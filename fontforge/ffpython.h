@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "flaglist.h"
+
 #if PY_MAJOR_VERSION >= 3
 
 #define PyInt_Check    PyLong_Check
@@ -102,9 +104,6 @@
 typedef int Py_ssize_t;
 #endif
 
-struct flaglist { char *name; int flag; };
-#define FLAGLIST_EMPTY { NULL, 0 }
-
 extern SplineChar *sc_active_in_ui;
 extern FontViewBase *fv_active_in_ui;
 extern int layer_active_in_ui;
@@ -112,5 +111,5 @@ extern int layer_active_in_ui;
 extern void FfPy_Replace_MenuItemStub(PyObject *(*func)(PyObject *,PyObject *));
 extern PyObject *PySC_From_SC(SplineChar *sc);
 extern PyObject *PyFV_From_FV(FontViewBase *fv);
-extern int FlagsFromTuple(PyObject *tuple,struct flaglist *flags);
+extern int FlagsFromTuple(PyObject *tuple,struct flaglist *flags,const char *flagkind);
 extern void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer);

@@ -39,6 +39,7 @@
 #include "ttf.h"
 #include "plugins.h"
 #include "ustring.h"
+#include "flaglist.h"
 #include "scripting.h"
 #include "scriptfuncs.h"
 #include <math.h>
@@ -55,7 +56,8 @@
 #define PYMETHODDEF_EMPTY  {NULL, NULL, 0, NULL}
 #define PYGETSETDEF_EMPTY { NULL, NULL, NULL, NULL, NULL }
 
-static struct flaglist sfnt_name_str_ids[], sfnt_name_mslangs[];
+static struct flaglist sfnt_name_str_ids[];
+static struct flaglist sfnt_name_mslangs[];
 
 FontViewBase *fv_active_in_ui = NULL;
 SplineChar *sc_active_in_ui = NULL;
@@ -213,6 +215,17 @@ static PyFF_Layer *LayerFromLayer(Layer *,PyFF_Layer *);
 /* Utilities */
 /* ************************************************************************** */
 
+static void FreeStringArray( int cnt, char **names ) {
+    int i;
+    if ( names==NULL )
+	return;
+    for ( i=1; i<cnt; ++i ) {
+	if ( names[i] != NULL )
+	    free(names[i]);
+    }
+    free(names);
+}
+
 #if PY_MAJOR_VERSION >= 3
 
 typedef int (*cmpfunc)(PyObject*, PyObject*);
@@ -266,40 +279,48 @@ static PyObject *enrichened_compare(cmpfunc compare, PyObject *a, PyObject *b, i
 
 #endif /* PY_MAJOR_VERSION >= 3 */
 
-#define PYFF_FLAG_UNKNOWN ((int32)0x80000000)
+static int FlagsFromString(char *str, struct flaglist *flags, const char *flagkind) {
+    int i;
+    i = FindFlagByName( flags, str );
+    if ( i == FLAG_UNKNOWN ) {
+	if ( flagkind == NULL )
+	    flagkind = "flag";
 
-static uint32 FlagsFromString(char *str,struct flaglist *flags) {
-    uint32 i;
-    for ( i=0; flags[i].name!=NULL; ++i )
-	if ( strcmp(str,flags[i].name)==0 )
-return( flags[i].flag );
-
-    PyErr_Format( PyExc_TypeError, "Unknown flag %s", str );
-return( PYFF_FLAG_UNKNOWN );
+	PyErr_Format( PyExc_ValueError, "Unknown %s \"%s\"", flagkind, str );
+    }
+return( i );
 }
 
-int FlagsFromTuple(PyObject *tuple,struct flaglist *flags) {
+/* FlagsFromTuple() - Converts a python sequence of strings into a flags integer.
+ * On an error a python exception is raised and FLAG_UNKNOWN returned.
+ * If flagkind is not NULL, then it is used in any error message to identify
+ * the kind of flags being parsed.
+ */
+int FlagsFromTuple(PyObject *tuple,struct flaglist *flags, const char *flagkind) {
     int ret = 0,temp;
     int i;
     char *str = NULL;
     PyObject *obj;
 
+    if ( flagkind == NULL )
+	flagkind = "flag";
+
     /* Might be omitted */
     if ( tuple == NULL )
 return( 0 );
-    /* Might just be one string, might be a tuple of strings */
+    /* Might just be one string, might be a tuple (or any sequence) of strings */
     if ( STRING_CHECK(tuple)) {
 #if PY_MAJOR_VERSION >= 3
         obj = PyUnicode_AsUTF8String(tuple);
         if (obj == NULL)
-return( PYFF_FLAG_UNKNOWN );
+return( FLAG_UNKNOWN );
         str = PyBytes_AsString(obj);
-        i = FlagsFromString(str,flags);
+        i = FlagsFromString(str,flags,flagkind);
         Py_DECREF(obj);
         return i;
 #else /* PY_MAJOR_VERSION >= 3 */
 	str = PyBytes_AsString(tuple);
-return( FlagsFromString(str,flags));
+return( FlagsFromString(str,flags,flagkind));
 #endif /* PY_MAJOR_VERSION >= 3 */
     } else if ( PySequence_Check(tuple)) {
 	ret = 0;
@@ -308,30 +329,30 @@ return( FlagsFromString(str,flags));
 	    if ( obj==Py_None )
 	continue;
 	    if ( !STRING_CHECK(obj)) {
-		PyErr_Format(PyExc_TypeError, "Bad flag tuple, must be strings");
-return( PYFF_FLAG_UNKNOWN );
+		PyErr_Format(PyExc_TypeError, "Bad %s list, must consist of strings only", flagkind);
+return( FLAG_UNKNOWN );
 	    }
 #if PY_MAJOR_VERSION >= 3
         {
             PyObject *obj2 = PyUnicode_AsUTF8String(obj);
             if (obj2 == NULL)
-return( PYFF_FLAG_UNKNOWN );
+return( FLAG_UNKNOWN );
             str = PyBytes_AsString(obj2);
-            temp = FlagsFromString(str,flags);
+            temp = FlagsFromString(str,flags,flagkind);
             Py_DECREF(obj2);
         }
 #else /* PY_MAJOR_VERSION >= 3 */
 	    str = PyBytes_AsString(obj);
-	    temp = FlagsFromString(str,flags);
+	    temp = FlagsFromString(str,flags,flagkind);
 #endif /* PY_MAJOR_VERSION >= 3 */
-	    if ( temp==PYFF_FLAG_UNKNOWN )
-return( PYFF_FLAG_UNKNOWN );
+	    if ( temp==FLAG_UNKNOWN )
+return( FLAG_UNKNOWN );
 	    ret |= temp;
 	}
 return( ret );
     } else {
-	PyErr_Format(PyExc_TypeError, "Bad flag tuple, must be a tuple of strings (or a string)");
-return( PYFF_FLAG_UNKNOWN );
+	PyErr_Format(PyExc_TypeError, "Bad %s list, must be a single string or a sequence (tuple/list) of strings", flagkind);
+return( FLAG_UNKNOWN );
     }
 }
 
@@ -383,18 +404,23 @@ void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer) {
     ((PyFF_Glyph *) pysc)->layer = layer;
 }
 
+#define BAD_TAG ((uint32)0xffffffff)
 static uint32 StrToTag(char *tag_name, int *was_mac) {
     uint8 foo[4];
     int feat, set;
 
     if ( tag_name==NULL ) {
 	PyErr_Format(PyExc_TypeError, "OpenType tags must be represented strings" );
-return( 0xffffffff );
+return( BAD_TAG );
     }
 
     if ( was_mac!=NULL && sscanf(tag_name,"<%d,%d>", &feat, &set )==2 ) {
+	if ( feat < 0 || set < 0 ) {
+	    PyErr_Format(PyExc_ValueError, "OpenType tag feature or set number must not be negative: %s", tag_name);
+return( BAD_TAG );
+	}
 	*was_mac = true;
-return( (feat<<16) | set );
+return( ( ((uint32)feat)<<16) | set );
     }
 
     if ( was_mac ) *was_mac = false;
@@ -408,8 +434,8 @@ return( (feat<<16) | set );
 		if ( tag_name[3]!='\0' ) {
 		    foo[3] = tag_name[3];
 		    if ( tag_name[4]!='\0' ) {
-			PyErr_Format(PyExc_TypeError, "OpenType tags are limited to 4 characters: %s", tag_name);
-return( 0xffffffff );
+			PyErr_Format(PyExc_ValueError, "OpenType tags are limited to 4 characters: %s", tag_name);
+return( BAD_TAG );
 		    }
 		}
 	    }
@@ -692,12 +718,20 @@ static PyObject *PyFF_OpenFont(PyObject *UNUSED(self), PyObject *args) {
     if ( !PyArg_ParseTuple(args,"es|i", "UTF-8", &filename, &openflags ))
 return( NULL );
     locfilename = utf82def_copy(filename);
+    free(filename);
+
+    /* The actual filename opened may be different from the one passed
+     * to LoadSplineFont, so we can't report the filename on an
+     * error.
+     */
     sf = LoadSplineFont(locfilename,openflags);
-    free(filename); free(locfilename);
+
     if ( sf==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "Open failed");
+	free(locfilename);
 return( NULL );
     }
+    free(locfilename);
 return( PyFV_From_FV_I( SFAdd( sf, openflags&of_hidewindow )));
 }
 
@@ -769,8 +803,10 @@ return( NULL );
 	instrs = galloc(icnt);
 	for ( i=0; i<icnt; ++i ) {
 	    instrs[i] = PyInt_AsLong(PySequence_GetItem(tuple,i));
-	    if ( PyErr_Occurred())
+	    if ( PyErr_Occurred()) {
+		free(instrs);
 return( NULL );
+	    }
 	}
     }
     as_str = _IVUnParseInstrs(instrs,icnt);
@@ -808,9 +844,8 @@ static PyObject *PyFF_printSetup(PyObject *UNUSED(self), PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"s|sii", &ptype, &pcmd, &pagewidth, &pageheight ) )
 return( NULL );
-    iptype = FlagsFromString(ptype,printmethod);
-    if ( iptype==PYFF_FLAG_UNKNOWN ) {
-	PyErr_Format(PyExc_TypeError, "Unknown printing method" );
+    iptype = FlagsFromString(ptype,printmethod,"printing method");
+    if ( iptype==FLAG_UNKNOWN ) {
 return( NULL );
     }
 
@@ -1020,7 +1055,7 @@ return( reto );
 }
 
 static PyObject *PyFF_ask(PyObject *UNUSED(self), PyObject *args) {
-    char *title,*quest, **answers;
+    char *title=NULL,*quest=NULL, **answers;
     int def=0, cancel=-1, cnt;
     PyObject *answero;
     int i, ret;
@@ -1034,34 +1069,43 @@ return( NULL );
 return( NULL );
     if ( !PySequence_Check(answero) || STRING_CHECK(answero)) {
 	PyErr_Format(PyExc_TypeError, "Expected a tuple of strings for the third argument");
+	free(title);
+	free(quest);
 return( NULL );
     }
     cnt = PySequence_Size(answero);
     answers = galloc((cnt+1)*sizeof(char *));
-    answers[cnt] = NULL;
     if ( cancel==-1 )
 	cancel = cnt-1;
     if ( cancel<0 || cancel>=cnt || def<0 || def>=cnt ) {
 	PyErr_Format(PyExc_ValueError, "Value out of bounds for 4th or 5th argument");
+	free(title);
+	free(quest);
+	free(answers);
 return( NULL );
     }
     for ( i=0; i<cnt; ++i ) {
         PyObject *utf8_name = PYBYTES_UTF8(PySequence_GetItem(answero,i));
-	if ( utf8_name==NULL )
+	if ( utf8_name==NULL ) {
+	    free(title);
+	    free(quest);
+	    FreeStringArray( i, answers );
 return( NULL );
+	}
 	answers[i] = copy(PyBytes_AsString(utf8_name));
 	Py_DECREF(utf8_name);
     }
+    answers[cnt] = NULL;
 
     ret = ff_ask(title,(const char **) answers,def,cancel,quest);
     free(title);
     free(quest);
-    free(answers);
+    FreeStringArray( cnt, answers );
 return( Py_BuildValue("i",ret));
 }
 
 static PyObject *PyFF_askChoices(PyObject *UNUSED(self), PyObject *args) {
-    char *title,*quest, **answers;
+    char *title=NULL,*quest=NULL, **answers;
     int def=0, cnt;
     PyObject *answero;
     int i, ret;
@@ -1075,27 +1119,35 @@ return( NULL );
 return( NULL );
     if ( !PySequence_Check(answero) || STRING_CHECK(answero)) {
 	PyErr_Format(PyExc_TypeError, "Expected a tuple of strings for the third argument");
+	free(title);
+	free(quest);
 return( NULL );
     }
     cnt = PySequence_Size(answero);
     answers = galloc((cnt+1)*sizeof(char *));
-    answers[cnt] = NULL;
     if ( def<0 || def>=cnt ) {
 	PyErr_Format(PyExc_ValueError, "Value out of bounds for 4th argument");
+	free(title);
+	free(quest);
 return( NULL );
     }
     for ( i=0; i<cnt; ++i ) {
         PyObject *utf8_name = PYBYTES_UTF8(PySequence_GetItem(answero,i));
-        if ( utf8_name==NULL )
-            return( NULL );
+        if ( utf8_name==NULL ) {
+	    free(title);
+	    free(quest);
+	    FreeStringArray( i, answers );
+return( NULL );
+	}
         answers[i] = copy(PyBytes_AsString(utf8_name));
         Py_DECREF(utf8_name);
     }
+    answers[cnt] = NULL;
 
     ret = ff_choose(title,(const char **) answers,cnt,def,quest);
     free(title);
     free(quest);
-    free(answers);
+    FreeStringArray( cnt, answers );
 return( Py_BuildValue("i",ret));
 }
 
@@ -1115,7 +1167,8 @@ return( NULL );
     ret = ff_ask_string(title,def,quest);
     free(title);
     free(quest);
-    free(def);
+    if(def!=NULL)
+	free(def);
     if ( ret==NULL )
 Py_RETURN_NONE;
     reto = Py_BuildValue("s",ret);
@@ -2349,18 +2402,19 @@ return( NULL );
 Py_RETURN( self );
 }
 
+/* Simplify flags: see 'enum simplify_flags' in splinefont.h */
 struct flaglist simplifyflags[] = {
-    { "cleanup", -1 },
-    { "ignoreslopes", 1 },
-    { "ignoreextrema", 2 },
-    { "smoothcurves", 4 },
-    { "choosehv", 8 },
-    { "forcelines", 16 },
-    { "nearlyhvlines", 32 },
-    { "mergelines", 64 },
-    { "setstarttoextremum", 128 },
-    { "setstarttoextrema", 128 },		/* Documentation error */
-    { "removesingletonpoints", 256 },
+    { "cleanup", sf_cleanup },
+    { "ignoreslopes", sf_ignoreslopes },
+    { "ignoreextrema", sf_ignoreextremum },
+    { "smoothcurves", sf_smoothcurves },
+    { "choosehv", sf_choosehv },
+    { "forcelines", sf_forcelines },
+    { "nearlyhvlines", sf_nearlyhvlines },
+    { "mergelines", sf_mergelines },
+    { "setstarttoextremum", sf_setstart2extremum },
+    { "setstarttoextrema",  sf_setstart2extremum }, /* Documentation error */
+    { "removesingletonpoints", sf_rmsingletonpoints },
     FLAGLIST_EMPTY /* Sentinel */
 };
 
@@ -2392,7 +2446,7 @@ Py_RETURN( self );		/* As simple as it can be */
     if ( PySequence_Size(args)>=1 )
 	smpl.err = PyFloat_AsDouble(PySequence_GetItem(args,0));
     if ( !PyErr_Occurred() && PySequence_Size(args)>=2 )
-	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags);
+	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags,"simplify flag");
     if ( !PyErr_Occurred() && PySequence_Size(args)>=3 )
 	smpl.tan_bounds = PyFloat_AsDouble( PySequence_GetItem(args,2));
     if ( !PyErr_Occurred() && PySequence_Size(args)>=4 )
@@ -2507,10 +2561,12 @@ Py_RETURN( self );		/* no points=> no clusters */
 Py_RETURN( self );
 }
 
+/* Add Extrema type: see 'enum ae_type' in splinefont.h */
 struct flaglist addextremaflags[] = {
-    { "all", 0 },
-    { "only_good", 2 },
-    { "only_good_rm", 3 },
+    { "all", ae_all },
+    /*{ "", ae_between_selected },  -- Not needed for python */
+    { "only_good", ae_only_good },
+    { "only_good_rm", ae_only_good_rm_later },
     FLAGLIST_EMPTY /* Sentinel */
 };
 
@@ -2522,10 +2578,11 @@ static PyObject *PyFFContour_AddExtrema(PyFF_Contour *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"|si", &flag, &emsize ) )
 return( NULL );
-    if ( flag!=NULL )
-	ae = FlagsFromString(flag,addextremaflags);
-    if ( ae==PYFF_FLAG_UNKNOWN )
+    if ( flag!=NULL ) {
+	ae = FlagsFromString(flag,addextremaflags,"extrema flag");
+	if ( ae==FLAG_UNKNOWN )
 return( NULL );
+    }
 
     ss = SSFromContour(self,NULL);
     if ( ss==NULL )
@@ -3332,7 +3389,7 @@ Py_RETURN( self );		/* As simple as it can be */
     if ( PySequence_Size(args)>=1 )
 	smpl.err = PyFloat_AsDouble(PySequence_GetItem(args,0));
     if ( !PyErr_Occurred() && PySequence_Size(args)>=2 )
-	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags);
+	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags,"simplify flag");
     if ( !PyErr_Occurred() && PySequence_Size(args)>=3 )
 	smpl.tan_bounds = PyFloat_AsDouble( PySequence_GetItem(args,2));
     if ( !PyErr_Occurred() && PySequence_Size(args)>=4 )
@@ -3476,8 +3533,11 @@ static PyObject *PyFFLayer_AddExtrema(PyFF_Layer *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"|si", &flag, &emsize ) )
 return( NULL );
-    if ( flag!=NULL )
-	ae = FlagsFromString(flag,addextremaflags);
+    if ( flag!=NULL ) {
+	ae = FlagsFromString(flag,addextremaflags,"extrema flag");
+        if ( ae==FLAG_UNKNOWN )
+return( NULL );
+    }
 
     ss = SSFromLayer(self);
     if ( ss==NULL )
@@ -3537,6 +3597,7 @@ return( false );
 return( true );
 }
 
+/* Linecap type: see 'enum linecap' in splinefont.h */
 struct flaglist linecap[] = {
     { "butt", lc_butt },
     { "round", lc_round },
@@ -3544,6 +3605,7 @@ struct flaglist linecap[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
+/* Linejoin type: see 'enum linejoin' in splinefont.h */
 struct flaglist linejoin[] = {
     { "miter", lj_miter },
     { "round", lj_round },
@@ -3564,10 +3626,20 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args) {
     int c, j, f;
     PyObject *flagtuple=NULL;
     PyObject *poly=NULL;
+    int argcnt;
 #if PY_MAJOR_VERSION >= 3
     PyObject *bytes;
 #endif /* PY_MAJOR_VERSION >= 3 */
 
+    if ( !PySequence_Check(args) ) {
+	PyErr_Format(PyExc_TypeError, "Expected a sequence");
+return( -1 );
+    }
+    argcnt = PySequence_Size(args);
+    if ( argcnt==0 ) {
+	PyErr_Format(PyExc_TypeError, "Expected a name of a pen type");
+return( -1 );
+    }
 #if PY_MAJOR_VERSION >= 3
     bytes = PyUnicode_AsUTF8String(PySequence_GetItem(args,0));
     if (bytes == NULL)
@@ -3654,13 +3726,16 @@ return( -1 );
         PyErr_Format(PyExc_ValueError, "Stroke width must be positive" );
 return( -1 );
     }
-    c = FlagsFromString(cap,linecap);
-    j = FlagsFromString(join,linejoin);
-    f = FlagsFromTuple(flagtuple,strokeflags);
-    if ( c==PYFF_FLAG_UNKNOWN || j==PYFF_FLAG_UNKNOWN || f==PYFF_FLAG_UNKNOWN ) {
-	PyErr_Format(PyExc_ValueError, "Bad value for line cap, join or flags" );
+    c = FlagsFromString(cap,linecap,"linecap type");
+    if ( c==FLAG_UNKNOWN )
 return( -1 );
-    }
+    j = FlagsFromString(join,linejoin,"linejoin type");
+    if ( c==FLAG_UNKNOWN )
+return( -1 );
+    f = FlagsFromTuple(flagtuple,strokeflags,"stroke flag");
+    if ( c==FLAG_UNKNOWN )
+return( -1 );
+
     si->radius = width/2;
     si->join = j;
     si->cap = c;
@@ -3692,9 +3767,10 @@ return( NULL );
     pt = strrchr(locfilename,'.');
     if ( pt==NULL ) pt=locfilename;
 
-    file = fopen( locfilename,"w");
+    file = fopen( locfilename,"wb");
     if ( file==NULL ) {
-	PyErr_Format(PyExc_EnvironmentError, "Could not create file %s", locfilename );
+	PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
+	free(locfilename);
 return( NULL );
     }
 
@@ -3718,7 +3794,7 @@ return( NULL );
 	_ExportPlate(file,&sc,ly_fore);
     /* else if ( strcasecmp(pt,".fig")==0 )*/
     else {
-	PyErr_Format(PyExc_TypeError, "Unknown extension to export: %s", pt );
+	PyErr_Format(PyExc_ValueError, "Unknown file name extension \"%s\" to export", pt );
 	free( locfilename );
 	fclose(file);
 	SplinePointListsFree(dummylayers[ly_fore].splines);
@@ -4520,7 +4596,11 @@ return( NULL );
     }
 
     len = PySequence_Size(args);
-    if ( PySequence_GetItem(args,len-1)== Py_None ) {
+    if ( len < 2 ) {
+	PyErr_Format(PyExc_EnvironmentError, "qCurveTo requires at least two arguments");
+return( NULL );
+    }
+    else if ( PySequence_GetItem(args,len-1)== Py_None ) {
 	--len;
 	if ( !((PyFF_GlyphPen *) self)->ended ) {
 	    PyErr_Format(PyExc_EnvironmentError, "qCurveTo must describe an entire contour if its last argument is None");
@@ -4569,7 +4649,7 @@ return( NULL );
 	((PyFF_GlyphPen *) self)->changed = true;
     } else {
 	if ( ((PyFF_GlyphPen *) self)->ended ) {
-	    PyErr_Format(PyExc_EnvironmentError, "The curveTo operator must be preceded by a moveTo operator" );
+	    PyErr_Format(PyExc_EnvironmentError, "The qCurveTo operator must be preceded by a moveTo operator" );
 return( NULL );
 	} else if ( len<2 ) {
 	    PyErr_Format(PyExc_EnvironmentError, "qCurveTo must have at least two tuples");
@@ -4613,7 +4693,7 @@ static PyObject *PyFFGlyphPen_closePath(PyObject *self, PyObject *UNUSED(args)) 
     SplineSet *ss;
 
     if ( ((PyFF_GlyphPen *) self)->ended ) {
-	PyErr_Format(PyExc_EnvironmentError, "The curveTo operator must be preceded by a moveTo operator" );
+	PyErr_Format(PyExc_EnvironmentError, "The closePath operator requires and open path to close" );
 return( NULL );
     }
 
@@ -4637,7 +4717,7 @@ Py_RETURN( self );
 static PyObject *PyFFGlyphPen_endPath(PyObject *self, PyObject *UNUSED(args)) {
 
     if ( ((PyFF_GlyphPen *) self)->ended ) {
-	PyErr_Format(PyExc_EnvironmentError, "The curveTo operator must be preceded by a moveTo operator" );
+	PyErr_Format(PyExc_EnvironmentError, "The endPath operator must be preceded path operations" );
 return( NULL );
     }
 
@@ -5329,7 +5409,7 @@ return( -1 );
     cnt = PySequence_Size(value);
     mkd = gcalloc(cnt,sizeof(struct mathkerndata));
     for ( i=0; i<cnt; ++i ) {
-	PyObject *obj = PyTuple_GetItem(value,i);
+	PyObject *obj = PySequence_GetItem(value,i);
 	if ( i==cnt-1 && PyInt_Check(obj))
 	    mkd[i].kern = PyInt_AsLong(obj);
 	else if ( !PyArg_ParseTuple(obj, "hh", &mkd[i].kern, &mkd[i].height )) {
@@ -6058,8 +6138,8 @@ static int PyFF_Glyph_set_glyphclass(PyFF_Glyph *self,PyObject *value, void *UNU
 
     if ( str==NULL )
 return( -1 );
-    gc = FlagsFromString(str,glyphclasses);
-    if ( gc==PYFF_FLAG_UNKNOWN )
+    gc = FlagsFromString(str,glyphclasses,"glyph class");
+    if ( gc==FLAG_UNKNOWN )
 return( -1 );
     self->sc->glyph_class = gc;
 return( 0 );
@@ -6279,6 +6359,7 @@ return( -1 );
 return( 0 );
 }
 
+/* Anchor type: see 'enum anchor_type' in splinefont.h */
 static struct flaglist ap_types[] = {
     { "mark", at_mark },
     { "base", at_basechar },
@@ -6355,8 +6436,8 @@ return( NULL );
 	if ( !PyArg_ParseTuple(tuple, "ssdd|i", &ac_name, &type, &x, &y, &lig_index ))
 return( NULL );
     }
-    aptype = FlagsFromString(type,ap_types);
-    if ( aptype==PYFF_FLAG_UNKNOWN )
+    aptype = FlagsFromString(type,ap_types,"anchor type");
+    if ( aptype==FLAG_UNKNOWN )
 return( NULL );
     for ( ac=sf->anchor; ac!=NULL; ac=ac->next ) {
 	if ( strcmp(ac->name,ac_name)==0 )
@@ -6979,6 +7060,7 @@ static PyObject *PyFFGlyph_canonicalStart(PyObject *self, PyObject *UNUSED(args)
 Py_RETURN( self );
 }
 
+/* Char weight/Embolden types: see 'enum embolden_type' in baseviews.h */
 static struct flaglist cw_types[] = {
     { "lcg", embolden_lcg },
     { "cjk", embolden_cjk },
@@ -6989,6 +7071,7 @@ static struct flaglist cw_types[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
+/* Counter types: see 'enum counter_type' in baseviews.h */
 static struct flaglist co_types[] = {
     { "squish", ct_squish },
     { "retain", ct_retain },
@@ -7013,11 +7096,11 @@ static enum embolden_type CW_ParseArgs(SplineFont *sf, struct lcg_zones *zones, 
 	    &zones->removeoverlap,
 	    &zoneO ))
 return( embolden_error );
-    type = FlagsFromString(type_name,cw_types);
-    if ( type==(uint32)PYFF_FLAG_UNKNOWN )
+    type = FlagsFromString(type_name,cw_types,"embolden type");
+    if ( type==(uint32)FLAG_UNKNOWN )
 return( embolden_error );
-    zones->counter_type = FlagsFromString(counter_name,co_types);
-    if ( zones->counter_type==(uint32)PYFF_FLAG_UNKNOWN )
+    zones->counter_type = FlagsFromString(counter_name,co_types,"counter type");
+    if ( zones->counter_type==(uint32)FLAG_UNKNOWN )
 return( embolden_error );
 
     just_top = true;
@@ -7251,6 +7334,7 @@ return(NULL);
 Py_RETURN( self );
 }
 
+/* PostScript importing flags */
 static struct flaglist import_ps_flags[] = {
     { "toobigwarn", 0 },			/* Obsolete */
     { "removeoverlap", 0 },			/* Obsolete */
@@ -7270,20 +7354,50 @@ return( NULL );
     locfilename = utf82def_copy(filename);
     free(filename);
 
+    /* Check if the file exists and is readable */
+    if ( access(locfilename,R_OK)!=0 ) {
+	PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
+	free(locfilename);
+return( NULL );
+    }
+
     pt = strrchr(locfilename,'.');
     if ( pt==NULL ) pt=locfilename;
 
-    if ( strcasecmp(pt,".eps")==0 || strcasecmp(pt,".ps")==0 || strcasecmp(pt,".art")==0 )
-	SCImportPS(sc,((PyFF_Glyph *) self)->layer,locfilename,false,FlagsFromTuple(flags,import_ps_flags));
+    if ( strcasecmp(pt,".eps")==0 || strcasecmp(pt,".ps")==0 || strcasecmp(pt,".art")==0 ) {
+	int psflags = FlagsFromTuple(flags,import_ps_flags,"PostScript import flag");
+	if ( psflags==FLAG_UNKNOWN ) {
+	    free(locfilename);
+return( NULL );
+	}
+	SCImportPS(sc,((PyFF_Glyph *) self)->layer,locfilename,false,psflags);
+    }
+    else if ( strcasecmp(pt,".svg")==0 ) {
 #ifndef _NO_LIBXML
-    else if ( strcasecmp(pt,".svg")==0 )
 	SCImportSVG(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false);
-    else if ( strcasecmp(pt,".glif")==0 )
-	SCImportGlif(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false);
+#else
+	PyErr_Format(PyExc_NotImplementedError,"Cannot read file because XML support is not enabled");
+	free(locfilename);
+return( NULL );
 #endif
+    }
+    else if ( strcasecmp(pt,".glif")==0 ) {
+#ifndef _NO_LIBXML
+	SCImportGlif(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false);
+#else
+	PyErr_Format(PyExc_NotImplementedError,"Cannot read file because XML support is not enabled");
+	free(locfilename);
+return( NULL );
+#endif
+    }
     else if ( strcasecmp(pt,".plate")==0 ) {
 	FILE *plate = fopen(locfilename,"r");
-	if ( plate!=NULL ) {
+	if ( plate==NULL ) {
+	    PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
+	    free(locfilename);
+return( NULL );
+	}
+	else {
 	    SCImportPlateFile(sc,((PyFF_Glyph *) self)->layer,plate,false,0);
 	    fclose(plate);
 	}
@@ -7292,7 +7406,8 @@ return( NULL );
 	GImage *image = GImageRead(locfilename);
 	int ly = ((PyFF_Glyph *) self)->layer;
 	if ( image==NULL ) {
-	    PyErr_Format(PyExc_EnvironmentError, "Could not load image file %s", locfilename );
+	    PyErr_Format(PyExc_EnvironmentError, "Could not load image file \"%s\"", locfilename );
+	    free(locfilename);
 return(NULL);
 	}
 	if ( !sc->layers[ly].background )
@@ -7330,28 +7445,41 @@ return( NULL );
 	format=2;
 
     if ( format!=-1 ) {
-	if ( !PyArg_ParseTuple(args,"O|ii",&foo,&pixels,&bits) )
+	if ( !PyArg_ParseTuple(args,"O|ii",&foo,&pixels,&bits) ) {
+	    free(locfilename);
 return( NULL );
+	}
 	if ( !ExportImage(locfilename,sc,layer,format,pixels,bits)) {
-	    PyErr_Format(PyExc_EnvironmentError, "Could not create image file %s", locfilename );
+	    PyErr_Format(PyExc_EnvironmentError, "Could not create image file \"%s\"", locfilename );
+	    free(locfilename);
 return( NULL );
 	}
     } else {
-	file = fopen( locfilename,"w");
+	file = fopen( locfilename,"wb");
 	if ( file==NULL ) {
-	    PyErr_Format(PyExc_EnvironmentError, "Could not create file %s", locfilename );
+	    PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
+	    free(locfilename);
 return( NULL );
 	}
+
 	if ( !PyArg_ParseTuple(args,"O|i",&foo,&layer) ) {
 	    PyErr_Clear();
-	    if ( !PyArg_ParseTuple(args,"O|s",&foo,&layer_str) )
+	    if ( !PyArg_ParseTuple(args,"O|s",&foo,&layer_str) ) {
+		free(locfilename);
+		fclose(file);
 return( NULL );
+	    }
 	    layer = SFFindLayerIndexByName(sc->parent,layer_str);
-	    if ( layer<0 )
+	    if ( layer<0 ) {
+		free(locfilename);
+		fclose(file);
 return( NULL );
+	    }
 	}
 	if ( layer<0 || layer>=sc->layer_cnt ) {
 	    PyErr_Format(PyExc_ValueError, "Layer is out of range" );
+	    free(locfilename);
+	    fclose(file);
 return( NULL );
 	}
 
@@ -7614,6 +7742,10 @@ static PyObject *PyFFGlyph_getPosSub(PyObject *self, PyObject *args) {
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
 
+    if ( PySequence_Size(args)!=1 ) {
+	PyErr_Format(PyExc_TypeError,"Expected a subtable name");
+return( NULL );
+    }
     subname = PyBytes_AsString(PySequence_GetItem(args,0));
     if ( subname==NULL )
 return( NULL );
@@ -7717,6 +7849,10 @@ static PyObject *PyFFGlyph_removePosSub(PyObject *self, PyObject *args) {
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
 
+    if ( PySequence_Size(args)!=1 ) {
+	PyErr_Format(PyExc_TypeError,"Expected a subtable name");
+return( NULL );
+    }
     subname = PyBytes_AsString(PySequence_GetItem(args,0));
     if ( subname==NULL )
 return( NULL );
@@ -7779,6 +7915,10 @@ static PyObject *PyFFGlyph_addPosSub(PyObject *self, PyObject *args) {
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
 
+    if ( PySequence_Size(args)==0 ) {
+	PyErr_Format(PyExc_TypeError,"The first argument must be a subtable name");
+return( NULL );
+    }
     subname = PyBytes_AsString(PySequence_GetItem(args,0));
     if ( subname==NULL )
 return( NULL );
@@ -7944,6 +8084,7 @@ return( NULL );
 return( Py_BuildValue( "i", SCValidate(sc,layer,force)) );
 }
 
+/* Transformation flags: see 'enum fvtrans_flags' in baseviews.h */
 static struct flaglist trans_flags[] = {
     { "partialRefs", fvt_partialreftrans },
     { "round", fvt_round_to_int },
@@ -7961,8 +8102,8 @@ static PyObject *PyFFGlyph_Transform(PyObject *self, PyObject *args) {
     if ( !PyArg_ParseTuple(args,"(dddddd)|O",&m[0], &m[1], &m[2], &m[3], &m[4], &m[5],
 	    &flagO) )
 return( NULL );
-    flags = FlagsFromTuple(flagO,trans_flags);
-    if ( flags==PYFF_FLAG_UNKNOWN )
+    flags = FlagsFromTuple(flagO,trans_flags,"transformation flag");
+    if ( flags==FLAG_UNKNOWN )
 return( NULL );
     flags |= fvt_alllayers;
     for ( i=0; i<6; ++i )
@@ -7997,7 +8138,7 @@ static PyObject *PyFFGlyph_Simplify(PyFF_Glyph *self, PyObject *args) {
     if ( PySequence_Size(args)>=1 )
 	smpl.err = PyFloat_AsDouble(PySequence_GetItem(args,0));
     if ( !PyErr_Occurred() && PySequence_Size(args)>=2 )
-	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags);
+	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags,"simplify flag");
     if ( !PyErr_Occurred() && PySequence_Size(args)>=3 )
 	smpl.tan_bounds = PyFloat_AsDouble( PySequence_GetItem(args,2));
     if ( !PyErr_Occurred() && PySequence_Size(args)>=4 )
@@ -8041,9 +8182,11 @@ static PyObject *PyFFGlyph_AddExtrema(PyFF_Glyph *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"|si", &flag, &emsize ) )
 return( NULL );
-    if ( flag!=NULL )
-	ae = FlagsFromString(flag,addextremaflags);
-
+    if ( flag!=NULL ) {
+	ae = FlagsFromString(flag,addextremaflags,"extrema flag");
+	if ( ae == FLAG_UNKNOWN )
+return( NULL );
+    }
     SplineCharAddExtrema(sc,sc->layers[self->layer].splines,ae,sf->ascent+sf->descent);
     SCCharChangedUpdate(sc,self->layer);
 Py_RETURN( self );
@@ -8808,8 +8951,8 @@ static PyObject *PyFFSelection_select(PyObject *self, PyObject *args) {
     for ( i=0; i<cnt; ++i ) {
 	PyObject *arg = PyTuple_GetItem(args,i);
 	if ( !STRING_CHECK(arg) && PySequence_Check(arg)) {
-	    int newflags = FlagsFromTuple(arg,select_flags);
-	    if ( newflags==PYFF_FLAG_UNKNOWN )
+	    int newflags = FlagsFromTuple(arg,select_flags,"select flag");
+	    if ( newflags==FLAG_UNKNOWN )
 return( NULL );
 	    if ( (newflags&(sel_more|sel_less)) == 0 )
 		newflags |= (flags&(sel_more|sel_less));
@@ -10151,55 +10294,57 @@ static int SetSFNTName(SplineFont *sf,PyObject *tuple,struct ttflangname *englis
 #endif /* PY_MAJOR_VERSION >= 3 */
 
     if ( !PySequence_Check(tuple)) {
-	PyErr_Format(PyExc_TypeError, "Value must be a tuple" );
+	PyErr_Format(PyExc_TypeError, "sfnt_name must be a tuple" );
+return(0);
+    }
+    if ( PySequence_Size(tuple)!=3 ) {
+	PyErr_Format(PyExc_TypeError, "sfnt_name tuple must consist of three strings" );
 return(0);
     }
 
     val = PySequence_GetItem(tuple,0);
     if ( STRING_CHECK(val) ) {
 #if PY_MAJOR_VERSION >= 3
-    bytes = PyUnicode_AsUTF8String(val);
-    if (bytes == NULL)
+	bytes = PyUnicode_AsUTF8String(val);
+	if (bytes == NULL)
 return( 0 );
 	lang_str = PyBytes_AsString(bytes);
-	lang = FlagsFromString(lang_str,sfnt_name_mslangs);
-    Py_DECREF(bytes);
+	lang = FlagsFromString(lang_str,sfnt_name_mslangs,"language");
+	Py_DECREF(bytes);
 #else /* PY_MAJOR_VERSION >= 3 */
 	lang_str = PyBytes_AsString(val);
-	lang = FlagsFromString(lang_str,sfnt_name_mslangs);
+	lang = FlagsFromString(lang_str,sfnt_name_mslangs,"language");
 #endif /* PY_MAJOR_VERSION >= 3 */
-	if ( lang==PYFF_FLAG_UNKNOWN ) {
-	    PyErr_Format(PyExc_TypeError, "Unknown language" );
+	if ( lang==FLAG_UNKNOWN ) {
 return( 0 );
 	}
     } else if ( PyInt_Check(val))
 	lang = PyInt_AsLong(val);
     else {
-	PyErr_Format(PyExc_TypeError, "Unknown language" );
+	PyErr_Format(PyExc_TypeError, "Language must be a string or an integer" );
 return( 0 );
     }
 
     val = PySequence_GetItem(tuple,1);
     if ( STRING_CHECK(val) ) {
 #if PY_MAJOR_VERSION >= 3
-    bytes = PyUnicode_AsUTF8String(val);
-    if (bytes == NULL)
+	bytes = PyUnicode_AsUTF8String(val);
+	if (bytes == NULL)
 return( 0 );
 	strid_str = PyBytes_AsString(bytes);
-	strid = FlagsFromString(strid_str,sfnt_name_str_ids);
-    Py_DECREF(bytes);
+	strid = FlagsFromString(strid_str,sfnt_name_str_ids,"string id");
+	Py_DECREF(bytes);
 #else /* PY_MAJOR_VERSION >= 3 */
 	strid_str = PyBytes_AsString(val);
-	strid = FlagsFromString(strid_str,sfnt_name_str_ids);
+	strid = FlagsFromString(strid_str,sfnt_name_str_ids,"string id");
 #endif /* PY_MAJOR_VERSION >= 3 */
-	if ( strid==PYFF_FLAG_UNKNOWN ) {
-	    PyErr_Format(PyExc_TypeError, "Unknown string id" );
+	if ( strid==FLAG_UNKNOWN ) {
 return( 0 );
 	}
     } else if ( PyInt_Check(val))
 	strid = PyInt_AsLong(val);
     else {
-	PyErr_Format(PyExc_TypeError, "Unknown string id" );
+	PyErr_Format(PyExc_TypeError, "String-id must be a string or an integer" );
 return( 0 );
     }
 
@@ -10356,8 +10501,10 @@ static int bitmapper(PyFF_Font *self,PyObject *value,int isavail) {
 return( -1 );
     sizes = galloc((cnt+1)*sizeof(int));
     for ( i=0; i<cnt; ++i ) {
-	if ( !PyArg_ParseTuple(PyTuple_GetItem(value,i),"i", &sizes[i]))
+	if ( !PyArg_ParseTuple(PyTuple_GetItem(value,i),"i", &sizes[i])) {
+	    free(sizes);
 return( -1 );
+	}
 	if ( (sizes[i]>>16)==0 )
 	    sizes[i] |= 0x10000;
     }
@@ -10376,6 +10523,7 @@ static int PyFF_Font_set_bitmapSizes(PyFF_Font *self,PyObject *value, void *UNUS
 return( bitmapper(self,value,true));
 }
 
+/* GASP (grid-fitting and scan procedure) flags */
 static struct flaglist gaspflags[] = {
     { "gridfit",		1 },
     { "antialias",		2 },
@@ -10420,11 +10568,15 @@ return( -1 );
 	gasp = galloc(cnt*sizeof(struct gasp));
 	for ( i=0; i<cnt; ++i ) {
 	    if ( !PyArg_ParseTuple(PyTuple_GetItem(value,i),"HO",
-		    &gasp[i].ppem, &flags ))
+				   &gasp[i].ppem, &flags )) {
+		free(gasp);
 return( -1 );
-	    flag = FlagsFromTuple(flags,gaspflags);
-	    if ( flag==PYFF_FLAG_UNKNOWN )
+	    }
+	    flag = FlagsFromTuple(flags,gaspflags,"gasp flag");
+	    if ( flag==FLAG_UNKNOWN ) {
+		free(gasp);
 return( -1 );
+	    }
 	    gasp[i].flags = flag;
 	}
     }
@@ -11314,6 +11466,7 @@ return( -1 );
     base = chunkalloc(sizeof( struct Base));
     base->baseline_cnt = basecnt;
     base->baseline_tags = galloc(basecnt*sizeof(uint32));
+    base->scripts = NULL;
     for ( i=0; i<basecnt; ++i ) {
 	PyObject *str = PyTuple_GetItem(basetags,i);
 	if ( !STRING_CHECK(str) ) {
@@ -11322,8 +11475,10 @@ return( -1 );
 return( -1 );
 	}
 	base->baseline_tags[i] = StrToTag(PyBytes_AsString(str),NULL);
-	if ( base->baseline_tags[i]==0xffffffff )
+	if ( base->baseline_tags[i]==BAD_TAG ) {
+	    BaseFree(base);
 return( -1 );
+	}
     }
 
     lastbs = NULL;
@@ -11348,7 +11503,7 @@ return( -1 );
 	    lastbs->next = bs;
 	lastbs = bs;
 	bs->script = StrToTag(scripttag,NULL);
-	if ( bs->script == 0xffffffff ) {
+	if ( bs->script == BAD_TAG ) {
 	    BaseFree(base);
 return( -1 );
 	}
@@ -11357,7 +11512,7 @@ return( -1 );
 	else if ( basecnt!=0 && (def_baseln!=NULL && offsets!=NULL)) {
 	    /* Also reasonable */;
 	    uint32 tag = StrToTag(def_baseln,NULL);
-	    if ( tag==0xffffffff ) {
+	    if ( tag==BAD_TAG ) {
 		BaseFree(base);
 return( -1 );
 	    }
@@ -11417,7 +11572,7 @@ return( -1 );
 		lastln->next = ln;
 	    lastln = ln;
 	    ln->lang = StrToTag(tag,NULL);
-	    if ( ln->lang == 0xffffffff ) {
+	    if ( ln->lang == BAD_TAG ) {
 		PyErr_Format(PyExc_TypeError, "A language tag must be a 4 character string");
 		BaseFree(base);
 return( -1 );
@@ -11450,7 +11605,7 @@ return( -1 );
 		    lastft->next = ft;
 		lastln = ln;
 		ft->lang = StrToTag(tag,NULL);
-		if ( ft->lang == 0xffffffff ) {
+		if ( ft->lang == BAD_TAG ) {
 		    BaseFree(base);
 return( -1 );
 		}
@@ -11674,30 +11829,39 @@ return( -1 );
 
 	if ( !PySequence_Check(subtuple)) {
 	    PyErr_Format(PyExc_TypeError, "Value must be a tuple" );
-    return(0);
+	    OtfNameListFree(head);
+return( -1 );
 	}
-
+	if ( PySequence_Size(subtuple) != 2 ) {
+	    PyErr_Format(PyExc_TypeError, "Value must be a tuple of a language name and string" );
+	    OtfNameListFree(head);
+return( -1 );
+	}
 	val = PySequence_GetItem(subtuple,0);
 	if ( STRING_CHECK(val) ) {
 	    char *lang_str = PyBytes_AsString(val);
-	    lang = FlagsFromString(lang_str,sfnt_name_mslangs);
-	    if ( lang==PYFF_FLAG_UNKNOWN ) {
-		PyErr_Format(PyExc_TypeError, "Unknown language" );
-return( 0 );
+	    lang = FlagsFromString(lang_str,sfnt_name_mslangs,"language");
+	    if ( lang==FLAG_UNKNOWN ) {
+	    OtfNameListFree(head);
+return( -1 );
 	    }
 	} else if ( PyInt_Check(val))
 	    lang = PyInt_AsLong(val);
 	else {
-	    PyErr_Format(PyExc_TypeError, "Unknown language" );
-return( 0 );
+	    PyErr_Format(PyExc_TypeError, "Language must be a string or an integer");
+	    OtfNameListFree(head);
+return( -1 );
 	}
 
-	string = PyBytes_AsString(PySequence_GetItem(subtuple,2));
-	if ( string==NULL )
-return( 0 );
+	string = PyBytes_AsString(PySequence_GetItem(subtuple,1));
+	if ( string==NULL ) {
+	    OtfNameListFree(head);
+return( -1 );
+	}
 	cur = chunkalloc(sizeof( struct otfname ));
 	cur->name = copy(string);
 	cur->lang = lang;
+	cur->next = NULL;
 	if ( head==NULL )
 	    head = cur;
 	else
@@ -12003,17 +12167,25 @@ return( 0 );
     names = galloc((cnt+1)*sizeof(char *));
     classes = galloc((cnt+1)*sizeof(char *));
     names[0] = classes[0] = NULL;
-    for ( i=0; i<cnt; ++i ) {
-	if ( !PyArg_ParseTuple(PySequence_GetItem(value,i),"(sO)", &nm, &subtuple))
+    /* Fill in names[] and classes[], starting at index 1 instead of 0 */
+    for ( i=1; i<=cnt; ++i ) {
+	names[i] = classes[i] = NULL;
+	if ( !PyArg_ParseTuple(PySequence_GetItem(value,i),"(sO)", &nm, &subtuple)) {
+	    FreeStringArray( i, names );
+	    FreeStringArray( i, classes );
 return( -1 );
-	classes[i+1] = GlyphNamesFromTuple(subtuple);
-	if ( classes[i+1]==NULL )
+	}
+	classes[i] = GlyphNamesFromTuple(subtuple);
+	if ( classes[i+1]==NULL ) {
+	    FreeStringArray( i, names );
+	    FreeStringArray( i, classes );
 return( -1 );
-	names[i+1] = copy(nm);
+	}
+	names[i] = copy(nm);
     }
 
     MarkClassFree(sf->mark_class_cnt,sf->mark_classes,sf->mark_class_names);
-    sf->mark_class_cnt = cnt+1;
+    sf->mark_class_cnt = cnt+1; /* +1 because index 0 was skipped */
     sf->mark_classes = classes;
     sf->mark_class_names = names;
     
@@ -12558,7 +12730,7 @@ static PyObject *PyFFFont_GetTableData(PyObject *self, PyObject *args) {
     if ( !PyArg_ParseTuple(args,"s",&table_name) )
 return( NULL );
     tag = StrToTag(table_name,NULL);
-    if ( tag==0xffffffff )
+    if ( tag==BAD_TAG )
 return( NULL );
 
     for ( tab=((PyFF_Font *) self)->fv->sf->ttf_tables; tab!=NULL && tab->tag!=tag; tab=tab->next );
@@ -12624,7 +12796,7 @@ static PyObject *PyFFFont_SetTableData(PyObject *self, PyObject *args) {
     if ( !PyArg_ParseTuple(args,"sO",&table_name,&tuple) )
 return( NULL );
     tag = StrToTag(table_name,NULL);
-    if ( tag==0xffffffff )
+    if ( tag==BAD_TAG )
 return( NULL );
 
     if ( tuple==Py_None ) {
@@ -12717,6 +12889,7 @@ return( NULL );
 Py_RETURN(self);
 }
 
+/* Font comparison flags */
 static struct flaglist compflags[] = {
     { "outlines",		  1 },
     { "outlines-exactly",	  2 },
@@ -12749,19 +12922,24 @@ return( NULL );
 
     if ( !PyType_IsSubtype(&PyFF_FontType,((PyObject *)other)->ob_type) ) {
 	PyErr_Format(PyExc_TypeError,"First argument must be a fontforge font");
+	free(locfilename);
 return( NULL );
     }
-    flags = FlagsFromTuple(flagstuple,compflags);
-    if ( flags==PYFF_FLAG_UNKNOWN )
+    flags = FlagsFromTuple(flagstuple,compflags,"comparison flag");
+    if ( flags==FLAG_UNKNOWN ) {
+	free(locfilename);
 return( NULL );
+    }
 
-    if ( strcmp(filename,"-")==0 )
+    if ( strcmp(locfilename,"-")==0 )
 	diffs = stdout;
-    else
-	diffs = fopen(filename,"w");
-    if ( diffs==NULL ) {
-	PyErr_Format(PyExc_EnvironmentError,"Failed to open output file: %s", locfilename);
+    else {
+	diffs = fopen(locfilename,"w");
+	if ( diffs==NULL ) {
+	    PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
+	    free(locfilename);
 return( NULL );
+	}
     }
 
     free( locfilename );
@@ -13591,6 +13769,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
+/* OpenType lookup types: see 'enum otlookup_type' in splinefont.h */
 static struct flaglist lookup_types[] = {
     { "gsub_single", gsub_single },
     { "gsub_multiple", gsub_multiple },
@@ -13614,11 +13793,15 @@ static struct flaglist lookup_types[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
+/* OpenType lookup flags: see 'enum pst_flags' in splinefont.h */
 static struct flaglist lookup_flags[] = {
     { "right_to_left", pst_r2l },
     { "ignore_bases", pst_ignorebaseglyphs },
     { "ignore_ligatures", pst_ignoreligatures },
     { "ignore_marks", pst_ignorecombiningmarks },
+    /*{ "", pst_usemarkfilteringset },*/
+    /*{ "", pst_markclass },*/
+    /*{ "", pst_markset },*/
     { "right_2_left", pst_r2l },
     { "right2left", pst_r2l },
     FLAGLIST_EMPTY /* Sentinel */
@@ -13634,7 +13817,7 @@ return( -1 );
 	if ( strcmp(lookup_flags[i].name,str)==0 )
 return( lookup_flags[i].flag );
 
-    for ( i=1; i<sf->mark_class_cnt; ++i )
+    for ( i=1; i<sf->mark_class_cnt; ++i ) /* Start at 1 because class 0 is unused */
 	if ( strcmp(sf->mark_class_names[i],str)==0 )
 return( i<<8 );
 
@@ -13665,6 +13848,8 @@ return( -1 );
 return( flags );
 }
 
+#define BAD_FEATURE_LIST ((FeatureScriptLangList*)-1)
+
 static FeatureScriptLangList *PyParseFeatureList(PyObject *tuple) {
     FeatureScriptLangList *flhead=NULL, *fltail, *fl;
     struct scriptlanglist *sltail, *sl;
@@ -13682,19 +13867,25 @@ return( (FeatureScriptLangList *) -1 );
 	PyObject *subs = PySequence_GetItem(tuple,f);
 	if ( !PySequence_Check(subs)) {
 	    PyErr_Format(PyExc_TypeError, "A feature list is composed of a tuple of tuples" );
-return( (FeatureScriptLangList *) -1 );
+	    FeatureScriptLangListFree(flhead);
+return( BAD_FEATURE_LIST );
 	} else if ( PySequence_Size(subs)!=2 ) {
 	    PyErr_Format(PyExc_TypeError, "A feature list is composed of a tuple of tuples each containing two elements");
-return( (FeatureScriptLangList *) -1 );
+	    FeatureScriptLangListFree(flhead);
+return( BAD_FEATURE_LIST );
 	} else if ( !STRING_CHECK(PySequence_GetItem(subs,0)) ||
 		!PySequence_Check(PySequence_GetItem(subs,1))) {
 	    PyErr_Format(PyExc_TypeError, "Bad type for argument");
-return( (FeatureScriptLangList *) -1 );
+	    FeatureScriptLangListFree(flhead);
+return( BAD_FEATURE_LIST );
 	}
 	fl = chunkalloc(sizeof(FeatureScriptLangList));
 	fl->featuretag = StrToTag(PyBytes_AsString(PySequence_GetItem(subs,0)),&wasmac);
-	if ( fl->featuretag == 0xffffffff )
-return( (FeatureScriptLangList *) -1 );
+	if ( fl->featuretag == BAD_TAG ) {
+	    free(fl);
+	    FeatureScriptLangListFree(flhead);
+return( BAD_FEATURE_LIST );
+	}
 	fl->ismac = wasmac;
 	if ( flhead==NULL )
 	    flhead = fl;
@@ -13704,29 +13895,37 @@ return( (FeatureScriptLangList *) -1 );
 	scripts = PySequence_GetItem(subs,1);
 	if ( !PySequence_Check(scripts)) {
 	    PyErr_Format(PyExc_TypeError, "A script list is composed of a tuple of tuples" );
-return( (FeatureScriptLangList *) -1 );
+	    FeatureScriptLangListFree(flhead);
+return( BAD_FEATURE_LIST );
 	} else if ( PySequence_Size(scripts)==0 ) {
 	    PyErr_Format(PyExc_TypeError, "No scripts specified for feature %s", PyBytes_AsString(PySequence_GetItem(subs,0)));
-return( (FeatureScriptLangList *) -1 );
+return( BAD_FEATURE_LIST );
+	    FeatureScriptLangListFree(flhead);
 	}
 	sltail = NULL;
 	for ( s=0; s<PySequence_Size(scripts); ++s ) {
 	    PyObject *scriptsubs = PySequence_GetItem(scripts,s);
 	    if ( !PySequence_Check(scriptsubs)) {
 		PyErr_Format(PyExc_TypeError, "A script list is composed of a tuple of tuples" );
-return( (FeatureScriptLangList *) -1 );
+		FeatureScriptLangListFree(flhead);
+return( BAD_FEATURE_LIST );
 	    } else if ( PySequence_Size(scriptsubs)!=2 ) {
 		PyErr_Format(PyExc_TypeError, "A script list is composed of a tuple of tuples each containing two elements");
-return( (FeatureScriptLangList *) -1 );
+		FeatureScriptLangListFree(flhead);
+return( BAD_FEATURE_LIST );
 	    } else if ( !STRING_CHECK(PySequence_GetItem(scriptsubs,0)) ||
 		    !PySequence_Check(PySequence_GetItem(scriptsubs,1))) {
 		PyErr_Format(PyExc_TypeError, "Bad type for argument");
-return( (FeatureScriptLangList *) -1 );
+		FeatureScriptLangListFree(flhead);
+return( BAD_FEATURE_LIST );
 	    }
 	    sl = chunkalloc(sizeof(struct scriptlanglist));
 	    sl->script = StrToTag(PyBytes_AsString(PySequence_GetItem(scriptsubs,0)),NULL);
-	    if ( sl->script==0xffffffff )
-return( (FeatureScriptLangList *) -1 );
+	    if ( sl->script==BAD_TAG ) {
+		free(sl);
+		FeatureScriptLangListFree(flhead);
+return( BAD_FEATURE_LIST );
+	    }
 	    if ( sltail==NULL )
 		fl->scripts = sl;
 	    else
@@ -13735,13 +13934,16 @@ return( (FeatureScriptLangList *) -1 );
 	    langs = PySequence_GetItem(scriptsubs,1);
 	    if ( STRING_CHECK(langs) ) {
 		uint32 lang = StrToTag(PyBytes_AsString(langs),NULL);
-		if ( lang==0xffffffff )
-return( (FeatureScriptLangList *) -1 );
+		if ( lang==BAD_TAG ) {
+		    FeatureScriptLangListFree(flhead);
+return( BAD_FEATURE_LIST );
+		}
 		sl->lang_cnt = 1;
 		sl->langs[0] = lang;
 	    } else if ( !PySequence_Check(langs)) {
 		PyErr_Format(PyExc_TypeError, "A language list is composed of a tuple of strings" );
-return( (FeatureScriptLangList *) -1 );
+		FeatureScriptLangListFree(flhead);
+return( BAD_FEATURE_LIST );
 	    } else if ( PySequence_Size(langs)==0 ) {
 		sl->lang_cnt = 1;
 		sl->langs[0] = DEFAULT_LANG;
@@ -13751,8 +13953,10 @@ return( (FeatureScriptLangList *) -1 );
 		    sl->morelangs = galloc((sl->lang_cnt-MAX_LANG)*sizeof(uint32));
 		for ( l=0; l<sl->lang_cnt; ++l ) {
 		    uint32 lang = StrToTag(PyBytes_AsString(PySequence_GetItem(langs,l)),NULL);
-		    if ( lang==0xffffffff )
-return( (FeatureScriptLangList *) -1 );
+		    if ( lang==BAD_TAG ) {
+			FeatureScriptLangListFree(flhead);
+return( BAD_FEATURE_LIST );
+		    }
 		    if ( l<MAX_LANG )
 			sl->langs[l] = lang;
 		    else
@@ -13789,8 +13993,8 @@ return( NULL );
 	}
     }
 
-    itype = FlagsFromString(type,lookup_types);
-    if ( itype==0x8000000 )
+    itype = FlagsFromString(type,lookup_types,"lookup type");
+    if ( itype==FLAG_UNKNOWN )
 return( NULL );
 
     flags = ParseLookupFlags(sf,flagtuple);
@@ -13798,11 +14002,12 @@ return( NULL );
 return( NULL );
 
     fl = PyParseFeatureList(featlist);
-    if ( fl==(FeatureScriptLangList *) -1 )
+    if ( fl==BAD_FEATURE_LIST )
 return( NULL );
 
     if ( after!=NULL && (after->lookup_type>=gpos_start)!=(itype>=gpos_start) ) {
 	PyErr_Format(PyExc_EnvironmentError, "After lookup, %s, is in a different table", after_str );
+	FeatureScriptLangListFree(fl);
 return( NULL );
     }
 
@@ -13844,6 +14049,7 @@ return( NULL );
     }
     othersf = ((PyFF_Font *) otherfont)->fv->sf;
 
+    list = NULL;
     before = NULL;
     if ( before_str!=NULL )
 	before = SFFindLookup(sf,before_str);
@@ -13860,21 +14066,25 @@ return( NULL );
 	int subcnt = PySequence_Size(lookup_list);
 	list = gcalloc(subcnt+1,sizeof(OTLookup *));
 	for ( i=0; i<subcnt; ++i ) {
-	    PyObject *str = PyTuple_GetItem(lookup_list,i);
+	    PyObject *str = PySequence_GetItem(lookup_list,i);
 	    if ( !STRING_CHECK(str)) {
 		PyErr_Format(PyExc_TypeError, "Unexpected type" );
+		free(list);
 return( NULL );
 	    }
 	    lookup_str = PyBytes_AsString(str);
 	    otl = SFFindLookup(othersf,lookup_str);
 	    if ( otl==NULL ) {
 		PyErr_Format(PyExc_EnvironmentError, "No lookup named %s exists in %s.", lookup_str, othersf->fontname );
+		free(list);
 return( NULL );
 	    }
 	    list[i] = otl;
 	}
     } else {
 	PyErr_Format(PyExc_TypeError, "Unexpected type" );
+	if ( list!=NULL )
+	    free(list);
 return( NULL );
     }
     OTLookupsCopyInto(sf,othersf,list,before);
@@ -13899,7 +14109,7 @@ return( NULL );
     }
 
     fl = PyParseFeatureList(featlist);
-    if ( fl==(FeatureScriptLangList *) -1 )
+    if ( fl==BAD_FEATURE_LIST )
 return( NULL );
 
     FeatureScriptLangListFree(otl->features);
@@ -13952,7 +14162,8 @@ Py_RETURN( self );
 static PyObject *PyFFFont_getLookupInfo(PyObject *self, PyObject *args) {
     SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
     OTLookup *otl;
-    char *lookup, *type;
+    char *lookup;
+    const char *type;
     int i, cnt;
     PyObject *flags_tuple;
     FeatureScriptLangList *fl;
@@ -14288,7 +14499,7 @@ return( NULL );
 
     file = fopen(filename,"w");
     if ( file==NULL ) {
-	PyErr_Format(PyExc_EnvironmentError, "Could not open %s for writing.", filename );
+	PyErr_SetFromErrnoWithFilename(PyExc_IOError,filename);
 return(NULL);
     }
     FVB_MakeNamelist(fv, file);
@@ -14310,7 +14521,7 @@ return( NULL );
     } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)srch)->ob_type) ) {
 	srch_ss = SSFromContour((PyFF_Contour *) srch, NULL);
     } else {
-	PyErr_Format(PyExc_TypeError, "Unexpected type");
+	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
 return( NULL );
     }
 
@@ -14319,7 +14530,7 @@ return( NULL );
     } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)rpl)->ob_type) ) {
 	rpl_ss = SSFromContour((PyFF_Contour *) rpl, NULL);
     } else {
-	PyErr_Format(PyExc_TypeError, "Unexpected type");
+	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
 return( NULL );
     }
 
@@ -14327,6 +14538,7 @@ return( NULL );
 return( Py_BuildValue( "i", FVReplaceAll(fv,srch_ss,rpl_ss,err,sv_reverse|sv_flips)));
 }
 
+/* Search flags: see 'enum search_flags' in baseviews.h */
 struct flaglist find_flags[] = {
     {"reverse", sv_reverse},
     {"flips", sv_flips},
@@ -14352,11 +14564,14 @@ return( NULL );
     } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)srch)->ob_type) ) {
 	srch_ss = SSFromContour((PyFF_Contour *) srch, NULL);
     } else {
-	PyErr_Format(PyExc_TypeError, "Unexpected type");
+	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
 return( NULL );
     }
-    if (pyflags) 
-	flags = FlagsFromTuple(pyflags, find_flags);
+    if (pyflags) {
+	flags = FlagsFromTuple(pyflags, find_flags, "search flag");
+	if ( flags==FLAG_UNKNOWN )
+return( NULL );
+    }
     else
 	flags = sv_reverse|sv_flips;
 
@@ -14404,7 +14619,8 @@ return( NULL );
 	    s2d = true;
 #endif
 	if ( !SFDWrite(locfilename,fv->sf,fv->map,fv->normal,s2d)) {
-	    PyErr_Format(PyExc_EnvironmentError, "Save As failed");
+	    PyErr_Format(PyExc_EnvironmentError, "Save As \"%s\" failed",locfilename);
+	    free(locfilename);
 return( NULL );
 	}
 	/* Hmmm. We don't set the filename, nor the save_to_dir bit */
@@ -14442,7 +14658,8 @@ return( NULL );
 	    }
 	} else {
 	    if ( !SFDWrite(freeme,fv->sf,fv->map,fv->normal,s2d)) {
-		PyErr_Format(PyExc_EnvironmentError, "Save As failed");
+		PyErr_Format(PyExc_EnvironmentError, "Save As \"%s\" failed",freeme);
+		free(freeme);
 return( NULL );
 	    }
 	    free(freeme);
@@ -14495,6 +14712,7 @@ struct flaglist gen_flags[] = {
     { "composites-in-afm", 0x400000 },
     FLAGLIST_EMPTY /* Sentinel */
 };
+/* Generate TrueType Collection flags: see 'enum ttc_flags' in splinefont.h */
 struct flaglist genttc_flags[] = {
     { "merge", ttc_flag_trymerge },
     { "cff", ttc_flag_cff },
@@ -14530,9 +14748,8 @@ return( NULL );
 return( NULL );
     }
     if ( flags!=NULL ) {
-	iflags = FlagsFromTuple(flags,gen_flags);
-	if ( iflags==PYFF_FLAG_UNKNOWN ) {
-	    PyErr_Format(PyExc_TypeError, "Unknown flag");
+	iflags = FlagsFromTuple(flags,gen_flags,"generate flag");
+	if ( iflags==FLAG_UNKNOWN ) {
 return( NULL );
 	}
 	/* Legacy screw ups mean that opentype & apple bits don't mean what */
@@ -14619,9 +14836,8 @@ return( NULL );
 return( NULL );
     }
     if ( flags!=NULL ) {
-	iflags = FlagsFromTuple(flags,gen_flags);
-	if ( iflags==PYFF_FLAG_UNKNOWN ) {
-	    PyErr_Format(PyExc_TypeError, "Unknown flag");
+	iflags = FlagsFromTuple(flags,gen_flags,"generate flag");
+	if ( iflags==FLAG_UNKNOWN ) {
 return( NULL );
 	}
 	/* Legacy screw ups mean that opentype & apple bits don't mean what */
@@ -14637,9 +14853,8 @@ return( NULL );
 	    iflags |= 0x90;
     }
     if ( ttcflags!=NULL ) {
-	ittcflags = FlagsFromTuple(ttcflags,genttc_flags);
-	if ( ittcflags==PYFF_FLAG_UNKNOWN ) {
-	    PyErr_Format(PyExc_TypeError, "Unknown ttc flag");
+	ittcflags = FlagsFromTuple(ttcflags,genttc_flags,"generate TTC flag");
+	if ( ittcflags==FLAG_UNKNOWN ) {
 return( NULL );
 	}
     }
@@ -14666,10 +14881,10 @@ return( NULL );
 	cur = makesflist(others,bf);
 	last->next = cur;
 	last = cur;
-    } else if ( PySequence_Check(others)) {
+    } else if ( PySequence_Check(others) ) {
 	int i, subcnt = PySequence_Size(others);
 	for ( i=0; i<subcnt; ++i ) {
-	    PyObject *item = PyTuple_GetItem(others,i);
+	    PyObject *item = PySequence_GetItem(others,i);
 	    if ( PyType_IsSubtype(&PyFF_FontType,((PyObject *)item)->ob_type) ) {
 		cur = makesflist(item,bf);
 		last->next = cur;
@@ -14686,9 +14901,10 @@ return( NULL );
 
     locfilename = utf82def_copy(filename);
     free(filename);
+
     if ( !WriteTTC(locfilename,head,ff_ttc,bf,iflags,layer,ittcflags)) {
 	PyErr_Format(PyExc_EnvironmentError, "Font generation failed");
-return( NULL );
+	/* Don't return here, will return after memory is freed below */
     }
     free(locfilename);
     for ( cur=head; cur!=NULL; cur=head ) {
@@ -14696,6 +14912,8 @@ return( NULL );
 	free(cur->sizes);
 	chunkfree(cur,sizeof(struct sflist));
     }
+    if ( PyErr_Occurred() )
+return( NULL );
 Py_RETURN( self );
 }
 
@@ -14722,7 +14940,8 @@ return( NULL );
     }
     out = fopen(locfilename,"w");
     if ( out==NULL ) {
-	PyErr_Format(PyExc_EnvironmentError, "Failed to open file, %s, for writing", locfilename );
+	PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
+	free(locfilename);
 return( NULL );
     }
     if ( otl!=NULL )
@@ -14732,6 +14951,7 @@ return( NULL );
     err = ferror(out);
     if ( fclose(out)!=0 || err ) {
 	PyErr_Format(PyExc_EnvironmentError, "IO error on file %s", locfilename);
+	free(locfilename);
 return( NULL );
     }
     free(locfilename);
@@ -14949,6 +15169,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
+/* Print sample flags */
 static struct flaglist printflags[] = {
     { "fontdisplay", 0 },
     { "chars", 1 },
@@ -14978,9 +15199,8 @@ return( NULL );
     ptype = PyBytes_AsString(PyTuple_GetItem(args,0));
     if ( ptype==NULL )
 return( NULL );
-    type = FlagsFromString(ptype,printflags);
-    if ( type==PYFF_FLAG_UNKNOWN ) {
-	PyErr_Format(PyExc_TypeError, "Unknown printing type" );
+    type = FlagsFromString(ptype,printflags,"print sample type");
+    if ( type==FLAG_UNKNOWN ) {
 return( NULL );
     }
     if ( type==4 ) {
@@ -15000,8 +15220,10 @@ return( NULL );
 	    pointsizes = galloc((subcnt+1)*sizeof(int32));
 	    for ( i=0; i<subcnt; ++i ) {
 		pointsizes[i] = PyInt_AsLong(PySequence_GetItem(arg,i));
-		if ( PyErr_Occurred())
+		if ( PyErr_Occurred()) {
+		    free(pointsizes);
 return( NULL );
+		}
 	    }
 	    pointsizes[i] = 0;
 	} else {
@@ -15011,8 +15233,11 @@ return( NULL );
     }
     if ( arg_cnt>2 ) {
 	char *str = PyBytes_AsString(PyTuple_GetItem(args,2));
-	if ( str==NULL )
+	if ( str==NULL ) {
+	    if ( pointsizes!=NULL )
+		free(pointsizes);
 return( NULL );
+	}
 	if ( inlinesample ) {
 	    sample = utf82u_copy(str);
 	    samplefile = NULL;
@@ -15023,8 +15248,15 @@ return( NULL );
     }
     if ( arg_cnt>3 ) {
 	output = PyBytes_AsString(PyTuple_GetItem(args,3));
-	if ( output==NULL )
+	if ( output==NULL ) {
+	    if ( pointsizes!=NULL )
+		free(pointsizes);
+	    if ( locfilename!=NULL )
+		free(locfilename);
+	    if ( sample!=NULL )
+		free(sample);
 return( NULL );
+	}
     }
     ScriptPrint(((PyFF_Font *) self)->fv,type,pointsizes,samplefile,sample,output);
     free(pointsizes);
@@ -15644,7 +15876,7 @@ static PyObject *PyFFFont_Simplify(PyFF_Font *self, PyObject *args) {
     if ( PySequence_Size(args)>=1 )
 	smpl.err = PyFloat_AsDouble(PySequence_GetItem(args,0));
     if ( !PyErr_Occurred() && PySequence_Size(args)>=2 )
-	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags);
+	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags,"simplify flag");
     if ( !PyErr_Occurred() && PySequence_Size(args)>=3 )
 	smpl.tan_bounds = PyFloat_AsDouble( PySequence_GetItem(args,2));
     if ( !PyErr_Occurred() && PySequence_Size(args)>=4 )
@@ -17191,7 +17423,7 @@ void PyFF_Main(int argc,char **argv,int start) {
 #endif /* PY_MAJOR_VERSION >= 3 -------------------------------------------------*/
 
 void PyFF_ScriptFile(FontViewBase *fv,SplineChar *sc, char *filename) {
-    FILE *fp = fopen(filename,"r");
+    FILE *fp = fopen(filename,"rb");
 
     fv_active_in_ui = fv;		/* Make fv known to interpreter */
     sc_active_in_ui = sc;		/* Make sc known to interpreter */
@@ -17253,7 +17485,7 @@ return;
 	if ( strcmp(pt,".py")==0 ) {
 	    FILE *fp;
 	    sprintf( buffer, "%s/%s", dir, ent->d_name );
-	    fp = fopen(buffer,"r");
+	    fp = fopen(buffer,"rb");
 	    if ( fp==NULL )
     continue;
 	    PyRun_SimpleFile(fp,buffer);
@@ -17370,8 +17602,6 @@ void ff_init(void) {
 
 #else
 #include "fontforgevw.h"
-struct flaglist { char *name; int flag; };
-#define FLAGLIST_EMPTY { NULL, 0 }
 #endif		/* _NO_PYTHON */
 
 /* These don't get translated. They are a copy of a similar list in fontinfo.c */

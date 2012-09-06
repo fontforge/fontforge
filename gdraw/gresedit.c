@@ -2505,6 +2505,7 @@ void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_fi
 	re_end->next = _GDrawableRIHead();
 	for ( re_end = _GDrawableRIHead(); re_end->next!=NULL; re_end = re_end->next );
 	re_end->next = _GTabSetRIHead();
+	for ( re_end = _GTabSetRIHead(); re_end->next!=NULL; re_end = re_end->next );
     }
     if ( additional!=NULL ) {
 	for ( re_end=additional; re_end->next!=NULL; re_end = re_end->next );

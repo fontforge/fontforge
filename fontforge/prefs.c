@@ -1899,7 +1899,7 @@ void DoPrefs(void) {
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title = _("Preferences");
     pos.x = pos.y = 0;
-    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,290));
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,350));
     pos.height = GDrawPointsToPixels(NULL,line_max*26+69);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&p,&wattrs);
 
