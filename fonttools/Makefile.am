@@ -25,44 +25,15 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-ACLOCAL_AMFLAGS = -I m4
+#--------------------------------------------------------------------------
+#
+# Small programs some people might find useful. These are not built
+# from the top-level Makefile.
 
-AM_CPPFLAGS =
-AM_LDFLAGS =
+noinst_PROGRAMS = findtable pfadecrypt rmligamarks stripttc woff	\
+	dewoff pcl2ttf showttf ttf2eps
 
-BUILT_SOURCES =
-EXTRA_DIST =
-CLEANFILES =
-MOSTLYCLEANFILES =
+woff_LDADD = $(ZLIB_LIBS)
+dewoff_LDADD = $(ZLIB_LIBS)
 
-include_HEADERS =
-noinst_LTLIBRARIES =
-lib_LTLIBRARIES =
-EXTRA_LTLIBRARIES =
-
-include libltdl/Makefile.inc
-
-SUBDIRS = inc
-SUBDIRS += Unicode gutils
-
-if GRAPHICAL_USER_INTERFACE
-SUBDIRS += gdraw
-endif GRAPHICAL_USER_INTERFACE
-
-SUBDIRS += plugins
-SUBDIRS += fontforge po htdocs pycontrib
-SUBDIRS += cidmap
-SUBDIRS += $(subdirs)
-SUBDIRS += tests
-
-# The following conditional may always be false, but is here so the
-# fonttools directory is included by "make dist".
-if FONTTOOLS
-SUBDIRS += fonttools
-endif FONTTOOLS
-
-pkgconfigdir = ${libdir}/pkgconfig
-nodist_pkgconfig_DATA = libfontforge.pc libfontforgeexe.pc
-
-EXTRA_DIST += LICENSE README-Mac.html README-MS.html README-unix	\
-	README-Unix.html Readme.VMS
+EXTRA_DIST = README-ttf2eps

@@ -288,6 +288,10 @@ i_do_have_gui="${i_do_have_x}"
 AM_CONDITIONAL([GRAPHICAL_USER_INTERFACE],[test x"${i_do_have_gui}" = xyes])
 AM_CONDITIONAL([MACINTOSH],[test x"${gww_ismac}" = xyes])
 
+# See Makefile.am for an explanation of why this exists despite always
+# being "false".
+AM_CONDITIONAL([FONTTOOLS],[test x != x])
+
 FONTFORGE_SET_MY_CFLAGS
 FONTFORGE_SET_MY_LIBS
 FONTFORGE_CREATE_MAKEFILES
