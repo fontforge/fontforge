@@ -4,6 +4,7 @@
 /* This file was generated using the program 'makeutype' */
 
 #include <ctype.h>		/* Include here so we can control it. If a system header includes it later bad things happen */
+#include <basics.h>		/* Include here so we can use pre-defined int types to correctly size constant data arrays. */
 #ifdef tolower
 # undef tolower
 #endif
@@ -85,12 +86,12 @@ extern const unsigned short ____tolower[];
 extern const unsigned short ____toupper[];
 extern const unsigned short ____totitle[];
 extern const unsigned short ____tomirror[];
-extern const unsigned char ____digitval[];
+extern const unsigned char  ____digitval[];
 extern const unsigned int  ____utype[];
 
 extern const unsigned int  ____utype2[];
 
-extern const unsigned int  ____codepointassigned[];
+extern const uint32	____codepointassigned[];	/* 1bit_boolean_flag x 32 = exists in Unicode.org character chart list. */
 
 #define tolower(ch) (____tolower[(ch)+1])
 #define toupper(ch) (____toupper[(ch)+1])

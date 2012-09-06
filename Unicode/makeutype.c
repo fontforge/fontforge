@@ -62,6 +62,7 @@
 #define MAXC	65536
 #define MAXA	18
 
+/* These values get stored within flags[unicodechar={0..MAXC}] */
 #define _LOWER		1
 #define _UPPER		2
 #define _TITLE		4
@@ -121,10 +122,10 @@ unsigned short mytoupper[MAXC];
 unsigned short mytotitle[MAXC];
 unsigned char mynumericvalue[MAXC];
 unsigned short mymirror[MAXC];
-unsigned int flags[MAXC];
-unsigned int flags2[MAXC];
+unsigned long flags[MAXC];
+unsigned long flags2[MAXC];
 unichar_t alts[MAXC][MAXA+1];
-long assignedcodepoints[0x120000/32];
+unsigned long assignedcodepoints[0x120000/32];	/* 32 characters represented per each long value */
 
 const char GeneratedFileMessage[] = "\n/* This file was generated using the program 'makeutype' */\n\n";
 const char CantReadFile[] = "Can't find or read file %s\n";		/* exit(1) */
@@ -659,6 +660,7 @@ static void dump() {
     fprintf( header, GeneratedFileMessage );
 
     fprintf( header, "#include <ctype.h>\t\t/* Include here so we can control it. If a system header includes it later bad things happen */\n" );
+    fprintf( header, "#include <basics.h>\t\t/* Include here so we can use pre-defined int types to correctly size constant data arrays. */\n" );
     fprintf( header, "#ifdef tolower\n" );
     fprintf( header, "# undef tolower\n" );
     fprintf( header, "#endif\n" );
@@ -745,10 +747,10 @@ static void dump() {
     fprintf( header, "extern const unsigned short ____toupper[];\n" );
     fprintf( header, "extern const unsigned short ____totitle[];\n" );
     fprintf( header, "extern const unsigned short ____tomirror[];\n" );
-    fprintf( header, "extern const unsigned char ____digitval[];\n" );
+    fprintf( header, "extern const unsigned char  ____digitval[];\n" );
     fprintf( header, "extern const unsigned int  ____utype[];\n\n" );
     fprintf( header, "extern const unsigned int  ____utype2[];\n\n" );
-    fprintf( header, "extern const unsigned int  ____codepointassigned[];\n\n" );
+    fprintf( header, "extern const uint32\t____codepointassigned[];\t/* 1bit_boolean_flag x 32 = exists in Unicode.org character chart list. */\n\n" );
 
     fprintf( header, "#define tolower(ch) (____tolower[(ch)+1])\n" );
     fprintf( header, "#define toupper(ch) (____toupper[(ch)+1])\n" );
@@ -892,7 +894,8 @@ static void dump() {
 		fprintf( data, "\n");
     }
 
-    fprintf( data, "const unsigned int ____codepointassigned[] = {\n" );
+    fprintf( data, "const uint32 ____codepointassigned[] = {\n" );
+    fprintf( data, "  /* 32 unicode.org characters represented for each data value in array */\n" );
     for ( i=0; i<0x120000/32; i+=j ) {
 	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<0x120000/32-1; ++j )
