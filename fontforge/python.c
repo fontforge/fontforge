@@ -14564,7 +14564,7 @@ return( NULL );
     } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)srch)->ob_type) ) {
 	srch_ss = SSFromContour((PyFF_Contour *) srch, NULL);
     } else {
-	PyErr_Format(PyExc_TypeError, "Unexpected a contour or layer");
+	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
 return( NULL );
     }
     if (pyflags) {
