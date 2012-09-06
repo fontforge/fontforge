@@ -329,7 +329,7 @@ return( FlagsFromString(str,flags,flagkind));
 	    if ( obj==Py_None )
 	continue;
 	    if ( !STRING_CHECK(obj)) {
-		PyErr_Format(PyExc_TypeError, "Bad %s list, must consist of only strings", flagkind);
+		PyErr_Format(PyExc_TypeError, "Bad %s list, must consist of strings only", flagkind);
 return( FLAG_UNKNOWN );
 	    }
 #if PY_MAJOR_VERSION >= 3
