@@ -30,6 +30,10 @@
 
 include Makefile
 
+#######################################################################
+# The maintainer tools such as "stamper" are built if you configure   #
+# with --enable-maintainer-tools                                      #
+#######################################################################
 ifeq (@MAINTAINER_TOOLS@,yes)
 
 # You need to build the "fontforge" program to do the stamps for

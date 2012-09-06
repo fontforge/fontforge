@@ -4644,10 +4644,8 @@ static void *GXDrawRequestSelection(GWindow w,enum selnames sn, char *typename, 
 		    memcpy(temp,sd->data,bytelen);
 		    temp[bytelen] = '\0';
 		    temp[bytelen+1] = '\0';
-#ifndef UNICHAR_16
 		    temp[bytelen+2] = '\0';
 		    temp[bytelen+3] = '\0';
-#endif
 		    *len = bytelen;
 		}
 return( temp );
@@ -4677,10 +4675,8 @@ return( NULL );
     memcpy(temp,prop,bytelen);
     temp[bytelen]='\0';
     temp[bytelen+1]='\0';		/* Nul terminate unicode strings too */
-#ifndef UNICHAR_16
     temp[bytelen+2] = '\0';
     temp[bytelen+3] = '\0';
-#endif
     if ( len!=NULL )
 	*len = bytelen;
     XFree(prop);

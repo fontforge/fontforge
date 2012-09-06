@@ -1481,10 +1481,6 @@ return( false );
     ((FInfo *) (info.finderInfo))->fdCreator = mb->creator;
     pt = strrchr(fname,'/');
     filename = def2u_copy(pt==NULL?fname:pt+1);
-#ifdef UNICHAR_16
-    ret = FSCreateFileUnicode(&parentref,u_strlen(filename), (UniChar *) filename,
-    		kFSCatInfoFinderInfo, &info, &ref, NULL);
-#else
     { UniChar *ucs2fn = galloc((u_strlen(filename)+1) * sizeof(UniChar));
       int i;
 	for ( i=0; filename[i]!=0; ++i )
@@ -1494,7 +1490,6 @@ return( false );
 		    kFSCatInfoFinderInfo, &info, &ref, NULL);
 	free(ucs2fn);
     }
-#endif
     free(filename);
     if ( ret==dupFNErr ) {
     	/* File already exists, create failed, didn't get an FSRef */

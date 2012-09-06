@@ -487,24 +487,12 @@ unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len) {
 	} else if ( *pt<=0xef ) {
 	    *upt = ((*pt&0xf)<<12) | ((pt[1]&0x3f)<<6) | (pt[2]&0x3f);
 	    pt += 3;
-#ifdef UNICHAR_16
-	} else if ( upt+1<uend ) {
-	    /* Um... I don't support surrogates */
-	    w = ( ((*pt&0x7)<<2) | ((pt[1]&0x30)>>4) )-1;
-	    *upt++ = 0xd800 | (w<<6) | ((pt[1]&0xf)<<2) | ((pt[2]&0x30)>>4);
-	    *upt   = 0xdc00 | ((pt[2]&0xf)<<6) | (pt[3]&0x3f);
-	    pt += 4;
-	} else {
-	    /* no space for surrogate */
-	    pt += 4;
-#else
 	} else {
 	    w = ( ((*pt&0x7)<<2) | ((pt[1]&0x30)>>4) )-1;
 	    w = (w<<6) | ((pt[1]&0xf)<<2) | ((pt[2]&0x30)>>4);
 	    w2 = ((pt[2]&0xf)<<6) | (pt[3]&0x3f);
 	    *upt = w*0x400 + w2 + 0x10000;
 	    pt += 4;
-#endif
 	}
 	++upt;
     }
@@ -515,86 +503,6 @@ return( ubuf );
 unichar_t *utf82u_strcpy(unichar_t *ubuf,const char *utf8buf) {
 return( utf82u_strncpy(ubuf,utf8buf,strlen(utf8buf)+1));
 }
-
-# ifdef UNICHAR_16
-uint32 *utf82u32_strncpy(uint32 *ubuf,const char *utf8buf,int len) {
-    uint32 *upt=ubuf, *uend=ubuf+len-1;
-    const uint8 *pt = (const uint8 *) utf8buf;
-    int w, w2;
-
-    while ( *pt!='\0' && upt<uend ) {
-	if ( *pt<=127 )
-	    *upt = *pt++;
-	else if ( *pt<=0xdf ) {
-	    *upt = ((*pt&0x1f)<<6) | (pt[1]&0x3f);
-	    pt += 2;
-	} else if ( *pt<=0xef ) {
-	    *upt = ((*pt&0xf)<<12) | ((pt[1]&0x3f)<<6) | (pt[2]&0x3f);
-	    pt += 3;
-	} else {
-	    w = ( ((*pt&0x7)<<2) | ((pt[1]&0x30)>>4) )-1;
-	    w = (w<<6) | ((pt[1]&0xf)<<2) | ((pt[2]&0x30)>>4);
-	    w2 = ((pt[2]&0xf)<<6) | (pt[3]&0x3f);
-	    *upt = w*0x400 + w2 + 0x10000;
-	    pt += 4;
-	}
-	++upt;
-    }
-    *upt = '\0';
-return( ubuf );
-}
-
-char *u322utf8_strncpy(char *utf8buf, const uint32 *ubuf,int len) {
-    uint8 *pt=(uint8 *) utf8buf, *end=(uint8 *) utf8buf+len-1;
-    const uint32 *upt = ubuf;
-
-    while ( *upt!='\0' && pt<end ) {
-	if ( *upt<=127 )
-	    *pt++ = *upt;
-	else if ( *upt<=0x7ff ) {
-	    if ( pt+1>=end )
-    break;
-	    *pt++ = 0xc0 | (*upt>>6);
-	    *pt++ = 0x80 | (*upt&0x3f);
-	} else if ( *upt<=0xffff ) {
-	    if ( pt+2>=end )
-    break;
-	    *pt++ = 0xe0 | (*upt>>12);
-	    *pt++ = 0x80 | ((*upt>>6)&0x3f);
-	    *pt++ = 0x80 | (*upt&0x3f);
-	} else {
-	    uint32 val = *upt-0x10000;
-	    int u = ((val&0xf0000)>>16)+1, z=(val&0x0f000)>>12, y=(val&0x00fc0)>>6, x=val&0x0003f;
-	    if ( pt+3>=end )
-    break;
-	    *pt++ = 0xf0 | (u>>2);
-	    *pt++ = 0x80 | ((u&3)<<4) | z;
-	    *pt++ = 0x80 | y;
-	    *pt++ = 0x80 | x;
-	}
-	++upt;
-    }
-    *pt = '\0';
-return( utf8buf );
-}
-
-char *u322utf8_copy(const uint32 *ubuf) {
-    int i, len;
-    char *buf;
-
-    for ( i=len=0; ubuf[i]!=0; ++i )
-	if ( ubuf[i]<0x80 )
-	    ++len;
-	else if ( ubuf[i]<0x800 )
-	    len += 2;
-	else if ( ubuf[i]<0x10000 )
-	    len += 3;
-	else
-	    len += 4;
-    buf = (char *) galloc(len+1);
-return( u322utf8_strncpy(buf,ubuf,len+1));
-}
-#endif
 
 unichar_t *utf82u_copyn(const char *utf8buf,int len) {
     unichar_t *ubuf = (unichar_t *) galloc((len+1)*sizeof(unichar_t));
@@ -617,20 +525,6 @@ void utf82u_strcat(unichar_t *to,const char *from) {
     utf82u_strcpy(to+u_strlen(to),from);
 }
 
-#ifdef UNICHAR_16
-uint32 *utf82u32_copy(const char *utf8buf) {
-    int len;
-    uint32 *ubuf;
-
-    if ( utf8buf==NULL )
-return( NULL );
-
-    len = strlen(utf8buf);
-    ubuf = (uint32 *) galloc((len+1)*sizeof(uint32));
-return( utf82u32_strncpy(ubuf,utf8buf,len+1));
-}
-#endif
-
 char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
     char *pt = utf8buf;
 
@@ -640,18 +534,6 @@ char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
 	else if ( *ubuf<0x800 ) {
 	    *pt++ = 0xc0 | (*ubuf>>6);
 	    *pt++ = 0x80 | (*ubuf&0x3f);
-#ifdef UNICHAR_16
-	} else if ( *ubuf>=0xd800 && *ubuf<0xdc00 && ubuf[1]>=0xdc00 && ubuf[1]<0xe000 ) {
-	    int u = ((*ubuf>>6)&0xf)+1, y = ((*ubuf&3)<<4) | ((ubuf[1]>>6)&0xf);
-	    *pt++ = 0xf0 | (u>>2);
-	    *pt++ = 0x80 | ((u&3)<<4) | ((*ubuf>>2)&0xf);
-	    *pt++ = 0x80 | y;
-	    *pt++ = 0x80 | (ubuf[1]&0x3f);
-	} else {
-	    *pt++ = 0xe0 | (*ubuf>>12);
-	    *pt++ = 0x80 | ((*ubuf>>6)&0x3f);
-	    *pt++ = 0x80 | (*ubuf&0x3f);
-#else
 	} else if ( *ubuf < 0x10000 ) {
 	    *pt++ = 0xe0 | (*ubuf>>12);
 	    *pt++ = 0x80 | ((*ubuf>>6)&0x3f);
@@ -663,7 +545,6 @@ char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
 	    *pt++ = 0x80 | ((u&3)<<4) | z;
 	    *pt++ = 0x80 | y;
 	    *pt++ = 0x80 | x;
-#endif
 	}
 	++ubuf;
     }

@@ -1107,11 +1107,7 @@ static void bUtf8(Context *c) {
 	    ScriptError( c, "Bad value for argument" );
 	buf[0] = c->a.vals[1].u.ival; buf[1] = 0;
 	c->return_val.type = v_str;
-#ifdef UNICHAR_16
-	c->return_val.u.sval = u322utf8_copy(buf);
-#else
 	c->return_val.u.sval = u2utf8_copy(buf);
-#endif
     } else if ( c->a.vals[1].type==v_arr || c->a.vals[1].type==v_arrfree ) {
 	Array *arr = c->a.vals[1].u.aval;
 	temp = galloc((arr->argc+1)*sizeof(int32));
@@ -1124,11 +1120,7 @@ static void bUtf8(Context *c) {
 	}
 	temp[i] = 0;
 	c->return_val.type = v_str;
-#ifdef UNICHAR_16
-	c->return_val.u.sval = u322utf8_copy(temp);
-#else
 	c->return_val.u.sval = u2utf8_copy(temp);
-#endif
 	free(temp);
     } else
 	ScriptError( c, "Bad type for argument" );
