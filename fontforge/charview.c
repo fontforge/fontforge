@@ -3280,7 +3280,7 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     real xdiff, ydiff;
     SplinePoint *sp, dummy;
     spiro_cp *cp;
-
+    
     GDrawSetFont(pixmap,cv->small);
     r.x = RPT_DATA; r.width = 60;
     r.y = cv->mbh; r.height = cv->infoh-1;
@@ -4737,12 +4737,12 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
 	for ( pos=units*ceil(xmin/units); pos<xmax; pos += units ) {
 	    x = cv->xoff + rint(pos*cv->scale);
 	    GDrawDrawLine(pixmap,x+cv->rulerh,ybase,x+cv->rulerh,ybase+cv->rulerh, rulerbigtickcol);
-	    CVDrawNum(cv,pixmap,x+cv->rulerh,ybase+cv->sas,"%g",pos,1);
+	    CVDrawNum(cv,pixmap,x+cv->rulerh+15,ybase+cv->sas,"%g",pos,1);
 	}
 	for ( pos=units*ceil(ymin/units); pos<ymax; pos += units ) {
 	    y = -cv->yoff + cv->height - rint(pos*cv->scale);
 	    GDrawDrawLine(pixmap,0,ybase+cv->rulerh+y,cv->rulerh,ybase+cv->rulerh+y, rulerbigtickcol);
-	    CVDrawVNum(cv,pixmap,1,y+ybase+cv->rulerh+cv->sas,"%g",pos,1);
+	    CVDrawVNum(cv,pixmap,1,y+ybase+cv->rulerh+cv->sas+20,"%g",pos,1);
 	}
     }
 }
@@ -10431,7 +10431,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     cv->showdebugchanges = CVShows.showdebugchanges;
 
     cv->infoh = 13;
-    cv->rulerh = 13;
+    cv->rulerh = 16;
 
     GDrawGetSize(cv->gw,&pos);
     memset(&gd,0,sizeof(gd));
