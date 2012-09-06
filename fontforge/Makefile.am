@@ -84,7 +84,7 @@ if THE_PROGRAMS
 fontforge_SOURCES = main.c
 fontforge_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	$(MY_CFLAGS)
-fontforge_LDADD = libfontforgeexe.la
+fontforge_LDADD = libfontforgeexe.la $(LDADD)
 fontforge_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -export-dynamic
 
 endif THE_PROGRAMS
@@ -117,15 +117,7 @@ libfontforge_la_CPPFLAGS = "-I$(top_builddir)/inc"					\
 	"-DDOCDIR=\"${docdir}\"" "-DPLUGINDIR=\"${pkglibdir}/plugins\""	\
 	$(MY_CFLAGS)
 
-libfontforge_la_LIBADD = splinerefigure.lo		\
-	$(top_builddir)/Unicode/libgunicode.la		\
-	$(top_builddir)/gutils/libgutils.la			\
-	$(top_builddir)/gutils/libgioftp.la
-
-if GRAPHICAL_USER_INTERFACE
-libfontforge_la_LIBADD += $(top_builddir)/gdraw/libgdraw.la	\
-	$(XINPUT_LIBS) $(XKB_LIBS)
-endif GRAPHICAL_USER_INTERFACE
+libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD)
 
 if PLUGIN_GB12345
 libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/gb12345.la
@@ -176,11 +168,24 @@ endif !GRAPHICAL_USER_INTERFACE
 nodist_libfontforgeexe_la_SOURCES = exelibstamp.c
 
 libfontforgeexe_la_CPPFLAGS = $(libfontforge_la_CPPFLAGS)
-libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS)
+libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS) $(LIBADD)
 
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
 libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -release $(VERSION)
+
+#--------------------------------------------------------------------------
+
+LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
+	$(top_builddir)/gutils/libgutils.la			\
+	$(top_builddir)/gutils/libgioftp.la
+
+if GRAPHICAL_USER_INTERFACE
+LIBADD += $(top_builddir)/gdraw/libgdraw.la	\
+	$(XINPUT_LIBS) $(XKB_LIBS)
+endif GRAPHICAL_USER_INTERFACE
+
+LDADD = $(LIBADD)
 
 #--------------------------------------------------------------------------
 
