@@ -28,7 +28,7 @@
 
 
 #ifdef HAVE_CONFIG_H
-# include "config.h"
+#include "config.h"
 #endif
 
 #ifndef _NO_PYTHON
@@ -17602,6 +17602,7 @@ void ff_init(void) {
 
 #else
 #include "fontforgevw.h"
+#include "flaglist.h"
 #endif		/* _NO_PYTHON */
 
 /* These don't get translated. They are a copy of a similar list in fontinfo.c */
