@@ -10237,6 +10237,7 @@ static PyObject *PyFF_Font_new(PyTypeObject *type, PyObject *UNUSED(args), PyObj
     self = (PyFF_Font *) (type->tp_alloc)(type,0);
     if ( self!=NULL ) {
 	self->fv = SFAdd(SplineFontNew(),false);
+	self->fv->python_fv_object = self;
     }
 return( (PyObject *) self );
 }
