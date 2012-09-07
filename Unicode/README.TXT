@@ -3,6 +3,7 @@ UPDATING FONTFORGE'S SUPPORT FOR UNICODE
 Thanks to Khaled Hosny for reverse-engineering this.
 To update unicode coverage, run:
 
+cd Unicode
 wget http://unicode.org/Public/UNIDATA/LineBreak.txt
 wget http://unicode.org/Public/UNIDATA/NamesList.txt
 wget http://unicode.org/Public/UNIDATA/PropList.txt
@@ -10,7 +11,7 @@ wget http://unicode.org/Public/UNIDATA/UnicodeData.txt
 make makeutype
 ./makeutype
 rm *.txt
-
+mv utype.h ../inc/
 
 UPDATING FONTFORGE'S ROUTINES FOR RE-ENCODING
 
@@ -20,6 +21,7 @@ notice that some files are still lacking. I couldn't find them.
 
 Thanks to Jose Da Silva for asking, what's it for. To make use of this, run:
 
+cd Unicode
 wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-1.TXT
 wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-2.TXT
 wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-3.TXT
