@@ -566,6 +566,20 @@ static int SaveAs_FormatChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
+
+enum fchooserret _FVSaveAsFilterFunc(GGadget *g,struct gdirentry *ent, const unichar_t *dir)
+{
+    char* n = u_to_c(ent->name);
+    int ew = endswithi( n, "sfd" ) || endswithi( n, "sfdir" );
+//    printf("_FVSaveAsFilterFunc() name:%s mtype:%s ew:%d\n",n,ent->mimetype,ew);
+    if( ew )
+	return fc_show;
+    if( ent->isdir )
+	return fc_show;
+    return fc_hide;
+}
+
+
 int _FVMenuSaveAs(FontView *fv) {
     char *temp;
     char *ret;
@@ -618,7 +632,8 @@ int _FVMenuSaveAs(FontView *fv) {
     gcd.data = &s2d;
     gcd.creator = GCheckBoxCreate;
 
-    ret = gwwv_save_filename_with_gadget(_("Save as..."),temp,NULL,&gcd);
+    ret = GWidgetSaveAsFileWithGadget8(_("Save as..."),temp,0,NULL,_FVSaveAsFilterFunc,GFileChooserSaveAsInputFilenameFunc,&gcd);
+//    ret = gwwv_save_filename_with_gadget(_("Save as..."),temp,NULL,&gcd);
     free(temp);
     if ( ret==NULL )
 return( 0 );

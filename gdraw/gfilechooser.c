@@ -473,13 +473,21 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 /* Handle events from the text field */
 static int GFileChooserTextChanged(GGadget *t,GEvent *e) {
     GFileChooser *gfc;
+    GGadget *g = (GGadget *)GGadgetGetUserData(t);
+    
     const unichar_t *pt, *spt;
-
+    unichar_t * pt_toFree = 0;
     if ( e->type!=et_controlevent || e->u.control.subtype!=et_textchanged )
 return( true );
     pt = spt = _GGadgetGetTitle(t);
     if ( pt==NULL )
 return( true );
+    if( GFileChooserGetInputFilenameFunc(g)(g, &pt)) {
+	pt_toFree = pt;
+	spt = pt;
+	GGadgetSetTitle(g, pt);
+    }
+
     while ( *pt && *pt!='*' && *pt!='?' && *pt!='[' && *pt!='{' )
 	++pt;
     if ( *spt!='\0' && spt[u_strlen(spt)-1]=='/' )
@@ -515,6 +523,8 @@ return( true );
 	    _GWidget_MakeDefaultButton(&gfc->filterb->g);
     }
     free(gfc->lastname); gfc->lastname = NULL;
+    if(pt_toFree)
+	free(pt_toFree);
 return( true );
 }
 
@@ -1161,6 +1171,86 @@ GFileChooserFilterType GFileChooserGetFilterFunc(GGadget *g) {
 return( gfc->filter );
 }
 
+/**
+ * no change to the current filename by default
+ * 
+ * if a change is desired, then currentFilename should point to the
+ * new string and return 1 to allow the caller to free this new
+ * string.
+ */
+int GFileChooserDefInputFilenameFunc( GGadget *g, unichar_t** currentFilename ) {
+    return 0;
+}
+
+int GFileChooserSaveAsInputFilenameFunc( GGadget *g, unichar_t** ppt ) {
+    unichar_t* pt = *ppt;
+    char* p = u_to_c(pt);
+    int plen = strlen(p);
+    int ew = endswithi( p, ".sfdir") || endswithi( p, ".sfd");
+    int trim = 0;
+    /**
+     * Check to see if they are trying to add chars to a valid extension.
+     * If so, lets just no allow that to happen.
+     */
+    if(plen) {
+	char* pdup = copy(p);
+	pdup[ plen - 1 ] = '\0';
+	trim = endswithi( pdup, ".sfdir") || endswithi( pdup, ".sfd");
+	free(pdup);
+	// don't trim an attempt to move to an sfdir extension
+	if( endswithi( p, ".sfdi") )
+	    trim = 0;
+
+	if( trim ) {
+	    pt = u_copyn( pt, u_strlen(pt)-1 );
+	} else {
+	    if( endswithi( p, ".sfdi")) {
+		pt = u_copynallocm(pt,u_strlen(pt),u_strlen(pt)+10);
+		u_strcat(pt,c_to_u("r"));
+	    }
+	    else if( endswithi( p, ".sf")) {
+		pt = u_copynallocm(pt,u_strlen(pt),u_strlen(pt)+10);
+		u_strcat(pt,c_to_u("d"));
+	    }
+	}
+    }
+
+    /**
+     * If we didn't trim anything or alter the string, if there is not
+     * a correct extension there already, then we will add one for the
+     * user to be helpful.
+     */
+    if( pt==*ppt ) {
+	char* extension = ".sfd";
+	if( *p && p[plen-1] == '.' )
+	    extension = "sfd";
+	if( !ew ) {
+	    pt = u_concat( pt, c_to_u(extension) );
+	}
+    }
+
+    int ret = (pt != *ppt);
+    *ppt = pt;
+    return(ret);
+}
+
+
+void GFileChooserSetInputFilenameFunc(GGadget *g,GFileChooserInputFilenameFuncType func) {
+    GFileChooser *gfc = (GFileChooser *) g;
+    if ( func==NULL )
+	func = GFileChooserDefInputFilenameFunc;
+    gfc->inputfilenamefunc = func;
+}
+
+GFileChooserInputFilenameFuncType GFileChooserGetInputFilenameFunc(GGadget *g) {
+    GFileChooser *gfc = (GFileChooser *) g;
+    if ( gfc->inputfilenamefunc==NULL )
+	return GFileChooserDefInputFilenameFunc;
+    return( gfc->inputfilenamefunc );
+}
+
+
+
 void GFileChooserSetMimetypes(GGadget *g,unichar_t **mimetypes) {
     GFileChooser *gfc = (GFileChooser *) g;
     int i;
@@ -1619,7 +1709,7 @@ GGadget *GFileChooserCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 
     GFileChooserCreateChildren(gfc, gd->flags);
     gfc->filter = GFileChooserDefFilter;
-    
+    GFileChooserSetInputFilenameFunc( gfc, 0 );
     if ( gd->flags & gg_group_end )
 	_GGadgetCloseGroup(&gfc->g);
 
