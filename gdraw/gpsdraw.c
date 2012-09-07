@@ -1461,6 +1461,7 @@ static struct displayfuncs psfuncs = {
     PSDrawFontMetrics,
 
     PSDrawHasCairo,
+
     PSDrawPathStartNew,
     PSDrawPathClose,
     PSDrawPathMoveTo,
@@ -1471,6 +1472,8 @@ static struct displayfuncs psfuncs = {
     PSDrawPathFillAndStroke,
 
     NULL,		/* Pango layout */
+    NULL,
+    NULL,
     NULL,
     NULL,
     NULL,
