@@ -63,24 +63,8 @@
 #define ____INITIAL	0x800000
 #define ____MEDIAL	0x1000000
 #define ____FINAL	0x2000000
-#define ____ISOLATED 0x4000000
-#define ____DECOMPNORM 0x10000000
-
-#define ____COMBININGCLASS 0xff
-#define ____ABOVE	0x100
-#define ____BELOW	0x200
-#define ____OVERSTRIKE	0x400
-#define ____LEFT	0x800
-#define ____RIGHT	0x1000
-#define ____JOINS2	0x2000
-#define ____CENTERLEFT	0x4000
-#define ____CENTERRIGHT	0x8000
-#define ____CENTEREDOUTSIDE	0x10000
-#define ____OUTSIDE		0x20000
-#define ____LEFTEDGE	0x80000
-#define ____RIGHTEDGE	0x40000
-#define ____TOUCHING	0x100000
-#define ____COMBININGPOSMASK	0x1fff00
+#define ____ISOLATED	0x4000000
+#define ____DECOMPNORM	0x10000000
 
 extern const unsigned short ____tolower[];
 extern const unsigned short ____toupper[];
@@ -89,7 +73,30 @@ extern const unsigned short ____tomirror[];
 extern const unsigned char  ____digitval[];
 extern const unsigned int  ____utype[];
 
-extern const unsigned int  ____utype2[];
+/* utype2[] binary flags used for position/layout of each unicode.org character */
+#define ____COMBININGCLASS	0xff
+#define ____ABOVE		0x100
+#define ____BELOW		0x200
+#define ____OVERSTRIKE		0x400
+#define ____LEFT		0x800
+#define ____RIGHT		0x1000
+#define ____JOINS2		0x2000
+#define ____CENTERLEFT		0x4000
+#define ____CENTERRIGHT		0x8000
+#define ____CENTEREDOUTSIDE	0x10000
+#define ____OUTSIDE		0x20000
+#define ____LEFTEDGE		0x80000
+#define ____RIGHTEDGE		0x40000
+#define ____TOUCHING		0x100000
+#define ____COMBININGPOSMASK	0x1fff00
+#define ____NOPOSDATAGIVEN	(uint32)(-1)	/* -1 == no position data given */
+
+#define combiningclass(ch)	(____utype2[(ch)+1]&____COMBININGCLASS)
+#define combiningposmask(ch)	(____utype2[(ch)+1]&____COMBININGPOSMASK)
+
+extern const uint32	____utype2[];			/* hold position boolean flags for each Unicode.org defined character */
+
+#define isunicodepointassigned(ch) (____codepointassigned[(ch)/32]&(1<<((ch)%32)))
 
 extern const uint32	____codepointassigned[];	/* 1bit_boolean_flag x 32 = exists in Unicode.org character chart list. */
 
@@ -127,10 +134,6 @@ extern const uint32	____codepointassigned[];	/* 1bit_boolean_flag x 32 = exists 
 
 #define isdecompositionnormative(ch) (____utype[(ch)+1]&____DECOMPNORM)
 
-#define combiningclass(ch) (____utype2[(ch)+1]&____COMBININGCLASS)
-#define combiningposmask(ch) (____utype2[(ch)+1]&____COMBININGPOSMASK)
-
-#define isunicodepointassigned(ch) (____codepointassigned[(ch)/32]&(1<<((ch)%32)))
 
 
 extern struct arabicforms {

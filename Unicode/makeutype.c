@@ -44,7 +44,7 @@
  * Then run the executable binary "/makeutype".
  * This will create 4 files in the same directory:
  *	ArabicForms.c, unialt.c, utype.c, utype.h
- * (please move utype.h into Fontforge's "inc" subdirectory)
+ * (please move utype.h into Fontforge's "../inc" subdirectory)
  *
  * When done building the updated files, you can clean-up by removing
  * LineBreak.txt, NamesList.txt, PropList.txt,UnicodeData.txt, and the
@@ -70,7 +70,7 @@
 #define _SPACE		0x10
 #define _PUNCT		0x20
 #define _HEX		0x40
-#define	_ZEROWIDTH	0x80
+#define _ZEROWIDTH	0x80
 
 #define _LEFT_2_RIGHT	0x100
 #define _RIGHT_2_LEFT	0x200
@@ -79,13 +79,13 @@
 #define _ENS		0x1000
 #define _CS		0x2000
 #define _ENT		0x4000
-#define	_COMBINING	0x8000
+#define _COMBINING	0x8000
 
-#define	_BREAKBEFOREOK	0x10000
-#define	_BREAKAFTEROK	0x20000
-#define	_NONSTART	0x40000		/* small kana, close punct, can't start a line */
-#define	_NONEND		0x80000		/* open punct, can't end a line */
-/*#define	_MUSTBREAK	0x100000/* newlines, paragraphs, etc. */
+#define _BREAKBEFOREOK	0x10000
+#define _BREAKAFTEROK	0x20000
+#define _NONSTART	0x40000		/* small kana, close punct, can't start a line */
+#define _NONEND		0x80000		/* open punct, can't end a line */
+/*#define _MUSTBREAK	0x100000	/* newlines, paragraphs, etc. */
 #define	_URLBREAKAFTER	0x100000	/* break after slash not followed by digits (ie. in URLs not fractions or dates) */
 
 #define _ALPHABETIC	0x200000
@@ -122,7 +122,7 @@ unsigned short mytoupper[MAXC];
 unsigned short mytotitle[MAXC];
 unsigned char mynumericvalue[MAXC];
 unsigned short mymirror[MAXC];
-unsigned long flags[MAXC];
+unsigned long flags[MAXC];			/* 32 binary flags for each unicode.org character */
 unsigned long flags2[MAXC];
 unichar_t alts[MAXC][MAXA+1];
 unsigned long assignedcodepoints[0x120000/32];	/* 32 characters represented per each long value */
@@ -719,28 +719,8 @@ static void dump() {
     fprintf( header, "#define ____INITIAL	0x%0x\n", _INITIAL );
     fprintf( header, "#define ____MEDIAL	0x%0x\n", _MEDIAL );
     fprintf( header, "#define ____FINAL	0x%0x\n", _FINAL );
-    fprintf( header, "#define ____ISOLATED 0x%0x\n", _ISOLATED );
-    fprintf( header, "#define ____DECOMPNORM 0x%0x\n", _DecompositionNormative );
-    fprintf( header, "\n" );
-
-    fprintf( header, "#define ____COMBININGCLASS 0x%0x\n", _CombiningClass );
-    fprintf( header, "#define ____ABOVE	0x%0x\n", _Above );
-    fprintf( header, "#define ____BELOW	0x%0x\n", _Below );
-    fprintf( header, "#define ____OVERSTRIKE	0x%0x\n", _Overstrike );
-    fprintf( header, "#define ____LEFT	0x%0x\n", _Left );
-    fprintf( header, "#define ____RIGHT	0x%0x\n", _Right );
-    fprintf( header, "#define ____JOINS2	0x%0x\n", _Joins2 );
-    fprintf( header, "#define ____CENTERLEFT	0x%0x\n", _CenterLeft );
-    fprintf( header, "#define ____CENTERRIGHT	0x%0x\n", _CenterRight );
-    fprintf( header, "#define ____CENTEREDOUTSIDE	0x%0x\n", _CenteredOutside );
-    fprintf( header, "#define ____OUTSIDE		0x%0x\n", _Outside );
-    fprintf( header, "#define ____LEFTEDGE	0x%0x\n", _LeftEdge );
-    fprintf( header, "#define ____RIGHTEDGE	0x%0x\n", _RightEdge );
-    fprintf( header, "#define ____TOUCHING	0x%0x\n", _Touching );
-    fprintf( header, "#define ____COMBININGPOSMASK	0x%0x\n",
-	    _Outside|_CenteredOutside|_CenterRight|_CenterLeft|_Joins2|
-	    _Right|_Left|_Overstrike|_Below|_Above|_RightEdge|_LeftEdge|
-	    _Touching );
+    fprintf( header, "#define ____ISOLATED	0x%0x\n", _ISOLATED );
+    fprintf( header, "#define ____DECOMPNORM	0x%0x\n", _DecompositionNormative );
     fprintf( header, "\n" );
 
     fprintf( header, "extern const unsigned short ____tolower[];\n" );
@@ -749,7 +729,35 @@ static void dump() {
     fprintf( header, "extern const unsigned short ____tomirror[];\n" );
     fprintf( header, "extern const unsigned char  ____digitval[];\n" );
     fprintf( header, "extern const unsigned int  ____utype[];\n\n" );
-    fprintf( header, "extern const unsigned int  ____utype2[];\n\n" );
+
+    fprintf( header, "/* utype2[] binary flags used for position/layout of each unicode.org character */\n" );
+    fprintf( header, "#define ____COMBININGCLASS\t0x%0x\n", _CombiningClass );
+    fprintf( header, "#define ____ABOVE\t\t0x%0x\n", _Above );
+    fprintf( header, "#define ____BELOW\t\t0x%0x\n", _Below );
+    fprintf( header, "#define ____OVERSTRIKE\t\t0x%0x\n", _Overstrike );
+    fprintf( header, "#define ____LEFT\t\t0x%0x\n", _Left );
+    fprintf( header, "#define ____RIGHT\t\t0x%0x\n", _Right );
+    fprintf( header, "#define ____JOINS2\t\t0x%0x\n", _Joins2 );
+    fprintf( header, "#define ____CENTERLEFT\t\t0x%0x\n", _CenterLeft );
+    fprintf( header, "#define ____CENTERRIGHT\t\t0x%0x\n", _CenterRight );
+    fprintf( header, "#define ____CENTEREDOUTSIDE\t0x%0x\n", _CenteredOutside );
+    fprintf( header, "#define ____OUTSIDE\t\t0x%0x\n", _Outside );
+    fprintf( header, "#define ____LEFTEDGE\t\t0x%0x\n", _LeftEdge );
+    fprintf( header, "#define ____RIGHTEDGE\t\t0x%0x\n", _RightEdge );
+    fprintf( header, "#define ____TOUCHING\t\t0x%0x\n", _Touching );
+    fprintf( header, "#define ____COMBININGPOSMASK\t0x%0x\n",
+	    _Outside|_CenteredOutside|_CenterRight|_CenterLeft|_Joins2|
+	    _Right|_Left|_Overstrike|_Below|_Above|_RightEdge|_LeftEdge|
+	    _Touching );
+    fprintf( header, "#define ____NOPOSDATAGIVEN\t(uint32)(-1)\t/* -1 == no position data given */\n\n" );
+
+    fprintf( header, "#define combiningclass(ch)\t(____utype2[(ch)+1]&____COMBININGCLASS)\n" );
+    fprintf( header, "#define combiningposmask(ch)\t(____utype2[(ch)+1]&____COMBININGPOSMASK)\n\n" );
+
+    fprintf( header, "extern const uint32\t____utype2[];\t\t\t/* hold position boolean flags for each Unicode.org defined character */\n\n" );
+
+    fprintf( header, "#define isunicodepointassigned(ch) (____codepointassigned[(ch)/32]&(1<<((ch)%%32)))\n\n" );
+
     fprintf( header, "extern const uint32\t____codepointassigned[];\t/* 1bit_boolean_flag x 32 = exists in Unicode.org character chart list. */\n\n" );
 
     fprintf( header, "#define tolower(ch) (____tolower[(ch)+1])\n" );
@@ -784,12 +792,6 @@ static void dump() {
     fprintf( header, "#define isarabfinal(ch) (____utype[(ch)+1]&____FINAL)\n" );
     fprintf( header, "#define isarabisolated(ch) (____utype[(ch)+1]&____ISOLATED)\n\n" );
     fprintf( header, "#define isdecompositionnormative(ch) (____utype[(ch)+1]&____DECOMPNORM)\n\n" );
-    fprintf( header, "#define combiningclass(ch) (____utype2[(ch)+1]&____COMBININGCLASS)\n" );
-    fprintf( header, "#define combiningposmask(ch) (____utype2[(ch)+1]&____COMBININGPOSMASK)\n" );
-
-    fprintf( header, "\n" );
-
-    fprintf( header, "#define isunicodepointassigned(ch) (____codepointassigned[(ch)/32]&(1<<((ch)%%32)))\n" );
 
     fprintf( header, "\n" );
 
@@ -879,7 +881,8 @@ static void dump() {
 	    else
 		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned int ____utype2[] = { 0,\n" );
+    fprintf( data, "const uint32 ____utype2[] = { 0,\n" );
+    fprintf( data, "  /* binary flags used for physical layout of each unicode.org character */\n" );
     for ( i=0; i<MAXC; i+=j ) {
 	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
