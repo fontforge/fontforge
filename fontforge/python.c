@@ -10245,6 +10245,7 @@ return( (PyObject *) self );
 static PyObject *PyFFFont_close(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
 
+    fv->python_fv_object = NULL;
     FontViewClose(fv);
     ((PyFF_Font *) self)->fv = NULL;
 Py_RETURN_NONE;
