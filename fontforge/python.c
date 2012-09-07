@@ -212,6 +212,22 @@ static PyFF_Layer *LayerFromSS(SplineSet *,PyFF_Layer *);
 static PyFF_Layer *LayerFromLayer(Layer *,PyFF_Layer *);
 
 /* ************************************************************************** */
+/* Checks for closed fonts */
+/* ************************************************************************** */
+
+static int IsFontClosed(const PyFF_Font *self) {
+    return( self==NULL || self->fv==NULL );
+}
+
+static int CheckIfFontClosed(const PyFF_Font *self) {
+    if ( IsFontClosed(self) ) {
+	PyErr_Format(PyExc_RuntimeError, "Operation is not allowed after font has been closed" );
+return( -1 );
+    }
+    return 0;
+}
+
+/* ************************************************************************** */
 /* Utilities */
 /* ************************************************************************** */
 
@@ -10242,17 +10258,42 @@ static PyObject *PyFF_Font_new(PyTypeObject *type, PyObject *UNUSED(args), PyObj
 return( (PyObject *) self );
 }
 
-static PyObject *PyFFFont_close(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_close(PyObject *object, PyObject *UNUSED(args)) {
+    PyFF_Font* self = (PyFF_Font*)object;
+    FontViewBase *fv;
+
+    if( CheckIfFontClosed(self) )
+return( NULL );
+    fv = self->fv;
+
+    if ( self->math!=NULL && self->math->sf == fv->sf )
+	self->math->sf = NULL;
+
+    if ( self->private!=NULL && self->private->fv == fv ) {
+	self->private->fv = NULL;
+	self->private->sf = NULL;
+    }
+
+    if ( self->layers!=NULL && self->layers->sf == fv->sf )
+	self->layers->sf = NULL;
+
+    if ( self->selection!=NULL && self->selection->fv == fv )
+	self->selection->fv = NULL;
+
+    if ( self->cvt!=NULL && self->cvt->sf == fv->sf ) {
+	self->cvt->sf = NULL;
+	self->cvt->cvt = NULL;
+    }
 
     fv->python_fv_object = NULL;
     FontViewClose(fv);
-    ((PyFF_Font *) self)->fv = NULL;
+    self->fv = NULL;
 Py_RETURN_NONE;
 }
 
 static PyObject *PyFFFont_Str(PyFF_Font *self) {
-return( STRING_FROM_FORMAT( "<Font: %s>", self->fv->sf->fontname ));
+return( STRING_FROM_FORMAT( "<Font: %s>",
+			    IsFontClosed(self) ? "<closed>" : self->fv->sf->fontname ));
 }
 
 /* ************************************************************************** */
