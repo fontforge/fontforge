@@ -482,7 +482,14 @@ return( true );
     pt = spt = _GGadgetGetTitle(t);
     if ( pt==NULL )
 return( true );
-    if( GFileChooserGetInputFilenameFunc(g)(g, &pt)) {
+    gfc = (GFileChooser *) GGadgetGetUserData(t);
+    // if this is the first time we are here, we assume
+    // the current filename is what it was before. Less NULL
+    // checks in the callback function below.
+    if(!gfc->inputfilenameprevchar)
+	gfc->inputfilenameprevchar = u_copy(_GGadgetGetTitle(t));
+
+    if( GFileChooserGetInputFilenameFunc(g)(g, &pt,gfc->inputfilenameprevchar)) {
 	pt_toFree = pt;
 	spt = pt;
 	GGadgetSetTitle(g, pt);
@@ -492,7 +499,6 @@ return( true );
 	++pt;
     if ( *spt!='\0' && spt[u_strlen(spt)-1]=='/' )
 	pt = spt+u_strlen(spt)-1;
-    gfc = (GFileChooser *) GGadgetGetUserData(t);
 
     /* if there are no wildcards and no directories in the filename */
     /*  then as it gets changed the list box should show the closest */
@@ -525,6 +531,11 @@ return( true );
     free(gfc->lastname); gfc->lastname = NULL;
     if(pt_toFree)
 	free(pt_toFree);
+
+    if(gfc->inputfilenameprevchar)
+	free(gfc->inputfilenameprevchar);
+    gfc->inputfilenameprevchar = u_copy(_GGadgetGetTitle(t));
+    
 return( true );
 }
 
@@ -1178,49 +1189,34 @@ return( gfc->filter );
  * new string and return 1 to allow the caller to free this new
  * string.
  */
-int GFileChooserDefInputFilenameFunc( GGadget *g, unichar_t** currentFilename ) {
+int GFileChooserDefInputFilenameFunc( GGadget *g,
+				      unichar_t** currentFilename,
+				      unichar_t* oldfilename ) {
     return 0;
 }
 
-int GFileChooserSaveAsInputFilenameFunc( GGadget *g, unichar_t** ppt ) {
+int GFileChooserSaveAsInputFilenameFunc( GGadget *g,
+					 unichar_t** ppt,
+					 unichar_t* oldfilename ) {
     unichar_t* pt = *ppt;
     char* p = u_to_c(pt);
     int plen = strlen(p);
     int ew = endswithi( p, ".sfdir") || endswithi( p, ".sfd");
     int trim = 0;
-    /**
-     * Check to see if they are trying to add chars to a valid extension.
-     * If so, lets just no allow that to happen.
-     */
-    if(plen) {
-	char* pdup = copy(p);
-	pdup[ plen - 1 ] = '\0';
-	trim = endswithi( pdup, ".sfdir") || endswithi( pdup, ".sfd");
-	free(pdup);
-	// don't trim an attempt to move to an sfdir extension
-	if( endswithi( p, ".sfdi") )
-	    trim = 0;
 
-	if( trim ) {
-	    pt = u_copyn( pt, u_strlen(pt)-1 );
-	} else {
-	    if( endswithi( p, ".sfdi")) {
-		pt = u_copynallocm(pt,u_strlen(pt),u_strlen(pt)+10);
-		u_strcat(pt,c_to_u("r"));
-	    }
-	    else if( endswithi( p, ".sf")) {
-		pt = u_copynallocm(pt,u_strlen(pt),u_strlen(pt)+10);
-		u_strcat(pt,c_to_u("d"));
-	    }
+    if( !ew ) {
+	if( endswithi( u_to_c(oldfilename), ".sfd")
+	    || endswithi( u_to_c(oldfilename), ".sfdir")) {
+	    *ppt = u_copy(oldfilename);
+	    return 1;
 	}
     }
-
+    
     /**
-     * If we didn't trim anything or alter the string, if there is not
-     * a correct extension there already, then we will add one for the
-     * user to be helpful.
+     * If there is not a correct extension there already, then we will
+     * add one for the user to be helpful.
      */
-    if( pt==*ppt ) {
+    if( pt==*ppt) {
 	char* extension = ".sfd";
 	if( *p && p[plen-1] == '.' )
 	    extension = "sfd";

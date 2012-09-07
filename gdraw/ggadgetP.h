@@ -396,6 +396,7 @@ typedef struct gfilechooser {
     struct ghvbox *topbox;
     unichar_t **history;
     unichar_t **paths;
+    unichar_t *inputfilenameprevchar;
     int hpos, hcnt, hmax;
 } GFileChooser;
 
