@@ -14641,13 +14641,20 @@ return( NULL );
 return( fontiter_New( self,index,NULL) );
 }
 
-static PyObject *PyFFFont_Save(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_Save(PyObject *object, PyObject *args) {
+    PyFF_Font *self = (PyFF_Font*)object;
     char *filename;
-    char *locfilename = NULL, *pt;
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    char *locfilename = NULL;
+    char *pt;
+    FontViewBase *fv;
     int s2d=false;
 
+    if ( CheckIfFontClosed(self) )
+return(NULL);
+    fv = self->fv;
+
     if ( PySequence_Size(args)==1 ) {
+	/* Save As - Filename was provided */
 	if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
 return( NULL );
 	locfilename = utf82def_copy(filename);
@@ -14666,10 +14673,8 @@ return( NULL );
 	    free(locfilename);
 return( NULL );
 	}
-	/* Hmmm. We don't set the filename, nor the save_to_dir bit */
-	free(locfilename);
     } else {
-	char *freeme = NULL;
+	/* Save - No filename provided */
 	if ( fv->cidmaster!=NULL && fv->cidmaster->filename!=NULL )
 	    filename = fv->cidmaster->filename;
 	else if ( fv->sf->mm!=NULL && fv->sf->mm->normal->filename!=NULL )
@@ -14680,34 +14685,60 @@ return( NULL );
 	    SplineFont *sf = fv->cidmaster?fv->cidmaster:
 		    fv->sf->mm!=NULL?fv->sf->mm->normal:fv->sf;
 	    char *fn = sf->defbasefilename ? sf->defbasefilename : sf->fontname;
-	    freeme = galloc((strlen(fn)+10));
-	    strcpy(freeme,fn);
+	    locfilename = galloc((strlen(fn)+10));
+	    strcpy(locfilename,fn);
 	    if ( sf->defbasefilename!=NULL )
 		/* Don't add a default suffix, they've already told us what name to use */;
 	    else if ( fv->cidmaster!=NULL )
-		strcat(freeme,"CID");
+		strcat(locfilename,"CID");
 	    else if ( sf->mm==NULL )
 		;
 	    else if ( sf->mm->apple )
-		strcat(freeme,"Var");
+		strcat(locfilename,"Var");
 	    else
-		strcat(freeme,"MM");
-	    strcat(freeme,".sfd");
+		strcat(locfilename,"MM");
+	    strcat(locfilename,".sfd");
 	}
-	if ( freeme==NULL ) {
+	if ( locfilename==NULL ) {
 	    if ( !SFDWriteBak(fv->sf,fv->map,fv->normal) ) {
 		PyErr_Format(PyExc_EnvironmentError, "Save failed");
 return( NULL );
 	    }
 	} else {
-	    if ( !SFDWrite(freeme,fv->sf,fv->map,fv->normal,s2d)) {
-		PyErr_Format(PyExc_EnvironmentError, "Save As \"%s\" failed",freeme);
-		free(freeme);
+	    if ( !SFDWrite(locfilename,fv->sf,fv->map,fv->normal,s2d)) {
+		PyErr_Format(PyExc_EnvironmentError, "Save As \"%s\" failed",locfilename);
+		free(locfilename);
 return( NULL );
 	    }
-	    free(freeme);
 	}
     }
+
+    /* Save succeeded, do any post-save fixups.
+     * Refer to _FVMenuSaveAs() in fontview.c
+     */
+    if ( locfilename!=NULL ) {
+	SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf->mm!=NULL?fv->sf->mm->normal:fv->sf;
+	free(sf->filename);
+	sf->filename = copy(locfilename);
+	sf->save_to_dir = s2d;
+	free(sf->origname);
+	sf->origname = copy(locfilename);
+	sf->new = false;
+	if ( sf->mm!=NULL ) {
+	    int i;
+	    for ( i=0; i<sf->mm->instance_count; ++i ) {
+		free(sf->mm->instances[i]->filename);
+		sf->mm->instances[i]->filename = copy(locfilename);
+		free(sf->mm->instances[i]->origname);
+		sf->mm->instances[i]->origname = copy(locfilename);
+		sf->mm->instances[i]->new = false;
+	    }
+	}
+	SplineFontSetUnChanged(sf);
+
+	free(locfilename);
+    }
+
 Py_RETURN( self );
 }
 
