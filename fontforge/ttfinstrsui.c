@@ -143,7 +143,7 @@ return;
     ihadd(0x18,N_("Round To Grid\nSets the round state"));
     ihadd(0x19,N_("Round To Half Grid\nSets the round state (round to closest .5 not int)"));
     ihadd(0x7c,N_("Round Up To Grid\nSets the round state"));
-    ihadd(0x77,N_("Super 45 degrees ROUND\nToo complicated. Look it up"));
+    ihadd(0x77,N_("Super 45\302\260 ROUND\nToo complicated. Look it up"));
     ihadd(0x7e,N_("Set ANGle Weight\nPops an int, and sets the angle\nweight state variable to it\nObsolete"));
     ihadd(0x85,N_("SCAN conversion ConTRoL\nPops a number which sets the\ndropout control mode"));
     ihadd(0x8d,N_("SCANTYPE\nPops number which sets which scan\nconversion rules to use"));
