@@ -970,7 +970,7 @@ initialize ( ) {
     if test ! -d "$_aux_dir" ; then
 	_aux_dir=.
     else
-	$VERBOSE_ECHO "Detected auxillary directory: $_aux_dir"
+	$VERBOSE_ECHO "Detected auxiliary directory: $_aux_dir"
     fi
 
     ################################
@@ -1196,7 +1196,7 @@ if [ "x$HAVE_AUTORECONF" = "xyes" ] ; then
 	$ECHO "Warning: $AUTORECONF failed"
 
 	if test -f ltmain.sh ; then
-	    $ECHO "libtoolize being run by autoreconf is not creating ltmain.sh in the auxillary directory like it should"
+	    $ECHO "libtoolize being run by autoreconf is not creating ltmain.sh in the auxiliary directory like it should"
 	fi
 
 	$ECHO "Attempting to run the preparation steps individually"
