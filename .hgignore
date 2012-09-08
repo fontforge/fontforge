@@ -61,6 +61,7 @@ syntax: regexp
 \.exe$
 \.dll$
 \.obj$
+\.gmo$
 ~$
 ^config$
 ^pyhook/config$
