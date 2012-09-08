@@ -55,6 +55,10 @@ SUBDIRS += cidmap
 SUBDIRS += $(subdirs)
 SUBDIRS += tests
 
+if MACINTOSH
+SUBDIRS += mackeys
+endif MACINTOSH
+
 # The following conditional may always be false, but is here so the
 # fonttools directory is included by "make dist".
 if FONTTOOLS
