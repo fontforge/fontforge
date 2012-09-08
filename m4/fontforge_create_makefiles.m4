@@ -19,6 +19,7 @@ AC_CONFIG_FILES([pycontrib/Makefile])
 AC_CONFIG_FILES([cidmap/Makefile])
 AC_CONFIG_FILES([plugins/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
+AC_CONFIG_FILES([desktop/Makefile])
 AC_CONFIG_FILES([fonttools/Makefile])
 
 # GNUmakefiles that act as wrappers around portable makefiles and

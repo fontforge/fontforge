@@ -59,8 +59,10 @@ if MACINTOSH
 SUBDIRS += mackeys
 endif MACINTOSH
 
-# The following conditional may always be false, but is here so the
-# fonttools directory is included by "make dist".
+if DESKTOP
+SUBDIRS += desktop
+endif DESKTOP
+
 if FONTTOOLS
 SUBDIRS += fonttools
 endif FONTTOOLS

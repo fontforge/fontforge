@@ -110,6 +110,8 @@ AC_PATH_PROG([MSGFMT],[msgfmt],[msgfmt])
 AC_PATH_PROG([XGETTEXT],[xgettext],[xgettext])
 AC_PATH_PROG([CPROTO],[cproto],[cproto])
 AC_PATH_PROG([UNZIP],[unzip],[unzip])
+AC_PATH_PROG([UPDATE_MIME_DATABASE],[update-mime-database],[update-mime-database])
+AC_PATH_PROG([UPDATE_DESKTOP_DATABASE],[update-desktop-database],[update-desktop-database])
 AC_PATH_PROG([PLUTIL],[plutil],[:])
 
 FONTFORGE_ARG_ENABLE_REAL
@@ -291,8 +293,11 @@ i_do_have_gui="${i_do_have_x}"
 AM_CONDITIONAL([GRAPHICAL_USER_INTERFACE],[test x"${i_do_have_gui}" = xyes])
 AM_CONDITIONAL([MACINTOSH],[test x"${gww_ismac}" = xyes])
 
-# See Makefile.am for an explanation of why this exists despite always
-# being "false".
+# FIXME: Make it necessary to enable this.
+AM_CONDITIONAL([DESKTOP],[test x = x])
+
+# The following conditional is always false, so the fonttools never
+# get built by default, but they will be included by "make dist".
 AM_CONDITIONAL([FONTTOOLS],[test x != x])
 
 FONTFORGE_SET_MY_CFLAGS
