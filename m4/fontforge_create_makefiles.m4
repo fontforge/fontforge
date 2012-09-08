@@ -21,8 +21,12 @@ AC_CONFIG_FILES([plugins/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
 AC_CONFIG_FILES([fonttools/Makefile])
 
-# GNUmakefiles that act as wrappers around portable makefiles, to do
-# fancy things that are mainly for the benefit of maintainers.
+# GNUmakefiles that act as wrappers around portable makefiles and
+# provide additional targets.
+AC_CONFIG_FILES([GNUmakefile])
 AC_CONFIG_FILES([fontforge/GNUmakefile])
 AC_CONFIG_FILES([po/GNUmakefile])
+
+# GNUmakefile snippets for use with "include".
+AC_CONFIG_FILES([xgettext_search.mk])
 ])

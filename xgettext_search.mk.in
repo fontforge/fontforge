@@ -27,28 +27,11 @@
 
 #--------------------------------------------------------------------------
 #
-# An extension of the Makefile, with some targets written specifically
-# for GNU Make.
+# Files to search through for translatable strings.
 
-include Makefile
-include $(top_builddir)/xgettext_search.mk
+fontforge_cfiles := $(wildcard $(top_srcdir)/fontforge/*.c)
+fontforge_prefiles := $(wildcard $(top_srcdir)/fontforge/*.pre)
+gdraw_cfiles = $(wildcard $(top_srcdir)/gdraw/*.c)
 
-XGETTEXT_OPTIONS = --keyword=_ --keyword=N_ --keyword=S_ --keyword=U_	\
---keyword=NU_ --keyword=P_:1,2 --add-comments=GT: --from-code=utf-8		\
---language=C --sort-by-file
-
-# This potfile will be created in $(builddir). You can copy it to
-# $(srcdir) if you do outside-of-source builds and want it in the
-# source tree.
-MY_POTFILE = FontForge.pot
-
-$(MY_POTFILE): potfile
-
-potfile:
-	$(XGETTEXT) $(XGETTEXT_OPTIONS) --output=$(MY_POTFILE) $(xgettext_search_files)
-	$(SED) -i -e '1,4d' $(MY_POTFILE)
-	$(SED) -i -e "1i\
-# Template of user interface strings for $(PACKAGE), in US English.\n\
-# Copyright (C) 2000-2012 by George Williams.\n\
-# This file is distributed under the same license as the $(PACKAGE) package.\n\
-# The FontForge project, <https://github.com/fontforge/fontforge>, 2012." $(MY_POTFILE)
+xgettext_search_files := $(fontforge_cfiles) $(fontforge_prefiles)	\
+	$(gdraw_cfiles)
