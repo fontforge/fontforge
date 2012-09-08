@@ -2997,7 +2997,6 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 
     memset(mi,'\0',sizeof(mi));
 
-    printf("cvpop(1) i:%d\n", i );
     anysel = CVTestSelectFromEvent(cv,event);
     if( !anysel ) {
 	for ( i=0;i<=cvt_skew; ++i ) {
@@ -3019,7 +3018,6 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	}
     }
     
-    printf("cvpop(2) i:%d\n", i );
     if( !anysel ) {
 	if ( cvlayers!=NULL && !cv->b.sc->parent->multilayer ) {
 	    mi[i].ti.line = true;
@@ -3037,7 +3035,6 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	}
     }
 
-    printf("cvpop(3) i:%d\n", i );
     if( i > 0 ) {
 	mi[i].ti.line = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
@@ -3056,7 +3053,6 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i].mid = j;
 	mi[i].invoke = CVPopupSelectInvoked;
     }
-    printf("cvpop(5) i:%d\n", i );
 
     if ( cv->b.sc->parent->multilayer ) {
 	mi[i].ti.text = (unichar_t *) _("Make Clip Path");
