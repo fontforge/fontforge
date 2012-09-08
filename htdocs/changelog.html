@@ -53,8 +53,9 @@
         <LI>
           <B>General:</B>
         <LI>
-          Fix bug that caused incorrectly dumping some context substitution
-          format 1 lookups to feature files.
+          Fix bug that caused incorrectly dumping some context substitution format 1
+          lookups to feature files. We were also accepting the broken lookups we were
+          generated and FontForge would crash later, now they are rejected, too.
         <LI>
           "TeX Names" is now accepted internally as an alias for "ΤεΧ Names" when
           specifying a name list by name.

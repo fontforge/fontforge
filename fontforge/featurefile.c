@@ -4647,7 +4647,10 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 		    r->u.rcoverage.replacements = copy(rpl->name_or_class );
 		}
 	    } else {
-		for ( i=0, rp=rpl; g!=NULL && rp!=NULL; ++i, rp=rp->next ) {
+		if ( rpl==NULL ) {
+		    LogError(_("No substitution specified on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+		    ++tok->err_count;
+		} else for ( i=0, rp=rpl; g!=NULL && rp!=NULL; ++i, rp=rp->next ) {
 		    if ( rp->lookupname!=NULL ) {
 			head = chunkalloc(sizeof(struct feat_item));
 			head->type = ft_lookup_ref;
