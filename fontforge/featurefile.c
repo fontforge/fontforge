@@ -645,7 +645,7 @@ static void dump_contextpstglyphs(FILE *out,SplineFont *sf,
 	fprintf( out, " by " );
 	for ( i=0; i<r->lookup_cnt; ++i ) {
 	    otl = r->lookups[i].lookup;
-	    for ( pt=r->u.glyph.names, j=0; ; ) {
+	    for ( pt=r->u.glyph.names, j=0; ; j++ ) {
 		while ( *pt==' ' ) ++pt;
 		if ( *pt=='\0' || j>=r->lookups[i].seq )
 	    break;
