@@ -28,5 +28,5 @@ AC_CONFIG_FILES([fontforge/GNUmakefile])
 AC_CONFIG_FILES([po/GNUmakefile])
 
 # GNUmakefile snippets for use with "include".
-AC_CONFIG_FILES([xgettext_search.mk])
+AC_CONFIG_FILES([mk/xgettext_search.mk])
 ])

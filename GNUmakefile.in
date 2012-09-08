@@ -31,7 +31,7 @@
 # for GNU Make.
 
 include Makefile
-include $(top_builddir)/xgettext_search.mk
+include $(top_builddir)/mk/xgettext_search.mk
 
 XGETTEXT_OPTIONS = --keyword=H_ --from-code=utf-8 --language=C	\
 --sort-by-file
