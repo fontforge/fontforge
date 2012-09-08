@@ -2990,47 +2990,60 @@ static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
 
 void CVToolsPopup(CharView *cv, GEvent *event) {
     GMenuItem mi[125];
-    int i, j, anysel;
+    int i=0;
+    int j=0;
+    int anysel=0;
     static char *selectables[] = { N_("Get Info..."), N_("Open Reference"), N_("Add Anchor"), NULL };
 
     memset(mi,'\0',sizeof(mi));
-    for ( i=0;i<=cvt_skew; ++i ) {
-	char *msg = _(popupsres[i]);
-	if ( cv->b.sc->inspiro && hasspiro()) {
-	    if ( i==cvt_spirog2 )
-		msg = _("Add a g2 curve point");
-	    else if ( i==cvt_spiroleft )
-		msg = _("Add a left \"tangent\" point");
-	    else if ( i==cvt_spiroright )
-		msg = _("Add a right \"tangent\" point");
-	}
-	mi[i].ti.text = (unichar_t *) msg;
-	mi[i].ti.text_is_1byte = true;
-	mi[i].ti.fg = COLOR_DEFAULT;
-	mi[i].ti.bg = COLOR_DEFAULT;
-	mi[i].mid = i;
-	mi[i].invoke = CVPopupInvoked;
-    }
 
-    if ( cvlayers!=NULL && !cv->b.sc->parent->multilayer ) {
-	mi[i].ti.line = true;
-	mi[i].ti.fg = COLOR_DEFAULT;
-	mi[i++].ti.bg = COLOR_DEFAULT;
-	for ( j=0;j<3; ++j, ++i ) {
-	    mi[i].ti.text = (unichar_t *) _(editablelayers[j]);
-	    mi[i].ti.text_in_resource = true;
+    printf("cvpop(1) i:%d\n", i );
+    anysel = CVTestSelectFromEvent(cv,event);
+    if( !anysel ) {
+	for ( i=0;i<=cvt_skew; ++i ) {
+	    char *msg = _(popupsres[i]);
+	    if ( cv->b.sc->inspiro && hasspiro()) {
+		if ( i==cvt_spirog2 )
+		    msg = _("Add a g2 curve point");
+		else if ( i==cvt_spiroleft )
+		    msg = _("Add a left \"tangent\" point");
+		else if ( i==cvt_spiroright )
+		    msg = _("Add a right \"tangent\" point");
+	    }
+	    mi[i].ti.text = (unichar_t *) msg;
 	    mi[i].ti.text_is_1byte = true;
 	    mi[i].ti.fg = COLOR_DEFAULT;
 	    mi[i].ti.bg = COLOR_DEFAULT;
-	    mi[i].mid = j;
-	    mi[i].invoke = CVPopupLayerInvoked;
+	    mi[i].mid = i;
+	    mi[i].invoke = CVPopupInvoked;
+	}
+    }
+    
+    printf("cvpop(2) i:%d\n", i );
+    if( !anysel ) {
+	if ( cvlayers!=NULL && !cv->b.sc->parent->multilayer ) {
+	    mi[i].ti.line = true;
+	    mi[i].ti.fg = COLOR_DEFAULT;
+	    mi[i++].ti.bg = COLOR_DEFAULT;
+	    for ( j=0;j<3; ++j, ++i ) {
+		mi[i].ti.text = (unichar_t *) _(editablelayers[j]);
+		mi[i].ti.text_in_resource = true;
+		mi[i].ti.text_is_1byte = true;
+		mi[i].ti.fg = COLOR_DEFAULT;
+		mi[i].ti.bg = COLOR_DEFAULT;
+		mi[i].mid = j;
+		mi[i].invoke = CVPopupLayerInvoked;
+	    }
 	}
     }
 
-    anysel = CVTestSelectFromEvent(cv,event);
-    mi[i].ti.line = true;
-    mi[i].ti.fg = COLOR_DEFAULT;
-    mi[i++].ti.bg = COLOR_DEFAULT;
+    printf("cvpop(3) i:%d\n", i );
+    if( i > 0 ) {
+	mi[i].ti.line = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i++].ti.bg = COLOR_DEFAULT;
+    }
+    
     for ( j=0;selectables[j]!=0; ++j, ++i ) {
 	mi[i].ti.text = (unichar_t *) _(selectables[j]);
 	mi[i].ti.text_is_1byte = true;
@@ -3043,6 +3056,7 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i].mid = j;
 	mi[i].invoke = CVPopupSelectInvoked;
     }
+    printf("cvpop(5) i:%d\n", i );
 
     if ( cv->b.sc->parent->multilayer ) {
 	mi[i].ti.text = (unichar_t *) _("Make Clip Path");
@@ -3051,6 +3065,7 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = j;
 	mi[i].invoke = CVPopupSelectInvoked;
+	i++; 
     }
 
     cv->had_control = (event->u.mouse.state&ksm_control)?1:0;
