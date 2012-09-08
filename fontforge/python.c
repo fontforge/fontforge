@@ -5589,28 +5589,49 @@ static void PyFF_Glyph_dealloc(PyFF_Glyph *self) {
 
 static PyObject *PyFFGlyph_Repr(PyFF_Glyph *self) {
     PyObject *ret;
-    char prefix[256];
+    char buf[200];
+    char *repr = buf;
+    int space_needed;
+    int at;
+    const struct altuni *alt;
+
+    /* Get space to hold string. For effeciency try to avoid malloc
+     * except for rare cases where more is needed.
+     */
+    space_needed = 64;
+    if ( self->sc!=NULL ) {
+	space_needed += strlen(self->sc->name);
+	/* Count the number of altuni, where vs==-1 so we only get true alternates. */
+	for ( alt=self->sc->altuni; alt!=NULL; alt=alt->next )
+	    if ( alt->vs==-1 && alt->unienc>=0 )
+		space_needed += 9;
+    }
+    if ( space_needed >= sizeof(buf) )
+	repr = galloc( space_needed );
 
 #ifdef DEBUG
-    snprintf(prefix,sizeof(prefix), "<%s at 0x%lx sc=0x%lx",
-	     self->ob_type->tp_name, (unsigned long)(self), (unsigned long)(self->sc));
+    at = sprintf(repr, "<%s at 0x%lx sc=0x%lx",
+		 self->ob_type->tp_name, (unsigned long)(self), (unsigned long)(self->sc));
 #else
-    snprintf(prefix,sizeof(prefix), "<%s at 0x%lx",
-	     self->ob_type->tp_name, (unsigned long)(self));
+    at = sprintf(repr, "<%s at 0x%lx",
+		 self->ob_type->tp_name, (unsigned long)(self));
 #endif
     if ( self->sc==NULL ) {
-	ret = STRING_FROM_FORMAT("%s CLOSED>",prefix);
+	strcpy( &repr[at], " CLOSED>" );
     }
     else {
-	char codepoint[16];
-	if ( self->sc->unicodeenc < 0 )
-	    codepoint[0]='\0';
-	else
-	    snprintf(codepoint,sizeof(codepoint)," U+%04X",self->sc->unicodeenc);
+	if ( self->sc->unicodeenc >= 0 )
+	    at += sprintf( &repr[at], " U+%04X", self->sc->unicodeenc);
 
-	ret = STRING_FROM_FORMAT("%s%s \"%s\">",
-				 prefix, codepoint, self->sc->name);
+	for ( alt=self->sc->altuni; alt!=NULL; alt=alt->next )
+	    if ( alt->vs==-1 && alt->unienc>=0 )
+		at += sprintf( &repr[at], " U+%04X", alt->unienc );
+
+	at += sprintf( &repr[at], " \"%s\">", self->sc->name);
     }
+    ret = STRING_TO_PY(repr);
+    if ( repr != buf )
+	free(repr);
     return( ret );
 }
 
