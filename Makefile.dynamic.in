@@ -153,6 +153,12 @@ install_py: $(DESTDIR)$(sharedir) all install_libs install_incs install_po insta
 install_gtk: fontforgegtk
 	(cd gtkui ; $(MAKE) install )
 
+strip:
+	if test -d gtkui; then cd gtkui ; $(MAKE) strip ; fi
+
+strip_gtk:
+	(cd gtkui ; $(MAKE) strip )
+
 uninstall:
 	-rm $(DESTDIR)$(bindir)/fontforge
 	-rm $(DESTDIR)$(bindir)/sfddiff
