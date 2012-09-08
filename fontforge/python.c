@@ -6985,8 +6985,9 @@ static char *appendaccent_keywords[] = { "name", "unicode", "pos", NULL };
 static PyObject *PyFFGlyph_appendAccent(PyObject *self, PyObject *args, PyObject *keywds) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
-    int pos = -1, uni=-1;
-    char *name = NULL;
+    int pos = ____NOPOSDATAGIVEN;	/* unicode char pos info, see #define for (uint32)(utype2[]) */
+    int uni=-1;				/* unicode char value */
+    char *name = NULL;			/* unicode char name */
     int ret;
 
     if ( !PyArg_ParseTupleAndKeywords(args,keywds,"|sii",appendaccent_keywords,
@@ -6996,7 +6997,7 @@ return( NULL );
 	PyErr_Format(PyExc_ValueError, "You must specify either a name of a unicode code point");
 return( NULL );
     }
-    ret = SCAppendAccent(sc,layer,name,uni,pos);
+    ret = SCAppendAccent(sc,layer,name,uni,(uint32)(pos));
     if ( ret==1 ) {
 	PyErr_Format(PyExc_ValueError, "No base character reference found");
 return( NULL );
