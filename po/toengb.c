@@ -1,3 +1,5 @@
+/* A little program to help create the en_GB.po file. */
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
