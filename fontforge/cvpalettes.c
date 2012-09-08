@@ -2416,8 +2416,18 @@ static int CVLScanForItem(int x, int y, int *col) {
 
     *col=-1;
     if ( x>0 && x<viscol+cw ) *col=CID_VBase;
-    else if ( (layerscols & LSHOW_CUBIC) && x>=quadcol && x<quadcol+cw ) *col=CID_QBase;
-    else if ( (layerscols & LSHOW_FG) && x>=fgcol && x<fgcol+cw ) *col=CID_FBase;
+    /**
+     * The two below options, CID_QBase and CID_FBase allow the curve
+     * type and foreground/background to be changed simply by clicking
+     * on them. The cubic/quadratic and background/foreground
+     * attributes should NOT be buttons that can change these
+     * attributes, they should only SHOW the attribute. Changing the
+     * attributes can be done in Font Info, Layers, and is done
+     * infrequently and has a lot of implications so shouldn't be
+     * easily done by mistake.
+     */
+//    else if ( (layerscols & LSHOW_CUBIC) && x>=quadcol && x<quadcol+cw ) *col=CID_QBase;
+//    else if ( (layerscols & LSHOW_FG) && x>=fgcol && x<fgcol+cw ) *col=CID_FBase;
     else if ( x>=editcol ) *col=CID_EBase;
 
     return l;
