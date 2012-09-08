@@ -57,3 +57,6 @@ clean:
 
 distclean cleaner:
 	-rm -fr *.lo *.o ../libgutils.la Makefile ../libgioftp.la .libs/* .libs
+
+strip:
+	-strip ../.libs/libgutils.*

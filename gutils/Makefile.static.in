@@ -36,3 +36,6 @@ clean:
 
 distclean cleaner:
 	-rm -f *.o ../libs/libgutils.a Makefile
+
+strip:
+	-strip ../.libs/libgutils.*
