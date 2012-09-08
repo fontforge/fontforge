@@ -49,6 +49,19 @@ static Color rbearinglinecol = 0x000080;
 int pref_mv_shift_and_arrow_skip = 10;
 int pref_mv_control_shift_and_arrow_skip = 5;
 
+static SplineChar* getSelectedChar( MetricsView* mv ) {
+    int i=0;
+    for ( i=0; i<mv->glyphcnt; ++i ) {
+	if ( mv->perchar[i].selected ) {
+	    return mv->chars[i];
+	}
+    }
+    if( mv->glyphcnt==1 ) {
+	return mv->chars[0];
+    }
+    return 0;
+}
+
 
 void MVColInit( void ) {
     static int cinit=false;
@@ -1918,13 +1931,22 @@ return( true );
 #define MID_CopyVWidth	2127
 #define MID_Join	2128
 #define MID_Center	2600
+#define MID_SetWidth	2601
+#define MID_SetLBearing	2602
+#define MID_SetRBearing	2603
 #define MID_Thirds	2604
 #define MID_VKernClass	2605
 #define MID_VKernFromHKern	2606
 #define MID_KernOnly	2607
 #define MID_WidthOnly	2608
 #define MID_BothKernWidth	2609
+#define MID_SetBearings	2610
 #define MID_Recent	2703
+#define MID_SetVWidth	2705
+#define MID_RemoveKerns	2707
+#define MID_RemoveVKerns 2709
+
+
 
 #define MID_Warnings	3000
 
@@ -3372,15 +3394,59 @@ static void tylistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+
+
+static void MVMenuSetWidth(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    if ( mi->mid == MID_SetVWidth && !mv->sf->hasvmetrics )
+return;
+    SplineChar* sc = getSelectedChar(mv);
+    printf("MVMenuSetWidth() sc:%p\n",sc);
+    if(!sc)
+ 	return;
+    
+    GenericVSetWidth(mv->fv,sc,
+		     mi->mid==MID_SetWidth?wt_width:
+		     mi->mid==MID_SetLBearing?wt_lbearing:
+		     mi->mid==MID_SetRBearing?wt_rbearing:
+		     mi->mid==MID_SetBearings?wt_bearings:
+		     wt_vwidth);
+}
+
+static void MVMenuRemoveKern(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    SplineChar* sc = getSelectedChar(mv);
+    if(!sc)
+ 	return;
+    SCRemoveKern(sc);
+}
+static void MVMenuRemoveVKern(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    SplineChar* sc = getSelectedChar(mv);
+    if(!sc)
+ 	return;
+    SCRemoveVKern(sc);
+}
+
+#define GMENUITEM2_LINE { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }
+    
 static GMenuItem2 mtlist[] = {
     { { (unichar_t *) N_("_Center in Width"), (GImage *) "metricscenter.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Center in Width|No Shortcut"), NULL, NULL, MVMenuCenter, MID_Center },
     { { (unichar_t *) N_("_Thirds in Width"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Thirds in Width|No Shortcut"), NULL, NULL, MVMenuCenter, MID_Thirds },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
+    { { (unichar_t *) N_("Set _Width..."), (GImage *) "metricssetwidth.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Set Width...|Ctl+Shft+L"), NULL, NULL, MVMenuSetWidth, MID_SetWidth },
+    { { (unichar_t *) N_("Set _LBearing..."), (GImage *) "metricssetlbearing.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'L' }, H_("Set LBearing...|Ctl+L"), NULL, NULL, MVMenuSetWidth, MID_SetLBearing },
+    { { (unichar_t *) N_("Set _RBearing..."), (GImage *) "metricssetrbearing.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Set RBearing...|Ctl+R"), NULL, NULL, MVMenuSetWidth, MID_SetRBearing },
+    { { (unichar_t *) N_("Set Both Bearings..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Set Both Bearings...|No Shortcut"), NULL, NULL, MVMenuSetWidth, MID_SetBearings },
+    GMENUITEM2_LINE,
+    { { (unichar_t *) N_("Set _Vertical Advance..."), (GImage *) "metricssetvwidth.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Set Vertical Advance...|No Shortcut"), NULL, NULL, MVMenuSetWidth, MID_SetVWidth },
+    GMENUITEM2_LINE,
     { { (unichar_t *) N_("_Window Type"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, NULL, tylist, tylistcheck, NULL, 0 },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
+    GMENUITEM2_LINE,
     { { (unichar_t *) N_("Ker_n By Classes..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Kern By Classes...|No Shortcut"), NULL, NULL, MVMenuKernByClasses, 0 },
     { { (unichar_t *) N_("VKern By Classes..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("VKern By Classes...|No Shortcut"), NULL, NULL, MVMenuVKernByClasses, MID_VKernClass },
     { { (unichar_t *) N_("VKern From HKern"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("VKern From HKern|No Shortcut"), NULL, NULL, MVMenuVKernFromHKern, MID_VKernFromHKern },
+    { { (unichar_t *) N_("Remove Kern _Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Remove Kern Pairs|No Shortcut"), NULL, NULL, MVMenuRemoveKern, MID_RemoveKerns },
+    { { (unichar_t *) N_("Remove VKern Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Remove VKern Pairs|No Shortcut"), NULL, NULL, MVMenuRemoveVKern, MID_RemoveVKerns },
     { { (unichar_t *) N_("Kern Pair Closeup..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Kern Pair Closeup...|No Shortcut"), NULL, NULL, MVMenuKPCloseup, 0 },
     GMENUITEM2_EMPTY
 };
@@ -3595,13 +3661,24 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-
+    SplineChar* sc = getSelectedChar(mv);
+    
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_VKernClass:
 	  case MID_VKernFromHKern:
 	    mi->ti.disabled = !mv->sf->hasvmetrics;
 	  break;
+	  case MID_SetVWidth:
+	    mi->ti.disabled = !mv->sf->hasvmetrics;
+	  break;
+	case MID_RemoveKerns:
+	    mi->ti.disabled = sc ? sc->kerns==NULL : 1;
+	  break;
+	case MID_RemoveVKerns:
+	    mi->ti.disabled = sc ? sc->vkerns==NULL : 1;
+	  break;
+	    
 	}
     }
 }

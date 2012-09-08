@@ -930,6 +930,7 @@ extern void CVAddAnchor(CharView *cv);
 extern AnchorClass *AnchorClassUnused(SplineChar *sc,int *waslig);
 extern void FVSetWidth(FontView *fv,enum widthtype wtype);
 extern void CVSetWidth(CharView *cv,enum widthtype wtype);
+extern void GenericVSetWidth(FontView *fv,SplineChar* sc,enum widthtype wtype);
 extern void CVChangeSC(CharView *cv, SplineChar *sc );
 extern Undoes *CVPreserveTState(CharView *cv);
 extern void CVRestoreTOriginalState(CharView *cv);
