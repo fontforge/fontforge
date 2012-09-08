@@ -95,6 +95,16 @@ install: $(sharedir) all install_libs install_po install_pycontrib
 	sh -c "if test -d fontforge/FontForge.app >/dev/null ; then rm -rf /Applications/FontForge.app ; mv fontforge/FontForge.app /Applications ; ln -s /usr/local/bin/fontforge /Applications/FontForge.app/Contents/MacOS/FontForge ; fi"
 	sh < systemspecific
 
+install_gtk: fontforgegtk
+	(cd gtkui ; $(MAKE) install )
+
+strip:
+	if test -d gtkui; then cd gtkui ; $(MAKE) strip ; fi
+	( cd Unicode ; $(MAKE) strip )
+
+strip_gtk:
+	(cd gtkui ; $(MAKE) strip )
+
 uninstall:
 	-rm $(DESTDIR)$(bindir)/fontforge
 	-rm $(DESTDIR)$(bindir)/sfddiff

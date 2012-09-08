@@ -155,6 +155,7 @@ install_gtk: fontforgegtk
 
 strip:
 	if test -d gtkui; then cd gtkui ; $(MAKE) strip ; fi
+	( cd Unicode ; $(MAKE) strip )
 
 strip_gtk:
 	(cd gtkui ; $(MAKE) strip )

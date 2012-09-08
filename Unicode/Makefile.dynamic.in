@@ -36,3 +36,6 @@ clean:
 
 distclean cleaner:
 	-rm -f *.o *.lo ../libgunicode.la .libs/* .libs Makefile
+
+strip:
+	-strip ../.libs/libgunicode.*
