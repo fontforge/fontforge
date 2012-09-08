@@ -38,6 +38,7 @@
 #include "fontforgevw.h"
 #include "ttf.h"
 #include "plugins.h"
+#include "utype.h"
 #include "ustring.h"
 #include "flaglist.h"
 #include "scripting.h"
@@ -7097,8 +7098,9 @@ static char *appendaccent_keywords[] = { "name", "unicode", "pos", NULL };
 static PyObject *PyFFGlyph_appendAccent(PyObject *self, PyObject *args, PyObject *keywds) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
-    int pos = -1, uni=-1;
-    char *name = NULL;
+    int pos = ____NOPOSDATAGIVEN;	/* unicode char pos info, see #define for (uint32)(utype2[]) */
+    int uni=-1;				/* unicode char value */
+    char *name = NULL;			/* unicode char name */
     int ret;
 
     if ( !PyArg_ParseTupleAndKeywords(args,keywds,"|sii",appendaccent_keywords,
@@ -7108,7 +7110,7 @@ return( NULL );
 	PyErr_Format(PyExc_ValueError, "You must specify either a name of a unicode code point");
 return( NULL );
     }
-    ret = SCAppendAccent(sc,layer,name,uni,pos);
+    ret = SCAppendAccent(sc,layer,name,uni,(uint32)(pos));
     if ( ret==1 ) {
 	PyErr_Format(PyExc_ValueError, "No base character reference found");
 return( NULL );
@@ -17697,7 +17699,7 @@ void PyFF_Main(int argc,char **argv,int start) {
 #endif /* PY_MAJOR_VERSION >= 3 -------------------------------------------------*/
 
 void PyFF_ScriptFile(FontViewBase *fv,SplineChar *sc, char *filename) {
-    FILE *fp = fopen(filename,"rb");
+    PyObject *fp = PyFile_FromString(filename,"rb");
 
     fv_active_in_ui = fv;		/* Make fv known to interpreter */
     sc_active_in_ui = sc;		/* Make sc known to interpreter */
@@ -17707,8 +17709,7 @@ void PyFF_ScriptFile(FontViewBase *fv,SplineChar *sc, char *filename) {
     if ( fp==NULL )
 	LogError(_("Can't open %s"), filename );
     else {
-	PyRun_SimpleFile(fp,filename);
-	fclose(fp);
+	PyRun_SimpleFile(PyFile_AsFile(fp),filename);
     }
 }
 
@@ -17757,13 +17758,11 @@ return;
 	if ( pt==NULL )
     continue;
 	if ( strcmp(pt,".py")==0 ) {
-	    FILE *fp;
 	    sprintf( buffer, "%s/%s", dir, ent->d_name );
-	    fp = fopen(buffer,"rb");
+	    PyObject *fp = PyFile_FromString(buffer,"rb");
 	    if ( fp==NULL )
     continue;
-	    PyRun_SimpleFile(fp,buffer);
-	    fclose(fp);
+	    PyRun_SimpleFile(PyFile_AsFile(fp),buffer);
 	}
     }
     closedir(diro);
