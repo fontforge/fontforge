@@ -5114,9 +5114,10 @@ static void bBuildAccented(Context *c) {
 }
 
 static void bAppendAccent(Context *c) {
-    int pos = -1;
-    char *glyph_name = NULL;
-    int uni = -1;
+    int pos = ____NOPOSDATAGIVEN;	/* unicode char pos info, see #define for (uint32)(utype2[]) */
+    char *glyph_name = NULL;		/* unicode char name */
+    int uni = -1;			/* unicode char value */
+
     int ret;
     SplineChar *sc;
 
@@ -5132,10 +5133,10 @@ static void bAppendAccent(Context *c) {
     else
 	uni = c->a.vals[1].u.ival;
     if ( c->a.argc==3 )
-	pos = c->a.vals[2].u.ival;
+	pos = (uint32)(c->a.vals[2].u.ival);
 
     sc = GetOneSelChar(c);
-    ret = SCAppendAccent(sc,ly_fore,glyph_name,uni,pos);
+    ret = SCAppendAccent(sc,ly_fore,glyph_name,uni,(uint32)(pos));
     if ( ret==1 )
 	ScriptError(c,"No base character reference found");
     else if ( ret==2 )
