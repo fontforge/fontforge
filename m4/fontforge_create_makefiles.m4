@@ -24,4 +24,5 @@ AC_CONFIG_FILES([fonttools/Makefile])
 # GNUmakefiles that act as wrappers around portable makefiles, to do
 # fancy things that are mainly for the benefit of maintainers.
 AC_CONFIG_FILES([fontforge/GNUmakefile])
+AC_CONFIG_FILES([po/GNUmakefile])
 ])
