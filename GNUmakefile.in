@@ -36,9 +36,7 @@ include $(top_builddir)/xgettext_search.mk
 XGETTEXT_OPTIONS = --keyword=H_ --from-code=utf-8 --language=C	\
 --sort-by-file
 
-# This potfile will be created in $(builddir). You can copy it to
-# $(srcdir) if you do outside-of-source builds and want it in the
-# source tree.
+# This potfile will be created in $(builddir).
 MY_POTFILE = FontForge-MenuShortCuts.pot
 
 $(MY_POTFILE): shortcuts-template
