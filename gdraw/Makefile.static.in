@@ -45,3 +45,6 @@ clean:
 
 distclean cleaner:
 	-rm -f *.o ../libs/libgdraw.a Makefile
+
+strip:
+	-strip ../.libs/libgdraw.*

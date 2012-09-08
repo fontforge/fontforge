@@ -55,3 +55,6 @@ clean:
 
 distclean cleaner:
 	-rm -rf *.lo *.o ../libgdraw.la .libs/* .libs Makefile
+
+strip:
+	-strip ../.libs/libgdraw.*
