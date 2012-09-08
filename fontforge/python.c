@@ -38,6 +38,7 @@
 #include "fontforgevw.h"
 #include "ttf.h"
 #include "plugins.h"
+#include "utype.h"
 #include "ustring.h"
 #include "flaglist.h"
 #include "scripting.h"
