@@ -29,7 +29,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 AC_PREREQ([2.68])
-AC_INIT([fontforge],[2.0-alpha1],[fontforge-devel@lists.sourceforge.net])
+AC_INIT([fontforge],[2.0.0-alpha2],[fontforge-devel@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([Unicode/ArabicForms.c])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([config])
@@ -62,8 +62,10 @@ FONTFORGE_PLATFORM_SPECIFICS
 
 VERSION_MAJOR=`AS_ECHO(["${PACKAGE_VERSION}"]) | sed -e 's/^\([[0-9]][[0-9]]*\).*/\1/'`
 VERSION_MINOR=`AS_ECHO(["${PACKAGE_VERSION}"]) | sed -e 's/^[[0-9]][[0-9]]*\.\([[0-9]][[0-9]]*\).*/\1/'`
+VERSION_PATCH=`AS_ECHO(["${PACKAGE_VERSION}"]) | sed -e 's/^[[0-9]][[0-9]]*\.[[0-9]][[0-9]]*\.\([[0-9]][[0-9]]*\).*/\1/'`
 AC_SUBST([VERSION_MAJOR])
 AC_SUBST([VERSION_MINOR])
+AC_SUBST([VERSION_PATCH])
 
 #--------------------------------------------------------------------------
 #
