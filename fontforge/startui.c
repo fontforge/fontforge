@@ -34,6 +34,8 @@
 #include <unistd.h>
 #include <dynamic.h>
 #include <stdlib.h>		/* getenv,setenv */
+#include <sys/stat.h>
+#include <sys/types.h>
 #ifdef _NO_LIBPNG
 #  define PNGLIBNAME	"libpng"
 #else
@@ -1069,6 +1071,33 @@ static void GrokNavigationMask(void) {
     navigation_mask = GMenuItemParseMask(H_("NavigationMask|None"));
 }
 
+static int ffensuredir( const char* basedir, const char* dirname, mode_t mode ) {
+    const int buffersz = PATH_MAX;
+    char buffer[buffersz+1];
+    
+    snprintf(buffer,buffersz,"%s/%s", basedir, dirname );
+    struct stat sb;
+    if( -1 == lstat( buffer, &sb )) {
+	if( 0 != mkdir( buffer, mode )) {
+	    // this is bad. errno
+	    fprintf( stderr, "Failed to create directory: %s\n", buffer );
+	    return 0;
+	}
+    }
+    return 1;
+}
+
+static void ensureDotFontForgeIsSetup() {
+    char *basedir = GFileGetHomeDir();
+    if ( !basedir ) {
+	return;
+    }
+    ffensuredir( basedir, ".FontForge",        S_IRWXU );
+    ffensuredir( basedir, ".FontForge/python", S_IRWXU );
+}
+
+
+
 int main( int argc, char **argv ) {
     extern const char *source_modtime_str;
     extern const char *source_version_str;
@@ -1333,6 +1362,7 @@ int main( int argc, char **argv ) {
 	}
     }
 
+    ensureDotFontForgeIsSetup();
     GDrawCreateDisplays(display,argv[0]);
     default_background = GDrawGetDefaultBackground(screen_display);
     InitToolIconClut(default_background);
