@@ -41,7 +41,7 @@ MO_FILES = ca.mo el.mo es.mo it.mo pl.mo vi.mo zh_TW.mo de.mo	\
 	en_GB.mo fr.mo ja.mo ml.mo ru.mo uk.mo zh_CN.mo
 
 .po.mo:
-	$(MSGFMT) -o $@ $<
+	$(MSGFMT) --check --output-file=$@ $<
 
 all-local: $(MO_FILES)
 
