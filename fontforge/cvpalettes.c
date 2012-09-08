@@ -2996,7 +2996,6 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
     static char *selectables[] = { N_("Get Info..."), N_("Open Reference"), N_("Add Anchor"), NULL };
 
     memset(mi,'\0',sizeof(mi));
-
     anysel = CVTestSelectFromEvent(cv,event);
     if( !anysel ) {
 	for ( i=0;i<=cvt_skew; ++i ) {
