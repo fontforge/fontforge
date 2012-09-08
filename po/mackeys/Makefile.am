@@ -29,7 +29,7 @@ MACKEYS_PO_FILES = en.po
 MACKEYS_MO_FILES = en.mo
 
 .po.mo:
-	$(MSGFMT) -o $@ $<
+	$(MSGFMT) --check --output-file=$@ $<
 
 all-local: $(MACKEYS_MO_FILES)
 
