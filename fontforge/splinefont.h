@@ -2758,7 +2758,7 @@ extern int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc, int layer,int o
 extern int SFIsRotatable(SplineFont *sf,SplineChar *sc, int layer);
 /*extern int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int layer, int copybmp, int doit);*/
 extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *bmp, int disp_only);
-extern int SCAppendAccent(SplineChar *sc,int layer, char *glyph_name,int uni,int pos);
+extern int SCAppendAccent(SplineChar *sc,int layer, char *glyph_name,int uni,uint32 pos);
 extern const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int nocheck);
 
 extern int getAdobeEnc(char *name);

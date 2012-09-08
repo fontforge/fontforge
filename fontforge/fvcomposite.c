@@ -2011,7 +2011,8 @@ static void _BCCenterAccent( BDFFont *bdf, int gid, int rgid, int ch, int basech
 
 static void _SCCenterAccent(SplineChar *sc,SplineChar *basersc, SplineFont *sf,
 	int layer, int ch, BDFFont *bdf, int disp_only,
-	SplineChar *rsc, real ia, int basech, int invert,
+	SplineChar *rsc, real ia, int basech,
+	int invert,	/* invert accent, false==0, true!=0 */
 	uint32 pos	/* unicode char position info, see #define for utype2[] in utype.h */ ) {
     real transform[6];
     DBounds bb, rbb, bbb;
@@ -2117,7 +2118,7 @@ return;
 	}
 
 	if ( invert ) {
-	    /* this transform does a vertical flip from the vertical midpoint of the breve */
+	    /* yes, this transform does a vertical flip from the vertical midpoint of the breve */
 	    transform[3] = -1;
 	    transform[5] = rbb.maxy+rbb.miny;
 	}
@@ -2267,7 +2268,7 @@ return;
 static void SCCenterAccent(SplineChar *sc,SplineChar *basersc, SplineFont *sf,
 	int layer, int ch, BDFFont *bdf,int disp_only,
 	real ia, int basech, char *dot ) {
-    int invert = false;
+    int invert = false;			/* invert accent, false==0, true!=0 */
     SplineChar *rsc = GetGoodAccentGlyph(sf,ch,basech,&invert,ia,dot,sc);
 
     /* find a location to put an accent on this character */
@@ -2918,13 +2919,15 @@ return;
 return;
 }
 
-int SCAppendAccent(SplineChar *sc,int layer,char *glyph_name, int uni,
-	int pos	/* unicode char position info, see #define for (uint32)(utype2[]) */ ) {
+int SCAppendAccent(SplineChar *sc,int layer,
+	char *glyph_name,	/* unicode char name */
+	int uni,		/* unicode char value */
+	uint32 pos		/* unicode char position info, see #define for (uint32)(utype2[]) */ ) {
     SplineFont *sf = sc->parent;
     double ia;
     int basech;
     RefChar *ref, *last=NULL;
-    int invert = false;
+    int invert = false;		/* invert accent, false==0, true!=0 */
     SplineChar *asc;
     int i;
     const unichar_t *apt, *end;
@@ -2933,7 +2936,7 @@ int SCAppendAccent(SplineChar *sc,int layer,char *glyph_name, int uni,
     for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 	last = ref;
     if ( last==NULL )
-return( 1 );
+return( 1 );				/* No base character reference found */
     basech = last->sc->unicodeenc;
 
     if (( ia = sf->italicangle )==0 )
@@ -2948,7 +2951,7 @@ return( 1 );
     else if ( asc==NULL && uni!=-1 )
 	asc = GetGoodAccentGlyph(sf,uni,basech,&invert,ia,NULL,sc);
     if ( asc==NULL )
-return( 2 );
+return( 2 );				/* Could not find that accent */
     if ( uni==-1 && (pt=strchr(asc->name,'.'))!=NULL && pt-asc->name<100 ) {
 	char buffer[101];
 	strncpy(buffer,asc->name,pt-asc->name);
@@ -2970,6 +2973,6 @@ return( 2 );
 	}
     }
 
-    _SCCenterAccent(sc,last->sc,sf,layer,uni,NULL,false,asc,ia,basech,invert,(uint32)(pos));
+    _SCCenterAccent(sc,last->sc,sf,layer,uni,NULL,false,asc,ia,basech,invert,pos);
 return( 0 );
 }
