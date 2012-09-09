@@ -57,8 +57,8 @@ typedef struct {
 typedef struct gbidata {
     unichar_t *text;
     uint8 *level;
-    uint8 *override;
-    uint16 *type;
+    uint8 *override;	/* override (L2R or R2L) text direction, 1=L2R or -1=R2L */
+    uint32 *type;	/* unicode char feature data, see #define for (uint32)(utype[]) */
     unichar_t **original;
     int32 len;
     unsigned int base_right_to_left: 1;

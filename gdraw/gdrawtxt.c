@@ -2406,7 +2406,7 @@ void GDrawBiText1(GBiText *bd, const unichar_t *text, int32 cnt) {
 	    bd->text[pos] = ch;
 	    bd->level[pos] = level;
 	    bd->override[pos] = override;
-	    bd->type[pos] = ____utype[ch+1];
+	    bd->type[pos] = ____utype[ch+1];	/* unicode char feature data, see #define for (uint32)(utype[]) */
 	    bd->original[pos] = (unichar_t *) pt;
 	    if ( ch>=0x621 && ch<=0x6ff )	/* The other arabic chars have already been interpreted, presumably user knows what he's doing */
 		bd->interpret_arabic = true;
@@ -2434,13 +2434,13 @@ void _GDrawBiText2(GBiText *bd, int32 start, int32 end) {
     for ( pos = start; pos<end; ++pos ) {
 	if ( bd->override[pos] || (bd->type[pos] & (____L2R|____R2L)) ) {
 	    if ( bd->override[pos] )
-		last = bd->override[pos];
+		last = bd->override[pos];	/* override 1=L2R or -1=R2L */
 	    else if ( bd->type[pos]&____L2R )
-		last = 1;
+		last = 1;			/* go left to right */
 	    else
-		last = -1;
+		last = -1;			/* go right to left */
 	} else if ( bd->type[pos]&____ENUM && (last==-1 || (pos!=0 && (bd->type[pos-1]&____ANUM))))
-	    bd->type[pos] = ____ANUM;
+	    bd->type[pos] = (bd->type[pos]|____ENUM|____ANUM) - ____ENUM; /* make it an arabic number */
     }
     last = 0;
     for ( pos = start; pos<end; ++pos ) {
@@ -2452,13 +2452,13 @@ void _GDrawBiText2(GBiText *bd, int32 start, int32 end) {
 	    last = 1;
 	else if ( (bd->type[pos]&(____ENS|____CS)) && last==1 && pos<end-1 &&
 		(bd->type[pos+1]&____ENUM) )
-	    bd->type[pos] = ____ENUM;
+	    bd->type[pos] = (bd->type[pos]|____ENUM|____ANUM) - ____ANUM; /* make it numeric = ENUM */
 	else if ( (bd->type[pos]&____CS) && last==-1 && pos<end-1 &&
 		(bd->type[pos+1]&____ANUM) )
-	    bd->type[pos] = ____ANUM;
+	    bd->type[pos] = (bd->type[pos]|____ENUM|____ANUM) - ____ENUM; /* make it an arabic number */
 	else if ( (bd->type[pos]&____ENT) &&
 		(last==1 || (pos<end-1 && (bd->type[pos+1]&____ENUM) )))
-	    bd->type[pos] = ____ENUM;
+	    bd->type[pos] = (bd->type[pos]|____ENUM|____ANUM) - ____ANUM; /* make it numeric = ENUM */
 	else if ( bd->type[pos]&(____ENT|____ENS|____CS) )
 	    bd->type[pos] = 0;
     }
@@ -2572,7 +2572,7 @@ static int32 _GDraw_DoBiText(GWindow gw, int32 x, int32 y,
     GBiText bd;
     unichar_t btext[MAXBI];
     uint8 level[MAXBI], override[MAXBI];
-    uint16 type[MAXBI];
+    uint32 type[MAXBI];		/* unicode char feature data, see #define for (uint32)(utype[]) */
     unichar_t *orig[MAXBI];
     int32 width;
 
@@ -2581,14 +2581,14 @@ static int32 _GDraw_DoBiText(GWindow gw, int32 x, int32 y,
 	bd.text = btext;
 	bd.level = level;
 	bd.override = override;
-	bd.type = type;
+	bd.type = type;		/* unicode char feature data, see #define for (uint32)(utype[]) */
 	bd.original = orig;
     } else {
 	++cnt;		/* for EOS */
 	bd.text = malloc(cnt*sizeof(unichar_t));
 	bd.level = malloc(cnt*sizeof(uint8));
 	bd.override = malloc(cnt*sizeof(uint8));
-	bd.type = malloc(cnt*sizeof(uint16));
+	bd.type = malloc(cnt*sizeof(uint32));
 	bd.original = malloc(cnt*sizeof(unichar_t *));
 	--cnt;
     }
@@ -2616,7 +2616,7 @@ static int32 _GDraw_DoBiWidth(GWindow gw, const unichar_t *text, int len, int32 
     GBiText bd;
     unichar_t btext[MAXBI];
     uint8 level[MAXBI], override[MAXBI];
-    uint16 type[MAXBI];
+    uint32 type[MAXBI];		/* unicode char feature data, see #define for (uint32)(utype[]) */
     unichar_t *orig[MAXBI];
     int32 width;
     int i;
@@ -2634,7 +2634,7 @@ static int32 _GDraw_DoBiWidth(GWindow gw, const unichar_t *text, int len, int32 
 	bd.text = malloc(cnt*sizeof(unichar_t));
 	bd.level = malloc(cnt*sizeof(uint8));
 	bd.override = malloc(cnt*sizeof(uint8));
-	bd.type = malloc(cnt*sizeof(uint16));
+	bd.type = malloc(cnt*sizeof(uint32));
 	bd.original = malloc(cnt*sizeof(unichar_t *));
 	--cnt;
     }
