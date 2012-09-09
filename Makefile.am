@@ -75,7 +75,7 @@ EXTRA_DIST += LICENSE README-Mac.html README-MS.html README-unix	\
 
 #--------------------------------------------------------------------------
 
-INDENT_DIRS = Unicode gutils gdraw fontforge
+INDENT_DIRS = Unicode gutils gdraw fontforge pyhook tests fonttools
 
 INDENT_PROFILE = \
 	--k-and-r-style \

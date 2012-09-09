@@ -109,6 +109,7 @@ PKG_PROG_PKG_CONFIG
 AC_PATH_PROG([MSGFMT],[msgfmt],[msgfmt])
 AC_PATH_PROG([XGETTEXT],[xgettext],[xgettext])
 AC_PATH_PROG([CPROTO],[cproto],[cproto])
+AC_PATH_PROG([INDENT],[indent],[indent])
 AC_PATH_PROG([UNZIP],[unzip],[unzip])
 AC_PATH_PROG([UPDATE_MIME_DATABASE],[update-mime-database],[update-mime-database])
 AC_PATH_PROG([UPDATE_DESKTOP_DATABASE],[update-desktop-database],[update-desktop-database])
