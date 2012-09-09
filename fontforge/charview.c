@@ -3275,7 +3275,7 @@ void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     GRect r;
     Color bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap));
     Color fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap));
-    const int buffersz = 50;
+    const int buffersz = 150;
     char buffer[buffersz+1];
     int ybase = cv->mbh+(cv->infoh-cv->sfh)/2+cv->sas;
     real xdiff, ydiff;
@@ -3324,7 +3324,7 @@ void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 	    strncpy(layername,cv->b.sc->parent->layers[idx].name,layernamesz);
 	}
     }
-    snprintf( buffer, buffersz, "Active Layer: %s (%s)",
+    snprintf( buffer, buffersz, _("Active Layer: %s (%s)"),
 	      ( cv->b.drawmode==dm_grid ? _("Guide") :
 		cv->b.layerheads[cv->b.drawmode]->background ? _("Back") :
 		_("Fore") ),
