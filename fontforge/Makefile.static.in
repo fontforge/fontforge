@@ -140,3 +140,7 @@ FontForge-old.pot: *.c utf8.pot
 	xgettext -k_ -kN_ -kS_ -kP_:1,2 --add-comments=GT: -oFontForge.pot *.c ../gdraw/*.c
 	cat utf8.pot >> FontForge.pot
 	-patch < pottitle.patch
+
+strip:
+	-strip .libs/fontforge
+	-strip ../.libs/libfontforge.*

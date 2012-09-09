@@ -99,10 +99,11 @@ install_gtk: fontforgegtk
 	(cd gtkui ; $(MAKE) install )
 
 strip:
-	if test -d gtkui; then cd gtkui ; $(MAKE) strip ; fi
-	( cd Unicode ; $(MAKE) strip )
+	( cd fontforge ; $(MAKE) strip )
 	( cd gdraw ; $(MAKE) strip )
+	if test -d gtkui; then cd gtkui ; $(MAKE) strip ; fi
 	( cd gutils ; $(MAKE) strip )
+	( cd Unicode ; $(MAKE) strip )
 
 strip_gtk:
 	(cd gtkui ; $(MAKE) strip )

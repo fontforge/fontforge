@@ -184,3 +184,7 @@ FontForge-old.pot: *.c utf8.pot
 stamps: stamper
 	./stamper > stamp.c
 	./stamper -l >libffstamp.h
+
+strip:
+	-strip .libs/fontforge
+	-strip ../.libs/libfontforge.*
