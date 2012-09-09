@@ -6440,7 +6440,8 @@ void BaseScriptFree(struct basescript *bs) {
 
     while ( bs!=NULL ) {
 	next = bs->next;
-	free(bs->baseline_pos);
+	if ( bs->baseline_pos )
+	    free(bs->baseline_pos);
 	BaseLangFree(bs->langs);
 	chunkfree(bs,sizeof(struct basescript));
 	bs = next;

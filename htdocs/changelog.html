@@ -6,6 +6,7 @@
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+  <META http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </HEAD>
 <BODY>
 <DIV id="in">
@@ -52,6 +53,10 @@
         <LI>
           <B>General:</B>
         <LI>
+          Fix bug that caused incorrectly dumping some context substitution format 1
+          lookups to feature files. We were also accepting the broken lookups we were
+          generated and FontForge would crash later, now they are rejected, too.
+        <LI>
           "TeX Names" is now accepted internally as an alias for "ΤεΧ Names" when
           specifying a name list by name.
         <LI>
@@ -81,6 +86,9 @@
           syntax should be always used.
         <LI>
           <B>UI fixes and additions:</B>
+        <LI>
+          It is now possible to style vertical tabset layout differently than horizontal
+          by means of dummy GGadget <CODE>GVTabSet</CODE>.
         <LI>
           Type3/multilayer, device tables and the paste after command are always enabled
           now.
@@ -113,6 +121,8 @@
         <LI>
           New and updated translations:
           <UL>
+            <LI>
+              Updated Polish translation from Michał Nowakowski.
             <LI>
               Updated Russian translation from Alexandre Proukodine.
           </UL>

@@ -45,7 +45,11 @@ void galloc_set_trap(void (*newtrap)(void)) {
 #ifdef USE_OUR_MEMORY
 void *galloc(long size) {
     void *ret;
-    while (( ret = malloc(size))==NULL )
+    /* Avoid malloc(0) as malloc is allowed to return NULL.
+     * If malloc fails, call trap() to allow it to possibly
+     * recover memory and try again.
+     */
+    while (( ret = malloc(size==0 ? sizeof(int) : size))==NULL )
 	trap();
     memset(ret,0x3c,size);		/* fill with random junk for debugging */
 return( ret );

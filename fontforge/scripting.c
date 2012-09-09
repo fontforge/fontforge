@@ -46,6 +46,7 @@
 #include "plugins.h"
 #include "scripting.h"
 #include "scriptfuncs.h"
+#include "flaglist.h"
 
 int no_windowing_ui = false;
 int running_script = false;
@@ -5109,9 +5110,10 @@ static void bBuildAccented(Context *c) {
 }
 
 static void bAppendAccent(Context *c) {
-    int pos = -1;
-    char *glyph_name = NULL;
-    int uni = -1;
+    int pos = ____NOPOSDATAGIVEN;	/* unicode char pos info, see #define for (uint32)(utype2[]) */
+    char *glyph_name = NULL;		/* unicode char name */
+    int uni = -1;			/* unicode char value */
+
     int ret;
     SplineChar *sc;
 
@@ -5127,10 +5129,10 @@ static void bAppendAccent(Context *c) {
     else
 	uni = c->a.vals[1].u.ival;
     if ( c->a.argc==3 )
-	pos = c->a.vals[2].u.ival;
+	pos = (uint32)(c->a.vals[2].u.ival);
 
     sc = GetOneSelChar(c);
-    ret = SCAppendAccent(sc,ly_fore,glyph_name,uni,pos);
+    ret = SCAppendAccent(sc,ly_fore,glyph_name,uni,(uint32)(pos));
     if ( ret==1 )
 	ScriptError(c,"No base character reference found");
     else if ( ret==2 )
@@ -7564,8 +7566,7 @@ return;
     }
 }
 
-struct flaglist { char *name; int flag; };
-
+/* Anchor type: see 'enum anchor_type' in splinefont.h */
 static struct flaglist ap_types[] = {
     { "mark", at_mark },
     { "base", at_basechar },
@@ -7574,7 +7575,7 @@ static struct flaglist ap_types[] = {
     { "entry", at_centry },
     { "exit", at_cexit },
     { "baselig", at_baselig },
-    { NULL, 0 }
+    FLAGLIST_EMPTY
 };
 
 static void bGetAnchorPoints(Context *c) {
@@ -7606,7 +7607,7 @@ static void bGetAnchorPoints(Context *c) {
 	temp->vals[0].type = v_str;
 	temp->vals[0].u.sval = copy(ap->anchor->name);
 	temp->vals[1].type = v_str;
-	temp->vals[1].u.sval = copy(ap_types[ap->type].name);
+	temp->vals[1].u.sval = copy(FindNameOfFlag(ap_types,ap->type));
 	temp->vals[2].type = v_real;
 	temp->vals[2].u.fval = ap->me.x;
 	temp->vals[3].type = v_real;
