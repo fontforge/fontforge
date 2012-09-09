@@ -77,6 +77,9 @@ nodist_pkgconfig_DATA = libfontforge.pc libfontforgeexe.pc
 EXTRA_DIST += LICENSE README-Mac.html README-MS.html README-unix	\
 	README-Unix.html Readme.VMS
 
+uninstall-local:
+	(cd desktop; $(MAKE) $(AM_MAKEFLAGS) uninstall)
+
 #--------------------------------------------------------------------------
 
 INDENT_DIRS = Unicode gutils gdraw fontforge pyhook tests fonttools

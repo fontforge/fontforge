@@ -27,14 +27,14 @@
 
 include $(top_srcdir)/mk/layout.am
 
-desktop_DATA = fontforge.desktop
-hicolor16x16_DATA = icons/16x16/apps/fontforge.png
-hicolor22x22_DATA = icons/22x22/apps/fontforge.png
-hicolor24x24_DATA = icons/24x24/apps/fontforge.png
-hicolor32x32_DATA = icons/32x32/apps/fontforge.png
-hicolor48x48_DATA = icons/48x48/apps/fontforge.png
-hicolorscalable_DATA = icons/scalable/apps/fontforge.svg
-mimepackages_DATA = fontforge.xml
+dist_desktop_DATA = fontforge.desktop
+dist_hicolor16x16_DATA = icons/16x16/apps/fontforge.png
+dist_hicolor22x22_DATA = icons/22x22/apps/fontforge.png
+dist_hicolor24x24_DATA = icons/24x24/apps/fontforge.png
+dist_hicolor32x32_DATA = icons/32x32/apps/fontforge.png
+dist_hicolor48x48_DATA = icons/48x48/apps/fontforge.png
+dist_hicolorscalable_DATA = icons/scalable/apps/fontforge.svg
+dist_mimepackages_DATA = fontforge.xml
 
 update-database: update-mime-database update-desktop-database
 

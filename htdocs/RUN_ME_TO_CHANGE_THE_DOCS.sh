@@ -3,7 +3,7 @@
 # Having the files listed explicitly rather than looking for them in
 # the Makefile lets automake keep track of the distribution.
 
-doc_list="`find . -type f -print | grep -v '^.*~$'`"
+doc_list="`find . -type f -print | grep -E -v '^.*(~|\.orig)$'`"
 root_doc_list="`ls *.html *.png *.gif *.pdf`"
 nonbmp_doc_list="`find nonBMP -type f -print`"
 flags_doc_list="`find flags -type f -print`"
