@@ -3325,8 +3325,11 @@ void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 	}
     }
     snprintf( buffer, buffersz, _("Active Layer: %s (%s)"),
+/* GT: Guide layer, make it short */
 	      ( cv->b.drawmode==dm_grid ? _("Guide") :
+/* GT: Background, make it short */
 		cv->b.layerheads[cv->b.drawmode]->background ? _("Back") :
+/* GT: Foreground, make it short */
 		_("Fore") ),
 	      layername );
     GDrawDrawBiText8(pixmap,LAYER_DATA,ybase,buffer,-1,NULL,fg);
