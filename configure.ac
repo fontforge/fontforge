@@ -29,7 +29,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 AC_PREREQ([2.68])
-AC_INIT([fontforge],[2.0.0-alpha2],[fontforge-devel@lists.sourceforge.net])
+AC_INIT([fontforge],[2.0.0-beta1],[fontforge-devel@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([Unicode/ArabicForms.c])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([config])
