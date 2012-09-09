@@ -113,10 +113,12 @@ INDENT_PROFILE = \
 	--dont-format-comments
 
 write-indent-profiles:
-	for dir in $(INDENT_DIRS); do \
+	@for dir in $(INDENT_DIRS); do \
 		rm -f "$(top_srcdir)/$${dir}/.indent.pro"; \
+		echo rm -f "$(top_srcdir)/$${dir}/.indent.pro"; \
 		for flag in $(value INDENT_PROFILE); do \
 			echo "" "$${flag}" >> "$(top_srcdir)/$${dir}/.indent.pro"; \
+			echo echo '""' "$${flag}" ">>" "$(top_srcdir)/$${dir}/.indent.pro"; \
 		done; \
 	done
 
