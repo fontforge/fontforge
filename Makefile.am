@@ -27,6 +27,8 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
+#--------------------------------------------------------------------------
+
 AM_CPPFLAGS =
 AM_LDFLAGS =
 
@@ -41,6 +43,9 @@ lib_LTLIBRARIES =
 EXTRA_LTLIBRARIES =
 
 include libltdl/Makefile.inc
+include $(top_srcdir)/mk/layout.am
+
+#--------------------------------------------------------------------------
 
 SUBDIRS = inc
 SUBDIRS += Unicode gutils
@@ -67,7 +72,6 @@ if FONTTOOLS
 SUBDIRS += fonttools
 endif FONTTOOLS
 
-pkgconfigdir = ${libdir}/pkgconfig
 nodist_pkgconfig_DATA = libfontforge.pc libfontforgeexe.pc
 
 EXTRA_DIST += LICENSE README-Mac.html README-MS.html README-unix	\

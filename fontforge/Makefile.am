@@ -25,6 +25,8 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+include $(top_srcdir)/mk/layout.am
+
 #--------------------------------------------------------------------------
 
 if THE_PROGRAMS
@@ -82,6 +84,7 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 if THE_PROGRAMS
 
 fontforge_SOURCES = main.c
+fontforge_CPPFLAGS = $(AM_CPPFLAGS)
 fontforge_LDADD = libfontforgeexe.la $(LDADD)
 fontforge_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -export-dynamic
 
@@ -110,6 +113,7 @@ libfontforge_la_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c	\
 nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
+libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS)
 libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD)
 
 if PLUGIN_GB12345
@@ -160,6 +164,7 @@ endif !GRAPHICAL_USER_INTERFACE
 
 nodist_libfontforgeexe_la_SOURCES = exelibstamp.c
 
+libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS)
 libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS) $(LIBADD)
 
 # Using -release instead of -version-info seems appropriate in the
@@ -179,9 +184,9 @@ endif GRAPHICAL_USER_INTERFACE
 
 LDADD = $(LIBADD)
 
-AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
-	"-DSHAREDIR=\"${pkgdatadir}\"" "-DDOCDIR=\"${docdir}\""	\
-	"-DPLUGINDIR=\"${pkglibdir}/plugins\"" $(MY_CFLAGS)
+AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
+	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
+	"-DPLUGINDIR=\"${MY_PLUGINDIR}\"" $(MY_CFLAGS)
 
 #--------------------------------------------------------------------------
 

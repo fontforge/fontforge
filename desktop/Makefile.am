@@ -25,25 +25,7 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-PACKAGEROOTDIR = ${datarootdir}
-
-DESKTOPDIR = ${PACKAGEROOTDIR}/applications
-MIMEDIR = ${PACKAGEROOTDIR}/mime
-ICONSDIR = ${PACKAGEROOTDIR}/icons
-HICOLORDIR = ${ICONSDIR}/hicolor
-
-desktopdir = ${DESKTOPDIR}
-mimedir= ${MIMEDIR}
-mimepackagesdir = ${MIMEDIR}/packages
-iconsdir = ${ICONSDIR}
-hicolordir = ${HICOLORDIR}
-
-hicolor16x16dir = ${hicolordir}/16x16/apps
-hicolor22x22dir = ${hicolordir}/22x22/apps
-hicolor24x24dir = ${hicolordir}/24x24/apps
-hicolor32x32dir = ${hicolordir}/32x32/apps
-hicolor48x48dir = ${hicolordir}/48x48/apps
-hicolorscalabledir = ${hicolordir}/scalable/apps
+include $(top_srcdir)/mk/layout.am
 
 desktop_DATA = fontforge.desktop
 hicolor16x16_DATA = icons/16x16/apps/fontforge.png
