@@ -8649,6 +8649,9 @@ static void PyFFCvt_dealloc(PyFF_Cvt *self) {
 static PyObject *PyFFCvt_new(PyFF_Font *owner) {
     PyFF_Cvt *self;
 
+    if ( CheckIfFontClosed(owner) )
+return( NULL );
+
     if ( owner->cvt!=NULL )
 Py_RETURN( owner->cvt );
     self = PyObject_New(PyFF_Cvt, &PyFF_CvtType);
@@ -8986,8 +8989,12 @@ static void PyFFSelection_dealloc(PyFF_Selection *self) {
 static PyObject *PyFFSelection_new(PyFF_Font *owner) {
     PyFF_Selection *self;
 
+    if ( CheckIfFontClosed(owner) )
+return(NULL);
+
     if ( owner->selection != NULL )
 Py_RETURN( owner->selection );
+
     self = PyObject_New(PyFF_Selection, &PyFF_SelectionType);
     self->fv = owner->fv;
     owner->selection = self;
@@ -9157,11 +9164,17 @@ return( NULL );
 Py_RETURN(self);
 }
 
-static PyObject *fontiter_New(PyObject *font, int bysel, struct searchdata *sv);
+static PyObject *fontiter_New(PyFF_Font *font, int bysel, struct searchdata *sv);
 
-static PyObject *PySelection_iter(PyObject *self) {
+static PyObject *PySelection_iter(PyObject *object) {
+    PyFF_Selection * self = (PyFF_Selection*)object;
+    PyFF_Font *font = PyFF_FontForFV(self->fv);
+
+    if ( CheckIfFontClosed(font) )
+return (NULL);
+
     /* FontIter with either 1 => encodings of selected glyphs, or 2 => selected glyphs */
-return( fontiter_New(self, ((PyFF_Selection *) self)->by_glyphs + 1, NULL ));
+return( fontiter_New(font, self->by_glyphs + 1, NULL ));
 }
 
 static PyMethodDef PyFFSelection_methods[] = {
@@ -10237,21 +10250,26 @@ typedef struct {
 } fontiterobject;
 static PyTypeObject PyFF_FontIterType;
 
-static PyObject *fontiter_New(PyObject *font, int bysel, struct searchdata *sv) {
+static PyObject *fontiter_New(PyFF_Font *self, int bysel, struct searchdata *sv) {
     fontiterobject *di;
+
+    if ( CheckIfFontClosed(self) )
+return( NULL );
+
     di = PyObject_New(fontiterobject, &PyFF_FontIterType);
     if (di == NULL)
 return NULL;
-    di->sf = ((PyFF_Font *) font)->fv->sf;
-    di->fv = ((PyFF_Font *) font)->fv;
+    di->sf = self->fv->sf;
+    di->fv = self->fv;
     di->pos = 0;
     di->byselection = bysel;
     di->sv = sv;
 return (PyObject *)di;
 }
 
-static PyObject *fontiter_new(PyObject *font) {
-return( fontiter_New(font,false,NULL) );
+static PyObject *fontiter_new_wholefont(PyObject *object) {
+    PyFF_Font *self = (PyFF_Font*)object;
+return( fontiter_New(self,false,NULL) );
 }
 
 static void fontiter_dealloc(fontiterobject *di) {
@@ -10438,8 +10456,7 @@ static PyObject *PyFF_Font_new(PyTypeObject *type, PyObject *UNUSED(args), PyObj
 return( (PyObject *) self );
 }
 
-static PyObject *PyFFFont_close(PyObject *object, PyObject *UNUSED(args)) {
-    PyFF_Font* self = (PyFF_Font*)object;
+static PyObject *PyFFFont_close(PyFF_Font *self, PyObject *UNUSED(args)) {
     FontViewBase *fv;
 
     if( CheckIfFontClosed(self) )
@@ -10649,8 +10666,12 @@ static PyObject *PyFF_Font_get_sfntnames(PyFF_Font *self, void *UNUSED(closure))
     int cnt, i;
     PyObject *tuple;
     struct ttflangname dummy;
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
 
+    if ( CheckIfFontClosed(self) )
+return( NULL );
+
+    sf = self->fv->sf;
     memset(&dummy,0,sizeof(dummy));
     DefaultTTFEnglishNames(&dummy, sf);
 
@@ -10689,11 +10710,15 @@ return( tuple );
 }
 
 static int PyFF_Font_set_sfntnames(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
     struct ttflangname *names;
     struct ttflangname dummy;
     int i;
 
+    if ( CheckIfFontClosed(self) )
+return(-1);
+
+    sf = self->fv->sf;
     if ( !PySequence_Check(value)) {
 	PyErr_Format(PyExc_TypeError, "Value must be a tuple" );
 return(-1);
@@ -10721,9 +10746,13 @@ return( 0 );
 static PyObject *PyFF_Font_get_bitmapSizes(PyFF_Font *self, void *UNUSED(closure)) {
     PyObject *tuple;
     int cnt;
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
     BDFFont *bdf;
 
+    if ( CheckIfFontClosed(self) )
+return( NULL );
+
+    sf = self->fv->sf;
     for ( cnt=0, bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next, ++cnt );
 
     tuple = PyTuple_New(cnt);
@@ -10738,6 +10767,9 @@ return( tuple );
 static int bitmapper(PyFF_Font *self,PyObject *value,int isavail) {
     int cnt, i;
     int *sizes;
+
+    if ( CheckIfFontClosed(self) )
+return(-1);
 
     cnt = PyTuple_Size(value);
     if ( PyErr_Occurred())
@@ -10778,8 +10810,12 @@ static struct flaglist gaspflags[] = {
 static PyObject *PyFF_Font_get_gasp(PyFF_Font *self, void *UNUSED(closure)) {
     PyObject *tuple, *flagstuple;
     int i, j, cnt;
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
 
+    if ( CheckIfFontClosed(self) )
+return(NULL);
+
+    sf = self->fv->sf;
     tuple = PyTuple_New(sf->gasp_cnt);
 
     for ( i=0; i<sf->gasp_cnt; ++i ) {
@@ -10797,11 +10833,15 @@ return( tuple );
 }
 
 static int PyFF_Font_set_gasp(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
     int cnt, i, flag;
     struct gasp *gasp;
     PyObject *flags;
 
+    if ( CheckIfFontClosed(self) )
+return(-1);
+
+    sf = self->fv->sf;
     cnt = PyTuple_Size(value);
     if ( PyErr_Occurred())
 return( -1 );
@@ -10833,8 +10873,12 @@ static PyObject *PyFF_Font_get_lookups(PyFF_Font *self, void *UNUSED(closure), i
     PyObject *tuple;
     OTLookup *otl;
     int cnt;
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
 
+    if ( CheckIfFontClosed(self) )
+return(NULL);
+
+    sf = self->fv->sf;
     cnt = 0;
     for ( otl=isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl=otl->next )
 	++cnt;
@@ -10859,8 +10903,12 @@ return( PyFF_Font_get_lookups(self,closure,false));
 static PyObject *PyFF_Font_get_math(PyFF_Font *self, void *UNUSED(closure)) {
     PyFF_Math *math;
 
+    if ( CheckIfFontClosed(self) )
+return(NULL);
+
     if ( self->math!=NULL )
 Py_RETURN( self->math );
+
     math = (PyFF_Math *) PyObject_New(PyFF_Math, &PyFF_MathType);
     if (math == NULL)
 return NULL;
@@ -10871,6 +10919,9 @@ Py_RETURN( self->math );
 
 static PyObject *PyFF_Font_get_private(PyFF_Font *self, void *UNUSED(closure)) {
     PyFF_Private *private;
+
+    if ( CheckIfFontClosed(self) )
+return(NULL);
 
     if ( self->private!=NULL )
 Py_RETURN( self->private );
@@ -10886,8 +10937,12 @@ Py_RETURN( self->private );
 static PyObject *PyFF_Font_get_layers(PyFF_Font *self, void *UNUSED(closure)) {
     PyFF_LayerInfoArray *layers;
 
+    if ( CheckIfFontClosed(self) )
+return(NULL);
+
     if ( self->layers!=NULL )
 Py_RETURN( self->layers );
+
     layers = (PyFF_LayerInfoArray *) PyObject_New(PyFF_LayerInfoArray, &PyFF_LayerInfoArrayType);
     if (layers == NULL)
 return NULL;
@@ -10897,16 +10952,22 @@ Py_RETURN( self->layers );
 }
 
 static PyObject *PyFF_Font_get_layer_cnt(PyFF_Font *self, void *UNUSED(closure)) {
-
+    if ( CheckIfFontClosed(self) )
+return(NULL);
 return( Py_BuildValue("i", self->fv->sf->layer_cnt ));
 }
 
 static PyObject *PyFF_Font_get_activeLayer(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return(NULL);
 return( Py_BuildValue("i", self->fv->active_layer ));
 }
 
 static int PyFF_Font_set_activeLayer(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     int layer;
+
+    if ( CheckIfFontClosed(self) )
+return(-1);
 
     if ( PyInt_Check(value) )
 	layer = PyInt_AsLong(value);
@@ -10932,8 +10993,12 @@ static int PyFF_Font_set_selection(PyFF_Font *self,PyObject *value, void *UNUSED
     PyFF_Selection *sel = (PyFF_Selection *) value;
     int i, len2;
     int is_sel;
-    FontViewBase *fv = self->fv;
+    FontViewBase *fv;
 
+    if ( CheckIfFontClosed(self) )
+return(-1);
+
+    fv = self->fv;
     if ( PyType_IsSubtype(&PyFF_SelectionType,((PyObject *)value)->ob_type) ) {
 	len2 = PyFFSelection_Length(value);
 	is_sel = true;
@@ -10979,9 +11044,13 @@ static int PyFF_Font_set_cvt(PyFF_Font *self,PyObject *value, void *UNUSED(closu
     PyFF_Cvt *c2 = (PyFF_Cvt *) value;
     int i, len2;
     int is_cvt2;
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
     struct ttf_table *cvt;
 
+    if ( CheckIfFontClosed(self) )
+return(-1);
+
+    sf = self->fv->sf;
     if ( PyType_IsSubtype(&PyFF_CvtType,((PyObject *)value)->ob_type) ) {
 	len2 = PyFFCvt_Length(value);
 	is_cvt2 = true;
@@ -11013,7 +11082,12 @@ return( 0 );
 }
 
 static PyObject *PyFF_Font_get_temporary(PyFF_Font *self, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
+
+    if ( CheckIfFontClosed(self) )
+return(NULL);
+
+    sf = self->fv->sf;
     if ( sf->python_temporary==NULL )
 Py_RETURN_NONE;
     Py_INCREF( (PyObject *) (sf->python_temporary) );
@@ -11021,9 +11095,14 @@ return( sf->python_temporary );
 }
 
 static int PyFF_Font_set_temporary(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
-    PyObject *old = sf->python_temporary;
+    SplineFont *sf;
+    PyObject *old;
 
+    if ( CheckIfFontClosed(self) )
+return(-1);
+
+    sf = self->fv->sf;
+    old = sf->python_temporary;
     /* I'd rather not store None, because C routines don't understand it */
     /*  and they occasionally need to know whether there is something real */
     /*  in this field. */
@@ -11036,7 +11115,12 @@ return( 0 );
 }
 
 static PyObject *PyFF_Font_get_persistent(PyFF_Font *self, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
+
+    if ( CheckIfFontClosed(self) )
+return(NULL);
+
+    sf = self->fv->sf;
     if ( sf->python_persistent==NULL )
 Py_RETURN_NONE;
     Py_INCREF( (PyObject *) (sf->python_persistent) );
@@ -11044,9 +11128,14 @@ return( sf->python_persistent );
 }
 
 static int PyFF_Font_set_persistent(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
-    PyObject *old = sf->python_persistent;
+    SplineFont *sf;
+    PyObject *old;
 
+    if ( CheckIfFontClosed(self) )
+return(-1);
+
+    sf = self->fv->sf;
+    old = sf->python_persistent;
     /* I'd rather not store None, because C routines don't understand it */
     /*  and they occasionally need to know whether there is something real */
     /*  in this field. */
@@ -11086,12 +11175,16 @@ return( 0 );
 }
 
 static int PyFF_Font_set_str_null(PyFF_Font *self,PyObject *value,
-	char *str,int offset) {
+				  char *str,int offset) {
+    if ( CheckIfFontClosed(self) )
+return(-1);
 return( _PyFF_Font_set_str_null(self->fv->sf,value,str,offset));
 }
 
 static int PyFF_Font_set_cidstr_null(PyFF_Font *self,PyObject *value,
-	char *str,int offset) {
+				     char *str,int offset) {
+    if ( CheckIfFontClosed(self) )
+return(-1);
     if ( self->fv->cidmaster==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "Not a cid-keyed font");
 return( -1 );
@@ -11100,10 +11193,12 @@ return( _PyFF_Font_set_str_null(self->fv->cidmaster,value,str,offset));
 }
 
 static int PyFF_Font_set_str(PyFF_Font *self,PyObject *value,
-	char *str,int offset) {
+			     char *str,int offset) {
     char *newv, **oldpos;
     PyObject *temp;
 
+    if ( CheckIfFontClosed(self) )
+return(-1);
     if ( value==NULL ) {
 	PyErr_Format(PyExc_TypeError, "Cannot delete the %s", str);
 return( -1 );
@@ -11125,7 +11220,7 @@ return( 0 );
 }
 
 static int _PyFF_Font_set_real(SplineFont *sf,PyObject *value,
-	char *str,int offset) {
+			       char *str,int offset) {
     double temp;
 
     if ( value==NULL ) {
@@ -11140,12 +11235,16 @@ return( 0 );
 }
 
 static int PyFF_Font_set_real(PyFF_Font *self,PyObject *value,
-	char *str,int offset) {
+			      char *str,int offset) {
+    if ( CheckIfFontClosed(self) )
+return(-1);
 return( _PyFF_Font_set_real( self->fv->sf,value,str,offset));
 }
 
 static int PyFF_Font_set_cidreal(PyFF_Font *self,PyObject *value,
-	char *str,int offset) {
+				 char *str,int offset) {
+    if ( CheckIfFontClosed(self) )
+return(-1);
     if ( self->fv->cidmaster==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "Not a cid-keyed font");
 return( -1 );
@@ -11169,12 +11268,16 @@ return( 0 );
 }
 
 static int PyFF_Font_set_int(PyFF_Font *self,PyObject *value,
-	char *str,int offset) {
+			     char *str,int offset) {
+    if ( CheckIfFontClosed(self) )
+return(-1);
 return( _PyFF_Font_set_int( self->fv->sf,value,str,offset));
 }
 
 static int PyFF_Font_set_cidint(PyFF_Font *self,PyObject *value,
-	char *str,int offset) {
+				char *str,int offset) {
+    if ( CheckIfFontClosed(self) )
+return(-1);
     if ( self->fv->cidmaster==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "Not a cid-keyed font");
 return( -1 );
@@ -11183,9 +11286,10 @@ return( _PyFF_Font_set_int( self->fv->cidmaster,value,str,offset));
 }
 
 static int PyFF_Font_set_int2(PyFF_Font *self,PyObject *value,
-	char *str,int offset) {
+			      char *str,int offset) {
     long temp;
-
+    if ( CheckIfFontClosed(self) )
+return(-1);
     if ( value==NULL ) {
 	PyErr_Format(PyExc_TypeError, "Cannot delete the %s", str);
 return( -1 );
@@ -11198,10 +11302,17 @@ return( 0 );
 }
 
 static PyObject *PyFF_Font_get_texparams(PyFF_Font *self, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
-    int i, em = sf->ascent+sf->descent;
-    PyObject *tuple = PyTuple_New(23);
+    SplineFont *sf;
+    int i, em;
+    PyObject *tuple;
     double val;
+
+    if ( CheckIfFontClosed(self) )
+return(NULL);
+
+    sf = self->fv->sf;
+    em = sf->ascent+sf->descent;
+    tuple = PyTuple_New(23);
 
     if ( sf->texdata.type==tex_text )
 	PyTuple_SetItem(tuple,0,Py_BuildValue("s", "text"));
@@ -11225,16 +11336,19 @@ return( tuple );
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_str(name) \
 static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
+    if ( CheckIfFontClosed(self) ) return(NULL);	\
 return( Py_BuildValue("s", self->fv->sf->name ));	\
 }							\
 							\
 static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
+    if(CheckIfFontClosed(self)) return(-1);				\
 return( PyFF_Font_set_str(self,value,#name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_strnull(name) \
 static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
+    if ( CheckIfFontClosed(self) ) return(NULL);	\
     if ( self->fv->sf->name==NULL )			\
 Py_RETURN_NONE;						\
     else						\
@@ -11242,12 +11356,14 @@ return( Py_BuildValue("s", self->fv->sf->name ));	\
 }							\
 							\
 static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
+    if ( CheckIfFontClosed(self) ) return(-1);				     \
 return( PyFF_Font_set_str_null(self,value,#name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_cidstrnull(name) \
 static PyObject *PyFF_Font_get_cid##name(PyFF_Font *self, void *UNUSED(closure)) { \
+    if ( CheckIfFontClosed(self) ) return(NULL);	\
     if ( self->fv->cidmaster==NULL )			\
 Py_RETURN_NONE;						\
     if ( self->fv->cidmaster->name==NULL )		\
@@ -11257,78 +11373,92 @@ return( Py_BuildValue("s", self->fv->cidmaster->name )); \
 }							\
 							\
 static int PyFF_Font_set_cid##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
+    if ( CheckIfFontClosed(self) ) return(-1);					      \
 return( PyFF_Font_set_cidstr_null(self,value,"cid" #name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_real(name) \
 static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
+    if ( CheckIfFontClosed(self) ) return(NULL);	\
 return( Py_BuildValue("d", self->fv->sf->name ));	\
 }							\
 							\
 static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
+    if ( CheckIfFontClosed(self) ) return(-1);				 \
 return( PyFF_Font_set_real(self,value,#name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_cidreal(name) \
 static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
+    if ( CheckIfFontClosed(self) ) return (NULL);	\
     if ( self->fv->cidmaster==NULL )			\
 Py_RETURN_NONE;						\
 return( Py_BuildValue("d", self->fv->cidmaster->name ));	\
 }							\
 							\
 static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
+    if ( CheckIfFontClosed(self) ) return (-1);				    \
 return( PyFF_Font_set_cidreal(self,value,#name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_int(name) \
 static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
+    if ( CheckIfFontClosed(self) ) return (NULL);	\
 return( Py_BuildValue("i", self->fv->sf->name ));	\
 }							\
 							\
 static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
+    if ( CheckIfFontClosed(self) ) return (-1);				\
 return( PyFF_Font_set_int(self,value,#name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_cidint(name) \
 static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
+    if ( CheckIfFontClosed(self) ) return (NULL);		\
     if ( self->fv->cidmaster==NULL )				\
 Py_RETURN_NONE;							\
 return( Py_BuildValue("i", self->fv->cidmaster->name ));	\
-}							\
-							\
+}								\
+								\
 static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
+    if ( CheckIfFontClosed(self) ) return (-1);				   \
 return( PyFF_Font_set_cidint(self,value,#name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_int2(name) \
 static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
+    if ( CheckIfFontClosed(self) ) return (NULL);	\
 return( Py_BuildValue("i", self->fv->sf->name ));	\
 }							\
 							\
 static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
+    if ( CheckIfFontClosed(self) ) return (-1);				 \
 return( PyFF_Font_set_int2(self,value,#name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_ro_bit(name) \
 static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
+    if ( CheckIfFontClosed(self) ) return (NULL);	\
 return( Py_BuildValue("i", self->fv->sf->name ));	\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_bit(name) \
 static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
+    if ( CheckIfFontClosed(self) ) return (NULL);	\
 return( Py_BuildValue("i", self->fv->sf->name ));	\
 }							\
 							\
 static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) { \
     long temp;						\
 							\
+    if ( CheckIfFontClosed(self) ) return (-1);		\
     if ( value==NULL ) {				\
 	PyErr_SetString(PyExc_TypeError, "Cannot delete the " #name ); \
 return( -1 );						\
@@ -11350,28 +11480,36 @@ static void SFDefaultOS2(SplineFont *sf) {
 
 #define ff_gs_os2int2(name) \
 static PyObject *PyFF_Font_get_OS2_##name(PyFF_Font *self, void *UNUSED(closure)) { \
-    SplineFont *sf = self->fv->sf;			\
+    SplineFont *sf;					\
+    if ( CheckIfFontClosed(self) ) return (NULL);	\
+    sf = self->fv->sf;					\
     SFDefaultOS2(sf);					\
 return( Py_BuildValue("i", sf->pfminfo.name ));		\
 }							\
 							\
 static int PyFF_Font_set_OS2_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
-    SplineFont *sf = self->fv->sf;			\
+    SplineFont *sf;					\
+    if ( CheckIfFontClosed(self) ) return (-1);		\
+    sf = self->fv->sf;					\
     SFDefaultOS2(sf);					\
 return( PyFF_Font_set_int2(self,value,#name,offsetof(SplineFont,pfminfo)+offsetof(struct pfminfo,name)) );\
 }
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_os2bit(name) \
 static PyObject *PyFF_Font_get_OS2_##name(PyFF_Font *self, void *UNUSED(closure)) { \
-    SplineFont *sf = self->fv->sf;			\
+    SplineFont *sf;					\
+    if ( CheckIfFontClosed(self) ) return (NULL);	\
+    sf = self->fv->sf;					\
     SFDefaultOS2(sf);					\
 return( Py_BuildValue("i", self->fv->sf->pfminfo.name ));	\
 }							\
 							\
 static int PyFF_Font_set_OS2_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) { \
-    SplineFont *sf = self->fv->sf;			\
+    SplineFont *sf;					\
     long temp;						\
 							\
+    if ( CheckIfFontClosed(self) ) return (-1);		\
+    sf = self->fv->sf;					\
     if ( value==NULL ) {				\
 	PyErr_SetString(PyExc_TypeError, "Cannot delete the " #name ); \
 return( -1 );						\
@@ -11417,6 +11555,7 @@ ff_gs_real(strokewidth)
 ff_gs_int(ascent)
 ff_gs_int(descent)
 ff_gs_int(uniqueid)
+
 ff_gs_int2(macstyle)
 ff_gs_int2(os2_version)
 ff_gs_int2(gasp_version)
@@ -11466,6 +11605,8 @@ ff_gs_bit(head_optimized_for_cleartype)
 static PyObject *PyFF_Font_get_sfntRevision(PyFF_Font *self, void *UNUSED(closure)) {
     int version = self->fv->sf->sfntRevision;
 
+    if ( CheckIfFontClosed(self) )
+return(NULL);
     if ( version==sfntRevisionUnset )
 Py_RETURN_NONE;
 
@@ -11473,8 +11614,11 @@ return( Py_BuildValue("d", version/65536.0 ));
 }
 
 static int PyFF_Font_set_sfntRevision(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
 
+    if ( CheckIfFontClosed(self) )
+return(-1);
+    sf = self->fv->sf;
     if ( value==Py_None )
 	sf->sfntRevision = sfntRevisionUnset;
     else if ( PyFloat_Check(value)) {
@@ -11496,8 +11640,11 @@ return( 0 );
 }
 
 static PyObject *PyFF_Font_get_woffMajor(PyFF_Font *self, void *UNUSED(closure)) {
-    int version = self->fv->sf->woffMajor;
+    int version;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    version = self->fv->sf->woffMajor;
     if ( version==woffUnset )
 Py_RETURN_NONE;
 
@@ -11505,8 +11652,11 @@ return( Py_BuildValue("i", version ));
 }
 
 static int PyFF_Font_set_woffMajor(PyFF_Font *self, PyObject *value, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
+    sf = self->fv->sf;
     if ( value==Py_None ) {
 	sf->woffMajor = woffUnset;
 	sf->woffMinor = woffUnset;
@@ -11524,8 +11674,11 @@ return( 0 );
 }
 
 static PyObject *PyFF_Font_get_woffMinor(PyFF_Font *self, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( sf->woffMajor==woffUnset )
 Py_RETURN_NONE;
 
@@ -11533,8 +11686,11 @@ return( Py_BuildValue("i", sf->woffMinor ));
 }
 
 static int PyFF_Font_set_woffMinor(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
+    sf = self->fv->sf;
     if ( value==Py_None ) {
 	sf->woffMajor = woffUnset;
 	sf->woffMinor = woffUnset;
@@ -11551,8 +11707,10 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_vertical_origin(PyFF_Font *UNUSED(self), void *UNUSED(closure)) {
-return( Py_BuildValue("i", 0 ));
+static PyObject *PyFF_Font_get_vertical_origin(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+return( Py_BuildValue("i", 0 )); /* No longer implemented, return 0 for backwards compatability */
 }
 
 static int PyFF_Font_set_vertical_origin(PyFF_Font *UNUSED(self), PyObject *UNUSED(value), void *UNUSED(closure)) {
@@ -11561,8 +11719,11 @@ return( -1 );
 }
 
 static PyObject *PyFF_Font_get_os2codepages(PyFF_Font *self, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !sf->pfminfo.hascodepages )
 	OS2FigureCodePages(sf,sf->pfminfo.codepages);
 	/* Don't mark it as having them though */
@@ -11570,8 +11731,11 @@ return( Py_BuildValue("(ii)", sf->pfminfo.codepages[0],sf->pfminfo.codepages[1])
 }
 
 static int PyFF_Font_set_os2codepages(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
+    sf = self->fv->sf;
     if ( value == NULL ) {
         sf->pfminfo.hascodepages = false;
 return( 0 );
@@ -11584,8 +11748,11 @@ return( 0 );
 }
 
 static PyObject *PyFF_Font_get_os2unicoderanges(PyFF_Font *self, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !sf->pfminfo.hasunicoderanges )
 	OS2FigureUnicodeRanges(sf,sf->pfminfo.unicoderanges);
 	/* Don't mark it as having them though */
@@ -11595,8 +11762,11 @@ return( Py_BuildValue("(iiii)",
 }
 
 static int PyFF_Font_set_os2unicoderanges(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
+    sf = self->fv->sf;
     if ( value == NULL ) {
         sf->pfminfo.hasunicoderanges = false;
 return( 0 );
@@ -11611,19 +11781,25 @@ return( 0 );
 }
 
 static PyObject *PyFF_Font_get_loadvalidation_state(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
 return( Py_BuildValue("i", self->fv->sf->loadvalidation_state));
 }
 
 static PyObject *PyFF_Font_get_privatevalidation_state(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
 return( Py_BuildValue("i", ValidatePrivate(self->fv->sf)));
 }
 
-static PyObject *PyFF_Font_get_baseline(PyFF_Font *UNUSED(self), void *UNUSED(closure), struct Base *base) {
+static PyObject *PyFF_Font_get_baseline(PyFF_Font *self, void *UNUSED(closure), struct Base *base) {
     PyObject *ret, *scripts, *langs, *features, *tags, *script, *poses, *lang, *feature;
     int cnt,i,j,k;
     struct basescript *bs;
     struct baselangextent *bl, *feat;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
     if ( base==NULL )
 Py_RETURN_NONE;
 
@@ -11676,14 +11852,18 @@ return( ret );
 }
 
 static PyObject *PyFF_Font_get_horizontal_baseline(PyFF_Font *self, void *closure) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
 return( PyFF_Font_get_baseline(self,closure,self->fv->sf->horiz_base));
 }
 
 static PyObject *PyFF_Font_get_vertical_baseline(PyFF_Font *self, void *closure) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
 return( PyFF_Font_get_baseline(self,closure,self->fv->sf->vert_base));
 }
 
-static int PyFF_Font_set_baseline(PyFF_Font *UNUSED(self), PyObject *value, void *UNUSED(closure),struct Base **basep) {
+static int PyFF_Font_set_baseline(PyFF_Font *self, PyObject *value, void *UNUSED(closure),struct Base **basep) {
     PyObject *basetags, *scripts;
     int basecnt,i;
     struct Base *base;
@@ -11692,6 +11872,8 @@ static int PyFF_Font_set_baseline(PyFF_Font *UNUSED(self), PyObject *value, void
     struct baselangextent *ln, *lastln;
     struct baselangextent *ft, *lastft;
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
     if ( value==Py_None ) {
 	BaseFree(*basep);
 	*basep = NULL;
@@ -11863,21 +12045,29 @@ return( 0 );
 }
 
 static int PyFF_Font_set_horizontal_baseline(PyFF_Font *self,PyObject *value, void *closure) {
+    if ( CheckIfFontClosed(self) )
+return (-1);
 return( PyFF_Font_set_baseline(self,value,closure,&self->fv->sf->horiz_base));
 }
 
 static int PyFF_Font_set_vertical_baseline(PyFF_Font *self,PyObject *value, void *closure) {
+    if ( CheckIfFontClosed(self) )
+return (-1);
 return( PyFF_Font_set_baseline(self,value,closure,&self->fv->sf->vert_base));
 }
 
-static PyObject *PyFF_Font_get_path(PyFF_Font *self, void *UNUSED(closure)) { \
+static PyObject *PyFF_Font_get_path(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
     if ( self->fv->sf->origname==NULL )
 Py_RETURN_NONE;
     else
 return( Py_BuildValue("s", self->fv->sf->origname ));
 }
 
-static PyObject *PyFF_Font_get_sfd_path(PyFF_Font *self, void *UNUSED(closure)) { \
+static PyObject *PyFF_Font_get_sfd_path(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
     if ( self->fv->sf->filename==NULL )
 Py_RETURN_NONE;
     else
@@ -11887,7 +12077,11 @@ return( Py_BuildValue("s", self->fv->sf->filename ));
 static PyObject *PyFF_Font_get_OS2_panose(PyFF_Font *self, void *UNUSED(closure)) {
     int i;
     PyObject *tuple;
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
+
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !sf->pfminfo.panose_set )
 	SFDefaultOS2(sf);
     tuple = PyTuple_New(10);
@@ -11898,8 +12092,11 @@ return( tuple );
 
 static int PyFF_Font_set_OS2_panose(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     int panose[10], i;
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
+    sf = self->fv->sf;
     if ( value==NULL ) {
 	PyErr_Format(PyExc_TypeError, "Cannot delete panose");
 return( -1 );
@@ -11918,8 +12115,11 @@ return( 0 );
 
 static PyObject *PyFF_Font_get_OS2_vendor(PyFF_Font *self, void *UNUSED(closure)) {
     char buf[8];
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     SFDefaultOS2(sf);
     buf[0] = sf->pfminfo.os2_vendor[0];
     buf[1] = sf->pfminfo.os2_vendor[1];
@@ -11930,10 +12130,13 @@ return( Py_BuildValue("s",buf));
 }
 
 static int PyFF_Font_set_OS2_vendor(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
     char *newv;
     PyObject *temp;
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
+    sf = self->fv->sf;
     if ( value==NULL ) {
 	PyErr_Format(PyExc_TypeError, "Cannot delete vendor" );
 return( -1 );
@@ -11964,13 +12167,17 @@ return( 0 );
 
 static PyObject *PyFF_Font_get_design_size(PyFF_Font *self, void *UNUSED(closure)) {
     /* Design size is expressed in tenths of points */
+    if ( CheckIfFontClosed(self) )
+return (NULL);
 return( Py_BuildValue("d", self->fv->sf->design_size/10.0));
 }
 
 static int PyFF_Font_set_design_size(PyFF_Font *self, PyObject *value,
-	void *UNUSED(closure)) {
+				     void *UNUSED(closure)) {
     double temp;
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
     if ( value==NULL )
 	self->fv->sf->design_size = 0;
     else if ( PyFloat_Check(value)) {
@@ -11995,8 +12202,11 @@ static PyObject *PyFF_Font_get_size_feature(PyFF_Font *self, void *UNUSED(closur
     struct otfname *names;
     int i,cnt;
     PyObject *tuple;
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( sf->design_size==0 )
 Py_RETURN_NONE;
 
@@ -12019,15 +12229,18 @@ return( Py_BuildValue("(dddiO)", sf->design_size/10.0,
 }
 
 static int PyFF_Font_set_size_feature(PyFF_Font *self,PyObject *value,
-	void *UNUSED(closure)) {
+				      void *UNUSED(closure)) {
     double temp, top=0, bot=0;
     int id=0;
     PyObject *names=NULL;
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
     int i;
     struct otfname *head, *last, *cur;
     char *string;
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
+    sf = self->fv->sf;
     if ( value==NULL ) {
 	sf->design_size = 0;
 	/* Setting the design size to zero means there will be no 'size' feature in the output */
@@ -12118,6 +12331,8 @@ return( 0 );
 }
 
 static PyObject *PyFF_Font_get_cidsubfontcnt(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
     if ( self->fv->cidmaster==NULL )
 return( Py_BuildValue("i", 0));
 return( Py_BuildValue("i", self->fv->cidmaster->subfontcnt));
@@ -12125,21 +12340,28 @@ return( Py_BuildValue("i", self->fv->cidmaster->subfontcnt));
 
 static PyObject *PyFF_Font_get_cidsubfontnames(PyFF_Font *self, void *UNUSED(closure)) {
     PyObject *tuple;
-    SplineFont *sf = self->fv->cidmaster;
+    SplineFont *cidmaster;
     int i;
 
-    if ( sf==NULL )
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    cidmaster = self->fv->cidmaster;
+    if ( cidmaster==NULL )
 Py_RETURN_NONE;
-    tuple = PyTuple_New(sf->subfontcnt);
-    for ( i=0; i<sf->subfontcnt; ++i )
-	PyTuple_SET_ITEM(tuple,i,Py_BuildValue("s",sf->subfonts[i]->fontname));
+    tuple = PyTuple_New(cidmaster->subfontcnt);
+    for ( i=0; i<cidmaster->subfontcnt; ++i )
+	PyTuple_SET_ITEM(tuple,i,Py_BuildValue("s",cidmaster->subfonts[i]->fontname));
 return( tuple );
 }
 
 static PyObject *PyFF_Font_get_cidsubfont(PyFF_Font *self, void *UNUSED(closure)) {
     int i;
-    SplineFont *cidmaster = self->fv->cidmaster, *sf = self->fv->sf;
+    SplineFont *cidmaster, *sf;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    cidmaster = self->fv->cidmaster;
+    sf = self->fv->sf;
     if ( cidmaster==NULL )
 return( Py_BuildValue("i", -1));
     for ( i=0; i<cidmaster->subfontcnt && sf!=cidmaster->subfonts[i]; ++i );
@@ -12148,9 +12370,13 @@ return( Py_BuildValue("i", i));
 
 static int PyFF_Font_set_cidsubfont(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     int i;
-    SplineFont *cidmaster = self->fv->cidmaster, *sf;
-    EncMap *map = self->fv->map;
+    SplineFont *cidmaster, *sf;
+    EncMap *map;
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
+    cidmaster = self->fv->cidmaster;
+    map = self->fv->map;
     if ( cidmaster==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "Not a cid-keyed font");
 return( -1 );
@@ -12196,8 +12422,11 @@ return( 0 );
 }
 
 static PyObject *PyFF_Font_get_is_cid(PyFF_Font *self, void *UNUSED(closure)) {
-    SplineFont *cidmaster = self->fv->cidmaster;
+    SplineFont *cidmaster;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    cidmaster = self->fv->cidmaster;
     if ( cidmaster==NULL )
 return( Py_BuildValue("i", 0));
 
@@ -12207,8 +12436,11 @@ return( Py_BuildValue("i", 1));
 #if 0
 static int PyFF_Font_set_is_cid(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     int i;
-    SplineFont *cidmaster = self->fv->cidmaster, *sf;
+    SplineFont *cidmaster, *sf;
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
+    cidmaster = self->fv->cidmaster;
     if ( !PyInt_Check(value)) {
 	PyErr_Format(PyExc_TypeError, "Expected boolean value" );
 return( -1 );
@@ -12227,20 +12459,28 @@ return( 0 );
     if ( map == NULL )
 	ScriptError( c, "No cidmap matching given ROS" );
     MakeCIDMaster(sf, c->curfv->map, false, NULL, map);
+/* **** FUNCTION WAS NEVER FINISHED **** */
+    }
+}
 #endif
 
 static PyObject *PyFF_Font_get_encoding(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
 return( Py_BuildValue("s", self->fv->map->enc->enc_name));
 }
 
 static int PyFF_Font_set_encoding(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
-    FontViewBase *fv = self->fv;
+    FontViewBase *fv;
     char *encname;
     Encoding *new_enc;
 #if PY_MAJOR_VERSION >= 3
     PyObject *bytes;
 #endif
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
+    fv = self->fv;
     if ( value==NULL ) {
 	PyErr_Format(PyExc_TypeError, "Cannot delete encoding field" );
 return( -1 );
@@ -12302,13 +12542,18 @@ return(0);
 
 /* Not really the right question now... but this is the closest we come */
 static PyObject *PyFF_Font_get_is_quadratic(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
 return( Py_BuildValue("i", self->fv->sf->layers[self->fv->active_layer].order2));
 }
 
 static int PyFF_Font_set_is_quadratic(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
     int order2;
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
+    sf = self->fv->sf;
     if ( value==NULL ) {
 	PyErr_Format(PyExc_TypeError, "Cannot delete is_quadratic field" );
 return( -1 );
@@ -12327,6 +12572,8 @@ return(0);
 }
 
 static PyObject *PyFF_Font_get_guide(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
 return( (PyObject *) LayerFromLayer(&self->fv->sf->grid,NULL));
 }
 
@@ -12336,6 +12583,8 @@ static int PyFF_Font_set_guide(PyFF_Font *self,PyObject *value, void *UNUSED(clo
     SplineFont *sf;
     Layer *guide;
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
     if ( value==NULL ) {
 	PyErr_Format(PyExc_TypeError, "Cannot delete guide field" );
 return( -1 );
@@ -12367,9 +12616,12 @@ return( 0 );
 
 static PyObject *PyFF_Font_get_mark_classes(PyFF_Font *self, void *UNUSED(closure)) {
     PyObject *tuple, *nametuple;
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
     int i;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( sf->mark_class_cnt==0 )
 Py_RETURN_NONE;
 
@@ -12382,12 +12634,15 @@ return( tuple );
 }
 
 static int PyFF_Font_set_mark_classes(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
     int i, cnt;
     char **names, **classes;
     char *nm;
     PyObject *subtuple;
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
+    sf = self->fv->sf;
     if ( value==NULL || value==Py_None )
 	cnt = 0;
     else {
@@ -12436,6 +12691,8 @@ return( 0 );
 }
 
 static PyObject *PyFF_Font_get_em(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
 return( Py_BuildValue("i", self->fv->sf->ascent + self->fv->sf->descent ));
 }
 
@@ -12443,6 +12700,8 @@ static int PyFF_Font_set_em(PyFF_Font *self,PyObject *value, void *UNUSED(closur
     int newem, as, ds, oldem;
     SplineFont *sf;
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
     if ( value==NULL ) {
 	PyErr_Format(PyExc_TypeError, "Cannot delete em field" );
 return( -1 );
@@ -12465,10 +12724,13 @@ return( 0 );
 }
 
 static int PyFF_Font_SetMaxpValue(PyFF_Font *self,PyObject *value,char *str) {
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
     struct ttf_table *tab;
     int val;
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
+    sf = self->fv->sf;
     val = PyInt_AsLong(value);
     if ( PyErr_Occurred())
 return( -1 );
@@ -12503,11 +12765,14 @@ return( 0 );
 }
 
 static PyObject *PyFF_Font_GetMaxpValue(PyFF_Font *self,char *str) {
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf;
     struct ttf_table *tab;
     uint8 *data, dummy[32];
     int val;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     memset(dummy,0,32);
     dummy[15] = 2;
     tab = SFFindTable(sf,CHR('m','a','x','p'));
@@ -12537,62 +12802,94 @@ return( Py_BuildValue("i",val));
 }
 
 static PyObject *PyFF_Font_get_maxp_IDEFs(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
 return( PyFF_Font_GetMaxpValue(self,"IDEFs"));
 }
 
 static int PyFF_Font_set_maxp_IDEFs(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (-1);
 return( PyFF_Font_SetMaxpValue(self,value,"IDEFs"));
 }
 
 static PyObject *PyFF_Font_get_maxp_FDEFs(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
 return( PyFF_Font_GetMaxpValue(self,"FDEFs"));
 }
 
 static int PyFF_Font_set_maxp_FDEFs(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (-1);
 return( PyFF_Font_SetMaxpValue(self,value,"FDEFs"));
 }
 
 static PyObject *PyFF_Font_get_maxp_maxStackDepth(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
 return( PyFF_Font_GetMaxpValue(self,"MaxStackDepth"));
 }
 
 static int PyFF_Font_set_maxp_maxStackDepth(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (-1);
 return( PyFF_Font_SetMaxpValue(self,value,"MaxStackDepth"));
 }
 
 static PyObject *PyFF_Font_get_maxp_storageCnt(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
 return( PyFF_Font_GetMaxpValue(self,"StorageCnt"));
 }
 
 static int PyFF_Font_set_maxp_storageCnt(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (-1);
 return( PyFF_Font_SetMaxpValue(self,value,"StorageCnt"));
 }
 
 static PyObject *PyFF_Font_get_maxp_twilightPtCnt(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
 return( PyFF_Font_GetMaxpValue(self,"TwilightPntCnt"));
 }
 
 static int PyFF_Font_set_maxp_twilightPtCnt(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (-1);
 return( PyFF_Font_SetMaxpValue(self,value,"TwilightPntCnt"));
 }
 
 static PyObject *PyFF_Font_get_maxp_zones(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
 return( PyFF_Font_GetMaxpValue(self,"Zones"));
 }
 
 static int PyFF_Font_set_maxp_zones(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return (-1);
 return( PyFF_Font_SetMaxpValue(self,value,"Zones"));
 }
 
 static PyObject *PyFF_Font_get_xHeight(PyFF_Font *self, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
-    double val = SFXHeight(sf,self->fv->active_layer,true);
+    SplineFont *sf;
+    double val;
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
+    val = SFXHeight(sf,self->fv->active_layer,true);
 return( Py_BuildValue("d",val));
 }
 
 static PyObject *PyFF_Font_get_capHeight(PyFF_Font *self, void *UNUSED(closure)) {
-    SplineFont *sf = self->fv->sf;
-    double val = SFCapHeight(sf,self->fv->active_layer,true);
+    SplineFont *sf;
+    double val;
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
+    val = SFCapHeight(sf,self->fv->active_layer,true);
 return( Py_BuildValue("d",val));
 }
 
@@ -12964,21 +13261,23 @@ static PyGetSetDef PyFF_Font_getset[] = {
 /* Font Methods */
 /* ************************************************************************** */
 		    
-static PyObject *PyFFFont_GetTableData(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_GetTableData(PyFF_Font *self, PyObject *args) {
     char *table_name;
     uint32 tag;
     struct ttf_table *tab;
     PyObject *binstr;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
     if ( !PyArg_ParseTuple(args,"s",&table_name) )
 return( NULL );
     tag = StrToTag(table_name,NULL);
     if ( tag==BAD_TAG )
 return( NULL );
 
-    for ( tab=((PyFF_Font *) self)->fv->sf->ttf_tables; tab!=NULL && tab->tag!=tag; tab=tab->next );
+    for ( tab=self->fv->sf->ttf_tables; tab!=NULL && tab->tag!=tag; tab=tab->next );
     if ( tab==NULL )
-	for ( tab=((PyFF_Font *) self)->fv->sf->ttf_tab_saved; tab!=NULL && tab->tag!=tag; tab=tab->next );
+	for ( tab=self->fv->sf->ttf_tab_saved; tab!=NULL && tab->tag!=tag; tab=tab->next );
 
     if ( tab==NULL )
 Py_RETURN_NONE;
@@ -12988,7 +13287,7 @@ return( binstr );
 }
 
 static void TableAddInstrs(SplineFont *sf, uint32 tag,int replace,
-	uint8 *instrs,int icnt) {
+			   uint8 *instrs,int icnt) {
     struct ttf_table *tab;
 
     for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=tag; tab=tab->next );
@@ -13029,13 +13328,15 @@ return;
     tab->maxlen = tab->len;
 }
 
-static PyObject *PyFFFont_SetTableData(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_SetTableData(PyFF_Font *self, PyObject *args) {
     char *table_name;
     uint32 tag;
     PyObject *tuple;
     uint8 *instrs;
     int icnt, i;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
     if ( !PyArg_ParseTuple(args,"sO",&table_name,&tuple) )
 return( NULL );
     tag = StrToTag(table_name,NULL);
@@ -13043,7 +13344,7 @@ return( NULL );
 return( NULL );
 
     if ( tuple==Py_None ) {
-	SFRemoveSavedTable(((PyFF_Font *) self)->fv->sf,tag);
+	SFRemoveSavedTable(self->fv->sf,tag);
 Py_RETURN(self);
     }
 	
@@ -13066,12 +13367,14 @@ return( NULL );
 return( NULL );
 	}
     }
-    TableAddInstrs(((PyFF_Font *) self)->fv->sf,tag,true,instrs,icnt);
+    TableAddInstrs(self->fv->sf,tag,true,instrs,icnt);
     free(instrs);
 Py_RETURN(self);
 }
 
 static PyObject *PyFFFont_regenBitmaps(PyFF_Font *self,PyObject *args) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
     if ( bitmapper(self,args,false)==-1 )
 return( NULL );
 
@@ -13082,9 +13385,12 @@ static PyObject *PyFFFont_importBitmaps(PyFF_Font *self,PyObject *args) {
     char *filename;
     char *locfilename = NULL, *ext;
     int to_background = -1, back=false;
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv;
     int ok, format;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( !PyArg_ParseTuple(args,"es|i","UTF-8",&filename,
 	    &to_background) )
 return( NULL );
@@ -13158,6 +13464,8 @@ static PyObject *PyFFFont_compareFonts(PyFF_Font *self,PyObject *args) {
     int flags;
     char *filename, *locfilename;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
     if ( !PyArg_ParseTuple(args,"OesO", &other, "UTF-8", &filename, &flagstuple ))
 return( NULL );
     locfilename = utf82def_copy(filename);
@@ -13168,6 +13476,8 @@ return( NULL );
 	free(locfilename);
 return( NULL );
     }
+    if ( CheckIfFontClosed(other) )
+return (NULL);
     flags = FlagsFromTuple(flagstuple,compflags,"comparison flag");
     if ( flags==FLAG_UNKNOWN ) {
 	free(locfilename);
@@ -13193,11 +13503,14 @@ return( NULL );
 return( ret );
 }
 
-static PyObject *PyFFFont_appendSFNTName(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_appendSFNTName(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     struct ttflangname dummy;
     int i;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     memset(&dummy,0,sizeof(dummy));
     DefaultTTFEnglishNames(&dummy, sf);
 
@@ -13211,12 +13524,16 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_cidConvertTo(PyFF_Font *self,PyObject *args) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
-    SplineFont *sf = fv->sf;
+    FontViewBase *fv;
+    SplineFont *sf;
     struct cidmap *map;
     char *registry, *ordering;
     int supplement;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
+    sf = fv->sf;
     if ( sf->cidmaster!=NULL ) {
 	PyErr_Format(PyExc_EnvironmentError,"This font is already a CID keyed font." );
 return( NULL );
@@ -13234,10 +13551,14 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_cidConvertByCmap(PyFF_Font *self,PyObject *args) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
-    SplineFont *sf = fv->sf;
+    FontViewBase *fv;
+    SplineFont *sf;
     char *locfilename;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
+    sf = fv->sf;
     if ( sf->cidmaster!=NULL ) {
 	PyErr_Format(PyExc_EnvironmentError,"This font is already a CID keyed font." );
 return( NULL );
@@ -13249,8 +13570,11 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_cidFlatten(PyFF_Font *self, PyObject *UNUSED(args)) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    SplineFont *sf;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( sf->cidmaster==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError,"This font is not a CID keyed font." );
 return( NULL );
@@ -13261,9 +13585,12 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_cidFlattenByCMap(PyFF_Font *self,PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    SplineFont *sf;
     char *locfilename;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( sf->cidmaster==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError,"This font is not a CID keyed font." );
 return( NULL );
@@ -13280,10 +13607,14 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_cidInsertBlankSubFont(PyFF_Font *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
-    SplineFont *cidmaster = fv->cidmaster, *sf;
+    FontViewBase *fv;
+    SplineFont *cidmaster, *sf;
     struct cidmap *map;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
+    cidmaster = fv->cidmaster;
     if ( cidmaster==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError,"This font is not a CID keyed font." );
 return( NULL );
@@ -13307,10 +13638,15 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_cidRemoveSubFont(PyFF_Font *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv, *fvs;
-    SplineFont *cidmaster = fv->cidmaster, *sf = fv->sf, *replace;
+    FontViewBase *fv, *fvs;
+    SplineFont *cidmaster, *sf, *replace;
     int i;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
+    sf = fv->sf;
+    cidmaster = fv->cidmaster;
     if ( cidmaster==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError,"This font is not a CID keyed font." );
 return( NULL );
@@ -13345,7 +13681,7 @@ Py_RETURN( self );
 }
 
 static struct lookup_subtable *addLookupSubtable(SplineFont *sf, char *lookup,
-	char *new_subtable, char *after_str) {
+						 char *new_subtable, char *after_str) {
     OTLookup *otl;
     struct lookup_subtable *sub, *after=NULL;
     int is_v;
@@ -13411,21 +13747,27 @@ return( NULL );
 return( sub );
 }
 
-static PyObject *PyFFFont_buildOrReplaceAALTFeatures(PyObject *self, PyObject *UNUSED(args)) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_buildOrReplaceAALTFeatures(PyFF_Font *self, PyObject *UNUSED(args)) {
+    SplineFont *sf;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     AddNewAALTFeatures(sf);
 
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_addAnchorClass(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_addAnchorClass(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     char *subtable, *anchor_name;
     struct lookup_subtable *sub;
     AnchorClass *ac;
     int lookup_type;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"ss", &subtable, &anchor_name ))
 return( NULL );
 
@@ -13460,11 +13802,14 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_removeAnchorClass(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_removeAnchorClass(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     char *anchor_name;
     AnchorClass *ac;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"s", &anchor_name ))
 return( NULL );
 
@@ -13602,8 +13947,8 @@ static void pyAutoKernAll(FontViewBase *fv,struct lookup_subtable *sub ) {
 	    sub->onlyCloser, 0);
 }
 
-static PyObject *PyFFFont_addKerningClass(PyObject *self, PyObject *args) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_addKerningClass(PyFF_Font *self, PyObject *args) {
+    FontViewBase *fv;
     SplineFont *sf = fv->sf;
     char *lookup, *subtable, *after_str=NULL;
     int i;
@@ -13627,6 +13972,9 @@ static PyObject *PyFFFont_addKerningClass(PyObject *self, PyObject *args) {
      * Third two lists of glyphs to be turned into classes and then autokerned cnt=6/8
      * Fourth turns the selection into a list of glyphs, to be used both left and right for two sets of classes to be autokerned cnt=4/6
      */
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( (acnt = PySequence_Size(args))<4 ) {
 	PyErr_Format(PyExc_EnvironmentError, "Too few arguments.");
 return( NULL );
@@ -13742,8 +14090,8 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_alterKerningClass(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_alterKerningClass(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     char *subtable;
     int i;
     struct lookup_subtable *sub;
@@ -13752,6 +14100,9 @@ static PyObject *PyFFFont_alterKerningClass(PyObject *self, PyObject *args) {
     int cnt1, cnt2;
     int16 *offs;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"sOOO", &subtable, &class1s, &class2s,
 	    &offsets ))
 return( NULL );
@@ -13790,13 +14141,16 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_getKerningClass(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_getKerningClass(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     char *subtable;
     struct lookup_subtable *sub;
     PyObject *offsets;
     int i;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"s", &subtable ))
 return( NULL );
 
@@ -13819,12 +14173,15 @@ return( Py_BuildValue("(OOO)",
 	offsets));
 }
 
-static PyObject *PyFFFont_isKerningClass(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_isKerningClass(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     char *subtable;
     struct lookup_subtable *sub;
     PyObject *ret;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"s", &subtable ))
 return( NULL );
 
@@ -13837,12 +14194,15 @@ return( NULL );
 return( ret );
 }
 
-static PyObject *PyFFFont_isVerticalKerning(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_isVerticalKerning(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     char *subtable;
     struct lookup_subtable *sub;
     PyObject *ret;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"s", &subtable ))
 return( NULL );
 
@@ -13859,9 +14219,10 @@ static char *ak_keywords1[] = { "subTableName", "separation", "minKern",
 	"touch", "onlyCloser", "height", NULL };
 static char *ak_keywords2[] = { "subTableName", "separation", "list1", "list2",
 	"minKern", "touch", "onlyCloser", "height", NULL };
-static PyObject *PyFFFont_autoKern(PyObject *self, PyObject *args, PyObject *keywds) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
-    SplineFont *sf = fv->sf;
+
+static PyObject *PyFFFont_autoKern(PyFF_Font *self, PyObject *args, PyObject *keywds) {
+    FontViewBase *fv;
+    SplineFont *sf;
     char *subtablename;
     int separation;
     PyObject *list1=NULL, *list2=NULL;
@@ -13869,6 +14230,10 @@ static PyObject *PyFFFont_autoKern(PyObject *self, PyObject *args, PyObject *key
     struct lookup_subtable *sub;
     int minkern = 10, touch=0, height=0, onlyCloser=0;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
+    sf = fv->sf;
     if ( PySequence_Size(args)==2 ) {
 	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "si|iiii", ak_keywords1,
 		&subtablename, &separation, &minkern, &touch, &onlyCloser, &height))
@@ -13913,11 +14278,14 @@ return( NULL );
 Py_RETURN( self );
 }    
     
-static PyObject *PyFFFont_removeLookup(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_removeLookup(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     char *lookup;
     OTLookup *otl;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"s", &lookup ))
 return( NULL );
 
@@ -13930,12 +14298,15 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_mergeLookups(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_mergeLookups(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     char *lookup1, *lookup2;
     OTLookup *otl1, *otl2;
     struct lookup_subtable *sub;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"ss", &lookup1, &lookup2 ))
 return( NULL );
 
@@ -13968,11 +14339,14 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_removeLookupSubtable(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_removeLookupSubtable(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     char *subtable;
     struct lookup_subtable *sub;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"s", &subtable ))
 return( NULL );
 
@@ -13985,11 +14359,14 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_mergeLookupSubtables(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_mergeLookupSubtables(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     char *subtable1, *subtable2;
     struct lookup_subtable *sub1, *sub2;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"ss", &subtable1, &subtable2 ))
 return( NULL );
 
@@ -14211,8 +14588,8 @@ return( BAD_FEATURE_LIST );
 return( flhead );
 }
 
-static PyObject *PyFFFont_addLookup(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_addLookup(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     OTLookup *otl, *after = NULL;
     int itype;
     char *lookup_str, *type, *after_str=NULL;
@@ -14220,6 +14597,9 @@ static PyObject *PyFFFont_addLookup(PyObject *self, PyObject *args) {
     int flags;
     FeatureScriptLangList *fl;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"ssOO|s", &lookup_str, &type, &flagtuple, &featlist, &after_str ))
 return( NULL );
 
@@ -14276,21 +14656,28 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_importLookups(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_importLookups(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     SplineFont *othersf;
-    PyObject *otherfont, *lookup_list;
+    PyObject *lookup_list;
+    PyFF_Font *otherfont;
     char *lookup_str, *before_str=NULL;
     OTLookup *otl, *before, **list;
     int i;
 
-    if ( !PyArg_ParseTuple(args,"OO|s", &otherfont, &lookup_list, &before_str))
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
+    if ( !PyArg_ParseTuple(args,"OO|s", ((PyObject **)&otherfont), &lookup_list, &before_str))
 return( NULL );
     if ( !PyType_IsSubtype(&PyFF_FontType,((PyObject *)otherfont)->ob_type) ) {
 	PyErr_Format(PyExc_TypeError,"First argument must be a fontforge font");
 return( NULL );
     }
-    othersf = ((PyFF_Font *) otherfont)->fv->sf;
+    if ( CheckIfFontClosed(otherfont) )
+return (NULL);
+
+    othersf = otherfont->fv->sf;
 
     list = NULL;
     before = NULL;
@@ -14335,13 +14722,16 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_lookupSetFeatureList(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_lookupSetFeatureList(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     OTLookup *otl;
     char *lookup;
     PyObject *featlist;
     FeatureScriptLangList *fl;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"sO", &lookup, &featlist ))
 return( NULL );
 
@@ -14360,13 +14750,16 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_lookupSetFlags(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_lookupSetFlags(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     OTLookup *otl;
     char *lookup;
     PyObject *flagtuple;
     int flags;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"sO", &lookup, &flagtuple ))
 return( NULL );
 
@@ -14384,12 +14777,15 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_lookupSetStoreLigatureInAfm(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_lookupSetStoreLigatureInAfm(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     OTLookup *otl;
     char *lookup;
     int store_it;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"si", &lookup, &store_it ))
 return( NULL );
 
@@ -14402,8 +14798,8 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_getLookupInfo(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_getLookupInfo(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     OTLookup *otl;
     char *lookup;
     const char *type;
@@ -14414,6 +14810,9 @@ static PyObject *PyFFFont_getLookupInfo(PyObject *self, PyObject *args) {
     int fcnt, scnt, l;
     PyObject *farray, *sarray, *larray;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"s", &lookup ))
 return( NULL );
 
@@ -14460,11 +14859,14 @@ return( NULL );
 return( Py_BuildValue("(sOO)",type,flags_tuple,farray) );
 }
 
-static PyObject *PyFFFont_addLookupSubtable(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_addLookupSubtable(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     char *lookup, *subtable, *after_str=NULL;
     OTLookup *otl;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"ss|s", &lookup, &subtable, &after_str ))
 return( NULL );
 
@@ -14487,8 +14889,9 @@ Py_RETURN( self );
 static char *contextchain_keywords[] = { "afterSubtable",
 	"bclasses", "mclasses", "fclasses",
 	"bclassnames", "mclassnames", "fclassnames", NULL };
-static PyObject *PyFFFont_addContextualSubtable(PyObject *self, PyObject *args, PyObject *keywds) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+
+static PyObject *PyFFFont_addContextualSubtable(PyFF_Font *self, PyObject *args, PyObject *keywds) {
+    SplineFont *sf;
     char *lookup, *subtable, *after_str=NULL, *type, *rule;
     PyObject *bclasses=NULL, *mclasses=NULL, *fclasses=NULL;
     PyObject *bclassnames=NULL, *mclassnames=NULL, *fclassnames=NULL;
@@ -14502,6 +14905,9 @@ static PyObject *PyFFFont_addContextualSubtable(PyObject *self, PyObject *args, 
     int is_warning;
     char *msg;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTupleAndKeywords(args,keywds,"ssss|sOOO", contextchain_keywords,
 	    &lookup, &subtable, &type, &rule,
 	    &after_str, &bclasses, &mclasses, &fclasses,
@@ -14651,14 +15057,17 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_getLookupSubtables(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_getLookupSubtables(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     char *lookup;
     OTLookup *otl;
     struct lookup_subtable *sub;
     int cnt;
     PyObject *tuple;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"s", &lookup ))
 return( NULL );
 
@@ -14674,14 +15083,17 @@ return( NULL );
 return( tuple );
 }
 
-static PyObject *PyFFFont_getLookupSubtableAnchorClasses(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_getLookupSubtableAnchorClasses(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     char *subtable;
     struct lookup_subtable *sub;
     AnchorClass *ac;
     int cnt;
     PyObject *tuple;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"s", &subtable ))
 return( NULL );
 
@@ -14700,11 +15112,14 @@ return( NULL );
 return( tuple );
 }
 
-static PyObject *PyFFFont_getLookupOfSubtable(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_getLookupOfSubtable(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     char *subtable;
     struct lookup_subtable *sub;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"s", &subtable ))
 return( NULL );
 
@@ -14716,11 +15131,14 @@ return( NULL );
 return( Py_BuildValue("s", sub->lookup->lookup_name ));
 }
 
-static PyObject *PyFFFont_getSubtableOfAnchor(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+static PyObject *PyFFFont_getSubtableOfAnchor(PyFF_Font *self, PyObject *args) {
+    SplineFont *sf;
     char *anchorclass;
     AnchorClass *ac;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"s", &anchorclass ))
 return( NULL );
 
@@ -14732,11 +15150,14 @@ return( Py_BuildValue("s", ac->subtable->subtable_name ));
 return( NULL );
 }
 
-static PyObject *PyFFFont_saveNamelist(PyObject *self, PyObject *args) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_saveNamelist(PyFF_Font *self, PyObject *args) {
+    FontViewBase *fv;
     char *filename;
     FILE *file;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( !PyArg_ParseTuple(args,"s", &filename ))
 return( NULL );
 
@@ -14750,12 +15171,15 @@ return(NULL);
 Py_RETURN_NONE;
 }
 
-static PyObject *PyFFFont_replaceAll(PyObject *self, PyObject *args) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_replaceAll(PyFF_Font *self, PyObject *args) {
+    FontViewBase *fv;
     PyObject *srch, *rpl;
     SplineSet *srch_ss, *rpl_ss;
     double err = .01;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( !PyArg_ParseTuple(args,"OO|d", &srch, &rpl, &err ))
 return( NULL );
 
@@ -14791,14 +15215,17 @@ struct flaglist find_flags[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
-static PyObject *PyFFFont_find(PyObject *self, PyObject *args) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_find(PyFF_Font *self, PyObject *args) {
+    FontViewBase *fv;
     PyObject *srch;
     SplineSet *srch_ss;
     PyObject *pyflags = NULL;
     int flags = 0;
     double err = .01;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( !PyArg_ParseTuple(args,"O|dO", &srch, &err, &pyflags))
 return( NULL );
 
@@ -14822,10 +15249,12 @@ return( NULL );
 return( fontiter_New( self,false,SDFromContour(fv,srch_ss,err,flags)) );
 }
 
-static PyObject *PyFFFont_glyphs(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_glyphs(PyFF_Font *self, PyObject *args) {
     char *type = "GID";
     int index;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
     if ( !PyArg_ParseTuple(args,"|s", &type ))
 return( NULL );
 
@@ -14841,8 +15270,7 @@ return( NULL );
 return( fontiter_New( self,index,NULL) );
 }
 
-static PyObject *PyFFFont_Save(PyObject *object, PyObject *args) {
-    PyFF_Font *self = (PyFF_Font*)object;
+static PyObject *PyFFFont_Save(PyFF_Font *self, PyObject *args) {
     char *filename;
     char *locfilename = NULL;
     char *pt;
@@ -14942,14 +15370,20 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_revert(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_revert(PyFF_Font *self, PyObject *UNUSED(args)) {
+    FontViewBase *fv;
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     FVRevert(fv);
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_revertToBackup(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_revertFromBackup(PyFF_Font *self, PyObject *UNUSED(args)) {
+    FontViewBase *fv;
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     FVRevertBackup(fv);
 Py_RETURN( self );
 }
@@ -14993,18 +15427,22 @@ struct flaglist genttc_flags[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
-static PyObject *PyFFFont_Generate(PyObject *self, PyObject *args, PyObject *keywds) {
+static PyObject *PyFFFont_Generate(PyFF_Font *self, PyObject *args, PyObject *keywds) {
     char *filename;
     char *locfilename = NULL;
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv;
     PyObject *flags=NULL;
     int iflags = -1;
     int resolution = -1;
     char *bitmaptype="", *subfontdirectory=NULL, *namelist=NULL;
     NameList *rename_to = NULL;
-    int layer = fv->active_layer;
+    int layer;
     char *layer_str=NULL;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
+    layer = fv->active_layer;
     if ( !PyArg_ParseTupleAndKeywords(args, keywds, "es|sOissi", gen_keywords,
 	    "UTF-8",&filename, &bitmaptype, &flags, &resolution, &subfontdirectory,
 	    &namelist, &layer) ) {
@@ -15097,8 +15535,7 @@ return(NULL);
 return( ret );
 }
 
-static PyObject *PyFFFont_GenerateTTC(PyObject *object, PyObject *args, PyObject *keywds) {
-    PyFF_Font *self = (PyFF_Font*)object;
+static PyObject *PyFFFont_GenerateTTC(PyFF_Font *self, PyObject *args, PyObject *keywds) {
     char *filename;
     char *locfilename = NULL;
     FontViewBase *fv;
@@ -15221,15 +15658,18 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_GenerateFeature(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_GenerateFeature(PyFF_Font *self, PyObject *args) {
     char *filename;
     char *locfilename = NULL;
     char *lookup_name = NULL;
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv;
     FILE *out;
     OTLookup *otl = NULL;
     int err;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( !PyArg_ParseTuple(args,"es|s","UTF-8",&filename,&lookup_name) )
 return( NULL );
     locfilename = utf82def_copy(filename);
@@ -15262,11 +15702,14 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_MergeKern(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_MergeKern(PyFF_Font *self, PyObject *args) {
     char *filename;
     char *locfilename = NULL;
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
 return( NULL );
     locfilename = utf82def_copy(filename);
@@ -15279,61 +15722,72 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_MergeFonts(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_MergeFonts(PyFF_Font *self, PyObject *args) {
     char *filename;
     char *locfilename = NULL;
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv;
     SplineFont *sf;
     int openflags=0;
     int preserveCrossFontKerning = 0;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( !PyArg_ParseTuple(args,"es|ii","UTF-8",&filename,
 	    &preserveCrossFontKerning, &openflags) )
 return( NULL );
     locfilename = utf82def_copy(filename);
     free(filename);
     sf = LoadSplineFont(locfilename,openflags);
-    free(locfilename);
     if ( sf==NULL ) {
-	PyErr_Format(PyExc_EnvironmentError, "No font found in file");
+	PyErr_Format(PyExc_EnvironmentError, "No font found in file \"%s\"", locfilename);
+	free(locfilename);
 return( NULL );
     }
+    free(locfilename);
     if ( sf->fv==NULL )
 	EncMapFree(sf->map);
     MergeFont(fv,sf,preserveCrossFontKerning);
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_InterpolateFonts(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_InterpolateFonts(PyFF_Font *self, PyObject *args) {
     char *filename;
     char *locfilename = NULL;
-    FontViewBase *fv = ((PyFF_Font *) self)->fv, *newfv;
+    FontViewBase *fv, *newfv;
     SplineFont *sf;
     int openflags=0;
     double fraction;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( !PyArg_ParseTuple(args,"des|i",&fraction,"UTF-8",&filename, &openflags) )
 return( NULL );
     locfilename = utf82def_copy(filename);
     free(filename);
     sf = LoadSplineFont(locfilename,openflags);
-    free(locfilename);
     if ( sf==NULL ) {
-	PyErr_Format(PyExc_EnvironmentError, "No font found in file");
+	PyErr_Format(PyExc_EnvironmentError, "No font found in file \"%s\"", locfilename);
+	free(locfilename);
 return( NULL );
     }
+    free(locfilename);
     if ( sf->fv==NULL )
 	EncMapFree(sf->map);
     newfv = SFAdd(InterpolateFont(fv->sf,sf,fraction, fv->map->enc ),false);
 return( PyFV_From_FV_I(newfv));
 }
 
-static PyObject *PyFFFont_CreateMappedChar(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_CreateMappedChar(PyFF_Font *self, PyObject *args) {
     int enc;
     char *str;
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv;
     SplineChar *sc;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( !PyArg_ParseTuple(args,"s", &str ) ) {
 	PyErr_Clear();
 	if ( !PyArg_ParseTuple(args,"i", &enc ) )
@@ -15353,12 +15807,15 @@ return( NULL );
 return( PySC_From_SC_I( sc ));
 }
 
-static PyObject *PyFFFont_CreateUnicodeChar(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_CreateUnicodeChar(PyFF_Font *self, PyObject *args) {
     int uni, enc;
     char *name=NULL;
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv;
     SplineChar *sc;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( !PyArg_ParseTuple(args,"i|s", &uni, &name ) )
 return( NULL );
     if ( uni<-1 || uni>=unicode4_size ) {
@@ -15384,14 +15841,18 @@ return( NULL );
 return( PySC_From_SC_I( sc ));
 }
 
-static PyObject *PyFFFont_CreateInterpolatedGlyph(PyObject *self, PyObject *args) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
-    SplineFont *sf = fv->sf;
+static PyObject *PyFFFont_CreateInterpolatedGlyph(PyFF_Font *self, PyObject *args) {
+    FontViewBase *fv;
+    SplineFont *sf;
     PyObject *from, *to;
     double by;
     SplineChar *sc;
     int baseenc;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
+    sf = fv->sf;
     if ( !PyArg_ParseTuple(args,"OOd",&from,&to,&by) )
 return( NULL );
     if ( !PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)from)->ob_type) ||
@@ -15418,11 +15879,14 @@ return( NULL );
 return( PySC_From_SC_I( sc ));
 }
 
-static PyObject *PyFFFont_findEncodingSlot(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_findEncodingSlot(PyFF_Font *self, PyObject *args) {
     int uni= -1;
     char *name=NULL;
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( !PyArg_ParseTuple(args,"s", &name ) ) {
 	PyErr_Clear();
 	if ( !PyArg_ParseTuple(args,"i", &uni ) )
@@ -15436,13 +15900,16 @@ return( NULL );
 return( Py_BuildValue("i",SFFindSlot(fv->sf, fv->map, uni, name )) );
 }
 
-static PyObject *PyFFFont_removeGlyph(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_removeGlyph(PyFF_Font *self, PyObject *args) {
     int uni;
     char *name=NULL;
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv;
     SplineChar *sc;
     int flags = 0;	/* Currently unused */
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( PyTuple_Size(args)==1 && PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)PyTuple_GetItem(args,0))->ob_type)) {
 	sc = ((PyFF_Glyph *) PyTuple_GetItem(args,0))->sc;
 	if ( sc->parent!=fv->sf ) {
@@ -15484,7 +15951,7 @@ static struct flaglist printflags[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
-static PyObject *PyFFFont_print(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_printSample(PyFF_Font *self, PyObject *args) {
     int type, i, inlinesample = true;
     int32 *pointsizes=NULL;
     char *samplefile=NULL, *output=NULL;
@@ -15494,6 +15961,8 @@ static PyObject *PyFFFont_print(PyObject *self, PyObject *args) {
     PyObject *arg;
     char *ptype;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
     arg_cnt = PyTuple_Size(args);
     if ( arg_cnt<1 || arg_cnt>4 ) {
 	PyErr_Format(PyExc_ValueError, "Wrong number of arguments" );
@@ -15562,19 +16031,22 @@ return( NULL );
 return( NULL );
 	}
     }
-    ScriptPrint(((PyFF_Font *) self)->fv,type,pointsizes,samplefile,sample,output);
+    ScriptPrint(self->fv,type,pointsizes,samplefile,sample,output);
     free(pointsizes);
     free(locfilename);
     /* ScriptPrint frees sample for us */
 Py_RETURN(self);
 }
 
-static PyObject *PyFFFont_randomText(PyObject *self, PyObject *args) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_randomText(PyFF_Font *self, PyObject *args) {
+    FontViewBase *fv;
     char *script=NULL, *lang=NULL, *txt;
     uint32 stag, ltag=0;
     PyObject *ret;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( !PyArg_ParseTuple(args,"s|s",&script, &lang ))
 return( NULL );
     stag = StrToTag(script,NULL);
@@ -15588,87 +16060,124 @@ return( NULL );
 return( ret );
 }
 
-static PyObject *PyFFFont_clear(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_clear(PyFF_Font *self, PyObject *UNUSED(args)) {
+    FontViewBase *fv;
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     FVClear(fv);
 Py_RETURN(self);
 }
 
-static PyObject *PyFFFont_cut(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_cut(PyFF_Font *self, PyObject *UNUSED(args)) {
+    FontViewBase *fv;
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     FVCopy(fv,ct_fullcopy);
     FVClear(fv);
 Py_RETURN(self);
 }
 
-static PyObject *PyFFFont_copy(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_copy(PyFF_Font *self, PyObject *UNUSED(args)) {
+    FontViewBase *fv;
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     FVCopy(fv,ct_fullcopy);
 Py_RETURN(self);
 }
 
-static PyObject *PyFFFont_copyReference(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_copyReference(PyFF_Font *self, PyObject *UNUSED(args)) {
+    FontViewBase *fv;
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     FVCopy(fv,ct_reference);
 Py_RETURN(self);
 }
 
-static PyObject *PyFFFont_paste(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_paste(PyFF_Font *self, PyObject *UNUSED(args)) {
+    FontViewBase *fv;
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     PasteIntoFV(fv,false,NULL);
 Py_RETURN(self);
 }
 
-static PyObject *PyFFFont_pasteInto(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_pasteInto(PyFF_Font *self, PyObject *UNUSED(args)) {
+    FontViewBase *fv;
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     PasteIntoFV(fv,true,NULL);
 Py_RETURN(self);
 }
 
-static PyObject *PyFFFont_unlinkReferences(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_unlinkReferences(PyFF_Font *self, PyObject *UNUSED(args)) {
+    FontViewBase *fv;
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     FVUnlinkRef(fv);
 Py_RETURN(self);
 }
 
 
-static PyObject *PyFFFont_Build(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_Build(PyFF_Font *self, PyObject *UNUSED(args)) {
+    FontViewBase *fv;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     FVBuildAccent(fv,false);
 
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_canonicalContours(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
-    EncMap *map = fv->map;
-    SplineFont *sf = fv->sf;
+static PyObject *PyFFFont_canonicalContours(PyFF_Font *self, PyObject *UNUSED(args)) {
+    FontViewBase *fv;
+    EncMap *map;
+    SplineFont *sf;
     int i,gid;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
+    sf = fv->sf;
+    map = fv->map;
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] )
 	CanonicalContours(sf->glyphs[gid],fv->active_layer);
 
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_canonicalStart(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
-    EncMap *map = fv->map;
-    SplineFont *sf = fv->sf;
+static PyObject *PyFFFont_canonicalStart(PyFF_Font *self, PyObject *UNUSED(args)) {
+    FontViewBase *fv;
+    EncMap *map;
+    SplineFont *sf;
     int i,gid;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
+    sf = fv->sf;
+    map = fv->map;
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] )
 	SPLsStartToLeftmost(sf->glyphs[gid],fv->active_layer);
 
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_changeWeight(PyObject *self, PyObject *args) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_changeWeight(PyFF_Font *self, PyObject *args) {
+    FontViewBase *fv;
     enum embolden_type type;
     struct lcg_zones zones;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     type = CW_ParseArgs(fv->sf,&zones,args);
     if ( type == embolden_error )
 return( NULL );
@@ -15677,10 +16186,13 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_condenseExtend(PyObject *self, PyObject *args) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_condenseExtend(PyFF_Font *self, PyObject *args) {
+    FontViewBase *fv;
     struct counterinfo ci;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     memset(&ci,0,sizeof(ci));
     ci.sb_factor = ci.sb_add = -10000;
     ci.correct_italic = true;
@@ -15827,10 +16339,13 @@ return( false );
 return( true );
 }
 
-static PyObject *PyFFFont_italicize(PyObject *self, PyObject *args, PyObject *keywds) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_italicize(PyFF_Font *self, PyObject *args, PyObject *keywds) {
+    FontViewBase *fv;
     ItalicInfo ii;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( !Parse_ItalicArgs(&ii,args,keywds))
 return( NULL );
     MakeItalic(fv,NULL,&ii);
@@ -15842,13 +16357,16 @@ static char *smallcaps_keywords[] = { "scheight", "capheight", "lcstem", "ucstem
 	"symbols", "letter_extension", "symbol_extension", "stem_height_factor",
 	"hscale", "vscale", NULL };
 
-static PyObject *PyFFFont_addSmallCaps(PyObject *self, PyObject *args, PyObject *keywds) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_addSmallCaps(PyFF_Font *self, PyObject *args, PyObject *keywds) {
+    FontViewBase *fv;
     struct smallcaps small;
     struct genericchange genchange;
     double lc_width=0, uc_width=0, vstem_factor=0, hscale=0, vscale=0, scheight=0, capheight=0;
     int dosymbols=0;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     memset(&genchange,0,sizeof(genchange));
     SmallCapsFindConstants(&small,fv->sf,fv->active_layer);
     genchange.small = &small;
@@ -15914,8 +16432,8 @@ static char *genchange_keywords[] = {
 	"vMap",
 	NULL};
 
-static PyObject *PyFFFont_genericGlyphChange(PyObject *self, PyObject *args, PyObject *keywds) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_genericGlyphChange(PyFF_Font *self, PyObject *args, PyObject *keywds) {
+    FontViewBase *fv;
     struct smallcaps small;
     struct genericchange genchange;
     char *stemtype = "uniform", *hcountertype="uniform", *vCounterType="mapped";
@@ -15933,6 +16451,9 @@ static PyObject *PyFFFont_genericGlyphChange(PyObject *self, PyObject *args, PyO
 	vScale=1.0;
     PyObject *vMap=NULL;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     memset(&genchange,0,sizeof(genchange));
     SmallCapsFindConstants(&small,fv->sf,fv->active_layer);
     genchange.small = &small;
@@ -16105,16 +16626,22 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_autoHint(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_autoHint(PyFF_Font *self, PyObject *UNUSED(args)) {
+    FontViewBase *fv;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     FVAutoHint(fv);
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_autoInstr(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_autoInstr(PyFF_Font *self, PyObject *UNUSED(args)) {
+    FontViewBase *fv;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     FVAutoInstr(fv);
 Py_RETURN( self );
 }
@@ -16122,10 +16649,13 @@ Py_RETURN( self );
 static char *autowidth_keywords[] = { "minBearing", "maxBearing", "height",
 	"loopCnt", NULL };
 
-static PyObject *PyFFFont_autoWidth(PyObject *self, PyObject *args, PyObject *keywds) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_autoWidth(PyFF_Font *self, PyObject *args, PyObject *keywds) {
+    FontViewBase *fv;
     int space, min=10, max=-1, height=0, loop=1;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( !PyArg_ParseTupleAndKeywords(args,keywds,"i|iiii",autowidth_keywords,
 	    &space,&min,&max,&height,&loop))
 return( NULL );
@@ -16133,20 +16663,26 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_autoTrace(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_autoTrace(PyFF_Font *self, PyObject *UNUSED(args)) {
+    FontViewBase *fv;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     FVAutoTrace(fv,false);
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_Transform(PyFF_Layer *self, PyObject *args) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_Transform(PyFF_Font *self, PyObject *args) {
+    FontViewBase *fv;
     int i;
     double m[6];
     real t[6];
     BVTFunc bvts[1];
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( !PyArg_ParseTuple(args,"(dddddd)",&m[0], &m[1], &m[2], &m[3], &m[4], &m[5] ) )
 return( NULL );
     for ( i=0; i<6; ++i )
@@ -16156,10 +16692,13 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_NLTransform(PyFF_Layer *self, PyObject *args) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_NLTransform(PyFF_Font *self, PyObject *args) {
+    FontViewBase *fv;
     char *xexpr, *yexpr;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( !PyArg_ParseTuple(args,"ss", &xexpr, &yexpr ) )
 return( NULL );
     if ( !SFNLTrans(fv,xexpr,yexpr) ) {
@@ -16171,8 +16710,11 @@ Py_RETURN( self );
 
 static PyObject *PyFFFont_Simplify(PyFF_Font *self, PyObject *args) {
     static struct simplifyinfo smpl = { sf_normal, 0.75, 0.2, 10, 0, 0, 0 };
-    FontViewBase *fv = self->fv;
+    FontViewBase *fv;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     smpl.err = (fv->sf->ascent+fv->sf->descent)/1000.;
     smpl.linefixup = (fv->sf->ascent+fv->sf->descent)/500.;
     smpl.linelenmax = (fv->sf->ascent+fv->sf->descent)/100.;
@@ -16195,11 +16737,16 @@ Py_RETURN( self );
 
 static PyObject *PyFFFont_Round(PyFF_Font *self, PyObject *args) {
     double factor=1;
-    FontViewBase *fv = self->fv;
-    SplineFont *sf = fv->sf;
-    EncMap *map = fv->map;
+    FontViewBase *fv;
+    SplineFont *sf;
+    EncMap *map;
     int i, gid;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
+    sf = fv->sf;
+    map = fv->map;
     if ( !PyArg_ParseTuple(args,"|d",&factor ) )
 return( NULL );
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
@@ -16212,10 +16759,15 @@ Py_RETURN( self );
 static PyObject *PyFFFont_Cluster(PyFF_Font *self, PyObject *args) {
     double within = .1, max = .5;
     int i, gid;
-    FontViewBase *fv = self->fv;
-    SplineFont *sf = fv->sf;
-    EncMap *map = fv->map;
+    FontViewBase *fv;
+    SplineFont *sf;
+    EncMap *map;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
+    sf = fv->sf;
+    map = fv->map;
     if ( !PyArg_ParseTuple(args,"|dd", &within, &max ) )
 return( NULL );
 
@@ -16227,8 +16779,11 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_AddExtrema(PyFF_Font *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = self->fv;
+    FontViewBase *fv;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     FVAddExtrema(fv);
 Py_RETURN( self );
 }
@@ -16236,6 +16791,8 @@ Py_RETURN( self );
 static PyObject *PyFFFont_Stroke(PyFF_Font *self, PyObject *args) {
     StrokeInfo si;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
     if ( Stroke_Parse(&si,args)==-1 )
 return( NULL );
 
@@ -16244,16 +16801,21 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_Correct(PyFF_Font *self, PyObject *UNUSED(args)) {
+static PyObject *PyFFFont_correctDirection(PyFF_Font *self, PyObject *UNUSED(args)) {
     int i, gid;
-    FontViewBase *fv = self->fv;
-    SplineFont *sf = fv->sf;
-    EncMap *map = fv->map;
+    FontViewBase *fv;
+    SplineFont *sf;
+    EncMap *map;
     int changed, refchanged;
     int checkrefs = true;
     RefChar *ref;
     SplineChar *sc;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
+    sf = fv->sf;
+    map = fv->map;
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && (sc=sf->glyphs[gid])!=NULL && fv->selected[i] ) {
 	changed = refchanged = false;
 	if ( checkrefs ) {
@@ -16278,13 +16840,15 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_RemoveOverlap(PyFF_Font *self, PyObject *UNUSED(args)) {
-
+    if ( CheckIfFontClosed(self) )
+return (NULL);
     FVOverlap(self->fv,over_remove);
 Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_Intersect(PyFF_Font *self, PyObject *UNUSED(args)) {
-
+    if ( CheckIfFontClosed(self) )
+return (NULL);
     FVOverlap(self->fv,over_intersect);
 Py_RETURN( self );
 }
@@ -16292,6 +16856,8 @@ Py_RETURN( self );
 static PyObject *PyFFFont_replaceWithReference(PyFF_Font *self, PyObject *args) {
     double fudge = .01;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
     if ( !PyArg_ParseTuple(args,"|d",&fudge) )
 return( NULL );
 
@@ -16317,6 +16883,8 @@ static PyObject *PyFFFont_compareGlyphs(PyFF_Font *self, PyObject *args) {
     int bb_err=2, comp_hints=false, report_errors = true;
     int ret;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
     if ( !PyArg_ParseTuple(args,"|dddiii",&pt_err,&spline_err,&bitmaps,
 	    &bb_err,&comp_hints,&report_errors) )
 return( NULL );
@@ -16329,94 +16897,98 @@ return( Py_BuildValue("i", ret ));
 }
 #endif
 
-static PyObject *PyFFFont_validate(PyObject *self, PyObject *args) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+static PyObject *PyFFFont_validate(PyFF_Font *self, PyObject *args) {
+    FontViewBase *fv;
     SplineFont *sf = fv->sf;
     int force=false;
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
     if ( !PyArg_ParseTuple(args,"|i",&force) )
 return( NULL );
 return( Py_BuildValue("i", SFValidate(sf,fv->active_layer,force)));
 }
 
+
 static PyMethodDef PyFF_Font_methods[] = {
-    { "appendSFNTName", PyFFFont_appendSFNTName, METH_VARARGS, "Adds or replaces a name in the sfnt 'name' table. Takes three arguments, a language, a string id, and the string value" },
-    { "close", PyFFFont_close, METH_NOARGS, "Frees up memory for the current font. Any python pointers to it will become invalid." },
+    { "appendSFNTName", (PyCFunction) PyFFFont_appendSFNTName, METH_VARARGS, "Adds or replaces a name in the sfnt 'name' table. Takes three arguments, a language, a string id, and the string value" },
+    { "close", (PyCFunction) PyFFFont_close, METH_NOARGS, "Frees up memory for the current font. Any python pointers to it will become invalid." },
     { "compareFonts", (PyCFunction) PyFFFont_compareFonts, METH_VARARGS, "Compares two fonts and stores the result into a file"},
-    { "save", PyFFFont_Save, METH_VARARGS, "Save the current font to a sfd file" },
+    { "save", (PyCFunction) PyFFFont_Save, METH_VARARGS, "Save the current font to a sfd file" },
     { "generate", (PyCFunction) PyFFFont_Generate, METH_VARARGS | METH_KEYWORDS, "Save the current font to a standard font file" },
     { "generateTtc", (PyCFunction) PyFFFont_GenerateTTC, METH_VARARGS | METH_KEYWORDS, "Save the current font and some others into a truetype collection file" },
     { "generateFeatureFile", (PyCFunction) PyFFFont_GenerateFeature, METH_VARARGS, "Creates an adobe feature file containing all features and lookups" },
-    { "mergeKern", PyFFFont_MergeKern, METH_VARARGS, "Merge feature data into the current font from an external file" },
-    { "mergeFeature", PyFFFont_MergeKern, METH_VARARGS, "Merge feature data into the current font from an external file" },
-    { "mergeFonts", PyFFFont_MergeFonts, METH_VARARGS, "Merge two fonts" },
-    { "revert", PyFFFont_revert, METH_NOARGS, "Reloads the current font from the disk" },
-    { "revertFromBackup", PyFFFont_revertToBackup, METH_NOARGS, "Reloads the current font from a backup copy on the disk" },
-    { "interpolateFonts", PyFFFont_InterpolateFonts, METH_VARARGS, "Interpolate between two fonts returning a new one" },
-    { "createChar", PyFFFont_CreateUnicodeChar, METH_VARARGS, "Creates a (blank) glyph at the specified unicode codepoint" },
-    { "createInterpolatedGlyph", PyFFFont_CreateInterpolatedGlyph, METH_VARARGS, "Creates (and returns) a new glyph interpolated between the two arguments." },
-    { "createMappedChar", PyFFFont_CreateMappedChar, METH_VARARGS, "Creates a (blank) glyph at the specified encoding" },
+    { "mergeKern", (PyCFunction) PyFFFont_MergeKern, METH_VARARGS, "Merge feature data into the current font from an external file" },
+    { "mergeFeature", (PyCFunction) PyFFFont_MergeKern, METH_VARARGS, "Merge feature data into the current font from an external file" },
+    { "mergeFonts", (PyCFunction) PyFFFont_MergeFonts, METH_VARARGS, "Merge two fonts" },
+    { "revert", (PyCFunction) PyFFFont_revert, METH_NOARGS, "Reloads the current font from the disk" },
+    { "revertFromBackup", (PyCFunction) PyFFFont_revertFromBackup, METH_NOARGS, "Reloads the current font from a backup copy on the disk" },
+    { "interpolateFonts", (PyCFunction) PyFFFont_InterpolateFonts, METH_VARARGS, "Interpolate between two fonts returning a new one" },
+    { "createChar", (PyCFunction) PyFFFont_CreateUnicodeChar, METH_VARARGS, "Creates a (blank) glyph at the specified unicode codepoint" },
+    { "createInterpolatedGlyph", (PyCFunction) PyFFFont_CreateInterpolatedGlyph, METH_VARARGS, "Creates (and returns) a new glyph interpolated between the two arguments." },
+    { "createMappedChar", (PyCFunction) PyFFFont_CreateMappedChar, METH_VARARGS, "Creates a (blank) glyph at the specified encoding" },
     { "cidConvertTo", (PyCFunction) PyFFFont_cidConvertTo, METH_VARARGS, "Turns a normal font into a CID keyed font with one subfont." },
     { "cidConvertByCmap", (PyCFunction) PyFFFont_cidConvertByCmap, METH_VARARGS, "Turns a normal font into a CID keyed font with one subfont, using the CMAP file to specify the CID ordering." },
     { "cidFlatten", (PyCFunction) PyFFFont_cidFlatten, METH_NOARGS, "Turns a cid-keyed font into a normal font, using the CID ordering as an encoding" },
     { "cidFlattenByCMap", (PyCFunction) PyFFFont_cidFlattenByCMap, METH_VARARGS, "Turns a cid-keyed font into a normal font, using the mapping specified in the CMAP file." },
     { "cidInsertBlankSubFont", (PyCFunction) PyFFFont_cidInsertBlankSubFont, METH_NOARGS, "Adds a new subfont, a blank one, to the CID keyed font, and changes the current subfont to be the new one." },
     { "cidRemoveSubFont", (PyCFunction) PyFFFont_cidRemoveSubFont, METH_NOARGS, "Removes the current subfont from a CID keyed font." },
-    { "getTableData", PyFFFont_GetTableData, METH_VARARGS, "Returns a tuple, one entry per byte (as unsigned integers) of the table"},
-    { "setTableData", PyFFFont_SetTableData, METH_VARARGS, "Sets the table to a tuple of bytes"},
-    { "addLookup", PyFFFont_addLookup, METH_VARARGS, "Add a new lookup"},
-    { "addLookupSubtable", PyFFFont_addLookupSubtable, METH_VARARGS, "Add a new lookup-subtable (not for contextual lookups)"},
+    { "getTableData", (PyCFunction) PyFFFont_GetTableData, METH_VARARGS, "Returns a tuple, one entry per byte (as unsigned integers) of the table"},
+    { "setTableData", (PyCFunction) PyFFFont_SetTableData, METH_VARARGS, "Sets the table to a tuple of bytes"},
+    { "addLookup", (PyCFunction) PyFFFont_addLookup, METH_VARARGS, "Add a new lookup"},
+    { "addLookupSubtable", (PyCFunction) PyFFFont_addLookupSubtable, METH_VARARGS, "Add a new lookup-subtable (not for contextual lookups)"},
     { "addContextualSubtable", (PyCFunction) PyFFFont_addContextualSubtable, METH_VARARGS | METH_KEYWORDS, "Create a subtable in a contextual, contextual chaining or reverse contextual chaining lookup." },
-    { "addAnchorClass", PyFFFont_addAnchorClass, METH_VARARGS, "Add a new anchor class to the subtable"},
-    { "addKerningClass", PyFFFont_addKerningClass, METH_VARARGS, "Add a new subtable with a new kerning class to a lookup"},
-    { "alterKerningClass", PyFFFont_alterKerningClass, METH_VARARGS, "Changes the existing kerning class in the named subtable"},
+    { "addAnchorClass", (PyCFunction) PyFFFont_addAnchorClass, METH_VARARGS, "Add a new anchor class to the subtable"},
+    { "addKerningClass", (PyCFunction) PyFFFont_addKerningClass, METH_VARARGS, "Add a new subtable with a new kerning class to a lookup"},
+    { "alterKerningClass", (PyCFunction) PyFFFont_alterKerningClass, METH_VARARGS, "Changes the existing kerning class in the named subtable"},
     { "autoKern", (PyCFunction) PyFFFont_autoKern, METH_VARARGS | METH_KEYWORDS, "Automatically generates kerning pairs between the specified sets of glyphs."},
-    { "buildOrReplaceAALTFeatures", PyFFFont_buildOrReplaceAALTFeatures, METH_NOARGS, "Removes any existing 'aalt' features and builds new ones."},
-    { "findEncodingSlot", PyFFFont_findEncodingSlot, METH_VARARGS, "Returns the encoding of a unicode code point or glyph name if they are in the current encoding. Else returns -1" },
-    { "getKerningClass", PyFFFont_getKerningClass, METH_VARARGS, "Returns the contents of the kerning class in the named subtable"},
-    { "getLookupInfo", PyFFFont_getLookupInfo, METH_VARARGS, "Get info about the named lookup" },
-    { "getLookupSubtables", PyFFFont_getLookupSubtables, METH_VARARGS, "Get a tuple of subtable names in a lookup" },
-    { "getLookupSubtableAnchorClasses", PyFFFont_getLookupSubtableAnchorClasses, METH_VARARGS, "Get a tuple of all anchor classes in a subtable" },
-    { "getLookupOfSubtable", PyFFFont_getLookupOfSubtable, METH_VARARGS, "Returns the name of the lookup containing this subtable" },
-    { "getSubtableOfAnchor", PyFFFont_getSubtableOfAnchor, METH_VARARGS, "Returns the name of the lookup subtable containing this anchor class" },
+    { "buildOrReplaceAALTFeatures", (PyCFunction) PyFFFont_buildOrReplaceAALTFeatures, METH_NOARGS, "Removes any existing 'aalt' features and builds new ones."},
+    { "findEncodingSlot", (PyCFunction) PyFFFont_findEncodingSlot, METH_VARARGS, "Returns the encoding of a unicode code point or glyph name if they are in the current encoding. Else returns -1" },
+    { "getKerningClass", (PyCFunction) PyFFFont_getKerningClass, METH_VARARGS, "Returns the contents of the kerning class in the named subtable"},
+    { "getLookupInfo", (PyCFunction) PyFFFont_getLookupInfo, METH_VARARGS, "Get info about the named lookup" },
+    { "getLookupSubtables", (PyCFunction) PyFFFont_getLookupSubtables, METH_VARARGS, "Get a tuple of subtable names in a lookup" },
+    { "getLookupSubtableAnchorClasses", (PyCFunction) PyFFFont_getLookupSubtableAnchorClasses, METH_VARARGS, "Get a tuple of all anchor classes in a subtable" },
+    { "getLookupOfSubtable", (PyCFunction) PyFFFont_getLookupOfSubtable, METH_VARARGS, "Returns the name of the lookup containing this subtable" },
+    { "getSubtableOfAnchor", (PyCFunction) PyFFFont_getSubtableOfAnchor, METH_VARARGS, "Returns the name of the lookup subtable containing this anchor class" },
     { "importBitmaps", (PyCFunction) PyFFFont_importBitmaps, METH_VARARGS, "Imports bitmap strikes from a font file."},
-    { "importLookups", PyFFFont_importLookups, METH_VARARGS, "Imports a tuple of named lookups from another font."},
-    { "isKerningClass", PyFFFont_isKerningClass, METH_VARARGS, "Returns whether the named subtable contains a kerning class"},
-    { "isVerticalKerning", PyFFFont_isVerticalKerning, METH_VARARGS, "Returns whether the named subtable contains vertical kerning data"},
-    { "lookupSetFeatureList", PyFFFont_lookupSetFeatureList, METH_VARARGS, "Sets the feature, script, language list on a lookup" },
-    { "lookupSetFlags", PyFFFont_lookupSetFlags, METH_VARARGS, "Sets the lookup flags on a lookup" },
-    { "lookupSetStoreLigatureInAfm", PyFFFont_lookupSetStoreLigatureInAfm, METH_VARARGS, "Sets whether this ligature lookup contains data which should live in the afm file"},
-    { "mergeLookups", PyFFFont_mergeLookups, METH_VARARGS, "Merges two lookups" },
-    { "mergeLookupSubtables", PyFFFont_mergeLookupSubtables, METH_VARARGS, "Merges two lookup subtables" },
-    { "printSample", PyFFFont_print, METH_VARARGS, "Produces a font sample printout" },
-    { "randomText", PyFFFont_randomText, METH_VARARGS, "Produces a string with random text generated from the font using letter frequencies for the specified script and language"},
+    { "importLookups", (PyCFunction) PyFFFont_importLookups, METH_VARARGS, "Imports a tuple of named lookups from another font."},
+    { "isKerningClass", (PyCFunction) PyFFFont_isKerningClass, METH_VARARGS, "Returns whether the named subtable contains a kerning class"},
+    { "isVerticalKerning", (PyCFunction) PyFFFont_isVerticalKerning, METH_VARARGS, "Returns whether the named subtable contains vertical kerning data"},
+    { "lookupSetFeatureList", (PyCFunction) PyFFFont_lookupSetFeatureList, METH_VARARGS, "Sets the feature, script, language list on a lookup" },
+    { "lookupSetFlags", (PyCFunction) PyFFFont_lookupSetFlags, METH_VARARGS, "Sets the lookup flags on a lookup" },
+    { "lookupSetStoreLigatureInAfm", (PyCFunction) PyFFFont_lookupSetStoreLigatureInAfm, METH_VARARGS, "Sets whether this ligature lookup contains data which should live in the afm file"},
+    { "mergeLookups", (PyCFunction) PyFFFont_mergeLookups, METH_VARARGS, "Merges two lookups" },
+    { "mergeLookupSubtables", (PyCFunction) PyFFFont_mergeLookupSubtables, METH_VARARGS, "Merges two lookup subtables" },
+    { "printSample", (PyCFunction) PyFFFont_printSample, METH_VARARGS, "Produces a font sample printout" },
+    { "randomText", (PyCFunction) PyFFFont_randomText, METH_VARARGS, "Produces a string with random text generated from the font using letter frequencies for the specified script and language"},
     { "regenBitmaps", (PyCFunction) PyFFFont_regenBitmaps, METH_VARARGS, "Rerasterize the bitmap fonts specified in the argument tuple" },
-    { "removeAnchorClass", PyFFFont_removeAnchorClass, METH_VARARGS, "Removes the named anchor class" },
-    { "removeGlyph", PyFFFont_removeGlyph, METH_VARARGS, "Removes the glyph from the font" },
-    { "removeLookup", PyFFFont_removeLookup, METH_VARARGS, "Removes the named lookup" },
-    { "removeLookupSubtable", PyFFFont_removeLookupSubtable, METH_VARARGS, "Removes the named lookup subtable" },
-    { "saveNamelist", PyFFFont_saveNamelist, METH_VARARGS, "Saves the namelist of the current font." },
-    { "replaceAll", PyFFFont_replaceAll, METH_VARARGS, "Searches for a pattern in the font and replaces it with another everywhere it was found" },
-    { "find", PyFFFont_find, METH_VARARGS, "Searches for a pattern in the font and returns an iterator which produces glyphs with that pattern" },
-    { "glyphs", PyFFFont_glyphs, METH_VARARGS, "Returns an iterator over all glyphs" },
+    { "removeAnchorClass", (PyCFunction) PyFFFont_removeAnchorClass, METH_VARARGS, "Removes the named anchor class" },
+    { "removeGlyph", (PyCFunction) PyFFFont_removeGlyph, METH_VARARGS, "Removes the glyph from the font" },
+    { "removeLookup", (PyCFunction) PyFFFont_removeLookup, METH_VARARGS, "Removes the named lookup" },
+    { "removeLookupSubtable", (PyCFunction) PyFFFont_removeLookupSubtable, METH_VARARGS, "Removes the named lookup subtable" },
+    { "saveNamelist", (PyCFunction) PyFFFont_saveNamelist, METH_VARARGS, "Saves the namelist of the current font." },
+    { "replaceAll", (PyCFunction) PyFFFont_replaceAll, METH_VARARGS, "Searches for a pattern in the font and replaces it with another everywhere it was found" },
+    { "find", (PyCFunction) PyFFFont_find, METH_VARARGS, "Searches for a pattern in the font and returns an iterator which produces glyphs with that pattern" },
+    { "glyphs", (PyCFunction) PyFFFont_glyphs, METH_VARARGS, "Returns an iterator over all glyphs" },
 /* Selection based */
-    { "clear", PyFFFont_clear, METH_NOARGS, "Clears all selected glyphs" },
-    { "cut", PyFFFont_cut, METH_NOARGS, "Cuts all selected glyphs" },
-    { "copy", PyFFFont_copy, METH_NOARGS, "Copies all selected glyphs" },
-    { "copyReference", PyFFFont_copyReference, METH_NOARGS, "Copies all selected glyphs as references" },
-    { "paste", PyFFFont_paste, METH_NOARGS, "Pastes the clipboard into the selected glyphs (clearing them first)" },
-    { "pasteInto", PyFFFont_pasteInto, METH_NOARGS, "Pastes the clipboard into the selected glyphs (merging with what's there)" },
-    { "unlinkReferences", PyFFFont_unlinkReferences, METH_NOARGS, "Unlinks all references in the selected glyphs" },
+    { "clear", (PyCFunction) PyFFFont_clear, METH_NOARGS, "Clears all selected glyphs" },
+    { "cut", (PyCFunction) PyFFFont_cut, METH_NOARGS, "Cuts all selected glyphs" },
+    { "copy", (PyCFunction) PyFFFont_copy, METH_NOARGS, "Copies all selected glyphs" },
+    { "copyReference", (PyCFunction) PyFFFont_copyReference, METH_NOARGS, "Copies all selected glyphs as references" },
+    { "paste", (PyCFunction) PyFFFont_paste, METH_NOARGS, "Pastes the clipboard into the selected glyphs (clearing them first)" },
+    { "pasteInto", (PyCFunction) PyFFFont_pasteInto, METH_NOARGS, "Pastes the clipboard into the selected glyphs (merging with what's there)" },
+    { "unlinkReferences", (PyCFunction) PyFFFont_unlinkReferences, METH_NOARGS, "Unlinks all references in the selected glyphs" },
     { "replaceWithReference", (PyCFunction) PyFFFont_replaceWithReference, METH_VARARGS, "Replaces any inline copies of any of the selected glyphs with a reference" },
     { "correctReferences", (PyCFunction) PyFFFont_correctReferences, METH_NOARGS, "Replaces any inline copies of any of the selected glyphs with a reference" },
 
     { "addExtrema", (PyCFunction) PyFFFont_AddExtrema, METH_NOARGS, "Add extrema to the contours of the glyph"},
     { "addSmallCaps", (PyCFunction) PyFFFont_addSmallCaps, METH_VARARGS | METH_KEYWORDS, "For selected upper/lower case (latin, greek, cyrillic) characters, add a small caps variant of that glyph"},
-    { "autoHint", PyFFFont_autoHint, METH_NOARGS, "Guess at postscript hints"},
-    { "autoInstr", PyFFFont_autoInstr, METH_NOARGS, "Guess at truetype instructions"},
+    { "autoHint", (PyCFunction) PyFFFont_autoHint, METH_NOARGS, "Guess at postscript hints"},
+    { "autoInstr", (PyCFunction) PyFFFont_autoInstr, METH_NOARGS, "Guess at truetype instructions"},
     { "autoWidth", (PyCFunction) PyFFFont_autoWidth, METH_VARARGS | METH_KEYWORDS, "Guess horizontal advance widths for selected glyphs" },
-    { "autoTrace", PyFFFont_autoTrace, METH_NOARGS, "Autotrace any background images"},
-    { "build", PyFFFont_Build, METH_NOARGS, "If the current glyph is an accented character\nand all components are in the font\nthen build it out of references" },
+    { "autoTrace", (PyCFunction) PyFFFont_autoTrace, METH_NOARGS, "Autotrace any background images"},
+    { "build", (PyCFunction) PyFFFont_Build, METH_NOARGS, "If the current glyph is an accented character\nand all components are in the font\nthen build it out of references" },
     { "canonicalContours", (PyCFunction) PyFFFont_canonicalContours, METH_NOARGS, "Orders the contours in the current glyph by the x coordinate of their leftmost point. (This can reduce the size of the postscript charstring needed to describe the glyph(s)."},
     { "canonicalStart", (PyCFunction) PyFFFont_canonicalStart, METH_NOARGS, "Sets the start point of all the contours of the current glyph to be the leftmost point on the contour."},
     { "changeWeight", (PyCFunction) PyFFFont_changeWeight, METH_VARARGS, "Change the weight (thickness) of the stems of the selected glyphs"},
@@ -16424,7 +16996,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "cluster", (PyCFunction) PyFFFont_Cluster, METH_VARARGS, "Cluster the points of a glyph towards common values" },
     /*{ "compareGlyphs", (PyCFunction) PyFFFont_compareGlyphs, METH_VARARGS, "Compares two sets of glyphs"},*/
     /* compareGlyphs assumes an old scripting context */
-    { "correctDirection", (PyCFunction) PyFFFont_Correct, METH_NOARGS, "Orient a layer so that external contours are clockwise and internal counter clockwise." },
+    { "correctDirection", (PyCFunction) PyFFFont_correctDirection, METH_NOARGS, "Orient a layer so that external contours are clockwise and internal counter clockwise." },
     { "genericGlyphChange", (PyCFunction) PyFFFont_genericGlyphChange, METH_VARARGS | METH_KEYWORDS, "Rather like changeWeight or condenseExtend but with more options."},
     { "italicize", (PyCFunction) PyFFFont_italicize, METH_VARARGS | METH_KEYWORDS, "Italicize the selected glyphs"},
     { "intersect", (PyCFunction) PyFFFont_Intersect, METH_NOARGS, "Leaves the areas where the contours of a glyph overlap."},
@@ -16434,7 +17006,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "stroke", (PyCFunction)PyFFFont_Stroke, METH_VARARGS, "Strokes the countours in a glyph"},
     { "transform", (PyCFunction)PyFFFont_Transform, METH_VARARGS, "Transform a font by a 6 element matrix." },
     { "nltransform", (PyCFunction)PyFFFont_NLTransform, METH_VARARGS, "Transform a font by non-linear expessions for x and y." },
-    { "validate", PyFFFont_validate, METH_VARARGS, "Check whether a font is valid and return True if it is." },
+    { "validate", (PyCFunction)PyFFFont_validate, METH_VARARGS, "Check whether a font is valid and return True if it is." },
 
     PYMETHODDEF_EMPTY /* Sentinel */
 };
@@ -16442,18 +17014,26 @@ static PyMethodDef PyFF_Font_methods[] = {
 /* ************************************************************************** */
 /* *********************** Font as glyph dictionary ************************* */
 /* ************************************************************************** */
-static Py_ssize_t PyFF_FontLength( PyObject *self ) {
-return( ((PyFF_Font *) self)->fv->map->enccount );
+static Py_ssize_t PyFF_FontLength( PyObject *object ) {
+    PyFF_Font *self = (PyFF_Font*)object;
+    if ( CheckIfFontClosed(self) )
+return (-1);
+return( self->fv->map->enccount );
 }
 
-static PyObject *PyFF_FontIndex( PyObject *self, PyObject *index ) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
-    SplineFont *sf = fv->sf;
+static PyObject *PyFF_FontIndex( PyObject *object, PyObject *index ) {
+    PyFF_Font *self = (PyFF_Font*)object;
+    FontViewBase *fv;
+    SplineFont *sf;
     SplineChar *sc = NULL;
 #if PY_MAJOR_VERSION >= 3
     int index_is_bytes = false;
 #endif
 
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
+    sf = fv->sf;
     if ( STRING_CHECK(index)) {
     char *name;
 #if PY_MAJOR_VERSION >= 3
@@ -16491,14 +17071,19 @@ return( NULL );
 return( PySC_From_SC_I(sc));
 }
 
-static int PyFF_FontContains( PyObject *self, PyObject *index ) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
-    SplineFont *sf = fv->sf;
+static int PyFF_FontContains( PyObject *object, PyObject *index ) {
+    PyFF_Font *self = (PyFF_Font*)object;
+    FontViewBase *fv;
+    SplineFont *sf;
     SplineChar *sc = NULL;
 #if PY_MAJOR_VERSION >= 3
     int index_is_bytes = false;
 #endif
 
+    if ( CheckIfFontClosed(self) )
+return (-1);
+    fv = self->fv;
+    sf = fv->sf;
     if ( STRING_CHECK(index)) {
 #if PY_MAJOR_VERSION >= 3
     index = PyUnicode_AsUTF8String(index);
@@ -16580,7 +17165,7 @@ static PyTypeObject PyFF_FontType = {
     NULL,                      /* tp_clear */
     NULL,                      /* tp_richcompare */
     0,                         /* tp_weaklistoffset */
-    fontiter_new,              /* tp_iter */
+    fontiter_new_wholefont,    /* tp_iter */
     NULL,                      /* tp_iternext */
     PyFF_Font_methods,         /* tp_methods */
     NULL,                      /* tp_members */
