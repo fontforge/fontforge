@@ -82,8 +82,6 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 if THE_PROGRAMS
 
 fontforge_SOURCES = main.c
-fontforge_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
-	$(MY_CFLAGS)
 fontforge_LDADD = libfontforgeexe.la $(LDADD)
 fontforge_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -export-dynamic
 
@@ -111,11 +109,6 @@ libfontforge_la_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c	\
 	activeinui.c pluginloading.c is_LIGATURE.c
 nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
-
-libfontforge_la_CPPFLAGS = "-I$(top_builddir)/inc"					\
-	"-I$(top_srcdir)/inc" "-DSHAREDIR=\"${pkgdatadir}\""			\
-	"-DDOCDIR=\"${docdir}\"" "-DPLUGINDIR=\"${pkglibdir}/plugins\""	\
-	$(MY_CFLAGS)
 
 libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD)
 
@@ -167,7 +160,6 @@ endif !GRAPHICAL_USER_INTERFACE
 
 nodist_libfontforgeexe_la_SOURCES = exelibstamp.c
 
-libfontforgeexe_la_CPPFLAGS = $(libfontforge_la_CPPFLAGS)
 libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS) $(LIBADD)
 
 # Using -release instead of -version-info seems appropriate in the
@@ -187,15 +179,18 @@ endif GRAPHICAL_USER_INTERFACE
 
 LDADD = $(LIBADD)
 
+AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
+	"-DSHAREDIR=\"${pkgdatadir}\"" "-DDOCDIR=\"${docdir}\""	\
+	"-DPLUGINDIR=\"${pkglibdir}/plugins\"" $(MY_CFLAGS)
+
 #--------------------------------------------------------------------------
 
 # In splinerefigure.c, the slight error introduced occasionally by
 # optimization turns out to have disastrous effects. Compile it
 # without optimization.
 splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
-	$(LIBTOOL) --mode=compile $(CC) -g -DHAVE_CONFIG_H -c -o	\
-		splinerefigure.lo $(libfontforge_la_CPPFLAGS)			\
-		$(srcdir)/splinerefigure.c
+	$(LIBTOOL) --mode=compile $(CC) -g -DHAVE_CONFIG_H -c -o		\
+		splinerefigure.lo $(AM_CPPFLAGS) $(srcdir)/splinerefigure.c
 
 #--------------------------------------------------------------------------
 
