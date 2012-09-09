@@ -5579,8 +5579,11 @@ static PyTypeObject PyFF_MathKernType = {
 /* ************************************************************************** */
 
 static void PyFF_Glyph_dealloc(PyFF_Glyph *self) {
-    if ( self->sc!=NULL )
+    if ( self->sc!=NULL ) {
+	if ( self->sc->python_sc_object == self )
+	    self->sc->python_sc_object = NULL;
 	self->sc = NULL;
+    }
     Py_XDECREF(self->layers);
     Py_XDECREF(self->refs);
     Py_XDECREF(self->mk);
@@ -10411,10 +10414,14 @@ static PyTypeObject PyFF_FontIterType = {
 /* ************************************************************************** */
 
 static void PyFF_Font_dealloc(PyFF_Font *self) {
-    if ( self->fv!=NULL )
+    if ( self->fv!=NULL ) {
+	if ( self->fv->python_fv_object == self )
+	    self->fv->python_fv_object = NULL;
 	self->fv = NULL;
+    }
     Py_XDECREF(self->selection);
     Py_XDECREF(self->cvt);
+    Py_XDECREF(self->layers);
     Py_XDECREF(self->private);
     Py_XDECREF(self->math);
     ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
@@ -16723,7 +16730,8 @@ static void PyFF_AWGlyph_dealloc(PyFF_AWGlyph *self) {
     Py_XDECREF(self->left);
     Py_XDECREF(self->right);
     if ( self->base!=NULL ) {
-	self->base->python_data = NULL;
+	if ( self->base->python_data == self )
+	    self->base->python_data = NULL;
 	self->base = NULL;
     }
     self->ob_type->tp_free((PyObject *) self);
