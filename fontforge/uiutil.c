@@ -302,7 +302,7 @@ void help(char *file) {
 
 void help(char *file) {
     char fullspec[1024], *temp, *pt;
-
+    
     if ( browser[0]=='\0' )
 	findbrowser();
 #ifndef __CygWin
@@ -323,8 +323,9 @@ return;
 #else
 		strcpy(fullspec,"/usr/local/share/doc/fontforge/");
 #endif
-	    } else
+	    } else {
 		strcpy(fullspec,helpdir);
+	    }
 	}
 	strcat(fullspec,file);
 	if (( pt = strrchr(fullspec,'#') )!=NULL ) *pt ='\0';
