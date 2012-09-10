@@ -404,23 +404,15 @@ extern GFont *GDrawAttachFont(GWindow gw, FontRequest *rq);
 extern FontRequest *GDrawDecomposeFont(GFont *fi, FontRequest *rq);
 extern void GDrawFontMetrics(GFont *fi,int *as, int *ds, int *ld);
 extern void GDrawWindowFontMetrics(GWindow gw,GFont *fi,int *as, int *ds, int *ld);
-int32 GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32 cnt, FontMods *mods,
-	GTextBounds *size);
+extern int32 GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32 cnt, FontMods *mods, GTextBounds *size);
 extern int32 GDrawGetTextWidth(GWindow gw, const unichar_t *text, int32 cnt, FontMods *mods);
 extern int32 GDrawDrawText(GWindow gw, int32 x, int32 y, const unichar_t *txt, int32 cnt, FontMods *mods, Color col);
 /* Routines that handle bidirectional text */
 /* (slower than the equivalent left to right routines) */
 /* will call pango if available. */
-extern int32 GDrawDrawBiText(GWindow gw, int32 x, int32 y, const unichar_t *txt, int32 cnt, FontMods *mods, Color col);
-extern int32 GDrawDrawBiText8(GWindow gw, int32 x, int32 y, const char *txt, int32 cnt, FontMods *mods, Color col);
-extern int32 GDrawGetBiTextWidth(GWindow gw,const unichar_t *text, int len, int32 cnt, FontMods *mods);
-extern int32 GDrawGetBiText8Width(GWindow gw,const char *text, int len, int32 cnt, FontMods *mods);
-extern int32 GDrawGetBiTextBounds(GWindow gw,const unichar_t *text, int32 cnt, FontMods *mods, GTextBounds *bounds);
-extern int32 GDrawGetBiText8Bounds(GWindow gw,const char *text, int32 cnt, FontMods *mods, GTextBounds *bounds);
 extern int GDrawFontHasCharset(FontInstance *fi,/*enum charset*/int charset);
 /* UTF8 routines */
-int32 GDrawGetText8Bounds(GWindow gw,char *text, int32 cnt, FontMods *mods,
-	GTextBounds *size);
+extern int32 GDrawGetText8Bounds(GWindow gw, const char *text, int32 cnt, FontMods *mods, GTextBounds *size);
 extern int32 GDrawGetText8Width(GWindow gw, const char *text, int32 cnt, FontMods *mods);
 extern int32 GDrawDrawText8(GWindow gw, int32 x, int32 y, const char *txt, int32 cnt, FontMods *mods, Color col);
 

@@ -409,10 +409,10 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     }
     if ( y<=high && ii->instrdata->instr_cnt==0 && i==0 ) {
 	if ( ii->instrdata->in_composit ) {
-	    GDrawDrawBiText8(pixmap,num_end+EDGE_SPACING,y+ii->as,_("<instrs inherited>"),-1,NULL,0xff0000);
+	    GDrawDrawText8(pixmap,num_end+EDGE_SPACING,y+ii->as,_("<instrs inherited>"),-1,NULL,0xff0000);
 	    y += ii->fh;
 	}
-	GDrawDrawBiText8(pixmap,num_end+EDGE_SPACING,y+ii->as,_("<no instrs>"),-1,NULL,0xff0000);
+	GDrawDrawText8(pixmap,num_end+EDGE_SPACING,y+ii->as,_("<no instrs>"),-1,NULL,0xff0000);
     } else {
 	int temp_indent;
 	for ( ; y<=high && i<ii->instrdata->instr_cnt+1; ++i ) {
@@ -455,8 +455,8 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 	    }
 	    x = addr_end + EDGE_SPACING;
 	    if ( ii->showhex )
-		GDrawDrawBiText(pixmap,x,y+ii->as,uins,-1,NULL,MAIN_FOREGROUND);
-	    GDrawDrawBiText(pixmap,num_end+EDGE_SPACING+temp_indent*4,y+ii->as,uname,-1,NULL,MAIN_FOREGROUND);
+		GDrawDrawText(pixmap,x,y+ii->as,uins,-1,NULL,MAIN_FOREGROUND);
+	    GDrawDrawText(pixmap,num_end+EDGE_SPACING+temp_indent*4,y+ii->as,uname,-1,NULL,MAIN_FOREGROUND);
 	    y += ii->fh;
 	}
 	if ( ii->showaddr && ii->lstopped!=-1 ) {
@@ -1232,13 +1232,13 @@ static void short_expose(ShortView *sv,GWindow pixmap,GRect *rect) {
     for ( ; y<=high && index<sv->len/2; ++index ) {
 	sprintf( caddr, "%d", index );
 	x = sv->addrend - ADDR_SPACER - GDrawGetText8Width(pixmap,caddr,-1,NULL);
-	GDrawDrawBiText8(pixmap,x,y+sv->as,caddr,-1,NULL,MAIN_FOREGROUND);
+	GDrawDrawText8(pixmap,x,y+sv->as,caddr,-1,NULL,MAIN_FOREGROUND);
 
 	sprintf( cval, "%d", sv->edits[index] );
-	GDrawDrawBiText8(pixmap,sv->addrend,y+sv->as,cval,-1,NULL,MAIN_FOREGROUND);
+	GDrawDrawText8(pixmap,sv->addrend,y+sv->as,cval,-1,NULL,MAIN_FOREGROUND);
 
 	if ( sv->comments[index]!=NULL )
-	    GDrawDrawBiText8(pixmap,sv->valend,y+sv->as,sv->comments[index],-1,NULL,MAIN_FOREGROUND);
+	    GDrawDrawText8(pixmap,sv->valend,y+sv->as,sv->comments[index],-1,NULL,MAIN_FOREGROUND);
 	y += sv->fh;
     }
 }
@@ -1359,10 +1359,10 @@ static int sv_e_h(GWindow gw, GEvent *event) {
 	r.x = r.y = 0; r.width = sv->vwidth+40; r.height = sv->fh-1;
 	GDrawFillRect(gw,&r,0x808080);
 	GDrawSetFont(gw,sv->gfont);
-	x = sv->addrend - ADDR_SPACER - 2 - GDrawGetBiText8Width(gw,_("Index"),-1,-1,NULL);
-	GDrawDrawBiText8(gw,x,sv->as,_("Index"),-1,NULL,0xffffff);
-	GDrawDrawBiText8(gw,sv->addrend,sv->as,_("Value"),-1,NULL,0xffffff);
-	GDrawDrawBiText8(gw,sv->valend,sv->as,_("Comment"),-1,NULL,0xffffff);
+	x = sv->addrend - ADDR_SPACER - 2 - GDrawGetText8Width(gw,_("Index"),-1,NULL);
+	GDrawDrawText8(gw,x,sv->as,_("Index"),-1,NULL,0xffffff);
+	GDrawDrawText8(gw,sv->addrend,sv->as,_("Value"),-1,NULL,0xffffff);
+	GDrawDrawText8(gw,sv->valend,sv->as,_("Comment"),-1,NULL,0xffffff);
 	
 	GDrawDrawLine(gw,0,sv->fh-1,r.width,sv->fh-1,0x000000);
 	GDrawDrawLine(gw,0,sv->vheight+sv->fh,sv->vwidth,sv->vheight+sv->fh,0x000000);

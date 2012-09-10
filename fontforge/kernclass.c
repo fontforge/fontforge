@@ -1487,13 +1487,13 @@ return;
 	    int fg = err ? 0xff0000 : 0x006080;
 	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
 	    if ( len<=kcd->kernw )
-		GDrawDrawBiText8(pixmap,kcd->xstart+(kcd->kernw-len)/2,kcd->ystart2+i*kcd->kernh+kcd->as+1,
+		GDrawDrawText8(pixmap,kcd->xstart+(kcd->kernw-len)/2,kcd->ystart2+i*kcd->kernh+kcd->as+1,
 			buf,-1,NULL,fg);
 	    else {
 		r.x = kcd->xstart; r.width = kcd->kernw;
 		r.y = kcd->ystart2+i*kcd->kernh-1; r.height = kcd->kernh+1;
 		GDrawPushClip(pixmap,&r,&old3);
-		GDrawDrawBiText8(pixmap,r.x,r.y+kcd->as+1,
+		GDrawDrawText8(pixmap,r.x,r.y+kcd->as+1,
 			buf,-1,NULL,fg);
 		GDrawPopClip(pixmap,&old3);
 	    }
@@ -1507,13 +1507,13 @@ return;
 	    int fg = err ? 0xff0000 : 0x006080;
 	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
 	    if ( len<=kcd->kernw )
-		GDrawDrawBiText8(pixmap,kcd->xstart2+i*kcd->kernw+(kcd->kernw-len)/2,kcd->ystart+kcd->as+1,
+		GDrawDrawText8(pixmap,kcd->xstart2+i*kcd->kernw+(kcd->kernw-len)/2,kcd->ystart+kcd->as+1,
 		    buf,-1,NULL,fg);
 	    else {
 		r.x = kcd->xstart2+i*kcd->kernw; r.width = kcd->kernw;
 		r.y = kcd->ystart-1; r.height = kcd->kernh+1;
 		GDrawPushClip(pixmap,&r,&old3);
-		GDrawDrawBiText8(pixmap,r.x,r.y+kcd->as+1,
+		GDrawDrawText8(pixmap,r.x,r.y+kcd->as+1,
 			buf,-1,NULL,fg);
 		GDrawPopClip(pixmap,&old3);
 	    }
@@ -1535,7 +1535,7 @@ return;
 
 	    sprintf( buf, "%d", kcd->offsets[(i+kcd->offtop)*kcd->second_cnt+j+kcd->offleft] );
 	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
-	    GDrawDrawBiText8(pixmap,x+kcd->kernw-3-len,y+kcd->as+1,
+	    GDrawDrawText8(pixmap,x+kcd->kernw-3-len,y+kcd->as+1,
 		buf,-1,NULL,MAIN_FOREGROUND);
 	}
     }

@@ -960,7 +960,7 @@ return;
 	    off = (smd->stateh-len*smd->fh)/2;
 	    for ( j=0; j<len; ++j ) {
 		ubuf[0] = buf[j];
-		GDrawDrawBiText(pixmap,smd->xstart+3,smd->ystart2+i*smd->stateh+off+j*smd->fh+smd->as,
+		GDrawDrawText(pixmap,smd->xstart+3,smd->ystart2+i*smd->stateh+off+j*smd->fh+smd->as,
 		    ubuf,1,NULL,0xff0000);
 	    }
 	}
@@ -969,11 +969,11 @@ return;
 	GDrawDrawLine(pixmap,smd->xstart2+i*smd->statew,smd->ystart,smd->xstart2+i*smd->statew,smd->ystart+rect.height,
 		0x808080);
 	if ( i+smd->offleft<smd->class_cnt ) {
-	    GDrawDrawBiText8(pixmap,smd->xstart2+i*smd->statew+1,smd->ystart+smd->as+1,
+	    GDrawDrawText8(pixmap,smd->xstart2+i*smd->statew+1,smd->ystart+smd->as+1,
 		"Class",-1,NULL,0xff0000);
 	    sprintf( buf, "%d", i+smd->offleft );
 	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
-	    GDrawDrawBiText8(pixmap,smd->xstart2+i*smd->statew+(smd->statew-len)/2,smd->ystart+smd->fh+smd->as+1,
+	    GDrawDrawText8(pixmap,smd->xstart2+i*smd->statew+(smd->statew-len)/2,smd->ystart+smd->fh+smd->as+1,
 		buf,-1,NULL,0xff0000);
 	}
     }
@@ -994,7 +994,7 @@ return;
 
 	    sprintf( buf, "%d", this->next_state );
 	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
-	    GDrawDrawBiText8(pixmap,x+(smd->statew-len)/2,y+smd->as+1,
+	    GDrawDrawText8(pixmap,x+(smd->statew-len)/2,y+smd->as+1,
 		buf,-1,NULL,0x000000);
 
 	    ubuf[0] = (this->flags&0x8000)? 'M' : ' ';
@@ -1007,7 +1007,7 @@ return;
 		ubuf[3] = '\0';
 	    }
 	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-	    GDrawDrawBiText(pixmap,x+(smd->statew-len)/2,y+smd->fh+smd->as+1,
+	    GDrawDrawText(pixmap,x+(smd->statew-len)/2,y+smd->fh+smd->as+1,
 		ubuf,-1,NULL,0x000000);
 
 	    buf[0]='\0';
@@ -1033,7 +1033,7 @@ return;
 		    kddd = false;
 	    }
 	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
-	    GDrawDrawBiText8(pixmap,x+(smd->statew-len)/2,y+2*smd->fh+smd->as+1,
+	    GDrawDrawText8(pixmap,x+(smd->statew-len)/2,y+2*smd->fh+smd->as+1,
 		buf,-1,NULL,0x000000);
 
 	    buf[0] = '\0';
@@ -1052,7 +1052,7 @@ return;
 		else buf[0] = '\0';
 	    }
 	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
-	    GDrawDrawBiText8(pixmap,x+(smd->statew-len)/2,y+3*smd->fh+smd->as+1,
+	    GDrawDrawText8(pixmap,x+(smd->statew-len)/2,y+3*smd->fh+smd->as+1,
 		buf,-1,NULL,0x000000);
 	}
     }

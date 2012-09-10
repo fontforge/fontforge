@@ -283,9 +283,9 @@ static int ruler_e_h(GWindow gw, GEvent *event) {
 	GDrawSetFont(gw,cv->rfont);
 	/*GDrawFillRect(gw,NULL,0xe0e0c0);*/
 	for ( line=0; RulerText(cv,ubuf,line); ++line )
-	    GDrawDrawBiText(gw,2,line*cv->rfh+cv->ras+1,ubuf,-1,NULL,0x000000);
+	    GDrawDrawText(gw,2,line*cv->rfh+cv->ras+1,ubuf,-1,NULL,0x000000);
 	for ( i=0; RulerTextIntersection(cv,ubuf,i); ++i )
-	    GDrawDrawBiText(gw,2,(line+i)*cv->rfh+cv->ras+1,ubuf,-1,NULL,0x000000);
+	    GDrawDrawText(gw,2,(line+i)*cv->rfh+cv->ras+1,ubuf,-1,NULL,0x000000);
       break;
       case et_mousedown:
 	cv->autonomous_ruler_w = false;
@@ -441,12 +441,12 @@ static void RulerPlace(CharView *cv, GEvent *event) {
     GDrawSetFont(cv->ruler_w,cv->rfont);
     width = h = 0;
     for ( i=0; RulerText(cv,ubuf,i); ++i ) {
-	w = GDrawGetBiTextWidth(cv->ruler_w,ubuf,-1,-1,NULL);
+	w = GDrawGetTextWidth(cv->ruler_w,ubuf,-1,NULL);
 	if ( w>width ) width = w;
 	h += cv->rfh;
     }
     for ( i=0; RulerTextIntersection(cv,ubuf,i); ++i ) {
-	w = GDrawGetBiTextWidth(cv->ruler_w,ubuf,-1,-1,NULL);
+	w = GDrawGetTextWidth(cv->ruler_w,ubuf,-1,NULL);
 	if ( w>width ) width = w;
 	h += cv->rfh;
     }
@@ -618,14 +618,14 @@ static int cpinfo_e_h(GWindow gw, GEvent *event) {
 	GDrawSetFont(gw,cv->rfont);
 	for ( which = 1; which>=0; --which ) {
 	    for ( line=0; PtInfoText(cv,line,which,buf,sizeof(buf))!=NULL; ++line ) {
-		GDrawDrawBiText8(gw,2,y,buf,-1,NULL,0x000000);
+		GDrawDrawText8(gw,2,y,buf,-1,NULL,0x000000);
 		y += cv->rfh+1;
 	    }
 	    GDrawDrawLine(gw,0,y+2-cv->ras,2000,y+2-cv->ras,0x000000);
 	    y += 4;
 	}
 	if ( PtInfoText(cv,0,-1,buf,sizeof(buf))!=NULL )
-	    GDrawDrawBiText8(gw,2,y,buf,-1,NULL,0x000000);
+	    GDrawDrawText8(gw,2,y,buf,-1,NULL,0x000000);
       break;
     }
 return( true );
@@ -673,14 +673,14 @@ static void CpInfoPlace(CharView *cv, GEvent *event) {
     h = 0; width = 0;
     for ( which = 0; which<2; ++which ) {
 	for ( line=0; PtInfoText(cv,line,which,buf,sizeof(buf))!=NULL; ++line ) {
-	    w = GDrawGetBiText8Width(cv->ruler_w,buf,-1,-1,NULL);
+	    w = GDrawGetText8Width(cv->ruler_w,buf,-1,NULL);
 	    if ( w>width ) width = w;
 	    h += cv->rfh+1;
 	}
 	h += 4;
     }
     if ( PtInfoText(cv,0,-1,buf,sizeof(buf))!=NULL ) {
-	w = GDrawGetBiText8Width(cv->ruler_w,buf,-1,-1,NULL);
+	w = GDrawGetText8Width(cv->ruler_w,buf,-1,NULL);
 	if ( w>width ) width = w;
 	h += cv->rfh+1;
     }

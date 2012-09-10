@@ -2120,7 +2120,7 @@ static int _SizeCnt(struct att_dlg *att,struct node *node, int lpos,int depth) {
     if ( node->monospace )
 	GDrawSetFont(att->v,att->monofont);
     node->lpos = lpos++;
-    len = 5+8*depth+ att->as + 5 + GDrawGetBiText8Width(att->v,node->label,-1,-1,NULL);
+    len = 5+8*depth+ att->as + 5 + GDrawGetText8Width(att->v,node->label,-1,NULL);
     if ( len>att->maxl ) att->maxl = len;
     if ( node->monospace )
 	GDrawSetFont(att->v,att->font);
@@ -2263,12 +2263,12 @@ static void AttExpose(struct att_dlg *att,GWindow pixmap,GRect *rect) {
 		ept = findendquote(spt);
 	}
 	if ( ept==NULL )
-	    GDrawDrawBiText8(pixmap,r.x+r.width+5,y,node->label,-1,NULL,fg);
+	    GDrawDrawText8(pixmap,r.x+r.width+5,y,node->label,-1,NULL,fg);
 	else {
 	    int len;
-	    len = GDrawDrawBiText8(pixmap,r.x+r.width+5,y,node->label,spt-node->label,NULL,fg);
-	    len += GDrawDrawBiText8(pixmap,r.x+r.width+5+len,y,spt,ept-spt,NULL,0x0000ff);
-	    GDrawDrawBiText8(pixmap,r.x+r.width+5+len,y,ept,-1,NULL,fg);
+	    len = GDrawDrawText8(pixmap,r.x+r.width+5,y,node->label,spt-node->label,NULL,fg);
+	    len += GDrawDrawText8(pixmap,r.x+r.width+5+len,y,spt,ept-spt,NULL,0x0000ff);
+	    GDrawDrawText8(pixmap,r.x+r.width+5+len,y,ept,-1,NULL,fg);
 	}
 	if ( node->monospace )
 	    GDrawSetFont(pixmap,att->font);

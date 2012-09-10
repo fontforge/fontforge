@@ -782,7 +782,7 @@ static void TPDDraw(TilePathDlg *tpd, GWindow pixmap, GEvent *event) {
 	GDrawDrawRect(pixmap,&r,0);
 
 	GDrawSetFont(pixmap,cv->inactive ? tpd->plain : tpd->bold);
-	GDrawDrawBiText8(pixmap,r.x,pos.y-2-tpd->fh+tpd->as,_(tilenames[i]),-1,NULL,0);
+	GDrawDrawText8(pixmap,r.x,pos.y-2-tpd->fh+tpd->as,_(tilenames[i]),-1,NULL,0);
     }
 }
 

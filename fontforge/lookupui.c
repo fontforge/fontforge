@@ -4935,10 +4935,10 @@ return( GGadgetDispatchEvent(active_fv->vsb,event));
       case et_expose:
 	FVDrawInfo(active_fv,pixmap,event);
 	GDrawSetFont(pixmap, kf->first_fv->notactive? kf->plain : kf->bold );
-	GDrawDrawBiText8(pixmap,10,kf->mbh+kf->first_fv->infoh+kf->as,
+	GDrawDrawText8(pixmap,10,kf->mbh+kf->first_fv->infoh+kf->as,
 		_("Select glyphs for the first part of the kern pair"),-1,NULL,0x000000);
 	GDrawSetFont(pixmap, kf->second_fv->notactive? kf->plain : kf->bold );
-	GDrawDrawBiText8(pixmap,10,kf->label2_y+kf->as,
+	GDrawDrawText8(pixmap,10,kf->label2_y+kf->as,
 		_("Select glyphs for the second part of the kern pair"),-1,NULL,0x000000);
       break;
       case et_char:

@@ -571,35 +571,7 @@ struct bounds {
     int ymin, ymax;
 };
 
-int32 GDrawDrawText(GWindow gw, int32 x, int32 y,
-	const unichar_t *text, int32 cnt, FontMods *mods, Color col) {
-return( GDrawDrawBiText(gw, x, y, text, cnt, mods, col) );
-}
-
-int32 GDrawGetTextWidth(GWindow gw,const unichar_t *text, int32 cnt, FontMods *mods) {
-return( GDrawGetBiTextWidth(gw, text, cnt, cnt, mods) );
-}
-
-int32 GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32 cnt, FontMods *mods,
-	GTextBounds *size) {
-return( GDrawGetBiTextBounds(gw, text, cnt, mods, size) );
-}
-
 /* UTF8 routines */
-
-int32 GDrawDrawText8(GWindow gw, int32 x, int32 y,
-	const char *text, int32 cnt, FontMods *mods, Color col) {
-return( GDrawDrawBiText8(gw, x, y, text, cnt, mods, col) );
-}
-
-int32 GDrawGetText8Width(GWindow gw,const char *text, int32 cnt, FontMods *mods) {
-return( GDrawGetBiText8Width(gw, text, cnt, cnt, mods) );
-}
-
-int32 GDrawGetText8Bounds(GWindow gw,char *text, int32 cnt, FontMods *mods,
-	GTextBounds *size) {
-return( GDrawGetBiText8Bounds(gw, text, cnt, mods, size) );
-}
 
 /* End UTF8 routines */
 
@@ -668,20 +640,20 @@ return( 0 );
 return( _GXPDraw_DoText8(w,x,y,text,cnt,mods,col,drawit,arg));
 }
 
-int32 GDrawDrawBiText(GWindow gw, int32 x, int32 y,
+int32 GDrawDrawText(GWindow gw, int32 x, int32 y,
 	const unichar_t *text, int32 cnt, FontMods *mods, Color col) {
     struct tf_arg arg;
 
 return( __GXPDraw_DoText(gw,x,y,text,cnt,mods,col,tf_drawit,&arg));
 }
 
-int32 GDrawGetBiTextWidth(GWindow gw,const unichar_t *text, int len, int32 cnt, FontMods *mods) {
+int32 GDrawGetTextWidth(GWindow gw,const unichar_t *text, int32 cnt, FontMods *mods) {
     struct tf_arg arg;
 
 return( __GXPDraw_DoText(gw,0,0,text,cnt,mods,0x0,tf_width,&arg));
 }
 
-int32 GDrawGetBiTextBounds(GWindow gw,const unichar_t *text, int32 cnt, FontMods *mods, GTextBounds *bounds) {
+int32 GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32 cnt, FontMods *mods, GTextBounds *bounds) {
     int ret;
     struct tf_arg arg;
 
@@ -692,20 +664,20 @@ int32 GDrawGetBiTextBounds(GWindow gw,const unichar_t *text, int32 cnt, FontMods
 return( ret );
 }
 
-int32 GDrawDrawBiText8(GWindow gw, int32 x, int32 y,
+int32 GDrawDrawText8(GWindow gw, int32 x, int32 y,
 	const char *text, int32 cnt, FontMods *mods, Color col) {
     struct tf_arg arg;
 
 return( __GXPDraw_DoText8(gw,x,y,text,cnt,mods,col,tf_drawit,&arg));
 }
 
-int32 GDrawGetBiText8Width(GWindow gw, const char *text, int len, int32 cnt, FontMods *mods) {
+int32 GDrawGetText8Width(GWindow gw, const char *text, int32 cnt, FontMods *mods) {
     struct tf_arg arg;
 
 return( __GXPDraw_DoText8(gw,0,0,text,cnt,mods,0x0,tf_width,&arg));
 }
 
-int32 GDrawGetBiText8Bounds(GWindow gw,const char *text, int32 cnt, FontMods *mods, GTextBounds *bounds) {
+int32 GDrawGetText8Bounds(GWindow gw,const char *text, int32 cnt, FontMods *mods, GTextBounds *bounds) {
     int ret;
     struct tf_arg arg;
 

@@ -172,7 +172,7 @@ static int DrawTab(GWindow pixmap, GTabSet *gts, int i, int x, int y ) {
         GDrawFillRect(pixmap,&r,gts->g.box->active_border);
     }
 
-    GDrawDrawBiText(pixmap,x+(gts->tabs[i].width-gts->tabs[i].tw)/2,y+gts->rowh-gts->ds,
+    GDrawDrawText(pixmap,x+(gts->tabs[i].width-gts->tabs[i].tw)/2,y+gts->rowh-gts->ds,
 	    gts->tabs[i].name,-1,NULL,fg);
     gts->tabs[i].x = x;
     x += gts->tabs[i].width;
@@ -226,7 +226,7 @@ return( false );
 		r.width = gts->vert_list_width-10; r.height = gts->fh;
 		GDrawFillRect(pixmap,&r,gts->g.box->active_border);
 	    }
-	    GDrawDrawBiText(pixmap,x+gts->tabs[i].nesting*ni,y + gts->as,gts->tabs[i].name,-1,NULL,fg);
+	    GDrawDrawText(pixmap,x+gts->tabs[i].nesting*ni,y + gts->as,gts->tabs[i].name,-1,NULL,fg);
 	    y += gts->fh;
 	}
 	fg = gts->g.box->main_foreground;
@@ -386,7 +386,7 @@ static void GTabSet_Remetric(GTabSet *gts) {
     gts->vert_list_width = 0;
 
     for ( i=0; i<gts->tabcnt; ++i ) {
-	gts->tabs[i].tw = GDrawGetBiTextWidth(gts->g.base,gts->tabs[i].name,-1,-1,NULL);
+	gts->tabs[i].tw = GDrawGetTextWidth(gts->g.base,gts->tabs[i].name,-1,NULL);
 	gts->tabs[i].width = gts->tabs[i].tw + 2*bp;
 	in = gts->tabs[i].nesting*ni;
 	if ( gts->tabs[i].tw+in > gts->vert_list_width )

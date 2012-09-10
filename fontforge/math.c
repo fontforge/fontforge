@@ -1312,7 +1312,7 @@ static void MKDDraw(MathKernDlg *mkd, GWindow pixmap, GEvent *event) {
 	GDrawDrawRect(pixmap,&r,0);
 
 	GDrawSetFont(pixmap,cv->inactive ? mkd->plain : mkd->bold);
-	GDrawDrawBiText8(pixmap,r.x,5+mkd->as,cornernames[i],-1,NULL,0);
+	GDrawDrawText8(pixmap,r.x,5+mkd->as,cornernames[i],-1,NULL,0);
     }
 }
 

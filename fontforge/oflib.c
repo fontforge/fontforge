@@ -1753,32 +1753,32 @@ static int oflib_fonts_e_h(GWindow gw, GEvent *event) {
 			GDrawDrawLine(gw,box.x+(box.width/2),box.y+2, box.x+(box.width/2),box.y+box.height-2, 0x000000);
 		}
 		x = box.x + d->fh;
-		x += GDrawDrawBiText8(gw,x, box.y+d->as,
+		x += GDrawDrawText8(gw,x, box.y+d->as,
 			d->show[index]->name,-1,NULL,MAIN_FOREGROUND);
 		if ( x< box.x + d->fh + 10*d->fh )
 		    x = box.x + d->fh + 11*d->fh;
 		else
 		    x += d->as;
-		x += GDrawDrawBiText8(gw,x, box.y+d->as,
+		x += GDrawDrawText8(gw,x, box.y+d->as,
 			d->show[index]->author,-1,NULL,MAIN_FOREGROUND);
 		if ( x< box.x + d->fh + 17*d->fh )
 		    x = box.x + d->fh + 18*d->fh;
 		else
 		    x += d->as;
-		x += GDrawDrawBiText8(gw,x, box.y+d->as,
+		x += GDrawDrawText8(gw,x, box.y+d->as,
 			d->show[index]->license==ofll_ofl?"OFL":"PD",-1,NULL,MAIN_FOREGROUND);
 		if ( x< box.x + d->fh + 20*d->fh )
 		    x = box.x + d->fh + 21*d->fh;
 		else
 		    x += d->as;
-		x += GDrawDrawBiText8(gw,x, box.y+d->as,
+		x += GDrawDrawText8(gw,x, box.y+d->as,
 			d->show[index]->taglist,-1,NULL,MAIN_FOREGROUND);
 		if ( x< box.x + d->fh + 42*d->fh )
 		    x = box.x + d->fh + 43*d->fh;
 		else
 		    x += d->as;
 		formatOFLibDate(buffer,sizeof(buffer), d->show[index]->date );
-		x += GDrawDrawBiText8(gw,x, box.y+d->as,
+		x += GDrawDrawText8(gw,x, box.y+d->as,
 			buffer,-1,NULL,MAIN_FOREGROUND);
 		if ( d->show[index]->open && d->show[index]->urls!=NULL )
 		    du = d->show[index]->urls;
@@ -1787,7 +1787,7 @@ static int oflib_fonts_e_h(GWindow gw, GEvent *event) {
 	    } else {
 		if ( du->selected )
 		    GDrawFillRect(gw,&r,ACTIVE_BORDER);
-		GDrawDrawBiText8(gw,r.x + d->fh, r.y+d->as,
+		GDrawDrawText8(gw,r.x + d->fh, r.y+d->as,
 			du->comment,-1,NULL,MAIN_FOREGROUND);
 		if ( du->next!=NULL )
 		    du = du->next;

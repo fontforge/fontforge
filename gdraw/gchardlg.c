@@ -745,7 +745,7 @@ static void InsChrExpose( GWindow pixmap, GRect *rect) {
 	else
 	    sprintf( buffer, "Page: %d", inschr.page );
 	uc_strcpy(ubuf,buffer);
-	GDrawDrawBiText(pixmap,GDrawPointsToPixels(pixmap,6),
+	GDrawDrawText(pixmap,GDrawPointsToPixels(pixmap,6),
 		GDrawPointsToPixels(pixmap,90)+inschr.sas,
 		ubuf, -1, NULL, 0x000000 );
 	GDrawPopClip(pixmap,&old);
@@ -789,8 +789,8 @@ return;
     continue;
 	buf[0] = InsChrMapChar(i*16+j);
 	if ( buf[0]==0xad ) buf[0] = '-';	/* 0xad usually doesn't print */
-	width = GDrawGetBiTextWidth(pixmap,buf,1,1,NULL);
-	GDrawDrawBiText(pixmap,
+	width = GDrawGetTextWidth(pixmap,buf,1,NULL);
+	GDrawDrawText(pixmap,
 		j*inschr.spacing+(inschr.spacing-width)/2,
 		i*inschr.spacing+inschr.ybase+inschr.as+4,
 		buf,1,NULL,0x000000);

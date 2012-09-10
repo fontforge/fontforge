@@ -5689,7 +5689,7 @@ return( NULL );
     r.width = r.height = 2*fv->lab_height;
     GDrawFillRect(pixmap,&r,1);
     buf[0] = uni; buf[1] = 0;
-    GDrawDrawBiText(pixmap,2,fv->lab_height,buf,1,NULL,0);
+    GDrawDrawText(pixmap,2,fv->lab_height,buf,1,NULL,0);
     unrot = GDrawCopyScreenToImage(pixmap,&r);
     if ( unrot==NULL )
 return( NULL );
@@ -6173,13 +6173,13 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 	    } else if ( use_utf8 ) {
 		GTextBounds size;
 		if ( styles!=laststyles ) GDrawSetFont(pixmap,FVCheckFont(fv,styles));
-		width = GDrawGetBiText8Bounds(pixmap,utf8_buf,-1,mods,&size);
+		width = GDrawGetText8Bounds(pixmap,utf8_buf,-1,mods,&size);
 		if ( size.lbearing==0 && size.rbearing==0 ) {
 		    utf8_buf[0] = 0xe0 | (0xfffd>>12);
 		    utf8_buf[1] = 0x80 | ((0xfffd>>6)&0x3f);
 		    utf8_buf[2] = 0x80 | (0xfffd&0x3f);
 		    utf8_buf[3] = 0;
-		    width = GDrawGetBiText8Bounds(pixmap,utf8_buf,-1,mods,&size);
+		    width = GDrawGetText8Bounds(pixmap,utf8_buf,-1,mods,&size);
 		}
 		width = size.rbearing - size.lbearing+1;
 		if ( width >= fv->cbw-1 ) {
@@ -6187,7 +6187,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 		    width = fv->cbw-1;
 		}
 		if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 )
-		    GDrawDrawBiText8(pixmap,j*fv->cbw+(fv->cbw-1-width)/2-size.lbearing,i*fv->cbh+fv->lab_as+1,utf8_buf,-1,mods,fg^fgxor);
+		    GDrawDrawText8(pixmap,j*fv->cbw+(fv->cbw-1-width)/2-size.lbearing,i*fv->cbh+fv->lab_as+1,utf8_buf,-1,mods,fg^fgxor);
 		if ( width >= fv->cbw-1 )
 		    GDrawPopClip(pixmap,&old2);
 		laststyles = styles;
@@ -6199,7 +6199,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 		    width = fv->cbw-1;
 		}
 		if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 )
-		    GDrawDrawBiText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,i*fv->cbh+fv->lab_as+1,buf,-1,mods,fg^fgxor);
+		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,i*fv->cbh+fv->lab_as+1,buf,-1,mods,fg^fgxor);
 		if ( width >= fv->cbw-1 )
 		    GDrawPopClip(pixmap,&old2);
 		laststyles = styles;
@@ -6308,8 +6308,8 @@ return;
         }
     }
 
-    tlen = GDrawDrawBiText(pixmap,10,fv->mbh+fv->lab_as,ubuffer,ulen,NULL,fvglyphinfocol);
-    GDrawDrawBiText(pixmap,10+tlen,fv->mbh+fv->lab_as,ubuffer+ulen,-1,NULL,fg);
+    tlen = GDrawDrawText(pixmap,10,fv->mbh+fv->lab_as,ubuffer,ulen,NULL,fvglyphinfocol);
+    GDrawDrawText(pixmap,10+tlen,fv->mbh+fv->lab_as,ubuffer+ulen,-1,NULL,fg);
     GDrawPopClip(pixmap,&old);
 }
 
