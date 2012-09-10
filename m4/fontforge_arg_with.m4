@@ -63,7 +63,7 @@ AC_DEFUN([FONTFORGE_ARG_WITH_PANGO],
    FONTFORGE_ARG_WITH([pango],
       [AS_HELP_STRING([--without-pango],
           [build without Pango text rendering (use less sophisticated rendering instead)])],
-      [pango],
+      [pango >= 1.10],
       [FONTFORGE_WARN_PKG_NOT_FOUND([PANGO])],
       [_NO_LIBPANGO])
 ])
