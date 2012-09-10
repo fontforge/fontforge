@@ -233,72 +233,6 @@ static void GTextFieldFocusChanged(GTextField *gt,int gained) {
 	GDrawPostEvent(&e);
 }
 
-static void GTextFieldMakePassword(GTextField *gt, int start_of_change) {
-    int cnt = u_strlen(gt->text);
-    unichar_t *pt, *end;
-
-    if ( cnt>= gt->bilen ) {
-	gt->bilen = cnt + 50;
-	gt->bidata.text = grealloc(gt->bidata.text,gt->bilen*sizeof(unichar_t));
-    }
-    end = gt->bidata.text+cnt;
-    for ( pt = gt->bidata.text+start_of_change ; pt<end ;  )
-	*pt++ = '*';
-    *pt = '\0';
-}
-
-static void GTextFieldProcessBi(GTextField *gt, int start_of_change) {
-    int i, pos;
-    unichar_t *pt, *end;
-    GBiText bi;
-
-    if ( !gt->dobitext )
-	i = GDrawIsAllLeftToRight(gt->text+start_of_change,-1);
-    else
-	i = GDrawIsAllLeftToRight(gt->text,-1);
-    gt->dobitext = (i!=1);
-    if ( gt->dobitext ) {
-	int cnt = u_strlen(gt->text);
-	if ( cnt+1>= gt->bilen ) {
-	    gt->bilen = cnt + 50;
-	    free(gt->bidata.text); free(gt->bidata.level);
-	    free(gt->bidata.override); free(gt->bidata.type);
-	    free(gt->bidata.original);
-	    ++gt->bilen;
-	    gt->bidata.text = galloc(gt->bilen*sizeof(unichar_t));
-	    gt->bidata.level = galloc(gt->bilen*sizeof(uint8));
-	    gt->bidata.override = galloc(gt->bilen*sizeof(uint8));
-	    gt->bidata.type = galloc(gt->bilen*sizeof(uint16));
-	    gt->bidata.original = galloc(gt->bilen*sizeof(unichar_t *));
-	    --gt->bilen;
-	}
-	bi = gt->bidata;
-	pt = gt->text;
-	pos = 0;
-	gt->bidata.interpret_arabic = false;
-	do {
-	    end = u_strchr(pt,'\n');
-	    if ( end==NULL || !gt->multi_line ) end = pt+u_strlen(pt);
-	    else ++end;
-	    bi.text = gt->bidata.text+pos;
-	    bi.level = gt->bidata.level+pos;
-	    bi.override = gt->bidata.override+pos;
-	    bi.type = gt->bidata.type+pos;
-	    bi.original = gt->bidata.original+pos;
-	    bi.base_right_to_left = GDrawIsAllLeftToRight(pt,end-pt)==-1;
-	    GDrawBiText1(&bi,pt,end-pt);
-	    if ( bi.interpret_arabic ) gt->bidata.interpret_arabic = true;
-	    pos += end-pt;
-	    pt = end;
-	} while ( *pt!='\0' );
-	gt->bidata.len = cnt;
-	if ( !gt->multi_line ) {
-	    gt->bidata.base_right_to_left = bi.base_right_to_left;
-	    GDrawBiText2(&gt->bidata,0,-1);
-	}
-    }
-}
-
 static void GTextFieldPangoRefigureLines(GTextField *gt, int start_of_change) {
     char *utf8_text, *pt, *ept;
     unichar_t *upt, *uept;
@@ -469,20 +403,6 @@ static unichar_t *GTextFieldGetPtFromPos(GTextField *gt,int i,int xpos) {
     uc = utf82u_index(index8,gt->utf8_text + gt->lines8[i]);
     end = gt->text + gt->lines[i] + uc;
 return( end );
-}
-
-static int GTextFieldBiPosFromPos(GTextField *gt,int i,int pos) {
-    int ll,j;
-    unichar_t *pt = gt->text+pos;
-
-    if ( !gt->dobitext )
-return( pos );
-    ll = gt->lines[i+1]==-1?-1:gt->lines[i+1]-gt->lines[i]-1;
-    for ( j=gt->lines[i]; j<ll; ++j )
-	if ( gt->bidata.original[j] == pt )
-return( j );
-
-return( pos );
 }
 
 static int GTextFieldGetOffsetFromOffset(GTextField *gt,int l, int sel) {
