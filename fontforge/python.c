@@ -17372,10 +17372,10 @@ static void SetPythonModuleMetadata( PyObject *module ) {
     pyver = STRING_TO_PY(ver);
     Py_INCREF(pyver);
     PyModule_AddObject(module, "__version__", pyver);
-    snprintf(isodate, sizeof(isodate), "%04d-%02d-%02d",
-	     (dt / 10000), (dt / 100) % 100, dt % 100 );
 
     /* Make __date__ string */
+    snprintf(isodate, sizeof(isodate), "%04d-%02d-%02d",
+	     (dt / 10000), (dt / 100) % 100, dt % 100 );
     pydate = STRING_TO_PY(isodate);
     Py_INCREF(pydate);
     PyModule_AddObject(module, "__date__", pydate);
