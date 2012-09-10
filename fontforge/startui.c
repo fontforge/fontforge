@@ -1071,20 +1071,17 @@ static void GrokNavigationMask(void) {
     navigation_mask = GMenuItemParseMask(H_("NavigationMask|None"));
 }
 
-static int ffensuredir( const char* basedir, const char* dirname, mode_t mode ) {
+/**
+ * Create the directory basedir/dirname with the given mode.
+ * Silently ignore any errors that might happen. 
+ */
+static void ffensuredir( const char* basedir, const char* dirname, mode_t mode ) {
     const int buffersz = PATH_MAX;
     char buffer[buffersz+1];
     
     snprintf(buffer,buffersz,"%s/%s", basedir, dirname );
-    struct stat sb;
-    if( -1 == lstat( buffer, &sb )) {
-	if( 0 != mkdir( buffer, mode )) {
-	    // this is bad. errno
-	    fprintf( stderr, "Failed to create directory: %s\n", buffer );
-	    return 0;
-	}
-    }
-    return 1;
+    // ignore errors, this is just to help the user aftre all.
+    mkdir( buffer, mode );
 }
 
 static void ensureDotFontForgeIsSetup() {
