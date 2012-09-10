@@ -2195,8 +2195,36 @@ static int GFI_NameChange(GGadget *g, GEvent *e) {
 	    if ( noticeweights[j][i]!=NULL )
 	break;
 	}
-	if ( gfi->human_untitled )
-	    GGadgetSetTitle(GWidgetGetControl(gw,CID_Human),uname);
+	
+	/**
+	 * Let's try to give the user a nice default human title for
+	 * the font.
+	 * 
+	 * The official URL for the human name:
+	 * http://www.microsoft.com/typography/otspec/name.htm
+	 *
+	 * The unofficial SIL URL for the name:
+	 * http://scripts.sil.org/cms/scripts/page.php?item_id=IWS-Chapter08#3054f18b
+	 *
+	 * While it is not *mandatory* to remove the Regular from the
+	 * human name we do that and allow the user to add it if that
+	 * is what they really want.
+	 */
+	if ( gfi->human_untitled ) {
+	    unichar_t *cp = u_copy(uname);
+	    int i=0;
+	    for( i=u_strlen(cp); i>=0; i-- ) {
+		if( cp[i] == '-' ) {
+		    cp[i] = ' ';
+		    break;
+		}
+	    }
+	    if(u_endswith(cp,c_to_u(" Regular")) || u_endswith(cp,c_to_u(" regular"))) {
+		cp[u_strlen(cp) - strlen(" Regular")] ='\0';
+	    }
+	    GGadgetSetTitle(GWidgetGetControl(gw,CID_Human),cp);
+	    free(cp);
+	}
 	if ( gfi->family_untitled ) {
 	    const unichar_t *ept = uname+u_strlen(uname); unichar_t *temp;
 	    for ( i=0; knownweights[i]!=NULL; ++i ) {
