@@ -1329,25 +1329,19 @@ return(false);
 
 #ifndef _NO_LIBPANGO
 
-#  if PANGO_VERSION_MINOR<8
-#   define no_pango_font_description_set_absolute_size
-#  endif
 #  define GTimer GTimer_GTK
 #  include <pango/pangoxft.h>
-#  if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+#  if !defined(_NO_LIBCAIRO)
 #   include <pango/pangocairo.h>
 #  endif
 #  undef GTimer
-#  if PANGO_VERSION_MINOR<8
-#   define pango_xft_render_layout my_xft_render_layout
-#  endif
 
 int _GXPDraw_hasPango(void) {
 
     if ( !usepango )
 return( false );
 
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+# if !defined(_NO_LIBCAIRO)
 return( 3 );
 # else
 return( 1 );
@@ -1358,28 +1352,7 @@ return( 1 );
 /* ****************************** Pango Render ****************************** */
 /* ************************************************************************** */
 
-/* This routine exists in pango 1.8, but I depend on it, and I've only got 1.2*/
-/*  as a test bed. So... */
-
-static void my_xft_render_layout(XftDraw *xftw,XftColor *fgcol,
-	PangoLayout *layout,int x,int y) {
-    PangoRectangle rect, r2;
-    PangoLayoutIter *iter;
-
-    iter = pango_layout_get_iter(layout);
-    do {
-	PangoLayoutRun *run = pango_layout_iter_get_run(iter);
-	if ( run!=NULL ) {	/* NULL runs mark end of line */
-	    pango_layout_iter_get_run_extents(iter,&r2,&rect);
-	    pango_xft_render(xftw,fgcol,run->item->analysis.font,run->glyphs,
-		    x+(rect.x+PANGO_SCALE/2)/PANGO_SCALE, y+(rect.y+PANGO_SCALE/2)/PANGO_SCALE);
-	    /* I doubt I'm supposed to free (or unref) the run? */
-	}
-    } while ( pango_layout_iter_next_run(iter));
-    pango_layout_iter_free(iter);
-}
-
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+# if !defined(_NO_LIBCAIRO)
 /* Strangely the equivalent routine was not part of the pangocairo library */
 /* Oh there's pango_cairo_layout_path but that's more restrictive and probably*/
 /*  less efficient */
@@ -1418,7 +1391,7 @@ void _GXPDraw_NewWindow(GXWindow nw) {
     if ( !usepango || !_GXPDraw_hasPango())
 return;
 
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+# if !defined(_NO_LIBCAIRO)
     if ( nw->usecairo ) {
 	if ( pango_cairo_font_map_create_context==NULL )
 return;
@@ -1496,20 +1469,8 @@ return( *fdbase );
     /* Pango doesn't give me any control over the resolution on X, so I do my */
     /*  own conversion from points to pixels */
     /* But under pangocairo I can set the resolution, so behavior is different*/
-    /* But then, set_absolute_size doesn't exist in some versions of the */
-    /*  library */
-#ifndef no_pango_font_description_set_absolute_size
-    if ( pango_font_description_set_absolute_size!=NULL ) {
-	pango_font_description_set_absolute_size(fd,
+    pango_font_description_set_absolute_size(fd,
 		    GDrawPointsToPixels(NULL,font->rq.point_size*PANGO_SCALE));
-    } else
-#endif
-    {
-	if ( pc )				/* pango Resolution set correctly */
-	    pango_font_description_set_size(fd,font->rq.point_size*PANGO_SCALE);
-	else					/* pango Resolution probably wrong */
-	    pango_font_description_set_size(fd,(font->rq.point_size*gdisp->res+gdisp->xres/2)*PANGO_SCALE/gdisp->xres);
-    }
 return( fd );
 }
 
@@ -1523,7 +1484,7 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
     PangoLayout *layout = gdisp->pango_layout;
     PangoFontDescription *fd;
 
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+# if !defined(_NO_LIBCAIRO)
     if ( gw->usecairo )
 	layout = gdisp->pangoc_layout;
 # endif
@@ -1532,7 +1493,7 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
     pango_layout_set_text(layout,(char *) text,cnt);
     pango_layout_get_pixel_extents(layout,NULL,&rect);
     if ( drawit==tf_drawit ) {
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+# if !defined(_NO_LIBCAIRO)
 	if ( gw->usecairo ) {
 	    layout = gdisp->pangoc_layout;
 	    my_cairo_render_layout(gw->cc,col,layout,x,y);
@@ -1560,7 +1521,7 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
 	    clip.width = gw->ggc->clip.width;
 	    clip.height = gw->ggc->clip.height;
 	    XftDrawSetClipRectangles(gw->xft_w,0,0,&clip,1);
-	    my_xft_render_layout(gw->xft_w,&fg,layout,x,y);
+	    pango_xft_render_layout(gw->xft_w,&fg,layout,x,y);
 	}
     } else if ( drawit==tf_rect ) {
 	PangoLayoutIter *iter;
@@ -1615,7 +1576,7 @@ void _GXPDraw_FontMetrics(GXWindow gw,GFont *fi,int *as, int *ds, int *ld) {
     PangoFont *pfont;
     PangoFontMetrics *fm;
 
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+# if !defined(_NO_LIBCAIRO)
     if ( gw->usecairo ) {
 	_GXPDraw_configfont(gdisp,fi,true);
 	pfont = pango_font_map_load_font(gdisp->pangoc_fontmap,gdisp->pangoc_context,
@@ -1646,7 +1607,7 @@ void _GXPDraw_LayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
     if ( fi==NULL )
 	fi = gw->ggc->fi;
 
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+# if !defined(_NO_LIBCAIRO)
     if ( gw->usecairo )
 	layout = gdisp->pangoc_layout;
 # endif
@@ -1660,7 +1621,7 @@ void _GXPDraw_LayoutDraw(GWindow w, int32 x, int32 y, Color col) {
     GXDisplay *gdisp = gw->display;
     PangoLayout *layout = gdisp->pango_layout;
 
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+# if !defined(_NO_LIBCAIRO)
     if ( gw->usecairo ) {
 	layout = gdisp->pangoc_layout;
 	my_cairo_render_layout(gw->cc,col,layout,x,y);
@@ -1681,7 +1642,7 @@ void _GXPDraw_LayoutDraw(GWindow w, int32 x, int32 y, Color col) {
 	clip.width = gw->ggc->clip.width;
 	clip.height = gw->ggc->clip.height;
 	XftDrawSetClipRectangles(gw->xft_w,0,0,&clip,1);
-	my_xft_render_layout(gw->xft_w,&fg,layout,x,y);
+	pango_xft_render_layout(gw->xft_w,&fg,layout,x,y);
     }
 }
 
@@ -1691,7 +1652,7 @@ void _GXPDraw_LayoutIndexToPos(GWindow w, int index, GRect *pos) {
     PangoLayout *layout = gdisp->pango_layout;
     PangoRectangle rect;
 
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+# if !defined(_NO_LIBCAIRO)
     if ( gw->usecairo )
 	layout = gdisp->pangoc_layout;
 # endif
@@ -1705,7 +1666,7 @@ int _GXPDraw_LayoutXYToIndex(GWindow w, int x, int y) {
     PangoLayout *layout = gdisp->pango_layout;
     int trailing, index;
 
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+# if !defined(_NO_LIBCAIRO)
     if ( gw->usecairo )
 	layout = gdisp->pangoc_layout;
 # endif
@@ -1733,7 +1694,7 @@ void _GXPDraw_LayoutExtents(GWindow w, GRect *size) {
     PangoLayout *layout = gdisp->pango_layout;
     PangoRectangle rect;
 
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+# if !defined(_NO_LIBCAIRO)
     if ( gw->usecairo )
 	layout = gdisp->pangoc_layout;
 # endif
@@ -1746,7 +1707,7 @@ void _GXPDraw_LayoutSetWidth(GWindow w, int width) {
     GXDisplay *gdisp = gw->display;
     PangoLayout *layout = gdisp->pango_layout;
 
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+# if !defined(_NO_LIBCAIRO)
     if ( gw->usecairo )
 	layout = gdisp->pangoc_layout;
 # endif
@@ -1758,7 +1719,7 @@ int _GXPDraw_LayoutLineCount(GWindow w) {
     GXDisplay *gdisp = gw->display;
     PangoLayout *layout = gdisp->pango_layout;
 
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+# if !defined(_NO_LIBCAIRO)
     if ( gw->usecairo )
 	layout = gdisp->pangoc_layout;
 # endif
@@ -1771,7 +1732,7 @@ int _GXPDraw_LayoutLineStart(GWindow w, int l) {
     PangoLayout *layout = gdisp->pango_layout;
     PangoLayoutLine *line;
 
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+# if !defined(_NO_LIBCAIRO)
     if ( gw->usecairo )
 	layout = gdisp->pangoc_layout;
 # endif
