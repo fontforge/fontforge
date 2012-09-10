@@ -278,7 +278,6 @@ typedef struct gtextfield {
     unsigned int accepts_tabs: 1;
     unsigned int accepts_returns: 1;
     unsigned int wrap: 1;
-    unsigned int dobitext: 1;	/* has at least one right to left character */
     unsigned int password: 1;
     unsigned int dontdraw: 1;	/* Used when the tf is part of a larger control, and the control determines when to draw the tf */
     unsigned int donthook: 1;	/* Used when the tf is part of a the gchardlg.c */
@@ -301,8 +300,6 @@ typedef struct gtextfield {
     GScrollBar *hsb, *vsb;
     int16 lcnt, lmax;
     int32 *lines;		/* offsets in text to the start of the nth line */
-    GBiText bidata;
-    int32 bilen;		/* allocated size of bidata */
     int16 xmax;
     GIC *gic;
     GTimer *numeric_scroll;

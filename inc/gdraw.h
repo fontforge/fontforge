@@ -53,18 +53,6 @@ typedef struct {
 
 #define FONTMODS_EMPTY { 0, 0, 0, 0, 0, 0 }
 
-
-typedef struct gbidata {
-    unichar_t *text;
-    uint8 *level;
-    uint8 *override;
-    uint16 *type;
-    unichar_t **original;
-    int32 len;
-    unsigned int base_right_to_left: 1;
-    unsigned int interpret_arabic: 1;
-} GBiText;
-
 typedef struct font_instance FontInstance, GFont;
 enum gic_style { gic_overspot=2, gic_root=1, gic_hidden=0, gic_orlesser=4, gic_type=3 };
 typedef struct ginput_context GIC;

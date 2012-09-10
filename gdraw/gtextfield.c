@@ -405,17 +405,6 @@ static unichar_t *GTextFieldGetPtFromPos(GTextField *gt,int i,int xpos) {
 return( end );
 }
 
-static int GTextFieldGetOffsetFromOffset(GTextField *gt,int l, int sel) {
-    int i;
-    unichar_t *spt = gt->text+sel;
-    int llen = gt->lines[l+1]!=-1 ? gt->lines[l+1]: u_strlen(gt->text+gt->lines[l])+gt->lines[l];
-
-    if ( !gt->dobitext )
-return( sel );
-    for ( i=gt->lines[l]; i<llen && gt->bidata.original[i]!=spt; ++i );
-return( i );
-}
-
 static int GTextField_Show(GTextField *gt, int pos) {
     int i, ll, xoff, loff;
     int refresh=false;
@@ -630,11 +619,7 @@ static void GTextFieldSelectWord(GTextField *gt,int mid, int16 *start, int16 *en
     unichar_t *text;
     unichar_t ch = gt->text[mid];
 
-    if ( gt->dobitext ) {
-	text = gt->bidata.text;
-	mid = GTextFieldGetOffsetFromOffset(gt,GTextFieldFindLine(gt,mid),mid);
-    } else
-	text = gt->text;
+    text = gt->text;
     ch = text[mid];
 
     if ( ch=='\0' )
@@ -657,11 +642,6 @@ static void GTextFieldSelectWord(GTextField *gt,int mid, int16 *start, int16 *en
 	*end = i;
 	for ( i=mid-1; i>=0 && !(text[i]<0x10000 && isalnum(text[i])) && text[i]!='_' ; --i );
 	*start = i+1;
-    }
-
-    if ( gt->dobitext ) {
-	*start = gt->bidata.original[*start]-gt->text;
-	*end = gt->bidata.original[*end]-gt->text;
     }
 }
 
@@ -772,12 +752,7 @@ return( true );
 return( true );			/* but probably best to return success */
       case ec_backword:
         if ( gt->sel_start==gt->sel_end && gt->sel_start!=0 ) {
-	    if ( gt->dobitext ) {
-		int sel = GTextFieldGetOffsetFromOffset(gt,GTextFieldFindLine(gt,gt->sel_start),gt->sel_start);
-		sel = GTextFieldSelBackword(gt->bidata.text,sel);
-		gt->sel_start = gt->bidata.original[sel]-gt->text;
-	    } else
-		gt->sel_start = GTextFieldSelBackword(gt->text,gt->sel_start);
+	    gt->sel_start = GTextFieldSelBackword(gt->text,gt->sel_start);
 	}
 	GTextField_Replace(gt,nullstr);
 	_ggadget_redraw(g);
@@ -805,42 +780,24 @@ return( false );
 }
 
 static int GTBackPos(GTextField *gt,int pos, int ismeta) {
-    int newpos,sel;
+    int newpos;
 
-    if ( ismeta && !gt->dobitext )
+    if ( ismeta )
 	newpos = GTextFieldSelBackword(gt->text,pos);
-    else if ( ismeta ) {
-	sel = GTextFieldGetOffsetFromOffset(gt,GTextFieldFindLine(gt,pos),pos);
-	newpos = GTextFieldSelBackword(gt->bidata.text,sel);
-	newpos = gt->bidata.original[newpos]-gt->text;
-    } else if ( !gt->dobitext )
+    else
 	newpos = pos-1;
-    else {
-	sel = GTextFieldGetOffsetFromOffset(gt,GTextFieldFindLine(gt,pos),pos);
-	if ( sel!=0 ) --sel;
-	newpos = gt->bidata.original[sel]-gt->text;
-    }
     if ( newpos==-1 ) newpos = pos;
 return( newpos );
 }
 
 static int GTForePos(GTextField *gt,int pos, int ismeta) {
-    int newpos=pos,sel;
+    int newpos=pos;
 
-    if ( ismeta && !gt->dobitext )
+    if ( ismeta )
 	newpos = GTextFieldSelForeword(gt->text,pos);
-    else if ( ismeta ) {
-	sel = GTextFieldGetOffsetFromOffset(gt,GTextFieldFindLine(gt,pos),pos);
-	newpos = GTextFieldSelForeword(gt->bidata.text,sel);
-	newpos = gt->bidata.original[newpos]-gt->text;
-    } else if ( !gt->dobitext ) {
+    else {
 	if ( gt->text[pos]!=0 )
 	    newpos = pos+1;
-    } else {
-	sel = GTextFieldGetOffsetFromOffset(gt,GTextFieldFindLine(gt,pos),pos);
-	if ( gt->text[sel]!=0 )
-	    ++sel;
-	newpos = gt->bidata.original[sel]-gt->text;
     }
 return( newpos );
 }
@@ -2073,11 +2030,6 @@ return;
     free(gt->lines);
     free(gt->oldtext);
     free(gt->text);
-    free(gt->bidata.text);
-    free(gt->bidata.level);
-    free(gt->bidata.override);
-    free(gt->bidata.type);
-    free(gt->bidata.original);
     _ggadget_destroy(g);
 }
 
