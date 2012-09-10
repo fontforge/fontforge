@@ -119,19 +119,6 @@ void GDrawEnablePango(int on) {
 }
 
 #ifndef _NO_LIBCAIRO
-# if (CAIRO_VERSION_MAJOR==1 && CAIRO_VERSION_MINOR<6)
-static int cairo_format_stride_for_width(cairo_format_t f,int width) {
-    if ( f==CAIRO_FORMAT_ARGB32 || f==CAIRO_FORMAT_RGB24 )
-return( 4*width );
-    else if ( f==CAIRO_FORMAT_A8 )
-return( ((width+3)>>2)<<2 );
-    else if ( f==CAIRO_FORMAT_A1 )
-return( ((width+31)>>5)<<5 );
-    else
-return( 4*width );
-}
-#endif
-
 /* ************************************************************************** */
 /* ***************************** Cairo Library ****************************** */
 /* ************************************************************************** */
@@ -919,8 +906,6 @@ static cairo_surface_t *GImage2Surface(GImage *image, GRect *src, uint8 **_data)
     /* We can't reuse the image's data for alpha images because we must */
     /*  premultiply each channel by alpha. We can reuse it for non-transparent*/
     /*  rgb images */
-# if CAIRO_VERSION_MAJOR==1 && CAIRO_VERSION_MINOR>=6
-    /* Bug in old cairos. In them, this code doesn't work */
     if ( base->image_type == it_true && type == CAIRO_FORMAT_RGB24 ) {
 	idata = ((uint32 *) (base->data)) + src->y*base->bytes_per_line + src->x;
 	*_data = NULL;		/* We can reuse the image's own data, don't need a copy */
@@ -928,7 +913,6 @@ return( cairo_image_surface_create_for_data((uint8 *) idata,type,
 		src->width, src->height,
 		base->bytes_per_line));
     }
-#endif
 
     stride = cairo_format_stride_for_width(type,src->width);
     *_data = data = galloc(stride * src->height);
