@@ -35,6 +35,7 @@
 #include "splinefont.h"
 #include "uiinterface.h"
 
+
 static const int unicode4_size = 17*65536;
     /* Unicode goes up to 0x10ffff */
 
@@ -44,11 +45,6 @@ extern void CheckIsScript(int argc, char *argv[]);
 
 extern char *AdobeStandardEncoding[256];
 extern int32 unicode_from_adobestd[256];
-
-struct unicode_nameannot {
-    const char *name, *annot;
-};
-extern const struct unicode_nameannot * const *const *_UnicodeNameAnnot;
 
 extern int default_fv_font_size;
 extern int default_fv_antialias;
@@ -99,4 +95,6 @@ typedef struct library_version_configuration {
 extern Library_Version_Configuration library_version_configuration;
 
 extern int check_library_version(Library_Version_Configuration *exe_lib_version, int fatal, int quiet);
+
+extern int fontforge_main(int, char **);
 #endif

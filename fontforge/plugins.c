@@ -25,115 +25,29 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if !defined(NOPLUGIN)
-
 #include "plugins.h"
-#include "dynamic.h"
-#include <utype.h>
+#include "pluginloading.h"
+#include "basics.h"
 
-#include <sys/types.h>
-#include <dirent.h>
-
-void LoadPlugin(char *dynamic_lib_name) {
-    DL_CONST void *plugin;
-    char *pt, *spt, *freeme = NULL;
-    int (*init)(void);
-
-    spt = strrchr(dynamic_lib_name,'/');
-    if ( spt==NULL )
-	spt = dynamic_lib_name;
-    pt = strrchr(spt,'.');
-    if ( pt==NULL ) {
-	freeme = galloc(strlen(dynamic_lib_name)+strlen(SO_EXT)+4);
-	strcpy(freeme,dynamic_lib_name);
-#ifdef __Mac
-	/* Bless us and splash us my precious. libtool on the mac names */
-	/*  module shared libraries with ".so" and not ".dylib". Who'd u thunk it? */
-	strcat(freeme,".so");
-#else
-	strcat(freeme,SO_EXT);
-#endif
-	dynamic_lib_name = freeme;
-    }
-    plugin = dlopen(dynamic_lib_name,RTLD_LAZY);
-    if ( plugin==NULL ) {
-	LogError(_("Failed to dlopen: %s\n%s"), dynamic_lib_name, dlerror());
-	free(freeme);
-return;
-    }
-    init = (int (*)(void)) dlsym(plugin,"FontForgeInit");
-    if ( init==NULL ) {
-	LogError(_("Failed to find init function in %s"), dynamic_lib_name);
-	dlclose(plugin);
-	free(freeme);
-return;
-    }
-    if ( (*init)()==0 )
-	/* Init routine in charge of any error messages */
-	dlclose(plugin);
-    free(freeme);
+/* Load (or fake loading) a named plugin that is somewhere in the path
+ * list for lt_dlopenext(). Returns 'true' on success; otherwise
+ * returns 'false'. */
+int LoadPlugin(const char *dynamic_lib_name) {
+    lt_dlhandle plugin;
+    plugin = load_plugin(dynamic_lib_name, LogError);
+    return (plugin != NULL);
 }
 
-static int isdyname(char *filename) {
-    char *pt;
-
-    pt = strrchr(filename,'.');
-    if ( pt==NULL )
-return( false );
-
-#ifdef __Mac
-    /* Libtool on the mac does version numbers the wrong way */
-    /*  and uses .so */
-    if ( strcmp(pt,".so")!=0 )
-return( false );
-    while ( pt-1>filename && isdigit(pt[-1])) --pt;
-    if ( pt-1>filename && pt[-1]=='.' )
-return( false );		/* Looks like a version number */
-
-return( true );
-#else
-    if ( strcmp(pt,SO_EXT)==0 )
-return( true );
-
-return( false );
-#endif
+/* Callback function for LoadPluginDir(). */
+static int plugin_loading_callback(const char *dynamic_lib_name, void *UNUSED(data)) {
+    (void) LoadPlugin(dynamic_lib_name);
+    return 0;
 }
 
-void LoadPluginDir(char *dir) {
-    DIR *diro;
-    struct dirent *ent;
-    char buffer[1025];
-
-    if ( dir==NULL ) {
-	/* First load system plug-ins */
-#if defined( PLUGINDIR )
-	LoadPluginDir( PLUGINDIR );
-#else
-	char *pt = getFontForgeShareDir();
-	if ( pt!=NULL ) {
-	    snprintf(buffer, sizeof(buffer), "%s/plugins", pt );
-	    LoadPluginDir( buffer );
-	}
-#endif
-	/* Then load user defined ones */
-	if ( getPfaEditDir(buffer)!=NULL ) {
-	    strcpy(buffer,getPfaEditDir(buffer));
-	    strcat(buffer,"/plugins");
-	    LoadPluginDir(buffer);
-	}
-return;
-    }
-
-    diro = opendir(dir);
-    if ( diro==NULL )		/* It's ok not to have any plugins */
-return;
-
-    while ( (ent = readdir(diro))!=NULL ) {
-	if ( isdyname(ent->d_name) ) {
-	    sprintf( buffer, "%s/%s", dir, ent->d_name );
-	    LoadPlugin(buffer);
-	}
-    }
-    closedir(diro);
+/* Load all the plugins in the given search_path, if search_path !=
+   NULL.  Load plugins in the "user-defined" search path, if
+   search_path == NULL. */
+void LoadPluginDir(const char *search_path) {
+    const char *path = (search_path == NULL) ? lt_dlgetsearchpath() : search_path;
+    (void) lt_dlforeachfile(path, plugin_loading_callback, NULL);
 }
-#endif

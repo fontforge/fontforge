@@ -24,10 +24,12 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #ifndef _INTL_H
 #define _INTL_H
 
 #if !defined( HAVE_LIBINTL_H )
+
 # define _(str)			(str)
 # define P_(str1,str_non1,n)	((n)==1?str1:str_non1)
 # define U_(str)		(str)
@@ -48,7 +50,7 @@
 
 # define dgettext(domain,str)	(str)
 
-#elif defined( NODYNAMIC ) || defined ( _STATIC_LIBINTL )
+#else /* HAVE_LIBINTL_H */
 
 # include <libintl.h>
 # define _(str)			gettext(str)
@@ -57,39 +59,8 @@
 /*  so we must do something special. */
 # define U_(str)		gettext(str)
 
-#else
+#endif /* HAVE_LIBINTL_H */
 
-# include <libintl.h>
-# define _(str)			gwwv_gettext(str)
-# define P_(str1,str_non1,n)	gwwv_ngettext(str1,str_non1,n)
-# define U_(str)		gwwv_gettext(str)
-
-# ifdef bindtextdomain
-#  undef bindtextdomain
-# endif
-# ifdef bind_textdomain_codeset
-#  undef bind_textdomain_codeset
-# endif
-# ifdef textdomain
-#  undef textdomain
-# endif
-
-# define bindtextdomain(domain,dir)		gwwv_bindtextdomain(domain,dir)
-# define bind_textdomain_codeset(domain,enc)	gwwv_bind_textdomain_codeset(domain,enc)
-# define textdomain(domain)			gwwv_textdomain(domain)
-
-# ifdef dgettext
-#  undef dgettext
-# endif
-# define dgettext(domain,str)	gwwv_dgettext(domain,str)
-
-char *gwwv_bindtextdomain(const char *, const char *);
-char *gwwv_bind_textdomain_codeset(const char *, const char *);
-char *gwwv_textdomain(const char *);
-char *gwwv_gettext(const char *);
-char *gwwv_ngettext(const char *,const char *, unsigned long int);
-char *gwwv_dgettext(const char *,const char *);
-#endif
 /* For messages including utf8 sequences that need gettext_noop treatment */
 #define NU_(str)	(str)
 #define N_(str)		(str)

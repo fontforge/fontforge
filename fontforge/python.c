@@ -60,9 +60,11 @@
 static struct flaglist sfnt_name_str_ids[];
 static struct flaglist sfnt_name_mslangs[];
 
-FontViewBase *fv_active_in_ui = NULL;
-SplineChar *sc_active_in_ui = NULL;
-int layer_active_in_ui = ly_fore;
+/*** These have been moved elsewhere ***/
+/*FontViewBase *fv_active_in_ui = NULL;*/
+/*SplineChar *sc_active_in_ui = NULL;*/
+/*int layer_active_in_ui = ly_fore;*/
+
 static PyObject *hook_dict;			/* Dictionary of python hook scripts (to be activated when certain fontforge events happen) */
 static PyObject *pickler, *unpickler;		/* cPickle.dumps, cPickle.loads */
 static PyObject *_new_point, *_new_contour, *_new_layer;	/* Python handles to c functions, needed for pickler */
@@ -10075,7 +10077,11 @@ static PyObject *fontiter_iternextkey(fontiterobject *di) {
 #ifdef _HAS_LONGLONG
 	    const char *dictfmt = "{sKsKsK}";
 #else
+<<<<<<< local
 	    const char *dictfmt = "{sksksk}"
+=======
+	    const char *dictfmt = "{sksksk}";
+>>>>>>> other
 #endif
 	    PyObject *glyph, *tempdict;
 	    PyObject *matched;

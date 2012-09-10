@@ -1,6 +1,6 @@
-/* This program is used to create a 'release date' time stamp when it is time for the
- * next fontforge release build. To use this program, go to the command line and run:
- * make stamper
+/*
+ * This program is used to create a 'release date' time stamp when it is time for the
+ * next fontforge release build. See fontforge/GNUmakefile.in
  */
 #include <stdio.h>
 #include <time.h>
@@ -15,8 +15,8 @@ int main( int argc, char **argv ) {
     time(&now);
     tm = gmtime(&now);
     /* Let the user or developer know that this resulting output is generated rather than edited */
-    printf( "/* This file was generated using stamper.c to create the next version release.    */\n" );
-    printf( "/* If you need to update this to the next release version, then run: make stamper */\n\n" );
+    printf( "/* This file was generated using stamper.c to create the next version release.          */\n" );
+    printf( "/* If you need to update this to the next release version, see fontforge/GNUmakefile.in */\n\n" );
     if ( argc==1 ) {
 	/* Generate a *.c type output if there is some variable on the command line */
 	printf( "#include <time.h>\n\n" );

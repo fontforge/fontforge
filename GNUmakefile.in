@@ -1,0 +1,132 @@
+# Copyright (C) 2000-2012 by George Williams
+# Copyright (C) 2012 by Barry Schwartz
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
+#
+# Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+#
+# The name of the author may not be used to endorse or promote products
+# derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+#--------------------------------------------------------------------------
+#
+# An extension of the Makefile, with some targets written specifically
+# for GNU Make.
+
+include Makefile
+include $(top_builddir)/mk/xgettext_search.mk
+
+XGETTEXT_OPTIONS = --keyword=H_ --from-code=utf-8 --language=C	\
+--sort-by-file
+
+# This potfile will be created in $(builddir).
+MY_POTFILE = FontForge-MenuShortCuts.pot
+
+$(MY_POTFILE): shortcuts-template
+
+shortcuts-template:
+	@echo ''
+	@echo Creating the template file $(MY_POTFILE) ...
+	@$(XGETTEXT) $(XGETTEXT_OPTIONS) --output=$(MY_POTFILE) $(xgettext_search_files)
+	@echo Editing the file ...
+	@$(SED) -i -e '1,4d' $(MY_POTFILE)
+	@$(SED) -i -e "1i\
+# Menu shortcuts for $(PACKAGE).\n\
+# Copyright (C) 2000-2012 by George Williams.\n\
+# This file is distributed under the same license as the $(PACKAGE) package.\n\
+# The FontForge project, <https://github.com/fontforge/fontforge>, 2012." $(MY_POTFILE)
+	@$(SED) -i -e 's|^\("Content-Type: text/plain; charset=\)CHARSET\(\\n"\)|\1UTF-8\2|' $(MY_POTFILE)
+	@$(SED) -i -e '/^"Content-Transfer-Encoding: 8bit\\n"/a\
+\
+#. This file allows you to change FontForge’s menu shortcuts. It is a gettext\
+#.  based system, which means it is locale dependent.\
+#.\
+#. These entries are formatted as follows:\
+#.  First we have the (English) name of the command as it appears in\
+#.      the menu.\
+#.  Then we have a "|" (which is used as a separator)\
+#.  Finally we have the shortcut for the command as a textual string.\
+#.\
+#. If you wish to change a shortcut simply provide its textual representation\
+#.  in the msgstr field. So if you want the shortcut for New Outline Window\
+#.  to be Ctl+O\
+#.        msgid "New Outline Window|Ctl+H"\
+#.        msgstr "Ctl+O"\
+#. (NOTE: You should NOT include "New Outline Window|" in your msgstr)\
+#. If you wish to remove a shortcut\
+#.        msgid "New Outline Window|Ctl+H"\
+#.        msgstr "No Shortcut"\
+#. If you wish to use a function key (or similar)\
+#.        msgid "New Outline Window|Ctl+H"\
+#.        msgstr "F2"\
+#. or\
+#.        msgid "New Outline Window|Ctl+H"\
+#.        msgstr "Backspace"\
+#.\
+#. You may apply one or several modifiers to shortcuts. FontForge recognizes:\
+#.   Ctl+   Shft+    Alt+   CapsLock+\
+#. Some keyboards have additional modifier keys, X maps them to a flag bit in\
+#.  the keyboard state mask of the XKeyEvent. If you want to use these modifiers\
+#.  you need to know what that bit is. FontForge will also recognize:\
+#.    Flag0x01+   Flag0x02+   Flag0x04+  Flag0x08+\
+#.    Flag0x10+   Flag0x20+   Flag0x40+  Flag0x80+\
+#. (I can’t come up with better names than these because in general\
+#.  I don’t know what they are myself).\
+#. The mac has two additional modifier keys: Command and Option\
+#.  X never gets the Command key (or rather the X application’s menubar gets\
+#.  it and client programs never see it) so we can’t use it.\
+#.  But clients can get at the Option key and FontForge recognizes\
+#.     Opt+\
+#.\
+#. So...\
+#.        msgid "New Outline Window|Ctl+H"\
+#.        msgstr "Ctl+Shft+Alt+Flag10+Opt+F2"\
+#. would be practically untypeable, but syntactically valid.\
+#.\
+#. When FF displays a shortcut in the menu it will use a similar syntax.\
+#. That may not be appropriate for non-English terminals. On a French system\
+#.  it might be better to show the Shift modifier as Majuscule. At the bottom of\
+#.  this file are several entries which are not used to set shortcuts but are\
+#.  used in displaying the shortcuts in the menu, thus\
+#.      #: ../gdraw/gmenu.c:120\
+#.      msgid "Shft+"\
+#.      msgstr "Maj+"\
+#.\
+#. Even though not obvious from this file, it is also possible to add names for\
+#.  special keys. So you could add:\
+#.      msgid "Escape"\
+#.      msgstr "Échappe"\
+#.      msgid "Delete"\
+#.      msgstr "Efface"\
+#. (or whatever is appropriate for keyboards)\
+#.\
+#. The English names accepted are those defined under XK_MISCELLANY in\
+#.  keysymdef.h of the X11 header files -- without the initial XK_\
+#.\
+#.\
+#. I am told that the use of "|" to provide contextual information in a\
+#. gettext string is non-standard. However it is documented in section\
+#. 10.2.6 of http://www.gnu.org/software/gettext/manual/html_mono/gettext.html\
+#. I need it, and I will use it.\
+#.\
+#. --------------------------------------------------------------------------\
+' $(MY_POTFILE)
+	@echo Done.
+

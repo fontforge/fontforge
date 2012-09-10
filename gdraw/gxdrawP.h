@@ -358,7 +358,7 @@ typedef struct gxdisplay /* : GDisplay */ {
     PangoFontMap *pango_fontmap;
     PangoContext *pango_context;
     PangoLayout  *pango_layout;
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+# if !defined(_NO_LIBCAIRO)
     PangoFontMap *pangoc_fontmap;
     PangoContext *pangoc_context;
     PangoLayout  *pangoc_layout;

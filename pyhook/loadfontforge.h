@@ -1,5 +1,5 @@
-#include "Python.h"
-#include "../inc/dynamic.h"
+#include <Python.h>
+#include <dynamic.h>
 
 #if defined(__Mac)
 # undef dlopen
@@ -10,8 +10,8 @@ PyMODINIT_FUNC ENTRY_POINT(void) {
     void (*initer)(void);
 
     if ( (lib = dlopen("libgunicode" SO_EXT,RTLD_LAZY))==NULL ) {
-#ifdef PREFIX
-	lib = dlopen( PREFIX "/lib/" "libgunicode" SO_EXT,RTLD_LAZY);
+#ifdef LIBDIR
+	lib = dlopen( LIBDIR "libgunicode" SO_EXT,RTLD_LAZY);
 #endif
     }
     if ( lib==NULL ) {
@@ -20,8 +20,8 @@ return;
     }
 
     if ( (lib = dlopen("libgutils" SO_EXT,RTLD_LAZY))==NULL ) {
-#ifdef PREFIX
-	lib = dlopen( PREFIX "/lib/" "libgutils" SO_EXT,RTLD_LAZY);
+#ifdef LIBDIR
+	lib = dlopen( LIBDIR "libgutils" SO_EXT,RTLD_LAZY);
 #endif
     }
     if ( lib==NULL ) {
@@ -30,8 +30,8 @@ return;
     }
 
     if ( (lib = dlopen("libfontforge" SO_EXT,RTLD_LAZY))==NULL ) {
-#ifdef PREFIX
-	lib = dlopen( PREFIX "/lib/" "libfontforge" SO_EXT,RTLD_LAZY);
+#ifdef LIBDIR
+	lib = dlopen( LIBDIR "/lib/" "libfontforge" SO_EXT,RTLD_LAZY);
 #endif
     }
     if ( lib==NULL ) {

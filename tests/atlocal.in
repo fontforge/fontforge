@@ -1,0 +1,16 @@
+# -*- shell-script -*-
+# @configure_input@
+# Configurable variable values for Autoconf test suite.
+
+srcdir="@srcdir@"
+builddir="@builddir@"
+top_srcdir="@top_srcdir@"
+top_builddir="@top_builddir@"
+abs_srcdir="@abs_srcdir@"
+abs_builddir="@abs_builddir@"
+abs_top_srcdir="@abs_top_srcdir@"
+abs_top_builddir="@abs_top_builddir@"
+
+MKDIR_P="@MKDIR_P@"
+
+skip_python="test x@i_do_have_python_scripting@ != xyes"

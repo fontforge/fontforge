@@ -1,0 +1,41 @@
+AT_INIT
+AT_COPYRIGHT([Copyright (C) 2012 by George Williams])
+
+m4_defun([run_python],[(fontforge -lang py -script "${abs_builddir}/$1" || /bin/false)])
+
+m4_defun([check_python],[
+AT_SETUP([$1])
+AT_SKIP_IF([${skip_python}])
+m4_ifblank([$3],[],[AT_SKIP_IF([test ! -r "${abs_srcdir}/fonts/$3"])])
+AT_CHECK([run_python([$2])],[0],[ignore],[ignore])
+AT_CLEANUP
+])
+
+m4_defun([check_python_inconsistent],[
+AT_SETUP([$1 (passes inconsistently; skipping)])
+AT_SKIP_IF([${skip_python}])
+AT_SKIP_IF([/bin/true])
+m4_ifblank([$3],[],[AT_SKIP_IF([test ! -r "${abs_srcdir}/fonts/$3"])])
+AT_CHECK([(run_python([$2]) || exit 77)],[0],[ignore],[ignore])
+AT_CLEANUP
+])
+
+#--------------------------------------------------------------------------
+
+AT_BANNER([Python scripting])
+
+check_python([Ambrosia.sfd],[test0001.py])
+check_python([LucidaGrande.ttc],[test0101.py],[LucidaGrande.ttc])
+#check_python_inconsistent([Caliban.sfd],[test1001.py])
+check_python([Caliban.sfd],[test1001.py])
+check_python([Zapfino-4.0d3.dfont],[test1001a.py],[Zapfino-4.0d3.dfont])
+check_python([Zapfino-4.1d6.dfont],[test1001b.py],[Zapfino-4.1d6.dfont])
+check_python([make new font],[test1001c.py])
+check_python([nuvo-medium-woff-demo.woff],[test1002.py],[nuvo-medium-woff-demo.woff])
+check_python([StrokeTests.sfd],[test1003.py])
+check_python([DirectionTest.sfd],[test1004.py])
+check_python([AddExtremaTest2.sfd],[test1005.py])
+check_python([math table],[test1006.py])
+check_python([ayn+meem.init.svg],[test1007.py])
+
+#--------------------------------------------------------------------------

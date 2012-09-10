@@ -31,11 +31,8 @@
 /* See http://www.levien.com/spiro/ */
 
 #ifdef _NO_LIBSPIRO
-static int has_spiro = false;
 
-int hasspiro(void) {
-return(false);
-}
+static int has_spiro = false;
 
 SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
 return( NULL );
@@ -44,60 +41,12 @@ return( NULL );
 spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *cnt) {
 return( NULL );
 }
-#else
-# include "bezctx_ff.h"
-# if defined(_STATIC_LIBSPIRO) || defined(NODYNAMIC)
-#  define _TaggedSpiroCPsToBezier TaggedSpiroCPsToBezier
+
+#else /* ! _NO_LIBSPIRO */
+
+#  include "bezctx_ff.h"
+
 static int has_spiro = true;
-
-int hasspiro(void) {
-return(true);
-}
-
-static void initSpiro(void) {
-}
-# else
-#  include <dynamic.h>
-
-static DL_CONST void *libspiro;
-static void (*_TaggedSpiroCPsToBezier)(spiro_cp *spiros,bezctx *bc);
-static int inited = false, has_spiro = false;
-
-static void initSpiro(void) {
-    if ( inited )
-return;
-
-    libspiro = dlopen("libspiro" SO_EXT,RTLD_LAZY);
-    if ( libspiro==NULL )
-#ifdef LIBDIR
-	libspiro = dlopen(LIBDIR "/libspiro" SO_EXT,RTLD_LAZY);
-#else
-	libspiro = dlopen("/usr/local/bin" "/libspiro" SO_EXT,RTLD_LAZY);
-#endif
-	
-    inited = true;
-
-    if ( libspiro==NULL ) {
-#ifndef __Mac
-	fprintf( stderr, "%s\n", dlerror());
-#endif
-return;
-    }
-
-    _TaggedSpiroCPsToBezier = (void (*)(spiro_cp *spiros,bezctx *bc)) dlsym(libspiro,"TaggedSpiroCPsToBezier");
-   if ( _TaggedSpiroCPsToBezier==NULL ) {
-	LogError(_("Hmm. This system has a libspiro, but it doesn't contain the entry points\nfontforge needs. Must be something else.\n"));
-    } else
-	has_spiro = true;
-}
-
-int hasspiro(void) {
-    if ( has_spiro )
-return( true );
-    initSpiro();
-return(has_spiro);
-}
-#endif
 
 SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
     int n;
@@ -108,7 +57,6 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
 
     if ( spiros==NULL )
 return( NULL );
-    initSpiro();
     for ( n=0; spiros[n].ty!=SPIRO_END; ++n )
 	if ( SPIRO_SELECTED(&spiros[n]) )
 	    ++any;
@@ -125,13 +73,13 @@ return( NULL );
 	}
 
 	if ( !any )
-	    _TaggedSpiroCPsToBezier(spiros,bc);
+	    TaggedSpiroCPsToBezier(spiros,bc);
 	else {
 	    nspiros = galloc((n+1)*sizeof(spiro_cp));
 	    memcpy(nspiros,spiros,(n+1)*sizeof(spiro_cp));
 	    for ( n=0; nspiros[n].ty!=SPIRO_END; ++n )
 		nspiros[n].ty &= ~0x80;
-	    _TaggedSpiroCPsToBezier(nspiros,bc);
+	    TaggedSpiroCPsToBezier(nspiros,bc);
 	    free(nspiros);
 	}
 	ss = bezctx_ff_close(bc);
@@ -211,7 +159,12 @@ spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt) {
     if ( _cnt!=NULL ) *_cnt = cnt;
 return( ret );
 }
-#endif
+
+#endif /* ! _NO_LIBSPIRO */
+
+int hasspiro(void) {
+    return has_spiro;
+}
 
 spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16 *_cnt) {
     int n;
@@ -231,7 +184,7 @@ void SSRegenerateFromSpiros(SplineSet *spl) {
 
     if ( spl->spiro_cnt<=1 )
 return;
-    if ( !has_spiro && !hasspiro())
+	if ( !has_spiro)
 return;
 
     SplineSetBeziersClear(spl);
