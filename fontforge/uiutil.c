@@ -614,12 +614,9 @@ static void MouseToPos(GEvent *event,int *_l, int *_c) {
 	l = errdata.cnt-1;
 	if ( l>=0 )
 	    c = strlen(errdata.errlines[l]);
-    } else if ( (GDrawHasCairo(errdata.v)&gc_pango) && l>=0 ) {
+    } else if ( l>=0 ) {
 	GDrawLayoutInit(errdata.v,errdata.errlines[l],-1,NULL);
 	c = GDrawLayoutXYToIndex(errdata.v,event->u.mouse.x-3,4);
-    } else if ( l>=0 ) {
-	GDrawGetText8PtFromPos(errdata.v,errdata.errlines[l],-1,NULL,event->u.mouse.x-3,&end);
-	c = end - errdata.errlines[l];
     }
     *_l = l;
     *_c = c;
@@ -677,33 +674,27 @@ return( GGadgetDispatchEvent(errdata.vsb,event));
 	      if ( s_l>e_l ) {
 		  s_l = e_l; s_c = e_c; e_l = errdata.start_l; e_c = errdata.start_c;
 	      }
-	      if ( GDrawHasCairo(gw)&gc_pango )
-		  GDrawLayoutInit(gw,errdata.errlines[i+errdata.offtop],-1,NULL);
+	      GDrawLayoutInit(gw,errdata.errlines[i+errdata.offtop],-1,NULL);
 	      if ( i+errdata.offtop >= s_l && i+errdata.offtop <= e_l ) {
 		  if ( i+errdata.offtop > s_l )
 		      xs = 0;
-		  else if ( GDrawHasCairo(gw)&gc_pango ) {
+		  else {
 		      GRect pos;
 		      GDrawLayoutIndexToPos(gw,s_c,&pos);
 		      xs = pos.x+3;
-		  } else
-		      xs = GDrawGetText8Width(gw,errdata.errlines[i+errdata.offtop],s_c,NULL);
+		  }
 		  if ( i+errdata.offtop < e_l )
 		      xe = 3000;
-		  else if ( GDrawHasCairo(gw)&gc_pango ) {
+		  else {
 		      GRect pos;
 		      GDrawLayoutIndexToPos(gw,s_c,&pos);
 		      xe = pos.x+pos.width+3;
-		  } else
-		      xe = GDrawGetText8Width(gw,errdata.errlines[i+errdata.offtop],e_c,NULL);
+		  }
 		  r.x = xs+3; r.width = xe-xs;
 		  r.y = i*errdata.fh; r.height = errdata.fh;
 		  GDrawFillRect(gw,&r,ACTIVE_BORDER);
 	      }
-	      if ( GDrawHasCairo(gw)&gc_pango )
-		  GDrawLayoutDraw(gw,3,i*errdata.fh+errdata.as,MAIN_FOREGROUND);
-	      else
-		  GDrawDrawBiText8(gw,3,i*errdata.fh+errdata.as,errdata.errlines[i+errdata.offtop],-1,NULL,MAIN_FOREGROUND);
+	      GDrawLayoutDraw(gw,3,i*errdata.fh+errdata.as,MAIN_FOREGROUND);
 	  }
       break;
       case et_char:

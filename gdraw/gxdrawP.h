@@ -84,7 +84,6 @@ capable of using composite.
 #  include <cairo/cairo-ft.h>
 #  include <fontconfig/fontconfig.h>
 # endif
-# ifndef _NO_LIBPANGO
 #  define GTimer GTimer_GTK
 #  include <ft2build.h>
 #  ifdef __VMS
@@ -96,7 +95,6 @@ typedef pid_t GPid;
 #  endif
 #  include <pango/pango.h>
 #  undef GTimer
-# endif
 #endif
 
 #include "gdrawP.h"
@@ -148,7 +146,6 @@ typedef struct gxwindow /* :GWindow */ {
     unsigned int is_popup: 1;
     unsigned int disable_expose_requests: 1;
     unsigned int usecairo: 1;		/* use a cairo context */
-    unsigned int usepango: 1;		/* draw text with pango */
     unsigned int is_dlg: 1;
     unsigned int not_restricted: 1;
     unsigned int was_positioned: 1;
@@ -166,9 +163,7 @@ typedef struct gxwindow /* :GWindow */ {
     cairo_surface_t *cs;
     struct gcstate cairo_state;
 #endif
-#ifndef _NO_LIBPANGO
     XftDraw *xft_w;
-#endif
     Window transient_owner;
 } *GXWindow;
 
@@ -354,7 +349,6 @@ typedef struct gxdisplay /* : GDisplay */ {
 # endif
     GXWindow default_icon;
     struct xkb xkb;
-#ifndef _NO_LIBPANGO
     PangoFontMap *pango_fontmap;
     PangoContext *pango_context;
     PangoLayout  *pango_layout;
@@ -363,7 +357,6 @@ typedef struct gxdisplay /* : GDisplay */ {
     PangoContext *pangoc_context;
     PangoLayout  *pangoc_layout;
 # endif
-#endif
     Window last_nontransient_window;
 } GXDisplay;
 

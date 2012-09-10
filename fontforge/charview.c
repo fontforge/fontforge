@@ -1749,15 +1749,10 @@ static void CVDrawRefName(CharView *cv,GWindow pixmap,RefChar *ref,int fg) {
     if ( x<-400 || y<-40 || x>cv->width+400 || y>cv->height )
 return;
 
-    if ( GDrawHasCairo(pixmap)&gc_pango ) {
-	GDrawLayoutInit(pixmap,ref->sc->name,-1,cv->small);
-	GDrawLayoutExtents(pixmap,&size);
-	GDrawLayoutDraw(pixmap,x-size.width/2,y,fg);
-	len = size.width;
-    } else {
-	len = GDrawGetBiText8Width(pixmap,ref->sc->name,-1,-1,NULL);
-	GDrawDrawBiText8(pixmap,x-len/2,y,ref->sc->name,-1,NULL,fg);
-    }
+    GDrawLayoutInit(pixmap,ref->sc->name,-1,cv->small);
+    GDrawLayoutExtents(pixmap,&size);
+    GDrawLayoutDraw(pixmap,x-size.width/2,y,fg);
+    len = size.width;
     if ( ref->use_my_metrics )
 	GDrawDrawImage(pixmap,&GIcon_lock,NULL,x+len+3,y-cv->sas);
 }
@@ -1817,20 +1812,16 @@ return;
 		name = ubuf;
 	    } else
 		name = NULL;		/* Should never happen */
-	    if ( GDrawHasCairo(pixmap)&gc_pango ) {
-		GRect size;
-		GDrawLayoutInit(pixmap,name,-1,NULL);
-		GDrawLayoutExtents(pixmap,&size);
-		len = size.width;
-	    } else
-		len = GDrawGetBiText8Width(pixmap,name,-1,-1,NULL);
+
+	    GRect size;
+	    GDrawLayoutInit(pixmap,name,-1,NULL);
+	    GDrawLayoutExtents(pixmap,&size);
+	    len = size.width;
+
 	    r.x = x-len/2; r.width = len;
 	    r.y = y+7; r.height = cv->nfh;
 	    GDrawFillRect(pixmap,&r,view_bgcol );
-	    if ( GDrawHasCairo(pixmap)&gc_pango ) {
-		GDrawLayoutDraw(pixmap,x-len/2,y+7+cv->nas,col);
-	    } else
-		GDrawDrawBiText8(pixmap,x-len/2,y+7+cv->nas,name,-1,NULL,col);
+	    GDrawLayoutDraw(pixmap,x-len/2,y+7+cv->nas,col);
 	}
     }
 }
@@ -10481,13 +10472,12 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
 	/*  so the font I used to use isn't found, and a huge monster is */
 	/*  inserted instead */
 	if ( infofamily==NULL )
-	    infofamily = (GDrawHasCairo(cv->v)&(gc_alpha|gc_pango))?SANS_UI_FAMILIES:FIXED_UI_FAMILIES;
+	    infofamily = SANS_UI_FAMILIES;
     }
 
     memset(&rq,0,sizeof(rq));
     rq.utf8_family_name = infofamily;
-    rq.point_size = GResourceFindInt("CharView.Rulers.FontSize",
-	    (GDrawHasCairo(cv->v)&(gc_alpha|gc_pango))?-10:-7);
+    rq.point_size = GResourceFindInt("CharView.Rulers.FontSize", -10);
     rq.weight = 400;
     cv->small = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->gw),&rq);
     GDrawFontMetrics(cv->small,&as,&ds,&ld);

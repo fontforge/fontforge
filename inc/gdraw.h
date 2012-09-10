@@ -328,7 +328,6 @@ enum gzoom_flags { gzf_pos=1, gzf_size=2 };
 enum gcairo_flags { gc_buildpath=1,	/* Has build path commands (postscript, cairo) */
 		    gc_alpha=2,		/* Supports alpha channels & translucent colors (cairo, pdf) */
 		    gc_xor=4,		/* Cairo can't do the traditional XOR drawing that X11 does */
-		    gc_pango=8,
 		    gc_all = gc_buildpath|gc_alpha
 		    };
 

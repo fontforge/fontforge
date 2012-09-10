@@ -215,11 +215,9 @@ struct font_instance {
     uint16 replacement_char;
     int pixelsize;
 #endif
-#ifndef _NO_LIBPANGO
     PangoFontDescription *pango_fd;
 #ifndef _NO_LIBCAIRO
     PangoFontDescription *pangoc_fd;
-#endif
 #endif
 };
 

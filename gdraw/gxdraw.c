@@ -1404,11 +1404,9 @@ return( NULL );
     if ( gdisp->visual->class==TrueColor && !(wattrs->mask&wam_nocairo) &&_GXCDraw_hasCairo() )
 	_GXCDraw_NewWindow(nw,wattrs->background_color);
 #endif
-#ifndef _NO_LIBPANGO	/* Must come after the cairo init so pango will know to use cairo or xft */
+    /* Must come after the cairo init so pango will know to use cairo or xft */
     /* I think we will always want to use pango, so it isn't conditional on a wam */
-    if ( gdisp->visual->class==TrueColor && _GXPDraw_hasPango() )
-	_GXPDraw_NewWindow(nw);
-#endif
+    _GXPDraw_NewWindow(nw);
 return( (GWindow) nw );
 }
 
@@ -1474,11 +1472,9 @@ return( NULL );
 	    _GXCDraw_hasCairo() )
 	_GXCDraw_NewWindow(gw,gw->ggc->bg);
 #endif
-#ifndef _NO_LIBPANGO	/* Must come after the cairo init so pango will know to use cairo or xft */
+    /* Must come after the cairo init so pango will know to use cairo or xft */
     /* I think we will always want to use pango, so it isn't conditional */
-    if ( ((GXDisplay *) gdisp)->visual->class==TrueColor && _GXPDraw_hasPango() )
-	_GXPDraw_NewWindow(gw);
-#endif
+    _GXPDraw_NewWindow(gw);
 return( (GWindow) gw );
 }
 
@@ -1537,10 +1533,7 @@ static void GXDrawDestroyWindow(GWindow w) {
     if ( gw->usecairo )
 	_GXCDraw_DestroyWindow(gw);
 #endif
-#ifndef _NO_LIBPANGO
-    if ( gw->usepango )
-	_GXPDraw_DestroyWindow(gw);
-#endif
+    _GXPDraw_DestroyWindow(gw);
 
     if ( gw->is_pixmap ) {
 	XFreePixmap(gw->display->display,gw->w);
@@ -2529,9 +2522,6 @@ static enum gcairo_flags GXDrawHasCairo(GWindow w) {
     if ( ((GXWindow) w)->usecairo )
 return( _GXCDraw_CairoCapabilities( (GXWindow) w));
 
-    if ( ((GXWindow) w)->usepango )
-return( gc_pango|gc_xor );
-
 return( gc_xor );
 }
 
@@ -2600,9 +2590,6 @@ return;
 
 #else
 static enum gcairo_flags GXDrawHasCairo(GWindow w) {
-    if ( ((GXWindow) w)->usepango )
-return( gc_pango|gc_xor );
-
 return( gc_xor );
 }
 
@@ -2643,62 +2630,35 @@ static void GXDrawPathFillAndStroke(GWindow w,Color fillcol, Color strokecol) {
 #endif
 
 static void GXDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
-	_GXPDraw_LayoutInit(w,text,cnt,fi);
-#endif
+    _GXPDraw_LayoutInit(w,text,cnt,fi);
 }
 
 static void GXDraw_LayoutDraw(GWindow w, int32 x, int32 y, Color fg) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
-	_GXPDraw_LayoutDraw(w,x,y,fg);
-#endif
+    _GXPDraw_LayoutDraw(w,x,y,fg);
 }
 
 static void GXDraw_LayoutIndexToPos(GWindow w, int index, GRect *pos) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
-	_GXPDraw_LayoutIndexToPos(w,index,pos);
-#endif
+    _GXPDraw_LayoutIndexToPos(w,index,pos);
 }
 
 static int GXDraw_LayoutXYToIndex(GWindow w, int x, int y) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
 return( _GXPDraw_LayoutXYToIndex(w,x,y));
-#endif
-return( -1 );
 }
 
 static void GXDraw_LayoutExtents(GWindow w, GRect *size) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
-	_GXPDraw_LayoutExtents(w,size);
-#endif
+    _GXPDraw_LayoutExtents(w,size);
 }
 
 static void GXDraw_LayoutSetWidth(GWindow w, int width) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
-	_GXPDraw_LayoutSetWidth(w,width);
-#endif
+    _GXPDraw_LayoutSetWidth(w,width);
 }
 
 static int GXDraw_LayoutLineCount(GWindow w) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
 return( _GXPDraw_LayoutLineCount(w));
-#endif
-return( -1 );
 }
 
 static int GXDraw_LayoutLineStart(GWindow w, int l) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
 return( _GXPDraw_LayoutLineStart(w, l));
-#endif
-return( -1 );
 }
 
 static void GXDrawSendExpose(GXWindow gw, int x,int y,int wid,int hei ) {
@@ -3019,17 +2979,7 @@ return;
 }
 
 static void GXDrawFontMetrics( GWindow w,GFont *fi,int *as, int *ds, int *ld) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
-	_GXPDraw_FontMetrics( ((GXWindow) w),fi,as,ds,ld);
-    else
-#endif
-#ifndef _NO_LIBCAIRO
-    if ( ((GXWindow) w)->usecairo )
-	_GXCDraw_FontMetrics( ((GXWindow) w),fi,as,ds,ld);
-    else
-#endif
-	GDrawFontMetrics(fi,as,ds,ld);
+    _GXPDraw_FontMetrics( ((GXWindow) w),fi,as,ds,ld);
 }
     
 

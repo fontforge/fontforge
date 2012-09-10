@@ -6051,17 +6051,6 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 			adobes_pua_alts[uni-0xf600]!=0 ) {
 		    use_utf8 = false;
 		    do_Adobe_Pua(buf,sizeof(buf),uni);
-		} else if ( uni>=0x1d400 && uni<=0x1d7ff &&
-			!(GDrawHasCairo(fv->v)&gc_pango)) {
-		    int i;
-		    /* Pango knows how to find the right letters (or we hope it does) */
-		    for ( i=0; mathmap[i].start!=0; ++i ) {
-			if ( uni<=mathmap[i].last ) {
-			    buf[0] = maps[mathmap[i].charset][uni-mathmap[i].start];
-			    styles = mathmap[i].styles;
-		    break;
-			}
-		    }
 		} else if ( uni>=0xe0020 && uni<=0xe007e ) {
 		    buf[0] = uni-0xe0000;	/* A map of Ascii for language names */
 #if HANYANG

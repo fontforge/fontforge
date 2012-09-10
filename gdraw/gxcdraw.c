@@ -1220,9 +1220,6 @@ return;
 enum gcairo_flags _GXCDraw_CairoCapabilities( GXWindow gw) {
     enum gcairo_flags flags = gc_all;
 
-    if ( gw->usepango )
-	flags |= gc_pango;
-
 return( flags|gc_xor );	/* If not buffered, we can emulate xor by having X11 do it in the X layer */
 }
 /* ************************************************************************** */
@@ -1252,15 +1249,6 @@ return(false);
 #   include <pango/pangocairo.h>
 #  endif
 #  undef GTimer
-
-int _GXPDraw_hasPango(void) {
-
-# if !defined(_NO_LIBCAIRO)
-return( 3 );
-# else
-return( 1 );
-# endif
-}
 
 /* ************************************************************************** */
 /* ****************************** Pango Render ****************************** */
@@ -1344,13 +1332,12 @@ void _GXPDraw_NewWindow(GXWindow nw) {
 	if ( gdisp->pango_layout==NULL )
 	    gdisp->pango_layout = pango_layout_new(gdisp->pango_context);
     }
-    nw->usepango = true;
 return;
 }
 
 void _GXPDraw_DestroyWindow(GXWindow nw) {
     /* And why doesn't the man page mention this essential function? */
-    if ( nw->usepango && XftDrawDestroy!=NULL && nw->xft_w!=NULL ) {
+    if ( XftDrawDestroy!=NULL && nw->xft_w!=NULL ) {
 	XftDrawDestroy(nw->xft_w);
 	nw->xft_w = NULL;
     }

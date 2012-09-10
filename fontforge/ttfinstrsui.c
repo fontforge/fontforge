@@ -444,16 +444,11 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 	    }
 
 	    if ( ii->showaddr ) {
-		if ( GDrawHasCairo(pixmap) & gc_pango ) {
-		    GRect size;
-		    GDrawLayoutInit(pixmap,loc,-1,NULL);
-		    GDrawLayoutExtents(pixmap,&size);
-		    x = addr_end - EDGE_SPACING - size.width;
-		    GDrawLayoutDraw(pixmap,x,y+ii->as,MAIN_FOREGROUND);
-		} else {
-		    x = addr_end - EDGE_SPACING - GDrawGetText8Width(pixmap,loc,-1,NULL);
-		    GDrawDrawBiText8(pixmap,x,y+ii->as,loc,-1,NULL,MAIN_FOREGROUND);
-		}
+		GRect size;
+		GDrawLayoutInit(pixmap,loc,-1,NULL);
+		GDrawLayoutExtents(pixmap,&size);
+		x = addr_end - EDGE_SPACING - size.width;
+		GDrawLayoutDraw(pixmap,x,y+ii->as,MAIN_FOREGROUND);
 		if ( ii->bpcheck && ii->bpcheck(ii,i))
 		    GDrawDrawImage(pixmap,&GIcon_Stop,NULL,EDGE_SPACING,
 			    y+(ii->fh-8)/2-5);

@@ -636,16 +636,10 @@ static void BVDrawRefName(BitmapView *bv,GWindow pixmap,BDFRefChar *ref,int fg) 
     if ( x<-400 || y<-40 || x>bv->width+400 || y>bv->height )
 return;
 
-    if ( GDrawHasCairo(pixmap)&gc_pango ) {
-	GDrawLayoutInit(pixmap,refinfo,-1,bv->small);
-	GDrawLayoutExtents(pixmap,&size);
-	GDrawLayoutDraw(pixmap,x-size.width/2,y,fg);
-	len = size.width;
-    } else {
-	GDrawSetFont(pixmap,bv->small);
-	len = GDrawGetBiText8Width(pixmap,refinfo,-1,-1,NULL);
-	GDrawDrawBiText8(pixmap,x-len/2,y,refinfo,-1,NULL,fg);
-    }
+    GDrawLayoutInit(pixmap,refinfo,-1,bv->small);
+    GDrawLayoutExtents(pixmap,&size);
+    GDrawLayoutDraw(pixmap,x-size.width/2,y,fg);
+    len = size.width;
     free(refinfo);
 }
 
@@ -2365,7 +2359,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
 	/*  so the font I used to use isn't found, and a huge monster is */
 	/*  inserted instead */
 	if ( infofamily==NULL )
-	    infofamily = (GDrawHasCairo(bv->v)&(gc_alpha|gc_pango))?SANS_UI_FAMILIES:FIXED_UI_FAMILIES;
+	    infofamily = SANS_UI_FAMILIES;
     }
 
     memset(&rq,0,sizeof(rq));

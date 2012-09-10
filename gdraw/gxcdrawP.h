@@ -56,8 +56,6 @@ extern int32 _GXCDraw_DoText(GWindow gw, int32 x, int32 y,
 	enum text_funcs drawit, struct tf_arg *arg);
 
 #endif
-#ifndef _NO_LIBPANGO
-extern int _GXPDraw_hasPango(void);
 extern void _GXPDraw_NewWindow(GXWindow nw);
 extern void _GXPDraw_DestroyWindow(GXWindow nw);
 #include "fontP.h"
@@ -76,6 +74,5 @@ extern void _GXPDraw_LayoutExtents(GWindow w, GRect *size);
 extern void _GXPDraw_LayoutSetWidth(GWindow w, int width);
 extern int  _GXPDraw_LayoutLineCount(GWindow w);
 extern int  _GXPDraw_LayoutLineStart(GWindow w,int l);
-#endif
 
 #endif /* _GXCDRAWP_H */

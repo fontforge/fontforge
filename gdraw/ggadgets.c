@@ -983,35 +983,24 @@ return( true );
 
 void _ggadget_underlineMnemonic(GWindow gw,int32 x,int32 y,unichar_t *label,
 	unichar_t mnemonic, Color fg, int maxy) {
-    unichar_t *pt;
     int point = GDrawPointsToPixels(gw,1);
     int width;
     /*GRect clip;*/
 
     if ( mnemonic=='\0' )
 return;
-    if ( GDrawHasCairo(gw)&gc_pango ) {
-	char *ctext = u2utf8_copy(label);
-	char *cpt = utf8_strchr(ctext,mnemonic);
-	GRect space;
-	if ( cpt==NULL && isupper(mnemonic))
-	    cpt = strchr(ctext,tolower(mnemonic));
-	if ( cpt==NULL )
+    char *ctext = u2utf8_copy(label);
+    char *cpt = utf8_strchr(ctext,mnemonic);
+    GRect space;
+    if ( cpt==NULL && isupper(mnemonic))
+	cpt = strchr(ctext,tolower(mnemonic));
+    if ( cpt==NULL )
 return;
-	GDrawLayoutInit(gw,ctext,-1,NULL);
-	GDrawLayoutIndexToPos(gw, cpt-ctext, &space);
-	free(ctext);
-	x += space.x;
-	width = space.width;
-    } else {
-	pt = u_strchr(label,mnemonic);
-	if ( pt==NULL && isupper(mnemonic))
-	    pt = u_strchr(label,tolower(mnemonic));
-	if ( pt==NULL )
-return;
-	x += GDrawGetBiTextWidth(gw,label,pt-label,pt-label,NULL);
-	width = GDrawGetBiTextWidth(gw,pt,1,1,NULL);
-    }
+    GDrawLayoutInit(gw,ctext,-1,NULL);
+    GDrawLayoutIndexToPos(gw, cpt-ctext, &space);
+    free(ctext);
+    x += space.x;
+    width = space.width;
     GDrawSetLineWidth(gw,point);
     y += 2*point;
     if ( y+point-1 >= maxy )
