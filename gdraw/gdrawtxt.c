@@ -1202,6 +1202,13 @@ static int32 _GDraw_ScreenDrawToImage(GWindow gw, struct font_data *fd, struct f
 	unichar_t *text, unichar_t *end, FontMods *mods, Color col,
 	enum text_funcs drawit, struct tf_arg *oldarg);
 
+int32 __GXPDraw_DoText(GWindow w, int32 x, int32 y,
+	const unichar_t *text, int32 cnt, FontMods *mods, Color col,
+	enum text_funcs drawit, struct tf_arg *arg);
+int32 __GXPDraw_DoText8(GWindow w, int32 x, int32 y,
+	const char *text, int32 cnt, FontMods *mods, Color col,
+	enum text_funcs drawit, struct tf_arg *arg);
+
 static int32 _GDraw_DrawUnencoded(GWindow gw, FontInstance *fi,
 	int32 x, int32 y,
 	unichar_t *text, unichar_t *end, FontMods *mods, Color col,
@@ -2653,6 +2660,32 @@ static int32 _GDraw_DoBiWidth(GWindow gw, const unichar_t *text, int len, int32 
 return( width );
 }
 
+int32 __GXPDraw_DoText(GWindow w, int32 x, int32 y,
+	const unichar_t *text, int32 cnt, FontMods *mods, Color col,
+	enum text_funcs drawit, struct tf_arg *arg) {
+    struct font_instance *fi = w->ggc->fi;
+
+    if ( fi==NULL )
+return( 0 );
+
+    if ( mods==NULL )
+	mods = &dummyfontmods;
+return( _GXPDraw_DoText(w,x,y,text,cnt,mods,col,tf_drawit,arg));
+}
+
+int32 __GXPDraw_DoText8(GWindow w, int32 x, int32 y,
+	const char *text, int32 cnt, FontMods *mods, Color col,
+	enum text_funcs drawit, struct tf_arg *arg) {
+    struct font_instance *fi = w->ggc->fi;
+
+    if ( fi==NULL )
+return( 0 );
+
+    if ( mods==NULL )
+	mods = &dummyfontmods;
+return( _GXPDraw_DoText8(w,x,y,text,cnt,mods,col,drawit,arg));
+}
+
 int32 GDrawDrawBiText(GWindow gw, int32 x, int32 y,
 	const unichar_t *text, int32 cnt, FontMods *mods, Color col) {
     int ret;
@@ -2660,7 +2693,7 @@ int32 GDrawDrawBiText(GWindow gw, int32 x, int32 y,
 
 #ifndef _NO_LIBPANGO
     if ( gw->usepango )
-return( _GXPDraw_DoText(gw,x,y,text,cnt,mods,col,tf_drawit,&arg));
+return( __GXPDraw_DoText(gw,x,y,text,cnt,mods,col,tf_drawit,&arg));
     else
 #endif
     if (( ret = GDrawIsAllLeftToRight(text,cnt))==1 ) {
@@ -2676,7 +2709,7 @@ int32 GDrawGetBiTextWidth(GWindow gw,const unichar_t *text, int len, int32 cnt, 
 
 #ifndef _NO_LIBPANGO
     if ( gw->usepango )
-return( _GXPDraw_DoText(gw,0,0,text,cnt,mods,0x0,tf_width,&arg));
+return( __GXPDraw_DoText(gw,0,0,text,cnt,mods,0x0,tf_width,&arg));
     else
 #endif
     if ( len==-1 || len==cnt || ( ret = GDrawIsAllLeftToRight(text,cnt))==1 ) {
@@ -2694,7 +2727,7 @@ int32 GDrawGetBiTextBounds(GWindow gw,const unichar_t *text, int32 cnt, FontMods
     arg.first = true;
 #ifndef _NO_LIBPANGO
     if ( gw->usepango )
-	ret = _GXPDraw_DoText(gw,0,0,text,cnt,mods,0x0,tf_rect,&arg);
+	ret = __GXPDraw_DoText(gw,0,0,text,cnt,mods,0x0,tf_rect,&arg);
     else
 #endif
 	ret = _GDraw_DoText(gw,0,0,(unichar_t *) text,cnt,mods,0,tf_rect,&arg);
@@ -2751,7 +2784,7 @@ int32 GDrawDrawBiText8(GWindow gw, int32 x, int32 y,
 
 #ifndef _NO_LIBPANGO
     if ( gw->usepango )
-return( _GXPDraw_DoText8(gw,x,y,text,cnt,mods,col,tf_drawit,&arg));
+return( __GXPDraw_DoText8(gw,x,y,text,cnt,mods,col,tf_drawit,&arg));
     else
 #endif
     if (( ret = GDrawIsAllLeftToRight8(text,cnt))==1 ) {
@@ -2772,7 +2805,7 @@ int32 GDrawGetBiText8Width(GWindow gw, const char *text, int len, int32 cnt, Fon
 
 #ifndef _NO_LIBPANGO
     if ( gw->usepango )
-return( _GXPDraw_DoText8(gw,0,0,text,cnt,mods,0x0,tf_width,&arg));
+return( __GXPDraw_DoText8(gw,0,0,text,cnt,mods,0x0,tf_width,&arg));
     else
 #endif
     if (( ret = GDrawIsAllLeftToRight8(text,cnt))==1 ) {
@@ -2795,7 +2828,7 @@ int32 GDrawGetBiText8Bounds(GWindow gw,const char *text, int32 cnt, FontMods *mo
     arg.first = true;
 #ifndef _NO_LIBPANGO
     if ( gw->usepango )
-	ret = _GXPDraw_DoText8(gw,0,0,text,cnt,mods,0x0,tf_rect,&arg);
+	ret = __GXPDraw_DoText8(gw,0,0,text,cnt,mods,0x0,tf_rect,&arg);
     else
 #endif
 	ret = _GDraw_DoText8(gw,0,0,text,cnt,mods,0,tf_rect,&arg);
