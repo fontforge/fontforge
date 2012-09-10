@@ -571,10 +571,6 @@ struct bounds {
     int ymin, ymax;
 };
 
-/* UTF8 routines */
-
-/* End UTF8 routines */
-
 void GDrawFontMetrics(FontInstance *fi,int *as, int *ds, int *ld) {
     struct font_data *fd;
     XFontStruct *fontinfo;
@@ -664,8 +660,9 @@ int32 GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32 cnt, FontMods *
 return( ret );
 }
 
-int32 GDrawDrawText8(GWindow gw, int32 x, int32 y,
-	const char *text, int32 cnt, FontMods *mods, Color col) {
+/* UTF8 routines */
+
+int32 GDrawDrawText8(GWindow gw, int32 x, int32 y, const char *text, int32 cnt, FontMods *mods, Color col) {
     struct tf_arg arg;
 
 return( __GXPDraw_DoText8(gw,x,y,text,cnt,mods,col,tf_drawit,&arg));
@@ -687,3 +684,5 @@ int32 GDrawGetText8Bounds(GWindow gw,const char *text, int32 cnt, FontMods *mods
     *bounds = arg.size;
 return( ret );
 }
+
+/* End UTF8 routines */
