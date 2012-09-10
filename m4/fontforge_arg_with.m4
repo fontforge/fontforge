@@ -50,7 +50,7 @@ AC_DEFUN([FONTFORGE_ARG_WITH_CAIRO],
    FONTFORGE_ARG_WITH([cairo],
       [AS_HELP_STRING([--without-cairo],
                       [build without Cairo graphics (use regular X graphics instead)])],
-      [cairo],
+      [cairo >= 1.6],
       [FONTFORGE_WARN_PKG_NOT_FOUND([CAIRO])],
       [_NO_LIBCAIRO])
 ])
