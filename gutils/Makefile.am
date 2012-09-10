@@ -58,3 +58,5 @@ libgioftp_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 libgioftp_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -release $(VERSION)
 
 #--------------------------------------------------------------------------
+
+-include $(top_srcdir)/git.mk

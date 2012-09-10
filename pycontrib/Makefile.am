@@ -32,3 +32,5 @@ pkgpythondata_DATA = excepthook.py
 endif PYTHON_SCRIPTING
 
 EXTRA_DIST = excepthook.py
+
+-include $(top_srcdir)/git.mk

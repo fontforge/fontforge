@@ -233,3 +233,5 @@ clean-darwin-stuff:
 endif MACINTOSH
 
 #--------------------------------------------------------------------------
+
+-include $(top_srcdir)/git.mk

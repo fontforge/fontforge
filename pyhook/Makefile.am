@@ -42,3 +42,5 @@ fontforge_la_LDFLAGS = -module -shared -avoid-version
 fontforge_la_LIBADD = $(LIBFONTFORGE_LIBS)
 
 EXTRA_DIST = LICENSE
+
+-include $(top_srcdir)/git.mk

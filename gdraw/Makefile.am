@@ -50,3 +50,5 @@ libgdraw_la_LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 # absence of a well defined ABI.
 libgdraw_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -release $(VERSION)
 
+
+-include $(top_srcdir)/git.mk

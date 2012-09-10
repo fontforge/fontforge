@@ -32,3 +32,5 @@ nobase_htdocs_DATA = $(INSTALLED_DOC_LIST) .htaccess
 
 EXTRA_DIST = $(DOC_LIST) .htaccess RUN_ME_TO_CHANGE_THE_DOCS.sh	\
 	$(srcdir)/doc_list.mk
+
+-include $(top_srcdir)/git.mk

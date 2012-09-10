@@ -37,3 +37,5 @@ pkginclude_HEADERS = basics.h chardata.h charset.h config.h dynamic.h	\
 
 noinst_HEADERS = pluginloading.h
 
+
+-include $(top_srcdir)/git.mk

@@ -51,3 +51,5 @@ update-desktop-database:
 EXTRA_DIST = icons/src/icon-16x16-apps-fontforge.svg	\
 	icons/src/icon-24x24-apps-fontforge.svg				\
 	icons/src/icon-32x32-apps-fontforge.svg
+
+-include $(top_srcdir)/git.mk

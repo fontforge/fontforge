@@ -37,3 +37,5 @@ libgunicode_la_CPPFLAGS = "-I$(top_builddir)/inc"	\
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
 libgunicode_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -release $(VERSION)
+
+-include $(top_srcdir)/git.mk

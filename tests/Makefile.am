@@ -79,3 +79,5 @@ EXTRA_DIST += fonts/AddExtremaTest2.sfd fonts/ayn+meem.init.svg		\
 	fonts/SimplifyBugs.sfd
 
 DISTCLEANFILES = atconfig
+
+-include $(top_srcdir)/git.mk
