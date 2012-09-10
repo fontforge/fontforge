@@ -113,11 +113,6 @@ void GDrawEnableCairo(int on) {
     /* Obviously, if we have no library, enabling it will do nothing */
 }
 
-void GDrawEnablePango(int on) {
-    usepango=on;
-    /* Obviously, if we have no library, enabling it will do nothing */
-}
-
 #ifndef _NO_LIBCAIRO
 /* ************************************************************************** */
 /* ***************************** Cairo Library ****************************** */

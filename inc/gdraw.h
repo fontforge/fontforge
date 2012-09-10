@@ -544,7 +544,6 @@ extern void GDrawPathStroke(GWindow w,Color col);
 extern void GDrawPathFill(GWindow w,Color col);
 extern void GDrawPathFillAndStroke(GWindow w,Color fillcol, Color strokecol);
 extern void GDrawEnableCairo(int on);
-extern void GDrawEnablePango(int on);
 
 extern void GDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi);
 extern void GDrawLayoutDraw(GWindow w, int32 x, int32 y, Color fg);

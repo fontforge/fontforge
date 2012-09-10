@@ -100,9 +100,6 @@ static void _dousage(void) {
 #ifndef _NO_LIBCAIRO
     printf( "\t-usecairo=yes|no  Use (or not) the cairo library for drawing\n" );
 #endif
-#ifndef _NO_LIBPANGO
-    printf( "\t-usepango=yes|no  Use (or not) the pango library for text\n" );
-#endif
     printf( "\t-help\t\t\t (displays this message, and exits)\n" );
     printf( "\t-docs\t\t\t (displays this message, invokes a browser)\n\t\t\t\t (Using the BROWSER environment variable)\n" );
     printf( "\t-version\t\t (prints the version of fontforge and exits)\n" );
@@ -971,11 +968,6 @@ int fontforge_main( int argc, char **argv ) {
 		GDrawEnableCairo(false);
 	    else
 		GDrawEnableCairo(true);
-	} else if ( strncmp(pt,"-usepango",strlen("-usepango"))==0 ) {
-	    if ( strcmp(pt,"-usepango=no")==0 )
-		GDrawEnablePango(false);
-	    else
-		GDrawEnablePango(true);
 	} else if ( strcmp(pt,"-nosplash")==0 )
 	    splash = 0;
 	else if ( strcmp(pt,"-unique")==0 )
@@ -1125,7 +1117,6 @@ exit( 0 );
 		strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 ||
 		strcmp(pt,"-dontopenxdevices")==0 || strcmp(pt,"-unique")==0 ||
 		strncmp(pt,"-usecairo",strlen("-usecairo"))==0 ||
-		strncmp(pt,"-usepango",strlen("-usepango"))==0 ||
 		strcmp(pt,"-home")==0 )
 	    /* Already done, needed to be before display opened */;
 	else if ( strncmp(pt,"-psn_",5)==0 )
