@@ -1697,7 +1697,7 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
     /* If it's not (bmp) unicode we have no info on it */
     /*  Unless it looks like one of adobe's special ligature names */
     if ( uni==-1 || uni>=0x10000 )
-	/* Nope */;
+	; /* Nope, we don't have data for this char, it's outside our existing database array */
     else if ( isdecompositionnormative(uni) &&
 		unicode_alternates[uni>>8]!=NULL &&
 		(alt = unicode_alternates[uni>>8][uni&0xff])!=NULL ) {
