@@ -124,4 +124,15 @@ extern int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list
 extern int uAllAscii(const unichar_t *str);
 extern int AllAscii(const char *);
 extern char *StripToASCII(const char *utf8_str);
+
+/**
+ * Return true if the haystack unicode string ends with the string needle.
+ * Return 0 otherwise.
+ *
+ * Needles which are larger than the haystack are handled.
+ *
+ * No new strings are allocated, freed, or returned.
+ */
+extern int u_endswith(const unichar_t *haystack,const unichar_t *needle);
+
 #endif
