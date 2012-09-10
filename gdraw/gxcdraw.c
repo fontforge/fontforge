@@ -1377,13 +1377,11 @@ return;
 
 # if !defined(_NO_LIBCAIRO)
     if ( nw->usecairo ) {
-	if ( pango_cairo_font_map_create_context==NULL )
-return;
 	/* using pango through cairo is different from using it on bare X */
 	if ( gdisp->pangoc_context==NULL ) {
 	    gdisp->pangoc_fontmap = pango_cairo_font_map_get_default();
-	    gdisp->pangoc_context = pango_cairo_font_map_create_context(
-		    (PangoCairoFontMap *) (gdisp->pangoc_fontmap));
+	    gdisp->pangoc_context = pango_font_map_create_context(
+		    PANGO_FONT_MAP (gdisp->pangoc_fontmap));
 	    if ( pango_cairo_context_set_resolution!=NULL )
 		pango_cairo_context_set_resolution(gdisp->pangoc_context,
 			gdisp->res);
