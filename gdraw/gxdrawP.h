@@ -81,8 +81,6 @@ capable of using composite.
 # ifndef _NO_LIBCAIRO
 #  include <cairo/cairo.h>
 #  include <cairo/cairo-xlib.h>
-#  include <cairo/cairo-ft.h>
-#  include <fontconfig/fontconfig.h>
 # endif
 #  define GTimer GTimer_GTK
 #  include <ft2build.h>

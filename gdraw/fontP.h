@@ -187,11 +187,6 @@ struct family_info {
 			     /* encoding, see if we can use a screen font */
 };
 
-struct charset_cairofont {	/* One of these for every font in the set (nfont of them) */
-    cairo_scaled_font_t *cf;
-    FcCharSet *cs;
-};
-
 struct font_instance {
     FontRequest rq;		/* identification of this instance */
     struct family_info *fam;
@@ -207,14 +202,6 @@ struct font_instance {
 			        /* one final level for really bad last chances */
 			        /*  scaled fonts from the screen fall here */
     GDisplay *mapped_to;
-#ifndef _NO_LIBCAIRO
-    FcFontSet *ordered;
-    struct charset_cairofont *cscf;	/* One of these for every font in the set (nfont of them) */
-    FcPattern *pat;
-    int16 replacement_index;
-    uint16 replacement_char;
-    int pixelsize;
-#endif
     PangoFontDescription *pango_fd;
 #ifndef _NO_LIBCAIRO
     PangoFontDescription *pangoc_fd;
