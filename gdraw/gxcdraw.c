@@ -43,11 +43,6 @@
 # include <sys/utsname.h>
 #endif
 
-#ifdef _NO_LIBPANGO
-static int usepango=false;
-#else
-static int usepango=true;
-#endif
 #ifdef _NO_LIBCAIRO
 static int usecairo = false;
 #else
@@ -70,18 +65,18 @@ static void MacVersionTest(void) {
     struct utsname osinfo;
     static int tested=0;
 
-    if ( tested || (!usepango && !usecairo))
+    if ( tested || !usecairo)
 return;
     tested = true;
 
     if ( uname(&osinfo)!=0 ) {
 	/* Error? Shouldn't happen */
-	usecairo = usepango = false;
+	usecairo = false;
 return;
     }
     if ( *osinfo.release!='9' || access("/usr/X11R6/bin/Xnest",0)==0 )
 return;		/* Not 10.5.* or we've got the Xorg distribution */
-    usecairo = usepango = false;
+    usecairo = false;
     fprintf( stderr, "You appear to have a version of X11 with a bug in it.\n" );
     fprintf( stderr, " This bug will cause fontforge to crash if it attempts\n" );
     fprintf( stderr, " to use the pango or cairo libraries. FontForge will\n" );
@@ -1306,8 +1301,6 @@ return(false);
 /* ***************************** Pango Library ****************************** */
 /* ************************************************************************** */
 
-#ifndef _NO_LIBPANGO
-
 #  define GTimer GTimer_GTK
 #  include <pango/pangoxft.h>
 #  if !defined(_NO_LIBCAIRO)
@@ -1316,9 +1309,6 @@ return(false);
 #  undef GTimer
 
 int _GXPDraw_hasPango(void) {
-
-    if ( !usepango )
-return( false );
 
 # if !defined(_NO_LIBCAIRO)
 return( 3 );
@@ -1387,8 +1377,6 @@ void _GXPDraw_NewWindow(GXWindow nw) {
     GXDisplay *gdisp = nw->display;
 
     MacVersionTest();
-    if ( !usepango || !_GXPDraw_hasPango())
-return;
 
 # if !defined(_NO_LIBCAIRO)
     if ( nw->usecairo ) {
@@ -1738,4 +1726,3 @@ return( -1 );
 
 return( line->start_index );
 }
-#endif	/* ! _NO_LIBPANGO */
