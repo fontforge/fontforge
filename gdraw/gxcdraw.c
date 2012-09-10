@@ -1382,9 +1382,8 @@ return;
 	    gdisp->pangoc_fontmap = pango_cairo_font_map_get_default();
 	    gdisp->pangoc_context = pango_font_map_create_context(
 		    PANGO_FONT_MAP (gdisp->pangoc_fontmap));
-	    if ( pango_cairo_context_set_resolution!=NULL )
-		pango_cairo_context_set_resolution(gdisp->pangoc_context,
-			gdisp->res);
+	    pango_cairo_context_set_resolution(gdisp->pangoc_context,
+		    gdisp->res);
 	    gdisp->pangoc_layout = pango_layout_new(gdisp->pangoc_context);
 	}
     } else
