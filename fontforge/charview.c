@@ -1216,6 +1216,11 @@ void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePointList *s
     if ( cv->inactive )
 	dopoints = false;
 
+    if( strokeFillMode == sfm_fill ) {
+	CVDrawSplineSetOutlineOnly( cv, pixmap, set,
+				    fg, dopoints, clip, strokeFillMode );
+    }
+
     GDrawSetFont(pixmap,cv->small);		/* For point numbers */
     for ( spl = set; spl!=NULL; spl = spl->next ) {
 	if ( spl->contour_name!=NULL )
@@ -1245,10 +1250,6 @@ void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePointList *s
 	}
     }
 
-    if( strokeFillMode == sfm_fill ) {
-	CVDrawSplineSetOutlineOnly( cv, pixmap, set,
-				    fg, dopoints, clip, strokeFillMode );
-    }
     if( strokeFillMode != sfm_nothing ) {
 	/*
 	 * If we were filling, we have to stroke the outline again to properly show
