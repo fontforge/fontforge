@@ -49,60 +49,6 @@ static int usecairo = false;
 static int usecairo = true;
 #endif
 
-static void MacVersionTest(void) {
-    /* pango and cairo do not work on mac 10.5.0 same code runs fine on 10.5.6 */
-    /* I'm guessing that there is a problem with libfontconfig under Xfree86 */
-    /*  which is not present in the X.org release. (X11->About says it is */
-    /*  Xfree under 10.5.0, and X.org under 10.5.6) */
-    /* If I try to use pango or cairo under 10.5.0 fontforge crashes instantly*/
-    /*  and people blame me */
-    /* Note that pango runs fine under 10.4.? */
-    /* So how to detect a bad X library? */
-    /*  well `uname -r` gives us 9.0.0 on 10.5, so problems may happen above that */
-    /*  the X.org bin directory contains the file "Xnest" while the */
-    /*   XFree bin directory does not */
-#ifdef __Mac
-    struct utsname osinfo;
-    static int tested=0;
-
-    if ( tested || !usecairo)
-return;
-    tested = true;
-
-    if ( uname(&osinfo)!=0 ) {
-	/* Error? Shouldn't happen */
-	usecairo = false;
-return;
-    }
-    if ( *osinfo.release!='9' || access("/usr/X11R6/bin/Xnest",0)==0 )
-return;		/* Not 10.5.* or we've got the Xorg distribution */
-    usecairo = false;
-    fprintf( stderr, "You appear to have a version of X11 with a bug in it.\n" );
-    fprintf( stderr, " This bug will cause fontforge to crash if it attempts\n" );
-    fprintf( stderr, " to use the pango or cairo libraries. FontForge will\n" );
-    fprintf( stderr, " not attempt to use these libraries.\n\n" );
-    fprintf( stderr, "You can install a fix by going to <Apple>->Software Update\n" );
-    fprintf( stderr, " and selecting \"Mac OS X Update Combined\".\n\n" );
-    fprintf( stderr, "If you believe you do have the correct software, then\n" );
-    fprintf( stderr, " simply create the file \"/usr/X11R6/bin/Xnest\" and\n" );
-    fprintf( stderr, " fontforge will shut up.\n" );
-    GDrawError(
-	"You appear to have a version of X11 with a bug in it."
-	" This bug will cause fontforge to crash if it attempts"
-	" to use the pango or cairo libraries. FontForge will"
-	" not attempt to use these libraries.\n\n"
-	"You can install a fix by going to <Apple>->Software Update"
-	" and selecting \"Mac OS X Update Combined\".\n\n"
-	"If you don't want to see this message at startup, go to"
-	" File->Preferences->Generic and turn off both"
-	" UseCairo and UsePango.\n\n"
-	"If you believe you do have the correct software, then"
-	" simply create the file \"/usr/X11R6/bin/Xnest\" and"
-	" fontforge will shut up.\n"
-    );
-#endif
-}
-
 void GDrawEnableCairo(int on) {
     usecairo=on;
     /* Obviously, if we have no library, enabling it will do nothing */
@@ -129,7 +75,6 @@ void _GXCDraw_NewWindow(GXWindow nw,Color bg) {
     GXDisplay *gdisp = nw->display;
     Display *display = gdisp->display;
 
-    MacVersionTest();
     if ( !usecairo || !_GXCDraw_hasCairo())
 return;
 
@@ -1375,8 +1320,6 @@ static void my_cairo_render_layout(cairo_t *cc, Color fg,
 /* ************************************************************************** */
 void _GXPDraw_NewWindow(GXWindow nw) {
     GXDisplay *gdisp = nw->display;
-
-    MacVersionTest();
 
 # if !defined(_NO_LIBCAIRO)
     if ( nw->usecairo ) {
