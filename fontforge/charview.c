@@ -1123,9 +1123,7 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 
 void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *set,
 				Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode ) {
-    Spline *spline, *first;
     SplinePointList *spl;
-    int truetype_markup = set==cv->b.gridfit && cv->dv!=NULL;
     int currentSplineCounter = 0;
 
     if( strokeFillMode == sfm_fill ) {
@@ -2309,7 +2307,7 @@ return;				/* no points. no side bearings */
 }
 
 static int CVExposeGlyphFill(CharView *cv, GWindow pixmap, GEvent *event, DRect* clip ) {
-    int i, layer, rlayer, cvlayer = CVLayer((CharViewBase *) cv);
+    int layer, cvlayer = CVLayer((CharViewBase *) cv);
     int filled = 0;
     if (( cv->showfore || cv->b.drawmode==dm_fore ) && cv->showfilled &&
 	cv->filled!=NULL ) {

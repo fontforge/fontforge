@@ -182,7 +182,6 @@ InsertSubMenus(menu_info_func func,
     int i;
     int j;
     GMenuItem2 *mmn;
-    unichar_t *submenuu;
 
     for (i = 0; submenu_names[i] != NULL; ++i) {
         unichar_t *submenuu = utf82u_copy(submenu_names[i]);
