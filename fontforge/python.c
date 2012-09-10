@@ -17123,6 +17123,13 @@ void PyFF_ErrorF3(const char *frmt, const char *str, int size, int depth) {
     PyErr_Format(PyExc_ValueError, frmt, str, size, depth );
 }
 
+
+/* ************************************************************************** */
+/* PYTHON INITIALIZATION   ---   Python 3.x or greater */
+/* ************************************************************************** */
+
+static void SetPythonModuleMetadata( PyObject *module );
+
 #if PY_MAJOR_VERSION >= 3 /*---------------------------------------------*/
 
 #include "dynamic.h"
@@ -17194,6 +17201,8 @@ PyMODINIT_FUNC _PyInit_fontforge(void) {
 
     m = PyModule_Create(&fontforge_module);
 
+    SetPythonModuleMetadata( m );
+
     for ( i=0; types[i]!=NULL; ++i ) {
         Py_INCREF(types[i]);
         PyModule_AddObject(m, names[i], (PyObject *)types[i]);
@@ -17211,7 +17220,11 @@ PyMODINIT_FUNC _PyInit_fontforge(void) {
 }
 
 PyMODINIT_FUNC _PyInit_psMat(void) {
-    return PyModule_Create(&psMat_module);
+    PyObject *module;
+    module PyModule_Create(&psMat_module);
+    if ( module!=NULL )
+	SetPythonModuleMetadata( module );
+    return( module );
 }
 
 PyMODINIT_FUNC _PyInit___FontForge_Internals___(void) {
@@ -17251,8 +17264,11 @@ void FontForge_PythonInit(void) {
 }
 
 #else /* PY_MAJOR_VERSION >= 3 ---------------------------------------------*/
+/* ************************************************************************** */
+/* PYTHON INITIALIZATION   ---   Python 2.x */
+/* ************************************************************************** */
+/* See also _PyInit_fontforge above for the version 3 case */
 
-    /* See also _PyInit_fontforge above for the version 3 case */
 static void initPyFontForge(void) {
     PyObject* m;
     int i;
@@ -17291,6 +17307,8 @@ return;
     m = Py_InitModule3("fontforge", FontForge_methods,
                        "FontForge font manipulation module.");
 
+    SetPythonModuleMetadata( m );
+
     for ( i=0; types[i]!=NULL; ++i ) {
 	Py_INCREF(types[i]);
 	PyModule_AddObject(m, names[i], (PyObject *)types[i]);
@@ -17306,6 +17324,8 @@ return;
 
     m = Py_InitModule3("psMat", psMat_methods,
                        "PostScript Matrix manipulation");
+    SetPythonModuleMetadata( m );
+
     /* No types, just tuples */
 
     /* I need some way to pickle objects from C. The only way I can think to */
@@ -17327,6 +17347,40 @@ void FontForge_PythonInit(void) {
 }
 
 #endif /* PY_MAJOR_VERSION >= 3 ---------------------------------------*/
+
+/* ************************************************************************** */
+/* Other python environment initializations */
+/* ************************************************************************** */
+
+static void SetPythonModuleMetadata( PyObject *module ) {
+    char ver[32];
+    char isodate[32];
+    PyObject* pyver;
+    PyObject* pydate;
+    int dt = library_version_configuration.library_source_versiondate;
+
+    /* Make __version__ string */
+    if ( library_version_configuration.major <= 1 )
+	snprintf(ver, sizeof(ver), "%u.%u.%d",
+		 library_version_configuration.major,
+		 library_version_configuration.minor,
+		 library_version_configuration.library_source_versiondate );
+    else
+	snprintf(ver, sizeof(ver), "%u.%u",
+		 library_version_configuration.major,
+		 library_version_configuration.minor );
+    pyver = STRING_TO_PY(ver);
+    Py_INCREF(pyver);
+    PyModule_AddObject(module, "__version__", pyver);
+    snprintf(isodate, sizeof(isodate), "%04d-%02d-%02d",
+	     (dt / 10000), (dt / 100) % 100, dt % 100 );
+
+    /* Make __date__ string */
+    pydate = STRING_TO_PY(isodate);
+    Py_INCREF(pydate);
+    PyModule_AddObject(module, "__date__", pydate);
+}
+
 
 extern int no_windowing_ui, running_script;
 
