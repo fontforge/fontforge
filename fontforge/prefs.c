@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -2593,10 +2594,10 @@ void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* plist) {
     GWindowAttrs wattrs;
     GGadgetCreateData *pgcd, gcd[20], sgcd[45], mgcd[3], mfgcd[9], msgcd[9];
     GGadgetCreateData mfboxes[3], *mfarray[14];
-    GGadgetCreateData mpboxes[3], *mparray[14];
-    GGadgetCreateData sboxes[2], *sarray[50];
+    GGadgetCreateData mpboxes[3];
+    GGadgetCreateData sboxes[2];
     GGadgetCreateData mboxes[3], mboxes2[5], *varray[5], *harray[8];
-    GTextInfo *plabel, **list, label[20], slabel[45], *plabels[TOPICS+5], mflabels[9], mslabels[9];
+    GTextInfo *plabel, label[20], slabel[45], mflabels[9], mslabels[9];
     GTabInfo aspects[TOPICS+5], subaspects[3];
     GGadgetCreateData **hvarray, boxes[2*TOPICS];
     struct pref_data p;

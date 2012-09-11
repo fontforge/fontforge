@@ -1,0 +1,90 @@
+# Copyright (C) 2000-2012 by George Williams
+# Copyright (C) 2012 by Barry Schwartz
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
+#
+# Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+#
+# The name of the author may not be used to endorse or promote products
+# derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+#--------------------------------------------------------------------------
+#
+# Some variables controlling the file layout, and which you may want
+# to override when running make.
+#
+# For example, you may want to install the help system in
+# ${docdir}/html instead of in ${docdir} itself:
+#
+#      make HTDOCS_SUBDIR=/html
+#      make HTDOCS_SUBDIR=/html install
+#
+#--------------------------------------------------------------------------
+
+# Where the application's icons for internal use go. (For the
+# locations of desktop icons, see below.)
+pixmapsdir = ${pkgdatadir}/pixmaps
+
+# Where the FontForge help system goes.
+HTDOCS_SUBDIR =
+htdocsdir = ${docdir}$(HTDOCS_SUBDIR)
+
+# Where pkg-config files go.
+pkgconfigdir = ${libdir}/pkgconfig
+
+# Where contributed Python scripts go.
+pkgpythondatadir = $(pkgdatadir)/python
+
+# Where plugin modules go.
+plugindir = ${pkglibdir}/plugins
+
+# What gets passed as macros to the C sources.
+MY_SHAREDIR = ${pkgdatadir}
+MY_DOCDIR = ${htdocsdir}
+MY_PLUGINDIR = ${plugindir}
+
+#--------------------------------------------------------------------------
+#
+# Layout of the freedesktop.org support.
+
+PACKAGEROOTDIR = ${datarootdir}
+
+# Where .desktop files go.
+DESKTOPDIR = ${PACKAGEROOTDIR}/applications
+desktopdir = ${DESKTOPDIR}
+
+# Where MIME data goes. (Support for .sfd files, for instance.)
+MIMEDIR = ${PACKAGEROOTDIR}/mime
+mimedir= ${MIMEDIR}
+mimepackagesdir = ${MIMEDIR}/packages
+
+# Where desktop icons go.
+ICONSDIR = ${PACKAGEROOTDIR}/icons
+HICOLORDIR = ${ICONSDIR}/hicolor
+iconsdir = ${ICONSDIR}
+hicolordir = ${HICOLORDIR}
+hicolor16x16dir = ${hicolordir}/16x16/apps
+hicolor22x22dir = ${hicolordir}/22x22/apps
+hicolor24x24dir = ${hicolordir}/24x24/apps
+hicolor32x32dir = ${hicolordir}/32x32/apps
+hicolor48x48dir = ${hicolordir}/48x48/apps
+hicolorscalabledir = ${hicolordir}/scalable/apps
+
+#--------------------------------------------------------------------------
