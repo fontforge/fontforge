@@ -27,7 +27,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-python_LTLIBRARIES = psMat.la fontforge.la
+pyexec_LTLIBRARIES = psMat.la fontforge.la
 
 psMat_la_SOURCES = psMatpyhook.c loadfontforge.h
 psMat_la_CPPFLAGS = -DLIBDIR='"$(libdir)"' $(PYTHON_CFLAGS)	\
