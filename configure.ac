@@ -54,6 +54,7 @@ FONTFORGE_CHECK_LTDL_VERSION
 
 AC_PATH_XTRA
 i_do_have_x="${have_x}"
+i_do_have_gui="${i_do_have_x}"
 
 AC_SUBST([HOST],["$host"])
 AC_SUBST([MACAPP])
@@ -222,6 +223,10 @@ if test x"${i_do_have_pango}" = xyes; then
    PKG_CHECK_MODULES([PANGOXFT],[pangoxft])
 fi
 
+if test x"${i_do_have_gui}" = xyes; then
+   PKG_CHECK_MODULES([FONTCONFIG],[fontconfig])
+fi
+
 FONTFORGE_CONFIG_FREETYPE_DEBUGGER
 
 #--------------------------------------------------------------------------
@@ -290,7 +295,6 @@ AC_CHECK_FUNC([tzset],[:],[AC_DEFINE([_NO_TZSET],1,[Define if not using tzset.])
 
 #--------------------------------------------------------------------------
 
-i_do_have_gui="${i_do_have_x}"
 AM_CONDITIONAL([GRAPHICAL_USER_INTERFACE],[test x"${i_do_have_gui}" = xyes])
 AM_CONDITIONAL([MACINTOSH],[test x"${gww_ismac}" = xyes])
 
