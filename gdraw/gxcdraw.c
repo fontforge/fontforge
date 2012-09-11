@@ -1336,6 +1336,26 @@ return( 1 );
 /* ****************************** Pango Render ****************************** */
 /* ************************************************************************** */
 
+/* This is not a drop-in replacement for pango_xft_render_layout as as both */
+/* expect x and y in different ways */
+static void my_xft_render_layout(XftDraw *xftw,XftColor *fgcol,
+	PangoLayout *layout,int x,int y) {
+    PangoRectangle rect, r2;
+    PangoLayoutIter *iter;
+
+    iter = pango_layout_get_iter(layout);
+    do {
+	PangoLayoutRun *run = pango_layout_iter_get_run(iter);
+	if ( run!=NULL ) {	/* NULL runs mark end of line */
+	    pango_layout_iter_get_run_extents(iter,&r2,&rect);
+	    pango_xft_render(xftw,fgcol,run->item->analysis.font,run->glyphs,
+		    x+(rect.x+PANGO_SCALE/2)/PANGO_SCALE, y+(rect.y+PANGO_SCALE/2)/PANGO_SCALE);
+	    /* I doubt I'm supposed to free (or unref) the run? */
+	}
+    } while ( pango_layout_iter_next_run(iter));
+    pango_layout_iter_free(iter);
+}
+
 # if !defined(_NO_LIBCAIRO)
 /* Strangely the equivalent routine was not part of the pangocairo library */
 /* Oh there's pango_cairo_layout_path but that's more restrictive and probably*/
@@ -1502,7 +1522,7 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
 	    clip.width = gw->ggc->clip.width;
 	    clip.height = gw->ggc->clip.height;
 	    XftDrawSetClipRectangles(gw->xft_w,0,0,&clip,1);
-	    pango_xft_render_layout(gw->xft_w,&fg,layout,x,y);
+	    my_xft_render_layout(gw->xft_w,&fg,layout,x,y);
 	}
     } else if ( drawit==tf_rect ) {
 	PangoLayoutIter *iter;
@@ -1623,7 +1643,7 @@ void _GXPDraw_LayoutDraw(GWindow w, int32 x, int32 y, Color col) {
 	clip.width = gw->ggc->clip.width;
 	clip.height = gw->ggc->clip.height;
 	XftDrawSetClipRectangles(gw->xft_w,0,0,&clip,1);
-	pango_xft_render_layout(gw->xft_w,&fg,layout,x,y);
+	my_xft_render_layout(gw->xft_w,&fg,layout,x,y);
     }
 }
 
