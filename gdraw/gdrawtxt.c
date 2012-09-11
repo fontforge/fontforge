@@ -56,9 +56,6 @@ static struct family_info *FindFamily(FState *fs,unichar_t *names) {
     struct family_info *fam;
     unichar_t ch;
 
-    if ( names==NULL || *names==NULL )
-return( NULL );
-
     ch = *names;
     if ( ch=='"' ) ch = names[1];
     if ( isupper(ch)) ch = tolower(ch);
@@ -76,9 +73,6 @@ static int CountFamilyNames(unichar_t *names) {
     int tot=0;
     unichar_t quote=0;
 
-    if ( names==NULL || *names==NULL )
-return( NULL );
-
     forever {
 	if ( *names=='"' || *names=='\'' ) {
 	    quote = *names++;
@@ -94,7 +88,7 @@ return( tot );
 }
 
 static struct font_name *FindFontName(FState *fs, unichar_t *name, enum font_type *ft) {
-    int ch;
+    unichar_t ch;
     struct font_name *fn;
     extern struct fontabbrev _gdraw_fontabbrev[];
     int i;
@@ -164,19 +158,20 @@ return( ft );
 }
 
 static struct family_info *CreateFamily(FState *fs, unichar_t *requested_families) {
-    int cnt, ch;
+    int cnt;
+    unichar_t ch;
     struct font_name **fonts;
     enum font_type ft;
     struct family_info *fam;
 
     cnt = CountFamilyNames(requested_families);
 
-    fonts = galloc((cnt+1) * sizeof(struct font_name **));
+    fonts = malloc((cnt+1) * sizeof(struct font_name **));
     if ( fonts==NULL )
 return( NULL );
     fonts[cnt]=NULL;
     ft = FindFonts(fs,requested_families,fonts);
-    fam = galloc(sizeof(struct family_info));
+    fam = malloc(sizeof(struct family_info));
     if ( fam==NULL ) {
 	gfree(fonts);
 return( NULL );
@@ -1552,7 +1547,7 @@ static int32 _GDraw_Transform(GWindow gw, struct font_data *fd, struct font_data
 	int enc, int32 x, int32 y,
 	unichar_t *text, unichar_t *end, FontMods *mods, Color col,
 	enum text_funcs drawit, struct tf_arg *arg) {
-    long ch;
+    unichar_t ch;
     int olen=0;
     int32 dist = 0;
     int started, lcstate, starts_word = mods->starts_word;
@@ -1622,7 +1617,7 @@ static int32 _GDraw_Transform(GWindow gw, struct font_data *fd, struct font_data
 		if ( ch==0xa0 ) ch=' ';	/* Many iso8859-1 fonts have a zero width nbsp */
 	    }
 	    if ( enc<em_first2byte ) {
-		int highch = ch>>8;
+		int highch = (ch>>8)&0xff;
 		if ( highch>=table->first && highch<=table->last &&
 			(plane = table->table[highch-table->first])!=NULL &&
 			(ch=plane[ch&0xff])!=0 ) {
@@ -1631,7 +1626,7 @@ static int32 _GDraw_Transform(GWindow gw, struct font_data *fd, struct font_data
 		    if ( drawit>=tf_stopat ) cw = TextWidth1((lcstate>0)?sc:fd,opt-1,1)+letter_spacing;
 		}
 	    } else if ( enc!=em_unicode && enc<em_max && !mods->has_charset ) {
-		int highch = ch>>8;
+		int highch = (ch>>8)&0xff;
 		if ( highch>=table2->first && highch<=table2->last &&
 			(plane2 = table2->table[highch-table2->first])!=NULL &&
 			(ch=plane2[ch&0xff])!=0 ) {
@@ -1772,7 +1767,7 @@ struct bounds {
     int ymin, ymax;
 };
 
-static int GetCharBB(struct font_data *fd,struct font_data *sc, int ach,
+static int GetCharBB(struct font_data *fd,struct font_data *sc, unichar_t ach,
 	struct bounds *bb) {
     XCharStruct *cs;
 
@@ -1794,7 +1789,7 @@ return( false );
 	else
 	    cs = &fd->info->per_char[ach-fd->info->min_char_or_byte2];
     } else {
-	int highch=ach>>8, lowch = ach&0xff;
+	int highch=(ach>>8)&0xff, lowch = ach&0xff;
 	if ( highch>fd->info->max_byte1 || highch<fd->info->min_byte1 ||
 		lowch>fd->info->max_char_or_byte2 ||
 		lowch<fd->info->min_char_or_byte2 )
@@ -1887,7 +1882,7 @@ static int32 ComposeCharacter(GWindow gw, struct font_instance *fi,
 	else
 	    pt = &accent;
     }
-    
+
     /* first thing to do is to draw the base character itself */
     /* (this won't work for combiners which need extra space to the left */
     /*  but my algorithem only works for stuff which doesn't alter the width */
@@ -1905,7 +1900,7 @@ static int32 ComposeCharacter(GWindow gw, struct font_instance *fi,
 return( dist );
 
     mods->starts_word = oldstart;
-    GetCharBB(fd,sc,EncodingPosInMapping(fd->map,*pt,mods),&bb);
+    GetCharBB(fd,sc,(unichar_t)(EncodingPosInMapping(fd->map,*pt,mods)),&bb);
     resbb = bb;
 
     if ( fi->rq.point_size<0 )
@@ -1921,7 +1916,7 @@ return( dist );
 	if ( afd==NULL )
 	    /* Oh well, we couldn't find the accent, just skip it */;
 	else if ( ( ach = EncodingPosInMapping(afd->map,accent,NULL))!=-1 &&
-		GetCharBB(afd,NULL,ach,&abb)) {
+		GetCharBB(afd,NULL,(unichar_t)(ach),&abb)) {
 	    xoff = ComposingXOffset(*text,&bb,&abb,spacing);
 	    yoff = ComposingYOffset(*text,&resbb,&abb,spacing);
 	    if ( drawit!=tf_drawit )
