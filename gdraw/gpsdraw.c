@@ -44,117 +44,128 @@
 /* ********************** Noops & Meaningless functions ********************* */
 /* ************************************************************************** */
 
-static void PSDrawInit(GDisplay *gdisp) {
+static void PSDrawInit(GDisplay *UNUSED(gdisp)) {
     /* delay any real initialization until they actually want to print */
     /*  no point in reading up on a bunch of fonts which never get used */
 }
 
-static void PSDrawTerm(GDisplay *gdisp) {
+static void PSDrawTerm(GDisplay *UNUSED(gdisp)) {
 }
 
-static void *PSDrawNativeDisplay(GDisplay *gdisp) {
+static void *PSDrawNativeDisplay(GDisplay *UNUSED(gdisp)) {
 return( NULL );
 }
 
-static void PSDrawSetDefaultIcon(GWindow icon) {
+static void PSDrawSetDefaultIcon(GWindow UNUSED(icon)) {
 }
 
-static GWindow PSDrawCreateSubWindow(GWindow w, GRect *pos,
-	int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
+static GWindow PSDrawCreateSubWindow(GWindow UNUSED(w), GRect *UNUSED(pos),
+        int (*eh)(GWindow,GEvent *), void *UNUSED(user_data),
+        GWindowAttrs *UNUSED(wattrs)) {
+    (void)eh;
     fprintf( stderr, "CreateSubWindow not implemented for postscript\n" );
 return NULL;
 }
 
-static GWindow PSDrawCreatePixmap(GDisplay *gdisp, uint16 width, uint16 height) {
+static GWindow PSDrawCreatePixmap(GDisplay *UNUSED(gdisp), uint16 UNUSED(width),
+        uint16 UNUSED(height)) {
     fprintf( stderr, "CreatePixmap not implemented for postscript\n" );
 return NULL;
 }
 
-static GWindow PSDrawCreateBitmap(GDisplay *gdisp, uint16 width, uint16 height, uint8 *data) {
+static GWindow PSDrawCreateBitmap(GDisplay *UNUSED(gdisp), uint16 UNUSED(width),
+        uint16 UNUSED(height), uint8 *UNUSED(data)) {
     fprintf( stderr, "CreateBitmap not implemented for postscript\n" );
 return NULL;
 }
 
-static GCursor PSDrawCreateCursor(GWindow src,GWindow mask,Color fg,Color bg,
-	int16 x, int16 y ) {
+static GCursor PSDrawCreateCursor(GWindow UNUSED(src), GWindow UNUSED(mask),
+        Color UNUSED(fg), Color UNUSED(bg), int16 UNUSED(x), int16 UNUSED(y) ) {
     fprintf( stderr, "CreateCursor not implemented for postscript\n" );
 return 0;
 }
 
-static void PSSetZoom(GWindow w,GRect *r, enum gzoom_flags flags ) {
+static void PSSetZoom(GWindow UNUSED(w), GRect *UNUSED(r),
+        enum gzoom_flags UNUSED(flags) ) {
     fprintf( stderr, "SetZoom not implemented for postscript\n" );
 }
 
-static void PSDestroyCursor(GDisplay *gdisp,GCursor ct ) {
+static void PSDestroyCursor(GDisplay *UNUSED(gdisp), GCursor UNUSED(ct) ) {
     fprintf( stderr, "DestroyCursor not implemented for postscript\n" );
 }
 
-static int PSNativeWindowExists(GDisplay *gdisp,void *native ) {
+static int PSNativeWindowExists(GDisplay *UNUSED(gdisp), void *UNUSED(native) ) {
 return( false );
 }
 
-static void PSSetWindowBorder(GWindow w,int width, Color col ) {
+static void PSSetWindowBorder(GWindow UNUSED(w), int UNUSED(width),
+        Color UNUSED(col) ) {
     fprintf( stderr, "SetWindowBorder not implemented for postscript\n" );
 }
 
-static void PSSetWindowBackground(GWindow w, Color col ) {
+static void PSSetWindowBackground(GWindow UNUSED(w), Color UNUSED(col) ) {
     fprintf( stderr, "SetWindowBackground not implemented for postscript\n" );
 }
 
-static int PSSetDither(GDisplay *gdisp,int dither ) {
+static int PSSetDither(GDisplay *UNUSED(gdisp), int UNUSED(dither) ) {
     fprintf( stderr, "SetDither not implemented for postscript\n" );
 return( true );
 }
 
-static void PSDrawReparentWindow(GWindow child,GWindow newparent, int x,int y) {
+static void PSDrawReparentWindow(GWindow UNUSED(child),
+        GWindow UNUSED(newparent), int UNUSED(x), int UNUSED(y)) {
     /* It's a noop */
 }
 
-static void PSDrawSetVisible(GWindow w,int vis ) {
+static void PSDrawSetVisible(GWindow UNUSED(w), int UNUSED(vis) ) {
     /* It's a noop */
 }
 
-static void PSDrawMove(GWindow w, int32 x, int32 y) {
+static void PSDrawMove(GWindow UNUSED(w), int32 UNUSED(x), int32 UNUSED(y)) {
     /* Not meaningful */
 }
 
-static void PSDrawResize(GWindow w, int32 width, int32 height) {
+static void PSDrawResize(GWindow UNUSED(w),
+        int32 UNUSED(width), int32 UNUSED(height)) {
     /* Not meaningful */
 }
 
-static void PSDrawMoveResize(GWindow w, int32 x, int32 y, int32 width, int32 height) {
+static void PSDrawMoveResize(GWindow UNUSED(w), int32 UNUSED(x), int32 UNUSED(y),
+        int32 UNUSED(width), int32 UNUSED(height)) {
     /* Not meaningful */
 }
 
-static void PSDrawRaise(GWindow w) {
+static void PSDrawRaise(GWindow UNUSED(w)) {
     /* Not meaningful */
 }
 
-static void PSDrawRaiseAbove(GWindow w,GWindow below) {
+static void PSDrawRaiseAbove(GWindow UNUSED(w), GWindow UNUSED(below)) {
     /* Not meaningful */
 }
 
-static int PSDrawIsAbove(GWindow w,GWindow below) {
+static int PSDrawIsAbove(GWindow UNUSED(w), GWindow UNUSED(below)) {
 return( -1 );		/* Not meaningful */
 }
 
-static void PSDrawLower(GWindow w) {
+static void PSDrawLower(GWindow UNUSED(w)) {
     /* Not meaningful */
 }
 
-static void PSDrawSetWindowTitles(GWindow w, const unichar_t *title, const unichar_t *icontit) {
+static void PSDrawSetWindowTitles(GWindow UNUSED(w),
+        const unichar_t *UNUSED(title), const unichar_t *UNUSED(icontit)) {
     /* Not meaningful */
 }
 
-static void PSDrawSetWindowTitles8(GWindow w, const char *title, const char *icontit) {
+static void PSDrawSetWindowTitles8(GWindow UNUSED(w),
+        const char *UNUSED(title), const char *UNUSED(icontit)) {
     /* Not meaningful */
 }
 
-static void PSDrawSetTransientFor(GWindow transient, GWindow owner) {
+static void PSDrawSetTransientFor(GWindow UNUSED(transient), GWindow UNUSED(owner)) {
     /* Not meaningful */
 }
 
-static void PSDrawGetPointerPosition(GWindow w, GEvent *ret) {
+static void PSDrawGetPointerPosition(GWindow UNUSED(w), GEvent *ret) {
     /* Not meaningful */
 
     ret->u.mouse.state = 0;
@@ -162,42 +173,44 @@ static void PSDrawGetPointerPosition(GWindow w, GEvent *ret) {
     ret->u.mouse.y = 0;
 }
 
-static GWindow PSDrawGetPointerWindow(GWindow w) {
+static GWindow PSDrawGetPointerWindow(GWindow UNUSED(w)) {
     /* Not meaningful */
 return( NULL );
 }
 
-static void PSDrawSetCursor(GWindow w, GCursor ct) {
+static void PSDrawSetCursor(GWindow UNUSED(w), GCursor UNUSED(ct)) {
     /* Not meaningful */
 }
 
-static GCursor PSDrawGetCursor(GWindow w) {
+static GCursor PSDrawGetCursor(GWindow UNUSED(w)) {
     /* Not meaningful */
 return( ct_default );
 }
 
-static GWindow PSDrawGetRedirectWindow(GDisplay *gd) {
+static GWindow PSDrawGetRedirectWindow(GDisplay *UNUSED(gd)) {
     /* Not meaningful */
 return( NULL );
 }
 
-static unichar_t *PSDrawGetWindowTitle(GWindow w) {
+static unichar_t *PSDrawGetWindowTitle(GWindow UNUSED(w)) {
 return(NULL);
 }
 
-static char *PSDrawGetWindowTitle8(GWindow w) {
+static char *PSDrawGetWindowTitle8(GWindow UNUSED(w)) {
 return(NULL);
 }
 
-static void PSDrawTranslateCoordinates(GWindow _from,GWindow _to, GPoint *pt) {
+static void PSDrawTranslateCoordinates(GWindow UNUSED(_from),
+        GWindow UNUSED(_to), GPoint *UNUSED(pt)) {
     /* Only one window active at a time, translation is a noop */
 }
 
-static void PSDrawScroll(GWindow w, GRect *rect, int32 hor, int32 vert) {
+static void PSDrawScroll(GWindow UNUSED(w), GRect *UNUSED(rect),
+        int32 UNUSED(hor), int32 UNUSED(vert)) {
     /* Not meaningful */
 }
 
-static void PSDrawBeep(GDisplay *gdisp) {
+static void PSDrawBeep(GDisplay *UNUSED(gdisp)) {
     /* Not meaningful */
 }
 
@@ -207,104 +220,117 @@ static void PSDrawFlush(GDisplay *gdisp) {
 	fflush(((GPSWindow) (gdisp->groot))->output_file);
 }
 
-static GIC *PSDrawCreateInputContext(GWindow w,enum gic_style def_style) {
+static GIC *PSDrawCreateInputContext(GWindow UNUSED(w),
+        enum gic_style UNUSED(def_style)) {
     /* Not meaningful */
 return( NULL );
 }
 
-static void PSDrawSetGIC(GWindow w, GIC *gic, int x, int y) {
+static void PSDrawSetGIC(GWindow UNUSED(w), GIC *UNUSED(gic),
+        int UNUSED(x), int UNUSED(y)) {
     /* Not meaningful */
 }
 
-static void PSDrawPointerUngrab(GDisplay *gdisp) {
+static void PSDrawPointerUngrab(GDisplay *UNUSED(gdisp)) {
     /* Not meaningful */
 }
 
-static void PSDrawPointerGrab(GWindow w) {
+static void PSDrawPointerGrab(GWindow UNUSED(w)) {
     /* Not meaningful */
 }
 
-static void PSDrawGrabSelection(GWindow w,enum selnames sel) {
+static void PSDrawGrabSelection(GWindow UNUSED(w), enum selnames UNUSED(sel)) {
     /* Not meaningful */
 }
 
-static void PSDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
-	void *data,int32 len,int32 unitsize,void *(*gendata)(void *,int32 *len),
-	void (*freedata)(void *)) {
+static void PSDrawAddSelectionType(GWindow UNUSED(w), enum selnames UNUSED(sel),
+        char *UNUSED(type), void *UNUSED(data), int32 UNUSED(len),
+        int32 UNUSED(unitsize), void *(*gendata)(void *,int32 *len),
+        void (*freedata)(void *)) {
     /* Not meaningful */
+    (void)gendata;
+    (void)freedata;
 }
 
-static void *PSDrawRequestSelection(GWindow w,enum selnames sn, char *typename, int32 *len) {
+static void *PSDrawRequestSelection(GWindow UNUSED(w), enum selnames UNUSED(sn),
+        char *UNUSED(typename), int32 *UNUSED(len)) {
     /* Not meaningful */
 return( NULL );
 }
 
-static int PSDrawSelectionHasType(GWindow w,enum selnames sn, char *typename) {
+static int PSDrawSelectionHasType(GWindow UNUSED(w), enum selnames UNUSED(sn),
+        char *UNUSED(typename)) {
     /* Not meaningful */
 return( false );
 }
 
-static void PSDrawBindSelection(GDisplay *disp,enum selnames sn, char *atomname) {
+static void PSDrawBindSelection(GDisplay *UNUSED(disp), enum selnames UNUSED(sn),
+        char *UNUSED(atomname)) {
     /* Not meaningful */
 }
 
-static int PSDrawSelectionHasOwner(GDisplay *disp,enum selnames sn) {
+static int PSDrawSelectionHasOwner(GDisplay *UNUSED(disp), enum selnames UNUSED(sn)) {
     /* Not meaningful */
 return( false );
 }
 
-static void PSDrawRequestExpose(GWindow gw, GRect *rect,int doclear) {
+static void PSDrawRequestExpose(GWindow UNUSED(gw), GRect *UNUSED(rect),
+    int UNUSED(doclear)) {
     /* Not meaningful */
 }
 
-static GTimer *PSDrawRequestTimer(GWindow w,int32 time_from_now,int32 frequency,
-	void *userdata) {
+static GTimer *PSDrawRequestTimer(GWindow UNUSED(w), int32 UNUSED(time_from_now),
+        int32 UNUSED(frequency), void *UNUSED(userdata)) {
 return( NULL );
 }
 
-static void PSDrawCancelTimer(GTimer *timer) {
+static void PSDrawCancelTimer(GTimer *UNUSED(timer)) {
 }
 
-static void PSDrawSyncThread(GDisplay *gdisp, void (*func)(void *), void *data) {
+static void PSDrawSyncThread(GDisplay *UNUSED(gdisp), void (*func)(void *), void *data) {
     (func)(data);
 }
 
-static void PSDrawForceUpdate(GWindow gw) {
+static void PSDrawForceUpdate(GWindow UNUSED(gw)) {
 }
 
-static void PSDrawSync(GDisplay *gdisp) {
+static void PSDrawSync(GDisplay *UNUSED(gdisp)) {
 }
 
-static void PSDrawSkipMouseMoveEvents(GWindow gw, GEvent *last) {
+static void PSDrawSkipMouseMoveEvents(GWindow UNUSED(gw), GEvent *UNUSED(last)) {
 }
 
-static void PSDrawProcessPendingEvents(GDisplay *gdisp) {
+static void PSDrawProcessPendingEvents(GDisplay *UNUSED(gdisp)) {
 }
 
-static void PSDrawProcessWindowEvents(GWindow gw) {
+static void PSDrawProcessWindowEvents(GWindow UNUSED(gw)) {
 }
 
-static void PSDrawEventLoop(GDisplay *gd) {
+static void PSDrawEventLoop(GDisplay *UNUSED(gd)) {
 }
 
-static void PSDrawPostEvent(GEvent *e) {
+static void PSDrawPostEvent(GEvent *UNUSED(e)) {
 }
 
-static void PSDrawPostDragEvent(GWindow w,GEvent *mouse,enum event_type et) {
+static void PSDrawPostDragEvent(GWindow UNUSED(w), GEvent *UNUSED(mouse),
+        enum event_type UNUSED(et)) {
 }
 
-static int  PSDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *de) {
+static int  PSDrawRequestDeviceEvents(GWindow UNUSED(w), int UNUSED(devcnt),
+        struct gdeveventmask *UNUSED(de)) {
 return( 0 );
 }
 
-static GImage *_PSDraw_CopyScreenToImage(GWindow w, GRect *rect) {
+static GImage *_PSDraw_CopyScreenToImage(GWindow UNUSED(w), GRect *UNUSED(rect)) {
 return( NULL );
 }
 
-static void _PSDraw_Pixmap( GWindow _w, GWindow _pixmap, GRect *src, int32 x, int32 y) {
+static void _PSDraw_Pixmap( GWindow UNUSED(_w), GWindow UNUSED(_pixmap),
+        GRect *UNUSED(src), int32 UNUSED(x), int32 UNUSED(y)) {
 }
 
-static void _PSDraw_TilePixmap( GWindow _w, GWindow _pixmap, GRect *src, int32 x, int32 y) {
+static void _PSDraw_TilePixmap( GWindow UNUSED(_w), GWindow UNUSED(_pixmap),
+        GRect *UNUSED(src), int32 UNUSED(x), int32 UNUSED(y)) {
 }
 
 /* ************************************************************************** */
@@ -678,7 +704,8 @@ static void PSDrawFillRect(GWindow w, GRect *rct,Color col) {
     ps->pnt_cnt = 0;
 }
 
-static void PSDrawFillRoundRect(GWindow w, GRect *rct,int UNUSED(radius),Color col) {
+static void PSDrawFillRoundRect(GWindow UNUSED(w), GRect *UNUSED(rct),
+        int UNUSED(radius), Color UNUSED(col)) {
     fprintf( stderr, "DrawFillRoundRect not implemented for postscript\n" );
 return;
 }
@@ -767,11 +794,11 @@ static void PSDrawFillPoly(GWindow w, GPoint *pt, int16 cnt,Color col) {
     PSDrawDoPoly(ps,pt,cnt,"fill");
 }
 
-static void PSDrawFontMetrics(GWindow w,FontInstance *fi,int *as, int *ds, int *ld) {
-    GDrawFontMetrics(fi,as,ds,ld);
+static void PSDrawFontMetrics(GWindow UNUSED(w), FontInstance *fi, int *as, int *ds, int *ld) {
+    GDrawFontMetrics(fi, as, ds, ld);
 }
 
-static enum gcairo_flags PSDrawHasCairo(GWindow w) {
+static enum gcairo_flags PSDrawHasCairo(GWindow UNUSED(w)) {
 return( gc_buildpath );
 }
 
@@ -1341,9 +1368,10 @@ static int GPSPrinterEndJob(GWindow w,int cancel) {
 return( ret );
 }
 
-static GWindow PSDrawCreateTopWindow(GDisplay *gdisp, GRect *pos,
-	int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
-return( GPSPrinterStartJob(gdisp,wattrs==NULL?NULL:user_data,NULL));
+static GWindow PSDrawCreateTopWindow(GDisplay *gdisp, GRect *UNUSED(pos),
+        int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
+    (void)eh;
+return( GPSPrinterStartJob(gdisp, wattrs==NULL ? NULL : user_data, NULL));
 }
 
 static void PSDrawDestroyWindow(GWindow w) {
