@@ -54,7 +54,10 @@ return( n );
 
 static struct family_info *FindFamily(FState *fs,unichar_t *names) {
     struct family_info *fam;
-    int ch;
+    unichar_t ch;
+
+    if ( names==NULL || *names==NULL )
+return( NULL );
 
     ch = *names;
     if ( ch=='"' ) ch = names[1];
@@ -72,6 +75,9 @@ return( NULL );
 static int CountFamilyNames(unichar_t *names) {
     int tot=0;
     unichar_t quote=0;
+
+    if ( names==NULL || *names==NULL )
+return( NULL );
 
     forever {
 	if ( *names=='"' || *names=='\'' ) {
