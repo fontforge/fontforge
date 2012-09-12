@@ -69,22 +69,8 @@ enum cm_type { cmt_default=-1, cmt_current, cmt_copy, cmt_private };
 extern int gdraw_xkeysym_2_unicode[];
 
 
-/*#define GREEK_BUG	1*/
-
 static void GXDrawTransmitSelection(GXDisplay *gd,XEvent *event);
 static void GXDrawClearSelData(GXDisplay *gd,enum selnames sel);
-
-struct font_decomp {
-    int point;
-    int res;
-    enum font_style style;
-    int iw_weight;
-    enum charset map;
-    unichar_t *name;
-    int prop;
-    unichar_t *mapname;
-    enum font_type ft;
-};
 
 /* ************************************************************************** */
 /* ******************************* Font Stuff ******************************* */
@@ -96,8 +82,6 @@ static void _GXDraw_InitFonts(GXDisplay *gxdisplay) {
     /* In inches, because that's how fonts are measured */
     gxdisplay->fontstate = fs;
     fs->res = gxdisplay->res;
-    fs->res_closer_to = fs->res<=88 ? 75: 100;
-    fs->allow_scaling = 1;
 }
 
 /* ************************************************************************** */
@@ -2556,45 +2540,6 @@ static void _GXDraw_TilePixmap( GWindow _w, GWindow _pixmap, GRect *src, int32 x
     GDrawPopClip(_w,&old);
 }
 
-static struct font_data *GXDrawScaleFont(GDisplay *gdisp, struct font_data *fd, FontRequest *rq) {
-    struct font_data *newfd;
-    char buffer[10], *pt, *res;
-    int n;
-
-    pt = strstr(fd->localname,"-0-0-");
-    if ( pt== NULL )
-return( NULL );
-    sprintf(buffer,"%d",PointToPixel(rq->point_size,gdisp->res));
-    res = galloc(strlen(fd->localname)+strlen(buffer)+1);
-    if ( res==NULL )
-return( NULL );
-    n = pt+1-fd->localname;
-    strncpy(res,fd->localname,n);
-    strcpy(res+n,buffer);
-    strcat(res+n,pt+2);
-
-    newfd = galloc(sizeof(struct font_data));
-    if ( newfd==NULL )
-return( NULL );
-    *newfd = *fd;
-    newfd->next = NULL;
-    newfd->charmap_name = u_copy(fd->charmap_name);
-    newfd->localname = res;
-    newfd->info = NULL;
-    newfd->kerns = NULL;
-    newfd->is_scalable = false;
-    newfd->point_size = rq->point_size;
-    newfd->x_height = newfd->cap_height = 0;
-    newfd->base = fd;
-return( newfd );
-}
-
-static struct font_data *GXDrawStylizeFont(GDisplay *gdisp, struct font_data *fd, FontRequest *rq) {
-    /* on X we can't build a slanted font from an unslanted one, so this */
-    /*  is a noop */
-return( fd );
-}
-
 static void GXDrawFontMetrics( GWindow w,GFont *fi,int *as, int *ds, int *ld) {
     _GXPDraw_FontMetrics( ((GXWindow) w),fi,as,ds,ld);
 }
@@ -4499,8 +4444,8 @@ static struct displayfuncs xfuncs = {
     _GXDraw_Pixmap,
     _GXDraw_TilePixmap,
 
-    GXDrawScaleFont,
-    GXDrawStylizeFont,
+    NULL,
+    NULL,
     NULL,
     NULL,
     NULL,

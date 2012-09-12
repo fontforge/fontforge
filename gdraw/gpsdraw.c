@@ -1472,8 +1472,6 @@ return( NULL );
     gdisp->linear_thumb_cnt = 1;
     gdisp->fontstate = gcalloc(1,sizeof(FState));
     gdisp->fontstate->res = gdisp->res;
-    gdisp->fontstate->allow_scaling = true;
-    gdisp->fontstate->use_screen_fonts = true;
 
     gdisp->def_background = COLOR_CREATE(0xff,0xff,0xff);
     gdisp->def_background = COLOR_CREATE(0x00,0x00,0x00);

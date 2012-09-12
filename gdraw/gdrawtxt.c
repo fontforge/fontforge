@@ -30,8 +30,6 @@
 #include "fontP.h"
 #include "gxcdrawP.h"
 #include "ustring.h"
-#include "chardata.h"
-#include "utype.h"
 
 FontInstance *GDrawSetFont(GWindow gw, FontInstance *fi) {
     FontInstance *old = gw->ggc->fi;
