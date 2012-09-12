@@ -301,7 +301,8 @@ static GFont *rvfont=NULL;
 /*
  * Comparison function for use with qsort.
  */
-static int BasePointCompare(const BasePoint *l,const BasePoint *r) {
+static int BasePointCompare(const void *_l, const void *_r) {
+	const BasePoint *l = _l, *r = _r;
 	if ( l->x>r->x)
 return( 1 );
 	if ( l->x<r->x)
@@ -313,7 +314,7 @@ return( -1 );
 return( 0 );
 }
 
-static int ReverseBasePointCompare(const BasePoint *l,const BasePoint *r) {
+static int ReverseBasePointCompare(const void *l, const void *r) {
 return( -BasePointCompare(l,r) );
 }
 
