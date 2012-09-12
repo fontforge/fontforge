@@ -993,6 +993,10 @@ return( *fdbase );
 	    (font->rq.style&fs_extended )?  PANGO_STRETCH_EXPANDED  :
 					    PANGO_STRETCH_NORMAL);
 
+    if (font->rq.style&fs_vertical)
+	/* FIXME: not sure this is the right thing */
+	pango_font_description_set_gravity(fd, PANGO_GRAVITY_WEST);
+
     if ( font->rq.point_size<=0 )
 	GDrawIError( "Bad point size for pango" );	/* any negative (pixel) values should be converted when font opened */
 

@@ -5609,109 +5609,10 @@ return( feat_sc );
 return( base_sc );
 }
 
-static GImage *GImageCropAndRotate(GImage *unrot) {
-    struct _GImage *unbase = unrot->u.image, *rbase;
-    int xmin = unbase->width, xmax = -1, ymin = unbase->height, ymax = -1;
-    int i,j, ii;
-    GImage *rot;
-
-    for ( i=0; i<unbase->height; ++i ) {
-	for ( j=0; j<unbase->width; ++j ) {
-	    if ( !(unbase->data[i*unbase->bytes_per_line+(j>>3)]&(0x80>>(j&7))) ) {
-		if ( j<xmin ) xmin = j;
-		if ( j>xmax ) xmax = j;
-		if ( i>ymax ) ymax = i;
-		if ( i<ymin ) ymin = i;
-	    }
-	}
-    }
-    if ( xmax==-1 )
-return( NULL );
-
-    rot = GImageCreate(it_mono,ymax-ymin+1,xmax-xmin+1);
-    if ( rot==NULL )
-return( NULL );
-    rbase = rot->u.image;
-    memset(rbase->data,-1,rbase->height*rbase->bytes_per_line);
-    for ( i=ymin; i<=ymax; ++i ) {
-	for ( j=xmin; j<=xmax; ++j ) {
-	    if ( !(unbase->data[i*unbase->bytes_per_line+(j>>3)]&(0x80>>(j&7)) )) {
-		ii = ymax-i;
-		rbase->data[(j-xmin)*rbase->bytes_per_line+(ii>>3)] &= ~(0x80>>(ii&7));
-	    }
-	}
-    }
-    rbase->trans = 1;
-return( rot );
-}
-
-static GImage *UniGetRotatedGlyph(FontView *fv, SplineChar *sc,int uni) {
-    SplineFont *sf = fv->b.sf;
-    int cid=-1;
-    static GWindow pixmap=NULL;
-    GRect r;
-    unichar_t buf[2];
-    GImage *unrot, *rot;
-    SplineFont *cm = sf->cidmaster;
-
-    if ( uni!=-1 )
-	/* Do nothing */;
-    else if ( sscanf(sc->name,"vertuni%x", (unsigned *) &uni)==1 )
-	/* All done */;
-    else if ( cm!=NULL &&
-	    ((cid=CIDFromName(sc->name,cm))!=-1 ||
-	     sscanf( sc->name, "cid-%d", &cid)==1 ||		/* Obsolete names */
-	     sscanf( sc->name, "vertcid_%d", &cid)==1 ||
-	     sscanf( sc->name, "cid_%d", &cid)==1 )) {
-	uni = CID2Uni(FindCidMap(cm->cidregistry,cm->ordering,cm->supplement,cm),
-		cid);
-    }
-    if ( uni&0x10000 ) uni -= 0x10000;		/* Bug in some old cidmap files */
-    if ( uni<0 || uni>0xffff )
-return( NULL );
-
-    if ( pixmap==NULL ) {
-	pixmap = GDrawCreateBitmap(NULL,2*fv->lab_height,2*fv->lab_height,NULL);
-	if ( pixmap==NULL )
-return( NULL );
-	GDrawSetFont(pixmap,((FontView *) (sf->fv))->fontset[0]);
-    }
-    r.x = r.y = 0;
-    r.width = r.height = 2*fv->lab_height;
-    GDrawFillRect(pixmap,&r,1);
-    buf[0] = uni; buf[1] = 0;
-    GDrawDrawText(pixmap,2,fv->lab_height,buf,1,NULL,0);
-    unrot = GDrawCopyScreenToImage(pixmap,&r);
-    if ( unrot==NULL )
-return( NULL );
-
-    rot = GImageCropAndRotate(unrot);
-    GImageDestroy(unrot);
-return( rot );
-}
-
-static void GlyphImageXor(GImage *image,int fgxor) {
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    int i,j;
-
-    if ( base->image_type==it_mono || base->image_type==it_index ) {
-	if ( base->clut!=NULL ) {
-	    for ( i=0; i<base->clut->clut_len; ++i )
-		base->clut->clut[i] ^= fgxor;
-	}
-    } else if ( base->image_type==it_true || base->image_type==it_rgba ) {
-	uint32 *ipt = (uint32 *) (base->data);
-	for ( i=0; i<base->height; ++i ) {
-	    for ( j=0; j<base->width; ++j )
-		ipt[j] ^= fgxor;
-	    ipt = (uint32 *) (((uint8 *) ipt) + base->bytes_per_line);
-	}
-    }
-}
-
 /* we style some glyph names differently, see FVExpose() */
 #define _uni_italic	0x2
-#define _uni_fontmax	(1<<2)
+#define _uni_vertical	(1<<2)
+#define _uni_fontmax	(2<<2)
 
 static GFont *FVCheckFont(FontView *fv,int type) {
     FontRequest rq;
@@ -5721,7 +5622,11 @@ static GFont *FVCheckFont(FontView *fv,int type) {
 	rq.utf8_family_name = fv_fontnames;
 	rq.point_size = fv_fontsize;
 	rq.weight = 400;
-	rq.style = (type&_uni_italic) ? fs_italic : 0;
+	rq.style = 0;
+	if (type&_uni_italic)
+	    rq.style |= fs_italic;
+	if (type&_uni_vertical)
+	    rq.style |= fs_vertical;
 	fv->fontset[type] = GDrawInstanciateFont(fv->v,&rq);
     }
 return( fv->fontset[type] );
@@ -5746,7 +5651,7 @@ static void do_Adobe_Pua(unichar_t *buf,int sob,int uni) {
 }
 
 static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
-    int i, j, width, gid;
+    int i, j, y, width, gid;
     int changed;
     GRect old, old2, r;
     GClut clut;
@@ -5754,7 +5659,6 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
     GImage gi;
     SplineChar dummy;
     int styles, laststyles=0;
-    GImage *rotated=NULL;
     Color bg, def_fg;
     int fgxor;
 
@@ -5890,7 +5794,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 			    *pt = '.';
 			}
 			if ( strstr(pt,".vert")!=NULL )
-			    rotated = UniGetRotatedGlyph(fv,sc,buf[0]!='?'?buf[0]:-1);
+			    styles = _uni_vertical;
 			if ( buf[0]!='?' ) {
 			    fg = def_fg;
 			    if ( strstr(pt,".italic")!=NULL )
@@ -5907,7 +5811,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 			fg = def_fg;
 		    } else if ( strncmp(sc->name,"vertcid_",8)==0 ||
 			    strncmp(sc->name,"vertuni",7)==0 ) {
-			rotated = UniGetRotatedGlyph(fv,sc,-1);
+			styles = _uni_vertical;
 		    }
 		}
 	      break;
@@ -5945,15 +5849,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 		GDrawDrawLine(pixmap,r.x+r.width-2,r.y,r.x+r.width-2,r.y+r.height-1,hintcol);
 		GDrawDrawLine(pixmap,r.x+r.width-3,r.y,r.x+r.width-3,r.y+r.height-1,hintcol);
 	    }
-	    if ( rotated!=NULL ) {
-		GDrawPushClip(pixmap,&r,&old2);
-		if ( fgxor!=0 )
-		    GlyphImageXor(rotated,fgxor);
-		GDrawDrawImage(pixmap,rotated,NULL,j*fv->cbw+2,i*fv->cbh+2);
-		GDrawPopClip(pixmap,&old2);
-		GImageDestroy(rotated);
-		rotated = NULL;
-	    } else if ( use_utf8 && sc->unicodeenc!=-1 &&
+	    if ( use_utf8 && sc->unicodeenc!=-1 &&
 		/* Pango complains if we try to draw non characters */
 		/* These two are guaranteed "NOT A UNICODE CHARACTER" in all planes */
 		    ((sc->unicodeenc&0xffff)==0xfffe || (sc->unicodeenc&0xffff)==0xffff ||
@@ -5980,8 +5876,13 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 		    GDrawPushClip(pixmap,&r,&old2);
 		    width = fv->cbw-1;
 		}
-		if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 )
-		    GDrawDrawText8(pixmap,j*fv->cbw+(fv->cbw-1-width)/2-size.lbearing,i*fv->cbh+fv->lab_as+1,utf8_buf,-1,mods,fg^fgxor);
+		if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 ) {
+		    y = i*fv->cbh+fv->lab_as+1;
+		    /* move rotated glyph up a bit to center it */
+		    if (styles&_uni_vertical)
+			y -= fv->lab_as/2;
+		    GDrawDrawText8(pixmap,j*fv->cbw+(fv->cbw-1-width)/2-size.lbearing,y,utf8_buf,-1,mods,fg^fgxor);
+		}
 		if ( width >= fv->cbw-1 )
 		    GDrawPopClip(pixmap,&old2);
 		laststyles = styles;
@@ -5992,8 +5893,13 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 		    GDrawPushClip(pixmap,&r,&old2);
 		    width = fv->cbw-1;
 		}
-		if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 )
-		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,i*fv->cbh+fv->lab_as+1,buf,-1,mods,fg^fgxor);
+		if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 ) {
+		    y = i*fv->cbh+fv->lab_as+1;
+		    /* move rotated glyph up a bit to center it */
+		    if (styles&_uni_vertical)
+			y -= fv->lab_as/2;
+		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,y,buf,-1,mods,fg^fgxor);
+		}
 		if ( width >= fv->cbw-1 )
 		    GDrawPopClip(pixmap,&old2);
 		laststyles = styles;

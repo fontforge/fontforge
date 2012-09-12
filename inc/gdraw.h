@@ -29,7 +29,7 @@
 #include "gimage.h"
 #include "charset.h"
 
-enum font_style { fs_none, fs_italic=1, fs_smallcaps=2, fs_condensed=4, fs_extended=8 };
+enum font_style { fs_none, fs_italic=1, fs_smallcaps=2, fs_condensed=4, fs_extended=8, fs_vertical=16 };
 enum font_type { ft_unknown, ft_serif, ft_sans, ft_mono, ft_cursive, ft_max };
 enum text_mods { tm_none, tm_upper=1, tm_lower=2, tm_initialcaps=4, tm_showsofthyphen=8 };
 enum text_lines { tl_none, tl_under=1, tl_strike=2, tl_over=4, tl_dash=8 };
