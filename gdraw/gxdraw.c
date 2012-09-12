@@ -2781,102 +2781,6 @@ static void _GXDraw_TilePixmap( GWindow _w, GWindow _pixmap, GRect *src, int32 x
     GDrawPopClip(_w,&old);
 }
 
-static void *GXDrawLoadFontMetrics(GDisplay *gdisp, struct font_data *fd) {
-    unsigned long xh, ch;
-    static Atom xa_glyph_ranges = 0;
-    int i,j, any, minch, maxch,index;
-    XFontStruct *fs;
-
- /*printf( "Loading metrics for: %s\n", fd->localname );*/
-    lastfontrequest = fd->localname;
-    fd->info = fs = XLoadQueryFont(((GXDisplay *) gdisp)->display,fd->localname);
-    lastfontrequest = NULL;
-    if ( fs==NULL ) {
-	fd->configuration_error = true;
-	fprintf( stderr, "Help! Server claimed font\n\t%s\n existed in the font list, but when I asked for it there was nothing.\n I may crash soon.\n",
-		fd->localname );
-return( NULL );
-    }
-    if ( XGetFontProperty(fs,XA_X_HEIGHT,&xh))
-	fd->x_height = xh;
-    if ( XGetFontProperty(fs,XA_CAP_HEIGHT,&ch))
-	fd->cap_height = ch;
-#if 0
-    if ( fs->per_char == NULL )		/* this means they're all the same (presumably all exist) */
-return( fs );
-#endif
-
-    if ( xa_glyph_ranges==0 )
-	xa_glyph_ranges = XInternAtom(((GXDisplay *) gdisp)->display,"_XFREE86_GLYPH_RANGES",false);
-    /* there may be more than one glyph_range properties, so have to parse each*/
-#if 0		/* This doesn't work under XFree 4.0 */
-    for ( i=(fs->max_char_or_byte2-fs->min_char_or_byte2+1)*(fs->max_byte1-fs->min_byte1+1)-2;
-	    i>=0 ; --i )
-	fs->per_char[i].attributes &= ~AFM_EXISTS;
-#else
-    fd->exists = gcalloc( ((fs->max_char_or_byte2-fs->min_char_or_byte2+1)*(fs->max_byte1-fs->min_byte1+1)+7)/8,
-	    sizeof(uint8));
-#endif
-    any = 0;
-    minch = (fs->min_byte1<<8) + fs->min_char_or_byte2;
-    maxch = (fs->max_byte1<<8) + fs->max_char_or_byte2;
-    for ( i=0; i<fs->n_properties; ++i ) {
-	if ( fs->properties[i].name==xa_glyph_ranges ) {
-	    char *range, *pt, *end;
-	    int v1,v2;
-	    range = XGetAtomName(((GXDisplay *) gdisp)->display,fs->properties[i].card32);
-	    if ( range!=NULL ) {
-		any = 1;
-		for ( pt=range; *pt ; ) {
-		    v1 = strtol(pt,&end,10);
-		    if ( *end=='_' || *end=='-' ) {
-			v2 = strtol(end+1,&end,10);
-		    } else
-			v2 = v1;
-		    for ( j=v1; j<=v2; ++j ) {
-			if ( j>=minch && j<maxch ) {
-#if 0
-			    fs->per_char[
-				((j>>8)-fs->min_byte1)*(fs->max_char_or_byte2-fs->min_char_or_byte2+1)+
-				(j&0xff)-fs->min_char_or_byte2].attributes |= AFM_EXISTS;
-#else
-			    index = 
-				((j>>8)-fs->min_byte1)*(fs->max_char_or_byte2-fs->min_char_or_byte2+1)+
-				(j&0xff)-fs->min_char_or_byte2;
-			    fd->exists[index>>3] |= (1<<(index&7));
-#endif
-			}
-		    }
-		    pt = end;
-		    while ( isspace(*pt)) ++pt;
-		}
-		XFree(range);
-	    }
-	}
-    }
-    if ( !any ) {
-	if ( fs->per_char == NULL ) {		/* this means they're all the same (presumably all exist) */
-	    free(fd->exists);
-	    fd->exists = NULL;
-return( fs );
-	}
-	for ( i=(fs->max_char_or_byte2-fs->min_char_or_byte2+1)*(fs->max_byte1-fs->min_byte1+1)-1;
-		i>=0 ; --i ) {
-	    XCharStruct *cs = &fs->per_char[i];
-	    if ( cs->width!=0 || cs->lbearing!=0 || cs->rbearing!=0 ||
-		    iszerowidth(
-			( i / (fs->max_byte1-fs->min_byte1+1) )*256 +
-			( i % (fs->max_byte1-fs->min_byte1+1) ) ) )
-#if 0
-		cs->attributes |= AFM_EXISTS;
-#else
-		fd->exists[i>>3] |= (1<<(i&7));
-#endif
-	}
-    }
-return( fs );
-}
-
 static struct font_data *GXDrawScaleFont(GDisplay *gdisp, struct font_data *fd, FontRequest *rq) {
     struct font_data *newfd;
     char buffer[10], *pt, *res;
@@ -4884,7 +4788,7 @@ static struct displayfuncs xfuncs = {
 
     GXDrawScaleFont,
     GXDrawStylizeFont,
-    GXDrawLoadFontMetrics,
+    NULL,
     GXDrawText1,
     GXDrawText2,
 

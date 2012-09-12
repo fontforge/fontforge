@@ -675,7 +675,7 @@ void _GPSDraw_CopyFile(FILE *to, FILE *from) {
 }
 
 void *_GPSDraw_LoadFontMetrics(GDisplay *gdisp, struct font_data *base) {
-    if ( base->screen_font!=NULL )
+    if ( 0 /*base->screen_font!=NULL*/ )
 	base->info = (screen_display->funcs->loadFontMetrics)(screen_display,base->screen_font);
     else
 	parse_afm(gdisp->fontstate,base->metricsfile,base);

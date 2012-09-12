@@ -402,7 +402,6 @@ extern GFont *GDrawSetFont(GWindow gw, GFont *fi);
 extern GFont *GDrawInstanciateFont(GDisplay *disp, FontRequest *rq);
 extern GFont *GDrawAttachFont(GWindow gw, FontRequest *rq);
 extern FontRequest *GDrawDecomposeFont(GFont *fi, FontRequest *rq);
-extern void GDrawFontMetrics(GFont *fi,int *as, int *ds, int *ld);
 extern void GDrawWindowFontMetrics(GWindow gw,GFont *fi,int *as, int *ds, int *ld);
 extern int GDrawFontHasCharset(FontInstance *fi,/*enum charset*/int charset);
 

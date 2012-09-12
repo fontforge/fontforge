@@ -545,15 +545,6 @@ FontRequest *GDrawDecomposeFont(FontInstance *fi, FontRequest *rq) {
     *rq = fi->rq;
 return( rq );
 }
-/* ************************************************************************** */
-
-static void *_loadFontMetrics(GDisplay *disp, struct font_data *fd, FontInstance *fi) {
-    void *ret;
-    ret = (disp->funcs->loadFontMetrics)(disp,fd);
-    if ( fd->configuration_error && fi!=NULL )
-	_GDrawBuildFontInstance(disp,&fi->rq,fi->fam,fi);
-return( ret );
-}
 
 /* ************************************************************************** */
 
@@ -570,41 +561,6 @@ struct bounds {
     int xmin, xmax;
     int ymin, ymax;
 };
-
-void GDrawFontMetrics(FontInstance *fi,int *as, int *ds, int *ld) {
-    struct font_data *fd;
-    XFontStruct *fontinfo;
-    int i, mi=0, mask=0;
-
-    for ( i=0; i<fi->fam->name_cnt+3; ++i ) for ( mask=1, mi=0; mask!=0; mask<<=1, ++mi ) {
-	if ( mask&fi->level_masks[i] )
-    goto break_two_loops;
-    }
-    break_two_loops:;
-    if ( mask==0 ) {
-	*as = *ds = *ld = 0;
-    } else {
-	fd = fi->fonts[mi];
-	if ( fi->level_masks[i]&(1<<em_unicode) )
-	    fd = fi->fonts[em_unicode];
-	if ( fd->info==NULL )
-	    _loadFontMetrics(fi->mapped_to,fd,fi);
-	fontinfo = fd->info;
-	*ld = 0;
-	*as = fontinfo->ascent;
-	*ds = fontinfo->descent;
-	if ( fd->scale_metrics_by ) {
-	    *as = (*as*fd->scale_metrics_by) / 72000L;
-	    *ds = (*ds*fd->scale_metrics_by) / 72000L;
-	}
-#if 0
-	if ( fd->screen_font!=NULL ) {
-	    *as = (*as*fd->point_size*printer_fonts.res)/(72*fontinfo->ascent+fontinfo->descent);
-	    *ds = (*ds*fd->point_size*printer_fonts.res)/(72*fontinfo->ascent+fontinfo->descent);
-	}
-#endif
-    }
-}
 
 int GDrawFontHasCharset(FontInstance *fi,/*enum charset*/int charset) {
 return( fi!=NULL && fi->fonts[charset]!=NULL );
