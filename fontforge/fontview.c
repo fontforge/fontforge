@@ -5732,53 +5732,6 @@ static void GlyphImageXor(GImage *image,int fgxor) {
 #define _uni_greek	1
 #define _uni_digit	2
 
-static int latinmap[] = {
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
-    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-    'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-    '\0'
-};
-static int greekmap[] = {
-    0x391, 0x392, 0x393, 0x394, 0x395, 0x396, 0x397, 0x398, 0x399, 0x39a,
-    0x39b, 0x39c, 0x39d, 0x39e, 0x39f, 0x3a0, 0x3a1, 0x3f4, 0x3a3, 0x3a4,
-    0x3a5, 0x3a6, 0x3a7, 0x3a8, 0x3a9, 0x2207,
-    0x3b1, 0x3b2, 0x3b3, 0x3b4, 0x3b5, 0x3b6, 0x3b7, 0x3b8, 0x3b9, 0x3ba,
-    0x3bb, 0x3bc, 0x3bd, 0x3be, 0x3bf, 0x3c0, 0x3c1, 0x3c2, 0x3c3, 0x3c4,
-    0x3c5, 0x3c6, 0x3c7, 0x3c8, 0x3c9,
-    0x2202, 0x3f5, 0x3d1, 0x3f0, 0x3d5, 0x3f1, 0x3d6,
-    0
-};
-static int digitmap[] = { '0', '1', '2', '3', '4', '5', '6','7','8','9', '\0' };
-static int *maps[] = { latinmap, greekmap, digitmap };
-
-static struct { int start, last; int styles; int charset; } mathmap[] = {
-    { 0x1d400, 0x1d433, _uni_bold,		_uni_latin },
-    { 0x1d434, 0x1d467, _uni_italic,		_uni_latin },
-    { 0x1d468, 0x1d49b, _uni_bold|_uni_italic,	_uni_latin },
-    { 0x1d49c, 0x1d4cf, _uni_script,		_uni_latin },
-    { 0x1d4d0, 0x1d503, _uni_script|_uni_bold,	_uni_latin },
-    { 0x1d504, 0x1d537, _uni_fraktur,		_uni_latin },
-    { 0x1d538, 0x1d56b, _uni_doublestruck,	_uni_latin },
-    { 0x1d56c, 0x1d59f, _uni_fraktur|_uni_bold,	_uni_latin },
-    { 0x1d5a0, 0x1d5d3, _uni_sans,		_uni_latin },
-    { 0x1d5d4, 0x1d607, _uni_sans|_uni_bold,	_uni_latin },
-    { 0x1d608, 0x1d63b, _uni_sans|_uni_italic,	_uni_latin },
-    { 0x1d63c, 0x1d66f, _uni_sans|_uni_bold|_uni_italic,	_uni_latin },
-    { 0x1d670, 0x1d6a3, _uni_mono,		_uni_latin },
-    { 0x1d6a8, 0x1d6e1, _uni_bold,		_uni_greek },
-    { 0x1d6e2, 0x1d71b, _uni_italic,		_uni_greek },
-    { 0x1d71c, 0x1d755, _uni_bold|_uni_italic,	_uni_greek },
-    { 0x1d756, 0x1d78f, _uni_sans|_uni_bold,	_uni_greek },
-    { 0x1d790, 0x1d7c9, _uni_sans|_uni_bold|_uni_italic,	_uni_greek },
-    { 0x1d7ce, 0x1d7d7, _uni_bold,		_uni_digit },
-    { 0x1d7d8, 0x1d7e1, _uni_doublestruck,	_uni_digit },
-    { 0x1d7e2, 0x1d7eb, _uni_sans,		_uni_digit },
-    { 0x1d7ec, 0x1d7f5, _uni_sans|_uni_bold,	_uni_digit },
-    { 0x1d7f6, 0x1d7ff, _uni_mono,		_uni_digit },
-    { 0, 0, 0, 0 }
-};
-
 static GFont *FVCheckFont(FontView *fv,int type) {
     FontRequest rq;
     int family = type>>2;
