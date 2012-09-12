@@ -20,7 +20,7 @@ libgutils_OBJECTS = divisors.o fsys.o gcol.o gimage.o gimagereadbmp.o \
  gimagereadxpm.o gimagewritebmp.o gimagewritegimage.o \
  gimagewritejpeg.o gimagewritepng.o gimagewritexbm.o gimagewritexpm.o \
  gwwintl.o dynamic.o \
- gio.o giofile.o giohosts.o giomime.o giothread.o giotrans.o
+ gio.o giofile.o giohosts.o giomime.o giothread.o giotrans.o dlist.o
 
 Incs = -I$(top_srcdir)/inc -I../inc -I/usr/pkg/include -I/usr/pkg/include/giflib
 CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ $(X_CFLAGS) -DNOTHREADS @DEFS@ -DLIBDIR='"$(libdir)"'

@@ -57,7 +57,7 @@ fontforge_UIOBJECTS1 = alignment.o anchorsaway.o autowidth2dlg.o basedlg.o \
  openfontdlg.o prefs.o problems.o pythonui.o savefontdlg.o scriptingdlg.o \
  scstylesui.o searchview.o sftextfield.o showatt.o simplifydlg.o splashimage.o \
  startui.o statemachine.o tilepath.o transform.o ttfinstrsui.o \
- uiutil.o windowmenu.o justifydlg.o deltaui.o
+ uiutil.o windowmenu.o justifydlg.o deltaui.o hotkeys.o
 fontforge_UIOBJECTS = $(fontforge_UIOBJECTS1) stamp.o
 fontforge_SCRIPTOBJ = startnoui.o stamp.o
 

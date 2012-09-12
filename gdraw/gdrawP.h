@@ -105,6 +105,7 @@ struct gwindow {
     unsigned int disable_expose_requests: 1;
     unsigned int usecairo: 1;		/* use a cairo context -- if meaningful */
     unsigned int usepango: 1;		/* draw text with pango */
+    char* window_type_name;
 };
 
 struct ginput_context {

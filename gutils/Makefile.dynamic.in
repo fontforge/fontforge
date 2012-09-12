@@ -29,7 +29,7 @@ libgutils_OBJECTS = divisors.lo fsys.lo gcol.lo gimage.lo gimagereadbmp.lo \
  gimagereadxpm.lo gimagewritebmp.lo gimagewritegimage.lo \
  gimagewritejpeg.lo gimagewritepng.lo gimagewritexbm.lo gimagewritexpm.lo \
  gwwintl.lo dynamic.lo \
- gio.lo giofile.lo giohosts.lo giomime.lo giothread.lo giotrans.lo
+ gio.lo giofile.lo giohosts.lo giomime.lo giothread.lo giotrans.lo dlist.lo
 libgioftp_OBJECTS = gioftp.lo
 
 Incs = -I$(top_srcdir)/inc -I../inc -I/usr/pkg/include -I/usr/pkg/include/giflib

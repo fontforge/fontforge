@@ -358,6 +358,8 @@ extern int  GDrawNativeWindowExists(GDisplay *gdisp, void *native);
 extern void GDrawSetZoom(GWindow w, GRect *zoomsize, enum gzoom_flags);
 extern void GDrawSetWindowBorder(GWindow w, int width, Color color);
 extern void GDrawSetWindowBackground(GWindow w, Color color);
+extern void  GDrawSetWindowTypeName(GWindow w, char* name);
+extern char* GDrawGetWindowTypeName(GWindow gw);
 extern int  GDrawSetDither(GDisplay *gdisp, int dither);
 extern void GDrawReparentWindow(GWindow child,GWindow newparent, int x,int y);
 extern void GDrawSetVisible(GWindow w, int visible);
@@ -562,4 +564,5 @@ extern int GDrawKeyState(int keysym);
 
 extern int GImageGetScaledWidth(GWindow gw, GImage *img);
 extern int GImageGetScaledHeight(GWindow gw, GImage *img);
+
 #endif

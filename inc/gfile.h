@@ -62,4 +62,9 @@ extern int u_GFileMkDir(unichar_t *name);
 extern int u_GFileRmDir(unichar_t *name);
 extern int u_GFileUnlink(unichar_t *name);
 
+extern char* getGResourceProgramDir();
+extern void FindProgDir(char *prog);
+extern char *getLocaleDir(void);
+
+
 #endif

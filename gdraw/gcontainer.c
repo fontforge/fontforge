@@ -491,11 +491,11 @@ static int _GWidget_TopLevel_Key(GWindow top, GWindow ew, GEvent *event) {
 	     GMenuAnyUnmaskedShortcuts(topd->ispalette?topd->owner->gmenubar:NULL,topd->gmenubar)) ) {
 	handled = GMenuPopupCheckKey(event);
 	if ( topd->ispalette ) {
-	    if ( !(handled = GMenuBarCheckKey(topd->owner->gmenubar,event)) )
+	    if ( !(handled = GMenuBarCheckKey(top,topd->owner->gmenubar,event)) )
 		handled = GWidgetCheckMn((GContainerD *) topd->owner,event);
 	}
 	if ( !handled )
-	    if ( !(handled = GMenuBarCheckKey(topd->gmenubar,event)) )
+	    if ( !(handled = GMenuBarCheckKey(top,topd->gmenubar,event)) )
 		handled = GWidgetCheckMn((GContainerD *) topd,event);
     }
     if ( handled )

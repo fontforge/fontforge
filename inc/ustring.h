@@ -124,4 +124,11 @@ extern int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list
 extern int uAllAscii(const unichar_t *str);
 extern int AllAscii(const char *);
 extern char *StripToASCII(const char *utf8_str);
+
+/**
+ * Remove trailing \n or \r from the given string. No memory allocations
+ * are performed, null is injected over these terminators to trim the string.
+ */
+extern char* chomp( char* p );
+
 #endif

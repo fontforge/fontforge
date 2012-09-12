@@ -49,7 +49,7 @@ fontforge_UIOBJECTS = alignment.o anchorsaway.o basedlg.o \
  openfontdlg.o prefs.o problems.o pythonui.o savefontdlg.o scriptingdlg.o \
  scstylesui.o searchview.o sftextfield.o showatt.o simplifydlg.o splashimage.o \
  startui.o stamp.o statemachine.o tilepath.o transform.o ttfinstrsui.o \
- uiutil.o windowmenu.o justifydlg.o deltaui.o autowidth2dlg.o
+ uiutil.o windowmenu.o justifydlg.o deltaui.o autowidth2dlg.o hotkeys.o
 fontforge_SCRIPTOBJ = startnoui.o stamp.o
 fontforge_OBJECTS=$(fontforge_LIBOBJECTS) $(@exeOBJECTS@)
 
