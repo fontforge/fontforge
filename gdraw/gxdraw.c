@@ -2541,7 +2541,7 @@ static void _GXDraw_TilePixmap( GWindow _w, GWindow _pixmap, GRect *src, int32 x
 }
 
 static void GXDrawFontMetrics( GWindow w,GFont *fi,int *as, int *ds, int *ld) {
-    _GXPDraw_FontMetrics( ((GXWindow) w),fi,as,ds,ld);
+    _GXPDraw_FontMetrics(w, fi, as, ds, ld);
 }
     
 

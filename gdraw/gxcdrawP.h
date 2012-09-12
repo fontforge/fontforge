@@ -66,7 +66,7 @@ extern int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
 extern int32 _GXPDraw_DoText(GWindow w, int32 x, int32 y,
 	const unichar_t *text, int32 cnt, FontMods *mods, Color col,
 	enum text_funcs drawit, struct tf_arg *arg);
-extern void _GXPDraw_FontMetrics(GXWindow gw,GFont *fi,int *as, int *ds, int *ld);
+extern void _GXPDraw_FontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld);
 extern void _GXPDraw_LayoutInit(GWindow w, char *text, int cnt, GFont *fi);
 extern void _GXPDraw_LayoutDraw(GWindow w, int32 x, int32 y, Color fg);
 extern void _GXPDraw_LayoutIndexToPos(GWindow w, int index, GRect *pos);

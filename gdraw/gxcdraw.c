@@ -1102,12 +1102,12 @@ int32 _GXPDraw_DoText(GWindow w, int32 x, int32 y,
 return(width);
 }
 
-void _GXPDraw_FontMetrics(GXWindow gw,GFont *fi,int *as, int *ds, int *ld) {
-    GXDisplay *gdisp = gw->display;
+void _GXPDraw_FontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld) {
+    GXDisplay *gdisp = ((GXWindow) gw)->display;
     PangoFont *pfont;
     PangoFontMetrics *fm;
 
-    _GXPDraw_configfont((GWindow) gw, fi);
+    _GXPDraw_configfont(gw, fi);
 # if !defined(_NO_LIBCAIRO)
     if ( gw->usecairo )
 	pfont = pango_font_map_load_font(gdisp->pangoc_fontmap,gdisp->pangoc_context,
