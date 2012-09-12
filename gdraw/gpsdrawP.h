@@ -120,9 +120,6 @@ extern void _GPSDraw_Image(GWindow, GImage *, GRect *src, int32 x, int32 y);
 extern void _GPSDraw_TileImage(GWindow, GImage *, GRect *src, int32 x, int32 y);
 extern void _GPSDraw_ImageMagnified(GWindow, GImage *, GRect *src, int32 x, int32 y, int32 width, int32 height);
 
-extern void *_GPSDraw_LoadFontMetrics(GDisplay *gdisp, struct font_data *fd);
-extern struct font_data *_GPSDraw_ScaleFont(GDisplay *gdisp, struct font_data *fd, FontRequest *rq);
-extern struct font_data *_GPSDraw_StylizeFont(GDisplay *gdisp, struct font_data *fd, FontRequest *rq);
 extern void _GPSDraw_ProcessFont(GPSWindow ps, struct font_data *fd);
 
 extern double _GSPDraw_YPos(GPSWindow ps,int y);

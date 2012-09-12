@@ -857,69 +857,6 @@ static void PSDrawPathFillAndStroke(GWindow w,Color fillcol, Color strokecol) {
     fprintf( ps->output_file,"   stroke\n" );
 }
 
-static void PSSetFontCol(GPSWindow ps, struct font_data *font, Color col) {
-
-    ps->ggc->fg = col;
-    PSDrawSetcol(ps);
-    if ( font!=ps->cur_font ) {
-	if ( font->screen_font==NULL )
-	    fprintf( ps->output_file, "MyFontDict /%s get setfont\n", font->localname );
-	ps->cur_font = font;
-    }
-}
-
-static int usehex(char *transbuf,int len) {
-    int i, norm, bad;
-
-    norm=bad=0;
-    for ( i=0; i<len; ++i ) {
-	if ( transbuf[i]>=' ' && transbuf[i]<'\177' && transbuf[i]!='(' && transbuf[i]!=')' )
-	    ++norm;
-	else
-	    ++bad;
-    }
-return( 4*bad+norm>2*len );
-}
-
-static void _GPSDraw_Text1(GWindow gw, struct font_data *fd,
-	int32 x, int32 y, char *txt, int32 cnt, FontMods *mods, Color col) {
-    GPSWindow ps = (GPSWindow) gw;
-    int i;
-
-    _GPSDraw_FlushPath(ps);
-    if ( fd->needsprocessing )
-	_GPSDraw_ProcessFont(ps,fd);
-    PSSetFontCol(ps,fd,col);
-    if ( mods->letter_spacing!=0 )
-	fprintf(ps->output_file,"%g 0 ", _GSPDraw_XPos(ps,mods->letter_spacing) );
-    if ( usehex(txt,cnt)) {
-	fputc('<',ps->output_file);
-	for ( i=0; i<cnt; ++i )
-	    fprintf(ps->output_file,"%02X", ((unsigned char *) txt)[i]);
-	fputc('>',ps->output_file);
-    } else {
-	fputc('(',ps->output_file);
-	for ( i=0; i<cnt; ++i ) {
-	    if ( txt[i]=='\\' )
-		fprintf(ps->output_file,"\\\\");
-	    else if ( txt[i]>=' ' && txt[i]<'\177' && txt[i]!='(' && txt[i]!=')' )
-		fputc(txt[i],ps->output_file);
-	    else
-		fprintf(ps->output_file,"\\%03o", ((unsigned char *) txt)[i]);
-	}
-	fputc(')',ps->output_file);
-    }
-    fprintf( ps->output_file," %g %g %s\n", _GSPDraw_XPos(ps,x), _GSPDraw_YPos(ps,y),
-	    mods->letter_spacing==0? "g_show": "g_ashow" );
-    
-    ps->cur_x = ps->cur_y = -1;
-}
-
-static void _GPSDraw_Text2(GWindow gw, struct font_data *fd,
-	int32 x, int32 y, GChar2b *txt, int32 cnt, FontMods *mods, Color col) {
-    _GPSDraw_Text1(gw,fd,x,y,(char *)txt,2*cnt,mods,col);
-}
-
 static void PSPageSetup(GPSWindow ps,FILE *out, float thumbscale) {
     GPSDisplay *gdisp = ps->display;
     /* I want to put this somewhere in the document header, but DSC conventions*/
@@ -1447,11 +1384,11 @@ static struct displayfuncs psfuncs = {
     _PSDraw_Pixmap,
     _PSDraw_TilePixmap,
 
-    _GPSDraw_ScaleFont,
-    _GPSDraw_StylizeFont,
-    _GPSDraw_LoadFontMetrics,
-    _GPSDraw_Text1,
-    _GPSDraw_Text2,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
 
     PSDrawCreateInputContext,
     PSDrawSetGIC,
