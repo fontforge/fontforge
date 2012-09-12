@@ -44,10 +44,4 @@ LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgioftp.la			\
 	$(top_builddir)/fontforge/libfontforge.la
 
-# FIXME: It is not necessary to include this gdraw stuff, is it?
-if GRAPHICAL_USER_INTERFACE
-LIBADD += $(top_builddir)/gdraw/libgdraw.la $(XINPUT_LIBS)	\
-	$(XKB_LIBS)
-endif GRAPHICAL_USER_INTERFACE
-
 -include $(top_srcdir)/git.mk

@@ -165,7 +165,7 @@ endif !GRAPHICAL_USER_INTERFACE
 nodist_libfontforgeexe_la_SOURCES = exelibstamp.c
 
 libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS)
-libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS) $(LIBADD)
+libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS) $(LIBADD) $(GUILIBADD)
 
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
@@ -177,12 +177,13 @@ LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la			\
 	$(top_builddir)/gutils/libgioftp.la
 
+GUILIBADD =
 if GRAPHICAL_USER_INTERFACE
-LIBADD += $(top_builddir)/gdraw/libgdraw.la	\
-	$(XINPUT_LIBS) $(XKB_LIBS)
+GUILIBADD += $(top_builddir)/gdraw/libgdraw.la $(XINPUT_LIBS)	\
+	$(XKB_LIBS)
 endif GRAPHICAL_USER_INTERFACE
 
-LDADD = $(LIBADD)
+LDADD = $(LIBADD) $(GUILIBADD)
 
 AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
 	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\

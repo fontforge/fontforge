@@ -27,7 +27,6 @@ test x"${i_do_have_gui}" = xyes && __pkg_deps="${__pkg_deps} fontconfig"
 __pkg_deps="${__pkg_deps} zlib"
 
 __private_deps=""
-test x"${i_do_have_gui}" = xyes && __private_deps="${__private_deps} -lgdraw"
 __private_deps="${__private_deps} -lgioftp"
 __private_deps="${__private_deps} -lgutils"
 __private_deps="${__private_deps} -lgunicode"
@@ -40,6 +39,9 @@ __private_deps="${__private_deps} ${PTHREAD_LIBS}"
 __private_deps="${__private_deps} ${LIBLTDL}"
 __private_deps="${__private_deps} ${LIBS}"
 
+__private_exe_deps=""
+test x"${i_do_have_gui}" = xyes && __private_exe_deps="${__private_exe_deps} -lgdraw"
+
 AC_SUBST([LIBFONTFORGE_PKGCONFIG_VERSION],["${__cleaned_version}"])
 AC_SUBST([LIBFONTFORGE_PKGCONFIG_REQUIRES],[])
 AC_SUBST([LIBFONTFORGE_PKGCONFIG_REQUIRES_PRIVATE],["${__pkg_deps}"])
@@ -50,7 +52,7 @@ AC_SUBST([LIBFONTFORGEEXE_PKGCONFIG_VERSION],["${__cleaned_version}"])
 AC_SUBST([LIBFONTFORGEEXE_PKGCONFIG_REQUIRES],[])
 AC_SUBST([LIBFONTFORGEEXE_PKGCONFIG_REQUIRES_PRIVATE],["libfontforge ${__pkg_deps}"])
 AC_SUBST([LIBFONTFORGEEXE_PKGCONFIG_LIBS],["-L${libdir} -lfontforgeexe"])
-AC_SUBST([LIBFONTFORGEEXE_PKGCONFIG_LIBS_PRIVATE],["-L${libdir} ${__private_deps}"])
+AC_SUBST([LIBFONTFORGEEXE_PKGCONFIG_LIBS_PRIVATE],["-L${libdir} ${__private_exe_deps} ${__private_deps}"])
 
 AC_CONFIG_FILES([libfontforge.pc])
 AC_CONFIG_FILES([libfontforgeexe.pc])
