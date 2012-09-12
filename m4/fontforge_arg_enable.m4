@@ -54,6 +54,7 @@ AC_ARG_ENABLE([python-extension],
                           even if they were included in this source distribution])],
          [i_do_have_python_extension="${enableval}"],
          [i_do_have_python_extension=yes])
+AM_CONDITIONAL([PYTHON_EXTENSION],[test x"${i_do_have_python_extension}" = xyes])
 ])
 
 

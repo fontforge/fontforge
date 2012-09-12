@@ -57,8 +57,11 @@ endif GRAPHICAL_USER_INTERFACE
 SUBDIRS += plugins
 SUBDIRS += fontforge po htdocs pycontrib
 SUBDIRS += cidmap
-SUBDIRS += $(subdirs)
 SUBDIRS += tests
+
+if PYTHON_EXTENSION
+SUBDIRS += pyhook
+endif PYTHON_EXTENSION
 
 if MACINTOSH
 SUBDIRS += mackeys
@@ -117,7 +120,13 @@ INDENT_PROFILE = \
 	--case-indentation0 \
 	--continue-at-parentheses \
 	--leave-preprocessor-space \
-	--dont-format-comments
+	--dont-format-comments \
+	-T\ FILE \
+	-T\ AnchorPoint \
+	-T\ BDFFont \
+	-T\ MMSet \
+	-T\ SplineChar \
+	-T\ SplineFont
 
 write-indent-profiles:
 	@for dir in $(INDENT_DIRS); do \

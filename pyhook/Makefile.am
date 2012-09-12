@@ -25,22 +25,29 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-ACLOCAL_AMFLAGS = -I m4
-
 pyexec_LTLIBRARIES = psMat.la fontforge.la
 
-psMat_la_SOURCES = psMatpyhook.c loadfontforge.h
-psMat_la_CPPFLAGS = -DLIBDIR='"$(libdir)"' $(PYTHON_CFLAGS)	\
-	$(LIBFONTFORGE_CFLAGS)
-psMat_la_LDFLAGS = -module -shared -avoid-version
-psMat_la_LIBADD = $(LIBFONTFORGE_LIBS)
+psMat_la_SOURCES = psMatpyhook.c
+psMat_la_LIBADD = $(LIBADD)
 
-fontforge_la_SOURCES = fontforgepyhook.c loadfontforge.h
-fontforge_la_CPPFLAGS = -DLIBDIR='"$(libdir)"' $(PYTHON_CFLAGS)	\
-	$(LIBFONTFORGE_CFLAGS)
-fontforge_la_LDFLAGS = -module -shared -avoid-version
-fontforge_la_LIBADD = $(LIBFONTFORGE_LIBS)
+fontforge_la_SOURCES = fontforgepyhook.c
+fontforge_la_LIBADD = $(LIBADD)
 
-EXTRA_DIST = LICENSE
+AM_CPPFLAGS = -DLIBDIR='"$(libdir)"' $(PYTHON_CFLAGS)			\
+	"-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"				\
+	"-I$(top_builddir)/fontforge" "-I$(top_srcdir)/fontforge"	\
+	$(MY_CFLAGS)
+AM_LDFLAGS = -module -shared -avoid-version
+
+LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
+	$(top_builddir)/gutils/libgutils.la			\
+	$(top_builddir)/gutils/libgioftp.la			\
+	$(top_builddir)/fontforge/libfontforge.la
+
+# FIXME: It is not necessary to include this gdraw stuff, is it?
+if GRAPHICAL_USER_INTERFACE
+LIBADD += $(top_builddir)/gdraw/libgdraw.la $(XINPUT_LIBS)	\
+	$(XKB_LIBS)
+endif GRAPHICAL_USER_INTERFACE
 
 -include $(top_srcdir)/git.mk

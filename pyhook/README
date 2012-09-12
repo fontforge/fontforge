@@ -1,7 +1,0 @@
-This is the source distribution for the FontForge Python extension. It
-presumes that you already have fontforge (configured for Python
-scripting) installed on your system. Alternatively it may be built as
-a subproject of FontForge, if this distribution is placed in the
-"pyhook" subdirectory of the FontForge source distribution.
-
-For help with installation, see the file INSTALL.
