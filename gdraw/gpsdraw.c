@@ -794,8 +794,8 @@ static void PSDrawFillPoly(GWindow w, GPoint *pt, int16 cnt,Color col) {
     PSDrawDoPoly(ps,pt,cnt,"fill");
 }
 
-static void PSDrawFontMetrics(GWindow UNUSED(w), FontInstance *fi, int *as, int *ds, int *ld) {
-    GDrawFontMetrics(fi, as, ds, ld);
+static void PSDrawFontMetrics(GWindow w, FontInstance *fi, int *as, int *ds, int *ld) {
+    GDrawWindowFontMetrics(w, fi, as, ds, ld);
 }
 
 static enum gcairo_flags PSDrawHasCairo(GWindow UNUSED(w)) {

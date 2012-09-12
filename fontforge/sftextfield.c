@@ -2186,7 +2186,7 @@ static void SFTextAreaFit(SFTextArea *st) {
     { /* This doesn't mean much of anything */
 	FontInstance *old = GDrawSetFont(st->g.base,st->font);
 	(void) GDrawGetTextBounds(st->g.base,st->li.text, -1, NULL, &bounds);
-	GDrawFontMetrics(st->font,&as, &ds, &ld);
+	GDrawWindowFontMetrics(st->g.base,st->font,&as, &ds, &ld);
 	if ( as<bounds.as ) as = bounds.as;
 	if ( ds<bounds.ds ) ds = bounds.ds;
 	st->fh = fh = as+ds;

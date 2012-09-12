@@ -7297,7 +7297,7 @@ static void FVCreateInnards(FontView *fv,GRect *pos) {
     rq.weight = 400;
     fv->fontset[0] = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
     GDrawSetFont(fv->v,fv->fontset[0]);
-    GDrawFontMetrics(fv->fontset[0],&as,&ds,&ld);
+    GDrawWindowFontMetrics(fv->v,fv->fontset[0],&as,&ds,&ld);
     fv->lab_as = as;
     fv->showhmetrics = default_fv_showhmetrics;
     fv->showvmetrics = default_fv_showvmetrics && sf->hasvmetrics;

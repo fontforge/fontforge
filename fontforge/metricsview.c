@@ -4726,7 +4726,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
 	mvfont = GResourceFindFont("MetricsView.Font",mvfont);
     }
     mv->font = mvfont;
-    GDrawFontMetrics(mv->font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(gw,mv->font,&as,&ds,&ld);
     mv->fh = as+ds; mv->as = as;
 
     pt = buf;

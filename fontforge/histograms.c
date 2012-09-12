@@ -800,7 +800,7 @@ void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8 *select
 	font = GResourceFindFont("Histogram.Font",font);
     }
     hist.font = font;
-    GDrawFontMetrics(hist.font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(gw,hist.font,&as,&ds,&ld);
     hist.fh = as+ds; hist.as = as;
 
     GDrawSetFont(gw,hist.font);

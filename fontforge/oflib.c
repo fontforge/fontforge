@@ -1912,7 +1912,7 @@ return;
 	oflibfont = GResourceFindFont("OFLib.Font",oflibfont);
     }
     active->font = oflibfont;
-    GDrawFontMetrics(active->font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(active->gw,active->font,&as,&ds,&ld);
     active->as = as; active->fh = as+ds;
 
     memset(&boxes,0,sizeof(boxes));

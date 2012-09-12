@@ -1510,7 +1510,7 @@ void StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
 	font = GResourceFindFont("StateMachine.Font",font);
     }
     smd.font = font;
-    GDrawFontMetrics(smd.font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(gw,smd.font,&as,&ds,&ld);
     smd.fh = as+ds; smd.as = as;
     GDrawSetFont(gw,smd.font);
 

@@ -5172,7 +5172,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 	boldfont = GResourceFindFont("KernFormat.BoldFont",boldfont);
     }
     kf.plain = plainfont; kf.bold = boldfont;
-    GDrawFontMetrics(kf.plain,&as,&ds,&ld);
+    GDrawWindowFontMetrics(kf.gw,kf.plain,&as,&ds,&ld);
     kf.fh = as+ds; kf.as = as;
 
     i = j = 0;

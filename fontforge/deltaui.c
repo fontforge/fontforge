@@ -993,7 +993,7 @@ static void StartDeltaDisplay(QGData *qg) {
 	valfont = GResourceFindFont("Validate.Font",valfont);
     }
     qg->font = valfont;
-    GDrawFontMetrics(qg->font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(gw,qg->font,&as,&ds,&ld);
     qg->fh = as+ds;
     qg->as = as;
 

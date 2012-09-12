@@ -2589,7 +2589,7 @@ return;
 	font = GResourceFindFont("KernClass.Font",font);
     }
     kcd->font = font;
-    GDrawFontMetrics(kcd->font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(gw,kcd->font,&as,&ds,&ld);
     kcd->fh = as+ds; kcd->as = as;
     GDrawSetFont(gw,kcd->font);
 

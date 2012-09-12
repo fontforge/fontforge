@@ -1072,7 +1072,7 @@ exit( 0 );
     splash_italic = GDrawInstanciateFont(NULL,&rq);
     splash_italic = GResourceFindFont("Splash.ItalicFont",splash_italic);
     GDrawSetFont(splashw,splash_font);
-    GDrawFontMetrics(splash_font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(splashw,splash_font,&as,&ds,&ld);
     fh = as+ds+ld;
     SplashLayout();
     localsplash = splash;

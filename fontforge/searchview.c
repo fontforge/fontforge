@@ -699,7 +699,7 @@ return( NULL );
 	boldfont = GResourceFindFont("SearchView.BoldFont",boldfont);
     }
     sv->plain = plainfont; sv->bold = boldfont;
-    GDrawFontMetrics(sv->plain,&as,&ds,&ld);
+    GDrawWindowFontMetrics(sv->gw,sv->plain,&as,&ds,&ld);
     sv->fh = as+ds; sv->as = as;
 
     SVCharViewInits(sv);

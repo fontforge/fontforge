@@ -5410,7 +5410,7 @@ return;
 	valfont = GResourceFindFont("Validate.Font",valfont);
     }
     valwin->font = valfont;
-    GDrawFontMetrics(valwin->font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(valwin->gw,valwin->font,&as,&ds,&ld);
     valwin->fh = as+ds;
     valwin->as = as;
 

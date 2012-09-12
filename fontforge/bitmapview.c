@@ -2367,7 +2367,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
     rq.point_size = -7;
     rq.weight = 400;
     bv->small = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
-    GDrawFontMetrics(bv->small,&as,&ds,&ld);
+    GDrawWindowFontMetrics(gw,bv->small,&as,&ds,&ld);
     bv->sfh = as+ds; bv->sas = as;
 
     BVFit(bv);

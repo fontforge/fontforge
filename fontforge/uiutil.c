@@ -753,16 +753,6 @@ static void CreateErrorWindow(void) {
     GGadgetData gd;
     extern int _GScrollBar_Width;
 
-    memset(&rq,0,sizeof(rq));
-    rq.utf8_family_name = SANS_UI_FAMILIES;
-    rq.point_size = 10;
-    rq.weight = 400;
-    errdata.font = GDrawInstanciateFont(NULL,&rq);
-    errdata.font = GResourceFindFont("Warnings.Font",errdata.font);
-    GDrawFontMetrics(errdata.font,&as,&ds,&ld);
-    errdata.as = as;
-    errdata.fh = as+ds;
-
     GDrawGetSize(GDrawGetRoot(NULL),&size);
 
     memset(&wattrs,0,sizeof(wattrs));
@@ -773,10 +763,20 @@ static void CreateErrorWindow(void) {
     wattrs.positioned = true;
     wattrs.utf8_window_title = _("Warnings");
     pos.width = GDrawPointsToPixels(NULL,GGadgetScale(400));
-    pos.height = 5*errdata.fh;
+    pos.height = GDrawPointsToPixels(NULL,GGadgetScale(100));
     pos.x = size.width - pos.width - 10;
     pos.y = size.height - pos.height - 30;
     errdata.gw = gw = GDrawCreateTopWindow(NULL,&pos,warnings_e_h,&errdata,&wattrs);
+
+    memset(&rq,0,sizeof(rq));
+    rq.utf8_family_name = SANS_UI_FAMILIES;
+    rq.point_size = 10;
+    rq.weight = 400;
+    errdata.font = GDrawInstanciateFont(NULL,&rq);
+    errdata.font = GResourceFindFont("Warnings.Font",errdata.font);
+    GDrawWindowFontMetrics(errdata.gw,errdata.font,&as,&ds,&ld);
+    errdata.as = as;
+    errdata.fh = as+ds;
 
     memset(&gd,0,sizeof(gd));
     gd.pos.y = 0; gd.pos.height = pos.height;
