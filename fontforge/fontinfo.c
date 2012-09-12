@@ -2196,30 +2196,21 @@ static int GFI_NameChange(GGadget *g, GEvent *e) {
 	    if ( noticeweights[j][i]!=NULL )
 	break;
 	}
-	
-	/**
-	 * Let's try to give the user a nice default human title for
-	 * the font.
-	 * 
-	 * The official URL for the human name:
-	 * http://www.microsoft.com/typography/otspec/name.htm
-	 *
-	 * The unofficial SIL URL for the name:
-	 * http://scripts.sil.org/cms/scripts/page.php?item_id=IWS-Chapter08#3054f18b
-	 *
-	 * While it is not *mandatory* to remove the Regular from the
-	 * human name we do that and allow the user to add it if that
-	 * is what they really want.
-	 */
+
+	/* If the user didn't set the full name yet, we guess it from the
+	 * postrscript name */
 	if ( gfi->human_untitled ) {
 	    unichar_t *cp = u_copy(uname);
 	    int i=0;
+	    /* replace the last hyphen with space */
 	    for( i=u_strlen(cp); i>=0; i-- ) {
 		if( cp[i] == '-' ) {
 		    cp[i] = ' ';
 		    break;
 		}
 	    }
+	    /* If the postscript name ends with "Regular" it is recommended not
+	     * to include it in the full name */
 	    if(u_endswith(cp,c_to_u(" Regular")) || u_endswith(cp,c_to_u(" regular"))) {
 		cp[u_strlen(cp) - strlen(" Regular")] ='\0';
 	    }
