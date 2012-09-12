@@ -892,6 +892,7 @@ extern int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **spl,
 	RefChar **ref, ImageList **img, AnchorPoint **ap, spiro_cp **cp);
 extern int CVOneContourSel(CharView *cv, SplinePointList **_spl,
 	RefChar **ref, ImageList **img);
+extern void CVInfoDrawText(CharView *cv, GWindow pixmap );
 extern void CVImport(CharView *cv);
 extern void BVImport(BitmapView *bv);
 extern void FVImport(FontView *bv);
@@ -1002,6 +1003,7 @@ extern GTextInfo *SLOfFont(SplineFont *sf);
 
 extern void DoPrefs(void);
 extern void DoXRes(void);
+extern void PointerDlg(CharView *cv);
 extern void LastFonts_Activate(void);
 extern void LastFonts_End(int success);
 extern void GListAddStr(GGadget *list,unichar_t *str, void *ud);

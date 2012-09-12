@@ -2587,7 +2587,7 @@ static int PrefsSubSet_Ok(GGadget *g, GEvent *e) {
     return( true );
 }
 
-void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* plist) {
+static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* plist) {
     struct prefs_list* pl = plist;
     GRect pos;
     GWindow gw;
