@@ -96,10 +96,6 @@ struct bounds {
     int ymin, ymax;
 };
 
-int GDrawFontHasCharset(FontInstance *fi,/*enum charset*/int charset) {
-return( fi!=NULL && fi->fonts[charset]!=NULL );
-}
-
 int32 __GXPDraw_DoText(GWindow w, int32 x, int32 y,
 	const unichar_t *text, int32 cnt, FontMods *mods, Color col,
 	enum text_funcs drawit, struct tf_arg *arg) {

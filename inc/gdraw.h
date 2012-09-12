@@ -403,7 +403,6 @@ extern GFont *GDrawInstanciateFont(GWindow gw, FontRequest *rq);
 extern GFont *GDrawAttachFont(GWindow gw, FontRequest *rq);
 extern FontRequest *GDrawDecomposeFont(GFont *fi, FontRequest *rq);
 extern void GDrawWindowFontMetrics(GWindow gw,GFont *fi,int *as, int *ds, int *ld);
-extern int GDrawFontHasCharset(FontInstance *fi,/*enum charset*/int charset);
 
 extern int32 GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32 cnt, FontMods *mods, GTextBounds *size);
 extern int32 GDrawGetTextWidth(GWindow gw, const unichar_t *text, int32 cnt, FontMods *mods);
