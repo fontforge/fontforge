@@ -156,6 +156,7 @@ typedef struct gxwindow /* :GWindow */ {
     GCursor cursor;
     Window parentissimus;
     struct gxinput_context *gic, *all;
+    PangoLayout  *pango_layout;
 #ifndef _NO_LIBCAIRO
     cairo_t *cc;
     cairo_surface_t *cs;
@@ -349,11 +350,9 @@ typedef struct gxdisplay /* : GDisplay */ {
     struct xkb xkb;
     PangoFontMap *pango_fontmap;
     PangoContext *pango_context;
-    PangoLayout  *pango_layout;
 # if !defined(_NO_LIBCAIRO)
     PangoFontMap *pangoc_fontmap;
     PangoContext *pangoc_context;
-    PangoLayout  *pangoc_layout;
 # endif
     Window last_nontransient_window;
 } GXDisplay;

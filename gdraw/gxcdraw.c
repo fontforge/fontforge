@@ -934,8 +934,9 @@ void _GXPDraw_NewWindow(GXWindow nw) {
 		    PANGO_FONT_MAP (gdisp->pangoc_fontmap));
 	    pango_cairo_context_set_resolution(gdisp->pangoc_context,
 		    gdisp->res);
-	    gdisp->pangoc_layout = pango_layout_new(gdisp->pangoc_context);
 	}
+	if (nw->pango_layout==NULL)
+	    nw->pango_layout = pango_layout_new(gdisp->pangoc_context);
     } else
 # endif
     {
@@ -945,8 +946,8 @@ void _GXPDraw_NewWindow(GXWindow nw) {
 	    /* No obvious way to get or set the resolution of pango_xft */
 	}
 	nw->xft_w = XftDrawCreate(gdisp->display,nw->w,gdisp->visual,gdisp->cmap);
-	if ( gdisp->pango_layout==NULL )
-	    gdisp->pango_layout = pango_layout_new(gdisp->pango_context);
+	if ( nw->pango_layout==NULL )
+	    nw->pango_layout = pango_layout_new(gdisp->pango_context);
     }
 return;
 }
@@ -957,17 +958,19 @@ void _GXPDraw_DestroyWindow(GXWindow nw) {
 	XftDrawDestroy(nw->xft_w);
 	nw->xft_w = NULL;
     }
+    if ( nw->pango_layout!=NULL )
+	g_object_unref(nw->pango_layout);
 }
 
 /* ************************************************************************** */
 /* ******************************* Pango Text ******************************* */
 /* ************************************************************************** */
-PangoFontDescription *_GXPDraw_configfont(GXDisplay *gdisp, GFont *font,int pc) {
+PangoFontDescription *_GXPDraw_configfont(GWindow gw, GFont *font) {
     PangoFontDescription *fd;
 #ifdef _NO_LIBCAIRO
     PangoFontDescription **fdbase = &font->pango_fd;
 #else
-    PangoFontDescription **fdbase = pc ? &font->pangoc_fd : &font->pango_fd;
+    PangoFontDescription **fdbase = ((GXWindow) gw)->usecairo ? &font->pangoc_fd : &font->pango_fd;
 #endif
 
     if ( *fdbase!=NULL )
@@ -1015,27 +1018,21 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
     GXDisplay *gdisp = gw->display;
     struct font_instance *fi = gw->ggc->fi;
     PangoRectangle rect, ink;
-    PangoLayout *layout = gdisp->pango_layout;
     PangoFontDescription *fd;
 
-# if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo )
-	layout = gdisp->pangoc_layout;
-# endif
-    fd = _GXPDraw_configfont(gdisp,fi,layout!=gdisp->pango_layout);
-    pango_layout_set_font_description(layout,fd);
-    pango_layout_set_text(layout,(char *) text,cnt);
-    pango_layout_get_pixel_extents(layout,NULL,&rect);
+    fd = _GXPDraw_configfont(w, fi);
+    pango_layout_set_font_description(gw->pango_layout,fd);
+    pango_layout_set_text(gw->pango_layout,(char *) text,cnt);
+    pango_layout_get_pixel_extents(gw->pango_layout,NULL,&rect);
     if ( drawit==tf_drawit ) {
 # if !defined(_NO_LIBCAIRO)
 	if ( gw->usecairo ) {
-	    layout = gdisp->pangoc_layout;
-	    my_cairo_render_layout(gw->cc,col,layout,x,y);
+	    my_cairo_render_layout(gw->cc,col,gw->pango_layout,x,y);
 #if 0
 	    cairo_move_to(gw->cc,x,y - fi->ascent);
 	    gw->ggc->fg = col;
 	    GXCDrawSetcolfunc(gw,gw->ggc);
-	    pango_cairo_layout_path(gw->cc,layout);
+	    pango_cairo_layout_path(gw->cc,gw->pango_layout);
 	    cairo_fill(gw->cc);
 #endif
 	} else
@@ -1055,14 +1052,14 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
 	    clip.width = gw->ggc->clip.width;
 	    clip.height = gw->ggc->clip.height;
 	    XftDrawSetClipRectangles(gw->xft_w,0,0,&clip,1);
-	    my_xft_render_layout(gw->xft_w,&fg,layout,x,y);
+	    my_xft_render_layout(gw->xft_w,&fg,gw->pango_layout,x,y);
 	}
     } else if ( drawit==tf_rect ) {
 	PangoLayoutIter *iter;
 	PangoLayoutRun *run;
 	PangoFontMetrics *fm;
 
-	pango_layout_get_pixel_extents(layout,&ink,&rect);
+	pango_layout_get_pixel_extents(gw->pango_layout,&ink,&rect);
 	arg->size.lbearing = ink.x - rect.x;
 	arg->size.rbearing = ink.x+ink.width - rect.x;
 	arg->size.width = rect.width;
@@ -1070,7 +1067,7 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
 	    /* There are no runs if there are no characters */
 	    memset(&arg->size,0,sizeof(arg->size));
 	} else {
-	    iter = pango_layout_get_iter(layout);
+	    iter = pango_layout_get_iter(gw->pango_layout);
 	    run = pango_layout_iter_get_run(iter);
 	    if ( run==NULL ) {
 		/* Pango doesn't give us runs in a couple of other places */
@@ -1110,18 +1107,15 @@ void _GXPDraw_FontMetrics(GXWindow gw,GFont *fi,int *as, int *ds, int *ld) {
     PangoFont *pfont;
     PangoFontMetrics *fm;
 
+    _GXPDraw_configfont((GWindow) gw, fi);
 # if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo ) {
-	_GXPDraw_configfont(gdisp,fi,true);
+    if ( gw->usecairo )
 	pfont = pango_font_map_load_font(gdisp->pangoc_fontmap,gdisp->pangoc_context,
 		fi->pangoc_fd);
-    } else
+    else
 #endif
-    {
-	_GXPDraw_configfont(gdisp,fi,false);
 	pfont = pango_font_map_load_font(gdisp->pango_fontmap,gdisp->pango_context,
 		fi->pango_fd);
-    }
     fm = pango_font_get_metrics(pfont,NULL);
     *as = pango_font_metrics_get_ascent(fm)/PANGO_SCALE;
     *ds = pango_font_metrics_get_descent(fm)/PANGO_SCALE;
@@ -1134,31 +1128,23 @@ void _GXPDraw_FontMetrics(GXWindow gw,GFont *fi,int *as, int *ds, int *ld) {
 /* ************************************************************************** */
 void _GXPDraw_LayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
     GXWindow gw = (GXWindow) w;
-    GXDisplay *gdisp = gw->display;
-    PangoLayout *layout = gdisp->pango_layout;
     PangoFontDescription *fd;
 
     if ( fi==NULL )
 	fi = gw->ggc->fi;
 
-# if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo )
-	layout = gdisp->pangoc_layout;
-# endif
-    fd = _GXPDraw_configfont(gdisp,fi,layout!=gdisp->pango_layout);
-    pango_layout_set_font_description(layout,fd);
-    pango_layout_set_text(layout,(char *) text,cnt);
+    fd = _GXPDraw_configfont(w, fi);
+    pango_layout_set_font_description(gw->pango_layout,fd);
+    pango_layout_set_text(gw->pango_layout,(char *) text,cnt);
 }
 
 void _GXPDraw_LayoutDraw(GWindow w, int32 x, int32 y, Color col) {
     GXWindow gw = (GXWindow) w;
     GXDisplay *gdisp = gw->display;
-    PangoLayout *layout = gdisp->pango_layout;
 
 # if !defined(_NO_LIBCAIRO)
     if ( gw->usecairo ) {
-	layout = gdisp->pangoc_layout;
-	my_cairo_render_layout(gw->cc,col,layout,x,y);
+	my_cairo_render_layout(gw->cc,col,gw->pango_layout,x,y);
     } else
 #endif
     {
@@ -1176,47 +1162,35 @@ void _GXPDraw_LayoutDraw(GWindow w, int32 x, int32 y, Color col) {
 	clip.width = gw->ggc->clip.width;
 	clip.height = gw->ggc->clip.height;
 	XftDrawSetClipRectangles(gw->xft_w,0,0,&clip,1);
-	my_xft_render_layout(gw->xft_w,&fg,layout,x,y);
+	my_xft_render_layout(gw->xft_w,&fg,gw->pango_layout,x,y);
     }
 }
 
 void _GXPDraw_LayoutIndexToPos(GWindow w, int index, GRect *pos) {
     GXWindow gw = (GXWindow) w;
-    GXDisplay *gdisp = gw->display;
-    PangoLayout *layout = gdisp->pango_layout;
     PangoRectangle rect;
 
-# if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo )
-	layout = gdisp->pangoc_layout;
-# endif
-    pango_layout_index_to_pos(layout,index,&rect);
+    pango_layout_index_to_pos(gw->pango_layout,index,&rect);
     pos->x = rect.x/PANGO_SCALE; pos->y = rect.y/PANGO_SCALE; pos->width = rect.width/PANGO_SCALE; pos->height = rect.height/PANGO_SCALE;
 }
 
 int _GXPDraw_LayoutXYToIndex(GWindow w, int x, int y) {
     GXWindow gw = (GXWindow) w;
-    GXDisplay *gdisp = gw->display;
-    PangoLayout *layout = gdisp->pango_layout;
     int trailing, index;
 
-# if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo )
-	layout = gdisp->pangoc_layout;
-# endif
     /* Pango retuns the last character if x is negative, not the first */
     if ( x<0 ) x=0;
-    pango_layout_xy_to_index(layout,x*PANGO_SCALE,y*PANGO_SCALE,&index,&trailing);
+    pango_layout_xy_to_index(gw->pango_layout,x*PANGO_SCALE,y*PANGO_SCALE,&index,&trailing);
     /* If I give pango a position after the last character on a line, it */
     /*  returns to me the first character. Strange. And annoying -- you click */
     /*  at the end of a line and the cursor moves to the start */
     /* Of course in right to left text an initial position is correct... */
     if ( index+trailing==0 && x>0 ) {
 	PangoRectangle rect;
-	pango_layout_get_pixel_extents(layout,&rect,NULL);
+	pango_layout_get_pixel_extents(gw->pango_layout,&rect,NULL);
 	if ( x>=rect.width ) {
 	    x = rect.width-1;
-	    pango_layout_xy_to_index(layout,x*PANGO_SCALE,y*PANGO_SCALE,&index,&trailing);
+	    pango_layout_xy_to_index(gw->pango_layout,x*PANGO_SCALE,y*PANGO_SCALE,&index,&trailing);
 	}
     }
 return( index+trailing );
@@ -1224,53 +1198,29 @@ return( index+trailing );
 
 void _GXPDraw_LayoutExtents(GWindow w, GRect *size) {
     GXWindow gw = (GXWindow) w;
-    GXDisplay *gdisp = gw->display;
-    PangoLayout *layout = gdisp->pango_layout;
     PangoRectangle rect;
 
-# if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo )
-	layout = gdisp->pangoc_layout;
-# endif
-    pango_layout_get_pixel_extents(layout,NULL,&rect);
+    pango_layout_get_pixel_extents(gw->pango_layout,NULL,&rect);
     size->x = rect.x; size->y = rect.y; size->width = rect.width; size->height = rect.height;
 }
 
 void _GXPDraw_LayoutSetWidth(GWindow w, int width) {
     GXWindow gw = (GXWindow) w;
-    GXDisplay *gdisp = gw->display;
-    PangoLayout *layout = gdisp->pango_layout;
 
-# if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo )
-	layout = gdisp->pangoc_layout;
-# endif
-    pango_layout_set_width(layout,width==-1? -1 : width*PANGO_SCALE);
+    pango_layout_set_width(gw->pango_layout,width==-1? -1 : width*PANGO_SCALE);
 }
 
 int _GXPDraw_LayoutLineCount(GWindow w) {
     GXWindow gw = (GXWindow) w;
-    GXDisplay *gdisp = gw->display;
-    PangoLayout *layout = gdisp->pango_layout;
 
-# if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo )
-	layout = gdisp->pangoc_layout;
-# endif
-return( pango_layout_get_line_count(layout));
+return( pango_layout_get_line_count(gw->pango_layout));
 }
 
 int _GXPDraw_LayoutLineStart(GWindow w, int l) {
     GXWindow gw = (GXWindow) w;
-    GXDisplay *gdisp = gw->display;
-    PangoLayout *layout = gdisp->pango_layout;
     PangoLayoutLine *line;
 
-# if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo )
-	layout = gdisp->pangoc_layout;
-# endif
-    line = pango_layout_get_line(layout,l);
+    line = pango_layout_get_line(gw->pango_layout,l);
     if ( line==NULL )
 return( -1 );
 

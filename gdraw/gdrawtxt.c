@@ -56,12 +56,7 @@ FontInstance *GDrawInstanciateFont(GWindow gw, FontRequest *rq) {
     fi->rq.family_name = u_copy( fi->rq.family_name );
     fi->rq.utf8_family_name = copy( fi->rq.utf8_family_name );
 
-#ifndef _NO_LIBCAIRO
-    if ( gw->usecairo )
-	_GXPDraw_configfont(gdisp,fi,true);
-    else
-#endif
-	_GXPDraw_configfont(gdisp,fi,false);
+    _GXPDraw_configfont(gw, fi);
 return( fi );
 }
 
