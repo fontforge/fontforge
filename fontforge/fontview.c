@@ -49,16 +49,7 @@ int home_char='A';
 int compact_font_on_open=0;
 int navigation_mask = 0;		/* Initialized in startui.c */
 
-static char *special_fontnames[] = {
-	SERIF_UI_FAMILIES,
-	"script,formalscript,serif",
-	"fraktur,serif",
-	"doublestruck,serif",
-	SANS_UI_FAMILIES,
-	MONO_UI_FAMILIES,
-	NULL
-    };
-static char *standard_fontnames = "fontview," MONO_UI_FAMILIES;
+static char *fv_fontnames = "fontview," MONO_UI_FAMILIES;
 
 #define	FV_LAB_HEIGHT	15
 
@@ -5718,32 +5709,18 @@ static void GlyphImageXor(GImage *image,int fgxor) {
     }
 }
 
-/* Mathmatical Alphanumeric Symbols in the 1d400-1d7ff range are styled */
-/*  variants on latin, greek, and digits				*/
-#define _uni_bold	0x1
+/* we style some glyph names differently, see FVExpose() */
 #define _uni_italic	0x2
-#define _uni_script	(1<<2)
-#define _uni_fraktur	(2<<2)
-#define _uni_doublestruck	(3<<2)
-#define _uni_sans	(4<<2)
-#define _uni_mono	(5<<2)
-#define _uni_fontmax	(6<<2)
-#define _uni_latin	0
-#define _uni_greek	1
-#define _uni_digit	2
+#define _uni_fontmax	(1<<2)
 
 static GFont *FVCheckFont(FontView *fv,int type) {
     FontRequest rq;
-    int family = type>>2;
-    char *fontnames;
 
     if ( fv->fontset[type]==NULL ) {
-	fontnames = special_fontnames[family];
-
 	memset(&rq,0,sizeof(rq));
-	rq.utf8_family_name = fontnames;
+	rq.utf8_family_name = fv_fontnames;
 	rq.point_size = fv_fontsize;
-	rq.weight = (type&_uni_bold) ? 700:400;
+	rq.weight = 400;
 	rq.style = (type&_uni_italic) ? fs_italic : 0;
 	fv->fontset[type] = GDrawInstanciateFont(fv->v,&rq);
     }
@@ -5845,7 +5822,6 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 	    switch ( fv->glyphlabel ) {
 	      case gl_name:
 		uc_strncpy(buf,sc->name,sizeof(buf)/sizeof(buf[0]));
-		styles = _uni_sans;
 	      break;
 	      case gl_unicode:
 		if ( sc->unicodeenc!=-1 ) {
@@ -5853,7 +5829,6 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 		    uc_strcpy(buf,cbuf);
 		} else
 		    uc_strcpy(buf,"?");
-		styles = _uni_sans;
 	      break;
 	      case gl_encoding:
 		if ( fv->b.map->enc->only_1byte ||
@@ -5862,7 +5837,6 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 		else
 		    sprintf(cbuf,"%04x",index);
 		uc_strcpy(buf,cbuf);
-		styles = _uni_sans;
 	      break;
 	      case gl_glyph:
 		if ( uni==0xad )
@@ -5920,7 +5894,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 			if ( buf[0]!='?' ) {
 			    fg = def_fg;
 			    if ( strstr(pt,".italic")!=NULL )
-				styles = _uni_italic|_uni_mono;
+				styles = _uni_italic;
 			}
 		    } else if ( strncmp(sc->name,"hwuni",5)==0 ) {
 			int uni=-1;
@@ -5929,7 +5903,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 		    } else if ( strncmp(sc->name,"italicuni",9)==0 ) {
 			int uni=-1;
 			sscanf(sc->name,"italicuni%x", (unsigned *) &uni );
-			if ( uni!=-1 ) { buf[0] = uni; styles=_uni_italic|_uni_mono; }
+			if ( uni!=-1 ) { buf[0] = uni; styles=_uni_italic; }
 			fg = def_fg;
 		    } else if ( strncmp(sc->name,"vertcid_",8)==0 ||
 			    strncmp(sc->name,"vertuni",7)==0 ) {
@@ -7065,13 +7039,7 @@ static struct resed fontview_re[] = {
     {N_("Changed Color"), "ChangedColor", rt_color, &fvchangedcol, N_("Color used to mark a changed glyph"), NULL, { 0 }, 0, 0 },
     {N_("Hinting Needed Color"), "HintingNeededColor", rt_color, &fvhintingneededcol, N_("Color used to mark glyphs that need hinting"), NULL, { 0 }, 0, 0 },
     {N_("Font Size"), "FontSize", rt_int, &fv_fontsize, N_("Size (in points) of the font used to display information and glyph labels in the fontview"), NULL, { 0 }, 0, 0 },
-    {N_("Font Family"), "FontFamily", rt_stringlong, &standard_fontnames, N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs"), NULL, { 0 }, 0, 0 },
-    {N_("Serif Family"), "SerifFamily", rt_stringlong, &special_fontnames[0], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a serif font"), NULL, { 0 }, 0, 0 },
-    {N_("Script Family"), "ScriptFamily", rt_stringlong, &special_fontnames[1], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a script font"), NULL, { 0 }, 0, 0 },
-    {N_("Fraktur Family"), "FrakturFamily", rt_stringlong, &special_fontnames[2], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a fractur font"), NULL, { 0 }, 0, 0 },
-    {N_("Double Struck Family"), "DoubleStruckFamily", rt_stringlong, &special_fontnames[3], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a double struck font"), NULL, { 0 }, 0, 0 },
-    {N_("Sans-Serif Family"), "SansFamily", rt_stringlong, &special_fontnames[4], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a sans-serif font"), NULL, { 0 }, 0, 0 },
-    {N_("Monospace Family"), "MonoFamily", rt_stringlong, &special_fontnames[5], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a monospace font"), NULL, { 0 }, 0, 0 },
+    {N_("Font Family"), "FontFamily", rt_stringlong, &fv_fontnames, N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs"), NULL, { 0 }, 0, 0 },
     RESED_EMPTY
 };
 
@@ -7112,7 +7080,7 @@ static void FVCreateInnards(FontView *fv,GRect *pos) {
 
     fv->fontset = gcalloc(_uni_fontmax,sizeof(GFont *));
     memset(&rq,0,sizeof(rq));
-    rq.utf8_family_name = standard_fontnames;
+    rq.utf8_family_name = fv_fontnames;
     rq.point_size = fv_fontsize;
     rq.weight = 400;
     fv->fontset[0] = GDrawInstanciateFont(gw,&rq);
