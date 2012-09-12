@@ -473,18 +473,32 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 /* Handle events from the text field */
 static int GFileChooserTextChanged(GGadget *t,GEvent *e) {
     GFileChooser *gfc;
+    GGadget *g = (GGadget *)GGadgetGetUserData(t);
+    
     const unichar_t *pt, *spt;
-
+    unichar_t * pt_toFree = 0;
     if ( e->type!=et_controlevent || e->u.control.subtype!=et_textchanged )
 return( true );
     pt = spt = _GGadgetGetTitle(t);
     if ( pt==NULL )
 return( true );
+    gfc = (GFileChooser *) GGadgetGetUserData(t);
+    // if this is the first time we are here, we assume
+    // the current filename is what it was before. Less NULL
+    // checks in the callback function below.
+    if(!gfc->inputfilenameprevchar)
+	gfc->inputfilenameprevchar = u_copy(_GGadgetGetTitle(t));
+
+    if( GFileChooserGetInputFilenameFunc(g)(g, &pt,gfc->inputfilenameprevchar)) {
+	pt_toFree = pt;
+	spt = pt;
+	GGadgetSetTitle(g, pt);
+    }
+
     while ( *pt && *pt!='*' && *pt!='?' && *pt!='[' && *pt!='{' )
 	++pt;
     if ( *spt!='\0' && spt[u_strlen(spt)-1]=='/' )
 	pt = spt+u_strlen(spt)-1;
-    gfc = (GFileChooser *) GGadgetGetUserData(t);
 
     /* if there are no wildcards and no directories in the filename */
     /*  then as it gets changed the list box should show the closest */
@@ -515,6 +529,13 @@ return( true );
 	    _GWidget_MakeDefaultButton(&gfc->filterb->g);
     }
     free(gfc->lastname); gfc->lastname = NULL;
+    if(pt_toFree)
+	free(pt_toFree);
+
+    if(gfc->inputfilenameprevchar)
+	free(gfc->inputfilenameprevchar);
+    gfc->inputfilenameprevchar = u_copy(_GGadgetGetTitle(t));
+    
 return( true );
 }
 
@@ -1161,6 +1182,71 @@ GFileChooserFilterType GFileChooserGetFilterFunc(GGadget *g) {
 return( gfc->filter );
 }
 
+/**
+ * no change to the current filename by default
+ * 
+ * if a change is desired, then currentFilename should point to the
+ * new string and return 1 to allow the caller to free this new
+ * string.
+ */
+int GFileChooserDefInputFilenameFunc( GGadget *g,
+				      unichar_t** currentFilename,
+				      unichar_t* oldfilename ) {
+    return 0;
+}
+
+int GFileChooserSaveAsInputFilenameFunc( GGadget *g,
+					 unichar_t** ppt,
+					 unichar_t* oldfilename ) {
+    unichar_t* pt = *ppt;
+    char* p = u_to_c(pt);
+    int plen = strlen(p);
+    int ew = endswithi( p, ".sfdir") || endswithi( p, ".sfd");
+    int trim = 0;
+
+    if( !ew ) {
+	if( endswithi( u_to_c(oldfilename), ".sfd")
+	    || endswithi( u_to_c(oldfilename), ".sfdir")) {
+	    *ppt = u_copy(oldfilename);
+	    return 1;
+	}
+    }
+    
+    /**
+     * If there is not a correct extension there already, then we will
+     * add one for the user to be helpful.
+     */
+    if( pt==*ppt) {
+	char* extension = ".sfd";
+	if( *p && p[plen-1] == '.' )
+	    extension = "sfd";
+	if( !ew ) {
+	    pt = u_concat( pt, c_to_u(extension) );
+	}
+    }
+
+    int ret = (pt != *ppt);
+    *ppt = pt;
+    return(ret);
+}
+
+
+void GFileChooserSetInputFilenameFunc(GGadget *g,GFileChooserInputFilenameFuncType func) {
+    GFileChooser *gfc = (GFileChooser *) g;
+    if ( func==NULL )
+	func = GFileChooserDefInputFilenameFunc;
+    gfc->inputfilenamefunc = func;
+}
+
+GFileChooserInputFilenameFuncType GFileChooserGetInputFilenameFunc(GGadget *g) {
+    GFileChooser *gfc = (GFileChooser *) g;
+    if ( gfc->inputfilenamefunc==NULL )
+	return GFileChooserDefInputFilenameFunc;
+    return( gfc->inputfilenamefunc );
+}
+
+
+
 void GFileChooserSetMimetypes(GGadget *g,unichar_t **mimetypes) {
     GFileChooser *gfc = (GFileChooser *) g;
     int i;
@@ -1619,7 +1705,7 @@ GGadget *GFileChooserCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 
     GFileChooserCreateChildren(gfc, gd->flags);
     gfc->filter = GFileChooserDefFilter;
-    
+    GFileChooserSetInputFilenameFunc( gfc, 0 );
     if ( gd->flags & gg_group_end )
 	_GGadgetCloseGroup(&gfc->g);
 

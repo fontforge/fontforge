@@ -289,6 +289,9 @@ struct matrixinit {
 struct gdirentry;
 typedef enum fchooserret (*GFileChooserFilterType)(GGadget *g,struct gdirentry *ent,
 	const unichar_t *dir);
+typedef int (*GFileChooserInputFilenameFuncType)( GGadget *g,
+						  unichar_t** currentFilename,
+						  unichar_t* oldfilename );
 
     /* Obsolete */
 #define _STR_NULL	(-1)		/* Null string resource */
@@ -431,6 +434,10 @@ int GFileChooserFilterEh(GGadget *g,GEvent *e);
 void GFileChooserConnectButtons(GGadget *g,GGadget *ok, GGadget *filter);
 void GFileChooserSetFilterText(GGadget *g,const unichar_t *filter);
 void GFileChooserSetFilterFunc(GGadget *g,GFileChooserFilterType filter);
+void GFileChooserSetInputFilenameFunc(GGadget *g,GFileChooserInputFilenameFuncType filter);
+int GFileChooserDefInputFilenameFunc( GGadget *g, unichar_t** currentFilename, unichar_t* oldfilename );
+int GFileChooserSaveAsInputFilenameFunc( GGadget *g, unichar_t** ppt, unichar_t* oldfilename );
+GFileChooserInputFilenameFuncType GFileChooserGetInputFilenameFunc(GGadget *g);
 void GFileChooserSetDir(GGadget *g,unichar_t *dir);
 struct giocontrol *GFileChooserReplaceIO(GGadget *g,struct giocontrol *gc);
 unichar_t *GFileChooserGetDir(GGadget *g);

@@ -191,8 +191,10 @@ return( true );
 }
 
 unichar_t *GWidgetSaveAsFileWithGadget(const unichar_t *title, const unichar_t *defaultfile,
-	const unichar_t *initial_filter, unichar_t **mimetypes,
-	GFileChooserFilterType filter, GGadgetCreateData *optional_gcd) {
+				       const unichar_t *initial_filter, unichar_t **mimetypes,
+				       GFileChooserFilterType filter,
+				       GFileChooserInputFilenameFuncType filenamefunc,
+				       GGadgetCreateData *optional_gcd) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -320,6 +322,7 @@ unichar_t *GWidgetSaveAsFileWithGadget(const unichar_t *title, const unichar_t *
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
     GFileChooserSetFilterText(gcd[0].ret,initial_filter);
     GFileChooserSetFilterFunc(gcd[0].ret,filter);
+    GFileChooserSetInputFilenameFunc(gcd[0].ret, filenamefunc);
     GFileChooserSetMimetypes(gcd[0].ret,mimetypes);
     GGadgetSetTitle(gcd[0].ret,defaultfile);
     GFileChooserGetChildren(gcd[0].ret,&pulldown,&files,&tf);
@@ -341,12 +344,14 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
 	const unichar_t *initial_filter, unichar_t **mimetypes,
 	GFileChooserFilterType filter) {
 return( GWidgetSaveAsFileWithGadget(title,defaultfile,initial_filter,mimetypes,
-		filter, NULL ));
+				    filter, NULL, NULL ));
 }
 
 char *GWidgetSaveAsFileWithGadget8(const char *title, const char *defaultfile,
-	const char *initial_filter, char **mimetypes,
-	GFileChooserFilterType filter, GGadgetCreateData *optional_gcd) {
+				   const char *initial_filter, char **mimetypes,
+				   GFileChooserFilterType filter,
+				   GFileChooserInputFilenameFuncType filenamefunc,
+				   GGadgetCreateData *optional_gcd) {
     unichar_t *tit=NULL, *def=NULL, *filt=NULL, **mimes=NULL, *ret;
     char *utf8_ret;
     int i;
@@ -364,7 +369,7 @@ char *GWidgetSaveAsFileWithGadget8(const char *title, const char *defaultfile,
 	    mimes[i] = utf82u_copy(mimetypes[i]);
 	mimes[i] = NULL;
     }
-    ret = GWidgetSaveAsFileWithGadget(tit,def,filt,mimes,filter,optional_gcd);
+    ret = GWidgetSaveAsFileWithGadget(tit,def,filt,mimes,filter,filenamefunc,optional_gcd);
     if ( mimes!=NULL ) {
 	for ( i=0; mimes[i]!=NULL; ++i )
 	    free(mimes[i]);
@@ -380,5 +385,5 @@ char *GWidgetSaveAsFile8(const char *title, const char *defaultfile,
 	const char *initial_filter, char **mimetypes,
 	GFileChooserFilterType filter) {
 return( GWidgetSaveAsFileWithGadget8(title,defaultfile,initial_filter,mimetypes,
-		filter, NULL ));
+				     filter, NULL, NULL ));
 }

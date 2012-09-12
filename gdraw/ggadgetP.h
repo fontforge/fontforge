@@ -391,6 +391,7 @@ typedef struct gfilechooser {
     unichar_t *wildcard;
     unichar_t *lastname;
     GFileChooserFilterType filter;
+    GFileChooserInputFilenameFuncType inputfilenamefunc;
     /*enum fchooserret (*filter)(GGadget *chooser,struct gdirentry *file,const unichar_t *dir);*/
     struct giocontrol *outstanding;
     GCursor old_cursor;
@@ -399,6 +400,7 @@ typedef struct gfilechooser {
     struct ghvbox *topbox;
     unichar_t **history;
     unichar_t **paths;
+    unichar_t *inputfilenameprevchar;
     int hpos, hcnt, hmax;
 } GFileChooser;
 
