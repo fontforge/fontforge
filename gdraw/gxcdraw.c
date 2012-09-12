@@ -962,7 +962,7 @@ void _GXPDraw_DestroyWindow(GXWindow nw) {
 /* ************************************************************************** */
 /* ******************************* Pango Text ******************************* */
 /* ************************************************************************** */
-static PangoFontDescription *_GXPDraw_configfont(GXDisplay *gdisp, GFont *font,int pc) {
+PangoFontDescription *_GXPDraw_configfont(GXDisplay *gdisp, GFont *font,int pc) {
     PangoFontDescription *fd;
 #ifdef _NO_LIBCAIRO
     PangoFontDescription **fdbase = &font->pango_fd;

@@ -2369,7 +2369,7 @@ void DoPrefs(void) {
     rq.utf8_family_name = MONO_UI_FAMILIES;
     rq.point_size = 12;
     rq.weight = 400;
-    font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    font = GDrawInstanciateFont(gw,&rq);
     GGadgetSetFont(mfgcd[0].ret,font);
     GGadgetSetFont(msgcd[0].ret,font);
     GHVBoxFitWindow(mboxes[0].ret);

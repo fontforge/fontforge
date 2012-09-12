@@ -2544,7 +2544,7 @@ static void GTextFieldInit() {
     GDrawDecomposeFont(_ggadget_default_font,&rq);
     rq.family_name = NULL;
     rq.utf8_family_name = MONO_UI_FAMILIES;
-    _gtextfield_font = GDrawInstanciateFont(screen_display,&rq);
+    _gtextfield_font = GDrawInstanciateFont(NULL,&rq);
     _GGadgetCopyDefaultBox(&_GGadget_gtextfield_box);
     _GGadget_gtextfield_box.padding = 3;
     /*_GGadget_gtextfield_box.flags = box_active_border_inner;*/
@@ -2625,7 +2625,7 @@ static void GTextFieldFit(GTextField *gt) {
 	    /* Doesn't fit. Try a smaller size */
 	    GDrawDecomposeFont(gt->font,&rq);
 	    --rq.point_size;
-	    gt->font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gt->g.base),&rq);
+	    gt->font = GDrawInstanciateFont(gt->g.base,&rq);
 	}
 	gt->fh = as+ds;
 	gt->as = as;

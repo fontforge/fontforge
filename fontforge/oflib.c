@@ -1908,7 +1908,7 @@ return;
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 12;
 	rq.weight = 400;
-	oflibfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	oflibfont = GDrawInstanciateFont(gw,&rq);
 	oflibfont = GResourceFindFont("OFLib.Font",oflibfont);
     }
     active->font = oflibfont;

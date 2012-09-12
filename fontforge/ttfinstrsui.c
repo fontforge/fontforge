@@ -860,7 +860,7 @@ static void InstrDlgCreate(struct instrdata *id,char *title) {
 	rq.utf8_family_name = MONO_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
-	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	font = GDrawInstanciateFont(gw,&rq);
 	font = GResourceFindFont("TTInstruction.Font",font);
     }
     iv->instrinfo.gfont = font;
@@ -1552,7 +1552,7 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	rq.utf8_family_name = MONO_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
-	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	font = GDrawInstanciateFont(gw,&rq);
 	font = GResourceFindFont("CVT.Font",font);
     }
     sv->gfont = font;

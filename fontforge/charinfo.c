@@ -5052,7 +5052,7 @@ return;
 	    rq.utf8_family_name = MONO_UI_FAMILIES;
 	    rq.point_size = 12;
 	    rq.weight = 400;
-	    font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(ci->gw),&rq);
+	    font = GDrawInstanciateFont(ci->gw,&rq);
 	    font = GResourceFindFont("GlyphInfo.Font",font);
 	}
 	for ( i=0; i<5; ++i )

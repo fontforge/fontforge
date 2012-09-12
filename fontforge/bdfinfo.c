@@ -781,7 +781,7 @@ return;
 	rq.family_name = sans;
 	rq.point_size = 10;
 	rq.weight = 400;
-	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	font = GDrawInstanciateFont(gw,&rq);
 	font = GResourceFindFont("BDFProperties.Font",font);
     }
     bd.font = font;

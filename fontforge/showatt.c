@@ -2795,12 +2795,12 @@ static void ShowAttCreateDlg(struct att_dlg *att, SplineFont *sf, int which,
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 12;
 	rq.weight = 400;
-	propfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(att->gw),&rq);
+	propfont = GDrawInstanciateFont(att->gw,&rq);
 	propfont = GResourceFindFont("ShowATT.Font",propfont);
 
 	GDrawDecomposeFont(propfont, &rq);
 	rq.utf8_family_name = MONO_UI_FAMILIES;	/* I want to show tabluar data sometimes */
-	monofont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(att->gw),&rq);
+	monofont = GDrawInstanciateFont(att->gw,&rq);
 	monofont = GResourceFindFont("ShowATT.MonoFont",monofont);
     }
     att->font = propfont;

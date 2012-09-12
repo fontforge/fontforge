@@ -2216,7 +2216,7 @@ return;
 	    rq.utf8_family_name = MONO_UI_FAMILIES;
 	    rq.point_size = -12;
 	    rq.weight = 400;
-	    monofont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->gw),&rq);
+	    monofont = GDrawInstanciateFont(cv->gw,&rq);
 	    monofont = GResourceFindFont("DebugView.Font",monofont);
 	}
 	dv->ii.gfont = monofont;

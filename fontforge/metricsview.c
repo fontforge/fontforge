@@ -4722,7 +4722,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
-	mvfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	mvfont = GDrawInstanciateFont(gw,&rq);
 	mvfont = GResourceFindFont("MetricsView.Font",mvfont);
     }
     mv->font = mvfont;

@@ -1098,11 +1098,11 @@ void GWidgetCreateInsChar(void) {
 	rq.point_size = /*15*/12;
 	rq.weight = 400;
 	rq.style = 0;
-	inschr.font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(inschr.icw),&rq);
+	inschr.font = GDrawInstanciateFont(inschr.icw,&rq);
 	GDrawWindowFontMetrics(inschr.icw,inschr.font,&as, &ds, &ld);
 	inschr.as = as;
 	rq.point_size = 8;
-	inschr.smallfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(inschr.icw),&rq);
+	inschr.smallfont = GDrawInstanciateFont(inschr.icw,&rq);
 	GDrawWindowFontMetrics(inschr.icw,inschr.smallfont,&as, &ds, &ld);
 	inschr.sas = as;
 

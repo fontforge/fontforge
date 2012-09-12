@@ -989,7 +989,7 @@ static void StartDeltaDisplay(QGData *qg) {
 	rq.utf8_family_name = "Helvetica";
 	rq.point_size = 11;
 	rq.weight = 400;
-	valfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	valfont = GDrawInstanciateFont(gw,&rq);
 	valfont = GResourceFindFont("Validate.Font",valfont);
     }
     qg->font = valfont;

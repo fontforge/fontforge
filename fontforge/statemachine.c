@@ -1506,7 +1506,7 @@ void StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
 	rq.point_size = 12;
 	rq.weight = 400;
 	rq.utf8_family_name = MONO_UI_FAMILIES;
-	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	font = GDrawInstanciateFont(gw,&rq);
 	font = GResourceFindFont("StateMachine.Font",font);
     }
     smd.font = font;

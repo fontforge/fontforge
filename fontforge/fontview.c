@@ -5925,7 +5925,7 @@ static GFont *FVCheckFont(FontView *fv,int type) {
 	rq.point_size = fv_fontsize;
 	rq.weight = (type&_uni_bold) ? 700:400;
 	rq.style = (type&_uni_italic) ? fs_italic : 0;
-	fv->fontset[type] = GDrawInstanciateFont(GDrawGetDisplayOfWindow(fv->v),&rq);
+	fv->fontset[type] = GDrawInstanciateFont(fv->v,&rq);
     }
 return( fv->fontset[type] );
 }
@@ -7295,7 +7295,7 @@ static void FVCreateInnards(FontView *fv,GRect *pos) {
     rq.utf8_family_name = standard_fontnames;
     rq.point_size = fv_fontsize;
     rq.weight = 400;
-    fv->fontset[0] = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    fv->fontset[0] = GDrawInstanciateFont(gw,&rq);
     GDrawSetFont(fv->v,fv->fontset[0]);
     GDrawWindowFontMetrics(fv->v,fv->fontset[0],&as,&ds,&ld);
     fv->lab_as = as;

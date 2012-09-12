@@ -10719,7 +10719,7 @@ return;
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 12;
 	rq.weight = 400;
-	fi_font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	fi_font = GDrawInstanciateFont(gw,&rq);
 	fi_font = GResourceFindFont("FontInfo.Font",fi_font);
     }
     d->font = fi_font;

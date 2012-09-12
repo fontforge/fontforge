@@ -1668,7 +1668,7 @@ return;
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
-	layersfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers2),&rq);
+	layersfont = GDrawInstanciateFont(cvlayers2,&rq);
 	layersfont = GResourceFindFont("LayersPalette.Font",layersfont);
     }
 
@@ -2816,7 +2816,7 @@ return( cvlayers );
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
-	layersfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers2),&rq);
+	layersfont = GDrawInstanciateFont(cvlayers2,&rq);
 	layersfont = GResourceFindFont("LayersPalette.Font",layersfont);
     }
     layerinfo.font = layersfont;
@@ -3345,7 +3345,7 @@ return(bvlayers);
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
-	layersfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers2),&rq);
+	layersfont = GDrawInstanciateFont(cvlayers2,&rq);
 	layersfont = GResourceFindFont("LayersPalette.Font",layersfont);
     }
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )

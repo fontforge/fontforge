@@ -59,6 +59,7 @@ extern int32 _GXCDraw_DoText(GWindow gw, int32 x, int32 y,
 extern void _GXPDraw_NewWindow(GXWindow nw);
 extern void _GXPDraw_DestroyWindow(GXWindow nw);
 #include "fontP.h"
+extern PangoFontDescription *_GXPDraw_configfont(GXDisplay *gdisp, GFont *font,int pc);
 extern int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
 	const char *text, int32 cnt, FontMods *mods, Color col,
 	enum text_funcs drawit, struct tf_arg *arg);

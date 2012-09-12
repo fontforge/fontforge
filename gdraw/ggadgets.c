@@ -250,7 +250,7 @@ void *GResource_font_cvt(char *val, void *def) {
     if ( *pt!='\0' )
 	rq.utf8_family_name = freeme = copy(pt);
 		
-    fi = GDrawInstanciateFont(screen_display,&rq);
+    fi = GDrawInstanciateFont(NULL,&rq);
 
     if ( freeme!=NULL )
 	free(freeme);
@@ -398,7 +398,7 @@ FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box, FontInstance *deffon
 	rq.point_size = 10;
 	rq.weight = 400;
 	rq.style = 0;
-	fi = GDrawInstanciateFont(screen_display,&rq);
+	fi = GDrawInstanciateFont(NULL,&rq);
 	if ( fi==NULL )
 	    GDrawFatalError("Cannot find a default font for gadgets");
     }
@@ -462,7 +462,7 @@ void GGadgetInit(void) {
 	    rq.point_size = localeptsize();
 	    rq.weight = 400;
 	    rq.style = 0;
-	    popup_font = GDrawInstanciateFont(screen_display,&rq);
+	    popup_font = GDrawInstanciateFont(NULL,&rq);
 	    if ( popup_font==NULL )
 		popup_font = _ggadget_default_font;
 	}

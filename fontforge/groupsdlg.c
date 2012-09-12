@@ -555,7 +555,7 @@ static void GroupWCreate(struct groupdlg *grp,GRect *pos) {
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 12;
 	rq.weight = 400;
-	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(grp->gw),&rq);
+	font = GDrawInstanciateFont(grp->gw,&rq);
 	font = GResourceFindFont("Groups.Font",font);
     }
     grp->font = font;
