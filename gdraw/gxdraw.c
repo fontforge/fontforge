@@ -2820,68 +2820,6 @@ static struct font_data *GXDrawStylizeFont(GDisplay *gdisp, struct font_data *fd
 return( fd );
 }
 
-static void GXDrawText1(GWindow gw, struct font_data *fd,
-	int32 x, int32 y, char *txt, int32 cnt, FontMods *mods, Color col) {
-    GXWindow gxw = (GXWindow) gw;
-    GXDisplay *display = gxw->display;
-
-    if ( x>32767 || y>32767 )
-return;
-
-    gxw->ggc->fg = col;
-    GXDrawSetline(display,gxw->ggc);
-    XSetFont(display->display,display->gcstate[gxw->ggc->bitmap_col].gc,fd->info->fid);
-    if ( mods->letter_spacing==0 )
-	XDrawString(display->display,gxw->w,display->gcstate[gxw->ggc->bitmap_col].gc,x,y,txt,cnt);
-    else {
-	XTextItem items[30], *ti;
-	char *pt, *end = txt+cnt;
-	int first = true;
-	while ( txt<end ) {
-	    for ( pt=txt, ti=items; pt<end && pt<txt+30; ++pt ) {
-		ti->chars = pt;
-		ti->nchars = 1;
-		ti->delta = mods->letter_spacing;
-		ti++->font = None;
-	    }
-	    if ( first ) items[0].delta = 0;
-	    XDrawText(display->display,gxw->w,display->gcstate[gxw->ggc->bitmap_col].gc,x,y,items,pt-txt);
-	    txt = pt; first = false;
-	}
-    }
-}
-
-static void GXDrawText2(GWindow gw, struct font_data *fd,
-	int32 x, int32 y, GChar2b *txt, int32 cnt, FontMods *mods, Color col) {
-    GXWindow gxw = (GXWindow) gw;
-    GXDisplay *display = gxw->display;
-
-    if ( x>32767 || y>32767 )
-return;
-
-    gxw->ggc->fg = col;
-    GXDrawSetline(display,gxw->ggc);
-    XSetFont(display->display,display->gcstate[gxw->ggc->bitmap_col].gc,fd->info->fid);
-    if ( mods->letter_spacing==0 )
-	XDrawString16(display->display,gxw->w,display->gcstate[gxw->ggc->bitmap_col].gc,x,y,(XChar2b *) txt,cnt);
-    else {
-	XTextItem16 items[30], *ti;
-	GChar2b *pt, *end = txt+cnt;
-	int first = true;
-	while ( txt<end ) {
-	    for ( pt=txt, ti=items; pt<end && pt<txt+30; ++pt ) {
-		ti->chars = (XChar2b *) pt;
-		ti->nchars = 1;
-		ti->delta = mods->letter_spacing;
-		ti++->font = None;
-	    }
-	    if ( first ) items[0].delta = 0;
-	    XDrawText16(display->display,gxw->w,display->gcstate[gxw->ggc->bitmap_col].gc,x,y,items,pt-txt);
-	    txt = pt; first = false;
-	}
-    }
-}
-
 static void GXDrawFontMetrics( GWindow w,GFont *fi,int *as, int *ds, int *ld) {
     _GXPDraw_FontMetrics( ((GXWindow) w),fi,as,ds,ld);
 }
@@ -4789,8 +4727,8 @@ static struct displayfuncs xfuncs = {
     GXDrawScaleFont,
     GXDrawStylizeFont,
     NULL,
-    GXDrawText1,
-    GXDrawText2,
+    NULL,
+    NULL,
 
     GXDrawCreateInputContext,
     GXDrawSetGIC,
