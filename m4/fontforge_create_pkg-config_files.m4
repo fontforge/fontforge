@@ -23,6 +23,7 @@ test x"${i_do_have_pango}" = xyes && __pkg_deps="${__pkg_deps} pango"
 test x"${i_do_have_pango}" = xyes -a x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} pangocairo"
 test x"${i_do_have_pango}" = xyes && my_libs="${my_libs} pangoxft"
 test x"${i_do_have_freetype}" = xyes && __pkg_deps="${__pkg_deps} freetype2"
+test x"${i_do_have_gui}" = xyes && __pkg_deps="${__pkg_deps} fontconfig"
 __pkg_deps="${__pkg_deps} zlib"
 
 __private_deps=""
