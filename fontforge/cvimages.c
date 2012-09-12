@@ -149,13 +149,10 @@ return;
 void SCImportPDFFile(SplineChar *sc,int layer,FILE *pdf,int doclear,int flags) {
     SplinePointList *spl, *espl;
     SplineSet **head;
-    int empty, width;
 
     if ( pdf==NULL )
 return;
 
-    width = UNDEFINED_WIDTH;
-    empty = sc->layers[layer].splines==NULL && sc->layers[layer].refs==NULL;
     if ( sc->parent->multilayer && layer>ly_back ) {
 	SCAppendEntityLayers(sc, EntityInterpretPDFPage(pdf,-1));
     } else {

@@ -4854,7 +4854,6 @@ static void fea_ParseLookupDef(struct parseState *tok, int could_be_stat ) {
     char *lookup_name;
     struct feat_item *item, *first_after_mark;
     enum otlookup_type lookuptype;
-    int has_marks;
     int ret;
     int has_single, has_multiple;
 
@@ -4964,11 +4963,8 @@ return;
 
     /* Make sure all entries in this lookup of the same lookup type */
     lookuptype = ot_undef;
-    has_marks = false;
     for ( item=tok->sofar ; item!=NULL && item->type!=ft_lookup_start; item=item->next ) {
 	enum otlookup_type cur = fea_LookupTypeFromItem(item);
-	if ( item->type==ft_ap && item->u2.ap->type == at_mark )
-	    has_marks = true;
 	if ( cur==ot_undef )	/* Some entries in the list (lookupflags) have no type */
 	    /* Tum, ty, tum tum */;
 	else if ( lookuptype==ot_undef )
