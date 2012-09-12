@@ -1,4 +1,3 @@
-/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2007-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -2368,7 +2367,7 @@ return;
 	int uni = si->sc->unicodeenc;
 	char *pt;
 
-        if ( uni!=-1 && uni<0x10000 &&
+        if ( uni!=-1 && uni<0x10000 &&	/* if it is within our unicode database */
         	isdecompositionnormative(uni) &&
 		unicode_alternates[uni>>8]!=NULL &&
 		(alt = unicode_alternates[uni>>8][uni&0xff])!=NULL )
@@ -3271,11 +3270,11 @@ return( true );
     if ( strncmp(sc->name,"uni",3)==0 && (len-3)%4==0 && len>7 )
 return( true );
 
-    if ( sc->unicodeenc==-1 || sc->unicodeenc>=0x10000 )
+    if ( sc->unicodeenc==-1 || sc->unicodeenc>=0x10000 ) /* it's outside our unicode database */
 return( false );
-    else if ( isdecompositionnormative(sc->unicodeenc) &&
-		unicode_alternates[sc->unicodeenc>>8]!=NULL &&
-		(alt = unicode_alternates[sc->unicodeenc>>8][sc->unicodeenc&0xff])!=NULL ) {
+    if ( isdecompositionnormative(sc->unicodeenc) &&
+	    unicode_alternates[sc->unicodeenc>>8]!=NULL &&
+	    (alt = unicode_alternates[sc->unicodeenc>>8][sc->unicodeenc&0xff])!=NULL ) {
 	if ( alt[1]=='\0' )
 return( false );		/* Single replacements aren't ligatures */
 	else if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2])))

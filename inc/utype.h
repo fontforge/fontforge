@@ -3,8 +3,8 @@
 
 /* This file was generated using the program 'makeutype' */
 
-#include <ctype.h>		/* Include here so we can control it. If a system header includes it later bad things happen */
-#include <basics.h>		/* Include here so we can use pre-defined int types to correctly size constant data arrays. */
+#include <ctype.h>	/* Include here so we can control it. If a system header includes it later bad things happen */
+#include <basics.h>	/* Include here so we can use pre-defined int types to correctly size constant data arrays. */
 #ifdef tolower
 # undef tolower
 #endif
@@ -36,42 +36,73 @@
 # undef ishexdigit
 #endif
 
-#define ____L	0x1
-#define ____U	0x2
+extern const unsigned short ____tolower[];
+extern const unsigned short ____toupper[];
+extern const unsigned short ____totitle[];
+extern const unsigned short ____tomirror[];
+extern const unsigned char  ____digitval[];
+
+/* utype[] holds binary flags used for features of each unicode.org character */
+#define ____L		0x1
+#define ____U		0x2
 #define ____TITLE	0x4
-#define ____D	0x8
-#define ____S	0x10
-#define ____P	0x20
-#define ____X	0x40
-#define ____ZW	0x80
-#define ____L2R	0x100
-#define ____R2L	0x200
+#define ____D		0x8
+#define ____S		0x10
+#define ____P		0x20
+#define ____X		0x40
+#define ____ZW		0x80
+#define ____L2R		0x100
+#define ____R2L		0x200
 #define ____ENUM	0x400
 #define ____ANUM	0x800
-#define ____ENS	0x1000
-#define ____CS	0x2000
-#define ____ENT	0x4000
+#define ____ENS		0x1000
+#define ____CS		0x2000
+#define ____ENT		0x4000
 #define ____COMBINE	0x8000
-#define ____BB	0x10000
-#define ____BA	0x20000
-#define ____NS	0x40000
-#define ____NE	0x80000
-#define ____UB	0x100000
-#define ____NB	0x8000000
-#define ____AL	0x200000
-#define ____ID	0x400000
+#define ____BB		0x10000
+#define ____BA		0x20000
+#define ____NS		0x40000
+#define ____NE		0x80000
+#define ____UB		0x100000
+#define ____NB		0x8000000
+#define ____AL		0x200000
+#define ____ID		0x400000
 #define ____INITIAL	0x800000
 #define ____MEDIAL	0x1000000
 #define ____FINAL	0x2000000
 #define ____ISOLATED	0x4000000
 #define ____DECOMPNORM	0x10000000
 
-extern const unsigned short ____tolower[];
-extern const unsigned short ____toupper[];
-extern const unsigned short ____totitle[];
-extern const unsigned short ____tomirror[];
-extern const unsigned char  ____digitval[];
-extern const unsigned int  ____utype[];
+#define islower(ch)		(____utype[(ch)+1]&____L)
+#define isupper(ch)		(____utype[(ch)+1]&____U)
+#define istitle(ch)		(____utype[(ch)+1]&____TITLE)
+#define isalpha(ch)		(____utype[(ch)+1]&(____L|____U|____TITLE|____AL))
+#define isdigit(ch)		(____utype[(ch)+1]&____D)
+#define isalnum(ch)		(____utype[(ch)+1]&(____L|____U|____TITLE|____AL|____D))
+#define isideographic(ch)	(____utype[(ch)+1]&____ID)
+#define isideoalpha(ch)		(____utype[(ch)+1]&(____ID|____L|____U|____TITLE|____AL))
+#define isspace(ch)		(____utype[(ch)+1]&____S)
+#define ispunct(ch)		(____utype[(ch)+1]&_____P)
+#define ishexdigit(ch)		(____utype[(ch)+1]&____X)
+#define iszerowidth(ch)		(____utype[(ch)+1]&____ZW)
+#define islefttoright(ch)	(____utype[(ch)+1]&____L2R)
+#define isrighttoleft(ch)	(____utype[(ch)+1]&____R2L)
+#define iseuronumeric(ch)	(____utype[(ch)+1]&____ENUM)
+#define isarabnumeric(ch)	(____utype[(ch)+1]&____ANUM)
+#define iseuronumsep(ch)	(____utype[(ch)+1]&____ENS)
+#define iscommonsep(ch)		(____utype[(ch)+1]&____CS)
+#define iseuronumterm(ch)	(____utype[(ch)+1]&____ENT)
+#define iscombining(ch)		(____utype[(ch)+1]&____COMBINE)
+#define isbreakbetweenok(ch1,ch2) (((____utype[(ch1)+1]&____BA) && !(____utype[(ch2)+1]&____NS)) || ((____utype[(ch2)+1]&____BB) && !(____utype[(ch1)+1]&____NE)) || (!(____utype[(ch2)+1]&____D) && ch1=='/'))
+#define isnobreak(ch)		(____utype[(ch)+1]&____NB)
+#define isarabinitial(ch)	(____utype[(ch)+1]&____INITIAL)
+#define isarabmedial(ch)	(____utype[(ch)+1]&____MEDIAL)
+#define isarabfinal(ch)		(____utype[(ch)+1]&____FINAL)
+#define isarabisolated(ch)	(____utype[(ch)+1]&____ISOLATED)
+
+#define isdecompositionnormative(ch) (____utype[(ch)+1]&____DECOMPNORM)
+
+extern const uint32	____utype[];		/* hold character type features for each Unicode.org defined character */
 
 /* utype2[] binary flags used for position/layout of each unicode.org character */
 #define ____COMBININGCLASS	0xff
@@ -94,46 +125,17 @@ extern const unsigned int  ____utype[];
 #define combiningclass(ch)	(____utype2[(ch)+1]&____COMBININGCLASS)
 #define combiningposmask(ch)	(____utype2[(ch)+1]&____COMBININGPOSMASK)
 
-extern const uint32	____utype2[];			/* hold position boolean flags for each Unicode.org defined character */
+extern const uint32	____utype2[];		/* hold position boolean flags for each Unicode.org defined character */
 
 #define isunicodepointassigned(ch) (____codepointassigned[(ch)/32]&(1<<((ch)%32)))
 
-extern const uint32	____codepointassigned[];	/* 1bit_boolean_flag x 32 = exists in Unicode.org character chart list. */
+extern const uint32	____codepointassigned[]; /* 1bit_boolean_flag x 32 = exists in Unicode.org character chart list. */
 
 #define tolower(ch) (____tolower[(ch)+1])
 #define toupper(ch) (____toupper[(ch)+1])
 #define totitle(ch) (____totitle[(ch)+1])
 #define tomirror(ch) (____tomirror[(ch)+1])
 #define tovalue(ch) (____digitval[(ch)+1])
-#define islower(ch) (____utype[(ch)+1]&____L)
-#define isupper(ch) (____utype[(ch)+1]&____U)
-#define istitle(ch) (____utype[(ch)+1]&____TITLE)
-#define isalpha(ch) (____utype[(ch)+1]&(____L|____U|____TITLE|____AL))
-#define isdigit(ch) (____utype[(ch)+1]&____D)
-#define isalnum(ch) (____utype[(ch)+1]&(____L|____U|____TITLE|____AL|____D))
-#define isideographic(ch) (____utype[(ch)+1]&____ID)
-#define isideoalpha(ch) (____utype[(ch)+1]&(____ID|____L|____U|____TITLE|____AL))
-#define isspace(ch) (____utype[(ch)+1]&____S)
-#define ispunct(ch) (____utype[(ch)+1]&_____P)
-#define ishexdigit(ch) (____utype[(ch)+1]&____X)
-#define iszerowidth(ch) (____utype[(ch)+1]&____ZW)
-#define islefttoright(ch) (____utype[(ch)+1]&____L2R)
-#define isrighttoleft(ch) (____utype[(ch)+1]&____R2L)
-#define iseuronumeric(ch) (____utype[(ch)+1]&____ENUM)
-#define isarabnumeric(ch) (____utype[(ch)+1]&____ANUM)
-#define iseuronumsep(ch) (____utype[(ch)+1]&____ENS)
-#define iscommonsep(ch) (____utype[(ch)+1]&____CS)
-#define iseuronumterm(ch) (____utype[(ch)+1]&____ENT)
-#define iscombining(ch) (____utype[(ch)+1]&____COMBINE)
-#define isbreakbetweenok(ch1,ch2) (((____utype[(ch1)+1]&____BA) && !(____utype[(ch2)+1]&____NS)) || ((____utype[(ch2)+1]&____BB) && !(____utype[(ch1)+1]&____NE)) || (!(____utype[(ch2)+1]&____D) && ch1=='/'))
-#define isnobreak(ch) (____utype[(ch)+1]&____NB)
-#define isarabinitial(ch) (____utype[(ch)+1]&____INITIAL)
-#define isarabmedial(ch) (____utype[(ch)+1]&____MEDIAL)
-#define isarabfinal(ch) (____utype[(ch)+1]&____FINAL)
-#define isarabisolated(ch) (____utype[(ch)+1]&____ISOLATED)
-
-#define isdecompositionnormative(ch) (____utype[(ch)+1]&____DECOMPNORM)
-
 
 
 extern struct arabicforms {

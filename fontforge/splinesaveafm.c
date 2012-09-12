@@ -1261,7 +1261,7 @@ return( FigureName(unicode,sc->name,u));
 	    unicode_alternates[sc->unicodeenc>>8]!=NULL &&
 	    (upt = unicode_alternates[sc->unicodeenc>>8][sc->unicodeenc&0xff])!=NULL ) {
 	while ( *upt!='\0' )
-	    unicode[u++] = *upt++;
+	    unicode[u++] = *upt++;	/* where is upt initialized???? */
     } else
 	unicode[u++] = sc->unicodeenc;
 return( u );

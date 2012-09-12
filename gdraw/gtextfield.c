@@ -268,7 +268,7 @@ static void GTextFieldProcessBi(GTextField *gt, int start_of_change) {
 	    gt->bidata.text = galloc(gt->bilen*sizeof(unichar_t));
 	    gt->bidata.level = galloc(gt->bilen*sizeof(uint8));
 	    gt->bidata.override = galloc(gt->bilen*sizeof(uint8));
-	    gt->bidata.type = galloc(gt->bilen*sizeof(uint16));
+	    gt->bidata.type = galloc(gt->bilen*sizeof(uint32));
 	    gt->bidata.original = galloc(gt->bilen*sizeof(unichar_t *));
 	    --gt->bilen;
 	}
@@ -280,11 +280,11 @@ static void GTextFieldProcessBi(GTextField *gt, int start_of_change) {
 	    end = u_strchr(pt,'\n');
 	    if ( end==NULL || !gt->multi_line ) end = pt+u_strlen(pt);
 	    else ++end;
-	    bi.text = gt->bidata.text+pos;
-	    bi.level = gt->bidata.level+pos;
-	    bi.override = gt->bidata.override+pos;
-	    bi.type = gt->bidata.type+pos;
-	    bi.original = gt->bidata.original+pos;
+	    bi.text = gt->bidata.text+pos*sizeof(unichar_t);
+	    bi.level = gt->bidata.level+pos*sizeof(uint8);
+	    bi.override = gt->bidata.override+pos*sizeof(uint8);
+	    bi.type = gt->bidata.type+pos*sizeof(uint32);
+	    bi.original = gt->bidata.original+pos*sizeof(unichar_t *);
 	    bi.base_right_to_left = GDrawIsAllLeftToRight(pt,end-pt)==-1;
 	    GDrawBiText1(&bi,pt,end-pt);
 	    if ( bi.interpret_arabic ) gt->bidata.interpret_arabic = true;
