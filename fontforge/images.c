@@ -12241,9 +12241,6 @@ void InitToolIconClut(Color bg) {
     }
 }
 
-/* Among other things, this routine sets global icon cache up. */
-extern void GGadgetInit(void);
-
 /* Some icons in this file, so that FontForge could show anything meaningful */
 /* when devoid of its external images. But if these are available and set up */
 /* by means of X resources, this routine polls them for fancy icons to use */

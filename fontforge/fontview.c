@@ -4563,7 +4563,6 @@ static GMenuItem2 dummyall[] = {
 /* Builds up a menu containing all the anchor classes */
 static void aplistbuild(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    extern void GMenuItemArrayFree(GMenuItem *mi);
 
     GMenuItemArrayFree(mi->sub);
     mi->sub = NULL;
@@ -4639,7 +4638,6 @@ static GMenuItem2 emptymenu[] = {
 
 static void FVEncodingMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    extern void GMenuItemArrayFree(GMenuItem *mi);
 
     if ( mi->sub!=NULL ) {
 	GMenuItemArrayFree(mi->sub);
@@ -4705,7 +4703,6 @@ return;
 
 static void FVForceEncodingMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    extern void GMenuItemArrayFree(GMenuItem *mi);
 
     if ( mi->sub!=NULL ) {
 	GMenuItemArrayFree(mi->sub);
@@ -4999,7 +4996,6 @@ static GMenuItem2 lylist[] = {
 static void lylistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     SplineFont *sf = fv->b.sf;
-    extern void GMenuItemArrayFree(GMenuItem *mi);
     int ly;
     GMenuItem *sub;
 
@@ -5060,8 +5056,6 @@ static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     int i, base;
     BDFFont *bdf;
     char buffer[50];
-    extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
     int pos;
     SplineFont *sf = fv->b.sf;
     SplineFont *master = sf->cidmaster ? sf->cidmaster : sf;
@@ -5282,8 +5276,6 @@ static GMenuItem2 cdlist[] = {
 static void cdlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i, base, j;
-    extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
     SplineFont *sub, *cidmaster = fv->b.cidmaster;
 
     for ( i=0; cdlist[i].mid!=MID_CIDFontInfo; ++i );
@@ -5346,8 +5338,6 @@ static GMenuItem2 mmlist[] = {
 static void mmlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i, base, j;
-    extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
     MMSet *mm = fv->b.sf->mm;
     SplineFont *sub;
     GMenuItem2 *mml;
