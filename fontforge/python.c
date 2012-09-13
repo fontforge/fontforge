@@ -57,6 +57,46 @@
 #define PYMETHODDEF_EMPTY  {NULL, NULL, 0, NULL}
 #define PYGETSETDEF_EMPTY { NULL, NULL, NULL, NULL, NULL }
 
+/* AnyPyString_to_UTF8() -- Takes a Python string object and returns a
+ * newly-alloced C-string that is UTF-8 encoded.  Accepts either 'str' or
+ * 'unicode' in Python 2, and just 'str' in Python 3 (which is a
+ * unicode).  See macro ANYSTRING_CHECK() in ffpython.h.
+ *
+ * Returns NULL on error and sets Python exception.
+ */
+char* AnyPyString_to_UTF8( PyObject* obj ) {
+    char * s = NULL;
+    if ( PyUnicode_Check(obj) ) {
+	PyObject *bytes = PyUnicode_AsUTF8String(obj);
+	if ( bytes!=NULL ) {
+#if PY_MAJOR_VERSION >= 3
+	    s = copy( PyBytes_AsString(bytes) );
+#else
+	    s = copy( PyString_AS_STRING(bytes) );
+#endif
+	    Py_DECREF(bytes);
+	}
+    }
+#if PY_MAJOR_VERSION <= 2
+    else if ( PyString_Check(obj) ) {
+	PyObject *utf8str = PyString_AsEncodedObject(obj, "UTF-8", NULL);
+	if ( utf8str!=NULL ) {
+	    s = copy(PyString_AS_STRING(utf8strj));
+	    Py_DECREF(utf8str);
+	}
+    }
+#endif
+    else {
+#if PY_MAJOR_VERSION >= 3
+	PyErr_Format(PyExc_TypeError, "Expected a string");
+#else
+	PyErr_Format(PyExc_TypeError, "Expected a string ('unicode' or UTF-8 encoded 'str')");
+#endif
+    }
+    return s;
+}
+
+
 static struct flaglist sfnt_name_str_ids[];
 static struct flaglist sfnt_name_mslangs[];
 
@@ -6754,12 +6794,8 @@ return( NULL );
 	int extender=0, start=0, end=0, full=0;
 	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(obj)) ) {
 	    parts[i].component = copy( ((PyFF_Glyph *) obj)->sc->name );
-	} else if ( PyUnicode_Check(obj)) {
-	    PyObject *bytes = PyUnicode_AsUTF8String(obj);
-	    parts[i].component = copy(PyBytes_AsString(bytes));
-	    Py_DECREF(bytes);
-	} else if ( PyString_Check(obj)) {
-	    parts[i].component = copy(PyString_AsString(obj));
+	} else if ( ANYSTRING_CHECK(obj) ) {
+	    parts[i].component = AnyPyString_to_UTF8(obj);
 	} else if ( PyTuple_Check(obj) && PyTuple_Size(obj)>0 &&
 		    PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(PyTuple_GetItem(obj,0))) ) {
 	    PyObject *g;

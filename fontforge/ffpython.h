@@ -34,6 +34,7 @@
 #define PyInt_AsLong   PyLong_AsLong
 #define PyInt_FromLong PyLong_FromLong
 
+#define ANYSTRING_CHECK(obj) (PyUnicode_Check(obj))
 #define STRING_CHECK   PyUnicode_Check
 #define STRING_TO_PY   PyUnicode_FromString
 #define DECODE_UTF8(s, size, errors) PyUnicode_DecodeUTF8(s, size, errors)
@@ -45,6 +46,7 @@
 #else /* PY_MAJOR_VERSION >= 3 */
 /*********** PYTHON 2 **********/
 
+#define ANYSTRING_CHECK(obj) ( PyUnicode_Check(obj) || PyString_Check(obj) )
 #define STRING_CHECK   PyBytes_Check
 #define STRING_TO_PY   PyBytes_FromString
 #define DECODE_UTF8(s, size, errors) PyString_Decode(s, size, "UTF-8", errors)
@@ -73,6 +75,10 @@
 #ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
 #define PyMODINIT_FUNC void
 #endif
+
+
+extern char* AnyPyString_to_UTF8( PyObject* );
+
 
 #if PY_MAJOR_VERSION < 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION <= 7)
 #define PyBytesObject PyStringObject
