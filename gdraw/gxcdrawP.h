@@ -47,14 +47,6 @@ extern void _GXCDraw_Flush(GXWindow gw);
 extern void _GXCDraw_DirtyRect(GXWindow gw,double x, double y, double width, double height);
 
 #include "fontP.h"
-extern void _GXCDraw_FontMetrics(GXWindow w,GFont *fi,int *as, int *ds, int *ld);
-extern int32 _GXCDraw_DoText8(GWindow gw, int32 x, int32 y,
-	const char *text, int32 cnt, FontMods *mods, Color col,
-	enum text_funcs drawit, struct tf_arg *arg);
-extern int32 _GXCDraw_DoText(GWindow gw, int32 x, int32 y,
-	const unichar_t *text, int32 cnt, FontMods *mods, Color col,
-	enum text_funcs drawit, struct tf_arg *arg);
-
 #endif
 extern void _GXPDraw_NewWindow(GXWindow nw);
 extern void _GXPDraw_DestroyWindow(GXWindow nw);
