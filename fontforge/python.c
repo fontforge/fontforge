@@ -10077,7 +10077,11 @@ static PyObject *fontiter_iternextkey(fontiterobject *di) {
 #ifdef _HAS_LONGLONG
 	    const char *dictfmt = "{sKsKsK}";
 #else
+<<<<<<< local
+	    const char *dictfmt = "{sksksk}"
+=======
 	    const char *dictfmt = "{sksksk}";
+>>>>>>> other
 #endif
 	    PyObject *glyph, *tempdict;
 	    PyObject *matched;
