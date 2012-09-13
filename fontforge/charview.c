@@ -7289,8 +7289,6 @@ static void cv_ptlistcheck(CharView *cv, struct gmenuitem *mi) {
     int acceptable = -1;
     uint16 junk;
     int i;
-    extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
 
     if ( cv->showing_spiro_pt_menu != (cv->b.sc->inspiro && hasspiro())) {
 	GMenuItemArrayFree(mi->sub);
@@ -9999,7 +9997,6 @@ static void ap2listbuild(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     GMenuItem *sub;
     int k, cnt;
     AnchorPoint *ap;
-    extern void GMenuItemArrayFree(GMenuItem *mi);
 
     if ( mi->sub!=NULL ) {
 	GMenuItemArrayFree(mi->sub);
@@ -10067,9 +10064,6 @@ static void aplistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     SplineChar *sc = cv->b.sc, **glyphs;
     SplineFont *sf = sc->parent;
     AnchorPoint *ap, *found;
-    extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern void GMenuItem2ArrayFree(GMenuItem2 *mi);
-    extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
     GMenuItem2 *mit;
     int cnt;
 
@@ -10228,8 +10222,6 @@ static GMenuItem2 mvlist[] = {
 static void mvlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     int i, base, j;
-    extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
     MMSet *mm = cv->b.sc->parent->mm;
     uint32 submask;
     SplineFont *sub;
@@ -10307,8 +10299,6 @@ static void CVMenuShowSubChar(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e
 static void mmlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     int i, base, j;
-    extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
     MMSet *mm = cv->b.sc->parent->mm;
     SplineFont *sub;
     GMenuItem2 *mml;
