@@ -1384,12 +1384,6 @@ static struct displayfuncs psfuncs = {
     _PSDraw_Pixmap,
     _PSDraw_TilePixmap,
 
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-
     PSDrawCreateInputContext,
     PSDrawSetGIC,
 

@@ -4444,12 +4444,6 @@ static struct displayfuncs xfuncs = {
     _GXDraw_Pixmap,
     _GXDraw_TilePixmap,
 
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-
     GXDrawCreateInputContext,
     GXDrawSetGIC,
 
