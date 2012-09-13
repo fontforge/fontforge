@@ -519,7 +519,6 @@ void _GWidget_ClearPopupOwner(GGadget *g);
 
 extern void _GGadgetCopyDefaultBox(GBox *box);
 extern FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box,FontInstance *deffont);
-extern void GGadgetInit(void);
 extern void _ggadget_underlineMnemonic(GWindow gw,int32 x,int32 y,unichar_t *label,
 	unichar_t mneumonic, Color fg,int ymax);
 extern void _ggadgetFigureSize(GWindow gw, GBox *design, GRect *r, int isdef);
@@ -551,7 +550,6 @@ extern int GBoxBorderWidth(GWindow gw, GBox *box);
 extern int GBoxExtraSpace(GGadget *g);
 extern int GBoxDrawnWidth(GWindow gw, GBox *box);
 
-extern int GGadgetWithin(GGadget *g, int x, int y);
 extern int GGadgetInnerWithin(GGadget *g, int x, int y);
 
 extern int GTextInfoGetWidth(GWindow base,GTextInfo *ti,FontInstance *font);
@@ -566,10 +564,6 @@ extern GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt);
 extern GTextInfo **GTextInfoArrayCopy(GTextInfo **ti);
 extern int GTextInfoArrayCount(GTextInfo **ti);
 extern int GTextInfoCompare(GTextInfo *ti1, GTextInfo *ti2);
-extern void GMenuItemArrayFree(GMenuItem *mi);
-extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
-extern void GMenuItem2ArrayFree(GMenuItem2 *mi);
-extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
 extern int GMenuItemArrayMask(GMenuItem *mi);
 extern int GMenuItemArrayAnyUnmasked(GMenuItem *mi);
 
