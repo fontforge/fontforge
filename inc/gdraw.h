@@ -287,8 +287,6 @@ typedef struct gwindow_attrs {
 #define GWINDOWATTRS_EMPTY { 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL }
 
 
-<<<<<<< HEAD
-=======
 enum printer_attr_mask { pam_pagesize=1, pam_margins=2, pam_scale=4,
 			 pam_res=8, pam_copies=0x10, pam_thumbnails=0x20, pam_printername=0x40,
 			 pam_filename=0x80, pam_args=0x100, pam_color=0x200, pam_transparent=0x400,
@@ -297,7 +295,6 @@ enum printer_attr_mask { pam_pagesize=1, pam_margins=2, pam_scale=4,
 
 enum printer_units { pu_inches, pu_points, pu_mm };
 
->>>>>>> master
 typedef struct gprinter_attrs {
     enum printer_attr_mask mask;
     float width, height;		/* paper size */
