@@ -1020,6 +1020,9 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
     PangoRectangle rect, ink;
     PangoFontDescription *fd;
 
+    if (fi == NULL)
+	return(0);
+
     fd = _GXPDraw_configfont(w, fi);
     pango_layout_set_font_description(gw->pango_layout,fd);
     pango_layout_set_text(gw->pango_layout,(char *) text,cnt);

@@ -75,57 +75,17 @@ return( rq );
 
 /* ************************************************************************** */
 
-int32 __GXPDraw_DoText(GWindow w, int32 x, int32 y,
-	const unichar_t *text, int32 cnt, FontMods *mods, Color col,
-	enum text_funcs drawit, struct tf_arg *arg);
-int32 __GXPDraw_DoText8(GWindow w, int32 x, int32 y,
-	const char *text, int32 cnt, FontMods *mods, Color col,
-	enum text_funcs drawit, struct tf_arg *arg);
-
-static FontMods dummyfontmods = FONTMODS_EMPTY;
-
-struct bounds {
-    int xmin, xmax;
-    int ymin, ymax;
-};
-
-int32 __GXPDraw_DoText(GWindow w, int32 x, int32 y,
-	const unichar_t *text, int32 cnt, FontMods *mods, Color col,
-	enum text_funcs drawit, struct tf_arg *arg) {
-    struct font_instance *fi = w->ggc->fi;
-
-    if ( fi==NULL )
-return( 0 );
-
-    if ( mods==NULL )
-	mods = &dummyfontmods;
-return( _GXPDraw_DoText(w,x,y,text,cnt,mods,col,tf_drawit,arg));
-}
-
-int32 __GXPDraw_DoText8(GWindow w, int32 x, int32 y,
-	const char *text, int32 cnt, FontMods *mods, Color col,
-	enum text_funcs drawit, struct tf_arg *arg) {
-    struct font_instance *fi = w->ggc->fi;
-
-    if ( fi==NULL )
-return( 0 );
-
-    if ( mods==NULL )
-	mods = &dummyfontmods;
-return( _GXPDraw_DoText8(w,x,y,text,cnt,mods,col,drawit,arg));
-}
-
 int32 GDrawDrawText(GWindow gw, int32 x, int32 y,
 	const unichar_t *text, int32 cnt, FontMods *mods, Color col) {
     struct tf_arg arg;
 
-return( __GXPDraw_DoText(gw,x,y,text,cnt,mods,col,tf_drawit,&arg));
+return( _GXPDraw_DoText(gw,x,y,text,cnt,mods,col,tf_drawit,&arg));
 }
 
 int32 GDrawGetTextWidth(GWindow gw,const unichar_t *text, int32 cnt, FontMods *mods) {
     struct tf_arg arg;
 
-return( __GXPDraw_DoText(gw,0,0,text,cnt,mods,0x0,tf_width,&arg));
+return( _GXPDraw_DoText(gw,0,0,text,cnt,mods,0x0,tf_width,&arg));
 }
 
 int32 GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32 cnt, FontMods *mods, GTextBounds *bounds) {
@@ -134,7 +94,7 @@ int32 GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32 cnt, FontMods *
 
     memset(&arg,'\0',sizeof(arg));
     arg.first = true;
-    ret = __GXPDraw_DoText(gw,0,0,text,cnt,mods,0x0,tf_rect,&arg);
+    ret = _GXPDraw_DoText(gw,0,0,text,cnt,mods,0x0,tf_rect,&arg);
     *bounds = arg.size;
 return( ret );
 }
@@ -144,13 +104,13 @@ return( ret );
 int32 GDrawDrawText8(GWindow gw, int32 x, int32 y, const char *text, int32 cnt, FontMods *mods, Color col) {
     struct tf_arg arg;
 
-return( __GXPDraw_DoText8(gw,x,y,text,cnt,mods,col,tf_drawit,&arg));
+return( _GXPDraw_DoText8(gw,x,y,text,cnt,mods,col,tf_drawit,&arg));
 }
 
 int32 GDrawGetText8Width(GWindow gw, const char *text, int32 cnt, FontMods *mods) {
     struct tf_arg arg;
 
-return( __GXPDraw_DoText8(gw,0,0,text,cnt,mods,0x0,tf_width,&arg));
+return( _GXPDraw_DoText8(gw,0,0,text,cnt,mods,0x0,tf_width,&arg));
 }
 
 int32 GDrawGetText8Bounds(GWindow gw,const char *text, int32 cnt, FontMods *mods, GTextBounds *bounds) {
@@ -159,7 +119,7 @@ int32 GDrawGetText8Bounds(GWindow gw,const char *text, int32 cnt, FontMods *mods
 
     memset(&arg,'\0',sizeof(arg));
     arg.first = true;
-    ret = __GXPDraw_DoText8(gw,0,0,text,cnt,mods,0x0,tf_rect,&arg);
+    ret = _GXPDraw_DoText8(gw,0,0,text,cnt,mods,0x0,tf_rect,&arg);
     *bounds = arg.size;
 return( ret );
 }
