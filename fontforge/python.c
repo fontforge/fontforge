@@ -1397,12 +1397,7 @@ return( NULL );
 }
 
 static PyTypeObject PyFF_PointType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.point",         /* tp_name */
     sizeof(PyFF_Point),        /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -1515,12 +1510,7 @@ return NULL;
 }
 
 static PyTypeObject PyFF_ContourIterType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "contouriter",             /* tp_name */
     sizeof(contouriterobject), /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -2960,12 +2950,7 @@ static PyMethodDef PyFFContour_methods[] = {
 };
 
 static PyTypeObject PyFF_ContourType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-#endif
     "fontforge.contour",       /*tp_name*/
     sizeof(PyFF_Contour),      /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -3072,12 +3057,7 @@ return NULL;
 }
 
 static PyTypeObject PyFF_LayerIterType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "layeriter",               /* tp_name */
     sizeof(layeriterobject),   /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -4163,12 +4143,7 @@ static PyMethodDef PyFFLayer_methods[] = {
 };
 
 static PyTypeObject PyFF_LayerType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.layer",         /* tp_name */
     sizeof(PyFF_Layer),        /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -4859,12 +4834,7 @@ static PyMethodDef PyFF_GlyphPen_methods[] = {
 /* ************************************************************************** */
 
 static PyTypeObject PyFF_GlyphPenType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.glyphPen",      /* tp_name */
     sizeof(PyFF_GlyphPen),     /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -5083,12 +5053,7 @@ return NULL;
 }
 
 static PyTypeObject PyFF_LayerArrayIterType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "dictionary-keyiterator",  /* tp_name */
     sizeof(layersiterobject),  /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -5259,12 +5224,7 @@ static PyMappingMethods PyFF_LayerArrayMapping = {
 /* ************************************************************************** */
 
 static PyTypeObject PyFF_LayerArrayType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.glyphlayerarray", /* tp_name */
     sizeof(PyFF_LayerArray),   /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -5408,12 +5368,7 @@ static PyMappingMethods PyFF_RefArrayMapping = {
 /* ************************************************************************** */
 
 static PyTypeObject PyFF_RefArrayType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.references",    /* tp_name */
     sizeof(PyFF_RefArray),     /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -5556,12 +5511,7 @@ static PyGetSetDef PyFFMathKern_members[] = {
 };
 
 static PyTypeObject PyFF_MathKernType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.mathKern",      /* tp_name */
     sizeof(PyFF_MathKern),     /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -8512,12 +8462,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
 /* ************************************************************************** */
 
 static PyTypeObject PyFF_GlyphType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.glyph",         /* tp_name */
     sizeof(PyFF_Glyph),	       /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -8619,12 +8564,7 @@ return NULL;
 }
 
 static PyTypeObject PyFF_CvtIterType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "cvtiter",                 /* tp_name */
     sizeof(cvtiterobject),     /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -8956,12 +8896,7 @@ static PyMethodDef PyFFCvt_methods[] = {
 };
 
 static PyTypeObject PyFF_CvtType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-#endif
     "fontforge.cvt",           /*tp_name*/
     sizeof(PyFF_Cvt),          /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -9294,12 +9229,7 @@ static PyMappingMethods PyFFSelection_Mapping = {
 };
 
 static PyTypeObject PyFF_SelectionType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-#endif
     "fontforge.selection",     /*tp_name*/
     sizeof(PyFF_Selection),    /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -9396,12 +9326,7 @@ return NULL;
 }
 
 static PyTypeObject PyFF_LayerInfoArrayIterType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.fontlayeriter", /* tp_name */
     sizeof(layerinfoiterobject), /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -9546,12 +9471,7 @@ static PyGetSetDef PyFF_LayerInfo_getset[] = {
 };
 
 static PyTypeObject PyFF_LayerInfoType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.layerinfo",     /* tp_name */
     sizeof(PyFF_LayerInfo),    /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -9747,12 +9667,7 @@ static PyMethodDef PyFF_LayerInfoArray_methods[] = {
 };
 
 static PyTypeObject PyFF_LayerInfoArrayType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-#endif
     "fontforge.fontlayerarray",/*tp_name*/
     sizeof(PyFF_LayerInfoArray), /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -9879,12 +9794,7 @@ static PyMethodDef FFMath_methods[] = {
 };
 
 static PyTypeObject PyFF_MathType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.math",	       /* tp_name */
     sizeof(PyFF_Math),         /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -9997,12 +9907,7 @@ return NULL;
 }
 
 static PyTypeObject PyFF_PrivateIterType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "dictionary-keyiterator",  /* tp_name */
     sizeof(privateiterobject), /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -10218,12 +10123,7 @@ static PyMethodDef FFPrivate_methods[] = {
 /* ************************************************************************** */
 
 static PyTypeObject PyFF_PrivateType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.private",       /* tp_name */
     sizeof(PyFF_Private),      /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -10408,12 +10308,7 @@ return NULL;
 }
 
 static PyTypeObject PyFF_FontIterType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontiter",                /* tp_name */
     sizeof(fontiterobject),    /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -17173,12 +17068,7 @@ static PyMappingMethods PyFF_FontMapping = {
 };
 
 static PyTypeObject PyFF_FontType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.font",          /* tp_name */
     sizeof(PyFF_Font),         /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -17297,8 +17187,7 @@ static PyMappingMethods PyFF_AWGlyphMapping = {
 };
 
 static PyTypeObject PyFF_AWGlyphIndexType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
+    PyVarObject_HEAD_INIT(NULL,0)
     "fontforge.awglyphIndex",  /* tp_name */
     sizeof(PyFF_AWGlyphI),     /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -17438,8 +17327,7 @@ static PyGetSetDef PyFF_AWGlyph_getset[] = {
 };
 
 static PyTypeObject PyFF_AWGlyphType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
+    PyVarObject_HEAD_INIT(NULL,0)
     "fontforge.awglyph",       /* tp_name */
     sizeof(PyFF_AWGlyph),      /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -17564,8 +17452,7 @@ static PyGetSetDef PyFF_AWContext_getset[] = {
 };
 
 static PyTypeObject PyFF_AWContextType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
+    PyVarObject_HEAD_INIT(NULL,0)
     "fontforge.awcontext",     /* tp_name */
     sizeof(PyFF_AWContext),    /* tp_basicsize */
     0,                         /* tp_itemsize */

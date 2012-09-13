@@ -76,9 +76,13 @@
 #define PyMODINIT_FUNC void
 #endif
 
+#ifndef PyVarObject_HEAD_INIT
+    #define PyVarObject_HEAD_INIT(type, size) \
+        PyObject_HEAD_INIT(type) size,
+#endif
+
 
 extern char* AnyPyString_to_UTF8( PyObject* );
-
 
 #if PY_MAJOR_VERSION < 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION <= 7)
 #define PyBytesObject PyStringObject
