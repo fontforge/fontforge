@@ -193,8 +193,9 @@ struct gatoms {
     redirected => characters from any window go to one window
     targetted_redirect => characters from one special window (and its children) go to another window
 */
+enum inputtype { it_normal, it_restricted, it_redirected, it_targetted };
 struct inputRedirect {
-    enum inputtype { it_normal, it_restricted, it_redirected, it_targetted } it;
+    enum inputtype it;
     GWindow cur_dlg;		/* This one always gets input */
     GWindow inactive;		/* This one gives its input to the dlg */
     struct inputRedirect *prev;
@@ -210,20 +211,22 @@ struct button_state {
     int16 double_wiggle;	/* max pixel wiggle allowed between release&click */
 };
 
+struct seldata {
+    int32 typeatom;
+    int32 cnt;
+    int32 unitsize;
+    void *data;
+    void *(*gendata)(void *,int32 *len);
+    /* Either the data are stored here, or we use this function to generate them on the fly */
+    void (*freedata)(void *);
+    struct seldata *next;
+};
+
 struct gxselinfo {
     int32 sel_atom;		/* Either XA_PRIMARY or CLIPBOARD */
     GXWindow owner;
     Time timestamp;
-    struct seldata {
-	int32 typeatom;
-	int32 cnt;
-	int32 unitsize;
-	void *data;
-	void *(*gendata)(void *,int32 *len);
-		/* Either the data are stored here, or we use this function to generate them on the fly */
-	void (*freedata)(void *);
-	struct seldata *next;
-    } *datalist;
+    struct seldata *datalist;
 };
 
 struct gxseltypes {
@@ -232,12 +235,41 @@ struct gxseltypes {
     Atom *types;		/* array of selection types */
 };
 
+struct things_to_do {
+    void (*func)(void *);
+    void *data;
+    struct things_to_do *next;
+};
+
 struct xthreaddata {
 # ifdef HAVE_PTHREAD_H
     pthread_mutex_t sync_mutex;		/* controls access to the rest of this structure */
-    struct things_to_do { void (*func)(void *); void *data; struct things_to_do *next; } *things_to_do;
+    struct things_to_do *things_to_do;
 # endif
     int sync_sock, send_sock;		/* socket on which to send sync events to thread displaying screen */
+};
+
+struct gimageglobals {
+    XImage *img, *mask;
+    int16 *red_dith, *green_dith, *blue_dith;
+    int32 iwidth, iheight;
+};
+
+struct atomdata { char *atomname; int32 xatom; };
+
+struct inputdevices {
+    char *name;
+    int devid;
+# ifndef _NO_XINPUT
+    XDevice *dev;
+# else
+    int *dev;
+# endif
+    int event_types[5];	/* mousemove, mousedown, mouseup, char, charup */
+};
+
+struct xkb {
+    int opcode, event, error;
 };
 
 typedef struct gxdisplay /* : GDisplay */ {
@@ -281,11 +313,7 @@ typedef struct gxdisplay /* : GDisplay */ {
     struct button_state bs;
     XComposeStatus buildingkeys;
     struct inputRedirect *input;
-    struct gimageglobals {
-	XImage *img, *mask;
-	int16 *red_dith, *green_dith, *blue_dith;
-	int32 iwidth, iheight;
-    } gg;
+    struct gimageglobals gg;
     Pixmap grey_stipple;
     Pixmap fence_stipple;
     int32 mycontext;
@@ -294,7 +322,7 @@ typedef struct gxdisplay /* : GDisplay */ {
     Time last_event_time;
     struct gxselinfo selinfo[sn_max];
     int amax, alen;
-    struct atomdata { char *atomname; int32 xatom; } *atomdata;
+    struct atomdata *atomdata;
     struct gxseltypes seltypes;
     int32 SelNotifyTimeout;		/* In seconds (time to give up on requests for selections) */
     struct {
@@ -318,30 +346,19 @@ typedef struct gxdisplay /* : GDisplay */ {
     int16 xres;				/* What X Thinks the resolution is */
     XIM im;				/* Input method for current locale */
     XFontSet def_im_fontset;
-    struct inputdevices {
-	char *name;
-	int devid;
-# ifndef _NO_XINPUT
-	XDevice *dev;
-# else
-	int *dev;
-# endif
-	int event_types[5];	/* mousemove, mousedown, mouseup, char, charup */
-    } *inputdevices;
+    struct inputdevices *inputdevices;
     int n_inputdevices;
 # ifdef _WACOM_DRV_BROKEN
     struct wacom_state *wacom_state;
     int wacom_fd;
 # endif
     GXWindow default_icon;
-    struct xkb {
-	int opcode, event, error;
-    } xkb;
+    struct xkb xkb;
 #ifndef _NO_LIBPANGO
     PangoFontMap *pango_fontmap;
     PangoContext *pango_context;
     PangoLayout  *pango_layout;
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+# if !defined(_NO_LIBCAIRO)
     PangoFontMap *pangoc_fontmap;
     PangoContext *pangoc_context;
     PangoLayout  *pangoc_layout;

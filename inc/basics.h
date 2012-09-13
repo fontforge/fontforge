@@ -55,11 +55,7 @@ typedef uint8_t		uint8;
 /* An integral type which can hold a pointer */
 typedef intptr_t	intpt;
 
-#ifdef UNICHAR_16
-typedef uint16 unichar_t;
-#else
 typedef uint32 unichar_t;
-#endif
 
 /* A macro to mark unused function parameters with. We often
  * have such parameters, because of extensive use of callbacks.

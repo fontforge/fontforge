@@ -475,9 +475,7 @@ return( NULL );
 	    out = (char *) str;
 	    iconv(enc->tounicode,&in,&inlen,&out,&outlen);
 	    out[0] = '\0'; out[1] = '\0';
-#ifndef UNICHAR_16
 	    out[2] = '\0'; out[3] = '\0';
-#endif
 	    free(cstr);
 	} else {
 	    str = uc_copy("");
@@ -5919,44 +5917,6 @@ static void MMFillFromVAR(SplineFont *sf, struct ttfinfo *info) {
     for ( i=0; i<mm->instance_count; ++i )
 	mm->instances[i] = SFFromTuple(sf,v,i,mm,info);
     VariationFree(info);
-}
-
-static void SFRelativeWinAsDs(SplineFont *sf) {
-    if ( !sf->pfminfo.winascent_add || !sf->pfminfo.windescent_add ||
-	    !sf->pfminfo.hheadascent_add || !sf->pfminfo.hheaddescent_add ) {
-	DBounds b;
-	CIDLayerFindBounds(sf,ly_fore,&b);
-	if ( !sf->pfminfo.winascent_add ) {
-	    sf->pfminfo.winascent_add = true;
-	    if ( sf->pfminfo.os2_winascent < sf->ascent/8 ) {
-		/* There was a bug for a while which gave us really bad values */
-		sf->pfminfo.os2_winascent = 0;
-		sf->pfminfo.windescent_add = true;
-		sf->pfminfo.os2_windescent = 0;
-	    } else
-		sf->pfminfo.os2_winascent -= b.maxy;
-	}
-	if ( !sf->pfminfo.windescent_add ) {
-	    sf->pfminfo.windescent_add = true;
-	    sf->pfminfo.os2_windescent += b.miny;
-	}
-	if ( !sf->pfminfo.hheadascent_add ) {
-	    sf->pfminfo.hheadascent_add = true;
-	    sf->pfminfo.hhead_ascent -= b.maxy;
-	}
-	if ( !sf->pfminfo.hheaddescent_add ) {
-	    sf->pfminfo.hheaddescent_add = true;
-	    sf->pfminfo.hhead_descent -= b.miny;
-	}
-    }
-    if ( !sf->pfminfo.typoascent_add ) {
-	sf->pfminfo.typoascent_add = true;
-	sf->pfminfo.os2_typoascent -= sf->ascent;
-    }
-    if ( !sf->pfminfo.typodescent_add  ) {
-	sf->pfminfo.typodescent_add = true;
-	sf->pfminfo.os2_typodescent -= -sf->descent;
-    }
 }
 
 static void PsuedoEncodeUnencoded(EncMap *map,struct ttfinfo *info) {

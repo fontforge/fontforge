@@ -87,37 +87,43 @@ int autohint_before_generate = 1;
 /* Then, on top of that I tried generating some full glyph subroutines, and   */
 /*  to my surprise, it just made things worse.                                */
 
+struct potentialsubrs {
+    uint8 *data;		/* the charstring of the subr */
+    int len;			/* the length of the charstring */
+    int idx;			/* initially index into psubrs array */
+    				/*  then index into subrs array or -1 if none */
+    int cnt;			/* the usage count */
+    int fd;			/* Which sub font is it in */
+				/* -1 => used in more than one */
+    int next;
+    int full_glyph_index;	/* Into the glyphbits array */
+				/* for full references */
+    BasePoint *startstop;	/* Again for full references */
+};
+
+struct bits {
+    uint8 *data;
+    int dlen;
+    int psub_index;
+};
+
+struct glyphbits {
+    SplineChar *sc;
+    int fd;			/* Which subfont is it in */
+    int bcnt;
+    struct bits *bits;
+    uint8 wasseac;
+};
+
 #define HSH_SIZE	511
 /* In type2 charstrings we divide every character into bits where a bit is */
 /* bounded by a hintmask/moveto. Each of these is a potential subroutine and */
 /* is stored here */
 typedef struct glyphinfo {
-    struct potentialsubrs {
-	uint8 *data;		/* the charstring of the subr */
-	int len;		/* the length of the charstring */
-	int idx;		/* initially index into psubrs array */
-				/*  then index into subrs array or -1 if none */
-	int cnt;		/* the usage count */
-	int fd;			/* Which sub font is it in */
-				/* -1 => used in more than one */
-	int next;
-	int full_glyph_index;	/* Into the glyphbits array */
-				/* for full references */
-	BasePoint *startstop;	/* Again for full references */
-    } *psubrs;
+    struct potentialsubrs *psubrs;
     int pcnt, pmax;
     int hashed[HSH_SIZE];
-    struct glyphbits {
-	SplineChar *sc;
-	int fd;			/* Which subfont is it in */
-	int bcnt;
-	struct bits {
-	    uint8 *data;
-	    int dlen;
-	    int psub_index;
-	} *bits;
-	uint8 wasseac;
-    } *gb, *active;
+    struct glyphbits *gb, *active;
     SplineFont *sf;
     int layer;
     int glyphcnt;
@@ -1183,56 +1189,6 @@ static void _CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl[MmMax], int instan
 	}
     }
     SplinePointListsFree(freeme);
-}
-
-static RefChar *IsRefable(RefChar *ref, int isps, real transform[6], RefChar *sofar, int layer) {
-    real trans[6];
-    RefChar *sub;
-    struct reflayer *rl;
-
-    trans[0] = ref->transform[0]*transform[0] +
-		ref->transform[1]*transform[2];
-    trans[1] = ref->transform[0]*transform[1] +
-		ref->transform[1]*transform[3];
-    trans[2] = ref->transform[2]*transform[0] +
-		ref->transform[3]*transform[2];
-    trans[3] = ref->transform[2]*transform[1] +
-		ref->transform[3]*transform[3];
-    trans[4] = ref->transform[4]*transform[0] +
-		ref->transform[5]*transform[2] +
-		transform[4];
-    trans[5] = ref->transform[4]*transform[1] +
-		ref->transform[5]*transform[3] +
-		transform[5];
-
-    if (( isps==1 && ref->adobe_enc!=-1 ) ||
-	    (/*isps!=1 &&*/ (ref->sc->layers[layer].splines!=NULL || ref->sc->layers[layer].refs==NULL))) {
-	/* If we're in postscript mode and the character we are refering to */
-	/*  has an adobe encoding then we are done. */
-	/* In TrueType mode, if the character has no refs itself then we are */
-	/*  done, but if it has splines as well as refs we are also done */
-	/*  because it will have to be dumped out as splines */
-	/* Type2 PS (opentype) is the same as truetype here */
-	/* Now that I allow refs to be subrs in type1, it also uses the ttf test */
-	sub = RefCharCreate();
-	rl = sub->layers;
-	*sub = *ref;
-	sub->layers = rl;
-	*rl = ref->layers[0];
-	sub->next = sofar;
-	/*sub->layers[0].splines = NULL;*/
-	memcpy(sub->transform,trans,sizeof(trans));
-return( sub );
-    } else if ( /* isps &&*/ ( ref->sc->layers[layer].refs==NULL || ref->sc->layers[layer].splines!=NULL) ) {
-	RefCharsFreeRef(sofar);
-return( NULL );
-    }
-    for ( sub=ref->sc->layers[layer].refs; sub!=NULL; sub=sub->next ) {
-	sofar = IsRefable(sub,isps,trans, sofar, layer);
-	if ( sofar==NULL )
-return( NULL );
-    }
-return( sofar );
 }
 
 static int IsPSSeacable(SplineChar *sc,int layer) {

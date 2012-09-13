@@ -912,83 +912,23 @@ return( NULL );
 #undef extended			/* used in xlink.h */
 #include <libxml/parser.h>
 
-# if defined(_STATIC_LIBXML) || defined(NODYNAMIC)
-
-#define _xmlParseMemory		xmlParseMemory
-#define _xmlParseFile		xmlParseFile
-#define _xmlDocGetRootElement	xmlDocGetRootElement
-#define _xmlFreeDoc		xmlFreeDoc
 #ifdef __CygWin
-# define _xmlFree		free
+/*
+ * FIXME: Check whether this kludge is still (a) necessary, (b)
+ * functional. At least (a) seems unlikely to have remained true over
+ * time.
+ */
 /* Nasty kludge, but xmlFree doesn't work on cygwin (or I can't get it to) */
-#else
-# define _xmlFree		xmlFree
+# define xmlFree free
 #endif
-#define _xmlStrcmp		xmlStrcmp
-#define _xmlGetProp		xmlGetProp
-#define _xmlNodeListGetString		xmlNodeListGetString
 
 static int libxml_init_base() {
 return( true );
 }
-# else
-#  include <dynamic.h>
-
-static DL_CONST void *libxml;
-static xmlDocPtr (*_xmlParseMemory)(const char *memory,int memsize);
-static xmlDocPtr (*_xmlParseFile)(const char *filename);
-static xmlNodePtr (*_xmlDocGetRootElement)(xmlDocPtr doc);
-static void (*_xmlFreeDoc)(xmlDocPtr doc);
-static void (*_xmlFree)(void *);
-static int (*_xmlStrcmp)(const xmlChar *,const xmlChar *);
-static xmlChar *(*_xmlGetProp)(xmlNodePtr,const xmlChar *);
-static xmlChar *(*_xmlNodeListGetString)(xmlDocPtr,xmlNodePtr,int);
-
-static int libxml_init_base() {
-    static int xmltested = false;
-
-    if ( xmltested )
-return( libxml!=NULL );
-
-    dlopen("libz" SO_EXT,RTLD_GLOBAL|RTLD_LAZY);
-
-    libxml = dlopen( "libxml2" SO_EXT,RTLD_LAZY);
-# ifdef SO_2_EXT
-    if ( libxml==NULL )
-	libxml = dlopen("libxml2" SO_2_EXT,RTLD_LAZY);
-# endif
-    xmltested = true;
-    if ( libxml==NULL )
-return( false );
-
-    _xmlParseMemory = (xmlDocPtr (*)(const char *,int)) dlsym(libxml,"xmlParseMemory");
-    _xmlParseFile = (xmlDocPtr (*)(const char *)) dlsym(libxml,"xmlParseFile");
-    _xmlDocGetRootElement = (xmlNodePtr (*)(xmlDocPtr )) dlsym(libxml,"xmlDocGetRootElement");
-    _xmlFreeDoc = (void (*)(xmlDocPtr)) dlsym(libxml,"xmlFreeDoc");
-    /* xmlFree is done differently for threaded and non-threaded libraries. */
-    /*  I hope this gets both right... */
-    if ( dlsym(libxml,"__xmlFree")) {
-	xmlFreeFunc *(*foo)(void) = (xmlFreeFunc *(*)(void)) dlsym(libxml,"__xmlFree");
-	_xmlFree = *(*foo)();
-    } else {
-	xmlFreeFunc *foo = dlsym(libxml,"xmlFree");
-	_xmlFree = *foo;
-    }
-    _xmlStrcmp = (int (*)(const xmlChar *,const xmlChar *)) dlsym(libxml,"xmlStrcmp");
-    _xmlGetProp = (xmlChar *(*)(xmlNodePtr,const xmlChar *)) dlsym(libxml,"xmlGetProp");
-    _xmlNodeListGetString = (xmlChar *(*)(xmlDocPtr,xmlNodePtr,int)) dlsym(libxml,"xmlNodeListGetString");
-    if ( _xmlParseFile==NULL || _xmlDocGetRootElement==NULL || _xmlFree==NULL ) {
-	libxml = NULL;
-return( false );
-    }
-
-return( true );
-}
-# endif
 
 static xmlNodePtr FindNode(xmlNodePtr kids,char *name) {
     while ( kids!=NULL ) {
-	if ( _xmlStrcmp(kids->name,(const xmlChar *) name)== 0 )
+	if ( xmlStrcmp(kids->name,(const xmlChar *) name)== 0 )
 return( kids );
 	kids = kids->next;
     }
@@ -1004,10 +944,10 @@ static PyObject *LibToPython(xmlDocPtr doc,xmlNodePtr dict) {
     xmlNodePtr keys, temp;
 
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
-	if ( _xmlStrcmp(keys->name,(const xmlChar *) "key")== 0 ) {
-	    char *keyname = (char *) _xmlNodeListGetString(doc,keys->children,true);
+	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")== 0 ) {
+	    char *keyname = (char *) xmlNodeListGetString(doc,keys->children,true);
 	    for ( temp=keys->next; temp!=NULL; temp=temp->next ) {
-		if ( _xmlStrcmp(temp->name,(const xmlChar *) "text")!=0 )
+		if ( xmlStrcmp(temp->name,(const xmlChar *) "text")!=0 )
 	    break;
 	    }
 	    item = XMLEntryToPython(doc,temp);
@@ -1015,7 +955,7 @@ static PyObject *LibToPython(xmlDocPtr doc,xmlNodePtr dict) {
 		PyDict_SetItemString(pydict, keyname, item );
 	    if ( temp==NULL )
 	break;
-	    else if ( _xmlStrcmp(temp->name,(const xmlChar *) "key")!=0 )
+	    else if ( xmlStrcmp(temp->name,(const xmlChar *) "key")!=0 )
 		keys = temp->next;
 	    free(keyname);
 	}
@@ -1026,22 +966,22 @@ return( pydict );
 static PyObject *XMLEntryToPython(xmlDocPtr doc,xmlNodePtr entry) {
     char *contents;
 
-    if ( _xmlStrcmp(entry->name,(const xmlChar *) "true")==0 ) {
+    if ( xmlStrcmp(entry->name,(const xmlChar *) "true")==0 ) {
 	Py_INCREF(Py_True);
 return( Py_True );
     }
-    if ( _xmlStrcmp(entry->name,(const xmlChar *) "false")==0 ) {
+    if ( xmlStrcmp(entry->name,(const xmlChar *) "false")==0 ) {
 	Py_INCREF(Py_False);
 return( Py_False );
     }
-    if ( _xmlStrcmp(entry->name,(const xmlChar *) "none")==0 ) {
+    if ( xmlStrcmp(entry->name,(const xmlChar *) "none")==0 ) {
 	Py_INCREF(Py_None);
 return( Py_None );
     }
 
-    if ( _xmlStrcmp(entry->name,(const xmlChar *) "dict")==0 )
+    if ( xmlStrcmp(entry->name,(const xmlChar *) "dict")==0 )
 return( LibToPython(doc,entry));
-    if ( _xmlStrcmp(entry->name,(const xmlChar *) "array")==0 ) {
+    if ( xmlStrcmp(entry->name,(const xmlChar *) "array")==0 ) {
 	xmlNodePtr sub;
 	int cnt;
 	PyObject *ret, *item;
@@ -1050,13 +990,13 @@ return( LibToPython(doc,entry));
 	/*  since each item gets its own type */
 
 	for ( cnt=0, sub=entry->children; sub!=NULL; sub=sub->next ) {
-	    if ( _xmlStrcmp(sub->name,(const xmlChar *) "text")==0 )
+	    if ( xmlStrcmp(sub->name,(const xmlChar *) "text")==0 )
 	continue;
 	    ++cnt;
 	}
 	ret = PyTuple_New(cnt);
 	for ( cnt=0, sub=entry->children; sub!=NULL; sub=sub->next ) {
-	    if ( _xmlStrcmp(sub->name,(const xmlChar *) "text")==0 )
+	    if ( xmlStrcmp(sub->name,(const xmlChar *) "text")==0 )
 	continue;
 	    item = XMLEntryToPython(doc,sub);
 	    if ( item==NULL ) {
@@ -1069,18 +1009,18 @@ return( LibToPython(doc,entry));
 return( ret );
     }
 
-    contents = (char *) _xmlNodeListGetString(doc,entry->children,true);
-    if ( _xmlStrcmp(entry->name,(const xmlChar *) "integer")==0 ) {
+    contents = (char *) xmlNodeListGetString(doc,entry->children,true);
+    if ( xmlStrcmp(entry->name,(const xmlChar *) "integer")==0 ) {
 	long val = strtol(contents,NULL,0);
 	free(contents);
 return( Py_BuildValue("i",val));
     }
-    if ( _xmlStrcmp(entry->name,(const xmlChar *) "real")==0 ) {
+    if ( xmlStrcmp(entry->name,(const xmlChar *) "real")==0 ) {
 	double val = strtod(contents,NULL);
 	free(contents);
 return( Py_BuildValue("d",val));
     }
-    if ( _xmlStrcmp(entry->name,(const xmlChar *) "string")==0 ) {
+    if ( xmlStrcmp(entry->name,(const xmlChar *) "string")==0 ) {
 	PyObject *ret = Py_BuildValue("s",contents);
 	free(contents);
 return( ret );
@@ -1097,34 +1037,34 @@ static StemInfo *GlifParseHints(xmlDocPtr doc,xmlNodePtr dict,char *hinttype) {
     double pos, width;
 
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
-	if ( _xmlStrcmp(keys->name,(const xmlChar *) "key")== 0 ) {
-	    char *keyname = (char *) _xmlNodeListGetString(doc,keys->children,true);
+	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")== 0 ) {
+	    char *keyname = (char *) xmlNodeListGetString(doc,keys->children,true);
 	    int found = strcmp(keyname,hinttype)==0;
 	    free(keyname);
 	    if ( found ) {
 		for ( array=keys->next; array!=NULL; array=array->next ) {
-		    if ( _xmlStrcmp(array->name,(const xmlChar *) "array")==0 )
+		    if ( xmlStrcmp(array->name,(const xmlChar *) "array")==0 )
 		break;
 		}
 		if ( array!=NULL ) {
 		    for ( kids = array->children; kids!=NULL; kids=kids->next ) {
-			if ( _xmlStrcmp(kids->name,(const xmlChar *) "dict")==0 ) {
+			if ( xmlStrcmp(kids->name,(const xmlChar *) "dict")==0 ) {
 			    pos = -88888888; width = 0;
 			    for ( poswidth=kids->children; poswidth!=NULL; poswidth=poswidth->next ) {
-				if ( _xmlStrcmp(poswidth->name,(const xmlChar *) "key")==0 ) {
-				    char *keyname2 = (char *) _xmlNodeListGetString(doc,poswidth->children,true);
+				if ( xmlStrcmp(poswidth->name,(const xmlChar *) "key")==0 ) {
+				    char *keyname2 = (char *) xmlNodeListGetString(doc,poswidth->children,true);
 				    int ispos = strcmp(keyname2,"position")==0, iswidth = strcmp(keyname2,"width")==0;
 				    double value;
 				    free(keyname2);
 				    for ( temp=poswidth->next; temp!=NULL; temp=temp->next ) {
-					if ( _xmlStrcmp(temp->name,(const xmlChar *) "text")!=0 )
+					if ( xmlStrcmp(temp->name,(const xmlChar *) "text")!=0 )
 				    break;
 				    }
 				    if ( temp!=NULL ) {
-					char *valname = (char *) _xmlNodeListGetString(doc,temp->children,true);
-					if ( _xmlStrcmp(temp->name,(const xmlChar *) "integer")==0 )
+					char *valname = (char *) xmlNodeListGetString(doc,temp->children,true);
+					if ( xmlStrcmp(temp->name,(const xmlChar *) "integer")==0 )
 					    value = strtol(valname,NULL,10);
-					else if ( _xmlStrcmp(temp->name,(const xmlChar *) "real")==0 )
+					else if ( xmlStrcmp(temp->name,(const xmlChar *) "real")==0 )
 					    value = strtod(valname,NULL);
 					else
 					    ispos = iswidth = false;
@@ -1169,16 +1109,16 @@ static SplineChar *_UFOLoadGlyph(xmlDocPtr doc,char *glifname) {
     int wasquad = -1;	/* Unspecified */
     SplineSet *last = NULL;
 
-    glyph = _xmlDocGetRootElement(doc);
-    format = _xmlGetProp(glyph,(xmlChar *) "format");
-    if ( _xmlStrcmp(glyph->name,(const xmlChar *) "glyph")!=0 ||
-	    (format!=NULL && _xmlStrcmp(format,(xmlChar *) "1")!=0)) {
+    glyph = xmlDocGetRootElement(doc);
+    format = xmlGetProp(glyph,(xmlChar *) "format");
+    if ( xmlStrcmp(glyph->name,(const xmlChar *) "glyph")!=0 ||
+	    (format!=NULL && xmlStrcmp(format,(xmlChar *) "1")!=0)) {
 	LogError(_("Expected glyph file with format==1\n"));
-	_xmlFreeDoc(doc);
+	xmlFreeDoc(doc);
 	free(format);
 return( NULL );
     }
-    name = (char *) _xmlGetProp(glyph,(xmlChar *) "name");
+    name = (char *) xmlGetProp(glyph,(xmlChar *) "name");
     if ( name==NULL && glifname!=NULL ) {
 	char *pt = strrchr(glifname,'/');
 	name = copy(pt+1);
@@ -1198,32 +1138,32 @@ return( NULL );
     last = NULL;
 
     for ( kids = glyph->children; kids!=NULL; kids=kids->next ) {
-	if ( _xmlStrcmp(kids->name,(const xmlChar *) "advance")==0 ) {
-	    width = _xmlGetProp(kids,(xmlChar *) "width");
-	    height = _xmlGetProp(kids,(xmlChar *) "height");
+	if ( xmlStrcmp(kids->name,(const xmlChar *) "advance")==0 ) {
+	    width = xmlGetProp(kids,(xmlChar *) "width");
+	    height = xmlGetProp(kids,(xmlChar *) "height");
 	    if ( width!=NULL )
 		sc->width = strtol((char *) width,NULL,10);
 	    if ( height!=NULL )
 		sc->vwidth = strtol((char *) height,NULL,10);
 	    sc->widthset = true;
 	    free(width); free(height);
-	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "unicode")==0 ) {
-	    u = _xmlGetProp(kids,(xmlChar *) "hex");
+	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "unicode")==0 ) {
+	    u = xmlGetProp(kids,(xmlChar *) "hex");
 	    uni = strtol((char *) u,NULL,16);
 	    if ( sc->unicodeenc == -1 )
 		sc->unicodeenc = uni;
 	    else
 		AltUniAdd(sc,uni);
-	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "outline")==0 ) {
+	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "outline")==0 ) {
 	    for ( contour = kids->children; contour!=NULL; contour=contour->next ) {
-		if ( _xmlStrcmp(contour->name,(const xmlChar *) "component")==0 ) {
-		    char *base = (char *) _xmlGetProp(contour,(xmlChar *) "base"),
-			*xs = (char *) _xmlGetProp(contour,(xmlChar *) "xScale"),
-			*ys = (char *) _xmlGetProp(contour,(xmlChar *) "yScale"),
-			*xys = (char *) _xmlGetProp(contour,(xmlChar *) "xyScale"),
-			*yxs = (char *) _xmlGetProp(contour,(xmlChar *) "yxScale"),
-			*xo = (char *) _xmlGetProp(contour,(xmlChar *) "xOffset"),
-			*yo = (char *) _xmlGetProp(contour,(xmlChar *) "yOffset");
+		if ( xmlStrcmp(contour->name,(const xmlChar *) "component")==0 ) {
+		    char *base = (char *) xmlGetProp(contour,(xmlChar *) "base"),
+			*xs = (char *) xmlGetProp(contour,(xmlChar *) "xScale"),
+			*ys = (char *) xmlGetProp(contour,(xmlChar *) "yScale"),
+			*xys = (char *) xmlGetProp(contour,(xmlChar *) "xyScale"),
+			*yxs = (char *) xmlGetProp(contour,(xmlChar *) "yxScale"),
+			*xo = (char *) xmlGetProp(contour,(xmlChar *) "xOffset"),
+			*yo = (char *) xmlGetProp(contour,(xmlChar *) "yOffset");
 		    RefChar *r;
 		    if ( base==NULL )
 			LogError(_("component with no base glyph"));
@@ -1247,7 +1187,7 @@ return( NULL );
 			sc->layers[ly_fore].refs = r;
 		    }
 		    free(xs); free(ys); free(xys); free(yxs); free(xo); free(yo);
-		} else if ( _xmlStrcmp(contour->name,(const xmlChar *) "contour")==0 ) {
+		} else if ( xmlStrcmp(contour->name,(const xmlChar *) "contour")==0 ) {
 		    SplineSet *ss;
 		    SplinePoint *sp;
 		    BasePoint pre[2], init[4];
@@ -1257,11 +1197,11 @@ return( NULL );
 		    for ( points = contour->children; points!=NULL; points=points->next ) {
 			char *xs, *ys, *type;
 			double x,y;
-			if ( _xmlStrcmp(points->name,(const xmlChar *) "point")!=0 )
+			if ( xmlStrcmp(points->name,(const xmlChar *) "point")!=0 )
 		    continue;
-			xs = (char *) _xmlGetProp(points,(xmlChar *) "x");
-			ys = (char *) _xmlGetProp(points,(xmlChar *) "y");
-			type = (char *) _xmlGetProp(points,(xmlChar *) "type");
+			xs = (char *) xmlGetProp(points,(xmlChar *) "x");
+			ys = (char *) xmlGetProp(points,(xmlChar *) "y");
+			type = (char *) xmlGetProp(points,(xmlChar *) "type");
 			if ( xs==NULL || ys == NULL )
 		    continue;
 			x = strtod(xs,NULL); y = strtod(ys,NULL);
@@ -1395,17 +1335,17 @@ return( NULL );
 		    last = ss;
 		}
 	    }
-	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "lib")==0 ) {
+	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "lib")==0 ) {
 	    xmlNodePtr keys, temp, dict = FindNode(kids->children,"dict");
 	    if ( dict!=NULL ) {
 		for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
-		    if ( _xmlStrcmp(keys->name,(const xmlChar *) "key")== 0 ) {
-			char *keyname = (char *) _xmlNodeListGetString(doc,keys->children,true);
+		    if ( xmlStrcmp(keys->name,(const xmlChar *) "key")== 0 ) {
+			char *keyname = (char *) xmlNodeListGetString(doc,keys->children,true);
 			int found = strcmp(keyname,"com.fontlab.hintData")==0;
 			free(keyname);
 			if ( found ) {
 			    for ( temp=keys->next; temp!=NULL; temp=temp->next ) {
-				if ( _xmlStrcmp(temp->name,(const xmlChar *) "dict")==0 )
+				if ( xmlStrcmp(temp->name,(const xmlChar *) "dict")==0 )
 			    break;
 			    }
 			    if ( temp!=NULL ) {
@@ -1424,7 +1364,7 @@ return( NULL );
 	    }
 	}
     }
-    _xmlFreeDoc(doc);
+    xmlFreeDoc(doc);
     SPLCatagorizePoints(sc->layers[ly_fore].splines);
 return( sc );
 }
@@ -1432,7 +1372,7 @@ return( sc );
 static SplineChar *UFOLoadGlyph(char *glifname) {
     xmlDocPtr doc;
 
-    doc = _xmlParseFile(glifname);
+    doc = xmlParseFile(glifname);
     if ( doc==NULL ) {
 	LogError( _("Bad glif file %s\n" ), glifname);
 return( NULL );
@@ -1478,31 +1418,31 @@ static void UFOLoadGlyphs(SplineFont *sf,char *glyphdir) {
     SplineChar *sc;
     int tot;
 
-    doc = _xmlParseFile(glyphlist);
+    doc = xmlParseFile(glyphlist);
     free(glyphlist);
     if ( doc==NULL ) {
 	LogError( _("Bad contents.plist\n" ));
 return;
     }
-    plist = _xmlDocGetRootElement(doc);
+    plist = xmlDocGetRootElement(doc);
     dict = FindNode(plist->children,"dict");
-    if ( _xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 || dict == NULL ) {
+    if ( xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 || dict == NULL ) {
 	LogError(_("Expected property list file"));
-	_xmlFreeDoc(doc);
+	xmlFreeDoc(doc);
 return;
     }
     for ( tot=0, keys=dict->children; keys!=NULL; keys=keys->next ) {
-	if ( _xmlStrcmp(keys->name,(const xmlChar *) "key")==0 )
+	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 )
 	    ++tot;
     }
     ff_progress_change_total(tot);
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
-	for ( value = keys->next; value!=NULL && _xmlStrcmp(value->name,(const xmlChar *) "text")==0;
+	for ( value = keys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
 		value = value->next );
 	if ( value==NULL )
     break;
-	if ( _xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
-	    valname = (char *) _xmlNodeListGetString(doc,value->children,true);
+	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
+	    valname = (char *) xmlNodeListGetString(doc,value->children,true);
 	    glyphfname = buildname(glyphdir,valname);
 	    free(valname);
 	    sc = UFOLoadGlyph(glyphfname);
@@ -1517,7 +1457,7 @@ return;
 	    ff_progress_next();
 	}
     }
-    _xmlFreeDoc(doc);
+    xmlFreeDoc(doc);
 
     GlyphHashFree(sf);
     for ( i=0; i<sf->glyphcnt; ++i )
@@ -1536,43 +1476,43 @@ static void UFOHandleKern(SplineFont *sf,char *basedir,int isv) {
     uint32 script;
 
     if ( GFileExists(fname))
-	doc = _xmlParseFile(fname);
+	doc = xmlParseFile(fname);
     free(fname);
     if ( doc==NULL )
 return;
 
-    plist = _xmlDocGetRootElement(doc);
+    plist = xmlDocGetRootElement(doc);
     dict = FindNode(plist->children,"dict");
-    if ( _xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 || dict==NULL ) {
+    if ( xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 || dict==NULL ) {
 	LogError(_("Expected property list file"));
-	_xmlFreeDoc(doc);
+	xmlFreeDoc(doc);
 return;
     }
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
-	for ( value = keys->next; value!=NULL && _xmlStrcmp(value->name,(const xmlChar *) "text")==0;
+	for ( value = keys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
 		value = value->next );
 	if ( value==NULL )
     break;
-	if ( _xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
-	    keyname = (char *) _xmlNodeListGetString(doc,keys->children,true);
+	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
+	    keyname = (char *) xmlNodeListGetString(doc,keys->children,true);
 	    sc = SFGetChar(sf,-1,keyname);
 	    free(keyname);
 	    if ( sc==NULL )
 	continue;
 	    keys = value;
 	    for ( subkeys = value->children; subkeys!=NULL; subkeys = subkeys->next ) {
-		for ( value = subkeys->next; value!=NULL && _xmlStrcmp(value->name,(const xmlChar *) "text")==0;
+		for ( value = subkeys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
 			value = value->next );
 		if ( value==NULL )
 	    break;
-		if ( _xmlStrcmp(subkeys->name,(const xmlChar *) "key")==0 ) {
-		    keyname = (char *) _xmlNodeListGetString(doc,subkeys->children,true);
+		if ( xmlStrcmp(subkeys->name,(const xmlChar *) "key")==0 ) {
+		    keyname = (char *) xmlNodeListGetString(doc,subkeys->children,true);
 		    ssc = SFGetChar(sf,-1,keyname);
 		    free(keyname);
 		    if ( ssc==NULL )
 		continue;
 		    subkeys = value;
-		    valname = (char *) _xmlNodeListGetString(doc,value->children,true);
+		    valname = (char *) xmlNodeListGetString(doc,value->children,true);
 		    offset = strtol(valname,&end,10);
 		    if ( *end=='\0' ) {
 			kp = chunkalloc(sizeof(KernPair));
@@ -1597,7 +1537,7 @@ return;
 	    }
 	}
     }
-    _xmlFreeDoc(doc);
+    xmlFreeDoc(doc);
 }
 
 static void UFOAddName(SplineFont *sf,char *value,int strid) {
@@ -1631,14 +1571,14 @@ static void UFOAddPrivateArray(SplineFont *sf,char *key,xmlDocPtr doc,xmlNodePtr
     char space[400], *pt, *end;
     xmlNodePtr kid;
 
-    if ( _xmlStrcmp(value->name,(const xmlChar *) "array")!=0 )
+    if ( xmlStrcmp(value->name,(const xmlChar *) "array")!=0 )
 return;
     pt = space; end = pt+sizeof(space)-10;
     *pt++ = '[';
     for ( kid = value->children; kid!=NULL; kid=kid->next ) {
-	if ( _xmlStrcmp(kid->name,(const xmlChar *) "integer")==0 ||
-		_xmlStrcmp(kid->name,(const xmlChar *) "real")==0 ) {
-	    char *valName = (char *) _xmlNodeListGetString(doc,kid->children,true);
+	if ( xmlStrcmp(kid->name,(const xmlChar *) "integer")==0 ||
+		xmlStrcmp(kid->name,(const xmlChar *) "real")==0 ) {
+	    char *valName = (char *) xmlNodeListGetString(doc,kid->children,true);
 	    if ( pt+1+strlen(valName)<end ) {
 		if ( pt!=space+1 )
 		    *pt++=' ';
@@ -1661,12 +1601,12 @@ static void UFOGetByteArray(char *array,int cnt,xmlDocPtr doc,xmlNodePtr value) 
 
     memset(array,0,cnt);
 
-    if ( _xmlStrcmp(value->name,(const xmlChar *) "array")!=0 )
+    if ( xmlStrcmp(value->name,(const xmlChar *) "array")!=0 )
 return;
     i=0;
     for ( kid = value->children; kid!=NULL; kid=kid->next ) {
-	if ( _xmlStrcmp(kid->name,(const xmlChar *) "integer")==0 ) {
-	    char *valName = (char *) _xmlNodeListGetString(doc,kid->children,true);
+	if ( xmlStrcmp(kid->name,(const xmlChar *) "integer")==0 ) {
+	    char *valName = (char *) xmlNodeListGetString(doc,kid->children,true);
 	    if ( i<cnt )
 		array[i++] = strtol(valName,NULL,10);
 	    free(valName);
@@ -1678,11 +1618,11 @@ static long UFOGetBits(xmlDocPtr doc,xmlNodePtr value) {
     xmlNodePtr kid;
     long mask=0;
 
-    if ( _xmlStrcmp(value->name,(const xmlChar *) "array")!=0 )
+    if ( xmlStrcmp(value->name,(const xmlChar *) "array")!=0 )
 return( 0 );
     for ( kid = value->children; kid!=NULL; kid=kid->next ) {
-	if ( _xmlStrcmp(kid->name,(const xmlChar *) "integer")==0 ) {
-	    char *valName = (char *) _xmlNodeListGetString(doc,kid->children,true);
+	if ( xmlStrcmp(kid->name,(const xmlChar *) "integer")==0 ) {
+	    char *valName = (char *) xmlNodeListGetString(doc,kid->children,true);
 	    mask |= 1<<strtol(valName,NULL,10);
 	    free(valName);
 	}
@@ -1694,11 +1634,11 @@ static void UFOGetBitArray(xmlDocPtr doc,xmlNodePtr value,uint32 *res,int len) {
     xmlNodePtr kid;
     int index;
 
-    if ( _xmlStrcmp(value->name,(const xmlChar *) "array")!=0 )
+    if ( xmlStrcmp(value->name,(const xmlChar *) "array")!=0 )
 return;
     for ( kid = value->children; kid!=NULL; kid=kid->next ) {
-	if ( _xmlStrcmp(kid->name,(const xmlChar *) "integer")==0 ) {
-	    char *valName = (char *) _xmlNodeListGetString(doc,kid->children,true);
+	if ( xmlStrcmp(kid->name,(const xmlChar *) "integer")==0 ) {
+	    char *valName = (char *) xmlNodeListGetString(doc,kid->children,true);
 	    index = strtol(valName,NULL,10);
 	    if ( index < len<<5 )
 		res[index>>5] |= 1<<(index&31);
@@ -1732,17 +1672,17 @@ return( NULL );
     free(glyphlist);
 
     temp = buildname(basedir,"fontinfo.plist");
-    doc = _xmlParseFile(temp);
+    doc = xmlParseFile(temp);
     free(temp);
     if ( doc==NULL ) {
 	/* Can I get an error message from libxml? */
 return( NULL );
     }
-    plist = _xmlDocGetRootElement(doc);
+    plist = xmlDocGetRootElement(doc);
     dict = FindNode(plist->children,"dict");
-    if ( _xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 || dict==NULL ) {
+    if ( xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 || dict==NULL ) {
 	LogError(_("Expected property list file"));
-	_xmlFreeDoc(doc);
+	xmlFreeDoc(doc);
 return( NULL );
     }
 
@@ -1750,140 +1690,140 @@ return( NULL );
     strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
     setlocale(LC_NUMERIC,"C");
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
-	for ( value = keys->next; value!=NULL && _xmlStrcmp(value->name,(const xmlChar *) "text")==0;
+	for ( value = keys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
 		value = value->next );
 	if ( value==NULL )
     break;
-	if ( _xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
-	    keyname = _xmlNodeListGetString(doc,keys->children,true);
-	    valname = _xmlNodeListGetString(doc,value->children,true);
+	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
+	    keyname = xmlNodeListGetString(doc,keys->children,true);
+	    valname = xmlNodeListGetString(doc,value->children,true);
 	    keys = value;
-	    if ( _xmlStrcmp(keyname,(xmlChar *) "familyName")==0 )
+	    if ( xmlStrcmp(keyname,(xmlChar *) "familyName")==0 )
 		sf->familyname = (char *) valname;
-	    else if ( _xmlStrcmp(keyname,(xmlChar *) "styleName")==0 )
+	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleName")==0 )
 		stylename = (char *) valname;
-	    else if ( _xmlStrcmp(keyname,(xmlChar *) "fullName")==0 ||
-		    _xmlStrcmp(keyname,(xmlChar *) "postscriptFullName")==0 )
+	    else if ( xmlStrcmp(keyname,(xmlChar *) "fullName")==0 ||
+		    xmlStrcmp(keyname,(xmlChar *) "postscriptFullName")==0 )
 		sf->fullname = (char *) valname;
-	    else if ( _xmlStrcmp(keyname,(xmlChar *) "fontName")==0 ||
-		    _xmlStrcmp(keyname,(xmlChar *) "postscriptFontName")==0 )
+	    else if ( xmlStrcmp(keyname,(xmlChar *) "fontName")==0 ||
+		    xmlStrcmp(keyname,(xmlChar *) "postscriptFontName")==0 )
 		sf->fontname = (char *) valname;
-	    else if ( _xmlStrcmp(keyname,(xmlChar *) "weightName")==0 ||
-		    _xmlStrcmp(keyname,(xmlChar *) "postscriptWeightName")==0 )
+	    else if ( xmlStrcmp(keyname,(xmlChar *) "weightName")==0 ||
+		    xmlStrcmp(keyname,(xmlChar *) "postscriptWeightName")==0 )
 		sf->weight = (char *) valname;
-	    else if ( _xmlStrcmp(keyname,(xmlChar *) "note")==0 )
+	    else if ( xmlStrcmp(keyname,(xmlChar *) "note")==0 )
 		sf->comments = (char *) valname;
-	    else if ( _xmlStrcmp(keyname,(xmlChar *) "copyright")==0 )
+	    else if ( xmlStrcmp(keyname,(xmlChar *) "copyright")==0 )
 		sf->copyright = (char *) valname;
-	    else if ( _xmlStrcmp(keyname,(xmlChar *) "trademark")==0 )
+	    else if ( xmlStrcmp(keyname,(xmlChar *) "trademark")==0 )
 		UFOAddName(sf,(char *) valname,ttf_trademark);
 	    else if ( strncmp((char *) keyname,"openTypeName",12)==0 ) {
-		if ( _xmlStrcmp(keyname+12,(xmlChar *) "Designer")==0 )
+		if ( xmlStrcmp(keyname+12,(xmlChar *) "Designer")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_designer);
-		else if ( _xmlStrcmp(keyname+12,(xmlChar *) "DesignerURL")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "DesignerURL")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_designerurl);
-		else if ( _xmlStrcmp(keyname+12,(xmlChar *) "Manufacturer")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "Manufacturer")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_manufacturer);
-		else if ( _xmlStrcmp(keyname+12,(xmlChar *) "ManufacturerURL")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "ManufacturerURL")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_venderurl);
-		else if ( _xmlStrcmp(keyname+12,(xmlChar *) "License")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "License")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_license);
-		else if ( _xmlStrcmp(keyname+12,(xmlChar *) "LicenseURL")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "LicenseURL")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_licenseurl);
-		else if ( _xmlStrcmp(keyname+12,(xmlChar *) "Version")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "Version")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_version);
-		else if ( _xmlStrcmp(keyname+12,(xmlChar *) "UniqueID")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "UniqueID")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_uniqueid);
-		else if ( _xmlStrcmp(keyname+12,(xmlChar *) "Description")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "Description")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_descriptor);
-		else if ( _xmlStrcmp(keyname+12,(xmlChar *) "PreferedFamilyName")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "PreferedFamilyName")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_preffamilyname);
-		else if ( _xmlStrcmp(keyname+12,(xmlChar *) "PreferedSubfamilyName")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "PreferedSubfamilyName")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_prefmodifiers);
-		else if ( _xmlStrcmp(keyname+12,(xmlChar *) "CompatibleFullName")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "CompatibleFullName")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_compatfull);
-		else if ( _xmlStrcmp(keyname+12,(xmlChar *) "SampleText")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "SampleText")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_sampletext);
-		else if ( _xmlStrcmp(keyname+12,(xmlChar *) "WWSFamilyName")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "WWSFamilyName")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_wwsfamily);
-		else if ( _xmlStrcmp(keyname+12,(xmlChar *) "WWSSubfamilyName")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "WWSSubfamilyName")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_wwssubfamily);
 		else
 		    free(valname);
 	    } else if ( strncmp((char *) keyname, "openTypeHhea",12)==0 ) {
-		if ( _xmlStrcmp(keyname+12,(xmlChar *) "Ascender")==0 ) {
+		if ( xmlStrcmp(keyname+12,(xmlChar *) "Ascender")==0 ) {
 		    sf->pfminfo.hhead_ascent = strtol((char *) valname,&end,10);
 		    sf->pfminfo.hheadascent_add = false;
-		} else if ( _xmlStrcmp(keyname+12,(xmlChar *) "Descender")==0 ) {
+		} else if ( xmlStrcmp(keyname+12,(xmlChar *) "Descender")==0 ) {
 		    sf->pfminfo.hhead_descent = strtol((char *) valname,&end,10);
 		    sf->pfminfo.hheaddescent_add = false;
-		} else if ( _xmlStrcmp(keyname+12,(xmlChar *) "LineGap")==0 )
+		} else if ( xmlStrcmp(keyname+12,(xmlChar *) "LineGap")==0 )
 		    sf->pfminfo.linegap = strtol((char *) valname,&end,10);
 		free(valname);
 		sf->pfminfo.hheadset = true;
 	    } else if ( strncmp((char *) keyname,"openTypeVhea",12)==0 ) {
-		if ( _xmlStrcmp(keyname+12,(xmlChar *) "LineGap")==0 )
+		if ( xmlStrcmp(keyname+12,(xmlChar *) "LineGap")==0 )
 		    sf->pfminfo.vlinegap = strtol((char *) valname,&end,10);
 		sf->pfminfo.vheadset = true;
 		free(valname);
 	    } else if ( strncmp((char *) keyname,"openTypeOS2",11)==0 ) {
 		sf->pfminfo.pfmset = true;
-		if ( _xmlStrcmp(keyname+11,(xmlChar *) "Panose")==0 ) {
+		if ( xmlStrcmp(keyname+11,(xmlChar *) "Panose")==0 ) {
 		    UFOGetByteArray(sf->pfminfo.panose,sizeof(sf->pfminfo.panose),doc,value);
 		    sf->pfminfo.panose_set = true;
-		} else if ( _xmlStrcmp(keyname+11,(xmlChar *) "Type")==0 )
+		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "Type")==0 )
 		    sf->pfminfo.fstype = UFOGetBits(doc,value);
-		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "FamilyClass")==0 ) {
+		else if ( xmlStrcmp(keyname+11,(xmlChar *) "FamilyClass")==0 ) {
 		    char fc[2];
 		    UFOGetByteArray(fc,sizeof(fc),doc,value);
 		    sf->pfminfo.os2_family_class = (fc[0]<<8)|fc[1];
-		} else if ( _xmlStrcmp(keyname+11,(xmlChar *) "WidthClass")==0 )
+		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "WidthClass")==0 )
 		    sf->pfminfo.width = strtol((char *) valname,&end,10);
-		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "WeightClass")==0 )
+		else if ( xmlStrcmp(keyname+11,(xmlChar *) "WeightClass")==0 )
 		    sf->pfminfo.weight = strtol((char *) valname,&end,10);
-		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "VendorID")==0 ) {
+		else if ( xmlStrcmp(keyname+11,(xmlChar *) "VendorID")==0 ) {
 		    char *temp = sf->pfminfo.os2_vendor + 3;
 		    strncpy(sf->pfminfo.os2_vendor,valname,4);
 		    while ( *temp == 0 && temp >= sf->pfminfo.os2_vendor ) *temp-- = ' ';
-		} else if ( _xmlStrcmp(keyname+11,(xmlChar *) "TypoAscender")==0 ) {
+		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "TypoAscender")==0 ) {
 		    sf->pfminfo.typoascent_add = false;
 		    sf->pfminfo.os2_typoascent = strtol((char *) valname,&end,10);
-		} else if ( _xmlStrcmp(keyname+11,(xmlChar *) "TypoDescender")==0 ) {
+		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "TypoDescender")==0 ) {
 		    sf->pfminfo.typodescent_add = false;
 		    sf->pfminfo.os2_typodescent = strtol((char *) valname,&end,10);
-		} else if ( _xmlStrcmp(keyname+11,(xmlChar *) "TypoLineGap")==0 )
+		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "TypoLineGap")==0 )
 		    sf->pfminfo.os2_typolinegap = strtol((char *) valname,&end,10);
-		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "WinAscent")==0 ) {
+		else if ( xmlStrcmp(keyname+11,(xmlChar *) "WinAscent")==0 ) {
 		    sf->pfminfo.winascent_add = false;
 		    sf->pfminfo.os2_winascent = strtol((char *) valname,&end,10);
-		} else if ( _xmlStrcmp(keyname+11,(xmlChar *) "WinDescent")==0 ) {
+		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "WinDescent")==0 ) {
 		    sf->pfminfo.windescent_add = false;
 		    sf->pfminfo.os2_windescent = strtol((char *) valname,&end,10);
 		} else if ( strncmp((char *) keyname+11,"Subscript",9)==0 ) {
 		    sf->pfminfo.subsuper_set = true;
-		    if ( _xmlStrcmp(keyname+20,(xmlChar *) "XSize")==0 )
+		    if ( xmlStrcmp(keyname+20,(xmlChar *) "XSize")==0 )
 			sf->pfminfo.os2_subxsize = strtol((char *) valname,&end,10);
-		    else if ( _xmlStrcmp(keyname+20,(xmlChar *) "YSize")==0 )
+		    else if ( xmlStrcmp(keyname+20,(xmlChar *) "YSize")==0 )
 			sf->pfminfo.os2_subysize = strtol((char *) valname,&end,10);
-		    else if ( _xmlStrcmp(keyname+20,(xmlChar *) "XOffset")==0 )
+		    else if ( xmlStrcmp(keyname+20,(xmlChar *) "XOffset")==0 )
 			sf->pfminfo.os2_subxoff = strtol((char *) valname,&end,10);
-		    else if ( _xmlStrcmp(keyname+20,(xmlChar *) "YOffset")==0 )
+		    else if ( xmlStrcmp(keyname+20,(xmlChar *) "YOffset")==0 )
 			sf->pfminfo.os2_subyoff = strtol((char *) valname,&end,10);
 		} else if ( strncmp((char *) keyname+11, "Superscript",11)==0 ) {
 		    sf->pfminfo.subsuper_set = true;
-		    if ( _xmlStrcmp(keyname+22,(xmlChar *) "XSize")==0 )
+		    if ( xmlStrcmp(keyname+22,(xmlChar *) "XSize")==0 )
 			sf->pfminfo.os2_supxsize = strtol((char *) valname,&end,10);
-		    else if ( _xmlStrcmp(keyname+22,(xmlChar *) "YSize")==0 )
+		    else if ( xmlStrcmp(keyname+22,(xmlChar *) "YSize")==0 )
 			sf->pfminfo.os2_supysize = strtol((char *) valname,&end,10);
-		    else if ( _xmlStrcmp(keyname+22,(xmlChar *) "XOffset")==0 )
+		    else if ( xmlStrcmp(keyname+22,(xmlChar *) "XOffset")==0 )
 			sf->pfminfo.os2_supxoff = strtol((char *) valname,&end,10);
-		    else if ( _xmlStrcmp(keyname+22,(xmlChar *) "YOffset")==0 )
+		    else if ( xmlStrcmp(keyname+22,(xmlChar *) "YOffset")==0 )
 			sf->pfminfo.os2_supyoff = strtol((char *) valname,&end,10);
 		} else if ( strncmp((char *) keyname+11, "Strikeout",9)==0 ) {
 		    sf->pfminfo.subsuper_set = true;
-		    if ( _xmlStrcmp(keyname+20,(xmlChar *) "Size")==0 )
+		    if ( xmlStrcmp(keyname+20,(xmlChar *) "Size")==0 )
 			sf->pfminfo.os2_strikeysize = strtol((char *) valname,&end,10);
-		    else if ( _xmlStrcmp(keyname+20,(xmlChar *) "Position")==0 )
+		    else if ( xmlStrcmp(keyname+20,(xmlChar *) "Position")==0 )
 			sf->pfminfo.os2_strikeypos = strtol((char *) valname,&end,10);
 		} else if ( strncmp((char *) keyname+11, "CodePageRanges",14)==0 ) {
 		    UFOGetBitArray(doc,value,sf->pfminfo.codepages,2);
@@ -1894,57 +1834,57 @@ return( NULL );
 		}
 		free(valname);
 	    } else if ( strncmp((char *) keyname, "postscript",10)==0 ) {
-		if ( _xmlStrcmp(keyname+10,(xmlChar *) "UnderlineThickness")==0 )
+		if ( xmlStrcmp(keyname+10,(xmlChar *) "UnderlineThickness")==0 )
 		    sf->uwidth = strtol((char *) valname,&end,10);
-		else if ( _xmlStrcmp(keyname+10,(xmlChar *) "UnderlinePosition")==0 )
+		else if ( xmlStrcmp(keyname+10,(xmlChar *) "UnderlinePosition")==0 )
 		    sf->upos = strtol((char *) valname,&end,10);
-		else if ( _xmlStrcmp(keyname+10,(xmlChar *) "BlueFuzz")==0 )
+		else if ( xmlStrcmp(keyname+10,(xmlChar *) "BlueFuzz")==0 )
 		    UFOAddPrivate(sf,"BlueFuzz",(char *) valname);
-		else if ( _xmlStrcmp(keyname+10,(xmlChar *) "BlueScale")==0 )
+		else if ( xmlStrcmp(keyname+10,(xmlChar *) "BlueScale")==0 )
 		    UFOAddPrivate(sf,"BlueScale",(char *) valname);
-		else if ( _xmlStrcmp(keyname+10,(xmlChar *) "BlueShift")==0 )
+		else if ( xmlStrcmp(keyname+10,(xmlChar *) "BlueShift")==0 )
 		    UFOAddPrivate(sf,"BlueShift",(char *) valname);
-		else if ( _xmlStrcmp(keyname+10,(xmlChar *) "BlueValues")==0 )
+		else if ( xmlStrcmp(keyname+10,(xmlChar *) "BlueValues")==0 )
 		    UFOAddPrivateArray(sf,"BlueValues",doc,value);
-		else if ( _xmlStrcmp(keyname+10,(xmlChar *) "OtherBlues")==0 )
+		else if ( xmlStrcmp(keyname+10,(xmlChar *) "OtherBlues")==0 )
 		    UFOAddPrivateArray(sf,"OtherBlues",doc,value);
-		else if ( _xmlStrcmp(keyname+10,(xmlChar *) "FamilyBlues")==0 )
+		else if ( xmlStrcmp(keyname+10,(xmlChar *) "FamilyBlues")==0 )
 		    UFOAddPrivateArray(sf,"FamilyBlues",doc,value);
-		else if ( _xmlStrcmp(keyname+10,(xmlChar *) "FamilyOtherBlues")==0 )
+		else if ( xmlStrcmp(keyname+10,(xmlChar *) "FamilyOtherBlues")==0 )
 		    UFOAddPrivateArray(sf,"FamilyOtherBlues",doc,value);
-		else if ( _xmlStrcmp(keyname+10,(xmlChar *) "StemSnapH")==0 )
+		else if ( xmlStrcmp(keyname+10,(xmlChar *) "StemSnapH")==0 )
 		    UFOAddPrivateArray(sf,"StemSnapH",doc,value);
-		else if ( _xmlStrcmp(keyname+10,(xmlChar *) "StemSnapV")==0 )
+		else if ( xmlStrcmp(keyname+10,(xmlChar *) "StemSnapV")==0 )
 		    UFOAddPrivateArray(sf,"StemSnapV",doc,value);
-		else if ( _xmlStrcmp(keyname+10,(xmlChar *) "ForceBold")==0 )
+		else if ( xmlStrcmp(keyname+10,(xmlChar *) "ForceBold")==0 )
 		    UFOAddPrivate(sf,"ForceBold",(char *) value->name);
 			/* value->name is either true or false */
 		free(valname);
 	    } else if ( strncmp((char *)keyname,"macintosh",9)==0 ) {
-		if ( _xmlStrcmp(keyname+9,(xmlChar *) "FONDName")==0 )
+		if ( xmlStrcmp(keyname+9,(xmlChar *) "FONDName")==0 )
 		    sf->fondname = (char *) valname;
 		else
 		    free(valname);
-	    } else if ( _xmlStrcmp(keyname,(xmlChar *) "unitsPerEm")==0 ) {
+	    } else if ( xmlStrcmp(keyname,(xmlChar *) "unitsPerEm")==0 ) {
 		em = strtol((char *) valname,&end,10);
 		if ( *end!='\0' ) em = -1;
 		free(valname);
-	    } else if ( _xmlStrcmp(keyname,(xmlChar *) "ascender")==0 ) {
+	    } else if ( xmlStrcmp(keyname,(xmlChar *) "ascender")==0 ) {
 		as = strtod((char *) valname,&end);
 		if ( *end!='\0' ) as = -1;
 		else sf->ufo_ascent = as;
 		free(valname);
-	    } else if ( _xmlStrcmp(keyname,(xmlChar *) "descender")==0 ) {
+	    } else if ( xmlStrcmp(keyname,(xmlChar *) "descender")==0 ) {
 		ds = -strtod((char *) valname,&end);
 		if ( *end!='\0' ) ds = -1;
 		else sf->ufo_descent = -ds;
 		free(valname);
-	    } else if ( _xmlStrcmp(keyname,(xmlChar *) "italicAngle")==0 ||
-		    _xmlStrcmp(keyname,(xmlChar *) "postscriptSlantAngle")==0 ) {
+	    } else if ( xmlStrcmp(keyname,(xmlChar *) "italicAngle")==0 ||
+		    xmlStrcmp(keyname,(xmlChar *) "postscriptSlantAngle")==0 ) {
 		sf->italicangle = strtod((char *) valname,&end);
 		if ( *end!='\0' ) sf->italicangle = 0;
 		free(valname);
-	    } else if ( _xmlStrcmp(keyname,(xmlChar *) "descender")==0 ) {
+	    } else if ( xmlStrcmp(keyname,(xmlChar *) "descender")==0 ) {
 		ds = -strtol((char *) valname,&end,10);
 		if ( *end!='\0' ) ds = -1;
 		free(valname);
@@ -1963,7 +1903,7 @@ return( NULL );
     }
     if ( em==-1 ) {
 	LogError( _("This font does not specify unitsPerEm\n") );
-	_xmlFreeDoc(doc);
+	xmlFreeDoc(doc);
 	setlocale(LC_NUMERIC,oldloc);
 	SplineFontFree(sf);
 return( NULL );
@@ -1990,7 +1930,7 @@ return( NULL );
 	    sf->names->names[ttf_version]!=NULL &&
 	    strncmp(sf->names->names[ttf_version],"Version ",8)==0 )
 	sf->version = copy(sf->names->names[ttf_version]+8);
-    _xmlFreeDoc(doc);
+    xmlFreeDoc(doc);
 
     UFOLoadGlyphs(sf,glyphdir);
 
@@ -2013,21 +1953,21 @@ return( NULL );
     temp = buildname(basedir,"lib.plist");
     doc = NULL;
     if ( GFileExists(temp))
-	doc = _xmlParseFile(temp);
+	doc = xmlParseFile(temp);
     free(temp);
     if ( doc!=NULL ) {
-	plist = _xmlDocGetRootElement(doc);
+	plist = xmlDocGetRootElement(doc);
 	dict = NULL;
 	if ( plist!=NULL )
 	    dict = FindNode(plist->children,"dict");
 	if ( plist==NULL ||
-		_xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 ||
+		xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 ||
 		dict==NULL ) {
 	    LogError(_("Expected property list file"));
 	} else {
 	    sf->python_persistent = LibToPython(doc,dict);
 	}
-	_xmlFreeDoc(doc);
+	xmlFreeDoc(doc);
     }
 #endif
     setlocale(LC_NUMERIC,oldloc);
@@ -2046,9 +1986,9 @@ SplineSet *SplinePointListInterpretGlif(char *filename,char *memory, int memlen,
 return( NULL );
     }
     if ( filename!=NULL )
-	doc = _xmlParseFile(filename);
+	doc = xmlParseFile(filename);
     else
-	doc = _xmlParseMemory(memory,memlen);
+	doc = xmlParseMemory(memory,memlen);
     if ( doc==NULL )
 return( NULL );
 

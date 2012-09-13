@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -2195,8 +2196,27 @@ static int GFI_NameChange(GGadget *g, GEvent *e) {
 	    if ( noticeweights[j][i]!=NULL )
 	break;
 	}
-	if ( gfi->human_untitled )
-	    GGadgetSetTitle(GWidgetGetControl(gw,CID_Human),uname);
+
+	/* If the user didn't set the full name yet, we guess it from the
+	 * postrscript name */
+	if ( gfi->human_untitled ) {
+	    unichar_t *cp = u_copy(uname);
+	    int i=0;
+	    /* replace the last hyphen with space */
+	    for( i=u_strlen(cp); i>=0; i-- ) {
+		if( cp[i] == '-' ) {
+		    cp[i] = ' ';
+		    break;
+		}
+	    }
+	    /* If the postscript name ends with "Regular" it is recommended not
+	     * to include it in the full name */
+	    if(u_endswith(cp,c_to_u(" Regular")) || u_endswith(cp,c_to_u(" regular"))) {
+		cp[u_strlen(cp) - strlen(" Regular")] ='\0';
+	    }
+	    GGadgetSetTitle(GWidgetGetControl(gw,CID_Human),cp);
+	    free(cp);
+	}
 	if ( gfi->family_untitled ) {
 	    const unichar_t *ept = uname+u_strlen(uname); unichar_t *temp;
 	    for ( i=0; knownweights[i]!=NULL; ++i ) {

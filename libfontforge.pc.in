@@ -1,0 +1,17 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+libdir=@libdir@
+includedir=@includedir@
+datarootdir=@datarootdir@
+mandir=@mandir@
+localedir=@localedir@
+
+Name: libfontforge
+Description: a font manipulation library.
+Version: @LIBFONTFORGE_PKGCONFIG_VERSION@
+Requires: @LIBFONTFORGE_PKGCONFIG_REQUIRES@
+Requires.private: @LIBFONTFORGE_PKGCONFIG_REQUIRES_PRIVATE@
+Libs: @LIBFONTFORGE_PKGCONFIG_LIBS@
+Libs.private: @LIBFONTFORGE_PKGCONFIG_LIBS_PRIVATE@
+Cflags: -I${includedir}/fontforge

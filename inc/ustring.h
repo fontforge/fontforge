@@ -85,15 +85,7 @@ extern char *strstartmatch(const char *initial,const char *full);
 extern unichar_t *u_strstartmatch(const unichar_t *initial, const unichar_t *full);
 extern unichar_t *cu_strstartmatch(const char *initial, const unichar_t *full);
 
-#ifdef UNICHAR_16
-extern uint32 *utf82u32_strncpy(int32 *ubuf,const char *utf8buf,int len);
-extern uint32 *utf82u32_copy(const char *utf8buf);
-extern char *u322utf8_copy(const uint32 *ubuf);
-extern char *u322utf8_strncpy(char *utf8buf, const uint32 *ubuf,int len);
-#else
-/* Make sure we have different entry points in the library */
 #define utf82u_strncpy utf82U_strncpy
-#endif
 extern int32 utf8_ildb(const char **utf8_text);
 extern char *utf8_idpb(char *utf8_text,uint32 ch);
 extern char *utf8_db(char *utf8_text);
@@ -132,4 +124,15 @@ extern int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list
 extern int uAllAscii(const unichar_t *str);
 extern int AllAscii(const char *);
 extern char *StripToASCII(const char *utf8_str);
+
+/**
+ * Return true if the haystack unicode string ends with the string needle.
+ * Return 0 otherwise.
+ *
+ * Needles which are larger than the haystack are handled.
+ *
+ * No new strings are allocated, freed, or returned.
+ */
+extern int u_endswith(const unichar_t *haystack,const unichar_t *needle);
+
 #endif

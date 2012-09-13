@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -26,12 +27,15 @@
  */
 
 #include "fontforgeui.h"
+#include "annotations.h"
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>
 #include <chardata.h>
 #include "ttf.h"		/* For MAC_DELETED_GLYPH_NAME */
 #include <gkeysym.h>
+#include "is_LIGATURE.h"
+
 extern int lookup_hideunused;
 
 static int last_gi_aspect = 0;
@@ -385,27 +389,6 @@ return;
     }
 }
 
-static int UnicodeContainsCombiners(int uni) {
-    const unichar_t *alt;
-
-    if ( uni<0 || uni>=unicode4_size )
-return( -1 );
-    if ( iscombining(uni))
-return( true );
-
-    if ( !isdecompositionnormative(uni) || unicode_alternates[uni>>8]==NULL )
-return( false );
-    alt = unicode_alternates[uni>>8][uni&0xff];
-    if ( alt==NULL )
-return( false );
-    while ( *alt ) {
-	if ( UnicodeContainsCombiners(*alt))
-return( true );
-	++alt;
-    }
-return( false );
-}
-
 static int CI_NewCounter(GGadget *g, GEvent *e) {
     CharInfo *ci;
 
@@ -433,25 +416,26 @@ return( true );
 
 static int CI_DeleteCounter(GGadget *g, GEvent *e) {
     int32 len; int i,j, offset;
-    GTextInfo **old, **new;
+    GTextInfo **old, **new_;
     GGadget *list;
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	offset = GGadgetGetCid(g)-CID_Delete;
 	list = GWidgetGetControl(GGadgetGetWindow(g),CID_List+offset);
 	old = GGadgetGetList(list,&len);
-	new = gcalloc(len+1,sizeof(GTextInfo *));
-	for ( i=j=0; i<len; ++i ) if ( !old[i]->selected ) {
-	    new[j] = galloc(sizeof(GTextInfo));
-	    *new[j] = *old[i];
-	    new[j]->text = u_copy(new[j]->text);
-	    ++j;
-	}
-	new[j] = gcalloc(1,sizeof(GTextInfo));
+	new_ = gcalloc(len+1,sizeof(GTextInfo *));
+	for ( i=j=0; i<len; ++i )
+	    if ( !old[i]->selected ) {
+		new_[j] = (GTextInfo *) galloc(sizeof(GTextInfo));
+		*new_[j] = *old[i];
+		new_[j]->text = u_copy(new_[j]->text);
+		++j;
+	    }
+	new_[j] = (GTextInfo *) gcalloc(1,sizeof(GTextInfo));
 	if ( offset==600 ) {
 	    for ( i=0; i<len; ++i ) if ( old[i]->selected )
 		chunkfree(old[i]->userdata,sizeof(HintMask));
 	}
-	GGadgetSetList(list,new,false);
+	GGadgetSetList(list,new_,false);
 	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Delete+offset),false);
 	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Edit+offset),false);
     }
@@ -505,9 +489,9 @@ static void SetNameFromUnicode(GWindow gw,int cid,int val) {
     free(temp);
 }
 
-void SCInsertPST(SplineChar *sc,PST *new) {
-    new->next = sc->possub;
-    sc->possub = new;
+void SCInsertPST(SplineChar *sc,PST *new_) {
+    new_->next = sc->possub;
+    sc->possub = new_;
 }
 
 static int CI_NameCheck(const unichar_t *name) {
@@ -1685,11 +1669,12 @@ static int CI_TileMarginChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
+/* Generate default settings for the entries in ligature lookup
+ * subtables. */
 static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
     const unichar_t *alt=NULL, *pt;
     char *components = NULL;
     int len;
-    const char *uname;
     unichar_t hack[30], *upt;
     char buffer[80];
 
@@ -1705,17 +1690,14 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 	else if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2]))) {
 	    if ( alt_lig != -10 )	/* alt_lig = 10 => mac unicode decomp */
 		alt = NULL;		/* Otherwise, don't treat accented letters as ligatures */
-	} else if ( _UnicodeNameAnnot!=NULL &&
-		(uname = _UnicodeNameAnnot[uni>>16][(uni>>8)&0xff][uni&0xff].name)!=NULL &&
-		strstr(uname,"LIGATURE")==NULL &&
-		strstr(uname,"VULGAR FRACTION")==NULL &&
+	} else if (! is_LIGATURE_or_VULGAR_FRACTION((unsigned int) uni) &&
 		uni!=0x152 && uni!=0x153 &&	/* oe ligature should not be standard */
 		uni!=0x132 && uni!=0x133 &&	/* nor ij */
 		(uni<0xfb2a || uni>0xfb4f) &&	/* Allow hebrew precomposed chars */
 		uni!=0x215f &&
 		!((uni>=0x0958 && uni<=0x095f) || uni==0x929 || uni==0x931 || uni==0x934)) {
 	    alt = NULL;
-	} else if ( _UnicodeNameAnnot==NULL ) {
+	} else if ( names_db==NULL ) {
 	    if ( (uni>=0xbc && uni<=0xbe ) ||		/* Latin1 fractions */
 		    (uni>=0x2153 && uni<=0x215e ) ||	/* other fractions */
 		    (uni>=0xfb00 && uni<=0xfb06 ) ||	/* latin ligatures */
@@ -4057,7 +4039,7 @@ static int CI_NextPrev(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	int enc = ci->enc + GGadgetGetCid(g);	/* cid is 1 for next, -1 for prev */
-	SplineChar *new;
+	SplineChar *new_;
 	struct splinecharlist *scl;
 
 	if ( enc<0 || enc>=ci->map->enccount ) {
@@ -4066,14 +4048,14 @@ return( true );
 	}
 	if ( !_CI_OK(ci))
 return( true );
-	new = SFMakeChar(ci->sc->parent,ci->map,enc);
-	if ( new->charinfo!=NULL && new->charinfo!=ci ) {
+	new_ = SFMakeChar(ci->sc->parent,ci->map,enc);
+	if ( new_->charinfo!=NULL && new_->charinfo!=ci ) {
 	    GGadgetSetEnabled(g,false);
 return( true );
 	}
-	ci->sc = new;
+	ci->sc = new_;
 	ci->enc = enc;
-	for ( scl=ci->changes; scl!=NULL && scl->sc->orig_pos!=new->orig_pos;
+	for ( scl=ci->changes; scl!=NULL && scl->sc->orig_pos!=new_->orig_pos;
 		scl = scl->next );
 	ci->cachedsc = scl==NULL ? NULL : scl->sc;
 	CIFillup(ci);

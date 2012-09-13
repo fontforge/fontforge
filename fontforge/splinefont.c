@@ -1343,7 +1343,7 @@ static const char **mods[] = { knownweights, modifierlist, NULL };
 static const char **fullmods[] = { realweights, modifierlistfull, NULL };
 
 char *_GetModifiers(char *fontname, char *familyname,char *weight) {
-    char *pt, *fpt;
+    char *pt, *fpt, *space;
     int i, j;
 
     /* URW fontnames don't match the familyname */
@@ -1382,8 +1382,10 @@ char *_GetModifiers(char *fontname, char *familyname,char *weight) {
     }
     if ( fpt!=NULL ) {
 	for ( i=0; mods[i]!=NULL; ++i ) for ( j=0; mods[i][j]!=NULL; ++j ) {
-	    if ( strcmp(fpt,mods[i][j])==0 )
-return( fullmods[i][j]);
+	    if ( strcmp(fpt,mods[i][j])==0 ) {
+		strcpy(space,fullmods[i][j]);
+return(space);
+	    }
 	}
 	if ( strcmp(fpt,"BoldItal")==0 )
 return( "BoldItalic" );

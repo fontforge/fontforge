@@ -45,7 +45,11 @@ void galloc_set_trap(void (*newtrap)(void)) {
 #ifdef USE_OUR_MEMORY
 void *galloc(long size) {
     void *ret;
-    while (( ret = malloc(size))==NULL )
+    /* Avoid malloc(0) as malloc is allowed to return NULL.
+     * If malloc fails, call trap() to allow it to possibly
+     * recover memory and try again.
+     */
+    while (( ret = malloc(size==0 ? sizeof(int) : size))==NULL )
 	trap();
     memset(ret,0x3c,size);		/* fill with random junk for debugging */
 return( ret );
@@ -75,7 +79,7 @@ char *copy(const char *str) {
 
     if ( str==NULL )
 return( NULL );
-    ret = galloc(strlen(str)+1);
+    ret = (char *) galloc(strlen(str)+1);
     strcpy(ret,str);
 return( ret );
 }
@@ -85,7 +89,7 @@ char *copyn(const char *str,long n) {
 
     if ( str==NULL )
 return( NULL );
-    ret = galloc(n+1);
+    ret = (char *) galloc(n+1);
     memcpy(ret,str,n);
     ret[n]='\0';
 return( ret );

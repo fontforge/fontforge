@@ -46,7 +46,6 @@ static unichar_t err409[] = { ' ','C','o','n','f','l','i','c','t', '\0' };
 static unichar_t err412[] = { ' ','P','r','e','c','o','n','d','i','t','i','o','n',' ','F','a','i','l','e','d', '\0' };
 static unichar_t err414[] = { ' ','R','e','q','u','e','s','t','-','U','R','I',' ','T','o','o',' ','L','o','n','g', '\0' };
 static unichar_t err500[] = { ' ','I','n','t','e','r','n','a','l',' ','S','e','r','v','e','r',' ','E','r','r','o','r', '\0' };
-static unichar_t err501[] = { ' ','N','o','t',' ','I','m','p','l','e','m','e','n','t','e','d', '\0' };
 
 void _GIO_reporterror(GIOControl *gc, int errn) {
 
@@ -104,14 +103,14 @@ static void _gio_file_dir(GIOControl *gc,char *path) {
 return;
     }
 
-    buffer = galloc(strlen(path)+FILENAME_MAX+3);
+    buffer = (char *) galloc(strlen(path)+FILENAME_MAX+3);
     strcpy(buffer,path);
     ept = buffer+strlen(buffer);
     if ( ept[-1]!='/' )
 	*ept++ = '/';
 
     while (( ent = readdir(dir))!=NULL ) {
-	cur = gcalloc(1,sizeof(GDirEntry));
+	cur = (GDirEntry *) gcalloc(1,sizeof(GDirEntry));
 	cur->name = def2u_copy(ent->d_name);
 	strcpy(ept,ent->d_name);
 	stat(buffer,&statb);
@@ -135,7 +134,7 @@ return;
     /* Under cygwin we should give the user access to /cygdrive, even though */
     /*  a diropen("/") will not find it */
     if ( strcmp(path,"/")==0 ) {
-	cur = gcalloc(1,sizeof(GDirEntry));
+	cur = (GDirEntry *) gcalloc(1,sizeof(GDirEntry));
 	cur->name = def2u_copy("cygdrive");
 	strcpy(ept,"cygdrive");
 	stat(buffer,&statb);
@@ -169,7 +168,7 @@ static void _gio_file_statfile(GIOControl *gc,char *path) {
     if ( stat(path,&statb)==-1 ) {
 	_GIO_reporterror(gc,errno);
     } else {
-	cur = gcalloc(1,sizeof(GDirEntry));
+	cur = (GDirEntry *) gcalloc(1,sizeof(GDirEntry));
 	cur->name = uc_copy(GFileNameTail(path));
 	cur->hasdir = cur->hasexe = cur->hasmode = cur->hassize = cur->hastime = true;
 	cur->size    = statb.st_size;

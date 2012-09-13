@@ -735,15 +735,9 @@ static void GTextFieldGrabPrimarySelection(GTextField *gt) {
 
     GDrawGrabSelection(gt->g.base,sn_primary);
     gt->sel_start = ss; gt->sel_end = se;
-#ifdef UNICHAR_16
-    GDrawAddSelectionType(gt->g.base,sn_primary,"text/plain;charset=ISO-10646-UCS-2",gt,gt->sel_end-gt->sel_start,
-	    sizeof(unichar_t),
-	    genunicodedata,noop);
-#else
     GDrawAddSelectionType(gt->g.base,sn_primary,"text/plain;charset=ISO-10646-UCS-4",gt,gt->sel_end-gt->sel_start,
 	    sizeof(unichar_t),
 	    genunicodedata,noop);
-#endif
     GDrawAddSelectionType(gt->g.base,sn_primary,"UTF8_STRING",gt,gt->sel_end-gt->sel_start,
 	    sizeof(char),
 	    genutf8data,noop);
@@ -758,15 +752,9 @@ static void GTextFieldGrabPrimarySelection(GTextField *gt) {
 static void GTextFieldGrabDDSelection(GTextField *gt) {
 
     GDrawGrabSelection(gt->g.base,sn_drag_and_drop);
-#ifdef UNICHAR_16
-    GDrawAddSelectionType(gt->g.base,sn_drag_and_drop,"text/plain;charset=ISO-10646-UCS-2",gt,gt->sel_end-gt->sel_start,
-	    sizeof(unichar_t),
-	    ddgenunicodedata,noop);
-#else
     GDrawAddSelectionType(gt->g.base,sn_drag_and_drop,"text/plain;charset=ISO-10646-UCS-4",gt,gt->sel_end-gt->sel_start,
 	    sizeof(unichar_t),
 	    ddgenunicodedata,noop);
-#endif
     GDrawAddSelectionType(gt->g.base,sn_drag_and_drop,"STRING",gt,gt->sel_end-gt->sel_start,sizeof(char),
 	    ddgenlocaldata,noop);
 }
@@ -776,10 +764,8 @@ static void GTextFieldGrabSelection(GTextField *gt, enum selnames sel ) {
     if ( gt->sel_start!=gt->sel_end ) {
 	unichar_t *temp;
 	char *ctemp, *ctemp2;
-#ifndef UNICHAR_16
 	int i;
 	uint16 *u2temp;
-#endif
 
 	GDrawGrabSelection(gt->g.base,sel);
 	temp = galloc((gt->sel_end-gt->sel_start + 2)*sizeof(unichar_t));
@@ -787,11 +773,6 @@ static void GTextFieldGrabSelection(GTextField *gt, enum selnames sel ) {
 	u_strncpy(temp+1,gt->text+gt->sel_start,gt->sel_end-gt->sel_start);
 	ctemp = u2utf8_copy(temp+1);
 	ctemp2 = u2def_copy(temp+1);
-#ifdef UNICHAR_16
-	GDrawAddSelectionType(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-2",temp,u_strlen(temp),
-		sizeof(unichar_t),
-		NULL,NULL);
-#else
 	GDrawAddSelectionType(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-4",temp,u_strlen(temp),
 		sizeof(unichar_t),
 		NULL,NULL);
@@ -802,7 +783,6 @@ static void GTextFieldGrabSelection(GTextField *gt, enum selnames sel ) {
 	GDrawAddSelectionType(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-2",u2temp,u_strlen(temp),
 		2,
 		NULL,NULL);
-#endif
 	GDrawAddSelectionType(gt->g.base,sel,"UTF8_STRING",copy(ctemp),strlen(ctemp),
 		sizeof(char),
 		NULL,NULL);
@@ -915,19 +895,6 @@ static void GTextFieldPaste(GTextField *gt,enum selnames sel) {
 	    GTextField_Replace(gt,temp);
 	    free(ctemp); free(temp);
 	}
-#ifdef UNICHAR_16
-    } else if ( GDrawSelectionHasType(gt->g.base,sel,"Unicode") ||
-	    GDrawSelectionHasType(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-2")) {
-	unichar_t *temp;
-	int32 len;
-	temp = GDrawRequestSelection(gt->g.base,sel,"Unicode",&len);
-	if ( temp==NULL || len==0 )
-	    temp = GDrawRequestSelection(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-2",&len);
-	/* Bug! I don't handle byte reversed selections. But I don't think there should be any anyway... */
-	if ( temp!=NULL )
-	    GTextField_Replace(gt,temp[0]==0xfeff?temp+1:temp);
-	free(temp);
-#else
 /* Bug in the xorg library on 64 bit machines and 32 bit transfers don't work */
 /*  so avoid them, by looking for utf8 first */
     } else if ( GDrawSelectionHasType(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-4")) {
@@ -956,7 +923,6 @@ static void GTextFieldPaste(GTextField *gt,enum selnames sel) {
 	    free(temp);
 	}
 	free(temp2);
-#endif
     } else if ( GDrawSelectionHasType(gt->g.base,sel,"STRING")) {
 	unichar_t *temp; char *ctemp;
 	int32 len;
