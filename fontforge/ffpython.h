@@ -27,6 +27,7 @@
 
 #include "flaglist.h"
 
+/*********** PYTHON 3 **********/
 #if PY_MAJOR_VERSION >= 3
 
 #define PyInt_Check    PyLong_Check
@@ -42,6 +43,7 @@
 #define PICKLE "pickle"
 
 #else /* PY_MAJOR_VERSION >= 3 */
+/*********** PYTHON 2 **********/
 
 #define STRING_CHECK   PyBytes_Check
 #define STRING_TO_PY   PyBytes_FromString
@@ -53,6 +55,14 @@
 
 #endif /* PY_MAJOR_VERSION >= 3 */
 
+/*********** Common **********/
+#ifndef Py_TYPE
+#define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
+#endif
+
+#ifndef Py_TYPENAME
+#define Py_TYPENAME(ob) (((PyObject*)(ob))->ob_type->tp_name)
+#endif
 
 #if !defined( Py_RETURN_NONE )
 /* Not defined before 2.4 */

@@ -1277,7 +1277,7 @@ static int PyFFPoint_compare(PyFF_Point *self,PyObject *other) {
     if ( PyTuple_Check(other) && PyTuple_Size(other)==2 ) {
 	if ( !PyArg_ParseTuple(other,"dd", &x, &y ))
 return( -1 );
-    } else if ( PyType_IsSubtype(&PyFF_PointType,((PyObject *)other)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_PointType, Py_TYPE(other)) ) {
 	x = ((PyFF_Point *) other)->x;
 	y = ((PyFF_Point *) other)->y;
     } else {
@@ -1304,7 +1304,7 @@ static PyObject *PyFFPoint_richcompare(PyObject *a, PyObject *b, int op) {
 static PyObject *PyFFPoint_Repr(PyFF_Point *self) {
     char buffer[200];
 
-    sprintf(buffer,"%s(%g,%g,%s)", self->ob_type->tp_name, self->x, self->y,
+    sprintf(buffer,"%s(%g,%g,%s)", Py_TYPE(self)->tp_name, self->x, self->y,
 	    self->on_curve?"True":"False" );
 return( STRING_TO_PY(buffer));
 }
@@ -1550,7 +1550,7 @@ static void PyFFContour_dealloc(PyFF_Contour *self) {
     PyMem_Del(self->points);
     if ( self->spiro_cnt!=0 )
 	PyMem_Del(self->spiros);
-    ((PyObject *)self)->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static void PyFFContour_ClearSpiros(PyFF_Contour *self) {
@@ -1611,7 +1611,7 @@ static int PyFFContour_docompare(PyFF_Contour *self,PyObject *other,
     int ret;
     SplinePoint *badpoint;
 
-    if ( !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)other)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(other)) ) {
 	PyErr_Format(PyExc_TypeError, "Unexpected type");
 return( -1 );
     }
@@ -1870,13 +1870,13 @@ static PyObject *PyFFContour_Concat( PyObject *_c1, PyObject *_c2 ) {
     PyFF_Point *dummies[1];
     double x,y;
 
-    if ( PyType_IsSubtype(&PyFF_PointType,((PyObject *)c2)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_PointType, Py_TYPE(c2)) ) {
 	memset(&dummy,0,sizeof(dummy));
 	dummy.pt_cnt = 1;
 	dummy.points = dummies; dummies[0] = (PyFF_Point *) _c2;
 	c2 = &dummy;
-    } else if ( !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)c1)->ob_type) ||
-                !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)c2)->ob_type) ||
+    } else if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c1)) ||
+                !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c2)) ||
 	    c1->is_quadratic != c2->is_quadratic ) {
 	if ( PyTuple_Check(_c2) && PyArg_ParseTuple(_c2,"dd",&x,&y)) {
 	    PyFF_Point *pt = PyFFPoint_CNew(x,y,true,false);
@@ -1912,13 +1912,13 @@ static PyObject *PyFFContour_InPlaceConcat( PyObject *_self, PyObject *_c2 ) {
     PyFF_Point *dummies[1];
     double x,y;
 
-    if ( PyType_IsSubtype(&PyFF_PointType,((PyObject *)c2)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_PointType, Py_TYPE(c2)) ) {
 	memset(&dummy,0,sizeof(dummy));
 	dummy.pt_cnt = 1;
 	dummy.points = dummies; dummies[0] = (PyFF_Point *) _c2;
 	c2 = &dummy;
-    } else if ( !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)self)->ob_type) ||
-                !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)c2)->ob_type) ||
+    } else if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(self)) ||
+                !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c2)) ||
 	    self->is_quadratic != c2->is_quadratic ) {
 	if ( PyTuple_Check(_c2) && PyArg_ParseTuple(_c2,"dd",&x,&y)) {
 	    PyFF_Point *pt = PyFFPoint_CNew(x,y,true,false);
@@ -1959,7 +1959,7 @@ static int PyFFContour_IndexAssign( PyObject *self, Py_ssize_t pos, PyObject *va
     PyFF_Contour *cont = (PyFF_Contour *) self;
     PyObject *old;
 
-    if ( !PyType_IsSubtype(&PyFF_PointType,((PyObject *)val)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_PointType, Py_TYPE(val)) ) {
 	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Point");
 return( -1 );
     }
@@ -2026,7 +2026,7 @@ static int PyFFContour_SliceAssign( PyObject *_self, Py_ssize_t start, Py_ssize_
     PyFF_Contour *self = (PyFF_Contour *) _self, *rpl = (PyFF_Contour *) _rpl;
     int i, diff;
 
-    if ( !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)rpl)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(rpl)) ) {
 	PyErr_Format(PyExc_TypeError, "Replacement must be a (FontForge) Contour");
 return( -1 );
     }
@@ -2076,7 +2076,7 @@ static int PyFFContour_Contains(PyObject *_self, PyObject *_pt) {
     if ( PySequence_Check(_pt)) {
 	if ( !PyArg_ParseTuple(_pt,"ff", &x, &y ))
 return( -1 );
-    } else if ( !PyType_IsSubtype(&PyFF_PointType,((PyObject *)_pt)->ob_type) ) {
+    } else if ( !PyType_IsSubtype(&PyFF_PointType, Py_TYPE(_pt)) ) {
 	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Point");
 return( -1 );
     } else {
@@ -2288,7 +2288,7 @@ static PyObject *PyFFContour_InsertPoint(PyFF_Contour *self, PyObject *args) {
 	    if ( !PyArg_ParseTuple( args, "dd|ii", &x, &y, &on, &pos )) {
 		PyErr_Clear();
 		if ( !PyArg_ParseTuple( args, "O|i", &p, &pos ) ||
-             !PyType_IsSubtype(&PyFF_PointType,((PyObject *)p)->ob_type))
+		     !PyType_IsSubtype(&PyFF_PointType, Py_TYPE(p)) )
 return( NULL );
 	    }
 	}
@@ -2539,7 +2539,7 @@ return( NULL );
     } else if ( spline_err==-1 )
 	spline_err = pt_err;
 
-    if ( !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)other)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(other)) ) {
 	PyErr_Format(PyExc_TypeError, "Unexpected type");
 return( NULL );
     }
@@ -2736,7 +2736,7 @@ static void do_pycall(PyObject *obj,char *method,PyObject *args_tuple) {
 
     func = PyObject_GetAttrString(obj,method);	/* I hope this is right */
     if ( func==NULL ) {
-        fprintf( stderr, "Failed to find %s in %s\n", method, ((PyObject *)obj)->ob_type->tp_name );
+        fprintf( stderr, "Failed to find %s in %s\n", method, Py_TYPENAME(obj) );
 	Py_DECREF(args_tuple);
 return;
     }
@@ -3106,7 +3106,7 @@ return 0;
 static void PyFFLayer_dealloc(PyFF_Layer *self) {
     PyFFLayer_clear(self);
     PyMem_Del(self->contours);
-    ((PyObject *)self)->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static PyObject *PyFFLayer_new(PyTypeObject *type, PyObject *UNUSED(args), PyObject *UNUSED(kwds)) {
@@ -3168,9 +3168,9 @@ static int PyFFLayer_docompare(PyFF_Layer *self,PyObject *other,
     SplinePoint *badpoint;
 
     ss = SSFromLayer(self);
-    if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)other)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(other)) ) {
 	ss2 = SSFromContour((PyFF_Contour *) other,NULL);
-    } else if ( PyType_IsSubtype(&PyFF_LayerType,((PyObject *)other)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(other)) ) {
 	ss2 = SSFromLayer((PyFF_Layer *) other);
     } else {
 	PyErr_Format(PyExc_TypeError, "Unexpected type");
@@ -3192,7 +3192,7 @@ return( 0 );
 
     /* There's no real ordering on these guys. Make up something that is */
     /*  at least consistent */
-    if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)other)->ob_type) )
+    if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(other)) )
 return( -1 );
 
     /* Ok, both are layers */
@@ -3276,14 +3276,14 @@ static PyObject *PyFFLayer_Concat( PyObject *_c1, PyObject *_c2 ) {
     PyFF_Layer dummy;
     PyFF_Contour *dummies[1];
 
-    if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)c2)->ob_type) &&
+    if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c2)) &&
 	    c1->is_quadratic == c2->is_quadratic ) {
 	memset(&dummy,0,sizeof(dummy));
 	dummy.cntr_cnt = 1;
 	dummy.contours = dummies; dummies[0] = (PyFF_Contour *) _c2;
 	c2 = &dummy;
-    } else if ( !PyType_IsSubtype(&PyFF_LayerType,((PyObject *)c1)->ob_type) ||
-                !PyType_IsSubtype(&PyFF_LayerType,((PyObject *)c2)->ob_type) ||
+    } else if ( !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(c1)) ||
+                !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(c2)) ||
 	    c1->is_quadratic != c2->is_quadratic ) {
 	PyErr_Format(PyExc_TypeError, "Both arguments must be Layers of the same order");
 return( NULL );
@@ -3309,14 +3309,14 @@ static PyObject *PyFFLayer_InPlaceConcat( PyObject *_self, PyObject *_c2 ) {
     PyFF_Layer dummy;
     PyFF_Contour *dummies[1];
 
-    if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)c2)->ob_type) &&
+    if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c2)) &&
 	    self->is_quadratic == ((PyFF_Contour *) c2)->is_quadratic ) {
 	memset(&dummy,0,sizeof(dummy));
 	dummy.cntr_cnt = 1;
 	dummy.contours = dummies; dummies[0] = (PyFF_Contour *) _c2;
 	c2 = &dummy;
-    } else if ( !PyType_IsSubtype(&PyFF_LayerType,((PyObject *)self)->ob_type) ||
-                !PyType_IsSubtype(&PyFF_LayerType,((PyObject *)c2)->ob_type) ||
+    } else if ( !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(self)) ||
+                !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(c2)) ||
 	    self->is_quadratic != c2->is_quadratic ) {
 	PyErr_Format(PyExc_TypeError, "Both arguments must be Layers of the same order");
 return( NULL );
@@ -3352,7 +3352,7 @@ static int PyFFLayer_IndexAssign( PyObject *self, Py_ssize_t pos, PyObject *val 
     PyFF_Contour *contour;
     PyFF_Contour *old;
 
-    if ( !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)val)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(val)) ) {
 	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Contour");
 return( -1 );
     }
@@ -3463,8 +3463,8 @@ return( NULL );
     } else if ( spline_err==-1 )
 	spline_err = pt_err;
 
-    if ( !PyType_IsSubtype(&PyFF_LayerType,((PyObject *)other)->ob_type) &&
-	 !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)other)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(other)) &&
+	 !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(other)) ) {
 	PyErr_Format(PyExc_TypeError, "Unexpected type");
 return( NULL );
     }
@@ -3750,10 +3750,10 @@ return( -1 );
 	SplineSet *ss=NULL;
 	int start=0, order2=0;
 
-	if ( PyType_IsSubtype(&PyFF_ContourType,poly->ob_type) ) {
+	if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(poly)) ) {
 	    order2 = ((PyFF_Contour *) poly)->is_quadratic;
 	    ss = SSFromContour((PyFF_Contour *) poly,&start);
-	} else if ( PyType_IsSubtype(&PyFF_LayerType,poly->ob_type) ) {
+	} else if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(poly)) ) {
 	    order2 = ((PyFF_Layer *) poly)->is_quadratic;
 	    ss = SSFromLayer((PyFF_Layer *) poly);
 	} else {
@@ -3925,7 +3925,7 @@ static PyObject *PyFFLayer_Exclude(PyFF_Layer *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"O", &obj ) )
 return( NULL );
-    if ( !PyType_IsSubtype(&PyFF_LayerType,((PyObject *)obj)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(obj)) ) {
 	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Layer");
 return( NULL );
     }
@@ -3955,7 +3955,7 @@ static PyObject *PyFFLayer_interpolateNewLayer(PyFF_Layer *self, PyObject *args)
 
     if ( !PyArg_ParseTuple(args,"Od", &obj, &amount ) )
 return( NULL );
-    if ( !PyType_IsSubtype(&PyFF_LayerType,((PyObject *)obj)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(obj)) ) {
 	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Layer");
 return( NULL );
     }
@@ -4522,7 +4522,7 @@ static void PyFF_GlyphPen_dealloc(PyFF_GlyphPen *self) {
 	    SCCharChangedUpdate(self->sc,self->layer);
 	self->sc = NULL;
     }
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFGlyphPen_Str(PyFF_GlyphPen *self) {
@@ -4960,10 +4960,10 @@ return( -1 );
 	layer = &sc->parent->grid;
     else
 	layer = &sc->layers[layeri];
-    if ( PyType_IsSubtype(&PyFF_LayerType,((PyObject *)value)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(value)) ) {
 	isquad = ((PyFF_Layer *) value)->is_quadratic;
 	ss = SSFromLayer( (PyFF_Layer *) value);
-    } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)value)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(value)) ) {
 	isquad = ((PyFF_Contour *) value)->is_quadratic;
 	ss = SSFromContour( (PyFF_Contour *) value,NULL);
     } else {
@@ -5107,7 +5107,7 @@ static PyTypeObject PyFF_LayerArrayIterType = {
 static void PyFF_LayerArray_dealloc(PyFF_LayerArray *self) {
     if ( self->sc!=NULL )
 	self->sc = NULL;
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFLayerArray_Str(PyFF_LayerArray *self) {
@@ -5282,7 +5282,7 @@ static PyTypeObject PyFF_LayerArrayType = {
 static void PyFF_RefArray_dealloc(PyFF_RefArray *self) {
     if ( self->sc!=NULL )
 	self->sc = NULL;
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFReferences_Str(PyFF_RefArray *self) {
@@ -5429,7 +5429,7 @@ static PyTypeObject PyFF_RefArrayType = {
 /* ************************************************************************** */
 
 static void PyFFMathKern_dealloc(PyFF_MathKern *self) {
-    ((PyObject *)self)->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static PyObject *PyFFMathKern_Str(PyFF_MathKern *self) {
@@ -5589,7 +5589,7 @@ static void PyFF_Glyph_dealloc(PyFF_Glyph *self) {
     Py_XDECREF(self->layers);
     Py_XDECREF(self->refs);
     Py_XDECREF(self->mk);
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFGlyph_Repr(PyFF_Glyph *self) {
@@ -5616,10 +5616,10 @@ static PyObject *PyFFGlyph_Repr(PyFF_Glyph *self) {
 
 #ifdef DEBUG
     at = sprintf(repr, "<%s at 0x%lx sc=0x%lx",
-		 self->ob_type->tp_name, (unsigned long)(self), (unsigned long)(self->sc));
+		 Py_TYPENAME(self), (unsigned long)(self), (unsigned long)(self->sc));
 #else
     at = sprintf(repr, "<%s at 0x%lx",
-		 self->ob_type->tp_name, (unsigned long)(self));
+		 Py_TYPENAME(self), (unsigned long)(self));
 #endif
     if ( self->sc==NULL ) {
 	strcpy( &repr[at], " CLOSED>" );
@@ -5652,7 +5652,7 @@ static int PyFFGlyph_docompare(PyFF_Glyph *self,PyObject *other,
     int ret;
     SplinePoint *badpoint;
 
-    if ( PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)other)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(other)) ) {
 	SplineChar *sc = self->sc;
 	SplineChar *sc2 = ((PyFF_Glyph *) other)->sc;
 	int olayer = ((PyFF_Glyph *) other)->layer;
@@ -5664,9 +5664,9 @@ static int PyFFGlyph_docompare(PyFF_Glyph *self,PyObject *other,
 		sc->layers[self->layer].refs,sc2->layers[olayer].refs,
 		pt_err,spline_err,sc->name,false,&dummy);
 return( ret );
-    } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)other)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(other)) ) {
 	ss2 = SSFromContour((PyFF_Contour *) other,NULL);
-    } else if ( PyType_IsSubtype(&PyFF_LayerType,((PyObject *)other)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(other)) ) {
 	ss2 = SSFromLayer((PyFF_Layer *) other);
     } else {
 	PyErr_Format(PyExc_TypeError, "Unexpected type");
@@ -5690,7 +5690,7 @@ return( 0 );
 
     /* There's no real ordering on these guys. Make up something that is */
     /*  at least consistent */
-    if ( !PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)other)->ob_type) )
+    if ( !PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(other)) )
 return( -1 );
     /* Ok, both are glyphs */
     sc1 = self->sc; sc2 = ((PyFF_Glyph *) other)->sc;
@@ -6699,7 +6699,7 @@ return( NULL );
 	len = 0;
 	for ( i=0; i<cnt; ++i ) {
 	    PyObject *obj = PySequence_GetItem(value,i);
-	    if ( PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)obj)->ob_type) ) {
+	    if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(obj)) ) {
 		PyFF_Glyph *g = (PyFF_Glyph *) obj;
 		len += strlen(g->sc->name) + 1;
 	    } else {
@@ -6752,7 +6752,7 @@ return( NULL );
     for ( i=0; i<cnt; ++i ) {
 	PyObject *obj = PySequence_GetItem(tuple,i);
 	int extender=0, start=0, end=0, full=0;
-	if ( PyType_IsSubtype(&PyFF_GlyphType,obj->ob_type) ) {
+	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(obj)) ) {
 	    parts[i].component = copy( ((PyFF_Glyph *) obj)->sc->name );
 	} else if ( PyUnicode_Check(obj)) {
 	    PyObject *bytes = PyUnicode_AsUTF8String(obj);
@@ -6761,7 +6761,7 @@ return( NULL );
 	} else if ( PyString_Check(obj)) {
 	    parts[i].component = copy(PyString_AsString(obj));
 	} else if ( PyTuple_Check(obj) && PyTuple_Size(obj)>0 &&
-		PyType_IsSubtype(&PyFF_GlyphType,PyTuple_GetItem(obj,0)->ob_type) ) {
+		    PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(PyTuple_GetItem(obj,0))) ) {
 	    PyObject *g;
 	    if ( !PyArg_ParseTuple(obj,"O|iiii", &g,
 		    &extender, &start, &end, &full )) {
@@ -7735,7 +7735,7 @@ return(NULL );
     len = 0;
     for ( i=0; i<cnt; ++i ) {
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
-	if ( PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)aglyph)->ob_type) ) {
+	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
 	    SplineChar *sc = ((PyFF_Glyph *) aglyph)->sc;
 	    str = sc->name;
 	} else
@@ -7750,7 +7750,7 @@ return( NULL );
     ret = pt = galloc(len+1);
     for ( i=0; i<cnt; ++i ) {
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
-	if ( PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)aglyph)->ob_type) ) {
+	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
 	    SplineChar *sc = ((PyFF_Glyph *) aglyph)->sc;
 	    str = sc->name;
 	} else
@@ -7778,7 +7778,7 @@ return(NULL );
     ret = galloc((cnt+1)*sizeof(char *));
     for ( i=0; i<cnt; ++i ) {
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
-	if ( PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)aglyph)->ob_type) ) {
+	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
 	    SplineChar *sc = ((PyFF_Glyph *) aglyph)->sc;
 	    str = sc->name;
 	} else
@@ -7845,7 +7845,7 @@ return(NULL );
     ret = galloc((cnt+1)*sizeof(SplineChar *));
     for ( i=0; i<cnt; ++i ) {
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
-	if ( PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)aglyph)->ob_type) ) {
+	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
 	    ret[i] = ((PyFF_Glyph *) aglyph)->sc;
 	    if ( ret[i]->parent!=sf ) {
 		PyErr_Format(PyExc_TypeError,"Glyph object, %s, must belong to the expected font.", ret[i]->name);
@@ -8377,7 +8377,7 @@ static PyObject *PyFFGlyph_Exclude(PyFF_Glyph *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"O", &obj ) )
 return( NULL );
-    if ( !PyType_IsSubtype(&PyFF_LayerType,((PyObject *)obj)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(obj)) ) {
 	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Layer");
 return( NULL );
     }
@@ -8575,7 +8575,7 @@ static PyObject *cvtiter_iternext(cvtiterobject *ci) {
 return NULL;
 
     if ( ci->pos<cvt->cvt->len/2 ) {
-        entry = (((PyObject *)cvt)->ob_type->tp_as_sequence->sq_item)((PyObject *) cvt,ci->pos++);
+        entry = (Py_TYPE(cvt)->tp_as_sequence->sq_item)((PyObject *) cvt, ci->pos++);
 return( entry );
     }
 
@@ -8645,7 +8645,7 @@ static PyTypeObject PyFF_CvtIterType = {
 /* ************************************************************************** */
 
 static void PyFFCvt_dealloc(PyFF_Cvt *self) {
-    ((PyObject *)self)->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static PyObject *PyFFCvt_new(PyFF_Font *owner) {
@@ -8709,7 +8709,7 @@ static PyObject *PyFFCvt_Concat( PyObject *_c1, PyObject *_c2 ) {
     int is_cvt2;
 
     len1 = PyFFCvt_Length(_c1);
-    if ( PyType_IsSubtype(&PyFF_CvtType,((PyObject *)c2)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_CvtType, Py_TYPE(c2)) ) {
 	len2 = PyFFCvt_Length(_c2);
 	is_cvt2 = true;
     } else if ( PySequence_Check(_c2)) {
@@ -8740,7 +8740,7 @@ static PyObject *PyFFCvt_InPlaceConcat( PyObject *_self, PyObject *_c2 ) {
     struct ttf_table *cvt;
 
     len1 = PyFFCvt_Length(_self);
-    if ( PyType_IsSubtype(&PyFF_CvtType,((PyObject *)c2)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_CvtType, Py_TYPE(c2)) ) {
 	len2 = PyFFCvt_Length(_c2);
 	is_cvt2 = true;
     } else if ( PySequence_Check(_c2)) {
@@ -8985,7 +8985,7 @@ static PyTypeObject PyFF_CvtType = {
 /* ************************************************************************** */
 
 static void PyFFSelection_dealloc(PyFF_Selection *self) {
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFSelection_new(PyFF_Font *owner) {
@@ -9092,7 +9092,7 @@ static int SelIndex(PyObject *arg, FontViewBase *fv, int ints_as_unicode) {
 	enc = PyInt_AsLong(arg);
 	if ( ints_as_unicode )
 	    enc = SFFindSlot(fv->sf, fv->map, enc, NULL );
-    } else if ( PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)arg)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(arg)) ) {
 	SplineChar *sc = ((PyFF_Glyph *) arg)->sc;
 	if ( sc->parent == fv->sf )
 	    enc = fv->map->backmap[sc->orig_pos];
@@ -9424,7 +9424,7 @@ static PyTypeObject PyFF_LayerInfoArrayIterType = {
 static void PyFF_LayerInfo_dealloc(PyFF_LayerInfo *self) {
     if ( self->sf!=NULL )
 	self->sf = NULL;
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFLayerInfo_Str(PyFF_LayerInfo *self) {
@@ -9573,7 +9573,7 @@ static PyTypeObject PyFF_LayerInfoType = {
 static void PyFF_LayerInfoArray_dealloc(PyFF_LayerInfoArray *self) {
     if ( self->sf!=NULL )
 	self->sf = NULL;
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFLayerInfoArray_Str(PyFF_LayerInfoArray *self) {
@@ -9772,7 +9772,7 @@ static PyTypeObject PyFF_LayerInfoArrayType = {
 /* ************************************************************************** */
 
 static void PyFFMath_dealloc(PyFF_Math *self) {
-    ((PyObject *)self)->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static PyObject *PyFFMath_Str(PyFF_Math *self) {
@@ -10025,7 +10025,7 @@ static PyTypeObject PyFF_PrivateIterType = {
 static void PyFF_Private_dealloc(PyFF_Private *self) {
     if ( self->sf!=NULL )
 	self->sf = NULL;
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFPrivate_Str(PyFF_Private *self) {
@@ -10444,7 +10444,7 @@ static void PyFF_Font_dealloc(PyFF_Font *self) {
     Py_XDECREF(self->layers);
     Py_XDECREF(self->private);
     Py_XDECREF(self->math);
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFF_Font_new(PyTypeObject *type, PyObject *UNUSED(args), PyObject *UNUSED(kwds)) {
@@ -10495,13 +10495,13 @@ static PyObject *PyFFFont_Repr(PyFF_Font *self) {
     char prefix[256];
 #ifdef DEBUG
     snprintf(prefix,sizeof(prefix), "<%s at 0x%lx fv=0x%lx sf=0x%lx",
-	     self->ob_type->tp_name,
+	     Py_TYPENAME(self),
 	     (unsigned long)(self),
 	     (unsigned long)(self->fv),
 	     (unsigned long)(self->fv ? self->fv->sf : 0) );
 #else
     snprintf(prefix,sizeof(prefix), "<%s at 0x%lx",
-	     self->ob_type->tp_name, (unsigned long)(self) );
+	     Py_TYPENAME(self), (unsigned long)(self) );
 #endif
     if ( self->fv==NULL )
 	ret = STRING_FROM_FORMAT("%s CLOSED>",prefix);
@@ -11001,7 +11001,7 @@ static int PyFF_Font_set_selection(PyFF_Font *self,PyObject *value, void *UNUSED
 return(-1);
 
     fv = self->fv;
-    if ( PyType_IsSubtype(&PyFF_SelectionType,((PyObject *)value)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_SelectionType, Py_TYPE(value)) ) {
 	len2 = PyFFSelection_Length(value);
 	is_sel = true;
     } else if ( PySequence_Check(value)) {
@@ -11053,7 +11053,7 @@ static int PyFF_Font_set_cvt(PyFF_Font *self,PyObject *value, void *UNUSED(closu
 return(-1);
 
     sf = self->fv->sf;
-    if ( PyType_IsSubtype(&PyFF_CvtType,((PyObject *)value)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_CvtType, Py_TYPE(value)) ) {
 	len2 = PyFFCvt_Length(value);
 	is_cvt2 = true;
     } else if ( PySequence_Check(value)) {
@@ -12591,10 +12591,10 @@ return (-1);
 	PyErr_Format(PyExc_TypeError, "Cannot delete guide field" );
 return( -1 );
     }
-    if ( PyType_IsSubtype(&PyFF_LayerType,((PyObject *)value)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(value)) ) {
 	isquad = ((PyFF_Layer *) value)->is_quadratic;
 	ss = SSFromLayer( (PyFF_Layer *) value);
-    } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)value)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(value)) ) {
 	isquad = ((PyFF_Contour *) value)->is_quadratic;
 	ss = SSFromContour( (PyFF_Contour *) value,NULL);
     } else {
@@ -13473,7 +13473,7 @@ return( NULL );
     locfilename = utf82def_copy(filename);
     free(filename);
 
-    if ( !PyType_IsSubtype(&PyFF_FontType,((PyObject *)other)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_FontType, Py_TYPE(other)) ) {
 	PyErr_Format(PyExc_TypeError,"First argument must be a fontforge font");
 	free(locfilename);
 return( NULL );
@@ -14672,7 +14672,7 @@ return (NULL);
     sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"OO|s", ((PyObject **)&otherfont), &lookup_list, &before_str))
 return( NULL );
-    if ( !PyType_IsSubtype(&PyFF_FontType,((PyObject *)otherfont)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_FontType, Py_TYPE(otherfont)) ) {
 	PyErr_Format(PyExc_TypeError,"First argument must be a fontforge font");
 return( NULL );
     }
@@ -15185,18 +15185,18 @@ return (NULL);
     if ( !PyArg_ParseTuple(args,"OO|d", &srch, &rpl, &err ))
 return( NULL );
 
-    if ( PyType_IsSubtype(&PyFF_LayerType,((PyObject *)srch)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(srch)) ) {
 	srch_ss = SSFromLayer((PyFF_Layer *) srch);
-    } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)srch)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(srch)) ) {
 	srch_ss = SSFromContour((PyFF_Contour *) srch, NULL);
     } else {
 	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
 return( NULL );
     }
 
-    if ( PyType_IsSubtype(&PyFF_LayerType,((PyObject *)rpl)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(rpl)) ) {
 	rpl_ss = SSFromLayer((PyFF_Layer *) rpl);
-    } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)rpl)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(rpl)) ) {
 	rpl_ss = SSFromContour((PyFF_Contour *) rpl, NULL);
     } else {
 	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
@@ -15231,9 +15231,9 @@ return (NULL);
     if ( !PyArg_ParseTuple(args,"O|dO", &srch, &err, &pyflags))
 return( NULL );
 
-    if ( PyType_IsSubtype(&PyFF_LayerType,((PyObject *)srch)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(srch)) ) {
 	srch_ss = SSFromLayer((PyFF_Layer *) srch);
-    } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)srch)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(srch)) ) {
 	srch_ss = SSFromContour((PyFF_Contour *) srch, NULL);
     } else {
 	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
@@ -15614,7 +15614,7 @@ return( NULL );
     head = last = makesflist(self,bf);
     if ( others==Py_None )
 	/* Silly to have a ttc with just one font, but ok */;
-    else if ( PyType_IsSubtype(&PyFF_FontType,((PyObject *)others)->ob_type) ) {
+    else if ( PyType_IsSubtype(&PyFF_FontType, Py_TYPE(others)) ) {
 	PyFF_Font* otherfont = (PyFF_Font*)others;
 	if ( CheckIfFontClosed(otherfont) ) {
 	    freesflist(head);
@@ -15627,7 +15627,7 @@ return(NULL);
 	int i, subcnt = PySequence_Size(others);
 	for ( i=0; i<subcnt; ++i ) {
 	    PyObject *item = PySequence_GetItem(others,i);
-	    if ( PyType_IsSubtype(&PyFF_FontType,((PyObject *)item)->ob_type) ) {
+	    if ( PyType_IsSubtype(&PyFF_FontType, Py_TYPE(item)) ) {
 		PyFF_Font* otherfont = (PyFF_Font*)item;
 		if( CheckIfFontClosed(otherfont) ) {
 		    freesflist(head);
@@ -15857,8 +15857,8 @@ return (NULL);
     sf = fv->sf;
     if ( !PyArg_ParseTuple(args,"OOd",&from,&to,&by) )
 return( NULL );
-    if ( !PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)from)->ob_type) ||
-         !PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)to)->ob_type)) {
+    if ( !PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(from)) ||
+         !PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(to))) {
 	PyErr_Format(PyExc_TypeError, "Expected glyph objects");
 return( NULL );
     }
@@ -15912,7 +15912,7 @@ static PyObject *PyFFFont_removeGlyph(PyFF_Font *self, PyObject *args) {
     if ( CheckIfFontClosed(self) )
 return (NULL);
     fv = self->fv;
-    if ( PyTuple_Size(args)==1 && PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)PyTuple_GetItem(args,0))->ob_type)) {
+    if ( PyTuple_Size(args)==1 && PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(PyTuple_GetItem(args,0))) ) {
 	sc = ((PyFF_Glyph *) PyTuple_GetItem(args,0))->sc;
 	if ( sc->parent!=fv->sf ) {
 	    PyErr_Format(PyExc_ValueError, "This glyph is not in the font");
@@ -17226,7 +17226,7 @@ typedef struct {
 static PyTypeObject PyFF_AWGlyphType, PyFF_AWGlyphIndexType, PyFF_AWContextType;
 
 static void PyFF_AWGlyphIndex_dealloc(PyFF_AWGlyphI *self) {
-    self->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static Py_ssize_t PyFF_AWGlyphLength( PyObject *self ) {
@@ -17321,7 +17321,7 @@ static void PyFF_AWGlyph_dealloc(PyFF_AWGlyph *self) {
 	    self->base->python_data = NULL;
 	self->base = NULL;
     }
-    self->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *GetPythonObjectForAWGlyph(AW_Glyph *aw) {
@@ -17463,7 +17463,7 @@ static void PyFF_AWContext_dealloc(PyFF_AWContext *self) {
 	self->base->python_data = NULL;
 	self->base = NULL;
     }
-    self->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *GetPythonObjectForAWData(AW_Data *all) {
@@ -17937,7 +17937,7 @@ return( NULL );
 return( NULL );
     for ( i=0; i<len-2; ++i ) {
 	PyObject *obj = PyTuple_GetItem(args,2+i);
-	if ( !PyType_IsSubtype(&PyFF_PointType,((PyObject *)obj)->ob_type) ) {
+	if ( !PyType_IsSubtype(&PyFF_PointType, Py_TYPE(obj)) ) {
 	    PyErr_Format(PyExc_TypeError, "Expected FontForge points.");
 return( NULL );
 	}
@@ -17967,7 +17967,7 @@ return( NULL );
 return( NULL );
     for ( i=0; i<len-1; ++i ) {
 	PyObject *obj = PyTuple_GetItem(args,1+i);
-	if ( !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)obj)->ob_type) ) {
+	if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(obj)) ) {
 	    PyErr_Format(PyExc_TypeError, "Expected FontForge Contours.");
 return( NULL );
 	}
@@ -18084,7 +18084,7 @@ PyMODINIT_FUNC _PyInit_fontforge(void) {
 
     setupMath();
     for ( i=0; types[i]!=NULL; ++i ) {
-        ((PyObject *)types[i])->ob_type = &PyType_Type; /* Or does Type_Ready do this??? */
+        Py_TYPE(types[i]) = &PyType_Type; /* Or does Type_Ready do this??? */
         if (PyType_Ready(types[i]) < 0)
             return NULL;        /* Is this what we want? */
     }
@@ -18189,7 +18189,7 @@ return;
 
     setupMath();
     for ( i=0; types[i]!=NULL; ++i ) {
-	types[i]->ob_type = &PyType_Type;		/* Or does Type_Ready do this??? */
+	Py_TYPE(types[i]) = &PyType_Type;		/* Or does Type_Ready do this??? */
 	if (PyType_Ready(types[i]) < 0)
 return;
     }
