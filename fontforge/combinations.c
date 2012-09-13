@@ -518,7 +518,7 @@ static void KP_ExposeKerns(KPData *kpd,GWindow pixmap,GRect *rect) {
 	    sprintf( buffer, "%d,%d ", kern->newoff, kern->newyoff );
 	if ( kern->ac!=NULL )
 	    strncat(buffer,kern->ac->name,sizeof(buffer)-strlen(buffer)-1);
-	GDrawDrawText8(pixmap,15,subclip.y+kpd->uh-kpd->fh+kpd->as,buffer,-1,NULL,
+	GDrawDrawText8(pixmap,15,subclip.y+kpd->uh-kpd->fh+kpd->as,buffer,-1,
 		kern->kp!=NULL && kern->newoff!=kern->kp->off ? 0xff0000 : 0x000000 );
 	if ( i+kpd->off_top==kpd->selected ) {
 	    sel.x = 0; sel.width = kpd->vwidth-1;

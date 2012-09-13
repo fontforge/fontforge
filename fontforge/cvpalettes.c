@@ -851,7 +851,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     temp.x = 52-16; temp.y = i*27; temp.width = 16; temp.height = 4*12;
     GDrawFillRect(pixmap,&temp,GDrawGetDefaultBackground(NULL));
     for ( j=0; j<4; ++j ) {
-	GDrawDrawText(pixmap,2,i*27+j*12+10,(unichar_t *) _Mouse[j],-1,NULL,GDrawGetDefaultForeground(NULL));
+	GDrawDrawText(pixmap,2,i*27+j*12+10,(unichar_t *) _Mouse[j],-1,GDrawGetDefaultForeground(NULL));
 	if ( (&cv->b1_tool)[j]!=cvt_none )
 	    GDrawDrawImage(pixmap,smalls[(&cv->b1_tool)[j]],NULL,52-16,i*27+j*12);
     }
@@ -1382,7 +1382,7 @@ return;
 	if ( i==0 || i==1 ) {
 	    str = i==0?_("Guide") : _("Back");
 	    GDrawDrawText8(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
-		    (char *) str,-1,NULL,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
+		    (char *) str,-1,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
 	} else if ( layer2.offtop+i>=layer2.current_layers ) {
     break;
 	} else if ( layer2.layers[layer2.offtop+i]!=NULL ) {
@@ -1897,7 +1897,7 @@ return;
             }
             str = ( ll>=0 && ll<cv->b.sc->layer_cnt ? (cv->b.sc->layers[ll].order2? "Q" : "C") : " ");
 	    GDrawDrawText8(pixmap, quadcol, y + yt,
-		    (char *) str,-1,NULL,GDrawGetDefaultForeground(NULL));
+		    (char *) str,-1,GDrawGetDefaultForeground(NULL));
         }
 
          /* draw fg/bg toggle */
@@ -1910,7 +1910,7 @@ return;
             }
             str = ( ll>=0 && ll<cv->b.sc->layer_cnt ? (cv->b.sc->layers[ll].background? "B" : "F") : "#");
 	    GDrawDrawText8(pixmap, fgcol, y + yt,
-		    (char *) str,-1,NULL,GDrawGetDefaultForeground(NULL));
+		    (char *) str,-1,GDrawGetDefaultForeground(NULL));
         }
 
          /* draw layer thumbnail and label */
@@ -1929,7 +1929,7 @@ return;
 	if ( ll==-1 || ll==0 || ll==1) {
 	    str = ll==-1 ? _("Guide") : (ll==0 ?_("Back") : _("Fore")) ;
 	    GDrawDrawText8(pixmap,r.x+2,y + yt,
-		    (char *) str,-1,NULL,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
+		    (char *) str,-1,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
 	} else if ( ll>=layerinfo.current_layers ) {
              break; /* no more layers to draw! */
 	} else if ( ll>=0 && layerinfo.layers[ll]!=NULL ) {
@@ -1944,7 +1944,7 @@ return;
             str = cv->b.sc->parent->layers[ll].name;
             if ( !str || !*str ) str="-";
 	    GDrawDrawText8(pixmap, r.x+2, y + yt,
-		        (char *) str,-1,NULL,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
+		        (char *) str,-1,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
 	}
     }
 }
@@ -2061,7 +2061,7 @@ static void CVLCheckLayerCount(CharView *cv, int resize) {
 	    } else if ( hasmn==NULL ) {
                 sprintf(namebuf,"%s", i==-1 ? _("Guide") : (i==0 ?_("Back") : _("Fore")) );
             }
-            width = GDrawGetText8Width(cvlayers, namebuf, -1, NULL);
+            width = GDrawGetText8Width(cvlayers, namebuf, -1);
 	    if ( width+togsize>maxwidth ) maxwidth = width + togsize;
 	} else if ( i==-1 ) {
 	    if ( width+togsize>maxwidth ) maxwidth = width + togsize;

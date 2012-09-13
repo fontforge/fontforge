@@ -377,13 +377,13 @@ static void SVDraw(SearchView *sv, GWindow pixmap, GEvent *event) {
     else
 	GDrawSetFont(pixmap,sv->bold);
     GDrawDrawText8(pixmap,10,sv->mbh+5+sv->as,
-	    _("Search Pattern:"),-1,NULL,0);
+	    _("Search Pattern:"),-1,0);
     if ( sv->cv_rpl.inactive )
 	GDrawSetFont(pixmap,sv->plain);
     else
 	GDrawSetFont(pixmap,sv->bold);
     GDrawDrawText8(pixmap,sv->rpl_x,sv->mbh+5+sv->as,
-	    _("Replace Pattern:"),-1,NULL,0);
+	    _("Replace Pattern:"),-1,0);
     r.x = 10-1; r.y=sv->cv_y-1;
     r.width = sv->cv_width+1; r.height = sv->cv_height+1;
     GDrawDrawRect(pixmap,&r,0);

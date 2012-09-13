@@ -53,10 +53,10 @@ extern void _GXPDraw_DestroyWindow(GXWindow nw);
 #include "fontP.h"
 extern PangoFontDescription *_GXPDraw_configfont(GWindow gw, GFont *font);
 extern int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
-	const char *text, int32 cnt, FontMods *mods, Color col,
+	const char *text, int32 cnt, Color col,
 	enum text_funcs drawit, struct tf_arg *arg);
 extern int32 _GXPDraw_DoText(GWindow w, int32 x, int32 y,
-	const unichar_t *text, int32 cnt, FontMods *mods, Color col,
+	const unichar_t *text, int32 cnt, Color col,
 	enum text_funcs drawit, struct tf_arg *arg);
 extern void _GXPDraw_FontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld);
 extern void _GXPDraw_LayoutInit(GWindow w, char *text, int cnt, GFont *fi);

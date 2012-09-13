@@ -42,17 +42,6 @@ typedef struct {
     char *utf8_family_name;
 } FontRequest;
 
-typedef struct {
-    int16 letter_spacing;		/* in point tenths */
-    unsigned int starts_word: 1;
-    unsigned int has_charset: 1;
-    enum text_mods mods;
-    enum text_lines lines;
-    enum charset charset;
-} FontMods;
-
-#define FONTMODS_EMPTY { 0, 0, 0, 0, 0, 0 }
-
 typedef struct font_instance FontInstance, GFont;
 enum gic_style { gic_overspot=2, gic_root=1, gic_hidden=0, gic_orlesser=4, gic_type=3 };
 typedef struct ginput_context GIC;
@@ -404,13 +393,13 @@ extern GFont *GDrawAttachFont(GWindow gw, FontRequest *rq);
 extern FontRequest *GDrawDecomposeFont(GFont *fi, FontRequest *rq);
 extern void GDrawWindowFontMetrics(GWindow gw,GFont *fi,int *as, int *ds, int *ld);
 
-extern int32 GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32 cnt, FontMods *mods, GTextBounds *size);
-extern int32 GDrawGetTextWidth(GWindow gw, const unichar_t *text, int32 cnt, FontMods *mods);
-extern int32 GDrawDrawText(GWindow gw, int32 x, int32 y, const unichar_t *txt, int32 cnt, FontMods *mods, Color col);
+extern int32 GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32 cnt, GTextBounds *size);
+extern int32 GDrawGetTextWidth(GWindow gw, const unichar_t *text, int32 cnt);
+extern int32 GDrawDrawText(GWindow gw, int32 x, int32 y, const unichar_t *txt, int32 cnt, Color col);
 /* UTF8 routines */
-extern int32 GDrawGetText8Bounds(GWindow gw, const char *text, int32 cnt, FontMods *mods, GTextBounds *size);
-extern int32 GDrawGetText8Width(GWindow gw, const char *text, int32 cnt, FontMods *mods);
-extern int32 GDrawDrawText8(GWindow gw, int32 x, int32 y, const char *txt, int32 cnt, FontMods *mods, Color col);
+extern int32 GDrawGetText8Bounds(GWindow gw, const char *text, int32 cnt, GTextBounds *size);
+extern int32 GDrawGetText8Width(GWindow gw, const char *text, int32 cnt);
+extern int32 GDrawDrawText8(GWindow gw, int32 x, int32 y, const char *txt, int32 cnt, Color col);
 
 extern GIC *GDrawCreateInputContext(GWindow w,enum gic_style def_style);
 extern void GDrawSetGIC(GWindow w,GIC *gic,int x, int y);

@@ -5701,7 +5701,6 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 	    char utf8_buf[8];
 	    int use_utf8 = false;
 	    Color fg;
-	    FontMods *mods=NULL;
 	    extern const int amspua[];
 	    int uni;
 	    struct cidmap *cidmap = NULL;
@@ -5863,13 +5862,13 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 	    } else if ( use_utf8 ) {
 		GTextBounds size;
 		if ( styles!=laststyles ) GDrawSetFont(pixmap,FVCheckFont(fv,styles));
-		width = GDrawGetText8Bounds(pixmap,utf8_buf,-1,mods,&size);
+		width = GDrawGetText8Bounds(pixmap,utf8_buf,-1,&size);
 		if ( size.lbearing==0 && size.rbearing==0 ) {
 		    utf8_buf[0] = 0xe0 | (0xfffd>>12);
 		    utf8_buf[1] = 0x80 | ((0xfffd>>6)&0x3f);
 		    utf8_buf[2] = 0x80 | (0xfffd&0x3f);
 		    utf8_buf[3] = 0;
-		    width = GDrawGetText8Bounds(pixmap,utf8_buf,-1,mods,&size);
+		    width = GDrawGetText8Bounds(pixmap,utf8_buf,-1,&size);
 		}
 		width = size.rbearing - size.lbearing+1;
 		if ( width >= fv->cbw-1 ) {
@@ -5881,14 +5880,14 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 		    /* move rotated glyph up a bit to center it */
 		    if (styles&_uni_vertical)
 			y -= fv->lab_as/2;
-		    GDrawDrawText8(pixmap,j*fv->cbw+(fv->cbw-1-width)/2-size.lbearing,y,utf8_buf,-1,mods,fg^fgxor);
+		    GDrawDrawText8(pixmap,j*fv->cbw+(fv->cbw-1-width)/2-size.lbearing,y,utf8_buf,-1,fg^fgxor);
 		}
 		if ( width >= fv->cbw-1 )
 		    GDrawPopClip(pixmap,&old2);
 		laststyles = styles;
 	    } else {
 		if ( styles!=laststyles ) GDrawSetFont(pixmap,FVCheckFont(fv,styles));
-		width = GDrawGetTextWidth(pixmap,buf,-1,mods);
+		width = GDrawGetTextWidth(pixmap,buf,-1);
 		if ( width >= fv->cbw-1 ) {
 		    GDrawPushClip(pixmap,&r,&old2);
 		    width = fv->cbw-1;
@@ -5898,7 +5897,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 		    /* move rotated glyph up a bit to center it */
 		    if (styles&_uni_vertical)
 			y -= fv->lab_as/2;
-		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,y,buf,-1,mods,fg^fgxor);
+		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,y,buf,-1,fg^fgxor);
 		}
 		if ( width >= fv->cbw-1 )
 		    GDrawPopClip(pixmap,&old2);
@@ -6008,8 +6007,8 @@ return;
         }
     }
 
-    tlen = GDrawDrawText(pixmap,10,fv->mbh+fv->lab_as,ubuffer,ulen,NULL,fvglyphinfocol);
-    GDrawDrawText(pixmap,10+tlen,fv->mbh+fv->lab_as,ubuffer+ulen,-1,NULL,fg);
+    tlen = GDrawDrawText(pixmap,10,fv->mbh+fv->lab_as,ubuffer,ulen,fvglyphinfocol);
+    GDrawDrawText(pixmap,10+tlen,fv->mbh+fv->lab_as,ubuffer+ulen,-1,fg);
     GDrawPopClip(pixmap,&old);
 }
 

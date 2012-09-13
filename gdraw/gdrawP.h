@@ -216,8 +216,8 @@ struct displayfuncs {
     struct font_data *(*scaleFont)(GDisplay *, struct font_data *fd,FontRequest *rq);
     struct font_data *(*stylizeFont)(GDisplay *, struct font_data *fd,FontRequest *rq);
     /* XFontStruct **/void *(*loadFontMetrics)(GDisplay *, struct font_data *fd);
-    void (*drawText1)(GWindow, struct font_data *fd, int32 x, int32 y, char *txt, int32 cnt, FontMods *, Color col);
-    void (*drawText2)(GWindow, struct font_data *fd, int32 x, int32 y, GChar2b *txt, int32 cnt, FontMods *, Color col);
+    void (*drawText1)(GWindow, struct font_data *fd, int32 x, int32 y, char *txt, int32 cnt, Color col);
+    void (*drawText2)(GWindow, struct font_data *fd, int32 x, int32 y, GChar2b *txt, int32 cnt, Color col);
 
     GIC *(*createInputContext)(GWindow, enum gic_style);
     void (*setGIC)(GWindow, GIC *, int x, int y);

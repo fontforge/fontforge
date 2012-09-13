@@ -2225,7 +2225,7 @@ static void gtextfield_resize(GGadget *g, int32 width, int32 height ) {
     _ggadget_resize(g,gtwidth, gtheight);
 
     if ( gt->hsb==NULL && gt->xoff_left!=0 && !gt->multi_line &&
-	    GDrawGetTextWidth(gt->g.base,gt->text,-1,NULL)<gt->g.inner.width )
+	    GDrawGetTextWidth(gt->g.base,gt->text,-1)<gt->g.inner.width )
 	gt->xoff_left = 0;
 
     GTextFieldRefigureLines(gt,0);
@@ -2613,7 +2613,7 @@ static void GTextFieldFit(GTextField *gt) {
 	FontRequest rq;
 	int tries;
 	for ( tries = 0; tries<2; ++tries ) {
-	    width = GDrawGetTextBounds(gt->g.base,gt->text, -1, NULL, &bounds);
+	    width = GDrawGetTextBounds(gt->g.base,gt->text, -1, &bounds);
 	    GDrawWindowFontMetrics(gt->g.base,gt->font,&as, &ds, &ld);
 #if 0 /* Alexej doesn't like this behavior, says textfields should be */
 /*  consistent no matter what's inside them. Hmm. */
@@ -2629,7 +2629,7 @@ static void GTextFieldFit(GTextField *gt) {
 	}
 	gt->fh = as+ds;
 	gt->as = as;
-	gt->nw = GDrawGetTextWidth(gt->g.base,nstr, 1, NULL );
+	gt->nw = GDrawGetTextWidth(gt->g.base,nstr, 1);
 	GDrawSetFont(gt->g.base,old);
     }
 
@@ -2901,7 +2901,7 @@ return( true );
 		r.height = gt->fh;
 		GDrawFillRect(popup,&r,owner->box->active_border);
 	    }
-	    GDrawDrawText(popup,bp,i*gt->fh+gt->as+bp,gc->choices[i],-1,NULL,fg);
+	    GDrawDrawText(popup,bp,i*gt->fh+gt->as+bp,gc->choices[i],-1,fg);
 	}
 	GDrawPopClip(popup,&old1);
     } else if ( event->type == et_mouseup ) {
@@ -2936,7 +2936,7 @@ static void GCompletionCreatePopup(GCompletionField *gc) {
 
     maxw = 0;
     for ( i=0; i<gc->ctot; ++i ) {
-	width = GDrawGetTextWidth(base,gc->choices[i],-1,NULL);
+	width = GDrawGetTextWidth(base,gc->choices[i],-1);
 	if ( width > maxw ) maxw = width;
     }
     maxw += 2*bp;

@@ -747,7 +747,7 @@ static void InsChrExpose( GWindow pixmap, GRect *rect) {
 	uc_strcpy(ubuf,buffer);
 	GDrawDrawText(pixmap,GDrawPointsToPixels(pixmap,6),
 		GDrawPointsToPixels(pixmap,90)+inschr.sas,
-		ubuf, -1, NULL, 0x000000 );
+		ubuf, -1, 0x000000 );
 	GDrawPopClip(pixmap,&old);
     }
     if ( rect->y+rect->height < inschr.ybase )
@@ -789,11 +789,11 @@ return;
     continue;
 	buf[0] = InsChrMapChar(i*16+j);
 	if ( buf[0]==0xad ) buf[0] = '-';	/* 0xad usually doesn't print */
-	width = GDrawGetTextWidth(pixmap,buf,1,NULL);
+	width = GDrawGetTextWidth(pixmap,buf,1);
 	GDrawDrawText(pixmap,
 		j*inschr.spacing+(inschr.spacing-width)/2,
 		i*inschr.spacing+inschr.ybase+inschr.as+4,
-		buf,1,NULL,0x000000);
+		buf,1,0x000000);
     }
     if ( inschr.flash )
 	InsChrXorChar(pixmap,inschr.x,inschr.y);

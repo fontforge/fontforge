@@ -373,10 +373,10 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     GDrawSetLineWidth(pixmap,0);
     addr_end = 0;
     if ( ii->showaddr )
-	addr_end = GDrawGetTextWidth(pixmap,nums,4,NULL)+EDGE_SPACING;
+	addr_end = GDrawGetTextWidth(pixmap,nums,4)+EDGE_SPACING;
     num_end = addr_end;
     if ( ii->showhex )
-	num_end = addr_end + GDrawGetTextWidth(pixmap,nums,5,NULL)+4;
+	num_end = addr_end + GDrawGetTextWidth(pixmap,nums,5)+4;
     else if ( addr_end<36+2*EDGE_SPACING )
 	num_end = addr_end = 36+2*EDGE_SPACING;
 
@@ -409,10 +409,10 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     }
     if ( y<=high && ii->instrdata->instr_cnt==0 && i==0 ) {
 	if ( ii->instrdata->in_composit ) {
-	    GDrawDrawText8(pixmap,num_end+EDGE_SPACING,y+ii->as,_("<instrs inherited>"),-1,NULL,0xff0000);
+	    GDrawDrawText8(pixmap,num_end+EDGE_SPACING,y+ii->as,_("<instrs inherited>"),-1,0xff0000);
 	    y += ii->fh;
 	}
-	GDrawDrawText8(pixmap,num_end+EDGE_SPACING,y+ii->as,_("<no instrs>"),-1,NULL,0xff0000);
+	GDrawDrawText8(pixmap,num_end+EDGE_SPACING,y+ii->as,_("<no instrs>"),-1,0xff0000);
     } else {
 	int temp_indent;
 	for ( ; y<=high && i<ii->instrdata->instr_cnt+1; ++i ) {
@@ -455,8 +455,8 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 	    }
 	    x = addr_end + EDGE_SPACING;
 	    if ( ii->showhex )
-		GDrawDrawText(pixmap,x,y+ii->as,uins,-1,NULL,MAIN_FOREGROUND);
-	    GDrawDrawText(pixmap,num_end+EDGE_SPACING+temp_indent*4,y+ii->as,uname,-1,NULL,MAIN_FOREGROUND);
+		GDrawDrawText(pixmap,x,y+ii->as,uins,-1,MAIN_FOREGROUND);
+	    GDrawDrawText(pixmap,num_end+EDGE_SPACING+temp_indent*4,y+ii->as,uname,-1,MAIN_FOREGROUND);
 	    y += ii->fh;
 	}
 	if ( ii->showaddr && ii->lstopped!=-1 ) {
@@ -1231,14 +1231,14 @@ static void short_expose(ShortView *sv,GWindow pixmap,GRect *rect) {
     y = low;
     for ( ; y<=high && index<sv->len/2; ++index ) {
 	sprintf( caddr, "%d", index );
-	x = sv->addrend - ADDR_SPACER - GDrawGetText8Width(pixmap,caddr,-1,NULL);
-	GDrawDrawText8(pixmap,x,y+sv->as,caddr,-1,NULL,MAIN_FOREGROUND);
+	x = sv->addrend - ADDR_SPACER - GDrawGetText8Width(pixmap,caddr,-1);
+	GDrawDrawText8(pixmap,x,y+sv->as,caddr,-1,MAIN_FOREGROUND);
 
 	sprintf( cval, "%d", sv->edits[index] );
-	GDrawDrawText8(pixmap,sv->addrend,y+sv->as,cval,-1,NULL,MAIN_FOREGROUND);
+	GDrawDrawText8(pixmap,sv->addrend,y+sv->as,cval,-1,MAIN_FOREGROUND);
 
 	if ( sv->comments[index]!=NULL )
-	    GDrawDrawText8(pixmap,sv->valend,y+sv->as,sv->comments[index],-1,NULL,MAIN_FOREGROUND);
+	    GDrawDrawText8(pixmap,sv->valend,y+sv->as,sv->comments[index],-1,MAIN_FOREGROUND);
 	y += sv->fh;
     }
 }
@@ -1359,10 +1359,10 @@ static int sv_e_h(GWindow gw, GEvent *event) {
 	r.x = r.y = 0; r.width = sv->vwidth+40; r.height = sv->fh-1;
 	GDrawFillRect(gw,&r,0x808080);
 	GDrawSetFont(gw,sv->gfont);
-	x = sv->addrend - ADDR_SPACER - 2 - GDrawGetText8Width(gw,_("Index"),-1,NULL);
-	GDrawDrawText8(gw,x,sv->as,_("Index"),-1,NULL,0xffffff);
-	GDrawDrawText8(gw,sv->addrend,sv->as,_("Value"),-1,NULL,0xffffff);
-	GDrawDrawText8(gw,sv->valend,sv->as,_("Comment"),-1,NULL,0xffffff);
+	x = sv->addrend - ADDR_SPACER - 2 - GDrawGetText8Width(gw,_("Index"),-1);
+	GDrawDrawText8(gw,x,sv->as,_("Index"),-1,0xffffff);
+	GDrawDrawText8(gw,sv->addrend,sv->as,_("Value"),-1,0xffffff);
+	GDrawDrawText8(gw,sv->valend,sv->as,_("Comment"),-1,0xffffff);
 	
 	GDrawDrawLine(gw,0,sv->fh-1,r.width,sv->fh-1,0x000000);
 	GDrawDrawLine(gw,0,sv->vheight+sv->fh,sv->vwidth,sv->vheight+sv->fh,0x000000);
@@ -1562,7 +1562,7 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     sv->as = as+1;
     sv->fh = sv->as+ds;
 
-    sv->chrlen = numlen = GDrawGetTextWidth(sv->v,num,1,NULL);
+    sv->chrlen = numlen = GDrawGetTextWidth(sv->v,num,1);
     sv->addrend = 6*numlen + ADDR_SPACER + EDGE_SPACER;
     sv->valend = sv->addrend + 7*numlen + ADDR_SPACER + EDGE_SPACER;
 

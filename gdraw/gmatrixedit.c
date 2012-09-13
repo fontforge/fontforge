@@ -251,16 +251,16 @@ static int GME_ColWidth(GMatrixEdit *gme, int c) {
 return( 0 );
     switch ( gme->col_data[c].me_type ) {
       case me_int:
-	width = GDrawGetText8Width(gme->g.base,"1234", -1, NULL );
+	width = GDrawGetText8Width(gme->g.base,"1234", -1);
       break;
       case me_hex: case me_addr:
-	width = GDrawGetText8Width(gme->g.base,"0xFFFF", -1, NULL );
+	width = GDrawGetText8Width(gme->g.base,"0xFFFF", -1);
       break;
       case me_uhex:
-	width = GDrawGetText8Width(gme->g.base,"U+FFFF", -1, NULL );
+	width = GDrawGetText8Width(gme->g.base,"U+FFFF", -1);
       break;
       case me_real:
-	width = GDrawGetText8Width(gme->g.base,"1.234567", -1, NULL );
+	width = GDrawGetText8Width(gme->g.base,"1.234567", -1);
       break;
       case me_enum:
 	max = 0;
@@ -268,9 +268,9 @@ return( 0 );
 	    mi = FindMi(gme->col_data[c].enum_vals,gme->data[r*gme->cols+c].u.md_ival);
 	    if ( mi!=NULL ) {
 		if ( mi->ti.text_is_1byte )
-		    cur = GDrawGetText8Width(gme->g.base,(char *)mi->ti.text,-1,NULL);
+		    cur = GDrawGetText8Width(gme->g.base,(char *)mi->ti.text,-1);
 		else
-		    cur = GDrawGetTextWidth(gme->g.base,mi->ti.text,-1,NULL);
+		    cur = GDrawGetTextWidth(gme->g.base,mi->ti.text,-1);
 		if ( cur>max ) max = cur;
 	    }
 	}
@@ -279,13 +279,13 @@ return( 0 );
 	    GMenuItem *mi = gme->col_data[c].enum_vals;
 	    for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.line ; ++i ) {
 		if ( mi[i].ti.text!=NULL ) {
-		    cur = GDrawGetTextWidth(gme->g.base,mi[i].ti.text, -1, NULL );
+		    cur = GDrawGetTextWidth(gme->g.base,mi[i].ti.text, -1);
 		    if ( cur>max ) max = cur;
 		}
 	    }
 	}
 #endif
-	cur = 6 * GDrawGetText8Width(gme->g.base,"n", 1, NULL );
+	cur = 6 * GDrawGetText8Width(gme->g.base,"n", 1);
 	if ( max<cur )
 	    max = cur;
 	width = max;
@@ -310,12 +310,12 @@ return( 0 );
 	    char buf[1024];
 	    utf8_strncpy(buf, str, 40);
 	    pt = strchr(buf,'\n');
-	    cur = GDrawGetText8Width(gme->g.base,buf, pt==NULL ? -1: pt-buf, NULL );
+	    cur = GDrawGetText8Width(gme->g.base,buf, pt==NULL ? -1: pt-buf);
 	    if ( cur>max ) max = cur;
 	    free(freeme);
 	}
-	if ( max < 10*GDrawGetText8Width(gme->g.base,"n", 1, NULL ) )
-	    width = 10*GDrawGetText8Width(gme->g.base,"n", 1, NULL );
+	if ( max < 10*GDrawGetText8Width(gme->g.base,"n", 1) )
+	    width = 10*GDrawGetText8Width(gme->g.base,"n", 1);
 	else
 	    width = max;
 	if ( gme->col_data[c].me_type==me_stringchoice ||
@@ -331,7 +331,7 @@ return( 0 );
     }
     if ( gme->col_data[c].title!=NULL ) {
 	GDrawSetFont(gme->g.base,gme->titfont);
-	cur = GDrawGetText8Width(gme->g.base,gme->col_data[c].title, -1, NULL );
+	cur = GDrawGetText8Width(gme->g.base,gme->col_data[c].title, -1);
 	if ( cur>width ) width = cur;
     }
     GDrawSetFont(gme->g.base,old);
@@ -642,7 +642,7 @@ static int GMatrixEdit_Expose(GWindow pixmap, GGadget *g, GEvent *event) {
 		r.x = gme->col_data[c].x + gme->g.inner.x - gme->off_left;
 		r.width = gme->col_data[c].width;
 		GDrawPushClip(pixmap,&r,&old);
-		GDrawDrawText8(pixmap,r.x,y,gme->col_data[c].title,-1,NULL,fg);
+		GDrawDrawText8(pixmap,r.x,y,gme->col_data[c].title,-1,fg);
 		GDrawPopClip(pixmap,&old);
 	    }
 	    if ( c!=lastc && !gme->col_data[c].hidden)
@@ -752,7 +752,7 @@ static int GME_RecalcFH(GMatrixEdit *gme) {
 		end = ept - str;
 	break;
 	}
-	GDrawGetText8Bounds(gme->nested, str, end, NULL, &bounds);
+	GDrawGetText8Bounds(gme->nested, str, end, &bounds);
 	free(str);
 	if ( bounds.as>as )
 	    as = bounds.as;
@@ -1646,7 +1646,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 			k = strlen(buf);
 			buf[k] = '>'; buf[k+1] = '\0';
 			GDrawDrawText8(pixmap,gme->col_data[0].x - gme->off_left,y,
-				buf,-1,NULL,gmatrixedit_activecol);
+				buf,-1,gmatrixedit_activecol);
 		    }
 		} else {
 		    data = &gme->data[(r+gme->off_top)*gme->cols+c];
@@ -1659,9 +1659,9 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 			mi = FindMi(gme->col_data[c].enum_vals,data->u.md_ival);
 			if ( mi!=NULL ) {
 			    if ( mi->ti.text_is_1byte )
-				GDrawDrawText8(pixmap,clip.x,y,(char *)mi->ti.text,-1,NULL,fg);
+				GDrawDrawText8(pixmap,clip.x,y,(char *)mi->ti.text,-1,fg);
 			    else
-				GDrawDrawText(pixmap,clip.x,y,mi->ti.text,-1,NULL,fg);
+				GDrawDrawText(pixmap,clip.x,y,mi->ti.text,-1,fg);
 		    break;
 			}
 			/* Fall through into next case */
@@ -1675,7 +1675,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		    }
 		    if ( str!=NULL ) {
 			pt = strchr(str,'\n');
-			GDrawDrawText8(pixmap,clip.x,y,str,pt==NULL?-1:pt-str,NULL,fg);
+			GDrawDrawText8(pixmap,clip.x,y,str,pt==NULL?-1:pt-str,fg);
 			free(str);
 		    }
 		}

@@ -1012,7 +1012,7 @@ return( fd );
 }
 
 int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
-	const char *text, int32 cnt, FontMods *mods, Color col,
+	const char *text, int32 cnt, Color col,
 	enum text_funcs drawit, struct tf_arg *arg) {
     GXWindow gw = (GXWindow) w;
     GXDisplay *gdisp = gw->display;
@@ -1097,10 +1097,10 @@ return( rect.width );
 }
 
 int32 _GXPDraw_DoText(GWindow w, int32 x, int32 y,
-	const unichar_t *text, int32 cnt, FontMods *mods, Color col,
+	const unichar_t *text, int32 cnt, Color col,
 	enum text_funcs drawit, struct tf_arg *arg) {
     char *temp = cnt>=0 ? u2utf8_copyn(text,cnt) : u2utf8_copy(text);
-    int width = _GXPDraw_DoText8(w,x,y,temp,-1,mods,col,drawit,arg);
+    int width = _GXPDraw_DoText8(w,x,y,temp,-1,col,drawit,arg);
     free(temp);
 return(width);
 }

@@ -576,7 +576,7 @@ return( true );
 	    temp = -1;
 	    if (( ept = u_strchr(pt,'\n'))!=NULL )
 		temp = ept-pt;
-	    temp = GDrawGetTextWidth(popup,pt,temp,NULL);
+	    temp = GDrawGetTextWidth(popup,pt,temp);
 	    if ( temp>width ) width = temp;
 	    ++lines;
 	    pt = ept+1;
@@ -627,7 +627,7 @@ return( true );
 		temp = -1;
 		if (( ept = u_strchr(pt,'\n'))!=NULL )
 		    temp = ept-pt;
-		GDrawDrawText(popup,x,y,pt,temp,NULL,popup_foreground);
+		GDrawDrawText(popup,x,y,pt,temp,popup_foreground);
 		y += fh;
 		pt = ept+1;
 	    } while ( ept!=NULL && *pt!='\0' );
