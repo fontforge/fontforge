@@ -45,6 +45,8 @@
 #include "scriptfuncs.h"
 #include <math.h>
 #include <unistd.h>
+#include <errno.h>
+#include <string.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <stdarg.h>
@@ -18034,7 +18036,7 @@ PyMODINIT_FUNC _PyInit_fontforge(void) {
 
 PyMODINIT_FUNC _PyInit_psMat(void) {
     PyObject *module;
-    module PyModule_Create(&psMat_module);
+    module = PyModule_Create(&psMat_module);
     if ( module!=NULL )
 	SetPythonModuleMetadata( module );
     return( module );
@@ -18292,17 +18294,25 @@ void PyFF_Main(int argc,char **argv,int start) {
 #endif /* PY_MAJOR_VERSION >= 3 -------------------------------------------------*/
 
 void PyFF_ScriptFile(FontViewBase *fv,SplineChar *sc, char *filename) {
-    PyObject *fp = PyFile_FromString(filename,"rb");
+    FILE *fp;
+    int rc;
+
+    fp = fopen(filename, "rb");
+    if ( fp==NULL ) {
+	fprintf(stderr, "Failed to open script \"%s\": %s\n", filename, strerror(errno));
+	LogError(_("Can't open %s"), filename );
+	return;
+    }
 
     fv_active_in_ui = fv;		/* Make fv known to interpreter */
     sc_active_in_ui = sc;		/* Make sc known to interpreter */
     layer_active_in_ui = ly_fore;
     if ( fv!=NULL )
 	layer_active_in_ui = fv->active_layer;
-    if ( fp==NULL )
-	LogError(_("Can't open %s"), filename );
-    else {
-	PyRun_SimpleFile(PyFile_AsFile(fp),filename);
+
+    rc = PyRun_SimpleFileEx(fp, filename, 1/*close fp*/);
+    if ( rc != 0 ) {
+	LogError(_("Execution of script %s failed"), filename );
     }
 }
 
@@ -18340,7 +18350,7 @@ void PyFF_FreeSC(SplineChar *sc) {
 static void LoadFilesInPythonInitDir(char *dir) {
     DIR *diro;
     struct dirent *ent;
-    char buffer[1025];
+    char pathname[1025];
 
     diro = opendir(dir);
     if ( diro==NULL )		/* It's ok not to have any python init scripts */
@@ -18351,11 +18361,15 @@ return;
 	if ( pt==NULL )
     continue;
 	if ( strcmp(pt,".py")==0 ) {
-	    sprintf( buffer, "%s/%s", dir, ent->d_name );
-	    PyObject *fp = PyFile_FromString(buffer,"rb");
-	    if ( fp==NULL )
+	    FILE *fp;
+	    snprintf( pathname, sizeof(pathname), "%s/%s", dir, ent->d_name );
+
+	    fp = fopen( pathname, "rb" );
+	    if ( fp==NULL ) {
+		fprintf(stderr,"Failed to open script \"%s\": %s\n",pathname,strerror(errno));
     continue;
-	    PyRun_SimpleFile(PyFile_AsFile(fp),buffer);
+	    }
+	    PyRun_SimpleFileEx(fp, pathname, 1/*close fp*/);
 	}
     }
     closedir(diro);
