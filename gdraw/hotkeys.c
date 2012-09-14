@@ -31,7 +31,10 @@
 
 struct dlistnode* hotkeys = 0;
 
-
+/**
+ * Return the file name of the user defined hotkeys.
+ * The return value must be freed by the caller.
+ */
 static char *getHotkeyFilename(void) {
     static char *ret=NULL;
     char buffer[1025];
@@ -59,6 +62,10 @@ char* trimspaces( char* line ) {
     return line;
 }
 
+/**
+ * Load all the hotkeys from the file at filename, marking them as userdefined
+ * if isUserDefined is set.
+ */
 static void loadHotkeysFromFile( const char* filename, int isUserDefined ) 
 {
     char line[1100];
@@ -91,6 +98,10 @@ static void loadHotkeysFromFile( const char* filename, int isUserDefined )
     fclose(f);
 }
 
+/**
+ * Load all the default hotkeys for this locale and then the users
+ * ~/.Fontforge/hotkeys.
+ */
 void hotkeysLoad()
 {
     char* p = 0;
@@ -122,6 +133,7 @@ void hotkeysLoad()
 	return;
     }
     loadHotkeysFromFile( fn, true );
+    free(fn);
 }
 
 static void hotkeysSaveCallback(Hotkey* hk,FILE* f) {
@@ -130,7 +142,10 @@ static void hotkeysSaveCallback(Hotkey* hk,FILE* f) {
     }
 }
 
-
+/**
+ * Save all the user defined hotkeys back to the users
+ * ~/.Fontforge/hotkeys file.
+ */
 void hotkeysSave() {
     char* fn = "/tmp/hotkeys.out";
     if( !fn ) {
@@ -150,7 +165,7 @@ void hotkeysSave() {
     // FIXME: rename this over the old file.
 }
 
-    
+
 char* hotkeysGetKeyDescriptionFromAction( char* action ) {
     struct dlistnode* node = hotkeys;
     for( ; node; node=node->next ) {
@@ -162,6 +177,10 @@ char* hotkeysGetKeyDescriptionFromAction( char* action ) {
     return 0;
 }
 
+/**
+ * Does the hotkey 'hk' have the right window_type to trigger its
+ * action on the window 'w'.
+ */
 static int hotkeyHasMatchingWindowType( GWindow w, Hotkey* hk ) {
     char* windowType = GDrawGetWindowTypeName( w );
     if( !windowType )
@@ -179,6 +198,13 @@ static int hotkeyHasMatchingWindowType( GWindow w, Hotkey* hk ) {
     return 0;
 }
 
+
+/**
+ * Find a hotkey by the action. This is useful for menus to find out
+ * what hotkey is currently bound to them. So if the user changes
+ * file/open to be alt+j then the menu can adjust the hotkey is is
+ * displaying to show the user what key they have assigned.
+ */
 Hotkey* hotkeyFindByAction( char* action ) {
     struct dlistnode* node = hotkeys;
     for( ; node; node=node->next ) {
