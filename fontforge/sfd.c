@@ -39,6 +39,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <limits.h>		/* For NAME_MAX or _POSIX_NAME_MAX */
+
 #ifndef NAME_MAX
 # ifndef  _POSIX_NAME_MAX
 #  define _POSIX_NAME_MAX 512
@@ -4345,23 +4346,6 @@ static void SFDConsumeUntil( FILE *sfd, char** terminators ) {
     }
 }
 
-#include <stddef.h>
-int listLength( void* p, int nextoffset ) {
-    if( !p )
-        return 0;
-    int ret = 1;
-    p = *((void**)(p + nextoffset));
-    for( ; p; ret++ ) {
-        p = *((void**)(p + nextoffset));
-    }
-    return ret;
-}
-
-int undoesLength( struct undoes *undoes ) {
-    int offset = offsetof( Undoes, next );
-    return listLength( undoes, offset );
-}
-
 static int orig_pos;
 
 static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf, int had_sf_layer_cnt) {
@@ -7560,8 +7544,6 @@ exit( 1 );
 return( sf );
 }
 
-#include <sys/types.h>
-#include <sys/stat.h>
 void SFTimesFromFile(SplineFont *sf,FILE *file) {
     struct stat b;
     if ( fstat(fileno(file),&b)!=-1 ) {
