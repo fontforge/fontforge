@@ -606,7 +606,6 @@ return( ret );
 
 static void MouseToPos(GEvent *event,int *_l, int *_c) {
     int l,c=0;
-    char *end;
 
     GDrawSetFont(errdata.v,errdata.font);
     l = event->u.mouse.y/errdata.fh + errdata.offtop;
