@@ -221,10 +221,6 @@ if test x"${i_do_have_cairo}" = xyes; then
    PKG_CHECK_MODULES([PANGOCAIRO],[pangocairo])
 fi
 
-if test x"${i_do_have_gui}" = xyes; then
-   PKG_CHECK_MODULES([FONTCONFIG],[fontconfig])
-fi
-
 FONTFORGE_CONFIG_FREETYPE_DEBUGGER
 
 #--------------------------------------------------------------------------
