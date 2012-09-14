@@ -56,7 +56,6 @@ FontInstance *GDrawInstanciateFont(GWindow gw, FontRequest *rq) {
     fi->rq.family_name = u_copy( fi->rq.family_name );
     fi->rq.utf8_family_name = copy( fi->rq.utf8_family_name );
 
-    _GXPDraw_configfont(gw, fi);
 return( fi );
 }
 
