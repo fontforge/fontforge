@@ -3667,8 +3667,6 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	switch ( mi->mid ) {
 	  case MID_VKernClass:
 	  case MID_VKernFromHKern:
-	    mi->ti.disabled = !mv->sf->hasvmetrics;
-	  break;
 	  case MID_SetVWidth:
 	    mi->ti.disabled = !mv->sf->hasvmetrics;
 	  break;
