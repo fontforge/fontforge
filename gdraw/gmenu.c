@@ -487,6 +487,9 @@ static void GMenuDrawDownArrow(struct gmenu *m, int ybase) {
     GDrawDrawLine(m->w,p[2].x-pt,p[2].y,p[0].x,p[0].y+pt,m->box->border_darkest);
 }
 
+/**
+ * Return the menu bar at the top of this menu list
+ * */
 static GMenuBar * getTopLevelMenubar( struct gmenu *m ) {
     while( m->parent ) {
 	m = m->parent;
@@ -1089,6 +1092,14 @@ return( keysym );
 }
 #endif
 
+/**
+ * return true if the prefix matches the first segment of the given action.
+ * For example,
+ * return will be 0 when action = foo.bar.baz prefix = bar
+ * return will be 0 when action = foo.bar.baz prefix = fooo
+ * return will be 1 when action = foo.bar.baz prefix = foo
+ * return will be 1 when action = baz prefix = baz
+ */
 static int HKActionMatchesFirstPartOf( char* action, char* prefix ) {
     char* pt = strchr(action,'.');
     if( !pt )

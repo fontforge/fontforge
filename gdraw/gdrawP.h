@@ -105,6 +105,11 @@ struct gwindow {
     unsigned int disable_expose_requests: 1;
     unsigned int usecairo: 1;		/* use a cairo context -- if meaningful */
     unsigned int usepango: 1;		/* draw text with pango */
+    /**
+     * This is an optional window type string that is used by the hotkey subsystem.
+     * It is a pointer to a constant string which is never to be freeed or NULL.
+     * This will be, for example, "CharView" for the glyph editing window.
+     */
     char* window_type_name;
 };
 

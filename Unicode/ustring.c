@@ -882,9 +882,25 @@ return( true );
 
 
 char* chomp( char* line ) {
+    if( !line )
+	return line;
     if ( line[strlen(line)-1]=='\n' )
 	line[strlen(line)-1] = '\0';
     if ( line[strlen(line)-1]=='\r' )
 	line[strlen(line)-1] = '\0';
     return line;
+
+    // maybe we could do this instead if we care about the strlen overhead?
+    /* int end=strlen(line); */
+    /* if( end > 1 ) { */
+    /* 	if ( line[end-2]=='\r' ) { */
+    /* 	    line[end-2] = '\0'; */
+    /* 	    return line; */
+    /* 	} */
+    /* } */
+    /* if( end > 0 ) { */
+    /* 	if ( line[end-1]=='\n' || line[end-1]=='\r' ) */
+    /* 	    line[end-1] = '\0'; */
+    /* } */
+    /* return line; */
 }
