@@ -43,78 +43,14 @@
 # include <sys/utsname.h>
 #endif
 
-#ifdef _NO_LIBPANGO
-static int usepango=false;
-#else
-static int usepango=true;
-#endif
 #ifdef _NO_LIBCAIRO
 static int usecairo = false;
 #else
 static int usecairo = true;
 #endif
 
-static void MacVersionTest(void) {
-    /* pango and cairo do not work on mac 10.5.0 same code runs fine on 10.5.6 */
-    /* I'm guessing that there is a problem with libfontconfig under Xfree86 */
-    /*  which is not present in the X.org release. (X11->About says it is */
-    /*  Xfree under 10.5.0, and X.org under 10.5.6) */
-    /* If I try to use pango or cairo under 10.5.0 fontforge crashes instantly*/
-    /*  and people blame me */
-    /* Note that pango runs fine under 10.4.? */
-    /* So how to detect a bad X library? */
-    /*  well `uname -r` gives us 9.0.0 on 10.5, so problems may happen above that */
-    /*  the X.org bin directory contains the file "Xnest" while the */
-    /*   XFree bin directory does not */
-#ifdef __Mac
-    struct utsname osinfo;
-    static int tested=0;
-
-    if ( tested || (!usepango && !usecairo))
-return;
-    tested = true;
-
-    if ( uname(&osinfo)!=0 ) {
-	/* Error? Shouldn't happen */
-	usecairo = usepango = false;
-return;
-    }
-    if ( *osinfo.release!='9' || access("/usr/X11R6/bin/Xnest",0)==0 )
-return;		/* Not 10.5.* or we've got the Xorg distribution */
-    usecairo = usepango = false;
-    fprintf( stderr, "You appear to have a version of X11 with a bug in it.\n" );
-    fprintf( stderr, " This bug will cause fontforge to crash if it attempts\n" );
-    fprintf( stderr, " to use the pango or cairo libraries. FontForge will\n" );
-    fprintf( stderr, " not attempt to use these libraries.\n\n" );
-    fprintf( stderr, "You can install a fix by going to <Apple>->Software Update\n" );
-    fprintf( stderr, " and selecting \"Mac OS X Update Combined\".\n\n" );
-    fprintf( stderr, "If you believe you do have the correct software, then\n" );
-    fprintf( stderr, " simply create the file \"/usr/X11R6/bin/Xnest\" and\n" );
-    fprintf( stderr, " fontforge will shut up.\n" );
-    GDrawError(
-	"You appear to have a version of X11 with a bug in it."
-	" This bug will cause fontforge to crash if it attempts"
-	" to use the pango or cairo libraries. FontForge will"
-	" not attempt to use these libraries.\n\n"
-	"You can install a fix by going to <Apple>->Software Update"
-	" and selecting \"Mac OS X Update Combined\".\n\n"
-	"If you don't want to see this message at startup, go to"
-	" File->Preferences->Generic and turn off both"
-	" UseCairo and UsePango.\n\n"
-	"If you believe you do have the correct software, then"
-	" simply create the file \"/usr/X11R6/bin/Xnest\" and"
-	" fontforge will shut up.\n"
-    );
-#endif
-}
-
 void GDrawEnableCairo(int on) {
     usecairo=on;
-    /* Obviously, if we have no library, enabling it will do nothing */
-}
-
-void GDrawEnablePango(int on) {
-    usepango=on;
     /* Obviously, if we have no library, enabling it will do nothing */
 }
 
@@ -124,12 +60,7 @@ void GDrawEnablePango(int on) {
 /* ************************************************************************** */
 
 int _GXCDraw_hasCairo(void) {
-    int initted = false, hasC;
-    if ( !usecairo )
-	return( false );
-    if ( !initted )
-	hasC = FcInit();
-    return( hasC );
+    return ( usecairo );
 }
 
 /* ************************************************************************** */
@@ -139,7 +70,6 @@ void _GXCDraw_NewWindow(GXWindow nw,Color bg) {
     GXDisplay *gdisp = nw->display;
     Display *display = gdisp->display;
 
-    MacVersionTest();
     if ( !usecairo || !_GXCDraw_hasCairo())
 return;
 
@@ -494,385 +424,6 @@ void _GXCDraw_PathFillAndStroke(GWindow w,Color fillcol, Color strokecol) {
     w->ggc->fg = strokecol;
     GXCDrawSetline(gw,gw->ggc);
     cairo_fill( gw->cc );
-}
-
-/* ************************************************************************** */
-/* *************************** Cairo Text & Fonts *************************** */
-/* ************************************************************************** */
-
-static int indexOfChar(GFont *font,unichar_t ch,int last_index) {
-    int new_index = -1, i;
-
-    if ( last_index>=0 && last_index<font->ordered->nfont ) {
-	if ( FcCharSetHasChar(font->cscf[last_index].cs,ch) )
-	    new_index = last_index;
-    }
-    if ( new_index==-1 ) {
-	for ( i=0; i<font->ordered->nfont; ++i ) if ( i!=last_index ) {
-	    if ( FcCharSetHasChar(font->cscf[i].cs,ch) ) {
-		new_index = i;
-	break;
-	    }
-	}
-    }
-    if ( new_index!=-1 && font->cscf[new_index].cf==NULL ) {
-	FcPattern *onefont;
-	cairo_matrix_t fm, cm;
-	static cairo_font_options_t *def=NULL;
-
-	if ( def==NULL )	/* Docs claim this isn't needed. Docs appear wrong */
-	    def = cairo_font_options_create();
-
-	onefont = FcFontRenderPrepare(NULL,font->pat,font->ordered->fonts[new_index]);
-#if 0
- { double ps, pre=-1;
-     FcPatternGetDouble(onefont,FC_PIXEL_SIZE,0,&ps);
-     FcPatternGetDouble(font->ordered->fonts[new_index],FC_PIXEL_SIZE,0,&pre);
-     printf( "Pixel size desired=%d, pre=%g, in font=%g\n", font->pixelsize, pre, ps );
- }
-#endif
-
-	memset(&fm,0,sizeof(fm)); memset(&cm,0,sizeof(cm));
-	fm.xx = fm.yy = font->pixelsize;
-	cm.xx = cm.yy = 1;
-	font->cscf[new_index].cf = cairo_scaled_font_create(
-		cairo_ft_font_face_create_for_pattern(onefont),
-		&fm,&cm,def );
-	/*FcPatternDestroy(onefont);*/
-    }
-return( new_index );
-}
-	
-static void configfont(GFont *font) {
-    FcPattern *pat;
-    int pixel_size;
-    FcResult retval;
-    int i;
-    static unichar_t replacements[] = { 0xfffd, 0xfffc, '?', 0 };
-
-    if ( font->ordered!=NULL )
-return;
-
-    pat = FcPatternCreate();
-    FcPatternAddDouble(pat,FC_DPI,GDrawPointsToPixels(NULL,72));
-    if ( font->rq.point_size>0 ) {
-	FcPatternAddDouble(pat,FC_SIZE,font->rq.point_size);
-	pixel_size = GDrawPointsToPixels(NULL,font->rq.point_size);
-    } else {
-	FcPatternAddDouble(pat,FC_PIXEL_SIZE,-font->rq.point_size);
-	pixel_size = -font->rq.point_size;
-    }
-
-    if ( font->rq.style&fs_italic )
-	FcPatternAddInteger(pat,FC_SLANT,FC_SLANT_ITALIC);
-    else
-	FcPatternAddInteger(pat,FC_SLANT,FC_SLANT_ROMAN);
-
-    if ( font->rq.weight<=200 )
-	FcPatternAddInteger(pat,FC_WEIGHT,FC_WEIGHT_LIGHT);
-    else if ( font->rq.weight<=400 )
-	FcPatternAddInteger(pat,FC_WEIGHT,FC_WEIGHT_LIGHT+
-		((font->rq.weight-200)/(400-200)) * (FC_WEIGHT_MEDIUM-FC_WEIGHT_LIGHT));
-    else if ( font->rq.weight<=600 )
-	FcPatternAddInteger(pat,FC_WEIGHT,FC_WEIGHT_MEDIUM+
-		((font->rq.weight-400)/(600-400)) * (FC_WEIGHT_DEMIBOLD-FC_WEIGHT_MEDIUM));
-    else if ( font->rq.weight<=700 )
-	FcPatternAddInteger(pat,FC_WEIGHT,FC_WEIGHT_DEMIBOLD+
-		((font->rq.weight-600)/(700-600)) * (FC_WEIGHT_BOLD-FC_WEIGHT_DEMIBOLD));
-    else if ( font->rq.weight<=900 )
-	FcPatternAddInteger(pat,FC_WEIGHT,FC_WEIGHT_BOLD+
-		((font->rq.weight-700)/(900-700)) * (FC_WEIGHT_BLACK-FC_WEIGHT_BOLD));
-    else
-	FcPatternAddInteger(pat,FC_WEIGHT,FC_WEIGHT_BLACK);
-
-    if ( font->rq.utf8_family_name != NULL ) {
-	char *start, *end;
-	for ( start=font->rq.utf8_family_name; *start; start=end ) {
-	    for ( end=start; *end!='\0' && *end!=',' ; ++end );
-	    FcPatternAddString(pat,FC_FAMILY,copyn(start,end-start));
-	    while ( *end==',' ) ++end;
-	}
-    } else {
-	const unichar_t *start, *end;
-	for ( start=font->rq.family_name; *start; start=end ) {
-	    for ( end=start; *end!='\0' && *end!=',' ; ++end );
-	    FcPatternAddString(pat,FC_FAMILY,u2utf8_copyn(start,end-start));
-	    while ( *end==',' ) ++end;
-	}
-    }
-
-    FcConfigSubstitute(NULL,pat,FcMatchPattern);
-    FcDefaultSubstitute(pat);
-    font->ordered = FcFontSort(NULL,pat,true,NULL,&retval);
-    font->pat = pat;
-    font->pixelsize = pixel_size;
-    font->replacement_index = -1;
-    if ( font->ordered!=NULL ) {
-	font->cscf = gcalloc(font->ordered->nfont,sizeof(struct charset_cairofont));
-	for ( i=0; i<font->ordered->nfont; ++i )
-	    FcPatternGetCharSet(font->ordered->fonts[i],FC_CHARSET,0,
-		    &font->cscf[i].cs);
-	for ( i=0; replacements[i]!=0 ; ++i ) {
-	    font->replacement_char = replacements[i];
-	    font->replacement_index = indexOfChar(font,replacements[i],-1);
-	    if ( font->replacement_index!=-1 )
-	break;
-	}
-    }
-}
-
-void _GXCDraw_FontMetrics(GXWindow gw,GFont *fi,int *as, int *ds, int *ld) {
-    int index;
-
-    if ( fi->ordered==NULL )
-	configfont(fi);
-    if ( fi->ordered==NULL ) {
-	*as = *ds = *ld = -1;
-return;
-    }
-    index = indexOfChar(fi,'A',-1);
-    if ( index==-1 )
-	index = fi->replacement_index;
-    if ( index==-1 )
-	*as = *ds = *ld = -1;
-    else {
-	cairo_font_extents_t bounds;
-	cairo_scaled_font_extents(fi->cscf[index].cf,&bounds);
-	*as = rint(bounds.ascent);
-	*ds = rint(bounds.descent);
-	*ld = rint(bounds.height-(bounds.ascent+bounds.descent));
-    }
-}
-
-int32 _GXCDraw_DoText8(GWindow w, int32 x, int32 y,
-	const char *text, int32 cnt, FontMods *mods, Color col,
-	enum text_funcs drawit, struct tf_arg *arg) {
-    GXWindow gw = (GXWindow) w;
-    const char *end = text+(cnt<0?strlen(text):cnt);
-    struct font_instance *fi = gw->ggc->fi;
-    const char *start, *pt, *last_good;
-    uint32 ch;
-    int index, last_index;
-    char outbuffer[100], *outpt, *outend;
-    cairo_text_extents_t ct;
-    cairo_font_extents_t bounds;
-
-    if ( fi->ordered==NULL )
-	configfont(fi);
-    if ( fi->ordered==NULL )
-return( x );
-
-    if ( drawit==tf_drawit ) {
-	gw->ggc->fg = col;
-	GXCDrawSetcolfunc(gw,gw->ggc);
-	cairo_move_to(gw->cc,x,y);
-    }
-
-    for ( start = text; start<end; ) {
-	pt = start;
-	ch = utf8_ildb(&pt);
-	if ( ch<=0 )
-    break;
-	outpt = outbuffer; outend = outpt+100-5;
-	last_index = indexOfChar(fi,ch,-1);
-	if ( last_index==-1 ) {
-	    last_index = fi->replacement_index;
-	    if ( last_index!=-1 )
-		outpt = utf8_idpb(outpt,fi->replacement_char);
-	    last_good = pt;
-	} else {
-	    outpt = utf8_idpb(outpt,ch);
-	    last_good = pt;
-	    if ( drawit==tf_width || drawit==tf_drawit || drawit==tf_rect )
-		    /* Stopat functions should examine each glyph drawn */
-		    while ( pt<end && outpt<=outend ) {
-		ch = utf8_ildb((const char **) &pt);
-		if ( ch<=0 )
-	    break;
-		index = indexOfChar(fi,ch,last_index);
-		if ( index!=last_index )
-	    break;
-		outpt = utf8_idpb(outpt,ch);
-		last_good = pt;
-	    }
-	}
-	if ( last_index!=-1 ) {
-	    *outpt++ = '\0';
-	    cairo_scaled_font_text_extents(fi->cscf[last_index].cf,outbuffer,&ct);
-	    switch ( drawit ) {
-	      case tf_width:
-	        /* We just need to increment x, which happens at the end */;
-	      break;
-	      case tf_drawit:
-		cairo_set_scaled_font(gw->cc,fi->cscf[last_index].cf);
-		cairo_show_text(gw->cc,outbuffer);
-	      break;
-	      case tf_rect:
-		if ( x==0 )
-		    arg->size.lbearing = x+ct.x_bearing;
-		arg->size.rbearing = x+ct.width;
-		cairo_scaled_font_extents(fi->cscf[last_index].cf,&bounds);
-		if ( arg->size.fas<bounds.ascent )
-		    arg->size.fas = bounds.ascent;
-		if ( arg->size.fds<bounds.descent )
-		    arg->size.fds = bounds.descent;
-		if ( arg->size.as<-ct.y_bearing )
-		    arg->size.as = -ct.y_bearing;
-		if ( arg->size.ds<ct.height+ct.y_bearing )
-		    arg->size.ds = ct.height+ct.y_bearing;
-		arg->size.width += ct.x_advance;
-	      break;
-	      case tf_stopat:
-		if ( x+ct.x_advance < arg->maxwidth )
-		    /* Do Nothing here */;
-		else if ( x+ct.x_advance/2 >= arg->maxwidth ) {
-		    arg->utf8_last = (char *) start;
-		    arg->width = x;
-return( x );
-		} else {
-		    arg->utf8_last = (char *) pt;
-		    x += ct.x_advance;
-		    arg->width = x;
-return( x );
-		}
-	      break;
-	      case tf_stopbefore:
-		if ( x+ct.x_advance >= arg->maxwidth ) {
-		    arg->utf8_last = (char *) start;
-		    arg->width = x;
-return( x );
-		}
-	      break;
-	      case tf_stopafter:
-		if ( x+ct.x_advance >= arg->maxwidth ) {
-		    arg->utf8_last = (char *) pt;
-		    x += ct.x_advance;
-		    arg->width = x;
-return( x );
-		}
-	      break;
-	    }
-	    x += ct.x_advance;
-	}
-	start = last_good;
-    }
-return( x );
-}
-
-int32 _GXCDraw_DoText(GWindow w, int32 x, int32 y,
-	const unichar_t *text, int32 cnt, FontMods *mods, Color col,
-	enum text_funcs drawit, struct tf_arg *arg) {
-    GXWindow gw = (GXWindow) w;
-    const unichar_t *end = text+(cnt<0?u_strlen(text):cnt);
-    struct font_instance *fi = gw->ggc->fi;
-    const unichar_t *start, *pt, *last_good;
-    uint32 ch;
-    int index, last_index;
-    char outbuffer[100], *outpt, *outend;
-    cairo_text_extents_t ct;
-    cairo_font_extents_t bounds;
-
-    if ( fi->ordered==NULL )
-	configfont(fi);
-    if ( fi->ordered==NULL )
-return( x );
-
-    if ( drawit==tf_drawit ) {
-	gw->ggc->fg = col;
-	GXCDrawSetcolfunc(gw,gw->ggc);
-	cairo_move_to(gw->cc,x,y);
-    }
-
-    for ( start = text; start<end; ) {
-	pt = start;
-	ch = *pt++;
-	if ( ch<=0 )
-    break;
-	outpt = outbuffer; outend = outpt+100-5;
-	last_index = indexOfChar(fi,ch,-1);
-	if ( last_index==-1 ) {
-	    last_index = fi->replacement_index;
-	    if ( last_index!=-1 )
-		outpt = utf8_idpb(outpt,fi->replacement_char);
-	    last_good = pt;
-	} else {
-	    outpt = utf8_idpb(outpt,ch);
-	    last_good = pt;
-	    if ( drawit==tf_width || drawit==tf_drawit || drawit==tf_rect )
-		    /* Stopat functions should examine each glyph drawn */
-		    while ( pt<end && outpt<=outend ) {
-		ch = *pt++;
-		if ( ch<=0 )
-	    break;
-		index = indexOfChar(fi,ch,last_index);
-		if ( index!=last_index )
-	    break;
-		outpt = utf8_idpb(outpt,ch);
-		last_good = pt;
-	    }
-	}
-	if ( last_index!=-1 ) {
-	    *outpt++ = '\0';
-	    cairo_scaled_font_text_extents(fi->cscf[last_index].cf,outbuffer,&ct);
-	    switch ( drawit ) {
-	      case tf_width:
-	        /* We just need to increment x, which happens at the end */;
-	      break;
-	      case tf_drawit:
-		cairo_set_scaled_font(gw->cc,fi->cscf[last_index].cf);
-		cairo_show_text(gw->cc,outbuffer);
-	      break;
-	      case tf_rect:
-		if ( x==0 )
-		    arg->size.lbearing = x+ct.x_bearing;
-		arg->size.rbearing = x+ct.width;
-		/* I can't understand how ct.y_bearing & ct.height provide useful data !!!!*/
-		cairo_scaled_font_extents(fi->cscf[last_index].cf,&bounds);
-		if ( arg->size.fas<bounds.ascent )
-		    arg->size.fas = bounds.ascent;
-		if ( arg->size.fds<bounds.descent )
-		    arg->size.fds = bounds.descent;
-		if ( arg->size.as<-ct.y_bearing )
-		    arg->size.as = -ct.y_bearing;
-		if ( arg->size.ds<ct.height+ct.y_bearing )
-		    arg->size.ds = ct.height+ct.y_bearing;
-		arg->size.width += ct.x_advance;
-	      break;
-	      case tf_stopat:
-		if ( x+ct.x_advance < arg->maxwidth )
-		    /* Do Nothing here */;
-		else if ( x+ct.x_advance/2 >= arg->maxwidth ) {
-		    arg->last = (unichar_t *) start;
-		    arg->width = x;
-return( x );
-		} else {
-		    arg->last = (unichar_t *) pt;
-		    x += ct.x_advance;
-		    arg->width = x;
-return( x );
-		}
-	      break;
-	      case tf_stopbefore:
-		if ( x+ct.x_advance >= arg->maxwidth ) {
-		    arg->last = (unichar_t *) start;
-		    arg->width = x;
-return( x );
-		}
-	      break;
-	      case tf_stopafter:
-		if ( x+ct.x_advance >= arg->maxwidth ) {
-		    arg->last = (unichar_t *) pt;
-		    x += ct.x_advance;
-		    arg->width = x;
-return( x );
-		}
-	      break;
-	    }
-	    x += ct.x_advance;
-	}
-	start = last_good;
-    }
-return( x );
 }
 
 /* ************************************************************************** */
@@ -1285,9 +836,6 @@ return;
 enum gcairo_flags _GXCDraw_CairoCapabilities( GXWindow gw) {
     enum gcairo_flags flags = gc_all;
 
-    if ( gw->usepango )
-	flags |= gc_pango;
-
 return( flags|gc_xor );	/* If not buffered, we can emulate xor by having X11 do it in the X layer */
 }
 /* ************************************************************************** */
@@ -1311,26 +859,12 @@ return(false);
 /* ***************************** Pango Library ****************************** */
 /* ************************************************************************** */
 
-#ifndef _NO_LIBPANGO
-
 #  define GTimer GTimer_GTK
 #  include <pango/pangoxft.h>
 #  if !defined(_NO_LIBCAIRO)
 #   include <pango/pangocairo.h>
 #  endif
 #  undef GTimer
-
-int _GXPDraw_hasPango(void) {
-
-    if ( !usepango )
-return( false );
-
-# if !defined(_NO_LIBCAIRO)
-return( 3 );
-# else
-return( 1 );
-# endif
-}
 
 /* ************************************************************************** */
 /* ****************************** Pango Render ****************************** */
@@ -1391,10 +925,6 @@ static void my_cairo_render_layout(cairo_t *cc, Color fg,
 void _GXPDraw_NewWindow(GXWindow nw) {
     GXDisplay *gdisp = nw->display;
 
-    MacVersionTest();
-    if ( !usepango || !_GXPDraw_hasPango())
-return;
-
 # if !defined(_NO_LIBCAIRO)
     if ( nw->usecairo ) {
 	/* using pango through cairo is different from using it on bare X */
@@ -1404,8 +934,9 @@ return;
 		    PANGO_FONT_MAP (gdisp->pangoc_fontmap));
 	    pango_cairo_context_set_resolution(gdisp->pangoc_context,
 		    gdisp->res);
-	    gdisp->pangoc_layout = pango_layout_new(gdisp->pangoc_context);
 	}
+	if (nw->pango_layout==NULL)
+	    nw->pango_layout = pango_layout_new(gdisp->pangoc_context);
     } else
 # endif
     {
@@ -1415,30 +946,31 @@ return;
 	    /* No obvious way to get or set the resolution of pango_xft */
 	}
 	nw->xft_w = XftDrawCreate(gdisp->display,nw->w,gdisp->visual,gdisp->cmap);
-	if ( gdisp->pango_layout==NULL )
-	    gdisp->pango_layout = pango_layout_new(gdisp->pango_context);
+	if ( nw->pango_layout==NULL )
+	    nw->pango_layout = pango_layout_new(gdisp->pango_context);
     }
-    nw->usepango = true;
 return;
 }
 
 void _GXPDraw_DestroyWindow(GXWindow nw) {
     /* And why doesn't the man page mention this essential function? */
-    if ( nw->usepango && XftDrawDestroy!=NULL && nw->xft_w!=NULL ) {
+    if ( XftDrawDestroy!=NULL && nw->xft_w!=NULL ) {
 	XftDrawDestroy(nw->xft_w);
 	nw->xft_w = NULL;
     }
+    if ( nw->pango_layout!=NULL )
+	g_object_unref(nw->pango_layout);
 }
 
 /* ************************************************************************** */
 /* ******************************* Pango Text ******************************* */
 /* ************************************************************************** */
-static PangoFontDescription *_GXPDraw_configfont(GXDisplay *gdisp, GFont *font,int pc) {
+PangoFontDescription *_GXPDraw_configfont(GWindow gw, GFont *font) {
     PangoFontDescription *fd;
 #ifdef _NO_LIBCAIRO
     PangoFontDescription **fdbase = &font->pango_fd;
 #else
-    PangoFontDescription **fdbase = pc ? &font->pangoc_fd : &font->pango_fd;
+    PangoFontDescription **fdbase = ((GXWindow) gw)->usecairo ? &font->pangoc_fd : &font->pango_fd;
 #endif
 
     if ( *fdbase!=NULL )
@@ -1464,6 +996,10 @@ return( *fdbase );
 	    (font->rq.style&fs_extended )?  PANGO_STRETCH_EXPANDED  :
 					    PANGO_STRETCH_NORMAL);
 
+    if (font->rq.style&fs_vertical)
+	/* FIXME: not sure this is the right thing */
+	pango_font_description_set_gravity(fd, PANGO_GRAVITY_WEST);
+
     if ( font->rq.point_size<=0 )
 	GDrawIError( "Bad point size for pango" );	/* any negative (pixel) values should be converted when font opened */
 
@@ -1476,33 +1012,30 @@ return( fd );
 }
 
 int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
-	const char *text, int32 cnt, FontMods *mods, Color col,
+	const char *text, int32 cnt, Color col,
 	enum text_funcs drawit, struct tf_arg *arg) {
     GXWindow gw = (GXWindow) w;
     GXDisplay *gdisp = gw->display;
     struct font_instance *fi = gw->ggc->fi;
     PangoRectangle rect, ink;
-    PangoLayout *layout = gdisp->pango_layout;
     PangoFontDescription *fd;
 
-# if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo )
-	layout = gdisp->pangoc_layout;
-# endif
-    fd = _GXPDraw_configfont(gdisp,fi,layout!=gdisp->pango_layout);
-    pango_layout_set_font_description(layout,fd);
-    pango_layout_set_text(layout,(char *) text,cnt);
-    pango_layout_get_pixel_extents(layout,NULL,&rect);
+    if (fi == NULL)
+	return(0);
+
+    fd = _GXPDraw_configfont(w, fi);
+    pango_layout_set_font_description(gw->pango_layout,fd);
+    pango_layout_set_text(gw->pango_layout,(char *) text,cnt);
+    pango_layout_get_pixel_extents(gw->pango_layout,NULL,&rect);
     if ( drawit==tf_drawit ) {
 # if !defined(_NO_LIBCAIRO)
 	if ( gw->usecairo ) {
-	    layout = gdisp->pangoc_layout;
-	    my_cairo_render_layout(gw->cc,col,layout,x,y);
+	    my_cairo_render_layout(gw->cc,col,gw->pango_layout,x,y);
 #if 0
 	    cairo_move_to(gw->cc,x,y - fi->ascent);
 	    gw->ggc->fg = col;
 	    GXCDrawSetcolfunc(gw,gw->ggc);
-	    pango_cairo_layout_path(gw->cc,layout);
+	    pango_cairo_layout_path(gw->cc,gw->pango_layout);
 	    cairo_fill(gw->cc);
 #endif
 	} else
@@ -1522,14 +1055,14 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
 	    clip.width = gw->ggc->clip.width;
 	    clip.height = gw->ggc->clip.height;
 	    XftDrawSetClipRectangles(gw->xft_w,0,0,&clip,1);
-	    my_xft_render_layout(gw->xft_w,&fg,layout,x,y);
+	    my_xft_render_layout(gw->xft_w,&fg,gw->pango_layout,x,y);
 	}
     } else if ( drawit==tf_rect ) {
 	PangoLayoutIter *iter;
 	PangoLayoutRun *run;
 	PangoFontMetrics *fm;
 
-	pango_layout_get_pixel_extents(layout,&ink,&rect);
+	pango_layout_get_pixel_extents(gw->pango_layout,&ink,&rect);
 	arg->size.lbearing = ink.x - rect.x;
 	arg->size.rbearing = ink.x+ink.width - rect.x;
 	arg->size.width = rect.width;
@@ -1537,7 +1070,7 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
 	    /* There are no runs if there are no characters */
 	    memset(&arg->size,0,sizeof(arg->size));
 	} else {
-	    iter = pango_layout_get_iter(layout);
+	    iter = pango_layout_get_iter(gw->pango_layout);
 	    run = pango_layout_iter_get_run(iter);
 	    if ( run==NULL ) {
 		/* Pango doesn't give us runs in a couple of other places */
@@ -1564,31 +1097,28 @@ return( rect.width );
 }
 
 int32 _GXPDraw_DoText(GWindow w, int32 x, int32 y,
-	const unichar_t *text, int32 cnt, FontMods *mods, Color col,
+	const unichar_t *text, int32 cnt, Color col,
 	enum text_funcs drawit, struct tf_arg *arg) {
     char *temp = cnt>=0 ? u2utf8_copyn(text,cnt) : u2utf8_copy(text);
-    int width = _GXPDraw_DoText8(w,x,y,temp,-1,mods,col,drawit,arg);
+    int width = _GXPDraw_DoText8(w,x,y,temp,-1,col,drawit,arg);
     free(temp);
 return(width);
 }
 
-void _GXPDraw_FontMetrics(GXWindow gw,GFont *fi,int *as, int *ds, int *ld) {
-    GXDisplay *gdisp = gw->display;
+void _GXPDraw_FontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld) {
+    GXDisplay *gdisp = ((GXWindow) gw)->display;
     PangoFont *pfont;
     PangoFontMetrics *fm;
 
+    _GXPDraw_configfont(gw, fi);
 # if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo ) {
-	_GXPDraw_configfont(gdisp,fi,true);
+    if ( gw->usecairo )
 	pfont = pango_font_map_load_font(gdisp->pangoc_fontmap,gdisp->pangoc_context,
 		fi->pangoc_fd);
-    } else
+    else
 #endif
-    {
-	_GXPDraw_configfont(gdisp,fi,false);
 	pfont = pango_font_map_load_font(gdisp->pango_fontmap,gdisp->pango_context,
 		fi->pango_fd);
-    }
     fm = pango_font_get_metrics(pfont,NULL);
     *as = pango_font_metrics_get_ascent(fm)/PANGO_SCALE;
     *ds = pango_font_metrics_get_descent(fm)/PANGO_SCALE;
@@ -1601,31 +1131,23 @@ void _GXPDraw_FontMetrics(GXWindow gw,GFont *fi,int *as, int *ds, int *ld) {
 /* ************************************************************************** */
 void _GXPDraw_LayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
     GXWindow gw = (GXWindow) w;
-    GXDisplay *gdisp = gw->display;
-    PangoLayout *layout = gdisp->pango_layout;
     PangoFontDescription *fd;
 
     if ( fi==NULL )
 	fi = gw->ggc->fi;
 
-# if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo )
-	layout = gdisp->pangoc_layout;
-# endif
-    fd = _GXPDraw_configfont(gdisp,fi,layout!=gdisp->pango_layout);
-    pango_layout_set_font_description(layout,fd);
-    pango_layout_set_text(layout,(char *) text,cnt);
+    fd = _GXPDraw_configfont(w, fi);
+    pango_layout_set_font_description(gw->pango_layout,fd);
+    pango_layout_set_text(gw->pango_layout,(char *) text,cnt);
 }
 
 void _GXPDraw_LayoutDraw(GWindow w, int32 x, int32 y, Color col) {
     GXWindow gw = (GXWindow) w;
     GXDisplay *gdisp = gw->display;
-    PangoLayout *layout = gdisp->pango_layout;
 
 # if !defined(_NO_LIBCAIRO)
     if ( gw->usecairo ) {
-	layout = gdisp->pangoc_layout;
-	my_cairo_render_layout(gw->cc,col,layout,x,y);
+	my_cairo_render_layout(gw->cc,col,gw->pango_layout,x,y);
     } else
 #endif
     {
@@ -1643,47 +1165,35 @@ void _GXPDraw_LayoutDraw(GWindow w, int32 x, int32 y, Color col) {
 	clip.width = gw->ggc->clip.width;
 	clip.height = gw->ggc->clip.height;
 	XftDrawSetClipRectangles(gw->xft_w,0,0,&clip,1);
-	my_xft_render_layout(gw->xft_w,&fg,layout,x,y);
+	my_xft_render_layout(gw->xft_w,&fg,gw->pango_layout,x,y);
     }
 }
 
 void _GXPDraw_LayoutIndexToPos(GWindow w, int index, GRect *pos) {
     GXWindow gw = (GXWindow) w;
-    GXDisplay *gdisp = gw->display;
-    PangoLayout *layout = gdisp->pango_layout;
     PangoRectangle rect;
 
-# if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo )
-	layout = gdisp->pangoc_layout;
-# endif
-    pango_layout_index_to_pos(layout,index,&rect);
+    pango_layout_index_to_pos(gw->pango_layout,index,&rect);
     pos->x = rect.x/PANGO_SCALE; pos->y = rect.y/PANGO_SCALE; pos->width = rect.width/PANGO_SCALE; pos->height = rect.height/PANGO_SCALE;
 }
 
 int _GXPDraw_LayoutXYToIndex(GWindow w, int x, int y) {
     GXWindow gw = (GXWindow) w;
-    GXDisplay *gdisp = gw->display;
-    PangoLayout *layout = gdisp->pango_layout;
     int trailing, index;
 
-# if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo )
-	layout = gdisp->pangoc_layout;
-# endif
     /* Pango retuns the last character if x is negative, not the first */
     if ( x<0 ) x=0;
-    pango_layout_xy_to_index(layout,x*PANGO_SCALE,y*PANGO_SCALE,&index,&trailing);
+    pango_layout_xy_to_index(gw->pango_layout,x*PANGO_SCALE,y*PANGO_SCALE,&index,&trailing);
     /* If I give pango a position after the last character on a line, it */
     /*  returns to me the first character. Strange. And annoying -- you click */
     /*  at the end of a line and the cursor moves to the start */
     /* Of course in right to left text an initial position is correct... */
     if ( index+trailing==0 && x>0 ) {
 	PangoRectangle rect;
-	pango_layout_get_pixel_extents(layout,&rect,NULL);
+	pango_layout_get_pixel_extents(gw->pango_layout,&rect,NULL);
 	if ( x>=rect.width ) {
 	    x = rect.width-1;
-	    pango_layout_xy_to_index(layout,x*PANGO_SCALE,y*PANGO_SCALE,&index,&trailing);
+	    pango_layout_xy_to_index(gw->pango_layout,x*PANGO_SCALE,y*PANGO_SCALE,&index,&trailing);
 	}
     }
 return( index+trailing );
@@ -1691,56 +1201,31 @@ return( index+trailing );
 
 void _GXPDraw_LayoutExtents(GWindow w, GRect *size) {
     GXWindow gw = (GXWindow) w;
-    GXDisplay *gdisp = gw->display;
-    PangoLayout *layout = gdisp->pango_layout;
     PangoRectangle rect;
 
-# if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo )
-	layout = gdisp->pangoc_layout;
-# endif
-    pango_layout_get_pixel_extents(layout,NULL,&rect);
+    pango_layout_get_pixel_extents(gw->pango_layout,NULL,&rect);
     size->x = rect.x; size->y = rect.y; size->width = rect.width; size->height = rect.height;
 }
 
 void _GXPDraw_LayoutSetWidth(GWindow w, int width) {
     GXWindow gw = (GXWindow) w;
-    GXDisplay *gdisp = gw->display;
-    PangoLayout *layout = gdisp->pango_layout;
 
-# if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo )
-	layout = gdisp->pangoc_layout;
-# endif
-    pango_layout_set_width(layout,width==-1? -1 : width*PANGO_SCALE);
+    pango_layout_set_width(gw->pango_layout,width==-1? -1 : width*PANGO_SCALE);
 }
 
 int _GXPDraw_LayoutLineCount(GWindow w) {
     GXWindow gw = (GXWindow) w;
-    GXDisplay *gdisp = gw->display;
-    PangoLayout *layout = gdisp->pango_layout;
 
-# if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo )
-	layout = gdisp->pangoc_layout;
-# endif
-return( pango_layout_get_line_count(layout));
+return( pango_layout_get_line_count(gw->pango_layout));
 }
 
 int _GXPDraw_LayoutLineStart(GWindow w, int l) {
     GXWindow gw = (GXWindow) w;
-    GXDisplay *gdisp = gw->display;
-    PangoLayout *layout = gdisp->pango_layout;
     PangoLayoutLine *line;
 
-# if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo )
-	layout = gdisp->pangoc_layout;
-# endif
-    line = pango_layout_get_line(layout,l);
+    line = pango_layout_get_line(gw->pango_layout,l);
     if ( line==NULL )
 return( -1 );
 
 return( line->start_index );
 }
-#endif	/* ! _NO_LIBPANGO */

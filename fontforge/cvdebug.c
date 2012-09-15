@@ -167,55 +167,55 @@ static void DVRegExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     y = 3+dv->ii.as - dv->reg_offtop*dv->ii.fh;
 
     if ( exc==NULL ) {
-	GDrawDrawBiText8(pixmap,3,y,"<not running>",-1,NULL,MAIN_FOREGROUND);
+	GDrawDrawText8(pixmap,3,y,"<not running>",-1,MAIN_FOREGROUND);
 return;
     }
 
     sprintf( buffer, " rp0: %d", exc->GS.rp0 );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, " rp1: %d", exc->GS.rp1 );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, " rp2: %d", exc->GS.rp2 );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, "loop: %ld", exc->GS.loop );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     y+=2;
 
     sprintf( buffer, " zp0: %s", exc->GS.gep0?"Normal":"Twilight" );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, " zp1: %s", exc->GS.gep1?"Normal":"Twilight" );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, " zp2: %s", exc->GS.gep2?"Normal":"Twilight" );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     y+=2;
 
     sprintf( buffer, "MinDist: %.2f", exc->GS.minimum_distance/64.0 );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, "CvtCutin: %.2f", exc->GS.control_value_cutin/64.0 );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, "SingWidCut: %.2f", exc->GS.single_width_cutin/64.0 );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, "SingWidVal: %.2f", exc->GS.single_width_value/64.0 );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     y+=2;
 
     sprintf( buffer, "freeVec: %g,%g", (((int)exc->GS.freeVector.x<<16)>>(16+14)) + ((exc->GS.freeVector.x&0x3fff)/16384.0),
 	    (((int)exc->GS.freeVector.y<<16)>>(16+14)) + ((exc->GS.freeVector.y&0x3fff)/16384.0) );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, "projVec: %g,%g", (((int)exc->GS.projVector.x<<16)>>(16+14)) + ((exc->GS.projVector.x&0x3fff)/16384.0),
 	    (((int)exc->GS.projVector.y<<16)>>(16+14)) + ((exc->GS.projVector.y&0x3fff)/16384.0) );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, "dualVec: %g,%g", (((int)exc->GS.dualVector.x<<16)>>(16+14)) + ((exc->GS.dualVector.x&0x3fff)/16384.0),
 	    (((int)exc->GS.dualVector.y<<16)>>(16+14)) + ((exc->GS.dualVector.y&0x3fff)/16384.0) );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     y+=2;
 
     sprintf( buffer, "AutoFlip: %s", exc->GS.auto_flip?"True": "False" );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, "DeltaBase: %d", exc->GS.delta_base );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, "DeltaShift: %d", exc->GS.delta_shift );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, "RndState: %s",
 	    exc->GS.round_state==TT_Round_To_Half_Grid? "To Half Grid" :
 	    exc->GS.round_state==TT_Round_To_Grid? "To Grid" :
@@ -226,25 +226,25 @@ return;
 	    exc->GS.round_state==TT_Round_Super? "Super" :
 	    exc->GS.round_state==TT_Round_Super_45? "Super45" :
 		"Unknown" );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, "SRndPeriod: %.2f", exc->period/64.0 );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, "SRndPhase: %.2f", exc->phase/64.0 );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, "SRndThreshold: %.2f", exc->threshold/64.0 );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, "InstrControl: %d", exc->GS.instruct_control );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, "ScanControl: %s", exc->GS.scan_control?"True": "False" );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
     sprintf( buffer, "ScanType: %d", exc->GS.scan_type );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
 
     /* Instruction control, scan control, scan type, phase, threshold for super rounding */
 
     y += 2;
     sprintf( buffer, "Pixels/Em: %d", PPEMY(exc) );
-    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND); y += dv->ii.fh;
+    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND); y += dv->ii.fh;
 }
 
 static void DVStackExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
@@ -256,11 +256,11 @@ static void DVStackExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     GDrawSetFont(pixmap,dv->ii.gfont);
     y = 3+dv->ii.as - dv->stack_offtop*dv->ii.fh;
     if ( exc==NULL  || exc->top==0 ) {
-	GDrawDrawBiText8(pixmap,3,y,"<empty>",-1,NULL,MAIN_FOREGROUND);
+	GDrawDrawText8(pixmap,3,y,"<empty>",-1,MAIN_FOREGROUND);
     } else {
 	for ( i=exc->top-1; i>=0; --i ) {
 	    sprintf(buffer, "%3d: %3ld (%.2f)", i, exc->stack[i], exc->stack[i]/64.0 );
-	    GDrawDrawBiText8(pixmap,3,y,buffer,-1,NULL,MAIN_FOREGROUND);
+	    GDrawDrawText8(pixmap,3,y,buffer,-1,MAIN_FOREGROUND);
 	    if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
 	break;
 	    y += dv->ii.fh;
@@ -277,7 +277,7 @@ static void DVStorageExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     GDrawSetFont(pixmap,dv->ii.gfont);
     y = 3+dv->ii.as - dv->storage_offtop*dv->ii.fh;
     if ( exc==NULL || exc->storeSize==0 ) {
-	GDrawDrawBiText8(pixmap,3,y,_("<empty>"),-1,NULL,MAIN_FOREGROUND);
+	GDrawDrawText8(pixmap,3,y,_("<empty>"),-1,MAIN_FOREGROUND);
     } else {
 	int n_watch;
 	uint8 *watches = DebuggerGetWatchStores(dv->dc,&n_watch);
@@ -289,7 +289,7 @@ static void DVStorageExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	    if ( i<n_watch && watches!=NULL && watches[i] && y>0 )
 		GDrawDrawImage(pixmap,&GIcon_Stop,NULL,3,
 			    y-dv->ii.as-2);
-	    GDrawDrawBiText8(pixmap,23,y,buffer,-1,NULL,MAIN_FOREGROUND);
+	    GDrawDrawText8(pixmap,23,y,buffer,-1,MAIN_FOREGROUND);
 	    if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
 	break;
 	    y += dv->ii.fh;
@@ -306,7 +306,7 @@ static void DVCvtExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     GDrawSetFont(pixmap,dv->ii.gfont);
     y = 3+dv->ii.as;
     if ( exc==NULL || exc->cvtSize==0 ) {
-	GDrawDrawBiText8(pixmap,3,y,_("<empty>"),-1,NULL,MAIN_FOREGROUND);
+	GDrawDrawText8(pixmap,3,y,_("<empty>"),-1,MAIN_FOREGROUND);
     } else {
 	int n_watch;
 	uint8 *watches = DebuggerGetWatchCvts(dv->dc,&n_watch);
@@ -316,7 +316,7 @@ static void DVCvtExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	    if ( dv->cvt_offtop+i<n_watch && watches!=NULL && watches[dv->cvt_offtop+i] && y>0 )
 		GDrawDrawImage(pixmap,&GIcon_Stop,NULL,3,
 			    y-dv->ii.as-2);
-	    GDrawDrawBiText8(pixmap,23,y,buffer,-1,NULL,MAIN_FOREGROUND);
+	    GDrawDrawText8(pixmap,23,y,buffer,-1,MAIN_FOREGROUND);
 	    if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
 	break;
 	    y += dv->ii.fh;
@@ -410,7 +410,7 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 		else
 		    sprintf(buffer, "   : I   %g,%g", (double) me.x , (double) me.y );
 		if ( y>0 )
-		    GDrawDrawBiText8(pixmap,3+19,y,buffer,-1,NULL,MAIN_FOREGROUND);
+		    GDrawDrawText8(pixmap,3+19,y,buffer,-1,MAIN_FOREGROUND);
 		y += dv->ii.fh;
 	    }
 	    if ( r->contours!=NULL && i==r->contours[c] ) {	/* No contours in twilight */
@@ -437,14 +437,14 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'X':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'Y':' ',
 			(double) me.x, (double) me.y );
 	    if ( y>0 )
-		GDrawDrawBiText8(pixmap,3+19,y,buffer,-1,NULL,MAIN_FOREGROUND);
+		GDrawDrawText8(pixmap,3+19,y,buffer,-1,MAIN_FOREGROUND);
 	    if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
 	break;
 	    y += dv->ii.fh;
 	}
     }
     if ( n==0 ) {
-	GDrawDrawBiText8(pixmap,3,y,_("<none>"),-1,NULL,MAIN_FOREGROUND);
+	GDrawDrawText8(pixmap,3,y,_("<none>"),-1,MAIN_FOREGROUND);
     }
 }
 
@@ -2216,12 +2216,12 @@ return;
 	    rq.utf8_family_name = MONO_UI_FAMILIES;
 	    rq.point_size = -12;
 	    rq.weight = 400;
-	    monofont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->gw),&rq);
+	    monofont = GDrawInstanciateFont(cv->gw,&rq);
 	    monofont = GResourceFindFont("DebugView.Font",monofont);
 	}
 	dv->ii.gfont = monofont;
 	GDrawSetFont(dv->ii.v,dv->ii.gfont);
-	GDrawFontMetrics(dv->ii.gfont,&as,&ds,&ld);
+	GDrawWindowFontMetrics(dv->ii.v,dv->ii.gfont,&as,&ds,&ld);
 	dv->ii.as = as+1;
 	dv->ii.fh = dv->ii.as+ds;
 	dv->ii.isel_pos = -1;
