@@ -2810,7 +2810,7 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
 
     r.x = r.y = 0; r.width = r.height = fv->cbw-1;
     if ( icon == NULL )
-	cv->icon = icon = GDrawCreateBitmap(NULL,r.width,r.width,NULL);
+	cv->icon = icon = GDrawCreatePixmap(NULL,r.width,r.width);
     GDrawFillRect(icon,&r,0x0);		/* for some reason icons seem to be color reversed by my defn */
 
     bdf = NULL; bdfc = NULL;
