@@ -56,6 +56,18 @@
 #endif /* PY_MAJOR_VERSION >= 3 */
 #include "ffpython.h"
 
+/* Use a different function name for Python 2 versus 3 so that
+** trying to import the wrong version will give a dynamic-link
+** error rather than randomly crashing.
+*/
+#if PY_MAJOR_VERSION >= 3
+#define FFPY_PYTHON_ENTRY_FUNCTION fontforge_python3_init
+#else
+#define FFPY_PYTHON_ENTRY_FUNCTION fontforge_python2_init
+#endif
+PyMODINIT_FUNC FFPY_PYTHON_ENTRY_FUNCTION(const char* modulename);
+
+
 #define PYMETHODDEF_EMPTY  {NULL, NULL, 0, NULL}
 #define PYGETSETDEF_EMPTY { NULL, NULL, NULL, NULL, NULL }
 
@@ -83,7 +95,7 @@ char* AnyPyString_to_UTF8( PyObject* obj ) {
     else if ( PyString_Check(obj) ) {
 	PyObject *utf8str = PyString_AsEncodedObject(obj, "UTF-8", NULL);
 	if ( utf8str!=NULL ) {
-	    s = copy(PyString_AS_STRING(utf8strj));
+	    s = copy(PyString_AS_STRING(utf8str));
 	    Py_DECREF(utf8str);
 	}
     }
@@ -17952,33 +17964,7 @@ static void SetPythonModuleMetadata( PyObject *module );
 PyMODINIT_FUNC _PyInit_fontforge(void);
 PyMODINIT_FUNC _PyInit_psMat(void);
 PyMODINIT_FUNC _PyInit___FontForge_Internals___(void);
-PyMODINIT_FUNC PyInit_fontforge(void);
-PyMODINIT_FUNC PyInit_psMat(void);
 
-static int load_glibraries(void) {
-    DL_CONST void *lib;
-
-    if ( (lib = dlopen("libgunicode" SO_EXT,RTLD_LAZY))==NULL ) {
-#ifdef PREFIX
-        lib = dlopen( PREFIX "/lib/" "libgunicode" SO_EXT,RTLD_LAZY);
-#endif
-    }
-    if ( lib==NULL ) {
-        PyErr_Format(PyExc_SystemError,"Missing library: %s", "libgunicode");
-        return 1;
-    }
-
-    if ( (lib = dlopen("libgutils" SO_EXT,RTLD_LAZY))==NULL ) {
-#ifdef PREFIX
-        lib = dlopen( PREFIX "/lib/" "libgutils" SO_EXT,RTLD_LAZY);
-#endif
-    }
-    if ( lib==NULL ) {
-        PyErr_Format(PyExc_SystemError,"Missing library: %s", "libgutils");
-        return 1;
-    }
-    return 0;
-}
 
     /* See also initPyFontForge above for the version 3 case */
 PyMODINIT_FUNC _PyInit_fontforge(void) {
@@ -18046,25 +18032,6 @@ PyMODINIT_FUNC _PyInit___FontForge_Internals___(void) {
     return PyModule_Create(&ff_internals_module);
 }
 
-PyMODINIT_FUNC PyInit_fontforge(void) {
-    if ( load_glibraries() != 0 )
-        return NULL;
-    doinitFontForgeMain();
-    no_windowing_ui = running_script = true;
-    PyImport_AppendInittab("psMat", _PyInit_psMat);
-    PyImport_AppendInittab("__FontForge_Internals___", _PyInit___FontForge_Internals___);
-    return _PyInit_fontforge();
-}
-
-PyMODINIT_FUNC PyInit_psMat(void) {
-    if ( load_glibraries() != 0 )
-        return NULL;
-    doinitFontForgeMain();
-    no_windowing_ui = running_script = true;
-    PyImport_AppendInittab("fontforge", _PyInit_fontforge);
-    PyImport_AppendInittab("__FontForge_Internals___", _PyInit___FontForge_Internals___);
-    return _PyInit_psMat();
-}
 
 void FontForge_PythonInit(void) {
     Py_SetProgramName(L"fontforge");
@@ -18106,11 +18073,10 @@ static void initPyFontForge(void) {
 	    NULL };
     static char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
 	    "spiroLeft", "spiroRight", "spiroOpen", NULL };
-    static int initted = false;
+    static int initted = 0;
 
     if ( initted )
 return;
-    initted = true;
 
     setupMath();
     for ( i=0; types[i]!=NULL; ++i ) {
@@ -18121,6 +18087,7 @@ return;
 
     m = Py_InitModule3("fontforge", FontForge_methods,
                        "FontForge font manipulation module.");
+    initted = 1;
 
     SetPythonModuleMetadata( m );
 
@@ -18472,13 +18439,25 @@ return;
 	PyFF_CallDictFunc(hook_dict,"loadFontHook","f", fv );
 }
 
-#if PY_MAJOR_VERSION < 3
-void ff_init(void) {
+
+/* This function is called when fontforge is being imported into
+** a python process.  Actually python first invokes the wrapper
+** functions in the pyhook/*.c files; and those then call this
+** function.
+*/
+PyMODINIT_FUNC FFPY_PYTHON_ENTRY_FUNCTION(const char* modulename) {
+    fprintf(stdout,"Initializing FontForge via import of module %s\n",modulename);
     doinitFontForgeMain();
     no_windowing_ui = running_script = true;
+
+#if PY_MAJOR_VERSION >= 3
+    PyImport_AppendInittab("psMat", _PyInit_psMat);
+    PyImport_AppendInittab("__FontForge_Internals___", _PyInit___FontForge_Internals___);
+    return _PyInit_fontforge();
+#else
     initPyFontForge();
+#endif
 }
-#endif /* PY_MAJOR_VERSION < 3 */
 
 #else
 #include "fontforgevw.h"
