@@ -337,6 +337,7 @@ return;
     GDrawDrawLine(pixmap,0,mv->displayend+3*(mv->fh+4),mv->width,mv->displayend+3*(mv->fh+4),0x000000);
     GDrawDrawLine(pixmap,0,mv->displayend+4*(mv->fh+4),mv->width,mv->displayend+4*(mv->fh+4),0x000000);
     GDrawDrawLine(pixmap,0,mv->displayend+5*(mv->fh+4),mv->width,mv->displayend+5*(mv->fh+4),0x000000);
+    GDrawPopClip(pixmap,&old);
 }
 
 static void MVSetSubtables(SplineFont *sf) {
@@ -2836,7 +2837,7 @@ static void MVMenuPointSize(GWindow mgw, struct gmenuitem *UNUSED(mi), GEvent *U
     memset(&label,0,sizeof(label));
     memset(&boxes,0,sizeof(boxes));
 
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict|wam_nocairo;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
@@ -4680,7 +4681,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->dpi = 72;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon|wam_nocairo;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon;
     wattrs.event_masks = ~(0);
     wattrs.cursor = ct_mypointer;
     MVWindowTitle(buf,sizeof(buf),mv);
@@ -4796,7 +4797,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     pos.x = mv->xstart; pos.width = mv->dwidth - mv->xstart;
     pos.y = mv->topend+2; pos.height = mv->displayend - mv->topend - 2;
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_backcol|wam_nocairo;
+    wattrs.mask = wam_events|wam_backcol;
     wattrs.background_color = view_bgcol;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
