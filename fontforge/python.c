@@ -41,6 +41,7 @@
 #include "utype.h"
 #include "ustring.h"
 #include "flaglist.h"
+#include "strlist.h"
 #include "scripting.h"
 #include "scriptfuncs.h"
 #include <math.h>
@@ -48,6 +49,7 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <dirent.h>
 #include <stdarg.h>
 #if PY_MAJOR_VERSION >= 3
@@ -312,6 +314,10 @@ return( -1 );
 /* ************************************************************************** */
 /* Utilities */
 /* ************************************************************************** */
+
+static struct string_list *default_pyinit_dirs(void);
+static int dir_exists(const char* path);
+
 
 static void FreeStringArray( int cnt, char **names ) {
     int i;
@@ -764,6 +770,21 @@ static PyObject *PyFF_Version(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
 
     sprintf( buffer, "%d", library_version_configuration.library_source_versiondate);
 return( Py_BuildValue("s", buffer ));
+}
+
+static PyObject *PyFF_GetScriptPath(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+    PyObject *ret;
+    struct string_list *dpath;
+    struct string_list *p;
+    int cnt, i;
+
+    dpath = default_pyinit_dirs();
+    cnt = string_list_count(dpath);
+    ret = PyTuple_New(cnt);
+    for ( i=0,p=dpath; p!=NULL; p=p->next,i++ ) {
+	PyTuple_SET_ITEM(ret,i,Py_BuildValue("s",p->str));
+    }
+    return ret;
 }
 
 static PyObject *PyFF_FontTuple(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
@@ -17614,6 +17635,7 @@ static PyMethodDef FontForge_methods[] = {
     { "unicodeFromName", PyFF_UnicodeFromName, METH_VARARGS, "Given a name, look it up in the namelists and find what unicode code point it maps to (returns -1 if not found)" },
     { "nameFromUnicode", PyFF_NameFromUnicode, METH_VARARGS, "Given a unicode code point and (optionally) a namelist, find the corresponding glyph name" },
     { "version", PyFF_Version, METH_NOARGS, "Returns a string containing the current version of FontForge, as 20061116" },
+    { "scriptPath", PyFF_GetScriptPath, METH_NOARGS, "Returns a list of the directories searched for scripts"},
     { "fonts", PyFF_FontTuple, METH_NOARGS, "Returns a tuple of all loaded fonts" },
     { "fontsInFile", PyFF_FontsInFile, METH_VARARGS, "Returns a tuple containing the names of any fonts in an external file"},
     { "open", PyFF_OpenFont, METH_VARARGS, "Opens a font and returns it" },
@@ -18232,7 +18254,6 @@ void PyFF_Main(int argc,char **argv,int start) {
         i++;
     }
     free( newargv );
-
     exit( exit_status );
 }
 
@@ -18255,7 +18276,8 @@ void PyFF_Main(int argc,char **argv,int start) {
     for ( i=start; i<argc; ++i )
 	newargv[i-start+1] = argv[i];
     newargv[i-start+1] = NULL;
-    exit( Py_Main( i-start+1,newargv ));
+
+    exit( Py_Main( i-start+1,newargv ) );
 }
 
 #endif /* PY_MAJOR_VERSION >= 3 -------------------------------------------------*/
@@ -18317,51 +18339,104 @@ void PyFF_FreeSC(SplineChar *sc) {
 static void LoadFilesInPythonInitDir(char *dir) {
     DIR *diro;
     struct dirent *ent;
-    char pathname[1025];
+    struct string_list *filelist=NULL;
+    struct string_list *item;
 
     diro = opendir(dir);
     if ( diro==NULL )		/* It's ok not to have any python init scripts */
 return;
 
     while ( (ent = readdir(diro))!=NULL ) {
+	char buffer[PATH_MAX+2];
 	char *pt = strrchr(ent->d_name,'.');
 	if ( pt==NULL )
     continue;
 	if ( strcmp(pt,".py")==0 ) {
-	    FILE *fp;
-	    snprintf( pathname, sizeof(pathname), "%s/%s", dir, ent->d_name );
-
-	    fp = fopen( pathname, "rb" );
-	    if ( fp==NULL ) {
-		fprintf(stderr,"Failed to open script \"%s\": %s\n",pathname,strerror(errno));
-    continue;
-	    }
-	    PyRun_SimpleFileEx(fp, pathname, 1/*close fp*/);
+	    snprintf( buffer, sizeof(buffer), "%s/%s", dir, ent->d_name );
+	    filelist = prepend_string_list( filelist, buffer );
 	}
     }
     closedir(diro);
+
+    filelist = sort_string_list( filelist );
+
+    for ( item=filelist; item!=NULL; item=item->next ) {
+	FILE *fp;
+	char *pathname = item->str;
+	fp = fopen( pathname, "rb" );
+	if ( fp==NULL ) {
+	    fprintf(stderr,"Failed to open script \"%s\": %s\n",pathname,strerror(errno));
+	    continue;
+	}
+	PyRun_SimpleFileEx(fp, pathname, 1/*close fp*/);
+    }
+    delete_string_list( filelist );
+}
+
+static int dir_exists(const char* path) {
+    struct stat st;
+    if ( stat(path,&st)==0 && S_ISDIR(st.st_mode) )
+	return 1;
+    return 0;
+}
+
+static struct string_list *default_pyinit_dirs(void) {
+    static struct string_list *pathlist = NULL;
+    const char *sharedir;
+    const char *userdir;
+    char subdir[16];
+    char buffer[PATH_MAX+2];
+
+    if ( pathlist != NULL ) {
+	/* Re-scan directories, so delete old list */
+	delete_string_list(pathlist);
+	pathlist = NULL;
+    }
+    snprintf(subdir, sizeof(subdir), "python%d", PY_MAJOR_VERSION);
+
+    sharedir = getFontForgeShareDir();
+    userdir = getPfaEditDir(buffer);
+
+    if ( sharedir!=NULL ) {
+	snprintf(buffer,sizeof(buffer),"%s/%s",sharedir,subdir);
+	if ( dir_exists(buffer) ) {
+	    pathlist = append_string_list( pathlist, buffer );
+	}
+	else { /* Fall back to version-less python */
+	    snprintf(buffer,sizeof(buffer),"%s/%s",sharedir,"python");
+	    if ( dir_exists(buffer) ) {
+		pathlist = append_string_list( pathlist, buffer );
+	    }
+	}
+    }
+
+    if ( userdir!=NULL ) {
+	snprintf(buffer,sizeof(buffer),"%s/%s",userdir,subdir);
+	if ( dir_exists(buffer) ) {
+	    pathlist = append_string_list( pathlist, buffer );
+	}
+	else { /* Fall back to version-less python */
+	    snprintf(buffer,sizeof(buffer),"%s/%s",userdir,"python");
+	    if ( dir_exists(buffer) ) {
+		pathlist = append_string_list( pathlist, buffer );
+	    }
+	}
+    }
+
+    return pathlist;
 }
 
 void PyFF_ProcessInitFiles(void) {
     static int done = false;
-    char buffer[1025], *pt;
+    struct string_list * dpath;
 
     if ( done )
 return;
+    dpath = default_pyinit_dirs();
+    for ( ; dpath!=NULL; dpath=dpath->next ) {
+	LoadFilesInPythonInitDir( dpath->str );
+    }
     done = true;
-
-    pt = getFontForgeShareDir();
-    if ( pt!=NULL ) {
-	snprintf(buffer,sizeof(buffer),"%s/python", pt );
-	/* Load the system directory */
-	LoadFilesInPythonInitDir( buffer );
-    }
-    /* Load the user directory */
-    if ( getPfaEditDir(buffer)!=NULL ) {
-	strcpy(buffer,getPfaEditDir(buffer));
-	strcat(buffer,"/python");
-	LoadFilesInPythonInitDir(buffer);
-    }
 }
 
 void PyFF_CallDictFunc(PyObject *dict,char *key,char *argtypes, ... ) {
@@ -18446,7 +18521,6 @@ return;
 ** function.
 */
 PyMODINIT_FUNC FFPY_PYTHON_ENTRY_FUNCTION(const char* modulename) {
-    fprintf(stdout,"Initializing FontForge via import of module %s\n",modulename);
     doinitFontForgeMain();
     no_windowing_ui = running_script = true;
 
