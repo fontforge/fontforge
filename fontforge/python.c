@@ -18056,6 +18056,10 @@ PyMODINIT_FUNC _PyInit___FontForge_Internals___(void) {
 
 
 void FontForge_PythonInit(void) {
+    PyObject *module_main;
+    PyObject *module_fontforge;
+    PyObject *module_psMat;
+
     Py_SetProgramName(L"fontforge");
     PyImport_AppendInittab("fontforge", _PyInit_fontforge);
     PyImport_AppendInittab("psMat", _PyInit_psMat);
@@ -18065,6 +18069,13 @@ void FontForge_PythonInit(void) {
 #else
     Py_Initialize();
 #endif
+
+    /* Pre-import modules fontforge and psMat */
+    module_main = PyImport_AddModule("__main__");
+    module_fontforge = PyImport_ImportModule("fontforge");
+    module_psMat = PyImport_ImportModule("psMat");
+    PyModule_AddObject(module_main, "fontforge", module_fontforge);
+    PyModule_AddObject(module_main, "psMat", module_psMat);
 }
 
 #else /* PY_MAJOR_VERSION >= 3 ---------------------------------------------*/
@@ -18140,6 +18151,10 @@ return;
 }
 
 void FontForge_PythonInit(void) {
+    PyObject *module_main;
+    PyObject *module_fontforge;
+    PyObject *module_psMat;
+
     Py_SetProgramName("fontforge");
     PyImport_AppendInittab("fontforge", initPyFontForge);
 #ifdef MAC
@@ -18148,6 +18163,13 @@ void FontForge_PythonInit(void) {
     Py_Initialize();
 #endif
     initPyFontForge();
+
+    /* Pre-import modules fontforge and psMat */
+    module_main = PyImport_AddModule("__main__");
+    module_fontforge = PyImport_ImportModule("fontforge");
+    module_psMat = PyImport_ImportModule("psMat");
+    PyModule_AddObject(module_main, "fontforge", module_fontforge);
+    PyModule_AddObject(module_main, "psMat", module_psMat);
 }
 
 #endif /* PY_MAJOR_VERSION >= 3 ---------------------------------------*/
