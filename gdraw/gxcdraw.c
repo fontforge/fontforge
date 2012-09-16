@@ -814,6 +814,14 @@ void _GXCDraw_CopyArea( GXWindow from, GXWindow into, GRect *src, int32 x, int32
 return;
     }
 
+    int width, height;
+
+    width = cairo_xlib_surface_get_width(into->cs);
+    height = cairo_xlib_surface_get_height(into->cs);
+
+    /* make sure the destination surface is big enough for the copied area */
+    cairo_xlib_surface_set_size(into->cs, imax(width, src->width), imax(height, src->height));
+
     cairo_set_source_surface(into->cc,from->cs,x-src->x,y-src->y);
     cairo_rectangle(into->cc,x,y,src->width,src->height);
     cairo_fill(into->cc);
