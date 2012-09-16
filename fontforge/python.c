@@ -1546,7 +1546,7 @@ return NULL;
 
 static PyTypeObject PyFF_ContourIterType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "contouriter",             /* tp_name */
+    "fontforge.contour_iterator", /* tp_name */
     sizeof(contouriterobject), /* tp_basicsize */
     0,                         /* tp_itemsize */
     /* methods */
@@ -3093,7 +3093,7 @@ return NULL;
 
 static PyTypeObject PyFF_LayerIterType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "layeriter",               /* tp_name */
+    "fontforge.layer_iterator", /* tp_name */
     sizeof(layeriterobject),   /* tp_basicsize */
     0,                         /* tp_itemsize */
     /* methods */
@@ -5089,7 +5089,7 @@ return NULL;
 
 static PyTypeObject PyFF_LayerArrayIterType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "dictionary-keyiterator",  /* tp_name */
+    "fontforge.layer_array_iterator",  /* tp_name */
     sizeof(layersiterobject),  /* tp_basicsize */
     0,                         /* tp_itemsize */
     /* methods */
@@ -5260,7 +5260,7 @@ static PyMappingMethods PyFF_LayerArrayMapping = {
 
 static PyTypeObject PyFF_LayerArrayType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "fontforge.glyphlayerarray", /* tp_name */
+    "fontforge.layer_rarray", /* tp_name */
     sizeof(PyFF_LayerArray),   /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor) PyFF_LayerArray_dealloc, /* tp_dealloc */
@@ -8600,7 +8600,7 @@ return NULL;
 
 static PyTypeObject PyFF_CvtIterType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "cvtiter",                 /* tp_name */
+    "fontforge.cvt_iterator",  /* tp_name */
     sizeof(cvtiterobject),     /* tp_basicsize */
     0,                         /* tp_itemsize */
     /* methods */
@@ -8955,7 +8955,7 @@ static PyTypeObject PyFF_CvtType = {
 #else
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
 #endif
-    "fontforge cvt objects",   /* tp_doc */
+    "fontforge cvt (control value table) objects", /* tp_doc */
     NULL,                      /* tp_traverse */
     NULL,                      /* tp_clear */
     NULL,                      /* tp_richcompare */
@@ -9362,7 +9362,7 @@ return NULL;
 
 static PyTypeObject PyFF_LayerInfoArrayIterType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "fontforge.fontlayeriter", /* tp_name */
+    "fontforge.layerinfo_array_iterator", /* tp_name */
     sizeof(layerinfoiterobject), /* tp_basicsize */
     0,                         /* tp_itemsize */
     /* methods */
@@ -9703,7 +9703,7 @@ static PyMethodDef PyFF_LayerInfoArray_methods[] = {
 
 static PyTypeObject PyFF_LayerInfoArrayType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "fontforge.fontlayerarray",/*tp_name*/
+    "fontforge.layerinfo_array",/*tp_name*/
     sizeof(PyFF_LayerInfoArray), /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor) PyFF_LayerInfoArray_dealloc, /*tp_dealloc*/
@@ -9885,7 +9885,7 @@ static PyTypeObject PyFF_MathType = {
 };
 
 /* Build a get/set table for the math type based on the math_constants_descriptor */
-static void setupMath(void) {
+static int setup_math_type(PyTypeObject* mathtype) {
     int cnt;
     PyGetSetDef *getset;
 
@@ -9899,7 +9899,8 @@ static void setupMath(void) {
 	getset[cnt].doc = math_constants_descriptor[cnt].message;
 	getset[cnt].closure = (void *) (intpt) math_constants_descriptor[cnt].offset;
     }
-    PyFF_MathType.tp_getset = getset;
+    mathtype->tp_getset = getset;
+    return 0;
 }
 
 /* ************************************************************************** */
@@ -9943,7 +9944,7 @@ return NULL;
 
 static PyTypeObject PyFF_PrivateIterType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "dictionary-keyiterator",  /* tp_name */
+    "fontforge.private_iterator",  /* tp_name */
     sizeof(privateiterobject), /* tp_basicsize */
     0,                         /* tp_itemsize */
     /* methods */
@@ -10344,7 +10345,7 @@ return NULL;
 
 static PyTypeObject PyFF_FontIterType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "fontiter",                /* tp_name */
+    "fontforge.font_iterator", /* tp_name */
     sizeof(fontiterobject),    /* tp_basicsize */
     0,                         /* tp_itemsize */
     /* methods */
@@ -17972,13 +17973,123 @@ void PyFF_ErrorF3(const char *frmt, const char *str, int size, int depth) {
     PyErr_Format(PyExc_ValueError, frmt, str, size, depth );
 }
 
+/* ************************************************************************** */
+/* PYTHON INITIALIZATING   ---   Common across all Python versions */
+/* ************************************************************************** */
+
+static char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
+			       "spiroLeft", "spiroRight", "spiroOpen", NULL };
+
+
+typedef int (*type_initializer)(PyTypeObject *);
+
+typedef struct {
+    PyTypeObject *typeobj;
+    int add_to_module;
+    type_initializer setup_function;
+} python_type_info;
+
+static python_type_info fontforge_all_python_types[] = {
+    {&PyFF_PointType,		1, NULL},
+    {&PyFF_ContourType,		1, NULL},
+    {&PyFF_LayerType,		1, NULL},
+    {&PyFF_GlyphPenType,	1, NULL},
+    {&PyFF_GlyphType,		1, NULL},
+    {&PyFF_CvtType,		1, NULL},
+    {&PyFF_PrivateIterType,	0, NULL},
+    {&PyFF_PrivateType,		1, NULL},
+    {&PyFF_FontIterType,	0, NULL},
+    {&PyFF_SelectionType,	1, NULL},
+    {&PyFF_FontType,		1, NULL},
+    {&PyFF_ContourIterType,	0, NULL},
+    {&PyFF_LayerIterType,	0, NULL},
+    {&PyFF_CvtIterType,		0, NULL},
+    {&PyFF_LayerArrayType,	1, NULL},
+    {&PyFF_RefArrayType,	1, NULL},
+    {&PyFF_LayerArrayIterType,	0, NULL},
+    {&PyFF_LayerInfoType,	1, NULL},
+    {&PyFF_LayerInfoArrayType,	1, NULL},
+    {&PyFF_LayerInfoArrayIterType,	0, NULL},
+    {&PyFF_AWGlyphType,		1, NULL},
+    {&PyFF_AWGlyphIndexType,	0, NULL},
+    {&PyFF_AWContextType,	1, NULL},
+    {&PyFF_MathType,		1, setup_math_type},
+    {&PyFF_MathKernType,	1, NULL},
+    {NULL,0,NULL}
+};
+
+
+static int FinalizePythonTypes(python_type_info* typelist) {
+    int i=0;
+
+    /* Build types first with custom initializers */
+    for ( i=0; typelist[i].typeobj != NULL; ++i ) {
+	PyTypeObject * typ = typelist[i].typeobj;
+	type_initializer typ_init = typelist[i].setup_function;
+
+	if ( typ != NULL && typ_init != NULL ) {
+#ifdef DEBUG
+	    fprintf(stderr,"Building type %s\n", typ->tp_name);
+#endif
+	    if ( typ_init( typ ) < 0 ) {
+		fprintf(stderr,"Python initialization failed: setup of type %s failed\n",
+			typ->tp_name);
+		return -1;
+	    }
+	}
+    }
+
+    /* Let Python make the type ready */
+    for ( i=0; typelist[i].typeobj != NULL; ++i ) {
+	PyTypeObject * typ = typelist[i].typeobj;
+
+#ifdef DEBUG
+	fprintf(stdout,"PyTypeReady(%s)\n", typ->tp_name);
+#endif
+	if ( PyType_Ready(typ) < 0 ) {
+	    fprintf(stderr,"Python initialization failed: PyTypeReady(%s) failed\n",
+		    typ->tp_name);
+	    return -1;
+	}
+    }
+    return 0;
+}
+
+static int AddPythonTypesToModule( PyObject *module, python_type_info* typelist)
+{
+    int i;
+    for ( i=0; typelist[i].typeobj != NULL; ++i ) {
+	PyTypeObject * typ = typelist[i].typeobj;
+	int do_add = typelist[i].add_to_module;
+	const char *typnam;
+	const char *dot;
+
+	if ( ! do_add )
+	    continue;
+
+	/* Determine the type name, without the dotted module qualification */
+	typnam = typ->tp_name;
+	dot = strchr(typnam,'.');
+	if ( dot!=NULL )
+	    typnam = dot+1;
+
+	/* Add the type to the module */
+#ifdef DEBUG
+	fprintf(stdout,"Adding type %s as %s\n", typ->tp_name, typnam);
+#endif
+	Py_INCREF( typ );
+	PyModule_AddObject( module, typnam, (PyObject*)typ );
+    }
+    return 0;
+}
+
+static void SetPythonModuleMetadata( PyObject *module );
+static void AddHookDictionary( PyObject *module );
+static void AddSpiroConstants( PyObject *module );
 
 /* ************************************************************************** */
 /* PYTHON INITIALIZATION   ---   Python 3.x or greater */
 /* ************************************************************************** */
-
-static void SetPythonModuleMetadata( PyObject *module );
-
 #if PY_MAJOR_VERSION >= 3 /*---------------------------------------------*/
 
 #include "dynamic.h"
@@ -17987,57 +18098,18 @@ PyMODINIT_FUNC _PyInit_fontforge(void);
 PyMODINIT_FUNC _PyInit_psMat(void);
 PyMODINIT_FUNC _PyInit___FontForge_Internals___(void);
 
-
-    /* See also initPyFontForge above for the version 3 case */
 PyMODINIT_FUNC _PyInit_fontforge(void) {
     PyObject *m;
-    int i;
 
-    static PyTypeObject *types[] = { &PyFF_PointType, &PyFF_ContourType,
-	    &PyFF_LayerType, &PyFF_GlyphPenType, &PyFF_GlyphType,
-	    &PyFF_CvtType, &PyFF_PrivateIterType, &PyFF_PrivateType,
-	    &PyFF_FontIterType, &PyFF_SelectionType, &PyFF_FontType,
-	    &PyFF_ContourIterType, &PyFF_LayerIterType, &PyFF_CvtIterType,
-	    &PyFF_LayerArrayType, &PyFF_RefArrayType, &PyFF_LayerArrayIterType,
-	    &PyFF_LayerInfoType, &PyFF_LayerInfoArrayType, &PyFF_LayerInfoArrayIterType,
-	    &PyFF_AWGlyphType, &PyFF_AWGlyphIndexType, &PyFF_AWContextType,
-	    &PyFF_MathType, &PyFF_MathKernType, NULL };
-    
-    static char *names[] = { "point", "contour", "layer", "glyphPen", "glyph",
-	    "cvt", "privateiter", "private", "fontiter", "selection", "font",
-	    "contouriter", "layeriter", "cvtiter",
-	    "glyphlayerarray", "glyphlayerrefarray", "glyphlayeriter",
-	    "layerinfo", "fontlayerarray", "fontlayeriter",
-	    "awglyph", "awglyphIndex", "awcontext",
-	    "math", "mathkern",
-	    NULL };
-
-    static char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
-	    "spiroLeft", "spiroRight", "spiroOpen", NULL };
-
-    setupMath();
-    for ( i=0; types[i]!=NULL; ++i ) {
-        Py_TYPE(types[i]) = &PyType_Type; /* Or does Type_Ready do this??? */
-        if (PyType_Ready(types[i]) < 0)
-            return NULL;        /* Is this what we want? */
-    }
+    if ( FinalizePythonTypes( fontforge_all_python_types ) < 0 )
+	return NULL;
 
     m = PyModule_Create(&fontforge_module);
 
     SetPythonModuleMetadata( m );
-
-    for ( i=0; types[i]!=NULL; ++i ) {
-        Py_INCREF(types[i]);
-        PyModule_AddObject(m, names[i], (PyObject *)types[i]);
-    }
-    /* Add a dictionary in which the user may define hooks -- scripts to run */
-    /*  when certain events happen in fontforge (like loading a file) */
-    hook_dict = PyDict_New();
-    Py_INCREF(hook_dict);
-    PyModule_AddObject(m, "hooks", hook_dict);
-    /* Add constant names for the spiro point types */
-    for ( i=0; spiro_names[i]!=NULL; ++i )
-        PyModule_AddObject(m, spiro_names[i], Py_BuildValue("i",i+1));
+    AddPythonTypesToModule( m, fontforge_all_python_types );
+    AddHookDictionary( m );
+    AddSpiroConstants( m );
 
     return m;
 }
@@ -18082,70 +18154,40 @@ void FontForge_PythonInit(void) {
 /* ************************************************************************** */
 /* PYTHON INITIALIZATION   ---   Python 2.x */
 /* ************************************************************************** */
-/* See also _PyInit_fontforge above for the version 3 case */
 
 static void initPyFontForge(void) {
     PyObject* m;
-    int i;
-    static PyTypeObject *types[] = { &PyFF_PointType, &PyFF_ContourType,
-	    &PyFF_LayerType, &PyFF_GlyphPenType, &PyFF_GlyphType,
-	    &PyFF_CvtType, &PyFF_PrivateIterType, &PyFF_PrivateType,
-	    &PyFF_FontIterType, &PyFF_SelectionType, &PyFF_FontType,
-	    &PyFF_ContourIterType, &PyFF_LayerIterType, &PyFF_CvtIterType,
-	    &PyFF_LayerArrayType, &PyFF_RefArrayType, &PyFF_LayerArrayIterType,
-	    &PyFF_LayerInfoType, &PyFF_LayerInfoArrayType, &PyFF_LayerInfoArrayIterType,
-	    &PyFF_AWGlyphType, &PyFF_AWGlyphIndexType, &PyFF_AWContextType,
-	    &PyFF_MathType, &PyFF_MathKernType, NULL };
-    static char *names[] = { "point", "contour", "layer", "glyphPen", "glyph",
-	    "cvt", "privateiter", "private", "fontiter", "selection", "font",
-	    "contouriter", "layeriter", "cvtiter",
-	    "glyphlayerarray", "glyphlayerrefarray", "glyphlayeriter",
-	    "layerinfo", "fontlayerarray", "fontlayeriter",
-	    "awglyph", "awglyphIndex", "awcontext",
-	    "math", "mathkern",
-	    NULL };
-    static char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
-	    "spiroLeft", "spiroRight", "spiroOpen", NULL };
     static int initted = 0;
 
     if ( initted )
 return;
 
-    setupMath();
-    for ( i=0; types[i]!=NULL; ++i ) {
-	Py_TYPE(types[i]) = &PyType_Type;		/* Or does Type_Ready do this??? */
-	if (PyType_Ready(types[i]) < 0)
-return;
-    }
+    /* ========== Initialize module "fontforge" ========== */
+    if ( FinalizePythonTypes( fontforge_all_python_types ) < 0 )
+	return;
 
     m = Py_InitModule3("fontforge", FontForge_methods,
                        "FontForge font manipulation module.");
     initted = 1;
 
+
     SetPythonModuleMetadata( m );
+    AddPythonTypesToModule( m, fontforge_all_python_types );
+    AddHookDictionary( m );
+    AddSpiroConstants( m );
 
-    for ( i=0; types[i]!=NULL; ++i ) {
-	Py_INCREF(types[i]);
-	PyModule_AddObject(m, names[i], (PyObject *)types[i]);
-    }
-    /* Add a dictionary in which the user may define hooks -- scripts to run */
-    /*  when certain events happen in fontforge (like loading a file) */
-    hook_dict = PyDict_New();
-    Py_INCREF(hook_dict);
-    PyModule_AddObject(m, "hooks", hook_dict);
-    /* Add constant names for the spiro point types */
-    for ( i=0; spiro_names[i]!=NULL; ++i )
-	PyModule_AddObject(m, spiro_names[i], Py_BuildValue("i",i+1));
-
+    /* ========== Initialize module "psMat" ========== */
     m = Py_InitModule3("psMat", psMat_methods,
                        "PostScript Matrix manipulation");
     SetPythonModuleMetadata( m );
 
     /* No types, just tuples */
 
-    /* I need some way to pickle objects from C. The only way I can think to */
-    /*  do that is to go through this kludge. Define a dummy module with one */
-    /*  function, and then invoke that function to store handles to the pickler */
+    /* ========== Initialize module "__FontForge_Internals__" ========== */
+    /* I need some way to pickle objects from C. The only way I can think to
+     * do that is to go through this kludge. Define a dummy module with one
+     * function, and then invoke that function to store handles to the pickler.
+     */
     m = Py_InitModule3("__FontForge_Internals___", FontForge_internal_methods,
                        "I use this to get access to certain python objects I need, and to hide some internal python functions. I don't expect users ever to care about it.");
 }
@@ -18207,6 +18249,23 @@ static void SetPythonModuleMetadata( PyObject *module ) {
     PyModule_AddObject(module, "__date__", pydate);
 }
 
+static void AddHookDictionary( PyObject *module ) {
+    /* Add a dictionary in which the user may define hooks (scripts to
+     * run) when certain events happen in fontforge, like loading a
+     * file.
+     */
+    PyObject *hook_dict;
+    hook_dict = PyDict_New();
+    Py_INCREF(hook_dict);
+    PyModule_AddObject(module, "hooks", hook_dict);
+}
+
+static void AddSpiroConstants( PyObject *module ) {
+    int i;
+    /* Add constant names for the spiro point types */
+    for ( i=0; spiro_names[i]!=NULL; ++i )
+        PyModule_AddObject(module, spiro_names[i], Py_BuildValue("i",i+1));
+}
 
 extern int no_windowing_ui, running_script;
 
