@@ -166,7 +166,7 @@ struct grad_stops {
     real offset;
     uint32 col;
     real opacity;
-} *grad_stops;
+};
 
 struct gradient {
     BasePoint start;	/* focal of a radial gradient, start of a linear */
