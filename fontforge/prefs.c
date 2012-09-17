@@ -182,7 +182,7 @@ static int alwaysgenapple=false, alwaysgenopentype=false;
 static int gfc_showhidden, gfc_dirplace;
 static char *gfc_bookmarks=NULL;
 
-static int prefs_usecairo = true, prefs_usepango=true;
+static int prefs_usecairo = true;
 
 static int pointless;
 
@@ -286,9 +286,6 @@ static struct prefs_list {
 	{ N_("SplashScreen"), pr_bool, &splash, NULL, NULL, 'S', NULL, 0, N_("Show splash screen on start-up") },
 #ifndef _NO_LIBCAIRO
 	{ N_("UseCairoDrawing"), pr_bool, &prefs_usecairo, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
-#endif
-#ifndef _NO_LIBPANGO
-	{ N_("UsePangoDrawing"), pr_bool, &prefs_usepango, NULL, NULL, '\0', NULL, 0, N_("Use the pango library for text (if available)\nThis makes for prettier and handles complex scripts.\nBut it can slow things down on older machines.\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
 #endif
 	{ N_("ExportClipboard"), pr_bool, &export_clipboard, NULL, NULL, '\0', NULL, 0, N_( "If you are running an X11 clipboard manager you might want\nto turn this off. FF can put things into its internal clipboard\nwhich it cannot export to X11 (things like copying more than\none glyph in the fontview). If you have a clipboard manager\nrunning it will force these to be exported with consequent\nloss of data.") },
 	{ N_("AutoSaveFrequency"), pr_int, &AutoSaveFrequency, NULL, NULL, '\0', NULL, 0, N_( "The number of seconds between autosaves. If you set this to 0 there will be no autosaves.") },
@@ -474,9 +471,6 @@ static struct prefs_list {
 	{ "AnchorControlPixelSize", pr_int, &aa_pixelsize, NULL, NULL, '\0', NULL, 1, NULL },
 #ifdef _NO_LIBCAIRO
 	{ "UseCairoDrawing", pr_bool, &prefs_usecairo, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
-#endif
-#ifdef _NO_LIBPANGO
-	{ "UsePangoDrawing", pr_bool, &prefs_usepango, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
 #endif
 	{ "CV_B1Tool", pr_int, (int *) &cv_b1_tool, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "CV_CB1Tool", pr_int, (int *) &cv_cb1_tool, NULL, NULL, '\0', NULL, 1, NULL },
@@ -1162,7 +1156,6 @@ static void PrefsUI_LoadPrefs(void) {
     LoadNamelistDir(NULL);
     ProcessFileChooserPrefs();
     GDrawEnableCairo( prefs_usecairo );
-    GDrawEnablePango( prefs_usepango );
 }
 
 static void PrefsUI_SavePrefs(int not_if_script) {
@@ -1804,7 +1797,6 @@ return( true );
 	if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
 	    fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
 	GDrawEnableCairo(prefs_usecairo);
-	GDrawEnablePango(prefs_usepango);
     }
 return( true );
 }
@@ -2377,7 +2369,7 @@ void DoPrefs(void) {
     rq.utf8_family_name = MONO_UI_FAMILIES;
     rq.point_size = 12;
     rq.weight = 400;
-    font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    font = GDrawInstanciateFont(gw,&rq);
     GGadgetSetFont(mfgcd[0].ret,font);
     GGadgetSetFont(msgcd[0].ret,font);
     GHVBoxFitWindow(mboxes[0].ret);

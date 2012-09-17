@@ -389,8 +389,7 @@ return( false );
 	    yoff = (g->inner.height-lcnt*gr->fh)/2;
 	_ggadget_underlineMnemonic(pixmap,x,g->inner.y + gr->as + yoff,gr->label,
 		g->mnemonic,fg,g->inner.y+g->inner.height);
-	x += GDrawDrawBiText(pixmap,x,g->inner.y + gr->as + yoff,gr->label,-1,NULL,
-		fg );
+	x += GDrawDrawText(pixmap,x,g->inner.y + gr->as + yoff,gr->label,-1,fg);
 	x += GDrawPointsToPixels(pixmap,_GGadget_TextImageSkip);
     }
     if ( !gr->image_precedes && img!=NULL )
@@ -546,7 +545,7 @@ static void GRadioGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
     GDrawWindowFontMetrics(g->base,gl->font,&as, &ds, &ld);
     if ( gl->label!=NULL ) {
 	FontInstance *old = GDrawSetFont(gl->g.base,gl->font);
-	width = GDrawGetBiTextBounds(gl->g.base,gl->label, -1, NULL, &bounds);
+	width = GDrawGetTextBounds(gl->g.base,gl->label, -1, &bounds);
 	GDrawSetFont(gl->g.base,old);
 	if ( as<bounds.as ) as = bounds.as;
 	if ( ds<bounds.ds ) ds = bounds.ds;

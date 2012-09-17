@@ -445,10 +445,10 @@ static void HistExpose(GWindow pixmap, struct hist_dlg *hist) {
 
     GDrawSetFont(pixmap,hist->font);
     sprintf(buf,"%d",hist->hoff);
-    GDrawDrawBiText8(pixmap,0,height+2+hist->as, buf,-1,NULL,0x000000);
+    GDrawDrawText8(pixmap,0,height+2+hist->as, buf,-1,0x000000);
     sprintf(buf,"%d",hist->hoff+hist->hwidth/hist->barwidth);
-    GDrawDrawBiText8(pixmap,size.width-GDrawGetText8Width(pixmap,buf,-1,NULL),height+2+hist->as,
-	    buf,-1,NULL,0x000000);
+    GDrawDrawText8(pixmap,size.width-GDrawGetText8Width(pixmap,buf,-1),height+2+hist->as,
+	    buf,-1,0x000000);
 }
 
 static void HistRExpose(GWindow pixmap, struct hist_dlg *hist) {
@@ -462,8 +462,8 @@ static void HistRExpose(GWindow pixmap, struct hist_dlg *hist) {
     yscale = (4*height/5.0)/(hist->h->max-0);
 
     sprintf(buf,"%d",hist->h->max);
-    GDrawDrawBiText8(pixmap,1,height-rint(hist->h->max*yscale),
-	    buf,-1,NULL,0x000000);
+    GDrawDrawText8(pixmap,1,height-rint(hist->h->max*yscale),
+	    buf,-1,0x000000);
 }
 
 static void HistLExpose(GWindow pixmap, struct hist_dlg *hist) {
@@ -477,8 +477,8 @@ static void HistLExpose(GWindow pixmap, struct hist_dlg *hist) {
     yscale = (4*height/5.0)/(hist->h->max-0);
 
     sprintf(buf,"%d",hist->h->max);
-    GDrawDrawBiText8(pixmap,size.width-GDrawGetText8Width(pixmap,buf,-1,NULL)-1,height-rint(hist->h->max*yscale),
-	    buf,-1,NULL,0x000000);
+    GDrawDrawText8(pixmap,size.width-GDrawGetText8Width(pixmap,buf,-1)-1,height-rint(hist->h->max*yscale),
+	    buf,-1,0x000000);
 }
 
 static void HistScroll(struct hist_dlg *hist,struct sbevent *sb) {
@@ -800,11 +800,11 @@ void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8 *select
 	font = GResourceFindFont("Histogram.Font",font);
     }
     hist.font = font;
-    GDrawFontMetrics(hist.font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(gw,hist.font,&as,&ds,&ld);
     hist.fh = as+ds; hist.as = as;
 
     GDrawSetFont(gw,hist.font);
-    hist.x = 10+GDrawGetTextWidth(gw,n9999,-1,NULL);
+    hist.x = 10+GDrawGetTextWidth(gw,n9999,-1);
     hist.hwidth = pos.width - 2*hist.x;
     hist.y = 10; hist.hheight = pos.width-20;
 

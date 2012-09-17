@@ -782,7 +782,7 @@ static void TPDDraw(TilePathDlg *tpd, GWindow pixmap, GEvent *event) {
 	GDrawDrawRect(pixmap,&r,0);
 
 	GDrawSetFont(pixmap,cv->inactive ? tpd->plain : tpd->bold);
-	GDrawDrawBiText8(pixmap,r.x,pos.y-2-tpd->fh+tpd->as,_(tilenames[i]),-1,NULL,0);
+	GDrawDrawText8(pixmap,r.x,pos.y-2-tpd->fh+tpd->as,_(tilenames[i]),-1,0);
     }
 }
 
@@ -1082,7 +1082,7 @@ static int TileAsk(struct tiledata *td,SplineFont *sf) {
     }
     tpd.plain = font;
     tpd.bold = bold;
-    GDrawFontMetrics(tpd.plain,&as,&ds,&ld);
+    GDrawWindowFontMetrics(tpd.gw,tpd.plain,&as,&ds,&ld);
     tpd.fh = as+ds; tpd.as = as;
 
     memset(&label,0,sizeof(label));

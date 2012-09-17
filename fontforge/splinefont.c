@@ -1343,7 +1343,8 @@ static const char **mods[] = { knownweights, modifierlist, NULL };
 static const char **fullmods[] = { realweights, modifierlistfull, NULL };
 
 char *_GetModifiers(char *fontname, char *familyname,char *weight) {
-    char *pt, *fpt, *space;
+    char *pt, *fpt;
+    static char space[20];
     int i, j;
 
     /* URW fontnames don't match the familyname */

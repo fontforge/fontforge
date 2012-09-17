@@ -100,9 +100,6 @@ static void _dousage(void) {
 #ifndef _NO_LIBCAIRO
     printf( "\t-usecairo=yes|no  Use (or not) the cairo library for drawing\n" );
 #endif
-#ifndef _NO_LIBPANGO
-    printf( "\t-usepango=yes|no  Use (or not) the pango library for text\n" );
-#endif
     printf( "\t-help\t\t\t (displays this message, and exits)\n" );
     printf( "\t-docs\t\t\t (displays this message, invokes a browser)\n\t\t\t\t (Using the BROWSER environment variable)\n" );
     printf( "\t-version\t\t (prints the version of fontforge and exits)\n" );
@@ -196,7 +193,7 @@ static void SplashLayout() {
 	lastspace = NULL;
 	for ( pt=start; ; ++pt ) {
 	    if ( *pt==' ' || *pt=='\0' ) {
-		if ( GDrawGetTextWidth(splashw,start,pt-start,NULL)<splashimage.u.image->width-10 )
+		if ( GDrawGetTextWidth(splashw,start,pt-start)<splashimage.u.image->width-10 )
 		    lastspace = pt;
 		else
 	break;
@@ -536,15 +533,15 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	y = splashimage.u.image->height + as + fh/2;
 	for ( i=1; i<linecnt; ++i ) {
 	    if ( is>=lines[i-1]+1 && is<lines[i] ) {
-		x = 8+GDrawDrawBiText(gw,8,y,lines[i-1]+1,is-lines[i-1]-1,NULL,0x000000);
+		x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,is-lines[i-1]-1,0x000000);
 		GDrawSetFont(gw,splash_italic);
-		GDrawDrawBiText(gw,x,y,is,lines[i]-is,NULL,0x000000);
+		GDrawDrawText(gw,x,y,is,lines[i]-is,0x000000);
 	    } else if ( ie>=lines[i-1]+1 && ie<lines[i] ) {
-		x = 8+GDrawDrawBiText(gw,8,y,lines[i-1]+1,ie-lines[i-1]-1,NULL,0x000000);
+		x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,ie-lines[i-1]-1,0x000000);
 		GDrawSetFont(gw,splash_font);
-		GDrawDrawBiText(gw,x,y,ie,lines[i]-ie,NULL,0x000000);
+		GDrawDrawText(gw,x,y,ie,lines[i]-ie,0x000000);
 	    } else
-		GDrawDrawBiText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,NULL,0x000000);
+		GDrawDrawText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,0x000000);
 	    y += fh;
 	}
 	GDrawPopClip(gw,&old);
@@ -971,11 +968,6 @@ int fontforge_main( int argc, char **argv ) {
 		GDrawEnableCairo(false);
 	    else
 		GDrawEnableCairo(true);
-	} else if ( strncmp(pt,"-usepango",strlen("-usepango"))==0 ) {
-	    if ( strcmp(pt,"-usepango=no")==0 )
-		GDrawEnablePango(false);
-	    else
-		GDrawEnablePango(true);
 	} else if ( strcmp(pt,"-nosplash")==0 )
 	    splash = 0;
 	else if ( strcmp(pt,"-unique")==0 )
@@ -1080,7 +1072,7 @@ exit( 0 );
     splash_italic = GDrawInstanciateFont(NULL,&rq);
     splash_italic = GResourceFindFont("Splash.ItalicFont",splash_italic);
     GDrawSetFont(splashw,splash_font);
-    GDrawFontMetrics(splash_font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(splashw,splash_font,&as,&ds,&ld);
     fh = as+ds+ld;
     SplashLayout();
     localsplash = splash;
@@ -1125,7 +1117,6 @@ exit( 0 );
 		strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 ||
 		strcmp(pt,"-dontopenxdevices")==0 || strcmp(pt,"-unique")==0 ||
 		strncmp(pt,"-usecairo",strlen("-usecairo"))==0 ||
-		strncmp(pt,"-usepango",strlen("-usepango"))==0 ||
 		strcmp(pt,"-home")==0 )
 	    /* Already done, needed to be before display opened */;
 	else if ( strncmp(pt,"-psn_",5)==0 )
