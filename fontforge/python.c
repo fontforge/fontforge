@@ -18330,6 +18330,49 @@ void FontForge_InitializeEmbeddedPython(void) {
     InitializePythonMainNamespace();
 }
 
+/* PyFF_Main() -- This is called to run a script as the main task, by
+ * running the command:   fontforge -script somescript.py arg1 arg2 ...
+ *
+ * This function is passed the entire original command line.
+ * Before passing it to Python, it must eliminate all the
+ * options up to and including the '-script' option, but while
+ * preserving argv[0].
+ *
+ * Also note that Python 3 expects argv to be C wide strings.
+ */
+#if PY_MAJOR_VERSION >= 3
+#define ARGV_CHAR_TYPE wchar_t
+#else
+#define ARGV_CHAR_TYPE char
+#endif
+static ARGV_CHAR_TYPE ** copy_argv(char *arg0, int argc ,char **argv);
+
+void PyFF_Main(int argc,char **argv,int start) {
+    char *arg;
+    ARGV_CHAR_TYPE **newargv;
+    int newargc;
+    int exitcode;
+
+    no_windowing_ui = running_script = true;
+
+    PyFF_ProcessInitFiles();
+
+    /* Skip '-script' option */
+    arg = argv[start];
+    if ( *arg=='-' && arg[1]=='-' ) ++arg;
+    if ( strcmp(arg,"-script")==0 )
+	++start;
+
+    /* Make new argv array */
+    newargc = argc - start + 1;
+    newargv = copy_argv(argv[0], newargc-1, &argv[start] );
+
+    /* Run Python */
+    exitcode = Py_Main( newargc, newargv );
+    exit(exitcode);
+}
+
+
 /* ************************************************************************** */
 /* PYTHON INITIALIZATION   ---   Python 3.x or greater */
 /* ************************************************************************** */
@@ -18343,46 +18386,26 @@ static void SetPythonProgramName(const char *progname) {
     Py_SetProgramName(saved_progname);
 }
 
-void PyFF_Main(int argc,char **argv,int start) {
-    char *arg;
-    wchar_t **newargv;
+static wchar_t ** copy_argv(char *arg0, int argc ,char **argv) {
     int i;
-    int exit_status;    
+    wchar_t **newargv;
 
-    no_windowing_ui = running_script = true;
-
-    PyFF_ProcessInitFiles();
-
-    newargv = gcalloc(argc + 1,sizeof(wchar_t *));
-    arg = argv[start];
-    if ( *arg=='-' && arg[1]=='-' )
-        ++arg;
-    if ( strcmp(arg,"-script")==0 )
-        ++start;
-
-    newargv[0] = copy_to_wide_string(argv[0]);
+    newargv= gcalloc(argc+2,sizeof(char *));
+    newargv[0] = copy_to_wide_string(arg0);
     if (newargv[0] == NULL) {
         fprintf(stderr, "argv[0] is an invalid multibyte sequence in the current locale\n");
         exit(1);
     }
-    for ( i=start; i<argc; ++i ) {
-        newargv[i - start + 1] = copy_to_wide_string(argv[i]);
-        if (newargv[i - start + 1] == NULL) {
-            fprintf(stderr, "argv[%d] is an invalid multibyte sequence in the current locale\n", i);
-            exit(1);
-        }
-    }
-    newargv[i-start+1] = NULL;
 
-    exit_status = Py_Main(2,newargv );
-
-    i = 0;
-    while (newargv[i] != NULL) {
-        free( newargv[i] );
-        i++;
+    for ( i=0; i<argc; ++i ) {
+	newargv[i+1] = copy_to_wide_string(argv[i]);
+	if (newargv[i+1] == NULL) {
+	    fprintf(stderr, "argv[%d] is an invalid multibyte sequence in the current locale\n",i+1);
+	    exit(1);
+	}
     }
-    free( newargv );
-    exit( exit_status );
+    newargv[argc+1] = NULL;
+    return newargv;
 }
 
 #else /* PY_MAJOR_VERSION */
@@ -18398,24 +18421,18 @@ static void SetPythonProgramName(const char *progname) {
     Py_SetProgramName(saved_progname);
 }
 
-void PyFF_Main(int argc,char **argv,int start) {
-    char **newargv, *arg;
+static char ** copy_argv(char *arg0, int argc ,char **argv) {
     int i;
+    char **newargv;
 
-    no_windowing_ui = running_script = true;
+    newargv= gcalloc(argc+2,sizeof(char *));
+    newargv[0] = copy(arg0);
 
-    PyFF_ProcessInitFiles();
-
-    newargv= gcalloc(argc+1,sizeof(char *));
-    arg = argv[start];
-    if ( *arg=='-' && arg[1]=='-' ) ++arg;
-    if ( strcmp(arg,"-script")==0 )
-	++start;
-    newargv[0] = argv[0];
-    for ( i=start; i<argc; ++i )
-	newargv[i-start+1] = argv[i];
-    newargv[i-start+1] = NULL;
-    exit( Py_Main( i-start+1,newargv ));
+    for ( i=0; i<argc; ++i ) {
+	newargv[i+1] = copy(argv[i]);
+    }
+    newargv[argc+1] = NULL;
+    return newargv;
 }
 
 #endif /* PY_MAJOR_VERSION */
