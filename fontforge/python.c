@@ -35,6 +35,12 @@
 #include "Python.h"
 #include "structmember.h"
 
+#if PY_MAJOR_VERSION >= 3
+/* Some Python 3+ APIs use C wide characters (wchar_t) */
+#define NEED_WIDE_CHAR 1
+#endif
+
+
 #include "fontforgevw.h"
 #include "ttf.h"
 #include "plugins.h"
@@ -44,6 +50,8 @@
 #include "strlist.h"
 #include "scripting.h"
 #include "scriptfuncs.h"
+#include "ffpython.h"
+
 #include <math.h>
 #include <unistd.h>
 #include <errno.h>
@@ -52,16 +60,20 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <stdarg.h>
-#if PY_MAJOR_VERSION >= 3
 #include <stdio.h>
+#if NEED_WIDE_CHAR
 #include <wchar.h>
-#endif /* PY_MAJOR_VERSION >= 3 */
-#include "ffpython.h"
+#endif
 
-/* Use a different function name for Python 2 versus 3 so that
-** trying to import the wrong version will give a dynamic-link
-** error rather than randomly crashing.
-*/
+
+/* This defines the name of the Python entry function that is expected
+ * to exist when importing this module from Python. Use a different
+ * function name for Python 2 versus 3 so that trying to import the
+ * wrong version will give a reasonably-meaningful dynamic-link error
+ * rather than randomly crashing.
+ *
+ * MUST MATCH SAME NAME IN "pyhooks/*.c"
+ */
 #if PY_MAJOR_VERSION >= 3
 #define FFPY_PYTHON_ENTRY_FUNCTION fontforge_python3_init
 #else
@@ -70,8 +82,91 @@
 PyMODINIT_FUNC FFPY_PYTHON_ENTRY_FUNCTION(const char* modulename);
 
 
-#define PYMETHODDEF_EMPTY  {NULL, NULL, 0, NULL}
+/* ========== MODULE DEFINITIONS ========== */
+/* The following types are used to define Python Modules.  For every
+ * module, you must create a 'module_definition' structure describing
+ * it.  Then toward the bottom of this file in the "MODULE REGISTRY"
+ * section, make sure you add the module to the list of all modules.
+ */
+
+typedef int (*type_initializer)(PyTypeObject *);
+
+/* Typedef 'python_type_info' -- Create an array of these, one for
+ * each python class (or type) that your module defines.  End the
+ * array with a sentinel using the TYPEINFO_EMPTY macro
+ */
+typedef struct {
+    PyTypeObject *typeobj; /* The python type definition. */
+    int add_to_module; /* Include this type's name in the module namespace
+			* if true, or keep it hidden if false.
+			*/
+    type_initializer setup_function; /* Called to do any extra modifications or
+				      * setup of the type definition prior to
+				      * the finalizing PyTypeReady() call.
+				      */
+} python_type_info;
+#define TYPEINFO_EMPTY { NULL, 0, NULL }  /* Sentinel */
+
+
+/* Typedef 'module_definition' -- Create one of these structures for
+ * each Python module that is being defined.
+ *
+ * Be sure to register the defintion in the "MODULE REGISTRY" section.
+ */
+typedef struct {
+    /* Set these members as initial constant values. */
+    const char *module_name;
+    const char *docstring;
+    python_type_info *types; /* array of type defintions, or NULL */
+    PyMethodDef *methods; /* array of module-level methods/functions, or NULL */
+    int auto_import;  /* automatically import module in embedded mode? */
+
+    void (*finalize_func)(PyObject* module); /* Called to do any remaining post-initialization fixups */
+
+    /* These following members are set at runtime; initialize using
+     * the MODULEDEF_RUNTIMEINFO_INIT macro.
+     */
+    struct {
+	PyObject *module;
+	PyMODINIT_FUNC (*modinit_func)(void);
+#if PY_MAJOR_VERSION >= 3
+	PyModuleDef pymod_def;
+#endif
+    } runtime;
+} module_definition;
+
+#if PY_MAJOR_VERSION >= 3
+#define MODULEDEF_RUNTIMEINFO_INIT { NULL, NULL, {PyModuleDef_HEAD_INIT,NULL,NULL,-1,NULL,NULL,NULL,NULL,NULL} }
+#else
+#define MODULEDEF_RUNTIMEINFO_INIT { NULL, NULL }
+#endif
+
+
+/* Other sentinel values for end-of-array initialization */
+#define PYMETHODDEF_EMPTY  { NULL, NULL, 0, NULL }
 #define PYGETSETDEF_EMPTY { NULL, NULL, NULL, NULL, NULL }
+
+/* ----------------------------------------------------- */
+
+
+#if NEED_WIDE_CHAR
+/* Takes an ASCII string and returns a newly-allocated C "wide" string
+ * equivalent.
+ */
+static wchar_t *copy_to_wide_string(const char *s) {
+    size_t n;
+    wchar_t *ws;
+
+    ws = NULL;
+    n = mbstowcs(NULL, s, 0) + 1;
+    if (n != (size_t) -1) {
+        ws = gcalloc(n, sizeof(wchar_t));
+        mbstowcs(ws, s, n);
+    }
+    return ws;
+}
+#endif /* NEED_WIDE_CHAR */
+
 
 /* AnyPyString_to_UTF8() -- Takes a Python string object and returns a
  * newly-alloced C-string that is UTF-8 encoded.  Accepts either 'str' or
@@ -5260,7 +5355,7 @@ static PyMappingMethods PyFF_LayerArrayMapping = {
 
 static PyTypeObject PyFF_LayerArrayType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "fontforge.layer_rarray", /* tp_name */
+    "fontforge.layer_array", /* tp_name */
     sizeof(PyFF_LayerArray),   /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor) PyFF_LayerArray_dealloc, /* tp_dealloc */
@@ -17619,7 +17714,7 @@ void FFPy_AWDataFree(AW_Data *all) {
 /* ************************************************************************** */
 /*			     FontForge Python Module			      */
 /* ************************************************************************** */
-static PyMethodDef FontForge_methods[] = {
+static PyMethodDef module_fontforge_methods[] = {
     { "getPrefs", PyFF_GetPrefs, METH_VARARGS, "Get FontForge preference items" },
     { "setPrefs", PyFF_SetPrefs, METH_VARARGS, "Set FontForge preference items" },
     { "savePrefs", PyFF_SavePrefs, METH_NOARGS, "Save FontForge preference items" },
@@ -17665,32 +17760,65 @@ static PyMethodDef FontForge_methods[] = {
     PYMETHODDEF_EMPTY  /* Sentinel */
 };
 
+static python_type_info module_fontforge_types[] = {
+    {&PyFF_AWContextType,	1, NULL},
+    {&PyFF_AWGlyphIndexType,	0, NULL},
+    {&PyFF_AWGlyphType,		1, NULL},
+    {&PyFF_ContourIterType,	0, NULL},
+    {&PyFF_ContourType,		1, NULL},
+    {&PyFF_CvtIterType,		0, NULL},
+    {&PyFF_CvtType,		1, NULL},
+    {&PyFF_FontIterType,	0, NULL},
+    {&PyFF_FontType,		1, NULL},
+    {&PyFF_GlyphPenType,	1, NULL},
+    {&PyFF_GlyphType,		1, NULL},
+    {&PyFF_LayerArrayIterType,	0, NULL},
+    {&PyFF_LayerArrayType,	1, NULL},
+    {&PyFF_LayerInfoArrayIterType,	0, NULL},
+    {&PyFF_LayerInfoArrayType,	1, NULL},
+    {&PyFF_LayerInfoType,	1, NULL},
+    {&PyFF_LayerIterType,	0, NULL},
+    {&PyFF_LayerType,		1, NULL},
+    {&PyFF_MathKernType,	1, NULL},
+    {&PyFF_MathType,		1, setup_math_type},
+    {&PyFF_PointType,		1, NULL},
+    {&PyFF_PrivateIterType,	0, NULL},
+    {&PyFF_PrivateType,		1, NULL},
+    {&PyFF_RefArrayType,	1, NULL},
+    {&PyFF_SelectionType,	1, NULL},
+    TYPEINFO_EMPTY
+};
+
+static void AddHookDictionary( PyObject *module );
+static void AddSpiroConstants( PyObject *module );
+static void FinalizeFontforgeModule( PyObject* module ) {
+    AddHookDictionary( module );
+    AddSpiroConstants( module );
+}
+
+static module_definition module_def_fontforge = {
+    "fontforge",                           /* module_name */
+    "FontForge font manipulation module.", /* docstring */
+    module_fontforge_types,                /* types */
+    module_fontforge_methods,              /* methods */
+    true,                                  /* auto_import */
+    FinalizeFontforgeModule,               /* finalize_func */
+    MODULEDEF_RUNTIMEINFO_INIT
+};
+
 /* ************************************************************************** */
 /* ************************* initializer routines *************************** */
 /* ************************************************************************** */
 void FfPy_Replace_MenuItemStub(PyObject *(*func)(PyObject *,PyObject *)) {
     int i;
-
-    for ( i=0; FontForge_methods[i].ml_name!=NULL; ++i )
-	if ( strcmp(FontForge_methods[i].ml_name,"registerMenuItem")==0 ) {
-	    FontForge_methods[i].ml_meth = func;
+    PyMethodDef *methods = module_fontforge_methods;
+    for ( i=0; methods[i].ml_name!=NULL; ++i )
+	if ( strcmp(methods[i].ml_name,"registerMenuItem")==0 ) {
+	    methods[i].ml_meth = func;
 return;
 	}
 }
 
-#if PY_MAJOR_VERSION >= 3
-static PyModuleDef fontforge_module = {
-    PyModuleDef_HEAD_INIT,
-    "fontforge",                           /* m_name */
-    "FontForge font manipulation module.", /* m_doc */
-    -1,                                    /* m_size */
-    FontForge_methods,                     /* m_methods */
-    NULL,                                  /* m_reload */
-    NULL,                                  /* m_traverse */
-    NULL,                                  /* m_clear */
-    NULL                                   /* m_free */
-};
-#endif /* PY_MAJOR_VERSION >= 3 */
 
 static PyObject *PyPS_Identity(PyObject *UNUSED(noself), PyObject *UNUSED(args)) {
 return( Py_BuildValue("(dddddd)",  1.0, 0.0, 0.0,  1.0, 0.0, 0.0));
@@ -17777,7 +17905,7 @@ return( NULL );
 return( tuple );
 }
 
-static PyMethodDef psMat_methods[] = {
+static PyMethodDef module_psMat_methods[] = {
     { "identity", PyPS_Identity, METH_NOARGS, "Identity transformation" },
     { "translate", PyPS_Translate, METH_VARARGS, "Translation transformation" },
     { "rotate", PyPS_Rotate, METH_VARARGS, "Rotation transformation" },
@@ -17788,19 +17916,16 @@ static PyMethodDef psMat_methods[] = {
     PYMETHODDEF_EMPTY /* Sentinel */
 };
 
-#if PY_MAJOR_VERSION >= 3
-static PyModuleDef psMat_module = {
-    PyModuleDef_HEAD_INIT,
-    "psMat",                          /* m_name */
-    "PostScript Matrix manipulation", /* m_doc */
-    -1,                               /* m_size */
-    psMat_methods,                    /* m_methods */
-    NULL,                             /* m_reload */
-    NULL,                             /* m_traverse */
-    NULL,                             /* m_clear */
-    NULL                              /* m_free */
+static module_definition module_def_psMat = {
+    "psMat",                               /* module_name */
+    "PostScript Matric manipulation",      /* docstring */
+    NULL,                                  /* types */
+    module_psMat_methods,                  /* methods */
+    true,                                  /* auto_import */
+    NULL,                                  /* finalize_func */
+    MODULEDEF_RUNTIMEINFO_INIT
 };
-#endif /* PY_MAJOR_VERSION >= 3 */
+
 
 static void PyFF_PicklerInit(void) {
     if ( pickler==NULL )
@@ -17937,7 +18062,7 @@ return( NULL );
 return( (PyObject *) self );
 }
 
-static PyMethodDef FontForge_internal_methods[] = {
+static PyMethodDef module_ff_internals_methods[] = {
     { "initPickles", PyFFi_initPickles, METH_VARARGS, "Set the pickle/unpickle globals so I can call them from C" },
     { "initPickleTypes", PyFFi_initPickleTypes, METH_VARARGS, "Set the some globals so I can call C functions from python" },
     { "newPoint", PyFFi_newPoint, METH_VARARGS, "Top level function to create a new point, needed (I think) for the pickler" },
@@ -17946,19 +18071,16 @@ static PyMethodDef FontForge_internal_methods[] = {
     PYMETHODDEF_EMPTY /* Sentinel */
 };
 
-#if PY_MAJOR_VERSION >= 3
-static PyModuleDef ff_internals_module = {
-    PyModuleDef_HEAD_INIT,
-    "__FontForge_Internals___", /* m_name */
-    "I use this to get access to certain python objects I need, and to hide some internal python functions. I don't expect users ever to care about it.", /* m_doc */
-    -1,                         /* m_size */
-    FontForge_internal_methods, /* m_methods */
-    NULL,                       /* m_reload */
-    NULL,                       /* m_traverse */
-    NULL,                       /* m_clear */
-    NULL                        /* m_free */
+static module_definition module_def_ff_internals = {
+    "__FontForge_Internals___",            /* module_name */
+    "I use this to get access to certain python objects I need, and to hide some internal python functions. I don't expect users ever to care about it.",     /* docstring */
+    NULL,                                  /* types */
+    module_ff_internals_methods,           /* methods */
+    false,                                 /* auto_import */
+    NULL,                                  /* finalize_func */
+    MODULEDEF_RUNTIMEINFO_INIT
 };
-#endif /* PY_MAJOR_VERSION >= 3 */
+
 
 void PyFF_ErrorString(const char *msg,const char *str) {
     char *cond = (char *) msg;
@@ -17974,49 +18096,63 @@ void PyFF_ErrorF3(const char *frmt, const char *str, int size, int depth) {
 }
 
 /* ************************************************************************** */
-/* PYTHON INITIALIZATING   ---   Common across all Python versions */
+/* PYTHON INITIALIZATION */
 /* ************************************************************************** */
+
+extern int no_windowing_ui, running_script;
+
+static void RegisterAllPyModules(void);
+static void CreateAllPyModules(void);
+
+static PyObject * CreatePyModule( module_definition *moddef );
+static void SetPythonProgramName( const char *progname /* in ASCII */ );
+static void SetPythonModuleMetadata( PyObject *module );
+static int FinalizePythonTypes( python_type_info* typelist );
+static int AddPythonTypesToModule( PyObject *module, python_type_info* typelist );
+
+/* These individual "create module" functions are only needed because
+ * Python itself needs a specific "callback" function pointer for each
+ * module that takes no arguments.  Used by RegisterAllPyModules().
+ */
+#if PY_MAJOR_VERSION >= 3
+/* Python 3 module init functions return a pointer to the module object, or NULL */
+#define ff_crmod(name) \
+static PyMODINIT_FUNC CreatePyModule_##name(void) {\
+    return CreatePyModule(&module_def_##name);\
+}
+#else
+/* Python 2 module init functions do not return any value */
+#define ff_crmod(name) \
+static void CreatePyModule_##name(void) {\
+    CreatePyModule(&module_def_##name);\
+}
+#endif
+#define ff_fixmod(name) \
+    module_def_##name.runtime.modinit_func = CreatePyModule_##name
+
+/* ===== MODULE REGISTRY -- LIST OF ALL PYTHON MODULES ===== */
+static module_definition * all_modules[] = {
+    &module_def_fontforge,
+    &module_def_psMat,
+    &module_def_ff_internals
+};
+
+ff_crmod(fontforge)
+ff_crmod(psMat)
+ff_crmod(ff_internals)
+
+static void fixup_module_definitions(void) {
+    ff_fixmod(fontforge);
+    ff_fixmod(psMat);
+    ff_fixmod(ff_internals);
+}
+/* ===== END MODULE REGISTRY ===== */
+
+#define NUM_MODULES (sizeof(all_modules) / sizeof(module_definition *))
+
 
 static char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
 			       "spiroLeft", "spiroRight", "spiroOpen", NULL };
-
-
-typedef int (*type_initializer)(PyTypeObject *);
-
-typedef struct {
-    PyTypeObject *typeobj;
-    int add_to_module;
-    type_initializer setup_function;
-} python_type_info;
-
-static python_type_info fontforge_all_python_types[] = {
-    {&PyFF_PointType,		1, NULL},
-    {&PyFF_ContourType,		1, NULL},
-    {&PyFF_LayerType,		1, NULL},
-    {&PyFF_GlyphPenType,	1, NULL},
-    {&PyFF_GlyphType,		1, NULL},
-    {&PyFF_CvtType,		1, NULL},
-    {&PyFF_PrivateIterType,	0, NULL},
-    {&PyFF_PrivateType,		1, NULL},
-    {&PyFF_FontIterType,	0, NULL},
-    {&PyFF_SelectionType,	1, NULL},
-    {&PyFF_FontType,		1, NULL},
-    {&PyFF_ContourIterType,	0, NULL},
-    {&PyFF_LayerIterType,	0, NULL},
-    {&PyFF_CvtIterType,		0, NULL},
-    {&PyFF_LayerArrayType,	1, NULL},
-    {&PyFF_RefArrayType,	1, NULL},
-    {&PyFF_LayerArrayIterType,	0, NULL},
-    {&PyFF_LayerInfoType,	1, NULL},
-    {&PyFF_LayerInfoArrayType,	1, NULL},
-    {&PyFF_LayerInfoArrayIterType,	0, NULL},
-    {&PyFF_AWGlyphType,		1, NULL},
-    {&PyFF_AWGlyphIndexType,	0, NULL},
-    {&PyFF_AWContextType,	1, NULL},
-    {&PyFF_MathType,		1, setup_math_type},
-    {&PyFF_MathKernType,	1, NULL},
-    {NULL,0,NULL}
-};
 
 
 static int FinalizePythonTypes(python_type_info* typelist) {
@@ -18083,139 +18219,194 @@ static int AddPythonTypesToModule( PyObject *module, python_type_info* typelist)
     return 0;
 }
 
-static void SetPythonModuleMetadata( PyObject *module );
-static void AddHookDictionary( PyObject *module );
-static void AddSpiroConstants( PyObject *module );
+
+static PyObject* CreatePyModule( module_definition *mdef ) {
+    PyObject *module;
+
+    if ( mdef->runtime.module != NULL )
+	return mdef->runtime.module;
+
+    if ( mdef->types != NULL && FinalizePythonTypes( mdef->types ) < 0 )
+	return NULL;
+
+#if PY_MAJOR_VERSION >= 3
+    mdef->runtime.pymod_def.m_name = mdef->module_name;
+    mdef->runtime.pymod_def.m_doc = mdef->docstring;
+    mdef->runtime.pymod_def.m_methods = mdef->methods;
+    mdef->runtime.pymod_def.m_size = -1;
+    mdef->runtime.pymod_def.m_reload = NULL;
+    mdef->runtime.pymod_def.m_traverse = NULL;
+    mdef->runtime.pymod_def.m_clear = NULL;
+    mdef->runtime.pymod_def.m_free = NULL;
+    module = PyModule_Create( &mdef->runtime.pymod_def );
+#else
+    module = Py_InitModule3(mdef->module_name, mdef->methods, mdef->docstring);
+#endif
+    mdef->runtime.module = module;
+    SetPythonModuleMetadata( module );
+    if ( mdef->types != NULL )
+	AddPythonTypesToModule( module, mdef->types );
+
+    if ( mdef->finalize_func != NULL )
+	(mdef->finalize_func)( module );
+
+    return module;
+}
+
+static PyObject *InitializePythonMainNamespace() {
+    static PyObject *module_main = NULL; /* Python's __main__ namespace module */
+    int i;
+
+    if ( module_main != NULL )
+	return module_main;
+
+    module_main = PyImport_AddModule("__main__");
+
+    /* Pre-import our modules */
+    for ( i=0; i<NUM_MODULES; i++ ) {
+	if ( all_modules[i]->auto_import ) {
+	    const char *modname = all_modules[i]->module_name;
+	    PyObject *mod;
+	    mod = PyImport_ImportModule( modname );
+	    PyModule_AddObject( module_main, modname, mod );
+	}
+    }
+    return module_main;
+}
+
+static void CreateAllPyModules(void) {
+    int i;
+    for ( i=0; i<NUM_MODULES; i++ ) {
+        CreatePyModule( all_modules[i] );
+    }
+}
+
+
+static void RegisterAllPyModules() {
+    /* This adds all the modules to Python's 'builtin' module list.
+     * It allows an 'import some_module' to always work, as python
+     * knows where to find the module in already-loaded code without
+     * having to search the filesystem for module files/libraries.
+     */
+    int i;
+    fixup_module_definitions();
+    for ( i=0; i<NUM_MODULES; i++ ) {
+	PyImport_AppendInittab( all_modules[i]->module_name,
+				all_modules[i]->runtime.modinit_func );
+    }
+}
+
+/* This is called to start up the embedded python interpreter */
+void FontForge_InitializeEmbeddedPython(void) {
+    static int initialized = 0;
+    if ( initialized )
+	return;
+
+    SetPythonProgramName("fontforge");
+    RegisterAllPyModules();
+#ifdef MAC
+    PyMac_Initialize();
+#else
+    Py_Initialize();
+#endif
+    initialized = 1;
+
+    /* The embedded python interpreter is now functionally
+     * "running". We can modify it to our needs.
+     */
+    CreateAllPyModules();
+    InitializePythonMainNamespace();
+}
 
 /* ************************************************************************** */
 /* PYTHON INITIALIZATION   ---   Python 3.x or greater */
 /* ************************************************************************** */
 #if PY_MAJOR_VERSION >= 3 /*---------------------------------------------*/
 
-#include "dynamic.h"
-
-PyMODINIT_FUNC _PyInit_fontforge(void);
-PyMODINIT_FUNC _PyInit_psMat(void);
-PyMODINIT_FUNC _PyInit___FontForge_Internals___(void);
-
-PyMODINIT_FUNC _PyInit_fontforge(void) {
-    PyObject *m;
-
-    if ( FinalizePythonTypes( fontforge_all_python_types ) < 0 )
-	return NULL;
-
-    m = PyModule_Create(&fontforge_module);
-
-    SetPythonModuleMetadata( m );
-    AddPythonTypesToModule( m, fontforge_all_python_types );
-    AddHookDictionary( m );
-    AddSpiroConstants( m );
-
-    return m;
+static void SetPythonProgramName(const char *progname) {
+    static wchar_t *saved_progname=NULL;
+    if ( saved_progname )
+	free(saved_progname);
+    saved_progname = copy_to_wide_string(progname);
+    Py_SetProgramName(saved_progname);
 }
 
-PyMODINIT_FUNC _PyInit_psMat(void) {
-    PyObject *module;
-    module = PyModule_Create(&psMat_module);
-    if ( module!=NULL )
-	SetPythonModuleMetadata( module );
-    return( module );
+void PyFF_Main(int argc,char **argv,int start) {
+    char *arg;
+    wchar_t **newargv;
+    int i;
+    int exit_status;    
+
+    no_windowing_ui = running_script = true;
+
+    PyFF_ProcessInitFiles();
+
+    newargv = gcalloc(argc + 1,sizeof(wchar_t *));
+    arg = argv[start];
+    if ( *arg=='-' && arg[1]=='-' )
+        ++arg;
+    if ( strcmp(arg,"-script")==0 )
+        ++start;
+
+    newargv[0] = copy_to_wide_string(argv[0]);
+    if (newargv[0] == NULL) {
+        fprintf(stderr, "argv[0] is an invalid multibyte sequence in the current locale\n");
+        exit(1);
+    }
+    for ( i=start; i<argc; ++i ) {
+        newargv[i - start + 1] = copy_to_wide_string(argv[i]);
+        if (newargv[i - start + 1] == NULL) {
+            fprintf(stderr, "argv[%d] is an invalid multibyte sequence in the current locale\n", i);
+            exit(1);
+        }
+    }
+    newargv[i-start+1] = NULL;
+
+    exit_status = Py_Main(2,newargv );
+
+    i = 0;
+    while (newargv[i] != NULL) {
+        free( newargv[i] );
+        i++;
+    }
+    free( newargv );
+    exit( exit_status );
 }
 
-PyMODINIT_FUNC _PyInit___FontForge_Internals___(void) {
-    return PyModule_Create(&ff_internals_module);
-}
-
-
-void FontForge_PythonInit(void) {
-    PyObject *module_main;
-    PyObject *module_fontforge;
-    PyObject *module_psMat;
-
-    Py_SetProgramName(L"fontforge");
-    PyImport_AppendInittab("fontforge", _PyInit_fontforge);
-    PyImport_AppendInittab("psMat", _PyInit_psMat);
-    PyImport_AppendInittab("__FontForge_Internals___", _PyInit___FontForge_Internals___);
-#ifdef MAC
-    PyMac_Initialize();
-#else
-    Py_Initialize();
-#endif
-
-    /* Pre-import modules fontforge and psMat */
-    module_main = PyImport_AddModule("__main__");
-    module_fontforge = PyImport_ImportModule("fontforge");
-    module_psMat = PyImport_ImportModule("psMat");
-    PyModule_AddObject(module_main, "fontforge", module_fontforge);
-    PyModule_AddObject(module_main, "psMat", module_psMat);
-}
-
-#else /* PY_MAJOR_VERSION >= 3 ---------------------------------------------*/
+#else /* PY_MAJOR_VERSION */
 /* ************************************************************************** */
 /* PYTHON INITIALIZATION   ---   Python 2.x */
 /* ************************************************************************** */
 
-static void initPyFontForge(void) {
-    PyObject* m;
-    static int initted = 0;
-
-    if ( initted )
-return;
-
-    /* ========== Initialize module "fontforge" ========== */
-    if ( FinalizePythonTypes( fontforge_all_python_types ) < 0 )
-	return;
-
-    m = Py_InitModule3("fontforge", FontForge_methods,
-                       "FontForge font manipulation module.");
-    initted = 1;
-
-
-    SetPythonModuleMetadata( m );
-    AddPythonTypesToModule( m, fontforge_all_python_types );
-    AddHookDictionary( m );
-    AddSpiroConstants( m );
-
-    /* ========== Initialize module "psMat" ========== */
-    m = Py_InitModule3("psMat", psMat_methods,
-                       "PostScript Matrix manipulation");
-    SetPythonModuleMetadata( m );
-
-    /* No types, just tuples */
-
-    /* ========== Initialize module "__FontForge_Internals__" ========== */
-    /* I need some way to pickle objects from C. The only way I can think to
-     * do that is to go through this kludge. Define a dummy module with one
-     * function, and then invoke that function to store handles to the pickler.
-     */
-    m = Py_InitModule3("__FontForge_Internals___", FontForge_internal_methods,
-                       "I use this to get access to certain python objects I need, and to hide some internal python functions. I don't expect users ever to care about it.");
+static void SetPythonProgramName(const char *progname) {
+    static char *saved_progname=NULL;
+    if ( saved_progname )
+	free(saved_progname);
+    saved_progname = copy(progname);
+    Py_SetProgramName(saved_progname);
 }
 
-void FontForge_PythonInit(void) {
-    PyObject *module_main;
-    PyObject *module_fontforge;
-    PyObject *module_psMat;
+void PyFF_Main(int argc,char **argv,int start) {
+    char **newargv, *arg;
+    int i;
 
-    Py_SetProgramName("fontforge");
-    PyImport_AppendInittab("fontforge", initPyFontForge);
-#ifdef MAC
-    PyMac_Initialize();
-#else
-    Py_Initialize();
-#endif
-    initPyFontForge();
+    no_windowing_ui = running_script = true;
 
-    /* Pre-import modules fontforge and psMat */
-    module_main = PyImport_AddModule("__main__");
-    module_fontforge = PyImport_ImportModule("fontforge");
-    module_psMat = PyImport_ImportModule("psMat");
-    PyModule_AddObject(module_main, "fontforge", module_fontforge);
-    PyModule_AddObject(module_main, "psMat", module_psMat);
+    PyFF_ProcessInitFiles();
+
+    newargv= gcalloc(argc+1,sizeof(char *));
+    arg = argv[start];
+    if ( *arg=='-' && arg[1]=='-' ) ++arg;
+    if ( strcmp(arg,"-script")==0 )
+	++start;
+    newargv[0] = argv[0];
+    for ( i=start; i<argc; ++i )
+	newargv[i-start+1] = argv[i];
+    newargv[i-start+1] = NULL;
+    exit( Py_Main( i-start+1,newargv ));
 }
 
-#endif /* PY_MAJOR_VERSION >= 3 ---------------------------------------*/
-
+#endif /* PY_MAJOR_VERSION */
 /* ************************************************************************** */
 /* Other python environment initializations */
 /* ************************************************************************** */
@@ -18267,7 +18458,6 @@ static void AddSpiroConstants( PyObject *module ) {
         PyModule_AddObject(module, spiro_names[i], Py_BuildValue("i",i+1));
 }
 
-extern int no_windowing_ui, running_script;
 
 void PyFF_Stdin(void) {
     no_windowing_ui = running_script = true;
@@ -18283,83 +18473,8 @@ void PyFF_Stdin(void) {
 
 #if PY_MAJOR_VERSION >= 3 /*---------------------------------------------*/
 
-static wchar_t *copy_to_wide_string(const char *s) {
-    size_t n;
-    wchar_t *ws;
-
-    ws = NULL;
-    n = mbstowcs(NULL, s, 0) + 1;
-    if (n != (size_t) -1) {
-        ws = gcalloc(n, sizeof(wchar_t));
-        mbstowcs(ws, s, n);
-    }
-    return ws;
-}
-
-void PyFF_Main(int argc,char **argv,int start) {
-    char *arg;
-    wchar_t **newargv;
-    int i;
-    int exit_status;    
-
-    no_windowing_ui = running_script = true;
-
-    PyFF_ProcessInitFiles();
-
-    newargv = gcalloc(argc + 1,sizeof(wchar_t *));
-    arg = argv[start];
-    if ( *arg=='-' && arg[1]=='-' )
-        ++arg;
-    if ( strcmp(arg,"-script")==0 )
-        ++start;
-
-    newargv[0] = copy_to_wide_string(argv[0]);
-    if (newargv[0] == NULL) {
-        fprintf(stderr, "argv[0] is an invalid multibyte sequence in the current locale\n");
-        exit(1);
-    }
-    for ( i=start; i<argc; ++i ) {
-        newargv[i - start + 1] = copy_to_wide_string(argv[i]);
-        if (newargv[i - start + 1] == NULL) {
-            fprintf(stderr, "argv[%d] is an invalid multibyte sequence in the current locale\n", i);
-            exit(1);
-        }
-    }
-    newargv[i-start+1] = NULL;
-
-    exit_status = Py_Main(2,newargv );
-
-    i = 0;
-    while (newargv[i] != NULL) {
-        free( newargv[i] );
-        i++;
-    }
-    free( newargv );
-    exit( exit_status );
-}
-
 #else /* PY_MAJOR_VERSION >= 3 -------------------------------------------------*/
 
-void PyFF_Main(int argc,char **argv,int start) {
-    char **newargv, *arg;
-    int i;
-
-    no_windowing_ui = running_script = true;
-
-    PyFF_ProcessInitFiles();
-
-    newargv= gcalloc(argc+1,sizeof(char *));
-    arg = argv[start];
-    if ( *arg=='-' && arg[1]=='-' ) ++arg;
-    if ( strcmp(arg,"-script")==0 )
-	++start;
-    newargv[0] = argv[0];
-    for ( i=start; i<argc; ++i )
-	newargv[i-start+1] = argv[i];
-    newargv[i-start+1] = NULL;
-
-    exit( Py_Main( i-start+1,newargv ) );
-}
 
 #endif /* PY_MAJOR_VERSION >= 3 -------------------------------------------------*/
 
@@ -18605,12 +18720,23 @@ PyMODINIT_FUNC FFPY_PYTHON_ENTRY_FUNCTION(const char* modulename) {
     doinitFontForgeMain();
     no_windowing_ui = running_script = true;
 
+    RegisterAllPyModules();
+    CreateAllPyModules();
+
 #if PY_MAJOR_VERSION >= 3
-    PyImport_AppendInittab("psMat", _PyInit_psMat);
-    PyImport_AppendInittab("__FontForge_Internals___", _PyInit___FontForge_Internals___);
-    return _PyInit_fontforge();
+    /* Python 3 expects the module object to be returned */
+    {
+	int i;
+	for ( i=0; i<NUM_MODULES; i++ ) {
+	    if (strcmp(all_modules[i]->module_name, modulename)==0 ) {
+		return all_modules[i]->runtime.module;
+	    }
+	}
+	return NULL;
+    }
 #else
-    initPyFontForge();
+    /* Python 2 doesn't expect any return value */
+    return;
 #endif
 }
 
