@@ -573,4 +573,13 @@ extern void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut);
 extern int GMenuItemParseMask(char *shortcut);
 
 extern int GGadgetUndoMacEnglishOptionCombinations(GEvent *event);
+
+/* Among other things, this routine sets global icon cache up. */
+extern void GGadgetInit(void);
+extern int GGadgetWithin(GGadget *g, int x, int y);
+extern void GMenuItemArrayFree(GMenuItem *mi);
+extern void GMenuItem2ArrayFree(GMenuItem2 *mi);
+extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
+extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
+
 #endif
