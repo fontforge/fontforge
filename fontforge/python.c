@@ -18500,12 +18500,6 @@ void PyFF_Stdin(void) {
     exit(0);
 }
 
-#if PY_MAJOR_VERSION >= 3 /*---------------------------------------------*/
-
-#else /* PY_MAJOR_VERSION >= 3 -------------------------------------------------*/
-
-
-#endif /* PY_MAJOR_VERSION >= 3 -------------------------------------------------*/
 
 void PyFF_ScriptFile(FontViewBase *fv,SplineChar *sc, char *filename) {
     FILE *fp;
