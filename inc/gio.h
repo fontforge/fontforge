@@ -27,7 +27,7 @@
 #ifndef _GIO_H
 #define _GIO_H
 
-#include "basics.h"
+#include <basics.h>
 #include <time.h>
 
 enum giofuncs { gf_dir, gf_statfile, gf_getfile, gf_putfile,

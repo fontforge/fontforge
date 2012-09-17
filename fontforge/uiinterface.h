@@ -26,7 +26,7 @@
  */
 #ifndef _UIINTERFACE_H
 #define _UIINTERFACE_H
-# include "basics.h"
+# include <basics.h>
 /* This encapsulates a set of callbacks and stubs. The callbacks get activated*/
 /*  when an event happens (a glyph in a font changes for example, then all */
 /*  charviews looking at it must be updated), and the stubs provide some simple*/

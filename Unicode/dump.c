@@ -56,8 +56,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "../inc/charset.h"
-#include "../inc/basics.h"
+#include <charset.h>
+#include <basics.h>
 
 char *alphabets[] = { "8859-1.TXT", "8859-2.TXT", "8859-3.TXT", "8859-4.TXT",
     "8859-5.TXT", "8859-6.TXT", "8859-7.TXT", "8859-8.TXT", "8859-9.TXT",
@@ -1326,7 +1326,7 @@ return 1;
     fprintf( output, GeneratedFileMessage );
     fprintf( header, GeneratedFileMessage );
 
-    fprintf( header, "#include \"basics.h\"\n\n" );
+    fprintf( header, "#include <basics.h>"\n\n" );
     fprintf( header, "struct charmap {\n    int first, last;\n    unsigned char **table;\n    unichar_t *totable;\n};\n" );
     fprintf( header, "struct charmap2 {\n    int first, last;\n    unsigned short **table;\n    unichar_t *totable;\n};\n\n" );
 
