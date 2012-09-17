@@ -148,6 +148,8 @@ typedef struct {
 
 /* ----------------------------------------------------- */
 
+static PyObject *InitializePythonMainNamespace(void);
+
 
 #if NEED_WIDE_CHAR
 /* Takes an ASCII string and returns a newly-allocated C "wide" string
@@ -865,6 +867,13 @@ static PyObject *PyFF_Version(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
 
     sprintf( buffer, "%d", library_version_configuration.library_source_versiondate);
 return( Py_BuildValue("s", buffer ));
+}
+
+
+static PyObject *PyFF_RunInitScripts(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+    InitializePythonMainNamespace();
+    PyFF_ProcessInitFiles();
+Py_RETURN_NONE;
 }
 
 static PyObject *PyFF_GetScriptPath(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
@@ -17731,6 +17740,7 @@ static PyMethodDef module_fontforge_methods[] = {
     { "unicodeFromName", PyFF_UnicodeFromName, METH_VARARGS, "Given a name, look it up in the namelists and find what unicode code point it maps to (returns -1 if not found)" },
     { "nameFromUnicode", PyFF_NameFromUnicode, METH_VARARGS, "Given a unicode code point and (optionally) a namelist, find the corresponding glyph name" },
     { "version", PyFF_Version, METH_NOARGS, "Returns a string containing the current version of FontForge, as 20061116" },
+    { "runInitScripts", PyFF_RunInitScripts, METH_NOARGS, "Run the system and user initialization scripts, if not already run" },
     { "scriptPath", PyFF_GetScriptPath, METH_NOARGS, "Returns a list of the directories searched for scripts"},
     { "fonts", PyFF_FontTuple, METH_NOARGS, "Returns a tuple of all loaded fonts" },
     { "fontsInFile", PyFF_FontsInFile, METH_VARARGS, "Returns a tuple containing the names of any fonts in an external file"},
@@ -18266,9 +18276,11 @@ static PyObject *InitializePythonMainNamespace() {
     for ( i=0; i<NUM_MODULES; i++ ) {
 	if ( all_modules[i]->auto_import ) {
 	    const char *modname = all_modules[i]->module_name;
-	    PyObject *mod;
-	    mod = PyImport_ImportModule( modname );
-	    PyModule_AddObject( module_main, modname, mod );
+	    if ( ! PyObject_HasAttrString(module_main, modname) ) {
+		PyObject *mod;
+		mod = PyImport_ImportModule( modname );
+		PyModule_AddObject( module_main, modname, mod );
+	    }
 	}
     }
     return module_main;
