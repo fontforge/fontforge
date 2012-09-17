@@ -66,7 +66,7 @@ int _GXCDraw_hasCairo(void) {
 /* ************************************************************************** */
 /* ****************************** Cairo Window ****************************** */
 /* ************************************************************************** */
-void _GXCDraw_NewWindow(GXWindow nw,Color bg) {
+void _GXCDraw_NewWindow(GXWindow nw) {
     GXDisplay *gdisp = nw->display;
     Display *display = gdisp->display;
 
