@@ -2498,7 +2498,9 @@ static void _GXDraw_Pixmap( GWindow _w, GWindow _pixmap, GRect *src, int32 x, in
     } else {
 	_GXDraw_SetClipFunc(gdisp,gw->ggc);
 #ifndef _NO_LIBCAIRO
-	if ( gw->usecairo )
+	/* FIXME: _GXCDraw_CopyArea makes the glyph dissabear in the class kern
+	 * dialog */
+	if ( 0 && gw->usecairo )
 	    _GXCDraw_CopyArea(pixmap,gw,src,x,y);
 	else
 #endif
