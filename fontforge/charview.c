@@ -144,6 +144,7 @@ static Color tracecol = 0x008000;
 static Color rulerbigtickcol = 0x008000;
 static Color previewfillcol = 0x0f0f0f;
 
+
 static int cvcolsinited = false;
 static struct resed charview_re[] = {
     { N_("Point Color"), "PointColor", rt_color, &pointcol, N_("The color of an on-curve point"), NULL, { 0 }, 0, 0 },
@@ -3118,6 +3119,21 @@ return;
     cv->map_of_enc = map;
     cv->enc = i;
     CVChangeSC(cv,sc);
+}
+
+static void CVSwitchToTab(CharView *cv,int tnum ) {
+    if( tnum >= cv->former_cnt )
+	return;
+    
+    SplineFont *sf = cv->b.fv->sf;
+    char* n = cv->former_names[tnum];
+    int unienc = UniFromName(n,sf->uni_interp,cv->b.fv->map->enc);
+    CVChangeChar(cv,unienc);
+}
+
+static void CVMenuShowTab(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    CVSwitchToTab(cv,mi->mid);
 }
 
 static int CVChangeToFormer( GGadget *g, GEvent *e) {
@@ -6737,6 +6753,10 @@ static void pllistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     cv_pllistcheck(cv, mi);
 }
 
+static void tablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+}
+
 static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVDoUndo(&cv->b);
@@ -10057,6 +10077,16 @@ static GMenuItem2 pllist[] = {
     GMENUITEM2_EMPTY
 };
 
+static GMenuItem2 tablist[] = {
+    { { (unichar_t *) N_("Tab0"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, 0, NULL, NULL, CVMenuShowTab, 0 },
+    { { (unichar_t *) N_("Tab1"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, 0, NULL, NULL, CVMenuShowTab, 1 },
+    { { (unichar_t *) N_("Tab2"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, 0, NULL, NULL, CVMenuShowTab, 2 },
+    { { (unichar_t *) N_("Tab3"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, 0, NULL, NULL, CVMenuShowTab, 3 },
+    { { (unichar_t *) N_("Tab4"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, 0, NULL, NULL, CVMenuShowTab, 4 },
+    { { (unichar_t *) N_("Tab5"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, 0, NULL, NULL, CVMenuShowTab, 5 },
+    GMENUITEM2_EMPTY
+};
+
 static GMenuItem2 aplist[] = {
     { { (unichar_t *) N_("_Detach"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'K' }, 0, NULL, NULL, CVMenuAPDetach, 0 },
     GMENUITEM2_EMPTY
@@ -10156,6 +10186,7 @@ static GMenuItem2 swlist[] = {
     { { (unichar_t *) N_("Previe_w"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, 0, NULL, NULL, CVMenuPreview, MID_Preview },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Pale_ttes"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, NULL, pllist, pllistcheck, NULL, 0 },
+    { { (unichar_t *) N_("Tab"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, NULL, tablist, tablistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Glyph Tabs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, 0, NULL, NULL, CVMenuShowTabs, MID_ShowTabs },
     { { (unichar_t *) N_("_Rulers"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, 0, NULL, NULL, CVMenuShowHideRulers, MID_HideRulers },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */

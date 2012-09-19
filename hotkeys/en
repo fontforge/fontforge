@@ -570,3 +570,11 @@ CharView.Menu.Point.Tools.Toggle Spiro: s
 +CharView.Menu.Point.Tools.Corner: 3
 +CharView.Menu.Point.Tools.Left: 4
 +CharView.Menu.Point.Tools.Right: 5
+
+CharView.Menu.View.Show.Tab.Tab0: Ctl+1
+CharView.Menu.View.Show.Tab.Tab1: Ctl+2
+CharView.Menu.View.Show.Tab.Tab2: Ctl+3
+CharView.Menu.View.Show.Tab.Tab3: Ctl+4
+CharView.Menu.View.Show.Tab.Tab4: Ctl+5
+CharView.Menu.View.Show.Tab.Tab5: Ctl+6
+

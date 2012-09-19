@@ -100,6 +100,8 @@ static void freenode(struct dlistnode* node )
 
 void dlist_free_external( struct dlistnode** list )
 {
+    if( !list || !(*list) )
+	return;
     dlist_foreach( list, freenode );
 }
 
