@@ -31,6 +31,114 @@
 
 struct dlistnode* hotkeys = 0;
 
+static char* hotkeyGetWindowTypeString( Hotkey* hk ) 
+{
+    char* pt = strchr(hk->action,'.');
+    if( !pt )
+	return 0;
+    int len = pt - hk->action;
+    static char buffer[HOTKEY_ACTION_MAX_SIZE+1];
+    strncpy( buffer, hk->action, len );
+    buffer[len] = '\0';
+    return buffer;
+}
+
+/**
+ * Does the hotkey 'hk' have the right window_type to trigger its
+ * action on the window 'w'.
+ */
+static int hotkeyHasMatchingWindowTypeString( char* windowType, Hotkey* hk ) {
+    if( !windowType )
+	return 0;
+    char* pt = strchr(hk->action,'.');
+    if( !pt )
+	return 0;
+    
+    int len = pt - hk->action;
+    if( strlen(windowType) < len )
+	return 0;
+    int rc = strncmp( windowType, hk->action, len );
+    if( !rc )
+	return 1;
+    return 0;
+}
+
+/**
+ * Does the hotkey 'hk' have the right window_type to trigger its
+ * action on the window 'w'.
+ */
+static int hotkeyHasMatchingWindowType( GWindow w, Hotkey* hk ) {
+    char* windowType = GDrawGetWindowTypeName( w );
+    return hotkeyHasMatchingWindowTypeString( windowType, hk );
+}
+
+static struct dlistnodeExternal*
+hotkeyFindAllByStateAndKeysym( char* windowType, uint16 state, uint16 keysym ) {
+
+    struct dlistnodeExternal* ret = 0;
+    struct dlistnode* node = hotkeys;
+    for( ; node; node=node->next ) {
+	Hotkey* hk = (Hotkey*)node;
+	printf("check hk:%s keysym:%d\n", hk->text, hk->keysym );
+	if( hk->keysym ) {
+	    if( keysym == hk->keysym ) {
+		if( state == hk->state ) {
+		    printf("event match! for hk:%s keysym:%d\n", hk->text, hk->keysym );
+		    printf("event.state:%d hk.state:%d\n", state, hk->state );
+		    if( hotkeyHasMatchingWindowTypeString( windowType, hk ) ) {
+			printf("matching window type too for hk:%s keysym:%d\n", hk->text, hk->keysym );
+			dlist_pushfront_external( &ret, hk );
+		    }
+		}
+	    }
+	}
+    }
+    return ret;
+}
+
+
+static Hotkey* hotkeyFindByStateAndKeysym( char* windowType, uint16 state, uint16 keysym ) {
+
+    struct dlistnode* node = hotkeys;
+    for( ; node; node=node->next ) {
+	Hotkey* hk = (Hotkey*)node;
+	printf("check hk:%s keysym:%d\n", hk->text, hk->keysym );
+	if( hk->keysym ) {
+	    if( keysym == hk->keysym ) {
+		if( state == hk->state ) {
+		    printf("event match! for hk:%s keysym:%d\n", hk->text, hk->keysym );
+		    printf("event.state:%d hk.state:%d\n", state, hk->state );
+		    if( hotkeyHasMatchingWindowTypeString( windowType, hk ) ) {
+			printf("matching window type too for hk:%s keysym:%d\n", hk->text, hk->keysym );
+			return hk;
+		    }
+		}
+	    }
+	}
+    }
+    return 0;
+}
+
+
+struct dlistnodeExternal* hotkeyFindAllByEvent( GWindow w, GEvent *event ) {
+    if( event->u.chr.autorepeat )
+	return 0;
+    char* windowType = GDrawGetWindowTypeName( w );
+    return hotkeyFindAllByStateAndKeysym( windowType,
+					  event->u.chr.state,
+					  event->u.chr.keysym );
+}
+
+
+Hotkey* hotkeyFindByEvent( GWindow w, GEvent *event ) {
+
+    if( event->u.chr.autorepeat )
+	return 0;
+
+    char* windowType = GDrawGetWindowTypeName( w );
+    return hotkeyFindByStateAndKeysym( windowType, event->u.chr.state, event->u.chr.keysym );
+}
+
 /**
  * Return the file name of the user defined hotkeys.
  * The return value must be freed by the caller.
@@ -77,6 +185,8 @@ static void loadHotkeysFromFile( const char* filename, int isUserDefined )
     fprintf(stderr,"loading hotkey definition file: %s\n", filename );
 
     while ( fgets(line,sizeof(line),f)!=NULL ) {
+	int append = 0;
+	
 	if ( *line=='#' )
 	    continue;
 	char* pt = strchr(line,':');
@@ -86,17 +196,40 @@ static void loadHotkeysFromFile( const char* filename, int isUserDefined )
 	char* keydefinition = pt+1;
 	chomp( keydefinition );
 	keydefinition = trimspaces( keydefinition );
-//	printf("2.accel:%s key__%s__\n", line, keydefinition );
-
+	printf("2.accel:%s key__%s__\n", line, keydefinition );
+	char* action = line;
+	if( line[0] == '+' ) {
+	    append = 1;
+	    action++;
+	}
+	
+	
 	Hotkey* hk = gcalloc(1,sizeof(Hotkey));
-	strncpy( hk->action, line, HOTKEY_ACTION_MAX_SIZE );
+	strncpy( hk->action, action, HOTKEY_ACTION_MAX_SIZE );
 	HotkeyParse( hk, keydefinition );
+
+	// If we didn't get a hotkey (No Shortcut)
+	// then we move along
 	if( !hk->state && !hk->keysym ) {
 	    free(hk);
 	    continue;
 	}
+	
+	// If we already have a binding for that hotkey combination
+	// for this window, forget the old one. One combo = One action.
+	if( !append ) {
+	    Hotkey* oldkey = hotkeyFindByStateAndKeysym( hotkeyGetWindowTypeString(hk),
+							 hk->state, hk->keysym );
+	    if( oldkey ) {
+		printf("have oldkey!\n");
+		dlist_erase( &hotkeys, oldkey );
+		free(oldkey);
+	    }
+	}
+	
+	
 	hk->isUserDefined = isUserDefined;
-//	printf("3. state:%d keysym:%d\n", hk->state, hk->keysym );
+	printf("3. state:%d keysym:%d\n", hk->state, hk->keysym );
 	dlist_pushfront( &hotkeys, hk );
     }
     fclose(f);
@@ -181,27 +314,6 @@ char* hotkeysGetKeyDescriptionFromAction( char* action ) {
     return 0;
 }
 
-/**
- * Does the hotkey 'hk' have the right window_type to trigger its
- * action on the window 'w'.
- */
-static int hotkeyHasMatchingWindowType( GWindow w, Hotkey* hk ) {
-    char* windowType = GDrawGetWindowTypeName( w );
-    if( !windowType )
-	return 0;
-    char* pt = strchr(hk->action,'.');
-    if( !pt )
-	return 0;
-    
-    int len = pt - hk->action;
-    if( strlen(windowType) < len )
-	return 0;
-    int rc = strncmp( windowType, hk->action, len );
-    if( !rc )
-	return 1;
-    return 0;
-}
-
 
 /**
  * Find a hotkey by the action. This is useful for menus to find out
@@ -232,34 +344,6 @@ Hotkey* hotkeyFindByMenuPath( GWindow w, char* path ) {
     return(hotkeyFindByAction(line));
 }
 
-
-    
-Hotkey* hotkeyFindByEvent( GWindow w, GEvent *event ) {
-
-    if( event->u.chr.autorepeat )
-	return 0;
-    
-    struct dlistnode* node = hotkeys;
-    for( ; node; node=node->next ) {
-	Hotkey* hk = (Hotkey*)node;
-	printf("check hk:%s keysym:%d\n", hk->text, hk->keysym );
-	if( hk->keysym ) {
-	    if( event->u.chr.keysym == hk->keysym ) {
-		if( event->u.chr.state == hk->state ) {
-		    printf("event match! for hk:%s keysym:%d\n", hk->text, hk->keysym );
-		    printf("event.state:%d hk.state:%d\n",
-			   event->u.chr.state,
-			   hk->state );
-		    if( hotkeyHasMatchingWindowType( w, hk ) ) {
-			printf("matching window type too for hk:%s keysym:%d\n", hk->text, hk->keysym );
-			return hk;
-		    }
-		}
-	    }
-	}
-    }
-    return 0;
-}
 
 char* hotkeyTextWithoutModifiers( char* hktext ) {
     if( !strcmp( hktext, "no shortcut" )

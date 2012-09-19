@@ -263,7 +263,7 @@ GMenuItem2 cvtoollist[] = {
     { { (unichar_t *) N_("_Tangent"), (GImage *) "pointstangent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Tangent Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_tangent },
     { { (unichar_t *) N_("P_en"), (GImage *) "toolspen.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Pen|No Shortcut"), NULL, NULL, CVMenuTool, cvt_pen },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Activate Spiro"), (GImage *) "toolsspiro.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Activate Spiro|No Shortcut"), NULL, NULL, CVMenuSpiroSet, cvt_spiro },
+    { { (unichar_t *) N_("Toggle Spiro"), (GImage *) "toolsspiro.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Activate Spiro|No Shortcut"), NULL, NULL, CVMenuSpiroSet, cvt_spiro },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Knife"), (GImage *) "toolsknife.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Knife|No Shortcut"), NULL, NULL, CVMenuTool, cvt_knife },
     { { (unichar_t *) N_("_Ruler"), (GImage *) "toolsruler.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Ruler|No Shortcut"), NULL, NULL, CVMenuTool, cvt_ruler },
@@ -293,7 +293,7 @@ GMenuItem2 cvspirotoollist[] = {
     { { (unichar_t *) N_("Lef_t"), (GImage *) "pointsspiroprev.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Left Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spiroleft },
     { { (unichar_t *) N_("Rig_ht"), (GImage *) "pointsspironext.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Right Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spiroright },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("De_activate Spiro"), (GImage *) "toolsspiro.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Activate Spiro|No Shortcut"), NULL, NULL, CVMenuSpiroSet, cvt_spiro },
+    { { (unichar_t *) N_("Toggle Spiro"), (GImage *) "toolsspiro.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Activate Spiro|No Shortcut"), NULL, NULL, CVMenuSpiroSet, cvt_spiro },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Knife"), (GImage *) "toolsknife.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Knife|No Shortcut"), NULL, NULL, CVMenuTool, cvt_knife },
     { { (unichar_t *) N_("_Ruler"), (GImage *) "toolsruler.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Ruler|No Shortcut"), NULL, NULL, CVMenuTool, cvt_ruler },

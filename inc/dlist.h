@@ -40,6 +40,14 @@ struct dlistnode {
     struct dlistnode* next;
     struct dlistnode* prev;
 };
+
+struct dlistnodeExternal {
+    struct dlistnode* next;
+    struct dlistnode* prev;
+    void* ptr;
+};
+
+
 extern void dlist_pushfront( struct dlistnode** list, struct dlistnode* node );
 extern int  dlist_size( struct dlistnode** list );
 extern int  dlist_isempty( struct dlistnode** list );
@@ -48,5 +56,8 @@ typedef void (*dlist_foreach_func_type)( struct dlistnode* );
 extern void dlist_foreach( struct dlistnode** list, dlist_foreach_func_type func );
 typedef void (*dlist_foreach_udata_func_type)( struct dlistnode*, void* udata );
 extern void dlist_foreach_udata( struct dlistnode** list, dlist_foreach_udata_func_type func, void* udata );
+
+extern void dlist_pushfront_external( struct dlistnode** list, void* ptr );
+extern void dlist_free_external( struct dlistnode** list );
 
 #endif // _DLIST_H

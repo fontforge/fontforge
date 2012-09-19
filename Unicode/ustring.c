@@ -890,3 +890,12 @@ char* chomp( char* line ) {
 	line[strlen(line)-1] = '\0';
     return line;
 }
+
+int endswith(const char *haystack,const char *needle) {
+    int haylen = strlen( haystack );
+    int nedlen = strlen( needle );
+    if( haylen < nedlen )
+	return 0;
+    char* p = strstr( haystack + haylen - nedlen, needle );
+    return p == ( haystack + haylen - nedlen );
+}

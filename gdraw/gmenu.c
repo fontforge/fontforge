@@ -1843,8 +1843,10 @@ return( true );
     /* then look for hotkeys everywhere */
 	
 	printf("looking for hotkey in new system...keysym:%d\n", event->u.chr.keysym );
-	Hotkey* hk = hotkeyFindByEvent( top, event );
-	if( hk ) {
+	struct dlistnodeExternal* hklist = hotkeyFindAllByEvent( top, event );
+	struct dlistnodeExternal* node = hklist;
+	for( ; node; node=node->next ) {
+	    Hotkey* hk = (Hotkey*)node->ptr;
 	    printf("hotkey found by event! hk:%p\n", hk );
 	    mi = GMenuSearchAction(mb->g.base,mb->mi,hk->action,event,mb->child==NULL);
 	    if ( mi ) {
@@ -1862,7 +1864,7 @@ return( true );
 	    
 	    printf("END hotkey found by event! hk:%p\n", hk );
 	}
-	
+	dlist_free_external(hklist);
 	
     if ( mb->child!=NULL ) {
 	GMenu *m;

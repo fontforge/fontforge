@@ -31,6 +31,7 @@
 #include "ustring.h"
 #include "gresource.h"
 #include "hotkeys.h"
+#include "gkeysym.h"
 
 int GTextInfoGetWidth(GWindow base,GTextInfo *ti,FontInstance *font) {
     int width=0;
@@ -920,12 +921,14 @@ return;
 	sh = pt+1;
     }
     hk->state = mask;
+    printf("first loop\n");
     for ( i=0; i<0x100; ++i ) {
 	if ( GDrawKeysyms[i]!=NULL && uc_strcmp(GDrawKeysyms[i],sh)==0 ) {
 	    hk->keysym = 0xff00 + i;
     break;
 	}
     }
+    printf("i:%d hk->keysym:%d\n",i,hk->keysym);
     if ( i==0x100 ) {
 	hk->keysym = utf8_ildb((const char **) &sh);
 	if ( *sh!='\0' ) {
@@ -933,14 +936,18 @@ return;
 return;
 	}
     }
+    printf("2... i:%d hk->keysym:%d\n",i,hk->keysym);
     //
     // The user really means lower case keys unless they have
     // given the "shift" modifier too. Like: Ctl+Shft+L
     //
-    hk->keysym = tolower(hk->keysym);
-    if( hk->state & ksm_shift ) {
-	hk->keysym = toupper(hk->keysym);
+    if( hk->keysym < GK_Special ) {
+	hk->keysym = tolower(hk->keysym);
+	if( hk->state & ksm_shift ) {
+	    hk->keysym = toupper(hk->keysym);
+	}
     }
+    printf("3... i:%d hk->keysym:%d\n",i,hk->keysym);
 }
     
 void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut) {

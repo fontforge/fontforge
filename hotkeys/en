@@ -510,7 +510,7 @@ MetricsView.Menu.Element.Show Dependent:Alt+Ctl+I
 MetricsView.Menu.Element.Find Problems...:Ctl+E
 MetricsView.Menu.Element.Bitmap Strikes Available...:Ctl+Shft+B
 MetricsView.Menu.Element.Regenerate Bitmap Glyphs...:Ctl+B
-MetricsView.Menu.Element.Transform...:Ctl+\\
+MetricsView.Menu.Element.Transform...:Ctl+\
 MetricsView.Menu.Element.Tile Path...:No Shortcut
 MetricsView.Menu.Element.Add Extrema:Ctl+Shft+X
 MetricsView.Menu.Element.To Int:Ctl+Shft+_
@@ -550,10 +550,23 @@ CharView.Menu.View.Zoom in: Shft++
 CharView.Menu.View.Zoom in: z
 CharView.Menu.View.Zoom in: =
 
+CharView.Menu.Edit.Merge: Delete
+
 CharView.Menu.Point.Tools.Ruler: r
 CharView.Menu.Point.Tools.Pointer: v
+CharView.Menu.Point.Tools.Magnify: a
+CharView.Menu.Point.Tools.Freehand: f
+CharView.Menu.Point.Tools.Scroll: h
+CharView.Menu.Point.Tools.Pen: p
+CharView.Menu.Point.Tools.Knife: k
+CharView.Menu.Point.Tools.HVCurve: 1
+CharView.Menu.Point.Tools.Curve: 2
+CharView.Menu.Point.Tools.Corner: 3
+CharView.Menu.Point.Tools.Tangent: 4
+CharView.Menu.Point.Tools.Toggle Spiro: s
 
-CharView.Menu.Metrics.Set LBearing...:Ctl+4
-CharView.Menu.Metrics.Set LBearing...:Ctl+L
-
-
++CharView.Menu.Point.Tools.G2: 1
++CharView.Menu.Point.Tools.G4: 2
++CharView.Menu.Point.Tools.Corner: 3
++CharView.Menu.Point.Tools.Left: 4
++CharView.Menu.Point.Tools.Right: 5

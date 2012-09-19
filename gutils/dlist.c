@@ -51,12 +51,12 @@ int dlist_isempty( struct dlistnode** list ) {
 void dlist_erase( struct dlistnode** list, struct dlistnode* node ) {
     if( !node )
 	return;
-    if( *list = node ) {
+    if( *list == node ) {
 	*list = node->next;
 	if( node->next ) {
 	    node->next->prev = 0;
 	}
-		return 0;
+	return 0;
     }
     if( node->prev ) {
 	node->prev->next = node->next;
@@ -64,7 +64,6 @@ void dlist_erase( struct dlistnode** list, struct dlistnode* node ) {
     if( node->next ) {
 	node->next->prev = node->prev;
     }
-	
 }
 
 void dlist_foreach( struct dlistnode** list, dlist_foreach_func_type func )
@@ -85,5 +84,22 @@ void dlist_foreach_udata( struct dlistnode** list, dlist_foreach_udata_func_type
 	node = node->next;
 	func( t, udata );
     }
+}
+
+void dlist_pushfront_external( struct dlistnode** list, void* ptr )
+{
+    struct dlistnodeExternal* n = calloc(1,sizeof(struct dlistnodeExternal));
+    n->ptr = ptr;
+    dlist_pushfront( list, n );
+}
+
+static void freenode(struct dlistnode* node )
+{
+    free(node);
+}
+
+void dlist_free_external( struct dlistnode** list )
+{
+    dlist_foreach( list, freenode );
 }
 

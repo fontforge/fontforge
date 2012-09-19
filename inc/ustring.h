@@ -131,4 +131,6 @@ extern char *StripToASCII(const char *utf8_str);
  */
 extern char* chomp( char* p );
 
+int endswith(const char *haystack,const char *needle);
+
 #endif
