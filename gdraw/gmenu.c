@@ -1801,13 +1801,11 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     GMenuItem *mi;
     unichar_t keysym = event->u.chr.keysym;
 
-    printf("GMenuBarCheckKey(1)\n");
-
+    printf("GMenuBarCheckKey() keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
     if ( g==NULL )
 return( false );
     if ( keysym==0 )
 return( false );
-    printf("GMenuBarCheckKey(2)\n");
 
     if ( (menumask&ksm_cmdmacosx) && keysym>0x7f &&
 	    (event->u.chr.state&ksm_meta) &&
@@ -1817,7 +1815,6 @@ return( false );
     if ( keysym<GK_Special && islower(keysym))
 	keysym = toupper(keysym);
     if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&(menumask&~(ksm_meta|ksm_shift)))) {
-    printf("GMenuBarCheckKey(3)\n");
 	/* Only look for mneumonics in the leaf of the displayed menu structure */
 	if ( mb->child!=NULL )
 return( gmenu_key(mb->child,event));	/* this routine will do shortcuts too */
@@ -1830,14 +1827,20 @@ return( true );
 	    }
 	}
     }
-    
-    printf("should we look for hotkey in new system?\n");
-    
-    /* then look for shortcuts everywhere */
-    /* if ( event->u.chr.state&(menumask&~ksm_shift) || */
-    /* 	    event->u.chr.keysym>=GK_Special || */
-    /* 	    mb->any_unmasked_shortcuts ) { */
-    if(1) {
+
+    /* First check for an open menu underscore key being pressed */
+    mi = GMenuSearchShortcut(mb->g.base,mb->mi,event,mb->child==NULL);
+    if ( mi ) {
+	if ( mi->ti.checkable && !mi->ti.disabled )
+	    mi->ti.checked = !mi->ti.checked;
+	if ( mi->invoke!=NULL && !mi->ti.disabled )
+	    (mi->invoke)(mb->g.base,mi,NULL);
+	if ( mb->child != NULL )
+	    GMenuDestroy(mb->child);
+	return( true );
+    }
+
+    /* then look for hotkeys everywhere */
 	
 	printf("looking for hotkey in new system...keysym:%d\n", event->u.chr.keysym );
 	Hotkey* hk = hotkeyFindByEvent( top, event );
@@ -1861,21 +1864,12 @@ return( true );
 	}
 	
 	
-	mi = GMenuSearchShortcut(mb->g.base,mb->mi,event,mb->child==NULL);
-	if ( mi!=NULL ) {
-	    if ( mi->ti.checkable && !mi->ti.disabled )
-		mi->ti.checked = !mi->ti.checked;
-	    if ( mi->invoke!=NULL && !mi->ti.disabled )
-		(mi->invoke)(mb->g.base,mi,NULL);
-	    if ( mb->child != NULL )
-		GMenuDestroy(mb->child);
-return( true );
-	}
-    }
     if ( mb->child!=NULL ) {
 	GMenu *m;
-	for ( m=mb->child; m->child!=NULL; m = m->child );
-return( GMenuSpecialKeys(m,event->u.chr.keysym,event));
+	// m = last(mb->child);
+	for ( m=mb->child; m->child!=NULL; m = m->child ) {
+	}
+	return( GMenuSpecialKeys(m,event->u.chr.keysym,event));
     }
 
     if ( event->u.chr.keysym==GK_Menu )

@@ -91,6 +91,10 @@ static void loadHotkeysFromFile( const char* filename, int isUserDefined )
 	Hotkey* hk = gcalloc(1,sizeof(Hotkey));
 	strncpy( hk->action, line, HOTKEY_ACTION_MAX_SIZE );
 	HotkeyParse( hk, keydefinition );
+	if( !hk->state && !hk->keysym ) {
+	    free(hk);
+	    continue;
+	}
 	hk->isUserDefined = isUserDefined;
 //	printf("3. state:%d keysym:%d\n", hk->state, hk->keysym );
 	dlist_pushfront( &hotkeys, hk );
@@ -238,7 +242,7 @@ Hotkey* hotkeyFindByEvent( GWindow w, GEvent *event ) {
     struct dlistnode* node = hotkeys;
     for( ; node; node=node->next ) {
 	Hotkey* hk = (Hotkey*)node;
-//	printf("check hk:%s keysym:%d\n", hk->text, hk->keysym );
+	printf("check hk:%s keysym:%d\n", hk->text, hk->keysym );
 	if( hk->keysym ) {
 	    if( event->u.chr.keysym == hk->keysym ) {
 		if( event->u.chr.state == hk->state ) {

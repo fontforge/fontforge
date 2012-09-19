@@ -933,6 +933,14 @@ return;
 return;
 	}
     }
+    //
+    // The user really means lower case keys unless they have
+    // given the "shift" modifier too. Like: Ctl+Shft+L
+    //
+    hk->keysym = tolower(hk->keysym);
+    if( hk->state & ksm_shift ) {
+	hk->keysym = toupper(hk->keysym);
+    }
 }
     
 void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut) {
