@@ -1801,10 +1801,13 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     GMenuItem *mi;
     unichar_t keysym = event->u.chr.keysym;
 
+    printf("GMenuBarCheckKey(1)\n");
+
     if ( g==NULL )
 return( false );
     if ( keysym==0 )
 return( false );
+    printf("GMenuBarCheckKey(2)\n");
 
     if ( (menumask&ksm_cmdmacosx) && keysym>0x7f &&
 	    (event->u.chr.state&ksm_meta) &&
@@ -1814,6 +1817,7 @@ return( false );
     if ( keysym<GK_Special && islower(keysym))
 	keysym = toupper(keysym);
     if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&(menumask&~(ksm_meta|ksm_shift)))) {
+    printf("GMenuBarCheckKey(3)\n");
 	/* Only look for mneumonics in the leaf of the displayed menu structure */
 	if ( mb->child!=NULL )
 return( gmenu_key(mb->child,event));	/* this routine will do shortcuts too */
@@ -1826,12 +1830,15 @@ return( true );
 	    }
 	}
     }
-
+    
+    printf("should we look for hotkey in new system?\n");
+    
     /* then look for shortcuts everywhere */
-    if ( event->u.chr.state&(menumask&~ksm_shift) ||
-	    event->u.chr.keysym>=GK_Special ||
-	    mb->any_unmasked_shortcuts ) {
-
+    /* if ( event->u.chr.state&(menumask&~ksm_shift) || */
+    /* 	    event->u.chr.keysym>=GK_Special || */
+    /* 	    mb->any_unmasked_shortcuts ) { */
+    if(1) {
+	
 	printf("looking for hotkey in new system...keysym:%d\n", event->u.chr.keysym );
 	Hotkey* hk = hotkeyFindByEvent( top, event );
 	if( hk ) {

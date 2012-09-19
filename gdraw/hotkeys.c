@@ -238,7 +238,7 @@ Hotkey* hotkeyFindByEvent( GWindow w, GEvent *event ) {
     struct dlistnode* node = hotkeys;
     for( ; node; node=node->next ) {
 	Hotkey* hk = (Hotkey*)node;
-	printf("check hk:%s keysym:%d\n", hk->text, hk->keysym );
+//	printf("check hk:%s keysym:%d\n", hk->text, hk->keysym );
 	if( hk->keysym ) {
 	    if( event->u.chr.keysym == hk->keysym ) {
 		if( event->u.chr.state == hk->state ) {
