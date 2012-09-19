@@ -328,7 +328,7 @@ static int ruler_linger_e_h(GWindow gw, GEvent *event) {
       case et_expose:
 	GDrawSetFont(gw,cv->rfont);
 	for ( i=0; i < cv->ruler_linger_num_lines ; ++i )
-	    GDrawDrawBiText(gw,2,i*cv->rfh+cv->ras+1,cv->ruler_linger_lines[i],-1,NULL,measuretoolwindowforegroundcol);
+	    GDrawDrawText(gw,2,i*cv->rfh+cv->ras+1,cv->ruler_linger_lines[i],-1,measuretoolwindowforegroundcol);
       break;
       case et_mousedown:
 	// TBD
@@ -553,11 +553,11 @@ static void RulerLingerPlace(CharView *cv, GEvent *event) {
 	    rq.utf8_family_name = FIXED_UI_FAMILIES;
 	    rq.point_size = -12;
 	    rq.weight = 400;
-	    rvfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->ruler_w),&rq);
+	    rvfont = GDrawInstanciateFont(cv->ruler_w,&rq);
 	    rvfont = GResourceFindFont("CharView.Measure.Font",rvfont);
 	}
 	cv->rfont = rvfont;
-	GDrawFontMetrics(cv->rfont,&as,&ds,&ld);
+	GDrawWindowFontMetrics(cv->ruler_linger_w,cv->rfont,&as,&ds,&ld);
 	cv->rfh = as+ds; cv->ras = as;
     } else
 	GDrawRaise(cv->ruler_linger_w);
@@ -569,13 +569,13 @@ static void RulerLingerPlace(CharView *cv, GEvent *event) {
     cv->p.pressed = true;
 
     for ( i=0; line<sizeof(cv->ruler_linger_lines)/sizeof(cv->ruler_linger_lines[0]) && RulerText(cv,cv->ruler_linger_lines[line],i) ; ++i,++line ) {
-	w = GDrawGetBiTextWidth(cv->ruler_linger_w,cv->ruler_linger_lines[line],-1,-1,NULL);
+	w = GDrawGetTextWidth(cv->ruler_linger_w,cv->ruler_linger_lines[line],-1);
 	if ( w>width ) width = w;
 	h += cv->rfh;
     }
     cv->p.pressed = old_pressed;
     for ( i=0; line<sizeof(cv->ruler_linger_lines)/sizeof(cv->ruler_linger_lines[0]) && RulerTextIntersection(cv,cv->ruler_linger_lines[line],i); ++i,++line ) {
-	w = GDrawGetBiTextWidth(cv->ruler_linger_w,cv->ruler_linger_lines[line],-1,-1,NULL);
+	w = GDrawGetTextWidth(cv->ruler_linger_w,cv->ruler_linger_lines[line],-1);
 	if ( w>width ) width = w;
 	h += cv->rfh;
     }
@@ -596,7 +596,7 @@ static void RulerLingerPlace(CharView *cv, GEvent *event) {
 
 static void RulerLingerMove(CharView *cv) {
     if ( cv->ruler_linger_w ) {
-	int width, x, y;
+	int x, y;
 	GRect size;
 	GRect rsize;
 	GRect csize;
@@ -973,12 +973,12 @@ return;
 		GDrawSetFont(pixmap,cv->rfont);
 		len = snprintf(buf,sizeof buf,"%g",xdist);
 		utf82u_strcpy(ubuf,buf);
-		GDrawDrawBiText(pixmap,(x+xend)/2 - len*charwidth/2,y + (y > yend ? 12 : -5),ubuf,-1,NULL,textcolor);
+		GDrawDrawText(pixmap,(x+xend)/2 - len*charwidth/2,y + (y > yend ? 12 : -5),ubuf,-1,textcolor);
 		GDrawDrawLine(pixmap,x,y,xend,y,measuretoollinecol);
 
 		len = snprintf(buf,sizeof buf,"%g",ydist);
 		utf82u_strcpy(ubuf,buf);
-		GDrawDrawBiText(pixmap,xend + (x < xend ? charwidth/2 : -(len * charwidth + charwidth/2)),(y+yend)/2,ubuf,-1,NULL,textcolor);
+		GDrawDrawText(pixmap,xend + (x < xend ? charwidth/2 : -(len * charwidth + charwidth/2)),(y+yend)/2,ubuf,-1,textcolor);
 		GDrawDrawLine(pixmap,xend,y,xend,yend,measuretoollinecol);
 	    }
 	}
@@ -1010,7 +1010,7 @@ return;
 
 		len = snprintf(buf,sizeof buf,"%g",len);
 		utf82u_strcpy(ubuf,buf);
-		GDrawDrawBiText(pixmap,x + (x < xend ? -(len*charwidth) : charwidth/2 ),y + (y < yend ? 12 : -5),ubuf,-1,NULL,textcolor);
+		GDrawDrawText(pixmap,x + (x < xend ? -(len*charwidth) : charwidth/2 ),y + (y < yend ? 12 : -5),ubuf,-1,textcolor);
 	    }
 	    prev_rect = rect;
 	}
