@@ -115,7 +115,7 @@ static void GMenuInit() {
     memset(&rq,0,sizeof(rq));
     GDrawDecomposeFont(_ggadget_default_font,&rq);
     rq.weight = 400;
-    menu_font = menubar_font = GDrawInstanciateFont(screen_display,&rq);
+    menu_font = menubar_font = GDrawInstanciateFont(NULL,&rq);
     _GGadgetCopyDefaultBox(&menubar_box);
     _GGadgetCopyDefaultBox(&menu_box);
     menubar_box.border_shape = menu_box.border_shape = bs_rect;
@@ -438,22 +438,22 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	GMenuDrawArrow(m,ybase,r2l);
     else if ( mi->shortcut!=0 && (mi->short_mask&0xffe0)==0 && mac_menu_icons ) {
 	_shorttext(mi->shortcut,0,shortbuf);
-	width = GDrawGetBiTextWidth(pixmap,shortbuf,-1,-1,NULL) + GMenuMacIconsWidth(m,mi->short_mask);
+	width = GDrawGetTextWidth(pixmap,shortbuf,-1) + GMenuMacIconsWidth(m,mi->short_mask);
 	if ( r2l ) {
-	    int x = GDrawDrawBiText(pixmap,m->bp,ybase,shortbuf,-1,NULL,fg);
+	    int x = GDrawDrawText(pixmap,m->bp,ybase,shortbuf,-1,fg);
 	    GMenuDrawMacIcons(m,fg,ybase, x, mi->short_mask);
 	} else {
 	    int x = GMenuDrawMacIcons(m,fg,ybase,m->rightedge-width, mi->short_mask);
-	    GDrawDrawBiText(pixmap,x,ybase,shortbuf,-1,NULL,fg);
+	    GDrawDrawText(pixmap,x,ybase,shortbuf,-1,fg);
 	}
     } else if ( mi->shortcut!=0 ) {
 	shorttext(mi,shortbuf);
 
-	width = GDrawGetBiTextWidth(pixmap,shortbuf,-1,-1,NULL);
+	width = GDrawGetTextWidth(pixmap,shortbuf,-1);
 	if ( r2l )
-	    GDrawDrawBiText(pixmap,m->bp,ybase,shortbuf,-1,NULL,fg);
+	    GDrawDrawText(pixmap,m->bp,ybase,shortbuf,-1,fg);
 	else
-	    GDrawDrawBiText(pixmap,m->rightedge-width,ybase,shortbuf,-1,NULL,fg);
+	    GDrawDrawText(pixmap,m->rightedge-width,ybase,shortbuf,-1,fg);
     }
     GDrawPopClip(pixmap,&old);
 return( y + h );
@@ -1271,10 +1271,10 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
 	if ( temp>width ) width = temp;
 	if ( mi[i].shortcut!=0 && (mi[i].short_mask&0xffe0)==0 && mac_menu_icons ) {
 	    _shorttext(mi[i].shortcut,0,buffer);
-	    temp = GDrawGetBiTextWidth(m->w,buffer,-1,-1,NULL) + GMenuMacIconsWidth(m,mi[i].short_mask);
+	    temp = GDrawGetTextWidth(m->w,buffer,-1) + GMenuMacIconsWidth(m,mi[i].short_mask);
 	} else {
 	    shorttext(&mi[i],buffer);
-	    temp = GDrawGetBiTextWidth(m->w,buffer,-1,-1,NULL);
+	    temp = GDrawGetTextWidth(m->w,buffer,-1);
 	}
 	if ( temp>keywidth ) keywidth=temp;
 	if ( mi[i].sub!=NULL && 3*m->as>keywidth )
@@ -1836,7 +1836,7 @@ static void GMenuBarFindXs(GMenuBar *mb) {
 	mb->xs[i+1] = mb->xs[i]+wid+GTextInfoGetWidth(mb->g.base,&mb->mi[i].ti,NULL);
 #else
     for ( i=wid=0; i<mb->mtot; ++i ) {
-	temp = GDrawGetBiTextWidth(mb->g.base,mb->mi[i].ti.text,-1,-1,NULL);
+	temp = GDrawGetTextWidth(mb->g.base,mb->mi[i].ti.text,-1);
 	if ( temp>wid ) wid = temp;
     }
     wid += GDrawPointsToPixels(mb->g.base,5);

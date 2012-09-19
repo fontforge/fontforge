@@ -42,7 +42,7 @@ int GTextInfoGetWidth(GWindow base,GTextInfo *ti,FontInstance *font) {
 
 	if ( font!=NULL )
 	    GDrawSetFont(base,font);
-	width = GDrawGetBiTextWidth(base,ti->text, -1, -1, NULL);
+	width = GDrawGetTextWidth(base,ti->text, -1);
     }
     if ( ti->image!=NULL ) {
 	iwidth = GImageGetScaledWidth(base,ti->image);
@@ -74,7 +74,7 @@ int GTextInfoGetHeight(GWindow base,GTextInfo *ti,FontInstance *font) {
     GDrawWindowFontMetrics(base,font,&as, &ds, &ld);
     if ( ti->text!=NULL ) {
 	GDrawSetFont(base,font);
-	GDrawGetBiTextBounds(base,ti->text, -1, NULL, &bounds);
+	GDrawGetTextBounds(base,ti->text, -1, &bounds);
 	if ( as<bounds.as ) as = bounds.as;
 	if ( ds<bounds.ds ) ds = bounds.ds;
     }
@@ -111,7 +111,7 @@ int GTextInfoGetAs(GWindow base,GTextInfo *ti, FontInstance *font) {
     GDrawWindowFontMetrics(base,font,&as, &ds, &ld);
     if ( ti->text!=NULL ) {
 	GDrawSetFont(base,font);
-	GDrawGetBiTextBounds(base,ti->text, -1, NULL, &bounds);
+	GDrawGetTextBounds(base,ti->text, -1, &bounds);
 	if ( as<bounds.as ) as = bounds.as;
 	if ( ds<bounds.ds ) ds = bounds.ds;
     }
@@ -143,7 +143,7 @@ int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
 	    fg = ti->fg;
 
 	GDrawSetFont(base,font);
-	GDrawGetBiTextBounds(base,ti->text, -1, NULL, &bounds);
+	GDrawGetTextBounds(base,ti->text, -1, &bounds);
 	if ( as<bounds.as ) as = bounds.as;
 	if ( ds<bounds.ds ) ds = bounds.ds;
     }
@@ -191,7 +191,7 @@ int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
 	}
 	if ( ti->text!=NULL ) {
 	    int ypos = y+as+(height>fh?(height-fh)/2:0);
-	    int width = GDrawDrawBiText(base,x,ypos,ti->text,-1,NULL,fg);
+	    int width = GDrawDrawText(base,x,ypos,ti->text,-1,fg);
 	    _ggadget_underlineMnemonic(base,x,ypos,ti->text,ti->mnemonic,fg,ymax);
 	    x += width + skip;
 	}

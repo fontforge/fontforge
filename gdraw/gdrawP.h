@@ -104,7 +104,6 @@ struct gwindow {
     unsigned int is_popup: 1;
     unsigned int disable_expose_requests: 1;
     unsigned int usecairo: 1;		/* use a cairo context -- if meaningful */
-    unsigned int usepango: 1;		/* draw text with pango */
 };
 
 struct ginput_context {
@@ -213,12 +212,6 @@ struct displayfuncs {
     GImage *(*copyScreenToImage)(GWindow, GRect *rect);
     void (*drawPixmap)(GWindow, GWindow, GRect *src, int32 x, int32 y);
     void (*tilePixmap)(GWindow, GWindow, GRect *src, int32 x, int32 y);
-
-    struct font_data *(*scaleFont)(GDisplay *, struct font_data *fd,FontRequest *rq);
-    struct font_data *(*stylizeFont)(GDisplay *, struct font_data *fd,FontRequest *rq);
-    /* XFontStruct **/void *(*loadFontMetrics)(GDisplay *, struct font_data *fd);
-    void (*drawText1)(GWindow, struct font_data *fd, int32 x, int32 y, char *txt, int32 cnt, FontMods *, Color col);
-    void (*drawText2)(GWindow, struct font_data *fd, int32 x, int32 y, GChar2b *txt, int32 cnt, FontMods *, Color col);
 
     GIC *(*createInputContext)(GWindow, enum gic_style);
     void (*setGIC)(GWindow, GIC *, int x, int y);
