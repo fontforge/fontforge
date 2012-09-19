@@ -89,7 +89,7 @@ static Color fvhintingneededcol = 0x0000ff;
 
 enum glyphlable { gl_glyph, gl_name, gl_unicode, gl_encoding };
 int default_fv_showhmetrics=false, default_fv_showvmetrics=false,
-	default_fv_glyphlabel = gl_glyph;
+	default_fv_glyphlabel = gl_name;
 #define METRICS_BASELINE 0x0000c0
 #define METRICS_ORIGIN	 0xc00000
 #define METRICS_ADVANCE	 0x008000
