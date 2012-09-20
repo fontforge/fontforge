@@ -166,7 +166,7 @@ struct grad_stops {
     real offset;
     uint32 col;
     real opacity;
-} *grad_stops;
+};
 
 struct gradient {
     BasePoint start;	/* focal of a radial gradient, start of a linear */
@@ -2746,6 +2746,7 @@ extern Undoes *_SCPreserveLayer(SplineChar *sc,int layer,int dohints);
 extern Undoes *SCPreserveState(SplineChar *sc,int dohints);
 extern Undoes *SCPreserveBackground(SplineChar *sc);
 extern Undoes *SFPreserveGuide(SplineFont *sf);
+extern Undoes *_SFPreserveGuide(SplineFont *sf);
 extern Undoes *SCPreserveWidth(SplineChar *sc);
 extern Undoes *SCPreserveVWidth(SplineChar *sc);
 extern Undoes *BCPreserveState(BDFChar *bc);
@@ -2758,7 +2759,7 @@ extern int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc, int layer,int o
 extern int SFIsRotatable(SplineFont *sf,SplineChar *sc, int layer);
 /*extern int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int layer, int copybmp, int doit);*/
 extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *bmp, int disp_only);
-extern int SCAppendAccent(SplineChar *sc,int layer, char *glyph_name,int uni,int pos);
+extern int SCAppendAccent(SplineChar *sc,int layer, char *glyph_name,int uni,uint32 pos);
 extern const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int nocheck);
 
 extern int getAdobeEnc(char *name);

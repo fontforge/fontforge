@@ -98,7 +98,7 @@ static void scrprintf(struct scr *scr, char *format, ... ) {
 
     va_start(ap,format);
     vsnprintf(buffer,sizeof(buffer),format,ap);
-    GDrawDrawBiText8(scr->pixmap,3,scr->y,buffer,-1,NULL,MAIN_FOREGROUND);
+    GDrawDrawText8(scr->pixmap,3,scr->y,buffer,-1,MAIN_FOREGROUND);
     scr->y += scr->fh;
     ++scr->lines;
 }

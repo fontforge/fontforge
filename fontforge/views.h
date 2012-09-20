@@ -892,6 +892,7 @@ extern int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **spl,
 	RefChar **ref, ImageList **img, AnchorPoint **ap, spiro_cp **cp);
 extern int CVOneContourSel(CharView *cv, SplinePointList **_spl,
 	RefChar **ref, ImageList **img);
+extern void CVInfoDrawText(CharView *cv, GWindow pixmap );
 extern void CVImport(CharView *cv);
 extern void BVImport(BitmapView *bv);
 extern void FVImport(FontView *bv);
@@ -1002,6 +1003,7 @@ extern GTextInfo *SLOfFont(SplineFont *sf);
 
 extern void DoPrefs(void);
 extern void DoXRes(void);
+extern void PointerDlg(CharView *cv);
 extern void LastFonts_Activate(void);
 extern void LastFonts_End(int success);
 extern void GListAddStr(GGadget *list,unichar_t *str, void *ud);
@@ -1168,6 +1170,10 @@ extern void SFMathDlg(SplineFont *sf,int def_layer);
 extern GMenuItem2 *cvpy_menu, *fvpy_menu;
 extern void cvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
+
+extern GMenuItem2 *cv_menu, *fv_menu;
+extern void cv_tl2listcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
+extern void fv_tl2listcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 
 extern void SFValidationWindow(SplineFont *sf,int layer, enum fontformat format);
 extern void ValidationDestroy(SplineFont *sf);

@@ -65,7 +65,7 @@ unichar_t fontpcf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-',
 unichar_t fontsnf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','-','s','n','f', '\0' };
 
 #ifdef __Mac
-#include </Developer/Headers/FlatCarbon/Files.h>
+#include <Developer/Headers/FlatCarbon/Files.h>
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
 
 unichar_t *_GioMacMime(const char *path) {

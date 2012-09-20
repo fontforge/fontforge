@@ -2385,7 +2385,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 	GDrawSetFont(ccd->glyphs_simple,_ggadget_default_font);
     }
     extrabuttonsgcd[i].gd.pos.width = GDrawPixelsToPoints(ccd->glyphs_simple,
-	    GDrawGetText8Width(ccd->glyphs_simple,(char *)extrabuttonslab[i].text,-1,NULL))+50;
+	    GDrawGetText8Width(ccd->glyphs_simple,(char *)extrabuttonslab[i].text,-1))+50;
     extrabuttonsgcd[i].gd.cid = CID_GAddLookup;
     extrabuttonsgcd[i].gd.handle_controlevent = CCD_AddLookup;
     extrabuttonsgcd[i++].creator = GListButtonCreate;

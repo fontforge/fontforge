@@ -849,7 +849,7 @@ static void GRowColFit(GRowCol *grc) {
 	}
 	if ( i<5 ) {
 	    int as, ds, ld;
-	    GDrawFontMetrics(grc->font,&as, &ds, &ld);
+	    GDrawWindowFontMetrics(grc->g.base,grc->font,&as, &ds, &ld);
 	    height += (5-i)*(as+ds);
 	}
 	grc->g.r.height = height + 2*bp;

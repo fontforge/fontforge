@@ -851,7 +851,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     temp.x = 52-16; temp.y = i*27; temp.width = 16; temp.height = 4*12;
     GDrawFillRect(pixmap,&temp,GDrawGetDefaultBackground(NULL));
     for ( j=0; j<4; ++j ) {
-	GDrawDrawBiText(pixmap,2,i*27+j*12+10,(unichar_t *) _Mouse[j],-1,NULL,GDrawGetDefaultForeground(NULL));
+	GDrawDrawText(pixmap,2,i*27+j*12+10,(unichar_t *) _Mouse[j],-1,GDrawGetDefaultForeground(NULL));
 	if ( (&cv->b1_tool)[j]!=cvt_none )
 	    GDrawDrawImage(pixmap,smalls[(&cv->b1_tool)[j]],NULL,52-16,i*27+j*12);
     }
@@ -1381,8 +1381,8 @@ return;
 		0x808080);
 	if ( i==0 || i==1 ) {
 	    str = i==0?_("Guide") : _("Back");
-	    GDrawDrawBiText8(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
-		    (char *) str,-1,NULL,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
+	    GDrawDrawText8(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
+		    (char *) str,-1,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
 	} else if ( layer2.offtop+i>=layer2.current_layers ) {
     break;
 	} else if ( layer2.layers[layer2.offtop+i]!=NULL ) {
@@ -1668,7 +1668,7 @@ return;
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
-	layersfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers2),&rq);
+	layersfont = GDrawInstanciateFont(cvlayers2,&rq);
 	layersfont = GResourceFindFont("LayersPalette.Font",layersfont);
     }
 
@@ -1896,8 +1896,8 @@ return;
                 GDrawFillRect(pixmap,&r,mocolor);
             }
             str = ( ll>=0 && ll<cv->b.sc->layer_cnt ? (cv->b.sc->layers[ll].order2? "Q" : "C") : " ");
-	    GDrawDrawBiText8(pixmap, quadcol, y + yt,
-		    (char *) str,-1,NULL,GDrawGetDefaultForeground(NULL));
+	    GDrawDrawText8(pixmap, quadcol, y + yt,
+		    (char *) str,-1,GDrawGetDefaultForeground(NULL));
         }
 
          /* draw fg/bg toggle */
@@ -1909,8 +1909,8 @@ return;
                 GDrawFillRect(pixmap,&r,mocolor);
             }
             str = ( ll>=0 && ll<cv->b.sc->layer_cnt ? (cv->b.sc->layers[ll].background? "B" : "F") : "#");
-	    GDrawDrawBiText8(pixmap, fgcol, y + yt,
-		    (char *) str,-1,NULL,GDrawGetDefaultForeground(NULL));
+	    GDrawDrawText8(pixmap, fgcol, y + yt,
+		    (char *) str,-1,GDrawGetDefaultForeground(NULL));
         }
 
          /* draw layer thumbnail and label */
@@ -1928,8 +1928,8 @@ return;
         r.x=editcol;
 	if ( ll==-1 || ll==0 || ll==1) {
 	    str = ll==-1 ? _("Guide") : (ll==0 ?_("Back") : _("Fore")) ;
-	    GDrawDrawBiText8(pixmap,r.x+2,y + yt,
-		    (char *) str,-1,NULL,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
+	    GDrawDrawText8(pixmap,r.x+2,y + yt,
+		    (char *) str,-1,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
 	} else if ( ll>=layerinfo.current_layers ) {
              break; /* no more layers to draw! */
 	} else if ( ll>=0 && layerinfo.layers[ll]!=NULL ) {
@@ -1943,8 +1943,8 @@ return;
 //		    y+as-bdfc->ymax);
             str = cv->b.sc->parent->layers[ll].name;
             if ( !str || !*str ) str="-";
-	    GDrawDrawBiText8(pixmap, r.x+2, y + yt,
-		        (char *) str,-1,NULL,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
+	    GDrawDrawText8(pixmap, r.x+2, y + yt,
+		        (char *) str,-1,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
 	}
     }
 }
@@ -1966,6 +1966,7 @@ static void CVLRemoveEdit(CharView *cv, int save) {
 	GDrawRequestExpose(cvlayers,NULL,false);
 
 	layerinfo.rename_active = 0;
+	CVInfoDrawText(cv,cv->gw);
     }
 }
 
@@ -2060,7 +2061,7 @@ static void CVLCheckLayerCount(CharView *cv, int resize) {
 	    } else if ( hasmn==NULL ) {
                 sprintf(namebuf,"%s", i==-1 ? _("Guide") : (i==0 ?_("Back") : _("Fore")) );
             }
-            width = GDrawGetBiText8Width(cvlayers, namebuf, strlen(namebuf), -1, NULL);
+            width = GDrawGetText8Width(cvlayers, namebuf, -1);
 	    if ( width+togsize>maxwidth ) maxwidth = width + togsize;
 	} else if ( i==-1 ) {
 	    if ( width+togsize>maxwidth ) maxwidth = width + togsize;
@@ -2416,8 +2417,18 @@ static int CVLScanForItem(int x, int y, int *col) {
 
     *col=-1;
     if ( x>0 && x<viscol+cw ) *col=CID_VBase;
-    else if ( (layerscols & LSHOW_CUBIC) && x>=quadcol && x<quadcol+cw ) *col=CID_QBase;
-    else if ( (layerscols & LSHOW_FG) && x>=fgcol && x<fgcol+cw ) *col=CID_FBase;
+    /**
+     * The two below options, CID_QBase and CID_FBase allow the curve
+     * type and foreground/background to be changed simply by clicking
+     * on them. The cubic/quadratic and background/foreground
+     * attributes should NOT be buttons that can change these
+     * attributes, they should only SHOW the attribute. Changing the
+     * attributes can be done in Font Info, Layers, and is done
+     * infrequently and has a lot of implications so shouldn't be
+     * easily done by mistake.
+     */
+//    else if ( (layerscols & LSHOW_CUBIC) && x>=quadcol && x<quadcol+cw ) *col=CID_QBase;
+//    else if ( (layerscols & LSHOW_FG) && x>=fgcol && x<fgcol+cw ) *col=CID_FBase;
     else if ( x>=editcol ) *col=CID_EBase;
 
     return l;
@@ -2455,6 +2466,7 @@ return;
     if (cvlayers)  GDrawRequestExpose(cvlayers,NULL,false);
     if ( dm!=cv->b.drawmode )
         GDrawRequestExpose(cv->gw,NULL,false); /* the logo (where the scrollbars join) shows what layer we are in */
+    CVInfoDrawText(cv,cv->gw);
 }
 
 static int cvlayers_e_h(GWindow gw, GEvent *event) {
@@ -2804,7 +2816,7 @@ return( cvlayers );
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
-	layersfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers2),&rq);
+	layersfont = GDrawInstanciateFont(cvlayers2,&rq);
 	layersfont = GResourceFindFont("LayersPalette.Font",layersfont);
     }
     layerinfo.font = layersfont;
@@ -3333,7 +3345,7 @@ return(bvlayers);
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
-	layersfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers2),&rq);
+	layersfont = GDrawInstanciateFont(cvlayers2,&rq);
 	layersfont = GResourceFindFont("LayersPalette.Font",layersfont);
     }
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
