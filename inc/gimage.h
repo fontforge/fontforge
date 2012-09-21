@@ -26,7 +26,7 @@
  */
 #ifndef _GIMAGE_H
 #define _GIMAGE_H
-#include "basics.h"
+#include <basics.h>
 
 typedef uint32 Color;
 

@@ -27,8 +27,8 @@
 
 #ifndef _GPROGRESS_H
 #define _GPROGRESS_H
-#include "basics.h"
-#include "intl.h"
+#include <basics.h>
+#include <intl.h>
 
 extern void GProgressStartIndicator(
     int delay,			/* in tenths of seconds */
