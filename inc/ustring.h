@@ -29,8 +29,8 @@
 #include <stdarg.h>
 #include <string.h>
 #include <memory.h>
-#include "basics.h"
-#include "charset.h"
+#include <basics.h>
+#include <charset.h>
 
 extern char *copy(const char *);
 extern char *copyn(const char *,long);
