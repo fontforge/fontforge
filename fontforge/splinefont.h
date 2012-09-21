@@ -3246,4 +3246,8 @@ extern bigreal SFDescender(SplineFont *sf, int layer, int return_error);
 
 extern SplineChar ***GlyphClassesFromNames(SplineFont *sf,char **classnames,
 	int class_cnt );
+
+extern void SCRemoveKern(SplineChar* sc);
+extern void SCRemoveVKern(SplineChar* sc);
+
 #endif

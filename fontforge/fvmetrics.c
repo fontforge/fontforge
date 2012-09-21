@@ -208,6 +208,13 @@ void CVDoit(CreateWidthData *wd) {
     DoChar(cv->b.sc,wd,(FontViewBase *) (cv->b.fv),NULL);
     wd->done = true;
 }
+void GenericVDoit(CreateWidthData *wd) {
+    FontViewBase* fv = (FontViewBase*)wd->_fv;
+    SplineChar* sc = (SplineChar*)wd->_sc;
+    
+    DoChar(sc,wd,fv,NULL);
+    wd->done = true;
+}
 
 void FVSetWidthScript(FontViewBase *fv,enum widthtype wtype,int val,int incr) {
     CreateWidthData wd;
