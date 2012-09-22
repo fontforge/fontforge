@@ -87,6 +87,11 @@ struct instrinfo {
     int  (*handle_char)(struct instrinfo *,GEvent *e);
 };
 
+struct reflist {
+    RefChar *ref;
+    struct reflist *parent;
+};
+
 typedef struct debugview {
     struct debugger_context *dc;	/* Local to freetype.c */
     GWindow dv, v;
@@ -109,12 +114,22 @@ typedef struct debugview {
 
     int codeSize;
     uint8 initialbytes[4];
-    struct reflist { RefChar *ref; struct reflist *parent; } *active_refs;
+    struct reflist *active_refs;
     int last_npoints;
     int layer;
 } DebugView;
 
 enum dv_coderange { cr_none=0, cr_fpgm, cr_prep, cr_glyph };	/* cleverly chosen to match ttobjs.h */
+
+struct freehand {
+    struct tracedata *head, *last;	/* for the freehand tool */
+    SplinePointList *current_trace;
+    int ignore_wobble;		/* Ignore wiggles smaller than this */
+    int skip_cnt;
+};
+
+enum expandedge { ee_none, ee_nw, ee_up, ee_ne, ee_right, ee_se, ee_down,
+		  ee_sw, ee_left, ee_max };
 
 typedef struct charview {
     CharViewBase b;
@@ -212,14 +227,8 @@ typedef struct charview {
     IPoint handscroll_base;
     uint16 rfh, ras;
     BasePoint lastknife;
-    struct freehand {
-	struct tracedata *head, *last;	/* for the freehand tool */
-	SplinePointList *current_trace;
-	int ignore_wobble;		/* Ignore wiggles smaller than this */
-	int skip_cnt;
-    } freehand;
-    enum expandedge { ee_none, ee_nw, ee_up, ee_ne, ee_right, ee_se, ee_down,
-	    ee_sw, ee_left, ee_max } expandedge;
+    struct freehand freehand;
+    enum expandedge expandedge;
     BasePoint expandorigin;
     real expandwidth, expandheight;
     SplinePointList *active_shape;
@@ -298,6 +307,18 @@ struct aplist { AnchorPoint *ap; int connected_to, selected; struct aplist *next
 
 enum mv_grids { mv_hidegrid, mv_showgrid, mv_partialgrid, mv_hidemovinggrid };
 enum mv_type { mv_kernonly, mv_widthonly, mv_kernwidth };
+
+struct metricchar {
+    int16 dx, dwidth;	/* position and width of the displayed char */
+    int16 dy, dheight;	/*  displayed info for vertical metrics */
+    int xoff, yoff;
+    int16 mx, mwidth;	/* position and width of the text underneath */
+    int16 kernafter;
+    unsigned int selected: 1;
+    GGadget *width, *lbearing, *rbearing, *kern, *name;
+    GGadget* updownkparray[10]; /* Cherry picked elements from width...kern allowing up/down key navigation */
+};
+
 typedef struct metricsview {
     struct fontview *fv;
     SplineFont *sf;
@@ -321,16 +342,7 @@ typedef struct metricsview {
     int16 cmax, clen; 
     SplineChar **chars;		/* Character input stream */
     struct opentype_str *glyphs;/* after going through the various gsub/gpos transformations */
-    struct metricchar {		/* One for each glyph above */
-	int16 dx, dwidth;	/* position and width of the displayed char */
-	int16 dy, dheight;	/*  displayed info for vertical metrics */
-	int xoff, yoff;
-	int16 mx, mwidth;	/* position and width of the text underneath */
-	int16 kernafter;
-	unsigned int selected: 1;
-	GGadget *width, *lbearing, *rbearing, *kern, *name;
-	GGadget* updownkparray[10]; /* Cherry picked elements from width...kern allowing up/down key navigation */
-    } *perchar;
+    struct metricchar *perchar;	/* One for each glyph above */
     SplineChar **sstr;		/* Character input stream */
     int16 mwidth, mbase;
     int16 glyphcnt, max;
@@ -510,8 +522,6 @@ extern void TPDCharViewInits(TilePathDlg *tpd, int cid);
 extern void PTDCharViewInits(TilePathDlg *tpd, int cid);
 #endif		/* Tile Path */
 
-# ifdef FONTFORGE_CONFIG_TYPE3
-
 typedef struct gradientdlg {
     struct cvcontainer base;
     FontView dummy_fv;
@@ -536,7 +546,6 @@ typedef struct gradientdlg {
     struct gradient *active;
 } GradientDlg;
 extern void GDDCharViewInits(GradientDlg *gdd,int cid);
-#endif		/* Type3 */
 
 typedef struct strokedlg {
     struct cvcontainer base;
@@ -567,25 +576,35 @@ typedef struct strokedlg {
 } StrokeDlg;
 extern void StrokeCharViewInits(StrokeDlg *sd,int cid);
 
+struct lksubinfo {
+    struct lookup_subtable *subtable;
+    unsigned int deleted: 1;
+    unsigned int new: 1;
+    unsigned int selected: 1;
+    unsigned int moved: 1;
+};
+
+struct lkinfo {
+    OTLookup *lookup;
+    unsigned int open: 1;
+    unsigned int deleted: 1;
+    unsigned int new: 1;
+    unsigned int selected: 1;
+    unsigned int moved: 1;
+    int16 subtable_cnt, subtable_max;
+    struct lksubinfo *subtables;
+};
+
 struct lkdata {
     int cnt, max;
     int off_top, off_left;
-    struct lkinfo {
-	OTLookup *lookup;
-	unsigned int open: 1;
-	unsigned int deleted: 1;
-	unsigned int new: 1;
-	unsigned int selected: 1;
-	unsigned int moved: 1;
-	int16 subtable_cnt, subtable_max;
-	struct lksubinfo {
-	    struct lookup_subtable *subtable;
-	    unsigned int deleted: 1;
-	    unsigned int new: 1;
-	    unsigned int selected: 1;
-	    unsigned int moved: 1;
-	} *subtables;
-    } *all;
+    struct lkinfo *all;
+};
+
+struct anchor_shows {
+    CharView *cv;
+    SplineChar *sc;
+    int restart;
 };
 
 struct gfi_data {		/* FontInfo */
@@ -603,7 +622,7 @@ struct gfi_data {		/* FontInfo */
     unsigned int mpdone: 1;
     unsigned int lk_drag_and_drop: 1;
     unsigned int lk_dropablecursor: 1;
-    struct anchor_shows { CharView *cv; SplineChar *sc; int restart; } anchor_shows[2];
+    struct anchor_shows anchor_shows[2];
     struct texdata texdata;
     GFont *font;
     int as, fh;
@@ -794,6 +813,8 @@ extern void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePoint
 	Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode );
 extern void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	Color fg, int dopoints, DRect *clip );
+extern void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *set,
+	Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode );
 extern GWindow CVMakeTools(CharView *cv);
 extern GWindow CVMakeLayers(CharView *cv);
 extern GWindow BVMakeTools(BitmapView *bv);
@@ -871,6 +892,7 @@ extern int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **spl,
 	RefChar **ref, ImageList **img, AnchorPoint **ap, spiro_cp **cp);
 extern int CVOneContourSel(CharView *cv, SplinePointList **_spl,
 	RefChar **ref, ImageList **img);
+extern void CVInfoDrawText(CharView *cv, GWindow pixmap );
 extern void CVImport(CharView *cv);
 extern void BVImport(BitmapView *bv);
 extern void FVImport(FontView *bv);
@@ -909,6 +931,7 @@ extern void CVAddAnchor(CharView *cv);
 extern AnchorClass *AnchorClassUnused(SplineChar *sc,int *waslig);
 extern void FVSetWidth(FontView *fv,enum widthtype wtype);
 extern void CVSetWidth(CharView *cv,enum widthtype wtype);
+extern void GenericVSetWidth(FontView *fv,SplineChar* sc,enum widthtype wtype);
 extern void CVChangeSC(CharView *cv, SplineChar *sc );
 extern Undoes *CVPreserveTState(CharView *cv);
 extern void CVRestoreTOriginalState(CharView *cv);
@@ -981,6 +1004,7 @@ extern GTextInfo *SLOfFont(SplineFont *sf);
 
 extern void DoPrefs(void);
 extern void DoXRes(void);
+extern void PointerDlg(CharView *cv);
 extern void LastFonts_Activate(void);
 extern void LastFonts_End(int success);
 extern void GListAddStr(GGadget *list,unichar_t *str, void *ud);
@@ -1148,6 +1172,10 @@ extern GMenuItem2 *cvpy_menu, *fvpy_menu;
 extern void cvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 
+extern GMenuItem2 *cv_menu, *fv_menu;
+extern void cv_tl2listcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
+extern void fv_tl2listcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
+
 extern void SFValidationWindow(SplineFont *sf,int layer, enum fontformat format);
 extern void ValidationDestroy(SplineFont *sf);
 
@@ -1186,4 +1214,7 @@ extern char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current);
 extern void ME_ListCheck(GGadget *g,int r, int c, SplineFont *sf);
 extern void ME_SetCheckUnique(GGadget *g,int r, int c, SplineFont *sf);
 extern void ME_ClassCheckUnique(GGadget *g,int r, int c, SplineFont *sf);
+
+extern void CVRegenFill(CharView *cv);
+
 #endif	/* _VIEWS_H */

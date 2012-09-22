@@ -324,13 +324,15 @@ unichar_t *GWidgetSaveAsFileWithGadget(const unichar_t *title, const unichar_t *
     GFileChooserSetFilterFunc(gcd[0].ret,filter);
     GFileChooserSetInputFilenameFunc(gcd[0].ret, filenamefunc);
     GFileChooserSetMimetypes(gcd[0].ret,mimetypes);
-    GGadgetSetTitle(gcd[0].ret,defaultfile);
+    GFileChooserSetFilename(gcd[0].ret,defaultfile);
+//    GGadgetSetTitle(gcd[0].ret,defaultfile);
     GFileChooserGetChildren(gcd[0].ret,&pulldown,&files,&tf);
     GWidgetIndicateFocusGadget(tf);
 
     memset(&d,'\0',sizeof(d));
     d.gfc = gcd[0].ret;
 
+    
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !d.done )

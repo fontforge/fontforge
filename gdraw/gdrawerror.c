@@ -35,11 +35,12 @@
 
 #define ERR_LINE_MAX	20
 static GWindow error;
+enum err_type { et_info, et_warn, et_error, et_fatal };
 static struct errinfo {
     unichar_t *lines[ERR_LINE_MAX];
     unsigned int dismissed: 1;
     int width;
-    enum err_type { et_info, et_warn, et_error, et_fatal } err_type;
+    enum err_type err_type;
 } errinfo;
 
 static int e_h(GWindow gw, GEvent *event) {
@@ -51,18 +52,18 @@ static int e_h(GWindow gw, GEvent *event) {
     if ( event->type == et_expose ) {
 	max_len = 0;
 	for ( line = 0; line<ERR_LINE_MAX && errinfo.lines[line]!=NULL; ++line ) {
-	    len = GDrawGetTextWidth(gw,errinfo.lines[line],-1,NULL);
+	    len = GDrawGetTextWidth(gw,errinfo.lines[line],-1);
 	    if ( len>max_len ) max_len = len;
 	}
 	x = (errinfo.width-max_len)/2;
 	for ( line = 0; line<ERR_LINE_MAX && errinfo.lines[line]!=NULL; ++line )
-	    GDrawDrawText(gw,x, 10+10+15*line, errinfo.lines[line],-1,NULL,0x000000);
+	    GDrawDrawText(gw,x, 10+10+15*line, errinfo.lines[line],-1,0x000000);
 
-	x = (errinfo.width-(len = GDrawGetTextWidth(gw,ok,2,NULL)))/2;
+	x = (errinfo.width-(len = GDrawGetTextWidth(gw,ok,2)))/2;
 	r.x = x-10; r.y = 25+15*line; r.width = len+20; r.height = 18;
 	GDrawFillRect(gw,&r,0xffffff);
 	GDrawDrawRect(gw,&r,0x000000);
-	GDrawDrawText(gw,x,r.y+13,ok,2,NULL,0x000000);
+	GDrawDrawText(gw,x,r.y+13,ok,2,0x000000);
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.chars[0]=='\r' || event->u.chr.chars[0]=='\33' )
 	    errinfo.dismissed = true;
@@ -109,7 +110,7 @@ static void ProcessText(unichar_t *ubuf,char *buf, enum err_type et) {
 
     max_len = 0;
     for ( line = 0; line<ERR_LINE_MAX && errinfo.lines[line]!=NULL; ++line ) {
-	len = GDrawGetTextWidth(error,errinfo.lines[line],-1,NULL);
+	len = GDrawGetTextWidth(error,errinfo.lines[line],-1);
 	if ( len>max_len ) max_len = len;
     }
     errinfo.width = max_len+30;

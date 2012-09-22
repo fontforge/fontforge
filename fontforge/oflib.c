@@ -62,18 +62,22 @@ extern GBox _ggadget_Default_Box;
 static int fakemons[] = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 static char *monnames[] = { N_("January"), N_("February"), N_("March"), N_("April"), N_("May"), N_("June"), N_("July"), N_("August"), N_("September"), N_("October"), N_("November"), N_("December") };
 
+enum ofl_license { ofll_ofl, ofll_pd };
+
+struct ofl_download_urls {
+    char *url;
+    char *comment;
+    uint8 selected;
+    struct ofl_download_urls *next;
+};
+
 struct ofl_font_info {
     char *name;
     char *author;
     int date;	/* Not real date. Minutes since 2005, assuming Feb has 29 days*/
     char *taglist;
-    enum ofl_license { ofll_ofl, ofll_pd } license;
-    struct ofl_download_urls {
-	char *url;
-	char *comment;
-	uint8 selected;
-	struct ofl_download_urls *next;
-    } *urls;
+    enum ofl_license license;
+    struct ofl_download_urls *urls;
     /* If they've looked at the preview image in the past, cache that locally */
     char *preview_filename;
     GImage *preview;
@@ -443,10 +447,12 @@ return( anymatches );
     }
 }
 
+enum tok_type { tok_int, tok_str, tok_name, tok_EOF };
+
 struct tokbuf {
     char *buf;
     int buf_max;
-    enum tok_type { tok_int, tok_str, tok_name, tok_EOF } type;
+    enum tok_type type;
     int ival;
 };
 
@@ -1747,33 +1753,33 @@ static int oflib_fonts_e_h(GWindow gw, GEvent *event) {
 			GDrawDrawLine(gw,box.x+(box.width/2),box.y+2, box.x+(box.width/2),box.y+box.height-2, 0x000000);
 		}
 		x = box.x + d->fh;
-		x += GDrawDrawBiText8(gw,x, box.y+d->as,
-			d->show[index]->name,-1,NULL,MAIN_FOREGROUND);
+		x += GDrawDrawText8(gw,x, box.y+d->as,
+			d->show[index]->name,-1,MAIN_FOREGROUND);
 		if ( x< box.x + d->fh + 10*d->fh )
 		    x = box.x + d->fh + 11*d->fh;
 		else
 		    x += d->as;
-		x += GDrawDrawBiText8(gw,x, box.y+d->as,
-			d->show[index]->author,-1,NULL,MAIN_FOREGROUND);
+		x += GDrawDrawText8(gw,x, box.y+d->as,
+			d->show[index]->author,-1,MAIN_FOREGROUND);
 		if ( x< box.x + d->fh + 17*d->fh )
 		    x = box.x + d->fh + 18*d->fh;
 		else
 		    x += d->as;
-		x += GDrawDrawBiText8(gw,x, box.y+d->as,
-			d->show[index]->license==ofll_ofl?"OFL":"PD",-1,NULL,MAIN_FOREGROUND);
+		x += GDrawDrawText8(gw,x, box.y+d->as,
+			d->show[index]->license==ofll_ofl?"OFL":"PD",-1,MAIN_FOREGROUND);
 		if ( x< box.x + d->fh + 20*d->fh )
 		    x = box.x + d->fh + 21*d->fh;
 		else
 		    x += d->as;
-		x += GDrawDrawBiText8(gw,x, box.y+d->as,
-			d->show[index]->taglist,-1,NULL,MAIN_FOREGROUND);
+		x += GDrawDrawText8(gw,x, box.y+d->as,
+			d->show[index]->taglist,-1,MAIN_FOREGROUND);
 		if ( x< box.x + d->fh + 42*d->fh )
 		    x = box.x + d->fh + 43*d->fh;
 		else
 		    x += d->as;
 		formatOFLibDate(buffer,sizeof(buffer), d->show[index]->date );
-		x += GDrawDrawBiText8(gw,x, box.y+d->as,
-			buffer,-1,NULL,MAIN_FOREGROUND);
+		x += GDrawDrawText8(gw,x, box.y+d->as,
+			buffer,-1,MAIN_FOREGROUND);
 		if ( d->show[index]->open && d->show[index]->urls!=NULL )
 		    du = d->show[index]->urls;
 		else
@@ -1781,8 +1787,8 @@ static int oflib_fonts_e_h(GWindow gw, GEvent *event) {
 	    } else {
 		if ( du->selected )
 		    GDrawFillRect(gw,&r,ACTIVE_BORDER);
-		GDrawDrawBiText8(gw,r.x + d->fh, r.y+d->as,
-			du->comment,-1,NULL,MAIN_FOREGROUND);
+		GDrawDrawText8(gw,r.x + d->fh, r.y+d->as,
+			du->comment,-1,MAIN_FOREGROUND);
 		if ( du->next!=NULL )
 		    du = du->next;
 		else {
@@ -1902,11 +1908,11 @@ return;
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 12;
 	rq.weight = 400;
-	oflibfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	oflibfont = GDrawInstanciateFont(gw,&rq);
 	oflibfont = GResourceFindFont("OFLib.Font",oflibfont);
     }
     active->font = oflibfont;
-    GDrawFontMetrics(active->font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(active->gw,active->font,&as,&ds,&ld);
     active->as = as; active->fh = as+ds;
 
     memset(&boxes,0,sizeof(boxes));

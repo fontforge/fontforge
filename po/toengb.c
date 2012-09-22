@@ -1,3 +1,5 @@
+/* A little program to help create the en_GB.po file. */
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -28,7 +30,10 @@ struct {
     NULL
 };
 
-static char *strcasestr(const char *haystack, const char *needle) {
+/* If we were to call the following function strcasestr(), on some
+ * systems (PC-BSD 9.0 in particular) the confusion with the native
+ * strcasestr() causes compilation problems. */
+static char *my_strcasestr(const char *haystack, const char *needle) {
     const char *npt, *hpt;
     int hch, nch;
 
@@ -75,7 +80,7 @@ static void replace(char *line, char *find, char *rpl) {
     int flen = strlen(find), rlen = strlen(rpl);
     int len = rlen - flen;
 
-    while ( (pt = strcasestr(pt,find))!=NULL ) {
+    while ( (pt = my_strcasestr(pt,find))!=NULL ) {
 	if ( len>0 ) {
 	    for ( mpt = line+strlen(line); mpt>=pt+flen; --mpt )
 		mpt[len] = *mpt;
@@ -102,7 +107,7 @@ static int anyneedles(int start, int end) {
 	if ( l==start && (pt=strchr(lpt,'|'))!=NULL )
 	    lpt = pt+1;
 	for ( i=0; words[i].us!=NULL; ++i ) {
-	    if ( strcasestr(lpt,words[i].us)!=NULL ) {
+	    if ( my_strcasestr(lpt,words[i].us)!=NULL ) {
 		if ( strcmp(words[i].us,words[i].gb)==0 )		/* The word delimiter is the same, but miter isn't. So we include delimiter first to make sure miter isn't found */
 return( false );
 		else

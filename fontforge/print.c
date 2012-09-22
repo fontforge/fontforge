@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -400,6 +401,12 @@ static void pdf_dump_type1(PI *pi,int sfid) {
     sfbit->twobyte = false;
 }
 
+struct opac_state {
+    int isfill;
+    float opacity;
+    int obj;
+};
+
 struct glyph_res {
     int pattern_cnt, pattern_max;
     char **pattern_names;
@@ -408,13 +415,12 @@ struct glyph_res {
     char **image_names;
     int *image_objs;
     int opacity_cnt, opacity_max;
-    struct opac_state { int isfill; float opacity; int obj; } *opac_state;
+    struct opac_state *opac_state;
 };
 
 #define GLYPH_RES_EMPTY { 0, 0, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL }
 
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 void makePatName(char *buffer,
 	RefChar *ref,SplineChar *sc,int layer,int isstroke,int isgrad) {
     /* In PDF patterns (which include gradients) are fixed to the page. They */
@@ -678,7 +684,6 @@ static void pdf_ImageCheck(PI *pi,struct glyph_res *gr,ImageList *images,
 	images = images->next;
     }
 }
-#endif
 
 /* We need different gradients and patterns for different transform */
 /*  matrices of references to the same glyph. Sigh. */
@@ -686,8 +691,6 @@ int PdfDumpGlyphResources(PI *pi,SplineChar *sc) {
     int resobj;
     struct glyph_res gr = GLYPH_RES_EMPTY;
     int i;
-
-#ifdef FONTFORGE_CONFIG_TYPE3
     int layer;
     RefChar *ref;
 
@@ -707,7 +710,6 @@ int PdfDumpGlyphResources(PI *pi,SplineChar *sc) {
 	    }
 	}
     }
-#endif
     resobj = pdf_addobject(pi);
     fprintf(pi->out,"<<\n" );
     if ( gr.pattern_cnt!=0 ) {
@@ -747,7 +749,6 @@ static int PdfDumpSFResources(PI *pi,SplineFont *sf) {
     int resobj;
     struct glyph_res gr = GLYPH_RES_EMPTY;
     int i;
-#ifdef FONTFORGE_CONFIG_TYPE3
     int layer, gid;
     SplineChar *sc;
     RefChar *ref;
@@ -770,7 +771,6 @@ static int PdfDumpSFResources(PI *pi,SplineFont *sf) {
 	    }
 	}
     }
-#endif
     resobj = pdf_addobject(pi);
     fprintf(pi->out,"<<\n" );
     if ( gr.pattern_cnt!=0 ) {
@@ -808,7 +808,6 @@ return( resobj );
 
 static int pdf_charproc(PI *pi, SplineChar *sc) {
     int ret = pi->next_object;
-#ifdef FONTFORGE_CONFIG_TYPE3
     long streamstart, streamlength;
     int i,last;
 
@@ -875,9 +874,6 @@ static int pdf_charproc(PI *pi, SplineChar *sc) {
     pdf_addobject(pi);
     fprintf( pi->out, " %ld\n", streamlength );
     fprintf( pi->out, "endobj\n\n" );
-#else
-    IError("This should never get called");
-#endif
 return( ret );
 }
 

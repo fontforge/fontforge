@@ -1,0 +1,21 @@
+[Desktop Entry]
+Name=FontForge
+Name[ru]=FontForge
+Name[fr]=FontForge
+Name[zh_TW]=字型鍛造廠
+Name[uk]=FontForge
+Name[eo]=FontForge
+Comment=An outline font editor
+Comment[ru]=Редактор шрифтов
+Comment[fr]=Un constructeur des polices
+Comment[zh_TW]=FontForge 描邊字型編輯器
+Comment[pl_PL]=Edytor fontów
+Comment[uk]=Редактор шрифтів
+Comment[eo]=Tipardosiero-redaktilo
+Exec=fontforge %U
+Icon=fontforge
+StartupWMClass=fontforge
+Terminal=false
+Type=Application
+Categories=Graphics;
+MimeType=application/vnd.font-fontforge-sfd;application/x-font-ttf;application/x-font-otf;application/x-font-type1;application/x-font-bdf;application/x-font-pcf;application/x-font-tex;

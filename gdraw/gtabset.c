@@ -32,11 +32,14 @@
 #include "gkeysym.h"
 
 static GBox gtabset_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox gvtabset_box = GBOX_EMPTY; /* Don't initialize here */
 static FontInstance *gtabset_font = NULL;
 static int gtabset_inited = false;
 
+static GResInfo gtabset_ri, gvtabset_ri;
+
 static GResInfo gtabset_ri = {
-    NULL, &ggadget_ri, NULL, NULL,
+    &gvtabset_ri, &ggadget_ri, &gvtabset_ri, NULL,
     &gtabset_box,
     NULL,
     NULL,
@@ -53,15 +56,43 @@ static GResInfo gtabset_ri = {
     NULL,
     NULL
 };
+
+/* Dummy gadget for styling vertical layout */
+static GResInfo gvtabset_ri = {
+    NULL, &gtabset_ri, &gtabset_ri, NULL,
+    &gvtabset_box,
+    NULL,
+    NULL,
+    NULL,
+    N_("VerticalTabSet"),
+    N_("Vertical Tab Set"),
+    "GVTabSet",
+    "Gdraw",
+    false,
+    0,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
+};
 #define NEST_INDENT	4
 
 static void GTabSetInit() {
 
+    if ( gtabset_inited )
+return;
+
     GGadgetInit();
+
     _GGadgetCopyDefaultBox(&gtabset_box);
     gtabset_box.border_width = 1; gtabset_box.border_shape = bs_rect;
     /*gtabset_box.flags = 0;*/
     gtabset_font = _GGadgetInitDefaultBox("GTabSet.",&gtabset_box,NULL);
+
+    gvtabset_box = gtabset_box; /* needs this to figure inheritance */
+    _GGadgetInitDefaultBox("GVTabSet.",&gvtabset_box,NULL);
+
     gtabset_inited = true;
 }
 
@@ -131,8 +162,18 @@ static int DrawTab(GWindow pixmap, GTabSet *gts, int i, int x, int y ) {
 
     if ( fg==COLOR_DEFAULT ) fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap));
     GBoxDrawTabOutline(pixmap,&gts->g,x,y,gts->tabs[i].width,gts->rowh,i==gts->sel);
-    GDrawDrawBiText(pixmap,x+(gts->tabs[i].width-gts->tabs[i].tw)/2,y+gts->rowh-gts->ds,
-	    gts->tabs[i].name,-1,NULL,fg);
+
+    if ( (i==gts->sel) && (gts->g.box->flags&box_active_border_inner) ) {
+        GRect r;
+        r.x = x+2;
+        r.y = y+1;
+        r.width = gts->tabs[i].width-4;
+        r.height = gts->rowh-2;
+        GDrawFillRect(pixmap,&r,gts->g.box->active_border);
+    }
+
+    GDrawDrawText(pixmap,x+(gts->tabs[i].width-gts->tabs[i].tw)/2,y+gts->rowh-gts->ds,
+	    gts->tabs[i].name,-1,fg);
     gts->tabs[i].x = x;
     x += gts->tabs[i].width;
 return( x );
@@ -185,7 +226,7 @@ return( false );
 		r.width = gts->vert_list_width-10; r.height = gts->fh;
 		GDrawFillRect(pixmap,&r,gts->g.box->active_border);
 	    }
-	    GDrawDrawBiText(pixmap,x+gts->tabs[i].nesting*ni,y + gts->as,gts->tabs[i].name,-1,NULL,fg);
+	    GDrawDrawText(pixmap,x+gts->tabs[i].nesting*ni,y + gts->as,gts->tabs[i].name,-1,fg);
 	    y += gts->fh;
 	}
 	fg = gts->g.box->main_foreground;
@@ -345,7 +386,7 @@ static void GTabSet_Remetric(GTabSet *gts) {
     gts->vert_list_width = 0;
 
     for ( i=0; i<gts->tabcnt; ++i ) {
-	gts->tabs[i].tw = GDrawGetBiTextWidth(gts->g.base,gts->tabs[i].name,-1,-1,NULL);
+	gts->tabs[i].tw = GDrawGetTextWidth(gts->g.base,gts->tabs[i].name,-1);
 	gts->tabs[i].width = gts->tabs[i].tw + 2*bp;
 	in = gts->tabs[i].nesting*ni;
 	if ( gts->tabs[i].tw+in > gts->vert_list_width )
@@ -532,7 +573,7 @@ return( true );
 return( false );
 }
 
-static int gtabset_focus(GGadget *g, GEvent *event) {
+static int gtabset_focus(GGadget *g, GEvent *UNUSED(event)) {
 
     if ( !g->takes_input || (g->state!=gs_enabled && g->state!=gs_active ))
 return(false);
@@ -789,7 +830,7 @@ GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     if ( !gtabset_inited )
 	GTabSetInit();
     gts->g.funcs = &gtabset_funcs;
-    _GGadget_Create(&gts->g,base,gd,data,&gtabset_box);
+    _GGadget_Create(&gts->g,base,gd,data, gd->flags&gg_tabset_vert ? &gvtabset_box  : &gtabset_box);
     gts->font = gtabset_font;
 
     gts->g.takes_input = true; gts->g.takes_keyboard = true; gts->g.focusable = true;

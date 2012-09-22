@@ -220,7 +220,7 @@ return( TT_Err_Execution_Too_Long );		/* Some random error code, says we're prob
 	ret = 0;
 	while ( exc->curRange!=tt_coderange_glyph ) {
 	    TestStorage(dc,exc);
-	    ret = _TT_RunIns(exc);
+	    ret = TT_RunIns(exc);
 	    if ( ret==TT_Err_Code_Overflow )
 return( 0 );
 	    if ( ret )
@@ -243,7 +243,7 @@ return( TT_Err_Execution_Too_Long );
     break;
 	}
 	TestStorage(dc,exc);
-	ret = _TT_RunIns(exc);
+	ret = TT_RunIns(exc);
 	if ( ret )
     break;
 	/* Signal the parent if we are single stepping, or if we've reached a break-point */
@@ -298,11 +298,11 @@ static void *StartChar(void *_dc) {
 	memset(dc->storetouched,0,dc->storeSize);
 
     massive_kludge = dc;
-    if ( _FT_Set_Char_Size(dc->ftc->face,(int) (dc->ptsizex*64),(int) (dc->ptsizey*64), dc->dpi, dc->dpi))
+    if ( FT_Set_Char_Size(dc->ftc->face,(int) (dc->ptsizex*64),(int) (dc->ptsizey*64), dc->dpi, dc->dpi))
  goto finish;
 
     massive_kludge = dc;
-    _FT_Load_Glyph(dc->ftc->face,dc->ftc->glyph_indeces[dc->sc->orig_pos],
+    FT_Load_Glyph(dc->ftc->face,dc->ftc->glyph_indeces[dc->sc->orig_pos],
 	    dc->is_bitmap ? (FT_LOAD_NO_BITMAP|FT_LOAD_TARGET_MONO) : FT_LOAD_NO_BITMAP);
 
  finish:
@@ -337,7 +337,7 @@ void DebuggerTerminate(struct debugger_context *dc) {
     if ( dc->ftc!=NULL )
 	FreeTypeFreeContext(dc->ftc);
     if ( dc->context!=NULL )
-	_FT_Done_FreeType( dc->context );
+	FT_Done_FreeType( dc->context );
     free(dc->watch);
     free(dc->oldpts);
     free(dc);
@@ -395,12 +395,12 @@ return( NULL );
     dc->ptsizex = ptsizex;
     dc->dpi = dpi;
     dc->is_bitmap = is_bitmap;
-    if ( _FT_Init_FreeType( &dc->context )) {
+    if ( FT_Init_FreeType( &dc->context )) {
 	free(dc);
 return( NULL );
     }
 
-    _FT_Set_Debug_Hook( dc->context,
+    FT_Set_Debug_Hook( dc->context,
 		       FT_DEBUG_HOOK_TRUETYPE,
 		       (FT_DebugHook_Func)PauseIns );
 
@@ -660,7 +660,7 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     }
     bitmap.buffer = gcalloc(bitmap.pitch*bitmap.rows,sizeof(uint8));
 
-    err = (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
+    err = (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
 
     for ( i=0; i<outline.n_points; ++i ) {
 	outline.points[i].x += xoff;

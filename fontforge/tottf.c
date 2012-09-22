@@ -1596,10 +1596,6 @@ return;
 #endif
 }
 
-/* Standard names for cff */
-extern const char *cffnames[];
-extern const int nStdStrings;
-
 static int storesid(struct alltabs *at,char *str) {
     int i;
     FILE *news;
@@ -2965,7 +2961,7 @@ static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at,
 	hhead->ascender = ymax + sf->pfminfo.hhead_ascent;
     else
 	hhead->ascender = sf->pfminfo.hhead_ascent;
-    if ( sf->pfminfo.hheadascent_add )
+    if ( sf->pfminfo.hheaddescent_add )
 	hhead->descender = ymin + sf->pfminfo.hhead_descent;
     else
 	hhead->descender = sf->pfminfo.hhead_descent;
@@ -4746,7 +4742,7 @@ static FILE *NeedsVariationSequenceTable(SplineFont *sf,int *vslen,EncMap *map) 
     struct altuni *altuni, *au;
     uint32 vsbuf[512], *vses = vsbuf;
     FILE *format14;
-    uint32 *avail = galloc(65536*sizeof(uint32));
+    uint32 *avail = NULL;
     enum vs_type {vs_default=(1<<24), vs_nondefault=(2<<24) };
     SplineChar *sc;
     uint32 here;

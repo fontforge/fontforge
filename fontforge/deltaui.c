@@ -844,12 +844,12 @@ static void QGDrawWindow(GWindow pixmap, QGData *qg, GEvent *e) {
 	    if ( !where.parent->open )
 		GDrawDrawLine(pixmap,r.x+qg->as/2,r.y+2,r.x+qg->as/2,r.y+qg->as-2,
 			0x000000);
-	    GDrawDrawBiText8(pixmap,r.x+qg->fh,y,where.parent->name,-1,NULL, 0x000000);
+	    GDrawDrawText8(pixmap,r.x+qg->fh,y,where.parent->name,-1, 0x000000);
 	} else {
 	    QuestionableGrid *q = &where.parent->first[where.offset];
 	    sprintf( buffer, _("\"%.40s\" size=%d point=%d (%d,%d) distance=%g"),
 		    q->sc->name, q->size, q->nearestpt, q->x, q->y, q->distance );
-	    GDrawDrawBiText8(pixmap,2+(depth+1)*qg->fh,y,buffer,-1,NULL, 0x000000);
+	    GDrawDrawText8(pixmap,2+(depth+1)*qg->fh,y,buffer,-1, 0x000000);
 	}
 	y += qg->fh;
 	QG_NextLine(&where);
@@ -989,11 +989,11 @@ static void StartDeltaDisplay(QGData *qg) {
 	rq.utf8_family_name = "Helvetica";
 	rq.point_size = 11;
 	rq.weight = 400;
-	valfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	valfont = GDrawInstanciateFont(gw,&rq);
 	valfont = GResourceFindFont("Validate.Font",valfont);
     }
     qg->font = valfont;
-    GDrawFontMetrics(qg->font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(gw,qg->font,&as,&ds,&ld);
     qg->fh = as+ds;
     qg->as = as;
 

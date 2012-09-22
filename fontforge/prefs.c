@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -75,7 +76,6 @@ extern char *BDFFoundry;
 extern char *TTFFoundry;
 extern char *xuid;
 extern char *SaveTablesPref;
-extern char *RecentFiles[RECENT_MAX];
 static char *LastFonts[2*RECENT_MAX];
 static int LastFontIndex=0, LastFontsPreserving=0;
 /*struct cvshows CVShows = { 1, 1, 1, 1, 1, 0, 1 };*/ /* in charview */
@@ -148,6 +148,7 @@ extern int allow_utf8_glyphnames;		/* in lookupui.c */
 extern int add_char_to_name_list;		/* in charinfo.c */
 extern int clear_tt_instructions_when_needed;	/* in cvundoes.c */
 extern int export_clipboard;			/* in cvundoes.c */
+extern int prefs_ensure_correct_extension;      /* in fontview.c */
 extern int default_cv_width;			/* in charview.c */
 extern int default_cv_height;			/* in charview.c */
 extern int interpCPsOnMotion;			/* in charview.c */
@@ -182,7 +183,7 @@ static int alwaysgenapple=false, alwaysgenopentype=false;
 static int gfc_showhidden, gfc_dirplace;
 static char *gfc_bookmarks=NULL;
 
-static int prefs_usecairo = true, prefs_usepango=true;
+static int prefs_usecairo = true;
 
 static int pointless;
 
@@ -287,10 +288,8 @@ static struct prefs_list {
 #ifndef _NO_LIBCAIRO
 	{ N_("UseCairoDrawing"), pr_bool, &prefs_usecairo, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
 #endif
-#ifndef _NO_LIBPANGO
-	{ N_("UsePangoDrawing"), pr_bool, &prefs_usepango, NULL, NULL, '\0', NULL, 0, N_("Use the pango library for text (if available)\nThis makes for prettier and handles complex scripts.\nBut it can slow things down on older machines.\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
-#endif
 	{ N_("ExportClipboard"), pr_bool, &export_clipboard, NULL, NULL, '\0', NULL, 0, N_( "If you are running an X11 clipboard manager you might want\nto turn this off. FF can put things into its internal clipboard\nwhich it cannot export to X11 (things like copying more than\none glyph in the fontview). If you have a clipboard manager\nrunning it will force these to be exported with consequent\nloss of data.") },
+	{ N_("EnsureCorrectSaveExtension"), pr_bool, &prefs_ensure_correct_extension, NULL, NULL, '\0', NULL, 0, N_( "When inputting a name in the Save or SaveAs dialogs, FontForge can ensure that the correct filename extension (SFD or SFDIR) is always used. This prevents you from accidentally naming your source file with a binary extension (such as .otf), out of habit.)") },
 	{ N_("AutoSaveFrequency"), pr_int, &AutoSaveFrequency, NULL, NULL, '\0', NULL, 0, N_( "The number of seconds between autosaves. If you set this to 0 there will be no autosaves.") },
 	PREFS_LIST_EMPTY
 },
@@ -474,9 +473,6 @@ static struct prefs_list {
 	{ "AnchorControlPixelSize", pr_int, &aa_pixelsize, NULL, NULL, '\0', NULL, 1, NULL },
 #ifdef _NO_LIBCAIRO
 	{ "UseCairoDrawing", pr_bool, &prefs_usecairo, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
-#endif
-#ifdef _NO_LIBPANGO
-	{ "UsePangoDrawing", pr_bool, &prefs_usepango, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
 #endif
 	{ "CV_B1Tool", pr_int, (int *) &cv_b1_tool, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "CV_CB1Tool", pr_int, (int *) &cv_cb1_tool, NULL, NULL, '\0', NULL, 1, NULL },
@@ -1162,7 +1158,6 @@ static void PrefsUI_LoadPrefs(void) {
     LoadNamelistDir(NULL);
     ProcessFileChooserPrefs();
     GDrawEnableCairo( prefs_usecairo );
-    GDrawEnablePango( prefs_usepango );
 }
 
 static void PrefsUI_SavePrefs(int not_if_script) {
@@ -1253,6 +1248,7 @@ return;
 
 struct pref_data {
     int done;
+    struct prefs_list* plist;
 };
 
 static int Prefs_ScriptBrowse(GGadget *g, GEvent *e) {
@@ -1803,7 +1799,6 @@ return( true );
 	if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
 	    fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
 	GDrawEnableCairo(prefs_usecairo);
-	GDrawEnablePango(prefs_usepango);
     }
 return( true );
 }
@@ -1822,7 +1817,9 @@ static int e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct pref_data *p = GDrawGetUserData(gw);
 	p->done = true;
-	MacFeatListFree(GGadgetGetUserData((GWidgetGetControl(gw,CID_Features))));
+	if(GWidgetGetControl(gw,CID_Features)) {
+	    MacFeatListFree(GGadgetGetUserData((GWidgetGetControl(gw,CID_Features))));
+	}
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("prefs.html");
@@ -1897,7 +1894,7 @@ void DoPrefs(void) {
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title = _("Preferences");
     pos.x = pos.y = 0;
-    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,290));
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,350));
     pos.height = GDrawPointsToPixels(NULL,line_max*26+69);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&p,&wattrs);
 
@@ -2374,7 +2371,7 @@ void DoPrefs(void) {
     rq.utf8_family_name = MONO_UI_FAMILIES;
     rq.point_size = 12;
     rq.weight = 400;
-    font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    font = GDrawInstanciateFont(gw,&rq);
     GGadgetSetFont(mfgcd[0].ret,font);
     GGadgetSetFont(msgcd[0].ret,font);
     GHVBoxFitWindow(mboxes[0].ret);
@@ -2507,3 +2504,379 @@ void DoXRes(void) {
     CVColInit();
     GResEdit(&fontview_ri,xdefs_filename,change_res_filename);
 }
+
+struct prefs_list pointer_dialog_list[] = {
+    { N_("ArrowMoveSize"), pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, N_("The number of em-units by which an arrow key will move a selected point") },
+    { N_("ArrowAccelFactor"), pr_real, &arrowAccelFactor, NULL, NULL, '\0', NULL, 0, N_("Holding down the Alt (or Meta) key will speed up arrow key motion by this factor") },
+    { N_("InterpolateCPsOnMotion"), pr_bool, &interpCPsOnMotion, NULL, NULL, '\0', NULL, 0, N_("When moving one end point of a spline but not the other\ninterpolate the control points between the two.") },
+    PREFS_LIST_EMPTY
+};
+
+static int PrefsSubSet_Ok(GGadget *g, GEvent *e) {
+    GWindow gw = GGadgetGetWindow(g);
+    struct pref_data *p = GDrawGetUserData(GGadgetGetWindow(g));
+    struct prefs_list* plist = p->plist;
+    struct prefs_list* pl = plist;
+    int i=0,j=0;
+    int err=0, enc;
+    const unichar_t *ret;
+    
+    p->done = true;
+
+    for ( i=0, pl=plist; pl->name; ++i, ++pl ) {
+	switch( pl->type ) {
+	case pr_int:
+	    *((int *) (pl->val)) = GetInt8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err);
+	    break;
+	case pr_unicode:
+	    *((int *) (pl->val)) = GetUnicodeChar8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err);
+	    break;
+	case pr_bool:
+	    *((int *) (pl->val)) = GGadgetIsChecked(GWidgetGetControl(gw,j*CID_PrefsOffset+CID_PrefsBase+i));
+	    break;
+	case pr_real:
+	    *((float *) (pl->val)) = GetReal8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err);
+	    break;
+	case pr_encoding:
+	{ Encoding *e;
+		e = ParseEncodingNameFromList(GWidgetGetControl(gw,j*CID_PrefsOffset+CID_PrefsBase+i));
+		if ( e!=NULL )
+		    *((Encoding **) (pl->val)) = e;
+		enc = 1;	/* So gcc doesn't complain about unused. It is unused, but why add the ifdef and make the code even messier? Sigh. icc complains anyway */
+	}
+	break;
+	case pr_namelist:
+	{ NameList *nl;
+	    GTextInfo *ti = GGadgetGetListItemSelected(GWidgetGetControl(gw,j*CID_PrefsOffset+CID_PrefsBase+i));
+	    if ( ti!=NULL ) {
+		char *name = u2utf8_copy(ti->text);
+		nl = NameListByName(name);
+		free(name);
+		if ( nl!=NULL && nl->uses_unicode && !allow_utf8_glyphnames)
+		    ff_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
+		else if ( nl!=NULL )
+		    *((NameList **) (pl->val)) = nl;
+	    }
+	}
+	break;
+	case pr_string: case pr_file:
+	    ret = _GGadgetGetTitle(GWidgetGetControl(gw,j*CID_PrefsOffset+CID_PrefsBase+i));
+	    if ( pl->val!=NULL ) {
+		free( *((char **) (pl->val)) );
+		*((char **) (pl->val)) = NULL;
+		if ( ret!=NULL && *ret!='\0' )
+		    *((char **) (pl->val)) = /* u2def_*/ cu_copy(ret);
+	    } else {
+		char *cret = cu_copy(ret);
+		(pl->set)(cret);
+		free(cret);
+	    }
+	    break;
+	case pr_angle:
+	    *((float *) (pl->val)) = GetReal8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err)/RAD2DEG;
+	    break;
+	}
+    }
+    
+    return( true );
+}
+
+static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* plist) {
+    struct prefs_list* pl = plist;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData *pgcd, gcd[20], sgcd[45], mgcd[3], mfgcd[9], msgcd[9];
+    GGadgetCreateData mfboxes[3], *mfarray[14];
+    GGadgetCreateData mpboxes[3];
+    GGadgetCreateData sboxes[2];
+    GGadgetCreateData mboxes[3], mboxes2[5], *varray[5], *harray[8];
+    GTextInfo *plabel, label[20], slabel[45], mflabels[9], mslabels[9];
+    GTabInfo aspects[TOPICS+5], subaspects[3];
+    GGadgetCreateData **hvarray, boxes[2*TOPICS];
+    struct pref_data p;
+    int line,line_max = 3;
+    int i = 0, gc = 0, ii, y, si=0, k=0;
+    char buf[20];
+    char *tempstr;
+
+    PrefsInit();
+    MfArgsInit();
+
+    line_max=0;
+    for ( i=0, pl=plist; pl->name; ++i, ++pl ) {
+	    ++line_max;
+    }
+
+    int itemCount = 100;
+    pgcd = gcalloc(itemCount,sizeof(GGadgetCreateData));
+    plabel = gcalloc(itemCount,sizeof(GTextInfo));
+    hvarray = gcalloc((itemCount)*5,sizeof(GGadgetCreateData *));
+    memset(&p,'\0',sizeof(p));
+    memset(&wattrs,0,sizeof(wattrs));
+    memset(sgcd,0,sizeof(sgcd));
+    memset(slabel,0,sizeof(slabel));
+    memset(&mfgcd,0,sizeof(mfgcd));
+    memset(&msgcd,0,sizeof(msgcd));
+    memset(&mflabels,0,sizeof(mflabels));
+    memset(&mslabels,0,sizeof(mslabels));
+    memset(&mfboxes,0,sizeof(mfboxes));
+    memset(&mpboxes,0,sizeof(mpboxes));
+    memset(&sboxes,0,sizeof(sboxes));
+    memset(&boxes,0,sizeof(boxes));
+    memset(&mgcd,0,sizeof(mgcd));
+    memset(&mgcd,0,sizeof(mgcd));
+    memset(&subaspects,'\0',sizeof(subaspects));
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+    memset(&aspects,'\0',sizeof(aspects));
+    GCDFillMacFeat(mfgcd,mflabels,250,default_mac_feature_map, true, mfboxes, mfarray);
+
+    p.plist = plist;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict|wam_isdlg;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.is_dlg = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = windowTitle;
+    pos.x = pos.y = 0;
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,340));
+    pos.height = GDrawPointsToPixels(NULL,line_max*26+25);
+    gw = GDrawCreateTopWindow(NULL,&pos,e_h,&p,&wattrs);
+
+
+    
+    for ( i=0, pl=plist; pl->name; ++i, ++pl ) {
+
+	    plabel[gc].text = (unichar_t *) _(pl->name);
+	    plabel[gc].text_is_1byte = true;
+	    pgcd[gc].gd.label = &plabel[gc];
+	    pgcd[gc].gd.mnemonic = '\0';
+	    pgcd[gc].gd.popup_msg = (unichar_t *) 0;//_(pl->popup);
+	    pgcd[gc].gd.pos.x = 8;
+	    pgcd[gc].gd.pos.y = y + 6;
+	    pgcd[gc].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	    pgcd[gc++].creator = GLabelCreate;
+	    hvarray[si++] = &pgcd[gc-1];
+
+	    plabel[gc].text_is_1byte = true;
+	    pgcd[gc].gd.label = &plabel[gc];
+	    pgcd[gc].gd.mnemonic = '\0';
+	    pgcd[gc].gd.popup_msg = (unichar_t *) 0;//_(pl->popup);
+	    pgcd[gc].gd.pos.x = 110;
+	    pgcd[gc].gd.pos.y = y;
+	    pgcd[gc].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	    pgcd[gc].data = pl;
+	    pgcd[gc].gd.cid = k*CID_PrefsOffset+CID_PrefsBase+i;
+	    switch ( pl->type ) {
+	      case pr_bool:
+		plabel[gc].text = (unichar_t *) _("On");
+		pgcd[gc].gd.pos.y += 3;
+		pgcd[gc++].creator = GRadioCreate;
+		hvarray[si++] = &pgcd[gc-1];
+		pgcd[gc] = pgcd[gc-1];
+		pgcd[gc].gd.pos.x += 50;
+		pgcd[gc].gd.cid = 0;
+		pgcd[gc].gd.label = &plabel[gc];
+		plabel[gc].text = (unichar_t *) _("Off");
+		plabel[gc].text_is_1byte = true;
+		hvarray[si++] = &pgcd[gc];
+		hvarray[si++] = GCD_Glue;
+		if ( *((int *) pl->val))
+		    pgcd[gc-1].gd.flags |= gg_cb_on;
+		else
+		    pgcd[gc].gd.flags |= gg_cb_on;
+		++gc;
+		y += 22;
+	      break;
+	      case pr_int:
+		sprintf(buf,"%d", *((int *) pl->val));
+		plabel[gc].text = (unichar_t *) copy( buf );
+		pgcd[gc++].creator = GTextFieldCreate;
+		hvarray[si++] = &pgcd[gc-1];
+		hvarray[si++] = GCD_Glue; hvarray[si++] = GCD_Glue;
+		y += 26;
+	      break;
+	      case pr_unicode:
+		/*sprintf(buf,"U+%04x", *((int *) pl->val));*/
+		{ char *pt; pt = buf; pt = utf8_idpb(pt, *((int *) pl->val)); *pt='\0'; }
+		plabel[gc].text = (unichar_t *) copy( buf );
+		pgcd[gc++].creator = GTextFieldCreate;
+		hvarray[si++] = &pgcd[gc-1];
+		hvarray[si++] = GCD_Glue; hvarray[si++] = GCD_Glue;
+		y += 26;
+	      break;
+	      case pr_real:
+		sprintf(buf,"%g", *((float *) pl->val));
+		plabel[gc].text = (unichar_t *) copy( buf );
+		pgcd[gc++].creator = GTextFieldCreate;
+		hvarray[si++] = &pgcd[gc-1];
+		hvarray[si++] = GCD_Glue; hvarray[si++] = GCD_Glue;
+		y += 26;
+	      break;
+	      case pr_encoding:
+		pgcd[gc].gd.u.list = GetEncodingTypes();
+		pgcd[gc].gd.label = EncodingTypesFindEnc(pgcd[gc].gd.u.list,
+			*(Encoding **) pl->val);
+		for ( ii=0; pgcd[gc].gd.u.list[ii].text!=NULL ||pgcd[gc].gd.u.list[ii].line; ++ii )
+		    if ( pgcd[gc].gd.u.list[ii].userdata!=NULL &&
+			    (strcmp(pgcd[gc].gd.u.list[ii].userdata,"Compacted")==0 ||
+			     strcmp(pgcd[gc].gd.u.list[ii].userdata,"Original")==0 ))
+			pgcd[gc].gd.u.list[ii].disabled = true;
+		pgcd[gc].creator = GListFieldCreate;
+		pgcd[gc].gd.pos.width = 160;
+		if ( pgcd[gc].gd.label==NULL ) pgcd[gc].gd.label = &encodingtypes[0];
+		++gc;
+		hvarray[si++] = &pgcd[gc-1];
+		hvarray[si++] = GCD_ColSpan; hvarray[si++] = GCD_ColSpan;
+		y += 28;
+	      break;
+	      case pr_namelist:
+	        { char **nlnames = AllNamelistNames();
+		int cnt;
+		GTextInfo *namelistnames;
+		for ( cnt=0; nlnames[cnt]!=NULL; ++cnt);
+		namelistnames = gcalloc(cnt+1,sizeof(GTextInfo));
+		for ( cnt=0; nlnames[cnt]!=NULL; ++cnt) {
+		    namelistnames[cnt].text = (unichar_t *) nlnames[cnt];
+		    namelistnames[cnt].text_is_1byte = true;
+		    if ( strcmp(_((*(NameList **) (pl->val))->title),nlnames[cnt])==0 ) {
+			namelistnames[cnt].selected = true;
+			pgcd[gc].gd.label = &namelistnames[cnt];
+		    }
+		}
+		pgcd[gc].gd.u.list = namelistnames;
+		pgcd[gc].creator = GListButtonCreate;
+		pgcd[gc].gd.pos.width = 160;
+		++gc;
+		hvarray[si++] = &pgcd[gc-1];
+		hvarray[si++] = GCD_ColSpan; hvarray[si++] = GCD_ColSpan;
+		y += 28;
+	      } break;
+	      case pr_string: case pr_file:
+		if ( pl->set==SetAutoTraceArgs || ((char **) pl->val)==&mf_args )
+		    pgcd[gc].gd.pos.width = 160;
+		if ( pl->val!=NULL )
+		    tempstr = *((char **) (pl->val));
+		else
+		    tempstr = (char *) ((pl->get)());
+		if ( tempstr!=NULL )
+		    plabel[gc].text = /* def2u_*/ uc_copy( tempstr );
+		else if ( ((char **) pl->val)==&BDFFoundry )
+		    plabel[gc].text = /* def2u_*/ uc_copy( "FontForge" );
+		else
+		    plabel[gc].text = /* def2u_*/ uc_copy( "" );
+		plabel[gc].text_is_1byte = false;
+		pgcd[gc++].creator = GTextFieldCreate;
+		hvarray[si++] = &pgcd[gc-1];
+		if ( pl->type==pr_file ) {
+		    pgcd[gc] = pgcd[gc-1];
+		    pgcd[gc-1].gd.pos.width = 140;
+		    hvarray[si++] = GCD_ColSpan;
+		    pgcd[gc].gd.pos.x += 145;
+		    pgcd[gc].gd.cid += CID_PrefsBrowseOffset;
+		    pgcd[gc].gd.label = &plabel[gc];
+		    plabel[gc].text = (unichar_t *) "...";
+		    plabel[gc].text_is_1byte = true;
+		    pgcd[gc].gd.handle_controlevent = Prefs_BrowseFile;
+		    pgcd[gc++].creator = GButtonCreate;
+		    hvarray[si++] = &pgcd[gc-1];
+		} else if ( pl->set==SetAutoTraceArgs || ((char **) pl->val)==&mf_args ) {
+		    hvarray[si++] = GCD_ColSpan;
+		    hvarray[si++] = GCD_Glue;
+		} else {
+		    hvarray[si++] = GCD_Glue;
+		    hvarray[si++] = GCD_Glue;
+		}
+		y += 26;
+		if ( pl->val==NULL )
+		    free(tempstr);
+	      break;
+	      case pr_angle:
+		sprintf(buf,"%g", *((float *) pl->val) * RAD2DEG);
+		plabel[gc].text = (unichar_t *) copy( buf );
+		pgcd[gc++].creator = GTextFieldCreate;
+		hvarray[si++] = &pgcd[gc-1];
+		plabel[gc].text = (unichar_t *) U_("°");
+		plabel[gc].text_is_1byte = true;
+		pgcd[gc].gd.label = &plabel[gc];
+		pgcd[gc].gd.pos.x = pgcd[gc-1].gd.pos.x+gcd[gc-1].gd.pos.width+2; pgcd[gc].gd.pos.y = pgcd[gc-1].gd.pos.y; 
+		pgcd[gc].gd.flags = gg_enabled|gg_visible;
+		pgcd[gc++].creator = GLabelCreate;
+		hvarray[si++] = &pgcd[gc-1];
+		hvarray[si++] = GCD_Glue;
+		y += 26;
+	      break;
+	    }
+	    ++line;
+	    hvarray[si++] = NULL;
+	
+    }
+
+    harray[4] = 0;
+    harray[5] = 0;
+    harray[6] = 0;
+    harray[7] = 0;
+
+    gcd[gc].gd.pos.x = 30-3;
+    gcd[gc].gd.pos.y = y+5-3;
+    gcd[gc].gd.pos.width = -1;
+    gcd[gc].gd.pos.height = 0;
+    gcd[gc].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[gc].text = (unichar_t *) _("_OK");
+    label[gc].text_is_1byte = true;
+    label[gc].text_in_resource = true;
+    gcd[gc].gd.mnemonic = 'O';
+    gcd[gc].gd.label = &label[gc];
+    gcd[gc].gd.handle_controlevent = PrefsSubSet_Ok;
+    gcd[gc++].creator = GButtonCreate;
+    harray[0] = GCD_Glue; harray[1] = &gcd[gc-1]; harray[2] = GCD_Glue; harray[3] = GCD_Glue;
+
+    
+    memset(mboxes,0,sizeof(mboxes));
+    memset(mboxes2,0,sizeof(mboxes2));
+
+    mboxes[2].gd.pos.x = 2;
+    mboxes[2].gd.pos.y = 20;
+    mboxes[2].gd.flags = gg_enabled|gg_visible;
+    mboxes[2].gd.u.boxelements = harray;
+    mboxes[2].creator = GHBoxCreate;
+    
+    mboxes[0].gd.pos.x = mboxes[0].gd.pos.y = 2;
+    mboxes[0].gd.flags = gg_enabled|gg_visible;
+    mboxes[0].gd.u.boxelements = hvarray;
+    mboxes[0].creator = GHVGroupCreate;
+
+    varray[0] = &mboxes[0];
+    varray[1] = &mboxes[2];
+    varray[2] = 0;
+    varray[3] = 0;
+    varray[4] = 0;
+
+    /* varray[0] = &mboxes[2]; */
+    /* varray[1] = 0;//&mboxes[2]; */
+    /* varray[2] = 0; */
+    /* varray[3] = 0; */
+    /* varray[4] = 0; */
+    
+    mboxes2[0].gd.pos.x = 4;
+    mboxes2[0].gd.pos.y = 4;
+    mboxes2[0].gd.flags = gg_enabled|gg_visible;
+    mboxes2[0].gd.u.boxelements = varray;
+    mboxes2[0].creator = GVBoxCreate;
+
+    GGadgetsCreate(gw,mboxes2);
+    
+
+    GDrawSetVisible(gw,true);
+    while ( !p.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+}
+
+
+void PointerDlg(CharView *cv) {
+    PrefsSubSetDlg( cv, _("Arrow Options"), pointer_dialog_list );
+}
+

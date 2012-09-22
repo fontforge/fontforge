@@ -34,6 +34,7 @@
 #include <ctype.h>
 
 #ifdef _NO_LIBPNG
+
 SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags, char *filename,struct fontdict *fd) {
     ff_post_error(_("WOFF not supported"), _("This version of fontforge cannot handle WOFF files. You need to recompile it with libpng and zlib") );
 return( NULL );
@@ -54,71 +55,10 @@ return( 1 );
 int CanWoff(void) {
 return( 0 );
 }
-#else
-# if !defined(_STATIC_LIBPNG) && !defined(NODYNAMIC)
-#  include <dynamic.h>
-# endif
+
+#else /* ! _NO_LIBPNG */
+
 # include <zlib.h>
-
-# if !defined(_STATIC_LIBPNG) && !defined(NODYNAMIC)
-
-static DL_CONST void *zlib=NULL;
-static int (*_inflateInit_)(z_stream *,const char *,int);
-static int (*_inflate)(z_stream *,int flags);
-static int (*_inflateEnd)(z_stream *);
-static int (*_deflateInit_)(z_stream *,int level, const char *,int);
-static int (*_deflate)(z_stream *,int flags);
-static int (*_deflateEnd)(z_stream *);
-static int (*_uncompress)(Bytef *, uLongf *, const Bytef *, uLong);
-static int (*_compress)(Bytef *, uLongf *, const Bytef *, uLong);
-
-static int haszlib(void) {
-    if ( zlib!=NULL )
-return( true );
-
-    if ( (zlib = dlopen("libz" SO_EXT,RTLD_GLOBAL|RTLD_LAZY))==NULL ) {
-	LogError( "%s", dlerror());
-return( false );
-    }
-    _inflateInit_ = (int (*)(z_stream *,const char *,int)) dlsym(zlib,"inflateInit_");
-    _inflate = (int (*)(z_stream *,int )) dlsym(zlib,"inflate");
-    _inflateEnd = (int (*)(z_stream *)) dlsym(zlib,"inflateEnd");
-    _deflateInit_ = (int (*)(z_stream *,int,const char *,int)) dlsym(zlib,"deflateInit_");
-    _deflate = (int (*)(z_stream *,int )) dlsym(zlib,"deflate");
-    _deflateEnd = (int (*)(z_stream *)) dlsym(zlib,"deflateEnd");
-    _uncompress = (int (*)(Bytef *, uLongf *, const Bytef *, uLong)) dlsym(zlib,"uncompress");
-    _compress = (int (*)(Bytef *, uLongf *, const Bytef *, uLong)) dlsym(zlib,"compress");
-    if ( _inflateInit_==NULL || _inflate==NULL || _inflateEnd==NULL ||
-	    _deflateInit_==NULL || _deflate==NULL || _deflateEnd==NULL ) {
-	LogError( "%s", dlerror());
-	dlclose(zlib); zlib=NULL;
-return( false );
-    }
-return( true );
-}
-
-/* Grump. zlib defines this as a macro */
-#define _inflateInit(strm) \
-        _inflateInit_((strm),                ZLIB_VERSION, sizeof(z_stream))
-#define _deflateInit(strm,level) \
-        _deflateInit_((strm),level,          ZLIB_VERSION, sizeof(z_stream))
-
-# else
-/* Either statically linked, or loaded at start up */
-static int haszlib(void) {
-return( true );
-}
-
-#define _inflateInit	inflateInit
-#define _inflate	inflate
-#define _inflateEnd	inflateEnd
-#define _deflateInit	deflateInit
-#define _deflate	deflate
-#define _deflateEnd	deflateEnd
-#define _compress	compress
-#define _uncompress	uncompress
-
-# endif /* !defined(_STATIC_LIBPNG) && !defined(NODYNAMIC) */
 
 static void copydata(FILE *to,int off_to,FILE *from,int off_from, int len) {
     int ch, i;
@@ -146,13 +86,13 @@ static int decompressdata(FILE *to,int off_to,FILE *from,int off_from,
     fseek(to  ,off_to  ,SEEK_SET);
     fseek(from,off_from,SEEK_SET);
     memset(&strm,0,sizeof(strm));
-    ret = _inflateInit(&strm);
+    ret = inflateInit(&strm);
     if ( ret!=Z_OK )
 return( true );
 
     do {
 	if ( len<=0 ) {
-            (void)_inflateEnd(&strm);
+            (void)inflateEnd(&strm);
 return( true );
         }
 	amount = len;
@@ -161,7 +101,7 @@ return( true );
         strm.avail_in = fread(in, 1, amount, from);
 	len -= strm.avail_in;
         if (ferror(from)) {
-            (void)_inflateEnd(&strm);
+            (void)inflateEnd(&strm);
 return( true );
         }
         if (strm.avail_in == 0)
@@ -170,19 +110,19 @@ return( true );
         do {
             strm.avail_out = CHUNK;
             strm.next_out = out;
-            ret = _inflate(&strm, Z_NO_FLUSH);
+            ret = inflate(&strm, Z_NO_FLUSH);
 	    if ( ret!=Z_OK && ret!=Z_STREAM_END ) {
-		(void)_inflateEnd(&strm);
+		(void)inflateEnd(&strm);
 return( true );
 	    }
 	    amount = CHUNK - strm.avail_out;
 	    if ( fwrite(out,1,amount,to)!= amount || ferror(to) ) {
-		(void)_inflateEnd(&strm);
+		(void)inflateEnd(&strm);
 return( true );
 	    }
 	} while ( strm.avail_out==0 );
     } while ( ret!=Z_STREAM_END );
-    (void)_inflateEnd(&strm);
+    (void)inflateEnd(&strm);
     if ( uncomplen!=strm.total_out ) {
 	LogError(_("Decompressed length did not match expected length for table"));
 return( true );
@@ -207,7 +147,7 @@ return(0);
 
     fseek(from,off_from,SEEK_SET);
     memset(&strm,0,sizeof(strm));
-    ret = _deflateInit(&strm,Z_DEFAULT_COMPRESSION);
+    ret = deflateInit(&strm,Z_DEFAULT_COMPRESSION);
     if ( ret!=Z_OK ) {
 	fprintf( stderr,"Compression initialization failed.\n" );
 return(0);
@@ -216,7 +156,7 @@ return(0);
 
     do {
 	if ( len<=0 ) {
-            (void)_deflateEnd(&strm);
+            (void)deflateEnd(&strm);
     break;
         }
 	amount = len;
@@ -225,7 +165,7 @@ return(0);
         strm.avail_in = fread(in, 1, amount, from);
 	len -= strm.avail_in;
         if (ferror(from)) {
-            (void)_deflateEnd(&strm);
+            (void)deflateEnd(&strm);
 	    fprintf( stderr, "IO error.\n" );
     break;
         }
@@ -235,16 +175,16 @@ return(0);
         do {
             strm.avail_out = CHUNK;
             strm.next_out = out;
-            ret = _deflate(&strm, len==0 ? Z_FINISH : Z_NO_FLUSH);
+            ret = deflate(&strm, len==0 ? Z_FINISH : Z_NO_FLUSH);
 	    if ( ret==Z_STREAM_ERROR ) {
-		(void)_deflateEnd(&strm);
+		(void)deflateEnd(&strm);
 		fprintf( stderr, "Compression failed somehow.\n");
 		err = 1;
 	break;
 	    }
 	    amount = CHUNK - strm.avail_out;
 	    if ( fwrite(out,1,amount,tmp)!= amount || ferror(tmp) ) {
-		(void)_deflateEnd(&strm);
+		(void)deflateEnd(&strm);
 		fprintf( stderr, "IO Error.\n");
 		err=1;
 	break;
@@ -253,7 +193,7 @@ return(0);
 	if ( err )
     break;
     } while ( ret!=Z_STREAM_END );
-    (void)_deflateEnd(&strm);
+    (void)deflateEnd(&strm);
 
     if ( strm.total_out>=uncompLen ) {
 	/* Didn't actually make the data smaller, so store uncompressed */
@@ -281,11 +221,6 @@ SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags, char *fil
     int here, next, tab_start;
     int head_pos = -1;
     SplineFont *sf;
-
-    if ( !haszlib()) {
-	ff_post_error(_("WOFF not supported"), _("Could not find the zlib library which is needed to understand WOFF") );
-return( NULL );
-    }
 
     fseek(woff,0,SEEK_END);
     len = ftell(woff);
@@ -412,7 +347,7 @@ return( NULL );
 	fread(temp,1,metaLenCompressed,woff);
 	sf->woffMetadata = galloc(metaLenUncompressed+1);
 	sf->woffMetadata[metaLenUncompressed] ='\0';
-	_uncompress(sf->woffMetadata,&len,temp,metaLenCompressed);
+	uncompress(sf->woffMetadata,&len,temp,metaLenCompressed);
 	sf->woffMetadata[len] ='\0';
 	free(temp);
     }
@@ -431,11 +366,6 @@ int _WriteWOFFFont(FILE *woff,SplineFont *sf, enum fontformat format,
     int compLen, uncompLen, newoffset;
     int tag, checksum, offset;
     int tab_start, here;
-
-    if ( !haszlib()) {
-	ff_post_error(_("WOFF not supported"), _("Could not find the zlib library which is needed to understand WOFF") );
-return( 0 );
-    }
 
     if ( major==woffUnset ) {
 	struct ttflangname *useng;
@@ -534,7 +464,7 @@ return( ret );
 	uLongf complen = 2*uncomplen;
 	char *temp=galloc(complen+1);
 	newoffset = ftell(woff);
-	_compress(temp,&complen,sf->woffMetadata,uncomplen);
+	compress(temp,&complen,sf->woffMetadata,uncomplen);
 	fwrite(temp,1,complen,woff);
 	free(temp);
 	if ( (ftell(woff)&3)!=0 ) {
@@ -579,6 +509,7 @@ return( ret );
 }
 
 int CanWoff(void) {
-return( haszlib());
+    return( true );
 }
-#endif		/* NOLIBPNG */
+
+#endif /* ! _NO_LIBPNG */

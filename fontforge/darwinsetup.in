@@ -1,0 +1,94 @@
+#! @SHELL@
+
+case "@HOST@" in
+
+*-apple-darwin*)
+
+# This temp directory will be removed by "make clean".
+tmpdir="@builddir@/darwinsetup_tmpdir"
+mkdir -p "${tmpdir}"
+
+GREP="@GREP@"
+SED="@SED@"
+PLUTIL="@PLUTIL@"
+
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+bindir="@bindir@"
+
+prefsdir=~/Library/Preferences
+
+#Add FontForge to the X11 applications menu, so that mac users don't have
+# to deal with xterms or messing around with paths
+#Mac OS/X 10.1 did not have plutil (it didn't have X11 either)
+if test -d "${prefsdir}" -a x"${PLUTIL}" != x":" ; then
+  if test \! -e "${prefsdir}"/com.apple.x11.plist ; then
+    cat <<EOF >"${prefsdir}"/com.apple.x11.plist
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>apps_menu</key>
+	<array>
+		<array>
+			<string>Terminal</string>
+			<string>xterm</string>
+			<string>n</string>
+		</array>
+		<array>
+			<string>FontForge</string>
+			<string>${bindir}/fontforge</string>
+			<string>f</string>
+		</array>
+	</array>
+</dict>
+</plist>
+EOF
+    ${PLUTIL} -convert binary1 "${prefsdir}"/com.apple.x11.plist
+  elif ${GREP} -q fontforge "${prefsdir}"/com.apple.x11.plist ; then
+    cat </dev/null >/dev/null
+# It's already in the menu, no need to add it
+  else
+    if ${GREP} -q "xml version=" "${prefsdir}"/com.apple.x11.plist ; then
+# It's already in xml format
+      cp "${prefsdir}"/com.apple.x11.plist "${tmpdir}"/x11.xml
+    else
+      ${PLUTIL} -convert xml1 -o "${tmpdir}"/x11.xml "${prefsdir}"/com.apple.x11.plist
+    fi
+    if ${GREP} -q apps_menu "${prefsdir}"/com.apple.x11.plist ; then
+      cat >"${tmpdir}"/fontforge-sed-script <<EOF
+/apps_menu/ { N
+a \\
+		<array>\\
+			<string>FontForge</string>\\
+			<string>${bindir}/fontforge</string>\\
+			<string>f</string>\\
+		</array>
+}
+EOF
+    else
+      cat >"${tmpdir}"/fontforge-sed-script <<EOF
+/<dict/ a \\
+	<key>apps_menu</key>\\
+	<array>\\
+		<array>\\
+			<string>Terminal</string>\\
+			<string>xterm</string>\\
+			<string>n</string>\\
+		</array>\\
+		<array>\\
+			<string>FontForge</string>\\
+			<string>${bindir}/fontforge</string>\\
+			<string>f</string>\\
+		</array>\\
+	</array>
+EOF
+    fi
+    ${SED} -f "${tmpdir}"/fontforge-sed-script "${tmpdir}"/x11.xml >"${tmpdir}"/x11_1.xml
+    ${PLUTIL} -convert binary1 -o "${prefsdir}"/com.apple.x11.plist "${tmpdir}"/x11_1.xml
+    #rm -f "${tmpdir}"/x11_1.xml "${tmpdir}"/fontforge-sed-script "${tmpdir}"/x11.xml
+  fi
+fi
+
+ ;;
+esac

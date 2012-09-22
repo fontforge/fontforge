@@ -57,31 +57,41 @@ typedef struct textunit {
     struct textunit *next;
 } TextUnit;
 
+struct filledsplines {
+    SplineSet *splines;
+    unsigned int isfillable: 1;		/* All splinesets are closed */
+    Pen fill, stroke;			/* A value of 0xffffffff means do not fill or stroke */
+    float stroke_width;
+    enum linejoin join;
+    enum linecap cap;
+    real transform[6];			/* The stroke may be quite different depending on the transformation (ie. ellipse not circle, rotated, etc) */
+};
+
+struct text {
+    TextUnit *text;
+    real transform[6];
+    struct entity *bound;
+};
+
+struct image {
+    GImage *image;
+    real transform[6];
+    Color col;				/* that gets poured into imagemasks */
+};
+
+struct group {
+    struct entity *group;
+};
+
+enum entity_type { et_splines, et_text, et_image, et_group };
+
 typedef struct entity {
-    enum entity_type { et_splines, et_text, et_image, et_group } type;
+    enum entity_type type;
     union {
-	struct filledsplines {
-	    SplineSet *splines;
-	    unsigned int isfillable: 1;		/* All splinesets are closed */
-	    Pen fill, stroke;			/* A value of 0xffffffff means do not fill or stroke */
-	    float stroke_width;
-	    enum linejoin join;
-	    enum linecap cap;
-	    real transform[6];			/* The stroke may be quite different depending on the transformation (ie. ellipse not circle, rotated, etc) */
-	} splines;
-	struct text {
-	    TextUnit *text;
-	    real transform[6];
-	    struct entity *bound;
-	} text;
-	struct image {
-	    GImage *image;
-	    real transform[6];
-	    Color col;				/* that gets poured into imagemasks */
-	} image;
-	struct group {
-	    struct entity *group;
-	} group;
+	struct filledsplines splines;
+	struct text text;
+	struct image image;
+	struct group group;
     } u;
     SplineSet *clippath;
     DBounds bb;
@@ -140,15 +150,19 @@ struct pskeydict {
     struct pskeyval *entries;
 };
 
+enum pstype { ps_void, ps_num, ps_bool, ps_string, ps_instr, ps_lit,
+	      ps_mark, ps_array, ps_dict };
+
+union vals {
+    real val;
+    int tf;
+    char *str;
+    struct pskeydict dict;		/* and for arrays too */
+};
+
 struct psstack {
-    enum pstype { ps_void, ps_num, ps_bool, ps_string, ps_instr, ps_lit,
-		  ps_mark, ps_array, ps_dict } type;
-    union vals {
-	real val;
-	int tf;
-	char *str;
-	struct pskeydict dict;		/* and for arrays too */
-    } u;
+    enum pstype type;
+    union vals u;
 };
 
 struct pskeyval {

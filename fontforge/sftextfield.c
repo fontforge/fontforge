@@ -388,15 +388,9 @@ static void SFTextAreaGrabPrimarySelection(SFTextArea *st) {
 
     GDrawGrabSelection(st->g.base,sn_primary);
     st->sel_start = ss; st->sel_end = se;
-#ifdef UNICHAR_16
-    GDrawAddSelectionType(st->g.base,sn_primary,"text/plain;charset=ISO-10646-UCS-2",st,st->sel_end-st->sel_start,
-	    sizeof(unichar_t),
-	    genunicodedata,noop);
-#else
     GDrawAddSelectionType(st->g.base,sn_primary,"text/plain;charset=ISO-10646-UCS-4",st,st->sel_end-st->sel_start,
 	    sizeof(unichar_t),
 	    genunicodedata,noop);
-#endif
     GDrawAddSelectionType(st->g.base,sn_primary,"UTF8_STRING",st,3*(st->sel_end-st->sel_start),
 	    sizeof(unichar_t),
 	    genutf8data,noop);
@@ -407,15 +401,9 @@ static void SFTextAreaGrabPrimarySelection(SFTextArea *st) {
 static void SFTextAreaGrabDDSelection(SFTextArea *st) {
 
     GDrawGrabSelection(st->g.base,sn_drag_and_drop);
-#ifdef UNICHAR_16
-    GDrawAddSelectionType(st->g.base,sn_drag_and_drop,"text/plain;charset=ISO-10646-UCS-2",st,st->sel_end-st->sel_start,
-	    sizeof(unichar_t),
-	    ddgenunicodedata,noop);
-#else
     GDrawAddSelectionType(st->g.base,sn_drag_and_drop,"text/plain;charset=ISO-10646-UCS-4",st,st->sel_end-st->sel_start,
 	    sizeof(unichar_t),
 	    ddgenunicodedata,noop);
-#endif
     GDrawAddSelectionType(st->g.base,sn_drag_and_drop,"STRING",st,st->sel_end-st->sel_start,sizeof(char),
 	    ddgenlocaldata,noop);
 }
@@ -425,21 +413,14 @@ static void SFTextAreaGrabSelection(SFTextArea *st, enum selnames sel ) {
     if ( st->sel_start!=st->sel_end ) {
 	unichar_t *temp;
 	char *ctemp;
-#ifndef UNICHAR_16
 	int i;
 	uint16 *u2temp;
-#endif
 
 	GDrawGrabSelection(st->g.base,sel);
 	temp = galloc((st->sel_end-st->sel_start + 2)*sizeof(unichar_t));
 	temp[0] = 0xfeff;		/* KDE expects a byte order flag */
 	u_strncpy(temp+1,st->li.text+st->sel_start,st->sel_end-st->sel_start);
 	ctemp = u2utf8_copy(temp);
-#ifdef UNICHAR_16
-	GDrawAddSelectionType(st->g.base,sel,"text/plain;charset=ISO-10646-UCS-2",temp,u_strlen(temp),
-		sizeof(unichar_t),
-		NULL,NULL);
-#else
 	GDrawAddSelectionType(st->g.base,sel,"text/plain;charset=ISO-10646-UCS-4",temp,u_strlen(temp),
 		sizeof(unichar_t),
 		NULL,NULL);
@@ -450,7 +431,6 @@ static void SFTextAreaGrabSelection(SFTextArea *st, enum selnames sel ) {
 	GDrawAddSelectionType(st->g.base,sel,"text/plain;charset=ISO-10646-UCS-2",u2temp,u_strlen(temp),
 		2,
 		NULL,NULL);
-#endif
 	GDrawAddSelectionType(st->g.base,sel,"UTF8_STRING",ctemp,strlen(ctemp),sizeof(char),
 		NULL,NULL);
 	GDrawAddSelectionType(st->g.base,sel,"STRING",u2def_copy(temp),u_strlen(temp),sizeof(char),
@@ -545,19 +525,6 @@ static void SFTextAreaPaste(SFTextArea *st,enum selnames sel) {
 	    SFTextArea_Replace(st,temp);
 	    free(ctemp); free(temp);
 	}
-#ifdef UNICHAR_16
-    } else if ( GDrawSelectionHasType(st->g.base,sel,"Unicode") ||
-	    GDrawSelectionHasType(st->g.base,sel,"text/plain;charset=ISO-10646-UCS-2")) {
-	unichar_t *temp;
-	int32 len;
-	temp = GDrawRequestSelection(st->g.base,sel,"Unicode",&len);
-	if ( temp==NULL || len==0 )
-	    temp = GDrawRequestSelection(st->g.base,sel,"text/plain;charset=ISO-10646-UCS-2",&len);
-	/* Bug! I don't handle byte reversed selections. But I don't think there should be any anyway... */
-	if ( temp!=NULL )
-	    SFTextArea_Replace(st,temp[0]==0xfeff?temp+1:temp);
-	free(temp);
-#else
     } else if ( GDrawSelectionHasType(st->g.base,sel,"text/plain;charset=ISO-10646-UCS-4")) {
 	unichar_t *temp;
 	int32 len;
@@ -584,7 +551,6 @@ static void SFTextAreaPaste(SFTextArea *st,enum selnames sel) {
 	    free(temp);
 	}
 	free(temp2);
-#endif
     } else if ( GDrawSelectionHasType(st->g.base,sel,"STRING")) {
 	unichar_t *temp; char *ctemp;
 	int32 len;
@@ -2161,7 +2127,7 @@ static void SFTextAreaInit() {
     GGadgetInit();
     GDrawDecomposeFont(_ggadget_default_font,&rq);
     rq.utf8_family_name = MONO_UI_FAMILIES;
-    sftextarea_font = GDrawInstanciateFont(screen_display,&rq);
+    sftextarea_font = GDrawInstanciateFont(NULL,&rq);
     sftextarea_font = GResourceFindFont("SFTextArea.Font",sftextarea_font);
     _GGadgetCopyDefaultBox(&sftextarea_box);
     sftextarea_box.padding = 3;
@@ -2219,8 +2185,8 @@ static void SFTextAreaFit(SFTextArea *st) {
 
     { /* This doesn't mean much of anything */
 	FontInstance *old = GDrawSetFont(st->g.base,st->font);
-	(void) GDrawGetTextBounds(st->g.base,st->li.text, -1, NULL, &bounds);
-	GDrawFontMetrics(st->font,&as, &ds, &ld);
+	(void) GDrawGetTextBounds(st->g.base,st->li.text, -1, &bounds);
+	GDrawWindowFontMetrics(st->g.base,st->font,&as, &ds, &ld);
 	if ( as<bounds.as ) as = bounds.as;
 	if ( ds<bounds.ds ) ds = bounds.ds;
 	st->fh = fh = as+ds;

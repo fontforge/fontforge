@@ -1312,7 +1312,7 @@ static void MKDDraw(MathKernDlg *mkd, GWindow pixmap, GEvent *event) {
 	GDrawDrawRect(pixmap,&r,0);
 
 	GDrawSetFont(pixmap,cv->inactive ? mkd->plain : mkd->bold);
-	GDrawDrawBiText8(pixmap,r.x,5+mkd->as,cornernames[i],-1,NULL,0);
+	GDrawDrawText8(pixmap,r.x,5+mkd->as,cornernames[i],-1,0);
     }
 }
 
@@ -1809,10 +1809,8 @@ static void MKDInit(MathKernDlg *mkd,SplineChar *sc) {
 	msc->parent = &mkd->dummy_sf;
 	msc->layer_cnt = 2;
 	msc->layers = gcalloc(2,sizeof(Layer));
-#ifdef FONTFORGE_CONFIG_TYPE3
 	LayerDefault(&msc->layers[0]);
 	LayerDefault(&msc->layers[1]);
-#endif
 	mkd->chars[i] = msc;
 
 	mcv->b.sc = msc;
@@ -1899,7 +1897,7 @@ void MathKernDialog(SplineChar *sc,int def_layer) {
     }
     mkd.plain = mathfont;
     mkd.bold = mathbold;
-    GDrawFontMetrics(mkd.plain,&as,&ds,&ld);
+    GDrawWindowFontMetrics(mkd.gw,mkd.plain,&as,&ds,&ld);
     mkd.fh = as+ds; mkd.as = as;
 
     memset(&label,0,sizeof(label));

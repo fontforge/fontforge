@@ -29,10 +29,6 @@
 #include <ustring.h>
 #include <errno.h>
 
-#ifndef NODYNAMIC
-# include <dynamic.h>
-#endif
-
 struct stdfuncs _GIO_stdfuncs = {
     GIOguessMimeType, _GIO_decomposeURL, _GIO_PostSuccess, _GIO_PostInter,
     _GIO_PostError, _GIO_RequestAuthorization, _GIO_LookupHost,
@@ -69,9 +65,9 @@ static int AddProtocol(unichar_t *prefix,int len) {
     if ( plen>=pmax ) {
 	pmax += 20;		/* We're never going to support 20 protocols? */
 	if ( plen==0 ) {
-	    protocols = galloc(pmax*sizeof(struct protocols));
+	    protocols = (struct protocols *) galloc(pmax*sizeof(struct protocols));
 	} else {
-	    protocols = grealloc(protocols,pmax*sizeof(struct protocols));
+	    protocols = (struct protocols *) grealloc(protocols,pmax*sizeof(struct protocols));
 	}
     }
     memset(protocols+plen,0,sizeof(struct protocols));
@@ -82,36 +78,7 @@ static int AddProtocol(unichar_t *prefix,int len) {
 	protocols[plen].term = NULL;
 	protocols[plen].dothread = false;
     } else {
-#ifdef NODYNAMIC
 return( false );
-#else
-	char lib[300], buffer[1400];
-	DL_CONST void *handle;
-	void (*init)(DL_CONST void *,struct stdfuncs *,int);
-	strcpy(lib,"libgio");
-	cu_strncat(lib,prefix,len);
-	strcat(lib,SO_EXT);
-	if ( (handle = dlopen(lib,RTLD_LAZY))==NULL ) {
-#ifdef LIBDIR
-	    sprintf(buffer,LIBDIR "/%s",lib);
-	    if ( (handle = dlopen(buffer,RTLD_LAZY))==NULL )
-#endif
-	    {
-#ifdef GWW_TEST
- printf ( "dlopen failed: %s\n", dlerror());
-#endif
-return( false );
-	    }
-	}
-	protocols[plen].handle = handle;
-	protocols[plen].dispatcher = dlsym(handle,"GIO_dispatch");
-	protocols[plen].cancel = dlsym(handle,"GIO_cancel");
-	protocols[plen].term = dlsym(handle,"GIO_term");
-	init = dlsym(handle,"GIO_init");
-	if ( init!=NULL )
-	    (init)(handle,&_GIO_stdfuncs,plen);
-	protocols[plen].dothread = true;
-#endif
     }
     protocols[plen].index = plen;
     protocols[plen].proto = u_copyn(prefix,len);
@@ -195,7 +162,7 @@ return;
 	    /* could put stuff here to queue functions if we get too many */
 	    /*  threads, or perhaps even a thread pool */
 	    uc_strcpy(gc->status,"Queued");
-	    gc->threaddata = galloc(sizeof(struct gio_threaddata));
+	    gc->threaddata = (struct gio_threaddata *) galloc(sizeof(struct gio_threaddata));
 	    gc->threaddata->mutex = initmutex;
 	    gc->threaddata->cond = initcond;
 	    if ( _GIO_stdfuncs.gdraw_sync_thread!=NULL )
@@ -254,7 +221,7 @@ void GIOFreeDirEntries(GDirEntry *ent) {
 GDirEntry *GIOgetDirData(GIOControl *gc) {
 
     if ( gc->direntrydata )
-return( gc->iodata );
+return( (GDirEntry *) gc->iodata );
 
 return( NULL );
 }
@@ -273,7 +240,7 @@ void GIOcancel(GIOControl *gc) {
 	/* Per connection cleanup, cancels io if not done and removes from any queues */
 	(protocols[gc->protocol_index].cancel)(gc);
     if ( gc->direntrydata )
-	GIOFreeDirEntries(gc->iodata);
+	GIOFreeDirEntries((GDirEntry *) gc->iodata);
     else
 	free(gc->iodata);
     free(gc->threaddata);
@@ -290,7 +257,7 @@ void GIOclose(GIOControl *gc) {
 GIOControl *GIOCreate(unichar_t *path,void *userdata,
 	void (*receivedata)(struct giocontrol *),
 	void (*receiveerror)(struct giocontrol *)) {
-    GIOControl *gc = gcalloc(1,sizeof(GIOControl));
+    GIOControl *gc = (GIOControl *) gcalloc(1,sizeof(GIOControl));
 
     gc->path = u_copy(path);
     gc->userdata = userdata;

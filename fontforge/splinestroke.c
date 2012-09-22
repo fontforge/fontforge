@@ -64,8 +64,10 @@ struct extrapoly {
     int ptcnt;		/* 3 (for miters) or 4 (for square caps) */
 };
 
+enum pentype { pt_circle, pt_square, pt_poly };
+
 typedef struct strokecontext {
-    enum pentype { pt_circle, pt_square, pt_poly } pentype;
+    enum pentype pentype;
     int cur, max;
     StrokePoint *all;
     struct extrapoly *ep;
@@ -2639,6 +2641,8 @@ static void AddUnhiddenPoints(StrokeContext *c) {
     int i, any;
     bigreal xdiff, ydiff;
 
+    if ( c==NULL || c->all==NULL )
+return;
     start=0;
     if ( c->all[0].left_hidden )
 	for ( start=0; start<c->cur && c->all[start].left_hidden; ++start );

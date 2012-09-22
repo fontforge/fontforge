@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -26,12 +27,15 @@
  */
 
 #include "fontforgeui.h"
+#include "annotations.h"
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>
 #include <chardata.h>
 #include "ttf.h"		/* For MAC_DELETED_GLYPH_NAME */
 #include <gkeysym.h>
+#include "is_LIGATURE.h"
+
 extern int lookup_hideunused;
 
 static int last_gi_aspect = 0;
@@ -385,27 +389,6 @@ return;
     }
 }
 
-static int UnicodeContainsCombiners(int uni) {
-    const unichar_t *alt;
-
-    if ( uni<0 || uni>=unicode4_size )
-return( -1 );
-    if ( iscombining(uni))
-return( true );
-
-    if ( !isdecompositionnormative(uni) || unicode_alternates[uni>>8]==NULL )
-return( false );
-    alt = unicode_alternates[uni>>8][uni&0xff];
-    if ( alt==NULL )
-return( false );
-    while ( *alt ) {
-	if ( UnicodeContainsCombiners(*alt))
-return( true );
-	++alt;
-    }
-return( false );
-}
-
 static int CI_NewCounter(GGadget *g, GEvent *e) {
     CharInfo *ci;
 
@@ -433,25 +416,26 @@ return( true );
 
 static int CI_DeleteCounter(GGadget *g, GEvent *e) {
     int32 len; int i,j, offset;
-    GTextInfo **old, **new;
+    GTextInfo **old, **new_;
     GGadget *list;
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	offset = GGadgetGetCid(g)-CID_Delete;
 	list = GWidgetGetControl(GGadgetGetWindow(g),CID_List+offset);
 	old = GGadgetGetList(list,&len);
-	new = gcalloc(len+1,sizeof(GTextInfo *));
-	for ( i=j=0; i<len; ++i ) if ( !old[i]->selected ) {
-	    new[j] = galloc(sizeof(GTextInfo));
-	    *new[j] = *old[i];
-	    new[j]->text = u_copy(new[j]->text);
-	    ++j;
-	}
-	new[j] = gcalloc(1,sizeof(GTextInfo));
+	new_ = gcalloc(len+1,sizeof(GTextInfo *));
+	for ( i=j=0; i<len; ++i )
+	    if ( !old[i]->selected ) {
+		new_[j] = (GTextInfo *) galloc(sizeof(GTextInfo));
+		*new_[j] = *old[i];
+		new_[j]->text = u_copy(new_[j]->text);
+		++j;
+	    }
+	new_[j] = (GTextInfo *) gcalloc(1,sizeof(GTextInfo));
 	if ( offset==600 ) {
 	    for ( i=0; i<len; ++i ) if ( old[i]->selected )
 		chunkfree(old[i]->userdata,sizeof(HintMask));
 	}
-	GGadgetSetList(list,new,false);
+	GGadgetSetList(list,new_,false);
 	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Delete+offset),false);
 	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Edit+offset),false);
     }
@@ -505,9 +489,9 @@ static void SetNameFromUnicode(GWindow gw,int cid,int val) {
     free(temp);
 }
 
-void SCInsertPST(SplineChar *sc,PST *new) {
-    new->next = sc->possub;
-    sc->possub = new;
+void SCInsertPST(SplineChar *sc,PST *new_) {
+    new_->next = sc->possub;
+    sc->possub = new_;
 }
 
 static int CI_NameCheck(const unichar_t *name) {
@@ -1254,10 +1238,8 @@ static SplineChar *CI_SCDuplicate(SplineChar *sc) {
     newsc->possub = CI_PSTCopy(sc->possub);
     newsc->kerns = CI_KPCopy(sc->kerns);
     newsc->vkerns = CI_KPCopy(sc->vkerns);
-#ifdef FONTFORGE_CONFIG_TYPE3
     newsc->tile_margin = sc->tile_margin;
     newsc->tile_bounds = sc->tile_bounds;
-#endif
 return( newsc );
 }
 
@@ -1379,10 +1361,8 @@ static int _CI_OK(CharInfo *ci) {
     char *italicdevtab=NULL, *accentdevtab=NULL, *hicdt=NULL, *vicdt=NULL;
     int lig_caret_cnt_fixed=0;
     int low,high;
-#ifdef FONTFORGE_CONFIG_TYPE3
     real tile_margin=0;
     DBounds tileb;
-#endif
     SplineChar *oldsc = ci->cachedsc==NULL ? ci->sc : ci->cachedsc;
 
     if ( !CI_ValidateAltUnis(ci))
@@ -1402,7 +1382,6 @@ return( false );
     if ( err )
 return( false );
 
-#ifdef FONTFORGE_CONFIG_TYPE3
     memset(&tileb,0,sizeof(tileb));
     if ( ci->sc->parent->multilayer ) {
 	if ( GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_IsTileMargin)))
@@ -1416,7 +1395,6 @@ return( false );
 	if ( err )
 return( false );
     }
-#endif
 
     lig_caret_cnt_fixed = !GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_DefLCCount));
     if ( ci->lc_seen ) {
@@ -1527,10 +1505,8 @@ return( false );
 	}
     }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
     ci->cachedsc->tile_margin = tile_margin;
     ci->cachedsc->tile_bounds = tileb;
-#endif
 
 return( ret );
 }
@@ -1611,10 +1587,8 @@ static void CI_ApplyAll(CharInfo *ci) {
 	KernPairsFree(sc->kerns); KernPairsFree(sc->vkerns);
 	sc->kerns = cached->kerns; sc->vkerns = cached->vkerns;
 	cached->kerns = cached->vkerns = NULL;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	sc->tile_margin = cached->tile_margin;
 	sc->tile_bounds = cached->tile_bounds;
-#endif
 	if ( !sc->changed ) {
 	    sc->changed = true;
 	    refresh_fvdi = true;
@@ -1665,7 +1639,6 @@ static int CI_OK(GGadget *g, GEvent *e) {
 return( true );
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static void CI_BoundsToMargin(CharInfo *ci) {
     int err=false;
     real margin = GetCalmReal8(ci->gw,CID_TileMargin,NULL,&err);
@@ -1695,13 +1668,13 @@ static int CI_TileMarginChange(GGadget *g, GEvent *e) {
 	CI_BoundsToMargin(ci);
 return( true );
 }
-#endif
 
+/* Generate default settings for the entries in ligature lookup
+ * subtables. */
 static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
     const unichar_t *alt=NULL, *pt;
     char *components = NULL;
     int len;
-    const char *uname;
     unichar_t hack[30], *upt;
     char buffer[80];
 
@@ -1717,17 +1690,14 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 	else if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2]))) {
 	    if ( alt_lig != -10 )	/* alt_lig = 10 => mac unicode decomp */
 		alt = NULL;		/* Otherwise, don't treat accented letters as ligatures */
-	} else if ( _UnicodeNameAnnot!=NULL &&
-		(uname = _UnicodeNameAnnot[uni>>16][(uni>>8)&0xff][uni&0xff].name)!=NULL &&
-		strstr(uname,"LIGATURE")==NULL &&
-		strstr(uname,"VULGAR FRACTION")==NULL &&
+	} else if (! is_LIGATURE_or_VULGAR_FRACTION((unsigned int) uni) &&
 		uni!=0x152 && uni!=0x153 &&	/* oe ligature should not be standard */
 		uni!=0x132 && uni!=0x133 &&	/* nor ij */
 		(uni<0xfb2a || uni>0xfb4f) &&	/* Allow hebrew precomposed chars */
 		uni!=0x215f &&
 		!((uni>=0x0958 && uni<=0x095f) || uni==0x929 || uni==0x931 || uni==0x934)) {
 	    alt = NULL;
-	} else if ( _UnicodeNameAnnot==NULL ) {
+	} else if ( names_db==NULL ) {
 	    if ( (uni>=0xbc && uni<=0xbe ) ||		/* Latin1 fractions */
 		    (uni>=0x2153 && uni<=0x215e ) ||	/* other fractions */
 		    (uni>=0xfb00 && uni<=0xfb06 ) ||	/* latin ligatures */
@@ -4036,7 +4006,6 @@ static void CIFillup(CharInfo *ci) {
     }
     GA_ToMD(GWidgetGetControl(ci->gw,CID_AltUni), sc);
 
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( ci->sc->parent->multilayer ) {
 	int margined = sc->tile_margin!=0 || (sc->tile_bounds.minx==0 && sc->tile_bounds.maxx==0);
 	char buffer[40];
@@ -4058,7 +4027,6 @@ static void CIFillup(CharInfo *ci) {
 	    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMaxY),buffer);
 	}
     }
-#endif
 
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_DefLCCount), !sc->lig_caret_cnt_fixed );
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_LCCountLab), sc->lig_caret_cnt_fixed );
@@ -4071,7 +4039,7 @@ static int CI_NextPrev(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	int enc = ci->enc + GGadgetGetCid(g);	/* cid is 1 for next, -1 for prev */
-	SplineChar *new;
+	SplineChar *new_;
 	struct splinecharlist *scl;
 
 	if ( enc<0 || enc>=ci->map->enccount ) {
@@ -4080,14 +4048,14 @@ return( true );
 	}
 	if ( !_CI_OK(ci))
 return( true );
-	new = SFMakeChar(ci->sc->parent,ci->map,enc);
-	if ( new->charinfo!=NULL && new->charinfo!=ci ) {
+	new_ = SFMakeChar(ci->sc->parent,ci->map,enc);
+	if ( new_->charinfo!=NULL && new_->charinfo!=ci ) {
 	    GGadgetSetEnabled(g,false);
 return( true );
 	}
-	ci->sc = new;
+	ci->sc = new_;
 	ci->enc = enc;
-	for ( scl=ci->changes; scl!=NULL && scl->sc->orig_pos!=new->orig_pos;
+	for ( scl=ci->changes; scl!=NULL && scl->sc->orig_pos!=new_->orig_pos;
 		scl = scl->next );
 	ci->cachedsc = scl==NULL ? NULL : scl->sc;
 	CIFillup(ci);
@@ -4154,11 +4122,9 @@ void SCCharInfo(SplineChar *sc,int deflayer, EncMap *map,int enc) {
     GGadgetCreateData tbox[3], *thvarray[36], *tbarray[4];
     GGadgetCreateData lcbox[2], *lchvarray[4][4];
     GGadgetCreateData varbox[2][2], *varhvarray[2][5][4];
-#ifdef FONTFORGE_CONFIG_TYPE3
     GGadgetCreateData tilegcd[16], tilebox[4];
     GTextInfo tilelabel[16];
     GGadgetCreateData *tlvarray[6], *tlharray[4], *tlhvarray[4][5];
-#endif
     int i;
     GTabInfo aspects[17];
     static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0, 0, 0, 0, COLOR_DEFAULT, COLOR_DEFAULT, 0, 0, 0, 0, 0, 0, 0 };
@@ -4186,7 +4152,6 @@ return;
 
     if ( !boxset ) {
 	extern GBox _ggadget_Default_Box;
-	extern void GGadgetInit(void);
 	GGadgetInit();
 	smallbox = _ggadget_Default_Box;
 	smallbox.padding = 1;
@@ -4772,7 +4737,6 @@ return;
 	    varbox[i][0].creator = GHVBoxCreate;
 	}
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 	memset(&tilegcd,0,sizeof(tilegcd));
 	memset(&tilebox,0,sizeof(tilebox));
 	memset(&tilelabel,0,sizeof(tilelabel));
@@ -4881,7 +4845,6 @@ return;
 	tilebox[0].gd.flags = gg_enabled|gg_visible;
 	tilebox[0].gd.u.boxelements = tlvarray;
 	tilebox[0].creator = GVBoxCreate;
-#endif
 
 	memset(&mgcd,0,sizeof(mgcd));
 	memset(&mbox,0,sizeof(mbox));
@@ -4954,13 +4917,11 @@ return;
 	aspects[i].nesting = 1;
 	aspects[i++].gcd = varbox[1];
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( sc->parent->multilayer ) {
 	    aspects[i].text = (unichar_t *) U_("Tile Size");
 	    aspects[i].text_is_1byte = true;
 	    aspects[i++].gcd = tilebox;
 	}
-#endif
 
 	if ( last_gi_aspect<i )
 	    aspects[last_gi_aspect].selected = true;
@@ -5078,13 +5039,11 @@ return;
 	GHVBoxSetExpandableRow(varbox[0][0].ret,3);
 	GHVBoxSetExpandableRow(varbox[1][0].ret,3);
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( sc->parent->multilayer ) {
 	    GHVBoxSetExpandableRow(tilebox[0].ret,gb_expandglue);
 	    GHVBoxSetExpandableCol(tilebox[2].ret,gb_expandglue);
 	    GHVBoxSetExpandableCol(tilebox[3].ret,gb_expandglue);
 	}
-#endif
 
 	GHVBoxFitWindow(mbox[0].ret);
 
@@ -5093,7 +5052,7 @@ return;
 	    rq.utf8_family_name = MONO_UI_FAMILIES;
 	    rq.point_size = 12;
 	    rq.weight = 400;
-	    font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(ci->gw),&rq);
+	    font = GDrawInstanciateFont(ci->gw,&rq);
 	    font = GResourceFindFont("GlyphInfo.Font",font);
 	}
 	for ( i=0; i<5; ++i )

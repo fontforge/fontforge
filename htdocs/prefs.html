@@ -104,14 +104,7 @@
       FontForge can use its own drawing routines, or rely on Cairo library in the
       <A HREF="charview.html">outline glyph view</A>. Using Cairo is slower, but
       gives smooth curves, and subpixel display precision. New setting applies
-      only to windows created afterwards.
-    <DT>
-      UsePangoDrawing
-    <DD>
-      Controls whether FontForge uses its own interface text drawing routines,
-      or relies on Pango library. Using Pango slows down older machines, but gives
-      antialiased text, exotic Unicode support, and complex script support. New
-      setting applies only to windows created afterwards.<BR Clear=all>
+      only to windows created afterwards.<BR Clear=all>
   </DL>
   <P>
   <IMG SRC="prefs-newfont.png" WIDTH="502" HEIGHT="360" ALIGN="Right">
@@ -187,7 +180,9 @@
       In the glyph window this controls how ff behaves when the user types a normal
       character. If this is On then when a normal character is typed the glyph
       window will shift to display that character, if Off typed characters will
-      be ignored.
+      trigger actions associated with that character as a hotkey or be ignored.
+      For example the default action associated with ` as a hotkey is to trigger
+      Preview mode while that key is pressed.
     <DT>
       OpenCharsInNewWindow
     <DD>

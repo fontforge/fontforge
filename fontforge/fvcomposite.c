@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -1958,7 +1959,9 @@ return( ap1->anchor );
 return( NULL );
 }
 
-static void _BCCenterAccent( BDFFont *bdf, int gid, int rgid, int ch, int basech, int italicoff, int pos, real em ) {
+static void _BCCenterAccent( BDFFont *bdf, int gid, int rgid, int ch, int basech, int italicoff,
+	uint32 pos,	/* unicode char position info, see #define for utype2[] in utype.h */
+	real em ) {
     BDFChar *bc, *rbc;
     int ixoff, iyoff, ispacing;
     IBounds ibb, irb;
@@ -2009,7 +2012,9 @@ static void _BCCenterAccent( BDFFont *bdf, int gid, int rgid, int ch, int basech
 
 static void _SCCenterAccent(SplineChar *sc,SplineChar *basersc, SplineFont *sf,
 	int layer, int ch, BDFFont *bdf, int disp_only,
-	SplineChar *rsc, real ia, int basech, int invert, int pos ) {
+	SplineChar *rsc, real ia, int basech,
+	int invert,	/* invert accent, false==0, true!=0 */
+	uint32 pos	/* unicode char position info, see #define for utype2[] in utype.h */ ) {
     real transform[6];
     DBounds bb, rbb, bbb;
     real xoff, yoff;
@@ -2050,15 +2055,16 @@ return;
 	    /* Do Nothing */;
 	else if ( basersc == NULL || (basech!=-1 && (basech==sc->unicodeenc || ( basersc = SFGetChar(sf,basech,NULL))==NULL )))
 	    basersc = sc;
-	
     }
     if ( ia==0 && baserch!=basech && basersc!=NULL ) {
 	ybase = SplineCharFindSlantedBounds(basersc,layer,&bbb,ia);
 	if ( ____utype2[1+ch]&(____ABOVE|____BELOW) ) {
+	    /* if unicode.org character definition matches ABOVE or BELOW, then... */
 	    bbb.maxy = bb.maxy;
 	    bbb.miny = bb.miny;
 	}
 	if ( ____utype2[1+ch]&(____RIGHT|____LEFT) ) {
+	    /* if unicode.org character definition matches RIGHT or LEFT, then... */
 	    bbb.maxx = bb.maxx;
 	    bbb.minx = bb.minx;
 	}
@@ -2077,11 +2083,11 @@ return;
 	/*  If so then figure offsets relative to it. */
 	xoff = ap1->me.x-ap2->me.x + sc->layers[layer].refs->transform[4];
 	yoff = ap1->me.y-ap2->me.y + sc->layers[layer].refs->transform[5];
-	pos = ____utype2[1+ch];
+	pos = ____utype2[1+ch];	/* init with unicode.org position information */
     } else if ( AnchorClassMatch(basersc,rsc,(AnchorClass *) -1,&ap1,&ap2)!=NULL && ap2->type==at_mark ) {
 	xoff = ap1->me.x-ap2->me.x;
 	yoff = ap1->me.y-ap2->me.y;
-	pos = ____utype2[1+ch];
+	pos = ____utype2[1+ch];	/* init with unicode.org position information */
     } else {
  /* try to establish a common line on which all accents lie. The problem being*/
  /*  that an accent above a,e,o will usually be slightly higher than an accent */
@@ -2113,15 +2119,16 @@ return;
 	}
 
 	if ( invert ) {
-	    /* this transform does a vertical flip from the vertical midpoint of the breve */
+	    /* yes, this transform does a vertical flip from the vertical midpoint of the breve */
 	    transform[3] = -1;
 	    transform[5] = rbb.maxy+rbb.miny;
 	}
-	if ( pos==-1 ) {
-	    if ( ch<0 || ch>=0x10000 )
+	if ( pos==____NOPOSDATAGIVEN ) {
+	    /* if here, then we need to initialize some type of position info for the accent */
+	    if ( ch<0 || ch>=0x10000 )	/* makeutype.c only built data in utype.c for {0...MAXC} */
 		pos = ____ABOVE;
 	    else
-		pos = ____utype2[1+ch];
+		pos = ____utype2[1+ch];	/* init with unicode.org position information */
 	    /* In greek, PSILI and friends are centered above lower case, and kern left*/
 	    /*  for upper case */
 	    if (( basech>=0x390 && basech<=0x3ff) || (basech>=0x1f00 && basech<=0x1fff)) {
@@ -2245,9 +2252,9 @@ return;
 
     if ( bdf == NULL || !disp_only ) {
 	_SCAddRef(sc,rsc,layer,transform);
-	if ( pos!=-1 && (pos&____RIGHT) )
+	if ( pos!=____NOPOSDATAGIVEN && (pos&____RIGHT) )
 	    SCSynchronizeWidth(sc,sc->width + rbb.maxx-rbb.minx+spacing,sc->width,NULL);
-	if ( pos!=-1 && (pos&(____LEFT|____RIGHT|____CENTERLEFT|____LEFTEDGE|____CENTERRIGHT|____RIGHTEDGE)) )
+	if ( pos!=____NOPOSDATAGIVEN && (pos&(____LEFT|____RIGHT|____CENTERLEFT|____LEFTEDGE|____CENTERRIGHT|____RIGHTEDGE)) )
 	    TurnOffUseMyMetrics(sc);
     }
     if ( !disp_only ) {
@@ -2262,10 +2269,11 @@ return;
 static void SCCenterAccent(SplineChar *sc,SplineChar *basersc, SplineFont *sf,
 	int layer, int ch, BDFFont *bdf,int disp_only,
 	real ia, int basech, char *dot ) {
-    int invert = false;
+    int invert = false;			/* invert accent, false==0, true!=0 */
     SplineChar *rsc = GetGoodAccentGlyph(sf,ch,basech,&invert,ia,dot,sc);
 
-    _SCCenterAccent(sc,basersc,sf,layer,ch,bdf,disp_only,rsc,ia,basech,invert,-1);
+    /* find a location to put an accent on this character */
+    _SCCenterAccent(sc,basersc,sf,layer,ch,bdf,disp_only,rsc,ia,basech,invert,____NOPOSDATAGIVEN);
 }
 
 static void _BCPutRefAfter( BDFFont *bdf,int gid,int rgid,int normal,int under ) {
@@ -2855,7 +2863,7 @@ return;
 
     if (( ia = sf->italicangle )==0 )
 	ia = SFGuessItalicAngle(sf);
-    ia *= 3.1415926535897932/180;
+    ia *= 3.1415926535897932/180;	/* convert degrees to radians */
 
     dot = strchr(sc->name,'.');
 
@@ -2912,12 +2920,15 @@ return;
 return;
 }
 
-int SCAppendAccent(SplineChar *sc,int layer,char *glyph_name, int uni,int pos) {
+int SCAppendAccent(SplineChar *sc,int layer,
+	char *glyph_name,	/* unicode char name */
+	int uni,		/* unicode char value */
+	uint32 pos		/* unicode char position info, see #define for (uint32)(utype2[]) */ ) {
     SplineFont *sf = sc->parent;
     double ia;
     int basech;
     RefChar *ref, *last=NULL;
-    int invert = false;
+    int invert = false;		/* invert accent, false==0, true!=0 */
     SplineChar *asc;
     int i;
     const unichar_t *apt, *end;
@@ -2926,12 +2937,12 @@ int SCAppendAccent(SplineChar *sc,int layer,char *glyph_name, int uni,int pos) {
     for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 	last = ref;
     if ( last==NULL )
-return( 1 );
+return( 1 );				/* No base character reference found */
     basech = last->sc->unicodeenc;
 
     if (( ia = sf->italicangle )==0 )
 	ia = SFGuessItalicAngle(sf);
-    ia *= 3.1415926535897932/180;
+    ia *= 3.1415926535897932/180;	/* convert degrees to radians */
 
     SCPreserveLayer(sc,layer,true);
 
@@ -2941,14 +2952,14 @@ return( 1 );
     else if ( asc==NULL && uni!=-1 )
 	asc = GetGoodAccentGlyph(sf,uni,basech,&invert,ia,NULL,sc);
     if ( asc==NULL )
-return( 2 );
+return( 2 );				/* Could not find that accent */
     if ( uni==-1 && (pt=strchr(asc->name,'.'))!=NULL && pt-asc->name<100 ) {
 	char buffer[101];
 	strncpy(buffer,asc->name,pt-asc->name);
 	buffer[(pt-asc->name)] = '\0';
 	uni = UniFromName(buffer,ui_none,NULL);
     }
-    
+
     if ( uni<=BottomAccent || uni>=TopAccent ) {
 	/* Find the real combining character that maps to this glyph */
 	/* that's where we store positioning info */

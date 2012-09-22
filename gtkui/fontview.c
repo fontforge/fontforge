@@ -1243,13 +1243,11 @@ return;
 }
 
 void FontViewMenu_PasteAfter(GtkMenuItem *menuitem, gpointer user_data) {
-#ifdef FONTFORGE_CONFIG_PASTEAFTER
     FontView *fv = FV_From_MI(menuitem);
     int pos = FVAnyCharSelected(fv);
     if ( pos<0 )
 return;
     PasteIntoFV((FontViewBase *) fv,2,NULL);
-#endif
 }
 
 void FontViewMenu_SameGlyphAs(GtkMenuItem *menuitem, gpointer user_data) {
@@ -3235,11 +3233,6 @@ void FontViewMenu_ActivateEdit(GtkMenuItem *menuitem, gpointer user_data) {
     w = lookup_widget( GTK_WIDGET(menuitem), "copy_vwidth1" );
     if ( w!=NULL )
 	gtk_widget_set_sensitive(w,pos!=-1 && fv->b.sf->hasvmetrics);
-
-#  ifndef FONTFORGE_CONFIG_PASTEAFTER
-    w = lookup_widget( GTK_WIDGET(menuitem), "paste_after1" );
-    gtk_widget_hide(w);
-#  endif
 }
 
 void FontViewMenu_ActivateDependents(GtkMenuItem *menuitem, gpointer user_data) {
@@ -5379,9 +5372,6 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
 #endif
 #ifndef FONTFORGE_CONFIG_TILEPATH
     gtk_widget_hide(lookup_widget( GTK_WIDGET(fv->gw), "tilepath1" ));
-#endif
-#ifndef FONTFORGE_CONFIG_PASTEAFTER
-    gtk_widget_hide(lookup_widget( GTK_WIDGET(fv->gw), "paste_after1" ));
 #endif
 
     FVSetTitle( (FontViewBase *) fv);

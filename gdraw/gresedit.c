@@ -33,20 +33,22 @@
 #include <stdlib.h>
 #include <ustring.h>
 
-typedef struct greseditdlg {
-    struct tofree {
-	GGadgetCreateData *gcd;
-	GTextInfo *lab;
-	GGadgetCreateData mainbox[2], flagsbox, colbox, extrabox, ibox, fontbox,
+struct tofree {
+    GGadgetCreateData *gcd;
+    GTextInfo *lab;
+    GGadgetCreateData mainbox[2], flagsbox, colbox, extrabox, ibox, fontbox,
 	sabox;
-	GGadgetCreateData *marray[11], *farray[5][6], *carray[12][9], *(*earray)[8];
-	GGadgetCreateData *iarray[4], *fontarray[5], *saarray[5];
-	char *fontname;
-	char **extradefs;
-	char bw[20], padding[20], rr[20];
-	GResInfo *res;
-	int startcid, fontcid, btcid;
-    } *tofree;
+    GGadgetCreateData *marray[11], *farray[5][6], *carray[12][9], *(*earray)[8];
+    GGadgetCreateData *iarray[4], *fontarray[5], *saarray[5];
+    char *fontname;
+    char **extradefs;
+    char bw[20], padding[20], rr[20];
+    GResInfo *res;
+    int startcid, fontcid, btcid;
+};
+
+typedef struct greseditdlg {
+    struct tofree *tofree;
     GWindow gw;
     GGadget *tabset;
     const char *def_res_file;
@@ -2503,6 +2505,7 @@ void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_fi
 	re_end->next = _GDrawableRIHead();
 	for ( re_end = _GDrawableRIHead(); re_end->next!=NULL; re_end = re_end->next );
 	re_end->next = _GTabSetRIHead();
+	for ( re_end = _GTabSetRIHead(); re_end->next!=NULL; re_end = re_end->next );
     }
     if ( additional!=NULL ) {
 	for ( re_end=additional; re_end->next!=NULL; re_end = re_end->next );

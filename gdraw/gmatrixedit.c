@@ -107,12 +107,12 @@ return;
     gmatrixedit_box.main_background = COLOR_TRANSPARENT;
     gmatrixedit_box.disabled_background = COLOR_TRANSPARENT;
     GDrawDecomposeFont(_ggadget_default_font,&rq);
-    gmatrixedit_font = GDrawInstanciateFont(screen_display,&rq);
+    gmatrixedit_font = GDrawInstanciateFont(NULL,&rq);
     gmatrixedit_font = _GGadgetInitDefaultBox("GMatrixEdit.",&gmatrixedit_box,gmatrixedit_font);
     GDrawDecomposeFont(gmatrixedit_font,&rq);
     rq.point_size = (rq.point_size>=12) ? rq.point_size-2 : rq.point_size>=10 ? rq.point_size-1 : rq.point_size;
     rq.weight = 700;
-    gmatrixedit_titfont = GResourceFindFont("GMatrixEdit.TitleFont",GDrawInstanciateFont(screen_display,&rq));
+    gmatrixedit_titfont = GResourceFindFont("GMatrixEdit.TitleFont",GDrawInstanciateFont(NULL,&rq));
     gmatrixedit_title_bg = GResourceFindColor("GMatrixEdit.TitleBG",gmatrixedit_title_bg);
     gmatrixedit_title_fg = GResourceFindColor("GMatrixEdit.TitleFG",gmatrixedit_title_fg);
     gmatrixedit_title_divider = GResourceFindColor("GMatrixEdit.TitleDivider",gmatrixedit_title_divider);
@@ -251,16 +251,16 @@ static int GME_ColWidth(GMatrixEdit *gme, int c) {
 return( 0 );
     switch ( gme->col_data[c].me_type ) {
       case me_int:
-	width = GDrawGetBiText8Width(gme->g.base,"1234", -1, -1, NULL );
+	width = GDrawGetText8Width(gme->g.base,"1234", -1);
       break;
       case me_hex: case me_addr:
-	width = GDrawGetBiText8Width(gme->g.base,"0xFFFF", -1, -1, NULL );
+	width = GDrawGetText8Width(gme->g.base,"0xFFFF", -1);
       break;
       case me_uhex:
-	width = GDrawGetBiText8Width(gme->g.base,"U+FFFF", -1, -1, NULL );
+	width = GDrawGetText8Width(gme->g.base,"U+FFFF", -1);
       break;
       case me_real:
-	width = GDrawGetBiText8Width(gme->g.base,"1.234567", -1, -1, NULL );
+	width = GDrawGetText8Width(gme->g.base,"1.234567", -1);
       break;
       case me_enum:
 	max = 0;
@@ -268,9 +268,9 @@ return( 0 );
 	    mi = FindMi(gme->col_data[c].enum_vals,gme->data[r*gme->cols+c].u.md_ival);
 	    if ( mi!=NULL ) {
 		if ( mi->ti.text_is_1byte )
-		    cur = GDrawGetBiText8Width(gme->g.base,(char *)mi->ti.text, -1,-1,NULL);
+		    cur = GDrawGetText8Width(gme->g.base,(char *)mi->ti.text,-1);
 		else
-		    cur = GDrawGetBiTextWidth(gme->g.base,mi->ti.text, -1,-1,NULL);
+		    cur = GDrawGetTextWidth(gme->g.base,mi->ti.text,-1);
 		if ( cur>max ) max = cur;
 	    }
 	}
@@ -279,13 +279,13 @@ return( 0 );
 	    GMenuItem *mi = gme->col_data[c].enum_vals;
 	    for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.line ; ++i ) {
 		if ( mi[i].ti.text!=NULL ) {
-		    cur = GDrawGetBiTextWidth(gme->g.base,mi[i].ti.text, -1, -1, NULL );
+		    cur = GDrawGetTextWidth(gme->g.base,mi[i].ti.text, -1);
 		    if ( cur>max ) max = cur;
 		}
 	    }
 	}
 #endif
-	cur = 6 * GDrawGetBiText8Width(gme->g.base,"n", 1, 1, NULL );
+	cur = 6 * GDrawGetText8Width(gme->g.base,"n", 1);
 	if ( max<cur )
 	    max = cur;
 	width = max;
@@ -304,13 +304,18 @@ return( 0 );
 		str = freeme = (gme->col_data[c].func)(&gme->g,r,c);
 	    if ( str==NULL )
 	continue;
-	    pt = strchr(str,'\n');
-	    cur = GDrawGetBiText8Width(gme->g.base,str, -1, pt==NULL ? -1: pt-str, NULL );
+	    /* use the maximum width of 40 characters to avoid insanely wide
+	     * cells and horizontal scrollbars, the magic number 40 is the max
+	     * length of characters after which we use GME_StrBigEdit below */
+	    char buf[1024];
+	    utf8_strncpy(buf, str, 40);
+	    pt = strchr(buf,'\n');
+	    cur = GDrawGetText8Width(gme->g.base,buf, pt==NULL ? -1: pt-buf);
 	    if ( cur>max ) max = cur;
 	    free(freeme);
 	}
-	if ( max < 10*GDrawGetBiText8Width(gme->g.base,"n", 1, 1, NULL ) )
-	    width = 10*GDrawGetBiText8Width(gme->g.base,"n", 1, 1, NULL );
+	if ( max < 10*GDrawGetText8Width(gme->g.base,"n", 1) )
+	    width = 10*GDrawGetText8Width(gme->g.base,"n", 1);
 	else
 	    width = max;
 	if ( gme->col_data[c].me_type==me_stringchoice ||
@@ -326,7 +331,7 @@ return( 0 );
     }
     if ( gme->col_data[c].title!=NULL ) {
 	GDrawSetFont(gme->g.base,gme->titfont);
-	cur = GDrawGetBiText8Width(gme->g.base,gme->col_data[c].title, -1, -1, NULL );
+	cur = GDrawGetText8Width(gme->g.base,gme->col_data[c].title, -1);
 	if ( cur>width ) width = cur;
     }
     GDrawSetFont(gme->g.base,old);
@@ -637,7 +642,7 @@ static int GMatrixEdit_Expose(GWindow pixmap, GGadget *g, GEvent *event) {
 		r.x = gme->col_data[c].x + gme->g.inner.x - gme->off_left;
 		r.width = gme->col_data[c].width;
 		GDrawPushClip(pixmap,&r,&old);
-		GDrawDrawBiText8(pixmap,r.x,y,gme->col_data[c].title,-1,NULL,fg);
+		GDrawDrawText8(pixmap,r.x,y,gme->col_data[c].title,-1,fg);
 		GDrawPopClip(pixmap,&old);
 	    }
 	    if ( c!=lastc && !gme->col_data[c].hidden)
@@ -747,7 +752,7 @@ static int GME_RecalcFH(GMatrixEdit *gme) {
 		end = ept - str;
 	break;
 	}
-	GDrawGetBiText8Bounds(gme->nested, str, end, NULL, &bounds);
+	GDrawGetText8Bounds(gme->nested, str, end, &bounds);
 	free(str);
 	if ( bounds.as>as )
 	    as = bounds.as;
@@ -1461,7 +1466,7 @@ return;
 	if ( str==NULL )
 	    str = copy("");
 	if ( str!=NULL &&
-		(strlen(str)>40 || strchr(str,'\n')!=NULL || gme->col_data[c].me_type == me_bigstr))
+		(utf8_strlen(str)>40 || strchr(str,'\n')!=NULL || gme->col_data[c].me_type == me_bigstr))
 	    GME_StrBigEdit(gme,str);
 	else
 	    GME_StrSmallEdit(gme,str,event);
@@ -1640,8 +1645,8 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 			buf[18] = '\0';
 			k = strlen(buf);
 			buf[k] = '>'; buf[k+1] = '\0';
-			GDrawDrawBiText8(pixmap,gme->col_data[0].x - gme->off_left,y,
-				buf,-1,NULL,gmatrixedit_activecol);
+			GDrawDrawText8(pixmap,gme->col_data[0].x - gme->off_left,y,
+				buf,-1,gmatrixedit_activecol);
 		    }
 		} else {
 		    data = &gme->data[(r+gme->off_top)*gme->cols+c];
@@ -1654,9 +1659,9 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 			mi = FindMi(gme->col_data[c].enum_vals,data->u.md_ival);
 			if ( mi!=NULL ) {
 			    if ( mi->ti.text_is_1byte )
-				GDrawDrawBiText8(pixmap,clip.x,y,(char *)mi->ti.text,-1,NULL,fg);
+				GDrawDrawText8(pixmap,clip.x,y,(char *)mi->ti.text,-1,fg);
 			    else
-				GDrawDrawBiText(pixmap,clip.x,y,mi->ti.text,-1,NULL,fg);
+				GDrawDrawText(pixmap,clip.x,y,mi->ti.text,-1,fg);
 		    break;
 			}
 			/* Fall through into next case */
@@ -1670,7 +1675,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		    }
 		    if ( str!=NULL ) {
 			pt = strchr(str,'\n');
-			GDrawDrawBiText8(pixmap,clip.x,y,str,pt==NULL?-1:pt-str,NULL,fg);
+			GDrawDrawText8(pixmap,clip.x,y,str,pt==NULL?-1:pt-str,fg);
 			free(str);
 		    }
 		}
@@ -2079,9 +2084,9 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 
     memset(&wattrs,0,sizeof(wattrs));
     if ( gme->g.box->main_background!=COLOR_TRANSPARENT )
-	wattrs.mask = wam_events|wam_cursor|wam_backcol|wam_nocairo;
+	wattrs.mask = wam_events|wam_cursor|wam_backcol;
     else
-	wattrs.mask = wam_events|wam_cursor|wam_nocairo;
+	wattrs.mask = wam_events|wam_cursor;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.cursor = ct_pointer;
     wattrs.background_color = gme->g.box->main_background;

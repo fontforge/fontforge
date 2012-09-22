@@ -76,10 +76,8 @@ struct l2 {
     2, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, NULL, NULL
 };
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 struct l2 layer2 = { 2, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, NULL, NULL };
 static int layers2_active = -1;
-#endif
 static GPoint cvtoolsoff = { -9999, -9999 }, cvlayersoff = { -9999, -9999 }, bvlayersoff = { -9999, -9999 }, bvtoolsoff = { -9999, -9999 }, bvshadesoff = { -9999, -9999 };
 int palettes_fixed=1;
 static GCursor tools[cvt_max+1] = { ct_pointer }, spirotools[cvt_max+1];
@@ -853,7 +851,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     temp.x = 52-16; temp.y = i*27; temp.width = 16; temp.height = 4*12;
     GDrawFillRect(pixmap,&temp,GDrawGetDefaultBackground(NULL));
     for ( j=0; j<4; ++j ) {
-	GDrawDrawBiText(pixmap,2,i*27+j*12+10,(unichar_t *) _Mouse[j],-1,NULL,GDrawGetDefaultForeground(NULL));
+	GDrawDrawText(pixmap,2,i*27+j*12+10,(unichar_t *) _Mouse[j],-1,GDrawGetDefaultForeground(NULL));
 	if ( (&cv->b1_tool)[j]!=cvt_none )
 	    GDrawDrawImage(pixmap,smalls[(&cv->b1_tool)[j]],NULL,52-16,i*27+j*12);
     }
@@ -1124,6 +1122,8 @@ return;			/* Not available in order2 spline mode */
     } else if ( event->type == et_mouseup ) {
 	if ( pos==cvt_freehand && event->u.mouse.clicks==2 ) {
 	    FreeHandStrokeDlg(&expand);
+	} else if ( pos==cvt_pointer && event->u.mouse.clicks==2 ) {
+	    PointerDlg(cv);
 	} else if ( i==cvt_rect/2 && event->u.mouse.clicks==2 ) {
 	    ((j==0)?CVRectElipse:CVPolyStar)(cv);
 	    mi = i;
@@ -1298,8 +1298,6 @@ static BDFChar *BDFCharFromLayer(SplineChar *sc,int layer) {
 return( SplineCharAntiAlias(&dummy,ly_fore,24,4));
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
-
 /* Update the type3 layers palette to the given character view */
 static void CVLayers2Set(CharView *cv) {
     int i, top;
@@ -1383,8 +1381,8 @@ return;
 		0x808080);
 	if ( i==0 || i==1 ) {
 	    str = i==0?_("Guide") : _("Back");
-	    GDrawDrawBiText8(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
-		    (char *) str,-1,NULL,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
+	    GDrawDrawText8(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
+		    (char *) str,-1,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
 	} else if ( layer2.offtop+i>=layer2.current_layers ) {
     break;
 	} else if ( layer2.layers[layer2.offtop+i]!=NULL ) {
@@ -1670,7 +1668,7 @@ return;
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
-	layersfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers2),&rq);
+	layersfont = GDrawInstanciateFont(cvlayers2,&rq);
 	layersfont = GResourceFindFont("LayersPalette.Font",layersfont);
     }
 
@@ -1779,10 +1777,6 @@ return;
     layer2.layers[layer+1] = BDFCharFromLayer(cv->b.sc,layer);
     GDrawRequestExpose(cvlayers2,NULL,false);
 }
-#else
-void SC_MoreLayers(SplineChar *sc, Layer *old) {
-}
-#endif /* FONTFORGE_CONFIG_TYPE3 */
 
 /* Update the state of the controls of the non-type3 layers palette to the given character view */
 /* New widgets are not allocated here. For that, see CVLCheckLayerCount(). */
@@ -1840,12 +1834,10 @@ static void CVLayers1Set(CharView *cv) {
  * are created or hid here, only the state of existing gadgets is changed.
  * New layer gadgets are created in CVLCheckLayerCount(). */
 void CVLayersSet(CharView *cv) {
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( cv->b.sc->parent->multilayer ) {
 	CVLayers2Set(cv);
 return;
     }
-#endif
      /* This is for the non-type3 layers palette: */
     CVLayers1Set(cv);
 }
@@ -1876,9 +1868,7 @@ return;
     memset(&base,0,sizeof(base));
     gi.u.image = &base;
     base.image_type = it_index;
-#ifdef FONTFORGE_CONFIG_TYPE3
     base.clut = layer2.clut;
-#endif
     base.trans = -1;
     GDrawSetFont(pixmap,layerinfo.font);
 
@@ -1906,8 +1896,8 @@ return;
                 GDrawFillRect(pixmap,&r,mocolor);
             }
             str = ( ll>=0 && ll<cv->b.sc->layer_cnt ? (cv->b.sc->layers[ll].order2? "Q" : "C") : " ");
-	    GDrawDrawBiText8(pixmap, quadcol, y + yt,
-		    (char *) str,-1,NULL,GDrawGetDefaultForeground(NULL));
+	    GDrawDrawText8(pixmap, quadcol, y + yt,
+		    (char *) str,-1,GDrawGetDefaultForeground(NULL));
         }
 
          /* draw fg/bg toggle */
@@ -1919,8 +1909,8 @@ return;
                 GDrawFillRect(pixmap,&r,mocolor);
             }
             str = ( ll>=0 && ll<cv->b.sc->layer_cnt ? (cv->b.sc->layers[ll].background? "B" : "F") : "#");
-	    GDrawDrawBiText8(pixmap, fgcol, y + yt,
-		    (char *) str,-1,NULL,GDrawGetDefaultForeground(NULL));
+	    GDrawDrawText8(pixmap, fgcol, y + yt,
+		    (char *) str,-1,GDrawGetDefaultForeground(NULL));
         }
 
          /* draw layer thumbnail and label */
@@ -1938,8 +1928,8 @@ return;
         r.x=editcol;
 	if ( ll==-1 || ll==0 || ll==1) {
 	    str = ll==-1 ? _("Guide") : (ll==0 ?_("Back") : _("Fore")) ;
-	    GDrawDrawBiText8(pixmap,r.x+2,y + yt,
-		    (char *) str,-1,NULL,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
+	    GDrawDrawText8(pixmap,r.x+2,y + yt,
+		    (char *) str,-1,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
 	} else if ( ll>=layerinfo.current_layers ) {
              break; /* no more layers to draw! */
 	} else if ( ll>=0 && layerinfo.layers[ll]!=NULL ) {
@@ -1953,8 +1943,8 @@ return;
 //		    y+as-bdfc->ymax);
             str = cv->b.sc->parent->layers[ll].name;
             if ( !str || !*str ) str="-";
-	    GDrawDrawBiText8(pixmap, r.x+2, y + yt,
-		        (char *) str,-1,NULL,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
+	    GDrawDrawText8(pixmap, r.x+2, y + yt,
+		        (char *) str,-1,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
 	}
     }
 }
@@ -1976,6 +1966,7 @@ static void CVLRemoveEdit(CharView *cv, int save) {
 	GDrawRequestExpose(cvlayers,NULL,false);
 
 	layerinfo.rename_active = 0;
+	CVInfoDrawText(cv,cv->gw);
     }
 }
 
@@ -2070,7 +2061,7 @@ static void CVLCheckLayerCount(CharView *cv, int resize) {
 	    } else if ( hasmn==NULL ) {
                 sprintf(namebuf,"%s", i==-1 ? _("Guide") : (i==0 ?_("Back") : _("Fore")) );
             }
-            width = GDrawGetBiText8Width(cvlayers, namebuf, strlen(namebuf), -1, NULL);
+            width = GDrawGetText8Width(cvlayers, namebuf, -1);
 	    if ( width+togsize>maxwidth ) maxwidth = width + togsize;
 	} else if ( i==-1 ) {
 	    if ( width+togsize>maxwidth ) maxwidth = width + togsize;
@@ -2190,9 +2181,6 @@ static char *UniqueLayerName(SplineChar *sc, const char *base)
 
     return buffer;
 }
-
-/* CVRegenFill() regenerates data used to show or not show paths as filled */
-extern void CVRegenFill(CharView *cv);
 
 /* Layers palette menu selection */
 static void CVLayerInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
@@ -2429,8 +2417,18 @@ static int CVLScanForItem(int x, int y, int *col) {
 
     *col=-1;
     if ( x>0 && x<viscol+cw ) *col=CID_VBase;
-    else if ( (layerscols & LSHOW_CUBIC) && x>=quadcol && x<quadcol+cw ) *col=CID_QBase;
-    else if ( (layerscols & LSHOW_FG) && x>=fgcol && x<fgcol+cw ) *col=CID_FBase;
+    /**
+     * The two below options, CID_QBase and CID_FBase allow the curve
+     * type and foreground/background to be changed simply by clicking
+     * on them. The cubic/quadratic and background/foreground
+     * attributes should NOT be buttons that can change these
+     * attributes, they should only SHOW the attribute. Changing the
+     * attributes can be done in Font Info, Layers, and is done
+     * infrequently and has a lot of implications so shouldn't be
+     * easily done by mistake.
+     */
+//    else if ( (layerscols & LSHOW_CUBIC) && x>=quadcol && x<quadcol+cw ) *col=CID_QBase;
+//    else if ( (layerscols & LSHOW_FG) && x>=fgcol && x<fgcol+cw ) *col=CID_FBase;
     else if ( x>=editcol ) *col=CID_EBase;
 
     return l;
@@ -2468,6 +2466,7 @@ return;
     if (cvlayers)  GDrawRequestExpose(cvlayers,NULL,false);
     if ( dm!=cv->b.drawmode )
         GDrawRequestExpose(cv->gw,NULL,false); /* the logo (where the scrollbars join) shows what layer we are in */
+    CVInfoDrawText(cv,cv->gw);
 }
 
 static int cvlayers_e_h(GWindow gw, GEvent *event) {
@@ -2747,13 +2746,9 @@ return( false );
 	g = GWidgetGetControl(cvlayers, CID_EBase+off-1);
 	if ( off-1<parent->layer_cnt && off!=curlayer ) {
             CVLSelectLayer(cv, off);
-    #ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( cv->b.sc->parent->multilayer )
 	    	GDrawRequestExpose(cvlayers2,NULL,false);
 	    else
-    #else
-	    GDrawRequestExpose(cvlayers,NULL,false);
-    #endif
 return( true );
 	}
     }
@@ -2773,7 +2768,6 @@ return( true );
 	    if ( islower(mn)) mnc = toupper(mn);
 	    else if ( isupper(mn)) mnc = tolower(mn);
 	    if ( event->u.chr.chars[0]==mn || event->u.chr.chars[0]==mnc ) {
-    #ifdef FONTFORGE_CONFIG_TYPE3
 		if ( cv->b.sc->parent->multilayer ) {
 		    fake.type = et_mousedown;
 		    fake.w = cvlayers;
@@ -2786,9 +2780,7 @@ return( true );
 			fake.u.mouse.y = CV_LAYERS2_HEADER_HEIGHT+12+2*CV_LAYERS2_LINE_HEIGHT;
 		    }
 		    cvlayers2_e_h(cvlayers2,&fake);
-		} else
-    #endif
-		{
+		} else {
             	    CVLSelectLayer(cv, i);
 	    	    GDrawRequestExpose(cvlayers,NULL,false);
 		}
@@ -2824,7 +2816,7 @@ return( cvlayers );
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
-	layersfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers2),&rq);
+	layersfont = GDrawInstanciateFont(cvlayers2,&rq);
 	layersfont = GResourceFindFont("LayersPalette.Font",layersfont);
     }
     layerinfo.font = layersfont;
@@ -3010,47 +3002,56 @@ static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
 
 void CVToolsPopup(CharView *cv, GEvent *event) {
     GMenuItem mi[125];
-    int i, j, anysel;
+    int i=0;
+    int j=0;
+    int anysel=0;
     static char *selectables[] = { N_("Get Info..."), N_("Open Reference"), N_("Add Anchor"), NULL };
 
     memset(mi,'\0',sizeof(mi));
-    for ( i=0;i<=cvt_skew; ++i ) {
-	char *msg = _(popupsres[i]);
-	if ( cv->b.sc->inspiro && hasspiro()) {
-	    if ( i==cvt_spirog2 )
-		msg = _("Add a g2 curve point");
-	    else if ( i==cvt_spiroleft )
-		msg = _("Add a left \"tangent\" point");
-	    else if ( i==cvt_spiroright )
-		msg = _("Add a right \"tangent\" point");
-	}
-	mi[i].ti.text = (unichar_t *) msg;
-	mi[i].ti.text_is_1byte = true;
-	mi[i].ti.fg = COLOR_DEFAULT;
-	mi[i].ti.bg = COLOR_DEFAULT;
-	mi[i].mid = i;
-	mi[i].invoke = CVPopupInvoked;
-    }
-
-    if ( cvlayers!=NULL && !cv->b.sc->parent->multilayer ) {
-	mi[i].ti.line = true;
-	mi[i].ti.fg = COLOR_DEFAULT;
-	mi[i++].ti.bg = COLOR_DEFAULT;
-	for ( j=0;j<3; ++j, ++i ) {
-	    mi[i].ti.text = (unichar_t *) _(editablelayers[j]);
-	    mi[i].ti.text_in_resource = true;
+    anysel = CVTestSelectFromEvent(cv,event);
+    if( !anysel ) {
+	for ( i=0;i<=cvt_skew; ++i ) {
+	    char *msg = _(popupsres[i]);
+	    if ( cv->b.sc->inspiro && hasspiro()) {
+		if ( i==cvt_spirog2 )
+		    msg = _("Add a g2 curve point");
+		else if ( i==cvt_spiroleft )
+		    msg = _("Add a left \"tangent\" point");
+		else if ( i==cvt_spiroright )
+		    msg = _("Add a right \"tangent\" point");
+	    }
+	    mi[i].ti.text = (unichar_t *) msg;
 	    mi[i].ti.text_is_1byte = true;
 	    mi[i].ti.fg = COLOR_DEFAULT;
 	    mi[i].ti.bg = COLOR_DEFAULT;
-	    mi[i].mid = j;
-	    mi[i].invoke = CVPopupLayerInvoked;
+	    mi[i].mid = i;
+	    mi[i].invoke = CVPopupInvoked;
+	}
+    }
+    
+    if( !anysel ) {
+	if ( cvlayers!=NULL && !cv->b.sc->parent->multilayer ) {
+	    mi[i].ti.line = true;
+	    mi[i].ti.fg = COLOR_DEFAULT;
+	    mi[i++].ti.bg = COLOR_DEFAULT;
+	    for ( j=0;j<3; ++j, ++i ) {
+		mi[i].ti.text = (unichar_t *) _(editablelayers[j]);
+		mi[i].ti.text_in_resource = true;
+		mi[i].ti.text_is_1byte = true;
+		mi[i].ti.fg = COLOR_DEFAULT;
+		mi[i].ti.bg = COLOR_DEFAULT;
+		mi[i].mid = j;
+		mi[i].invoke = CVPopupLayerInvoked;
+	    }
 	}
     }
 
-    anysel = CVTestSelectFromEvent(cv,event);
-    mi[i].ti.line = true;
-    mi[i].ti.fg = COLOR_DEFAULT;
-    mi[i++].ti.bg = COLOR_DEFAULT;
+    if( i > 0 ) {
+	mi[i].ti.line = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i++].ti.bg = COLOR_DEFAULT;
+    }
+    
     for ( j=0;selectables[j]!=0; ++j, ++i ) {
 	mi[i].ti.text = (unichar_t *) _(selectables[j]);
 	mi[i].ti.text_is_1byte = true;
@@ -3071,6 +3072,7 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = j;
 	mi[i].invoke = CVPopupSelectInvoked;
+	i++; 
     }
 
     cv->had_control = (event->u.mouse.state&ksm_control)?1:0;
@@ -3084,16 +3086,12 @@ static void CVPaletteCheck(CharView *cv) {
 	}
 	CVMakeTools(cv);
     }
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( cv->b.sc->parent->multilayer && cvlayers2==NULL ) {
 	if ( palettes_fixed ) {
 	    cvlayersoff.x = 0; cvlayersoff.y = CV_TOOLS_HEIGHT+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
 	}
 	CVMakeLayers2(cv);
     } else if ( !cv->b.sc->parent->multilayer && cvlayers==NULL ) {
-#else
-    if ( cvlayers==NULL ) {
-#endif
 	if ( palettes_fixed ) {
 	    cvlayersoff.x = 0; cvlayersoff.y = CV_TOOLS_HEIGHT+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
 	}
@@ -3106,10 +3104,8 @@ int CVPaletteIsVisible(CharView *cv,int which) {
     if ( which==1 )
 return( cvtools!=NULL && GDrawIsVisible(cvtools) );
 
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( cv->b.sc->parent->multilayer )
 return( cvlayers2!=NULL && GDrawIsVisible(cvlayers2));
-#endif
 
 return( cvlayers!=NULL && GDrawIsVisible(cvlayers) );
 }
@@ -3118,10 +3114,8 @@ void CVPaletteSetVisible(CharView *cv,int which,int visible) {
     CVPaletteCheck(cv);
     if ( which==1 && cvtools!=NULL)
 	GDrawSetVisible(cvtools,visible );
-#ifdef FONTFORGE_CONFIG_TYPE3
     else if ( which==0 && cv->b.sc->parent->multilayer && cvlayers2!=NULL )
 	GDrawSetVisible(cvlayers2,visible );
-#endif
     else if ( which==0 && cvlayers!=NULL )
 	GDrawSetVisible(cvlayers,visible );
     cvvisible[which] = visible;
@@ -3141,7 +3135,6 @@ void _CVPaletteActivate(CharView *cv,int force) {
     CharView *old;
 
     CVPaletteCheck(cv);
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( layers2_active!=-1 && layers2_active!=cv->b.sc->parent->multilayer ) {
 	if ( !cvvisible[0] ) {
 	    if ( cvlayers2!=NULL ) GDrawSetVisible(cvlayers2,false);
@@ -3155,54 +3148,42 @@ void _CVPaletteActivate(CharView *cv,int force) {
 	}
     }
     layers2_active = cv->b.sc->parent->multilayer;
-#endif
     if ( (old = GDrawGetUserData(cvtools))!=cv || force) {
 	if ( old!=NULL ) {
 	    SaveOffsets(old->gw,cvtools,&cvtoolsoff);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( old->b.sc->parent->multilayer )
 		SaveOffsets(old->gw,cvlayers2,&cvlayersoff);
 	    else
-#endif
 		SaveOffsets(old->gw,cvlayers,&cvlayersoff);
 	}
 	GDrawSetUserData(cvtools,cv);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( cv->b.sc->parent->multilayer ) {
 	    LayersSwitch(cv);
 	    GDrawSetUserData(cvlayers2,cv);
-	} else
-#endif
-	{
+	} else {
 	    GDrawSetUserData(cvlayers,cv);
             CVLCheckLayerCount(cv,true);
 	}
 	if ( palettes_docked ) {
 	    ReparentFixup(cvtools,cv->v,0,0,CV_TOOLS_WIDTH,CV_TOOLS_HEIGHT);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( cv->b.sc->parent->multilayer )
 		ReparentFixup(cvlayers2,cv->v,0,CV_TOOLS_HEIGHT+2,0,0);
 	    else
-#endif
 		ReparentFixup(cvlayers,cv->v,0,CV_TOOLS_HEIGHT+2,0,0);
 	} else {
 	    if ( cvvisible[0]) {
-#ifdef FONTFORGE_CONFIG_TYPE3
 		if ( cv->b.sc->parent->multilayer )
 		    RestoreOffsets(cv->gw,cvlayers2,&cvlayersoff);
 		else
-#endif
 		    RestoreOffsets(cv->gw,cvlayers,&cvlayersoff);
 	    }
 	    if ( cvvisible[1])
 		RestoreOffsets(cv->gw,cvtools,&cvtoolsoff);
 	}
 	GDrawSetVisible(cvtools,cvvisible[1]);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( cv->b.sc->parent->multilayer )
 	    GDrawSetVisible(cvlayers2,cvvisible[0]);
 	else
-#endif
 	    GDrawSetVisible(cvlayers,cvvisible[0]);
 	if ( cvvisible[1]) {
 	    cv->showing_tool = cvt_none;
@@ -3244,7 +3225,6 @@ void CV_LayerPaletteCheck(SplineFont *sf) {
     }
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 /* make the charview point to the correct layer heads for the specified glyph */
 void SFLayerChange(SplineFont *sf) {
     CharView *old, *cv;
@@ -3266,7 +3246,6 @@ return;					/* No charviews open */
 return;
     _CVPaletteActivate(old,true);
 }
-#endif
 
 void CVPalettesHideIfMine(CharView *cv) {
     if ( cvtools==NULL )
@@ -3275,14 +3254,11 @@ return;
 	SaveOffsets(cv->gw,cvtools,&cvtoolsoff);
 	GDrawSetVisible(cvtools,false);
 	GDrawSetUserData(cvtools,NULL);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( cv->b.sc->parent->multilayer && cvlayers2!=NULL ) {
 	    SaveOffsets(cv->gw,cvlayers2,&cvlayersoff);
 	    GDrawSetVisible(cvlayers2,false);
 	    GDrawSetUserData(cvlayers2,NULL);
-	} else
-#endif
-	{
+	} else {
 	    SaveOffsets(cv->gw,cvlayers,&cvlayersoff);
 	    GDrawSetVisible(cvlayers,false);
 	    GDrawSetUserData(cvlayers,NULL);
@@ -3291,11 +3267,7 @@ return;
 }
 
 int CVPalettesWidth(void) {
-#ifdef FONTFORGE_CONFIG_TYPE3
 return( GGadgetScale(CV_LAYERS2_WIDTH));
-#else
-return( GGadgetScale(CV_LAYERS_WIDTH));
-#endif
 }
 
 /* ************************************************************************** */
@@ -3383,7 +3355,7 @@ return(bvlayers);
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
-	layersfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers2),&rq);
+	layersfont = GDrawInstanciateFont(cvlayers2,&rq);
 	layersfont = GResourceFindFont("LayersPalette.Font",layersfont);
     }
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
@@ -4026,13 +3998,10 @@ void CVPaletteDeactivate(void) {
 	if ( cv!=NULL ) {
 	    SaveOffsets(cv->gw,cvtools,&cvtoolsoff);
 	    GDrawSetUserData(cvtools,NULL);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( cv->b.sc->parent->multilayer && cvlayers2!=NULL ) {
 		SaveOffsets(cv->gw,cvlayers2,&cvlayersoff);
 		GDrawSetUserData(cvlayers2,NULL);
-	    } else
-#endif
-	    if ( cvlayers!=NULL ) {
+	    } else if ( cvlayers!=NULL ) {
 		SaveOffsets(cv->gw,cvlayers,&cvlayersoff);
 		GDrawSetUserData(cvlayers,NULL);
 	    }
@@ -4040,10 +4009,8 @@ void CVPaletteDeactivate(void) {
 	GDrawSetVisible(cvtools,false);
 	if ( cvlayers!=NULL )
 	    GDrawSetVisible(cvlayers,false);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( cvlayers2!=NULL )
 	    GDrawSetVisible(cvlayers2,false);
-#endif
     }
     if ( bvtools!=NULL ) {
 	BitmapView *bv = GDrawGetUserData(bvtools);
@@ -4096,10 +4063,8 @@ void PalettesChangeDocking(void) {
 		ReparentFixup(cvtools,cv->v,0,0,CV_TOOLS_WIDTH,CV_TOOLS_HEIGHT);
 		if ( cvlayers!=NULL )
 		    ReparentFixup(cvlayers,cv->v,0,CV_TOOLS_HEIGHT+2,0,0);
-#ifdef FONTFORGE_CONFIG_TYPE3
 		if ( cvlayers2!=NULL )
 		    ReparentFixup(cvlayers2,cv->v,0,CV_TOOLS_HEIGHT+2,0,0);
-#endif
 	    }
 	}
 	if ( bvtools!=NULL ) {
@@ -4115,10 +4080,8 @@ void PalettesChangeDocking(void) {
 	    GDrawReparentWindow(cvtools,GDrawGetRoot(NULL),0,0);
 	    if ( cvlayers!=NULL )
 		GDrawReparentWindow(cvlayers,GDrawGetRoot(NULL),0,CV_TOOLS_HEIGHT+2+45);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( cvlayers2!=NULL )
 		GDrawReparentWindow(cvlayers2,GDrawGetRoot(NULL),0,CV_TOOLS_HEIGHT+2+45);
-#endif
 	}
 	if ( bvtools!=NULL ) {
 	    GDrawReparentWindow(bvtools,GDrawGetRoot(NULL),0,0);

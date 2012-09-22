@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: ca\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-05-25 19:56+0200\n"
-"PO-Revision-Date: 2012-01-26 19:19+0100\n"
+"PO-Revision-Date: 2012-09-07 19:02-0500\n"
 "Last-Translator: Rafael Ferran i Peralta <rferran@terra.es>\n"
 "Language-Team: Catalan <kde-i18n-ca@kde.org>\n"
 "MIME-Version: 1.0\n"
@@ -21494,7 +21494,7 @@ msgstr "No hi ha cap glif anomenat %s (utilitzat a %s)"
 #: math.c:919
 #, c-format
 msgid "Bad device table for glyph %s in %s"
-msgstr "La taula de dispositiu és incorrecta pel glif %s a %"
+msgstr "La taula de dispositiu és incorrecta pel glif %s a %s"
 
 #: math.c:927
 msgid "Bad Parts List"

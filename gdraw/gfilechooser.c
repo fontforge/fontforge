@@ -483,11 +483,6 @@ return( true );
     if ( pt==NULL )
 return( true );
     gfc = (GFileChooser *) GGadgetGetUserData(t);
-    // if this is the first time we are here, we assume
-    // the current filename is what it was before. Less NULL
-    // checks in the callback function below.
-    if(!gfc->inputfilenameprevchar)
-	gfc->inputfilenameprevchar = u_copy(_GGadgetGetTitle(t));
 
     if( GFileChooserGetInputFilenameFunc(g)(g, &pt,gfc->inputfilenameprevchar)) {
 	pt_toFree = pt;
@@ -1204,6 +1199,9 @@ int GFileChooserSaveAsInputFilenameFunc( GGadget *g,
     int ew = endswithi( p, ".sfdir") || endswithi( p, ".sfd");
     int trim = 0;
 
+    printf("GFileChooserSaveAsInputFilenameFunc() old:%s\n",u_to_c(oldfilename));
+    printf("GFileChooserSaveAsInputFilenameFunc() new:%s\n",u_to_c(pt));
+    
     if( !ew ) {
 	if( endswithi( u_to_c(oldfilename), ".sfd")
 	    || endswithi( u_to_c(oldfilename), ".sfdir")) {
@@ -1245,6 +1243,20 @@ GFileChooserInputFilenameFuncType GFileChooserGetInputFilenameFunc(GGadget *g) {
     return( gfc->inputfilenamefunc );
 }
 
+
+void GFileChooserSetFilename(GGadget *g,const unichar_t *defaultfile) 
+{
+    GFileChooser *gfc = (GFileChooser *) g;
+
+    GGadgetSetTitle(g,defaultfile);
+    
+    // if this is the first time we are here, we assume
+    // the current filename is what it was before. Less NULL
+    // checks in the callback function below.
+    if(!gfc->inputfilenameprevchar)
+	gfc->inputfilenameprevchar = u_copy(_GGadgetGetTitle(&gfc->name->g));
+    
+}
 
 
 void GFileChooserSetMimetypes(GGadget *g,unichar_t **mimetypes) {

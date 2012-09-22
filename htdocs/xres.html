@@ -64,56 +64,6 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
     <DD>
       Sets the color of markings for glyphs that need hinting or instructing.
     <DT>
-      <CODE>fontforge.FontView.FontFamily</CODE>
-    <DD>
-      A list of font family names to be used in the font view to display an example
-      character over each user character.
-    <DT>
-      <CODE>fontforge.FontView.SerifFamily</CODE>
-    <DD>
-      A list of font family names to be used in the font view to display an example
-      character over each user character when the character is one of the stylized
-      variants in U+1D400-U+1D7FF. Used for characters that should be drawn with
-      a serif font.
-    <DT>
-      <CODE>fontforge.FontView.ScriptFamily</CODE>
-    <DD>
-      <IMG SRC="script-A.png" WIDTH="29" HEIGHT="25" ALIGN="Right">A list of font
-      family names to be used in the font view to display an example character
-      over each user character when the character is one of the stylized variants
-      in U+1D400-U+1D7FF. Used for characters that should be drawn with a script
-      font.
-    <DT>
-      <CODE>fontforge.FontView.FrakturFamily</CODE>
-    <DD>
-      <IMG SRC="fraktur-A.png" WIDTH="25" HEIGHT="21" ALIGN="Right">A list of font
-      family names to be used in the font view to display an example character
-      over each user character when the character is one of the stylized variants
-      in U+1D400-U+1D7FF. Used for characters that should be drawn with a fraktur
-      font.
-    <DT>
-      <CODE>fontforge.FontView.DoubleStruckFamily</CODE>
-    <DD>
-      <IMG SRC="doublestruck-B.png" WIDTH="20" HEIGHT="21" ALIGN="Right">A list
-      of font family names to be used in the font view to display an example character
-      over each user character when the character is one of the stylized variants
-      in U+1D400-U+1D7FF. Used for characters that should be drawn with a double-struck
-      font.
-    <DT>
-      <CODE>fontforge.FontView.SansFamily</CODE>
-    <DD>
-      A list of font family names to be used in the font view to display an example
-      character over each user character when the character is one of the stylized
-      variants in U+1D400-U+1D7FF. Used for characters that should be drawn with
-      a sans-serif font.
-    <DT>
-      <CODE>fontforge.FontView.MonoFamily</CODE>
-    <DD>
-      A list of font family names to be used in the font view to display an example
-      character over each user character when the character is one of the stylized
-      variants in U+1D400-U+1D7FF. Used for characters that should be drawn with
-      a monospaced font.
-    <DT>
       <CODE>fontforge.FontView.FontSize</CODE>
     <DD>
       Point size of those fonts.
@@ -841,19 +791,11 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
       Gdraw.GLine...<BR>
       Gdraw.GMenu...<BR>
       Gdraw.GMenuBar...<BR>
-      Gdraw.GTabSet...</CODE>
+      Gdraw.GTabSet...<BR>
+      Gdraw.GVTabSet...</CODE>
     <DD>
       As above.<BR>
       Specifies the box, font, color, etc. for this particular type of ggadget.
-    <DT>
-      <CODE>Gdraw.GHVGroupBox</CODE>
-    <DD>
-      <B>Don't use it!</B> Old versions of X resource editor saved
-      <CODE>Gdraw.GGroup</CODE> under this name. That was wrong, as it was never
-      actually recognized by X Resource loader and had no effect. The confusion
-      is because we actually have two gadgets: <CODE>GGroup</CODE> and
-      <CODE>GHVBox</CODE>, that are supposed to work in tandem. Actually,
-      only <CODE>GGroup</CODE> is worth styling.
     <DT>
       <CODE>Gdraw.GHVBox</CODE>
     <DD>
@@ -1054,6 +996,23 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
       "&lt;New&gt;" entry).
     <DT>
       ...
+  </DL>
+  <P>
+  <DL>
+    <DT>
+      <A NAME="deprecated">Deprecated</A>
+    <DD>
+      The following resources are deprecated and will be silently ignored.
+      <UL>
+	<LI><CODE>fontforge.FontView.FontFamily</CODE>
+	<LI><CODE>fontforge.FontView.SerifFamily</CODE>
+	<LI><CODE>fontforge.FontView.ScriptFamily</CODE>
+	<LI><CODE>fontforge.FontView.FrakturFamily</CODE>
+	<LI><CODE>fontforge.FontView.DoubleStruckFamily</CODE>
+	<LI><CODE>fontforge.FontView.SansFamily</CODE>
+	<LI><CODE>fontforge.FontView.MonoFamily</CODE>
+        <LI><CODE>Gdraw.GHVGroupBox</CODE>
+      </UL>
   </DL>
   <P>
   <DL>

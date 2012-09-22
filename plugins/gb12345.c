@@ -1,3 +1,9 @@
+/* Avoid symbol clashes that occur in some situations, by using a
+ * module-specific symbol name, instead of just
+ * "FontForgeInit". Libltdl knows to look for symbols prefixed by
+ * "modulename_LTX_". See the Autoconf manual for details. */
+#define FontForgeInit gb12345_LTX_FontForgeInit
+
 #include "plugins.h"
 
 static const unsigned short __gb12345_to_ucs[] =

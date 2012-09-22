@@ -985,7 +985,6 @@ static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
 return( ent );
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static uint8 *StringToBytes(struct psstack *stackel,int *len) {
     char *pt;
     uint8 *upt, *base, *ret;
@@ -1219,7 +1218,6 @@ return( sp-5 );
     ec->splines = ent;
 return( sp-5 );
 }
-#endif
 
 static void HandleType3Reference(IO *wrapper,EntityChar *ec,real transform[6],
 	char *tokbuf, int toksize) {
@@ -1283,15 +1281,10 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     int warned = 0;
     struct garbage tofrees;
     SplineSet *clippath = NULL;
-#if !defined(FONTFORGE_CONFIG_TYPE3)
-    char tokbuf[100];
-    const int tokbufsize = 100;
-#else
     char *tokbuf;
     const int tokbufsize = 2*65536+10;
 
     tokbuf = galloc(tokbufsize);
-#endif
 
     strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
     setlocale(LC_NUMERIC,"C");
@@ -2449,7 +2442,6 @@ printf( "-%s-\n", toknames[tok]);
 	    }
 	  break;
 	  case pt_imagemask:
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    i = PSAddImagemask(ec,stack,sp,transform,fore);
 	    while ( sp>i ) {
 		--sp;
@@ -2459,11 +2451,6 @@ printf( "-%s-\n", toknames[tok]);
 		else if ( stack[sp].type==ps_array || stack[sp].type==ps_dict )
 		    dictfree(&stack[sp].u.dict);
 	    }
-#else
-	    LogError( _("This version of FontForge does not support the imagemask operator.\nFor support configure --with-multilayer.\n") );
-	    if ( sp>=5 && (stack[sp-1].type==ps_instr || stack[sp-1].type==ps_string))
-		sp -= 5;
-#endif
 	  break;
 
 	  /* We don't do these right, but at least we'll avoid some errors with this hack */
@@ -2845,9 +2832,7 @@ printf( "-%s-\n", toknames[tok]);
     if ( ec->width == UNDEFINED_WIDTH )
 	ec->width = wrapper->advance_width;
     setlocale(LC_NUMERIC,oldloc);
-#ifdef FONTFORGE_CONFIG_TYPE3
     free(tokbuf);
-#endif
 }
 
 static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {
@@ -2907,7 +2892,6 @@ static Entity *EntityReverse(Entity *ent) {
 return( last );
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static SplinePointList *SplinesFromLayers(SplineChar *sc,int *flags, int tostroke) {
     int layer;
     SplinePointList *head=NULL, *last, *new, *nlast, *temp, *each, *transed;
@@ -3056,10 +3040,6 @@ void SFSetLayerWidthsStroked(SplineFont *sf, real strokewidth) {
 	sc->layers[ly_fore].stroke_pen.width = strokewidth;
     }
 }
-#else
-void SFSplinesFromLayers(SplineFont *sf, int tostroke) {
-}
-#endif
 
 static void EntityCharCorrectDir(EntityChar *ec) {
     SplineSet *ss;
@@ -3298,13 +3278,9 @@ static void SCInterpretPS(FILE *ps,SplineChar *sc, int *flags) {
     ec.sc = sc;
     _InterpretPS(&wrapper,&ec,NULL);
     sc->width = ec.width;
-#ifdef FONTFORGE_CONFIG_TYPE3
     sc->layer_cnt = 1;
     SCAppendEntityLayers(sc,ec.splines);
     if ( sc->layer_cnt==1 ) ++sc->layer_cnt;
-#else
-    sc->layers[ly_fore].splines = SplinesFromEntityChar(&ec,flags,false);
-#endif
     sc->layers[ly_fore].refs = revrefs(ec.refs);
     free(wrapper.top);
 }

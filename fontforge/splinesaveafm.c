@@ -1191,15 +1191,17 @@ static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype,
 	fprintf( afm, "Descender %d\n", (int) rint(dsh*1000/em) );
 }
 
+struct cc_accents {
+    SplineChar *accent;
+    real xoff, yoff;
+    struct cc_accents *next;
+};
+
 struct cc_data {
     char *name;
     SplineChar *base;
     int acnt;
-    struct cc_accents {
-	SplineChar *accent;
-	real xoff, yoff;
-	struct cc_accents *next;
-    } *accents;
+    struct cc_accents *accents;
 };
 
 struct cc_container {
