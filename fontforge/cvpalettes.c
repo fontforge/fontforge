@@ -1405,6 +1405,10 @@ return;
 #define MID_Earlier	5
 #define MID_Later	6
 #define MID_Last	7
+#define MID_MakeLine 100
+#define MID_MakeArc  200
+#define MID_InsertPtOnSplineAt  2309
+#define MID_NameContour  2318
 
 static void CVLayer2Invoked(GWindow v, GMenuItem *mi, GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(v);
@@ -2997,6 +3001,27 @@ static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
       case 3:
 	CVMakeClipPath(cv);
       break;
+    case MID_MakeLine: {
+	CharView *cv = (CharView *) GDrawGetUserData(v);
+	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_alt));
+	break;
+    }
+    case MID_MakeArc: {
+	CharView *cv = (CharView *) GDrawGetUserData(v);
+	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_alt));
+	break;
+    }
+    case MID_InsertPtOnSplineAt: {
+	CharView *cv = (CharView *) GDrawGetUserData(v);
+	_CVMenuInsertPt( cv );
+	break;
+    }
+    case MID_NameContour: {
+	CharView *cv = (CharView *) GDrawGetUserData(v);
+	_CVMenuNameContour( cv );
+	break;
+    }
+      
     }
 }
 
@@ -3073,6 +3098,41 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i].mid = j;
 	mi[i].invoke = CVPopupSelectInvoked;
 	i++; 
+    }
+
+    int cnt = CVCountSelectedPoints(cv);
+    if( cnt > 1 ) {
+	mi[i].ti.text = (unichar_t *) _("Make Line");
+	mi[i].ti.text_is_1byte = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = MID_MakeLine;
+	mi[i].invoke = CVPopupSelectInvoked;
+	i++;
+
+	mi[i].ti.text = (unichar_t *) _("Make Arc");
+	mi[i].ti.text_is_1byte = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = MID_MakeArc;
+	mi[i].invoke = CVPopupSelectInvoked;
+	i++;
+
+	mi[i].ti.text = (unichar_t *) _("Insert Point On Spline At...");
+	mi[i].ti.text_is_1byte = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = MID_InsertPtOnSplineAt;
+	mi[i].invoke = CVPopupSelectInvoked;
+	i++;
+
+	mi[i].ti.text = (unichar_t *) _("Name Contour");
+	mi[i].ti.text_is_1byte = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = MID_NameContour;
+	mi[i].invoke = CVPopupSelectInvoked;
+	i++;
     }
 
     cv->had_control = (event->u.mouse.state&ksm_control)?1:0;

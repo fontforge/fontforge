@@ -224,6 +224,37 @@ return 1;
 return 0;
 }
 
+/**
+ * Returns the number of points which are currently selected in this
+ * charview. Handy for menus and the like which might like to grey out
+ * if there are <2, or <3 points actively selected.
+ */
+int CVCountSelectedPoints(CharView *cv) {
+    SplinePointList *spl;
+    Spline *spline, *first;
+    int ret = 0;
+
+    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
+	first = NULL;
+	if ( spl->first->selected ) {
+	    ret++;
+	}
+	first = NULL;
+
+	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+	    if ( spline->to->selected ) {
+		ret++;
+	    }
+	    if ( first==NULL ) {
+		first = spline;
+	    }
+	}
+    }
+    return ret;
+}
+
+
+	
 /* floor(pt) would _not_ be more correct, as we want
  * shapes not to cross axes multiple times while scaling.
  */
@@ -8129,7 +8160,7 @@ static void CVMenuMakeLine(GWindow gw, struct gmenuitem *mi, GEvent *e) {
     _CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_alt));
 }
 
-static void _CVMenuNameContour(CharView *cv) {
+void _CVMenuNameContour(CharView *cv) {
     SplinePointList *spl, *onlysel = NULL;
     SplinePoint *sp;
     char *ret;
@@ -8286,7 +8317,7 @@ return( false );
 return( true );
 }
 
-static void _CVMenuInsertPt(CharView *cv) {
+void _CVMenuInsertPt(CharView *cv) {
     SplineSet *spl;
     Spline *s, *found=NULL, *first;
     struct insertonsplineat iosa;
