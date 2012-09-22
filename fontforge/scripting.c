@@ -5279,7 +5279,7 @@ static void bAutoHint(Context *c) {
 static void bSubstitutionPoints(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVAutoHint(c->curfv);
+    FVAutoHintSubs(c->curfv);
 }
 
 static void bAutoCounter(Context *c) {
