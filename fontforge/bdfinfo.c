@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -499,19 +500,19 @@ static void BdfP_Expose(struct bdf_dlg *bd, GWindow pixmap) {
 	    GDrawFillRect(pixmap,&r,ACTIVE_BORDER);
 	}
 	GDrawPushClip(pixmap,&clip,&old);
-	GDrawDrawBiText8(pixmap,4,i*(bd->fh+1)+bd->as,bdf->props[i+cur->top_prop].name,-1,NULL,MAIN_FOREGROUND);
+	GDrawDrawText8(pixmap,4,i*(bd->fh+1)+bd->as,bdf->props[i+cur->top_prop].name,-1,MAIN_FOREGROUND);
 	GDrawPopClip(pixmap,&old);
 	switch ( bdf->props[i+cur->top_prop].type&~prt_property ) {
 	  case prt_string: case prt_atom:
-	    GDrawDrawBiText8(pixmap,bd->value_x+2,i*(bd->fh+1)+bd->as,bdf->props[i+cur->top_prop].u.str,-1,NULL,MAIN_FOREGROUND);
+	    GDrawDrawText8(pixmap,bd->value_x+2,i*(bd->fh+1)+bd->as,bdf->props[i+cur->top_prop].u.str,-1,MAIN_FOREGROUND);
 	  break;
 	  case prt_int:
 	    sprintf( buffer, "%d", bdf->props[i+cur->top_prop].u.val );
-	    GDrawDrawBiText8(pixmap,bd->value_x+2,i*(bd->fh+1)+bd->as,buffer,-1,NULL,MAIN_FOREGROUND);
+	    GDrawDrawText8(pixmap,bd->value_x+2,i*(bd->fh+1)+bd->as,buffer,-1,MAIN_FOREGROUND);
 	  break;
 	  case prt_uint:
 	    sprintf( buffer, "%u", (unsigned) bdf->props[i+cur->top_prop].u.val );
-	    GDrawDrawBiText8(pixmap,bd->value_x+2,i*(bd->fh+1)+bd->as,buffer,-1,NULL,MAIN_FOREGROUND);
+	    GDrawDrawText8(pixmap,bd->value_x+2,i*(bd->fh+1)+bd->as,buffer,-1,MAIN_FOREGROUND);
 	  break;
 	}
 	GDrawDrawLine(pixmap,0,i*(bd->fh+1)+bd->fh,bd->vwidth,i*(bd->fh+1)+bd->fh,0x808080);
@@ -533,7 +534,7 @@ static void BdfP_Expose(struct bdf_dlg *bd, GWindow pixmap) {
 /* GT: word is used for the latin script and the latin language) and that you, as */
 /* GT: a translator may need to ask me to disambiguate more strings. Please do so: */
 /* GT:      <pfaedit@users.sourceforge.net> */
-	GDrawDrawBiText8(pixmap,4,i*(bd->fh+1)+bd->as,S_("Property|New..."),-1,NULL,0xff0000);
+	GDrawDrawText8(pixmap,4,i*(bd->fh+1)+bd->as,S_("Property|New..."),-1,0xff0000);
 	GDrawDrawLine(pixmap,0,i*(bd->fh+1)+bd->fh,bd->vwidth,i*(bd->fh+1)+bd->fh, _ggadget_Default_Box.border_darker);
     }
     GDrawDrawLine(pixmap,bd->value_x,0,bd->value_x,bd->vheight, _ggadget_Default_Box.border_darker);
@@ -780,13 +781,13 @@ return;
 	rq.family_name = sans;
 	rq.point_size = 10;
 	rq.weight = 400;
-	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	font = GDrawInstanciateFont(gw,&rq);
 	font = GResourceFindFont("BDFProperties.Font",font);
     }
     bd.font = font;
     {
 	int as, ds, ld;
-	GDrawFontMetrics(bd.font,&as,&ds,&ld);
+	GDrawWindowFontMetrics(gw,bd.font,&as,&ds,&ld);
 	bd.as = as; bd.fh = as+ds;
     }
 

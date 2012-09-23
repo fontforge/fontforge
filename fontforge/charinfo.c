@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -26,12 +27,15 @@
  */
 
 #include "fontforgeui.h"
+#include "annotations.h"
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>
 #include <chardata.h>
 #include "ttf.h"		/* For MAC_DELETED_GLYPH_NAME */
 #include <gkeysym.h>
+#include "is_LIGATURE.h"
+
 extern int lookup_hideunused;
 
 static int last_gi_aspect = 0;
@@ -383,27 +387,6 @@ return;
 	GListDelSelected(list);
 	chunkfree(cur,sizeof(HintMask));
     }
-}
-
-static int UnicodeContainsCombiners(int uni) {
-    const unichar_t *alt;
-
-    if ( uni<0 || uni>=unicode4_size )
-return( -1 );
-    if ( iscombining(uni))
-return( true );
-
-    if ( !isdecompositionnormative(uni) || unicode_alternates[uni>>8]==NULL )
-return( false );
-    alt = unicode_alternates[uni>>8][uni&0xff];
-    if ( alt==NULL )
-return( false );
-    while ( *alt ) {
-	if ( UnicodeContainsCombiners(*alt))
-return( true );
-	++alt;
-    }
-return( false );
 }
 
 static int CI_NewCounter(GGadget *g, GEvent *e) {
@@ -1686,11 +1669,12 @@ static int CI_TileMarginChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
+/* Generate default settings for the entries in ligature lookup
+ * subtables. */
 static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
     const unichar_t *alt=NULL, *pt;
     char *components = NULL;
     int len;
-    const char *uname;
     unichar_t hack[30], *upt;
     char buffer[80];
 
@@ -1706,17 +1690,14 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 	else if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2]))) {
 	    if ( alt_lig != -10 )	/* alt_lig = 10 => mac unicode decomp */
 		alt = NULL;		/* Otherwise, don't treat accented letters as ligatures */
-	} else if ( _UnicodeNameAnnot!=NULL &&
-		(uname = _UnicodeNameAnnot[uni>>16][(uni>>8)&0xff][uni&0xff].name)!=NULL &&
-		strstr(uname,"LIGATURE")==NULL &&
-		strstr(uname,"VULGAR FRACTION")==NULL &&
+	} else if (! is_LIGATURE_or_VULGAR_FRACTION((unsigned int) uni) &&
 		uni!=0x152 && uni!=0x153 &&	/* oe ligature should not be standard */
 		uni!=0x132 && uni!=0x133 &&	/* nor ij */
 		(uni<0xfb2a || uni>0xfb4f) &&	/* Allow hebrew precomposed chars */
 		uni!=0x215f &&
 		!((uni>=0x0958 && uni<=0x095f) || uni==0x929 || uni==0x931 || uni==0x934)) {
 	    alt = NULL;
-	} else if ( _UnicodeNameAnnot==NULL ) {
+	} else if ( names_db==NULL ) {
 	    if ( (uni>=0xbc && uni<=0xbe ) ||		/* Latin1 fractions */
 		    (uni>=0x2153 && uni<=0x215e ) ||	/* other fractions */
 		    (uni>=0xfb00 && uni<=0xfb06 ) ||	/* latin ligatures */
@@ -4171,7 +4152,6 @@ return;
 
     if ( !boxset ) {
 	extern GBox _ggadget_Default_Box;
-	extern void GGadgetInit(void);
 	GGadgetInit();
 	smallbox = _ggadget_Default_Box;
 	smallbox.padding = 1;
@@ -5072,7 +5052,7 @@ return;
 	    rq.utf8_family_name = MONO_UI_FAMILIES;
 	    rq.point_size = 12;
 	    rq.weight = 400;
-	    font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(ci->gw),&rq);
+	    font = GDrawInstanciateFont(ci->gw,&rq);
 	    font = GResourceFindFont("GlyphInfo.Font",font);
 	}
 	for ( i=0; i<5; ++i )

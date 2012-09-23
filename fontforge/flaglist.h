@@ -2,7 +2,7 @@
 #ifndef _FLAGLIST_H_
 #define _FLAGLIST_H_
 
-#include "basics.h"
+#include <basics.h>
 
 struct flaglist { const char *name; int flag; };
 #define FLAGLIST_EMPTY { NULL, 0 }

@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -25,6 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "annotations.h"
 #include <gkeysym.h>
 #include <utype.h>
 #include <ustring.h>
@@ -161,6 +163,7 @@ static void BC_CharChangedUpdate(BDFChar *bc) {
 
 static char *BVMakeTitles(BitmapView *bv, BDFChar *bc,char *buf) {
     char *title;
+    const char *uniname;
     SplineChar *sc;
     BDFFont *bdf = bv->bdf;
 
@@ -175,10 +178,12 @@ static char *BVMakeTitles(BitmapView *bv, BDFChar *bc,char *buf) {
     sprintf(buf,_("%1$.80s at %2$d size %3$d from %4$.80s"),
 	    sc!=NULL ? sc->name : "<Nameless>", bv->enc, bdf->pixelsize, sc==NULL ? "" : sc->parent->fontname);
     title = copy(buf);
-    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x110000 && _UnicodeNameAnnot!=NULL &&
-	    _UnicodeNameAnnot[sc->unicodeenc>>16][(sc->unicodeenc>>8)&0xff][sc->unicodeenc&0xff].name!=NULL ) {
-	strcat(buf, " ");
-	strcpy(buf+strlen(buf), _UnicodeNameAnnot[sc->unicodeenc>>16][(sc->unicodeenc>>8)&0xff][sc->unicodeenc&0xff].name);
+    if ( sc->unicodeenc != -1) {
+	uniname = uninm_name(names_db, (unsigned int) sc->unicodeenc);
+	if (uniname != NULL) {
+	    strcat(buf, " ");
+	    strcpy(buf+strlen(buf), uniname);
+	}
     }
 return( title );
 }
@@ -631,16 +636,10 @@ static void BVDrawRefName(BitmapView *bv,GWindow pixmap,BDFRefChar *ref,int fg) 
     if ( x<-400 || y<-40 || x>bv->width+400 || y>bv->height )
 return;
 
-    if ( GDrawHasCairo(pixmap)&gc_pango ) {
-	GDrawLayoutInit(pixmap,refinfo,-1,bv->small);
-	GDrawLayoutExtents(pixmap,&size);
-	GDrawLayoutDraw(pixmap,x-size.width/2,y,fg);
-	len = size.width;
-    } else {
-	GDrawSetFont(pixmap,bv->small);
-	len = GDrawGetBiText8Width(pixmap,refinfo,-1,-1,NULL);
-	GDrawDrawBiText8(pixmap,x-len/2,y,refinfo,-1,NULL,fg);
-    }
+    GDrawLayoutInit(pixmap,refinfo,-1,bv->small);
+    GDrawLayoutExtents(pixmap,&size);
+    GDrawLayoutDraw(pixmap,x-size.width/2,y,fg);
+    len = size.width;
     free(refinfo);
 }
 
@@ -800,12 +799,12 @@ static void BVInfoDrawText(BitmapView *bv, GWindow pixmap ) {
 
     sprintf(buffer,"%d%s%d", bv->info_x, coord_sep, bv->info_y );
     buffer[11] = '\0';
-    GDrawDrawBiText8(pixmap,bv->infoh+RPT_DATA,ybase,buffer,-1,NULL,GDrawGetDefaultForeground(NULL));
+    GDrawDrawText8(pixmap,bv->infoh+RPT_DATA,ybase,buffer,-1,GDrawGetDefaultForeground(NULL));
 
     if ( bv->active_tool!=cvt_none ) {
 	sprintf(buffer,"%d%s%d", bv->info_x-bv->pressed_x, coord_sep, bv->info_y-bv->pressed_y );
 	buffer[11] = '\0';
-	GDrawDrawBiText8(pixmap,bv->infoh+RPT_DATA,ybase+bv->sfh+10,buffer,-1,NULL,GDrawGetDefaultForeground(NULL));
+	GDrawDrawText8(pixmap,bv->infoh+RPT_DATA,ybase+bv->sfh+10,buffer,-1,GDrawGetDefaultForeground(NULL));
     }
 }
 
@@ -2360,15 +2359,15 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
 	/*  so the font I used to use isn't found, and a huge monster is */
 	/*  inserted instead */
 	if ( infofamily==NULL )
-	    infofamily = (GDrawHasCairo(bv->v)&(gc_alpha|gc_pango))?SANS_UI_FAMILIES:FIXED_UI_FAMILIES;
+	    infofamily = SANS_UI_FAMILIES;
     }
 
     memset(&rq,0,sizeof(rq));
     rq.utf8_family_name = infofamily;
     rq.point_size = -7;
     rq.weight = 400;
-    bv->small = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
-    GDrawFontMetrics(bv->small,&as,&ds,&ld);
+    bv->small = GDrawInstanciateFont(gw,&rq);
+    GDrawWindowFontMetrics(gw,bv->small,&as,&ds,&ld);
     bv->sfh = as+ds; bv->sas = as;
 
     BVFit(bv);

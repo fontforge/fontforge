@@ -278,7 +278,6 @@ typedef struct gtextfield {
     unsigned int accepts_tabs: 1;
     unsigned int accepts_returns: 1;
     unsigned int wrap: 1;
-    unsigned int dobitext: 1;	/* has at least one right to left character */
     unsigned int password: 1;
     unsigned int dontdraw: 1;	/* Used when the tf is part of a larger control, and the control determines when to draw the tf */
     unsigned int donthook: 1;	/* Used when the tf is part of a the gchardlg.c */
@@ -286,7 +285,6 @@ typedef struct gtextfield {
     unsigned int incr_down: 1;	/* Direction of increments when numeric_scroll events happen */
     unsigned int completionfield: 1;
     unsigned int was_completing: 1;
-    unsigned int pango: 1;
     uint8 fh;
     uint8 as;
     uint8 nw;			/* Width of one character (an "n") */
@@ -302,8 +300,6 @@ typedef struct gtextfield {
     GScrollBar *hsb, *vsb;
     int16 lcnt, lmax;
     int32 *lines;		/* offsets in text to the start of the nth line */
-    GBiText bidata;
-    int32 bilen;		/* allocated size of bidata */
     int16 xmax;
     GIC *gic;
     GTimer *numeric_scroll;
@@ -519,7 +515,6 @@ void _GWidget_ClearPopupOwner(GGadget *g);
 
 extern void _GGadgetCopyDefaultBox(GBox *box);
 extern FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box,FontInstance *deffont);
-extern void GGadgetInit(void);
 extern void _ggadget_underlineMnemonic(GWindow gw,int32 x,int32 y,unichar_t *label,
 	unichar_t mneumonic, Color fg,int ymax);
 extern void _ggadgetFigureSize(GWindow gw, GBox *design, GRect *r, int isdef);
@@ -551,7 +546,6 @@ extern int GBoxBorderWidth(GWindow gw, GBox *box);
 extern int GBoxExtraSpace(GGadget *g);
 extern int GBoxDrawnWidth(GWindow gw, GBox *box);
 
-extern int GGadgetWithin(GGadget *g, int x, int y);
 extern int GGadgetInnerWithin(GGadget *g, int x, int y);
 
 extern int GTextInfoGetWidth(GWindow base,GTextInfo *ti,FontInstance *font);
@@ -566,10 +560,6 @@ extern GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt);
 extern GTextInfo **GTextInfoArrayCopy(GTextInfo **ti);
 extern int GTextInfoArrayCount(GTextInfo **ti);
 extern int GTextInfoCompare(GTextInfo *ti1, GTextInfo *ti2);
-extern void GMenuItemArrayFree(GMenuItem *mi);
-extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
-extern void GMenuItem2ArrayFree(GMenuItem2 *mi);
-extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
 extern int GMenuItemArrayMask(GMenuItem *mi);
 extern int GMenuItemArrayAnyUnmasked(GMenuItem *mi);
 

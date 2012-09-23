@@ -58,7 +58,7 @@ capable of using composite.
 #include <vms_x_fix.h>
 #endif
 #ifdef HAVE_CONFIG_H
-# include "config.h"
+#include <config.h>
 #endif
 
 #ifndef X_DISPLAY_MISSING
@@ -81,10 +81,7 @@ capable of using composite.
 # ifndef _NO_LIBCAIRO
 #  include <cairo/cairo.h>
 #  include <cairo/cairo-xlib.h>
-#  include <cairo/cairo-ft.h>
-#  include <fontconfig/fontconfig.h>
 # endif
-# ifndef _NO_LIBPANGO
 #  define GTimer GTimer_GTK
 #  include <ft2build.h>
 #  ifdef __VMS
@@ -96,7 +93,6 @@ typedef pid_t GPid;
 #  endif
 #  include <pango/pango.h>
 #  undef GTimer
-# endif
 #endif
 
 #include "gdrawP.h"
@@ -148,7 +144,6 @@ typedef struct gxwindow /* :GWindow */ {
     unsigned int is_popup: 1;
     unsigned int disable_expose_requests: 1;
     unsigned int usecairo: 1;		/* use a cairo context */
-    unsigned int usepango: 1;		/* draw text with pango */
     unsigned int is_dlg: 1;
     unsigned int not_restricted: 1;
     unsigned int was_positioned: 1;
@@ -161,14 +156,13 @@ typedef struct gxwindow /* :GWindow */ {
     GCursor cursor;
     Window parentissimus;
     struct gxinput_context *gic, *all;
+    PangoLayout  *pango_layout;
 #ifndef _NO_LIBCAIRO
     cairo_t *cc;
     cairo_surface_t *cs;
     struct gcstate cairo_state;
 #endif
-#ifndef _NO_LIBPANGO
     XftDraw *xft_w;
-#endif
     Window transient_owner;
 } *GXWindow;
 
@@ -354,16 +348,12 @@ typedef struct gxdisplay /* : GDisplay */ {
 # endif
     GXWindow default_icon;
     struct xkb xkb;
-#ifndef _NO_LIBPANGO
     PangoFontMap *pango_fontmap;
     PangoContext *pango_context;
-    PangoLayout  *pango_layout;
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+# if !defined(_NO_LIBCAIRO)
     PangoFontMap *pangoc_fontmap;
     PangoContext *pangoc_context;
-    PangoLayout  *pangoc_layout;
 # endif
-#endif
     Window last_nontransient_window;
 } GXDisplay;
 

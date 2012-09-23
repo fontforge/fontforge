@@ -61,7 +61,6 @@ int _GGadget_Skip = 6;
 int _GGadget_TextImageSkip = 4;
 char *_GGadget_ImagePath = NULL;
 static int _ggadget_inited=0;
-extern void GGadgetInit(void);
 static Color popup_foreground=0, popup_background=COLOR_CREATE(0xff,0xff,0xc0);
 static int popup_delay=1000, popup_lifetime=20000;
 
@@ -251,7 +250,7 @@ void *GResource_font_cvt(char *val, void *def) {
     if ( *pt!='\0' )
 	rq.utf8_family_name = freeme = copy(pt);
 		
-    fi = GDrawInstanciateFont(screen_display,&rq);
+    fi = GDrawInstanciateFont(NULL,&rq);
 
     if ( freeme!=NULL )
 	free(freeme);
@@ -399,7 +398,7 @@ FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box, FontInstance *deffon
 	rq.point_size = 10;
 	rq.weight = 400;
 	rq.style = 0;
-	fi = GDrawInstanciateFont(screen_display,&rq);
+	fi = GDrawInstanciateFont(NULL,&rq);
 	if ( fi==NULL )
 	    GDrawFatalError("Cannot find a default font for gadgets");
     }
@@ -463,7 +462,7 @@ void GGadgetInit(void) {
 	    rq.point_size = localeptsize();
 	    rq.weight = 400;
 	    rq.style = 0;
-	    popup_font = GDrawInstanciateFont(screen_display,&rq);
+	    popup_font = GDrawInstanciateFont(NULL,&rq);
 	    if ( popup_font==NULL )
 		popup_font = _ggadget_default_font;
 	}
@@ -577,7 +576,7 @@ return( true );
 	    temp = -1;
 	    if (( ept = u_strchr(pt,'\n'))!=NULL )
 		temp = ept-pt;
-	    temp = GDrawGetBiTextWidth(popup,pt,temp,temp,NULL);
+	    temp = GDrawGetTextWidth(popup,pt,temp);
 	    if ( temp>width ) width = temp;
 	    ++lines;
 	    pt = ept+1;
@@ -628,7 +627,7 @@ return( true );
 		temp = -1;
 		if (( ept = u_strchr(pt,'\n'))!=NULL )
 		    temp = ept-pt;
-		GDrawDrawBiText(popup,x,y,pt,temp,NULL,popup_foreground);
+		GDrawDrawText(popup,x,y,pt,temp,popup_foreground);
 		y += fh;
 		pt = ept+1;
 	    } while ( ept!=NULL && *pt!='\0' );
@@ -984,35 +983,24 @@ return( true );
 
 void _ggadget_underlineMnemonic(GWindow gw,int32 x,int32 y,unichar_t *label,
 	unichar_t mnemonic, Color fg, int maxy) {
-    unichar_t *pt;
     int point = GDrawPointsToPixels(gw,1);
     int width;
     /*GRect clip;*/
 
     if ( mnemonic=='\0' )
 return;
-    if ( GDrawHasCairo(gw)&gc_pango ) {
-	char *ctext = u2utf8_copy(label);
-	char *cpt = utf8_strchr(ctext,mnemonic);
-	GRect space;
-	if ( cpt==NULL && isupper(mnemonic))
-	    cpt = strchr(ctext,tolower(mnemonic));
-	if ( cpt==NULL )
+    char *ctext = u2utf8_copy(label);
+    char *cpt = utf8_strchr(ctext,mnemonic);
+    GRect space;
+    if ( cpt==NULL && isupper(mnemonic))
+	cpt = strchr(ctext,tolower(mnemonic));
+    if ( cpt==NULL )
 return;
-	GDrawLayoutInit(gw,ctext,-1,NULL);
-	GDrawLayoutIndexToPos(gw, cpt-ctext, &space);
-	free(ctext);
-	x += space.x;
-	width = space.width;
-    } else {
-	pt = u_strchr(label,mnemonic);
-	if ( pt==NULL && isupper(mnemonic))
-	    pt = u_strchr(label,tolower(mnemonic));
-	if ( pt==NULL )
-return;
-	x += GDrawGetBiTextWidth(gw,label,pt-label,pt-label,NULL);
-	width = GDrawGetBiTextWidth(gw,pt,1,1,NULL);
-    }
+    GDrawLayoutInit(gw,ctext,-1,NULL);
+    GDrawLayoutIndexToPos(gw, cpt-ctext, &space);
+    free(ctext);
+    x += space.x;
+    width = space.width;
     GDrawSetLineWidth(gw,point);
     y += 2*point;
     if ( y+point-1 >= maxy )

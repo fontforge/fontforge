@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -517,7 +518,7 @@ static void KP_ExposeKerns(KPData *kpd,GWindow pixmap,GRect *rect) {
 	    sprintf( buffer, "%d,%d ", kern->newoff, kern->newyoff );
 	if ( kern->ac!=NULL )
 	    strncat(buffer,kern->ac->name,sizeof(buffer)-strlen(buffer)-1);
-	GDrawDrawBiText8(pixmap,15,subclip.y+kpd->uh-kpd->fh+kpd->as,buffer,-1,NULL,
+	GDrawDrawText8(pixmap,15,subclip.y+kpd->uh-kpd->fh+kpd->as,buffer,-1,
 		kern->kp!=NULL && kern->newoff!=kern->kp->off ? 0xff0000 : 0x000000 );
 	if ( i+kpd->off_top==kpd->selected ) {
 	    sel.x = 0; sel.width = kpd->vwidth-1;
@@ -1231,11 +1232,11 @@ return;
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
-	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	font = GDrawInstanciateFont(gw,&rq);
 	font = GResourceFindFont("Combinations.Font",font);
     }
     kpd.font = font;
-    GDrawFontMetrics(kpd.font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(gw,kpd.font,&as,&ds,&ld);
     kpd.fh = as+ds; kpd.as = as;
 
     kpd.uh = (4*kpd.bdf->pixelsize/3)+kpd.fh+6;

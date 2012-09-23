@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -2195,8 +2196,27 @@ static int GFI_NameChange(GGadget *g, GEvent *e) {
 	    if ( noticeweights[j][i]!=NULL )
 	break;
 	}
-	if ( gfi->human_untitled )
-	    GGadgetSetTitle(GWidgetGetControl(gw,CID_Human),uname);
+
+	/* If the user didn't set the full name yet, we guess it from the
+	 * postrscript name */
+	if ( gfi->human_untitled ) {
+	    unichar_t *cp = u_copy(uname);
+	    int i=0;
+	    /* replace the last hyphen with space */
+	    for( i=u_strlen(cp); i>=0; i-- ) {
+		if( cp[i] == '-' ) {
+		    cp[i] = ' ';
+		    break;
+		}
+	    }
+	    /* If the postscript name ends with "Regular" it is recommended not
+	     * to include it in the full name */
+	    if(u_endswith(cp,c_to_u(" Regular")) || u_endswith(cp,c_to_u(" regular"))) {
+		cp[u_strlen(cp) - strlen(" Regular")] ='\0';
+	    }
+	    GGadgetSetTitle(GWidgetGetControl(gw,CID_Human),cp);
+	    free(cp);
+	}
 	if ( gfi->family_untitled ) {
 	    const unichar_t *ept = uname+u_strlen(uname); unichar_t *temp;
 	    for ( i=0; knownweights[i]!=NULL; ++i ) {
@@ -5587,14 +5607,14 @@ void GFI_LookupScrollbars(struct gfi_data *gfi, int isgpos, int refresh) {
 	if ( lk->all[i].deleted )
     continue;
 	++lcnt;
-	wmax = GDrawGetBiText8Width(gw,lk->all[i].lookup->lookup_name,-1,-1,NULL);
+	wmax = GDrawGetText8Width(gw,lk->all[i].lookup->lookup_name,-1);
 	if ( wmax > width ) width = wmax;
 	if ( lk->all[i].open ) {
 	    for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
 		if ( lk->all[i].subtables[j].deleted )
 	    continue;
 		++lcnt;
-		wmax = gfi->fh+GDrawGetBiText8Width(gw,lk->all[i].subtables[j].subtable->subtable_name,-1,-1,NULL);
+		wmax = gfi->fh+GDrawGetText8Width(gw,lk->all[i].subtables[j].subtable->subtable_name,-1);
 		if ( wmax > width ) width = wmax;
 	    }
 	}
@@ -6487,8 +6507,8 @@ static void LookupExpose(GWindow pixmap, struct gfi_data *gfi, int isgpos) {
 	    GDrawDrawLine(pixmap,r.x+2,r.y+(r.height/2), r.x+r.width-2,r.y+(r.height/2), 0x000000);
 	    if ( !lk->all[i].open )
 		GDrawDrawLine(pixmap,r.x+(r.width/2),r.y+2, r.x+(r.width/2),r.y+r.height-2, 0x000000);
-	    GDrawDrawBiText8(pixmap,r.x+gfi->fh, r.y+gfi->as,
-		    lk->all[i].lookup->lookup_name,-1,NULL,MAIN_FOREGROUND);
+	    GDrawDrawText8(pixmap,r.x+gfi->fh, r.y+gfi->as,
+		    lk->all[i].lookup->lookup_name,-1,MAIN_FOREGROUND);
 	}
 	++lcnt;
 	if ( lk->all[i].open ) {
@@ -6503,8 +6523,8 @@ static void LookupExpose(GWindow pixmap, struct gfi_data *gfi, int isgpos) {
 		    }
 		    r.x = LK_MARGIN+2*gfi->fh-lk->off_left;
 		    r.y = LK_MARGIN+(lcnt-lk->off_top)*gfi->fh;
-		    GDrawDrawBiText8(pixmap,r.x, r.y+gfi->as,
-			    lk->all[i].subtables[j].subtable->subtable_name,-1,NULL,MAIN_FOREGROUND);
+		    GDrawDrawText8(pixmap,r.x, r.y+gfi->as,
+			    lk->all[i].subtables[j].subtable->subtable_name,-1,MAIN_FOREGROUND);
 		}
 		++lcnt;
 	    }
@@ -10699,11 +10719,11 @@ return;
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 12;
 	rq.weight = 400;
-	fi_font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	fi_font = GDrawInstanciateFont(gw,&rq);
 	fi_font = GResourceFindFont("FontInfo.Font",fi_font);
     }
     d->font = fi_font;
-    GDrawFontMetrics(d->font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(gw,d->font,&as,&ds,&ld);
     d->as = as; d->fh = as+ds;
 
     GTextInfoListFree(namelistnames);

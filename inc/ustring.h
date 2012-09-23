@@ -29,8 +29,8 @@
 #include <stdarg.h>
 #include <string.h>
 #include <memory.h>
-#include "basics.h"
-#include "charset.h"
+#include <basics.h>
+#include <charset.h>
 
 extern char *copy(const char *);
 extern char *copyn(const char *,long);
@@ -126,11 +126,38 @@ extern int AllAscii(const char *);
 extern char *StripToASCII(const char *utf8_str);
 
 /**
- * Remove trailing \n or \r from the given string. No memory allocations
- * are performed, null is injected over these terminators to trim the string.
+ * Remove trailing \n or \r from the given string. No memory
+ * allocations are performed, null is injected over these terminators
+ * to trim the string.
+ *
+ * This function is designed to be impotent if called with a string
+ * that does not end with \n or \r. ie, you don't need to redundantly
+ * check if there is a newline at the end of string and not call here
+ * if there is no newline. You can just call here with any string and
+ * be assured that afterwards there will be no trailing newline or
+ * carrage return character found at the end of the string pointed to
+ * by 'p'.
  */
 extern char* chomp( char* p );
 
+/**
+ * Return true if the haystack plain string ends with the string
+ * needle. Return 0 otherwise.
+ *
+ * Needles which are larger than the haystack are handled.
+ *
+ * No new strings are allocated, freed, or returned.
+ */
 int endswith(const char *haystack,const char *needle);
+
+/**
+ * Return true if the haystack unicode string ends with the string needle.
+ * Return 0 otherwise.
+ *
+ * Needles which are larger than the haystack are handled.
+ *
+ * No new strings are allocated, freed, or returned.
+ */
+extern int u_endswith(const unichar_t *haystack,const unichar_t *needle);
 
 #endif

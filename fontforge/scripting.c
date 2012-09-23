@@ -1531,11 +1531,7 @@ static void bLoadPluginDir(Context *c) {
 	_dir = script2utf8_copy(c->a.vals[1].u.sval);
 	dir = utf82def_copy(_dir); free(_dir);
     }
-#if !defined(NODYNAMIC)
     LoadPluginDir(dir);
-#else
-    ScriptError(c,"This version of fontforge does not support plugins");
-#endif
     free(dir);
 }
 
@@ -5283,19 +5279,19 @@ static void bAutoHint(Context *c) {
 static void bSubstitutionPoints(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVAutoHint(c->curfv);
+    FVAutoHintSubs(c->curfv);
 }
 
 static void bAutoCounter(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVAutoHint(c->curfv);
+    FVAutoCounter(c->curfv);
 }
 
 static void bDontAutoHint(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVAutoHint(c->curfv);
+    FVDontAutoHint(c->curfv);
 }
 
 static void bAutoInstr(Context *c) {

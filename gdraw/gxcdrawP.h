@@ -4,7 +4,7 @@
 extern int _GXCDraw_hasCairo(void);
 #ifndef _NO_LIBCAIRO
 
-extern void _GXCDraw_NewWindow(GXWindow nw,Color bg);
+extern void _GXCDraw_NewWindow(GXWindow nw);
 extern void _GXCDraw_ResizeWindow(GXWindow gw,GRect *rect);
 extern void _GXCDraw_DestroyWindow(GXWindow gw);
 
@@ -47,27 +47,18 @@ extern void _GXCDraw_Flush(GXWindow gw);
 extern void _GXCDraw_DirtyRect(GXWindow gw,double x, double y, double width, double height);
 
 #include "fontP.h"
-extern void _GXCDraw_FontMetrics(GXWindow w,GFont *fi,int *as, int *ds, int *ld);
-extern int32 _GXCDraw_DoText8(GWindow gw, int32 x, int32 y,
-	const char *text, int32 cnt, FontMods *mods, Color col,
-	enum text_funcs drawit, struct tf_arg *arg);
-extern int32 _GXCDraw_DoText(GWindow gw, int32 x, int32 y,
-	const unichar_t *text, int32 cnt, FontMods *mods, Color col,
-	enum text_funcs drawit, struct tf_arg *arg);
-
 #endif
-#ifndef _NO_LIBPANGO
-extern int _GXPDraw_hasPango(void);
 extern void _GXPDraw_NewWindow(GXWindow nw);
 extern void _GXPDraw_DestroyWindow(GXWindow nw);
 #include "fontP.h"
+extern PangoFontDescription *_GXPDraw_configfont(GWindow gw, GFont *font);
 extern int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
-	const char *text, int32 cnt, FontMods *mods, Color col,
+	const char *text, int32 cnt, Color col,
 	enum text_funcs drawit, struct tf_arg *arg);
 extern int32 _GXPDraw_DoText(GWindow w, int32 x, int32 y,
-	const unichar_t *text, int32 cnt, FontMods *mods, Color col,
+	const unichar_t *text, int32 cnt, Color col,
 	enum text_funcs drawit, struct tf_arg *arg);
-extern void _GXPDraw_FontMetrics(GXWindow gw,GFont *fi,int *as, int *ds, int *ld);
+extern void _GXPDraw_FontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld);
 extern void _GXPDraw_LayoutInit(GWindow w, char *text, int cnt, GFont *fi);
 extern void _GXPDraw_LayoutDraw(GWindow w, int32 x, int32 y, Color fg);
 extern void _GXPDraw_LayoutIndexToPos(GWindow w, int index, GRect *pos);
@@ -76,6 +67,5 @@ extern void _GXPDraw_LayoutExtents(GWindow w, GRect *size);
 extern void _GXPDraw_LayoutSetWidth(GWindow w, int width);
 extern int  _GXPDraw_LayoutLineCount(GWindow w);
 extern int  _GXPDraw_LayoutLineStart(GWindow w,int l);
-#endif
 
 #endif /* _GXCDRAWP_H */

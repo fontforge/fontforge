@@ -675,11 +675,8 @@ Undoes *SCPreserveBackground(SplineChar *sc) {
 return( SCPreserveLayer(sc,ly_back,false));
 }
 
-Undoes *SFPreserveGuide(SplineFont *sf) {
+Undoes *_SFPreserveGuide(SplineFont *sf) {
     Undoes *undo;
-
-    if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
-return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
 
@@ -695,6 +692,12 @@ return(NULL);
     undo->u.state.fillfirst = sf->grid.fillfirst;
     undo->copied_from = sf;
 return( AddUndo(undo,&sf->grid.undoes,&sf->grid.redoes));
+}
+
+Undoes *SFPreserveGuide(SplineFont *sf) {
+    if ( no_windowing_ui || maxundoes==0 )             /* No use for undoes in scripting */
+return(NULL);
+return( _SFPreserveGuide(sf) );
 }
 
 void SCUndoSetLBearingChange(SplineChar *sc,int lbc) {

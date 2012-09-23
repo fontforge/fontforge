@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "POT-Creation-Date: 2006-10-09 13:00-0700\n"
-"PO-Revision-Date: 2008-02-13 09:00+EET\n"
+"PO-Revision-Date: 2012-09-07 19:04-0500\n"
 "Last-Translator: Apostolos Syropoulos <asyropoulos@yahoo.com>\n"
 "Language-Team: LANGUAGE <gr.c@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -15248,7 +15248,7 @@ msgstr ""
 #: problems.c:1931
 #, c-format
 msgid "Glyph %1$.50s with a %2$s with feature <%3$d,%4$d>"
-msgstr "Found %1$.4g, expected %2$.4g"
+msgstr ""
 
 #: problems.c:1936
 #, c-format
@@ -19504,7 +19504,7 @@ msgstr "Εσωτερικό λάθος κατά τη δημιουργία του 
 #: winfonts.c:930
 #, c-format
 msgid "Could not open output file: %s"
-msgstr "Αδύνατο το άνοιγμα του αρχείου εξόδου"
+msgstr "Αδύνατο το άνοιγμα του αρχείου εξόδου: %s"
 
 #: ../gdraw/gaskdlg.c:1293
 msgid "_None"

@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2007-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -4934,11 +4935,11 @@ return( GGadgetDispatchEvent(active_fv->vsb,event));
       case et_expose:
 	FVDrawInfo(active_fv,pixmap,event);
 	GDrawSetFont(pixmap, kf->first_fv->notactive? kf->plain : kf->bold );
-	GDrawDrawBiText8(pixmap,10,kf->mbh+kf->first_fv->infoh+kf->as,
-		_("Select glyphs for the first part of the kern pair"),-1,NULL,0x000000);
+	GDrawDrawText8(pixmap,10,kf->mbh+kf->first_fv->infoh+kf->as,
+		_("Select glyphs for the first part of the kern pair"),-1,0x000000);
 	GDrawSetFont(pixmap, kf->second_fv->notactive? kf->plain : kf->bold );
-	GDrawDrawBiText8(pixmap,10,kf->label2_y+kf->as,
-		_("Select glyphs for the second part of the kern pair"),-1,NULL,0x000000);
+	GDrawDrawText8(pixmap,10,kf->label2_y+kf->as,
+		_("Select glyphs for the second part of the kern pair"),-1,0x000000);
       break;
       case et_char:
 	kf_charEvent(&kf->base,event);
@@ -5171,7 +5172,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 	boldfont = GResourceFindFont("KernFormat.BoldFont",boldfont);
     }
     kf.plain = plainfont; kf.bold = boldfont;
-    GDrawFontMetrics(kf.plain,&as,&ds,&ld);
+    GDrawWindowFontMetrics(kf.gw,kf.plain,&as,&ds,&ld);
     kf.fh = as+ds; kf.as = as;
 
     i = j = 0;

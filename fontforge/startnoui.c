@@ -25,8 +25,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgevw.h"
+#include "annotations.h"
 #include <gfile.h>
 #include <ustring.h>
+#include <ltdl.h>
 #include <time.h>
 #include <sys/time.h>
 #include <locale.h>
@@ -69,7 +71,7 @@ static void doscripthelp(void) {
 exit(0);
 }
 
-int main( int argc, char **argv ) {
+int fontforge_main( int argc, char **argv ) {
     extern const char *source_version_str;
     extern const char *source_modtime_str;
 
@@ -120,5 +122,8 @@ int main( int argc, char **argv ) {
 #  else
     PyFF_Stdin();
 #  endif
+
+    uninm_names_db_close(names_db);
+    lt_dlexit();
 return( 0 );
 }

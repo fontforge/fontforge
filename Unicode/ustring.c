@@ -879,8 +879,6 @@ return( false );
 return( true );
 }
 
-
-
 char* chomp( char* line ) {
     if( !line )
 	return line;
@@ -897,5 +895,14 @@ int endswith(const char *haystack,const char *needle) {
     if( haylen < nedlen )
 	return 0;
     char* p = strstr( haystack + haylen - nedlen, needle );
+    return p == ( haystack + haylen - nedlen );
+}
+
+int u_endswith(const unichar_t *haystack,const unichar_t *needle) {
+    int haylen = u_strlen( haystack );
+    int nedlen = u_strlen( needle );
+    if( haylen < nedlen )
+	return 0;
+    unichar_t* p = u_strstr( haystack + haylen - nedlen, needle );
     return p == ( haystack + haylen - nedlen );
 }

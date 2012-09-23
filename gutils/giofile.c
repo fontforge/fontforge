@@ -24,11 +24,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "basics.h"
+#include <basics.h>
 #include "giofuncP.h"
-#include "gfile.h"
+#include <gfile.h>
 #include "string.h"
-#include "ustring.h"
+#include <ustring.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -46,7 +46,6 @@ static unichar_t err409[] = { ' ','C','o','n','f','l','i','c','t', '\0' };
 static unichar_t err412[] = { ' ','P','r','e','c','o','n','d','i','t','i','o','n',' ','F','a','i','l','e','d', '\0' };
 static unichar_t err414[] = { ' ','R','e','q','u','e','s','t','-','U','R','I',' ','T','o','o',' ','L','o','n','g', '\0' };
 static unichar_t err500[] = { ' ','I','n','t','e','r','n','a','l',' ','S','e','r','v','e','r',' ','E','r','r','o','r', '\0' };
-static unichar_t err501[] = { ' ','N','o','t',' ','I','m','p','l','e','m','e','n','t','e','d', '\0' };
 
 void _GIO_reporterror(GIOControl *gc, int errn) {
 

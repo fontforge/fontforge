@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -2719,4 +2720,25 @@ struct cv_interface *cv_interface = &noui_cv;
 
 void FF_SetCVInterface(struct cv_interface *cvi) {
     cv_interface = cvi;
+}
+
+
+void SCRemoveKern(SplineChar* sc) {
+    if ( sc->kerns!=NULL ) {
+	KernPairsFree(sc->kerns);
+	sc->kerns = NULL;
+	sc->parent->changed = true;
+	if( sc->parent->fv->cidmaster!=NULL )
+	    sc->parent->fv->cidmaster->changed = true;
+    }
+}
+
+void SCRemoveVKern(SplineChar* sc) {
+    if ( sc->vkerns!=NULL ) {
+	KernPairsFree(sc->vkerns);
+	sc->vkerns = NULL;
+	sc->parent->changed = true;
+	if( sc->parent->fv->cidmaster!=NULL )
+	    sc->parent->fv->cidmaster->changed = true;
+    }
 }

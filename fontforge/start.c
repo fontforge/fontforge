@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgevw.h"
+#include "pluginloading.h"
+#include "annotations.h"
 #include <gfile.h>
 #include <time.h>
 #include <sys/time.h>
@@ -38,7 +40,9 @@
 int32 unicode_from_adobestd[256];
 struct lconv localeinfo;
 char *coord_sep = ",";
-const struct unicode_nameannot * const *const *_UnicodeNameAnnot = NULL;
+
+/* Unicode character names and annotations. */
+uninm_names_db names_db;
 
 static void initadobeenc(void) {
     int i,j;
@@ -54,62 +58,6 @@ static void initadobeenc(void) {
     }
 }
 
-static void inituninameannot(void) {
-#if _NO_LIBUNINAMESLIST
-    _UnicodeNameAnnot = NULL;
-#elif defined(_STATIC_LIBUNINAMESLIST) || defined(NODYNAMIC)
-    extern const struct unicode_nameannot * const * const UnicodeNameAnnot[];
-    _UnicodeNameAnnot = UnicodeNameAnnot;
-#else
-    DL_CONST void *libuninames=NULL;
-    const char *loc = getenv("LC_ALL");
-# ifdef LIBDIR
-    char full[1024], buf[100];
-# else
-    char buf[100];
-#endif
-    int i;
-
-    if ( loc==NULL ) loc = getenv("LC_MESSAGES");
-    if ( loc==NULL ) loc = getenv("LANG");
-    for ( i=0; i<4; ++i ) {
-	strcpy(buf,"libuninameslist-");
-	if ( i==3 )
-	    buf[strlen(buf)-1] = '\0';
-	    /* Use the default name */
-	else if ( i==2 ) {
-	    if ( loc==NULL || strlen( loc )<2 )
-    continue;
-	    strncat(buf,loc,2);
-	} else if ( i==1 ) {
-	    if ( loc==NULL || strlen( loc )<5 )
-    continue;
-	    strncat(buf,loc,5);
-	} else if ( i==0 ) {
-	    if ( loc==NULL || strlen( loc )<6 )
-    continue;
-	    strcat(buf,loc);
-	}
-	strcat(buf, SO_EXT );
-
-# ifdef LIBDIR
-#  if !defined(_NO_SNPRINTF) && !defined(VMS)
-	snprintf( full, sizeof(full), "%s/%s", LIBDIR, buf );
-#  else
-	sprintf( full, "%s/%s", LIBDIR, buf );
-#  endif
-	libuninames = dlopen( full,RTLD_LAZY);
-# endif
-	if ( libuninames==NULL )
-	    libuninames = dlopen( buf,RTLD_LAZY);
-	if ( libuninames!=NULL ) {
-	    _UnicodeNameAnnot = dlsym(libuninames,"UnicodeNameAnnot");
-return;
-	}
-    }
-#endif
-}
-
 static void initrand(void) {
     struct timeval tv;
 
@@ -118,6 +66,8 @@ static void initrand(void) {
     srandom(tv.tv_usec);
 }
 
+/* FIXME: Is this necessary or desirable, given we now are using
+ * libltdl modules? */
 static void initlibrarysearchpath(void) {
 #ifdef __Mac
     /* If the user has not set library path, then point it at fink */
@@ -129,11 +79,26 @@ static void initlibrarysearchpath(void) {
 #endif
 }
 
+static void initlibltdl(void) {
+    char buffer[2000];
+
+    if (!plugins_are_initialized()) {
+        init_plugins();
+        if (getPfaEditDir(buffer)!=NULL ) {
+            strcpy(buffer,getPfaEditDir(buffer));
+            strcat(buffer,"/plugins");
+            lt_dladdsearchdir(strdup(buffer));
+        }
+    }
+}
+
 void InitSimpleStuff(void) {
+    char *names_db_file;
+
     initlibrarysearchpath();
+    initlibltdl();
     initrand();
     initadobeenc();
-    inituninameannot();
 
     setlocale(LC_ALL,"");
     localeinfo = *localeconv();
@@ -141,6 +106,15 @@ void InitSimpleStuff(void) {
     if ( *localeinfo.decimal_point=='.' ) coord_sep=",";
     else if ( *localeinfo.decimal_point!='.' ) coord_sep=" ";
     if ( getenv("FF_SCRIPT_IN_LATIN1") ) use_utf8_in_script=false;
+
+    /*
+     * Load character names and annotations that come from the Unicode
+     * NamesList.txt. This should not be done until after the locale
+     * has been set.
+     */
+    names_db_file = uninm_find_names_db(NULL);
+    names_db = (names_db_file == NULL) ? ((uninm_names_db) 0) : uninm_names_db_open(names_db_file);
+    free(names_db_file);
 
     SetDefaults();
 }
