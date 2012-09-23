@@ -27,7 +27,10 @@
 
 #include "hotkeys.h"
 #include <locale.h>
+#include <string.h>
+#include <ustring.h>
 
+extern char *getPfaEditDir(char *buffer);
 
 struct dlistnode* hotkeys = 0;
 
@@ -79,14 +82,14 @@ hotkeyFindAllByStateAndKeysym( char* windowType, uint16 state, uint16 keysym ) {
     struct dlistnode* node = hotkeys;
     for( ; node; node=node->next ) {
 	Hotkey* hk = (Hotkey*)node;
-	printf("check hk:%s keysym:%d\n", hk->text, hk->keysym );
+//	printf("check hk:%s keysym:%d\n", hk->text, hk->keysym );
 	if( hk->keysym ) {
 	    if( keysym == hk->keysym ) {
 		if( state == hk->state ) {
-		    printf("event match! for hk:%s keysym:%d\n", hk->text, hk->keysym );
-		    printf("event.state:%d hk.state:%d\n", state, hk->state );
+//		    printf("event match! for hk:%s keysym:%d\n", hk->text, hk->keysym );
+//		    printf("event.state:%d hk.state:%d\n", state, hk->state );
 		    if( hotkeyHasMatchingWindowTypeString( windowType, hk ) ) {
-			printf("matching window type too for hk:%s keysym:%d\n", hk->text, hk->keysym );
+//			printf("matching window type too for hk:%s keysym:%d\n", hk->text, hk->keysym );
 			dlist_pushfront_external( &ret, hk );
 		    }
 		}
@@ -102,14 +105,14 @@ static Hotkey* hotkeyFindByStateAndKeysym( char* windowType, uint16 state, uint1
     struct dlistnode* node = hotkeys;
     for( ; node; node=node->next ) {
 	Hotkey* hk = (Hotkey*)node;
-	printf("check hk:%s keysym:%d\n", hk->text, hk->keysym );
+//	printf("check hk:%s keysym:%d\n", hk->text, hk->keysym );
 	if( hk->keysym ) {
 	    if( keysym == hk->keysym ) {
 		if( state == hk->state ) {
-		    printf("event match! for hk:%s keysym:%d\n", hk->text, hk->keysym );
-		    printf("event.state:%d hk.state:%d\n", state, hk->state );
+//		    printf("event match! for hk:%s keysym:%d\n", hk->text, hk->keysym );
+//		    printf("event.state:%d hk.state:%d\n", state, hk->state );
 		    if( hotkeyHasMatchingWindowTypeString( windowType, hk ) ) {
-			printf("matching window type too for hk:%s keysym:%d\n", hk->text, hk->keysym );
+//			printf("matching window type too for hk:%s keysym:%d\n", hk->text, hk->keysym );
 			return hk;
 		    }
 		}
@@ -162,7 +165,7 @@ static char *getHotkeyFilename(void) {
  * are performed, null is injected at the end of string and if there are leading
  * spaces the return value will be past them.
  */
-char* trimspaces( char* line ) {
+static char* trimspaces( char* line ) {
    while ( line[strlen(line)-1]==' ' )
 	line[strlen(line)-1] = '\0';
    while( *line == ' ' )
@@ -196,7 +199,7 @@ static void loadHotkeysFromFile( const char* filename, int isUserDefined )
 	char* keydefinition = pt+1;
 	chomp( keydefinition );
 	keydefinition = trimspaces( keydefinition );
-	printf("2.accel:%s key__%s__\n", line, keydefinition );
+//	printf("2.accel:%s key__%s__\n", line, keydefinition );
 	char* action = line;
 	if( line[0] == '+' ) {
 	    append = 1;
@@ -221,7 +224,7 @@ static void loadHotkeysFromFile( const char* filename, int isUserDefined )
 	    Hotkey* oldkey = hotkeyFindByStateAndKeysym( hotkeyGetWindowTypeString(hk),
 							 hk->state, hk->keysym );
 	    if( oldkey ) {
-		printf("have oldkey!\n");
+//		printf("have oldkey!\n");
 		dlist_erase( &hotkeys, oldkey );
 		free(oldkey);
 	    }
@@ -229,7 +232,7 @@ static void loadHotkeysFromFile( const char* filename, int isUserDefined )
 	
 	
 	hk->isUserDefined = isUserDefined;
-	printf("3. state:%d keysym:%d\n", hk->state, hk->keysym );
+//	printf("3. state:%d keysym:%d\n", hk->state, hk->keysym );
 	dlist_pushfront( &hotkeys, hk );
     }
     fclose(f);
@@ -241,11 +244,16 @@ static void loadHotkeysFromFile( const char* filename, int isUserDefined )
  */
 void hotkeysLoad()
 {
+    char localefn[PATH_MAX+1];
     char* p = 0;
+
+    printf("SHAREDIR:%s\n", SHAREDIR );
+
+    snprintf(localefn,PATH_MAX,"%s/hotkeys/default", SHAREDIR );
+    loadHotkeysFromFile( localefn, false );
     
     // FIXME: find out how to convert en_AU.UTF-8 that setlocale()
     //   gives to its fallback of en_GB
-    char localefn[PATH_MAX+1];
     char* currentlocale = copy(setlocale(LC_MESSAGES, 0));
     snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", SHAREDIR, currentlocale);
     loadHotkeysFromFile( localefn, false );
@@ -321,7 +329,7 @@ char* hotkeysGetKeyDescriptionFromAction( char* action ) {
  * file/open to be alt+j then the menu can adjust the hotkey is is
  * displaying to show the user what key they have assigned.
  */
-Hotkey* hotkeyFindByAction( char* action ) {
+static Hotkey* hotkeyFindByAction( char* action ) {
     struct dlistnode* node = hotkeys;
     for( ; node; node=node->next ) {
 	Hotkey* hk = (Hotkey*)node;

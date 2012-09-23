@@ -238,9 +238,9 @@ static void shorttext(GMenuItem *gi,unichar_t *buf) {
     _shorttext(gi->shortcut,gi->short_mask,buf);
 }
 
-int GMenuGetMenuPathRecurse( GMenuItem** stack,
-			     GMenuItem *basemi,
-			     GMenuItem *targetmi ) {
+static int GMenuGetMenuPathRecurse( GMenuItem** stack,
+				    GMenuItem *basemi,
+				    GMenuItem *targetmi ) {
     GMenuItem *mi = basemi;
     int i;
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
@@ -277,7 +277,7 @@ int GMenuGetMenuPathRecurse( GMenuItem** stack,
  * Do not free the return value, it is a pointer into a buffer owned
  * by this function.
  */
-char* GMenuGetMenuPath( GMenuItem *basemi, GMenuItem *targetmi ) {
+static char* GMenuGetMenuPath( GMenuItem *basemi, GMenuItem *targetmi ) {
     GMenuItem* stack[1024];
     bzero(stack,sizeof(stack));
     if( !targetmi->ti.text )
@@ -543,7 +543,6 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	GMenuDrawArrow(m,ybase,r2l);
     else { // if ( mi->shortcut!=0 && (mi->short_mask&0xffe0)==0 && mac_menu_icons ) {
 	_shorttext(mi->shortcut,0,shortbuf);
-<<<<<<< HEAD
 	uint16 short_mask = mi->short_mask;
 
 	/* printf("m->menubar: %p\n", m->menubar ); */
@@ -571,44 +570,17 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	    }
 	}
 	
-	width = GDrawGetBiTextWidth(pixmap,shortbuf,-1,-1,NULL);
+	width = GDrawGetTextWidth(pixmap,shortbuf,-1);
 	width += GMenuMacIconsWidth(m,short_mask);
 	if ( r2l ) {
-	    int x = GDrawDrawBiText(pixmap,m->bp,ybase,shortbuf,-1,NULL,fg);
+	    int x = GDrawDrawText(pixmap,m->bp,ybase,shortbuf,-1,fg);
 	    GMenuDrawMacIcons(m,fg,ybase, x, short_mask);
 	} else {
 	    int x = GMenuDrawMacIcons(m,fg,ybase,m->rightedge-width, short_mask);
-	    GDrawDrawBiText(pixmap,x,ybase,shortbuf,-1,NULL,fg);
-	}
-=======
-	width = GDrawGetTextWidth(pixmap,shortbuf,-1) + GMenuMacIconsWidth(m,mi->short_mask);
-	if ( r2l ) {
-	    int x = GDrawDrawText(pixmap,m->bp,ybase,shortbuf,-1,fg);
-	    GMenuDrawMacIcons(m,fg,ybase, x, mi->short_mask);
-	} else {
-	    int x = GMenuDrawMacIcons(m,fg,ybase,m->rightedge-width, mi->short_mask);
 	    GDrawDrawText(pixmap,x,ybase,shortbuf,-1,fg);
 	}
-    } else if ( mi->shortcut!=0 ) {
-	shorttext(mi,shortbuf);
-
-	width = GDrawGetTextWidth(pixmap,shortbuf,-1);
-	if ( r2l )
-	    GDrawDrawText(pixmap,m->bp,ybase,shortbuf,-1,fg);
-	else
-	    GDrawDrawText(pixmap,m->rightedge-width,ybase,shortbuf,-1,fg);
->>>>>>> upstream/master
     }
-    
-    /* } else if ( mi->shortcut!=0 ) { */
-    /* 	shorttext(mi,shortbuf); */
 
-    /* 	width = GDrawGetBiTextWidth(pixmap,shortbuf,-1,-1,NULL); */
-    /* 	if ( r2l ) */
-    /* 	    GDrawDrawBiText(pixmap,m->bp,ybase,shortbuf,-1,NULL,fg); */
-    /* 	else */
-    /* 	    GDrawDrawBiText(pixmap,m->rightedge-width,ybase,shortbuf,-1,NULL,fg); */
-    /* } */
     GDrawPopClip(pixmap,&old);
 return( y + h );
 }
@@ -1515,10 +1487,11 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
     GDrawSetFont(m->w,m->font);
     m->hasticks = false; width = 0; keywidth = 0;
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
-	if ( mi[i].ti.checkable ) m->hasticks = true;
+	if ( mi[i].ti.checkable )
+	    m->hasticks = true;
 	temp = GTextInfoGetWidth(m->w,&mi[i].ti,m->font);
-	if ( temp>width ) width = temp;
-<<<<<<< HEAD
+	if ( temp>width ) 
+	    width = temp;
 
 	uc_strcpy(buffer,"");
 	uint16 short_mask = 0;
@@ -1540,18 +1513,10 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
 		uc_strcpy(buffer,hotkeyTextWithoutModifiers(hk->text));
 	    }
 	    
-	    temp = GDrawGetBiTextWidth(m->w,buffer,-1,-1,NULL);
+	    temp = GDrawGetTextWidth(m->w,buffer,-1);
 	    if( short_mask ) {
 		temp += GMenuMacIconsWidth(m,short_mask);
 	    }
-=======
-	if ( mi[i].shortcut!=0 && (mi[i].short_mask&0xffe0)==0 && mac_menu_icons ) {
-	    _shorttext(mi[i].shortcut,0,buffer);
-	    temp = GDrawGetTextWidth(m->w,buffer,-1) + GMenuMacIconsWidth(m,mi[i].short_mask);
-	} else {
-	    shorttext(&mi[i],buffer);
-	    temp = GDrawGetTextWidth(m->w,buffer,-1);
->>>>>>> upstream/master
 	}
 	
 	/* if ( mi[i].shortcut!=0 && (mi[i].short_mask&0xffe0)==0 && mac_menu_icons ) { */

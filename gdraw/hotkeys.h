@@ -94,12 +94,12 @@ typedef struct hotkey {
  * include the locale versions like en_GB which provide the shipped
  * defaults and the user overrides in ~/.FontForge/hotkeys.
  */
-extern void    hotkeysLoad();
+extern void    hotkeysLoad(void);
 
 /**
  * Save all user defined hotkeys back to ~/.FontForge/hotkeys.
  */
-extern void    hotkeysSave();
+extern void    hotkeysSave(void);
 
 /**
  * Return the non localized string definition of the keys that must
@@ -111,8 +111,20 @@ extern char*   hotkeysGetKeyDescriptionFromAction( char* action );
  * Find the hotkey that matches the given event for the given window.
  * The window is needed because hotkeys can bind to specific windows
  * like the fontview, metricsview or charview.
+ *
+ * Do not free the return value, it's not yours! 
  */
 extern Hotkey* hotkeyFindByEvent( GWindow w, GEvent *event );
+
+/**
+ * Like hotkeyFindByEvent but this gives you access to all the hotkeys
+ * that are to be triggered for the given event on the given window.
+ *
+ * You should call dlist_free_external() on the return value. The
+ * hotkeys returned are not yours to free, but the list nodes that
+ * point to the hotkeys *ARE* yours to free.
+ */ 
+extern struct dlistnodeExternal* hotkeyFindAllByEvent( GWindow w, GEvent *event );
 
 /**
  * Strip off any modifier definitation from the given fill hotkey string
@@ -122,32 +134,15 @@ extern Hotkey* hotkeyFindByEvent( GWindow w, GEvent *event );
  */
 extern char*   hotkeyTextWithoutModifiers( char* hktext );
 
-
-
-#if 0
-
 /**
- * A function that is invoked when the user presses a collection of
- * keys that they have defined should perform an action
+ * Given a menu path like File/Open find the hotkey which will trigger
+ * that menu item. The window is needed because there might be a
+ * menuitem with the same text path in fontview and charview which the
+ * user has decided should have different hotkeys
+ *
+ * Do not free the return value, it's not yours! 
  */
-typedef void (*CVHotkeyFunc)(CharView *cv,GEvent *event);
-
-/**
- * A cvhotkey holds the text descrition of a hotkey in keydesc, a
- * preparsed version of that hotkey definition in Hotkey, and a
- * callback function that should be called when that hotkey is
- * pressed. Note that as the Hotkey element is the last in the struct
- * is can be left out of a definition when creating an array of
- * cvhotkey elements. The Hotkey struct can later be initialized when
- * the resources are read from the user's theme file.
- */
-typedef struct cvhotkey {
-    CVHotkeyFunc func;
-    void*        udata;
-    Hotkey       hk;
-} CVHotkey;
-
-#endif
+extern Hotkey* hotkeyFindByMenuPath( GWindow w, char* path );
 
 
 #endif // _HOTKEYS_H

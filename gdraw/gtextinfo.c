@@ -894,7 +894,7 @@ void HotkeyParse( Hotkey* hk, const char *shortcut ) {
     if ( pt!=NULL )
 	sh = pt+1;
     if ( *sh=='\0' || strcmp(sh,"No Shortcut")==0 || strcmp(sh,"None")==0 )
-return;
+	return;
 
     initmods();
 
@@ -916,27 +916,24 @@ return;
 	    mask |= temp;
 	else {
 	    fprintf( stderr, "Could not parse short cut: %s\n", shortcut );
-return;
+	    return;
 	}
 	sh = pt+1;
     }
     hk->state = mask;
-    printf("first loop\n");
     for ( i=0; i<0x100; ++i ) {
 	if ( GDrawKeysyms[i]!=NULL && uc_strcmp(GDrawKeysyms[i],sh)==0 ) {
 	    hk->keysym = 0xff00 + i;
-    break;
+	    break;
 	}
     }
-    printf("i:%d hk->keysym:%d\n",i,hk->keysym);
     if ( i==0x100 ) {
 	hk->keysym = utf8_ildb((const char **) &sh);
 	if ( *sh!='\0' ) {
 	    fprintf( stderr, "Unexpected characters at end of short cut: %s\n", shortcut );
-return;
+	    return;
 	}
     }
-    printf("2... i:%d hk->keysym:%d\n",i,hk->keysym);
     //
     // The user really means lower case keys unless they have
     // given the "shift" modifier too. Like: Ctl+Shft+L
@@ -947,7 +944,6 @@ return;
 	    hk->keysym = toupper(hk->keysym);
 	}
     }
-    printf("3... i:%d hk->keysym:%d\n",i,hk->keysym);
 }
     
 void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut) {

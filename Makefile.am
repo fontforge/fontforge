@@ -49,6 +49,7 @@ include $(top_srcdir)/mk/layout.am
 
 SUBDIRS = inc
 SUBDIRS += Unicode gutils
+SUBDIRS += hotkeys
 
 if GRAPHICAL_USER_INTERFACE
 SUBDIRS += gdraw

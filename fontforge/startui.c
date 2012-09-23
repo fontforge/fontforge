@@ -38,6 +38,8 @@
 #include <stdlib.h>		/* getenv,setenv */
 #include <sys/stat.h>
 #include <sys/types.h>
+#include "../gdraw/hotkeys.h"
+
 #ifdef _NO_LIBPNG
 #  define PNGLIBNAME	"libpng"
 #else
