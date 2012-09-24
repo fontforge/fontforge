@@ -44,7 +44,7 @@
  * Then run the executable binary "/makeutype".
  * This will create 4 files in the same directory:
  *	ArabicForms.c, unialt.c, utype.c, utype.h
- * (please move utype.h into Fontforge's "inc" subdirectory)
+ * (please move utype.h into Fontforge's "../inc" subdirectory)
  *
  * When done building the updated files, you can clean-up by removing
  * LineBreak.txt, NamesList.txt, PropList.txt,UnicodeData.txt, and the
@@ -62,6 +62,7 @@
 #define MAXC	65536
 #define MAXA	18
 
+/* These values get stored within flags[unicodechar={0..MAXC}] */
 #define _LOWER		1
 #define _UPPER		2
 #define _TITLE		4
@@ -69,7 +70,7 @@
 #define _SPACE		0x10
 #define _PUNCT		0x20
 #define _HEX		0x40
-#define	_ZEROWIDTH	0x80
+#define _ZEROWIDTH	0x80
 
 #define _LEFT_2_RIGHT	0x100
 #define _RIGHT_2_LEFT	0x200
@@ -78,13 +79,13 @@
 #define _ENS		0x1000
 #define _CS		0x2000
 #define _ENT		0x4000
-#define	_COMBINING	0x8000
+#define _COMBINING	0x8000
 
-#define	_BREAKBEFOREOK	0x10000
-#define	_BREAKAFTEROK	0x20000
-#define	_NONSTART	0x40000		/* small kana, close punct, can't start a line */
-#define	_NONEND		0x80000		/* open punct, can't end a line */
-/*#define	_MUSTBREAK	0x100000/* newlines, paragraphs, etc. */
+#define _BREAKBEFOREOK	0x10000
+#define _BREAKAFTEROK	0x20000
+#define _NONSTART	0x40000		/* small kana, close punct, can't start a line */
+#define _NONEND		0x80000		/* open punct, can't end a line */
+/*#define _MUSTBREAK	0x100000	/* newlines, paragraphs, etc. */
 #define	_URLBREAKAFTER	0x100000	/* break after slash not followed by digits (ie. in URLs not fractions or dates) */
 
 #define _ALPHABETIC	0x200000
@@ -121,10 +122,10 @@ unsigned short mytoupper[MAXC];
 unsigned short mytotitle[MAXC];
 unsigned char mynumericvalue[MAXC];
 unsigned short mymirror[MAXC];
-unsigned int flags[MAXC];
-unsigned int flags2[MAXC];
+unsigned long flags[MAXC];			/* 32 binary flags for each unicode.org character */
+unsigned long flags2[MAXC];
 unichar_t alts[MAXC][MAXA+1];
-long assignedcodepoints[0x120000/32];
+unsigned long assignedcodepoints[0x120000/32];	/* 32 characters represented per each long value */
 
 const char GeneratedFileMessage[] = "\n/* This file was generated using the program 'makeutype' */\n\n";
 const char CantReadFile[] = "Can't find or read file %s\n";		/* exit(1) */
@@ -621,11 +622,18 @@ static void dumparabicdata(FILE *header) {
     fprintf( data, GeneratedFileMessage );
 
     fprintf( data, "struct arabicforms ArabicForms[] = {\n" );
+    fprintf( data, "\t/* initial, medial, final, isolated, isletter, joindual, required_lig_with_alef */\n");
     for ( i=0; i<256; ++i ) {
-	fprintf( data, "\t{ 0x%04x, 0x%04x, 0x%04x, 0x%04x, %d, %d, %d }%s\n",
+	fprintf( data, "\t{ 0x%04x, 0x%04x, 0x%04x, 0x%04x, %d, %d, %d }",
 		forms[i].initial, forms[i].medial, forms[i].final, forms[i].isolated,
-		forms[i].isletter, forms[i].joindual, forms[i].required_lig_with_alef,
-		i==255?"":",");
+		forms[i].isletter, forms[i].joindual, forms[i].required_lig_with_alef);
+	if ( i==255 )
+	    fprintf( data, "\n");
+	else
+	    if ( (i & 31)==0 )
+		fprintf( data, ",\t/* 0x%04x */\n",0x600+i);
+	    else
+		fprintf( data, ",\n");
     }
     fprintf( data, "};\n" );
     fclose( data );
@@ -652,6 +660,7 @@ static void dump() {
     fprintf( header, GeneratedFileMessage );
 
     fprintf( header, "#include <ctype.h>\t\t/* Include here so we can control it. If a system header includes it later bad things happen */\n" );
+    fprintf( header, "#include <basics.h>\t\t/* Include here so we can use pre-defined int types to correctly size constant data arrays. */\n" );
     fprintf( header, "#ifdef tolower\n" );
     fprintf( header, "# undef tolower\n" );
     fprintf( header, "#endif\n" );
@@ -710,38 +719,46 @@ static void dump() {
     fprintf( header, "#define ____INITIAL	0x%0x\n", _INITIAL );
     fprintf( header, "#define ____MEDIAL	0x%0x\n", _MEDIAL );
     fprintf( header, "#define ____FINAL	0x%0x\n", _FINAL );
-    fprintf( header, "#define ____ISOLATED 0x%0x\n", _ISOLATED );
-    fprintf( header, "#define ____DECOMPNORM 0x%0x\n", _DecompositionNormative );
-    fprintf( header, "\n" );
-
-    fprintf( header, "#define ____COMBININGCLASS 0x%0x\n", _CombiningClass );
-    fprintf( header, "#define ____ABOVE	0x%0x\n", _Above );
-    fprintf( header, "#define ____BELOW	0x%0x\n", _Below );
-    fprintf( header, "#define ____OVERSTRIKE	0x%0x\n", _Overstrike );
-    fprintf( header, "#define ____LEFT	0x%0x\n", _Left );
-    fprintf( header, "#define ____RIGHT	0x%0x\n", _Right );
-    fprintf( header, "#define ____JOINS2	0x%0x\n", _Joins2 );
-    fprintf( header, "#define ____CENTERLEFT	0x%0x\n", _CenterLeft );
-    fprintf( header, "#define ____CENTERRIGHT	0x%0x\n", _CenterRight );
-    fprintf( header, "#define ____CENTEREDOUTSIDE	0x%0x\n", _CenteredOutside );
-    fprintf( header, "#define ____OUTSIDE		0x%0x\n", _Outside );
-    fprintf( header, "#define ____LEFTEDGE	0x%0x\n", _LeftEdge );
-    fprintf( header, "#define ____RIGHTEDGE	0x%0x\n", _RightEdge );
-    fprintf( header, "#define ____TOUCHING	0x%0x\n", _Touching );
-    fprintf( header, "#define ____COMBININGPOSMASK	0x%0x\n",
-	    _Outside|_CenteredOutside|_CenterRight|_CenterLeft|_Joins2|
-	    _Right|_Left|_Overstrike|_Below|_Above|_RightEdge|_LeftEdge|
-	    _Touching );
+    fprintf( header, "#define ____ISOLATED	0x%0x\n", _ISOLATED );
+    fprintf( header, "#define ____DECOMPNORM	0x%0x\n", _DecompositionNormative );
     fprintf( header, "\n" );
 
     fprintf( header, "extern const unsigned short ____tolower[];\n" );
     fprintf( header, "extern const unsigned short ____toupper[];\n" );
     fprintf( header, "extern const unsigned short ____totitle[];\n" );
     fprintf( header, "extern const unsigned short ____tomirror[];\n" );
-    fprintf( header, "extern const unsigned char ____digitval[];\n" );
+    fprintf( header, "extern const unsigned char  ____digitval[];\n" );
     fprintf( header, "extern const unsigned int  ____utype[];\n\n" );
-    fprintf( header, "extern const unsigned int  ____utype2[];\n\n" );
-    fprintf( header, "extern const unsigned int  ____codepointassigned[];\n\n" );
+
+    fprintf( header, "/* utype2[] binary flags used for position/layout of each unicode.org character */\n" );
+    fprintf( header, "#define ____COMBININGCLASS\t0x%0x\n", _CombiningClass );
+    fprintf( header, "#define ____ABOVE\t\t0x%0x\n", _Above );
+    fprintf( header, "#define ____BELOW\t\t0x%0x\n", _Below );
+    fprintf( header, "#define ____OVERSTRIKE\t\t0x%0x\n", _Overstrike );
+    fprintf( header, "#define ____LEFT\t\t0x%0x\n", _Left );
+    fprintf( header, "#define ____RIGHT\t\t0x%0x\n", _Right );
+    fprintf( header, "#define ____JOINS2\t\t0x%0x\n", _Joins2 );
+    fprintf( header, "#define ____CENTERLEFT\t\t0x%0x\n", _CenterLeft );
+    fprintf( header, "#define ____CENTERRIGHT\t\t0x%0x\n", _CenterRight );
+    fprintf( header, "#define ____CENTEREDOUTSIDE\t0x%0x\n", _CenteredOutside );
+    fprintf( header, "#define ____OUTSIDE\t\t0x%0x\n", _Outside );
+    fprintf( header, "#define ____LEFTEDGE\t\t0x%0x\n", _LeftEdge );
+    fprintf( header, "#define ____RIGHTEDGE\t\t0x%0x\n", _RightEdge );
+    fprintf( header, "#define ____TOUCHING\t\t0x%0x\n", _Touching );
+    fprintf( header, "#define ____COMBININGPOSMASK\t0x%0x\n",
+	    _Outside|_CenteredOutside|_CenterRight|_CenterLeft|_Joins2|
+	    _Right|_Left|_Overstrike|_Below|_Above|_RightEdge|_LeftEdge|
+	    _Touching );
+    fprintf( header, "#define ____NOPOSDATAGIVEN\t(uint32)(-1)\t/* -1 == no position data given */\n\n" );
+
+    fprintf( header, "#define combiningclass(ch)\t(____utype2[(ch)+1]&____COMBININGCLASS)\n" );
+    fprintf( header, "#define combiningposmask(ch)\t(____utype2[(ch)+1]&____COMBININGPOSMASK)\n\n" );
+
+    fprintf( header, "extern const uint32\t____utype2[];\t\t\t/* hold position boolean flags for each Unicode.org defined character */\n\n" );
+
+    fprintf( header, "#define isunicodepointassigned(ch) (____codepointassigned[(ch)/32]&(1<<((ch)%%32)))\n\n" );
+
+    fprintf( header, "extern const uint32\t____codepointassigned[];\t/* 1bit_boolean_flag x 32 = exists in Unicode.org character chart list. */\n\n" );
 
     fprintf( header, "#define tolower(ch) (____tolower[(ch)+1])\n" );
     fprintf( header, "#define toupper(ch) (____toupper[(ch)+1])\n" );
@@ -775,97 +792,125 @@ static void dump() {
     fprintf( header, "#define isarabfinal(ch) (____utype[(ch)+1]&____FINAL)\n" );
     fprintf( header, "#define isarabisolated(ch) (____utype[(ch)+1]&____ISOLATED)\n\n" );
     fprintf( header, "#define isdecompositionnormative(ch) (____utype[(ch)+1]&____DECOMPNORM)\n\n" );
-    fprintf( header, "#define combiningclass(ch) (____utype2[(ch)+1]&____COMBININGCLASS)\n" );
-    fprintf( header, "#define combiningposmask(ch) (____utype2[(ch)+1]&____COMBININGPOSMASK)\n" );
-
-    fprintf( header, "\n" );
-
-    fprintf( header, "#define isunicodepointassigned(ch) (____codepointassigned[(ch)/32]&(1<<((ch)%%32)))\n" );
 
     fprintf( header, "\n" );
 
     fprintf( data, "#include \"utype.h\"\n" );
     fprintf( data, GeneratedFileMessage );
-    fprintf( data, "const unsigned short ____tolower[]= { 0,\n " );
+    fprintf( data, "const unsigned short ____tolower[]= { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
+	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
 	    fprintf(data, " 0x%04x,", mytolower[i+j]);
 	if ( i+j==MAXC-1 ) {
 	    fprintf(data, " 0x%04x\n};\n\n", mytolower[i+j]);
     break;
 	} else
-	    fprintf( data, "\n ");
+	    if ( (i & 63)==0 )
+		fprintf( data, "\t/* 0x%04x */\n",i);
+	    else
+		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned short ____toupper[] = { 0,\n " );
+    fprintf( data, "const unsigned short ____toupper[] = { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
+	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
 	    fprintf(data, " 0x%04x,", mytoupper[i+j]);
 	if ( i+j==MAXC-1 ) {
 	    fprintf(data, " 0x%04x\n};\n\n", mytoupper[i+j]);
     break;
 	} else
-	    fprintf( data, "\n ");
+	    if ( (i & 63)==0 )
+		fprintf( data, "\t/* 0x%04x */\n",i);
+	    else
+		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned short ____totitle[] = { 0,\n " );
+    fprintf( data, "const unsigned short ____totitle[] = { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
+	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
 	    fprintf(data, " 0x%04x,", mytotitle[i+j]);
 	if ( i+j==MAXC-1 ) {
 	    fprintf(data, " 0x%04x\n};\n\n", mytotitle[i+j]);
     break;
 	} else
-	    fprintf( data, "\n ");
+	    if ( (i & 63)==0 )
+		fprintf( data, "\t/* 0x%04x */\n",i);
+	    else
+		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned short ____tomirror[] = { 0,\n " );
+    fprintf( data, "const unsigned short ____tomirror[] = { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
+	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
 	    fprintf(data, " 0x%04x,", mymirror[i+j]);
 	if ( i+j==MAXC-1 ) {
 	    fprintf(data, " 0x%04x\n};\n\n", mymirror[i+j]);
     break;
 	} else
-	    fprintf( data, "\n ");
+	    if ( (i & 63)==0 )
+		fprintf( data, "\t/* 0x%04x */\n",i);
+	    else
+		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned char ____digitval[] = { 0,\n " );
+    fprintf( data, "const unsigned char ____digitval[] = { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
+	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
 	    fprintf(data, " 0x%02x,", mynumericvalue[i+j]);
 	if ( i+j==MAXC-1 ) {
 	    fprintf(data, " 0x%02x\n};\n\n", mynumericvalue[i+j]);
     break;
 	} else
-	    fprintf( data, "\n ");
+	    if ( (i & 63)==0 )
+		fprintf( data, "\t/* 0x%04x */\n",i);
+	    else
+		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned int ____utype[] = { 0,\n " );
+    fprintf( data, "const unsigned int ____utype[] = { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
+	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
 	    fprintf(data, " 0x%08x,", flags[i+j]);
 	if ( i+j==MAXC-1 ) {
 	    fprintf(data, " 0x%08x\n};\n\n", flags[i+j]);
     break;
 	} else
-	    fprintf( data, "\n ");
+	    if ( (i & 63)==0 )
+		fprintf( data, "\t/* 0x%04x */\n",i);
+	    else
+		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned int ____utype2[] = { 0,\n " );
+    fprintf( data, "const uint32 ____utype2[] = { 0,\n" );
+    fprintf( data, "  /* binary flags used for physical layout of each unicode.org character */\n" );
     for ( i=0; i<MAXC; i+=j ) {
+	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
 	    fprintf(data, " 0x%08x,", flags2[i+j]);
 	if ( i+j==MAXC-1 ) {
 	    fprintf(data, " 0x%08x\n};\n\n", flags2[i+j]);
     break;
 	} else
-	    fprintf( data, "\n ");
+	    if ( (i & 63)==0 )
+		fprintf( data, "\t/* 0x%04x */\n",i);
+	    else
+		fprintf( data, "\n");
     }
 
-    fprintf( data, "const unsigned int ____codepointassigned[] = {\n " );
+    fprintf( data, "const uint32 ____codepointassigned[] = {\n" );
+    fprintf( data, "  /* 32 unicode.org characters represented for each data value in array */\n" );
     for ( i=0; i<0x120000/32; i+=j ) {
+	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<0x120000/32-1; ++j )
 	    fprintf(data, " 0x%08x,", assignedcodepoints[i+j]);
 	if ( i+j==0x120000/32-1 ) {
 	    fprintf(data, " 0x%08x\n};\n\n", assignedcodepoints[i+j]);
     break;
 	} else
-	    fprintf( data, "\n ");
+	    if ( (i & 63)==0 )
+		fprintf( data, "\t/* 0x%04x */\n",i);
+	    else
+		fprintf( data, "\n");
     }
 
     fclose( data );
@@ -1782,8 +1827,8 @@ int main() {
     /*  so apply at a different level */
     /* readcorpfile("ADOBE ", "AdobeCorporateuse.txt"); */
     cheat();				/* over-ride with these mods after reading input files */
-    dump();
-    dump_alttable();
+    dump();				/* create utype.h, utype.c and ArabicForms.c */
+    dump_alttable();			/* create unialt.c */
     FreeNamesMemorySpace();		/* cleanup alloc of memory */
 return( 0 );
 }

@@ -32,7 +32,6 @@
 #include <ustring.h>
 #include <utype.h>
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 void SCAppendEntityLayers(SplineChar *sc, Entity *ent) {
     int cnt, pos;
     Entity *e, *enext;
@@ -99,7 +98,6 @@ return;
     sc->layer_cnt += cnt;
     SCMoreLayers(sc,old);
 }
-#endif
 
 void SCImportPSFile(SplineChar *sc,int layer,FILE *ps,int doclear,int flags) {
     SplinePointList *spl, *espl;
@@ -110,12 +108,9 @@ void SCImportPSFile(SplineChar *sc,int layer,FILE *ps,int doclear,int flags) {
 return;
     width = UNDEFINED_WIDTH;
     empty = sc->layers[layer].splines==NULL && sc->layers[layer].refs==NULL;
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->parent->multilayer && layer>ly_back ) {
 	SCAppendEntityLayers(sc, EntityInterpretPS(ps,&width));
-    } else
-#endif
-    {
+    } else {
 	spl = SplinePointListInterpretPS(ps,flags,sc->parent->strokedfont,&width);
 	if ( spl==NULL ) {
 	    ff_post_error( _("Too Complex or Bad"), _("I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)") );
@@ -154,19 +149,13 @@ return;
 void SCImportPDFFile(SplineChar *sc,int layer,FILE *pdf,int doclear,int flags) {
     SplinePointList *spl, *espl;
     SplineSet **head;
-    int empty, width;
 
     if ( pdf==NULL )
 return;
 
-    width = UNDEFINED_WIDTH;
-    empty = sc->layers[layer].splines==NULL && sc->layers[layer].refs==NULL;
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->parent->multilayer && layer>ly_back ) {
 	SCAppendEntityLayers(sc, EntityInterpretPDFPage(pdf,-1));
-    } else
-#endif
-    {
+    } else {
 	spl = SplinesFromEntities(EntityInterpretPDFPage(pdf,-1),&flags,sc->parent->strokedfont);
 	if ( spl==NULL ) {
 	    ff_post_error( _("Too Complex or Bad"), _("I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)") );
@@ -308,13 +297,10 @@ return;
 void SCImportSVG(SplineChar *sc,int layer,char *path,char *memory, int memlen, int doclear) {
     SplinePointList *spl, *espl, **head;
 
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->parent->multilayer && layer>ly_back ) {
 	SCAppendEntityLayers(sc, EntityInterpretSVG(path,memory,memlen,sc->parent->ascent+sc->parent->descent,
 		sc->parent->ascent));
-    } else
-#endif
-    {
+    } else {
 	spl = SplinePointListInterpretSVG(path,memory,memlen,sc->parent->ascent+sc->parent->descent,
 		sc->parent->ascent,sc->parent->strokedfont);
 	for ( espl = spl; espl!=NULL && espl->first->next==NULL; espl=espl->next );
@@ -774,9 +760,7 @@ static SplineSet * slurpspline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     xs.s = galloc((cnt+1)*sizeof(real));
     xs.closed = (sub&1);
     for ( i=0; i<cnt; ++i )
-#if defined( FONTFORGE_CONFIG_USE_LONGDOUBLE )
-	fscanf(fig,"%Lf",&xs.s[i]);
-#elif defined( FONTFORGE_CONFIG_USE_DOUBLE )
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	fscanf(fig,"%lf",&xs.s[i]);
 #else
 	fscanf(fig,"%f",&xs.s[i]);
@@ -980,11 +964,7 @@ int FVImportImages(FontViewBase *fv,char *path,int format,int toback, int flags)
 return(false);
 	    }
 	    ++tot;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    SCAddScaleImage(sc,image,true,toback?ly_back:ly_fore);
-#else
-	    SCAddScaleImage(sc,image,true,toback || !fv->sf->layers[fv->active_layer].background ? ly_back : fv->active_layer );
-#endif
 #ifndef _NO_LIBXML
 	} else if ( format==fv_svg ) {
 	    SCImportSVG(sc,toback?ly_back:fv->active_layer,start,NULL,0,flags&sf_clearbeforeinput);
@@ -1097,11 +1077,7 @@ return( false );
     continue;
 	    }
 	    ++tot;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    SCAddScaleImage(sc,image,true,toback?ly_back:ly_fore);
-#else
-	    SCAddScaleImage(sc,image,true,ly_back);
-#endif
 #ifndef _NO_LIBXML
 	} else if ( format==fv_svgtemplate ) {
 	    SCImportSVG(sc,toback?ly_back:fv->active_layer,start,NULL,0,flags&sf_clearbeforeinput);

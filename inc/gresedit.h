@@ -27,9 +27,9 @@
 #ifndef _GRESEDIT_H
 #define _GRESEDIT_H
 
-#include "basics.h"
-#include "gresource.h"
-#include "ggadget.h"
+#include <basics.h>
+#include <gresource.h>
+#include <ggadget.h>
 
 enum res_type2 { rt_stringlong = rt_string+1, rt_coloralpha, rt_image, rt_font };
 

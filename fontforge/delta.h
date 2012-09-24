@@ -44,6 +44,12 @@ struct qgnode {
     char *name;
 };
 
+enum qg_error { qg_ok, qg_notnumber, qg_badnumber, qg_badrange, qg_nofont };
+
+enum glyph_sort { gs_unicode, gs_alpha, gs_gid };
+
+enum info_sort { is_glyph_size_pt, is_glyph_pt_size, is_size_glyph_pt };
+
 typedef struct qg_data {
     /* Set by dlg */
     FontViewBase *fv;
@@ -62,7 +68,7 @@ typedef struct qg_data {
 /* Set internally */
     QuestionableGrid *qg;
     int cur, max, glyph_start;
-    enum qg_error { qg_ok, qg_notnumber, qg_badnumber, qg_badrange, qg_nofont } error;
+    enum qg_error error;
 
 /* Dlg internal */
     struct gwindow *gw;
@@ -76,8 +82,8 @@ typedef struct qg_data {
     int loff_top;
     struct ggadget *vsb;
     struct gwindow *v;
-    enum glyph_sort { gs_unicode, gs_alpha, gs_gid } glyph_sort;
-    enum info_sort { is_glyph_size_pt, is_glyph_pt_size, is_size_glyph_pt } info_sort;
+    enum glyph_sort glyph_sort;
+    enum info_sort info_sort;
 
     struct qgnode list;
 

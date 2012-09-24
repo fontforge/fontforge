@@ -35,14 +35,14 @@
 #include <chardata.h>
 #include <gresource.h>
 #include "ggadgetP.h"		/* For the font family names */
-#if !defined(_NO_LIBUNINAMESLIST) && !defined(_STATIC_LIBUNINAMESLIST) && !defined(NODYNAMIC)
-#  include <dynamic.h>
-#endif
+#include <annotations_base.h>
 
-struct unicode_nameannot {
-    const char *name, *annot;
-};
-static const struct unicode_nameannot * const *const *_UnicodeNameAnnot = NULL;
+/*
+ * FIXME: Is it possible to share this names_db with the FontForge
+ * main code? And is it possible to free this memory at some point?
+ */
+/* Unicode character names and annotations. */
+static uninm_names_db names_db = (uninm_names_db) NULL;
 
 #define INSCHR_CharSet	1
 #define INSCHR_Char	2
@@ -56,6 +56,8 @@ static const struct unicode_nameannot * const *const *_UnicodeNameAnnot = NULL;
 #define INSCHR_Close	10
 #define INSCHR_Show	11
 
+enum dsp_mode { d_hex, d_dec, d_unicode, d_kuten };
+
 static struct inschr {
     GWindow icw;
     int width, height;
@@ -63,7 +65,7 @@ static struct inschr {
     long sel_char;
     enum charset map;
     int page;
-    enum dsp_mode { d_hex, d_dec, d_unicode, d_kuten } dsp_mode;
+    enum dsp_mode dsp_mode;
     unsigned int hidden: 1;
     unsigned int show_enabled: 1;
     unsigned int mouse_down: 1;
@@ -339,24 +341,6 @@ struct namemap encodingnames[] = {
     {"Specials", em_max+74 },
 #endif
     { NULL, 0 }};
-
-static void inituninameannot(void) {
-#if _NO_LIBUNINAMESLIST
-    _UnicodeNameAnnot = NULL;
-#elif defined(_STATIC_LIBUNINAMESLIST) || defined(NODYNAMIC)
-    extern const struct unicode_nameannot * const * const UnicodeNameAnnot[];
-    _UnicodeNameAnnot = UnicodeNameAnnot;
-#else
-    DL_CONST void *libuninames=NULL;
-# ifdef LIBDIR
-    libuninames = dlopen( LIBDIR "/" "libuninameslist" SO_EXT,RTLD_LAZY);
-# endif
-    if ( libuninames==NULL )
-	libuninames = dlopen( "libuninameslist" SO_EXT,RTLD_LAZY);
-    if ( libuninames!=NULL )
-	_UnicodeNameAnnot = dlsym(libuninames,"UnicodeNameAnnot");
-#endif
-}
 
 static int mapFromIndex(int i) {
 return( encodingnames[i].map );
@@ -761,9 +745,9 @@ static void InsChrExpose( GWindow pixmap, GRect *rect) {
 	else
 	    sprintf( buffer, "Page: %d", inschr.page );
 	uc_strcpy(ubuf,buffer);
-	GDrawDrawBiText(pixmap,GDrawPointsToPixels(pixmap,6),
+	GDrawDrawText(pixmap,GDrawPointsToPixels(pixmap,6),
 		GDrawPointsToPixels(pixmap,90)+inschr.sas,
-		ubuf, -1, NULL, 0x000000 );
+		ubuf, -1, 0x000000 );
 	GDrawPopClip(pixmap,&old);
     }
     if ( rect->y+rect->height < inschr.ybase )
@@ -805,11 +789,11 @@ return;
     continue;
 	buf[0] = InsChrMapChar(i*16+j);
 	if ( buf[0]==0xad ) buf[0] = '-';	/* 0xad usually doesn't print */
-	width = GDrawGetBiTextWidth(pixmap,buf,1,1,NULL);
-	GDrawDrawBiText(pixmap,
+	width = GDrawGetTextWidth(pixmap,buf,1);
+	GDrawDrawText(pixmap,
 		j*inschr.spacing+(inschr.spacing-width)/2,
 		i*inschr.spacing+inschr.ybase+inschr.as+4,
-		buf,1,NULL,0x000000);
+		buf,1,0x000000);
     }
     if ( inschr.flash )
 	InsChrXorChar(pixmap,inschr.x,inschr.y);
@@ -874,15 +858,8 @@ static void uc_annot_strncat(unichar_t *to, const char *from, int len) {
     register unichar_t ch;
 
     to += u_strlen(to);
-    while ( (ch = *(unsigned char *) from++) != '\0' && --len>=0 ) {
-	if ( from[-2]=='\t' ) {
-	    if ( ch=='*' ) ch = 0x2022;
-	    else if ( ch=='x' ) ch = 0x2192;
-	    else if ( ch==':' ) ch = 0x224d;
-	    else if ( ch=='#' ) ch = 0x2245;
-	}
+    while ( (ch = utf8_ildb(&from)) != '\0' && --len>=0 )
 	*(to++) = ch;
-    }
     *to = 0;
 }
 
@@ -895,10 +872,13 @@ static void InsChrMouseMove(GWindow gw, GEvent *event) {
 	int uch = InsChrMapChar(16*y + x);
 	static unichar_t space[600];
 	char cspace[40];
+	const char *uniname;
+	const char *uniannot;
 
-	if ( _UnicodeNameAnnot!=NULL &&
-		_UnicodeNameAnnot[uch>>16][(uch>>8)&0xff][uch&0xff].name!=NULL ) {
-	    uc_strcpy(space,_UnicodeNameAnnot[uch>>16][(uch>>8)&0xff][uch&0xff].name);
+	uniname = uninm_name(names_db, uch);
+	uniannot = uninm_annotation(names_db, uch);
+	if (uniname != NULL) {
+	    uc_strncpy(space, uniname, 550);
 	    sprintf( cspace, " U+%04X", uch );
 	    uc_strcpy(space+u_strlen(space),cspace);
 	} else {
@@ -911,7 +891,7 @@ static void InsChrMouseMove(GWindow gw, GEvent *event) {
 	    else if ( uch>=0xAC00 && uch<=0xD7A3 )
 		sprintf(cspace, "Hangul Syllable U+%04X ", uch);
 	    else if ( uch>=0xD800 && uch<=0xDB7F )
-		sprintf(cspace, "Non Private Use High Surrogate U+%04X ", uch);
+ 		sprintf(cspace, "Non Private Use High Surrogate U+%04X ", uch);
 	    else if ( uch>=0xDB80 && uch<=0xDBFF )
 		sprintf(cspace, "Private Use High Surrogate U+%04X ", uch);
 	    else if ( uch>=0xDC00 && uch<=0xDFFF )
@@ -922,12 +902,11 @@ static void InsChrMouseMove(GWindow gw, GEvent *event) {
 		sprintf(cspace, "Unencoded Unicode U+%04X ", uch);
 	    uc_strcpy(space,cspace);
 	}
-	if ( uch<0x110000 && _UnicodeNameAnnot!=NULL &&
-		_UnicodeNameAnnot[uch>>16][(uch>>8)&0xff][uch&0xff].annot!=NULL ) {
+	if (uniannot != NULL) {
 	    int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
 	    if ( left>4 ) {
 		uc_strcat(space,"\n");
-		uc_annot_strncat(space,_UnicodeNameAnnot[uch>>16][(uch>>8)&0xff][uch&0xff].annot,left-2);
+		uc_annot_strncat(space, uniannot, left-2);
 	    }
 	}
 	GGadgetPreparePopup(gw,space);
@@ -1069,12 +1048,17 @@ void GWidgetCreateInsChar(void) {
     int i;
     FontRequest rq;
     int as, ds, ld;
-    static int inited= false;
+    char *names_db_file;
 
-    if ( !inited ) {
-	inituninameannot();
-	inited = true;
-    }
+    /*
+     * Load character names and annotations that come from the Unicode
+     * NamesList.txt. This should not be done until after the locale
+     * has been set.
+     */
+    names_db_file = uninm_find_names_db(NULL);
+    names_db = (names_db_file == NULL) ? ((uninm_names_db) 0) : uninm_names_db_open(names_db_file);
+    free(names_db_file);
+
     if ( inschr.icw!=NULL ) {
 	inschr.hidden = false;
 	GDrawSetVisible(inschr.icw,true);
@@ -1114,11 +1098,11 @@ void GWidgetCreateInsChar(void) {
 	rq.point_size = /*15*/12;
 	rq.weight = 400;
 	rq.style = 0;
-	inschr.font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(inschr.icw),&rq);
+	inschr.font = GDrawInstanciateFont(inschr.icw,&rq);
 	GDrawWindowFontMetrics(inschr.icw,inschr.font,&as, &ds, &ld);
 	inschr.as = as;
 	rq.point_size = 8;
-	inschr.smallfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(inschr.icw),&rq);
+	inschr.smallfont = GDrawInstanciateFont(inschr.icw,&rq);
 	GDrawWindowFontMetrics(inschr.icw,inschr.smallfont,&as, &ds, &ld);
 	inschr.sas = as;
 

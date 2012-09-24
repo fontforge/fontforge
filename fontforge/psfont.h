@@ -160,17 +160,19 @@ typedef struct fontdict {
 #endif
 } FontDict;
 
+struct fddata {
+    int leniv;
+    int subrmapoff, sdbytes, subrcnt;
+    int flexmax;
+    unsigned int iscjk:1;
+    struct pschars *subrs;
+};
+
 struct cidbytes {
     int fdbytes, gdbytes, cidcnt;
     int cidmapoffset;
     int fdcnt;
-    struct fddata {
-	int leniv;
-	int subrmapoff, sdbytes, subrcnt;
-	int flexmax;
-	unsigned int iscjk:1;
-	struct pschars *subrs;
-    } *fds;
+    struct fddata *fds;
     int *fdind;
     int errors;
 };

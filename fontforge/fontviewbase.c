@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -1641,7 +1642,6 @@ static void _FVRevert(FontViewBase *fv,int tobackup) {
     int i;
     FontViewBase *fvs;
     EncMap *map;
-    extern struct compressors compressors[];
 
     if ( old->origname==NULL )
 return;

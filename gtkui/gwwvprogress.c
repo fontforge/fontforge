@@ -38,7 +38,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
-#include "basics.h"
+#include <basics.h>
 #include "support.h"
 #include "gwwvprogress.h"
 

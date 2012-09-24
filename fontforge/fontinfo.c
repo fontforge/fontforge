@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +32,7 @@
 #include <utype.h>
 #include "unicoderange.h"
 #include <locale.h>
+#include "lookups.h"
 
 extern int _GScrollBar_Width;
 extern GBox _ggadget_Default_Box;
@@ -2175,8 +2177,6 @@ return( true );		/* can't happen */
 return( true );
 }
 
-extern char *knownweights[], *realweights[], **noticeweights[];
-
 static int GFI_NameChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GWindow gw = GGadgetGetWindow(g);
@@ -2196,8 +2196,27 @@ static int GFI_NameChange(GGadget *g, GEvent *e) {
 	    if ( noticeweights[j][i]!=NULL )
 	break;
 	}
-	if ( gfi->human_untitled )
-	    GGadgetSetTitle(GWidgetGetControl(gw,CID_Human),uname);
+
+	/* If the user didn't set the full name yet, we guess it from the
+	 * postrscript name */
+	if ( gfi->human_untitled ) {
+	    unichar_t *cp = u_copy(uname);
+	    int i=0;
+	    /* replace the last hyphen with space */
+	    for( i=u_strlen(cp); i>=0; i-- ) {
+		if( cp[i] == '-' ) {
+		    cp[i] = ' ';
+		    break;
+		}
+	    }
+	    /* If the postscript name ends with "Regular" it is recommended not
+	     * to include it in the full name */
+	    if(u_endswith(cp,c_to_u(" Regular")) || u_endswith(cp,c_to_u(" regular"))) {
+		cp[u_strlen(cp) - strlen(" Regular")] ='\0';
+	    }
+	    GGadgetSetTitle(GWidgetGetControl(gw,CID_Human),cp);
+	    free(cp);
+	}
 	if ( gfi->family_untitled ) {
 	    const unichar_t *ept = uname+u_strlen(uname); unichar_t *temp;
 	    for ( i=0; knownweights[i]!=NULL; ++i ) {
@@ -3509,7 +3528,6 @@ static void LayersMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     mi->candelete = Layers_CanDelete;
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static int GFI_Type3Change(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	GWindow gw = GGadgetGetWindow(g);
@@ -3529,7 +3547,6 @@ static int GFI_Type3Change(GGadget *g, GEvent *e) {
     }
 return( true );
 }
-#endif
 
 static int GFI_OrderChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
@@ -3537,9 +3554,7 @@ static int GFI_OrderChange(GGadget *g, GEvent *e) {
 	GGadget *backs = GWidgetGetControl(gw,CID_Backgrounds);
 	int mixed = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsMixed));
 	int cubic = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsOrder3));
-#ifdef FONTFORGE_CONFIG_TYPE3
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_IsMultiLayer), cubic);
-#endif
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_GuideOrder2), mixed);
 	if ( !mixed ) {
 	    GGadgetSetChecked(GWidgetGetControl(gw,CID_GuideOrder2), !cubic );
@@ -3989,9 +4004,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int design_size, size_top, size_bottom, styleid;
 	int strokedfont = false;
 	real strokewidth;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	int multilayer = false;
-#endif
 	char os2_vendor[4];
 	NameList *nl;
 	extern int allow_utf8_glyphnames;
@@ -4082,9 +4095,7 @@ return(true);
 	guideorder2 = GGadgetIsChecked(GWidgetGetControl(gw,CID_GuideOrder2));
 	strokedfont = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsStrokedFont));
 	strokewidth = GetReal8(gw,CID_StrokeWidth,_("Stroke _Width:"),&err);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	multilayer = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsMultiLayer));
-#endif
 	vmetrics = GGadgetIsChecked(GWidgetGetControl(gw,CID_HasVerticalMetrics));
 	upos = GetReal8(gw,CID_UPos, _("Underline _Position:"),&err);
 	uwid = GetReal8(gw,CID_UWidth,S_("Underline|_Height:"),&err);
@@ -4252,7 +4263,6 @@ return(true);
 	}
 	if ( !SSNameValidate(d))
 return( true );
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( strokedfont!=sf->strokedfont || multilayer!=sf->multilayer ) {
 	    if ( sf->strokedfont && multilayer )
 		SFSetLayerWidthsStroked(sf,sf->strokewidth);
@@ -4266,11 +4276,6 @@ return( true );
 	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
 		sf->glyphs[i]->changedsincelasthinted = !strokedfont && !multilayer;
 	}
-#else
-	if ( strokedfont!=sf->strokedfont )
-	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
-		sf->glyphs[i]->changedsincelasthinted = !strokedfont;
-#endif
 	sf->strokedfont = strokedfont;
 	sf->strokewidth = strokewidth;
 	GDrawSetCursor(gw,ct_watch);
@@ -5602,14 +5607,14 @@ void GFI_LookupScrollbars(struct gfi_data *gfi, int isgpos, int refresh) {
 	if ( lk->all[i].deleted )
     continue;
 	++lcnt;
-	wmax = GDrawGetBiText8Width(gw,lk->all[i].lookup->lookup_name,-1,-1,NULL);
+	wmax = GDrawGetText8Width(gw,lk->all[i].lookup->lookup_name,-1);
 	if ( wmax > width ) width = wmax;
 	if ( lk->all[i].open ) {
 	    for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
 		if ( lk->all[i].subtables[j].deleted )
 	    continue;
 		++lcnt;
-		wmax = gfi->fh+GDrawGetBiText8Width(gw,lk->all[i].subtables[j].subtable->subtable_name,-1,-1,NULL);
+		wmax = gfi->fh+GDrawGetText8Width(gw,lk->all[i].subtables[j].subtable->subtable_name,-1);
 		if ( wmax > width ) width = wmax;
 	    }
 	}
@@ -6502,8 +6507,8 @@ static void LookupExpose(GWindow pixmap, struct gfi_data *gfi, int isgpos) {
 	    GDrawDrawLine(pixmap,r.x+2,r.y+(r.height/2), r.x+r.width-2,r.y+(r.height/2), 0x000000);
 	    if ( !lk->all[i].open )
 		GDrawDrawLine(pixmap,r.x+(r.width/2),r.y+2, r.x+(r.width/2),r.y+r.height-2, 0x000000);
-	    GDrawDrawBiText8(pixmap,r.x+gfi->fh, r.y+gfi->as,
-		    lk->all[i].lookup->lookup_name,-1,NULL,MAIN_FOREGROUND);
+	    GDrawDrawText8(pixmap,r.x+gfi->fh, r.y+gfi->as,
+		    lk->all[i].lookup->lookup_name,-1,MAIN_FOREGROUND);
 	}
 	++lcnt;
 	if ( lk->all[i].open ) {
@@ -6518,8 +6523,8 @@ static void LookupExpose(GWindow pixmap, struct gfi_data *gfi, int isgpos) {
 		    }
 		    r.x = LK_MARGIN+2*gfi->fh-lk->off_left;
 		    r.y = LK_MARGIN+(lcnt-lk->off_top)*gfi->fh;
-		    GDrawDrawBiText8(pixmap,r.x, r.y+gfi->as,
-			    lk->all[i].subtables[j].subtable->subtable_name,-1,NULL,MAIN_FOREGROUND);
+		    GDrawDrawText8(pixmap,r.x, r.y+gfi->as,
+			    lk->all[i].subtables[j].subtable->subtable_name,-1,MAIN_FOREGROUND);
 		}
 		++lcnt;
 	    }
@@ -6540,7 +6545,6 @@ static void LookupDeselect(struct lkdata *lk) {
 
 static void LookupPopup(GWindow gw,OTLookup *otl,struct lookup_subtable *sub,
 	struct lkdata *lk) {
-    extern char *lookup_type_names[2][10];
     static char popup_msg[600];
     int pos;
     char *lookuptype;
@@ -8061,7 +8065,6 @@ return;
     lgcd[k++].creator = GLabelCreate;
     larray2[j++] = &lgcd[k-1]; larray2[j++] = GCD_ColSpan; larray2[j++] = GCD_Glue; larray2[j++] = GCD_Glue; larray2[j++] = NULL;
 
-#ifdef FONTFORGE_CONFIG_TYPE3
     lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = lgcd[k-1].gd.pos.y+k;
     llabel[k].text = (unichar_t *) _("_Outline Font");
     llabel[k].text_is_1byte = true;
@@ -8098,18 +8101,6 @@ return;
     lgcd[k].creator = GRadioCreate;
     lgcd[k++].gd.popup_msg = (unichar_t *) _("Glyphs will be composed of stroked lines rather than filled outlines.\nAll glyphs are stroked at the following width");
     larray2[j++] = GCD_HPad10; larray2[j++] = &lgcd[k-1];
-#else
-    lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = lgcd[k-1].gd.pos.y+16;
-    llabel[k].text = (unichar_t *) _("_Stroked Font");
-    llabel[k].text_is_1byte = true;
-    llabel[k].text_in_resource = true;
-    lgcd[k].gd.label = &llabel[k];
-    lgcd[k].gd.flags = sf->strokedfont ? (gg_visible | gg_enabled | gg_utf8_popup | gg_cb_on) : (gg_visible | gg_enabled | gg_utf8_popup);
-    lgcd[k].gd.cid = CID_IsStrokedFont;
-    lgcd[k].creator = GCheckBoxCreate;
-    lgcd[k++].gd.popup_msg = (unichar_t *) _("Glyphs will be composed of stroked lines rather than filled outlines.\nAll glyphs are stroked at the following width");
-    larray2[j++] = GCD_HPad10; larray2[j++] = &lgcd[k-1];
-#endif
 
     lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = lgcd[k-1].gd.pos.y+20;
     llabel[k].text = (unichar_t *) _("  Stroke _Width:");
@@ -10728,11 +10719,11 @@ return;
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 12;
 	rq.weight = 400;
-	fi_font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	fi_font = GDrawInstanciateFont(gw,&rq);
 	fi_font = GResourceFindFont("FontInfo.Font",fi_font);
     }
     d->font = fi_font;
-    GDrawFontMetrics(d->font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(gw,d->font,&as,&ds,&ld);
     d->as = as; d->fh = as+ds;
 
     GTextInfoListFree(namelistnames);

@@ -2583,27 +2583,33 @@ return( lfile );
 return( final );
 }
 
+struct feat_lookups {
+    uint32 tag;
+    int lcnt;
+    OTLookup **lookups;
+    int feature_id;		/* Initially consecutive, but may be rearranged by sorting */
+    uint32 name_param_ptr;
+};
+
+struct langsys {
+    uint32 lang;
+    int fc;
+    int *feature_id;
+    int same_as;
+    int32 offset;
+};
+
+struct scriptset {
+    uint32 script;
+    int lc;
+    struct langsys *langsys;
+};
+
 struct ginfo {
     int fmax, fcnt;
-    struct feat_lookups {
-	uint32 tag;
-	int lcnt;
-	OTLookup **lookups;
-	int feature_id;		/* Initially consecutive, but may be rearranged by sorting */
-	uint32 name_param_ptr;
-    } *feat_lookups;
+    struct feat_lookups *feat_lookups;
     int sc;
-    struct scriptset {
-	uint32 script;
-	int lc;
-	struct langsys {
-	    uint32 lang;
-	    int fc;
-	    int *feature_id;
-	    int same_as;
-	    int32 offset;
-	} *langsys;
-    } *scripts;
+    struct scriptset *scripts;
 };
 
 static int FindOrMakeNewFeatureLookup(struct ginfo *ginfo,OTLookup **lookups,

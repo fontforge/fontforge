@@ -284,7 +284,7 @@ unichar_t *u_copyn(const unichar_t *pt, long n) {
     if ( n*sizeof(unichar_t)>=MEMORY_MASK )
 	n = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = galloc((n+1)*sizeof(unichar_t));
+    res = (unichar_t *) galloc((n+1)*sizeof(unichar_t));
     memcpy(res,pt,n*sizeof(unichar_t));
     res[n]='\0';
 return(res);
@@ -306,7 +306,7 @@ return( u_copy( s2 ));
     else if ( s2==NULL )
 return( u_copy( s1 ));
     len1 = u_strlen(s1); len2 = u_strlen(s2);
-    pt = galloc((len1+len2+1)*sizeof(unichar_t));
+    pt = (unichar_t *) galloc((len1+len2+1)*sizeof(unichar_t));
     u_strcpy(pt,s1);
     u_strcpy(pt+len1,s2);
 return( pt );
@@ -322,7 +322,7 @@ return((unichar_t *)0);
     if ( (len+1)*sizeof(unichar_t)>=MEMORY_MASK )
 	len = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = galloc((len+1)*sizeof(unichar_t));
+    res = (unichar_t *) galloc((len+1)*sizeof(unichar_t));
     for ( rpt=res; --len>=0 ; *rpt++ = *(unsigned char *) pt++ );
     *rpt = '\0';
 return(res);
@@ -340,7 +340,7 @@ return((unichar_t *)0);
     if ( (n+1)*sizeof(unichar_t)>=MEMORY_MASK )
 	n = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = galloc((n+1)*sizeof(unichar_t));
+    res = (unichar_t *) galloc((n+1)*sizeof(unichar_t));
     for ( rpt=res; --n>=0 ; *rpt++ = *(unsigned char *) pt++ );
     *rpt = '\0';
 return(res);
@@ -356,7 +356,7 @@ return(NULL);
     if ( (len+1)>=MEMORY_MASK )
 	len = MEMORY_MASK-1;
 #endif
-    res = galloc(len+1);
+    res = (char *) galloc(len+1);
     for ( rpt=res; --len>=0 ; *rpt++ = *pt++ );
     *rpt = '\0';
 return(res);
@@ -374,7 +374,7 @@ return((char *)0);
     if ( (n+1)>=MEMORY_MASK )
 	n = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = galloc(n+1);
+    res = (char *) galloc(n+1);
     for ( rpt=res; --n>=0 ; *rpt++ = *pt++ );
     *rpt = '\0';
 return(res);
@@ -487,24 +487,12 @@ unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len) {
 	} else if ( *pt<=0xef ) {
 	    *upt = ((*pt&0xf)<<12) | ((pt[1]&0x3f)<<6) | (pt[2]&0x3f);
 	    pt += 3;
-#ifdef UNICHAR_16
-	} else if ( upt+1<uend ) {
-	    /* Um... I don't support surrogates */
-	    w = ( ((*pt&0x7)<<2) | ((pt[1]&0x30)>>4) )-1;
-	    *upt++ = 0xd800 | (w<<6) | ((pt[1]&0xf)<<2) | ((pt[2]&0x30)>>4);
-	    *upt   = 0xdc00 | ((pt[2]&0xf)<<6) | (pt[3]&0x3f);
-	    pt += 4;
-	} else {
-	    /* no space for surrogate */
-	    pt += 4;
-#else
 	} else {
 	    w = ( ((*pt&0x7)<<2) | ((pt[1]&0x30)>>4) )-1;
 	    w = (w<<6) | ((pt[1]&0xf)<<2) | ((pt[2]&0x30)>>4);
 	    w2 = ((pt[2]&0xf)<<6) | (pt[3]&0x3f);
 	    *upt = w*0x400 + w2 + 0x10000;
 	    pt += 4;
-#endif
 	}
 	++upt;
     }
@@ -516,88 +504,8 @@ unichar_t *utf82u_strcpy(unichar_t *ubuf,const char *utf8buf) {
 return( utf82u_strncpy(ubuf,utf8buf,strlen(utf8buf)+1));
 }
 
-# ifdef UNICHAR_16
-uint32 *utf82u32_strncpy(uint32 *ubuf,const char *utf8buf,int len) {
-    uint32 *upt=ubuf, *uend=ubuf+len-1;
-    const uint8 *pt = (const uint8 *) utf8buf;
-    int w, w2;
-
-    while ( *pt!='\0' && upt<uend ) {
-	if ( *pt<=127 )
-	    *upt = *pt++;
-	else if ( *pt<=0xdf ) {
-	    *upt = ((*pt&0x1f)<<6) | (pt[1]&0x3f);
-	    pt += 2;
-	} else if ( *pt<=0xef ) {
-	    *upt = ((*pt&0xf)<<12) | ((pt[1]&0x3f)<<6) | (pt[2]&0x3f);
-	    pt += 3;
-	} else {
-	    w = ( ((*pt&0x7)<<2) | ((pt[1]&0x30)>>4) )-1;
-	    w = (w<<6) | ((pt[1]&0xf)<<2) | ((pt[2]&0x30)>>4);
-	    w2 = ((pt[2]&0xf)<<6) | (pt[3]&0x3f);
-	    *upt = w*0x400 + w2 + 0x10000;
-	    pt += 4;
-	}
-	++upt;
-    }
-    *upt = '\0';
-return( ubuf );
-}
-
-char *u322utf8_strncpy(char *utf8buf, const uint32 *ubuf,int len) {
-    uint8 *pt=(uint8 *) utf8buf, *end=(uint8 *) utf8buf+len-1;
-    const uint32 *upt = ubuf;
-
-    while ( *upt!='\0' && pt<end ) {
-	if ( *upt<=127 )
-	    *pt++ = *upt;
-	else if ( *upt<=0x7ff ) {
-	    if ( pt+1>=end )
-    break;
-	    *pt++ = 0xc0 | (*upt>>6);
-	    *pt++ = 0x80 | (*upt&0x3f);
-	} else if ( *upt<=0xffff ) {
-	    if ( pt+2>=end )
-    break;
-	    *pt++ = 0xe0 | (*upt>>12);
-	    *pt++ = 0x80 | ((*upt>>6)&0x3f);
-	    *pt++ = 0x80 | (*upt&0x3f);
-	} else {
-	    uint32 val = *upt-0x10000;
-	    int u = ((val&0xf0000)>>16)+1, z=(val&0x0f000)>>12, y=(val&0x00fc0)>>6, x=val&0x0003f;
-	    if ( pt+3>=end )
-    break;
-	    *pt++ = 0xf0 | (u>>2);
-	    *pt++ = 0x80 | ((u&3)<<4) | z;
-	    *pt++ = 0x80 | y;
-	    *pt++ = 0x80 | x;
-	}
-	++upt;
-    }
-    *pt = '\0';
-return( utf8buf );
-}
-
-char *u322utf8_copy(const uint32 *ubuf) {
-    int i, len;
-    char *buf;
-
-    for ( i=len=0; ubuf[i]!=0; ++i )
-	if ( ubuf[i]<0x80 )
-	    ++len;
-	else if ( ubuf[i]<0x800 )
-	    len += 2;
-	else if ( ubuf[i]<0x10000 )
-	    len += 3;
-	else
-	    len += 4;
-    buf = galloc(len+1);
-return( u322utf8_strncpy(buf,ubuf,len+1));
-}
-#endif
-
 unichar_t *utf82u_copyn(const char *utf8buf,int len) {
-    unichar_t *ubuf = galloc((len+1)*sizeof(unichar_t));
+    unichar_t *ubuf = (unichar_t *) galloc((len+1)*sizeof(unichar_t));
 return( utf82u_strncpy(ubuf,utf8buf,len+1));
 }
 
@@ -609,27 +517,13 @@ unichar_t *utf82u_copy(const char *utf8buf) {
 return( NULL );
 
     len = strlen(utf8buf);
-    ubuf = galloc((len+1)*sizeof(unichar_t));
+    ubuf = (unichar_t *) galloc((len+1)*sizeof(unichar_t));
 return( utf82u_strncpy(ubuf,utf8buf,len+1));
 }
 
 void utf82u_strcat(unichar_t *to,const char *from) {
     utf82u_strcpy(to+u_strlen(to),from);
 }
-
-#ifdef UNICHAR_16
-uint32 *utf82u32_copy(const char *utf8buf) {
-    int len;
-    uint32 *ubuf;
-
-    if ( utf8buf==NULL )
-return( NULL );
-
-    len = strlen(utf8buf);
-    ubuf = galloc((len+1)*sizeof(uint32));
-return( utf82u32_strncpy(ubuf,utf8buf,len+1));
-}
-#endif
 
 char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
     char *pt = utf8buf;
@@ -640,18 +534,6 @@ char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
 	else if ( *ubuf<0x800 ) {
 	    *pt++ = 0xc0 | (*ubuf>>6);
 	    *pt++ = 0x80 | (*ubuf&0x3f);
-#ifdef UNICHAR_16
-	} else if ( *ubuf>=0xd800 && *ubuf<0xdc00 && ubuf[1]>=0xdc00 && ubuf[1]<0xe000 ) {
-	    int u = ((*ubuf>>6)&0xf)+1, y = ((*ubuf&3)<<4) | ((ubuf[1]>>6)&0xf);
-	    *pt++ = 0xf0 | (u>>2);
-	    *pt++ = 0x80 | ((u&3)<<4) | ((*ubuf>>2)&0xf);
-	    *pt++ = 0x80 | y;
-	    *pt++ = 0x80 | (ubuf[1]&0x3f);
-	} else {
-	    *pt++ = 0xe0 | (*ubuf>>12);
-	    *pt++ = 0x80 | ((*ubuf>>6)&0x3f);
-	    *pt++ = 0x80 | (*ubuf&0x3f);
-#else
 	} else if ( *ubuf < 0x10000 ) {
 	    *pt++ = 0xe0 | (*ubuf>>12);
 	    *pt++ = 0x80 | ((*ubuf>>6)&0x3f);
@@ -663,7 +545,6 @@ char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
 	    *pt++ = 0x80 | ((u&3)<<4) | z;
 	    *pt++ = 0x80 | y;
 	    *pt++ = 0x80 | x;
-#endif
 	}
 	++ubuf;
     }
@@ -708,7 +589,7 @@ char *latin1_2_utf8_copy(const char *lbuf) {
 return( NULL );
 
     len = strlen(lbuf);
-    utf8buf = galloc(2*len+1);
+    utf8buf = (char *) galloc(2*len+1);
 return( latin1_2_utf8_strcpy(utf8buf,lbuf));
 }
 
@@ -721,7 +602,7 @@ char *utf8_2_latin1_copy(const char *utf8buf) {
 return( NULL );
 
     len = strlen(utf8buf);
-    pt = lbuf = galloc(len+1);
+    pt = lbuf = (char *) galloc(len+1);
     for ( upt=utf8buf; (ch=utf8_ildb(&upt))!='\0'; )
 	if ( ch>=0xff )
 	    *pt++ = '?';
@@ -739,7 +620,7 @@ char *u2utf8_copy(const unichar_t *ubuf) {
 return( NULL );
 
     len = u_strlen(ubuf);
-    utf8buf = galloc((len+1)*4);
+    utf8buf = (char *) galloc((len+1)*4);
 return( u2utf8_strcpy(utf8buf,ubuf));
 }
 
@@ -750,7 +631,7 @@ char *u2utf8_copyn(const unichar_t *ubuf,int len) {
     if ( ubuf==NULL )
 return( NULL );
 
-    utf8buf = pt = galloc((len+1)*4);
+    utf8buf = pt = (char *) galloc((len+1)*4);
     for ( i=0; i<len && *ubuf!='\0'; ++i )
 	pt = utf8_idpb(pt, *ubuf++);
     *pt = '\0';
@@ -907,6 +788,17 @@ int utf82u_strlen(const char *utf8_str) {
 return( len );
 }
 
+void utf8_strncpy(register char *to, const char *from, int len) {
+    /* copy n characters NOT bytes */
+    const char *old = from;
+    while ( len && *old ) {
+	utf8_ildb(&old);
+	len--;
+    }
+    strncpy(to, from, old-from);
+    to[old-from] = 0;
+}
+
 #include <chardata.h>
 char *StripToASCII(const char *utf8_str) {
     /* Remove any non-ascii characters: Special case, convert the copyright symbol to (c) */
@@ -915,12 +807,12 @@ char *StripToASCII(const char *utf8_str) {
     const unichar_t *alt;
 
     len = strlen(utf8_str);
-    pt = newcr = galloc(len+1);
+    pt = newcr = (char *) galloc(len+1);
     end = pt+len;
     while ( (ch= utf8_ildb(&utf8_str))!='\0' ) {
 	if ( pt>=end ) {
 	    int off = pt-newcr;
-	    newcr = grealloc(newcr,(off+10)+1);
+	    newcr = (char *) grealloc(newcr,(off+10)+1);
 	    pt = newcr+off;
 	    end = pt+10;
 	}
@@ -932,7 +824,7 @@ char *StripToASCII(const char *utf8_str) {
 	    char *str = "(c)";
 	    if ( pt+strlen(str)>=end ) {
 		int off = pt-newcr;
-		newcr = grealloc(newcr,(off+10+strlen(str))+1);
+		newcr = (char *) grealloc(newcr,(off+10+strlen(str))+1);
 		pt = newcr+off;
 		end = pt+10;
 	    }
@@ -943,7 +835,7 @@ char *StripToASCII(const char *utf8_str) {
 	    while ( *alt!='\0' ) {
 		if ( pt>=end ) {
 		    int off = pt-newcr;
-		    newcr = grealloc(newcr,(off+10)+1);
+		    newcr = (char *) grealloc(newcr,(off+10)+1);
 		    pt = newcr+off;
 		    end = pt+10;
 		}
@@ -985,4 +877,13 @@ int uAllAscii(const unichar_t *txt) {
 return( false );
     }
 return( true );
+}
+
+int u_endswith(const unichar_t *haystack,const unichar_t *needle) {
+    int haylen = u_strlen( haystack );
+    int nedlen = u_strlen( needle );
+    if( haylen < nedlen )
+	return 0;
+    unichar_t* p = u_strstr( haystack + haylen - nedlen, needle );
+    return p == ( haystack + haylen - nedlen );
 }

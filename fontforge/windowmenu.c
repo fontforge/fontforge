@@ -29,8 +29,6 @@
 # include "splinefont.h"
 #  include "ustring.h"
 
-extern void GMenuItemArrayFree(struct gmenuitem *mi);
-
 static void WindowSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
     GDrawRaise(mi->ti.userdata);
 }
@@ -55,7 +53,6 @@ void WindowMenuBuild(GWindow basew,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv;
     GMenuItem *sub;
     BDFFont *bdf;
-    extern void GMenuItemArrayFree(GMenuItem *mi);
 
     precnt = 6;
     cnt = precnt;
@@ -125,7 +122,6 @@ static void RecentSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
 void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *e) {
     int i, cnt, cnt1;
     FontViewBase *fv;
-    extern void GMenuItemArrayFree(struct gmenuitem *mi);
     GMenuItem *sub;
 
     if ( mi->sub!=NULL ) {

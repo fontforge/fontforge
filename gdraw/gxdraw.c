@@ -69,260 +69,19 @@ enum cm_type { cmt_default=-1, cmt_current, cmt_copy, cmt_private };
 extern int gdraw_xkeysym_2_unicode[];
 
 
-/*#define GREEK_BUG	1*/
-
 static void GXDrawTransmitSelection(GXDisplay *gd,XEvent *event);
 static void GXDrawClearSelData(GXDisplay *gd,enum selnames sel);
-
-struct font_decomp {
-    int point;
-    int res;
-    enum font_style style;
-    int iw_weight;
-    enum charset map;
-    unichar_t *name;
-    int prop;
-    unichar_t *mapname;
-    enum font_type ft;
-};
 
 /* ************************************************************************** */
 /* ******************************* Font Stuff ******************************* */
 /* ************************************************************************** */
 
-/* Names from x server are in isolatin1, not unicode */
-static int decompose_screen_name(char *xname, struct font_decomp *info, int screen_res) {
-    unichar_t weight[80], ital[80], prop[80], map[80], sans[80], conext[80];
-    char foundary[80];
-    static unichar_t name[80];
-    int pixelh, screenw, avgwid;
-    register char *pt, *strt; char *pos;
-
-    /* don't need foundary, um, pointh, screenh, whatsat */
-    /* well, let's keep the foundary to work around a bug in SUSE greek fonts */
-    pt = xname;
-    if ( *pt++!='-' )
-return( false );
-    strt = pt;
-    while ( *pt!='-' && *pt!='\0' ) ++pt;	/* Skip foundary */
-    if ( *pt=='\0' )
-return( false );
-    strncpy(foundary,strt,pt-strt); foundary[(pt-strt)] = '\0';
-
-    strt = ++pt;
-    while ( *pt!='-' && *pt!='\0' ) ++pt;	/* Get the name */
-    if ( *pt=='\0' )
-return( false );
-    uc_strncpy(name,strt,pt-strt); name[(pt-strt)] = '\0';
-
-    strt = ++pt;
-    while ( *pt!='-' && *pt!='\0' ) ++pt;	/* Get the weight */
-    if ( *pt=='\0' )
-return( false );
-    uc_strncpy(weight,strt,pt-strt); weight[(pt-strt)] = '\0';
-
-    strt = ++pt;
-    while ( *pt!='-' && *pt!='\0' ) ++pt;	/* Get the style */
-    if ( *pt=='\0' )
-return( false );
-    uc_strncpy(ital,strt,pt-strt); ital[(pt-strt)] = '\0';
-
-    strt = ++pt;
-    while ( *pt!='-' && *pt!='\0' ) ++pt;	/* condensed, extended, normal */
-    if ( *pt=='\0' )
-return( false );
-    uc_strncpy(conext,strt,pt-strt); conext[(pt-strt)] = '\0';
-
-    strt = ++pt;
-    while ( *pt!='-' && *pt!='\0' ) ++pt;	/* sans/serif mark */
-    if ( *pt=='\0' )
-return( false );
-    uc_strncpy(sans,strt,pt-strt); sans[(pt-strt)] = '\0';
-    if ( uc_strstrmatch(sans,"sans")!=NULL )
-	uc_strcat(name,"Sans");
-    else if ( uc_strstrmatch(sans,"serif")!=NULL )
-	uc_strcat(name,"Serif");
-
-    pixelh = strtol(pt+1,&pos,10);		/* get the pixel size */
-    pt = pos;
-    if ( *pt!='-' )
-return( false );
-
-    ++pt;
-    while ( *pt!='-' && *pt!='\0' ) ++pt;	/* Skip the point size */
-    if ( *pt=='\0' )
-return( false );
-
-    screenw = strtol(pt+1,&pos,10);		/* get the screen resolution (horizontally) */
-    pt = pos;
-    if ( *pt!='-' )
-return( false );
-
-    ++pt;
-    while ( *pt!='-' && *pt!='\0' ) ++pt;	/* Skip the vertical screen res */
-    if ( *pt=='\0' )
-return( false );
-
-    strt = ++pt;
-    while ( *pt!='-' && *pt!='\0' ) ++pt;	/* Get the mono/proportional flag */
-    if ( *pt=='\0' )
-return( false );
-    uc_strncpy(prop,strt,pt-strt); prop[(pt-strt)] = '\0';
-
-    avgwid = strtol(pt+1,&pos,10);		/* get the average width. We don't care about it, but it can tell us if the font is scaled */
-    pt = pos;
- /* fonts with avgwid==0 and pixelh!=0 appear to be some weird transients of */
- /*  scaling (or something). If we ask for them again we probably won't find */
- /*  them (or if we do they won't have metrics), and that makes us very unhappy */
- /*  so best just to ignore them now */
-    if ( *pt!='-' || (pixelh!=0 && avgwid==0))
-return( false );
- /* This is a scaleable bitmap. They look ugly when scaled, so don't accept them */
-    if ( pixelh==0 && screenw!=0 )
-return( false );
-
-    uc_strcpy(map,pt+1);
-
-    /*info->point = pointh/10;*/
-    info->point = (pixelh*72+screen_res/2)/screen_res;
-    info->res = screenw;
-    info->name = name;
-    info->style = fs_none;
-    if ( *ital=='r' ) info->style = fs_none;
-    else if ( *ital=='i' || *ital=='I' || *ital=='o' || *ital=='O' ) info->style = fs_italic;
-    /* I had thought the choices for proportional were m (mono) and p (prop) */
-    /*  but jis has a c here, and I don't know what that means. jis is mono */
-    info->prop = true;
-    if ( *prop=='m' || *prop=='M' ) info->prop = false;
-    else if ( *prop=='c' || *prop=='C' ) info->prop = false;
-    info->mapname = NULL;
-    if (( info->map = _GDraw_ParseMapping(map))== em_none ) {
-	if ( uc_strmatch(map,"sunolglyph-1")==0 || uc_strmatch(map,"sunolcursor-1")==0 )
-return( false );
-	if ( uc_strmatch(name,"symbol")==0 && uc_strmatch(map,"adobe-fontspecific")==0 )
-	    info->map = em_symbol;
-	else if ( uc_strmatch(name,"zapfdingbats")==0 )
-	    info->map = em_zapfding;
-	else {
-	    info->map = em_max;
-	    info->mapname = u_copy(map);
-	}
-    }
-    /* SUSE bug */
-    if ( strcmp(foundary,"greek")==0 && info->map==em_iso8859_1 )
-	info->map = em_iso8859_7;
-    /* End workaround */
-    if ( uc_strstrmatch(conext,"condensed")!=NULL )
-	info->style |= fs_condensed;
-    else if ( uc_strstrmatch(conext,"extended")!=NULL )
-	info->style |= fs_extended;
-    /* I don't know where smallcaps should be placed, so look everywhere */
-    if ( strstrmatch(xname,"small")!=NULL && strstrmatch(xname,"cap")!=NULL )
-	info->style |= fs_smallcaps;
-    info->ft = ft_unknown;
-    if ( uc_strstrmatch(name,"sans")!=NULL )
-	info->ft = ft_sans;
-    else if ( uc_strstrmatch(name,"serif")!=NULL )
-	info->ft = ft_serif;
-    
-    info->iw_weight = _GDraw_FontFigureWeights(weight);
-return( true );
-}
-
-static void GXDrawHashFont(FState *fonts,char *xname,struct font_decomp *decomp) {
-    int map = decomp->map;
-    struct font_name *fn = _GDraw_HashFontFamily(fonts,decomp->name,decomp->prop);
-    struct font_data *fd;
-
-    if ( fn->ft == ft_unknown && decomp->ft!=ft_unknown )
-	fn->ft = decomp->ft;
-
-    for ( fd=fn->data[map]; fd!=NULL; fd=fd->next )
-	if ( strcmp(fd->localname,xname)==0 )	/* Why duplicates? */
-return;
-
-#ifdef GREEK_BUG
- printf( "Adding %s map=%d\n", xname, map);
-#endif
-    fd = gcalloc(1,sizeof(struct font_data));
-    fd->next = fn->data[map];
-    fn->data[map] = fd;
-    fd->point_size = decomp->point;
-    fd->weight = decomp->iw_weight;
-    fd->style = decomp->style;
-    fd->localname = copy(xname);
-    fd->parent = fn;
-    fd->map = map;
-    fd->charmap_name = u_copy(decomp->mapname);
-    fd->x_height = fd->cap_height = 0;
-    if ( fd->point_size==0 )
-	fd->is_scalable = true;
-}
-
 static void _GXDraw_InitFonts(GXDisplay *gxdisplay) {
-    Display *display = gxdisplay->display;
-    char **ret;
-    int ret_len, i;
-    struct font_decomp decomp;
     FState *fs = gcalloc(1,sizeof(FState));
 
     /* In inches, because that's how fonts are measured */
     gxdisplay->fontstate = fs;
     fs->res = gxdisplay->res;
-    fs->res_closer_to = fs->res<=88 ? 75: 100;
-    fs->allow_scaling = 1;
-
-    /* Search for those font names which fit the standard format */
-    ret = XListFonts(display,"-*-*-*-*-*--*-*-*-*-*-*-*-*",8000,&ret_len);
-
-    for ( i=0; i<ret_len; ++i ) {
-	if ( decompose_screen_name(ret[i],&decomp,fs->res)) {
-	    GXDrawHashFont(gxdisplay->fontstate,ret[i],&decomp);
-	    if ( decomp.map == em_max )
-		free( decomp.mapname );
-	}
-    }
-    _GDraw_RemoveDuplicateFonts(gxdisplay->fontstate);
-    _GDraw_FillLastChance(gxdisplay->fontstate);
-    XFreeFontNames(ret);
-
-    /* Input servers need a fontset to draw characters with. Now we don't know*/
-    /*  what the input server is going to need because parsing locale names is*/
-    /*  a somewhat arcane art. So let's just include one font from every encod*/
-    /*  ing we've got. Amazingly that's just what one of our font_instance */
-    /*  structures contains. All we need do is reformat it. */
-    if ( gxdisplay->im!=NULL ) {
-	FontRequest rq;
-	static const unichar_t fam[] = { 'h','e','l','v','e','t','i','c','a',',','a','r','i','a','l',',','f','i','x','e','d',',','m','i','n','g',',','g','o','t','h','i','c',',','m','i','n','c','h','o', '\0' };
-	struct font_instance *fi;
-	int i,len;
-	char *names;
-        char **missing_list;
-        int missing_count;
-        char *def_string;
-
-	memset(&rq,0,sizeof(rq));
-	rq.point_size = -16;
-	rq.weight = 400;
-	rq.family_name = fam;
-	fi = GDrawInstanciateFont( (GDisplay *) gxdisplay,&rq);
-	for ( i=len=0; i<em_max; ++i ) if ( fi->fonts[i]!=NULL )
-	    len += strlen(fi->fonts[i]->localname)+1;
-	names = galloc(len+2); *names = '\0';
-	for ( i=len=0; i<em_max; ++i ) if ( fi->fonts[i]!=NULL ) {
-	    strcat(names,fi->fonts[i]->localname);
-	    strcat(names,",");
-	}
-	names[strlen(names)-1] = '\0';	/* Remove extranious comma */
-	gxdisplay->def_im_fontset = XCreateFontSet(gxdisplay->display, names, &missing_list,
-                               &missing_count, &def_string);
-	if ( gxdisplay->def_im_fontset==NULL ) {
-	    fprintf(stderr,"Failed to create a fontset for the input method\n%s\n", names );
-	    XCloseIM(gxdisplay->im);
-	    gxdisplay->im = NULL;
-	}
-	free(names);
-    }
 }
 
 /* ************************************************************************** */
@@ -1402,13 +1161,11 @@ return( NULL );
 #ifndef _NO_LIBCAIRO
     /* Only do sub-pixel/anti-alias stuff if we've got truecolor */
     if ( gdisp->visual->class==TrueColor && !(wattrs->mask&wam_nocairo) &&_GXCDraw_hasCairo() )
-	_GXCDraw_NewWindow(nw,wattrs->background_color);
+	_GXCDraw_NewWindow(nw);
 #endif
-#ifndef _NO_LIBPANGO	/* Must come after the cairo init so pango will know to use cairo or xft */
+    /* Must come after the cairo init so pango will know to use cairo or xft */
     /* I think we will always want to use pango, so it isn't conditional on a wam */
-    if ( gdisp->visual->class==TrueColor && _GXPDraw_hasPango() )
-	_GXPDraw_NewWindow(nw);
-#endif
+    _GXPDraw_NewWindow(nw);
 return( (GWindow) nw );
 }
 
@@ -1472,13 +1229,11 @@ return( NULL );
     /* Only do sub-pixel/anti-alias stuff if we've got truecolor */
     if ( ((GXDisplay *) gdisp)->visual->class==TrueColor && wamcairo &&
 	    _GXCDraw_hasCairo() )
-	_GXCDraw_NewWindow(gw,gw->ggc->bg);
+	_GXCDraw_NewWindow(gw);
 #endif
-#ifndef _NO_LIBPANGO	/* Must come after the cairo init so pango will know to use cairo or xft */
+    /* Must come after the cairo init so pango will know to use cairo or xft */
     /* I think we will always want to use pango, so it isn't conditional */
-    if ( ((GXDisplay *) gdisp)->visual->class==TrueColor && _GXPDraw_hasPango() )
-	_GXPDraw_NewWindow(gw);
-#endif
+    _GXPDraw_NewWindow(gw);
 return( (GWindow) gw );
 }
 
@@ -1537,10 +1292,7 @@ static void GXDrawDestroyWindow(GWindow w) {
     if ( gw->usecairo )
 	_GXCDraw_DestroyWindow(gw);
 #endif
-#ifndef _NO_LIBPANGO
-    if ( gw->usepango )
-	_GXPDraw_DestroyWindow(gw);
-#endif
+    _GXPDraw_DestroyWindow(gw);
 
     if ( gw->is_pixmap ) {
 	XFreePixmap(gw->display->display,gw->w);
@@ -2529,9 +2281,6 @@ static enum gcairo_flags GXDrawHasCairo(GWindow w) {
     if ( ((GXWindow) w)->usecairo )
 return( _GXCDraw_CairoCapabilities( (GXWindow) w));
 
-    if ( ((GXWindow) w)->usepango )
-return( gc_pango|gc_xor );
-
 return( gc_xor );
 }
 
@@ -2600,9 +2349,6 @@ return;
 
 #else
 static enum gcairo_flags GXDrawHasCairo(GWindow w) {
-    if ( ((GXWindow) w)->usepango )
-return( gc_pango|gc_xor );
-
 return( gc_xor );
 }
 
@@ -2643,62 +2389,35 @@ static void GXDrawPathFillAndStroke(GWindow w,Color fillcol, Color strokecol) {
 #endif
 
 static void GXDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
-	_GXPDraw_LayoutInit(w,text,cnt,fi);
-#endif
+    _GXPDraw_LayoutInit(w,text,cnt,fi);
 }
 
 static void GXDraw_LayoutDraw(GWindow w, int32 x, int32 y, Color fg) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
-	_GXPDraw_LayoutDraw(w,x,y,fg);
-#endif
+    _GXPDraw_LayoutDraw(w,x,y,fg);
 }
 
 static void GXDraw_LayoutIndexToPos(GWindow w, int index, GRect *pos) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
-	_GXPDraw_LayoutIndexToPos(w,index,pos);
-#endif
+    _GXPDraw_LayoutIndexToPos(w,index,pos);
 }
 
 static int GXDraw_LayoutXYToIndex(GWindow w, int x, int y) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
 return( _GXPDraw_LayoutXYToIndex(w,x,y));
-#endif
-return( -1 );
 }
 
 static void GXDraw_LayoutExtents(GWindow w, GRect *size) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
-	_GXPDraw_LayoutExtents(w,size);
-#endif
+    _GXPDraw_LayoutExtents(w,size);
 }
 
 static void GXDraw_LayoutSetWidth(GWindow w, int width) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
-	_GXPDraw_LayoutSetWidth(w,width);
-#endif
+    _GXPDraw_LayoutSetWidth(w,width);
 }
 
 static int GXDraw_LayoutLineCount(GWindow w) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
 return( _GXPDraw_LayoutLineCount(w));
-#endif
-return( -1 );
 }
 
 static int GXDraw_LayoutLineStart(GWindow w, int l) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
 return( _GXPDraw_LayoutLineStart(w, l));
-#endif
-return( -1 );
 }
 
 static void GXDrawSendExpose(GXWindow gw, int x,int y,int wid,int hei ) {
@@ -2779,7 +2498,9 @@ static void _GXDraw_Pixmap( GWindow _w, GWindow _pixmap, GRect *src, int32 x, in
     } else {
 	_GXDraw_SetClipFunc(gdisp,gw->ggc);
 #ifndef _NO_LIBCAIRO
-	if ( gw->usecairo )
+	/* FIXME: _GXCDraw_CopyArea makes the glyph dissabear in the class kern
+	 * dialog */
+	if ( 0 && gw->usecairo )
 	    _GXCDraw_CopyArea(pixmap,gw,src,x,y);
 	else
 #endif
@@ -2821,215 +2542,8 @@ static void _GXDraw_TilePixmap( GWindow _w, GWindow _pixmap, GRect *src, int32 x
     GDrawPopClip(_w,&old);
 }
 
-static void *GXDrawLoadFontMetrics(GDisplay *gdisp, struct font_data *fd) {
-    unsigned long xh, ch;
-    static Atom xa_glyph_ranges = 0;
-    int i,j, any, minch, maxch,index;
-    XFontStruct *fs;
-
- /*printf( "Loading metrics for: %s\n", fd->localname );*/
-    lastfontrequest = fd->localname;
-    fd->info = fs = XLoadQueryFont(((GXDisplay *) gdisp)->display,fd->localname);
-    lastfontrequest = NULL;
-    if ( fs==NULL ) {
-	fd->configuration_error = true;
-	fprintf( stderr, "Help! Server claimed font\n\t%s\n existed in the font list, but when I asked for it there was nothing.\n I may crash soon.\n",
-		fd->localname );
-return( NULL );
-    }
-    if ( XGetFontProperty(fs,XA_X_HEIGHT,&xh))
-	fd->x_height = xh;
-    if ( XGetFontProperty(fs,XA_CAP_HEIGHT,&ch))
-	fd->cap_height = ch;
-#if 0
-    if ( fs->per_char == NULL )		/* this means they're all the same (presumably all exist) */
-return( fs );
-#endif
-
-    if ( xa_glyph_ranges==0 )
-	xa_glyph_ranges = XInternAtom(((GXDisplay *) gdisp)->display,"_XFREE86_GLYPH_RANGES",false);
-    /* there may be more than one glyph_range properties, so have to parse each*/
-#if 0		/* This doesn't work under XFree 4.0 */
-    for ( i=(fs->max_char_or_byte2-fs->min_char_or_byte2+1)*(fs->max_byte1-fs->min_byte1+1)-2;
-	    i>=0 ; --i )
-	fs->per_char[i].attributes &= ~AFM_EXISTS;
-#else
-    fd->exists = gcalloc( ((fs->max_char_or_byte2-fs->min_char_or_byte2+1)*(fs->max_byte1-fs->min_byte1+1)+7)/8,
-	    sizeof(uint8));
-#endif
-    any = 0;
-    minch = (fs->min_byte1<<8) + fs->min_char_or_byte2;
-    maxch = (fs->max_byte1<<8) + fs->max_char_or_byte2;
-    for ( i=0; i<fs->n_properties; ++i ) {
-	if ( fs->properties[i].name==xa_glyph_ranges ) {
-	    char *range, *pt, *end;
-	    int v1,v2;
-	    range = XGetAtomName(((GXDisplay *) gdisp)->display,fs->properties[i].card32);
-	    if ( range!=NULL ) {
-		any = 1;
-		for ( pt=range; *pt ; ) {
-		    v1 = strtol(pt,&end,10);
-		    if ( *end=='_' || *end=='-' ) {
-			v2 = strtol(end+1,&end,10);
-		    } else
-			v2 = v1;
-		    for ( j=v1; j<=v2; ++j ) {
-			if ( j>=minch && j<maxch ) {
-#if 0
-			    fs->per_char[
-				((j>>8)-fs->min_byte1)*(fs->max_char_or_byte2-fs->min_char_or_byte2+1)+
-				(j&0xff)-fs->min_char_or_byte2].attributes |= AFM_EXISTS;
-#else
-			    index = 
-				((j>>8)-fs->min_byte1)*(fs->max_char_or_byte2-fs->min_char_or_byte2+1)+
-				(j&0xff)-fs->min_char_or_byte2;
-			    fd->exists[index>>3] |= (1<<(index&7));
-#endif
-			}
-		    }
-		    pt = end;
-		    while ( isspace(*pt)) ++pt;
-		}
-		XFree(range);
-	    }
-	}
-    }
-    if ( !any ) {
-	if ( fs->per_char == NULL ) {		/* this means they're all the same (presumably all exist) */
-	    free(fd->exists);
-	    fd->exists = NULL;
-return( fs );
-	}
-	for ( i=(fs->max_char_or_byte2-fs->min_char_or_byte2+1)*(fs->max_byte1-fs->min_byte1+1)-1;
-		i>=0 ; --i ) {
-	    XCharStruct *cs = &fs->per_char[i];
-	    if ( cs->width!=0 || cs->lbearing!=0 || cs->rbearing!=0 ||
-		    iszerowidth(
-			( i / (fs->max_byte1-fs->min_byte1+1) )*256 +
-			( i % (fs->max_byte1-fs->min_byte1+1) ) ) )
-#if 0
-		cs->attributes |= AFM_EXISTS;
-#else
-		fd->exists[i>>3] |= (1<<(i&7));
-#endif
-	}
-    }
-return( fs );
-}
-
-static struct font_data *GXDrawScaleFont(GDisplay *gdisp, struct font_data *fd, FontRequest *rq) {
-    struct font_data *newfd;
-    char buffer[10], *pt, *res;
-    int n;
-
-    pt = strstr(fd->localname,"-0-0-");
-    if ( pt== NULL )
-return( NULL );
-    sprintf(buffer,"%d",PointToPixel(rq->point_size,gdisp->res));
-    res = galloc(strlen(fd->localname)+strlen(buffer)+1);
-    if ( res==NULL )
-return( NULL );
-    n = pt+1-fd->localname;
-    strncpy(res,fd->localname,n);
-    strcpy(res+n,buffer);
-    strcat(res+n,pt+2);
-
-    newfd = galloc(sizeof(struct font_data));
-    if ( newfd==NULL )
-return( NULL );
-    *newfd = *fd;
-    newfd->next = NULL;
-    newfd->charmap_name = u_copy(fd->charmap_name);
-    newfd->localname = res;
-    newfd->info = NULL;
-    newfd->kerns = NULL;
-    newfd->is_scalable = false;
-    newfd->point_size = rq->point_size;
-    newfd->x_height = newfd->cap_height = 0;
-    newfd->base = fd;
-return( newfd );
-}
-
-static struct font_data *GXDrawStylizeFont(GDisplay *gdisp, struct font_data *fd, FontRequest *rq) {
-    /* on X we can't build a slanted font from an unslanted one, so this */
-    /*  is a noop */
-return( fd );
-}
-
-static void GXDrawText1(GWindow gw, struct font_data *fd,
-	int32 x, int32 y, char *txt, int32 cnt, FontMods *mods, Color col) {
-    GXWindow gxw = (GXWindow) gw;
-    GXDisplay *display = gxw->display;
-
-    if ( x>32767 || y>32767 )
-return;
-
-    gxw->ggc->fg = col;
-    GXDrawSetline(display,gxw->ggc);
-    XSetFont(display->display,display->gcstate[gxw->ggc->bitmap_col].gc,fd->info->fid);
-    if ( mods->letter_spacing==0 )
-	XDrawString(display->display,gxw->w,display->gcstate[gxw->ggc->bitmap_col].gc,x,y,txt,cnt);
-    else {
-	XTextItem items[30], *ti;
-	char *pt, *end = txt+cnt;
-	int first = true;
-	while ( txt<end ) {
-	    for ( pt=txt, ti=items; pt<end && pt<txt+30; ++pt ) {
-		ti->chars = pt;
-		ti->nchars = 1;
-		ti->delta = mods->letter_spacing;
-		ti++->font = None;
-	    }
-	    if ( first ) items[0].delta = 0;
-	    XDrawText(display->display,gxw->w,display->gcstate[gxw->ggc->bitmap_col].gc,x,y,items,pt-txt);
-	    txt = pt; first = false;
-	}
-    }
-}
-
-static void GXDrawText2(GWindow gw, struct font_data *fd,
-	int32 x, int32 y, GChar2b *txt, int32 cnt, FontMods *mods, Color col) {
-    GXWindow gxw = (GXWindow) gw;
-    GXDisplay *display = gxw->display;
-
-    if ( x>32767 || y>32767 )
-return;
-
-    gxw->ggc->fg = col;
-    GXDrawSetline(display,gxw->ggc);
-    XSetFont(display->display,display->gcstate[gxw->ggc->bitmap_col].gc,fd->info->fid);
-    if ( mods->letter_spacing==0 )
-	XDrawString16(display->display,gxw->w,display->gcstate[gxw->ggc->bitmap_col].gc,x,y,(XChar2b *) txt,cnt);
-    else {
-	XTextItem16 items[30], *ti;
-	GChar2b *pt, *end = txt+cnt;
-	int first = true;
-	while ( txt<end ) {
-	    for ( pt=txt, ti=items; pt<end && pt<txt+30; ++pt ) {
-		ti->chars = (XChar2b *) pt;
-		ti->nchars = 1;
-		ti->delta = mods->letter_spacing;
-		ti++->font = None;
-	    }
-	    if ( first ) items[0].delta = 0;
-	    XDrawText16(display->display,gxw->w,display->gcstate[gxw->ggc->bitmap_col].gc,x,y,items,pt-txt);
-	    txt = pt; first = false;
-	}
-    }
-}
-
 static void GXDrawFontMetrics( GWindow w,GFont *fi,int *as, int *ds, int *ld) {
-#ifndef _NO_LIBPANGO
-    if ( ((GXWindow) w)->usepango )
-	_GXPDraw_FontMetrics( ((GXWindow) w),fi,as,ds,ld);
-    else
-#endif
-#ifndef _NO_LIBCAIRO
-    if ( ((GXWindow) w)->usecairo )
-	_GXCDraw_FontMetrics( ((GXWindow) w),fi,as,ds,ld);
-    else
-#endif
-	GDrawFontMetrics(fi,as,ds,ld);
+    _GXPDraw_FontMetrics(w, fi, as, ds, ld);
 }
     
 
@@ -4644,10 +4158,8 @@ static void *GXDrawRequestSelection(GWindow w,enum selnames sn, char *typename, 
 		    memcpy(temp,sd->data,bytelen);
 		    temp[bytelen] = '\0';
 		    temp[bytelen+1] = '\0';
-#ifndef UNICHAR_16
 		    temp[bytelen+2] = '\0';
 		    temp[bytelen+3] = '\0';
-#endif
 		    *len = bytelen;
 		}
 return( temp );
@@ -4677,10 +4189,8 @@ return( NULL );
     memcpy(temp,prop,bytelen);
     temp[bytelen]='\0';
     temp[bytelen+1]='\0';		/* Nul terminate unicode strings too */
-#ifndef UNICHAR_16
     temp[bytelen+2] = '\0';
     temp[bytelen+3] = '\0';
-#endif
     if ( len!=NULL )
 	*len = bytelen;
     XFree(prop);
@@ -4935,12 +4445,6 @@ static struct displayfuncs xfuncs = {
     _GXDraw_CopyScreenToImage,
     _GXDraw_Pixmap,
     _GXDraw_TilePixmap,
-
-    GXDrawScaleFont,
-    GXDrawStylizeFont,
-    GXDrawLoadFontMetrics,
-    GXDrawText1,
-    GXDrawText2,
 
     GXDrawCreateInputContext,
     GXDrawSetGIC,

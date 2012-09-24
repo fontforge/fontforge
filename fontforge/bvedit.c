@@ -564,7 +564,7 @@ return( ret );
 }
 
 int BDFCharQuickBounds( BDFChar *bc,IBounds *bb,int8 xoff,int8 yoff,int use_backup,int first ) {
-    int bmp_width, has_bitmap = false;
+    int has_bitmap = false;
     int xmin, xmax, ymin, ymax;
     BDFRefChar *head;
     
@@ -575,7 +575,6 @@ int BDFCharQuickBounds( BDFChar *bc,IBounds *bb,int8 xoff,int8 yoff,int use_back
 	xmin = bc->xmin; xmax = bc->xmax;
 	ymin = bc->ymin; ymax = bc->ymax;
     }
-    bmp_width = xmax - xmin + 1;
     has_bitmap = BCHasOutputtableBitmap( bc );
 
     if ( has_bitmap && first ) {

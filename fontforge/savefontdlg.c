@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -2042,8 +2043,6 @@ return( true );
 }
 
 static int e_h(GWindow gw, GEvent *event) {
-    extern int GGadgetWithin(GGadget *g, int x, int y);
-
     if ( event->type==et_close ) {
 	struct gfc_data *d = GDrawGetUserData(gw);
 	d->done = true;

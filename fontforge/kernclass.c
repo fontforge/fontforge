@@ -1485,16 +1485,16 @@ return;
 	if ( i+kcd->offtop<kcd->first_cnt ) {
 	    int err = KCD_NameClass(kcd->sf,buf,sizeof(buf),fclasses[i+kcd->offtop].u.md_str);
 	    int fg = err ? 0xff0000 : 0x006080;
-	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
+	    len = GDrawGetText8Width(pixmap,buf,-1);
 	    if ( len<=kcd->kernw )
-		GDrawDrawBiText8(pixmap,kcd->xstart+(kcd->kernw-len)/2,kcd->ystart2+i*kcd->kernh+kcd->as+1,
-			buf,-1,NULL,fg);
+		GDrawDrawText8(pixmap,kcd->xstart+(kcd->kernw-len)/2,kcd->ystart2+i*kcd->kernh+kcd->as+1,
+			buf,-1,fg);
 	    else {
 		r.x = kcd->xstart; r.width = kcd->kernw;
 		r.y = kcd->ystart2+i*kcd->kernh-1; r.height = kcd->kernh+1;
 		GDrawPushClip(pixmap,&r,&old3);
-		GDrawDrawBiText8(pixmap,r.x,r.y+kcd->as+1,
-			buf,-1,NULL,fg);
+		GDrawDrawText8(pixmap,r.x,r.y+kcd->as+1,
+			buf,-1,fg);
 		GDrawPopClip(pixmap,&old3);
 	    }
 	}
@@ -1505,16 +1505,16 @@ return;
 	if ( i+kcd->offleft<kcd->second_cnt ) {
 	    int err = KCD_NameClass(kcd->sf,buf,sizeof(buf),sclasses[i+kcd->offleft].u.md_str);
 	    int fg = err ? 0xff0000 : 0x006080;
-	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
+	    len = GDrawGetText8Width(pixmap,buf,-1);
 	    if ( len<=kcd->kernw )
-		GDrawDrawBiText8(pixmap,kcd->xstart2+i*kcd->kernw+(kcd->kernw-len)/2,kcd->ystart+kcd->as+1,
-		    buf,-1,NULL,fg);
+		GDrawDrawText8(pixmap,kcd->xstart2+i*kcd->kernw+(kcd->kernw-len)/2,kcd->ystart+kcd->as+1,
+		    buf,-1,fg);
 	    else {
 		r.x = kcd->xstart2+i*kcd->kernw; r.width = kcd->kernw;
 		r.y = kcd->ystart-1; r.height = kcd->kernh+1;
 		GDrawPushClip(pixmap,&r,&old3);
-		GDrawDrawBiText8(pixmap,r.x,r.y+kcd->as+1,
-			buf,-1,NULL,fg);
+		GDrawDrawText8(pixmap,r.x,r.y+kcd->as+1,
+			buf,-1,fg);
 		GDrawPopClip(pixmap,&old3);
 	    }
 	}
@@ -1534,9 +1534,9 @@ return;
 	continue;
 
 	    sprintf( buf, "%d", kcd->offsets[(i+kcd->offtop)*kcd->second_cnt+j+kcd->offleft] );
-	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
-	    GDrawDrawBiText8(pixmap,x+kcd->kernw-3-len,y+kcd->as+1,
-		buf,-1,NULL,MAIN_FOREGROUND);
+	    len = GDrawGetText8Width(pixmap,buf,-1);
+	    GDrawDrawText8(pixmap,x+kcd->kernw-3-len,y+kcd->as+1,
+		buf,-1,MAIN_FOREGROUND);
 	}
     }
 
@@ -2585,16 +2585,16 @@ return;
 	rq.point_size = 12;
 	rq.weight = 400;
 	rq.utf8_family_name = MONO_UI_FAMILIES;
-	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	font = GDrawInstanciateFont(gw,&rq);
 	font = GResourceFindFont("KernClass.Font",font);
     }
     kcd->font = font;
-    GDrawFontMetrics(kcd->font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(gw,kcd->font,&as,&ds,&ld);
     kcd->fh = as+ds; kcd->as = as;
     GDrawSetFont(gw,kcd->font);
 
     kcd->kernh = kcd->fh+3;
-    kcd->kernw = GDrawGetTextWidth(gw,kernw,-1,NULL)+3;
+    kcd->kernw = GDrawGetTextWidth(gw,kernw,-1)+3;
 
     if ( kc->subtable->separation==0 && !kc->subtable->kerning_by_touch ) {
 	kc->subtable->separation = sf->width_separation;

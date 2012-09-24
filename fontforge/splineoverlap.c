@@ -669,7 +669,7 @@ static int GradImproveInter(Monotonic *m1, Monotonic *m2,
 /* The x and y terms separate and the gradient is the sum of the two */
 	gt1 =    Grad1(&s1->splines[0],&s2->splines[0],t1,t2) + Grad1(&s1->splines[1],&s2->splines[1],t1,t2) ;
 	gt2 = -( Grad1(&s2->splines[0],&s1->splines[0],t2,t1) + Grad1(&s2->splines[1],&s1->splines[1],t2,t1));
-	glen = esqrt(gt1*gt1 + gt2*gt2) * factor;
+	glen = sqrt(gt1*gt1 + gt2*gt2) * factor;
 	if ( glen==0 )
     break;
 	t1 -= gt1/glen;
@@ -727,15 +727,11 @@ return( true );
 }
 #endif
 
-#if !defined( HAVE_LONG_DOUBLE ) || !defined( FONTFORGE_CONFIG_USE_LONGDOUBLE )
 /* An IEEE double has 52 bits of precision. So one unit of rounding error will be */
 /*  the number divided by 2^51 */
 # define BR_RE_Factor	(1024.0*1024.0*1024.0*1024.0*1024.0*2.0)
 /* But that's not going to work near 0, so, since the t values we care about */
 /*  are [0,1], let's use 1.0/D_RE_Factor */
-#else
-# define BR_RE_Factor	(1024.0*1024.0*1024.0*1024.0*1024.0*1024.0*8.0) /* 64 bits => divide by 2^51 */
-#endif
 
 static int ImproveInter(Monotonic *m1, Monotonic *m2,
 	extended *_t1,extended *_t2,BasePoint *inter) {
@@ -3143,8 +3139,8 @@ static SplinePoint *SameLine(SplinePoint *psp, SplinePoint *sp, SplinePoint *nsp
 
     noff.x = nsp->me.x-sp->me.x; noff.y = nsp->me.y-sp->me.y;
     poff.x = psp->me.x-sp->me.x; poff.y = psp->me.y-sp->me.y;
-    nlen = esqrt(noff.x*noff.x + noff.y*noff.y);
-    plen = esqrt(poff.x*poff.x + poff.y*poff.y);
+    nlen = sqrt(noff.x*noff.x + noff.y*noff.y);
+    plen = sqrt(poff.x*poff.x + poff.y*poff.y);
     if ( nlen==0 )
 return( nsp );
     if ( plen==0 )

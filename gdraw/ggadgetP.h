@@ -76,6 +76,9 @@ struct gfuncs {
     int (*is_default)(GGadget *g);
 };
 
+enum gadget_state {gs_invisible, gs_disabled, gs_enabled, gs_active,
+		   gs_focused, gs_pressedactive };
+
 struct ggadget {
     struct gfuncs *funcs;
     struct gwindow *base;
@@ -98,8 +101,7 @@ struct ggadget {
     short cid;
     void *data;
     GBox *box;
-    enum gadget_state {gs_invisible, gs_disabled, gs_enabled, gs_active,
-	    gs_focused, gs_pressedactive } state;
+    enum gadget_state state;
     unichar_t *popup_msg;
     GGadgetHandler handle_controlevent;
     int16 desired_width, desired_height;
@@ -276,7 +278,6 @@ typedef struct gtextfield {
     unsigned int accepts_tabs: 1;
     unsigned int accepts_returns: 1;
     unsigned int wrap: 1;
-    unsigned int dobitext: 1;	/* has at least one right to left character */
     unsigned int password: 1;
     unsigned int dontdraw: 1;	/* Used when the tf is part of a larger control, and the control determines when to draw the tf */
     unsigned int donthook: 1;	/* Used when the tf is part of a the gchardlg.c */
@@ -284,7 +285,6 @@ typedef struct gtextfield {
     unsigned int incr_down: 1;	/* Direction of increments when numeric_scroll events happen */
     unsigned int completionfield: 1;
     unsigned int was_completing: 1;
-    unsigned int pango: 1;
     uint8 fh;
     uint8 as;
     uint8 nw;			/* Width of one character (an "n") */
@@ -300,8 +300,6 @@ typedef struct gtextfield {
     GScrollBar *hsb, *vsb;
     int16 lcnt, lmax;
     int32 *lines;		/* offsets in text to the start of the nth line */
-    GBiText bidata;
-    int32 bilen;		/* allocated size of bidata */
     int16 xmax;
     GIC *gic;
     GTimer *numeric_scroll;
@@ -345,9 +343,11 @@ typedef struct gmenubar {
     GMenuItem fake[2];		/* Used if not enough room for menu... */
 } GMenuBar;
 
+struct tabs { unichar_t *name; int16 x, width, tw, nesting; unsigned int disabled: 1; GWindow w; };
+
 typedef struct gtabset {
     struct ggadget g;
-    struct tabs { unichar_t *name; int16 x, width, tw, nesting; unsigned int disabled: 1; GWindow w; } *tabs;
+    struct tabs *tabs;
     int16 *rowstarts;		/* for each row, index into tab array of its first tab, one extra entry at end with tabcnt */
     int16 tabcnt;		/* number of tabs */
     int16 sel;			/* active tab */
@@ -408,22 +408,24 @@ typedef struct ghvbox {
     int label_height;
 } GHVBox;
 
+struct col_data {
+    enum me_type me_type;
+    char *(*func)(GGadget *,int r,int c); /* Produces a string to display if md_str==NULL */
+    GMenuItem *enum_vals;
+    void (*enable_enum)(GGadget *,GMenuItem *, int r, int c);
+    GTextCompletionHandler completer;
+    char *title;
+    int16 width, x;			/* Relative to inner.x */
+    uint8 fixed;
+    uint8 disabled;
+    uint8 hidden;
+};
+
 typedef struct gmatrixedit {
     GGadget g;
     int rows, cols;
     int row_max;
-    struct col_data {
-	enum me_type me_type;
-	char *(*func)(GGadget *,int r,int c); /* Produces a string to display if md_str==NULL */
-	GMenuItem *enum_vals;
-	void (*enable_enum)(GGadget *,GMenuItem *, int r, int c);
-	GTextCompletionHandler completer;
-	char *title;
-	int16 width, x;			/* Relative to inner.x */
-	uint8 fixed;
-	uint8 disabled;
-	uint8 hidden;
-    } *col_data;
+    struct col_data *col_data;
     int hpad, vpad;			/* Internal padding */
     unsigned int has_titles: 1;
     unsigned int lr_pointer: 1;
@@ -513,7 +515,6 @@ void _GWidget_ClearPopupOwner(GGadget *g);
 
 extern void _GGadgetCopyDefaultBox(GBox *box);
 extern FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box,FontInstance *deffont);
-extern void GGadgetInit(void);
 extern void _ggadget_underlineMnemonic(GWindow gw,int32 x,int32 y,unichar_t *label,
 	unichar_t mneumonic, Color fg,int ymax);
 extern void _ggadgetFigureSize(GWindow gw, GBox *design, GRect *r, int isdef);
@@ -545,7 +546,6 @@ extern int GBoxBorderWidth(GWindow gw, GBox *box);
 extern int GBoxExtraSpace(GGadget *g);
 extern int GBoxDrawnWidth(GWindow gw, GBox *box);
 
-extern int GGadgetWithin(GGadget *g, int x, int y);
 extern int GGadgetInnerWithin(GGadget *g, int x, int y);
 
 extern int GTextInfoGetWidth(GWindow base,GTextInfo *ti,FontInstance *font);
@@ -560,10 +560,6 @@ extern GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt);
 extern GTextInfo **GTextInfoArrayCopy(GTextInfo **ti);
 extern int GTextInfoArrayCount(GTextInfo **ti);
 extern int GTextInfoCompare(GTextInfo *ti1, GTextInfo *ti2);
-extern void GMenuItemArrayFree(GMenuItem *mi);
-extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
-extern void GMenuItem2ArrayFree(GMenuItem2 *mi);
-extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
 extern int GMenuItemArrayMask(GMenuItem *mi);
 extern int GMenuItemArrayAnyUnmasked(GMenuItem *mi);
 

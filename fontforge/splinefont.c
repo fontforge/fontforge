@@ -1326,24 +1326,25 @@ return( sf );
 }
 
 /* Use URW 4 letter abbreviations */
-char *knownweights[] = { "Demi", "Bold", "Regu", "Medi", "Book", "Thin",
+const char *knownweights[] = { "Demi", "Bold", "Regu", "Medi", "Book", "Thin",
 	"Ligh", "Heav", "Blac", "Ultr", "Nord", "Norm", "Gras", "Stan", "Halb",
 	"Fett", "Mage", "Mitt", "Buch", NULL };
-char *realweights[] = { "Demi", "Bold", "Regular", "Medium", "Book", "Thin",
+const char *realweights[] = { "Demi", "Bold", "Regular", "Medium", "Book", "Thin",
 	"Light", "Heavy", "Black", "Ultra", "Nord", "Normal", "Gras", "Standard", "Halbfett",
 	"Fett", "Mager", "Mittel", "Buchschrift", NULL};
-static char *moreweights[] = { "ExtraLight", "VeryLight", NULL };
-char **noticeweights[] = { moreweights, realweights, knownweights, NULL };
+static const char *moreweights[] = { "ExtraLight", "VeryLight", NULL };
+const char **noticeweights[] = { moreweights, realweights, knownweights, NULL };
 
-static char *modifierlist[] = { "Ital", "Obli", "Kursive", "Cursive", "Slanted",
+static const char *modifierlist[] = { "Ital", "Obli", "Kursive", "Cursive", "Slanted",
 	"Expa", "Cond", NULL };
-static char *modifierlistfull[] = { "Italic", "Oblique", "Kursive", "Cursive", "Slanted",
+static const char *modifierlistfull[] = { "Italic", "Oblique", "Kursive", "Cursive", "Slanted",
     "Expanded", "Condensed", NULL };
-static char **mods[] = { knownweights, modifierlist, NULL };
-static char **fullmods[] = { realweights, modifierlistfull, NULL };
+static const char **mods[] = { knownweights, modifierlist, NULL };
+static const char **fullmods[] = { realweights, modifierlistfull, NULL };
 
 char *_GetModifiers(char *fontname, char *familyname,char *weight) {
     char *pt, *fpt;
+    static char space[20];
     int i, j;
 
     /* URW fontnames don't match the familyname */
@@ -1382,8 +1383,10 @@ char *_GetModifiers(char *fontname, char *familyname,char *weight) {
     }
     if ( fpt!=NULL ) {
 	for ( i=0; mods[i]!=NULL; ++i ) for ( j=0; mods[i][j]!=NULL; ++j ) {
-	    if ( strcmp(fpt,mods[i][j])==0 )
-return( fullmods[i][j]);
+	    if ( strcmp(fpt,mods[i][j])==0 ) {
+		strcpy(space,fullmods[i][j]);
+return(space);
+	    }
 	}
 	if ( strcmp(fpt,"BoldItal")==0 )
 return( "BoldItalic" );

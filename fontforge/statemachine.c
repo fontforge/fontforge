@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2003-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -959,8 +960,8 @@ return;
 	    off = (smd->stateh-len*smd->fh)/2;
 	    for ( j=0; j<len; ++j ) {
 		ubuf[0] = buf[j];
-		GDrawDrawBiText(pixmap,smd->xstart+3,smd->ystart2+i*smd->stateh+off+j*smd->fh+smd->as,
-		    ubuf,1,NULL,0xff0000);
+		GDrawDrawText(pixmap,smd->xstart+3,smd->ystart2+i*smd->stateh+off+j*smd->fh+smd->as,
+		    ubuf,1,0xff0000);
 	    }
 	}
     }
@@ -968,12 +969,12 @@ return;
 	GDrawDrawLine(pixmap,smd->xstart2+i*smd->statew,smd->ystart,smd->xstart2+i*smd->statew,smd->ystart+rect.height,
 		0x808080);
 	if ( i+smd->offleft<smd->class_cnt ) {
-	    GDrawDrawBiText8(pixmap,smd->xstart2+i*smd->statew+1,smd->ystart+smd->as+1,
-		"Class",-1,NULL,0xff0000);
+	    GDrawDrawText8(pixmap,smd->xstart2+i*smd->statew+1,smd->ystart+smd->as+1,
+		"Class",-1,0xff0000);
 	    sprintf( buf, "%d", i+smd->offleft );
-	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
-	    GDrawDrawBiText8(pixmap,smd->xstart2+i*smd->statew+(smd->statew-len)/2,smd->ystart+smd->fh+smd->as+1,
-		buf,-1,NULL,0xff0000);
+	    len = GDrawGetText8Width(pixmap,buf,-1);
+	    GDrawDrawText8(pixmap,smd->xstart2+i*smd->statew+(smd->statew-len)/2,smd->ystart+smd->fh+smd->as+1,
+		buf,-1,0xff0000);
 	}
     }
 
@@ -992,9 +993,9 @@ return;
 	continue;
 
 	    sprintf( buf, "%d", this->next_state );
-	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
-	    GDrawDrawBiText8(pixmap,x+(smd->statew-len)/2,y+smd->as+1,
-		buf,-1,NULL,0x000000);
+	    len = GDrawGetText8Width(pixmap,buf,-1);
+	    GDrawDrawText8(pixmap,x+(smd->statew-len)/2,y+smd->as+1,
+		buf,-1,0x000000);
 
 	    ubuf[0] = (this->flags&0x8000)? 'M' : ' ';
 	    if ( smd->sm->type==asm_kern && (this->flags&0x8000))
@@ -1005,9 +1006,9 @@ return;
 		ubuf[2] = (this->flags&0x2000) ? 'L' : ' ';
 		ubuf[3] = '\0';
 	    }
-	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-	    GDrawDrawBiText(pixmap,x+(smd->statew-len)/2,y+smd->fh+smd->as+1,
-		ubuf,-1,NULL,0x000000);
+	    len = GDrawGetTextWidth(pixmap,ubuf,-1);
+	    GDrawDrawText(pixmap,x+(smd->statew-len)/2,y+smd->fh+smd->as+1,
+		ubuf,-1,0x000000);
 
 	    buf[0]='\0';
 	    if ( smd->sm->type==asm_indic ) {
@@ -1031,9 +1032,9 @@ return;
 		} else
 		    kddd = false;
 	    }
-	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
-	    GDrawDrawBiText8(pixmap,x+(smd->statew-len)/2,y+2*smd->fh+smd->as+1,
-		buf,-1,NULL,0x000000);
+	    len = GDrawGetText8Width(pixmap,buf,-1);
+	    GDrawDrawText8(pixmap,x+(smd->statew-len)/2,y+2*smd->fh+smd->as+1,
+		buf,-1,0x000000);
 
 	    buf[0] = '\0';
 	    if ( smd->sm->type==asm_indic ) {
@@ -1050,9 +1051,9 @@ return;
 		if ( kddd ) strcpy(buf,"...");
 		else buf[0] = '\0';
 	    }
-	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
-	    GDrawDrawBiText8(pixmap,x+(smd->statew-len)/2,y+3*smd->fh+smd->as+1,
-		buf,-1,NULL,0x000000);
+	    len = GDrawGetText8Width(pixmap,buf,-1);
+	    GDrawDrawText8(pixmap,x+(smd->statew-len)/2,y+3*smd->fh+smd->as+1,
+		buf,-1,0x000000);
 	}
     }
 
@@ -1505,16 +1506,16 @@ void StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
 	rq.point_size = 12;
 	rq.weight = 400;
 	rq.utf8_family_name = MONO_UI_FAMILIES;
-	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	font = GDrawInstanciateFont(gw,&rq);
 	font = GResourceFindFont("StateMachine.Font",font);
     }
     smd.font = font;
-    GDrawFontMetrics(smd.font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(gw,smd.font,&as,&ds,&ld);
     smd.fh = as+ds; smd.as = as;
     GDrawSetFont(gw,smd.font);
 
     smd.stateh = 4*smd.fh+3;
-    smd.statew = GDrawGetTextWidth(gw,statew,-1,NULL)+3;
+    smd.statew = GDrawGetTextWidth(gw,statew,-1)+3;
     smd.xstart2 = smd.xstart+smd.statew/2;
     smd.ystart2 = smd.ystart+2*smd.fh+1;
 

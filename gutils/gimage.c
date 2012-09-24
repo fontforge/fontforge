@@ -33,8 +33,8 @@ GImage *GImageCreate(enum image_type type, int32 width, int32 height) {
     if ( type<it_mono || type>it_rgba )
 return( NULL );
 
-    gi = gcalloc(1,sizeof(GImage));
-    base = galloc(sizeof(struct _GImage));
+    gi = (GImage *) gcalloc(1,sizeof(GImage));
+    base = (struct _GImage *) galloc(sizeof(struct _GImage));
     if ( gi==NULL || base==NULL ) {
 	free(gi); free(base);
 return( NULL );
@@ -47,14 +47,14 @@ return( NULL );
     base->data = NULL;
     base->clut = NULL;
     base->trans = COLOR_UNKNOWN;
-    base->data = galloc(height*base->bytes_per_line);
+    base->data = (uint8 *) galloc(height*base->bytes_per_line);
     if ( base->data==NULL ) {
 	free(base);
 	free(gi);
 return( NULL );
     }
     if ( type==it_index ) {
-	base->clut = gcalloc(1,sizeof(GClut));
+	base->clut = (GClut *) gcalloc(1,sizeof(GClut));
 	base->clut->trans_index = COLOR_UNKNOWN;
     }
 return( gi );
@@ -68,8 +68,8 @@ GImage *_GImage_Create(enum image_type type, int32 width, int32 height) {
     if ( type<it_mono || type>it_rgba )
 return( NULL );
 
-    gi = gcalloc(1,sizeof(GImage));
-    base = galloc(sizeof(struct _GImage));
+    gi = (GImage *) gcalloc(1,sizeof(GImage));
+    base = (struct _GImage *) galloc(sizeof(struct _GImage));
     if ( gi==NULL || base==NULL ) {
 	free(gi); free(base);
 return( NULL );
@@ -82,7 +82,7 @@ return( NULL );
     base->data = NULL;
     base->clut = NULL;
     if ( type==it_index )
-	base->clut = gcalloc(1,sizeof(GClut));
+	base->clut = (GClut *) gcalloc(1,sizeof(GClut));
 return( gi );
 }
 
@@ -105,8 +105,8 @@ void GImageDestroy(GImage *gi) {
 }
 
 GImage *GImageCreateAnimation(GImage **images, int n) {
-    struct _GImage **imgs = galloc(n*sizeof(struct _GImage *));
-    GImage *gi = gcalloc(1,sizeof(GImage));
+    struct _GImage **imgs = (struct _GImage **) galloc(n*sizeof(struct _GImage *));
+    GImage *gi = (GImage *) gcalloc(1,sizeof(GImage));
     int i;
 
     gi->list_len = n;
@@ -131,7 +131,7 @@ GImage *GImageAddImageBefore(GImage *dest, GImage *src, int pos) {
     enum image_type it;
 
     n = (src->list_len==0?1:src->list_len) + (dest->list_len==0?1:dest->list_len);
-    imgs = galloc(n*sizeof(struct _GImage *));
+    imgs = (struct _GImage **) galloc(n*sizeof(struct _GImage *));
 
     i = 0;
     if ( dest->list_len==0 ) {

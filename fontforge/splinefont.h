@@ -27,7 +27,7 @@
 #ifndef _SPLINEFONT_H
 #define _SPLINEFONT_H
 
-#include "basics.h"
+#include <basics.h>
 #include "configure-fontforge.h"
 #ifdef HAVE_ICONV_H
 # include <iconv.h>
@@ -47,10 +47,7 @@
 #  define ICONV_CONST
 #endif
 
-#if defined( FONTFORGE_CONFIG_USE_LONGDOUBLE )
-# define real		long double
-# define bigreal	long double
-#elif defined( FONTFORGE_CONFIG_USE_DOUBLE )
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
 # define real		double
 # define bigreal	double
 #else
@@ -58,13 +55,7 @@
 # define bigreal	double
 #endif
 
-#if defined( HAVE_LONG_DOUBLE ) && (defined(FONTFORGE_CONFIG_USE_LONGDOUBLE) || defined( This_does_not_seem_to_make_a_difference ))
-# define extended	long double
-# define CheckExtremaForSingleBitErrors(sp,t,othert)	(t)
-# define EXTENDED_IS_LONG_DOUBLE	1
-#else
-# define extended	double
-#endif
+#define extended	double
 	/* Solaris wants to define extended to be unsigned [3] unless we do this*/
 #define _EXTENDED
 
@@ -122,9 +113,11 @@ typedef struct ibounds {
 #define IBOUNDS_EMPTY { 0, 0, 0, 0 }
 
 
+enum val_type { v_int, v_real, v_str, v_unicode, v_lval, v_arr, v_arrfree,
+		v_int32pt, v_int16pt, v_int8pt, v_void };
+
 typedef struct val {
-    enum val_type { v_int, v_real, v_str, v_unicode, v_lval, v_arr, v_arrfree,
-	    v_int32pt, v_int16pt, v_int8pt, v_void } type;
+    enum val_type type;
     union {
 	int ival;
 	real fval;
@@ -166,18 +159,22 @@ enum linecap {
 enum spreadMethod {
     sm_pad, sm_reflect, sm_repeat
 };
+
 #define COLOR_INHERITED	0xfffffffe
+
+struct grad_stops {
+    real offset;
+    uint32 col;
+    real opacity;
+};
+
 struct gradient {
     BasePoint start;	/* focal of a radial gradient, start of a linear */
     BasePoint stop;	/* center of a radial gradient, end of a linear */
     real radius;	/* 0=>linear gradient, else radius of a radial gradient */
     enum spreadMethod sm;
     int stop_cnt;
-    struct grad_stops {
-	real offset;
-	uint32 col;
-	real opacity;
-    } *grad_stops;
+    struct grad_stops *grad_stops;
 };
 
 struct pattern {
@@ -255,16 +252,19 @@ struct simplifyinfo {
     int check_selected_contours;
 };
 
+struct hsquash { double lsb_percent, stem_percent, counter_percent, rsb_percent; };
+
+enum serif_type { srf_flat, srf_simpleslant, srf_complexslant };
+/* |    | (flat)    |   | (simple)     |    | (complex) */
+/* |    |           |  /               |   /            */
+/* |    |           | /                |  /             */
+/* +----+           |/                 \ /              */
+
 typedef struct italicinfo {
     double italic_angle;
     double xheight_percent;
-    struct hsquash { double lsb_percent, stem_percent, counter_percent, rsb_percent; }
-	lc, uc, neither;
-    enum { srf_flat, srf_simpleslant, srf_complexslant } secondary_serif;
-    /* |    | (flat)    |   | (simple)     |    | (complex) */
-    /* |    |           |  /               |   /            */
-    /* |    |           | /                |  /             */
-    /* +----+           |/                 \ /              */
+    struct hsquash lc, uc, neither;
+    enum serif_type secondary_serif;
 
     unsigned int transform_bottom_serifs: 1;
     unsigned int transform_top_xh_serifs: 1;	/* Those at x-height */
@@ -443,43 +443,45 @@ enum pst_flags { pst_r2l=1, pst_ignorebaseglyphs=2, pst_ignoreligatures=4,
 	pst_ignorecombiningmarks=8, pst_usemarkfilteringset=0x10,
 	pst_markclass=0xff00, pst_markset=0xffff0000 };
 
+struct lookup_subtable {
+    char *subtable_name;
+    char *suffix;			/* for gsub_single, used to find a default replacement */
+    int16 separation, minkern;	/* for gpos_pair, used to guess default kerning values */
+    struct otlookup *lookup;
+    unsigned int unused: 1;
+    unsigned int per_glyph_pst_or_kern: 1;
+    unsigned int anchor_classes: 1;
+    unsigned int vertical_kerning: 1;
+    unsigned int ticked: 1;
+    unsigned int kerning_by_touch: 1;	/* for gpos_pair, calculate kerning so that glyphs will touch */
+    unsigned int onlyCloser: 1;		/* for kerning classes */
+    unsigned int dontautokern: 1;		/* for kerning classes */
+    struct kernclass *kc;
+    struct generic_fpst *fpst;
+    struct generic_asm  *sm;
+    /* Each time an item is added to a lookup we must place it into a */
+    /*  subtable. If it's a kerning class, fpst or state machine it has */
+    /*  a subtable all to itself. If it's an anchor class it can share */
+    /*  a subtable with other anchor classes (merge with). If it's a glyph */
+    /*  PST it may share a subtable with other PSTs */
+    /* Note items may only be placed in lookups in which they fit. Can't */
+    /*  put kerning data in a gpos_single lookup, etc. */
+    struct lookup_subtable *next;
+    int32 subtable_offset;
+    int32 *extra_subtables;
+    /* If a kerning subtable has too much stuff in it, we are prepared to */
+    /*  break it up into several smaller subtables, each of which has */
+    /*  an offset in this list (extra-subtables[0]==subtable_offset) */
+    /*  the list is terminated by an entry of -1 */
+};
+
 typedef struct otlookup {
     struct otlookup *next;
     enum otlookup_type lookup_type;
     uint32 lookup_flags;		/* Low order: traditional flags, High order: markset index, only meaningful if pst_usemarkfilteringset set */
     char *lookup_name;
     FeatureScriptLangList *features;
-    struct lookup_subtable {
-	char *subtable_name;
-	char *suffix;			/* for gsub_single, used to find a default replacement */
-	int16 separation, minkern;	/* for gpos_pair, used to guess default kerning values */
-	struct otlookup *lookup;
-	unsigned int unused: 1;
-	unsigned int per_glyph_pst_or_kern: 1;
-	unsigned int anchor_classes: 1;
-	unsigned int vertical_kerning: 1;
-	unsigned int ticked: 1;
-	unsigned int kerning_by_touch: 1;	/* for gpos_pair, calculate kerning so that glyphs will touch */
-	unsigned int onlyCloser: 1;		/* for kerning classes */
-	unsigned int dontautokern: 1;		/* for kerning classes */
-	struct kernclass *kc;
-	struct generic_fpst *fpst;
-	struct generic_asm  *sm;
-	/* Each time an item is added to a lookup we must place it into a */
-	/*  subtable. If it's a kerning class, fpst or state machine it has */
-	/*  a subtable all to itself. If it's an anchor class it can share */
-	/*  a subtable with other anchor classes (merge with). If it's a glyph */
-	/*  PST it may share a subtable with other PSTs */
-	/* Note items may only be placed in lookups in which they fit. Can't */
-	/*  put kerning data in a gpos_single lookup, etc. */
-	struct lookup_subtable *next;
-	int32 subtable_offset;
-	int32 *extra_subtables;
-	/* If a kerning subtable has too much stuff in it, we are prepared to */
-	/*  break it up into several smaller subtables, each of which has */
-	/*  an offset in this list (extra-subtables[0]==subtable_offset) */
-	/*  the list is terminated by an entry of -1 */
-    } *subtables;
+    struct lookup_subtable *subtables;
     unsigned int unused: 1;	/* No subtable is used (call SFFindUnusedLookups before examining) */
     unsigned int empty: 1;	/* No subtable is used, and no anchor classes are used */
     unsigned int store_in_afm: 1;	/* Used for ligatures, some get stored */
@@ -612,6 +614,29 @@ typedef struct liglist {
 enum fpossub_format { pst_glyphs, pst_class, pst_coverage,
 		    pst_reversecoverage, pst_formatmax };
 
+struct seqlookup {
+    int seq;
+    struct otlookup *lookup;
+};
+
+struct fpg { char *names, *back, *fore; };
+struct fpc { int ncnt, bcnt, fcnt; uint16 *nclasses, *bclasses, *fclasses, *allclasses; };
+struct fpv { int ncnt, bcnt, fcnt; char **ncovers, **bcovers, **fcovers; };
+struct fpr { int always1, bcnt, fcnt; char **ncovers, **bcovers, **fcovers; char *replacements; };
+
+struct fpst_rule {
+    union {
+	/* Note: Items in backtrack area are in reverse order because that's how the OT wants them */
+	/*  they need to be reversed again to be displayed to the user */
+	struct fpg glyph;
+	struct fpc class;
+	struct fpv coverage;
+	struct fpr rcoverage;
+    } u;
+    int lookup_cnt;
+    struct seqlookup *lookups;
+};
+
 typedef struct generic_fpst {
     uint16 /*enum possub_type*/ type;
     uint16 /*enum fpossub_format*/ format;
@@ -620,21 +645,7 @@ typedef struct generic_fpst {
     uint16 nccnt, bccnt, fccnt;
     uint16 rule_cnt;
     char **nclass, **bclass, **fclass;
-    struct fpst_rule {
-	union {
-	    /* Note: Items in backtrack area are in reverse order because that's how the OT wants them */
-	    /*  they need to be reversed again to be displayed to the user */
-	    struct fpg { char *names, *back, *fore; } glyph;
-	    struct fpc { int ncnt, bcnt, fcnt; uint16 *nclasses, *bclasses, *fclasses, *allclasses; } class;
-	    struct fpv { int ncnt, bcnt, fcnt; char **ncovers, **bcovers, **fcovers; } coverage;
-	    struct fpr { int always1, bcnt, fcnt; char **ncovers, **bcovers, **fcovers; char *replacements; } rcoverage;
-	} u;
-	int lookup_cnt;
-	struct seqlookup {
-	    int seq;
-	    struct otlookup *lookup;
-	} *lookups;
-    } *rules;
+    struct fpst_rule *rules;
     uint8 ticked;
     uint8 effectively_by_glyphs;
     char **nclassnames, **bclassnames, **fclassnames;
@@ -643,6 +654,25 @@ typedef struct generic_fpst {
 enum asm_type { asm_indic, asm_context, asm_lig, asm_simple=4, asm_insert,
 	asm_kern=0x11 };
 enum asm_flags { asm_vert=0x8000, asm_descending=0x4000, asm_always=0x2000 };
+
+struct asm_state {
+    uint16 next_state;
+    uint16 flags;
+    union {
+	struct {
+	    struct otlookup *mark_lookup;	/* for contextual glyph subs (tag of a nested lookup) */
+	    struct otlookup *cur_lookup;	/* for contextual glyph subs */
+	} context;
+	struct {
+	    char *mark_ins;
+	    char *cur_ins;
+	} insert;
+	struct {
+	    int16 *kerns;
+	    int kcnt;
+	} kern;
+    } u;
+};
 
 typedef struct generic_asm {		/* Apple State Machine */
     struct generic_asm *next;
@@ -653,24 +683,7 @@ typedef struct generic_asm {		/* Apple State Machine */
 
     uint16 class_cnt, state_cnt;
     char **classes;
-    struct asm_state {
-	uint16 next_state;
-	uint16 flags;
-	union {
-	    struct {
-		struct otlookup *mark_lookup;	/* for contextual glyph subs (tag of a nested lookup) */
-		struct otlookup *cur_lookup;	/* for contextual glyph subs */
-	    } context;
-	    struct {
-		char *mark_ins;
-		char *cur_ins;
-	    } insert;
-	    struct {
-		int16 *kerns;
-		int kcnt;
-	    } kern;
-	} u;
-    } *state;
+    struct asm_state *state;
 #if 0
     uint32 opentype_tag;		/* If converted from opentype */
 #endif
@@ -774,6 +787,14 @@ struct otffeatname {
     uint16 nid;			/* temporary value */
 };
 
+struct macsetting {
+    struct macsetting *next;
+    uint16 setting;
+    uint16 strid;
+    struct macname *setname;
+    unsigned int initially_enabled: 1;
+};
+
 typedef struct macfeat {
     struct macfeat *next;
     uint16 feature;
@@ -781,13 +802,7 @@ typedef struct macfeat {
     uint8 default_setting;		/* Apple's docs say both that this is a byte and a short. It's a byte */
     uint16 strid;			/* Temporary value, used when reading in */
     struct macname *featname;
-    struct macsetting {
-	struct macsetting *next;
-	uint16 setting;
-	uint16 strid;
-	struct macname *setname;
-	unsigned int initially_enabled: 1;
-    } *settings;
+    struct macsetting *settings;
 } MacFeat;
 
 typedef struct refbdfc {
@@ -799,6 +814,11 @@ typedef struct refbdfc {
     struct refbdfc *next;
     struct bdfchar *bdfc;
 } BDFRefChar;
+
+struct bdfcharlist {
+    struct bdfchar *bc;
+    struct bdfcharlist *next;
+};
 
 typedef struct bdfchar {
     struct splinechar *sc;
@@ -821,20 +841,19 @@ typedef struct bdfchar {
     uint16 vwidth;
     BDFFloat *selection;
     BDFFloat *backup;
-    struct bdfcharlist {
-	struct bdfchar *bc;
-	struct bdfcharlist *next;
-    } *dependents;
+    struct bdfcharlist *dependents;
 } BDFChar;
+
+enum undotype { ut_none=0, ut_state, ut_tstate, ut_statehint, ut_statename,
+		ut_statelookup,
+		ut_anchors,
+		ut_width, ut_vwidth, ut_lbearing, ut_rbearing, ut_possub,
+		ut_hints, ut_bitmap, ut_bitmapsel, ut_composit, ut_multiple, ut_layers,
+		ut_noop };
 
 typedef struct undoes {
     struct undoes *next;
-    enum undotype { ut_none=0, ut_state, ut_tstate, ut_statehint, ut_statename,
-	    ut_statelookup,
-	    ut_anchors,
-	    ut_width, ut_vwidth, ut_lbearing, ut_rbearing, ut_possub,
-	    ut_hints, ut_bitmap, ut_bitmapsel, ut_composit, ut_multiple, ut_layers,
-	    ut_noop } undotype;
+    enum undotype undotype;
     unsigned int was_modified: 1;
     unsigned int was_order2: 1;
     union {
@@ -853,13 +872,11 @@ typedef struct undoes {
 	    uint8 *instrs;
 	    int instrs_len;
 	    AnchorPoint *anchor;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    struct brush fill_brush;
 	    struct pen stroke_pen;
 	    unsigned int dofill: 1;
 	    unsigned int dostroke: 1;
 	    unsigned int fillfirst: 1;
-#endif
 	} state;
 	int width;	/* used by both ut_width and ut_vwidth */
 	int lbearing;	/* used by ut_lbearing */
@@ -916,12 +933,14 @@ typedef struct enc {
     int char_max;			/* Used by temporary encodings */
 } Encoding;
 
+struct renames { char *from; char *to; };
+
 typedef struct namelist {
     struct namelist *basedon;
     char *title;
     const char ***unicode[17];
     struct namelist *next;
-    struct renames { char *from; char *to; } *renames;
+    struct renames *renames;
     int uses_unicode;
     char *a_utf8_name;
 } NameList;
@@ -1015,6 +1034,8 @@ typedef struct splinepoint {
     HintMask *hintmask;
 } SplinePoint;
 
+enum linelist_flags { cvli_onscreen=0x1, cvli_clipped=0x2 };
+
 typedef struct linelist {
     IPoint here;
     struct linelist *next;
@@ -1024,7 +1045,7 @@ typedef struct linelist {
     /*  if this point needs to be clipped then set cvli_clipped */
     /*  asend and asstart are the actual screen locations where this point */
     /*  intersects the clip edge. */
-    enum { cvli_onscreen=0x1, cvli_clipped=0x2 } flags;
+    enum linelist_flags flags;
     IPoint asend, asstart;
 } LineList;
 
@@ -1112,6 +1133,19 @@ typedef struct imagelist {
     unsigned int selected: 1;
 } ImageList;
 
+struct reflayer {
+    unsigned int background: 1;
+    unsigned int order2: 1;
+    unsigned int anyflexes: 1;
+    unsigned int dofill: 1;
+    unsigned int dostroke: 1;
+    unsigned int fillfirst: 1;
+    struct brush fill_brush;
+    struct pen stroke_pen;
+    SplinePointList *splines;
+    ImageList *images;			/* Only in background or type3 layer(s) */
+};
+
 typedef struct refchar {
     unsigned int checked: 1;
     unsigned int selected: 1;
@@ -1129,20 +1163,7 @@ typedef struct refchar {
     int orig_pos;
     int unicode_enc;		/* used by paste */
     real transform[6];		/* transformation matrix (first 2 rows of a 3x3 matrix, missing row is 0,0,1) */
-    struct reflayer {
-	unsigned int background: 1;
-	unsigned int order2: 1;
-	unsigned int anyflexes: 1;
-#ifdef FONTFORGE_CONFIG_TYPE3
-	unsigned int dofill: 1;
-	unsigned int dostroke: 1;
-	unsigned int fillfirst: 1;
-	struct brush fill_brush;
-	struct pen stroke_pen;
-#endif
-	SplinePointList *splines;
-	ImageList *images;			/* Only in background or type3 layer(s) */
-    } *layers;
+    struct reflayer *layers;
     int layer_cnt;
     struct refchar *next;
     DBounds bb;
@@ -1223,13 +1244,11 @@ typedef struct layer /* : reflayer */{
     unsigned int background: 1;
     unsigned int order2: 1;
     unsigned int anyflexes: 1;
-#ifdef FONTFORGE_CONFIG_TYPE3
     unsigned int dofill: 1;
     unsigned int dostroke: 1;
     unsigned int fillfirst: 1;
     struct brush fill_brush;
     struct pen stroke_pen;
-#endif
     SplinePointList *splines;
     ImageList *images;			/* Only in background or type3 layer(s) */
     RefChar *refs;			/* Only in foreground layer(s) */
@@ -1245,6 +1264,14 @@ enum layer_type { ly_all=-2, ly_grid= -1, ly_back=0, ly_fore=1,
 	ly_none = -3
     };
 
+struct gv_part {
+    char *component;
+    unsigned int is_extender: 1;	/* This component may be skipped or repeated */
+    uint16 startConnectorLength;
+    uint16 endConnectorLength;
+    uint16 fullAdvance;
+};
+
 /* For the 'MATH' table (and for TeX) */
 struct glyphvariants {
     char *variants;	/* Space separated list of glyph names */
@@ -1252,13 +1279,13 @@ struct glyphvariants {
     int16 italic_correction;	/* Of the composed glyph */
     DeviceTable *italic_adjusts;
     int part_cnt;
-    struct gv_part {
-	char *component;
-	unsigned int is_extender: 1;	/* This component may be skipped or repeated */
-	uint16 startConnectorLength;
-	uint16 endConnectorLength;
-	uint16 fullAdvance;
-    } *parts;
+    struct gv_part *parts;
+};
+
+struct mathkerndata {
+    int16 height,kern;
+    DeviceTable *height_adjusts;
+    DeviceTable *kern_adjusts;
 };
 
 /* For the 'MATH' table */
@@ -1267,11 +1294,7 @@ struct mathkernvertex {
 	    /* So the last mkd should have its height ignored */
 	    /* The MATH table stores the height count, I think the kern count */
 	    /*  is more useful (and that's what I use here). They differ by 1 */
-    struct mathkerndata {
-	int16 height,kern;
-	DeviceTable *height_adjusts;
-	DeviceTable *kern_adjusts;
-    } *mkd;
+    struct mathkerndata *mkd;
 };
 
 struct mathkern {
@@ -1340,6 +1363,17 @@ enum validation_state { vs_unknown = 0,
 	vs_maskfindproblems = 0x1be | vs_pointstoofarapart | vs_nonintegral | vs_missinganchor | vs_overlappedhints
 	};
 
+struct splinecharlist { struct splinechar *sc; struct splinecharlist *next;};
+
+struct altuni { struct altuni *next; int unienc, vs, fid; };
+	/* vs is the "variation selector" a unicode codepoint which modifieds */
+	/*  the code point before it. If vs is -1 then unienc is just an */
+	/*  alternate encoding (greek Alpha and latin A), but if vs is one */
+	/*  of unicode's variation selectors then this glyph is somehow a */
+	/*  variant shape. The specifics depend on the selector and script */
+	/*  fid is currently unused, but may, someday, be used to do ttcs */
+	/* NOTE: GlyphInfo displays vs==-1 as vs==0, and fixes things up */
+
 typedef struct splinechar {
     char *name;
     int unicodeenc;
@@ -1390,7 +1424,7 @@ typedef struct splinechar {
     unsigned int compositionunit: 1;
     int16 jamo, varient;
 #endif
-    struct splinecharlist { struct splinechar *sc; struct splinecharlist *next;} *dependents;
+    struct splinecharlist *dependents;
 	    /* The dependents list is a list of all characters which refenence*/
 	    /*  the current character directly */
     KernPair *kerns;
@@ -1406,14 +1440,7 @@ typedef struct splinechar {
     int16 ttf_instrs_len;
     int16 countermask_cnt;
     HintMask *countermasks;
-    struct altuni { struct altuni *next; int unienc, vs, fid; } *altuni;
-	/* vs is the "variation selector" a unicode codepoint which modifieds */
-	/*  the code point before it. If vs is -1 then unienc is just an */
-	/*  alternate encoding (greek Alpha and latin A), but if vs is one */
-	/*  of unicode's variation selectors then this glyph is somehow a */
-	/*  variant shape. The specifics depend on the selector and script */
-	/*  fid is currently unused, but may, someday, be used to do ttcs */
-	/* NOTE: GlyphInfo displays vs==-1 as vs==0, and fixes things up */
+    struct altuni *altuni;
 /* for TeX */
     int16 tex_height, tex_depth;
 /* TeX also uses italic_correction and glyph variants below */
@@ -1434,7 +1461,6 @@ typedef struct splinechar {
     void *python_temporary;
 #endif
     void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
-#ifdef FONTFORGE_CONFIG_TYPE3
 	/* If the glyph is used as a tile pattern, then the next two values */
 	/*  determine the amount of white space around the tile. If extra is*/
 	/*  non-zero then we add it to the max components of the bbox and   */
@@ -1443,7 +1469,6 @@ typedef struct splinechar {
 	/*  will be used. */
     real tile_margin;			/* If the glyph is used as a tile */
     DBounds tile_bounds;
-#endif
 } SplineChar;
 
 #define TEX_UNDEF 0x7fff
@@ -1621,6 +1646,59 @@ struct Base {
     struct basescript *scripts;
 };
 
+struct pfminfo {		/* A misnomer now. OS/2 info would be more accurate, but that's stuff in here from all over ttf files */
+    unsigned int pfmset: 1;
+    unsigned int winascent_add: 1;
+    unsigned int windescent_add: 1;
+    unsigned int hheadascent_add: 1;
+    unsigned int hheaddescent_add: 1;
+    unsigned int typoascent_add: 1;
+    unsigned int typodescent_add: 1;
+    unsigned int subsuper_set: 1;
+    unsigned int panose_set: 1;
+    unsigned int hheadset: 1;
+    unsigned int vheadset: 1;
+    unsigned int hascodepages: 1;
+    unsigned int hasunicoderanges: 1;
+    unsigned char pfmfamily;
+    int16 weight;
+    int16 width;
+    char panose[10];
+    int16 fstype;
+    int16 linegap;		/* from hhea */
+    int16 vlinegap;		/* from vhea */
+    int16 hhead_ascent, hhead_descent;
+    int16 os2_typoascent, os2_typodescent, os2_typolinegap;
+    int16 os2_winascent, os2_windescent;
+    int16 os2_subxsize, os2_subysize, os2_subxoff, os2_subyoff;
+    int16 os2_supxsize, os2_supysize, os2_supxoff, os2_supyoff;
+    int16 os2_strikeysize, os2_strikeypos;
+    char os2_vendor[4];
+    int16 os2_family_class;
+    uint32 codepages[2];
+    uint32 unicoderanges[4];
+};
+
+struct ttf_table {
+    uint32 tag;
+    int32 len, maxlen;
+    uint8 *data;
+    struct ttf_table *next;
+    FILE *temp;	/* Temporary storage used during generation */
+};
+
+enum texdata_type { tex_unset, tex_text, tex_math, tex_mathext };
+
+struct texdata {
+    enum texdata_type type;
+    int32 params[22];		/* param[6] has different meanings in normal and math fonts */
+};
+
+struct gasp {
+    uint16 ppem;
+    uint16 flags;
+};
+
 typedef struct splinefont {
     char *fontname, *fullname, *familyname, *weight;
     char *familyname_with_timestamp;
@@ -1678,38 +1756,7 @@ typedef struct splinefont {
     int display_size;		/* a val <0 => Generate our own images from splines, a value >0 => find a bdf font of that size */
     struct psdict *private;	/* read in from type1 file or provided by user */
     char *xuid;
-    struct pfminfo {		/* A misnomer now. OS/2 info would be more accurate, but that's stuff in here from all over ttf files */
-	unsigned int pfmset: 1;
-	unsigned int winascent_add: 1;
-	unsigned int windescent_add: 1;
-	unsigned int hheadascent_add: 1;
-	unsigned int hheaddescent_add: 1;
-	unsigned int typoascent_add: 1;
-	unsigned int typodescent_add: 1;
-	unsigned int subsuper_set: 1;
-	unsigned int panose_set: 1;
-	unsigned int hheadset: 1;
-	unsigned int vheadset: 1;
-	unsigned int hascodepages: 1;
-	unsigned int hasunicoderanges: 1;
-	unsigned char pfmfamily;
-	int16 weight;
-	int16 width;
-	char panose[10];
-	int16 fstype;
-	int16 linegap;		/* from hhea */
-	int16 vlinegap;		/* from vhea */
-	int16 hhead_ascent, hhead_descent;
-	int16 os2_typoascent, os2_typodescent, os2_typolinegap;
-	int16 os2_winascent, os2_windescent;
-	int16 os2_subxsize, os2_subysize, os2_subxoff, os2_subyoff;
-	int16 os2_supxsize, os2_supysize, os2_supxoff, os2_supyoff;
-	int16 os2_strikeysize, os2_strikeypos;
-	char os2_vendor[4];
-	int16 os2_family_class;
-	uint32 codepages[2];
-	uint32 unicoderanges[4];
-    } pfminfo;
+    struct pfminfo pfminfo;
     struct ttflangname *names;
     char *cidregistry, *ordering;
     int supplement;
@@ -1726,13 +1773,7 @@ typedef struct splinefont {
     int top_enc;
     uint16 desired_row_cnt, desired_col_cnt;
     struct glyphnamehash *glyphnames;
-    struct ttf_table {
-	uint32 tag;
-	int32 len, maxlen;
-	uint8 *data;
-	struct ttf_table *next;
-	FILE *temp;	/* Temporary storage used during generation */
-    } *ttf_tables, *ttf_tab_saved;
+    struct ttf_table *ttf_tables, *ttf_tab_saved;
 	/* We copy: fpgm, prep, cvt, maxp (into ttf_tables) user can ask for others, into saved*/
     char **cvt_names;
     /* The end of this array is marked by a special entry: */
@@ -1741,10 +1782,7 @@ typedef struct splinefont {
     struct shortview *cvt_dlg;
     struct kernclasslistdlg *kcld, *vkcld;
     struct kernclassdlg *kcd;
-    struct texdata {
-	enum { tex_unset, tex_text, tex_math, tex_mathext } type;
-	int32 params[22];		/* param[6] has different meanings in normal and math fonts */
-    } texdata;
+    struct texdata texdata;
     OTLookup *gsub_lookups, *gpos_lookups;
     /* Apple morx subtables become gsub, and kern subtables become gpos */
     AnchorClass *anchor;
@@ -1789,10 +1827,7 @@ typedef struct splinefont {
     short compression;			/* If we opened a compressed sfd file, then save it out compressed too */
     short gasp_version;			/* 0/1 currently */
     short gasp_cnt;
-    struct gasp {
-	uint16 ppem;
-	uint16 flags;
-    } *gasp;
+    struct gasp *gasp;
     struct MATH *MATH;
     float sfd_version;			/* Used only when reading in an sfd file */
     struct gfi_data *fontinfo;
@@ -1819,6 +1854,19 @@ typedef struct splinefont {
 	    /* ufo_descent is negative */
 } SplineFont;
 
+struct axismap {
+    int points;	/* size of the next two arrays */
+    real *blends;	/* between [0,1] ordered so that blend[0]<blend[1]<... */
+    real *designs;	/* between the design ranges for this axis, typically [1,999] or [6,72] */
+    real min, def, max;		/* For mac */
+    struct macname *axisnames;	/* For mac */
+};
+
+struct named_instance {	/* For mac */
+    real *coords;	/* array[axis], these are in user units */
+    struct macname *names;
+};
+
 /* I am going to simplify my life and not encourage intermediate designs */
 /*  this means I can easily calculate ConvertDesignVector, and don't have */
 /*  to bother the user with specifying it. */
@@ -1834,19 +1882,10 @@ typedef struct mmset {
     real *positions;	/* array[instance][axis] saying where each instance lies on each axis */
     real *defweights;	/* array[instance] saying how much of each instance makes the normal font */
 			/* for adobe */
-    struct axismap {
-	int points;	/* size of the next two arrays */
-	real *blends;	/* between [0,1] ordered so that blend[0]<blend[1]<... */
-	real *designs;	/* between the design ranges for this axis, typically [1,999] or [6,72] */
-	real min, def, max;		/* For mac */
-	struct macname *axisnames;	/* For mac */
-    } *axismaps;	/* array[axis] */
+    struct axismap *axismaps;	/* array[axis] */
     char *cdv, *ndv;	/* for adobe */
     int named_instance_count;
-    struct named_instance {	/* For mac */
-	real *coords;	/* array[axis], these are in user units */
-	struct macname *names;
-    } *named_instances;
+    struct named_instance *named_instances;
     unsigned int changed: 1;
     unsigned int apple: 1;
 } MMSet;
@@ -1915,10 +1954,13 @@ enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 
 struct compressors { char *ext, *decomp, *recomp; };
 #define COMPRESSORS_EMPTY { NULL, NULL, NULL }
+extern struct compressors compressors[];
+
+enum archive_list_style { ars_tar, ars_zip };
 
 struct archivers {
     char *ext, *unarchive, *archive, *listargs, *extractargs, *appendargs;
-    enum archive_list_style { ars_tar, ars_zip } ars;
+    enum archive_list_style ars;
 };
 #define ARCHIVERS_EMPTY { NULL, NULL, NULL, NULL, NULL, NULL, 0 }
 
@@ -1928,8 +1970,13 @@ struct findsel;
 struct charprocs;
 struct enc;
 
+#ifdef USE_OUR_MEMORY
 extern void *chunkalloc(int size);
 extern void chunkfree(void *, int size);
+#else
+#define chunkalloc(size)	gcalloc(1,size)
+#define chunkfree(item,size)	free(item)
+#endif /* USE_OUR_MEMORY */
 
 extern char *strconcat(const char *str, const char *str2);
 extern char *strconcat3(const char *str, const char *str2, const char *str3);
@@ -2110,7 +2157,7 @@ extern AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 );
 extern AnchorClass *AnchorClassCursMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 );
-extern void SCInsertPST(SplineChar *sc,PST *new);
+extern void SCInsertPST(SplineChar *sc,PST *new_);
 extern void ValDevFree(ValDevTab *adjust);
 extern ValDevTab *ValDevTabCopy(ValDevTab *orig);
 extern void DeviceTableFree(DeviceTable *adjust);
@@ -2123,14 +2170,19 @@ extern StemInfo *StemInfoCopy(StemInfo *h);
 extern DStemInfo *DStemInfoCopy(DStemInfo *h);
 extern MinimumDistance *MinimumDistanceCopy(MinimumDistance *h);
 extern void SPChangePointType(SplinePoint *sp, int pointtype);
+
+struct lookup_cvt { OTLookup *from, *to; int old;};
+struct sub_cvt { struct lookup_subtable *from, *to; int old;};
+struct ac_cvt { AnchorClass *from, *to; int old;};
+
 struct sfmergecontext {
     SplineFont *sf_from, *sf_to;
     int lcnt;
-    struct lookup_cvt { OTLookup *from, *to; int old;} *lks;
+    struct lookup_cvt *lks;
     int scnt;
-    struct sub_cvt { struct lookup_subtable *from, *to; int old;} *subs;
+    struct sub_cvt *subs;
     int acnt;
-    struct ac_cvt { AnchorClass *from, *to; int old;} *acs;
+    struct ac_cvt *acs;
     char *prefix;
     int preserveCrossFontKerning;
     int lmax;
@@ -2386,12 +2438,7 @@ extern char **AutoTraceArgs(int ask);
 #define CURVATURE_ERROR	-1e9
 extern bigreal SplineCurvature(Spline *s, bigreal t);
 
-#ifndef EXTENDED_IS_LONG_DOUBLE
 extern double CheckExtremaForSingleBitErrors(const Spline1D *sp, double t, double othert);
-#define esqrt(d)	sqrt(d)
-#else
-extern extended esqrt(extended e);
-#endif
 extern int Spline2DFindExtrema(const Spline *sp, extended extrema[4] );
 extern int Spline2DFindPointsOfInflection(const Spline *sp, extended poi[2] );
 extern int SplineAtInflection(Spline1D *sp, bigreal t );
@@ -2520,8 +2567,8 @@ extern SplineSet *SplineSetRemoveOverlap(SplineChar *sc,SplineSet *base,enum ove
 extern SplineSet *SSShadow(SplineSet *spl,real angle, real outline_width,
 	real shadow_length,SplineChar *sc, int wireframe);
 
-extern double BlueScaleFigureForced(struct psdict *private,real bluevalues[], real otherblues[]);
-extern double BlueScaleFigure(struct psdict *private,real bluevalues[], real otherblues[]);
+extern double BlueScaleFigureForced(struct psdict *private_,real bluevalues[], real otherblues[]);
+extern double BlueScaleFigure(struct psdict *private_,real bluevalues[], real otherblues[]);
 extern void FindBlues( SplineFont *sf, int layer, real blues[14], real otherblues[10]);
 extern void QuickBlues(SplineFont *sf, int layer, BlueData *bd);
 extern void FindHStems( SplineFont *sf, real snaps[12], real cnt[12]);
@@ -2699,6 +2746,7 @@ extern Undoes *_SCPreserveLayer(SplineChar *sc,int layer,int dohints);
 extern Undoes *SCPreserveState(SplineChar *sc,int dohints);
 extern Undoes *SCPreserveBackground(SplineChar *sc);
 extern Undoes *SFPreserveGuide(SplineFont *sf);
+extern Undoes *_SFPreserveGuide(SplineFont *sf);
 extern Undoes *SCPreserveWidth(SplineChar *sc);
 extern Undoes *SCPreserveVWidth(SplineChar *sc);
 extern Undoes *BCPreserveState(BDFChar *bc);
@@ -2711,7 +2759,7 @@ extern int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc, int layer,int o
 extern int SFIsRotatable(SplineFont *sf,SplineChar *sc, int layer);
 /*extern int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int layer, int copybmp, int doit);*/
 extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *bmp, int disp_only);
-extern int SCAppendAccent(SplineChar *sc,int layer, char *glyph_name,int uni,int pos);
+extern int SCAppendAccent(SplineChar *sc,int layer, char *glyph_name,int uni,uint32 pos);
 extern const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int nocheck);
 
 extern int getAdobeEnc(char *name);
@@ -3149,6 +3197,7 @@ extern struct math_constants_descriptor {
 
 #define MATH_CONSTANTS_DESCRIPTOR_EMPTY { NULL, NULL, 0, 0, NULL, 0 }
 
+extern const char *knownweights[], *realweights[], **noticeweights[];
 
 extern int BPTooFar(BasePoint *bp1, BasePoint *bp2);
 extern StemInfo *SCHintOverlapInMask(SplineChar *sc,HintMask *hm);
@@ -3197,4 +3246,8 @@ extern bigreal SFDescender(SplineFont *sf, int layer, int return_error);
 
 extern SplineChar ***GlyphClassesFromNames(SplineFont *sf,char **classnames,
 	int class_cnt );
+
+extern void SCRemoveKern(SplineChar* sc);
+extern void SCRemoveVKern(SplineChar* sc);
+
 #endif

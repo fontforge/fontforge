@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +35,16 @@
 /* ************************************************************************** */
 /* ***************************** Problems Dialog **************************** */
 /* ************************************************************************** */
+
+struct mgrpl {
+    char *search;
+    char *rpl;		/* a rpl of "" means delete (NULL means not found) */
+};
+
+struct mlrpl {
+    uint32 search;
+    uint32 rpl;
+};
 
 struct problems {
     FontView *fv;
@@ -108,14 +119,8 @@ struct problems {
     struct lookup_subtable *badsubs_lsubtable;
     AnchorClass *missinganchor_class;
     int rpl_cnt, rpl_max;
-    struct mgrpl {
-	char *search;
-	char *rpl;		/* a rpl of "" means delete (NULL means not found) */
-    } *mg;
-    struct mlrpl {
-	uint32 search;
-	uint32 rpl;
-    } *mlt;
+    struct mgrpl *mg;
+    struct mlrpl *mlt;
     char *glyphname;
     int glyphenc;
     EncMap *map;
@@ -5114,9 +5119,9 @@ static void VWDrawWindow(GWindow pixmap,struct val_data *vw, GEvent *e) {
     GDrawSetFont(pixmap,vw->font);
     gid = VW_FindLine(vw,vw->loff_top, &skips);
     if ( gid==-1 ) {
-	GDrawDrawBiText8(pixmap,2,(vw->vlcnt-1)*vw->fh/2 + vw->as,
+	GDrawDrawText8(pixmap,2,(vw->vlcnt-1)*vw->fh/2 + vw->as,
 		vw->finished_first_pass ? _("Passed Validation") : _("Thinking..."),
-		-1,NULL,0x000000 );
+		-1,0x000000 );
 	GDrawPopClip(pixmap,&old);
 return;
     }
@@ -5146,13 +5151,13 @@ return;
 		if ( !sc->vs_open )
 		    GDrawDrawLine(pixmap,r.x+vw->as/2,r.y+2,r.x+vw->as/2,r.y+vw->as-2,
 			    0x000000);
-		GDrawDrawBiText8(pixmap,r.x+r.width+2,y,sc->name,-1,NULL,0x000000 );
+		GDrawDrawText8(pixmap,r.x+r.width+2,y,sc->name,-1,0x000000 );
 		y += vw->fh;
 		++sofar;
 		if ( sc->vs_open ) {
 		    for ( m=0, bit=(vs_known<<1) ; bit<=vs_last; ++m, bit<<=1 )
 			if ( (bit&vw->mask) && (vs&bit) && vserrornames[m]!=NULL ) {
-			    GDrawDrawBiText8(pixmap,10+r.width+r.x,y,_(vserrornames[m]),-1,NULL,0xff0000 );
+			    GDrawDrawText8(pixmap,10+r.width+r.x,y,_(vserrornames[m]),-1,0xff0000 );
 			    y += vw->fh;
 			    ++sofar;
 			}
@@ -5167,11 +5172,11 @@ return;
 	if ( vs!=0 ) {
 	    /* GT: "Private" is a keyword (sort of) in PostScript. Perhaps it */
 	    /* GT: should remain untranslated? */
-	    GDrawDrawBiText8(pixmap,r.x+r.width+2,y,_("Private Dictionary"),-1,NULL,0x000000 );
+	    GDrawDrawText8(pixmap,r.x+r.width+2,y,_("Private Dictionary"),-1,0x000000 );
 	    y += vw->fh;
 	    for ( m=0, bit=1 ; bit!=0; ++m, bit<<=1 ) {
 		if ( vs&bit ) {
-		    GDrawDrawBiText8(pixmap,10+r.width+r.x,y,_(privateerrornames[m]),-1,NULL,0xff0000 );
+		    GDrawDrawText8(pixmap,10+r.width+r.x,y,_(privateerrornames[m]),-1,0xff0000 );
 		    y += vw->fh;
 		}
 	    }
@@ -5401,11 +5406,11 @@ return;
 	rq.utf8_family_name = "Helvetica";
 	rq.point_size = 11;
 	rq.weight = 400;
-	valfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	valfont = GDrawInstanciateFont(gw,&rq);
 	valfont = GResourceFindFont("Validate.Font",valfont);
     }
     valwin->font = valfont;
-    GDrawFontMetrics(valwin->font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(valwin->gw,valwin->font,&as,&ds,&ld);
     valwin->fh = as+ds;
     valwin->as = as;
 

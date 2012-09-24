@@ -1175,12 +1175,10 @@ SearchData *SDFillup(SearchData *sv, FontViewBase *fv) {
     sv->sc_srch.layer_cnt = sv->sc_rpl.layer_cnt = 2;
     sv->sc_srch.layers = gcalloc(2,sizeof(Layer));
     sv->sc_rpl.layers = gcalloc(2,sizeof(Layer));
-#ifdef FONTFORGE_CONFIG_TYPE3
     LayerDefault(&sv->sc_srch.layers[0]);
     LayerDefault(&sv->sc_srch.layers[1]);
     LayerDefault(&sv->sc_rpl.layers[0]);
     LayerDefault(&sv->sc_rpl.layers[1]);
-#endif
 
     sv->fv = fv;
 return( sv );

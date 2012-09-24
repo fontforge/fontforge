@@ -27,7 +27,7 @@
 /*			   Python Interface to FontForge		      */
 
 #ifdef HAVE_CONFIG_H
-# include "config.h"
+#include <config.h>
 #endif
 
 #ifndef _NO_PYTHON
@@ -299,7 +299,7 @@ return( NULL );
 	    PyErr_Format(PyExc_TypeError, "Second argument is not callable" );
 return( NULL );
 	}
-	flags = FlagsFromTuple(PyTuple_GetItem(args,3), menuviews );
+	flags = FlagsFromTuple(PyTuple_GetItem(args,3), menuviews, "menu window" );
 	if ( flags==-1 ) {
 	    PyErr_Format(PyExc_ValueError, "Unknown window for menu" );
 return( NULL );

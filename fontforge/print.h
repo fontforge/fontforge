@@ -35,13 +35,38 @@ extern int use_gv;
 
 static const int printdpi = 600;
 
+enum printtype { pt_fontdisplay, pt_chars, pt_multisize, pt_fontsample };
+
+struct sfbits {
+    /* If it's a CID font we'll only have one. Otherwise we might have */
+    /*  several different encodings to get all the glyphs we need. Each */
+    /*  one counts as a font */
+    SplineFont *sf;
+    EncMap *map;
+    char psfontname[300];
+    int *our_font_objs;
+    int next_font, max_font;
+    int *fonts;	/* An array of sf->charcnt/256 entries indicating */
+    		/* the font number of encodings on that page of   */
+    		/* the font. -1 => not mapped (no encodings) */
+    FILE *fontfile;
+    int cidcnt;
+    unsigned int twobyte: 1;
+    unsigned int istype42cid: 1;
+    unsigned int iscid: 1;
+    unsigned int wastwobyte: 1;
+    unsigned int isunicode: 1;
+    unsigned int isunicodefull: 1;
+    struct sfmaps *sfmap;
+};
+
 typedef struct printinfo {
     FontViewBase *fv;
     struct metricsview *mv;
     SplineChar *sc;
     SplineFont *mainsf;
     EncMap *mainmap;
-    enum printtype { pt_fontdisplay, pt_chars, pt_multisize, pt_fontsample } pt;
+    enum printtype pt;
     int pointsize;
     int32 *pointsizes;
     int extrahspace, extravspace;
@@ -68,28 +93,7 @@ typedef struct printinfo {
     /*  sample text there may be many logical fonts. And each one may need to */
     /*  be represented by many actual fonts to encode all our glyphs */
     int sfcnt, sfmax, sfid;
-    struct sfbits {
-	/* If it's a CID font we'll only have one. Otherwise we might have */
-	/*  several different encodings to get all the glyphs we need. Each */
-	/*  one counts as a font */
-	SplineFont *sf;
-	EncMap *map;
-	char psfontname[300];
-	int *our_font_objs;
-	int next_font, max_font;
-	int *fonts;	/* An array of sf->charcnt/256 entries indicating */
-			/* the font number of encodings on that page of   */
-			/* the font. -1 => not mapped (no encodings) */
-	FILE *fontfile;
-	int cidcnt;
-	unsigned int twobyte: 1;
-	unsigned int istype42cid: 1;
-	unsigned int iscid: 1;
-	unsigned int wastwobyte: 1;
-	unsigned int isunicode: 1;
-	unsigned int isunicodefull: 1;
-	struct sfmaps *sfmap;
-    } *sfbits;
+    struct sfbits *sfbits;
     long start_cur_page;
     int lastfont, intext;
     struct layoutinfo *sample;
@@ -108,7 +112,5 @@ extern struct printdefaults {
 extern void PI_Init(PI *pi,FontViewBase *fv,SplineChar *sc);
 extern void DoPrinting(PI *pi,char *filename);
 extern int PdfDumpGlyphResources(PI *pi,SplineChar *sc);
-#ifdef FONTFORGE_CONFIG_TYPE3
 extern void makePatName(char *buffer,
 	RefChar *ref,SplineChar *sc,int layer,int isstroke,int isgrad);
-#endif

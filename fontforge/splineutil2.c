@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -45,11 +46,7 @@ int snaptoint=0;
 
 /*#define DEBUG	1*/
 
-#if defined( HAVE_LONG_DOUBLE ) && defined( FONTFORGE_CONFIG_USE_LONGDOUBLE )
-/* long double is USUALLY going to be IEEE 80 bit */
-# define RE_NearZero	.000000001
-# define RE_Factor	(1024.0*1024.0*1024.0*1024.0*1024.0*1024.0*8.0) /* 64 bits => divide by 2^51 */
-#elif defined( FONTFORGE_CONFIG_USE_DOUBLE ) || defined( FONTFORGE_CONFIG_USE_LONGDOUBLE )
+#if defined( FONTFORGE_CONFIG_USE_DOUBLE )
 # define RE_NearZero	.00000001
 # define RE_Factor	(1024.0*1024.0*1024.0*1024.0*1024.0*2.0) /* 52 bits => divide by 2^51 */
 #else
@@ -3729,7 +3726,7 @@ return(s);
 	    bigreal d = 4*s->splines[0].b*s->splines[0].b-4*3*s->splines[0].a*s->splines[0].c;
 	    if ( d>0 ) {
 		extended t1, t2;
-		d = esqrt(d);
+		d = sqrt(d);
 		t1 = (-2*s->splines[0].b+d)/(2*3*s->splines[0].a);
 		t2 = (-2*s->splines[0].b-d)/(2*3*s->splines[0].a);
 		t[p++] = CheckExtremaForSingleBitErrors(&s->splines[0],t1,t2);

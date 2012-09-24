@@ -37,7 +37,7 @@
 #include "psfont.h"
 #if __Mac
 # include <ctype.h>
-# include </Developer/Headers/FlatCarbon/Files.h>
+# include <Developer/Headers/FlatCarbon/Files.h>
 #else
 # include <utype.h>
 #undef __Mac
@@ -1481,10 +1481,6 @@ return( false );
     ((FInfo *) (info.finderInfo))->fdCreator = mb->creator;
     pt = strrchr(fname,'/');
     filename = def2u_copy(pt==NULL?fname:pt+1);
-#ifdef UNICHAR_16
-    ret = FSCreateFileUnicode(&parentref,u_strlen(filename), (UniChar *) filename,
-    		kFSCatInfoFinderInfo, &info, &ref, NULL);
-#else
     { UniChar *ucs2fn = galloc((u_strlen(filename)+1) * sizeof(UniChar));
       int i;
 	for ( i=0; filename[i]!=0; ++i )
@@ -1494,7 +1490,6 @@ return( false );
 		    kFSCatInfoFinderInfo, &info, &ref, NULL);
 	free(ucs2fn);
     }
-#endif
     free(filename);
     if ( ret==dupFNErr ) {
     	/* File already exists, create failed, didn't get an FSRef */
@@ -2199,30 +2194,38 @@ return( sf );
 return( NULL );
 }
 
+struct assoc {
+    short size, style, id;
+	/* size==0 => scalable */
+	/* style>>8 is the bit depth (0=>1, 1=>2, 2=>4, 3=>8) */
+	/* search order for ID is sfnt, NFNT, FONT */
+};
+
+struct stylewidths {
+    short style;
+    short *widthtab;	/* 4.12 fixed number with the width specified as a fraction of an em */
+};
+
+struct kerns {
+    unsigned char ch1, ch2;
+    short offset;		/* 4.12 */
+};
+
+struct stylekerns {
+    short style;
+    int kernpairs;
+    struct kerns *kerns;
+};
+
 typedef struct fond {
     char *fondname;
     int first, last;
     int assoc_cnt;
-    struct assoc {
-	short size, style, id;
-    } *assoc;
-	/* size==0 => scalable */
-	/* style>>8 is the bit depth (0=>1, 1=>2, 2=>4, 3=>8) */
-	/* search order for ID is sfnt, NFNT, FONT */
+    struct assoc *assoc;
     int stylewidthcnt;
-    struct stylewidths {
-	short style;
-	short *widthtab;		/* 4.12 fixed number with the width specified as a fraction of an em */
-    } *stylewidths;
+    struct stylewidths *stylewidths;
     int stylekerncnt;
-    struct stylekerns {
-	short style;
-	int kernpairs;
-	struct kerns {
-	    unsigned char ch1, ch2;
-	    short offset;		/* 4.12 */
-	} *kerns;
-    } *stylekerns;
+    struct stylekerns *stylekerns;
     char *psnames[48];
     struct fond *next;
 } FOND;

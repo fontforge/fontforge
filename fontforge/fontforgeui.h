@@ -96,6 +96,8 @@ extern GImage GIcon_sel2ptr, GIcon_rightpointer, GIcon_angle, GIcon_distance,
 extern GImage GIcon_up, GIcon_down;
 extern GImage OFL_logo;
 
+extern GMenuItem2 cvtoollist[], cvspirotoollist[];
+
 extern GTextInfo encodingtypes[];
 extern GTextInfo *EncodingTypesFindEnc(GTextInfo *encodingtypes, Encoding *enc);
 extern Encoding *ParseEncodingNameFromList(GGadget *listfield);

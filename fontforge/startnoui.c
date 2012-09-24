@@ -25,8 +25,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgevw.h"
+#include "annotations.h"
 #include <gfile.h>
 #include <ustring.h>
+#include <ltdl.h>
 #include <time.h>
 #include <sys/time.h>
 #include <locale.h>
@@ -86,7 +88,7 @@ return( sharedir );
 
     pt = strstr(GResourceProgramDir,"/bin");
     if ( pt==NULL ) {
-#ifdef SHAREDIR
+#if defined(SHAREDIR)
 return( sharedir = SHAREDIR "/../locale" );
 #elif defined( PREFIX )
 return( sharedir = PREFIX "/share/locale" );
@@ -135,23 +137,19 @@ static void doscripthelp(void) {
 exit(0);
 }
 
-int main( int argc, char **argv ) {
+int fontforge_main( int argc, char **argv ) {
     extern const char *source_version_str;
     extern const char *source_modtime_str;
 
     fprintf( stderr, "Copyright (c) 2000-2012 by George Williams.\n Executable based on sources from %s"
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    "-ML"
-#endif
 #ifdef FREETYPE_HAS_DEBUGGER
 	    "-TtfDb"
 #endif
 #ifdef _NO_PYTHON
 	    "-NoPython"
 #endif
-#ifdef FONTFORGE_CONFIG_USE_LONGDOUBLE
-	    "-LD"
-#elif defined(FONTFORGE_CONFIG_USE_DOUBLE)
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	    "-D"
 #endif
 	    ".\n",
@@ -190,5 +188,8 @@ int main( int argc, char **argv ) {
 #  else
     PyFF_Stdin();
 #  endif
+
+    uninm_names_db_close(names_db);
+    lt_dlexit();
 return( 0 );
 }

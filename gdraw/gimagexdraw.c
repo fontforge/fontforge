@@ -67,7 +67,7 @@ static void intersect_rectangles(GRect *rect, GRect *clip) {
 static void gdraw_8_on_1_nomag_dithered_masked(GXDisplay *gdisp,GImage *image,
 	GRect *src) {
     struct gcol clut[256];
-    int i,j,end, index;
+    int i,j, index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
     unsigned char *pt, *ipt, *mpt;
@@ -81,7 +81,6 @@ static void gdraw_8_on_1_nomag_dithered_masked(GXDisplay *gdisp,GImage *image,
     for ( i=src->width-1; i>=0; --i )
 	gdisp->gg.green_dith[i] = 0;
 
-    end = src->width;
     for ( i=src->y; i<src->y+src->height; ++i ) {
 	pt = (unsigned char *) (base->data) + i*base->bytes_per_line + src->x;
 	ipt = (unsigned char *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
@@ -120,7 +119,7 @@ static void gdraw_8_on_1_nomag_dithered_masked(GXDisplay *gdisp,GImage *image,
 }
 
 static void gdraw_32_on_1_nomag_dithered_masked(GXDisplay *gdisp, GImage *image, GRect *src) {
-    int i,j,end, index;
+    int i,j, index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
     uint32 *pt;
@@ -132,7 +131,6 @@ static void gdraw_32_on_1_nomag_dithered_masked(GXDisplay *gdisp, GImage *image,
     for ( i=src->width-1; i>=0; --i )
 	gdisp->gg.green_dith[i] = 0;
 
-    end = src->width;
     for ( i=src->y; i<src->y+src->height; ++i ) {
 	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
 	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
@@ -170,7 +168,7 @@ static void gdraw_32_on_1_nomag_dithered_masked(GXDisplay *gdisp, GImage *image,
 }
 
 static void gdraw_32a_on_1_nomag_dithered(GXDisplay *gdisp, GImage *image, GRect *src) {
-    int i,j,end;
+    int i,j;
     unsigned int index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
@@ -183,7 +181,6 @@ static void gdraw_32a_on_1_nomag_dithered(GXDisplay *gdisp, GImage *image, GRect
     for ( i=src->width-1; i>=0; --i )
 	gdisp->gg.green_dith[i] = 0;
 
-    end = src->width;
     for ( i=src->y; i<src->y+src->height; ++i ) {
 	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
 	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
@@ -222,7 +219,7 @@ static void gdraw_32a_on_1_nomag_dithered(GXDisplay *gdisp, GImage *image, GRect
 
 static void gdraw_8_on_1_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     struct gcol clut[256];
-    int i,j,end, index;
+    int i,j, index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     unsigned char *pt, *ipt;
     short *g_d;
@@ -235,7 +232,6 @@ static void gdraw_8_on_1_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image, 
     for ( i=src->width-1; i>=0; --i )
 	gdisp->gg.green_dith[i] = 0;
 
-    end = src->width;
     for ( i=src->y; i<src->y+src->height; ++i ) {
 	pt = (unsigned char *) (base->data) + i*base->bytes_per_line + src->x;
 	ipt = (unsigned char *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
@@ -267,7 +263,7 @@ static void gdraw_8_on_1_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image, 
 
 static void gdraw_32_on_1_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     struct gcol clut[256];
-    int i,j,end, index;
+    int i,j, index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     uint32 *pt;
     uint8 *ipt;
@@ -280,7 +276,6 @@ static void gdraw_32_on_1_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image,
     for ( i=src->width-1; i>=0; --i )
 	gdisp->gg.green_dith[i] = 0;
 
-    end = src->width;
     for ( i=src->y; i<src->y+src->height; ++i ) {
 	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
 	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
@@ -1702,7 +1697,7 @@ static void check_image_buffers(GXDisplay *gdisp, int neww, int newh, int is_bit
 	width = neww;
 	if ( width<400 ) width = 400;
     }
-    if ( width > gdisp->gg.iwidth || depth!=gdisp->gg.img->depth ) {
+    if ( width > gdisp->gg.iwidth || (gdisp->gg.img!=NULL && depth!=gdisp->gg.img->depth) ) {
 	if ( depth<=8 ) {
 	    if ( gdisp->gg.red_dith!=NULL ) free(gdisp->gg.red_dith);
 	    if ( gdisp->gg.green_dith!=NULL ) free(gdisp->gg.green_dith);

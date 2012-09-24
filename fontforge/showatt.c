@@ -1,3 +1,4 @@
+/* -*- coding: utf-8 -*- */
 /* Copyright (C) 2003-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -62,6 +63,8 @@ struct node {
     int lpos;
 };
 
+enum dlg_type { dt_show_att, dt_font_comp };
+
 struct att_dlg {
     unsigned int done: 1;
     struct node *tables;
@@ -74,7 +77,7 @@ struct att_dlg {
     int fh, as;
     GFont *font, *monofont;
     struct node *current;
-    enum dlg_type { dt_show_att, dt_font_comp } dlg_type;
+    enum dlg_type dlg_type;
     FontView *fv1, *fv2;
     struct node *popup_node;
 };
@@ -2117,7 +2120,7 @@ static int _SizeCnt(struct att_dlg *att,struct node *node, int lpos,int depth) {
     if ( node->monospace )
 	GDrawSetFont(att->v,att->monofont);
     node->lpos = lpos++;
-    len = 5+8*depth+ att->as + 5 + GDrawGetBiText8Width(att->v,node->label,-1,-1,NULL);
+    len = 5+8*depth+ att->as + 5 + GDrawGetText8Width(att->v,node->label,-1);
     if ( len>att->maxl ) att->maxl = len;
     if ( node->monospace )
 	GDrawSetFont(att->v,att->font);
@@ -2260,12 +2263,12 @@ static void AttExpose(struct att_dlg *att,GWindow pixmap,GRect *rect) {
 		ept = findendquote(spt);
 	}
 	if ( ept==NULL )
-	    GDrawDrawBiText8(pixmap,r.x+r.width+5,y,node->label,-1,NULL,fg);
+	    GDrawDrawText8(pixmap,r.x+r.width+5,y,node->label,-1,fg);
 	else {
 	    int len;
-	    len = GDrawDrawBiText8(pixmap,r.x+r.width+5,y,node->label,spt-node->label,NULL,fg);
-	    len += GDrawDrawBiText8(pixmap,r.x+r.width+5+len,y,spt,ept-spt,NULL,0x0000ff);
-	    GDrawDrawBiText8(pixmap,r.x+r.width+5+len,y,ept,-1,NULL,fg);
+	    len = GDrawDrawText8(pixmap,r.x+r.width+5,y,node->label,spt-node->label,fg);
+	    len += GDrawDrawText8(pixmap,r.x+r.width+5+len,y,spt,ept-spt,0x0000ff);
+	    GDrawDrawText8(pixmap,r.x+r.width+5+len,y,ept,-1,fg);
 	}
 	if ( node->monospace )
 	    GDrawSetFont(pixmap,att->font);
@@ -2792,17 +2795,17 @@ static void ShowAttCreateDlg(struct att_dlg *att, SplineFont *sf, int which,
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 12;
 	rq.weight = 400;
-	propfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(att->gw),&rq);
+	propfont = GDrawInstanciateFont(att->gw,&rq);
 	propfont = GResourceFindFont("ShowATT.Font",propfont);
 
 	GDrawDecomposeFont(propfont, &rq);
 	rq.utf8_family_name = MONO_UI_FAMILIES;	/* I want to show tabluar data sometimes */
-	monofont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(att->gw),&rq);
+	monofont = GDrawInstanciateFont(att->gw,&rq);
 	monofont = GResourceFindFont("ShowATT.MonoFont",monofont);
     }
     att->font = propfont;
     att->monofont = monofont;
-    GDrawFontMetrics(att->font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(att->gw,att->font,&as,&ds,&ld);
     att->fh = as+ds; att->as = as;
 
     att->bmargin = GDrawPointsToPixels(NULL,32)+sbsize;

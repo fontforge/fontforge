@@ -170,69 +170,22 @@ struct font_name {
     struct font_name *next;
     unichar_t *family_name;
     enum font_type ft;
-    int32 map_mask;		/* all charsets */
     struct font_data *data[em_uplanemax];/* list of all fonts with this name & type */
 					/*  Final 17 are any UnicodePlane fonts */
 };
 
-struct family_info {
-    unichar_t *family_names;	/* A list of names as allowed for font-family: property */
-    int16 name_cnt;		/* number of family names in the list */
-    enum font_type ft;		/* Of the LAST name in the family list which we can classify */
-				/* ie. "times, serif, daewoo" would give "ft_serif" for serif */
-    struct font_name **fonts;	/* one for each name_cnt */
-    struct family_info *next;
-    struct font_instance *instanciations;
-    struct family_info *screen_fam;	/* If the printer doesn't have an */
-			     /* encoding, see if we can use a screen font */
-};
-
 struct font_instance {
     FontRequest rq;		/* identification of this instance */
-    struct family_info *fam;
-    struct font_instance *next;	/* next instanciation in our family */
-    struct font_data *fonts[em_uplanemax];
-    struct font_data **smallcaps;/* either NULL or an array of em_max fonts to match the above but smaller */
-    struct font_data **unifonts;/* an array of fam->name_cnt+ft_max possible unicode fonts */
-    uint32 *level_masks;	/* an array of fam->name_cnt+3 masks */
-    				/* showing which encodings are at which level */
-			        /* there's one level for each family name */
-			        /* one level that for font type matches (ie serif) */
-			        /* one level for last chance */
-			        /* one final level for really bad last chances */
-			        /*  scaled fonts from the screen fall here */
-    GDisplay *mapped_to;
-#ifndef _NO_LIBCAIRO
-    FcFontSet *ordered;
-    struct charset_cairofont {		/* One of these for every font in the set (nfont of them) */
-	cairo_scaled_font_t *cf;
-	FcCharSet *cs;
-    } *cscf;
-    FcPattern *pat;
-    int16 replacement_index;
-    uint16 replacement_char;
-    int pixelsize;
-#endif
-#ifndef _NO_LIBPANGO
     PangoFontDescription *pango_fd;
 #ifndef _NO_LIBCAIRO
     PangoFontDescription *pangoc_fd;
 #endif
-#endif
 };
 
 typedef struct font_state {
-    long mappings_avail;
-    int res, res_closer_to;
+    int res;
     struct font_name *font_names[26];
-    struct family_info *fam_hash[26];
-    struct font_name *lastchance[em_uplanemax][ft_max];
-    struct font_name *lastchance2[em_uplanemax][ft_max];
-    /*struct font_data *nomaps;*/
-    struct font_data *StolenFromScreen;		/* Fonts not on the printer, but on the screen */
-    unsigned int allow_scaling: 1;
     unsigned int names_loaded: 1;
-    unsigned int use_screen_fonts: 1;
 } FState;
 
 enum text_funcs { tf_width, tf_drawit, tf_rect, tf_stopat, tf_stopbefore, tf_stopafter };
@@ -244,7 +197,5 @@ extern int _GDraw_ClassifyFontName(unichar_t *fontname, int *italic, int *bold);
 extern enum charset _GDraw_ParseMapping(unichar_t *setname);
 extern int _GDraw_FontFigureWeights(unichar_t *weight_str);
 extern struct font_name *_GDraw_HashFontFamily(FState *fonts,unichar_t *name, int prop);
-extern void _GDraw_RemoveDuplicateFonts(FState *fonts);
-extern void _GDraw_FillLastChance(FState *fonts);
 extern void _GDraw_FreeFD(struct font_data *fd);
 #endif

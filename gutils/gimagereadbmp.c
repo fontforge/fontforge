@@ -142,15 +142,15 @@ static int readpixels(FILE *file,struct bmpheader *head) {
 
     fseek(file,head->offset,0);
     if ( head->bitsperpixel>=16 ) {
-	head->int32_pixels = galloc(head->height* 4*head->width );
+	head->int32_pixels = (uint32 *) galloc(head->height* 4*head->width );
 	if ( head->int32_pixels==NULL )
 return( 0 );
     } else if ( head->bitsperpixel!=1 ) {
-	head->byte_pixels = galloc(head->height* head->width );
+	head->byte_pixels = (unsigned char *) galloc(head->height* head->width );
 	if ( head->byte_pixels==NULL )
 return( 0 );
     } else {
-	head->byte_pixels = galloc(head->height* ((head->width+7)/8) );
+	head->byte_pixels = (unsigned char *) galloc(head->height* ((head->width+7)/8) );
 	if ( head->byte_pixels==NULL )
 return( 0 );
     }
@@ -374,7 +374,7 @@ return( NULL );
 	memcpy(ret->u.image->clut->clut,bmp.clut,bmp.colorsused*sizeof(Color));
 	ret->u.image->clut->trans_index = COLOR_UNKNOWN;
     } else if ( ret->u.image->image_type==it_mono && bmp.colorsused!=0 ) {
-	ret->u.image->clut = gcalloc(1,sizeof(GClut));
+	ret->u.image->clut = (GClut *) gcalloc(1,sizeof(GClut));
 	ret->u.image->clut->clut_len = bmp.colorsused;
 	memcpy(ret->u.image->clut->clut,bmp.clut,bmp.colorsused*sizeof(Color));
 	ret->u.image->clut->trans_index = COLOR_UNKNOWN;

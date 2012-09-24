@@ -163,6 +163,30 @@ struct scrollbarinit { int32 sb_min, sb_max, sb_pagesize, sb_pos; };
 typedef int (*GGadgetHandler)(GGadget *,GEvent *);
 typedef unichar_t **(*GTextCompletionHandler)(GGadget *,int from_tab);
 
+enum gg_flags { gg_visible=1, gg_enabled=2, gg_pos_in_pixels=4,
+		gg_sb_vert=8, gg_line_vert=gg_sb_vert,
+		gg_but_default=0x10, gg_but_cancel=0x20,
+		gg_cb_on=0x40, gg_rad_startnew=0x80,
+		gg_rad_continueold=0x100,	/* even if not previous */
+		gg_list_alphabetic=0x100, gg_list_multiplesel=0x200,
+		gg_list_exactlyone=0x400, gg_list_internal=0x800,
+		gg_group_prevlabel=0x1000, gg_group_end=0x2000,
+		gg_textarea_wrap=0x4000,
+		gg_tabset_scroll=0x8000, gg_tabset_filllines=0x10000, gg_tabset_fill1line = 0x20000,
+		gg_tabset_nowindow=gg_textarea_wrap,
+		gg_rowcol_alphabetic=gg_list_alphabetic,
+		gg_rowcol_vrules=0x40000, gg_rowcol_hrules=0x800000,
+		gg_rowcol_displayonly=0x1000000,
+		gg_dontcopybox=0x10000000,
+		gg_pos_use0=0x20000000, gg_pos_under=0x40000000,
+		gg_pos_newline = (int) 0x80000000,
+		/* Reuse some flag values for different widgets */
+		gg_file_pulldown=gg_sb_vert, gg_file_multiple = gg_list_multiplesel,
+		gg_text_xim = gg_tabset_scroll,
+		gg_tabset_vert = gg_sb_vert,
+		gg_utf8_popup = gg_rowcol_displayonly
+};
+
 typedef struct ggadgetdata {
     GRect pos;
     GBox *box;
@@ -185,29 +209,7 @@ typedef struct ggadgetdata {
 	Color col;
 	int radiogroup;
     } u;
-    enum gg_flags { gg_visible=1, gg_enabled=2, gg_pos_in_pixels=4,
-	gg_sb_vert=8, gg_line_vert=gg_sb_vert,
-	gg_but_default=0x10, gg_but_cancel=0x20,
-	gg_cb_on=0x40, gg_rad_startnew=0x80,
-	gg_rad_continueold=0x100,	/* even if not previous */
-	gg_list_alphabetic=0x100, gg_list_multiplesel=0x200,
-	gg_list_exactlyone=0x400, gg_list_internal=0x800,
-	gg_group_prevlabel=0x1000, gg_group_end=0x2000,
-	gg_textarea_wrap=0x4000,
-	gg_tabset_scroll=0x8000, gg_tabset_filllines=0x10000, gg_tabset_fill1line = 0x20000,
-	gg_tabset_nowindow=gg_textarea_wrap,
-	gg_rowcol_alphabetic=gg_list_alphabetic,
-	gg_rowcol_vrules=0x40000, gg_rowcol_hrules=0x800000,
-	gg_rowcol_displayonly=0x1000000,
-	gg_dontcopybox=0x10000000,
-	gg_pos_use0=0x20000000, gg_pos_under=0x40000000,
-	gg_pos_newline = (int) 0x80000000,
-	/* Reuse some flag values for different widgets */
-	gg_file_pulldown=gg_sb_vert, gg_file_multiple = gg_list_multiplesel,
-	gg_text_xim = gg_tabset_scroll,
-	gg_tabset_vert = gg_sb_vert,
-	gg_utf8_popup = gg_rowcol_displayonly
-	} flags;
+    enum gg_flags flags;
     const unichar_t *popup_msg;		/* Brief help message */
     GGadgetHandler handle_controlevent;
 } GGadgetData;
@@ -239,31 +241,37 @@ enum editor_commands { ec_cut, ec_clear, ec_copy, ec_paste, ec_undo, ec_redo,
     /* return values from file chooser filter functions */
 enum fchooserret { fc_hide, fc_show, fc_showdisabled };
 
+enum me_type { me_int, me_enum, me_real, me_string, me_bigstr, me_func,
+	       me_funcedit,
+	       me_stringchoice, me_stringchoicetrans, me_stringchoicetag,
+	       me_button,
+	       me_hex, me_uhex, me_addr, me_onlyfuncedit };
+
+struct col_init {
+    enum me_type me_type;
+    char *(*func)(GGadget *,int r,int c);
+    GTextInfo *enum_vals;
+    void (*enable_enum)(GGadget *,GMenuItem *, int r, int c);
+    char *title;
+};
+
+struct matrix_data {
+    union {
+	intpt md_ival;
+	double md_real;
+	char *md_str;
+	void *md_addr;
+    } u;
+    uint8 frozen;
+    uint8 user_bits;
+    uint8 current;
+};
+
 struct matrixinit {
     int col_cnt;
-    struct col_init {
-	enum me_type { me_int, me_enum, me_real, me_string, me_bigstr, me_func,
-		me_funcedit,
-		me_stringchoice, me_stringchoicetrans, me_stringchoicetag,
-		me_button,
-		me_hex, me_uhex, me_addr, me_onlyfuncedit } me_type;
-	char *(*func)(GGadget *,int r,int c);
-	GTextInfo *enum_vals;
-	void (*enable_enum)(GGadget *,GMenuItem *, int r, int c);
-	char *title;
-    } *col_init;
+    struct col_init *col_init;
     int initial_row_cnt;
-    struct matrix_data {
-	union {
-	    intpt md_ival;
-	    double md_real;
-	    char *md_str;
-	    void *md_addr;
-	} u;
-	uint8 frozen;
-	uint8 user_bits;
-	uint8 current;
-    } *matrix_data;
+    struct matrix_data *matrix_data;
     void (*initrow)(GGadget *g,int row);
     int  (*candelete)(GGadget *g,int row);
     void (*finishedit)(GGadget *g,int r, int c, int wasnew);
@@ -565,4 +573,13 @@ extern void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut);
 extern int GMenuItemParseMask(char *shortcut);
 
 extern int GGadgetUndoMacEnglishOptionCombinations(GEvent *event);
+
+/* Among other things, this routine sets global icon cache up. */
+extern void GGadgetInit(void);
+extern int GGadgetWithin(GGadget *g, int x, int y);
+extern void GMenuItemArrayFree(GMenuItem *mi);
+extern void GMenuItem2ArrayFree(GMenuItem2 *mi);
+extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
+extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
+
 #endif

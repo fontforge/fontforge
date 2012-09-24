@@ -17224,7 +17224,7 @@ msgstr "字形在 %s 中但不在 %s中(位于%d@%d)\n"
 
 #
 #: glyphcomp.c:1290 glyphcomp.c:1313
-#, c-format
+#, fuzzy, c-format
 msgid "Glyph “%s” missing from %s at %d@%d\n"
 msgstr "字形不在 %s中(位于%d@%d)\n"
 
@@ -32893,14 +32893,12 @@ msgstr "前循匹配: "
 msgid "Backtrack class: "
 msgid_plural "Backtrack classes: "
 msgstr[0] "逆溯类属:"
-msgstr[1] "逆溯类属:"
 
 #
 #: showatt.c:475
 msgid "Class"
 msgid_plural "Classes"
 msgstr[0] "类属"
-msgstr[1] "类属"
 
 #
 #: showatt.c:490
