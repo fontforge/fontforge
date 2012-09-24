@@ -87,6 +87,24 @@ void dlist_foreach_udata( struct dlistnode** list, dlist_foreach_udata_func_type
     }
 }
 
+static struct dlistnode* dlist_last( struct dlistnode* node )
+{
+    while( node->next ) {
+	node = node->next;
+    }
+    return node;
+}
+
+void dlist_foreach_reverse_udata( struct dlistnode** list, dlist_foreach_udata_func_type func, void* udata )
+{
+    struct dlistnode* node = dlist_last(*list);
+    while( node ) {
+	struct dlistnode* t = node;
+	node = node->prev;
+	func( t, udata );
+    }
+}
+
 void dlist_pushfront_external( struct dlistnode** list, void* ptr )
 {
     struct dlistnodeExternal* n = calloc(1,sizeof(struct dlistnodeExternal));

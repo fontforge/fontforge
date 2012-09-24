@@ -41,6 +41,27 @@ struct dlistnode {
     struct dlistnode* prev;
 };
 
+/**
+ * DEVELOPERS: make sure the start of this struct is compatible with
+ * dlistnode. While I could use the dlistnode as a first member, using
+ * a copy of the members in the same order as dlistnode has them
+ * allows callers using this struct a bit simpler access.
+ * 
+ * While one can embed a dlistnode member into a struct to create
+ * linked lists, sometimes you want to return a splice of one of those
+ * lists. For example, if you have a double linked list of all your
+ * hotkeys, you might like to return only the ones that have a
+ * modifier of the Control key. You want to leave the hotkey structs
+ * in their original list, but create a new kust that references just
+ * a desired selection of objects.
+ *
+ * In other words, if you have some data you want to return in a
+ * double linked list, then use this node type. You can build one up
+ * using dlist_pushfront_external() and the caller can freee that list
+ * using dlist_free_external(). Any of the foreach() functions will
+ * work to iterate a list of dlistnodeExternal as this list is
+ * identical to a dlistnode with an extra ptr payload.
+ */
 struct dlistnodeExternal {
     struct dlistnode* next;
     struct dlistnode* prev;
@@ -48,16 +69,58 @@ struct dlistnodeExternal {
 };
 
 
+/**
+ * Push the node onto the head of the list
+ */
 extern void dlist_pushfront( struct dlistnode** list, struct dlistnode* node );
+
+/**
+ * the number of nodes in the list
+ */
 extern int  dlist_size( struct dlistnode** list );
+
+/**
+ * is the list empty
+ */
 extern int  dlist_isempty( struct dlistnode** list );
+
+/**
+ * Remove the node from the list. The node itself is not free()ed.
+ * That is still up to the caller. All this function does is preserve
+ * the list structure without the node being in it.
+ */
 extern void dlist_erase( struct dlistnode** list, struct dlistnode* node );
 typedef void (*dlist_foreach_func_type)( struct dlistnode* );
+
+/**
+ * Call func for every node in the list. This is a defensive
+ *  implementation, if you want to remove a node from the list inside
+ *  func() that is perfectly fine.
+ */
 extern void dlist_foreach( struct dlistnode** list, dlist_foreach_func_type func );
 typedef void (*dlist_foreach_udata_func_type)( struct dlistnode*, void* udata );
+
+/**
+ * Like dlist_foreach(), defensive coding still, but the udata pointer
+ * is passed back to your visitor function.
+ */
 extern void dlist_foreach_udata( struct dlistnode** list, dlist_foreach_udata_func_type func, void* udata );
 
+/**
+ * Like dlist_foreach_udata() but nodes are visited in reverse order.
+ */
+extern void dlist_foreach_reverse_udata( struct dlistnode** list, dlist_foreach_udata_func_type func, void* udata );
+
+/**
+ * Assuming list is an externalNode list, push a newly allocated list node with
+ * a dlistnodeExternal.ptr = ptr passed.
+ */
 extern void dlist_pushfront_external( struct dlistnode** list, void* ptr );
+
+/**
+ * Free a list of externalNode type. The externalNode memory is
+ * free()ed, whatever externalNode.ptr is pointing to is not free()ed.
+ */
 extern void dlist_free_external( struct dlistnode** list );
 
 #endif // _DLIST_H

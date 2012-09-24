@@ -145,4 +145,14 @@ extern char*   hotkeyTextWithoutModifiers( char* hktext );
 extern Hotkey* hotkeyFindByMenuPath( GWindow w, char* path );
 
 
+/**
+ * Set a hotkey to trigger the given action. If append is not true
+ * then any other hotkey bindings using keydefinition for the window
+ * type specified in the action you passed are first removed.
+ *
+ * The new hotkey is returned.
+ */
+extern Hotkey* hotkeySet( char* action, char* keydefinition, int append );
+
+
 #endif // _HOTKEYS_H

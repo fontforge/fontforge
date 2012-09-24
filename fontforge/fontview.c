@@ -884,6 +884,7 @@ return;
 }
 
 static void _MenuExit(void *UNUSED(junk)) {
+
     FontView *fv, *next;
 
     LastFonts_Activate();

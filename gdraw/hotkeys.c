@@ -29,6 +29,8 @@
 #include <locale.h>
 #include <string.h>
 #include <ustring.h>
+#include <errno.h>
+#include <unistd.h>
 
 extern char *getPfaEditDir(char *buffer);
 
@@ -82,14 +84,10 @@ hotkeyFindAllByStateAndKeysym( char* windowType, uint16 state, uint16 keysym ) {
     struct dlistnode* node = hotkeys;
     for( ; node; node=node->next ) {
 	Hotkey* hk = (Hotkey*)node;
-//	printf("check hk:%s keysym:%d\n", hk->text, hk->keysym );
 	if( hk->keysym ) {
 	    if( keysym == hk->keysym ) {
 		if( state == hk->state ) {
-//		    printf("event match! for hk:%s keysym:%d\n", hk->text, hk->keysym );
-//		    printf("event.state:%d hk.state:%d\n", state, hk->state );
 		    if( hotkeyHasMatchingWindowTypeString( windowType, hk ) ) {
-//			printf("matching window type too for hk:%s keysym:%d\n", hk->text, hk->keysym );
 			dlist_pushfront_external( &ret, hk );
 		    }
 		}
@@ -105,14 +103,10 @@ static Hotkey* hotkeyFindByStateAndKeysym( char* windowType, uint16 state, uint1
     struct dlistnode* node = hotkeys;
     for( ; node; node=node->next ) {
 	Hotkey* hk = (Hotkey*)node;
-//	printf("check hk:%s keysym:%d\n", hk->text, hk->keysym );
 	if( hk->keysym ) {
 	    if( keysym == hk->keysym ) {
 		if( state == hk->state ) {
-//		    printf("event match! for hk:%s keysym:%d\n", hk->text, hk->keysym );
-//		    printf("event.state:%d hk.state:%d\n", state, hk->state );
 		    if( hotkeyHasMatchingWindowTypeString( windowType, hk ) ) {
-//			printf("matching window type too for hk:%s keysym:%d\n", hk->text, hk->keysym );
 			return hk;
 		    }
 		}
@@ -145,17 +139,22 @@ Hotkey* hotkeyFindByEvent( GWindow w, GEvent *event ) {
 /**
  * Return the file name of the user defined hotkeys.
  * The return value must be freed by the caller.
+ *
+ * If extension is not null it will be postpended to the retuned path.
+ * This way you get to avoid dealing with appending to a string in c.
  */
-static char *getHotkeyFilename(void) {
-    static char *ret=NULL;
+static char *getHotkeyFilename( char* extension ) {
+    char *ret=NULL;
     char buffer[1025];
 
-    if ( ret!=NULL )
-	return( ret );
-    if ( getPfaEditDir(buffer)==NULL )
+    if ( getPfaEditDir(buffer)==NULL ) {
+	fprintf(stderr,_("Can not work out where your hotkey definition file is!\n"));
 	return( NULL );
+    }
+    if( !extension )
+	extension = "";
     
-    sprintf(buffer,"%s/hotkeys", getPfaEditDir(buffer));
+    sprintf(buffer,"%s/hotkeys%s", getPfaEditDir(buffer), extension);
     ret = copy(buffer);
     return( ret );
 }
@@ -173,6 +172,41 @@ static char* trimspaces( char* line ) {
     return line;
 }
 
+static Hotkey* hotkeySetFull( char* action, char* keydefinition, int append, int isUserDefined ) 
+{
+    Hotkey* hk = gcalloc(1,sizeof(Hotkey));
+    strncpy( hk->action, action, HOTKEY_ACTION_MAX_SIZE );
+    HotkeyParse( hk, keydefinition );
+
+    // If we didn't get a hotkey (No Shortcut)
+    // then we move along
+    if( !hk->state && !hk->keysym ) {
+	free(hk);
+	return;
+    }
+	
+    // If we already have a binding for that hotkey combination
+    // for this window, forget the old one. One combo = One action.
+    if( !append ) {
+	Hotkey* oldkey = hotkeyFindByStateAndKeysym( hotkeyGetWindowTypeString(hk),
+						     hk->state, hk->keysym );
+	if( oldkey ) {
+	    dlist_erase( &hotkeys, oldkey );
+	    free(oldkey);
+	}
+    }
+	
+    hk->isUserDefined = isUserDefined;
+    dlist_pushfront( &hotkeys, hk );
+}
+Hotkey* hotkeySet( char* action, char* keydefinition, int append )
+{
+    int isUserDefined = 1;
+    return hotkeySetFull( action, keydefinition, append, isUserDefined );
+}
+
+
+
 /**
  * Load all the hotkeys from the file at filename, marking them as userdefined
  * if isUserDefined is set.
@@ -182,10 +216,9 @@ static void loadHotkeysFromFile( const char* filename, int isUserDefined )
     char line[1100];
     FILE* f = fopen(filename,"r");
     if( !f ) {
-	fprintf(stderr,"Failed to open hotkey definition file: %s\n", filename );
+	fprintf(stderr,_("Failed to open hotkey definition file: %s\n"), filename );
 	return;
     }
-    fprintf(stderr,"loading hotkey definition file: %s\n", filename );
 
     while ( fgets(line,sizeof(line),f)!=NULL ) {
 	int append = 0;
@@ -199,41 +232,13 @@ static void loadHotkeysFromFile( const char* filename, int isUserDefined )
 	char* keydefinition = pt+1;
 	chomp( keydefinition );
 	keydefinition = trimspaces( keydefinition );
-//	printf("2.accel:%s key__%s__\n", line, keydefinition );
 	char* action = line;
 	if( line[0] == '+' ) {
 	    append = 1;
 	    action++;
 	}
 	
-	
-	Hotkey* hk = gcalloc(1,sizeof(Hotkey));
-	strncpy( hk->action, action, HOTKEY_ACTION_MAX_SIZE );
-	HotkeyParse( hk, keydefinition );
-
-	// If we didn't get a hotkey (No Shortcut)
-	// then we move along
-	if( !hk->state && !hk->keysym ) {
-	    free(hk);
-	    continue;
-	}
-	
-	// If we already have a binding for that hotkey combination
-	// for this window, forget the old one. One combo = One action.
-	if( !append ) {
-	    Hotkey* oldkey = hotkeyFindByStateAndKeysym( hotkeyGetWindowTypeString(hk),
-							 hk->state, hk->keysym );
-	    if( oldkey ) {
-//		printf("have oldkey!\n");
-		dlist_erase( &hotkeys, oldkey );
-		free(oldkey);
-	    }
-	}
-	
-	
-	hk->isUserDefined = isUserDefined;
-//	printf("3. state:%d keysym:%d\n", hk->state, hk->keysym );
-	dlist_pushfront( &hotkeys, hk );
+	hotkeySetFull( action, keydefinition, append, isUserDefined );
     }
     fclose(f);
 }
@@ -247,34 +252,29 @@ void hotkeysLoad()
     char localefn[PATH_MAX+1];
     char* p = 0;
 
-    printf("SHAREDIR:%s\n", SHAREDIR );
-
     snprintf(localefn,PATH_MAX,"%s/hotkeys/default", SHAREDIR );
     loadHotkeysFromFile( localefn, false );
     
-    // FIXME: find out how to convert en_AU.UTF-8 that setlocale()
-    //   gives to its fallback of en_GB
+    // FUTURE: perhaps find out how to convert en_AU.UTF-8 that setlocale()
+    //   gives to its fallback of en_GB. There are likely to be a bunch of other
+    //   languages which are similar but have specific locales
     char* currentlocale = copy(setlocale(LC_MESSAGES, 0));
     snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", SHAREDIR, currentlocale);
     loadHotkeysFromFile( localefn, false );
     while( p = strrchr( currentlocale, '.' )) {
 	*p = '\0';
-	printf("LOOP currentlocale:%s\n", currentlocale );
 	snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", SHAREDIR, currentlocale);
 	loadHotkeysFromFile( localefn, false );
     }
     while( p = strrchr( currentlocale, '_' )) {
 	*p = '\0';
-	printf("LOOP currentlocale:%s\n", currentlocale );
 	snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", SHAREDIR, currentlocale);
 	loadHotkeysFromFile( localefn, false );
     }
-    
     free(currentlocale);
     
-    char* fn = getHotkeyFilename();
+    char* fn = getHotkeyFilename(0);
     if( !fn ) {
-	fprintf(stderr,"Can not work out where your hotkey definition file is!\n");
 	return;
     }
     loadHotkeysFromFile( fn, true );
@@ -292,22 +292,33 @@ static void hotkeysSaveCallback(Hotkey* hk,FILE* f) {
  * ~/.Fontforge/hotkeys file.
  */
 void hotkeysSave() {
-    char* fn = "/tmp/hotkeys.out";
+    char* fn = getHotkeyFilename(".new");
     if( !fn ) {
-	fprintf(stderr,"Can not work out where your hotkey definition file is!\n");
 	return;
     }
     FILE* f = fopen(fn,"w");
     if( !f ) {
-	fprintf(stderr,"Failed to open your hotkey definition file for updates.\n");
+	free(fn);
+	fprintf(stderr,_("Failed to open your hotkey definition file for updates.\n"));
 	return;
     }
-    printf("hotkeysSave() sz:%d\n", dlist_size( &hotkeys ));
 
-    dlist_foreach_udata( &hotkeys, hotkeysSaveCallback, f );
+    dlist_foreach_reverse_udata( &hotkeys, hotkeysSaveCallback, f );
+    fsync(fileno(f));
     fclose(f);
 
-    // FIXME: rename this over the old file.
+    //
+    // Atomic rename of new over the old.
+    //
+    char* newpath = getHotkeyFilename(0);
+    int rc = rename( fn, newpath );
+    int e = errno;
+    free(fn);
+    free(newpath);
+    if( rc == -1 ) {
+	fprintf(stderr,_("Failed to rename the new hotkeys file over your old one!\n"));
+	fprintf(stderr,_("Reason:%s\n"), strerror(e));
+    }
 }
 
 

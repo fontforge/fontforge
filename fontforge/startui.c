@@ -917,7 +917,6 @@ int fontforge_main( int argc, char **argv ) {
     GResourceAddResourceFile(SHAREDIR "/resources/fontforge.resource",GResourceProgramName,false);
 #endif
     hotkeysLoad();
-    hotkeysSave();
 
 
     if ( load_prefs!=NULL && strcasecmp(load_prefs,"Always")==0 )
@@ -1178,6 +1177,8 @@ exit( 0 );
 	MenuOpen(NULL,NULL,NULL);
     GDrawEventLoop(NULL);
 
+    hotkeysSave();
+    
     uninm_names_db_close(names_db);
     lt_dlexit();
 
