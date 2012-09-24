@@ -1632,15 +1632,11 @@ static Monotonic *FindMonoContaining(Monotonic *base, bigreal t) {
     for ( m=base; m->s == base->s; m=m->next ) {
 	if ( t >= m->tstart && t <= m->tend )
 return( m );
-	if ( m->next == base ) /* don't search forever! */
-	    break;
     }
     SOError("Failed to find monotonic containing %g\n", (double) t );
     for ( m=base; m->s == base->s; m=m->prev ) {
 	if ( t >= m->tstart && t <= m->tend )
 return( m );
-	if ( m->prev == base ) /* don't search forever! */
-	    break;
     }
     SOError("Failed to find monotonic containing %g twice\n", (double) t );
 return( NULL );
@@ -1655,27 +1651,7 @@ static Intersection *TurnPreInter2Inter(Monotonic *ms) {
 	for ( p = ms->pending; p!=NULL; p=pnext ) {
 	    pnext = p->next;
 	    m1 = FindMonoContaining(p->m1,p->t1);
-	    if ( m1 == NULL ) {
-		m1 = FindMonoContaining(p->m1,p->t1-1e-06);
-		if ( m1 != NULL )
-		    p->t1 = m1->tend;
-	    }
-	    if ( m1 == NULL ) {
-		m1 = FindMonoContaining(p->m1,p->t1+1e-06);
-		if ( m1 != NULL )
-		    p->t1 = m1->tstart;
-	    }
 	    m2 = FindMonoContaining(p->m2,p->t2);
-	    if ( m2 == NULL ) {
-		m2 = FindMonoContaining(p->m2,p->t2-1e-06);
-		if ( m2 != NULL )
-		    p->t2 = m2->tend;
-	    }
-	    if ( m2 == NULL ) {
-		m2 = FindMonoContaining(p->m2,p->t2+1e-06);
-		if ( m2 != NULL )
-		    p->t2 = m2->tstart;
-	    }
 	    if ( p->is_close )
 		ilist = AddCloseIntersection(ilist,m1,m2,p->t1,p->t2,&p->inter);
 	    else
