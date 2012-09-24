@@ -52,6 +52,7 @@ typedef struct gidata {
     int interp_start, interp_end;
     GGadgetCreateData* gcd;
     GGadget *group1ret, *group2ret;
+    int nonmodal;
 } GIData;
 
 #define CID_BaseX	2001
@@ -1716,7 +1717,12 @@ static void PI_DoCancel(GIData *ci) {
 
 static int pi_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
-	PI_DoCancel( GDrawGetUserData(gw));
+	GIData  *d = GDrawGetUserData(gw);
+	if( d->nonmodal ) {
+	    PI_Destroy(d);
+	} else {
+	    PI_DoCancel( GDrawGetUserData(gw));
+	}
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("getinfo.html");
@@ -3293,6 +3299,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 
 	GHVBoxFitWindow(mb[0].ret);
 
+	gi->nonmodal = 1;
 	dlist_pushfront( &cv->pointInfoDialogs, gi );
 	GWidgetHidePalettes();
 	GDrawSetVisible(gi->gw,true);

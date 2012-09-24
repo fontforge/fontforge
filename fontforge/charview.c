@@ -11171,7 +11171,7 @@ int dlist_isempty( struct dlistnode** list ) {
 void dlist_erase( struct dlistnode** list, struct dlistnode* node ) {
     if( !node )
 	return;
-    if( *list = node ) {
+    if( *list == node ) {
 	*list = node->next;
 	if( node->next ) {
 	    node->next->prev = 0;
