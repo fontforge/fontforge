@@ -36,7 +36,7 @@
 
 int mv_width = 800, mv_height = 300;
 int mvshowgrid = mv_hidemovinggrid;
-int mv_type = mv_kernonly;
+int mv_type = mv_widthonly;
 static int mv_antialias = true;
 static double mv_scales[] = { 8.0, 4.0, 2.0, 1.5, 1.0, 2.0/3.0, .5, 1.0/3.0, .25, .2, 1.0/6.0, .125, .1 };
 #define SCALE_INDEX_NORMAL	4
