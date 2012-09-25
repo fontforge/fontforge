@@ -261,6 +261,7 @@ typedef struct charview {
     int guide_pos;
     struct qg_data *qg;
     int16 note_x, note_y;
+    struct dlistnode* pointInfoDialogs;
 } CharView;
 
 typedef struct bitmapview {
@@ -1214,11 +1215,13 @@ extern char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current);
 extern void ME_ListCheck(GGadget *g,int r, int c, SplineFont *sf);
 extern void ME_SetCheckUnique(GGadget *g,int r, int c, SplineFont *sf);
 extern void ME_ClassCheckUnique(GGadget *g,int r, int c, SplineFont *sf);
+extern void PI_Destroy(struct dlistnode *node);
+extern struct gidata;
+extern void PIChangePoint(struct gidata *ci);
 
 extern void CVRegenFill(CharView *cv);
 extern int  CVCountSelectedPoints(CharView *cv);
 extern void _CVMenuInsertPt(CharView *cv);
 extern void _CVMenuNameContour(CharView *cv);
-
 
 #endif	/* _VIEWS_H */

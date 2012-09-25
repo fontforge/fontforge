@@ -700,6 +700,7 @@ return;
     }
     if ( needsupdate )
 	SCUpdateAll(cv->b.sc);
+    
     /* lastselpt is set by our caller */
 }
 
