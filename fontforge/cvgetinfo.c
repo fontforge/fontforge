@@ -29,6 +29,7 @@
 #include <math.h>
 #include <utype.h>
 #include <gkeysym.h>
+#include <dlist.h>
 
 #define RAD2DEG	(180/3.1415926535897932)
 #define TCnt	3

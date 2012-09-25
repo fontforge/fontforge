@@ -33,6 +33,7 @@
 #include <utype.h>
 #include <gresource.h>
 #include <gresedit.h>
+#include <dlist.h>
 extern int _GScrollBar_Width;
 #include <gkeysym.h>
 #ifdef HAVE_IEEEFP_H
@@ -11147,55 +11148,6 @@ GResInfo charview_ri = {
     NULL
 };
 
-void dlist_pushfront( struct dlistnode** list, struct dlistnode* node ) {
-    if( *list ) {
-	node->next = *list;
-	node->next->prev = node;
-    }
-    *list = node;
-}
-
-int dlist_size( struct dlistnode** list ) {
-    struct dlistnode* node = *list;
-    int ret = 0;
-    for( ; node; node=node->next ) {
-	ret++;
-    }
-    return ret;
-}
-
-int dlist_isempty( struct dlistnode** list ) {
-    return *list == NULL;
-}
-
-void dlist_erase( struct dlistnode** list, struct dlistnode* node ) {
-    if( !node )
-	return;
-    if( *list == node ) {
-	*list = node->next;
-	if( node->next ) {
-	    node->next->prev = 0;
-	}
-	return;
-    }
-    if( node->prev ) {
-	node->prev->next = node->next;
-    }
-    if( node->next ) {
-	node->next->prev = node->prev;
-    }
-	
-}
-
-void dlist_foreach( struct dlistnode** list, dlist_foreach_func_type func )
-{
-    struct dlistnode* node = *list;
-    while( node ) {
-	struct dlistnode* t = node;
-	node = node->next;
-	func( t );
-    }
-}
 
 
 
