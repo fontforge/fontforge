@@ -42,6 +42,53 @@
  * various windows as an action path. For example,
  * CharView.Menu.File.Open is an action for the file/open menu item in
  * the charview/glyph editing window.
+ *
+ * This namespace convension uses dot separated strings. The window
+ * type as the first string, followed by "Menu", followed by each menu
+ * item on the path down to the menu that should be invoked when the
+ * hotkey is pressed.
+ *
+ * The same system can be extended to allow python code to be
+ * executed. The current plan is to use Python instead of Menu. There
+ * is no reason that the syntax can not be varied slightly for Python,
+ * for example to allow something like
+ *
+ * CharView.Python.MyFooFunction( 7, "fdsfsd" ): Alt+t
+ *
+ * Where everything after the "Python." is to be the name of a valid
+ * python function to execute, in this case a call to MyFooFunction.
+ * While we could allow raw python code inthere too, it's probably
+ * simpler for the fontforge code to rely on calling a function
+ * instead. There is no reason that arguments can not be supplied as
+ * above.
+ *
+ * The hotkeys are actually made effective (ie execute something), in
+ * the GMenuBarCheckKey() function in gmenu.c. That code would need
+ * some extending to allow the execution of a python function instead
+ * of the current code which only executes a menu item which is named
+ * in the action.
+ *
+ * I am tempted there to move the execution of an action hack into
+ * hotkeys.c with GMenuBarCheckKey() passing the window and menubar to
+ * the new hotkeyExecuteAction() function which itself could handle
+ * working out if it is a CharView.Python prefix action and
+ * dispatching accordingly. The gain to that is that other code might
+ * also like to execute a hotkey independant of the existing code. For
+ * example, python code might execute an "action" through that
+ * function.
+ *
+ * The part I haven't personally investigated is the code to dispatch
+ * a python function from C. I've done similar with other codebases
+ * but haven't seen how it's done in ff. Others might like to put some
+ * hints here for whoever (maybe me!) writes the code to allow python
+ * dispatch from hotkeys.
+ *
+ * In a similar way, I was thinking of just having a top level
+ * directory of Action.Foo to allow generic, but maybe too low level
+ * for a menuitem things to be made available to the hotkey system.
+ * Perhaps an Action.ActionsList which just enumerates these actions
+ * to the console would be handy to allow folks to see what the code
+ * current version of ff offers in terms of actions.
  * 
  */
 typedef struct hotkey {
