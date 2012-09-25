@@ -33,6 +33,7 @@
 #include <utype.h>
 #include <gresource.h>
 #include <gresedit.h>
+#include <dlist.h>
 extern int _GScrollBar_Width;
 #include <gkeysym.h>
 #ifdef HAVE_IEEEFP_H
@@ -44,6 +45,7 @@ extern int _GScrollBar_Width;
 /*  if that fails will strip off "CV*" and check for "Open|Ctl+O" */
 #undef H_
 #define H_(str) ("CV*" str)
+
 
 
 int ItalicConstrained=true;
@@ -4505,6 +4507,8 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
     /*  need the full form of this call */
     if ( cv->needsrasterize || cv->recentchange )
 	_CV_CharChangedUpdate(cv,2);
+
+    dlist_foreach( &cv->pointInfoDialogs, PIChangePoint );
 }
 
 static void CVTimer(CharView *cv,GEvent *event) {
@@ -5153,7 +5157,8 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 	CharViewFree(cv);
       break;
       case et_close:
-	GDrawDestroyWindow(gw);
+	  dlist_foreach( &cv->pointInfoDialogs, PI_Destroy );
+	  GDrawDestroyWindow(gw);
       break;
       case et_mouseup: case et_mousedown:
 	GGadgetEndPopup();
@@ -11142,3 +11147,8 @@ GResInfo charview_ri = {
     NULL,
     NULL
 };
+
+
+
+
+
