@@ -830,9 +830,18 @@ int fontforge_main( int argc, char **argv ) {
     /* Must be done before we cache the current directory */
     /* Change to HOME dir if specified on the commandline */
     for ( i=1; i<argc; ++i ) {
-	if (strcmp(argv[i],"-home")==0) {
+	char *pt = argv[i];
+	if ( pt[0]=='-' && pt[1]=='-' ) ++pt;
+#ifndef __Mac
+	if (strcmp(pt,"-home")==0) {
+#else
+	if (strcmp(pt,"-home")==0 || strncmp(pt,"-psn_",5)==0) {
+	    /* OK, I don't know what _-psn_ means, but to GW it means */
+	    /* we've been started on the mac from the FontForge.app   */
+	    /* structure, and the current directory is (shudder) "/"  */
+#endif
 	    if (getenv("HOME")!=NULL) chdir(getenv("HOME"));
-	    break;
+	    break;	/* Done - Unnecessary to check more arguments */
 	}
     }
 	
@@ -1043,12 +1052,11 @@ int fontforge_main( int argc, char **argv ) {
 	    /* already did a chdir earlier, don't need to do it again */;
 #if defined(__Mac)
 	else if ( strncmp(pt,"-psn_",5)==0 ) {
-	    /* OK, I don't know what this really means, but to me it means */
-	    /*  that we've been started on the mac from the FontForge.app  */
-	    /*  structure, and the current directory is (shudder) "/" */
+	    /* OK, I don't know what _-psn_ means, but to GW it means */
+	    /* we've been started on the mac from the FontForge.app   */
+	    /* structure, and the current directory was (shudder) "/" */
+	    /* (however, we changed to HOME earlier in main routine). */
 	    unique = 1;
-	    if ( getenv("HOME")!=NULL )
-		chdir(getenv("HOME"));
 	    listen_to_apple_events = true;
 	}
 #endif
