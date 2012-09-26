@@ -607,12 +607,18 @@ return( true );
 return( true );
 }
 
-static void AddR(char *prog, char *name, char *val ) {
-    char *full = galloc(strlen(name)+strlen(val)+4);
-    strcpy(full,name);
-    strcat(full,": ");
-    strcat(full,val);
-    GResourceAddResourceString(full,prog);
+static void  AddR(char *program_name, char *window_name, char *cmndline_val) {
+/* Add this command line value to this GUI resource.			*/
+/* These are the command line options expected when using this routine:	*/
+/*	-depth, -vc,-cmap or -colormap,-dontopenxdevices, -keyboard	*/
+    char *full;
+    if ((full = malloc(strlen(window_name)+strlen(cmndline_val)+4))!=NULL) {
+	strcpy(full,window_name);
+	strcat(full,": ");
+	strcat(full,cmndline_val);
+	GResourceAddResourceString(full,program_name);
+	free(full);
+    }
 }
 
 static int ReopenLastFonts(void) {
