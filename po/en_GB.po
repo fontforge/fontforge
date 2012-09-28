@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the FontForge package.
 # George Williams, <pfaedit@users.sourceforge.net>, 2008.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: 20981207\n"

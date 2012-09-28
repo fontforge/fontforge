@@ -607,12 +607,18 @@ return( true );
 return( true );
 }
 
-static void AddR(char *prog, char *name, char *val ) {
-    char *full = galloc(strlen(name)+strlen(val)+4);
-    strcpy(full,name);
-    strcat(full,": ");
-    strcat(full,val);
-    GResourceAddResourceString(full,prog);
+static void  AddR(char *program_name, char *window_name, char *cmndline_val) {
+/* Add this command line value to this GUI resource.			*/
+/* These are the command line options expected when using this routine:	*/
+/*	-depth, -vc,-cmap or -colormap,-dontopenxdevices, -keyboard	*/
+    char *full;
+    if ((full = malloc(strlen(window_name)+strlen(cmndline_val)+4))!=NULL) {
+	strcpy(full,window_name);
+	strcat(full,": ");
+	strcat(full,cmndline_val);
+	GResourceAddResourceString(full,program_name);
+	free(full);
+    }
 }
 
 static int ReopenLastFonts(void) {
@@ -822,8 +828,22 @@ int fontforge_main( int argc, char **argv ) {
     fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
 
     /* Must be done before we cache the current directory */
-    for ( i=1; i<argc; ++i ) if ( strcmp(argv[i],"-home")==0 && getenv("HOME")!=NULL )
-	chdir(getenv("HOME"));
+    /* Change to HOME dir if specified on the commandline */
+    for ( i=1; i<argc; ++i ) {
+	char *pt = argv[i];
+	if ( pt[0]=='-' && pt[1]=='-' ) ++pt;
+#ifndef __Mac
+	if (strcmp(pt,"-home")==0) {
+#else
+	if (strcmp(pt,"-home")==0 || strncmp(pt,"-psn_",5)==0) {
+	    /* OK, I don't know what _-psn_ means, but to GW it means */
+	    /* we've been started on the mac from the FontForge.app   */
+	    /* structure, and the current directory is (shudder) "/"  */
+#endif
+	    if (getenv("HOME")!=NULL) chdir(getenv("HOME"));
+	    break;	/* Done - Unnecessary to check more arguments */
+	}
+    }
 	
 #if defined(__Mac)
     /* Start X if they haven't already done so. Well... try anyway */
@@ -1028,20 +1048,18 @@ int fontforge_main( int argc, char **argv ) {
 	    doversion(source_version_str);
 	else if ( strcmp(pt,"-quit")==0 )
 	    quit_request = true;
-	else if ( strcmp(pt,"-home")==0 ) {
-	    if ( getenv("HOME")!=NULL )
-		chdir(getenv("HOME"));
+	else if ( strcmp(pt,"-home")==0 )
+	    /* already did a chdir earlier, don't need to do it again */;
 #if defined(__Mac)
-	} else if ( strncmp(pt,"-psn_",5)==0 ) {
-	    /* OK, I don't know what this really means, but to me it means */
-	    /*  that we've been started on the mac from the FontForge.app  */
-	    /*  structure, and the current directory is (shudder) "/" */
+	else if ( strncmp(pt,"-psn_",5)==0 ) {
+	    /* OK, I don't know what _-psn_ means, but to GW it means */
+	    /* we've been started on the mac from the FontForge.app   */
+	    /* structure, and the current directory was (shudder) "/" */
+	    /* (however, we changed to HOME earlier in main routine). */
 	    unique = 1;
-	    if ( getenv("HOME")!=NULL )
-		chdir(getenv("HOME"));
 	    listen_to_apple_events = true;
-#endif
 	}
+#endif
     }
 
     ensureDotFontForgeIsSetup();
