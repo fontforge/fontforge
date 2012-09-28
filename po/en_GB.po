@@ -3,10 +3,9 @@
 # This file is distributed under the same license as the FontForge package.
 # George Williams, <pfaedit@users.sourceforge.net>, 2008.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: 20981207\n"
+"Project-Id-Version: \n"
 "POT-Creation-Date: 2006-05-07 20:02-0700\n"
 "PO-Revision-Date: 2098-12-07 05:39-0800\n"
 "Last-Translator: George Williams, <pfaedit@users.sourceforge.net>\n"

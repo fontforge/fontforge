@@ -3,10 +3,9 @@
 # This file is distributed under the same license as FontForge.
 # Apostolos Syropoulos <asyropoulos@yahoo.com>, 2008.
 #
-#, fuzz
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: \n"
 "POT-Creation-Date: 2006-10-09 13:00-0700\n"
 "PO-Revision-Date: 2012-09-07 19:04-0500\n"
 "Last-Translator: Apostolos Syropoulos <asyropoulos@yahoo.com>\n"
