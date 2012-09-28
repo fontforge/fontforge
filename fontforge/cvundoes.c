@@ -39,6 +39,13 @@ int copymetadata = 0;
 int copyttfinstr = 0;
 int export_clipboard = 1;
 
+extern void BackTraceFD( int fd );
+extern void BackTrace( const char* msg );
+extern void *UHintCopy(SplineChar *sc,int docopy);
+extern void ExtractHints(SplineChar *sc,void *hints,int docopy);
+extern void UndoesFreeButRetainFirstN( Undoes** undopp, int retainAmount );
+
+
 void BackTraceFD( int fd ) {
     const int arraysz = 500;
     void* array[arraysz];
