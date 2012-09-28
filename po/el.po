@@ -3,7 +3,6 @@
 # This file is distributed under the same license as FontForge.
 # Apostolos Syropoulos <asyropoulos@yahoo.com>, 2008.
 #
-#, fuzz
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
