@@ -46,6 +46,7 @@ extern int _GScrollBar_Width;
 #undef H_
 #define H_(str) ("CV*" str)
 
+extern void UndoesFreeButRetainFirstN( Undoes** undopp, int retainAmount );
 
 
 int ItalicConstrained=true;
