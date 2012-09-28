@@ -921,6 +921,20 @@ static int isValidInt(unichar_t *end) {
     return 1;
 }
 
+static int GGadgetToInt(GGadget *g) 
+{
+    unichar_t *end;
+    int val = u_strtol(_GGadgetGetTitle(g),&end,10);
+    return val;
+}
+
+static real GGadgetToReal(GGadget *g) 
+{
+    unichar_t *end;
+    real val = u_strtod(_GGadgetGetTitle(g),&end);
+    return val;
+}
+
 
 static int MV_WidthChanged(GGadget *g, GEvent *e) {
     MetricsView *mv = GDrawGetUserData(GGadgetGetWindow(g));
@@ -939,6 +953,25 @@ return( true );
 	    GDrawBeep(NULL);
 	else if ( !mv->vertical && val!=sc->width ) {
 	    SCPreserveWidth(sc);
+
+	    // set i to the correct column that has the active width gadget
+	    for ( i=0; i<mv->glyphcnt; ++i ) {
+		if ( mv->perchar[i].width == g )
+		    break;
+	    }
+	    
+	    // Adjust the lbearing to consume or surrender half of the
+	    // change that the width value is undergoing.
+	    real offset = GGadgetToReal(mv->perchar[i].lbearing);
+	    offset += (val - sc->width * 1.0)/2;
+	    real transform[6];
+	    transform[0] = transform[3] = 1.0;
+	    transform[1] = transform[2] = transform[5] = 0;
+	    DBounds bb;
+	    SplineCharFindBounds(sc,&bb);
+	    transform[4] = offset-bb.minx;
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,0);
+
 	    SCSynchronizeWidth(sc,val,sc->width,NULL);
 	    SCCharChangedUpdate(sc,ly_none);
 	} else if ( mv->vertical && val!=sc->vwidth ) {
@@ -974,12 +1007,11 @@ return( true );
 	if (!isValidInt(end))
 	    GDrawBeep(NULL);
 	else if ( !mv->vertical && val!=bb.minx ) {
-	    
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[5] = 0;
 	    transform[4] = val-bb.minx;
-	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,fvt_dontmovewidth);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,0);
 	} else if ( mv->vertical && val!=sc->parent->ascent-bb.maxy ) {
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
@@ -987,6 +1019,7 @@ return( true );
 	    transform[5] = sc->parent->ascent-bb.maxy-val;
 	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,fvt_dontmovewidth);
 	}
+	
     } else if ( e->u.control.subtype == et_textfocuschanged &&
 	    e->u.control.u.tf_focus.gained_focus ) {
 	for ( i=0 ; i<mv->glyphcnt; ++i )
