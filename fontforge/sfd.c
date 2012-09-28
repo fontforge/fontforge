@@ -47,8 +47,8 @@
 # define NAME_MAX _POSIX_NAME_MAX
 #endif
 
-int UndoRedoLimitToSave = 12; 
-int UndoRedoLimitToLoad = 12; 
+int UndoRedoLimitToSave = 0; 
+int UndoRedoLimitToLoad = 0; 
 
 static char *joins[] = { "miter", "round", "bevel", "inher", NULL };
 static char *caps[] = { "butt", "round", "square", "inher", NULL };
