@@ -6,7 +6,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: FontForge 20080828\n"
+"Project-Id-Version: fontforge 2.0.0_beta1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-09-06 21:27+0200\n"
 "PO-Revision-Date: 2012-05-14 21:18+0200\n"

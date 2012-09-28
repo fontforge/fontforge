@@ -55,6 +55,15 @@ uninstall-local:
 		rm -f "$(DESTDIR)$(localedir)/$${locale}/LC_MESSAGES/FontForge.mo"; \
 	done)
 
+# Update Project-Id-Version string for each PO file with the current PACKAGE VERSION values.
+# Based on example at https://answers.launchpad.net/launchpad/+question/121821 given
+# by Jeroen T. Vermeulen (jtv) on 2010-08-20. Modified to use in Fontforge by JDS-2012sep27
+update-project-id:
+	(for localefile in $(PO_FILES); do \
+		$(SED) -e "s/[Pp]roject-[Ii]d-[Vv]ersion:*[^\\]*/Project-Id-Version: $(PACKAGE) $(VERSION)/" "$${localefile}" >"$${localefile}.new"; \
+		mv -b -- "$${localefile}.new" "$${localefile}"; \
+	done)
+
 EXTRA_DIST = $(PO_FILES)
 MOSTLYCLEANFILES = $(MO_FILES)
 

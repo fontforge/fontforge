@@ -5,7 +5,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: fontforge 2.0.0_beta1\n"
 "POT-Creation-Date: 2006-05-07 20:02-0700\n"
 "PO-Revision-Date: 2098-12-07 05:39-0800\n"
 "Last-Translator: George Williams, <pfaedit@users.sourceforge.net>\n"
