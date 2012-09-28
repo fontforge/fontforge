@@ -95,6 +95,10 @@ struct cvshows CVShows = {
 };
 struct cvshows CVShowsPrevewToggleSavedState;
 
+#define CID_Base	      1001
+#define CID_getValueFromUser  CID_Base + 1
+
+
 static Color pointcol = 0xff0000;
 static Color firstpointcol = 0x707000;
 static Color selectedpointcol = 0xc8c800;
@@ -7118,13 +7122,228 @@ static void CVUnlinkRef(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED
     _CVUnlinkRef(cv);
 }
 
-static void CVRemoveUndoes(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
+typedef struct getValueDialogData
+{
+    int done;
+    int cancelled;
+    CharView *cv;
+    GWindow gw;
+    char* ret;
+    GTextInfo label;
+} GetValueDialogData;
 
-    UndoesFree(cv->b.layerheads[cv->b.drawmode]->undoes);
-    UndoesFree(cv->b.layerheads[cv->b.drawmode]->redoes);
-    cv->b.layerheads[cv->b.drawmode]->undoes = cv->b.layerheads[cv->b.drawmode]->redoes = NULL;
+static int getValueDialogData_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+	GetValueDialogData *hd = GDrawGetUserData(gw);
+	hd->done = true;
+    } else if ( event->type == et_char ) {
+return( false );
+    } else if ( event->type == et_map ) {
+	/* Above palettes */
+	GDrawRaise(gw);
+    }
+return( true );
 }
+
+static int getValueFromUser_OK(GGadget *g, GEvent *e)
+{
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+        GetValueDialogData *hd = GDrawGetUserData(GGadgetGetWindow(g));
+        strcpy( hd->ret, hd->label.text );
+        strcpy( hd->ret, GGadgetGetTitle8(GWidgetGetControl(hd->gw,CID_getValueFromUser)));
+        hd->done = true;
+    }
+    return( true );
+}
+
+static int getValueFromUser_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+        GetValueDialogData *hd = GDrawGetUserData(GGadgetGetWindow(g));
+        hd->cancelled = true;
+        hd->done = true;
+    }
+    return( true );
+}
+
+static char* getValueFromUser( CharView *cv, const char* windowTitle, const char* msg, const char* defaultValue )
+{
+    const int retsz = 4096;
+    static char ret[4097];
+    static GetValueDialogData DATA;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[9], *harray1[4], *harray2[9], *barray[7], *varray[5][2], boxes[5];
+    GTextInfo label[9];
+    char buffer[200]; unichar_t ubuf[200];
+
+    DATA.cancelled = false;
+    DATA.done = false;
+    DATA.cv = cv;
+    DATA.ret = ret;
+    ret[0] = '\0';
+    
+    if ( DATA.gw==NULL ) {
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.event_masks = ~(1<<et_charup);
+	wattrs.restrict_input_to_me = 1;
+	wattrs.undercursor = 1;
+	wattrs.cursor = ct_pointer;
+	wattrs.utf8_window_title = windowTitle;
+	wattrs.is_dlg = true;
+	pos.x = pos.y = 0;
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
+	pos.height = GDrawPointsToPixels(NULL,90);
+	DATA.gw = gw = GDrawCreateTopWindow(NULL,&pos,getValueDialogData_e_h,&DATA,&wattrs);
+
+	memset(&label,0,sizeof(label));
+	memset(&gcd,  0,sizeof(gcd));
+	memset(&boxes,0,sizeof(boxes));
+
+	label[0].text = (unichar_t *) msg;
+	label[0].text_is_1byte = true;
+	label[0].text_in_resource = true;
+	gcd[0].gd.label = &label[0];
+	gcd[0].gd.pos.x = 5;
+	gcd[0].gd.pos.y = 5;
+	gcd[0].gd.flags = gg_enabled|gg_visible;
+	gcd[0].creator = GLabelCreate;
+	harray1[0] = GCD_Glue;
+	harray1[1] = &gcd[0];
+	harray1[2] = 0;
+            
+	label[1].text = (unichar_t *) defaultValue;
+	label[1].text_is_1byte = true;
+	DATA.label = label[1];
+	gcd[1].gd.label = &label[1];
+	gcd[1].gd.pos.x = 5;
+	gcd[1].gd.pos.y = 17+5;
+	gcd[1].gd.pos.width = 40;
+	gcd[1].gd.flags = gg_enabled|gg_visible;
+	gcd[1].gd.cid = CID_getValueFromUser;
+	gcd[1].creator = GTextFieldCreate;
+	harray2[0] = &gcd[1];
+	harray2[1] = 0;
+            
+	int idx = 2;
+	gcd[idx].gd.pos.x = 20-3;
+	gcd[idx].gd.pos.y = 17+37;
+	gcd[idx].gd.pos.width = -1;
+	gcd[idx].gd.pos.height = 0;
+	gcd[idx].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[idx].text = (unichar_t *) _("_OK");
+	label[idx].text_is_1byte = true;
+	label[idx].text_in_resource = true;
+	gcd[idx].gd.mnemonic = 'O';
+	gcd[idx].gd.label = &label[idx];
+	gcd[idx].gd.handle_controlevent = getValueFromUser_OK;
+	gcd[idx].creator = GButtonCreate;
+	barray[0] = GCD_Glue;
+	barray[1] = &gcd[idx];
+	barray[2] = GCD_Glue;
+	
+	++idx;
+	gcd[idx].gd.pos.x = -20;
+	gcd[idx].gd.pos.y = 17+37+3;
+	gcd[idx].gd.pos.width = -1;
+	gcd[idx].gd.pos.height = 0;
+	gcd[idx].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[idx].text = (unichar_t *) _("_Cancel");
+	label[idx].text_is_1byte = true;
+	label[idx].text_in_resource = true;
+	gcd[idx].gd.label = &label[idx];
+	gcd[idx].gd.mnemonic = 'C';
+	gcd[idx].gd.handle_controlevent = getValueFromUser_Cancel;
+	gcd[idx].creator = GButtonCreate;
+	barray[3] = GCD_Glue;
+	barray[4] = &gcd[idx];
+	barray[5] = GCD_Glue;
+	barray[6] = NULL;
+
+	gcd[7].gd.pos.x = 5;
+	gcd[7].gd.pos.y = 17+31;
+	gcd[7].gd.pos.width = 170-10;
+	gcd[7].gd.flags = gg_enabled|gg_visible;
+	gcd[7].creator = GLineCreate;
+
+	boxes[2].gd.flags = gg_enabled|gg_visible;
+	boxes[2].gd.u.boxelements = harray1;
+	boxes[2].creator = GHBoxCreate;
+
+	boxes[3].gd.flags = gg_enabled|gg_visible;
+	boxes[3].gd.u.boxelements = harray2;
+	boxes[3].creator = GHBoxCreate;
+
+	boxes[4].gd.flags = gg_enabled|gg_visible;
+	boxes[4].gd.u.boxelements = barray;
+	boxes[4].creator = GHBoxCreate;
+
+	varray[0][0] = &boxes[2]; varray[0][1] = NULL;
+	varray[1][0] = &boxes[3]; varray[1][1] = NULL;
+	varray[2][0] = &gcd[7];   varray[2][1] = NULL;
+	varray[3][0] = &boxes[4]; varray[3][1] = NULL;
+	varray[4][0] = NULL;
+
+	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+	boxes[0].gd.flags = gg_enabled|gg_visible;
+	boxes[0].gd.u.boxelements = varray[0];
+	boxes[0].creator = GHVGroupCreate;
+	
+	GGadgetsCreate(gw,boxes);
+	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[4].ret,gb_expandgluesame);
+	GHVBoxFitWindow(boxes[0].ret);
+    } else {
+	gw = DATA.gw;
+	snprintf( ret, retsz, "%s", defaultValue );
+	GGadgetSetTitle8(GWidgetGetControl(gw,CID_getValueFromUser),ret);
+	GDrawSetTransientFor(gw,(GWindow) -1);
+    }
+
+    GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_getValueFromUser));
+    GTextFieldSelect(GWidgetGetControl(gw,CID_getValueFromUser),0,-1);
+
+    GWidgetHidePalettes();
+    GDrawSetVisible(gw,true);
+    while ( !DATA.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawSetVisible(gw,false);
+
+    if( DATA.cancelled )
+        return 0;
+    return ret;
+}
+
+static int toint( char* v )
+{
+    if( !v )
+        return 0;
+    return atoi(v);
+}
+static char* tostr( int v )
+{
+    const int bufsz = 100;
+    static char buf[101];
+    snprintf(buf,bufsz,"%ld",v);
+    return buf;
+}
+
+
+static void CVRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e)
+{
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    static int lastValue = 10;
+    int v = toint(getValueFromUser( cv,
+				    "Trimming Undo Information",
+				    "How many most-recent Undos should be kept?",
+				    tostr(lastValue)));
+    lastValue = v;
+    UndoesFreeButRetainFirstN(&cv->b.layerheads[cv->b.drawmode]->undoes,v);
+    UndoesFreeButRetainFirstN(&cv->b.layerheads[cv->b.drawmode]->redoes,v);
+}
+
 
 /* We can only paste if there's something in the copy buffer */
 /* we can only copy if there's something selected to copy */
@@ -9752,7 +9971,7 @@ static GMenuItem2 edlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("U_nlink Reference"), (GImage *) "editunlink.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Unlink Reference|Ctl+U"), NULL, NULL, CVUnlinkRef, MID_UnlinkRef },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Remo_ve Undoes"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Remove Undoes|No Shortcut"), NULL, NULL, CVRemoveUndoes, MID_RemoveUndoes },
+    { { (unichar_t *) N_("Remo_ve Undoes..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Remove Undoes|No Shortcut"), NULL, NULL, CVRemoveUndoes, MID_RemoveUndoes },
     GMENUITEM2_EMPTY
 };
 

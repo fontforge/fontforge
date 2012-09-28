@@ -2796,7 +2796,7 @@ static int PXSZ_OK(GGadget *g, GEvent *e) {
 	dpi = GetInt8( pxsz->gw, CID_DPI, _("DPI"), &err );
 	if ( err )
 return(true);
-	if ( ptsize<3 || ptsize>300 || dpi<10 || dpi > 2000 ) {
+	if ( ptsize<3 || ptsize>1500 || dpi<10 || dpi > 2000 ) {
 	    ff_post_error(_("Number out of range"),_("Number out of range"));
 return( true );
 	}
