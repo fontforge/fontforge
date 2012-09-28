@@ -3,17 +3,20 @@
 # Copyright (C) 2006 THE fontforge'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the fontforge package.
 #
-#
+# Translators:
 # Lee Chenhwa <leechenhwa@aim.com>, 2006,2007,2008, 2009, 2012.
+# Lee Chenhwa <leechenhwa@aim.com>, 2012-04-29 18:06+0800
+#
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: fontforge 2.0.0_beta1\n"
-"Report-Msgid-Bugs-To: \n"
+"Report-Msgid-Bugs-To: fontforge-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2012-04-29 17:39+0800\n"
 "PO-Revision-Date: 2012-04-29 18:06+0800\n"
 "Last-Translator: 李振华 <leechenhwa@aim.com>\n"
 "Language-Team: Chinese Simplified\n"
-"Language: \n"
+"Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"

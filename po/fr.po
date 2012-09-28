@@ -2,14 +2,21 @@
 # Copyright (C) 2004-2007 by Pierre Hanser & Yannis Haralambous
 # This file is distributed under the same license as FontForge.
 #
+# Translators:
+#2004
+#2007-11-18 10:37+0100
+# Pierre HANSER, 2007-11-18 10:37+0100
+#
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: fontforge 2.0.0_beta1\n"
-"Report-Msgid-Bugs-To: \n"
+"Report-Msgid-Bugs-To: fontforge-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2007-11-18 10:37+0100\n"
 "PO-Revision-Date: 2007-10-07 14:00+0100\n"
 "Last-Translator: Pierre HANSER <hanser@club-internet.fr>\n"
 "Language-Team: French <fr.c@li.org>\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"

@@ -1,16 +1,21 @@
 # Traditional Chinese translation for FontForge.
 # Copyright (C) 2000-2007 by George Williams
 # This file is distributed under the same license as the FontForge package.
+#
+# Translators:
 # Wei-Lun Chao <william.chao@ossii.com.tw>, 2007, 2010.
+# Wei-Lun Chao <william.chao@ossii.com.tw>, 2011-02-22 14:07+0800
+#
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: fontforge 2.0.0_beta1\n"
-"Report-Msgid-Bugs-To: \n"
+"Report-Msgid-Bugs-To: fontforge-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2011-02-21 18:51-0800\n"
 "PO-Revision-Date: 2011-02-22 14:07+0800\n"
 "Last-Translator: Wei-Lun Chao <william.chao@ossii.com.tw>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
+"Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
