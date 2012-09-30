@@ -48,6 +48,7 @@ extern int onlycopydisplayed, copymetadata, copyttfinstr, add_char_to_name_list;
 int home_char='A';
 int compact_font_on_open=0;
 int navigation_mask = 0;		/* Initialized in startui.c */
+int prefs_ensure_correct_extension = 1;
 
 static char *fv_fontnames = "fontview," MONO_UI_FAMILIES;
 
@@ -558,6 +559,19 @@ static int SaveAs_FormatChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
+
+static enum fchooserret _FVSaveAsFilterFunc(GGadget *g,struct gdirentry *ent, const unichar_t *dir)
+{
+    char* n = u_to_c(ent->name);
+    int ew = endswithi( n, "sfd" ) || endswithi( n, "sfdir" );
+    if( ew )
+	return fc_show;
+    if( ent->isdir )
+	return fc_show;
+    return fc_hide;
+}
+
+
 int _FVMenuSaveAs(FontView *fv) {
     char *temp;
     char *ret;
@@ -610,7 +624,13 @@ int _FVMenuSaveAs(FontView *fv) {
     gcd.data = &s2d;
     gcd.creator = GCheckBoxCreate;
 
-    ret = gwwv_save_filename_with_gadget(_("Save as..."),temp,NULL,&gcd);
+    GFileChooserInputFilenameFuncType FilenameFunc = GFileChooserDefInputFilenameFunc;
+    if( prefs_ensure_correct_extension ) {
+	FilenameFunc = GFileChooserSaveAsInputFilenameFunc;
+    }
+    ret = GWidgetSaveAsFileWithGadget8(_("Save as..."),temp,0,NULL,
+				       _FVSaveAsFilterFunc, FilenameFunc,
+				       &gcd );
     free(temp);
     if ( ret==NULL )
 return( 0 );

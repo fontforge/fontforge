@@ -290,6 +290,18 @@ unichar_t *u_copyn(const unichar_t *pt, long n) {
 return(res);
 }
 
+unichar_t *u_copynallocm(const unichar_t *pt, long n, long m) {
+    unichar_t *res;
+#ifdef MEMORY_MASK
+    if ( n*sizeof(unichar_t)>=MEMORY_MASK )
+	n = MEMORY_MASK/sizeof(unichar_t)-1;
+#endif
+    res = galloc((m+1)*sizeof(unichar_t));
+    memcpy(res,pt,n*sizeof(unichar_t));
+    res[n]='\0';
+return(res);
+}
+
 unichar_t *u_copy(const unichar_t *pt) {
     if(pt)
 return u_copyn(pt,u_strlen(pt));
@@ -877,6 +889,54 @@ int uAllAscii(const unichar_t *txt) {
 return( false );
     }
 return( true );
+}
+
+char *copytolower(const char *input)
+{
+    char* ret = copy(input);
+    char* p = ret;
+    for( ; *p; ++p ) {
+	*p = tolower(*p);
+    }
+    return ret;
+}
+
+
+int endswith(const char *haystack,const char *needle) {
+    int haylen = strlen( haystack );
+    int nedlen = strlen( needle );
+    if( haylen < nedlen )
+	return 0;
+    char* p = strstr( haystack + haylen - nedlen, needle );
+    return p == ( haystack + haylen - nedlen );
+}
+
+int endswithi(const char *haystackZ,const char *needleZ) {
+    char* haystack = copytolower(haystackZ);
+    char* needle   = copytolower(needleZ);
+    int ret = endswith( haystack, needle );
+    free( haystack );
+    free( needle );
+    return ret;
+}
+
+int endswithi_partialExtension( const char *haystackZ,const char *needleZ) {
+    int nedlen = strlen(needleZ);
+    if( nedlen == 0 ) {
+	return 0;
+    }
+    char* haystack = copytolower(haystackZ);
+    char* needle   = copytolower(needleZ);
+    int ret = 0;
+    int i = nedlen-1;
+    ret |= endswith( haystack, needle );
+    for( ; i>=0 && !ret ; --i ) {
+	needle[i] = '\0';
+	ret |= endswith( haystack, needle );
+    }
+    free( haystack );
+    free( needle );
+    return ret;
 }
 
 int u_endswith(const unichar_t *haystack,const unichar_t *needle) {
