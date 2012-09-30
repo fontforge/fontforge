@@ -3800,7 +3800,6 @@ return( t );
     if ( slope<0 ) slope = -slope;
 
     for ( err = 0x40000; err!=0; err>>=1 ) {
-	if (factor == 0.0) break;
 	u1 = t+factor;
 	slope1 = (3*(double) sp->a*u1+2*sp->b)*u1+sp->c;
 	if ( slope1<0 ) slope1 = -slope1;
