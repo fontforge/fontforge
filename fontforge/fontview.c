@@ -2571,7 +2571,7 @@ static void FVMenuCanonicalContours(GWindow gw, struct gmenuitem *UNUSED(mi), GE
 }
 
 static void FVMenuAddExtrema(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FVAddExtrema( (FontViewBase *) GDrawGetUserData(gw) );
+    FVAddExtrema( (FontViewBase *) GDrawGetUserData(gw) , false);
 }
 
 static void FVMenuCorrectDir(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {

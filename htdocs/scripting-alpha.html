@@ -131,14 +131,18 @@ Generate(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file[,namelist-name]]]]])
 	    Adds a diagonal hint. A diagonal hint requires two points on oposite sides
 	    of the stem and a unit vector in the direction of the stem.
 	  <DT>
-	    <A NAME="AddExtrema" HREF="elementmenu.html#Add-Extrema">AddExtrema</A>()
+	    <A NAME="AddExtrema"
+	    HREF="elementmenu.html#Add-Extrema">AddExtrema</A>([all])
 	  <DD>
 	    If a spline in a glyph reaches a maximum or minimum x or y value within a
 	    spline then break the spline so that there will be a point at all significant
 	    extrema. (If this point is too close to an end-point then the end-point itself
 	    may be moved. There are various other caveats. See
 	    Element-&gt;<A NAME="AddExtrema" HREF="elementmenu.html#Add-Extrema">AddExtrema</A>
-	    for more information).
+	    for more information).  If the "all" argument is specified and
+	    is a nonzero integer, then all extrema will be added; otherwise,
+	    some that would be very close to existing endpoints will not be
+	    added.
 	  <DT>
 	    <A NAME="AddHHint" HREF="hintsmenu.html#HHint">AddHHint</A>(start,width)
 	  <DD>
