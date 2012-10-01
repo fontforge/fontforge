@@ -1531,10 +1531,6 @@ static int listLength( void* p, int nextoffset ) {
     }
     return ret;
 }
-static int sfundoesLength( struct sfundoes *undoes ) {
-    int offset = offsetof( SFUndoes, next );
-    return listLength( undoes, offset );
-}
 static int pstLength( struct generic_pst * pst ) {
     int offset = offsetof( PST, next );
     return listLength( pst, offset );
@@ -1546,7 +1542,7 @@ static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SplineFont *sf = fvb->sf;
     char* sfdchunk = 0;
     
-    printf("we currently have %d splinefont level undoes\n", sfundoesLength(sf->undoes));
+    printf("we currently have %d splinefont level undoes\n", dlist_size((struct dlistnode **)&sf->undoes));
     if( !sf->undoes )
 	return;
 
@@ -1604,7 +1600,7 @@ static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	
 	break;
     }
-    sf->undoes = undo->next;
+    dlist_erase( (struct dlistnode **)&sf->undoes, undo );
 }
 
 static void FVMenuCut(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -4143,7 +4139,7 @@ static void edlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  break;
 	case MID_UndoFontLevel:
 	    printf("undoes:%p\n",fv->b.sf->undoes);
-	    mi->ti.disabled = false; // (fv->b.sf->undoes != NULL);
+	    mi->ti.disabled = dlist_isempty( (struct dlistnode **)&fv->b.sf->undoes );
 	    break;
 	}
     }

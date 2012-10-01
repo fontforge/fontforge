@@ -903,7 +903,7 @@ typedef struct undoes {
 } Undoes;
 
 typedef struct sfundoes {
-    struct sfundoes *next;
+    struct dlistnode ln;
     char* msg;
     enum sfundotype { sfut_none=0, sfut_lookups, sfut_lookups_kerns,
 		      sfut_noop } type;

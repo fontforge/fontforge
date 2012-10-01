@@ -3614,21 +3614,6 @@ void SFUntickAllPSTandKern(SplineFont *sf)
 }
 
 
-#include <stddef.h>
-static int listLength( void* p, int nextoffset ) {
-    if( !p )
-        return 0;
-    int ret = 1;
-    p = *((void**)(p + nextoffset));
-    for( ; p; ret++ ) {
-        p = *((void**)(p + nextoffset));
-    }
-    return ret;
-}
-static int sfundoesLength( struct sfundoes *undoes ) {
-    int offset = offsetof( SFUndoes, next );
-    return listLength( undoes, offset );
-}
 
 static char* FileToAllocatedStringL( FILE *f ) 
 {
@@ -4204,21 +4189,17 @@ return( true );
 	    if( shouldCreateUndoEntry ) {
 		struct sfundoes *undo;
 		undo = chunkalloc(sizeof(SFUndoes));
-		undo->next = 0;
+		undo->ln.next = 0;
+		undo->ln.prev = 0;
 		undo->msg  = _("Lookup Table Edit");
 		undo->type = sfut_lookups;
 		if( lookup_type == gpos_pair ) {
 		    undo->type = sfut_lookups_kerns;
 		}
 		undo->u.lookupatomic.sfdchunk = str;
-		    
-		if( !sf->undoes ) sf->undoes = undo;
-		else {
-		    undo->next = sf->undoes;
-		    sf->undoes = undo;
-		}
+		dlist_pushfront( (struct dlistnode **)&sf->undoes, (struct dlistnode *)undo );
 	    }
-	    printf("we now have %d splinefont level undoes\n", sfundoesLength(sf->undoes));
+	    printf("we now have %d splinefont level undoes\n", dlist_size((struct dlistnode **)&sf->undoes));
 	}
 	
 
