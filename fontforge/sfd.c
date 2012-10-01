@@ -4526,7 +4526,7 @@ void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok ) {
 	    int isv = *tok=='V';
 	    int off, index;
 	    struct lookup_subtable *sub;
-
+	    int kernCount = 0;
 	    printf("SFDGetKerns() have a kern!!\n");
 	    if ( sf->sfd_version<2 )
 		LogError(_("Found an new style kerning pair inside a version 1 (or lower) sfd file.\n") );
@@ -4536,6 +4536,7 @@ void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok ) {
 		    LogError(_("KernPair with no subtable name.\n"));
 	    break;
 		}
+		kernCount++;
 		kp = chunkalloc(sizeof(KernPair1));
 		kp->sc = (SplineChar *) (intpt) index;
 		kp->kcid = true;
@@ -4556,7 +4557,11 @@ void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok ) {
 		    sc->kerns = kp;
 		last = kp;
 	    }
-	} else if ( strmatch(tok,"Kerns:")==0 ||
+	    if( !kernCount ) {
+		printf("SFDGetKerns() have a BLANK KERN\n");
+		sc->kerns = 0;
+	    }
+    } else if ( strmatch(tok,"Kerns:")==0 ||
 		strmatch(tok,"KernsSLI:")==0 ||
 		strmatch(tok,"KernsSLIF:")==0 ||
 		strmatch(tok,"VKernsSLIF:")==0 ||
@@ -5934,27 +5939,39 @@ void SFDFixupRefs(SplineFont *sf) {
 	    for ( isv=0; isv<2; ++isv ) {
 		for ( prev = NULL, kp=isv?sc->vkerns : sc->kerns; kp!=NULL; kp=next ) {
 		    int index = (intpt) (kp->sc);
+		    printf("kp->sc:%p\n",kp->sc);
+
 		    next = kp->next;
-		    if ( !kp->kcid ) {	/* It's encoded (old sfds), else orig */
-			if ( index>=map->encmax || map->map[index]==-1 )
-			    index = sf->glyphcnt;
-			else
-			    index = map->map[index];
-		    }
-		    kp->kcid = false;
-		    ksf = sf;
-		    if ( cidmaster!=sf ) {
-			for ( l=0; l<cidmaster->subfontcnt; ++l ) {
-			    ksf = cidmaster->subfonts[l];
-			    if ( index<ksf->glyphcnt && ksf->glyphs[index]!=NULL )
-		    break;
+		    // be impotent if the reference is already to the correct location
+		    if( index < sf->glyphcnt ) {
+		    
+			if ( !kp->kcid ) {	/* It's encoded (old sfds), else orig */
+			    if ( index>=map->encmax || map->map[index]==-1 )
+				index = sf->glyphcnt;
+			    else
+				index = map->map[index];
+			}
+			kp->kcid = false;
+			ksf = sf;
+			if ( cidmaster!=sf ) {
+			    for ( l=0; l<cidmaster->subfontcnt; ++l ) {
+				ksf = cidmaster->subfonts[l];
+				if ( index<ksf->glyphcnt && ksf->glyphs[index]!=NULL )
+				    break;
+			    }
+			}
+			if ( index>=ksf->glyphcnt || ksf->glyphs[index]==NULL ) {
+			    printf("index:%d glyphcnt:%d\n",index,ksf->glyphcnt);
+			    if( index < ksf->glyphcnt )
+				printf("ptr:%p\n", ksf->glyphs[index] );
+			
+			    IError( "Bad kerning information in glyph %s\n", sc->name );
+			    kp->sc = NULL;
+			} else {
+			    kp->sc = ksf->glyphs[index];
 			}
 		    }
-		    if ( index>=ksf->glyphcnt || ksf->glyphs[index]==NULL ) {
-			IError( "Bad kerning information in glyph %s\n", sc->name );
-			kp->sc = NULL;
-		    } else
-			kp->sc = ksf->glyphs[index];
+		    
 		    if ( kp->sc!=NULL )
 			prev = kp;
 		    else{

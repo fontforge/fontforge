@@ -3821,8 +3821,10 @@ static char* trimUndoSFD( SplineFont *sf, char* oldstr, char* newstr ) {
     char* oline = 0;
     char* nline = 0;
 
+    printf("copy old header...\n" );    
     // copy the header from the old SFD fragment
-    while((oline = getquotedeol(of))) {
+    while((oline = getquotedeol(of)) && !feof(of)) {
+	printf("copy old header...oline:%s\n", oline );    
 	if( !strnmatch( oline, "StartChar:", strlen( "StartChar:" ))) {
 	    int len = strlen("StartChar:");
 	    while( oline[len] && oline[len] == ' ' )
@@ -3834,6 +3836,7 @@ static char* trimUndoSFD( SplineFont *sf, char* oldstr, char* newstr ) {
 	fwrite( "\n", 1, 1, retf );
 	free(oline);
     }
+    printf("copy old header...done\n" );    
     
     while (oglyph) {
 	printf("old glyph:%s\n", oglyph );
@@ -3871,8 +3874,8 @@ static char* trimUndoSFD( SplineFont *sf, char* oldstr, char* newstr ) {
 	    }
 	    if( strcmp( oglyph, nglyph )) {
 		printf("mismatch between old and new SFD fragments. Skipping new glyph that is not in old...\n");
-//		glyphsWithUndoInfoCount++;
-//		trimUndoSFD_Output( retf, nglyph, nline );
+		glyphsWithUndoInfoCount++;
+		trimUndoSFD_Output( retf, nglyph, "Kerns2: " );
 		free(nline);
 		continue;
 	    }
@@ -3899,16 +3902,30 @@ static char* trimUndoSFD( SplineFont *sf, char* oldstr, char* newstr ) {
 	    glyphsWithUndoInfoCount++;
 	    trimUndoSFD_Output( retf, oglyph, oline );
 	}
-	
+
 	free(oline);
 	oglyph = SFDMoveToNextStartChar(of);
     }
-    
+
+    /* Trailing new glyph data that has nothing in the old file.
+     *
+     * we don't care what the data is if its new,
+     * we only want to be able to revert to the old state (nothing)
+     */
+    while ((nglyph = SFDMoveToNextStartChar(nf))) {
+	printf("new glyph:%s\n", nglyph );
+	SplineChar* newsc = SCFindByGlyphName( sf, nglyph );
+	nline = getquotedeol(nf);
+	glyphsWithUndoInfoCount++;
+	trimUndoSFD_Output( retf, nglyph, "Kerns2: " );
+    }
+
     printf("trimUndoSFD(end) glyphsWithUndoInfoCount:%d\n", glyphsWithUndoInfoCount );
     if( !glyphsWithUndoInfoCount )
 	return 0;
     
     char* ret = FileToAllocatedStringL( retf );
+    printf("trimUndoSFD(end) ret:%s\n", ret );
     return ret;
 }
 

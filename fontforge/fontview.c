@@ -1593,11 +1593,11 @@ static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	}
 	
 	if( undo->type == sfut_lookups_kerns ) {
+	    printf("calling fixups...\n" );
 	    SFDFixupRefs( sf );
 	}
 	
 	printf("st lookups undo finished...\n" );
-	
 	break;
     }
     dlist_erase( (struct dlistnode **)&sf->undoes, undo );
@@ -4138,7 +4138,6 @@ static void edlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    mi->ti.disabled = i==fv->b.map->enccount;
 	  break;
 	case MID_UndoFontLevel:
-	    printf("undoes:%p\n",fv->b.sf->undoes);
 	    mi->ti.disabled = dlist_isempty( (struct dlistnode **)&fv->b.sf->undoes );
 	    break;
 	}
