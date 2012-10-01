@@ -28,6 +28,7 @@
 #define _SPLINEFONT_H
 
 #include <basics.h>
+#include <dlist.h>
 #include "configure-fontforge.h"
 #ifdef HAVE_ICONV_H
 # include <iconv.h>

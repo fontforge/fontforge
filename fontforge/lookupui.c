@@ -3745,6 +3745,8 @@ static void sortKerns( SplineChar *sc ) {
  *
  * Note that the kernpair lists may be modified by this function in
  * that those lists might be sorted on return.
+ *
+ * The caller needs to free the return value.
  */
 static char* createUndoSFD( SplineFont *sf, int lookup_type ) 
 {
@@ -3814,6 +3816,8 @@ static void trimUndoSFD_Output( FILE* retf, char* glyph, char* line ) {
  * table which is about 2mb in SFD format. If you only change the
  * kerning for a 10 glyphs then the resulting SFD from this function
  * might be only in the 10-50kb size instead of megabytes.
+ *
+ * The caller needs to free the return value.
  */
 static char* trimUndoSFD( SplineFont *sf, char* oldstr, char* newstr ) {
     printf("trimUndoSFD(top) old.len:%ld new.len:%ld\n", strlen(oldstr), strlen(newstr) );
@@ -4049,36 +4053,11 @@ return( true );
 	/* First grab a snapshot of the state of the system as it is
 	 * now so that we can "undo" the lookup table edits as a
 	 * single operation if desired */
-	{
-	    k=0;
-	    printf("subfont count:%d..\n",pstkd->sf->subfontcnt);
-	    do {
-		sf = pstkd->sf->subfontcnt==0 ? pstkd->sf : pstkd->sf->subfonts[k];
-		char* str = createUndoSFD( sf, lookup_type );
-		printf("old lookups as SFD format...\n");
-		printf("str: %p\n", str );
-		printf("str: %s\n", str );
-
-		struct sfundoes *undo;
-		undo = chunkalloc(sizeof(SFUndoes));
-		undo->next = 0;
-		undo->msg  = _("Lookup Table Edit");
-		undo->type = sfut_lookups;
-		if( lookup_type == gpos_pair ) {
-		    undo->type = sfut_lookups_kerns;
-		}
-		undo->u.lookupatomic.sfdchunk = str;
-
-		if( !sf->undoes ) sf->undoes = undo;
-		else {
-		    undo->next = sf->undoes;
-		    sf->undoes = undo;
-		}
-		printf("we now have %d splinefont level undoes\n", sfundoesLength(sf->undoes));
-		
-		++k;
-	    } while ( k<pstkd->sf->subfontcnt );
-
+	printf("pstkd->sf->subfontcnt:%d\n",pstkd->sf->subfontcnt);
+	char* oldsfd = 0;
+	if( !pstkd->sf->subfontcnt ) {
+	    sf = pstkd->sf;
+	    oldsfd = createUndoSFD( sf, lookup_type );
 	}
 	
 	/* Then mark all the current things as unused */
@@ -4199,25 +4178,30 @@ return( true );
 	/* compare the updated data to the snapshot we took before and
 	 * trim the undo operation of superfluious data
 	 */
-	{
-	    k=0;
+	if( oldsfd ) {
+	    
+	    int shouldCreateUndoEntry = 1;
 	    printf("subfont count:%d..\n",pstkd->sf->subfontcnt);
-	    do {
-		sf = pstkd->sf->subfontcnt==0 ? pstkd->sf : pstkd->sf->subfonts[k];
-		char* str = createUndoSFD( sf, lookup_type );
-		printf("new lookups as SFD format...\n");
-		printf("str: %p\n", str );
-		printf("str: %s\n", str );
+	    sf = pstkd->sf;
+	    char* str = createUndoSFD( sf, lookup_type );
+	    printf("new lookups as SFD format...\n");
+	    printf("str: %p\n", str );
+	    printf("str: %s\n", str );
 
-		if( pstkd->sf->subfontcnt==0 ) {
-		    char* oldstr = sf->undoes->u.lookupatomic.sfdchunk;
-		    str = trimUndoSFD( sf, oldstr, str );
-		    if( str ) {
-			printf("trimmed str: %s\n", str );
-			free(str);
-		    }
+	    if( pstkd->sf->subfontcnt==0 ) {
+		char* diffstr = trimUndoSFD( sf, oldsfd, str );
+		if( !diffstr ) {
+		    // If nothing has changed after all,
+		    // don't create an empty undo
+		    shouldCreateUndoEntry = 0;
+		} else {
+		    printf("trimmed str: %s\n", diffstr );
+		    free(str);
+		    str = diffstr;
 		}
-		
+	    }
+
+	    if( shouldCreateUndoEntry ) {
 		struct sfundoes *undo;
 		undo = chunkalloc(sizeof(SFUndoes));
 		undo->next = 0;
@@ -4227,17 +4211,14 @@ return( true );
 		    undo->type = sfut_lookups_kerns;
 		}
 		undo->u.lookupatomic.sfdchunk = str;
-
+		    
 		if( !sf->undoes ) sf->undoes = undo;
 		else {
 		    undo->next = sf->undoes;
 		    sf->undoes = undo;
 		}
-		printf("we now have %d splinefont level undoes\n", sfundoesLength(sf->undoes));
-		
-		++k;
-	    } while ( k<pstkd->sf->subfontcnt );
-	    
+	    }
+	    printf("we now have %d splinefont level undoes\n", sfundoesLength(sf->undoes));
 	}
 	
 
