@@ -1224,4 +1224,17 @@ extern int  CVCountSelectedPoints(CharView *cv);
 extern void _CVMenuInsertPt(CharView *cv);
 extern void _CVMenuNameContour(CharView *cv);
 
+// sfd.c
+extern void SFD_DumpPST( FILE *sfd, SplineChar *sc );
+extern void SFD_DumpKerns( FILE *sfd, SplineChar *sc, int *newgids );
+extern void SFDDumpCharStartingMarker(FILE *sfd,SplineChar *sc);
+extern FILE* MakeTemporaryFile(void);
+extern char* FileToAllocatedString( FILE *f );
+extern char *getquotedeol(FILE *sfd);
+extern int getname(FILE *sfd, char *tokbuf);
+extern void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok );
+extern void SFDGetPSTs( FILE *sfd, SplineChar *sc, char* ttok );
+extern char* SFDMoveToNextStartChar( FILE* sfd );
+extern void SFDFixupRefs(SplineFont *sf);
+
 #endif	/* _VIEWS_H */

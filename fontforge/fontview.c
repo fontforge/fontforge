@@ -1316,6 +1316,7 @@ static void FVMenuCondense(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 #define MID_Undo	2109
 #define MID_Redo	2110
 #define MID_CopyWidth	2111
+#define MID_UndoFontLevel	2112
 #define MID_AllFonts		2122
 #define MID_DisplayedFont	2123
 #define	MID_CharName		2124
@@ -1517,6 +1518,93 @@ static void FVMenuUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(
 static void FVMenuRedo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     FVRedo((FontViewBase *) fv);
+}
+
+#include <stddef.h>
+static int listLength( void* p, int nextoffset ) {
+    if( !p )
+        return 0;
+    int ret = 1;
+    p = *((void**)(p + nextoffset));
+    for( ; p; ret++ ) {
+        p = *((void**)(p + nextoffset));
+    }
+    return ret;
+}
+static int sfundoesLength( struct sfundoes *undoes ) {
+    int offset = offsetof( SFUndoes, next );
+    return listLength( undoes, offset );
+}
+static int pstLength( struct generic_pst * pst ) {
+    int offset = offsetof( PST, next );
+    return listLength( pst, offset );
+}
+
+static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    FontViewBase * fvb = (FontViewBase *) fv;
+    SplineFont *sf = fvb->sf;
+    char* sfdchunk = 0;
+    
+    printf("we currently have %d splinefont level undoes\n", sfundoesLength(sf->undoes));
+    if( !sf->undoes )
+	return;
+
+    struct sfundoes *undo = sf->undoes;
+    printf("font level undo msg:%s\n", undo->msg );
+    switch(undo->type) {
+    case sfut_lookups_kerns:
+    case sfut_lookups:
+	sfdchunk = undo->u.lookupatomic.sfdchunk;
+	printf("Lookup table undo. SFD Chunk:%p len:%ld\n", sfdchunk, strlen(sfdchunk) );
+
+	// FIXME: Roll it on back!
+	FILE* sfd = MakeTemporaryFile();
+	fwrite( sfdchunk, strlen(sfdchunk), 1, sfd );
+	fseek( sfd, 0, SEEK_SET );
+
+	while( 1 ) {
+	    char* name = SFDMoveToNextStartChar( sfd );
+	    if( !name )
+		break;
+	    printf("glyphp: %p\n", name );
+	    printf("glyphs: %s\n", name );
+
+	    int unienc = 0;
+	    SplineChar *sc;
+	    sc = SFGetChar( sf, unienc, name );
+	    if( !sc ) {
+		printf("WARNING: couldn't find the character %s\n", name );
+	    }
+	    if( sc ) {
+		// FIXME: free the stuff in sc->psts so we don't leak it.
+		printf("should free the PST here so taht the GetPSTs() can recreate it. pst %p len:%d\n",
+		       sc->possub, pstLength( sc->possub ));
+		if( undo->type == sfut_lookups ) {
+		    PSTFree(sc->possub);
+		    sc->possub = 0;
+		}
+		char tok[2000];
+		getname( sfd, tok );
+		printf("tok: %s\n", tok );
+		SFDGetPSTs( sfd, sc, tok );
+		SFDGetKerns( sfd, sc, tok );
+		
+		printf("after load pst %p len:%d\n", sc->possub, pstLength( sc->possub ));
+	    }
+	    printf("done with glyph: %s\n", name );
+	    free(name);
+	}
+	
+	if( undo->type == sfut_lookups_kerns ) {
+	    SFDFixupRefs( sf );
+	}
+	
+	printf("st lookups undo finished...\n" );
+	
+	break;
+    }
+    sf->undoes = undo->next;
 }
 
 static void FVMenuCut(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -4053,6 +4141,10 @@ static void edlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    break;
 	    mi->ti.disabled = i==fv->b.map->enccount;
 	  break;
+	case MID_UndoFontLevel:
+	    printf("undoes:%p\n",fv->b.sf->undoes);
+	    mi->ti.disabled = false; // (fv->b.sf->undoes != NULL);
+	    break;
 	}
     }
 }
@@ -4402,6 +4494,7 @@ static GMenuItem2 sllist[] = {
 static GMenuItem2 edlist[] = {
     { { (unichar_t *) N_("_Undo"), (GImage *) "editundo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Undo|Ctl+Z"), NULL, NULL, FVMenuUndo, MID_Undo },
     { { (unichar_t *) N_("_Redo"), (GImage *) "editredo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Redo|Ctl+Y"), NULL, NULL, FVMenuRedo, MID_Redo},
+    { { (unichar_t *) N_("Undo Fontlevel"), (GImage *) "editundo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Undo Fontlevel"), NULL, NULL, FVMenuUndoFontLevel, MID_UndoFontLevel },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Cu_t"), (GImage *) "editcut.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, H_("Cut|Ctl+X"), NULL, NULL, FVMenuCut, MID_Cut },
     { { (unichar_t *) N_("_Copy"), (GImage *) "editcopy.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Copy|Ctl+C"), NULL, NULL, FVMenuCopy, MID_Copy },

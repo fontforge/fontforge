@@ -901,6 +901,20 @@ typedef struct undoes {
     struct splinefont *copied_from;
 } Undoes;
 
+typedef struct sfundoes {
+    struct sfundoes *next;
+    char* msg;
+    enum sfundotype { sfut_none=0, sfut_lookups, sfut_lookups_kerns,
+		      sfut_noop } type;
+    union {
+	int dummy;
+	struct {
+	    char* sfdchunk;
+	} lookupatomic;
+    } u;
+} SFUndoes;
+    
+
 typedef struct enc {
     char *enc_name;
     int char_cnt;	/* Size of the next two arrays */
@@ -1852,6 +1866,8 @@ typedef struct splinefont {
     char *woffMetadata;
     real ufo_ascent, ufo_descent;	/* I don't know what these mean, they don't seem to correspond to any other ascent/descent pair, but retain them so round-trip ufo input/output leaves them unchanged */
 	    /* ufo_descent is negative */
+
+    struct sfundoes *undoes;
 } SplineFont;
 
 struct axismap {
@@ -2668,6 +2684,7 @@ extern void SFKernCleanup(SplineFont *sf,int isv);
 extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,
 	const char *comment);
 
+extern void SFD_DumpLookup( FILE *sfd, SplineFont *sf );
 extern enum uni_interp interp_from_encoding(Encoding *enc,enum uni_interp interp);
 extern const char *EncName(Encoding *encname);
 extern const char*FindUnicharName(void);
