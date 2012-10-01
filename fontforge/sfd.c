@@ -881,7 +881,7 @@ static void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, char* keyPrefix, int
                 SFDDumpAnchorPoints( sfd, u->u.state.anchor );
             }
 	    if( u->u.state.splines ) {
-                fprintf(sfd, "SplineSet\n", keyPrefix, idx );
+                fprintf(sfd, "SplineSet\n" );
                 SFDDumpSplineSet( sfd, u->u.state.splines );
             }
             break;
@@ -3632,7 +3632,7 @@ static Undoes *SFDGetUndo( SplineFont *sf, FILE *sfd, SplineChar *sc,
                            const char* startTag, const char* endTag, int current_layer )
 {
     Undoes *u = 0;
-    char tok[2000], ch;
+    char tok[2000];
     int i;
     RefChar *lastr=NULL;
     ImageList *lasti=NULL;
@@ -3715,7 +3715,6 @@ static Undoes *SFDGetUndo( SplineFont *sf, FILE *sfd, SplineChar *sc,
 	    
 	    if( !strmatch(tok,"Image:"))
 	    {
-		int ly = current_layer;
 		ImageList *img = SFDGetImage(sfd);
 		if ( !u->u.state.images )
 		    u->u.state.images = img;
@@ -4331,12 +4330,9 @@ return( pat );
 
 
 static void SFDConsumeUntil( FILE *sfd, char** terminators ) {
-    char tok[2000];
-    int i;
-    int ch;
 
     char* line = 0;
-    while( line = getquotedeol( sfd )) {
+    while((line = getquotedeol( sfd ))) {
         char** tp = terminators;
         for( ; tp && *tp; ++tp ) {
             if( !strnmatch( line, *tp, strlen( *tp ))) {
@@ -4690,7 +4686,7 @@ return( NULL );
 		undo = 0;
 		limit = UndoRedoLimitToLoad;
 		last = sc->layers[current_layer].undoes;
-		while( undo = SFDGetUndo( sf, sfd, sc, "UndoOperation", "EndUndoOperation", current_layer ) ) 
+		while((undo = SFDGetUndo( sf, sfd, sc, "UndoOperation", "EndUndoOperation", current_layer ))) 
 		{
 		    // push to back
 		    if( last ) last->next = undo;
@@ -4714,7 +4710,7 @@ return( NULL );
 		undo = 0;
 		limit = UndoRedoLimitToLoad;
 		last = sc->layers[current_layer].redoes;
-		while( undo = SFDGetUndo( sf, sfd, sc, "RedoOperation", "EndRedoOperation", current_layer ) ) 
+		while((undo = SFDGetUndo( sf, sfd, sc, "RedoOperation", "EndRedoOperation", current_layer )))
 		{
 		    // push to back
 		    if( last ) last->next = undo;
