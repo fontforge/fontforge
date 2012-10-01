@@ -1720,7 +1720,7 @@ static int pi_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	GIData  *d = GDrawGetUserData(gw);
 	if( d->nonmodal ) {
-	    PI_Destroy(d);
+	    PI_Destroy((struct dlistnode *)d);
 	} else {
 	    PI_DoCancel( GDrawGetUserData(gw));
 	}
@@ -1828,14 +1828,14 @@ static void PI_FixStuff(GIData *ci) {
 void PI_Destroy(struct dlistnode *node) {
     GIData *d = (GIData *)node;
     GDrawDestroyWindow(d->gw);
-    dlist_erase(&d->cv->pointInfoDialogs,d);
+    dlist_erase(&d->cv->pointInfoDialogs,(struct dlistnode *)d);
     free(d);
 }
 
 static void PI_Close(GGadget *g) {
     GWindow gw = GGadgetGetWindow(g);
     GIData  *d = GDrawGetUserData(gw);
-    PI_Destroy(d);
+    PI_Destroy((struct dlistnode *)d);
 }
 
 static int PI_Cancel(GGadget *g, GEvent *e) {
@@ -3301,7 +3301,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	GHVBoxFitWindow(mb[0].ret);
 
 	gi->nonmodal = 1;
-	dlist_pushfront( &cv->pointInfoDialogs, gi );
+	dlist_pushfront( &cv->pointInfoDialogs, (struct dlistnode *)gi );
 	GWidgetHidePalettes();
 	GDrawSetVisible(gi->gw,true);
 }
