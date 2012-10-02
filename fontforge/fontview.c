@@ -1536,6 +1536,18 @@ static int pstLength( struct generic_pst * pst ) {
     return listLength( pst, offset );
 }
 
+/**
+ * Remove undo from the font level undoes on splinefont 'sf' and
+ * completely free the given undo from memory.
+ */
+static void sfundoRemoveAndFree( SplineFont *sf, struct sfundoes *undo ) {
+
+    if( undo->u.lookupatomic.sfdchunk )
+	free( undo->u.lookupatomic.sfdchunk );
+    dlist_erase( (struct dlistnode **)&sf->undoes, (struct dlistnode *)undo );
+    free(undo);
+}
+
 static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     FontViewBase * fvb = (FontViewBase *) fv;
@@ -1554,7 +1566,7 @@ static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	sfdchunk = undo->u.lookupatomic.sfdchunk;
 	if( !sfdchunk ) {
 	    ff_post_error(_("Undo information incomplete"),_("There is an splinefont level undo, but it does not contain any information to perform the undo. This is an application error, please report what you last did to the lookup tables so the developers can try to reproduce the issue and fix it."));
-	    dlist_erase( (struct dlistnode **)&sf->undoes, (struct dlistnode *)undo );
+	    sfundoRemoveAndFree( sf, undo );
 	    return;
 	}
 	
@@ -1573,7 +1585,7 @@ static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    sc = SFGetChar( sf, unienc, name );
 	    if( !sc ) {
 		ff_post_error(_("Bad undo"),_("couldn't find the character %s"), name );
-		return;
+		break;
 	    }
 	    if( sc ) {
 		// Free the stuff in sc->psts so we don't leak it.
@@ -1594,7 +1606,7 @@ static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	}
 	break;
     }
-    dlist_erase( (struct dlistnode **)&sf->undoes, (struct dlistnode *)undo );
+    sfundoRemoveAndFree( sf, undo );
 }
 
 static void FVMenuCut(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
