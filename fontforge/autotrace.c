@@ -30,7 +30,6 @@
 #include <utype.h>
 #include "sd.h"
 #include "gfile.h"
-#include <views.h>
 
 #include <sys/types.h>		/* for waitpid */
 #if !defined(__MINGW32__)

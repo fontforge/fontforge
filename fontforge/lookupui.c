@@ -3711,7 +3711,7 @@ static void SCKernsSort( SplineChar *sc ) {
  *
  * The caller needs to free the return value.
  */
-static char* createUndoSFD( SplineFont *sf, int lookup_type ) 
+static char* SFDCreateUndoForLookup( SplineFont *sf, int lookup_type ) 
 {
     int gid = 0;
     SplineChar *sc = 0;
@@ -3761,7 +3761,7 @@ static SplineChar* SCFindByGlyphName( SplineFont *sf, char* n ) {
 }
 
 
-static void trimUndoSFD_Output( FILE* retf, char* glyph, char* line ) {
+static void SFDTrimUndoOldToNew_Output( FILE* retf, char* glyph, char* line ) {
     fwrite( "StartChar:", strlen("StartChar:"), 1, retf );
     fwrite( glyph,       strlen(glyph),         1, retf );
     fwrite( "\n",         1,                    1, retf );
@@ -3782,7 +3782,7 @@ static void trimUndoSFD_Output( FILE* retf, char* glyph, char* line ) {
  *
  * The caller needs to free the return value.
  */
-static char* trimUndoSFD( SplineFont *sf, char* oldstr, char* newstr ) {
+static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
 
     if( !oldstr ) {
 	return 0;
@@ -3839,7 +3839,7 @@ static char* trimUndoSFD( SplineFont *sf, char* oldstr, char* newstr ) {
 	     */
 	    while( newsc->orig_pos > oldsc->orig_pos ) {
 		glyphsWithUndoInfoCount++;
-		trimUndoSFD_Output( retf, oglyph, oline );
+		SFDTrimUndoOldToNew_Output( retf, oglyph, oline );
 		free(oline);
 		oglyph = SFDMoveToNextStartChar(of);
 		oline = getquotedeol(of);
@@ -3854,7 +3854,7 @@ static char* trimUndoSFD( SplineFont *sf, char* oldstr, char* newstr ) {
 	    if( strcmp( oglyph, nglyph )) {
 		fprintf(stderr,"mismatch between old and new SFD fragments. Skipping new glyph that is not in old...\n");
 		glyphsWithUndoInfoCount++;
-		trimUndoSFD_Output( retf, nglyph, "Kerns2: " );
+		SFDTrimUndoOldToNew_Output( retf, nglyph, "Kerns2: " );
 		free(nline);
 		continue;
 	    }
@@ -3865,7 +3865,7 @@ static char* trimUndoSFD( SplineFont *sf, char* oldstr, char* newstr ) {
 	    }
 	    
 	    glyphsWithUndoInfoCount++;
-	    trimUndoSFD_Output( retf, oglyph, oline );
+	    SFDTrimUndoOldToNew_Output( retf, oglyph, oline );
 	    free(nline);
 	    break;
 	}
@@ -3876,7 +3876,7 @@ static char* trimUndoSFD( SplineFont *sf, char* oldstr, char* newstr ) {
 	 */
 	if( !newGlyphsSeen ) {
 	    glyphsWithUndoInfoCount++;
-	    trimUndoSFD_Output( retf, oglyph, oline );
+	    SFDTrimUndoOldToNew_Output( retf, oglyph, oline );
 	}
 
 	free(oline);
@@ -3892,7 +3892,7 @@ static char* trimUndoSFD( SplineFont *sf, char* oldstr, char* newstr ) {
 	SCFindByGlyphName( sf, nglyph );
 	nline = getquotedeol(nf);
 	glyphsWithUndoInfoCount++;
-	trimUndoSFD_Output( retf, nglyph, "Kerns2: " );
+	SFDTrimUndoOldToNew_Output( retf, nglyph, "Kerns2: " );
     }
 
     if( !glyphsWithUndoInfoCount )
@@ -4025,7 +4025,7 @@ return( true );
 	char* oldsfd = 0;
 	if( !pstkd->sf->subfontcnt ) {
 	    sf = pstkd->sf;
-	    oldsfd = createUndoSFD( sf, lookup_type );
+	    oldsfd = SFDCreateUndoForLookup( sf, lookup_type );
 	}
 	
 	/* Then mark all the current things as unused */
@@ -4144,10 +4144,10 @@ return( true );
 	    
 	    int shouldCreateUndoEntry = 1;
 	    sf = pstkd->sf;
-	    char* str = createUndoSFD( sf, lookup_type );
+	    char* str = SFDCreateUndoForLookup( sf, lookup_type );
 
 	    if( !pstkd->sf->subfontcnt ) {
-		char* diffstr = trimUndoSFD( sf, oldsfd, str );
+		char* diffstr = SFDTrimUndoOldToNew( sf, oldsfd, str );
 		if( !diffstr ) {
 		    // If nothing has changed after all,
 		    // don't create an empty undo

@@ -1255,7 +1255,40 @@ extern char *getquotedeol(FILE *sfd);
 extern int getname(FILE *sfd, char *tokbuf);
 extern void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok );
 extern void SFDGetPSTs( FILE *sfd, SplineChar *sc, char* ttok );
+
+/**
+ * Move the sfd file pointer to the start of the next glyph. Return 0
+ * if there is no next glyph. Otherwise, a copy of the string on the
+ * line of the SFD file that starts the glyph is returned. The caller
+ * should return the return value of this function.
+ *
+ * If the glyph starts with:
+ * StartChar: a
+ * The the return value with be "a" (sans the quotes).
+ *
+ * This is handy if the caller is done with a glyph and just wants to
+ * skip to the start of the next one.
+ */
 extern char* SFDMoveToNextStartChar( FILE* sfd );
+
+/**
+ * Some references in the SFD file are to a numeric glyph ID. As a
+ * sneaky method to handle that, fontforge will load these glyph
+ * numbers into the pointers which should refer to the glyph. For
+ * example, in kerning, instead of pointing to the splinechar for the
+ * "v" glyph, the ID might be stored there, say the number 143. This
+ * fixup function will convert such 143 references to being pointers
+ * to the splinechar with a numeric ID of 143. It is generally a good
+ * idea to do this, as some fontforge code will of course assume a
+ * pointer to a splinechar is a pointer to a splinechar and not just
+ * the glyph index of that splinechar.
+ *
+ * MIQ updated this in Oct 2012 to be more forgiving when called twice
+ * or on a splinefont which has some of it's references already fixed.
+ * This was to allow partial updates of data structures from SFD
+ * fragments and the fixup to operate just on those references which
+ * need to be fixed.
+ */
 extern void SFDFixupRefs(SplineFont *sf);
 
 
