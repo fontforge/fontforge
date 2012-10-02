@@ -1228,7 +1228,28 @@ extern void _CVMenuNameContour(CharView *cv);
 extern void SFD_DumpPST( FILE *sfd, SplineChar *sc );
 extern void SFD_DumpKerns( FILE *sfd, SplineChar *sc, int *newgids );
 extern void SFDDumpCharStartingMarker(FILE *sfd,SplineChar *sc);
+
+/**
+ * Create, open and unlink a new temporary file. This allows the
+ * caller to write to and read from the file without needing to worry
+ * about cleaning up the filesystem at all.
+ *
+ * On Linux, this will create a new file in /tmp with a secure name,
+ * open it, and delete the file from the filesystem. The application
+ * can still happily use the file as it has it open, but once it is
+ * closed or the application itself closes (or crashes) then the file
+ * will be expunged for you by the kernel.
+ *
+ * The caller can fclose() the returned file. Other applications will
+ * not be able to find the file by name anymore when this call
+ * returns.
+ */
 extern FILE* MakeTemporaryFile(void);
+
+/*
+ * Convert the contents of a File* to a newly allocated string
+ * The caller needs to free the returned string.
+ */
 extern char* FileToAllocatedString( FILE *f );
 extern char *getquotedeol(FILE *sfd);
 extern int getname(FILE *sfd, char *tokbuf);
@@ -1236,5 +1257,6 @@ extern void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok );
 extern void SFDGetPSTs( FILE *sfd, SplineChar *sc, char* ttok );
 extern char* SFDMoveToNextStartChar( FILE* sfd );
 extern void SFDFixupRefs(SplineFont *sf);
+
 
 #endif	/* _VIEWS_H */

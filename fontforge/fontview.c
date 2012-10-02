@@ -1542,19 +1542,23 @@ static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SplineFont *sf = fvb->sf;
     char* sfdchunk = 0;
     
-    printf("we currently have %d splinefont level undoes\n", dlist_size((struct dlistnode **)&sf->undoes));
+    // printf("we currently have %d splinefont level undoes\n", dlist_size((struct dlistnode **)&sf->undoes));
     if( !sf->undoes )
 	return;
-
+    
     struct sfundoes *undo = sf->undoes;
-    printf("font level undo msg:%s\n", undo->msg );
+    // printf("font level undo msg:%s\n", undo->msg );
     switch(undo->type) {
     case sfut_lookups_kerns:
     case sfut_lookups:
 	sfdchunk = undo->u.lookupatomic.sfdchunk;
-	printf("Lookup table undo. SFD Chunk:%p len:%ld\n", sfdchunk, strlen(sfdchunk) );
-
-	// FIXME: Roll it on back!
+	if( !sfdchunk ) {
+	    ff_post_error(_("Undo information incomplete"),_("There is an splinefont level undo, but it does not contain any information to perform the undo. This is an application error, please report what you last did to the lookup tables so the developers can try to reproduce the issue and fix it."));
+	    dlist_erase( (struct dlistnode **)&sf->undoes, (struct dlistnode *)undo );
+	    return;
+	}
+	
+	// Roll it on back!
 	FILE* sfd = MakeTemporaryFile();
 	fwrite( sfdchunk, strlen(sfdchunk), 1, sfd );
 	fseek( sfd, 0, SEEK_SET );
@@ -1563,44 +1567,34 @@ static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    char* name = SFDMoveToNextStartChar( sfd );
 	    if( !name )
 		break;
-	    printf("glyphp: %p\n", name );
-	    printf("glyphs: %s\n", name );
 
 	    int unienc = 0;
 	    SplineChar *sc;
 	    sc = SFGetChar( sf, unienc, name );
 	    if( !sc ) {
-		printf("WARNING: couldn't find the character %s\n", name );
+		ff_post_error(_("Bad undo"),_("couldn't find the character %s"), name );
+		return;
 	    }
 	    if( sc ) {
-		// FIXME: free the stuff in sc->psts so we don't leak it.
-		printf("should free the PST here so taht the GetPSTs() can recreate it. pst %p len:%d\n",
-		       sc->possub, pstLength( sc->possub ));
+		// Free the stuff in sc->psts so we don't leak it.
 		if( undo->type == sfut_lookups ) {
 		    PSTFree(sc->possub);
 		    sc->possub = 0;
 		}
 		char tok[2000];
 		getname( sfd, tok );
-		printf("tok: %s\n", tok );
 		SFDGetPSTs( sfd, sc, tok );
 		SFDGetKerns( sfd, sc, tok );
-		
-		printf("after load pst %p len:%d\n", sc->possub, pstLength( sc->possub ));
 	    }
-	    printf("done with glyph: %s\n", name );
 	    free(name);
 	}
 	
 	if( undo->type == sfut_lookups_kerns ) {
-	    printf("calling fixups...\n" );
 	    SFDFixupRefs( sf );
 	}
-	
-	printf("st lookups undo finished...\n" );
 	break;
     }
-    dlist_erase( (struct dlistnode **)&sf->undoes, undo );
+    dlist_erase( (struct dlistnode **)&sf->undoes, (struct dlistnode *)undo );
 }
 
 static void FVMenuCut(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -4489,7 +4483,7 @@ static GMenuItem2 sllist[] = {
 static GMenuItem2 edlist[] = {
     { { (unichar_t *) N_("_Undo"), (GImage *) "editundo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Undo|Ctl+Z"), NULL, NULL, FVMenuUndo, MID_Undo },
     { { (unichar_t *) N_("_Redo"), (GImage *) "editredo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Redo|Ctl+Y"), NULL, NULL, FVMenuRedo, MID_Redo},
-    { { (unichar_t *) N_("Undo Fontlevel"), (GImage *) "editundo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Undo Fontlevel"), NULL, NULL, FVMenuUndoFontLevel, MID_UndoFontLevel },
+    { { (unichar_t *) N_("Undo Fontlevel"), (GImage *) "editundo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Undo Fontlevel|No Shortcut"), NULL, NULL, FVMenuUndoFontLevel, MID_UndoFontLevel },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Cu_t"), (GImage *) "editcut.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, H_("Cut|Ctl+X"), NULL, NULL, FVMenuCut, MID_Cut },
     { { (unichar_t *) N_("_Copy"), (GImage *) "editcopy.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Copy|Ctl+C"), NULL, NULL, FVMenuCopy, MID_Copy },

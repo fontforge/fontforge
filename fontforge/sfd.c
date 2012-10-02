@@ -1998,21 +1998,42 @@ static void SFDFpstClassNamesOut(FILE *sfd,int class_cnt,char **classnames,char 
     }
 }
 
+/**
+ * Get the path name of /tmp or equivalent on the current system.
+ * The return value should not be freed by the caller
+ */
+static char* getSlashTempName() {
+    char* t = 0;
+    
+    if((t=getenv("TMPDIR"))) {
+	return t;
+    }
+    
+#ifndef P_tmpdir
+#define P_tmpdir	"/tmp"
+#endif
+    return P_tmpdir;
+}
+
+
 FILE* MakeTemporaryFile() 
 {
     FILE * ret = 0;
-    char template[100];
+    char template[PATH_MAX];
     int fd;
 
-    strcpy( template, "fontforge-stemp-XXXXXX" );
+    strcpy( template, getSlashTempName() );
+    strcat( template, "/" );
+    strcat( template, "fontforge-stemp-XXXXXX" );
     fd = mkstemp( template );
     ret = fdopen( fd, "r+" );
-
+    unlink( template );
     return ret;
 }
 
-/*
- * Convert the contents of a File* to a newly allocated string
+/**
+ * Read an entire file from the given open file handle and return that data
+ * as an allocated string that the caller must free.
  */
 char* FileToAllocatedString( FILE *f ) 
 {
@@ -2027,14 +2048,11 @@ char* FileToAllocatedString( FILE *f )
     ret[fsize] = '\0';
     bread = fread( ret, 1, fsize, f );
     if( bread != fsize ) {
-	printf("FileToAllocatedString() read failed. bread:%d fsize:%d\n", (int)bread, (int)fsize );
+	fprintf(stderr,_("Failed to read a file. Bytes read:%ld file size:%ld\n"), bread, fsize );
+	return 0;
     }
-    printf("FileToAllocatedString() ok. bread:%d fsize:%d\n", (int)bread, (int)fsize );
-    printf("FileToAllocatedString() ok. ret:%p\n", ret );
     return ret;
 }
-
-
 
 
 
@@ -4518,7 +4536,6 @@ void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok ) {
     SplineFont *sli_sf = sf->cidmaster ? sf->cidmaster : sf;
 
     strcpy( tok, ttok );
-    printf("SFDGetKerns() tok:%s\n",tok);
 
     if( strmatch(tok,"Kerns2:")==0 ||
 	strmatch(tok,"VKerns2:")==0 ) {
@@ -4527,7 +4544,6 @@ void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok ) {
 	    int off, index;
 	    struct lookup_subtable *sub;
 	    int kernCount = 0;
-	    printf("SFDGetKerns() have a kern!!\n");
 	    if ( sf->sfd_version<2 )
 		LogError(_("Found an new style kerning pair inside a version 1 (or lower) sfd file.\n") );
 	    while ( fscanf(sfd,"%d %d", &index, &off )==2 ) {
@@ -4793,18 +4809,13 @@ char* SFDMoveToNextStartChar( FILE* sfd ) {
     memset( ret, '\0', 2000 );
     char* line = 0;
     while((line = getquotedeol( sfd ))) {
-// 	printf("SFDMoveToNextStartChar() line:%s\n", line );
 	if( !strnmatch( line, "StartChar:", strlen( "StartChar:" ))) {
 	    // FIXME: use the getname()/SFDReadUTF7Str() combo
 	    // from SFDGetChar
 	    int len = strlen("StartChar:");
-//	    printf("SFDMoveToNextStartChar() len1:%d\n", len );
 	    while( line[len] && line[len] == ' ' )
 		len++;
-//	    printf("SFDMoveToNextStartChar() len2:%d\n", len );
 	    strcpy( ret, line+len );
-//	    printf("SFDMoveToNextStartChar() retp:%p\n", ret );
-//	    printf("SFDMoveToNextStartChar() rets:%s\n", ret );
 	    return copy(ret);
 	}
 	if(feof( sfd ))
@@ -4812,35 +4823,6 @@ char* SFDMoveToNextStartChar( FILE* sfd ) {
 	
     }
     return 0;
-    
-    /* strcpy(ret,""); */
-    /* while ( 1 ) { */
-    /* 	if ( getname(sfd,tok)!=1 ) { */
-    /* 	    return(NULL); */
-    /* 	} */
-    /* 	printf("name:%s\n", tok ); */
-    /* 	if ( strmatch(tok,"StartChar:")==0 ) { */
-    /* 	    printf("have startchar...\n"); */
-    /* 	    while ( isspace(ch=nlgetc(sfd))); */
-    /* 	    ungetc(ch,sfd); */
-    /* 	    if ( ch!='"' ) { */
-    /* 		if ( getname(sfd,tok)!=1 ) { */
-    /* 		    return( NULL ); */
-    /* 		} */
-    /* 		strcpy(ret,tok); */
-    /* 	    } else { */
-    /* 		char* pt = SFDReadUTF7Str(sfd); */
-    /* 		if ( pt==NULL ) { */
-    /* 		    return( NULL ); */
-    /* 		} */
-    /* 		strcpy(ret,pt); */
-    /* 		free(pt); */
-    /* 	    } */
-    /* 	    return ret; */
-    /* 	} */
-    /* } */
-    
-    return(NULL);
 }
 
 
@@ -5939,7 +5921,6 @@ void SFDFixupRefs(SplineFont *sf) {
 	    for ( isv=0; isv<2; ++isv ) {
 		for ( prev = NULL, kp=isv?sc->vkerns : sc->kerns; kp!=NULL; kp=next ) {
 		    int index = (intpt) (kp->sc);
-		    printf("kp->sc:%p\n",kp->sc);
 
 		    next = kp->next;
 		    // be impotent if the reference is already to the correct location
@@ -5961,10 +5942,6 @@ void SFDFixupRefs(SplineFont *sf) {
 			    }
 			}
 			if ( index>=ksf->glyphcnt || ksf->glyphs[index]==NULL ) {
-			    printf("index:%d glyphcnt:%d\n",index,ksf->glyphcnt);
-			    if( index < ksf->glyphcnt )
-				printf("ptr:%p\n", ksf->glyphs[index] );
-			
 			    IError( "Bad kerning information in glyph %s\n", sc->name );
 			    kp->sc = NULL;
 			} else {
