@@ -869,7 +869,7 @@ void FVOverlap(FontViewBase *fv,enum overlap_type ot) {
     ff_progress_end_indicator();
 }
 
-void FVAddExtrema(FontViewBase *fv) {
+void FVAddExtrema(FontViewBase *fv, int force_adding ) {
     int i, cnt=0, layer, first, last, gid;
     SplineChar *sc;
     SplineFont *sf = fv->sf;
@@ -894,7 +894,8 @@ void FVAddExtrema(FontViewBase *fv) {
 	    first = last = fv->active_layer;
 	for ( layer = first; layer<=last; ++layer ) {
 	    SCPreserveLayer(sc,layer,false);
-	    SplineCharAddExtrema(sc,sc->layers[layer].splines,ae_only_good,emsize);
+	    SplineCharAddExtrema(sc, sc->layers[layer].splines, 
+		force_adding? ae_all : ae_only_good, emsize);
 	}
 	SCCharChangedUpdate(sc,fv->active_layer);
 	if ( !ff_progress_next())

@@ -1676,7 +1676,7 @@ void FontViewMenu_CanonicalContours(GtkMenuItem *menuitem, gpointer user_data) {
 }
 
 void FontViewMenu_AddExtrema(GtkMenuItem *menuitem, gpointer user_data) {
-    FVAddExtrema( (FontViewBase *) FV_From_MI(menuitem) );
+    FVAddExtrema( (FontViewBase *) FV_From_MI(menuitem) , false);
 }
 
 void FontViewMenu_CorrectDir(GtkMenuItem *menuitem, gpointer user_data) {
