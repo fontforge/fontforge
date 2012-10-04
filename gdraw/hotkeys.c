@@ -88,7 +88,7 @@ hotkeyFindAllByStateAndKeysym( char* windowType, uint16 state, uint16 keysym ) {
 	    if( keysym == hk->keysym ) {
 		if( state == hk->state ) {
 		    if( hotkeyHasMatchingWindowTypeString( windowType, hk ) ) {
-			dlist_pushfront_external( &ret, hk );
+			dlist_pushfront_external( (struct dlistnode **)&ret, hk );
 		    }
 		}
 	    }
@@ -182,7 +182,7 @@ static Hotkey* hotkeySetFull( char* action, char* keydefinition, int append, int
     // then we move along
     if( !hk->state && !hk->keysym ) {
 	free(hk);
-	return;
+	return 0;
     }
 	
     // If we already have a binding for that hotkey combination
@@ -191,13 +191,14 @@ static Hotkey* hotkeySetFull( char* action, char* keydefinition, int append, int
 	Hotkey* oldkey = hotkeyFindByStateAndKeysym( hotkeyGetWindowTypeString(hk),
 						     hk->state, hk->keysym );
 	if( oldkey ) {
-	    dlist_erase( &hotkeys, oldkey );
+	    dlist_erase( &hotkeys, (struct dlistnode *)oldkey );
 	    free(oldkey);
 	}
     }
 	
     hk->isUserDefined = isUserDefined;
-    dlist_pushfront( &hotkeys, hk );
+    dlist_pushfront( &hotkeys, (struct dlistnode *)hk );
+    return hk;
 }
 Hotkey* hotkeySet( char* action, char* keydefinition, int append )
 {
@@ -261,12 +262,12 @@ void hotkeysLoad()
     char* currentlocale = copy(setlocale(LC_MESSAGES, 0));
     snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", SHAREDIR, currentlocale);
     loadHotkeysFromFile( localefn, false );
-    while( p = strrchr( currentlocale, '.' )) {
+    while((p = strrchr( currentlocale, '.' ))) {
 	*p = '\0';
 	snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", SHAREDIR, currentlocale);
 	loadHotkeysFromFile( localefn, false );
     }
-    while( p = strrchr( currentlocale, '_' )) {
+    while((p = strrchr( currentlocale, '_' ))) {
 	*p = '\0';
 	snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", SHAREDIR, currentlocale);
 	loadHotkeysFromFile( localefn, false );
@@ -303,7 +304,8 @@ void hotkeysSave() {
 	return;
     }
 
-    dlist_foreach_reverse_udata( &hotkeys, hotkeysSaveCallback, f );
+    dlist_foreach_reverse_udata( &hotkeys,
+				 (dlist_foreach_udata_func_type)hotkeysSaveCallback, f );
     fsync(fileno(f));
     fclose(f);
 
