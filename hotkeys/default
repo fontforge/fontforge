@@ -232,7 +232,7 @@ CharView.Menu.Help.Index:Ctl+F1
 CharView.Menu.Help.About...:No Shortcut
 CharView.Menu.Help.License...:No Shortcut
 
-FontView.Menu.File.New: Ctl+n
+FontView.Menu.File.New: Ctl+N
 FontView.Menu.File.Hangul.New Composition...:Ctl+Shft+N
 FontView.Menu.File.Hangul.Modify Composition...:No Shortcut
 FontView.Menu.File.Hangul.Build Syllables:No Shortcut
