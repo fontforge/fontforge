@@ -39,6 +39,7 @@ extern int _GScrollBar_Width;
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
+#include "dlist.h"
 
 /* Barry wants to be able to redefine menu bindings only in the charview (I think) */
 /*  the menu parser will first check for something like "CV*Open|Ctl+O", and */
@@ -150,6 +151,7 @@ static Color fillcol = 0x80707070;		/* Translucent */
 static Color tracecol = 0x008000;
 static Color rulerbigtickcol = 0x008000;
 static Color previewfillcol = 0x0f0f0f;
+
 
 static int cvcolsinited = false;
 static struct resed charview_re[] = {
@@ -3147,6 +3149,21 @@ return;
     cv->map_of_enc = map;
     cv->enc = i;
     CVChangeSC(cv,sc);
+}
+
+static void CVSwitchToTab(CharView *cv,int tnum ) {
+    if( tnum >= cv->former_cnt )
+	return;
+    
+    SplineFont *sf = cv->b.fv->sf;
+    char* n = cv->former_names[tnum];
+    int unienc = UniFromName(n,sf->uni_interp,cv->b.fv->map->enc);
+    CVChangeChar(cv,unienc);
+}
+
+static void CVMenuShowTab(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    CVSwitchToTab(cv,mi->mid);
 }
 
 static int CVChangeToFormer( GGadget *g, GEvent *e) {
@@ -6769,6 +6786,10 @@ static void cv_pllistcheck(CharView *cv, struct gmenuitem *mi) {
 static void pllistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     cv_pllistcheck(cv, mi);
+}
+
+static void tablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
 }
 
 static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -10817,6 +10838,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
 	ff_post_error(_("You may not use spiros"),_("This glyph should display spiro points, but unfortunately FontForge was unable to load libspiro, spiros are not available for use, and normal bezier points will be displayed instead."));
 #endif
     }
+    
 }
 
 void DefaultY(GRect *pos) {
@@ -10889,6 +10911,8 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv,int enc) {
 
     cv->gw = gw = GDrawCreateTopWindow(NULL,&pos,cv_e_h,cv,&wattrs);
     free( (unichar_t *) wattrs.icon_title );
+    GDrawSetWindowTypeName(cv->gw, "CharView");
+    
 
     GDrawGetSize(GDrawGetRoot(screen_display),&zoom);
     zoom.x = CVPalettesWidth(); zoom.width -= zoom.x-10;

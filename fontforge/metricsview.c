@@ -4802,6 +4802,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->width = pos.width; mv->height = pos.height;
     mv->gwgic = GDrawCreateInputContext(mv->gw,gic_root|gic_orlesser);
     GDrawSetGIC(gw,mv->gwgic,0,20);
+    GDrawSetWindowTypeName(mv->gw, "MetricsView");
 
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;

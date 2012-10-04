@@ -579,6 +579,8 @@ extern void GGadgetProtest8(char *labelr);
 
 extern void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut);
 extern int GMenuItemParseMask(char *shortcut);
+typedef struct hotkey Hotkey;
+extern void HotkeyParse( Hotkey* hk, const char *shortcut );
 
 extern int GGadgetUndoMacEnglishOptionCombinations(GEvent *event);
 

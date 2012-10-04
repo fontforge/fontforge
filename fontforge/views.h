@@ -30,10 +30,12 @@
 #include "baseviews.h"
 
 #include <ggadget.h>
+#include "dlist.h"
 
 struct gfi_data;
 struct contextchaindlg;
 struct statemachinedlg;
+
 
 extern struct cvshows {
     int showfore, showback, showgrids, showhhints, showvhints, showdhints;

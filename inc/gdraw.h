@@ -334,6 +334,23 @@ extern int  GDrawNativeWindowExists(GDisplay *gdisp, void *native);
 extern void GDrawSetZoom(GWindow w, GRect *zoomsize, enum gzoom_flags);
 extern void GDrawSetWindowBorder(GWindow w, int width, Color color);
 extern void GDrawSetWindowBackground(GWindow w, Color color);
+
+/**
+ * Set the window type to the given name.
+ *
+ * You should not free the 'name' string, it is assumed to exist for
+ * the lifetime of the fontforge run, for example, as a constant
+ * string. No copy of name is performed.
+ */
+extern void  GDrawSetWindowTypeName(GWindow w, char* name);
+/**
+ * Get the window type string that was set with GDrawSetWindowTypeName()
+ * or NULL if no such string was set.
+ *
+ * No memory allocations are performed. You should not free the string
+ * that is returned.
+ */
+extern char* GDrawGetWindowTypeName(GWindow w);
 extern int  GDrawSetDither(GDisplay *gdisp, int dither);
 extern void GDrawReparentWindow(GWindow child,GWindow newparent, int x,int y);
 extern void GDrawSetVisible(GWindow w, int visible);
@@ -499,4 +516,5 @@ extern int GDrawKeyState(int keysym);
 
 extern int GImageGetScaledWidth(GWindow gw, GImage *img);
 extern int GImageGetScaledHeight(GWindow gw, GImage *img);
+
 #endif

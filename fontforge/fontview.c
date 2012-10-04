@@ -904,6 +904,7 @@ return;
 }
 
 static void _MenuExit(void *UNUSED(junk)) {
+
     FontView *fv, *next;
 
     LastFonts_Activate();
@@ -1357,6 +1358,7 @@ static void FVMenuCondense(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 #define MID_SaveNamelist	2841
 #define MID_RenameGlyphs	2842
 #define MID_NameGlyphs		2843
+#define MID_HideNoGlyphSlots	2844
 #define MID_CreateMM	2900
 #define MID_MMInfo	2901
 #define MID_MMValid	2902
@@ -4966,6 +4968,8 @@ static void enlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  case MID_Compact:
 	    mi->ti.checked = fv->b.normal!=NULL;
 	  break;
+	case MID_HideNoGlyphSlots:
+	    break;
 	  case MID_Reencode: case MID_ForceReencode:
 	    mi->ti.disabled = fv->b.cidmaster!=NULL;
 	  break;
@@ -7066,6 +7070,7 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
 	nexty = 0;
     fv->gw = gw = GDrawCreateTopWindow(NULL,&pos,fv_e_h,fv,&wattrs);
     FontViewSetTitle(fv);
+    GDrawSetWindowTypeName(fv->gw, "FontView");
 
     if ( !fv_fs_init ) {
 	GResEditFind( fontview_re, "FontView.");

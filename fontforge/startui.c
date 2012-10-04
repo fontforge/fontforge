@@ -38,6 +38,8 @@
 #include <stdlib.h>		/* getenv,setenv */
 #include <sys/stat.h>
 #include <sys/types.h>
+#include "../gdraw/hotkeys.h"
+
 #ifdef _NO_LIBPNG
 #  define PNGLIBNAME	"libpng"
 #else
@@ -705,45 +707,6 @@ return( true );
 }
 #endif
 
-static char *getLocaleDir(void) {
-    static char *sharedir=NULL;
-    static int set=false;
-    char *pt;
-    int len;
-
-    if ( set )
-return( sharedir );
-
-    set = true;
-
-#if defined(__MINGW32__)
-
-    len = strlen(GResourceProgramDir) + strlen("/share/locale") +1;
-    sharedir = galloc(len);
-    strcpy(sharedir, GResourceProgramDir);
-    strcat(sharedir, "/share/locale");
-    return sharedir;
-
-#else
-
-    pt = strstr(GResourceProgramDir,"/bin");
-    if ( pt==NULL ) {
-#if defined(SHAREDIR)
-return( sharedir = SHAREDIR "/../locale" );
-#elif defined( PREFIX )
-return( sharedir = PREFIX "/share/locale" );
-#else
-	pt = GResourceProgramDir + strlen(GResourceProgramDir);
-#endif
-    }
-    len = (pt-GResourceProgramDir)+strlen("/share/locale")+1;
-    sharedir = galloc(len);
-    strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
-    strcpy(sharedir+(pt-GResourceProgramDir),"/share/locale");
-return( sharedir );
-
-#endif
-}
 
 #if defined(__Mac)
 static int hasquit( int argc, char **argv ) {
@@ -878,6 +841,7 @@ int fontforge_main( int argc, char **argv ) {
 #endif
 
     InitSimpleStuff();
+    FindProgDir(argv[0]);
 
 #if defined(__MINGW32__)
     {
@@ -952,6 +916,8 @@ int fontforge_main( int argc, char **argv ) {
     GGadgetSetImageDir(SHAREDIR "/pixmaps");
     GResourceAddResourceFile(SHAREDIR "/resources/fontforge.resource",GResourceProgramName,false);
 #endif
+    hotkeysLoad();
+
 
     if ( load_prefs!=NULL && strcasecmp(load_prefs,"Always")==0 )
 	LoadPrefs();
@@ -1211,6 +1177,8 @@ exit( 0 );
 	MenuOpen(NULL,NULL,NULL);
     GDrawEventLoop(NULL);
 
+    hotkeysSave();
+    
     uninm_names_db_close(names_db);
     lt_dlexit();
 
