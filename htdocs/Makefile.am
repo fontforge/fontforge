@@ -233,7 +233,7 @@ ROOT_DOC_LIST = AA-Comparison.html aacutebase.png aacutemid.png			\
 	windowmenu.html wItalic.png x-height.png xim.html xItalic.png		\
 	xres.html Big5.txt colorpicker.jpeg corpchar.txt fftype300.svg		\
 	fontforge-banner-420.jpeg FontForge.css Metal-fontforge-600.jpeg	\
-	MetalType.jpeg
+	MetalType.jpeg hotkeys.html hotkeys.jpeg
 
 JA_DOC_LIST = ja/AA-Comparison.html ja/AmbrosiaFV.png ja/BDFgrey.html	\
 	ja/BitmapView.png ja/FontForge.css ja/GenerateFamily.png			\

@@ -572,7 +572,7 @@ extern void _ggadget_destroy(GGadget *g);
 extern GWindow GListPopupCreate(GGadget *owner,void (*inform)(GGadget *,int), GTextInfo **ti);
 
 extern int GMenuPopupCheckKey(GEvent *event);
-extern int GMenuBarCheckKey(GGadget *g, GEvent *event);
+extern int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event);
 extern void _GButton_SetDefault(GGadget *g,int32 is_default);
 extern void _GButtonInit(void);
 extern void GListMarkDraw(GWindow pixmap,int x, int y, int height, enum gadget_state state );
