@@ -1794,7 +1794,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     GMenuItem *mi;
     unichar_t keysym = event->u.chr.keysym;
 
-    printf("GMenuBarCheckKey() keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
+//    printf("GMenuBarCheckKey() keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
     if ( g==NULL )
 return( false );
     if ( keysym==0 )
@@ -1835,12 +1835,12 @@ return( true );
 
     /* then look for hotkeys everywhere */
 	
-	printf("looking for hotkey in new system...keysym:%d\n", event->u.chr.keysym );
+//	printf("looking for hotkey in new system...keysym:%d\n", event->u.chr.keysym );
 	struct dlistnodeExternal* hklist = hotkeyFindAllByEvent( top, event );
 	struct dlistnodeExternal* node = hklist;
 	for( ; node; node=node->next ) {
 	    Hotkey* hk = (Hotkey*)node->ptr;
-	    printf("hotkey found by event! hk:%p\n", hk );
+//	    printf("hotkey found by event! hk:%p\n", hk );
 	    mi = GMenuSearchAction(mb->g.base,mb->mi,hk->action,event,mb->child==NULL);
 	    if ( mi ) {
 		if ( mi->ti.checkable && !mi->ti.disabled )
@@ -1855,7 +1855,7 @@ return( true );
 		
 	    }
 	    
-	    printf("END hotkey found by event! hk:%p\n", hk );
+//	    printf("END hotkey found by event! hk:%p\n", hk );
 	}
 	dlist_free_external(hklist);
 	
