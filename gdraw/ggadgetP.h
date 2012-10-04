@@ -278,7 +278,6 @@ typedef struct gtextfield {
     unsigned int accepts_tabs: 1;
     unsigned int accepts_returns: 1;
     unsigned int wrap: 1;
-    unsigned int dobitext: 1;	/* has at least one right to left character */
     unsigned int password: 1;
     unsigned int dontdraw: 1;	/* Used when the tf is part of a larger control, and the control determines when to draw the tf */
     unsigned int donthook: 1;	/* Used when the tf is part of a the gchardlg.c */
@@ -286,7 +285,6 @@ typedef struct gtextfield {
     unsigned int incr_down: 1;	/* Direction of increments when numeric_scroll events happen */
     unsigned int completionfield: 1;
     unsigned int was_completing: 1;
-    unsigned int pango: 1;
     uint8 fh;
     uint8 as;
     uint8 nw;			/* Width of one character (an "n") */
@@ -302,8 +300,6 @@ typedef struct gtextfield {
     GScrollBar *hsb, *vsb;
     int16 lcnt, lmax;
     int32 *lines;		/* offsets in text to the start of the nth line */
-    GBiText bidata;
-    int32 bilen;		/* allocated size of bidata */
     int16 xmax;
     GIC *gic;
     GTimer *numeric_scroll;
@@ -391,6 +387,7 @@ typedef struct gfilechooser {
     unichar_t *wildcard;
     unichar_t *lastname;
     GFileChooserFilterType filter;
+    GFileChooserInputFilenameFuncType inputfilenamefunc;
     /*enum fchooserret (*filter)(GGadget *chooser,struct gdirentry *file,const unichar_t *dir);*/
     struct giocontrol *outstanding;
     GCursor old_cursor;
@@ -399,6 +396,7 @@ typedef struct gfilechooser {
     struct ghvbox *topbox;
     unichar_t **history;
     unichar_t **paths;
+    unichar_t *inputfilenameprevchar;
     int hpos, hcnt, hmax;
 } GFileChooser;
 

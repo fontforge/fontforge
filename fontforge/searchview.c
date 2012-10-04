@@ -376,14 +376,14 @@ static void SVDraw(SearchView *sv, GWindow pixmap, GEvent *event) {
 	GDrawSetFont(pixmap,sv->plain);
     else
 	GDrawSetFont(pixmap,sv->bold);
-    GDrawDrawBiText8(pixmap,10,sv->mbh+5+sv->as,
-	    _("Search Pattern:"),-1,NULL,0);
+    GDrawDrawText8(pixmap,10,sv->mbh+5+sv->as,
+	    _("Search Pattern:"),-1,0);
     if ( sv->cv_rpl.inactive )
 	GDrawSetFont(pixmap,sv->plain);
     else
 	GDrawSetFont(pixmap,sv->bold);
-    GDrawDrawBiText8(pixmap,sv->rpl_x,sv->mbh+5+sv->as,
-	    _("Replace Pattern:"),-1,NULL,0);
+    GDrawDrawText8(pixmap,sv->rpl_x,sv->mbh+5+sv->as,
+	    _("Replace Pattern:"),-1,0);
     r.x = 10-1; r.y=sv->cv_y-1;
     r.width = sv->cv_width+1; r.height = sv->cv_height+1;
     GDrawDrawRect(pixmap,&r,0);
@@ -699,7 +699,7 @@ return( NULL );
 	boldfont = GResourceFindFont("SearchView.BoldFont",boldfont);
     }
     sv->plain = plainfont; sv->bold = boldfont;
-    GDrawFontMetrics(sv->plain,&as,&ds,&ld);
+    GDrawWindowFontMetrics(sv->gw,sv->plain,&as,&ds,&ld);
     sv->fh = as+ds; sv->as = as;
 
     SVCharViewInits(sv);

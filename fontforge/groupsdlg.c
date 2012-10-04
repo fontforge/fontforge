@@ -148,9 +148,9 @@ static int _GroupSBSizes(struct groupdlg *grp, Group *group, int lpos, int depth
 
     group->lpos = lpos++;
 
-    len = 5+8*depth+ grp->as + 5 + GDrawGetBiText8Width(grp->v,group->name,-1,-1,NULL);
+    len = 5+8*depth+ grp->as + 5 + GDrawGetText8Width(grp->v,group->name,-1);
     if ( group->glyphs!=NULL )
-	len += 5 + GDrawGetBiText8Width(grp->v,group->glyphs,-1,-1,NULL);
+	len += 5 + GDrawGetText8Width(grp->v,group->glyphs,-1);
     if ( len > grp->maxl )
 	grp->maxl = len;
 
@@ -239,9 +239,9 @@ static void GroupWExpose(struct groupdlg *grp,GWindow pixmap,GRect *rect) {
 		GDrawDrawLine(pixmap,r.x+grp->as/2,r.y+2,r.x+grp->as/2,r.y+grp->as-2,
 			fg);
 	}
-	len = GDrawDrawBiText8(pixmap,r.x+r.width+5,y,group->name,-1,NULL,fg);
+	len = GDrawDrawText8(pixmap,r.x+r.width+5,y,group->name,-1,fg);
 	if ( group->glyphs )
-	    GDrawDrawBiText8(pixmap,r.x+r.width+5+len+5,y,group->glyphs,-1,NULL,fg);
+	    GDrawDrawText8(pixmap,r.x+r.width+5+len+5,y,group->glyphs,-1,fg);
 	group = GroupNext(group,&depth);
 	y += grp->fh;
 	if ( y-grp->fh>rect->y+rect->height )
@@ -555,11 +555,11 @@ static void GroupWCreate(struct groupdlg *grp,GRect *pos) {
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 12;
 	rq.weight = 400;
-	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(grp->gw),&rq);
+	font = GDrawInstanciateFont(grp->gw,&rq);
 	font = GResourceFindFont("Groups.Font",font);
     }
     grp->font = font;
-    GDrawFontMetrics(grp->font,&as,&ds,&ld);
+    GDrawWindowFontMetrics(grp->gw,grp->font,&as,&ds,&ld);
     grp->fh = as+ds; grp->as = as;
 
     grp->lines_page = (pos->height-grp->bmargin)/grp->fh;

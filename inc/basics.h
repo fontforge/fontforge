@@ -82,5 +82,16 @@ extern void gfree(void *);
 #endif /* USE_OUR_MEMORY */
 
 extern void galloc_set_trap(void (*)(void));
+
+static inline int imin(int a, int b)
+{
+    return (a < b) ? a : b;
+}
+
+static inline int imax(int a, int b)
+{
+    return (a < b) ? b : a;
+}
+
 #endif
 

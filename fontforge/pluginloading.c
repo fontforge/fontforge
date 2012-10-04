@@ -25,9 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "intl.h"
-#include "basics.h"
-#include "pluginloading.h"
+#include <intl.h>
+#include <basics.h>
+#include <pluginloading.h>
 
 static int inited = false;
 

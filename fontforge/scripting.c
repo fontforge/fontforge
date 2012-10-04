@@ -4923,9 +4923,14 @@ static void bNearlyLines(Context *c) {
 }
 
 static void bAddExtrema(Context *c) {
-    if ( c->a.argc!=1 )
+    if ( c->a.argc==1 )
+	FVAddExtrema(c->curfv, false);
+    else if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_int )
+	    ScriptError( c, "Bad type for argument" );
+	FVAddExtrema(c->curfv, (c->a.vals[1].u.ival != 0));
+    } else
 	ScriptError( c, "Wrong number of arguments");
-    FVAddExtrema(c->curfv);
 }
 
 static void SCMakeLine(SplineChar *sc) {
@@ -5279,19 +5284,19 @@ static void bAutoHint(Context *c) {
 static void bSubstitutionPoints(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVAutoHint(c->curfv);
+    FVAutoHintSubs(c->curfv);
 }
 
 static void bAutoCounter(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVAutoHint(c->curfv);
+    FVAutoCounter(c->curfv);
 }
 
 static void bDontAutoHint(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVAutoHint(c->curfv);
+    FVDontAutoHint(c->curfv);
 }
 
 static void bAutoInstr(Context *c) {

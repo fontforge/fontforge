@@ -1205,7 +1205,7 @@ GResInfo *_GListRIHead(void) {
     if ( !glist_inited )
 	GListInit();
     /* bp = GBoxBorderWidth(GDrawGetRoot(NULL),&list_box);*/	/* This gives bizarre values */
-    GDrawFontMetrics(list_font,&as, &ds, &ld);	/* I don't have a window yet... */
+    GDrawWindowFontMetrics(GDrawGetRoot(NULL),list_font,&as, &ds, &ld);	/* I don't have a window yet... */
     list_gcd[0].gd.pos.height = list_gcd[1].gd.pos.height = 2*(as+ds)+4;
 return( &glist_ri );
 }

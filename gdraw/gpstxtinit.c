@@ -523,8 +523,6 @@ return( true );
 	    closedir(file);
 	}
     }
-    _GDraw_RemoveDuplicateFonts(fonts);
-    _GDraw_FillLastChance(fonts);
     fonts->names_loaded = true;
 return( fonts->names_loaded );
 }
@@ -674,14 +672,6 @@ void _GPSDraw_CopyFile(FILE *to, FILE *from) {
     fputc('\n',to);
 }
 
-void *_GPSDraw_LoadFontMetrics(GDisplay *gdisp, struct font_data *base) {
-    if ( base->screen_font!=NULL )
-	base->info = (screen_display->funcs->loadFontMetrics)(screen_display,base->screen_font);
-    else
-	parse_afm(gdisp->fontstate,base->metricsfile,base);
-return( base->info );
-}
-
 void _GPSDraw_ProcessFont(GPSWindow ps, struct font_data *fd) {
     char buffer[100];
     struct font_data *base = fd->base;
@@ -745,71 +735,4 @@ void _GPSDraw_ProcessFont(GPSWindow ps, struct font_data *fd) {
     }
 
     fd->needsprocessing = false;
-}
-
-struct font_data *_GPSDraw_ScaleFont(GDisplay *gdisp, struct font_data *base,
-	FontRequest *rq) {
-    char buffer[100];
-    struct font_data *fd;
-    double factor = 1.0;
-    int style = rq->style;
-    int point = rq->point_size;
-
-    if ( base->info==NULL )
-	_GPSDraw_LoadFontMetrics(gdisp,base);
-
-    if ( ((style&fs_italic) && !(base->style&fs_italic)) ||
-	    ((style&fs_extended) && !(base->style&fs_extended)) ||
-	    ((style&fs_condensed) && !(base->style&fs_condensed)) ) {
-	sprintf( buffer, "%s__%d_%s%s%s", base->localname, point,
-		((style&fs_italic) && !(base->style&fs_italic))? "O":"",
-		((style&fs_extended) && !(base->style&fs_extended))? "E":"",
-		((style&fs_condensed) && !(base->style&fs_condensed))? "C":"");
-    } else {
-	sprintf( buffer, "%s__%d", base->localname, point );
-    }
-
-    fd = galloc(sizeof(struct font_data));
-    *fd = *base;
-    fd->style |= (style&(fs_italic|fs_extended|fs_condensed));
-    fd->localname = copy(buffer);
-    fd->point_size = point;
-    fd->is_scalable = false;
-    fd->was_scaled = true;
-    fd->needsprocessing = true;
-    fd->base = base;
-
-    fd->scale_metrics_by = (factor*fd->point_size*gdisp->res)*65536/72000;
-return( fd );
-}
-
-struct font_data *_GPSDraw_StylizeFont(GDisplay *gdisp, struct font_data *base, FontRequest *rq) {
-    char buffer[100];
-    struct font_data *fd;
-    double factor = 1.0;
-    int style = rq->style;
-
-    if ( ((style&fs_italic) && !(base->style&fs_italic)) ||
-	    ((style&fs_extended) && !(base->style&fs_extended)) ||
-	    ((style&fs_condensed) && !(base->style&fs_condensed)) ) {
-	sprintf( buffer, "%s_%d%s%s%s", base->localname, rq->point_size,
-		((style&fs_italic) && !(base->style&fs_italic))? "O":"",
-		((style&fs_extended) && !(base->style&fs_extended))? "E":"",
-		((style&fs_condensed) && !(base->style&fs_condensed))? "C":"");
-    } else {
-return( base );		/* Can't do anything with it */
-    }
-
-    fd = galloc(sizeof(struct font_data));
-    *fd = *base;
-    fd->style |= (style&(fs_italic|fs_extended|fs_condensed));
-    base->next = fd;
-    fd->localname = copy(buffer);
-    fd->is_scalable = false;
-    fd->was_scaled = true;
-    fd->needsprocessing = true;
-    fd->base = base;
-
-    fd->scale_metrics_by *= factor;
-return( fd );
 }

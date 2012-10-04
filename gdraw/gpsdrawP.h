@@ -47,7 +47,6 @@ typedef struct gpswindow {
     unsigned int is_popup: 1;
     unsigned int disable_expose_requests: 1;
     unsigned int usecairo: 1;		/* should be 0, not meaningful */
-    unsigned int usepango: 1;		/* should be 0, not meaningful */
     FILE *init_file;			/* Postscript style guides want all */
 					/* fonts downloaded at start, but we */
 			                /* don't know what we'll need then */
@@ -121,9 +120,6 @@ extern void _GPSDraw_Image(GWindow, GImage *, GRect *src, int32 x, int32 y);
 extern void _GPSDraw_TileImage(GWindow, GImage *, GRect *src, int32 x, int32 y);
 extern void _GPSDraw_ImageMagnified(GWindow, GImage *, GRect *src, int32 x, int32 y, int32 width, int32 height);
 
-extern void *_GPSDraw_LoadFontMetrics(GDisplay *gdisp, struct font_data *fd);
-extern struct font_data *_GPSDraw_ScaleFont(GDisplay *gdisp, struct font_data *fd, FontRequest *rq);
-extern struct font_data *_GPSDraw_StylizeFont(GDisplay *gdisp, struct font_data *fd, FontRequest *rq);
 extern void _GPSDraw_ProcessFont(GPSWindow ps, struct font_data *fd);
 
 extern double _GSPDraw_YPos(GPSWindow ps,int y);

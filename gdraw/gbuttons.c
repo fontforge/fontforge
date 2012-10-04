@@ -281,7 +281,7 @@ static int gbutton_stringsize( GButton *gb,unichar_t *label,int *lcnt ) {
     for ( pt = label; ; ) {
         for ( start=pt; *pt!='\0' && *pt!='\n'; ++pt );
         if ( pt!=start ) {
-	    int w = GDrawGetBiTextWidth(gb->g.base,start,-1,pt-start,NULL);
+	    int w = GDrawGetTextWidth(gb->g.base,start,pt-start);
 	    if ( w>maxtextwidth ) maxtextwidth=w;
         }
         ++(*lcnt);
@@ -416,14 +416,13 @@ return( false );
 	if ( lcnt==1 ) {
 	    _ggadget_underlineMnemonic(pixmap,x,g->inner.y + gb->as + yoff + off,gb->label,
 		    g->mnemonic,fg,g->inner.y+g->inner.height);
-	    x += GDrawDrawBiText(pixmap,x,g->inner.y + gb->as + yoff + off,gb->label,-1,NULL,
-		    fg );
+	    x += GDrawDrawText(pixmap,x,g->inner.y + gb->as + yoff + off,gb->label,-1,fg);
 	} else {
 	    int y = g->inner.y + gb->as + yoff + off;
 	    for ( pt = gb->label; ; ) {
 		for ( start=pt; *pt!='\0' && *pt!='\n'; ++pt );
 		if ( pt!=start )
-		    GDrawDrawBiText(pixmap,x,y,start,pt-start,NULL,fg);
+		    GDrawDrawText(pixmap,x,y,start,pt-start,fg);
 		if ( *pt=='\0' )
 	    break;
 		++pt;
@@ -741,7 +740,7 @@ static void GButtonGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
 	ltxt = gbutton_textsize(gl,&lcnt,&width);
 	if ( lcnt==1 ) {
 	    FontInstance *old = GDrawSetFont(gl->g.base,gl->font);
-	    width = GDrawGetBiTextBounds(gl->g.base,ltxt, -1, NULL, &bounds);
+	    width = GDrawGetTextBounds(gl->g.base,ltxt, -1, &bounds);
 	    GDrawSetFont(gl->g.base,old);
 	    if ( as<bounds.as ) as = bounds.as;
 	    if ( ds<bounds.ds ) ds = bounds.ds;

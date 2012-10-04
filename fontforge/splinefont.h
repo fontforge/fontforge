@@ -27,7 +27,7 @@
 #ifndef _SPLINEFONT_H
 #define _SPLINEFONT_H
 
-#include "basics.h"
+#include <basics.h>
 #include "configure-fontforge.h"
 #ifdef HAVE_ICONV_H
 # include <iconv.h>
@@ -166,7 +166,7 @@ struct grad_stops {
     real offset;
     uint32 col;
     real opacity;
-} *grad_stops;
+};
 
 struct gradient {
     BasePoint start;	/* focal of a radial gradient, start of a linear */
@@ -3246,4 +3246,8 @@ extern bigreal SFDescender(SplineFont *sf, int layer, int return_error);
 
 extern SplineChar ***GlyphClassesFromNames(SplineFont *sf,char **classnames,
 	int class_cnt );
+
+extern void SCRemoveKern(SplineChar* sc);
+extern void SCRemoveVKern(SplineChar* sc);
+
 #endif

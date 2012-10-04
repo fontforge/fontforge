@@ -29,13 +29,14 @@
 #include <stdarg.h>
 #include <string.h>
 #include <memory.h>
-#include "basics.h"
-#include "charset.h"
+#include <basics.h>
+#include <charset.h>
 
 extern char *copy(const char *);
 extern char *copyn(const char *,long);
 extern unichar_t *u_copy(const unichar_t*);
 extern unichar_t *u_copyn(const unichar_t*, long);
+extern unichar_t *u_copynallocm(const unichar_t *pt, long n, long m);
 extern unichar_t *uc_copyn(const char *, int);
 extern unichar_t *uc_copy(const char*);
 extern unichar_t *u_concat(const unichar_t*,const unichar_t*);
@@ -124,6 +125,11 @@ extern int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list
 extern int uAllAscii(const unichar_t *str);
 extern int AllAscii(const char *);
 extern char *StripToASCII(const char *utf8_str);
+
+extern char *copytolower(const char *);
+extern int endswith(const char *haystack,const char *needle);
+extern int endswithi(const char *haystack,const char *needle);
+extern int endswithi_partialExtension( const char *haystack,const char *needle);
 
 /**
  * Return true if the haystack unicode string ends with the string needle.

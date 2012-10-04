@@ -851,7 +851,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     temp.x = 52-16; temp.y = i*27; temp.width = 16; temp.height = 4*12;
     GDrawFillRect(pixmap,&temp,GDrawGetDefaultBackground(NULL));
     for ( j=0; j<4; ++j ) {
-	GDrawDrawBiText(pixmap,2,i*27+j*12+10,(unichar_t *) _Mouse[j],-1,NULL,GDrawGetDefaultForeground(NULL));
+	GDrawDrawText(pixmap,2,i*27+j*12+10,(unichar_t *) _Mouse[j],-1,GDrawGetDefaultForeground(NULL));
 	if ( (&cv->b1_tool)[j]!=cvt_none )
 	    GDrawDrawImage(pixmap,smalls[(&cv->b1_tool)[j]],NULL,52-16,i*27+j*12);
     }
@@ -1381,8 +1381,8 @@ return;
 		0x808080);
 	if ( i==0 || i==1 ) {
 	    str = i==0?_("Guide") : _("Back");
-	    GDrawDrawBiText8(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
-		    (char *) str,-1,NULL,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
+	    GDrawDrawText8(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
+		    (char *) str,-1,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
 	} else if ( layer2.offtop+i>=layer2.current_layers ) {
     break;
 	} else if ( layer2.layers[layer2.offtop+i]!=NULL ) {
@@ -1405,6 +1405,10 @@ return;
 #define MID_Earlier	5
 #define MID_Later	6
 #define MID_Last	7
+#define MID_MakeLine 100
+#define MID_MakeArc  200
+#define MID_InsertPtOnSplineAt  2309
+#define MID_NameContour  2318
 
 static void CVLayer2Invoked(GWindow v, GMenuItem *mi, GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(v);
@@ -1668,7 +1672,7 @@ return;
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
-	layersfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers2),&rq);
+	layersfont = GDrawInstanciateFont(cvlayers2,&rq);
 	layersfont = GResourceFindFont("LayersPalette.Font",layersfont);
     }
 
@@ -1896,8 +1900,8 @@ return;
                 GDrawFillRect(pixmap,&r,mocolor);
             }
             str = ( ll>=0 && ll<cv->b.sc->layer_cnt ? (cv->b.sc->layers[ll].order2? "Q" : "C") : " ");
-	    GDrawDrawBiText8(pixmap, quadcol, y + yt,
-		    (char *) str,-1,NULL,GDrawGetDefaultForeground(NULL));
+	    GDrawDrawText8(pixmap, quadcol, y + yt,
+		    (char *) str,-1,GDrawGetDefaultForeground(NULL));
         }
 
          /* draw fg/bg toggle */
@@ -1909,8 +1913,8 @@ return;
                 GDrawFillRect(pixmap,&r,mocolor);
             }
             str = ( ll>=0 && ll<cv->b.sc->layer_cnt ? (cv->b.sc->layers[ll].background? "B" : "F") : "#");
-	    GDrawDrawBiText8(pixmap, fgcol, y + yt,
-		    (char *) str,-1,NULL,GDrawGetDefaultForeground(NULL));
+	    GDrawDrawText8(pixmap, fgcol, y + yt,
+		    (char *) str,-1,GDrawGetDefaultForeground(NULL));
         }
 
          /* draw layer thumbnail and label */
@@ -1928,8 +1932,8 @@ return;
         r.x=editcol;
 	if ( ll==-1 || ll==0 || ll==1) {
 	    str = ll==-1 ? _("Guide") : (ll==0 ?_("Back") : _("Fore")) ;
-	    GDrawDrawBiText8(pixmap,r.x+2,y + yt,
-		    (char *) str,-1,NULL,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
+	    GDrawDrawText8(pixmap,r.x+2,y + yt,
+		    (char *) str,-1,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
 	} else if ( ll>=layerinfo.current_layers ) {
              break; /* no more layers to draw! */
 	} else if ( ll>=0 && layerinfo.layers[ll]!=NULL ) {
@@ -1943,8 +1947,8 @@ return;
 //		    y+as-bdfc->ymax);
             str = cv->b.sc->parent->layers[ll].name;
             if ( !str || !*str ) str="-";
-	    GDrawDrawBiText8(pixmap, r.x+2, y + yt,
-		        (char *) str,-1,NULL,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
+	    GDrawDrawText8(pixmap, r.x+2, y + yt,
+		        (char *) str,-1,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
 	}
     }
 }
@@ -2061,7 +2065,7 @@ static void CVLCheckLayerCount(CharView *cv, int resize) {
 	    } else if ( hasmn==NULL ) {
                 sprintf(namebuf,"%s", i==-1 ? _("Guide") : (i==0 ?_("Back") : _("Fore")) );
             }
-            width = GDrawGetBiText8Width(cvlayers, namebuf, strlen(namebuf), -1, NULL);
+            width = GDrawGetText8Width(cvlayers, namebuf, -1);
 	    if ( width+togsize>maxwidth ) maxwidth = width + togsize;
 	} else if ( i==-1 ) {
 	    if ( width+togsize>maxwidth ) maxwidth = width + togsize;
@@ -2816,7 +2820,7 @@ return( cvlayers );
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
-	layersfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers2),&rq);
+	layersfont = GDrawInstanciateFont(cvlayers2,&rq);
 	layersfont = GResourceFindFont("LayersPalette.Font",layersfont);
     }
     layerinfo.font = layersfont;
@@ -2997,52 +3001,82 @@ static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
       case 3:
 	CVMakeClipPath(cv);
       break;
+    case MID_MakeLine: {
+	CharView *cv = (CharView *) GDrawGetUserData(v);
+	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_alt));
+	break;
+    }
+    case MID_MakeArc: {
+	CharView *cv = (CharView *) GDrawGetUserData(v);
+	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_alt));
+	break;
+    }
+    case MID_InsertPtOnSplineAt: {
+	CharView *cv = (CharView *) GDrawGetUserData(v);
+	_CVMenuInsertPt( cv );
+	break;
+    }
+    case MID_NameContour: {
+	CharView *cv = (CharView *) GDrawGetUserData(v);
+	_CVMenuNameContour( cv );
+	break;
+    }
+      
     }
 }
 
 void CVToolsPopup(CharView *cv, GEvent *event) {
     GMenuItem mi[125];
-    int i, j, anysel;
+    int i=0;
+    int j=0;
+    int anysel=0;
     static char *selectables[] = { N_("Get Info..."), N_("Open Reference"), N_("Add Anchor"), NULL };
 
     memset(mi,'\0',sizeof(mi));
-    for ( i=0;i<=cvt_skew; ++i ) {
-	char *msg = _(popupsres[i]);
-	if ( cv->b.sc->inspiro && hasspiro()) {
-	    if ( i==cvt_spirog2 )
-		msg = _("Add a g2 curve point");
-	    else if ( i==cvt_spiroleft )
-		msg = _("Add a left \"tangent\" point");
-	    else if ( i==cvt_spiroright )
-		msg = _("Add a right \"tangent\" point");
-	}
-	mi[i].ti.text = (unichar_t *) msg;
-	mi[i].ti.text_is_1byte = true;
-	mi[i].ti.fg = COLOR_DEFAULT;
-	mi[i].ti.bg = COLOR_DEFAULT;
-	mi[i].mid = i;
-	mi[i].invoke = CVPopupInvoked;
-    }
-
-    if ( cvlayers!=NULL && !cv->b.sc->parent->multilayer ) {
-	mi[i].ti.line = true;
-	mi[i].ti.fg = COLOR_DEFAULT;
-	mi[i++].ti.bg = COLOR_DEFAULT;
-	for ( j=0;j<3; ++j, ++i ) {
-	    mi[i].ti.text = (unichar_t *) _(editablelayers[j]);
-	    mi[i].ti.text_in_resource = true;
+    anysel = CVTestSelectFromEvent(cv,event);
+    if( !anysel ) {
+	for ( i=0;i<=cvt_skew; ++i ) {
+	    char *msg = _(popupsres[i]);
+	    if ( cv->b.sc->inspiro && hasspiro()) {
+		if ( i==cvt_spirog2 )
+		    msg = _("Add a g2 curve point");
+		else if ( i==cvt_spiroleft )
+		    msg = _("Add a left \"tangent\" point");
+		else if ( i==cvt_spiroright )
+		    msg = _("Add a right \"tangent\" point");
+	    }
+	    mi[i].ti.text = (unichar_t *) msg;
 	    mi[i].ti.text_is_1byte = true;
 	    mi[i].ti.fg = COLOR_DEFAULT;
 	    mi[i].ti.bg = COLOR_DEFAULT;
-	    mi[i].mid = j;
-	    mi[i].invoke = CVPopupLayerInvoked;
+	    mi[i].mid = i;
+	    mi[i].invoke = CVPopupInvoked;
+	}
+    }
+    
+    if( !anysel ) {
+	if ( cvlayers!=NULL && !cv->b.sc->parent->multilayer ) {
+	    mi[i].ti.line = true;
+	    mi[i].ti.fg = COLOR_DEFAULT;
+	    mi[i++].ti.bg = COLOR_DEFAULT;
+	    for ( j=0;j<3; ++j, ++i ) {
+		mi[i].ti.text = (unichar_t *) _(editablelayers[j]);
+		mi[i].ti.text_in_resource = true;
+		mi[i].ti.text_is_1byte = true;
+		mi[i].ti.fg = COLOR_DEFAULT;
+		mi[i].ti.bg = COLOR_DEFAULT;
+		mi[i].mid = j;
+		mi[i].invoke = CVPopupLayerInvoked;
+	    }
 	}
     }
 
-    anysel = CVTestSelectFromEvent(cv,event);
-    mi[i].ti.line = true;
-    mi[i].ti.fg = COLOR_DEFAULT;
-    mi[i++].ti.bg = COLOR_DEFAULT;
+    if( i > 0 ) {
+	mi[i].ti.line = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i++].ti.bg = COLOR_DEFAULT;
+    }
+    
     for ( j=0;selectables[j]!=0; ++j, ++i ) {
 	mi[i].ti.text = (unichar_t *) _(selectables[j]);
 	mi[i].ti.text_is_1byte = true;
@@ -3063,6 +3097,42 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = j;
 	mi[i].invoke = CVPopupSelectInvoked;
+	i++; 
+    }
+
+    int cnt = CVCountSelectedPoints(cv);
+    if( cnt > 1 ) {
+	mi[i].ti.text = (unichar_t *) _("Make Line");
+	mi[i].ti.text_is_1byte = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = MID_MakeLine;
+	mi[i].invoke = CVPopupSelectInvoked;
+	i++;
+
+	mi[i].ti.text = (unichar_t *) _("Make Arc");
+	mi[i].ti.text_is_1byte = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = MID_MakeArc;
+	mi[i].invoke = CVPopupSelectInvoked;
+	i++;
+
+	mi[i].ti.text = (unichar_t *) _("Insert Point On Spline At...");
+	mi[i].ti.text_is_1byte = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = MID_InsertPtOnSplineAt;
+	mi[i].invoke = CVPopupSelectInvoked;
+	i++;
+
+	mi[i].ti.text = (unichar_t *) _("Name Contour");
+	mi[i].ti.text_is_1byte = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = MID_NameContour;
+	mi[i].invoke = CVPopupSelectInvoked;
+	i++;
     }
 
     cv->had_control = (event->u.mouse.state&ksm_control)?1:0;
@@ -3345,7 +3415,7 @@ return(bvlayers);
 	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
-	layersfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers2),&rq);
+	layersfont = GDrawInstanciateFont(cvlayers2,&rq);
 	layersfont = GResourceFindFont("LayersPalette.Font",layersfont);
     }
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
