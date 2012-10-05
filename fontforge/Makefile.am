@@ -85,7 +85,7 @@ if THE_PROGRAMS
 
 fontforge_SOURCES = main.c
 fontforge_CPPFLAGS = $(AM_CPPFLAGS)
-fontforge_LDADD = libfontforgeexe.la $(LDADD)
+fontforge_LDADD = libfontforgeexe.la libfontforge.la $(LDADD)
 fontforge_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -export-dynamic
 
 endif THE_PROGRAMS
