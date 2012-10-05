@@ -4530,7 +4530,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
     if ( cv->needsrasterize || cv->recentchange )
 	_CV_CharChangedUpdate(cv,2);
 
-    dlist_foreach( &cv->pointInfoDialogs, PIChangePoint );
+    dlist_foreach( &cv->pointInfoDialogs, (dlist_foreach_func_type)PIChangePoint );
 }
 
 static void CVTimer(CharView *cv,GEvent *event) {
@@ -7171,7 +7171,7 @@ static int getValueFromUser_OK(GGadget *g, GEvent *e)
 {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
         GetValueDialogData *hd = GDrawGetUserData(GGadgetGetWindow(g));
-        strcpy( hd->ret, hd->label.text );
+        strcpy( hd->ret, u_to_c(hd->label.text));
         strcpy( hd->ret, GGadgetGetTitle8(GWidgetGetControl(hd->gw,CID_getValueFromUser)));
         hd->done = true;
     }
@@ -7197,7 +7197,6 @@ static char* getValueFromUser( CharView *cv, const char* windowTitle, const char
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[9], *harray1[4], *harray2[9], *barray[7], *varray[5][2], boxes[5];
     GTextInfo label[9];
-    char buffer[200]; unichar_t ubuf[200];
 
     DATA.cancelled = false;
     DATA.done = false;
@@ -7348,7 +7347,7 @@ static char* tostr( int v )
 {
     const int bufsz = 100;
     static char buf[101];
-    snprintf(buf,bufsz,"%ld",v);
+    snprintf(buf,bufsz,"%d",v);
     return buf;
 }
 
@@ -7358,8 +7357,8 @@ static void CVRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e)
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     static int lastValue = 10;
     int v = toint(getValueFromUser( cv,
-				    "Trimming Undo Information",
-				    "How many most-recent Undos should be kept?",
+				    _("Trimming Undo Information"),
+				    _("How many most-recent Undos should be kept?"),
 				    tostr(lastValue)));
     lastValue = v;
     UndoesFreeButRetainFirstN(&cv->b.layerheads[cv->b.drawmode]->undoes,v);
