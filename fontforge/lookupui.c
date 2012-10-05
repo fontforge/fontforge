@@ -38,6 +38,7 @@
 
 int add_char_to_name_list = true;
 int default_autokern_dlg = true;
+int fontlevel_undo_limit = 2;
 
 void SFUntickAllPSTandKern(SplineFont *sf);
 int kernsLength( KernPair *kp );
@@ -3852,7 +3853,7 @@ static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
 		return 0;
 	    }
 	    if( strcmp( oglyph, nglyph )) {
-		fprintf(stderr,"mismatch between old and new SFD fragments. Skipping new glyph that is not in old...\n");
+//		fprintf(stderr,"mismatch between old and new SFD fragments. Skipping new glyph that is not in old...\n");
 		glyphsWithUndoInfoCount++;
 		SFDTrimUndoOldToNew_Output( retf, nglyph, "Kerns2: " );
 		free(nline);
@@ -3900,6 +3901,11 @@ static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
     
     char* ret = FileToAllocatedString( retf );
     return ret;
+}
+
+static void SFUndoCleanup( struct sfundoes *undo ) {
+    if( undo->u.lookupatomic.sfdchunk )
+	free( undo->u.lookupatomic.sfdchunk );
 }
 
 
@@ -4159,6 +4165,10 @@ return( true );
 	    }
 
 	    if( shouldCreateUndoEntry ) {
+
+		dlist_trim_to_limit( (struct dlistnode **)&sf->undoes, fontlevel_undo_limit,
+				     (dlist_visitor_func_type)SFUndoCleanup );
+
 		struct sfundoes *undo;
 		undo = chunkalloc(sizeof(SFUndoes));
 		undo->ln.next = 0;
