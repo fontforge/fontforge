@@ -38,7 +38,7 @@
 
 int add_char_to_name_list = true;
 int default_autokern_dlg = true;
-int fontlevel_undo_limit = 2;
+int fontlevel_undo_limit = 10;
 
 void SFUntickAllPSTandKern(SplineFont *sf);
 int kernsLength( KernPair *kp );
