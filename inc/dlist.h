@@ -75,6 +75,11 @@ struct dlistnodeExternal {
 extern void dlist_pushfront( struct dlistnode** list, struct dlistnode* node );
 
 /**
+ * Take the last node off the list and return it. If the list is empty, return 0.
+ */
+struct dlistnode* dlist_popback( struct dlistnode** list );
+
+/**
  * the number of nodes in the list
  */
 extern int  dlist_size( struct dlistnode** list );
@@ -123,4 +128,24 @@ extern void dlist_pushfront_external( struct dlistnode** list, void* ptr );
  */
 extern void dlist_free_external( struct dlistnode** list );
 
+
+typedef void (*dlist_visitor_func_type)( struct dlistnode* );
+
+/**
+ * To create a list of bounded length, use this function. Limit is the
+ * maximum length the list can reach. If list nodes have to be removed
+ * to be under this limit then "f" is used as a callback to free list
+ * nodes. This allows application specific freeing of a list node, and
+ * the ability to maintain a limit on the length of a list as a simple
+ * one line call.
+ *
+ * The current implementation expects you to only be trimming one or
+ * two entries at a time. It will still work for trimming 100 entries
+ * at a single time, but might not be quite as optimized for that case
+ * as it could be.
+ */
+extern void dlist_trim_to_limit( struct dlistnode** list, int limit, dlist_visitor_func_type f );
+
+
 #endif // _DLIST_H
+
