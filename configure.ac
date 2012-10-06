@@ -78,7 +78,7 @@ giflib_url="http://giflib.sourceforge.net/"
 libpng_url="http://www.libpng.org/"
 libxml_url="http://www.xmlsoft.org/"
 libspiro_url="http://libspiro.sourceforge.net/"
-libunicodenames_url="https://github.com/chemoelectric/libunicodenames"
+libunicodenames_url="https://github.com/sortsmill/libunicodenames"
 
 # Point to the Wikipedia page, primarily because one may want
 # libjpeg-turbo rather than the reference implementation.
