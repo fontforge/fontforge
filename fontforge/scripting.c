@@ -3011,8 +3011,8 @@ return;
 	c->curfv->selected = grealloc(c->curfv->selected,newcnt);
 	if ( newcnt>map->encmax ) {
 	    memset(c->curfv->selected+map->enccount,0,newcnt-map->enccount);
-	    map->map = grealloc(map->map,(map->encmax=newcnt+10)*sizeof(int));
-	    memset(map->map+map->enccount,-1,(newcnt-map->enccount)*sizeof(int));
+	    map->map = grealloc(map->map,(map->encmax=newcnt+10)*sizeof(int32));
+	    memset(map->map+map->enccount,-1,(newcnt-map->enccount)*sizeof(int32));
 	}
     }
     map->enccount = newcnt;
@@ -6240,9 +6240,9 @@ static void bCIDChangeSubFont(Context *c) {
 	free(c->curfv->selected);
 	c->curfv->selected = gcalloc(new->glyphcnt,sizeof(char));
 	if ( new->glyphcnt>map->encmax )
-	    map->map = grealloc(map->map,(map->encmax = new->glyphcnt)*sizeof(int));
+	    map->map = grealloc(map->map,(map->encmax = new->glyphcnt)*sizeof(int32));
 	if ( new->glyphcnt>map->backmax )
-	    map->backmap = grealloc(map->backmap,(map->backmax = new->glyphcnt)*sizeof(int));
+	    map->backmap = grealloc(map->backmap,(map->backmax = new->glyphcnt)*sizeof(int32));
 	for ( i=0; i<new->glyphcnt; ++i )
 	    map->map[i] = map->backmap[i] = i;
 	map->enccount = new->glyphcnt;
