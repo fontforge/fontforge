@@ -202,8 +202,9 @@ if test x"${i_do_have_gui}" = xyes; then
    PKG_CHECK_MODULES([PANGO],[pango >= 1.10 pangoxft])
 fi
 
+PKG_CHECK_MODULES([FREETYPE],[freetype2])
+
 FONTFORGE_ARG_WITH_CAIRO
-FONTFORGE_ARG_WITH_FREETYPE
 AC_ARG_VAR([FREETYPE_SOURCE],
         [directory where freetype source code is located for --enable-freetype-debugger;
          however, if --enable-freetype-debugger=DIR is specified, then DIR overrides
@@ -327,7 +328,6 @@ Summary of optional features:
 Summary of optional dependencies:
 
   cairo              ${i_do_have_cairo}  	${cairo_url}
-  freetype           ${i_do_have_freetype}  	${freetype_url}
   giflib             ${i_do_have_giflib}  	${giflib_url}
   libjpeg            ${i_do_have_libjpeg}  	${libjpeg_url}
   libpng             ${i_do_have_libpng}  	${libpng_url}
