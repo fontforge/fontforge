@@ -1159,7 +1159,7 @@ static GMenuItem *GMenuSearchAction( GWindow gw,
 				     int call_moveto) {
     char* windowType = GDrawGetWindowTypeName( gw );
     if( !windowType )
-	return;
+	return 0;
     printf("GMenuSearchAction() windowtype:%s\n", windowType );
     int actionlen = strlen(action);
     int prefixlen = strlen(windowType) + 1 + strlen("Menu.");
