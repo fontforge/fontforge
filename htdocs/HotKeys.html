@@ -684,13 +684,22 @@ CharView.Menu.Element.Font Info...:Ctl+o
      case only one menu will perform a task depending on if spiro mode
      is active.
   <P>
- 
-     FontForge recognizes the following standard modifiers: Alt+,
-     Ctl+, Shft+, CapsLock+, Opt+ (the last corresponds to the Option
+     There are many modifiers that FontForge recognizes which are
+     listed in the next paragraph. These are always the English name
+     for the modifier regardless of your locale. The names are fully
+     case insensitive; you can write Control, conTROL, or control and
+     they will have the same effect. The non modifier key, for example
+     's' without the quotes undergoes an internal case modification.
+     If you specify control+S this will be interpreted as control
+     being held while the 's' key is pressed. If you are wanting the
+     Shift key to be held too, you need to explicitly specify that as
+     with control+shift+s as the key definition.
+     <p>
+     FontForge recognizes the following standard modifiers: Alt, Esc
+     Ctl, Control, Ctrl, Shft, Shift, CapsLock, Opt (the last corresponds to the Option
      key on the mac keyboard, Cmd+ for the mac Command key Note: This
      can only be used by an X program if the X11 application does not
      appropriate it -- this can be configured in the X11 Preferences).
-
   <p>
         Other than the CharView window type, there are FontView and MetricsView.
   </p>
