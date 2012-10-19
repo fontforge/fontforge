@@ -1,11 +1,11 @@
-CharView.Menu.File.New: Ctl+n
-CharView.Menu.File.Open: Ctl+o
-CharView.Menu.File.Close: Ctl+Shft+q
-CharView.Menu.File.Save: Ctl+s
-CharView.Menu.File.Save as...: Ctl+Shft+s
-CharView.Menu.File.Save all: Alt+Ctl+s
-CharView.Menu.File.Generate Fonts...:Ctl+Shft+g
-CharView.Menu.File.Generate Mac Family...:Alt+Ctl+g
+CharView.Menu.File.New: control+n
+CharView.Menu.File.Open: control+o
+CharView.Menu.File.Close: control+shift+q
+CharView.Menu.File.Save: control+s
+CharView.Menu.File.Save as...: control+shift+s
+CharView.Menu.File.Save all: alt+control+s
+CharView.Menu.File.Generate Fonts...:control+shift+g
+CharView.Menu.File.Generate Mac Family...:alt+control+g
 CharView.Menu.File.Import...:Ctl+Shft+i
 CharView.Menu.File.Revert File:Ctl+Shft+r
 CharView.Menu.File.Revert Glyph:Alt+Ctl+r

@@ -609,7 +609,6 @@ char* getGResourceProgramDir() {
 
 
 void FindProgDir(char *prog) {
-    printf("FindProgDir\n");
 #if defined(__MINGW32__)
     char  path[MAX_PATH+4];
     char* c = path;
