@@ -212,12 +212,14 @@ Hotkey* hotkeySet( char* action, char* keydefinition, int append )
  * Load all the hotkeys from the file at filename, marking them as userdefined
  * if isUserDefined is set.
  */
-static void loadHotkeysFromFile( const char* filename, int isUserDefined ) 
+static void loadHotkeysFromFile( const char* filename, int isUserDefined, int warnIfNotFound ) 
 {
     char line[1100];
     FILE* f = fopen(filename,"r");
     if( !f ) {
-	fprintf(stderr,_("Failed to open hotkey definition file: %s\n"), filename );
+	if( warnIfNotFound ) {
+	    fprintf(stderr,_("Failed to open hotkey definition file: %s\n"), filename );
+	}
 	return;
     }
 
@@ -254,23 +256,23 @@ void hotkeysLoad()
     char* p = 0;
 
     snprintf(localefn,PATH_MAX,"%s/hotkeys/default", SHAREDIR );
-    loadHotkeysFromFile( localefn, false );
+    loadHotkeysFromFile( localefn, false, true );
     
     // FUTURE: perhaps find out how to convert en_AU.UTF-8 that setlocale()
     //   gives to its fallback of en_GB. There are likely to be a bunch of other
     //   languages which are similar but have specific locales
     char* currentlocale = copy(setlocale(LC_MESSAGES, 0));
     snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", SHAREDIR, currentlocale);
-    loadHotkeysFromFile( localefn, false );
+    loadHotkeysFromFile( localefn, false, false );
     while((p = strrchr( currentlocale, '.' ))) {
 	*p = '\0';
 	snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", SHAREDIR, currentlocale);
-	loadHotkeysFromFile( localefn, false );
+	loadHotkeysFromFile( localefn, false, false );
     }
     while((p = strrchr( currentlocale, '_' ))) {
 	*p = '\0';
 	snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", SHAREDIR, currentlocale);
-	loadHotkeysFromFile( localefn, false );
+	loadHotkeysFromFile( localefn, false, false );
     }
     free(currentlocale);
     
@@ -278,7 +280,7 @@ void hotkeysLoad()
     if( !fn ) {
 	return;
     }
-    loadHotkeysFromFile( fn, true );
+    loadHotkeysFromFile( fn, true, false );
     free(fn);
 }
 

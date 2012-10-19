@@ -792,6 +792,7 @@ return(shortcut_domain);
 
 static struct { char *modifier; int mask; char *alt; } modifiers[] = {
     { "Ctl+", ksm_control, NULL },
+    { "Ctrl+", ksm_control, NULL },
     { "Control+", ksm_control, NULL },
     { "Shft+", ksm_shift, NULL },
     { "Shift+", ksm_shift, NULL },
@@ -799,6 +800,7 @@ static struct { char *modifier; int mask; char *alt; } modifiers[] = {
     { "CapsLock+", ksm_capslock, NULL },
     { "Meta+", ksm_meta, NULL },
     { "Alt+", ksm_meta, NULL },
+    { "Esc+", ksm_meta, NULL },
     { "Flag0x01+", 0x01, NULL },
     { "Flag0x02+", 0x02, NULL },
     { "Flag0x04+", 0x04, NULL },
@@ -814,6 +816,8 @@ static struct { char *modifier; int mask; char *alt; } modifiers[] = {
     { "Cmd+", ksm_cmdmacosx, NULL },
     { "NumLk+", ksm_cmdmacosx, NULL },    /* This is unfortunate. Numlock should be ignored, Command should not */
     { "NumLock+", ksm_cmdmacosx, NULL },
+    { "numlock+", ksm_cmdmacosx, NULL },
+    { "numberlock+", ksm_cmdmacosx, NULL },
     { NULL, 0, NULL }
     /* Windows flag key=Super (keysym ffeb/ffec) key maps to 0x40 on my machine */
 };
