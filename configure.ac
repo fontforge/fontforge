@@ -37,7 +37,7 @@ AC_CONFIG_TESTDIR([tests],[fontforge])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CONFIG_HEADERS([inc/config.h])
-AM_INIT_AUTOMAKE([subdir-objects foreign -Wall])
+AM_INIT_AUTOMAKE([foreign -Wall])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
@@ -49,8 +49,13 @@ m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 m4_ifdef([AM_PROG_AR],[AM_PROG_AR])
 LT_CONFIG_LTDL_DIR([libltdl])
 LT_INIT([dlopen])
-LTDL_INIT([nonrecursive])
+LTDL_INIT([recursive convenience])
 FONTFORGE_CHECK_LTDL_VERSION
+
+# The following is mainly for the benefit of the libltdl Makefile,
+# which expects to find <inc/config.h>.
+CPPFLAGS="${CPPFLAGS} AS_ESCAPE([-I${top_builddir}])"
+
 
 AC_PATH_XTRA
 i_do_have_x="${have_x}"
