@@ -1,11 +1,23 @@
+# (American) English User Interface strings for FontForge.
+# Copyright (C) 2000-2012 by George Williams and contributors.
+# This file is distributed under the same license as the FontForge package.
+# George Williams, <pfaedit@users.sourceforge.net>, 2006.
+#
+# Translators:
+# KANOU Hiroki <kanou@khdd.net>, 2005-08-29 17:43+0800
+# KANOU Hiroki <kanou@khdd.net>, 2006-04-04 12:08-0900
+# TANIGAWA Takashi <mihailjp@gmail.com>, 2012-10-04 20:25+0900
+#
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-04 20:25+0900\n"
-"PO-Revision-Date: \n"
+"Report-Msgid-Bugs-To: fontforge-devel@lists.sourceforge.net\n"
+"POT-Creation-Date: 2005-08-29 17:43+0800\n"
+"PO-Revision-Date: 2012-10-04 20:25+0900\n"
 "Last-Translator: MihailJP <mihailjp@gmail.com>\n"
 "Language-Team: LANGUAGE <ja.c@li.org>\n"
+"Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
