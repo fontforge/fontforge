@@ -52,6 +52,9 @@ pkgconfigdir = ${libdir}/pkgconfig
 # Where contributed Python scripts go.
 pkgpythondatadir = $(pkgdatadir)/python
 
+# Where hotkey bindings go.
+hotkeysdir = $(pkgdatadir)/hotkeys
+
 # Where plugin modules go.
 plugindir = ${pkglibdir}/plugins
 

@@ -1543,7 +1543,7 @@ return;
 		int ret;
 
 		rsb[0] =  _("_Review");
-		rsb[1] =  _("_Save");
+		rsb[1] =  _("_Generate");
 		rsb[2]=NULL;
 		errs = VSErrorsFromMask(vs&mask,blues);
 		ret = gwwv_ask(_("Errors detected"),rsb,0,0,_("The font contains errors.\n%sWould you like to review the errors or save the font anyway?"),errs);
@@ -2353,7 +2353,7 @@ return( 0 );
     gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = y-3;
     gcd[1].gd.pos.width = -1;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[1].text = (unichar_t *) _("_Save");
+    label[1].text = (unichar_t *) _("_Generate");
     label[1].text_is_1byte = true;
     label[1].text_in_resource = true;
     gcd[1].gd.mnemonic = 'S';

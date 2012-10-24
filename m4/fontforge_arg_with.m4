@@ -56,18 +56,6 @@ AC_DEFUN([FONTFORGE_ARG_WITH_CAIRO],
 ])
 
 
-dnl FONTFORGE_ARG_WITH_FREETYPE
-dnl ---------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_FREETYPE],
-[
-FONTFORGE_ARG_WITH([freetype],
-        [AS_HELP_STRING([--without-freetype],[build without freetype2])],
-        [freetype2],
-        [FONTFORGE_WARN_PKG_NOT_FOUND([FREETYPE])],
-        [_NO_FREETYPE])
-])
-
-
 dnl FONTFORGE_ARG_WITH_LIBPNG
 dnl -------------------------
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBPNG],

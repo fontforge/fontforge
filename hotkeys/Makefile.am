@@ -1,5 +1,5 @@
 # Copyright (C) 2000-2012 by George Williams
-# Copyright (C) 2012 by Barry Schwartz
+# Copyright (C) 2012 by Ben Martin
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -25,17 +25,10 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+include $(top_srcdir)/mk/layout.am
 
-# FIXME: The installed headers need to be reworked for better system
-# installation. In particular, they ought to have <> instead of "" and
-# they should require a "fontforge/" prefix.
+HOTKEY_FILES = default
+hotkeys_DATA = $(HOTKEY_FILES)
 
-pkginclude_HEADERS = basics.h chardata.h charset.h config.h dynamic.h	\
-	fileutil.h gdraw.h gfile.h ggadget.h gicons.h gimage.h gio.h		\
-	gkeysym.h gprogress.h gresedit.h gresource.h gwidget.h gwwiconv.h	\
-	intl.h ustring.h utype.h annotations_base.h dlist.h
-
-noinst_HEADERS = pluginloading.h
-
-
+EXTRA_DIST = $(HOTKEY_FILES) 
 -include $(top_srcdir)/git.mk

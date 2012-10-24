@@ -387,6 +387,7 @@ typedef struct gfilechooser {
     unichar_t *wildcard;
     unichar_t *lastname;
     GFileChooserFilterType filter;
+    GFileChooserInputFilenameFuncType inputfilenamefunc;
     /*enum fchooserret (*filter)(GGadget *chooser,struct gdirentry *file,const unichar_t *dir);*/
     struct giocontrol *outstanding;
     GCursor old_cursor;
@@ -395,6 +396,7 @@ typedef struct gfilechooser {
     struct ghvbox *topbox;
     unichar_t **history;
     unichar_t **paths;
+    unichar_t *inputfilenameprevchar;
     int hpos, hcnt, hmax;
 } GFileChooser;
 
@@ -570,7 +572,7 @@ extern void _ggadget_destroy(GGadget *g);
 extern GWindow GListPopupCreate(GGadget *owner,void (*inform)(GGadget *,int), GTextInfo **ti);
 
 extern int GMenuPopupCheckKey(GEvent *event);
-extern int GMenuBarCheckKey(GGadget *g, GEvent *event);
+extern int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event);
 extern void _GButton_SetDefault(GGadget *g,int32 is_default);
 extern void _GButtonInit(void);
 extern void GListMarkDraw(GWindow pixmap,int x, int y, int height, enum gadget_state state );

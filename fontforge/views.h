@@ -30,10 +30,12 @@
 #include "baseviews.h"
 
 #include <ggadget.h>
+#include "dlist.h"
 
 struct gfi_data;
 struct contextchaindlg;
 struct statemachinedlg;
+
 
 extern struct cvshows {
     int showfore, showback, showgrids, showhhints, showvhints, showdhints;
@@ -261,6 +263,7 @@ typedef struct charview {
     int guide_pos;
     struct qg_data *qg;
     int16 note_x, note_y;
+    struct dlistnode* pointInfoDialogs;
 } CharView;
 
 typedef struct bitmapview {
@@ -1214,11 +1217,81 @@ extern char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current);
 extern void ME_ListCheck(GGadget *g,int r, int c, SplineFont *sf);
 extern void ME_SetCheckUnique(GGadget *g,int r, int c, SplineFont *sf);
 extern void ME_ClassCheckUnique(GGadget *g,int r, int c, SplineFont *sf);
+extern void PI_Destroy(struct dlistnode *node);
+struct gidata;
+extern void PIChangePoint(struct gidata *ci);
 
 extern void CVRegenFill(CharView *cv);
 extern int  CVCountSelectedPoints(CharView *cv);
 extern void _CVMenuInsertPt(CharView *cv);
 extern void _CVMenuNameContour(CharView *cv);
+
+// sfd.c
+extern void SFD_DumpPST( FILE *sfd, SplineChar *sc );
+extern void SFD_DumpKerns( FILE *sfd, SplineChar *sc, int *newgids );
+extern void SFDDumpCharStartingMarker(FILE *sfd,SplineChar *sc);
+
+/**
+ * Create, open and unlink a new temporary file. This allows the
+ * caller to write to and read from the file without needing to worry
+ * about cleaning up the filesystem at all.
+ *
+ * On Linux, this will create a new file in /tmp with a secure name,
+ * open it, and delete the file from the filesystem. The application
+ * can still happily use the file as it has it open, but once it is
+ * closed or the application itself closes (or crashes) then the file
+ * will be expunged for you by the kernel.
+ *
+ * The caller can fclose() the returned file. Other applications will
+ * not be able to find the file by name anymore when this call
+ * returns.
+ */
+extern FILE* MakeTemporaryFile(void);
+
+/*
+ * Convert the contents of a File* to a newly allocated string
+ * The caller needs to free the returned string.
+ */
+extern char* FileToAllocatedString( FILE *f );
+extern char *getquotedeol(FILE *sfd);
+extern int getname(FILE *sfd, char *tokbuf);
+extern void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok );
+extern void SFDGetPSTs( FILE *sfd, SplineChar *sc, char* ttok );
+
+/**
+ * Move the sfd file pointer to the start of the next glyph. Return 0
+ * if there is no next glyph. Otherwise, a copy of the string on the
+ * line of the SFD file that starts the glyph is returned. The caller
+ * should return the return value of this function.
+ *
+ * If the glyph starts with:
+ * StartChar: a
+ * The the return value with be "a" (sans the quotes).
+ *
+ * This is handy if the caller is done with a glyph and just wants to
+ * skip to the start of the next one.
+ */
+extern char* SFDMoveToNextStartChar( FILE* sfd );
+
+/**
+ * Some references in the SFD file are to a numeric glyph ID. As a
+ * sneaky method to handle that, fontforge will load these glyph
+ * numbers into the pointers which should refer to the glyph. For
+ * example, in kerning, instead of pointing to the splinechar for the
+ * "v" glyph, the ID might be stored there, say the number 143. This
+ * fixup function will convert such 143 references to being pointers
+ * to the splinechar with a numeric ID of 143. It is generally a good
+ * idea to do this, as some fontforge code will of course assume a
+ * pointer to a splinechar is a pointer to a splinechar and not just
+ * the glyph index of that splinechar.
+ *
+ * MIQ updated this in Oct 2012 to be more forgiving when called twice
+ * or on a splinefont which has some of it's references already fixed.
+ * This was to allow partial updates of data structures from SFD
+ * fragments and the fixup to operate just on those references which
+ * need to be fixed.
+ */
+extern void SFDFixupRefs(SplineFont *sf);
 
 
 #endif	/* _VIEWS_H */
