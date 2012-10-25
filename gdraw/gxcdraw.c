@@ -49,6 +49,8 @@ static int usecairo = false;
 static int usecairo = true;
 #endif
 
+
+
 void GDrawEnableCairo(int on) {
     usecairo=on;
     /* Obviously, if we have no library, enabling it will do nothing */
