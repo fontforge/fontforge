@@ -106,4 +106,7 @@ extern char *_GIO_decomposeURL(const unichar_t *url,char **host, int *port, char
 	char **password);
 
 extern void GIO_SetThreadCallback(void (*callback)(void *,void *,void *));
+
+extern char* GIOGetMimeType (const char *path, int sniff_data);
+
 #endif
