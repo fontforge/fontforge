@@ -57,7 +57,7 @@ void dlist_erase( struct dlistnode** list, struct dlistnode* node ) {
 	if( node->next ) {
 	    node->next->prev = 0;
 	}
-	return 0;
+	return;
     }
     if( node->prev ) {
 	node->prev->next = node->next;

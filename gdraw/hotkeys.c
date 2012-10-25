@@ -25,12 +25,14 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "gdraw.h"
 #include "hotkeys.h"
 #include <locale.h>
 #include <string.h>
 #include <ustring.h>
 #include <errno.h>
 #include <unistd.h>
+#include "intl.h"
 
 extern char *getPfaEditDir(char *buffer);
 
