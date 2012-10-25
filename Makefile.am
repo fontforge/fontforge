@@ -42,14 +42,11 @@ noinst_LTLIBRARIES =
 lib_LTLIBRARIES =
 EXTRA_LTLIBRARIES =
 
-include libltdl/Makefile.inc
 include $(top_srcdir)/mk/layout.am
 
 #--------------------------------------------------------------------------
 
-SUBDIRS = inc
-SUBDIRS += Unicode gutils
-SUBDIRS += hotkeys
+SUBDIRS = inc libltdl Unicode gutils hotkeys
 
 if GRAPHICAL_USER_INTERFACE
 SUBDIRS += gdraw

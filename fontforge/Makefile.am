@@ -114,7 +114,7 @@ nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
 libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS)
-libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD)
+libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD) $(LIBLTDL)
 
 if PLUGIN_GB12345
 libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/gb12345.la
