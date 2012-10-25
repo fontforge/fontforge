@@ -503,9 +503,10 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
 		    SCConvertLayerToOrder3(nsc,layer);
 		}
 	    }
-	} else
+	} else {
 	    /* Happens in Apple's gvar (MM) fonts */
 	    nsc->layers[layer].order2 = sc->layers[layer].order2;
+	}
     }
     nsc->parent = into;
     nsc->orig_pos = -2;
@@ -520,10 +521,14 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
     }
     nsc->anchor = AnchorPointsDuplicate(nsc->anchor,nsc);
     nsc->changed = true;
-    nsc->dependents = NULL;		/* Fix up later when we know more */
-    if ( nsc->ttf_instrs_len!=0 ) {
-	nsc->ttf_instrs = galloc(nsc->ttf_instrs_len);
-	memcpy(nsc->ttf_instrs,sc->ttf_instrs,nsc->ttf_instrs_len);
+    /* Fix up dependents later when we know more */
+    nsc->dependents = NULL;
+    
+    /* Copy the instrs from the given sc to the new splinechar */
+    if ( sc->ttf_instrs_len!=0 ) {
+	nsc->ttf_instrs_len = sc->ttf_instrs_len;
+	nsc->ttf_instrs = galloc(sc->ttf_instrs_len);
+	memcpy(nsc->ttf_instrs,sc->ttf_instrs,sc->ttf_instrs_len);
     }
     nsc->kerns = NULL;
     nsc->vkerns = NULL;
