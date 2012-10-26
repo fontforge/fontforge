@@ -29,7 +29,6 @@
 #define _HOTKEYS_H
 
 #include "basics.h"
-#include "gwidget.h"
 #include "dlist.h"
 
 #define HOTKEY_ACTION_MAX_SIZE 200
@@ -200,6 +199,8 @@ extern Hotkey* hotkeyFindByMenuPath( GWindow w, char* path );
  * The new hotkey is returned.
  */
 extern Hotkey* hotkeySet( char* action, char* keydefinition, int append );
+
+extern void HotkeyParse( Hotkey* hk, const char *shortcut );
 
 
 #endif // _HOTKEYS_H

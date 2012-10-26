@@ -496,10 +496,12 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
 	if ( into!=NULL ) {
 	    if ( into->layers[layer].order2!=sc->layers[layer].order2 ) {
 		nsc->layers[layer].order2 = into->layers[layer].order2;
-		if ( into->layers[layer].order2 )
+		if ( into->layers[layer].order2 ) {
 		    SCConvertLayerToOrder2(nsc,layer);
-		else
+		} else {
+		    nsc->ttf_instrs = NULL; nsc->ttf_instrs_len = 0;
 		    SCConvertLayerToOrder3(nsc,layer);
+		}
 	    }
 	} else
 	    /* Happens in Apple's gvar (MM) fonts */

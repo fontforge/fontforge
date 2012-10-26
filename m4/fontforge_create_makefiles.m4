@@ -7,6 +7,7 @@ AC_DEFUN([FONTFORGE_CREATE_MAKEFILES],
 # Portable makefiles.
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([inc/Makefile])
+AC_CONFIG_FILES([libltdl/Makefile])
 AC_CONFIG_FILES([Unicode/Makefile])
 AC_CONFIG_FILES([gutils/Makefile])
 AC_CONFIG_FILES([hotkeys/Makefile])
