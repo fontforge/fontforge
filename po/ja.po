@@ -1074,7 +1074,6 @@ msgstr "警告"
 #: ../fontforge/metricsview.c:3128 ../fontforge/metricsview.c:3132
 #: ../fontforge/bitmapview.c:2107 ../fontforge/bitmapview.c:2111
 #: ../fontforge/fontview.c:4303 ../fontforge/fontview.c:4312
-#, fuzzy
 msgid "Font|_New"
 msgstr "新規(_N)"
 
@@ -1094,9 +1093,8 @@ msgid "_Close"
 msgstr "閉じる(_C)"
 
 #: ../fontforge/charview.c:9900
-#, fuzzy
 msgid "C_lose Tab"
-msgstr "閉じる(_C)"
+msgstr "タブを閉じる(_L)"
 
 #: ../fontforge/charview.c:9902 ../fontforge/cvexportdlg.c:537
 #: ../fontforge/metricsview.c:3137 ../fontforge/bitmapview.c:2116
@@ -1121,14 +1119,12 @@ msgstr "Macファミリーを出力(_F)..."
 
 #: ../fontforge/charview.c:9906 ../fontforge/metricsview.c:3141
 #: ../fontforge/bitmapview.c:2120 ../fontforge/fontview.c:4326
-#, fuzzy
 msgid "Generate TTC..."
-msgstr "フォントを出力..."
+msgstr "TTCを生成..."
 
 #: ../fontforge/charview.c:9907
-#, fuzzy
 msgid "E_xport..."
-msgstr "書き出し..."
+msgstr "書き出し(_X)..."
 
 #: ../fontforge/charview.c:9909 ../fontforge/sftextfield.c:938
 #: ../fontforge/fontinfo.c:6910 ../fontforge/bitmapview.c:2123
@@ -1163,7 +1159,7 @@ msgstr "環境設定(_E)..."
 #: ../fontforge/charview.c:9920 ../fontforge/metricsview.c:3148
 #: ../fontforge/bitmapview.c:2127 ../fontforge/fontview.c:4348
 msgid "_X Resource Editor..."
-msgstr ""
+msgstr "_X リソースエディタ..."
 
 #: ../fontforge/charview.c:9922 ../fontforge/metricsview.c:3150
 #: ../fontforge/bitmapview.c:2129 ../fontforge/fontview.c:4350
@@ -1221,14 +1217,12 @@ msgid "Select All _Points & Refs"
 msgstr "すべての点と参照を選択(_P)"
 
 #: ../fontforge/charview.c:9941
-#, fuzzy
 msgid "Select Open Contours"
-msgstr "同じ輪郭上の次の点"
+msgstr "閉じていない輪郭を選択"
 
 #: ../fontforge/charview.c:9942
-#, fuzzy
 msgid "Select Anc_hors"
-msgstr "アンカーを選択(_C)"
+msgstr "アンカーを選択(_H)"
 
 #: ../fontforge/charview.c:9943 ../fontforge/cvstroke.c:2499
 msgid "_Width"
@@ -1275,7 +1269,7 @@ msgstr "参照をコピー(_O)"
 
 #: ../fontforge/charview.c:9957
 msgid "Copy Loo_kup Data"
-msgstr ""
+msgstr "機能をコピー(_K)"
 
 #: ../fontforge/charview.c:9958 ../fontforge/metricsview.c:3161
 #: ../fontforge/fontview.c:4410 ../fontforge/fontview.c:5449
@@ -1311,7 +1305,6 @@ msgid "Clear _Background"
 msgstr "背景をクリア(_B)"
 
 #: ../fontforge/charview.c:9964
-#, fuzzy
 msgid "points|_Merge"
 msgstr "合併(_M)"
 
@@ -1327,7 +1320,7 @@ msgstr "背面にコピー(_F)"
 
 #: ../fontforge/charview.c:9968
 msgid "Cop_y Layer To Layer..."
-msgstr ""
+msgstr "別のレイヤーにコピー(_Y)..."
 
 #: ../fontforge/charview.c:9969
 msgid "Copy Gri_d Fit"
@@ -1344,18 +1337,16 @@ msgid "U_nlink Reference"
 msgstr "参照を解除(_N)"
 
 #: ../fontforge/charview.c:9975
-#, fuzzy
 msgid "Remo_ve Undoes..."
-msgstr "アンドゥ履歴のクリア(_V)"
+msgstr "アンドゥ履歴のクリア(_V)..."
 
 #: ../fontforge/charview.c:9980 ../fontforge/cvpalettes.c:260
 msgid "_Curve"
 msgstr "曲線上の点(_C)"
 
 #: ../fontforge/charview.c:9981 ../fontforge/cvpalettes.c:261
-#, fuzzy
 msgid "_HVCurve"
-msgstr "曲線上の点(_C)"
+msgstr "接線が垂直/水平な曲線上の点(_H)"
 
 #: ../fontforge/charview.c:9982 ../fontforge/charview.c:10009
 #: ../fontforge/cvpalettes.c:262 ../fontforge/cvpalettes.c:292
@@ -1377,14 +1368,12 @@ msgid "Can Be _Interpolated"
 msgstr "補間を許可する(_I)"
 
 #: ../fontforge/charview.c:9989
-#, fuzzy
 msgid "Can't _Be Interpolated"
-msgstr "補間を許可しない(_I)"
+msgstr "補間を許可しない(_B)"
 
 #: ../fontforge/charview.c:9990
-#, fuzzy
 msgid "Center Bet_ween Control Points"
-msgstr "制御点の中間に移動(_B)"
+msgstr "制御点の中間に移動(_W)"
 
 #: ../fontforge/charview.c:9992 ../fontforge/charview.c:10016
 msgid "_Add Anchor"
@@ -1392,7 +1381,7 @@ msgstr "アンカーを追加(_A)"
 
 #: ../fontforge/charview.c:9994
 msgid "Acceptable _Extrema"
-msgstr ""
+msgstr "許容する極大点(_E)"
 
 #: ../fontforge/charview.c:9996
 msgid "Make _Line"
@@ -1400,16 +1389,15 @@ msgstr "直線に変換(_L)"
 
 #: ../fontforge/charview.c:9997
 msgid "Ma_ke Arc"
-msgstr ""
+msgstr "円弧に変換(_K)"
 
 #: ../fontforge/charview.c:9998
 msgid "Inse_rt Point On Spline At..."
-msgstr ""
+msgstr "曲線に点を挿入(_R)..."
 
 #: ../fontforge/charview.c:9999 ../fontforge/charview.c:10018
-#, fuzzy
 msgid "_Name Contour"
-msgstr "同じ輪郭上の次の点"
+msgstr "輪郭に名前を付ける(_N)"
 
 #: ../fontforge/charview.c:10000
 msgid "Make Clip _Path"
@@ -1516,48 +1504,40 @@ msgid "_Find Intersections"
 msgstr "交点を見つける(_F)"
 
 #: ../fontforge/charview.c:10117 ../fontforge/fontview.c:4454
-#, fuzzy
 msgid "Change _Weight..."
-msgstr "MMの標準ウェイトを変更..."
+msgstr "ウェイトを変更(_W)..."
 
 #: ../fontforge/charview.c:10118 ../fontforge/fontview.c:4455
-#, fuzzy
 msgid "_Italic..."
-msgstr "イタリック"
+msgstr "イタリック(_I)..."
 
 #: ../fontforge/charview.c:10119 ../fontforge/fontview.c:4456
 msgid "Obli_que..."
-msgstr ""
+msgstr "斜体(_Q)..."
 
 #: ../fontforge/charview.c:10120 ../fontforge/fontview.c:4457
-#, fuzzy
 msgid "_Condense/Extend..."
-msgstr "Condensed"
+msgstr "幅(_C)..."
 
 #: ../fontforge/charview.c:10121 ../fontforge/fontview.c:4458
-#, fuzzy
 msgid "Change _X-Height..."
-msgstr "MMの標準ウェイトを変更..."
+msgstr "_Xハイトを変更..."
 
 #: ../fontforge/charview.c:10122 ../fontforge/fontview.c:4459
-#, fuzzy
 msgid "Change _Glyph..."
-msgstr "変更されたグリフ(_C)"
+msgstr "グリフの変更(_G)..."
 
 #: ../fontforge/charview.c:10124 ../fontforge/fontview.c:4464
-#, fuzzy
 msgid "In_line..."
-msgstr "インライン"
+msgstr "インライン(_L)..."
 
 #: ../fontforge/charview.c:10125 ../fontforge/fontview.c:4465
-#, fuzzy
 msgid "_Outline..."
-msgstr "アウトライン(_O)"
+msgstr "アウトライン(_O)..."
 
 #: ../fontforge/charview.c:10126 ../fontforge/fontview.c:4466
-#, fuzzy
 msgid "S_hadow..."
-msgstr "影つき"
+msgstr "影つき(_H)..."
 
 #: ../fontforge/charview.c:10127 ../fontforge/fontview.c:4467
 msgid "_Wireframe..."
@@ -1625,30 +1605,25 @@ msgid "S_how Dependent"
 msgstr "依存するグリフを表示(_H)"
 
 #: ../fontforge/charview.c:10162
-#, fuzzy
 msgid "Find Proble_ms..."
-msgstr "問題点を発見..."
+msgstr "問題点を発見(_M)..."
 
 #: ../fontforge/charview.c:10164
-#, fuzzy
 msgid "Bitm_ap strikes Available..."
 msgstr "使用するビットマップ(_A)..."
 
 #: ../fontforge/charview.c:10165 ../fontforge/metricsview.c:3233
 #: ../fontforge/bitmapview.c:2167 ../fontforge/fontview.c:4542
-#, fuzzy
 msgid "Regenerate _Bitmap Glyphs..."
 msgstr "ビットマップの再生成(_B)..."
 
 #: ../fontforge/charview.c:10166 ../fontforge/fontview.c:4543
-#, fuzzy
 msgid "Remove Bitmap Glyphs..."
-msgstr "グリフ名を変更(_Y)..."
+msgstr "ビットマップを除去..."
 
 #: ../fontforge/charview.c:10168
-#, fuzzy
 msgid "St_yles"
-msgstr "名前つきスタイル"
+msgstr "スタイル(_Y)"
 
 #: ../fontforge/charview.c:10169 ../fontforge/bitmapview.c:2170
 #: ../fontforge/fontview.c:4546
@@ -1666,9 +1641,8 @@ msgid "Tile _Path..."
 msgstr "パスのタイル敷き(_P)..."
 
 #: ../fontforge/charview.c:10173 ../fontforge/fontview.c:4550
-#, fuzzy
 msgid "Tile Pattern..."
-msgstr "パスのタイル敷き..."
+msgstr "タイルパターン..."
 
 #: ../fontforge/charview.c:10175 ../fontforge/fontview.c:4552
 msgid "O_verlap"
@@ -1693,24 +1667,20 @@ msgid "Roun_d"
 msgstr "座標を丸める(_D)"
 
 #: ../fontforge/charview.c:10182
-#, fuzzy
 msgid "_Order"
-msgstr "順序"
+msgstr "順序(_O)"
 
 #: ../fontforge/charview.c:10184
-#, fuzzy
 msgid "Check Self-Intersection"
-msgstr "自己交差を除去する"
+msgstr "自己交差を検出する"
 
 #: ../fontforge/charview.c:10185
-#, fuzzy
 msgid "Glyph Self-Intersects"
-msgstr "自己交差を除去する"
+msgstr "グリフの自己交差"
 
 #: ../fontforge/charview.c:10186
-#, fuzzy
 msgid "Cloc_kwise"
-msgstr "時計回り(_O)"
+msgstr "時計回り(_K)"
 
 #: ../fontforge/charview.c:10187
 msgid "Cou_nter Clockwise"
@@ -1723,13 +1693,12 @@ msgid "_Correct Direction"
 msgstr "アウトラインの向きを修正(_C)"
 
 #: ../fontforge/charview.c:10189
-#, fuzzy
 msgid "Reverse Direction"
-msgstr "アウトラインの向きを修正(_C)"
+msgstr "アウトラインの向きを反転"
 
 #: ../fontforge/charview.c:10191
 msgid "Insert Text Outlines..."
-msgstr ""
+msgstr "テキストのアウトラインを挿入..."
 
 #: ../fontforge/charview.c:10193 ../fontforge/metricsview.c:3248
 #: ../fontforge/fontview.c:4560
@@ -1737,9 +1706,8 @@ msgid "B_uild"
 msgstr "組み立て(_U)"
 
 #: ../fontforge/charview.c:10195 ../fontforge/fontview.c:4565
-#, fuzzy
 msgid "Compare Layers..."
-msgstr "フォントを比較..."
+msgstr "レイヤーを比較..."
 
 #: ../fontforge/charview.c:10200 ../fontforge/fontview.c:5195
 #: ../fontforge/fontview.c:5464
@@ -1771,9 +1739,8 @@ msgid "_Debug..."
 msgstr "デバッグ(_D)..."
 
 #: ../fontforge/charview.c:10208 ../fontforge/fontview.c:5207
-#, fuzzy
 msgid "S_uggest Deltas..."
-msgstr "ファイル名を指定して保存(_A)..."
+msgstr "差分を推測(_D)..."
 
 #: ../fontforge/charview.c:10210
 msgid "_Clear HStem"
@@ -1784,9 +1751,8 @@ msgid "Clear _VStem"
 msgstr "垂直ステムヒントを削除(_V)"
 
 #: ../fontforge/charview.c:10212
-#, fuzzy
 msgid "Clear DStem"
-msgstr "斜行ステムヒントを削除(_D)"
+msgstr "斜行ステムヒントを削除"
 
 #: ../fontforge/charview.c:10213 ../fontforge/fontview.c:5211
 msgid "Clear Instructions"
@@ -1869,9 +1835,8 @@ msgstr "右サイドベアリングを設定(_R)..."
 
 #: ../fontforge/charview.c:10296 ../fontforge/metricsview.c:3470
 #: ../fontforge/fontview.c:5223
-#, fuzzy
 msgid "Set Both Bearings..."
-msgstr "左サイドベアリングを設定..."
+msgstr "両サイドベアリングを設定..."
 
 #: ../fontforge/charview.c:10298 ../fontforge/metricsview.c:3472
 #: ../fontforge/fontview.c:5225 ../fontforge/fontview.c:5468
@@ -1952,7 +1917,7 @@ msgstr "合字(_L)"
 
 #: ../fontforge/charview.c:10383
 msgid "PointNumbers|_None"
-msgstr ""
+msgstr "なし(_N)"
 
 #: ../fontforge/charview.c:10384 ../fontforge/savefontdlg.c:167
 #: ../fontforge/openfontdlg.c:136
@@ -1966,19 +1931,16 @@ msgid "SVG"
 msgstr "SVG"
 
 #: ../fontforge/charview.c:10391
-#, fuzzy
 msgid "Show _Grid Fit..."
-msgstr "グリッド合わせを表示(_W)..."
+msgstr "グリッド合わせを表示(_G)..."
 
 #: ../fontforge/charview.c:10392 ../fontforge/metricsview.c:3387
-#, fuzzy
 msgid "_Bigger Point Size"
-msgstr "ピクセルサイズ拡大(_B)"
+msgstr "ポイントサイズ拡大(_B)"
 
 #: ../fontforge/charview.c:10393 ../fontforge/metricsview.c:3388
-#, fuzzy
 msgid "_Smaller Point Size"
-msgstr "ピクセルサイズ縮小(_S)"
+msgstr "ポイントサイズ縮小(_S)"
 
 #: ../fontforge/charview.c:10394 ../fontforge/metricsview.c:3381
 #: ../fontforge/fontview.c:5053
@@ -1986,127 +1948,105 @@ msgid "_Anti Alias"
 msgstr "アンチエイリアス(_A)"
 
 #: ../fontforge/charview.c:10395
-#, fuzzy
 msgid "_Off"
-msgstr "オフ(_O):"
+msgstr "オフ(_O)"
 
 #: ../fontforge/charview.c:10400
-#, fuzzy
 msgid "_Points"
-msgstr "点(_P)"
+msgstr "点を表示(_P)"
 
 #: ../fontforge/charview.c:10401
-#, fuzzy
 msgid "_Control Point Info"
 msgstr "制御点の情報を表示(_C)"
 
 #: ../fontforge/charview.c:10402
-#, fuzzy
 msgid "_Extrema"
-msgstr "極大点を表示(_M)"
+msgstr "極大点を表示(_E)"
 
 #: ../fontforge/charview.c:10403
-#, fuzzy
 msgid "Points of _Inflection"
-msgstr "変曲点を表示(_A)"
+msgstr "変曲点を表示(_I)"
 
 #: ../fontforge/charview.c:10404
-#, fuzzy
 msgid "Almost Horizontal/Vertical Lines"
-msgstr "直角に揃える(_N)"
+msgstr "ほとんど水平/垂直な直線"
 
 #: ../fontforge/charview.c:10405
-#, fuzzy
 msgid "Almost Horizontal/Vertical Curves"
-msgstr "直角に揃える(_N)"
+msgstr "ほとんど水平/垂直な曲線"
 
 #: ../fontforge/charview.c:10406
-#, fuzzy
 msgid "(Define \"Almost\")"
-msgstr "グループを定義"
+msgstr "(\"ほとんど\"の定義)"
 
 #: ../fontforge/charview.c:10407
-#, fuzzy
 msgid "_Side Bearings"
-msgstr "左サイドベアリングを設定..."
+msgstr "サイドベアリングを表示(_S)"
 
 #: ../fontforge/charview.c:10408
-#, fuzzy
 msgid "Reference Names"
-msgstr "参照の情報"
+msgstr "参照の名前"
 
 # fontview menu
 #: ../fontforge/charview.c:10409
-#, fuzzy
 msgid "_Fill"
-msgstr "ファイル(_F)"
+msgstr "塗りつぶし(_F)"
 
 #: ../fontforge/charview.c:10410
 msgid "Previe_w"
-msgstr ""
+msgstr "プレビュー(_W)"
 
 #: ../fontforge/charview.c:10412
-#, fuzzy
 msgid "Pale_ttes"
-msgstr "パレット(_P)"
+msgstr "パレット(_T)"
 
 #: ../fontforge/charview.c:10413
-#, fuzzy
 msgid "_Glyph Tabs"
-msgstr "画像による(_G)"
+msgstr "グリフタブ(_G)"
 
 #: ../fontforge/charview.c:10414
-#, fuzzy
 msgid "_Rulers"
-msgstr "ルーラーを隠す(_R)"
+msgstr "ルーラー(_R)"
 
 #: ../fontforge/charview.c:10416
-#, fuzzy
 msgid "_Horizontal Hints"
-msgstr "横書きカーニング"
+msgstr "水平ヒント(_H)"
 
 #: ../fontforge/charview.c:10417
-#, fuzzy
 msgid "_Vertical Hints"
-msgstr "縦書き(_V)"
+msgstr "垂直ヒント(_V)"
 
 #: ../fontforge/charview.c:10418
-#, fuzzy
 msgid "_Diagonal Hints"
-msgstr "斜めの分数"
+msgstr "斜めのヒント(_D)"
 
 #: ../fontforge/charview.c:10420
-#, fuzzy
 msgid "_BlueValues"
-msgstr "BlueValue"
+msgstr "_BlueValue"
 
 #: ../fontforge/charview.c:10422
-#, fuzzy
 msgid "FamilyBl_ues"
-msgstr "ファミリー"
+msgstr "ファミリーのBl_ue"
 
 #: ../fontforge/charview.c:10424
-#, fuzzy
 msgid "_Anchors"
-msgstr "アンカー"
+msgstr "アンカー(_A)"
 
 #: ../fontforge/charview.c:10426
 msgid "Debug Raster Cha_nges"
 msgstr ""
 
 #: ../fontforge/charview.c:10428
-#, fuzzy
 msgid "Hori_zontal Metric Lines"
-msgstr "横書きカーニング"
+msgstr "横書きメトリックライン(_Z)"
 
 #: ../fontforge/charview.c:10429
-#, fuzzy
 msgid "Vertical _Metric Lines"
-msgstr "縦書きメトリックがありません"
+msgstr "縦書きメトリックライン(_M)"
 
 #: ../fontforge/charview.c:10431
 msgid "Snap Outlines to Pi_xel Grid"
-msgstr ""
+msgstr "アウトラインをグリッドに合わせる(_X)"
 
 #: ../fontforge/charview.c:10436 ../fontforge/bitmapview.c:2184
 msgid "_Fit"
@@ -2161,18 +2101,16 @@ msgid "Find In Font _View"
 msgstr "フォント表示から探す(_V)"
 
 #: ../fontforge/charview.c:10452
-#, fuzzy
 msgid "N_umber Points"
-msgstr "点番号を表示(_N)"
+msgstr "点番号を表示(_U)"
 
 #: ../fontforge/charview.c:10453
-#, fuzzy
 msgid "Grid Fi_t"
-msgstr "グリッド合わせを表示(_G)"
+msgstr "グリッド合わせ(_T)"
 
 #: ../fontforge/charview.c:10454
 msgid "Sho_w"
-msgstr ""
+msgstr "表示(_W)"
 
 #: ../fontforge/charview.c:10456 ../fontforge/metricsview.c:3378
 #: ../fontforge/fontview.c:5037
@@ -2181,11 +2119,11 @@ msgstr "複合グリフを表示(_B)"
 
 #: ../fontforge/charview.c:10477
 msgid "SubFonts|_All"
-msgstr ""
+msgstr "すべて(_A)"
 
 #: ../fontforge/charview.c:10478
 msgid "SubFonts|_None"
-msgstr ""
+msgstr "なし(_N)"
 
 #: ../fontforge/charview.c:10539 ../fontforge/mmdlg.c:936
 #: ../fontforge/mmdlg.c:1779 ../fontforge/mmdlg.c:2137
@@ -2523,7 +2461,7 @@ msgstr "TFMとENCを出力"
 
 #: ../fontforge/savefontdlg.c:677
 msgid "SFNT"
-msgstr ""
+msgstr "SFNT"
 
 #: ../fontforge/savefontdlg.c:692
 msgid "TrueType Hints"
@@ -2627,7 +2565,7 @@ msgstr ""
 
 #: ../fontforge/savefontdlg.c:744
 msgid "Dummy 'DSIG'"
-msgstr ""
+msgstr "ダミーの'DSIG'テーブル"
 
 #: ../fontforge/savefontdlg.c:747
 msgid ""
@@ -3783,9 +3721,8 @@ msgid "Ahead Classes"
 msgstr "前方クラス"
 
 #: ../fontforge/contextchain.c:3087
-#, fuzzy
 msgid "List of class names"
-msgstr "クラスメンバーのリスト"
+msgstr "クラス名のリスト"
 
 #: ../fontforge/contextchain.c:3099
 msgid "Classes"
@@ -3986,9 +3923,8 @@ msgid "Custom"
 msgstr "カスタム"
 
 #: ../fontforge/encodingui.c:448
-#, fuzzy
 msgid "Encoding|Glyph Order"
-msgstr "符号位置(16進)による(_E)"
+msgstr "グリフ順"
 
 #: ../fontforge/encodingui.c:450
 msgid "ISO 8859-1  (Latin1)"
@@ -4126,9 +4062,8 @@ msgid "Bad Encoding"
 msgstr "不正なエンコーディング"
 
 #: ../fontforge/justifydlg.c:41
-#, fuzzy
 msgid "Glyph Names"
-msgstr "PostScriptグリフ名"
+msgstr "グリフ名"
 
 #: ../fontforge/justifydlg.c:46 ../fontforge/cvundoes.c:2878
 msgid "Lookups"
@@ -4297,7 +4232,7 @@ msgstr "XFig"
 #: ../fontforge/cvexportdlg.c:247 ../fontforge/cvimportdlg.c:414
 #: ../fontforge/cvimportdlg.c:437
 msgid "Glif"
-msgstr ""
+msgstr "Glif"
 
 #: ../fontforge/cvexportdlg.c:248
 msgid "PDF"
@@ -4318,9 +4253,8 @@ msgid "Create directory"
 msgstr "ディレクトリを作成"
 
 #: ../fontforge/cvexportdlg.c:521
-#, fuzzy
 msgid "Export"
-msgstr "書き出し..."
+msgstr "書き出し"
 
 #: ../fontforge/cvexportdlg.c:583 ../fontforge/cvimportdlg.c:723
 msgid "Format:"
@@ -6776,11 +6710,11 @@ msgstr "自動"
 
 #: ../fontforge/fontinfo.c:199 ../fontforge/fontinfo.c:207
 msgid "1"
-msgstr ""
+msgstr "1"
 
 #: ../fontforge/fontinfo.c:200
 msgid "2"
-msgstr ""
+msgstr "2"
 
 #: ../fontforge/fontinfo.c:201 ../fontforge/cvpointer.c:1504
 msgid "3"
@@ -6788,46 +6722,43 @@ msgstr "3"
 
 #: ../fontforge/fontinfo.c:202
 msgid "4"
-msgstr ""
+msgstr "4"
 
 #: ../fontforge/fontinfo.c:206
 msgid "0"
-msgstr ""
+msgstr "0"
 
 #: ../fontforge/fontinfo.c:211
 msgid "PanoseFamily|Any"
-msgstr ""
+msgstr "Any"
 
 #: ../fontforge/fontinfo.c:212
 msgid "PanoseFamily|No Fit"
-msgstr ""
+msgstr "No Fit"
 
 #: ../fontforge/fontinfo.c:213
-#, fuzzy
 msgid "Latin: Text & Display"
-msgstr "本文および見出し用"
+msgstr "Latin: Text & Display"
 
 #: ../fontforge/fontinfo.c:218
 msgid "cursive|Latin: Handwritten"
-msgstr ""
+msgstr "Latin: Handwritten"
 
 #: ../fontforge/fontinfo.c:219
-#, fuzzy
 msgid "Latin: Decorative"
-msgstr "O/図象的"
+msgstr "Latin: Decorative"
 
 #: ../fontforge/fontinfo.c:220
 msgid "Latin: Pictorial/Symbol"
-msgstr ""
+msgstr "Latin: Pictorial/Symbol"
 
 #: ../fontforge/fontinfo.c:253
-#, fuzzy
 msgid "PanoseSerifs|Any"
-msgstr "サンセリフ"
+msgstr "Any"
 
 #: ../fontforge/fontinfo.c:254
 msgid "PanoseSerifs|No Fit"
-msgstr ""
+msgstr "No Fit"
 
 #: ../fontforge/fontinfo.c:255 ../fontforge/fontinfo.c:637
 msgid "Cove"
@@ -6847,11 +6778,11 @@ msgstr "Obtuse Square Cove"
 
 #: ../fontforge/fontinfo.c:259 ../fontforge/fontinfo.c:641
 msgid "PanoseSerivfs|Square"
-msgstr ""
+msgstr "Square"
 
 #: ../fontforge/fontinfo.c:260 ../fontforge/fontinfo.c:642
 msgid "PanoseSerifs|Thin"
-msgstr ""
+msgstr "Thin"
 
 #: ../fontforge/fontinfo.c:261
 msgid "Bone"
@@ -6874,9 +6805,8 @@ msgid "Obtuse Sans"
 msgstr "Obtuse Sans"
 
 #: ../fontforge/fontinfo.c:266 ../fontforge/fontinfo.c:648
-#, fuzzy
 msgid "Perpendicular Sans"
-msgstr "Perp Sans"
+msgstr "Perpendicular Sans"
 
 #: ../fontforge/fontinfo.c:267 ../fontforge/fontinfo.c:649
 msgid "Flared"
@@ -6884,15 +6814,15 @@ msgstr "Flared"
 
 #: ../fontforge/fontinfo.c:268 ../fontforge/fontinfo.c:650
 msgid "PanoseSerivfs|Rounded"
-msgstr ""
+msgstr "Rounded"
 
 #: ../fontforge/fontinfo.c:272
 msgid "PanoseWeight|Any"
-msgstr ""
+msgstr "Any"
 
 #: ../fontforge/fontinfo.c:273
 msgid "PanoseWeight|No Fit"
-msgstr ""
+msgstr "No Fit"
 
 #: ../fontforge/fontinfo.c:274
 msgid "Very Light"
@@ -6904,7 +6834,7 @@ msgstr "Light"
 
 #: ../fontforge/fontinfo.c:276
 msgid "PanoseWeight|Thin"
-msgstr ""
+msgstr "Thin"
 
 #: ../fontforge/fontinfo.c:277
 msgid "Book"
@@ -6936,14 +6866,12 @@ msgid "Nord"
 msgstr "Nord"
 
 #: ../fontforge/fontinfo.c:291
-#, fuzzy
 msgid "PanoseProportion|Any"
-msgstr "幅の比率(_P)"
+msgstr "Any"
 
 #: ../fontforge/fontinfo.c:292
-#, fuzzy
 msgid "PanoseProportion|No Fit"
-msgstr "プロポーショナル幅"
+msgstr "No Fit"
 
 #: ../fontforge/fontinfo.c:293
 msgid "Old Style"
@@ -6982,55 +6910,53 @@ msgstr "Monospaced"
 #: ../fontforge/fontinfo.c:310 ../fontforge/fontinfo.c:482
 #: ../fontforge/fontinfo.c:616
 msgid "PanoseContrast|Any"
-msgstr ""
+msgstr "Any"
 
 #: ../fontforge/fontinfo.c:311 ../fontforge/fontinfo.c:483
 #: ../fontforge/fontinfo.c:617
 msgid "PanoseContrast|No Fit"
-msgstr ""
+msgstr "No Fit"
 
 #: ../fontforge/fontinfo.c:312 ../fontforge/fontinfo.c:484
 #: ../fontforge/fontinfo.c:618
 msgid "PanoseContrast|None"
-msgstr ""
+msgstr "None"
 
 #: ../fontforge/fontinfo.c:313
 msgid "PanoseContrast|Very Low"
-msgstr ""
+msgstr "Very Low"
 
 #: ../fontforge/fontinfo.c:314
 msgid "PanoseContrast|Low"
-msgstr ""
+msgstr "Low"
 
 #: ../fontforge/fontinfo.c:315
 msgid "PanoseContrast|Medium Low"
-msgstr ""
+msgstr "Medium Low"
 
 #: ../fontforge/fontinfo.c:316
 msgid "PanoseContrast|Medium"
-msgstr ""
+msgstr "Medium"
 
 #: ../fontforge/fontinfo.c:317
 msgid "PanoseContrast|Medium High"
-msgstr ""
+msgstr "Medium High"
 
 #: ../fontforge/fontinfo.c:318
 msgid "PanoseContrast|High"
-msgstr ""
+msgstr "High"
 
 #: ../fontforge/fontinfo.c:319
 msgid "PanoseContrast|Very High"
-msgstr ""
+msgstr "Very High"
 
 #: ../fontforge/fontinfo.c:329
-#, fuzzy
 msgid "PanoseStrokeVariation|Any"
-msgstr "ストロークの種類(_V)"
+msgstr "Any"
 
 #: ../fontforge/fontinfo.c:330
-#, fuzzy
 msgid "PanoseStrokeVariation|No Fit"
-msgstr "ストロークの種類(_V)"
+msgstr "No Fit"
 
 #: ../fontforge/fontinfo.c:331
 msgid "Gradual/Diagonal"
@@ -7062,11 +6988,11 @@ msgstr "Instant/Vertical"
 
 #: ../fontforge/fontinfo.c:348
 msgid "PanoseArmStyle|Any"
-msgstr ""
+msgstr "Any"
 
 #: ../fontforge/fontinfo.c:349
 msgid "PanoseArmStyle|No Fit"
-msgstr ""
+msgstr "No Fit"
 
 #: ../fontforge/fontinfo.c:350
 msgid "Straight Arms/Horizontal"
@@ -7109,13 +7035,12 @@ msgid "Non-Straight Arms/Double Serif"
 msgstr "Non-Straight Arms/Double Serif"
 
 #: ../fontforge/fontinfo.c:367
-#, fuzzy
 msgid "PanoseLetterform|Any"
-msgstr "文字の形状(_L)"
+msgstr "Any"
 
 #: ../fontforge/fontinfo.c:368
 msgid "PanoseLetterform|No Fit"
-msgstr ""
+msgstr "No Fit"
 
 #: ../fontforge/fontinfo.c:369
 msgid "Normal/Contact"
@@ -7175,118 +7100,99 @@ msgstr "Oblique/Square"
 
 #: ../fontforge/fontinfo.c:386
 msgid "PanoseMidline|Any"
-msgstr ""
+msgstr "Any"
 
 #: ../fontforge/fontinfo.c:387
 msgid "PanoseMidline|No Fit"
-msgstr ""
+msgstr "No Fit"
 
 #: ../fontforge/fontinfo.c:388
-#, fuzzy
 msgid "PanoseMidline|Standard/Trimmed"
 msgstr "Standard/Trimmed"
 
 #: ../fontforge/fontinfo.c:389
-#, fuzzy
 msgid "PanoseMidline|Standard/Pointed"
 msgstr "Standard/Pointed"
 
 #: ../fontforge/fontinfo.c:390
-#, fuzzy
 msgid "PanoseMidline|Standard/Serifed"
 msgstr "Standard/Serifed"
 
 #: ../fontforge/fontinfo.c:391
-#, fuzzy
 msgid "PanoseMidline|High/Trimmed"
 msgstr "High/Trimmed"
 
 #: ../fontforge/fontinfo.c:392
-#, fuzzy
 msgid "PanoseMidline|High/Pointed"
 msgstr "High/Pointed"
 
 #: ../fontforge/fontinfo.c:393
-#, fuzzy
 msgid "PanoseMidline|High/Serifed"
 msgstr "High/Serifed"
 
 #: ../fontforge/fontinfo.c:394
-#, fuzzy
 msgid "PanoseMidline|Constant/Trimmed"
 msgstr "Constant/Trimmed"
 
 #: ../fontforge/fontinfo.c:395
-#, fuzzy
 msgid "PanoseMidline|Constant/Pointed"
 msgstr "Constant/Pointed"
 
 #: ../fontforge/fontinfo.c:396
-#, fuzzy
 msgid "PanoseMidline|Constant/Serifed"
 msgstr "Constant/Serifed"
 
 #: ../fontforge/fontinfo.c:397
-#, fuzzy
 msgid "PanoseMidline|Low/Trimmed"
 msgstr "Low/Trimmed"
 
 #: ../fontforge/fontinfo.c:398
-#, fuzzy
 msgid "PanoseMidline|Low/Pointed"
 msgstr "Low/Pointed"
 
 #: ../fontforge/fontinfo.c:399
-#, fuzzy
 msgid "PanoseMidline|Low/Serifed"
 msgstr "Low/Serifed"
 
 #: ../fontforge/fontinfo.c:405
 msgid "PanoseXHeight|Any"
-msgstr ""
+msgstr "Any"
 
 #: ../fontforge/fontinfo.c:406
 msgid "PanoseXHeight|No Fit"
-msgstr ""
+msgstr "No Fit"
 
 #: ../fontforge/fontinfo.c:407
-#, fuzzy
 msgid "PanoseXHeight|Constant/Small"
 msgstr "Constant/Small"
 
 #: ../fontforge/fontinfo.c:408
-#, fuzzy
 msgid "PanoseXHeight|Constant/Standard"
 msgstr "Constant/Standard"
 
 #: ../fontforge/fontinfo.c:409
-#, fuzzy
 msgid "PanoseXHeight|Constant/Large"
 msgstr "Constant/Large"
 
 #: ../fontforge/fontinfo.c:410
-#, fuzzy
 msgid "PanoseXHeight|Ducking/Small"
 msgstr "Ducking/Small"
 
 #: ../fontforge/fontinfo.c:411
-#, fuzzy
 msgid "PanoseXHeight|Ducking/Standard"
 msgstr "Ducking/Standard"
 
 #: ../fontforge/fontinfo.c:412
-#, fuzzy
 msgid "PanoseXHeight|Ducking/Large"
 msgstr "Ducking/Large"
 
 #: ../fontforge/fontinfo.c:425
-#, fuzzy
 msgid "PanoseTool|Any"
-msgstr "Panose"
+msgstr "Any"
 
 #: ../fontforge/fontinfo.c:426
 msgid "PanoseTool|No Fit"
-msgstr ""
+msgstr "No Fit"
 
 #: ../fontforge/fontinfo.c:427
 msgid "Flat Nib"
@@ -7845,77 +7751,68 @@ msgid "Small Caps"
 msgstr "ギリシャ小型小文字"
 
 #: ../fontforge/fontinfo.c:733
-#, fuzzy
 msgid "PanoseKind|Any"
-msgstr "Panose"
+msgstr "Any"
 
 #: ../fontforge/fontinfo.c:734
 msgid "PanoseKind|No Fit"
-msgstr ""
+msgstr "No Fit"
 
 #: ../fontforge/fontinfo.c:735
 msgid "Montages"
-msgstr ""
+msgstr "Montages"
 
 #: ../fontforge/fontinfo.c:736
-#, fuzzy
 msgid "Pictures"
-msgstr "合字"
+msgstr "Pictures"
 
 #: ../fontforge/fontinfo.c:737
-#, fuzzy
 msgid "Shapes"
-msgstr "図形のタイプ"
+msgstr "Shapes"
 
 #: ../fontforge/fontinfo.c:738
-#, fuzzy
 msgid "Scientific"
-msgstr "科学文献用下つき文字"
+msgstr "Scientific"
 
 #: ../fontforge/fontinfo.c:739
 msgid "Music"
-msgstr ""
+msgstr "Music"
 
 #: ../fontforge/fontinfo.c:740
-#, fuzzy
 msgid "Expert"
-msgstr "エキスパート字形"
+msgstr "Expert"
 
 #: ../fontforge/fontinfo.c:741
-#, fuzzy
 msgid "Patterns"
-msgstr "単一化(_F)"
+msgstr "Patterns"
 
 #: ../fontforge/fontinfo.c:742
-#, fuzzy
 msgid "Borders"
-msgstr "順序"
+msgstr "Borders"
 
 #: ../fontforge/fontinfo.c:743
 msgid "Icons"
-msgstr ""
+msgstr "Icons"
 
 #: ../fontforge/fontinfo.c:744
 msgid "Logos"
-msgstr ""
+msgstr "Logos"
 
 #: ../fontforge/fontinfo.c:745
 msgid "Industry specific"
-msgstr ""
+msgstr "Industry specific"
 
 #: ../fontforge/fontinfo.c:754
-#, fuzzy
 msgid "No Width"
-msgstr "幅"
+msgstr "No Width"
 
 #: ../fontforge/fontinfo.c:755
-#, fuzzy
 msgid "Exceptionally Wide"
-msgstr "プロポーショナル幅"
+msgstr "Exceptionally Wide"
 
 #: ../fontforge/fontinfo.c:756
 msgid "Super Wide"
-msgstr ""
+msgstr "Super Wide"
 
 #: ../fontforge/fontinfo.c:757
 msgid "Very Wide"
@@ -7923,11 +7820,11 @@ msgstr "Very Wide"
 
 #: ../fontforge/fontinfo.c:758
 msgid "Wide"
-msgstr ""
+msgstr "Wide"
 
 #: ../fontforge/fontinfo.c:760
 msgid "Narrow"
-msgstr ""
+msgstr "Narrow"
 
 #: ../fontforge/fontinfo.c:761
 msgid "Very Narrow"
