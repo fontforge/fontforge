@@ -53,10 +53,8 @@
 #  endif
 #endif
 #ifdef __Mac
-# include <Developer/Headers/FlatCarbon/Files.h>
-# define FontInfo	MacFontInfo
-# define KernPair	MacKernPair
-# include <Developer/Headers/FlatCarbon/CarbonEvents.h>
+# include "carbon.h"
+
 /* For reasons obscure to me RunApplicationEventLoop is not defined in */
 /*  the mac header files if we are in 64 bit mode. Strangely it seems to */
 /*  be in the libraries and functional */
