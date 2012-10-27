@@ -480,7 +480,15 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
     Layer *layers = nsc->layers;
     int layer, lycopy;
 
-    *nsc = *sc;		/* We copy the layers just below */
+	*nsc = *sc;
+
+	/* Copy the instrs from the given sc to the new splinechar */
+	if ( sc->ttf_instrs_len!=0 ) {
+		nsc->ttf_instrs = galloc(sc->ttf_instrs_len);
+		memcpy(nsc->ttf_instrs,sc->ttf_instrs,sc->ttf_instrs_len);
+	}
+
+	/* We copy the layers just below */
     nsc->layer_cnt = into==NULL?2:into->layer_cnt;
     nsc->layers = layers;
     lycopy = sc->layer_cnt>nsc->layer_cnt ? nsc->layer_cnt : sc->layer_cnt;
@@ -499,7 +507,6 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
 		if ( into->layers[layer].order2 ) {
 		    SCConvertLayerToOrder2(nsc,layer);
 		} else {
-		    nsc->ttf_instrs = NULL; nsc->ttf_instrs_len = 0;
 		    SCConvertLayerToOrder3(nsc,layer);
 		}
 	    }
@@ -524,12 +531,6 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
     /* Fix up dependents later when we know more */
     nsc->dependents = NULL;
     
-    /* Copy the instrs from the given sc to the new splinechar */
-    if ( sc->ttf_instrs_len!=0 ) {
-	nsc->ttf_instrs_len = sc->ttf_instrs_len;
-	nsc->ttf_instrs = galloc(sc->ttf_instrs_len);
-	memcpy(nsc->ttf_instrs,sc->ttf_instrs,sc->ttf_instrs_len);
-    }
     nsc->kerns = NULL;
     nsc->vkerns = NULL;
     nsc->possub = PSTCopy(nsc->possub,nsc,mc);
