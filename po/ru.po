@@ -4,10 +4,14 @@
 # George Williams, <pfaedit@users.sourceforge.net>, 2006.
 # Александр Прокудин <alexandre.prokoudine@gmail.com>, 2010, 2011, 2012.
 #
+# Translators:
+# Александр Прокудин, 2012-08-01 00:27+0400
+#
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: FontForge 20100321\n"
-"Report-Msgid-Bugs-To: \n"
+"Project-Id-Version: fontforge 2.0.0_beta1\n"
+"Report-Msgid-Bugs-To: fontforge-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2012-08-01 00:27+0400\n"
 "PO-Revision-Date: 2012-08-01 10:14+0400\n"
 "Last-Translator: Александр Прокудин <alexandre.prokoudine@gmail.com>\n"

@@ -1,11 +1,24 @@
+# (American) English User Interface strings for FontForge.
+# Copyright (C) 2000-2012 by George Williams and contributors.
+# This file is distributed under the same license as the FontForge package.
+# George Williams, <pfaedit@users.sourceforge.net>, 2006.
+#
+# Translators:
+# KANOU Hiroki <kanou@khdd.net>, 2005-08-29 17:43+0800
+# KANOU Hiroki <kanou@khdd.net>, 2006-04-04 12:08-0900
+# TANIGAWA Takashi <mihailjp@gmail.com>, 2012-10-04 20:25+0900
+# OKANO Takayoshi <kano@na.rim.or.jp>, 2012-10-16
+#
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-04 20:25+0900\n"
-"PO-Revision-Date: \n"
+"Report-Msgid-Bugs-To: fontforge-devel@lists.sourceforge.net\n"
+"POT-Creation-Date: 2005-08-29 17:43+0800\n"
+"PO-Revision-Date: 2012-10-04 20:25+0900\n"
 "Last-Translator: MihailJP <mihailjp@gmail.com>\n"
 "Language-Team: LANGUAGE <ja.c@li.org>\n"
+"Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -995,7 +1008,7 @@ msgstr ""
 "新しい点を割り当てるための未使用の\n"
 "アンカークラスが見つかりませんでした.\n"
 "新しいアンカー点を作る場合,「エレメント(L)」→\n"
-"「フォント情報(I)」で定義してください."
+"「フォント情報(F)」で定義してください."
 
 #: ../fontforge/charview.c:8873 ../fontforge/metricsview.c:2106
 #: ../fontforge/metricsview.c:2523
@@ -2144,7 +2157,7 @@ msgstr "次の定義済みグリフ(_D)"
 #: ../fontforge/charview.c:10447 ../fontforge/metricsview.c:3373
 #: ../fontforge/bitmapview.c:2191 ../fontforge/fontview.c:5030
 msgid "Prev Defined Gl_yph"
-msgstr "前の定義済みグリフ(_A)"
+msgstr "前の定義済みグリフ(_Y)"
 
 #: ../fontforge/charview.c:10448
 msgid "Form_er Glyph"
@@ -2918,7 +2931,7 @@ msgid ""
 "dialog.\n"
 "Do you wish to continue to generate your font in spite of this?"
 msgstr ""
-"通例,PostScriptフォントはEMの大きさを2の冪乗に設定することになっていますが,こ"
+"通例,TrueTypeフォントはEMの大きさを2の冪乗に設定することになっていますが,こ"
 "のフォントは%dグリッドとなっています. これはエラーではありませんが,全角グリッ"
 "ドを エレメント(L)→フォント情報(F)→[一般情報] ダイアログで変更することを検討"
 "すべきでしょう.\n"
@@ -2971,7 +2984,7 @@ msgid ""
 msgstr ""
 "MacのType1リソースフォントを生成するときは,最低1個のNFNTビットマップフォント"
 "を出力しないとうまく動きません. このフォントに全くビットマップを作成していな"
-"いなら,このダイアログをキャンセルしてエレメント(l)→使用するビットマップ(A)コ"
+"いなら,このダイアログをキャンセルしてエレメント(L)→使用するビットマップ(A)コ"
 "マンドでビットマップを作成してください"
 
 #: ../fontforge/savefontdlg.c:1501
@@ -11244,7 +11257,7 @@ msgstr ""
 
 #: ../fontforge/fontinfo.c:8269
 msgid "_Histogram"
-msgstr "柱状グラフ"
+msgstr "柱状グラフ(_H)"
 
 #: ../fontforge/fontinfo.c:8275
 msgid "Histogram Dialog"
@@ -19109,7 +19122,7 @@ msgstr ""
 
 #: ../fontforge/metricsview.c:3367
 msgid "Insert Glyph _After..."
-msgstr "現在位置の後に挿入(_C)..."
+msgstr "現在位置の後に挿入(_A)..."
 
 #: ../fontforge/metricsview.c:3368
 msgid "Insert Glyph _Before..."
@@ -28497,7 +28510,7 @@ msgstr "グリフ %s 内の hsbw 演算子がスタックアンダーフロー�
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s\n"
 msgstr ""
-"グリフ %s 内の hlineto/rmoveto 演算子がスタックアンダーフローを起こしました\n"
+"グリフ %s 内の rlineto/rmoveto 演算子がスタックアンダーフローを起こしました\n"
 
 #: ../fontforge/psread.c:4419
 #, c-format
@@ -28697,7 +28710,7 @@ msgid ""
 "Ca_lligraphic\n"
 "(Rectangular)"
 msgstr ""
-"ペン書き(_C)\n"
+"ペン書き(_L)\n"
 "(長方形)"
 
 #: ../fontforge/cvstroke.c:803
