@@ -195,7 +195,8 @@ i_do_have_native_callbacks="${fontforge_cv_native_callbacks}"
 AC_SEARCH_LIBS([cos],[m])
 
 dnl FIXME: Is this needed, given we are using libltdl?
-dnl AC_SEARCH_LIBS([dlopen],[dl])
+dnl The dlopen() function is in the C library for *BSD and in libdl on GLIBC-based systems
+dnl AC_SEARCH_LIBS([dlopen], [dl dld])
 
 FONTFORGE_CONFIG_X_LIBRARIES
 
