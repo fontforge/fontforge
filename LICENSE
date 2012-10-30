@@ -1,5 +1,42 @@
-FontForge is copyright (C) 2000,2001,2002,2003,2004,2005,2006,2007,2008
-by George Williams.
+FontForge Licenses
+------------------
+
+FontForge is a free software project available as a whole project under
+the GNU General Public License (GNU GPL), version 3 or later.
+
+FontForge is a full-featured font editor which supports all common font
+formats. FontForge (known from 2000 to 2004 as PfaEdit) was written and
+developed primarily by George Williams from 2000 until 2011, published
+as free software, and distributed under the 3-clause BSD license. Later,
+when development slowed down and appeared to stop, in 2012 the FontForge
+community began to take an interest in improving FontForge further with
+fixes, modifications, libraries, patches, and other additions which have
+been introduced under the same, or different, yet, compatible licenses.
+
+How To License Contributions
+----------------------------
+
+The majority of FontForge was written by George Williams and published
+under the revised BSD license. This license is permitted to be compiled
+with added GNU GPL source code to build a FontForge executable program.
+
+The reason for choosing this direction in licensing is because there are
+many other libraries and files available under copyleft libre licenses,
+such as LGPL and GPL. For example, Pango and Cairo are available under
+the LGPL, and gnulib is available under the GPL.
+
+Contributions to existing files must be made under the existing license
+for that file. Contributions of new files should be made under a license
+compatible with FontForge or a license compatible with the GPLv3.
+
+Source Files
+------------
+
+FontForge Files Using The Revised BSD License
+---------------------------------------------
+
+FontForge is Copyright(C) 2000,2001,2002,2003,2004,2005,2006,2007,2008,
+2009,2010,2011 by George Williams.
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions are met:
@@ -25,5 +62,19 @@ by George Williams.
    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
    ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+TODO: list of files existing under this license
+(use GROFF's license as an example template for making this list)
+
+FontForge Files Using The LGPL and GPL Licenses
+-----------------------------------------------
+
+To read the LGPL and GPL texts, please refer to the GNU website.
+Copyright Notices
+
 The configure script is subject to the GNU public license. See the file
 COPYING.
+
+TODO: list of files under this license
+
+(not sure, but don't think this is needed here)
+TODO: Get name and email of all contributors from git history.
