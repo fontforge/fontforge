@@ -61,40 +61,28 @@ struct pdfcontext {
 };
 
 static long FindXRef(FILE *pdf) {
+/* Find 'startxref' in FILE pdf and return the value found, else return -1 */
     int ch;
     long xrefpos;
 
-    fseek(pdf,-5-2-8-2-10-2,SEEK_END);
-    forever {
+    if (fseek(pdf,-5-2-8-2-10-2,SEEK_END)==0 ) {
 	while ( (ch=getc(pdf))!=EOF ) {
-	    if ( ch=='s' )
-	break;
-	}
-	if ( ch==EOF )
-return( -1 );
-	while ( ch=='s' ) {
-	    if ( (ch=getc(pdf))!='t' )
-	continue;
-	    if ( (ch=getc(pdf))!='a' )
-	continue;
-	    if ( (ch=getc(pdf))!='r' )
-	continue;
-	    if ( (ch=getc(pdf))!='t' )
-	continue;
-	    if ( (ch=getc(pdf))!='x' )
-	continue;
-	    if ( (ch=getc(pdf))!='r' )
-	continue;
-	    if ( (ch=getc(pdf))!='e' )
-	continue;
-	    if ( (ch=getc(pdf))!='f' )
-	continue;
-	    if ( fscanf(pdf,"%ld",&xrefpos)!=1 )
-return( -1 );
+	    while ( ch=='s' && \
+		   (ch=getc(pdf))=='t' && \
+		   (ch=getc(pdf))=='a' && \
+		   (ch=getc(pdf))=='r' && \
+		   (ch=getc(pdf))=='t' && \
+		   (ch=getc(pdf))=='x' && \
+		   (ch=getc(pdf))=='r' && \
+		   (ch=getc(pdf))=='e' && \
+		   (ch=getc(pdf))=='f' ) {
+		if ( fscanf(pdf,"%ld",&xrefpos)!=1 ) return( -1 );
 
-return( xrefpos );
+		return( xrefpos );
+	    }
 	}
     }
+    return( -1 );
 }
 
 static int findkeyword(FILE *pdf, char *keyword, char *end) {
