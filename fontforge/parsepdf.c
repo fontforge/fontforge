@@ -214,8 +214,10 @@ return( ret );
 #define pdf_oper(ch) (ch=='(' || ch==')' || ch=='<' || ch=='>' || ch=='[' || ch==']' || ch=='{' || ch=='}' || ch=='/' || ch=='%' )
 
 static int pdf_peekch(FILE *pdf) {
-    int ch = getc(pdf);
-    ungetc(ch,pdf);
+/* Peek to see what is the next character to get in the file, */
+/* ...and spool back if no errors encountered while checking. */
+    int ch;
+    if ( (ch=getc(pdf))>=0 ) ungetc(ch,pdf);
 return( ch );
 }
 
