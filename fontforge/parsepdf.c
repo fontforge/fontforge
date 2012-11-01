@@ -128,16 +128,16 @@ static int seektrailer(FILE *pdf, long *start, long *num, struct pdfcontext *pc)
 
     /* check if there's encryption and toggle-on the encrypt flag if yes */
     if ( findkeyword(pdf,"/Encrypt",">>") ) {
-	int bar;
-	if ( fscanf(pdf,"%d %d",&pc->enc_dict,&bar)==2 )
+	long bar;
+	if ( fscanf(pdf,"%d %ld",&pc->enc_dict,&bar)==2 )
 	    pc->encrypted = true;
     }
 
     if ( pc->root == 0 ) {
 	if ( fseek(pdf,pos,SEEK_SET)!=0 ) return( false );
 	if ( findkeyword(pdf,"/Root",">>") ) {
-	    int bar;
-	    fscanf(pdf,"%d %d",&pc->root,&bar);
+	    long bar;
+	    fscanf(pdf,"%d %ld",&pc->root,&bar);
 	}
     }
 
@@ -156,34 +156,32 @@ static long *FindObjectsFromXREFObject(struct pdfcontext *pc, long prev_xref);
 
 static long *FindObjects(struct pdfcontext *pc) {
     FILE *pdf = pc->pdf;
-    long xrefpos = FindXRef(pdf);
+    long xrefpos;
     long *ret=NULL;
     int *gen=NULL;
-    int cnt = 0, i, start, num, ch;
+    int ch; long cnt, i, start, num;
     long offset; int gennum; char f;
 
-    if ( xrefpos == -1 )
-return( NULL );
-    fseek(pdf, xrefpos,SEEK_SET );
+    /* find the XREF location and point to that position. Exit if error */
+    if ( (xrefpos=FindXRef(pdf))== -1 || fseek(pdf,xrefpos,SEEK_SET)!=0 )
+	return( NULL );
 
-    if ( fscanf(pdf, "xref %d %d", &start, &num )!=2 ) {
-	int foo, bar;
-	fseek(pdf, xrefpos,SEEK_SET );
-	if ( fscanf(pdf, "%d %d", &foo, &bar )!=2 )
-return( NULL );
+    if ( fscanf(pdf,"xref %ld %ld",&start,&num )!=2 ) {
+	long foo, bar;
+	if ( fseek(pdf,xrefpos,SEEK_SET)!=0 || \
+	     fscanf(pdf,"%ld %ld",&foo,&bar)!=2 )
+	    return( NULL );
 	while ( isspace(ch=getc(pdf)));
-	if ( ch!='o' )
-return( NULL );
-	if ( getc(pdf)!='b' )
-return( NULL );
-	if ( getc(pdf)!='j' )
-return( NULL );
-	if ( !isspace(getc(pdf)) )
-return( NULL );
+	if ( ch=='o' && \
+	     getc(pdf)=='b' && \
+	     getc(pdf)=='j' && \
+	     isspace(getc(pdf)) )
+	    return( FindObjectsFromXREFObject(pc,xrefpos));
 
-return( FindObjectsFromXREFObject(pc,xrefpos));
+	return( NULL );
     }
 
+    cnt = 0;
     forever {
 	if ( start+num>cnt ) {
 	    ret = grealloc(ret,(start+num+1)*sizeof(long));
@@ -191,11 +189,11 @@ return( FindObjectsFromXREFObject(pc,xrefpos));
 	    gen = grealloc(gen,(start+num)*sizeof(int));
 	    memset(gen+cnt,-1,sizeof(int)*(start+num-cnt));
 	    cnt = start+num;
-	    pc->ocnt = cnt;
+	    pc->ocnt = (int)(cnt);
 	    ret[cnt] = -2;
 	}
 	for ( i=start; i<start+num; ++i ) {
-	    if ( fscanf(pdf,"%ld %d %c", &offset, &gennum, &f )!=3 ) {
+	    if ( fscanf(pdf,"%ld %d %c",&offset,&gennum,&f)!=3 ) {
 		free(gen);
 return( ret );
 	    }
@@ -214,7 +212,7 @@ return( ret );
 return( ret );
 		}
 	}
-	if ( fscanf(pdf, "%d %d", &start, &num )!=2 )
+	if ( fscanf(pdf, "%ld %ld", &start, &num )!=2 )
 	    if ( !seektrailer(pdf, &start, &num, pc)) {
 	    free(gen);
 return( ret );
