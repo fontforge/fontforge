@@ -885,16 +885,16 @@ return( res );
 /* ************************************************************************** */
 /* ****************************** xref streams ****************************** */
 /* ************************************************************************** */
-static long getuvalue(FILE *f,int len) {
-    long val;
-    int ch, i;
+static int getuvalue(FILE *f, int len, long *val) {
+/* Get a big endian binary value from file. Return 0 if okay, and -1 if error */
+    int ch;
 
-    val = 0;
-    for ( i=0; i<len; ++i ) {
-	ch = getc(f);
-	val = (val<<8) | ch;
+    *val = 0;
+    while ( --len>=0 ) {
+	if ( (ch=getc(f))<0 ) return( 1 );
+	*val = (*val<<8) | ch;
     }
-return( val );
+    return( 0 );
 }
 
 static long *FindObjectsFromXREFObject(struct pdfcontext *pc, long prev_xref) {
@@ -960,12 +960,11 @@ return( NULL );
 return( NULL );
 	rewind(xref_stream);
 	for ( i=start; i<start+num; ++i ) {
-	    type   = getuvalue(xref_stream,typewidth);
-	    offset = getuvalue(xref_stream,offwidth);
-	    gennum = getuvalue(xref_stream,genwidth);
-	    if ( feof(xref_stream)) {
+	    if ( getuvalue(xref_stream,typewidth,&type)  || \
+		 getuvalue(xref_stream,offwidth,&offset) || \
+		 getuvalue(xref_stream,genwidth,&gennum) ) {
 		fclose(xref_stream);
-return( NULL );
+		return( NULL );
 	    }
 	    if ( type==0 ) {
 		if ( gennum > gen[i] ) {
