@@ -132,7 +132,8 @@ typedef struct val {
 } Val;		/* Used by scripting */
 
 struct psdict {
-    int cnt, next;
+    int cnt;		/* *key[0..cnt] and *values[0..cnt] currently available */
+    int next;		/* **key[0..next] and **values[0..next] currently used  */
     char **keys;
     char **values;
 };

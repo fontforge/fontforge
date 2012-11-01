@@ -66,7 +66,7 @@ static long FindXRef(FILE *pdf) {
     long xrefpos;
 
     if (fseek(pdf,-5-2-8-2-10-2,SEEK_END)==0 ) {
-	while ( (ch=getc(pdf))!=EOF ) {
+	while ( (ch=getc(pdf))>=0 ) {
 	    while ( ch=='s' && \
 		   (ch=getc(pdf))=='t' && \
 		   (ch=getc(pdf))=='a' && \
@@ -325,11 +325,12 @@ return( pc->tokbuf );
 }   
 
 static void PSDictClear(struct psdict *dict) {
-    int i;
+/* Clear all psdict keys[] and values[] */
+  int i;
 
     for ( i=0; i<dict->next; ++i ) {
-	free(dict->keys[i]);
-	free(dict->values[i]);
+	if ( dict->keys[i] )   free(dict->keys[i]);
+	if ( dict->values[i] ) free(dict->values[i]);
     }
     dict->next = 0;
 }
