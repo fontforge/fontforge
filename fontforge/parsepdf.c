@@ -86,26 +86,34 @@ static long FindXRef(FILE *pdf) {
 }
 
 static int findkeyword(FILE *pdf, char *keyword, char *end) {
+/* Find Keyword in file pdf. Stop looking if reach end or get a file-error */
     char buffer[60];
     int len = strlen( keyword );
     int end_len = end==NULL ? 0 : strlen(end);
     int ch, i;
 
-    for ( i=0; i<len; ++i )
-	buffer[i] = ch = getc(pdf);
-    if ( ch==EOF )
-return( false );
+    /* exit with error if 'keyword' or 'end' too big to test */
+    if ( len >= sizeof(buffer) || end_len >= sizeof(buffer) ) {
+	return( false );
+    }
+
+     /* initialize buffer to begin checking for keyword */
+     for ( i=0; i<len; ++i ) {
+	if ( (ch=getc(pdf))<0 ) return( false );
+	buffer[i] = ch;
+    }
     buffer[i] = 0;
-    forever {
+
+    /* search file for keyword, or stop looking if found end */
+    while ( 1 ) {
 	if ( strcmp(buffer,keyword)==0 )
-return( true );
-	if ( strncmp(buffer,end,end_len)==0 )
-return( false );
+	    return( true );
+	if ( end_len && strncmp(buffer,end,end_len)==0 )
+	    return( false );
 	for ( i=1; i<len; ++i )
 	    buffer[i-1] = buffer[i];
-	buffer[len-1] = ch = getc(pdf);
-	if ( ch==EOF )
-return( false );
+	if ( (ch=getc(pdf))<0 ) return( false );
+	buffer[--i] = ch;
     }
 }
 
