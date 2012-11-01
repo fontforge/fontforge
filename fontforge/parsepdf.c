@@ -380,21 +380,20 @@ static void pdf_skipobjectheader(struct pdfcontext *pc) {
 }
 
 static int hex(int ch1, int ch2) {
-    int val;
+/* Convert two HEX characters to one binary value. Return -1 if error */
+/* NOTE: FIXME: parsepfa has an identical routine that can be merged. */
 
-    if ( ch1<='9' )
-	val = (ch1-'0')<<4;
-    else if ( ch1>='a' && ch1<='f' )
-	val = (ch1-'a'+10)<<4;
-    else
-	val = (ch1-'A'+10)<<4;
-    if ( ch2<='9' )
-	val |= (ch2-'0');
-    else if ( ch2>='a' && ch2<='f' )
-	val |= (ch2-'a'+10);
-    else
-	val |= (ch2-'A'+10);
-return( val );
+    if	    (ch1 >= '0' && ch1 <= '9') ch1 -='0';
+    else if (ch1 >= 'A' && ch1 <= 'F') ch1 -=('A'-10);
+    else if (ch1 >= 'a' && ch1 <= 'f') ch1 -=('a'-10);
+    else return( -1 );
+
+    if	    (ch2 >= '0' && ch2 <= '9') ch2 -='0';
+    else if (ch2 >= 'A' && ch2 <= 'F') ch2 -=('A'-10);
+    else if (ch2 >= 'a' && ch2 <= 'f') ch2 -=('a'-10);
+    else return( -1 );
+
+    return( (ch1<<4)|ch2 );
 }
 
 static int pdf_getprotectedtok(FILE *stream, char *tokbuf) {
