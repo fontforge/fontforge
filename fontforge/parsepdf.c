@@ -117,35 +117,39 @@ static int findkeyword(FILE *pdf, char *keyword, char *end) {
     }
 }
 
-static int seektrailer(FILE *pdf, int *start, int *num, struct pdfcontext *pc) {
-    int prev_xref;
-    int pos;
+static int seektrailer(FILE *pdf, long *start, long *num, struct pdfcontext *pc) {
+/* seek 'trailer' and then return values for 'start' and 'num'. Exit if error. */
+    long prev_xref;
+    long pos;
 
-    if ( !findkeyword(pdf,"trailer",NULL))
-return( false );
-    pos = ftell(pdf);
+    /* find 'trailer' and point 'pos' to the next char location after it */
+    if ( !findkeyword(pdf,"trailer",NULL) || (pos=ftell(pdf))==-1 )
+	return( false );
+
+    /* check if there's encryption and toggle-on the encrypt flag if yes */
     if ( findkeyword(pdf,"/Encrypt",">>") ) {
 	int bar;
-	if ( fscanf( pdf, "%d %d", &pc->enc_dict, &bar )==2 )
+	if ( fscanf(pdf,"%d %d",&pc->enc_dict,&bar)==2 )
 	    pc->encrypted = true;
     }
+
     if ( pc->root == 0 ) {
-	fseek(pdf,pos,SEEK_SET);
+	if ( fseek(pdf,pos,SEEK_SET)!=0 ) return( false );
 	if ( findkeyword(pdf,"/Root",">>") ) {
 	    int bar;
-	    fscanf( pdf, "%d %d", &pc->root, &bar );
+	    fscanf(pdf,"%d %d",&pc->root,&bar);
 	}
     }
-    fseek(pdf,pos,SEEK_SET);
-    if ( !findkeyword(pdf,"/Prev",">>"))
-return( false );
-    if ( fscanf( pdf, "%d", &prev_xref )!=1 )
-return( false );
-    fseek(pdf, prev_xref, SEEK_SET );
-    if ( fscanf(pdf, "xref %d %d", start, num )!=2 )
-return( false );
 
-return( true );
+    /* find '/Prev' and return values for 'start' & 'num', Exit if error */
+    if ( fseek(pdf,pos,SEEK_SET)!=0	    || \
+	 !findkeyword(pdf,"/Prev",">>")	    || \
+	 fscanf(pdf,"%ld",&prev_xref)!=1    || \
+	 fseek(pdf,prev_xref,SEEK_SET )!=0  || \
+	 fscanf(pdf,"xref %ld %ld",start,num)!=2 )
+	return( false );
+
+    return( true );
 }
 
 static long *FindObjectsFromXREFObject(struct pdfcontext *pc, long prev_xref);
