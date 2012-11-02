@@ -1965,20 +1965,21 @@ return( NULL );
 }
 
 static void pcFree(struct pdfcontext *pc) {
+/* Free any memory that may have been allocatted earlier */
     int i;
 
     PSDictClear(&pc->pdfdict);
-    free(pc->pdfdict.keys);
-    free(pc->pdfdict.values);
-    free(pc->objs);
+    if ( pc->pdfdict.keys ) free(pc->pdfdict.keys);
+    if ( pc->pdfdict.values ) free(pc->pdfdict.values);
+    if ( pc->objs ) free(pc->objs);
     for ( i=0; i<pc->fcnt; ++i )
-	free(pc->fontnames[i]);
-    free(pc->fontnames);
-    free(pc->fontobjs);
-    free(pc->cmapobjs);
-    free(pc->cmap_from_cid);
-    free(pc->pages);
-    free(pc->tokbuf);
+	if ( pc->fontnames[i] ) free(pc->fontnames[i]);
+    if ( pc->fontnames ) free(pc->fontnames);
+    if ( pc->fontobjs ) free(pc->fontobjs);
+    if ( pc->cmapobjs ) free(pc->cmapobjs);
+    if ( pc->cmap_from_cid ) free(pc->cmap_from_cid);
+    if ( pc->pages ) free(pc->pages);
+    if ( pc->tokbuf ) free(pc->tokbuf);
 }
 
 char **NamesReadPDF(char *filename) {
