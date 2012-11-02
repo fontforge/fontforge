@@ -185,7 +185,7 @@ static long *FindObjects(struct pdfcontext *pc) {
 	return( NULL );
     }
 
-    cnt = 0; ret=NULL; gen=NULL; /* no objects to return yet */
+    cnt=0; ret=NULL; gen=NULL; /* no objects to return yet */
     while ( 1 ) {
 	if ( start+num>cnt ) {
 	    /* increase memory needed for XREFs. Mark last location = -2 */
@@ -960,13 +960,13 @@ return( NULL );
 	}
 	/* I ignore Info */
 
-	cnt = 0; ret=NULL; gen=NULL; /* no objects to return yet */
+	cnt=0; ret=NULL; gen=NULL; /* no objects to return yet */
 	if ( start+num>cnt ) {
 	    /* increase memory needed for objects. Mark last location = -2 */
 	    ret_old=ret; gen_old=gen; sub_old=pc->subindex;
 	    pc->ocnt=(int)(start+num);
 	    ret = realloc(ret,(start+num+1)*sizeof(long));
-	    pc->subindex = grealloc(pc->subindex,(start+num+1)*sizeof(long));
+	    pc->subindex = realloc(pc->subindex,(start+num+1)*sizeof(long));
 	    gen = realloc(gen,(start+num)*sizeof(int));
 	    if ( ret==NULL || gen==NULL || pc->subindex==NULL || pc->ocnt!=start+num ) {
 		if ( ret==NULL ) ret=ret_old;
@@ -982,16 +982,18 @@ return( NULL );
 	    ret[cnt] = -2;
 	}
 	/* Now gather the cross references from their stream */
-	xref_stream = pdf_defilterstream(pc);
-	if ( xref_stream==NULL )
-return( NULL );
-	rewind(xref_stream);
+	if ( (xref_stream=pdf_defilterstream(pc))==NULL )
+	    goto FindObjectsFromXREFObjectError_ReleaseMemAndExit;
+	if ( fseek(xref_stream,0,SEEK_SET)!=0 ) {
+	    fclose(xref_stream); /* failed to rewind(xref_stream) */
+	    goto FindObjectsFromXREFObjectError_ReleaseMemAndExit;
+	}
 	for ( i=start; i<start+num; ++i ) {
 	    if ( getuvalue(xref_stream,typewidth,&type)  || \
 		 getuvalue(xref_stream,offwidth,&offset) || \
 		 getuvalue(xref_stream,genwidth,&gennum) ) {
 		fclose(xref_stream);
-		return( NULL );
+		goto FindObjectsFromXREFObjectError_ReleaseMemAndExit;
 	    }
 	    if ( type==0 ) {
 		if ( gennum > gen[i] ) {
