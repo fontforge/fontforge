@@ -149,7 +149,7 @@ static int seektrailer(FILE *pdf, long *start, long *num, struct pdfcontext *pc)
 	 fscanf(pdf,"xref %ld %ld",start,num)!=2 )
 	return( false );
 
-    return( true );
+    return( true ); /* Done! We now have 'start' and 'num' */
 }
 
 static long *FindObjectsFromXREFObject(struct pdfcontext *pc, long prev_xref);
@@ -157,16 +157,18 @@ static long *FindObjectsFromXREFObject(struct pdfcontext *pc, long prev_xref);
 static long *FindObjects(struct pdfcontext *pc) {
     FILE *pdf = pc->pdf;
     long xrefpos;
-    long *ret=NULL;
-    int *gen=NULL;
+    long *ret, *ret_old;
+    int *gen, *gen_old;
     int ch; long cnt, i, start, num;
     long offset; int gennum; char f;
 
     /* find the XREF location and point to that position. Exit if error */
-    if ( (xrefpos=FindXRef(pdf))== -1 || fseek(pdf,xrefpos,SEEK_SET)!=0 )
+    if ( (xrefpos=FindXRef(pdf))==-1 || fseek(pdf,xrefpos,SEEK_SET)!=0 )
 	return( NULL );
 
-    if ( fscanf(pdf,"xref %ld %ld",&start,&num )!=2 ) {
+    /* initialize 'start' and 'num' values if we have them here */
+    if ( fscanf(pdf,"xref %ld %ld",&start,&num)!=2 ) {
+	/* otherwise, check if it is an 'obj' and try there instead */
 	long foo, bar;
 	if ( fseek(pdf,xrefpos,SEEK_SET)!=0 || \
 	     fscanf(pdf,"%ld %ld",&foo,&bar)!=2 )
@@ -181,24 +183,33 @@ static long *FindObjects(struct pdfcontext *pc) {
 	return( NULL );
     }
 
-    cnt = 0;
-    forever {
+    cnt = 0; ret=NULL; gen=NULL; /* no objects to return yet */
+    while ( 1 ) {
 	if ( start+num>cnt ) {
-	    ret = grealloc(ret,(start+num+1)*sizeof(long));
+	    /* increase memory needed for XREFs. Mark last location = -2 */
+	    ret_old = ret; gen_old = gen; pc->ocnt = (int)(start+num);
+	    ret = realloc(ret,(start+num+1)*sizeof(long));
+	    gen = realloc(gen,(start+num)*sizeof(int));
+	    if ( ret==NULL || gen==NULL || pc->ocnt!=start+num ) {
+		if ( ret!=NULL ) free(ret);
+		else if ( ret_old!=NULL ) free(ret_old);
+		if ( gen!=NULL ) free(gen);
+		else if ( gen_old!=NULL ) free(gen_old);
+		NoMoreMemMessage(); pc->ocnt = 0;
+		return( NULL );
+	    }
 	    memset(ret+cnt,-1,sizeof(long)*(start+num-cnt));
-	    gen = grealloc(gen,(start+num)*sizeof(int));
 	    memset(gen+cnt,-1,sizeof(int)*(start+num-cnt));
 	    cnt = start+num;
-	    pc->ocnt = (int)(cnt);
 	    ret[cnt] = -2;
 	}
 	for ( i=start; i<start+num; ++i ) {
 	    if ( fscanf(pdf,"%ld %d %c",&offset,&gennum,&f)!=3 ) {
 		free(gen);
-return( ret );
+		return( ret );
 	    }
 	    if ( f=='f' ) {
-		if ( gennum > gen[i] ) {
+	      if ( gennum > gen[i] ) {
 		    ret[i] = -1;
 		    gen[i] = gennum;
 		}
@@ -209,13 +220,15 @@ return( ret );
 		}
 	    } else {
 		free(gen);
-return( ret );
-		}
+		return( ret );
+	    }
 	}
-	if ( fscanf(pdf, "%ld %ld", &start, &num )!=2 )
-	    if ( !seektrailer(pdf, &start, &num, pc)) {
+	/* load the next 'start' and 'num' values and continue. */
+	/* if can't get more 'start' and 'num' then we're done. */
+	if ( fscanf(pdf,"%ld %ld",&start,&num)!=2 && \
+	     !seektrailer(pdf,&start,&num,pc) ) {
 	    free(gen);
-return( ret );
+	    return( ret );
 	}
     }
 }
@@ -424,7 +437,7 @@ return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 
 static int pdf_skip_brackets(FILE *stream, char *tokbuf) {
     int ch, ret;
-    
+
     while ( isspace(ch = getc(stream)) );
     if (ch != '<')
 return 0;
