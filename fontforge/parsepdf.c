@@ -155,6 +155,8 @@ static int seektrailer(FILE *pdf, long *start, long *num, struct pdfcontext *pc)
 static long *FindObjectsFromXREFObject(struct pdfcontext *pc, long prev_xref);
 
 static long *FindObjects(struct pdfcontext *pc) {
+/* Find and return a list of file pointers to XREFObjects in this pdf file. */
+/* Return NULL if any file-reading error encountered, or if lack of memory. */
     FILE *pdf = pc->pdf;
     long xrefpos;
     long *ret, *ret_old;
@@ -187,7 +189,7 @@ static long *FindObjects(struct pdfcontext *pc) {
     while ( 1 ) {
 	if ( start+num>cnt ) {
 	    /* increase memory needed for XREFs. Mark last location = -2 */
-	    ret_old = ret; gen_old = gen; pc->ocnt = (int)(start+num);
+	    ret_old=ret; gen_old=gen; pc->ocnt=(int)(start+num);
 	    ret = realloc(ret,(start+num+1)*sizeof(long));
 	    gen = realloc(gen,(start+num)*sizeof(int));
 	    if ( ret==NULL || gen==NULL || pc->ocnt!=start+num ) {
@@ -914,8 +916,8 @@ static int getuvalue(FILE *f, int len, long *val) {
 
 static long *FindObjectsFromXREFObject(struct pdfcontext *pc, long prev_xref) {
     char *pt;
-    long *ret=NULL;
-    int *gen=NULL;
+    long *ret, *ret_old, *sub_old;
+    int *gen, *gen_old;
     int cnt = 0, i, start, num;
     int bar;
     int typewidth, offwidth, genwidth;
@@ -923,7 +925,7 @@ static long *FindObjectsFromXREFObject(struct pdfcontext *pc, long prev_xref) {
     FILE *xref_stream, *pdf = pc->pdf;
 
     while ( prev_xref!=-1 ) {
-	fseek(pdf,prev_xref,SEEK_SET);
+	if ( fseek(pdf,prev_xref,SEEK_SET)!=0 ) return( NULL );
 	pdf_skipobjectheader(pc);
 	if ( !pdf_readdict(pc))
 return( NULL );
@@ -958,15 +960,25 @@ return( NULL );
 	}
 	/* I ignore Info */
 
+	cnt = 0; ret=NULL; gen=NULL; /* no objects to return yet */
 	if ( start+num>cnt ) {
-	    ret = grealloc(ret,(start+num+1)*sizeof(long));
-	    memset(ret+cnt,-1,sizeof(long)*(start+num-cnt));
+	    /* increase memory needed for objects. Mark last location = -2 */
+	    ret_old=ret; gen_old=gen; sub_old=pc->subindex;
+	    pc->ocnt=(int)(start+num);
+	    ret = realloc(ret,(start+num+1)*sizeof(long));
 	    pc->subindex = grealloc(pc->subindex,(start+num+1)*sizeof(long));
+	    gen = realloc(gen,(start+num)*sizeof(int));
+	    if ( ret==NULL || gen==NULL || pc->subindex==NULL || pc->ocnt!=start+num ) {
+		if ( ret==NULL ) ret=ret_old;
+		if ( pc->subindex==NULL ) pc->subindex=sub_old;
+		if ( gen==NULL ) gen=gen_old;
+		NoMoreMemMessage();
+		goto FindObjectsFromXREFObjectError_ReleaseMemAndExit;
+	    }
+	    memset(ret+cnt,-1,sizeof(long)*(start+num-cnt));
 	    memset(pc->subindex+cnt,-1,sizeof(long)*(start+num-cnt));
-	    gen = grealloc(gen,(start+num)*sizeof(int));
 	    memset(gen+cnt,-1,sizeof(int)*(start+num-cnt));
 	    cnt = start+num;
-	    pc->ocnt = cnt;
 	    ret[cnt] = -2;
 	}
 	/* Now gather the cross references from their stream */
@@ -1003,6 +1015,14 @@ return( NULL );
     }
     free( gen );
 return( ret );
+
+FindObjectsFromXREFObjectError_ReleaseMemAndExit:
+/* error occurred, therefore release objects and return with NULL */
+    if ( ret!=NULL ) free(ret);
+    if ( pc->subindex!=NULL ) free(pc->subindex); pc->subindex=NULL;
+    if ( gen!=NULL ) free(gen);
+    pc->ocnt = 0;
+    return( NULL );
 }
 /* ************************************************************************** */
 /* **************************** End xref streams **************************** */
