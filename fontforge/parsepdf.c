@@ -1988,40 +1988,41 @@ char **NamesReadPDF(char *filename) {
     int i;
     char **list;
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strcpy(oldloc,setlocale(LC_NUMERIC,NULL) );
     setlocale(LC_NUMERIC,"C");
     memset(&pc,0,sizeof(pc));
-    pc.pdf = fopen(filename,"r");
-    if ( pc.pdf==NULL )
-return( NULL );
-    if ( (pc.objs = FindObjects(&pc))==NULL ) {
+    if ( (pc.pdf=fopen(filename,"r"))==NULL )
+	return( NULL );
+    if ( (pc.objs=FindObjects(&pc))==NULL ) {
 	LogError( _("Doesn't look like a valid pdf file, couldn't find xref section") );
-	fclose(pc.pdf);
-	pcFree(&pc);
-	setlocale(LC_NUMERIC,oldloc);
-return( NULL );
+	goto NamesReadPDF_error;
     }
     if ( pc.encrypted ) {
 	LogError( _("This pdf file contains an /Encrypt dictionary, and FontForge does not currently\nsupport pdf encryption" ));
-	fclose(pc.pdf);
-	pcFree(&pc);
-	setlocale(LC_NUMERIC,oldloc);
-return( NULL );
+	goto NamesReadPDF_error;
     }
     if ( pdf_findfonts(&pc)==0 ) {
-	fclose(pc.pdf);
-	pcFree(&pc);
-	setlocale(LC_NUMERIC,oldloc);
-return( NULL );
+	goto NamesReadPDF_error;
     }
-    list = galloc((pc.fcnt+1)*sizeof(char *));
+    if ( (list=malloc((pc.fcnt+1)*sizeof(char *)))==NULL )
+	goto NamesReadPDF_error;
     for ( i=0; i<pc.fcnt; ++i )
-	list[i] = copy( pc.fontnames[i]);
-    list[i] = NULL;
+	if ( (list[i]=copy(pc.fontnames[i]))==NULL )
+	    goto NamesReadPDFlist_error;
+    list[i]=NULL;
     fclose(pc.pdf);
     pcFree(&pc);
     setlocale(LC_NUMERIC,oldloc);
-return( list );
+    return( list );
+
+/* if errors, then free memory, close files, and return a NULL */
+NamesReadPDFlist_error:
+    while ( --i>=0 ) free( list[i] );
+NamesReadPDF_error:
+    pcFree(&pc);
+    fclose(pc.pdf);
+    setlocale(LC_NUMERIC,oldloc);
+    return( NULL );
 }
 
 SplineFont *_SFReadPdfFont(FILE *pdf,char *filename, enum openflags openflags) {
