@@ -265,20 +265,27 @@ static int pdf_skipwhitespace(struct pdfcontext *pc) {
 }
 
 static char *pdf_getname(struct pdfcontext *pc) {
+/* return name. return NULL if errors found */
     FILE *pdf = pc->compressed ? pc->compressed : pc->pdf;
     int ch;
     char *pt = pc->tokbuf, *end = pc->tokbuf+pc->tblen;
 
     /* first, skip any white spaces in front of name */
     if ( pdf_skipwhitespace(pc) ) return( NULL );
-    ch = getc(pdf);
-    if ( ch!='/' ) {
+
+    if ( (ch=getc(pdf))!='/' ) {
 	ungetc(ch,pdf);
-return( NULL );
+	return( NULL );
     }
+
     for ( ch=getc(pdf) ;; ch=getc(pdf) ) {
 	if ( pt>=end ) {
-	    char *temp = grealloc(pc->tokbuf,(pc->tblen+=300));
+	    char *temp;
+	    if ( (temp=realloc(pc->tokbuf,(pc->tblen+=300)))==NULL ) {
+		/* error, but don't need to free realloc memory */
+		NoMoreMemMessage();
+		return( NULL );
+	    }
 	    pt = temp + (pt-pc->tokbuf);
 	    pc->tokbuf = temp;
 	    end = temp+pc->tblen;
@@ -286,7 +293,7 @@ return( NULL );
 	if ( pdf_space(ch) || pdf_oper(ch) ) {
 	    ungetc(ch,pdf);
 	    *pt = '\0';
-return( pc->tokbuf );
+	    return( pc->tokbuf );
 	}
 	*pt++ = ch;
     }
