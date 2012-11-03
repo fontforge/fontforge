@@ -1,4 +1,5 @@
 /* Copyright (C) 2000-2012 by George Williams */
+/* 2012nov01, many fixes added, Jose Da Silva */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -562,7 +563,7 @@ static int pdf_findfonts(struct pdfcontext *pc) {
 		    (cmap=PSDictHasEntry(&pc->pdfdict,"ToUnicode"))!=NULL &&
 		    (desc=PSDictHasEntry(&pc->pdfdict,"DescendantFonts"))!=NULL &&
 		    (pt=PSDictHasEntry(&pc->pdfdict,"BaseFont"))!=NULL) {
-	    
+
 		if (*cmap == '[') cmap++;
 		if (*desc == '[') desc++;
 		sscanf(cmap, "%d", &cnum);
@@ -935,7 +936,7 @@ static long *FindObjectsFromXREFObject(struct pdfcontext *pc, long prev_xref) {
     char *pt;
     long *ret, *ret_old, *sub_old;
     int *gen, *gen_old;
-    int cnt = 0, i, start, num;
+    long cnt = 0, i, start, num;
     int bar;
     int typewidth, offwidth, genwidth;
     long type, offset, gennum;
@@ -955,14 +956,14 @@ return( NULL );
 	    num = pdf_getinteger(pt,pc);
 	}
 	if ( (pt=PSDictHasEntry(&pc->pdfdict,"Index"))!=NULL ) {
-	    if ( sscanf(pt,"[%d %d]", &start, &num )!=2 )
+	    if ( sscanf(pt,"[%ld %ld]",&start,&num)!=2 )
 return( NULL );
 	}
 	if ( (pt=PSDictHasEntry(&pc->pdfdict,"W"))==NULL )
 return( NULL );
 	else {
-	    if ( sscanf(pt,"[%d %d %d]", &typewidth, &offwidth, &genwidth )!=3 )
-return( NULL );
+	    if ( sscanf(pt,"[%d %d %d]",&typewidth,&offwidth,&genwidth )!=3 )
+		return( NULL );
 	}
 	if ( (pt=PSDictHasEntry(&pc->pdfdict,"Encrypt"))!=NULL ) {
 	    if ( sscanf( pt, "%d %d", &pc->enc_dict, &bar )==2 )
@@ -2034,7 +2035,7 @@ char **NamesReadPDF(char *filename) {
 
 /* if errors, then free memory, close files, and return a NULL */
 NamesReadPDFlist_error:
-    while ( --i>=0 ) free( list[i] );
+    while ( --i>=0 ) free(list[i]);
 NamesReadPDF_error:
     pcFree(&pc);
     fclose(pc.pdf);
