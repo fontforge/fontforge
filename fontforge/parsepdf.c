@@ -246,18 +246,22 @@ static int pdf_peekch(FILE *pdf) {
 return( ch );
 }
 
-static void pdf_skipwhitespace(struct pdfcontext *pc) {
+static int pdf_skipwhitespace(struct pdfcontext *pc) {
+/* Skip pdf white spaces. Return -1 if EOF or get file error. */
     FILE *pdf =  pc->compressed ? pc->compressed : pc->pdf;
     int ch;
 
-    forever {
-	ch = getc(pdf);
-	if( ch=='%' ) {
-	    while ( (ch=getc(pdf))!=EOF && ch!='\n' && ch!='\r' );
-	} else if ( !pdf_space(ch) )
-    break;
+    /* get next char and loop forever until EOF or file error */
+    while ( (ch=getc(pdf))>=0 ) {
+	if( ch=='%' )
+	    /* skip everything after '%' upto '\n' or '\r' */
+	    while ( (ch=getc(pdf))>=0 && ch!='\n' && ch!='\r' );
+	else
+	    if ( !pdf_space(ch) ) break;
     }
-    ungetc(ch,pdf);
+    /* Done! Now if not EOF or a file error, then unget ch */
+    if ( ch<0 || ungetc(ch,pdf)<0 ) return( -1 );
+    return( 0 );
 }
 
 static char *pdf_getname(struct pdfcontext *pc) {
@@ -265,7 +269,8 @@ static char *pdf_getname(struct pdfcontext *pc) {
     int ch;
     char *pt = pc->tokbuf, *end = pc->tokbuf+pc->tblen;
 
-    pdf_skipwhitespace(pc);
+    /* first, skip any white spaces in front of name */
+    if ( pdf_skipwhitespace(pc) ) return( NULL );
     ch = getc(pdf);
     if ( ch!='/' ) {
 	ungetc(ch,pdf);
@@ -349,7 +354,7 @@ return( pc->tokbuf );
 	}
 	ch = getc(pdf);
     }
-}   
+}
 
 static void PSDictClear(struct psdict *dict) {
 /* Clear all psdict keys[] and values[] */
@@ -369,7 +374,7 @@ static int pdf_readdict(struct pdfcontext *pc) {
 
     PSDictClear(&pc->pdfdict);
 
-    pdf_skipwhitespace(pc);
+    if ( pdf_skipwhitespace(pc) ) return( false );
     ch = getc(pdf);
     if ( ch!='<' || pdf_peekch(pdf)!='<' )
 return( false );
