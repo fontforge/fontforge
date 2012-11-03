@@ -465,12 +465,6 @@ static int pdf_skip_brackets(FILE *stream, char *tokbuf) {
     return( ret && ch=='>' );
 }
 
-    ret = pdf_getprotectedtok(stream, tokbuf);
-    ch = getc(stream);
-
-return ret && ch == '>';
-}
-
 static FILE *pdf_defilterstream(struct pdfcontext *pc);
 static int pdf_getinteger(char *pt,struct pdfcontext *pc);
 
