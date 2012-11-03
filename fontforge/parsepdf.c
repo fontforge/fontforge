@@ -434,27 +434,36 @@ static int hex(int ch1, int ch2) {
 }
 
 static int pdf_getprotectedtok(FILE *stream, char *tokbuf) {
-    char *pt=tokbuf, *end = tokbuf+100-2; int ch;
+    char *pt=tokbuf, *end=tokbuf+100-2; int ch;
 
     while ( isspace(ch = getc(stream)) );
-    while ( ch!=EOF && !isspace(ch) && ch!='[' && ch!=']' && ch!='{' && ch!='}' && ch!='<' && ch!='>' ) {
+    while ( ch>=0 && !isspace(ch) && ch!='[' && ch!=']' && ch!='{' && ch!='}' && ch!='<' && ch!='>' ) {
 	if ( pt<end ) *pt++ = ch;
 	ch = getc(stream);
     }
-    if ( pt==tokbuf && ch!=EOF )
-	*pt++ = ch;
-    else
-	ungetc(ch,stream);
+    if ( ch>=0 ) {
+	/* if not EOF or file error, then do this... */
+	if ( pt==tokbuf )
+	    *pt++ = ch;
+	else
+	    ungetc(ch,stream);
+    }
     *pt='\0';
-return( pt!=tokbuf?1:ch==EOF?-1: 0 );
+    return( pt!=tokbuf?1:ch<0?-1: 0 );
 }
 
 static int pdf_skip_brackets(FILE *stream, char *tokbuf) {
     int ch, ret;
 
+    /* first ch should be '<', else return 0 as not found */
     while ( isspace(ch = getc(stream)) );
-    if (ch != '<')
-return 0;
+    if (ch != '<') return( 0 );
+
+    ret = pdf_getprotectedtok(stream, tokbuf);
+    ch = getc(stream);
+
+    return( ret && ch=='>' );
+}
 
     ret = pdf_getprotectedtok(stream, tokbuf);
     ch = getc(stream);
