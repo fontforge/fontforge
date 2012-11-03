@@ -606,7 +606,7 @@ static int pdf_findfonts(struct pdfcontext *pc) {
 		for (j=0; j<k && pc->fontobjs[j] != i; j++);
 		if (j < k )
     continue;
-		    
+
 		if ((cmap=PSDictHasEntry(&pc->pdfdict,"ToUnicode"))!=NULL) {
 		    if (*cmap == '[') cmap++;
 		    sscanf(cmap, "%d", &cnum);
@@ -694,18 +694,20 @@ return;
 
 static int pdf_findpages(struct pdfcontext *pc) {
     FILE *pdf = pc->pdf;
-    int top_ref;
+    long top_ref;
     /* I could just find all the Page objects, but they would not be in order then */
 
-    if ( pc->root==0 )
-return( 0 );
+    if ( pc->root==0 ) return( 0 );
 
-    fseek(pdf,pc->objs[pc->root],SEEK_SET);
-    if ( !findkeyword(pdf,"/Pages",">>"))
-return( 0 );
-    if ( fscanf( pdf, "%d", &top_ref )!=1 )
-return( 0 );
-    pc->pages = galloc(pc->ocnt*sizeof(long));
+    if ( fseek(pdf,pc->objs[pc->root],SEEK_SET)==0 || \
+	 !findkeyword(pdf,"/Pages",">>")	   || \
+	 fscanf(pdf,"%ld",&top_ref)!=1 )
+	return( 0 );
+
+    if ( (pc->pages = malloc(pc->ocnt*sizeof(long)))==NULL ) {
+	NoMoreMemMessage();
+	return( 0 );
+    }
     pdf_addpages(pc,top_ref);
 return( pc->pcnt );
 }
