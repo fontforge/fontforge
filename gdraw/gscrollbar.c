@@ -520,8 +520,7 @@ static void GScrollBarFit(GScrollBar *gsb) {
     minheight = 2*(gsb->thumbborder+gsb->arrowsize) + GDrawPointsToPixels(gsb->g.base,2);
 
     if ( gsb->g.vert ) {
-	if ( gsb->g.r.width==0 )
-	    gsb->g.r.width = GDrawPointsToPixels(gsb->g.base,_GScrollBar_Width);
+	gsb->g.r.width = GDrawPointsToPixels(gsb->g.base,_GScrollBar_Width);
 	if ( gsb->g.r.height< minheight )
 	    gsb->g.r.height = minheight;
 	gsb->g.inner.x = gsb->g.r.x+gsb->sbborder;
@@ -529,8 +528,7 @@ static void GScrollBarFit(GScrollBar *gsb) {
 	gsb->g.inner.y = gsb->g.r.y+gsb->arrowsize;
 	gsb->g.inner.height = gsb->g.r.height - 2*gsb->arrowsize;
     } else {
-	if ( gsb->g.r.height==0 )
-	    gsb->g.r.height = GDrawPointsToPixels(gsb->g.base,_GScrollBar_Width);
+	gsb->g.r.height = GDrawPointsToPixels(gsb->g.base,_GScrollBar_Width);
 	if ( gsb->g.r.width< minheight )
 	    gsb->g.r.width = minheight;
 	gsb->g.inner.x = gsb->g.r.x+gsb->arrowsize;
