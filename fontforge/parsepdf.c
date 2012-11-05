@@ -194,10 +194,8 @@ static long *FindObjects(struct pdfcontext *pc) {
 	    ret = realloc(ret,(start+num+1)*sizeof(long));
 	    gen = realloc(gen,(start+num)*sizeof(int));
 	    if ( ret==NULL || gen==NULL || pc->ocnt!=start+num ) {
-		if ( ret!=NULL ) free(ret);
-		else if ( ret_old!=NULL ) free(ret_old);
-		if ( gen!=NULL ) free(gen);
-		else if ( gen_old!=NULL ) free(gen_old);
+		free(ret); free(ret_old);
+		free(gen); free(gen_old);
 		NoMoreMemMessage(); pc->ocnt = 0;
 		return( NULL );
 	    }
@@ -369,8 +367,8 @@ static void PSDictClear(struct psdict *dict) {
   int i;
 
     for ( i=0; i<dict->next; ++i ) {
-	if ( dict->keys[i] )   free(dict->keys[i]);
-	if ( dict->values[i] ) free(dict->values[i]);
+	free(dict->keys[i]);
+	free(dict->values[i]);
     }
     dict->next = 0;
 }
@@ -1038,9 +1036,7 @@ return( ret );
 
 FindObjectsFromXREFObjectError_ReleaseMemAndExit:
 /* error occurred, therefore release objects and return with NULL */
-    if ( ret!=NULL ) free(ret);
-    if ( pc->subindex!=NULL ) free(pc->subindex); pc->subindex=NULL;
-    if ( gen!=NULL ) free(gen);
+    free(ret); free(pc->subindex); pc->subindex=NULL; free(gen);
     pc->ocnt = 0;
     return( NULL );
 }
@@ -1987,17 +1983,16 @@ static void pcFree(struct pdfcontext *pc) {
     int i;
 
     PSDictClear(&pc->pdfdict);
-    if ( pc->pdfdict.keys ) free(pc->pdfdict.keys);
-    if ( pc->pdfdict.values ) free(pc->pdfdict.values);
-    if ( pc->objs ) free(pc->objs);
-    for ( i=0; i<pc->fcnt; ++i )
-	if ( pc->fontnames[i] ) free(pc->fontnames[i]);
-    if ( pc->fontnames ) free(pc->fontnames);
-    if ( pc->fontobjs ) free(pc->fontobjs);
-    if ( pc->cmapobjs ) free(pc->cmapobjs);
-    if ( pc->cmap_from_cid ) free(pc->cmap_from_cid);
-    if ( pc->pages ) free(pc->pages);
-    if ( pc->tokbuf ) free(pc->tokbuf);
+    free(pc->pdfdict.keys);
+    free(pc->pdfdict.values);
+    free(pc->objs);
+    for ( i=0; i<pc->fcnt; ++i ) free(pc->fontnames[i]);
+    free(pc->fontnames);
+    free(pc->fontobjs);
+    free(pc->cmapobjs);
+    free(pc->cmap_from_cid);
+    free(pc->pages);
+    free(pc->tokbuf);
 }
 
 char **NamesReadPDF(char *filename) {
