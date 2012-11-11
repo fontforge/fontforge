@@ -64,9 +64,27 @@ FontForge is Copyright(C) 2000,2001,2002,2003,2004,2005,2006,2007,2008,
 
 TODO: list of files existing under this license
 (use GROFF's license as an example template for making this list)
+These files were created under the Revised BSD License:
 
-FontForge Files Using The LGPL and GPL Licenses
------------------------------------------------
+fontforge-20120731-b/
+install-sh
+
+FontForge Files Using The GPL Licenses
+--------------------------------------
+
+To read the LGPL and GPL texts, please refer to the GNU website.
+Copyright Notices.
+
+These files were created under the GPL License:
+
+fontforge-20120731-b/
+aclocal.m4	configure.dynamic	configure.static.in
+config.guess	configure.dynamic.in	ltmain.sh
+config.sub	configure.in		Makefile.dynamic.in
+configure	configure.static	Makefile.static.in
+
+FontForge Files Using The LGPL Licenses
+---------------------------------------
 
 To read the LGPL and GPL texts, please refer to the GNU website.
 Copyright Notices
@@ -78,3 +96,11 @@ TODO: list of files under this license
 
 (not sure, but don't think this is needed here)
 TODO: Get name and email of all contributors from git history.
+
+These are generated files, or do not have a license specified
+-------------------------------------------------------------
+
+fontforge-20120731-b/
+descrip.mms	LICENSE		README-Unix.html
+fontforge.pc.in	README-Mac.html	systemspecific.in
+INSTALL		README-unix	VERSION
