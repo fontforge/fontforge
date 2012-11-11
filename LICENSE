@@ -104,3 +104,7 @@ fontforge-20120731-b/
 descrip.mms	LICENSE		README-Unix.html
 fontforge.pc.in	README-Mac.html	systemspecific.in
 INSTALL		README-unix	VERSION
+
+fontforge-20120731-b/pyhook:
+fontforgepyhook.c	psMatpyhook.c	setup.py.in
+loadfontforge.h		README
