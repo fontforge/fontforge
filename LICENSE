@@ -69,6 +69,15 @@ These files were created under the Revised BSD License:
 fontforge-20120731-b/
 install-sh
 
+fontforge-20120731-b/pycontrib:
+excepthook.py
+
+fontforge-20120731-b/Unicode:
+char.c		makebuildtables.c	ucharmap.c
+dump.c		makeutype.c		usprintf.c
+gwwiconv.c	memory.c		ustring.c
+
+
 FontForge Files Using The GPL Licenses
 --------------------------------------
 
@@ -82,6 +91,12 @@ aclocal.m4	configure.dynamic	configure.static.in
 config.guess	configure.dynamic.in	ltmain.sh
 config.sub	configure.in		Makefile.dynamic.in
 configure	configure.static	Makefile.static.in
+
+fontforge-20120731-b/plugins:
+ANALYZE_MAP.COM	Makefile.in
+
+fontforge-20120731-b/Unicode:
+Makefile.dynamic.in	Makefile.static.in
 
 FontForge Files Using The LGPL Licenses
 ---------------------------------------
@@ -105,6 +120,19 @@ descrip.mms	LICENSE		README-Unix.html
 fontforge.pc.in	README-Mac.html	systemspecific.in
 INSTALL		README-unix	VERSION
 
+fontforge-20120731-b/inc:
+chardata.h
+utype.h
+
+fontforge-20120731-b/plugins:
+descrip.mms	gb12345.c
+
+
 fontforge-20120731-b/pyhook:
 fontforgepyhook.c	psMatpyhook.c	setup.py.in
 loadfontforge.h		README
+
+fontforge-20120731-b/Unicode:
+alphabet.c	cjk.c		README.TXT
+ArabicForms.c	combiners.h	unialt.c
+backtrns.c	descrip.mms	utype.c
