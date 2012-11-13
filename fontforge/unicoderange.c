@@ -330,20 +330,27 @@ static struct unicoderange unassignedplanes[] = {
 };
 
 static int ucmp(const void *_ri1, const void *_ri2) {
+/* Compare unicode range1 to unicode range2. This routine is used to help */
+/* sort a list of ranges, returning a small value {-1,0,+1} if the start  */
+/* is the same, but the last is different, else returning a large diff if */
+/* the start of the two ranges are different. This routine used by qsort. */
     const struct rangeinfo *ri1 = _ri1, *ri2 = _ri2;
 
     if ( ri1->range->first == ri2->range->first ) {
+	/* These two ranges are similar since they begin on at same point */
 	if ( ri1->range->last > ri2->range->last )
-return( -1 );
+	    return( -1 ); /* range1 is larger than range2, list it ahead  */
 	else if ( ri1->range->last < ri2->range->last )
-return( 1 );
+	    return( 1 ); /* range2 should be sorted after range1 */
 	else
-return( 0 );
+	    return( 0 ); /* both ranges appear the same - no need to sort */
     } else
-return( ri1->range->first - ri2->range->first );
+	/* sort according to which range comes first */
+	return( ri1->range->first - ri2->range->first );
 }
 
 static int ncmp(const void *_ri1, const void *_ri2) {
+/* Compare two ranges using Unicode name. This routine is used by qsort() */
     const struct rangeinfo *ri1 = _ri1, *ri2 = _ri2;
 
 return( strcoll(_(ri1->range->name),_(ri2->range->name)));
@@ -429,9 +436,9 @@ struct rangeinfo *SFUnicodeRanges(SplineFont *sf, enum ur_flags flags) {
     }
 
     if ( flags&ur_sortbyunicode )
-	qsort(ri,cnt,sizeof(struct rangeinfo),ucmp);
+	qsort(ri,cnt,sizeof(struct rangeinfo),ucmp); /* sort by ranges */
     else if ( flags&ur_sortbyname )
-	qsort(ri,cnt,sizeof(struct rangeinfo),ncmp);
+	qsort(ri,cnt,sizeof(struct rangeinfo),ncmp); /* sort by names  */
 return( ri );
 }
 
