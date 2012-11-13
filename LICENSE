@@ -76,8 +76,8 @@ fileutil.h	gicons.h	gresedit.h	intl.h
 gdraw.h		gimage.h	gresource.h	ustring.h
 
 fontforge-20120731-b/Packaging:
-fontforge.desktop   FontForge.spec         fontforge.xml
-FontForge-doc.spec  FontForge.static.spec
+fontforge.desktop	FontForge.spec		fontforge.xml
+FontForge-doc.spec	FontForge.static.spec
 
 fontforge-20120731-b/pycontrib:
 excepthook.py
@@ -101,6 +101,15 @@ aclocal.m4	configure.dynamic	configure.static.in
 config.guess	configure.dynamic.in	ltmain.sh
 config.sub	configure.in		Makefile.dynamic.in
 configure	configure.static	Makefile.static.in
+
+fontforge-20120731-b/fontforge:
+Makefile.dynamic.in	Makefile.static.in
+
+fontforge-20120731-b/gdraw:
+Makefile.dynamic.in	Makefile.static.in
+
+fontforge-20120731-b/gutils:
+Makefile.dynamic.in	Makefile.static.in
 
 fontforge-20120731-b/inc:
 config.h.in
@@ -149,10 +158,10 @@ fontforge.pc.in	README-Mac.html	systemspecific.in
 INSTALL		README-unix	VERSION
 
 fontforge-20120731-b/inc:
-chardata.h
+chardata.h	descrip.mms	dynamic.h	utype.h
+
+fontforge-20120731-b/gutils:
 descrip.mms
-dynamic.h
-utype.h
 
 fontforge-20120731-b/plugins:
 descrip.mms	gb12345.c
