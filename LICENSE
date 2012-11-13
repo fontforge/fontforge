@@ -69,6 +69,19 @@ These files were created under the Revised BSD License:
 fontforge-20120731-b/
 install-sh
 
+fontforge-20120731-b/gutils:
+dynamic.c		gimagereadrgb.c		giofile.c
+fsys.c			gimagereadtiff.c	gioftp.c
+gcol.c			gimagereadxbm.c		gioftpP.h
+gimage.c		gimagereadxpm.c		giofuncP.h
+gimagebmpP.h		gimagewritebmp.c	giohosts.c
+gimageread.c		gimagewritegimage.c	giomime.c
+gimagereadbmp.c		gimagewritejpeg.c	gioP.h
+gimagereadgif.c		gimagewritepng.c	giothread.c
+gimagereadjpeg.c	gimagewritexbm.c	giotrans.c
+gimagereadpng.c		gimagewritexpm.c	gwwintl.c
+gimagereadras.c		gio.c
+
 fontforge-20120731-b/inc:
 basics.h	gfile.h		gio.h		gwidget.h
 charset.h	ggadget.h	gprogress.h	gwwiconv.h
@@ -161,7 +174,7 @@ fontforge-20120731-b/inc:
 chardata.h	descrip.mms	dynamic.h	utype.h
 
 fontforge-20120731-b/gutils:
-descrip.mms
+descrip.mms	divisors.c
 
 fontforge-20120731-b/plugins:
 descrip.mms	gb12345.c
