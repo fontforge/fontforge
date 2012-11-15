@@ -362,6 +362,8 @@ static int ncmp(const void *_ri1, const void *_ri2) {
 }
 
 struct rangeinfo *SFUnicodeRanges(SplineFont *sf, enum ur_flags flags) {
+/* Find and return the Unicode range descriptions for these characters */
+/* Return NULL if out of memory to hold rangeinfo[cnt]. */
     int cnt;
     int i, gid;
     int32 j;
@@ -383,6 +385,7 @@ struct rangeinfo *SFUnicodeRanges(SplineFont *sf, enum ur_flags flags) {
 	}
     }
 
+    /* count number of ranges to return back in rangeinfo[cnt] */
     for (i=cnt=0; unicoderange[i].name!=NULL; ++i )
 	if ( unicoderange[i].display )
 	    ++cnt;
@@ -391,8 +394,13 @@ struct rangeinfo *SFUnicodeRanges(SplineFont *sf, enum ur_flags flags) {
 	    ++cnt;
     cnt+=2;		/* for nonunicode, unassigned codes */
 
-    ri = gcalloc(cnt+1,sizeof(struct rangeinfo));
+    /* create memory space needed to return back rangeinfo[cnt] */
+    if ( (ri=calloc(cnt+1,sizeof(struct rangeinfo)))==NULL ) {
+	NoMoreMemMessage();
+	return( NULL );
+    }
 
+    /* populate rangeinfo[0..cnt-1] with unicoderanges we will display */
     for (i=cnt=0; unicoderange[i].name!=NULL; ++i )
 	if ( unicoderange[i].display )
 	    ri[cnt++].range = &unicoderange[i];
@@ -402,6 +410,7 @@ struct rangeinfo *SFUnicodeRanges(SplineFont *sf, enum ur_flags flags) {
     ri[cnt++].range = &nonunicode;
     ri[cnt++].range = &unassigned;
 
+    /* count glyphs in each range */
     for ( j=0; j<cnt-2; ++j ) {
 	int32 top = ri[j].range->last;
 	int32 bottom = ri[j].range->first;
@@ -424,7 +433,7 @@ struct rangeinfo *SFUnicodeRanges(SplineFont *sf, enum ur_flags flags) {
     /*  the version of unicode I know about (4.1 when this was written) */
     ++j;
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( sf->glyphs[gid]!=NULL ) {
-	int u=sf->glyphs[gid]->unicodeenc;
+	int32 u=sf->glyphs[gid]->unicodeenc;
 	if ( u>=0 && u<=0x11ffff && !isunicodepointassigned(u))
 	    ++ri[j].cnt;
     }
