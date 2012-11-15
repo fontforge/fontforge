@@ -69,6 +69,27 @@ These files were created under the Revised BSD License:
 fontforge-20120731-b/
 install-sh
 
+fontforge-20120731-b/gdraw:
+choosericons.c		gfiledlg.c		gradio.c
+colorP.h		ggadgetP.h		gresedit.c
+ctlvalues.c		ggadgets.c		gresource.c
+drawboxborder.c		ggroupbox.c		gresourceimage.c
+gaskdlg.c		ghvbox.c		gresourceP.h
+gbuttons.c		gimagebmpP.h		growcol.c
+gchardlg.c		gimageclut.c		gsavefiledlg.c
+gcolor.c		gimagecvt.c		gscrollbar.c
+gcontainer.c		gimagepsdraw.c		gspacer.c
+gdraw.c			gimagewriteeps.c	gtabset.c
+gdrawable.c		gimagexdraw.c		gtextfield.c
+gdrawbuildchars.c	gkeysym.c		gtextinfo.c
+gdrawerror.c		glist.c			gwidgetP.h
+gdrawgimage.c		gmatrixedit.c		gwidgets.c
+gdrawP.h		gmenu.c			gxcdraw.c
+gdrawtxt.c		gprogress.c		gxcdrawP.h
+gdrawtxtinit.c		gpsdraw.c		gxdrawP.h
+gdrawwacomdriver.c	gpsdrawP.h		hotkeys.c
+gfilechooser.c		gpstxtinit.c		hotkeys.h
+
 fontforge-20120731-b/gutils:
 dynamic.c		gimagereadrgb.c		giofile.c
 fsys.c			gimagereadtiff.c	gioftp.c
@@ -169,6 +190,9 @@ fontforge-20120731-b/
 descrip.mms	LICENSE		README-Unix.html
 fontforge.pc.in	README-Mac.html	systemspecific.in
 INSTALL		README-unix	VERSION
+
+fontforge-20120731-b/gdraw:
+descrip.mms	genkeysym.c	gxdraw.c	xkeysyms_unicode.c
 
 fontforge-20120731-b/inc:
 chardata.h	descrip.mms	dynamic.h	utype.h
