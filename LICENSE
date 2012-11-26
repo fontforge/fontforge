@@ -69,6 +69,8 @@ These files were created under the Revised BSD License:
 fontforge-20120731-b/
 install-sh
 
+fontforge-20120731-b/fontforge:
+
 fontforge-20120731-b/gdraw:
 choosericons.c		gfiledlg.c		gradio.c
 colorP.h		ggadgetP.h		gresedit.c
@@ -197,6 +199,8 @@ fontforge-20120731-b/
 descrip.mms	LICENSE		README-Unix.html
 fontforge.pc.in	README-Mac.html	systemspecific.in
 INSTALL		README-unix	VERSION
+
+fontforge-20120731-b/fontforge:
 
 fontforge-20120731-b/gdraw:
 descrip.mms	genkeysym.c	gxdraw.c	xkeysyms_unicode.c

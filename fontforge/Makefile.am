@@ -72,11 +72,11 @@ noinst_HEADERS = fontforgeui.h sftextfieldP.h configure-fontforge.h	\
 	views.h is_LIGATURE.h flaglist.h
 pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	libffstamp.h psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
-	lookups.h savefont.h ttf.h baseviews.h fvmetrics.h mm.h				\
+	lookups.h savefont.h ttf.h baseviews.h fvmetrics.h mm.h			\
 	scriptfuncs.h ttfinstrs.h edgelist2.h namehash.h scripting.h		\
 	uiinterface.h bezctx_ff.h edgelist.h groups.h nonlineartrans.h		\
 	sd.h unicoderange.h bitmapcontrol.h encoding.h ofl.h search.h		\
-	usermenu.h fffreetype.h PfEd.h sfd1.h ffpython.h import.h			\
+	usermenu.h fffreetype.h PfEd.h sfd1.h ffpython.h			\
 	plugins.h sflayoutP.h print.h splinefont.h annotations.h
 
 #--------------------------------------------------------------------------
