@@ -62,14 +62,76 @@ FontForge is Copyright(C) 2000,2001,2002,2003,2004,2005,2006,2007,2008,
    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
    ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-TODO: list of files existing under this license
-(use GROFF's license as an example template for making this list)
 These files were created under the Revised BSD License:
 
 fontforge-20120731-b/
 install-sh
 
 fontforge-20120731-b/fontforge:
+alignment.c		fontinfo.c		savefont.h
+anchorsaway.c		fontview.c		savefontdlg.c
+asmfpst.c		fontviewbase.c		scriptfuncs.h
+autohint.c		freetype.c		scripting.c
+autosave.c		freetypeui.c		scripting.h
+autotrace.c		ftdelta.c		scriptingdlg.c
+autowidth.c		fvcomposite.c		scstyles.c
+autowidth2.c		fvfonts.c		scstylesui.c
+autowidth2.h		fvfontsdlg.c		sd.h
+autowidth2dlg.c		fvmetrics.c		search.c
+basedlg.c		fvmetrics.h		search.h
+baseviews.h		fvmetricsdlg.c		searchview.c
+bdfinfo.c		glyphcomp.c		sfd.c
+bitmapchar.c		gotodlg.c		sfd1.c
+bitmapcontrol.c		groups.c		sfd1.h
+bitmapcontrol.h		groups.h		sfddiff.c
+bitmapdlg.c		groupsdlg.c		sflayout.c
+bitmapview.c		histograms.c		sflayoutP.h
+bvedit.c		http.c			sftextfield.c
+charinfo.c		ikarus.c		sftextfieldP.h
+charview.c		images.c		showatt.c
+clipnoui.c		justifydlg.c		simplifydlg.c
+clipui.c		kernclass.c		spiro.c
+combinations.c		layer2layer.c		splashimage.c
+configure-fontforge.h	lookups.c		splinechar.c
+contextchain.c		lookupui.c		splinefill.c
+cursors.c		macbinary.c		splinefont.c
+cvaddpoints.c		macenc.c		splinefont.h
+cvdebug.c		macencui.c		splineorder2.c
+cvdgloss.c		math.c			splineoverlap.c
+cvexport.c		mathconstants.c		splinerefigure.c
+cvexportdlg.c		metricsview.c		splinesaveafm.c
+cvfreehand.c		mm.c			splinesave.c
+cvgetinfo.c		mm.h			splinestroke.c
+cvgridfit.c		mmdlg.c			splineutil.c
+cvhand.c		namehash.h		splineutil2.c
+cvhints.c		namelist.c		start.c
+cvimages.c		nonlineartrans.c	startnoui.c
+cvimportdlg.c		nonlineartrans.h	startui.c
+cvknife.c		nonlineartransui.c	statemachine.c
+cvpalettes.c		noprefs.c		stemdb.c
+cvpointer.c		nouiutil.c		stemdb.h
+cvruler.c		nowakowskittfinstr.c	svg.c
+cvshapes.c		oflib.c			tilepath.c
+cvstroke.c		openfontdlg.c		tottf.c
+cvtranstools.c		palmfonts.c		tottfaat.c
+cvundoes.c		parsepdf.c		tottfgpos.c
+delta.h			parsepfa.c		tottfvar.c
+deltaui.c		parsettf.c		transform.c
+displayfonts.c		parsettfatt.c		ttf.h
+dumpbdf.c		parsettfbmf.c		ttfinstrs.c
+dumppfa.c		parsettfvar.c		ttfinstrs.h
+edgelist.h		PfEd.h			ttfinstrsui.c
+edgelist2.h		plugins.c		ttfspecial.c
+effects.c		plugins.h		ufo.c
+effectsui.c		prefs.c			uiinterface.h
+encoding.c		print.c			uiutil.c
+encodingui.c		print.h			unicoderange.c
+featurefile.c		problems.c		unicoderange.h
+fffreetype.h		psfont.h		utils.c
+ffpython.h		psread.c		views.h
+fontforge.h		python.c		windowmenu.c
+fontforgeui.h		pythonui.c		winfonts.c
+fontforgevw.h		savefont.c		woff.c
 
 fontforge-20120731-b/gdraw:
 choosericons.c		gfiledlg.c		gradio.c
@@ -201,6 +263,17 @@ fontforge.pc.in	README-Mac.html	systemspecific.in
 INSTALL		README-unix	VERSION
 
 fontforge-20120731-b/fontforge:
+acorn2sfd.c		fontimage.pe		pottitle.patch
+autowidth.h		fontlint.1		pua.c
+bezctx_ff.c		fontlint.pe		sfddiff.1
+bezctx_ff.h		langfreq.c		sfddiff.pe
+crctab.c		libffstamp.h		stamp.c
+descrip.mms		libstamp.pre		stamper.c
+diffstubs.c		lff.opt			threaddummy.c
+encoding.h		lookups.h		utf8.pot
+exelibstamp.pre		MacFontForgeApp.zip	xlib.opt
+fontforge.1		othersubrs.c		zapfnomen.c
+fontimage.1		potmstitle.patch
 
 fontforge-20120731-b/gdraw:
 descrip.mms	genkeysym.c	gxdraw.c	xkeysyms_unicode.c
