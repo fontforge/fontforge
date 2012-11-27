@@ -3617,7 +3617,7 @@ return;
 
     if ( copybuffer.undotype == ut_none ) {
 	j = -1;
-	forever {
+	while ( 1 ) {
 	    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] )
 		SCCheckXClipboard(SFMakeChar(sf,fv->map,i),ly_fore,!pasteinto);
 	    ++j;
@@ -3667,7 +3667,7 @@ return;
 	    if ( cur->undotype==ut_multiple )
 		cur = cur->u.multiple.mult;
 	}
-	forever {
+	while ( 1 ) {
 	    switch ( cur->undotype ) {
 	      case ut_noop:
 	      break;
