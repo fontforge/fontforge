@@ -3,14 +3,20 @@
 # This file is distributed under the same license as FontForge.
 # Apostolos Syropoulos <asyropoulos@yahoo.com>, 2008.
 #
-#, fuzz
+# Translators:
+# Apostolos Syropoulos <asyropoulos@yahoo.com>, 2006-10-09 13:00-0700
+# Apostolos Syropoulos <asyropoulos@yahoo.com>, 2012-09-07 19:04-0500
+#
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: fontforge 2.0.0_beta1\n"
+"Report-Msgid-Bugs-To: fontforge-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2006-10-09 13:00-0700\n"
 "PO-Revision-Date: 2012-09-07 19:04-0500\n"
 "Last-Translator: Apostolos Syropoulos <asyropoulos@yahoo.com>\n"
 "Language-Team: LANGUAGE <gr.c@li.org>\n"
+"Language: el\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"

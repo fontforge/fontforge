@@ -25,6 +25,8 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+include $(top_srcdir)/mk/layout.am
+
 lib_LTLIBRARIES = libgdraw.la
 
 libgdraw_la_SOURCES = choosericons.c ctlvalues.c drawboxborder.c		\
@@ -38,10 +40,10 @@ libgdraw_la_SOURCES = choosericons.c ctlvalues.c drawboxborder.c		\
 	gwidgets.c gxdraw.c gxcdraw.c ghvbox.c gmatrixedit.c gdrawable.c	\
 	gspacer.c xkeysyms_unicode.c colorP.h gdrawP.h gimagebmpP.h			\
 	gresourceP.h gxcdrawP.h fontP.h ggadgetP.h gpsdrawP.h gwidgetP.h	\
-	gxdrawP.h
+	gxdrawP.h hotkeys.c hotkeys.h
 
 libgdraw_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
-	$(MY_CFLAGS)
+	"-DSHAREDIR=\"${MY_SHAREDIR}\"" $(MY_CFLAGS) 
 
 libgdraw_la_LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la

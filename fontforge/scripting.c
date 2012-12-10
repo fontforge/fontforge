@@ -3011,8 +3011,8 @@ return;
 	c->curfv->selected = grealloc(c->curfv->selected,newcnt);
 	if ( newcnt>map->encmax ) {
 	    memset(c->curfv->selected+map->enccount,0,newcnt-map->enccount);
-	    map->map = grealloc(map->map,(map->encmax=newcnt+10)*sizeof(int));
-	    memset(map->map+map->enccount,-1,(newcnt-map->enccount)*sizeof(int));
+	    map->map = grealloc(map->map,(map->encmax=newcnt+10)*sizeof(int32));
+	    memset(map->map+map->enccount,-1,(newcnt-map->enccount)*sizeof(int32));
 	}
     }
     map->enccount = newcnt;
@@ -4923,9 +4923,14 @@ static void bNearlyLines(Context *c) {
 }
 
 static void bAddExtrema(Context *c) {
-    if ( c->a.argc!=1 )
+    if ( c->a.argc==1 )
+	FVAddExtrema(c->curfv, false);
+    else if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_int )
+	    ScriptError( c, "Bad type for argument" );
+	FVAddExtrema(c->curfv, (c->a.vals[1].u.ival != 0));
+    } else
 	ScriptError( c, "Wrong number of arguments");
-    FVAddExtrema(c->curfv);
 }
 
 static void SCMakeLine(SplineChar *sc) {
@@ -5279,19 +5284,19 @@ static void bAutoHint(Context *c) {
 static void bSubstitutionPoints(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVAutoHint(c->curfv);
+    FVAutoHintSubs(c->curfv);
 }
 
 static void bAutoCounter(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVAutoHint(c->curfv);
+    FVAutoCounter(c->curfv);
 }
 
 static void bDontAutoHint(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVAutoHint(c->curfv);
+    FVDontAutoHint(c->curfv);
 }
 
 static void bAutoInstr(Context *c) {
@@ -6235,9 +6240,9 @@ static void bCIDChangeSubFont(Context *c) {
 	free(c->curfv->selected);
 	c->curfv->selected = gcalloc(new->glyphcnt,sizeof(char));
 	if ( new->glyphcnt>map->encmax )
-	    map->map = grealloc(map->map,(map->encmax = new->glyphcnt)*sizeof(int));
+	    map->map = grealloc(map->map,(map->encmax = new->glyphcnt)*sizeof(int32));
 	if ( new->glyphcnt>map->backmax )
-	    map->backmap = grealloc(map->backmap,(map->backmax = new->glyphcnt)*sizeof(int));
+	    map->backmap = grealloc(map->backmap,(map->backmax = new->glyphcnt)*sizeof(int32));
 	for ( i=0; i<new->glyphcnt; ++i )
 	    map->map[i] = map->backmap[i] = i;
 	map->enccount = new->glyphcnt;

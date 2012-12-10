@@ -3,14 +3,19 @@
 # This file is distributed under the same license as the FontForge package.
 # George Williams, <pfaedit@users.sourceforge.net>, 2006.
 #
-#, fuzzy
+# Translators:
+# Claudio Beccari, 2005-08-29 17:43+0800
+#
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: fontforge 2.0.0_beta1\n"
+"Report-Msgid-Bugs-To: fontforge-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2005-08-29 17:43+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Claudio Beccari <beccari@polito.it>\n"
 "Language-Team: LANGUAGE <it.c@li.org>\n"
+"Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"

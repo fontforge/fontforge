@@ -485,17 +485,14 @@ static int _GWidget_TopLevel_Key(GWindow top, GWindow ew, GEvent *event) {
 	}
     }
     /* Check for mnemonics and shortcuts */
-    if ( event->type == et_char &&
-	    ((event->u.chr.state&(ksm_control|ksm_meta|ksm_cmdmacosx)) ||
-	     event->u.chr.keysym>=0xff00 ||
-	     GMenuAnyUnmaskedShortcuts(topd->ispalette?topd->owner->gmenubar:NULL,topd->gmenubar)) ) {
+    if ( event->type == et_char ) {
 	handled = GMenuPopupCheckKey(event);
 	if ( topd->ispalette ) {
-	    if ( !(handled = GMenuBarCheckKey(topd->owner->gmenubar,event)) )
+	    if ( !(handled = GMenuBarCheckKey(top,topd->owner->gmenubar,event)) )
 		handled = GWidgetCheckMn((GContainerD *) topd->owner,event);
 	}
 	if ( !handled )
-	    if ( !(handled = GMenuBarCheckKey(topd->gmenubar,event)) )
+	    if ( !(handled = GMenuBarCheckKey(top,topd->gmenubar,event)) )
 		handled = GWidgetCheckMn((GContainerD *) topd,event);
     }
     if ( handled )

@@ -36,6 +36,10 @@
 #include <unistd.h>
 #include <dynamic.h>
 #include <stdlib.h>		/* getenv,setenv */
+#include <sys/stat.h>
+#include <sys/types.h>
+#include "../gdraw/hotkeys.h"
+
 #ifdef _NO_LIBPNG
 #  define PNGLIBNAME	"libpng"
 #else
@@ -605,12 +609,18 @@ return( true );
 return( true );
 }
 
-static void AddR(char *prog, char *name, char *val ) {
-    char *full = galloc(strlen(name)+strlen(val)+4);
-    strcpy(full,name);
-    strcat(full,": ");
-    strcat(full,val);
-    GResourceAddResourceString(full,prog);
+static void  AddR(char *program_name, char *window_name, char *cmndline_val) {
+/* Add this command line value to this GUI resource.			*/
+/* These are the command line options expected when using this routine:	*/
+/*	-depth, -vc,-cmap or -colormap,-dontopenxdevices, -keyboard	*/
+    char *full;
+    if ((full = malloc(strlen(window_name)+strlen(cmndline_val)+4))!=NULL) {
+	strcpy(full,window_name);
+	strcat(full,": ");
+	strcat(full,cmndline_val);
+	GResourceAddResourceString(full,program_name);
+	free(full);
+    }
 }
 
 static int ReopenLastFonts(void) {
@@ -703,45 +713,6 @@ return( true );
 }
 #endif
 
-static char *getLocaleDir(void) {
-    static char *sharedir=NULL;
-    static int set=false;
-    char *pt;
-    int len;
-
-    if ( set )
-return( sharedir );
-
-    set = true;
-
-#if defined(__MINGW32__)
-
-    len = strlen(GResourceProgramDir) + strlen("/share/locale") +1;
-    sharedir = galloc(len);
-    strcpy(sharedir, GResourceProgramDir);
-    strcat(sharedir, "/share/locale");
-    return sharedir;
-
-#else
-
-    pt = strstr(GResourceProgramDir,"/bin");
-    if ( pt==NULL ) {
-#if defined(SHAREDIR)
-return( sharedir = SHAREDIR "/../locale" );
-#elif defined( PREFIX )
-return( sharedir = PREFIX "/share/locale" );
-#else
-	pt = GResourceProgramDir + strlen(GResourceProgramDir);
-#endif
-    }
-    len = (pt-GResourceProgramDir)+strlen("/share/locale")+1;
-    sharedir = galloc(len);
-    strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
-    strcpy(sharedir+(pt-GResourceProgramDir),"/share/locale");
-return( sharedir );
-
-#endif
-}
 
 #if defined(__Mac)
 static int hasquit( int argc, char **argv ) {
@@ -760,6 +731,30 @@ static void GrokNavigationMask(void) {
 
     navigation_mask = GMenuItemParseMask(H_("NavigationMask|None"));
 }
+
+/**
+ * Create the directory basedir/dirname with the given mode.
+ * Silently ignore any errors that might happen. 
+ */
+static void ffensuredir( const char* basedir, const char* dirname, mode_t mode ) {
+    const int buffersz = PATH_MAX;
+    char buffer[buffersz+1];
+    
+    snprintf(buffer,buffersz,"%s/%s", basedir, dirname );
+    // ignore errors, this is just to help the user aftre all.
+    mkdir( buffer, mode );
+}
+
+static void ensureDotFontForgeIsSetup() {
+    char *basedir = GFileGetHomeDir();
+    if ( !basedir ) {
+	return;
+    }
+    ffensuredir( basedir, ".FontForge",        S_IRWXU );
+    ffensuredir( basedir, ".FontForge/python", S_IRWXU );
+}
+
+
 
 int fontforge_main( int argc, char **argv ) {
     extern const char *source_modtime_str;
@@ -796,8 +791,22 @@ int fontforge_main( int argc, char **argv ) {
     fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
 
     /* Must be done before we cache the current directory */
-    for ( i=1; i<argc; ++i ) if ( strcmp(argv[i],"-home")==0 && getenv("HOME")!=NULL )
-	chdir(getenv("HOME"));
+    /* Change to HOME dir if specified on the commandline */
+    for ( i=1; i<argc; ++i ) {
+	char *pt = argv[i];
+	if ( pt[0]=='-' && pt[1]=='-' ) ++pt;
+#ifndef __Mac
+	if (strcmp(pt,"-home")==0) {
+#else
+	if (strcmp(pt,"-home")==0 || strncmp(pt,"-psn_",5)==0) {
+	    /* OK, I don't know what _-psn_ means, but to GW it means */
+	    /* we've been started on the mac from the FontForge.app   */
+	    /* structure, and the current directory is (shudder) "/"  */
+#endif
+	    if (getenv("HOME")!=NULL) chdir(getenv("HOME"));
+	    break;	/* Done - Unnecessary to check more arguments */
+	}
+    }
 	
 #if defined(__Mac)
     /* Start X if they haven't already done so. Well... try anyway */
@@ -852,6 +861,7 @@ int fontforge_main( int argc, char **argv ) {
 #endif
 
     InitSimpleStuff();
+    FindProgDir(argv[0]);
 
 #if defined(__MINGW32__)
     {
@@ -926,6 +936,8 @@ int fontforge_main( int argc, char **argv ) {
     GGadgetSetImageDir(SHAREDIR "/pixmaps");
     GResourceAddResourceFile(SHAREDIR "/resources/fontforge.resource",GResourceProgramName,false);
 #endif
+    hotkeysLoad();
+
 
     if ( load_prefs!=NULL && strcasecmp(load_prefs,"Always")==0 )
 	LoadPrefs();
@@ -1002,22 +1014,21 @@ int fontforge_main( int argc, char **argv ) {
 	    doversion(source_version_str);
 	else if ( strcmp(pt,"-quit")==0 )
 	    quit_request = true;
-	else if ( strcmp(pt,"-home")==0 ) {
-	    if ( getenv("HOME")!=NULL )
-		chdir(getenv("HOME"));
+	else if ( strcmp(pt,"-home")==0 )
+	    /* already did a chdir earlier, don't need to do it again */;
 #if defined(__Mac)
-	} else if ( strncmp(pt,"-psn_",5)==0 ) {
-	    /* OK, I don't know what this really means, but to me it means */
-	    /*  that we've been started on the mac from the FontForge.app  */
-	    /*  structure, and the current directory is (shudder) "/" */
+	else if ( strncmp(pt,"-psn_",5)==0 ) {
+	    /* OK, I don't know what _-psn_ means, but to GW it means */
+	    /* we've been started on the mac from the FontForge.app   */
+	    /* structure, and the current directory was (shudder) "/" */
+	    /* (however, we changed to HOME earlier in main routine). */
 	    unique = 1;
-	    if ( getenv("HOME")!=NULL )
-		chdir(getenv("HOME"));
 	    listen_to_apple_events = true;
-#endif
 	}
+#endif
     }
 
+    ensureDotFontForgeIsSetup();
     GDrawCreateDisplays(display,argv[0]);
     default_background = GDrawGetDefaultBackground(screen_display);
     InitToolIconClut(default_background);
@@ -1184,6 +1195,8 @@ exit( 0 );
 	MenuOpen(NULL,NULL,NULL);
     GDrawEventLoop(NULL);
 
+    hotkeysSave();
+    
     uninm_names_db_close(names_db);
     lt_dlexit();
 

@@ -39,7 +39,9 @@ typedef struct createwidthdata {
     real increment;
     enum settype type;
     enum widthtype wtype;
+    SplineChar* _sc;
 } CreateWidthData;
 
 extern void CVDoit(CreateWidthData *wd);
 extern void FVDoit(CreateWidthData *wd);
+extern void GenericVDoit(CreateWidthData *wd);

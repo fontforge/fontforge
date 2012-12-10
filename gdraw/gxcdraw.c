@@ -49,6 +49,8 @@ static int usecairo = false;
 static int usecairo = true;
 #endif
 
+
+
 void GDrawEnableCairo(int on) {
     usecairo=on;
     /* Obviously, if we have no library, enabling it will do nothing */
@@ -979,7 +981,9 @@ PangoFontDescription *_GXPDraw_configfont(GWindow w, GFont *font) {
 
     /* initialize cairo and pango if not initialized, e.g. root window */
     if (gw->pango_layout == NULL){
+#ifndef _NO_LIBCAIRO
 	_GXCDraw_NewWindow(gw);
+#endif
 	_GXPDraw_NewWindow(gw);
     }
 

@@ -58,7 +58,7 @@ capable of using composite.
 #include <vms_x_fix.h>
 #endif
 #ifdef HAVE_CONFIG_H
-# include "config.h"
+#include <config.h>
 #endif
 
 #ifndef X_DISPLAY_MISSING
@@ -373,7 +373,7 @@ typedef struct gdisplay GXDisplay;
 #endif
 
 extern int _GXDraw_WindowOrParentsDying(GXWindow gw);
-
+extern void _GXCDraw_NewWindow(GXWindow nw);
 extern void _GXDraw_Image(GWindow, GImage *, GRect *src, int32 x, int32 y);
 extern void _GXDraw_TileImage(GWindow, GImage *, GRect *src, int32 x, int32 y);
 extern void _GXDraw_Glyph(GWindow, GImage *, GRect *src, int32 x, int32 y);
