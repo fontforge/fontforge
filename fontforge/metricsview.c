@@ -921,7 +921,7 @@ static int isValidInt(unichar_t *end) {
     return 1;
 }
 
-static int GGadgetToInt(GGadget *g) 
+static int GGadgetToInt(GGadget *g)
 {
     unichar_t *end;
     int val = u_strtol(_GGadgetGetTitle(g),&end,10);
@@ -959,7 +959,7 @@ return( true );
 		if ( mv->perchar[i].width == g )
 		    break;
 	    }
-	    
+
 	    // Adjust the lbearing to consume or surrender half of the
 	    // change that the width value is undergoing.
 	    real offset = GGadgetToReal(mv->perchar[i].lbearing);

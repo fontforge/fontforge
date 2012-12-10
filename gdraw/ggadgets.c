@@ -1178,19 +1178,19 @@ void GGadgetSetTitle8WithMn(GGadget *g,const char *title) {
 }
 
 const unichar_t *_GGadgetGetTitle(GGadget *g) {
-    if ( g->funcs->_get_title!=NULL )
-return( (g->funcs->_get_title)(g) );
+    if ( g && g->funcs->_get_title!=NULL ) return( (g->funcs->_get_title)(g) );
 
-return( NULL );
+    return( NULL );
 }
 
 unichar_t *GGadgetGetTitle(GGadget *g) {
-    if ( g->funcs->get_title!=NULL )
-return( (g->funcs->get_title)(g) );
-    else if ( g->funcs->_get_title!=NULL )
-return( u_copy( (g->funcs->_get_title)(g) ));
+    if ( g )
+	if ( g->funcs->get_title!=NULL )
+	    return( (g->funcs->get_title)(g) );
+	else if ( g->funcs->_get_title!=NULL )
+	    return( u_copy( (g->funcs->_get_title)(g) ));
 
-return( NULL );
+    return( NULL );
 }
 
 char *GGadgetGetTitle8(GGadget *g) {
