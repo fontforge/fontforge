@@ -37,7 +37,7 @@ AC_CONFIG_TESTDIR([tests],[fontforge])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CONFIG_HEADERS([inc/config.h])
-AM_INIT_AUTOMAKE([subdir-objects foreign -Wall])
+AM_INIT_AUTOMAKE([foreign -Wall])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
@@ -49,8 +49,13 @@ m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 m4_ifdef([AM_PROG_AR],[AM_PROG_AR])
 LT_CONFIG_LTDL_DIR([libltdl])
 LT_INIT([dlopen])
-LTDL_INIT([nonrecursive])
+LTDL_INIT([recursive convenience])
 FONTFORGE_CHECK_LTDL_VERSION
+
+# The following is mainly for the benefit of the libltdl Makefile,
+# which expects to find <inc/config.h>.
+CPPFLAGS="${CPPFLAGS} AS_ESCAPE([-I${top_builddir}])"
+
 
 AC_PATH_XTRA
 i_do_have_x="${have_x}"
@@ -78,7 +83,7 @@ giflib_url="http://giflib.sourceforge.net/"
 libpng_url="http://www.libpng.org/"
 libxml_url="http://www.xmlsoft.org/"
 libspiro_url="http://libspiro.sourceforge.net/"
-libunicodenames_url="https://github.com/chemoelectric/libunicodenames"
+libunicodenames_url="https://github.com/sortsmill/libunicodenames"
 
 # Point to the Wikipedia page, primarily because one may want
 # libjpeg-turbo rather than the reference implementation.
@@ -202,8 +207,9 @@ if test x"${i_do_have_gui}" = xyes; then
    PKG_CHECK_MODULES([PANGO],[pango >= 1.10 pangoxft])
 fi
 
+PKG_CHECK_MODULES([FREETYPE],[freetype2])
+
 FONTFORGE_ARG_WITH_CAIRO
-FONTFORGE_ARG_WITH_FREETYPE
 AC_ARG_VAR([FREETYPE_SOURCE],
         [directory where freetype source code is located for --enable-freetype-debugger;
          however, if --enable-freetype-debugger=DIR is specified, then DIR overrides
@@ -320,14 +326,13 @@ Summary of optional features:
   python extension   ${i_do_have_python_extension}
   freetype debugger  ${i_do_have_freetype_debugger}
   capslock for alt   ${i_do_have_capslock_for_alt}
-  raw points mode    ${i_do_have_capslock_for_alt}
+  raw points mode    ${i_do_have_debug_raw_points}
   tile path          ${i_do_have_tile_path}
   gb12345 encoding   ${i_do_have_gb12345}
 
 Summary of optional dependencies:
 
   cairo              ${i_do_have_cairo}  	${cairo_url}
-  freetype           ${i_do_have_freetype}  	${freetype_url}
   giflib             ${i_do_have_giflib}  	${giflib_url}
   libjpeg            ${i_do_have_libjpeg}  	${libjpeg_url}
   libpng             ${i_do_have_libpng}  	${libpng_url}

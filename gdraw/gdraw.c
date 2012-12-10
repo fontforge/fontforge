@@ -294,6 +294,20 @@ void *GDrawGetUserData(GWindow gw) {
 return( gw->user_data );
 }
 
+void GDrawSetWindowTypeName(GWindow gw, char* name)
+{
+    gw->window_type_name = name;
+}
+
+char* GDrawGetWindowTypeName(GWindow gw)
+{
+    if(!gw)
+	return 0;
+    
+    return(gw->window_type_name);
+}
+
+
 GDisplay *GDrawGetDisplayOfWindow(GWindow gw) {
     if ( gw==NULL )
 return( screen_display );

@@ -27,6 +27,7 @@
 #include "fontforge.h"
 #include "splinefont.h"
 #include "baseviews.h"
+#include "views.h"
 #include <gdraw.h>
 #include <ustring.h>
 #include <math.h>
@@ -39,12 +40,21 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <limits.h>		/* For NAME_MAX or _POSIX_NAME_MAX */
+
 #ifndef NAME_MAX
 # ifndef  _POSIX_NAME_MAX
 #  define _POSIX_NAME_MAX 512
 # endif
 # define NAME_MAX _POSIX_NAME_MAX
 #endif
+
+int UndoRedoLimitToSave = 0; 
+int UndoRedoLimitToLoad = 0; 
+
+static char *joins[] = { "miter", "round", "bevel", "inher", NULL };
+static char *caps[] = { "butt", "round", "square", "inher", NULL };
+static char *spreads[] = { "pad", "reflect", "repeat", NULL };
+
 
 /* I will retain this list in case there are still some really old sfd files */
 /*  including numeric encodings.  This table maps them to string encodings */
@@ -106,6 +116,20 @@ static char base64[64] = {
  'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
  'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
  'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
+
+static const char *end_tt_instrs = "EndTTInstrs";
+static void SFDDumpRefs(FILE *sfd,RefChar *refs, char *name,EncMap *map, int *newgids);
+static RefChar *SFDGetRef(FILE *sfd, int was_enc);
+static void SFDDumpImage(FILE *sfd,ImageList *img);
+static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint** alist, AnchorPoint *lastap);
+static void SFDDumpTtfInstrs(FILE *sfd,SplineChar *sc);
+static void SFDDumpTtfInstrsExplicit(FILE *sfd,SplineChar *sc, uint8 *ttf_instrs, int16 ttf_instrs_len );
+static void SFDDumpHintList(FILE *sfd,char *key, StemInfo *h);
+static void SFDDumpDHintList( FILE *sfd,char *key, DStemInfo *d );
+static StemInfo *SFDReadHints(FILE *sfd);
+static DStemInfo *SFDReadDHints( SplineFont *sf,FILE *sfd,int old );
+extern void ExtractHints(SplineChar *sc,void *hints,int docopy);
+extern void *UHintCopy(SplineChar *sc,int docopy);
 
 static void utf7_encode(FILE *sfd,long ch) {
 
@@ -695,10 +719,13 @@ return;
     putc(']',sfd);
 }
 
-static void SFDDumpAnchorPoints(FILE *sfd,SplineChar *sc) {
-    AnchorPoint *ap;
-
-    for ( ap = sc->anchor; ap!=NULL; ap=ap->next ) {
+static void SFDDumpAnchorPoints(FILE *sfd,AnchorPoint *ap) {
+    if (ap==NULL) {
+	return;
+    }
+    
+    for ( ; ap!=NULL; ap=ap->next )
+    {
 	fprintf( sfd, "AnchorPoint: " );
 	SFDDumpUTF7Str(sfd,ap->anchor->name);
 	fprintf( sfd, "%g %g %s %d",
@@ -802,6 +829,109 @@ return( NULL );
 return( rle );
 }
 
+static void SFDDumpBrush( FILE *sfd, struct brush* brush ) {
+    fprintf(sfd, "Brush: #%06x %g\n", brush->col, brush->opacity );
+    fprintf(sfd, "EndBrush\n");
+}
+
+static void SFDDumpPen( FILE *sfd, struct pen* p ) {
+    fprintf(sfd, "Pen: %g %s %s [%g %g %g %g] [",
+            p->width, joins[p->linejoin], caps[p->linecap],
+            (double) p->trans[0], (double) p->trans[1],
+            (double) p->trans[2], (double) p->trans[3] );
+    if ( p->dashes[0]==0 && p->dashes[1]==DASH_INHERITED ) {
+	fprintf(sfd,"0 %d]\n", DASH_INHERITED);
+    } else {
+        int j;
+        for ( j=0; j<DASH_MAX && p->dashes[j]!=0; ++j )
+            fprintf( sfd,"%d ", p->dashes[j]);
+        fprintf(sfd,"]\n");
+    }
+    SFDDumpBrush( sfd, &p->brush );
+    fprintf(sfd, "EndPen\n");
+}
+
+
+
+static void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, char* keyPrefix, int idx ) {
+    fprintf(sfd, "%sOperation\n",      keyPrefix );
+    fprintf(sfd, "Index: %d\n",        idx );
+    fprintf(sfd, "Type: %d\n",         u->undotype );
+    fprintf(sfd, "WasModified: %d\n",  u->was_modified );
+    fprintf(sfd, "WasOrder2: %d\n",    u->was_order2 );
+
+    switch( u->undotype )
+    {
+        case ut_state:
+            fprintf(sfd, "Width: %d\n",           u->u.state.width );
+            fprintf(sfd, "VWidth: %d\n",          u->u.state.vwidth );
+            fprintf(sfd, "LBearingChange: %d\n",  u->u.state.lbearingchange );
+            fprintf(sfd, "UnicodeEnc: %d\n",      u->u.state.unicodeenc );
+            if( u->u.state.charname )
+                fprintf(sfd, "Charname: \"%s\"\n", u->u.state.charname );
+            if( u->u.state.comment )
+                fprintf(sfd, "Comment: \"%s\"\n", u->u.state.comment );
+            if( u->u.state.refs ) {
+                SFDDumpRefs( sfd, u->u.state.refs, 0, 0, 0 );
+            }
+	    if( u->u.state.images ) {
+                SFDDumpImage( sfd, u->u.state.images );
+            }
+            fprintf(sfd, "InstructionsLength: %d\n", u->u.state.instrs_len );
+            if( u->u.state.anchor ) {
+                SFDDumpAnchorPoints( sfd, u->u.state.anchor );
+            }
+	    if( u->u.state.splines ) {
+                fprintf(sfd, "SplineSet\n" );
+                SFDDumpSplineSet( sfd, u->u.state.splines );
+            }
+            break;
+
+        case ut_statehint:
+        {
+            SplineChar* tsc = 0;
+            tsc = SplineCharCopy( sc, 0, 0 );
+            ExtractHints( tsc, u->u.state.hints, 1 );
+            SFDDumpHintList(  sfd, "HStem: ",  tsc->hstem);
+            SFDDumpHintList(  sfd, "VStem: ",  tsc->vstem);
+            SFDDumpDHintList( sfd, "DStem2: ", tsc->dstem);
+            SplineCharFree( tsc );
+
+	    if( u->u.state.instrs_len )
+                SFDDumpTtfInstrsExplicit( sfd, sc, u->u.state.instrs, u->u.state.instrs_len );
+            break;
+        }
+
+        case ut_hints:
+        {
+            SplineChar* tsc = 0;
+            tsc = SplineCharCopy( sc, 0, 0 );
+            tsc->ttf_instrs = 0;
+            ExtractHints( tsc, u->u.state.hints, 1 );
+            SFDDumpHintList(  sfd, "HStem: ",  tsc->hstem);
+            SFDDumpHintList(  sfd, "VStem: ",  tsc->vstem);
+            SFDDumpDHintList( sfd, "DStem2: ", tsc->dstem);
+            SplineCharFree( tsc );
+
+            if( u->u.state.instrs_len )
+                SFDDumpTtfInstrsExplicit( sfd, sc, u->u.state.instrs, u->u.state.instrs_len );
+            if( u->copied_from && u->copied_from->fullname )
+                fprintf(sfd, "CopiedFrom: %s\n", u->copied_from->fullname );
+            break;
+        }
+        
+        case ut_width:
+        case ut_vwidth:
+        {
+            fprintf(sfd, "Width: %d\n", u->u.width );
+            break;
+        }
+        
+    }
+
+    fprintf(sfd, "End%sOperation\n", keyPrefix );
+}
+
 static void SFDDumpImage(FILE *sfd,ImageList *img) {
     GImage *image = img->image;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
@@ -903,10 +1033,9 @@ return;
     }
 }
 
-static const char *end_tt_instrs = "EndTTInstrs";
-static void SFDDumpTtfInstrs(FILE *sfd,SplineChar *sc) {
-#if 1
-    char *instrs = _IVUnParseInstrs( sc->ttf_instrs,sc->ttf_instrs_len );
+static void SFDDumpTtfInstrsExplicit(FILE *sfd,SplineChar *sc, uint8 *ttf_instrs, int16 ttf_instrs_len )
+{
+    char *instrs = _IVUnParseInstrs( ttf_instrs, ttf_instrs_len );
     char *pt;
     fprintf( sfd, "TtInstrs:\n" );
     for ( pt=instrs; *pt!='\0'; ++pt )
@@ -915,19 +1044,10 @@ static void SFDDumpTtfInstrs(FILE *sfd,SplineChar *sc) {
 	putc('\n',sfd);
     free(instrs);
     fprintf( sfd, "%s\n", end_tt_instrs );
-#else
-    struct enc85 enc;
-    int i;
-
-    memset(&enc,'\0',sizeof(enc));
-    enc.sfd = sfd;
-
-    fprintf( sfd, "TtfInstrs: %d\n", sc->ttf_instrs_len );
-    for ( i=0; i<sc->ttf_instrs_len; ++i )
-	SFDEnc85(&enc,sc->ttf_instrs[i]);
-    SFDEnc85EndEnc(&enc);
-    fprintf(sfd,"\nEndTtf\n" );
-#endif
+}
+static void SFDDumpTtfInstrs(FILE *sfd,SplineChar *sc)
+{
+    SFDDumpTtfInstrsExplicit( sfd, sc, sc->ttf_instrs,sc->ttf_instrs_len );
 }
 
 static void SFDDumpTtfTable(FILE *sfd,struct ttf_table *tab,SplineFont *sf) {
@@ -1167,9 +1287,6 @@ return( PyFF_UnPickleMeToObjects(buf));
     /* buf is a static buffer, I don't free it, I'll reuse it next time */
 }
 
-static char *joins[] = { "miter", "round", "bevel", "inher", NULL };
-static char *caps[] = { "butt", "round", "square", "inher", NULL };
-static char *spreads[] = { "pad", "reflect", "repeat", NULL };
 
 static void SFDDumpGradient(FILE *sfd, char *keyword, struct gradient *gradient) {
     int i;
@@ -1198,7 +1315,85 @@ static void SFDDumpPattern(FILE *sfd, char *keyword, struct pattern *pattern) {
 	    (double) pattern->transform[4], (double) pattern->transform[5] );
 }
 
-static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int todir) {
+void SFD_DumpPST( FILE *sfd, SplineChar *sc ) {
+    PST *pst;
+
+    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+	if (( pst->subtable==NULL && pst->type!=pst_lcaret) || pst->type==pst_null )
+	    /* Skip it */;
+	else {
+	    static char *keywords[] = { "Null:", "Position2:", "PairPos2:",
+		    "Substitution2:",
+		    "AlternateSubs2:", "MultipleSubs2:", "Ligature2:",
+		    "LCarets2:", NULL };
+	    fprintf( sfd, "%s ", keywords[pst->type] );
+	    if ( pst->subtable!=NULL )
+		SFDDumpUTF7Str(sfd,pst->subtable->subtable_name );
+	    if ( pst->type==pst_position ) {
+		fprintf( sfd, "dx=%d dy=%d dh=%d dv=%d",
+			pst->u.pos.xoff, pst->u.pos.yoff,
+			pst->u.pos.h_adv_off, pst->u.pos.v_adv_off);
+		SFDDumpValDevTab(sfd,pst->u.pos.adjust);
+		putc('\n',sfd);
+	    } else if ( pst->type==pst_pair ) {
+		fprintf( sfd, "%s dx=%d dy=%d dh=%d dv=%d",
+			pst->u.pair.paired,
+			pst->u.pair.vr[0].xoff, pst->u.pair.vr[0].yoff,
+			pst->u.pair.vr[0].h_adv_off, pst->u.pair.vr[0].v_adv_off );
+		SFDDumpValDevTab(sfd,pst->u.pair.vr[0].adjust);
+		fprintf( sfd, " dx=%d dy=%d dh=%d dv=%d",
+			pst->u.pair.vr[1].xoff, pst->u.pair.vr[1].yoff,
+			pst->u.pair.vr[1].h_adv_off, pst->u.pair.vr[1].v_adv_off);
+		SFDDumpValDevTab(sfd,pst->u.pair.vr[1].adjust);
+		putc('\n',sfd);
+	    } else if ( pst->type==pst_lcaret ) {
+		int i;
+		fprintf( sfd, "%d ", pst->u.lcaret.cnt );
+		for ( i=0; i<pst->u.lcaret.cnt; ++i )
+		    fprintf( sfd, "%d ", pst->u.lcaret.carets[i] );
+		fprintf( sfd, "\n" );
+	    } else
+		fprintf( sfd, "%s\n", pst->u.lig.components );
+	}
+    }
+}
+
+
+
+void SFD_DumpKerns( FILE *sfd, SplineChar *sc, int *newgids ) {
+    KernPair *kp;
+    int v;
+    
+    for ( v=0; v<2; ++v ) {
+	kp = v ? sc->vkerns : sc->kerns;
+	if ( kp!=NULL ) {
+	    fprintf( sfd, v ? "VKerns2:" : "Kerns2:" );
+	    for ( ; kp!=NULL; kp=kp->next )
+		if ( !SFDOmit(kp->sc)) {
+		    fprintf( sfd, " %d %d ",
+			    newgids!=NULL?newgids[kp->sc->orig_pos]:kp->sc->orig_pos,
+			    kp->off );
+		    SFDDumpUTF7Str(sfd,kp->subtable->subtable_name );
+		    if ( kp->adjust!=NULL ) putc(' ',sfd);
+		    SFDDumpDeviceTable(sfd,kp->adjust);
+		}
+	    fprintf(sfd, "\n" );
+	}
+    }
+}
+
+void SFDDumpCharStartingMarker(FILE *sfd,SplineChar *sc) {
+    if ( AllAscii(sc->name))
+	fprintf(sfd, "StartChar: %s\n", sc->name );
+    else {
+	fprintf(sfd, "StartChar: " );
+	SFDDumpUTF7Str(sfd,sc->name );
+	putc('\n',sfd);
+    }
+}
+
+
+static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int todir,int saveUndoes) {
     ImageList *img;
     KernPair *kp;
     PST *pst;
@@ -1208,13 +1403,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
     if (!todir)
 	putc('\n',sfd);
 
-    if ( AllAscii(sc->name))
-	fprintf(sfd, "StartChar: %s\n", sc->name );
-    else {
-	fprintf(sfd, "StartChar: " );
-	SFDDumpUTF7Str(sfd,sc->name );
-	putc('\n',sfd);
-    }
+    SFDDumpCharStartingMarker( sfd, sc );
     if ( (enc = map->backmap[sc->orig_pos])>=map->enccount ) {
 	if ( sc->parent->cidmaster==NULL )
 	    IError("Bad reverse encoding");
@@ -1279,9 +1468,45 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
     }
     if ( sc->ttf_instrs_len!=0 )
 	SFDDumpTtfInstrs(sfd,sc);
-    SFDDumpAnchorPoints(sfd,sc);
+    SFDDumpAnchorPoints(sfd,sc->anchor);
     fprintf( sfd, "LayerCount: %d\n", sc->layer_cnt );
     for ( i=0; i<sc->layer_cnt; ++i ) {
+        if( saveUndoes ) {
+            if( sc->layers[i].undoes || sc->layers[i].redoes ) {
+                fprintf(sfd, "UndoRedoHistory\n" );
+                fprintf(sfd, "Layer: %d\n", i );
+                Undoes *undo = 0;
+                int idx   = 0;
+                int limit = 0;
+
+                fprintf(sfd, "Undoes\n" );
+                idx = 0;
+                undo = sc->layers[i].undoes;
+                for( limit = UndoRedoLimitToSave;
+                     undo && (limit==-1 || limit>0);
+                     undo = undo->next, idx++ ) {
+                    SFDDumpUndo( sfd, sc, undo, "Undo", idx );
+                    if( limit > 0 )
+                        limit--;
+                }
+                fprintf(sfd, "EndUndoes\n" );
+
+		fprintf(sfd, "Redoes\n" );
+                idx = 0;
+                limit = UndoRedoLimitToSave;
+                undo = sc->layers[i].redoes;
+                for( limit = UndoRedoLimitToSave;
+                     undo && (limit==-1 || limit>0);
+                     undo = undo->next, idx++ ) {
+                    SFDDumpUndo( sfd, sc, undo, "Redo", idx );
+                    if( limit > 0 )
+                        limit--;
+                }
+                fprintf(sfd, "EndRedoes\n" );
+                fprintf(sfd, "EndUndoRedoHistory\n" );
+            }
+        }
+	
 	if ( sc->parent->multilayer ) {
 	    fprintf(sfd, "Layer: %d  %d %d %d  #%06x %g  #%06x %g %g %s %s [%g %g %g %g] [",
 		    i, sc->layers[i].dofill, sc->layers[i].dostroke, sc->layers[i].fillfirst,
@@ -1772,6 +1997,119 @@ static void SFDFpstClassNamesOut(FILE *sfd,int class_cnt,char **classnames,char 
 	putc('\n',sfd);
     }
 }
+
+/**
+ * Get the path name of /tmp or equivalent on the current system.
+ * The return value should not be freed by the caller
+ */
+static char* getSlashTempName() {
+    char* t = 0;
+    
+    if((t=getenv("TMPDIR"))) {
+	return t;
+    }
+    
+#ifndef P_tmpdir
+#define P_tmpdir	"/tmp"
+#endif
+    return P_tmpdir;
+}
+
+
+FILE* MakeTemporaryFile() 
+{
+    FILE * ret = 0;
+    char template[PATH_MAX];
+    int fd;
+
+    strcpy( template, getSlashTempName() );
+    strcat( template, "/" );
+    strcat( template, "fontforge-stemp-XXXXXX" );
+    fd = mkstemp( template );
+    ret = fdopen( fd, "r+" );
+    unlink( template );
+    return ret;
+}
+
+/**
+ * Read an entire file from the given open file handle and return that data
+ * as an allocated string that the caller must free.
+ */
+char* FileToAllocatedString( FILE *f ) 
+{
+    char* ret = 0;
+    long fsize = 0;
+    size_t bread = 0;
+    
+    fseek( f, 0, SEEK_END );
+    fsize = ftell( f );
+    fseek( f, 0, SEEK_SET );
+    ret = calloc( fsize + 1, 1 );
+    ret[fsize] = '\0';
+    bread = fread( ret, 1, fsize, f );
+    if( bread != fsize ) {
+	fprintf(stderr,_("Failed to read a file. Bytes read:%ld file size:%ld\n"), bread, fsize );
+	return 0;
+    }
+    return ret;
+}
+
+
+
+void SFD_DumpLookup( FILE *sfd, SplineFont *sf ) {
+    int isgpos;
+    OTLookup *otl;
+    struct lookup_subtable *sub;
+    FeatureScriptLangList *fl;
+    struct scriptlanglist *sl;
+    int i;
+    
+    for ( isgpos=0; isgpos<2; ++isgpos ) {
+	for ( otl = isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl = otl->next ) {
+	    fprintf( sfd, "Lookup: %d %d %d ", otl->lookup_type, otl->lookup_flags, otl->store_in_afm );
+	    SFDDumpUTF7Str(sfd,otl->lookup_name );
+	    fprintf( sfd, " {" );
+	    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
+		SFDDumpUTF7Str(sfd,sub->subtable_name );
+		if ( otl->lookup_type==gsub_single && sub->suffix!=NULL ) {
+		    putc('(',sfd);
+		    SFDDumpUTF7Str(sfd,sub->suffix );
+		    putc(')',sfd);
+		} else if ( otl->lookup_type==gpos_pair && sub->vertical_kerning )
+		    fprintf(sfd,"(1)");
+		if ( otl->lookup_type==gpos_pair && (sub->separation!=0 || sub->kerning_by_touch))
+		    fprintf(sfd,"[%d,%d,%d]", sub->separation, sub->minkern, sub->kerning_by_touch+2*sub->onlyCloser+4*sub->dontautokern );
+		putc(' ',sfd);
+	    }
+	    fprintf( sfd, "} [" );
+	    for ( fl=otl->features; fl!=NULL; fl=fl->next ) {
+		if ( fl->ismac )
+		    fprintf( sfd, "<%d,%d> (",
+			    (int) (fl->featuretag>>16),
+			    (int) (fl->featuretag&0xffff));
+		else
+		    fprintf( sfd, "'%c%c%c%c' (",
+			    (int) (fl->featuretag>>24), (int) ((fl->featuretag>>16)&0xff),
+			    (int) ((fl->featuretag>>8)&0xff), (int) (fl->featuretag&0xff) );
+		for ( sl= fl->scripts; sl!=NULL; sl = sl->next ) {
+		    fprintf( sfd, "'%c%c%c%c' <",
+			    (int) (sl->script>>24), (int) ((sl->script>>16)&0xff),
+			    (int) ((sl->script>>8)&0xff), (int) (sl->script&0xff) );
+		    for ( i=0; i<sl->lang_cnt; ++i ) {
+			uint32 lang = i<MAX_LANG ? sl->langs[i] : sl->morelangs[i-MAX_LANG];
+			fprintf( sfd, "'%c%c%c%c' ",
+				(int) (lang>>24), (int) ((lang>>16)&0xff),
+				(int) ((lang>>8)&0xff), (int) (lang&0xff) );
+		    }
+		    fprintf( sfd, "> " );
+		}
+		fprintf( sfd, ") " );
+	    }
+	    fprintf( sfd, "]\n" );
+	}
+    }
+}
+
 
 static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	int todir, char *dirname) {
@@ -2323,14 +2661,14 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	for ( i=0; i<sf->glyphcnt; ++i ) {
 	    if ( !SFDOmit(sf->glyphs[i]) ) {
 		if ( !todir )
-		    SFDDumpChar(sfd,sf->glyphs[i],map,newgids,todir);
+		SFDDumpChar(sfd,sf->glyphs[i],map,newgids,todir,1);
 		else {
 		    char *glyphfile = galloc(strlen(dirname)+2*strlen(sf->glyphs[i]->name)+20);
 		    FILE *gsfd;
 		    appendnames(glyphfile,dirname,"/",sf->glyphs[i]->name,GLYPH_EXT );
 		    gsfd = fopen(glyphfile,"w");
 		    if ( gsfd!=NULL ) {
-			SFDDumpChar(gsfd,sf->glyphs[i],map,newgids,todir);
+			SFDDumpChar(gsfd,sf->glyphs[i],map,newgids,todir,1);
 			if ( ferror(gsfd)) err = true;
 			if ( fclose(gsfd)) err = true;
 		    } else
@@ -2485,7 +2823,10 @@ static int SFDDump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
     ff_progress_start_indicator(10,_("Saving..."),_("Saving Spline Font Database"),_("Saving Outlines"),
 	    realcnt,i+1);
     ff_progress_enable_stop(false);
-    fprintf(sfd, "SplineFontDB: %.1f\n", 3.0 );
+    double version = 3.1;
+    if( !UndoRedoLimitToSave )
+        version = 3.0;
+    fprintf(sfd, "SplineFontDB: %.1f\n", version );
     if ( sf->mm != NULL )
 	err = SFD_MMDump(sfd,sf->mm->normal,map,normal,todir,dirname);
     else
@@ -2663,7 +3004,7 @@ return( ret );
 /* ********************************* INPUT ********************************** */
 #include "sfd1.h"
 
-static char *getquotedeol(FILE *sfd) {
+char *getquotedeol(FILE *sfd) {
     char *pt, *str, *end;
     int ch;
 
@@ -2730,7 +3071,7 @@ static int getprotectedname(FILE *sfd, char *tokbuf) {
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
 
-static int getname(FILE *sfd, char *tokbuf) {
+int getname(FILE *sfd, char *tokbuf) {
     int ch;
 
     while ( isspace(ch = nlgetc(sfd)));
@@ -3472,6 +3813,153 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd,int order2) {
 return( head );
 }
 
+static Undoes *SFDGetUndo( SplineFont *sf, FILE *sfd, SplineChar *sc,
+                           const char* startTag, const char* endTag, int current_layer )
+{
+    Undoes *u = 0;
+    char tok[2000];
+    int i;
+    RefChar *lastr=NULL;
+    ImageList *lasti=NULL;
+    AnchorPoint *lastap = NULL;
+    SplineChar* tsc = 0;
+    int haveReadAHint = 0;
+    
+    if ( getname(sfd,tok)!=1 )
+        return( NULL );
+    if ( strcmp(tok, startTag) )
+        return( NULL );
+
+    u = chunkalloc(sizeof(Undoes));
+    u->undotype = ut_state;
+
+    while ( 1 )
+    {
+        if ( getname(sfd,tok)!=1 ) {
+            chunkfree(u,sizeof(Undoes));
+            return( NULL );
+        }
+	
+        if ( !strmatch(tok,"EndUndoOperation")
+            || !strmatch(tok,"EndRedoOperation"))
+        {
+            if( u->undotype == ut_hints ) {
+                if( tsc ) {
+                    u->u.state.hints = UHintCopy(tsc,1);
+                    SplineCharFree( tsc );
+                }
+            }
+            
+            return u;
+        }
+	if ( !strmatch(tok,"Index:")) {
+            getint(sfd,&i);
+        }
+	if ( !strmatch(tok,"Type:")) {
+            getint(sfd,&i);
+            u->undotype = i;
+            if( u->undotype == ut_hints ) {
+                tsc = SplineCharCopy( sc, 0, 0 );
+                tsc->hstem = 0;
+                tsc->vstem = 0;
+                tsc->dstem = 0;
+            }
+        }
+        if ( !strmatch(tok,"WasModified:")) {
+            getint(sfd,&i);
+            u->was_modified = i;
+        }
+        if ( !strmatch(tok,"WasOrder2:")) {
+            getint(sfd,&i);
+            u->was_order2 = i;
+        }
+
+        switch( u->undotype )
+        {
+	case ut_state:
+	    if ( !strmatch(tok,"Width:"))          { getint(sfd,&i); u->u.state.width = i; }
+	    if ( !strmatch(tok,"VWidth:"))         { getint(sfd,&i); u->u.state.vwidth = i; }
+	    if ( !strmatch(tok,"LBearingChange:")) { getint(sfd,&i); u->u.state.lbearingchange = i; }
+	    if ( !strmatch(tok,"UnicodeEnc:"))     { getint(sfd,&i); u->u.state.unicodeenc = i; }
+	    if ( !strmatch(tok,"Charname:"))       { u->u.state.charname = getquotedeol(sfd); }
+	    if ( !strmatch(tok,"Comment:"))        { u->u.state.comment  = getquotedeol(sfd); }
+	    
+	    if( !strmatch(tok,"Refer:"))
+	    {
+		RefChar *ref = SFDGetRef(sfd,strmatch(tok,"Ref:")==0);
+		int i=0;
+		for( i=0; i< ref->layer_cnt; i++ ) {
+		    ref->layers[i].splines = 0;
+		}
+		if ( !u->u.state.refs )
+		    u->u.state.refs = ref;
+		else
+		    lastr->next = ref;
+		lastr = ref;
+	    }
+	    
+	    if( !strmatch(tok,"Image:"))
+	    {
+		ImageList *img = SFDGetImage(sfd);
+		if ( !u->u.state.images )
+		    u->u.state.images = img;
+		else
+		    lasti->next = img;
+		lasti = img;
+	    }
+	    
+	    if( !strmatch(tok,"Comment:")) {
+		u->u.state.comment  = getquotedeol(sfd);
+	    }
+	    if( !strmatch(tok,"InstructionsLength:")) {
+		getint(sfd,&i); u->u.state.instrs_len = i;
+	    }
+	    if( !strmatch(tok,"AnchorPoint:") ) {
+		lastap = SFDReadAnchorPoints( sfd, sc, &(u->u.state.anchor), lastap );
+	    }
+	    if ( !strmatch(tok,"SplineSet")) {
+		u->u.state.splines = SFDGetSplineSet(sf,sfd,sc->layers[current_layer].order2);
+	    }
+	    break;
+
+	case ut_hints:
+	{
+	    if ( !strmatch(tok,"HStem:") ) {
+		tsc->hstem = SFDReadHints(sfd);
+		tsc->hconflicts = StemListAnyConflicts(tsc->hstem);
+		haveReadAHint = 1;
+	    }
+	    else if ( !strmatch(tok,"VStem:") ) {
+		tsc->vstem = SFDReadHints(sfd);
+		tsc->vconflicts = StemListAnyConflicts(tsc->vstem);
+		haveReadAHint = 1;
+	    }
+	    else if( !strmatch(tok,"DStem2:")) {
+		tsc->dstem = SFDReadDHints( sc->parent,sfd,false );
+		haveReadAHint = 1;
+	    }
+	    else if( !strmatch(tok,"TtInstrs:")) {
+		SFDGetTtInstrs(sfd,tsc);
+		u->u.state.instrs = tsc->ttf_instrs;
+		u->u.state.instrs_len = tsc->ttf_instrs_len;
+		tsc->ttf_instrs = 0;
+		tsc->ttf_instrs_len = 0;
+	    }
+	    break;
+	}
+            
+	case ut_width:
+	case ut_vwidth:
+	    if( !strmatch(tok,"Width:")) {
+		getint(sfd,&i); u->u.width = i;
+	    }
+	    break;
+        }
+    }
+
+    return u;
+}
+
 static void SFDGetMinimumDistances(FILE *sfd, SplineChar *sc) {
     SplineSet *ss;
     SplinePoint *sp;
@@ -3719,7 +4207,8 @@ return( v );
 return( NULL );
 }
 
-static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint *lastap) {
+static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint** alist, AnchorPoint *lastap)
+{
     AnchorPoint *ap = chunkalloc(sizeof(AnchorPoint));
     AnchorClass *an;
     char *name;
@@ -3770,10 +4259,11 @@ return( lastap );
 return( lastap );
     }
     if ( lastap==NULL )
-	sc->anchor = ap;
+	(*alist) = ap;
     else
 	lastap->next = ap;
-return( ap );
+    
+    return( ap );
 }
 
 static RefChar *SFDGetRef(FILE *sfd, int was_enc) {
@@ -4023,7 +4513,318 @@ static struct pattern *SFDParsePattern(FILE *sfd,char *tok) {
 return( pat );
 }
 
+
+static void SFDConsumeUntil( FILE *sfd, char** terminators ) {
+
+    char* line = 0;
+    while((line = getquotedeol( sfd ))) {
+        char** tp = terminators;
+        for( ; tp && *tp; ++tp ) {
+            if( !strnmatch( line, *tp, strlen( *tp ))) {
+                return;
+            }
+        }
+    }
+}
+
 static int orig_pos;
+
+void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok ) {
+    struct splinefont * sf = sc->parent;
+    char tok[2000], ch;
+    uint32 script = 0;
+    SplineFont *sli_sf = sf->cidmaster ? sf->cidmaster : sf;
+
+    strcpy( tok, ttok );
+
+    if( strmatch(tok,"Kerns2:")==0 ||
+	strmatch(tok,"VKerns2:")==0 ) {
+	    KernPair *kp, *last=NULL;
+	    int isv = *tok=='V';
+	    int off, index;
+	    struct lookup_subtable *sub;
+	    int kernCount = 0;
+	    if ( sf->sfd_version<2 )
+		LogError(_("Found an new style kerning pair inside a version 1 (or lower) sfd file.\n") );
+	    while ( fscanf(sfd,"%d %d", &index, &off )==2 ) {
+		sub = SFFindLookupSubtableAndFreeName(sf,SFDReadUTF7Str(sfd));
+		if ( sub==NULL ) {
+		    LogError(_("KernPair with no subtable name.\n"));
+	    break;
+		}
+		kernCount++;
+		kp = chunkalloc(sizeof(KernPair1));
+		kp->sc = (SplineChar *) (intpt) index;
+		kp->kcid = true;
+		kp->off = off;
+		kp->subtable = sub;
+		kp->next = NULL;
+		while ( (ch=nlgetc(sfd))==' ' );
+		ungetc(ch,sfd);
+		if ( ch=='{' ) {
+		    kp->adjust=chunkalloc(sizeof(DeviceTable));
+		    SFDReadDeviceTable(sfd,kp->adjust);
+		}
+		if ( last != NULL )
+		    last->next = kp;
+		else if ( isv )
+		    sc->vkerns = kp;
+		else
+		    sc->kerns = kp;
+		last = kp;
+	    }
+	    if( !kernCount ) {
+		printf("SFDGetKerns() have a BLANK KERN\n");
+		sc->kerns = 0;
+	    }
+    } else if ( strmatch(tok,"Kerns:")==0 ||
+		strmatch(tok,"KernsSLI:")==0 ||
+		strmatch(tok,"KernsSLIF:")==0 ||
+		strmatch(tok,"VKernsSLIF:")==0 ||
+		strmatch(tok,"KernsSLIFO:")==0 ||
+		strmatch(tok,"VKernsSLIFO:")==0 ) {
+	    KernPair1 *kp, *last=NULL;
+	    int index, off, sli, flags=0;
+	    int hassli = (strmatch(tok,"KernsSLI:")==0);
+	    int isv = *tok=='V';
+	    int has_orig = strstr(tok,"SLIFO:")!=NULL;
+	    if ( sf->sfd_version>=2 ) {
+		IError( "Found an old style kerning pair inside a version 2 (or higher) sfd file." );
+exit(1);
+	    }
+	    if ( strmatch(tok,"KernsSLIF:")==0 || strmatch(tok,"KernsSLIFO:")==0 ||
+		    strmatch(tok,"VKernsSLIF:")==0 || strmatch(tok,"VKernsSLIFO:")==0 )
+		hassli=2;
+	    while ( (hassli==1 && fscanf(sfd,"%d %d %d", &index, &off, &sli )==3) ||
+		    (hassli==2 && fscanf(sfd,"%d %d %d %d", &index, &off, &sli, &flags )==4) ||
+		    (hassli==0 && fscanf(sfd,"%d %d", &index, &off )==2) ) {
+		if ( !hassli )
+		    sli = SFFindBiggestScriptLangIndex(sli_sf,
+			    script!=0?script:SCScriptFromUnicode(sc),DEFAULT_LANG);
+		if ( sli>=((SplineFont1 *) sli_sf)->sli_cnt && sli!=SLI_NESTED) {
+		    static int complained=false;
+		    if ( !complained )
+			IError("'%s' in %s has a script index out of bounds: %d",
+				isv ? "vkrn" : "kern",
+				sc->name, sli );
+		    else
+			IError( "'%s' in %s has a script index out of bounds: %d",
+				isv ? "vkrn" : "kern",
+				sc->name, sli );
+		    sli = SFFindBiggestScriptLangIndex(sli_sf,
+			    SCScriptFromUnicode(sc),DEFAULT_LANG);
+		    complained = true;
+		}
+		kp = chunkalloc(sizeof(KernPair1));
+		kp->kp.sc = (SplineChar *) (intpt) index;
+		kp->kp.kcid = has_orig;
+		kp->kp.off = off;
+		kp->sli = sli;
+		kp->flags = flags;
+		kp->kp.next = NULL;
+		while ( (ch=nlgetc(sfd))==' ' );
+		ungetc(ch,sfd);
+		if ( ch=='{' ) {
+		    kp->kp.adjust=chunkalloc(sizeof(DeviceTable));
+		    SFDReadDeviceTable(sfd,kp->kp.adjust);
+		}
+		if ( last != NULL )
+		    last->kp.next = (KernPair *) kp;
+		else if ( isv )
+		    sc->vkerns = (KernPair *) kp;
+		else
+		    sc->kerns = (KernPair *) kp;
+		last = kp;
+	    }
+    } else {
+	return;
+    }
+
+    // we matched something, grab the next top level token to ttok
+    getname( sfd, ttok );
+}
+
+
+void SFDGetPSTs( FILE *sfd, SplineChar *sc, char* ttok ) {
+    struct splinefont * sf = sc->parent;
+    char tok[2000], ch;
+    int isliga, ispos, issubs, ismult, islcar, ispair, temp;
+    PST *last = NULL;
+    uint32 script = 0;
+    SplineFont *sli_sf = sf->cidmaster ? sf->cidmaster : sf;
+
+    strcpy( tok, ttok );
+    
+    if ( strmatch(tok,"Script:")==0 ) {
+	/* Obsolete. But still used for parsing obsolete ligature/subs tags */
+	while ( (ch=nlgetc(sfd))==' ' || ch=='\t' );
+	if ( ch=='\n' || ch=='\r' )
+	    script = 0;
+	else {
+	    ungetc(ch,sfd);
+	    script = gettag(sfd);
+	}
+    } else if ( (ispos = (strmatch(tok,"Position:")==0)) ||
+		( ispos  = (strmatch(tok,"Position2:")==0)) ||
+		( ispair = (strmatch(tok,"PairPos:")==0)) ||
+		( ispair = (strmatch(tok,"PairPos2:")==0)) ||
+		( islcar = (strmatch(tok,"LCarets:")==0)) ||
+		( islcar = (strmatch(tok,"LCarets2:")==0)) ||
+		( isliga = (strmatch(tok,"Ligature:")==0)) ||
+		( isliga = (strmatch(tok,"Ligature2:")==0)) ||
+		( issubs = (strmatch(tok,"Substitution:")==0)) ||
+		( issubs = (strmatch(tok,"Substitution2:")==0)) ||
+		( ismult = (strmatch(tok,"MultipleSubs:")==0)) ||
+		( ismult = (strmatch(tok,"MultipleSubs2:")==0)) ||
+		strmatch(tok,"AlternateSubs:")==0 ||
+		strmatch(tok,"AlternateSubs2:")==0 ) {
+	    PST *pst;
+	    int old, type;
+	    type = ispos ? pst_position :
+			 ispair ? pst_pair :
+			 islcar ? pst_lcaret :
+			 isliga ? pst_ligature :
+			 issubs ? pst_substitution :
+			 ismult ? pst_multiple :
+			 pst_alternate;
+	    if ( strchr(tok,'2')!=NULL ) {
+		old = false;
+		pst = chunkalloc(sizeof(PST));
+		if ( type!=pst_lcaret )
+		    pst->subtable = SFFindLookupSubtableAndFreeName(sf,SFDReadUTF7Str(sfd));
+	    } else {
+		old = true;
+		pst = chunkalloc(sizeof(PST1));
+		((PST1 *) pst)->tag = CHR('l','i','g','a');
+		((PST1 *) pst)->script_lang_index = 0xffff;
+		while ( (ch=nlgetc(sfd))==' ' || ch=='\t' );
+		if ( isdigit(ch)) {
+		    int temp;
+		    ungetc(ch,sfd);
+		    getint(sfd,&temp);
+		    ((PST1 *) pst)->flags = temp;
+		    while ( (ch=nlgetc(sfd))==' ' || ch=='\t' );
+		} else
+		    ((PST1 *) pst)->flags = 0 /*PSTDefaultFlags(type,sc)*/;
+		if ( isdigit(ch)) {
+		    ungetc(ch,sfd);
+		    getusint(sfd,&((PST1 *) pst)->script_lang_index);
+		    while ( (ch=nlgetc(sfd))==' ' || ch=='\t' );
+		} else
+		    ((PST1 *) pst)->script_lang_index = SFFindBiggestScriptLangIndex(sf,
+			    script!=0?script:SCScriptFromUnicode(sc),DEFAULT_LANG);
+		if ( ch=='\'' ) {
+		    ungetc(ch,sfd);
+		    ((PST1 *) pst)->tag = gettag(sfd);
+		} else if ( ch=='<' ) {
+		    getint(sfd,&temp);
+		    ((PST1 *) pst)->tag = temp<<16;
+		    nlgetc(sfd);	/* comma */
+		    getint(sfd,&temp);
+		    ((PST1 *) pst)->tag |= temp;
+		    nlgetc(sfd);	/* close '>' */
+		    ((PST1 *) pst)->macfeature = true;
+		} else
+		    ungetc(ch,sfd);
+		if ( type==pst_lcaret ) {
+		/* These are meaningless for lcarets, set them to innocuous values */
+		    ((PST1 *) pst)->script_lang_index = SLI_UNKNOWN;
+		    ((PST1 *) pst)->tag = CHR(' ',' ',' ',' ');
+		} else if ( ((PST1 *) pst)->script_lang_index>=((SplineFont1 *) sli_sf)->sli_cnt && ((PST1 *) pst)->script_lang_index!=SLI_NESTED ) {
+		    static int complained=false;
+		    if ( !complained )
+			IError("'%c%c%c%c' in %s has a script index out of bounds: %d",
+				(((PST1 *) pst)->tag>>24), (((PST1 *) pst)->tag>>16)&0xff, (((PST1 *) pst)->tag>>8)&0xff, ((PST1 *) pst)->tag&0xff,
+				sc->name, ((PST1 *) pst)->script_lang_index );
+		    else
+			IError( "'%c%c%c%c' in %s has a script index out of bounds: %d\n",
+				(((PST1 *) pst)->tag>>24), (((PST1 *) pst)->tag>>16)&0xff, (((PST1 *) pst)->tag>>8)&0xff, ((PST1 *) pst)->tag&0xff,
+				sc->name, ((PST1 *) pst)->script_lang_index );
+		    ((PST1 *) pst)->script_lang_index = SFFindBiggestScriptLangIndex(sli_sf,
+			    SCScriptFromUnicode(sc),DEFAULT_LANG);
+		    complained = true;
+		}
+	    }
+	    if ( (sf->sfd_version<2)!=old ) {
+		IError( "Version mixup in PST of sfd file." );
+exit(1);
+	    }
+	    if ( last==NULL )
+		sc->possub = pst;
+	    else
+		last->next = pst;
+	    last = pst;
+	    pst->type = type;
+	    if ( pst->type==pst_position ) {
+		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd",
+			&pst->u.pos.xoff, &pst->u.pos.yoff,
+			&pst->u.pos.h_adv_off, &pst->u.pos.v_adv_off);
+		pst->u.pos.adjust = SFDReadValDevTab(sfd);
+		ch = nlgetc(sfd);		/* Eat new line */
+	    } else if ( pst->type==pst_pair ) {
+		getname(sfd,tok);
+		pst->u.pair.paired = copy(tok);
+		pst->u.pair.vr = chunkalloc(sizeof(struct vr [2]));
+		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd",
+			&pst->u.pair.vr[0].xoff, &pst->u.pair.vr[0].yoff,
+			&pst->u.pair.vr[0].h_adv_off, &pst->u.pair.vr[0].v_adv_off);
+		pst->u.pair.vr[0].adjust = SFDReadValDevTab(sfd);
+		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd",
+			&pst->u.pair.vr[1].xoff, &pst->u.pair.vr[1].yoff,
+			&pst->u.pair.vr[1].h_adv_off, &pst->u.pair.vr[1].v_adv_off);
+		pst->u.pair.vr[0].adjust = SFDReadValDevTab(sfd);
+		ch = nlgetc(sfd);
+	    } else if ( pst->type==pst_lcaret ) {
+		int i;
+		fscanf( sfd, " %d", &pst->u.lcaret.cnt );
+		pst->u.lcaret.carets = galloc(pst->u.lcaret.cnt*sizeof(int16));
+		for ( i=0; i<pst->u.lcaret.cnt; ++i )
+		    fscanf( sfd, " %hd", &pst->u.lcaret.carets[i]);
+		geteol(sfd,tok);
+	    } else {
+		geteol(sfd,tok);
+		pst->u.lig.components = copy(tok);	/* it's in the same place for all formats */
+		if ( isliga ) {
+		    pst->u.lig.lig = sc;
+		    if ( old )
+			last = (PST *) LigaCreateFromOldStyleMultiple((PST1 *) pst);
+		}
+	    }
+#ifdef FONTFORGE_CONFIG_CVT_OLD_MAC_FEATURES
+	    if ( old )
+		CvtOldMacFeature((PST1 *) pst);
+#endif
+    } else {
+	return;
+    }
+
+    // we matched something, grab the next top level token to ttok
+    getname( sfd, ttok );
+}
+
+
+char* SFDMoveToNextStartChar( FILE* sfd ) {
+    char ret[2000];
+
+    memset( ret, '\0', 2000 );
+    char* line = 0;
+    while((line = getquotedeol( sfd ))) {
+	if( !strnmatch( line, "StartChar:", strlen( "StartChar:" ))) {
+	    // FIXME: use the getname()/SFDReadUTF7Str() combo
+	    // from SFDGetChar
+	    int len = strlen("StartChar:");
+	    while( line[len] && line[len] == ' ' )
+		len++;
+	    strcpy( ret, line+len );
+	    return copy(ret);
+	}
+	if(feof( sfd ))
+	    break;
+	
+    }
+    return 0;
+}
+
 
 static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf, int had_sf_layer_cnt) {
     SplineChar *sc;
@@ -4241,7 +5042,7 @@ return( NULL );
 		SFDGetHintMask(sfd,&sc->countermasks[i]);
 	    }
 	} else if ( strmatch(tok,"AnchorPoint:")==0 ) {
-	    lastap = SFDReadAnchorPoints(sfd,sc,lastap);
+	    lastap = SFDReadAnchorPoints(sfd,sc,&sc->anchor,lastap);
 	} else if ( strmatch(tok,"Fore")==0 ) {
 	    while ( isspace(ch = nlgetc(sfd)));
 	    ungetc(ch,sfd);
@@ -4350,6 +5151,66 @@ return( NULL );
 	    sc->layers[current_layer].stroke_pen.brush.gradient = SFDParseGradient(sfd,tok);
 	} else if ( strmatch(tok,"StrokePattern:")==0 ) {
 	    sc->layers[current_layer].stroke_pen.brush.pattern = SFDParsePattern(sfd,tok);
+	} else if ( strmatch(tok,"UndoRedoHistory")==0 ) {
+
+	    getname(sfd,tok);
+	    if ( !strmatch(tok,"Layer:") ) {
+		int layer;
+		getint(sfd,&layer);
+	    }
+
+	    int limit;
+	    Undoes *undo = 0;
+	    struct undoes *last = 0;
+            
+	    getname(sfd,tok);
+	    if ( !strmatch(tok,"Undoes") ) {
+		undo = 0;
+		limit = UndoRedoLimitToLoad;
+		last = sc->layers[current_layer].undoes;
+		while((undo = SFDGetUndo( sf, sfd, sc, "UndoOperation", "EndUndoOperation", current_layer ))) 
+		{
+		    // push to back
+		    if( last ) last->next = undo;
+		    else       sc->layers[current_layer].undoes = undo;
+		    last = undo;
+		    
+		    if( limit != -1 ) {
+			limit--;
+			if( limit <= 0 ) {
+			    // we have hit our load limit, so lets just chuck everything away
+			    // until we hit the EndUndoes/EndRedoes magic line and then start
+			    // actually processing again.
+			    char* terminators[] = { "EndUndoes", "EndRedoes", 0 };
+			    SFDConsumeUntil( sfd, terminators );
+			}
+		    }
+		}
+	    }
+	    getname(sfd,tok);
+	    if ( !strmatch(tok,"Redoes") ) {
+		undo = 0;
+		limit = UndoRedoLimitToLoad;
+		last = sc->layers[current_layer].redoes;
+		while((undo = SFDGetUndo( sf, sfd, sc, "RedoOperation", "EndRedoOperation", current_layer )))
+		{
+		    // push to back
+		    if( last ) last->next = undo;
+		    else       sc->layers[current_layer].redoes = undo;
+		    last = undo;
+		    
+		    if( limit != -1 ) {
+			limit--;
+			if( limit <= 0 ) {
+			    // we have hit our load limit, so lets just chuck everything away
+			    // until we hit the EndUndoes/EndRedoes magic line and then start
+			    // actually processing again.
+			    char* terminators[] = { "EndUndoes", "EndRedoes", 0 };
+			    SFDConsumeUntil( sfd, terminators );
+			}
+		    }
+		}
+	    }
 	} else if ( strmatch(tok,"SplineSet")==0 ) {
 	    sc->layers[current_layer].splines = SFDGetSplineSet(sf,sfd,sc->layers[current_layer].order2);
 	} else if ( strmatch(tok,"Ref:")==0 || strmatch(tok,"Refer:")==0 ) {
@@ -4958,7 +5819,44 @@ return( sc );
 return( matched );
 }
 
-static void SFDFixupRefs(SplineFont *sf) {
+static void SFDFixupUndoRefsUndoList(SplineFont *sf,Undoes *undo) {
+    for( ; undo; undo = undo->next ) {
+	if( undo->undotype == ut_state && undo->u.state.refs ) {
+	    RefChar *ref=NULL;
+	    for ( ref=undo->u.state.refs; ref!=NULL; ref=ref->next ) {
+
+		ref->sc = sf->glyphs[ ref->orig_pos ];
+	    }
+	}
+    }
+}
+
+static void SFDFixupUndoRefs(SplineFont *sf) {
+    int i=0;
+    Undoes *undo = 0;
+
+    for ( i=0; i<sf->glyphcnt; ++i ) {
+	if ( sf->glyphs[i]!=NULL ) {
+	    SplineChar *sc = sf->glyphs[i];
+	    int layer = 0;
+	    for ( layer=0; layer<sc->layer_cnt; ++layer ) {
+		if( sc->layers[layer].undoes ) {
+		    undo = sc->layers[layer].undoes;
+		    SFDFixupUndoRefsUndoList( sf, undo );
+		}
+		if( sc->layers[layer].redoes ) {
+		    undo = sc->layers[layer].redoes;
+		    SFDFixupUndoRefsUndoList( sf, undo );
+		}
+	    }
+	}
+    }
+    
+
+}
+
+
+void SFDFixupRefs(SplineFont *sf) {
     int i, isv;
     RefChar *refs, *rnext, *rprev;
     /*int isautorecovery = sf->changed;*/
@@ -5023,27 +5921,34 @@ static void SFDFixupRefs(SplineFont *sf) {
 	    for ( isv=0; isv<2; ++isv ) {
 		for ( prev = NULL, kp=isv?sc->vkerns : sc->kerns; kp!=NULL; kp=next ) {
 		    int index = (intpt) (kp->sc);
+
 		    next = kp->next;
-		    if ( !kp->kcid ) {	/* It's encoded (old sfds), else orig */
-			if ( index>=map->encmax || map->map[index]==-1 )
-			    index = sf->glyphcnt;
-			else
-			    index = map->map[index];
-		    }
-		    kp->kcid = false;
-		    ksf = sf;
-		    if ( cidmaster!=sf ) {
-			for ( l=0; l<cidmaster->subfontcnt; ++l ) {
-			    ksf = cidmaster->subfonts[l];
-			    if ( index<ksf->glyphcnt && ksf->glyphs[index]!=NULL )
-		    break;
+		    // be impotent if the reference is already to the correct location
+		    if( index < sf->glyphcnt ) {
+		    
+			if ( !kp->kcid ) {	/* It's encoded (old sfds), else orig */
+			    if ( index>=map->encmax || map->map[index]==-1 )
+				index = sf->glyphcnt;
+			    else
+				index = map->map[index];
+			}
+			kp->kcid = false;
+			ksf = sf;
+			if ( cidmaster!=sf ) {
+			    for ( l=0; l<cidmaster->subfontcnt; ++l ) {
+				ksf = cidmaster->subfonts[l];
+				if ( index<ksf->glyphcnt && ksf->glyphs[index]!=NULL )
+				    break;
+			    }
+			}
+			if ( index>=ksf->glyphcnt || ksf->glyphs[index]==NULL ) {
+			    IError( "Bad kerning information in glyph %s\n", sc->name );
+			    kp->sc = NULL;
+			} else {
+			    kp->sc = ksf->glyphs[index];
 			}
 		    }
-		    if ( index>=ksf->glyphcnt || ksf->glyphs[index]==NULL ) {
-			IError( "Bad kerning information in glyph %s\n", sc->name );
-			kp->sc = NULL;
-		    } else
-			kp->sc = ksf->glyphs[index];
+		    
 		    if ( kp->sc!=NULL )
 			prev = kp;
 		    else{
@@ -7119,11 +8024,11 @@ exit( 1 );
 	SFD_AssignLookups((SplineFont1 *) sf);
     if ( !hadtimes )
 	SFTimesFromFile(sf,sfd);
+
+    SFDFixupUndoRefs(sf);
 return( sf );
 }
 
-#include <sys/types.h>
-#include <sys/stat.h>
 void SFTimesFromFile(SplineFont *sf,FILE *file) {
     struct stat b;
     if ( fstat(fileno(file),&b)!=-1 ) {
@@ -7147,8 +8052,12 @@ return( -1 );
     /*  this sequence, but I don't yet generate it. I want the parser to */
     /*  perculate through to users before I introduce the new format so there */
     /*  will be fewer complaints when it happens */
-    if ( dval!=0 && dval!=1 && dval!=2.0 && dval!=3.0 && dval!=4.0 ) {
-	LogError(_("Bad SFD Version number %.1f"), dval );
+    // MIQ: getreal() can give some funky rounding errors it seems
+    if ( dval!=0 && dval!=1 && dval!=2.0 && dval!=3.0
+         && !(dval > 3.09 && dval <= 3.11)
+         && dval!=4.0 )
+    {
+        LogError("Bad SFD Version number %.1f", dval );
 return( -1 );
     }
     ch = nlgetc(sfd); ungetc(ch,sfd);
@@ -7568,7 +8477,7 @@ return;
 	    }
 	}
 	if ( ssf->glyphs[i]!=NULL && ssf->glyphs[i]->changed )
-	    SFDDumpChar( asfd,ssf->glyphs[i],map,NULL,false);
+	    SFDDumpChar( asfd,ssf->glyphs[i],map,NULL,false,1);
     }
     fprintf( asfd, "EndChars\n" );
     fprintf( asfd, "EndSplineFont\n" );

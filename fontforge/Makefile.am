@@ -85,7 +85,7 @@ if THE_PROGRAMS
 
 fontforge_SOURCES = main.c
 fontforge_CPPFLAGS = $(AM_CPPFLAGS)
-fontforge_LDADD = libfontforgeexe.la $(LDADD)
+fontforge_LDADD = libfontforgeexe.la libfontforge.la $(LDADD)
 fontforge_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -export-dynamic
 
 endif THE_PROGRAMS
@@ -114,7 +114,7 @@ nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
 libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS)
-libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD)
+libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD) $(LIBLTDL)
 
 if PLUGIN_GB12345
 libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/gb12345.la

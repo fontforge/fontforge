@@ -27,7 +27,7 @@
 
 #include "plugins.h"
 #include "pluginloading.h"
-#include "basics.h"
+#include <basics.h>
 
 /* Load (or fake loading) a named plugin that is somewhere in the path
  * list for lt_dlopenext(). Returns 'true' on success; otherwise

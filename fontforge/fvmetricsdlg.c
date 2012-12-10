@@ -116,8 +116,8 @@ return( false );
 return( true );
 }
 
-static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
-	enum widthtype wtype, char *def) {
+static void FVCreateWidth( void *_fv,SplineChar* _sc,void (*doit)(CreateWidthData *),
+			   enum widthtype wtype, char *def) {
     GRect pos;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[11], boxes[2], topbox[2], *hvs[17], *varray[8], *buttons[6];
@@ -128,6 +128,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 
     cwd.wd.done = false;
     cwd.wd._fv = _fv;
+    cwd.wd._sc = _sc;
     cwd.wd.wtype = wtype;
     cwd.wd.doit = doit;
     cwd.gw = winds[wtype];
@@ -342,12 +343,21 @@ void FVSetWidth(FontView *fv,enum widthtype wtype) {
 	break;
 	}
     }
-    FVCreateWidth(fv,FVDoit,wtype,buffer);
+    FVCreateWidth(fv,0,FVDoit,wtype,buffer);
 }
 
 void CVSetWidth(CharView *cv,enum widthtype wtype) {
     char buf[10];
 
     SCDefWidthVal(buf,cv->b.sc,wtype);
-    FVCreateWidth(cv,CVDoit,wtype,buf);
+    FVCreateWidth(cv,cv->b.sc,CVDoit,wtype,buf);
 }
+
+
+void GenericVSetWidth(FontView *fv,SplineChar* sc,enum widthtype wtype) {
+    char buf[10];
+
+    SCDefWidthVal(buf,sc,wtype);
+    FVCreateWidth(fv,sc,GenericVDoit,wtype,buf);
+}
+

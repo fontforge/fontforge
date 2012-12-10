@@ -48,6 +48,7 @@ extern int onlycopydisplayed, copymetadata, copyttfinstr, add_char_to_name_list;
 int home_char='A';
 int compact_font_on_open=0;
 int navigation_mask = 0;		/* Initialized in startui.c */
+int prefs_ensure_correct_extension = 1;
 
 static char *fv_fontnames = "fontview," MONO_UI_FAMILIES;
 
@@ -558,6 +559,19 @@ static int SaveAs_FormatChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
+
+static enum fchooserret _FVSaveAsFilterFunc(GGadget *g,struct gdirentry *ent, const unichar_t *dir)
+{
+    char* n = u_to_c(ent->name);
+    int ew = endswithi( n, "sfd" ) || endswithi( n, "sfdir" );
+    if( ew )
+	return fc_show;
+    if( ent->isdir )
+	return fc_show;
+    return fc_hide;
+}
+
+
 int _FVMenuSaveAs(FontView *fv) {
     char *temp;
     char *ret;
@@ -610,7 +624,13 @@ int _FVMenuSaveAs(FontView *fv) {
     gcd.data = &s2d;
     gcd.creator = GCheckBoxCreate;
 
-    ret = gwwv_save_filename_with_gadget(_("Save as..."),temp,NULL,&gcd);
+    GFileChooserInputFilenameFuncType FilenameFunc = GFileChooserDefInputFilenameFunc;
+    if( prefs_ensure_correct_extension ) {
+	FilenameFunc = GFileChooserSaveAsInputFilenameFunc;
+    }
+    ret = GWidgetSaveAsFileWithGadget8(_("Save as..."),temp,0,NULL,
+				       _FVSaveAsFilterFunc, FilenameFunc,
+				       &gcd );
     free(temp);
     if ( ret==NULL )
 return( 0 );
@@ -884,6 +904,7 @@ return;
 }
 
 static void _MenuExit(void *UNUSED(junk)) {
+
     FontView *fv, *next;
 
     LastFonts_Activate();
@@ -1296,6 +1317,7 @@ static void FVMenuCondense(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 #define MID_Undo	2109
 #define MID_Redo	2110
 #define MID_CopyWidth	2111
+#define MID_UndoFontLevel	2112
 #define MID_AllFonts		2122
 #define MID_DisplayedFont	2123
 #define	MID_CharName		2124
@@ -1337,6 +1359,7 @@ static void FVMenuCondense(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 #define MID_SaveNamelist	2841
 #define MID_RenameGlyphs	2842
 #define MID_NameGlyphs		2843
+#define MID_HideNoGlyphSlots	2844
 #define MID_CreateMM	2900
 #define MID_MMInfo	2901
 #define MID_MMValid	2902
@@ -1497,6 +1520,95 @@ static void FVMenuUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(
 static void FVMenuRedo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     FVRedo((FontViewBase *) fv);
+}
+
+#include <stddef.h>
+static int listLength( void* p, int nextoffset ) {
+    if( !p )
+        return 0;
+    int ret = 1;
+    p = *((void**)(p + nextoffset));
+    for( ; p; ret++ ) {
+        p = *((void**)(p + nextoffset));
+    }
+    return ret;
+}
+static int pstLength( struct generic_pst * pst ) {
+    int offset = offsetof( PST, next );
+    return listLength( pst, offset );
+}
+
+/**
+ * Remove undo from the font level undoes on splinefont 'sf' and
+ * completely free the given undo from memory.
+ */
+static void sfundoRemoveAndFree( SplineFont *sf, struct sfundoes *undo ) {
+
+    if( undo->u.lookupatomic.sfdchunk )
+	free( undo->u.lookupatomic.sfdchunk );
+    dlist_erase( (struct dlistnode **)&sf->undoes, (struct dlistnode *)undo );
+    free(undo);
+}
+
+static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    FontViewBase * fvb = (FontViewBase *) fv;
+    SplineFont *sf = fvb->sf;
+    char* sfdchunk = 0;
+    
+    // printf("we currently have %d splinefont level undoes\n", dlist_size((struct dlistnode **)&sf->undoes));
+    if( !sf->undoes )
+	return;
+    
+    struct sfundoes *undo = sf->undoes;
+    // printf("font level undo msg:%s\n", undo->msg );
+    switch(undo->type) {
+    case sfut_lookups_kerns:
+    case sfut_lookups:
+	sfdchunk = undo->u.lookupatomic.sfdchunk;
+	if( !sfdchunk ) {
+	    ff_post_error(_("Undo information incomplete"),_("There is an splinefont level undo, but it does not contain any information to perform the undo. This is an application error, please report what you last did to the lookup tables so the developers can try to reproduce the issue and fix it."));
+	    sfundoRemoveAndFree( sf, undo );
+	    return;
+	}
+	
+	// Roll it on back!
+	FILE* sfd = MakeTemporaryFile();
+	fwrite( sfdchunk, strlen(sfdchunk), 1, sfd );
+	fseek( sfd, 0, SEEK_SET );
+
+	while( 1 ) {
+	    char* name = SFDMoveToNextStartChar( sfd );
+	    if( !name )
+		break;
+
+	    int unienc = 0;
+	    SplineChar *sc;
+	    sc = SFGetChar( sf, unienc, name );
+	    if( !sc ) {
+		ff_post_error(_("Bad undo"),_("couldn't find the character %s"), name );
+		break;
+	    }
+	    if( sc ) {
+		// Free the stuff in sc->psts so we don't leak it.
+		if( undo->type == sfut_lookups ) {
+		    PSTFree(sc->possub);
+		    sc->possub = 0;
+		}
+		char tok[2000];
+		getname( sfd, tok );
+		SFDGetPSTs( sfd, sc, tok );
+		SFDGetKerns( sfd, sc, tok );
+	    }
+	    free(name);
+	}
+	
+	if( undo->type == sfut_lookups_kerns ) {
+	    SFDFixupRefs( sf );
+	}
+	break;
+    }
+    sfundoRemoveAndFree( sf, undo );
 }
 
 static void FVMenuCut(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -2551,7 +2663,7 @@ static void FVMenuCanonicalContours(GWindow gw, struct gmenuitem *UNUSED(mi), GE
 }
 
 static void FVMenuAddExtrema(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FVAddExtrema( (FontViewBase *) GDrawGetUserData(gw) );
+    FVAddExtrema( (FontViewBase *) GDrawGetUserData(gw) , false);
 }
 
 static void FVMenuCorrectDir(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -4033,6 +4145,9 @@ static void edlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    break;
 	    mi->ti.disabled = i==fv->b.map->enccount;
 	  break;
+	case MID_UndoFontLevel:
+	    mi->ti.disabled = dlist_isempty( (struct dlistnode **)&fv->b.sf->undoes );
+	    break;
 	}
     }
 }
@@ -4382,6 +4497,7 @@ static GMenuItem2 sllist[] = {
 static GMenuItem2 edlist[] = {
     { { (unichar_t *) N_("_Undo"), (GImage *) "editundo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Undo|Ctl+Z"), NULL, NULL, FVMenuUndo, MID_Undo },
     { { (unichar_t *) N_("_Redo"), (GImage *) "editredo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Redo|Ctl+Y"), NULL, NULL, FVMenuRedo, MID_Redo},
+    { { (unichar_t *) N_("Undo Fontlevel"), (GImage *) "editundo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Undo Fontlevel|No Shortcut"), NULL, NULL, FVMenuUndoFontLevel, MID_UndoFontLevel },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Cu_t"), (GImage *) "editcut.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, H_("Cut|Ctl+X"), NULL, NULL, FVMenuCut, MID_Cut },
     { { (unichar_t *) N_("_Copy"), (GImage *) "editcopy.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Copy|Ctl+C"), NULL, NULL, FVMenuCopy, MID_Copy },
@@ -4946,6 +5062,8 @@ static void enlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  case MID_Compact:
 	    mi->ti.checked = fv->b.normal!=NULL;
 	  break;
+	case MID_HideNoGlyphSlots:
+	    break;
 	  case MID_Reencode: case MID_ForceReencode:
 	    mi->ti.disabled = fv->b.cidmaster!=NULL;
 	  break;
@@ -7046,6 +7164,7 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
 	nexty = 0;
     fv->gw = gw = GDrawCreateTopWindow(NULL,&pos,fv_e_h,fv,&wattrs);
     FontViewSetTitle(fv);
+    GDrawSetWindowTypeName(fv->gw, "FontView");
 
     if ( !fv_fs_init ) {
 	GResEditFind( fontview_re, "FontView.");

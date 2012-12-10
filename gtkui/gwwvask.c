@@ -587,7 +587,6 @@ char *gwwv_save_filename_with_gadget(const char *title, const char *def_name,
     GtkWidget *dialog;
     char *filename = NULL;
     gsize read, written;
-
     dialog = gtk_file_chooser_dialog_new (title,
 					  NULL,
 					  GTK_FILE_CHOOSER_ACTION_SAVE,

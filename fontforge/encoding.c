@@ -1408,10 +1408,10 @@ return(NULL);
 	    free(fvs->selected);
 	    fvs->selected = gcalloc(new->glyphcnt,sizeof(char));
 	    if ( fvs->map->encmax < new->glyphcnt )
-		fvs->map->map = grealloc(fvs->map->map,(fvs->map->encmax = new->glyphcnt)*sizeof(int));
+		fvs->map->map = grealloc(fvs->map->map,(fvs->map->encmax = new->glyphcnt)*sizeof(int32));
 	    fvs->map->enccount = new->glyphcnt;
 	    if ( fvs->map->backmax < new->glyphcnt )
-		fvs->map->backmap = grealloc(fvs->map->backmap,(fvs->map->backmax = new->glyphcnt)*sizeof(int));
+		fvs->map->backmap = grealloc(fvs->map->backmap,(fvs->map->backmax = new->glyphcnt)*sizeof(int32));
 	    for ( j=0; j<new->glyphcnt; ++j )
 		fvs->map->map[j] = fvs->map->backmap[j] = j;
 	}
@@ -1544,9 +1544,9 @@ return( false );
 		}
 	    }
 	    if ( !j ) {
-		map->map = grealloc(map->map,(map->encmax = map->enccount = max+extras)*sizeof(int));
-		memset(map->map,-1,map->enccount*sizeof(int));
-		memset(map->backmap,-1,sf->glyphcnt*sizeof(int));
+		map->map = grealloc(map->map,(map->encmax = map->enccount = max+extras)*sizeof(int32));
+		memset(map->map,-1,map->enccount*sizeof(int32));
+		memset(map->backmap,-1,sf->glyphcnt*sizeof(int32));
 		map->remap = cmap->remap; cmap->remap = NULL;
 	    }
 	    warned = true;
@@ -1821,9 +1821,9 @@ return(false);			/* Custom, it's whatever's there */
 	    if ( enc_cnt>map->backmax ) {
 		free(map->backmap);
 		map->backmax = enc_cnt;
-		map->backmap = galloc(enc_cnt*sizeof(int));
+		map->backmap = galloc(enc_cnt*sizeof(int32));
 	    }
-	    memset(map->backmap,-1,enc_cnt*sizeof(int));
+	    memset(map->backmap,-1,enc_cnt*sizeof(int32));
 	    for ( i=0; i<map->enccount; ++i ) if ( map->map[i]!=-1 )
 		if ( map->backmap[map->map[i]]==-1 )
 		    map->backmap[map->map[i]] = i;
@@ -1848,10 +1848,10 @@ return( true );
 
     if ( old->enccount<enc_cnt ) {
 	if ( old->encmax<enc_cnt ) {
-	    old->map = grealloc(old->map,enc_cnt*sizeof(int));
+	    old->map = grealloc(old->map,enc_cnt*sizeof(int32));
 	    old->encmax = enc_cnt;
 	}
-	memset(old->map+old->enccount,-1,(enc_cnt-old->enccount)*sizeof(int));
+	memset(old->map+old->enccount,-1,(enc_cnt-old->enccount)*sizeof(int32));
 	old->enccount = enc_cnt;
     }
     old->enc = new_enc;
@@ -1894,7 +1894,7 @@ return( true );
 
 EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc) {
     int i,j, extras, found, base, unmax;
-    int *encoded, *unencoded;
+    int32 *encoded, *unencoded;
     EncMap *map;
     struct altuni *altuni;
     SplineChar *sc;
@@ -1909,9 +1909,9 @@ return( NULL );
 	base = 256;
     else if ( enc->char_cnt<=0x10000 )
 	base = 0x10000;
-    encoded = galloc(base*sizeof(int));
-    memset(encoded,-1,base*sizeof(int));
-    unencoded = galloc(sf->glyphcnt*sizeof(int));
+    encoded = galloc(base*sizeof(int32));
+    memset(encoded,-1,base*sizeof(int32));
+    unencoded = galloc(sf->glyphcnt*sizeof(int32));
     unmax = sf->glyphcnt;
 
     for ( i=extras=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
@@ -1933,7 +1933,7 @@ return( NULL );
 	    else {
 		/* I don't think extras can surpass unmax now, but it doesn't */
 		/*  hurt to leave the code (it's from when we encoded duplicates see below) */
-		if ( extras>=unmax ) unencoded = grealloc(unencoded,(unmax+=300)*sizeof(int));
+		if ( extras>=unmax ) unencoded = grealloc(unencoded,(unmax+=300)*sizeof(int32));
 		unencoded[extras++] = i;
 	    }
 	    for ( altuni=sc->altuni; altuni!=NULL; altuni=altuni->next ) {
@@ -1980,12 +1980,12 @@ return( NULL );
 
     map = chunkalloc(sizeof(EncMap));
     map->enccount = map->encmax = base + extras;
-    map->map = galloc(map->enccount*sizeof(int));
-    memcpy(map->map,encoded,base*sizeof(int));
-    memcpy(map->map+base,unencoded,extras*sizeof(int));
+    map->map = galloc(map->enccount*sizeof(int32));
+    memcpy(map->map,encoded,base*sizeof(int32));
+    memcpy(map->map+base,unencoded,extras*sizeof(int32));
     map->backmax = sf->glyphcnt;
-    map->backmap = galloc(sf->glyphcnt*sizeof(int));
-    memset(map->backmap,-1,sf->glyphcnt*sizeof(int));	/* Just in case there are some unencoded glyphs (duplicates perhaps) */
+    map->backmap = galloc(sf->glyphcnt*sizeof(int32));
+    memset(map->backmap,-1,sf->glyphcnt*sizeof(int32));	/* Just in case there are some unencoded glyphs (duplicates perhaps) */
     for ( i = map->enccount-1; i>=0; --i ) if ( map->map[i]!=-1 )
 	map->backmap[map->map[i]] = i;
     map->enc = enc;
@@ -2012,7 +2012,7 @@ EncMap *CompactEncMap(EncMap *map, SplineFont *sf) {
     map->enccount = inuse;
     map->encmax = inuse;
     map->enc = &custom;
-    memset(map->backmap,-1,sf->glyphcnt*sizeof(int));
+    memset(map->backmap,-1,sf->glyphcnt*sizeof(int32));
     for ( i=inuse-1; i>=0; --i )
 	if ( (gid=map->map[i])!=-1 )
 	    map->backmap[gid] = i;
@@ -2155,7 +2155,7 @@ static int MapAddEncodingSlot(EncMap *map,int gid) {
     int enc;
 
     if ( map->enccount>=map->encmax )
-	map->map = grealloc(map->map,(map->encmax+=10)*sizeof(int));
+	map->map = grealloc(map->map,(map->encmax+=10)*sizeof(int32));
     enc = map->enccount++;
     map->map[enc] = gid;
     map->backmap[gid] = enc;
@@ -2183,8 +2183,8 @@ static int MapAddEnc(SplineFont *sf,SplineChar *sc,EncMap *basemap, EncMap *map,
     int any = false, enc;
 
     if ( gid>=map->backmax ) {
-	map->backmap = grealloc(map->backmap,(map->backmax+=10)*sizeof(int));
-	memset(map->backmap+map->backmax-10,-1,10*sizeof(int));
+	map->backmap = grealloc(map->backmap,(map->backmax+=10)*sizeof(int32));
+	memset(map->backmap+map->backmax-10,-1,10*sizeof(int32));
     }
     if ( map->enc->psnames!=NULL ) {
 	/* Check for multiple encodings */
@@ -2241,7 +2241,7 @@ void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int base
 	for ( fv=sf->fv; fv!=NULL; fv = fv->nextsame ) {
 	    EncMap *map = fv->map;
 	    if ( gid>=map->backmax )
-		map->backmap = grealloc(map->backmap,(map->backmax=gid+10)*sizeof(int));
+		map->backmap = grealloc(map->backmap,(map->backmax=gid+10)*sizeof(int32));
 	    map->backmap[gid] = -1;
 	}
     } else {
@@ -2262,7 +2262,7 @@ void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int base
 	    for ( fv=sf->fv; fv!=NULL; fv = fv->nextsame ) if ( fv->sf==sf ) {
 		EncMap *map = fv->map;
 		if ( gid>=map->backmax )
-		    map->backmap = grealloc(map->backmap,(map->backmax=gid+10)*sizeof(int));
+		    map->backmap = grealloc(map->backmap,(map->backmax=gid+10)*sizeof(int32));
 		map->backmap[gid] = -1;
 	    }
 	}

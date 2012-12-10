@@ -25,21 +25,28 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "intl.h"
-#include "basics.h"
-#include "pluginloading.h"
+#include <config.h>
+#include <intl.h>
+#include <basics.h>
+#include <pluginloading.h>
+#include <string.h>
 
 static int inited = false;
 
 void init_plugins(void) {
     int err;
 
-    if (!inited) {
+    if (!inited)
+    {
         err = lt_dlinit();
-        if (1 < err) {
-            fprintf(stderr, "%d errors encountered during libltdl startup.\n", err);
+        if (1 < err)
+	{
+            fprintf(stderr, "%d errors encountered during libltdl startup.\n",
+		     err);
             abort();
-        } else if (1 == err) {
+        }
+	else if (1 == err)
+	{
             fprintf(stderr, "1 error encountered during libltdl startup.\n");
             abort();
         }
@@ -64,17 +71,23 @@ lt_dlhandle load_plugin(const char *dynamic_lib_name, void (*logger)(const char 
     int (*init)(void);
 
     plugin = lt_dlopenext(dynamic_lib_name);
-    if ( plugin == NULL ) {
+    if ( plugin == NULL )
+    {
         if (logger != NULL)
             logger(_("Failed to dlopen: %s\n%s"), dynamic_lib_name, lt_dlerror());
-    } else {
+    }
+    else
+    {
         init = (int (*)(void)) lt_dlsym(plugin,"FontForgeInit");
-        if ( init == NULL ) {
+        if ( init == NULL )
+	{
             if (logger != NULL)
                 logger(_("Failed to find init function in %s"), dynamic_lib_name);
             lt_dlclose(plugin);
             plugin = NULL;
-        } else if ( (*init)()==0 ) { /* Init routine in charge of any
+        }
+	else if ( (*init)()==0 )
+	{ /* Init routine in charge of any
                                       * error messages */
             lt_dlclose(plugin);
             plugin = NULL;

@@ -38,6 +38,10 @@
 
 int add_char_to_name_list = true;
 int default_autokern_dlg = true;
+int fontlevel_undo_limit = 10;
+
+void SFUntickAllPSTandKern(SplineFont *sf);
+int kernsLength( KernPair *kp );
 
 /* ************************************************************************** */
 /* ******************************* UI routines ****************************** */
@@ -3593,6 +3597,318 @@ static int PSTKD_RemoveEmpty(GGadget *g, GEvent *e) {
 return( true );
 }
 
+void SFUntickAllPSTandKern(SplineFont *sf)
+{
+    SplineChar *sc;
+    PST *pst;
+    KernPair *kp;
+    int gid, isv;
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) {
+	if ( (sc = sf->glyphs[gid])!=NULL ) {
+	    for ( pst = sc->possub; pst!=NULL; pst=pst->next )
+		pst->ticked = false;
+	    for ( isv=0; isv<2; ++isv )
+		for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next )
+		    kp->kcid = 0;
+	}
+    }
+}
+
+
+
+/**
+ * Return true of the splinechar has any horizontal or vert kerns.
+ */
+static int SCHasAnyKerns(SplineChar *sc) {
+    KernPair *kp;
+    int v;
+    int ret = 0;
+    for ( v=0; v<2; ++v ) {
+	kp = v ? sc->vkerns : sc->kerns;
+	if ( kp!=NULL ) {
+	    ret = 1;
+	}
+    }
+    return ret;
+}
+
+
+int kernsLength( KernPair *kp ) {
+    if( !kp )
+	return 0;
+    int i = 0;
+    for ( ; kp; kp=kp->next ) {
+	++i;
+    }
+    return i;
+}
+
+static int kerncomp(const void *_r1, const void *_r2) {
+    const KernPair *kp1 = *(KernPair * const *)_r1;
+    const KernPair *kp2 = *(KernPair * const *)_r2;
+    if( kp1->sc->orig_pos == kp2->sc->orig_pos )
+	return 0;
+    if( kp1->sc->orig_pos <  kp2->sc->orig_pos )
+	return -1;
+    return 1;
+}
+
+/**
+ * This will sort both the kerns and vkerns for the splinefont so that
+ * the list is in the order of "orig_pos" for each kernpair.
+ *
+ * Sometimes FontForge had two KernPair lists which were identical but
+ * where not sorted the same way, using this function will force a
+ * specific ordering on the KernPair list to make performing a lexical
+ * "diff" between two serialized KernPair lists work as expected.
+ */
+static void SCKernsSort( SplineChar *sc ) {
+    KernPair *kp;
+    int v;
+    KernPair *cur;
+    KernPair *newlist = 0;
+    for ( v=0; v<2; ++v ) {
+	kp = v ? sc->vkerns : sc->kerns;
+	if ( kp!=NULL ) {
+	    int idx = 0;
+	    int length = kernsLength(kp);
+	    if( length == 0 ) {
+		// nothing is always sorted already!
+		continue;
+	    }
+	    
+	    KernPair** ordered = galloc( sizeof(KernPair*) * length+1 );
+	    // copy to temp array
+	    idx = 0;
+	    for ( cur = kp; cur; cur=cur->next ) {
+		ordered[idx] = cur;
+		idx++;
+	    }
+	    // sort array using easy swap()
+	    qsort(ordered,length,sizeof(KernPair*),kerncomp);
+
+	    // and back to a linked list again
+	    newlist = ordered[0];
+	    ordered[length-1]->next = 0;
+	    for( idx = 0; idx < length-1; idx++ ) {
+		ordered[idx]->next = ordered[idx+1];
+	    }
+	    free( ordered );
+
+	    // now change the right kerns member of sc
+	    if( v )  sc->vkerns = newlist;
+	    else     sc->kerns  = newlist;
+	}
+    }
+}
+
+
+/**
+ * Create a fragment of SFD file which represents the state of the
+ * lookup_type for the given splinefont.
+ *
+ * Note that the kernpair lists may be modified by this function in
+ * that those lists might be sorted on return.
+ *
+ * The caller needs to free the return value.
+ */
+static char* SFDCreateUndoForLookup( SplineFont *sf, int lookup_type ) 
+{
+    int gid = 0;
+    SplineChar *sc = 0;
+    PST *pst = 0;
+    FILE* sfd = MakeTemporaryFile();
+    SFD_DumpLookup( sfd, sf );
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) {
+	if ( (sc = sf->glyphs[gid])!=NULL ) {
+	    int haveStartMarker = 0;
+	    if(lookup_type==gpos_pair) {
+		if( SCHasAnyKerns(sc) ) {
+		    haveStartMarker = 1;
+		    SFDDumpCharStartingMarker( sfd, sc );
+		    SCKernsSort( sc );
+		    SFD_DumpKerns( sfd, sc, 0 );
+		}
+	    } else {
+		for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+		    if( !haveStartMarker ) {
+			haveStartMarker = 1;
+			SFDDumpCharStartingMarker( sfd, sc );
+		    }
+		    SFD_DumpPST( sfd, sc );
+		}
+	    }
+	    if( haveStartMarker ) {
+		fprintf(sfd,"EndChar\n" );
+	    }
+	}
+    }
+
+    char* str = FileToAllocatedString( sfd );
+    return(str);
+}
+
+static SplineChar* SCFindByGlyphName( SplineFont *sf, char* n ) {
+    int i=0;
+    for ( i=0; i<sf->glyphcnt; ++i ) {
+	if ( sf->glyphs[i]!=NULL ) {
+	    SplineChar *sc = sf->glyphs[i];
+	    if( !strcmp( sc->name, n )) {
+		return sc;
+	    }
+	}
+    }
+    return 0;
+}
+
+
+static void SFDTrimUndoOldToNew_Output( FILE* retf, char* glyph, char* line ) {
+    fwrite( "StartChar:", strlen("StartChar:"), 1, retf );
+    fwrite( glyph,       strlen(glyph),         1, retf );
+    fwrite( "\n",         1,                    1, retf );
+    fwrite( line,        strlen(line),          1, retf );
+    fwrite( "\n",         1,                    1, retf );
+    fwrite( "EndChar\n", strlen("EndChar\n"),   1, retf );
+}
+
+/**
+ * Given two SFD fragments, oldstr and newstr, compare them and remove
+ * the SFD for glyphs which have not changed state significantly
+ * between old and new.
+ *
+ * This can be very handy for fonts like DroidSans which have kerning
+ * table which is about 2mb in SFD format. If you only change the
+ * kerning for a 10 glyphs then the resulting SFD from this function
+ * might be only in the 10-50kb size instead of megabytes.
+ *
+ * The caller needs to free the return value.
+ */
+static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
+
+    if( !oldstr ) {
+	return 0;
+    }
+    if( !newstr ) {
+	return 0;
+    }
+    
+    FILE* of   = MakeTemporaryFile();
+    FILE* nf   = MakeTemporaryFile();
+    FILE* retf = MakeTemporaryFile();
+    int glyphsWithUndoInfoCount = 0;
+    fwrite( oldstr, strlen(oldstr), 1, of );
+    fwrite( newstr, strlen(newstr), 1, nf );
+    fseek( of, 0, SEEK_SET );
+    fseek( nf, 0, SEEK_SET );
+
+    char* oglyph = 0;
+    char* nglyph = 0;
+    char* oline = 0;
+    char* nline = 0;
+
+    // copy the header from the old SFD fragment
+    while((oline = getquotedeol(of)) && !feof(of)) {
+	if( !strnmatch( oline, "StartChar:", strlen( "StartChar:" ))) {
+	    int len = strlen("StartChar:");
+	    while( oline[len] && oline[len] == ' ' )
+		len++;
+	    oglyph = copy( oline+len );
+	    break;
+	}
+	fwrite( oline, strlen(oline), 1, retf );
+	fwrite( "\n", 1, 1, retf );
+	free(oline);
+    }
+    
+    while (oglyph) {
+	oline = getquotedeol(of);
+	SplineChar* oldsc = SCFindByGlyphName( sf, oglyph );
+	int newGlyphsSeen = 0;
+	
+	while ((nglyph = SFDMoveToNextStartChar(nf))) {
+	    newGlyphsSeen++;
+	    SplineChar* newsc = SCFindByGlyphName( sf, nglyph );
+	    if( !newsc || !oldsc ) {
+		return 0;
+	    }
+	    /**
+	     * If the user has deleted a whole glyph from the SFD
+	     * fragment then the nglyph in the new list will be
+	     * *after* oglyph in the ordering. If that's the case then
+	     * we have to output oglyph and read another glyph from
+	     * the old list.
+	     */
+	    while( newsc->orig_pos > oldsc->orig_pos ) {
+		glyphsWithUndoInfoCount++;
+		SFDTrimUndoOldToNew_Output( retf, oglyph, oline );
+		free(oline);
+		oglyph = SFDMoveToNextStartChar(of);
+		oline = getquotedeol(of);
+		oldsc = SCFindByGlyphName( sf, oglyph );
+	    }
+	    
+	    nline = getquotedeol(nf);
+	    if( !oline || !nline ) {
+		fprintf(stderr,"failed to read new or old files during SFD diff. Returning entire new data as diff!\n");
+		return 0;
+	    }
+	    if( strcmp( oglyph, nglyph )) {
+//		fprintf(stderr,"mismatch between old and new SFD fragments. Skipping new glyph that is not in old...\n");
+		glyphsWithUndoInfoCount++;
+		SFDTrimUndoOldToNew_Output( retf, nglyph, "Kerns2: " );
+		free(nline);
+		continue;
+	    }
+	    
+	    if( !strcmp( oline, nline )) {
+		// printf("old and new have the same data, skipping glyph:%s\n", oglyph );
+		break;
+	    }
+	    
+	    glyphsWithUndoInfoCount++;
+	    SFDTrimUndoOldToNew_Output( retf, oglyph, oline );
+	    free(nline);
+	    break;
+	}
+
+	/**
+	 * There is one or more old glyphs which do not have a new glyph
+	 * in the SFD fragments, preserve those old SFD fragments.
+	 */
+	if( !newGlyphsSeen ) {
+	    glyphsWithUndoInfoCount++;
+	    SFDTrimUndoOldToNew_Output( retf, oglyph, oline );
+	}
+
+	free(oline);
+	oglyph = SFDMoveToNextStartChar(of);
+    }
+
+    /* Trailing new glyph data that has nothing in the old file.
+     *
+     * we don't care what the data is if its new,
+     * we only want to be able to revert to the old state (nothing)
+     */
+    while ((nglyph = SFDMoveToNextStartChar(nf))) {
+	SCFindByGlyphName( sf, nglyph );
+	nline = getquotedeol(nf);
+	glyphsWithUndoInfoCount++;
+	SFDTrimUndoOldToNew_Output( retf, nglyph, "Kerns2: " );
+    }
+
+    if( !glyphsWithUndoInfoCount )
+	return 0;
+    
+    char* ret = FileToAllocatedString( retf );
+    return ret;
+}
+
+static void SFUndoCleanup( struct sfundoes *undo ) {
+    if( undo->u.lookupatomic.sfdchunk )
+	free( undo->u.lookupatomic.sfdchunk );
+}
+
+
 static int PSTKD_Ok(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -3708,22 +4024,31 @@ return( true );
 	}
 
 	/* Ok, if we get here then there should be no errors and we can parse */
-	/* First mark all the current things as unused */
+
+	/* First grab a snapshot of the state of the system as it is
+	 * now so that we can "undo" the lookup table edits as a
+	 * single operation if desired */
+	char* oldsfd = 0;
+	if( !pstkd->sf->subfontcnt ) {
+	    sf = pstkd->sf;
+	    oldsfd = SFDCreateUndoForLookup( sf, lookup_type );
+	}
+	
+	/* Then mark all the current things as unused */
 	k=0;
 	do {
 	    sf = pstkd->sf->subfontcnt==0 ? pstkd->sf : pstkd->sf->subfonts[k];
-	    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
-		for ( pst = sc->possub; pst!=NULL; pst=pst->next )
-		    pst->ticked = false;
-		for ( isv=0; isv<2; ++isv )
-		    for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next )
-			kp->kcid = 0;
-	    }
+	    SFUntickAllPSTandKern( sf );
 	    ++k;
 	} while ( k<pstkd->sf->subfontcnt );
 
+	/* Write the changes to each SplineChar. For example, updating
+	 * the ligaments will update the splinechar's
+	 * pst->u.subs.variant and pst->u.lig.lig
+	 */
 	if ( lookup_type!=gpos_pair ) {
 	    for ( r=0; r<rows; ++r ) {
+		
 		sc = SFGetChar(pstkd->sf,-1,psts[cols*r+0].u.md_str);
 		for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
 		    if ( pst->subtable == pstkd->sub && !pst->ticked )
@@ -3757,7 +4082,8 @@ return( true );
 	    }
 	}
 
-	/* Now free anything with this subtable which did not get ticked */
+	/* Now free anything with this subtable which did not get ticked
+	 * during the above update */
 	k=0;
 	do {
 	    sf = pstkd->sf->subfontcnt==0 ? pstkd->sf : pstkd->sf->subfonts[k];
@@ -3816,6 +4142,48 @@ return( true );
 	    pstkd->sub->onlyCloser = onlyCloser;
 	    pstkd->sub->dontautokern = !autokern;
 	}
+
+	/* compare the updated data to the snapshot we took before and
+	 * trim the undo operation of superfluious data
+	 */
+	if( oldsfd ) {
+	    
+	    int shouldCreateUndoEntry = 1;
+	    sf = pstkd->sf;
+	    char* str = SFDCreateUndoForLookup( sf, lookup_type );
+
+	    if( !pstkd->sf->subfontcnt ) {
+		char* diffstr = SFDTrimUndoOldToNew( sf, oldsfd, str );
+		if( !diffstr ) {
+		    // If nothing has changed after all,
+		    // don't create an empty undo
+		    shouldCreateUndoEntry = 0;
+		} else {
+		    free(str);
+		    str = diffstr;
+		}
+	    }
+
+	    if( shouldCreateUndoEntry ) {
+
+		dlist_trim_to_limit( (struct dlistnode **)&sf->undoes, fontlevel_undo_limit,
+				     (dlist_visitor_func_type)SFUndoCleanup );
+
+		struct sfundoes *undo;
+		undo = chunkalloc(sizeof(SFUndoes));
+		undo->ln.next = 0;
+		undo->ln.prev = 0;
+		undo->msg  = _("Lookup Table Edit");
+		undo->type = sfut_lookups;
+		if( lookup_type == gpos_pair ) {
+		    undo->type = sfut_lookups_kerns;
+		}
+		undo->u.lookupatomic.sfdchunk = str;
+		dlist_pushfront( (struct dlistnode **)&sf->undoes, (struct dlistnode *)undo );
+	    }
+//	    printf("we now have %d splinefont level undoes\n", dlist_size((struct dlistnode **)&sf->undoes));
+	}
+
 	pstkd->done = true;
     }
 return( true );
