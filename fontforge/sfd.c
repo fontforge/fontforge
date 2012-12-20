@@ -2048,7 +2048,7 @@ char* FileToAllocatedString( FILE *f )
     ret[fsize] = '\0';
     bread = fread( ret, 1, fsize, f );
     if( bread != fsize ) {
-	fprintf(stderr,_("Failed to read a file. Bytes read:%ld file size:%ld\n"), bread, fsize );
+	fprintf(stderr,_("Failed to read a file. Bytes read:%ld file size:%ld\n"),(long)(bread),fsize );
 	return 0;
     }
     return ret;
