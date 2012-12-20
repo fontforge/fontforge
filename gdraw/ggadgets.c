@@ -1184,11 +1184,12 @@ const unichar_t *_GGadgetGetTitle(GGadget *g) {
 }
 
 unichar_t *GGadgetGetTitle(GGadget *g) {
-    if ( g )
+    if ( g ) {
 	if ( g->funcs->get_title!=NULL )
 	    return( (g->funcs->get_title)(g) );
 	else if ( g->funcs->_get_title!=NULL )
 	    return( u_copy( (g->funcs->_get_title)(g) ));
+    }
 
     return( NULL );
 }
