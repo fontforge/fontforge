@@ -165,6 +165,19 @@ FONTFORGE_ARG_ENABLE([tile-path],
                 [enable a 'tile path' command (a variant of 'expand stroke')])],
         [FONTFORGE_CONFIG_TILEPATH])
 
+FONTFORGE_ARG_ENABLE([pixmaps-tango],
+        [AS_HELP_STRING([--enable-pixmaps-tango],
+                [enable tango pixmap icons instead of using the default icons])],
+        [FONTFORGE_PIXMAP_TANGO])
+# Populate pixmaps directory with default pixmap icons
+unzip -o -j fontforge/pixmaps/pixmaps_default.zip -d gtkui/pixmaps
+unzip -o -j fontforge/pixmaps/pixmaps_default.zip -d fontforge/pixmaps
+# Overwrite default icons with tango pixmap icons
+if test "${i_do_have_pixmaps_tango}" = yes; then
+  unzip -o -j fontforge/pixmaps/pixmaps_tango.zip -d gtkui/pixmaps
+  unzip -o -j fontforge/pixmaps/pixmaps_tango.zip -d fontforge/pixmaps
+fi
+
 FONTFORGE_ARG_ENABLE([gb12345],
         [AS_HELP_STRING([--enable-gb12345],
                 [build the GB12345 encoding plugin])],
