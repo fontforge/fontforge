@@ -1186,19 +1186,20 @@ return;
 }
 
 static int hex(int ch1, int ch2) {
-    if ( ch1>='0' && ch1<='9' )
-	ch1 -= '0';
-    else if ( ch1>='a' )
-	ch1 -= 'a'-10;
-    else 
-	ch1 -= 'A'-10;
-    if ( ch2>='0' && ch2<='9' )
-	ch2 -= '0';
-    else if ( ch2>='a' )
-	ch2 -= 'a'-10;
-    else 
-	ch2 -= 'A'-10;
-return( (ch1<<4)|ch2 );
+/* Convert two HEX characters to one binary value. Return -1 if error */
+/* NOTE: FIXME: parsepdf has an identical routine that can be merged. */
+
+    if	    (ch1 >= '0' && ch1 <= '9') ch1 -='0';
+    else if (ch1 >= 'A' && ch1 <= 'F') ch1 -=('A'-10);
+    else if (ch1 >= 'a' && ch1 <= 'f') ch1 -=('a'-10);
+    else return( -1 );
+
+    if	    (ch2 >= '0' && ch2 <= '9') ch2 -='0';
+    else if (ch2 >= 'A' && ch2 <= 'F') ch2 -=('A'-10);
+    else if (ch2 >= 'a' && ch2 <= 'f') ch2 -=('a'-10);
+    else return( -1 );
+
+    return( (ch1<<4)|ch2 );
 }
 
 unsigned short r;

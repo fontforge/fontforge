@@ -8,6 +8,7 @@
 # KANOU Hiroki <kanou@khdd.net>, 2006-04-04 12:08-0900
 # TANIGAWA Takashi <mihailjp@gmail.com>, 2012-10-04 20:25+0900
 # OKANO Takayoshi <kano@na.rim.or.jp>, 2012-10-16
+# TANIGAWA Takashi <mihailjp@gmail.com>, 2012-10-28
 #
 #
 msgid ""
@@ -15,7 +16,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: fontforge-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2005-08-29 17:43+0800\n"
-"PO-Revision-Date: 2012-10-04 20:25+0900\n"
+"PO-Revision-Date: 2012-10-28 11:44+0900\n"
 "Last-Translator: MihailJP <mihailjp@gmail.com>\n"
 "Language-Team: LANGUAGE <ja.c@li.org>\n"
 "Language: ja\n"

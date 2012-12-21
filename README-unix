@@ -17,7 +17,7 @@ INSTALLATION WITH DYNAMIC LIBRARIES
 	libgdraw.so
 	libgunicode.so
  and some user interface files
-	fontforge.{en,fr,de,ru,ja}.ui
+	fontforge.{ca de el en_GB es fr it ja ml pl ru uk vi zh_CN zh_TW}.ui
  and a shell script
 	doinstall
  which should put everything into a reasonable place (you probably need to be

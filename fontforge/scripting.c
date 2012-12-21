@@ -9788,27 +9788,27 @@ void ff_statement(Context *c) {
 }
 
 static FILE *CopyNonSeekableFile(FILE *former) {
-    int ch = '\n';
+/* Copy input stream or Standard input into an internal tmpfile  */
+/* that can then be used for running FontForge or Python scripts */
+/* The tmpfile automatically closes/deletes when FontForge exits */
+    int ch;
     FILE *temp = tmpfile();
     int istty = isatty(fileno(former)) && former==stdin;
 
-    if ( temp==NULL )
-return( former );
-    if ( istty )
+    if ( temp==NULL ) return( former );
+
+    if ( istty ) {
 	printf( "Type in your script file. Processing will not begin until all the script\n" );
-	printf( " has been input (ie. until you have pressed ^D)\n" );
-    while ( 1 ) {
-	if ( ch=='\n' && istty )
-	    printf( "> " );
-	ch = getc(former);
-	if ( ch==EOF )
-    break;
-	putc(ch,temp);
+	printf( " has been input (ie. until you have pressed ^D)\n> " );
     }
-    if ( istty )
-	printf( "\n" );
+    while ( (ch=getc(former))>=0 ) {
+	putc(ch,temp);
+	if ( ch=='\n' && istty ) printf( "> " );
+    }
+    if ( istty ) printf( "\n" );
+
     rewind(temp);
-return( temp );
+    return( temp );
 }
 
 void ff_VerboseCheck(void) {

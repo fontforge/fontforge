@@ -24,13 +24,10 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#define _DEFINE_SEARCHVIEW_
 #include "fontforgevw.h"
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>
-#include <execinfo.h>
-#include <stdio.h>
 
 extern char *coord_sep;
 
@@ -39,12 +36,18 @@ int copymetadata = 0;
 int copyttfinstr = 0;
 int export_clipboard = 1;
 
-extern void BackTraceFD( int fd );
-extern void BackTrace( const char* msg );
 extern void *UHintCopy(SplineChar *sc,int docopy);
 extern void ExtractHints(SplineChar *sc,void *hints,int docopy);
 extern void UndoesFreeButRetainFirstN( Undoes** undopp, int retainAmount );
 
+#if 0 && defined( __GLIBC__ ) && !defined( __CygWin )
+/* backtrace functions if you need to debug FontForge - needs glibc */
+/* may be useful if you need to track where routine was called from */
+#include <execinfo.h>
+#include <stdio.h>
+
+extern void BackTraceFD( int fd );
+extern void BackTrace( const char* msg );
 
 void BackTraceFD( int fd ) {
     const int arraysz = 500;
@@ -59,7 +62,7 @@ void BackTrace( const char* msg ) {
     fprintf( stderr, msg );
     BackTraceFD( 2 );
 }
-
+#endif
 
 /* ********************************* Undoes ********************************* */
 
@@ -3617,7 +3620,7 @@ return;
 
     if ( copybuffer.undotype == ut_none ) {
 	j = -1;
-	forever {
+	while ( 1 ) {
 	    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] )
 		SCCheckXClipboard(SFMakeChar(sf,fv->map,i),ly_fore,!pasteinto);
 	    ++j;
@@ -3667,7 +3670,7 @@ return;
 	    if ( cur->undotype==ut_multiple )
 		cur = cur->u.multiple.mult;
 	}
-	forever {
+	while ( 1 ) {
 	    switch ( cur->undotype ) {
 	      case ut_noop:
 	      break;

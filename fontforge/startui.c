@@ -53,18 +53,16 @@
 #  endif
 #endif
 #ifdef __Mac
-# include <Developer/Headers/FlatCarbon/Files.h>
-# define FontInfo	MacFontInfo
-# define KernPair	MacKernPair
-# include <Developer/Headers/FlatCarbon/CarbonEvents.h>
+#  include <carbon.h>
+
 /* For reasons obscure to me RunApplicationEventLoop is not defined in */
 /*  the mac header files if we are in 64 bit mode. Strangely it seems to */
 /*  be in the libraries and functional */
-#if __LP64__
+#  if __LP64__
 extern void RunApplicationEventLoop(void);
-#endif
-# undef FontInfo
-# undef KernPair
+#  endif
+#  undef FontInfo
+#  undef KernPair
 #endif
 
 #if defined(__MINGW32__)
@@ -795,14 +793,10 @@ int fontforge_main( int argc, char **argv ) {
     for ( i=1; i<argc; ++i ) {
 	char *pt = argv[i];
 	if ( pt[0]=='-' && pt[1]=='-' ) ++pt;
-#ifndef __Mac
-	if (strcmp(pt,"-home")==0) {
-#else
 	if (strcmp(pt,"-home")==0 || strncmp(pt,"-psn_",5)==0) {
 	    /* OK, I don't know what _-psn_ means, but to GW it means */
 	    /* we've been started on the mac from the FontForge.app   */
 	    /* structure, and the current directory is (shudder) "/"  */
-#endif
 	    if (getenv("HOME")!=NULL) chdir(getenv("HOME"));
 	    break;	/* Done - Unnecessary to check more arguments */
 	}
