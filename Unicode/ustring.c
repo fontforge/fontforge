@@ -452,7 +452,7 @@ unichar_t *cu_strstartmatch(const char *key,const unichar_t *str) {
     if ( key && str ) {
 	while( *key ) {
 	    if(tolower(*key) != tolower(*str))
-return 0;               
+return 0;
 	    key++;
 	    str++;
 	}

@@ -728,7 +728,7 @@ static void dump() {
     fprintf( header, "extern const unsigned short ____totitle[];\n" );
     fprintf( header, "extern const unsigned short ____tomirror[];\n" );
     fprintf( header, "extern const unsigned char  ____digitval[];\n" );
-    fprintf( header, "extern const unsigned int  ____utype[];\n\n" );
+    fprintf( header, "extern const uint32         ____utype[];\n\n" );
 
     fprintf( header, "/* utype2[] binary flags used for position/layout of each unicode.org character */\n" );
     fprintf( header, "#define ____COMBININGCLASS\t0x%0x\n", _CombiningClass );
@@ -867,7 +867,7 @@ static void dump() {
 	    else
 		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned int ____utype[] = { 0,\n" );
+    fprintf( data, "const uint32 ____utype[] = { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
 	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
@@ -1627,6 +1627,9 @@ static void visualalts(void) {
     alts[0x318c][0] = 0x1194;
     alts[0x318d][0] = 0x119e;
     alts[0x318e][0] = 0x11a1;
+
+    alts[0xff5f][0] = 0x2e28;	alts[0x2e28][0] = 0xff5f;	/* similar double brackets*/
+    alts[0xff60][0] = 0x2e29;	alts[0x2e29][0] = 0xff60;
 }
 
 

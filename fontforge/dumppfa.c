@@ -2760,13 +2760,16 @@ static void dumpimageproc(FILE *file,BDFChar *bdfc,BDFFont *font) {
     int i;
     struct psfilter ps;
 
-    fprintf( file, "  /%s { %d 0 0 0 0 0 setcachedevice \n",
-	    bdfc->sc->name, (int) rint(bdfc->width*scale));
-    fprintf( file, "\t%g %g translate %g %g scale %d %d true [%d 0 0 %d 0 %d] {<~\n",
-	    bdfc->xmin*scale, bdfc->ymax*scale,	/* Translate */
-	    width*scale, height*scale,		/* Scale */
+    /*			   wx wy ix iy urx ury setcachdevice */
+    fprintf( file, "  /%s { %d 0 %d %d %d %d setcachedevice \n",
+	  bdfc->sc->name, (int) rint(bdfc->width*scale),
+	  (int) rint(bdfc->xmin*scale), (int) rint(bdfc->ymin*scale),
+	  (int) rint((1+bdfc->xmax)*scale), (int) rint((1+bdfc->ymax)*scale));
+    fprintf( file, "\t%g %g translate %g %g scale %d %d true [%d 0 0 %d 0 0] {<~\n",
+	   bdfc->xmin*scale, bdfc->ymax*scale,	/* tx tx Translate */
+	   width*scale, height*scale,		/* x y Scale */
 	   width, height,
-	    width, -height, height );
+	   width, -height);
     InitFilter(&ps,(DumpChar) fputc,file);
     if ( bdfc->bytes_per_line==(width+7)/8 )
 	FilterStr(&ps,(uint8 *) bdfc->bitmap, height*bdfc->bytes_per_line);

@@ -1,4 +1,5 @@
 /* Copyright (C) 2000-2012 by George Williams */
+/* 2012nov01, many fixes added, Jose Da Silva */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -61,146 +62,155 @@ struct pdfcontext {
 };
 
 static long FindXRef(FILE *pdf) {
+/* Find 'startxref' in FILE pdf and return the value found, else return -1 */
     int ch;
     long xrefpos;
 
-    fseek(pdf,-5-2-8-2-10-2,SEEK_END);
-    forever {
-	while ( (ch=getc(pdf))!=EOF ) {
-	    if ( ch=='s' )
-	break;
-	}
-	if ( ch==EOF )
-return( -1 );
-	while ( ch=='s' ) {
-	    if ( (ch=getc(pdf))!='t' )
-	continue;
-	    if ( (ch=getc(pdf))!='a' )
-	continue;
-	    if ( (ch=getc(pdf))!='r' )
-	continue;
-	    if ( (ch=getc(pdf))!='t' )
-	continue;
-	    if ( (ch=getc(pdf))!='x' )
-	continue;
-	    if ( (ch=getc(pdf))!='r' )
-	continue;
-	    if ( (ch=getc(pdf))!='e' )
-	continue;
-	    if ( (ch=getc(pdf))!='f' )
-	continue;
-	    if ( fscanf(pdf,"%ld",&xrefpos)!=1 )
-return( -1 );
+    if (fseek(pdf,-5-2-8-2-10-2,SEEK_END)==0 ) {
+	while ( (ch=getc(pdf))>=0 ) {
+	    while ( ch=='s' && \
+		   (ch=getc(pdf))=='t' && \
+		   (ch=getc(pdf))=='a' && \
+		   (ch=getc(pdf))=='r' && \
+		   (ch=getc(pdf))=='t' && \
+		   (ch=getc(pdf))=='x' && \
+		   (ch=getc(pdf))=='r' && \
+		   (ch=getc(pdf))=='e' && \
+		   (ch=getc(pdf))=='f' ) {
+		if ( fscanf(pdf,"%ld",&xrefpos)!=1 ) return( -1 );
 
-return( xrefpos );
+		return( xrefpos );
+	    }
 	}
     }
+    return( -1 );
 }
 
 static int findkeyword(FILE *pdf, char *keyword, char *end) {
+/* Find Keyword in file pdf. Stop looking if reach end or get a file-error */
     char buffer[60];
     int len = strlen( keyword );
     int end_len = end==NULL ? 0 : strlen(end);
     int ch, i;
 
-    for ( i=0; i<len; ++i )
-	buffer[i] = ch = getc(pdf);
-    if ( ch==EOF )
-return( false );
+    /* exit with error if 'keyword' or 'end' too big to test */
+    if ( len >= sizeof(buffer) || end_len >= sizeof(buffer) ) {
+	return( false );
+    }
+
+     /* initialize buffer to begin checking for keyword */
+     for ( i=0; i<len; ++i ) {
+	if ( (ch=getc(pdf))<0 ) return( false );
+	buffer[i] = ch;
+    }
     buffer[i] = 0;
-    forever {
+
+    /* search file for keyword, or stop looking if found end */
+    while ( 1 ) {
 	if ( strcmp(buffer,keyword)==0 )
-return( true );
-	if ( strncmp(buffer,end,end_len)==0 )
-return( false );
+	    return( true );
+	if ( end_len && strncmp(buffer,end,end_len)==0 )
+	    return( false );
 	for ( i=1; i<len; ++i )
 	    buffer[i-1] = buffer[i];
-	buffer[len-1] = ch = getc(pdf);
-	if ( ch==EOF )
-return( false );
+	if ( (ch=getc(pdf))<0 ) return( false );
+	buffer[--i] = ch;
     }
 }
 
-static int seektrailer(FILE *pdf, int *start, int *num, struct pdfcontext *pc) {
-    int prev_xref;
-    int pos;
+static int seektrailer(FILE *pdf, long *start, long *num, struct pdfcontext *pc) {
+/* seek 'trailer' and then return values for 'start' and 'num'. Exit if error. */
+    long prev_xref;
+    long pos;
 
-    if ( !findkeyword(pdf,"trailer",NULL))
-return( false );
-    pos = ftell(pdf);
+    /* find 'trailer' and point 'pos' to the next char location after it */
+    if ( !findkeyword(pdf,"trailer",NULL) || (pos=ftell(pdf))==-1 )
+	return( false );
+
+    /* check if there's encryption and toggle-on the encrypt flag if yes */
     if ( findkeyword(pdf,"/Encrypt",">>") ) {
-	int bar;
-	if ( fscanf( pdf, "%d %d", &pc->enc_dict, &bar )==2 )
+	long bar;
+	if ( fscanf(pdf,"%d %ld",&pc->enc_dict,&bar)==2 )
 	    pc->encrypted = true;
     }
+
     if ( pc->root == 0 ) {
-	fseek(pdf,pos,SEEK_SET);
+	if ( fseek(pdf,pos,SEEK_SET)!=0 ) return( false );
 	if ( findkeyword(pdf,"/Root",">>") ) {
-	    int bar;
-	    fscanf( pdf, "%d %d", &pc->root, &bar );
+	    long bar;
+	    fscanf(pdf,"%d %ld",&pc->root,&bar);
 	}
     }
-    fseek(pdf,pos,SEEK_SET);
-    if ( !findkeyword(pdf,"/Prev",">>"))
-return( false );
-    if ( fscanf( pdf, "%d", &prev_xref )!=1 )
-return( false );
-    fseek(pdf, prev_xref, SEEK_SET );
-    if ( fscanf(pdf, "xref %d %d", start, num )!=2 )
-return( false );
 
-return( true );
+    /* find '/Prev' and return values for 'start' & 'num', Exit if error */
+    if ( fseek(pdf,pos,SEEK_SET)!=0	    || \
+	 !findkeyword(pdf,"/Prev",">>")	    || \
+	 fscanf(pdf,"%ld",&prev_xref)!=1    || \
+	 fseek(pdf,prev_xref,SEEK_SET )!=0  || \
+	 fscanf(pdf,"xref %ld %ld",start,num)!=2 )
+	return( false );
+
+    return( true ); /* Done! We now have 'start' and 'num' */
 }
 
 static long *FindObjectsFromXREFObject(struct pdfcontext *pc, long prev_xref);
 
 static long *FindObjects(struct pdfcontext *pc) {
+/* Find and return a list of file pointers to XREFObjects in this pdf file. */
+/* Return NULL if any file-reading error encountered, or if lack of memory. */
     FILE *pdf = pc->pdf;
-    long xrefpos = FindXRef(pdf);
-    long *ret=NULL;
-    int *gen=NULL;
-    int cnt = 0, i, start, num, ch;
+    long xrefpos;
+    long *ret, *ret_old;
+    int *gen, *gen_old;
+    int ch; long cnt, i, start, num;
     long offset; int gennum; char f;
 
-    if ( xrefpos == -1 )
-return( NULL );
-    fseek(pdf, xrefpos,SEEK_SET );
+    /* find the XREF location and point to that position. Exit if error */
+    if ( (xrefpos=FindXRef(pdf))==-1 || fseek(pdf,xrefpos,SEEK_SET)!=0 )
+	return( NULL );
 
-    if ( fscanf(pdf, "xref %d %d", &start, &num )!=2 ) {
-	int foo, bar;
-	fseek(pdf, xrefpos,SEEK_SET );
-	if ( fscanf(pdf, "%d %d", &foo, &bar )!=2 )
-return( NULL );
+    /* initialize 'start' and 'num' values if we have them here */
+    if ( fscanf(pdf,"xref %ld %ld",&start,&num)!=2 ) {
+	/* otherwise, check if it is an 'obj' and try there instead */
+	long foo, bar;
+	if ( fseek(pdf,xrefpos,SEEK_SET)!=0 || \
+	     fscanf(pdf,"%ld %ld",&foo,&bar)!=2 )
+	    return( NULL );
 	while ( isspace(ch=getc(pdf)));
-	if ( ch!='o' )
-return( NULL );
-	if ( getc(pdf)!='b' )
-return( NULL );
-	if ( getc(pdf)!='j' )
-return( NULL );
-	if ( !isspace(getc(pdf)) )
-return( NULL );
+	if ( ch=='o' && \
+	     getc(pdf)=='b' && \
+	     getc(pdf)=='j' && \
+	     isspace(getc(pdf)) )
+	    return( FindObjectsFromXREFObject(pc,xrefpos));
 
-return( FindObjectsFromXREFObject(pc,xrefpos));
+	return( NULL );
     }
 
-    forever {
+    cnt=0; ret=NULL; gen=NULL; /* no objects to return yet */
+    while ( 1 ) {
 	if ( start+num>cnt ) {
-	    ret = grealloc(ret,(start+num+1)*sizeof(long));
+	    /* increase memory needed for XREFs. Mark last location = -2 */
+	    ret_old=ret; gen_old=gen; pc->ocnt=(int)(start+num);
+	    ret = realloc(ret,(start+num+1)*sizeof(long));
+	    gen = realloc(gen,(start+num)*sizeof(int));
+	    if ( ret==NULL || gen==NULL || pc->ocnt!=start+num ) {
+		free(ret); free(ret_old);
+		free(gen); free(gen_old);
+		NoMoreMemMessage(); pc->ocnt = 0;
+		return( NULL );
+	    }
 	    memset(ret+cnt,-1,sizeof(long)*(start+num-cnt));
-	    gen = grealloc(gen,(start+num)*sizeof(int));
 	    memset(gen+cnt,-1,sizeof(int)*(start+num-cnt));
 	    cnt = start+num;
-	    pc->ocnt = cnt;
 	    ret[cnt] = -2;
 	}
 	for ( i=start; i<start+num; ++i ) {
-	    if ( fscanf(pdf,"%ld %d %c", &offset, &gennum, &f )!=3 ) {
+	    if ( fscanf(pdf,"%ld %d %c",&offset,&gennum,&f)!=3 ) {
 		free(gen);
-return( ret );
+		return( ret );
 	    }
 	    if ( f=='f' ) {
-		if ( gennum > gen[i] ) {
+	      if ( gennum > gen[i] ) {
 		    ret[i] = -1;
 		    gen[i] = gennum;
 		}
@@ -211,13 +221,15 @@ return( ret );
 		}
 	    } else {
 		free(gen);
-return( ret );
-		}
+		return( ret );
+	    }
 	}
-	if ( fscanf(pdf, "%d %d", &start, &num )!=2 )
-	    if ( !seektrailer(pdf, &start, &num, pc)) {
+	/* load the next 'start' and 'num' values and continue. */
+	/* if can't get more 'start' and 'num' then we're done. */
+	if ( fscanf(pdf,"%ld %ld",&start,&num)!=2 && \
+	     !seektrailer(pdf,&start,&num,pc) ) {
 	    free(gen);
-return( ret );
+	    return( ret );
 	}
     }
 }
@@ -226,39 +238,53 @@ return( ret );
 #define pdf_oper(ch) (ch=='(' || ch==')' || ch=='<' || ch=='>' || ch=='[' || ch==']' || ch=='{' || ch=='}' || ch=='/' || ch=='%' )
 
 static int pdf_peekch(FILE *pdf) {
-    int ch = getc(pdf);
-    ungetc(ch,pdf);
+/* Peek to see what is the next character to get in the file, */
+/* ...and spool back if no errors encountered while checking. */
+    int ch;
+    if ( (ch=getc(pdf))>=0 ) ungetc(ch,pdf);
 return( ch );
 }
 
-static void pdf_skipwhitespace(struct pdfcontext *pc) {
+static int pdf_skipwhitespace(struct pdfcontext *pc) {
+/* Skip pdf white spaces. Return -1 if EOF or get file error. */
     FILE *pdf =  pc->compressed ? pc->compressed : pc->pdf;
     int ch;
 
-    forever {
-	ch = getc(pdf);
-	if( ch=='%' ) {
-	    while ( (ch=getc(pdf))!=EOF && ch!='\n' && ch!='\r' );
-	} else if ( !pdf_space(ch) )
-    break;
+    /* get next char and loop forever until EOF or file error */
+    while ( (ch=getc(pdf))>=0 ) {
+	if( ch=='%' )
+	    /* skip everything after '%' upto '\n' or '\r' */
+	    while ( (ch=getc(pdf))>=0 && ch!='\n' && ch!='\r' );
+	else
+	    if ( !pdf_space(ch) ) break;
     }
-    ungetc(ch,pdf);
+    /* Done! Now if not EOF or a file error, then unget ch */
+    if ( ch<0 || ungetc(ch,pdf)<0 ) return( -1 );
+    return( 0 );
 }
 
 static char *pdf_getname(struct pdfcontext *pc) {
+/* return name. return NULL if errors found */
     FILE *pdf = pc->compressed ? pc->compressed : pc->pdf;
     int ch;
     char *pt = pc->tokbuf, *end = pc->tokbuf+pc->tblen;
 
-    pdf_skipwhitespace(pc);
-    ch = getc(pdf);
-    if ( ch!='/' ) {
+    /* first, skip any white spaces in front of name */
+    if ( pdf_skipwhitespace(pc) ) return( NULL );
+
+    if ( (ch=getc(pdf))!='/' ) {
 	ungetc(ch,pdf);
-return( NULL );
+	return( NULL );
     }
+
     for ( ch=getc(pdf) ;; ch=getc(pdf) ) {
 	if ( pt>=end ) {
-	    char *temp = grealloc(pc->tokbuf,(pc->tblen+=300));
+	    char *temp;
+	    if ( (temp=realloc(pc->tokbuf,(pc->tblen+=300)))==NULL ) {
+		/* error, but don't need to free realloc memory */
+		NoMoreMemMessage();
+		return( NULL );
+	    }
 	    pt = temp + (pt-pc->tokbuf);
 	    pc->tokbuf = temp;
 	    end = temp+pc->tblen;
@@ -266,7 +292,7 @@ return( NULL );
 	if ( pdf_space(ch) || pdf_oper(ch) ) {
 	    ungetc(ch,pdf);
 	    *pt = '\0';
-return( pc->tokbuf );
+	    return( pc->tokbuf );
 	}
 	*pt++ = ch;
     }
@@ -334,10 +360,11 @@ return( pc->tokbuf );
 	}
 	ch = getc(pdf);
     }
-}   
+}
 
 static void PSDictClear(struct psdict *dict) {
-    int i;
+/* Clear all psdict keys[] and values[] */
+  int i;
 
     for ( i=0; i<dict->next; ++i ) {
 	free(dict->keys[i]);
@@ -353,7 +380,7 @@ static int pdf_readdict(struct pdfcontext *pc) {
 
     PSDictClear(&pc->pdfdict);
 
-    pdf_skipwhitespace(pc);
+    if ( pdf_skipwhitespace(pc) ) return( false );
     ch = getc(pdf);
     if ( ch!='<' || pdf_peekch(pdf)!='<' )
 return( false );
@@ -389,50 +416,52 @@ static void pdf_skipobjectheader(struct pdfcontext *pc) {
 }
 
 static int hex(int ch1, int ch2) {
-    int val;
+/* Convert two HEX characters to one binary value. Return -1 if error */
+/* NOTE: FIXME: parsepfa has an identical routine that can be merged. */
 
-    if ( ch1<='9' )
-	val = (ch1-'0')<<4;
-    else if ( ch1>='a' && ch1<='f' )
-	val = (ch1-'a'+10)<<4;
-    else
-	val = (ch1-'A'+10)<<4;
-    if ( ch2<='9' )
-	val |= (ch2-'0');
-    else if ( ch2>='a' && ch2<='f' )
-	val |= (ch2-'a'+10);
-    else
-	val |= (ch2-'A'+10);
-return( val );
+    if	    (ch1 >= '0' && ch1 <= '9') ch1 -='0';
+    else if (ch1 >= 'A' && ch1 <= 'F') ch1 -=('A'-10);
+    else if (ch1 >= 'a' && ch1 <= 'f') ch1 -=('a'-10);
+    else return( -1 );
+
+    if	    (ch2 >= '0' && ch2 <= '9') ch2 -='0';
+    else if (ch2 >= 'A' && ch2 <= 'F') ch2 -=('A'-10);
+    else if (ch2 >= 'a' && ch2 <= 'f') ch2 -=('a'-10);
+    else return( -1 );
+
+    return( (ch1<<4)|ch2 );
 }
 
 static int pdf_getprotectedtok(FILE *stream, char *tokbuf) {
-    char *pt=tokbuf, *end = tokbuf+100-2; int ch;
+    char *pt=tokbuf, *end=tokbuf+100-2; int ch;
 
     while ( isspace(ch = getc(stream)) );
-    while ( ch!=EOF && !isspace(ch) && ch!='[' && ch!=']' && ch!='{' && ch!='}' && ch!='<' && ch!='>' ) {
+    while ( ch>=0 && !isspace(ch) && ch!='[' && ch!=']' && ch!='{' && ch!='}' && ch!='<' && ch!='>' ) {
 	if ( pt<end ) *pt++ = ch;
 	ch = getc(stream);
     }
-    if ( pt==tokbuf && ch!=EOF )
-	*pt++ = ch;
-    else
-	ungetc(ch,stream);
+    if ( ch>=0 ) {
+	/* if not EOF or file error, then do this... */
+	if ( pt==tokbuf )
+	    *pt++ = ch;
+	else
+	    ungetc(ch,stream);
+    }
     *pt='\0';
-return( pt!=tokbuf?1:ch==EOF?-1: 0 );
+    return( pt!=tokbuf?1:ch<0?-1: 0 );
 }
 
 static int pdf_skip_brackets(FILE *stream, char *tokbuf) {
     int ch, ret;
-    
+
+    /* first ch should be '<', else return 0 as not found */
     while ( isspace(ch = getc(stream)) );
-    if (ch != '<')
-return 0;
+    if (ch != '<') return( 0 );
 
     ret = pdf_getprotectedtok(stream, tokbuf);
     ch = getc(stream);
 
-return ret && ch == '>';
+    return( ret && ch=='>' );
 }
 
 static FILE *pdf_defilterstream(struct pdfcontext *pc);
@@ -532,7 +561,7 @@ static int pdf_findfonts(struct pdfcontext *pc) {
 		    (cmap=PSDictHasEntry(&pc->pdfdict,"ToUnicode"))!=NULL &&
 		    (desc=PSDictHasEntry(&pc->pdfdict,"DescendantFonts"))!=NULL &&
 		    (pt=PSDictHasEntry(&pc->pdfdict,"BaseFont"))!=NULL) {
-	    
+
 		if (*cmap == '[') cmap++;
 		if (*desc == '[') desc++;
 		sscanf(cmap, "%d", &cnum);
@@ -570,7 +599,7 @@ static int pdf_findfonts(struct pdfcontext *pc) {
 		for (j=0; j<k && pc->fontobjs[j] != i; j++);
 		if (j < k )
     continue;
-		    
+
 		if ((cmap=PSDictHasEntry(&pc->pdfdict,"ToUnicode"))!=NULL) {
 		    if (*cmap == '[') cmap++;
 		    sscanf(cmap, "%d", &cnum);
@@ -658,18 +687,20 @@ return;
 
 static int pdf_findpages(struct pdfcontext *pc) {
     FILE *pdf = pc->pdf;
-    int top_ref;
+    long top_ref;
     /* I could just find all the Page objects, but they would not be in order then */
 
-    if ( pc->root==0 )
-return( 0 );
+    if ( pc->root==0 ) return( 0 );
 
-    fseek(pdf,pc->objs[pc->root],SEEK_SET);
-    if ( !findkeyword(pdf,"/Pages",">>"))
-return( 0 );
-    if ( fscanf( pdf, "%d", &top_ref )!=1 )
-return( 0 );
-    pc->pages = galloc(pc->ocnt*sizeof(long));
+    if ( fseek(pdf,pc->objs[pc->root],SEEK_SET)==0 || \
+	 !findkeyword(pdf,"/Pages",">>")	   || \
+	 fscanf(pdf,"%ld",&top_ref)!=1 )
+	return( 0 );
+
+    if ( (pc->pages = malloc(pc->ocnt*sizeof(long)))==NULL ) {
+	NoMoreMemMessage();
+	return( 0 );
+    }
     pdf_addpages(pc,top_ref);
 return( pc->pcnt );
 }
@@ -887,30 +918,30 @@ return( res );
 /* ************************************************************************** */
 /* ****************************** xref streams ****************************** */
 /* ************************************************************************** */
-static long getuvalue(FILE *f,int len) {
-    long val;
-    int ch, i;
+static int getuvalue(FILE *f, int len, long *val) {
+/* Get a big endian binary value from file. Return 0 if okay, and -1 if error */
+    int ch;
 
-    val = 0;
-    for ( i=0; i<len; ++i ) {
-	ch = getc(f);
-	val = (val<<8) | ch;
+    *val = 0;
+    while ( --len>=0 ) {
+	if ( (ch=getc(f))<0 ) return( 1 );
+	*val = (*val<<8) | ch;
     }
-return( val );
+    return( 0 );
 }
 
 static long *FindObjectsFromXREFObject(struct pdfcontext *pc, long prev_xref) {
     char *pt;
-    long *ret=NULL;
-    int *gen=NULL;
-    int cnt = 0, i, start, num;
+    long *ret, *ret_old, *sub_old;
+    int *gen, *gen_old;
+    long cnt = 0, i, start, num;
     int bar;
     int typewidth, offwidth, genwidth;
     long type, offset, gennum;
     FILE *xref_stream, *pdf = pc->pdf;
 
     while ( prev_xref!=-1 ) {
-	fseek(pdf,prev_xref,SEEK_SET);
+	if ( fseek(pdf,prev_xref,SEEK_SET)!=0 ) return( NULL );
 	pdf_skipobjectheader(pc);
 	if ( !pdf_readdict(pc))
 return( NULL );
@@ -923,14 +954,14 @@ return( NULL );
 	    num = pdf_getinteger(pt,pc);
 	}
 	if ( (pt=PSDictHasEntry(&pc->pdfdict,"Index"))!=NULL ) {
-	    if ( sscanf(pt,"[%d %d]", &start, &num )!=2 )
+	    if ( sscanf(pt,"[%ld %ld]",&start,&num)!=2 )
 return( NULL );
 	}
 	if ( (pt=PSDictHasEntry(&pc->pdfdict,"W"))==NULL )
 return( NULL );
 	else {
-	    if ( sscanf(pt,"[%d %d %d]", &typewidth, &offwidth, &genwidth )!=3 )
-return( NULL );
+	    if ( sscanf(pt,"[%d %d %d]",&typewidth,&offwidth,&genwidth )!=3 )
+		return( NULL );
 	}
 	if ( (pt=PSDictHasEntry(&pc->pdfdict,"Encrypt"))!=NULL ) {
 	    if ( sscanf( pt, "%d %d", &pc->enc_dict, &bar )==2 )
@@ -945,29 +976,40 @@ return( NULL );
 	}
 	/* I ignore Info */
 
+	cnt=0; ret=NULL; gen=NULL; /* no objects to return yet */
 	if ( start+num>cnt ) {
-	    ret = grealloc(ret,(start+num+1)*sizeof(long));
+	    /* increase memory needed for objects. Mark last location = -2 */
+	    ret_old=ret; gen_old=gen; sub_old=pc->subindex;
+	    pc->ocnt=(int)(start+num);
+	    ret = realloc(ret,(start+num+1)*sizeof(long));
+	    pc->subindex = realloc(pc->subindex,(start+num+1)*sizeof(long));
+	    gen = realloc(gen,(start+num)*sizeof(int));
+	    if ( ret==NULL || gen==NULL || pc->subindex==NULL || pc->ocnt!=start+num ) {
+		if ( ret==NULL ) ret=ret_old;
+		if ( pc->subindex==NULL ) pc->subindex=sub_old;
+		if ( gen==NULL ) gen=gen_old;
+		NoMoreMemMessage();
+		goto FindObjectsFromXREFObjectError_ReleaseMemAndExit;
+	    }
 	    memset(ret+cnt,-1,sizeof(long)*(start+num-cnt));
-	    pc->subindex = grealloc(pc->subindex,(start+num+1)*sizeof(long));
 	    memset(pc->subindex+cnt,-1,sizeof(long)*(start+num-cnt));
-	    gen = grealloc(gen,(start+num)*sizeof(int));
 	    memset(gen+cnt,-1,sizeof(int)*(start+num-cnt));
 	    cnt = start+num;
-	    pc->ocnt = cnt;
 	    ret[cnt] = -2;
 	}
 	/* Now gather the cross references from their stream */
-	xref_stream = pdf_defilterstream(pc);
-	if ( xref_stream==NULL )
-return( NULL );
-	rewind(xref_stream);
+	if ( (xref_stream=pdf_defilterstream(pc))==NULL )
+	    goto FindObjectsFromXREFObjectError_ReleaseMemAndExit;
+	if ( fseek(xref_stream,0,SEEK_SET)!=0 ) {
+	    fclose(xref_stream); /* failed to rewind(xref_stream) */
+	    goto FindObjectsFromXREFObjectError_ReleaseMemAndExit;
+	}
 	for ( i=start; i<start+num; ++i ) {
-	    type   = getuvalue(xref_stream,typewidth);
-	    offset = getuvalue(xref_stream,offwidth);
-	    gennum = getuvalue(xref_stream,genwidth);
-	    if ( feof(xref_stream)) {
+	    if ( getuvalue(xref_stream,typewidth,&type)  || \
+		 getuvalue(xref_stream,offwidth,&offset) || \
+		 getuvalue(xref_stream,genwidth,&gennum) ) {
 		fclose(xref_stream);
-return( NULL );
+		goto FindObjectsFromXREFObjectError_ReleaseMemAndExit;
 	    }
 	    if ( type==0 ) {
 		if ( gennum > gen[i] ) {
@@ -991,6 +1033,12 @@ return( NULL );
     }
     free( gen );
 return( ret );
+
+FindObjectsFromXREFObjectError_ReleaseMemAndExit:
+/* error occurred, therefore release objects and return with NULL */
+    free(ret); free(pc->subindex); pc->subindex=NULL; free(gen);
+    pc->ocnt = 0;
+    return( NULL );
 }
 /* ************************************************************************** */
 /* **************************** End xref streams **************************** */
@@ -1931,14 +1979,14 @@ return( NULL );
 }
 
 static void pcFree(struct pdfcontext *pc) {
+/* Free any memory that may have been allocatted earlier */
     int i;
 
     PSDictClear(&pc->pdfdict);
     free(pc->pdfdict.keys);
     free(pc->pdfdict.values);
     free(pc->objs);
-    for ( i=0; i<pc->fcnt; ++i )
-	free(pc->fontnames[i]);
+    for ( i=0; i<pc->fcnt; ++i ) free(pc->fontnames[i]);
     free(pc->fontnames);
     free(pc->fontobjs);
     free(pc->cmapobjs);
@@ -1953,40 +2001,41 @@ char **NamesReadPDF(char *filename) {
     int i;
     char **list;
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strcpy(oldloc,setlocale(LC_NUMERIC,NULL) );
     setlocale(LC_NUMERIC,"C");
     memset(&pc,0,sizeof(pc));
-    pc.pdf = fopen(filename,"r");
-    if ( pc.pdf==NULL )
-return( NULL );
-    if ( (pc.objs = FindObjects(&pc))==NULL ) {
+    if ( (pc.pdf=fopen(filename,"r"))==NULL )
+	return( NULL );
+    if ( (pc.objs=FindObjects(&pc))==NULL ) {
 	LogError( _("Doesn't look like a valid pdf file, couldn't find xref section") );
-	fclose(pc.pdf);
-	pcFree(&pc);
-	setlocale(LC_NUMERIC,oldloc);
-return( NULL );
+	goto NamesReadPDF_error;
     }
     if ( pc.encrypted ) {
 	LogError( _("This pdf file contains an /Encrypt dictionary, and FontForge does not currently\nsupport pdf encryption" ));
-	fclose(pc.pdf);
-	pcFree(&pc);
-	setlocale(LC_NUMERIC,oldloc);
-return( NULL );
+	goto NamesReadPDF_error;
     }
     if ( pdf_findfonts(&pc)==0 ) {
-	fclose(pc.pdf);
-	pcFree(&pc);
-	setlocale(LC_NUMERIC,oldloc);
-return( NULL );
+	goto NamesReadPDF_error;
     }
-    list = galloc((pc.fcnt+1)*sizeof(char *));
+    if ( (list=malloc((pc.fcnt+1)*sizeof(char *)))==NULL )
+	goto NamesReadPDF_error;
     for ( i=0; i<pc.fcnt; ++i )
-	list[i] = copy( pc.fontnames[i]);
-    list[i] = NULL;
+	if ( (list[i]=copy(pc.fontnames[i]))==NULL )
+	    goto NamesReadPDFlist_error;
+    list[i]=NULL;
     fclose(pc.pdf);
     pcFree(&pc);
     setlocale(LC_NUMERIC,oldloc);
-return( list );
+    return( list );
+
+/* if errors, then free memory, close files, and return a NULL */
+NamesReadPDFlist_error:
+    while ( --i>=0 ) free(list[i]);
+NamesReadPDF_error:
+    pcFree(&pc);
+    fclose(pc.pdf);
+    setlocale(LC_NUMERIC,oldloc);
+    return( NULL );
 }
 
 SplineFont *_SFReadPdfFont(FILE *pdf,char *filename, enum openflags openflags) {
