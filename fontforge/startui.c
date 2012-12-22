@@ -67,8 +67,6 @@ extern void RunApplicationEventLoop(void);
 
 #if defined(__MINGW32__)
 #include <Windows.h>
-int  srandom( int n ){ srand(n); }
-int  random( void ){ return rand();}
 void sleep( int n ){ _sleep(n);}
 #endif
 

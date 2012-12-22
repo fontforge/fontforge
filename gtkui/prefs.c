@@ -746,8 +746,8 @@ static void DefaultXUID(void) {
 	r1 = rand()&0x3ff;
     } while ( r1==0 );		/* I reserve "0" for me! */
     gettimeofday(&tv,NULL);
-    srandom(tv.tv_usec+1);
-    r2 = random();
+    g_random_set_seed(tv.tv_usec+1);
+    r2 = g_random_int();
     sprintf( buffer, "1021 %d %d", r1, r2 );
     free(xuid);
     xuid = copy(buffer);

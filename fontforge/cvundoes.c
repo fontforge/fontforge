@@ -29,6 +29,12 @@
 #include <ustring.h>
 #include <utype.h>
 
+#if defined(__MINGW32__)
+// no backtrace on windows yet
+#else
+    #include <execinfo.h>
+#endif
+
 extern char *coord_sep;
 
 int onlycopydisplayed = 0;
@@ -50,12 +56,15 @@ extern void BackTraceFD( int fd );
 extern void BackTrace( const char* msg );
 
 void BackTraceFD( int fd ) {
+#if defined(__MINGW32__)
+#else
     const int arraysz = 500;
     void* array[arraysz];
     size_t size;
     
     size = backtrace( array, arraysz ); 
     backtrace_symbols_fd( array, size, fd );
+#endif
 }
 
 void BackTrace( const char* msg ) {
