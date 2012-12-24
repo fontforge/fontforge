@@ -162,20 +162,6 @@ int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
 
     r.y = y; r.height = height;
     r.x = 0; r.width = 10000;
-    if (( ti->selected && sel!=COLOR_DEFAULT ) || ( ti->bg!=COLOR_DEFAULT && ti->bg!=COLOR_UNKNOWN )) {
-	Color bg = ti->bg;
-	if ( ti->selected ) {
-	    if ( sel==COLOR_DEFAULT )
-		sel = fg;
-	    bg = sel;
-	    if ( sel==fg ) {
-		fg = ti->bg;
-		if ( fg==COLOR_DEFAULT || fg==COLOR_UNKNOWN )
-		    fg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(base));
-	    }
-	}
-	GDrawFillRect(base,&r,bg);
-    }
 
     if ( ti->line ) {
 	_GGroup_Init();
@@ -187,6 +173,21 @@ int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
 	GBoxDrawHLine(base,&r,&_GGroup_LineBox);
 	GDrawPopClip(base,&old);
     } else {
+	if (( ti->selected && sel!=COLOR_DEFAULT ) || ( ti->bg!=COLOR_DEFAULT && ti->bg!=COLOR_UNKNOWN )) {
+	    Color bg = ti->bg;
+	    if ( ti->selected ) {
+		if ( sel==COLOR_DEFAULT )
+		    sel = fg;
+		bg = sel;
+		if ( sel==fg ) {
+		    fg = ti->bg;
+		    if ( fg==COLOR_DEFAULT || fg==COLOR_UNKNOWN )
+			fg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(base));
+		}
+	    }
+	    GDrawFillRect(base,&r,bg);
+	}
+
 	if ( ti->image!=NULL && ti->image_precedes ) {
 	    GDrawDrawScaledImage(base,ti->image,x,y + (iheight>as?0:as-iheight));
 	    x += iwidth + skip;
