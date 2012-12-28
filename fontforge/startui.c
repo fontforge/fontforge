@@ -54,15 +54,12 @@
 #endif
 #ifdef __Mac
 #  include <carbon.h>
-
 /* For reasons obscure to me RunApplicationEventLoop is not defined in */
 /*  the mac header files if we are in 64 bit mode. Strangely it seems to */
 /*  be in the libraries and functional */
 #  if __LP64__
 extern void RunApplicationEventLoop(void);
 #  endif
-#  undef FontInfo
-#  undef KernPair
 #endif
 
 #if defined(__MINGW32__)
