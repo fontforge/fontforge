@@ -8,6 +8,8 @@
 #include "splinefont.h"
 #include <intl.h>
 
+#include <glib.h>
+
 #define ISOL	0
 #define INIT	1
 #define MEDI	2
@@ -1866,7 +1868,7 @@ static int RandomWordLength(float *wl) {
 	wl = word_lengths;
 
   retry:
-    cum = random()/(double) RAND_MAX;
+    cum = g_random_int()/(double) RAND_MAX;
     for ( i=0; i<30; ++i ) {
 	if ( cum<wl[i] )
 return( i );
@@ -1916,7 +1918,7 @@ return( -1 );
 	    percent = space;
 	}
 	for ( tries=0; tries<5; ++tries ) {
-	    cum = random()/(double) RAND_MAX;
+	    cum = g_random_int()/(double) RAND_MAX;
 	    for ( i=0; freq[i].utf8_letter!=NULL; ++i ) {
 		if ( cum<=percent[i] && percent[i]!=0 ) {
 		    if ( sf==NULL || SFHasUtf8Sequence(sf,freq[i].utf8_letter))
@@ -1930,7 +1932,7 @@ return( i );
     }
 
     for ( tries=0; tries<10; ++tries ) {
-	cum = random()/(double) RAND_MAX;
+	cum = g_random_int()/(double) RAND_MAX;
 	for ( i=0; freq[i].utf8_letter!=NULL; ++i ) {
 	    if ( cum<freq[i].frequency[pos] ) {
 		if ( sf==NULL || SFHasUtf8Sequence(sf,freq[i].utf8_letter))
@@ -1948,7 +1950,7 @@ return( i );
     if ( cnt==0 )
 return( -1 );
     for ( tries=0; tries<10; ++tries ) {
-	i = random()%cnt;
+	i = g_random_int()%cnt;
 	if ( sf==NULL || SFHasUtf8Sequence(sf,freq[i].utf8_letter))
 return( i );
     }
@@ -2000,7 +2002,7 @@ static char *RandomWord(struct lang_frequencies *lf, SplineFont *sf) {
 		/* Now there are some "words" with no vowels: "Mrs", "Dr", "PhD" */
 		/*  so this is not an absolute */
 		if ( len>1 && all_consonant_count++<4 &&
-			random()/(double) RAND_MAX >= lf->all_consonants[len] ) {
+			g_random_int()/(double) RAND_MAX >= lf->all_consonants[len] ) {
 		    clen = 1;
 		    pt = word_buf;
 		    for ( last=0; freq[last].utf8_letter!=NULL; ++last )
@@ -2021,9 +2023,9 @@ static char *RandomWord(struct lang_frequencies *lf, SplineFont *sf) {
 	    /*  and divide by the prob of a two vowel sequence, and check */
 	    if (( vlen>1 && isv ) || ( clen>1 && !isv )) {
 		if ( isv )
-		    retry = random()/(double) RAND_MAX >= lf->vowel_run[vlen+1]/lf->vowel_run[2];
+		    retry = g_random_int()/(double) RAND_MAX >= lf->vowel_run[vlen+1]/lf->vowel_run[2];
 		else
-		    retry = random()/(double) RAND_MAX >= lf->consonant_run[vlen+1]/lf->consonant_run[2];
+		    retry = g_random_int()/(double) RAND_MAX >= lf->consonant_run[vlen+1]/lf->consonant_run[2];
 		if ( retry ) {
 		    int j;
 		    for ( j=0; j<10; ++j ) {
@@ -2153,7 +2155,7 @@ return( buffer );
 static char *ScriptRandomChar(struct script_chars *chrs) {
     int i;
 
-    i = random()%chrs->cnt;
+    i = g_random_int()%chrs->cnt;
 return( ch2utf8( chrs->chars[i]) );
 }
 
@@ -2175,7 +2177,7 @@ return( word_buf );
 static char *RandomPara(struct lang_frequencies *lf,
 	struct script_chars *chrs, SplineFont *sf) {
     /* paragraphs will be somewhere between 20 and 84 words */
-    int i, len = 20 + (random()/(RAND_MAX>>6));
+    int i, len = 20 + (g_random_int()/(RAND_MAX>>6));
 #define PARA_MAX	(84*(WORD_MAX+1)+10)
     char parabuf[PARA_MAX];
     char *pt = parabuf;
@@ -2240,7 +2242,7 @@ char *RandomParaFromScript(uint32 script, uint32 *lang, SplineFont *sf) {
 	    ++cnt;
     }
     if ( cnt!=0 ) {
-	int pos = random()%(cnt+1);
+	int pos = g_random_int()%(cnt+1);
 	if ( pos<cnt ) {
 	    cnt = 0;
 	    for ( i=0; lang_frequencies[i].script!=0; ++i ) {
