@@ -139,7 +139,7 @@ is_LIGATURE:
 
 if GRAPHICAL_USER_INTERFACE
 
-libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c				\
+libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	autowidth2dlg.c basedlg.c bdfinfo.c bitmapdlg.c bitmapview.c	\
 	charinfo.c charview.c clipui.c combinations.c contextchain.c	\
 	cursors.c cvaddpoints.c cvdebug.c cvdgloss.c cvexportdlg.c		\
@@ -154,7 +154,7 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c				\
 	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	\
 	splashimage.c startui.c statemachine.c tilepath.c transform.c	\
 	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
-	usermenu.c
+	usermenu.c 
 
 else !GRAPHICAL_USER_INTERFACE
 
@@ -219,7 +219,7 @@ FontForge.app/Contents/Info.plist: $(srcdir)/MacFontForgeApp.zip $(srcdir)/stamp
 	$(UNZIP) $(srcdir)/MacFontForgeApp.zip
 	mkdir -p darwinsetup_tmpdir
 	cp FontForge.app/Contents/Info.plist darwinsetup_tmpdir
-	( VERSION=`$(GREP) source_version_str $(srcdir)/stamp.c | $(SED) 's/const char \*source_version_str = "//' | $(SED) 's/";//'` ; $(SED) s/20080810/$$VERSION/ < darwinsetup_tmpdir/Info.plist > FontForge.app/Contents/Info.plist )
+	( VERSION=`$(GREP) source_version_str $(srcdir)/stamp.c | $(SED) 's/const char \*source_version_str = "//' | $(SED) 's/";.*//'` ; $(SED) s/20080810/$$VERSION/ < darwinsetup_tmpdir/Info.plist > FontForge.app/Contents/Info.plist )
 
 mostlyclean-local: clean-darwin-stuff
 

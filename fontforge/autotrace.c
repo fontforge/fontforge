@@ -42,6 +42,8 @@
 #include <errno.h>		/* for errors */
 #include <dirent.h>		/* for opendir,etc. */
 
+#include <glib.h>
+
 int preferpotrace = false;
 
 /* Interface to Martin Weber's autotrace program   */
@@ -193,7 +195,7 @@ static int mytempnam(char *buffer) {
     else
 	strcpy(buffer,P_tmpdir);
     strcat(buffer,"/PfaEdXXXXXX");
-    fd = mkstemp(buffer);
+    fd = g_mkstemp(buffer);
 #if 0
     old = copy(buffer);
     strcat(buffer,".bmp");
