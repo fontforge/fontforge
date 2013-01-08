@@ -76,7 +76,7 @@ endif FONTTOOLS
 nodist_pkgconfig_DATA = libfontforge.pc libfontforgeexe.pc
 
 EXTRA_DIST += LICENSE README-Mac.html README-MS.html README-unix	\
-	README-Unix.html Readme.VMS
+	README-Unix.html Readme.VMS create-osx-app-bundle.sh
 
 uninstall-local:
 	(cd desktop; $(MAKE) $(AM_MAKEFLAGS) uninstall)

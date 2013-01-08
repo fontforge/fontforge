@@ -77,7 +77,7 @@ static void initlibrarysearchpath(void) {
     /*  install image libs. For some reason fink installs in a place */
     /*  the dynamic loader doesn't find */
     /* (And fink's attempts to set the PATH variables generally don't work */
-    setenv("DYLD_LIBRARY_PATH","/sw/lib",0);
+//    setenv("DYLD_LIBRARY_PATH","/sw/lib",0);
 #endif
 }
 
