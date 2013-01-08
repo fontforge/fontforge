@@ -41,7 +41,10 @@
 #include <dirent.h>
 #include <limits.h>		/* For NAME_MAX or _POSIX_NAME_MAX */
 
-#include <glib/gfileutils.h>
+#define GTimer GTimer_GTK
+#include <glib.h>
+#undef GTimer
+
 
 #ifndef NAME_MAX
 # ifndef  _POSIX_NAME_MAX
