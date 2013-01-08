@@ -48,7 +48,9 @@
 # include <langinfo.h>
 #endif
 
-#include <glib/grand.h>
+#define GTimer GTimer_GTK
+#include <glib.h>
+#undef GTimer
 
 #define RAD2DEG	(180/3.1415926535897932)
 
