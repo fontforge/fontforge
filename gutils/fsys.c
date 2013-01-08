@@ -616,10 +616,10 @@ void FindProgDir(char *prog) {
     unsigned int  len = GetModuleFileNameA(NULL, path, MAX_PATH);
     path[len] = '\0';
     for(; *c; *c++){
-	if(*c == '\\'){
-	    tail=c;
-	    *c = '/';
-	}
+    	if(*c == '\\'){
+    	    tail=c;
+    	    *c = '/';
+    	}
     }
     if(tail) *tail='\0';
     GResourceProgramDir = copy(path);
@@ -633,7 +633,7 @@ void FindProgDir(char *prog) {
 #endif
 }
 
-char *getLocaleDir(void) {
+char *getShareDir(void) {
     static char *sharedir=NULL;
     static int set=false;
     char *pt;
@@ -646,10 +646,10 @@ return( sharedir );
 
 #if defined(__MINGW32__)
 
-    len = strlen(GResourceProgramDir) + strlen("/share/locale") +1;
+    len = strlen(GResourceProgramDir) + strlen("/share/fontforge") +2;
     sharedir = galloc(len);
     strcpy(sharedir, GResourceProgramDir);
-    strcat(sharedir, "/share/locale");
+    strcat(sharedir, "/share/fontforge");
     return sharedir;
 
 #else
@@ -657,18 +657,34 @@ return( sharedir );
     pt = strstr(GResourceProgramDir,"/bin");
     if ( pt==NULL ) {
 #ifdef SHAREDIR
-return( sharedir = SHAREDIR "/../locale" );
+	return( sharedir = SHAREDIR );
 #elif defined( PREFIX )
-return( sharedir = PREFIX "/share/locale" );
+	return( sharedir = PREFIX "/share" );
 #else
 	pt = GResourceProgramDir + strlen(GResourceProgramDir);
 #endif
     }
-    len = (pt-GResourceProgramDir)+strlen("/share/locale")+1;
+    len = (pt-GResourceProgramDir)+strlen("/share/fontforge")+1;
     sharedir = galloc(len);
     strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
-    strcpy(sharedir+(pt-GResourceProgramDir),"/share/locale");
-return( sharedir );
-
+    strcpy(sharedir+(pt-GResourceProgramDir),"/share/fontforge");
+    return( sharedir );
 #endif
+}
+
+
+char *getLocaleDir(void) {
+    static char *sharedir=NULL;
+    static int set=false;
+    char *pt;
+
+    if ( set )
+	return( sharedir );
+
+    char* prefix = getShareDir();
+    int len = strlen(prefix) + strlen("/../locale") + 2;
+    sharedir = galloc(len);
+    strcpy(sharedir,prefix);
+    strcat(sharedir,"/../locale");
+    return sharedir;
 }

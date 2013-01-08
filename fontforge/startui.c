@@ -921,9 +921,22 @@ int fontforge_main( int argc, char **argv ) {
 
 	gfree(path);
     }
-#elif defined(SHAREDIR)
-    GGadgetSetImageDir(SHAREDIR "/pixmaps");
-    GResourceAddResourceFile(SHAREDIR "/resources/fontforge.resource",GResourceProgramName,false);
+#else
+    {
+	char shareDir[PATH_MAX];
+	char* sd = getShareDir();
+	strncpy( shareDir, sd, PATH_MAX );
+	if(!sd) {
+	    strcpy( shareDir, SHAREDIR );
+	}
+
+	char path[PATH_MAX];
+	snprintf(path, PATH_MAX, "%s%s", shareDir, "/pixmaps" );
+	GGadgetSetImageDir( path );
+	
+	snprintf(path, PATH_MAX, "%s%s", shareDir, "/resources/fontforge.resource" );
+	GResourceAddResourceFile(path, GResourceProgramName,false);
+    }
 #endif
     hotkeysLoad();
 
