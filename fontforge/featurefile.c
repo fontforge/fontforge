@@ -3935,7 +3935,7 @@ static struct feat_item *fea_AddAllLigPosibilities(struct parseState *tok,struct
     continue;
 	strcpy(next,temp->name);
 	after = next+strlen(next);
-	if ( glyphs->next!=NULL ) {
+	if ( glyphs->next!=NULL && glyphs->next->mark_count == glyphs->mark_count ) {
 	    *after++ = ' ';
 	    sofar = fea_AddAllLigPosibilities(tok,glyphs->next,sc,sequence_start,after,sofar);
 	} else {
