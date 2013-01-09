@@ -213,7 +213,7 @@ if MACINTOSH
 # FIXME: All of this needs testing on Mac OS X.
 
 # put the FontForge.app zipfile in the share directory
-pkgdata_DATA = MacFontForgeApp.zip
+pkgdata_DATA = MacFontForgeAppBuilt.zip
 
 install-exec-local: FontForge.app/Contents/Info.plist
 	$(SHELL) -x darwinsetup
@@ -223,7 +223,11 @@ FontForge.app/Contents/Info.plist: $(srcdir)/MacFontForgeApp.zip $(srcdir)/stamp
 	mkdir -p darwinsetup_tmpdir
 	cp FontForge.app/Contents/Info.plist darwinsetup_tmpdir
 	( VERSION=`$(GREP) source_version_str $(srcdir)/stamp.c | $(SED) 's/const char \*source_version_str = "//' | $(SED) 's/";.*//'` ; $(SED) s/20080810/$$VERSION/ < darwinsetup_tmpdir/Info.plist > FontForge.app/Contents/Info.plist )
-	zip -r $(srcdir)/MacFontForgeApp.zip FontForge.app
+
+BUILT_SOURCES = MacFontForgeAppBuilt.zip
+
+MacFontForgeAppBuilt.zip: FontForge.app/Contents/Info.plist
+	zip -r $(srcdir)/MacFontForgeAppBuilt.zip FontForge.app
 
 mostlyclean-local: clean-darwin-stuff
 

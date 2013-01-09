@@ -10,8 +10,8 @@ bundle_bin="$bundle_res/opt/local/bin"
 bundle_lib="$bundle_res/opt/local/lib"
 bundle_etc="$bundle_res/opt/local/etc"
 
-cp ./fontforge/MacFontForgeApp.zip $TEMPDIR/
-unzip -d $TEMPDIR $TEMPDIR/MacFontForgeApp.zip
+cp ./fontforge/MacFontForgeAppBuilt.zip $TEMPDIR/
+unzip -d $TEMPDIR $TEMPDIR/MacFontForgeAppBuilt.zip
 DESTDIR=$bundle_res make install
 
 cd $bundle_bin

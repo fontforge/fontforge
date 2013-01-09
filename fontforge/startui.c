@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "config.h"
 #include "fontforgeui.h"
 #include "annotations.h"
 #include <gfile.h>
@@ -161,7 +163,7 @@ static GTimer *autosave_timer, *splasht;
 static GFont *splash_font, *splash_italic;
 static int as,fh, linecnt;
 static unichar_t msg[470];
-static unichar_t *lines[20], *is, *ie;
+static unichar_t *lines[30], *is, *ie;
 
 void ShowAboutScreen(void) {
     static int first=1;
@@ -204,11 +206,22 @@ static void SplashLayout() {
 	if ( *pt ) ++pt;
     }
     uc_strcpy(pt, " FontForge used to be named PfaEdit.");
+
+    pt += u_strlen(pt);
+    lines[linecnt++] = pt;
+    uc_strcpy(pt,"  git hash: ");;
+    pt += u_strlen(pt);
+    lines[linecnt++] = pt;
+    uc_strcat(pt, FONTFORGE_GIT_VERSION);
+    
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcpy(pt,"  Version: ");;
     uc_strcat(pt,source_modtime_str);
-    uc_strcat(pt," (");
+    
+    pt += u_strlen(pt);
+    lines[linecnt++] = pt;
+    uc_strcat(pt,"           (");
     uc_strcat(pt,source_version_str);
     uc_strcat(pt,"-ML");
 #ifdef FREETYPE_HAS_DEBUGGER
@@ -223,7 +236,7 @@ static void SplashLayout() {
     uc_strcat(pt,")");
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
-    uc_strcpy(pt,"  Library Version: ");
+    uc_strcpy(pt,"  Lib Version: ");
     uc_strcat(pt,library_version_configuration.library_source_modtime_string);
     lines[linecnt++] = pt+u_strlen(pt);
     lines[linecnt] = NULL;
@@ -782,6 +795,7 @@ int fontforge_main( int argc, char **argv ) {
 	    ".\n",
 	    source_modtime_str );
     fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
+    fprintf( stderr, " Based on source from git with hash:%s\n", FONTFORGE_GIT_VERSION );
 
     /* Must be done before we cache the current directory */
     /* Change to HOME dir if specified on the commandline */
