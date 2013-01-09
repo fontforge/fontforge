@@ -541,7 +541,8 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 
     if ( mi->sub!=NULL )
 	GMenuDrawArrow(m,ybase,r2l);
-    else { // if ( mi->shortcut!=0 && (mi->short_mask&0xffe0)==0 && mac_menu_icons ) {
+    else
+    {
 	_shorttext(mi->shortcut,0,shortbuf);
 	uint16 short_mask = mi->short_mask;
 
@@ -556,7 +557,8 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	 * to get the hotkey if there is one for that menu item.
 	 */
 	GMenuBar* toplevel = getTopLevelMenubar(m);
-	if( toplevel ) {
+	if( toplevel )
+	{
 	    short_mask = 0;
 	    uc_strcpy(shortbuf,"");
 	    /* printf("m->menubar->mi: %p\n", toplevel->mi ); */
@@ -564,23 +566,37 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	    Hotkey* hk = hotkeyFindByMenuPath( toplevel->g.base,
 					       GMenuGetMenuPath( toplevel->mi, mi ));
 //	    printf("hk: %p\n", hk );
-	    if(hk) {
+	    if(hk)
+	    {
 		short_mask = hk->state;
-		uc_strcpy(shortbuf,hotkeyTextWithoutModifiers(hk->text));
+		char* keydesc = hk->text;
+		if( mac_menu_icons )
+		{
+		    keydesc = hotkeyTextWithoutModifiers( keydesc );
+		}
+		uc_strcpy( shortbuf, keydesc );
 	    }
 	}
 	
 	width = GDrawGetTextWidth(pixmap,shortbuf,-1);
-	width += GMenuMacIconsWidth(m,short_mask);
-	if ( r2l ) {
+	if( mac_menu_icons )
+	    width += GMenuMacIconsWidth( m, short_mask );
+	
+	if ( r2l )
+	{
 	    int x = GDrawDrawText(pixmap,m->bp,ybase,shortbuf,-1,fg);
-	    GMenuDrawMacIcons(m,fg,ybase, x, short_mask);
-	} else {
-	    int x = GMenuDrawMacIcons(m,fg,ybase,m->rightedge-width, short_mask);
+	    if( mac_menu_icons )
+		GMenuDrawMacIcons(m,fg,ybase, x, short_mask);
+	}
+	else
+	{
+	    int x = m->rightedge-width;
+	    if( mac_menu_icons )
+		x = GMenuDrawMacIcons(m,fg,ybase,m->rightedge-width, short_mask);
 	    GDrawDrawText(pixmap,x,ybase,shortbuf,-1,fg);
 	}
     }
-
+    
     GDrawPopClip(pixmap,&old);
 return( y + h );
 }
@@ -1510,22 +1526,20 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
 					       GMenuGetMenuPath( toplevel->mi, &mi[i] ));
 	    if(hk) {
 		short_mask = hk->state;
-		uc_strcpy(buffer,hotkeyTextWithoutModifiers(hk->text));
+		char* keydesc = hk->text;
+		if( mac_menu_icons )
+		{
+		    keydesc = hotkeyTextWithoutModifiers( keydesc );
+		}
+		uc_strcpy( buffer, keydesc );
 	    }
 	    
 	    temp = GDrawGetTextWidth(m->w,buffer,-1);
-	    if( short_mask ) {
-		temp += GMenuMacIconsWidth(m,short_mask);
+	    if( short_mask && mac_menu_icons ) {
+		temp += GMenuMacIconsWidth( m, short_mask );
 	    }
 	}
 	
-	/* if ( mi[i].shortcut!=0 && (mi[i].short_mask&0xffe0)==0 && mac_menu_icons ) { */
-	/*     _shorttext(mi[i].shortcut,0,buffer); */
-	/*     temp = GDrawGetBiTextWidth(m->w,buffer,-1,-1,NULL) + GMenuMacIconsWidth(m,mi[i].short_mask); */
-	/* } else { */
-	/*     shorttext(&mi[i],buffer); */
-	/*     temp = GDrawGetBiTextWidth(m->w,buffer,-1,-1,NULL); */
-	/* } */
 	if ( temp>keywidth ) keywidth=temp;
 	if ( mi[i].sub!=NULL && 3*m->as>keywidth )
 	    keywidth = 3*m->as;
