@@ -34,6 +34,7 @@ sed -i -e "s|$OLDPREFIX|$NEWPREFIX|g" pangorc
 sed -i -e "s|$OLDPREFIX|$NEWPREFIX|g" pango.modules
 cd $bundle_etc/fonts
 sed -i -e "s|$OLDPREFIX|$NEWPREFIX|g" fonts.conf 
+sed -i -e 's|<fontconfig>|<fontconfig><dir>/Applications/FontForge.app/Contents/Resources/opt/local/share/fontforge/pixmaps/</dir>|g' fonts.conf
 
 cd $bundle_lib/pango/
 cd `find . -type d -maxdepth 1 -mindepth 1`
