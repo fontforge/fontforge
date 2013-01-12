@@ -875,8 +875,6 @@ void MVReKern(MetricsView *mv) {
 void MVRegenChar(MetricsView *mv, SplineChar *sc) {
     int i;
 
-    fprintf(stderr,"bdf:%p scopos:%d glyphcount:%d\n", mv->bdf, sc->orig_pos, mv->show->glyphcnt );
-
     if ( mv->bdf==NULL && sc->orig_pos<mv->show->glyphcnt ) {
 	BDFCharFree(mv->show->glyphs[sc->orig_pos]);
 	mv->show->glyphs[sc->orig_pos] = NULL;
