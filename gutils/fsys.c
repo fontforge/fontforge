@@ -686,5 +686,23 @@ char *getLocaleDir(void) {
     sharedir = galloc(len);
     strcpy(sharedir,prefix);
     strcat(sharedir,"/../locale");
+    set = true;
+    return sharedir;
+}
+
+char *getPixmapDir(void) {
+    static char *sharedir=NULL;
+    static int set=false;
+    char *pt;
+
+    if ( set )
+	return( sharedir );
+
+    char* prefix = getShareDir();
+    int len = strlen(prefix) + strlen("/pixmaps") + 2;
+    sharedir = galloc(len);
+    strcpy(sharedir,prefix);
+    strcat(sharedir,"/pixmaps");
+    set = true;
     return sharedir;
 }

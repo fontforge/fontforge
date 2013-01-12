@@ -222,7 +222,7 @@ FontForge.app/Contents/Info.plist: $(srcdir)/MacFontForgeApp.zip $(srcdir)/stamp
 	$(UNZIP) $(srcdir)/MacFontForgeApp.zip
 	mkdir -p darwinsetup_tmpdir
 	cp FontForge.app/Contents/Info.plist darwinsetup_tmpdir
-	( VERSION=`$(GREP) source_version_str $(srcdir)/stamp.c | $(SED) 's/const char \*source_version_str = "//' | $(SED) 's/";.*//'` ; $(SED) s/20080810/$$VERSION/ < darwinsetup_tmpdir/Info.plist > FontForge.app/Contents/Info.plist )
+	( VERSION=`$(GREP) FONTFORGE_VERSIONDATE_RAW ../inc/config.h | $(SED) 's/.*RAW //g'` ; $(SED) s/20080810/$$VERSION/ < darwinsetup_tmpdir/Info.plist > FontForge.app/Contents/Info.plist )
 
 BUILT_SOURCES = MacFontForgeAppBuilt.zip
 
