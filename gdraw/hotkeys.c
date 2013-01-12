@@ -26,6 +26,7 @@
  */
 
 #include "gdraw.h"
+#include "gfile.h"
 #include "hotkeys.h"
 #include <locale.h>
 #include <string.h>
@@ -256,24 +257,25 @@ void hotkeysLoad()
 {
     char localefn[PATH_MAX+1];
     char* p = 0;
+    char* sharedir = getShareDir();
 
-    snprintf(localefn,PATH_MAX,"%s/hotkeys/default", SHAREDIR );
+    snprintf(localefn,PATH_MAX,"%s/hotkeys/default", sharedir );
     loadHotkeysFromFile( localefn, false, true );
     
     // FUTURE: perhaps find out how to convert en_AU.UTF-8 that setlocale()
     //   gives to its fallback of en_GB. There are likely to be a bunch of other
     //   languages which are similar but have specific locales
     char* currentlocale = copy(setlocale(LC_MESSAGES, 0));
-    snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", SHAREDIR, currentlocale);
+    snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", sharedir, currentlocale);
     loadHotkeysFromFile( localefn, false, false );
     while((p = strrchr( currentlocale, '.' ))) {
 	*p = '\0';
-	snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", SHAREDIR, currentlocale);
+	snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", sharedir, currentlocale);
 	loadHotkeysFromFile( localefn, false, false );
     }
     while((p = strrchr( currentlocale, '_' ))) {
 	*p = '\0';
-	snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", SHAREDIR, currentlocale);
+	snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", sharedir, currentlocale);
 	loadHotkeysFromFile( localefn, false, false );
     }
     free(currentlocale);

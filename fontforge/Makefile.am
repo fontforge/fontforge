@@ -72,11 +72,11 @@ noinst_HEADERS = fontforgeui.h sftextfieldP.h configure-fontforge.h	\
 	views.h is_LIGATURE.h flaglist.h
 pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	libffstamp.h psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
-	lookups.h savefont.h ttf.h baseviews.h fvmetrics.h mm.h				\
+	lookups.h savefont.h ttf.h baseviews.h fvmetrics.h mm.h			\
 	scriptfuncs.h ttfinstrs.h edgelist2.h namehash.h scripting.h		\
 	uiinterface.h bezctx_ff.h edgelist.h groups.h nonlineartrans.h		\
 	sd.h unicoderange.h bitmapcontrol.h encoding.h ofl.h search.h		\
-	usermenu.h fffreetype.h PfEd.h sfd1.h ffpython.h import.h			\
+	usermenu.h fffreetype.h PfEd.h sfd1.h ffpython.h			\
 	plugins.h sflayoutP.h print.h splinefont.h annotations.h
 
 #--------------------------------------------------------------------------
@@ -139,7 +139,7 @@ is_LIGATURE:
 
 if GRAPHICAL_USER_INTERFACE
 
-libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c				\
+libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	autowidth2dlg.c basedlg.c bdfinfo.c bitmapdlg.c bitmapview.c	\
 	charinfo.c charview.c clipui.c combinations.c contextchain.c	\
 	cursors.c cvaddpoints.c cvdebug.c cvdgloss.c cvexportdlg.c		\
@@ -154,7 +154,7 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c				\
 	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	\
 	splashimage.c startui.c statemachine.c tilepath.c transform.c	\
 	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
-	usermenu.c
+	usermenu.c 
 
 else !GRAPHICAL_USER_INTERFACE
 
@@ -212,6 +212,9 @@ if MACINTOSH
 
 # FIXME: All of this needs testing on Mac OS X.
 
+# put the FontForge.app zipfile in the share directory
+pkgdata_DATA = MacFontForgeAppBuilt.zip
+
 install-exec-local: FontForge.app/Contents/Info.plist
 	$(SHELL) -x darwinsetup
 
@@ -219,7 +222,12 @@ FontForge.app/Contents/Info.plist: $(srcdir)/MacFontForgeApp.zip $(srcdir)/stamp
 	$(UNZIP) $(srcdir)/MacFontForgeApp.zip
 	mkdir -p darwinsetup_tmpdir
 	cp FontForge.app/Contents/Info.plist darwinsetup_tmpdir
-	( VERSION=`$(GREP) source_version_str $(srcdir)/stamp.c | $(SED) 's/const char \*source_version_str = "//' | $(SED) 's/";//'` ; $(SED) s/20080810/$$VERSION/ < darwinsetup_tmpdir/Info.plist > FontForge.app/Contents/Info.plist )
+	( VERSION=`$(GREP) FONTFORGE_VERSIONDATE_RAW ../inc/config.h | $(SED) 's/.*RAW //g'` ; $(SED) s/20080810/$$VERSION/ < darwinsetup_tmpdir/Info.plist > FontForge.app/Contents/Info.plist )
+
+BUILT_SOURCES = MacFontForgeAppBuilt.zip
+
+MacFontForgeAppBuilt.zip: FontForge.app/Contents/Info.plist
+	zip -r $(srcdir)/MacFontForgeAppBuilt.zip FontForge.app
 
 mostlyclean-local: clean-darwin-stuff
 

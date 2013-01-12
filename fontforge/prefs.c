@@ -48,7 +48,13 @@
 # include <langinfo.h>
 #endif
 
+#define GTimer GTimer_GTK
+#include <glib.h>
+#undef GTimer
+
 #define RAD2DEG	(180/3.1415926535897932)
+
+static void change_res_filename(const char *newname);
 
 extern int splash;
 extern int adjustwidth;
@@ -989,8 +995,8 @@ static void DefaultXUID(void) {
 	r1 = rand()&0x3ff;
     } while ( r1==0 );		/* I reserve "0" for me! */
     gettimeofday(&tv,NULL);
-    srandom(tv.tv_usec+1);
-    r2 = random();
+    g_random_set_seed(tv.tv_usec+1);
+    r2 = g_random_int();
     sprintf( buffer, "1021 %d %d", r1, r2 );
     free(xuid);
     xuid = copy(buffer);
@@ -1152,6 +1158,20 @@ static void PrefsUI_LoadPrefs(void) {
 	    }
 	}
 	fclose(p);
+    }
+
+    //
+    // If the user has no theme set, then use the default
+    //
+    if ( !xdefs_filename )
+    {
+	fprintf(stderr,"no xdefs_filename!\n");
+	char path[PATH_MAX];
+	snprintf(path, PATH_MAX, "%s/%s", getPixmapDir(), "resources" );
+	fprintf(stderr,"trying default theme:%s\n", path );
+	if(GFileExists(path)) {
+	    change_res_filename( path );
+	}
     }
     if ( xdefs_filename!=NULL )
 	GResourceAddResourceFile(xdefs_filename,GResourceProgramName,true);

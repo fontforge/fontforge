@@ -1,0 +1,164 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:filetype=tcl:et:sw=4:ts=4:sts=4
+# $Id$
+
+PortSystem      1.0
+
+name            fontforge
+version         2.0.0_beta1
+set docversion  2.0.0_beta1
+revision        49
+categories      graphics fonts
+platforms       darwin
+maintainers     Ben Martin
+license         GPL
+description     Outline and bitmap font editor/converter for many formats
+
+long_description \
+    FontForge allows you to edit outline and bitmap fonts.  You may create \
+    new ones or modify old ones.  It is also a format converter and can \
+    interconvert between PostScript (ascii & binary Type1, some Type3, \
+    some Type0), TrueType, OpenType (Type2), CID, SVG.  Previously known as \
+    pfaedit.
+
+homepage        http://fontforge.org/
+master_sites    sourceforge:project/fontforge/fontforge-source
+distname        ${name}-${version}
+dist_subdir     ${name}/${version}
+worksrcdir      ${name}-${version}
+
+master_sites        file:///Users/ben/Work/FontForge/2012/mac-build/categories/fontforge
+checksums fontforge-2.0.0_beta1.tar.gz \
+   sha1    800b4e05ec8e713470a80b93241512d4c623a134 \
+   rmd160  67a4ef3e9b2f42bfcb0d20dd9cef7dea238d484f
+
+# fetch.type      git
+# git.url         https://github.com/monkeyiq/fontforge-fork.git
+# git.branch      2012dec/buildwin
+# use_autoreconf    yes
+
+
+# fetch.type      git
+# git.url         https://github.com/fontforge/fontforge.git
+# git.branch      master
+# use_autoreconf  yes
+
+
+worksrcdir      ${name}-${version}
+
+
+depends_lib \
+    port:xorg-libXi \
+    port:xorg-libxkbui \
+    port:xorg-libXt \
+    port:freetype \
+    port:gettext \
+    port:giflib \
+    port:jpeg \
+    port:tiff \
+    port:pango \
+    port:cairo \
+    port:libiconv \
+    port:glib2 \
+    port:libpng \
+    port:libuninameslist \
+    port:libxml2 \
+    port:tiff \
+    port:libtool \
+    port:zlib \
+    port:libspiro
+    
+depends_build \
+    port:pkgconfig port:autoconf port:automake
+
+post-extract {
+    foreach fn { "${worksrcpath}/configure.ac" "${worksrcpath}/configure" } {
+        set fn [ subst $fn ]
+        if {[file exists "${fn}"]} {
+            system "sed -i -e 's/-Werror=missing-prototypes//g' ${fn} "
+            system "sed -i -e 's/-Werror=implicit//g' ${fn} "
+        }
+    }
+    foreach file [ exec grep -R --include "*.c" "Python\.h" ${worksrcpath} | cut -d: -f1 | sort | uniq ] {
+        system "sed -i -e 's|Python\.h|python2.7/Python\.h|g' ${file}"
+    }
+    set xcodebase    [ exec xcode-select -print-path . ]
+    set xcodesdkpath [ exec ls -rv1 "${xcodebase}/Platforms/MacOSX.platform/Developer/SDKs/" | head -1 ]
+    system "ln -s ${xcodesdkpath}/Developer ${worksrcpath}/. "
+}
+
+
+configure.args  --with-cairo \
+                --enable-pixmaps-tango \
+                --mandir=${prefix}/share/man \
+                --x-includes=${prefix}/include \
+                --x-libraries=${prefix}/lib
+
+configure.cflags-append  -D__GLIB_H_INSIDE__ -Ipython2.7 -g
+configure.ldflags-append -lintl
+
+post-configure {
+    # nasty compiler bug when generating 32bit code for this file. 
+    # but lets not throw our hands up and avoid -O2 for the rest
+    # of the files!
+    puts "XXXXXXXXX patching the optimizer flags for metricsview!"
+    system "sed -i -e 's/-c -o libfontforgeexe_la-metricsview.lo/-O0 -c -o libfontforgeexe_la-metricsview.lo/g' ${worksrcpath}/fontforge/Makefile.in"
+    puts "path: ${worksrcpath}/fontforge/Makefile.in"
+    system "grep libfontforgeexe_la-metricsview.lo  ${worksrcpath}/fontforge/Makefile.in"
+
+}
+
+
+set docdir      ${prefix}/share/doc/${name}
+
+destroot.args   docdir=${docdir}
+
+post-destroot {
+    xinstall -d ${destroot}${docdir}
+    xinstall -m 644 -W ${worksrcpath} \
+        AUTHORS INSTALL LICENSE README-Mac.html README-Unix.html README-unix \
+        ${destroot}${docdir}
+}
+
+use_parallel_build  yes
+
+
+
+
+#
+# These are a collection of bits that might be handy at some stage.
+#
+#
+##build.args-append architecture=x86  address-model=32 
+# if {![variant_isset universal]} { 
+#     # Honour 'build_arch', if not universal as per #28327 
+#     if {[lsearch ${build_arch} ppc*] != -1} { 
+#         build.args-append   architecture=power 
+#         if {${os.arch} != "powerpc"} { 
+#             build.args-append   --disable-long-double 
+#         } 
+#     } else { 
+#         if {[lsearch ${build_arch} *86*] != -1} { 
+#             build.args-append   architecture=x86 
+#         } else { 
+#             error "Current value of 'build_arch' is not supported." 
+#         } 
+#     } 
+#     if {[lsearch ${build_arch} *64] != -1} { 
+#         build.args-append   address-model=64 
+#     } else { 
+#         build.args-append   address-model=32 
+#     } 
+# } 
+
+
+
+#livecheck.regex     ${name}_full-(\\d+)\.
+#extract.only    ${distname}${extract.suffix}
+#
+#post-patch {
+#    if {${os.major} > 11 && ${os.platform} == "darwin"} {
+#        eval reinplace -W {${worksrcpath}/fontforge} "s|AnchorPoint|FFAnchorPoint|g" \
+#            [glob -tails -directory ${worksrcpath}/fontforge *.c] \
+#            splinefont.h baseviews.h views.h
+#    }
+#}

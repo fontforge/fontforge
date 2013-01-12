@@ -541,7 +541,8 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 
     if ( mi->sub!=NULL )
 	GMenuDrawArrow(m,ybase,r2l);
-    else { // if ( mi->shortcut!=0 && (mi->short_mask&0xffe0)==0 && mac_menu_icons ) {
+    else
+    {
 	_shorttext(mi->shortcut,0,shortbuf);
 	uint16 short_mask = mi->short_mask;
 
@@ -556,7 +557,8 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	 * to get the hotkey if there is one for that menu item.
 	 */
 	GMenuBar* toplevel = getTopLevelMenubar(m);
-	if( toplevel ) {
+	if( toplevel )
+	{
 	    short_mask = 0;
 	    uc_strcpy(shortbuf,"");
 	    /* printf("m->menubar->mi: %p\n", toplevel->mi ); */
@@ -564,23 +566,37 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	    Hotkey* hk = hotkeyFindByMenuPath( toplevel->g.base,
 					       GMenuGetMenuPath( toplevel->mi, mi ));
 //	    printf("hk: %p\n", hk );
-	    if(hk) {
+	    if(hk)
+	    {
 		short_mask = hk->state;
-		uc_strcpy(shortbuf,hotkeyTextWithoutModifiers(hk->text));
+		char* keydesc = hk->text;
+		if( mac_menu_icons )
+		{
+		    keydesc = hotkeyTextWithoutModifiers( keydesc );
+		}
+		uc_strcpy( shortbuf, keydesc );
 	    }
 	}
 	
 	width = GDrawGetTextWidth(pixmap,shortbuf,-1);
-	width += GMenuMacIconsWidth(m,short_mask);
-	if ( r2l ) {
+	if( mac_menu_icons )
+	    width += GMenuMacIconsWidth( m, short_mask );
+	
+	if ( r2l )
+	{
 	    int x = GDrawDrawText(pixmap,m->bp,ybase,shortbuf,-1,fg);
-	    GMenuDrawMacIcons(m,fg,ybase, x, short_mask);
-	} else {
-	    int x = GMenuDrawMacIcons(m,fg,ybase,m->rightedge-width, short_mask);
+	    if( mac_menu_icons )
+		GMenuDrawMacIcons(m,fg,ybase, x, short_mask);
+	}
+	else
+	{
+	    int x = m->rightedge-width;
+	    if( mac_menu_icons )
+		x = GMenuDrawMacIcons(m,fg,ybase,m->rightedge-width, short_mask);
 	    GDrawDrawText(pixmap,x,ybase,shortbuf,-1,fg);
 	}
     }
-
+    
     GDrawPopClip(pixmap,&old);
 return( y + h );
 }
@@ -1510,22 +1526,20 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
 					       GMenuGetMenuPath( toplevel->mi, &mi[i] ));
 	    if(hk) {
 		short_mask = hk->state;
-		uc_strcpy(buffer,hotkeyTextWithoutModifiers(hk->text));
+		char* keydesc = hk->text;
+		if( mac_menu_icons )
+		{
+		    keydesc = hotkeyTextWithoutModifiers( keydesc );
+		}
+		uc_strcpy( buffer, keydesc );
 	    }
 	    
 	    temp = GDrawGetTextWidth(m->w,buffer,-1);
-	    if( short_mask ) {
-		temp += GMenuMacIconsWidth(m,short_mask);
+	    if( short_mask && mac_menu_icons ) {
+		temp += GMenuMacIconsWidth( m, short_mask );
 	    }
 	}
 	
-	/* if ( mi[i].shortcut!=0 && (mi[i].short_mask&0xffe0)==0 && mac_menu_icons ) { */
-	/*     _shorttext(mi[i].shortcut,0,buffer); */
-	/*     temp = GDrawGetBiTextWidth(m->w,buffer,-1,-1,NULL) + GMenuMacIconsWidth(m,mi[i].short_mask); */
-	/* } else { */
-	/*     shorttext(&mi[i],buffer); */
-	/*     temp = GDrawGetBiTextWidth(m->w,buffer,-1,-1,NULL); */
-	/* } */
 	if ( temp>keywidth ) keywidth=temp;
 	if ( mi[i].sub!=NULL && 3*m->as>keywidth )
 	    keywidth = 3*m->as;
@@ -1670,10 +1684,9 @@ return( _GMenuCreatePopupMenu(owner,event,mi,NULL));
 
 int GMenuPopupCheckKey(GEvent *event) {
 
-    if ( most_recent_popup_menu==NULL )
-return( false );
+    if ( most_recent_popup_menu==NULL ) return( false );
 
-return( gmenu_key(most_recent_popup_menu,event));
+    return( gmenu_key(most_recent_popup_menu,event) );
 }
 
 /* ************************************************************************** */
@@ -1682,108 +1695,77 @@ int GGadgetUndoMacEnglishOptionCombinations(GEvent *event) {
     int keysym = event->u.chr.keysym;
 
     switch ( keysym ) {
+    /* translate special mac keys to ordinary keys */
       case 0xba:
-	keysym = '0';
-      break;
+	keysym = '0'; break;
       case 0xa1:
-	keysym = '1';
-      break;
+	keysym = '1'; break;
       case 0x2122:
-	keysym = '2';
-      break;
+	keysym = '2'; break;
       case 0xa3:
-	keysym = '3';
-      break;
+	keysym = '3'; break;
       case 0xa2:
-	keysym = '4';
-      break;
+	keysym = '4'; break;
       case 0x221e:
-	keysym = '5';
-      break;
+	keysym = '5'; break;
       case 0xa7:
-	keysym = '6';
-      break;
+	keysym = '6'; break;
       case 0xb6:
-	keysym = '7';
-      break;
+	keysym = '7'; break;
       case 0x2022:
-	keysym = '8';
-      break;
+	keysym = '8'; break;
       case 0xaa:
-	keysym = '9';
-      break;
+	keysym = '9'; break;
       case 0xe5:
-	keysym = 'a';
-      break;
+	keysym = 'a'; break;
       case 0x222b:
-	keysym = 'b';
-      break;
+	keysym = 'b'; break;
       case 0xe7:
-	keysym = 'c';
-      break;
+	keysym = 'c'; break;
       case 0x2202:
-	keysym = 'd';
-      break;
+	keysym = 'd'; break;
       /* e is a modifier */
       case 0x192:
-	keysym = 'f';
-      break;
+	keysym = 'f'; break;
       case 0xa9:
-	keysym = 'g';
-      break;
+	keysym = 'g'; break;
       case 0x2d9:
-	keysym = 'h';
-      break;
+	keysym = 'h'; break;
       /* i is a modifier */
       case 0x2206:
-	keysym = 'j';
-      break;
+	keysym = 'j'; break;
       case 0x2da:
-	keysym = 'k';
-      break;
+	keysym = 'k'; break;
       case 0xac:
-	keysym = 'l';
-      break;
+	keysym = 'l'; break;
       case 0xb5:
-	keysym = 'm';
-      break;
+	keysym = 'm'; break;
       /* n is a modifier */
       case 0xf8:
-	keysym = 'o';
-      break;
+	keysym = 'o'; break;
       case 0x3c0:
-	keysym = 'p';
-      break;
+	keysym = 'p'; break;
       case 0x153:
-	keysym = 'q';
-      break;
+	keysym = 'q'; break;
       case 0xae:
-	keysym = 'r';
-      break;
+	keysym = 'r'; break;
       case 0x2020:
-	keysym = 's';
-      break;
+	keysym = 's'; break;
       case 0xee:
-	keysym = 't';
-      break;
+	keysym = 't'; break;
       /* u is a modifier */
       case 0x221a:
-	keysym = 'v';
-      break;
+	keysym = 'v'; break;
       case 0x2211:
-	keysym = 'w';
-      break;
+	keysym = 'w'; break;
       case 0x2248:
-	keysym = 'x';
-      break;
+	keysym = 'x'; break;
       case 0xa5:
-	keysym = 'y';
-      break;
+	keysym = 'y'; break;
       case 0x3a9:
-	keysym = 'z';
-      break;
+	keysym = 'z'; break;
     }
-return( keysym );
+    return( keysym );
 }
 
 
@@ -1795,10 +1777,8 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     unichar_t keysym = event->u.chr.keysym;
 
 //    printf("GMenuBarCheckKey() keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
-    if ( g==NULL )
-return( false );
-    if ( keysym==0 )
-return( false );
+
+    if ( g==NULL || keysym==0 ) return( false ); /* exit if no gadget or key */
 
     if ( (menumask&ksm_cmdmacosx) && keysym>0x7f &&
 	    (event->u.chr.state&ksm_meta) &&
@@ -1810,13 +1790,12 @@ return( false );
     if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&(menumask&~(ksm_meta|ksm_shift)))) {
 	/* Only look for mneumonics in the leaf of the displayed menu structure */
 	if ( mb->child!=NULL )
-return( gmenu_key(mb->child,event));	/* this routine will do shortcuts too */
+	    return( gmenu_key(mb->child,event)); /* this routine will do shortcuts too */
 
 	for ( i=0; i<mb->mtot; ++i ) {
-	    if ( mb->mi[i].ti.mnemonic == keysym &&
-			!mb->mi[i].ti.disabled ) {
+	    if ( mb->mi[i].ti.mnemonic == keysym && !mb->mi[i].ti.disabled ) {
 		GMenuBarKeyInvoke(mb,i);
-return( true );
+		return( true );
 	    }
 	}
     }
@@ -1854,7 +1833,7 @@ return( true );
 		printf("hotkey found for event must be a non menu action... action:%s\n", hk->action );
 		
 	    }
-	    
+
 //	    printf("END hotkey found by event! hk:%p\n", hk );
 	}
 	dlist_free_external(hklist);
@@ -1870,7 +1849,7 @@ return( true );
     if ( event->u.chr.keysym==GK_Menu )
 	GMenuCreatePopupMenu(event->w,event, mb->mi);
 
-return( false );
+    return( false );
 }
 
 static void GMenuBarDrawDownArrow(GWindow pixmap, GMenuBar *mb, int x) {

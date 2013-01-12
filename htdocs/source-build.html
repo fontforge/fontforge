@@ -21,6 +21,8 @@
     <LI>
       <A HREF="ms-install.html#Installing">Installing on MS/Windows</A>
     <LI>
+      <A HREF="#src-unix">Before you build (on unix/linux based systems)</A>
+    <LI>
       <A HREF="#src-mac">Before you build (on a mac)</A>
     <LI>
       <A HREF="#src-MS">Before you build (on MS/Windows)</A>
@@ -63,6 +65,23 @@
       <A HREF="running.html">Running FontForge</A>
     <LI>
       <A HREF="uninstall.html">Uninstalling</A>
+  </UL>
+  <H2>
+    Before you build (on  <A NAME="src-unix">unix/linux</A> based systems)
+  </H2>
+  <P>
+  You must have the following packages installed before you can build:
+  <UL>
+    <LI><A HREF="http://gcc.gnu.org/">gcc</a> (version 4.5 or newer)
+    <LI><A HREF="http://www.freedesktop.org/wiki/Software/pkg-config">pkg-config</a>
+    <LI><A HREF="http://www.gnu.org/software/automake/">automake</a> (version 1.6.0 or newer)
+    <LI><A HREF="http://www.gnu.org/software/autoconf/">autoconf</a>
+    <LI><A HREF="http://www.gnu.org/software/m4/">m4</a>
+    <LI><A HREF="http://www.gnu.org/software/libtool/">libtool</a> (version 1.4.2 or newer)
+    <LI><A HREF="http://developer.gnome.org/glib/">glib</a> (version 2.16 or newer)
+    <LI><A HREF="http://sourceware.org/libffi/">libffi</a> (version 3.0.0 or newer)
+    <LI><A HREF="http://www.zlib.net/">zlib</a>
+    <LI><A HREF="http://www.freetype.org/download.html">freetype2</a>
   </UL>
   <H2>
     Before you build (on a <A NAME="src-mac">mac</A>)
@@ -255,7 +274,8 @@ CVS password:
   is a little program that figures out how to use your system), and then build
   it (do not type the "$"):
   <BLOCKQUOTE id="shell">
-    <PRE><FONT COLOR="Gray">$ </FONT>./configure
+    <PRE><FONT COLOR="Gray">$ </FONT>./autogen.sh
+<FONT COLOR="Gray">$ </FONT>./configure
 <FONT COLOR="Gray">$ </FONT>make
 </PRE>
   </BLOCKQUOTE>

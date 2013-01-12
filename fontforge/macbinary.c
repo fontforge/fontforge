@@ -37,7 +37,7 @@
 #include "psfont.h"
 #if __Mac
 # include <ctype.h>
-# include <Developer/Headers/FlatCarbon/Files.h>
+# include "carbon.h"
 #else
 # include <utype.h>
 #undef __Mac

@@ -132,7 +132,8 @@ typedef struct val {
 } Val;		/* Used by scripting */
 
 struct psdict {
-    int cnt, next;
+    int cnt;		/* *key[0..cnt] and *values[0..cnt] currently available */
+    int next;		/* **key[0..next] and **values[0..next] currently used  */
     char **keys;
     char **values;
 };
@@ -1446,7 +1447,8 @@ typedef struct splinechar {
     unsigned int unlink_rm_ovrlp_save_undo: 1;
     unsigned int inspiro: 1;
     unsigned int lig_caret_cnt_fixed: 1;
-    /* 6 bits left (one more if we ignore compositionunit below) */
+    unsigned int suspendMetricsViewEventPropagation: 1; /* rect tool might do this while drawing */
+    /* 5 bits left (one more if we ignore compositionunit below) */
 #if HANYANG
     unsigned int compositionunit: 1;
     int16 jamo, varient;

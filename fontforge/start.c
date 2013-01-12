@@ -37,6 +37,8 @@
 # include <stdlib.h>		/* getenv,setenv */
 #endif
 
+#include <glib.h>
+
 int32 unicode_from_adobestd[256];
 struct lconv localeinfo;
 char *coord_sep = ",";
@@ -63,7 +65,7 @@ static void initrand(void) {
 
     gettimeofday(&tv,NULL);
     srand(tv.tv_usec);
-    srandom(tv.tv_usec);
+    g_random_set_seed(tv.tv_usec);
 }
 
 /* FIXME: Is this necessary or desirable, given we now are using
@@ -75,7 +77,7 @@ static void initlibrarysearchpath(void) {
     /*  install image libs. For some reason fink installs in a place */
     /*  the dynamic loader doesn't find */
     /* (And fink's attempts to set the PATH variables generally don't work */
-    setenv("DYLD_LIBRARY_PATH","/sw/lib",0);
+//    setenv("DYLD_LIBRARY_PATH","/sw/lib",0);
 #endif
 }
 
