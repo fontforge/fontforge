@@ -875,16 +875,25 @@ void MVReKern(MetricsView *mv) {
 void MVRegenChar(MetricsView *mv, SplineChar *sc) {
     int i;
 
-    if ( mv->bdf==NULL && sc->orig_pos<mv->show->glyphcnt ) {
-	BDFCharFree(mv->show->glyphs[sc->orig_pos]);
-	mv->show->glyphs[sc->orig_pos] = NULL;
+    if( !sc->suspendMetricsViewEventPropagation )
+    {
+	if ( mv->bdf==NULL && sc->orig_pos<mv->show->glyphcnt )
+	{
+	    BDFCharFree(mv->show->glyphs[sc->orig_pos]);
+	    mv->show->glyphs[sc->orig_pos] = NULL;
+	}
     }
+    
     for ( i=0; i<mv->glyphcnt; ++i ) {
+	MVRefreshValues(mv,i);
+    }
+    for ( i=0; i<mv->glyphcnt; ++i )
+    {
 	if ( mv->glyphs[i].sc == sc )
-    break;
+	    break;
     }
     if ( i>=mv->glyphcnt )
-return;		/* Not displayed */
+	return;		/* Not displayed */
     MVRemetric(mv);
     GDrawRequestExpose(mv->v,NULL,false);
 }

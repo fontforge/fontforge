@@ -126,6 +126,7 @@ return;
     }
     SplineMake(last,cv->active_shape->first,false);
     cv->active_shape->last = cv->active_shape->first;
+    cv->b.sc->suspendMetricsViewEventPropagation = 1;
     SCUpdateAll(cv->b.sc);
 }
 
@@ -307,6 +308,7 @@ return;
       break;
     }
     RedoActiveSplineSet(cv->active_shape);
+    cv->b.sc->suspendMetricsViewEventPropagation = 1;
     SCUpdateAll(cv->b.sc);
 }
 
@@ -363,4 +365,7 @@ return;
 	cv->active_shape->spiro_max = cv->active_shape->spiro_cnt;
     }
     cv->active_shape = NULL;
+
+    cv->b.sc->suspendMetricsViewEventPropagation = 0;
+    SCUpdateAll(cv->b.sc);
 }
