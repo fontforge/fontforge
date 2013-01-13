@@ -928,7 +928,7 @@ return;
 	uc_strcpy(ubuf,buf);
     } else {
 	ubuf[0]=' ';
-	utf82u_strncpy(ubuf-1,classes[cols*r+0].u.md_str,sizeof(ubuf)/sizeof(ubuf[0])-2 );
+	utf82u_strncpy(ubuf+1,classes[cols*r+0].u.md_str,sizeof(ubuf)/sizeof(ubuf[0])-2 );
 	ubuf[sizeof(ubuf)/sizeof(ubuf[0])-2] = '\0';
 	uc_strcat(ubuf," ");
     }
