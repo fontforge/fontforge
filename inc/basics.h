@@ -80,6 +80,7 @@ extern void gfree(void *);
 #define grealloc realloc
 #define gfree free
 #endif /* USE_OUR_MEMORY */
+extern void NoMoreMemMessage(void);
 
 extern void galloc_set_trap(void (*)(void));
 

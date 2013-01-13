@@ -74,6 +74,11 @@ void gfree(void *old) {
 }
 #endif /* USE_OUR_MEMORY */
 
+void NoMoreMemMessage(void) {
+/* Output an 'Out of memory' message, then continue */
+    fprintf(stderr, "Out of memory\n" );
+}
+
 char *copy(const char *str) {
     char *ret;
 

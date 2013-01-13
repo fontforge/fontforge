@@ -165,6 +165,30 @@ FONTFORGE_ARG_ENABLE([tile-path],
                 [enable a 'tile path' command (a variant of 'expand stroke')])],
         [FONTFORGE_CONFIG_TILEPATH])
 
+
+##################
+# Theme selection.
+#
+# go with tango by default
+#
+themename=tango
+
+#
+# Retain the old 2012 theme for those who like it. 
+#
+FONTFORGE_ARG_ENABLE([theme-2012],
+        [AS_HELP_STRING([--enable-theme-2012],
+                [use old circa 2012 icons instead of using the tango default icons])],
+        [FONTFORGE_THEME_TANGO])
+if test x$enable_theme_2012 = xyes; then
+   $themename = 2012
+fi
+
+# select the theme.
+AM_CONDITIONAL(USE_THEME_2012,  test x"$themename" = x2012)
+AM_CONDITIONAL(USE_THEME_TANGO, test x"$themename" = xtango)
+
+
 FONTFORGE_ARG_ENABLE([gb12345],
         [AS_HELP_STRING([--enable-gb12345],
                 [build the GB12345 encoding plugin])],
@@ -195,7 +219,8 @@ i_do_have_native_callbacks="${fontforge_cv_native_callbacks}"
 AC_SEARCH_LIBS([cos],[m])
 
 dnl FIXME: Is this needed, given we are using libltdl?
-dnl AC_SEARCH_LIBS([dlopen],[dl])
+dnl The dlopen() function is in the C library for *BSD and in libdl on GLIBC-based systems
+dnl AC_SEARCH_LIBS([dlopen], [dl dld])
 
 FONTFORGE_CONFIG_X_LIBRARIES
 
@@ -312,6 +337,25 @@ FONTFORGE_CREATE_MAKEFILES
 FONTFORGE_CREATE_PKGCONFIG_FILES
 FONTFORGE_CREATE_SYSTEMSPECIFIC
 FONTFORGE_CONFIG_TESTSUITE
+
+FONTFORGE_GIT_VERSION=""
+if test -d .git; then
+  FONTFORGE_GIT_VERSION=`git log --pretty=format:'%H' -n 1`
+fi
+FONTFORGE_MODTIME="`date '+%s'`L"
+FONTFORGE_MODTIME_STR="`date +'%H:%M %Z %e-%b-%Y'`"
+FONTFORGE_VERSIONDATE="`date '+%y%m%d'`"
+AC_DEFINE_UNQUOTED(FONTFORGE_GIT_VERSION,"$FONTFORGE_GIT_VERSION","git hash that source are built from")
+AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME,"$FONTFORGE_MODTIME","Epoch time that configure was run at")
+AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_STR,"$FONTFORGE_MODTIME_STR",
+	"A user friendly date that that configure was run at: For example 01:48 GMT 6-Sep-2012")
+AC_DEFINE_UNQUOTED(FONTFORGE_VERSIONDATE,"$FONTFORGE_VERSIONDATE","YY MM DD as numbers when configure was run")
+AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_RAW,$FONTFORGE_MODTIME,"Epoch time that configure was run at (no quotes)")
+AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_STR_RAW,$FONTFORGE_MODTIME_STR,
+	"A user friendly date that that configure was run at: For example 01:48 GMT 6-Sep-2012 (no quotes)")
+AC_DEFINE_UNQUOTED(FONTFORGE_VERSIONDATE_RAW,$FONTFORGE_VERSIONDATE,"YY MM DD as numbers when configure was run (no quotes)")
+
+
 
 AC_OUTPUT
 

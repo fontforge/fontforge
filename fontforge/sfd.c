@@ -41,6 +41,11 @@
 #include <dirent.h>
 #include <limits.h>		/* For NAME_MAX or _POSIX_NAME_MAX */
 
+#define GTimer GTimer_GTK
+#include <glib.h>
+#undef GTimer
+
+
 #ifndef NAME_MAX
 # ifndef  _POSIX_NAME_MAX
 #  define _POSIX_NAME_MAX 512
@@ -2004,11 +2009,11 @@ static void SFDFpstClassNamesOut(FILE *sfd,int class_cnt,char **classnames,char 
  */
 static char* getSlashTempName() {
     char* t = 0;
-    
+
     if((t=getenv("TMPDIR"))) {
 	return t;
     }
-    
+
 #ifndef P_tmpdir
 #define P_tmpdir	"/tmp"
 #endif
@@ -2016,8 +2021,7 @@ static char* getSlashTempName() {
 }
 
 
-FILE* MakeTemporaryFile() 
-{
+FILE* MakeTemporaryFile() {
     FILE * ret = 0;
     char template[PATH_MAX];
     int fd;
@@ -2025,35 +2029,44 @@ FILE* MakeTemporaryFile()
     strcpy( template, getSlashTempName() );
     strcat( template, "/" );
     strcat( template, "fontforge-stemp-XXXXXX" );
-    fd = mkstemp( template );
+    fd = g_mkstemp( template );
     ret = fdopen( fd, "r+" );
     unlink( template );
     return ret;
 }
 
+
 /**
  * Read an entire file from the given open file handle and return that data
  * as an allocated string that the caller must free.
+ * If any read or memory error occurs, then free string and return 0.
+ * FIXME: Use a better method than fseek() and ftell() since this does not
+ * play well with stdin, streaming input type files, or files with NULLs
  */
-char* FileToAllocatedString( FILE *f ) 
-{
-    char* ret = 0;
+char* FileToAllocatedString( FILE *f ) {
+    char *ret, *buf;
     long fsize = 0;
     size_t bread = 0;
-    
-    fseek( f, 0, SEEK_END );
-    fsize = ftell( f );
-    fseek( f, 0, SEEK_SET );
-    ret = calloc( fsize + 1, 1 );
-    ret[fsize] = '\0';
-    bread = fread( ret, 1, fsize, f );
-    if( bread != fsize ) {
-	fprintf(stderr,_("Failed to read a file. Bytes read:%ld file size:%ld\n"), bread, fsize );
-	return 0;
-    }
-    return ret;
-}
 
+    /* get approximate file size, and allocate some memory */
+    if ( fseek(f,0,SEEK_END)==0 && \
+	 (fsize=ftell(f))!=-1   && \
+	 fseek(f,0,SEEK_SET)==0 && \
+	 (buf=calloc(fsize+30001,1))!=NULL ) {
+	/* fread in file, size=non-exact, then resize memory smaller */
+	bread=fread(buf,1,fsize+30000,f);
+	if ( bread<=0 || bread >=fsize+30000 || (ret=realloc(buf,bread+1))==NULL ) {
+	    free( buf );
+	} else {
+	    ret[bread] = '\0';
+	    return( ret );
+	}
+    }
+
+    /* error occurred reading in file */
+    fprintf(stderr,_("Failed to read a file. Bytes read:%ld file size:%ld\n"),(long)(bread),fsize );
+    return( 0 );
+}
 
 
 void SFD_DumpLookup( FILE *sfd, SplineFont *sf ) {

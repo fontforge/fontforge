@@ -843,6 +843,7 @@ static void CVAdjustSpline(CharView *cv) {
     TPoint tp[5];
     real t;
     Spline1D *oldx = &old->splines[0], *oldy = &old->splines[1];
+    int oldfrompointtype, oldtopointtype;
 
     if ( cv->b.layerheads[cv->b.drawmode]->order2 )
 return;
@@ -859,7 +860,16 @@ return;
     tp[3] = tp[0];		/* Give more weight to this point than to the others */
     tp[4] = tp[0];		/*  ditto */
     cv->p.spline = ApproximateSplineFromPoints(old->from,old->to,tp,5,old->order2);
-    old->from->pointtype = pt_corner; old->to->pointtype = pt_corner;
+
+    /* don't change hvcurves to corners */
+    oldfrompointtype = old->from->pointtype;
+    oldtopointtype = old->to->pointtype;
+    old->from->pointtype = old->to->pointtype = pt_corner;
+    if ( oldfrompointtype == pt_hvcurve )
+        SPChangePointType(old->from, pt_hvcurve);
+    if ( oldtopointtype == pt_hvcurve )
+        SPChangePointType(old->to, pt_hvcurve);
+
     old->from->nextcpdef = old->to->prevcpdef = false;
     SplineFree(old);
     CVSetCharChanged(cv,true);

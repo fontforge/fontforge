@@ -64,6 +64,8 @@ extern int u_GFileUnlink(unichar_t *name);
 
 extern char* getGResourceProgramDir(void);
 extern void  FindProgDir(char *prog);
+extern char *getShareDir(void);
 extern char *getLocaleDir(void);
+extern char *getPixmapDir(void);
 
 #endif
