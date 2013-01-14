@@ -41,6 +41,11 @@
 #include <dirent.h>
 #include <limits.h>		/* For NAME_MAX or _POSIX_NAME_MAX */
 
+#define GTimer GTimer_GTK
+#include <glib.h>
+#undef GTimer
+
+
 #ifndef NAME_MAX
 # ifndef  _POSIX_NAME_MAX
 #  define _POSIX_NAME_MAX 512
@@ -2024,7 +2029,7 @@ FILE* MakeTemporaryFile() {
     strcpy( template, getSlashTempName() );
     strcat( template, "/" );
     strcat( template, "fontforge-stemp-XXXXXX" );
-    fd = mkstemp( template );
+    fd = g_mkstemp( template );
     ret = fdopen( fd, "r+" );
     unlink( template );
     return ret;

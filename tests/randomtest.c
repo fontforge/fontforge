@@ -222,9 +222,9 @@ return( error_count + ceil(error_fraction*item->len));
 
 static int getRandom(int low, int high) {
     if ( low-high<0x10000 )
-return( low + ((random()>>8)%(high+1-low)) );
+return( low + ((g_random_int()>>8)%(high+1-low)) );
 
-return( low + (random()%(high+1-low)) );
+return( low + (g_random_int()%(high+1-low)) );
 }
 
 static int copyfont(struct fontlist *item,char *newfont) {
@@ -479,7 +479,7 @@ exit(1);
 	ExecuteTest(testfile);		/* This should never return */
 
     time(&now);
-    srandom(now);
+    g_random_set_seed(now);
 
     FindFonts(dirs,exts);
     mkdir(results_dir,0755);

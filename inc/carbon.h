@@ -4,13 +4,15 @@
 #undef __GNUC_STDC_INLINE__
 #endif
 
-#define FontInfo MacFontInfo
-#define KernPair MacKernPair
+#define AnchorPoint MacAnchorPoint
+#define FontInfo    MacFontInfo
+#define KernPair    MacKernPair
 
 #include <Carbon/Carbon.h>
 
 #undef FontInfo
 #undef KernPair
+#undef AnchorPoint
 
 
 

@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "config.h"
 #include "fontforgeui.h"
 #include "annotations.h"
 #include <gfile.h>
@@ -54,21 +56,16 @@
 #endif
 #ifdef __Mac
 #  include <carbon.h>
-
 /* For reasons obscure to me RunApplicationEventLoop is not defined in */
 /*  the mac header files if we are in 64 bit mode. Strangely it seems to */
 /*  be in the libraries and functional */
 #  if __LP64__
 extern void RunApplicationEventLoop(void);
 #  endif
-#  undef FontInfo
-#  undef KernPair
 #endif
 
 #if defined(__MINGW32__)
 #include <Windows.h>
-int  srandom( int n ){ srand(n); }
-int  random( void ){ return rand();}
 void sleep( int n ){ _sleep(n);}
 #endif
 
@@ -166,7 +163,7 @@ static GTimer *autosave_timer, *splasht;
 static GFont *splash_font, *splash_italic;
 static int as,fh, linecnt;
 static unichar_t msg[470];
-static unichar_t *lines[20], *is, *ie;
+static unichar_t *lines[30], *is, *ie;
 
 void ShowAboutScreen(void) {
     static int first=1;
@@ -209,11 +206,22 @@ static void SplashLayout() {
 	if ( *pt ) ++pt;
     }
     uc_strcpy(pt, " FontForge used to be named PfaEdit.");
+
+    pt += u_strlen(pt);
+    lines[linecnt++] = pt;
+    uc_strcpy(pt,"  git hash: ");;
+    pt += u_strlen(pt);
+    lines[linecnt++] = pt;
+    uc_strcat(pt, FONTFORGE_GIT_VERSION);
+    
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcpy(pt,"  Version: ");;
     uc_strcat(pt,source_modtime_str);
-    uc_strcat(pt," (");
+    
+    pt += u_strlen(pt);
+    lines[linecnt++] = pt;
+    uc_strcat(pt,"           (");
     uc_strcat(pt,source_version_str);
     uc_strcat(pt,"-ML");
 #ifdef FREETYPE_HAS_DEBUGGER
@@ -228,7 +236,7 @@ static void SplashLayout() {
     uc_strcat(pt,")");
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
-    uc_strcpy(pt,"  Library Version: ");
+    uc_strcpy(pt,"  Lib Version: ");
     uc_strcat(pt,library_version_configuration.library_source_modtime_string);
     lines[linecnt++] = pt+u_strlen(pt);
     lines[linecnt] = NULL;
@@ -787,6 +795,7 @@ int fontforge_main( int argc, char **argv ) {
 	    ".\n",
 	    source_modtime_str );
     fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
+    fprintf( stderr, " Based on source from git with hash:%s\n", FONTFORGE_GIT_VERSION );
 
     /* Must be done before we cache the current directory */
     /* Change to HOME dir if specified on the commandline */
@@ -926,9 +935,22 @@ int fontforge_main( int argc, char **argv ) {
 
 	gfree(path);
     }
-#elif defined(SHAREDIR)
-    GGadgetSetImageDir(SHAREDIR "/pixmaps");
-    GResourceAddResourceFile(SHAREDIR "/resources/fontforge.resource",GResourceProgramName,false);
+#else
+    {
+	char shareDir[PATH_MAX];
+	char* sd = getShareDir();
+	strncpy( shareDir, sd, PATH_MAX );
+	if(!sd) {
+	    strcpy( shareDir, SHAREDIR );
+	}
+
+	char path[PATH_MAX];
+	snprintf(path, PATH_MAX, "%s%s", shareDir, "/pixmaps" );
+	GGadgetSetImageDir( path );
+	
+	snprintf(path, PATH_MAX, "%s%s", shareDir, "/resources/fontforge.resource" );
+	GResourceAddResourceFile(path, GResourceProgramName,false);
+    }
 #endif
     hotkeysLoad();
 
