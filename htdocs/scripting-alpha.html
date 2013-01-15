@@ -206,6 +206,23 @@ Generate(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file[,namelist-name]]]]])
 		kern_statemachine
 	    </UL>
 	    <P>
+      The lookup flags define what glyphs to include or ignore. 
+	    <TABLE BORDER CELLPADDING="2">
+	      <TR>
+          <TD>0</TD>
+          <TD>Include all glyphs</TD>
+	      </TR>
+	      <TR>
+          <TD>8</TD>
+          <TD>Ignore mark_class_cnt</TD>
+	      </TR>
+	      <TR>
+          <TD>16</TD>
+          <TD>Ignore mark_set_cnt</TD>
+	      </TR>
+	      <TR>
+      </TABLE>
+	    <P>
 	    A feature-script-lang array is an array with one entry for each feature (there
 	    may be no entries if there are no features). Each entry is itself a two element
 	    array, the first entry is a string containing a 4 letter feature tag, and
