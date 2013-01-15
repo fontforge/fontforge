@@ -2215,7 +2215,7 @@ static struct keywords {
     char *name;
     enum toktype tok;
 } fea_keywords[] = {
-/* list must be in toktype order */
+/* non-keyword tokens (must come first) */
     { "name", tk_name }, { "glyphclass", tk_class }, { "integer", tk_int },
     { "random character", tk_char}, { "cid", tk_cid }, { "EOF", tk_eof },
 /* keywords now */
