@@ -382,6 +382,7 @@ FontView.Menu.View.36 pixel outline:Ctl+3
 FontView.Menu.View.48 pixel outline:Ctl+4
 FontView.Menu.View.72 pixel outline:Ctl+7
 FontView.Menu.View.96 pixel outline:Ctl+9
+FontView.Menu.View.128 pixel outline:Ctl+1
 FontView.Menu.View.Anti Alias:Ctl+5
 FontView.Menu.View.Fit to em:Ctl+6
 FontView.Menu.View.Bitmap Magnification...:No Shortcut
