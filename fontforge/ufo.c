@@ -1911,7 +1911,7 @@ return( NULL );
     sf->ascent = as; sf->descent = ds;
     if ( sf->fontname==NULL ) {
 	if ( stylename!=NULL && sf->familyname!=NULL )
-	    sf->fullname = strconcat3(sf->familyname,"-",stylename);
+	    sf->fontname = strconcat3(sf->familyname,"-",stylename);
 	else
 	    sf->fontname = "Untitled";
     }
