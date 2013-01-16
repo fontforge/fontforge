@@ -3865,7 +3865,9 @@ static void MVChar(MetricsView *mv,GEvent *event) {
     if ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ||
 	    event->u.chr.keysym == GK_Down || event->u.chr.keysym==GK_KP_Down ) {
 	    GGadget *active = GWindowGetFocusGadgetOfWindow(mv->gw);
-	    unichar_t *end;
+	    if(!active)
+		return;
+ 	    unichar_t *end;
 	    double val = u_strtod(_GGadgetGetTitle(active),&end);
 	    if (isValidInt(end)) {
 		int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? 1 : -1;
