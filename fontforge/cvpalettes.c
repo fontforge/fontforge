@@ -41,6 +41,9 @@ extern int interpCPsOnMotion;
 #include <utype.h>
 #include <gresource.h>
 
+static void CVLCheckLayerCount(CharView *cv, int resize);
+
+
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
 #define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
@@ -1846,6 +1849,24 @@ return;
     CVLayers1Set(cv);
 }
 
+/**
+ * Get the offset at the right hand size of the eyeball to show/hide
+ * a layer. This is the x offset where the Q/C indicators might be drawn.
+ */
+static int32 Layers_getOffsetAtRightOfViewLayer(CharView *cv)
+{
+    int32 ret = 64;
+    GGadget *v = GWidgetGetControl(cvlayers,CID_VBase+1);
+    if( v )
+    {
+	GRect size;
+	GGadgetGetSize(v,&size);
+	ret = 7 + size.width;
+    }
+    return ret;
+}
+
+
  /* Draw the fg/bg, cubic/quadratic columns, plus layer preview and label name */
 static void LayersExpose(CharView *cv,GWindow pixmap,GEvent *event) {
     int i, ll, y;
@@ -1863,8 +1884,9 @@ static void LayersExpose(CharView *cv,GWindow pixmap,GEvent *event) {
     if ( event->u.expose.rect.y+event->u.expose.rect.height<layer_header_height )
 return;
 
+    int offsetAtRightOfViewLayer = Layers_getOffsetAtRightOfViewLayer(cv);
     column_width = layerinfo.column_width;
-
+    
     GDrawSetDither(NULL, false);	/* on 8 bit displays we don't want any dithering */
     ww=layerinfo.sb_start;
 
@@ -1876,10 +1898,20 @@ return;
     base.trans = -1;
     GDrawSetFont(pixmap,layerinfo.font);
 
-    quadcol=fgcol=viscol;
-    if ( layerscols & LSHOW_CUBIC ) { quadcol = viscol+column_width; fgcol=viscol+column_width; } /* show quad col */
-    if ( layerscols & LSHOW_FG    ) { fgcol = quadcol+column_width; } /* show fg col */
-    editcol=fgcol+column_width;
+    quadcol=fgcol=offsetAtRightOfViewLayer;
+    if ( layerscols & LSHOW_CUBIC )
+    {
+	/* show quad col */
+	quadcol = offsetAtRightOfViewLayer;
+	fgcol   = offsetAtRightOfViewLayer+column_width;
+    } 
+    if ( layerscols & LSHOW_FG )
+    {
+	/* show fg col */
+	fgcol = quadcol+column_width;
+    }
+    // editcol is the X offset where the layer name label should be drawn
+    editcol = fgcol+column_width;
 
      /* loop once per layer, where 0==guides, 1=back, 2=fore, etc */
     for ( i=(event->u.expose.rect.y-layer_header_height)/layer_height;
@@ -1965,6 +1997,9 @@ static void CVLRemoveEdit(CharView *cv, int save) {
 		&& uc_strcmp( str,cv->b.sc->parent->layers[l].name) ) {
 	    free( cv->b.sc->parent->layers[l].name );
 	    cv->b.sc->parent->layers[l].name = cu_copy( str );
+
+	    CVLCheckLayerCount(cv,true);
+	    CVLayersSet(cv);
 	}
 	GGadgetSetVisible(g,false);
 	GDrawRequestExpose(cvlayers,NULL,false);
@@ -1992,12 +2027,21 @@ static void CVLCheckLayerCount(CharView *cv, int resize) {
     char namebuf[40];
     int viscol=7, quadcol, fgcol, editcol;
     extern int _GScrollBar_Width;
+    int offsetAtRightOfViewLayer = Layers_getOffsetAtRightOfViewLayer(cv);
 
     if (layerinfo.rename_active) CVLRemoveEdit(cv,true);
 
-    quadcol=fgcol=viscol;
-    if ( layerscols & LSHOW_CUBIC ) { quadcol = viscol+column_width; fgcol=viscol+column_width; }
-    if ( layerscols & LSHOW_FG    ) { fgcol = quadcol+column_width; }
+    quadcol=fgcol=offsetAtRightOfViewLayer;
+    if ( layerscols & LSHOW_CUBIC )
+    {
+	quadcol = offsetAtRightOfViewLayer;
+	fgcol   = offsetAtRightOfViewLayer+column_width;
+    }
+    if ( layerscols & LSHOW_FG )
+    {
+	fgcol = quadcol+column_width;
+    }
+    // editcol is the X offset where the layer name label should be drawn
     editcol = fgcol+column_width;
 
     /* First figure out if we need to create any new widgets. If we have more */
@@ -2034,7 +2078,8 @@ static void CVLCheckLayerCount(CharView *cv, int resize) {
     GGadgetMove(GWidgetGetControl(cvlayers,CID_LayersMenu), x+5, 5+(y-8-size.height)/2);
     maxwidth=x+5+size.width;
 
-    if ( !resize ) {
+    if ( !resize )
+    {
          /* adjust the number of layers that can be visible in the palette */
         GDrawGetSize(cvlayers,&size);
         layerinfo.visible_layers=(size.height-layer_header_height)/layer_height;
@@ -2049,12 +2094,8 @@ static void CVLCheckLayerCount(CharView *cv, int resize) {
 	GGadget *v = GWidgetGetControl(cvlayers,CID_VBase+i);
 
         width=0;
-        togsize=viscol;
-        GGadgetGetSize(v,&size);
-        togsize+=size.width; /* makes togsize  == the right edge of the visibility column */
-        if ( layerscols & LSHOW_CUBIC ) { togsize += column_width; } /* Quadratic column */
-        if ( layerscols & LSHOW_FG    ) { togsize += column_width; } /* fg/bg column     */
-
+	togsize = editcol;
+	
 	if ( i>=0 && i<sc->layer_cnt ) {
 	    char *hasmn = strchr(sc->parent->layers[i].name,'_');
 	    if ( hasmn==NULL && i>=2 && i<9 && strlen(sc->parent->layers[i].name)<30 ) {
@@ -2066,6 +2107,7 @@ static void CVLCheckLayerCount(CharView *cv, int resize) {
                 sprintf(namebuf,"%s", i==-1 ? _("Guide") : (i==0 ?_("Back") : _("Fore")) );
             }
             width = GDrawGetText8Width(cvlayers, namebuf, -1);
+	    width += 20; // padding takes up some space.
 	    if ( width+togsize>maxwidth ) maxwidth = width + togsize;
 	} else if ( i==-1 ) {
 	    if ( width+togsize>maxwidth ) maxwidth = width + togsize;
@@ -2087,20 +2129,22 @@ static void CVLCheckLayerCount(CharView *cv, int resize) {
          /* don't need the scroll bar, so turn it off */
 	GGadgetSetVisible(GWidgetGetControl(cvlayers,CID_SB),false);
     } else {
-	GGadget *sb = GWidgetGetControl(cvlayers,CID_SB);
-	maxwidth += 2 + GDrawPointsToPixels(cv->gw,_GScrollBar_Width);
-	GScrollBarSetBounds(sb,0,sc->layer_cnt,layerinfo.visible_layers);
-	GScrollBarSetPos(sb,cv->layers_off_top);
-	GGadgetSetVisible(sb,true);
+	if( !resize )
+	{
+	    GGadget *sb = GWidgetGetControl(cvlayers,CID_SB);
+	    maxwidth += 2 + GDrawPointsToPixels(cv->gw,_GScrollBar_Width);
+	    GScrollBarSetBounds(sb,0,sc->layer_cnt,layerinfo.visible_layers);
+	    GScrollBarSetPos(sb,cv->layers_off_top);
+	    GGadgetSetVisible(sb,true);
+	}
     }
 
      /* Resize the palette to fit */
-    if ( resize ) {
+    if ( resize )
+    {
         y += GDrawPointsToPixels(NULL,3);
         GDrawGetSize(cvlayers,&size);
-        if ( size.width != maxwidth || y!=size.height ) {
-            GDrawResize(cvlayers,maxwidth,y);
-        }
+	GDrawResize(cvlayers,maxwidth,y);
     }
 
     GDrawGetSize(cvlayers,&size);
@@ -2627,6 +2671,11 @@ return ( true );
                 GGadgetSetTitle8(g, cv->b.sc->parent->layers[layer].name);
 
                 layerinfo.rename_active=1;
+
+		CVLCheckLayerCount(cv,true); /* update widget existence */
+		CVLayersSet(cv);       /* update widget state     */
+		GDrawRequestExpose(cvtools,NULL,false);
+		
               } break;
 	    }
         } else if ( event->u.control.subtype == et_radiochanged ) {
@@ -2937,7 +2986,8 @@ return( cvlayers );
 
     GGadgetGetSize(GWidgetGetControl(cvlayers,CID_VGrid),&size);
     layer_height = size.height;
-    layerinfo.column_width = size.width;
+    int32 w = GDrawGetText8Width(cvlayers, "W", -1);
+    layerinfo.column_width = w+6;
 
     layerinfo.active = CVLayer(&cv->b); /* the index of the active layer */
     layerinfo.mo_col   = -2; /* -2 forces this variable to be updated. afterwords it will be -1 for nothing, or >=0 */
@@ -2945,6 +2995,7 @@ return( cvlayers );
     layerinfo.offtop   = 0;
     layerinfo.rename_active = 0;
 
+    
 return( cvlayers );
 }
 
