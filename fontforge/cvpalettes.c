@@ -61,6 +61,7 @@ static GWindow cvlayers2=NULL;
 static int layerscols = LSHOW_CUBIC|LSHOW_FG|LSHOW_PREVIEW; /* which columns to show in layers1 palette */
 static int layer_height = 0;        /* height of each layer row in layers1 palette */
 static int layer_header_height = 0; /* height of initial stuff in layers1 palette  */
+static int layer_footer_height = 0; /* height of +/- buttons at bottom of layers1 palette */
 static int layers_max = 2; /* Maximum number of layers for which widgets have been allocated in layers1 palette */
 struct l2 {
     int active;           /* index of the active layer */
@@ -1912,7 +1913,8 @@ return;
     }
     // editcol is the X offset where the layer name label should be drawn
     editcol = fgcol+column_width;
-
+    int bottomOfLast = 0;
+    
      /* loop once per layer, where 0==guides, 1=back, 2=fore, etc */
     for ( i=(event->u.expose.rect.y-layer_header_height)/layer_height;
 	    i<(event->u.expose.rect.y+event->u.expose.rect.height+layer_height-layer_header_height)/layer_height;
@@ -1921,6 +1923,7 @@ return;
         if ( ll>=cv->b.sc->layer_cnt || ll<-1 ) continue;
 
         y = layer_header_height + i*layer_height;
+	bottomOfLast = y + layer_height;
         if ( y<layer_header_height ) continue;
 
          /* draw quadratic/cubic toggle */
@@ -1983,6 +1986,14 @@ return;
 		        (char *) str,-1,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
 	}
     }
+
+    if( bottomOfLast )
+    {
+	GGadgetSetY(GWidgetGetControl(cvlayers,CID_AddLayer),    bottomOfLast + 2 );
+	GGadgetSetY(GWidgetGetControl(cvlayers,CID_RemoveLayer), bottomOfLast + 2 );
+	GGadgetSetY(GWidgetGetControl(cvlayers,CID_LayersMenu),  bottomOfLast + 2 );
+    }
+    
 }
 
 /* Remove the layer rename edit box. If save!=0, then record the text as the new layer name. */
@@ -2072,6 +2083,7 @@ static void CVLCheckLayerCount(CharView *cv, int resize) {
     x = 7+size.width;
     y = layer_header_height;
     GGadgetMove(GWidgetGetControl(cvlayers,CID_RemoveLayer), x, 5);
+    GGadgetSetSize(GWidgetGetControl(cvlayers,CID_RemoveLayer),&size);
     GGadgetGetSize(GWidgetGetControl(cvlayers,CID_RemoveLayer),&size);
     x += size.width;
     GGadgetGetSize(GWidgetGetControl(cvlayers,CID_LayersMenu),&size);
@@ -2144,7 +2156,7 @@ static void CVLCheckLayerCount(CharView *cv, int resize) {
     {
         y += GDrawPointsToPixels(NULL,3);
         GDrawGetSize(cvlayers,&size);
-	GDrawResize(cvlayers,maxwidth,y);
+	GDrawResize(cvlayers,maxwidth,y+layer_footer_height);
     }
 
     GDrawGetSize(cvlayers,&size);
@@ -2981,8 +2993,8 @@ return( cvlayers );
 
     gadget=GWidgetGetControl(cvlayers,CID_AddLayer);
     GGadgetGetSize(gadget,&size);
-    //layer_header_height = size.y + size.height + 2*GDrawPointsToPixels(((GLabel*)gadget)->box->border_width);
-    layer_header_height = size.y + size.height;
+    layer_header_height = 0;
+    layer_footer_height = size.y + size.height;
 
     GGadgetGetSize(GWidgetGetControl(cvlayers,CID_VGrid),&size);
     layer_height = size.height;
