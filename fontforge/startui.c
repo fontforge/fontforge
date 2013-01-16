@@ -489,7 +489,7 @@ static  OSErr install_apple_event_handlers(void) {
 #else
     sprintf( buffer, "%s/.FontForge-LogFile.txt", getenv("HOME"));
 #endif
-    logfile = fopen("/Users/gww/LogFile.txt","w");
+    logfile = fopen("/tmp/LogFile.txt","w");
  }
  if ( logfile==NULL )
   logfile = stderr;
