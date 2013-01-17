@@ -67,5 +67,6 @@ extern void  FindProgDir(char *prog);
 extern char *getShareDir(void);
 extern char *getLocaleDir(void);
 extern char *getPixmapDir(void);
+extern char *getHelpDir(void);
 
 #endif
