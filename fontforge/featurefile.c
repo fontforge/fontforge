@@ -42,6 +42,8 @@
 #include <ustring.h>
 #include <locale.h>
 
+#include <glib.h>
+
 /* Adobe's opentype feature file */
 /* Which suffers incompatible changes according to Adobe's whim */
 /* Currently trying to support the version of december 2008, Version 1.8. */
@@ -1724,6 +1726,68 @@ static void UniOut(FILE *out,char *name ) {
     }
 }
 
+static gboolean dump_header_languagesystem_hash_fe( gpointer key,
+						gpointer value,
+						gpointer user_data )
+{
+    FILE *out = (FILE*)user_data;
+    fprintf( out, "\nlanguagesystem %s;", (char*)key );
+    return 0;
+}
+
+static void donothing(gpointer data)
+{
+}
+
+
+static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
+    int isgpos;
+    int i,l,s, subl;
+    OTLookup *otl;
+    FeatureScriptLangList *fl;
+    struct scriptlanglist *sl;
+    struct otffeatname *fn;
+    struct otfname *on;
+
+    GTree* ht = g_tree_new_full( (GCompareDataFunc)g_ascii_strcasecmp, 0, free, donothing );
+    
+    for ( isgpos=0; isgpos<2; ++isgpos ) {
+	uint32 *feats = SFFeaturesInScriptLang(sf,isgpos,0xffffffff,0xffffffff);
+	if ( feats[0]!=0 ) {
+	    uint32 *scripts = SFScriptsInLookups(sf,isgpos);
+	    note_nested_lookups_used_twice(isgpos ? sf->gpos_lookups : sf->gsub_lookups);
+	    for ( i=0; feats[i]!=0; ++i ) {
+
+		for ( s=0; scripts[s]!=0; ++s ) {
+		    uint32 *langs = SFLangsInScript(sf,isgpos,scripts[s]);
+		    int firsts = true;
+		    for ( l=0; langs[l]!=0; ++l ) {
+			int first = true;
+			for ( otl = isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl=otl->next ) {
+			    for ( fl=otl->features; fl!=NULL; fl=fl->next ) if ( fl->featuretag==feats[i] ) {
+				    for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) if ( sl->script==scripts[s] ) {
+					    for ( subl=0; subl<sl->lang_cnt; ++subl ) {
+						uint32 lang = subl<MAX_LANG ? sl->langs[subl] : sl->morelangs[subl-MAX_LANG];
+
+						char* key[100];
+						snprintf(key,99,"%c%c%c%c %c%c%c%c",
+							 scripts[s]>>24, scripts[s]>>16, scripts[s]>>8, scripts[s],
+							 langs[l]>>24, langs[l]>>16, langs[l]>>8, langs[l] );
+						g_tree_insert( ht, copy(key), "" );
+					    }
+					}
+				}
+			}
+		    }
+		}
+	    }
+	}
+    }
+    
+    g_tree_foreach( ht, dump_header_languagesystem_hash_fe, out );
+    fprintf( out, "\n" );
+}
+
 static void dump_gsubgpos(FILE *out, SplineFont *sf) {
     int isgpos;
     int i,l,s, subl;
@@ -1795,7 +1859,7 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
 			    found:
 			    if ( fl!=NULL ) {
 				if ( firsts ) {
-				    fprintf( out, "\n  script %c%c%c%c;\n",
+				    fprintf( out, "\n xxx  script %c%c%c%c;\n",
 					    scripts[s]>>24, scripts[s]>>16, scripts[s]>>8, scripts[s] );
 				    firsts = false;
 				}
@@ -1918,6 +1982,7 @@ void FeatDumpFontLookups(FILE *out,SplineFont *sf) {
     untick_lookups(sf);
     preparenames(sf);
     gdef_markclasscheck(out,sf,NULL);
+    dump_header_languagesystem(out,sf);
     dump_gsubgpos(out,sf);
     dump_gdef(out,sf);
     dump_base(out,sf);
