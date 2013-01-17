@@ -1004,15 +1004,7 @@ static void DefaultXUID(void) {
 
 static void DefaultHelp(void) {
     if ( helpdir==NULL ) {
-#if defined(__MINGW32__)
-	helpdir = copy("");
-#elif defined(DOCDIR)
-	helpdir = copy(DOCDIR "/");
-#elif defined(SHAREDIR)
-	helpdir = copy(SHAREDIR "/doc/fontforge/");
-#else
-	helpdir = copy("/usr/local/share/doc/fontforge/");
-#endif
+	helpdir = copy(getHelpDir());
     }
 }
 
