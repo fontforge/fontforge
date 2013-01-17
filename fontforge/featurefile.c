@@ -1859,7 +1859,7 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
 			    found:
 			    if ( fl!=NULL ) {
 				if ( firsts ) {
-				    fprintf( out, "\n xxx  script %c%c%c%c;\n",
+				    fprintf( out, "\n script %c%c%c%c;\n",
 					    scripts[s]>>24, scripts[s]>>16, scripts[s]>>8, scripts[s] );
 				    firsts = false;
 				}
