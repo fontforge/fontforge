@@ -3,28 +3,29 @@ George Williams
 
 Aktado <aktado@users.sourceforge.jp>
 Arthaey Angosii
-Alexey Kryukov
+Alexey Kryukov - nowakowskittfinstr.c
 Barry Schwartz
 Baruch Even
-Ben Martin
+Ben Martin - hotkeys.c, hotkeys.h
 Craig Lennox
 Deron Meranda
 Dave Levine
 Dong Yang
 Georg Duffner
 J. Jansen - gv - ANALYZE_MAP.COM
+Johannes Plass - gv = ANALYZE_MAP.COM
 Jonathan Hanna
 Jonathan Hue
-Johannes Plass - gv = ANALYZE_MAP.COM
+Joshua Richardson
 KANOU
-Kemie Guaida
+Kemie Guaida - Tango PixMaps
 Khaled Hosny
 Lu Wang
 Matthew Petroff
 Matthew Skala
-Max Rabkin
+Max Rabkin - excepthook.py
 Michal Mazurek
-Michal Nowakowski
+Michal Nowakowski - nowakowskittfinstr.c
 Scott Pakin - Packaging
 Timothy O. Theisen - gv = ANALYZE_MAP.COM
 Tom Harvey - fontforge.1
