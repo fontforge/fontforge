@@ -2214,14 +2214,15 @@ return( 0 );
 	        if (fp->insubs) { /* break CharStrings onto a seperate line */
 	            putBack(fp, temp, temptok, ch, &pt);
 	            putBack(fp, temp, "", '/', &pt);
+		    fp->insubs = 0;
     break;
 	        }
 	    }
-	} else if ( sptok && isspace(ch)) {
+	} else if ( sptok && isspace(ch) ) {
 	    nowspace = 1;
 	    if ( ch=='\n' || ch=='\r' )
     break;
-	} else if ( sptok && !isdigit(ch))
+	} else if ( sptok && !isdigit(ch) )
 	    sptok = 0;
 	else if ( rpt!=NULL && ch==*rpt ) {
 	    if ( *++rpt=='\0' ) {
@@ -2236,14 +2237,14 @@ return( 0 );
 	} else if ( rpt!=NULL ) {
 	    rpt = NULL;
 	    willbehex = false;
-	} else if ( isdigit(ch)) {
+	} else if ( isdigit(ch) ) {
 	    sptok = 0;
 	    nownum = 1;
 	    if ( innum )
 		val = 10*val + ch-'0';
 	    else
 		val = ch-'0';
-	} else if ( isspace(ch)) {
+	} else if ( isspace(ch) ) {
 	    nowspace = 1;
 	    if ( ch=='\n' || ch=='\r' )
     break;
