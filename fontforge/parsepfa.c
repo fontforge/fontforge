@@ -39,7 +39,7 @@
 struct fontparse {
     FontDict *fd, *mainfd;
     /* always in font data */
-    unsigned int infi:1;
+    unsigned int infi:1;		/* in definition of FontInfo dict */
     unsigned int inchars:1;
     unsigned int inprivate:1;
     unsigned int insubs:1;
@@ -1314,10 +1314,78 @@ static char *rmbinary(char *line) {
 		pt[0] = '\n';
 		pt[1] = '\0';
 	    }
-	break;
+	    break;
 	}
     }
-return( line );
+    return( line );
+}
+
+/* makePrintable():							*/
+/* Convert the given null-terminated string into one that has all	*/
+/* binary chars converted to corresponding hex encoding. Show binary as	*/
+/* hex-encoded for printability; Return value must be free() later.	*/
+/* go see "Re: [Fontforge-devel] stuck in infinite loop", 2012August22	*/
+static char *makePrintable(const char *line) {
+    unsigned bufflen = strlen(line) * 2 + 1;
+    char *retval = malloc(bufflen);
+    if ( !retval ) {
+	LogError(_("makePrintable(): unable to alloc memory"));
+	return( NULL );
+    }
+    const char *rdpt;
+    char *wrpt = retval;
+    for (rdpt = line; *rdpt; ++rdpt) {
+	if ( ( *rdpt<' ' || *rdpt>=0x7f ) && *rdpt!='\n' ) {
+	    snprintf(wrpt, 3, "%.2x", *rdpt);
+	    wrpt += 2;
+	} else {
+	    *wrpt++ = *rdpt;
+	}
+    }
+    *wrpt = '\0';
+
+    return( retval );
+}
+
+/* Does the buffer ending at "pt" end with "str"?  Look back as far as	*/
+/* "n" chars. "pt" should point to final character in buffer, and not	*/
+/* not a terminating null. Return 1 if matched, else 0 if error		*/
+/* go see "Re: [Fontforge-devel] stuck in infinite loop", 2012August22	*/
+static int matchFromBack(const char *pt, const char *str, int n) {
+    int i, num_to_check = strlen(str);
+    const char *strpt = str + num_to_check - 1;
+    if ( n < num_to_check ) num_to_check = n;
+    for (i = 0; i < num_to_check; i++) {
+	if (*pt-- != *strpt--) return( 0 );
+    }
+
+    return( 1 );  /* they matched */
+}
+
+/* putBack():								*/
+/* Puts "str", and "last" if not '\0' back onto front of filestream f;	*/
+/* also moves "pt" back the same number of characters. This routine is	*/
+/* is part of a large patch which is best described in the mailing list	*/
+/* go see "Re: [Fontforge-devel] stuck in infinite loop", 2012August22	*/
+static void putBack(struct fontparse *fp, FILE *f, const char *str, char last, char **pt) {
+    if (last) {
+	(*pt)--;
+	if ( ungetc(last, f)<0 ) {
+	    fp->alreadycomplained = 1;
+	    LogError(_("Internal Err: Unable to put data back into file"));
+	    return;
+	}
+    }
+
+    const char *backpt;
+    for (backpt = str + strlen(str) - 1; backpt >= str; backpt--) {
+	if ( ungetc(*backpt, f)<0 ) {
+	    fp->alreadycomplained = 1;
+	    LogError(_("Internal Err: Unable to put data back into file"));
+	    break;
+	}
+    }
+    pt -= strlen(str);
 }
 
 static void sfnts2tempfile(struct fontparse *fp,FILE *in,char *line) {
@@ -1533,7 +1601,7 @@ return;
 	} else if ( *line=='\n' || *line=='\0' ) {
 	    /* Ignore blank lines */;
 	} else if ( !fp->alreadycomplained ) {
-	    LogError( _("Didn't understand \"%s"), rmbinary(line) );
+	    LogError( _("Didn't understand \"%s\" inside subs def'n"), rmbinary(line) );
 	    fp->alreadycomplained = true;
 	}
     } else if ( fp->inchars ) {
@@ -1680,7 +1748,7 @@ return;
 	    fp->pending_parse = &fp->fd->fontinfo->blendaxistypes;
 	    AddValue(fp,NULL,line,endtok);
 	} else if ( !fp->alreadycomplained ) {
-	    LogError( _("Didn't understand \"%s"), rmbinary(line) );
+	    LogError(_("Didn't understand \"%s\" in font info"), rmbinary(line));
 	    fp->alreadycomplained = true;
 	}
     } else if ( fp->inblend ) {
@@ -1788,7 +1856,8 @@ return;
 		fp->fd->blendfontinfo = gcalloc(1,sizeof(struct psdict));
 		InitDict(fp->fd->blendfontinfo,line);
 	    } else {
-		fp->infi = 1;
+		if ( !strstr(line, "end") )
+		    fp->infi = 1;
 	    }
 return;
 	} else if ( strstr(line,"/Blend")!=NULL && strstr(line,"dict")!=NULL ) {
@@ -1939,7 +2008,7 @@ return;
 	} else if ( fp->skipping_mbf ) {	/* Skip over the makeblendedfont defn in a multimaster font */
 	    /* Do Nothing */
 	} else if ( !fp->alreadycomplained ) {
-	    LogError( _("Didn't understand \"%s"), rmbinary(line) );
+	    LogError( _("Didn't understand \"%s\" in blended font defn"), rmbinary(line) );
 	    fp->alreadycomplained = true;
 	}
     }
@@ -1976,7 +2045,8 @@ return;
 		fp->alreadycomplained = true;
 	    }
 	} else if ( !fp->alreadycomplained ) {
-	    LogError( _("Didn't understand \"%s"), rmbinary(line) );
+	    LogError( _("Didn't understand \"%s\" while adding info to private subroutines"),
+	                rmbinary(line) );
 	    fp->alreadycomplained = true;
 	}
     } else if ( fp->inchars ) {
@@ -2011,9 +2081,14 @@ return;
 	    }
 return;
 	} else if ( strstr(line,"/Subrs")!=NULL ) {
-	    pt = strstr(line,"dup");
-	    if ( pt!=NULL )
-		*pt = '\0';
+	    /* font is defining glyph on same line as Subrs array,	*/
+	    /* which we need to parse using parseline;			*/
+	    /* remove the binary glyph def and retry parse; then add	*/
+	    /* the glyph def back and continue parsing binary stuff	*/
+	    pt = binstart; /* start at binary, work backwards, find glyph def */
+	    while (--pt >= line) if (!strncmp("dup", pt, 3)) break;
+	    if ( pt<line ) pt = NULL;
+	    if ( pt!=NULL ) *pt = '\0';
 	    parseline(fp,line,in);
 	    if ( pt!=NULL ) {
 		*pt = 'd';
@@ -2027,16 +2102,22 @@ return;
     }
 }
 
-/* In the book the token which starts a character description is always RD but*/
-/*  it's just the name of a subroutine which is defined in the private diction*/
-/*  and it could be anything. in one case it was "-|" (hyphen bar) so we can't*/
-/*  just look for RD we must be a bit smarter and figure out what the token is*/
-/* (oh. I see now. it's allowed to be either one "RD" or "-|", but nothing else*/
-/*  right) */
-/* It's defined as {string currentfile exch readstring pop} so look for that */
-/* Except that in gsf files we've also got "/-!{string currentfile exch readhexstring pop} readonly def" */
-/*  NOTE: readhexstring!!! */
-/* And in files generated by GNU fontutils */
+/* glorpline (maybe means "glyph" or "parse" line) appears to process	*/
+/*  each line of the eexec portion of a Type 1 font file.		*/
+/*  Call it on each line of the file in order, in order to update "fp".	*/
+/*									*/
+/* In the book the token which starts a character description is always */
+/*  RD but it's just the name of a subroutine which is defined in the	*/
+/*  private diction and it could be anything. in one case it was a	*/
+/*  "-|" (hyphen bar) so we can't just look for RD we must be a bit	*/
+/*  smarter and figure out what the token is (oh. I see now. it's	*/
+/*  allowed to be either one "RD" or "-|", but nothing else right)	*/
+/* It's defined as {string currentfile exch readstring pop} so look for	*/
+/* that Except that in gsf files we've also got				*/
+/* "/-!{string currentfile exch readhexstring pop} readonly def"	*/
+/*									*/
+/*  NOTE: readhexstring!!!						*/
+/* And in files generated by GNU fontutils				*/
 static int glorpline(struct fontparse *fp, FILE *temp, char *rdtok) {
     static char *buffer=NULL, *end;
     char *pt, *binstart;
@@ -2048,6 +2129,7 @@ static int glorpline(struct fontparse *fp, FILE *temp, char *rdtok) {
     char *tokpt = NULL, *rdpt;
     char temptok[255];
     int intok, first;
+    int inPrivate = 0, inSubrs = 0;
     int wasminus=false, isminus, nibble=0, firstnibble=true, inhex;
     int willbehex = false;
 
@@ -2109,7 +2191,7 @@ return( 0 );
 	    tokpt = temptok;
 	} else if ( intok && !isspace(ch) && ch!='{' && ch!='[' ) {
 	    *tokpt++ = ch;
-	} else if ( (intok||sptok) && (ch=='{' || ch=='[')) {
+	} else if ( (intok||sptok) && (ch=='{' || ch=='[') ) {
 	    *tokpt = '\0';
 	    rpt = rdline+1;
 	    intok = sptok = 0;
@@ -2117,11 +2199,30 @@ return( 0 );
 	    *tokpt = '\0';
 	    intok = 0;
 	    sptok = 1;
-	} else if ( sptok && isspace(ch)) {
+	    /* we've just read a name; ensure that we don't have two lines */
+	    /* munged together that cause line-by-line parsing to fail	   */
+	    if ( !strcmp("Private", temptok) ) {
+		inPrivate = 1;
+	    } else if ( !strcmp("Subrs", temptok) ) {
+	        inSubrs = 1;
+	        if ( inPrivate ) {
+	            putBack(fp, temp, temptok, ch, &pt);
+	            putBack(fp, temp, "/", '\0', &pt); /* starts /Subrs token */
+    break;
+	        }
+	    } else if ( !strcmp("CharStrings", temptok) ) {
+	        if (fp->insubs) { /* break CharStrings onto a seperate line */
+	            putBack(fp, temp, temptok, ch, &pt);
+	            putBack(fp, temp, "", '/', &pt);
+		    fp->insubs = 0;
+    break;
+	        }
+	    }
+	} else if ( sptok && isspace(ch) ) {
 	    nowspace = 1;
 	    if ( ch=='\n' || ch=='\r' )
     break;
-	} else if ( sptok && !isdigit(ch))
+	} else if ( sptok && !isdigit(ch) )
 	    sptok = 0;
 	else if ( rpt!=NULL && ch==*rpt ) {
 	    if ( *++rpt=='\0' ) {
@@ -2136,17 +2237,19 @@ return( 0 );
 	} else if ( rpt!=NULL ) {
 	    rpt = NULL;
 	    willbehex = false;
-	} else if ( isdigit(ch)) {
+	} else if ( isdigit(ch) ) {
 	    sptok = 0;
 	    nownum = 1;
 	    if ( innum )
 		val = 10*val + ch-'0';
 	    else
 		val = ch-'0';
-	} else if ( isspace(ch)) {
+	} else if ( isspace(ch) ) {
 	    nowspace = 1;
 	    if ( ch=='\n' || ch=='\r' )
     break;
+	    if ( inSubrs && matchFromBack(pt - 2, "array", pt - buffer - 1) )
+    break;  /* Subrs may be on same line with first RD def -- seperate them */
 	} else if ( wasspace && ch==*rdtok ) {
 	    nowr = 1;
 	    fp->useshexstrings = willbehex;
@@ -2187,7 +2290,7 @@ return( 0 );
 	innum = nownum; wasspace = nowspace; inr = nowr;
 	wasminus = isminus;
 	first = 0;
-    }
+    } /* end while */
     *pt = '\0';
     if ( binstart==NULL ) {
 	parseline(fp,buffer,temp);
@@ -2478,7 +2581,7 @@ static void dodata( struct fontparse *fp, FILE *in, FILE *temp) {
 }
 
 static void realdecrypt(struct fontparse *fp,FILE *in, FILE *temp) {
-    char buffer[256];
+    char buffer[1024]; /* 256 was okay, but need this much now when some lines are concatenated */
     int first, hassectionheads;
     char rdtok[20];
     int saw_blend = false;

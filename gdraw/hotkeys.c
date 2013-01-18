@@ -177,7 +177,8 @@ static char* trimspaces( char* line ) {
 
 static Hotkey* hotkeySetFull( char* action, char* keydefinition, int append, int isUserDefined ) 
 {
-    Hotkey* hk = gcalloc(1,sizeof(Hotkey));
+    Hotkey* hk = calloc(1,sizeof(Hotkey));
+    if ( hk==NULL ) return 0;
     strncpy( hk->action, action, HOTKEY_ACTION_MAX_SIZE );
     HotkeyParse( hk, keydefinition );
 
