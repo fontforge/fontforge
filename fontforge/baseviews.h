@@ -29,6 +29,9 @@
 
 #include "splinefont.h"
 
+#define free_with_debug(x) { fprintf(stderr,"%p FREE()\n",x); free(x); }
+
+
 enum widthtype { wt_width, wt_lbearing, wt_rbearing, wt_bearings, wt_vwidth };
 
 enum fvtrans_flags { fvt_alllayers=1, fvt_round_to_int=2,

@@ -640,7 +640,7 @@ char *getShareDir(void) {
     int len;
 
     if ( set )
-return( sharedir );
+	return( sharedir );
 
     set = true;
 
@@ -703,6 +703,27 @@ char *getPixmapDir(void) {
     sharedir = galloc(len);
     strcpy(sharedir,prefix);
     strcat(sharedir,"/pixmaps");
+    set = true;
+    return sharedir;
+}
+
+char *getHelpDir(void) {
+    static char *sharedir=NULL;
+    static int set=false;
+    char *pt;
+
+    if ( set )
+	return( sharedir );
+
+    char* prefix = getShareDir();
+#if defined(DOCDIR)
+    prefix = DOCDIR;
+#endif    
+    char* postfix = "/../doc/fontforge/";
+    int len = strlen(prefix) + strlen(postfix) + 2;
+    sharedir = galloc(len);
+    strcpy(sharedir,prefix);
+    strcat(sharedir,postfix);
     set = true;
     return sharedir;
 }

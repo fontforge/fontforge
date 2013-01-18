@@ -863,8 +863,8 @@ int fontforge_main( int argc, char **argv ) {
     PythonUI_Init();
 #endif
 
-    InitSimpleStuff();
     FindProgDir(argv[0]);
+    InitSimpleStuff();
 
 #if defined(__MINGW32__)
     {
