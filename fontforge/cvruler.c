@@ -28,6 +28,17 @@
 #include <math.h>
 #include <ustring.h>
 
+#include "cvruler.h"
+
+int measuretoolshowhorizontolvertical = true;
+Color measuretoollinecol = 0x000000;
+Color measuretoolpointcol = 0xFF0000;
+Color measuretoolpointsnappedcol = 0x00FF00;
+Color measuretoolcanvasnumberscol = 0xFF0000;
+Color measuretoolcanvasnumberssnappedcol = 0x00FF00;
+Color measuretoolwindowforegroundcol = 0x000000;
+Color measuretoolwindowbackgroundcol = 0xe0e0c0;
+
 BasePoint last_ruler_offset[2] = { {0,0}, {0,0} };
 int infowindowdistance = 30;
 
@@ -250,7 +261,7 @@ static int RulerTextIntersection(CharView *cv, unichar_t *ubuf, int i) {
 	real xoff = cv->ruler_intersections[cv->num_ruler_intersections-2].x - cv->ruler_intersections[1].x;
 	real yoff = cv->ruler_intersections[cv->num_ruler_intersections-2].y - cv->ruler_intersections[1].y;
 	real len = sqrt(xoff*xoff+yoff*yoff);
-	sprintf(buf,"First Edge to Last Edge: %f x %f length %f",fabs(xoff),fabs(yoff),len);
+	snprintf(buf,sizeof buf,"First Edge to Last Edge: %g x %g length %f",fabs(xoff),fabs(yoff),len);
 	utf82u_strcpy(ubuf,buf);
 return( 1 );
     } else if ( cv->num_ruler_intersections>4 )
@@ -259,13 +270,27 @@ return( 1 );
     if ( i>=cv->num_ruler_intersections )
 return( 0 );
 
-    if (i==0)
-	sprintf(buf,"[%d] (%f,%f)",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y);
-    else {
+    if ( i==0 ) {
+	snprintf(buf,sizeof buf,"[%d] (%g,%g)",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y);
+	if ( cv->p.sp ) {
+	    strcat(buf," snapped");
+	    cv->start_intersection_snapped = 1;
+	} else {
+	    cv->start_intersection_snapped = 0;
+	}
+    } else {
 	real xoff = cv->ruler_intersections[i].x - cv->ruler_intersections[i-1].x;
 	real yoff = cv->ruler_intersections[i].y - cv->ruler_intersections[i-1].y;
 	real len = sqrt(xoff*xoff+yoff*yoff);
-	sprintf(buf,"[%d] (%f,%f) %f x %f length %f",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y,fabs(xoff),fabs(yoff),len);
+	snprintf(buf,sizeof buf,"[%d] (%g,%g) %g x %g length %g",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y,fabs(xoff),fabs(yoff),len);
+	if ( i==(cv->num_ruler_intersections-1) ) {
+	    if ( cv->info_sp ) {
+		strcat(buf," snapped");
+		cv->end_intersection_snapped = 1;
+	    } else {
+		cv->end_intersection_snapped = 0;
+	    }
+	}
     }
 
     utf82u_strcpy(ubuf,buf);
@@ -281,16 +306,35 @@ static int ruler_e_h(GWindow gw, GEvent *event) {
     switch ( event->type ) {
       case et_expose:
 	GDrawSetFont(gw,cv->rfont);
-	/*GDrawFillRect(gw,NULL,0xe0e0c0);*/
 	for ( line=0; RulerText(cv,ubuf,line); ++line )
-	    GDrawDrawText(gw,2,line*cv->rfh+cv->ras+1,ubuf,-1,0x000000);
-	for ( i=0; RulerTextIntersection(cv,ubuf,i); ++i )
-	    GDrawDrawText(gw,2,(line+i)*cv->rfh+cv->ras+1,ubuf,-1,0x000000);
+	    GDrawDrawText(gw,2,line*cv->rfh+cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+	if ( cv->p.pressed ) for ( i=0; RulerTextIntersection(cv,ubuf,i); ++i )
+	    GDrawDrawText(gw,2,(line+i)*cv->rfh+cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
       break;
       case et_mousedown:
 	cv->autonomous_ruler_w = false;
 	GDrawDestroyWindow(gw);
 	cv->ruler_w = NULL;
+      break;
+    }
+return( true );
+}
+
+static int ruler_linger_e_h(GWindow gw, GEvent *event) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    int i;
+
+    switch ( event->type ) {
+      case et_expose:
+	GDrawSetFont(gw,cv->rfont);
+	for ( i=0; i < cv->ruler_linger_num_lines ; ++i )
+	    GDrawDrawText(gw,2,i*cv->rfh+cv->ras+1,cv->ruler_linger_lines[i],-1,measuretoolwindowforegroundcol);
+      break;
+      case et_mousedown:
+	// TBD
+	// cv->autonomous_ruler_w = false;
+	// GDrawDestroyWindow(gw);
+	// cv->ruler_linger_w = NULL;
       break;
     }
 return( true );
@@ -378,6 +422,25 @@ static int GetIntersections(CharView *cv,BasePoint from,BasePoint to,BasePoint *
 	sizeof(all_intersections[0]),
 	BasePointCompare(&from,&to)<=0 ? BasePointCompare : ReverseBasePointCompare );
 
+    /*
+     * Filter out intersectsions that are too close.
+     * This is for snapped points, but we get more than one extra per snap,
+     * so do them all for now.
+     */
+    for ( i = 1 ; i<total_intersections && i<max_intersections ; ) {
+	if ( (0.00001 > fabs(all_intersections[i].x-all_intersections[i-1].x)) &&
+	     (0.00001 > fabs(all_intersections[i].y-all_intersections[i-1].y)) ) {
+	    int j;
+
+	    for( j = i+1 ; j<total_intersections &&  j<max_intersections ; j++ )
+		all_intersections[j-1] = all_intersections[j];
+	    if ( total_intersections < max_intersections )
+		total_intersections--;
+	} else {
+	    i++;
+	}
+    }
+
 return( total_intersections );	/* note that it could be greater than max */
 }
 
@@ -397,7 +460,7 @@ static void RulerPlace(CharView *cv, GEvent *event) {
 	wattrs.mask = wam_events|wam_cursor|wam_positioned|wam_nodecor|wam_backcol|wam_bordwidth;
 	wattrs.event_masks = (1<<et_expose)|(1<<et_resize)|(1<<et_mousedown);
 	wattrs.cursor = ct_mypointer;
-	wattrs.background_color = 0xe0e0c0;
+	wattrs.background_color = measuretoolwindowbackgroundcol;
 	wattrs.nodecoration = 1;
 	wattrs.border_width = 1;
 	pos.x = pos.y = 0; pos.width=pos.height = 20;
@@ -435,8 +498,7 @@ static void RulerPlace(CharView *cv, GEvent *event) {
 	    } else
 		break;
 	}
-    } else
-	cv->num_ruler_intersections = 0;
+    }
 
     GDrawSetFont(cv->ruler_w,cv->rfont);
     width = h = 0;
@@ -445,7 +507,7 @@ static void RulerPlace(CharView *cv, GEvent *event) {
 	if ( w>width ) width = w;
 	h += cv->rfh;
     }
-    for ( i=0; RulerTextIntersection(cv,ubuf,i); ++i ) {
+    if ( cv->p.pressed ) for ( i=0; RulerTextIntersection(cv,ubuf,i); ++i ) {
 	w = GDrawGetTextWidth(cv->ruler_w,ubuf,-1);
 	if ( w>width ) width = w;
 	h += cv->rfh;
@@ -463,6 +525,106 @@ static void RulerPlace(CharView *cv, GEvent *event) {
     GDrawMoveResize(cv->ruler_w,x,y,width+4,h+4);
 }
 
+static void RulerLingerPlace(CharView *cv, GEvent *event) {
+    int width, x, y;
+    GRect size;
+    GPoint pt;
+    int i,h,w;
+    GWindowAttrs wattrs;
+    GRect pos;
+    FontRequest rq;
+    int as, ds, ld;
+    int line;
+    int old_pressed;
+
+    if ( cv->ruler_linger_w==NULL ) {
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_positioned|wam_nodecor|wam_backcol|wam_bordwidth;
+	wattrs.event_masks = (1<<et_expose)|(1<<et_resize)|(1<<et_mousedown);
+	wattrs.cursor = ct_mypointer;
+	wattrs.background_color = measuretoolwindowbackgroundcol;
+	wattrs.nodecoration = 1;
+	wattrs.border_width = 1;
+	pos.x = pos.y = 0; pos.width=pos.height = 20;
+	cv->ruler_linger_w = GWidgetCreateTopWindow(NULL,&pos,ruler_linger_e_h,cv,&wattrs);
+
+	if ( rvfont==NULL ) {
+	    memset(&rq,0,sizeof(rq));
+	    rq.utf8_family_name = FIXED_UI_FAMILIES;
+	    rq.point_size = -12;
+	    rq.weight = 400;
+	    rvfont = GDrawInstanciateFont(cv->ruler_w,&rq);
+	    rvfont = GResourceFindFont("CharView.Measure.Font",rvfont);
+	}
+	cv->rfont = rvfont;
+	GDrawWindowFontMetrics(cv->ruler_linger_w,cv->rfont,&as,&ds,&ld);
+	cv->rfh = as+ds; cv->ras = as;
+    } else
+	GDrawRaise(cv->ruler_linger_w);
+
+    GDrawSetFont(cv->ruler_linger_w,cv->rfont);
+    width = h = 0;
+    line = 0;
+    old_pressed = cv->p.pressed;
+    cv->p.pressed = true;
+
+    for ( i=0; line<sizeof(cv->ruler_linger_lines)/sizeof(cv->ruler_linger_lines[0]) && RulerText(cv,cv->ruler_linger_lines[line],i) ; ++i,++line ) {
+	w = GDrawGetTextWidth(cv->ruler_linger_w,cv->ruler_linger_lines[line],-1);
+	if ( w>width ) width = w;
+	h += cv->rfh;
+    }
+    cv->p.pressed = old_pressed;
+    for ( i=0; line<sizeof(cv->ruler_linger_lines)/sizeof(cv->ruler_linger_lines[0]) && RulerTextIntersection(cv,cv->ruler_linger_lines[line],i); ++i,++line ) {
+	w = GDrawGetTextWidth(cv->ruler_linger_w,cv->ruler_linger_lines[line],-1);
+	if ( w>width ) width = w;
+	h += cv->rfh;
+    }
+    cv->ruler_linger_num_lines = line;
+
+    GDrawGetSize(GDrawGetRoot(NULL),&size);
+    pt.x = event->u.mouse.x; pt.y = event->u.mouse.y;
+    GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt);
+    x = pt.x + infowindowdistance;
+    if ( x+width > size.width )
+	x = pt.x - width-infowindowdistance;
+    y = pt.y -cv->ras-2;
+    if ( y+h > size.height )
+	y = pt.y - h - cv->ras -10;
+    GDrawMoveResize(cv->ruler_linger_w,x,y,width+4,h+4);
+    GDrawSetVisible(cv->ruler_linger_w,true);
+}
+
+static void RulerLingerMove(CharView *cv) {
+    if ( cv->ruler_linger_w ) {
+	int x, y;
+	GRect size;
+	GRect rsize;
+	GRect csize;
+	GPoint pt;
+
+	GDrawGetSize(GDrawGetRoot(NULL),&size);
+	GDrawGetSize(cv->ruler_linger_w,&rsize);
+	GDrawGetSize(cv->gw,&csize);
+
+	pt.x = cv->xoff + rint(cv->ruler_intersections[cv->num_ruler_intersections-1].x*cv->scale);
+	pt.y = -cv->yoff + cv->height - rint(cv->ruler_intersections[cv->num_ruler_intersections-1].y*cv->scale);
+	GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt);
+	x = pt.x + infowindowdistance;
+	if ( x+rsize.width>size.width )
+	    x = pt.x - rsize.width-infowindowdistance;
+	y = pt.y -cv->ras-2;
+	if ( y+rsize.height>size.height )
+	    y = pt.y - rsize.height - cv->ras -10;
+
+	if ( x>=csize.x && x<=(csize.x+csize.width) && y>=csize.y && y<=(csize.y+csize.height) ) {
+	    GDrawMove(cv->ruler_linger_w,x,y);
+	    GDrawSetVisible(cv->ruler_linger_w,true);
+	} else {
+	    GDrawSetVisible(cv->ruler_linger_w,false);
+	}
+    }
+}
+
 void CVMouseDownRuler(CharView *cv, GEvent *event) {
 
     cv->autonomous_ruler_w = false;
@@ -470,6 +632,10 @@ void CVMouseDownRuler(CharView *cv, GEvent *event) {
     RulerPlace(cv,event);
     cv->p.rubberlining = true;
     GDrawSetVisible(cv->ruler_w,true);
+    if ( cv->ruler_linger_w ) {
+	GDrawDestroyWindow(cv->ruler_linger_w);
+	cv->ruler_linger_w = NULL;
+    }
 }
 
 void CVMouseMoveRuler(CharView *cv, GEvent *event) {
@@ -514,6 +680,14 @@ return;
 
 	if ( !(event->u.mouse.state & ksm_alt) ) {
 	    /*cv->autonomous_ruler_w = true;*/
+
+	    if ( cv->ruler_linger_w ) {
+		GDrawDestroyWindow(cv->ruler_linger_w);
+		cv->ruler_linger_w = NULL;
+	    }
+	    if ( cv->num_ruler_intersections>1 ) {
+		RulerLingerPlace(cv,event);
+	    }
 return;
 	}
 
@@ -765,5 +939,81 @@ void CPEndInfo(CharView *cv) {
 	    cv->ruler_w = NULL;
 	}
     }
+    /* TBD, wrong time to kill? */
+    if ( cv->ruler_linger_w!=NULL && cv->b1_tool!=cvt_ruler && cv->b1_tool_old!=cvt_ruler ) {
+	GDrawDestroyWindow(cv->ruler_linger_w);
+	cv->ruler_linger_w = NULL;
+    }
 }
 
+void CVRulerExpose(GWindow pixmap,CharView *cv) {
+    if ( cv->b1_tool!=cvt_ruler && cv->b1_tool_old!=cvt_ruler ) {
+	cv->num_ruler_intersections = 0;
+return;
+    }
+
+    if ( cv->num_ruler_intersections >= 2 ) {
+	int x =  cv->xoff + rint(cv->ruler_intersections[0].x*cv->scale);
+	int y = -cv->yoff + cv->height - rint(cv->ruler_intersections[0].y*cv->scale);
+	int xend =  cv->xoff + rint(cv->ruler_intersections[cv->num_ruler_intersections-1].x*cv->scale);
+	int yend = -cv->yoff + cv->height - rint(cv->ruler_intersections[cv->num_ruler_intersections-1].y*cv->scale);
+	real xdist = fabs(cv->ruler_intersections[0].x - cv->ruler_intersections[cv->num_ruler_intersections-1].x);
+	real ydist = fabs(cv->ruler_intersections[0].y - cv->ruler_intersections[cv->num_ruler_intersections-1].y);
+	int i;
+	int len;
+	int charwidth = 6; /* TBD */
+	Color textcolor = (cv->start_intersection_snapped && cv->end_intersection_snapped) ? measuretoolcanvasnumberssnappedcol : measuretoolcanvasnumberscol;
+
+	if ( measuretoolshowhorizontolvertical ) {
+	    char buf[40];
+	    unichar_t ubuf[40];
+
+	    if ( xdist*cv->scale>10.0 && ydist*cv->scale>10.0 ) {
+
+		GDrawSetFont(pixmap,cv->rfont);
+		len = snprintf(buf,sizeof buf,"%g",xdist);
+		utf82u_strcpy(ubuf,buf);
+		GDrawDrawText(pixmap,(x+xend)/2 - len*charwidth/2,y + (y > yend ? 12 : -5),ubuf,-1,textcolor);
+		GDrawDrawLine(pixmap,x,y,xend,y,measuretoollinecol);
+
+		len = snprintf(buf,sizeof buf,"%g",ydist);
+		utf82u_strcpy(ubuf,buf);
+		GDrawDrawText(pixmap,xend + (x < xend ? charwidth/2 : -(len * charwidth + charwidth/2)),(y+yend)/2,ubuf,-1,textcolor);
+		GDrawDrawLine(pixmap,xend,y,xend,yend,measuretoollinecol);
+	    }
+	}
+
+	if ( !cv->p.rubberlining ) {
+	    GDrawDrawLine(pixmap,x,y,xend,yend,measuretoollinecol);
+	}
+
+	GDrawSetFont(pixmap,cv->rfont);
+	for ( i=0 ; i<cv->num_ruler_intersections; ++i ) {
+	    GRect rect,prev_rect;
+
+	    rect.x = cv->xoff + rint(cv->ruler_intersections[i].x*cv->scale) - 1;
+	    rect.y = -cv->yoff + cv->height - rint(cv->ruler_intersections[i].y*cv->scale) - 1;
+	    rect.width = 3;
+	    rect.height = 3;
+
+	    GDrawFillElipse(pixmap,&rect,((i==(cv->num_ruler_intersections-1) && cv->info_sp) || (i==0 && cv->p.sp)) ? measuretoolpointsnappedcol : measuretoolpointcol);
+	    if ( i>0 && (cv->num_ruler_intersections<6 || (prev_rect.x + 10)<rect.x || (prev_rect.y + 10)<rect.y || (prev_rect.y - 10)>rect.y) ) {
+		real xoff = cv->ruler_intersections[i].x - cv->ruler_intersections[i-1].x;
+		real yoff = cv->ruler_intersections[i].y - cv->ruler_intersections[i-1].y;
+		real len = sqrt(xoff*xoff+yoff*yoff);
+		char buf[40];
+		unichar_t ubuf[40];
+		int x,y;
+
+		x = (prev_rect.x + rect.x)/2;
+		y = (prev_rect.y + rect.y)/2;
+
+		len = snprintf(buf,sizeof buf,"%g",len);
+		utf82u_strcpy(ubuf,buf);
+		GDrawDrawText(pixmap,x + (x < xend ? -(len*charwidth) : charwidth/2 ),y + (y < yend ? 12 : -5),ubuf,-1,textcolor);
+	    }
+	    prev_rect = rect;
+	}
+	RulerLingerMove(cv);	/* in case things are moving or scaling */
+    }
+}
