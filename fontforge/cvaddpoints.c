@@ -304,6 +304,7 @@ static void CVMergeSPLS(CharView *cv,SplineSet *ss, SplinePoint *base,SplinePoin
     } else
 	SplineSetSpirosClear(ss);
     cv->p.spl->last = cv->p.spl->first = NULL;
+    cv->p.spl->spiros = 0;
     SplinePointListFree(cv->p.spl);
     cv->p.spl = NULL;
 }
@@ -474,10 +475,7 @@ return;			/* We clicked on the active point, that's a no-op */
 	if ( sp==NULL || (sp->next!=NULL && sp->prev!=NULL) || sp==base ) {
 	    /* Add a new point */
 	    SplineSetSpirosClear(sel);
-	    sp = chunkalloc(sizeof(SplinePoint));
-	    sp->me.x = cv->p.cx;
-	    sp->me.y = cv->p.cy;
-	    sp->prevcp = sp->nextcp = sp->me;
+	    sp = SplinePointCreate( cv->p.cx, cv->p.cy );
 	    sp->noprevcp = sp->nonextcp = 1;
 	    sp->nextcpdef = sp->prevcpdef = 1;
 	    sp->pointtype = ptype;
@@ -558,14 +556,11 @@ return;			/* We clicked on the active point, that's a no-op */
 	ss = cv->p.spl;
     } else {
 	ss = chunkalloc(sizeof(SplineSet));
-	sp = chunkalloc(sizeof(SplinePoint));
+	sp = SplinePointCreate( cv->p.cx, cv->p.cy );
+	
 	ss->first = ss->last = sp;
 	ss->next = cv->b.layerheads[cv->b.drawmode]->splines;
 	cv->b.layerheads[cv->b.drawmode]->splines = ss;
-	sp->me.x = cv->p.cx;
-	sp->me.y = cv->p.cy;
-	sp->nextcp = sp->me;
-	sp->prevcp = sp->me;
 	sp->nonextcp = sp->noprevcp = 1;
 	sp->nextcpdef = sp->prevcpdef = 1;
 	sp->pointtype = ptype;

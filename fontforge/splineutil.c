@@ -243,7 +243,7 @@ void SplinePointFree(SplinePoint *sp) {
 
 void SplinePointMDFree(SplineChar *sc, SplinePoint *sp) {
     MinimumDistance *md, *prev, *next;
-
+    
     if ( sc!=NULL ) {
 	prev = NULL;
 	for ( md = sc->md; md!=NULL; md = next ) {
@@ -289,6 +289,7 @@ void SplineSetBeziersClear(SplinePointList *spl) {
 
     if ( spl==NULL )
 return;
+    
     if ( spl->first!=NULL ) {
 	nonext = spl->first->next==NULL;
 	first = NULL;
@@ -310,6 +311,7 @@ void SplinePointListFree(SplinePointList *spl) {
 
     if ( spl==NULL )
 return;
+    
     if ( spl->first!=NULL ) {
 	nonext = spl->first->next==NULL;
 	first = NULL;
@@ -1276,9 +1278,11 @@ SplinePointList *SplinePointListCopy1(const SplinePointList *spl) {
 
     cur = chunkalloc(sizeof(SplinePointList));
     cur->is_clip_path = spl->is_clip_path;
+    cur->spiro_cnt = cur->spiro_max = 0;
+    cur->spiros = 0;
 
     for ( pt=spl->first; ;  ) {
-	cpt = chunkalloc(sizeof(SplinePoint));
+	cpt = SplinePointCreate( 0, 0 );
 	*cpt = *pt;
 	if ( pt->hintmask!=NULL ) {
 	    cpt->hintmask = chunkalloc(sizeof(HintMask));
@@ -1897,6 +1901,7 @@ SplinePointList *SplinePointListSpiroTransform(SplinePointList *base, real trans
     int allsel, anysel;
     int i;
 
+    
     if ( allpoints )
 return( SplinePointListTransform(base,transform,tpt_AllPoints));
 
