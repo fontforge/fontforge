@@ -42,6 +42,10 @@
 #include <sys/types.h>
 #include "../gdraw/hotkeys.h"
 
+#ifdef __Mac
+extern void setup_cocoa_app();
+#endif
+
 #ifdef _NO_LIBPNG
 #  define PNGLIBNAME	"libpng"
 #else
@@ -1204,6 +1208,7 @@ exit( 0 );
     if ( listen_to_apple_events ) {
 	install_apple_event_handlers();
 	install_mac_timer();
+	setup_cocoa_app();
 	RunApplicationEventLoop();
     } else
 #endif
