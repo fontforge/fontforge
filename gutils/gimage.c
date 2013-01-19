@@ -30,15 +30,12 @@ GImage *GImageCreate(enum image_type type, int32 width, int32 height) {
     GImage *gi;
     struct _GImage *base;
 
-    if ( type<it_mono || type>it_rgba )
-return( NULL );
+    if ( type<it_mono || type>it_rgba ) return( NULL );
 
-    gi = (GImage *) gcalloc(1,sizeof(GImage));
-    base = (struct _GImage *) galloc(sizeof(struct _GImage));
-    if ( gi==NULL || base==NULL ) {
-	free(gi); free(base);
-return( NULL );
-    }
+    gi = (GImage *) calloc(1,sizeof(GImage));
+    base = (struct _GImage *) malloc(sizeof(struct _GImage));
+    if ( gi==NULL || base==NULL ) goto errorGImageCreate;
+
     gi->u.image = base;
     base->image_type = type;
     base->width = width;
@@ -47,17 +44,20 @@ return( NULL );
     base->data = NULL;
     base->clut = NULL;
     base->trans = COLOR_UNKNOWN;
-    base->data = (uint8 *) galloc(height*base->bytes_per_line);
-    if ( base->data==NULL ) {
-	free(base);
-	free(gi);
-return( NULL );
-    }
+    base->data = (uint8 *) malloc(height*base->bytes_per_line);
+    if ( base->data==NULL ) goto errorGImageCreate;
     if ( type==it_index ) {
-	base->clut = (GClut *) gcalloc(1,sizeof(GClut));
+	base->clut = (GClut *) calloc(1,sizeof(GClut));
+	if ( base->clut==NULL ) {
+	    free(base->data); goto errorGImageCreate;
+ 	}
 	base->clut->trans_index = COLOR_UNKNOWN;
     }
-return( gi );
+    return( gi );
+
+errorGImageCreate:
+    NoMoreMemMessage(); free(base); free(gi);
+    return( NULL );
 }
 
 
@@ -65,15 +65,12 @@ GImage *_GImage_Create(enum image_type type, int32 width, int32 height) {
     GImage *gi;
     struct _GImage *base;
 
-    if ( type<it_mono || type>it_rgba )
-return( NULL );
+    if ( type<it_mono || type>it_rgba ) return( NULL );
 
-    gi = (GImage *) gcalloc(1,sizeof(GImage));
-    base = (struct _GImage *) galloc(sizeof(struct _GImage));
-    if ( gi==NULL || base==NULL ) {
-	free(gi); free(base);
-return( NULL );
-    }
+    gi = (GImage *) calloc(1,sizeof(GImage));
+    base = (struct _GImage *) malloc(sizeof(struct _GImage));
+    if ( gi==NULL || base==NULL ) goto error_GImage_Create;
+
     gi->u.image = base;
     base->image_type = type;
     base->width = width;
@@ -81,9 +78,15 @@ return( NULL );
     base->bytes_per_line = (type==it_true || type==it_rgba)?4*width:type==it_index?width:(width+7)/8;
     base->data = NULL;
     base->clut = NULL;
-    if ( type==it_index )
-	base->clut = (GClut *) gcalloc(1,sizeof(GClut));
-return( gi );
+    if ( type==it_index ) {
+	base->clut = (GClut *) calloc(1,sizeof(GClut));
+	if ( base->clut==NULL )  goto error_GImage_Create;
+    }
+    return( gi );
+
+error_GImage_Create:
+    NoMoreMemMessage(); free(base); free(gi);
+    return( NULL );
 }
 
 void GImageDestroy(GImage *gi) {
@@ -105,9 +108,17 @@ void GImageDestroy(GImage *gi) {
 }
 
 GImage *GImageCreateAnimation(GImage **images, int n) {
-    struct _GImage **imgs = (struct _GImage **) galloc(n*sizeof(struct _GImage *));
-    GImage *gi = (GImage *) gcalloc(1,sizeof(GImage));
+    GImage *gi;
+    struct _GImage **imgs;
     int i;
+
+    /* Create enough memory space to hold the complete animation	*/
+    gi = (GImage *) calloc(1,sizeof(GImage));
+    imgs = (struct _GImage **) malloc(n*sizeof(struct _GImage *));
+    if ( gi==NULL || imgs==NULL ) {
+	NoMoreMemMessage(); free(gi); free(imgs);
+	return( NULL );
+    }
 
     gi->list_len = n;
     gi->u.images = imgs;
@@ -131,7 +142,11 @@ GImage *GImageAddImageBefore(GImage *dest, GImage *src, int pos) {
     enum image_type it;
 
     n = (src->list_len==0?1:src->list_len) + (dest->list_len==0?1:dest->list_len);
-    imgs = (struct _GImage **) galloc(n*sizeof(struct _GImage *));
+    imgs = (struct _GImage **) malloc(n*sizeof(struct _GImage *));
+    if ( imgs==NULL ) {
+	NoMoreMemMessage();
+	return( NULL );
+    }
 
     i = 0;
     if ( dest->list_len==0 ) {
