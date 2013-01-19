@@ -108,11 +108,23 @@ void GImageDestroy(GImage *gi) {
 }
 
 GImage *GImageCreateAnimation(GImage **images, int n) {
+/* Create an animation using n "images". Return gi and free "images" if	*/
+/* okay, else return NULL and keep "images" if memory error occurred,	*/
     GImage *gi;
     struct _GImage **imgs;
     int i;
 
-    /* Create enough memory space to hold the complete animation	*/
+    /* Check if "images" are okay to copy before creating an animation.	*/
+    /* We expect to find single images (not an array). Type must match.	*/
+    for ( i=0; i<n; ++i ) {
+	if ( images[i]->list_len!=0 || \
+	     images[i]->u.image->image_type!=images[0]->u.image->image_type ) {
+	    fprintf( stderr, "Images are not compatible to make an Animation\n" );
+	    return( NULL );
+	}
+    }
+
+    /* First, create enough memory space to hold the complete animation	*/
     gi = (GImage *) calloc(1,sizeof(GImage));
     imgs = (struct _GImage **) malloc(n*sizeof(struct _GImage *));
     if ( gi==NULL || imgs==NULL ) {
@@ -120,19 +132,14 @@ GImage *GImageCreateAnimation(GImage **images, int n) {
 	return( NULL );
     }
 
+    /* Copy images[i] pointer into 'gi', then release each "images[i]".	*/
     gi->list_len = n;
     gi->u.images = imgs;
     for ( i=0; i<n; ++i ) {
-	if ( images[i]->list_len!=0 ) {
-	    free(gi);
-return( NULL );
-	}
-	if ( images[i]->u.image->image_type!=images[0]->u.image->image_type )
-return( NULL );
 	imgs[i] = images[i]->u.image;
 	free(images[i]);
     }
-return( gi );
+    return( gi );
 }
 
 /* -1 => add it at the end */
