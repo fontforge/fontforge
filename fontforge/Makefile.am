@@ -195,7 +195,7 @@ AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
 # optimization turns out to have disastrous effects. Compile it
 # without optimization.
 splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
-	$(LIBTOOL) --mode=compile $(CC) -g -DHAVE_CONFIG_H -c -o		\
+	$(LIBTOOL) --mode=compile $(CC) -g -D_FF_CONFIG_H -c -o		\
 		splinerefigure.lo $(AM_CPPFLAGS) $(srcdir)/splinerefigure.c
 
 #--------------------------------------------------------------------------

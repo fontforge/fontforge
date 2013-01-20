@@ -9,8 +9,6 @@ libgutil_OBJECTS =divisors.obj,dynamic.obj,fsys.obj,gimage.obj,gimageread.obj\
  gimagewritexbm.obj,gwwintl.obj,gio.obj,giofile.obj,gioftp.obj,giohosts.obj,\
  giomime.obj,giothread.obj,giotrans.obj,gcol.obj
 
-CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=("HAVE_CONFIG_H=1")
-
 all : [-.libs]libgutil.olb
 	write sys$output "gutil finished"
 

@@ -1,9 +1,6 @@
 # Makefile for OpenVMS
 # Date : 11 November 2008
 
-CFLAGS=/nowarn/incl=([-.inc],[-.fontforge])/name=(as_is,short)/define=(\
-	"HAVE_CONFIG_H=1")
-
 gb12345.exe : gb12345.obj [-.fontforge]lff.opt
 	@ WRITE_ SYS$OUTPUT "  generating gb12345.opt"
 	@ OPEN_/WRITE FILE  gb12345.opt

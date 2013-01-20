@@ -24,7 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <basics.h>
+
+#include <config.h>		/* FF config file */
 
 #ifdef _NO_LIBUNGIF
 
@@ -32,6 +33,7 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 
 #else /* We can build with gif_lib - therefore import gif files */
 
+#include <basics.h>
 #include <string.h>
 #include "gimage.h"
 #include <gif_lib.h>
