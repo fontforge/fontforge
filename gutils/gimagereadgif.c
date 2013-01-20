@@ -30,7 +30,7 @@
 
 static int a_file_must_define_something=0;	/* ANSI says so */
 
-#else /* ! _NO_LIBUNGIF */
+#else /* We can build with gif_lib - therefore import gif files */
 
 #include <string.h>
 #include "gimage.h"
@@ -43,18 +43,21 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si) {
     int i,j,l;
     uint8 *d;
 
-    if ( si->ImageDesc.ColorMap!=NULL )
-	m = si->ImageDesc.ColorMap;
+    /* Create memory to hold image, exit with NULL if not enough memory */
+    if ( si->ImageDesc.ColorMap!=NULL ) m=si->ImageDesc.ColorMap;
     if ( m->BitsPerPixel==1 ) {
-	ret = GImageCreate(it_bitmap,si->ImageDesc.Width,si->ImageDesc.Height);
+	if ( (ret=GImageCreate(it_bitmap,si->ImageDesc.Width,si->ImageDesc.Height))==NULL ) return( NULL );
 	if ( m->ColorCount==2 &&
 		m->Colors[0].Red==0 && m->Colors[0].Green==0 && m->Colors[0].Blue==0 &&
 		m->Colors[1].Red==255 && m->Colors[1].Green==255 && m->Colors[1].Blue==255 )
 	    /* Don't need a clut */;
 	else
-	    ret->u.image->clut = (GClut *) gcalloc(1,sizeof(GClut));
+	    if ( (ret->u.image->clut = (GClut *) calloc(1,sizeof(GClut)))==NULL ) {
+		NoMoreMemMessage(); free(ret); return( NULL );
+	    }
     } else
-	ret = GImageCreate(it_index,si->ImageDesc.Width,si->ImageDesc.Height);
+	if ( (ret=GImageCreate(it_index,si->ImageDesc.Width,si->ImageDesc.Height))==NULL ) return( NULL );
+
     base = ret->u.image;
     if ( base->clut!=NULL ) {
 	base->clut->clut_len = m->ColorCount;
@@ -79,7 +82,7 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si) {
 	if ( si->ExtensionBlocks[i].Function==0xf9 &&
 		si->ExtensionBlocks[i].ByteCount>=4 ) {
 	    base->delay = (si->ExtensionBlocks[i].Bytes[2]<<8) |
-		    (si->ExtensionBlocks[i].Bytes[2]&&0xff);
+		    (si->ExtensionBlocks[i].Bytes[2]&0xff);
 	    if ( si->ExtensionBlocks[i].Bytes[0]&1 ) {
 		base->trans = (unsigned char) si->ExtensionBlocks[i].Bytes[3];
 		if ( base->clut!=NULL )
@@ -87,7 +90,7 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si) {
 	    }
 	}
     }
-return( ret );
+    return( ret );
 }
 
 GImage *GImageReadGif(char *filename) {
@@ -95,27 +98,36 @@ GImage *GImageReadGif(char *filename) {
     GifFileType *gif;
     int i;
 
-    if ((gif = DGifOpenFileName(filename)) == NULL) {
-	fprintf( stderr, "can't open %s\n", filename);
-return( NULL );
+    if ( (gif=DGifOpenFileName(filename))==NULL ) {
+	fprintf( stderr,"Can't open \"%s\"\n",filename );
+	return( NULL );
     }
 
     if ( DGifSlurp(gif)==GIF_ERROR ) {
-	DGifCloseFile(gif);
-	fprintf(stderr,"Bad gif file %s\n", filename );
-return( NULL );
+	fprintf(stderr,"Bad gif file \"%s\"\n",filename );
+	DGifCloseFile(gif); return( NULL );
     }
 
-    images = (GImage **) galloc(gif->ImageCount*sizeof(GImage *));
-    for ( i=0; i<gif->ImageCount; ++i )
+    /* Process each image so that it/they can be imported into FF. */
+    if ( (images=(GImage **) malloc(gif->ImageCount*sizeof(GImage *)))==NULL ) {
+	NoMoreMemMessage(); DGifCloseFile(gif); return( NULL );
+    }
+    for ( i=0; i<gif->ImageCount; ++i ) {
 	images[i] = ProcessSavedImage(gif,&gif->SavedImages[i]);
+	if ( images[i]==NULL ) {
+	    while ( --i>=0 ) free(images[i]);
+	    free(images); DGifCloseFile(gif); return( NULL );
+	}
+    }
+
+    /* All okay if you reached here. We have 1 image or several images */
     if ( gif->ImageCount==1 )
 	ret = images[0];
     else
 	ret = GImageCreateAnimation(images,gif->ImageCount);
     DGifCloseFile(gif);
     free(images);
-return( ret );
+    return( ret );
 }
 
 #endif /* ! _NO_LIBUNGIF */
