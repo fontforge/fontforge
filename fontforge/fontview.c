@@ -1568,7 +1568,7 @@ static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     case sfut_lookups:
 	sfdchunk = undo->u.lookupatomic.sfdchunk;
 	if( !sfdchunk ) {
-	    ff_post_error(_("Undo information incomplete"),_("There is an splinefont level undo, but it does not contain any information to perform the undo. This is an application error, please report what you last did to the lookup tables so the developers can try to reproduce the issue and fix it."));
+	    ff_post_error(_("Undo information incomplete"),_("There is a splinefont level undo, but it does not contain any information to perform the undo. This is an application error, please report what you last did to the lookup tables so the developers can try to reproduce the issue and fix it."));
 	    sfundoRemoveAndFree( sf, undo );
 	    return;
 	}
