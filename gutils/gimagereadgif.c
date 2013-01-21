@@ -41,12 +41,13 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si) {
     GImage *ret;
     struct _GImage *base;
-    ColorMapObject *m = gif->SColorMap;
+    ColorMapObject *m = gif->SColorMap;  /* gif_lib.h, NULL if not exists. */
     int i,j,l;
     uint8 *d;
 
     /* Create memory to hold image, exit with NULL if not enough memory */
     if ( si->ImageDesc.ColorMap!=NULL ) m=si->ImageDesc.ColorMap;
+    if ( m==NULL ) return( NULL );
     if ( m->BitsPerPixel==1 ) {
 	if ( (ret=GImageCreate(it_bitmap,si->ImageDesc.Width,si->ImageDesc.Height))==NULL ) return( NULL );
 	if ( m->ColorCount==2 &&
