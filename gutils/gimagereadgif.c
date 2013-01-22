@@ -1,4 +1,5 @@
 /* Copyright (C) 2000-2012 by George Williams */
+/* 2013jan18..22, several fixes + interlacing, Jose Da Silva */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -38,12 +39,14 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 #include "gimage.h"
 #include <gif_lib.h>
 
-static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si) {
+static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si,int il) {
+/* Process each gif image into an internal FF format. Return NULL if error */
     GImage *ret;
     struct _GImage *base;
     ColorMapObject *m = gif->SColorMap;  /* gif_lib.h, NULL if not exists. */
-    int i,j,l;
-    uint8 *d;
+    int i,j,k,*id;
+    long l;
+    uint8 *d,*iv;
 
     /* Create memory to hold image, exit with NULL if not enough memory */
     if ( si->ImageDesc.ColorMap!=NULL ) m=si->ImageDesc.ColorMap;
@@ -60,7 +63,12 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si) {
 	    }
     } else
 	if ( (ret=GImageCreate(it_index,si->ImageDesc.Width,si->ImageDesc.Height))==NULL ) return( NULL );
+    if ( il && ((id=(int *) malloc(si->ImageDesc.Height*sizeof(int)))==NULL || \
+		(iv=(uint8 *) malloc(si->ImageDesc.Height*sizeof(uint8)))==NULL )) {
+	NoMoreMemMessage(); free(ret->u.image->clut); free(ret); free(id); free(iv); return( NULL );
+    }
 
+    /* Process gif image into an internal FF usable format */
     base = ret->u.image;
     if ( base->clut!=NULL ) {
 	base->clut->clut_len = m->ColorCount;
@@ -81,6 +89,37 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si) {
 	    }
 	}
     }
+    if ( il ) {
+	/* Convert interlaced image into a sequential image */
+	j=0; k=0;
+	for ( i=0; i<base->height; ++i ) {
+	    id[i]=k;
+	    if ( j==0 ) {
+		k += 8;
+		if ( k>=base->height ) {
+		    j++; k=4;
+		}
+	    } else if ( j==1 ) {
+		k += 8;
+		if ( k>=base->height ) {
+		    j++; k=2;
+		}
+	    } else if ( j==2 ) {
+		k += 4;
+		if ( k>=base->height ) {
+		    j++; k=1;
+		}
+	    } else
+		k += 2;
+	}
+	for ( j=0; j<base->bytes_per_line; ++j ) {
+	    for ( i=1; i<base->height; ++i )
+		iv[id[i]]=base->data[i*base->bytes_per_line+j];
+	    for ( i=1; i<base->height; ++i )
+		base->data[i*base->bytes_per_line+j]=iv[i];
+	}
+	free(id); free(iv);
+    }
     for ( i=0; i<si->ExtensionBlockCount; ++i ) {
 	if ( si->ExtensionBlocks[i].Function==0xf9 &&
 		si->ExtensionBlocks[i].ByteCount>=4 ) {
@@ -97,9 +136,10 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si) {
 }
 
 GImage *GImageReadGif(char *filename) {
+/* Import a gif image (or gif animation), else return NULL if error  */
     GImage *ret, **images;
     GifFileType *gif;
-    int i;
+    int i,il;
 
     if ( (gif=DGifOpenFileName(filename))==NULL ) {
 	fprintf( stderr,"Can't open \"%s\"\n",filename );
@@ -115,8 +155,9 @@ GImage *GImageReadGif(char *filename) {
     if ( (images=(GImage **) malloc(gif->ImageCount*sizeof(GImage *)))==NULL ) {
 	NoMoreMemMessage(); DGifCloseFile(gif); return( NULL );
     }
+    il=gif->SavedImages[0].ImageDesc.Interlace;
     for ( i=0; i<gif->ImageCount; ++i ) {
-	images[i] = ProcessSavedImage(gif,&gif->SavedImages[i]);
+	images[i] = ProcessSavedImage(gif,&gif->SavedImages[i],il);
 	if ( images[i]==NULL ) {
 	    while ( --i>=0 ) free(images[i]);
 	    free(images); DGifCloseFile(gif); return( NULL );
