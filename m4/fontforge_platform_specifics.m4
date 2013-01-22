@@ -8,6 +8,7 @@ AC_CANONICAL_HOST
 
 m4_define([default_SDK],[/])
 m4_define([default_CARBON],[System/Library/Frameworks/Carbon.framework/Carbon])
+m4_define([default_COCOA],[/System/Library/Frameworks/Cocoa.framework/Cocoa])
 m4_define([default_CORESERVICES],[System/Library/Frameworks/CoreServices.framework/CoreServices])
 
 AS_CASE([$host],
@@ -48,6 +49,7 @@ AS_CASE([$host],
 
       AC_ARG_VAR([SDK],[(Macintosh only) path to software development kit; defaults to ]default_SDK)
       AC_ARG_VAR([CARBON],[(Macintosh only) path to Carbon; defaults to SDK/]default_CARBON)
+      AC_ARG_VAR([COCOA],[(Macintosh only) path to Cocoa; defaults to SDK/]default_COCOA)
       AC_ARG_VAR([CORESERVICES],[(Macintosh only) path to CoreServices; defaults to SDK/]default_CORESERVICES)
 
       test x"${SDK}" = x && SDK="default_SDK"
@@ -57,11 +59,13 @@ AS_CASE([$host],
          derooted_SDK="${SDK}"
       fi
       test x"${CARBON}" = x && CARBON="${derooted_SDK}/default_CARBON"
+      test x"${COCOA}" = x && CARBON="${derooted_SDK}/default_COCOA"
       test x"${CORESERVICES}" = x && CORESERVICES="${derooted_SDK}/default_CORESERVICES"
 
       if test x"${cross_compiling}" != xyes; then
          test x"${CORESERVICES}" != x && LIBS="-Wl,${CORESERVICES} ${LIBS}"
          test x"${CARBON}" != x && LIBS="-Wl,${CARBON} ${LIBS}"
+         test x"${COCOA}" != x && LIBS="-Wl,${COCOA} ${LIBS}"
          # I would like to be able to just leave the framework as a
          # filename. But if I do that, libtool eats it and gcc doesn't
          # get it and ld doesn't get it and we get undefined symbols.

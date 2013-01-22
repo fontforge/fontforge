@@ -23103,7 +23103,7 @@ msgid ""
 "When inputting a name in the Save or SaveAs dialogs, FontForge can ensure "
 "that the correct filename extension (SFD or SFDIR) is always used. This "
 "prevents you from accidentally naming your source file with a binary "
-"extension (such as .otf), out of habit.)"
+"extension (such as .otf), out of habit."
 msgstr ""
 
 #: ../fontforge/prefs.c:296
@@ -23153,7 +23153,7 @@ msgstr ""
 #: ../fontforge/prefs.c:313
 msgid ""
 "The number of undo and redo operations to load from sfd files.\n"
-"With this option you can disgard undo information while loading SFD files.\n"
+"With this option you can disregard undo information while loading SFD files.\n"
 "If set to 0 then no undo/redo information is loaded.\n"
 "If set to -1 then all available undo/redo information is loaded without "
 "limit."
