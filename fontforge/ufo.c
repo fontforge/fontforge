@@ -374,6 +374,11 @@ static void PListOutputBoolean(FILE *plist, char *key, int value) {
 }
 
 static void PListOutputDate(FILE *plist, char *key, time_t timestamp) {
+/* openTypeHeadCreated = string format as \"YYYY/MM/DD HH:MM:SS\".	*/
+/* \"YYYY/MM/DD\" is year/month/day. The month is in the range 1-12 and	*/
+/* the day is in the range 1-end of month.				*/
+/*  \"HH:MM:SS\" is hour:minute:second. The hour is in the range 0:23.	*/
+/* Minutes and seconds are in the range 0-59.				*/
     struct tm *tm = gmtime(&timestamp);
 
     fprintf( plist, "\t<key>%s</key>\n", key );
@@ -482,7 +487,7 @@ static int UFOOutputMetaInfo(char *basedir,SplineFont *sf) {
 
     if ( plist==NULL )
 return( false );
-    PListOutputString(plist,"creator","net.SourceForge.FontForge");
+    PListOutputString(plist,"creator","net.GitHub.FontForge");
 #ifdef Version_1
     PListOutputInteger(plist,"formatVersion",1);
 #else
