@@ -227,6 +227,7 @@ FONTFORGE_CONFIG_X_LIBRARIES
 # zlib is a requirement. It is too commonly available to bother
 # leaving out.
 PKG_CHECK_MODULES([ZLIB],[zlib])
+PKG_CHECK_MODULES([GLIB],[glib-2.0 >= 2.6 gio-2.0])
 
 if test x"${i_do_have_gui}" = xyes; then
    PKG_CHECK_MODULES([PANGO],[pango >= 1.10 pangoxft])

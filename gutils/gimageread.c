@@ -28,41 +28,43 @@
 #include <string.h>
 #include <ustring.h>
 
+#include "gio.h"
+#include "gfile.h"
+
 GImage *GImageRead(char * filename) {
-    char *pt;
+    char *mime;
 
-    if ( filename==NULL )
-return( NULL );
+    if (filename == NULL || !GFileExists (filename))
+	return( NULL );
 
-    pt = strrchr(filename,'.');
-    if ( pt==NULL )
-	pt = "";
-    if ( strmatch(pt,".bmp")==0 )
-return( GImageReadBmp(filename));
-    else if ( strmatch(pt,".xbm")==0 )
-return( GImageReadXbm(filename));
-    else if ( strmatch(pt,".xpm")==0 )
-return( GImageReadXpm(filename));
+    mime = GIOGetMimeType (filename, true);
+
+    if (strcasecmp (mime, "image/bmp") == 0)
+	return( GImageReadBmp(filename));
+    else if (strcasecmp (mime, "image/x-xbitmap") == 0)
+	return( GImageReadXbm(filename));
+    else if (strcasecmp (mime, "image/x-xpixmap") == 0)
+	return( GImageReadXpm(filename));
 #ifndef _NO_LIBTIFF
-    else if ( strmatch(pt,".tiff")==0 || strmatch(pt,".tif")==0 )
-return( GImageReadTiff(filename));
+    else if (strcasecmp (mime, "image/tiff") == 0)
+	return( GImageReadTiff(filename));
 #endif
 #ifndef _NO_LIBJPEG
-    else if ( strmatch(pt,".jpeg")==0 || strmatch(pt,".jpg")==0 )
-return( GImageReadJpeg(filename));
+    else if (strcasecmp (mime, "image/jpeg") == 0)
+	return( GImageReadJpeg(filename));
 #endif
 #ifndef _NO_LIBPNG
-    else if ( strmatch(pt,".png")==0 )
-return( GImageReadPng(filename));
+    else if (strcasecmp (mime, "image/png") == 0)
+	return( GImageReadPng(filename));
 #endif
 #ifndef _NO_LIBUNGIF
-    else if ( strmatch(pt,".gif")==0 )
-return( GImageReadGif(filename));
+    else if (strcasecmp (mime, "image/gif") == 0)
+	return( GImageReadGif(filename));
 #endif
-    else if ( strmatch(pt,".ras")==0 )
-return( GImageReadRas(filename));		/* Sun raster */
-    else if ( strmatch(pt,".rgb")==0 )
-return( GImageReadRgb(filename));		/* SGI format */
+    else if (strcasecmp (mime, "image/x-cmu-raster") == 0)
+	return( GImageReadRas(filename));		/* Sun raster */
+    else if (strcasecmp (mime, "image/x-rgb") == 0)
+	return( GImageReadRgb(filename));		/* SGI format */
 
 return( NULL );
 }
