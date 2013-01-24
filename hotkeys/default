@@ -178,7 +178,7 @@ CharView.Menu.View.Number Points.TrueType:No Shortcut
 CharView.Menu.View.Number Points.PostScript:No Shortcut
 CharView.Menu.View.Number Points.SVG:No Shortcut
 CharView.Menu.View.Grid Fit.Show Grid Fit...:No Shortcut
-CharView.Menu.View.Grid Fit.Bigger Point Size:Ctl+Shft++
+CharView.Menu.View.Grid Fit.Bigger Point Size:Ctl++
 CharView.Menu.View.Grid Fit.Smaller Point Size:Ctl+-
 CharView.Menu.View.Grid Fit.Grid Fit Anti Alias:No Shortcut
 CharView.Menu.View.Grid Fit.Grid Fit Off:No Shortcut
