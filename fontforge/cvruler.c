@@ -27,6 +27,7 @@
 #include "fontforgeui.h"
 #include <math.h>
 #include <ustring.h>
+#include <assert.h>
 
 #include "cvruler.h"
 
@@ -40,307 +41,94 @@ Color measuretoolwindowforegroundcol = 0x000000;
 Color measuretoolwindowbackgroundcol = 0xe0e0c0;
 
 BasePoint last_ruler_offset[2] = { {0,0}, {0,0} };
-int infowindowdistance = 30;
 
-static void SlopeToBuf(char *buf,char *label,double dx, double dy) {
+static void SlopeToBuf(char *buf, int buflen, const char *label, double dx, double dy) {
     if ( dx==0 && dy==0 )
-	sprintf( buf, _("%s No Slope"), label );
+	snprintf( buf, buflen, _("%s No Slope"), label );
     else if ( dx==0 )
-	sprintf( buf, "%s dy/dx= ∞, %4g°", label, atan2(dy,dx)*180/3.1415926535897932);
+	snprintf( buf, buflen, "%s dy/dx= ∞, %4g°", label, atan2(dy,dx)*180/M_PI);
     else
-	sprintf( buf, "%s dy/dx= %4g, %4g°", label, dy/dx, atan2(dy,dx)*180/3.1415926535897932);
+	snprintf( buf, buflen, "%s dy/dx= %4g, %4g°", label, dy/dx, atan2(dy,dx)*180/M_PI);
 }
 
-static void CurveToBuf(char *buf,CharView *cv,Spline *s, double t) {
+static int GetCurvature(CharView *cv, Spline *s, double t,double *curvature,double *radius) {
     double kappa, emsize;
 
     kappa = SplineCurvature(s,t);
     if ( kappa==CURVATURE_ERROR )
-	strcpy(buf,_("No Curvature"));
+	return false;
     else {
 	emsize = cv->b.sc->parent->ascent + cv->b.sc->parent->descent;
 	if ( kappa==0 )
-	    sprintf(buf,_(" Curvature: %g"), kappa*emsize);
+	    *radius = INFINITY;
 	else
-	    sprintf(buf,_(" Curvature: %g  Radius: %g"), kappa*emsize, 1.0/kappa );
+	    *radius = 1.0/kappa;
+	*curvature = kappa*emsize;
     }
+    return true;
 }
 
-static int RulerText(CharView *cv, unichar_t *ubuf, int line) {
-    char buf[80];
+static int GetSplineLength(Spline *s1,SplinePoint *sp1,double t1,Spline *s2,SplinePoint *sp2,double t2,double *l) {
     double len;
-    double dx, dy;
-    Spline *s;
-    double t;
-    BasePoint slope;
-    real xoff = cv->info.x-cv->p.cx, yoff = cv->info.y-cv->p.cy;
 
-    buf[0] = '\0';
-    switch ( line ) {
-      case 0: {
-	real len = sqrt(xoff*xoff+yoff*yoff);
-
-	if ( cv->autonomous_ruler_w ) {
-	    xoff = last_ruler_offset[0].x;
-	    yoff = last_ruler_offset[0].y;
-	}
-
-	if ( !cv->autonomous_ruler_w && !cv->p.pressed )
-	    /* Give current location accurately */
-	    sprintf( buf, "%f,%f", (double) cv->info.x, (double) cv->info.y);
+    if ( sp1!=NULL && sp2!=NULL &&
+    ((sp1->next!=NULL && sp1->next->to==sp2) ||
+     (sp1->prev!=NULL && sp1->prev->from==sp2)) ) {
+	if ( sp1->next!=NULL && sp1->next->to==sp2 )
+	    len = SplineLength(sp1->next);
 	else
-	    sprintf( buf, "%f %.0f° (%f,%f)", (double) len,
-		    atan2(yoff,xoff)*180/3.1415926535897932,
-		    (double) xoff,(double) yoff);
-      break; }
-      case 1:
-	if ( cv->p.pressed ) {
-	    if ( cv->p.spline!=NULL ||
-		    (cv->p.sp!=NULL &&
-		     ((cv->p.sp->next==NULL && cv->p.sp->prev!=NULL) ||
-		      (cv->p.sp->prev==NULL && cv->p.sp->next!=NULL) ||
-		      (cv->p.sp->next!=NULL && cv->p.sp->prev!=NULL &&
-		        BpColinear(!cv->p.sp->noprevcp ? &cv->p.sp->prevcp : &cv->p.sp->prev->from->me,
-				&cv->p.sp->me,
-			        !cv->p.sp->nonextcp ? &cv->p.sp->nextcp : &cv->p.sp->next->to->me))) ) ) {
-		Spline *spline;
-		double t;
+	    len = SplineLength(sp1->prev);
+    } else if ( s1 == s2 && s2!=NULL )
+	len = SplineLengthRange(s2,t1,t2);
+    else if ( sp1!=NULL && s2!=NULL &&
+	    sp1->next == s2 )
+	len = SplineLengthRange(s2,0,t2);
+    else if ( sp1!=NULL && s2!=NULL &&
+	    sp1->prev == s2 )
+	len = SplineLengthRange(s2,t2,1);
+    else if ( sp2!=NULL && s1!=NULL &&
+	    sp2->next == s1 )
+	len = SplineLengthRange(s1,0,t1);
+    else if ( sp2!=NULL && s1!=NULL &&
+	    sp2->prev == s1 )
+	len = SplineLengthRange(s1,t1,1);
+    else
+	return false;
 
-		if ( cv->p.spline!=NULL ) {
-		    spline = cv->p.spline;
-		    t = cv->p.t;
-		} else if ( cv->p.sp->next == NULL ) {
-		    spline = cv->p.sp->prev;
-		    t = 1;
-		} else {
-		    spline = cv->p.sp->next;
-		    t = 0;
-		}
-		slope.x = (3*spline->splines[0].a*t + 2*spline->splines[0].b)*t + spline->splines[0].c;
-		slope.y = (3*spline->splines[1].a*t + 2*spline->splines[1].b)*t + spline->splines[1].c;
-		len = sqrt(slope.x*slope.x + slope.y*slope.y);
-		if ( len!=0 ) {
-		    slope.x /= len; slope.y /= len;
-		    sprintf( buf, _("Normal Distance: %.2f Along Spline: %.2f"),
-			    fabs(slope.y*xoff - slope.x*yoff),
-			    slope.x*xoff + slope.y*yoff );
-		}
-	    }
-	} else if ( cv->dv!=NULL || cv->b.gridfit!=NULL ) {
-	    double scalex = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/(rint(cv->ft_pointsizex*cv->ft_dpi/72.0));
-	    double scaley = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/(rint(cv->ft_pointsizey*cv->ft_dpi/72.0));
-	    sprintf( buf, "%.2f,%.2f", (double) (cv->info.x/scalex), (double) (cv->info.y/scaley));
-	} else if ( cv->p.spline!=NULL ) {
-	    s = cv->p.spline;
-	    t = cv->p.t;
-#if 0
-	    sprintf( buf, _("Near (%f,%f) @t=%g"),
-		    (double) (((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d),
-		    (double) (((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d),
-		    t );
-#else
-	    sprintf( buf, _("Near (%f,%f)"),
-		    (double) (((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d),
-		    (double) (((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d) );
-#endif
-	} else if ( cv->p.sp!=NULL ) {
-	    sprintf( buf, _("Near (%f,%f)"),(double) cv->p.sp->me.x,(double) cv->p.sp->me.y );
-	} else
-return( false );
-      break;
-      case 2:
-	if ( cv->p.pressed ) {
-	    if ( cv->p.sp!=NULL && cv->info_sp!=NULL &&
-		    ((cv->p.sp->next!=NULL && cv->p.sp->next->to==cv->info_sp) ||
-		     (cv->p.sp->prev!=NULL && cv->p.sp->prev->from==cv->info_sp)) ) {
-		if ( cv->p.sp->next!=NULL && cv->p.sp->next->to==cv->info_sp )
-		    len = SplineLength(cv->p.sp->next);
-		else
-		    len = SplineLength(cv->p.sp->prev);
-	    } else if ( cv->p.spline == cv->info_spline && cv->info_spline!=NULL )
-		len = SplineLengthRange(cv->info_spline,cv->p.t,cv->info_t);
-	    else if ( cv->p.sp!=NULL && cv->info_spline!=NULL &&
-		    cv->p.sp->next == cv->info_spline )
-		len = SplineLengthRange(cv->info_spline,0,cv->info_t);
-	    else if ( cv->p.sp!=NULL && cv->info_spline!=NULL &&
-		    cv->p.sp->prev == cv->info_spline )
-		len = SplineLengthRange(cv->info_spline,cv->info_t,1);
-	    else if ( cv->info_sp!=NULL && cv->p.spline!=NULL &&
-		    cv->info_sp->next == cv->p.spline )
-		len = SplineLengthRange(cv->p.spline,0,cv->p.t);
-	    else if ( cv->info_sp!=NULL && cv->p.spline!=NULL &&
-		    cv->info_sp->prev == cv->p.spline )
-		len = SplineLengthRange(cv->p.spline,cv->p.t,1);
-	    else
-return( false );
-	    if ( len>1 )
-		sprintf( buf, _("Spline Length=%.1f"), len);
-	    else
-		sprintf( buf, _("Spline Length=%g"), len);
-	} else if ( cv->p.spline!=NULL ) {
-	    s = cv->p.spline;
-	    t = cv->p.t;
-	    dx = (3*s->splines[0].a*t+2*s->splines[0].b)*t+s->splines[0].c;
-	    dy = (3*s->splines[1].a*t+2*s->splines[1].b)*t+s->splines[1].c;
-	    SlopeToBuf(buf,"",dx,dy);
-	} else if ( cv->p.sp!=NULL ) {
-	    if ( cv->p.sp->nonextcp )
-		strcpy(buf,_("No Next Control Point"));
-	    else
-		sprintf(buf,_("Next CP: (%f,%f)"), (double) cv->p.sp->nextcp.x, (double) cv->p.sp->nextcp.y);
-	} else
-return( false );
-      break;
-      case 3:
-	if ( cv->p.pressed )
-return( false );
-	else if ( cv->p.spline!=NULL ) {
-	    CurveToBuf(buf,cv,cv->p.spline,cv->p.t);
-	} else if ( cv->p.sp!=NULL && cv->p.sp->next!=NULL ) {
-	    s = cv->p.sp->next;
-	    dx = s->splines[0].c;
-	    dy = s->splines[1].c;
-	    SlopeToBuf(buf,_(" Next"),dx,dy);
-	} else if ( cv->p.sp!=NULL ) {
-	    if ( cv->p.sp->noprevcp )
-		strcpy(buf,_("No Previous Control Point"));
-	    else
-		sprintf(buf,_("Prev CP: (%f,%f)"), (double) cv->p.sp->prevcp.x, (double) cv->p.sp->prevcp.y);
-	} else
-return( false );
-      break;
-      case 4:
-	if ( cv->p.spline!=NULL )
-return( false );
-	else if ( cv->p.sp->next!=NULL ) {
-	    CurveToBuf(buf,cv,cv->p.sp->next,0);
-	} else if ( cv->p.sp->prev!=NULL ) {
-	    s = cv->p.sp->prev;
-	    dx = (3*s->splines[0].a*1+2*s->splines[0].b)*1+s->splines[0].c;
-	    dy = (3*s->splines[1].a*1+2*s->splines[1].b)*1+s->splines[1].c;
-	    SlopeToBuf(buf,_(" Prev"),dx,dy);
-	} else
-return( false );
-      break;
-      case 5:
-	if ( cv->p.sp->next!=NULL ) {
-	    if ( cv->p.sp->noprevcp )
-		strcpy(buf,_("No Previous Control Point"));
-	    else
-		sprintf(buf,_("Prev CP: (%f,%f)"), (double) cv->p.sp->prevcp.x, (double) cv->p.sp->prevcp.y);
-	} else {
-	    CurveToBuf(buf,cv,cv->p.sp->prev,1);
-	}
-      break;
-      case 6:
-	if ( cv->p.sp->next!=NULL && cv->p.sp->prev!=NULL ) {
-	    s = cv->p.sp->prev;
-	    dx = (3*s->splines[0].a*1+2*s->splines[0].b)*1+s->splines[0].c;
-	    dy = (3*s->splines[1].a*1+2*s->splines[1].b)*1+s->splines[1].c;
-	    SlopeToBuf(buf,_(" Prev"),dx,dy);
-	} else
-return( false );
-      break;
-      case 7:
-	if ( cv->p.sp->next!=NULL && cv->p.sp->prev!=NULL ) {
-	    CurveToBuf(buf,cv,cv->p.sp->prev,1);
-	} else
-return( false );
-      break;
-      default:
-return( false );
-    }
-    utf82u_strcpy(ubuf,buf);
-return( true );
+    *l = len;
+    return true;
 }
 
-static int RulerTextIntersection(CharView *cv, unichar_t *ubuf, int i) {
-    char buf[80];
+static void CheckFont(CharView *cv)
+{
+    static GFont *rvfont = NULL;
 
-    if ( i==0 && cv->num_ruler_intersections>4 ) {
-	real xoff = cv->ruler_intersections[cv->num_ruler_intersections-2].x - cv->ruler_intersections[1].x;
-	real yoff = cv->ruler_intersections[cv->num_ruler_intersections-2].y - cv->ruler_intersections[1].y;
-	real len = sqrt(xoff*xoff+yoff*yoff);
-	snprintf(buf,sizeof buf,"First Edge to Last Edge: %g x %g length %f",fabs(xoff),fabs(yoff),len);
-	utf82u_strcpy(ubuf,buf);
-return( 1 );
-    } else if ( cv->num_ruler_intersections>4 )
-	i -= 1;
+    // TBD, correct place to do font.
+    if ( rvfont==NULL ) {
+	FontRequest rq;
 
-    if ( i>=cv->num_ruler_intersections )
-return( 0 );
+        memset(&rq,0,sizeof(rq));
+	rq.utf8_family_name = FIXED_UI_FAMILIES;
+	rq.point_size = -12;
+	rq.weight = 400;
 
-    if ( i==0 ) {
-	snprintf(buf,sizeof buf,"[%d] (%g,%g)",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y);
-	if ( cv->p.sp ) {
-	    strcat(buf," snapped");
-	    cv->start_intersection_snapped = 1;
-	} else {
-	    cv->start_intersection_snapped = 0;
-	}
-    } else {
-	real xoff = cv->ruler_intersections[i].x - cv->ruler_intersections[i-1].x;
-	real yoff = cv->ruler_intersections[i].y - cv->ruler_intersections[i-1].y;
-	real len = sqrt(xoff*xoff+yoff*yoff);
-	snprintf(buf,sizeof buf,"[%d] (%g,%g) %g x %g length %g",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y,fabs(xoff),fabs(yoff),len);
-	if ( i==(cv->num_ruler_intersections-1) ) {
-	    if ( cv->info_sp ) {
-		strcat(buf," snapped");
-		cv->end_intersection_snapped = 1;
-	    } else {
-		cv->end_intersection_snapped = 0;
-	    }
-	}
+	/*
+	 * This assumes that font will not actually depend on the CharView,
+	 * that is just used in set-up.
+	 */
+	// rvfont = GDrawInstanciateFont(cv->ruler_w,&rq);
+	rvfont = GDrawInstanciateFont(cv->v,&rq);
+	rvfont = GResourceFindFont("CharView.Measure.Font",rvfont);
     }
 
-    utf82u_strcpy(ubuf,buf);
-return( 1 );
-}
+    if ( cv->rfont==NULL ) {
+	int as, ds, ld;
 
-static int ruler_e_h(GWindow gw, GEvent *event) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-    unichar_t ubuf[80];
-    int line;
-    int i;
-
-    switch ( event->type ) {
-      case et_expose:
-	GDrawSetFont(gw,cv->rfont);
-	for ( line=0; RulerText(cv,ubuf,line); ++line )
-	    GDrawDrawText(gw,2,line*cv->rfh+cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
-	if ( cv->p.pressed ) for ( i=0; RulerTextIntersection(cv,ubuf,i); ++i )
-	    GDrawDrawText(gw,2,(line+i)*cv->rfh+cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
-      break;
-      case et_mousedown:
-	cv->autonomous_ruler_w = false;
-	GDrawDestroyWindow(gw);
-	cv->ruler_w = NULL;
-      break;
+	GDrawWindowFontMetrics(cv->v,rvfont,&as,&ds,&ld);
+	cv->rfh = as+ds; cv->ras = as;
+	cv->rfont = rvfont;
     }
-return( true );
 }
-
-static int ruler_linger_e_h(GWindow gw, GEvent *event) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-    int i;
-
-    switch ( event->type ) {
-      case et_expose:
-	GDrawSetFont(gw,cv->rfont);
-	for ( i=0; i < cv->ruler_linger_num_lines ; ++i )
-	    GDrawDrawText(gw,2,i*cv->rfh+cv->ras+1,cv->ruler_linger_lines[i],-1,measuretoolwindowforegroundcol);
-      break;
-      case et_mousedown:
-	// TBD
-	// cv->autonomous_ruler_w = false;
-	// GDrawDestroyWindow(gw);
-	// cv->ruler_linger_w = NULL;
-      break;
-    }
-return( true );
-}
-	
-static GFont *rvfont=NULL;
 
 /*
  * Comparison function for use with qsort.
@@ -362,11 +150,21 @@ static int ReverseBasePointCompare(const void *l, const void *r) {
 return( -BasePointCompare(l,r) );
 }
 
+static int SpExists(CharView *cv, SplinePoint *sp) {
+    SplineSet *spl;
+
+    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
+	if ( SpExistsInSS(sp,spl) )
+return( true );
+    }
+return( false );
+}
+
 /*
  * Fill buffer with intersects on a line (from,to).
  * return number found, buf fill the buffer only up to a max_intersections.
  *
- * The points from and to are also put in the buffer. 
+ * The points from and to are also put in the buffer.
  *
  * Copied somewhat from CVMouseUpKnife(), perhaps they should be consolidated
  */
@@ -444,41 +242,25 @@ static int GetIntersections(CharView *cv,BasePoint from,BasePoint to,BasePoint *
 return( total_intersections );	/* note that it could be greater than max */
 }
 
+static void UpdateIntersections(CharView *cv,BasePoint from,BasePoint to)
+{
+    if ( !cv->ruler_intersections ) {
+	cv->allocated_ruler_intersections = 32;
+	cv->ruler_intersections = galloc(cv->allocated_ruler_intersections * sizeof(cv->ruler_intersections[0]));
+    }
+    for(;;) {
+	cv->num_ruler_intersections = GetIntersections(cv,from,to,cv->ruler_intersections,cv->allocated_ruler_intersections);
+	if ( cv->num_ruler_intersections>cv->allocated_ruler_intersections ) {
+	    cv->allocated_ruler_intersections = cv->num_ruler_intersections * 2;
+	    cv->ruler_intersections = grealloc(cv->ruler_intersections,cv->allocated_ruler_intersections * sizeof(cv->ruler_intersections[0]));
+	} else
+	    break;
+    }
+}
+
 static void RulerPlace(CharView *cv, GEvent *event) {
-    unichar_t ubuf[80];
-    int width, x, y;
-    GRect size;
-    GPoint pt;
-    int i,h,w;
-    GWindowAttrs wattrs;
-    GRect pos;
-    FontRequest rq;
-    int as, ds, ld;
-
-    if ( cv->ruler_w==NULL ) {
-	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_positioned|wam_nodecor|wam_backcol|wam_bordwidth;
-	wattrs.event_masks = (1<<et_expose)|(1<<et_resize)|(1<<et_mousedown);
-	wattrs.cursor = ct_mypointer;
-	wattrs.background_color = measuretoolwindowbackgroundcol;
-	wattrs.nodecoration = 1;
-	wattrs.border_width = 1;
-	pos.x = pos.y = 0; pos.width=pos.height = 20;
-	cv->ruler_w = GWidgetCreateTopWindow(NULL,&pos,ruler_e_h,cv,&wattrs);
-
-	if ( rvfont==NULL ) {
-	    memset(&rq,0,sizeof(rq));
-	    rq.utf8_family_name = FIXED_UI_FAMILIES;
-	    rq.point_size = -12;
-	    rq.weight = 400;
-	    rvfont = GDrawInstanciateFont(cv->ruler_w,&rq);
-	    rvfont = GResourceFindFont("CharView.Measure.Font",rvfont);
-	}
-	cv->rfont = rvfont;
-	GDrawWindowFontMetrics(cv->ruler_w,cv->rfont,&as,&ds,&ld);
-	cv->rfh = as+ds; cv->ras = as;
-    } else
-	GDrawRaise(cv->ruler_w);
+    // TBD, correct place to do font.
+    CheckFont(cv);
 
     if ( cv->p.pressed ) {
 	BasePoint from;
@@ -486,470 +268,89 @@ static void RulerPlace(CharView *cv, GEvent *event) {
 	from.x = cv->p.cx;
 	from.y = cv->p.cy;
 
-	if ( !cv->ruler_intersections ) {
-	    cv->allocated_ruler_intersections = 32;
-	    cv->ruler_intersections = galloc(cv->allocated_ruler_intersections * sizeof(cv->ruler_intersections[0]));
-	}
-	for(;;) {
-	    cv->num_ruler_intersections = GetIntersections(cv,from,cv->info,cv->ruler_intersections,cv->allocated_ruler_intersections);
-	    if ( cv->num_ruler_intersections>cv->allocated_ruler_intersections ) {
-		cv->allocated_ruler_intersections = cv->num_ruler_intersections * 2;
-		cv->ruler_intersections = grealloc(cv->ruler_intersections,cv->allocated_ruler_intersections * sizeof(cv->ruler_intersections[0]));
-	    } else
-		break;
-	}
-    }
+	if ( cv->p.sp )
+	    cv->start_intersection_snapped = cv->p.sp;
+	else
+	    cv->start_intersection_snapped = 0;
 
-    GDrawSetFont(cv->ruler_w,cv->rfont);
-    width = h = 0;
-    for ( i=0; RulerText(cv,ubuf,i); ++i ) {
-	w = GDrawGetTextWidth(cv->ruler_w,ubuf,-1);
-	if ( w>width ) width = w;
-	h += cv->rfh;
-    }
-    if ( cv->p.pressed ) for ( i=0; RulerTextIntersection(cv,ubuf,i); ++i ) {
-	w = GDrawGetTextWidth(cv->ruler_w,ubuf,-1);
-	if ( w>width ) width = w;
-	h += cv->rfh;
-    }
+	if ( cv->info_sp )
+	    cv->end_intersection_snapped = cv->info_sp;
+	else
+	    cv->end_intersection_snapped = 0;
 
-    GDrawGetSize(GDrawGetRoot(NULL),&size);
-    pt.x = event->u.mouse.x; pt.y = event->u.mouse.y;
-    GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt);
-    x = pt.x + infowindowdistance;
-    if ( x+width > size.width )
-	x = pt.x - width-infowindowdistance;
-    y = pt.y -cv->ras-2;
-    if ( y+h > size.height )
-	y = pt.y - h - cv->ras -10;
-    GDrawMoveResize(cv->ruler_w,x,y,width+4,h+4);
-}
-
-static void RulerLingerPlace(CharView *cv, GEvent *event) {
-    int width, x, y;
-    GRect size;
-    GPoint pt;
-    int i,h,w;
-    GWindowAttrs wattrs;
-    GRect pos;
-    FontRequest rq;
-    int as, ds, ld;
-    int line;
-    int old_pressed;
-
-    if ( cv->ruler_linger_w==NULL ) {
-	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_positioned|wam_nodecor|wam_backcol|wam_bordwidth;
-	wattrs.event_masks = (1<<et_expose)|(1<<et_resize)|(1<<et_mousedown);
-	wattrs.cursor = ct_mypointer;
-	wattrs.background_color = measuretoolwindowbackgroundcol;
-	wattrs.nodecoration = 1;
-	wattrs.border_width = 1;
-	pos.x = pos.y = 0; pos.width=pos.height = 20;
-	cv->ruler_linger_w = GWidgetCreateTopWindow(NULL,&pos,ruler_linger_e_h,cv,&wattrs);
-
-	if ( rvfont==NULL ) {
-	    memset(&rq,0,sizeof(rq));
-	    rq.utf8_family_name = FIXED_UI_FAMILIES;
-	    rq.point_size = -12;
-	    rq.weight = 400;
-	    rvfont = GDrawInstanciateFont(cv->ruler_w,&rq);
-	    rvfont = GResourceFindFont("CharView.Measure.Font",rvfont);
-	}
-	cv->rfont = rvfont;
-	GDrawWindowFontMetrics(cv->ruler_linger_w,cv->rfont,&as,&ds,&ld);
-	cv->rfh = as+ds; cv->ras = as;
-    } else
-	GDrawRaise(cv->ruler_linger_w);
-
-    GDrawSetFont(cv->ruler_linger_w,cv->rfont);
-    width = h = 0;
-    line = 0;
-    old_pressed = cv->p.pressed;
-    cv->p.pressed = true;
-
-    for ( i=0; line<sizeof(cv->ruler_linger_lines)/sizeof(cv->ruler_linger_lines[0]) && RulerText(cv,cv->ruler_linger_lines[line],i) ; ++i,++line ) {
-	w = GDrawGetTextWidth(cv->ruler_linger_w,cv->ruler_linger_lines[line],-1);
-	if ( w>width ) width = w;
-	h += cv->rfh;
-    }
-    cv->p.pressed = old_pressed;
-    for ( i=0; line<sizeof(cv->ruler_linger_lines)/sizeof(cv->ruler_linger_lines[0]) && RulerTextIntersection(cv,cv->ruler_linger_lines[line],i); ++i,++line ) {
-	w = GDrawGetTextWidth(cv->ruler_linger_w,cv->ruler_linger_lines[line],-1);
-	if ( w>width ) width = w;
-	h += cv->rfh;
-    }
-    cv->ruler_linger_num_lines = line;
-
-    GDrawGetSize(GDrawGetRoot(NULL),&size);
-    pt.x = event->u.mouse.x; pt.y = event->u.mouse.y;
-    GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt);
-    x = pt.x + infowindowdistance;
-    if ( x+width > size.width )
-	x = pt.x - width-infowindowdistance;
-    y = pt.y -cv->ras-2;
-    if ( y+h > size.height )
-	y = pt.y - h - cv->ras -10;
-    GDrawMoveResize(cv->ruler_linger_w,x,y,width+4,h+4);
-    GDrawSetVisible(cv->ruler_linger_w,true);
-}
-
-static void RulerLingerMove(CharView *cv) {
-    if ( cv->ruler_linger_w ) {
-	int x, y;
-	GRect size;
-	GRect rsize;
-	GRect csize;
-	GPoint pt;
-
-	GDrawGetSize(GDrawGetRoot(NULL),&size);
-	GDrawGetSize(cv->ruler_linger_w,&rsize);
-	GDrawGetSize(cv->gw,&csize);
-
-	pt.x = cv->xoff + rint(cv->ruler_intersections[cv->num_ruler_intersections-1].x*cv->scale);
-	pt.y = -cv->yoff + cv->height - rint(cv->ruler_intersections[cv->num_ruler_intersections-1].y*cv->scale);
-	GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt);
-	x = pt.x + infowindowdistance;
-	if ( x+rsize.width>size.width )
-	    x = pt.x - rsize.width-infowindowdistance;
-	y = pt.y -cv->ras-2;
-	if ( y+rsize.height>size.height )
-	    y = pt.y - rsize.height - cv->ras -10;
-
-	if ( x>=csize.x && x<=(csize.x+csize.width) && y>=csize.y && y<=(csize.y+csize.height) ) {
-	    GDrawMove(cv->ruler_linger_w,x,y);
-	    GDrawSetVisible(cv->ruler_linger_w,true);
-	} else {
-	    GDrawSetVisible(cv->ruler_linger_w,false);
-	}
+	UpdateIntersections(cv,from,cv->info);
     }
 }
 
 void CVMouseDownRuler(CharView *cv, GEvent *event) {
-
     cv->autonomous_ruler_w = false;
-
     RulerPlace(cv,event);
     cv->p.rubberlining = true;
-    GDrawSetVisible(cv->ruler_w,true);
-    if ( cv->ruler_linger_w ) {
-	GDrawDestroyWindow(cv->ruler_linger_w);
-	cv->ruler_linger_w = NULL;
-    }
 }
 
 void CVMouseMoveRuler(CharView *cv, GEvent *event) {
+
     if ( cv->autonomous_ruler_w )
 return;
 
     if ( !cv->p.pressed && (event->u.mouse.state&ksm_alt) ) {
-	if ( cv->ruler_w!=NULL && GDrawIsVisible(cv->ruler_w)) {
-	    GDrawDestroyWindow(cv->ruler_w);
-	    cv->ruler_w = NULL;
-	}
 return;
     }
     if ( !cv->p.pressed )
 	CVMouseAtSpline(cv,event);
     RulerPlace(cv,event);
-    if ( !cv->p.pressed )
-	GDrawSetVisible(cv->ruler_w,true);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);		/* The resize needs to happen before the expose */
     if ( !cv->p.pressed && (event->u.mouse.state&ksm_alt) ) /* but a mouse up might sneak in... */
 return;
-    GDrawRequestExpose(cv->ruler_w,NULL,false);
     GDrawRequestExpose(cv->v,NULL,false);
 }
 
 void CVMouseUpRuler(CharView *cv, GEvent *event) {
-    if ( cv->ruler_w!=NULL ) {
-	GRect size;
-
-	last_ruler_offset[1] = last_ruler_offset[0];
-	last_ruler_offset[0].x = cv->info.x-cv->p.cx;
-	last_ruler_offset[0].y = cv->info.y-cv->p.cy;
-
-	/* if we have gone out of bounds abandon the window */
-	GDrawGetSize(cv->v,&size);
-	if ( event->u.mouse.x<0 || event->u.mouse.y<0 || event->u.mouse.x>=size.width || event->u.mouse.y>=size.height ) {
-	    GDrawDestroyWindow(cv->ruler_w);
-	    cv->ruler_w = NULL;
-return;
-	}
-
-	if ( !(event->u.mouse.state & ksm_alt) ) {
-	    /*cv->autonomous_ruler_w = true;*/
-
-	    if ( cv->ruler_linger_w ) {
-		GDrawDestroyWindow(cv->ruler_linger_w);
-		cv->ruler_linger_w = NULL;
-	    }
-	    if ( cv->num_ruler_intersections>1 ) {
-		RulerLingerPlace(cv,event);
-	    }
-return;
-	}
-
-	GDrawDestroyWindow(cv->ruler_w);
-	cv->ruler_w = NULL;
-    }
-}
-
-/* ************************************************************************** */
-
-static char *PtInfoText(CharView *cv, int lineno, int active, char *buffer, int blen) {
-    BasePoint *cp;
-    double t;
-    Spline *s;
-    SplinePoint *sp = cv->p.sp;
-    extern char *coord_sep;
-    double dx, dy, kappa, kappa2;
-    int emsize;
-
-    if ( !cv->p.prevcp && !cv->p.nextcp ) {
-	sp = cv->active_sp;
-	if ( sp==NULL )
-return( NULL );
-    }
-
-    if ( active==-1 ) {
-	if ( lineno>0 )
-return( NULL );
-	if ( sp->next==NULL || sp->prev==NULL )
-return( NULL );
-	kappa = SplineCurvature(sp->next,0);
-	kappa2 = SplineCurvature(sp->prev,1);
-	emsize = cv->b.sc->parent->ascent + cv->b.sc->parent->descent;
-	if ( kappa == CURVATURE_ERROR || kappa2 == CURVATURE_ERROR )
-	    strncpy(buffer,_("No curvature info"), blen);
-	else
-	    snprintf( buffer, blen, U_("∆Curvature: %g"), (kappa-kappa2)*emsize );
-return( buffer );
-    }
-
-    if ( (!cv->p.prevcp && active ) || (!cv->p.nextcp && !active)) {
-	cp = &sp->nextcp;
-	t = 0;
-	s = sp->next;
-    } else {
-	cp = &sp->prevcp;
-	t = 1;
-	s = sp->prev;
-    }
-	
-    switch( lineno ) {
-      case 0:
-	if ( t==0 )
-	    strncpy( buffer, _(" Next CP"), blen);
-	else
-	    strncpy( buffer, _(" Prev CP"), blen);
-      break;
-      case 1:
-	snprintf( buffer, blen, "(%g%s%g)", (double) cp->x, coord_sep, (double) cp->y);
-      break;
-      case 2:
-	snprintf( buffer, blen, "∆ (%g%s%g)", (double) (cp->x-sp->me.x), coord_sep, (double) (cp->y-sp->me.y));
-      break;
-      case 3:
-	dx = cp->x - sp->me.x; dy = cp->y - sp->me.y;
-	if ( dx==0 && dy==0 )
-	    snprintf( buffer, blen, "%s", _("No Slope") );
-	else if ( dx==0 )
-	    snprintf( buffer, blen, "∆y/∆x= ∞" );
-	else
-	    snprintf( buffer, blen, "∆y/∆x= %g", dy/dx );
-      break;
-      case 4:
-	dx = cp->x - sp->me.x; dy = cp->y - sp->me.y;
-	snprintf( buffer, blen, "∠ %g°", atan2(dy,dx)*180/3.1415926535897932 );
-      break;
-      case 5:
-	if ( s==NULL )
-return( NULL );
-	kappa = SplineCurvature(s,t);
-	if ( kappa==CURVATURE_ERROR )
-return( NULL );
-	emsize = cv->b.sc->parent->ascent + cv->b.sc->parent->descent;
-	/* If we normalize by the em-size, the curvature is often more */
-	/*  readable */
-	snprintf( buffer, blen, _("Curvature: %g"), kappa*emsize);
-      break;
-      default:
-return( NULL );
-    }
-return( buffer );
-}
-
-static int cpinfo_e_h(GWindow gw, GEvent *event) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-    char buf[100];
-    int line, which, y;
-
-    switch ( event->type ) {
-      case et_expose:
-	y = cv->ras+1;
-	GDrawSetFont(gw,cv->rfont);
-	for ( which = 1; which>=0; --which ) {
-	    for ( line=0; PtInfoText(cv,line,which,buf,sizeof(buf))!=NULL; ++line ) {
-		GDrawDrawText8(gw,2,y,buf,-1,0x000000);
-		y += cv->rfh+1;
-	    }
-	    GDrawDrawLine(gw,0,y+2-cv->ras,2000,y+2-cv->ras,0x000000);
-	    y += 4;
-	}
-	if ( PtInfoText(cv,0,-1,buf,sizeof(buf))!=NULL )
-	    GDrawDrawText8(gw,2,y,buf,-1,0x000000);
-      break;
-    }
-return( true );
-}
-	
-static void CpInfoPlace(CharView *cv, GEvent *event) {
-    char buf[100];
-    int line, which;
-    int width, x, y;
-    GRect size;
-    GPoint pt, pt2;
-    int h,w;
-    GWindowAttrs wattrs;
-    GRect pos;
-    FontRequest rq;
-    int as, ds, ld;
-    SplinePoint *sp;
-
-    if ( cv->ruler_w==NULL ) {
-	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_positioned|wam_nodecor|wam_backcol|wam_bordwidth;
-	wattrs.event_masks = (1<<et_expose)|(1<<et_resize)|(1<<et_mousedown);
-	wattrs.cursor = ct_mypointer;
-	wattrs.background_color = 0xe0e0c0;
-	wattrs.nodecoration = 1;
-	wattrs.border_width = 1;
-	pos.x = pos.y = 0; pos.width=pos.height = 20;
-	cv->ruler_w = GWidgetCreateTopWindow(NULL,&pos,cpinfo_e_h,cv,&wattrs);
-
-	if ( rvfont==NULL ) {
-	    memset(&rq,0,sizeof(rq));
-	    rq.utf8_family_name = FIXED_UI_FAMILIES;
-	    rq.point_size = -12;
-	    rq.weight = 400;
-	    rvfont = GDrawInstanciateFont(cv->ruler_w,&rq);
-	    rvfont = GResourceFindFont("CharView.Measure.Font",rvfont);
-	}
-	cv->rfont = rvfont;
-	GDrawWindowFontMetrics(cv->ruler_w,cv->rfont,&as,&ds,&ld);
-	cv->rfh = as+ds; cv->ras = as;
-    } else
-	GDrawRaise(cv->ruler_w);
-
-    GDrawSetFont(cv->ruler_w,cv->rfont);
-    h = 0; width = 0;
-    for ( which = 0; which<2; ++which ) {
-	for ( line=0; PtInfoText(cv,line,which,buf,sizeof(buf))!=NULL; ++line ) {
-	    w = GDrawGetText8Width(cv->ruler_w,buf,-1);
-	    if ( w>width ) width = w;
-	    h += cv->rfh+1;
-	}
-	h += 4;
-    }
-    if ( PtInfoText(cv,0,-1,buf,sizeof(buf))!=NULL ) {
-	w = GDrawGetText8Width(cv->ruler_w,buf,-1);
-	if ( w>width ) width = w;
-	h += cv->rfh+1;
-    }
-    
-    GDrawGetSize(GDrawGetRoot(NULL),&size);
-    pt.x = event->u.mouse.x; pt.y = event->u.mouse.y;	/* Address of cp */
-    GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt);
-
-    sp = cv->p.sp;
-    if ( !cv->p.prevcp && !cv->p.nextcp )
-	sp = cv->active_sp;
-    if ( sp!=NULL ) {
-	x =  cv->xoff + rint(sp->me.x*cv->scale);
-	y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
-	if ( x>=0 && y>=0 && x<cv->width && y<cv->height ) {
-	    pt2.x = x; pt2.y = y;
-	    GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt2);
-	} else
-	    sp = NULL;
-    }
-
-    x = pt.x + infowindowdistance;
-    y = pt.y - cv->ras-2;
-    if ( sp!=NULL && x<=pt2.x-4 && x+width>=pt2.x+4 && y<=pt2.y-4 && y+h>=pt2.y+4 )
-	x = pt2.x + 4;
-    if ( x+width > size.width ) {
-	x = pt.x - width-30;
-	if ( sp!=NULL && x<=pt2.x-4 && x+width>=pt2.x+4 && y<=pt2.y-4 && y+h>=pt2.y+4 )
-	    x = pt2.x - width - 4;
-	if ( x<0 ) {
-	    x = pt.x + 10;
-	    y = pt.y - h - infowindowdistance;
-	    if ( sp!=NULL && x<=pt2.x-4 && x+width>=pt2.x+4 && y<=pt2.y-4 && y+h>=pt2.y+4 )
-		y = pt2.y - h - 4;
-	    if ( y<0 )
-		y = pt.y+infowindowdistance;	/* If this doesn't work we have nowhere else to */
-				/* try so don't check */
-	}
-    }
-    if ( y+h > size.height )
-	y = pt.y - h - cv->ras - 10;
-    GDrawMoveResize(cv->ruler_w,x,y,width+4,h+4);
+    // TBD, what is this really for?
+    last_ruler_offset[1] = last_ruler_offset[0];
+    last_ruler_offset[0].x = cv->info.x-cv->p.cx;
+    last_ruler_offset[0].y = cv->info.y-cv->p.cy;
 }
 
 void CPStartInfo(CharView *cv, GEvent *event) {
-
     if ( !cv->showcpinfo )
 return;
-    cv->autonomous_ruler_w = false;
 
-    CpInfoPlace(cv,event);
-    GDrawSetVisible(cv->ruler_w,true);
+    cv->autonomous_ruler_w = false;
 }
 
 void CPUpdateInfo(CharView *cv, GEvent *event) {
-
-    if ( !cv->showcpinfo )
-return;
-    if ( !cv->p.pressed ) {
-	if ( cv->ruler_w!=NULL && GDrawIsVisible(cv->ruler_w)) {
-	    GDrawDestroyWindow(cv->ruler_w);
-	    cv->ruler_w = NULL;
-	}
-return;
-    }
-    if ( cv->ruler_w==NULL )
-	CPStartInfo(cv,event);
-    else {
-	CpInfoPlace(cv,event);
-	GDrawSync(NULL);
-	GDrawProcessPendingEvents(NULL);		/* The resize needs to happen before the expose */
-	if ( !cv->p.pressed  ) /* but a mouse up might sneak in... */
-return;
-	GDrawRequestExpose(cv->ruler_w,NULL,false);
-    }
 }
 
 void CPEndInfo(CharView *cv) {
-    if ( cv->ruler_w!=NULL ) {
-	if ( !cv->p.pressed ) {
-	    GDrawDestroyWindow(cv->ruler_w);
-	    cv->ruler_w = NULL;
-	}
-    }
-    /* TBD, wrong time to kill? */
-    if ( cv->ruler_linger_w!=NULL && cv->b1_tool!=cvt_ruler && cv->b1_tool_old!=cvt_ruler ) {
-	GDrawDestroyWindow(cv->ruler_linger_w);
-	cv->ruler_linger_w = NULL;
-    }
 }
 
 void CVRulerExpose(GWindow pixmap,CharView *cv) {
-    if ( cv->b1_tool!=cvt_ruler && cv->b1_tool_old!=cvt_ruler ) {
-	cv->num_ruler_intersections = 0;
-return;
+
+    // TBD, correct place to do font.
+    CheckFont(cv);
+
+    if ( cv->num_ruler_intersections >= 2 ) {
+	BasePoint to,from;
+	from = cv->ruler_intersections[0];
+	to = cv->ruler_intersections[cv->num_ruler_intersections-1];
+
+	// In case things have moved. TBD: handles removal of points, but what about re-use?
+	// Snapped points are followed, but no new snapping occurs, that is left just for user ruler placement.
+	if ( cv->start_intersection_snapped ) {
+	    if ( SpExists( cv, cv->start_intersection_snapped ) )
+		from = cv->start_intersection_snapped->me;
+	    else
+		cv->start_intersection_snapped = 0;
+	}
+	if ( cv->end_intersection_snapped ) {
+	    if ( SpExists( cv, cv->end_intersection_snapped ) )
+		to = cv->end_intersection_snapped->me;
+	    else
+		cv->end_intersection_snapped = 0;
+	}
+	UpdateIntersections(cv,from,to);
     }
 
     if ( cv->num_ruler_intersections >= 2 ) {
@@ -970,14 +371,16 @@ return;
 
 	    if ( xdist*cv->scale>10.0 && ydist*cv->scale>10.0 ) {
 
+		assert(cv->rfont);
+
 		GDrawSetFont(pixmap,cv->rfont);
 		len = snprintf(buf,sizeof buf,"%g",xdist);
-		utf82u_strcpy(ubuf,buf);
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
 		GDrawDrawText(pixmap,(x+xend)/2 - len*charwidth/2,y + (y > yend ? 12 : -5),ubuf,-1,textcolor);
 		GDrawDrawLine(pixmap,x,y,xend,y,measuretoollinecol);
 
 		len = snprintf(buf,sizeof buf,"%g",ydist);
-		utf82u_strcpy(ubuf,buf);
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
 		GDrawDrawText(pixmap,xend + (x < xend ? charwidth/2 : -(len * charwidth + charwidth/2)),(y+yend)/2,ubuf,-1,textcolor);
 		GDrawDrawLine(pixmap,xend,y,xend,yend,measuretoollinecol);
 	    }
@@ -996,7 +399,7 @@ return;
 	    rect.width = 3;
 	    rect.height = 3;
 
-	    GDrawFillElipse(pixmap,&rect,((i==(cv->num_ruler_intersections-1) && cv->info_sp) || (i==0 && cv->p.sp)) ? measuretoolpointsnappedcol : measuretoolpointcol);
+	    GDrawFillElipse(pixmap,&rect,((i==(cv->num_ruler_intersections-1) && cv->end_intersection_snapped) || (i==0 && cv->start_intersection_snapped)) ? measuretoolpointsnappedcol : measuretoolpointcol);
 	    if ( i>0 && (cv->num_ruler_intersections<6 || (prev_rect.x + 10)<rect.x || (prev_rect.y + 10)<rect.y || (prev_rect.y - 10)>rect.y) ) {
 		real xoff = cv->ruler_intersections[i].x - cv->ruler_intersections[i-1].x;
 		real yoff = cv->ruler_intersections[i].y - cv->ruler_intersections[i-1].y;
@@ -1009,11 +412,473 @@ return;
 		y = (prev_rect.y + rect.y)/2;
 
 		len = snprintf(buf,sizeof buf,"%g",len);
-		utf82u_strcpy(ubuf,buf);
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
 		GDrawDrawText(pixmap,x + (x < xend ? -(len*charwidth) : charwidth/2 ),y + (y < yend ? 12 : -5),ubuf,-1,textcolor);
 	    }
 	    prev_rect = rect;
 	}
-	RulerLingerMove(cv);	/* in case things are moving or scaling */
     }
+
+    if ( cv->rv && GDrawIsVisible(cv->rv->gw)) {
+	GDrawRequestExpose(cv->rv->gw,NULL,false);
+    }
+}
+
+static int rv_e_h(GWindow gw, GEvent *event) {
+    MeasureToolView *rv = (MeasureToolView *) GDrawGetUserData(gw);
+    int i,line;
+    unichar_t ubuf[128];
+
+    // TBD, some real formating
+    int point_start_line = 0;
+    int point_start_x = 2;
+    int intersection_start_line = 12;
+    int intersection_start_x = 2;
+
+    switch ( event->type ) {
+      case et_expose:
+      case et_visibility:
+
+	assert(rv->cv);
+	assert(rv->cv->rfont);
+
+	GDrawSetFont(gw,rv->cv->rfont);
+	GDrawClear(gw,NULL);
+
+	if (1) {
+	    char buf[180];
+	    Spline *s = 0;
+	    SplinePoint *sp = 0;
+	    double t = 0.0;
+
+	    line = point_start_line;
+
+	    /* Give current location accurately */
+	    snprintf( buf, sizeof buf, "%s: %f %f",
+		_("Position"),
+		(double) rv->cv->info.x, (double) rv->cv->info.y
+		);
+	    utf82u_strncpy(ubuf,buf,sizeof ubuf);
+	    GDrawDrawText(gw,point_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+	    line++;
+
+	    /* If the button is pressed, "info" tracks the position after the press */
+	    /* if a conptrol point is selected, we are interesting in the spline point */
+	    if (rv->cv->p.prevcp || rv->cv->p.nextcp) {
+		s = 0;
+		t = 0;
+		sp = rv->cv->p.sp;
+	    } else if (rv->cv->p.pressed) {
+		s = rv->cv->info_spline;
+		t = rv->cv->info_t;
+		sp = rv->cv->info_sp;
+	    } else {
+		s = rv->cv->p.spline;
+		t = rv->cv->p.t;
+		sp = rv->cv->p.sp;
+	    }
+
+	    if (s) {
+		snprintf( buf, sizeof buf, "%s: %f %f",
+		    _("Near"),
+		    (double) (((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d),
+		    (double) (((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d) );
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
+		GDrawDrawText(gw,point_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+		line++;
+		line++;
+	    } else if (sp) {
+		char cpn[64];
+		char cpp[64];
+
+		if (!sp->nonextcp) {
+		    snprintf(cpn,sizeof cpn,"  %s: %f %f ∆ (%g,%g)",
+			_("Next CP"),
+			sp->nextcp.x, sp->nextcp.y,
+			sp->nextcp.x-sp->me.x, sp->nextcp.y-sp->me.y
+			);
+		} else {
+		    snprintf(cpn,sizeof cpn,"  %s: none", _("Next CP") );
+		}
+		if (!sp->noprevcp) {
+		    snprintf(cpp,sizeof cpp,"  %s: %f %f ∆ (%g,%g)",
+			_("Prev CP"),
+			sp->prevcp.x, sp->prevcp.y,
+			sp->prevcp.x-sp->me.x, sp->prevcp.y-sp->me.y
+			);
+		} else {
+		    snprintf(cpp,sizeof cpp,"  %s: none", _("Prev CP") );
+		}
+
+		snprintf( buf, sizeof buf, "%s: %f %f",
+		    (rv->cv->p.prevcp || rv->cv->p.nextcp) ? _("Controlling") : _("Near"),
+		    (double) sp->me.x,
+		    (double) sp->me.y
+		    );
+
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
+		GDrawDrawText(gw,point_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+
+		utf82u_strncpy(ubuf,cpp,sizeof ubuf);
+		GDrawDrawText(gw,point_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+
+		utf82u_strncpy(ubuf,cpn,sizeof ubuf);
+		GDrawDrawText(gw,point_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+
+	    } else {
+		snprintf( buf, sizeof buf, "%s: %s",
+		    _("Near"),
+		    _("none") );
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
+		GDrawDrawText(gw,point_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+		line++;
+		line++;
+	    }
+
+	    if (s) {
+		double dx = (3*s->splines[0].a*t+2*s->splines[0].b)*t+s->splines[0].c;
+		double dy = (3*s->splines[1].a*t+2*s->splines[1].b)*t+s->splines[1].c;
+		SlopeToBuf(buf,sizeof buf,_("Slope:"),dx,dy);
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
+		GDrawDrawText(gw,point_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+		line++;
+		line++;
+	    } else if (sp) {
+		// TBD
+		char buf_n[64];
+		char buf_p[64];
+
+	        // TBD for continous curves there is really only one slope
+
+		if (sp->next) {
+		    double dx = sp->next->splines[0].c;
+		    double dy = sp->next->splines[1].c;
+		    SlopeToBuf(buf_n,sizeof buf_n,"",dx,dy);
+		} else {
+		    snprintf(buf_n,sizeof buf_n,"");
+		}
+		if (sp->prev) {
+		    double dx = (3*sp->prev->splines[0].a*1+2*sp->prev->splines[0].b)*1+sp->prev->splines[0].c;
+		    double dy = (3*sp->prev->splines[1].a*1+2*sp->prev->splines[1].b)*1+sp->prev->splines[1].c;
+		    SlopeToBuf(buf_p,sizeof buf_p,"",dx,dy);
+		} else {
+		    snprintf(buf_p,sizeof buf_p,"");
+		}
+
+		snprintf( buf, sizeof buf, "%s:",_("Slope"));
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
+		GDrawDrawText(gw,point_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+
+		snprintf( buf, sizeof buf, "  %s:%s",_("Prev"),buf_p);
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
+		GDrawDrawText(gw,point_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+
+		snprintf( buf, sizeof buf, "  %s:%s",_("Next"),buf_n);
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
+		GDrawDrawText(gw,point_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+
+	    } else {
+		snprintf( buf, sizeof buf, _("%s: %s"),
+		    _("Slope"),
+		    _("none")
+		    );
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
+		GDrawDrawText(gw,point_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+		line++;
+		line++;
+	    }
+
+	    if (s) {
+		double curvature;
+		double radius;
+
+		if (GetCurvature(rv->cv,s,t,&curvature,&radius)) {
+		    snprintf(buf,sizeof buf,"%s: %g %s: %g",
+			_("Curvature"),
+			curvature,
+			_("Radius"),
+			radius);
+		} else {
+		    snprintf(buf,sizeof buf,"%s: %s",
+			_("Curvature"),
+			_("bad"));
+		}
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
+		GDrawDrawText(gw,point_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+		line++;
+		line++;
+	    } else if (sp) {
+		double ncurvature;
+		double nradius;
+		double pcurvature;
+		double pradius;
+		int gotn = 0;
+		int gotp = 0;
+
+		if (sp->next) {
+		    gotn = GetCurvature(rv->cv,sp->next,0,&ncurvature,&nradius);
+		}
+		if (sp->prev) {
+		    gotp = GetCurvature(rv->cv,sp->prev,1,&pcurvature,&pradius);
+		}
+
+		// TBD, we really should be able to get a single curvature at continous spline points, and to get angles discontinous ones
+
+		snprintf(buf,sizeof buf,"%s:", _("Curvature") );
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
+		GDrawDrawText(gw,point_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+
+		if (gotp) {
+		    snprintf(buf,sizeof buf,"  %s: %g %s: %g",
+			_("Prev"),
+			pcurvature,
+			_("Radius"),
+			pradius);
+		} else {
+		    snprintf(buf,sizeof buf,"  %s: %s",_("Prev"),_("none"));
+		}
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
+		GDrawDrawText(gw,point_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+
+		if (gotn) {
+		    snprintf(buf,sizeof buf,"  %s: %g %s: %g",
+			_("Next"),
+			ncurvature,
+			_("Radius"),
+			nradius);
+		} else {
+		    snprintf(buf,sizeof buf,"  %s: %s",_("Next"),_("none"));
+		}
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
+		GDrawDrawText(gw,point_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+
+		if (gotn && gotp) {
+		    snprintf(buf,sizeof buf,"  %s: %g",
+			U_("∆Curvature"),
+			ncurvature - pcurvature);
+		    utf82u_strncpy(ubuf,buf,sizeof ubuf);
+		    GDrawDrawText(gw,point_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		    line++;
+		}
+	    } else {
+		snprintf(buf,sizeof buf,"%s: %s",
+		    _("Curvature"),
+		    _("none"));
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
+		GDrawDrawText(gw,point_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+	    }
+	    line++;
+	}
+
+	line = intersection_start_line;
+	if (1) {
+
+	    if (rv->cv->num_ruler_intersections > 1) {
+		char buf[80];
+		real xoff = 0.0;
+		real yoff = 0.0;
+		real len = 0.0;
+		double slen;
+		char sbuf[80];
+
+		// TBD, length along spline, fill in zerowed arguments
+		if (GetSplineLength(0,rv->cv->start_intersection_snapped,0.0,0,rv->cv->end_intersection_snapped,0.0,&slen)) {
+		    snprintf( sbuf, sizeof sbuf, "%s: %f",
+			_("Spline"),
+			slen);
+		} else {
+		    snprintf( sbuf, sizeof sbuf, "");
+		}
+
+		xoff = rv->cv->ruler_intersections[rv->cv->num_ruler_intersections-1].x - rv->cv->ruler_intersections[0].x;
+		yoff = rv->cv->ruler_intersections[rv->cv->num_ruler_intersections-1].y - rv->cv->ruler_intersections[0].y;
+		len = sqrt(xoff*xoff+yoff*yoff);
+
+		snprintf( buf, sizeof buf, "%s: %f %.0f°  X %f Y %f %s",
+		    _("Ruler length"), (double) len,
+		    atan2(yoff,xoff)*180/M_PI,
+		    (double) xoff,(double) yoff,
+		    sbuf
+		    );
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
+		GDrawDrawText(gw,intersection_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+
+		utf82u_strncpy(ubuf,_("Ruler Intersections/Segments:"),sizeof ubuf);
+		GDrawDrawText(gw,intersection_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+
+		snprintf(buf,sizeof buf,"%5s %8s %8s %8s %8s %8s",
+			"#",
+			_("End-X"),
+			_("End-Y"),
+			_("Length-X"),
+			_("Length-Y"),
+			_("Length")
+			);
+		utf82u_strncpy(ubuf,buf,sizeof ubuf);
+		GDrawDrawText(gw,intersection_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		line++;
+
+		for ( i=0; i < rv->cv->num_ruler_intersections ; ++i,++line ) {
+		    const char *state = "";
+		    char buf2[20];
+
+		    if (i > 0) {
+			xoff = rv->cv->ruler_intersections[i].x - rv->cv->ruler_intersections[i-1].x;
+			yoff = rv->cv->ruler_intersections[i].y - rv->cv->ruler_intersections[i-1].y;
+			len = sqrt(xoff*xoff+yoff*yoff);
+		    } else {
+			xoff = 0.0;
+			yoff = 0.0;
+			len = 0.0;
+		    }
+
+		    if (i == 0 &&  rv->cv->start_intersection_snapped) state = "snapped";
+		    else if (i == (rv->cv->num_ruler_intersections-1) &&  rv->cv->end_intersection_snapped) state = "snapped";
+
+		    if (i) snprintf(buf2,sizeof buf2,"%d",i);
+		    else snprintf(buf2,sizeof buf2,_("start"));
+		    snprintf(buf,sizeof buf,"%5s %8g %8g %8g %8g %8g %s",
+			buf2,
+			rv->cv->ruler_intersections[i].x,
+			rv->cv->ruler_intersections[i].y,
+			fabs(xoff),
+			fabs(yoff),
+			len,
+			state);
+
+		    utf82u_strncpy(ubuf,buf,sizeof ubuf);
+
+		    GDrawDrawText(gw,intersection_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+		}
+
+		if (rv->cv->num_ruler_intersections > 4) {
+		    line++;
+
+		    // TBD, the meaning is problematic.
+		    // We currently on start with crossing intersections, but touching, including snapping could be more valid start and ends.
+		    real xoff = rv->cv->ruler_intersections[rv->cv->num_ruler_intersections-2].x - rv->cv->ruler_intersections[1].x;
+		    real yoff = rv->cv->ruler_intersections[rv->cv->num_ruler_intersections-2].y - rv->cv->ruler_intersections[1].y;
+		    real len = sqrt(xoff*xoff+yoff*yoff);
+		    char buf2[20];
+		    snprintf(buf2,sizeof buf2,"1-%d",rv->cv->num_ruler_intersections-2);
+		    snprintf(buf,sizeof buf,"%5s %8g %8g %8g %8g %8g %s",
+			buf2,
+			rv->cv->ruler_intersections[rv->cv->num_ruler_intersections-2].x,
+			rv->cv->ruler_intersections[rv->cv->num_ruler_intersections-2].y,
+			fabs(xoff),
+			fabs(yoff),
+			len,
+			""
+			);
+		    utf82u_strncpy(ubuf,buf,sizeof ubuf);
+	            GDrawDrawText(gw,intersection_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+	            line++;
+		}
+
+		if (rv->cv->num_ruler_intersections > 2) {
+	            line++;
+
+		    real xoff = rv->cv->ruler_intersections[0].x - rv->cv->ruler_intersections[rv->cv->num_ruler_intersections-1].x;
+		    real yoff = rv->cv->ruler_intersections[0].y - rv->cv->ruler_intersections[rv->cv->num_ruler_intersections-1].y;
+		    real len = sqrt(xoff*xoff+yoff*yoff);
+
+		    snprintf(buf,sizeof buf,"%5s %8g %8g %8g %8g %8g %s",
+		        _("Total"),
+		        rv->cv->ruler_intersections[rv->cv->num_ruler_intersections-1].x,
+		        rv->cv->ruler_intersections[rv->cv->num_ruler_intersections-1].y,
+		        fabs(xoff),
+		        fabs(yoff),
+		        len,
+		        (rv->cv->start_intersection_snapped && rv->cv->end_intersection_snapped) ? _("snapped") : ""
+		        );
+
+	            utf82u_strncpy(ubuf,buf,sizeof ubuf);
+	            GDrawDrawText(gw,intersection_start_x,line*rv->cv->rfh+rv->cv->ras+1,ubuf,-1,measuretoolwindowforegroundcol);
+	            line++;
+	        }
+	    }
+	}
+
+      break;
+      case et_resize:
+      break;
+      case et_close:
+	GDrawDestroyWindow(rv->gw);
+      break;
+      case et_destroy:
+	rv->gw = 0;
+      break;
+      default:
+	// printf("rv_e_h Unhandled Event: %d\n",event->type);
+      break;
+    }
+return( true );
+}
+
+MeasureToolView *MeasureToolViewCreate(CharView *cv) {
+    GRect pos;
+    GWindowAttrs wattrs;
+    char buf[120];
+
+    if (cv->rv && cv->rv->gw) {
+	GDrawRaise(cv->rv->gw);
+return( cv->rv );
+    }
+
+    if (!cv->rv) {
+	cv->rv = gcalloc(1,sizeof(MeasureToolView));
+	cv->rv->cv = cv;
+    }
+
+    pos.x = 0;
+    pos.y = 0;
+    pos.width = 600;
+    pos.height = 400;
+
+    snprintf(buf,sizeof buf,_("Measure Tool Metrics for %.80s from %.90s"),
+	cv->b.sc->name, cv->b.sc->parent->fontname);
+
+    memset(&wattrs,0,sizeof(wattrs));
+    // wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle;
+    wattrs.event_masks = ~0;
+    wattrs.utf8_window_title = buf;
+
+    cv->rv->gw = GDrawCreateTopWindow(NULL,&pos,rv_e_h,cv->rv,&wattrs);
+
+    GDrawSetWindowTypeName(cv->rv->gw, "RulerMetricsView");
+
+    GDrawSetVisible(cv->rv->gw,true);
+
+return( cv->rv );
+}
+
+void MeasureToolViewFree(MeasureToolView *rv) {
+
+    assert(rv);
+
+    if (rv->gw) {
+	GDrawDestroyWindow(rv->gw);
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
+    }
+    rv->cv->rv = 0;
+    free(rv);
 }

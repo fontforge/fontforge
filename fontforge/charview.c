@@ -4193,8 +4193,9 @@ static void CVMouseMove(CharView *cv, GEvent *event ) {
 	    CVCheckResizeCursors(cv);
 	    if ( cv->dv!=NULL )
 		CVDebugPointPopup(cv);
-	} else if ( cv->showing_tool == cvt_ruler )
-	    CVMouseMoveRuler(cv,event);
+	}
+	/* keep the ruler data always active */
+	CVMouseMoveRuler(cv,event);
 return;
     }
 
@@ -5486,6 +5487,11 @@ return;
 static void CVMenuOpenMetrics(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     MetricsViewCreate((FontView *) (cv->b.fv),cv->b.sc,NULL);
+}
+
+static void CVMenuOpenMeasureTool(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    MeasureToolViewCreate(cv);
 }
 
 static void CVMenuSave(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -9865,6 +9871,7 @@ static GMenuItem2 wnmenu[] = {
     { { (unichar_t *) N_("New O_utline Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("New Outline Window|Ctl+H"), NULL, NULL, /* No function, never avail */NULL, 0 },
     { { (unichar_t *) N_("New _Bitmap Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("New Bitmap Window|Ctl+J"), NULL, NULL, CVMenuOpenBitmap, MID_OpenBitmap },
     { { (unichar_t *) N_("New _Metrics Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("New Metrics Window|Ctl+K"), NULL, NULL, CVMenuOpenMetrics, 0 },
+    { { (unichar_t *) N_("Measu_re Tool Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Measure Tool Window|Ctl+R"), NULL, NULL, CVMenuOpenMeasureTool, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Warnings"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Warnings|No Shortcut"), NULL, NULL, _MenuWarnings, MID_Warnings },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
@@ -10952,13 +10959,8 @@ void CharViewFree(CharView *cv) {
     if ( cv->qg != NULL )
 	QGRmCharView(cv->qg,cv);
     BDFCharFree(cv->filled);
-    if ( cv->ruler_w ) {
-	GDrawDestroyWindow(cv->ruler_w);
-	cv->ruler_w = NULL;
-    }
-    if ( cv->ruler_linger_w ) {
-	GDrawDestroyWindow(cv->ruler_linger_w);
-	cv->ruler_linger_w = NULL;
+    if ( cv->rv ) {
+	MeasureToolViewFree(cv->rv);
     }
     free(cv->gi.u.image->clut);
     free(cv->gi.u.image);

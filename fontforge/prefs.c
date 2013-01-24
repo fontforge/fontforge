@@ -106,7 +106,6 @@ extern int mv_type;                              /* in metricsview.c */
 extern int prefer_cjk_encodings;	/* in parsettf */
 extern int onlycopydisplayed, copymetadata, copyttfinstr;
 extern struct cvshows CVShows;
-extern int infowindowdistance;		/* in cvruler.c */
 extern int oldformatstate;		/* in savefontdlg.c */
 extern int oldbitmapstate;		/* in savefontdlg.c */
 static int old_ttf_flags=0, old_otf_flags=0;
@@ -434,7 +433,6 @@ static struct prefs_list {
 	{ "MarkPointsOfInflect", pr_int, &CVShows.markpoi, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "ShowRulers", pr_bool, &CVShows.showrulers, NULL, NULL, '\0', NULL, 1, N_("Display rulers in the Outline Glyph View") },
 	{ "ShowCPInfo", pr_int, &CVShows.showcpinfo, NULL, NULL, '\0', NULL, 1, NULL },
-	{ "InfoWindowDistance", pr_int, &infowindowdistance, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "ShowSideBearings", pr_int, &CVShows.showsidebearings, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "ShowRefNames", pr_int, &CVShows.showrefnames, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "ShowPoints", pr_bool, &CVShows.showpoints, NULL, NULL, '\0', NULL, 1, NULL },

@@ -117,7 +117,6 @@ static int default_fv_glyphlabel=0;	/* in fontview */
 static int save_to_dir=0;			/* in fontview, use sfdir rather than sfd */
 static int palettes_docked=1;		/* in cvpalettes */
 static int cvvisible[2]={1,1}, bvvisible[3]={1,1,1};	/* in cvpalettes.c */
-static int infowindowdistance=10;		/* in cvruler.c */
 static int loacal_markextrema, loacal_markpoi, loacal_showrulers,
     loacal_showcpinfo, loacal_showsidebearings, loacal_showpoints,
     loacal_showfilled, loacal_showtabs, loacal_showrefnames;
@@ -259,7 +258,6 @@ extras[] = {
     { "BVVisible0", pr_bool, &bvvisible[0], NULL, NULL, '\0', NULL, 1, NULL },
     { "BVVisible1", pr_bool, &bvvisible[1], NULL, NULL, '\0', NULL, 1, NULL },
     { "BVVisible2", pr_bool, &bvvisible[2], NULL, NULL, '\0', NULL, 1, NULL },
-    { "InfoWindowDistance", pr_int, &infowindowdistance, NULL, NULL, '\0', NULL, 1, NULL },
     { "MarkExtrema", pr_int, &loacal_markextrema, NULL, NULL, '\0', NULL, 1, NULL },
     { "MarkPointsOfInflect", pr_int, &loacal_markpoi, NULL, NULL, '\0', NULL, 1, NULL },
     { "ShowRulers", pr_bool, &loacal_showrulers, NULL, NULL, '\0', NULL, 1, N_("Display rulers in the Outline Glyph View") },

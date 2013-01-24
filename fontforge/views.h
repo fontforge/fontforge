@@ -189,15 +189,12 @@ typedef struct charview {
     GGadget *vsb, *hsb, *mb, *tabs;
     GFont *small, *normal;
     GWindow icon;
-    GWindow ruler_w;
-    GWindow ruler_linger_w;
-    unichar_t ruler_linger_lines[40][80];
-    int ruler_linger_num_lines;
+    struct measuretoolview *rv;
     int num_ruler_intersections;
     int allocated_ruler_intersections;
     BasePoint *ruler_intersections;
-    int start_intersection_snapped;
-    int end_intersection_snapped;
+    SplinePoint *start_intersection_snapped;
+    SplinePoint *end_intersection_snapped;
     GFont *rfont;
     GTimer *pressed;
     GWindow backimgs;
@@ -381,6 +378,11 @@ typedef struct metricsview {
     int ybaseline;
     int oldscript, oldlang;
 } MetricsView;
+
+typedef struct measuretoolview {
+    CharView *cv;
+    GWindow gw;
+} MeasureToolView;
 
 enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8 };
 typedef struct fontview {
@@ -1009,6 +1011,9 @@ extern void MetricsViewFree(MetricsView *mv);
 extern void MVRefreshAll(MetricsView *mv);
 extern void MV_FriendlyFeatures(GGadget *g, int pos);
 extern GTextInfo *SLOfFont(SplineFont *sf);
+
+extern MeasureToolView *MeasureToolViewCreate(CharView *);
+extern void MeasureToolViewFree(MeasureToolView *);
 
 extern void DoPrefs(void);
 extern void DoXRes(void);
