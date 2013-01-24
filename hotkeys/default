@@ -180,7 +180,7 @@ CharView.Menu.View.Number Points.SVG:No Shortcut
 CharView.Menu.View.Grid Fit.Show Grid Fit...:Ctl+#
 CharView.Menu.View.Grid Fit.Bigger Point Size:Ctl++
 CharView.Menu.View.Grid Fit.Smaller Point Size:Ctl+-
-CharView.Menu.View.Grid Fit.Grid Fit Anti Alias:No Shortcut
+CharView.Menu.View.Grid Fit.Grid Fit Anti Alias:Ctl+Alt+Shft+#
 CharView.Menu.View.Grid Fit.Grid Fit Off:Ctl+Alt+#
 CharView.Menu.View.Show.Points:Ctl+D
 CharView.Menu.View.Show.Control Point Info:No Shortcut
