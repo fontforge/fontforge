@@ -328,7 +328,7 @@ FontView.Menu.Element.Build.Build Duplicate Glyph:No Shortcut
 FontView.Menu.Element.Other Info.Show Dependent.References...:Alt+Ctl+I
 FontView.Menu.Element.Other Info.Show Dependent.Substitutions...:No Shortcut
 FontView.Menu.Element.Transformations.Transform...:Ctl+\
-FontView.Menu.Element.Transformations.Point of View Projection...:Ctl+Shft+<
+FontView.Menu.Element.Transformations.Point of View Projection...:No Shortcut
 FontView.Menu.Element.Transformations.Non Linear Transform...:Ctl+Shft+:
 FontView.Menu.Element.Round.To Int:Ctl+Shft+_
 FontView.Menu.Element.Round.To Hundredths:No Shortcut
