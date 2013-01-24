@@ -224,6 +224,19 @@
       When holding down the Alt (Meta) key, the arrow keys will move faster. This
       preference item says how much faster.
     <DT>
+      <A NAME="DrawOpenContoursWithHighlight">DrawOpenContoursWithHighlight</A>
+    <DD>
+      When drawing a foreground layer, render the outline of open
+      contours in a specific color to highlight a potential mistake.
+      When drawing a new path, the incremental stages will be shown in
+      a red, and when the contour is closed it will revert back to the
+      normal color.
+
+      By default this open contour highlight color is a red, it can be
+      changed using the OpenContourColor resource. To do this see the
+      Outline View 2 section of the X Resource Editor available
+      through the File menu.
+    <DT>
       <A NAME="SnapDistance">SnapDistance</A>
     <DD>
       The maximum distance at which pointer motion in the glyph view will be snapped
