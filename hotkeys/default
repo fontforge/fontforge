@@ -163,7 +163,7 @@ CharView.Menu.View.Next Glyph:Ctl+]
 CharView.Menu.View.Prev Glyph:Ctl+[
 CharView.Menu.View.Next Defined Glyph:Alt+Ctl+]
 CharView.Menu.View.Prev Defined Glyph:Alt+Ctl+[
-CharView.Menu.View.Former Glyph:Ctl+Shft+<
+CharView.Menu.View.Former Glyph:No Shortcut
 CharView.Menu.View.Goto:Ctl+Shft+>
 CharView.Menu.View.Find In Font View:Ctl+Shft+<
 CharView.Menu.View.Show.Palettes.Tools:No Shortcut
