@@ -129,7 +129,7 @@ CharView.Menu.Element.Build.Build Composite Glyph:No Shortcut
 CharView.Menu.Element.Show Dependent.References...:Alt+Ctl+I
 CharView.Menu.Element.Show Dependent.Substitutions...:No Shortcut
 CharView.Menu.Element.Transformations.Transform...:Ctl+\
-CharView.Menu.Element.Transformations.Point of View Projection...:Ctl+Shft+<
+CharView.Menu.Element.Transformations.Point of View Projection...:No Shortcut
 CharView.Menu.Element.Transformations.Non Linear Transform...:Ctl+Shft+:
 CharView.Menu.Element.Round.To Int:Ctl+Shft+_
 CharView.Menu.Element.Round.To Hundredths:No Shortcut
