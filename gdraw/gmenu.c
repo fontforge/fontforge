@@ -1814,7 +1814,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 
     /* then look for hotkeys everywhere */
 	
-//	printf("looking for hotkey in new system...keysym:%d\n", event->u.chr.keysym );
+//    printf("looking for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
 	struct dlistnodeExternal* hklist = hotkeyFindAllByEvent( top, event );
 	struct dlistnodeExternal* node = hklist;
 	for( ; node; node=node->next ) {

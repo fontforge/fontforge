@@ -33,6 +33,15 @@
 #include "hotkeys.h"
 #include "gkeysym.h"
 
+/////////////////////////////////////////////////////////////////
+// The below keys are from this file, when/if we move to GTK+
+// then perhaps we should include this file instead of the inline
+// definitions
+//#include <gdk/gdkkeysyms.h>
+#define GDK_KEY_Tab 0xff09
+#define GDK_KEY_ISO_Left_Tab 0xfe20
+/////////////////////////////////////////////////////////////////
+
 int GTextInfoGetWidth(GWindow base,GTextInfo *ti,FontInstance *font) {
     int width=0;
     int iwidth=0;
@@ -943,12 +952,20 @@ void HotkeyParse( Hotkey* hk, const char *shortcut ) {
     // The user really means lower case keys unless they have
     // given the "shift" modifier too. Like: Ctl+Shft+L
     //
+//    fprintf(stderr,"HotkeyParse(1) spec:%d hk->keysym:%d shortcut:%s\n", GK_Special, hk->keysym, shortcut );
     if( hk->keysym < GK_Special ) {
 	hk->keysym = tolower(hk->keysym);
 	if( hk->state & ksm_shift ) {
 	    hk->keysym = toupper(hk->keysym);
 	}
     }
+    if( hk->keysym == GDK_KEY_Tab ) {
+	if( hk->state & ksm_shift ) {
+	    hk->keysym = GDK_KEY_ISO_Left_Tab;
+	}
+    }
+    
+//    fprintf(stderr,"HotkeyParse(end) spec:%d hk->state:%d hk->keysym:%d shortcut:%s\n", GK_Special, hk->state, hk->keysym, shortcut );
 }
     
 void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut) {

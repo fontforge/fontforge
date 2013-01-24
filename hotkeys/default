@@ -37,6 +37,8 @@ CharView.Menu.Edit.Select.First Point:Ctl+.
 CharView.Menu.Edit.Select.First Point, Next Contour:Alt+Ctl+.
 CharView.Menu.Edit.Select.Next Point:Ctl+Shft+}
 CharView.Menu.Edit.Select.Prev Point:Ctl+Shft+{
++CharView.Menu.Edit.Select.Next Point:Tab
++CharView.Menu.Edit.Select.Prev Point:Shft+Tab
 CharView.Menu.Edit.Select.Next Control Point:Ctl+;
 CharView.Menu.Edit.Select.Prev Control Point:Ctl+Shft+:
 CharView.Menu.Edit.Select.Points on Selected Contours:Alt+Ctl+,
