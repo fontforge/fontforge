@@ -1859,7 +1859,7 @@ return;
 static int32 Layers_getOffsetAtRightOfViewLayer(CharView *cv)
 {
     int32 ret = 64;
-    GGadget *v = GWidgetGetControl(cvlayers,CID_VBase+1);
+    GGadget *v = GWidgetGetControl(cvlayers,CID_VBack);
     if( v )
     {
 	GRect size;
@@ -1882,7 +1882,7 @@ static void LayersExpose(CharView *cv,GWindow pixmap,GEvent *event) {
 
     int yt = .7*layer_height; /* vertical spacer to add when drawing text in the row */
     int column_width;
-    int viscol=7, quadcol, fgcol, editcol;
+    int viscol=0, quadcol, fgcol, editcol;
 
     if ( event->u.expose.rect.y+event->u.expose.rect.height<layer_header_height )
 return;
@@ -2038,7 +2038,7 @@ static void CVLCheckLayerCount(CharView *cv, int resize) {
     int x, y;
     int column_width = layerinfo.column_width;
     char namebuf[40];
-    int viscol=7, quadcol, fgcol, editcol;
+    int viscol=0, quadcol, fgcol, editcol;
     extern int _GScrollBar_Width;
     int offsetAtRightOfViewLayer = Layers_getOffsetAtRightOfViewLayer(cv);
 
@@ -2072,6 +2072,7 @@ static void CVLCheckLayerCount(CharView *cv, int resize) {
 	    gcd[0].creator = GVisibilityBoxCreate;
 
 	    GGadgetsCreate(cvlayers,gcd);
+	    GVisibilityBoxSetToMinWH(GWidgetGetControl(cvlayers,CID_VBase+i));
 	}
 	layers_max = sc->layer_cnt;
     }
@@ -2121,7 +2122,7 @@ static void CVLCheckLayerCount(CharView *cv, int resize) {
                 sprintf(namebuf,"%s", i==-1 ? _("Guide") : (i==0 ?_("Back") : _("Fore")) );
             }
             width = GDrawGetText8Width(cvlayers, namebuf, -1);
-	    width += 20; // padding takes up some space.
+	    width += 10; // padding takes up some space.
 	    if ( width+togsize>maxwidth ) maxwidth = width + togsize;
 	} else if ( i==-1 ) {
 	    if ( width+togsize>maxwidth ) maxwidth = width + togsize;
@@ -2469,7 +2470,7 @@ static void LayerMenu(CharView *cv,GEvent *event, int nolayer) {
 /* col will be set to either -1 for none, CID_VBase, CID_QBase, CID_FBase, or CID_EBase */
 static int CVLScanForItem(int x, int y, int *col) {
     int l=(y-layer_header_height)/layer_height + layerinfo.offtop - 1;
-    int viscol=7, quadcol, fgcol, editcol;
+    int viscol=0, quadcol, fgcol, editcol;
     int cw=layerinfo.column_width;
 
     quadcol=fgcol=viscol;
@@ -2870,7 +2871,7 @@ GWindow CVMakeLayers(CharView *cv) {
     FontRequest rq;
     extern int _GScrollBar_Width;
     int i=0;
-    int viscol=7;
+    int viscol=0;
 
     if ( cvlayers!=NULL )
 return( cvlayers );
@@ -2910,11 +2911,18 @@ return( cvlayers );
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
+    int32 plusw = GDrawGetText8Width(cv->gw,  _("+"), -1);
+    int32 plush = GDrawGetText8Height(cv->gw, _("+"), -1);
+    plusw = GDrawPointsToPixels(NULL,plusw+4);
+    plush = GDrawPointsToPixels(NULL,plush+4);
+    plush = MAX( plush, plusw ); // make it square.
+    
      /* Add Layer button */
     label[0].text = (unichar_t *) _("+");
     label[0].text_is_1byte = true;
     gcd[i].gd.label = &label[0];
     gcd[i].gd.pos.x = 7; gcd[i].gd.pos.y = 5; 
+    gcd[i].gd.pos.width  = plusw; gcd[i].gd.pos.height = plush;
     gcd[i].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
     gcd[i].gd.cid = CID_AddLayer;
     gcd[i].gd.popup_msg = (unichar_t *) _("Add a new layer");
@@ -2926,6 +2934,7 @@ return( cvlayers );
     label[1].text_is_1byte = true;
     gcd[i].gd.label = &label[1];
     gcd[i].gd.pos.x = 30; gcd[i].gd.pos.y = 5; 
+    gcd[i].gd.pos.width  = plusw; gcd[i].gd.pos.height = plush;
     gcd[i].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
     gcd[i].gd.cid = CID_RemoveLayer;
     gcd[i].gd.popup_msg = (unichar_t *) _("Delete the current layer");
@@ -2933,7 +2942,7 @@ return( cvlayers );
     ++i;
 
      /* "Layers" label next to the add and remove buttons */
-    label[2].text = (unichar_t *) _("Layers");
+    label[2].text = (unichar_t *) _("");
     label[2].text_is_1byte = true;
     gcd[i].gd.label = &label[2];
     gcd[i].gd.pos.x = 47; gcd[i].gd.pos.y = 5; 
@@ -3009,7 +3018,9 @@ return( cvlayers );
     layerinfo.offtop   = 0;
     layerinfo.rename_active = 0;
 
-    
+    GVisibilityBoxSetToMinWH(GWidgetGetControl(cvlayers,CID_VGrid));
+    GVisibilityBoxSetToMinWH(GWidgetGetControl(cvlayers,CID_VBack));
+    GVisibilityBoxSetToMinWH(GWidgetGetControl(cvlayers,CID_VFore));
 return( cvlayers );
 }
 
