@@ -1,4 +1,4 @@
-Gdraw.ScreenWidthCentimeters: 34
+Gdraw.ScreenWidthCentimeters: 60
 
 fontforge.CharView.Hotkey.Tool.SpiroG4: '
 fontforge.CharView.Hotkey.Tool.SpiroCorner: \
@@ -182,7 +182,7 @@ Gdraw.GMenu.Box.BorderShape: rect
 Gdraw.GMenu.Box.NormalBackground: #ffffff
 Gdraw.GMenu.Box.Padding: 3
 Gdraw.GMenu.Font: 400 10pt Cantarell,sans,clearlyu,unifont
-Gdraw.GMenu.MacIcons: True
+Gdraw.GMenu.MacIcons: False
 Gdraw.GMenuBar.Box.ActiveBorder: #ffffff
 Gdraw.GMenuBar.Box.BorderInner: False
 Gdraw.GMenuBar.Box.BorderInnerCol: #edeceb
