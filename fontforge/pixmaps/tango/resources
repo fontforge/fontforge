@@ -291,6 +291,7 @@ fontforge.CharView.BackgroundImageColor: #ff888a85
 fontforge.CharView.BackgroundOutlineColor: #4e9a06
 fontforge.CharView.BlueValuesStippledColor: #80729fcf
 fontforge.CharView.ClipPathColor: #3464a4
+fontforge.CharView.OpenPathColor: #660000
 fontforge.CharView.ConflictHintColor: #43d3d3
 fontforge.CharView.CoordinateLineColor: #80827c
 fontforge.CharView.DHintColor: #80d7a7a7
