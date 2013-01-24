@@ -353,3 +353,5 @@ fontforge.MetricsView.KernLineColor: #3d7905
 fontforge.MetricsView.SelectedGlyphColor: #8f918d
 fontforge.MetricsView.SideBearingLineColor: #12376c
 fontforge.View.Background: #dddddd
+Gdraw.GVisibilityBoxOn.Image:check_on.png
+Gdraw.GVisibilityBoxOff.Image:check_off.png

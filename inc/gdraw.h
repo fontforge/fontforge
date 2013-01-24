@@ -416,6 +416,7 @@ extern int32 GDrawDrawText(GWindow gw, int32 x, int32 y, const unichar_t *txt, i
 /* UTF8 routines */
 extern int32 GDrawGetText8Bounds(GWindow gw, const char *text, int32 cnt, GTextBounds *size);
 extern int32 GDrawGetText8Width(GWindow gw, const char *text, int32 cnt);
+extern int32 GDrawGetText8Height(GWindow gw, const char *text, int32 cnt);
 extern int32 GDrawDrawText8(GWindow gw, int32 x, int32 y, const char *txt, int32 cnt, Color col);
 
 extern GIC *GDrawCreateInputContext(GWindow w,enum gic_style def_style);
