@@ -1769,8 +1769,8 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
 					    for ( subl=0; subl<sl->lang_cnt; ++subl ) {
 						uint32 lang = subl<MAX_LANG ? sl->langs[subl] : sl->morelangs[subl-MAX_LANG];
 
-						char* key[100];
-						snprintf(key,99,"%c%c%c%c %c%c%c%c",
+						char key[100];
+						snprintf(key,sizeof key,"%c%c%c%c %c%c%c%c",
 							 scripts[s]>>24, scripts[s]>>16, scripts[s]>>8, scripts[s],
 							 langs[l]>>24, langs[l]>>16, langs[l]>>8, langs[l] );
 						g_tree_insert( ht, copy(key), "" );
