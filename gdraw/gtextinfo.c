@@ -960,9 +960,11 @@ void HotkeyParse( Hotkey* hk, const char *shortcut ) {
 	}
     }
     if( hk->keysym == GDK_KEY_Tab ) {
+#ifndef __Mac
 	if( hk->state & ksm_shift ) {
 	    hk->keysym = GDK_KEY_ISO_Left_Tab;
 	}
+#endif
     }
     
 //    fprintf(stderr,"HotkeyParse(end) spec:%d hk->state:%d hk->keysym:%d shortcut:%s\n", GK_Special, hk->state, hk->keysym, shortcut );
