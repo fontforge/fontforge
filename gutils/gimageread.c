@@ -37,6 +37,7 @@ GImage *GImageRead(char * filename) {
     if (filename == NULL || !GFileExists (filename))
 	return( NULL );
 
+    
     mime = GIOGetMimeType (filename, true);
 
     if (strcasecmp (mime, "image/bmp") == 0)
@@ -55,7 +56,7 @@ GImage *GImageRead(char * filename) {
 #endif
 #ifndef _NO_LIBPNG
     else if (strcasecmp (mime, "image/png") == 0)
-	return( GImageReadPng(filename));
+	return( GImageReadPng(filename) );
 #endif
 #ifndef _NO_LIBUNGIF
     else if (strcasecmp (mime, "image/gif") == 0)
