@@ -361,6 +361,7 @@ int GGadgetGetCid(GGadget *g);
 void GGadgetResize(GGadget *g,int32 width, int32 height );
 void GGadgetMove(GGadget *g,int32 x, int32 y );
 int32 GGadgetGetX(GGadget *g);
+int32 GGadgetGetY(GGadget *g);
 void  GGadgetSetY(GGadget *g, int32 y );
 void GGadgetRedraw(GGadget *g);
 void GGadgetsCreate(GWindow base, GGadgetCreateData *gcd);

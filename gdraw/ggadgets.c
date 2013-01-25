@@ -1093,6 +1093,11 @@ int32 GGadgetGetX(GGadget *g)
     return g->r.x;
 }
 
+int32 GGadgetGetY(GGadget *g)
+{
+    return g->r.y;
+}
+
 void  GGadgetSetY(GGadget *g, int32 y )
 {
     int32 x = GGadgetGetX(g);

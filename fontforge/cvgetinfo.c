@@ -119,7 +119,7 @@ typedef struct gidata {
 #define II_Height	70
 
 #define PI_Width	228
-#define PI_Height	394
+#define PI_Height	434
 
 #define AI_Width	160
 #define AI_Height	258
@@ -3075,7 +3075,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	pb[6].creator = GHVBoxCreate;
 	varray[k++] = &pb[6];
 	varray[k++] = GCD_Glue;
-
+	
 	label[j].text = (unichar_t *) _("Type:");
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];
@@ -3303,7 +3303,10 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gi->nonmodal = 1;
 	dlist_pushfront( &cv->pointInfoDialogs, (struct dlistnode *)gi );
 	GWidgetHidePalettes();
-	GDrawSetVisible(gi->gw,true);
+	GDrawResize(gi->gw,
+		    GGadgetScale(GDrawPointsToPixels(NULL,PI_Width)),
+		    GDrawPointsToPixels(NULL,PI_Height));
+	GDrawSetVisible(gi->gw,true);	
 }
 
 /* ************************************************************************** */
