@@ -210,8 +210,8 @@ return( unknown );
 #include "ustring.h"
 
 
-char *
-GIOGetMimeType( const char *path, bool sniff_data )
+char*
+GIOGetMimeType( const char *path, int sniff_data )
 {
     char *content_type, *mime;
     int sniff_length = 4096;
