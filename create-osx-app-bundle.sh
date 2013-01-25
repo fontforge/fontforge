@@ -55,6 +55,12 @@ do
 done
 
 
+cd $bundle_res
+mkdir -p opt/local/share/mime
+cp -av /opt/local/share/mime/mime.cache opt/local/share/mime
+cp -av /opt/local/share/mime/globs      opt/local/share/mime
+cp -av /opt/local/share/mime/magic      opt/local/share/mime
+
 
 cd $TEMPDIR
 zip -r ~/MacFontForgeBundledApp.zip FontForge.app
