@@ -2942,7 +2942,7 @@ return( cvlayers );
     ++i;
 
      /* "Layers" label next to the add and remove buttons */
-    label[2].text = (unichar_t *) _("");
+    label[2].text = (unichar_t *) "";
     label[2].text_is_1byte = true;
     gcd[i].gd.label = &label[2];
     gcd[i].gd.pos.x = 47; gcd[i].gd.pos.y = 5; 
