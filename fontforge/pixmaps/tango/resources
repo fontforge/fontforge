@@ -1,3 +1,32 @@
+fontforge.CharView.Hotkey.Tool.SpiroG4: '
+fontforge.CharView.Hotkey.Tool.SpiroCorner: \
+fontforge.CharView.Hotkey.Tool.SpiroLeft: [
+fontforge.CharView.Hotkey.Tool.SpiroRight: ]
+fontforge.CharView.Hotkey.Tool.Freehand:
+fontforge.CharView.Hotkey.Tool.Hand: h
+fontforge.CharView.Hotkey.Tool.Pen: p
+fontforge.CharView.Hotkey.Tool.PointCurve: q
+fontforge.CharView.Hotkey.Tool.PointHVCurve: w
+fontforge.CharView.Hotkey.Tool.PointTangent: t
+fontforge.CharView.Hotkey.Tool.PointCorner: a
+fontforge.CharView.Hotkey.Tool.Pointer: v
+fontforge.CharView.Hotkey.Tool.Ruler: m
+fontforge.CharView.Hotkey.Tool.Knife: k
+fontforge.CharView.Hotkey.Tool.Zoom: c
+fontforge.CharView.Hotkey.Zoom.Out: x
+fontforge.CharView.Hotkey.Zoom.In: z
+
+fontforge.CharView.Hotkey.Show.Tab0: 1
+fontforge.CharView.Hotkey.Show.Tab1: 2
+fontforge.CharView.Hotkey.Show.Tab2: 3
+fontforge.CharView.Hotkey.Show.Tab3: 4
+fontforge.CharView.Hotkey.Show.Tab4: 5
+fontforge.CharView.Hotkey.Show.Tab5: 6
+fontforge.CharView.Hotkey.Show.Tab6: 7
+fontforge.CharView.Hotkey.Show.Tab7: 8
+fontforge.CharView.Hotkey.Show.Tab8: 9
+fontforge.CharView.Hotkey.Show.Tab9: 0
+
 Gdraw.Background: #edeceb
 Gdraw.Foreground: #222222
 Gdraw.GButton.Box.BorderInner: True
