@@ -45,8 +45,6 @@ Gdraw.GButton.Box.Padding: 1
 Gdraw.GButton.Box.Radius: 3
 Gdraw.GButton.Font: 400 10pt Cantarell,sans,clearlyu,unifont
 Gdraw.GButton.ShiftOnPress: False
-Gdraw.GCancelButton.Box.GradientStartCol: #ebb4a0
-Gdraw.GCancelButton.Box.NormalBackground: #f27458
 Gdraw.GCheckBox.Box.BorderType: none
 Gdraw.GCheckBox.Box.Padding: 0
 Gdraw.GCheckBox.Font: 400 10pt Cantarell,sans,clearlyu,unifont
@@ -87,8 +85,6 @@ Gdraw.GDefaultButton.Box.BorderBrightest: #598ec6
 Gdraw.GDefaultButton.Box.BorderDarker: #598ec6
 Gdraw.GDefaultButton.Box.BorderDarkest: #598ec6
 Gdraw.GDefaultButton.Box.BorderOuterCol: #bcd2ea
-Gdraw.GDefaultButton.Box.GradientStartCol: #b7ceeb
-Gdraw.GDefaultButton.Box.NormalBackground: #64a4f2
 Gdraw.GDrawable.Box.BorderType: none
 Gdraw.GDrawable.Box.BorderWidth: 0
 Gdraw.GDrawable.Box.Padding: 0
