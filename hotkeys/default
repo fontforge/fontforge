@@ -156,8 +156,6 @@ CharView.Menu.Hints.Create VHint...:No Shortcut
 CharView.Menu.Hints.Review Hints...:Alt+Ctl+H
 
 CharView.Menu.View.Fit:Ctl+F
-CharView.Menu.View.Zoom out:Alt+Ctl+-
-CharView.Menu.View.Zoom in:Alt+Ctl+Shft++
 CharView.Menu.View.Display Compositions...:No Shortcut
 CharView.Menu.View.Next Glyph:Ctl+]
 CharView.Menu.View.Prev Glyph:Ctl+[
@@ -206,7 +204,13 @@ CharView.Menu.View.Show.Debug Raster Changes:No Shortcut
 CharView.Menu.View.Show.Hori_zontal Metric Lines:No Shortcut
 CharView.Menu.View.Show.Vertical Metric Lines:No Shortcut
 CharView.Menu.View.Show.Snap Outlines to Pixel Grid:No Shortcut
-
+CharView.Menu.View.Zoom out: x
+CharView.Menu.View.Zoom out: -
+CharView.Menu.View.Zoom out:Alt+Ctl+-
+CharView.Menu.View.Zoom in: Shft++
+CharView.Menu.View.Zoom in: z
+CharView.Menu.View.Zoom in: =
+CharView.Menu.View.Zoom in:Alt+Ctl+Shft++
 
 CharView.Menu.Metrics.Center in Width:No Shortcut
 CharView.Menu.Metrics.Thirds in Width:No Shortcut
@@ -546,13 +550,6 @@ MetricsView.Menu.Help.Overview:Shft+F1
 MetricsView.Menu.Help.Index:Ctl+F1
 MetricsView.Menu.Help.About...:No Shortcut
 MetricsView.Menu.Help.License...:No Shortcut
-
-
-CharView.Menu.View.Zoom out: x
-CharView.Menu.View.Zoom out: -
-CharView.Menu.View.Zoom in: Shft++
-CharView.Menu.View.Zoom in: z
-CharView.Menu.View.Zoom in: =
 
 CharView.Menu.Edit.Merge: Delete
 
