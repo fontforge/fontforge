@@ -62,7 +62,7 @@ CharView.Menu.Point.Can't Be Interpolated:No Shortcut
 CharView.Menu.Point.Center Between Control Points:No Shortcut
 CharView.Menu.Point.Add Anchor:Ctl+0
 CharView.Menu.Point.Acceptable Extrema:No Shortcut
-CharView.Menu.Point.Make Line:No Shortcut
+CharView.Menu.Point.Make Line:Ctl+Shft+|
 CharView.Menu.Point.Make Arc:No Shortcut
 CharView.Menu.Point.Insert Point On Spline At...:No Shortcut
 CharView.Menu.Point.Name Contour:No Shortcut
