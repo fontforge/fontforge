@@ -336,7 +336,7 @@ fontforge.FontView.FontSize: 10
 fontforge.FontView.FrakturFamily: fraktur,serif
 fontforge.FontView.GlyphInfoColor: #598ec6
 fontforge.FontView.HintingNeededColor: #598ec6
-ontforge.FontView.MonoFamily: dejavu sans mono,courier,monospace,clearlyu,unifont
+fontforge.FontView.MonoFamily: dejavu sans mono,courier,monospace,clearlyu,unifont
 fontforge.FontView.SansFamily: dejavu sans,helvetica,caliban,sans,clearlyu,unifont
 fontforge.FontView.ScriptFamily: script,formalscript,serif
 fontforge.FontView.SelectedColor: #88b2de
