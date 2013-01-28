@@ -53,6 +53,7 @@ CharView.Menu.Edit.Select.Select Points Affected by HM: No Shortcut
 CharView.Menu.Edit.Unlink Reference: Ctl+U
 CharView.Menu.Edit.Remove Undoes: No Shortcut
 
+CharView.Menu.Point.Add Anchor:Ctl+0
 CharView.Menu.Point.Make First:Ctl+1
 CharView.Menu.Point.Curve:Ctl+2
 CharView.Menu.Point.Corner:Ctl+3
@@ -63,8 +64,6 @@ CharView.Menu.Point.G2 Curve: No Shortcut
 CharView.Menu.Point.Corner:Ctl+3
 CharView.Menu.Point.Prev Constraint:Ctl+4
 CharView.Menu.Point.Next Constraint:Ctl+5
-CharView.Menu.Point.Make First:Ctl+1
-CharView.Menu.Point.Add Anchor:Ctl+0
 CharView.Menu.Point.Can Be Interpolated: No Shortcut
 CharView.Menu.Point.Can't Be Interpolated: No Shortcut
 CharView.Menu.Point.Center Between Control Points: No Shortcut
