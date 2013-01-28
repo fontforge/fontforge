@@ -261,7 +261,7 @@ static int RulerTextIntersection(CharView *cv, unichar_t *ubuf, int i) {
 	real xoff = cv->ruler_intersections[cv->num_ruler_intersections-2].x - cv->ruler_intersections[1].x;
 	real yoff = cv->ruler_intersections[cv->num_ruler_intersections-2].y - cv->ruler_intersections[1].y;
 	real len = sqrt(xoff*xoff+yoff*yoff);
-	snprintf(buf,sizeof buf,"First Edge to Last Edge: %g x %g length %f",fabs(xoff),fabs(yoff),len);
+	snprintf(buf,sizeof buf, _("First Edge to Last Edge: %g x %g length %f"),fabs(xoff),fabs(yoff),len);
 	utf82u_strcpy(ubuf,buf);
 return( 1 );
     } else if ( cv->num_ruler_intersections>4 )
@@ -273,7 +273,7 @@ return( 0 );
     if ( i==0 ) {
 	snprintf(buf,sizeof buf,"[%d] (%g,%g)",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y);
 	if ( cv->p.sp ) {
-	    strcat(buf," snapped");
+	    strcat(buf, _(" snapped"));
 	    cv->start_intersection_snapped = 1;
 	} else {
 	    cv->start_intersection_snapped = 0;
@@ -282,10 +282,10 @@ return( 0 );
 	real xoff = cv->ruler_intersections[i].x - cv->ruler_intersections[i-1].x;
 	real yoff = cv->ruler_intersections[i].y - cv->ruler_intersections[i-1].y;
 	real len = sqrt(xoff*xoff+yoff*yoff);
-	snprintf(buf,sizeof buf,"[%d] (%g,%g) %g x %g length %g",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y,fabs(xoff),fabs(yoff),len);
+	snprintf(buf,sizeof buf, _("[%d] (%g,%g) %g x %g length %g"),i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y,fabs(xoff),fabs(yoff),len);
 	if ( i==(cv->num_ruler_intersections-1) ) {
 	    if ( cv->info_sp ) {
-		strcat(buf," snapped");
+		strcat(buf, _(" snapped"));
 		cv->end_intersection_snapped = 1;
 	    } else {
 		cv->end_intersection_snapped = 0;
