@@ -1,28 +1,57 @@
-CharView.Menu.File.New: Ctl+N
-CharView.Menu.File.Open: Ctl+O
-CharView.Menu.File.Close: Ctl+Shft+Q
-CharView.Menu.File.Save: Ctl+S
-CharView.Menu.File.Save as...: Ctl+Shft+S
-CharView.Menu.File.Save all: Alt+Ctl+S
-CharView.Menu.File.Generate Fonts...:Ctl+Shft+G
-CharView.Menu.File.Generate Mac Family...:Alt+Ctl+G
-CharView.Menu.File.Import...:Ctl+Shft+I
-CharView.Menu.File.Revert File:Ctl+Shft+R
-CharView.Menu.File.Revert Glyph:Alt+Ctl+R
-CharView.Menu.File.Print...:Ctl+P
-CharView.Menu.File.Execute Script...:Ctl+.
-CharView.Menu.File.Quit:Ctl+Q
+fontforge.CharView.Hotkey.Tool.SpiroG4: '
+fontforge.CharView.Hotkey.Tool.SpiroCorner: \
+fontforge.CharView.Hotkey.Tool.SpiroLeft: [
+fontforge.CharView.Hotkey.Tool.SpiroRight: ]
+fontforge.CharView.Hotkey.Tool.Freehand:
+fontforge.CharView.Hotkey.Tool.Hand: h
+fontforge.CharView.Hotkey.Tool.Pen: p
+fontforge.CharView.Hotkey.Tool.PointCurve: q
+fontforge.CharView.Hotkey.Tool.PointHVCurve: w
+fontforge.CharView.Hotkey.Tool.PointTangent: t
+fontforge.CharView.Hotkey.Tool.PointCorner: a
+fontforge.CharView.Hotkey.Tool.Pointer: v
+fontforge.CharView.Hotkey.Tool.Ruler: m
+fontforge.CharView.Hotkey.Tool.Knife: k
+fontforge.CharView.Hotkey.Tool.Zoom: c
+fontforge.CharView.Hotkey.Zoom.Out: x
+fontforge.CharView.Hotkey.Zoom.In: z
 
-CharView.Menu.Edit.Undo: Ctl+Z
-CharView.Menu.Edit.Redo: Ctl+Y
-CharView.Menu.Edit.Cut: Ctl+X
-CharView.Menu.Edit.Copy: Ctl+C
-CharView.Menu.Edit.Copy Reference: Ctl+G
-CharView.Menu.Edit.Copy Lookup Data: Alt+Ctl+C
-CharView.Menu.Edit.Copy Width: Ctl+W
+fontforge.CharView.Hotkey.Show.Tab0: 1
+fontforge.CharView.Hotkey.Show.Tab1: 2
+fontforge.CharView.Hotkey.Show.Tab2: 3
+fontforge.CharView.Hotkey.Show.Tab3: 4
+fontforge.CharView.Hotkey.Show.Tab4: 5
+fontforge.CharView.Hotkey.Show.Tab5: 6
+fontforge.CharView.Hotkey.Show.Tab6: 7
+fontforge.CharView.Hotkey.Show.Tab7: 8
+fontforge.CharView.Hotkey.Show.Tab8: 9
+fontforge.CharView.Hotkey.Show.Tab9: 0
+
+CharView.Menu.File.New: control+n
+CharView.Menu.File.Open: control+o
+CharView.Menu.File.Close: control+shift+q
+CharView.Menu.File.Save: control+s
+CharView.Menu.File.Save as...: control+shift+s
+CharView.Menu.File.Save all: alt+control+s
+CharView.Menu.File.Generate Fonts...:control+shift+g
+CharView.Menu.File.Generate Mac Family...:alt+control+g
+CharView.Menu.File.Import...:Ctl+Shft+i
+CharView.Menu.File.Revert File:Ctl+Shft+r
+CharView.Menu.File.Revert Glyph:Alt+Ctl+r
+CharView.Menu.File.Print...:Ctl+p
+CharView.Menu.File.Execute Script...:Ctl+.
+CharView.Menu.File.Quit:Ctl+q
+
+CharView.Menu.Edit.Undo: Ctl+z
+CharView.Menu.Edit.Redo: Ctl+y
+CharView.Menu.Edit.Cut: Ctl+x
+CharView.Menu.Edit.Copy: Ctl+c
+CharView.Menu.Edit.Copy Reference: Ctl+g
+CharView.Menu.Edit.Copy Lookup Data: Alt+Ctl+c
+CharView.Menu.Edit.Copy Width: Ctl+w
 CharView.Menu.Edit.Copy LBearing: No Shortcut
 CharView.Menu.Edit.Copy RBearing: No Shortcut
-CharView.Menu.Edit.Paste: Ctl+V
+CharView.Menu.Edit.Paste: Ctl+v
 CharView.Menu.Edit.Clear: Delete
 CharView.Menu.Edit.Clear Background: No Shortcut
 CharView.Menu.Edit.Merge: Ctl+M
