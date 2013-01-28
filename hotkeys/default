@@ -80,8 +80,8 @@ CharView.Menu.Point.Curve:Ctl+2
 CharView.Menu.Point.Corner:Ctl+3
 CharView.Menu.Point.Tangent:Ctl+4
 CharView.Menu.Point.HVCurve:Ctl+5
+CharView.Menu.Point.G2 Curve: Ctl+1
 CharView.Menu.Point.G4 Curve:Ctl+2
-CharView.Menu.Point.G2 Curve: No Shortcut
 CharView.Menu.Point.Corner:Ctl+3
 CharView.Menu.Point.Prev Constraint:Ctl+4
 CharView.Menu.Point.Next Constraint:Ctl+5
