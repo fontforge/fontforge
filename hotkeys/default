@@ -26,6 +26,7 @@ CharView.Menu.Edit.Paste: Ctl+V
 CharView.Menu.Edit.Clear: Delete
 CharView.Menu.Edit.Clear Background: No Shortcut
 CharView.Menu.Edit.Merge: Ctl+M
+CharView.Menu.Edit.Merge: Delete
 CharView.Menu.Edit.Join: Ctl+Shft+J
 CharView.Menu.Edit.Copy Fg To Bg: Ctl+Shft+C
 CharView.Menu.Edit.Copy Layer To Layer...: No Shortcut
@@ -547,8 +548,6 @@ MetricsView.Menu.View.Outline: No Shortcut
 MetricsView.Menu.Help.Help:F1
 MetricsView.Menu.Help.Overview:Shft+F1
 MetricsView.Menu.Help.Index:Ctl+F1
-
-CharView.Menu.Edit.Merge: Delete
 
 CharView.Menu.Point.Tools.Ruler: r
 CharView.Menu.Point.Tools.Pointer: v
