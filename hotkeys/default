@@ -569,10 +569,10 @@ CharView.Menu.Point.Tools.Toggle Spiro: s
 MetricsView.Menu.Help.About...: No Shortcut
 MetricsView.Menu.Help.License...: No Shortcut
 
-CharView.Menu.View.Show.Tab.Tab0: Ctl+1
-CharView.Menu.View.Show.Tab.Tab1: Ctl+2
-CharView.Menu.View.Show.Tab.Tab2: Ctl+3
-CharView.Menu.View.Show.Tab.Tab3: Ctl+4
-CharView.Menu.View.Show.Tab.Tab4: Ctl+5
-CharView.Menu.View.Show.Tab.Tab5: Ctl+6
+CharView.Menu.View.Show.Tab.Tab0: Alt+1
+CharView.Menu.View.Show.Tab.Tab1: Alt+2
+CharView.Menu.View.Show.Tab.Tab2: Alt+3
+CharView.Menu.View.Show.Tab.Tab3: Alt+4
+CharView.Menu.View.Show.Tab.Tab4: Alt+5
+CharView.Menu.View.Show.Tab.Tab5: Alt+6
 
