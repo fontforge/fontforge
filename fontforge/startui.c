@@ -42,6 +42,10 @@
 #include <sys/types.h>
 #include "../gdraw/hotkeys.h"
 
+#ifdef __Mac
+extern void setup_cocoa_app();
+#endif
+
 #ifdef _NO_LIBPNG
 #  define PNGLIBNAME	"libpng"
 #else
@@ -489,7 +493,7 @@ static  OSErr install_apple_event_handlers(void) {
 #else
     sprintf( buffer, "%s/.FontForge-LogFile.txt", getenv("HOME"));
 #endif
-    logfile = fopen("/Users/gww/LogFile.txt","w");
+    logfile = fopen("/tmp/LogFile.txt","w");
  }
  if ( logfile==NULL )
   logfile = stderr;
@@ -863,8 +867,8 @@ int fontforge_main( int argc, char **argv ) {
     PythonUI_Init();
 #endif
 
-    InitSimpleStuff();
     FindProgDir(argv[0]);
+    InitSimpleStuff();
 
 #if defined(__MINGW32__)
     {
@@ -1204,6 +1208,7 @@ exit( 0 );
     if ( listen_to_apple_events ) {
 	install_apple_event_handlers();
 	install_mac_timer();
+	setup_cocoa_app();
 	RunApplicationEventLoop();
     } else
 #endif

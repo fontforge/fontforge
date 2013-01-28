@@ -33,6 +33,15 @@
 #include "hotkeys.h"
 #include "gkeysym.h"
 
+/////////////////////////////////////////////////////////////////
+// The below keys are from this file, when/if we move to GTK+
+// then perhaps we should include this file instead of the inline
+// definitions
+//#include <gdk/gdkkeysyms.h>
+#define GDK_KEY_Tab 0xff09
+#define GDK_KEY_ISO_Left_Tab 0xfe20
+/////////////////////////////////////////////////////////////////
+
 int GTextInfoGetWidth(GWindow base,GTextInfo *ti,FontInstance *font) {
     int width=0;
     int iwidth=0;
@@ -162,20 +171,6 @@ int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
 
     r.y = y; r.height = height;
     r.x = 0; r.width = 10000;
-    if (( ti->selected && sel!=COLOR_DEFAULT ) || ( ti->bg!=COLOR_DEFAULT && ti->bg!=COLOR_UNKNOWN )) {
-	Color bg = ti->bg;
-	if ( ti->selected ) {
-	    if ( sel==COLOR_DEFAULT )
-		sel = fg;
-	    bg = sel;
-	    if ( sel==fg ) {
-		fg = ti->bg;
-		if ( fg==COLOR_DEFAULT || fg==COLOR_UNKNOWN )
-		    fg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(base));
-	    }
-	}
-	GDrawFillRect(base,&r,bg);
-    }
 
     if ( ti->line ) {
 	_GGroup_Init();
@@ -187,6 +182,21 @@ int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
 	GBoxDrawHLine(base,&r,&_GGroup_LineBox);
 	GDrawPopClip(base,&old);
     } else {
+	if (( ti->selected && sel!=COLOR_DEFAULT ) || ( ti->bg!=COLOR_DEFAULT && ti->bg!=COLOR_UNKNOWN )) {
+	    Color bg = ti->bg;
+	    if ( ti->selected ) {
+		if ( sel==COLOR_DEFAULT )
+		    sel = fg;
+		bg = sel;
+		if ( sel==fg ) {
+		    fg = ti->bg;
+		    if ( fg==COLOR_DEFAULT || fg==COLOR_UNKNOWN )
+			fg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(base));
+		}
+	    }
+	    GDrawFillRect(base,&r,bg);
+	}
+
 	if ( ti->image!=NULL && ti->image_precedes ) {
 	    GDrawDrawScaledImage(base,ti->image,x,y + (iheight>as?0:as-iheight));
 	    x += iwidth + skip;
@@ -942,12 +952,22 @@ void HotkeyParse( Hotkey* hk, const char *shortcut ) {
     // The user really means lower case keys unless they have
     // given the "shift" modifier too. Like: Ctl+Shft+L
     //
+//    fprintf(stderr,"HotkeyParse(1) spec:%d hk->keysym:%d shortcut:%s\n", GK_Special, hk->keysym, shortcut );
     if( hk->keysym < GK_Special ) {
 	hk->keysym = tolower(hk->keysym);
 	if( hk->state & ksm_shift ) {
 	    hk->keysym = toupper(hk->keysym);
 	}
     }
+    if( hk->keysym == GDK_KEY_Tab ) {
+#ifndef __Mac
+	if( hk->state & ksm_shift ) {
+	    hk->keysym = GDK_KEY_ISO_Left_Tab;
+	}
+#endif
+    }
+    
+//    fprintf(stderr,"HotkeyParse(end) spec:%d hk->state:%d hk->keysym:%d shortcut:%s\n", GK_Special, hk->state, hk->keysym, shortcut );
 }
     
 void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut) {

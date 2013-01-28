@@ -45,6 +45,12 @@ lib_LTLIBRARIES = libfontforge.la libfontforgeexe.la
 
 #--------------------------------------------------------------------------
 
+macobjective.o: macobjective.m
+	clang -g -arch x86_64 -arch i386 -c "${srcdir}/macobjective.m" -o macobjective.o
+
+
+#--------------------------------------------------------------------------
+
 SUBDIRS = pixmaps
 
 FFSCRIPT_HEADER = "\#!$(bindir)/fontforge -lang=ff"
@@ -77,7 +83,7 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	uiinterface.h bezctx_ff.h edgelist.h groups.h nonlineartrans.h		\
 	sd.h unicoderange.h bitmapcontrol.h encoding.h ofl.h search.h		\
 	usermenu.h fffreetype.h PfEd.h sfd1.h ffpython.h			\
-	plugins.h sflayoutP.h print.h splinefont.h annotations.h
+	plugins.h sflayoutP.h print.h splinefont.h annotations.h cvruler.h
 
 #--------------------------------------------------------------------------
 
@@ -144,7 +150,7 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	charinfo.c charview.c clipui.c combinations.c contextchain.c	\
 	cursors.c cvaddpoints.c cvdebug.c cvdgloss.c cvexportdlg.c		\
 	cvfreehand.c cvgetinfo.c cvgridfit.c cvhand.c cvhints.c			\
-	cvimportdlg.c cvknife.c cvpalettes.c cvpointer.c cvruler.c		\
+	cvimportdlg.c cvknife.c cvpalettes.c cvpointer.c cvruler.c 		\
 	cvshapes.c cvstroke.c cvtranstools.c displayfonts.c effectsui.c	\
 	encodingui.c fontinfo.c fontview.c freetypeui.c fvfontsdlg.c	\
 	fvmetricsdlg.c gotodlg.c groupsdlg.c histograms.c images.c		\
@@ -154,7 +160,7 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	\
 	splashimage.c startui.c statemachine.c tilepath.c transform.c	\
 	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
-	usermenu.c 
+	usermenu.c macobjective.h
 
 else !GRAPHICAL_USER_INTERFACE
 
@@ -164,8 +170,12 @@ endif !GRAPHICAL_USER_INTERFACE
 
 nodist_libfontforgeexe_la_SOURCES = exelibstamp.c
 
+if MACINTOSH
+MACFFEXE_LIBADD=macobjective.o
+endif MACINTOSH
+
 libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS)
-libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS) $(LIBADD) $(GUILIBADD)
+libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MACFFEXE_LIBADD)
 
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
@@ -202,7 +212,7 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 
 EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe libstamp.pre	\
 	exelibstamp.pre fontimage.1 fontlint.1 sfddiff.1			\
-	MacFontForgeApp.zip darwinsetup.in
+	MacFontForgeApp.zip darwinsetup.in macobjective.m 
 MOSTLYCLEANFILES = fontimage fontlint sfddiff libstamp.c	\
 	exelibstamp.c
 

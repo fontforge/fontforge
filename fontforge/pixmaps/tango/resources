@@ -1,5 +1,3 @@
-Gdraw.ScreenWidthCentimeters: 34
-
 fontforge.CharView.Hotkey.Tool.SpiroG4: '
 fontforge.CharView.Hotkey.Tool.SpiroCorner: \
 fontforge.CharView.Hotkey.Tool.SpiroLeft: [
@@ -182,7 +180,7 @@ Gdraw.GMenu.Box.BorderShape: rect
 Gdraw.GMenu.Box.NormalBackground: #ffffff
 Gdraw.GMenu.Box.Padding: 3
 Gdraw.GMenu.Font: 400 10pt Cantarell,sans,clearlyu,unifont
-Gdraw.GMenu.MacIcons: True
+Gdraw.GMenu.MacIcons: False
 Gdraw.GMenuBar.Box.ActiveBorder: #ffffff
 Gdraw.GMenuBar.Box.BorderInner: False
 Gdraw.GMenuBar.Box.BorderInnerCol: #edeceb
@@ -291,6 +289,7 @@ fontforge.CharView.BackgroundImageColor: #ff888a85
 fontforge.CharView.BackgroundOutlineColor: #4e9a06
 fontforge.CharView.BlueValuesStippledColor: #80729fcf
 fontforge.CharView.ClipPathColor: #3464a4
+fontforge.CharView.OpenPathColor: #660000
 fontforge.CharView.ConflictHintColor: #43d3d3
 fontforge.CharView.CoordinateLineColor: #80827c
 fontforge.CharView.DHintColor: #80d7a7a7
@@ -341,7 +340,7 @@ fontforge.FontView.FontSize: 10
 fontforge.FontView.FrakturFamily: fraktur,serif
 fontforge.FontView.GlyphInfoColor: #598ec6
 fontforge.FontView.HintingNeededColor: #598ec6
-ontforge.FontView.MonoFamily: dejavu sans mono,courier,monospace,clearlyu,unifont
+fontforge.FontView.MonoFamily: dejavu sans mono,courier,monospace,clearlyu,unifont
 fontforge.FontView.SansFamily: dejavu sans,helvetica,caliban,sans,clearlyu,unifont
 fontforge.FontView.ScriptFamily: script,formalscript,serif
 fontforge.FontView.SelectedColor: #88b2de
@@ -352,4 +351,6 @@ fontforge.MetricsView.ItalicAdvanceColor: #80827c
 fontforge.MetricsView.KernLineColor: #3d7905
 fontforge.MetricsView.SelectedGlyphColor: #8f918d
 fontforge.MetricsView.SideBearingLineColor: #12376c
-fontforge.View.Background: #dddddd
+fontforge.View.Background: #ffffff
+Gdraw.GVisibilityBoxOn.Image:check_on.png
+Gdraw.GVisibilityBoxOff.Image:check_off.png

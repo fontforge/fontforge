@@ -26,6 +26,7 @@
  */
 
 #include "fontforgeui.h"
+#include "cvruler.h"
 #include "annotations.h"
 #include <math.h>
 #include <locale.h>
@@ -55,10 +56,13 @@ int cv_auto_goto = false;
 float arrowAmount=1;
 float arrowAccelFactor=10.;
 float snapdistance=3.5;
+float snapdistancemeasuretool=3.5;
+int xorrubberlines=false;
 int updateflex = false;
 extern int clear_tt_instructions_when_needed;
 int use_freetype_with_aa_fill_cv = 1;
 int interpCPsOnMotion=false;
+int DrawOpenPathsWithHighlight = 1;
 int default_cv_width = 540;
 int default_cv_height = 540;
 
@@ -146,6 +150,7 @@ static Color gridfitoutlinecol = 0x009800;
 static Color backoutlinecol = 0x009800;
 static Color foreoutlinecol = 0x000000;
 static Color clippathcol = 0x0000ff;
+static Color openpathcol = 0x660000;
 static Color backimagecol = 0x707070;
 static Color fillcol = 0x80707070;		/* Translucent */
 static Color tracecol = 0x008000;
@@ -197,6 +202,7 @@ static struct resed charview2_re[] = {
     { N_("Inactive Layer Color"), "BackgroundOutlineColor", rt_color, &backoutlinecol, N_("The color of outlines in inactive layers"), NULL, { 0 }, 0, 0 },
     { N_("Active Layer Color"), "ForegroundOutlineColor", rt_color, &foreoutlinecol, N_("The color of outlines in the active layer"), NULL, { 0 }, 0, 0 },
     { N_("Clip Path Color"), "ClipPathColor", rt_color, &clippathcol, N_("The color of the clip path"), NULL, { 0 }, 0, 0 },
+    { N_("Open Path Color"), "OpenPathColor", rt_color, &openpathcol, N_("The color of the an open path"), NULL, { 0 }, 0, 0 },
     { N_("Background Image Color"), "BackgroundImageColor", rt_coloralpha, &backimagecol, N_("The color used to draw bitmap (single bit) images which do not specify a clut"), NULL, { 0 }, 0, 0 },
     { N_("Fill Color"), "FillColor", rt_coloralpha, &fillcol, N_("The color used to fill the outline if that mode is active"), NULL, { 0 }, 0, 0 },
     { N_("Preview Fill Color"), "PreviewFillColor", rt_coloralpha, &previewfillcol, N_("The color used to fill the outline when in preview mode"), NULL, { 0 }, 0, 0 },
@@ -208,6 +214,13 @@ static struct resed charview2_re[] = {
     { N_("Raster Dark Color"), "RasterDarkColor", rt_coloralpha, &rasterdarkcol, N_("When debugging in grey-scale this is the color of a raster block which is fully covered."), NULL, { 0 }, 0, 0 },
     { N_("Delta Grid Color"), "DeltaGridColor", rt_color, &deltagridcol, N_("Indicates a notable grid pixel when suggesting deltas."), NULL, { 0 }, 0, 0 },
     { N_("Ruler Big Tick Color"), "RulerBigTickColor", rt_color, &rulerbigtickcol, N_("The color used to draw the large tick marks in rulers."), NULL, { 0 }, 0, 0 },
+    { N_("Measure Tool Line Color"), "MeasureToolLineColor", rt_color, &measuretoollinecol, N_("The color used to draw the measure tool line."), NULL, { 0 }, 0, 0 },
+    { N_("Measure Tool Point Color"), "MeasureToolPointColor", rt_color, &measuretoolpointcol, N_("The color used to draw the measure tool points."), NULL, { 0 }, 0, 0 },
+    { N_("Measure Tool Point Snapped Color"), "MeasureToolPointSnappedColor", rt_color, &measuretoolpointsnappedcol, N_("The color used to draw the measure tool points when snapped."), NULL, { 0 }, 0, 0 },
+    { N_("Measure Tool Canvas Number Color"), "MeasureToolCanvasNumbersColor", rt_color, &measuretoolcanvasnumberscol, N_("The color used to draw the measure tool numbers on the canvas."), NULL, { 0 }, 0, 0 },
+    { N_("Measure Tool Canvas Number Snapped Color"), "MeasureToolCanvasNumbersSnappedColor", rt_color, &measuretoolcanvasnumberssnappedcol, N_("The color used to draw the measure tool numbers on the canvas when snapped."), NULL, { 0 }, 0, 0 },
+    { N_("Measure Tool Windows Foreground Color"), "MeasureToolWindowForeground", rt_color, &measuretoolwindowforegroundcol, N_("The measure tool window foreground color."), NULL, { 0 }, 0, 0 },
+    { N_("Measure Tool Windows Background Color"), "MeasureToolWindowBackground", rt_color, &measuretoolwindowbackgroundcol, N_("The measure tool window background color."), NULL, { 0 }, 0, 0 },
     RESED_EMPTY
 };
 
@@ -227,6 +240,7 @@ return 1;
 	    cv->spacebar_hold = 0;
 	    cv->b1_tool = cv->b1_tool_old;
 	    cv->active_tool = cvt_none;
+	    cv->b1_tool_old = cvt_none;
 return 1;
 	}
     }
@@ -349,47 +363,22 @@ return;
 
 static void CVDrawRubberLine(GWindow pixmap, CharView *cv) {
     int x,y, xend,yend;
+    Color col = cv->active_tool==cvt_ruler ? measuretoollinecol : oldoutlinecol;
     if ( !cv->p.rubberlining )
 return;
     x =  cv->xoff + rint(cv->p.cx*cv->scale);
     y = -cv->yoff + cv->height - rint(cv->p.cy*cv->scale);
     xend =  cv->xoff + rint(cv->info.x*cv->scale);
     yend = -cv->yoff + cv->height - rint(cv->info.y*cv->scale);
-    GDrawSetXORMode(pixmap);
-    GDrawSetLineWidth(pixmap,0);
-    GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
-    GDrawDrawLine(pixmap,x,y,xend,yend,oldoutlinecol);
-    if ( cv->num_ruler_intersections>2 ) {
-	int i;
-
-	GDrawSetFont(pixmap,cv->rfont);
-	for ( i=0 ; i<cv->num_ruler_intersections; ++i ) {
-	    GRect rect,prev_rect;
-
-	    rect.x = cv->xoff + rint(cv->ruler_intersections[i].x*cv->scale) - 1;
-	    rect.y = -cv->yoff + cv->height - rint(cv->ruler_intersections[i].y*cv->scale) - 1;
-	    rect.width = 3;
-	    rect.height = 3;
-
-	    GDrawFillElipse(pixmap,&rect,0xFF0000);
-	    if ( i>0 && (cv->num_ruler_intersections<6 || (prev_rect.x + 10)<rect.x || (prev_rect.y + 10)<rect.y || (prev_rect.y - 10)>rect.y) ) {
-		real xoff = cv->ruler_intersections[i].x - cv->ruler_intersections[i-1].x;
-		real yoff = cv->ruler_intersections[i].y - cv->ruler_intersections[i-1].y;
-		real len = sqrt(xoff*xoff+yoff*yoff);
-		char buf[40];
-		unichar_t ubuf[40];
-		int x,y;
-
-		x = (prev_rect.x + rect.x)/2;
-		y = (prev_rect.y + rect.y)/2;
-
-		sprintf(buf,"%5.4f",len);
-		utf82u_strcpy(ubuf,buf);
-		GDrawDrawText(pixmap,x,y,ubuf,-1,0xFF0000);
-	    }
-	    prev_rect = rect;
-	}
+    if ( xorrubberlines ) {		/* XOR prevents use of CAIRO for these lines */
+	GDrawSetXORMode(pixmap);
+	GDrawSetLineWidth(pixmap,0);
+	GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
+    } else {
+	GDrawSetCopyMode(pixmap);
+	GDrawSetLineWidth(pixmap,0);
     }
+    GDrawDrawLine(pixmap,x,y,xend,yend,col);
     GDrawSetCopyMode(pixmap);
 }
 
@@ -667,6 +656,16 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
     char buf[12];
     int isfake;
 
+    if ( DrawOpenPathsWithHighlight
+	 && cv->b.drawmode==dm_fore
+	 && spl->first
+	 && spl->first->prev==NULL )
+    {
+	if( sp!=spl->first )
+	    col = openpathcol;
+    }
+    
+    
     if ( cv->markextrema && SpIsExtremum(sp) )
 	 col = extremepointcol;
     if ( sp->selected )
@@ -1170,6 +1169,16 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 	GDrawFillRuleSetWinding(pixmap);
     }
     for ( spl = set; spl!=NULL; spl = spl->next ) {
+
+	Color fc  = spl->is_clip_path ? clippathcol : fg;
+	if ( DrawOpenPathsWithHighlight
+	     && cv->b.drawmode==dm_fore
+	     && spl->first
+	     && spl->first->prev==NULL )
+	{
+	    fc = openpathcol;
+	}
+	
 	if ( GDrawHasCairo(pixmap)&gc_buildpath ) {
 	    Spline *first, *spline;
 	    double x,y, cx1, cy1, cx2, cy2, dx,dy;
@@ -1215,8 +1224,8 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 		GDrawPathClose(pixmap);
 
 	    switch( strokeFillMode ) {
-	    case sfm_stroke:
-		GDrawPathStroke(pixmap,(spl->is_clip_path ? clippathcol : fg)|0xff000000);
+	    case sfm_stroke: 
+		GDrawPathStroke( pixmap, fc | 0xff000000 );
 		break;
 	    case sfm_fill:
 	    case sfm_nothing:
@@ -1225,7 +1234,7 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 	} else {
 	    GPointList *gpl = MakePoly(cv,spl), *cur;
 	    for ( cur=gpl; cur!=NULL; cur=cur->next )
-		GDrawDrawPoly(pixmap,cur->gp,cur->cnt,spl->is_clip_path ? clippathcol : fg);
+		GDrawDrawPoly(pixmap,cur->gp,cur->cnt,fc);
 	    GPLFree(gpl);
 	}
     }
@@ -2593,6 +2602,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	if ( cv->p.rubberlining )
 	    CVDrawRubberLine(pixmap,cv);
     }
+    CVRulerExpose(pixmap,cv);
 
     GDrawPopClip(pixmap,&old);
 }
@@ -3647,7 +3657,6 @@ return( fs->p->anysel );
 }
 
 static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
-    extern float snapdistance;
     extern int snaptoint;
 
     memset(p,'\0',sizeof(PressedOn));
@@ -3661,7 +3670,7 @@ static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
     p->cx = (event->u.mouse.x-cv->xoff)/cv->scale;
     p->cy = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale;
 
-    fs->fudge = snapdistance/cv->scale;		/* 3.5 pixel fudge */
+    fs->fudge = (cv->active_tool==cvt_ruler ? snapdistancemeasuretool : snapdistance)/cv->scale;
     fs->c_xl = fs->xl = p->cx - fs->fudge;
     fs->c_xh = fs->xh = p->cx + fs->fudge;
     fs->c_yl = fs->yl = p->cy - fs->fudge;
@@ -4211,6 +4220,8 @@ static void CVMouseMove(CharView *cv, GEvent *event ) {
 	    CVMouseMoveRuler(cv,event);
 return;
     }
+
+    GDrawRequestExpose(cv->v,NULL,false);	/* TBD, hack to clear ruler */
 
     SetFS(&fs,&p,cv,event);
     if ( cv->active_tool == cvt_freehand )
@@ -10967,6 +10978,10 @@ void CharViewFree(CharView *cv) {
     if ( cv->ruler_w ) {
 	GDrawDestroyWindow(cv->ruler_w);
 	cv->ruler_w = NULL;
+    }
+    if ( cv->ruler_linger_w ) {
+	GDrawDestroyWindow(cv->ruler_linger_w);
+	cv->ruler_linger_w = NULL;
     }
     free(cv->gi.u.image->clut);
     free(cv->gi.u.image);

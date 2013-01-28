@@ -1106,7 +1106,8 @@ typedef struct spline {
     unsigned int leftedge: 1;
     unsigned int rightedge: 1;
     unsigned int acceptableextrema: 1;	/* This spline has extrema, but we don't care */
-    SplinePoint *from, *to;
+    SplinePoint *from;
+    SplinePoint *to;
     Spline1D splines[2];		/* splines[0] is the x spline, splines[1] is y */
     struct linearapprox *approx;
     /* Posible optimizations:

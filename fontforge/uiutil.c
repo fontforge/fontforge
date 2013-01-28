@@ -301,7 +301,7 @@ void help(char *file) {
 #else
 
 void help(char *file) {
-    char fullspec[1024], *temp, *pt;
+    char fullspec[PATH_MAX], *temp, *pt;
     
     if ( browser[0]=='\0' )
 	findbrowser();
@@ -315,15 +315,11 @@ return;
     if ( strstr(file,"http://")==NULL ) {
 	memset(fullspec,0,sizeof fullspec);
 	if ( ! GFileIsAbsolute(file) ) {
+	    printf("...helpdir:%p\n", helpdir );
 	    if ( helpdir==NULL || *helpdir=='\0' ) {
-#if defined(DOCDIR)
-		strncpy(fullspec,DOCDIR "/",sizeof fullspec - 1 - strlen(file));
-#elif defined(SHAREDIR)
-		strncpy(fullspec,SHAREDIR "/doc/fontforge/",sizeof fullspec - 1 - strlen(file));
-#else
-		strncpy(fullspec,"/usr/local/share/doc/fontforge/",sizeof fullspec - 1 - strlen(file));
-#endif
+		snprintf(fullspec, PATH_MAX, "%s", getHelpDir());
 	    } else {
+		printf("...helpdir2:%s\n", helpdir );
 		strncpy(fullspec,helpdir,sizeof fullspec - 1);
 	    }
 	}

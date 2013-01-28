@@ -6,7 +6,7 @@ PortSystem      1.0
 name            fontforge
 version         2.0.0_beta1
 set docversion  2.0.0_beta1
-revision        51
+revision        62
 categories      graphics fonts
 platforms       darwin
 maintainers     Ben Martin
@@ -26,10 +26,10 @@ distname        ${name}-${version}
 dist_subdir     ${name}/${version}
 worksrcdir      ${name}-${version}
 
-master_sites        file:///Users/ben/Work/FontForge/2012/mac-build/categories/fontforge
-checksums fontforge-2.0.0_beta1.tar.gz \
- sha1    d5c9ba28765db76a94e457c533e8a0b83007ec5e \
- rmd160  89e31b6509e947cd933f2e0d48135682ab2cb6a5
+#master_sites        file:///Users/ben/Work/FontForge/2012/mac-build/categories/fontforge
+#checksums fontforge-2.0.0_beta1.tar.gz \
+#  sha1    c89cf3daa09b10d7d017219551c3ed378d9ec92a \
+#  rmd160  fb2840a0f0e1206d7df914b729d43d34d1479712
 
 # fetch.type      git
 # git.url         https://github.com/monkeyiq/fontforge-fork.git
@@ -37,10 +37,10 @@ checksums fontforge-2.0.0_beta1.tar.gz \
 # use_autoreconf    yes
 
 
-# fetch.type      git
-# git.url         https://github.com/fontforge/fontforge.git
-# git.branch      master
-# use_autoreconf  yes
+fetch.type      git
+git.url         https://github.com/fontforge/fontforge.git
+git.branch      master
+use_autoreconf  yes
 
 
 worksrcdir      ${name}-${version}
