@@ -24,26 +24,34 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include "giofuncP.h"
 #include "ustring.h"
 
-
-struct transtab { unichar_t *old; unichar_t *new; int olen; int gf_mask; };
+struct transtab {
+    unichar_t *old;
+    unichar_t *new;
+    int olen;		/* length to test against */
+    int gf_mask;	/* enum giofuncs */
+};
 static struct transtab *transtab=NULL;
 
 unichar_t *_GIO_translateURL(unichar_t *path, enum giofuncs gf) {
     struct transtab *test;
+    unichar_t *res;
 
     if ( transtab==NULL )
-return( NULL );
+	/* Need some sort of _GIO_addURL(), otherwise you never get past here	*/
+	return( NULL );
 
     for ( test = transtab; test->old!=NULL; ++test ) {
 	if ( (test->gf_mask&(1<<gf)) && u_strncmp(path,test->old,test->olen)==0 ) {
-	    unichar_t *res = galloc((u_strlen(path)-test->olen+u_strlen(test->new)+1)*sizeof(unichar_t));
+	    if ( (res=malloc((u_strlen(path)-test->olen+u_strlen(test->new)+1)*sizeof(unichar_t)))==NULL )
+		return( NULL );
 	    u_strcpy(res,test->new);
 	    u_strcat(res,path+test->olen);
-return( res );
+	    return( res );
 	}
     }
-return( NULL );
+    return( NULL );
 }
