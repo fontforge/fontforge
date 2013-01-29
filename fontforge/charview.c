@@ -62,6 +62,7 @@ int updateflex = false;
 extern int clear_tt_instructions_when_needed;
 int use_freetype_with_aa_fill_cv = 1;
 int interpCPsOnMotion=false;
+int DrawOpenPathsWithHighlight = 1;
 int default_cv_width = 540;
 int default_cv_height = 540;
 
@@ -149,6 +150,7 @@ static Color gridfitoutlinecol = 0x009800;
 static Color backoutlinecol = 0x009800;
 static Color foreoutlinecol = 0x000000;
 static Color clippathcol = 0x0000ff;
+static Color openpathcol = 0x660000;
 static Color backimagecol = 0x707070;
 static Color fillcol = 0x80707070;		/* Translucent */
 static Color tracecol = 0x008000;
@@ -200,6 +202,7 @@ static struct resed charview2_re[] = {
     { N_("Inactive Layer Color"), "BackgroundOutlineColor", rt_color, &backoutlinecol, N_("The color of outlines in inactive layers"), NULL, { 0 }, 0, 0 },
     { N_("Active Layer Color"), "ForegroundOutlineColor", rt_color, &foreoutlinecol, N_("The color of outlines in the active layer"), NULL, { 0 }, 0, 0 },
     { N_("Clip Path Color"), "ClipPathColor", rt_color, &clippathcol, N_("The color of the clip path"), NULL, { 0 }, 0, 0 },
+    { N_("Open Path Color"), "OpenPathColor", rt_color, &openpathcol, N_("The color of the an open path"), NULL, { 0 }, 0, 0 },
     { N_("Background Image Color"), "BackgroundImageColor", rt_coloralpha, &backimagecol, N_("The color used to draw bitmap (single bit) images which do not specify a clut"), NULL, { 0 }, 0, 0 },
     { N_("Fill Color"), "FillColor", rt_coloralpha, &fillcol, N_("The color used to fill the outline if that mode is active"), NULL, { 0 }, 0, 0 },
     { N_("Preview Fill Color"), "PreviewFillColor", rt_coloralpha, &previewfillcol, N_("The color used to fill the outline when in preview mode"), NULL, { 0 }, 0, 0 },
@@ -653,6 +656,16 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
     char buf[12];
     int isfake;
 
+    if ( DrawOpenPathsWithHighlight
+	 && cv->b.drawmode==dm_fore
+	 && spl->first
+	 && spl->first->prev==NULL )
+    {
+	if( sp!=spl->first )
+	    col = openpathcol;
+    }
+    
+    
     if ( cv->markextrema && SpIsExtremum(sp) )
 	 col = extremepointcol;
     if ( sp->selected )
@@ -1156,6 +1169,16 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 	GDrawFillRuleSetWinding(pixmap);
     }
     for ( spl = set; spl!=NULL; spl = spl->next ) {
+
+	Color fc  = spl->is_clip_path ? clippathcol : fg;
+	if ( DrawOpenPathsWithHighlight
+	     && cv->b.drawmode==dm_fore
+	     && spl->first
+	     && spl->first->prev==NULL )
+	{
+	    fc = openpathcol;
+	}
+	
 	if ( GDrawHasCairo(pixmap)&gc_buildpath ) {
 	    Spline *first, *spline;
 	    double x,y, cx1, cy1, cx2, cy2, dx,dy;
@@ -1201,8 +1224,8 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 		GDrawPathClose(pixmap);
 
 	    switch( strokeFillMode ) {
-	    case sfm_stroke:
-		GDrawPathStroke(pixmap,(spl->is_clip_path ? clippathcol : fg)|0xff000000);
+	    case sfm_stroke: 
+		GDrawPathStroke( pixmap, fc | 0xff000000 );
 		break;
 	    case sfm_fill:
 	    case sfm_nothing:
@@ -1211,7 +1234,7 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 	} else {
 	    GPointList *gpl = MakePoly(cv,spl), *cur;
 	    for ( cur=gpl; cur!=NULL; cur=cur->next )
-		GDrawDrawPoly(pixmap,cur->gp,cur->cnt,spl->is_clip_path ? clippathcol : fg);
+		GDrawDrawPoly(pixmap,cur->gp,cur->cnt,fc);
 	    GPLFree(gpl);
 	}
     }

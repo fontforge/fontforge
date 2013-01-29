@@ -30,7 +30,7 @@
 #include <errno.h>
 
 struct stdfuncs _GIO_stdfuncs = {
-    GIOguessMimeType, _GIO_decomposeURL, _GIO_PostSuccess, _GIO_PostInter,
+    _GIO_decomposeURL, _GIO_PostSuccess, _GIO_PostInter,
     _GIO_PostError, _GIO_RequestAuthorization, _GIO_LookupHost,
     NULL,			/* default authorizer */
     GIOFreeDirEntries,

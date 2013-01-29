@@ -31,6 +31,13 @@
 #include "intl.h"
 struct giocontrol;
 
+#ifndef MAX
+#define MAX(x,y)   (((x) > (y)) ? (x) : (y))
+#endif
+#ifndef MIN
+#define MIN(x,y)   (((x) < (y)) ? (x) : (y))
+#endif
+
 typedef struct gtextinfo {
     unichar_t *text;
     GImage *image;
@@ -354,6 +361,7 @@ int GGadgetGetCid(GGadget *g);
 void GGadgetResize(GGadget *g,int32 width, int32 height );
 void GGadgetMove(GGadget *g,int32 x, int32 y );
 int32 GGadgetGetX(GGadget *g);
+int32 GGadgetGetY(GGadget *g);
 void  GGadgetSetY(GGadget *g, int32 y );
 void GGadgetRedraw(GGadget *g);
 void GGadgetsCreate(GWindow base, GGadgetCreateData *gcd);
@@ -591,5 +599,7 @@ extern void GMenuItemArrayFree(GMenuItem *mi);
 extern void GMenuItem2ArrayFree(GMenuItem2 *mi);
 extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
 extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
+
+extern void GVisibilityBoxSetToMinWH(GGadget *g);
 
 #endif

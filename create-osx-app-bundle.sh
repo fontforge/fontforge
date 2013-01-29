@@ -14,6 +14,11 @@ cp ./fontforge/MacFontForgeAppBuilt.zip $TEMPDIR/
 unzip -d $TEMPDIR $TEMPDIR/MacFontForgeAppBuilt.zip
 DESTDIR=$bundle_res make install
 
+sed -i -e "s|Gdraw.ScreenWidthCentimeters:.*|Gdraw.ScreenWidthCentimeters: 34|g" \
+       "$bundle_res/opt/local/share/fontforge/pixmaps/resources"
+sed -i -e "s|Gdraw.GMenu.MacIcons:.*|Gdraw.GMenu.MacIcons: True|g" \
+       "$bundle_res/opt/local/share/fontforge/pixmaps/resources"
+
 cd $bundle_bin
 dylibbundler --overwrite-dir --bundle-deps --fix-file \
   ./fontforge \
@@ -49,6 +54,12 @@ do
       --dest-dir "$bundle_lib"
 done
 
+
+cd $bundle_res
+mkdir -p opt/local/share/mime
+cp -av /opt/local/share/mime/mime.cache opt/local/share/mime
+cp -av /opt/local/share/mime/globs      opt/local/share/mime
+cp -av /opt/local/share/mime/magic      opt/local/share/mime
 
 
 cd $TEMPDIR

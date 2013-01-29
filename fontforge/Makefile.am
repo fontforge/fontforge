@@ -83,7 +83,7 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	uiinterface.h bezctx_ff.h edgelist.h groups.h nonlineartrans.h		\
 	sd.h unicoderange.h bitmapcontrol.h encoding.h ofl.h search.h		\
 	usermenu.h fffreetype.h PfEd.h sfd1.h ffpython.h			\
-	plugins.h sflayoutP.h print.h splinefont.h annotations.h
+	plugins.h sflayoutP.h print.h splinefont.h annotations.h cvruler.h
 
 #--------------------------------------------------------------------------
 
@@ -150,7 +150,7 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	charinfo.c charview.c clipui.c combinations.c contextchain.c	\
 	cursors.c cvaddpoints.c cvdebug.c cvdgloss.c cvexportdlg.c		\
 	cvfreehand.c cvgetinfo.c cvgridfit.c cvhand.c cvhints.c			\
-	cvimportdlg.c cvknife.c cvpalettes.c cvpointer.c cvruler.c		\
+	cvimportdlg.c cvknife.c cvpalettes.c cvpointer.c cvruler.c 		\
 	cvshapes.c cvstroke.c cvtranstools.c displayfonts.c effectsui.c	\
 	encodingui.c fontinfo.c fontview.c freetypeui.c fvfontsdlg.c	\
 	fvmetricsdlg.c gotodlg.c groupsdlg.c histograms.c images.c		\

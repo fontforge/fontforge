@@ -42,6 +42,7 @@
 
 #define forever for (;;)
 
+typedef int bool;
 typedef int32_t		int32;
 typedef uint32_t	uint32;
 typedef int16_t		int16;
