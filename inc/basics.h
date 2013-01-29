@@ -27,10 +27,7 @@
 #ifndef _BASICS_H
 #define _BASICS_H
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
+# include <config.h>		/* FF config file */
 #include <stdio.h>		/* for NULL */
 #ifdef HAVE_STDINT_H
 # include <stdint.h>
