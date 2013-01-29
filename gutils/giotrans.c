@@ -36,6 +36,33 @@ struct transtab {
 };
 static struct transtab *transtab=NULL;
 
+#if 0
+int _GIO_addURL(unichar_t *path, enum giofuncs gf) {
+/* TODO: Write _GIO_addURL()							*/
+/* Currently, _GIO_translateURL() never goes beyond "if (transtab==NULL) until	*/
+/* transtab gets populated by another routine which adds a URL to transtab	*/
+    struct transtab *test;
+
+    if ( (test=calloc(1,sizeof(transtab)))==NULL )
+	return( 0 );
+
+    if ( transtab==NULL )
+	transtab=test;
+    else {
+	/* TODO: need to understand purpose of olen before setting it since it	*/
+	/* appears it will need to be set according to gf_mask			*/
+	;
+    }
+
+    return( 0 );
+}
+
+void _GIO_freelistURL() {
+/* Free memory before exiting program */
+    free(transtab); /* needs to be expanded to accomidate a list */
+}
+#endif
+
 unichar_t *_GIO_translateURL(unichar_t *path, enum giofuncs gf) {
     struct transtab *test;
     unichar_t *res;
