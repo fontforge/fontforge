@@ -27,14 +27,17 @@
 #include "gimage.h"
 
 GImage *GImageCreate(enum image_type type, int32 width, int32 height) {
+/* Prepare to get a bitmap image. Cleanup and return NULL if not enough memory */
     GImage *gi;
     struct _GImage *base;
 
-    if ( type<it_mono || type>it_rgba ) return( NULL );
+    if ( type<it_mono || type>it_rgba )
+	return( NULL );
 
     gi = (GImage *) calloc(1,sizeof(GImage));
     base = (struct _GImage *) malloc(sizeof(struct _GImage));
-    if ( gi==NULL || base==NULL ) goto errorGImageCreate;
+    if ( gi==NULL || base==NULL )
+	goto errorGImageCreate;
 
     gi->u.image = base;
     base->image_type = type;
@@ -44,19 +47,21 @@ GImage *GImageCreate(enum image_type type, int32 width, int32 height) {
     base->data = NULL;
     base->clut = NULL;
     base->trans = COLOR_UNKNOWN;
-    base->data = (uint8 *) malloc(height*base->bytes_per_line);
-    if ( base->data==NULL ) goto errorGImageCreate;
+    if ( (base->data = (uint8 *) malloc(height*base->bytes_per_line))==NULL )
+	goto errorGImageCreate;
     if ( type==it_index ) {
-	base->clut = (GClut *) calloc(1,sizeof(GClut));
-	if ( base->clut==NULL ) {
-	    free(base->data); goto errorGImageCreate;
+	if ( (base->clut = (GClut *) calloc(1,sizeof(GClut)))==NULL ) {
+	    free(base->data);
+	    goto errorGImageCreate;
  	}
 	base->clut->trans_index = COLOR_UNKNOWN;
     }
     return( gi );
 
 errorGImageCreate:
-    NoMoreMemMessage(); free(base); free(gi);
+    free(base);
+    free(gi);
+    NoMoreMemMessage();
     return( NULL );
 }
 
@@ -65,11 +70,13 @@ GImage *_GImage_Create(enum image_type type, int32 width, int32 height) {
     GImage *gi;
     struct _GImage *base;
 
-    if ( type<it_mono || type>it_rgba ) return( NULL );
+    if ( type<it_mono || type>it_rgba )
+	return( NULL );
 
     gi = (GImage *) calloc(1,sizeof(GImage));
     base = (struct _GImage *) malloc(sizeof(struct _GImage));
-    if ( gi==NULL || base==NULL ) goto error_GImage_Create;
+    if ( gi==NULL || base==NULL )
+	goto error_GImage_Create;
 
     gi->u.image = base;
     base->image_type = type;
@@ -79,13 +86,15 @@ GImage *_GImage_Create(enum image_type type, int32 width, int32 height) {
     base->data = NULL;
     base->clut = NULL;
     if ( type==it_index ) {
-	base->clut = (GClut *) calloc(1,sizeof(GClut));
-	if ( base->clut==NULL )  goto error_GImage_Create;
+	if ( (base->clut = (GClut *) calloc(1,sizeof(GClut)))==NULL )
+	  goto error_GImage_Create;
     }
     return( gi );
 
 error_GImage_Create:
-    NoMoreMemMessage(); free(base); free(gi);
+    free(base);
+    free(gi);
+    NoMoreMemMessage();
     return( NULL );
 }
 
@@ -128,7 +137,9 @@ GImage *GImageCreateAnimation(GImage **images, int n) {
     gi = (GImage *) calloc(1,sizeof(GImage));
     imgs = (struct _GImage **) malloc(n*sizeof(struct _GImage *));
     if ( gi==NULL || imgs==NULL ) {
-	NoMoreMemMessage(); free(gi); free(imgs);
+	free(gi);
+	free(imgs);
+	NoMoreMemMessage();
 	return( NULL );
     }
 

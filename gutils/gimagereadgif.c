@@ -50,22 +50,32 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si,int il) 
 
     /* Create memory to hold image, exit with NULL if not enough memory */
     if ( si->ImageDesc.ColorMap!=NULL ) m=si->ImageDesc.ColorMap;
-    if ( m==NULL ) return( NULL );
+    if ( m==NULL )
+	return( NULL );
     if ( m->BitsPerPixel==1 ) {
-	if ( (ret=GImageCreate(it_bitmap,si->ImageDesc.Width,si->ImageDesc.Height))==NULL ) return( NULL );
+	if ( (ret=GImageCreate(it_bitmap,si->ImageDesc.Width,si->ImageDesc.Height))==NULL )
+	    return( NULL );
 	if ( m->ColorCount==2 &&
 		m->Colors[0].Red==0 && m->Colors[0].Green==0 && m->Colors[0].Blue==0 &&
 		m->Colors[1].Red==255 && m->Colors[1].Green==255 && m->Colors[1].Blue==255 )
 	    /* Don't need a clut */;
 	else
 	    if ( (ret->u.image->clut = (GClut *) calloc(1,sizeof(GClut)))==NULL ) {
-		NoMoreMemMessage(); free(ret); return( NULL );
+		free(ret);
+		NoMoreMemMessage();
+		return( NULL );
 	    }
     } else
-	if ( (ret=GImageCreate(it_index,si->ImageDesc.Width,si->ImageDesc.Height))==NULL ) return( NULL );
+	if ( (ret=GImageCreate(it_index,si->ImageDesc.Width,si->ImageDesc.Height))==NULL )
+	    return( NULL );
     if ( il && ((id=(int *) malloc(si->ImageDesc.Height*sizeof(int)))==NULL || \
-		(iv=(uint8 *) malloc(si->ImageDesc.Height*sizeof(uint8)))==NULL )) {
-	NoMoreMemMessage(); free(ret->u.image->clut); free(ret); free(id); free(iv); return( NULL );
+		(iv=(uint8 *) malloc(si->ImageDesc.Height*sizeof(uint8)))==NULL) ) {
+	free(ret->u.image->clut);
+	free(ret);
+	free(id);
+	free(iv);
+	NoMoreMemMessage();
+	return( NULL );
     }
 
     /* Process gif image into an internal FF usable format */
@@ -118,7 +128,8 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si,int il) 
 	    for ( i=1; i<base->height; ++i )
 		base->data[i*base->bytes_per_line+j]=iv[i];
 	}
-	free(id); free(iv);
+	free(id);
+	free(iv);
     }
     for ( i=0; i<si->ExtensionBlockCount; ++i ) {
 	if ( si->ExtensionBlocks[i].Function==0xf9 &&
@@ -148,19 +159,23 @@ GImage *GImageReadGif(char *filename) {
 
     if ( DGifSlurp(gif)==GIF_ERROR ) {
 	fprintf(stderr,"Bad gif file \"%s\"\n",filename );
-	DGifCloseFile(gif); return( NULL );
+	DGifCloseFile(gif);
+	return( NULL );
     }
 
     /* Process each image so that it/they can be imported into FF. */
     if ( (images=(GImage **) malloc(gif->ImageCount*sizeof(GImage *)))==NULL ) {
-	NoMoreMemMessage(); DGifCloseFile(gif); return( NULL );
+	DGifCloseFile(gif);
+	NoMoreMemMessage();
+	return( NULL );
     }
     il=gif->SavedImages[0].ImageDesc.Interlace;
     for ( i=0; i<gif->ImageCount; ++i ) {
-	images[i] = ProcessSavedImage(gif,&gif->SavedImages[i],il);
-	if ( images[i]==NULL ) {
+	if ( (images[i]=ProcessSavedImage(gif,&gif->SavedImages[i],il))==NULL ) {
 	    while ( --i>=0 ) free(images[i]);
-	    free(images); DGifCloseFile(gif); return( NULL );
+	    free(images);
+	    DGifCloseFile(gif);
+	    return( NULL );
 	}
     }
 
