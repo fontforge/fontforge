@@ -43,22 +43,41 @@ typedef struct _SunRaster {
 enum types { TypeOld, TypeStandard, TypeByteEncoded, TypeRGB, TypeTIFF, TypeIFF };
 enum cluts { ClutNone, ClutRGB, ClutRaw };
 
-static long getlong(FILE *fp) {
+static int getlong(FILE *fp, long *value) {
+/* Get Big-Endian long (32bit int) value. Return 0 if okay, -1 if error	*/
     int ch1, ch2, ch3, ch4;
 
-    ch1 = fgetc(fp); ch2 = fgetc(fp); ch3=fgetc(fp); ch4=fgetc(fp);
-return( (ch1<<24) | (ch2<<16) | (ch3<<8) | ch4 );
+    if ( (ch1=fgetc(fp))<0 || (ch2=fgetc(fp))<0 || \
+	 (ch3=fgetc(fp))<0 || (ch4=fgetc(fp))<0 ) {
+	*value=0;
+	return( -1 );
+    }
+    *value=(long)( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
+    return( 0 );
 }
 
-static void getrasheader(SUNRASTER *head, FILE *fp) {
-    head->MagicNumber = getlong(fp);
-    head->Width = getlong(fp);
-    head->Height = getlong(fp);
-    head->Depth = getlong(fp);
-    head->Length = getlong(fp);
-    head->Type = getlong(fp);
-    head->ColorMapType = getlong(fp);
-    head->ColorMapLength = getlong(fp);
+static int getrasheader(SUNRASTER *head, FILE *fp) {
+/* Get Header info. Return 0 if read input file okay, -1 if read error	*/
+    if ( getlong(fp,&head->MagicNumber)	 || \
+	 getlong(fp,&head->Width)	 || \
+	 getlong(fp,&head->Height)	 || \
+	 getlong(fp,&head->Depth)	 || \
+	 getlong(fp,&head->Length)	 || \
+	 getlong(fp,&head->Type)	 || \
+	 getlong(fp,&head->ColorMapType) || \
+	 getlong(fp,&head->ColorMapLength) )
+	return( -1 );
+
+    /* Check if header information okay (only try Big-Endian for now).	*/
+    if ( head->MagicNumber!=SUN_RAS_MAGIC ||
+	 head->Type<0 || head->Type>TypeRGB ||
+	 (head->ColorMapType!=ClutNone && head->ColorMapType!=ClutRGB) ||
+	 (head->Depth!=1 && head->Depth!=8 && head->Depth!=24 && head->Depth!=32) ||
+	 (head->Depth>=24 && head->ColorMapType!=ClutNone) ||
+	 head->ColorMapLength>3*256 )
+	return( -1 );
+
+    return( 0 );
 }
 
 static GImage *ReadRasBitmap(GImage *ret,int width, int height, FILE *fp ) {
@@ -216,24 +235,21 @@ return ret;
 }
 
 GImage *GImageReadRas(char *filename) {
-    FILE *fp = fopen(filename,"rb");
+    FILE *fp;			/* source file */
     struct _SunRaster header;
     int i;
     GImage *ret;
     struct _GImage *base;
 
-    if ( fp==NULL )
-return( NULL );
-    getrasheader(&header,fp);
-    if ( header.MagicNumber!=SUN_RAS_MAGIC ||
-	    header.Type<0 || header.Type>TypeRGB ||
-	    (header.ColorMapType!=ClutNone &&header.ColorMapType!=ClutRGB) ||
-	    (header.Depth!=1 && header.Depth!=8 && header.Depth!=24 &&
-		header.Depth!=32) ||
-	    (header.Depth>=24 && header.ColorMapType!=ClutNone) ||
-	    header.ColorMapLength>3*256 ) {
+    if ( (fp=fopen(filename,"rb"))==NULL ) {
+	fprintf(stderr,"Can't open \"%s\"\n", filename);
+	return( NULL );
+    }
+
+    if ( getrasheader(&header,fp) ) {
+	fprintf(stderr,"Bad input file \"%s\"\n",filename );
 	fclose(fp);
-return( NULL );
+	return( NULL );
     }
 
     ret = GImageCreate(header.Depth==24?it_true:it_index,header.Width, header.Height);
