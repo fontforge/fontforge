@@ -177,16 +177,19 @@ static GImage *ReadRas24RBit(GImage *ret,int width, int height, FILE *fp ) {
 
     for ( i=0; i<height; ++i ) {
 	for ( ipt = (long *) (base->data + i*base->bytes_per_line), end = ipt+width; ipt<end; ) {
-	    ch1 = fgetc(fp); ch2 = fgetc(fp); ch3 = fgetc(fp);
+	    if ( (ch1=fgetc(fp))<0 || (ch2=fgetc(fp))<0 || (ch3=fgetc(fp))<0 )
+		goto errorReadRas24RBit;
 	    *ipt++ = COLOR_CREATE(ch1,ch2,ch3);
 	}
 	if ( width&1 )		/* pad out to 16 bits */
-	    fgetc(fp);
+	    if ( fgetc(fp)<0 )
+		goto errorReadRas24RBit;
     }
-    if ( ch3==EOF ) {
-	GImageDestroy(ret);
-	ret = NULL;
-    }
+    return( ret );
+
+errorReadRas24RBit:
+    GImageDestroy(ret);
+    return( NULL );
 return ret;
 }
 
