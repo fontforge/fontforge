@@ -113,14 +113,18 @@ static GImage *ReadRas8Bit(GImage *ret,int width, int height, FILE *fp ) {
     int i;
 
     for ( i=0; i<height; ++i ) {
-	if ( fread((base->data + i*base->bytes_per_line),width,1,fp)==EOF ) {
-	    GImageDestroy(ret);
-return( NULL);
+	if ( fread((base->data + i*base->bytes_per_line),width,1,fp)<0 ) {
+	    goto errorReadRas8Bit;
 	}
 	if ( width&1 )		/* pad out to 16 bits */
-	    fgetc(fp);
+	    if ( fgetc(fp)<0 )
+		goto errorReadRas8Bit;
     }
-return ret;
+    return( ret );
+
+errorReadRas8Bit:
+    GImageDestroy(ret);
+    return( NULL );
 }
 
 static GImage *ReadRas24Bit(GImage *ret,int width, int height, FILE *fp ) {
