@@ -86,7 +86,11 @@ static GImage *ReadRasBitmap(GImage *ret,int width, int height, FILE *fp ) {
     unsigned char *pt, *buf;
 
     len = ((width+15)/16)*2;
-    buf = (unsigned char *) galloc(len);
+    if ( (buf=(unsigned char *) malloc(len*sizeof(unsigned char)))==NULL ) {
+	NoMoreMemMessage();
+	return( NULL);
+    }
+
     for ( i=0; i<height; ++i ) {
 	if ( fread(buf,len,1,fp)==EOF ) {
 	    GImageDestroy(ret);
@@ -252,7 +256,12 @@ GImage *GImageReadRas(char *filename) {
 	return( NULL );
     }
 
-    ret = GImageCreate(header.Depth==24?it_true:it_index,header.Width, header.Height);
+    /* Create memory to hold image, exit with NULL if not enough memory */
+    if ( (ret=GImageCreate(header.Depth==24?it_true:it_index,header.Width,header.Height))==NULL ) {
+	fclose(fp);
+	return( NULL );
+    }
+
     base = ret->u.image;
     if ( header.ColorMapLength!=0 && base->clut!=NULL ) {
 	char clutb[3*256]; int n;
