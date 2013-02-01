@@ -1,4 +1,5 @@
 /* Copyright (C) 2000-2012 by George Williams */
+/* 2013jan30..31, additional error checks done, Jose Da Silva */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -248,9 +249,10 @@ return ret;
 }
 
 GImage *GImageReadRas(char *filename) {
+/* Import a *.ras image (or *.im{1,8,24,32}), else return NULL if error	*/
     FILE *fp;			/* source file */
     struct _SunRaster header;
-    GImage *ret;
+    GImage *ret = NULL;
     struct _GImage *base;
 
     if ( (fp=fopen(filename,"rb"))==NULL ) {
@@ -258,11 +260,8 @@ GImage *GImageReadRas(char *filename) {
 	return( NULL );
     }
 
-    if ( getrasheader(&header,fp) ) {
-	fprintf(stderr,"Bad input file \"%s\"\n",filename );
-	fclose(fp);
-	return( NULL );
-    }
+    if ( getrasheader(&header,fp) )
+	goto errorGImageReadRas;
 
     /* Create memory to hold image, exit with NULL if not enough memory */
     if ( (ret=GImageCreate(header.Depth==24?it_true:it_index,header.Width,header.Height))==NULL ) {
@@ -270,14 +269,12 @@ GImage *GImageReadRas(char *filename) {
 	return( NULL );
     }
 
+    /* Convert *.ras ColorMap to one that FF can use */
     base = ret->u.image;
     if ( header.ColorMapLength!=0 && base->clut!=NULL ) {
 	char clutb[3*256]; int i,n;
-	if ( fread(clutb,header.ColorMapLength,1,fp)<0 ) {
-	    GImageDestroy(ret);
-	    fclose(fp);
-	    return( NULL );
-	}
+	if ( fread(clutb,header.ColorMapLength,1,fp)<0 )
+	    goto errorGImageReadRas;
 	n = header.ColorMapLength/3;
 	base->clut->clut_len = n;
 	for ( i=0; i<n; ++i )
@@ -307,11 +304,16 @@ GImage *GImageReadRas(char *filename) {
 	/* Don't bother with most of the rle formats */
 	if ( header.Depth==8 )
 	    ret = ReadRle8Bit(ret,header.Width,header.Height,fp);
-	else {
-	    GImageDestroy(ret);
-	    ret = NULL;
-	}
     }
+    if ( ret!=NULL ) {
+	/* All okay if reached here, return converted image */
+	fclose(fp);
+	return( ret );
+    }
+
+errorGImageReadRas:
+    fprintf(stderr,"Bad input file \"%s\"\n",filename );
+    GImageDestroy(ret);
     fclose(fp);
-    return( ret );
+    return( NULL );
 }
