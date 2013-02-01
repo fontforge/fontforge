@@ -250,7 +250,6 @@ return ret;
 GImage *GImageReadRas(char *filename) {
     FILE *fp;			/* source file */
     struct _SunRaster header;
-    int i;
     GImage *ret;
     struct _GImage *base;
 
@@ -273,8 +272,12 @@ GImage *GImageReadRas(char *filename) {
 
     base = ret->u.image;
     if ( header.ColorMapLength!=0 && base->clut!=NULL ) {
-	char clutb[3*256]; int n;
-	fread(clutb,header.ColorMapLength,1,fp);
+	char clutb[3*256]; int i,n;
+	if ( fread(clutb,header.ColorMapLength,1,fp)<0 ) {
+	    GImageDestroy(ret);
+	    fclose(fp);
+	    return( NULL );
+	}
 	n = header.ColorMapLength/3;
 	base->clut->clut_len = n;
 	for ( i=0; i<n; ++i )
@@ -310,5 +313,5 @@ GImage *GImageReadRas(char *filename) {
 	}
     }
     fclose(fp);
-return( ret );
+    return( ret );
 }
