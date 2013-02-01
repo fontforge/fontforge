@@ -1,4 +1,5 @@
 /* Copyright (C) 2000-2012 by George Williams */
+/* 2013jan30..31, additional error checks done, Jose Da Silva */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -43,22 +44,41 @@ typedef struct _SunRaster {
 enum types { TypeOld, TypeStandard, TypeByteEncoded, TypeRGB, TypeTIFF, TypeIFF };
 enum cluts { ClutNone, ClutRGB, ClutRaw };
 
-static long getlong(FILE *fp) {
+static int getlong(FILE *fp, long *value) {
+/* Get Big-Endian long (32bit int) value. Return 0 if okay, -1 if error	*/
     int ch1, ch2, ch3, ch4;
 
-    ch1 = fgetc(fp); ch2 = fgetc(fp); ch3=fgetc(fp); ch4=fgetc(fp);
-return( (ch1<<24) | (ch2<<16) | (ch3<<8) | ch4 );
+    if ( (ch1=fgetc(fp))<0 || (ch2=fgetc(fp))<0 || \
+	 (ch3=fgetc(fp))<0 || (ch4=fgetc(fp))<0 ) {
+	*value=0;
+	return( -1 );
+    }
+    *value=(long)( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
+    return( 0 );
 }
 
-static void getrasheader(SUNRASTER *head, FILE *fp) {
-    head->MagicNumber = getlong(fp);
-    head->Width = getlong(fp);
-    head->Height = getlong(fp);
-    head->Depth = getlong(fp);
-    head->Length = getlong(fp);
-    head->Type = getlong(fp);
-    head->ColorMapType = getlong(fp);
-    head->ColorMapLength = getlong(fp);
+static int getrasheader(SUNRASTER *head, FILE *fp) {
+/* Get Header info. Return 0 if read input file okay, -1 if read error	*/
+    if ( getlong(fp,&head->MagicNumber)	 || \
+	 getlong(fp,&head->Width)	 || \
+	 getlong(fp,&head->Height)	 || \
+	 getlong(fp,&head->Depth)	 || \
+	 getlong(fp,&head->Length)	 || \
+	 getlong(fp,&head->Type)	 || \
+	 getlong(fp,&head->ColorMapType) || \
+	 getlong(fp,&head->ColorMapLength) )
+	return( -1 );
+
+    /* Check if header information okay (only try Big-Endian for now).	*/
+    if ( head->MagicNumber!=SUN_RAS_MAGIC ||
+	 head->Type<0 || head->Type>TypeRGB ||
+	 (head->ColorMapType!=ClutNone && head->ColorMapType!=ClutRGB) ||
+	 (head->Depth!=1 && head->Depth!=8 && head->Depth!=24 && head->Depth!=32) ||
+	 (head->Depth>=24 && head->ColorMapType!=ClutNone) ||
+	 head->ColorMapLength>3*256 )
+	return( -1 );
+
+    return( 0 );
 }
 
 static GImage *ReadRasBitmap(GImage *ret,int width, int height, FILE *fp ) {
@@ -67,7 +87,11 @@ static GImage *ReadRasBitmap(GImage *ret,int width, int height, FILE *fp ) {
     unsigned char *pt, *buf;
 
     len = ((width+15)/16)*2;
-    buf = (unsigned char *) galloc(len);
+    if ( (buf=(unsigned char *) malloc(len*sizeof(unsigned char)))==NULL ) {
+	NoMoreMemMessage();
+	return( NULL);
+    }
+
     for ( i=0; i<height; ++i ) {
 	if ( fread(buf,len,1,fp)==EOF ) {
 	    GImageDestroy(ret);
@@ -90,14 +114,18 @@ static GImage *ReadRas8Bit(GImage *ret,int width, int height, FILE *fp ) {
     int i;
 
     for ( i=0; i<height; ++i ) {
-	if ( fread((base->data + i*base->bytes_per_line),width,1,fp)==EOF ) {
-	    GImageDestroy(ret);
-return( NULL);
+	if ( fread((base->data + i*base->bytes_per_line),width,1,fp)<0 ) {
+	    goto errorReadRas8Bit;
 	}
 	if ( width&1 )		/* pad out to 16 bits */
-	    fgetc(fp);
+	    if ( fgetc(fp)<0 )
+		goto errorReadRas8Bit;
     }
-return ret;
+    return( ret );
+
+errorReadRas8Bit:
+    GImageDestroy(ret);
+    return( NULL );
 }
 
 static GImage *ReadRas24Bit(GImage *ret,int width, int height, FILE *fp ) {
@@ -108,17 +136,19 @@ static GImage *ReadRas24Bit(GImage *ret,int width, int height, FILE *fp ) {
 
     for ( i=0; i<height; ++i ) {
 	for ( ipt = (long *) (base->data + i*base->bytes_per_line), end = ipt+width; ipt<end; ) {
-	    ch1 = fgetc(fp); ch2 = fgetc(fp); ch3 = fgetc(fp);
+	    if ( (ch1=fgetc(fp))<0 || (ch2=fgetc(fp))<0 || (ch3=fgetc(fp))<0 )
+		goto errorReadRas24Bit;
 	    *ipt++ = COLOR_CREATE(ch3,ch2,ch1);
 	}
 	if ( width&1 )		/* pad out to 16 bits */
-	    fgetc(fp);
+	    if ( fgetc(fp)<0 )
+		goto errorReadRas24Bit;
     }
-    if ( ch3==EOF ) {
-	GImageDestroy(ret);
-	ret = NULL;
-    }
-return ret;
+    return( ret );
+
+errorReadRas24Bit:
+    GImageDestroy(ret);
+    return( NULL );
 }
 
 static GImage *ReadRas32Bit(GImage *ret,int width, int height, FILE *fp ) {
@@ -148,16 +178,19 @@ static GImage *ReadRas24RBit(GImage *ret,int width, int height, FILE *fp ) {
 
     for ( i=0; i<height; ++i ) {
 	for ( ipt = (long *) (base->data + i*base->bytes_per_line), end = ipt+width; ipt<end; ) {
-	    ch1 = fgetc(fp); ch2 = fgetc(fp); ch3 = fgetc(fp);
+	    if ( (ch1=fgetc(fp))<0 || (ch2=fgetc(fp))<0 || (ch3=fgetc(fp))<0 )
+		goto errorReadRas24RBit;
 	    *ipt++ = COLOR_CREATE(ch1,ch2,ch3);
 	}
 	if ( width&1 )		/* pad out to 16 bits */
-	    fgetc(fp);
+	    if ( fgetc(fp)<0 )
+		goto errorReadRas24RBit;
     }
-    if ( ch3==EOF ) {
-	GImageDestroy(ret);
-	ret = NULL;
-    }
+    return( ret );
+
+errorReadRas24RBit:
+    GImageDestroy(ret);
+    return( NULL );
 return ret;
 }
 
@@ -216,31 +249,32 @@ return ret;
 }
 
 GImage *GImageReadRas(char *filename) {
-    FILE *fp = fopen(filename,"rb");
+/* Import a *.ras image (or *.im{1,8,24,32}), else return NULL if error	*/
+    FILE *fp;			/* source file */
     struct _SunRaster header;
-    int i;
-    GImage *ret;
+    GImage *ret = NULL;
     struct _GImage *base;
 
-    if ( fp==NULL )
-return( NULL );
-    getrasheader(&header,fp);
-    if ( header.MagicNumber!=SUN_RAS_MAGIC ||
-	    header.Type<0 || header.Type>TypeRGB ||
-	    (header.ColorMapType!=ClutNone &&header.ColorMapType!=ClutRGB) ||
-	    (header.Depth!=1 && header.Depth!=8 && header.Depth!=24 &&
-		header.Depth!=32) ||
-	    (header.Depth>=24 && header.ColorMapType!=ClutNone) ||
-	    header.ColorMapLength>3*256 ) {
-	fclose(fp);
-return( NULL );
+    if ( (fp=fopen(filename,"rb"))==NULL ) {
+	fprintf(stderr,"Can't open \"%s\"\n", filename);
+	return( NULL );
     }
 
-    ret = GImageCreate(header.Depth==24?it_true:it_index,header.Width, header.Height);
+    if ( getrasheader(&header,fp) )
+	goto errorGImageReadRas;
+
+    /* Create memory to hold image, exit with NULL if not enough memory */
+    if ( (ret=GImageCreate(header.Depth==24?it_true:it_index,header.Width,header.Height))==NULL ) {
+	fclose(fp);
+	return( NULL );
+    }
+
+    /* Convert *.ras ColorMap to one that FF can use */
     base = ret->u.image;
     if ( header.ColorMapLength!=0 && base->clut!=NULL ) {
-	char clutb[3*256]; int n;
-	fread(clutb,header.ColorMapLength,1,fp);
+	char clutb[3*256]; int i,n;
+	if ( fread(clutb,header.ColorMapLength,1,fp)<0 )
+	    goto errorGImageReadRas;
 	n = header.ColorMapLength/3;
 	base->clut->clut_len = n;
 	for ( i=0; i<n; ++i )
@@ -270,11 +304,16 @@ return( NULL );
 	/* Don't bother with most of the rle formats */
 	if ( header.Depth==8 )
 	    ret = ReadRle8Bit(ret,header.Width,header.Height,fp);
-	else {
-	    GImageDestroy(ret);
-	    ret = NULL;
-	}
     }
+    if ( ret!=NULL ) {
+	/* All okay if reached here, return converted image */
+	fclose(fp);
+	return( ret );
+    }
+
+errorGImageReadRas:
+    fprintf(stderr,"Bad input file \"%s\"\n",filename );
+    GImageDestroy(ret);
     fclose(fp);
-return( ret );
+    return( NULL );
 }

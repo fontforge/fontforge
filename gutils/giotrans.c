@@ -31,8 +31,9 @@
 struct transtab {
     unichar_t *old;
     unichar_t *new;
-    int olen;		/* length to test against */
-    int gf_mask;	/* enum giofuncs */
+/*  struct transtab *next;	/* pointer to next transtab */
+    int olen;			/* length to test against */
+    int gf_mask;		/* enum giofuncs */
 };
 static struct transtab *transtab=NULL;
 
@@ -59,7 +60,13 @@ int _GIO_addURL(unichar_t *path, enum giofuncs gf) {
 
 void _GIO_freelistURL() {
 /* Free memory before exiting program */
-    free(transtab); /* needs to be expanded to accomidate a list */
+    struct transtab *next, *this = transtab;
+
+    while ( this!=NULL ) {
+	next = this.next;
+	free(this.old); free(this.next); free(this);
+	this = next;
+    }
 }
 #endif
 
