@@ -234,7 +234,7 @@ CharView.Menu.View.Zoom in:Alt+Ctl+Shft++
 CharView.Menu.Metrics.Center in Width: No Shortcut
 CharView.Menu.Metrics.Thirds in Width: No Shortcut
 CharView.Menu.Metrics.Set Width...:Ctl+Shft+L
-CharView.Menu.Metrics.Set LBearing...:Ctl+L
+CharView.Menu.Metrics.Set LBearing...:No Shortcut
 CharView.Menu.Metrics.Set RBearing...:Ctl+R
 CharView.Menu.Metrics.Set Both Bearings...: No Shortcut
 CharView.Menu.Metrics.Set Vertical Advance...: No Shortcut

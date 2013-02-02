@@ -2984,6 +2984,33 @@ int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
 		sf->backedup = bs_backedup;
 	} else {
 #if 1
+
+           int PrefMaxBackupsToKeep = 30;
+           char path[PATH_MAX];
+           char pathnew[PATH_MAX];
+           int idx = 0;
+
+           snprintf( path, PATH_MAX, "%s.~%02d", sf->filename, idx );
+	   ret = SFDWrite( path,sf,map,normal,false);
+fprintf(stderr,"ret:%d save to:%s\n", ret, path );
+
+           for( idx=PrefMaxBackupsToKeep; idx > 0; idx-- )
+           {
+              snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx-1 );
+              snprintf( pathnew, PATH_MAX, "%s.~%02d", sf->filename, idx );
+fprintf(stderr,"rename %s to %s\n", path, pathnew );
+              
+              int rc = rename( path, pathnew );
+              if( !idx && !rc ) 
+	   	  sf->backedup = bs_backedup;
+           }
+           idx = PrefMaxBackupsToKeep;
+           snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx );
+           unlink(path);
+fprintf(stderr,"unlink to:%s\n", path );
+           return(ret);
+
+
 	    strcpy(buf,sf->filename);
 	    strcat(buf,"~");
 #else
