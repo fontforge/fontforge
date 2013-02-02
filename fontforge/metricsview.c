@@ -597,6 +597,9 @@ static void MVRefreshValues(MetricsView *mv, int i) {
 
     GGadgetSetTitle8(mv->perchar[i].name,sc->name);
 
+if( !mv->perchar[i].width )
+return;
+
     sprintf(buf,"%d",mv->vertical ? sc->vwidth : sc->width);
     GGadgetSetTitle8(mv->perchar[i].width,buf);
 
@@ -627,6 +630,9 @@ static void MVRefreshValues(MetricsView *mv, int i) {
 	kern_offset = mv->glyphs[i].kp->off;
     else if ( mv->glyphs[i].kc!=NULL )
 	kern_offset = mv->glyphs[i].kc->offsets[ mv->glyphs[i].kc_index ];
+if( !mv->perchar[i+1].kern )
+  return;
+
     if ( kern_offset!=0x7ffffff && i!=mv->glyphcnt-1 ) {
 	sprintf(buf,"%d",kern_offset);
 	GGadgetSetTitle8(mv->perchar[i+1].kern,buf);

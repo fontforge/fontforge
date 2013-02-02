@@ -39,7 +39,7 @@
 #include <math.h>
 #include <unistd.h>
 
-int OpenCharsInNewWindow = 1;
+int OpenCharsInNewWindow = 0;
 char *RecentFiles[RECENT_MAX] = { NULL };
 int save_to_dir = 0;			/* use sfdir rather than sfd */
 unichar_t *script_menu_names[SCRIPT_MENU_MAX];
