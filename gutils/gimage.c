@@ -27,18 +27,18 @@
 #include "gimage.h"
 
 GImage *GImageCreate(enum image_type type, int32 width, int32 height) {
-/* Prepare to get a bitmap image. Cleanup and return NULL if not enough memory */
     GImage *gi;
     struct _GImage *base;
 
     if ( type<it_mono || type>it_rgba )
-	return( NULL );
+return( NULL );
 
-    gi = (GImage *) calloc(1,sizeof(GImage));
-    base = (struct _GImage *) malloc(sizeof(struct _GImage));
-    if ( gi==NULL || base==NULL )
-	goto errorGImageCreate;
-
+    gi = (GImage *) gcalloc(1,sizeof(GImage));
+    base = (struct _GImage *) galloc(sizeof(struct _GImage));
+    if ( gi==NULL || base==NULL ) {
+	free(gi); free(base);
+return( NULL );
+    }
     gi->u.image = base;
     base->image_type = type;
     base->width = width;
@@ -47,22 +47,17 @@ GImage *GImageCreate(enum image_type type, int32 width, int32 height) {
     base->data = NULL;
     base->clut = NULL;
     base->trans = COLOR_UNKNOWN;
-    if ( (base->data = (uint8 *) malloc(height*base->bytes_per_line))==NULL )
-	goto errorGImageCreate;
+    base->data = (uint8 *) galloc(height*base->bytes_per_line);
+    if ( base->data==NULL ) {
+	free(base);
+	free(gi);
+return( NULL );
+    }
     if ( type==it_index ) {
-	if ( (base->clut = (GClut *) calloc(1,sizeof(GClut)))==NULL ) {
-	    free(base->data);
-	    goto errorGImageCreate;
- 	}
+	base->clut = (GClut *) gcalloc(1,sizeof(GClut));
 	base->clut->trans_index = COLOR_UNKNOWN;
     }
-    return( gi );
-
-errorGImageCreate:
-    free(base);
-    free(gi);
-    NoMoreMemMessage();
-    return( NULL );
+return( gi );
 }
 
 
@@ -71,13 +66,14 @@ GImage *_GImage_Create(enum image_type type, int32 width, int32 height) {
     struct _GImage *base;
 
     if ( type<it_mono || type>it_rgba )
-	return( NULL );
+return( NULL );
 
-    gi = (GImage *) calloc(1,sizeof(GImage));
-    base = (struct _GImage *) malloc(sizeof(struct _GImage));
-    if ( gi==NULL || base==NULL )
-	goto error_GImage_Create;
-
+    gi = (GImage *) gcalloc(1,sizeof(GImage));
+    base = (struct _GImage *) galloc(sizeof(struct _GImage));
+    if ( gi==NULL || base==NULL ) {
+	free(gi); free(base);
+return( NULL );
+    }
     gi->u.image = base;
     base->image_type = type;
     base->width = width;
@@ -85,17 +81,9 @@ GImage *_GImage_Create(enum image_type type, int32 width, int32 height) {
     base->bytes_per_line = (type==it_true || type==it_rgba)?4*width:type==it_index?width:(width+7)/8;
     base->data = NULL;
     base->clut = NULL;
-    if ( type==it_index ) {
-	if ( (base->clut = (GClut *) calloc(1,sizeof(GClut)))==NULL )
-	  goto error_GImage_Create;
-    }
-    return( gi );
-
-error_GImage_Create:
-    free(base);
-    free(gi);
-    NoMoreMemMessage();
-    return( NULL );
+    if ( type==it_index )
+	base->clut = (GClut *) gcalloc(1,sizeof(GClut));
+return( gi );
 }
 
 void GImageDestroy(GImage *gi) {
@@ -117,40 +105,23 @@ void GImageDestroy(GImage *gi) {
 }
 
 GImage *GImageCreateAnimation(GImage **images, int n) {
-/* Create an animation using n "images". Return gi and free "images" if	*/
-/* okay, else return NULL and keep "images" if memory error occurred,	*/
-    GImage *gi;
-    struct _GImage **imgs;
+    struct _GImage **imgs = (struct _GImage **) galloc(n*sizeof(struct _GImage *));
+    GImage *gi = (GImage *) gcalloc(1,sizeof(GImage));
     int i;
 
-    /* Check if "images" are okay to copy before creating an animation.	*/
-    /* We expect to find single images (not an array). Type must match.	*/
-    for ( i=0; i<n; ++i ) {
-	if ( images[i]->list_len!=0 || \
-	     images[i]->u.image->image_type!=images[0]->u.image->image_type ) {
-	    fprintf( stderr, "Images are not compatible to make an Animation\n" );
-	    return( NULL );
-	}
-    }
-
-    /* First, create enough memory space to hold the complete animation	*/
-    gi = (GImage *) calloc(1,sizeof(GImage));
-    imgs = (struct _GImage **) malloc(n*sizeof(struct _GImage *));
-    if ( gi==NULL || imgs==NULL ) {
-	free(gi);
-	free(imgs);
-	NoMoreMemMessage();
-	return( NULL );
-    }
-
-    /* Copy images[i] pointer into 'gi', then release each "images[i]".	*/
     gi->list_len = n;
     gi->u.images = imgs;
     for ( i=0; i<n; ++i ) {
+	if ( images[i]->list_len!=0 ) {
+	    free(gi);
+return( NULL );
+	}
+	if ( images[i]->u.image->image_type!=images[0]->u.image->image_type )
+return( NULL );
 	imgs[i] = images[i]->u.image;
 	free(images[i]);
     }
-    return( gi );
+return( gi );
 }
 
 /* -1 => add it at the end */
@@ -160,11 +131,7 @@ GImage *GImageAddImageBefore(GImage *dest, GImage *src, int pos) {
     enum image_type it;
 
     n = (src->list_len==0?1:src->list_len) + (dest->list_len==0?1:dest->list_len);
-    imgs = (struct _GImage **) malloc(n*sizeof(struct _GImage *));
-    if ( imgs==NULL ) {
-	NoMoreMemMessage();
-	return( NULL );
-    }
+    imgs = (struct _GImage **) galloc(n*sizeof(struct _GImage *));
 
     i = 0;
     if ( dest->list_len==0 ) {

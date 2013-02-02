@@ -26,7 +26,9 @@
  */
 /*			 Python Interface to FontForge GTK+		      */
 
-#include <config.h>		/* FF config file */
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
 
 #ifndef _NO_PYTHON
 #include "Python.h"

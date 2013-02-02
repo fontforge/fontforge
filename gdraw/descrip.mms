@@ -16,6 +16,8 @@ libgdraw_OBJECTS =  choosericons.obj,drawboxborder.obj,\
 
 libgdraw_OBJECTS1=gdrawable.obj,gxcdraw.obj
 
+CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=("HAVE_CONFIG_H=1")
+
 all : [-.libs]libgdraw.olb
 	write sys$output "gdraw finished"
 

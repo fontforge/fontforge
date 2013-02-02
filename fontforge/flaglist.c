@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <basics.h>
 #include <string.h>
 #include "flaglist.h"

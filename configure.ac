@@ -322,11 +322,6 @@ AC_CHECK_FUNC([snprintf],[:],[AC_DEFINE([_NO_SNPRINTF],1,[Define if not using sn
 AC_CHECK_FUNC([tzset],[:],[AC_DEFINE([_NO_TZSET],1,[Define if not using tzset.])])
 
 #--------------------------------------------------------------------------
-# Put ifdef wrapper around the new config.h so we don't repeatedly call it.
-AH_TOP([#ifndef _FF_CONFIG_H])
-AH_TOP([#define _FF_CONFIG_H 1])
-AH_BOTTOM([#endif])
-#--------------------------------------------------------------------------
 
 AM_CONDITIONAL([GRAPHICAL_USER_INTERFACE],[test x"${i_do_have_gui}" = xyes])
 AM_CONDITIONAL([MACINTOSH],[test x"${gww_ismac}" = xyes])

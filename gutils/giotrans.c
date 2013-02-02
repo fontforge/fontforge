@@ -24,61 +24,26 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 #include "giofuncP.h"
 #include "ustring.h"
 
-struct transtab {
-    unichar_t *old;
-    unichar_t *new;
-    int olen;		/* length to test against */
-    int gf_mask;	/* enum giofuncs */
-};
+
+struct transtab { unichar_t *old; unichar_t *new; int olen; int gf_mask; };
 static struct transtab *transtab=NULL;
-
-#if 0
-int _GIO_addURL(unichar_t *path, enum giofuncs gf) {
-/* TODO: Write _GIO_addURL()							*/
-/* Currently, _GIO_translateURL() never goes beyond "if (transtab==NULL) until	*/
-/* transtab gets populated by another routine which adds a URL to transtab	*/
-    struct transtab *test;
-
-    if ( (test=calloc(1,sizeof(transtab)))==NULL )
-	return( 0 );
-
-    if ( transtab==NULL )
-	transtab=test;
-    else {
-	/* TODO: need to understand purpose of olen before setting it since it	*/
-	/* appears it will need to be set according to gf_mask			*/
-	;
-    }
-
-    return( 0 );
-}
-
-void _GIO_freelistURL() {
-/* Free memory before exiting program */
-    free(transtab); /* needs to be expanded to accomidate a list */
-}
-#endif
 
 unichar_t *_GIO_translateURL(unichar_t *path, enum giofuncs gf) {
     struct transtab *test;
-    unichar_t *res;
 
     if ( transtab==NULL )
-	/* Need some sort of _GIO_addURL(), otherwise you never get past here	*/
-	return( NULL );
+return( NULL );
 
     for ( test = transtab; test->old!=NULL; ++test ) {
 	if ( (test->gf_mask&(1<<gf)) && u_strncmp(path,test->old,test->olen)==0 ) {
-	    if ( (res=malloc((u_strlen(path)-test->olen+u_strlen(test->new)+1)*sizeof(unichar_t)))==NULL )
-		return( NULL );
+	    unichar_t *res = galloc((u_strlen(path)-test->olen+u_strlen(test->new)+1)*sizeof(unichar_t));
 	    u_strcpy(res,test->new);
 	    u_strcat(res,path+test->olen);
-	    return( res );
+return( res );
 	}
     }
-    return( NULL );
+return( NULL );
 }

@@ -5,6 +5,8 @@ libgunicode_OBJECTS =  ArabicForms.obj,alphabet.obj,backtrns.obj,char.obj,\
 	cjk.obj,memory.obj,ucharmap.obj,unialt.obj,ustring.obj,\
 	utype.obj,usprintf.obj,gwwiconv.obj
 
+CFLAGS=/incl=([-.inc])/name=(as_is,short)/nowarn/define=("HAVE_CONFIG_H=1")
+
 all : [-.libs]libgunicode.olb
 	write sys$output "unicode finished"
 

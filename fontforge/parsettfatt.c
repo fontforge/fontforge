@@ -5614,8 +5614,6 @@ return;
 			}
 		    }
 		    free(coords);
-		} else {
-		    curScript->baseline_pos = gcalloc(curBase->baseline_cnt,sizeof(int16));
 		}
 		lastLang = NULL;
 		if ( defminmax!=0 )
