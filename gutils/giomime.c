@@ -41,9 +41,11 @@ unichar_t textps[] = { 't','e','x','t','/','p','s', '\0' };
 unichar_t sfdfont[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','v','n','d','.','f','o','n','t','-','f','o','n','t','f','o','r','g','e','-','s','f','d', '\0' };
 unichar_t textpsfont[] = { 't','e','x','t','/','f','o','n','t','p','s', '\0' };
 unichar_t textbdffont[] = { 't','e','x','t','/','f','o','n','t','b','d','f', '\0' };
+unichar_t imagebmp[] = { 'i','m','a','g','e','/','b','m','p', '\0' }; /* *.bmp */
 unichar_t imagegif[] = { 'i','m','a','g','e','/','g','i','f', '\0' };
-unichar_t imagejpeg[] = { 'i','m','a','g','e','/','j','p','e','g', '\0' };
+unichar_t imagejpeg[] = { 'i','m','a','g','e','/','j','p','e','g', '\0' }; /* *.jpeg,*.jpg */
 unichar_t imagepng[] = { 'i','m','a','g','e','/','p','n','g', '\0' };
+unichar_t imageras[] = { 'i','m','a','g','e','/','x','-','c','m','u','-','r','a','s','t','e','r', '\0' }; /* *.ras */
 unichar_t imagesvg[] = { 'i','m','a','g','e','/','s','v','g','+','x','m','l', '\0' };
 unichar_t videoquick[] = { 'v','i','d','e','o','/','q','u','i','c','k','t','i','m','e', '\0' };
 unichar_t audiowav[] = { 'a','u','d','i','o','/','w','a','v', '\0' };
@@ -63,6 +65,8 @@ unichar_t compressed[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','
 unichar_t tar[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','t','a','r', '\0' };
 unichar_t fontpcf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','-','p','c','f', '\0' };
 unichar_t fontsnf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','-','s','n','f', '\0' };
+//unichar_t fontwoff[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','-','w','o','f','f', '\0' };
+//unichar_t fonttexfm[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','t','e','x','-','t','f','m', '\0' }; /* *.tfm */
 
 #ifdef __Mac
 #include <carbon.h>
@@ -146,10 +150,16 @@ return( textps );
 return( textbdffont );
     else if ( uc_strmatch(pt,".pdf")==0 )
 return( pdf );
+    else if ( uc_strmatch(pt,".bmp")==0 )
+return( imagebmp );
     else if ( uc_strmatch(pt,".gif")==0 )
 return( imagegif );
     else if ( uc_strmatch(pt,".png")==0 )
 return( imagepng );
+    else if ( uc_strmatch(pt,".ras")==0 || uc_strmatch(pt,".im1")==0 ||
+	      uc_strmatch(pt,".im8")==0 || uc_strmatch(pt,".im24")==0 ||
+	      uc_strmatch(pt,".im32")==0 )
+return( imageras );
     else if ( uc_strmatch(pt,".svg")==0 )
 return( imagesvg );
     else if ( uc_strmatch(pt,".jpeg")==0 || uc_strmatch(pt,".jpg")==0 )

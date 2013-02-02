@@ -158,7 +158,7 @@ GImage *GImageReadGif(char *filename) {
     }
 
     if ( DGifSlurp(gif)==GIF_ERROR ) {
-	fprintf(stderr,"Bad gif file \"%s\"\n",filename );
+	fprintf(stderr,"Bad input file \"%s\"\n",filename );
 	DGifCloseFile(gif);
 	return( NULL );
     }
