@@ -3,9 +3,7 @@
  */
 /* Bleah. I'll modify it if I want to */
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
+#include <config.h>		/* FF config file */
 
 #include <sys/types.h>
 #include <sys/stat.h>
