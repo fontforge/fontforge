@@ -162,6 +162,7 @@ return;
     closedir(dir);
 }
 
+
 void _DoAutoSaves(FontViewBase *fvs) {
     FontViewBase *fv;
     SplineFont *sf;
