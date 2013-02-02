@@ -114,7 +114,7 @@ static GImage *ReadRas8Bit(GImage *ret,int width, int height, FILE *fp ) {
     int i;
 
     for ( i=0; i<height; ++i ) {
-	if ( fread((base->data + i*base->bytes_per_line),width,1,fp)<0 ) {
+	if ( fread((base->data + i*base->bytes_per_line),width,1,fp)<1 ) {
 	    goto errorReadRas8Bit;
 	}
 	if ( width&1 )		/* pad out to 16 bits */
@@ -273,7 +273,7 @@ GImage *GImageReadRas(char *filename) {
     base = ret->u.image;
     if ( header.ColorMapLength!=0 && base->clut!=NULL ) {
 	char clutb[3*256]; int i,n;
-	if ( fread(clutb,header.ColorMapLength,1,fp)<0 )
+	if ( fread(clutb,header.ColorMapLength,1,fp)<1 )
 	    goto errorGImageReadRas;
 	n = header.ColorMapLength/3;
 	base->clut->clut_len = n;
