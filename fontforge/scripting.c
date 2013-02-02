@@ -8804,13 +8804,7 @@ static void docall(Context *c,char *name,Val *val) {
 	    }
 	    sub.script = fopen(sub.filename,"r");
 	    if ( sub.script==NULL ) {
-		if ( sub.filename==name )
-		    ScriptError(&sub, "No built-in function or script-file");
-		else {
-		    char *filename = sub.filename;
-		    sub.filename = name;
-		    ScriptErrorString(&sub, "No built-in function or script-file", filename);
-		}
+		ScriptErrorString(c, "No built-in function or script-file", name);
 	    } else {
 		sub.lineno = 1;
 		while ( !sub.returned && !sub.broken && (tok = ff_NextToken(&sub))!=tt_eof ) {
