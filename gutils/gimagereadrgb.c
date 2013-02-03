@@ -158,7 +158,7 @@ GImage *GImageReadRgb(char *filename) {
     int i,j,k;
     unsigned char *pt, *end;
     unsigned long *ipt, *iend;
-    GImage *ret;
+    GImage *ret = NULL;
     struct _GImage *base;
 
     if ( (fp=fopen(filename,"rb"))==NULL ) {
@@ -169,7 +169,11 @@ GImage *GImageReadRgb(char *filename) {
     if ( getsgiheader(&header,fp) )
 	goto errorGImageReadRgb;
 
-    ret = GImageCreate(header.dim==3?it_true:it_index,header.width,header.height);
+    /* Create memory to hold image, exit with NULL if not enough memory */
+    if ( (ret=GImageCreate(header.dim==3?it_true:it_index,header.width,header.height))==NULL ) {
+	fclose(fp);
+	return( NULL );
+    }
     base = ret->u.image;
 
     if ( header.format==RLE ) {
@@ -276,6 +280,7 @@ GImage *GImageReadRgb(char *filename) {
 
 errorGImageReadRgb:
     fprintf(stderr,"Bad input file \"%s\"\n",filename );
+    GImageDestroy(ret);
     fclose(fp);
     return( NULL );
 }
