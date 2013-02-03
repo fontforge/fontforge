@@ -87,6 +87,17 @@ static int getsgiheader(struct sgiheader *head,FILE *fp) {
 	 fread(head->pad,sizeof(head->pad),1,fp)<1 )
     return( -1 );
 
+    /* Check if header information okay (for us to use here ) */
+    if ( head->magic!=SGI_MAGIC || \
+	 (head->format!=VERBATIM && head->format!=RLE) || \
+	 (head->bpc!=1 && head->bpc!=2) || \
+	 head->dim<1 || head->dim>3 || \
+	 head->pixmax>65535 || (head->pixmax>255 && head->bpc==1) || \
+	 (head->chans!=1 && head->chans!=3 && head->chans!=4) || \
+	 head->pixmax<0 || head->pixmin<0 || head->pixmin>head->pixmax || \
+	 head->colormap!=0 )
+    return( -1 );
+
     return( 0 );
 }
 
@@ -157,18 +168,6 @@ GImage *GImageReadRgb(char *filename) {
 
     if ( getsgiheader(&header,fp) )
 	goto errorGImageReadRgb;
-
-    if ( header.magic!=SGI_MAGIC ||
-	    (header.format!=VERBATIM && header.format!=RLE) ||
-	    (header.bpc!=1 && header.bpc!=2) ||
-	    header.dim<1 || header.dim>3 ||
-	    header.pixmax>65535 || (header.pixmax>255 && header.bpc==1) ||
-	    (header.chans!=1 && header.chans!=3 && header.chans!=4) ||
-	    header.pixmax<0 || header.pixmin<0 || header.pixmin>header.pixmax ||
-	    header.colormap != 0 ) {
-	fclose(fp);
-return( NULL );
-    }
 
     ret = GImageCreate(header.dim==3?it_true:it_index,header.width,header.height);
     base = ret->u.image;
