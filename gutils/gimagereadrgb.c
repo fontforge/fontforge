@@ -28,12 +28,12 @@
 #include <string.h>
 
 struct sgiheader {
-    short magic;
+    short magic;		/* Magic (identification) number */
     char format;
     char bpc;
     unsigned short dim;
-    unsigned short width;
-    unsigned short height;
+    unsigned short width;	/* Width of image in pixels */
+    unsigned short height;	/* Height of image in pixels */
     unsigned short chans;
     long pixmin;
     long pixmax;
@@ -126,7 +126,7 @@ static void freeptrtab(unsigned char **ptrtab,int tot) {
 }
 
 GImage *GImageReadRgb(char *filename) {
-    FILE *fp = fopen(filename,"rb");
+    FILE *fp;			/* source file */
     struct sgiheader header;
     int j,i;
     unsigned char *pt, *end;
@@ -134,8 +134,12 @@ GImage *GImageReadRgb(char *filename) {
     GImage *ret;
     struct _GImage *base;
 
-    if ( fp==NULL )
-return( NULL );
+
+    if ( (fp=fopen(filename,"rb"))==NULL ) {
+	fprintf(stderr,"Can't open \"%s\"\n", filename);
+	return( NULL );
+    }
+
     getsgiheader(&header,fp);
     if ( header.magic!=SGI_MAGIC ||
 	    (header.format!=VERBATIM && header.format!=RLE) ||
