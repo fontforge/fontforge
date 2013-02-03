@@ -156,6 +156,7 @@ GImage *GImageReadRgb(char *filename) {
     struct sgiheader header;
     int i,j,k;
     unsigned char *pt, *end;
+    unsigned char *r=NULL,*g=NULL,*b=NULL,*a=NULL;	/* Colors */
     unsigned long *ipt, *iend;
     GImage *ret = NULL;
     struct _GImage *base;
@@ -166,7 +167,7 @@ GImage *GImageReadRgb(char *filename) {
     }
 
     if ( getsgiheader(&header,fp) )
-	goto errorGImageReadRgb;
+	goto errorGImageReadRgbFile;
 
     /* Create memory to hold image, exit with NULL if not enough memory */
     if ( (ret=GImageCreate(header.dim==3?it_true:it_index,header.width,header.height))==NULL ) {
@@ -185,7 +186,7 @@ GImage *GImageReadRgb(char *filename) {
 	/*lengthtab = (unsigned long *)galloc(tablen*sizeof(long));*/
 	ptrtab = (unsigned char **)galloc(tablen*sizeof(unsigned char *));
 	if ( readlongtab(fp,starttab,tablen) )
-	    goto errorGImageReadRgb;
+	    goto errorGImageReadRgbFile;
 	/*readlongtab(fp,lengthtab,tablen);*/
 	for ( i=0; i<tablen; ++i )
 	    find_scanline(fp,&header,i,starttab,ptrtab);
@@ -217,18 +218,21 @@ GImage *GImageReadRgb(char *filename) {
 	    for ( i=0; i<header.height; ++i ) {
 		pt = (unsigned char *) (base->data + (header.height-1-i)*base->bytes_per_line);
 		for ( end=pt+header.width; pt<end; ) {
-		    if ( (k=getshort(fp))<0 ) goto errorGImageReadRgb;
+		    if ( (k=getshort(fp))<0 ) goto errorGImageReadRgbFile;
 		    *pt++ = (k*255L)/header.pixmax;
 		}
 	    }
-	} else if ( header.bpc==1 ) {
-	    unsigned char *r,*g,*b, *a=NULL;
+	} else {
 	    unsigned char *rpt, *gpt, *bpt;
-	    r = (unsigned char *) galloc(header.width);
-	    g = (unsigned char *) galloc(header.width);
-	    b = (unsigned char *) galloc(header.width);
-	    if ( header.chans==4 )
-		a = (unsigned char *) galloc(header.width);
+	    if ( (r=(unsigned char *) malloc(header.width*sizeof(unsigned char)))==NULL || \
+		 (g=(unsigned char *) malloc(header.width*sizeof(unsigned char)))==NULL || \
+		 (b=(unsigned char *) malloc(header.width*sizeof(unsigned char)))==NULL || \
+		 (header.chans==4 && \
+		 (a=(unsigned char *) malloc(header.width*sizeof(unsigned char)))==NULL) ) {
+		NoMoreMemMessage();
+		goto errorGImageReadRgbMem;
+	    }
+	    if ( header.bpc==1 ) {
 	    for ( i=0; i<header.height; ++i ) {
 		fread(r,header.width,1,fp);
 		fread(g,header.width,1,fp);
@@ -241,26 +245,18 @@ GImage *GImageReadRgb(char *filename) {
 		    *ipt++ = COLOR_CREATE(*rpt++*255L/header.pixmax,
 			    *gpt++*255L/header.pixmax,*bpt++*255L/header.pixmax);
 	    }
-	    gfree(r); gfree(g); gfree(b); gfree(a);
-	} else {
-	    unsigned char *r,*g,*b, *a=NULL;
-	    unsigned char *rpt, *gpt, *bpt;
-	    r = (unsigned char *) galloc(header.width);
-	    g = (unsigned char *) galloc(header.width);
-	    b = (unsigned char *) galloc(header.width);
-	    if ( header.chans==4 )
-		a = (unsigned char *) galloc(header.width);
+	    } else {
 	    for ( i=0; i<header.height; ++i ) {
 		for ( j=0; j<header.width; ++j ) {
-		    if ( (k=getshort(fp))<0 ) goto errorGImageReadRgb;
+		    if ( (k=getshort(fp))<0 ) goto errorGImageReadRgbFile;
 		    r[j] = k*255L/header.pixmax;
 		}
 		for ( j=0; j<header.width; ++j ) {
-		    if ( (k=getshort(fp))<0 ) goto errorGImageReadRgb;
+		    if ( (k=getshort(fp))<0 ) goto errorGImageReadRgbFile;
 		    g[j] = k*255L/header.pixmax;
 		}
 		for ( j=0; j<header.width; ++j ) {
-		    if ( (k=getshort(fp))<0 ) goto errorGImageReadRgb;
+		    if ( (k=getshort(fp))<0 ) goto errorGImageReadRgbFile;
 		    b[j] = k*255L/header.pixmax;
 		}
 		if ( header.chans==4 ) {
@@ -272,13 +268,16 @@ GImage *GImageReadRgb(char *filename) {
 		for ( iend=ipt+header.width; ipt<iend; )
 		    *ipt++ = COLOR_CREATE(*rpt++,*gpt++,*bpt++);
 	    }
-	    gfree(r); gfree(g); gfree(b); gfree(a);
+	    }
+	    free(r); free(g); free(b); free(a);
 	}
     }
     return( ret );
 
-errorGImageReadRgb:
+errorGImageReadRgbFile:
     fprintf(stderr,"Bad input file \"%s\"\n",filename );
+errorGImageReadRgbMem:
+    free(r); free(g); free(b); free(a);
     GImageDestroy(ret);
     fclose(fp);
     return( NULL );
