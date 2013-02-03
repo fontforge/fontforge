@@ -60,6 +60,7 @@ static int getlong(FILE *fp, long *value) {
 static int getrasheader(SUNRASTER *head, FILE *fp) {
 /* Get Header info. Return 0 if read input file okay, -1 if read error	*/
     if ( getlong(fp,&head->MagicNumber)	 || \
+	 (head->MagicNumber!=SUN_RAS_MAGIC && head->MagicNumber!=LITTLE_ENDIAN_MAGIC) || \
 	 getlong(fp,&head->Width)	 || \
 	 getlong(fp,&head->Height)	 || \
 	 getlong(fp,&head->Depth)	 || \

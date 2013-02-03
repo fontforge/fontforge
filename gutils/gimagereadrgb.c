@@ -72,7 +72,7 @@ static int getshort(FILE *fp) {
 
 static int getsgiheader(struct sgiheader *head,FILE *fp) {
 /* Get Header info. Return 0 if read input file okay, -1 if read error	*/
-    if ( (head->magic=getshort(fp))<0	|| \
+    if ( (head->magic=getshort(fp))<0	|| head->magic!=SGI_MAGIC || \
 	 (head->format=fgetc(fp))<0	|| \
 	 (head->bpc=fgetc(fp))<0	|| \
 	 (head->dim=getshort(fp))<0	|| \
@@ -88,8 +88,7 @@ static int getsgiheader(struct sgiheader *head,FILE *fp) {
     return( -1 );
 
     /* Check if header information okay (for us to use here ) */
-    if ( head->magic!=SGI_MAGIC || \
-	 (head->format!=VERBATIM && head->format!=RLE) || \
+    if ( (head->format!=VERBATIM && head->format!=RLE) || \
 	 (head->bpc!=1 && head->bpc!=2) || \
 	 head->dim<1 || head->dim>3 || \
 	 head->pixmax>65535 || (head->pixmax>255 && head->bpc==1) || \
