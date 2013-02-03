@@ -158,8 +158,8 @@ GImage *GImageReadRgb(char *filename) {
     int i,j,k;
     unsigned char *pt, *end;
     unsigned char *r=NULL,*g=NULL,*b=NULL,*a=NULL;	/* Colors */
-    unsigned long *starttab/*, *lengthtab*/;
-    unsigned char **ptrtab;
+    unsigned long *starttab=NULL /*, *lengthtab=NULL */;
+    unsigned char **ptrtab=NULL;
     long tablen=0;
     unsigned long *ipt, *iend;
     GImage *ret = NULL;
@@ -236,18 +236,18 @@ GImage *GImageReadRgb(char *filename) {
 		goto errorGImageReadRgbMem;
 	    }
 	    if ( header.bpc==1 ) {
-	    for ( i=0; i<header.height; ++i ) {
-		fread(r,header.width,1,fp);
-		fread(g,header.width,1,fp);
-		fread(b,header.width,1,fp);
-		if ( header.chans==4 )
-		    fread(a,header.width,1,fp);
+		for ( i=0; i<header.height; ++i ) {
+		    if ( (fread(r,header.width,1,fp))<1 || \
+			 (fread(g,header.width,1,fp))<1 || \
+			 (fread(b,header.width,1,fp))<1 || \
+			 (header.chans==4 && (fread(a,header.width,1,fp))<1) )
+			goto errorGImageReadRgbFile;
 		ipt = (unsigned long *) (base->data + (header.height-1-i)*base->bytes_per_line);
 		rpt = r; gpt = g; bpt = b;
 		for ( iend=ipt+header.width; ipt<iend; )
 		    *ipt++ = COLOR_CREATE(*rpt++*255L/header.pixmax,
 			    *gpt++*255L/header.pixmax,*bpt++*255L/header.pixmax);
-	    }
+		}
 	    } else {
 	    for ( i=0; i<header.height; ++i ) {
 		for ( j=0; j<header.width; ++j ) {
