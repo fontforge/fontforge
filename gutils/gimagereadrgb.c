@@ -177,17 +177,18 @@ GImage *GImageReadRgb(char *filename) {
     base = ret->u.image;
 
     if ( header.format==RLE ) {
-	unsigned long *starttab/*, *lengthtab*/;
-	unsigned char **ptrtab;
 	long tablen;
 
 	tablen = header.height*header.chans;
-	starttab = (unsigned long *)galloc(tablen*sizeof(long));
-	/*lengthtab = (unsigned long *)galloc(tablen*sizeof(long));*/
-	ptrtab = (unsigned char **)galloc(tablen*sizeof(unsigned char *));
+	if ( (starttab=(unsigned long *)malloc(tablen*sizeof(long)))==NULL || \
+	   /*(lengthtab=(unsigned long *)malloc(tablen*sizeof(long)))==NULL || \ */
+	     (ptrtab=(unsigned char **)malloc(tablen*sizeof(unsigned char *)))==NULL ) {
+	    NoMoreMemMessage();
+	    goto errorGImageReadRgbMem;
+	}
 	if ( readlongtab(fp,starttab,tablen) )
+	    /* || readlongtab(fp,lengthtab,tablen) */
 	    goto errorGImageReadRgbFile;
-	/*readlongtab(fp,lengthtab,tablen);*/
 	for ( i=0; i<tablen; ++i )
 	    find_scanline(fp,&header,i,starttab,ptrtab);
 	if ( header.chans==1 ) {
@@ -203,7 +204,7 @@ GImage *GImageReadRgb(char *filename) {
 	    }
 	}
 	freeptrtab(ptrtab,tablen);
-	gfree(ptrtab); gfree(starttab); /*gfree(lengthtab);*/
+	free(ptrtab); free(starttab); /*free(lengthtab);*/
     } else {
 	if ( header.chans==1 && header.bpc==1 ) {
 	    for ( i=0; i<header.height; ++i ) {
@@ -277,6 +278,7 @@ GImage *GImageReadRgb(char *filename) {
 errorGImageReadRgbFile:
     fprintf(stderr,"Bad input file \"%s\"\n",filename );
 errorGImageReadRgbMem:
+    free(ptrtab); free(starttab); /*free(lengthtab);*/
     free(r); free(g); free(b); free(a);
     GImageDestroy(ret);
     fclose(fp);
