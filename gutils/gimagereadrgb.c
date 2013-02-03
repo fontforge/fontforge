@@ -47,41 +47,57 @@ struct sgiheader {
 #define VERBATIM	0
 #define RLE		1
 
-static long getlong(FILE *fp) {
+static int getlong(FILE *fp, long *value) {
+/* Get Big-Endian long (32bit int) value. Return 0 if okay, -1 if error	*/
     int ch1, ch2, ch3, ch4;
 
-    ch1 = fgetc(fp); ch2 = fgetc(fp); ch3=fgetc(fp); ch4=fgetc(fp);
-return( (ch1<<24) | (ch2<<16) | (ch3<<8) | ch4 );
+    if ( (ch1=fgetc(fp))<0 || (ch2=fgetc(fp))<0 || \
+	 (ch3=fgetc(fp))<0 || (ch4=fgetc(fp))<0 ) {
+	*value=0;
+	return( -1 );
+    }
+    *value=(long)( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
+    return( 0 );
 }
 
 static int getshort(FILE *fp) {
+/* Get Big-Endian short 16bit value. Return value if okay, -1 if error	*/
     int ch1, ch2;
 
-    ch1 = fgetc(fp); ch2 = fgetc(fp);
-return( (ch1<<8) | ch2);
+    if ( (ch1=fgetc(fp))<0 || (ch2=fgetc(fp))<0 )
+	return( -1 );
+
+    return( (ch1<<8) | ch2 );
 }
 
-static void getsgiheader(struct sgiheader *head, FILE *fp) {
-    head->magic = getshort(fp);
-    head->format = getc(fp);
-    head->bpc = getc(fp);
-    head->dim = getshort(fp);
-    head->width = getshort(fp);
-    head->height = getshort(fp);
-    head->chans = getshort(fp);
-    head->pixmin = getlong(fp);
-    head->pixmax = getlong(fp);
-    fread(head->dummy,sizeof(head->dummy),1,fp);
-    fread(head->imagename,sizeof(head->imagename),1,fp);
-    head->colormap = getlong(fp);
-    fread(head->pad,sizeof(head->pad),1,fp);
+static int getsgiheader(struct sgiheader *head,FILE *fp) {
+/* Get Header info. Return 0 if read input file okay, -1 if read error	*/
+    if ( (head->magic=getshort(fp))<0	|| \
+	 (head->format=fgetc(fp))<0	|| \
+	 (head->bpc=fgetc(fp))<0	|| \
+	 (head->dim=getshort(fp))<0	|| \
+	 (head->width=getshort(fp))<0	|| \
+	 (head->height=getshort(fp))<0	|| \
+	 (head->chans=getshort(fp))<0	|| \
+	 getlong(fp,&head->pixmin)	|| \
+	 getlong(fp,&head->pixmax)	|| \
+	 fread(head->dummy,sizeof(head->dummy),1,fp)<1 || \
+	 fread(head->imagename,sizeof(head->imagename),1,fp)<1 || \
+	 getlong(fp,&head->colormap)	|| \
+	 fread(head->pad,sizeof(head->pad),1,fp)<1 )
+    return( -1 );
+
+    return( 0 );
 }
 
-static void readlongtab(FILE *fp,unsigned long *tab,int tablen) {
+static int readlongtab(FILE *fp,unsigned long *tab,int tablen) {
     int i;
 
     for ( i=0; i<tablen; ++i )
-	tab[i] = getlong(fp);
+	if ( getlong(fp,&tab[i]) )
+	    return( -1 ); /* had a read error */
+
+    return( 0 ); /* read everything okay */
 }
 
 static void find_scanline(FILE *fp,struct sgiheader *header,int cur,
@@ -128,19 +144,20 @@ static void freeptrtab(unsigned char **ptrtab,int tot) {
 GImage *GImageReadRgb(char *filename) {
     FILE *fp;			/* source file */
     struct sgiheader header;
-    int j,i;
+    int i,j,k;
     unsigned char *pt, *end;
     unsigned long *ipt, *iend;
     GImage *ret;
     struct _GImage *base;
-
 
     if ( (fp=fopen(filename,"rb"))==NULL ) {
 	fprintf(stderr,"Can't open \"%s\"\n", filename);
 	return( NULL );
     }
 
-    getsgiheader(&header,fp);
+    if ( getsgiheader(&header,fp) )
+	goto errorGImageReadRgb;
+
     if ( header.magic!=SGI_MAGIC ||
 	    (header.format!=VERBATIM && header.format!=RLE) ||
 	    (header.bpc!=1 && header.bpc!=2) ||
@@ -165,7 +182,8 @@ return( NULL );
 	starttab = (unsigned long *)galloc(tablen*sizeof(long));
 	/*lengthtab = (unsigned long *)galloc(tablen*sizeof(long));*/
 	ptrtab = (unsigned char **)galloc(tablen*sizeof(unsigned char *));
-	readlongtab(fp,starttab,tablen);
+	if ( readlongtab(fp,starttab,tablen) )
+	    goto errorGImageReadRgb;
 	/*readlongtab(fp,lengthtab,tablen);*/
 	for ( i=0; i<tablen; ++i )
 	    find_scanline(fp,&header,i,starttab,ptrtab);
@@ -196,8 +214,10 @@ return( NULL );
 	} else if ( header.chans==1 ) {
 	    for ( i=0; i<header.height; ++i ) {
 		pt = (unsigned char *) (base->data + (header.height-1-i)*base->bytes_per_line);
-		for ( end=pt+header.width; pt<end; )
-		    *pt++ = (getshort(fp)*255L)/header.pixmax;
+		for ( end=pt+header.width; pt<end; ) {
+		    if ( (k=getshort(fp))<0 ) goto errorGImageReadRgb;
+		    *pt++ = (k*255L)/header.pixmax;
+		}
 	    }
 	} else if ( header.bpc==1 ) {
 	    unsigned char *r,*g,*b, *a=NULL;
@@ -229,12 +249,18 @@ return( NULL );
 	    if ( header.chans==4 )
 		a = (unsigned char *) galloc(header.width);
 	    for ( i=0; i<header.height; ++i ) {
-		for ( j=0; j<header.width; ++j )
-		    r[j] = getshort(fp)*255L/header.pixmax;
-		for ( j=0; j<header.width; ++j )
-		    g[j] = getshort(fp)*255L/header.pixmax;
-		for ( j=0; j<header.width; ++j )
-		    b[j] = getshort(fp)*255L/header.pixmax;
+		for ( j=0; j<header.width; ++j ) {
+		    if ( (k=getshort(fp))<0 ) goto errorGImageReadRgb;
+		    r[j] = k*255L/header.pixmax;
+		}
+		for ( j=0; j<header.width; ++j ) {
+		    if ( (k=getshort(fp))<0 ) goto errorGImageReadRgb;
+		    g[j] = k*255L/header.pixmax;
+		}
+		for ( j=0; j<header.width; ++j ) {
+		    if ( (k=getshort(fp))<0 ) goto errorGImageReadRgb;
+		    b[j] = k*255L/header.pixmax;
+		}
 		if ( header.chans==4 ) {
 		    fread(a,header.width,1,fp);
 		    fread(a,header.width,1,fp);
@@ -247,6 +273,10 @@ return( NULL );
 	    gfree(r); gfree(g); gfree(b); gfree(a);
 	}
     }
-	    
-return( ret );
+    return( ret );
+
+errorGImageReadRgb:
+    fprintf(stderr,"Bad input file \"%s\"\n",filename );
+    fclose(fp);
+    return( NULL );
 }
