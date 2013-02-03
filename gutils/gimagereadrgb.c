@@ -100,8 +100,8 @@ static int getsgiheader(struct sgiheader *head,FILE *fp) {
     return( 0 );
 }
 
-static int readlongtab(FILE *fp,unsigned long *tab,int tablen) {
-    int i;
+static int readlongtab(FILE *fp,unsigned long *tab,long tablen) {
+    long i;
 
     for ( i=0; i<tablen; ++i )
 	if ( getlong(fp,&tab[i]) )
@@ -139,16 +139,17 @@ return;
     }
 }
 
-static void freeptrtab(unsigned char **ptrtab,int tot) {
-    int i,j;
+static void freeptrtab(unsigned char **ptrtab,long tot) {
+    long i,j;
 
-    for ( i=0; i<tot; ++i )
-	if ( ptrtab[i]!=NULL ) {
-	    for ( j=i+1; j<tot; ++j )
-		if ( ptrtab[j]==ptrtab[i] )
-		    ptrtab[j] = NULL;
-	    gfree(ptrtab[i]);
-	}
+    if ( ptrtab!=NULL )
+	for ( i=0; i<tot; ++i )
+	    if ( ptrtab[i]!=NULL ) {
+		for ( j=i+1; j<tot; ++j )
+		    if ( ptrtab[j]==ptrtab[i] )
+			ptrtab[j] = NULL;
+		free(ptrtab[i]);
+	    }
 }
 
 GImage *GImageReadRgb(char *filename) {
@@ -157,6 +158,9 @@ GImage *GImageReadRgb(char *filename) {
     int i,j,k;
     unsigned char *pt, *end;
     unsigned char *r=NULL,*g=NULL,*b=NULL,*a=NULL;	/* Colors */
+    unsigned long *starttab/*, *lengthtab*/;
+    unsigned char **ptrtab;
+    long tablen=0;
     unsigned long *ipt, *iend;
     GImage *ret = NULL;
     struct _GImage *base;
@@ -177,8 +181,6 @@ GImage *GImageReadRgb(char *filename) {
     base = ret->u.image;
 
     if ( header.format==RLE ) {
-	long tablen;
-
 	tablen = header.height*header.chans;
 	if ( (starttab=(unsigned long *)malloc(tablen*sizeof(long)))==NULL || \
 	   /*(lengthtab=(unsigned long *)malloc(tablen*sizeof(long)))==NULL || \ */
@@ -278,6 +280,7 @@ GImage *GImageReadRgb(char *filename) {
 errorGImageReadRgbFile:
     fprintf(stderr,"Bad input file \"%s\"\n",filename );
 errorGImageReadRgbMem:
+    freeptrtab(ptrtab,tablen);
     free(ptrtab); free(starttab); /*free(lengthtab);*/
     free(r); free(g); free(b); free(a);
     GImageDestroy(ret);
