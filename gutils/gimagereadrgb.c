@@ -110,7 +110,7 @@ static int readlongtab(FILE *fp,unsigned long *tab,long tablen) {
     return( 0 ); /* read everything okay */
 }
 
-static void find_scanline(FILE *fp,struct sgiheader *header,int cur,
+static int find_scanline(FILE *fp,struct sgiheader *header,int cur,
 	unsigned long *starttab,unsigned char **ptrtab) {
     extern int fgetc(FILE *);
     int (*getthingamy)(FILE *) = header->bpc==1?fgetc:getshort;
@@ -120,14 +120,17 @@ static void find_scanline(FILE *fp,struct sgiheader *header,int cur,
     for ( i=0; i<cur; ++i )
 	if ( starttab[i]==starttab[cur] ) {
 	    ptrtab[cur] = ptrtab[i];
-return;
+	    return( 0 );
 	}
-    pt = ptrtab[cur] = (unsigned char *) galloc(header->width);
+    if ( (pt=ptrtab[cur]=(unsigned char *) malloc(header->width))==NULL ) {
+	NoMoreMemMessage();
+	return( -1 );
+    }
     fseek(fp,starttab[cur],0);
     while (1) {
 	ch = getthingamy(fp);
 	if (( cnt = (ch&0x7f))==0 )
-return;
+	    return( 0 );
 	if ( ch&0x80 ) {
 	    while ( --cnt>=0 )
 		*pt++ = getthingamy(fp)*255L/header->pixmax;
@@ -137,6 +140,7 @@ return;
 		*pt++ = val;
 	}
     }
+    return( 0 );
 }
 
 static void freeptrtab(unsigned char **ptrtab,long tot) {
@@ -182,9 +186,9 @@ GImage *GImageReadRgb(char *filename) {
 
     if ( header.format==RLE ) {
 	tablen = header.height*header.chans;
-	if ( (starttab=(unsigned long *)malloc(tablen*sizeof(long)))==NULL || \
-	   /*(lengthtab=(unsigned long *)malloc(tablen*sizeof(long)))==NULL || \ */
-	     (ptrtab=(unsigned char **)malloc(tablen*sizeof(unsigned char *)))==NULL ) {
+	if ( (starttab=(unsigned long *)calloc(1,tablen*sizeof(long)))==NULL || \
+	   /*(lengthtab=(unsigned long *)calloc(1,tablen*sizeof(long)))==NULL || \ */
+	     (ptrtab=(unsigned char **)calloc(1,tablen*sizeof(unsigned char *)))==NULL ) {
 	    NoMoreMemMessage();
 	    goto errorGImageReadRgbMem;
 	}
@@ -192,7 +196,9 @@ GImage *GImageReadRgb(char *filename) {
 	    /* || readlongtab(fp,lengthtab,tablen) */
 	    goto errorGImageReadRgbFile;
 	for ( i=0; i<tablen; ++i )
-	    find_scanline(fp,&header,i,starttab,ptrtab);
+	    if ( (k=find_scanline(fp,&header,i,starttab,ptrtab)) ) {
+		if ( k==-1 ) goto errorGImageReadRgbMem; else goto errorGImageReadRgbFile;
+	    }
 	if ( header.chans==1 ) {
 	    for ( i=0; i<header.height; ++i )
 		memcpy(base->data + (header.height-1-i)*base->bytes_per_line,ptrtab[i],header.width);
