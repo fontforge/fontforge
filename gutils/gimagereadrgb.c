@@ -28,19 +28,19 @@
 #include <string.h>
 
 struct sgiheader {
-    short magic;		/* Magic (identification) number */
-    char format;
-    char bpc;
-    unsigned short dim;
-    unsigned short width;	/* Width of image in pixels */
-    unsigned short height;	/* Height of image in pixels */
-    unsigned short chans;
-    long pixmin;
-    long pixmax;
-    char dummy[4];
-    char imagename[80];
-    long colormap;
-    char pad[404];
+    short magic;		/* Magic (SGI identification) number	*/
+    char format;		/* Storage format (RLE=1 or VERBATIM=0)	*/
+    char bpc;			/* Bytes per pixel channel (1or2 bytes)	*/
+    unsigned short dim;		/* Number of dimensions (1,2,3)		*/
+    unsigned short width;	/* Width of image in pixels	X-size	*/
+    unsigned short height;	/* Height of image in pixels	Y-size	*/
+    unsigned short chans;	/* Number of channels (1,3,4)	Z-size	*/
+    long pixmin;		/* Minimum pixel value	(darkest)	*/
+    long pixmax;		/* Maximum pixel value	(brightest)	*/
+    char dummy[4];		/* Ignored				*/
+    char imagename[80];		/* Image name	(0..79chars + '\0')	*/
+    long colormap;		/* Colormap ID	(0,1,2,3)		*/
+    char pad[404];		/* Ignored	(total=512bytes)	*/
 };
 
 #define SGI_MAGIC	474
