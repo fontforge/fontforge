@@ -4122,11 +4122,13 @@ static void FVApplySubstitution(FontViewBase *fv,uint32 script, uint32 lang, uin
 	    /* This is deliberatly in the else. We don't want to remove a glyph*/
 	    /*  we are about to replace */
 	    for ( gid2=0; gid2<sf->glyphcnt; ++gid2 ) if ( (sc2=replacements[gid2])!=NULL ) {
-		RefChar *rf, *rnext;
-		for ( rf = sc2->layers[ly_fore].refs; rf!=NULL; rf=rnext ) {
-		    rnext = rf->next;
-		    if ( rf->sc==sc )
-			SCRefToSplines(sc2,rf,ly_fore);
+		if (sc2->layers && ly_fore < sc2->layer_cnt) {
+		    RefChar *rf, *rnext;
+		    for ( rf = sc2->layers[ly_fore].refs; rf!=NULL; rf=rnext ) {
+		        rnext = rf->next;
+		        if ( rf->sc==sc )
+			    SCRefToSplines(sc2,rf,ly_fore);
+		    }
 		}
 	    }
 	    SFRemoveGlyph(sf,sc,&flags);
