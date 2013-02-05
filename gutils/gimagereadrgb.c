@@ -112,9 +112,9 @@ static int readlongtab(FILE *fp,unsigned long *tab,long tablen) {
 
 static int find_scanline(FILE *fp,struct sgiheader *header,int cur,
 	unsigned long *starttab,unsigned char **ptrtab) {
-    extern int fgetc(FILE *);
-    int (*getthingamy)(FILE *) = header->bpc==1?fgetc:getshort;
-    int ch,i,cnt,val;
+/* Find and expand a scanline. Return 0 if okay, else -ve if error */
+    int ch,i,cnt;
+    long val;
     unsigned char *pt;
 
     for ( i=0; i<cur; ++i )
@@ -126,17 +126,34 @@ static int find_scanline(FILE *fp,struct sgiheader *header,int cur,
 	NoMoreMemMessage();
 	return( -1 );
     }
-    fseek(fp,starttab[cur],0);
-    while (1) {
-	ch = getthingamy(fp);
-	if (( cnt = (ch&0x7f))==0 )
-	    return( 0 );
+    if ( fseek(fp,starttab[cur],0)!= 0 ) return( -2 );
+    while ( header->bpc==1 ) {
+	if ( (ch=fgetc(fp))<0 ) return( -2 );
+	if ( (cnt=(ch&0x7f))==0 ) return( 0 );
 	if ( ch&0x80 ) {
-	    while ( --cnt>=0 )
-		*pt++ = getthingamy(fp)*255L/header->pixmax;
+	    while ( --cnt>=0 ) {
+		if ( (ch=fgetc(fp))<0 ) return( -2 );
+		*pt++ = ch*255L/header->pixmax;
+	    }
 	} else {
-	    val = getthingamy(fp)*255L/header->pixmax;
-	    while ( --cnt>= 0 )
+	    if ( (ch=fgetc(fp))<0 ) return( -2 );
+	    ch = ch*255L/header->pixmax;
+	    while ( --cnt>=0 )
+		*pt++ = ch;
+	}
+    }
+    while ( header->bpc!=1 ) {
+	if ( getlong(fp,&val) ) return( -2 );
+	if ( (cnt=(ch&0x7f))==0 ) return( 0 );
+	if ( ch&0x80 ) {
+	    while ( --cnt>=0 ) {
+		if ( getlong(fp,&val) ) return( -2 );
+		*pt++ = ch*255L/header->pixmax;
+	    }
+	} else {
+	    if ( getlong(fp,&val) ) return( -2 );
+	    val = val*255L/header->pixmax;
+	    while ( --cnt>=0 )
 		*pt++ = val;
 	}
     }
