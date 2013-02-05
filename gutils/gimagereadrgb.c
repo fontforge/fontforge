@@ -93,11 +93,15 @@ static int getsgiheader(struct sgiheader *head,FILE *fp) {
 	 head->dim<1 || head->dim>3 || \
 	 head->pixmax>65535 || (head->pixmax>255 && head->bpc==1) || \
 	 (head->chans!=1 && head->chans!=3 && head->chans!=4) || \
-	 head->pixmax<0 || head->pixmin<0 || head->pixmin>head->pixmax || \
+	 head->pixmax<0 || head->pixmin<0 || head->pixmin>=head->pixmax || \
 	 head->colormap!=0 )
     return( -1 );
 
     return( 0 );
+}
+
+static long scalecolor(struct sgiheader *header,long value) {
+    return( (value-header->pixmin)*255L/(header->pixmax-header->pixmin) );
 }
 
 static int readlongtab(FILE *fp,unsigned long *tab,long tablen) {
@@ -133,11 +137,11 @@ static int find_scanline(FILE *fp,struct sgiheader *header,int cur,
 	if ( ch&0x80 ) {
 	    while ( --cnt>=0 ) {
 		if ( (ch=fgetc(fp))<0 ) return( -2 );
-		*pt++ = ch*255L/header->pixmax;
+		*pt++ = scalecolor(header,ch);
 	    }
 	} else {
 	    if ( (ch=fgetc(fp))<0 ) return( -2 );
-	    ch = ch*255L/header->pixmax;
+	    ch = scalecolor(header,ch);
 	    while ( --cnt>=0 )
 		*pt++ = ch;
 	}
@@ -148,16 +152,16 @@ static int find_scanline(FILE *fp,struct sgiheader *header,int cur,
 	if ( ch&0x80 ) {
 	    while ( --cnt>=0 ) {
 		if ( getlong(fp,&val) ) return( -2 );
-		*pt++ = ch*255L/header->pixmax;
+		*pt++ = scalecolor(header,val);
 	    }
 	} else {
 	    if ( getlong(fp,&val) ) return( -2 );
-	    val = val*255L/header->pixmax;
+	    val = scalecolor(header,val);
 	    while ( --cnt>=0 )
 		*pt++ = val;
 	}
     }
-    return( 0 );
+    return( -2 );
 }
 
 static void freeptrtab(unsigned char **ptrtab,long tot) {
