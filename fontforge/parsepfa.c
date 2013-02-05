@@ -1320,6 +1320,9 @@ static char *rmbinary(char *line) {
     return( line );
 }
 
+#if 0
+/* used for debugging putBack, this routine can be removed */
+
 /* makePrintable():							*/
 /* Convert the given null-terminated string into one that has all	*/
 /* binary chars converted to corresponding hex encoding. Show binary as	*/
@@ -1328,7 +1331,7 @@ static char *rmbinary(char *line) {
 static char *makePrintable(const char *line) {
     unsigned bufflen = strlen(line) * 2 + 1;
     char *retval = malloc(bufflen);
-    if ( !retval ) {
+    if ( retval==NULL ) {
 	LogError(_("makePrintable(): unable to alloc memory"));
 	return( NULL );
     }
@@ -1346,6 +1349,7 @@ static char *makePrintable(const char *line) {
 
     return( retval );
 }
+#endif
 
 /* Does the buffer ending at "pt" end with "str"?  Look back as far as	*/
 /* "n" chars. "pt" should point to final character in buffer, and not	*/
