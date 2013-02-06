@@ -1,5 +1,5 @@
 /* Copyright (C) 2000-2012 by George Williams */
-/* 2013jan30..31, additional error checks done, Jose Da Silva */
+/* 2013jan30..feb5, additional fixes and error checks done, Jose Da Silva */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -87,27 +87,24 @@ static GImage *ReadRasBitmap(GImage *ret,int width, int height, FILE *fp ) {
     int i,j,len;
     unsigned char *pt, *buf;
 
-    len = ((width+15)/16)*2;
+    len = ((width+15)/16)*2;	/* pad out to 16 bits */
     if ( (buf=(unsigned char *) malloc(len*sizeof(unsigned char)))==NULL ) {
 	NoMoreMemMessage();
 	return( NULL);
     }
 
     for ( i=0; i<height; ++i ) {
-	if ( fread(buf,len,1,fp)==EOF ) {
+	if ( fread(buf,len,1,fp)<1 ) {
+	    free(buf);
 	    GImageDestroy(ret);
-return( NULL);
+	    return( NULL );
 	}
 	pt = (unsigned char *) (base->data + i*base->bytes_per_line);
-	for ( j=0 ; j<width; ++j )
-	    if ( buf[j>>3]&(1<<(j&7)) )
-		*pt++ = 1;
-	    else
-		*pt++ = 0;
+	for ( j=0; j<(width+7)>>3; ++j )
+	    pt[j]=256-buf[j];
     }
-    gfree(buf);
-
-return ret;
+    free(buf);
+    return( ret );
 }
 
 static GImage *ReadRas8Bit(GImage *ret,int width, int height, FILE *fp ) {
@@ -192,7 +189,6 @@ static GImage *ReadRas24RBit(GImage *ret,int width, int height, FILE *fp ) {
 errorReadRas24RBit:
     GImageDestroy(ret);
     return( NULL );
-return ret;
 }
 
 static GImage *ReadRas32RBit(GImage *ret,int width, int height, FILE *fp ) {
@@ -265,7 +261,10 @@ GImage *GImageReadRas(char *filename) {
 	goto errorGImageReadRas;
 
     /* Create memory to hold image, exit with NULL if not enough memory */
-    if ( (ret=GImageCreate(header.Depth==24?it_true:it_index,header.Width,header.Height))==NULL ) {
+    if ( (header.Depth==1 && \
+	  (ret=GImageCreate(it_bitmap,header.Width,header.Height))==NULL) || \
+	  (header.Depth!=1 && \
+	  (ret=GImageCreate(header.Depth==24?it_true:it_index,header.Width,header.Height))==NULL) ) {
 	fclose(fp);
 	return( NULL );
     }
@@ -276,10 +275,17 @@ GImage *GImageReadRas(char *filename) {
 	char clutb[3*256]; int i,n;
 	if ( fread(clutb,header.ColorMapLength,1,fp)<1 )
 	    goto errorGImageReadRas;
+//	if ( header.ColorMapType==ClutRaw ) {
+//	    n = header.ColorMapLength;
+//	    base->clut->clut_len = n;
+//	    for ( i=0; i<n; ++i )
+//		base->clut->clut[i] = clutb[i];
+//	} else {
 	n = header.ColorMapLength/3;
 	base->clut->clut_len = n;
 	for ( i=0; i<n; ++i )
 	    base->clut->clut[i] = COLOR_CREATE(clutb[i],clutb[i+n],clutb[i+2*n]);
+//	}
     }
 
     if ( header.Type==TypeOld || header.Type==TypeStandard ) {	/* Synonymous */
@@ -301,11 +307,17 @@ GImage *GImageReadRas(char *filename) {
 	    ret = ReadRas24RBit(ret,header.Width,header.Height,fp);
 	else
 	    ret = ReadRas32RBit(ret,header.Width,header.Height,fp);
-    } else if ( header.Type==TypeRGB ) {
-	/* Don't bother with most of the rle formats */
+    } else if ( header.Type==TypeByteEncoded ) {
 	if ( header.Depth==8 )
 	    ret = ReadRle8Bit(ret,header.Width,header.Height,fp);
-    }
+	else
+	    /* Don't bother with most rle formats */
+	    /* TODO: if someone wants to do this - accept more formats */
+	    free( ret );
+    } else
+	    /* Don't bother with other formats */
+	    /* TODO: if someone wants to do this - accept more formats */
+	    free( ret );
     if ( ret!=NULL ) {
 	/* All okay if reached here, return converted image */
 	fclose(fp);
