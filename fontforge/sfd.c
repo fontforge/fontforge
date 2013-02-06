@@ -2992,66 +2992,95 @@ int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
     else
     {
 	sf->backedup = bs_dontknow;
-	free(buf);
-	buf=0;
-	
+//	free(buf);
+//	buf=0;
 
-	char path[PATH_MAX];
-	char pathnew[PATH_MAX];
-	int idx = 0;
-
-	// If they don't want backups, we are already done
-	if( !PrefMaxBackupsToKeep )
+	if( PrefMaxBackupsToKeep )
 	{
-	    return true;
-	}
+	    char path[PATH_MAX];
+	    char pathnew[PATH_MAX];
+	    int idx = 0;
+	    int rc = 0;
+	    
+	    snprintf( path,    PATH_MAX, "%s", sf->filename );
+	    snprintf( pathnew, PATH_MAX, "%s.~%02d", sf->filename, idx );
+	    rc = rename( path, pathnew );
+//	    ret = SFDWrite( path,sf,map,normal,false);
+	    fprintf(stderr,"ret:%d save to:%s\n", ret, path );
 
-	idx = PrefMaxBackupsToKeep;
-	snprintf( path, PATH_MAX, "%s.~%02d", sf->filename, idx );
-	int haveReachedMaxBackups = GFileExists(path);
-	
-	if( haveReachedMaxBackups )
-	{
-	    for( idx=1; idx <= PrefMaxBackupsToKeep; idx++ )
+	    for( idx=PrefMaxBackupsToKeep; idx > 0; idx-- )
 	    {
-		snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx );
-		snprintf( pathnew, PATH_MAX, "%s.~%02d", sf->filename, idx-1 );
+		snprintf( path, PATH_MAX, "%s.~%02d", sf->filename, idx-1 );
+		snprintf( pathnew, PATH_MAX, "%s.~%02d", sf->filename, idx );
 		fprintf(stderr,"rename %s to %s\n", path, pathnew );
               
 		int rc = rename( path, pathnew );
-		if( !idx && !rc ) 
+		if( !idx && !rc )
 		    sf->backedup = bs_backedup;
 	    }
-	    idx = 0;
+	    idx = PrefMaxBackupsToKeep+1;
 	    snprintf( path, PATH_MAX, "%s.~%02d", sf->filename, idx );
 	    unlink(path);
-	    //
-	    // Where to save the new backup into
-	    //
-	    idx = PrefMaxBackupsToKeep;
-	}
-	else
-	{
-	    // Don't have to change places to find a spot to sit the new backup
-	    // so we only need to find out what the next number in the sequence is
-	    for( idx=1; idx < PrefMaxBackupsToKeep; idx++ )
-	    {
-		snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx );
-		if(!GFileExists(path))
-		{
-		    // keep idx at its current value, that is where to save
-		    // the new backup file into
-		    break;
-		}
-	    }
-	    
+	    fprintf(stderr,"unlink to:%s\n", path );
+//          return(ret);
 	}
 	
-	snprintf( path, PATH_MAX, "%s.~%02d", sf->filename, idx );
-	ret = SFDWrite( path,sf,map,normal,false);
-	fprintf(stderr,"ret:%d save to:%s\n", ret, path );
 
+	/* char path[PATH_MAX]; */
+	/* char pathnew[PATH_MAX]; */
+	/* int idx = 0; */
+
+	/* // If they don't want backups, we are already done */
+	/* if( !PrefMaxBackupsToKeep ) */
+	/* { */
+	/*     return true; */
+	/* } */
+
+	/* idx = PrefMaxBackupsToKeep; */
+	/* snprintf( path, PATH_MAX, "%s.~%02d", sf->filename, idx ); */
+	/* int haveReachedMaxBackups = GFileExists(path); */
 	
+	/* if( haveReachedMaxBackups ) */
+	/* { */
+	/*     for( idx=1; idx <= PrefMaxBackupsToKeep; idx++ ) */
+	/*     { */
+	/* 	snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx ); */
+	/* 	snprintf( pathnew, PATH_MAX, "%s.~%02d", sf->filename, idx-1 ); */
+	/* 	fprintf(stderr,"rename %s to %s\n", path, pathnew ); */
+              
+	/* 	int rc = rename( path, pathnew ); */
+	/* 	if( !idx && !rc )  */
+	/* 	    sf->backedup = bs_backedup; */
+	/*     } */
+	/*     idx = 0; */
+	/*     snprintf( path, PATH_MAX, "%s.~%02d", sf->filename, idx ); */
+	/*     unlink(path); */
+	/*     // */
+	/*     // Where to save the new backup into */
+	/*     // */
+	/*     idx = PrefMaxBackupsToKeep; */
+	/* } */
+	/* else */
+	/* { */
+	/*     // Don't have to change places to find a spot to sit the new backup */
+	/*     // so we only need to find out what the next number in the sequence is */
+	/*     for( idx=1; idx < PrefMaxBackupsToKeep; idx++ ) */
+	/*     { */
+	/* 	snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx ); */
+	/* 	if(!GFileExists(path)) */
+	/* 	{ */
+	/* 	    // keep idx at its current value, that is where to save */
+	/* 	    // the new backup file into */
+	/* 	    break; */
+	/* 	} */
+	/*     } */
+	    
+	/* } */
+	
+	/* snprintf( path, PATH_MAX, "%s.~%02d", sf->filename, idx ); */
+	/* ret = SFDWrite( path,sf,map,normal,false); */
+	/* fprintf(stderr,"ret:%d save to:%s\n", ret, path ); */
+
 	/* for( idx=PrefMaxBackupsToKeep; idx > 0; idx-- ) */
 	/* { */
 	/*     snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx-1 ); */
@@ -3059,14 +3088,14 @@ int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
 	/*     fprintf(stderr,"rename %s to %s\n", path, pathnew ); */
               
 	/*     int rc = rename( path, pathnew ); */
-	/*     if( !idx && !rc )  */
+	/*     if( !idx && !rc ) */
 	/* 	sf->backedup = bs_backedup; */
 	/* } */
 	/* idx = PrefMaxBackupsToKeep; */
 	/* snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx ); */
 	/* unlink(path); */
 	/* fprintf(stderr,"unlink to:%s\n", path ); */
-	return(ret);
+	/* return(ret); */
     }
     free(buf);
 
