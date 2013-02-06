@@ -6,7 +6,7 @@ PortSystem      1.0
 name            fontforge
 version         2.0.0_beta1
 set docversion  2.0.0_beta1
-revision        63
+revision        71
 categories      graphics fonts
 platforms       darwin
 maintainers     Ben Martin
