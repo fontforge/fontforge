@@ -60,6 +60,8 @@ static char *joins[] = { "miter", "round", "bevel", "inher", NULL };
 static char *caps[] = { "butt", "round", "square", "inher", NULL };
 static char *spreads[] = { "pad", "reflect", "repeat", NULL };
 
+int PrefMaxBackupsToKeep = 0;
+
 
 /* I will retain this list in case there are still some really old sfd files */
 /*  including numeric encodings.  This table maps them to string encodings */
@@ -2965,80 +2967,120 @@ return( !err );
 }
 
 int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
-    char *buf, *buf2=NULL/*, *pt, *bpt*/;
+    char *buf=0, *buf2=NULL;
     int ret;
 
     if ( sf->save_to_dir )
+    {
 	ret = SFDWrite(sf->filename,sf,map,normal,true);
-    else {
-	if ( sf->cidmaster!=NULL )
-	    sf=sf->cidmaster;
-	buf = galloc(strlen(sf->filename)+10);
-	if ( sf->compression!=0 ) {
-	    buf2 = galloc(strlen(sf->filename)+10);
-	    strcpy(buf2,sf->filename);
-	    strcat(buf2,compressors[sf->compression-1].ext);
-	    strcpy(buf,buf2);
-	    strcat(buf,"~");
-	    if ( rename(buf2,buf)==0 )
-		sf->backedup = bs_backedup;
-	} else {
-#if 1
-
-           int PrefMaxBackupsToKeep = 30;
-           char path[PATH_MAX];
-           char pathnew[PATH_MAX];
-           int idx = 0;
-
-           snprintf( path, PATH_MAX, "%s.~%02d", sf->filename, idx );
-	   ret = SFDWrite( path,sf,map,normal,false);
-fprintf(stderr,"ret:%d save to:%s\n", ret, path );
-
-           for( idx=PrefMaxBackupsToKeep; idx > 0; idx-- )
-           {
-              snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx-1 );
-              snprintf( pathnew, PATH_MAX, "%s.~%02d", sf->filename, idx );
-fprintf(stderr,"rename %s to %s\n", path, pathnew );
-              
-              int rc = rename( path, pathnew );
-              if( !idx && !rc ) 
-	   	  sf->backedup = bs_backedup;
-           }
-           idx = PrefMaxBackupsToKeep;
-           snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx );
-           unlink(path);
-fprintf(stderr,"unlink to:%s\n", path );
-           return(ret);
-
-
-	    strcpy(buf,sf->filename);
-	    strcat(buf,"~");
-#else
-	    pt = strrchr(sf->filename,'.');
-	    if ( pt==NULL || pt<strrchr(sf->filename,'/'))
-		pt = sf->filename+strlen(sf->filename);
-	    strcpy(buf,sf->filename);
-	    bpt = buf + (pt-sf->filename);
-	    *bpt++ = '~';
-	    strcpy(bpt,pt);
-#endif
-	    if ( rename(sf->filename,buf)==0 )
-		sf->backedup = bs_backedup;
-	}
-	free(buf);
-
-	ret = SFDWrite(sf->filename,sf,map,normal,false);
-	if ( ret && sf->compression!=0 ) {
-	    unlink(buf2);
-	    buf = galloc(strlen(sf->filename)+40);
-	    sprintf( buf, "%s %s", compressors[sf->compression-1].recomp, sf->filename );
-	    if ( system( buf )!=0 )
-		sf->compression = 0;
-	    free(buf);
-	}
-	free(buf2);
+	return(ret);
     }
-return( ret );
+    
+    if ( sf->cidmaster!=NULL )
+	sf=sf->cidmaster;
+    buf = galloc(strlen(sf->filename)+10);
+    if ( sf->compression!=0 )
+    {
+	buf2 = galloc(strlen(sf->filename)+10);
+	strcpy(buf2,sf->filename);
+	strcat(buf2,compressors[sf->compression-1].ext);
+	strcpy(buf,buf2);
+	strcat(buf,"~");
+	if ( rename(buf2,buf)==0 )
+	    sf->backedup = bs_backedup;
+    }
+    else
+    {
+	sf->backedup = bs_dontknow;
+	free(buf);
+	buf=0;
+	
+
+	char path[PATH_MAX];
+	char pathnew[PATH_MAX];
+	int idx = 0;
+
+	// If they don't want backups, we are already done
+	if( !PrefMaxBackupsToKeep )
+	{
+	    return true;
+	}
+
+	idx = PrefMaxBackupsToKeep;
+	snprintf( path, PATH_MAX, "%s.~%02d", sf->filename, idx );
+	int haveReachedMaxBackups = GFileExists(path);
+	
+	if( haveReachedMaxBackups )
+	{
+	    for( idx=1; idx <= PrefMaxBackupsToKeep; idx++ )
+	    {
+		snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx );
+		snprintf( pathnew, PATH_MAX, "%s.~%02d", sf->filename, idx-1 );
+		fprintf(stderr,"rename %s to %s\n", path, pathnew );
+              
+		int rc = rename( path, pathnew );
+		if( !idx && !rc ) 
+		    sf->backedup = bs_backedup;
+	    }
+	    idx = 0;
+	    snprintf( path, PATH_MAX, "%s.~%02d", sf->filename, idx );
+	    unlink(path);
+	    //
+	    // Where to save the new backup into
+	    //
+	    idx = PrefMaxBackupsToKeep;
+	}
+	else
+	{
+	    // Don't have to change places to find a spot to sit the new backup
+	    // so we only need to find out what the next number in the sequence is
+	    for( idx=1; idx < PrefMaxBackupsToKeep; idx++ )
+	    {
+		snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx );
+		if(!GFileExists(path))
+		{
+		    // keep idx at its current value, that is where to save
+		    // the new backup file into
+		    break;
+		}
+	    }
+	    
+	}
+	
+	snprintf( path, PATH_MAX, "%s.~%02d", sf->filename, idx );
+	ret = SFDWrite( path,sf,map,normal,false);
+	fprintf(stderr,"ret:%d save to:%s\n", ret, path );
+
+	
+	/* for( idx=PrefMaxBackupsToKeep; idx > 0; idx-- ) */
+	/* { */
+	/*     snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx-1 ); */
+	/*     snprintf( pathnew, PATH_MAX, "%s.~%02d", sf->filename, idx ); */
+	/*     fprintf(stderr,"rename %s to %s\n", path, pathnew ); */
+              
+	/*     int rc = rename( path, pathnew ); */
+	/*     if( !idx && !rc )  */
+	/* 	sf->backedup = bs_backedup; */
+	/* } */
+	/* idx = PrefMaxBackupsToKeep; */
+	/* snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx ); */
+	/* unlink(path); */
+	/* fprintf(stderr,"unlink to:%s\n", path ); */
+	return(ret);
+    }
+    free(buf);
+
+    ret = SFDWrite(sf->filename,sf,map,normal,false);
+    if ( ret && sf->compression!=0 ) {
+	unlink(buf2);
+	buf = galloc(strlen(sf->filename)+40);
+	sprintf( buf, "%s %s", compressors[sf->compression-1].recomp, sf->filename );
+	if ( system( buf )!=0 )
+	    sf->compression = 0;
+	free(buf);
+    }
+    free(buf2);
+    return( ret );
 }
 
 /* ********************************* INPUT ********************************** */
