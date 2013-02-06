@@ -71,11 +71,11 @@ static int getrasheader(SUNRASTER *head, FILE *fp) {
 	return( -1 );
 
     /* Check if header information okay (only try Big-Endian for now).	*/
-    if ( head->MagicNumber!=SUN_RAS_MAGIC ||
-	 head->Type<0 || head->Type>TypeRGB ||
-	 (head->ColorMapType!=ClutNone && head->ColorMapType!=ClutRGB) ||
-	 (head->Depth!=1 && head->Depth!=8 && head->Depth!=24 && head->Depth!=32) ||
-	 (head->Depth>=24 && head->ColorMapType!=ClutNone) ||
+    if ( head->MagicNumber!=SUN_RAS_MAGIC || \
+	 head->Type<0 || head->Type>TypeRGB || \
+	 (head->ColorMapType!=ClutNone && head->ColorMapType!=ClutRGB) || \
+	 (head->Depth!=1 && head->Depth!=8 && head->Depth!=24 && head->Depth!=32) || \
+	 (head->Depth>=24 && head->ColorMapType!=ClutNone) || \
 	 head->ColorMapLength>3*256 )
 	return( -1 );
 
@@ -90,7 +90,8 @@ static GImage *ReadRasBitmap(GImage *ret,int width, int height, FILE *fp ) {
     len = ((width+15)/16)*2;	/* pad out to 16 bits */
     if ( (buf=(unsigned char *) malloc(len*sizeof(unsigned char)))==NULL ) {
 	NoMoreMemMessage();
-	return( NULL);
+	GImageDestroy(ret);
+	return( NULL );
     }
 
     for ( i=0; i<height; ++i ) {
@@ -211,38 +212,41 @@ return ret;
 }
 
 static GImage *ReadRle8Bit(GImage *ret,int width, int height, FILE *fp ) {
+/* TODO: Make this an input filter that goes in front of other routines	*/
+/* above so that in can be re-used by the different converters above.	*/
     struct _GImage *base = ret->u.image;
-    int i, tot, lineend, modwid;
-    int cnt=0,val=0,ch;
-    unsigned char *pt=NULL;
+    int x,y,cnt,val;
+    unsigned char *pt;
 
-    if ((modwid = ((width+1)&~1))==0 )
-	modwid = 2;;
-    tot = modwid*height; lineend = 0;
-    for ( i=0; i<tot; ++i ) {
-	if ( i==lineend ) {
-	    pt = (unsigned char *) (base->data + (lineend/modwid)*base->bytes_per_line);
-	    lineend += modwid;
+    x=0; y=0; cnt=0;
+    while ( 1 ) {
+	while ( cnt && x ) {
+	    *pt++ = val; --cnt; --x;
+	}
+	if ( x==0 ) {
+	    pt = (unsigned char *) (base->data + y*base->bytes_per_line);
+	    if ( ++y>height )
+		return( ret );
+	    x=width;
 	}
 	if ( cnt==0 ) {
-	    ch = fgetc(fp);
-	    if ( ch==0x80 ) {
-		cnt = fgetc(fp);
-		if ( cnt!=0 ) {	/* if ==0 then ch is 0x80 and correct */
-		    ch = val = fgetc(fp);
-		    --cnt;
-		}
+	    if ( (val=fgetc(fp))<0 ) goto errorReadRle8Bit;
+	    if ( val!=0x80 )
+		++cnt; /* ordinary value, then go insert it */
+	    else {
+		if ( (cnt=fgetc(fp))<0 ) goto errorReadRle8Bit;
+		if ( cnt==0 )
+		    ++cnt; /* actually want to go insert 0x80 */
+		else
+		    /* prepare to go insert 'val', 'cnt' times */
+		    if ( (val=fgetc(fp))<0 ) goto errorReadRle8Bit;
 	    }
-	} else {
-	    ch = val;
-	    --cnt;
 	}
-	if ( width&1 && i==lineend-1 )
-	    /* Skip the pad byte */;
-	else
-	    *pt++ = ch;
     }
-return ret;
+
+errorReadRle8Bit:
+    GImageDestroy(ret);
+    return( NULL );
 }
 
 GImage *GImageReadRas(char *filename) {
@@ -272,7 +276,7 @@ GImage *GImageReadRas(char *filename) {
     /* Convert *.ras ColorMap to one that FF can use */
     base = ret->u.image;
     if ( header.ColorMapLength!=0 && base->clut!=NULL ) {
-	char clutb[3*256]; int i,n;
+	unsigned char clutb[3*256]; int i,n;
 	if ( fread(clutb,header.ColorMapLength,1,fp)<1 )
 	    goto errorGImageReadRas;
 //	if ( header.ColorMapType==ClutRaw ) {
