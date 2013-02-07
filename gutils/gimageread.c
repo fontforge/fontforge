@@ -64,9 +64,11 @@ GImage *GImageRead(char * filename) {
 	else if ( strcasecmp(mime,"image/gif")==0 )
 	    return( GImageReadGif(filename) );
 #endif
-	else if ( strcasecmp(mime,"image/x-cmu-raster")==0 )
+	else if ( strcasecmp(mime,"image/x-cmu-raster")==0 || \
+		  strcasecmp(mime,"image/x-sun-raster")==0 )
 	    return( GImageReadRas(filename) );		/* Sun raster */
-	else if ( strcasecmp(mime,"image/x-rgb")==0 )
+	else if ( strcasecmp(mime,"image/x-rgb")==0 || \
+		  strcasecmp(mime,"image/x-sgi")==0 )
 	    return( GImageReadRgb(filename) );		/* SGI format */
     }
 
@@ -97,9 +99,11 @@ GImage *GImageRead(char * filename) {
 #endif
 	else if ( strmatch(pt,".ras")==0 || strmatch(pt,".im1")==0 || \
 		  strmatch(pt,".im8")==0 || strmatch(pt,".im24")==0 || \
-		  strmatch(pt,".im32")==0 )
+		  strmatch(pt,".im32")==0 || strmatch(pt,".rs")==0 || \
+		  strmatch(pt,".sun")==0 )
 	    return( GImageReadRas(filename) );		/* Sun raster */
-	else if ( strmatch(pt,".rgb")==0 )
+	else if ( strmatch(pt,".rgb")==0 || strmatch(pt,".rgba")==0 || \
+		  strmatch(pt,".sgi")==0 || strmatch(pt,".bw")==0 )
 	    return( GImageReadRgb(filename) );		/* SGI format */
     }
 
