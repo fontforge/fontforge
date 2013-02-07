@@ -38,6 +38,9 @@ extern char *GFileNameTail(const char *oldname);
 extern char *GFileAppendFile(char *dir,char *name,int isdir);
 extern int GFileIsAbsolute(const char *file);
 extern int GFileIsDir(const char *file);
+/**
+ * Returns true if the file exists
+ */
 extern int GFileExists(const char *file);
 extern int GFileModifyable(const char *file);
 extern int GFileModifyableDir(const char *file);

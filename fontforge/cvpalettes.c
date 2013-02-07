@@ -2082,12 +2082,12 @@ static void CVLCheckLayerCount(CharView *cv, int resize) {
     GDrawSetFont(cvlayers,layerinfo.font); /* for width finding code, need this */
 
      /* First need to position the add, remove, and layers gadgets */
-    GGadgetGetSize(GWidgetGetControl(cvlayers,CID_AddLayer),&size);
+    GGadgetGetSize(GWidgetGetControl(cvlayers,CID_RemoveLayer),&size);
     x = 7+size.width;
     y = layer_header_height;
-    GGadgetMove(GWidgetGetControl(cvlayers,CID_RemoveLayer), x, 5);
-    GGadgetSetSize(GWidgetGetControl(cvlayers,CID_RemoveLayer),&size);
-    GGadgetGetSize(GWidgetGetControl(cvlayers,CID_RemoveLayer),&size);
+    GGadgetMove(GWidgetGetControl(cvlayers,CID_AddLayer), x, 5);
+    GGadgetSetSize(GWidgetGetControl(cvlayers,CID_AddLayer),&size);
+    GGadgetGetSize(GWidgetGetControl(cvlayers,CID_AddLayer),&size);
     x += size.width;
     GGadgetGetSize(GWidgetGetControl(cvlayers,CID_LayersMenu),&size);
     GGadgetMove(GWidgetGetControl(cvlayers,CID_LayersMenu), x+5, 5+(y-8-size.height)/2);
@@ -2918,25 +2918,25 @@ return( cvlayers );
     plush = MAX( plush, plusw ); // make it square.
     
      /* Add Layer button */
-    label[0].text = (unichar_t *) _("+");
+    label[0].text = (unichar_t *) _("-");
     label[0].text_is_1byte = true;
     gcd[i].gd.label = &label[0];
     gcd[i].gd.pos.x = 7; gcd[i].gd.pos.y = 5; 
     gcd[i].gd.pos.width  = plusw; gcd[i].gd.pos.height = plush;
     gcd[i].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
-    gcd[i].gd.cid = CID_AddLayer;
+    gcd[i].gd.cid = CID_RemoveLayer;
     gcd[i].gd.popup_msg = (unichar_t *) _("Add a new layer");
     gcd[i].creator = GButtonCreate;
     ++i;
 
      /* Delete Layer button */
-    label[1].text = (unichar_t *) _("-");
+    label[1].text = (unichar_t *) _("+");
     label[1].text_is_1byte = true;
     gcd[i].gd.label = &label[1];
     gcd[i].gd.pos.x = 30; gcd[i].gd.pos.y = 5; 
     gcd[i].gd.pos.width  = plusw; gcd[i].gd.pos.height = plush;
     gcd[i].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
-    gcd[i].gd.cid = CID_RemoveLayer;
+    gcd[i].gd.cid = CID_AddLayer;
     gcd[i].gd.popup_msg = (unichar_t *) _("Delete the current layer");
     gcd[i].creator = GButtonCreate;
     ++i;
