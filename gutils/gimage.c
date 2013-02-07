@@ -99,21 +99,24 @@ error_GImage_Create:
 }
 
 void GImageDestroy(GImage *gi) {
+/* Free memory (if GImage exists) */
     int i;
 
-    if ( gi->list_len!=0 ) {
-	for ( i=0; i<gi->list_len; ++i ) {
-	    free(gi->u.images[i]->clut);
-	    free(gi->u.images[i]->data);
-	    free(gi->u.images[i]);
+    if (gi!=NULL ) {
+	if ( gi->list_len!=0 ) {
+	    for ( i=0; i<gi->list_len; ++i ) {
+		free(gi->u.images[i]->clut);
+		free(gi->u.images[i]->data);
+		free(gi->u.images[i]);
+	    }
+	    free(gi->u.images);
+	} else {
+	    free(gi->u.image->clut);
+	    free(gi->u.image->data);
+	    free(gi->u.image);
 	}
-	free(gi->u.images);
-    } else {
-	free(gi->u.image->clut);
-	free(gi->u.image->data);
-	free(gi->u.image);
+	free(gi);
     }
-    free(gi);
 }
 
 GImage *GImageCreateAnimation(GImage **images, int n) {

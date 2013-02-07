@@ -28,143 +28,198 @@
 #include <string.h>
 
 struct sgiheader {
-    short magic;
-    char format;
-    char bpc;
-    unsigned short dim;
-    unsigned short width;
-    unsigned short height;
-    unsigned short chans;
-    long pixmin;
-    long pixmax;
-    char dummy[4];
-    char imagename[80];
-    long colormap;
-    char pad[404];
+    short magic;		/* Magic (SGI identification) number	*/
+    char format;		/* Storage format (RLE=1 or VERBATIM=0)	*/
+    char bpc;			/* Bytes per pixel channel (1or2 bytes)	*/
+    unsigned short dim;		/* Number of dimensions (1,2,3)		*/
+    unsigned short width;	/* Width of image in pixels	X-size	*/
+    unsigned short height;	/* Height of image in pixels	Y-size	*/
+    unsigned short chans;	/* Number of channels (1,3,4)	Z-size	*/
+    long pixmin;		/* Minimum pixel value	(darkest)	*/
+    long pixmax;		/* Maximum pixel value	(brightest)	*/
+    char dummy[4];		/* Ignored				*/
+    char imagename[80];		/* Image name	(0..79chars + '\0')	*/
+    long colormap;		/* Colormap ID	(0,1,2,3)		*/
+    char pad[404];		/* Ignored	(total=512bytes)	*/
 };
 
 #define SGI_MAGIC	474
 #define VERBATIM	0
 #define RLE		1
 
-static long getlong(FILE *fp) {
+static int getlong(FILE *fp, long *value) {
+/* Get Big-Endian long (32bit int) value. Return 0 if okay, -1 if error	*/
     int ch1, ch2, ch3, ch4;
 
-    ch1 = fgetc(fp); ch2 = fgetc(fp); ch3=fgetc(fp); ch4=fgetc(fp);
-return( (ch1<<24) | (ch2<<16) | (ch3<<8) | ch4 );
+    if ( (ch1=fgetc(fp))<0 || (ch2=fgetc(fp))<0 || \
+	 (ch3=fgetc(fp))<0 || (ch4=fgetc(fp))<0 ) {
+	*value=0;
+	return( -1 );
+    }
+    *value=(long)( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
+    return( 0 );
 }
 
 static int getshort(FILE *fp) {
+/* Get Big-Endian short 16bit value. Return value if okay, -1 if error	*/
     int ch1, ch2;
 
-    ch1 = fgetc(fp); ch2 = fgetc(fp);
-return( (ch1<<8) | ch2);
+    if ( (ch1=fgetc(fp))<0 || (ch2=fgetc(fp))<0 )
+	return( -1 );
+
+    return( (ch1<<8) | ch2 );
 }
 
-static void getsgiheader(struct sgiheader *head, FILE *fp) {
-    head->magic = getshort(fp);
-    head->format = getc(fp);
-    head->bpc = getc(fp);
-    head->dim = getshort(fp);
-    head->width = getshort(fp);
-    head->height = getshort(fp);
-    head->chans = getshort(fp);
-    head->pixmin = getlong(fp);
-    head->pixmax = getlong(fp);
-    fread(head->dummy,sizeof(head->dummy),1,fp);
-    fread(head->imagename,sizeof(head->imagename),1,fp);
-    head->colormap = getlong(fp);
-    fread(head->pad,sizeof(head->pad),1,fp);
+static int getsgiheader(struct sgiheader *head,FILE *fp) {
+/* Get Header info. Return 0 if read input file okay, -1 if read error	*/
+    if ( (head->magic=getshort(fp))<0	|| head->magic!=SGI_MAGIC || \
+	 (head->format=fgetc(fp))<0	|| \
+	 (head->bpc=fgetc(fp))<0	|| \
+	 (head->dim=getshort(fp))<0	|| \
+	 (head->width=getshort(fp))<0	|| \
+	 (head->height=getshort(fp))<0	|| \
+	 (head->chans=getshort(fp))<0	|| \
+	 getlong(fp,&head->pixmin)	|| \
+	 getlong(fp,&head->pixmax)	|| \
+	 fread(head->dummy,sizeof(head->dummy),1,fp)<1 || \
+	 fread(head->imagename,sizeof(head->imagename),1,fp)<1 || \
+	 getlong(fp,&head->colormap)	|| \
+	 fread(head->pad,sizeof(head->pad),1,fp)<1 )
+    return( -1 );
+
+    /* Check if header information okay (for us to use here ) */
+    if ( (head->format!=VERBATIM && head->format!=RLE) || \
+	 (head->bpc!=1 && head->bpc!=2) || \
+	 head->dim<1 || head->dim>3 || \
+	 head->pixmax>65535 || (head->pixmax>255 && head->bpc==1) || \
+	 (head->chans!=1 && head->chans!=3 && head->chans!=4) || \
+	 head->pixmax<0 || head->pixmin<0 || head->pixmin>=head->pixmax || \
+	 head->colormap!=0 )
+    return( -1 );
+
+    return( 0 );
 }
 
-static void readlongtab(FILE *fp,unsigned long *tab,int tablen) {
-    int i;
+static long scalecolor(struct sgiheader *header,long value) {
+    return( (value-header->pixmin)*255L/(header->pixmax-header->pixmin) );
+}
+
+static int readlongtab(FILE *fp,unsigned long *tab,long tablen) {
+    long i;
 
     for ( i=0; i<tablen; ++i )
-	tab[i] = getlong(fp);
+	if ( getlong(fp,&tab[i]) )
+	    return( -1 ); /* had a read error */
+
+    return( 0 ); /* read everything okay */
 }
 
-static void find_scanline(FILE *fp,struct sgiheader *header,int cur,
+static int find_scanline(FILE *fp,struct sgiheader *header,int cur,
 	unsigned long *starttab,unsigned char **ptrtab) {
-    extern int fgetc(FILE *);
-    int (*getthingamy)(FILE *) = header->bpc==1?fgetc:getshort;
-    int ch,i,cnt,val;
+/* Find and expand a scanline. Return 0 if okay, else -ve if error */
+    int ch,i,cnt;
+    long val;
     unsigned char *pt;
 
     for ( i=0; i<cur; ++i )
 	if ( starttab[i]==starttab[cur] ) {
 	    ptrtab[cur] = ptrtab[i];
-return;
+	    return( 0 );
 	}
-    pt = ptrtab[cur] = (unsigned char *) galloc(header->width);
-    fseek(fp,starttab[cur],0);
-    while (1) {
-	ch = getthingamy(fp);
-	if (( cnt = (ch&0x7f))==0 )
-return;
+    if ( (pt=ptrtab[cur]=(unsigned char *) malloc(header->width))==NULL ) {
+	NoMoreMemMessage();
+	return( -1 );
+    }
+    if ( fseek(fp,starttab[cur],0)!= 0 ) return( -2 );
+    while ( header->bpc==1 ) {
+	if ( (ch=fgetc(fp))<0 ) return( -2 );
+	if ( (cnt=(ch&0x7f))==0 ) return( 0 );
 	if ( ch&0x80 ) {
-	    while ( --cnt>=0 )
-		*pt++ = getthingamy(fp)*255L/header->pixmax;
+	    while ( --cnt>=0 ) {
+		if ( (ch=fgetc(fp))<0 ) return( -2 );
+		*pt++ = scalecolor(header,ch);
+	    }
 	} else {
-	    val = getthingamy(fp)*255L/header->pixmax;
-	    while ( --cnt>= 0 )
+	    if ( (ch=fgetc(fp))<0 ) return( -2 );
+	    ch = scalecolor(header,ch);
+	    while ( --cnt>=0 )
+		*pt++ = ch;
+	}
+    }
+    while ( header->bpc!=1 ) {
+	if ( getlong(fp,&val) ) return( -2 );
+	if ( (cnt=(ch&0x7f))==0 ) return( 0 );
+	if ( ch&0x80 ) {
+	    while ( --cnt>=0 ) {
+		if ( getlong(fp,&val) ) return( -2 );
+		*pt++ = scalecolor(header,val);
+	    }
+	} else {
+	    if ( getlong(fp,&val) ) return( -2 );
+	    val = scalecolor(header,val);
+	    while ( --cnt>=0 )
 		*pt++ = val;
 	}
     }
+    return( -2 );
 }
 
-static void freeptrtab(unsigned char **ptrtab,int tot) {
-    int i,j;
+static void freeptrtab(unsigned char **ptrtab,long tot) {
+    long i,j;
 
-    for ( i=0; i<tot; ++i )
-	if ( ptrtab[i]!=NULL ) {
-	    for ( j=i+1; j<tot; ++j )
-		if ( ptrtab[j]==ptrtab[i] )
-		    ptrtab[j] = NULL;
-	    gfree(ptrtab[i]);
-	}
+    if ( ptrtab!=NULL )
+	for ( i=0; i<tot; ++i )
+	    if ( ptrtab[i]!=NULL ) {
+		for ( j=i+1; j<tot; ++j )
+		    if ( ptrtab[j]==ptrtab[i] )
+			ptrtab[j] = NULL;
+		free(ptrtab[i]);
+	    }
 }
 
 GImage *GImageReadRgb(char *filename) {
-    FILE *fp = fopen(filename,"rb");
+    FILE *fp;			/* source file */
     struct sgiheader header;
-    int j,i;
+    int i,j,k;
     unsigned char *pt, *end;
+    unsigned char *r=NULL,*g=NULL,*b=NULL,*a=NULL;	/* Colors */
+    unsigned long *starttab=NULL /*, *lengthtab=NULL */;
+    unsigned char **ptrtab=NULL;
+    long tablen=0;
     unsigned long *ipt, *iend;
-    GImage *ret;
+    GImage *ret = NULL;
     struct _GImage *base;
 
-    if ( fp==NULL )
-return( NULL );
-    getsgiheader(&header,fp);
-    if ( header.magic!=SGI_MAGIC ||
-	    (header.format!=VERBATIM && header.format!=RLE) ||
-	    (header.bpc!=1 && header.bpc!=2) ||
-	    header.dim<1 || header.dim>3 ||
-	    header.pixmax>65535 || (header.pixmax>255 && header.bpc==1) ||
-	    (header.chans!=1 && header.chans!=3 && header.chans!=4) ||
-	    header.pixmax<0 || header.pixmin<0 || header.pixmin>header.pixmax ||
-	    header.colormap != 0 ) {
-	fclose(fp);
-return( NULL );
+    if ( (fp=fopen(filename,"rb"))==NULL ) {
+	fprintf(stderr,"Can't open \"%s\"\n", filename);
+	return( NULL );
     }
 
-    ret = GImageCreate(header.dim==3?it_true:it_index,header.width,header.height);
+    if ( getsgiheader(&header,fp) )
+	goto errorGImageReadRgbFile;
+
+    /* Create memory to hold image, exit with NULL if not enough memory */
+    if ( (ret=GImageCreate(header.dim==3?it_true:it_index,header.width,header.height))==NULL ) {
+	fclose(fp);
+	return( NULL );
+    }
     base = ret->u.image;
 
     if ( header.format==RLE ) {
-	unsigned long *starttab/*, *lengthtab*/;
-	unsigned char **ptrtab;
-	long tablen;
-
 	tablen = header.height*header.chans;
-	starttab = (unsigned long *)galloc(tablen*sizeof(long));
-	/*lengthtab = (unsigned long *)galloc(tablen*sizeof(long));*/
-	ptrtab = (unsigned char **)galloc(tablen*sizeof(unsigned char *));
-	readlongtab(fp,starttab,tablen);
-	/*readlongtab(fp,lengthtab,tablen);*/
+	if ( (starttab=(unsigned long *)calloc(1,tablen*sizeof(long)))==NULL || \
+	   /*(lengthtab=(unsigned long *)calloc(1,tablen*sizeof(long)))==NULL || \ */
+	     (ptrtab=(unsigned char **)calloc(1,tablen*sizeof(unsigned char *)))==NULL ) {
+	    NoMoreMemMessage();
+	    goto errorGImageReadRgbMem;
+	}
+	if ( readlongtab(fp,starttab,tablen) )
+	    /* || readlongtab(fp,lengthtab,tablen) */
+	    goto errorGImageReadRgbFile;
 	for ( i=0; i<tablen; ++i )
-	    find_scanline(fp,&header,i,starttab,ptrtab);
+	    if ( (k=find_scanline(fp,&header,i,starttab,ptrtab)) ) {
+		if ( k==-1 ) goto errorGImageReadRgbMem; else goto errorGImageReadRgbFile;
+	    }
 	if ( header.chans==1 ) {
 	    for ( i=0; i<header.height; ++i )
 		memcpy(base->data + (header.height-1-i)*base->bytes_per_line,ptrtab[i],header.width);
@@ -178,7 +233,7 @@ return( NULL );
 	    }
 	}
 	freeptrtab(ptrtab,tablen);
-	gfree(ptrtab); gfree(starttab); /*gfree(lengthtab);*/
+	free(ptrtab); free(starttab); /*free(lengthtab);*/
     } else {
 	if ( header.chans==1 && header.bpc==1 ) {
 	    for ( i=0; i<header.height; ++i ) {
@@ -192,45 +247,48 @@ return( NULL );
 	} else if ( header.chans==1 ) {
 	    for ( i=0; i<header.height; ++i ) {
 		pt = (unsigned char *) (base->data + (header.height-1-i)*base->bytes_per_line);
-		for ( end=pt+header.width; pt<end; )
-		    *pt++ = (getshort(fp)*255L)/header.pixmax;
+		for ( end=pt+header.width; pt<end; ) {
+		    if ( (k=getshort(fp))<0 ) goto errorGImageReadRgbFile;
+		    *pt++ = (k*255L)/header.pixmax;
+		}
 	    }
-	} else if ( header.bpc==1 ) {
-	    unsigned char *r,*g,*b, *a=NULL;
+	} else {
 	    unsigned char *rpt, *gpt, *bpt;
-	    r = (unsigned char *) galloc(header.width);
-	    g = (unsigned char *) galloc(header.width);
-	    b = (unsigned char *) galloc(header.width);
-	    if ( header.chans==4 )
-		a = (unsigned char *) galloc(header.width);
-	    for ( i=0; i<header.height; ++i ) {
-		fread(r,header.width,1,fp);
-		fread(g,header.width,1,fp);
-		fread(b,header.width,1,fp);
-		if ( header.chans==4 )
-		    fread(a,header.width,1,fp);
+	    if ( (r=(unsigned char *) malloc(header.width*sizeof(unsigned char)))==NULL || \
+		 (g=(unsigned char *) malloc(header.width*sizeof(unsigned char)))==NULL || \
+		 (b=(unsigned char *) malloc(header.width*sizeof(unsigned char)))==NULL || \
+		 (header.chans==4 && \
+		 (a=(unsigned char *) malloc(header.width*sizeof(unsigned char)))==NULL) ) {
+		NoMoreMemMessage();
+		goto errorGImageReadRgbMem;
+	    }
+	    if ( header.bpc==1 ) {
+		for ( i=0; i<header.height; ++i ) {
+		    if ( (fread(r,header.width,1,fp))<1 || \
+			 (fread(g,header.width,1,fp))<1 || \
+			 (fread(b,header.width,1,fp))<1 || \
+			 (header.chans==4 && (fread(a,header.width,1,fp))<1) )
+			goto errorGImageReadRgbFile;
 		ipt = (unsigned long *) (base->data + (header.height-1-i)*base->bytes_per_line);
 		rpt = r; gpt = g; bpt = b;
 		for ( iend=ipt+header.width; ipt<iend; )
 		    *ipt++ = COLOR_CREATE(*rpt++*255L/header.pixmax,
 			    *gpt++*255L/header.pixmax,*bpt++*255L/header.pixmax);
-	    }
-	    gfree(r); gfree(g); gfree(b); gfree(a);
-	} else {
-	    unsigned char *r,*g,*b, *a=NULL;
-	    unsigned char *rpt, *gpt, *bpt;
-	    r = (unsigned char *) galloc(header.width);
-	    g = (unsigned char *) galloc(header.width);
-	    b = (unsigned char *) galloc(header.width);
-	    if ( header.chans==4 )
-		a = (unsigned char *) galloc(header.width);
+		}
+	    } else {
 	    for ( i=0; i<header.height; ++i ) {
-		for ( j=0; j<header.width; ++j )
-		    r[j] = getshort(fp)*255L/header.pixmax;
-		for ( j=0; j<header.width; ++j )
-		    g[j] = getshort(fp)*255L/header.pixmax;
-		for ( j=0; j<header.width; ++j )
-		    b[j] = getshort(fp)*255L/header.pixmax;
+		for ( j=0; j<header.width; ++j ) {
+		    if ( (k=getshort(fp))<0 ) goto errorGImageReadRgbFile;
+		    r[j] = k*255L/header.pixmax;
+		}
+		for ( j=0; j<header.width; ++j ) {
+		    if ( (k=getshort(fp))<0 ) goto errorGImageReadRgbFile;
+		    g[j] = k*255L/header.pixmax;
+		}
+		for ( j=0; j<header.width; ++j ) {
+		    if ( (k=getshort(fp))<0 ) goto errorGImageReadRgbFile;
+		    b[j] = k*255L/header.pixmax;
+		}
 		if ( header.chans==4 ) {
 		    fread(a,header.width,1,fp);
 		    fread(a,header.width,1,fp);
@@ -240,9 +298,19 @@ return( NULL );
 		for ( iend=ipt+header.width; ipt<iend; )
 		    *ipt++ = COLOR_CREATE(*rpt++,*gpt++,*bpt++);
 	    }
-	    gfree(r); gfree(g); gfree(b); gfree(a);
+	    }
+	    free(r); free(g); free(b); free(a);
 	}
     }
-	    
-return( ret );
+    return( ret );
+
+errorGImageReadRgbFile:
+    fprintf(stderr,"Bad input file \"%s\"\n",filename );
+errorGImageReadRgbMem:
+    freeptrtab(ptrtab,tablen);
+    free(ptrtab); free(starttab); /*free(lengthtab);*/
+    free(r); free(g); free(b); free(a);
+    GImageDestroy(ret);
+    fclose(fp);
+    return( NULL );
 }
