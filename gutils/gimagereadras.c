@@ -221,23 +221,20 @@ static GImage *ReadRle8Bit(GImage *ret,int width, int height, FILE *fp ) {
     x=0; y=0; cnt=0;
     while ( 1 ) {
 	while ( cnt && x ) {
-	    *pt++ = val; --cnt; --x;
+	    --cnt; if ( --x || (width&1)-1 ) * pt++ = val;
 	}
 	if ( x==0 ) {
 	    pt = (unsigned char *) (base->data + y*base->bytes_per_line);
 	    if ( ++y>height )
 		return( ret );
-	    x=width;
+	    x=((width+1)>>1)<<1;
 	}
 	if ( cnt==0 ) {
 	    if ( (val=fgetc(fp))<0 ) goto errorReadRle8Bit;
-	    if ( val!=0x80 )
-		++cnt; /* ordinary value, then go insert it */
-	    else {
+	    cnt++;
+	    if ( val==0x80 ) {
 		if ( (cnt=fgetc(fp))<0 ) goto errorReadRle8Bit;
-		if ( cnt==0 )
-		    ++cnt; /* actually want to go insert 0x80 */
-		else
+		if ( cnt++!=0 )
 		    /* prepare to go insert 'val', 'cnt' times */
 		    if ( (val=fgetc(fp))<0 ) goto errorReadRle8Bit;
 	    }
