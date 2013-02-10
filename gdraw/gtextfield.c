@@ -2810,7 +2810,7 @@ return( NULL );
     for ( doit=0; doit<2; ++doit ) {
 	cnt=0;
 	for ( i=0; i<len; ++i ) {
-	    if ( u_strncmp(ti[i]->text,spt,match_len)==0 ) {
+	    if ( ti[i]->text && u_strncmp(ti[i]->text,spt,match_len)==0 ) {
 		if ( doit )
 		    ret[cnt] = u_copy(ti[i]->text);
 		++cnt;
