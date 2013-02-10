@@ -5549,6 +5549,8 @@ GMenuItem2 helplist[] = {
 };
 
 GMenuItem fvpopupmenu[] = {
+    { { (unichar_t *) N_("New O_utline Window"), 0, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, '\0', ksm_control, NULL, NULL, FVMenuOpenOutline, MID_OpenOutline },
+    GMENUITEM2_LINE,
     { { (unichar_t *) N_("Cu_t"), (GImage *) "editcut.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, '\0', ksm_control, NULL, NULL, FVMenuCut, MID_Cut },
     { { (unichar_t *) N_("_Copy"), (GImage *) "editcopy.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuCopy, MID_Copy },
     { { (unichar_t *) N_("C_opy Reference"), (GImage *) "editcopyref.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, FVMenuCopyRef, MID_CopyRef },
@@ -6580,7 +6582,7 @@ return;
 		FVToggleCharSelected(fv,pos);
 	    }
 	    if ( event->u.mouse.button==3 )
-		GMenuCreatePopupMenu(fv->v,event, fvpopupmenu);
+		GMenuCreatePopupMenuWithName(fv->v,event, "Popup", fvpopupmenu);
 	    else
 		fv->pressed = GDrawRequestTimer(fv->v,200,100,NULL);
 	}
@@ -7103,6 +7105,7 @@ static void FVCreateInnards(FontView *fv,GRect *pos) {
     wattrs.background_color = view_bgcol;
     fv->v = GWidgetCreateSubWindow(gw,pos,v_e_h,fv,&wattrs);
     GDrawSetVisible(fv->v,true);
+    GDrawSetWindowTypeName(fv->v, "FontView");
 
     fv->gic   = GDrawCreateInputContext(fv->v,gic_root|gic_orlesser);
     fv->gwgic = GDrawCreateInputContext(fv->gw,gic_root|gic_orlesser);

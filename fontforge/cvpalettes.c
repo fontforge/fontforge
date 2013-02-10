@@ -3212,7 +3212,7 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
     }
 
     cv->had_control = (event->u.mouse.state&ksm_control)?1:0;
-    GMenuCreatePopupMenu(cv->v,event, mi);
+    GMenuCreatePopupMenuWithName(cv->v,event, "Popup", mi);
 }
 
 static void CVPaletteCheck(CharView *cv) {
