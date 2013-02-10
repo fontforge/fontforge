@@ -360,6 +360,17 @@ static Hotkey* hotkeyFindByAction( char* action ) {
     return 0;
 }
 
+Hotkey* hotkeyFindByMenuPathInSubMenu( GWindow w, char* subMenuName, char* path ) {
+
+    char* wt = GDrawGetWindowTypeName(w);
+    if(!wt)
+	return 0;
+
+    char line[PATH_MAX+1];
+    snprintf(line,PATH_MAX,"%s.%s%s%s",wt, subMenuName, ".Menu.", path );
+//    printf("line:%s\n",line);
+    return(hotkeyFindByAction(line));
+}
 
 Hotkey* hotkeyFindByMenuPath( GWindow w, char* path ) {
 
