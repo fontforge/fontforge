@@ -107,6 +107,7 @@ typedef struct gmenuitem2 {
     int mid;
 } GMenuItem2;
 
+#define GMENUITEM2_LINE   { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, '\0', 0, NULL, NULL, NULL, 0 }
 #define GMENUITEM2_EMPTY { GTEXTINFO_EMPTY, NULL, NULL, NULL, NULL, 0 }
 
 
@@ -529,8 +530,13 @@ enum fchooserret GFileChooserDefFilter(GGadget *g,struct gdirentry *ent,
 	const unichar_t *dir);
 
 GWindow GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi);
+GWindow GMenuCreatePopupMenuWithName(GWindow owner,GEvent *event, char* subMenuName,GMenuItem *mi);
 GWindow _GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi,
-	void (*donecallback)(GWindow owner));
+			      void (*donecallback)(GWindow owner));
+GWindow _GMenuCreatePopupMenuWithName(GWindow owner,GEvent *event, GMenuItem *mi,
+				      char* subMenuName, 
+				      void (*donecallback)(GWindow owner));
+
 
 GGadget *GLineCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GGroupCreate(struct gwindow *base, GGadgetData *gd,void *data);

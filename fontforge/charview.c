@@ -10761,6 +10761,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     cv->v = GWidgetCreateSubWindow(cv->gw,&pos,v_e_h,cv,&wattrs);
+    GDrawSetWindowTypeName(cv->v, "CharView");
 
     if ( GDrawRequestDeviceEvents(cv->v,input_em_cnt,input_em)>0 ) {
 	/* Success! They've got a wacom tablet */

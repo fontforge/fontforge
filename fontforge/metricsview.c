@@ -4936,6 +4936,8 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     mv->v = GWidgetCreateSubWindow(mv->gw,&pos,mv_v_e_h,mv,&wattrs);
+    GDrawSetWindowTypeName(mv->v, "MetricsView");
+    
     MVSetFeatures(mv);
     MVMakeLabels(mv);
     MVResize(mv);

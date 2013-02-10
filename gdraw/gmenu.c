@@ -167,6 +167,7 @@ typedef struct gmenu {
     FontInstance *font;
     void (*donecallback)(GWindow owner);
     GIC *gic;
+    char subMenuName[100];
     /* The code below still contains the old code for using up/down arrows */
     /*  in the menu instead of a scrollbar. If vsb==NULL and the menu doesn't */
     /*  fit on the screen, then the old code will be implemented (normally */
@@ -508,7 +509,7 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
     int r2l = false;
     int x;
 
-    /* printf("GMenuDrawMenuLine(top)\n"); */
+    //printf("GMenuDrawMenuLine(top)\n");
     /* if(mi->ti.text) */
     /* 	printf("GMenuDrawMenuLine() mi:%s\n",u_to_c(mi->ti.text)); */
 	
@@ -557,25 +558,33 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	 * to get the hotkey if there is one for that menu item.
 	 */
 	GMenuBar* toplevel = getTopLevelMenubar(m);
+	Hotkey* hk = 0;
 	if( toplevel )
 	{
-	    short_mask = 0;
-	    uc_strcpy(shortbuf,"");
+	    hk = hotkeyFindByMenuPath( toplevel->g.base,
+				       GMenuGetMenuPath( toplevel->mi, mi ));
+	}
+	else if( m->owner && strlen(m->subMenuName) ) 
+	{
+	    hk = hotkeyFindByMenuPathInSubMenu( m->owner, m->subMenuName,
+						GMenuGetMenuPath( m->mi, mi ));
+	}
+	
+	short_mask = 0;
+	uc_strcpy(shortbuf,"");
+	
+	if( hk )
+	{
 	    /* printf("m->menubar->mi: %p\n", toplevel->mi ); */
 	    /* printf("m->menubar->window: %p\n", toplevel->g.base ); */
-	    Hotkey* hk = hotkeyFindByMenuPath( toplevel->g.base,
-					       GMenuGetMenuPath( toplevel->mi, mi ));
-//	    printf("hk: %p\n", hk );
-	    if(hk)
+	    /* printf("drawline... hk: %p\n", hk ); */
+	    short_mask = hk->state;
+	    char* keydesc = hk->text;
+	    if( mac_menu_icons )
 	    {
-		short_mask = hk->state;
-		char* keydesc = hk->text;
-		if( mac_menu_icons )
-		{
-		    keydesc = hotkeyTextWithoutModifiers( keydesc );
-		}
-		uc_strcpy( shortbuf, keydesc );
+		keydesc = hotkeyTextWithoutModifiers( keydesc );
 	    }
+	    uc_strcpy( shortbuf, keydesc );
 	}
 	
 	width = GDrawGetTextWidth(pixmap,shortbuf,-1);
@@ -606,6 +615,7 @@ static int gmenu_expose(struct gmenu *m, GEvent *event,GWindow pixmap) {
     GRect r;
     int i;
 
+    /* printf("gmenu_expose() m:%p ev:%p\n",m,event); */
     GDrawPushClip(pixmap,&event->u.expose.rect,&old1);
     r.x = 0; r.width = m->width; r.y = 0; r.height = m->height;
     GBoxDrawBackground(pixmap,&r,m->box,gs_active,false);
@@ -1463,7 +1473,9 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
 			     GMenuItem *mi,
 			     GPoint *where,
 			     int awidth, int aheight,
-			     GFont *font, int disable) {
+			     GFont *font, int disable,
+			     char* subMenuName )
+{
     GMenu *m = gcalloc(1,sizeof(GMenu));
     GRect pos;
     GDisplay *disp = GDrawGetDisplayOfWindow(owner);
@@ -1482,7 +1494,8 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
     m->box = &menu_box;
     m->tickoff = m->tioff = m->bp = GBoxBorderWidth(owner,m->box);
     m->line_with_mouse = -1;
-
+    if( subMenuName )
+	strncpy(m->subMenuName,subMenuName,sizeof(m->subMenuName)-1);
 /* Mnemonics in menus don't work under gnome. Turning off nodecor makes them */
 /*  work, but that seems a high price to pay */
     pattrs.mask = wam_events|wam_nodecor|wam_positioned|wam_cursor|wam_transient|wam_verytransient;
@@ -1521,18 +1534,29 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
 	 * first and then add the modifier icons if there are to be
 	 * any for the key combination.
 	 */
+//	printf("_gmenu_create() toplevel:%p owner:%p\n", toplevel, owner );
+
+	Hotkey* hk = 0;
 	if( toplevel ) {
-	    Hotkey* hk = hotkeyFindByMenuPath( toplevel->g.base,
-					       GMenuGetMenuPath( toplevel->mi, &mi[i] ));
-	    if(hk) {
-		short_mask = hk->state;
-		char* keydesc = hk->text;
-		if( mac_menu_icons )
-		{
-		    keydesc = hotkeyTextWithoutModifiers( keydesc );
-		}
-		uc_strcpy( buffer, keydesc );
+	    hk = hotkeyFindByMenuPath( toplevel->g.base,
+				       GMenuGetMenuPath( toplevel->mi, &mi[i] ));
+	}
+	else if( owner && strlen(m->subMenuName) )
+	{
+	    hk = hotkeyFindByMenuPathInSubMenu( owner, m->subMenuName,
+						GMenuGetMenuPath( mi, &mi[i] ));
+	}
+	
+//	printf("hk:%p\n", hk);
+	if( hk )
+	{
+	    short_mask = hk->state;
+	    char* keydesc = hk->text;
+	    if( mac_menu_icons )
+	    {
+		keydesc = hotkeyTextWithoutModifiers( keydesc );
 	    }
+	    uc_strcpy( buffer, keydesc );
 	    
 	    temp = GDrawGetTextWidth(m->w,buffer,-1);
 	    if( short_mask && mac_menu_icons ) {
@@ -1625,12 +1649,13 @@ return( m );
 static GMenu *GMenuCreateSubMenu(GMenu *parent,GMenuItem *mi,int disable) {
     GPoint p;
     GMenu *m;
-
+    char *subMenuName = 0;
+    
     p.x = parent->width;
     p.y = (parent->line_with_mouse-parent->offtop)*parent->fh + parent->bp;
     GDrawTranslateCoordinates(parent->w,GDrawGetRoot(GDrawGetDisplayOfWindow(parent->w)),&p);
     m = _GMenu_Create(getTopLevelMenubar(parent),parent->owner,mi,&p,-parent->width,parent->fh,
-	    parent->font, disable);
+		      parent->font, disable, subMenuName );
     m->parent = parent;
     m->pressed = parent->pressed;
 return( m );
@@ -1639,22 +1664,34 @@ return( m );
 static GMenu *GMenuCreatePulldownMenu(GMenuBar *mb,GMenuItem *mi,int disabled) {
     GPoint p;
     GMenu *m;
+    char *subMenuName = 0;
 
     p.x = mb->g.inner.x + mb->xs[mb->entry_with_mouse]-
 	    GBoxDrawnWidth(mb->g.base,&menu_box );
     p.y = mb->g.r.y + mb->g.r.height;
     GDrawTranslateCoordinates(mb->g.base,GDrawGetRoot(GDrawGetDisplayOfWindow(mb->g.base)),&p);
-    m = _GMenu_Create(mb,mb->g.base,mi,&p,
-	    mb->xs[mb->entry_with_mouse+1]-mb->xs[mb->entry_with_mouse],
-	    -mb->g.r.height,mb->font, disabled);
+    m = _GMenu_Create( mb, mb->g.base, mi, &p,
+		       mb->xs[mb->entry_with_mouse+1]-mb->xs[mb->entry_with_mouse],
+		       -mb->g.r.height,
+		       mb->font, disabled, subMenuName );
     m->menubar = mb;
     m->pressed = mb->pressed;
     _GWidget_SetPopupOwner((GGadget *) mb);
 return( m );
 }
 
-GWindow _GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi,
-	void (*donecallback)(GWindow) ) {
+GWindow _GMenuCreatePopupMenu( GWindow owner,GEvent *event, GMenuItem *mi,
+			       void (*donecallback)(GWindow) )
+{
+    char *subMenuName = 0;
+    return _GMenuCreatePopupMenuWithName( owner, event, mi, subMenuName, donecallback );
+}
+
+
+GWindow _GMenuCreatePopupMenuWithName( GWindow owner,GEvent *event, GMenuItem *mi,
+				       char *subMenuName,
+				       void (*donecallback)(GWindow) )
+{
     GPoint p;
     GMenu *m;
     GEvent e;
@@ -1665,7 +1702,8 @@ GWindow _GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi,
     p.x = event->u.mouse.x;
     p.y = event->u.mouse.y;
     GDrawTranslateCoordinates(owner,GDrawGetRoot(GDrawGetDisplayOfWindow(owner)),&p);
-    m = _GMenu_Create(0,owner,GMenuItemArrayCopy(mi,NULL),&p,0,0,menu_font,false);
+    m = _GMenu_Create( 0, owner, GMenuItemArrayCopy(mi,NULL), &p,
+		       0, 0, menu_font,false, subMenuName );
     m->any_unmasked_shortcuts = GMenuItemArrayAnyUnmasked(m->mi);
     GDrawPointerUngrab(GDrawGetDisplayOfWindow(owner));
     GDrawPointerGrab(m->w);
@@ -1678,9 +1716,18 @@ GWindow _GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi,
 return( m->w );
 }
 
-GWindow GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi) {
-return( _GMenuCreatePopupMenu(owner,event,mi,NULL));
+GWindow GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi)
+{
+    char* subMenuName = 0;
+    return( _GMenuCreatePopupMenuWithName(owner,event,mi,subMenuName,NULL));
 }
+
+GWindow GMenuCreatePopupMenuWithName(GWindow owner,GEvent *event,
+				     char* subMenuName, GMenuItem *mi)
+{
+    return( _GMenuCreatePopupMenuWithName(owner,event,mi,subMenuName,NULL));
+}
+
 
 int GMenuPopupCheckKey(GEvent *event) {
 
