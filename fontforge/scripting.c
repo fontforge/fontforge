@@ -4619,23 +4619,27 @@ static void bItalic(Context *c) {
 }
 
 static void bSmallCaps(Context *c) {
-    struct smallcaps small;
-    struct genericchange genchange;
+    struct smallcaps small = {};
+    struct position_maps maps[2] = {{ .cur_width = -1 }, { .cur_width = 1 }};
+    struct genericchange genchange = {
+	.stem_height_scale = 0.93, .stem_width_scale = 0.93,
+	.hcounter_scale = 0.66,	.lsb_scale = 0.66, .rsb_scale = 0.66,
+	.v_scale = 0.675,
+	.gc = gc_smallcaps,
+	.extension_for_letters = "sc",
+	.extension_for_symbols = "taboldstyle",
+	.use_vert_mapping = 1,
+	.dstem_control = 1,
+	.m = { .cnt = 2, .maps = maps },
+	.small = &small
+    };
 
     if ( c->a.argc>1 )
 	ScriptError( c, "Wrong number of arguments");
     SmallCapsFindConstants(&small,c->curfv->sf,c->curfv->active_layer);
-    memset(&genchange,0,sizeof(genchange));
-    genchange.small = &small;
-    genchange.gc = gc_smallcaps;
-    genchange.extension_for_letters = "sc";
-    genchange.extension_for_symbols = "taboldstyle";
 
-    genchange.stem_width_scale  = small.lc_stem_width / small.uc_stem_width;
-    genchange.stem_height_scale = genchange.stem_width_scale;
-    genchange.v_scale           = small.xheight / small.capheight;
-    genchange.hcounter_scale    = genchange.v_scale;
-    genchange.lsb_scale = genchange.rsb_scale = genchange.v_scale;
+    maps[1].current = small.capheight;
+    maps[1].desired = small.scheight;
 
     FVAddSmallCaps(c->curfv,&genchange);
 }
