@@ -4406,6 +4406,27 @@ return( true );
 return( false );
 }
 
+
+int KernClassFindIndexContaining( char **firsts_or_seconds,
+				  int firsts_or_seconds_size,
+				  const char *name )
+{
+    int ret = -1;
+    int i = 0 ;
+
+    for ( i=1; i < firsts_or_seconds_size; ++i )
+    {
+	if ( PSTContains(firsts_or_seconds[i],name) )
+	{
+	    ret = i;
+	    break;
+	}
+    }
+    
+    return ret;
+}
+
+
 int KernClassContains(KernClass *kc, char *name1, char *name2, int ordered ) {
     int infirst=0, insecond=0, scpos1, kwpos1, scpos2, kwpos2;
     int i;

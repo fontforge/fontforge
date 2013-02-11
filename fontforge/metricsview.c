@@ -1118,6 +1118,7 @@ return( gwwv_ask(_("Use Kerning Class?"),(const char **) yesno,0,1,
 	second_is_0 ? _("{Everything Else}") : lsc->name)==0 );
 }
 
+
 static int MV_ChangeKerning(MetricsView *mv, int which, int offset, int is_diff) {
     SplineChar *sc = mv->glyphs[which].sc;
     SplineChar *psc = mv->glyphs[which-1].sc;
@@ -1213,8 +1214,10 @@ return( false );
 		MMKern(sc->parent,psc,sc,is_diff?offset:offset-kp->off,sub,kp);
 	}
     }
-    mv->perchar[which-1].kernafter = iscale * (offset*mv->pixelsize)/
-	    (mv->sf->ascent+mv->sf->descent);
+    int16 newkernafter = iscale * (offset*mv->pixelsize)/
+	(mv->sf->ascent+mv->sf->descent);
+    mv->perchar[which-1].kernafter = newkernafter;
+    
     if ( mv->vertical ) {
 	for ( i=which; i<mv->glyphcnt; ++i ) {
 	    mv->perchar[i].dy = mv->perchar[i-1].dy+mv->perchar[i-1].dheight +
@@ -1226,8 +1229,79 @@ return( false );
 		    mv->perchar[i-1].kernafter;
 	}
     }
+
+    /**
+     * Class based kerning. If we have altered one pair "Tc" then we
+     * want to find any other pairs in the same class that are shown
+     * and alter them in a similar way. Note that the update to the
+     * value shown is already done as that is taken from the
+     * KernClass. We can get away with just calling MVRefreshValues()
+     * on the right indexes to update the kern value entry boxes. On
+     * the other hand, we have to make sure the guide and glyph
+     * display is adjusted accordingly too otherwise the user will not
+     * see the currect kerning for all other digraphs in the same
+     * class even thuogh the kerning entry box is updated.
+     */
+    if( kc && psc && sc )
+    {
+	// cache the cell in the kernclass that we are editing for quick comparison
+	// in the loop
+	int pscidx = KernClassFindIndexContaining( kc->firsts,  kc->first_cnt,  psc->name );
+	int  scidx = KernClassFindIndexContaining( kc->seconds, kc->second_cnt,  sc->name );
+
+	if( pscidx > 0 && scidx > 0 )
+	{
+	    for ( i=1; i<mv->glyphcnt; ++i )
+	    {
+		// don't check yourself.
+		if( i-1 == which )
+		    continue;
+
+		/* printf("mv->glyphs[i-1].sc.name:%s\n", mv->glyphs[i-1].sc->name ); */
+		/* printf("mv->glyphs[i  ].sc.name:%s\n", mv->glyphs[i  ].sc->name ); */
+
+		int pidx = KernClassFindIndexContaining( kc->firsts,
+							 kc->first_cnt,
+							 mv->glyphs[i-1].sc->name );
+		/*
+		 * Same value for firsts in the kernclass matrix
+		 */ 
+		if( pidx == pscidx )
+		{
+		    int idx = KernClassFindIndexContaining( kc->seconds,
+							    kc->second_cnt,
+							    mv->glyphs[ i ].sc->name );
+
+		    /*
+		     * First and Second match, we have the same cell
+		     * in the kernclass and thus the same kern value
+		     * should be applied.
+		     */ 
+		    if( scidx == idx )
+		    {
+			// update the kern text entry box in the lower part of
+			// the window.
+			MVRefreshValues( mv, i-1 );
+
+			//
+			// Shift the guide and kerning for this digraph, and move
+			// all the glyphs on the right over or back a bit so that things
+			// still all fit as expected.
+			//
+			mv->perchar[i-1].kernafter = newkernafter;
+			for ( int j=i; j<mv->glyphcnt; ++j ) {
+			    mv->perchar[j].dx = mv->perchar[j-1].dx + mv->perchar[j-1].dwidth +
+				mv->perchar[j-1].kernafter;
+			}
+		    }
+		}
+	    }
+	}
+    }
+
     mv->sf->changed = true;
     GDrawRequestExpose(mv->v,NULL,false);
+
 return( true );
 }
 
