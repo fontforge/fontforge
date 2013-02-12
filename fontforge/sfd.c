@@ -60,7 +60,7 @@ static char *joins[] = { "miter", "round", "bevel", "inher", NULL };
 static char *caps[] = { "butt", "round", "square", "inher", NULL };
 static char *spreads[] = { "pad", "reflect", "repeat", NULL };
 
-int PrefMaxBackupsToKeep = 1;
+int PrefMaxBackupsToKeep = 20;
 
 
 /* I will retain this list in case there are still some really old sfd files */
