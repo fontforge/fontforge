@@ -3283,4 +3283,10 @@ extern SplineChar ***GlyphClassesFromNames(SplineFont *sf,char **classnames,
 extern void SCRemoveKern(SplineChar* sc);
 extern void SCRemoveVKern(SplineChar* sc);
 
+/**
+ * Return falise if the container does not contain "sought"
+ * Return true if sought is in the container.
+ */
+extern int SplinePointListContains( SplinePointList* container, SplinePointList* sought );
+
 #endif
