@@ -727,3 +727,40 @@ char *getHelpDir(void) {
     set = true;
     return sharedir;
 }
+
+char *getDotFontForgeDir(void) {
+    char buffer[PATH_MAX];
+    static char *editdir = NULL;
+    char *dir;
+    char olddir[1024];
+
+    if ( editdir!=NULL )
+return( editdir );
+
+    dir = GFileGetHomeDir();
+    if ( dir==NULL )
+return( NULL );
+#ifdef __VMS
+   sprintf(buffer,"%s/_FontForge", dir);
+#else
+   sprintf(buffer,"%s/.FontForge", dir);
+#endif
+   /* We used to use .PfaEdit. So if we don't find a .FontForge look for that*/
+    /*  if there is a .PfaEdit, then rename it to .FontForge */
+    if ( access(buffer,F_OK)==-1 ) {
+#ifdef __VMS
+       snprintf(olddir,sizeof(olddir),"%s/_PfaEdit", dir);
+#else
+       snprintf(olddir,sizeof(olddir),"%s/.PfaEdit", dir);
+#endif
+       if ( access(olddir,F_OK)==0 )
+	    rename(olddir,buffer);
+    }
+    free(dir);
+    /* If we still can't find it, create it */
+    if ( access(buffer,F_OK)==-1 )
+	if ( GFileMkDir(buffer)==-1 )
+return( NULL );
+    editdir = copy(buffer);
+return( editdir );
+}

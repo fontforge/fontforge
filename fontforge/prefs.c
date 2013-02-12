@@ -1050,7 +1050,127 @@ static void ParseNewMacFeature(FILE *p,char *line) {
     user_mac_feature_map = default_mac_feature_map;
 }
 
-static void PrefsUI_LoadPrefs(void) {
+static void PrefsUI_LoadPrefs_FromFile( char* filename )
+{
+    FILE *p;
+    char line[1100];
+    int i, j, ri=0, mn=0, ms=0, fn=0, ff=0, filt_max=0;
+    int msp=0, msc=0;
+    char *pt;
+    struct prefs_list *pl;
+
+    if ( filename!=NULL && (p=fopen(filename,"r"))!=NULL ) {
+	while ( fgets(line,sizeof(line),p)!=NULL ) {
+	    if ( *line=='#' )
+	continue;
+	    pt = strchr(line,':');
+	    if ( pt==NULL )
+	continue;
+	    for ( j=0; load_prefs_list[j]!=NULL; ++j ) {
+		for ( i=0; load_prefs_list[j][i].name!=NULL; ++i )
+		    if ( strncmp(line,load_prefs_list[j][i].name,pt-line)==0 )
+		break;
+		if ( load_prefs_list[j][i].name!=NULL )
+	    break;
+	    }
+	    pl = NULL;
+	    if ( load_prefs_list[j]!=NULL )
+		pl = &load_prefs_list[j][i];
+	    for ( ++pt; *pt=='\t'; ++pt );
+	    if ( line[strlen(line)-1]=='\n' )
+		line[strlen(line)-1] = '\0';
+	    if ( line[strlen(line)-1]=='\r' )
+		line[strlen(line)-1] = '\0';
+	    if ( pl==NULL ) {
+		if ( strncmp(line,"Recent:",strlen("Recent:"))==0 && ri<RECENT_MAX )
+		    RecentFiles[ri++] = copy(pt);
+		else if ( strncmp(line,"MenuScript:",strlen("MenuScript:"))==0 && ms<SCRIPT_MENU_MAX )
+		    script_filenames[ms++] = copy(pt);
+		else if ( strncmp(line,"MenuName:",strlen("MenuName:"))==0 && mn<SCRIPT_MENU_MAX )
+		    script_menu_names[mn++] = utf82u_copy(pt);
+		else if ( strncmp(line,"FontFilterName:",strlen("FontFilterName:"))==0 ) {
+		    if ( fn>=filt_max )
+			user_font_filters = grealloc(user_font_filters,((filt_max+=10)+1)*sizeof( struct openfilefilters));
+		    user_font_filters[fn].filter = NULL;
+		    user_font_filters[fn++].name = copy(pt);
+		    user_font_filters[fn].name = NULL;
+		} else if ( strncmp(line,"FontFilter:",strlen("FontFilter:"))==0 ) {
+		    if ( ff<filt_max )
+			user_font_filters[ff++].filter = copy(pt);
+		} else if ( strncmp(line,"MacMapCnt:",strlen("MacSetCnt:"))==0 ) {
+		    sscanf( pt, "%d", &msc );
+		    msp = 0;
+		    user_macfeat_otftag = gcalloc(msc+1,sizeof(struct macsettingname));
+		} else if ( strncmp(line,"MacMapping:",strlen("MacMapping:"))==0 && msp<msc ) {
+		    ParseMacMapping(pt,&user_macfeat_otftag[msp++]);
+		} else if ( strncmp(line,"MacFeat:",strlen("MacFeat:"))==0 ) {
+		    ParseNewMacFeature(p,line);
+		}
+	continue;
+	    }
+	    switch ( pl->type ) {
+	      case pr_encoding:
+		{ Encoding *enc = FindOrMakeEncoding(pt);
+		    if ( enc==NULL )
+			enc = FindOrMakeEncoding("ISO8859-1");
+		    if ( enc==NULL )
+			enc = &custom;
+		    *((Encoding **) (pl->val)) = enc;
+		}
+	      break;
+	      case pr_namelist:
+		{ NameList *nl = NameListByName(pt);
+		    if ( strcmp(pt,"NULL")==0 && pl->val != &namelist_for_new_fonts )
+			*((NameList **) (pl->val)) = NULL;
+		    else if ( nl!=NULL )
+			*((NameList **) (pl->val)) = nl;
+		}
+	      break;
+	      case pr_bool: case pr_int:
+		sscanf( pt, "%d", (int *) pl->val );
+	      break;
+	      case pr_unicode:
+		if ( sscanf( pt, "U+%x", (int *) pl->val )!=1 )
+		    if ( sscanf( pt, "u+%x", (int *) pl->val )!=1 )
+			sscanf( pt, "%x", (int *) pl->val );
+	      break;
+	      case pr_real: case pr_angle:
+		{ char *end;
+		    *((float *) pl->val) = strtod(pt,&end);
+		    if (( *end==',' || *end=='.' ) ) {
+			*end = (*end=='.')?',':'.';
+			*((float *) pl->val) = strtod(pt,NULL);
+		    }
+		}
+		if ( pl->type == pr_angle )
+		    *(float *) pl->val /= RAD2DEG;
+	      break;
+	      case pr_string: case pr_file:
+		if ( *pt=='\0' ) pt=NULL;
+		if ( pl->val!=NULL )
+		    *((char **) (pl->val)) = copy(pt);
+		else
+		    (pl->set)(copy(pt));
+	      break;
+	    }
+	}
+	fclose(p);
+    }
+}
+
+void Prefs_LoadDefaultPreferences( void )
+{
+    char filename[PATH_MAX+1];
+    char* sharedir = getShareDir();
+    int rc = 0;
+    
+    snprintf(filename,PATH_MAX,"%s/prefs", sharedir );
+    PrefsUI_LoadPrefs_FromFile( filename );
+}
+
+
+static void PrefsUI_LoadPrefs(void)
+{
     char *prefs = getPfaEditPrefs();
     FILE *p;
     char line[1100];
