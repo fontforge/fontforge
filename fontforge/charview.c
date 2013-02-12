@@ -1160,19 +1160,31 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
     CVDrawSplineSetSpecialized( cv, pixmap, set, fg, dopoints, clip, sfm_stroke );
 }
 
+
 void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *set,
 				Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode ) {
     SplinePointList *spl;
     int currentSplineCounter = 0;
+    int activelayer = CVLayer(&cv->b);
 
     if( strokeFillMode == sfm_fill ) {
 	GDrawFillRuleSetWinding(pixmap);
     }
+    
     for ( spl = set; spl!=NULL; spl = spl->next ) {
 
 	Color fc  = spl->is_clip_path ? clippathcol : fg;
-	if ( DrawOpenPathsWithHighlight
-	     && cv->b.drawmode==dm_fore
+	/**
+	 * Only make the outline red if this is not a grid layer
+	 * and we want to highlight open paths
+	 * and the activelayer is sane
+	 * and the activelayer contains the given splinepointlist
+	 * and the path is open
+	 */
+	if ( cv->b.drawmode!=dm_grid
+	     && DrawOpenPathsWithHighlight
+	     && activelayer < cv->b.sc->layer_cnt
+	     && SplinePointListContains( cv->b.sc->layers[activelayer].splines, spl )
 	     && spl->first
 	     && spl->first->prev==NULL )
 	{
