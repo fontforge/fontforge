@@ -1,3 +1,32 @@
+CharView.Popup.Menu.Get Info...:Ctl+I
+CharView.Popup.Menu.Pointer: v
+CharView.Popup.Menu.Magnify: a
+CharView.Popup.Menu.Draw a freehand curve: f
+CharView.Popup.Menu.Scroll by hand: h
+CharView.Popup.Menu.Add Anchor:Ctl+0
+FontView.Popup.Menu.FontView.Menu.Metrics.Set Vertical Advance...: No Shortcut
+FontView.Popup.Menu.New Outline Window:Ctl+H
+FontView.Popup.Menu.Cut:Ctl+X
+FontView.Popup.Menu.Copy:Ctl+C
+FontView.Popup.Menu.Copy Reference:Ctl+G
+FontView.Popup.Menu.Copy Width:Ctl+W
+FontView.Popup.Menu.Paste:Ctl+V
+FontView.Popup.Menu.Clear: No Shortcut
+FontView.Popup.Menu.Copy Fg To Bg:Ctl+Shft+C
+FontView.Popup.Menu.Unlink Reference:Ctl+U
+FontView.Popup.Menu.Glyph Info...:Ctl+I
+FontView.Popup.Menu.Transformations.Transform...:Ctl+\
+FontView.Popup.Menu.Expand Stroke...:Ctl+Shft+E
+FontView.Popup.Menu.Round.To Int:Ctl+Shft+_
+FontView.Popup.Menu.Correct Direction:Ctl+Shft+D
+FontView.Popup.Menu.AutoHint:Ctl+Shft+H
+FontView.Popup.Menu.Center in Width: No Shortcut
+FontView.Popup.Menu.Thirds in Width: No Shortcut
+FontView.Popup.Menu.Set Width...:Ctl+Shft+L
+FontView.Popup.Menu.Set Vertical Advance...: No Shortcut
+
+
+
 CharView.Menu.File.New: Ctl+N
 CharView.Menu.File.Open: Ctl+O
 CharView.Menu.File.Close: Ctl+Shft+Q
@@ -258,12 +287,6 @@ CharView.Menu.Help.Index:Ctl+F1
 CharView.Menu.Help.About...: No Shortcut
 CharView.Menu.Help.License...: No Shortcut
 
-CharView.Popup.Menu.Get Info...:Ctl+I
-CharView.Popup.Menu.Pointer: v
-CharView.Popup.Menu.Magnify: a
-CharView.Popup.Menu.Draw a freehand curve: f
-CharView.Popup.Menu.Scroll by hand: h
-CharView.Popup.Menu.Add Anchor:Ctl+0
 
 
 FontView.Menu.File.New: Ctl+N
@@ -495,7 +518,6 @@ FontView.Menu.Help.Index:Ctl+F1
 FontView.Menu.Help.About...: No Shortcut
 FontView.Menu.Help.License...: No Shortcut
 
-FontView.Popup.Menu.FontView.Menu.Metrics.Set Vertical Advance...: No Shortcut
 FontView.Menu.Metrics.Auto Width...:Ctl+Shft+W
 FontView.Menu.Metrics.Kern By Classes...: No Shortcut
 FontView.Menu.Metrics.Remove All Kern Pairs: No Shortcut
@@ -527,7 +549,6 @@ FontView.Menu.Help.Index:Ctl+F1
 FontView.Menu.Help.About...: No Shortcut
 FontView.Menu.Help.License...: No Shortcut
 
-FontView.Popup.Menu.FontView.Menu.Metrics.Set Vertical Advance...: No Shortcut
 FontView.Menu.Metrics.Auto Width...:Ctl+Shft+W
 FontView.Menu.Metrics.Kern By Classes...: No Shortcut
 FontView.Menu.Metrics.Remove All Kern Pairs: No Shortcut
@@ -558,26 +579,6 @@ FontView.Menu.Help.Overview:Shft+F1
 FontView.Menu.Help.Index:Ctl+F1
 FontView.Menu.Help.About...: No Shortcut
 FontView.Menu.Help.License...: No Shortcut
-
-FontView.Popup.Menu.New Outline Window:Ctl+H
-FontView.Popup.Menu.Cut:Ctl+X
-FontView.Popup.Menu.Copy:Ctl+C
-FontView.Popup.Menu.Copy Reference:Ctl+G
-FontView.Popup.Menu.Copy Width:Ctl+W
-FontView.Popup.Menu.Paste:Ctl+V
-FontView.Popup.Menu.Clear: No Shortcut
-FontView.Popup.Menu.Copy Fg To Bg:Ctl+Shft+C
-FontView.Popup.Menu.Unlink Reference:Ctl+U
-FontView.Popup.Menu.Glyph Info...:Ctl+I
-FontView.Popup.Menu.Transformations.Transform...:Ctl+\
-FontView.Popup.Menu.Expand Stroke...:Ctl+Shft+E
-FontView.Popup.Menu.Round.To Int:Ctl+Shft+_
-FontView.Popup.Menu.Correct Direction:Ctl+Shft+D
-FontView.Popup.Menu.AutoHint:Ctl+Shft+H
-FontView.Popup.Menu.Center in Width: No Shortcut
-FontView.Popup.Menu.Thirds in Width: No Shortcut
-FontView.Popup.Menu.Set Width...:Ctl+Shft+L
-FontView.Popup.Menu.Set Vertical Advance...: No Shortcut
 
 
 
