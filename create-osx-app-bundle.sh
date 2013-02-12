@@ -63,10 +63,12 @@ cp -av /opt/local/share/mime/magic      opt/local/share/mime
 
 
 cd $TEMPDIR
-zip -r ~/MacFontForgeBundledApp.zip FontForge.app
+zip -r ~/FontForge.app.zip FontForge.app
+cp -f ~/FontForge.app.zip /tmp/
+chmod o+r /tmp/FontForge.app.zip
 
 echo "Completed at `date`"
-ls -lh `echo ~`/MacFontForgeBundledApp.zip
+ls -lh `echo ~`/FontForge.app.zip
 
 
 

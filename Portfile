@@ -1,12 +1,19 @@
 # -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:filetype=tcl:et:sw=4:ts=4:sts=4
 # $Id$
 
+### leave the MIQ tags here so that the same portfile can be 
+### shared in the main github repo and modified to enable
+### this local git cache to be used by a local build.
+###
+### Lines starting with triple # and ending in hash MIQ will be
+### uncommented by the mac air build system.
+
 PortSystem      1.0
 
 name            fontforge
 version         2.0.0_beta1
 set docversion  2.0.0_beta1
-revision        71
+revision        74
 categories      graphics fonts
 platforms       darwin
 maintainers     Ben Martin
@@ -41,6 +48,11 @@ fetch.type      git
 git.url         https://github.com/fontforge/fontforge.git
 git.branch      master
 use_autoreconf  yes
+
+
+#fetch.type      git       #MIQ
+#git.branch      master    #MIQ
+#git.url         /usr/local/src/github-fontforge/fontforge #MIQ
 
 
 worksrcdir      ${name}-${version}
