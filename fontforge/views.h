@@ -1299,5 +1299,6 @@ extern char* SFDMoveToNextStartChar( FILE* sfd );
  */
 extern void SFDFixupRefs(SplineFont *sf);
 
+extern void Prefs_LoadDefaultPreferences( void );
 
 #endif	/* _VIEWS_H */
