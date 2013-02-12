@@ -33,6 +33,7 @@
 #include <utype.h>
 #include <gresource.h>
 #include "hotkeys.h"
+#include "gutils/prefs.h"
 
 static GBox menubar_box = GBOX_EMPTY; /* Don't initialize here */
 static GBox menu_box = GBOX_EMPTY; /* Don't initialize here */
@@ -1143,7 +1144,7 @@ static GMenuItem *GMenuSearchActionRecursive( GWindow gw,
 					      GEvent *event,
 					      int call_moveto) {
     
-    printf("GMenuSearchAction() action:%s\n", action );
+//    printf("GMenuSearchAction() action:%s\n", action );
     int i;
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
 	if ( call_moveto && mi[i].moveto != NULL)
@@ -1152,24 +1153,17 @@ static GMenuItem *GMenuSearchActionRecursive( GWindow gw,
 	if ( mi[i].sub ) {
 	    if( HKActionMatchesFirstPartOf( action, u_to_c(mi[i].ti.text) )) {
 		char* subaction = HKActionPointerPastLeftmostKey(action);
-		printf("GMenuSearchAction() action:%s decending menu:%s\n", action, u_to_c(mi[i].ti.text) );
+//		printf("GMenuSearchAction() action:%s decending menu:%s\n", action, u_to_c(mi[i].ti.text) );
 		GMenuItem *ret = GMenuSearchActionRecursive(gw,mi[i].sub,subaction,event,call_moveto);
 		if ( ret!=NULL )
 		    return( ret );
 	    }
 	} else {
-	    printf("line:%d 1byte:%d in_resource:%d \n",
-		   mi[i].ti.line,
-		   mi[i].ti.text_is_1byte,
-		   mi[i].ti.text_in_resource );
-	    
-	    
-	    if( !mi[i].ti.text ) {
-		printf("no text...\n");
-	    } else {
-		printf("GMenuSearchAction() action:%s testing menu:%s\n", action, u_to_c(mi[i].ti.text) );
+	    if( mi[i].ti.text )
+	    {
+//		printf("GMenuSearchAction() action:%s testing menu:%s\n", action, u_to_c(mi[i].ti.text) );
 		if( HKActionMatchesFirstPartOf( action, u_to_c(mi[i].ti.text) )) {
-		    printf("GMenuSearchAction() matching final menu part! action:%s\n", action );
+//		    printf("GMenuSearchAction() matching final menu part! action:%s\n", action );
 		    return &mi[i];
 		}
 	    }
@@ -1186,7 +1180,7 @@ static GMenuItem *GMenuSearchAction( GWindow gw,
     char* windowType = GDrawGetWindowTypeName( gw );
     if( !windowType )
 	return 0;
-    printf("GMenuSearchAction() windowtype:%s\n", windowType );
+//    printf("GMenuSearchAction() windowtype:%s\n", windowType );
     int actionlen = strlen(action);
     int prefixlen = strlen(windowType) + 1 + strlen("Menu.");
     if( actionlen < prefixlen ) {
@@ -1867,20 +1861,32 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	for( ; node; node=node->next ) {
 	    Hotkey* hk = (Hotkey*)node->ptr;
 //	    printf("hotkey found by event! hk:%p\n", hk );
-	    mi = GMenuSearchAction(mb->g.base,mb->mi,hk->action,event,mb->child==NULL);
-	    if ( mi ) {
-		if ( mi->ti.checkable && !mi->ti.disabled )
-		    mi->ti.checked = !mi->ti.checked;
-		if ( mi->invoke!=NULL && !mi->ti.disabled )
-		    (mi->invoke)(mb->g.base,mi,NULL);
-		if ( mb->child != NULL )
-		    GMenuDestroy(mb->child);
-		return( true );
-	    } else {
-		printf("hotkey found for event must be a non menu action... action:%s\n", hk->action );
-		
-	    }
+	    int skipkey = false;
 
+	    if( cv_auto_goto )
+	    {
+		if( !hk->state )
+		    skipkey = true;
+//		printf("hotkey state:%d skip:%d\n", hk->state, skipkey );
+	    }
+	    
+	    if( !skipkey )
+	    {
+		mi = GMenuSearchAction(mb->g.base,mb->mi,hk->action,event,mb->child==NULL);
+		if ( mi ) {
+		    if ( mi->ti.checkable && !mi->ti.disabled )
+			mi->ti.checked = !mi->ti.checked;
+		    if ( mi->invoke!=NULL && !mi->ti.disabled )
+			(mi->invoke)(mb->g.base,mi,NULL);
+		    if ( mb->child != NULL )
+			GMenuDestroy(mb->child);
+		    return( true );
+		} else {
+		    printf("hotkey found for event must be a non menu action... action:%s\n", hk->action );
+		
+		}
+	    }
+	    
 //	    printf("END hotkey found by event! hk:%p\n", hk );
 	}
 	dlist_free_external(hklist);

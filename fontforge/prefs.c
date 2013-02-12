@@ -56,6 +56,8 @@
 
 static void change_res_filename(const char *newname);
 
+#include "gutils/prefs.h"
+
 extern int splash;
 extern int adjustwidth;
 extern int adjustlbearing;
@@ -71,7 +73,6 @@ extern int PreferSpacingAccents;
 extern int CharCenterHighest;
 extern int ask_user_for_resolution;
 extern int stop_at_join;
-extern int cv_auto_goto;
 extern int recognizePUA;
 extern float arrowAmount;
 extern float arrowAccelFactor;

@@ -42,6 +42,8 @@ extern int _GScrollBar_Width;
 #endif
 #include "dlist.h"
 
+#include "gutils/prefs.h"
+
 /* Barry wants to be able to redefine menu bindings only in the charview (I think) */
 /*  the menu parser will first check for something like "CV*Open|Ctl+O", and */
 /*  if that fails will strip off "CV*" and check for "Open|Ctl+O" */
@@ -52,7 +54,6 @@ extern void UndoesFreeButRetainFirstN( Undoes** undopp, int retainAmount );
 
 
 int ItalicConstrained=true;
-int cv_auto_goto = false;
 float arrowAmount=1;
 float arrowAccelFactor=10.;
 float snapdistance=3.5;
@@ -3265,6 +3266,7 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 	update_spacebar_hand_tool(cv);
     }
 
+//    printf("CVCharUp() ag:%d key:%d\n", cv_auto_goto, event->u.chr.keysym );
     if( !cv_auto_goto )
     {
 	if( event->u.chr.keysym=='`' ) {
