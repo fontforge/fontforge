@@ -1996,3 +1996,16 @@ void SFLayerSetBackground(SplineFont *sf,int layer,int is_back) {
 	++k;
     } while ( k<sf->subfontcnt );
 }
+
+
+int SplinePointListContains( SplinePointList* container, SplinePointList* sought )
+{
+    SplinePointList *spl;
+    for ( spl = container; spl!=NULL; spl = spl->next )
+    {
+	if( spl == sought )
+	    return 1;
+    }
+    return 0;
+}
+
