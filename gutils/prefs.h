@@ -27,4 +27,10 @@
 
 extern int cv_auto_goto;
 
+/**
+ * It might make sense to move to using glib to load prefs in the future?
+ * I've left this little stub of code around for then
+ */
+//extern void loadPrefsFiles(void);
+
 

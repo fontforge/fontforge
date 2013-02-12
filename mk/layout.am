@@ -55,6 +55,9 @@ pkgpythondatadir = $(pkgdatadir)/python
 # Where hotkey bindings go.
 hotkeysdir = $(pkgdatadir)/hotkeys
 
+# Where stuff that is in $top/share goes
+fontforgesharesdir = $(pkgdatadir)
+
 # Where plugin modules go.
 plugindir = ${pkglibdir}/plugins
 

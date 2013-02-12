@@ -26,6 +26,47 @@
  */
 
 #include "prefs.h"
+#include <glib.h>
+#include <stdio.h>
+#include "ustring.h"
+#include "fileutil.h"
+#include "gfile.h"
+
 
 int cv_auto_goto = 0;
+
+/* GKeyFile* keyfile = 0; */
+
+/* static int get_bool(const gchar *group_name, const gchar *key, int def ) */
+/* { */
+/*     GError *err = NULL; */
+/*     int ret = g_key_file_get_boolean( keyfile, group_name, key, &err ); */
+/*     if (err != NULL) */
+/*     { */
+/* 	g_error_free (err); */
+/* 	ret = def; */
+/*     } */
+/*     return ret; */
+/* } */
+
+
+/* void loadPrefsFiles(void) */
+/* { */
+/*     if( keyfile ) */
+/* 	return; */
+    
+/*     keyfile = g_key_file_new(); */
+/*     char localefn[PATH_MAX+1]; */
+/*     char* sharedir = getShareDir(); */
+/*     int rc = 0; */
+    
+/*     snprintf(localefn,PATH_MAX,"%s/preferences", sharedir ); */
+/*     rc = g_key_file_load_from_file( keyfile, localefn, G_KEY_FILE_NONE, 0 ); */
+    
+/*     snprintf(localefn,PATH_MAX,"%s/preferences", getDotFontForgeDir() ); */
+/*     rc = g_key_file_load_from_file( keyfile, localefn, G_KEY_FILE_NONE, 0 ); */
+    
+/*     cv_auto_goto = get_bool( "CharView", "AutoGoto", 0 ); */
+/* } */
+
 

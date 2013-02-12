@@ -41,6 +41,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "../gdraw/hotkeys.h"
+#include "gutils/prefs.h"
 
 #ifdef __Mac
 extern void setup_cocoa_app();
@@ -957,7 +958,8 @@ int fontforge_main( int argc, char **argv ) {
     }
 #endif
     hotkeysLoad();
-
+//    loadPrefsFiles();
+    Prefs_LoadDefaultPreferences();
 
     if ( load_prefs!=NULL && strcasecmp(load_prefs,"Always")==0 )
 	LoadPrefs();
