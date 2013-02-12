@@ -32,27 +32,180 @@
 #include "Python.h"
 #include "structmember.h"
 
+#if PY_MAJOR_VERSION >= 3
+/* Some Python 3+ APIs use C wide characters (wchar_t) */
+#define NEED_WIDE_CHAR 1
+#endif
+
+
 #include "fontforgevw.h"
 #include "ttf.h"
 #include "plugins.h"
 #include "utype.h"
 #include "ustring.h"
 #include "flaglist.h"
+#include "strlist.h"
 #include "scripting.h"
 #include "scriptfuncs.h"
-#include <math.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <dirent.h>
-#include <stdarg.h>
-#if PY_MAJOR_VERSION >= 3
-#include <stdio.h>
-#include <wchar.h>
-#endif /* PY_MAJOR_VERSION >= 3 */
 #include "ffpython.h"
 
-#define PYMETHODDEF_EMPTY  {NULL, NULL, 0, NULL}
+#include <math.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <stdarg.h>
+#include <stdio.h>
+#if NEED_WIDE_CHAR
+#include <wchar.h>
+#endif
+
+
+/* This defines the name of the Python entry function that is expected
+ * to exist when importing this module from Python. Use a different
+ * function name for Python 2 versus 3 so that trying to import the
+ * wrong version will give a reasonably-meaningful dynamic-link error
+ * rather than randomly crashing.
+ *
+ * MUST MATCH SAME NAME IN "pyhooks/*.c"
+ */
+#if PY_MAJOR_VERSION >= 3
+#define FFPY_PYTHON_ENTRY_FUNCTION fontforge_python3_init
+#else
+#define FFPY_PYTHON_ENTRY_FUNCTION fontforge_python2_init
+#endif
+PyMODINIT_FUNC FFPY_PYTHON_ENTRY_FUNCTION(const char* modulename);
+
+
+/* ========== MODULE DEFINITIONS ========== */
+/* The following types are used to define Python Modules.  For every
+ * module, you must create a 'module_definition' structure describing
+ * it.  Then toward the bottom of this file in the "MODULE REGISTRY"
+ * section, make sure you add the module to the list of all modules.
+ */
+
+typedef int (*type_initializer)(PyTypeObject *);
+
+/* Typedef 'python_type_info' -- Create an array of these, one for
+ * each python class (or type) that your module defines.  End the
+ * array with a sentinel using the TYPEINFO_EMPTY macro
+ */
+typedef struct {
+    PyTypeObject *typeobj; /* The python type definition. */
+    int add_to_module; /* Include this type's name in the module namespace
+			* if true, or keep it hidden if false.
+			*/
+    type_initializer setup_function; /* Called to do any extra modifications or
+				      * setup of the type definition prior to
+				      * the finalizing PyTypeReady() call.
+				      */
+} python_type_info;
+#define TYPEINFO_EMPTY { NULL, 0, NULL }  /* Sentinel */
+
+
+/* Typedef 'module_definition' -- Create one of these structures for
+ * each Python module that is being defined.
+ *
+ * Be sure to register the defintion in the "MODULE REGISTRY" section.
+ */
+typedef struct {
+    /* Set these members as initial constant values. */
+    const char *module_name;
+    const char *docstring;
+    python_type_info *types; /* array of type defintions, or NULL */
+    PyMethodDef *methods; /* array of module-level methods/functions, or NULL */
+    int auto_import;  /* automatically import module in embedded mode? */
+
+    void (*finalize_func)(PyObject* module); /* Called to do any remaining post-initialization fixups */
+
+    /* These following members are set at runtime; initialize using
+     * the MODULEDEF_RUNTIMEINFO_INIT macro.
+     */
+    struct {
+	PyObject *module;
+	PyMODINIT_FUNC (*modinit_func)(void);
+#if PY_MAJOR_VERSION >= 3
+	PyModuleDef pymod_def;
+#endif
+    } runtime;
+} module_definition;
+
+#if PY_MAJOR_VERSION >= 3
+#define MODULEDEF_RUNTIMEINFO_INIT { NULL, NULL, {PyModuleDef_HEAD_INIT,NULL,NULL,-1,NULL,NULL,NULL,NULL,NULL} }
+#else
+#define MODULEDEF_RUNTIMEINFO_INIT { NULL, NULL }
+#endif
+
+
+/* Other sentinel values for end-of-array initialization */
+#define PYMETHODDEF_EMPTY  { NULL, NULL, 0, NULL }
 #define PYGETSETDEF_EMPTY { NULL, NULL, NULL, NULL, NULL }
+
+/* ----------------------------------------------------- */
+
+static PyObject *InitializePythonMainNamespace(void);
+
+
+#if NEED_WIDE_CHAR
+/* Takes an ASCII string and returns a newly-allocated C "wide" string
+ * equivalent.
+ */
+static wchar_t *copy_to_wide_string(const char *s) {
+    size_t n;
+    wchar_t *ws;
+
+    ws = NULL;
+    n = mbstowcs(NULL, s, 0) + 1;
+    if (n != (size_t) -1) {
+        ws = gcalloc(n, sizeof(wchar_t));
+        mbstowcs(ws, s, n);
+    }
+    return ws;
+}
+#endif /* NEED_WIDE_CHAR */
+
+
+/* AnyPyString_to_UTF8() -- Takes a Python string object and returns a
+ * newly-alloced C-string that is UTF-8 encoded.  Accepts either 'str' or
+ * 'unicode' in Python 2, and just 'str' in Python 3 (which is a
+ * unicode).  See macro ANYSTRING_CHECK() in ffpython.h.
+ *
+ * Returns NULL on error and sets Python exception.
+ */
+char* AnyPyString_to_UTF8( PyObject* obj ) {
+    char * s = NULL;
+    if ( PyUnicode_Check(obj) ) {
+	PyObject *bytes = PyUnicode_AsUTF8String(obj);
+	if ( bytes!=NULL ) {
+#if PY_MAJOR_VERSION >= 3
+	    s = copy( PyBytes_AsString(bytes) );
+#else
+	    s = copy( PyString_AS_STRING(bytes) );
+#endif
+	    Py_DECREF(bytes);
+	}
+    }
+#if PY_MAJOR_VERSION <= 2
+    else if ( PyString_Check(obj) ) {
+	PyObject *utf8str = PyString_AsEncodedObject(obj, "UTF-8", NULL);
+	if ( utf8str!=NULL ) {
+	    s = copy(PyString_AS_STRING(utf8str));
+	    Py_DECREF(utf8str);
+	}
+    }
+#endif
+    else {
+#if PY_MAJOR_VERSION >= 3
+	PyErr_Format(PyExc_TypeError, "Expected a string");
+#else
+	PyErr_Format(PyExc_TypeError, "Expected a string ('unicode' or UTF-8 encoded 'str')");
+#endif
+    }
+    return s;
+}
+
 
 static struct flaglist sfnt_name_str_ids[];
 static struct flaglist sfnt_name_mslangs[];
@@ -255,6 +408,10 @@ return( -1 );
 /* ************************************************************************** */
 /* Utilities */
 /* ************************************************************************** */
+
+static struct string_list *default_pyinit_dirs(void);
+static int dir_exists(const char* path);
+
 
 static void FreeStringArray( int cnt, char **names ) {
     int i;
@@ -707,6 +864,28 @@ static PyObject *PyFF_Version(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
 
     sprintf( buffer, "%d", library_version_configuration.library_source_versiondate);
 return( Py_BuildValue("s", buffer ));
+}
+
+
+static PyObject *PyFF_RunInitScripts(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+    InitializePythonMainNamespace();
+    PyFF_ProcessInitFiles();
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFF_GetScriptPath(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+    PyObject *ret;
+    struct string_list *dpath;
+    struct string_list *p;
+    int cnt, i;
+
+    dpath = default_pyinit_dirs();
+    cnt = string_list_count(dpath);
+    ret = PyTuple_New(cnt);
+    for ( i=0,p=dpath; p!=NULL; p=p->next,i++ ) {
+	PyTuple_SET_ITEM(ret,i,Py_BuildValue("s",p->str));
+    }
+    return ret;
 }
 
 static PyObject *PyFF_FontTuple(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
@@ -1274,7 +1453,7 @@ static int PyFFPoint_compare(PyFF_Point *self,PyObject *other) {
     if ( PyTuple_Check(other) && PyTuple_Size(other)==2 ) {
 	if ( !PyArg_ParseTuple(other,"dd", &x, &y ))
 return( -1 );
-    } else if ( PyType_IsSubtype(&PyFF_PointType,((PyObject *)other)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_PointType, Py_TYPE(other)) ) {
 	x = ((PyFF_Point *) other)->x;
 	y = ((PyFF_Point *) other)->y;
     } else {
@@ -1301,7 +1480,7 @@ static PyObject *PyFFPoint_richcompare(PyObject *a, PyObject *b, int op) {
 static PyObject *PyFFPoint_Repr(PyFF_Point *self) {
     char buffer[200];
 
-    sprintf(buffer,"%s(%g,%g,%s)", self->ob_type->tp_name, self->x, self->y,
+    sprintf(buffer,"%s(%g,%g,%s)", Py_TYPE(self)->tp_name, self->x, self->y,
 	    self->on_curve?"True":"False" );
 return( STRING_TO_PY(buffer));
 }
@@ -1354,12 +1533,7 @@ return( NULL );
 }
 
 static PyTypeObject PyFF_PointType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.point",         /* tp_name */
     sizeof(PyFF_Point),        /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -1472,13 +1646,8 @@ return NULL;
 }
 
 static PyTypeObject PyFF_ContourIterType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
-    "contouriter",             /* tp_name */
+    "fontforge.contour_iterator", /* tp_name */
     sizeof(contouriterobject), /* tp_basicsize */
     0,                         /* tp_itemsize */
     /* methods */
@@ -1547,7 +1716,7 @@ static void PyFFContour_dealloc(PyFF_Contour *self) {
     PyMem_Del(self->points);
     if ( self->spiro_cnt!=0 )
 	PyMem_Del(self->spiros);
-    ((PyObject *)self)->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static void PyFFContour_ClearSpiros(PyFF_Contour *self) {
@@ -1608,7 +1777,7 @@ static int PyFFContour_docompare(PyFF_Contour *self,PyObject *other,
     int ret;
     SplinePoint *badpoint;
 
-    if ( !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)other)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(other)) ) {
 	PyErr_Format(PyExc_TypeError, "Unexpected type");
 return( -1 );
     }
@@ -1867,13 +2036,13 @@ static PyObject *PyFFContour_Concat( PyObject *_c1, PyObject *_c2 ) {
     PyFF_Point *dummies[1];
     double x,y;
 
-    if ( PyType_IsSubtype(&PyFF_PointType,((PyObject *)c2)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_PointType, Py_TYPE(c2)) ) {
 	memset(&dummy,0,sizeof(dummy));
 	dummy.pt_cnt = 1;
 	dummy.points = dummies; dummies[0] = (PyFF_Point *) _c2;
 	c2 = &dummy;
-    } else if ( !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)c1)->ob_type) ||
-                !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)c2)->ob_type) ||
+    } else if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c1)) ||
+                !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c2)) ||
 	    c1->is_quadratic != c2->is_quadratic ) {
 	if ( PyTuple_Check(_c2) && PyArg_ParseTuple(_c2,"dd",&x,&y)) {
 	    PyFF_Point *pt = PyFFPoint_CNew(x,y,true,false);
@@ -1909,13 +2078,13 @@ static PyObject *PyFFContour_InPlaceConcat( PyObject *_self, PyObject *_c2 ) {
     PyFF_Point *dummies[1];
     double x,y;
 
-    if ( PyType_IsSubtype(&PyFF_PointType,((PyObject *)c2)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_PointType, Py_TYPE(c2)) ) {
 	memset(&dummy,0,sizeof(dummy));
 	dummy.pt_cnt = 1;
 	dummy.points = dummies; dummies[0] = (PyFF_Point *) _c2;
 	c2 = &dummy;
-    } else if ( !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)self)->ob_type) ||
-                !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)c2)->ob_type) ||
+    } else if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(self)) ||
+                !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c2)) ||
 	    self->is_quadratic != c2->is_quadratic ) {
 	if ( PyTuple_Check(_c2) && PyArg_ParseTuple(_c2,"dd",&x,&y)) {
 	    PyFF_Point *pt = PyFFPoint_CNew(x,y,true,false);
@@ -1956,7 +2125,7 @@ static int PyFFContour_IndexAssign( PyObject *self, Py_ssize_t pos, PyObject *va
     PyFF_Contour *cont = (PyFF_Contour *) self;
     PyObject *old;
 
-    if ( !PyType_IsSubtype(&PyFF_PointType,((PyObject *)val)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_PointType, Py_TYPE(val)) ) {
 	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Point");
 return( -1 );
     }
@@ -2023,7 +2192,7 @@ static int PyFFContour_SliceAssign( PyObject *_self, Py_ssize_t start, Py_ssize_
     PyFF_Contour *self = (PyFF_Contour *) _self, *rpl = (PyFF_Contour *) _rpl;
     int i, diff;
 
-    if ( !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)rpl)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(rpl)) ) {
 	PyErr_Format(PyExc_TypeError, "Replacement must be a (FontForge) Contour");
 return( -1 );
     }
@@ -2073,7 +2242,7 @@ static int PyFFContour_Contains(PyObject *_self, PyObject *_pt) {
     if ( PySequence_Check(_pt)) {
 	if ( !PyArg_ParseTuple(_pt,"ff", &x, &y ))
 return( -1 );
-    } else if ( !PyType_IsSubtype(&PyFF_PointType,((PyObject *)_pt)->ob_type) ) {
+    } else if ( !PyType_IsSubtype(&PyFF_PointType, Py_TYPE(_pt)) ) {
 	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Point");
 return( -1 );
     } else {
@@ -2285,7 +2454,7 @@ static PyObject *PyFFContour_InsertPoint(PyFF_Contour *self, PyObject *args) {
 	    if ( !PyArg_ParseTuple( args, "dd|ii", &x, &y, &on, &pos )) {
 		PyErr_Clear();
 		if ( !PyArg_ParseTuple( args, "O|i", &p, &pos ) ||
-             !PyType_IsSubtype(&PyFF_PointType,((PyObject *)p)->ob_type))
+		     !PyType_IsSubtype(&PyFF_PointType, Py_TYPE(p)) )
 return( NULL );
 	    }
 	}
@@ -2536,7 +2705,7 @@ return( NULL );
     } else if ( spline_err==-1 )
 	spline_err = pt_err;
 
-    if ( !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)other)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(other)) ) {
 	PyErr_Format(PyExc_TypeError, "Unexpected type");
 return( NULL );
     }
@@ -2733,7 +2902,7 @@ static void do_pycall(PyObject *obj,char *method,PyObject *args_tuple) {
 
     func = PyObject_GetAttrString(obj,method);	/* I hope this is right */
     if ( func==NULL ) {
-        fprintf( stderr, "Failed to find %s in %s\n", method, ((PyObject *)obj)->ob_type->tp_name );
+        fprintf( stderr, "Failed to find %s in %s\n", method, Py_TYPENAME(obj) );
 	Py_DECREF(args_tuple);
 return;
     }
@@ -2917,12 +3086,7 @@ static PyMethodDef PyFFContour_methods[] = {
 };
 
 static PyTypeObject PyFF_ContourType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-#endif
     "fontforge.contour",       /*tp_name*/
     sizeof(PyFF_Contour),      /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -3029,13 +3193,8 @@ return NULL;
 }
 
 static PyTypeObject PyFF_LayerIterType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
-    "layeriter",               /* tp_name */
+    "fontforge.layer_iterator", /* tp_name */
     sizeof(layeriterobject),   /* tp_basicsize */
     0,                         /* tp_itemsize */
     /* methods */
@@ -3103,7 +3262,7 @@ return 0;
 static void PyFFLayer_dealloc(PyFF_Layer *self) {
     PyFFLayer_clear(self);
     PyMem_Del(self->contours);
-    ((PyObject *)self)->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static PyObject *PyFFLayer_new(PyTypeObject *type, PyObject *UNUSED(args), PyObject *UNUSED(kwds)) {
@@ -3165,9 +3324,9 @@ static int PyFFLayer_docompare(PyFF_Layer *self,PyObject *other,
     SplinePoint *badpoint;
 
     ss = SSFromLayer(self);
-    if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)other)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(other)) ) {
 	ss2 = SSFromContour((PyFF_Contour *) other,NULL);
-    } else if ( PyType_IsSubtype(&PyFF_LayerType,((PyObject *)other)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(other)) ) {
 	ss2 = SSFromLayer((PyFF_Layer *) other);
     } else {
 	PyErr_Format(PyExc_TypeError, "Unexpected type");
@@ -3189,7 +3348,7 @@ return( 0 );
 
     /* There's no real ordering on these guys. Make up something that is */
     /*  at least consistent */
-    if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)other)->ob_type) )
+    if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(other)) )
 return( -1 );
 
     /* Ok, both are layers */
@@ -3273,14 +3432,14 @@ static PyObject *PyFFLayer_Concat( PyObject *_c1, PyObject *_c2 ) {
     PyFF_Layer dummy;
     PyFF_Contour *dummies[1];
 
-    if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)c2)->ob_type) &&
+    if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c2)) &&
 	    c1->is_quadratic == c2->is_quadratic ) {
 	memset(&dummy,0,sizeof(dummy));
 	dummy.cntr_cnt = 1;
 	dummy.contours = dummies; dummies[0] = (PyFF_Contour *) _c2;
 	c2 = &dummy;
-    } else if ( !PyType_IsSubtype(&PyFF_LayerType,((PyObject *)c1)->ob_type) ||
-                !PyType_IsSubtype(&PyFF_LayerType,((PyObject *)c2)->ob_type) ||
+    } else if ( !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(c1)) ||
+                !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(c2)) ||
 	    c1->is_quadratic != c2->is_quadratic ) {
 	PyErr_Format(PyExc_TypeError, "Both arguments must be Layers of the same order");
 return( NULL );
@@ -3306,14 +3465,14 @@ static PyObject *PyFFLayer_InPlaceConcat( PyObject *_self, PyObject *_c2 ) {
     PyFF_Layer dummy;
     PyFF_Contour *dummies[1];
 
-    if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)c2)->ob_type) &&
+    if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c2)) &&
 	    self->is_quadratic == ((PyFF_Contour *) c2)->is_quadratic ) {
 	memset(&dummy,0,sizeof(dummy));
 	dummy.cntr_cnt = 1;
 	dummy.contours = dummies; dummies[0] = (PyFF_Contour *) _c2;
 	c2 = &dummy;
-    } else if ( !PyType_IsSubtype(&PyFF_LayerType,((PyObject *)self)->ob_type) ||
-                !PyType_IsSubtype(&PyFF_LayerType,((PyObject *)c2)->ob_type) ||
+    } else if ( !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(self)) ||
+                !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(c2)) ||
 	    self->is_quadratic != c2->is_quadratic ) {
 	PyErr_Format(PyExc_TypeError, "Both arguments must be Layers of the same order");
 return( NULL );
@@ -3349,7 +3508,7 @@ static int PyFFLayer_IndexAssign( PyObject *self, Py_ssize_t pos, PyObject *val 
     PyFF_Contour *contour;
     PyFF_Contour *old;
 
-    if ( !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)val)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(val)) ) {
 	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Contour");
 return( -1 );
     }
@@ -3460,8 +3619,8 @@ return( NULL );
     } else if ( spline_err==-1 )
 	spline_err = pt_err;
 
-    if ( !PyType_IsSubtype(&PyFF_LayerType,((PyObject *)other)->ob_type) &&
-	 !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)other)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(other)) &&
+	 !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(other)) ) {
 	PyErr_Format(PyExc_TypeError, "Unexpected type");
 return( NULL );
     }
@@ -3747,10 +3906,10 @@ return( -1 );
 	SplineSet *ss=NULL;
 	int start=0, order2=0;
 
-	if ( PyType_IsSubtype(&PyFF_ContourType,poly->ob_type) ) {
+	if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(poly)) ) {
 	    order2 = ((PyFF_Contour *) poly)->is_quadratic;
 	    ss = SSFromContour((PyFF_Contour *) poly,&start);
-	} else if ( PyType_IsSubtype(&PyFF_LayerType,poly->ob_type) ) {
+	} else if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(poly)) ) {
 	    order2 = ((PyFF_Layer *) poly)->is_quadratic;
 	    ss = SSFromLayer((PyFF_Layer *) poly);
 	} else {
@@ -3922,7 +4081,7 @@ static PyObject *PyFFLayer_Exclude(PyFF_Layer *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"O", &obj ) )
 return( NULL );
-    if ( !PyType_IsSubtype(&PyFF_LayerType,((PyObject *)obj)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(obj)) ) {
 	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Layer");
 return( NULL );
     }
@@ -3952,7 +4111,7 @@ static PyObject *PyFFLayer_interpolateNewLayer(PyFF_Layer *self, PyObject *args)
 
     if ( !PyArg_ParseTuple(args,"Od", &obj, &amount ) )
 return( NULL );
-    if ( !PyType_IsSubtype(&PyFF_LayerType,((PyObject *)obj)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(obj)) ) {
 	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Layer");
 return( NULL );
     }
@@ -4120,12 +4279,7 @@ static PyMethodDef PyFFLayer_methods[] = {
 };
 
 static PyTypeObject PyFF_LayerType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.layer",         /* tp_name */
     sizeof(PyFF_Layer),        /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -4519,7 +4673,7 @@ static void PyFF_GlyphPen_dealloc(PyFF_GlyphPen *self) {
 	    SCCharChangedUpdate(self->sc,self->layer);
 	self->sc = NULL;
     }
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFGlyphPen_Str(PyFF_GlyphPen *self) {
@@ -4816,12 +4970,7 @@ static PyMethodDef PyFF_GlyphPen_methods[] = {
 /* ************************************************************************** */
 
 static PyTypeObject PyFF_GlyphPenType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.glyphPen",      /* tp_name */
     sizeof(PyFF_GlyphPen),     /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -4957,10 +5106,10 @@ return( -1 );
 	layer = &sc->parent->grid;
     else
 	layer = &sc->layers[layeri];
-    if ( PyType_IsSubtype(&PyFF_LayerType,((PyObject *)value)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(value)) ) {
 	isquad = ((PyFF_Layer *) value)->is_quadratic;
 	ss = SSFromLayer( (PyFF_Layer *) value);
-    } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)value)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(value)) ) {
 	isquad = ((PyFF_Contour *) value)->is_quadratic;
 	ss = SSFromContour( (PyFF_Contour *) value,NULL);
     } else {
@@ -5040,13 +5189,8 @@ return NULL;
 }
 
 static PyTypeObject PyFF_LayerArrayIterType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
-    "dictionary-keyiterator",  /* tp_name */
+    "fontforge.layer_array_iterator",  /* tp_name */
     sizeof(layersiterobject),  /* tp_basicsize */
     0,                         /* tp_itemsize */
     /* methods */
@@ -5104,7 +5248,7 @@ static PyTypeObject PyFF_LayerArrayIterType = {
 static void PyFF_LayerArray_dealloc(PyFF_LayerArray *self) {
     if ( self->sc!=NULL )
 	self->sc = NULL;
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFLayerArray_Str(PyFF_LayerArray *self) {
@@ -5216,13 +5360,8 @@ static PyMappingMethods PyFF_LayerArrayMapping = {
 /* ************************************************************************** */
 
 static PyTypeObject PyFF_LayerArrayType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
-    "fontforge.glyphlayerarray", /* tp_name */
+    "fontforge.layer_array", /* tp_name */
     sizeof(PyFF_LayerArray),   /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor) PyFF_LayerArray_dealloc, /* tp_dealloc */
@@ -5279,7 +5418,7 @@ static PyTypeObject PyFF_LayerArrayType = {
 static void PyFF_RefArray_dealloc(PyFF_RefArray *self) {
     if ( self->sc!=NULL )
 	self->sc = NULL;
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFReferences_Str(PyFF_RefArray *self) {
@@ -5365,12 +5504,7 @@ static PyMappingMethods PyFF_RefArrayMapping = {
 /* ************************************************************************** */
 
 static PyTypeObject PyFF_RefArrayType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.references",    /* tp_name */
     sizeof(PyFF_RefArray),     /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -5426,7 +5560,7 @@ static PyTypeObject PyFF_RefArrayType = {
 /* ************************************************************************** */
 
 static void PyFFMathKern_dealloc(PyFF_MathKern *self) {
-    ((PyObject *)self)->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static PyObject *PyFFMathKern_Str(PyFF_MathKern *self) {
@@ -5513,12 +5647,7 @@ static PyGetSetDef PyFFMathKern_members[] = {
 };
 
 static PyTypeObject PyFF_MathKernType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.mathKern",      /* tp_name */
     sizeof(PyFF_MathKern),     /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -5586,7 +5715,7 @@ static void PyFF_Glyph_dealloc(PyFF_Glyph *self) {
     Py_XDECREF(self->layers);
     Py_XDECREF(self->refs);
     Py_XDECREF(self->mk);
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFGlyph_Repr(PyFF_Glyph *self) {
@@ -5613,10 +5742,10 @@ static PyObject *PyFFGlyph_Repr(PyFF_Glyph *self) {
 
 #ifdef DEBUG
     at = sprintf(repr, "<%s at 0x%lx sc=0x%lx",
-		 self->ob_type->tp_name, (unsigned long)(self), (unsigned long)(self->sc));
+		 Py_TYPENAME(self), (unsigned long)(self), (unsigned long)(self->sc));
 #else
     at = sprintf(repr, "<%s at 0x%lx",
-		 self->ob_type->tp_name, (unsigned long)(self));
+		 Py_TYPENAME(self), (unsigned long)(self));
 #endif
     if ( self->sc==NULL ) {
 	strcpy( &repr[at], " CLOSED>" );
@@ -5649,7 +5778,7 @@ static int PyFFGlyph_docompare(PyFF_Glyph *self,PyObject *other,
     int ret;
     SplinePoint *badpoint;
 
-    if ( PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)other)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(other)) ) {
 	SplineChar *sc = self->sc;
 	SplineChar *sc2 = ((PyFF_Glyph *) other)->sc;
 	int olayer = ((PyFF_Glyph *) other)->layer;
@@ -5661,9 +5790,9 @@ static int PyFFGlyph_docompare(PyFF_Glyph *self,PyObject *other,
 		sc->layers[self->layer].refs,sc2->layers[olayer].refs,
 		pt_err,spline_err,sc->name,false,&dummy);
 return( ret );
-    } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)other)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(other)) ) {
 	ss2 = SSFromContour((PyFF_Contour *) other,NULL);
-    } else if ( PyType_IsSubtype(&PyFF_LayerType,((PyObject *)other)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(other)) ) {
 	ss2 = SSFromLayer((PyFF_Layer *) other);
     } else {
 	PyErr_Format(PyExc_TypeError, "Unexpected type");
@@ -5687,7 +5816,7 @@ return( 0 );
 
     /* There's no real ordering on these guys. Make up something that is */
     /*  at least consistent */
-    if ( !PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)other)->ob_type) )
+    if ( !PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(other)) )
 return( -1 );
     /* Ok, both are glyphs */
     sc1 = self->sc; sc2 = ((PyFF_Glyph *) other)->sc;
@@ -6696,7 +6825,7 @@ return( NULL );
 	len = 0;
 	for ( i=0; i<cnt; ++i ) {
 	    PyObject *obj = PySequence_GetItem(value,i);
-	    if ( PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)obj)->ob_type) ) {
+	    if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(obj)) ) {
 		PyFF_Glyph *g = (PyFF_Glyph *) obj;
 		len += strlen(g->sc->name) + 1;
 	    } else {
@@ -6749,16 +6878,12 @@ return( NULL );
     for ( i=0; i<cnt; ++i ) {
 	PyObject *obj = PySequence_GetItem(tuple,i);
 	int extender=0, start=0, end=0, full=0;
-	if ( PyType_IsSubtype(&PyFF_GlyphType,obj->ob_type) ) {
+	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(obj)) ) {
 	    parts[i].component = copy( ((PyFF_Glyph *) obj)->sc->name );
-	} else if ( PyUnicode_Check(obj)) {
-	    PyObject *bytes = PyUnicode_AsUTF8String(obj);
-	    parts[i].component = copy(PyBytes_AsString(bytes));
-	    Py_DECREF(bytes);
-	} else if ( PyString_Check(obj)) {
-	    parts[i].component = copy(PyString_AsString(obj));
+	} else if ( ANYSTRING_CHECK(obj) ) {
+	    parts[i].component = AnyPyString_to_UTF8(obj);
 	} else if ( PyTuple_Check(obj) && PyTuple_Size(obj)>0 &&
-		PyType_IsSubtype(&PyFF_GlyphType,PyTuple_GetItem(obj,0)->ob_type) ) {
+		    PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(PyTuple_GetItem(obj,0))) ) {
 	    PyObject *g;
 	    if ( !PyArg_ParseTuple(obj,"O|iiii", &g,
 		    &extender, &start, &end, &full )) {
@@ -7732,7 +7857,7 @@ return(NULL );
     len = 0;
     for ( i=0; i<cnt; ++i ) {
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
-	if ( PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)aglyph)->ob_type) ) {
+	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
 	    SplineChar *sc = ((PyFF_Glyph *) aglyph)->sc;
 	    str = sc->name;
 	} else
@@ -7747,7 +7872,7 @@ return( NULL );
     ret = pt = galloc(len+1);
     for ( i=0; i<cnt; ++i ) {
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
-	if ( PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)aglyph)->ob_type) ) {
+	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
 	    SplineChar *sc = ((PyFF_Glyph *) aglyph)->sc;
 	    str = sc->name;
 	} else
@@ -7775,7 +7900,7 @@ return(NULL );
     ret = galloc((cnt+1)*sizeof(char *));
     for ( i=0; i<cnt; ++i ) {
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
-	if ( PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)aglyph)->ob_type) ) {
+	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
 	    SplineChar *sc = ((PyFF_Glyph *) aglyph)->sc;
 	    str = sc->name;
 	} else
@@ -7842,7 +7967,7 @@ return(NULL );
     ret = galloc((cnt+1)*sizeof(SplineChar *));
     for ( i=0; i<cnt; ++i ) {
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
-	if ( PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)aglyph)->ob_type) ) {
+	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
 	    ret[i] = ((PyFF_Glyph *) aglyph)->sc;
 	    if ( ret[i]->parent!=sf ) {
 		PyErr_Format(PyExc_TypeError,"Glyph object, %s, must belong to the expected font.", ret[i]->name);
@@ -8374,7 +8499,7 @@ static PyObject *PyFFGlyph_Exclude(PyFF_Glyph *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"O", &obj ) )
 return( NULL );
-    if ( !PyType_IsSubtype(&PyFF_LayerType,((PyObject *)obj)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(obj)) ) {
 	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Layer");
 return( NULL );
     }
@@ -8473,12 +8598,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
 /* ************************************************************************** */
 
 static PyTypeObject PyFF_GlyphType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.glyph",         /* tp_name */
     sizeof(PyFF_Glyph),	       /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -8572,7 +8692,7 @@ static PyObject *cvtiter_iternext(cvtiterobject *ci) {
 return NULL;
 
     if ( ci->pos<cvt->cvt->len/2 ) {
-        entry = (((PyObject *)cvt)->ob_type->tp_as_sequence->sq_item)((PyObject *) cvt,ci->pos++);
+        entry = (Py_TYPE(cvt)->tp_as_sequence->sq_item)((PyObject *) cvt, ci->pos++);
 return( entry );
     }
 
@@ -8580,13 +8700,8 @@ return NULL;
 }
 
 static PyTypeObject PyFF_CvtIterType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
-    "cvtiter",                 /* tp_name */
+    "fontforge.cvt_iterator",  /* tp_name */
     sizeof(cvtiterobject),     /* tp_basicsize */
     0,                         /* tp_itemsize */
     /* methods */
@@ -8642,7 +8757,7 @@ static PyTypeObject PyFF_CvtIterType = {
 /* ************************************************************************** */
 
 static void PyFFCvt_dealloc(PyFF_Cvt *self) {
-    ((PyObject *)self)->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static PyObject *PyFFCvt_new(PyFF_Font *owner) {
@@ -8706,7 +8821,7 @@ static PyObject *PyFFCvt_Concat( PyObject *_c1, PyObject *_c2 ) {
     int is_cvt2;
 
     len1 = PyFFCvt_Length(_c1);
-    if ( PyType_IsSubtype(&PyFF_CvtType,((PyObject *)c2)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_CvtType, Py_TYPE(c2)) ) {
 	len2 = PyFFCvt_Length(_c2);
 	is_cvt2 = true;
     } else if ( PySequence_Check(_c2)) {
@@ -8737,7 +8852,7 @@ static PyObject *PyFFCvt_InPlaceConcat( PyObject *_self, PyObject *_c2 ) {
     struct ttf_table *cvt;
 
     len1 = PyFFCvt_Length(_self);
-    if ( PyType_IsSubtype(&PyFF_CvtType,((PyObject *)c2)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_CvtType, Py_TYPE(c2)) ) {
 	len2 = PyFFCvt_Length(_c2);
 	is_cvt2 = true;
     } else if ( PySequence_Check(_c2)) {
@@ -8917,12 +9032,7 @@ static PyMethodDef PyFFCvt_methods[] = {
 };
 
 static PyTypeObject PyFF_CvtType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-#endif
     "fontforge.cvt",           /*tp_name*/
     sizeof(PyFF_Cvt),          /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -8946,7 +9056,7 @@ static PyTypeObject PyFF_CvtType = {
 #else
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
 #endif
-    "fontforge cvt objects",   /* tp_doc */
+    "fontforge cvt (control value table) objects", /* tp_doc */
     NULL,                      /* tp_traverse */
     NULL,                      /* tp_clear */
     NULL,                      /* tp_richcompare */
@@ -8982,7 +9092,7 @@ static PyTypeObject PyFF_CvtType = {
 /* ************************************************************************** */
 
 static void PyFFSelection_dealloc(PyFF_Selection *self) {
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFSelection_new(PyFF_Font *owner) {
@@ -9089,7 +9199,7 @@ static int SelIndex(PyObject *arg, FontViewBase *fv, int ints_as_unicode) {
 	enc = PyInt_AsLong(arg);
 	if ( ints_as_unicode )
 	    enc = SFFindSlot(fv->sf, fv->map, enc, NULL );
-    } else if ( PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)arg)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(arg)) ) {
 	SplineChar *sc = ((PyFF_Glyph *) arg)->sc;
 	if ( sc->parent == fv->sf )
 	    enc = fv->map->backmap[sc->orig_pos];
@@ -9255,12 +9365,7 @@ static PyMappingMethods PyFFSelection_Mapping = {
 };
 
 static PyTypeObject PyFF_SelectionType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-#endif
     "fontforge.selection",     /*tp_name*/
     sizeof(PyFF_Selection),    /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -9357,13 +9462,8 @@ return NULL;
 }
 
 static PyTypeObject PyFF_LayerInfoArrayIterType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
-    "fontforge.fontlayeriter", /* tp_name */
+    "fontforge.layerinfo_array_iterator", /* tp_name */
     sizeof(layerinfoiterobject), /* tp_basicsize */
     0,                         /* tp_itemsize */
     /* methods */
@@ -9421,7 +9521,7 @@ static PyTypeObject PyFF_LayerInfoArrayIterType = {
 static void PyFF_LayerInfo_dealloc(PyFF_LayerInfo *self) {
     if ( self->sf!=NULL )
 	self->sf = NULL;
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFLayerInfo_Str(PyFF_LayerInfo *self) {
@@ -9507,12 +9607,7 @@ static PyGetSetDef PyFF_LayerInfo_getset[] = {
 };
 
 static PyTypeObject PyFF_LayerInfoType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.layerinfo",     /* tp_name */
     sizeof(PyFF_LayerInfo),    /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -9570,7 +9665,7 @@ static PyTypeObject PyFF_LayerInfoType = {
 static void PyFF_LayerInfoArray_dealloc(PyFF_LayerInfoArray *self) {
     if ( self->sf!=NULL )
 	self->sf = NULL;
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFLayerInfoArray_Str(PyFF_LayerInfoArray *self) {
@@ -9708,13 +9803,8 @@ static PyMethodDef PyFF_LayerInfoArray_methods[] = {
 };
 
 static PyTypeObject PyFF_LayerInfoArrayType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-#endif
-    "fontforge.fontlayerarray",/*tp_name*/
+    "fontforge.layerinfo_array",/*tp_name*/
     sizeof(PyFF_LayerInfoArray), /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor) PyFF_LayerInfoArray_dealloc, /*tp_dealloc*/
@@ -9769,7 +9859,7 @@ static PyTypeObject PyFF_LayerInfoArrayType = {
 /* ************************************************************************** */
 
 static void PyFFMath_dealloc(PyFF_Math *self) {
-    ((PyObject *)self)->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static PyObject *PyFFMath_Str(PyFF_Math *self) {
@@ -9840,12 +9930,7 @@ static PyMethodDef FFMath_methods[] = {
 };
 
 static PyTypeObject PyFF_MathType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.math",	       /* tp_name */
     sizeof(PyFF_Math),         /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -9901,7 +9986,7 @@ static PyTypeObject PyFF_MathType = {
 };
 
 /* Build a get/set table for the math type based on the math_constants_descriptor */
-static void setupMath(void) {
+static int setup_math_type(PyTypeObject* mathtype) {
     int cnt;
     PyGetSetDef *getset;
 
@@ -9915,7 +10000,8 @@ static void setupMath(void) {
 	getset[cnt].doc = math_constants_descriptor[cnt].message;
 	getset[cnt].closure = (void *) (intpt) math_constants_descriptor[cnt].offset;
     }
-    PyFF_MathType.tp_getset = getset;
+    mathtype->tp_getset = getset;
+    return 0;
 }
 
 /* ************************************************************************** */
@@ -9958,13 +10044,8 @@ return NULL;
 }
 
 static PyTypeObject PyFF_PrivateIterType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
-    "dictionary-keyiterator",  /* tp_name */
+    "fontforge.private_iterator",  /* tp_name */
     sizeof(privateiterobject), /* tp_basicsize */
     0,                         /* tp_itemsize */
     /* methods */
@@ -10022,7 +10103,7 @@ static PyTypeObject PyFF_PrivateIterType = {
 static void PyFF_Private_dealloc(PyFF_Private *self) {
     if ( self->sf!=NULL )
 	self->sf = NULL;
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFPrivate_Str(PyFF_Private *self) {
@@ -10179,12 +10260,7 @@ static PyMethodDef FFPrivate_methods[] = {
 /* ************************************************************************** */
 
 static PyTypeObject PyFF_PrivateType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.private",       /* tp_name */
     sizeof(PyFF_Private),      /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -10373,13 +10449,8 @@ return NULL;
 }
 
 static PyTypeObject PyFF_FontIterType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
-    "fontiter",                /* tp_name */
+    "fontforge.font_iterator", /* tp_name */
     sizeof(fontiterobject),    /* tp_basicsize */
     0,                         /* tp_itemsize */
     /* methods */
@@ -10445,7 +10516,7 @@ static void PyFF_Font_dealloc(PyFF_Font *self) {
     Py_XDECREF(self->layers);
     Py_XDECREF(self->private);
     Py_XDECREF(self->math);
-    ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFF_Font_new(PyTypeObject *type, PyObject *UNUSED(args), PyObject *UNUSED(kwds)) {
@@ -10496,13 +10567,13 @@ static PyObject *PyFFFont_Repr(PyFF_Font *self) {
     char prefix[256];
 #ifdef DEBUG
     snprintf(prefix,sizeof(prefix), "<%s at 0x%lx fv=0x%lx sf=0x%lx",
-	     self->ob_type->tp_name,
+	     Py_TYPENAME(self),
 	     (unsigned long)(self),
 	     (unsigned long)(self->fv),
 	     (unsigned long)(self->fv ? self->fv->sf : 0) );
 #else
     snprintf(prefix,sizeof(prefix), "<%s at 0x%lx",
-	     self->ob_type->tp_name, (unsigned long)(self) );
+	     Py_TYPENAME(self), (unsigned long)(self) );
 #endif
     if ( self->fv==NULL )
 	ret = STRING_FROM_FORMAT("%s CLOSED>",prefix);
@@ -11002,7 +11073,7 @@ static int PyFF_Font_set_selection(PyFF_Font *self,PyObject *value, void *UNUSED
 return(-1);
 
     fv = self->fv;
-    if ( PyType_IsSubtype(&PyFF_SelectionType,((PyObject *)value)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_SelectionType, Py_TYPE(value)) ) {
 	len2 = PyFFSelection_Length(value);
 	is_sel = true;
     } else if ( PySequence_Check(value)) {
@@ -11054,7 +11125,7 @@ static int PyFF_Font_set_cvt(PyFF_Font *self,PyObject *value, void *UNUSED(closu
 return(-1);
 
     sf = self->fv->sf;
-    if ( PyType_IsSubtype(&PyFF_CvtType,((PyObject *)value)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_CvtType, Py_TYPE(value)) ) {
 	len2 = PyFFCvt_Length(value);
 	is_cvt2 = true;
     } else if ( PySequence_Check(value)) {
@@ -12592,10 +12663,10 @@ return (-1);
 	PyErr_Format(PyExc_TypeError, "Cannot delete guide field" );
 return( -1 );
     }
-    if ( PyType_IsSubtype(&PyFF_LayerType,((PyObject *)value)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(value)) ) {
 	isquad = ((PyFF_Layer *) value)->is_quadratic;
 	ss = SSFromLayer( (PyFF_Layer *) value);
-    } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)value)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(value)) ) {
 	isquad = ((PyFF_Contour *) value)->is_quadratic;
 	ss = SSFromContour( (PyFF_Contour *) value,NULL);
     } else {
@@ -13474,7 +13545,7 @@ return( NULL );
     locfilename = utf82def_copy(filename);
     free(filename);
 
-    if ( !PyType_IsSubtype(&PyFF_FontType,((PyObject *)other)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_FontType, Py_TYPE(other)) ) {
 	PyErr_Format(PyExc_TypeError,"First argument must be a fontforge font");
 	free(locfilename);
 return( NULL );
@@ -14679,7 +14750,7 @@ return (NULL);
     sf = self->fv->sf;
     if ( !PyArg_ParseTuple(args,"OO|s", ((PyObject **)&otherfont), &lookup_list, &before_str))
 return( NULL );
-    if ( !PyType_IsSubtype(&PyFF_FontType,((PyObject *)otherfont)->ob_type) ) {
+    if ( !PyType_IsSubtype(&PyFF_FontType, Py_TYPE(otherfont)) ) {
 	PyErr_Format(PyExc_TypeError,"First argument must be a fontforge font");
 return( NULL );
     }
@@ -15192,18 +15263,18 @@ return (NULL);
     if ( !PyArg_ParseTuple(args,"OO|d", &srch, &rpl, &err ))
 return( NULL );
 
-    if ( PyType_IsSubtype(&PyFF_LayerType,((PyObject *)srch)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(srch)) ) {
 	srch_ss = SSFromLayer((PyFF_Layer *) srch);
-    } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)srch)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(srch)) ) {
 	srch_ss = SSFromContour((PyFF_Contour *) srch, NULL);
     } else {
 	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
 return( NULL );
     }
 
-    if ( PyType_IsSubtype(&PyFF_LayerType,((PyObject *)rpl)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(rpl)) ) {
 	rpl_ss = SSFromLayer((PyFF_Layer *) rpl);
-    } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)rpl)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(rpl)) ) {
 	rpl_ss = SSFromContour((PyFF_Contour *) rpl, NULL);
     } else {
 	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
@@ -15238,9 +15309,9 @@ return (NULL);
     if ( !PyArg_ParseTuple(args,"O|dO", &srch, &err, &pyflags))
 return( NULL );
 
-    if ( PyType_IsSubtype(&PyFF_LayerType,((PyObject *)srch)->ob_type) ) {
+    if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(srch)) ) {
 	srch_ss = SSFromLayer((PyFF_Layer *) srch);
-    } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)srch)->ob_type) ) {
+    } else if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(srch)) ) {
 	srch_ss = SSFromContour((PyFF_Contour *) srch, NULL);
     } else {
 	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
@@ -15621,7 +15692,7 @@ return( NULL );
     head = last = makesflist(self,bf);
     if ( others==Py_None )
 	/* Silly to have a ttc with just one font, but ok */;
-    else if ( PyType_IsSubtype(&PyFF_FontType,((PyObject *)others)->ob_type) ) {
+    else if ( PyType_IsSubtype(&PyFF_FontType, Py_TYPE(others)) ) {
 	PyFF_Font* otherfont = (PyFF_Font*)others;
 	if ( CheckIfFontClosed(otherfont) ) {
 	    freesflist(head);
@@ -15634,7 +15705,7 @@ return(NULL);
 	int i, subcnt = PySequence_Size(others);
 	for ( i=0; i<subcnt; ++i ) {
 	    PyObject *item = PySequence_GetItem(others,i);
-	    if ( PyType_IsSubtype(&PyFF_FontType,((PyObject *)item)->ob_type) ) {
+	    if ( PyType_IsSubtype(&PyFF_FontType, Py_TYPE(item)) ) {
 		PyFF_Font* otherfont = (PyFF_Font*)item;
 		if( CheckIfFontClosed(otherfont) ) {
 		    freesflist(head);
@@ -15864,8 +15935,8 @@ return (NULL);
     sf = fv->sf;
     if ( !PyArg_ParseTuple(args,"OOd",&from,&to,&by) )
 return( NULL );
-    if ( !PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)from)->ob_type) ||
-         !PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)to)->ob_type)) {
+    if ( !PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(from)) ||
+         !PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(to))) {
 	PyErr_Format(PyExc_TypeError, "Expected glyph objects");
 return( NULL );
     }
@@ -15919,7 +15990,7 @@ static PyObject *PyFFFont_removeGlyph(PyFF_Font *self, PyObject *args) {
     if ( CheckIfFontClosed(self) )
 return (NULL);
     fv = self->fv;
-    if ( PyTuple_Size(args)==1 && PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)PyTuple_GetItem(args,0))->ob_type)) {
+    if ( PyTuple_Size(args)==1 && PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(PyTuple_GetItem(args,0))) ) {
 	sc = ((PyFF_Glyph *) PyTuple_GetItem(args,0))->sc;
 	if ( sc->parent!=fv->sf ) {
 	    PyErr_Format(PyExc_ValueError, "This glyph is not in the font");
@@ -17145,12 +17216,7 @@ static PyMappingMethods PyFF_FontMapping = {
 };
 
 static PyTypeObject PyFF_FontType = {
-#if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-#endif
     "fontforge.font",          /* tp_name */
     sizeof(PyFF_Font),         /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -17234,7 +17300,7 @@ typedef struct {
 static PyTypeObject PyFF_AWGlyphType, PyFF_AWGlyphIndexType, PyFF_AWContextType;
 
 static void PyFF_AWGlyphIndex_dealloc(PyFF_AWGlyphI *self) {
-    self->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static Py_ssize_t PyFF_AWGlyphLength( PyObject *self ) {
@@ -17269,8 +17335,7 @@ static PyMappingMethods PyFF_AWGlyphMapping = {
 };
 
 static PyTypeObject PyFF_AWGlyphIndexType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
+    PyVarObject_HEAD_INIT(NULL,0)
     "fontforge.awglyphIndex",  /* tp_name */
     sizeof(PyFF_AWGlyphI),     /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -17329,7 +17394,7 @@ static void PyFF_AWGlyph_dealloc(PyFF_AWGlyph *self) {
 	    self->base->python_data = NULL;
 	self->base = NULL;
     }
-    self->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *GetPythonObjectForAWGlyph(AW_Glyph *aw) {
@@ -17410,8 +17475,7 @@ static PyGetSetDef PyFF_AWGlyph_getset[] = {
 };
 
 static PyTypeObject PyFF_AWGlyphType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
+    PyVarObject_HEAD_INIT(NULL,0)
     "fontforge.awglyph",       /* tp_name */
     sizeof(PyFF_AWGlyph),      /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -17471,7 +17535,7 @@ static void PyFF_AWContext_dealloc(PyFF_AWContext *self) {
 	self->base->python_data = NULL;
 	self->base = NULL;
     }
-    self->ob_type->tp_free((PyObject *) self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *GetPythonObjectForAWData(AW_Data *all) {
@@ -17536,8 +17600,7 @@ static PyGetSetDef PyFF_AWContext_getset[] = {
 };
 
 static PyTypeObject PyFF_AWContextType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
+    PyVarObject_HEAD_INIT(NULL,0)
     "fontforge.awcontext",     /* tp_name */
     sizeof(PyFF_AWContext),    /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -17668,7 +17731,7 @@ void FFPy_AWDataFree(AW_Data *all) {
 /* ************************************************************************** */
 /*			     FontForge Python Module			      */
 /* ************************************************************************** */
-static PyMethodDef FontForge_methods[] = {
+static PyMethodDef module_fontforge_methods[] = {
     { "getPrefs", PyFF_GetPrefs, METH_VARARGS, "Get FontForge preference items" },
     { "setPrefs", PyFF_SetPrefs, METH_VARARGS, "Set FontForge preference items" },
     { "savePrefs", PyFF_SavePrefs, METH_NOARGS, "Save FontForge preference items" },
@@ -17685,6 +17748,8 @@ static PyMethodDef FontForge_methods[] = {
     { "unicodeFromName", PyFF_UnicodeFromName, METH_VARARGS, "Given a name, look it up in the namelists and find what unicode code point it maps to (returns -1 if not found)" },
     { "nameFromUnicode", PyFF_NameFromUnicode, METH_VARARGS, "Given a unicode code point and (optionally) a namelist, find the corresponding glyph name" },
     { "version", PyFF_Version, METH_NOARGS, "Returns a string containing the current version of FontForge, as 20061116" },
+    { "runInitScripts", PyFF_RunInitScripts, METH_NOARGS, "Run the system and user initialization scripts, if not already run" },
+    { "scriptPath", PyFF_GetScriptPath, METH_NOARGS, "Returns a list of the directories searched for scripts"},
     { "fonts", PyFF_FontTuple, METH_NOARGS, "Returns a tuple of all loaded fonts" },
     { "fontsInFile", PyFF_FontsInFile, METH_VARARGS, "Returns a tuple containing the names of any fonts in an external file"},
     { "open", PyFF_OpenFont, METH_VARARGS, "Opens a font and returns it" },
@@ -17713,32 +17778,65 @@ static PyMethodDef FontForge_methods[] = {
     PYMETHODDEF_EMPTY  /* Sentinel */
 };
 
+static python_type_info module_fontforge_types[] = {
+    {&PyFF_AWContextType,	1, NULL},
+    {&PyFF_AWGlyphIndexType,	0, NULL},
+    {&PyFF_AWGlyphType,		1, NULL},
+    {&PyFF_ContourIterType,	0, NULL},
+    {&PyFF_ContourType,		1, NULL},
+    {&PyFF_CvtIterType,		0, NULL},
+    {&PyFF_CvtType,		1, NULL},
+    {&PyFF_FontIterType,	0, NULL},
+    {&PyFF_FontType,		1, NULL},
+    {&PyFF_GlyphPenType,	1, NULL},
+    {&PyFF_GlyphType,		1, NULL},
+    {&PyFF_LayerArrayIterType,	0, NULL},
+    {&PyFF_LayerArrayType,	1, NULL},
+    {&PyFF_LayerInfoArrayIterType,	0, NULL},
+    {&PyFF_LayerInfoArrayType,	1, NULL},
+    {&PyFF_LayerInfoType,	1, NULL},
+    {&PyFF_LayerIterType,	0, NULL},
+    {&PyFF_LayerType,		1, NULL},
+    {&PyFF_MathKernType,	1, NULL},
+    {&PyFF_MathType,		1, setup_math_type},
+    {&PyFF_PointType,		1, NULL},
+    {&PyFF_PrivateIterType,	0, NULL},
+    {&PyFF_PrivateType,		1, NULL},
+    {&PyFF_RefArrayType,	1, NULL},
+    {&PyFF_SelectionType,	1, NULL},
+    TYPEINFO_EMPTY
+};
+
+static void AddHookDictionary( PyObject *module );
+static void AddSpiroConstants( PyObject *module );
+static void FinalizeFontforgeModule( PyObject* module ) {
+    AddHookDictionary( module );
+    AddSpiroConstants( module );
+}
+
+static module_definition module_def_fontforge = {
+    "fontforge",                           /* module_name */
+    "FontForge font manipulation module.", /* docstring */
+    module_fontforge_types,                /* types */
+    module_fontforge_methods,              /* methods */
+    true,                                  /* auto_import */
+    FinalizeFontforgeModule,               /* finalize_func */
+    MODULEDEF_RUNTIMEINFO_INIT
+};
+
 /* ************************************************************************** */
 /* ************************* initializer routines *************************** */
 /* ************************************************************************** */
 void FfPy_Replace_MenuItemStub(PyObject *(*func)(PyObject *,PyObject *)) {
     int i;
-
-    for ( i=0; FontForge_methods[i].ml_name!=NULL; ++i )
-	if ( strcmp(FontForge_methods[i].ml_name,"registerMenuItem")==0 ) {
-	    FontForge_methods[i].ml_meth = func;
+    PyMethodDef *methods = module_fontforge_methods;
+    for ( i=0; methods[i].ml_name!=NULL; ++i )
+	if ( strcmp(methods[i].ml_name,"registerMenuItem")==0 ) {
+	    methods[i].ml_meth = func;
 return;
 	}
 }
 
-#if PY_MAJOR_VERSION >= 3
-static PyModuleDef fontforge_module = {
-    PyModuleDef_HEAD_INIT,
-    "fontforge",                           /* m_name */
-    "FontForge font manipulation module.", /* m_doc */
-    -1,                                    /* m_size */
-    FontForge_methods,                     /* m_methods */
-    NULL,                                  /* m_reload */
-    NULL,                                  /* m_traverse */
-    NULL,                                  /* m_clear */
-    NULL                                   /* m_free */
-};
-#endif /* PY_MAJOR_VERSION >= 3 */
 
 static PyObject *PyPS_Identity(PyObject *UNUSED(noself), PyObject *UNUSED(args)) {
 return( Py_BuildValue("(dddddd)",  1.0, 0.0, 0.0,  1.0, 0.0, 0.0));
@@ -17825,7 +17923,7 @@ return( NULL );
 return( tuple );
 }
 
-static PyMethodDef psMat_methods[] = {
+static PyMethodDef module_psMat_methods[] = {
     { "identity", PyPS_Identity, METH_NOARGS, "Identity transformation" },
     { "translate", PyPS_Translate, METH_VARARGS, "Translation transformation" },
     { "rotate", PyPS_Rotate, METH_VARARGS, "Rotation transformation" },
@@ -17836,19 +17934,16 @@ static PyMethodDef psMat_methods[] = {
     PYMETHODDEF_EMPTY /* Sentinel */
 };
 
-#if PY_MAJOR_VERSION >= 3
-static PyModuleDef psMat_module = {
-    PyModuleDef_HEAD_INIT,
-    "psMat",                          /* m_name */
-    "PostScript Matrix manipulation", /* m_doc */
-    -1,                               /* m_size */
-    psMat_methods,                    /* m_methods */
-    NULL,                             /* m_reload */
-    NULL,                             /* m_traverse */
-    NULL,                             /* m_clear */
-    NULL                              /* m_free */
+static module_definition module_def_psMat = {
+    "psMat",                               /* module_name */
+    "PostScript Matric manipulation",      /* docstring */
+    NULL,                                  /* types */
+    module_psMat_methods,                  /* methods */
+    true,                                  /* auto_import */
+    NULL,                                  /* finalize_func */
+    MODULEDEF_RUNTIMEINFO_INIT
 };
-#endif /* PY_MAJOR_VERSION >= 3 */
+
 
 static void PyFF_PicklerInit(void) {
     if ( pickler==NULL )
@@ -17945,7 +18040,7 @@ return( NULL );
 return( NULL );
     for ( i=0; i<len-2; ++i ) {
 	PyObject *obj = PyTuple_GetItem(args,2+i);
-	if ( !PyType_IsSubtype(&PyFF_PointType,((PyObject *)obj)->ob_type) ) {
+	if ( !PyType_IsSubtype(&PyFF_PointType, Py_TYPE(obj)) ) {
 	    PyErr_Format(PyExc_TypeError, "Expected FontForge points.");
 return( NULL );
 	}
@@ -17975,7 +18070,7 @@ return( NULL );
 return( NULL );
     for ( i=0; i<len-1; ++i ) {
 	PyObject *obj = PyTuple_GetItem(args,1+i);
-	if ( !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)obj)->ob_type) ) {
+	if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(obj)) ) {
 	    PyErr_Format(PyExc_TypeError, "Expected FontForge Contours.");
 return( NULL );
 	}
@@ -17985,7 +18080,7 @@ return( NULL );
 return( (PyObject *) self );
 }
 
-static PyMethodDef FontForge_internal_methods[] = {
+static PyMethodDef module_ff_internals_methods[] = {
     { "initPickles", PyFFi_initPickles, METH_VARARGS, "Set the pickle/unpickle globals so I can call them from C" },
     { "initPickleTypes", PyFFi_initPickleTypes, METH_VARARGS, "Set the some globals so I can call C functions from python" },
     { "newPoint", PyFFi_newPoint, METH_VARARGS, "Top level function to create a new point, needed (I think) for the pickler" },
@@ -17994,19 +18089,16 @@ static PyMethodDef FontForge_internal_methods[] = {
     PYMETHODDEF_EMPTY /* Sentinel */
 };
 
-#if PY_MAJOR_VERSION >= 3
-static PyModuleDef ff_internals_module = {
-    PyModuleDef_HEAD_INIT,
-    "__FontForge_Internals___", /* m_name */
-    "I use this to get access to certain python objects I need, and to hide some internal python functions. I don't expect users ever to care about it.", /* m_doc */
-    -1,                         /* m_size */
-    FontForge_internal_methods, /* m_methods */
-    NULL,                       /* m_reload */
-    NULL,                       /* m_traverse */
-    NULL,                       /* m_clear */
-    NULL                        /* m_free */
+static module_definition module_def_ff_internals = {
+    "__FontForge_Internals___",            /* module_name */
+    "I use this to get access to certain python objects I need, and to hide some internal python functions. I don't expect users ever to care about it.",     /* docstring */
+    NULL,                                  /* types */
+    module_ff_internals_methods,           /* methods */
+    false,                                 /* auto_import */
+    NULL,                                  /* finalize_func */
+    MODULEDEF_RUNTIMEINFO_INIT
 };
-#endif /* PY_MAJOR_VERSION >= 3 */
+
 
 void PyFF_ErrorString(const char *msg,const char *str) {
     char *cond = (char *) msg;
@@ -18021,231 +18113,337 @@ void PyFF_ErrorF3(const char *frmt, const char *str, int size, int depth) {
     PyErr_Format(PyExc_ValueError, frmt, str, size, depth );
 }
 
-
 /* ************************************************************************** */
-/* PYTHON INITIALIZATION   ---   Python 3.x or greater */
+/* PYTHON INITIALIZATION */
 /* ************************************************************************** */
 
+extern int no_windowing_ui, running_script;
+
+static void RegisterAllPyModules(void);
+static void CreateAllPyModules(void);
+
+static PyObject * CreatePyModule( module_definition *moddef );
+static void SetPythonProgramName( const char *progname /* in ASCII */ );
 static void SetPythonModuleMetadata( PyObject *module );
+static int FinalizePythonTypes( python_type_info* typelist );
+static int AddPythonTypesToModule( PyObject *module, python_type_info* typelist );
 
-#if PY_MAJOR_VERSION >= 3 /*---------------------------------------------*/
-
-#include "dynamic.h"
-
-PyMODINIT_FUNC _PyInit_fontforge(void);
-PyMODINIT_FUNC _PyInit_psMat(void);
-PyMODINIT_FUNC _PyInit___FontForge_Internals___(void);
-PyMODINIT_FUNC PyInit_fontforge(void);
-PyMODINIT_FUNC PyInit_psMat(void);
-
-static int load_glibraries(void) {
-    DL_CONST void *lib;
-
-    if ( (lib = dlopen("libgunicode" SO_EXT,RTLD_LAZY))==NULL ) {
-#ifdef PREFIX
-        lib = dlopen( PREFIX "/lib/" "libgunicode" SO_EXT,RTLD_LAZY);
+/* These individual "create module" functions are only needed because
+ * Python itself needs a specific "callback" function pointer for each
+ * module that takes no arguments.  Used by RegisterAllPyModules().
+ */
+#if PY_MAJOR_VERSION >= 3
+/* Python 3 module init functions return a pointer to the module object, or NULL */
+#define ff_crmod(name) \
+static PyMODINIT_FUNC CreatePyModule_##name(void) {\
+    return CreatePyModule(&module_def_##name);\
+}
+#else
+/* Python 2 module init functions do not return any value */
+#define ff_crmod(name) \
+static void CreatePyModule_##name(void) {\
+    CreatePyModule(&module_def_##name);\
+}
 #endif
-    }
-    if ( lib==NULL ) {
-        PyErr_Format(PyExc_SystemError,"Missing library: %s", "libgunicode");
-        return 1;
+#define ff_fixmod(name) \
+    module_def_##name.runtime.modinit_func = CreatePyModule_##name
+
+/* ===== MODULE REGISTRY -- LIST OF ALL PYTHON MODULES ===== */
+static module_definition * all_modules[] = {
+    &module_def_fontforge,
+    &module_def_psMat,
+    &module_def_ff_internals
+};
+
+ff_crmod(fontforge)
+ff_crmod(psMat)
+ff_crmod(ff_internals)
+
+static void fixup_module_definitions(void) {
+    ff_fixmod(fontforge);
+    ff_fixmod(psMat);
+    ff_fixmod(ff_internals);
+}
+/* ===== END MODULE REGISTRY ===== */
+
+#define NUM_MODULES (sizeof(all_modules) / sizeof(module_definition *))
+
+
+static char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
+			       "spiroLeft", "spiroRight", "spiroOpen", NULL };
+
+
+static int FinalizePythonTypes(python_type_info* typelist) {
+    int i=0;
+
+    /* Build types first with custom initializers */
+    for ( i=0; typelist[i].typeobj != NULL; ++i ) {
+	PyTypeObject * typ = typelist[i].typeobj;
+	type_initializer typ_init = typelist[i].setup_function;
+
+	if ( typ != NULL && typ_init != NULL ) {
+#ifdef DEBUG
+	    fprintf(stderr,"Building type %s\n", typ->tp_name);
+#endif
+	    if ( typ_init( typ ) < 0 ) {
+		fprintf(stderr,"Python initialization failed: setup of type %s failed\n",
+			typ->tp_name);
+		return -1;
+	    }
+	}
     }
 
-    if ( (lib = dlopen("libgutils" SO_EXT,RTLD_LAZY))==NULL ) {
-#ifdef PREFIX
-        lib = dlopen( PREFIX "/lib/" "libgutils" SO_EXT,RTLD_LAZY);
+    /* Let Python make the type ready */
+    for ( i=0; typelist[i].typeobj != NULL; ++i ) {
+	PyTypeObject * typ = typelist[i].typeobj;
+
+#ifdef DEBUG
+	fprintf(stdout,"PyTypeReady(%s)\n", typ->tp_name);
 #endif
-    }
-    if ( lib==NULL ) {
-        PyErr_Format(PyExc_SystemError,"Missing library: %s", "libgutils");
-        return 1;
+	if ( PyType_Ready(typ) < 0 ) {
+	    fprintf(stderr,"Python initialization failed: PyTypeReady(%s) failed\n",
+		    typ->tp_name);
+	    return -1;
+	}
     }
     return 0;
 }
 
-    /* See also initPyFontForge above for the version 3 case */
-PyMODINIT_FUNC _PyInit_fontforge(void) {
-    PyObject *m;
+static int AddPythonTypesToModule( PyObject *module, python_type_info* typelist)
+{
+    int i;
+    for ( i=0; typelist[i].typeobj != NULL; ++i ) {
+	PyTypeObject * typ = typelist[i].typeobj;
+	int do_add = typelist[i].add_to_module;
+	const char *typnam;
+	const char *dot;
+
+	if ( ! do_add )
+	    continue;
+
+	/* Determine the type name, without the dotted module qualification */
+	typnam = typ->tp_name;
+	dot = strchr(typnam,'.');
+	if ( dot!=NULL )
+	    typnam = dot+1;
+
+	/* Add the type to the module */
+#ifdef DEBUG
+	fprintf(stdout,"Adding type %s as %s\n", typ->tp_name, typnam);
+#endif
+	Py_INCREF( typ );
+	PyModule_AddObject( module, typnam, (PyObject*)typ );
+    }
+    return 0;
+}
+
+
+static PyObject* CreatePyModule( module_definition *mdef ) {
+    PyObject *module;
+
+    if ( mdef->runtime.module != NULL )
+	return mdef->runtime.module;
+
+    if ( mdef->types != NULL && FinalizePythonTypes( mdef->types ) < 0 )
+	return NULL;
+
+#if PY_MAJOR_VERSION >= 3
+    mdef->runtime.pymod_def.m_name = mdef->module_name;
+    mdef->runtime.pymod_def.m_doc = mdef->docstring;
+    mdef->runtime.pymod_def.m_methods = mdef->methods;
+    mdef->runtime.pymod_def.m_size = -1;
+    mdef->runtime.pymod_def.m_reload = NULL;
+    mdef->runtime.pymod_def.m_traverse = NULL;
+    mdef->runtime.pymod_def.m_clear = NULL;
+    mdef->runtime.pymod_def.m_free = NULL;
+    module = PyModule_Create( &mdef->runtime.pymod_def );
+#else
+    module = Py_InitModule3(mdef->module_name, mdef->methods, mdef->docstring);
+#endif
+    mdef->runtime.module = module;
+    SetPythonModuleMetadata( module );
+    if ( mdef->types != NULL )
+	AddPythonTypesToModule( module, mdef->types );
+
+    if ( mdef->finalize_func != NULL )
+	(mdef->finalize_func)( module );
+
+    return module;
+}
+
+static PyObject *InitializePythonMainNamespace() {
+    static PyObject *module_main = NULL; /* Python's __main__ namespace module */
     int i;
 
-    static PyTypeObject *types[] = { &PyFF_PointType, &PyFF_ContourType,
-	    &PyFF_LayerType, &PyFF_GlyphPenType, &PyFF_GlyphType,
-	    &PyFF_CvtType, &PyFF_PrivateIterType, &PyFF_PrivateType,
-	    &PyFF_FontIterType, &PyFF_SelectionType, &PyFF_FontType,
-	    &PyFF_ContourIterType, &PyFF_LayerIterType, &PyFF_CvtIterType,
-	    &PyFF_LayerArrayType, &PyFF_RefArrayType, &PyFF_LayerArrayIterType,
-	    &PyFF_LayerInfoType, &PyFF_LayerInfoArrayType, &PyFF_LayerInfoArrayIterType,
-	    &PyFF_AWGlyphType, &PyFF_AWGlyphIndexType, &PyFF_AWContextType,
-	    &PyFF_MathType, &PyFF_MathKernType, NULL };
-    
-    static char *names[] = { "point", "contour", "layer", "glyphPen", "glyph",
-	    "cvt", "privateiter", "private", "fontiter", "selection", "font",
-	    "contouriter", "layeriter", "cvtiter",
-	    "glyphlayerarray", "glyphlayerrefarray", "glyphlayeriter",
-	    "layerinfo", "fontlayerarray", "fontlayeriter",
-	    "awglyph", "awglyphIndex", "awcontext",
-	    "math", "mathkern",
-	    NULL };
+    if ( module_main != NULL )
+	return module_main;
 
-    static char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
-	    "spiroLeft", "spiroRight", "spiroOpen", NULL };
+    module_main = PyImport_AddModule("__main__");
 
-    setupMath();
-    for ( i=0; types[i]!=NULL; ++i ) {
-        ((PyObject *)types[i])->ob_type = &PyType_Type; /* Or does Type_Ready do this??? */
-        if (PyType_Ready(types[i]) < 0)
-            return NULL;        /* Is this what we want? */
+    /* Pre-import our modules */
+    for ( i=0; i<NUM_MODULES; i++ ) {
+	if ( all_modules[i]->auto_import ) {
+	    const char *modname = all_modules[i]->module_name;
+	    if ( ! PyObject_HasAttrString(module_main, modname) ) {
+		PyObject *mod;
+		mod = PyImport_ImportModule( modname );
+		PyModule_AddObject( module_main, modname, mod );
+	    }
+	}
     }
+    return module_main;
+}
 
-    m = PyModule_Create(&fontforge_module);
-
-    SetPythonModuleMetadata( m );
-
-    for ( i=0; types[i]!=NULL; ++i ) {
-        Py_INCREF(types[i]);
-        PyModule_AddObject(m, names[i], (PyObject *)types[i]);
+static void CreateAllPyModules(void) {
+    int i;
+    for ( i=0; i<NUM_MODULES; i++ ) {
+        CreatePyModule( all_modules[i] );
     }
-    /* Add a dictionary in which the user may define hooks -- scripts to run */
-    /*  when certain events happen in fontforge (like loading a file) */
-    hook_dict = PyDict_New();
-    Py_INCREF(hook_dict);
-    PyModule_AddObject(m, "hooks", hook_dict);
-    /* Add constant names for the spiro point types */
-    for ( i=0; spiro_names[i]!=NULL; ++i )
-        PyModule_AddObject(m, spiro_names[i], Py_BuildValue("i",i+1));
-
-    return m;
 }
 
-PyMODINIT_FUNC _PyInit_psMat(void) {
-    PyObject *module;
-    module PyModule_Create(&psMat_module);
-    if ( module!=NULL )
-	SetPythonModuleMetadata( module );
-    return( module );
+
+static void RegisterAllPyModules() {
+    /* This adds all the modules to Python's 'builtin' module list.
+     * It allows an 'import some_module' to always work, as python
+     * knows where to find the module in already-loaded code without
+     * having to search the filesystem for module files/libraries.
+     */
+    int i;
+    fixup_module_definitions();
+    for ( i=0; i<NUM_MODULES; i++ ) {
+	PyImport_AppendInittab( all_modules[i]->module_name,
+				all_modules[i]->runtime.modinit_func );
+    }
 }
 
-PyMODINIT_FUNC _PyInit___FontForge_Internals___(void) {
-    return PyModule_Create(&ff_internals_module);
-}
+/* This is called to start up the embedded python interpreter */
+void FontForge_InitializeEmbeddedPython(void) {
+    static int initialized = 0;
+    if ( initialized )
+	return;
 
-PyMODINIT_FUNC PyInit_fontforge(void) {
-    if ( load_glibraries() != 0 )
-        return NULL;
-    doinitFontForgeMain();
-    no_windowing_ui = running_script = true;
-    PyImport_AppendInittab("psMat", _PyInit_psMat);
-    PyImport_AppendInittab("__FontForge_Internals___", _PyInit___FontForge_Internals___);
-    return _PyInit_fontforge();
-}
-
-PyMODINIT_FUNC PyInit_psMat(void) {
-    if ( load_glibraries() != 0 )
-        return NULL;
-    doinitFontForgeMain();
-    no_windowing_ui = running_script = true;
-    PyImport_AppendInittab("fontforge", _PyInit_fontforge);
-    PyImport_AppendInittab("__FontForge_Internals___", _PyInit___FontForge_Internals___);
-    return _PyInit_psMat();
-}
-
-void FontForge_PythonInit(void) {
-    Py_SetProgramName(L"fontforge");
-    PyImport_AppendInittab("fontforge", _PyInit_fontforge);
-    PyImport_AppendInittab("psMat", _PyInit_psMat);
-    PyImport_AppendInittab("__FontForge_Internals___", _PyInit___FontForge_Internals___);
+    SetPythonProgramName("fontforge");
+    RegisterAllPyModules();
 #ifdef MAC
     PyMac_Initialize();
 #else
     Py_Initialize();
 #endif
+    initialized = 1;
+
+    /* The embedded python interpreter is now functionally
+     * "running". We can modify it to our needs.
+     */
+    CreateAllPyModules();
+    InitializePythonMainNamespace();
 }
 
-#else /* PY_MAJOR_VERSION >= 3 ---------------------------------------------*/
+/* PyFF_Main() -- This is called to run a script as the main task, by
+ * running the command:   fontforge -script somescript.py arg1 arg2 ...
+ *
+ * This function is passed the entire original command line.
+ * Before passing it to Python, it must eliminate all the
+ * options up to and including the '-script' option, but while
+ * preserving argv[0].
+ *
+ * Also note that Python 3 expects argv to be C wide strings.
+ */
+#if PY_MAJOR_VERSION >= 3
+#define ARGV_CHAR_TYPE wchar_t
+#else
+#define ARGV_CHAR_TYPE char
+#endif
+static ARGV_CHAR_TYPE ** copy_argv(char *arg0, int argc ,char **argv);
+
+void PyFF_Main(int argc,char **argv,int start) {
+    char *arg;
+    ARGV_CHAR_TYPE **newargv;
+    int newargc;
+    int exitcode;
+
+    no_windowing_ui = running_script = true;
+
+    PyFF_ProcessInitFiles();
+
+    /* Skip '-script' option */
+    arg = argv[start];
+    if ( *arg=='-' && arg[1]=='-' ) ++arg;
+    if ( strcmp(arg,"-script")==0 )
+	++start;
+
+    /* Make new argv array */
+    newargc = argc - start + 1;
+    newargv = copy_argv(argv[0], newargc-1, &argv[start] );
+
+    /* Run Python */
+    exitcode = Py_Main( newargc, newargv );
+    exit(exitcode);
+}
+
+
+/* ************************************************************************** */
+/* PYTHON INITIALIZATION   ---   Python 3.x or greater */
+/* ************************************************************************** */
+#if PY_MAJOR_VERSION >= 3 /*---------------------------------------------*/
+
+static void SetPythonProgramName(const char *progname) {
+    static wchar_t *saved_progname=NULL;
+    if ( saved_progname )
+	free(saved_progname);
+    saved_progname = copy_to_wide_string(progname);
+    Py_SetProgramName(saved_progname);
+}
+
+static wchar_t ** copy_argv(char *arg0, int argc ,char **argv) {
+    int i;
+    wchar_t **newargv;
+
+    newargv= gcalloc(argc+2,sizeof(char *));
+    newargv[0] = copy_to_wide_string(arg0);
+    if (newargv[0] == NULL) {
+        fprintf(stderr, "argv[0] is an invalid multibyte sequence in the current locale\n");
+        exit(1);
+    }
+
+    for ( i=0; i<argc; ++i ) {
+	newargv[i+1] = copy_to_wide_string(argv[i]);
+	if (newargv[i+1] == NULL) {
+	    fprintf(stderr, "argv[%d] is an invalid multibyte sequence in the current locale\n",i+1);
+	    exit(1);
+	}
+    }
+    newargv[argc+1] = NULL;
+    return newargv;
+}
+
+#else /* PY_MAJOR_VERSION */
 /* ************************************************************************** */
 /* PYTHON INITIALIZATION   ---   Python 2.x */
 /* ************************************************************************** */
-/* See also _PyInit_fontforge above for the version 3 case */
 
-static void initPyFontForge(void) {
-    PyObject* m;
+static void SetPythonProgramName(const char *progname) {
+    static char *saved_progname=NULL;
+    if ( saved_progname )
+	free(saved_progname);
+    saved_progname = copy(progname);
+    Py_SetProgramName(saved_progname);
+}
+
+static char ** copy_argv(char *arg0, int argc ,char **argv) {
     int i;
-    static PyTypeObject *types[] = { &PyFF_PointType, &PyFF_ContourType,
-	    &PyFF_LayerType, &PyFF_GlyphPenType, &PyFF_GlyphType,
-	    &PyFF_CvtType, &PyFF_PrivateIterType, &PyFF_PrivateType,
-	    &PyFF_FontIterType, &PyFF_SelectionType, &PyFF_FontType,
-	    &PyFF_ContourIterType, &PyFF_LayerIterType, &PyFF_CvtIterType,
-	    &PyFF_LayerArrayType, &PyFF_RefArrayType, &PyFF_LayerArrayIterType,
-	    &PyFF_LayerInfoType, &PyFF_LayerInfoArrayType, &PyFF_LayerInfoArrayIterType,
-	    &PyFF_AWGlyphType, &PyFF_AWGlyphIndexType, &PyFF_AWContextType,
-	    &PyFF_MathType, &PyFF_MathKernType, NULL };
-    static char *names[] = { "point", "contour", "layer", "glyphPen", "glyph",
-	    "cvt", "privateiter", "private", "fontiter", "selection", "font",
-	    "contouriter", "layeriter", "cvtiter",
-	    "glyphlayerarray", "glyphlayerrefarray", "glyphlayeriter",
-	    "layerinfo", "fontlayerarray", "fontlayeriter",
-	    "awglyph", "awglyphIndex", "awcontext",
-	    "math", "mathkern",
-	    NULL };
-    static char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
-	    "spiroLeft", "spiroRight", "spiroOpen", NULL };
-    static int initted = false;
+    char **newargv;
 
-    if ( initted )
-return;
-    initted = true;
+    newargv= gcalloc(argc+2,sizeof(char *));
+    newargv[0] = copy(arg0);
 
-    setupMath();
-    for ( i=0; types[i]!=NULL; ++i ) {
-	types[i]->ob_type = &PyType_Type;		/* Or does Type_Ready do this??? */
-	if (PyType_Ready(types[i]) < 0)
-return;
+    for ( i=0; i<argc; ++i ) {
+	newargv[i+1] = copy(argv[i]);
     }
-
-    m = Py_InitModule3("fontforge", FontForge_methods,
-                       "FontForge font manipulation module.");
-
-    SetPythonModuleMetadata( m );
-
-    for ( i=0; types[i]!=NULL; ++i ) {
-	Py_INCREF(types[i]);
-	PyModule_AddObject(m, names[i], (PyObject *)types[i]);
-    }
-    /* Add a dictionary in which the user may define hooks -- scripts to run */
-    /*  when certain events happen in fontforge (like loading a file) */
-    hook_dict = PyDict_New();
-    Py_INCREF(hook_dict);
-    PyModule_AddObject(m, "hooks", hook_dict);
-    /* Add constant names for the spiro point types */
-    for ( i=0; spiro_names[i]!=NULL; ++i )
-	PyModule_AddObject(m, spiro_names[i], Py_BuildValue("i",i+1));
-
-    m = Py_InitModule3("psMat", psMat_methods,
-                       "PostScript Matrix manipulation");
-    SetPythonModuleMetadata( m );
-
-    /* No types, just tuples */
-
-    /* I need some way to pickle objects from C. The only way I can think to */
-    /*  do that is to go through this kludge. Define a dummy module with one */
-    /*  function, and then invoke that function to store handles to the pickler */
-    m = Py_InitModule3("__FontForge_Internals___", FontForge_internal_methods,
-                       "I use this to get access to certain python objects I need, and to hide some internal python functions. I don't expect users ever to care about it.");
+    newargv[argc+1] = NULL;
+    return newargv;
 }
 
-void FontForge_PythonInit(void) {
-    Py_SetProgramName("fontforge");
-    PyImport_AppendInittab("fontforge", initPyFontForge);
-#ifdef MAC
-    PyMac_Initialize();
-#else
-    Py_Initialize();
-#endif
-    initPyFontForge();
-}
-
-#endif /* PY_MAJOR_VERSION >= 3 ---------------------------------------*/
-
+#endif /* PY_MAJOR_VERSION */
 /* ************************************************************************** */
 /* Other python environment initializations */
 /* ************************************************************************** */
@@ -18279,8 +18477,24 @@ static void SetPythonModuleMetadata( PyObject *module ) {
     PyModule_AddObject(module, "__date__", pydate);
 }
 
+static void AddHookDictionary( PyObject *module ) {
+    /* Add a dictionary in which the user may define hooks (scripts to
+     * run) when certain events happen in fontforge, like loading a
+     * file.
+     */
+    PyObject *hook_dict;
+    hook_dict = PyDict_New();
+    Py_INCREF(hook_dict);
+    PyModule_AddObject(module, "hooks", hook_dict);
+}
 
-extern int no_windowing_ui, running_script;
+static void AddSpiroConstants( PyObject *module ) {
+    int i;
+    /* Add constant names for the spiro point types */
+    for ( i=0; spiro_names[i]!=NULL; ++i )
+        PyModule_AddObject(module, spiro_names[i], Py_BuildValue("i",i+1));
+}
+
 
 void PyFF_Stdin(void) {
     no_windowing_ui = running_script = true;
@@ -18294,100 +18508,27 @@ void PyFF_Stdin(void) {
     exit(0);
 }
 
-#if PY_MAJOR_VERSION >= 3 /*---------------------------------------------*/
-
-static wchar_t *copy_to_wide_string(const char *s) {
-    size_t n;
-    wchar_t *ws;
-
-    ws = NULL;
-    n = mbstowcs(NULL, s, 0) + 1;
-    if (n != (size_t) -1) {
-        ws = gcalloc(n, sizeof(wchar_t));
-        mbstowcs(ws, s, n);
-    }
-    return ws;
-}
-
-void PyFF_Main(int argc,char **argv,int start) {
-    char *arg;
-    wchar_t **newargv;
-    int i;
-    int exit_status;    
-
-    no_windowing_ui = running_script = true;
-
-    PyFF_ProcessInitFiles();
-
-    newargv = gcalloc(argc + 1,sizeof(wchar_t *));
-    arg = argv[start];
-    if ( *arg=='-' && arg[1]=='-' )
-        ++arg;
-    if ( strcmp(arg,"-script")==0 )
-        ++start;
-
-    newargv[0] = copy_to_wide_string(argv[0]);
-    if (newargv[0] == NULL) {
-        fprintf(stderr, "argv[0] is an invalid multibyte sequence in the current locale\n");
-        exit(1);
-    }
-    for ( i=start; i<argc; ++i ) {
-        newargv[i - start + 1] = copy_to_wide_string(argv[i]);
-        if (newargv[i - start + 1] == NULL) {
-            fprintf(stderr, "argv[%d] is an invalid multibyte sequence in the current locale\n", i);
-            exit(1);
-        }
-    }
-    newargv[i-start+1] = NULL;
-
-    exit_status = Py_Main(2,newargv );
-
-    i = 0;
-    while (newargv[i] != NULL) {
-        free( newargv[i] );
-        i++;
-    }
-    free( newargv );
-
-    exit( exit_status );
-}
-
-#else /* PY_MAJOR_VERSION >= 3 -------------------------------------------------*/
-
-void PyFF_Main(int argc,char **argv,int start) {
-    char **newargv, *arg;
-    int i;
-
-    no_windowing_ui = running_script = true;
-
-    PyFF_ProcessInitFiles();
-
-    newargv= gcalloc(argc+1,sizeof(char *));
-    arg = argv[start];
-    if ( *arg=='-' && arg[1]=='-' ) ++arg;
-    if ( strcmp(arg,"-script")==0 )
-	++start;
-    newargv[0] = argv[0];
-    for ( i=start; i<argc; ++i )
-	newargv[i-start+1] = argv[i];
-    newargv[i-start+1] = NULL;
-    exit( Py_Main( i-start+1,newargv ));
-}
-
-#endif /* PY_MAJOR_VERSION >= 3 -------------------------------------------------*/
 
 void PyFF_ScriptFile(FontViewBase *fv,SplineChar *sc, char *filename) {
-    PyObject *fp = PyFile_FromString(filename,"rb");
+    FILE *fp;
+    int rc;
+
+    fp = fopen(filename, "rb");
+    if ( fp==NULL ) {
+	fprintf(stderr, "Failed to open script \"%s\": %s\n", filename, strerror(errno));
+	LogError(_("Can't open %s"), filename );
+	return;
+    }
 
     fv_active_in_ui = fv;		/* Make fv known to interpreter */
     sc_active_in_ui = sc;		/* Make sc known to interpreter */
     layer_active_in_ui = ly_fore;
     if ( fv!=NULL )
 	layer_active_in_ui = fv->active_layer;
-    if ( fp==NULL )
-	LogError(_("Can't open %s"), filename );
-    else {
-	PyRun_SimpleFile(PyFile_AsFile(fp),filename);
+
+    rc = PyRun_SimpleFileEx(fp, filename, 1/*close fp*/);
+    if ( rc != 0 ) {
+	LogError(_("Execution of script %s failed"), filename );
     }
 }
 
@@ -18425,47 +18566,104 @@ void PyFF_FreeSC(SplineChar *sc) {
 static void LoadFilesInPythonInitDir(char *dir) {
     DIR *diro;
     struct dirent *ent;
-    char buffer[1025];
+    struct string_list *filelist=NULL;
+    struct string_list *item;
 
     diro = opendir(dir);
     if ( diro==NULL )		/* It's ok not to have any python init scripts */
 return;
 
     while ( (ent = readdir(diro))!=NULL ) {
+	char buffer[PATH_MAX+2];
 	char *pt = strrchr(ent->d_name,'.');
 	if ( pt==NULL )
     continue;
 	if ( strcmp(pt,".py")==0 ) {
-	    sprintf( buffer, "%s/%s", dir, ent->d_name );
-	    PyObject *fp = PyFile_FromString(buffer,"rb");
-	    if ( fp==NULL )
-    continue;
-	    PyRun_SimpleFile(PyFile_AsFile(fp),buffer);
+	    snprintf( buffer, sizeof(buffer), "%s/%s", dir, ent->d_name );
+	    filelist = prepend_string_list( filelist, buffer );
 	}
     }
     closedir(diro);
+
+    filelist = sort_string_list( filelist );
+
+    for ( item=filelist; item!=NULL; item=item->next ) {
+	FILE *fp;
+	char *pathname = item->str;
+	fp = fopen( pathname, "rb" );
+	if ( fp==NULL ) {
+	    fprintf(stderr,"Failed to open script \"%s\": %s\n",pathname,strerror(errno));
+	    continue;
+	}
+	PyRun_SimpleFileEx(fp, pathname, 1/*close fp*/);
+    }
+    delete_string_list( filelist );
+}
+
+static int dir_exists(const char* path) {
+    struct stat st;
+    if ( stat(path,&st)==0 && S_ISDIR(st.st_mode) )
+	return 1;
+    return 0;
+}
+
+static struct string_list *default_pyinit_dirs(void) {
+    static struct string_list *pathlist = NULL;
+    const char *sharedir;
+    const char *userdir;
+    char subdir[16];
+    char buffer[PATH_MAX+2];
+
+    if ( pathlist != NULL ) {
+	/* Re-scan directories, so delete old list */
+	delete_string_list(pathlist);
+	pathlist = NULL;
+    }
+    snprintf(subdir, sizeof(subdir), "python%d", PY_MAJOR_VERSION);
+
+    sharedir = getFontForgeShareDir();
+    userdir = getPfaEditDir(buffer);
+
+    if ( sharedir!=NULL ) {
+	snprintf(buffer,sizeof(buffer),"%s/%s",sharedir,subdir);
+	if ( dir_exists(buffer) ) {
+	    pathlist = append_string_list( pathlist, buffer );
+	}
+	else { /* Fall back to version-less python */
+	    snprintf(buffer,sizeof(buffer),"%s/%s",sharedir,"python");
+	    if ( dir_exists(buffer) ) {
+		pathlist = append_string_list( pathlist, buffer );
+	    }
+	}
+    }
+
+    if ( userdir!=NULL ) {
+	snprintf(buffer,sizeof(buffer),"%s/%s",userdir,subdir);
+	if ( dir_exists(buffer) ) {
+	    pathlist = append_string_list( pathlist, buffer );
+	}
+	else { /* Fall back to version-less python */
+	    snprintf(buffer,sizeof(buffer),"%s/%s",userdir,"python");
+	    if ( dir_exists(buffer) ) {
+		pathlist = append_string_list( pathlist, buffer );
+	    }
+	}
+    }
+
+    return pathlist;
 }
 
 void PyFF_ProcessInitFiles(void) {
     static int done = false;
-    char buffer[1025], *pt;
+    struct string_list * dpath;
 
     if ( done )
 return;
+    dpath = default_pyinit_dirs();
+    for ( ; dpath!=NULL; dpath=dpath->next ) {
+	LoadFilesInPythonInitDir( dpath->str );
+    }
     done = true;
-
-    pt = getFontForgeShareDir();
-    if ( pt!=NULL ) {
-	snprintf(buffer,sizeof(buffer),"%s/python", pt );
-	/* Load the system directory */
-	LoadFilesInPythonInitDir( buffer );
-    }
-    /* Load the user directory */
-    if ( getPfaEditDir(buffer)!=NULL ) {
-	strcpy(buffer,getPfaEditDir(buffer));
-	strcat(buffer,"/python");
-	LoadFilesInPythonInitDir(buffer);
-    }
 }
 
 void PyFF_CallDictFunc(PyObject *dict,char *key,char *argtypes, ... ) {
@@ -18543,13 +18741,35 @@ return;
 	PyFF_CallDictFunc(hook_dict,"loadFontHook","f", fv );
 }
 
-#if PY_MAJOR_VERSION < 3
-void ff_init(void) {
+
+/* This function is called when fontforge is being imported into
+** a python process.  Actually python first invokes the wrapper
+** functions in the pyhook/*.c files; and those then call this
+** function.
+*/
+PyMODINIT_FUNC FFPY_PYTHON_ENTRY_FUNCTION(const char* modulename) {
     doinitFontForgeMain();
     no_windowing_ui = running_script = true;
-    initPyFontForge();
+
+    RegisterAllPyModules();
+    CreateAllPyModules();
+
+#if PY_MAJOR_VERSION >= 3
+    /* Python 3 expects the module object to be returned */
+    {
+	int i;
+	for ( i=0; i<NUM_MODULES; i++ ) {
+	    if (strcmp(all_modules[i]->module_name, modulename)==0 ) {
+		return all_modules[i]->runtime.module;
+	    }
+	}
+	return NULL;
+    }
+#else
+    /* Python 2 doesn't expect any return value */
+    return;
+#endif
 }
-#endif /* PY_MAJOR_VERSION < 3 */
 
 #else
 #include "fontforgevw.h"
