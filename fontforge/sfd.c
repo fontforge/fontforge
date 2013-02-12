@@ -3003,15 +3003,15 @@ int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
 	    int rc = 0;
 	    
 	    snprintf( path,    PATH_MAX, "%s", sf->filename );
-	    snprintf( pathnew, PATH_MAX, "%s.~%02d", sf->filename, idx );
+	    snprintf( pathnew, PATH_MAX, "%s~%02d", sf->filename, idx );
 	    rc = rename( path, pathnew );
 //	    ret = SFDWrite( path,sf,map,normal,false);
 	    fprintf(stderr,"ret:%d save to:%s\n", ret, path );
 
 	    for( idx=PrefMaxBackupsToKeep; idx > 0; idx-- )
 	    {
-		snprintf( path, PATH_MAX, "%s.~%02d", sf->filename, idx-1 );
-		snprintf( pathnew, PATH_MAX, "%s.~%02d", sf->filename, idx );
+		snprintf( path, PATH_MAX, "%s~%02d", sf->filename, idx-1 );
+		snprintf( pathnew, PATH_MAX, "%s~%02d", sf->filename, idx );
 		fprintf(stderr,"rename %s to %s\n", path, pathnew );
               
 		int rc = rename( path, pathnew );
@@ -3019,7 +3019,7 @@ int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
 		    sf->backedup = bs_backedup;
 	    }
 	    idx = PrefMaxBackupsToKeep+1;
-	    snprintf( path, PATH_MAX, "%s.~%02d", sf->filename, idx );
+	    snprintf( path, PATH_MAX, "%s~%02d", sf->filename, idx );
 	    unlink(path);
 	    fprintf(stderr,"unlink to:%s\n", path );
 //          return(ret);
@@ -3037,15 +3037,15 @@ int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
 	/* } */
 
 	/* idx = PrefMaxBackupsToKeep; */
-	/* snprintf( path, PATH_MAX, "%s.~%02d", sf->filename, idx ); */
+	/* snprintf( path, PATH_MAX, "%s~%02d", sf->filename, idx ); */
 	/* int haveReachedMaxBackups = GFileExists(path); */
 	
 	/* if( haveReachedMaxBackups ) */
 	/* { */
 	/*     for( idx=1; idx <= PrefMaxBackupsToKeep; idx++ ) */
 	/*     { */
-	/* 	snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx ); */
-	/* 	snprintf( pathnew, PATH_MAX, "%s.~%02d", sf->filename, idx-1 ); */
+	/* 	snprintf( path,    PATH_MAX, "%s~%02d", sf->filename, idx ); */
+	/* 	snprintf( pathnew, PATH_MAX, "%s~%02d", sf->filename, idx-1 ); */
 	/* 	fprintf(stderr,"rename %s to %s\n", path, pathnew ); */
               
 	/* 	int rc = rename( path, pathnew ); */
@@ -3053,7 +3053,7 @@ int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
 	/* 	    sf->backedup = bs_backedup; */
 	/*     } */
 	/*     idx = 0; */
-	/*     snprintf( path, PATH_MAX, "%s.~%02d", sf->filename, idx ); */
+	/*     snprintf( path, PATH_MAX, "%s~%02d", sf->filename, idx ); */
 	/*     unlink(path); */
 	/*     // */
 	/*     // Where to save the new backup into */
@@ -3066,7 +3066,7 @@ int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
 	/*     // so we only need to find out what the next number in the sequence is */
 	/*     for( idx=1; idx < PrefMaxBackupsToKeep; idx++ ) */
 	/*     { */
-	/* 	snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx ); */
+	/* 	snprintf( path,    PATH_MAX, "%s~%02d", sf->filename, idx ); */
 	/* 	if(!GFileExists(path)) */
 	/* 	{ */
 	/* 	    // keep idx at its current value, that is where to save */
@@ -3077,14 +3077,14 @@ int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
 	    
 	/* } */
 	
-	/* snprintf( path, PATH_MAX, "%s.~%02d", sf->filename, idx ); */
+	/* snprintf( path, PATH_MAX, "%s~%02d", sf->filename, idx ); */
 	/* ret = SFDWrite( path,sf,map,normal,false); */
 	/* fprintf(stderr,"ret:%d save to:%s\n", ret, path ); */
 
 	/* for( idx=PrefMaxBackupsToKeep; idx > 0; idx-- ) */
 	/* { */
-	/*     snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx-1 ); */
-	/*     snprintf( pathnew, PATH_MAX, "%s.~%02d", sf->filename, idx ); */
+	/*     snprintf( path,    PATH_MAX, "%s~%02d", sf->filename, idx-1 ); */
+	/*     snprintf( pathnew, PATH_MAX, "%s~%02d", sf->filename, idx ); */
 	/*     fprintf(stderr,"rename %s to %s\n", path, pathnew ); */
               
 	/*     int rc = rename( path, pathnew ); */
@@ -3092,7 +3092,7 @@ int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
 	/* 	sf->backedup = bs_backedup; */
 	/* } */
 	/* idx = PrefMaxBackupsToKeep; */
-	/* snprintf( path,    PATH_MAX, "%s.~%02d", sf->filename, idx ); */
+	/* snprintf( path,    PATH_MAX, "%s~%02d", sf->filename, idx ); */
 	/* unlink(path); */
 	/* fprintf(stderr,"unlink to:%s\n", path ); */
 	/* return(ret); */
