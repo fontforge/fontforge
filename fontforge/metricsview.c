@@ -3963,6 +3963,7 @@ static void MVChar(MetricsView *mv,GEvent *event) {
 		snprintf(buf,99,"%.0f",val);
 		GGadgetSetTitle8(active, buf);
 
+		event->u.control.u.tf_changed.from_pulldown=-1;
 		event->type=et_controlevent;
 		event->u.control.subtype = et_textchanged;
 		GGadgetDispatchEvent(active,event);
