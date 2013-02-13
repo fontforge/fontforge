@@ -105,6 +105,7 @@ static long scalecolor(struct sgiheader *header,long value) {
 }
 
 static int readlongtab(FILE *fp,unsigned long *tab,long tablen) {
+/* RLE table info, exit=0 if okay, return -1 if error */
     long i;
 
     for ( i=0; i<tablen; ++i )
@@ -195,6 +196,7 @@ GImage *GImageReadRgb(char *filename) {
 	return( NULL );
     }
 
+    /* Check, and Get, Header information */
     if ( getsgiheader(&header,fp) )
 	goto errorGImageReadRgbFile;
 
@@ -206,6 +208,9 @@ GImage *GImageReadRgb(char *filename) {
     base = ret->u.image;
 
     if ( header.format==RLE ) {
+	/* Working with RLE image data*/
+
+	/* First, get offset table info */
 	tablen = header.height*header.chans;
 	if ( (starttab=(unsigned long *)calloc(1,tablen*sizeof(long)))==NULL || \
 	   /*(lengthtab=(unsigned long *)calloc(1,tablen*sizeof(long)))==NULL || \ */
@@ -216,10 +221,14 @@ GImage *GImageReadRgb(char *filename) {
 	if ( readlongtab(fp,starttab,tablen) )
 	    /* || readlongtab(fp,lengthtab,tablen) */
 	    goto errorGImageReadRgbFile;
+
+	/* Next, get image data */
 	for ( i=0; i<tablen; ++i )
 	    if ( (k=find_scanline(fp,&header,i,starttab,ptrtab)) ) {
 		if ( k==-1 ) goto errorGImageReadRgbMem; else goto errorGImageReadRgbFile;
 	    }
+
+	/* Then, build image */
 	if ( header.chans==1 ) {
 	    for ( i=0; i<header.height; ++i )
 		memcpy(base->data + (header.height-1-i)*base->bytes_per_line,ptrtab[i],header.width);
@@ -235,6 +244,7 @@ GImage *GImageReadRgb(char *filename) {
 	freeptrtab(ptrtab,tablen);
 	free(ptrtab); free(starttab); /*free(lengthtab);*/
     } else {
+	/* working with Verbatim image data*/
 	if ( header.chans==1 && header.bpc==1 ) {
 	    for ( i=0; i<header.height; ++i ) {
 		fread(base->data + (header.height-1-i)*base->bytes_per_line,header.width,1,fp);
@@ -253,6 +263,7 @@ GImage *GImageReadRgb(char *filename) {
 		}
 	    }
 	} else {
+	    /* import RGB=3 or RGBA=4 Verbatim images */
 	    unsigned char *rpt, *gpt, *bpt;
 	    if ( (r=(unsigned char *) malloc(header.width*sizeof(unsigned char)))==NULL || \
 		 (g=(unsigned char *) malloc(header.width*sizeof(unsigned char)))==NULL || \
