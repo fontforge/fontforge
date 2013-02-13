@@ -1032,7 +1032,7 @@ int fontforge_main( int argc, char **argv ) {
 	    dohelp();
 	else if ( strcmp(pt,"-help")==0 )
 	    dousage();
-	else if ( strcmp(pt,"-version")==0 )
+	else if ( strcmp(pt,"-version")==0 || strcmp(pt,"-v")==0 || strcmp(pt,"-V")==0 )
 	    doversion(source_version_str);
 	else if ( strcmp(pt,"-quit")==0 )
 	    quit_request = true;
