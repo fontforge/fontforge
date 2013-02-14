@@ -60,7 +60,7 @@ static char *joins[] = { "miter", "round", "bevel", "inher", NULL };
 static char *caps[] = { "butt", "round", "square", "inher", NULL };
 static char *spreads[] = { "pad", "reflect", "repeat", NULL };
 
-int PrefMaxBackupsToKeep = 32;
+int prefRevisionsToRetain = 32;
 
 
 /* I will retain this list in case there are still some really old sfd files */
@@ -2966,6 +2966,70 @@ return( 0 );
 return( !err );
 }
 
+int SFDDoesAnyBackupExist(char* filename)
+{
+    char path[PATH_MAX];
+    int idx = 1;
+    int rc = 0;
+	    
+    snprintf( path, PATH_MAX, "%s-%02d", filename, idx );
+    return GFileExists(path);
+}
+
+/**
+ * Handle creation of potential implicit revisions when saving.
+ * 
+ * If s2d is set then we are saving to an sfdir and no revisions are
+ * created.
+ *
+ * If localRevisionsToRetain == 0 then no revisions are made.
+ * 
+ * If localRevisionsToRetain > 0 then it is taken as an explict number
+ * of revisions to make, and revisions are made
+ * 
+ * If localRevisionsToRetain == -1 then it is "not set".
+ * In that case, revisions are only made if there are already revisions
+ * for the locfilename.
+ * 
+ */
+int SFDWriteBakExtended(char* locfilename,
+			SplineFont *sf,EncMap *map,EncMap *normal,
+			int s2d,
+			int localRevisionsToRetain )
+{
+    int rc = 0;
+    
+    if( s2d )
+    {
+	rc = SFDWrite(locfilename,sf,map,normal,s2d);
+	return rc;
+    }
+    
+
+    int cacheRevisionsToRetain = prefRevisionsToRetain;
+    char* cacheSFFilename = sf->filename;
+
+    sf->filename = locfilename;
+    if( localRevisionsToRetain < 0 )
+    {
+	// If there are no backups, then don't start creating any
+	if( !SFDDoesAnyBackupExist(sf->filename))
+	    prefRevisionsToRetain = 0;
+    }
+    else
+    {
+	prefRevisionsToRetain = localRevisionsToRetain;
+    }
+    
+    rc = SFDWriteBak( sf, map, normal );
+	    
+    sf->filename = cacheSFFilename;
+    prefRevisionsToRetain = cacheRevisionsToRetain;
+
+    return rc;
+}
+
+
 int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
     char *buf=0, *buf2=NULL;
     int ret;
@@ -2992,10 +3056,8 @@ int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
     else
     {
 	sf->backedup = bs_dontknow;
-//	free(buf);
-//	buf=0;
 
-	if( PrefMaxBackupsToKeep )
+	if( prefRevisionsToRetain )
 	{
 	    char path[PATH_MAX];
 	    char pathnew[PATH_MAX];
@@ -3005,97 +3067,24 @@ int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
 	    snprintf( path,    PATH_MAX, "%s", sf->filename );
 	    snprintf( pathnew, PATH_MAX, "%s-%02d", sf->filename, idx );
 	    rc = rename( path, pathnew );
-//	    ret = SFDWrite( path,sf,map,normal,false);
-	    fprintf(stderr,"ret:%d save to:%s\n", ret, path );
+//	    fprintf(stderr,"ret:%d save to:%s\n", ret, path );
 
-	    for( idx=PrefMaxBackupsToKeep; idx > 0; idx-- )
+	    for( idx=prefRevisionsToRetain; idx > 0; idx-- )
 	    {
 		snprintf( path, PATH_MAX, "%s-%02d", sf->filename, idx-1 );
 		snprintf( pathnew, PATH_MAX, "%s-%02d", sf->filename, idx );
-		fprintf(stderr,"rename %s to %s\n", path, pathnew );
+//		fprintf(stderr,"rename %s to %s\n", path, pathnew );
               
 		int rc = rename( path, pathnew );
 		if( !idx && !rc )
 		    sf->backedup = bs_backedup;
 	    }
-	    idx = PrefMaxBackupsToKeep+1;
+	    idx = prefRevisionsToRetain+1;
 	    snprintf( path, PATH_MAX, "%s-%02d", sf->filename, idx );
 	    unlink(path);
-	    fprintf(stderr,"unlink to:%s\n", path );
-//          return(ret);
+//	    fprintf(stderr,"unlink to:%s\n", path );
 	}
 	
-
-	/* char path[PATH_MAX]; */
-	/* char pathnew[PATH_MAX]; */
-	/* int idx = 0; */
-
-	/* // If they don't want backups, we are already done */
-	/* if( !PrefMaxBackupsToKeep ) */
-	/* { */
-	/*     return true; */
-	/* } */
-
-	/* idx = PrefMaxBackupsToKeep; */
-	/* snprintf( path, PATH_MAX, "%s-%02d", sf->filename, idx ); */
-	/* int haveReachedMaxBackups = GFileExists(path); */
-	
-	/* if( haveReachedMaxBackups ) */
-	/* { */
-	/*     for( idx=1; idx <= PrefMaxBackupsToKeep; idx++ ) */
-	/*     { */
-	/* 	snprintf( path,    PATH_MAX, "%s-%02d", sf->filename, idx ); */
-	/* 	snprintf( pathnew, PATH_MAX, "%s-%02d", sf->filename, idx-1 ); */
-	/* 	fprintf(stderr,"rename %s to %s\n", path, pathnew ); */
-              
-	/* 	int rc = rename( path, pathnew ); */
-	/* 	if( !idx && !rc )  */
-	/* 	    sf->backedup = bs_backedup; */
-	/*     } */
-	/*     idx = 0; */
-	/*     snprintf( path, PATH_MAX, "%s-%02d", sf->filename, idx ); */
-	/*     unlink(path); */
-	/*     // */
-	/*     // Where to save the new backup into */
-	/*     // */
-	/*     idx = PrefMaxBackupsToKeep; */
-	/* } */
-	/* else */
-	/* { */
-	/*     // Don't have to change places to find a spot to sit the new backup */
-	/*     // so we only need to find out what the next number in the sequence is */
-	/*     for( idx=1; idx < PrefMaxBackupsToKeep; idx++ ) */
-	/*     { */
-	/* 	snprintf( path,    PATH_MAX, "%s-%02d", sf->filename, idx ); */
-	/* 	if(!GFileExists(path)) */
-	/* 	{ */
-	/* 	    // keep idx at its current value, that is where to save */
-	/* 	    // the new backup file into */
-	/* 	    break; */
-	/* 	} */
-	/*     } */
-	    
-	/* } */
-	
-	/* snprintf( path, PATH_MAX, "%s-%02d", sf->filename, idx ); */
-	/* ret = SFDWrite( path,sf,map,normal,false); */
-	/* fprintf(stderr,"ret:%d save to:%s\n", ret, path ); */
-
-	/* for( idx=PrefMaxBackupsToKeep; idx > 0; idx-- ) */
-	/* { */
-	/*     snprintf( path,    PATH_MAX, "%s-%02d", sf->filename, idx-1 ); */
-	/*     snprintf( pathnew, PATH_MAX, "%s-%02d", sf->filename, idx ); */
-	/*     fprintf(stderr,"rename %s to %s\n", path, pathnew ); */
-              
-	/*     int rc = rename( path, pathnew ); */
-	/*     if( !idx && !rc ) */
-	/* 	sf->backedup = bs_backedup; */
-	/* } */
-	/* idx = PrefMaxBackupsToKeep; */
-	/* snprintf( path,    PATH_MAX, "%s-%02d", sf->filename, idx ); */
-	/* unlink(path); */
-	/* fprintf(stderr,"unlink to:%s\n", path ); */
-	/* return(ret); */
     }
     free(buf);
 
