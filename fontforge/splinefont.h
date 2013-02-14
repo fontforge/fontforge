@@ -2708,8 +2708,13 @@ extern Encoding *_FindOrMakeEncoding(const char *name,int make_it);
 extern Encoding *FindOrMakeEncoding(const char *name);
 extern void SFDDumpMacFeat(FILE *sfd,MacFeat *mf);
 extern MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok);
+extern int SFDDoesAnyBackupExist(char* filename);
 extern int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal, int todir);
 extern int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal);
+extern int SFDWriteBakExtended(char* locfilename,
+			       SplineFont *sf,EncMap *map,EncMap *normal,
+			       int s2d,
+			       int localPrefMaxBackupsToKeep );
 extern SplineFont *SFDRead(char *filename);
 extern SplineFont *_SFDRead(char *filename,FILE *sfd);
 extern SplineFont *SFDirRead(char *filename);
