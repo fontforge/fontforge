@@ -28,7 +28,6 @@ __pkg_deps="${__pkg_deps} zlib"
 __private_deps=""
 __private_deps="${__private_deps} -lgioftp"
 __private_deps="${__private_deps} -lgutils"
-__private_deps="${__private_deps} -lgunicode"
 test x"${i_do_have_tifflib}" = xyes -a x"${__have_libtiff_pkg_config}" != xyes  && __private_deps="${__private_deps} ${LIBTIFF_LIBS}"
 test x"${i_do_have_giflib}" = xyes && __private_deps="${__private_deps} ${GIFLIB_LIBS}"
 test x"${i_do_have_libjpeg}" = xyes && __private_deps="${__private_deps} ${LIBJPEG_LIBS}"
@@ -44,7 +43,7 @@ test x"${i_do_have_gui}" = xyes && __private_exe_deps="${__private_exe_deps} -lg
 AC_SUBST([LIBFONTFORGE_PKGCONFIG_VERSION],["${__cleaned_version}"])
 AC_SUBST([LIBFONTFORGE_PKGCONFIG_REQUIRES],[])
 AC_SUBST([LIBFONTFORGE_PKGCONFIG_REQUIRES_PRIVATE],["${__pkg_deps}"])
-AC_SUBST([LIBFONTFORGE_PKGCONFIG_LIBS],["-L${libdir} -lfontforge"])
+AC_SUBST([LIBFONTFORGE_PKGCONFIG_LIBS],["-L${libdir} -lfontforge -lgunicode"])
 AC_SUBST([LIBFONTFORGE_PKGCONFIG_LIBS_PRIVATE],["${__private_deps}"])
 
 AC_SUBST([LIBFONTFORGEEXE_PKGCONFIG_VERSION],["${__cleaned_version}"])
