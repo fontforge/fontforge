@@ -1268,7 +1268,8 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 
 
 void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePointList *set,
-				Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode ) {
+				Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode )
+{
     Spline *spline, *first;
     SplinePointList *spl;
     int truetype_markup = set==cv->b.gridfit && cv->dv!=NULL;
@@ -1311,7 +1312,7 @@ void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePointList *s
     }
 
     if( strokeFillMode != sfm_nothing ) {
-	/*
+ 	/*
 	 * If we were filling, we have to stroke the outline again to properly show
 	 * clip path splines which will possibly have a different stroke color
 	 */
@@ -2491,9 +2492,11 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    /*  is to draw to pixmap, dump pixmap a bit earlier */
 	    /* Then when we moved the fill image around, we had to deal with the */
 	    /*  images before the fill... */
+	    enum outlinesfm_flags strokeFillMode = sfm_stroke;
+	    strokeFillMode = false;
 	    CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],
-		    !sf->multilayer || layer==ly_back ? backoutlinecol : foreoutlinecol,
-		    false,&clip,false);
+				 !sf->multilayer || layer==ly_back ? backoutlinecol : foreoutlinecol,
+				 false,&clip,strokeFillMode);
 	    for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
 		if ( /* cv->b.drawmode==dm_back &&*/ cv->showrefnames )
 		    CVDrawRefName(cv,pixmap,rf,0);
@@ -2534,8 +2537,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     }
 
     if ( layer<0 ) /* Guide lines are special */
-	CVDrawLayerSplineSet(cv,pixmap,cv->b.layerheads[cv->b.drawmode],foreoutlinecol,
-		cv->showpoints ,&clip,strokeFillMode);
+	CVDrawLayerSplineSet( cv,pixmap,cv->b.layerheads[cv->b.drawmode],foreoutlinecol,
+			      cv->showpoints ,&clip, strokeFillMode );
     else if ( (cv->showback[layer>>5]&(1<<(layer&31))) ||
 	    (!cv->show_ft_results && cv->dv==NULL )) {
 	for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
@@ -2552,12 +2555,24 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	}
     }
     if ( layer>=0 )
-	CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
-			 cv->showpoints ,&clip,strokeFillMode);
+    {
+	if( cv->dv && !(cv->showback[layer>>5]&(1<<(layer&31))))
+	{
+	    // MIQ 2013 feb: issue/168
+	    // turn off the glyph outline if we are in debug mode and
+	    // the layer is not visible
+	}
+	else
+	{
+	    CVDrawLayerSplineSet( cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
+				  cv->showpoints ,&clip, strokeFillMode );
+	}
+    }
+    
 
-    if ( cv->freehand.current_trace!=NULL )
-	CVDrawSplineSet(cv,pixmap,cv->freehand.current_trace,tracecol,
-		false,&clip);
+    if ( cv->freehand.current_trace )
+	CVDrawSplineSet( cv,pixmap,cv->freehand.current_trace,tracecol,
+			 false,&clip);
 
     if ( cv->showhmetrics && (cv->b.container==NULL || cv->b.container->funcs->type==cvc_mathkern) ) {
 	RefChar *lock = HasUseMyMetrics(cv->b.sc,cvlayer);

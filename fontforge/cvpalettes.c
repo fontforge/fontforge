@@ -2502,7 +2502,7 @@ static void CVLSelectLayer(CharView *cv, int layer) {
     enum drawmode dm = cv->b.drawmode;
 
     if ( layer<-1 || layer>=cv->b.sc->layer_cnt )
-return;
+	return;
 
     if ( layer==-1 ) {
         cv->b.drawmode = dm_grid;
@@ -2537,13 +2537,14 @@ static int cvlayers_e_h(GWindow gw, GEvent *event) {
     char *buts[3];
     buts[0] = _("_Yes"); buts[1]=_("_No"); buts[2] = NULL;
 
-    if ( event->type==et_destroy ) {
+    if ( event->type==et_destroy )
+    {
 	cvlayers = NULL;
-return( true );
+	return( true );
     }
 
     if ( cv==NULL )
-return( true );
+	return( true );
 
     switch ( event->type ) {
       case et_close:
@@ -2577,12 +2578,15 @@ return( true );
         GGadget *g;
         l = CVLScanForItem(event->u.mouse.x,event->u.mouse.y, &cid);
 
-        if ( cid==CID_EBase && l>=-1 && l<cv->b.sc->layer_cnt ) { /* Need to check for this BEFORE checking for right click! */
-            if ( event->u.mouse.button==1 && event->u.mouse.clicks==2 ) {
+        if ( cid==CID_EBase && l>=-1 && l<cv->b.sc->layer_cnt )
+	{
+	    /* Need to check for this BEFORE checking for right click! */
+            if ( event->u.mouse.button==1 && event->u.mouse.clicks==2 )
+	    {
 		 /* bring up edit box for layer name */
 
                 if ( l<2 )
-return ( true );
+		    return ( true );
 
                 x = 7+(1+((layerscols&LSHOW_CUBIC)?1:0)+((layerscols&LSHOW_FG)?1:0))*layerinfo.column_width;
                 g = GWidgetGetControl(cvlayers,CID_Edit);
@@ -2605,12 +2609,12 @@ return ( true );
          /* right click to pop up menu */
 	if ( event->u.mouse.button==3 ) {
 	    LayerMenu(cv,event,true);
-return(true);
+	    return(true);
         }
 
          /* otherwise, deal with clicking up on the various controls */
         if ( l<-1 || l>=cv->b.sc->layer_cnt)
-return (true);
+	    return (true);
 
         if ( cid==CID_QBase) {
             if (l>=0) { /* don't try to adjust if calling for guides layer */
