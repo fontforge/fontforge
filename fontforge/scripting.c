@@ -52,6 +52,8 @@ int no_windowing_ui = false;
 int running_script = false;
 int use_utf8_in_script = true;
 
+extern int prefRevisionsToRetain; /* sfd.c */
+
 #ifndef _NO_FFSCRIPT
 static int verbose = -1;
 static struct dictionary globals;
@@ -1744,17 +1746,32 @@ static void bRevertToBackup(Context *c) {
     FVRevertBackup(c->curfv);
 }
 
+
 static void bSave(Context *c) {
     SplineFont *sf = c->curfv->sf;
     char *t, *pt;
     char *locfilename;
     int s2d = false;
+    int localRevisionsToRetain = -1;
 
-    if ( c->a.argc>2 )
+    if ( c->a.argc>3 )
 	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.argc==2 ) {
+
+    // Grab the optional number of backups that are desired argument
+    if ( c->a.argc==3 ) {
+	/**
+	 * A call Save( wheretosave, revisioncount )
+	 */
+	if ( c->a.vals[2].type!=v_int )
+	    ScriptError(c,"The second argument to Save() must be a number of revisions to keep (integer)");
+	localRevisionsToRetain = c->a.vals[2].u.ival;
+    }
+    
+    if ( c->a.argc>=2 )
+    {
 	if ( c->a.vals[1].type!=v_str )
 	    ScriptError(c,"If an argument is given to Save it must be a filename");
+	
 	t = script2utf8_copy(c->a.vals[1].u.sval);
 	locfilename = utf82def_copy(t);
 #ifdef VMS
@@ -1766,14 +1783,30 @@ static void bSave(Context *c) {
 	if ( pt!=NULL && strmatch(pt,".sfdir")==0 )
 	    s2d = true;
 #endif
-	if ( !SFDWrite(locfilename,sf,c->curfv->map,c->curfv->normal,s2d))
-	    ScriptError(c,"Save As failed" );
+
+	int rc = SFDWriteBakExtended( locfilename,
+				      sf,c->curfv->map,c->curfv->normal,s2d,
+				      localRevisionsToRetain );
+	if ( !rc )
+	    ScriptError(c,"Save failed" );
+	    
 	/* Hmmm. We don't set the filename, nor the save_to_dir bit */
 	free(t); free(locfilename);
-    } else {
+    }
+    else
+    {
 	if ( sf->filename==NULL )
 	    ScriptError(c,"This font has no associated sfd file yet, you must specify a filename" );
-	if ( !SFDWriteBak(sf,c->curfv->map,c->curfv->normal) )
+
+	/**
+	 * If there are no existing backup files, don't start creating them here.
+	 * Otherwise, save as many as the user wants.
+	 */
+	int s2d = false;
+	int rc = SFDWriteBakExtended( sf->filename,
+				      sf,c->curfv->map,c->curfv->normal,s2d,
+				      localRevisionsToRetain );
+	if ( !rc )
 	    ScriptError(c,"Save failed" );
     }
 }

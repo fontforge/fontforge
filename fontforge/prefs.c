@@ -185,7 +185,7 @@ extern int show_kerning_pane_in_class;		/* kernclass.c */
 extern int AutoSaveFrequency;			/* autosave.c */
 extern int UndoRedoLimitToSave;  /* sfd.c */
 extern int UndoRedoLimitToLoad;  /* sfd.c */
-extern int PrefMaxBackupsToKeep; /* sfd.c */
+extern int prefRevisionsToRetain; /* sfd.c */
 
 extern NameList *force_names_when_opening;
 extern NameList *force_names_when_saving;
@@ -306,7 +306,7 @@ static struct prefs_list {
 	{ N_("ExportClipboard"), pr_bool, &export_clipboard, NULL, NULL, '\0', NULL, 0, N_( "If you are running an X11 clipboard manager you might want\nto turn this off. FF can put things into its internal clipboard\nwhich it cannot export to X11 (things like copying more than\none glyph in the fontview). If you have a clipboard manager\nrunning it will force these to be exported with consequent\nloss of data.") },
 	{ N_("EnsureCorrectSaveExtension"), pr_bool, &prefs_ensure_correct_extension, NULL, NULL, '\0', NULL, 0, N_( "When inputting a name in the Save or SaveAs dialogs, FontForge can ensure that the correct filename extension (SFD or SFDIR) is always used. This prevents you from accidentally naming your source file with a binary extension (such as .otf), out of habit.") },
 	{ N_("AutoSaveFrequency"), pr_int, &AutoSaveFrequency, NULL, NULL, '\0', NULL, 0, N_( "The number of seconds between autosaves. If you set this to 0 there will be no autosaves.") },
-	{ N_("PrefMaxBackupsToKeep"), pr_int, &PrefMaxBackupsToKeep, NULL, NULL, '\0', NULL, 0, N_( "The number of file.sfd~n backups to create when saving. If you set this to 0 there will be no backups created.") },
+	{ N_("RevisionsToRetain"), pr_int, &prefRevisionsToRetain, NULL, NULL, '\0', NULL, 0, N_( "When Saving, keep this number of previous versions of the file. file.sfd-01 will be the last saved file, file.sfd-02 will be the file saved before that, and so on. If you set this to 0 then no revisions will be retained.") },
 	{ N_("UndoRedoLimitToSave"), pr_int, &UndoRedoLimitToSave, NULL, NULL, '\0', NULL, 0, N_( "The number of undo and redo operations which will be saved in sfd files.\nIf you set this to 0 undo/redo information is not saved to sfd files.\nIf set to -1 then all available undo/redo information is saved without limit.") },
 	PREFS_LIST_EMPTY
 },

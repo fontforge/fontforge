@@ -62,6 +62,8 @@
 #include <wchar.h>
 #endif
 
+extern int prefRevisionsToRetain;
+
 
 /* This defines the name of the Python entry function that is expected
  * to exist when importing this module from Python. Use a different
@@ -15356,17 +15358,33 @@ static PyObject *PyFFFont_Save(PyFF_Font *self, PyObject *args) {
     char *pt;
     FontViewBase *fv;
     int s2d=false;
+    int localRevisionsToRetain = -1;
 
     if ( CheckIfFontClosed(self) )
-return(NULL);
+	return(NULL);
     fv = self->fv;
 
-    if ( PySequence_Size(args)==1 ) {
-	/* Save As - Filename was provided */
+    int haveFilename = 0;
+    if ( PySequence_Size(args) == 2 )
+    {
+	haveFilename = 1;
+	if ( !PyArg_ParseTuple(args,"es|i", "UTF-8", &filename, &localRevisionsToRetain ))
+	    return( NULL );
+    }
+    if ( PySequence_Size(args) == 1 )
+    {
+	haveFilename = 1;
 	if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
-return( NULL );
+	    return( NULL );
+    }
+    
+    
+    if ( haveFilename )
+    {
+	/* Save As - Filename was provided */
 	locfilename = utf82def_copy(filename);
 	free(filename);
+
 #ifdef VMS
 	pt = strrchr(locfilename,'_');
 	if ( pt!=NULL && strmatch(pt,"_sfdir")==0 )
@@ -15376,12 +15394,20 @@ return( NULL );
 	if ( pt!=NULL && strmatch(pt,".sfdir")==0 )
 	    s2d = true;
 #endif
-	if ( !SFDWrite(locfilename,fv->sf,fv->map,fv->normal,s2d)) {
+
+
+	int rc = SFDWriteBakExtended( locfilename,
+				      fv->sf,fv->map,fv->normal,s2d,
+				      localRevisionsToRetain );
+	if ( !rc )
+	{
 	    PyErr_Format(PyExc_EnvironmentError, "Save As \"%s\" failed",locfilename);
 	    free(locfilename);
-return( NULL );
+	    return( NULL );
 	}
-    } else {
+    }
+    else
+    {
 	/* Save - No filename provided */
 	if ( fv->cidmaster!=NULL && fv->cidmaster->filename!=NULL )
 	    filename = fv->cidmaster->filename;
@@ -15407,17 +15433,21 @@ return( NULL );
 		strcat(locfilename,"MM");
 	    strcat(locfilename,".sfd");
 	}
-	if ( locfilename==NULL ) {
-	    if ( !SFDWriteBak(fv->sf,fv->map,fv->normal) ) {
-		PyErr_Format(PyExc_EnvironmentError, "Save failed");
-return( NULL );
-	    }
-	} else {
-	    if ( !SFDWrite(locfilename,fv->sf,fv->map,fv->normal,s2d)) {
-		PyErr_Format(PyExc_EnvironmentError, "Save As \"%s\" failed",locfilename);
-		free(locfilename);
-return( NULL );
-	    }
+	char* targetfilename = locfilename;
+	if ( !targetfilename ) 
+	    targetfilename = fv->sf->filename;
+	
+	/**
+	 * If there are no existing backup files, don't start creating them here.
+	 * Otherwise, save as many as the user wants.
+	 */
+	int rc = SFDWriteBakExtended( targetfilename,
+				      fv->sf,fv->map,fv->normal,s2d,
+				      localRevisionsToRetain );
+	if ( !rc )
+	{
+	    PyErr_Format(PyExc_EnvironmentError, "Save failed");
+	    return( NULL );
 	}
     }
 
