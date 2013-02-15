@@ -39,10 +39,11 @@ GImage *GImageReadXbm(char * filename) {
 	return( NULL );
     }
 
-    if ( fscanf(file, "#define %*s %d\n", &width )!=1 )
-	goto bad;
-    if ( fscanf(file, "#define %*s %d\n", &height )!=1 )
-	goto bad;
+    /* Get width and height */
+    if ( fscanf(file,"#define %*s %d\n",&width)!=1 || \
+	 fscanf(file,"#define %*s %d\n",&height)!=1 )
+	goto errorGImageReadXbm;
+
     if ( (ch = getc(file))=='#' ) {
 	fscanf(file, "define %*s %*d\n" );	/* x hotspot */
 	fscanf(file, "#define %*s %*d\n" );	/* y hotspot */
@@ -70,12 +71,11 @@ GImage *GImageReadXbm(char * filename) {
 	}
     }
     fclose(file);
-return(gi);
+    return( gi );
 
-bad:
-    if ( gi!=NULL )
-	GImageDestroy(gi);
-    if ( file!=NULL )
-	fclose(file);
-return(NULL);
+errorGImageReadXbm:
+    fprintf(stderr,"Bad input file \"%s\"\n",filename );
+    GImageDestroy(gi);
+    fclose(file);
+    return( NULL );
 }
