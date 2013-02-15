@@ -79,7 +79,10 @@ GImage *GImageReadXbm(char * filename) {
 	l=32;
     }
 
-    gi = GImageCreate(it_mono,width,height);
+    /* Create memory to hold image, exit with NULL if not enough memory */
+    if ( (gi=GImageCreate(it_mono,width,height))==NULL )
+	goto errorGImageReadXbmMem;
+
     base = gi->u.image;
     for ( i=0; i<height; ++i ) {
 	scanline = base->data + i*base->bytes_per_line;
@@ -99,6 +102,7 @@ GImage *GImageReadXbm(char * filename) {
 
 errorGImageReadXbm:
     fprintf(stderr,"Bad input file \"%s\"\n",filename );
+errorGImageReadXbmMem:
     GImageDestroy(gi);
     fclose(file);
     return( NULL );
