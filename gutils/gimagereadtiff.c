@@ -60,8 +60,11 @@ GImage *GImageReadTiff(char *filename) {
 	return( NULL );
     }
 
-    TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
-    TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
+    /* Get width and height of TIF image, exit if error */
+    if ( TIFFGetField(tif,TIFFTAG_IMAGEWIDTH,&w)!=1 || \
+	 TIFFGetField(tif,TIFFTAG_IMAGELENGTH,&h)!=1 )
+	goto errorGImageReadTiff;
+
     npixels = w * h;
     raster = (uint32*) galloc(npixels * sizeof (uint32));
     if (raster != NULL) {
@@ -81,7 +84,12 @@ GImage *GImageReadTiff(char *filename) {
 	gfree(raster);
     }
     TIFFClose(tif);
-return( ret );
+    return( ret );
+
+errorGImageReadTiff:
+    fprintf(stderr,"Bad input file \"%s\"\n",filename );
+    TIFFClose(tif);
+    return( NULL );
 }
 
 #endif
