@@ -48,19 +48,37 @@ GImage *GImageReadXbm(char * filename) {
     if ( (ch=getc(file))<0 )
 	goto errorGImageReadXbm;
     if ( ch=='#' ) {
-	if ( fscanf(file,"define %*s %*d\n")!=1 ||	/* x hotspot */ \
-	     fscanf(file,"#define %*s %*d\n")!=1 )	/* y hotspot */
+	if ( fscanf(file,"define %*s %*d\n")<0 ||	/* x hotspot */ \
+	     fscanf(file,"#define %*s %*d\n")<0 )	/* y hotspot */
 	    goto errorGImageReadXbm;
     } else
 	if ( ungetc(ch,file)<0 )
 	    goto errorGImageReadXbm;
 
-    fscanf(file,"static ");
-    ungetc(ch=fgetc(file),file);
-    if ( ch=='u' )
-	fscanf(file,"unsigned ");
-    ch = ch;		/* Compiler bug work-arround */
-    fscanf(file,"char %*s = {");
+    /* Data starts after finding "static unsigned " or "static " */
+    if ( fscanf(file,"static ")<0 || (ch=getc(file))<0 )
+	goto errorGImageReadXbm;
+    if ( ch=='u' ) {
+	if ( fscanf(file,"nsigned ")<0 || (ch=getc(file))<0 )
+	    goto errorGImageReadXbm;
+	/* TODO: Do we want to track signed/unsigned data? */
+    }
+
+    /* Data may be in char,short or long formats */
+    if ( ch=='c' ) {
+	if ( fscanf(file,"har %*s = {")<0 )
+	    goto errorGImageReadXbm;
+	l=8;
+    } else if ( ch=='s' ) {
+	if ( fscanf(file,"hort %*s = {")<0 )
+	    goto errorGImageReadXbm;
+	l=16;
+    } else if ( ch=='l' ) {
+	if ( fscanf(file,"ong %*s = {")<0 )
+	    goto errorGImageReadXbm;
+	l=32;
+    }
+
     gi = GImageCreate(it_mono,width,height);
     base = gi->u.image;
     for ( i=0; i<height; ++i ) {
