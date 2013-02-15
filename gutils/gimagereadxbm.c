@@ -34,9 +34,11 @@ GImage *GImageReadXbm(char * filename) {
     int i,j,k,pixels,val,val2, ch;
     uint8 *scanline;
 
-    file = fopen(filename,"r");
-    if ( file==NULL )
-return NULL;
+    if ( (file=fopen(filename,"r"))==NULL ) {
+	fprintf(stderr,"Can't open \"%s\"\n", filename);
+	return( NULL );
+    }
+
     if ( fscanf(file, "#define %*s %d\n", &width )!=1 )
 	goto bad;
     if ( fscanf(file, "#define %*s %d\n", &height )!=1 )

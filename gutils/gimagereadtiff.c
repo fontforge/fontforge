@@ -48,6 +48,7 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 #undef uint32
 
 GImage *GImageReadTiff(char *filename) {
+/* Import a TIF image, else return NULL if error  */
     TIFF* tif;
     uint32 w,h,i,j;
     uint32 *ipt,*fpt,*raster=NULL;
