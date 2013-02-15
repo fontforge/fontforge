@@ -55,10 +55,10 @@ GImage *GImageReadTiff(char *filename) {
     GImage *ret=NULL;
     struct _GImage *base;
 
-    tif = TIFFOpen(filename, "r");
-
-    if (tif==NULL )
-return( ret );
+    if ( (tif=TIFFOpen(filename,"rb"))==NULL ) {
+	/* if error, then report "built-in" error message and then exit	*/
+	return( NULL );
+    }
 
     TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
     TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
