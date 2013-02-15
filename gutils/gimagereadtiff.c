@@ -1,4 +1,5 @@
 /* Copyright (C) 2000-2012 by George Williams */
+/* 2013feb15, added file and mem error checks, Jose Da Silva */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -71,19 +72,20 @@ GImage *GImageReadTiff(char *filename) {
 	goto errorGImageReadTiffMem;
     }
 
-	if (TIFFReadRGBAImage(tif, w, h, raster, 0)) {
-		base = ret->u.image;
-		for ( i=0; i<h; ++i ) {
-		    ipt = (uint32 *) (base->data+i*base->bytes_per_line);
-		    fpt = raster+(h-1-i)*w;
-		    for ( j=0; j<w; ++j )
-			*ipt++ = COLOR_CREATE(
-				TIFFGetR(fpt[j]), TIFFGetG(fpt[j]), TIFFGetB(fpt[j]));
-		}
-	} 
-    free(raster);
-    TIFFClose(tif);
-    return( ret );
+    /* Read TIF image and process it into an internal FF usable format	*/
+    if ( TIFFReadRGBAImage(tif,w,h,raster,0) ) {
+	TIFFClose(tif);
+	base=ret->u.image;
+	for ( i=0; i<h; ++i ) {
+	    ipt=(uint32 *)(base->data+i*base->bytes_per_line);
+	    fpt=raster+(h-1-i)*w;
+	    for ( j=0; j<w; ++j )
+		*ipt++ =COLOR_CREATE(
+			TIFFGetR(fpt[j]),TIFFGetG(fpt[j]),TIFFGetB(fpt[j]));
+	}
+	free(raster);
+	return( ret );
+    }
 
 errorGImageReadTiff:
     fprintf(stderr,"Bad input file \"%s\"\n",filename );
