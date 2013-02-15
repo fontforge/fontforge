@@ -44,11 +44,17 @@ GImage *GImageReadXbm(char * filename) {
 	 fscanf(file,"#define %*s %d\n",&height)!=1 )
 	goto errorGImageReadXbm;
 
-    if ( (ch = getc(file))=='#' ) {
-	fscanf(file, "define %*s %*d\n" );	/* x hotspot */
-	fscanf(file, "#define %*s %*d\n" );	/* y hotspot */
+    /* Check for, and skip past hotspot */
+    if ( (ch=getc(file))<0 )
+	goto errorGImageReadXbm;
+    if ( ch=='#' ) {
+	if ( fscanf(file,"define %*s %*d\n")!=1 ||	/* x hotspot */ \
+	     fscanf(file,"#define %*s %*d\n")!=1 )	/* y hotspot */
+	    goto errorGImageReadXbm;
     } else
-	ungetc(ch,file);
+	if ( ungetc(ch,file)<0 )
+	    goto errorGImageReadXbm;
+
     fscanf(file,"static ");
     ungetc(ch=fgetc(file),file);
     if ( ch=='u' )
