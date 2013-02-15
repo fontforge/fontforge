@@ -48,10 +48,8 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 
 GImage *GImageReadTiff(char *filename) {
     TIFF* tif;
-    uint32 w, h, i,j;
-    uint32 *ipt, *fpt;
-    size_t npixels;
-    uint32* raster;
+    uint32 w,h,i,j;
+    uint32 *ipt,*fpt,*raster=NULL;
     GImage *ret=NULL;
     struct _GImage *base;
 
@@ -65,12 +63,15 @@ GImage *GImageReadTiff(char *filename) {
 	 TIFFGetField(tif,TIFFTAG_IMAGELENGTH,&h)!=1 )
 	goto errorGImageReadTiff;
 
-    npixels = w * h;
-    raster = (uint32*) galloc(npixels * sizeof (uint32));
-    if (raster != NULL) {
+    /* Create memory to hold image & raster, exit if not enough memory	*/
+    if ( (ret=GImageCreate(it_true,w,h))==NULL )
+	goto errorGImageReadTiffMem;
+    if ( (raster=(uint32*) malloc(w*h*sizeof(uint32)))==NULL ) {
+	NoMoreMemMessage();
+	goto errorGImageReadTiffMem;
+    }
+
 	if (TIFFReadRGBAImage(tif, w, h, raster, 0)) {
-	    ret = GImageCreate(it_true,w,h);
-	    if ( ret!=NULL ) {
 		base = ret->u.image;
 		for ( i=0; i<h; ++i ) {
 		    ipt = (uint32 *) (base->data+i*base->bytes_per_line);
@@ -79,15 +80,15 @@ GImage *GImageReadTiff(char *filename) {
 			*ipt++ = COLOR_CREATE(
 				TIFFGetR(fpt[j]), TIFFGetG(fpt[j]), TIFFGetB(fpt[j]));
 		}
-	    }
 	} 
-	gfree(raster);
-    }
+    free(raster);
     TIFFClose(tif);
     return( ret );
 
 errorGImageReadTiff:
     fprintf(stderr,"Bad input file \"%s\"\n",filename );
+errorGImageReadTiffMem:
+    free(raster); free(ret);
     TIFFClose(tif);
     return( NULL );
 }
