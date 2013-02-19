@@ -349,7 +349,7 @@ fontforge.FontView.SerifFamily: dejavu serif,times,caslon,serif,clearlyu,unifont
 fontforge.MetricsView.AdvanceWidthColor: #80827c
 fontforge.MetricsView.ItalicAdvanceColor: #80827c
 fontforge.MetricsView.KernLineColor: #3d7905
-fontforge.MetricsView.SelectedGlyphColor: #8f918d
+fontforge.MetricsView.SelectedGlyphColor: #2b2b2b
 fontforge.MetricsView.SideBearingLineColor: #12376c
 fontforge.View.Background: #ffffff
 Gdraw.GVisibilityBoxOn.Image:check_on.png
