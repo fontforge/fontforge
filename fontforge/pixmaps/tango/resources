@@ -45,8 +45,7 @@ Gdraw.GButton.Box.Padding: 1
 Gdraw.GButton.Box.Radius: 3
 Gdraw.GButton.Font: 400 10pt Cantarell,sans,clearlyu,unifont
 Gdraw.GButton.ShiftOnPress: False
-Gdraw.GCancelButton.Box.GradientStartCol: #ebb4a0
-Gdraw.GCancelButton.Box.NormalBackground: #f27458
+Gdraw.GCancelButton.Box.NormalBackground: #ffffff
 Gdraw.GCheckBox.Box.BorderType: none
 Gdraw.GCheckBox.Box.Padding: 0
 Gdraw.GCheckBox.Font: 400 10pt Cantarell,sans,clearlyu,unifont
@@ -87,8 +86,7 @@ Gdraw.GDefaultButton.Box.BorderBrightest: #598ec6
 Gdraw.GDefaultButton.Box.BorderDarker: #598ec6
 Gdraw.GDefaultButton.Box.BorderDarkest: #598ec6
 Gdraw.GDefaultButton.Box.BorderOuterCol: #bcd2ea
-Gdraw.GDefaultButton.Box.GradientStartCol: #b7ceeb
-Gdraw.GDefaultButton.Box.NormalBackground: #64a4f2
+Gdraw.GDefaultButton.Box.NormalBackground: #ffffff
 Gdraw.GDrawable.Box.BorderType: none
 Gdraw.GDrawable.Box.BorderWidth: 0
 Gdraw.GDrawable.Box.Padding: 0
@@ -349,7 +347,7 @@ fontforge.FontView.SerifFamily: dejavu serif,times,caslon,serif,clearlyu,unifont
 fontforge.MetricsView.AdvanceWidthColor: #80827c
 fontforge.MetricsView.ItalicAdvanceColor: #80827c
 fontforge.MetricsView.KernLineColor: #3d7905
-fontforge.MetricsView.SelectedGlyphColor: #8f918d
+fontforge.MetricsView.SelectedGlyphColor: #2b2b2b
 fontforge.MetricsView.SideBearingLineColor: #12376c
 fontforge.View.Background: #ffffff
 Gdraw.GVisibilityBoxOn.Image:check_on.png
