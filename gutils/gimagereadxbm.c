@@ -100,16 +100,21 @@ GImage *GImageReadXbm(char * filename) {
     for ( i=0; i<height; ++i ) {
 	scanline = base->data + i*base->bytes_per_line;
 	for ( j=0; j<base->bytes_per_line; ++j ) {
-	    if ( (fscanf(file," 0x%x",(unsigned *) &pixels))!=1 )
+	    if ( fscanf(file," 0x%x",(unsigned *) &pixels)!=1 )
 		goto errorGImageReadXbm;
 	    *scanline++ = ConvertXbmByte(pixels);
 	    if ( l>8 && j+1<base->bytes_per_line ) {
 		*scanline++ = ConvertXbmByte(pixels>>8);
 		++j;
 	    }
-	    //if ( l>16 && j+1<base->bytes_per_line ) {
-	    //TODO:implement 32bit long (If such an xbm format exists)
-	    //}
+	    if ( l>16 && j+1<base->bytes_per_line ) {
+		*scanline++ = ConvertXbmByte(pixels>>16);
+		++j;
+		if ( j+1<base->bytes_per_line ) {
+		    *scanline++ = ConvertXbmByte(pixels>>24);
+		    ++j;
+		}
+	    }
 	    fscanf(file,",");
 	}
     }
