@@ -175,13 +175,14 @@ Gdraw.GMatrixEdit.TitleBG: #a09f9e
 Gdraw.GMatrixEdit.TitleDivider: #757371
 Gdraw.GMatrixEdit.TitleFG: #222222
 Gdraw.GMatrixEdit.TitleFont: 700 8pt dejavu sans
-Gdraw.GMenu.Box.BorderOuter: False
+Gdraw.GMenu.Box.BorderOuter: True
+Gdraw.GMenu.Box.BorderOuterCol: #dedede
 Gdraw.GMenu.Box.BorderShape: rect
 Gdraw.GMenu.Box.NormalBackground: #ffffff
 Gdraw.GMenu.Box.Padding: 3
 Gdraw.GMenu.Font: 400 10pt Cantarell,sans,clearlyu,unifont
 Gdraw.GMenu.MacIcons: False
-Gdraw.GMenuBar.Box.ActiveBorder: #ffffff
+Gdraw.GMenuBar.Box.ActiveBorder: #ededed
 Gdraw.GMenuBar.Box.BorderInner: False
 Gdraw.GMenuBar.Box.BorderInnerCol: #edeceb
 Gdraw.GMenuBar.Box.BorderOuter: False
