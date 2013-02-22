@@ -178,6 +178,7 @@ void u_strncat(unichar_t *to, const unichar_t *from, int len) {
     u_strncpy(to+u_strlen(to),from,len);
 }
 
+
 int  u_strlen(register const unichar_t *str) {
     register int len = 0;
 
@@ -185,6 +186,14 @@ int  u_strlen(register const unichar_t *str) {
 	++len;
 return( len );
 }
+
+int  c_strlen(const char * p )
+{
+    if(!p)
+	return 0;
+    return strlen(p);
+}
+
 
 unichar_t *u_strchr(const unichar_t *str ,unichar_t ch) {
     register unichar_t test;
