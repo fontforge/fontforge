@@ -66,6 +66,10 @@ extern void cu_strncat(char *, const unichar_t *,int len);
 extern void u_strcat(unichar_t *, const unichar_t *);
 extern void u_strncat(unichar_t *, const unichar_t *, int len);
 extern int  u_strlen(const unichar_t *);
+/**
+ * Like strlen() but passing a null pointer gets a 0 length
+ */
+extern int  c_strlen(const char *);
 extern unichar_t *u_strchr(const unichar_t *,unichar_t);
 extern unichar_t *u_strrchr(const unichar_t *,unichar_t);
 extern unichar_t *uc_strstr(const unichar_t *,const char *);
