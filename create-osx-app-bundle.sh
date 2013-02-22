@@ -63,8 +63,9 @@ cp -av /opt/local/share/mime/magic      opt/local/share/mime
 
 
 cd $TEMPDIR
-zip -r ~/FontForge.app.zip FontForge.app
-cp -f ~/FontForge.app.zip /tmp/
+rm -f  ~/FontForge.app.zip
+zip -9 -r ~/FontForge.app.zip FontForge.app
+cp -f  ~/FontForge.app.zip /tmp/
 chmod o+r /tmp/FontForge.app.zip
 
 echo "Completed at `date`"
