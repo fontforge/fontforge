@@ -1784,11 +1784,19 @@ return( NULL );
 		    sf->pfminfo.width = strtol((char *) valname,&end,10);
 		else if ( xmlStrcmp(keyname+11,(xmlChar *) "WeightClass")==0 )
 		    sf->pfminfo.weight = strtol((char *) valname,&end,10);
-		else if ( xmlStrcmp(keyname+11,(xmlChar *) "VendorID")==0 ) {
-		    char *temp = sf->pfminfo.os2_vendor + 3;
-		    strncpy(sf->pfminfo.os2_vendor,valname,4);
-		    while ( *temp == 0 && temp >= sf->pfminfo.os2_vendor ) *temp-- = ' ';
-		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "TypoAscender")==0 ) {
+		else if ( xmlStrcmp(keyname+11,(xmlChar *) "VendorID")==0 )
+		{
+		    const int os2_vendor_sz = sizeof(sf->pfminfo.os2_vendor);
+		    const int valname_len = c_strlen(valname);
+
+		    if( valname && valname_len <= os2_vendor_sz )
+			strncpy(sf->pfminfo.os2_vendor,valname,valname_len);
+
+		    char *temp = sf->pfminfo.os2_vendor + os2_vendor_sz - 1;
+		    while ( *temp == 0 && temp >= sf->pfminfo.os2_vendor )
+			*temp-- = ' ';
+		}
+		else if ( xmlStrcmp(keyname+11,(xmlChar *) "TypoAscender")==0 ) {
 		    sf->pfminfo.typoascent_add = false;
 		    sf->pfminfo.os2_typoascent = strtol((char *) valname,&end,10);
 		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "TypoDescender")==0 ) {
