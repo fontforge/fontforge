@@ -27,7 +27,6 @@
  */
 
 #include "fontforgeui.h"
-#include "annotations.h"
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>
@@ -35,6 +34,10 @@
 #include "ttf.h"		/* For MAC_DELETED_GLYPH_NAME */
 #include <gkeysym.h>
 #include "is_LIGATURE.h"
+
+#ifndef _NO_LIBUNINAMESLIST
+#include <uninameslist.h>
+#endif
 
 extern int lookup_hideunused;
 
@@ -1697,7 +1700,8 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 		uni!=0x215f &&
 		!((uni>=0x0958 && uni<=0x095f) || uni==0x929 || uni==0x931 || uni==0x934)) {
 	    alt = NULL;
-	} else if ( names_db==NULL ) {
+#ifndef _NO_LIBUNINAMESLIST
+	} else if ( uniNamesList_name(uni)==NULL ) {
 	    if ( (uni>=0xbc && uni<=0xbe ) ||		/* Latin1 fractions */
 		    (uni>=0x2153 && uni<=0x215e ) ||	/* other fractions */
 		    (uni>=0xfb00 && uni<=0xfb06 ) ||	/* latin ligatures */
@@ -1710,6 +1714,7 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 		;	/* These are good */
 	    else
 		alt = NULL;
+#endif
 	}
     }
     if ( alt==NULL ) {

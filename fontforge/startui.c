@@ -27,7 +27,6 @@
 
 #include "config.h"
 #include "fontforgeui.h"
-#include "annotations.h"
 #include <gfile.h>
 #include <gresource.h>
 #include <ustring.h>
@@ -1224,8 +1223,7 @@ exit( 0 );
     GDrawEventLoop(NULL);
 
     hotkeysSave();
-    
-    uninm_names_db_close(names_db);
+
     lt_dlexit();
 
 return( 0 );

@@ -27,7 +27,6 @@
 
 #include "fontforgeui.h"
 #include "cvruler.h"
-#include "annotations.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>
@@ -41,6 +40,10 @@ extern int _GScrollBar_Width;
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
 #include "dlist.h"
+
+#ifndef _NO_LIBUNINAMESLIST
+#include <uninameslist.h>
+#endif
 
 #include "gutils/prefs.h"
 
@@ -2983,11 +2986,12 @@ static char *CVMakeTitles(CharView *cv,char *buf) {
     if ( sc->changed )
 	strcat(buf," *");
     title = copy(buf);
-    uniname = (sc->unicodeenc != -1) ? uninm_name (names_db, sc->unicodeenc) : (const char *) NULL;
-    if (uniname != NULL) {
+#ifndef _NO_LIBUNINAMESLIST
+    if ( (uniname=uniNamesList_name(sc->unicodeenc))!=NULL ) {
 	strcat(buf, " ");
 	strcpy(buf+strlen(buf), uniname);
     }
+#endif
     if ( cv->show_ft_results || cv->dv )
 	sprintf(buf+strlen(buf), " (%gpt, %ddpi)", (double) cv->ft_pointsizey, cv->ft_dpi );
 return( title );

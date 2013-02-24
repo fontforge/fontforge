@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgevw.h"
-#include "annotations.h"
 #include <gfile.h>
 #include <ustring.h>
 #include <ltdl.h>
@@ -123,7 +122,6 @@ int fontforge_main( int argc, char **argv ) {
     PyFF_Stdin();
 #  endif
 
-    uninm_names_db_close(names_db);
     lt_dlexit();
 return( 0 );
 }
