@@ -44,7 +44,7 @@ static char dirname_[1024];
 #if !defined(__MINGW32__)
  #include <pwd.h>
 #else
- #include <Windows.h>
+ #include <windows.h>
 #endif
 
 #if defined(__MINGW32__)

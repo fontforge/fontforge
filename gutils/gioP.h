@@ -31,7 +31,7 @@
 #include <sys/types.h>
 
 #if defined(__MINGW32__)
-#include <WinSock2.h>
+#include <winsock2.h>
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>

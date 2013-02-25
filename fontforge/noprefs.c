@@ -44,6 +44,10 @@
 # include <langinfo.h>
 #endif
 
+#if defined(__MINGW32__)
+#include <windows.h>
+#endif
+
 #include <glib.h>
 
 static char *othersubrsfile = NULL;
