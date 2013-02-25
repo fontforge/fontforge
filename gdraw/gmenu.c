@@ -281,7 +281,7 @@ static int GMenuGetMenuPathRecurse( GMenuItem** stack,
  */
 static char* GMenuGetMenuPath( GMenuItem *basemi, GMenuItem *targetmi ) {
     GMenuItem* stack[1024];
-    bzero(stack,sizeof(stack));
+    memset(stack, 0, sizeof(stack));
     if( !targetmi->ti.text )
 	return 0;
     
@@ -303,7 +303,7 @@ static char* GMenuGetMenuPath( GMenuItem *basemi, GMenuItem *targetmi ) {
     int i;
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
 	if( mi[i].ti.text ) {
-	    bzero(stack,sizeof(stack));
+	    memset(stack, 0, sizeof(stack));
 //	    printf("GMenuGetMenuPath() xbase   %s\n", u_to_c(mi[i].ti.text));
 	    int rc = GMenuGetMenuPathRecurse( stack, &mi[i], targetmi );
 //	    printf("GMenuGetMenuPath() rc   %d\n",  rc);
