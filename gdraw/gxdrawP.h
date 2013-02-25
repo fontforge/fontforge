@@ -276,6 +276,9 @@ typedef struct gxdisplay /* : GDisplay */ {
     uint16 mykey_state;
     uint16 mykey_keysym;
     uint16 mykey_mask;
+    int    zeromq_fd;
+    void*  zeromq_datas;
+    void (*zeromq_fd_callback)(int zeromq_fd, void* datas );
     unsigned int mykeybuild: 1;
     unsigned int default_visual: 1;
     unsigned int do_dithering: 1;
@@ -394,4 +397,7 @@ extern int GDrawKeyToXK(int keysym);
 void _GXDraw_Wacom_Init(GXDisplay *gdisp);
 void _GXDraw_Wacom_TestEvents(GXDisplay *gdisp);
 # endif	/* Wacom fix */
+
+
+
 #endif

@@ -3,6 +3,7 @@
 
 # Copyright (C) 2000-2012 by George Williams
 # Copyright (C) 2012 by Barry Schwartz
+# Copyright (C) 2013 by Ben Martin
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -84,6 +85,7 @@ libpng_url="http://www.libpng.org/"
 libxml_url="http://www.xmlsoft.org/"
 libspiro_url="http://libspiro.sourceforge.net/"
 libunicodenames_url="https://github.com/sortsmill/libunicodenames"
+libzmq_url="http://www.zeromq.org/"
 
 # Point to the Wikipedia page, primarily because one may want
 # libjpeg-turbo rather than the reference implementation.
@@ -248,6 +250,7 @@ FONTFORGE_ARG_WITH_LIBXML
 FONTFORGE_ARG_WITH_LIBSPIRO
 FONTFORGE_ARG_WITH_LIBUNICODENAMES
 FONTFORGE_ARG_WITH_ICONV
+FONTFORGE_ARG_WITH_ZEROMQ
 
 if test x"${i_do_have_cairo}" = xyes; then
    PKG_CHECK_MODULES([PANGOCAIRO],[pangocairo])
@@ -390,6 +393,7 @@ Summary of optional dependencies:
   libxml             ${i_do_have_libxml}  	${libxml_url}
   libspiro           ${i_do_have_libspiro}  	${libspiro_url}
   libunicodenames    ${i_do_have_libunicodenames}  	${libunicodenames_url}
+  zeromq             ${i_do_have_libzmq}        ${libzmq_url}
   X Window System    ${i_do_have_x}
 ])
 

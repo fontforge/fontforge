@@ -43,6 +43,7 @@ extern int _GScrollBar_Width;
 #include "dlist.h"
 
 #include "gutils/prefs.h"
+#include "collabclient.h"
 
 /* Barry wants to be able to redefine menu bindings only in the charview (I think) */
 /*  the menu parser will first check for something like "CV*Open|Ctl+O", and */
@@ -4571,6 +4572,9 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	_CV_CharChangedUpdate(cv,2);
 
     dlist_foreach( &cv->pointInfoDialogs, (dlist_foreach_func_type)PIChangePoint );
+
+    printf("cvmouseup!\n");
+    collabclient_sendRedo( &cv->b );
 }
 
 static void CVTimer(CharView *cv,GEvent *event) {

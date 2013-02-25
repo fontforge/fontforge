@@ -2965,9 +2965,20 @@ return;
 		fd = gdisp->wacom_fd;
 	}
 #endif
+	if( gdisp->zeromq_fd > 0 )
+	{
+	    FD_SET(gdisp->zeromq_fd,&read);
+	    fd = MAX( fd, gdisp->zeromq_fd );
+	}
+	
 #ifndef __VMS
 	ret = select(fd+1,&read,&write,&except,timeout);
 #endif
+
+	if( FD_ISSET(gdisp->zeromq_fd,&read))
+	{
+	    gdisp->zeromq_fd_callback( gdisp->zeromq_fd, gdisp->zeromq_datas );
+	}
     }
 }
 
@@ -3907,9 +3918,19 @@ return( false );
 		fd = gdisp->wacom_fd;
 	}
 #endif
+	if( gdisp->zeromq_fd > 0 )
+	{
+	    FD_SET(gdisp->zeromq_fd,&read);
+	    fd = MAX( fd, gdisp->zeromq_fd );
+	}
+	
 #ifndef __VMS
 	ret = select(fd+1,&read,&write,&except,&offset);
 #endif
+	if( FD_ISSET(gdisp->zeromq_fd,&read))
+	{
+	    gdisp->zeromq_fd_callback( gdisp->zeromq_fd, gdisp->zeromq_datas );
+	}
     }
 }
 
@@ -4692,3 +4713,5 @@ GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname) {
 void _XSyncScreen() {
 }
 #endif
+
+

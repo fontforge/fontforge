@@ -180,6 +180,7 @@ typedef struct fontviewbase {
     void *python_fv_object;
 #endif
     struct fvcontainer *container;
+    void* collabClient;
 } FontViewBase;
 
 enum origins { or_zero, or_center, or_lastpress, or_value, or_undefined };

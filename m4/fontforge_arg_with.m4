@@ -19,6 +19,7 @@ if test x"${AS_TR_SH(i_do_have_$1)}" != xyes; then
    $4
    AC_DEFINE([$5],1,[Define if not using $1.])
 fi
+AM_CONDITIONAL(m4_toupper([$1]), test x"${AS_TR_SH(i_do_have_$1)}" = xyes)
 ])
 
 
@@ -207,3 +208,15 @@ dnl FONTFORGE_WARN_PKG_FALLBACK
 dnl ---------------------------
 AC_DEFUN([FONTFORGE_WARN_PKG_FALLBACK],
    [AC_MSG_WARN([No pkg-config file was found for $1, but the library is present and we will try to use it.])])
+
+
+dnl FONTFORGE_ARG_WITH_ZEROMQ
+dnl -------------------------
+AC_DEFUN([FONTFORGE_ARG_WITH_ZEROMQ],
+[
+FONTFORGE_ARG_WITH([libzmq],
+        [AS_HELP_STRING([--without-libzmq],[build without libzmq])],
+        [ libczmq libzmq > 3.2.0 ],
+        [FONTFORGE_WARN_PKG_NOT_FOUND([LIBZMQ])],
+        [_NO_LIBZMQ])
+])

@@ -39,6 +39,8 @@
 #include <math.h>
 #include <unistd.h>
 
+#include "collabclient.h"
+
 int OpenCharsInNewWindow = 0;
 char *RecentFiles[RECENT_MAX] = { NULL };
 int save_to_dir = 0;			/* use sfdir rather than sfd */
@@ -1369,7 +1371,11 @@ static void FVMenuCondense(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 #define MID_ModifyComposition	20902
 #define MID_BuildSyllables	20903
 
+#define MID_CollabStart         22000
+#define MID_CollabConnect       22001
+
 #define MID_Warnings	3000
+
 
 /* returns -1 if nothing selected, if exactly one char return it, -2 if more than one */
 static int FVAnyCharSelected(FontView *fv) {
@@ -5539,6 +5545,54 @@ static void FVWindowMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *e) {
     }
 }
 
+static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
+{
+#ifndef _NO_LIBZMQ
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    printf("connecting to server and sending initial SFD to it...\n");
+
+    char* address = "localhost";
+    int port = 5556;
+
+    void* cc = collabclient_new( address, port );
+    fv->b.collabClient = cc;
+    collabclient_sessionStart( cc, fv );
+    printf("connecting to server...sent the sfd for session start.\n");
+
+#endif    
+}
+
+static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
+{
+#ifndef _NO_LIBZMQ
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    printf("connecting to server...\n");
+
+    char* address = "localhost";
+    int port = 5556;
+
+    void* cc = collabclient_new( address, port );
+    fv->b.collabClient = cc;
+    collabclient_sessionJoin( cc, fv );
+
+    printf("FVMenuCollabConnect(done)\n");
+#endif    
+}
+
+static void collablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
+{
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    // nothing yet.
+}
+
+static GMenuItem2 collablist[] = {
+    { { (unichar_t *) N_("_Start Session..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Start Session...|No Shortcut"), NULL, NULL, FVMenuCollabStart, MID_CollabStart },
+    { { (unichar_t *) N_("_Connect to Session..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Connect to Session...|No Shortcut"), NULL, NULL, FVMenuCollabConnect, MID_CollabConnect },
+    GMENUITEM2_EMPTY,				/* Extra room to show sub-font names */
+};
+
 GMenuItem2 helplist[] = {
     { { (unichar_t *) N_("_Help"), (GImage *) "helphelp.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Help|F1"), NULL, NULL, FVMenuContextualHelp, 0 },
     { { (unichar_t *) N_("_Overview"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Overview|Shft+F1"), NULL, NULL, MenuHelp, 0 },
@@ -5595,6 +5649,9 @@ static GMenuItem2 mblist[] = {
 /* GT: Here (and following) MM means "MultiMaster" */
     { { (unichar_t *) N_("MM"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, NULL, mmlist, mmlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, NULL, wnmenu, FVWindowMenuBuild, NULL, 0 },
+#ifndef _NO_LIBZMQ
+    { { (unichar_t *) N_("C_ollaborate"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, NULL, collablist, collablistcheck, NULL, 0 },
+#endif
     { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, NULL, helplist, NULL, NULL, 0 },
     GMENUITEM2_EMPTY
 };
@@ -7286,6 +7343,26 @@ return( -1 );
 
 return( fv->rowoff*fv->colcnt );
 }
+
+int FontViewFind_byXUID( FontView* fv, void* udata )
+{
+    if( !fv || !fv->b.sf )
+	return 0;
+    return !strcmp( fv->b.sf->xuid, (char*)udata );
+}
+
+
+FontView* FontViewFind( int (*testFunc)( FontView*, void* udata ), void* udata )
+{
+    FontView *fv;
+    for ( fv=fv_list; fv!=NULL; fv=(FontView *) (fv->b.next) )
+    {
+	if( testFunc( fv, udata ))
+	    return fv;
+    }
+    return 0;
+}
+
 
 static FontViewBase *FVAny(void) { return (FontViewBase *) fv_list; }
 

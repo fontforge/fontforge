@@ -51,7 +51,7 @@ macobjective.o: macobjective.m
 
 #--------------------------------------------------------------------------
 
-SUBDIRS = pixmaps
+SUBDIRS = pixmaps collab
 
 FFSCRIPT_HEADER = "\#!$(bindir)/fontforge -lang=ff"
 
@@ -96,6 +96,9 @@ fontforge_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -export-dynamic
 
 endif THE_PROGRAMS
 
+if LIBZMQ
+ZMQSRCS = collabclient.c collabclient.h
+endif 
 #--------------------------------------------------------------------------
 
 libfontforge_la_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c	\
@@ -115,20 +118,25 @@ libfontforge_la_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c	\
 	tottfaat.c tottfgpos.c tottf.c tottfvar.c ttfinstrs.c				\
 	ttfspecial.c ufo.c unicoderange.c utils.c winfonts.c zapfnomen.c	\
 	groups.c langfreq.c ftdelta.c autowidth2.c woff.c stamp.c			\
-	activeinui.c pluginloading.c is_LIGATURE.c flaglist.c strlist.c
+	activeinui.c pluginloading.c is_LIGATURE.c flaglist.c strlist.c \
+	$(ZMQSRCS)
 nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
-libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS)
+libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_LIBS)
 libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD) $(LIBLTDL)
 
 if PLUGIN_GB12345
 libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/gb12345.la
 endif PLUGIN_GB12345
 
+if LIBZMQ
+libfontforge_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la
+endif LIBZMQ
+
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
-libfontforge_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -release $(VERSION)
+libfontforge_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) $(LIBZMQ_LIBS) -release $(VERSION)
 
 EXTRA_SCRIPTS = generate_codepoint_selector.py
 
@@ -216,6 +224,7 @@ EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe libstamp.pre	\
 MOSTLYCLEANFILES = fontimage fontlint sfddiff libstamp.c	\
 	exelibstamp.c
 
+#--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
 
 if MACINTOSH

@@ -860,7 +860,7 @@ static void SFDDumpPen( FILE *sfd, struct pen* p ) {
 
 
 
-static void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, char* keyPrefix, int idx ) {
+void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, char* keyPrefix, int idx ) {
     fprintf(sfd, "%sOperation\n",      keyPrefix );
     fprintf(sfd, "Index: %d\n",        idx );
     fprintf(sfd, "Type: %d\n",         u->undotype );
@@ -3913,8 +3913,9 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd,int order2) {
 return( head );
 }
 
-static Undoes *SFDGetUndo( SplineFont *sf, FILE *sfd, SplineChar *sc,
-                           const char* startTag, const char* endTag, int current_layer )
+Undoes *SFDGetUndo( SplineFont *sf, FILE *sfd, SplineChar *sc,
+		    const char* startTag, const char* endTag,
+		    int current_layer )
 {
     Undoes *u = 0;
     char tok[2000];

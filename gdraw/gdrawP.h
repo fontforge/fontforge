@@ -140,6 +140,9 @@ struct gdisplay {
     uint16 mykey_state;
     uint16 mykey_keysym;
     uint16 mykey_mask;
+    int    zeromq_fd;
+    void*  zeromq_datas;
+    void (*zeromq_fd_callback)(int zeromq_fd, void* datas );
     unsigned int mykeybuild: 1;
     /* display specific data */
 };

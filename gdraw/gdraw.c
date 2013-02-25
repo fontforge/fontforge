@@ -941,3 +941,15 @@ return( NULL );
 
 return( (gdisp->funcs->nativeDisplay)(gdisp) );
 }
+
+void setZeroMQReadFD( GDisplay *gdisp,
+		      int zeromq_fd, void* zeromq_datas,
+		      void (*zeromq_fd_callback)(int zeromq_fd, void* datas ))
+{
+    if ( gdisp==NULL )
+	gdisp=screen_display;
+    
+    gdisp->zeromq_fd = zeromq_fd;
+    gdisp->zeromq_datas = zeromq_datas;
+    gdisp->zeromq_fd_callback = zeromq_fd_callback;
+}

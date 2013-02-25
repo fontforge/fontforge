@@ -35,6 +35,8 @@
     #include <execinfo.h>
 #endif
 
+#include "collabclient.h"
+
 extern char *coord_sep;
 
 int onlycopydisplayed = 0;
@@ -639,6 +641,8 @@ return(NULL);
     undo->u.state.dofill = cv->layerheads[cv->drawmode]->dofill;
     undo->u.state.dostroke = cv->layerheads[cv->drawmode]->dostroke;
     undo->u.state.fillfirst = cv->layerheads[cv->drawmode]->fillfirst;
+
+    printf("new undo is at %p\n", undo );
 return( CVAddUndo(cv,undo));
 }
 
