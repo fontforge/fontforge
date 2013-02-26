@@ -255,7 +255,7 @@ return;
     
 #if defined(__MINGW32__)
 #include <gresource.h>
-#include <Windows.h>
+#include <windows.h>
 void help(char *file) {
     if(file){
 	char*  p_file  = copy(file);

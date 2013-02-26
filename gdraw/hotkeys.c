@@ -35,6 +35,10 @@
 #include <unistd.h>
 #include "intl.h"
 
+#ifdef __MINGW32__
+#define fsync _commit
+#endif
+
 extern char *getPfaEditDir(char *buffer);
 
 struct dlistnode* hotkeys = 0;

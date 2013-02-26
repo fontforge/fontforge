@@ -388,6 +388,8 @@ extern void _XSyncScreen(void);
 
 #if !defined(__MINGW32__)
 extern int GDrawKeyToXK(int keysym);
+#else
+extern int GDrawKeyToVK(int keysym);
 #endif
 
 # ifdef _WACOM_DRV_BROKEN
