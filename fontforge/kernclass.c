@@ -215,8 +215,10 @@ static void KCD_AddOffsetAsIs(void *data,int left_index,int right_index, int ker
 static void KCD_AutoKernAClass(KernClassDlg *kcd,int index,int is_first) {
     char *space[1], **lefts, **rights, **others;
     int lcnt, rcnt; int ocnt, acnt;
+    // CID_ClassList is a constant. It presumably provides a base for identifying the two list controls in the KernAClass dialogue, and we assign by which is active, not by which is the first list.
     GGadget *activelist = GWidgetGetControl( kcd->gw, CID_ClassList+(is_first?0:100));
     GGadget *otherlist = GWidgetGetControl( kcd->gw, CID_ClassList+(is_first?100:0));
+    // Each of these returns a GGadget. We then make the assumption that each gadget is nested in a GMatrixEdit and retrieve the GMatrixEdit object.
     struct matrix_data *otherdata = GMatrixEditGet(otherlist,&ocnt);
     struct matrix_data *activedata = GMatrixEditGet(activelist,&acnt);
     int err, touch=0, separation=0, minkern=0, onlyCloser;
@@ -233,6 +235,7 @@ return;
     if ( err )
 return;
 
+    // We next strdup from activedata[index], which causes a segmentation fault sometimes.
     space[0] = copy(activedata[index].u.md_str);
     others = galloc((ocnt+1)*sizeof(char *));
     for ( i=0; i<ocnt; ++i ) {
