@@ -156,11 +156,11 @@ Color gHslrgb2Color(struct hslrgb *col) {
 	else if ( col->hsl )
 	    gHSL2RGB(col);
 	else
-return( COLOR_UNKNOWN );
+	    return( COLOR_UNKNOWN );
     }
-return( (((int) rint(255.*col->r))<<16 ) |
-		    (((int) rint(255.*col->g))<<8 ) |
-		    (((int) rint(255.*col->b)) ) );
+    return( (((int) rint(255.*col->r))<<16 ) | \
+	    (((int) rint(255.*col->g))<<8 )  | \
+	    (((int) rint(255.*col->b)) ) );
 }
 
 Color gHslrgba2Color(struct hslrgba *col) {
@@ -170,19 +170,19 @@ Color gHslrgba2Color(struct hslrgba *col) {
 	else if ( col->hsl )
 	    gHSL2RGB((struct hslrgb *) col);
 	else
-return( COLOR_UNKNOWN );
+	    return( COLOR_UNKNOWN );
     }
     if ( !col->has_alpha || col->alpha==1.0 )
-return( (((int) rint(255.*col->r))<<16 ) |
-		    (((int) rint(255.*col->g))<<8 ) |
-		    (((int) rint(255.*col->b)) ) );
+	return( (((int) rint(255.*col->r))<<16 ) | \
+		(((int) rint(255.*col->g))<<8 )  | \
+		(((int) rint(255.*col->b)) ) );
     else if ( col->alpha==0.0 )
-return( COLOR_TRANSPARENT );
+	return( COLOR_TRANSPARENT );
     else
-return( (((int) rint(255.*col->alpha))<<24 ) |
-		    (((int) rint(255.*col->r))<<16) |
-		    (((int) rint(255.*col->g))<<8 ) |
-		    (((int) rint(255.*col->b)) ) );
+	return( (((int) rint(255.*col->alpha))<<24 ) | \
+		(((int) rint(255.*col->r))<<16) | \
+		(((int) rint(255.*col->g))<<8 ) | \
+		(((int) rint(255.*col->b)) ) );
 }
 
 void gColor2Hslrgb(struct hslrgb *col,Color from) {
