@@ -34,8 +34,11 @@ int GImageWriteXbm(GImage *gi, char *filename) {
     char stem[256];
     char *pt; uint8 *scanline;
 
-    if ( base->image_type!=it_mono )
-return(false );
+    /* This routine only exports 1-pixel mono-type images */
+    if ( base->image_type!=it_mono ) {
+	fprintf(stderr,"Image must be mono color.\n");
+	return( false );
+    }
 
     if (( pt = strrchr(filename,'/'))==NULL )
 	strcpy(stem,filename);
