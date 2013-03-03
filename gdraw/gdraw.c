@@ -29,6 +29,7 @@
 #include <ustring.h>
 #include <gio.h>
 #include "gdraw.h"
+#include <sys/select.h>
 
 /* Functions for font metrics:
     rectangle of text (left side bearing of first char, right of last char)
