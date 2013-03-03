@@ -96,6 +96,9 @@ int GImageWriteGImage(GImage *gi, char *filename) {
     char stem[256];
     char *pt;
 
+    if ( gi==NULL )
+	return( -1 );
+
     /* get filename stem (255chars max) */
     if ( (pt=strrchr(filename,'/'))!=NULL )
 	++pt;
