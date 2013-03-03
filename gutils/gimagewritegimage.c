@@ -82,20 +82,26 @@ static void WriteBase(FILE *file, struct _GImage *base, char *stem, int instance
 }
 
 int GImageWriteGImage(GImage *gi, char *filename) {
+/* Export a GImage that can be used by FontForge. Return 0 if all done okay */
     FILE *file;
     int i;
     char stem[256];
     char *pt;
 
-    if (( pt = strrchr(filename,'/'))==NULL )
-	strcpy(stem,filename);
+    /* get filename stem (255chars max) */
+    if ( (pt=strrchr(filename,'/'))!=NULL )
+	++pt;
     else
-	strcpy(stem,pt+1);
-    if ( (pt = strchr(stem,'.'))!=NULL )
+	pt=filename;
+    strncpy(stem,pt,sizeof(stem)); stem[255]='\0';
+    if ( (pt=strrchr(stem,'.'))!=NULL && pt!=stem )
 	*pt = '\0';
 
-    if ((file=fopen(filename,"w"))==NULL )
-return(false);
+    /* Begin writing C code to the file */
+    if ( (file=fopen(filename,"w"))==NULL ) {
+	fprintf(stderr,"Can't open \"%s\"\n", filename);
+	return( -1 );
+    }
     fprintf(file,"#include \"gimage.h\"\n\n" );
     if ( gi->list_len==0 ) {
 	WriteBase(file,gi->u.image,stem,0);
@@ -112,7 +118,7 @@ return(false);
 		stem, gi->list_len, stem );
     }
     fflush(file);
-    i = ferror(file);
+    i=ferror(file);
     fclose(file);
-return( !i );
+    return( i );
 }
