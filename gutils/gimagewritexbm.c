@@ -47,8 +47,10 @@ int GImageWriteXbm(GImage *gi, char *filename) {
     if ( (pt = strchr(stem,'.'))!=NULL )
 	*pt = '\0';
 
-    if ((file=fopen(filename,"w"))==NULL )
-return(false);
+    if ( (file=fopen(filename,"w"))==NULL ) {
+	fprintf(stderr,"Can't open \"%s\"\n", filename);
+	return( false );
+    }
     fprintf(file,"#define %s_width %d\n", stem, (int) base->width );
     fprintf(file,"#define %s_height %d\n", stem, (int) base->height );
     fprintf(file,"static unsigned char %s_bits[] = {\n", stem );
