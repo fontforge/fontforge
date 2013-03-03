@@ -40,11 +40,13 @@ int GImageWriteXbm(GImage *gi, char *filename) {
 	return( false );
     }
 
-    if (( pt = strrchr(filename,'/'))==NULL )
-	strcpy(stem,filename);
+    /* get filename stem (255chars max) */
+    if ( (pt=strrchr(filename,'/'))!=NULL )
+	++pt;
     else
-	strcpy(stem,pt+1);
-    if ( (pt = strchr(stem,'.'))!=NULL )
+	pt=filename;
+    strncpy(stem,pt,sizeof(stem)); stem[255]='\0';
+    if ( (pt=strchr(stem,'.'))!=NULL )
 	*pt = '\0';
 
     if ( (file=fopen(filename,"w"))==NULL ) {
