@@ -35,14 +35,11 @@
 #include <chardata.h>
 #include <gresource.h>
 #include "ggadgetP.h"		/* For the font family names */
-#include <annotations_base.h>
 
-/*
- * FIXME: Is it possible to share this names_db with the FontForge
- * main code? And is it possible to free this memory at some point?
- */
-/* Unicode character names and annotations. */
-static uninm_names_db names_db = (uninm_names_db) NULL;
+
+#ifndef _NO_LIBUNINAMESLIST
+#include <uninameslist.h>
+#endif
 
 #define INSCHR_CharSet	1
 #define INSCHR_Char	2
@@ -875,8 +872,13 @@ static void InsChrMouseMove(GWindow gw, GEvent *event) {
 	const char *uniname;
 	const char *uniannot;
 
-	uniname = uninm_name(names_db, uch);
-	uniannot = uninm_annotation(names_db, uch);
+#ifndef _NO_LIBUNINAMESLIST
+	uniname=uniNamesList_name(uch);
+	uniannot=uniNamesList_annot(uch);
+#else
+	uniname=NULL;
+	uniannot=NULL;
+#endif
 	if (uniname != NULL) {
 	    uc_strncpy(space, uniname, 550);
 	    sprintf( cspace, " U+%04X", uch );
@@ -1048,16 +1050,6 @@ void GWidgetCreateInsChar(void) {
     int i;
     FontRequest rq;
     int as, ds, ld;
-    char *names_db_file;
-
-    /*
-     * Load character names and annotations that come from the Unicode
-     * NamesList.txt. This should not be done until after the locale
-     * has been set.
-     */
-    names_db_file = uninm_find_names_db(NULL);
-    names_db = (names_db_file == NULL) ? ((uninm_names_db) 0) : uninm_names_db_open(names_db_file);
-    free(names_db_file);
 
     if ( inschr.icw!=NULL ) {
 	inschr.hidden = false;
