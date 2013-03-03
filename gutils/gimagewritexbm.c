@@ -66,7 +66,7 @@ int GImageWriteXbm(GImage *gi, char *filename) {
 		if ( (val&(1<<k)) )
 		    val2 |= (0x80>>k);
 	    }
-	    fprintf(file,"0x%x%s", val2^0xff, i==base->height-1 && j==base->bytes_per_line-1?"":", " );
+	    fprintf(file,"0x%.2x%s", val2^0xff, i==base->height-1 && j==base->bytes_per_line-1?"":", " );
 	}
 	fprintf(file,"\n");
     }
