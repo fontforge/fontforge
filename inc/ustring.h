@@ -85,6 +85,13 @@ extern unsigned long u_strtoul(const unichar_t *,unichar_t **,int);
 extern long   u_strtol(const unichar_t *,unichar_t **,int);
 extern double u_strtod(const unichar_t *,unichar_t **);
 
+/*
+ * Convert the integer 'v' to a string and return it.
+ * You do not own the return value, it is an internal buffer
+ * so you should copy it before using the function again
+ */ 
+extern char*  c_itostr( int v );
+
 extern char *strstart(const char *initial,const char *full);
 extern char *strstartmatch(const char *initial,const char *full);
 extern unichar_t *u_strstartmatch(const unichar_t *initial, const unichar_t *full);
@@ -169,5 +176,11 @@ int endswith(const char *haystack,const char *needle);
  * No new strings are allocated, freed, or returned.
  */
 extern int u_endswith(const unichar_t *haystack,const unichar_t *needle);
+
+/**
+ * Return a pointer to the last occurance of ch in 's' or null if it
+ * doesn't appear. Very much like the strrchr() call.
+ */
+extern char* str_rfind( char* s, char ch );
 
 #endif

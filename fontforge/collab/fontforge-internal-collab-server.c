@@ -203,9 +203,9 @@ s_collector (zloop_t *loop, zmq_pollitem_t *poller, void *args)
         kvmsg_set_sequence (kvmsg, ++self->sequence);
         kvmsg_send (kvmsg, self->publisher);
         int ttl = atoi (kvmsg_get_prop (kvmsg, "ttl"));
-        if (ttl)
-            kvmsg_set_prop (kvmsg, "ttl",
-                "%" PRId64, zclock_time () + ttl * 1000);
+//        if (ttl)
+//            kvmsg_set_prop (kvmsg, "ttl",
+//                "%" PRId64, zclock_time () + ttl * 1000);
         kvmsg_store (&kvmsg, self->kvmap);
         DEBUG ("I: publishing update=%d", (int) self->sequence);
     }

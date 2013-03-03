@@ -26,12 +26,18 @@
 *******************************************************************************
 ******************************************************************************/
 
+#define GTimer GTimer_GTK
+#include <glib.h>
+#undef GTimer
+
 #include "inc/ustring.h"
 #include "collabclient.h"
 #include "czmq.h"
 #include "collab/zmq_kvmsg.h"
 #include "inc/gfile.h"
 #include "views.h"
+
+
 
 #define MAGIC_VALUE 0xbeef
 #define SUBTREE "/client/"
@@ -336,6 +342,19 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
 {
     cloneclient_t* cc = (cloneclient_t*)ccvp;
 
+    //
+    // Fire up the fontforge-internal-collab-server process...
+    //
+    {
+	char command_line[PATH_MAX+1];
+	sprintf(command_line,
+		"%s/FontForgeInternal/fontforge-internal-collab-server",
+		getGResourceProgramDir() );
+	printf("command_line:%s\n", command_line );
+	GError * error = 0;
+	g_spawn_command_line_async( command_line, &error );
+    }
+    
     printf("Starting a session, sending it the current SFD as a baseline...\n");
     int s2d = 0;
     char filename[PATH_MAX];
@@ -435,7 +454,10 @@ void collabclient_sessionJoin( void* ccvp, FontView *fv )
             kvmsg_destroy (&kvmsg);
             break;          //  Done
         }
-	printf ("I: storing seq=%ld\n", kvmsg_sequence (kvmsg));
+	printf ("I: storing seq=%ld ", kvmsg_sequence (kvmsg));
+	if( kvmsg_get_prop (kvmsg, "type") )
+	    printf(" type:%s", kvmsg_get_prop (kvmsg, "type") );
+	printf ("\n");
 	if( !strcmp(kvmsg_get_prop (kvmsg, "type"), MSG_TYPE_SFD ))
 	{
 	    if( !lastSFD ||

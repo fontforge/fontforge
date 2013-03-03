@@ -40,6 +40,7 @@
 #include <unistd.h>
 
 #include "collabclient.h"
+#include "inc/gnetwork.h"
 
 int OpenCharsInNewWindow = 0;
 char *RecentFiles[RECENT_MAX] = { NULL };
@@ -5552,15 +5553,43 @@ static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 
     printf("connecting to server and sending initial SFD to it...\n");
 
-    char* address = "localhost";
-    int port = 5556;
+    int port_default = 5556;
+    int port = port_default;
+    char* address[ipaddress_string_length_t];
+    if( !getNetworkAddress( address ))
+    {
+	snprintf( address, ipaddress_string_length_t-1,
+		  "%s", HostPortPack( "127.0.0.1", port ));
+    }
+    else
+    {
+	snprintf( address, ipaddress_string_length_t-1,
+		  "%s", HostPortPack( address, port ));
+    }
+    
+    printf("host address:%s\n",address);
+    
+    char* res = gwwv_ask_string(
+	"Starting Collab Server",
+	address,
+	"FontForge has determined that your computer can be accessed"
+	" using the below address. Share that address with other people"
+	" who you wish to collaborate with...\n\nPress OK to start the collaboration server...");
+    
+    if( res )
+    {
+	HostPortUnpack( address, &port, port_default );
+	
+	printf("address:%s\n", address );
+	printf("port:%d\n", port );
 
-    void* cc = collabclient_new( address, port );
-    fv->b.collabClient = cc;
-    collabclient_sessionStart( cc, fv );
-    printf("connecting to server...sent the sfd for session start.\n");
-
-#endif    
+	
+	void* cc = collabclient_new( address, port );
+	fv->b.collabClient = cc;
+	collabclient_sessionStart( cc, fv );
+	printf("connecting to server...sent the sfd for session start.\n");
+    }
+#endif
 }
 
 static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
@@ -5570,15 +5599,25 @@ static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
 
     printf("connecting to server...\n");
 
-    char* address = "localhost";
-    int port = 5556;
-
-    void* cc = collabclient_new( address, port );
-    fv->b.collabClient = cc;
-    collabclient_sessionJoin( cc, fv );
-
+    char* res = gwwv_ask_string(
+	"Connect to Collab Server",
+	"",
+	"Please enter the network location of the Collab server you wish to connect to...");
+    if( res )
+    {
+	int port_default = 5556;
+	int port = port_default;
+	char* address[ipaddress_string_length_t];
+	strncpy( address, res, ipaddress_string_length_t-1 );
+	HostPortUnpack( address, &port, port_default );
+	
+	void* cc = collabclient_new( address, port );
+	fv->b.collabClient = cc;
+	collabclient_sessionJoin( cc, fv );
+    }
+    
     printf("FVMenuCollabConnect(done)\n");
-#endif    
+#endif
 }
 
 static void collablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))

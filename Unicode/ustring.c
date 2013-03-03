@@ -966,3 +966,16 @@ int u_endswith(const unichar_t *haystack,const unichar_t *needle) {
     unichar_t* p = u_strstr( haystack + haylen - nedlen, needle );
     return p == ( haystack + haylen - nedlen );
 }
+
+char*  c_itostr( int v )
+{
+    static char ret[100+1];
+    snprintf(ret,100,"%d",v );
+    return ret;
+}
+
+char* str_rfind( char* s, char ch )
+{
+    return strrchr( s, ch );
+}
+
