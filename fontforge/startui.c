@@ -511,6 +511,7 @@ CantInstallAppleEventHandler:
 
 static pascal void DoRealStuff(EventLoopTimerRef timer,void *ignored_data) {
     GDrawProcessPendingEvents(NULL);
+    MacServiceZeroMQFDs();
 }
 
 static void install_mac_timer(void) {

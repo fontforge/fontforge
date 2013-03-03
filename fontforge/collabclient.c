@@ -50,7 +50,8 @@ typedef struct {
                          //  base+n for all other sockets.
     zhash_t *kvmap;      //  Key-value store that we manage
     int64_t sequence;    //  How many updates we're at
-    
+
+    Undoes* preserveUndo;
     
     //
     // A DEALER that we receive snapshot requests from the server on
@@ -119,7 +120,7 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 	SplineChar *sc = sf->glyphs[ atoi(pos) ];
 	printf("sc:%p\n", sc );
 	printf("sc.name:%s\n", sc->name );
-	printf("data.size:%d\n", data_size );
+	printf("data.size:%ld\n", data_size );
 		    
 	int current_layer = 0;
 
@@ -134,7 +135,7 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 	    printf("have charview:%p\n", cv );
 	    
 	    char filename[PATH_MAX];
-	    snprintf(filename, PATH_MAX, "/tmp/fontforge-collab-inx.sfd");
+	    snprintf(filename, PATH_MAX, "/tmp/fontforge-collab-inx-%d.sfd", getpid() );
 	    GFileWriteAll( filename, (char*)data);
 	    FILE* file = fopen( filename, "r" );
 	    Undoes* undo = SFDGetUndo( sf, file, sc,
@@ -144,7 +145,7 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 	    fclose(file);
 	    if( !undo )
 	    {
-		printf("ERROR reading back undo instance!\n");
+		printf("***** ERROR ****** reading back undo instance!\n");
 		printf("data: %s\n\n", data );
 	    }
 	    if( undo )
@@ -170,8 +171,8 @@ static void zeromq_subscriber_fd_callback(int zeromq_fd, void* datas )
 
     int opt = 0;
     size_t optsz = sizeof(int);
-    int rc = zmq_getsockopt( cc->subscriber, ZMQ_EVENTS, &opt, &optsz );
-//    printf("rc:%d opt:%d\n", rc, opt );
+    zmq_getsockopt( cc->subscriber, ZMQ_EVENTS, &opt, &optsz );
+
     if( opt & ZMQ_POLLIN )
     {
 	printf("zeromq_subscriber_fd_callback() have message!\n");
@@ -275,6 +276,7 @@ void* collabclient_new( char* address, int port )
     cc->kvmap = zhash_new();
     cc->publisher_sendseq = 1;
     cc->sequence = 0;
+    cc->preserveUndo = 0;
     
     cc->snapshot = zsocket_new (cc->ctx, ZMQ_DEALER);
     zsocket_connect (cc->snapshot, makeAddressString(cc->address,cc->port));
@@ -337,7 +339,7 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
     printf("Starting a session, sending it the current SFD as a baseline...\n");
     int s2d = 0;
     char filename[PATH_MAX];
-    snprintf(filename, PATH_MAX, "/tmp/fontforge-collab-start.sfd");
+    snprintf(filename, PATH_MAX, "/tmp/fontforge-collab-start-%d.sfd", getpid());
     int ok = SFDWrite(filename,fv->b.sf,fv->b.map,fv->b.normal,s2d);
     printf("connecting to server...3 ok:%d\n",ok);
     if ( ok )
@@ -405,10 +407,11 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
 static int collabclient_sessionJoin_processmsg_foreach_fn( kvmsg_t* msg, void *argument )
 {
     cloneclient_t* cc = (cloneclient_t*)argument;
-    printf("processmsg_foreach() seq:%d\n", kvmsg_sequence (msg) );
+    printf("processmsg_foreach() seq:%ld\n", kvmsg_sequence (msg) );
     int create = 1;
     zeromq_subscriber_process_update( cc, msg, create );
     
+    return 0;
 }
 
 
@@ -432,7 +435,7 @@ void collabclient_sessionJoin( void* ccvp, FontView *fv )
             kvmsg_destroy (&kvmsg);
             break;          //  Done
         }
-	printf ("I: storing seq=%d\n", kvmsg_sequence (kvmsg));
+	printf ("I: storing seq=%ld\n", kvmsg_sequence (kvmsg));
 	if( !strcmp(kvmsg_get_prop (kvmsg, "type"), MSG_TYPE_SFD ))
 	{
 	    if( !lastSFD ||
@@ -441,7 +444,7 @@ void collabclient_sessionJoin( void* ccvp, FontView *fv )
 		lastSFD = kvmsg;
 	    }
 	    size_t data_size = kvmsg_size(lastSFD);
-	    printf("data_size:%d\n", data_size );
+	    printf("data_size:%ld\n", data_size );
 	}
 	kvmsg_store (&kvmsg, cc->kvmap);
     }
@@ -459,7 +462,7 @@ void collabclient_sessionJoin( void* ccvp, FontView *fv )
     {
 	int openflags = 0;
 	char filename[PATH_MAX];
-	snprintf(filename, PATH_MAX, "/tmp/fontforge-collab-import.sfd");
+	snprintf(filename, PATH_MAX, "/tmp/fontforge-collab-import-%d.sfd",getpid());
 	GFileWriteAll( filename, kvmsg_body (lastSFD) );
 
 	/*
@@ -477,7 +480,6 @@ void collabclient_sessionJoin( void* ccvp, FontView *fv )
 
     
     printf("applying updates from server that were performed after the SFD snapshot was done...\n");
-    int rc = 0;
 
     kvmap_visit( cc->kvmap, kvmsg_sequence (lastSFD),
 		 collabclient_sessionJoin_processmsg_foreach_fn, cc );
@@ -495,9 +497,9 @@ void collabclient_sessionJoin( void* ccvp, FontView *fv )
 
 
 static void
-collabclient_sendUndoRedo( CharViewBase *cv, Undoes *undo )
+collabclient_sendRedo_Internal( CharViewBase *cv, Undoes *undo )
 {
-    printf("collabclient_sendUndoRedo()\n");
+    printf("collabclient_sendRedo_Internal()\n");
     cloneclient_t* cc = cv->fv->collabClient;
     if( !cc )
 	return;
@@ -511,7 +513,7 @@ collabclient_sendUndoRedo( CharViewBase *cv, Undoes *undo )
     SFDDumpUndo( f, cv->sc, undo, "Undo", idx );
     fclose(f);
     char* sfd = GFileReadAll( filename );
-    printf("SENDING: %s\n\n", sfd );
+//    printf("SENDING: %s\n\n", sfd );
     
     kvmsg_t *kvmsg = kvmsg_new(0);
     kvmsg_fmt_key  (kvmsg, "%s%d", SUBTREE, cc->publisher_sendseq++);
@@ -524,7 +526,7 @@ collabclient_sendUndoRedo( CharViewBase *cv, Undoes *undo )
     printf("sc.name:%s\n", cv->sc->name );
     
     size_t data_size = kvmsg_size (kvmsg);
-    printf("data.size:%d\n", data_size );
+    printf("data.size:%ld\n", data_size );
 
     kvmsg_set_prop (kvmsg, "pos", pos );
     kvmsg_send     (kvmsg, cc->publisher);
@@ -533,16 +535,56 @@ collabclient_sendUndoRedo( CharViewBase *cv, Undoes *undo )
     free(sfd);
 }
 
+void collabclient_CVPreserveStateCalled( CharViewBase *cv )
+{
+    cloneclient_t* cc = cv->fv->collabClient;
+    if( !cc )
+	return;
+
+    Undoes *undo = cv->layerheads[cv->drawmode]->undoes;
+    cc->preserveUndo = undo;
+}
+
+
 void collabclient_sendRedo( CharViewBase *cv )
 {
+    cloneclient_t* cc = cv->fv->collabClient;
+    if( !cc )
+	return;
+
     printf("collabclient_sendRedo() cv:%p\n", cv );
     printf("collabclient_sendRedo() dm:%d\n", cv->drawmode );
+    printf("collabclient_sendRedo() preserveUndo:%p\n", cc->preserveUndo );
+    if( !cc->preserveUndo )
+	return;
+    
     CVDoUndo( cv );
     Undoes *undo = cv->layerheads[cv->drawmode]->redoes;
+    printf("collabclient_sendRedo() undo:%p\n", undo );
+
+    /* if( undo ) */
+    /* 	collabclient_sendRedo_Internal( cv, undo ); */
+    /* CVDoRedo( cv ); */
+
     if( undo )
-	collabclient_sendUndoRedo( cv, undo );
-    CVDoRedo( cv );
+    {
+	cv->layerheads[cv->drawmode]->redoes = undo->next;
+	collabclient_sendRedo_Internal( cv, undo );
+	UndoesFree( undo );
+    }
+    cc->preserveUndo = 0;
 }
+
+int collabclient_inSession( CharViewBase *cv )
+{
+    if( !cv )
+	return 0;
+    if( !cv->fv )
+	return 0;
+    cloneclient_t* cc = cv->fv->collabClient;
+    return cc;
+}
+
 
 
 #if 0

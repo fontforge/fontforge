@@ -522,4 +522,11 @@ extern void setZeroMQReadFD( GDisplay *disp,
 			     int zeromq_fd, void* zeromq_datas,
 			     void (*zeromq_fd_callback)(int zeromq_fd, void* datas ));
 
+/**
+ * The Mac OSX build doesn't use the same core event loop as the
+ * Linux/X build. So inside the timer we can use this to double check
+ * if any zeromq fds have changed and if so service their messages.
+ */
+extern void MacServiceZeroMQFDs(void);
+
 #endif

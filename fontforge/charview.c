@@ -3910,10 +3910,18 @@ int CVTestSelectFromEvent(CharView *cv,GEvent *event) {
 return( _CVTestSelectFromEvent(cv,&fs));
 }
 
+typedef struct lastselectedpoint 
+{
+    SplinePoint *lastselpt;
+    spiro_cp *lastselcp;
+} lastSelectedPoint;
+    
 static void CVMouseDown(CharView *cv, GEvent *event ) {
     FindSel fs;
     GEvent fake;
-
+    lastSelectedPoint lastSel;
+    memset( &lastSel, 0, sizeof(lastSelectedPoint));
+    
     if ( event->u.mouse.button==2 && event->u.mouse.device!=NULL &&
 	    strcmp(event->u.mouse.device,"stylus")==0 )
 return;		/* I treat this more like a modifier key change than a button press */
@@ -3946,6 +3954,8 @@ return;
 	}
 	if ( cv->showpointnumbers && cv->b.layerheads[cv->b.drawmode]->order2 )
 	    fs.all_controls = true;
+	lastSel.lastselpt = cv->lastselpt;
+	lastSel.lastselcp = cv->lastselcp;
 	cv->lastselpt = NULL;
 	cv->lastselcp = NULL;
 	_CVTestSelectFromEvent(cv,&fs);
@@ -3988,12 +3998,24 @@ return;
     CVInfoDraw(cv,cv->gw);
     CVSetConstrainPoint(cv,event);
 
+    int selectionChanged = 0;
     switch ( cv->active_tool ) {
       case cvt_pointer:
 	CVMouseDownPointer(cv, &fs, event);
+	printf("lastSel.lastselpt:%p  fs.p->sp:%p\n", lastSel.lastselpt, fs.p->sp );
+	if( lastSel.lastselpt != fs.p->sp
+	    || lastSel.lastselcp != fs.p->spiro )
+	{
+	    CVPreserveState(&cv->b);
+	    selectionChanged = 1;
+	}
 	cv->lastselpt = fs.p->sp;
 	cv->lastselcp = fs.p->spiro;
-      break;
+	if( selectionChanged )
+	{
+	    collabclient_sendRedo( &cv->b );    
+	}
+	break;
       case cvt_magnify: case cvt_minify:
       break;
       case cvt_hand:
@@ -4574,7 +4596,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
     dlist_foreach( &cv->pointInfoDialogs, (dlist_foreach_func_type)PIChangePoint );
 
     printf("cvmouseup!\n");
-    collabclient_sendRedo( &cv->b );
+    collabclient_sendRedo( &cv->b );    
 }
 
 static void CVTimer(CharView *cv,GEvent *event) {

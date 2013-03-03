@@ -601,12 +601,23 @@ static Undoes *AddUndo(Undoes *undo,Undoes **uhead,Undoes **rhead) {
     }
     undo->next = *uhead;
     *uhead = undo;
-return( undo );
+
+    return( undo );
 }
 
 static Undoes *CVAddUndo(CharViewBase *cv,Undoes *undo) {
-return( AddUndo(undo,&cv->layerheads[cv->drawmode]->undoes,
-	&cv->layerheads[cv->drawmode]->redoes));
+
+    Undoes* ret = AddUndo( undo,
+			   &cv->layerheads[cv->drawmode]->undoes,
+			   &cv->layerheads[cv->drawmode]->redoes );
+    
+    //
+    // Let the collab system know that a new undo state was pushed since
+    // it last sent a message.
+    //
+    collabclient_CVPreserveStateCalled( cv );
+    
+    return( ret );
 }
 
 int CVLayer(CharViewBase *cv) {
@@ -642,7 +653,15 @@ return(NULL);
     undo->u.state.dostroke = cv->layerheads[cv->drawmode]->dostroke;
     undo->u.state.fillfirst = cv->layerheads[cv->drawmode]->fillfirst;
 
-    printf("new undo is at %p\n", undo );
+    printf("CVPreserveState() new undo is at %p\n", undo );
+
+    // MIQ: Note, this is the wrong time to do this call
+    // we are taking the undo state, after that the app will
+    // modify the local state, and that modification is what
+    // we are interested in sending on the wire, not the old
+    // undo state.
+    // collabclient_sendRedo( cv );
+    
 return( CVAddUndo(cv,undo));
 }
 

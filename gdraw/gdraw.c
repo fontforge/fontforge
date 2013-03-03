@@ -28,6 +28,7 @@
 #include <gkeysym.h>
 #include <ustring.h>
 #include <gio.h>
+#include "gdraw.h"
 
 /* Functions for font metrics:
     rectangle of text (left side bearing of first char, right of last char)
@@ -953,3 +954,34 @@ void setZeroMQReadFD( GDisplay *gdisp,
     gdisp->zeromq_datas = zeromq_datas;
     gdisp->zeromq_fd_callback = zeromq_fd_callback;
 }
+
+#ifndef MAX
+#define MAX(x,y)   (((x) > (y)) ? (x) : (y))
+#endif
+				   
+void MacServiceZeroMQFDs()
+{
+    int ret = 0;
+    
+    GDisplay *gdisp = GDrawGetDisplayOfWindow(0);
+    int fd = 0;
+    fd_set read, write, except;
+    FD_ZERO(&read); FD_ZERO(&write); FD_ZERO(&except);
+    struct timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 1;
+    
+    if( gdisp->zeromq_fd > 0 )
+    {
+	FD_SET(gdisp->zeromq_fd,&read);
+	fd = MAX( fd, gdisp->zeromq_fd );
+    }
+    if( fd > 0 )
+	ret = select(fd+1,&read,&write,&except,&timeout);
+
+    if( FD_ISSET(gdisp->zeromq_fd,&read))
+    {
+	gdisp->zeromq_fd_callback( gdisp->zeromq_fd, gdisp->zeromq_datas );
+    }
+}
+

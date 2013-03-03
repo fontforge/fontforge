@@ -190,18 +190,18 @@ kvmsg_recv_full (void *socket, int sockopts )
     assert (socket);
     kvmsg_t *self = kvmsg_new (0);
 
-    printf("kvmsg_recv_full() top...\n");
+//    printf("kvmsg_recv_full() top...\n");
     
     //  Read all frames off the wire, reject if bogus
     int frame_nbr;
     for (frame_nbr = 0; frame_nbr < KVMSG_FRAMES; frame_nbr++) {
-	printf("kvmsg_recv_full() frame_nbr:%d\n", frame_nbr );
+//	printf("kvmsg_recv_full() frame_nbr:%d\n", frame_nbr );
         if (self->present [frame_nbr])
             zmq_msg_close (&self->frame [frame_nbr]);
         zmq_msg_init (&self->frame [frame_nbr]);
         self->present [frame_nbr] = 1;
         if (zmq_msg_recv (&self->frame [frame_nbr], socket, sockopts ) == -1) {
-	    printf("kvmsg_recv_full() can't get more\n");
+//	    printf("kvmsg_recv_full() can't get more\n");
             kvmsg_destroy (&self);
             break;
         }
@@ -215,7 +215,7 @@ kvmsg_recv_full (void *socket, int sockopts )
     //  .until
     if (self)
         s_decode_props (self);
-    printf("kvmsg_recv_full() bottom...\n");
+//    printf("kvmsg_recv_full() bottom...\n");
     return self;
 }
 

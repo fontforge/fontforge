@@ -27,6 +27,7 @@
 #include "fontforgeui.h"
 #include <utype.h>
 #include <math.h>
+#include "collabclient.h"
 
 int stop_at_join = false;
 extern int interpCPsOnMotion;
@@ -509,6 +510,9 @@ void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     /*  selected, or if the user held the shift key down */
     if ( ImgRefEdgeSelected(cv,fs,event))
 return;
+
+//    CVPreserveState(&cv->b);
+    
     dowidth = ( cv->showhmetrics && cv->p.cx>cv->b.sc->width-fs->fudge &&
 		cv->p.cx<cv->b.sc->width+fs->fudge && cv->b.container==NULL &&
 		usemymetrics==NULL );
@@ -539,6 +543,7 @@ return;
 	    !(event->u.mouse.state&ksm_shift))
 	needsupdate = CVClearSel(cv);
     if ( !fs->p->anysel ) {
+	printf("xxxxxxxxxx5 dowidth:%d dovwidth:%d doic:%d dotah:%d nearcaret:%d\n",dowidth,dovwidth,doic,dotah,nearcaret);
 	/* Nothing else... unless they clicked on the width line, check that */
 	if ( dowidth ) {
 	    if ( event->u.mouse.state&ksm_shift )
@@ -608,6 +613,17 @@ return;
 	    cv->expandedge = ee_right;
 	    SetCur(cv);
 	}
+	else
+	{
+	    printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx5.2 needsupdate:%d\n", needsupdate);
+
+	    //
+	    // Allow dragging a box around some points to send that information
+	    // to the other clients in the collab session
+	    //
+	    if( collabclient_inSession( &cv->b ))
+		CVPreserveState(&cv->b);
+	}
     } else if ( event->u.mouse.clicks<=1 && !(event->u.mouse.state&ksm_shift)) {
 	if ( fs->p->nextcp || fs->p->prevcp ) {
 	    CPStartInfo(cv,event);
@@ -616,10 +632,12 @@ return;
 	} else if ( fs->p->sp!=NULL ) {
 	    if ( !fs->p->sp->selected ) needsupdate = true;
 	    fs->p->sp->selected = true;
+	    printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1\n");
 	} else if ( fs->p->spiro!=NULL ) {
 	    if ( !SPIRO_SELECTED(fs->p->spiro) ) needsupdate = true;
 	    SPIRO_SELECT( fs->p->spiro );
 	} else if ( fs->p->spline!=NULL && (!cv->b.sc->inspiro || !hasspiro())) {
+	    printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1.2\n");
 	    if ( !fs->p->spline->to->selected &&
 		    !fs->p->spline->from->selected ) needsupdate = true;
 	    fs->p->spline->to->selected = true;
@@ -641,6 +659,8 @@ return;
 	} else if ( fs->p->sp!=NULL ) {
 	    needsupdate = true;
 	    fs->p->sp->selected = !fs->p->sp->selected;
+	    printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx2\n");
+	    
 	} else if ( fs->p->spiro!=NULL ) {
 	    needsupdate = true;
 	    fs->p->spiro->ty ^= 0x80;
@@ -698,8 +718,18 @@ return;
 	/* Select everything */
 	if ( CVSetSel(cv,-1)) needsupdate = true;
     }
+    printf("needsupdate:%d\n", needsupdate );
     if ( needsupdate )
+    {
 	SCUpdateAll(cv->b.sc);
+    }
+    else
+    {
+	/* // remove the redundant undo item from the stack */
+	/* Undoes *undo = cv->b.layerheads[cv->b.drawmode]->undoes; */
+	/* cv->b.layerheads[cv->b.drawmode]->undoes = undo->next; */
+	/* UndoesFree( undo ); */
+    }
     
     /* lastselpt is set by our caller */
 }
