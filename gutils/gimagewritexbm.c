@@ -46,7 +46,7 @@ int GImageWriteXbm(GImage *gi, char *filename) {
     else
 	pt=filename;
     strncpy(stem,pt,sizeof(stem)); stem[255]='\0';
-    if ( (pt=strchr(stem,'.'))!=NULL )
+    if ( (pt=strrchr(stem,'.'))!=NULL && pt!=stem )
 	*pt = '\0';
 
     if ( (file=fopen(filename,"w"))==NULL ) {
