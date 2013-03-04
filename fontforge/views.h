@@ -1315,6 +1315,7 @@ extern void Prefs_LoadDefaultPreferences( void );
 
 extern FontView* FontViewFind( int (*testFunc)( FontView*, void* ), void* udata );
 extern int FontViewFind_byXUID( FontView* fv, void* udata );
-
+extern int FontViewFind_byCollabPtr( FontView* fv, void* udata );
+extern int FontViewFind_byXUIDConnected( FontView* fv, void* udata );
 
 #endif	/* _VIEWS_H */

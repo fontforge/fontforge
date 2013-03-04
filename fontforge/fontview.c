@@ -3564,6 +3564,7 @@ static void FVMenuHistograms(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)
 				hist_blues);
 }
 
+
 static void FontViewSetTitle(FontView *fv) {
     unichar_t *title, *ititle, *temp;
     char *file=NULL;
@@ -3573,6 +3574,16 @@ static void FontViewSetTitle(FontView *fv) {
     if ( fv->gw==NULL )		/* In scripting */
 return;
 
+    char* collabStateString = "";
+    if( collabclient_inSessionFV( fv ))
+    {
+	printf("collabclient_getState( fv ) %d %d\n",
+	       fv->b.collabState,
+	       collabclient_getState( fv ) );
+	collabStateString = collabclient_stateToString(
+	    collabclient_getState( fv ));
+    }
+    
     enc = SFEncodingName(fv->b.sf,fv->b.normal?fv->b.normal:fv->b.map);
     len = strlen(fv->b.sf->fontname)+1 + strlen(enc)+6;
     if ( fv->b.normal ) len += strlen(_("Compact"))+1;
@@ -3583,10 +3594,18 @@ return;
 	if ( (file = fv->b.sf->filename)==NULL )
 	    file = fv->b.sf->origname;
     }
+    len += strlen(collabStateString);
     if ( file!=NULL )
 	len += 2+strlen(file);
     title = galloc((len+1)*sizeof(unichar_t));
-    uc_strcpy(title,fv->b.sf->fontname);
+    uc_strcpy(title,"");
+
+    if(*collabStateString)
+    {
+	uc_strcat(title, collabStateString);
+	uc_strcat(title, " - ");
+    }
+    uc_strcat(title,fv->b.sf->fontname);
     if ( fv->b.sf->changed )
 	uc_strcat(title,"*");
     if ( file!=NULL ) {
@@ -3605,6 +3624,13 @@ return;
     GDrawSetWindowTitles(fv->gw,title,ititle);
     free(title);
     free(ititle);
+
+    printf("collabStateString:%s\n", collabStateString );
+}
+
+void FVTitleUpdate(FontViewBase *fv)
+{
+    FontViewSetTitle( (FontView*)fv );
 }
 
 static void FontViewSetTitles(SplineFont *sf) {
@@ -5601,7 +5627,7 @@ static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
 
     char* res = gwwv_ask_string(
 	"Connect to Collab Server",
-	"",
+	"localhost",
 	"Please enter the network location of the Collab server you wish to connect to...");
     if( res )
     {
@@ -5700,6 +5726,7 @@ void FVRefreshChar(FontView *fv,int gid) {
     int i, j, enc;
     MetricsView *mv;
 
+    printf("*** FVRefreshChar fv:%p gid:%d\n", fv, gid );
     /* Can happen in scripts */ /* Can happen if we do an AutoHint when generating a tiny font for freetype context */
     if ( fv->v==NULL || fv->colcnt==0 || fv->b.sf->glyphs[gid]== NULL )
 return;
@@ -5717,6 +5744,9 @@ return;
 #endif
 
     for ( fv=(FontView *) (fv->b.sf->fv); fv!=NULL; fv = (FontView *) (fv->b.nextsame) ) {
+	if( !fv->colcnt )
+	    continue;
+    
 	for ( mv=fv->b.sf->metrics; mv!=NULL; mv=mv->next )
 	    MVRefreshChar(mv,fv->b.sf->glyphs[gid]);
 	if ( fv->show==fv->filled )
@@ -7388,6 +7418,21 @@ int FontViewFind_byXUID( FontView* fv, void* udata )
     if( !fv || !fv->b.sf )
 	return 0;
     return !strcmp( fv->b.sf->xuid, (char*)udata );
+}
+
+int FontViewFind_byXUIDConnected( FontView* fv, void* udata )
+{
+    if( !fv || !fv->b.sf )
+	return 0;
+    return ( fv->b.collabState == cs_server || fv->b.collabState == cs_client )
+	&& !strcmp( fv->b.sf->xuid, (char*)udata );
+}
+
+int FontViewFind_byCollabPtr( FontView* fv, void* udata )
+{
+    if( !fv || !fv->b.sf )
+	return 0;
+    return fv->b.collabClient == udata;
 }
 
 

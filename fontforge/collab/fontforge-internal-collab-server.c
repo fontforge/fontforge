@@ -51,6 +51,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "fontforge-internal-collab-server.h"
 #include "collab/zmq_kvmsg.h"
 
+#define SUBTREE "/client/"
+
 
 /**
  * The server is modeled on "Clone server Model Five" from the zguide.
@@ -136,7 +138,8 @@ s_send_single (const char *key, void *data, void *args)
 {
     kvroute_t *kvroute = (kvroute_t *) args;
     kvmsg_t *kvmsg = (kvmsg_t *) data;
-    DEBUG ("I: s_send_single %d", kvmsg_sequence(kvmsg) );
+    DEBUG ("I: s_send_single %d type:%s", kvmsg_sequence(kvmsg), kvmsg_get_prop (kvmsg, "type") );
+
     if (strlen (kvroute->subtree) <= strlen (kvmsg_key (kvmsg))
     &&  memcmp (kvroute->subtree,
                 kvmsg_key (kvmsg), strlen (kvroute->subtree)) == 0) {
@@ -144,6 +147,7 @@ s_send_single (const char *key, void *data, void *args)
             kvroute->socket, ZFRAME_MORE + ZFRAME_REUSE);
         kvmsg_send (kvmsg, kvroute->socket);
     }
+    
     return 0;
 }
 
@@ -172,6 +176,8 @@ s_snapshots (zloop_t *loop, zmq_pollitem_t *poller, void *args)
         if (subtree) {
             //  Send state socket to client
             kvroute_t routing = { poller->socket, identity, subtree };
+	    DEBUG("I: hash size:%ld", zhash_size(self->kvmap));
+
             zhash_foreach (self->kvmap, s_send_single, &routing);
 
             //  Now send END message with sequence number
@@ -201,13 +207,18 @@ s_collector (zloop_t *loop, zmq_pollitem_t *poller, void *args)
     kvmsg_t *kvmsg = kvmsg_recv (poller->socket);
     if (kvmsg) {
         kvmsg_set_sequence (kvmsg, ++self->sequence);
+	kvmsg_fmt_key(kvmsg, "%s%d", SUBTREE, self->sequence-1 );
+	
         kvmsg_send (kvmsg, self->publisher);
         int ttl = atoi (kvmsg_get_prop (kvmsg, "ttl"));
 //        if (ttl)
 //            kvmsg_set_prop (kvmsg, "ttl",
 //                "%" PRId64, zclock_time () + ttl * 1000);
-        kvmsg_store (&kvmsg, self->kvmap);
-        DEBUG ("I: publishing update=%d", (int) self->sequence);
+        DEBUG ("I: publishing update=%d type:%s", (int) self->sequence,kvmsg_get_prop (kvmsg, "type"));
+	DEBUG("I: hash size:%ld", zhash_size(self->kvmap));
+	
+        kvmsg_store( &kvmsg, self->kvmap );
+	
     }
     return 0;
 }

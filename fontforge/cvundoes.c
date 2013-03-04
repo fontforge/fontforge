@@ -1017,7 +1017,8 @@ return;
     SCUndoAct(cv->sc,CVLayer(cv),undo);
     undo->next = cv->layerheads[cv->drawmode]->redoes;
     cv->layerheads[cv->drawmode]->redoes = undo;
-    _CVCharChangedUpdate(cv,undo->was_modified);
+    if( !collabclient_generatingUndoForWire( cv ))
+	_CVCharChangedUpdate(cv,undo->was_modified);
 return;
 }
 

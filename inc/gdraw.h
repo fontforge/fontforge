@@ -474,6 +474,76 @@ extern GTimer *GDrawRequestTimer(GWindow w,int32 time_from_now,int32 frequency,
 	void *userdata);
 extern void GDrawCancelTimer(GTimer *timer);
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//
+// Windowless timers used for background activities
+//
+
+/**
+ * Callback which will be called at a nominated frequency with a given
+ * userdata pointer.
+ */
+typedef void (* BackgroundTimerFunc )(void*);
+
+/**
+ * Internal bookkeeping for windowless timers. They are currently
+ * windowed timers on the inside but we spare the user from creating
+ * the window, keeping track of it, and having to deal with an event
+ * handling function which tries to get back a nominated userdata
+ * pointer from all that jazz.
+ */
+typedef struct BackgroundTimerstruct
+{
+    // takes userdata as arg1
+    BackgroundTimerFunc func;
+
+    // the userdata pointer that should be passed to func
+    void *userdata;
+
+    // the internal hidden window used to actually get the timer events
+    GWindow w;
+
+    // the GDraw timer associated with the above window
+    GTimer* timer;
+
+    // how often to fire the timer
+    int32 BackgroundTimerMS;
+} BackgroundTimer_t;
+
+/**
+ * Create a new windowless timer which will be fired every
+ * BackgroundTimerMS milliseconds and call func with the supplied
+ * userdata.
+ */
+BackgroundTimer_t*
+BackgroundTimer_new( int32 BackgroundTimerMS, 
+		     BackgroundTimerFunc func,
+		     void *userdata );
+
+/**
+ * Remove a windowless background timer freeing any resources
+ * associated with it.
+ */
+void BackgroundTimer_remove( BackgroundTimer_t* t );
+
+/**
+ * Make sure the timer fires at it's desired time from now(). For
+ * example, if a timer will fire every 2 seconds and is about to fire
+ * in a few ms from now, calling touch() will make it fire 2 seconds
+ * from now instead.
+ *
+ * This way if you have a timer which is to handle background issues
+ * if something doesn't happen in a scheduled amount of time, you can
+ * touch() the timer to make sure it fires again after the full
+ * elapsed time instead of having it fire too soon.
+ */
+void BackgroundTimer_touch( BackgroundTimer_t* t );
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 extern void GDrawSyncThread(GDisplay *gd, void (*func)(void *), void *data);
 
 extern GWindow GPrinterStartJob(GDisplay *gdisp,void *user_data,GPrinterAttrs *attrs);

@@ -74,6 +74,8 @@ extern void collabclient_sessionStart( void* ccvp, FontView *fv );
  */
 extern void collabclient_sessionJoin( void* ccvp, FontView *fv );
 
+extern void collabclient_sessionReconnect( void* ccvp );
+
 /**
  * Something of interest has happened in fontforge which can be
  * undone. Send a "redo" event describing the local changes to the
@@ -106,8 +108,14 @@ extern void collabclient_CVPreserveStateCalled( CharViewBase *cv );
 /**
  * Return >0 if this charview is part of a collab session
  */
-extern int collabclient_inSession( CharViewBase *cv );
+extern int collabclient_inSession(   CharViewBase *cv );
+extern int collabclient_inSessionFV( FontViewBase* fv );
 
+extern int collabclient_generatingUndoForWire( CharViewBase *cv );
+
+
+extern enum collabState_t collabclient_getState( FontViewBase* fv );
+extern char*         collabclient_stateToString( enum collabState_t s );
 
 #endif
 

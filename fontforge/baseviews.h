@@ -163,6 +163,8 @@ struct fvcontainer_funcs {
 				/* Resize the container so that fv fits */
 };
 
+enum collabState_t { cs_neverConnected, cs_disconnected, cs_server, cs_client };
+
 typedef struct fontviewbase {
     struct fontviewbase *next;		/* Next on list of open fontviews */
     struct fontviewbase *nextsame;	/* Next fv looking at this font */
@@ -181,6 +183,8 @@ typedef struct fontviewbase {
 #endif
     struct fvcontainer *container;
     void* collabClient;
+    enum collabState_t collabState;
+    
 } FontViewBase;
 
 enum origins { or_zero, or_center, or_lastpress, or_value, or_undefined };
@@ -610,6 +614,7 @@ extern void FVRevertGlyph(FontViewBase *fv);
 extern int   MMReblend(FontViewBase *fv, MMSet *mm);
 extern FontViewBase *MMCreateBlendedFont(MMSet *mm,FontViewBase *fv,real blends[MmMax],int tonew );
 extern void FVB_MakeNamelist(FontViewBase *fv, FILE *file);
+extern void FVTitleUpdate(FontViewBase *fv);
 
 extern void AutoWidth2(FontViewBase *fv,int separation,int min_side,int max_side,
 	int chunk_height, int loop_cnt);

@@ -986,3 +986,64 @@ void MacServiceZeroMQFDs()
     }
 }
 
+
+static int BackgroundTimer_eh( GWindow w, GEvent* ev )
+{
+    if ( ev->type == et_timer )
+    {
+	BackgroundTimer_t* bgt = (BackgroundTimer_t*)ev->u.timer.userdata;
+	bgt->func( bgt->userdata );
+    }
+    return 0;
+}
+
+
+BackgroundTimer_t*
+BackgroundTimer_new( int32 BackgroundTimerMS, 
+		     BackgroundTimerFunc func,
+		     void *userdata )
+{
+    BackgroundTimer_t* ret = calloc( 1, sizeof(BackgroundTimer_t) );
+    ret->func = func;
+    ret->userdata = userdata;
+    ret->BackgroundTimerMS = BackgroundTimerMS;
+    
+    GWindowAttrs wattrs;
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_isdlg|wam_positioned;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.is_dlg = true;
+    wattrs.positioned = true;
+    wattrs.utf8_window_title = "Timer Window";
+    GRect pos;
+    pos.width = 10;
+    pos.height = 10;
+    pos.x = 0;
+    pos.y = 0;
+    
+    GWindow w = GDrawCreateTopWindow( 0, &pos,
+				      BackgroundTimer_eh, ret, &wattrs );
+    ret->timer = GDrawRequestTimer( w, BackgroundTimerMS, BackgroundTimerMS, ret );
+    ret->w = w;
+    return ret;
+}
+
+void BackgroundTimer_remove( BackgroundTimer_t* t )
+{
+    if( !t )
+	return;
+
+    GDrawCancelTimer( t->timer );
+    GDrawDestroyWindow( t->w );
+    free(t);
+}
+
+void BackgroundTimer_touch( BackgroundTimer_t* t )
+{
+    if( !t )
+	return;
+    
+    GDrawCancelTimer( t->timer );
+    t->timer = GDrawRequestTimer( t->w, t->BackgroundTimerMS, t->BackgroundTimerMS, t );
+}
+

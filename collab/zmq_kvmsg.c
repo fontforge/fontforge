@@ -56,6 +56,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <glib.h>
 
+#define DEBUG zclock_log
+
 //  Keys are short strings
 #define KVMSG_KEY_MAX   255
 
@@ -536,9 +538,12 @@ kvmsg_store (kvmsg_t **self_p, zhash_t *hash)
     if (*self_p) {
         kvmsg_t *self = *self_p;
         assert (self);
-        if (kvmsg_size (self)) {
-            if (self->present [FRAME_KEY]
-            &&  self->present [FRAME_BODY]) {
+        if (kvmsg_size (self))
+	{
+	    DEBUG("I: have size");
+            if (self->present [FRAME_KEY] && self->present [FRAME_BODY])
+	    {
+		DEBUG("I: frame & body... key:%s",kvmsg_key (self));
                 zhash_update (hash, kvmsg_key (self), self);
                 zhash_freefn (hash, kvmsg_key (self), kvmsg_free);
             }

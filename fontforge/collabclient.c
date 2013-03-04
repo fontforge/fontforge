@@ -36,6 +36,7 @@
 #include "collab/zmq_kvmsg.h"
 #include "inc/gfile.h"
 #include "views.h"
+#include "inc/gwidget.h"
 
 
 
@@ -46,6 +47,7 @@
 
 #define MSG_TYPE_SFD  "msg_type_sfd"
 #define MSG_TYPE_UNDO "msg_type_undo"
+
 
 typedef struct {
     int magic_number;    //  Magic number to test if the pointer is likely valid
@@ -58,6 +60,8 @@ typedef struct {
     int64_t sequence;    //  How many updates we're at
 
     Undoes* preserveUndo;
+    BackgroundTimer_t* roundTripTimer;
+    int                roundTripTimerWaitingSeq;         
     
     //
     // A DEALER that we receive snapshot requests from the server on
@@ -74,6 +78,7 @@ typedef struct {
     // Monotonically increasing number used to tag outgoing msgs
     // to the publisher
     int publisher_sendseq;         
+
     
 } cloneclient_t;
 
@@ -104,13 +109,16 @@ static char* makeAddressString( char* address, int port )
 static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg, int create )
 {
     cc->sequence = kvmsg_sequence (kvmsg);
+    if( cc->sequence >= cc->roundTripTimerWaitingSeq )
+	cc->roundTripTimerWaitingSeq = 0;
+		    
 
     char* uuid = kvmsg_get_prop (kvmsg, "uuid" );
     byte* data = kvmsg_body (kvmsg);
     size_t data_size = kvmsg_size (kvmsg);
 
     printf("uuid:%s\n", uuid );
-    FontView* fv = FontViewFind( FontViewFind_byXUID, uuid );
+    FontView* fv = FontViewFind( FontViewFind_byXUIDConnected, uuid );
     printf("fv:%p\n", fv );
     if( fv )
     {
@@ -188,8 +196,10 @@ static void zeromq_subscriber_fd_callback(int zeromq_fd, void* datas )
 	    kvmsg_t *kvmsg = kvmsg_recv_full (cc->subscriber, ZMQ_DONTWAIT);
 	    if (kvmsg)
 	    {
+		int64_t msgseq = kvmsg_sequence (kvmsg);
+
 		//  Discard out-of-sequence kvmsgs, incl. heartbeats
-		if (kvmsg_sequence (kvmsg) > cc->sequence)
+		if ( msgseq > cc->sequence)
 		{
 		    int create = 0;
 		    zeromq_subscriber_process_update( cc, kvmsg, create );
@@ -263,27 +273,51 @@ static void zeromq_subscriber_fd_callback(int zeromq_fd, void* datas )
 	    else
 		break;
 	}
-	
     }
-    
-    
 }
 
 
-void* collabclient_new( char* address, int port )
+
+static void collabclient_roundTripTimer( void* ccvp )
 {
-    cloneclient_t *cc = 0;
-    cc = (cloneclient_t *) zmalloc (sizeof (cloneclient_t));
-    cc->magic_number = MAGIC_VALUE;
-    cc->ctx   = obtainMainZMQContext();
-    cc->loop  = 0;
-    cc->address = copy( address );
-    cc->port  = port;
-    cc->kvmap = zhash_new();
-    cc->publisher_sendseq = 1;
-    cc->sequence = 0;
-    cc->preserveUndo = 0;
-    
+    cloneclient_t *cc = (cloneclient_t*)ccvp;
+
+    printf("collabclient_roundTripTimer() cc: %p\n", cc );
+    printf("collabclient_roundTripTimer() waitingseq: %d\n", cc->roundTripTimerWaitingSeq );
+
+    if( cc->roundTripTimerWaitingSeq )
+    {
+	cc->roundTripTimerWaitingSeq = 0;
+	
+	char *buts[3];
+	buts[0] = _("_Reconnect");
+	buts[1] = _("_Disconnect");
+	buts[2] = NULL;
+
+	if ( gwwv_ask(_("Network Issue"),
+		      (const char **) buts,0,1,
+		      _("FontForge expected some input from the server by now.\nWould you like to try to reconnect to the collaboration session?"))==1 )
+	{
+	    // break session
+	    FontView* fv = FontViewFind( FontViewFind_byCollabPtr, cc );
+	    if( fv )
+	    {
+		printf("fv:%p\n", fv );
+		fv->b.collabState = cs_disconnected;
+		FVTitleUpdate( &fv->b );
+	    }
+	    
+	    collabclient_free( &cc );
+	    return;
+	}
+	
+	collabclient_sessionReconnect( cc );
+    }
+}
+
+static void
+collabclient_remakeSockets( cloneclient_t *cc )
+{
     cc->snapshot = zsocket_new (cc->ctx, ZMQ_DEALER);
     zsocket_connect (cc->snapshot, makeAddressString(cc->address,cc->port));
     
@@ -300,6 +334,49 @@ void* collabclient_new( char* address, int port )
     int rc = zmq_getsockopt( cc->subscriber, ZMQ_FD, &fd, &fdsz );
     printf("rc:%d fd:%d\n", rc, fd );
     setZeroMQReadFD( 0, fd, cc, zeromq_subscriber_fd_callback );
+}
+
+
+void* collabclient_new( char* address, int port )
+{
+    cloneclient_t *cc = 0;
+    cc = (cloneclient_t *) zmalloc (sizeof (cloneclient_t));
+    cc->magic_number = MAGIC_VALUE;
+    cc->ctx   = obtainMainZMQContext();
+    cc->loop  = 0;
+    cc->address = copy( address );
+    cc->port  = port;
+    cc->kvmap = zhash_new();
+    cc->publisher_sendseq = 1;
+    cc->sequence = 0;
+    cc->preserveUndo = 0;
+    cc->roundTripTimerWaitingSeq = 0;
+
+    collabclient_remakeSockets( cc );
+
+    /* cc->snapshot = zsocket_new (cc->ctx, ZMQ_DEALER); */
+    /* zsocket_connect (cc->snapshot, makeAddressString(cc->address,cc->port)); */
+    
+    /* cc->subscriber = zsocket_new (cc->ctx, ZMQ_SUB); */
+    /* zsockopt_set_subscribe (cc->subscriber, ""); */
+    /* zsocket_connect (cc->subscriber, makeAddressString(cc->address,cc->port+1)); */
+    /* zsockopt_set_subscribe (cc->subscriber, SUBTREE); */
+
+    /* cc->publisher = zsocket_new (cc->ctx, ZMQ_PUSH); */
+    /* zsocket_connect (cc->publisher, makeAddressString(cc->address,cc->port+2)); */
+
+    /* int fd = 0; */
+    /* size_t fdsz = sizeof(fd); */
+    /* int rc = zmq_getsockopt( cc->subscriber, ZMQ_FD, &fd, &fdsz ); */
+    /* printf("rc:%d fd:%d\n", rc, fd ); */
+    /* setZeroMQReadFD( 0, fd, cc, zeromq_subscriber_fd_callback ); */
+
+    
+
+    int32 roundTripTimerMS = 2000;
+    cc->roundTripTimer = BackgroundTimer_new( roundTripTimerMS, 
+					      collabclient_roundTripTimer,
+					      cc );
     
     return cc;
 }
@@ -316,6 +393,18 @@ void collabclient_free( void** ccvp )
     }
     cc->magic_number = MAGIC_VALUE + 1;
 
+    zsocket_destroy( cc->ctx, cc->snapshot   );
+    zsocket_destroy( cc->ctx, cc->subscriber );
+    zsocket_destroy( cc->ctx, cc->publisher  );
+    BackgroundTimer_remove( cc->roundTripTimer );
+    setZeroMQReadFD( 0, 0, 0, zeromq_subscriber_fd_callback );
+
+    FontView* fv = FontViewFind( FontViewFind_byCollabPtr, cc );
+    if( fv )
+    {
+	fv->b.collabClient = 0;
+    }
+        
     zhash_destroy (&cc->kvmap);
     free(cc->address);
     free(cc);
@@ -352,7 +441,8 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
 		getGResourceProgramDir() );
 	printf("command_line:%s\n", command_line );
 	GError * error = 0;
-	g_spawn_command_line_async( command_line, &error );
+	if(!getenv("FONTFORGE_USE_EXISTING_SERVER"))
+	    g_spawn_command_line_async( command_line, &error );
     }
     
     printf("Starting a session, sending it the current SFD as a baseline...\n");
@@ -369,6 +459,8 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
     }
     GFileUnlink(filename);
     printf("connecting to server...sent the sfd for session start.\n");
+    fv->b.collabState = cs_server;
+    FVTitleUpdate( fv );
 }
 
 /* static int collabclient_sessionJoin_findSFD_foreach_fn( const char *key, void *item, void *argumentpp ) */
@@ -480,6 +572,12 @@ void collabclient_sessionJoin( void* ccvp, FontView *fv )
     
 //    printf("collabclient_sessionJoin() last sfd:%p\n", out );
 
+    if( !lastSFD )
+    {
+	gwwv_post_error(_("FontForge Collaboration"), _("No Font Snapshot recevied from the server"));
+	return;
+    }
+    
     if( lastSFD )
     {
 	int openflags = 0;
@@ -495,6 +593,8 @@ void collabclient_sessionJoin( void* ccvp, FontView *fv )
 	FontViewBase* newfv = ViewPostScriptFont( filename, openflags );
 	newfv->collabClient = cc;
 	fv->b.collabClient = 0;
+	newfv->collabState = cs_client;
+	FVTitleUpdate( newfv );
 	
 	/* cloneclient_t* newc = collabclient_new( cc->address, cc->port ); */
 	/* collabclient_sessionJoin( newc, fv ); */
@@ -502,7 +602,7 @@ void collabclient_sessionJoin( void* ccvp, FontView *fv )
 
     
     printf("applying updates from server that were performed after the SFD snapshot was done...\n");
-
+    
     kvmap_visit( cc->kvmap, kvmsg_sequence (lastSFD),
 		 collabclient_sessionJoin_processmsg_foreach_fn, cc );
 
@@ -514,6 +614,24 @@ void collabclient_sessionJoin( void* ccvp, FontView *fv )
     
 
     printf("collabclient_sessionJoin(complete)\n");
+}
+
+
+void collabclient_sessionReconnect( void* ccvp )
+{
+    cloneclient_t* cc = (cloneclient_t*)ccvp;
+
+    zsocket_destroy( cc->ctx, cc->snapshot   );
+    zsocket_destroy( cc->ctx, cc->subscriber );
+    zsocket_destroy( cc->ctx, cc->publisher  );
+    collabclient_remakeSockets( cc );
+    cc->publisher_sendseq = 1;
+
+    FontView* fv = FontViewFind( FontViewFind_byCollabPtr, cc );
+    if( fv )
+    {
+	collabclient_sessionJoin( cc, fv );
+    }
 }
 
 
@@ -536,7 +654,10 @@ collabclient_sendRedo_Internal( CharViewBase *cv, Undoes *undo )
     fclose(f);
     char* sfd = GFileReadAll( filename );
 //    printf("SENDING: %s\n\n", sfd );
-    
+
+    cc->roundTripTimerWaitingSeq = cc->publisher_sendseq;
+    BackgroundTimer_touch( cc->roundTripTimer );
+
     kvmsg_t *kvmsg = kvmsg_new(0);
     kvmsg_fmt_key  (kvmsg, "%s%d", SUBTREE, cc->publisher_sendseq++);
     kvmsg_set_body (kvmsg, sfd, strlen(sfd) );
@@ -604,7 +725,46 @@ int collabclient_inSession( CharViewBase *cv )
     if( !cv->fv )
 	return 0;
     cloneclient_t* cc = cv->fv->collabClient;
-    return cc;
+    return cc!=0;
+}
+
+int collabclient_inSessionFV( FontViewBase* fv )
+{
+    if( !fv )
+	return 0;
+    cloneclient_t* cc = fv->collabClient;
+    return cc!=0;
+}
+
+int collabclient_generatingUndoForWire( CharViewBase *cv )
+{
+    return collabclient_inSession( cv );
+}
+
+
+enum collabState_t
+collabclient_getState( FontViewBase* fv )
+{
+    if( !fv )
+	return cs_neverConnected;
+    return fv->collabState;
+}
+
+char*
+collabclient_stateToString( enum collabState_t s )
+{
+    switch( s )
+    {
+    case cs_neverConnected:
+	return "";
+    case cs_disconnected:
+	return _("Disconnected");
+    case cs_server:
+	return _("Collab Server");
+    case cs_client:
+	return _("Collab Client");
+    }
+    return _("Unknown Collab State!");
 }
 
 
