@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <config.h>		/* FF config file */
+#include <fontforge-config.h>		
 #include <gwwiconv.h>
 #include <stddef.h>
 #include <ustring.h>

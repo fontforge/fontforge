@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#include <fontforge-config.h>
 #include "fontforgeui.h"
 #include "annotations.h"
 #include <gfile.h>

@@ -58,7 +58,7 @@ capable of using composite.
 #include <vms_x_fix.h>
 #endif
 
-#include <config.h>		/* FF config file */
+#include <fontforge-config.h>
 
 #ifndef X_DISPLAY_MISSING
 # include <X11/X.h>

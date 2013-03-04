@@ -1,7 +1,7 @@
 /* This file was generated using stamper.c to create the next version release.          */
 /* If you need to update this to the next release version, see fontforge/GNUmakefile.in */
 
-#include "config.h"
+#include <fontforge-config.h>
 #include <time.h>
 
 const time_t source_modtime    = FONTFORGE_MODTIME;	/* Seconds since 1970 (standard unix time) */
