@@ -2970,7 +2970,6 @@ int SFDDoesAnyBackupExist(char* filename)
 {
     char path[PATH_MAX];
     int idx = 1;
-    int rc = 0;
 	    
     snprintf( path, PATH_MAX, "%s-%02d", filename, idx );
     return GFileExists(path);

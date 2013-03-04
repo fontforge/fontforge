@@ -305,7 +305,7 @@ static char* GMenuGetMenuPath( GMenuItem *basemi, GMenuItem *targetmi ) {
 	if( mi[i].ti.text ) {
 	    memset(stack, 0, sizeof(stack));
 //	    printf("GMenuGetMenuPath() xbase   %s\n", u_to_c(mi[i].ti.text));
-	    int rc = GMenuGetMenuPathRecurse( stack, &mi[i], targetmi );
+	    GMenuGetMenuPathRecurse( stack, &mi[i], targetmi );
 //	    printf("GMenuGetMenuPath() rc   %d\n",  rc);
 	    if( stack[0] != 0 ) {
 //		printf("GMenuGetMenuPath() have stack[0]...\n");

@@ -42,7 +42,7 @@ GImage *GImageReadXbm(char * filename) {
     int width, height;
     GImage *gi=NULL;
     struct _GImage *base;
-    int ch,i,j,k,l;
+    int ch,i,j,l;
     long pixels;
     uint8 *scanline;
 

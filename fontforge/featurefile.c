@@ -1746,8 +1746,6 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
     OTLookup *otl;
     FeatureScriptLangList *fl;
     struct scriptlanglist *sl;
-    struct otffeatname *fn;
-    struct otfname *on;
 
     GTree* ht = g_tree_new_full( (GCompareDataFunc)g_ascii_strcasecmp, 0, free, donothing );
     
@@ -1760,15 +1758,11 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
 
 		for ( s=0; scripts[s]!=0; ++s ) {
 		    uint32 *langs = SFLangsInScript(sf,isgpos,scripts[s]);
-		    int firsts = true;
 		    for ( l=0; langs[l]!=0; ++l ) {
-			int first = true;
 			for ( otl = isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl=otl->next ) {
 			    for ( fl=otl->features; fl!=NULL; fl=fl->next ) if ( fl->featuretag==feats[i] ) {
 				    for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) if ( sl->script==scripts[s] ) {
 					    for ( subl=0; subl<sl->lang_cnt; ++subl ) {
-						uint32 lang = subl<MAX_LANG ? sl->langs[subl] : sl->morelangs[subl-MAX_LANG];
-
 						char key[100];
 						snprintf(key,sizeof key,"%c%c%c%c %c%c%c%c",
 							 scripts[s]>>24, scripts[s]>>16, scripts[s]>>8, scripts[s],
