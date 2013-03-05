@@ -27,7 +27,6 @@
 #include "fontforgeui.h"
 #include "groups.h"
 #include "psfont.h"
-#include "annotations.h"
 #include <gfile.h>
 #include <gio.h>
 #include <gresedit.h>
@@ -41,6 +40,10 @@
 
 #include "collabclient.h"
 #include "inc/gnetwork.h"
+
+#ifndef _NO_LIBUNINAMESLIST
+#include <uninameslist.h>
+#endif
 
 int OpenCharsInNewWindow = 0;
 char *RecentFiles[RECENT_MAX] = { NULL };
@@ -1532,6 +1535,8 @@ static void FVMenuRedo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(
     FVRedo((FontViewBase *) fv);
 }
 
+/*
+ * Unused
 #include <stddef.h>
 static int listLength( void* p, int nextoffset ) {
     if( !p )
@@ -1547,6 +1552,7 @@ static int pstLength( struct generic_pst * pst ) {
     int offset = offsetof( PST, next );
     return listLength( pst, offset );
 }
+*/
 
 /**
  * Remove undo from the font level undoes on splinefont 'sf' and
@@ -5714,7 +5720,7 @@ GMenuItem2 helplist[] = {
 
 GMenuItem fvpopupmenu[] = {
     { { (unichar_t *) N_("New O_utline Window"), 0, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, '\0', ksm_control, NULL, NULL, FVMenuOpenOutline, MID_OpenOutline },
-    GMENUITEM2_LINE,
+    GMENUITEM_LINE,
     { { (unichar_t *) N_("Cu_t"), (GImage *) "editcut.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, '\0', ksm_control, NULL, NULL, FVMenuCut, MID_Cut },
     { { (unichar_t *) N_("_Copy"), (GImage *) "editcopy.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuCopy, MID_Copy },
     { { (unichar_t *) N_("C_opy Reference"), (GImage *) "editcopyref.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, FVMenuCopyRef, MID_CopyRef },
@@ -6212,9 +6218,11 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
     GDrawSetDither(NULL, true);
 }
 
+#ifndef _NO_LIBUNINAMESLIST
 static char *chosung[] = { "G", "GG", "N", "D", "DD", "L", "M", "B", "BB", "S", "SS", "", "J", "JJ", "C", "K", "T", "P", "H", NULL };
 static char *jungsung[] = { "A", "AE", "YA", "YAE", "EO", "E", "YEO", "YE", "O", "WA", "WAE", "OE", "YO", "U", "WEO", "WE", "WI", "YU", "EU", "YI", "I", NULL };
 static char *jongsung[] = { "", "G", "GG", "GS", "N", "NJ", "NH", "D", "L", "LG", "LM", "LB", "LS", "LT", "LP", "LH", "M", "B", "BS", "S", "SS", "NG", "J", "C", "K", "T", "P", "H", NULL };
+#endif
 
 void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
     GRect old, r;
@@ -6228,7 +6236,6 @@ void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
     int uni;
     Color fg = fvglyphinfocol;
     int ulen, tlen;
-    const char *uniname;
 
     if ( event->u.expose.rect.y+event->u.expose.rect.height<=fv->mbh )
 return;
@@ -6290,20 +6297,26 @@ return;
 	}
 	fg = 0x707070;
     }
-    if (uni != -1) {        
-        uniname = uninm_name(names_db, (unsigned int) uni);
-        if (uniname != NULL) {
-            utf82u_strncpy(ubuffer+u_strlen(ubuffer), uniname, 80);
-        } else if ( uni>=0xAC00 && uni<=0xD7A3 ) {
+
+#ifndef _NO_LIBUNINAMESLIST
+    /* Get unicode "Name" as defined in NameList.txt */
+    if (uni != -1) {
+	if ( (uniname=uniNamesList_name(uni))!=NULL ) {
+            utf82u_strncpy(ubuffer+u_strlen(ubuffer),uniname,80);
+//	    strncat(buffer,uniname,80);
+	} else if ( uni>=0xAC00 && uni<=0xD7A3 ) {
+//	    sprintf( buffer+strlen(buffer), "Hangul Syllable %s%s%s",
             sprintf( buffer, "Hangul Syllable %s%s%s",
-                     chosung[(uni-0xAC00)/(21*28)],
-                     jungsung[(uni-0xAC00)/28%21],
-                     jongsung[(uni-0xAC00)%28] );
+		    chosung[(uni-0xAC00)/(21*28)],
+		    jungsung[(uni-0xAC00)/28%21],
+		    jongsung[(uni-0xAC00)%28] );
             uc_strncat(ubuffer,buffer,80);
-        } else {
+	} else {
             uc_strncat(ubuffer, UnicodeRange(uni),80);
-        }
+//	    strncat(buffer, UnicodeRange(uni),80);
+	}
     }
+#endif
 
     tlen = GDrawDrawText(pixmap,10,fv->mbh+fv->lab_as,ubuffer,ulen,fvglyphinfocol);
     GDrawDrawText(pixmap,10+tlen,fv->mbh+fv->lab_as,ubuffer+ulen,-1,fg);
@@ -6505,6 +6518,7 @@ return;
     }
 }
 
+#ifndef _NO_LIBUNINAMESLIST
 static void utf82u_annot_strncat(unichar_t *to, const char *from, int len) {
     register unichar_t ch;
 
@@ -6518,15 +6532,15 @@ static void utf82u_annot_strncat(unichar_t *to, const char *from, int len) {
     }
     *to = 0;
 }
+#endif
 
 void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	int actualuni) {
+/* This is for the popup which appears when you hover mouse over a character on main window */
     static unichar_t space[810];
     char cspace[162];
     int upos=-1;
     int done = false;
-    const char *uniname;
-    const char *uniannot;
 
     /* If a glyph is multiply mapped then the inbuild unicode enc may not be */
     /*  the actual one used to access the glyph */
@@ -6564,9 +6578,10 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	done = true;
     }
 
+#ifndef _NO_LIBUNINAMESLIST
     if ( !done ) {
-        uniname = uninm_name(names_db, upos);
-        if (uniname != NULL) {
+	if ( (uniname=uniNamesList_name(upos))!=NULL ) {
+	    /* uniname=unicode "Name" as defined in NameList.txt */
 #if defined( _NO_SNPRINTF )
             sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
                      uniname);
@@ -6601,14 +6616,15 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
             utf82u_strcpy(space,cspace);
         }
     }
-    uniannot = uninm_annotation(names_db, upos);
-    if (uniannot != NULL) {
+    if ( (uniannot=uniNamesList_name(upos))!=NULL ) {
+	/* uniannot=unicode "Annotations" as defined in NameList.txt */
 	int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
 	if ( left>4 ) {
 	    uc_strcat(space,"\n");
             utf82u_annot_strncat(space, uniannot, left-2);
 	}
     }
+#endif
     if ( sc->comment!=NULL ) {
 	int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
 	if ( left>4 ) {

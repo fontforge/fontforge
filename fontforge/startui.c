@@ -25,9 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#include <fontforge-config.h>
 #include "fontforgeui.h"
-#include "annotations.h"
 #include <gfile.h>
 #include <gresource.h>
 #include <ustring.h>
@@ -75,8 +74,8 @@ extern void RunApplicationEventLoop(void);
 #endif
 
 #if defined(__MINGW32__)
-#include <Windows.h>
-void sleep( int n ){ _sleep(n);}
+#include <windows.h>
+#define sleep(n) Sleep(1000 * (n))
 #endif
 
 #include "collabclient.h"
@@ -761,7 +760,11 @@ static void ffensuredir( const char* basedir, const char* dirname, mode_t mode )
     
     snprintf(buffer,buffersz,"%s/%s", basedir, dirname );
     // ignore errors, this is just to help the user aftre all.
+#if !defined(__MINGW32__)
     mkdir( buffer, mode );
+#else
+    mkdir( buffer );
+#endif
 }
 
 static void ensureDotFontForgeIsSetup() {
@@ -790,11 +793,13 @@ int fontforge_main( int argc, char **argv ) {
     int ds, ld;
     int openflags=0;
     int doopen=0, quit_request=0;
-    int local_x;
 
     g_type_init();
 
-    fprintf( stderr, "Copyright (c) 2000-2012 by George Williams.\n Executable based on sources from %s"
+    fprintf( stderr, "Copyright (c) 2000-2012 by George Williams. See AUTHORS for contributors.\n" );
+    fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
+    fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
+    fprintf( stderr, " Executable based on sources from %s"
 	    "-ML"
 #ifdef FREETYPE_HAS_DEBUGGER
 	    "-TtfDb"
@@ -828,7 +833,7 @@ int fontforge_main( int argc, char **argv ) {
     /* Start X if they haven't already done so. Well... try anyway */
     /* Must be before we change DYLD_LIBRARY_PATH or X won't start */
     /* (osascript depends on a libjpeg which isn't found if we look in /sw/lib first */
-    local_x = uses_local_x(argc,argv);
+    int local_x = uses_local_x(argc,argv);
     if ( local_x==1 && getenv("DISPLAY")==NULL ) {
 	/* Don't start X if we're just going to quit. */
 	/* if X exists, it isn't needed. If X doesn't exist it's wrong */
@@ -1230,8 +1235,7 @@ exit( 0 );
     GDrawEventLoop(NULL);
 
     hotkeysSave();
-    
-    uninm_names_db_close(names_db);
+
     lt_dlexit();
 
 return( 0 );

@@ -104,6 +104,8 @@ return( NULL );
 }
 #endif
 
+/*
+ * Unused
 static unichar_t *GIOguessMimeType(const unichar_t *path,int isdir) {
     unichar_t *pt;
 
@@ -191,8 +193,7 @@ return( fontsnf );
 return( unknown );
 }
 
-
-
+*/
 
 
 //////////////////////////////////////////////////

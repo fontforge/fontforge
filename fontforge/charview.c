@@ -27,7 +27,6 @@
 
 #include "fontforgeui.h"
 #include "cvruler.h"
-#include "annotations.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>
@@ -41,6 +40,10 @@ extern int _GScrollBar_Width;
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
 #include "dlist.h"
+
+#ifndef _NO_LIBUNINAMESLIST
+#include <uninameslist.h>
+#endif
 
 #include "gutils/prefs.h"
 #include "collabclient.h"
@@ -2970,7 +2973,6 @@ return( ((FontView *) (cv->b.fv))->b.map->backmap[cv->b.sc->orig_pos] );
 
 static char *CVMakeTitles(CharView *cv,char *buf) {
     char *title;
-    const char *uniname;
     SplineChar *sc = cv->b.sc;
 
 /* GT: This is the title for a window showing an outline character */
@@ -2984,11 +2986,12 @@ static char *CVMakeTitles(CharView *cv,char *buf) {
     if ( sc->changed )
 	strcat(buf," *");
     title = copy(buf);
-    uniname = (sc->unicodeenc != -1) ? uninm_name (names_db, sc->unicodeenc) : (const char *) NULL;
-    if (uniname != NULL) {
+#ifndef _NO_LIBUNINAMESLIST
+    if ( (uniname=uniNamesList_name(sc->unicodeenc))!=NULL ) {
 	strcat(buf, " ");
 	strcpy(buf+strlen(buf), uniname);
     }
+#endif
     if ( cv->show_ft_results || cv->dv )
 	sprintf(buf+strlen(buf), " (%gpt, %ddpi)", (double) cv->ft_pointsizey, cv->ft_dpi );
 return( title );
@@ -3190,6 +3193,8 @@ return;
     CVChangeSC(cv,sc);
 }
 
+/*
+ * Unused
 static void CVSwitchToTab(CharView *cv,int tnum ) {
     if( tnum >= cv->former_cnt )
 	return;
@@ -3204,6 +3209,7 @@ static void CVMenuShowTab(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVSwitchToTab(cv,mi->mid);
 }
+*/
 
 static int CVChangeToFormer( GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
@@ -6857,9 +6863,12 @@ static void pllistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     cv_pllistcheck(cv, mi);
 }
 
+/*
+ * Unused
 static void tablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    GDrawGetUserData(gw);
 }
+*/
 
 static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
@@ -10375,7 +10384,6 @@ static void CVMenuVKernFromHKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVVKernFromHKern((FontViewBase *) cv->b.fv);
 }
 
-#define GMENUITEM2_LINE { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }
 static GMenuItem2 mtlist[] = {
     { { (unichar_t *) N_("_Center in Width"), (GImage *) "metricscenter.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Center in Width|No Shortcut"), NULL, NULL, CVMenuCenter, MID_Center },
     { { (unichar_t *) N_("_Thirds in Width"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Thirds in Width|No Shortcut"), NULL, NULL, CVMenuCenter, MID_Thirds },

@@ -44,7 +44,7 @@ static char dirname_[1024];
 #if !defined(__MINGW32__)
  #include <pwd.h>
 #else
- #include <Windows.h>
+ #include <windows.h>
 #endif
 
 #if defined(__MINGW32__)
@@ -676,7 +676,6 @@ char *getShareDir(void) {
 char *getLocaleDir(void) {
     static char *sharedir=NULL;
     static int set=false;
-    char *pt;
 
     if ( set )
 	return( sharedir );
@@ -693,7 +692,6 @@ char *getLocaleDir(void) {
 char *getPixmapDir(void) {
     static char *sharedir=NULL;
     static int set=false;
-    char *pt;
 
     if ( set )
 	return( sharedir );
@@ -710,7 +708,6 @@ char *getPixmapDir(void) {
 char *getHelpDir(void) {
     static char *sharedir=NULL;
     static int set=false;
-    char *pt;
 
     if ( set )
 	return( sharedir );

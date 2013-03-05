@@ -58,7 +58,7 @@ capable of using composite.
 #include <vms_x_fix.h>
 #endif
 
-#include <config.h>		/* FF config file */
+#include <fontforge-config.h>
 
 #ifndef X_DISPLAY_MISSING
 # include <X11/X.h>
@@ -390,6 +390,8 @@ extern void _XSyncScreen(void);
 
 #if !defined(__MINGW32__)
 extern int GDrawKeyToXK(int keysym);
+#else
+extern int GDrawKeyToVK(int keysym);
 #endif
 
 # ifdef _WACOM_DRV_BROKEN

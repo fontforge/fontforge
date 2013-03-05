@@ -836,6 +836,8 @@ return( NULL );
 return( rle );
 }
 
+/*
+ * Unused
 static void SFDDumpBrush( FILE *sfd, struct brush* brush ) {
     fprintf(sfd, "Brush: #%06x %g\n", brush->col, brush->opacity );
     fprintf(sfd, "EndBrush\n");
@@ -857,7 +859,7 @@ static void SFDDumpPen( FILE *sfd, struct pen* p ) {
     SFDDumpBrush( sfd, &p->brush );
     fprintf(sfd, "EndPen\n");
 }
-
+*/
 
 
 void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, char* keyPrefix, int idx ) {
@@ -2970,7 +2972,6 @@ int SFDDoesAnyBackupExist(char* filename)
 {
     char path[PATH_MAX];
     int idx = 1;
-    int rc = 0;
 	    
     snprintf( path, PATH_MAX, "%s-%02d", filename, idx );
     return GFileExists(path);

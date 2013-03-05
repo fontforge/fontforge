@@ -44,28 +44,33 @@ return( two );
 }
 
 int GImageWriteXpm(GImage *gi, char *filename) {
+/* Export an *.xpm image. Return 0 if all done okay */
     struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
     FILE *file;
     char stem[256];
     char *pt; uint8 *scanline;
     int i,j;
 
+    /* This routine only exports color-indexed type images */
     if ( base->image_type!=it_index )
-return(false );
+	return( -1 );
 
-    if (( pt = strrchr(filename,'/'))==NULL )
-	strcpy(stem,filename);
+    /* get filename stem (255chars max) */
+    if ( (pt=strrchr(filename,'/'))!=NULL )
+	++pt;
     else
-	strcpy(stem,pt+1);
-    if ( (pt = strchr(stem,'.'))!=NULL )
+	pt=filename;
+    strncpy(stem,pt,sizeof(stem)); stem[255]='\0';
+    if ( (pt=strrchr(stem,'.'))!=NULL && pt!=stem )
 	*pt = '\0';
 
-    if ((file=fopen(filename,"w"))==NULL )
-return(false);
+    if ( (file=fopen(filename,"w"))==NULL ) {
+	fprintf(stderr,"Can't open \"%s\"\n", filename);
+	return( -1 );
+    }
 
     fprintf(file,"/* XPM */\n" );
-    fprintf(file,"static char *%s[] =\n", stem );
-    fprintf(file,"{\n");
+    fprintf(file,"static char *%s[] = {\n",stem);
     fprintf(file,"/* width height ncolors chars_per_pixel */\n");
     fprintf(file,"\"%d %d %d %d\"\n", (int) base->width, (int) base->height, base->clut->clut_len,
 	    base->clut->clut_len>95?2:1 );
@@ -83,7 +88,7 @@ return(false);
     }
     fprintf(file,"};\n" );
     fflush(file);
-    i = ferror(file);
+    i=ferror(file);
     fclose(file);
-return( i );
+    return( i );
 }

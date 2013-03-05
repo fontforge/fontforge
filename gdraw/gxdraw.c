@@ -28,6 +28,11 @@
 #include <vms_x_fix.h>
 #endif
 
+#if defined(__MINGW32__)
+#include <windows.h>
+#include <winsock2.h>
+#endif
+
 #include "gxdrawP.h"
 #include "gxcdrawP.h"
 
@@ -41,10 +46,7 @@
 #include <locale.h>		/* for setting the X locale properly */
 
 #ifdef HAVE_PTHREAD_H
-# if defined(__MINGW32__)
-#  include <Windows.h>
-#  include <WinSock2.h>
-# else
+# ifndef __MINGW32__
 #  include <sys/socket.h>
 #  include <sys/un.h>
 # endif

@@ -528,7 +528,7 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
 	base.height = bdfc->ymax-bdfc->ymin+1;
 	base.trans = -1;
 	if ( format==0 )
-	    ret = GImageWriteXbm(&gi,filename);
+	    ret = !GImageWriteXbm(&gi,filename);
 #ifndef _NO_LIBPNG
 	else if ( format==2 )
 	    ret = GImageWritePng(&gi,filename,false);
@@ -600,7 +600,7 @@ int BCExportXBM(char *filename,BDFChar *bdfc, int format) {
 	base.height = bdfc->ymax-bdfc->ymin+1;
 	base.trans = -1;
 	if ( format==0 )
-	    ret = GImageWriteXbm(&gi,filename);
+	    ret = !GImageWriteXbm(&gi,filename);
 #ifndef _NO_LIBPNG
 	else if ( format==2 )
 	    ret = GImageWritePng(&gi,filename,false);
