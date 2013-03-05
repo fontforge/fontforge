@@ -57,7 +57,7 @@ struct dlistnode {
  *
  * In other words, if you have some data you want to return in a
  * double linked list, then use this node type. You can build one up
- * using dlist_pushfront_external() and the caller can freee that list
+ * using dlist_pushfront_external() and the caller can free that list
  * using dlist_free_external(). Any of the foreach() functions will
  * work to iterate a list of dlistnodeExternal as this list is
  * identical to a dlistnode with an extra ptr payload.

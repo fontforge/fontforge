@@ -841,6 +841,8 @@ static void SFDDumpBrush( FILE *sfd, struct brush* brush ) {
     fprintf(sfd, "EndBrush\n");
 }
 
+/*
+ * Unused
 static void SFDDumpPen( FILE *sfd, struct pen* p ) {
     fprintf(sfd, "Pen: %g %s %s [%g %g %g %g] [",
             p->width, joins[p->linejoin], caps[p->linecap],
@@ -857,7 +859,7 @@ static void SFDDumpPen( FILE *sfd, struct pen* p ) {
     SFDDumpBrush( sfd, &p->brush );
     fprintf(sfd, "EndPen\n");
 }
-
+*/
 
 
 static void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, char* keyPrefix, int idx ) {

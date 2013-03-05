@@ -1737,7 +1737,7 @@ GGadget *GFileChooserCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 
     GFileChooserCreateChildren(gfc, gd->flags);
     gfc->filter = GFileChooserDefFilter;
-    GFileChooserSetInputFilenameFunc( gfc, 0 );
+    GFileChooserSetInputFilenameFunc( (GGadget*)gfc, 0 );
     if ( gd->flags & gg_group_end )
 	_GGadgetCloseGroup(&gfc->g);
 

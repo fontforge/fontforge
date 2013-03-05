@@ -119,7 +119,7 @@ void dlist_pushfront_external( struct dlistnode** list, void* ptr )
 {
     struct dlistnodeExternal* n = calloc(1,sizeof(struct dlistnodeExternal));
     n->ptr = ptr;
-    dlist_pushfront( list, n );
+    dlist_pushfront( list, (struct dlistnode*)n );
 }
 
 static void freenode(struct dlistnode* node )

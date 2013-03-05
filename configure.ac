@@ -352,7 +352,7 @@ FONTFORGE_MODTIME="`date '+%s'`L"
 FONTFORGE_MODTIME_STR="`date +'%H:%M %Z %e-%b-%Y'`"
 FONTFORGE_VERSIONDATE="`date '+%Y%m%d'`"
 AC_DEFINE_UNQUOTED(FONTFORGE_GIT_VERSION,"$FONTFORGE_GIT_VERSION","git hash that source are built from")
-AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME,"$FONTFORGE_MODTIME","Epoch time that configure was run at")
+AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME,$FONTFORGE_MODTIME,"Epoch time that configure was run at")
 AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_STR,"$FONTFORGE_MODTIME_STR",
 	"A user friendly date that that configure was run at: For example 01:48 GMT 6-Sep-2012")
 AC_DEFINE_UNQUOTED(FONTFORGE_VERSIONDATE,"$FONTFORGE_VERSIONDATE","YYYYMMDD as number when configure was run")

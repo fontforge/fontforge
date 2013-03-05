@@ -937,12 +937,15 @@ static int isValidInt(unichar_t *end) {
     return 1;
 }
 
+/*
+ * Unused
 static int GGadgetToInt(GGadget *g)
 {
     unichar_t *end;
     int val = u_strtol(_GGadgetGetTitle(g),&end,10);
     return val;
 }
+*/
 
 static real GGadgetToReal(GGadget *g) 
 {
@@ -3557,7 +3560,7 @@ static void MVMenuRemoveVKern(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
     SCRemoveVKern(sc);
 }
 
-#define GMENUITEM2_LINE { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }
+//#define GMENUITEM2_LINE { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }
     
 static GMenuItem2 mtlist[] = {
     { { (unichar_t *) N_("_Center in Width"), (GImage *) "metricscenter.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Center in Width|No Shortcut"), NULL, NULL, MVMenuCenter, MID_Center },

@@ -1537,10 +1537,13 @@ static int listLength( void* p, int nextoffset ) {
     }
     return ret;
 }
+/*
+ * Unused
 static int pstLength( struct generic_pst * pst ) {
     int offset = offsetof( PST, next );
     return listLength( pst, offset );
 }
+*/
 
 /**
  * Remove undo from the font level undoes on splinefont 'sf' and
@@ -6045,9 +6048,11 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
     GDrawSetDither(NULL, true);
 }
 
+#ifndef _NO_LIBUNINAMESLIST
 static char *chosung[] = { "G", "GG", "N", "D", "DD", "L", "M", "B", "BB", "S", "SS", "", "J", "JJ", "C", "K", "T", "P", "H", NULL };
 static char *jungsung[] = { "A", "AE", "YA", "YAE", "EO", "E", "YEO", "YE", "O", "WA", "WAE", "OE", "YO", "U", "WEO", "WE", "WI", "YU", "EU", "YI", "I", NULL };
 static char *jongsung[] = { "", "G", "GG", "GS", "N", "NJ", "NH", "D", "L", "LG", "LM", "LB", "LS", "LT", "LP", "LH", "M", "B", "BS", "S", "SS", "NG", "J", "C", "K", "T", "P", "H", NULL };
+#endif
 
 void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
     GRect old, r;
@@ -6061,7 +6066,6 @@ void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
     int uni;
     Color fg = fvglyphinfocol;
     int ulen, tlen;
-    const char *uniname;
 
     if ( event->u.expose.rect.y+event->u.expose.rect.height<=fv->mbh )
 return;
@@ -6344,6 +6348,7 @@ return;
     }
 }
 
+#ifndef _NO_LIBUNINAMESLIST
 static void utf82u_annot_strncat(unichar_t *to, const char *from, int len) {
     register unichar_t ch;
 
@@ -6357,6 +6362,7 @@ static void utf82u_annot_strncat(unichar_t *to, const char *from, int len) {
     }
     *to = 0;
 }
+#endif
 
 void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	int actualuni) {
@@ -6365,8 +6371,6 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
     char cspace[162];
     int upos=-1;
     int done = false;
-    const char *uniname;
-    const char *uniannot;
 
     /* If a glyph is multiply mapped then the inbuild unicode enc may not be */
     /*  the actual one used to access the glyph */
