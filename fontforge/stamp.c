@@ -4,6 +4,6 @@
 #include <fontforge-config.h>
 #include <time.h>
 
-const time_t source_modtime    = FONTFORGE_MODTIME;	/* Seconds since 1970 (standard unix time) */
+const time_t source_modtime    = FONTFORGE_MODTIME_RAW;	/* Seconds since 1970 (standard unix time) */
 const char *source_modtime_str = FONTFORGE_MODTIME_STR;
 const char *source_version_str = FONTFORGE_VERSIONDATE;	/* Year, month, day */

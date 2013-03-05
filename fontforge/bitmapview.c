@@ -166,7 +166,6 @@ static void BC_CharChangedUpdate(BDFChar *bc) {
 
 static char *BVMakeTitles(BitmapView *bv, BDFChar *bc,char *buf) {
     char *title;
-    const char *uniname;
     SplineChar *sc;
     BDFFont *bdf = bv->bdf;
 
