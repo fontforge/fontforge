@@ -836,13 +836,13 @@ return( NULL );
 return( rle );
 }
 
+/*
+ * Unused
 static void SFDDumpBrush( FILE *sfd, struct brush* brush ) {
     fprintf(sfd, "Brush: #%06x %g\n", brush->col, brush->opacity );
     fprintf(sfd, "EndBrush\n");
 }
 
-/*
- * Unused
 static void SFDDumpPen( FILE *sfd, struct pen* p ) {
     fprintf(sfd, "Pen: %g %s %s [%g %g %g %g] [",
             p->width, joins[p->linejoin], caps[p->linecap],

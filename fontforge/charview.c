@@ -3192,6 +3192,8 @@ return;
     CVChangeSC(cv,sc);
 }
 
+/*
+ * Unused
 static void CVSwitchToTab(CharView *cv,int tnum ) {
     if( tnum >= cv->former_cnt )
 	return;
@@ -3202,8 +3204,6 @@ static void CVSwitchToTab(CharView *cv,int tnum ) {
     CVChangeChar(cv,unienc);
 }
 
-/*
- * Unused
 static void CVMenuShowTab(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVSwitchToTab(cv,mi->mid);
@@ -10355,7 +10355,6 @@ static void CVMenuVKernFromHKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVVKernFromHKern((FontViewBase *) cv->b.fv);
 }
 
-//#define GMENUITEM2_LINE { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }
 static GMenuItem2 mtlist[] = {
     { { (unichar_t *) N_("_Center in Width"), (GImage *) "metricscenter.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Center in Width|No Shortcut"), NULL, NULL, CVMenuCenter, MID_Center },
     { { (unichar_t *) N_("_Thirds in Width"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Thirds in Width|No Shortcut"), NULL, NULL, CVMenuCenter, MID_Thirds },

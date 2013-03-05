@@ -499,11 +499,12 @@ static int GFileChooserTextChanged(GGadget *t,GEvent *e) {
     GFileChooser *gfc;
     GGadget *g = (GGadget *)GGadgetGetUserData(t);
     
-    const unichar_t *pt, *spt;
+    unichar_t *pt;
+    const unichar_t *spt;
     unichar_t * pt_toFree = 0;
     if ( e->type!=et_controlevent || e->u.control.subtype!=et_textchanged )
 return( true );
-    pt = spt = _GGadgetGetTitle(t);
+    spt = pt = _GGadgetGetTitle(t);
     if ( pt==NULL )
 return( true );
     gfc = (GFileChooser *) GGadgetGetUserData(t);
