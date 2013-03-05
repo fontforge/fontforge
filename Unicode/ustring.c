@@ -179,7 +179,7 @@ void u_strncat(unichar_t *to, const unichar_t *from, int len) {
 }
 
 
-int  u_strlen(register const unichar_t *str) {
+int u_strlen(register const unichar_t *str) {
     register int len = 0;
 
     while ( *str++!='\0' )
@@ -187,7 +187,7 @@ int  u_strlen(register const unichar_t *str) {
 return( len );
 }
 
-int  c_strlen(const char * p )
+int c_strlen( const char * p )
 {
     if(!p)
 	return 0;
@@ -966,3 +966,16 @@ int u_endswith(const unichar_t *haystack,const unichar_t *needle) {
     unichar_t* p = u_strstr( haystack + haylen - nedlen, needle );
     return p == ( haystack + haylen - nedlen );
 }
+
+char* c_itostr( int v )
+{
+    static char ret[100+1];
+    snprintf(ret,100,"%d",v );
+    return ret;
+}
+
+char* str_rfind( char* s, char ch )
+{
+    return strrchr( s, ch );
+}
+
