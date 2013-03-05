@@ -790,7 +790,6 @@ int fontforge_main( int argc, char **argv ) {
     int ds, ld;
     int openflags=0;
     int doopen=0, quit_request=0;
-    int local_x;
 
     g_type_init();
 

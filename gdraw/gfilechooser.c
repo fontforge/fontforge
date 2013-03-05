@@ -1221,7 +1221,6 @@ int GFileChooserSaveAsInputFilenameFunc( GGadget *g,
     char* p = u_to_c(pt);
     int plen = strlen(p);
     int ew = endswithi( p, ".sfdir") || endswithi( p, ".sfd");
-    int trim = 0;
 
     if( !ew ) {
 	if( endswithi( u_to_c(oldfilename), ".sfd")

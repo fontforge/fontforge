@@ -1162,7 +1162,6 @@ void Prefs_LoadDefaultPreferences( void )
 {
     char filename[PATH_MAX+1];
     char* sharedir = getShareDir();
-    int rc = 0;
     
     snprintf(filename,PATH_MAX,"%s/prefs", sharedir );
     PrefsUI_LoadPrefs_FromFile( filename );
