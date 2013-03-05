@@ -27,7 +27,6 @@
 #include "fontforgeui.h"
 #include "groups.h"
 #include "psfont.h"
-#include "annotations.h"
 #include <gfile.h>
 #include <gio.h>
 #include <gresedit.h>
@@ -38,6 +37,10 @@
 #include <gresource.h>
 #include <math.h>
 #include <unistd.h>
+
+#ifndef _NO_LIBUNINAMESLIST
+#include <uninameslist.h>
+#endif
 
 int OpenCharsInNewWindow = 0;
 char *RecentFiles[RECENT_MAX] = { NULL };
@@ -6120,20 +6123,26 @@ return;
 	}
 	fg = 0x707070;
     }
-    if (uni != -1) {        
-        uniname = uninm_name(names_db, (unsigned int) uni);
-        if (uniname != NULL) {
-            utf82u_strncpy(ubuffer+u_strlen(ubuffer), uniname, 80);
-        } else if ( uni>=0xAC00 && uni<=0xD7A3 ) {
+
+#ifndef _NO_LIBUNINAMESLIST
+    /* Get unicode "Name" as defined in NameList.txt */
+    if (uni != -1) {
+	if ( (uniname=uniNamesList_name(uni))!=NULL ) {
+            utf82u_strncpy(ubuffer+u_strlen(ubuffer),uniname,80);
+//	    strncat(buffer,uniname,80);
+	} else if ( uni>=0xAC00 && uni<=0xD7A3 ) {
+//	    sprintf( buffer+strlen(buffer), "Hangul Syllable %s%s%s",
             sprintf( buffer, "Hangul Syllable %s%s%s",
-                     chosung[(uni-0xAC00)/(21*28)],
-                     jungsung[(uni-0xAC00)/28%21],
-                     jongsung[(uni-0xAC00)%28] );
+		    chosung[(uni-0xAC00)/(21*28)],
+		    jungsung[(uni-0xAC00)/28%21],
+		    jongsung[(uni-0xAC00)%28] );
             uc_strncat(ubuffer,buffer,80);
-        } else {
+	} else {
             uc_strncat(ubuffer, UnicodeRange(uni),80);
-        }
+//	    strncat(buffer, UnicodeRange(uni),80);
+	}
     }
+#endif
 
     tlen = GDrawDrawText(pixmap,10,fv->mbh+fv->lab_as,ubuffer,ulen,fvglyphinfocol);
     GDrawDrawText(pixmap,10+tlen,fv->mbh+fv->lab_as,ubuffer+ulen,-1,fg);
@@ -6351,6 +6360,7 @@ static void utf82u_annot_strncat(unichar_t *to, const char *from, int len) {
 
 void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	int actualuni) {
+/* This is for the popup which appears when you hover mouse over a character on main window */
     static unichar_t space[810];
     char cspace[162];
     int upos=-1;
@@ -6394,9 +6404,10 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	done = true;
     }
 
+#ifndef _NO_LIBUNINAMESLIST
     if ( !done ) {
-        uniname = uninm_name(names_db, upos);
-        if (uniname != NULL) {
+	if ( (uniname=uniNamesList_name(upos))!=NULL ) {
+	    /* uniname=unicode "Name" as defined in NameList.txt */
 #if defined( _NO_SNPRINTF )
             sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
                      uniname);
@@ -6431,14 +6442,15 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
             utf82u_strcpy(space,cspace);
         }
     }
-    uniannot = uninm_annotation(names_db, upos);
-    if (uniannot != NULL) {
+    if ( (uniannot=uniNamesList_name(upos))!=NULL ) {
+	/* uniannot=unicode "Annotations" as defined in NameList.txt */
 	int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
 	if ( left>4 ) {
 	    uc_strcat(space,"\n");
             utf82u_annot_strncat(space, uniannot, left-2);
 	}
     }
+#endif
     if ( sc->comment!=NULL ) {
 	int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
 	if ( left>4 ) {

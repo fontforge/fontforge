@@ -28,24 +28,32 @@
 #include "string.h"
 
 int GImageWriteXbm(GImage *gi, char *filename) {
+/* Export an *.xbm image, return 0 if all done okay */
     struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
     FILE *file;
     int i,j, val,val2,k;
     char stem[256];
     char *pt; uint8 *scanline;
 
-    if ( base->image_type!=it_mono )
-return(false );
+    /* This routine only exports 1-pixel mono-type images */
+    if ( base->image_type!=it_mono ) {
+	fprintf(stderr,"Image must be mono color.\n");
+	return( -1 );
+    }
 
-    if (( pt = strrchr(filename,'/'))==NULL )
-	strcpy(stem,filename);
+    /* get filename stem (255chars max) */
+    if ( (pt=strrchr(filename,'/'))!=NULL )
+	++pt;
     else
-	strcpy(stem,pt+1);
-    if ( (pt = strchr(stem,'.'))!=NULL )
+	pt=filename;
+    strncpy(stem,pt,sizeof(stem)); stem[255]='\0';
+    if ( (pt=strrchr(stem,'.'))!=NULL && pt!=stem )
 	*pt = '\0';
 
-    if ((file=fopen(filename,"w"))==NULL )
-return(false);
+    if ( (file=fopen(filename,"w"))==NULL ) {
+	fprintf(stderr,"Can't open \"%s\"\n", filename);
+	return( -1 );
+    }
     fprintf(file,"#define %s_width %d\n", stem, (int) base->width );
     fprintf(file,"#define %s_height %d\n", stem, (int) base->height );
     fprintf(file,"static unsigned char %s_bits[] = {\n", stem );
@@ -58,14 +66,14 @@ return(false);
 		if ( (val&(1<<k)) )
 		    val2 |= (0x80>>k);
 	    }
-	    fprintf(file,"0x%x%s", val2^0xff, i==base->height-1 && j==base->bytes_per_line-1?"":", " );
+	    fprintf(file,"0x%.2x%s", val2^0xff, i==base->height-1 && j==base->bytes_per_line-1?"":", " );
 	}
 	fprintf(file,"\n");
     }
     fprintf(file,"};\n");
     fflush(file);
 
-    i = ferror(file);
+    i=ferror(file);
     fclose(file);
-return( !i );
+    return( i );
 }

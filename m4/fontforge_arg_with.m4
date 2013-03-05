@@ -30,16 +30,23 @@ AC_DEFUN([FONTFORGE_ARG_WITH],
    [FONTFORGE_ARG_WITH_BASE([$1],[$2],[$3],[$4],[$5],[eval AS_TR_SH(i_do_have_$1)=no])])
 
 
-dnl FONTFORGE_ARG_WITH_LIBUNICODENAMES
-dnl ----------------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNICODENAMES],
+dnl FONTFORGE_ARG_WITH_LIBNAMESLIST
+dnl -------------------------------
+AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST],
 [
-   FONTFORGE_ARG_WITH([libunicodenames],
-      [AS_HELP_STRING([--without-libunicodenames],
-                      [do not include access to Unicode NamesList data])],
-      [libunicodenames],
-      [FONTFORGE_WARN_PKG_NOT_FOUND([LIBUNICODENAMES])],
-      [_NO_LIBUNICODENAMES])
+   FONTFORGE_ARG_WITH_BASE([libuninameslist],
+      [AS_HELP_STRING([--without-libuninameslist],[build without Unicode Name or Annotation support])],
+      [libuninameslist],
+      [FONTFORGE_WARN_PKG_NOT_FOUND([LIBUNINAMESLIST])],
+      [_NO_LIBUNINAMESLIST],
+      [
+       FONTFORGE_SEARCH_LIBS([uniNamesList_name],[uninameslist],
+         [i_do_have_libuninameslist=yes
+          AC_SUBST([LIBUNINAMESLIST_CFLAGS],[""])
+          AC_SUBST([LIBUNINAMESLIST_LIBS],["${found_lib}"])
+          FONTFORGE_WARN_PKG_FALLBACK([LIBUNINAMESLIST])],
+         [i_do_have_libuninameslist=no])
+       ])
 ])
 
 

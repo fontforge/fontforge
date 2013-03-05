@@ -83,7 +83,7 @@ giflib_url="http://giflib.sourceforge.net/"
 libpng_url="http://www.libpng.org/"
 libxml_url="http://www.xmlsoft.org/"
 libspiro_url="http://libspiro.sourceforge.net/"
-libunicodenames_url="https://github.com/sortsmill/libunicodenames"
+libuninameslist_url="https://github.com/fontforge/libuninameslist"
 
 # Point to the Wikipedia page, primarily because one may want
 # libjpeg-turbo rather than the reference implementation.
@@ -246,7 +246,7 @@ FONTFORGE_ARG_WITH_LIBPNG
 FONTFORGE_ARG_WITH_LIBTIFF
 FONTFORGE_ARG_WITH_LIBXML
 FONTFORGE_ARG_WITH_LIBSPIRO
-FONTFORGE_ARG_WITH_LIBUNICODENAMES
+FONTFORGE_ARG_WITH_LIBUNINAMESLIST
 FONTFORGE_ARG_WITH_ICONV
 
 if test x"${i_do_have_cairo}" = xyes; then
@@ -389,7 +389,7 @@ Summary of optional dependencies:
   libtiff            ${i_do_have_libtiff}  	${libtiff_url}
   libxml             ${i_do_have_libxml}  	${libxml_url}
   libspiro           ${i_do_have_libspiro}  	${libspiro_url}
-  libunicodenames    ${i_do_have_libunicodenames}  	${libunicodenames_url}
+  libuninameslist    ${i_do_have_libuninameslist}  	${libuninameslist_url}
   X Window System    ${i_do_have_x}
 ])
 
