@@ -300,17 +300,25 @@ FONTFORGE_COMPILER_FLAGS([WARNING_CFLAGS],
          -Werror=implicit])
 
 #--------------------------------------------------------------------------
+# Bypass older autoscan recommendations (if anyone decides to run autoscan)
+# These packages promises to not use malloc(0) or realloc(n, 0) so we don't
+# want autoscan to suggest using AC_FUNC_MALLOC or AC_FUNC_REALLOC, by
+# redefining the problem
+m4_define([AN_FUNCTION], [m4_if([$1], [malloc], [],
+  [AN_OUTPUT([function], $@)])])
+m4_define([AN_FUNCTION], [m4_if([$1], [realloc], [],
+  [AN_OUTPUT([function], $@)])])
+
+#--------------------------------------------------------------------------
 # Checks for library functions.
 
 AC_FUNC_ERROR_AT_LINE
 AC_FUNC_FORK
-AC_FUNC_MALLOC
 AC_FUNC_MKTIME
 AC_FUNC_MMAP
 if test x"${ac_cv_func_mmap_fixed_mapped}" != xyes; then
    AC_DEFINE([_NO_MMAP],1,[Define if not using mmap.])
 fi
-AC_FUNC_REALLOC
 AC_FUNC_STRCOLL
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([alarm atexit dup2 endpwent floor])
