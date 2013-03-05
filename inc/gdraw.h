@@ -588,15 +588,23 @@ extern int GDrawKeyState(int keysym);
 extern int GImageGetScaledWidth(GWindow gw, GImage *img);
 extern int GImageGetScaledHeight(GWindow gw, GImage *img);
 
-extern void setZeroMQReadFD( GDisplay *disp,
-			     int zeromq_fd, void* zeromq_datas,
-			     void (*zeromq_fd_callback)(int zeromq_fd, void* datas ));
+
+/* extern void setZeroMQReadFD( GDisplay *disp, */
+/* 			     int zeromq_fd, void* zeromq_datas, */
+/* 			     void (*zeromq_fd_callback)(int zeromq_fd, void* datas )); */
+
+extern void GDrawAddReadFD( GDisplay *disp,
+			    int fd, void* udata,
+			    void (*callback)(int fd, void* udata ));
+extern void GDrawRemoveReadFD( GDisplay *disp,
+			       int fd, void* udata );
 
 /**
  * The Mac OSX build doesn't use the same core event loop as the
  * Linux/X build. So inside the timer we can use this to double check
- * if any zeromq fds have changed and if so service their messages.
+ * if any fds that we should monitor for input have changed and if so
+ * service their messages.
  */
-extern void MacServiceZeroMQFDs(void);
+extern void MacServiceReadFDs(void);
 
 #endif

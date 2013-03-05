@@ -2918,6 +2918,7 @@ static void GXDrawWaitForEvent(GXDisplay *gdisp) {
     struct timeval offset, *timeout;
     fd_set read, write, except;
     int fd,ret;
+    int idx = 0;
 
     forever {
 	gettimeofday(&tv,NULL);
@@ -2965,19 +2966,23 @@ return;
 		fd = gdisp->wacom_fd;
 	}
 #endif
-	if( gdisp->zeromq_fd > 0 )
+
+	for( idx = 0; idx < gdisp->fd_callbacks_last; ++idx )
 	{
-	    FD_SET(gdisp->zeromq_fd,&read);
-	    fd = MAX( fd, gdisp->zeromq_fd );
+	    fd_callback_t* cb = &gdisp->fd_callbacks[ idx ];
+	    FD_SET( cb->fd, &read );
+	    fd = MAX( fd, cb->fd );
 	}
 	
 #ifndef __VMS
 	ret = select(fd+1,&read,&write,&except,timeout);
 #endif
 
-	if( FD_ISSET(gdisp->zeromq_fd,&read))
+	for( idx = 0; idx < gdisp->fd_callbacks_last; ++idx )
 	{
-	    gdisp->zeromq_fd_callback( gdisp->zeromq_fd, gdisp->zeromq_datas );
+	    fd_callback_t* cb = &gdisp->fd_callbacks[ idx ];
+	    if( FD_ISSET(cb->fd,&read))
+		cb->callback( cb->fd, cb->udata );
 	}
     }
 }
@@ -3856,7 +3861,8 @@ static int GXDrawWaitForNotifyEvent(GXDisplay *gdisp,XEvent *event, Window w) {
     struct timeval offset;
     fd_set read, write, except;
     int fd,ret;
-
+    int idx = 0;
+    
     gettimeofday(&giveup,NULL);
     giveup.tv_sec += gdisp->SelNotifyTimeout;
     
@@ -3918,18 +3924,23 @@ return( false );
 		fd = gdisp->wacom_fd;
 	}
 #endif
-	if( gdisp->zeromq_fd > 0 )
+
+	for( idx = 0; idx < gdisp->fd_callbacks_last; ++idx )
 	{
-	    FD_SET(gdisp->zeromq_fd,&read);
-	    fd = MAX( fd, gdisp->zeromq_fd );
+	    fd_callback_t* cb = &gdisp->fd_callbacks[ idx ];
+	    FD_SET( cb->fd, &read );
+	    fd = MAX( fd, cb->fd );
 	}
 	
 #ifndef __VMS
 	ret = select(fd+1,&read,&write,&except,&offset);
 #endif
-	if( FD_ISSET(gdisp->zeromq_fd,&read))
+
+	for( idx = 0; idx < gdisp->fd_callbacks_last; ++idx )
 	{
-	    gdisp->zeromq_fd_callback( gdisp->zeromq_fd, gdisp->zeromq_datas );
+	    fd_callback_t* cb = &gdisp->fd_callbacks[ idx ];
+	    if( FD_ISSET(cb->fd,&read))
+		cb->callback( cb->fd, cb->udata );
 	}
     }
 }

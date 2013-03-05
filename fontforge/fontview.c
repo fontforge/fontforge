@@ -1374,6 +1374,8 @@ static void FVMenuCondense(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 
 #define MID_CollabStart         22000
 #define MID_CollabConnect       22001
+#define MID_CollabDisconnect    22002
+#define MID_CollabCloseLocalServer  22003
 
 #define MID_Warnings	3000
 
@@ -5574,7 +5576,6 @@ static void FVWindowMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *e) {
 
 static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
-#ifndef _NO_LIBZMQ
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
     printf("connecting to server and sending initial SFD to it...\n");
@@ -5615,12 +5616,10 @@ static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 	collabclient_sessionStart( cc, fv );
 	printf("connecting to server...sent the sfd for session start.\n");
     }
-#endif
 }
 
 static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
-#ifndef _NO_LIBZMQ
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
     printf("connecting to server...\n");
@@ -5643,18 +5642,64 @@ static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
     }
     
     printf("FVMenuCollabConnect(done)\n");
-#endif
+}
+
+static void FVMenuCollabDisconnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
+{
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    collabclient_sessionDisconnect( &fv->b );
+}
+
+static void FVMenuCollabCloseLocalServer(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
+{
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    enum collabState_t st = collabclient_getState( &fv->b );
+    if( st >= cs_server )
+    {
+	char *buts[3];
+	buts[0] = _("_OK");
+	buts[1] = _("_Cancel");
+	buts[2] = NULL;
+	if ( gwwv_ask(_("Close Server"),(const char **) buts,0,1,_("Please make sure you have saved the font before you close the server. Closing the server will force all clients which might be connected to it to also disconnect. Really close the local server"))==1 )
+	{
+	    return;
+	}
+    }
+    
+    collabclient_sessionDisconnect( &fv->b );
+    collabclient_closeLocalServer( fv );
 }
 
 static void collablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    // nothing yet.
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi )
+    {
+	switch ( mi->mid )
+	{
+	case MID_CollabDisconnect:
+	{
+	    enum collabState_t st = collabclient_getState( &fv->b );
+	    mi->ti.disabled = ( st < cs_server );
+	    break;
+	}
+	case MID_CollabCloseLocalServer:
+	    printf("can close local server: %d\n", collabclient_haveLocalServer() );
+	    mi->ti.disabled = !collabclient_haveLocalServer();
+	    break;
+	}
+    }
 }
 
 static GMenuItem2 collablist[] = {
     { { (unichar_t *) N_("_Start Session..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Start Session...|No Shortcut"), NULL, NULL, FVMenuCollabStart, MID_CollabStart },
     { { (unichar_t *) N_("_Connect to Session..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Connect to Session...|No Shortcut"), NULL, NULL, FVMenuCollabConnect, MID_CollabConnect },
+    { { (unichar_t *) N_("_Disconnect"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Disconnect|No Shortcut"), NULL, NULL, FVMenuCollabDisconnect, MID_CollabDisconnect },
+    GMENUITEM2_LINE,
+    { { (unichar_t *) N_("Close local server"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Close local server|No Shortcut"), NULL, NULL, FVMenuCollabCloseLocalServer, MID_CollabCloseLocalServer },
+
     GMENUITEM2_EMPTY,				/* Extra room to show sub-font names */
 };
 

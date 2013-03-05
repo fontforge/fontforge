@@ -117,22 +117,29 @@ typedef struct {
     // socket.
     void *collector;
 
+    // A REP socket to reply to client pings 
+    void* ping;
+    
 } clonesrv_t;
 
 
-
-//  .split send snapshots
-//  We handle ICANHAZ? requests by sending snapshot data to the
-//  client that requested it:
-
-//  Routing information for a key-value snapshot
+/**
+ *  Send Snapshots
+ *  
+ *  Handles ICANHAZ? requests by sending snapshot data to the
+ *  client that requested it:
+ *
+ *  Routing information for a key-value snapshot
+ */
 typedef struct {
     void *socket;           //  ROUTER socket to send to
     zframe_t *identity;     //  Identity of peer who requested state
     char *subtree;          //  Client subtree specification
 } kvroute_t;
 
-//  We call this function for each key-value pair in our hash table
+/**
+ * We call this function for each key-value pair in our hash table
+ */
 static int
 s_send_single (const char *key, void *data, void *args)
 {
@@ -151,11 +158,12 @@ s_send_single (const char *key, void *data, void *args)
     return 0;
 }
 
-//  .split snapshot handler
-//  This is the reactor handler for the snapshot socket; it accepts
-//  just the ICANHAZ? request and replies with a state snapshot ending
-//  with a KTHXBAI message:
-
+/**
+ * Snapshot Handler
+ *  This is the reactor handler for the snapshot socket; it accepts
+ *  just the ICANHAZ? request and replies with a state snapshot ending
+ *  with a KTHXBAI message:
+ */
 static int
 s_snapshots (zloop_t *loop, zmq_pollitem_t *poller, void *args)
 {
@@ -195,10 +203,12 @@ s_snapshots (zloop_t *loop, zmq_pollitem_t *poller, void *args)
     return 0;
 }
 
-//  .split collect updates
-//  We store each update with a new sequence number, and if necessary, a
-//  time-to-live. We publish updates immediately on our publisher socket:
-
+/**
+ *  COllect Updates
+ *  
+ *  We store each update with a new sequence number, and if necessary, a
+ *  time-to-live. We publish updates immediately on our publisher socket:
+ */
 static int
 s_collector (zloop_t *loop, zmq_pollitem_t *poller, void *args)
 {
@@ -210,7 +220,7 @@ s_collector (zloop_t *loop, zmq_pollitem_t *poller, void *args)
 	kvmsg_fmt_key(kvmsg, "%s%d", SUBTREE, self->sequence-1 );
 	
         kvmsg_send (kvmsg, self->publisher);
-        int ttl = atoi (kvmsg_get_prop (kvmsg, "ttl"));
+//        int ttl = atoi (kvmsg_get_prop (kvmsg, "ttl"));
 //        if (ttl)
 //            kvmsg_set_prop (kvmsg, "ttl",
 //                "%" PRId64, zclock_time () + ttl * 1000);
@@ -223,34 +233,50 @@ s_collector (zloop_t *loop, zmq_pollitem_t *poller, void *args)
     return 0;
 }
 
+/**
+ * Reply to a ping request from FontForge on localhost
+ */
+static int
+s_ping (zloop_t *loop, zmq_pollitem_t *poller, void *args)
+{
+    clonesrv_t *self = (clonesrv_t *) args;
+    char* p = zstr_recv_nowait( self->ping );
+    if( p && !strcmp(p,"quit"))
+    {
+	exit(0);
+    }
+    zstr_send( self->ping, "pong" );
+    return 0;
+}
+
 //  .split flush ephemeral values
 //  At regular intervals we flush ephemeral values that have expired. This
 //  could be slow on very large data sets:
 
 //  If key-value pair has expired, delete it and publish the
 //  fact to listening clients.
-static int
-s_flush_single (const char *key, void *data, void *args)
-{
-    clonesrv_t *self = (clonesrv_t *) args;
+/* static int */
+/* s_flush_single (const char *key, void *data, void *args) */
+/* { */
+/*     clonesrv_t *self = (clonesrv_t *) args; */
 
-    kvmsg_t *kvmsg = (kvmsg_t *) data;
-    int64_t ttl;
-    sscanf (kvmsg_get_prop (kvmsg, "ttl"), "%" PRId64, &ttl);
-    if (ttl && zclock_time () >= ttl) {
-        kvmsg_set_sequence (kvmsg, ++self->sequence);
-        kvmsg_set_body (kvmsg, (byte *) "", 0);
-        kvmsg_send (kvmsg, self->publisher);
-        kvmsg_store (&kvmsg, self->kvmap);
-        DEBUG ("I: publishing delete=%d", (int) self->sequence);
-    }
-    return 0;
-}
+/*     kvmsg_t *kvmsg = (kvmsg_t *) data; */
+/*     int64_t ttl; */
+/*     sscanf (kvmsg_get_prop (kvmsg, "ttl"), "%" PRId64, &ttl); */
+/*     if (ttl && zclock_time () >= ttl) { */
+/*         kvmsg_set_sequence (kvmsg, ++self->sequence); */
+/*         kvmsg_set_body (kvmsg, (byte *) "", 0); */
+/*         kvmsg_send (kvmsg, self->publisher); */
+/*         kvmsg_store (&kvmsg, self->kvmap); */
+/*         DEBUG ("I: publishing delete=%d", (int) self->sequence); */
+/*     } */
+/*     return 0; */
+/* } */
 
 static int
 s_flush_ttl (zloop_t *loop, zmq_pollitem_t *poller, void *args)
 {
-    clonesrv_t *self = (clonesrv_t *) args;
+//    clonesrv_t *self = (clonesrv_t *) args;
 //    if (self->kvmap)
 //        zhash_foreach (self->kvmap, s_flush_single, args);
     return 0;
@@ -261,7 +287,6 @@ int main (void)
 {
     int port = 5556;
 
-    
     clonesrv_t *self = (clonesrv_t *) zmalloc (sizeof (clonesrv_t));
     self->port = port;
     self->ctx = zctx_new ();
@@ -271,11 +296,13 @@ int main (void)
 
     //  Set up our clone server sockets
     self->snapshot  = zsocket_new (self->ctx, ZMQ_ROUTER);
-    zsocket_bind (self->snapshot,  "tcp://*:%d", self->port);
+    zsocket_bind (self->snapshot,  "tcp://*:%d", self->port + socket_srv_offset_snapshot );
     self->publisher = zsocket_new (self->ctx, ZMQ_PUB);
-    zsocket_bind (self->publisher, "tcp://*:%d", self->port + 1);
+    zsocket_bind (self->publisher, "tcp://*:%d", self->port + socket_srv_offset_publisher );
     self->collector = zsocket_new (self->ctx, ZMQ_PULL);
-    zsocket_bind (self->collector, "tcp://*:%d", self->port + 2);
+    zsocket_bind (self->collector, "tcp://*:%d", self->port + socket_srv_offset_collector );
+    self->ping = zsocket_new (self->ctx, ZMQ_REP);
+    zsocket_bind (self->ping,      "tcp://*:%d", self->port + socket_srv_offset_ping );
 
     //  Register our handlers with reactor
     zmq_pollitem_t poller = { 0, 0, ZMQ_POLLIN };
@@ -284,6 +311,8 @@ int main (void)
     poller.socket = self->collector;
     zloop_poller (self->loop, &poller, s_collector, self);
     zloop_timer (self->loop, 1000, 0, s_flush_ttl, self);
+    poller.socket = self->ping;
+    zloop_poller (self->loop, &poller, s_ping, self);
 
     DEBUG ("I: server up and running...");
     //  Run reactor until process interrupted

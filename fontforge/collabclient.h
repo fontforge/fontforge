@@ -74,7 +74,19 @@ extern void collabclient_sessionStart( void* ccvp, FontView *fv );
  */
 extern void collabclient_sessionJoin( void* ccvp, FontView *fv );
 
+/**
+ * Reconnect to the collab server. The sockets are all remade, and the
+ * SFD and updates will be downloaded from the server to start a fresh
+ * fontview.
+ */
 extern void collabclient_sessionReconnect( void* ccvp );
+
+/**
+ * Disconnect from the collab server. Sockets are cleaned up and the
+ * state is set to disconnected to remind the user that they are no
+ * longer collaborating.
+ */
+extern void collabclient_sessionDisconnect( FontViewBase* fv );
 
 /**
  * Something of interest has happened in fontforge which can be
@@ -111,11 +123,67 @@ extern void collabclient_CVPreserveStateCalled( CharViewBase *cv );
 extern int collabclient_inSession(   CharViewBase *cv );
 extern int collabclient_inSessionFV( FontViewBase* fv );
 
+/**
+ * If an undo takes place, it needs to know if it should repaint
+ * the window to reflect the changes. If collabclient_generatingUndoForWire
+ * returns true, then we don't really want to repaint just yet.
+ *
+ * Consider the process of events
+ *
+ * (a) User performs moving the top node in A left a bit
+ * (b) the collab code runs "undo" so it can get the redo information
+ * (c) the undo repaints the window
+ * (d) the redo info is sent to the server
+ * (e) delay
+ * (f) server publishes this redo to all clients (including us)
+ * (g) we "redo" the information from the server
+ * (h) the redo repaints the window
+ *
+ * We would give a better user experience if (c) doesn't happen. So
+ * the user doesn't see the older state appear and cancelled out again
+ * moments later.
+ *
+ * So an undo should check this function and
+ * if( collabclient_generatingUndoForWire() )
+ * {
+ *    dont repaint UI
+ * }
+ */
 extern int collabclient_generatingUndoForWire( CharViewBase *cv );
 
-
+/**
+ * Get the state as a enum or string. This can tell the user if we
+ * have never connected, are running a local server, or are simply a
+ * client. Also we can let them know if we were once connected but are
+ * now disconnected.
+ */
 extern enum collabState_t collabclient_getState( FontViewBase* fv );
 extern char*         collabclient_stateToString( enum collabState_t s );
+
+/**
+ * Is there a local fontforge collab server process running on this
+ * machine? This might take very short amount of time after startup to
+ * be set properly as we ask the server process to reply to a ping.
+ */
+extern int  collabclient_haveLocalServer( void );
+
+/**
+ * At startup you should call this to sniff for a local fontforge
+ * server process.
+ */
+extern void collabclient_sniffForLocalServer( void );
+
+/**
+ * Close the local server process. Code would likely want to
+ * collabclient_sessionDisconnect() first and then call here to kill
+ * off the server itself.
+ *
+ * It is a good idea to warn the user that this is happening because
+ * the server process can normally outlive many fontforge clients and
+ * if fontforge itself crashes (on the server too). However, closing
+ * the server process will end it.
+ */
+extern void collabclient_closeLocalServer( FontViewBase* fv );
 
 #endif
 

@@ -129,6 +129,16 @@ struct gtimer {
     unsigned int active: 1;
 };
 
+typedef struct fd_callback_struct
+{
+    int    fd;
+    void*  udata;
+    void (*callback)(int fd, void* udata );
+    
+} fd_callback_t;
+
+enum { gdisplay_fd_callbacks_size = 64 };
+
 struct gdisplay {
     struct displayfuncs *funcs;
     void *semaphore;				/* To lock the display against multiple threads */
@@ -140,9 +150,8 @@ struct gdisplay {
     uint16 mykey_state;
     uint16 mykey_keysym;
     uint16 mykey_mask;
-    int    zeromq_fd;
-    void*  zeromq_datas;
-    void (*zeromq_fd_callback)(int zeromq_fd, void* datas );
+    fd_callback_t fd_callbacks[ gdisplay_fd_callbacks_size ];
+    int fd_callbacks_last;
     unsigned int mykeybuild: 1;
     /* display specific data */
 };

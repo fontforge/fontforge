@@ -187,23 +187,17 @@ kvmsg_destroy (kvmsg_t **self_p)
 kvmsg_t *
 kvmsg_recv_full (void *socket, int sockopts )
 {
-    //  This method is almost unchanged from kvsimple
-    //  .skip
     assert (socket);
     kvmsg_t *self = kvmsg_new (0);
 
-//    printf("kvmsg_recv_full() top...\n");
-    
     //  Read all frames off the wire, reject if bogus
     int frame_nbr;
     for (frame_nbr = 0; frame_nbr < KVMSG_FRAMES; frame_nbr++) {
-//	printf("kvmsg_recv_full() frame_nbr:%d\n", frame_nbr );
         if (self->present [frame_nbr])
             zmq_msg_close (&self->frame [frame_nbr]);
         zmq_msg_init (&self->frame [frame_nbr]);
         self->present [frame_nbr] = 1;
         if (zmq_msg_recv (&self->frame [frame_nbr], socket, sockopts ) == -1) {
-//	    printf("kvmsg_recv_full() can't get more\n");
             kvmsg_destroy (&self);
             break;
         }
@@ -214,10 +208,8 @@ kvmsg_recv_full (void *socket, int sockopts )
             break;
         }
     }
-    //  .until
     if (self)
         s_decode_props (self);
-//    printf("kvmsg_recv_full() bottom...\n");
     return self;
 }
 
@@ -592,79 +584,6 @@ kvmsg_dump (kvmsg_t *self)
     else
         fprintf (stderr, "NULL message\n");
 }
-//  .until
-
-//  .split test method
-//  The selftest method is the same as in kvsimple with added support
-//  for the uuid and property features of kvmsg:
-
-int
-kvmsg_test (int verbose)
-{
-    //  .skip
-    kvmsg_t
-        *kvmsg;
-
-    printf (" * kvmsg: ");
-
-    //  Prepare our context and sockets
-    zctx_t *ctx = zctx_new ();
-    void *output = zsocket_new (ctx, ZMQ_DEALER);
-    int rc = zmq_bind (output, "ipc://kvmsg_selftest.ipc");
-    assert (rc == 0);
-    void *input = zsocket_new (ctx, ZMQ_DEALER);
-    rc = zmq_connect (input, "ipc://kvmsg_selftest.ipc");
-    assert (rc == 0);
-
-    zhash_t *kvmap = zhash_new ();
-
-    //  .until
-    //  Test send and receive of simple message
-    kvmsg = kvmsg_new (1);
-    kvmsg_set_key  (kvmsg, "key");
-    kvmsg_set_uuid (kvmsg);
-    kvmsg_set_body (kvmsg, (byte *) "body", 4);
-    if (verbose)
-        kvmsg_dump (kvmsg);
-    kvmsg_send (kvmsg, output);
-    kvmsg_store (&kvmsg, kvmap);
-
-    kvmsg = kvmsg_recv (input);
-    if (verbose)
-        kvmsg_dump (kvmsg);
-    assert (streq (kvmsg_key (kvmsg), "key"));
-    kvmsg_store (&kvmsg, kvmap);
-
-    //  Test send and receive of message with properties
-    kvmsg = kvmsg_new (2);
-    kvmsg_set_prop (kvmsg, "prop1", "value1");
-    kvmsg_set_prop (kvmsg, "prop2", "value1");
-    kvmsg_set_prop (kvmsg, "prop2", "value2");
-    kvmsg_set_key  (kvmsg, "key");
-    kvmsg_set_uuid (kvmsg);
-    kvmsg_set_body (kvmsg, (byte *) "body", 4);
-    assert (streq (kvmsg_get_prop (kvmsg, "prop2"), "value2"));
-    if (verbose)
-        kvmsg_dump (kvmsg);
-    kvmsg_send (kvmsg, output);
-    kvmsg_destroy (&kvmsg);
-
-    kvmsg = kvmsg_recv (input);
-    if (verbose)
-        kvmsg_dump (kvmsg);
-    assert (streq (kvmsg_key (kvmsg), "key"));
-    assert (streq (kvmsg_get_prop (kvmsg, "prop2"), "value2"));
-    kvmsg_destroy (&kvmsg);
-    //  .skip
-    //  Shutdown and destroy all objects
-    zhash_destroy (&kvmap);
-    zctx_destroy (&ctx);
-
-    printf ("OK\n");
-    return 0;
-}
-//  .until
-
     
 struct kvmap_visit_buildq_foreach_data
 {

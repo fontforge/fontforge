@@ -653,13 +653,12 @@ return(NULL);
     undo->u.state.dostroke = cv->layerheads[cv->drawmode]->dostroke;
     undo->u.state.fillfirst = cv->layerheads[cv->drawmode]->fillfirst;
 
-    printf("CVPreserveState() new undo is at %p\n", undo );
+    // printf("CVPreserveState() new undo is at %p\n", undo );
 
-    // MIQ: Note, this is the wrong time to do this call
-    // we are taking the undo state, after that the app will
-    // modify the local state, and that modification is what
-    // we are interested in sending on the wire, not the old
-    // undo state.
+    // MIQ: Note, this is the wrong time to call sendRedo as we are
+    // currently taking the undo state snapshot, after that the app
+    // will modify the local state, and that modification is what we
+    // are interested in sending on the wire, not the old undo state.
     // collabclient_sendRedo( cv );
     
 return( CVAddUndo(cv,undo));

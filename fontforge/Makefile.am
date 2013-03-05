@@ -96,9 +96,6 @@ fontforge_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -export-dynamic
 
 endif THE_PROGRAMS
 
-if LIBZMQ
-ZMQSRCS = collabclient.c collabclient.h
-endif 
 #--------------------------------------------------------------------------
 
 libfontforge_la_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c	\
@@ -119,7 +116,7 @@ libfontforge_la_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c	\
 	ttfspecial.c ufo.c unicoderange.c utils.c winfonts.c zapfnomen.c	\
 	groups.c langfreq.c ftdelta.c autowidth2.c woff.c stamp.c			\
 	activeinui.c pluginloading.c is_LIGATURE.c flaglist.c strlist.c \
-	$(ZMQSRCS)
+	collabclient.c collabclient.h
 nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 

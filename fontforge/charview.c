@@ -3910,6 +3910,9 @@ int CVTestSelectFromEvent(CharView *cv,GEvent *event) {
 return( _CVTestSelectFromEvent(cv,&fs));
 }
 
+/**
+ * A cache for the selected spline point or spiro control point
+ */
 typedef struct lastselectedpoint 
 {
     SplinePoint *lastselpt;

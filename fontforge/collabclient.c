@@ -32,12 +32,21 @@
 
 #include "inc/ustring.h"
 #include "collabclient.h"
-#include "czmq.h"
-#include "collab/zmq_kvmsg.h"
 #include "inc/gfile.h"
 #include "views.h"
 #include "inc/gwidget.h"
 
+
+
+
+#ifndef _NO_LIBZMQ
+#define BUILD_COLLAB
+#endif
+
+#ifdef BUILD_COLLAB
+#include "collab/zmq_kvmsg.h"
+#include "czmq.h"
+#endif
 
 
 #define MAGIC_VALUE 0xbeef
@@ -50,7 +59,10 @@
 
 
 typedef struct {
+
     int magic_number;    //  Magic number to test if the pointer is likely valid
+
+#ifdef BUILD_COLLAB
     zctx_t *ctx;         //  Main zeromq Context
     zloop_t *loop;       //  main zloop reactor
     char* address;       //  address of the server
@@ -59,8 +71,17 @@ typedef struct {
     zhash_t *kvmap;      //  Key-value store that we manage
     int64_t sequence;    //  How many updates we're at
 
-    Undoes* preserveUndo;
-    BackgroundTimer_t* roundTripTimer;
+    Undoes* preserveUndo; //< Used by collabclient_sendRedo to only send an undo if one has
+                          // been made
+
+    /*
+     * The roundTripTimer fires X milliseconds after we send a redo to
+     * the server. The roundTripTimerWaitingSeq is a cache of the
+     * sequence that we sent to the server. If we don't get a reply to
+     * the update that we sent on subscriber within the timeout then
+     * we assume there is a network problem and alert the user.
+     */ 
+    BackgroundTimer_t* roundTripTimer; 
     int                roundTripTimerWaitingSeq;         
     
     //
@@ -79,9 +100,13 @@ typedef struct {
     // to the publisher
     int publisher_sendseq;         
 
-    
+#endif    
 } cloneclient_t;
 
+
+int  collabclient_setHaveLocalServer( int v );
+
+#ifdef BUILD_COLLAB
 
 static zctx_t* obtainMainZMQContext()
 {
@@ -97,7 +122,7 @@ static zctx_t* obtainMainZMQContext()
  * Convert address + port to a string like
  * tcp://localhost:5556
  * 
- * you do not own the return value, do not free it.
+ * you do not own the return value, do not free it. 
  */
 static char* makeAddressString( char* address, int port )
 {
@@ -106,6 +131,18 @@ static char* makeAddressString( char* address, int port )
     return ret;
 }
 
+/**
+ * Process the given kvmsg from the server. If create is set and we do
+ * not have any charview for a changed glyph then we first create a
+ * charview for it. This allows the updates from a server to be
+ * processed at startup time, getting us up to speed with any glyphs
+ * that have changed.
+ *
+ * This function is mainly called in response to an update which is
+ * published from the server. However, in sessionJoin() we also call
+ * here to handle the incremental updates to glyphs that have occurred
+ * after the SFD was sent to the server.
+ */
 static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg, int create )
 {
     cc->sequence = kvmsg_sequence (kvmsg);
@@ -176,7 +213,13 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
     printf ("I: processed update=%d\n", (int) cc->sequence);
 }
 
-
+/**
+ * A callback function that should be invoked when there is input in
+ * the zeromq fd zeromq_fd. The collabclient is taken as the user data
+ * pointer.
+ *
+ * Add this callback using GDrawAddReadFD()
+ */
 static void zeromq_subscriber_fd_callback(int zeromq_fd, void* datas )
 {
     cloneclient_t* cc = (cloneclient_t*)datas;
@@ -203,67 +246,8 @@ static void zeromq_subscriber_fd_callback(int zeromq_fd, void* datas )
 		{
 		    int create = 0;
 		    zeromq_subscriber_process_update( cc, kvmsg, create );
-    
-		    /* cc->sequence = kvmsg_sequence (kvmsg); */
-
-		    /* char* uuid = kvmsg_get_prop (kvmsg, "uuid" ); */
-		    /* byte* data = kvmsg_body (kvmsg); */
-		    /* size_t data_size = kvmsg_size (kvmsg); */
-
-		    /* printf("uuid:%s\n", uuid ); */
-		    /* FontView* fv = FontViewFind( FontViewFind_byXUID, uuid ); */
-		    /* printf("fv:%p\n", fv ); */
-		    /* if( fv ) */
-		    /* { */
-		    /* 	if( !data_size ) */
-		    /* 	{ */
-		    /* 	    printf("zero length message!\n" ); */
-		    /* 	    continue; */
-		    /* 	} */
-			
-		    /* 	SplineFont *sf = fv->b.sf; */
-		    /* 	char* pos = kvmsg_get_prop (kvmsg, "pos" ); */
-		    /* 	printf("pos:%s\n", pos ); */
-		    /* 	SplineChar *sc = sf->glyphs[ atoi(pos) ]; */
-		    /* 	printf("sc:%p\n", sc ); */
-		    /* 	printf("sc.name:%s\n", sc->name ); */
-		    /* 	printf("data.size:%d\n", data_size ); */
-		    
-		    /* 	int current_layer = 0; */
-			
-		    /* 	for( CharViewBase* cv = sc->views; cv; cv = cv->next ) */
-		    /* 	{ */
-		    /* 	    char filename[PATH_MAX]; */
-		    /* 	    snprintf(filename, PATH_MAX, "/tmp/fontforge-collab-inx.sfd"); */
-		    /* 	    GFileWriteAll( filename, (char*)data); */
-		    /* 	    FILE* file = fopen( filename, "r" ); */
-		    /* 	    Undoes* undo = SFDGetUndo( sf, file, sc, */
-		    /* 				       "UndoOperation", */
-		    /* 				       "EndUndoOperation", */
-		    /* 				       current_layer ); */
-		    /* 	    fclose(file); */
-		    /* 	    if( !undo ) */
-		    /* 	    { */
-		    /* 		printf("ERROR reading back undo instance!\n"); */
-		    /* 		printf("data: %s\n\n", data ); */
-		    /* 	    } */
-		    /* 	    if( undo ) */
-		    /* 	    { */
-		    /* 		undo->next = 0; */
-		    /* 		cv->layerheads[cv->drawmode]->redoes = undo; */
-		    /* 		CVDoRedo( cv ); */
-		    /* 	    } */
-			    
-		    /* 	    break; */
-		    /* 	} */
-		    /* } */
-		    
-		    
 		    kvmsg_store (&kvmsg, cc->kvmap);
 		    printf ("I: received update=%d\n", (int) cc->sequence);
-		    
-		    
-		    
 		}
 		else
 		{
@@ -277,7 +261,14 @@ static void zeromq_subscriber_fd_callback(int zeromq_fd, void* datas )
 }
 
 
-
+/**
+ * A timeout function which is called after a given idle period to
+ * alert the user if we have not received a reply from the server yet.
+ *
+ * If we don't get a reply in time then the user experience will
+ * suffer greatly (UI elements jumping around etc) so we ask the user
+ * if they want to start again or disconnect.
+ */
 static void collabclient_roundTripTimer( void* ccvp )
 {
     cloneclient_t *cc = (cloneclient_t*)ccvp;
@@ -304,41 +295,72 @@ static void collabclient_roundTripTimer( void* ccvp )
 	    {
 		printf("fv:%p\n", fv );
 		fv->b.collabState = cs_disconnected;
+		fv->b.collabClient = 0;
 		FVTitleUpdate( &fv->b );
 	    }
 	    
-	    collabclient_free( &cc );
+	    collabclient_free( (void**)&cc );
 	    return;
 	}
 	
 	collabclient_sessionReconnect( cc );
     }
 }
+#endif
+
+void collabclient_sessionDisconnect( FontViewBase* fv )
+{
+#ifdef BUILD_COLLAB
+    
+    cloneclient_t *cc = fv->collabClient;
+
+    fv->collabState = cs_disconnected;
+    fv->collabClient = 0;
+    FVTitleUpdate( fv );
+    
+    collabclient_free( (void**)&cc );
+
+#endif
+}
+
+
+#ifdef BUILD_COLLAB
 
 static void
 collabclient_remakeSockets( cloneclient_t *cc )
 {
     cc->snapshot = zsocket_new (cc->ctx, ZMQ_DEALER);
-    zsocket_connect (cc->snapshot, makeAddressString(cc->address,cc->port));
+    zsocket_connect (cc->snapshot,
+		     makeAddressString( cc->address,
+					cc->port + socket_offset_snapshot));
     
     cc->subscriber = zsocket_new (cc->ctx, ZMQ_SUB);
     zsockopt_set_subscribe (cc->subscriber, "");
-    zsocket_connect (cc->subscriber, makeAddressString(cc->address,cc->port+1));
+    zsocket_connect (cc->subscriber,
+		     makeAddressString( cc->address,
+					cc->port + socket_offset_subscriber));
     zsockopt_set_subscribe (cc->subscriber, SUBTREE);
 
     cc->publisher = zsocket_new (cc->ctx, ZMQ_PUSH);
-    zsocket_connect (cc->publisher, makeAddressString(cc->address,cc->port+2));
+    zsocket_connect (cc->publisher,
+		     makeAddressString( cc->address,
+					cc->port + socket_offset_publisher));
 
     int fd = 0;
     size_t fdsz = sizeof(fd);
     int rc = zmq_getsockopt( cc->subscriber, ZMQ_FD, &fd, &fdsz );
     printf("rc:%d fd:%d\n", rc, fd );
-    setZeroMQReadFD( 0, fd, cc, zeromq_subscriber_fd_callback );
+    GDrawAddReadFD( 0, fd, cc, zeromq_subscriber_fd_callback );
+    
 }
+
+#endif
 
 
 void* collabclient_new( char* address, int port )
 {
+#ifdef BUILD_COLLAB
+    
     cloneclient_t *cc = 0;
     cc = (cloneclient_t *) zmalloc (sizeof (cloneclient_t));
     cc->magic_number = MAGIC_VALUE;
@@ -354,35 +376,22 @@ void* collabclient_new( char* address, int port )
 
     collabclient_remakeSockets( cc );
 
-    /* cc->snapshot = zsocket_new (cc->ctx, ZMQ_DEALER); */
-    /* zsocket_connect (cc->snapshot, makeAddressString(cc->address,cc->port)); */
-    
-    /* cc->subscriber = zsocket_new (cc->ctx, ZMQ_SUB); */
-    /* zsockopt_set_subscribe (cc->subscriber, ""); */
-    /* zsocket_connect (cc->subscriber, makeAddressString(cc->address,cc->port+1)); */
-    /* zsockopt_set_subscribe (cc->subscriber, SUBTREE); */
-
-    /* cc->publisher = zsocket_new (cc->ctx, ZMQ_PUSH); */
-    /* zsocket_connect (cc->publisher, makeAddressString(cc->address,cc->port+2)); */
-
-    /* int fd = 0; */
-    /* size_t fdsz = sizeof(fd); */
-    /* int rc = zmq_getsockopt( cc->subscriber, ZMQ_FD, &fd, &fdsz ); */
-    /* printf("rc:%d fd:%d\n", rc, fd ); */
-    /* setZeroMQReadFD( 0, fd, cc, zeromq_subscriber_fd_callback ); */
-
-    
-
     int32 roundTripTimerMS = 2000;
     cc->roundTripTimer = BackgroundTimer_new( roundTripTimerMS, 
 					      collabclient_roundTripTimer,
 					      cc );
     
     return cc;
+
+#endif
+
+    return 0;
 }
 
 void collabclient_free( void** ccvp )
 {
+#ifdef BUILD_COLLAB
+    
     cloneclient_t* cc = (cloneclient_t*)*ccvp;
     if( !cc )
 	return;
@@ -393,11 +402,18 @@ void collabclient_free( void** ccvp )
     }
     cc->magic_number = MAGIC_VALUE + 1;
 
+    {
+	int fd = 0;
+	size_t fdsz = sizeof(fd);
+	int rc = zmq_getsockopt( cc->subscriber, ZMQ_FD, &fd, &fdsz );
+	GDrawRemoveReadFD( 0, fd, cc );
+    }
+    
+    
     zsocket_destroy( cc->ctx, cc->snapshot   );
     zsocket_destroy( cc->ctx, cc->subscriber );
     zsocket_destroy( cc->ctx, cc->publisher  );
     BackgroundTimer_remove( cc->roundTripTimer );
-    setZeroMQReadFD( 0, 0, 0, zeromq_subscriber_fd_callback );
 
     FontView* fv = FontViewFind( FontViewFind_byCollabPtr, cc );
     if( fv )
@@ -409,7 +425,15 @@ void collabclient_free( void** ccvp )
     free(cc->address);
     free(cc);
     *ccvp = 0;
+
+#endif
 }
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+#ifdef BUILD_COLLAB
 
 static void collabclient_sendSFD( void* ccvp, char* sfd )
 {
@@ -426,9 +450,94 @@ static void collabclient_sendSFD( void* ccvp, char* sfd )
     free(sfd);
 }
 
+static int collabclient_sessionJoin_processmsg_foreach_fn( kvmsg_t* msg, void *argument )
+{
+    cloneclient_t* cc = (cloneclient_t*)argument;
+    printf("processmsg_foreach() seq:%ld\n", kvmsg_sequence (msg) );
+    int create = 1;
+    zeromq_subscriber_process_update( cc, msg, create );
+    
+    return 0;
+}
+
+static void
+collabclient_sendRedo_Internal( CharViewBase *cv, Undoes *undo )
+{
+    printf("collabclient_sendRedo_Internal()\n");
+    cloneclient_t* cc = cv->fv->collabClient;
+    if( !cc )
+	return;
+    char* uuid = cv->fv->sf->xuid;
+    printf("uuid:%s\n", uuid );
+    
+    int idx = 0;
+    char filename[PATH_MAX];
+    snprintf(filename, PATH_MAX, "/tmp/fontforge-collab-x.sfd");
+    FILE* f = fopen( filename, "w" );
+    SFDDumpUndo( f, cv->sc, undo, "Undo", idx );
+    fclose(f);
+    char* sfd = GFileReadAll( filename );
+//    printf("SENDING: %s\n\n", sfd );
+
+    cc->roundTripTimerWaitingSeq = cc->publisher_sendseq;
+    BackgroundTimer_touch( cc->roundTripTimer );
+
+    kvmsg_t *kvmsg = kvmsg_new(0);
+    kvmsg_fmt_key  (kvmsg, "%s%d", SUBTREE, cc->publisher_sendseq++);
+    kvmsg_set_body (kvmsg, sfd, strlen(sfd) );
+    kvmsg_set_prop (kvmsg, "type", MSG_TYPE_UNDO );
+    kvmsg_set_prop (kvmsg, "uuid", uuid );
+    char pos[100];
+    sprintf(pos, "%d", cv->sc->orig_pos );
+    printf("pos:%s\n", pos );
+    printf("sc.name:%s\n", cv->sc->name );
+    
+    size_t data_size = kvmsg_size (kvmsg);
+    printf("data.size:%ld\n", data_size );
+
+    kvmsg_set_prop (kvmsg, "pos", pos );
+    kvmsg_send     (kvmsg, cc->publisher);
+    kvmsg_destroy (&kvmsg);
+    DEBUG("Sent a undo chunk of %d bytes to the server\n",strlen(sfd));
+    free(sfd);
+}
+
+typedef struct collabclient_sniffForLocalServer_struct
+{
+    void* socket;
+    BackgroundTimer_t* timer;
+    int haveServer;
+} collabclient_sniffForLocalServer_t;
+
+collabclient_sniffForLocalServer_t collabclient_sniffForLocalServer_singleton;
+
+static void collabclient_sniffForLocalServer_timer( void* udata )
+{
+    collabclient_sniffForLocalServer_t* cc = (collabclient_sniffForLocalServer_t*)udata;
+//    printf("collabclient_sniffForLocalServer_timer()\n");
+
+    char* p = zstr_recv_nowait( cc->socket );
+    if( p )
+    {
+	printf("collabclient_sniffForLocalServer_timer() p:%s\n", p);
+	if( !strcmp(p,"pong"))
+	{
+	    printf("******* have local server!\n");
+	    cc->haveServer = 1;
+	}
+    }
+}
+
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 void collabclient_sessionStart( void* ccvp, FontView *fv )
 {
+#ifdef BUILD_COLLAB
+
     cloneclient_t* cc = (cloneclient_t*)ccvp;
 
     //
@@ -460,74 +569,21 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
     GFileUnlink(filename);
     printf("connecting to server...sent the sfd for session start.\n");
     fv->b.collabState = cs_server;
-    FVTitleUpdate( fv );
-}
+    FVTitleUpdate( &fv->b );
 
-/* static int collabclient_sessionJoin_findSFD_foreach_fn( const char *key, void *item, void *argumentpp ) */
-/* { */
-/*     void** argument = (void**)argumentpp; */
-/*     kvmsg_t* kvmsg = (kvmsg_t*)item; */
-
-/*     printf("collabclient_sessionJoin_findSFD_foreach_fn() type:%s\n", kvmsg_get_prop (kvmsg, "type")); */
-/*     if( !strcmp(kvmsg_get_prop (kvmsg, "type"), MSG_TYPE_SFD )) */
-/*     { */
-/* 	if( *argument ) */
-/* 	{ */
-/* 	    kvmsg_t* current = (kvmsg_t*)*argument; */
-/* 	    if( kvmsg_sequence (kvmsg) > kvmsg_sequence (current) ) */
-/* 	    { */
-/* 		*argument = kvmsg; */
-/* 	    } */
-/* 	} */
-/* 	else */
-/* 	{ */
-/* 	    *argument = kvmsg; */
-/* 	} */
-/*     } */
-/*     return 0; */
-/* } */
-
-
-/* struct collabclient_sessionJoin_processUpdates_foreach_args */
-/* { */
-/*     cloneclient_t* cc; */
-/*     kvmsg_t* lastSFD; */
-/* }; */
-/* static int collabclient_sessionJoin_processUpdates_foreach_fn( const char *key, void *item, void *argument ) */
-/* { */
-/*     struct collabclient_sessionJoin_processUpdates_foreach_args* args = */
-/* 	(struct collabclient_sessionJoin_processUpdates_foreach_args*)argument; */
-/*     cloneclient_t* cc = args->cc; */
-/*     kvmsg_t* lastSFD = args->lastSFD; */
-/*     kvmsg_t* kvmsg = (kvmsg_t*)item; */
-
-/*     printf("collabclient_sessionJoin_processUpdates_foreach_fn() type:%s\n", kvmsg_get_prop (kvmsg, "type")); */
-/*     if( !strcmp(kvmsg_get_prop (kvmsg, "type"), MSG_TYPE_UNDO )) */
-/*     { */
-/* 	if( kvmsg_sequence (kvmsg) > kvmsg_sequence (lastSFD) ) */
-/* 	{ */
-/* 	    printf("processUpdates_foreach_fn() seq:%d\n", kvmsg_sequence(kvmsg)); */
-/* 	    int create = 1; */
-/* 	    zeromq_subscriber_process_update( cc, kvmsg, create ); */
-/* 	} */
-/*     } */
-/*     return 0; */
-/* } */
-
-
-static int collabclient_sessionJoin_processmsg_foreach_fn( kvmsg_t* msg, void *argument )
-{
-    cloneclient_t* cc = (cloneclient_t*)argument;
-    printf("processmsg_foreach() seq:%ld\n", kvmsg_sequence (msg) );
-    int create = 1;
-    zeromq_subscriber_process_update( cc, msg, create );
+    collabclient_setHaveLocalServer( 1 );
     
-    return 0;
+#endif
 }
+
+
+
 
 
 void collabclient_sessionJoin( void* ccvp, FontView *fv )
 {
+#ifdef BUILD_COLLAB
+    
     cloneclient_t* cc = (cloneclient_t*)ccvp;
     printf("collabclient_sessionJoin(top)\n");
 
@@ -614,11 +670,15 @@ void collabclient_sessionJoin( void* ccvp, FontView *fv )
     
 
     printf("collabclient_sessionJoin(complete)\n");
+
+#endif
 }
 
 
 void collabclient_sessionReconnect( void* ccvp )
 {
+#ifdef BUILD_COLLAB
+
     cloneclient_t* cc = (cloneclient_t*)ccvp;
 
     zsocket_destroy( cc->ctx, cc->snapshot   );
@@ -632,65 +692,32 @@ void collabclient_sessionReconnect( void* ccvp )
     {
 	collabclient_sessionJoin( cc, fv );
     }
+
+#endif
 }
 
 
 
-static void
-collabclient_sendRedo_Internal( CharViewBase *cv, Undoes *undo )
-{
-    printf("collabclient_sendRedo_Internal()\n");
-    cloneclient_t* cc = cv->fv->collabClient;
-    if( !cc )
-	return;
-    char* uuid = cv->fv->sf->xuid;
-    printf("uuid:%s\n", uuid );
-    
-    int idx = 0;
-    char filename[PATH_MAX];
-    snprintf(filename, PATH_MAX, "/tmp/fontforge-collab-x.sfd");
-    FILE* f = fopen( filename, "w" );
-    SFDDumpUndo( f, cv->sc, undo, "Undo", idx );
-    fclose(f);
-    char* sfd = GFileReadAll( filename );
-//    printf("SENDING: %s\n\n", sfd );
-
-    cc->roundTripTimerWaitingSeq = cc->publisher_sendseq;
-    BackgroundTimer_touch( cc->roundTripTimer );
-
-    kvmsg_t *kvmsg = kvmsg_new(0);
-    kvmsg_fmt_key  (kvmsg, "%s%d", SUBTREE, cc->publisher_sendseq++);
-    kvmsg_set_body (kvmsg, sfd, strlen(sfd) );
-    kvmsg_set_prop (kvmsg, "type", MSG_TYPE_UNDO );
-    kvmsg_set_prop (kvmsg, "uuid", uuid );
-    char pos[100];
-    sprintf(pos, "%d", cv->sc->orig_pos );
-    printf("pos:%s\n", pos );
-    printf("sc.name:%s\n", cv->sc->name );
-    
-    size_t data_size = kvmsg_size (kvmsg);
-    printf("data.size:%ld\n", data_size );
-
-    kvmsg_set_prop (kvmsg, "pos", pos );
-    kvmsg_send     (kvmsg, cc->publisher);
-    kvmsg_destroy (&kvmsg);
-    DEBUG("Sent a undo chunk of %d bytes to the server\n",strlen(sfd));
-    free(sfd);
-}
 
 void collabclient_CVPreserveStateCalled( CharViewBase *cv )
 {
+#ifdef BUILD_COLLAB
+
     cloneclient_t* cc = cv->fv->collabClient;
     if( !cc )
 	return;
 
     Undoes *undo = cv->layerheads[cv->drawmode]->undoes;
     cc->preserveUndo = undo;
+
+#endif
 }
 
 
 void collabclient_sendRedo( CharViewBase *cv )
 {
+#ifdef BUILD_COLLAB
+    
     cloneclient_t* cc = cv->fv->collabClient;
     if( !cc )
 	return;
@@ -716,38 +743,61 @@ void collabclient_sendRedo( CharViewBase *cv )
 	UndoesFree( undo );
     }
     cc->preserveUndo = 0;
+
+#endif
 }
 
 int collabclient_inSession( CharViewBase *cv )
 {
+#ifdef BUILD_COLLAB
+
     if( !cv )
 	return 0;
     if( !cv->fv )
 	return 0;
     cloneclient_t* cc = cv->fv->collabClient;
     return cc!=0;
+
+#endif
+    return 0;
 }
 
 int collabclient_inSessionFV( FontViewBase* fv )
 {
+#ifdef BUILD_COLLAB
+    
     if( !fv )
 	return 0;
     cloneclient_t* cc = fv->collabClient;
     return cc!=0;
+
+#endif
+    return 0;
 }
 
 int collabclient_generatingUndoForWire( CharViewBase *cv )
 {
+#ifdef BUILD_COLLAB
     return collabclient_inSession( cv );
+#endif
+    return 0;
 }
 
 
 enum collabState_t
 collabclient_getState( FontViewBase* fv )
 {
+#ifdef BUILD_COLLAB
+
     if( !fv )
 	return cs_neverConnected;
     return fv->collabState;
+
+#else
+
+    return cs_neverConnected;
+
+#endif
 }
 
 char*
@@ -768,66 +818,76 @@ collabclient_stateToString( enum collabState_t s )
 }
 
 
-
-#if 0
-
-int main (void)
+int
+collabclient_setHaveLocalServer( int v )
 {
-    //  Get state snapshot
-    int64_t sequence = 0;
-    zstr_sendm (snapshot, "ICANHAZ?");
-    zstr_send  (snapshot, SUBTREE);
-    while (true) {
-        kvmsg_t *kvmsg = kvmsg_recv (snapshot);
-        if (!kvmsg)
-            break;          //  Interrupted
-        if (streq (kvmsg_key (kvmsg), "KTHXBAI")) {
-            sequence = kvmsg_sequence (kvmsg);
-            printf ("I: received snapshot=%d\n", (int) sequence);
-            kvmsg_destroy (&kvmsg);
-            break;          //  Done
-        }
-        kvmsg_store (&kvmsg, kvmap);
-    }
-    int64_t alarm = zclock_time () + 1000;
-    while (!zctx_interrupted) {
-        zmq_pollitem_t items [] = { { subscriber, 0, ZMQ_POLLIN, 0 } };
-        int tickless = (int) ((alarm - zclock_time ()));
-        if (tickless < 0)
-            tickless = 0;
-        int rc = zmq_poll (items, 1, tickless * ZMQ_POLL_MSEC);
-        if (rc == -1)
-            break;              //  Context has been shut down
+#ifdef BUILD_COLLAB
 
-        if (items [0].revents & ZMQ_POLLIN) {
-            kvmsg_t *kvmsg = kvmsg_recv (subscriber);
-            if (!kvmsg)
-                break;          //  Interrupted
+    collabclient_sniffForLocalServer_t* cc = &collabclient_sniffForLocalServer_singleton;
+    int oldv = cc->haveServer;
+    cc->haveServer = v;
+    return oldv;
 
-            //  Discard out-of-sequence kvmsgs, incl. heartbeats
-            if (kvmsg_sequence (kvmsg) > sequence) {
-                sequence = kvmsg_sequence (kvmsg);
-                kvmsg_store (&kvmsg, kvmap);
-                printf ("I: received update=%d\n", (int) sequence);
-            }
-            else
-                kvmsg_destroy (&kvmsg);
-        }
-        //  If we timed-out, generate a random kvmsg
-        if (zclock_time () >= alarm) {
-            kvmsg_t *kvmsg = kvmsg_new (0);
-            kvmsg_fmt_key  (kvmsg, "%s%d", SUBTREE, randof (10000));
-            kvmsg_fmt_body (kvmsg, "%d", randof (1000000));
-            kvmsg_set_prop (kvmsg, "ttl", "%d", randof (30));
-            kvmsg_send     (kvmsg, publisher);
-            kvmsg_destroy (&kvmsg);
-            alarm = zclock_time () + 1000;
-        }
-    }
-    printf (" Interrupted\n%d messages in\n", (int) sequence);
-    zhash_destroy (&kvmap);
-    zctx_destroy (&ctx);
+#else
+
     return 0;
-}
 
 #endif
+}
+
+int
+collabclient_haveLocalServer( void )
+{
+#ifdef BUILD_COLLAB
+
+    collabclient_sniffForLocalServer_t* cc = &collabclient_sniffForLocalServer_singleton;
+    return cc->haveServer;
+    
+#else
+    return 0;
+#endif
+}
+
+void
+collabclient_sniffForLocalServer( void )
+{
+#ifdef BUILD_COLLAB
+
+    memset( &collabclient_sniffForLocalServer_singleton, 0,
+	    sizeof(collabclient_sniffForLocalServer_t));
+    collabclient_sniffForLocalServer_t* cc = &collabclient_sniffForLocalServer_singleton;
+
+    zctx_t* ctx = obtainMainZMQContext();
+    int port_default = 5556;
+
+    cc->socket = zsocket_new ( ctx, ZMQ_REQ );
+    zsocket_connect (cc->socket,
+		     makeAddressString("localhost",
+				       port_default + socket_offset_ping));
+    cc->timer = BackgroundTimer_new( 1000, collabclient_sniffForLocalServer_timer, cc );
+    zstr_send  (cc->socket, "ping");
+
+#endif
+}
+
+void
+collabclient_closeLocalServer( FontViewBase* fv )
+{
+#ifdef BUILD_COLLAB
+
+    collabclient_sniffForLocalServer_t* cc = &collabclient_sniffForLocalServer_singleton;
+    zctx_t* ctx = obtainMainZMQContext();
+    int port_default = 5556;
+
+    void* socket = zsocket_new ( ctx, ZMQ_REQ );
+    zsocket_connect ( socket,
+		      makeAddressString("localhost",
+					port_default + socket_offset_ping));
+    zstr_send( socket, "quit" );
+    cc->haveServer = 0;
+
+#endif
+}
+
+
+
