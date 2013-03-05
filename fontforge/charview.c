@@ -2987,6 +2987,7 @@ static char *CVMakeTitles(CharView *cv,char *buf) {
 	strcat(buf," *");
     title = copy(buf);
 #ifndef _NO_LIBUNINAMESLIST
+    const char *uniname;
     if ( (uniname=uniNamesList_name(sc->unicodeenc))!=NULL ) {
 	strcat(buf, " ");
 	strcpy(buf+strlen(buf), uniname);
