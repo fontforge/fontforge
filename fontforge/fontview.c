@@ -5771,7 +5771,6 @@ void FVRefreshChar(FontView *fv,int gid) {
     int i, j, enc;
     MetricsView *mv;
 
-    printf("*** FVRefreshChar fv:%p gid:%d\n", fv, gid );
     /* Can happen in scripts */ /* Can happen if we do an AutoHint when generating a tiny font for freetype context */
     if ( fv->v==NULL || fv->colcnt==0 || fv->b.sf->glyphs[gid]== NULL )
 return;

@@ -4005,7 +4005,7 @@ return;
     switch ( cv->active_tool ) {
       case cvt_pointer:
 	CVMouseDownPointer(cv, &fs, event);
-	printf("lastSel.lastselpt:%p  fs.p->sp:%p\n", lastSel.lastselpt, fs.p->sp );
+//	printf("lastSel.lastselpt:%p  fs.p->sp:%p\n", lastSel.lastselpt, fs.p->sp );
 	if( lastSel.lastselpt != fs.p->sp
 	    || lastSel.lastselcp != fs.p->spiro )
 	{
@@ -4598,7 +4598,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 
     dlist_foreach( &cv->pointInfoDialogs, (dlist_foreach_func_type)PIChangePoint );
 
-    printf("cvmouseup!\n");
+//    printf("cvmouseup!\n");
     collabclient_sendRedo( &cv->b );    
 }
 
