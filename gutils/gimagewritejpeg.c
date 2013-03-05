@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <config.h>		/* FF config file */
+#include <fontforge-config.h>
 
 #ifdef _NO_LIBJPEG
 

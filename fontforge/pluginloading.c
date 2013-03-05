@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <config.h>
+#include <fontforge-config.h>
 #include <intl.h>
 #include <basics.h>
 #include <pluginloading.h>
