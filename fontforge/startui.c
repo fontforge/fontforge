@@ -830,7 +830,7 @@ int fontforge_main( int argc, char **argv ) {
     /* Start X if they haven't already done so. Well... try anyway */
     /* Must be before we change DYLD_LIBRARY_PATH or X won't start */
     /* (osascript depends on a libjpeg which isn't found if we look in /sw/lib first */
-    local_x = uses_local_x(argc,argv);
+    int local_x = uses_local_x(argc,argv);
     if ( local_x==1 && getenv("DISPLAY")==NULL ) {
 	/* Don't start X if we're just going to quit. */
 	/* if X exists, it isn't needed. If X doesn't exist it's wrong */

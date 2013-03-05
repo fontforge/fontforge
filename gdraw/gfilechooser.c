@@ -499,8 +499,7 @@ static int GFileChooserTextChanged(GGadget *t,GEvent *e) {
     GFileChooser *gfc;
     GGadget *g = (GGadget *)GGadgetGetUserData(t);
     
-    unichar_t *pt;
-    const unichar_t *spt;
+    const unichar_t *pt, *spt;
     unichar_t * pt_toFree = 0;
     if ( e->type!=et_controlevent || e->u.control.subtype!=et_textchanged )
 return( true );
@@ -510,7 +509,7 @@ return( true );
     gfc = (GFileChooser *) GGadgetGetUserData(t);
 
     if( GFileChooserGetInputFilenameFunc(g)(g, &pt,gfc->inputfilenameprevchar)) {
-	pt_toFree = pt;
+	pt_toFree = (unichar_t*)pt;
 	spt = pt;
 	GGadgetSetTitle(g, pt);
     }
@@ -1210,15 +1209,15 @@ return( gfc->filter );
  * string.
  */
 int GFileChooserDefInputFilenameFunc( GGadget *g,
-				      unichar_t** currentFilename,
+				      const unichar_t ** currentFilename,
 				      unichar_t* oldfilename ) {
     return 0;
 }
 
 int GFileChooserSaveAsInputFilenameFunc( GGadget *g,
-					 unichar_t** ppt,
+					 const unichar_t ** ppt,
 					 unichar_t* oldfilename ) {
-    unichar_t* pt = *ppt;
+    const unichar_t* pt = *ppt;
     char* p = u_to_c(pt);
     int plen = strlen(p);
     int ew = endswithi( p, ".sfdir") || endswithi( p, ".sfd");
