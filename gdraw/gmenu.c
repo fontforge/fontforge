@@ -236,9 +236,12 @@ return;
 }
 
 
+/*
+ * Unused
 static void shorttext(GMenuItem *gi,unichar_t *buf) {
     _shorttext(gi->shortcut,gi->short_mask,buf);
 }
+*/
 
 static int GMenuGetMenuPathRecurse( GMenuItem** stack,
 				    GMenuItem *basemi,
@@ -1856,9 +1859,9 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     /* then look for hotkeys everywhere */
 	
 //    printf("looking for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
-	struct dlistnodeExternal* hklist = hotkeyFindAllByEvent( top, event );
-	struct dlistnodeExternal* node = hklist;
-	for( ; node; node=node->next ) {
+	struct dlistnodeExternal* node= hotkeyFindAllByEvent( top, event );
+	struct dlistnode* hklist = (struct dlistnode*)node;
+	for( ; node; node=(struct dlistnodeExternal*)(node->next) ) {
 	    Hotkey* hk = (Hotkey*)node->ptr;
 //	    printf("hotkey found by event! hk:%p\n", hk );
 	    int skipkey = false;
@@ -1889,7 +1892,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	    
 //	    printf("END hotkey found by event! hk:%p\n", hk );
 	}
-	dlist_free_external(hklist);
+	dlist_free_external(&hklist);
 	
     if ( mb->child!=NULL ) {
 	GMenu *m;

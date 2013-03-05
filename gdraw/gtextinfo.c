@@ -888,7 +888,8 @@ return(0);
 }
 
 void HotkeyParse( Hotkey* hk, const char *shortcut ) {
-    char *pt, *sh;
+    char *pt;
+    const char *sh;
     int mask, temp, i;
 
     hk->state  = 0;

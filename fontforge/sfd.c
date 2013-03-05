@@ -836,6 +836,8 @@ return( NULL );
 return( rle );
 }
 
+/*
+ * Unused
 static void SFDDumpBrush( FILE *sfd, struct brush* brush ) {
     fprintf(sfd, "Brush: #%06x %g\n", brush->col, brush->opacity );
     fprintf(sfd, "EndBrush\n");
@@ -857,7 +859,7 @@ static void SFDDumpPen( FILE *sfd, struct pen* p ) {
     SFDDumpBrush( sfd, &p->brush );
     fprintf(sfd, "EndPen\n");
 }
-
+*/
 
 
 static void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, char* keyPrefix, int idx ) {
