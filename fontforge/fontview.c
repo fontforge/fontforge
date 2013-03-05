@@ -6299,6 +6299,7 @@ return;
 #ifndef _NO_LIBUNINAMESLIST
     /* Get unicode "Name" as defined in NameList.txt */
     if (uni != -1) {
+	const char *uniname;
 	if ( (uniname=uniNamesList_name(uni))!=NULL ) {
             utf82u_strncpy(ubuffer+u_strlen(ubuffer),uniname,80);
 //	    strncat(buffer,uniname,80);
@@ -6577,6 +6578,8 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
     }
 
 #ifndef _NO_LIBUNINAMESLIST
+    const char *uniname;
+    const char *uniannot;
     if ( !done ) {
 	if ( (uniname=uniNamesList_name(upos))!=NULL ) {
 	    /* uniname=unicode "Name" as defined in NameList.txt */
