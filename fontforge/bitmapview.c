@@ -181,6 +181,7 @@ static char *BVMakeTitles(BitmapView *bv, BDFChar *bc,char *buf) {
 	    sc!=NULL ? sc->name : "<Nameless>", bv->enc, bdf->pixelsize, sc==NULL ? "" : sc->parent->fontname);
     title = copy(buf);
 #ifndef _NO_LIBUNINAMESLIST
+    const char *uniname;
     if ( (uniname=uniNamesList_name(sc->unicodeenc))!=NULL ) {
 	strcat(buf, " ");
 	strcpy(buf+strlen(buf), uniname);
