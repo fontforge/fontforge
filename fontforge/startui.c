@@ -78,6 +78,8 @@ extern void RunApplicationEventLoop(void);
 #define sleep(n) Sleep(1000 * (n))
 #endif
 
+#include "collabclient.h"
+
 extern int AutoSaveFrequency;
 int splash = 1;
 static int localsplash;
@@ -510,6 +512,7 @@ CantInstallAppleEventHandler:
 
 static pascal void DoRealStuff(EventLoopTimerRef timer,void *ignored_data) {
     GDrawProcessPendingEvents(NULL);
+    MacServiceReadFDs();
 }
 
 static void install_mac_timer(void) {
@@ -1216,6 +1219,9 @@ exit( 0 );
     }
     if ( !any && !doopen )
 	any = ReopenLastFonts();
+
+    collabclient_sniffForLocalServer();
+    
 #if defined(__Mac)
     if ( listen_to_apple_events ) {
 	install_apple_event_handlers();

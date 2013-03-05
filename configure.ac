@@ -3,6 +3,7 @@
 
 # Copyright (C) 2000-2012 by George Williams
 # Copyright (C) 2012 by Barry Schwartz
+# Copyright (C) 2013 by Ben Martin
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -84,6 +85,7 @@ libpng_url="http://www.libpng.org/"
 libxml_url="http://www.xmlsoft.org/"
 libspiro_url="http://libspiro.sourceforge.net/"
 libuninameslist_url="https://github.com/fontforge/libuninameslist"
+libzmq_url="http://www.zeromq.org/"
 
 # Point to the Wikipedia page, primarily because one may want
 # libjpeg-turbo rather than the reference implementation.
@@ -248,6 +250,7 @@ FONTFORGE_ARG_WITH_LIBXML
 FONTFORGE_ARG_WITH_LIBSPIRO
 FONTFORGE_ARG_WITH_LIBUNINAMESLIST
 FONTFORGE_ARG_WITH_ICONV
+FONTFORGE_ARG_WITH_ZEROMQ
 
 if test x"${i_do_have_cairo}" = xyes; then
    PKG_CHECK_MODULES([PANGOCAIRO],[pangocairo])
@@ -389,7 +392,8 @@ Summary of optional dependencies:
   libtiff            ${i_do_have_libtiff}  	${libtiff_url}
   libxml             ${i_do_have_libxml}  	${libxml_url}
   libspiro           ${i_do_have_libspiro}  	${libspiro_url}
-  libuninameslist    ${i_do_have_libuninameslist}  	${libuninameslist_url}
+  libuninameslist ${i_do_have_libuninameslist} ${libuninameslist_url}
+  zeromq             ${i_do_have_libzmq}        ${libzmq_url}
   X Window System    ${i_do_have_x}
 ])
 

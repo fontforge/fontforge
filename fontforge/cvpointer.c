@@ -27,6 +27,7 @@
 #include "fontforgeui.h"
 #include <utype.h>
 #include <math.h>
+#include "collabclient.h"
 
 int stop_at_join = false;
 extern int interpCPsOnMotion;
@@ -608,6 +609,15 @@ return;
 	    cv->expandedge = ee_right;
 	    SetCur(cv);
 	}
+	else
+	{
+	    //
+	    // Allow dragging a box around some points to send that information
+	    // to the other clients in the collab session
+	    //
+	    if( collabclient_inSession( &cv->b ))
+		CVPreserveState(&cv->b);
+	}
     } else if ( event->u.mouse.clicks<=1 && !(event->u.mouse.state&ksm_shift)) {
 	if ( fs->p->nextcp || fs->p->prevcp ) {
 	    CPStartInfo(cv,event);
@@ -641,6 +651,7 @@ return;
 	} else if ( fs->p->sp!=NULL ) {
 	    needsupdate = true;
 	    fs->p->sp->selected = !fs->p->sp->selected;
+	    
 	} else if ( fs->p->spiro!=NULL ) {
 	    needsupdate = true;
 	    fs->p->spiro->ty ^= 0x80;
@@ -698,8 +709,11 @@ return;
 	/* Select everything */
 	if ( CVSetSel(cv,-1)) needsupdate = true;
     }
+
     if ( needsupdate )
+    {
 	SCUpdateAll(cv->b.sc);
+    }
     
     /* lastselpt is set by our caller */
 }
