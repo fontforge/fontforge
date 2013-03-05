@@ -19,6 +19,7 @@ int main( int argc, char **argv ) {
     printf( "/* If you need to update this to the next release version, see fontforge/GNUmakefile.in */\n\n" );
     if ( argc==1 ) {
 	/* Generate a *.c type output if there is some variable on the command line */
+	printf( "#include <fontforge-config.h>\n" );
 	printf( "#include <time.h>\n\n" );
 	printf( "const time_t source_modtime    = %ldL;\t/* Seconds since 1970 (standard unix time) */\n", now);
 	printf( "const char *source_modtime_str = \"%02d:%02d GMT %d-%s-%d\";\n",
