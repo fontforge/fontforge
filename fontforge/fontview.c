@@ -3632,8 +3632,6 @@ return;
     GDrawSetWindowTitles(fv->gw,title,ititle);
     free(title);
     free(ititle);
-
-    printf("collabStateString:%s\n", collabStateString );
 }
 
 void FVTitleUpdate(FontViewBase *fv)
