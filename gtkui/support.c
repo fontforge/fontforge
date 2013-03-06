@@ -3,7 +3,7 @@
  */
 /* Bleah. I'll modify it if I want to */
 
-#include <config.h>		/* FF config file */
+#include <fontforge-config.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>

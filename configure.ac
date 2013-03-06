@@ -54,7 +54,7 @@ LTDL_INIT([recursive convenience])
 FONTFORGE_CHECK_LTDL_VERSION
 
 # The following is mainly for the benefit of the libltdl Makefile,
-# which expects to find <inc/config.h>.
+# which expects to find <inc/fontforge-config.h>.
 CPPFLAGS="${CPPFLAGS} AS_ESCAPE([-I${top_builddir}])"
 
 
@@ -333,7 +333,7 @@ AC_CHECK_FUNC([snprintf],[:],[AC_DEFINE([_NO_SNPRINTF],1,[Define if not using sn
 AC_CHECK_FUNC([tzset],[:],[AC_DEFINE([_NO_TZSET],1,[Define if not using tzset.])])
 
 #--------------------------------------------------------------------------
-# Put ifdef wrapper around the new config.h so we don't repeatedly call it.
+# Put ifdef wrapper around the new fontforge-config.h so we don't repeatedly call it.
 AH_TOP([#ifndef _FF_CONFIG_H])
 AH_TOP([#define _FF_CONFIG_H 1])
 AH_BOTTOM([#endif])

@@ -23,8 +23,8 @@ all : [-.libs]libgdraw.olb
 	library/create [-.libs]libgdraw.olb $(libgdraw_OBJECTS)
 	library [-.libs]libgdraw.olb $(libgdraw_OBJECTS1)
 
-$(libgdraw_OBJECTS) : [-.inc]config.h
-$(libgdraw_OBJECTS1) : [-.inc]config.h
+$(libgdraw_OBJECTS) : [-.inc]fontforge-config.h
+$(libgdraw_OBJECTS1) : [-.inc]fontforge-config.h
 
 choosericons.obj : choosericons.c
 drawboxborder.obj : drawboxborder.c
