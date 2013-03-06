@@ -22,4 +22,4 @@ gb12345_vms :
 	@ WRITE_ SYS$OUTPUT "  analyzing gb12345.map ..."
 	@ @ANALYZE_MAP.COM gb12345.map gb12345_vms.opt
 
-gb12345.obj : gb12345.c [-.inc]config.h
+gb12345.obj : gb12345.c [-.inc]fontforge-config.h
