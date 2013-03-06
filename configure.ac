@@ -400,8 +400,8 @@ Summary of optional dependencies:
   libtiff            ${i_do_have_libtiff}  	${libtiff_url}
   libxml             ${i_do_have_libxml}  	${libxml_url}
   libspiro           ${i_do_have_libspiro}  	${libspiro_url}
-  libuninameslist ${i_do_have_libuninameslist} ${libuninameslist_url}
-  zeromq             ${i_do_have_libzmq}        ${libzmq_url}
+  libuninameslist    ${i_do_have_libuninameslist}  	${libuninameslist_url}
+  zeromq             ${i_do_have_libzmq}  	${libzmq_url}
   X Window System    ${i_do_have_x}
 ])
 
