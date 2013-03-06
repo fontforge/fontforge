@@ -24,10 +24,10 @@ dylibbundler --overwrite-dir --bundle-deps --fix-file \
   ./fontforge \
   --install-path @executable_path/../lib \
   --dest-dir ../lib
-dylibbundler                 --bundle-deps --fix-file \
+dylibbundler --overwrite-dir --bundle-deps --fix-file \
   ./FontForgeInternal/fontforge-internal-collab-server \
-  --install-path @executable_path/../lib \
-  --dest-dir ../lib
+  --install-path @executable_path/collablib \
+  --dest-dir ./FontForgeInternal/collablib
 
 mkdir -p $bundle_lib
 cp -av /opt/local/lib/pango   $bundle_lib
