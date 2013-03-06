@@ -95,14 +95,14 @@ lff_vms :
 	@ WRITE_ SYS$OUTPUT "  analyzing lff.map ..."
 	@ @[-.plugins]ANALYZE_MAP.COM lff.map lff_vms.opt
 
-$(fontforge_LIBOBJECTS) : [-.inc]config.h
-$(fontforge_LIBOBJECTS1) : [-.inc]config.h
-$(fontforge_LIBOBJECTS2) : [-.inc]config.h
-$(fontforge_LIBOBJECTS3) : [-.inc]config.h
-$(fontforge_LIBOBJECTS4) : [-.inc]config.h
-$(fontforge_LIBOBJECTS5) : [-.inc]config.h
-$(fontforge_LIBOBJECTS6) : [-.inc]config.h
-$(fontforge_LIBOBJECTS7) : [-.inc]config.h
+$(fontforge_LIBOBJECTS) : [-.inc]fontforge-config.h
+$(fontforge_LIBOBJECTS1) : [-.inc]fontforge-config.h
+$(fontforge_LIBOBJECTS2) : [-.inc]fontforge-config.h
+$(fontforge_LIBOBJECTS3) : [-.inc]fontforge-config.h
+$(fontforge_LIBOBJECTS4) : [-.inc]fontforge-config.h
+$(fontforge_LIBOBJECTS5) : [-.inc]fontforge-config.h
+$(fontforge_LIBOBJECTS6) : [-.inc]fontforge-config.h
+$(fontforge_LIBOBJECTS7) : [-.inc]fontforge-config.h
 
 alignment.obj : alignment.c
 autohint.obj : autohint.c
