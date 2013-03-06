@@ -11,7 +11,7 @@ all : [-.libs]libgunicode.olb
 [-.libs]libgunicode.olb : $(libgunicode_OBJECTS)
 	library/create [-.libs]libgunicode.olb $(libgunicode_OBJECTS)
 
-$(libgunicode_OBJECTS) : [-.inc]config.h
+$(libgunicode_OBJECTS) : [-.inc]fontforge-config.h
 
 ArabicForms.obj : ArabicForms.c
 alphabet.obj : alphabet.c

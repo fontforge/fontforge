@@ -3,7 +3,7 @@
  */
 /* I can if I want to */
 
-#include <config.h>		/* FF config file */
+#include <fontforge-config.h>
 
 #include <gtk/gtk.h>
 
