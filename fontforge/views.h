@@ -861,7 +861,13 @@ extern int CVPalettesWidth(void);
 extern int BVPalettesWidth(void);
 
 extern void CVDoTransform(CharView *cv, enum cvtools cvt );
+
+// apply transform to specified layer
+extern void CVTransFuncLayer(CharView *cv,Layer *ly,real transform[6], enum fvtrans_flags flags);
+// apply transform to the current layer only
 extern void CVTransFunc(CharView *cv,real transform[6],enum fvtrans_flags);
+// apply transform to all layers
+extern void CVTransFuncAllLayers(CharView *cv,real transform[6], enum fvtrans_flags flags);
 enum transdlg_flags { tdf_enableback=0x1, tdf_enablekerns=0x2,
 	tdf_defaultkerns=0x4, tdf_addapply=0x8 };
 extern void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *,enum fvtrans_flags),
