@@ -991,7 +991,7 @@ return( true );
 	    DBounds bb;
 	    SplineCharFindBounds(sc,&bb);
 	    transform[4] = offset-bb.minx;
-	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,0);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL, 0 | fvt_alllayers );
 
 	    SCSynchronizeWidth(sc,val,sc->width,NULL);
 	    SCCharChangedUpdate(sc,ly_none);
@@ -1034,13 +1034,13 @@ return( true );
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[5] = 0;
 	    transform[4] = val-bb.minx;
-	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,0);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,0 | fvt_alllayers );
 	} else if ( mv->vertical && val!=sc->parent->ascent-bb.maxy ) {
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[4] = 0;
 	    transform[5] = sc->parent->ascent-bb.maxy-val;
-	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,fvt_dontmovewidth);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL, fvt_dontmovewidth | fvt_alllayers );
 	}
 	
     } else if ( e->u.control.subtype == et_textfocuschanged &&
@@ -3132,7 +3132,8 @@ static void MVMenuChangeLayer(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e
     GDrawRequestExpose(mv->v,NULL,false);
 }
 
-static void MVMenuCenter(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
+static void MVMenuCenter(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
+{
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i;
     DBounds bb;
@@ -3152,7 +3153,7 @@ static void MVMenuCenter(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	else
 	    transform[4] = (sc->width-(bb.maxx-bb.minx))/3 - bb.minx;
 	if ( transform[4]!=0 )
-	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,fvt_dontmovewidth);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL, fvt_dontmovewidth| fvt_alllayers );
     }
 }
 
@@ -4255,7 +4256,7 @@ static void MVSubMouse(MetricsView *mv,GEvent *event) {
 	_MVSubVMouse(mv,event);
 return;
     }
-
+    
     ybase = mv->ybaseline - mv->yoff;
     within = -1;
     for ( i=0; i<mv->glyphcnt; ++i ) {
@@ -4507,7 +4508,7 @@ return;
 	    transform[4] = diff*
 		    (mv->sf->ascent+mv->sf->descent)/(mv->pixelsize*iscale);
 	    if ( transform[4]!=0 )
-		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,false);
+		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL, 0 | fvt_alllayers );
 	}
 	mv->pressedwidth = false;
 	mv->pressedkern = false;

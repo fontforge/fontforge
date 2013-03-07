@@ -78,8 +78,9 @@ return;
 	    else
 		transform[4] = scale*ib.minx*wd->scale/100 - ib.minx;
 	}
-	if ( transform[4]!=0 ) {
-	    FVTrans(fv,sc,transform,NULL,fvt_dontmovewidth);
+	if ( transform[4]!=0 )
+	{
+	    FVTrans(fv,sc,transform,NULL,fvt_dontmovewidth | fvt_alllayers );
 	    bvts[0].x = transform[4];
 	    for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) if ( bdf->glyphs[sc->orig_pos]!=NULL )
 		BCTrans(bdf,bdf->glyphs[sc->orig_pos],bvts,fv);
@@ -150,7 +151,7 @@ return;
 	    SCSynchronizeWidth(sc,width,sc->width,fv);
 	}
 	if ( transform[4]!=0 ) {
-	    FVTrans(fv,sc,transform,NULL,fvt_dontmovewidth);
+	    FVTrans(fv,sc,transform,NULL, fvt_dontmovewidth | fvt_alllayers );
 	    bvts[0].x = transform[4];
 	    for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) if ( bdf->glyphs[sc->orig_pos]!=NULL )
 		BCTrans(bdf,bdf->glyphs[sc->orig_pos],bvts,fv);

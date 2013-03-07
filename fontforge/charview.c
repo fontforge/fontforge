@@ -7926,14 +7926,14 @@ static void TransRef(RefChar *ref,real transform[6], enum fvtrans_flags flags) {
     RefCharFindBounds(ref);
 }
 
-void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
+void CVTransFuncLayer(CharView *cv,Layer *ly,real transform[6], enum fvtrans_flags flags)
+{
     int anysel = cv->p.transany;
     RefChar *refs;
     ImageList *img;
     AnchorPoint *ap;
     KernPair *kp;
     PST *pst;
-    Layer *ly = cv->b.layerheads[cv->b.drawmode];
     int l, cvlayer;
 
     if ( cv->b.sc->inspiro && hasspiro() )
@@ -8001,6 +8001,21 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 	    for ( refs=cv->b.sc->layers[l].refs; refs!=NULL; refs=refs->next )
 		TransRef(refs,transform,flags);
 	}
+    }
+}
+
+void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags)
+{
+    Layer *ly = cv->b.layerheads[cv->b.drawmode];
+    CVTransFuncLayer( cv, ly, transform, flags );
+}
+
+void CVTransFuncAllLayers(CharView *cv,real transform[6], enum fvtrans_flags flags)
+{
+    for( int idx = 0; idx < cv->b.sc->layer_cnt; ++idx )
+    {
+	Layer *ly = &cv->b.sc->layers[ idx ];
+	CVTransFuncLayer( cv, ly, transform, flags );
     }
 }
 
@@ -9900,7 +9915,7 @@ static void CVMenuCenter(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     if ( transform[4]!=0 ) {
 	cv->p.transany = false;
 	CVPreserveState(&cv->b);
-	CVTransFunc(cv,transform,fvt_dontmovewidth);
+	CVTransFuncAllLayers(cv, transform, fvt_dontmovewidth );
 	CVCharChangedUpdate(&cv->b);
     }
     cv->b.drawmode = drawmode;
