@@ -11068,10 +11068,6 @@ void CharViewFree(CharView *cv) {
     if ( cv->rv ) {
 	MeasureToolViewFree(cv->rv);
     }
-    if ( cv->ruler_linger_w ) {
-	GDrawDestroyWindow(cv->ruler_linger_w);
-	cv->ruler_linger_w = NULL;
-    }
     free(cv->gi.u.image->clut);
     free(cv->gi.u.image);
 #if HANYANG
