@@ -825,8 +825,8 @@ static void MappingMatrixInit(struct matrixinit *mi,SplineFont *sf,
 	    md[3*(i+j)+2].u.md_real = rint(scale*md[3*(i+j)+0].u.md_real);
 	}
     } else if ( xheight==0 && capheight==0 ) {
-	md = gcalloc(4,sizeof(struct matrix_data));
-	mi->initial_row_cnt = 0;
+	md = gcalloc(3,sizeof(struct matrix_data));
+	mi->initial_row_cnt = 1;
 	mi->matrix_data = md;
     } else {
 	cnt = 1;	/* For the baseline */
