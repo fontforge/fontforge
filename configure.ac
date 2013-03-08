@@ -53,9 +53,10 @@ LT_INIT([dlopen])
 LTDL_INIT([recursive convenience])
 FONTFORGE_CHECK_LTDL_VERSION
 
-# The following is mainly for the benefit of the libltdl Makefile,
-# which expects to find <inc/fontforge-config.h>.
-CPPFLAGS="${CPPFLAGS} AS_ESCAPE([-I${top_builddir}])"
+# The following is for the benefit of the libltdl Makefile,
+# which expects to find <inc/fontforge-config.h> in top_builddir,
+# and for some other things that use a path relative to top_srcdir.
+CPPFLAGS="${CPPFLAGS} AS_ESCAPE([-I${top_builddir}]) AS_ESCAPE([-I${top_srcdir}])"
 
 
 AC_PATH_XTRA
