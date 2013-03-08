@@ -161,15 +161,27 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
     {
 	if( !data_size )
 	{
-	    printf("zero length message!\n" );
+	    printf("WARNING: zero length message!\n" );
 	    return;
 	}
 			
 	SplineFont *sf = fv->b.sf;
+	if( !sf )
+	{
+	    printf("ERROR: font view does not have the splinefont set!\n" );
+	    return;
+	}
+	
 	char* pos = kvmsg_get_prop (kvmsg, "pos" );
 	printf("pos:%s\n", pos );
 	SplineChar *sc = sf->glyphs[ atoi(pos) ];
 	printf("sc:%p\n", sc );
+	if( !sc )
+	{
+	    printf("WARNING: font view does not have a glyph for pos:%s\n", pos );
+	    return;
+	}
+	
 	printf("sc.name:%s\n", sc->name );
 	printf("data.size:%ld\n", data_size );
 		    
