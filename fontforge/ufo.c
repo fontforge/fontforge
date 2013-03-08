@@ -25,9 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include <fontforge-config.h>
 
 #ifndef _NO_PYTHON
 # include "Python.h"
@@ -376,11 +374,16 @@ static void PListOutputBoolean(FILE *plist, char *key, int value) {
 }
 
 static void PListOutputDate(FILE *plist, char *key, time_t timestamp) {
+/* openTypeHeadCreated = string format as \"YYYY/MM/DD HH:MM:SS\".	*/
+/* \"YYYY/MM/DD\" is year/month/day. The month is in the range 1-12 and	*/
+/* the day is in the range 1-end of month.				*/
+/*  \"HH:MM:SS\" is hour:minute:second. The hour is in the range 0:23.	*/
+/* Minutes and seconds are in the range 0-59.				*/
     struct tm *tm = gmtime(&timestamp);
 
     fprintf( plist, "\t<key>%s</key>\n", key );
     fprintf( plist, "\t<string>%4d/%02d/%02d %02d:%02d:%02d</string>\n",
-	    tm->tm_year+1900, tm->tm_mon,
+	    tm->tm_year+1900, tm->tm_mon+1,
 	    tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec );
 }
 
@@ -484,7 +487,7 @@ static int UFOOutputMetaInfo(char *basedir,SplineFont *sf) {
 
     if ( plist==NULL )
 return( false );
-    PListOutputString(plist,"creator","net.SourceForge.FontForge");
+    PListOutputString(plist,"creator","net.GitHub.FontForge");
 #ifdef Version_1
     PListOutputInteger(plist,"formatVersion",1);
 #else
@@ -1781,11 +1784,19 @@ return( NULL );
 		    sf->pfminfo.width = strtol((char *) valname,&end,10);
 		else if ( xmlStrcmp(keyname+11,(xmlChar *) "WeightClass")==0 )
 		    sf->pfminfo.weight = strtol((char *) valname,&end,10);
-		else if ( xmlStrcmp(keyname+11,(xmlChar *) "VendorID")==0 ) {
-		    char *temp = sf->pfminfo.os2_vendor + 3;
-		    strncpy(sf->pfminfo.os2_vendor,valname,4);
-		    while ( *temp == 0 && temp >= sf->pfminfo.os2_vendor ) *temp-- = ' ';
-		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "TypoAscender")==0 ) {
+		else if ( xmlStrcmp(keyname+11,(xmlChar *) "VendorID")==0 )
+		{
+		    const int os2_vendor_sz = sizeof(sf->pfminfo.os2_vendor);
+		    const int valname_len = c_strlen(valname);
+
+		    if( valname && valname_len <= os2_vendor_sz )
+			strncpy(sf->pfminfo.os2_vendor,valname,valname_len);
+
+		    char *temp = sf->pfminfo.os2_vendor + os2_vendor_sz - 1;
+		    while ( *temp == 0 && temp >= sf->pfminfo.os2_vendor )
+			*temp-- = ' ';
+		}
+		else if ( xmlStrcmp(keyname+11,(xmlChar *) "TypoAscender")==0 ) {
 		    sf->pfminfo.typoascent_add = false;
 		    sf->pfminfo.os2_typoascent = strtol((char *) valname,&end,10);
 		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "TypoDescender")==0 ) {
@@ -1911,7 +1922,7 @@ return( NULL );
     sf->ascent = as; sf->descent = ds;
     if ( sf->fontname==NULL ) {
 	if ( stylename!=NULL && sf->familyname!=NULL )
-	    sf->fullname = strconcat3(sf->familyname,"-",stylename);
+	    sf->fontname = strconcat3(sf->familyname,"-",stylename);
 	else
 	    sf->fontname = "Untitled";
     }

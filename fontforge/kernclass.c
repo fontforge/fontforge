@@ -2962,6 +2962,14 @@ static int KCL_Done(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	kcld = GDrawGetUserData(GGadgetGetWindow(g));
+	//
+	// Update any metrics views for the splinefont.
+	//
+	if( kcld && kcld->sf )
+	{
+	    MVReFeatureAll(kcld->sf);
+	    MVReKernAll(kcld->sf);
+	}
 	GDrawDestroyWindow(kcld->gw);
     }
 return( true );

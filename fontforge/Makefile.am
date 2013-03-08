@@ -45,7 +45,13 @@ lib_LTLIBRARIES = libfontforge.la libfontforgeexe.la
 
 #--------------------------------------------------------------------------
 
-SUBDIRS = pixmaps
+macobjective.o: macobjective.m
+	clang -g -arch x86_64 -arch i386 -c "${srcdir}/macobjective.m" -o macobjective.o
+
+
+#--------------------------------------------------------------------------
+
+SUBDIRS = pixmaps collab
 
 FFSCRIPT_HEADER = "\#!$(bindir)/fontforge -lang=ff"
 
@@ -69,7 +75,7 @@ sfddiff: sfddiff.pe
 #--------------------------------------------------------------------------
 
 noinst_HEADERS = fontforgeui.h sftextfieldP.h configure-fontforge.h	\
-	views.h is_LIGATURE.h flaglist.h
+	views.h is_LIGATURE.h flaglist.h strlist.h
 pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	libffstamp.h psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
 	lookups.h savefont.h ttf.h baseviews.h fvmetrics.h mm.h			\
@@ -77,7 +83,7 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	uiinterface.h bezctx_ff.h edgelist.h groups.h nonlineartrans.h		\
 	sd.h unicoderange.h bitmapcontrol.h encoding.h ofl.h search.h		\
 	usermenu.h fffreetype.h PfEd.h sfd1.h ffpython.h			\
-	plugins.h sflayoutP.h print.h splinefont.h annotations.h
+	plugins.h sflayoutP.h print.h splinefont.h cvruler.h
 
 #--------------------------------------------------------------------------
 
@@ -109,20 +115,25 @@ libfontforge_la_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c	\
 	tottfaat.c tottfgpos.c tottf.c tottfvar.c ttfinstrs.c				\
 	ttfspecial.c ufo.c unicoderange.c utils.c winfonts.c zapfnomen.c	\
 	groups.c langfreq.c ftdelta.c autowidth2.c woff.c stamp.c			\
-	activeinui.c pluginloading.c is_LIGATURE.c flaglist.c
+	activeinui.c pluginloading.c is_LIGATURE.c flaglist.c strlist.c \
+	collabclient.c collabclient.h
 nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
-libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS)
+libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_LIBS)
 libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD) $(LIBLTDL)
 
 if PLUGIN_GB12345
 libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/gb12345.la
 endif PLUGIN_GB12345
 
+if LIBZMQ
+libfontforge_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la
+endif LIBZMQ
+
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
-libfontforge_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -release $(VERSION)
+libfontforge_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) $(LIBZMQ_LIBS) -release $(VERSION)
 
 EXTRA_SCRIPTS = generate_codepoint_selector.py
 
@@ -144,7 +155,7 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	charinfo.c charview.c clipui.c combinations.c contextchain.c	\
 	cursors.c cvaddpoints.c cvdebug.c cvdgloss.c cvexportdlg.c		\
 	cvfreehand.c cvgetinfo.c cvgridfit.c cvhand.c cvhints.c			\
-	cvimportdlg.c cvknife.c cvpalettes.c cvpointer.c cvruler.c		\
+	cvimportdlg.c cvknife.c cvpalettes.c cvpointer.c cvruler.c 		\
 	cvshapes.c cvstroke.c cvtranstools.c displayfonts.c effectsui.c	\
 	encodingui.c fontinfo.c fontview.c freetypeui.c fvfontsdlg.c	\
 	fvmetricsdlg.c gotodlg.c groupsdlg.c histograms.c images.c		\
@@ -154,7 +165,7 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	\
 	splashimage.c startui.c statemachine.c tilepath.c transform.c	\
 	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
-	usermenu.c 
+	usermenu.c macobjective.h
 
 else !GRAPHICAL_USER_INTERFACE
 
@@ -164,8 +175,12 @@ endif !GRAPHICAL_USER_INTERFACE
 
 nodist_libfontforgeexe_la_SOURCES = exelibstamp.c
 
+if MACINTOSH
+MACFFEXE_LIBADD=macobjective.o
+endif MACINTOSH
+
 libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS)
-libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS) $(LIBADD) $(GUILIBADD)
+libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MACFFEXE_LIBADD)
 
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
@@ -195,17 +210,18 @@ AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
 # optimization turns out to have disastrous effects. Compile it
 # without optimization.
 splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
-	$(LIBTOOL) --mode=compile $(CC) -g -DHAVE_CONFIG_H -c -o		\
+	$(LIBTOOL) --mode=compile $(CC) -g -c -o		\
 		splinerefigure.lo $(AM_CPPFLAGS) $(srcdir)/splinerefigure.c
 
 #--------------------------------------------------------------------------
 
 EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe libstamp.pre	\
 	exelibstamp.pre fontimage.1 fontlint.1 sfddiff.1			\
-	MacFontForgeApp.zip darwinsetup.in
+	MacFontForgeApp.zip darwinsetup.in macobjective.m 
 MOSTLYCLEANFILES = fontimage fontlint sfddiff libstamp.c	\
 	exelibstamp.c
 
+#--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
 
 if MACINTOSH
@@ -222,7 +238,7 @@ FontForge.app/Contents/Info.plist: $(srcdir)/MacFontForgeApp.zip $(srcdir)/stamp
 	$(UNZIP) $(srcdir)/MacFontForgeApp.zip
 	mkdir -p darwinsetup_tmpdir
 	cp FontForge.app/Contents/Info.plist darwinsetup_tmpdir
-	( VERSION=`$(GREP) FONTFORGE_VERSIONDATE_RAW ../inc/config.h | $(SED) 's/.*RAW //g'` ; $(SED) s/20080810/$$VERSION/ < darwinsetup_tmpdir/Info.plist > FontForge.app/Contents/Info.plist )
+	( VERSION=`$(GREP) FONTFORGE_VERSIONDATE_RAW ../inc/fontforge-config.h | $(SED) 's/.*RAW //g'` ; $(SED) s/20080810/$$VERSION/ < darwinsetup_tmpdir/Info.plist > FontForge.app/Contents/Info.plist )
 
 BUILT_SOURCES = MacFontForgeAppBuilt.zip
 

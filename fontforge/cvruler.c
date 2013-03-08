@@ -749,8 +749,8 @@ static int rv_e_h(GWindow gw, GEvent *event) {
 			len = 0.0;
 		    }
 
-		    if (i == 0 &&  rv->cv->start_intersection_snapped) state = "snapped";
-		    else if (i == (rv->cv->num_ruler_intersections-1) &&  rv->cv->end_intersection_snapped) state = "snapped";
+		    if (i == 0 &&  rv->cv->start_intersection_snapped) state = _("snapped");
+		    else if (i == (rv->cv->num_ruler_intersections-1) &&  rv->cv->end_intersection_snapped) state = _("snapped");
 
 		    if (i) snprintf(buf2,sizeof buf2,"%d",i);
 		    else snprintf(buf2,sizeof buf2,_("start"));

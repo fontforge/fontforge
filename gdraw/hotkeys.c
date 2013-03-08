@@ -35,6 +35,10 @@
 #include <unistd.h>
 #include "intl.h"
 
+#ifdef __MINGW32__
+#define fsync _commit
+#endif
+
 extern char *getPfaEditDir(char *buffer);
 
 struct dlistnode* hotkeys = 0;
@@ -75,10 +79,13 @@ static int hotkeyHasMatchingWindowTypeString( char* windowType, Hotkey* hk ) {
  * Does the hotkey 'hk' have the right window_type to trigger its
  * action on the window 'w'.
  */
+/*
+ * Unused
 static int hotkeyHasMatchingWindowType( GWindow w, Hotkey* hk ) {
     char* windowType = GDrawGetWindowTypeName( w );
     return hotkeyHasMatchingWindowTypeString( windowType, hk );
 }
+*/
 
 static struct dlistnodeExternal*
 hotkeyFindAllByStateAndKeysym( char* windowType, uint16 state, uint16 keysym ) {
@@ -177,7 +184,8 @@ static char* trimspaces( char* line ) {
 
 static Hotkey* hotkeySetFull( char* action, char* keydefinition, int append, int isUserDefined ) 
 {
-    Hotkey* hk = gcalloc(1,sizeof(Hotkey));
+    Hotkey* hk = calloc(1,sizeof(Hotkey));
+    if ( hk==NULL ) return 0;
     strncpy( hk->action, action, HOTKEY_ACTION_MAX_SIZE );
     HotkeyParse( hk, keydefinition );
 
@@ -359,6 +367,17 @@ static Hotkey* hotkeyFindByAction( char* action ) {
     return 0;
 }
 
+Hotkey* hotkeyFindByMenuPathInSubMenu( GWindow w, char* subMenuName, char* path ) {
+
+    char* wt = GDrawGetWindowTypeName(w);
+    if(!wt)
+	return 0;
+
+    char line[PATH_MAX+1];
+    snprintf(line,PATH_MAX,"%s.%s%s%s",wt, subMenuName, ".Menu.", path );
+//    printf("line:%s\n",line);
+    return(hotkeyFindByAction(line));
+}
 
 Hotkey* hotkeyFindByMenuPath( GWindow w, char* path ) {
 

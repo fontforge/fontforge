@@ -3,6 +3,7 @@
 
 # Copyright (C) 2000-2012 by George Williams
 # Copyright (C) 2012 by Barry Schwartz
+# Copyright (C) 2013 by Ben Martin
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -36,7 +37,7 @@ AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_TESTDIR([tests],[fontforge])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
-AC_CONFIG_HEADERS([inc/config.h])
+AC_CONFIG_HEADERS([inc/fontforge-config.h])
 AM_INIT_AUTOMAKE([foreign -Wall])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
@@ -52,9 +53,10 @@ LT_INIT([dlopen])
 LTDL_INIT([recursive convenience])
 FONTFORGE_CHECK_LTDL_VERSION
 
-# The following is mainly for the benefit of the libltdl Makefile,
-# which expects to find <inc/config.h>.
-CPPFLAGS="${CPPFLAGS} AS_ESCAPE([-I${top_builddir}])"
+# The following is for the benefit of the libltdl Makefile,
+# which expects to find <inc/fontforge-config.h> in top_builddir,
+# and for some other things that use a path relative to top_srcdir.
+CPPFLAGS="${CPPFLAGS} AS_ESCAPE([-I${top_builddir}]) AS_ESCAPE([-I${top_srcdir}])"
 
 
 AC_PATH_XTRA
@@ -83,7 +85,8 @@ giflib_url="http://giflib.sourceforge.net/"
 libpng_url="http://www.libpng.org/"
 libxml_url="http://www.xmlsoft.org/"
 libspiro_url="http://libspiro.sourceforge.net/"
-libunicodenames_url="https://github.com/sortsmill/libunicodenames"
+libuninameslist_url="https://github.com/fontforge/libuninameslist"
+libzmq_url="http://www.zeromq.org/"
 
 # Point to the Wikipedia page, primarily because one may want
 # libjpeg-turbo rather than the reference implementation.
@@ -227,6 +230,7 @@ FONTFORGE_CONFIG_X_LIBRARIES
 # zlib is a requirement. It is too commonly available to bother
 # leaving out.
 PKG_CHECK_MODULES([ZLIB],[zlib])
+PKG_CHECK_MODULES([GLIB],[glib-2.0 >= 2.6 gio-2.0])
 
 if test x"${i_do_have_gui}" = xyes; then
    PKG_CHECK_MODULES([PANGO],[pango >= 1.10 pangoxft])
@@ -245,8 +249,9 @@ FONTFORGE_ARG_WITH_LIBPNG
 FONTFORGE_ARG_WITH_LIBTIFF
 FONTFORGE_ARG_WITH_LIBXML
 FONTFORGE_ARG_WITH_LIBSPIRO
-FONTFORGE_ARG_WITH_LIBUNICODENAMES
+FONTFORGE_ARG_WITH_LIBUNINAMESLIST
 FONTFORGE_ARG_WITH_ICONV
+FONTFORGE_ARG_WITH_ZEROMQ
 
 if test x"${i_do_have_cairo}" = xyes; then
    PKG_CHECK_MODULES([PANGOCAIRO],[pangocairo])
@@ -296,17 +301,25 @@ FONTFORGE_COMPILER_FLAGS([WARNING_CFLAGS],
          -Werror=implicit])
 
 #--------------------------------------------------------------------------
+# Bypass older autoscan recommendations (if anyone decides to run autoscan)
+# These packages promises to not use malloc(0) or realloc(n, 0) so we don't
+# want autoscan to suggest using AC_FUNC_MALLOC or AC_FUNC_REALLOC, by
+# redefining the problem
+m4_define([AN_FUNCTION], [m4_if([$1], [malloc], [],
+  [AN_OUTPUT([function], $@)])])
+m4_define([AN_FUNCTION], [m4_if([$1], [realloc], [],
+  [AN_OUTPUT([function], $@)])])
+
+#--------------------------------------------------------------------------
 # Checks for library functions.
 
 AC_FUNC_ERROR_AT_LINE
 AC_FUNC_FORK
-AC_FUNC_MALLOC
 AC_FUNC_MKTIME
 AC_FUNC_MMAP
 if test x"${ac_cv_func_mmap_fixed_mapped}" != xyes; then
    AC_DEFINE([_NO_MMAP],1,[Define if not using mmap.])
 fi
-AC_FUNC_REALLOC
 AC_FUNC_STRCOLL
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([alarm atexit dup2 endpwent floor])
@@ -320,6 +333,11 @@ AC_CHECK_FUNCS([strtol strtoul tzset uname])
 AC_CHECK_FUNC([snprintf],[:],[AC_DEFINE([_NO_SNPRINTF],1,[Define if not using snprintf.])])
 AC_CHECK_FUNC([tzset],[:],[AC_DEFINE([_NO_TZSET],1,[Define if not using tzset.])])
 
+#--------------------------------------------------------------------------
+# Put ifdef wrapper around the new fontforge-config.h so we don't repeatedly call it.
+AH_TOP([#ifndef _FF_CONFIG_H])
+AH_TOP([#define _FF_CONFIG_H 1])
+AH_BOTTOM([#endif])
 #--------------------------------------------------------------------------
 
 AM_CONDITIONAL([GRAPHICAL_USER_INTERFACE],[test x"${i_do_have_gui}" = xyes])
@@ -344,16 +362,16 @@ if test -d .git; then
 fi
 FONTFORGE_MODTIME="`date '+%s'`L"
 FONTFORGE_MODTIME_STR="`date +'%H:%M %Z %e-%b-%Y'`"
-FONTFORGE_VERSIONDATE="`date '+%y%m%d'`"
+FONTFORGE_VERSIONDATE="`date '+%Y%m%d'`"
 AC_DEFINE_UNQUOTED(FONTFORGE_GIT_VERSION,"$FONTFORGE_GIT_VERSION","git hash that source are built from")
 AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME,"$FONTFORGE_MODTIME","Epoch time that configure was run at")
 AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_STR,"$FONTFORGE_MODTIME_STR",
 	"A user friendly date that that configure was run at: For example 01:48 GMT 6-Sep-2012")
-AC_DEFINE_UNQUOTED(FONTFORGE_VERSIONDATE,"$FONTFORGE_VERSIONDATE","YY MM DD as numbers when configure was run")
+AC_DEFINE_UNQUOTED(FONTFORGE_VERSIONDATE,"$FONTFORGE_VERSIONDATE","YYYYMMDD as number when configure was run")
 AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_RAW,$FONTFORGE_MODTIME,"Epoch time that configure was run at (no quotes)")
 AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_STR_RAW,$FONTFORGE_MODTIME_STR,
 	"A user friendly date that that configure was run at: For example 01:48 GMT 6-Sep-2012 (no quotes)")
-AC_DEFINE_UNQUOTED(FONTFORGE_VERSIONDATE_RAW,$FONTFORGE_VERSIONDATE,"YY MM DD as numbers when configure was run (no quotes)")
+AC_DEFINE_UNQUOTED(FONTFORGE_VERSIONDATE_RAW,$FONTFORGE_VERSIONDATE,"YYYYMMDD as number when configure was run (no quotes)")
 
 
 
@@ -383,7 +401,8 @@ Summary of optional dependencies:
   libtiff            ${i_do_have_libtiff}  	${libtiff_url}
   libxml             ${i_do_have_libxml}  	${libxml_url}
   libspiro           ${i_do_have_libspiro}  	${libspiro_url}
-  libunicodenames    ${i_do_have_libunicodenames}  	${libunicodenames_url}
+  libuninameslist    ${i_do_have_libuninameslist}  	${libuninameslist_url}
+  zeromq             ${i_do_have_libzmq}  	${libzmq_url}
   X Window System    ${i_do_have_x}
 ])
 

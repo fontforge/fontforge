@@ -46,7 +46,11 @@ include $(top_srcdir)/mk/layout.am
 
 #--------------------------------------------------------------------------
 
-SUBDIRS = inc libltdl Unicode gutils hotkeys
+SUBDIRS = inc libltdl Unicode gutils hotkeys share
+
+if LIBZMQ
+SUBDIRS += collab
+endif
 
 if GRAPHICAL_USER_INTERFACE
 SUBDIRS += gdraw

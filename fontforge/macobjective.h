@@ -1,4 +1,4 @@
-/* Copyright (C) 2012 by Barry Schwartz */
+/* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,23 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _ANNOTATIONS_BASE_H_
-#define _ANNOTATIONS_BASE_H_
+#import <Cocoa/Cocoa.h>
 
-#ifndef _NO_LIBUNICODENAMES
 
-#include <libunicodenames.h>
 
-#else
-
-typedef void *uninm_names_db;
-
-#define uninm_find_names_db(locale_base)    ((char *) 0)
-#define uninm_names_db_open(filename)       ((uninm_names_db) 0)
-#define uninm_names_db_close(handle)        do {} while (0)
-#define uninm_name(handle, codepoint)       ((const char *) 0)
-#define uninm_annotation(handle, codepoint) ((const char *) 0)
-
-#endif
-
-#endif /* _ANNOTATIONS_BASE_H_ */

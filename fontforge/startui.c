@@ -25,9 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#include <fontforge-config.h>
 #include "fontforgeui.h"
-#include "annotations.h"
 #include <gfile.h>
 #include <gresource.h>
 #include <ustring.h>
@@ -41,6 +40,16 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "../gdraw/hotkeys.h"
+#include "gutils/prefs.h"
+
+#define GTimer GTimer_GTK
+#include <glib.h>
+#include <glib-object.h>
+#undef GTimer
+
+#ifdef __Mac
+extern void setup_cocoa_app();
+#endif
 
 #ifdef _NO_LIBPNG
 #  define PNGLIBNAME	"libpng"
@@ -65,9 +74,11 @@ extern void RunApplicationEventLoop(void);
 #endif
 
 #if defined(__MINGW32__)
-#include <Windows.h>
-void sleep( int n ){ _sleep(n);}
+#include <windows.h>
+#define sleep(n) Sleep(1000 * (n))
 #endif
+
+#include "collabclient.h"
 
 extern int AutoSaveFrequency;
 int splash = 1;
@@ -489,7 +500,7 @@ static  OSErr install_apple_event_handlers(void) {
 #else
     sprintf( buffer, "%s/.FontForge-LogFile.txt", getenv("HOME"));
 #endif
-    logfile = fopen("/Users/gww/LogFile.txt","w");
+    logfile = fopen("/tmp/LogFile.txt","w");
  }
  if ( logfile==NULL )
   logfile = stderr;
@@ -501,6 +512,7 @@ CantInstallAppleEventHandler:
 
 static pascal void DoRealStuff(EventLoopTimerRef timer,void *ignored_data) {
     GDrawProcessPendingEvents(NULL);
+    MacServiceReadFDs();
 }
 
 static void install_mac_timer(void) {
@@ -748,7 +760,11 @@ static void ffensuredir( const char* basedir, const char* dirname, mode_t mode )
     
     snprintf(buffer,buffersz,"%s/%s", basedir, dirname );
     // ignore errors, this is just to help the user aftre all.
+#if !defined(__MINGW32__)
     mkdir( buffer, mode );
+#else
+    mkdir( buffer );
+#endif
 }
 
 static void ensureDotFontForgeIsSetup() {
@@ -777,11 +793,13 @@ int fontforge_main( int argc, char **argv ) {
     int ds, ld;
     int openflags=0;
     int doopen=0, quit_request=0;
-#if defined(__Mac)
-    int local_x;
-#endif
 
-    fprintf( stderr, "Copyright (c) 2000-2012 by George Williams.\n Executable based on sources from %s"
+    g_type_init();
+
+    fprintf( stderr, "Copyright (c) 2000-2012 by George Williams. See AUTHORS for contributors.\n" );
+    fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
+    fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
+    fprintf( stderr, " Executable based on sources from %s"
 	    "-ML"
 #ifdef FREETYPE_HAS_DEBUGGER
 	    "-TtfDb"
@@ -815,7 +833,7 @@ int fontforge_main( int argc, char **argv ) {
     /* Start X if they haven't already done so. Well... try anyway */
     /* Must be before we change DYLD_LIBRARY_PATH or X won't start */
     /* (osascript depends on a libjpeg which isn't found if we look in /sw/lib first */
-    local_x = uses_local_x(argc,argv);
+    int local_x = uses_local_x(argc,argv);
     if ( local_x==1 && getenv("DISPLAY")==NULL ) {
 	/* Don't start X if we're just going to quit. */
 	/* if X exists, it isn't needed. If X doesn't exist it's wrong */
@@ -849,7 +867,7 @@ int fontforge_main( int argc, char **argv ) {
 	}
     }
 #endif
-
+    
     FF_SetUiInterface(&gdraw_ui_interface);
     FF_SetPrefsInterface(&gdraw_prefs_interface);
     FF_SetSCInterface(&gdraw_sc_interface);
@@ -863,8 +881,8 @@ int fontforge_main( int argc, char **argv ) {
     PythonUI_Init();
 #endif
 
-    InitSimpleStuff();
     FindProgDir(argv[0]);
+    InitSimpleStuff();
 
 #if defined(__MINGW32__)
     {
@@ -953,7 +971,8 @@ int fontforge_main( int argc, char **argv ) {
     }
 #endif
     hotkeysLoad();
-
+//    loadPrefsFiles();
+    Prefs_LoadDefaultPreferences();
 
     if ( load_prefs!=NULL && strcasecmp(load_prefs,"Always")==0 )
 	LoadPrefs();
@@ -1026,7 +1045,7 @@ int fontforge_main( int argc, char **argv ) {
 	    dohelp();
 	else if ( strcmp(pt,"-help")==0 )
 	    dousage();
-	else if ( strcmp(pt,"-version")==0 )
+	else if ( strcmp(pt,"-version")==0 || strcmp(pt,"-v")==0 || strcmp(pt,"-V")==0 )
 	    doversion(source_version_str);
 	else if ( strcmp(pt,"-quit")==0 )
 	    quit_request = true;
@@ -1200,10 +1219,14 @@ exit( 0 );
     }
     if ( !any && !doopen )
 	any = ReopenLastFonts();
+
+    collabclient_sniffForLocalServer();
+    
 #if defined(__Mac)
     if ( listen_to_apple_events ) {
 	install_apple_event_handlers();
 	install_mac_timer();
+	setup_cocoa_app();
 	RunApplicationEventLoop();
     } else
 #endif
@@ -1212,8 +1235,7 @@ exit( 0 );
     GDrawEventLoop(NULL);
 
     hotkeysSave();
-    
-    uninm_names_db_close(names_db);
+
     lt_dlexit();
 
 return( 0 );

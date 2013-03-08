@@ -14,11 +14,20 @@ cp ./fontforge/MacFontForgeAppBuilt.zip $TEMPDIR/
 unzip -d $TEMPDIR $TEMPDIR/MacFontForgeAppBuilt.zip
 DESTDIR=$bundle_res make install
 
+sed -i -e "s|Gdraw.ScreenWidthCentimeters:.*|Gdraw.ScreenWidthCentimeters: 34|g" \
+       "$bundle_res/opt/local/share/fontforge/pixmaps/resources"
+sed -i -e "s|Gdraw.GMenu.MacIcons:.*|Gdraw.GMenu.MacIcons: True|g" \
+       "$bundle_res/opt/local/share/fontforge/pixmaps/resources"
+
 cd $bundle_bin
 dylibbundler --overwrite-dir --bundle-deps --fix-file \
   ./fontforge \
   --install-path @executable_path/../lib \
   --dest-dir ../lib
+dylibbundler --overwrite-dir --bundle-deps --fix-file \
+  ./FontForgeInternal/fontforge-internal-collab-server \
+  --install-path @executable_path/collablib \
+  --dest-dir ./FontForgeInternal/collablib
 
 mkdir -p $bundle_lib
 cp -av /opt/local/lib/pango   $bundle_lib
@@ -50,12 +59,21 @@ do
 done
 
 
+cd $bundle_res
+mkdir -p opt/local/share/mime
+cp -av /opt/local/share/mime/mime.cache opt/local/share/mime
+cp -av /opt/local/share/mime/globs      opt/local/share/mime
+cp -av /opt/local/share/mime/magic      opt/local/share/mime
+
 
 cd $TEMPDIR
-zip -r ~/MacFontForgeBundledApp.zip FontForge.app
+rm -f  ~/FontForge.app.zip
+zip -9 -r ~/FontForge.app.zip FontForge.app
+cp -f  ~/FontForge.app.zip /tmp/
+chmod o+r /tmp/FontForge.app.zip
 
 echo "Completed at `date`"
-ls -lh `echo ~`/MacFontForgeBundledApp.zip
+ls -lh `echo ~`/FontForge.app.zip
 
 
 

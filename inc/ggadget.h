@@ -31,6 +31,13 @@
 #include "intl.h"
 struct giocontrol;
 
+#ifndef MAX
+#define MAX(x,y)   (((x) > (y)) ? (x) : (y))
+#endif
+#ifndef MIN
+#define MIN(x,y)   (((x) < (y)) ? (x) : (y))
+#endif
+
 typedef struct gtextinfo {
     unichar_t *text;
     GImage *image;
@@ -88,6 +95,7 @@ typedef struct gmenuitem {
     int mid;
 } GMenuItem;
 
+#define GMENUITEM_LINE   { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, '\0', 0, NULL, NULL, NULL, 0 }
 #define GMENUITEM_EMPTY { GTEXTINFO_EMPTY, '\0', 0, NULL, NULL, NULL, 0 }
 
 
@@ -100,8 +108,8 @@ typedef struct gmenuitem2 {
     int mid;
 } GMenuItem2;
 
+#define GMENUITEM2_LINE { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }
 #define GMENUITEM2_EMPTY { GTEXTINFO_EMPTY, NULL, NULL, NULL, NULL, 0 }
-
 
 typedef struct tabinfo {
     unichar_t *text;
@@ -290,7 +298,7 @@ struct gdirentry;
 typedef enum fchooserret (*GFileChooserFilterType)(GGadget *g,struct gdirentry *ent,
 	const unichar_t *dir);
 typedef int (*GFileChooserInputFilenameFuncType)( GGadget *g,
-						  unichar_t** currentFilename,
+						  const unichar_t ** currentFilename,
 						  unichar_t* oldfilename );
 
     /* Obsolete */
@@ -346,12 +354,16 @@ void GGadgetSetUserData(GGadget *g, void *d);
 void GGadgetSetPopupMsg(GGadget *g, const unichar_t *msg);
 GRect *GGadgetGetInnerSize(GGadget *g,GRect *rct);
 GRect *GGadgetGetSize(GGadget *g,GRect *rct);
+void GGadgetSetSize(GGadget *g,GRect *rct);
 void GGadgetGetDesiredVisibleSize(GGadget *g,GRect *outer, GRect *inner);
 void GGadgetGetDesiredSize(GGadget *g,GRect *outer, GRect *inner);
 void GGadgetSetDesiredSize(GGadget *g,GRect *outer, GRect *inner);
 int GGadgetGetCid(GGadget *g);
 void GGadgetResize(GGadget *g,int32 width, int32 height );
 void GGadgetMove(GGadget *g,int32 x, int32 y );
+int32 GGadgetGetX(GGadget *g);
+int32 GGadgetGetY(GGadget *g);
+void  GGadgetSetY(GGadget *g, int32 y );
 void GGadgetRedraw(GGadget *g);
 void GGadgetsCreate(GWindow base, GGadgetCreateData *gcd);
 int  GGadgetFillsWindow(GGadget *g);
@@ -435,8 +447,8 @@ void GFileChooserConnectButtons(GGadget *g,GGadget *ok, GGadget *filter);
 void GFileChooserSetFilterText(GGadget *g,const unichar_t *filter);
 void GFileChooserSetFilterFunc(GGadget *g,GFileChooserFilterType filter);
 void GFileChooserSetInputFilenameFunc(GGadget *g,GFileChooserInputFilenameFuncType filter);
-int GFileChooserDefInputFilenameFunc( GGadget *g, unichar_t** currentFilename, unichar_t* oldfilename );
-int GFileChooserSaveAsInputFilenameFunc( GGadget *g, unichar_t** ppt, unichar_t* oldfilename );
+int GFileChooserDefInputFilenameFunc( GGadget *g, const unichar_t** currentFilename, unichar_t* oldfilename );
+int GFileChooserSaveAsInputFilenameFunc( GGadget *g, const unichar_t** ppt, unichar_t* oldfilename );
 GFileChooserInputFilenameFuncType GFileChooserGetInputFilenameFunc(GGadget *g);
 void GFileChooserSetDir(GGadget *g,unichar_t *dir);
 struct giocontrol *GFileChooserReplaceIO(GGadget *g,struct giocontrol *gc);
@@ -518,8 +530,13 @@ enum fchooserret GFileChooserDefFilter(GGadget *g,struct gdirentry *ent,
 	const unichar_t *dir);
 
 GWindow GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi);
+GWindow GMenuCreatePopupMenuWithName(GWindow owner,GEvent *event, char* subMenuName,GMenuItem *mi);
 GWindow _GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi,
-	void (*donecallback)(GWindow owner));
+			      void (*donecallback)(GWindow owner));
+GWindow _GMenuCreatePopupMenuWithName(GWindow owner,GEvent *event, GMenuItem *mi,
+				      char* subMenuName, 
+				      void (*donecallback)(GWindow owner));
+
 
 GGadget *GLineCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GGroupCreate(struct gwindow *base, GGadgetData *gd,void *data);
@@ -588,5 +605,7 @@ extern void GMenuItemArrayFree(GMenuItem *mi);
 extern void GMenuItem2ArrayFree(GMenuItem2 *mi);
 extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
 extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
+
+extern void GVisibilityBoxSetToMinWH(GGadget *g);
 
 #endif

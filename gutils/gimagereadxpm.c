@@ -293,9 +293,10 @@ GImage *GImageReadXpm(char * filename) {
    unsigned char *pt, *end; unsigned long *ipt;
    int (*getdata)(unsigned char *,int,FILE *) = NULL;
 
-   fp = fopen(filename, "r");
-   if (!fp)
-return( NULL );
+    if ( (fp=fopen(filename,"rb"))==NULL ) {
+	fprintf(stderr,"Can't open \"%s\"\n", filename);
+	return( NULL );
+    }
 
     fgets((char *) buf,sizeof(buf),fp);
     if ( strstr((char *) buf,"XPM2")!=NULL )

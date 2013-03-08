@@ -1409,7 +1409,7 @@ msgstr "%1$.80s bei %2$d von %3$.90s"
 #. GT: Foreground, make it short
 #: charview.c:2301
 msgid "Fore"
-msgstr "Zeichenebene"
+msgstr "Zeichen"
 
 #. GT: Background, make it short
 #: charview.c:2303
@@ -1420,7 +1420,7 @@ msgstr "HG-Ebene"
 #. GT: Guide layer, make it short
 #: charview.c:2305
 msgid "Guide"
-msgstr "Gerüst-Ebene"
+msgstr "Gerüst"
 
 #: charview.c:2310
 msgid "Glyph"

@@ -27,12 +27,14 @@
 
 #include "flaglist.h"
 
+/*********** PYTHON 3 **********/
 #if PY_MAJOR_VERSION >= 3
 
 #define PyInt_Check    PyLong_Check
 #define PyInt_AsLong   PyLong_AsLong
 #define PyInt_FromLong PyLong_FromLong
 
+#define ANYSTRING_CHECK(obj) (PyUnicode_Check(obj))
 #define STRING_CHECK   PyUnicode_Check
 #define STRING_TO_PY   PyUnicode_FromString
 #define DECODE_UTF8(s, size, errors) PyUnicode_DecodeUTF8(s, size, errors)
@@ -42,7 +44,9 @@
 #define PICKLE "pickle"
 
 #else /* PY_MAJOR_VERSION >= 3 */
+/*********** PYTHON 2 **********/
 
+#define ANYSTRING_CHECK(obj) ( PyUnicode_Check(obj) || PyString_Check(obj) )
 #define STRING_CHECK   PyBytes_Check
 #define STRING_TO_PY   PyBytes_FromString
 #define DECODE_UTF8(s, size, errors) PyString_Decode(s, size, "UTF-8", errors)
@@ -53,6 +57,14 @@
 
 #endif /* PY_MAJOR_VERSION >= 3 */
 
+/*********** Common **********/
+#ifndef Py_TYPE
+#define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
+#endif
+
+#ifndef Py_TYPENAME
+#define Py_TYPENAME(ob) (((PyObject*)(ob))->ob_type->tp_name)
+#endif
 
 #if !defined( Py_RETURN_NONE )
 /* Not defined before 2.4 */
@@ -63,6 +75,14 @@
 #ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
 #define PyMODINIT_FUNC void
 #endif
+
+#ifndef PyVarObject_HEAD_INIT
+    #define PyVarObject_HEAD_INIT(type, size) \
+        PyObject_HEAD_INIT(type) size,
+#endif
+
+
+extern char* AnyPyString_to_UTF8( PyObject* );
 
 #if PY_MAJOR_VERSION < 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION <= 7)
 #define PyBytesObject PyStringObject

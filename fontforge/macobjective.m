@@ -1,4 +1,4 @@
-/* Copyright (C) 2012 by Barry Schwartz */
+/* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,12 +25,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _ANNOTATIONS_H_
-#define _ANNOTATIONS_H_
+#include "macobjective.h"
 
-#include <annotations_base.h>
+void setup_cocoa_app() 
+{
+   [NSApplication sharedApplication];
+}
 
-extern uninm_names_db names_db; /* Unicode character names and
-                                 * annotations. */
-
-#endif /* _ANNOTATIONS_H_ */

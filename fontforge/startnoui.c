@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgevw.h"
-#include "annotations.h"
 #include <gfile.h>
 #include <ustring.h>
 #include <ltdl.h>
@@ -75,7 +74,10 @@ int fontforge_main( int argc, char **argv ) {
     extern const char *source_version_str;
     extern const char *source_modtime_str;
 
-    fprintf( stderr, "Copyright (c) 2000-2012 by George Williams.\n Executable based on sources from %s"
+    fprintf( stderr, "Copyright (c) 2000-2012 by George Williams. See AUTHORS for contributors.\n" );
+    fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
+    fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
+    fprintf( stderr, " Executable based on sources from %s"
 	    "-ML"
 #ifdef FREETYPE_HAS_DEBUGGER
 	    "-TtfDb"
@@ -123,7 +125,6 @@ int fontforge_main( int argc, char **argv ) {
     PyFF_Stdin();
 #  endif
 
-    uninm_names_db_close(names_db);
     lt_dlexit();
 return( 0 );
 }

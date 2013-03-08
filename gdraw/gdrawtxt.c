@@ -111,6 +111,15 @@ int32 GDrawGetText8Width(GWindow gw, const char *text, int32 cnt) {
 return( _GXPDraw_DoText8(gw,0,0,text,cnt,0x0,tf_width,&arg));
 }
 
+int32 GDrawGetText8Height(GWindow gw, const char *text, int32 cnt) 
+{
+    GTextBounds bounds;
+    int32 ret = GDrawGetText8Bounds( gw, text, cnt, &bounds );
+    ret = bounds.as + bounds.ds;
+    return ret;
+}
+
+
 int32 GDrawGetText8Bounds(GWindow gw,const char *text, int32 cnt, GTextBounds *bounds) {
     int ret;
     struct tf_arg arg;

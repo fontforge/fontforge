@@ -66,6 +66,10 @@ extern void cu_strncat(char *, const unichar_t *,int len);
 extern void u_strcat(unichar_t *, const unichar_t *);
 extern void u_strncat(unichar_t *, const unichar_t *, int len);
 extern int  u_strlen(const unichar_t *);
+/**
+ * Like strlen() but passing a null pointer gets a 0 length
+ */
+extern int  c_strlen(const char *);
 extern unichar_t *u_strchr(const unichar_t *,unichar_t);
 extern unichar_t *u_strrchr(const unichar_t *,unichar_t);
 extern unichar_t *uc_strstr(const unichar_t *,const char *);
@@ -80,6 +84,13 @@ extern unichar_t *c_to_u(const char *);
 extern unsigned long u_strtoul(const unichar_t *,unichar_t **,int);
 extern long   u_strtol(const unichar_t *,unichar_t **,int);
 extern double u_strtod(const unichar_t *,unichar_t **);
+
+/*
+ * Convert the integer 'v' to a string and return it.
+ * You do not own the return value, it is an internal buffer
+ * so you should copy it before using the function again
+ */ 
+extern char*  c_itostr( int v );
 
 extern char *strstart(const char *initial,const char *full);
 extern char *strstartmatch(const char *initial,const char *full);
@@ -165,5 +176,11 @@ int endswith(const char *haystack,const char *needle);
  * No new strings are allocated, freed, or returned.
  */
 extern int u_endswith(const unichar_t *haystack,const unichar_t *needle);
+
+/**
+ * Return a pointer to the last occurance of ch in 's' or null if it
+ * doesn't appear. Very much like the strrchr() call.
+ */
+extern char* str_rfind( char* s, char ch );
 
 #endif

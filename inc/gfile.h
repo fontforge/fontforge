@@ -38,6 +38,9 @@ extern char *GFileNameTail(const char *oldname);
 extern char *GFileAppendFile(char *dir,char *name,int isdir);
 extern int GFileIsAbsolute(const char *file);
 extern int GFileIsDir(const char *file);
+/**
+ * Returns true if the file exists
+ */
 extern int GFileExists(const char *file);
 extern int GFileModifyable(const char *file);
 extern int GFileModifyableDir(const char *file);
@@ -61,11 +64,15 @@ extern int u_GFileReadable(unichar_t *file);
 extern int u_GFileMkDir(unichar_t *name);
 extern int u_GFileRmDir(unichar_t *name);
 extern int u_GFileUnlink(unichar_t *name);
-
+extern int GFileGetSize(char *name);
+extern char* GFileReadAll(char *name);
+extern int   GFileWriteAll(char* filepath, char *data);
 extern char* getGResourceProgramDir(void);
 extern void  FindProgDir(char *prog);
 extern char *getShareDir(void);
 extern char *getLocaleDir(void);
 extern char *getPixmapDir(void);
+extern char *getHelpDir(void);
+extern char *getDotFontForgeDir(void);
 
 #endif

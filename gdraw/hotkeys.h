@@ -189,6 +189,7 @@ extern char*   hotkeyTextWithoutModifiers( char* hktext );
  * Do not free the return value, it's not yours! 
  */
 extern Hotkey* hotkeyFindByMenuPath( GWindow w, char* path );
+extern Hotkey* hotkeyFindByMenuPathInSubMenu( GWindow w, char* subMenuName, char* path );
 
 
 /**

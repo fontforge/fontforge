@@ -40,6 +40,11 @@
 #include <setjmp.h>
 #include <signal.h>
 
+#if defined(__MINGW32__)
+#include <windows.h>
+#define sleep(n) Sleep(1000 * (n))
+#endif
+
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
 #define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)

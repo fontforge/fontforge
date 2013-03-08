@@ -26,6 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "lookups.h"
 #include <gkeysym.h>
 #include <gresource.h>
 #include <gresedit.h>
@@ -35,7 +36,7 @@
 #include <math.h>
 
 int mv_width = 800, mv_height = 300;
-int mvshowgrid = mv_hidemovinggrid;
+int mvshowgrid = mv_hidegrid;
 int mv_type = mv_widthonly;
 static int mv_antialias = true;
 static double mv_scales[] = { 8.0, 4.0, 2.0, 1.5, 1.0, 2.0/3.0, .5, 1.0/3.0, .25, .2, 1.0/6.0, .125, .1 };
@@ -597,6 +598,9 @@ static void MVRefreshValues(MetricsView *mv, int i) {
 
     GGadgetSetTitle8(mv->perchar[i].name,sc->name);
 
+if( !mv->perchar[i].width )
+return;
+
     sprintf(buf,"%d",mv->vertical ? sc->vwidth : sc->width);
     GGadgetSetTitle8(mv->perchar[i].width,buf);
 
@@ -627,6 +631,9 @@ static void MVRefreshValues(MetricsView *mv, int i) {
 	kern_offset = mv->glyphs[i].kp->off;
     else if ( mv->glyphs[i].kc!=NULL )
 	kern_offset = mv->glyphs[i].kc->offsets[ mv->glyphs[i].kc_index ];
+if( !mv->perchar[i+1].kern )
+  return;
+
     if ( kern_offset!=0x7ffffff && i!=mv->glyphcnt-1 ) {
 	sprintf(buf,"%d",kern_offset);
 	GGadgetSetTitle8(mv->perchar[i+1].kern,buf);
@@ -930,12 +937,15 @@ static int isValidInt(unichar_t *end) {
     return 1;
 }
 
+/*
+ * Unused
 static int GGadgetToInt(GGadget *g)
 {
     unichar_t *end;
     int val = u_strtol(_GGadgetGetTitle(g),&end,10);
     return val;
 }
+*/
 
 static real GGadgetToReal(GGadget *g) 
 {
@@ -981,7 +991,7 @@ return( true );
 	    DBounds bb;
 	    SplineCharFindBounds(sc,&bb);
 	    transform[4] = offset-bb.minx;
-	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,0);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL, 0 | fvt_alllayers );
 
 	    SCSynchronizeWidth(sc,val,sc->width,NULL);
 	    SCCharChangedUpdate(sc,ly_none);
@@ -1024,13 +1034,13 @@ return( true );
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[5] = 0;
 	    transform[4] = val-bb.minx;
-	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,0);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,0 | fvt_alllayers );
 	} else if ( mv->vertical && val!=sc->parent->ascent-bb.maxy ) {
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[4] = 0;
 	    transform[5] = sc->parent->ascent-bb.maxy-val;
-	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,fvt_dontmovewidth);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL, fvt_dontmovewidth | fvt_alllayers );
 	}
 	
     } else if ( e->u.control.subtype == et_textfocuschanged &&
@@ -1111,6 +1121,7 @@ return( gwwv_ask(_("Use Kerning Class?"),(const char **) yesno,0,1,
 	first_is_0  ? _("{Everything Else}") : fsc->name,
 	second_is_0 ? _("{Everything Else}") : lsc->name)==0 );
 }
+
 
 static int MV_ChangeKerning(MetricsView *mv, int which, int offset, int is_diff) {
     SplineChar *sc = mv->glyphs[which].sc;
@@ -1207,8 +1218,10 @@ return( false );
 		MMKern(sc->parent,psc,sc,is_diff?offset:offset-kp->off,sub,kp);
 	}
     }
-    mv->perchar[which-1].kernafter = iscale * (offset*mv->pixelsize)/
-	    (mv->sf->ascent+mv->sf->descent);
+    int16 newkernafter = iscale * (offset*mv->pixelsize)/
+	(mv->sf->ascent+mv->sf->descent);
+    mv->perchar[which-1].kernafter = newkernafter;
+    
     if ( mv->vertical ) {
 	for ( i=which; i<mv->glyphcnt; ++i ) {
 	    mv->perchar[i].dy = mv->perchar[i-1].dy+mv->perchar[i-1].dheight +
@@ -1220,8 +1233,79 @@ return( false );
 		    mv->perchar[i-1].kernafter;
 	}
     }
+
+    /**
+     * Class based kerning. If we have altered one pair "Tc" then we
+     * want to find any other pairs in the same class that are shown
+     * and alter them in a similar way. Note that the update to the
+     * value shown is already done as that is taken from the
+     * KernClass. We can get away with just calling MVRefreshValues()
+     * on the right indexes to update the kern value entry boxes. On
+     * the other hand, we have to make sure the guide and glyph
+     * display is adjusted accordingly too otherwise the user will not
+     * see the currect kerning for all other digraphs in the same
+     * class even thuogh the kerning entry box is updated.
+     */
+    if( kc && psc && sc )
+    {
+	// cache the cell in the kernclass that we are editing for quick comparison
+	// in the loop
+	int pscidx = KernClassFindIndexContaining( kc->firsts,  kc->first_cnt,  psc->name );
+	int  scidx = KernClassFindIndexContaining( kc->seconds, kc->second_cnt,  sc->name );
+
+	if( pscidx > 0 && scidx > 0 )
+	{
+	    for ( i=1; i<mv->glyphcnt; ++i )
+	    {
+		// don't check yourself.
+		if( i-1 == which )
+		    continue;
+
+		/* printf("mv->glyphs[i-1].sc.name:%s\n", mv->glyphs[i-1].sc->name ); */
+		/* printf("mv->glyphs[i  ].sc.name:%s\n", mv->glyphs[i  ].sc->name ); */
+
+		int pidx = KernClassFindIndexContaining( kc->firsts,
+							 kc->first_cnt,
+							 mv->glyphs[i-1].sc->name );
+		/*
+		 * Same value for firsts in the kernclass matrix
+		 */ 
+		if( pidx == pscidx )
+		{
+		    int idx = KernClassFindIndexContaining( kc->seconds,
+							    kc->second_cnt,
+							    mv->glyphs[ i ].sc->name );
+
+		    /*
+		     * First and Second match, we have the same cell
+		     * in the kernclass and thus the same kern value
+		     * should be applied.
+		     */ 
+		    if( scidx == idx )
+		    {
+			// update the kern text entry box in the lower part of
+			// the window.
+			MVRefreshValues( mv, i-1 );
+
+			//
+			// Shift the guide and kerning for this digraph, and move
+			// all the glyphs on the right over or back a bit so that things
+			// still all fit as expected.
+			//
+			mv->perchar[i-1].kernafter = newkernafter;
+			for ( int j=i; j<mv->glyphcnt; ++j ) {
+			    mv->perchar[j].dx = mv->perchar[j-1].dx + mv->perchar[j-1].dwidth +
+				mv->perchar[j-1].kernafter;
+			}
+		    }
+		}
+	    }
+	}
+    }
+
     mv->sf->changed = true;
     GDrawRequestExpose(mv->v,NULL,false);
+
 return( true );
 }
 
@@ -3048,7 +3132,8 @@ static void MVMenuChangeLayer(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e
     GDrawRequestExpose(mv->v,NULL,false);
 }
 
-static void MVMenuCenter(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
+static void MVMenuCenter(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
+{
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i;
     DBounds bb;
@@ -3068,7 +3153,7 @@ static void MVMenuCenter(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	else
 	    transform[4] = (sc->width-(bb.maxx-bb.minx))/3 - bb.minx;
 	if ( transform[4]!=0 )
-	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,fvt_dontmovewidth);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL, fvt_dontmovewidth| fvt_alllayers );
     }
 }
 
@@ -3476,8 +3561,6 @@ static void MVMenuRemoveVKern(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
     SCRemoveVKern(sc);
 }
 
-#define GMENUITEM2_LINE { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }
-    
 static GMenuItem2 mtlist[] = {
     { { (unichar_t *) N_("_Center in Width"), (GImage *) "metricscenter.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Center in Width|No Shortcut"), NULL, NULL, MVMenuCenter, MID_Center },
     { { (unichar_t *) N_("_Thirds in Width"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Thirds in Width|No Shortcut"), NULL, NULL, MVMenuCenter, MID_Thirds },
@@ -3865,7 +3948,9 @@ static void MVChar(MetricsView *mv,GEvent *event) {
     if ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ||
 	    event->u.chr.keysym == GK_Down || event->u.chr.keysym==GK_KP_Down ) {
 	    GGadget *active = GWindowGetFocusGadgetOfWindow(mv->gw);
-	    unichar_t *end;
+	    if(!active)
+		return;
+ 	    unichar_t *end;
 	    double val = u_strtod(_GGadgetGetTitle(active),&end);
 	    if (isValidInt(end)) {
 		int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? 1 : -1;
@@ -3880,6 +3965,7 @@ static void MVChar(MetricsView *mv,GEvent *event) {
 		snprintf(buf,99,"%.0f",val);
 		GGadgetSetTitle8(active, buf);
 
+		event->u.control.u.tf_changed.from_pulldown=-1;
 		event->type=et_controlevent;
 		event->u.control.subtype = et_textchanged;
 		GGadgetDispatchEvent(active,event);
@@ -4170,7 +4256,7 @@ static void MVSubMouse(MetricsView *mv,GEvent *event) {
 	_MVSubVMouse(mv,event);
 return;
     }
-
+    
     ybase = mv->ybaseline - mv->yoff;
     within = -1;
     for ( i=0; i<mv->glyphcnt; ++i ) {
@@ -4422,7 +4508,7 @@ return;
 	    transform[4] = diff*
 		    (mv->sf->ascent+mv->sf->descent)/(mv->pixelsize*iscale);
 	    if ( transform[4]!=0 )
-		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,false);
+		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL, 0 | fvt_alllayers );
 	}
 	mv->pressedwidth = false;
 	mv->pressedkern = false;
@@ -4928,6 +5014,8 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     mv->v = GWidgetCreateSubWindow(mv->gw,&pos,mv_v_e_h,mv,&wattrs);
+    GDrawSetWindowTypeName(mv->v, "MetricsView");
+    
     MVSetFeatures(mv);
     MVMakeLabels(mv);
     MVResize(mv);

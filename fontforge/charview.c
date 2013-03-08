@@ -27,7 +27,6 @@
 
 #include "fontforgeui.h"
 #include "cvruler.h"
-#include "annotations.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>
@@ -42,6 +41,13 @@ extern int _GScrollBar_Width;
 #endif
 #include "dlist.h"
 
+#ifndef _NO_LIBUNINAMESLIST
+#include <uninameslist.h>
+#endif
+
+#include "gutils/prefs.h"
+#include "collabclient.h"
+
 /* Barry wants to be able to redefine menu bindings only in the charview (I think) */
 /*  the menu parser will first check for something like "CV*Open|Ctl+O", and */
 /*  if that fails will strip off "CV*" and check for "Open|Ctl+O" */
@@ -52,7 +58,6 @@ extern void UndoesFreeButRetainFirstN( Undoes** undopp, int retainAmount );
 
 
 int ItalicConstrained=true;
-int cv_auto_goto = false;
 float arrowAmount=1;
 float arrowAccelFactor=10.;
 float snapdistance=3.5;
@@ -62,6 +67,7 @@ int updateflex = false;
 extern int clear_tt_instructions_when_needed;
 int use_freetype_with_aa_fill_cv = 1;
 int interpCPsOnMotion=false;
+int DrawOpenPathsWithHighlight = 1;
 int default_cv_width = 540;
 int default_cv_height = 540;
 
@@ -149,6 +155,7 @@ static Color gridfitoutlinecol = 0x009800;
 static Color backoutlinecol = 0x009800;
 static Color foreoutlinecol = 0x000000;
 static Color clippathcol = 0x0000ff;
+static Color openpathcol = 0x660000;
 static Color backimagecol = 0x707070;
 static Color fillcol = 0x80707070;		/* Translucent */
 static Color tracecol = 0x008000;
@@ -200,6 +207,7 @@ static struct resed charview2_re[] = {
     { N_("Inactive Layer Color"), "BackgroundOutlineColor", rt_color, &backoutlinecol, N_("The color of outlines in inactive layers"), NULL, { 0 }, 0, 0 },
     { N_("Active Layer Color"), "ForegroundOutlineColor", rt_color, &foreoutlinecol, N_("The color of outlines in the active layer"), NULL, { 0 }, 0, 0 },
     { N_("Clip Path Color"), "ClipPathColor", rt_color, &clippathcol, N_("The color of the clip path"), NULL, { 0 }, 0, 0 },
+    { N_("Open Path Color"), "OpenPathColor", rt_color, &openpathcol, N_("The color of the an open path"), NULL, { 0 }, 0, 0 },
     { N_("Background Image Color"), "BackgroundImageColor", rt_coloralpha, &backimagecol, N_("The color used to draw bitmap (single bit) images which do not specify a clut"), NULL, { 0 }, 0, 0 },
     { N_("Fill Color"), "FillColor", rt_coloralpha, &fillcol, N_("The color used to fill the outline if that mode is active"), NULL, { 0 }, 0, 0 },
     { N_("Preview Fill Color"), "PreviewFillColor", rt_coloralpha, &previewfillcol, N_("The color used to fill the outline when in preview mode"), NULL, { 0 }, 0, 0 },
@@ -653,6 +661,16 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
     char buf[12];
     int isfake;
 
+    if ( DrawOpenPathsWithHighlight
+	 && cv->b.drawmode==dm_fore
+	 && spl->first
+	 && spl->first->prev==NULL )
+    {
+	if( sp!=spl->first )
+	    col = openpathcol;
+    }
+    
+    
     if ( cv->markextrema && SpIsExtremum(sp) )
 	 col = extremepointcol;
     if ( sp->selected )
@@ -1147,15 +1165,37 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
     CVDrawSplineSetSpecialized( cv, pixmap, set, fg, dopoints, clip, sfm_stroke );
 }
 
+
 void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *set,
 				Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode ) {
     SplinePointList *spl;
     int currentSplineCounter = 0;
+    int activelayer = CVLayer(&cv->b);
 
     if( strokeFillMode == sfm_fill ) {
 	GDrawFillRuleSetWinding(pixmap);
     }
+    
     for ( spl = set; spl!=NULL; spl = spl->next ) {
+
+	Color fc  = spl->is_clip_path ? clippathcol : fg;
+	/**
+	 * Only make the outline red if this is not a grid layer
+	 * and we want to highlight open paths
+	 * and the activelayer is sane
+	 * and the activelayer contains the given splinepointlist
+	 * and the path is open
+	 */
+	if ( cv->b.drawmode!=dm_grid
+	     && DrawOpenPathsWithHighlight
+	     && activelayer < cv->b.sc->layer_cnt
+	     && SplinePointListContains( cv->b.sc->layers[activelayer].splines, spl )
+	     && spl->first
+	     && spl->first->prev==NULL )
+	{
+	    fc = openpathcol;
+	}
+	
 	if ( GDrawHasCairo(pixmap)&gc_buildpath ) {
 	    Spline *first, *spline;
 	    double x,y, cx1, cy1, cx2, cy2, dx,dy;
@@ -1201,8 +1241,8 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 		GDrawPathClose(pixmap);
 
 	    switch( strokeFillMode ) {
-	    case sfm_stroke:
-		GDrawPathStroke(pixmap,(spl->is_clip_path ? clippathcol : fg)|0xff000000);
+	    case sfm_stroke: 
+		GDrawPathStroke( pixmap, fc | 0xff000000 );
 		break;
 	    case sfm_fill:
 	    case sfm_nothing:
@@ -1211,7 +1251,7 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 	} else {
 	    GPointList *gpl = MakePoly(cv,spl), *cur;
 	    for ( cur=gpl; cur!=NULL; cur=cur->next )
-		GDrawDrawPoly(pixmap,cur->gp,cur->cnt,spl->is_clip_path ? clippathcol : fg);
+		GDrawDrawPoly(pixmap,cur->gp,cur->cnt,fc);
 	    GPLFree(gpl);
 	}
     }
@@ -1232,7 +1272,8 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 
 
 void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePointList *set,
-				Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode ) {
+				Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode )
+{
     Spline *spline, *first;
     SplinePointList *spl;
     int truetype_markup = set==cv->b.gridfit && cv->dv!=NULL;
@@ -1275,7 +1316,7 @@ void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePointList *s
     }
 
     if( strokeFillMode != sfm_nothing ) {
-	/*
+ 	/*
 	 * If we were filling, we have to stroke the outline again to properly show
 	 * clip path splines which will possibly have a different stroke color
 	 */
@@ -2455,9 +2496,11 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    /*  is to draw to pixmap, dump pixmap a bit earlier */
 	    /* Then when we moved the fill image around, we had to deal with the */
 	    /*  images before the fill... */
+	    enum outlinesfm_flags strokeFillMode = sfm_stroke;
+	    strokeFillMode = false;
 	    CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],
-		    !sf->multilayer || layer==ly_back ? backoutlinecol : foreoutlinecol,
-		    false,&clip,false);
+				 !sf->multilayer || layer==ly_back ? backoutlinecol : foreoutlinecol,
+				 false,&clip,strokeFillMode);
 	    for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
 		if ( /* cv->b.drawmode==dm_back &&*/ cv->showrefnames )
 		    CVDrawRefName(cv,pixmap,rf,0);
@@ -2498,8 +2541,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     }
 
     if ( layer<0 ) /* Guide lines are special */
-	CVDrawLayerSplineSet(cv,pixmap,cv->b.layerheads[cv->b.drawmode],foreoutlinecol,
-		cv->showpoints ,&clip,strokeFillMode);
+	CVDrawLayerSplineSet( cv,pixmap,cv->b.layerheads[cv->b.drawmode],foreoutlinecol,
+			      cv->showpoints ,&clip, strokeFillMode );
     else if ( (cv->showback[layer>>5]&(1<<(layer&31))) ||
 	    (!cv->show_ft_results && cv->dv==NULL )) {
 	for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
@@ -2516,12 +2559,24 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	}
     }
     if ( layer>=0 )
-	CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
-			 cv->showpoints ,&clip,strokeFillMode);
+    {
+	if( cv->dv && !(cv->showback[layer>>5]&(1<<(layer&31))))
+	{
+	    // MIQ 2013 feb: issue/168
+	    // turn off the glyph outline if we are in debug mode and
+	    // the layer is not visible
+	}
+	else
+	{
+	    CVDrawLayerSplineSet( cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
+				  cv->showpoints ,&clip, strokeFillMode );
+	}
+    }
+    
 
-    if ( cv->freehand.current_trace!=NULL )
-	CVDrawSplineSet(cv,pixmap,cv->freehand.current_trace,tracecol,
-		false,&clip);
+    if ( cv->freehand.current_trace )
+	CVDrawSplineSet( cv,pixmap,cv->freehand.current_trace,tracecol,
+			 false,&clip);
 
     if ( cv->showhmetrics && (cv->b.container==NULL || cv->b.container->funcs->type==cvc_mathkern) ) {
 	RefChar *lock = HasUseMyMetrics(cv->b.sc,cvlayer);
@@ -2918,7 +2973,6 @@ return( ((FontView *) (cv->b.fv))->b.map->backmap[cv->b.sc->orig_pos] );
 
 static char *CVMakeTitles(CharView *cv,char *buf) {
     char *title;
-    const char *uniname;
     SplineChar *sc = cv->b.sc;
 
 /* GT: This is the title for a window showing an outline character */
@@ -2932,11 +2986,13 @@ static char *CVMakeTitles(CharView *cv,char *buf) {
     if ( sc->changed )
 	strcat(buf," *");
     title = copy(buf);
-    uniname = (sc->unicodeenc != -1) ? uninm_name (names_db, sc->unicodeenc) : (const char *) NULL;
-    if (uniname != NULL) {
+#ifndef _NO_LIBUNINAMESLIST
+    const char *uniname;
+    if ( (uniname=uniNamesList_name(sc->unicodeenc))!=NULL ) {
 	strcat(buf, " ");
 	strcpy(buf+strlen(buf), uniname);
     }
+#endif
     if ( cv->show_ft_results || cv->dv )
 	sprintf(buf+strlen(buf), " (%gpt, %ddpi)", (double) cv->ft_pointsizey, cv->ft_dpi );
 return( title );
@@ -3138,6 +3194,8 @@ return;
     CVChangeSC(cv,sc);
 }
 
+/*
+ * Unused
 static void CVSwitchToTab(CharView *cv,int tnum ) {
     if( tnum >= cv->former_cnt )
 	return;
@@ -3152,6 +3210,7 @@ static void CVMenuShowTab(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVSwitchToTab(cv,mi->mid);
 }
+*/
 
 static int CVChangeToFormer( GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
@@ -3230,6 +3289,7 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 	update_spacebar_hand_tool(cv);
     }
 
+//    printf("CVCharUp() ag:%d key:%d\n", cv_auto_goto, event->u.chr.keysym );
     if( !cv_auto_goto )
     {
 	if( event->u.chr.keysym=='`' ) {
@@ -3857,10 +3917,21 @@ int CVTestSelectFromEvent(CharView *cv,GEvent *event) {
 return( _CVTestSelectFromEvent(cv,&fs));
 }
 
+/**
+ * A cache for the selected spline point or spiro control point
+ */
+typedef struct lastselectedpoint 
+{
+    SplinePoint *lastselpt;
+    spiro_cp *lastselcp;
+} lastSelectedPoint;
+    
 static void CVMouseDown(CharView *cv, GEvent *event ) {
     FindSel fs;
     GEvent fake;
-
+    lastSelectedPoint lastSel;
+    memset( &lastSel, 0, sizeof(lastSelectedPoint));
+    
     if ( event->u.mouse.button==2 && event->u.mouse.device!=NULL &&
 	    strcmp(event->u.mouse.device,"stylus")==0 )
 return;		/* I treat this more like a modifier key change than a button press */
@@ -3893,6 +3964,8 @@ return;
 	}
 	if ( cv->showpointnumbers && cv->b.layerheads[cv->b.drawmode]->order2 )
 	    fs.all_controls = true;
+	lastSel.lastselpt = cv->lastselpt;
+	lastSel.lastselcp = cv->lastselcp;
 	cv->lastselpt = NULL;
 	cv->lastselcp = NULL;
 	_CVTestSelectFromEvent(cv,&fs);
@@ -3935,12 +4008,24 @@ return;
     CVInfoDraw(cv,cv->gw);
     CVSetConstrainPoint(cv,event);
 
+    int selectionChanged = 0;
     switch ( cv->active_tool ) {
       case cvt_pointer:
 	CVMouseDownPointer(cv, &fs, event);
+//	printf("lastSel.lastselpt:%p  fs.p->sp:%p\n", lastSel.lastselpt, fs.p->sp );
+	if( lastSel.lastselpt != fs.p->sp
+	    || lastSel.lastselcp != fs.p->spiro )
+	{
+	    CVPreserveState(&cv->b);
+	    selectionChanged = 1;
+	}
 	cv->lastselpt = fs.p->sp;
 	cv->lastselcp = fs.p->spiro;
-      break;
+	if( selectionChanged )
+	{
+	    collabclient_sendRedo( &cv->b );    
+	}
+	break;
       case cvt_magnify: case cvt_minify:
       break;
       case cvt_hand:
@@ -4520,6 +4605,9 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	_CV_CharChangedUpdate(cv,2);
 
     dlist_foreach( &cv->pointInfoDialogs, (dlist_foreach_func_type)PIChangePoint );
+
+//    printf("cvmouseup!\n");
+    collabclient_sendRedo( &cv->b );    
 }
 
 static void CVTimer(CharView *cv,GEvent *event) {
@@ -6782,9 +6870,12 @@ static void pllistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     cv_pllistcheck(cv, mi);
 }
 
+/*
+ * Unused
 static void tablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    GDrawGetUserData(gw);
 }
+*/
 
 static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
@@ -7842,14 +7933,14 @@ static void TransRef(RefChar *ref,real transform[6], enum fvtrans_flags flags) {
     RefCharFindBounds(ref);
 }
 
-void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
+void CVTransFuncLayer(CharView *cv,Layer *ly,real transform[6], enum fvtrans_flags flags)
+{
     int anysel = cv->p.transany;
     RefChar *refs;
     ImageList *img;
     AnchorPoint *ap;
     KernPair *kp;
     PST *pst;
-    Layer *ly = cv->b.layerheads[cv->b.drawmode];
     int l, cvlayer;
 
     if ( cv->b.sc->inspiro && hasspiro() )
@@ -7917,6 +8008,21 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 	    for ( refs=cv->b.sc->layers[l].refs; refs!=NULL; refs=refs->next )
 		TransRef(refs,transform,flags);
 	}
+    }
+}
+
+void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags)
+{
+    Layer *ly = cv->b.layerheads[cv->b.drawmode];
+    CVTransFuncLayer( cv, ly, transform, flags );
+}
+
+void CVTransFuncAllLayers(CharView *cv,real transform[6], enum fvtrans_flags flags)
+{
+    for( int idx = 0; idx < cv->b.sc->layer_cnt; ++idx )
+    {
+	Layer *ly = &cv->b.sc->layers[ idx ];
+	CVTransFuncLayer( cv, ly, transform, flags );
     }
 }
 
@@ -9816,7 +9922,7 @@ static void CVMenuCenter(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     if ( transform[4]!=0 ) {
 	cv->p.transany = false;
 	CVPreserveState(&cv->b);
-	CVTransFunc(cv,transform,fvt_dontmovewidth);
+	CVTransFuncAllLayers(cv, transform, fvt_dontmovewidth );
 	CVCharChangedUpdate(&cv->b);
     }
     cv->b.drawmode = drawmode;
@@ -10301,7 +10407,6 @@ static void CVMenuVKernFromHKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVVKernFromHKern((FontViewBase *) cv->b.fv);
 }
 
-#define GMENUITEM2_LINE { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }
 static GMenuItem2 mtlist[] = {
     { { (unichar_t *) N_("_Center in Width"), (GImage *) "metricscenter.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Center in Width|No Shortcut"), NULL, NULL, CVMenuCenter, MID_Center },
     { { (unichar_t *) N_("_Thirds in Width"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Thirds in Width|No Shortcut"), NULL, NULL, CVMenuCenter, MID_Thirds },
@@ -10745,6 +10850,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     cv->v = GWidgetCreateSubWindow(cv->gw,&pos,v_e_h,cv,&wattrs);
+    GDrawSetWindowTypeName(cv->v, "CharView");
 
     if ( GDrawRequestDeviceEvents(cv->v,input_em_cnt,input_em)>0 ) {
 	/* Success! They've got a wacom tablet */
@@ -10961,6 +11067,10 @@ void CharViewFree(CharView *cv) {
     BDFCharFree(cv->filled);
     if ( cv->rv ) {
 	MeasureToolViewFree(cv->rv);
+    }
+    if ( cv->ruler_linger_w ) {
+	GDrawDestroyWindow(cv->ruler_linger_w);
+	cv->ruler_linger_w = NULL;
     }
     free(cv->gi.u.image->clut);
     free(cv->gi.u.image);

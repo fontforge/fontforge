@@ -9,7 +9,16 @@ if test x"${i_do_have_freetype_debugger}" = xyes; then
 elif test x"${i_do_have_freetype_debugger}" != xno; then
    FREETYPE_SOURCE="${i_do_have_freetype_debugger}"
 fi
+
 if test x"${i_do_have_freetype_debugger}" != xno; then
+
+   # Expand FREETYPE_SOURCE into an absolute path.
+   AS_CASE(["${FREETYPE_SOURCE}"],
+     [.],[FREETYPE_SOURCE=${ac_pwd}],
+     [[[\\/]]* | ?:[[\\/]]*],[:],
+     [FREETYPE_SOURCE=${ac_pwd}/${FREETYPE_SOURCE}])
+   i_do_have_freetype_debugger="${FREETYPE_SOURCE}"
+
    if test ! -r "${FREETYPE_SOURCE}/src/truetype/ttobjs.h"; then
       AC_MSG_ERROR([
 

@@ -44,7 +44,7 @@ static char dirname_[1024];
 #if !defined(__MINGW32__)
  #include <pwd.h>
 #else
- #include <Windows.h>
+ #include <windows.h>
 #endif
 
 #if defined(__MINGW32__)
@@ -640,7 +640,7 @@ char *getShareDir(void) {
     int len;
 
     if ( set )
-return( sharedir );
+	return( sharedir );
 
     set = true;
 
@@ -676,7 +676,6 @@ return( sharedir );
 char *getLocaleDir(void) {
     static char *sharedir=NULL;
     static int set=false;
-    char *pt;
 
     if ( set )
 	return( sharedir );
@@ -693,7 +692,6 @@ char *getLocaleDir(void) {
 char *getPixmapDir(void) {
     static char *sharedir=NULL;
     static int set=false;
-    char *pt;
 
     if ( set )
 	return( sharedir );
@@ -706,3 +704,94 @@ char *getPixmapDir(void) {
     set = true;
     return sharedir;
 }
+
+char *getHelpDir(void) {
+    static char *sharedir=NULL;
+    static int set=false;
+
+    if ( set )
+	return( sharedir );
+
+    char* prefix = getShareDir();
+#if defined(DOCDIR)
+    prefix = DOCDIR;
+#endif    
+    char* postfix = "/../doc/fontforge/";
+    int len = strlen(prefix) + strlen(postfix) + 2;
+    sharedir = galloc(len);
+    strcpy(sharedir,prefix);
+    strcat(sharedir,postfix);
+    set = true;
+    return sharedir;
+}
+
+char *getDotFontForgeDir(void) {
+    char buffer[PATH_MAX];
+    static char *editdir = NULL;
+    char *dir;
+    char olddir[1024];
+
+    if ( editdir!=NULL )
+return( editdir );
+
+    dir = GFileGetHomeDir();
+    if ( dir==NULL )
+return( NULL );
+#ifdef __VMS
+   sprintf(buffer,"%s/_FontForge", dir);
+#else
+   sprintf(buffer,"%s/.FontForge", dir);
+#endif
+   /* We used to use .PfaEdit. So if we don't find a .FontForge look for that*/
+    /*  if there is a .PfaEdit, then rename it to .FontForge */
+    if ( access(buffer,F_OK)==-1 ) {
+#ifdef __VMS
+       snprintf(olddir,sizeof(olddir),"%s/_PfaEdit", dir);
+#else
+       snprintf(olddir,sizeof(olddir),"%s/.PfaEdit", dir);
+#endif
+       if ( access(olddir,F_OK)==0 )
+	    rename(olddir,buffer);
+    }
+    free(dir);
+    /* If we still can't find it, create it */
+    if ( access(buffer,F_OK)==-1 )
+	if ( GFileMkDir(buffer)==-1 )
+return( NULL );
+    editdir = copy(buffer);
+return( editdir );
+}
+
+int GFileGetSize(char *name)
+{
+    struct stat buf;
+    int rc = stat( name, &buf );
+    if( rc != 0 )
+	return -1;
+    return buf.st_size;
+}
+
+char* GFileReadAll(char *name)
+{
+    int sz = GFileGetSize( name );
+    char* ret = calloc( 1, sz+1 );
+    FILE* fp = fopen( name, "r" );
+    size_t bread = fread( ret, 1, sz, fp );
+    fclose(fp);
+    if( bread == sz )
+	return ret;
+
+    free(ret);
+    return 0;
+}
+
+
+int GFileWriteAll(char* filepath, char *data)
+{
+    FILE* fp = fopen( filepath, "w" );
+    int bwrite = fwrite( data, 1, strlen(data), fp );
+    printf("GFileWriteAll() data.len:%d bwrite:%d\n", strlen(data), bwrite );
+    fclose(fp);
+}
+
+

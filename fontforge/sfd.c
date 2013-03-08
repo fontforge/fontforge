@@ -60,6 +60,8 @@ static char *joins[] = { "miter", "round", "bevel", "inher", NULL };
 static char *caps[] = { "butt", "round", "square", "inher", NULL };
 static char *spreads[] = { "pad", "reflect", "repeat", NULL };
 
+int prefRevisionsToRetain = 32;
+
 
 /* I will retain this list in case there are still some really old sfd files */
 /*  including numeric encodings.  This table maps them to string encodings */
@@ -834,6 +836,8 @@ return( NULL );
 return( rle );
 }
 
+/*
+ * Unused
 static void SFDDumpBrush( FILE *sfd, struct brush* brush ) {
     fprintf(sfd, "Brush: #%06x %g\n", brush->col, brush->opacity );
     fprintf(sfd, "EndBrush\n");
@@ -855,10 +859,10 @@ static void SFDDumpPen( FILE *sfd, struct pen* p ) {
     SFDDumpBrush( sfd, &p->brush );
     fprintf(sfd, "EndPen\n");
 }
+*/
 
 
-
-static void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, char* keyPrefix, int idx ) {
+void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, char* keyPrefix, int idx ) {
     fprintf(sfd, "%sOperation\n",      keyPrefix );
     fprintf(sfd, "Index: %d\n",        idx );
     fprintf(sfd, "Type: %d\n",         u->undotype );
@@ -2964,54 +2968,138 @@ return( 0 );
 return( !err );
 }
 
+int SFDDoesAnyBackupExist(char* filename)
+{
+    char path[PATH_MAX];
+    int idx = 1;
+	    
+    snprintf( path, PATH_MAX, "%s-%02d", filename, idx );
+    return GFileExists(path);
+}
+
+/**
+ * Handle creation of potential implicit revisions when saving.
+ * 
+ * If s2d is set then we are saving to an sfdir and no revisions are
+ * created.
+ *
+ * If localRevisionsToRetain == 0 then no revisions are made.
+ * 
+ * If localRevisionsToRetain > 0 then it is taken as an explict number
+ * of revisions to make, and revisions are made
+ * 
+ * If localRevisionsToRetain == -1 then it is "not set".
+ * In that case, revisions are only made if there are already revisions
+ * for the locfilename.
+ * 
+ */
+int SFDWriteBakExtended(char* locfilename,
+			SplineFont *sf,EncMap *map,EncMap *normal,
+			int s2d,
+			int localRevisionsToRetain )
+{
+    int rc = 0;
+    
+    if( s2d )
+    {
+	rc = SFDWrite(locfilename,sf,map,normal,s2d);
+	return rc;
+    }
+    
+
+    int cacheRevisionsToRetain = prefRevisionsToRetain;
+    char* cacheSFFilename = sf->filename;
+
+    sf->filename = locfilename;
+    if( localRevisionsToRetain < 0 )
+    {
+	// If there are no backups, then don't start creating any
+	if( !SFDDoesAnyBackupExist(sf->filename))
+	    prefRevisionsToRetain = 0;
+    }
+    else
+    {
+	prefRevisionsToRetain = localRevisionsToRetain;
+    }
+    
+    rc = SFDWriteBak( sf, map, normal );
+	    
+    sf->filename = cacheSFFilename;
+    prefRevisionsToRetain = cacheRevisionsToRetain;
+
+    return rc;
+}
+
+
 int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
-    char *buf, *buf2=NULL/*, *pt, *bpt*/;
+    char *buf=0, *buf2=NULL;
     int ret;
 
     if ( sf->save_to_dir )
+    {
 	ret = SFDWrite(sf->filename,sf,map,normal,true);
-    else {
-	if ( sf->cidmaster!=NULL )
-	    sf=sf->cidmaster;
-	buf = galloc(strlen(sf->filename)+10);
-	if ( sf->compression!=0 ) {
-	    buf2 = galloc(strlen(sf->filename)+10);
-	    strcpy(buf2,sf->filename);
-	    strcat(buf2,compressors[sf->compression-1].ext);
-	    strcpy(buf,buf2);
-	    strcat(buf,"~");
-	    if ( rename(buf2,buf)==0 )
-		sf->backedup = bs_backedup;
-	} else {
-#if 1
-	    strcpy(buf,sf->filename);
-	    strcat(buf,"~");
-#else
-	    pt = strrchr(sf->filename,'.');
-	    if ( pt==NULL || pt<strrchr(sf->filename,'/'))
-		pt = sf->filename+strlen(sf->filename);
-	    strcpy(buf,sf->filename);
-	    bpt = buf + (pt-sf->filename);
-	    *bpt++ = '~';
-	    strcpy(bpt,pt);
-#endif
-	    if ( rename(sf->filename,buf)==0 )
-		sf->backedup = bs_backedup;
-	}
-	free(buf);
-
-	ret = SFDWrite(sf->filename,sf,map,normal,false);
-	if ( ret && sf->compression!=0 ) {
-	    unlink(buf2);
-	    buf = galloc(strlen(sf->filename)+40);
-	    sprintf( buf, "%s %s", compressors[sf->compression-1].recomp, sf->filename );
-	    if ( system( buf )!=0 )
-		sf->compression = 0;
-	    free(buf);
-	}
-	free(buf2);
+	return(ret);
     }
-return( ret );
+    
+    if ( sf->cidmaster!=NULL )
+	sf=sf->cidmaster;
+    buf = galloc(strlen(sf->filename)+10);
+    if ( sf->compression!=0 )
+    {
+	buf2 = galloc(strlen(sf->filename)+10);
+	strcpy(buf2,sf->filename);
+	strcat(buf2,compressors[sf->compression-1].ext);
+	strcpy(buf,buf2);
+	strcat(buf,"~");
+	if ( rename(buf2,buf)==0 )
+	    sf->backedup = bs_backedup;
+    }
+    else
+    {
+	sf->backedup = bs_dontknow;
+
+	if( prefRevisionsToRetain )
+	{
+	    char path[PATH_MAX];
+	    char pathnew[PATH_MAX];
+	    int idx = 0;
+	    int rc = 0;
+	    
+	    snprintf( path,    PATH_MAX, "%s", sf->filename );
+	    snprintf( pathnew, PATH_MAX, "%s-%02d", sf->filename, idx );
+	    rc = rename( path, pathnew );
+//	    fprintf(stderr,"ret:%d save to:%s\n", ret, path );
+
+	    for( idx=prefRevisionsToRetain; idx > 0; idx-- )
+	    {
+		snprintf( path, PATH_MAX, "%s-%02d", sf->filename, idx-1 );
+		snprintf( pathnew, PATH_MAX, "%s-%02d", sf->filename, idx );
+//		fprintf(stderr,"rename %s to %s\n", path, pathnew );
+              
+		int rc = rename( path, pathnew );
+		if( !idx && !rc )
+		    sf->backedup = bs_backedup;
+	    }
+	    idx = prefRevisionsToRetain+1;
+	    snprintf( path, PATH_MAX, "%s-%02d", sf->filename, idx );
+	    unlink(path);
+//	    fprintf(stderr,"unlink to:%s\n", path );
+	}
+	
+    }
+    free(buf);
+
+    ret = SFDWrite(sf->filename,sf,map,normal,false);
+    if ( ret && sf->compression!=0 ) {
+	unlink(buf2);
+	buf = galloc(strlen(sf->filename)+40);
+	sprintf( buf, "%s %s", compressors[sf->compression-1].recomp, sf->filename );
+	if ( system( buf )!=0 )
+	    sf->compression = 0;
+	free(buf);
+    }
+    free(buf2);
+    return( ret );
 }
 
 /* ********************************* INPUT ********************************** */
@@ -3826,8 +3914,9 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd,int order2) {
 return( head );
 }
 
-static Undoes *SFDGetUndo( SplineFont *sf, FILE *sfd, SplineChar *sc,
-                           const char* startTag, const char* endTag, int current_layer )
+Undoes *SFDGetUndo( SplineFont *sf, FILE *sfd, SplineChar *sc,
+		    const char* startTag, const char* endTag,
+		    int current_layer )
 {
     Undoes *u = 0;
     char tok[2000];

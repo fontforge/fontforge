@@ -1088,6 +1088,24 @@ void GGadgetMove(GGadget *g,int32 x, int32 y ) {
     (g->funcs->move)(g,x,y);
 }
 
+int32 GGadgetGetX(GGadget *g)
+{
+    return g->r.x;
+}
+
+int32 GGadgetGetY(GGadget *g)
+{
+    return g->r.y;
+}
+
+void  GGadgetSetY(GGadget *g, int32 y )
+{
+    int32 x = GGadgetGetX(g);
+    GGadgetMove( g, x, y );
+}
+
+
+
 void GGadgetResize(GGadget *g,int32 width, int32 height ) {
     (g->funcs->resize)(g,width,height);
 }
@@ -1095,6 +1113,12 @@ void GGadgetResize(GGadget *g,int32 width, int32 height ) {
 GRect *GGadgetGetSize(GGadget *g,GRect *rct) {
 return( (g->funcs->getsize)(g,rct) );
 }
+
+void GGadgetSetSize(GGadget *g,GRect *rct)
+{
+    GGadgetResize(g,rct->width,rct->height);
+}
+
 
 GRect *GGadgetGetInnerSize(GGadget *g,GRect *rct) {
 return( (g->funcs->getinnersize)(g,rct) );

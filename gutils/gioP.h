@@ -31,7 +31,7 @@
 #include <sys/types.h>
 
 #if defined(__MINGW32__)
-#include <WinSock2.h>
+#include <winsock2.h>
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -43,7 +43,6 @@
 #endif
 
 struct stdfuncs {
-    unichar_t *(*guessMimeType)(const unichar_t *path,int isdir);
     char *(*decomposeURL)(const unichar_t *url,char **host, int *port,
 	char **username, char **password);
     void (*PostSuccess)(GIOControl *gc);
@@ -93,5 +92,4 @@ extern void GIO_cancel(GIOControl *gc);
 extern void GIO_init(void *handle,struct stdfuncs *_stdfuncs,int index);
 extern void GIO_term(void);
 
-extern unichar_t *_GioMacMime(const char *path);
 #endif

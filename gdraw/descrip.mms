@@ -16,8 +16,6 @@ libgdraw_OBJECTS =  choosericons.obj,drawboxborder.obj,\
 
 libgdraw_OBJECTS1=gdrawable.obj,gxcdraw.obj
 
-CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=("HAVE_CONFIG_H=1")
-
 all : [-.libs]libgdraw.olb
 	write sys$output "gdraw finished"
 
@@ -25,8 +23,8 @@ all : [-.libs]libgdraw.olb
 	library/create [-.libs]libgdraw.olb $(libgdraw_OBJECTS)
 	library [-.libs]libgdraw.olb $(libgdraw_OBJECTS1)
 
-$(libgdraw_OBJECTS) : [-.inc]config.h
-$(libgdraw_OBJECTS1) : [-.inc]config.h
+$(libgdraw_OBJECTS) : [-.inc]fontforge-config.h
+$(libgdraw_OBJECTS1) : [-.inc]fontforge-config.h
 
 choosericons.obj : choosericons.c
 drawboxborder.obj : drawboxborder.c

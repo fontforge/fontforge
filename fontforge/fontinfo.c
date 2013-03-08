@@ -8339,7 +8339,9 @@ return;
     vgcd[7].creator = GListButtonCreate;
     fstype[0].selected = fstype[1].selected =
 	    fstype[2].selected = fstype[3].selected = false;
-    if ( sf->pfminfo.fstype&0x8 /* also catches the "not set" case == -1 */ )
+    if ( sf->pfminfo.fstype == -1 )
+	i = 3;
+    else if ( sf->pfminfo.fstype&0x8 )
 	i = 2;
     else if ( sf->pfminfo.fstype&0x4 )
 	i = 1;

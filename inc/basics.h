@@ -27,10 +27,7 @@
 #ifndef _BASICS_H
 #define _BASICS_H
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
+# include <fontforge-config.h>
 #include <stdio.h>		/* for NULL */
 #ifdef HAVE_STDINT_H
 # include <stdint.h>
@@ -45,6 +42,7 @@
 
 #define forever for (;;)
 
+typedef int bool;
 typedef int32_t		int32;
 typedef uint32_t	uint32;
 typedef int16_t		int16;

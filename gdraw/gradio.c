@@ -575,6 +575,20 @@ static void GRadioGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
     }
 }
 
+void GVisibilityBoxSetToMinWH(GGadget *g)
+{
+    GRect size;
+    GRect outer;
+    GRect inner;
+    GRadioGetDesiredSize(g, &outer, &inner );
+    outer.width = MIN(outer.width,outer.height);
+    outer.width -= 3;
+    size.width  = outer.width;
+    size.height = outer.height;
+    GGadgetSetSize(g,&size);
+}
+
+
 struct gfuncs gradio_funcs = {
     0,
     sizeof(struct gfuncs),

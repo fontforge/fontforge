@@ -26,7 +26,6 @@
  */
 #include "fontforgevw.h"
 #include "pluginloading.h"
-#include "annotations.h"
 #include <gfile.h>
 #include <time.h>
 #include <sys/time.h>
@@ -42,9 +41,6 @@
 int32 unicode_from_adobestd[256];
 struct lconv localeinfo;
 char *coord_sep = ",";
-
-/* Unicode character names and annotations. */
-uninm_names_db names_db;
 
 static void initadobeenc(void) {
     int i,j;
@@ -95,7 +91,6 @@ static void initlibltdl(void) {
 }
 
 void InitSimpleStuff(void) {
-    char *names_db_file;
 
     initlibrarysearchpath();
     initlibltdl();
@@ -108,15 +103,6 @@ void InitSimpleStuff(void) {
     if ( *localeinfo.decimal_point=='.' ) coord_sep=",";
     else if ( *localeinfo.decimal_point!='.' ) coord_sep=" ";
     if ( getenv("FF_SCRIPT_IN_LATIN1") ) use_utf8_in_script=false;
-
-    /*
-     * Load character names and annotations that come from the Unicode
-     * NamesList.txt. This should not be done until after the locale
-     * has been set.
-     */
-    names_db_file = uninm_find_names_db(NULL);
-    names_db = (names_db_file == NULL) ? ((uninm_names_db) 0) : uninm_names_db_open(names_db_file);
-    free(names_db_file);
 
     SetDefaults();
 }
