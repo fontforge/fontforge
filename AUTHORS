@@ -6,12 +6,13 @@ Arthaey Angosii
 Alexey Kryukov - nowakowskittfinstr.c
 Alexandre Prokoudine
 Barry Schwartz
-Baruch Even
+Baruch Even - (debian upstream)
 Ben Martin - hotkeys.c, hotkeys.h
 Craig Lennox
 Deron Meranda
 Dave Levine
 Dong Yang
+Edward Lee
 Georg Duffner
 J. Jansen - gv - ANALYZE_MAP.COM
 Jason Pagura
@@ -35,9 +36,12 @@ serval2412
 Steve White - ASMO 708 codepage, & more
 Timothy O. Theisen - gv = ANALYZE_MAP.COM
 Tom Harvey - fontforge.1
+Ulrich Klauer
+Valek Filippov
 Ville Skytta
 Werner Lemberg
 yannis
+Yi Yang (ahyangyi)
 
 ...more coders to add here later since this is a long list!
 ...however, got a small start with Translators....2012sep27
@@ -57,6 +61,7 @@ OKANO Takayoshi, ja - Japanese
 Hiran - ml - Malayalam
 Michal Nowakowski - po - Polish
 Alexandre Prokoudine - ru - Russian
+Valek Filippov - ru - Russian
 Yuri Chornoivan - uk - Ukrainian
 Clytie Siddall - vi - Vietnamese
 Lee Chenhwa - zh_CN - Chinese
