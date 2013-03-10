@@ -3011,6 +3011,8 @@ int SFDWriteBakExtended(char* locfilename,
     char* cacheSFFilename = sf->filename;
 
     sf->filename = locfilename;
+    sf->save_to_dir = s2d;
+
     if( localRevisionsToRetain < 0 )
     {
 	// If there are no backups, then don't start creating any
