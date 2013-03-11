@@ -55,7 +55,6 @@ CharView.Menu.Edit.Paste: Ctl+V
 CharView.Menu.Edit.Clear: Delete
 CharView.Menu.Edit.Clear Background: No Shortcut
 CharView.Menu.Edit.Merge: Ctl+M
-CharView.Menu.Edit.Merge: Delete
 CharView.Menu.Edit.Join: Ctl+Shft+J
 CharView.Menu.Edit.Copy Fg To Bg: Ctl+Shft+C
 CharView.Menu.Edit.Copy Layer To Layer...: No Shortcut
