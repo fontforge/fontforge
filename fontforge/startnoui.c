@@ -37,6 +37,11 @@
 # include <stdlib.h>		/* getenv,setenv */
 #endif
 
+#ifndef _NO_LIBUNICODENAMES
+#include <libunicodenames.h>	/* need to open a database when we start */
+extern uninm_names_db names_db; /* Unicode character names and annotations database */
+#endif
+
 static void _doscriptusage(void) {
     printf( "fontforge [options]\n" );
     printf( "\t-usage\t\t\t (displays this message, and exits)\n" );
@@ -124,6 +129,10 @@ int fontforge_main( int argc, char **argv ) {
 #  else
     PyFF_Stdin();
 #  endif
+
+#ifndef _NO_LIBUNICODENAMES
+    uninm_names_db_close(names_db);	/* close this database before exiting */
+#endif
 
     lt_dlexit();
 return( 0 );
