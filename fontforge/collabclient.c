@@ -244,7 +244,7 @@ static void zeromq_subscriber_fd_callback(int zeromq_fd, void* datas )
 
     if( opt & ZMQ_POLLIN )
     {
-	printf("zeromq_subscriber_fd_callback() have message!\n");
+	printf("zeromq_subscriber_fd_callback() have message! cc:%p\n",cc);
 
 	while( 1 )
 	{
