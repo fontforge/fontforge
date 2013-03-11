@@ -43,6 +43,11 @@
 
 #ifndef _NO_LIBUNINAMESLIST
 #include <uninameslist.h>
+#else
+#ifndef _NO_LIBUNICODENAMES
+#include <libunicodenames.h>
+extern uninm_names_db names_db; /* Unicode character names and annotations database */
+#endif
 #endif
 
 int OpenCharsInNewWindow = 0;
@@ -6216,7 +6221,8 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
     GDrawSetDither(NULL, true);
 }
 
-#ifndef _NO_LIBUNINAMESLIST
+#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+#else
 static char *chosung[] = { "G", "GG", "N", "D", "DD", "L", "M", "B", "BB", "S", "SS", "", "J", "JJ", "C", "K", "T", "P", "H", NULL };
 static char *jungsung[] = { "A", "AE", "YA", "YAE", "EO", "E", "YEO", "YE", "O", "WA", "WAE", "OE", "YO", "U", "WEO", "WE", "WI", "YU", "EU", "YI", "I", NULL };
 static char *jongsung[] = { "", "G", "GG", "GS", "N", "NJ", "NH", "D", "L", "LG", "LM", "LB", "LS", "LT", "LP", "LH", "M", "B", "BS", "S", "SS", "NG", "J", "C", "K", "T", "P", "H", NULL };
@@ -6296,12 +6302,18 @@ return;
 	fg = 0x707070;
     }
 
-#ifndef _NO_LIBUNINAMESLIST
+#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+#else
     /* Get unicode "Name" as defined in NameList.txt */
     if (uni != -1) {
+#ifndef _NO_LIBUNINAMESLIST
 	const char *uniname;
 	if ( (uniname=uniNamesList_name(uni))!=NULL ) {
-            utf82u_strncpy(ubuffer+u_strlen(ubuffer),uniname,80);
+#else
+	char *uniname;
+        if ( (uniname=uninm_name(names_db,(unsigned int) uni))!= NULL ) {;
+#endif
+	    utf82u_strncpy(ubuffer+u_strlen(ubuffer),uniname,80);
 //	    strncat(buffer,uniname,80);
 	} else if ( uni>=0xAC00 && uni<=0xD7A3 ) {
 //	    sprintf( buffer+strlen(buffer), "Hangul Syllable %s%s%s",
@@ -6517,7 +6529,8 @@ return;
     }
 }
 
-#ifndef _NO_LIBUNINAMESLIST
+#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+#else
 static void utf82u_annot_strncat(unichar_t *to, const char *from, int len) {
     register unichar_t ch;
 
@@ -6577,11 +6590,16 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	done = true;
     }
 
-#ifndef _NO_LIBUNINAMESLIST
+#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+#else
     const char *uniname;
     const char *uniannot;
     if ( !done ) {
+#ifndef _NO_LIBUNINAMESLIST
 	if ( (uniname=uniNamesList_name(upos))!=NULL ) {
+#else
+	if ( (uniname=uninm_name(names_db,upos))!=NULL ) {
+#endif
 	    /* uniname=unicode "Name" as defined in NameList.txt */
 #if defined( _NO_SNPRINTF )
             sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
@@ -6617,7 +6635,11 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
             utf82u_strcpy(space,cspace);
         }
     }
+#ifndef _NO_LIBUNINAMESLIST
     if ( (uniannot=uniNamesList_name(upos))!=NULL ) {
+#else
+    if ( (uniannot=uninm_annotation(names_db,upos))!=NULL ) {
+#endif
 	/* uniannot=unicode "Annotations" as defined in NameList.txt */
 	int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
 	if ( left>4 ) {

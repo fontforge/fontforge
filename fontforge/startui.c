@@ -42,6 +42,11 @@
 #include "../gdraw/hotkeys.h"
 #include "gutils/prefs.h"
 
+#ifndef _NO_LIBUNICODENAMES
+#include <libunicodenames.h>	/* need to open a database when we start */
+extern uninm_names_db names_db; /* Unicode character names and annotations database */
+#endif
+
 #define GTimer GTimer_GTK
 #include <glib.h>
 #include <glib-object.h>
@@ -1221,7 +1226,7 @@ exit( 0 );
 	any = ReopenLastFonts();
 
     collabclient_sniffForLocalServer();
-    
+
 #if defined(__Mac)
     if ( listen_to_apple_events ) {
 	install_apple_event_handlers();
@@ -1235,6 +1240,10 @@ exit( 0 );
     GDrawEventLoop(NULL);
 
     hotkeysSave();
+
+#ifndef _NO_LIBUNICODENAMES
+    uninm_names_db_close(names_db);	/* close this database before exiting */
+#endif
 
     lt_dlexit();
 

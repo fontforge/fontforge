@@ -51,6 +51,26 @@ AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST],
 ])
 
 
+dnl FONTFORGE_ARG_WITH_LIBUNICODENAMES
+dnl ----------------------------------
+AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNICODENAMES],
+[
+   FONTFORGE_ARG_WITH_BASE([libunicodenames],
+      [AS_HELP_STRING([--without-libunicodenames],[build without Unicode Name or Annotation support - incase libuninameslist not found])],
+      [libunicodenames],
+      [FONTFORGE_WARN_PKG_NOT_FOUND([LIBUNICODENAMES])],
+      [_NO_LIBUNICODENAMES],
+      [
+       FONTFORGE_SEARCH_LIBS([uninm_names_db_open],[unicodenames],
+         [i_do_have_libunicodenames=yes
+          AC_SUBST([LIBUNICODENAMES_CFLAGS],[""])
+          AC_SUBST([LIBUNICODENAMES_LIBS],["${found_lib}"])
+          FONTFORGE_WARN_PKG_FALLBACK([LIBUNICODENAMES])],
+         [i_do_have_libunicodenames=no])
+       ])
+])
+
+
 dnl FONTFORGE_ARG_WITH_CAIRO
 dnl ------------------------
 AC_DEFUN([FONTFORGE_ARG_WITH_CAIRO],

@@ -43,6 +43,11 @@ extern int _GScrollBar_Width;
 
 #ifndef _NO_LIBUNINAMESLIST
 #include <uninameslist.h>
+#else
+#ifndef _NO_LIBUNICODENAMES
+#include <libunicodenames.h>
+extern uninm_names_db names_db; /* Unicode character names and annotations database */
+#endif
 #endif
 
 #include "gutils/prefs.h"
@@ -2986,9 +2991,14 @@ static char *CVMakeTitles(CharView *cv,char *buf) {
     if ( sc->changed )
 	strcat(buf," *");
     title = copy(buf);
-#ifndef _NO_LIBUNINAMESLIST
+#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+#else
     const char *uniname;
+#ifndef _NO_LIBUNINAMESLIST
     if ( (uniname=uniNamesList_name(sc->unicodeenc))!=NULL ) {
+#else
+    if ( sc->unicodeenc!=-1 && (uniname=uninm_name(names_db,sc->unicodeenc))!=NULL ) {
+#endif
 	strcat(buf, " ");
 	strcpy(buf+strlen(buf), uniname);
     }

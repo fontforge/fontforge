@@ -86,6 +86,7 @@ libpng_url="http://www.libpng.org/"
 libxml_url="http://www.xmlsoft.org/"
 libspiro_url="http://libspiro.sourceforge.net/"
 libuninameslist_url="https://github.com/fontforge/libuninameslist"
+libunicodenames_url="https://github.com/sortsmill/libunicodenames"
 libzmq_url="http://www.zeromq.org/"
 
 # Point to the Wikipedia page, primarily because one may want
@@ -250,6 +251,7 @@ FONTFORGE_ARG_WITH_LIBTIFF
 FONTFORGE_ARG_WITH_LIBXML
 FONTFORGE_ARG_WITH_LIBSPIRO
 FONTFORGE_ARG_WITH_LIBUNINAMESLIST
+FONTFORGE_ARG_WITH_LIBUNICODENAMES
 FONTFORGE_ARG_WITH_ICONV
 FONTFORGE_ARG_WITH_ZEROMQ
 
@@ -402,6 +404,7 @@ Summary of optional dependencies:
   libxml             ${i_do_have_libxml}  	${libxml_url}
   libspiro           ${i_do_have_libspiro}  	${libspiro_url}
   libuninameslist    ${i_do_have_libuninameslist}  	${libuninameslist_url}
+  libunicodenames    ${i_do_have_libunicodenames}  	${libunicodenames_url}
   zeromq             ${i_do_have_libzmq}  	${libzmq_url}
   X Window System    ${i_do_have_x}
 ])
