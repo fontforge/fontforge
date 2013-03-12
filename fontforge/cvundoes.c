@@ -42,7 +42,11 @@ extern char *coord_sep;
 int onlycopydisplayed = 0;
 int copymetadata = 0;
 int copyttfinstr = 0;
+#if defined(__Mac)
+int export_clipboard = 0;
+#else
 int export_clipboard = 1;
+#endif
 
 extern void *UHintCopy(SplineChar *sc,int docopy);
 extern void ExtractHints(SplineChar *sc,void *hints,int docopy);
@@ -77,7 +81,7 @@ void BackTrace( const char* msg ) {
 
 /* ********************************* Undoes ********************************* */
 
-int maxundoes = 12;		/* -1 is infinite */
+int maxundoes = 120;		/* -1 is infinite */
 int preserve_hint_undoes = true;
 
 static uint8 *bmpcopy(uint8 *bitmap,int bytes_per_line, int lines) {
