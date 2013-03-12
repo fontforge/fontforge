@@ -473,9 +473,12 @@ static void MVSelectSubtable(MetricsView *mv, struct lookup_subtable *sub) {
     int32 len; int i;
     GTextInfo **old = GGadgetGetList(mv->subtable_list,&len);
 
-    for ( i=0; i<len && (old[i]->userdata!=sub || old[i]->line); ++i );
+    for ( i=0; i<len && (old[i]->userdata!=sub || old[i]->line); ++i )
+    {
+    }
+    printf("MVSelectSubtable() i:%d sub:%p\n", i, sub );
     GGadgetSelectOneListItem(mv->subtable_list,i);
-    if ( sub!=NULL )
+    if ( sub )
 	mv->cur_subtable = sub;
 }
 
@@ -1963,6 +1966,8 @@ void MV_FriendlyFeatures(GGadget *g, int pos) {
 
 static int MV_SubtableChanged(GGadget *g, GEvent *e) {
 
+    printf("MV_SubtableChanged()\n");
+    
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	MetricsView *mv = GGadgetGetUserData(g);
 	int32 len;
@@ -4480,6 +4485,7 @@ return;
 	if ( mv->showgrid==mv_hidemovinggrid )
 	    GDrawRequestExpose(mv->v,NULL,false);
     } else if ( event->type == et_mouseup && mv->pressed ) {
+	printf("mvsubmouse(b)\n");
 	for ( i=0; i<mv->glyphcnt && !mv->perchar[i].selected; ++i );
 	mv->pressed = false;
 	mv->activeoff = 0;
@@ -4527,6 +4533,8 @@ return;
 static void MVMouse(MetricsView *mv,GEvent *event) {
     int i;
 
+    printf("MVMouse()\n");
+    
     if ( event->u.mouse.y< mv->topend || event->u.mouse.y >= mv->displayend ) {
 	if ( event->u.mouse.y >= mv->displayend &&
 		event->u.mouse.y<mv->height-mv->sbh ) {
@@ -4641,6 +4649,8 @@ return;
 static int mv_v_e_h(GWindow gw, GEvent *event) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
 
+    printf("mv_v_e_h() event->type:%d\n", event->type );
+    
     switch ( event->type ) {
       case et_expose:
 	GDrawSetLineWidth(gw,0);
@@ -4690,6 +4700,7 @@ return( true );
 static int mv_e_h(GWindow gw, GEvent *event) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     SplineFont *sf;
+    printf("mv_e_h()  event->type:%d\n", event->type );
     
     switch ( event->type ) {
       case et_selclear:
@@ -5122,3 +5133,43 @@ GResInfo metricsview_ri = {
     NULL,
     NULL
 };
+
+
+void MVSelectFirstKerningTable(struct metricsview *mv)
+{
+    SplineFont *sf = mv->sf;
+
+    printf("MVSelectFirstKerningTable() kerns:%p\n", sf->kerns );
+    if( sf->kerns )
+    {
+	printf("MVSelectFirstKerningTable() kerns.next:%p\n", sf->kerns->next );
+	printf("MVSelectFirstKerningTable() kerns.subt:%p\n", sf->kerns->subtable );
+    }
+
+    // FIXME: if nothing selected, then select the first entry.
+    GTextInfo **ti=NULL;
+    int32 len, sc;
+    ti = GGadgetGetList(mv->features,&len);
+    GGadgetSelectOneListItem(mv->features,0);
+    MVRemetric(mv);
+    GDrawRequestExpose(mv->v,NULL,false);
+	
+    return;
+    
+
+    if( sf->kerns && !sf->kerns->next && sf->kerns->subtable )
+    {
+	struct lookup_subtable *sub = sf->kerns->subtable;
+	printf("MVSelectFirstKerningTable() select table:%p\n", sub );
+	MVSelectSubtable( mv, sub );
+
+	GEvent e;
+	e.type = et_controlevent;
+	e.u.control.subtype = et_listselected;
+//	MV_SubtableChanged( mv->subtable_list, &e );
+	GDrawRequestExpose(mv->v,NULL,false);
+	GDrawRequestExpose(mv->gw,NULL,false);
+	printf("MVSelectFirstKerningTable() end... select table:%p\n", sub );
+    }
+}
+
