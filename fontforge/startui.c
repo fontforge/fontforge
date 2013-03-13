@@ -919,6 +919,8 @@ int fontforge_main( int argc, char **argv ) {
     /*  they are doing */
     { int did_keybindings = 0;
     if ( local_x && !get_mac_x11_prop("enable_key_equivalents") ) {
+	hotkeySystemSetCanUseMacCommand( 1 );
+	
 	/* Ok, we get the command key */
 	if ( getenv("LANG")==NULL && getenv("LC_MESSAGES")==NULL ) {
 	    setenv("LC_MESSAGES","en_US.UTF-8",0);
