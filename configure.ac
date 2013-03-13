@@ -255,6 +255,13 @@ FONTFORGE_ARG_WITH_LIBUNICODENAMES
 FONTFORGE_ARG_WITH_ICONV
 FONTFORGE_ARG_WITH_ZEROMQ
 
+# We have both libraries but did not choose which one to use yet
+if test x"${i_do_have_libuninameslist}" = xyes; then
+   if test x"${i_do_have_libunicodenames}" = xyes; then
+      i_do_have_libuninameslist=no
+   fi
+fi
+
 if test x"${i_do_have_cairo}" = xyes; then
    PKG_CHECK_MODULES([PANGOCAIRO],[pangocairo])
 fi
