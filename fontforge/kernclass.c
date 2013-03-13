@@ -216,7 +216,8 @@ static void KCD_AutoKernAClass(KernClassDlg *kcd,int index,int is_first) {
     char *space[1], **lefts, **rights, **others;
     int lcnt, rcnt; int ocnt, acnt;
     // CID_ClassList is a constant. It presumably provides a base for identifying the two list controls in the KernAClass dialogue, and we assign by which is active, not by which is the first list.
-    // Empirical testing suggests that index indices a unified collection of unique characters spread across the two list views. For example, 
+    // Empirical testing suggests that index indexes a unified collection of unique characters spread across the two list views. The empirical testing seems to reflect an incorrect calling sequence, as it turns out.
+    // This function expects things to be indexed separately according to the items in the two visible lists.
     GGadget *activelist = GWidgetGetControl( kcd->gw, CID_ClassList+(is_first?0:100));
     GGadget *otherlist = GWidgetGetControl( kcd->gw, CID_ClassList+(is_first?100:0));
     // Each of these returns a GGadget. We then make the assumption that each gadget is nested in a GMatrixEdit and retrieve the GMatrixEdit object.
@@ -238,6 +239,7 @@ return;
 
     // We next strdup from activedata[index].u.md_str, which causes a segmentation fault sometimes.
     space[0] = copy(activedata[index].u.md_str);
+    // space keeps just the specified item from activelist. others stores the items from the opposite list.
     others = galloc((ocnt+1)*sizeof(char *));
     for ( i=0; i<ocnt; ++i ) {
 	if ( i==0 && isEverythingElse(otherdata[0].u.md_str))
