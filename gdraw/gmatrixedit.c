@@ -992,8 +992,10 @@ return( true );
 
 static int GME_FinishEdit(GMatrixEdit *gme) {
 
-    if ( !gme->edit_active )
-return( true );
+    if ( !gme->edit_active ) {
+        gme->wasnew = false;
+        return( true );
+    }
     if ( !GME_SetValue(gme,gme->tf)) {
         gme->wasnew = false;
         return( false );
