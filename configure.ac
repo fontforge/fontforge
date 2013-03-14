@@ -259,6 +259,7 @@ FONTFORGE_ARG_WITH_ZEROMQ
 if test x"${i_do_have_libuninameslist}" = xyes; then
    if test x"${i_do_have_libunicodenames}" = xyes; then
       i_do_have_libuninameslist=no
+      AC_DEFINE(_NO_LIBUNINAMESLIST)
    fi
 fi
 
