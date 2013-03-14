@@ -27,6 +27,10 @@
 
 #include <fontforge-config.h>
 #include "fontforgeui.h"
+#ifndef _NO_LIBUNICODENAMES
+#include <libunicodenames.h>	/* need to open a database when we start */
+extern uninm_names_db names_db; /* Unicode character names and annotations database */
+#endif
 #include <gfile.h>
 #include <gresource.h>
 #include <ustring.h>
@@ -42,10 +46,6 @@
 #include "../gdraw/hotkeys.h"
 #include "gutils/prefs.h"
 
-#ifndef _NO_LIBUNICODENAMES
-#include <libunicodenames.h>	/* need to open a database when we start */
-extern uninm_names_db names_db; /* Unicode character names and annotations database */
-#endif
 
 #define GTimer GTimer_GTK
 #include <glib.h>
@@ -920,7 +920,7 @@ int fontforge_main( int argc, char **argv ) {
     { int did_keybindings = 0;
     if ( local_x && !get_mac_x11_prop("enable_key_equivalents") ) {
 	hotkeySystemSetCanUseMacCommand( 1 );
-	
+
 	/* Ok, we get the command key */
 	if ( getenv("LANG")==NULL && getenv("LC_MESSAGES")==NULL ) {
 	    setenv("LC_MESSAGES","en_US.UTF-8",0);
