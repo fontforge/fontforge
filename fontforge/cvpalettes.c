@@ -2524,6 +2524,8 @@ static void CVLSelectLayer(CharView *cv, int layer) {
         cv->show_ft_results = false;
     }
     layerinfo.active = CVLayer(&cv->b); /* the index of the active layer */
+
+    CVRegenFill(cv);
     GDrawRequestExpose(cv->v,NULL,false);
     if (cvlayers2) GDrawRequestExpose(cvlayers2,NULL,false);
     if (cvlayers)  GDrawRequestExpose(cvlayers,NULL,false);

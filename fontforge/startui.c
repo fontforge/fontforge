@@ -27,10 +27,6 @@
 
 #include <fontforge-config.h>
 #include "fontforgeui.h"
-#ifndef _NO_LIBUNICODENAMES
-#include <libunicodenames.h>	/* need to open a database when we start */
-extern uninm_names_db names_db; /* Unicode character names and annotations database */
-#endif
 #include <gfile.h>
 #include <gresource.h>
 #include <ustring.h>
@@ -46,6 +42,10 @@ extern uninm_names_db names_db; /* Unicode character names and annotations datab
 #include "../gdraw/hotkeys.h"
 #include "gutils/prefs.h"
 
+#ifndef _NO_LIBUNICODENAMES
+#include <libunicodenames.h>	/* need to open a database when we start */
+extern uninm_names_db names_db; /* Unicode character names and annotations database */
+#endif
 
 #define GTimer GTimer_GTK
 #include <glib.h>
@@ -917,10 +917,13 @@ int fontforge_main( int argc, char **argv ) {
     /*  gettext will not. So I don't bother to check for null strings or "C"  */
     /*  or "POSIX". If they've mucked with the locale perhaps they know what  */
     /*  they are doing */
+
+    // Always try to use the Command key, if their X11 doesn't pass it to us
+    // then we have the control-N fallbacks in place
+    hotkeySystemSetCanUseMacCommand( 1 );
     { int did_keybindings = 0;
     if ( local_x && !get_mac_x11_prop("enable_key_equivalents") ) {
-	hotkeySystemSetCanUseMacCommand( 1 );
-
+	
 	/* Ok, we get the command key */
 	if ( getenv("LANG")==NULL && getenv("LC_MESSAGES")==NULL ) {
 	    setenv("LC_MESSAGES","en_US.UTF-8",0);
