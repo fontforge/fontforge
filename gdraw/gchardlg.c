@@ -40,14 +40,14 @@
 #ifndef _NO_LIBUNINAMESLIST
 #include <uninameslist.h>
 #else
-  #ifndef _NO_LIBUNICODENAMES
-  #include <libunicodenames.h>	/* need to open a database when we start */
+#ifndef _NO_LIBUNICODENAMES
+#include <libunicodenames.h>	/* need to open a database when we start */
   /* FIXME: Is it possible to share this names_db with the FontForge  */
   /* main code? And is it possible to free this memory at some point? */
 
   /* Unicode character names and annotations. */
-  static uninm_names_db names_db = (uninm_names_db) NULL;
-  #endif
+static uninm_names_db names_db = (uninm_names_db) NULL;
+#endif
 #endif
 
 #define INSCHR_CharSet	1
