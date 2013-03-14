@@ -994,8 +994,10 @@ static int GME_FinishEdit(GMatrixEdit *gme) {
 
     if ( !gme->edit_active )
 return( true );
-    if ( !GME_SetValue(gme,gme->tf))
-return( false );
+    if ( !GME_SetValue(gme,gme->tf)) {
+        gme->wasnew = false;
+        return( false );
+    }
     gme->edit_active = false;
     GGadgetSetVisible(gme->tf,false);
     GME_AdjustCol(gme,gme->active_col);
