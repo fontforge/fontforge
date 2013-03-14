@@ -303,15 +303,18 @@ fi
 
 AX_PTHREAD
 
+#--------------------------------------------------------------------------
 FONTFORGE_COMPILER_FLAGS([WARNING_CFLAGS],
         [-Wunused -Wreturn-type
          -Wparentheses -Wformat -Wchar-subscripts
          -Wno-unused-but-set-variable -Wno-unused-result
-         -Wstrict-aliasing
          -Wcast-align
          -Werror=missing-prototypes
          -Werror=pointer-arith
+         -Wclobbered
          -Werror=implicit])
+# Sep2012, There's a bug in <py3 with Py_True/False that will propagate
+# with GCC's "strict-aliasing" rules. -Wstrict-aliasing
 
 #--------------------------------------------------------------------------
 # Bypass older autoscan recommendations (if anyone decides to run autoscan)
