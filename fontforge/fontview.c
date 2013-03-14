@@ -27,6 +27,14 @@
 #include "fontforgeui.h"
 #include "groups.h"
 #include "psfont.h"
+#ifndef _NO_LIBUNINAMESLIST
+#include <uninameslist.h>
+#else
+#ifndef _NO_LIBUNICODENAMES
+#include <libunicodenames.h>
+extern uninm_names_db names_db; /* Unicode character names and annotations database */
+#endif
+#endif
 #include <gfile.h>
 #include <gio.h>
 #include <gresedit.h>
@@ -41,14 +49,6 @@
 #include "collabclient.h"
 #include "inc/gnetwork.h"
 
-#ifndef _NO_LIBUNINAMESLIST
-#include <uninameslist.h>
-#else
-#ifndef _NO_LIBUNICODENAMES
-#include <libunicodenames.h>
-extern uninm_names_db names_db; /* Unicode character names and annotations database */
-#endif
-#endif
 
 int OpenCharsInNewWindow = 0;
 char *RecentFiles[RECENT_MAX] = { NULL };
@@ -6306,11 +6306,10 @@ return;
 #else
     /* Get unicode "Name" as defined in NameList.txt */
     if (uni != -1) {
-#ifndef _NO_LIBUNINAMESLIST
 	const char *uniname;
+#ifndef _NO_LIBUNINAMESLIST
 	if ( (uniname=uniNamesList_name(uni))!=NULL ) {
 #else
-	char *uniname;
         if ( (uniname=uninm_name(names_db,(unsigned int) uni))!= NULL ) {;
 #endif
 	    utf82u_strncpy(ubuffer+u_strlen(ubuffer),uniname,80);
