@@ -73,8 +73,10 @@ extern int clear_tt_instructions_when_needed;
 int use_freetype_with_aa_fill_cv = 1;
 int interpCPsOnMotion=false;
 int DrawOpenPathsWithHighlight = 1;
-int default_cv_width = 540;
-int default_cv_height = 540;
+#define default_cv_width 540
+#define default_cv_height 540
+int cv_width = default_cv_width;
+int cv_height = default_cv_height;
 
 extern struct lconv localeinfo;
 extern char *coord_sep;
@@ -4985,9 +4987,9 @@ return;
 	cv->width = newwidth; cv->height = newheight;
 	/*CVFit(cv);*/ CVNewScale(cv);
 	CVPalettesRaise(cv);
-	if ( cv->b.container == NULL && ( default_cv_width!=size.width || default_cv_height!=size.height )) {
-	    default_cv_width = size.width;
-	    default_cv_height = size.height;
+	if ( cv->b.container == NULL && ( cv_width!=size.width || cv_height!=size.height )) {
+	    cv_width = size.width;
+	    cv_height = size.height;
 	    SavePrefs(true);
 	}
     }
@@ -11011,7 +11013,8 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv,int enc) {
     if ( wattrs.icon )
 	wattrs.mask |= wam_icon;
     pos.x = GGadgetScale(104)+6;
-    pos.width=default_cv_width; pos.height = default_cv_height;
+    pos.width = (cv_width > 0) ? cv_width : default_cv_width;
+    pos.height = (cv_height > 0) ? cv_height : default_cv_height;
     DefaultY(&pos);
 
     cv->gw = gw = GDrawCreateTopWindow(NULL,&pos,cv_e_h,cv,&wattrs);
