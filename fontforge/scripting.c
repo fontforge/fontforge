@@ -717,7 +717,7 @@ static void bStrtod(Context *c) {
 	ScriptError( c, "Bad type for argument" );
 
     c->return_val.type = v_real;
-    c->return_val.u.ival = strtod(c->a.vals[1].u.sval,NULL);
+    c->return_val.u.fval = (float)strtod(c->a.vals[1].u.sval,NULL);
 }
 
 static void bStrskipint(Context *c) {
