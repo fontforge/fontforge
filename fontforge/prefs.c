@@ -160,8 +160,8 @@ extern int add_char_to_name_list;		/* in charinfo.c */
 extern int clear_tt_instructions_when_needed;	/* in cvundoes.c */
 extern int export_clipboard;			/* in cvundoes.c */
 extern int prefs_ensure_correct_extension;      /* in fontview.c */
-extern int default_cv_width;			/* in charview.c */
-extern int default_cv_height;			/* in charview.c */
+extern int cv_width;			/* in charview.c */
+extern int cv_height;			/* in charview.c */
 extern int interpCPsOnMotion;			/* in charview.c */
 extern int DrawOpenPathsWithHighlight;          /* in charview.c */
 extern int mv_width;				/* in metricsview.c */
@@ -428,8 +428,8 @@ static struct prefs_list {
 	{ "SaveToDir", pr_int, &save_to_dir, NULL, NULL, 'S', NULL, 1, NULL },
 	{ "OnlyCopyDisplayed", pr_bool, &onlycopydisplayed, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "PalettesDocked", pr_bool, &palettes_docked, NULL, NULL, '\0', NULL, 1, NULL },
-	{ "DefaultCVWidth", pr_int, &default_cv_width, NULL, NULL, '\0', NULL, 1, NULL },
-	{ "DefaultCVHeight", pr_int, &default_cv_height, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultCVWidth", pr_int, &cv_width, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultCVHeight", pr_int, &cv_height, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "CVVisible0", pr_bool, &cvvisible[0], NULL, NULL, '\0', NULL, 1, NULL },
 	{ "CVVisible1", pr_bool, &cvvisible[1], NULL, NULL, '\0', NULL, 1, NULL },
 	{ "BVVisible0", pr_bool, &bvvisible[0], NULL, NULL, '\0', NULL, 1, NULL },

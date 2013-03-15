@@ -144,8 +144,8 @@ static char *script_filenames[SCRIPT_MENU_MAX];
 static char *RecentFiles[RECENT_MAX];
 static int ItalicConstrained = true;
 extern int clear_tt_instructions_when_needed;	/* cvundoes.c */
-static int default_cv_width;			/* in charview.c */
-static int default_cv_height;			/* in charview.c */
+static int cv_width;			/* in charview.c */
+static int cv_height;			/* in charview.c */
 static int mv_width;				/* in metricsview.c */
 static int mv_height;				/* in metricsview.c */
 static int bv_width;				/* in bitmapview.c */
@@ -295,8 +295,8 @@ extras[] = {
     { "SeekChar", pr_unicode, &home_char, NULL, NULL, '\0', NULL, 1, NULL },
     { "CompactOnOpen", pr_bool, &compact_font_on_open, NULL, NULL, '\0', NULL, 1, NULL },
     { "PixmapDir", pr_file, &pixmapdir, NULL, NULL, 'R', NULL, 0, NULL },
-    { "DefaultCVWidth", pr_int, &default_cv_width, NULL, NULL, '\0', NULL, 1, NULL },
-    { "DefaultCVHeight", pr_int, &default_cv_height, NULL, NULL, '\0', NULL, 1, NULL },
+    { "DefaultCVWidth", pr_int, &cv_width, NULL, NULL, '\0', NULL, 1, NULL },
+    { "DefaultCVHeight", pr_int, &cv_height, NULL, NULL, '\0', NULL, 1, NULL },
     { "FCShowHidden", pr_bool, &gfc_showhidden, NULL, NULL, '\0', NULL, 1, NULL },
     { "FCDirPlacement", pr_int, &gfc_dirplace, NULL, NULL, '\0', NULL, 1, NULL },
     { "FCBookmarks", pr_string, &gfc_bookmarks, NULL, NULL, '\0', NULL, 1, NULL },
