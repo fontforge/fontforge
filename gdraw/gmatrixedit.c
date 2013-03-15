@@ -1456,7 +1456,7 @@ return;
 	    if ( gme->finishedit != NULL )
                 (gme->finishedit)(&gme->g,r,c,gme->wasnew);            
 	    GDrawRequestExpose(gme->nested,NULL,false);
-            gme->wasnew = false; // This is an attempted hack by somebody (Frank) who admittedly has no idea what is happening in all of this sparsely commented code.
+            // gme->wasnew = false; // This is an attempted hack by somebody (Frank) who admittedly has no idea what is happening in all of this sparsely commented code.
 	}
     } else if ( gme->col_data[c].me_type==me_onlyfuncedit ) {
 	/* Don't allow other editing */
