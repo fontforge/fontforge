@@ -2923,7 +2923,7 @@ return( cvlayers );
     plush = GDrawPointsToPixels(NULL,plush+4);
     plush = MAX( plush, plusw ); // make it square.
     
-     /* Delete Layer button */
+     /* Remove Layer button */
     label[0].text = (unichar_t *) _("-");
     label[0].text_is_1byte = true;
     gcd[i].gd.label = &label[0];
@@ -2935,7 +2935,7 @@ return( cvlayers );
     gcd[i].creator = GButtonCreate;
     ++i;
 
-     /* Add layer button */
+     /* Add Layer button */
     label[1].text = (unichar_t *) _("+");
     label[1].text_is_1byte = true;
     gcd[i].gd.label = &label[1];
