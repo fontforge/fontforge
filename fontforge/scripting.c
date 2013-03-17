@@ -1686,13 +1686,15 @@ static void bOpen(Context *c) {
     free(t); free(locfilename);
     if ( sf==NULL )
 	ScriptErrorString(c, "Failed to open", c->a.vals[1].u.sval);
-    if ( sf->fv!=NULL )
-	/* All done */;
-    else if ( !no_windowing_ui )
-	FontViewCreate(sf,openflags&of_hidewindow);
-    else
-	FVAppend(_FontViewCreate(sf));
-    c->curfv = sf->fv;
+    else {
+	if ( sf->fv!=NULL )
+	    /* All done */;
+	else if ( !no_windowing_ui )
+	    FontViewCreate(sf,openflags&of_hidewindow);
+	else
+	    FVAppend(_FontViewCreate(sf));
+	c->curfv = sf->fv;
+    }
 }
 
 static void bSelectBitmap(Context *c) {
