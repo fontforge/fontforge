@@ -42,6 +42,10 @@
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
+#ifdef USE_READLINE
+# include <readline/readline.h>
+# include <readline/history.h>
+#endif
 #include "ttf.h"
 #include "plugins.h"
 #include "scripting.h"
@@ -8382,21 +8386,37 @@ return( NULL );
 
 static void expr(Context*,Val *val);
 
+static int __AddScriptLine(FILE *script, const char *line)
+{
+    fpos_t pos;
+
+    if (fgetpos(script, &pos))
+	return -1;
+
+    fputs(line, script);
+    fsetpos(script, &pos);
+    return getc(script);
+}
+
 static int __cgetc(Context *c) {
     if (c->interactive) {
-	static char *linebuf = NULL;
-	static size_t lbsize = 0;
 	int ch;
 
 	if ((ch = getc(c->script)) < 0) {
-	    if (getline(&linebuf, &lbsize, stdin) > 0) {
-		fpos_t pos;
-		if (!fgetpos(c->script, &pos)) {
-		    fputs(linebuf, c->script);
-		    fsetpos(c->script, &pos);
-		    return getc(c->script);
-		}
+#ifdef USE_READLINE
+	    char *line = readline(">> ");
+	    if (line) {
+		ch = __AddScriptLine(c->script, line);
+		add_history(line);
+		free(line);
 	    }
+#else
+	    static char *linebuf = NULL;
+	    static size_t lbsize = 0;
+	    if (getline(&linebuf, &lbsize, stdin) > 0) {
+		ch = __AddScriptLine(c->script, linebuf);
+	    }
+#endif
 	}
 	return ch;
     }
