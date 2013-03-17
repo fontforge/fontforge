@@ -8382,14 +8382,35 @@ return( NULL );
 
 static void expr(Context*,Val *val);
 
+static int __cgetc(Context *c) {
+    if (c->interactive) {
+	static char *linebuf = NULL;
+	static size_t lbsize = 0;
+	int ch;
+
+	if ((ch = getc(c->script)) < 0) {
+	    if (getline(&linebuf, &lbsize, stdin) > 0) {
+		fpos_t pos;
+		if (!fgetpos(c->script, &pos)) {
+		    fputs(linebuf, c->script);
+		    fsetpos(c->script, &pos);
+		    return getc(c->script);
+		}
+	    }
+	}
+	return ch;
+    }
+    return getc(c->script);
+}
+
 static int _cgetc(Context *c) {
     int ch;
 
-    ch = getc(c->script);
+    ch = __cgetc(c);
     if ( verbose>0 )
 	putchar(ch);
     if ( ch=='\r' ) {
-	int nch = getc(c->script);
+	int nch = __cgetc(c);
 	if ( nch!='\n' )
 	    ungetc(nch,c->script);
 	else if ( verbose>0 )
@@ -9913,8 +9934,14 @@ void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     }
     /* On Mac OS/X fseek/ftell appear to be broken and return success even */
     /*  for terminals. They should return -1, EBADF */
-    if ( c.script!=NULL && (ftell(c.script)==-1 || isatty(fileno(c.script))) )
-	c.script = CopyNonSeekableFile(c.script);
+    if ( c.script!=NULL && (ftell(c.script)==-1 || isatty(fileno(c.script))) ) {
+	if (c.script == stdin) {
+	    c.script = tmpfile();
+	    if (c.script)
+		c.interactive = true;
+	} else
+	    c.script = CopyNonSeekableFile(c.script);
+    }
     if ( c.script==NULL )
 	ScriptError(&c, "No such file");
     else {
