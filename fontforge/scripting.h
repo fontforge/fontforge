@@ -79,6 +79,7 @@ typedef struct context {
     unsigned int returned: 1;		/* Irrelevant for user defined funcs */
     unsigned int broken: 1;		/* Irrelevant for user defined funcs */
     unsigned int interactive: 1;	/* Irrelevant for user defined funcs */
+    unsigned int error: 1;
     char tok_text[TOK_MAX+1];		/* Irrelevant for user defined funcs */
     enum token_type tok;		/* Irrelevant for user defined funcs */
     Val tok_val;			/* Irrelevant for user defined funcs */

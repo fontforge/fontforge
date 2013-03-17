@@ -219,6 +219,10 @@ static void calldatafree(Context *c) {
 static void traceback(Context *c) {
     int cnt = 0;
     while ( c!=NULL ) {
+	if (c->interactive) {
+	    c->error = true;
+	    return;
+	}
 	if ( cnt==1 ) LogError( _("Called from...\n") );
 	if ( cnt>0 ) LogError( _(" %s: line %d\n"), c->filename, c->lineno );
 	calldatafree(c);
@@ -248,8 +252,12 @@ static void expect(Context *c,enum token_type expected, enum token_type got) {
     if ( got!=expected ) {
 	if ( verbose>0 )
 	    fflush(stdout);
-	LogError( _("%s: %d Expected %s, got %s"),
-		c->filename, c->lineno, toknames[expected], toknames[got] );
+	if (c->interactive)
+	    LogError( _("Error: Expected %s, got %s"),
+		toknames[expected], toknames[got] );
+	else
+	    LogError( _("%s: %d Expected %s, got %s"),
+		     c->filename, c->lineno, toknames[expected], toknames[got] );
 	if ( !no_windowing_ui ) {
 	    ff_post_error(NULL,_("%1$s: %2$d. Expected %3$s got %4$s"),
 		    c->filename, c->lineno, toknames[expected], toknames[got] );
@@ -261,8 +269,11 @@ static void expect(Context *c,enum token_type expected, enum token_type got) {
 static void unexpected(Context *c,enum token_type got) {
     if ( verbose>0 )
 	fflush(stdout);
-    LogError( _("%s: %d Unexpected %s found"),
-	    c->filename, c->lineno, toknames[got] );
+    if (c->interactive)
+	LogError( _("Error: Unexpected %s found"), toknames[got] );
+    else
+	LogError( _("%s: %d Unexpected %s found"),
+		 c->filename, c->lineno, toknames[got] );
     if ( !no_windowing_ui ) {
 	ff_post_error(NULL,"%1$s: %2$d Unexpected %3$",
 		c->filename, c->lineno, toknames[got] );
@@ -280,7 +291,9 @@ void ScriptError( Context *c, const char *msg ) {
 
     if ( verbose>0 )
 	fflush(stdout);
-    if ( c->lineno!=0 )
+    if ( c->interactive )
+	LogError( "Error: %s\n", t1 );
+    else if ( c->lineno!=0 )
 	LogError( _("%s line: %d %s\n"), ufile, c->lineno, t1 );
     else
 	LogError( "%s: %s\n", ufile, t1 );
@@ -298,6 +311,8 @@ void ScriptErrorString( Context *c, const char *msg, const char *name) {
 
     if ( verbose>0 )
 	fflush(stdout);
+    if ( c->interactive )
+	LogError( "Error: %s: %s\n", t1, t2 );
     if ( c->lineno!=0 )
 	LogError( _("%s line: %d %s: %s\n"), ufile, c->lineno, t1, t2 );
     else
@@ -321,7 +336,9 @@ void ScriptErrorF( Context *c, const char *format, ... ) {
     
     if ( verbose>0 )
 	fflush(stdout);
-    if ( c->lineno!=0 )
+    if (c->interactive)
+	LogError( _("Error: %s\n"), errbuf );
+    else if ( c->lineno!=0 )
 	LogError( _("%s line: %d %s\n"), ufile, c->lineno, errbuf );
     else
 	LogError( "%s: %s\n", ufile, errbuf );
@@ -8394,6 +8411,9 @@ static int __AddScriptLine(FILE *script, const char *line)
 	return -1;
 
     fputs(line, script);
+#ifdef USE_READLINE
+    fputs("\n\n", script);
+#endif
     fsetpos(script, &pos);
     return getc(script);
 }
@@ -8404,7 +8424,7 @@ static int __cgetc(Context *c) {
 
 	if ((ch = getc(c->script)) < 0) {
 #ifdef USE_READLINE
-	    char *line = readline(">> ");
+	    char *line = readline("> ");
 	    if (line) {
 		ch = __AddScriptLine(c->script, line);
 		add_history(line);
@@ -9852,6 +9872,17 @@ void ff_statement(Context *c) {
     } else {
 	ff_backuptok(c);
 	expr(c,&val);
+	if (c->interactive) {
+	    if (c->error) {
+		c->error = false;
+	    }
+	    else if (val.type != v_void) {
+		printf("-> ");
+		PrintVal(&val);
+		printf("\n");
+		fflush(stdout);
+	    }
+	}
 	if ( val.type == v_str )
 	    free( val.u.sval );
     }
