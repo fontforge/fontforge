@@ -917,12 +917,9 @@ int fontforge_main( int argc, char **argv ) {
     /*  gettext will not. So I don't bother to check for null strings or "C"  */
     /*  or "POSIX". If they've mucked with the locale perhaps they know what  */
     /*  they are doing */
-
-    // Always try to use the Command key, if their X11 doesn't pass it to us
-    // then we have the control-N fallbacks in place
-    hotkeySystemSetCanUseMacCommand( 1 );
     { int did_keybindings = 0;
     if ( local_x && !get_mac_x11_prop("enable_key_equivalents") ) {
+	hotkeySystemSetCanUseMacCommand( 1 );
 	
 	/* Ok, we get the command key */
 	if ( getenv("LANG")==NULL && getenv("LC_MESSAGES")==NULL ) {
