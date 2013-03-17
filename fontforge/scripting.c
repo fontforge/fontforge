@@ -204,6 +204,7 @@ static void calldatafree(Context *c) {
 	    free( c->a.vals[i].u.sval );
 	if ( c->a.vals[i].type == v_arrfree || (c->a.vals[i].type == v_arr && c->dontfree[i]!=c->a.vals[i].u.aval ))
 	    arrayfree( c->a.vals[i].u.aval );
+	c->a.vals[i].type = v_void;
     }
     DictionaryFree(&c->locals);
 
