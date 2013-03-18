@@ -8418,7 +8418,7 @@ static int AddScriptLine(FILE *script, const char *line)
     return getc(script);
 }
 
-static int __cgetc(Context *c) {
+static int _buffered_cgetc(Context *c) {
     if (c->interactive) {
 	int ch;
 
@@ -8446,11 +8446,11 @@ static int __cgetc(Context *c) {
 static int _cgetc(Context *c) {
     int ch;
 
-    ch = __cgetc(c);
+    ch = _buffered_cgetc(c);
     if ( verbose>0 )
 	putchar(ch);
     if ( ch=='\r' ) {
-	int nch = __cgetc(c);
+	int nch = _buffered_cgetc(c);
 	if ( nch!='\n' )
 	    ungetc(nch,c->script);
 	else if ( verbose>0 )
