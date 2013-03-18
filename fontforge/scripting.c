@@ -8403,7 +8403,7 @@ return( NULL );
 
 static void expr(Context*,Val *val);
 
-static int __AddScriptLine(FILE *script, const char *line)
+static int AddScriptLine(FILE *script, const char *line)
 {
     fpos_t pos;
 
@@ -8427,12 +8427,12 @@ static int __cgetc(Context *c) {
 	    static char *linebuf = NULL;
 	    static size_t lbsize = 0;
 	    if (getline(&linebuf, &lbsize, stdin) > 0) {
-		ch = __AddScriptLine(c->script, linebuf);
+		ch = AddScriptLine(c->script, linebuf);
 	    }
 #else
 	    char *line = readline("> ");
 	    if (line) {
-		ch = __AddScriptLine(c->script, line);
+		ch = AddScriptLine(c->script, line);
 		add_history(line);
 		free(line);
 	    }
