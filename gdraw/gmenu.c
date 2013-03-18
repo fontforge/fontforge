@@ -1877,7 +1877,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 
     /* then look for hotkeys everywhere */
 	
-    printf("looking1 for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
+//    printf("looking1 for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
 
     if( hotkeySystemGetCanUseMacCommand() )
     {
