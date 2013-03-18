@@ -1881,8 +1881,10 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 
     if( hotkeySystemGetCanUseMacCommand() )
     {
-	event->u.chr.state &= ~ksm_cmdmacosx;
-	event->u.chr.state |= ksm_control;
+	if (event->u.chr.state & (ksm_cmdmacosx|ksm_control) == ksm_cmdmacosx) {
+	    event->u.chr.state &= ~ksm_cmdmacosx;
+	    event->u.chr.state |= ksm_control;
+	}
     }
     
 	
