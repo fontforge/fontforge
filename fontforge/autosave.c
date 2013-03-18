@@ -135,14 +135,14 @@ return( false );
 	    any=true;
 	    if ( sf->fv==NULL )		/* Doesn't work, cli arguments not parsed yet */
 		FontViewCreate(sf,false);
-	}
-	fprintf( stderr, " Done\n" );
+	    fprintf( stderr, " Done\n" );
 
-	char *buts[4];
-	buts[0] = _("_OK");
-	buts[1] = 0;
-	gwwv_ask( _("Recovery Complete"),(const char **) buts,0,1,_("Your file %s has been recovered.\nYou must now Save your file to continue working on it."), sf->filename );
-	_FVMenuSaveAs( sf->fv );
+	    char *buts[4];
+	    buts[0] = _("_OK");
+	    buts[1] = 0;
+	    gwwv_ask( _("Recovery Complete"),(const char **) buts,0,1,_("Your file %s has been recovered.\nYou must now Save your file to continue working on it."), sf->filename );
+	    _FVMenuSaveAs( sf->fv );
+	}
     }
     closedir(dir);
 return( any );
