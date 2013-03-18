@@ -145,6 +145,7 @@ return( ret );
 }
 
 int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
+/* TODO: Note, maybe this routine can be combined with print.c dump_pdfprologue() */
     DBounds b;
     time_t now;
     struct tm *tm;
@@ -210,7 +211,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     fprintf( pdf, "    /Creator (FontForge)\n" );
     time(&now);
     tm = localtime(&now);
-    fprintf( pdf, "    /CreationDate (D:%04d%02d%02d%02d%2d%02d",
+    fprintf( pdf, "    /CreationDate (D:%04d%02d%02d%02d%02d%02d",
 	    1900+tm->tm_year, tm->tm_mon+1, tm->tm_mday,
 	    tm->tm_hour, tm->tm_min, tm->tm_sec );
 #ifdef _NO_TZSET
@@ -219,8 +220,13 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     tzset();
     if ( timezone==0 )
 	fprintf( pdf, "Z)\n" );
-    else 
-	fprintf( pdf, "%+02d')\n", (int) timezone/3600 );	/* doesn't handle half-hour zones */
+    else {
+	if ( timezone<0 ) /* fprintf bug - this is a kludge to print +/- in front of a %02d-padded value */
+	    fprintf( pdf, "-" );
+	else
+	    fprintf( pdf, "+" );
+	fprintf( pdf, "%02d'%02d')\n", (int)(timezone/3600),(int)(timezone/60-(timezone/3600)*60) );
+    }
 #endif
     fprintf( pdf, "    /Title (%s from %s)\n", sc->name, sc->parent->fontname );
     if ( author!=NULL )
@@ -528,7 +534,7 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
 	base.height = bdfc->ymax-bdfc->ymin+1;
 	base.trans = -1;
 	if ( format==0 )
-	    ret = GImageWriteXbm(&gi,filename);
+	    ret = !GImageWriteXbm(&gi,filename);
 #ifndef _NO_LIBPNG
 	else if ( format==2 )
 	    ret = GImageWritePng(&gi,filename,false);
@@ -600,7 +606,7 @@ int BCExportXBM(char *filename,BDFChar *bdfc, int format) {
 	base.height = bdfc->ymax-bdfc->ymin+1;
 	base.trans = -1;
 	if ( format==0 )
-	    ret = GImageWriteXbm(&gi,filename);
+	    ret = !GImageWriteXbm(&gi,filename);
 #ifndef _NO_LIBPNG
 	else if ( format==2 )
 	    ret = GImageWritePng(&gi,filename,false);

@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgevw.h"
-#include "annotations.h"
 #include <gfile.h>
 #include <ustring.h>
 #include <ltdl.h>
@@ -36,6 +35,11 @@
 #include <dynamic.h>
 #ifdef __Mac
 # include <stdlib.h>		/* getenv,setenv */
+#endif
+
+#ifndef _NO_LIBUNICODENAMES
+#include <libunicodenames.h>	/* need to open a database when we start */
+extern uninm_names_db names_db; /* Unicode character names and annotations database */
 #endif
 
 static void _doscriptusage(void) {
@@ -75,7 +79,10 @@ int fontforge_main( int argc, char **argv ) {
     extern const char *source_version_str;
     extern const char *source_modtime_str;
 
-    fprintf( stderr, "Copyright (c) 2000-2012 by George Williams.\n Executable based on sources from %s"
+    fprintf( stderr, "Copyright (c) 2000-2012 by George Williams. See AUTHORS for contributors.\n" );
+    fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
+    fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
+    fprintf( stderr, " Executable based on sources from %s"
 	    "-ML"
 #ifdef FREETYPE_HAS_DEBUGGER
 	    "-TtfDb"
@@ -123,7 +130,10 @@ int fontforge_main( int argc, char **argv ) {
     PyFF_Stdin();
 #  endif
 
-    uninm_names_db_close(names_db);
+#ifndef _NO_LIBUNICODENAMES
+    uninm_names_db_close(names_db);	/* close this database before exiting */
+#endif
+
     lt_dlexit();
 return( 0 );
 }

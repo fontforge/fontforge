@@ -58,7 +58,7 @@ capable of using composite.
 #include <vms_x_fix.h>
 #endif
 
-#include <config.h>		/* FF config file */
+#include <fontforge-config.h>
 
 #ifndef X_DISPLAY_MISSING
 # include <X11/X.h>
@@ -276,6 +276,8 @@ typedef struct gxdisplay /* : GDisplay */ {
     uint16 mykey_state;
     uint16 mykey_keysym;
     uint16 mykey_mask;
+    fd_callback_t fd_callbacks[ gdisplay_fd_callbacks_size ];
+    int fd_callbacks_last;
     unsigned int mykeybuild: 1;
     unsigned int default_visual: 1;
     unsigned int do_dithering: 1;
@@ -388,10 +390,15 @@ extern void _XSyncScreen(void);
 
 #if !defined(__MINGW32__)
 extern int GDrawKeyToXK(int keysym);
+#else
+extern int GDrawKeyToVK(int keysym);
 #endif
 
 # ifdef _WACOM_DRV_BROKEN
 void _GXDraw_Wacom_Init(GXDisplay *gdisp);
 void _GXDraw_Wacom_TestEvents(GXDisplay *gdisp);
 # endif	/* Wacom fix */
+
+
+
 #endif

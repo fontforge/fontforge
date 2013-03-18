@@ -524,7 +524,21 @@ int main( int argc, char **argv ) {
     gchar *home_dir, *rc_path;
     struct argcontext args;
 
-    fprintf( stderr, "Copyright (c) 2000-2012 by George Williams.\n Executable based on sources from %s-ML.\n",
+    fprintf( stderr, "Copyright (c) 2000-2012 by George Williams. See AUTHORS for contributors.\n" );
+    fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
+    fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
+    fprintf( stderr, " Executable based on sources from %s"
+	    "-ML"
+#ifdef FREETYPE_HAS_DEBUGGER
+	    "-TtfDb"
+#endif
+#ifdef _NO_PYTHON
+	    "-NoPython"
+#endif
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
+	    "-D"
+#endif
+	    ".\n",
 	    source_modtime_str );
     fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
 

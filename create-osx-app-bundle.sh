@@ -24,6 +24,10 @@ dylibbundler --overwrite-dir --bundle-deps --fix-file \
   ./fontforge \
   --install-path @executable_path/../lib \
   --dest-dir ../lib
+dylibbundler --overwrite-dir --bundle-deps --fix-file \
+  ./FontForgeInternal/fontforge-internal-collab-server \
+  --install-path @executable_path/collablib \
+  --dest-dir ./FontForgeInternal/collablib
 
 mkdir -p $bundle_lib
 cp -av /opt/local/lib/pango   $bundle_lib
@@ -63,8 +67,9 @@ cp -av /opt/local/share/mime/magic      opt/local/share/mime
 
 
 cd $TEMPDIR
-zip -r ~/FontForge.app.zip FontForge.app
-cp -f ~/FontForge.app.zip /tmp/
+rm -f  ~/FontForge.app.zip
+zip -9 -r ~/FontForge.app.zip FontForge.app
+cp -f  ~/FontForge.app.zip /tmp/
 chmod o+r /tmp/FontForge.app.zip
 
 echo "Completed at `date`"

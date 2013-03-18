@@ -36,7 +36,7 @@
 #include <math.h>
 
 int mv_width = 800, mv_height = 300;
-int mvshowgrid = mv_hidemovinggrid;
+int mvshowgrid = mv_hidegrid;
 int mv_type = mv_widthonly;
 static int mv_antialias = true;
 static double mv_scales[] = { 8.0, 4.0, 2.0, 1.5, 1.0, 2.0/3.0, .5, 1.0/3.0, .25, .2, 1.0/6.0, .125, .1 };
@@ -937,12 +937,15 @@ static int isValidInt(unichar_t *end) {
     return 1;
 }
 
+/*
+ * Unused
 static int GGadgetToInt(GGadget *g)
 {
     unichar_t *end;
     int val = u_strtol(_GGadgetGetTitle(g),&end,10);
     return val;
 }
+*/
 
 static real GGadgetToReal(GGadget *g) 
 {
@@ -988,7 +991,7 @@ return( true );
 	    DBounds bb;
 	    SplineCharFindBounds(sc,&bb);
 	    transform[4] = offset-bb.minx;
-	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,0);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL, 0 | fvt_alllayers );
 
 	    SCSynchronizeWidth(sc,val,sc->width,NULL);
 	    SCCharChangedUpdate(sc,ly_none);
@@ -1031,13 +1034,13 @@ return( true );
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[5] = 0;
 	    transform[4] = val-bb.minx;
-	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,0);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,0 | fvt_alllayers );
 	} else if ( mv->vertical && val!=sc->parent->ascent-bb.maxy ) {
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[4] = 0;
 	    transform[5] = sc->parent->ascent-bb.maxy-val;
-	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,fvt_dontmovewidth);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL, fvt_dontmovewidth | fvt_alllayers );
 	}
 	
     } else if ( e->u.control.subtype == et_textfocuschanged &&
@@ -1797,53 +1800,75 @@ static void MVFigureGlyphNames(MetricsView *mv,const unichar_t *names) {
 static void MVLoadWordList(MetricsView *mv,int type) {
     GTextInfo **words;
     int cnt;
+    int dblQuoteCount = 0;
     char buffer[300], *pt;
     int ch;
     char *filename, *temp;
     FILE *file;
 
     filename = gwwv_open_filename(type==-1 ? "File of Kerning Words":"File of glyphname lists",NULL,"*.txt",NULL);
-    if ( filename==NULL ) {
+    if ( filename==NULL )
+    {
 	GGadgetSetTitle8(mv->text,"");
-return;
+	return;
     }
     temp = utf82def_copy(filename);
     file = fopen( temp,"r" );
     free(temp);
-    if ( file==NULL ) {
+    if ( file==NULL )
+    {
 	ff_post_error("Could not open", "Could not open %s", filename );
 	GGadgetSetTitle8(mv->text,"");
-return;
+	return;
     }
     free(filename);
 
     words = galloc(1002*sizeof(GTextInfo *));
 
     cnt = 0;
-    if ( type==-1 ) {
+    if ( type==-1 )
+    {
 	ch = getc(file);
-	while ( ch!=EOF ) {
-	    while ( isspace(ch) && ch<0x80 ) ch=getc(file);
-	    for ( pt = buffer; ch!=EOF && !(isspace(ch) && ch<0x80) ; ch=getc(file))
+	while ( ch!=EOF )
+	{
+	    // skip leading whitespace
+	    while ( isspace(ch) && ch<0x80 )
+		ch=getc(file);
+	    
+	    for ( pt = buffer; ch!=EOF; ch=getc(file))
+	    {
+		// We are either quoted or not, no nesting for now.
+		if( ch == '"' )
+		    dblQuoteCount = !dblQuoteCount;
+		
+		if( (isspace(ch) && ch<0x80) )
+		    if( !dblQuoteCount )
+			break;
+	    
 		if ( pt<buffer+sizeof(buffer)-2)
 		    *pt++=ch;
+	    }
+	    
 	    *pt = '\0';
 	    if ( buffer[0]=='\0' )
-	break;
+		break;
 	    if ( cnt>1000-3 )
-	break;
+		break;
 	    words[cnt] = gcalloc(1,sizeof(GTextInfo));
 	    words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
 	    words[cnt]->text = (unichar_t *) utf82def_copy( buffer );
 	    words[cnt++]->text_is_1byte = true;
 	}
-    } else {
+    }
+    else
+    {
 	strcpy(buffer,"​");		/* Zero width space: 0x200b, I use as a flag */
-	while ( fgets(buffer+3,sizeof(buffer)-3,file)!=NULL ) {
+	while ( fgets(buffer+3,sizeof(buffer)-3,file)!=NULL )
+	{
 	    if ( buffer[3]=='\n' || buffer[3]=='#' )
-	continue;
+		continue;
 	    if ( cnt>1000-3 )
-	break;
+		break;
 	    if ( buffer[strlen(buffer)-1]=='\n' )
 		buffer[strlen(buffer)-1] = '\0';
 	    words[cnt] = gcalloc(1,sizeof(GTextInfo));
@@ -3129,7 +3154,8 @@ static void MVMenuChangeLayer(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e
     GDrawRequestExpose(mv->v,NULL,false);
 }
 
-static void MVMenuCenter(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
+static void MVMenuCenter(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
+{
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i;
     DBounds bb;
@@ -3149,7 +3175,7 @@ static void MVMenuCenter(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	else
 	    transform[4] = (sc->width-(bb.maxx-bb.minx))/3 - bb.minx;
 	if ( transform[4]!=0 )
-	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,fvt_dontmovewidth);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL, fvt_dontmovewidth| fvt_alllayers );
     }
 }
 
@@ -3557,8 +3583,6 @@ static void MVMenuRemoveVKern(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
     SCRemoveVKern(sc);
 }
 
-#define GMENUITEM2_LINE { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }
-    
 static GMenuItem2 mtlist[] = {
     { { (unichar_t *) N_("_Center in Width"), (GImage *) "metricscenter.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Center in Width|No Shortcut"), NULL, NULL, MVMenuCenter, MID_Center },
     { { (unichar_t *) N_("_Thirds in Width"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Thirds in Width|No Shortcut"), NULL, NULL, MVMenuCenter, MID_Thirds },
@@ -3944,32 +3968,6 @@ static void MVChar(MetricsView *mv,GEvent *event) {
 	}
     }
     if ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ||
-	    event->u.chr.keysym == GK_Down || event->u.chr.keysym==GK_KP_Down ) {
-	    GGadget *active = GWindowGetFocusGadgetOfWindow(mv->gw);
-	    if(!active)
-		return;
- 	    unichar_t *end;
-	    double val = u_strtod(_GGadgetGetTitle(active),&end);
-	    if (isValidInt(end)) {
-		int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? 1 : -1;
-		if( event->u.chr.state&ksm_control && event->u.chr.state&ksm_shift ) {
-		    dir *= pref_mv_control_shift_and_arrow_skip;
-		}
-		else if( event->u.chr.state&ksm_shift ) {
-		    dir *= pref_mv_shift_and_arrow_skip;
-		}
-		val += dir;
-		char buf[100];
-		snprintf(buf,99,"%.0f",val);
-		GGadgetSetTitle8(active, buf);
-
-		event->u.control.u.tf_changed.from_pulldown=-1;
-		event->type=et_controlevent;
-		event->u.control.subtype = et_textchanged;
-		GGadgetDispatchEvent(active,event);
-	    }
-    }
-    if ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ||
 	 event->u.chr.keysym == GK_Down || event->u.chr.keysym==GK_KP_Down ) {
 	int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? -1 : 1;
 	if ( mv->word_index!=-1 ) {
@@ -4254,7 +4252,7 @@ static void MVSubMouse(MetricsView *mv,GEvent *event) {
 	_MVSubVMouse(mv,event);
 return;
     }
-
+    
     ybase = mv->ybaseline - mv->yoff;
     within = -1;
     for ( i=0; i<mv->glyphcnt; ++i ) {
@@ -4506,7 +4504,7 @@ return;
 	    transform[4] = diff*
 		    (mv->sf->ascent+mv->sf->descent)/(mv->pixelsize*iscale);
 	    if ( transform[4]!=0 )
-		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,false);
+		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL, 0 | fvt_alllayers );
 	}
 	mv->pressedwidth = false;
 	mv->pressedkern = false;

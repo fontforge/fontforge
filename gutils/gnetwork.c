@@ -1,4 +1,4 @@
-/* Copyright (C) 2012 by Barry Schwartz */
+/* Copyright (C) 2013 by Ben Martin */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,23 +25,67 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _ANNOTATIONS_BASE_H_
-#define _ANNOTATIONS_BASE_H_
+#include "inc/gnetwork.h"
+#include "inc/ustring.h"
 
-#ifndef _NO_LIBUNICODENAMES
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <limits.h>
+#include <netdb.h>
+extern int h_errno;
+#include <arpa/inet.h>
 
-#include <libunicodenames.h>
 
-#else
+char* getNetworkAddress( char* outstring )
+{
+    char hostname[PATH_MAX+1];
+    int rc = 0;
 
-typedef void *uninm_names_db;
+    rc = gethostname( hostname, PATH_MAX );
+    if( rc == -1 )
+    {
+	return 0;
+    }
+    printf("hostname: %s\n", hostname );
+    struct hostent * he = gethostbyname( hostname );
+    if( !he )
+    {
+	return 0;
+    }
+    if( he->h_addrtype != AF_INET && he->h_addrtype != AF_INET6 )
+    {
+	return 0;
+    }
+    
+    inet_ntop( he->h_addrtype, he->h_addr_list[0],
+	       outstring, ipaddress_string_length_t-1 );
 
-#define uninm_find_names_db(locale_base)    ((char *) 0)
-#define uninm_names_db_open(filename)       ((uninm_names_db) 0)
-#define uninm_names_db_close(handle)        do {} while (0)
-#define uninm_name(handle, codepoint)       ((const char *) 0)
-#define uninm_annotation(handle, codepoint) ((const char *) 0)
+    return outstring;
+}
 
-#endif
+char* HostPortPack( char* hostname, int port )
+{
+    static char ret[PATH_MAX+1];
+    snprintf(ret,PATH_MAX,"%s:%d",hostname,port);
+    return ret;
+}
 
-#endif /* _ANNOTATIONS_BASE_H_ */
+char* HostPortUnpack( char* packed, int* port, int port_default )
+{
+    char* colon = str_rfind( packed, ':' );
+    if( !colon )
+    {
+	*port = port_default;
+	return packed;
+    }
+
+    *colon = '\0';
+    *port = atoi(colon+1);
+    return packed;
+}
+
+
+

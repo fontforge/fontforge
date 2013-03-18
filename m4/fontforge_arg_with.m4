@@ -19,6 +19,7 @@ if test x"${AS_TR_SH(i_do_have_$1)}" != xyes; then
    $4
    AC_DEFINE([$5],1,[Define if not using $1.])
 fi
+AM_CONDITIONAL(m4_toupper([$1]), test x"${AS_TR_SH(i_do_have_$1)}" = xyes)
 ])
 
 
@@ -30,16 +31,43 @@ AC_DEFUN([FONTFORGE_ARG_WITH],
    [FONTFORGE_ARG_WITH_BASE([$1],[$2],[$3],[$4],[$5],[eval AS_TR_SH(i_do_have_$1)=no])])
 
 
+dnl FONTFORGE_ARG_WITH_LIBNAMESLIST
+dnl -------------------------------
+AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST],
+[
+   FONTFORGE_ARG_WITH_BASE([libuninameslist],
+      [AS_HELP_STRING([--without-libuninameslist],[build without Unicode Name or Annotation support])],
+      [libuninameslist],
+      [FONTFORGE_WARN_PKG_NOT_FOUND([LIBUNINAMESLIST])],
+      [_NO_LIBUNINAMESLIST],
+      [
+       FONTFORGE_SEARCH_LIBS([uniNamesList_name],[uninameslist],
+         [i_do_have_libuninameslist=yes
+          AC_SUBST([LIBUNINAMESLIST_CFLAGS],[""])
+          AC_SUBST([LIBUNINAMESLIST_LIBS],["${found_lib}"])
+          FONTFORGE_WARN_PKG_FALLBACK([LIBUNINAMESLIST])],
+         [i_do_have_libuninameslist=no])
+       ])
+])
+
+
 dnl FONTFORGE_ARG_WITH_LIBUNICODENAMES
 dnl ----------------------------------
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNICODENAMES],
 [
-   FONTFORGE_ARG_WITH([libunicodenames],
-      [AS_HELP_STRING([--without-libunicodenames],
-                      [do not include access to Unicode NamesList data])],
+   FONTFORGE_ARG_WITH_BASE([libunicodenames],
+      [AS_HELP_STRING([--without-libunicodenames],[build without Unicode Name or Annotation support - incase libuninameslist not found])],
       [libunicodenames],
       [FONTFORGE_WARN_PKG_NOT_FOUND([LIBUNICODENAMES])],
-      [_NO_LIBUNICODENAMES])
+      [_NO_LIBUNICODENAMES],
+      [
+       FONTFORGE_SEARCH_LIBS([uninm_names_db_open],[unicodenames],
+         [i_do_have_libunicodenames=yes
+          AC_SUBST([LIBUNICODENAMES_CFLAGS],[""])
+          AC_SUBST([LIBUNICODENAMES_LIBS],["${found_lib}"])
+          FONTFORGE_WARN_PKG_FALLBACK([LIBUNICODENAMES])],
+         [i_do_have_libunicodenames=no])
+       ])
 ])
 
 
@@ -207,3 +235,15 @@ dnl FONTFORGE_WARN_PKG_FALLBACK
 dnl ---------------------------
 AC_DEFUN([FONTFORGE_WARN_PKG_FALLBACK],
    [AC_MSG_WARN([No pkg-config file was found for $1, but the library is present and we will try to use it.])])
+
+
+dnl FONTFORGE_ARG_WITH_ZEROMQ
+dnl -------------------------
+AC_DEFUN([FONTFORGE_ARG_WITH_ZEROMQ],
+[
+FONTFORGE_ARG_WITH([libzmq],
+        [AS_HELP_STRING([--without-libzmq],[build without libzmq])],
+        [ libczmq libzmq > 3.2.0 ],
+        [FONTFORGE_WARN_PKG_NOT_FOUND([LIBZMQ])],
+        [_NO_LIBZMQ])
+])

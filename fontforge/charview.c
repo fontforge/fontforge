@@ -27,7 +27,6 @@
 
 #include "fontforgeui.h"
 #include "cvruler.h"
-#include "annotations.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>
@@ -42,7 +41,17 @@ extern int _GScrollBar_Width;
 #endif
 #include "dlist.h"
 
+#ifndef _NO_LIBUNINAMESLIST
+#include <uninameslist.h>
+#else
+#ifndef _NO_LIBUNICODENAMES
+#include <libunicodenames.h>
+extern uninm_names_db names_db; /* Unicode character names and annotations database */
+#endif
+#endif
+
 #include "gutils/prefs.h"
+#include "collabclient.h"
 
 /* Barry wants to be able to redefine menu bindings only in the charview (I think) */
 /*  the menu parser will first check for something like "CV*Open|Ctl+O", and */
@@ -2969,7 +2978,6 @@ return( ((FontView *) (cv->b.fv))->b.map->backmap[cv->b.sc->orig_pos] );
 
 static char *CVMakeTitles(CharView *cv,char *buf) {
     char *title;
-    const char *uniname;
     SplineChar *sc = cv->b.sc;
 
 /* GT: This is the title for a window showing an outline character */
@@ -2983,11 +2991,18 @@ static char *CVMakeTitles(CharView *cv,char *buf) {
     if ( sc->changed )
 	strcat(buf," *");
     title = copy(buf);
-    uniname = (sc->unicodeenc != -1) ? uninm_name (names_db, sc->unicodeenc) : (const char *) NULL;
-    if (uniname != NULL) {
+#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+#else
+    const char *uniname;
+#ifndef _NO_LIBUNINAMESLIST
+    if ( (uniname=uniNamesList_name(sc->unicodeenc))!=NULL ) {
+#else
+    if ( sc->unicodeenc!=-1 && (uniname=uninm_name(names_db,sc->unicodeenc))!=NULL ) {
+#endif
 	strcat(buf, " ");
 	strcpy(buf+strlen(buf), uniname);
     }
+#endif
     if ( cv->show_ft_results || cv->dv )
 	sprintf(buf+strlen(buf), " (%gpt, %ddpi)", (double) cv->ft_pointsizey, cv->ft_dpi );
 return( title );
@@ -3189,6 +3204,8 @@ return;
     CVChangeSC(cv,sc);
 }
 
+/*
+ * Unused
 static void CVSwitchToTab(CharView *cv,int tnum ) {
     if( tnum >= cv->former_cnt )
 	return;
@@ -3203,6 +3220,7 @@ static void CVMenuShowTab(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVSwitchToTab(cv,mi->mid);
 }
+*/
 
 static int CVChangeToFormer( GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
@@ -3909,10 +3927,21 @@ int CVTestSelectFromEvent(CharView *cv,GEvent *event) {
 return( _CVTestSelectFromEvent(cv,&fs));
 }
 
+/**
+ * A cache for the selected spline point or spiro control point
+ */
+typedef struct lastselectedpoint 
+{
+    SplinePoint *lastselpt;
+    spiro_cp *lastselcp;
+} lastSelectedPoint;
+    
 static void CVMouseDown(CharView *cv, GEvent *event ) {
     FindSel fs;
     GEvent fake;
-
+    lastSelectedPoint lastSel;
+    memset( &lastSel, 0, sizeof(lastSelectedPoint));
+    
     if ( event->u.mouse.button==2 && event->u.mouse.device!=NULL &&
 	    strcmp(event->u.mouse.device,"stylus")==0 )
 return;		/* I treat this more like a modifier key change than a button press */
@@ -3945,6 +3974,8 @@ return;
 	}
 	if ( cv->showpointnumbers && cv->b.layerheads[cv->b.drawmode]->order2 )
 	    fs.all_controls = true;
+	lastSel.lastselpt = cv->lastselpt;
+	lastSel.lastselcp = cv->lastselcp;
 	cv->lastselpt = NULL;
 	cv->lastselcp = NULL;
 	_CVTestSelectFromEvent(cv,&fs);
@@ -3987,12 +4018,24 @@ return;
     CVInfoDraw(cv,cv->gw);
     CVSetConstrainPoint(cv,event);
 
+    int selectionChanged = 0;
     switch ( cv->active_tool ) {
       case cvt_pointer:
 	CVMouseDownPointer(cv, &fs, event);
+//	printf("lastSel.lastselpt:%p  fs.p->sp:%p\n", lastSel.lastselpt, fs.p->sp );
+	if( lastSel.lastselpt != fs.p->sp
+	    || lastSel.lastselcp != fs.p->spiro )
+	{
+	    CVPreserveState(&cv->b);
+	    selectionChanged = 1;
+	}
 	cv->lastselpt = fs.p->sp;
 	cv->lastselcp = fs.p->spiro;
-      break;
+	if( selectionChanged )
+	{
+	    collabclient_sendRedo( &cv->b );    
+	}
+	break;
       case cvt_magnify: case cvt_minify:
       break;
       case cvt_hand:
@@ -4571,6 +4614,9 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	_CV_CharChangedUpdate(cv,2);
 
     dlist_foreach( &cv->pointInfoDialogs, (dlist_foreach_func_type)PIChangePoint );
+
+//    printf("cvmouseup!\n");
+    collabclient_sendRedo( &cv->b );    
 }
 
 static void CVTimer(CharView *cv,GEvent *event) {
@@ -6828,9 +6874,12 @@ static void pllistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     cv_pllistcheck(cv, mi);
 }
 
+/*
+ * Unused
 static void tablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    GDrawGetUserData(gw);
 }
+*/
 
 static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
@@ -7888,14 +7937,14 @@ static void TransRef(RefChar *ref,real transform[6], enum fvtrans_flags flags) {
     RefCharFindBounds(ref);
 }
 
-void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
+void CVTransFuncLayer(CharView *cv,Layer *ly,real transform[6], enum fvtrans_flags flags)
+{
     int anysel = cv->p.transany;
     RefChar *refs;
     ImageList *img;
     AnchorPoint *ap;
     KernPair *kp;
     PST *pst;
-    Layer *ly = cv->b.layerheads[cv->b.drawmode];
     int l, cvlayer;
 
     if ( cv->b.sc->inspiro && hasspiro() )
@@ -7963,6 +8012,21 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 	    for ( refs=cv->b.sc->layers[l].refs; refs!=NULL; refs=refs->next )
 		TransRef(refs,transform,flags);
 	}
+    }
+}
+
+void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags)
+{
+    Layer *ly = cv->b.layerheads[cv->b.drawmode];
+    CVTransFuncLayer( cv, ly, transform, flags );
+}
+
+void CVTransFuncAllLayers(CharView *cv,real transform[6], enum fvtrans_flags flags)
+{
+    for( int idx = 0; idx < cv->b.sc->layer_cnt; ++idx )
+    {
+	Layer *ly = &cv->b.sc->layers[ idx ];
+	CVTransFuncLayer( cv, ly, transform, flags );
     }
 }
 
@@ -9862,7 +9926,7 @@ static void CVMenuCenter(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     if ( transform[4]!=0 ) {
 	cv->p.transany = false;
 	CVPreserveState(&cv->b);
-	CVTransFunc(cv,transform,fvt_dontmovewidth);
+	CVTransFuncAllLayers(cv, transform, fvt_dontmovewidth );
 	CVCharChangedUpdate(&cv->b);
     }
     cv->b.drawmode = drawmode;
@@ -10346,7 +10410,6 @@ static void CVMenuVKernFromHKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVVKernFromHKern((FontViewBase *) cv->b.fv);
 }
 
-#define GMENUITEM2_LINE { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }
 static GMenuItem2 mtlist[] = {
     { { (unichar_t *) N_("_Center in Width"), (GImage *) "metricscenter.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Center in Width|No Shortcut"), NULL, NULL, CVMenuCenter, MID_Center },
     { { (unichar_t *) N_("_Thirds in Width"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Thirds in Width|No Shortcut"), NULL, NULL, CVMenuCenter, MID_Thirds },

@@ -1592,7 +1592,7 @@ void FVMetricsCenter(FontViewBase *fv,int docenter) {
 		else
 		    transform[4] = (sc->width-(bb.maxx-bb.minx))/3 - bb.minx;
 		if ( transform[4]!=0 ) {
-		    FVTrans(fv,sc,transform,NULL,fvt_dontmovewidth);
+		    FVTrans(fv,sc,transform,NULL, fvt_dontmovewidth | fvt_alllayers );
 		    bvts[0].x = transform[4];
 		    for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 			if ( gid<bdf->glyphcnt && bdf->glyphs[gid]!=NULL )

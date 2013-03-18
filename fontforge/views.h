@@ -861,7 +861,13 @@ extern int CVPalettesWidth(void);
 extern int BVPalettesWidth(void);
 
 extern void CVDoTransform(CharView *cv, enum cvtools cvt );
+
+// apply transform to specified layer
+extern void CVTransFuncLayer(CharView *cv,Layer *ly,real transform[6], enum fvtrans_flags flags);
+// apply transform to the current layer only
 extern void CVTransFunc(CharView *cv,real transform[6],enum fvtrans_flags);
+// apply transform to all layers
+extern void CVTransFuncAllLayers(CharView *cv,real transform[6], enum fvtrans_flags flags);
 enum transdlg_flags { tdf_enableback=0x1, tdf_enablekerns=0x2,
 	tdf_defaultkerns=0x4, tdf_addapply=0x8 };
 extern void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *,enum fvtrans_flags),
@@ -1236,6 +1242,9 @@ extern void _CVMenuNameContour(CharView *cv);
 extern void SFD_DumpPST( FILE *sfd, SplineChar *sc );
 extern void SFD_DumpKerns( FILE *sfd, SplineChar *sc, int *newgids );
 extern void SFDDumpCharStartingMarker(FILE *sfd,SplineChar *sc);
+extern Undoes *SFDGetUndo( SplineFont *sf, FILE *sfd, SplineChar *sc,
+			   const char* startTag, const char* endTag,
+			   int current_layer );
 
 /**
  * Create, open and unlink a new temporary file. This allows the
@@ -1299,6 +1308,20 @@ extern char* SFDMoveToNextStartChar( FILE* sfd );
  */
 extern void SFDFixupRefs(SplineFont *sf);
 
+/**
+ * Dump a single undo for the given splinechar to the file at "sfd".
+ * The keyPrefix can be either Undo or Redo to generate the correct XML
+ * element, and idx is the index into the undoes list that 'u' was found at
+ * so that a stream of single undo/redo elements can be saved and reloaded
+ * in the correct order.
+ */
+extern void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, char* keyPrefix, int idx );
+
 extern void Prefs_LoadDefaultPreferences( void );
+
+extern FontView* FontViewFind( int (*testFunc)( FontView*, void* ), void* udata );
+extern int FontViewFind_byXUID( FontView* fv, void* udata );
+extern int FontViewFind_byCollabPtr( FontView* fv, void* udata );
+extern int FontViewFind_byXUIDConnected( FontView* fv, void* udata );
 
 #endif	/* _VIEWS_H */

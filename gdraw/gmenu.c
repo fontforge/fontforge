@@ -236,9 +236,12 @@ return;
 }
 
 
+/*
+ * Unused
 static void shorttext(GMenuItem *gi,unichar_t *buf) {
     _shorttext(gi->shortcut,gi->short_mask,buf);
 }
+*/
 
 static int GMenuGetMenuPathRecurse( GMenuItem** stack,
 				    GMenuItem *basemi,
@@ -281,7 +284,7 @@ static int GMenuGetMenuPathRecurse( GMenuItem** stack,
  */
 static char* GMenuGetMenuPath( GMenuItem *basemi, GMenuItem *targetmi ) {
     GMenuItem* stack[1024];
-    bzero(stack,sizeof(stack));
+    memset(stack, 0, sizeof(stack));
     if( !targetmi->ti.text )
 	return 0;
     
@@ -303,9 +306,9 @@ static char* GMenuGetMenuPath( GMenuItem *basemi, GMenuItem *targetmi ) {
     int i;
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
 	if( mi[i].ti.text ) {
-	    bzero(stack,sizeof(stack));
+	    memset(stack, 0, sizeof(stack));
 //	    printf("GMenuGetMenuPath() xbase   %s\n", u_to_c(mi[i].ti.text));
-	    int rc = GMenuGetMenuPathRecurse( stack, &mi[i], targetmi );
+	    GMenuGetMenuPathRecurse( stack, &mi[i], targetmi );
 //	    printf("GMenuGetMenuPath() rc   %d\n",  rc);
 	    if( stack[0] != 0 ) {
 //		printf("GMenuGetMenuPath() have stack[0]...\n");
@@ -333,6 +336,16 @@ static int GMenuDrawMacIcons(struct gmenu *m, Color fg, int ybase, int x, int ma
     int h = 3*(m->as/3);
     int seg = h/3;
 
+    if( hotkeySystemGetCanUseMacCommand() )
+    {
+	if( mask & ksm_control )
+	{
+	    mask |= ksm_cmdmacosx;
+	    mask ^= ksm_control;
+	}
+    }
+    
+    
     if ( mask&ksm_cmdmacosx ) {
 	GDrawDrawLine(m->w,x,ybase-1,x,ybase-(seg-1),fg);
 	GDrawDrawLine(m->w,x,ybase-(2*seg),x,ybase-(h-2),fg);
@@ -391,6 +404,15 @@ static int GMenuMacIconsWidth(struct gmenu *m, int mask ) {
     int seg = h/3;
     int x=0;
 
+    if( hotkeySystemGetCanUseMacCommand() )
+    {
+	if( mask & ksm_control )
+	{
+	    mask |= ksm_cmdmacosx;
+	    mask ^= ksm_control; 
+	}
+    }
+    
     if ( mask&ksm_cmdmacosx ) {
 	x += h+seg-1;
     }
@@ -591,7 +613,7 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	width = GDrawGetTextWidth(pixmap,shortbuf,-1);
 	if( mac_menu_icons )
 	    width += GMenuMacIconsWidth( m, short_mask );
-	
+
 	if ( r2l )
 	{
 	    int x = GDrawDrawText(pixmap,m->bp,ybase,shortbuf,-1,fg);
@@ -1855,10 +1877,18 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 
     /* then look for hotkeys everywhere */
 	
-//    printf("looking for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
-	struct dlistnodeExternal* hklist = hotkeyFindAllByEvent( top, event );
-	struct dlistnodeExternal* node = hklist;
-	for( ; node; node=node->next ) {
+    printf("looking1 for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
+
+    if( hotkeySystemGetCanUseMacCommand() )
+    {
+	event->u.chr.state &= ~ksm_cmdmacosx;
+	event->u.chr.state |= ksm_control;
+    }
+    
+	
+	struct dlistnodeExternal* node= hotkeyFindAllByEvent( top, event );
+	struct dlistnode* hklist = (struct dlistnode*)node;
+	for( ; node; node=(struct dlistnodeExternal*)(node->next) ) {
 	    Hotkey* hk = (Hotkey*)node->ptr;
 //	    printf("hotkey found by event! hk:%p\n", hk );
 	    int skipkey = false;
@@ -1889,7 +1919,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	    
 //	    printf("END hotkey found by event! hk:%p\n", hk );
 	}
-	dlist_free_external(hklist);
+	dlist_free_external(&hklist);
 	
     if ( mb->child!=NULL ) {
 	GMenu *m;

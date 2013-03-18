@@ -35,6 +35,12 @@
 #include <unistd.h>
 #include "intl.h"
 
+#ifdef __MINGW32__
+#define fsync _commit
+#endif
+
+static int hotkeySystemCanUseMacCommand = 0;
+
 extern char *getPfaEditDir(char *buffer);
 
 struct dlistnode* hotkeys = 0;
@@ -75,10 +81,13 @@ static int hotkeyHasMatchingWindowTypeString( char* windowType, Hotkey* hk ) {
  * Does the hotkey 'hk' have the right window_type to trigger its
  * action on the window 'w'.
  */
+/*
+ * Unused
 static int hotkeyHasMatchingWindowType( GWindow w, Hotkey* hk ) {
     char* windowType = GDrawGetWindowTypeName( w );
     return hotkeyHasMatchingWindowTypeString( windowType, hk );
 }
+*/
 
 static struct dlistnodeExternal*
 hotkeyFindAllByStateAndKeysym( char* windowType, uint16 state, uint16 keysym ) {
@@ -397,3 +406,12 @@ char* hotkeyTextWithoutModifiers( char* hktext ) {
 }
 
 
+void hotkeySystemSetCanUseMacCommand( int v )
+{
+    hotkeySystemCanUseMacCommand = v;
+}
+
+int hotkeySystemGetCanUseMacCommand()
+{
+    return hotkeySystemCanUseMacCommand;
+}

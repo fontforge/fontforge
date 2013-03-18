@@ -1882,7 +1882,7 @@ static void LayersExpose(CharView *cv,GWindow pixmap,GEvent *event) {
 
     int yt = .7*layer_height; /* vertical spacer to add when drawing text in the row */
     int column_width;
-    int viscol=0, quadcol, fgcol, editcol;
+    int quadcol, fgcol, editcol;
 
     if ( event->u.expose.rect.y+event->u.expose.rect.height<layer_header_height )
 return;

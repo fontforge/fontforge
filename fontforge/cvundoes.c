@@ -35,12 +35,18 @@
     #include <execinfo.h>
 #endif
 
+#include "collabclient.h"
+
 extern char *coord_sep;
 
 int onlycopydisplayed = 0;
 int copymetadata = 0;
 int copyttfinstr = 0;
+#if defined(__Mac)
+int export_clipboard = 0;
+#else
 int export_clipboard = 1;
+#endif
 
 extern void *UHintCopy(SplineChar *sc,int docopy);
 extern void ExtractHints(SplineChar *sc,void *hints,int docopy);
@@ -75,7 +81,7 @@ void BackTrace( const char* msg ) {
 
 /* ********************************* Undoes ********************************* */
 
-int maxundoes = 12;		/* -1 is infinite */
+int maxundoes = 120;		/* -1 is infinite */
 int preserve_hint_undoes = true;
 
 static uint8 *bmpcopy(uint8 *bitmap,int bytes_per_line, int lines) {
@@ -599,12 +605,23 @@ static Undoes *AddUndo(Undoes *undo,Undoes **uhead,Undoes **rhead) {
     }
     undo->next = *uhead;
     *uhead = undo;
-return( undo );
+
+    return( undo );
 }
 
 static Undoes *CVAddUndo(CharViewBase *cv,Undoes *undo) {
-return( AddUndo(undo,&cv->layerheads[cv->drawmode]->undoes,
-	&cv->layerheads[cv->drawmode]->redoes));
+
+    Undoes* ret = AddUndo( undo,
+			   &cv->layerheads[cv->drawmode]->undoes,
+			   &cv->layerheads[cv->drawmode]->redoes );
+    
+    //
+    // Let the collab system know that a new undo state was pushed since
+    // it last sent a message.
+    //
+    collabclient_CVPreserveStateCalled( cv );
+    
+    return( ret );
 }
 
 int CVLayer(CharViewBase *cv) {
@@ -639,6 +656,15 @@ return(NULL);
     undo->u.state.dofill = cv->layerheads[cv->drawmode]->dofill;
     undo->u.state.dostroke = cv->layerheads[cv->drawmode]->dostroke;
     undo->u.state.fillfirst = cv->layerheads[cv->drawmode]->fillfirst;
+
+    // printf("CVPreserveState() new undo is at %p\n", undo );
+
+    // MIQ: Note, this is the wrong time to call sendRedo as we are
+    // currently taking the undo state snapshot, after that the app
+    // will modify the local state, and that modification is what we
+    // are interested in sending on the wire, not the old undo state.
+    // collabclient_sendRedo( cv );
+    
 return( CVAddUndo(cv,undo));
 }
 
@@ -994,7 +1020,8 @@ return;
     SCUndoAct(cv->sc,CVLayer(cv),undo);
     undo->next = cv->layerheads[cv->drawmode]->redoes;
     cv->layerheads[cv->drawmode]->redoes = undo;
-    _CVCharChangedUpdate(cv,undo->was_modified);
+    if( !collabclient_generatingUndoForWire( cv ))
+	_CVCharChangedUpdate(cv,undo->was_modified);
 return;
 }
 

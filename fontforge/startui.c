@@ -25,9 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#include <fontforge-config.h>
 #include "fontforgeui.h"
-#include "annotations.h"
 #include <gfile.h>
 #include <gresource.h>
 #include <ustring.h>
@@ -42,6 +41,11 @@
 #include <sys/types.h>
 #include "../gdraw/hotkeys.h"
 #include "gutils/prefs.h"
+
+#ifndef _NO_LIBUNICODENAMES
+#include <libunicodenames.h>	/* need to open a database when we start */
+extern uninm_names_db names_db; /* Unicode character names and annotations database */
+#endif
 
 #define GTimer GTimer_GTK
 #include <glib.h>
@@ -75,9 +79,11 @@ extern void RunApplicationEventLoop(void);
 #endif
 
 #if defined(__MINGW32__)
-#include <Windows.h>
-void sleep( int n ){ _sleep(n);}
+#include <windows.h>
+#define sleep(n) Sleep(1000 * (n))
 #endif
+
+#include "collabclient.h"
 
 extern int AutoSaveFrequency;
 int splash = 1;
@@ -511,6 +517,7 @@ CantInstallAppleEventHandler:
 
 static pascal void DoRealStuff(EventLoopTimerRef timer,void *ignored_data) {
     GDrawProcessPendingEvents(NULL);
+    MacServiceReadFDs();
 }
 
 static void install_mac_timer(void) {
@@ -758,7 +765,11 @@ static void ffensuredir( const char* basedir, const char* dirname, mode_t mode )
     
     snprintf(buffer,buffersz,"%s/%s", basedir, dirname );
     // ignore errors, this is just to help the user aftre all.
+#if !defined(__MINGW32__)
     mkdir( buffer, mode );
+#else
+    mkdir( buffer );
+#endif
 }
 
 static void ensureDotFontForgeIsSetup() {
@@ -787,11 +798,13 @@ int fontforge_main( int argc, char **argv ) {
     int ds, ld;
     int openflags=0;
     int doopen=0, quit_request=0;
-    int local_x;
 
     g_type_init();
 
-    fprintf( stderr, "Copyright (c) 2000-2012 by George Williams.\n Executable based on sources from %s"
+    fprintf( stderr, "Copyright (c) 2000-2012 by George Williams. See AUTHORS for contributors.\n" );
+    fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
+    fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
+    fprintf( stderr, " Executable based on sources from %s"
 	    "-ML"
 #ifdef FREETYPE_HAS_DEBUGGER
 	    "-TtfDb"
@@ -825,7 +838,7 @@ int fontforge_main( int argc, char **argv ) {
     /* Start X if they haven't already done so. Well... try anyway */
     /* Must be before we change DYLD_LIBRARY_PATH or X won't start */
     /* (osascript depends on a libjpeg which isn't found if we look in /sw/lib first */
-    local_x = uses_local_x(argc,argv);
+    int local_x = uses_local_x(argc,argv);
     if ( local_x==1 && getenv("DISPLAY")==NULL ) {
 	/* Don't start X if we're just going to quit. */
 	/* if X exists, it isn't needed. If X doesn't exist it's wrong */
@@ -906,6 +919,8 @@ int fontforge_main( int argc, char **argv ) {
     /*  they are doing */
     { int did_keybindings = 0;
     if ( local_x && !get_mac_x11_prop("enable_key_equivalents") ) {
+	hotkeySystemSetCanUseMacCommand( 1 );
+	
 	/* Ok, we get the command key */
 	if ( getenv("LANG")==NULL && getenv("LC_MESSAGES")==NULL ) {
 	    setenv("LC_MESSAGES","en_US.UTF-8",0);
@@ -1211,6 +1226,9 @@ exit( 0 );
     }
     if ( !any && !doopen )
 	any = ReopenLastFonts();
+
+    collabclient_sniffForLocalServer();
+
 #if defined(__Mac)
     if ( listen_to_apple_events ) {
 	install_apple_event_handlers();
@@ -1224,8 +1242,11 @@ exit( 0 );
     GDrawEventLoop(NULL);
 
     hotkeysSave();
-    
-    uninm_names_db_close(names_db);
+
+#ifndef _NO_LIBUNICODENAMES
+    uninm_names_db_close(names_db);	/* close this database before exiting */
+#endif
+
     lt_dlexit();
 
 return( 0 );

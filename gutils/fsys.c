@@ -44,7 +44,7 @@ static char dirname_[1024];
 #if !defined(__MINGW32__)
  #include <pwd.h>
 #else
- #include <Windows.h>
+ #include <windows.h>
 #endif
 
 #if defined(__MINGW32__)
@@ -676,7 +676,6 @@ char *getShareDir(void) {
 char *getLocaleDir(void) {
     static char *sharedir=NULL;
     static int set=false;
-    char *pt;
 
     if ( set )
 	return( sharedir );
@@ -693,7 +692,6 @@ char *getLocaleDir(void) {
 char *getPixmapDir(void) {
     static char *sharedir=NULL;
     static int set=false;
-    char *pt;
 
     if ( set )
 	return( sharedir );
@@ -710,7 +708,6 @@ char *getPixmapDir(void) {
 char *getHelpDir(void) {
     static char *sharedir=NULL;
     static int set=false;
-    char *pt;
 
     if ( set )
 	return( sharedir );
@@ -764,3 +761,37 @@ return( NULL );
     editdir = copy(buffer);
 return( editdir );
 }
+
+int GFileGetSize(char *name)
+{
+    struct stat buf;
+    int rc = stat( name, &buf );
+    if( rc != 0 )
+	return -1;
+    return buf.st_size;
+}
+
+char* GFileReadAll(char *name)
+{
+    int sz = GFileGetSize( name );
+    char* ret = calloc( 1, sz+1 );
+    FILE* fp = fopen( name, "r" );
+    size_t bread = fread( ret, 1, sz, fp );
+    fclose(fp);
+    if( bread == sz )
+	return ret;
+
+    free(ret);
+    return 0;
+}
+
+
+int GFileWriteAll(char* filepath, char *data)
+{
+    FILE* fp = fopen( filepath, "w" );
+    int bwrite = fwrite( data, 1, strlen(data), fp );
+    printf("GFileWriteAll() data.len:%d bwrite:%d\n", strlen(data), bwrite );
+    fclose(fp);
+}
+
+

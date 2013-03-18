@@ -15,7 +15,7 @@ all : [-.libs]libgutil.olb
 [-.libs]libgutil.olb : $(libgutil_OBJECTS)
 	library/create [-.libs]libgutil.olb $(libgutil_OBJECTS)
 
-$(libgutil_OBJECTS) : [-.inc]config.h
+$(libgutil_OBJECTS) : [-.inc]fontforge-config.h
 
 divisors.obj : divisors.c
 dynamic.obj : dynamic.c
