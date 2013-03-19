@@ -255,6 +255,14 @@ FONTFORGE_ARG_WITH_LIBUNICODENAMES
 FONTFORGE_ARG_WITH_ICONV
 FONTFORGE_ARG_WITH_ZEROMQ
 
+# We have both libraries but did not choose which one to use yet
+if test x"${i_do_have_libuninameslist}" = xyes; then
+   if test x"${i_do_have_libunicodenames}" = xyes; then
+      i_do_have_libuninameslist=no
+      AC_DEFINE(_NO_LIBUNINAMESLIST)
+   fi
+fi
+
 if test x"${i_do_have_cairo}" = xyes; then
    PKG_CHECK_MODULES([PANGOCAIRO],[pangocairo])
 fi
@@ -295,12 +303,18 @@ fi
 
 AX_PTHREAD
 
+#--------------------------------------------------------------------------
 FONTFORGE_COMPILER_FLAGS([WARNING_CFLAGS],
         [-Wunused -Wreturn-type
          -Wparentheses -Wformat -Wchar-subscripts
          -Wno-unused-but-set-variable -Wno-unused-result
+         -Wcast-align
          -Werror=missing-prototypes
+         -Werror=pointer-arith
+         -Wclobbered
          -Werror=implicit])
+# Sep2012, There's a bug in <py3 with Py_True/False that will propagate
+# with GCC's "strict-aliasing" rules. -Wstrict-aliasing
 
 #--------------------------------------------------------------------------
 # Bypass older autoscan recommendations (if anyone decides to run autoscan)

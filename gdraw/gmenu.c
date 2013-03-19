@@ -336,6 +336,16 @@ static int GMenuDrawMacIcons(struct gmenu *m, Color fg, int ybase, int x, int ma
     int h = 3*(m->as/3);
     int seg = h/3;
 
+    if( hotkeySystemGetCanUseMacCommand() )
+    {
+	if( mask & ksm_control )
+	{
+	    mask |= ksm_cmdmacosx;
+	    mask ^= ksm_control;
+	}
+    }
+    
+    
     if ( mask&ksm_cmdmacosx ) {
 	GDrawDrawLine(m->w,x,ybase-1,x,ybase-(seg-1),fg);
 	GDrawDrawLine(m->w,x,ybase-(2*seg),x,ybase-(h-2),fg);
@@ -394,6 +404,15 @@ static int GMenuMacIconsWidth(struct gmenu *m, int mask ) {
     int seg = h/3;
     int x=0;
 
+    if( hotkeySystemGetCanUseMacCommand() )
+    {
+	if( mask & ksm_control )
+	{
+	    mask |= ksm_cmdmacosx;
+	    mask ^= ksm_control; 
+	}
+    }
+    
     if ( mask&ksm_cmdmacosx ) {
 	x += h+seg-1;
     }
@@ -594,7 +613,7 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	width = GDrawGetTextWidth(pixmap,shortbuf,-1);
 	if( mac_menu_icons )
 	    width += GMenuMacIconsWidth( m, short_mask );
-	
+
 	if ( r2l )
 	{
 	    int x = GDrawDrawText(pixmap,m->bp,ybase,shortbuf,-1,fg);
@@ -1858,7 +1877,17 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 
     /* then look for hotkeys everywhere */
 	
-//    printf("looking for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
+    printf("looking1 for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
+
+    if( hotkeySystemGetCanUseMacCommand() )
+    {
+	if (event->u.chr.state & (ksm_cmdmacosx|ksm_control) == ksm_cmdmacosx) {
+	    event->u.chr.state &= ~ksm_cmdmacosx;
+	    event->u.chr.state |= ksm_control;
+	}
+    }
+    
+	
 	struct dlistnodeExternal* node= hotkeyFindAllByEvent( top, event );
 	struct dlistnode* hklist = (struct dlistnode*)node;
 	for( ; node; node=(struct dlistnodeExternal*)(node->next) ) {

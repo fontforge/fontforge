@@ -1372,8 +1372,8 @@ return;		/* Not interesting. Only intersection is at an endpoint */
 		break;
 		}
 	    } else {
-		volatile extended bkp_x;
-		extended diff, x, y1,y2, y1o,y2o;
+		volatile extended bkp_x, x;
+		extended diff, y1,y2, y1o,y2o;
 		extended t1,t2, t1o,t2o/*, t1t,t2t*/ ;
 
 		diff = (b.maxx-b.minx)/32;

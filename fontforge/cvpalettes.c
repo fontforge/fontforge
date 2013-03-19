@@ -2524,6 +2524,8 @@ static void CVLSelectLayer(CharView *cv, int layer) {
         cv->show_ft_results = false;
     }
     layerinfo.active = CVLayer(&cv->b); /* the index of the active layer */
+
+    CVRegenFill(cv);
     GDrawRequestExpose(cv->v,NULL,false);
     if (cvlayers2) GDrawRequestExpose(cvlayers2,NULL,false);
     if (cvlayers)  GDrawRequestExpose(cvlayers,NULL,false);
@@ -2921,7 +2923,7 @@ return( cvlayers );
     plush = GDrawPointsToPixels(NULL,plush+4);
     plush = MAX( plush, plusw ); // make it square.
     
-     /* Add Layer button */
+     /* Remove Layer button */
     label[0].text = (unichar_t *) _("-");
     label[0].text_is_1byte = true;
     gcd[i].gd.label = &label[0];
@@ -2929,11 +2931,11 @@ return( cvlayers );
     gcd[i].gd.pos.width  = plusw; gcd[i].gd.pos.height = plush;
     gcd[i].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
     gcd[i].gd.cid = CID_RemoveLayer;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Add a new layer");
+    gcd[i].gd.popup_msg = (unichar_t *) _("Delete the current layer");
     gcd[i].creator = GButtonCreate;
     ++i;
 
-     /* Delete Layer button */
+     /* Add Layer button */
     label[1].text = (unichar_t *) _("+");
     label[1].text_is_1byte = true;
     gcd[i].gd.label = &label[1];
@@ -2941,7 +2943,7 @@ return( cvlayers );
     gcd[i].gd.pos.width  = plusw; gcd[i].gd.pos.height = plush;
     gcd[i].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
     gcd[i].gd.cid = CID_AddLayer;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Delete the current layer");
+    gcd[i].gd.popup_msg = (unichar_t *) _("Add a new layer");
     gcd[i].creator = GButtonCreate;
     ++i;
 

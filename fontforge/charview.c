@@ -73,8 +73,10 @@ extern int clear_tt_instructions_when_needed;
 int use_freetype_with_aa_fill_cv = 1;
 int interpCPsOnMotion=false;
 int DrawOpenPathsWithHighlight = 1;
-int default_cv_width = 540;
-int default_cv_height = 540;
+#define default_cv_width 540
+#define default_cv_height 540
+int cv_width = default_cv_width;
+int cv_height = default_cv_height;
 
 extern struct lconv localeinfo;
 extern char *coord_sep;
@@ -296,7 +298,7 @@ static double rpt(CharView *cv, double pt) {
 }
 
 static int shouldShowFilledUsingCairo(CharView *cv) {
-    if ( cv->showfilled && GDrawHasCairo(cv->v)&gc_buildpath ) {
+    if ( cv->showfilled && GDrawHasCairo(cv->v) & gc_buildpath ) {
 	return 1;
     }
     return 0;
@@ -1178,7 +1180,7 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
     int activelayer = CVLayer(&cv->b);
 
     if( strokeFillMode == sfm_fill ) {
-	GDrawFillRuleSetWinding(pixmap);
+    	GDrawFillRuleSetWinding(pixmap);
     }
     
     for ( spl = set; spl!=NULL; spl = spl->next ) {
@@ -1282,13 +1284,13 @@ void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePointList *s
     Spline *spline, *first;
     SplinePointList *spl;
     int truetype_markup = set==cv->b.gridfit && cv->dv!=NULL;
-
+    
     if ( cv->inactive )
 	dopoints = false;
 
     if( strokeFillMode == sfm_fill ) {
-	CVDrawSplineSetOutlineOnly( cv, pixmap, set,
-				    fg, dopoints, clip, strokeFillMode );
+    	CVDrawSplineSetOutlineOnly( cv, pixmap, set,
+    				    fg, dopoints, clip, strokeFillMode );
     }
 
     GDrawSetFont(pixmap,cv->small);		/* For point numbers */
@@ -1341,7 +1343,7 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
 	Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode ) {
     int active = cv->b.layerheads[cv->b.drawmode]==layer;
     int ml = cv->b.sc->parent->multilayer;
-
+    
     if ( ml && layer->dostroke ) {
 	if ( layer->stroke_pen.brush.col!=COLOR_INHERITED &&
 		layer->stroke_pen.brush.col!=view_bgcol )
@@ -1358,11 +1360,7 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
     }
     if ( ml && !active && layer!=&cv->b.sc->layers[ly_back] )
 	GDrawSetDashedLine(pixmap,5,5,cv->xoff+cv->height-cv->yoff);
-    enum outlinesfm_flags refsfm = sfm_stroke;
-    if( shouldShowFilledUsingCairo(cv) ) {
-	refsfm = sfm_fill;
-    }
-    CVDrawSplineSetSpecialized(cv,pixmap,layer->splines,fg,dopoints && active,clip,refsfm);
+    CVDrawSplineSetSpecialized(cv,pixmap,layer->splines,fg,dopoints && active,clip,strokeFillMode);
     if ( ml && !active && layer!=&cv->b.sc->layers[ly_back] )
 	GDrawSetDashedLine(pixmap,0,0,0);
 #if 0
@@ -2384,7 +2382,7 @@ static int CVExposeGlyphFill(CharView *cv, GWindow pixmap, GEvent *event, DRect*
 	layer = cvlayer;
 	if ( layer>=0 ) {
 	    CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
-				 cv->showpoints, clip, sfm_fill );
+	    			 cv->showpoints, clip, sfm_fill );
 	    filled = 1;
 	}
     }
@@ -2405,7 +2403,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
 
     if( shouldShowFilledUsingCairo(cv) ) {
-	strokeFillMode = sfm_fill;
+    	strokeFillMode = sfm_fill;
     }
 
     clip.width = event->u.expose.rect.width/cv->scale;
@@ -2501,11 +2499,17 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    /*  is to draw to pixmap, dump pixmap a bit earlier */
 	    /* Then when we moved the fill image around, we had to deal with the */
 	    /*  images before the fill... */
+	    int activelayer = CVLayer(&cv->b);
+
 	    enum outlinesfm_flags strokeFillMode = sfm_stroke;
-	    strokeFillMode = false;
+	    if( cv->inPreviewMode )
+		strokeFillMode = sfm_nothing;
+	    if( layer == activelayer && layer >= ly_back )
+		strokeFillMode = sfm_fill;
+
 	    CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],
-				 !sf->multilayer || layer==ly_back ? backoutlinecol : foreoutlinecol,
-				 false,&clip,strokeFillMode);
+	    			 !sf->multilayer || layer==ly_back ? backoutlinecol : foreoutlinecol,
+	    			 false,&clip,strokeFillMode);
 	    for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
 		if ( /* cv->b.drawmode==dm_back &&*/ cv->showrefnames )
 		    CVDrawRefName(cv,pixmap,rf,0);
@@ -2574,14 +2578,14 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	else
 	{
 	    CVDrawLayerSplineSet( cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
-				  cv->showpoints ,&clip, strokeFillMode );
+	    			  cv->showpoints ,&clip, strokeFillMode );
 	}
     }
     
 
     if ( cv->freehand.current_trace )
-	CVDrawSplineSet( cv,pixmap,cv->freehand.current_trace,tracecol,
-			 false,&clip);
+    	CVDrawSplineSet( cv,pixmap,cv->freehand.current_trace,tracecol,
+    			 false,&clip);
 
     if ( cv->showhmetrics && (cv->b.container==NULL || cv->b.container->funcs->type==cvc_mathkern) ) {
 	RefChar *lock = HasUseMyMetrics(cv->b.sc,cvlayer);
@@ -4983,9 +4987,9 @@ return;
 	cv->width = newwidth; cv->height = newheight;
 	/*CVFit(cv);*/ CVNewScale(cv);
 	CVPalettesRaise(cv);
-	if ( cv->b.container == NULL && ( default_cv_width!=size.width || default_cv_height!=size.height )) {
-	    default_cv_width = size.width;
-	    default_cv_height = size.height;
+	if ( cv->b.container == NULL && ( cv_width!=size.width || cv_height!=size.height )) {
+	    cv_width = size.width;
+	    cv_height = size.height;
 	    SavePrefs(true);
 	}
     }
@@ -11009,7 +11013,8 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv,int enc) {
     if ( wattrs.icon )
 	wattrs.mask |= wam_icon;
     pos.x = GGadgetScale(104)+6;
-    pos.width=default_cv_width; pos.height = default_cv_height;
+    pos.width = (cv_width > 0) ? cv_width : default_cv_width;
+    pos.height = (cv_height > 0) ? cv_height : default_cv_height;
     DefaultY(&pos);
 
     cv->gw = gw = GDrawCreateTopWindow(NULL,&pos,cv_e_h,cv,&wattrs);

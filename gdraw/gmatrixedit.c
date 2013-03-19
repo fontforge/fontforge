@@ -992,10 +992,14 @@ return( true );
 
 static int GME_FinishEdit(GMatrixEdit *gme) {
 
-    if ( !gme->edit_active )
-return( true );
-    if ( !GME_SetValue(gme,gme->tf))
-return( false );
+    if ( !gme->edit_active ) {
+        gme->wasnew = false;
+        return( true );
+    }
+    if ( !GME_SetValue(gme,gme->tf)) {
+        gme->wasnew = false;
+        return( false );
+    }
     gme->edit_active = false;
     GGadgetSetVisible(gme->tf,false);
     GME_AdjustCol(gme,gme->active_col);
@@ -1450,8 +1454,9 @@ return;
 	    free(gme->data[r*gme->cols+c].u.md_str);
 	    gme->data[r*gme->cols+c].u.md_str = ret;
 	    if ( gme->finishedit != NULL )
-		(gme->finishedit)(&gme->g,r,c,gme->wasnew);
+                (gme->finishedit)(&gme->g,r,c,gme->wasnew);            
 	    GDrawRequestExpose(gme->nested,NULL,false);
+            gme->wasnew = false; // This is an attempted hack by somebody (Frank) who admittedly has no idea what is happening in all of this sparsely commented code.
 	}
     } else if ( gme->col_data[c].me_type==me_onlyfuncedit ) {
 	/* Don't allow other editing */

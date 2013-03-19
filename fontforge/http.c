@@ -61,6 +61,7 @@ int URLFromFile(char *url,FILE *from) {
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/time.h>			/* BSDs hold "struct timeval" here */
 #include <errno.h>
 #include <pthread.h>
 

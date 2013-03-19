@@ -25,6 +25,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgevw.h"
+#ifndef _NO_LIBUNICODENAMES
+#include <libunicodenames.h>	/* need to open a database when we start */
+extern uninm_names_db names_db; /* Unicode character names and annotations database */
+#endif
 #include <gfile.h>
 #include <ustring.h>
 #include <ltdl.h>
@@ -35,11 +39,6 @@
 #include <dynamic.h>
 #ifdef __Mac
 # include <stdlib.h>		/* getenv,setenv */
-#endif
-
-#ifndef _NO_LIBUNICODENAMES
-#include <libunicodenames.h>	/* need to open a database when we start */
-extern uninm_names_db names_db; /* Unicode character names and annotations database */
 #endif
 
 static void _doscriptusage(void) {

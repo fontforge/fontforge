@@ -34,6 +34,7 @@
 #define HOTKEY_ACTION_MAX_SIZE 200
 #define HOTKEY_TEXT_MAX_SIZE   100
 
+
 /**
  * A hotkey binds some keyboard combination to an abstract "action"
  *
@@ -203,5 +204,11 @@ extern Hotkey* hotkeySet( char* action, char* keydefinition, int append );
 
 extern void HotkeyParse( Hotkey* hk, const char *shortcut );
 
+/**
+ * Set to true if the hotkey system can use the Command key for its
+ * own actions.
+ */
+extern void hotkeySystemSetCanUseMacCommand( int v );
+extern int hotkeySystemGetCanUseMacCommand(void);
 
 #endif // _HOTKEYS_H

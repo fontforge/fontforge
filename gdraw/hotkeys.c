@@ -39,6 +39,8 @@
 #define fsync _commit
 #endif
 
+static int hotkeySystemCanUseMacCommand = 0;
+
 extern char *getPfaEditDir(char *buffer);
 
 struct dlistnode* hotkeys = 0;
@@ -404,3 +406,12 @@ char* hotkeyTextWithoutModifiers( char* hktext ) {
 }
 
 
+void hotkeySystemSetCanUseMacCommand( int v )
+{
+    hotkeySystemCanUseMacCommand = v;
+}
+
+int hotkeySystemGetCanUseMacCommand()
+{
+    return hotkeySystemCanUseMacCommand;
+}

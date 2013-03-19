@@ -204,6 +204,7 @@ static void calldatafree(Context *c) {
 	    free( c->a.vals[i].u.sval );
 	if ( c->a.vals[i].type == v_arrfree || (c->a.vals[i].type == v_arr && c->dontfree[i]!=c->a.vals[i].u.aval ))
 	    arrayfree( c->a.vals[i].u.aval );
+	c->a.vals[i].type = v_void;
     }
     DictionaryFree(&c->locals);
 
@@ -717,7 +718,7 @@ static void bStrtod(Context *c) {
 	ScriptError( c, "Bad type for argument" );
 
     c->return_val.type = v_real;
-    c->return_val.u.ival = strtod(c->a.vals[1].u.sval,NULL);
+    c->return_val.u.fval = (float)strtod(c->a.vals[1].u.sval,NULL);
 }
 
 static void bStrskipint(Context *c) {
@@ -1686,13 +1687,15 @@ static void bOpen(Context *c) {
     free(t); free(locfilename);
     if ( sf==NULL )
 	ScriptErrorString(c, "Failed to open", c->a.vals[1].u.sval);
-    if ( sf->fv!=NULL )
-	/* All done */;
-    else if ( !no_windowing_ui )
-	FontViewCreate(sf,openflags&of_hidewindow);
-    else
-	FVAppend(_FontViewCreate(sf));
-    c->curfv = sf->fv;
+    else {
+	if ( sf->fv!=NULL )
+	    /* All done */;
+	else if ( !no_windowing_ui )
+	    FontViewCreate(sf,openflags&of_hidewindow);
+	else
+	    FVAppend(_FontViewCreate(sf));
+	c->curfv = sf->fv;
+    }
 }
 
 static void bSelectBitmap(Context *c) {
