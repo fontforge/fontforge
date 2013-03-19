@@ -3968,6 +3968,32 @@ static void MVChar(MetricsView *mv,GEvent *event) {
 	}
     }
     if ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ||
+	    event->u.chr.keysym == GK_Down || event->u.chr.keysym==GK_KP_Down ) {
+	    GGadget *active = GWindowGetFocusGadgetOfWindow(mv->gw);
+	    if(!active)
+		return;
+ 	    unichar_t *end;
+	    double val = u_strtod(_GGadgetGetTitle(active),&end);
+	    if (isValidInt(end)) {
+		int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? 1 : -1;
+		if( event->u.chr.state&ksm_control && event->u.chr.state&ksm_shift ) {
+		    dir *= pref_mv_control_shift_and_arrow_skip;
+		}
+		else if( event->u.chr.state&ksm_shift ) {
+		    dir *= pref_mv_shift_and_arrow_skip;
+		}
+		val += dir;
+		char buf[100];
+		snprintf(buf,99,"%.0f",val);
+		GGadgetSetTitle8(active, buf);
+
+		event->u.control.u.tf_changed.from_pulldown=-1;
+		event->type=et_controlevent;
+		event->u.control.subtype = et_textchanged;
+		GGadgetDispatchEvent(active,event);
+	    }
+    }
+    if ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ||
 	 event->u.chr.keysym == GK_Down || event->u.chr.keysym==GK_KP_Down ) {
 	int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? -1 : 1;
 	if ( mv->word_index!=-1 ) {
