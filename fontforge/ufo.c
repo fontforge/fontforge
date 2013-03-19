@@ -1774,9 +1774,16 @@ return( NULL );
 		if ( xmlStrcmp(keyname+11,(xmlChar *) "Panose")==0 ) {
 		    UFOGetByteArray(sf->pfminfo.panose,sizeof(sf->pfminfo.panose),doc,value);
 		    sf->pfminfo.panose_set = true;
-		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "Type")==0 )
+		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "Type")==0 ) {
 		    sf->pfminfo.fstype = UFOGetBits(doc,value);
-		else if ( xmlStrcmp(keyname+11,(xmlChar *) "FamilyClass")==0 ) {
+		    if ( sf->pfminfo.fstype<0 ) {
+			/* all bits are set, but this is wrong, OpenType spec says */
+			/* bits 0, 4-7 and 10-15 must be unset, go see		   */
+			/* http://www.microsoft.com/typography/otspec/os2.htm#fst  */
+			LogError(_("Bad openTypeOS2type key: all bits are set. It will be ignored"));
+			sf->pfminfo.fstype = 0;
+		    }
+		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "FamilyClass")==0 ) {
 		    char fc[2];
 		    UFOGetByteArray(fc,sizeof(fc),doc,value);
 		    sf->pfminfo.os2_family_class = (fc[0]<<8)|fc[1];
