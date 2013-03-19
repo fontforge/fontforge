@@ -917,30 +917,34 @@ int fontforge_main( int argc, char **argv ) {
     /*  gettext will not. So I don't bother to check for null strings or "C"  */
     /*  or "POSIX". If they've mucked with the locale perhaps they know what  */
     /*  they are doing */
-    { int did_keybindings = 0;
-    if ( local_x && !get_mac_x11_prop("enable_key_equivalents") ) {
-	hotkeySystemSetCanUseMacCommand( 1 );
-	
-	/* Ok, we get the command key */
-	if ( getenv("LANG")==NULL && getenv("LC_MESSAGES")==NULL ) {
-	    setenv("LC_MESSAGES","en_US.UTF-8",0);
+    {
+	int did_keybindings = 0;
+	int useCommandKey = get_mac_x11_prop("enable_key_equivalents") <= 0;
+
+	if ( local_x && useCommandKey ) {
+	    hotkeySystemSetCanUseMacCommand( 1 );
+	    
+	    /* Ok, we get the command key */
+	    if ( getenv("LANG")==NULL && getenv("LC_MESSAGES")==NULL ) {
+		setenv("LC_MESSAGES","en_US.UTF-8",0);
+	    }
+	    /* Can we find a set of keybindings designed for the mac with cmd key? */
+	    bind_textdomain_codeset("Mac-FontForge-MenuShortCuts","UTF-8");
+	    bindtextdomain("Mac-FontForge-MenuShortCuts", getLocaleDir());
+	    if ( *dgettext("Mac-FontForge-MenuShortCuts","Flag0x10+")!='F' ) {
+		GMenuSetShortcutDomain("Mac-FontForge-MenuShortCuts");
+		did_keybindings = 1;
+	    }
 	}
-	/* Can we find a set of keybindings designed for the mac with cmd key? */
-	bind_textdomain_codeset("Mac-FontForge-MenuShortCuts","UTF-8");
-	bindtextdomain("Mac-FontForge-MenuShortCuts", getLocaleDir());
-	if ( *dgettext("Mac-FontForge-MenuShortCuts","Flag0x10+")!='F' ) {
-	    GMenuSetShortcutDomain("Mac-FontForge-MenuShortCuts");
-	    did_keybindings = 1;
+	if ( !did_keybindings ) {
+	    /* Nope. we can't. Fall back to the normal stuff */
+#endif
+	    GMenuSetShortcutDomain("FontForge-MenuShortCuts");
+	    bind_textdomain_codeset("FontForge-MenuShortCuts","UTF-8");
+	    bindtextdomain("FontForge-MenuShortCuts", getLocaleDir());
+#if defined(__Mac)
 	}
     }
-    if ( !did_keybindings ) {
-	/* Nope. we can't. Fall back to the normal stuff */
-#endif
-    GMenuSetShortcutDomain("FontForge-MenuShortCuts");
-    bind_textdomain_codeset("FontForge-MenuShortCuts","UTF-8");
-    bindtextdomain("FontForge-MenuShortCuts", getLocaleDir());
-#if defined(__Mac)
-    }}
 #endif
     bind_textdomain_codeset("FontForge","UTF-8");
     bindtextdomain("FontForge", getLocaleDir());
