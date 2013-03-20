@@ -5591,34 +5591,33 @@ static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 
     int port_default = 5556;
     int port = port_default;
-    char* address[ipaddress_string_length_t];
+    char address[IPADDRESS_STRING_LENGTH_T];
     if( !getNetworkAddress( address ))
     {
-	snprintf( address, ipaddress_string_length_t-1,
+	snprintf( address, IPADDRESS_STRING_LENGTH_T-1,
 		  "%s", HostPortPack( "127.0.0.1", port ));
     }
     else
     {
-	snprintf( address, ipaddress_string_length_t-1,
+	snprintf( address, IPADDRESS_STRING_LENGTH_T-1,
 		  "%s", HostPortPack( address, port ));
     }
-    
+
     printf("host address:%s\n",address);
-    
+
     char* res = gwwv_ask_string(
 	"Starting Collab Server",
 	address,
 	"FontForge has determined that your computer can be accessed"
 	" using the below address. Share that address with other people"
 	" who you wish to collaborate with...\n\nPress OK to start the collaboration server...");
-    
+
     if( res )
     {
 	HostPortUnpack( address, &port, port_default );
 	
 	printf("address:%s\n", address );
 	printf("port:%d\n", port );
-
 	
 	void* cc = collabclient_new( address, port );
 	fv->b.collabClient = cc;
@@ -5641,15 +5640,15 @@ static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
     {
 	int port_default = 5556;
 	int port = port_default;
-	char* address[ipaddress_string_length_t];
-	strncpy( address, res, ipaddress_string_length_t-1 );
+	char address[IPADDRESS_STRING_LENGTH_T];
+	strncpy( address, res, IPADDRESS_STRING_LENGTH_T-1 );
 	HostPortUnpack( address, &port, port_default );
 	
 	void* cc = collabclient_new( address, port );
 	fv->b.collabClient = cc;
 	collabclient_sessionJoin( cc, fv );
     }
-    
+
     printf("FVMenuCollabConnect(done)\n");
 }
 
