@@ -8428,6 +8428,9 @@ static int _buffered_cgetc(Context *c) {
 	    static size_t lbsize = 0;
 	    if (getline(&linebuf, &lbsize, stdin) > 0) {
 		ch = AddScriptLine(c->script, linebuf);
+	    } else {
+		if (linebuf)
+		    free(linebuf);
 	    }
 #else
 	    char *line = readline("> ");
@@ -8437,6 +8440,10 @@ static int _buffered_cgetc(Context *c) {
 		free(line);
 	    }
 #endif
+	    if (ch < 0) {
+		/* stdin is closed, so stop reading from it */
+		c->interactive = 0;
+	    }
 	}
 	return ch;
     }
