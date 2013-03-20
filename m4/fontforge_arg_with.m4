@@ -140,14 +140,25 @@ AC_ARG_WITH([libreadline],[AS_HELP_STRING([--without-libreadline],[build without
             [i_do_have_libreadline="${withval}"],[i_do_have_libreadline=yes])
 if test x"${i_do_have_libreadline}" = xyes -a x"${LIBREADLINE_LIBS}" = x; then
    FONTFORGE_SEARCH_LIBS([rl_readline_version],[readline],
-                  [AC_SUBST([LIBREADLINE_LIBS],["${found_lib}"])],
-                  [i_do_have_libreadline=no],
-		  [-ltermcap])
+		  [LIBREADLINE_LIBS="${LIBREADLINE_LIBS} ${found_lib}"],
+                  [i_do_have_libreadline=no])
+   if test x"${i_do_have_libreadline}" != xyes; then
+      i_do_have_libreadline=yes
+      unset ac_cv_search_rl_readline_version
+      FONTFORGE_SEARCH_LIBS([rl_readline_version],[readline],
+		     [LIBREADLINE_LIBS="${LIBREADLINE_LIBS} ${found_lib} -ltermcap"],
+                     [i_do_have_libreadline=no],
+		     [-ltermcap])
+   fi
 fi
 if test x"${i_do_have_libreadline}" = xyes -a x"${LIBREADLINE_CFLAGS}" = x; then
    AC_CHECK_HEADER([readline/readline.h],[AC_SUBST([LIBREADLINE_CFLAGS],[""])],[i_do_have_libreadline=no])
 fi
-if test x"${i_do_have_libreadline}" != xyes; then
+if test x"${i_do_have_libreadline}" = xyes; then
+   if test x"${LIBREADLINE_LIBS}" != x; then
+      AC_SUBST([LIBREADLINE_LIBS],["${LIBREADLINE_LIBS}"])
+   fi
+else
    FONTFORGE_WARN_PKG_NOT_FOUND([LIBREADLINE])
    AC_DEFINE([_NO_LIBREADLINE],1,[Define if not using libreadline.])
 fi
