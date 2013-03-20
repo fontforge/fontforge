@@ -8429,8 +8429,10 @@ static int _buffered_cgetc(Context *c) {
 	    if (getline(&linebuf, &lbsize, stdin) > 0) {
 		ch = AddScriptLine(c->script, linebuf);
 	    } else {
-		if (linebuf)
+		if (linebuf) {
 		    free(linebuf);
+		    linebuf = NULL;
+		}
 	    }
 #else
 	    char *line = readline("> ");
