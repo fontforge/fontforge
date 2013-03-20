@@ -1661,7 +1661,7 @@ SplineFont *SFReadUFO(char *basedir, int flags) {
     int as = -1, ds= -1, em= -1;
 
     if ( !libxml_init_base()) {
-	LogError( _("Can't find libxml2.\n") );
+	LogError(_("Can't find libxml2."));
 return( NULL );
     }
 
@@ -2000,7 +2000,7 @@ SplineSet *SplinePointListInterpretGlif(char *filename,char *memory, int memlen,
     SplineSet *ss;
 
     if ( !libxml_init_base()) {
-	LogError( _("Can't find libxml2.\n") );
+	LogError(_("Can't find libxml2."));
 return( NULL );
     }
     if ( filename!=NULL )
