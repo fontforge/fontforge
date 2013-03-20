@@ -576,7 +576,7 @@ return( false );
 	PListOutputString(plist,"openTypeOS2VendorID",vendor);
 	fc[0] = sf->pfminfo.os2_family_class>>8; fc[1] = sf->pfminfo.os2_family_class&0xff;
 	PListOutputIntArray(plist,"openTypeOS2FamilyClass",fc,2);
-	{
+	if ( sf->pfminfo.fstype!=-1 ) {
 	    int fscnt,i;
 	    char fstype[16];
 	    for ( i=fscnt=0; i<16; ++i )
@@ -1116,7 +1116,7 @@ static SplineChar *_UFOLoadGlyph(xmlDocPtr doc,char *glifname) {
     format = xmlGetProp(glyph,(xmlChar *) "format");
     if ( xmlStrcmp(glyph->name,(const xmlChar *) "glyph")!=0 ||
 	    (format!=NULL && xmlStrcmp(format,(xmlChar *) "1")!=0)) {
-	LogError(_("Expected glyph file with format==1\n"));
+	LogError(_("Expected glyph file with format==1"));
 	xmlFreeDoc(doc);
 	free(format);
 return( NULL );
@@ -1377,7 +1377,7 @@ static SplineChar *UFOLoadGlyph(char *glifname) {
 
     doc = xmlParseFile(glifname);
     if ( doc==NULL ) {
-	LogError( _("Bad glif file %s\n" ), glifname);
+	LogError(_("Bad glif file %s"), glifname);
 return( NULL );
     }
 return( _UFOLoadGlyph(doc,glifname));
@@ -1395,7 +1395,7 @@ return;
     for ( r=sc->layers[ly_fore].refs; r!=NULL; r=r->next ) {
 	rsc = SFGetChar(sf,-1,(char *) (r->sc));
 	if ( rsc==NULL ) {
-	    LogError( _("Failed to find glyph %s when fixing up references\n"), (char *) r->sc );
+	    LogError(_("Failed to find glyph %s when fixing up references"), (char *) r->sc);
 	    if ( prev==NULL )
 		sc->layers[ly_fore].refs = r->next;
 	    else
@@ -1424,7 +1424,7 @@ static void UFOLoadGlyphs(SplineFont *sf,char *glyphdir) {
     doc = xmlParseFile(glyphlist);
     free(glyphlist);
     if ( doc==NULL ) {
-	LogError( _("Bad contents.plist\n" ));
+	LogError(_("Bad contents.plist"));
 return;
     }
     plist = xmlDocGetRootElement(doc);
@@ -1661,14 +1661,14 @@ SplineFont *SFReadUFO(char *basedir, int flags) {
     int as = -1, ds= -1, em= -1;
 
     if ( !libxml_init_base()) {
-	LogError( _("Can't find libxml2.\n") );
+	LogError(_("Can't find libxml2."));
 return( NULL );
     }
 
     glyphdir = buildname(basedir,"glyphs");
     glyphlist = buildname(glyphdir,"contents.plist");
     if ( !GFileExists(glyphlist)) {
-	LogError(_("No glyphs directory or no contents file\n") );
+	LogError(_("No glyphs directory or no contents file"));
 	free(glyphlist);
 return( NULL );
     }
@@ -1774,9 +1774,16 @@ return( NULL );
 		if ( xmlStrcmp(keyname+11,(xmlChar *) "Panose")==0 ) {
 		    UFOGetByteArray(sf->pfminfo.panose,sizeof(sf->pfminfo.panose),doc,value);
 		    sf->pfminfo.panose_set = true;
-		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "Type")==0 )
+		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "Type")==0 ) {
 		    sf->pfminfo.fstype = UFOGetBits(doc,value);
-		else if ( xmlStrcmp(keyname+11,(xmlChar *) "FamilyClass")==0 ) {
+		    if ( sf->pfminfo.fstype<0 ) {
+			/* all bits are set, but this is wrong, OpenType spec says */
+			/* bits 0, 4-7 and 10-15 must be unset, go see		   */
+			/* http://www.microsoft.com/typography/otspec/os2.htm#fst  */
+			LogError(_("Bad openTypeOS2type key: all bits are set. It will be ignored"));
+			sf->pfminfo.fstype = 0;
+		    }
+		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "FamilyClass")==0 ) {
 		    char fc[2];
 		    UFOGetByteArray(fc,sizeof(fc),doc,value);
 		    sf->pfminfo.os2_family_class = (fc[0]<<8)|fc[1];
@@ -1913,7 +1920,7 @@ return( NULL );
 	ds = em-as;
     }
     if ( em==-1 ) {
-	LogError( _("This font does not specify unitsPerEm\n") );
+	LogError(_("This font does not specify unitsPerEm"));
 	xmlFreeDoc(doc);
 	setlocale(LC_NUMERIC,oldloc);
 	SplineFontFree(sf);
@@ -1993,7 +2000,7 @@ SplineSet *SplinePointListInterpretGlif(char *filename,char *memory, int memlen,
     SplineSet *ss;
 
     if ( !libxml_init_base()) {
-	LogError( _("Can't find libxml2.\n") );
+	LogError(_("Can't find libxml2."));
 return( NULL );
     }
     if ( filename!=NULL )
