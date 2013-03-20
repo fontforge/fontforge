@@ -61,7 +61,7 @@ char* getNetworkAddress( char* outstring )
     }
     
     inet_ntop( he->h_addrtype, he->h_addr_list[0],
-	       outstring, ipaddress_string_length_t-1 );
+	       outstring, IPADDRESS_STRING_LENGTH_T-1 );
 
     return outstring;
 }
