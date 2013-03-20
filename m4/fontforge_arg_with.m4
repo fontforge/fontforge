@@ -141,7 +141,8 @@ AC_ARG_WITH([libreadline],[AS_HELP_STRING([--without-libreadline],[build without
 if test x"${i_do_have_libreadline}" = xyes -a x"${LIBREADLINE_LIBS}" = x; then
    FONTFORGE_SEARCH_LIBS([rl_readline_version],[readline],
                   [AC_SUBST([LIBREADLINE_LIBS],["${found_lib}"])],
-                  [i_do_have_libreadline=no])
+                  [i_do_have_libreadline=no],
+		  [-ltermcap])
 fi
 if test x"${i_do_have_libreadline}" = xyes -a x"${LIBREADLINE_CFLAGS}" = x; then
    AC_CHECK_HEADER([readline/readline.h],[AC_SUBST([LIBREADLINE_CFLAGS],[""])],[i_do_have_libreadline=no])
