@@ -313,7 +313,7 @@ void ScriptErrorString( Context *c, const char *msg, const char *name) {
 	fflush(stdout);
     if ( c->interactive )
 	LogError( "Error: %s: %s\n", t1, t2 );
-    if ( c->lineno!=0 )
+    else if ( c->lineno!=0 )
 	LogError( _("%s line: %d %s: %s\n"), ufile, c->lineno, t1, t2 );
     else
 	LogError( "%s: %s: %s\n", ufile, t1, t2 );
