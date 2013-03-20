@@ -876,18 +876,8 @@ return( ret );
 }
 
 static struct fontdict *PSMakeEmptyFont(void) {
-    struct fontdict *ret;
-
-    ret = gcalloc(1,sizeof(struct fontdict));
-    ret->fontinfo = gcalloc(1,sizeof(struct fontinfo));
-    ret->chars = gcalloc(1,sizeof(struct pschars));
-    ret->private = gcalloc(1,sizeof(struct private));
-    ret->private->subrs = gcalloc(1,sizeof(struct pschars));
-    ret->private->private = gcalloc(1,sizeof(struct psdict));
-    ret->private->leniv = 4;
+    struct fontdict *ret = MakeEmptyFont();
     ret->charprocs = gcalloc(1,sizeof(struct charprocs));
-    ret->encoding_name = &custom;
-    ret->fontinfo->fstype = -1;
 return( ret );
 }
 
