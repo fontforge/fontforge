@@ -576,7 +576,7 @@ return( false );
 	PListOutputString(plist,"openTypeOS2VendorID",vendor);
 	fc[0] = sf->pfminfo.os2_family_class>>8; fc[1] = sf->pfminfo.os2_family_class&0xff;
 	PListOutputIntArray(plist,"openTypeOS2FamilyClass",fc,2);
-	{
+	if ( sf->pfminfo.fstype!=-1 ) {
 	    int fscnt,i;
 	    char fstype[16];
 	    for ( i=fscnt=0; i<16; ++i )
