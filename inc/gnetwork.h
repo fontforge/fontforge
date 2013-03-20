@@ -28,7 +28,7 @@
 #ifndef _ALREADY_INCLUDED_GNETWORK_H_
 #define _ALREADY_INCLUDED_GNETWORK_H_
 
-#define ipaddress_string_length_t 100
+#define IPADDRESS_STRING_LENGTH_T 100
 
 
 /**
