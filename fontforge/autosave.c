@@ -122,6 +122,10 @@ int DoAutoRecovery(int inquire) {
     SplineFont *sf;
     int inquire_state=0;
 
+#ifndef X_DISPLAY_MISSING
+/* TODO: run in --without-x mode, (non)-interactively */
+/* TODO: error checking if failed to do all things here */
+
     if ( recoverdir==NULL )
 return( false );
     if ( (dir = opendir(recoverdir))==NULL )
@@ -136,17 +140,17 @@ return( false );
 	    if ( sf->fv==NULL )		/* Doesn't work, cli arguments not parsed yet */
 		FontViewCreate(sf,false);
 	    fprintf( stderr, " Done\n" );
-#ifndef _NO_LIBXML
-	    /* Display a graphical OK prompt to continue */
+
+	    /* Ask user to save-as file */
 	    char *buts[4];
 	    buts[0] = _("_OK");
 	    buts[1] = 0;
 	    gwwv_ask( _("Recovery Complete"),(const char **) buts,0,1,_("Your file %s has been recovered.\nYou must now Save your file to continue working on it."), sf->filename );
 	    _FVMenuSaveAs( sf->fv );
-#endif
 	}
     }
     closedir(dir);
+#endif
 return( any );
 }
 
