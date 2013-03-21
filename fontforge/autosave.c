@@ -122,10 +122,6 @@ int DoAutoRecovery(int inquire) {
     SplineFont *sf;
     int inquire_state=0;
 
-#ifndef X_DISPLAY_MISSING
-/* TODO: run in --without-x mode, (non)-interactively */
-/* TODO: error checking if failed to do all things here */
-
     if ( recoverdir==NULL )
 return( false );
     if ( (dir = opendir(recoverdir))==NULL )
@@ -150,7 +146,6 @@ return( false );
 	}
     }
     closedir(dir);
-#endif
 return( any );
 }
 
