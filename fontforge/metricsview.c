@@ -473,9 +473,13 @@ static void MVSelectSubtable(MetricsView *mv, struct lookup_subtable *sub) {
     int32 len; int i;
     GTextInfo **old = GGadgetGetList(mv->subtable_list,&len);
 
-    for ( i=0; i<len && (old[i]->userdata!=sub || old[i]->line); ++i );
+    for ( i=0; i<len && (old[i]->userdata!=sub || old[i]->line); ++i )
+    {
+	// nothing //
+    }
+//    printf("MVSelectSubtable() i:%d sub:%p\n", i, sub );
     GGadgetSelectOneListItem(mv->subtable_list,i);
-    if ( sub!=NULL )
+    if ( sub )
 	mv->cur_subtable = sub;
 }
 
@@ -4719,6 +4723,7 @@ return( true );
 static int mv_e_h(GWindow gw, GEvent *event) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     SplineFont *sf;
+//    printf("mv_e_h()  event->type:%d\n", event->type );
     
     switch ( event->type ) {
       case et_selclear:
@@ -5151,3 +5156,32 @@ GResInfo metricsview_ri = {
     NULL,
     NULL
 };
+
+
+void MVSelectFirstKerningTable(struct metricsview *mv)
+{
+    SplineFont *sf = mv->sf;
+
+    /* printf("MVSelectFirstKerningTable() kerns:%p\n", sf->kerns ); */
+    /* if( sf->kerns ) */
+    /* { */
+    /* 	printf("MVSelectFirstKerningTable() kerns.next:%p\n", sf->kerns->next ); */
+    /* 	printf("MVSelectFirstKerningTable() kerns.subt:%p\n", sf->kerns->subtable ); */
+    /* } */
+
+    //
+    // if nothing selected, then select the first entry.
+    //
+    if( GGadgetGetFirstListSelectedItem(mv->features) >= 0 )
+    {
+	return;
+    }
+    
+    GTextInfo **ti=NULL;
+    int32 len, sc;
+    ti = GGadgetGetList(mv->features,&len);
+    GGadgetSelectOneListItem(mv->features,0);
+    MVRemetric(mv);
+    GDrawRequestExpose(mv->v,NULL,false);
+}
+
