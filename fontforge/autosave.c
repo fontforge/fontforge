@@ -35,8 +35,10 @@
 #include <dirent.h>
 #include <ustring.h>
 #include "gfile.h"
+#include "views.h"
+#include "gwidget.h"
 
-int AutoSaveFrequency=30;
+int AutoSaveFrequency=5;
 
 #if !defined(__MINGW32__)
 # include <pwd.h>
@@ -133,8 +135,15 @@ return( false );
 	    any=true;
 	    if ( sf->fv==NULL )		/* Doesn't work, cli arguments not parsed yet */
 		FontViewCreate(sf,false);
+	    fprintf( stderr, " Done\n" );
+
+	    /* Ask user to save-as file */
+	    char *buts[4];
+	    buts[0] = _("_OK");
+	    buts[1] = 0;
+	    gwwv_ask( _("Recovery Complete"),(const char **) buts,0,1,_("Your file %s has been recovered.\nYou must now Save your file to continue working on it."), sf->filename );
+	    _FVMenuSaveAs( sf->fv );
 	}
-	fprintf( stderr, " Done\n" );
     }
     closedir(dir);
 return( any );

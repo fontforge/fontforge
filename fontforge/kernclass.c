@@ -215,8 +215,12 @@ static void KCD_AddOffsetAsIs(void *data,int left_index,int right_index, int ker
 static void KCD_AutoKernAClass(KernClassDlg *kcd,int index,int is_first) {
     char *space[1], **lefts, **rights, **others;
     int lcnt, rcnt; int ocnt, acnt;
+    // CID_ClassList is a constant. It presumably provides a base for identifying the two list controls in the KernAClass dialogue, and we assign by which is active, not by which is the first list.
+    // Empirical testing suggests that index indexes a unified collection of unique characters spread across the two list views. The empirical testing seems to reflect an incorrect calling sequence, as it turns out.
+    // This function expects things to be indexed separately according to the items in the two visible lists.
     GGadget *activelist = GWidgetGetControl( kcd->gw, CID_ClassList+(is_first?0:100));
     GGadget *otherlist = GWidgetGetControl( kcd->gw, CID_ClassList+(is_first?100:0));
+    // Each of these returns a GGadget. We then make the assumption that each gadget is nested in a GMatrixEdit and retrieve the GMatrixEdit object.
     struct matrix_data *otherdata = GMatrixEditGet(otherlist,&ocnt);
     struct matrix_data *activedata = GMatrixEditGet(activelist,&acnt);
     int err, touch=0, separation=0, minkern=0, onlyCloser;
@@ -235,7 +239,9 @@ return;
     if ( err )
 return;
 
+    // We next strdup from activedata[index].u.md_str, which causes a segmentation fault sometimes.
     space[0] = copy(activedata[index].u.md_str);
+    // space keeps just the specified item from activelist. others stores the items from the opposite list.
     others = galloc((ocnt+1)*sizeof(char *));
     for ( i=0; i<ocnt; ++i ) {
 	if ( i==0 && isEverythingElse(otherdata[0].u.md_str))
@@ -2053,7 +2059,10 @@ void ME_ClassCheckUnique(GGadget *g,int r, int c, SplineFont *sf) {
 }
 
 static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
+    // This function expands the cross-mapping structures and then calls KCD_AutoKernAClass in order to populate them.
     KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
+    // CID_ClassList is a macro denoting the identification number for the widget for the first character list.
+    // If the CID differs, then we assume that we are using the second list.
     int is_first = GGadgetGetCid(g) == CID_ClassList;
     int i, autokern;
 
@@ -2063,6 +2072,7 @@ static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
     if ( wasnew ) {
 	autokern = GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_Autokern));
 	if ( is_first ) {
+            // offsets and adjusts are mappings between the characters in the first and second lists.
 	    kcd->offsets = grealloc(kcd->offsets,(kcd->first_cnt+1)*kcd->second_cnt*sizeof(int16));
 	    memset(kcd->offsets+kcd->first_cnt*kcd->second_cnt,
 		    0, kcd->second_cnt*sizeof(int16));
@@ -2073,14 +2083,17 @@ static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
 	    if ( autokern )
 		KCD_AutoKernAClass(kcd,kcd->first_cnt-1,true);
 	} else {
+            // The procedure for expanding offsets varies here, adding a column, since it is necessary to leave a space on each row for the new column.
+            {
 	    int16 *new = galloc(kcd->first_cnt*(kcd->second_cnt+1)*sizeof(int16));
-	    for ( i=0; i<kcd->first_cnt; ++i ) {
-		memcpy(new+i*(kcd->second_cnt+1),kcd->offsets+i*kcd->second_cnt,
-			kcd->second_cnt*sizeof(int16));
-		new[i*(kcd->second_cnt+1)+kcd->second_cnt] = 0;
-	    }
-	    free( kcd->offsets );
-	    kcd->offsets = new;
+	        for ( i=0; i<kcd->first_cnt; ++i ) {
+		    memcpy(new+i*(kcd->second_cnt+1),kcd->offsets+i*kcd->second_cnt,
+			    kcd->second_cnt*sizeof(int16));
+		    new[i*(kcd->second_cnt+1)+kcd->second_cnt] = 0;
+	        }
+	        free( kcd->offsets );
+	        kcd->offsets = new;
+            }
 	    {
 		DeviceTable *new = galloc(kcd->first_cnt*(kcd->second_cnt+1)*sizeof(DeviceTable));
 		for ( i=0; i<kcd->first_cnt; ++i ) {

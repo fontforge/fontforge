@@ -36,6 +36,11 @@
 
 #ifndef _NO_LIBUNINAMESLIST
 #include <uninameslist.h>
+#else
+#ifndef _NO_LIBUNICODENAMES
+#include <libunicodenames.h>
+extern uninm_names_db names_db; /* Unicode character names and annotations database */
+#endif
 #endif
 
 int bv_width = 270, bv_height=250;
@@ -180,9 +185,14 @@ static char *BVMakeTitles(BitmapView *bv, BDFChar *bc,char *buf) {
     sprintf(buf,_("%1$.80s at %2$d size %3$d from %4$.80s"),
 	    sc!=NULL ? sc->name : "<Nameless>", bv->enc, bdf->pixelsize, sc==NULL ? "" : sc->parent->fontname);
     title = copy(buf);
-#ifndef _NO_LIBUNINAMESLIST
+#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+#else
     const char *uniname;
+#ifndef _NO_LIBUNINAMESLIST
     if ( (uniname=uniNamesList_name(sc->unicodeenc))!=NULL ) {
+#else
+    if ( sc->unicodeenc!=-1 && (uniname=uninm_name(names_db,(unsigned int) sc->unicodeenc))!=NULL ) {
+#endif
 	strcat(buf, " ");
 	strcpy(buf+strlen(buf), uniname);
     }

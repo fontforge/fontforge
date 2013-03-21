@@ -42,6 +42,11 @@
 #include "../gdraw/hotkeys.h"
 #include "gutils/prefs.h"
 
+#ifndef _NO_LIBUNICODENAMES
+#include <libunicodenames.h>	/* need to open a database when we start */
+extern uninm_names_db names_db; /* Unicode character names and annotations database */
+#endif
+
 #define GTimer GTimer_GTK
 #include <glib.h>
 #include <glib-object.h>
@@ -912,28 +917,34 @@ int fontforge_main( int argc, char **argv ) {
     /*  gettext will not. So I don't bother to check for null strings or "C"  */
     /*  or "POSIX". If they've mucked with the locale perhaps they know what  */
     /*  they are doing */
-    { int did_keybindings = 0;
-    if ( local_x && !get_mac_x11_prop("enable_key_equivalents") ) {
-	/* Ok, we get the command key */
-	if ( getenv("LANG")==NULL && getenv("LC_MESSAGES")==NULL ) {
-	    setenv("LC_MESSAGES","en_US.UTF-8",0);
+    {
+	int did_keybindings = 0;
+	int useCommandKey = get_mac_x11_prop("enable_key_equivalents") <= 0;
+
+	if ( local_x && useCommandKey ) {
+	    hotkeySystemSetCanUseMacCommand( 1 );
+	    
+	    /* Ok, we get the command key */
+	    if ( getenv("LANG")==NULL && getenv("LC_MESSAGES")==NULL ) {
+		setenv("LC_MESSAGES","en_US.UTF-8",0);
+	    }
+	    /* Can we find a set of keybindings designed for the mac with cmd key? */
+	    bind_textdomain_codeset("Mac-FontForge-MenuShortCuts","UTF-8");
+	    bindtextdomain("Mac-FontForge-MenuShortCuts", getLocaleDir());
+	    if ( *dgettext("Mac-FontForge-MenuShortCuts","Flag0x10+")!='F' ) {
+		GMenuSetShortcutDomain("Mac-FontForge-MenuShortCuts");
+		did_keybindings = 1;
+	    }
 	}
-	/* Can we find a set of keybindings designed for the mac with cmd key? */
-	bind_textdomain_codeset("Mac-FontForge-MenuShortCuts","UTF-8");
-	bindtextdomain("Mac-FontForge-MenuShortCuts", getLocaleDir());
-	if ( *dgettext("Mac-FontForge-MenuShortCuts","Flag0x10+")!='F' ) {
-	    GMenuSetShortcutDomain("Mac-FontForge-MenuShortCuts");
-	    did_keybindings = 1;
+	if ( !did_keybindings ) {
+	    /* Nope. we can't. Fall back to the normal stuff */
+#endif
+	    GMenuSetShortcutDomain("FontForge-MenuShortCuts");
+	    bind_textdomain_codeset("FontForge-MenuShortCuts","UTF-8");
+	    bindtextdomain("FontForge-MenuShortCuts", getLocaleDir());
+#if defined(__Mac)
 	}
     }
-    if ( !did_keybindings ) {
-	/* Nope. we can't. Fall back to the normal stuff */
-#endif
-    GMenuSetShortcutDomain("FontForge-MenuShortCuts");
-    bind_textdomain_codeset("FontForge-MenuShortCuts","UTF-8");
-    bindtextdomain("FontForge-MenuShortCuts", getLocaleDir());
-#if defined(__Mac)
-    }}
 #endif
     bind_textdomain_codeset("FontForge","UTF-8");
     bindtextdomain("FontForge", getLocaleDir());
@@ -1221,7 +1232,7 @@ exit( 0 );
 	any = ReopenLastFonts();
 
     collabclient_sniffForLocalServer();
-    
+
 #if defined(__Mac)
     if ( listen_to_apple_events ) {
 	install_apple_event_handlers();
@@ -1235,6 +1246,10 @@ exit( 0 );
     GDrawEventLoop(NULL);
 
     hotkeysSave();
+
+#ifndef _NO_LIBUNICODENAMES
+    uninm_names_db_close(names_db);	/* close this database before exiting */
+#endif
 
     lt_dlexit();
 

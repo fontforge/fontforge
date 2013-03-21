@@ -1372,8 +1372,8 @@ return;		/* Not interesting. Only intersection is at an endpoint */
 		break;
 		}
 	    } else {
-		volatile extended bkp_x;
-		extended diff, x, y1,y2, y1o,y2o;
+		volatile extended bkp_x, x;
+		extended diff, y1,y2, y1o,y2o;
 		extended t1,t2, t1o,t2o/*, t1t,t2t*/ ;
 
 		diff = (b.maxx-b.minx)/32;
@@ -3305,6 +3305,18 @@ return;
     }
 }
 
+
+static int BetweenForCollinearPoints( SplinePoint* a, SplinePoint* middle, SplinePoint* b )
+{
+    int ret = 0;
+
+    if( a->me.x <= middle->me.x && middle->me.x <= b->me.x )
+	if( a->me.y <= middle->me.y && middle->me.y <= b->me.y )
+	    return 1;
+    
+    return ret;
+}
+
 /* If we have a contour with no width, say a line from A to B and then from B */
 /*  to A, then it will be ambiguous, depending on how we hit the contour, as  */
 /*  to whether it is needed or not. Which will cause us to complain. Since    */
@@ -3334,39 +3346,64 @@ static SplineSet *SSRemoveReversals(SplineSet *base) {
 		base = prev;
 	break;
 	    }
-	    for ( sp=base->first; ; ) {
+	    for ( sp=base->first; ; )
+	    {
 		if ( sp->next!=NULL && sp->prev!=NULL &&
-			sp->nextcp.x==sp->prevcp.x && sp->nextcp.y==sp->prevcp.y ) {
-		    SplinePoint *nsp = sp->next->to, *psp = sp->prev->from, *isp;
+		     sp->nextcp.x==sp->prevcp.x && sp->nextcp.y==sp->prevcp.y )
+		{
+		    SplinePoint *nsp = sp->next->to;
+		    SplinePoint *psp = sp->prev->from;
+		    SplinePoint *isp = 0;
+		    
 		    if ( psp->me.x==nsp->me.x && psp->me.y==nsp->me.y &&
-			    psp->nextcp.x==nsp->prevcp.x && psp->nextcp.y==nsp->prevcp.y ) {
+			    psp->nextcp.x==nsp->prevcp.x && psp->nextcp.y==nsp->prevcp.y )
+		    {
 			/* We wish to remove sp, sp->next, sp->prev & one of nsp/psp */
 			RemoveNextSP(psp,sp,nsp,base);
 			changed = true;
-	    break;
-		    } else if ( sp->nonextcp /* which implies sp->noprevcp */ &&
-			    psp->nonextcp && nsp->noprevcp &&
-			    (isp = SameLine(psp,sp,nsp))!=NULL ) {
-			/* We have a line that backtracks, but doesn't cover */
-			/*  the entire spline, so we intersect */
-			/* We want to remove sp, the shorter of sp->next, sp->prev */
-			/*  and a bit of the other one. Also reomve one of nsp,psp */
-			if ( isp==psp ) {
-			    RemoveNextSP(psp,sp,nsp,base);
-			    psp->nextcp = psp->me;
-			    psp->nonextcp = true;
-			} else {
-			    RemovePrevSP(psp,sp,nsp,base);
+			break;
+		    }
+		    else if ( sp->nonextcp /* which implies sp->noprevcp */ &&
+			      psp->nonextcp && nsp->noprevcp &&
+			      (isp = SameLine(psp,sp,nsp))!=NULL )
+		    {
+			/* printf(" sp x:%f y:%f\n",  sp->me.x,  sp->me.y ); */
+			/* printf("psp x:%f y:%f\n", psp->me.x, psp->me.y ); */
+			/* printf("nsp x:%f y:%f\n", nsp->me.x, nsp->me.y ); */
+			/* printf("between1:%d\n", BetweenForCollinearPoints( nsp, psp, sp )); */
+			/* printf("between2:%d\n", BetweenForCollinearPoints( psp, nsp, sp )); */
+
+			if( BetweenForCollinearPoints( nsp, psp, sp )
+			    || BetweenForCollinearPoints( psp, nsp, sp ) )
+			{
+			    /* leave these as they are */
 			}
-			changed = true;
-	    break;
+			else
+			{
+			    /* We have a line that backtracks, but doesn't cover */
+			    /*  the entire spline, so we intersect */
+			    /* We want to remove sp, the shorter of sp->next, sp->prev */
+			    /*  and a bit of the other one. Also reomve one of nsp,psp */
+			    if ( isp==psp )
+			    {
+				RemoveNextSP(psp,sp,nsp,base);
+				psp->nextcp = psp->me;
+				psp->nonextcp = true;
+			    }
+			    else
+			    {
+				RemovePrevSP(psp,sp,nsp,base);
+			    }
+			    changed = true;
+			    break;
+			}
 		    }
 		}
 		if ( sp->next==NULL )
-	    break;
+		    break;
 		sp = sp->next->to;
 		if ( sp==base->first )
-	    break;
+		    break;
 	    }
 	}
 	SSRemoveBacktracks(base);

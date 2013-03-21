@@ -53,9 +53,10 @@ LT_INIT([dlopen])
 LTDL_INIT([recursive convenience])
 FONTFORGE_CHECK_LTDL_VERSION
 
-# The following is mainly for the benefit of the libltdl Makefile,
-# which expects to find <inc/fontforge-config.h>.
-CPPFLAGS="${CPPFLAGS} AS_ESCAPE([-I${top_builddir}])"
+# The following is for the benefit of the libltdl Makefile,
+# which expects to find <inc/fontforge-config.h> in top_builddir,
+# and for some other things that use a path relative to top_srcdir.
+CPPFLAGS="${CPPFLAGS} AS_ESCAPE([-I${top_builddir}]) AS_ESCAPE([-I${top_srcdir}])"
 
 
 AC_PATH_XTRA
@@ -85,7 +86,9 @@ libpng_url="http://www.libpng.org/"
 libxml_url="http://www.xmlsoft.org/"
 libspiro_url="http://libspiro.sourceforge.net/"
 libuninameslist_url="https://github.com/fontforge/libuninameslist"
+libunicodenames_url="https://github.com/sortsmill/libunicodenames"
 libzmq_url="http://www.zeromq.org/"
+libreadline_url="http://www.gnu.org/software/readline"
 
 # Point to the Wikipedia page, primarily because one may want
 # libjpeg-turbo rather than the reference implementation.
@@ -249,8 +252,18 @@ FONTFORGE_ARG_WITH_LIBTIFF
 FONTFORGE_ARG_WITH_LIBXML
 FONTFORGE_ARG_WITH_LIBSPIRO
 FONTFORGE_ARG_WITH_LIBUNINAMESLIST
+FONTFORGE_ARG_WITH_LIBUNICODENAMES
 FONTFORGE_ARG_WITH_ICONV
 FONTFORGE_ARG_WITH_ZEROMQ
+FONTFORGE_ARG_WITH_LIBREADLINE
+
+# We have both libraries but did not choose which one to use yet
+if test x"${i_do_have_libuninameslist}" = xyes; then
+   if test x"${i_do_have_libunicodenames}" = xyes; then
+      i_do_have_libuninameslist=no
+      AC_DEFINE(_NO_LIBUNINAMESLIST)
+   fi
+fi
 
 if test x"${i_do_have_cairo}" = xyes; then
    PKG_CHECK_MODULES([PANGOCAIRO],[pangocairo])
@@ -292,12 +305,18 @@ fi
 
 AX_PTHREAD
 
+#--------------------------------------------------------------------------
 FONTFORGE_COMPILER_FLAGS([WARNING_CFLAGS],
         [-Wunused -Wreturn-type
          -Wparentheses -Wformat -Wchar-subscripts
          -Wno-unused-but-set-variable -Wno-unused-result
+         -Wcast-align
          -Werror=missing-prototypes
+         -Werror=pointer-arith
+         -Wclobbered
          -Werror=implicit])
+# Sep2012, There's a bug in <py3 with Py_True/False that will propagate
+# with GCC's "strict-aliasing" rules. -Wstrict-aliasing
 
 #--------------------------------------------------------------------------
 # Bypass older autoscan recommendations (if anyone decides to run autoscan)
@@ -401,7 +420,9 @@ Summary of optional dependencies:
   libxml             ${i_do_have_libxml}  	${libxml_url}
   libspiro           ${i_do_have_libspiro}  	${libspiro_url}
   libuninameslist    ${i_do_have_libuninameslist}  	${libuninameslist_url}
+  libunicodenames    ${i_do_have_libunicodenames}  	${libunicodenames_url}
   zeromq             ${i_do_have_libzmq}  	${libzmq_url}
+  libreadline        ${i_do_have_libreadline}  	${libreadline_url}
   X Window System    ${i_do_have_x}
 ])
 

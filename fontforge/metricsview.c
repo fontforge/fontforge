@@ -1803,53 +1803,75 @@ static void MVFigureGlyphNames(MetricsView *mv,const unichar_t *names) {
 static void MVLoadWordList(MetricsView *mv,int type) {
     GTextInfo **words;
     int cnt;
+    int dblQuoteCount = 0;
     char buffer[300], *pt;
     int ch;
     char *filename, *temp;
     FILE *file;
 
     filename = gwwv_open_filename(type==-1 ? "File of Kerning Words":"File of glyphname lists",NULL,"*.txt",NULL);
-    if ( filename==NULL ) {
+    if ( filename==NULL )
+    {
 	GGadgetSetTitle8(mv->text,"");
-return;
+	return;
     }
     temp = utf82def_copy(filename);
     file = fopen( temp,"r" );
     free(temp);
-    if ( file==NULL ) {
+    if ( file==NULL )
+    {
 	ff_post_error("Could not open", "Could not open %s", filename );
 	GGadgetSetTitle8(mv->text,"");
-return;
+	return;
     }
     free(filename);
 
     words = galloc(1002*sizeof(GTextInfo *));
 
     cnt = 0;
-    if ( type==-1 ) {
+    if ( type==-1 )
+    {
 	ch = getc(file);
-	while ( ch!=EOF ) {
-	    while ( isspace(ch) && ch<0x80 ) ch=getc(file);
-	    for ( pt = buffer; ch!=EOF && !(isspace(ch) && ch<0x80) ; ch=getc(file))
+	while ( ch!=EOF )
+	{
+	    // skip leading whitespace
+	    while ( isspace(ch) && ch<0x80 )
+		ch=getc(file);
+	    
+	    for ( pt = buffer; ch!=EOF; ch=getc(file))
+	    {
+		// We are either quoted or not, no nesting for now.
+		if( ch == '"' )
+		    dblQuoteCount = !dblQuoteCount;
+		
+		if( (isspace(ch) && ch<0x80) )
+		    if( !dblQuoteCount )
+			break;
+	    
 		if ( pt<buffer+sizeof(buffer)-2)
 		    *pt++=ch;
+	    }
+	    
 	    *pt = '\0';
 	    if ( buffer[0]=='\0' )
-	break;
+		break;
 	    if ( cnt>1000-3 )
-	break;
+		break;
 	    words[cnt] = gcalloc(1,sizeof(GTextInfo));
 	    words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
 	    words[cnt]->text = (unichar_t *) utf82def_copy( buffer );
 	    words[cnt++]->text_is_1byte = true;
 	}
-    } else {
+    }
+    else
+    {
 	strcpy(buffer,"​");		/* Zero width space: 0x200b, I use as a flag */
-	while ( fgets(buffer+3,sizeof(buffer)-3,file)!=NULL ) {
+	while ( fgets(buffer+3,sizeof(buffer)-3,file)!=NULL )
+	{
 	    if ( buffer[3]=='\n' || buffer[3]=='#' )
-	continue;
+		continue;
 	    if ( cnt>1000-3 )
-	break;
+		break;
 	    if ( buffer[strlen(buffer)-1]=='\n' )
 		buffer[strlen(buffer)-1] = '\0';
 	    words[cnt] = gcalloc(1,sizeof(GTextInfo));
@@ -3955,25 +3977,32 @@ static void MVChar(MetricsView *mv,GEvent *event) {
 	    GGadget *active = GWindowGetFocusGadgetOfWindow(mv->gw);
 	    if(!active)
 		return;
- 	    unichar_t *end;
-	    double val = u_strtod(_GGadgetGetTitle(active),&end);
-	    if (isValidInt(end)) {
-		int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? 1 : -1;
-		if( event->u.chr.state&ksm_control && event->u.chr.state&ksm_shift ) {
-		    dir *= pref_mv_control_shift_and_arrow_skip;
-		}
-		else if( event->u.chr.state&ksm_shift ) {
-		    dir *= pref_mv_shift_and_arrow_skip;
-		}
-		val += dir;
-		char buf[100];
-		snprintf(buf,99,"%.0f",val);
-		GGadgetSetTitle8(active, buf);
 
-		event->u.control.u.tf_changed.from_pulldown=-1;
-		event->type=et_controlevent;
-		event->u.control.subtype = et_textchanged;
-		GGadgetDispatchEvent(active,event);
+	    // MIQ: We do not want to increment and decrement the integer
+	    //      value of the kerning word on up/down now, instead we
+	    //      should always move up/down in the list of kerning words.
+	    if( active != mv->text )
+	    {
+		unichar_t *end;
+		double val = u_strtod(_GGadgetGetTitle(active),&end);
+		if (isValidInt(end)) {
+		    int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? 1 : -1;
+		    if( event->u.chr.state&ksm_control && event->u.chr.state&ksm_shift ) {
+			dir *= pref_mv_control_shift_and_arrow_skip;
+		    }
+		    else if( event->u.chr.state&ksm_shift ) {
+			dir *= pref_mv_shift_and_arrow_skip;
+		    }
+		    val += dir;
+		    char buf[100];
+		    snprintf(buf,99,"%.0f",val);
+		    GGadgetSetTitle8(active, buf);
+
+		    event->u.control.u.tf_changed.from_pulldown=-1;
+		    event->type=et_controlevent;
+		    event->u.control.subtype = et_textchanged;
+		    GGadgetDispatchEvent(active,event);
+		}
 	    }
     }
     if ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ||

@@ -37,6 +37,11 @@
 
 #ifndef _NO_LIBUNINAMESLIST
 #include <uninameslist.h>
+#else
+#ifndef _NO_LIBUNICODENAMES
+#include <libunicodenames.h>
+extern uninm_names_db names_db; /* Unicode character names and annotations database */
+#endif
 #endif
 
 extern int lookup_hideunused;
@@ -1700,8 +1705,13 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 		uni!=0x215f &&
 		!((uni>=0x0958 && uni<=0x095f) || uni==0x929 || uni==0x931 || uni==0x934)) {
 	    alt = NULL;
+#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+#else
 #ifndef _NO_LIBUNINAMESLIST
 	} else if ( uniNamesList_name(uni)==NULL ) {
+#else
+	} else if ( names_db==NULL ) {
+#endif
 	    if ( (uni>=0xbc && uni<=0xbe ) ||		/* Latin1 fractions */
 		    (uni>=0x2153 && uni<=0x215e ) ||	/* other fractions */
 		    (uni>=0xfb00 && uni<=0xfb06 ) ||	/* latin ligatures */
