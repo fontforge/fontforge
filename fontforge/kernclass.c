@@ -582,7 +582,7 @@ static void KCD_KernExpose(KernClassDlg *kcd,GWindow pixmap,GEvent *event) {
     int kern = u_strtol(ret,NULL,10);
     int baseline, xbaseline;
 
-    printf("KCD_KernExpose() ssc:%p fsc:%p\n", kcd->ssc, kcd->fsc );
+//    printf("KCD_KernExpose() ssc:%p fsc:%p\n", kcd->ssc, kcd->fsc );
 
     kern = kcd->magfactor*rint(kern*kcd->pixelsize/(double) em);
 
@@ -656,15 +656,20 @@ static void KCD_UpdateGlyphFromName(KernClassDlg *kcd,int which,char* glyphname)
     free( localglyphname );
     
     if ( sc==NULL )
-return;
+	return;
+
     if ( GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_FreeType)) )
 	freetypecontext = FreeTypeFontContext(sc->parent,sc,sc->parent->fv,kcd->layer);
-    if ( freetypecontext ) {
+    if ( freetypecontext )
+    {
 	*scpos = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,kcd->pixelsize,72,8);
 	FreeTypeFreeContext(freetypecontext);
-    } else
+    }
+    else
+    {
 	*scpos = SplineCharAntiAlias(sc,kcd->layer,kcd->pixelsize,4);
-
+    }
+    
     printf("KCD_UpdateGlyph() scpos:%p\n", *scpos );
 }
 
@@ -674,7 +679,7 @@ static void KCD_UpdateGlyph(KernClassDlg *kcd,int which) {
     SplineChar *sc;
     char *temp;
     void *freetypecontext=NULL;
-    printf("KCD_UpdateGlyph() which:%d iskp:%d\n", which, kcd->iskernpair);
+//    printf("KCD_UpdateGlyph() which:%d iskp:%d\n", which, kcd->iskernpair);
     
     BDFCharFree(*scpos);
     *scpos = NULL;
@@ -689,7 +694,7 @@ static void KCD_UpdateGlyph(KernClassDlg *kcd,int which) {
 		which==0 ? CID_First : CID_Second ));
 	if ( sel==NULL )
 	{
-	    printf("KCD_UpdateGlyph() which:%d no selection...returning\n", which );
+//	    printf("KCD_UpdateGlyph() which:%d no selection...returning\n", which );
 	    return;
 	}
 	else
@@ -697,22 +702,26 @@ static void KCD_UpdateGlyph(KernClassDlg *kcd,int which) {
 	    temp = cu_copy(sel->text);
 	}
 
-	printf("KCD_UpdateGlyph() temp:%s\n", temp );
+//	printf("KCD_UpdateGlyph() temp:%s\n", temp );
     }
 
     *possc = sc = SFGetChar(kcd->sf,-1,temp);
     free(temp);
     if ( sc==NULL )
-return;
+	return;
     if ( GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_FreeType)) )
 	freetypecontext = FreeTypeFontContext(sc->parent,sc,sc->parent->fv,kcd->layer);
-    if ( freetypecontext ) {
+    if ( freetypecontext )
+    {
 	*scpos = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,kcd->pixelsize,72,8);
 	FreeTypeFreeContext(freetypecontext);
-    } else
+    }
+    else
+    {
 	*scpos = SplineCharAntiAlias(sc,kcd->layer,kcd->pixelsize,4);
-
-    printf("KCD_UpdateGlyph() scpos:%p\n", *scpos );
+    }
+    
+//    printf("KCD_UpdateGlyph() scpos:%p\n", *scpos );
 }
 
 static void _KCD_DisplaySizeChanged(KernClassDlg *kcd) {
@@ -1428,7 +1437,7 @@ return;
     else if ( event->type==et_mousedown )
 	kcd->st_pos = pos;
     else if ( event->type==et_mouseup ) {
-	printf("KCD_Mouse(up)\n");
+//	printf("KCD_Mouse(up)\n");
 	if ( pos==kcd->st_pos )
 	    KCD_EditOffset(kcd, pos/kcd->second_cnt, pos%kcd->second_cnt);
     }
@@ -1762,7 +1771,6 @@ static int kcd_sub_e_h(GWindow gw, GEvent *event) {
     KernClassDlg *kcd = GDrawGetUserData(gw);
     switch ( event->type ) {
       case et_expose:
-	  printf("kcd_sub_e_h() -> KCD_KernExpose()\n");
 	KCD_KernExpose(kcd,gw,event);
       break;
       case et_mouseup: case et_mousedown: case et_mousemove:
@@ -2066,7 +2074,7 @@ static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
     int is_first = GGadgetGetCid(g) == CID_ClassList;
     int i, autokern;
 
-    printf("KCD_FinishEdit()\n");
+//    printf("KCD_FinishEdit()\n");
     ME_ClassCheckUnique(g, r, c, kcd->sf);
 
     if ( wasnew ) {
@@ -2113,19 +2121,32 @@ static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
     }
 }
 
+static int whichToWidgetID( int which )
+{
+    return which==0 ? CID_First : CID_Second;
+}
+
 
 static char *KCD_PickGlyphsForClass(GGadget *g,int r, int c) {
     KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
     int rows, cols = GMatrixEditGetColCnt(g);
     struct matrix_data *classes = _GMatrixEditGet(g,&rows);
-    char *new = GlyphSetFromSelection(kcd->sf,kcd->layer,classes[r*cols+c].u.md_str);
-    
-    printf("KCD_PickGlyphsForClass...r:%d c:%d\n",r,c);
 
-    GGadgetSetTitle8(GWidgetGetControl(kcd->gw,CID_Second),new );
-    KCD_UpdateGlyph(kcd,0);
-    KCD_UpdateGlyphFromName(kcd,1,new);
+    int which    = GWidgetGetControl(kcd->gw,CID_ClassList+100) == g;
+    int widgetid = whichToWidgetID( which );
+    char *new = GlyphSetFromSelection(kcd->sf,kcd->layer,classes[r*cols+c].u.md_str);
+
+    GGadgetSetTitle8(GWidgetGetControl(kcd->gw,widgetid),new );
+    KCD_UpdateGlyphFromName(kcd,which,new);
+
+    char *other = GGadgetGetTitle8(GWidgetGetControl(kcd->gw,whichToWidgetID( !which )));
+    if( other )
+    {
+	KCD_UpdateGlyphFromName(kcd,!which,other);
+    }
+    
     GDrawRequestExpose(kcd->subw,NULL,false);
+
 return( new );
 }
 
@@ -3047,11 +3068,11 @@ static int KCL_Done(GGadget *g, GEvent *e) {
 	    MVReFeatureAll( sf );
 	    MVReKernAll( sf );
 	    
-	    KernClass* kc = sf->kerns;
-	    int i = 0;
-	    for( ; kc; kc = kc->next )
-		i++;
-	    printf("kern count:%d\n", i );
+	    /* KernClass* kc = sf->kerns; */
+	    /* int i = 0; */
+	    /* for( ; kc; kc = kc->next ) */
+	    /* 	i++; */
+	    /* printf("kern count:%d\n", i ); */
 
 	    MetricsView *mv;
 	    for ( mv=sf->metrics; mv!=NULL; mv=mv->next )
