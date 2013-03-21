@@ -51,6 +51,23 @@ static Color rbearinglinecol = 0x000080;
 int pref_mv_shift_and_arrow_skip = 10;
 int pref_mv_control_shift_and_arrow_skip = 5;
 
+/**
+ * This doesn't need to be a perfect test by any means. It should
+ * return true if the currently active kerning lookup includes some
+ * class based kerning which might require GUI elements other than the
+ * currently active one to be drawn. The only price to pay by
+ * returning true all the time is a slight performance one when
+ * redrawing something that doesn't absolutely need to be redrawn.
+ */
+static int haveClassBasedKerningInView( MetricsView* mv )
+{
+    if( mv->cur_subtable )
+    {
+	return mv->cur_subtable->kc > 0;
+    }
+    return 0;
+}
+
 static SplineChar* getSelectedChar( MetricsView* mv ) {
     int i=0;
     for ( i=0; i<mv->glyphcnt; ++i ) {
@@ -1340,6 +1357,13 @@ return( true );
 		MVDeselectChar(mv,i);
 	MVSelectChar(mv,which);
     }
+
+    if( haveClassBasedKerningInView(mv) )
+    {
+	MVRemetric(mv);
+	GDrawRequestExpose(mv->v,NULL,false);
+    }
+    
 return( true );
 }
 
@@ -3920,7 +3944,8 @@ return;
     GDrawRequestExpose(mv->v,NULL,true);
 }
 
-static void MVChar(MetricsView *mv,GEvent *event) {
+static void MVChar(MetricsView *mv,GEvent *event)
+{
     if ( event->u.chr.keysym=='s' &&
 	    (event->u.chr.state&ksm_control) &&
 	    (event->u.chr.state&ksm_meta) )
@@ -4001,6 +4026,12 @@ static void MVChar(MetricsView *mv,GEvent *event) {
 		    event->type=et_controlevent;
 		    event->u.control.subtype = et_textchanged;
 		    GGadgetDispatchEvent(active,event);
+
+		    if( haveClassBasedKerningInView(mv) )
+		    {
+			MVRemetric(mv);
+			GDrawRequestExpose(mv->v,NULL,false);
+		    }
 		}
 	    }
     }
