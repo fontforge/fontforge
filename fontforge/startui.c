@@ -27,6 +27,10 @@
 
 #include <fontforge-config.h>
 #include "fontforgeui.h"
+#ifndef _NO_LIBUNICODENAMES
+#include <libunicodenames.h>	/* need to open a database when we start */
+extern uninm_names_db names_db; /* Unicode character names and annotations database */
+#endif
 #include <gfile.h>
 #include <gresource.h>
 #include <ustring.h>
@@ -42,10 +46,6 @@
 #include "../gdraw/hotkeys.h"
 #include "gutils/prefs.h"
 
-#ifndef _NO_LIBUNICODENAMES
-#include <libunicodenames.h>	/* need to open a database when we start */
-extern uninm_names_db names_db; /* Unicode character names and annotations database */
-#endif
 
 #define GTimer GTimer_GTK
 #include <glib.h>

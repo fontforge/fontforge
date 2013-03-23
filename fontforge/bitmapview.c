@@ -26,14 +26,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
-#include <gkeysym.h>
-#include <utype.h>
-#include <ustring.h>
-#include <math.h>
-#include <locale.h>
-#include <gresource.h>
-#include <gresedit.h>
-
 #ifndef _NO_LIBUNINAMESLIST
 #include <uninameslist.h>
 #else
@@ -42,6 +34,14 @@
 extern uninm_names_db names_db; /* Unicode character names and annotations database */
 #endif
 #endif
+#include <gkeysym.h>
+#include <utype.h>
+#include <ustring.h>
+#include <math.h>
+#include <locale.h>
+#include <gresource.h>
+#include <gresedit.h>
+
 
 int bv_width = 270, bv_height=250;
 
@@ -191,7 +191,7 @@ static char *BVMakeTitles(BitmapView *bv, BDFChar *bc,char *buf) {
 #ifndef _NO_LIBUNINAMESLIST
     if ( (uniname=uniNamesList_name(sc->unicodeenc))!=NULL ) {
 #else
-    if ( sc->unicodeenc!=-1 && (uniname=uninm_name(names_db,(unsigned int) sc->unicodeenc))!=NULL ) {
+    if ( sc->unicodeenc!=-1 && (uniname=uninm_name(names_db,(unsigned int) sc->unicodeenc))!= NULL) {
 #endif
 	strcat(buf, " ");
 	strcpy(buf+strlen(buf), uniname);
