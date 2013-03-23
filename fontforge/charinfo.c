@@ -27,14 +27,6 @@
  */
 
 #include "fontforgeui.h"
-#include <ustring.h>
-#include <math.h>
-#include <utype.h>
-#include <chardata.h>
-#include "ttf.h"		/* For MAC_DELETED_GLYPH_NAME */
-#include <gkeysym.h>
-#include "is_LIGATURE.h"
-
 #ifndef _NO_LIBUNINAMESLIST
 #include <uninameslist.h>
 #else
@@ -43,6 +35,13 @@
 extern uninm_names_db names_db; /* Unicode character names and annotations database */
 #endif
 #endif
+#include <ustring.h>
+#include <math.h>
+#include <utype.h>
+#include <chardata.h>
+#include "ttf.h"		/* For MAC_DELETED_GLYPH_NAME */
+#include <gkeysym.h>
+#include "is_LIGATURE.h"
 
 extern int lookup_hideunused;
 
