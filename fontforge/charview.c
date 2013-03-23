@@ -27,6 +27,14 @@
 
 #include "fontforgeui.h"
 #include "cvruler.h"
+#ifndef _NO_LIBUNINAMESLIST
+#include <uninameslist.h>
+#else
+#ifndef _NO_LIBUNICODENAMES
+#include <libunicodenames.h>
+extern uninm_names_db names_db; /* Unicode character names and annotations database */
+#endif
+#endif
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>
@@ -41,14 +49,6 @@ extern int _GScrollBar_Width;
 #endif
 #include "dlist.h"
 
-#ifndef _NO_LIBUNINAMESLIST
-#include <uninameslist.h>
-#else
-#ifndef _NO_LIBUNICODENAMES
-#include <libunicodenames.h>
-extern uninm_names_db names_db; /* Unicode character names and annotations database */
-#endif
-#endif
 
 #include "gutils/prefs.h"
 #include "collabclient.h"
