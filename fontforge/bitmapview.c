@@ -186,18 +186,33 @@ static char *BVMakeTitles(BitmapView *bv, BDFChar *bc,char *buf) {
 	    sc!=NULL ? sc->name : "<Nameless>", bv->enc, bdf->pixelsize, sc==NULL ? "" : sc->parent->fontname);
     title = copy(buf);
 #if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+    /* no nameslist library code */
 #else
     const char *uniname;
 #ifndef _NO_LIBUNINAMESLIST
-    if ( (uniname=uniNamesList_name(sc->unicodeenc))!=NULL ) {
+#ifndef _LIBUNINAMESLIST_FUN
+    /* old libuninameslist library code */
+    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x110000 && UnicodeNameAnnot!=NULL &&
+	    UnicodeNameAnnot[sc->unicodeenc>>16][(sc->unicodeenc>>8)&0xff][sc->unicodeenc&0xff].name!=NULL ) {
+	strcat(buf, " ");
+	strcpy(buf+strlen(buf), UnicodeNameAnnot[sc->unicodeenc>>16][(sc->unicodeenc>>8)&0xff][sc->unicodeenc&0xff].name);
+    }
 #else
-    if ( sc->unicodeenc!=-1 && (uniname=uninm_name(names_db,(unsigned int) sc->unicodeenc))!= NULL) {
-#endif
+    /* new libuninameslist library code */
+    if ( (uniname=uniNamesList_name(sc->unicodeenc))!=NULL ) {
 	strcat(buf, " ");
 	strcpy(buf+strlen(buf), uniname);
     }
 #endif
-return( title );
+#else
+    /* libunicodesnames library code */
+    if ( sc->unicodeenc!=-1 && (uniname=uninm_name(names_db,(unsigned int) sc->unicodeenc))!= NULL) {
+	strcat(buf, " ");
+	strcpy(buf+strlen(buf), uniname);
+    }
+#endif
+#endif
+    return( title );
 }
 
 void BVChangeBC(BitmapView *bv, BDFChar *bc, int fitit ) {
