@@ -2268,7 +2268,7 @@ int16 *PerGlyphDefBaseline(SplineFont *sf,int *def_baseline) {
 		    script == CHR('g','u','j','r' ) || script == CHR('g','j','r','2') ||
 		    script == CHR('g','u','r','u' ) || script == CHR('g','u','r','2') ||
 		    script == CHR('k','n','d','a' ) || script == CHR('k','n','d','2') ||
-		    script == CHR('m','l','y','m' ) || script == CHR('m','l','y','2') ||
+		    script == CHR('m','l','y','m' ) || script == CHR('m','l','m','2') ||
 		    script == CHR('o','r','y','a' ) || script == CHR('o','r','y','2') ||
 		    script == CHR('t','a','m','l' ) || script == CHR('t','m','l','2') ||
 		    script == CHR('t','e','l','u' ) || script == CHR('t','e','l','2'))
