@@ -6220,12 +6220,9 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
     GDrawSetDither(NULL, true);
 }
 
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-#else
 static char *chosung[] = { "G", "GG", "N", "D", "DD", "L", "M", "B", "BB", "S", "SS", "", "J", "JJ", "C", "K", "T", "P", "H", NULL };
 static char *jungsung[] = { "A", "AE", "YA", "YAE", "EO", "E", "YEO", "YE", "O", "WA", "WAE", "OE", "YO", "U", "WEO", "WE", "WI", "YU", "EU", "YI", "I", NULL };
 static char *jongsung[] = { "", "G", "GG", "GS", "N", "NJ", "NH", "D", "L", "LG", "LM", "LB", "LS", "LT", "LP", "LH", "M", "B", "BS", "S", "SS", "NG", "J", "C", "K", "T", "P", "H", NULL };
-#endif
 
 void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
     GRect old, r;
@@ -6301,10 +6298,10 @@ return;
 	fg = 0x707070;
     }
 
+    if (uni != -1) {
 #if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
 #else
     /* Get unicode "Name" as defined in NameList.txt */
-    if (uni != -1) {
 	const char *uniname;
 #ifndef _NO_LIBUNINAMESLIST
 	if ( (uniname=uniNamesList_name(uni))!=NULL ) {
@@ -6312,9 +6309,9 @@ return;
         if ( (uniname=uninm_name(names_db,(unsigned int) uni))!= NULL ) {;
 #endif
 	    utf82u_strncpy(ubuffer+u_strlen(ubuffer),uniname,80);
-//	    strncat(buffer,uniname,80);
-	} else if ( uni>=0xAC00 && uni<=0xD7A3 ) {
-//	    sprintf( buffer+strlen(buffer), "Hangul Syllable %s%s%s",
+	} else
+#endif
+	if ( uni>=0xAC00 && uni<=0xD7A3 ) {
             sprintf( buffer, "Hangul Syllable %s%s%s",
 		    chosung[(uni-0xAC00)/(21*28)],
 		    jungsung[(uni-0xAC00)/28%21],
@@ -6322,10 +6319,8 @@ return;
             uc_strncat(ubuffer,buffer,80);
 	} else {
             uc_strncat(ubuffer, UnicodeRange(uni),80);
-//	    strncat(buffer, UnicodeRange(uni),80);
 	}
     }
-#endif
 
     tlen = GDrawDrawText(pixmap,10,fv->mbh+fv->lab_as,ubuffer,ulen,fvglyphinfocol);
     GDrawDrawText(pixmap,10+tlen,fv->mbh+fv->lab_as,ubuffer+ulen,-1,fg);
@@ -6588,11 +6583,10 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	done = true;
     }
 
+    if ( !done ) {
 #if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
 #else
     const char *uniname;
-    const char *uniannot;
-    if ( !done ) {
 #ifndef _NO_LIBUNINAMESLIST
 	if ( (uniname=uniNamesList_name(upos))!=NULL ) {
 #else
@@ -6607,7 +6601,9 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
                       uniname);
 #endif
             utf82u_strcpy(space,cspace);
-        } else if ( upos>=0xAC00 && upos<=0xD7A3 ) {
+        } else
+#endif
+	if ( upos>=0xAC00 && upos<=0xD7A3 ) {
 #if defined( _NO_SNPRINTF )
             sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
                      localenc, localenc, upos, sc->name==NULL?"":sc->name,
@@ -6633,6 +6629,9 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
             utf82u_strcpy(space,cspace);
         }
     }
+#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+#else
+    const char *uniannot;
 #ifndef _NO_LIBUNINAMESLIST
     if ( (uniannot=uniNamesList_name(upos))!=NULL ) {
 #else
