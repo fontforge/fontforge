@@ -1,0 +1,18 @@
+In early 2013 this directory contained one file: excepthook.py.
+
+Ben Martin added the simple and collab directories. Many of these
+newly added scripts depend on the test.sfd example font file to work.
+To keep the scripts simple, they expect to be run in the directory
+that contains them. So they can find the test.sfd file as
+"../test.sfd" for example.
+
+The scripts have been included here to provide some basic, small,
+scripts that might help shine some light on how to perform certain
+tasks using the python interface to FontForge.
+
+The scripts are mostly setup to call fontforge on themselves when run.
+So for example, while in the simple directory you should be able 
+to just enter the following in a shell to run the script:
+
+./load-font-and-show-name.py
+

@@ -58,6 +58,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #define DEBUG zclock_log
 
+int collabclient_getDefaultBasePort()
+{
+    return 5556;
+}
+
+char* collabclient_makeAddressString( char* address, int port )
+{
+    static char ret[PATH_MAX+1];
+    snprintf(ret,PATH_MAX,"tcp://%s:%d",address,port);
+    return ret;
+}
+
+
 //  Keys are short strings
 #define KVMSG_KEY_MAX   255
 
