@@ -36,19 +36,7 @@
 #include <gresource.h>
 #include "ggadgetP.h"		/* For the font family names */
 
-
-#ifndef _NO_LIBUNINAMESLIST
-#include <uninameslist.h>
-#else
-#ifndef _NO_LIBUNICODENAMES
-#include <libunicodenames.h>	/* need to open a database when we start */
-  /* FIXME: Is it possible to share this names_db with the FontForge  */
-  /* main code? And is it possible to free this memory at some point? */
-
-  /* Unicode character names and annotations. */
-static uninm_names_db names_db = (uninm_names_db) NULL;
-#endif
-#endif
+#include "../fontforge/unicodelibinfo.c"
 
 #define INSCHR_CharSet	1
 #define INSCHR_Char	2
@@ -878,26 +866,14 @@ static void InsChrMouseMove(GWindow gw, GEvent *event) {
 	int uch = InsChrMapChar(16*y + x);
 	static unichar_t space[600];
 	char cspace[40];
-	const char *uniname;
-	const char *uniannot;
+	char *uniname;
+	char *uniannot;
 
-#ifndef _NO_LIBUNINAMESLIST
-	uniname=uniNamesList_name(uch);
-	uniannot=uniNamesList_annot(uch);
-#else
-#ifndef _NO_LIBUNICODENAMES
-	uniname = uninm_name(names_db, uch);
-	uniannot = uninm_annotation(names_db, uch);
-#else
-	/* no built-in unicode NamesList.txt support */
-	uniname=NULL;
-	uniannot=NULL;
-#endif
-#endif
-	if (uniname != NULL) {
+	if ( (uniname=unicode_name(uch))!=NULL ) {
 	    uc_strncpy(space, uniname, 550);
 	    sprintf( cspace, " U+%04X", uch );
 	    uc_strcpy(space+u_strlen(space),cspace);
+	    free(uniname);
 	} else {
 	    if ( uch<160 )
 		sprintf(cspace, "Control Char U+%04X ", uch);
@@ -919,12 +895,13 @@ static void InsChrMouseMove(GWindow gw, GEvent *event) {
 		sprintf(cspace, "Unencoded Unicode U+%04X ", uch);
 	    uc_strcpy(space,cspace);
 	}
-	if (uniannot != NULL) {
+	if ( (uniannot=unicode_annot(uch))!=NULL ) {
 	    int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
 	    if ( left>4 ) {
 		uc_strcat(space,"\n");
 		uc_annot_strncat(space, uniannot, left-2);
 	    }
+	    free(uniannot);
 	}
 	GGadgetPreparePopup(gw,space);
     } else if ( inschr.mouse_down ) {
@@ -1065,18 +1042,12 @@ void GWidgetCreateInsChar(void) {
     int i;
     FontRequest rq;
     int as, ds, ld;
+    static int inited= false;
 
-#ifndef _NO_LIBUNICODENAMES
-    char *names_db_file;
-
-    /* Load character names and annotations dtabase which came from the Unicode */
-    /* NamesList.txt. This should not be done until after the locale has been set. */
-    names_db_file = uninm_find_names_db(NULL);
-    names_db = (names_db_file == NULL) ? ((uninm_names_db) 0) : uninm_names_db_open(names_db_file);
-    free(names_db_file);
-    /* note database file needs to be closed later by startui.c or startnoui.c */
-#endif
-
+    if ( !inited ) {
+	inituninameannot();
+	inited = true;
+    }
     if ( inschr.icw!=NULL ) {
 	inschr.hidden = false;
 	GDrawSetVisible(inschr.icw,true);
