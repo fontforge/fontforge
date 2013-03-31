@@ -55,19 +55,35 @@ dnl FONTFORGE_ARG_WITH_LIBUNICODENAMES
 dnl ----------------------------------
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNICODENAMES],
 [
-   FONTFORGE_ARG_WITH_BASE([libunicodenames],
-      [AS_HELP_STRING([--without-libunicodenames],[build without Unicode Name or Annotation support - incase libuninameslist not found])],
-      [libunicodenames],
-      [FONTFORGE_WARN_PKG_NOT_FOUND([LIBUNICODENAMES])],
-      [_NO_LIBUNICODENAMES],
-      [
-       FONTFORGE_SEARCH_LIBS([uninm_names_db_open],[unicodenames],
-         [i_do_have_libunicodenames=yes
-          AC_SUBST([LIBUNICODENAMES_CFLAGS],[""])
-          AC_SUBST([LIBUNICODENAMES_LIBS],["${found_lib}"])
-          FONTFORGE_WARN_PKG_FALLBACK([LIBUNICODENAMES])],
-         [i_do_have_libunicodenames=no])
-       ])
+AC_ARG_VAR([LIBUNICODENAMES_CFLAGS],[C compiler flags for LIBUNICODENAMES, overriding the automatic detection])
+AC_ARG_VAR([LIBUNICODENAMES_LIBS],[linker flags for LIBUNICODENAMES, overriding the automatic detection])
+AC_ARG_WITH([libunicodenames],[AS_HELP_STRING([--without-libunicodenames],
+	    [build without Unicode Name or Annotation support])],
+	    [i_do_have_libunicodenames="${withval}"],[i_do_have_libunicodenames=yes])
+if test x"${i_do_have_libunicodenames}" = xyes -a x"${LIBUNICODENAMES_LIBS}" = x; then
+   FONTFORGE_SEARCH_LIBS([uninm_names_db_open],[unicodenames],
+		  [LIBUNICODENAMES_LIBS="${LIBUNICODENAMES_LIBS} ${found_lib}"],
+		  [i_do_have_libunicodenames=no])
+   if test x"${i_do_have_libunicodenames}" != xyes; then
+      i_do_have_libunicodenames=yes
+      unset ac_cv_search_uninm_names_db_open
+      FONTFORGE_SEARCH_LIBS([uninm_names_db_open],[unicodenames],
+		     [LIBUNICODENAMES_LIBS="${LIBUNICODENAMES_LIBS} ${found_lib} -lunicodenames"],
+                     [i_do_have_libunicodenames=no],
+		     [-lunicodenames])
+   fi
+fi
+if test x"${i_do_have_libunicodenames}" = xyes -a x"${LIBUNICODENAMES_CFLAGS}" = x; then
+   AC_CHECK_HEADER([libunicodenames.h],[AC_SUBST([LIBUNICODENAMES_CFLAGS],[""])],[i_do_have_libunicodenames=no])
+fi
+if test x"${i_do_have_libunicodenames}" = xyes; then
+   if test x"${LIBUNICODENAMES_LIBS}" != x; then
+      AC_SUBST([LIBUNICODENAMES_LIBS],["${LIBUNICODENAMES_LIBS}"])
+   fi
+else
+   FONTFORGE_WARN_PKG_NOT_FOUND([LIBUNICODENAMES])
+   AC_DEFINE([_NO_LIBUNICODENAMES],1,[Define if not using libunicodenames.])
+fi
 ])
 
 
