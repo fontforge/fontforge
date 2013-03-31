@@ -2766,6 +2766,10 @@ extern char **NamesReadMacBinary(char *filename);
 extern void SFSetOrder(SplineFont *sf,int order2);
 extern int SFFindOrder(SplineFont *sf);
 
+extern void inituninameannot(void);
+extern char *unicode_name(int32 unienc);
+extern char *unicode_annot(int32 unienc);
+
 extern const char *UnicodeRange(int unienc);
 extern SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i);
 extern SplineChar *SFMakeChar(SplineFont *sf,EncMap *map,int i);

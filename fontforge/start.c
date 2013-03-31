@@ -26,10 +26,6 @@
  */
 #include "fontforgevw.h"
 #include "pluginloading.h"
-#ifndef _NO_LIBUNICODENAMES
-#include <libunicodenames.h>
-uninm_names_db names_db; /* Unicode character names and annotations database */
-#endif
 #include <gfile.h>
 #include <time.h>
 #include <sys/time.h>
@@ -108,16 +104,7 @@ void InitSimpleStuff(void) {
     else if ( *localeinfo.decimal_point!='.' ) coord_sep=" ";
     if ( getenv("FF_SCRIPT_IN_LATIN1") ) use_utf8_in_script=false;
 
-#ifndef _NO_LIBUNICODENAMES
-    char *names_db_file;
-
-    /* Load character names and annotations that come from the Unicode NamesList.txt */
-    /* This should not be done until after the locale has been set. */
-    names_db_file = uninm_find_names_db(NULL);
-    names_db = (names_db_file == NULL) ? ((uninm_names_db) 0) : uninm_names_db_open(names_db_file);
-    free(names_db_file);
-    /* NOTE: you need to do uninm_names_db_close(names_db); when you exit program */
-#endif
+    inituninameannot();	/* Note: unicodenames done after locales set */
 
     SetDefaults();
 }
