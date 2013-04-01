@@ -208,15 +208,23 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 	    if( undo )
 	    {
 		undo->next = 0;
+		undo->next = cv->layerheads[cv->drawmode]->redoes;
 		cv->layerheads[cv->drawmode]->redoes = undo;
 		CVDoRedo( cv );
 
 		char* isLocalUndo = kvmsg_get_prop (kvmsg, "isLocalUndo" );
-		if( isLocalUndo && isLocalUndo[0] == '1' )
+		if( isLocalUndo )
 		{
-		    Undoes* undo = cv->layerheads[cv->drawmode]->undoes;
-		    if( undo )
-			cv->layerheads[cv->drawmode]->undoes = undo->next;
+		    if( isLocalUndo[0] == '1' )
+		    {
+			Undoes* undo = cv->layerheads[cv->drawmode]->undoes;
+			if( undo )
+			{
+			    cv->layerheads[cv->drawmode]->undoes = undo->next;
+			    undo->next = cv->layerheads[cv->drawmode]->redoes;
+			    cv->layerheads[cv->drawmode]->redoes = undo;
+			}
+		    }
 		}
 		
 		
@@ -807,6 +815,30 @@ void collabclient_performLocalUndo( CharViewBase *cv )
 }
 
 
+void collabclient_performLocalRedo( CharViewBase *cv )
+{
+   cloneclient_t* cc = cv->fv->collabClient;
+    if( !cc )
+	return;
+
+    printf("collabclient_performLocalRedo() cv:%p\n", cv );
+    printf("collabclient_performLocalRedo() dm:%d\n", cv->drawmode );
+    printf("collabclient_performLocalRedo() preserveUndo:%p\n", cc->preserveUndo );
+    Undoes *undo = cv->layerheads[cv->drawmode]->redoes;
+    printf("collabclient_performLocalRedo() undo:%p\n", undo );
+
+    if( undo )
+    {
+	cv->layerheads[cv->drawmode]->redoes = undo->next;
+	undo->next = 0;
+	collabclient_sendRedo_Internal( cv, undo, 0 );
+	undo->next = 0;
+	UndoesFree( undo );
+    }
+    cc->preserveUndo = 0;
+}
+
+
 void collabclient_sendRedo( CharViewBase *cv )
 {
 #ifdef BUILD_COLLAB
@@ -829,6 +861,7 @@ void collabclient_sendRedo( CharViewBase *cv )
     {
 	cv->layerheads[cv->drawmode]->redoes = undo->next;
 	collabclient_sendRedo_Internal( cv, undo, 0 );
+	undo->next = 0;
 	UndoesFree( undo );
     }
     cc->preserveUndo = 0;

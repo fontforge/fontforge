@@ -6925,6 +6925,21 @@ static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
 
 static void CVRedo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    Undoes *undo = cv->b.layerheads[cv->b.drawmode]->redoes;
+    if( undo )
+    {
+	if( collabclient_inSession( cv ) )
+	{
+	    printf("in-session (redo)!\n");
+	    collabclient_performLocalRedo( cv );
+	    cv->lastselpt = NULL;
+	    _CVCharChangedUpdate(cv,1);
+	    return;
+	}
+    }
+    
+    
     CVDoRedo(&cv->b);
     cv->lastselpt = NULL;
 }
