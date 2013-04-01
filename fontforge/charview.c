@@ -6887,6 +6887,38 @@ static void tablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 
 static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    Undoes *undo = cv->b.layerheads[cv->b.drawmode]->undoes;
+
+    printf("CVUndo() undo:%p u->next:%p\n", undo, ( undo ? undo->next : 0 ) );
+    if( undo )
+    {
+	printf("undo:\n%s\n", UndoToString( cv->b.sc, undo ) );
+	{
+	    int len = 0;
+	    Undoes *p = undo;
+	    for( ; p; p = p->next )
+		len++;
+	    printf("u.len:%d\n", len );
+	}
+	{
+	    int len = 0;
+	    Undoes *p = cv->b.layerheads[cv->b.drawmode]->redoes;
+	    for( ; p; p = p->next )
+		len++;
+	    printf("r.len:%d\n", len );
+	}
+	
+	if( collabclient_inSession( cv ) )
+	{
+	    printf("in-session!\n");
+	    collabclient_performLocalUndo( cv );
+	    cv->lastselpt = NULL;
+	    _CVCharChangedUpdate(cv,1);
+	    return;
+	}
+    }
+    
     CVDoUndo(&cv->b);
     cv->lastselpt = NULL;
 }

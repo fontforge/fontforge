@@ -210,6 +210,16 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 		undo->next = 0;
 		cv->layerheads[cv->drawmode]->redoes = undo;
 		CVDoRedo( cv );
+
+		char* isLocalUndo = kvmsg_get_prop (kvmsg, "isLocalUndo" );
+		if( isLocalUndo && isLocalUndo[0] == '1' )
+		{
+		    Undoes* undo = cv->layerheads[cv->drawmode]->undoes;
+		    if( undo )
+			cv->layerheads[cv->drawmode]->undoes = undo->next;
+		}
+		
+		
 	    }
 			    
 	    break;
@@ -279,8 +289,8 @@ static void collabclient_roundTripTimer( void* ccvp )
 {
     cloneclient_t *cc = (cloneclient_t*)ccvp;
 
-    printf("collabclient_roundTripTimer() cc: %p\n", cc );
-    printf("collabclient_roundTripTimer() waitingseq: %d\n", cc->roundTripTimerWaitingSeq );
+//    printf("collabclient_roundTripTimer() cc: %p\n", cc );
+//    printf("collabclient_roundTripTimer() waitingseq: %d\n", cc->roundTripTimerWaitingSeq );
 
     if( cc->roundTripTimerWaitingSeq )
     {
@@ -489,7 +499,7 @@ static int collabclient_sessionJoin_processmsg_foreach_fn( kvmsg_t* msg, void *a
 }
 
 static void
-collabclient_sendRedo_Internal( CharViewBase *cv, Undoes *undo )
+collabclient_sendRedo_Internal( CharViewBase *cv, Undoes *undo, int isLocalUndo )
 {
     printf("collabclient_sendRedo_Internal()\n");
     cloneclient_t* cc = cv->fv->collabClient;
@@ -525,6 +535,8 @@ collabclient_sendRedo_Internal( CharViewBase *cv, Undoes *undo )
 
     kvmsg_set_prop (kvmsg, "pos", pos );
     kvmsg_set_prop (kvmsg, "name", cv->sc->name );
+    sprintf(pos, "%d", isLocalUndo );
+    kvmsg_set_prop (kvmsg, "isLocalUndo", pos );
     kvmsg_send     (kvmsg, cc->publisher);
     kvmsg_destroy (&kvmsg);
     DEBUG("Sent a undo chunk of %d bytes to the server\n",strlen(sfd));
@@ -771,6 +783,29 @@ void collabclient_CVPreserveStateCalled( CharViewBase *cv )
 #endif
 }
 
+static int reallyPerformUndo = 1;
+
+int collabclient_reallyPerformUndo( CharViewBase *cv )
+{
+    return reallyPerformUndo;
+}
+
+
+void collabclient_performLocalUndo( CharViewBase *cv )
+{
+    Undoes *undo = cv->layerheads[cv->drawmode]->undoes;
+    if( undo )
+    {
+	printf("undo:%p\n", undo );
+	cv->layerheads[cv->drawmode]->undoes = undo->next;
+	undo->next = 0;
+	collabclient_sendRedo_Internal( cv, undo, 1 );
+	UndoesFree( undo );
+    }
+    cloneclient_t* cc = cv->fv->collabClient;
+    cc->preserveUndo = 0;
+}
+
 
 void collabclient_sendRedo( CharViewBase *cv )
 {
@@ -790,14 +825,10 @@ void collabclient_sendRedo( CharViewBase *cv )
     Undoes *undo = cv->layerheads[cv->drawmode]->redoes;
     printf("collabclient_sendRedo() undo:%p\n", undo );
 
-    /* if( undo ) */
-    /* 	collabclient_sendRedo_Internal( cv, undo ); */
-    /* CVDoRedo( cv ); */
-
     if( undo )
     {
 	cv->layerheads[cv->drawmode]->redoes = undo->next;
-	collabclient_sendRedo_Internal( cv, undo );
+	collabclient_sendRedo_Internal( cv, undo, 0 );
 	UndoesFree( undo );
     }
     cc->preserveUndo = 0;
@@ -833,10 +864,20 @@ int collabclient_inSessionFV( FontViewBase* fv )
     return 0;
 }
 
+static int generatingUndoForWire = 1;
+
+void collabclient_setGeneratingUndoForWire( int v )
+{
+    generatingUndoForWire = v;
+}
+
 int collabclient_generatingUndoForWire( CharViewBase *cv )
 {
 #ifdef BUILD_COLLAB
-    return collabclient_inSession( cv );
+    if( collabclient_inSession( cv ) )
+    {
+	return generatingUndoForWire;
+    }
 #endif
     return 0;
 }

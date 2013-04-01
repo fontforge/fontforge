@@ -103,6 +103,7 @@ extern void collabclient_sessionDisconnect( FontViewBase* fv );
  * server. Thus the server will publish these changes to all clients.
  */
 extern void collabclient_sendRedo( CharViewBase *cv );
+extern void collabclient_performLocalUndo( CharViewBase *cv );
 
 /**
  * Sometimes code *might* have created a new undo in the process of a
@@ -131,6 +132,9 @@ extern void collabclient_CVPreserveStateCalled( CharViewBase *cv );
  */
 extern int collabclient_inSession(   CharViewBase *cv );
 extern int collabclient_inSessionFV( FontViewBase* fv );
+
+extern int collabclient_reallyPerformUndo( CharViewBase *cv );
+
 
 /**
  * If an undo takes place, it needs to know if it should repaint
@@ -193,6 +197,13 @@ extern void collabclient_sniffForLocalServer( void );
  * the server process will end it.
  */
 extern void collabclient_closeLocalServer( FontViewBase* fv );
+
+
+/**
+ * Some parts of the system like charview's "undo" menu item might need
+ * to override this setting so that UI redraws happen by default.
+ */
+extern void collabclient_setGeneratingUndoForWire( int v );
 
 
 extern int64_t collabclient_getCurrentSequenceNumber(void* ccvp);

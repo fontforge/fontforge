@@ -28,6 +28,7 @@
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>
+#include "inc/gfile.h"
 
 #if defined(__MINGW32__)
 // no backtrace on windows yet
@@ -635,7 +636,7 @@ Undoes *CVPreserveState(CharViewBase *cv) {
     Undoes *undo;
     int layer = CVLayer(cv);
 
-    printf("no_windowing_ui:%d maxundoes:%d\n", no_windowing_ui, maxundoes );
+    printf("CVPreserveState() no_windowing_ui:%d maxundoes:%d\n", no_windowing_ui, maxundoes );
     if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
@@ -1014,30 +1015,35 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 void CVDoUndo(CharViewBase *cv) {
     Undoes *undo = cv->layerheads[cv->drawmode]->undoes;
 
+    printf("CVDoUndo() undo:%p u->next:%p\n", undo, ( undo ? undo->next : 0 ) );
     if ( undo==NULL )		/* Shouldn't happen */
-return;
+	return;
+    
     cv->layerheads[cv->drawmode]->undoes = undo->next;
     undo->next = NULL;
+
     SCUndoAct(cv->sc,CVLayer(cv),undo);
     undo->next = cv->layerheads[cv->drawmode]->redoes;
     cv->layerheads[cv->drawmode]->redoes = undo;
+
     if( !collabclient_generatingUndoForWire( cv ))
+    {
 	_CVCharChangedUpdate(cv,undo->was_modified);
-return;
+    }
 }
 
 void CVDoRedo(CharViewBase *cv) {
     Undoes *undo = cv->layerheads[cv->drawmode]->redoes;
 
     if ( undo==NULL )		/* Shouldn't happen */
-return;
+	return;
     cv->layerheads[cv->drawmode]->redoes = undo->next;
     undo->next = NULL;
+
     SCUndoAct(cv->sc,CVLayer(cv),undo);
     undo->next = cv->layerheads[cv->drawmode]->undoes;
     cv->layerheads[cv->drawmode]->undoes = undo;
     CVCharChangedUpdate(cv);
-return;
 }
 
 void SCDoUndo(SplineChar *sc,int layer) {
@@ -3895,3 +3901,17 @@ void PasteAnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from) {
 void PasteRemoveAnchorClass(SplineFont *sf,AnchorClass *dying) {
     _PasteAnchorClassManip(sf,NULL,dying);
 }
+
+char* UndoToString( SplineChar* sc, Undoes *undo )
+{
+    int idx = 0;
+    char filename[PATH_MAX];
+    snprintf(filename, PATH_MAX, "/tmp/fontforge-undo-to-string.sfd");
+    FILE* f = fopen( filename, "w" );
+    SFDDumpUndo( f, sc, undo, "Undo", idx );
+    fclose(f);
+    char* sfd = GFileReadAll( filename );
+    return sfd;
+}
+
+    
