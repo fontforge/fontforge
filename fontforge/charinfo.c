@@ -27,14 +27,6 @@
  */
 
 #include "fontforgeui.h"
-#ifndef _NO_LIBUNINAMESLIST
-#include <uninameslist.h>
-#else
-#ifndef _NO_LIBUNICODENAMES
-#include <libunicodenames.h>
-extern uninm_names_db names_db; /* Unicode character names and annotations database */
-#endif
-#endif
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>
@@ -1681,7 +1673,7 @@ return( true );
  * subtables. */
 static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
     const unichar_t *alt=NULL, *pt;
-    char *components = NULL;
+    char *components = NULL, *tmp;
     int len;
     unichar_t hack[30], *upt;
     char buffer[80];
@@ -1705,13 +1697,7 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 		uni!=0x215f &&
 		!((uni>=0x0958 && uni<=0x095f) || uni==0x929 || uni==0x931 || uni==0x934)) {
 	    alt = NULL;
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-#else
-#ifndef _NO_LIBUNINAMESLIST
-	} else if ( uniNamesList_name(uni)==NULL ) {
-#else
-	} else if ( names_db==NULL ) {
-#endif
+	} else if ( (tmp=unicode_name(65))==NULL ) { /* test for 'A' to see if library exists */
 	    if ( (uni>=0xbc && uni<=0xbe ) ||		/* Latin1 fractions */
 		    (uni>=0x2153 && uni<=0x215e ) ||	/* other fractions */
 		    (uni>=0xfb00 && uni<=0xfb06 ) ||	/* latin ligatures */
@@ -1724,8 +1710,8 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 		;	/* These are good */
 	    else
 		alt = NULL;
-#endif
-	}
+	} else
+	    free(tmp); /* found 'A' means there is a library, now cleanup */
     }
     if ( alt==NULL ) {
 	if ( name==NULL || alt_lig )
