@@ -1220,6 +1220,7 @@ static SplineChar *CI_SCDuplicate(SplineChar *sc) {
 
     newsc = chunkalloc(sizeof(SplineChar));
     newsc->name = copy(sc->name);
+    newsc->parent = sc->parent;
     newsc->unicodeenc = sc->unicodeenc;
     newsc->orig_pos = sc->orig_pos;
     newsc->comment = copy(sc->comment);
