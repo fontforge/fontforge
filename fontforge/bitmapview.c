@@ -26,14 +26,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
-#ifndef _NO_LIBUNINAMESLIST
-#include <uninameslist.h>
-#else
-#ifndef _NO_LIBUNICODENAMES
-#include <libunicodenames.h>
-extern uninm_names_db names_db; /* Unicode character names and annotations database */
-#endif
-#endif
 #include <gkeysym.h>
 #include <utype.h>
 #include <ustring.h>
@@ -173,6 +165,7 @@ static char *BVMakeTitles(BitmapView *bv, BDFChar *bc,char *buf) {
     char *title;
     SplineChar *sc;
     BDFFont *bdf = bv->bdf;
+    char *uniname;
 
     sc = bc->sc;
 /* GT: This is the title for a window showing a bitmap character */
@@ -185,19 +178,14 @@ static char *BVMakeTitles(BitmapView *bv, BDFChar *bc,char *buf) {
     sprintf(buf,_("%1$.80s at %2$d size %3$d from %4$.80s"),
 	    sc!=NULL ? sc->name : "<Nameless>", bv->enc, bdf->pixelsize, sc==NULL ? "" : sc->parent->fontname);
     title = copy(buf);
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-#else
-    const char *uniname;
-#ifndef _NO_LIBUNINAMESLIST
-    if ( (uniname=uniNamesList_name(sc->unicodeenc))!=NULL ) {
-#else
-    if ( sc->unicodeenc!=-1 && (uniname=uninm_name(names_db,(unsigned int) sc->unicodeenc))!= NULL) {
-#endif
+
+    /* Enhance 'buf' description with Nameslist.txt unicode name definition */
+    if ( (uniname=unicode_name(sc->unicodeenc))!=NULL ) {
 	strcat(buf, " ");
 	strcpy(buf+strlen(buf), uniname);
+	free(uniname);
     }
-#endif
-return( title );
+    return( title );
 }
 
 void BVChangeBC(BitmapView *bv, BDFChar *bc, int fitit ) {

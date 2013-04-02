@@ -27,14 +27,6 @@
 
 #include "fontforgeui.h"
 #include "cvruler.h"
-#ifndef _NO_LIBUNINAMESLIST
-#include <uninameslist.h>
-#else
-#ifndef _NO_LIBUNICODENAMES
-#include <libunicodenames.h>
-extern uninm_names_db names_db; /* Unicode character names and annotations database */
-#endif
-#endif
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>
@@ -2983,6 +2975,7 @@ return( ((FontView *) (cv->b.fv))->b.map->backmap[cv->b.sc->orig_pos] );
 static char *CVMakeTitles(CharView *cv,char *buf) {
     char *title;
     SplineChar *sc = cv->b.sc;
+    char *uniname;
 
 /* GT: This is the title for a window showing an outline character */
 /* GT: It will look something like: */
@@ -2995,21 +2988,17 @@ static char *CVMakeTitles(CharView *cv,char *buf) {
     if ( sc->changed )
 	strcat(buf," *");
     title = copy(buf);
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-#else
-    const char *uniname;
-#ifndef _NO_LIBUNINAMESLIST
-    if ( (uniname=uniNamesList_name(sc->unicodeenc))!=NULL ) {
-#else
-    if ( sc->unicodeenc!=-1 && (uniname=uninm_name(names_db,sc->unicodeenc))!=NULL ) {
-#endif
+
+    /* Enhance 'buf' description with Nameslist.txt unicode name definition */
+    if ( (uniname=unicode_name(sc->unicodeenc))!=NULL ) {
 	strcat(buf, " ");
 	strcpy(buf+strlen(buf), uniname);
+	free(uniname);
     }
-#endif
+
     if ( cv->show_ft_results || cv->dv )
 	sprintf(buf+strlen(buf), " (%gpt, %ddpi)", (double) cv->ft_pointsizey, cv->ft_dpi );
-return( title );
+    return( title );
 }
 
 static void SC_RefreshTitles(SplineChar *sc) {
