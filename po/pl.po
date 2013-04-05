@@ -2603,7 +2603,7 @@ msgid "Open Path Color"
 msgstr "Kolor otwartych obrysów"
 
 #: ../fontforge/charview.c:209
-msgid "The color of the an open path"
+msgid "The color of the open path"
 msgstr "Kolor używany do wyróżniania obrysów, które nie są poprawnie zamknięte"
 
 #: ../fontforge/charview.c:210
@@ -3950,7 +3950,7 @@ msgid "FontForge Collaboration"
 msgstr ""
 
 #: ../fontforge/collabclient.c:645
-msgid "No Font Snapshot recevied from the server"
+msgid "No Font Snapshot received from the server"
 msgstr ""
 
 #: ../fontforge/collabclient.c:823
