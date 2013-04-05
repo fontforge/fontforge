@@ -103,18 +103,65 @@ char *unicode_name(int32 unienc) {
     return( name_data );
 }
 
+static char *unicode_nicer(const char *from) {
+/* Return nicer looking unicode annotations by changing the '*' to bullet */
+/* and other markers to fancier utf8 style symbols. if empty, return NULL */
+/* User should free the return string when finished with this information */
+    const char *pf;
+    char ch,*to,*pt;
+    long c;
+    int l;
+
+    if ( from==NULL )
+	return( NULL );
+
+    /* check if we need to convert some chars to bullets and symbols */
+    c=l=0;
+    for ( pf=from; (ch=*pf++)!='\0'; ++l ) if ( ch=='\t' ) {
+	/* require extra space for these larger utf8 type chars */
+	if ( *pf=='*' || *pf=='x' || *pf==':' || *pf=='#' ) ++c;
+    }
+
+    if ( (pt=to=malloc(l+c+c+1))!=NULL ) {
+	if ( c ) {
+	    while ( (ch=*pt++=*from++)!='\0' ) if (ch=='\t' ) {
+		if ( *from=='*' ) {
+		    c=0x2022; goto unicode_expand_c; /* 0x2022, bullet */
+		} else if ( *from=='x' ) {
+		    c=0x2192; goto unicode_expand_c; /* 0x2192, right-arrow */
+		} else if ( *from==':' ) {
+		    c=0x224d; goto unicode_expand_c; /* 0x224d, nearly equal */
+		} else if ( *from=='#' ) {
+		    c=0x2245; goto unicode_expand_c; /* 0x2245, approx equal */
+unicode_expand_c:
+		    ++from;
+		    *pt++ =0xe0+((c>>12)&0x0f);
+		    *pt++ =0x80+((c>>6)&0x3f);
+		    *pt++ =0x80+(c&0x3f);
+		}
+	    }
+	} else
+	    /* simply copy information verbatim, without the need to edit */
+	    while ( (*pt++=*from++)!='\0' );
+    }
+
+    return( to );
+}
+
 char *unicode_annot(int32 unienc) {
 /* Return the unicode annotation for the value given from a data library. */
 /* If there's no data available for this code, or no library, return NULL */
 /* User should free the return string when finished with this information */
-    char *annot_data;
 
-    annot_data=NULL;
 #if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
     /* no nameslist library code available to use */
     //fprintf(stderr,"no library - annotation\n");
     return( NULL );
 #else
+    char *annot_data;
+
+    annot_data=NULL;
+
     /* have nameslist library code available to use */
     if ( unienc<0 || unienc>=0x110000 )
 	return( NULL );
@@ -124,12 +171,12 @@ char *unicode_annot(int32 unienc) {
     /* old libuninameslist library code */
     if ( _UnicodeNameAnnot!=NULL &&
 	    _UnicodeNameAnnot[unienc>>16][(unienc>>8)&0xff][unienc&0xff].annot!=NULL ) {
-	annot_data=copy(_UnicodeNameAnnot[unienc>>16][(unienc>>8)&0xff][unienc&0xff].annot);
+	annot_data=unicode_nicer(_UnicodeNameAnnot[unienc>>16][(unienc>>8)&0xff][unienc&0xff].annot);
     }
     //fprintf(stderr,"use old code library - annotation ->%s<-\n",annot_data);
 #else
     /* new libuninameslist library code */
-    annot_data=copy(uniNamesList_annot(unienc));
+    annot_data=unicode_nicer(uniNamesList_annot(unienc));
     //fprintf(stderr,"new library - annotation ->%s<-\n",annot_data);
 #endif
 #else
@@ -137,7 +184,7 @@ char *unicode_annot(int32 unienc) {
     annot_data=copy(uninm_annotation(names_db,(unsigned int)(unienc)));
     //fprintf(stderr,"libunicodes library - annotation ->%s<-\n",annot_data);
 #endif
-#endif
 
     return( annot_data );
+#endif
 }
