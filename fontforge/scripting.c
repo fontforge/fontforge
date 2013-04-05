@@ -1090,6 +1090,45 @@ static void bNameFromUnicode(Context *c) {
     c->return_val.u.sval = copy(StdGlyphName(buffer,c->a.vals[1].u.ival,uniinterp,for_new_glyphs));
 }
 
+static void bUnicodeNameFromLib(Context *c) {
+/* If the library is available, then get the official name for this unicode value */
+    char *temp;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
+	ScriptError( c, "Bad type for argument" );
+    c->return_val.type = v_str;
+#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+    temp = NULL;
+#else
+    temp = unicode_name(c->a.vals[1].u.ival);
+#endif
+    if ( temp==NULL ) {
+	temp = galloc(1*sizeof(char)); temp = '\0';
+    }
+    c->return_val.u.sval = temp;
+}
+
+static void bUnicodeAnnotationFromLib(Context *c) {
+    char *temp;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
+	ScriptError( c, "Bad type for argument" );
+    c->return_val.type = v_str;
+#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+    temp = NULL;
+#else
+    temp = unicode_annot(c->a.vals[1].u.ival);
+#endif
+    if ( temp==NULL ) {
+	temp = galloc(1*sizeof(char)); temp = '\0';
+    }
+    c->return_val.u.sval = temp;
+}
+
 static void bChr(Context *c) {
     char buf[2];
     char *temp;
@@ -8080,6 +8119,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "GetEnv", bGetEnv, 1 },
     { "UnicodeFromName", bUnicodeFromName, 1 },
     { "NameFromUnicode", bNameFromUnicode, 1 },
+    { "UnicodeNameFromLib", bUnicodeNameFromLib, 1 },
+    { "UnicodeAnnotationFromLib", bUnicodeAnnotationFromLib, 1 },
     { "Chr", bChr, 1 },
     { "Ord", bOrd, 1 },
     { "Real", bReal, 1 },
