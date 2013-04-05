@@ -206,7 +206,7 @@ static struct resed charview2_re[] = {
     { N_("Inactive Layer Color"), "BackgroundOutlineColor", rt_color, &backoutlinecol, N_("The color of outlines in inactive layers"), NULL, { 0 }, 0, 0 },
     { N_("Active Layer Color"), "ForegroundOutlineColor", rt_color, &foreoutlinecol, N_("The color of outlines in the active layer"), NULL, { 0 }, 0, 0 },
     { N_("Clip Path Color"), "ClipPathColor", rt_color, &clippathcol, N_("The color of the clip path"), NULL, { 0 }, 0, 0 },
-    { N_("Open Path Color"), "OpenPathColor", rt_color, &openpathcol, N_("The color of the an open path"), NULL, { 0 }, 0, 0 },
+    { N_("Open Path Color"), "OpenPathColor", rt_color, &openpathcol, N_("The color of the open path"), NULL, { 0 }, 0, 0 },
     { N_("Background Image Color"), "BackgroundImageColor", rt_coloralpha, &backimagecol, N_("The color used to draw bitmap (single bit) images which do not specify a clut"), NULL, { 0 }, 0, 0 },
     { N_("Fill Color"), "FillColor", rt_coloralpha, &fillcol, N_("The color used to fill the outline if that mode is active"), NULL, { 0 }, 0, 0 },
     { N_("Preview Fill Color"), "PreviewFillColor", rt_coloralpha, &previewfillcol, N_("The color used to fill the outline when in preview mode"), NULL, { 0 }, 0, 0 },
