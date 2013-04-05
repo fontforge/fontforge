@@ -63,7 +63,9 @@
 #endif
 
 #include "gnetwork.h"
+#ifdef BUILD_COLLAB
 #include "collab/zmq_kvmsg.h"
+#endif
 #include "collabclient.h"
 #define GTimer GTimer_GTK
 #include <glib.h>
@@ -15426,6 +15428,8 @@ static PyObject *CollabSessionSetUpdatedCallback = NULL;
 
 static PyObject *PyFFFont_CollabSessionStart(PyFF_Font *self, PyObject *args)
 {
+#ifdef BUILD_COLLAB
+
     int port_default = collabclient_getDefaultBasePort();
     int port = port_default;
     char address[IPADDRESS_STRING_LENGTH_T];
@@ -15461,12 +15465,15 @@ static PyObject *PyFFFont_CollabSessionStart(PyFF_Font *self, PyObject *args)
     collabclient_sessionStart( cc, fv );
     printf("connecting to server...sent the sfd for session start.\n");
     inPythonStartedCollabSession = 1;
-    
+
+#endif
     Py_RETURN( self );
 }
     
 static PyObject *PyFFFont_CollabSessionJoin(PyFF_Font *self, PyObject *args)
 {
+#ifdef BUILD_COLLAB
+
     char* address = collabclient_makeAddressString(
 	"localhost", collabclient_getDefaultBasePort());
     
@@ -15496,9 +15503,10 @@ static PyObject *PyFFFont_CollabSessionJoin(PyFF_Font *self, PyObject *args)
     inPythonStartedCollabSession = 1;
     PyObject* ret = PyFV_From_FV_I( newfv );
     Py_RETURN( ret );
-    
-    
-//    Py_RETURN( self );
+
+#endif
+
+    Py_RETURN( self );
 }
 
 static void InvokeCollabSessionSetUpdatedCallback(PyFF_Font *self)

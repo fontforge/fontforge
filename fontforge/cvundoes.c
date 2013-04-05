@@ -760,7 +760,10 @@ Undoes *SCPreserveState(SplineChar *sc,int dohints) {
     if ( sc->parent->multilayer )
 	for ( i=ly_fore+1; i<sc->layer_cnt; ++i )
 	    SCPreserveLayer(sc,i,false);
-return( SCPreserveLayer(sc,ly_fore,dohints));
+
+    Undoes* ret = SCPreserveLayer( sc, ly_fore, dohints );
+    collabclient_SCPreserveStateCalled( sc );
+    return( ret );
 }
 
 Undoes *SCPreserveBackground(SplineChar *sc) {
@@ -867,7 +870,16 @@ return(NULL);
     undo->was_modified = sc->changed;
     undo->was_order2 = sc->layers[ly_fore].order2;
     undo->u.state.width = sc->width;
-return( AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes));
+
+    Undoes* ret = AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes);
+
+    //
+    // Let the collab system know that a new undo state was pushed since
+    // it last sent a message.
+    //
+    collabclient_SCPreserveStateCalled( sc );
+
+    return(ret);
 }
 
 Undoes *SCPreserveVWidth(SplineChar *sc) {
@@ -3912,6 +3924,19 @@ char* UndoToString( SplineChar* sc, Undoes *undo )
     fclose(f);
     char* sfd = GFileReadAll( filename );
     return sfd;
+}
+
+void dumpUndoChain( char* msg, SplineChar* sc, Undoes *undo )
+{
+    int idx = 0;
+
+    printf("dumpUndoChain(start) %s\n", msg );
+    for( ; undo; undo = undo->next, idx++ )
+    {
+	char* str = UndoToString( sc, undo );
+	printf("\n\n*** undo: %d\n%s\n", idx, str );
+    }
+    printf("dumpUndoChain(end) %s\n", msg );
 }
 
     

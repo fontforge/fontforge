@@ -4030,8 +4030,11 @@ return;
 	if( lastSel.lastselpt != fs.p->sp
 	    || lastSel.lastselcp != fs.p->spiro )
 	{
-	    CVPreserveState(&cv->b);
-	    selectionChanged = 1;
+	    if( collabclient_inSession( cv ) )
+	    {
+		CVPreserveState(&cv->b);
+		selectionChanged = 1;
+	    }
 	}
 	cv->lastselpt = fs.p->sp;
 	cv->lastselcp = fs.p->spiro;
@@ -10816,7 +10819,7 @@ static GMenuItem2 mblist_nomm[] = {
     GMENUITEM2_EMPTY
 };
 
-static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) {
+static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,int show) {
     GRect pos;
     GWindowAttrs wattrs;
     GGadgetData gd;
@@ -10984,8 +10987,11 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
 	GDrawSetGIC(cv->v,cv->gic,0,20);
 	cv->gwgic = GDrawCreateInputContext(cv->gw,gic_root|gic_orlesser);
 	GDrawSetGIC(cv->gw,cv->gwgic,0,20);
-    GDrawSetVisible(cv->gw,true);
-
+	if( show )
+	{
+	    GDrawSetVisible(cv->gw,true);
+	}
+	
     if ( (CharView *) (sc->views)==NULL && updateflex )
 	SplineCharIsFlexible(sc,CVLayer((CharViewBase *) cv));
     if ( sc->inspiro && !hasspiro() && !sc->parent->complained_about_spiros ) {
@@ -11035,7 +11041,8 @@ void DefaultY(GRect *pos) {
 
 static void CharViewInit(void);
 
-CharView *CharViewCreate(SplineChar *sc, FontView *fv,int enc) {
+CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show )
+{
     CharView *cv = gcalloc(1,sizeof(CharView));
     GWindowAttrs wattrs;
     GRect pos, zoom;
@@ -11114,8 +11121,13 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv,int enc) {
     cv->former_names[0] = copy(sc->name);
     GGadgetTakesKeyboard(cv->tabs,false);
 
-    _CharViewCreate(cv,sc,fv,enc);
-return( cv );
+    _CharViewCreate( cv, sc, fv, enc, show );
+    return( cv );
+}
+
+CharView *CharViewCreate(SplineChar *sc, FontView *fv,int enc)
+{
+    return CharViewCreateExtended( sc, fv, enc, 1 );
 }
 
 void CharViewFree(CharView *cv) {
@@ -11260,11 +11272,11 @@ void SVCharViewInits(SearchView *sv) {
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     sv->cv_rpl.gw = GWidgetCreateSubWindow(sv->gw,&pos,nested_cv_e_h,&sv->cv_rpl,&wattrs);
-    _CharViewCreate(&sv->cv_rpl, &sv->sd.sc_rpl, &sv->dummy_fv, 1);
+    _CharViewCreate(&sv->cv_rpl, &sv->sd.sc_rpl, &sv->dummy_fv, 1, 1);
 
     pos.x = 10;
     sv->cv_srch.gw = GWidgetCreateSubWindow(sv->gw,&pos,nested_cv_e_h,&sv->cv_srch,&wattrs);
-    _CharViewCreate(&sv->cv_srch, &sv->sd.sc_srch, &sv->dummy_fv, 0);
+    _CharViewCreate(&sv->cv_srch, &sv->sd.sc_srch, &sv->dummy_fv, 0, 1);
 }
 
 /* Same for the MATH Kern dlg */
@@ -11296,7 +11308,7 @@ void MKDCharViewInits(MathKernDlg *mkd) {
 	wattrs.event_masks = -1;
 	wattrs.cursor = ct_mypointer;
 	(&mkd->cv_topright)[i].gw = GWidgetCreateSubWindow(mkd->cvparent_w,&pos,nested_cv_e_h,(&mkd->cv_topright)+i,&wattrs);
-	_CharViewCreate((&mkd->cv_topright)+i, (&mkd->sc_topright)+i, &mkd->dummy_fv, i);
+	_CharViewCreate((&mkd->cv_topright)+i, (&mkd->sc_topright)+i, &mkd->dummy_fv, i, 1);
     }
 }
 
@@ -11332,7 +11344,7 @@ void TPDCharViewInits(TilePathDlg *tpd, int cid) {
 	wattrs.cursor = ct_mypointer;
 	(&tpd->cv_first)[i].gw = GWidgetCreateSubWindow(GDrawableGetWindow(GWidgetGetControl(tpd->gw,cid+i)),
 		&pos,nested_cv_e_h,(&tpd->cv_first)+i,&wattrs);
-	_CharViewCreate((&tpd->cv_first)+i, (&tpd->sc_first)+i, &tpd->dummy_fv, i);
+	_CharViewCreate((&tpd->cv_first)+i, (&tpd->sc_first)+i, &tpd->dummy_fv, i, 1 );
     }
 }
 
@@ -11363,7 +11375,7 @@ void PTDCharViewInits(TilePathDlg *tpd, int cid) {
 	wattrs.cursor = ct_mypointer;
 	tpd->cv_first.gw = GWidgetCreateSubWindow(GDrawableGetWindow(GWidgetGetControl(tpd->gw,cid)),
 		&pos,nested_cv_e_h,&tpd->cv_first,&wattrs);
-	_CharViewCreate(&tpd->cv_first, &tpd->sc_first, &tpd->dummy_fv, 0);
+	_CharViewCreate(&tpd->cv_first, &tpd->sc_first, &tpd->dummy_fv, 0, 1 );
     }
 }
 #endif		/* TilePath */
@@ -11393,7 +11405,7 @@ void GDDCharViewInits(GradientDlg *gdd, int cid) {
     gdd->cv_grad.gw = GWidgetCreateSubWindow(
 	    GDrawableGetWindow(GWidgetGetControl(gdd->gw,cid)),
 	    &pos,nested_cv_e_h,&gdd->cv_grad,&wattrs);
-    _CharViewCreate(&gdd->cv_grad, &gdd->sc_grad, &gdd->dummy_fv, 0);
+    _CharViewCreate(&gdd->cv_grad, &gdd->sc_grad, &gdd->dummy_fv, 0, 1 );
 }
 
 void StrokeCharViewInits(StrokeDlg *sd, int cid) {
@@ -11421,7 +11433,7 @@ void StrokeCharViewInits(StrokeDlg *sd, int cid) {
     sd->cv_stroke.gw = GWidgetCreateSubWindow(
 	    GDrawableGetWindow(GWidgetGetControl(sd->gw,cid)),
 	    &pos,nested_cv_e_h,&sd->cv_stroke,&wattrs);
-    _CharViewCreate(&sd->cv_stroke, &sd->sc_stroke, &sd->dummy_fv, 0);
+    _CharViewCreate(&sd->cv_stroke, &sd->sc_stroke, &sd->dummy_fv, 0, 1 );
 }
 
 static void SC_CloseAllWindows(SplineChar *sc) {

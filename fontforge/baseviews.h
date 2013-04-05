@@ -305,6 +305,8 @@ extern void PasteRemoveAnchorClass(SplineFont *sf,AnchorClass *dying);
  * Convert the undo into a string. You must free() the returned string.
  */
 extern char* UndoToString( SplineChar* sc, Undoes *undo );
+extern void dumpUndoChain( char* msg, SplineChar* sc, Undoes *undo );
+
 extern void ClipboardClear(void);
 extern SplineSet *ClipBoardToSplineSet(void);
 extern void BCCopySelected(BDFChar *bc,int pixelsize,int depth);

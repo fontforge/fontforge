@@ -102,6 +102,7 @@ extern void collabclient_sessionDisconnect( FontViewBase* fv );
  * undone. Send a "redo" event describing the local changes to the
  * server. Thus the server will publish these changes to all clients.
  */
+extern void collabclient_sendRedo_SC( SplineChar *sc );
 extern void collabclient_sendRedo( CharViewBase *cv );
 extern void collabclient_performLocalUndo( CharViewBase *cv );
 extern void collabclient_performLocalRedo( CharViewBase *cv );
@@ -127,6 +128,8 @@ extern void collabclient_performLocalRedo( CharViewBase *cv );
  * sent.
  */
 extern void collabclient_CVPreserveStateCalled( CharViewBase *cv );
+extern void collabclient_SCPreserveStateCalled( SplineChar *sc );
+
 
 /**
  * Return >0 if this charview is part of a collab session

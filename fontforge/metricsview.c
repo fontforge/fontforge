@@ -35,6 +35,11 @@
 #include <utype.h>
 #include <math.h>
 
+#include "collabclient.h"
+#include "gfile.h"
+extern char* SFDCreateUndoForLookup( SplineFont *sf, int lookup_type ) ;
+
+
 int mv_width = 800, mv_height = 300;
 int mvshowgrid = mv_hidegrid;
 int mv_type = mv_widthonly;
@@ -975,6 +980,19 @@ static real GGadgetToReal(GGadget *g)
     return val;
 }
 
+static void MV_handle_collabclient_sendRedo( MetricsView *mv, SplineChar *sc )
+{
+    if( collabclient_inSessionFV( mv->fv ) )
+    {
+	collabclient_sendRedo_SC( sc );
+	
+	/* CharViewBase* cv = sc->views; */
+	/* if( !cv ) */
+	/*     cv = CharViewCreate( sc, mv->fv, -1 ); */
+	/* collabclient_sendRedo( cv ); */
+    }
+}
+
 
 static int MV_WidthChanged(GGadget *g, GEvent *e) {
 /* This routines called during "Advanced Width Metrics" viewing */
@@ -994,8 +1012,14 @@ return( true );
 	if (!isValidInt(end))
 	    GDrawBeep(NULL);
 	else if ( !mv->vertical && val!=sc->width ) {
+	    dumpUndoChain( "before SCPreserveWidth...", sc, &sc->layers[ly_fore].undoes );
 	    SCPreserveWidth(sc);
-
+	    if( collabclient_inSessionFV( mv->fv ) )
+	    {
+		int dohints = 0;
+		SCPreserveState( sc, dohints );
+	    }
+	    
 	    // set i to the correct column that has the active width gadget
 	    for ( i=0; i<mv->glyphcnt; ++i ) {
 		if ( mv->perchar[i].width == g )
@@ -1016,6 +1040,8 @@ return( true );
 
 	    SCSynchronizeWidth(sc,val,sc->width,NULL);
 	    SCCharChangedUpdate(sc,ly_none);
+	    MV_handle_collabclient_sendRedo( mv, sc );
+	    
 	} else if ( mv->vertical && val!=sc->vwidth ) {
 	    SCPreserveVWidth(sc);
 	    sc->vwidth = val;
@@ -1031,7 +1057,10 @@ return( true );
 return( true );
 }
 
-static int MV_LBearingChanged(GGadget *g, GEvent *e) {
+static int MV_LBearingChanged(GGadget *g, GEvent *e)
+{
+    printf("MV_LBearingChanged(top) ************** \n");
+    
 /* This routines called during "Advanced Width Metrics" viewing */
 /* any time "LBrearing" changed or screen is updated		*/
     MetricsView *mv = GDrawGetUserData(GGadgetGetWindow(g));
@@ -1051,11 +1080,18 @@ return( true );
 	if (!isValidInt(end))
 	    GDrawBeep(NULL);
 	else if ( !mv->vertical && val!=bb.minx ) {
+ 	    int dohints = 0;
+	    SCPreserveState( sc, dohints );
+	    
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[5] = 0;
 	    transform[4] = val-bb.minx;
 	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,0 | fvt_alllayers );
+
+	    dumpUndoChain( "LBearing Changed...e", sc, &sc->layers[ly_fore].undoes );
+	    MV_handle_collabclient_sendRedo( mv, sc );
+	    
 	} else if ( mv->vertical && val!=sc->parent->ascent-bb.maxy ) {
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
@@ -1099,14 +1135,22 @@ return( true );
 	    /* Width is an integer. Adjust the lbearing so that the rbearing */
 	    /*  remains what was just typed in */
 	    if ( newwidth!=bb.maxx+val ) {
+		int dohints = 0;
+		SCPreserveState( sc, dohints );
+		
+		printf("RBearing Changed... transform!\n");
 		real transform[6];
 		transform[0] = transform[3] = 1.0;
 		transform[1] = transform[2] = transform[5] = 0;
 		transform[4] = newwidth-val-bb.maxx;
 		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,fvt_dontmovewidth);
 	    }
+	    dumpUndoChain( "RBearing Changed...2", sc, &sc->layers[ly_fore].undoes );
 	    SCSynchronizeWidth(sc,newwidth,sc->width,NULL);
+	    dumpUndoChain( "RBearing Changed...3", sc, &sc->layers[ly_fore].undoes );
 	    SCCharChangedUpdate(sc,ly_none);
+	    dumpUndoChain( "RBearing Changed...e", sc, &sc->layers[ly_fore].undoes );
+	    MV_handle_collabclient_sendRedo( mv, sc );
 	} else if ( mv->vertical && val!=sc->vwidth-(sc->parent->ascent-bb.miny) ) {
 	    double vw = val+(sc->parent->ascent-bb.miny);
 	    SCPreserveWidth(sc);
@@ -1156,6 +1200,24 @@ static int MV_ChangeKerning(MetricsView *mv, int which, int offset, int is_diff)
     kp = mv->glyphs[which-1].kp;
     kc = mv->glyphs[which-1].kc;
     index = mv->glyphs[which-1].kc_index;
+
+    printf("MV_ChangeKerning(top)\n");
+    printf("MV_ChangeKerning() kp:%p\n", kp );
+    printf("MV_ChangeKerning() kc:%p\n", kc );
+    // FIXME: MIQ:
+    {
+	SplineFont *sf = mv->sf;
+	int lookup_type = gpos_pair;
+	char* str = SFDCreateUndoForLookup( sf, lookup_type );
+	GFileWriteAll( "/tmp/mv-old-lookup-table.sfd", str );
+	printf("MV_ChangeKerning() sf->kerns:%p\n", sf->kerns );
+	if( sf->kerns )
+	{
+	    printf("MV_ChangeKerning()  first_cnt:%d\n", sf->kerns->first_cnt );
+	    printf("MV_ChangeKerning() second_cnt:%d\n", sf->kerns->second_cnt );
+	}
+    }
+
     if ( kc!=NULL ) {
 	if ( index==-1 )
 	    kc = NULL;
@@ -4493,6 +4555,7 @@ return;
 	}
 	mv->pressed_x = event->u.mouse.x;
     } else if ( event->type == et_mousemove && mv->pressed ) {
+	printf("move & pressed pressedwidth:%d pressedkern:%d type!=mv_kernonly:%d\n",mv->pressedwidth,mv->pressedkern,(mv->type!=mv_kernonly));
 	for ( i=0; i<mv->glyphcnt && !mv->perchar[i].selected; ++i );
 	if ( mv->pressedwidth ) {
 	    int ow = mv->perchar[i].dwidth;
@@ -4544,6 +4607,8 @@ return;
 	if ( mv->showgrid==mv_hidemovinggrid )
 	    GDrawRequestExpose(mv->v,NULL,false);
     } else if ( event->type == et_mouseup && mv->pressed ) {
+	printf("mouse up!\n");
+	printf("pressedwidth:%d pressedkern:%d type!=mv_kernonly:%d\n",mv->pressedwidth,mv->pressedkern,(mv->type!=mv_kernonly));
 	for ( i=0; i<mv->glyphcnt && !mv->perchar[i].selected; ++i );
 	mv->pressed = false;
 	mv->activeoff = 0;
@@ -4556,6 +4621,8 @@ return;
 		SCPreserveWidth(sc);
 		SCSynchronizeWidth(sc,sc->width+diff,sc->width,NULL);
 		SCCharChangedUpdate(sc,ly_none);
+		MV_handle_collabclient_sendRedo( mv, sc );
+		// FIXME: MIQ: collab send redo call
 	    }
 	} else if ( mv->pressedkern ) {
 	    mv->pressedkern = false;
