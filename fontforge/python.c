@@ -15582,9 +15582,9 @@ static PyObject *PyFFFont_CollabSessionRunMainLoop(PyFF_Font *self, PyObject *ar
 	MacServiceReadFDs();
     }
 
-    printf("originalSeq:%ld\n",originalSeq);
-    printf("     newSeq:%ld\n",collabclient_getCurrentSequenceNumber( self->fv->collabClient ));
-    
+    printf("originalSeq:%ld\n",(long int)(originalSeq));
+    printf("     newSeq:%ld\n",(long int)(collabclient_getCurrentSequenceNumber( self->fv->collabClient )));
+
     if( originalSeq < collabclient_getCurrentSequenceNumber( self->fv->collabClient ))
     {
 	printf("***********************\n");
