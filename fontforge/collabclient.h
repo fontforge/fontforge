@@ -33,6 +33,9 @@
 #include "views.h"
 
 
+extern int pref_collab_sessionJoinTimeoutMS;
+extern int pref_collab_roundTripTimerMS;
+
 /**
  * Create a new collab client. You can start using the client in two
  * major ways: collabclient_sessionStart() will send your current SFD
@@ -53,6 +56,12 @@
  * 
  */
 extern void* collabclient_new( char* address, int port );
+/**
+ * Like collabclient_new() but takes a single string like
+ * hostname:port
+ * instead of two explicit arguments.
+ */
+extern void* collabclient_newFromPackedAddress( char* packed );
 
 /**
  * Close a collab client which is no longer needed. Free the resources
@@ -72,7 +81,7 @@ extern void collabclient_sessionStart( void* ccvp, FontView *fv );
  * changes that other folks might have performed on that SFD since the session
  * was started.
  */
-extern void collabclient_sessionJoin( void* ccvp, FontView *fv );
+extern FontViewBase* collabclient_sessionJoin( void* ccvp, FontView *fv );
 
 /**
  * Reconnect to the collab server. The sockets are all remade, and the
@@ -93,7 +102,10 @@ extern void collabclient_sessionDisconnect( FontViewBase* fv );
  * undone. Send a "redo" event describing the local changes to the
  * server. Thus the server will publish these changes to all clients.
  */
+extern void collabclient_sendRedo_SC( SplineChar *sc );
 extern void collabclient_sendRedo( CharViewBase *cv );
+extern void collabclient_performLocalUndo( CharViewBase *cv );
+extern void collabclient_performLocalRedo( CharViewBase *cv );
 
 /**
  * Sometimes code *might* have created a new undo in the process of a
@@ -116,12 +128,17 @@ extern void collabclient_sendRedo( CharViewBase *cv );
  * sent.
  */
 extern void collabclient_CVPreserveStateCalled( CharViewBase *cv );
+extern void collabclient_SCPreserveStateCalled( SplineChar *sc );
+
 
 /**
  * Return >0 if this charview is part of a collab session
  */
 extern int collabclient_inSession(   CharViewBase *cv );
 extern int collabclient_inSessionFV( FontViewBase* fv );
+
+extern int collabclient_reallyPerformUndo( CharViewBase *cv );
+
 
 /**
  * If an undo takes place, it needs to know if it should repaint
@@ -184,6 +201,22 @@ extern void collabclient_sniffForLocalServer( void );
  * the server process will end it.
  */
 extern void collabclient_closeLocalServer( FontViewBase* fv );
+
+
+/**
+ * Some parts of the system like charview's "undo" menu item might need
+ * to override this setting so that UI redraws happen by default.
+ */
+extern void collabclient_setGeneratingUndoForWire( int v );
+
+
+/**
+ * Every message send from the server has a monotonically increasing
+ * SequenceNumber. This function gets what that value is right now and
+ * can be used to check if any messages have been received from the
+ * server by calling again and comparing the return value.
+ */
+extern int64_t collabclient_getCurrentSequenceNumber(void* ccvp);
 
 #endif
 
