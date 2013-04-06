@@ -71,6 +71,21 @@ extern "C" {
 	   socket_srv_offset_collector = socket_offset_publisher,
 	   socket_srv_offset_ping      = socket_offset_ping
     };
+
+    /**
+     * Its 5556 by default, but making that value contained in this
+     * function allows us to set it via prefs or some other means
+     */
+    extern int collabclient_getDefaultBasePort( void );
+
+    /**
+     * Convert address + port to a string like
+     * tcp://localhost:5556
+     * 
+     * you do not own the return value, do not free it. 
+     */
+    extern char* collabclient_makeAddressString( char* address, int port );
+    
     
     //  Constructor, sets sequence as provided
     kvmsg_t *     kvmsg_new (int64_t sequence);

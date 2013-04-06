@@ -7484,6 +7484,14 @@ int FontViewFind_byCollabPtr( FontView* fv, void* udata )
     return fv->b.collabClient == udata;
 }
 
+int FontViewFind_bySplineFont( FontView* fv, void* udata )
+{
+    if( !fv || !fv->b.sf )
+	return 0;
+    return fv->b.sf == udata;
+}
+
+
 
 FontView* FontViewFind( int (*testFunc)( FontView*, void* udata ), void* udata )
 {

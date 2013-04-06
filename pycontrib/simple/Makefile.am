@@ -1,5 +1,4 @@
-# Copyright (C) 2000-2012 by George Williams
-# Copyright (C) 2012 by Barry Schwartz
+# Copyright (C) 2013 by Ben Martin
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -27,14 +26,12 @@
 
 include $(top_srcdir)/mk/layout.am
 
+targetdatadir = $(pkgpythondatadir)/simple
+
 if PYTHON_SCRIPTING
-pkgpythondata_DATA = excepthook.py test.sfd
+targetdata_SCRIPTS = $(srcdir)/*.py
 endif PYTHON_SCRIPTING
 
-EXTRA_DIST = excepthook.py test.sfd README
-
-SUBDIRS =
-SUBDIRS += simple
-SUBDIRS += collab
+EXTRA_DIST = $(srcdir)/*.py
 
 -include $(top_srcdir)/git.mk

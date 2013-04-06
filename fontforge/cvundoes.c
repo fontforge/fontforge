@@ -28,6 +28,7 @@
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>
+#include "inc/gfile.h"
 
 #if defined(__MINGW32__)
 // no backtrace on windows yet
@@ -635,6 +636,7 @@ Undoes *CVPreserveState(CharViewBase *cv) {
     Undoes *undo;
     int layer = CVLayer(cv);
 
+    printf("CVPreserveState() no_windowing_ui:%d maxundoes:%d\n", no_windowing_ui, maxundoes );
     if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
@@ -758,7 +760,10 @@ Undoes *SCPreserveState(SplineChar *sc,int dohints) {
     if ( sc->parent->multilayer )
 	for ( i=ly_fore+1; i<sc->layer_cnt; ++i )
 	    SCPreserveLayer(sc,i,false);
-return( SCPreserveLayer(sc,ly_fore,dohints));
+
+    Undoes* ret = SCPreserveLayer( sc, ly_fore, dohints );
+    collabclient_SCPreserveStateCalled( sc );
+    return( ret );
 }
 
 Undoes *SCPreserveBackground(SplineChar *sc) {
@@ -865,7 +870,16 @@ return(NULL);
     undo->was_modified = sc->changed;
     undo->was_order2 = sc->layers[ly_fore].order2;
     undo->u.state.width = sc->width;
-return( AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes));
+
+    Undoes* ret = AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes);
+
+    //
+    // Let the collab system know that a new undo state was pushed since
+    // it last sent a message.
+    //
+    collabclient_SCPreserveStateCalled( sc );
+
+    return(ret);
 }
 
 Undoes *SCPreserveVWidth(SplineChar *sc) {
@@ -1013,30 +1027,35 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 void CVDoUndo(CharViewBase *cv) {
     Undoes *undo = cv->layerheads[cv->drawmode]->undoes;
 
+    printf("CVDoUndo() undo:%p u->next:%p\n", undo, ( undo ? undo->next : 0 ) );
     if ( undo==NULL )		/* Shouldn't happen */
-return;
+	return;
+    
     cv->layerheads[cv->drawmode]->undoes = undo->next;
     undo->next = NULL;
+
     SCUndoAct(cv->sc,CVLayer(cv),undo);
     undo->next = cv->layerheads[cv->drawmode]->redoes;
     cv->layerheads[cv->drawmode]->redoes = undo;
+
     if( !collabclient_generatingUndoForWire( cv ))
+    {
 	_CVCharChangedUpdate(cv,undo->was_modified);
-return;
+    }
 }
 
 void CVDoRedo(CharViewBase *cv) {
     Undoes *undo = cv->layerheads[cv->drawmode]->redoes;
 
     if ( undo==NULL )		/* Shouldn't happen */
-return;
+	return;
     cv->layerheads[cv->drawmode]->redoes = undo->next;
     undo->next = NULL;
+
     SCUndoAct(cv->sc,CVLayer(cv),undo);
     undo->next = cv->layerheads[cv->drawmode]->undoes;
     cv->layerheads[cv->drawmode]->undoes = undo;
     CVCharChangedUpdate(cv);
-return;
 }
 
 void SCDoUndo(SplineChar *sc,int layer) {
@@ -3894,3 +3913,30 @@ void PasteAnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from) {
 void PasteRemoveAnchorClass(SplineFont *sf,AnchorClass *dying) {
     _PasteAnchorClassManip(sf,NULL,dying);
 }
+
+char* UndoToString( SplineChar* sc, Undoes *undo )
+{
+    int idx = 0;
+    char filename[PATH_MAX];
+    snprintf(filename, PATH_MAX, "/tmp/fontforge-undo-to-string.sfd");
+    FILE* f = fopen( filename, "w" );
+    SFDDumpUndo( f, sc, undo, "Undo", idx );
+    fclose(f);
+    char* sfd = GFileReadAll( filename );
+    return sfd;
+}
+
+void dumpUndoChain( char* msg, SplineChar* sc, Undoes *undo )
+{
+    int idx = 0;
+
+    printf("dumpUndoChain(start) %s\n", msg );
+    for( ; undo; undo = undo->next, idx++ )
+    {
+	char* str = UndoToString( sc, undo );
+	printf("\n\n*** undo: %d\n%s\n", idx, str );
+    }
+    printf("dumpUndoChain(end) %s\n", msg );
+}
+
+    
