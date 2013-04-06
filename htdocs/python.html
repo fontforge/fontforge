@@ -273,10 +273,24 @@
 	namelist is specified the name will be taken from that.</TD>
     </TR>
     <TR>
+      <TD><CODE>UnicodeAnnotationFromLib</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Returns the Unicode Annotations for this value as described by www.unicode.org.
+	If there is no unicode annotation for this value, or no library available,
+	then return empty string "". It can execute with no current font.</TD>
+    </TR>
+    <TR>
       <TD><CODE>unicodeFromName</CODE></TD>
       <TD><CODE>(glyphname)</CODE></TD>
       <TD>Looks up glyph name in its dictionary and if it is associated with a
 	unicode code point returns that number. Otherwise it returns -1</TD>
+    </TR>
+    <TR>
+      <TD><CODE>UnicodeNameFromLib</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Returns the Unicode Name for this value as described by www.unicode.org.
+	If there is no unicode name for this value, or no library available,
+	then return empty string "". It can execute with no current font.</TD>
     </TR>
     <TR>
       <TD><CODE>version</CODE></TD>
