@@ -2951,7 +2951,7 @@ msgstr "Цвет обтравочного контура"
 
 #: ../fontforge/charview.c:205
 #, fuzzy
-msgid "The color of the an open path"
+msgid "The color of the open path"
 msgstr "Координата У выделенной точки близка к ascender height"
 
 #: ../fontforge/charview.c:206

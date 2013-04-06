@@ -47,6 +47,14 @@ extern void CheckIsScript(int argc, char *argv[]);
 extern char *AdobeStandardEncoding[256];
 extern int32 unicode_from_adobestd[256];
 
+/* unicode_nameannot - Deprecated, but kept for older programs to access. */
+#if _NO_LIBUNINAMESLIST
+struct unicode_nameannot {
+    const char *name, *annot;
+};
+#endif
+extern const struct unicode_nameannot * const *const *_UnicodeNameAnnot;
+
 extern int default_fv_font_size;
 extern int default_fv_antialias;
 extern int default_fv_bbsized;

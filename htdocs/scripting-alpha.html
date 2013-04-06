@@ -829,7 +829,7 @@ a[4][0] = "Nested array";
 	  <DT>
 	    <A NAME="CorrectDirection" HREF="elementmenu.html#Correct">CorrectDirection</A>([unlinkrefs])
 	  <DD>
-	    If the an argument is present it must be integral and is treated as a flag
+	    If an argument is present it must be integral and is treated as a flag
 	    controlling whether flipped references should be unlinked before the
 	    CorrectDirection code runs. If the argument is not present, or if it has
 	    a non-zero value then flipped references will be unlinked.
@@ -3176,12 +3176,24 @@ SetGasp([8,2,16,1,65535,3])
 	    Converts the argument to a unicode code point (a special type used in several
 	    commands). It can execute with no current font.
 	  <DT>
+	    <A NAME="UnicodeAnnotationFromLib">U</A>nicodeAnnotationFromLib(val)
+	  <DD>
+	    Returns the Unicode Annotations for this value as described by www.unicode.org.
+	    If there is no unicode annotation for this value, or no library available,
+	    then return empty string "". It can execute with no current font.
+	  <DT>
 	    <A NAME="UnicodeFromName">U</A>nicodeFromName(name)
 	  <DD>
 	    Looks the string "name" up in FontForge's database of commonly used glyph
 	    names and returns the unicode value associated with that name, or -1 if not
 	    found. This does <EM>not</EM> check the current font (if any). It can execute
 	    with no current font.
+	  <DT>
+	    <A NAME="UnicodeNameFromLib">U</A>nicodeNameFromLib(val)
+	  <DD>
+	    Returns the Unicode Name for this value as described by www.unicode.org.
+	    If there is no unicode name for this value, or no library available,
+	    then return empty string "". It can execute with no current font.
 	  <DT>
 	    <A NAME="UnlinkReference" HREF="editmenu.html#Unlink">UnlinkReference</A>
 	  <DD>
