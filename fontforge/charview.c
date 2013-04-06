@@ -4030,6 +4030,9 @@ return;
 	if( lastSel.lastselpt != fs.p->sp
 	    || lastSel.lastselcp != fs.p->spiro )
 	{
+	    // If we are in a collab session, we might like to preserve here
+	    // so that we can send a change of selected points to other members
+	    // of the group
 	    if( collabclient_inSession( cv ) )
 	    {
 		CVPreserveState(&cv->b);
@@ -6893,24 +6896,24 @@ static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
 
     Undoes *undo = cv->b.layerheads[cv->b.drawmode]->undoes;
 
-    printf("CVUndo() undo:%p u->next:%p\n", undo, ( undo ? undo->next : 0 ) );
+//    printf("CVUndo() undo:%p u->next:%p\n", undo, ( undo ? undo->next : 0 ) );
     if( undo )
     {
-	printf("undo:\n%s\n", UndoToString( cv->b.sc, undo ) );
-	{
-	    int len = 0;
-	    Undoes *p = undo;
-	    for( ; p; p = p->next )
-		len++;
-	    printf("u.len:%d\n", len );
-	}
-	{
-	    int len = 0;
-	    Undoes *p = cv->b.layerheads[cv->b.drawmode]->redoes;
-	    for( ; p; p = p->next )
-		len++;
-	    printf("r.len:%d\n", len );
-	}
+	/* printf("undo:\n%s\n", UndoToString( cv->b.sc, undo ) ); */
+	/* { */
+	/*     int len = 0; */
+	/*     Undoes *p = undo; */
+	/*     for( ; p; p = p->next ) */
+	/* 	len++; */
+	/*     printf("u.len:%d\n", len ); */
+	/* } */
+	/* { */
+	/*     int len = 0; */
+	/*     Undoes *p = cv->b.layerheads[cv->b.drawmode]->redoes; */
+	/*     for( ; p; p = p->next ) */
+	/* 	len++; */
+	/*     printf("r.len:%d\n", len ); */
+	/* } */
 	
 	if( collabclient_inSession( cv ) )
 	{
@@ -8089,8 +8092,6 @@ static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
     CharView *cv = (CharView *) d;
     int anya, l, cvlayer = CVLayer((CharViewBase *) cv);
 
-    printf("transfunc() cv:%p\n", cv );
-    
     if ( cv->b.layerheads[cv->b.drawmode]->undoes!=NULL &&
 	    cv->b.layerheads[cv->b.drawmode]->undoes->undotype==ut_tstate )
 	CVDoUndo(&cv->b);

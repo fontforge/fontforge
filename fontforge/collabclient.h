@@ -210,6 +210,12 @@ extern void collabclient_closeLocalServer( FontViewBase* fv );
 extern void collabclient_setGeneratingUndoForWire( int v );
 
 
+/**
+ * Every message send from the server has a monotonically increasing
+ * SequenceNumber. This function gets what that value is right now and
+ * can be used to check if any messages have been received from the
+ * server by calling again and comparing the return value.
+ */
 extern int64_t collabclient_getCurrentSequenceNumber(void* ccvp);
 
 #endif

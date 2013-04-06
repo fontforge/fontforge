@@ -59,6 +59,10 @@ int pref_collab_roundTripTimerMS = 2000;
 #define MSG_TYPE_SFD  "msg_type_sfd"
 #define MSG_TYPE_UNDO "msg_type_undo"
 
+//
+// Set to true if you want to see the raw SFD undo fragments which
+// are moving to/from the server.
+//
 #define DEBUG_SHOW_SFD_CHUNKS 0
 
 
@@ -709,6 +713,9 @@ FontViewBase* collabclient_sessionJoin( void* ccvp, FontView *fv )
     cc->sequence = 0;
     zstr_sendm (cc->snapshot, "ICANHAZ?");
     zstr_send  (cc->snapshot, SUBTREE);
+
+    // if we wait for timeoutMS millisec then we assume failure
+    // timeWaitedMS is used to keep track of how long we have waited
     kvmsg_t* lastSFD = 0;
     int timeWaitedMS = 0;
     int timeoutMS = pref_collab_sessionJoinTimeoutMS;
