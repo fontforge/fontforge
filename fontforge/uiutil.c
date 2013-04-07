@@ -221,12 +221,13 @@ static int SupportedLocale(char *fullspec,char *locale) {
 /* to see if this local matches the additional help message language. If so */
 /* then report back that there's another language available to use for help */
 /* NOTE: If Docs are not maintained very well, maybe comment-out lang here. */
-    static char *supported[] = { "ja", NULL }; /* list of other lang html */
     int i;
+    /* list languages in specific to generic order, ie: en_CA, en_GB, en... */
+    static char *supported[] = { "de","ja", NULL }; /* other html lang list */
 
     for ( i=0; supported[i]!=NULL; ++i ) {
 	if ( strcmp(locale,supported[i])==0 ) {
-	    strcat(fullspec,locale);
+	    strcat(fullspec,supported[i]);
 	    strcat(fullspec,"/");
 	    return( true );
 	}
@@ -246,24 +247,28 @@ static void AppendSupportedLocale(char *fullspec) {
     if ( loc==NULL ) loc = getenv("LANG");
     if ( loc==NULL ) loc = getenv("LC_MESSAGES");
     if ( loc==NULL )
-return;
+	return;
+
+    /* first, try checking entire string */
     strncpy(buffer,loc,sizeof(buffer));
-    if ( SupportedLocale(fullspec,buffer))
-return;
-    pt = strchr(buffer,'.');
-    if ( pt!=NULL ) {
+    if ( SupportedLocale(fullspec,buffer) )
+	return;
+
+    /* parse possible suffixes, such as .UTF-8, then try again */
+    if ( (pt=strchr(buffer,'.'))!=NULL ) {
 	*pt = '\0';
-	if ( SupportedLocale(fullspec,buffer))
-return;
+	if ( SupportedLocale(fullspec,buffer) )
+	    return;
     }
-    pt = strchr(buffer,'_');
-    if ( pt!=NULL ) {
+
+    /* parse possible suffixes such as _CA, _GB, and try again */
+    if ( (pt=strchr(buffer,'_'))!=NULL ) {
 	*pt = '\0';
-	if ( SupportedLocale(fullspec,buffer))
-return;
+	if ( SupportedLocale(fullspec,buffer) )
+	    return;
     }
 }
-    
+
 #if defined(__MINGW32__)
 #include <gresource.h>
 #include <windows.h>
@@ -313,7 +318,7 @@ void help(char *file) {
 
 void help(char *file) {
     char fullspec[PATH_MAX], *temp, *pt;
-    
+
     if ( browser[0]=='\0' )
 	findbrowser();
 #ifndef __CygWin
@@ -520,7 +525,7 @@ static int ErrChar(GEvent *e) {
 return( true );
     }
 return( false );
-}	
+}
 
 static int warnings_e_h(GWindow gw, GEvent *event) {
 
@@ -937,7 +942,7 @@ static void allow_events(void) {
     tinysleep(100);
     GDrawProcessPendingEvents(NULL);
 }
-    
+
 
 struct ui_interface gdraw_ui_interface = {
     UI_IError,
