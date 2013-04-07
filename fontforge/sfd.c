@@ -8042,7 +8042,7 @@ exit( 1 );
 	} else if ( strmatch(tok,"BeginChars:")==0 ) {
 	    int charcnt;
 	    getint(sfd,&charcnt);
-	    if (charcnt<enc->char_cnt && enc->char_cnt>0) {
+	    if (charcnt<enc->char_cnt) {
 		IError("SFD file specifies too few slots for its encoding.\n" );
 exit( 1 );
 	    }
