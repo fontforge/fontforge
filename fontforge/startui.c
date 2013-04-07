@@ -705,15 +705,15 @@ static int uses_local_x(int argc,char **argv) {
     for ( i=1; i<argc; ++i ) {
 	arg = argv[i];
 	if ( *arg=='-' ) {
-	    if ( arg[0]=='-' && arg[1]=='-' )
+	    if ( arg[0]=='-' && arg[1]=='-' && arg[2]!='\0')
 		++arg;
 	    if ( strcmp(arg,"-display")==0 )
 return( i+1<argc && strcmp(argv[i+1],":0")!=0 && strcmp(argv[i+1],":0.0")!=0? 2 : 0 );
-	    if ( strcmp(arg,"-c")==0 )
+	    if ( strcmp(argv[i],"-c")==0 )
 return( false );		/* we use a script string, no x display at all */
 	    if ( strcmp(arg,"-script")==0 )
 return( false );		/* we use a script, no x display at all */
-	    if ( strcmp(arg,"-")==0 )
+	    if ( strcmp(argv[i],"-")==0 )
 return( false );		/* script on stdin */
 	} else {
 	    /* Is this argument a script file ? */
@@ -1155,7 +1155,7 @@ exit( 0 );
 	char *pt = argv[i];
 
 	GDrawProcessPendingEvents(NULL);
-	if ( pt[0]=='-' && pt[1]=='-' )
+	if ( pt[0]=='-' && pt[1]=='-' && pt[2]!='\0')
 	    ++pt;
 	if ( strcmp(pt,"-new")==0 ) {
 	    FontNew();

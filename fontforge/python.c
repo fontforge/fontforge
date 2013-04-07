@@ -15557,7 +15557,6 @@ static void InvokeCollabSessionSetUpdatedCallback(PyFF_Font *self)
 {
     if( CollabSessionSetUpdatedCallback )
     {
-	int arg = 123;
 	PyObject *arglist;
 	PyObject *result;
 
