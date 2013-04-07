@@ -330,7 +330,7 @@ return;
 #endif
 
     if ( strstr(file,"http://")==NULL ) {
-	memset(fullspec,0,sizeof fullspec);
+	memset(fullspec,0,sizeof(fullspec));
 	if ( ! GFileIsAbsolute(file) ) {
 	    printf("...helpdir:%p\n", helpdir );
 	    if ( helpdir==NULL || *helpdir=='\0' ) {
@@ -356,14 +356,15 @@ return;
 	} else if ( pt!=NULL )
 	    *pt = '#';
     } else
-	strcpy(fullspec,file);
+	strncpy(fullspec,file,sizeof(fullspec));
 #if __CygWin
-    if ( (strstrmatch(browser,"/cygdrive")!=NULL || browser[0]=='\0') &&
+    if ( (browser[0]=='\0' || strstrmatch(browser,"/cygdrive")!=NULL ) && \
 		strstr(fullspec,":/")==NULL ) {
 	/* It looks as though the browser is a windows application, so we */
 	/*  should give it a windows file name */
 	char *pt, *tpt;
-	temp = galloc(1024);
+	if ( (temp=malloc(1024))==NULL )
+	    return;
 	cygwin_conv_to_full_win32_path(fullspec,temp);
 	for ( pt = fullspec, tpt = temp; *tpt && pt<fullspec+sizeof(fullspec)-3; *pt++ = *tpt++ )
 	    if ( *tpt=='\\' )
@@ -378,14 +379,15 @@ return;
     else
 #endif
     if ( strstr(fullspec,":/")==NULL ) {
-	char *t1 = galloc(strlen(fullspec)+strlen("file:")+20);
+	if ( (temp=malloc(strlen(fullspec)+strlen("file:")+20))==NULL )
+	    return;
 #if __CygWin
-	sprintf( t1, "file:\\\\\\%s", fullspec );
+	sprintf(temp,"file:\\\\\\%s",fullspec);
 #else
-	sprintf( t1, "file:%s", fullspec);
+	sprintf(temp,"file:%s",fullspec);
 #endif
-	strcpy(fullspec,t1);
-	free(t1);
+	strncpy(fullspec,temp,sizeof(fullspec));
+	free(temp);
     }
 #if 0 && __Mac
     /* Starting a Mac application is weird... system() can't do it */
@@ -395,36 +397,40 @@ return;
 	pt = strrchr(browser,'/');
 	if ( pt==NULL ) pt = browser-1;
 	++pt;
-	temp = galloc(strlen(pt)+strlen(fullspec) +
+	if ( (temp=malloc(strlen(pt)+strlen(fullspec) +
 		strlen( "osascript -l AppleScript -e \"Tell application \"\" to getURL \"\"\"" )+
-		20);
+		20))==NULL )
+	    return;;
 	/* this doesn't work on Max OS X.0 (osascript does not support -e) */
 	sprintf( temp, "osascript -l AppleScript -e \"Tell application \"%s\" to getURL \"%s\"\"",
 	    pt, fullspec);
 	system(temp);
 	ff_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
+	free(temp);
     } else {
 #elif __Mac
     /* This seems a bit easier... Thanks to riggle */
     if ( strcmp(browser,"open")==0 ) {
 	char *str = "DYLD_LIBRARY_PATH=\"\"; open ";
-	temp = galloc(strlen(str) + strlen(fullspec) + 20);
+	if ( (temp=malloc(strlen(str) + strlen(fullspec) + 20))==NULL )
+	    return;
 	sprintf( temp, "%s \"%s\" &", str, fullspec );
 	system(temp);
+	free(temp);
     } else {
 #elif __CygWin
     if ( browser[0]=='\0' ) {
 	do_windows_browser(fullspec);
-	temp = NULL;
     } else {
 #else
     {
 #endif
-	temp = galloc(strlen(browser) + strlen(fullspec) + 20);
+	if ( (temp=malloc(strlen(browser) + strlen(fullspec) + 20))==NULL )
+	    return;
 	sprintf( temp, strcmp(browser,"kfmclient openURL")==0 ? "%s \"%s\" &" : "\"%s\" \"%s\" &", browser, fullspec );
 	system(temp);
+	free(temp);
     }
-    free(temp);
 }
 #endif
 
