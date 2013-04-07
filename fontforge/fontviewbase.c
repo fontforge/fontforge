@@ -1475,13 +1475,13 @@ void FVRemoveUnused(FontViewBase *fv) {
     int gid, i;
     int flags = -1;
 
-    for ( i=map->enccount-1; i>=0 && ((gid=map->map[i])==-1 || !SCWorthOutputting(sf->glyphs[gid]));
+    for ( i=map->enccount-1;
+            i>=map->enc->char_cnt &&
+                ((gid=map->map[i])==-1 || !SCWorthOutputting(sf->glyphs[gid]));
 	    --i ) {
 	if ( gid!=-1 )
 	    SFRemoveGlyph(sf,sf->glyphs[gid],&flags);
 	map->enccount = i;
-	if ( map->enccount==map->enc->char_cnt )
-	    break;
     }
     /* We reduced the encoding, so don't really need to reallocate the selection */
     /*  array. It's just bigger than it needs to be. */
