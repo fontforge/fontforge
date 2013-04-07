@@ -156,9 +156,10 @@ return;
 static char browser[1025];
 
 static void findbrowser(void) {
+/* Find a browser to use so that help messages can be displayed */
 #if __CygWin
     static char *stdbrowsers[] = { "netscape.exe", "opera.exe", "galeon.exe", "kfmclient.exe",
-	"chrome.exe", "mozilla.exe", "mosaic.exe", /*"grail",*/
+	"firefox.exe", "chrome.exe", "seamonkey.exe", "mozilla.exe", "mosaic.exe", /*"grail",*/
 	"iexplore.exe",
 	/*"lynx.exe",*/
 #else
@@ -167,15 +168,18 @@ static void findbrowser(void) {
 /*  uses (understands?) environment variables any more, so BROWSER is a bit */
 /*  old-fashioned */
     static char *stdbrowsers[] = { "xdg-open", "x-www-browser", "htmlview",
-        "firefox", "mozilla", "konqueror", "opera", "google-chrome", "galeon",
-        "kfmclient", "netscape", "mosaic", /*"grail",*/ "lynx",
+#if __Mac
+	"safari",
+#endif
+	"firefox", "mozilla", "seamonkey", "iceweasel", "opera", "konqueror", "google-chrome",
+	"galeon", "kfmclient", "netscape", "mosaic", /*"grail",*/ "lynx",
 #endif
 	NULL };
     int i;
     char *path;
 
     if ( getenv("BROWSER")!=NULL ) {
-	strcpy(browser,getenv("BROWSER"));
+	strncpy(browser,getenv("BROWSER"),sizeof(browser));
 #if __CygWin			/* Get rid of any dos style names */
 	if ( isalpha(browser[0]) && browser[1]==':' && browser[2]=='\\' )
 	    cygwin_conv_to_full_posix_path(getenv("BROWSER"),browser);
@@ -213,46 +217,58 @@ return;
 }
 
 static int SupportedLocale(char *fullspec,char *locale) {
-    static char *supported[] = { "ja", NULL };
+/* If there's additional help files written for other languages, then check */
+/* to see if this local matches the additional help message language. If so */
+/* then report back that there's another language available to use for help */
+/* NOTE: If Docs are not maintained very well, maybe comment-out lang here. */
     int i;
+    /* list languages in specific to generic order, ie: en_CA, en_GB, en... */
+    static char *supported[] = { "de","ja", NULL }; /* other html lang list */
 
     for ( i=0; supported[i]!=NULL; ++i ) {
 	if ( strcmp(locale,supported[i])==0 ) {
-	    strcat(fullspec,locale);
+	    strcat(fullspec,supported[i]);
 	    strcat(fullspec,"/");
-return( true );
+	    return( true );
 	}
     }
-return( false );
+    return( false );
 }
 
 static void AppendSupportedLocale(char *fullspec) {
+/* Add Browser HELP for this local if there's more html docs for this local */
+
     /* KANOU has provided a japanese translation of the docs */
-    /* Edward Lee is working on traditional chinese */
+    /* Edward Lee is working on traditional chinese docs */
     const char *loc = getenv("LC_ALL");
     char buffer[40], *pt;
 
-    if ( loc==NULL ) loc = getenv("LC_MESSAGES");
+    if ( loc==NULL ) loc = getenv("LC_CTYPE");
     if ( loc==NULL ) loc = getenv("LANG");
+    if ( loc==NULL ) loc = getenv("LC_MESSAGES");
     if ( loc==NULL )
-return;
+	return;
+
+    /* first, try checking entire string */
     strncpy(buffer,loc,sizeof(buffer));
-    if ( SupportedLocale(fullspec,buffer))
-return;
-    pt = strchr(buffer,'.');
-    if ( pt!=NULL ) {
+    if ( SupportedLocale(fullspec,buffer) )
+	return;
+
+    /* parse possible suffixes, such as .UTF-8, then try again */
+    if ( (pt=strchr(buffer,'.'))!=NULL ) {
 	*pt = '\0';
-	if ( SupportedLocale(fullspec,buffer))
-return;
+	if ( SupportedLocale(fullspec,buffer) )
+	    return;
     }
-    pt = strchr(buffer,'_');
-    if ( pt!=NULL ) {
+
+    /* parse possible suffixes such as _CA, _GB, and try again */
+    if ( (pt=strchr(buffer,'_'))!=NULL ) {
 	*pt = '\0';
-	if ( SupportedLocale(fullspec,buffer))
-return;
+	if ( SupportedLocale(fullspec,buffer) )
+	    return;
     }
 }
-    
+
 #if defined(__MINGW32__)
 #include <gresource.h>
 #include <windows.h>
@@ -295,14 +311,15 @@ void help(char *file) {
 	/* using default browser */
 	ShellExecute(NULL, "open", p_uri, NULL, NULL, SW_SHOWDEFAULT);
 
-	if(p_uri != p_file) gfree(p_uri);
+	if(p_uri!=p_file) free(p_uri);
+	free(p_file);
     }
 }
 #else
 
 void help(char *file) {
     char fullspec[PATH_MAX], *temp, *pt;
-    
+
     if ( browser[0]=='\0' )
 	findbrowser();
 #ifndef __CygWin
@@ -509,7 +526,7 @@ static int ErrChar(GEvent *e) {
 return( true );
     }
 return( false );
-}	
+}
 
 static int warnings_e_h(GWindow gw, GEvent *event) {
 
@@ -926,7 +943,7 @@ static void allow_events(void) {
     tinysleep(100);
     GDrawProcessPendingEvents(NULL);
 }
-    
+
 
 struct ui_interface gdraw_ui_interface = {
     UI_IError,
