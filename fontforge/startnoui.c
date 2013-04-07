@@ -115,7 +115,7 @@ int fontforge_main( int argc, char **argv ) {
     CheckIsScript(argc,argv);		/* Will run the script and exit if it is a script */
     if ( argc==2 ) {
 	char *pt = argv[1];
-	if ( *pt=='-' && pt[1]=='-' ) ++pt;
+	if ( *pt=='-' && pt[1]=='-' && pt[2]!='\0') ++pt;
 	if ( strcmp(pt,"-usage")==0 )
 	    doscriptusage();
 	else if ( strcmp(pt,"-help")==0 )

@@ -103,6 +103,7 @@ char *unicode_name(int32 unienc) {
     return( name_data );
 }
 
+#ifndef _NO_LIBUNINAMESLIST
 static char *unicode_nicer(const char *from) {
 /* Return nicer looking unicode annotations by changing the '*' to bullet */
 /* and other markers to fancier utf8 style symbols. if empty, return NULL */
@@ -147,6 +148,7 @@ unicode_expand_c:
 
     return( to );
 }
+#endif
 
 char *unicode_annot(int32 unienc) {
 /* Return the unicode annotation for the value given from a data library. */

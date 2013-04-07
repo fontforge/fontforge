@@ -10100,7 +10100,7 @@ return( def_py );
 
 static void _CheckIsScript(int argc, char *argv[]) {
     int i, is_python = DefaultLangPython();
-    char *arg;
+    char *pt;
 
 #ifndef _NO_PYTHON
 /*# ifndef GWW_TEST*/
@@ -10110,15 +10110,15 @@ static void _CheckIsScript(int argc, char *argv[]) {
     if ( argc==1 )
 return;
     for ( i=1; i<argc; ++i ) {
-	arg = argv[i];
-	if ( *arg=='-' && arg[1]=='-' ) ++arg;
-	if ( strcmp(arg,"-nosplash")==0 )
+	pt = argv[i];
+	if ( *pt=='-' && pt[1]=='-' && pt[2]!='\0' ) ++pt;
+	if ( strcmp(pt,"-nosplash")==0 )
 	    /* Skip it */;
-	else if ( strcmp(argv[i],"-lang=py")==0 )
+	else if ( strcmp(pt,"-lang=py")==0 )
 	    is_python = true;
-	else if ( strcmp(argv[i],"-lang=ff")==0 || strcmp(argv[i],"-lang=pe")==0 )
+	else if ( strcmp(pt,"-lang=ff")==0 || strcmp(pt,"-lang=pe")==0 )
 	    is_python = false;
-	else if ( strcmp(argv[i],"-lang")==0 && i+1<argc &&
+	else if ( strcmp(pt,"-lang")==0 && i+1<argc &&
 		(strcmp(argv[i+1],"py")==0 || strcmp(argv[i+1],"ff")==0 || strcmp(argv[i+1],"pe")==0)) {
 	    ++i;
 	    is_python = strcmp(argv[i],"py")==0;
@@ -10133,10 +10133,10 @@ return;
 #elif !defined(_NO_FFSCRIPT)
 	    ProcessNativeScript(argc, argv,stdin);
 #endif
-	} else if ( strcmp(argv[i],"-script")==0 ||
-		strcmp(argv[i],"-dry")==0 || strcmp(argv[i],"-c")==0 ) {
+	} else if ( strcmp(pt,"-script")==0 ||
+		strcmp(pt,"-dry")==0 || strcmp(argv[i],"-c")==0 ) {
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
-	    if ( is_python==-1 && strcmp(argv[i],"-script")==0 )
+	    if ( is_python==-1 && strcmp(pt,"-script")==0 )
 		is_python = PythonLangFromExt(argv[i+1]);
 	    if ( is_python )
 		PyFF_Main(argc,argv,i);
