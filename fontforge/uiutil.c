@@ -311,7 +311,8 @@ void help(char *file) {
 	/* using default browser */
 	ShellExecute(NULL, "open", p_uri, NULL, NULL, SW_SHOWDEFAULT);
 
-	if(p_uri != p_file) gfree(p_uri);
+	if(p_uri!=p_file) free(p_uri);
+	free(p_file);
     }
 }
 #else
