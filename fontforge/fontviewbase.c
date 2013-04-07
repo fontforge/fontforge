@@ -1480,6 +1480,8 @@ void FVRemoveUnused(FontViewBase *fv) {
 	if ( gid!=-1 )
 	    SFRemoveGlyph(sf,sf->glyphs[gid],&flags);
 	map->enccount = i;
+	if ( map->enccount==map->enc->char_cnt )
+	    break;
     }
     /* We reduced the encoding, so don't really need to reallocate the selection */
     /*  array. It's just bigger than it needs to be. */
