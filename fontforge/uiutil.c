@@ -156,9 +156,10 @@ return;
 static char browser[1025];
 
 static void findbrowser(void) {
+/* Find a browser to use so that help messages can be displayed */
 #if __CygWin
     static char *stdbrowsers[] = { "netscape.exe", "opera.exe", "galeon.exe", "kfmclient.exe",
-	"chrome.exe", "mozilla.exe", "mosaic.exe", /*"grail",*/
+	"firefox.exe", "chrome.exe", "seamonkey.exe", "mozilla.exe", "mosaic.exe", /*"grail",*/
 	"iexplore.exe",
 	/*"lynx.exe",*/
 #else
@@ -167,8 +168,11 @@ static void findbrowser(void) {
 /*  uses (understands?) environment variables any more, so BROWSER is a bit */
 /*  old-fashioned */
     static char *stdbrowsers[] = { "xdg-open", "x-www-browser", "htmlview",
-        "firefox", "mozilla", "konqueror", "opera", "google-chrome", "galeon",
-        "kfmclient", "netscape", "mosaic", /*"grail",*/ "lynx",
+#if __Mac
+	"safari",
+#endif
+	"firefox", "mozilla", "seamonkey", "iceweasel", "opera", "konqueror", "google-chrome",
+	"galeon", "kfmclient", "netscape", "mosaic", /*"grail",*/ "lynx",
 #endif
 	NULL };
     int i;
@@ -213,27 +217,34 @@ return;
 }
 
 static int SupportedLocale(char *fullspec,char *locale) {
-    static char *supported[] = { "ja", NULL };
+/* If there's additional help files written for other languages, then check */
+/* to see if this local matches the additional help message language. If so */
+/* then report back that there's another language available to use for help */
+/* NOTE: If Docs are not maintained very well, maybe comment-out lang here. */
+    static char *supported[] = { "ja", NULL }; /* list of other lang html */
     int i;
 
     for ( i=0; supported[i]!=NULL; ++i ) {
 	if ( strcmp(locale,supported[i])==0 ) {
 	    strcat(fullspec,locale);
 	    strcat(fullspec,"/");
-return( true );
+	    return( true );
 	}
     }
-return( false );
+    return( false );
 }
 
 static void AppendSupportedLocale(char *fullspec) {
+/* Add Browser HELP for this local if there's more html docs for this local */
+
     /* KANOU has provided a japanese translation of the docs */
-    /* Edward Lee is working on traditional chinese */
+    /* Edward Lee is working on traditional chinese docs */
     const char *loc = getenv("LC_ALL");
     char buffer[40], *pt;
 
-    if ( loc==NULL ) loc = getenv("LC_MESSAGES");
+    if ( loc==NULL ) loc = getenv("LC_CTYPE");
     if ( loc==NULL ) loc = getenv("LANG");
+    if ( loc==NULL ) loc = getenv("LC_MESSAGES");
     if ( loc==NULL )
 return;
     strncpy(buffer,loc,sizeof(buffer));
