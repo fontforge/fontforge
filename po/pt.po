@@ -1,0 +1,821 @@
+# translation of FontForge.po
+# (Portuguese) Portuguese User Interface strings for FontForge.
+# Copyright (C) 2013 Michał Nowakowski
+# Please contact fontforge-devel list to share any corrections.
+# This file distributed under the same license as the FontForge package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: FontForge 2013\n"
+"Report-Msgid-Bugs-To: fontforge-devel@lists.sourceforge.net\n"
+"POT-Creation-Date: 2013-04-07 12:00-0800\n"
+"PO-Revision-Date: 2013-04-07 12:00-0800\n"
+"Last-Translator: Jose Da Silva <digital@joescat.com>\n"
+"Language-Team: \n"
+"Language: pt\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: ../fontforge/alignment.c:298 ../fontforge/anchorsaway.c:1233
+#: ../fontforge/combinations.c:1116 ../fontforge/cvhints.c:483 ../fontforge/cvhints.c:786
+#: ../fontforge/displayfonts.c:1132 ../fontforge/displayfonts.c:1633
+msgid "_Size:"
+msgstr "_Tamanho:"
+
+#: ../fontforge/alignment.c:344
+msgid "Space Regions"
+msgstr "Regiões Espaço"
+
+#: ../fontforge/alignment.c:355
+msgid "Coordinate along which to space"
+msgstr "Coordenar ao longo da qual o espaço"
+
+#: ../fontforge/alignment.c:363 ../fontforge/anchorsaway.c:1275
+#: ../fontforge/cvgetinfo.c:1236 ../fontforge/cvpalettes.c:437
+#: ../fontforge/cvpalettes.c:651 ../fontforge/nonlineartransui.c:344
+#: ../fontforge/nonlineartransui.c:582 ../fontforge/transform.c:361
+msgid "_X"
+msgstr "_X"
+
+#: ../fontforge/alignment.c:373 ../fontforge/anchorsaway.c:1321
+#: ../fontforge/cvgetinfo.c:1239 ../fontforge/cvpalettes.c:438
+#: ../fontforge/cvpalettes.c:659 ../fontforge/nonlineartransui.c:380
+#: ../fontforge/nonlineartransui.c:583 ../fontforge/transform.c:380
+msgid "_Y"
+msgstr "_Y"
+
+#: ../fontforge/alignment.c:394
+msgid "_Maximum distance between points in a region"
+msgstr "_distância _Máxima entre os pontos em uma região"
+
+#: ../fontforge/alignment.c:420 ../fontforge/anchorsaway.c:1370
+#: ../fontforge/autosave.c:142 ../fontforge/autowidth2dlg.c:281
+#: ../fontforge/basedlg.c:342 ../fontforge/basedlg.c:852 ../fontforge/bdfinfo.c:863
+#: ../fontforge/bitmapdlg.c:525 ../fontforge/charinfo.c:328 ../fontforge/charinfo.c:1095
+#: ../fontforge/charinfo.c:2306 ../fontforge/charinfo.c:4969 ../fontforge/charinfo.c:5248
+#: ../fontforge/charview.c:7338 ../fontforge/charview.c:8743
+#: ../fontforge/combinations.c:1182 ../fontforge/contextchain.c:2117
+#: ../fontforge/cvexportdlg.c:154 ../fontforge/cvgetinfo.c:590
+#: ../fontforge/cvgetinfo.c:703 ../fontforge/cvgetinfo.c:1624
+#: ../fontforge/cvgetinfo.c:3233 ../fontforge/cvgetinfo.c:3665
+#: ../fontforge/cvgridfit.c:356 ../fontforge/cvhints.c:566 ../fontforge/cvhints.c:807
+#: ../fontforge/cvimportdlg.c:351 ../fontforge/cvpalettes.c:578
+#: ../fontforge/cvpointer.c:1574 ../fontforge/cvstroke.c:1102
+#: ../fontforge/cvstroke.c:1800 ../fontforge/cvstroke.c:2349 ../fontforge/cvstroke.c:3312
+#: ../fontforge/cvundoes.c:2074 ../fontforge/cvundoes.c:2852 ../fontforge/deltaui.c:337
+#: ../fontforge/deltaui.c:1045 ../fontforge/displayfonts.c:482
+#: ../fontforge/effectsui.c:275 ../fontforge/effectsui.c:483 ../fontforge/fontinfo.c:2636
+#: ../fontforge/fontinfo.c:4050 ../fontforge/fontinfo.c:4080 ../fontforge/fontinfo.c:5051
+#: ../fontforge/fontinfo.c:6815 ../fontforge/fontinfo.c:10555
+#: ../fontforge/fontview.c:1048 ../fontforge/fontview.c:1957 ../fontforge/fontview.c:2219
+#: ../fontforge/fontview.c:3183 ../fontforge/fontview.c:5661 ../fontforge/fontview.c:7906
+#: ../fontforge/fvfontsdlg.c:220 ../fontforge/fvfontsdlg.c:399
+#: ../fontforge/fvimportbdf.c:1885 ../fontforge/fvmetricsdlg.c:211
+#: ../fontforge/gotodlg.c:244 ../fontforge/groupsdlg.c:1314 ../fontforge/groupsdlg.c:1549
+#: ../fontforge/histograms.c:968 ../fontforge/justifydlg.c:251
+#: ../fontforge/justifydlg.c:458 ../fontforge/justifydlg.c:774
+#: ../fontforge/justifydlg.c:970 ../fontforge/kernclass.c:2536
+#: ../fontforge/kernclass.c:2909 ../fontforge/layer2layer.c:292
+#: ../fontforge/lookupui.c:857 ../fontforge/lookupui.c:1144 ../fontforge/lookupui.c:1913
+#: ../fontforge/lookupui.c:2288 ../fontforge/lookupui.c:4860 ../fontforge/lookupui.c:5742
+#: ../fontforge/lookupui.c:6175 ../fontforge/lookupui.c:6552 ../fontforge/macencui.c:509
+#: ../fontforge/macencui.c:859 ../fontforge/macencui.c:1205 ../fontforge/math.c:783
+#: ../fontforge/math.c:1150 ../fontforge/math.c:1952 ../fontforge/metricsview.c:3094
+#: ../fontforge/mmdlg.c:684 ../fontforge/mmdlg.c:748 ../fontforge/mmdlg.c:1044
+#: ../fontforge/mmdlg.c:2542 ../fontforge/nonlineartransui.c:137
+#: ../fontforge/nonlineartransui.c:540 ../fontforge/openfontdlg.c:381
+#: ../fontforge/openfontdlg.c:704 ../fontforge/prefs.c:1658 ../fontforge/prefs.c:2467
+#: ../fontforge/prefs.c:2981 ../fontforge/problems.c:2634 ../fontforge/problems.c:4129
+#: ../fontforge/problems.c:5432 ../fontforge/savefontdlg.c:874
+#: ../fontforge/savefontdlg.c:1060 ../fontforge/scriptingdlg.c:313
+#: ../fontforge/scstylesui.c:279 ../fontforge/scstylesui.c:1724
+#: ../fontforge/scstylesui.c:2212 ../fontforge/scstylesui.c:2824
+#: ../fontforge/scstylesui.c:2995 ../fontforge/showatt.c:2842 ../fontforge/showatt.c:3329
+#: ../fontforge/simplifydlg.c:418 ../fontforge/statemachine.c:753
+#: ../fontforge/statemachine.c:1463 ../fontforge/tilepath.c:1210
+#: ../fontforge/tilepath.c:1880 ../fontforge/transform.c:733
+#: ../fontforge/ttfinstrsui.c:763 ../fontforge/ttfinstrsui.c:1461
+#: ../fontforge/ttfinstrsui.c:1600 ../fontforge/ttfinstrsui.c:1916
+#: ../gdraw/gaskdlg.c:1196 ../gdraw/gaskdlg.c:1233 ../gdraw/gaskdlg.c:1270
+#: ../gdraw/gaskdlg.c:1326 ../gdraw/gaskdlg.c:1587 ../gdraw/gaskdlg.c:1646
+#: ../gdraw/gcolor.c:673 ../gdraw/gfiledlg.c:123 ../gdraw/gmatrixedit.c:1227
+#: ../gdraw/gresedit.c:2327
+msgid "_OK"
+msgstr "_OK"
+
+#: ../fontforge/alignment.c:431 ../fontforge/anchorsaway.c:1381
+#: ../fontforge/autowidth2dlg.c:290 ../fontforge/basedlg.c:350 ../fontforge/basedlg.c:860
+#: ../fontforge/bdfinfo.c:874 ../fontforge/bitmapdlg.c:537 ../fontforge/charinfo.c:339
+#: ../fontforge/charinfo.c:887 ../fontforge/charinfo.c:897 ../fontforge/charinfo.c:1095
+#: ../fontforge/charinfo.c:1298 ../fontforge/charinfo.c:2315 ../fontforge/charinfo.c:4980
+#: ../fontforge/charinfo.c:5259 ../fontforge/charview.c:7355 ../fontforge/charview.c:8754
+#: ../fontforge/charview.c:8992 ../fontforge/combinations.c:1193
+#: ../fontforge/contextchain.c:2147 ../fontforge/cvexportdlg.c:166
+#: ../fontforge/cvexportdlg.c:309 ../fontforge/cvexportdlg.c:556
+#: ../fontforge/cvgetinfo.c:280 ../fontforge/cvgetinfo.c:601
+#: ../fontforge/cvgetinfo.c:1636 ../fontforge/cvgetinfo.c:3245
+#: ../fontforge/cvgetinfo.c:3677 ../fontforge/cvgetinfo.c:3765
+#: ../fontforge/cvgetinfo.c:3840 ../fontforge/cvgridfit.c:368 ../fontforge/cvhints.c:575
+#: ../fontforge/cvhints.c:819 ../fontforge/cvimportdlg.c:712
+#: ../fontforge/cvpalettes.c:589 ../fontforge/cvpointer.c:1584
+#: ../fontforge/cvstroke.c:1121 ../fontforge/cvstroke.c:1808 ../fontforge/cvstroke.c:2357
+#: ../fontforge/cvstroke.c:3323 ../fontforge/cvundoes.c:2853 ../fontforge/deltaui.c:347
+#: ../fontforge/displayfonts.c:493 ../fontforge/displayfonts.c:2182
+#: ../fontforge/effectsui.c:286 ../fontforge/effectsui.c:494
+#: ../fontforge/encodingui.c:152 ../fontforge/fontinfo.c:2636
+#: ../fontforge/fontinfo.c:4050 ../fontforge/fontinfo.c:4080 ../fontforge/fontinfo.c:4297
+#: ../fontforge/fontinfo.c:5061 ../fontforge/fontinfo.c:6159 ../fontforge/fontinfo.c:6395
+#: ../fontforge/fontinfo.c:6815 ../fontforge/fontinfo.c:6855 ../fontforge/fontinfo.c:6857
+#: ../fontforge/fontinfo.c:10566 ../fontforge/fontview.c:500 ../fontforge/fontview.c:1049
+#: ../fontforge/fontview.c:1965 ../fontforge/fontview.c:2227 ../fontforge/fontview.c:3193
+#: ../fontforge/fontview.c:3804 ../fontforge/fontview.c:4841 ../fontforge/fontview.c:4935
+#: ../fontforge/fontview.c:5662 ../fontforge/fontview.c:7914
+#: ../fontforge/fontviewbase.c:995 ../fontforge/fontviewbase.c:1634
+#: ../fontforge/fvfontsdlg.c:60 ../fontforge/fvfontsdlg.c:231
+#: ../fontforge/fvfontsdlg.c:410 ../fontforge/fvimportbdf.c:1886
+#: ../fontforge/fvmetricsdlg.c:220 ../fontforge/gotodlg.c:253
+#: ../fontforge/groupsdlg.c:1324 ../fontforge/groupsdlg.c:1559
+#: ../fontforge/histograms.c:977 ../fontforge/justifydlg.c:262
+#: ../fontforge/justifydlg.c:469 ../fontforge/justifydlg.c:785
+#: ../fontforge/justifydlg.c:981 ../fontforge/kernclass.c:2548
+#: ../fontforge/kernclass.c:2920 ../fontforge/layer2layer.c:301
+#: ../fontforge/lookupui.c:869 ../fontforge/lookupui.c:1155 ../fontforge/lookupui.c:1924
+#: ../fontforge/lookupui.c:2126 ../fontforge/lookupui.c:2299 ../fontforge/lookupui.c:3974
+#: ../fontforge/lookupui.c:4870 ../fontforge/lookupui.c:5750 ../fontforge/lookupui.c:5848
+#: ../fontforge/lookupui.c:6183 ../fontforge/lookupui.c:6560 ../fontforge/macencui.c:520
+#: ../fontforge/macencui.c:870 ../fontforge/macencui.c:1216 ../fontforge/math.c:791
+#: ../fontforge/math.c:1158 ../fontforge/metricsview.c:2259
+#: ../fontforge/metricsview.c:2676 ../fontforge/metricsview.c:3102
+#: ../fontforge/mmdlg.c:694 ../fontforge/mmdlg.c:758 ../fontforge/mmdlg.c:1054
+#: ../fontforge/mmdlg.c:2576 ../fontforge/nonlineartransui.c:148
+#: ../fontforge/nonlineartransui.c:551 ../fontforge/openfontdlg.c:392
+#: ../fontforge/openfontdlg.c:741 ../fontforge/parsettf.c:5505 ../fontforge/prefs.c:1668
+#: ../fontforge/prefs.c:2479 ../fontforge/problems.c:4141 ../fontforge/savefont.c:754
+#: ../fontforge/savefontdlg.c:885 ../fontforge/savefontdlg.c:1072
+#: ../fontforge/savefontdlg.c:1481 ../fontforge/savefontdlg.c:1672
+#: ../fontforge/savefontdlg.c:2379 ../fontforge/scriptingdlg.c:325
+#: ../fontforge/scstylesui.c:290 ../fontforge/scstylesui.c:1745
+#: ../fontforge/scstylesui.c:2223 ../fontforge/scstylesui.c:2832
+#: ../fontforge/scstylesui.c:3006 ../fontforge/searchview.c:842
+#: ../fontforge/showatt.c:3339 ../fontforge/simplifydlg.c:430
+#: ../fontforge/splinechar.c:1015 ../fontforge/statemachine.c:763
+#: ../fontforge/statemachine.c:1474 ../fontforge/tilepath.c:1218
+#: ../fontforge/tilepath.c:1888 ../fontforge/transform.c:754
+#: ../fontforge/ttfinstrsui.c:773 ../fontforge/ttfinstrsui.c:1472
+#: ../fontforge/ttfinstrsui.c:1601 ../fontforge/ttfinstrsui.c:1927
+#: ../gdraw/gaskdlg.c:1197 ../gdraw/gaskdlg.c:1234 ../gdraw/gaskdlg.c:1588
+#: ../gdraw/gaskdlg.c:1647 ../gdraw/gcolor.c:682 ../gdraw/gfilechooser.c:961
+#: ../gdraw/gfiledlg.c:153 ../gdraw/gmatrixedit.c:1240 ../gdraw/gresedit.c:2343
+#: ../gdraw/gsavefiledlg.c:289
+msgid "_Cancel"
+msgstr "_Cancelar"
+
+#: ../fontforge/alignment.c:676
+msgid "Not enough lines"
+msgstr "Nem linhas suficientes"
+
+#: ../fontforge/alignment.c:679
+msgid "Can't Parallel"
+msgstr "Não pode Paralela"
+
+#: ../fontforge/alignment.c:679
+msgid "These two lines share a common endpoint, I can't make them parallel"
+msgstr "Estas duas linhas de compartilhar um final comum, não posso fazê-los em paralelo"
+
+#: ../fontforge/anchorsaway.c:181
+msgid "Bases"
+msgstr "Bases"
+
+#: ../fontforge/anchorsaway.c:181
+msgid "Exits"
+msgstr "Sai"
+
+#: ../fontforge/anchorsaway.c:188
+msgid "Entries"
+msgstr "Entradas"
+
+#: ../fontforge/anchorsaway.c:188
+msgid "Marks"
+msgstr "Marcas"
+
+#: ../fontforge/anchorsaway.c:195
+msgid "Add Base Anchor..."
+msgstr "Adicionar Anchor Base..."
+
+#: ../fontforge/anchorsaway.c:195
+msgid "Add Exit Anchor..."
+msgstr "Adicionar Acabamento âncora..."
+
+#: ../fontforge/anchorsaway.c:199
+msgid "Add Entry Anchor..."
+msgstr "Adicionar âncora de Partida..."
+
+#: ../fontforge/anchorsaway.c:199
+msgid "Add Mark Anchor..."
+msgstr "Adicionar âncora Marca..."
+
+#: ../fontforge/anchorsaway.c:210
+#, c-format
+msgid "Anchor Control for class %.100s in glyph %.100s as %.20s"
+msgstr "Controle de âncora para a classe %.100s em %.100s glifo como %.20s"
+
+#: ../fontforge/anchorsaway.c:212
+msgid "mark"
+msgstr "marca"
+
+#: ../fontforge/anchorsaway.c:213
+msgid "cursive entry"
+msgstr "início cursiva"
+
+#: ../fontforge/anchorsaway.c:214
+msgid "cursive exit"
+msgstr "acabamento cursiva"
+
+#: ../fontforge/anchorsaway.c:215
+msgid "base"
+msgstr "base"
+
+#: ../fontforge/anchorsaway.c:216
+msgid "Anchor Control"
+msgstr "Controlo âncora"
+
+#: ../fontforge/anchorsaway.c:736
+msgid "Detaching Anchor Point"
+msgstr "Destacando Ponto de Ancoragem"
+
+#: ../fontforge/anchorsaway.c:736
+#, c-format
+msgid ""
+"This anchor was attached to point %d, but that's not a point I can move. I'm detaching "
+"the anchor from the point."
+msgstr ""
+"Esta âncora foi anexado ao ponto %d, mas isso não é um ponto que pode se mover. "
+"FontForge retirar a âncora do ponto."
+
+#: ../fontforge/anchorsaway.c:823
+msgid "Corrections must be between -128 and 127 (and should be smaller)"
+msgstr "Correcções devem estar entre -128 e 127 (e deve ser menor)"
+
+#: ../fontforge/anchorsaway.c:823 ../fontforge/charview.c:8591
+msgid "Out of Range"
+msgstr "Fora da Faixa"
+
+#: ../fontforge/anchorsaway.c:980
+msgid "Please identify a glyph by name, and FontForge will add an anchor to that glyph."
+msgstr "Por favor, identifique um glifo pelo nome, e FontForge irá adicionar uma âncora para que glifo."
+
+#: ../fontforge/anchorsaway.c:980
+msgid "Provide a glyph name"
+msgstr "Escreva um nome para o glifo"
+
+#: ../fontforge/anchorsaway.c:987
+msgid "Non-existant glyph"
+msgstr "Glifo não existe"
+
+#: ../fontforge/anchorsaway.c:987
+#, c-format
+msgid "The glyph, %.80s, is not in the font"
+msgstr "O glifo %.80s não se encontra na fonte"
+
+#: ../fontforge/anchorsaway.c:1004
+msgid "Duplicate Anchor Class"
+msgstr "Classe âncora Duplicado"
+
+#: ../fontforge/anchorsaway.c:1004
+#, c-format
+msgid "The glyph, %.80s, already contains an anchor in this class, %.80s."
+msgstr "O glifo, %.80s, já contém uma âncora nesta classe, %.80s."
+
+#: ../fontforge/anchorsaway.c:1198 ../fontforge/lookupui.c:2326
+msgid "Anchor Control..."
+msgstr "Controle de âncora..."
+
+#: ../fontforge/anchorsaway.c:1252
+msgid ""
+"The size at which the current glyph is rasterized.\n"
+"For small pixelsize you may want to use the magnification\n"
+"factor below to get a clearer view.\n"
+"\n"
+"The pulldown list contains the pixelsizes at which there\n"
+"are device table corrections."
+msgstr ""
+"O tamanho em que o glifo atual é rasterizado.\n"
+"Para pixelsize pequena que você pode querer usar o fator\n"
+"de ampliação abaixo para obter uma visão mais clara.\n"
+"\n"
+"A lista contém os tamanhos de pixels suspenso em que há\n"
+"correções de tabela do dispositivo."
+
+#. GT: Short for: Magnification
+#. GT: Short for "Magnification"
+#: ../fontforge/anchorsaway.c:1257 ../fontforge/lookupui.c:4827
+msgid "Mag:"
+msgstr "Amp:"
+
+#: ../fontforge/anchorsaway.c:1271
+msgid ""
+"The glyph is rasterized at the size above, but it\n"
+"may be difficult to see the alignment errors\n"
+"that can happen at small pixelsizes. This allows\n"
+"you to expand each pixel to show potential problems\n"
+"better."
+msgstr ""
+"O glifo é rasterizada com o tamanho acima, mas pode\n"
+"ser difícil de ver os erros de alinhamento que podem\n"
+"acontecer em tamanhos de pixels pequenos. Isso\n"
+"permite que você expanda cada pixel para mostrar os\n"
+"potenciais problemas melhor."
+
+#: ../fontforge/anchorsaway.c:1294
+msgid "The X coordinate of the anchor point in this glyph"
+msgstr "A coordenada X do ponto de âncora neste glifo"
+
+#. GT: Short for Correction
+#: ../fontforge/anchorsaway.c:1299 ../fontforge/anchorsaway.c:1345
+msgid "Cor:"
+msgstr "Cor:"
+
+#: ../fontforge/anchorsaway.c:1304 ../fontforge/anchorsaway.c:1350
+msgid ""
+"Correction in pixels to the horizontal positioning of this anchor point\n"
+"when rasterizing at the given pixelsize.\n"
+"(Lives in a Device Table)"
+msgstr ""
+"Correcção em pixels para o posicionamento horizontal do ponto de\n"
+"ancoragem quando rasterizing no pixelsize dado.\n"
+"(Responsabilidade pertence ao vídeo do computador)"
+
+#: ../fontforge/anchorsaway.c:1317
+msgid ""
+"This is the number of pixels by which the anchor\n"
+"should be moved horizontally when the glyph is\n"
+"rasterized at the above size.  This information\n"
+"is part of the device table for this anchor.\n"
+"Device tables are particularly important at small\n"
+"pixelsizes where rounding errors will have a\n"
+"proportionally greater effect."
+msgstr ""
+"Este é o número de pixels em que a âncora deve ser\n"
+"movido horizontalmente quando o glifo é rasterizada\n"
+"com o tamanho acima. Esta informação faz parte da\n"
+"tabela de dispositivo para este âncora. Tabelas de\n"
+"dispositivos são particularmente importantes em\n"
+"tamanhos de pixel pequenos erros de arredondamento,\n"
+"onde terá um efeito proporcionalmente maior."
+
+#: ../fontforge/anchorsaway.c:1340
+msgid "The Y coordinate of the anchor point in this glyph"
+msgstr "A coordenada Y do ponto de âncora neste glifo"
+
+#: ../fontforge/anchorsaway.c:1363
+msgid ""
+"This is the number of pixels by which the anchor\n"
+"should be moved vertically when the glyph is\n"
+"rasterized at the above size.  This information\n"
+"is part of the device table for this anchor.\n"
+"Device tables are particularly important at small\n"
+"pixelsizes where rounding errors will have a\n"
+"proportionally greater effect."
+msgstr ""
+"Este é o número de pixels em que a âncora deve\n"
+"ser deslocado verticalmente quando o glifo é\n"
+"rasterizada com o tamanho acima. Esta informação\n"
+"faz parte da tabela de dispositivo para este âncora.\n"
+"Tabelas de dispositivos são particularmente\n"
+"importantes no pequeno tamanhos de pixel onde os\n"
+"erros de arredondamento terá um efeito\n"
+"proporcionalmente maior."
+
+#: ../fontforge/autosave.c:144
+msgid "Recovery Complete"
+msgstr "Recuperação de Falhas Completa"
+
+#: ../fontforge/autosave.c:144
+#, c-format
+msgid ""
+"Your file %s has been recovered.\n"
+"You must now Save your file to continue working on it."
+msgstr ""
+"Seu arquivo %s foi recuperado.\n"
+"Agora, guarda o seu arquivo para continuar usando nele."
+
+#: ../fontforge/autotrace.c:535 ../fontforge/autotrace.c:536 ../fontforge/autotrace.c:739
+#: ../fontforge/autotrace.c:740
+msgid "Additional arguments for autotrace program:"
+msgstr "Os argumentos adicionais para programa autotrace:"
+
+#: ../fontforge/autotrace.c:552 ../fontforge/autotrace.c:588 ../fontforge/autotrace.c:763
+msgid "Can't find autotrace"
+msgstr "Não é possível encontrar autotrace"
+
+#: ../fontforge/autotrace.c:552 ../fontforge/autotrace.c:588 ../fontforge/autotrace.c:763
+msgid ""
+"Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n"
+"  http://sf.net/projects/autotrace/"
+msgstr ""
+"Não pode encontrar o programa autotrace (definir a variável AUTOTRACE) ou obter o programa:\n"
+"  http://sf.net/projects/autotrace/"
+
+#: ../fontforge/autotrace.c:565 ../fontforge/autotrace.c:811
+msgid "Autotracing..."
+msgstr "Grava..."
+
+#: ../fontforge/autotrace.c:585
+msgid "Nothing to trace"
+msgstr "Nada Gravado"
+
+#: ../fontforge/autotrace.c:760
+msgid "Can't find mf"
+msgstr "Não é possível encontrar mf"
+
+#: ../fontforge/autotrace.c:760
+msgid ""
+"Can't find mf program -- metafont (set MF environment variable) or download from:\n"
+"  http://www.tug.org/\n"
+"  http://www.ctan.org/\n"
+"It's part of the TeX distribution"
+msgstr ""
+"Não pode encontrar o programa mf ― metafont (definir a variável MF) ou obter o programa:\n"
+"  http://www.tug.org/\n"
+"  http://www.ctan.org/\n"
+"Que pertence programa TeX"
+
+#: ../fontforge/autotrace.c:774
+msgid "Can't create temporary directory"
+msgstr "Não é possível criar diretório temporário"
+
+#: ../fontforge/autotrace.c:806 ../fontforge/autotrace.c:826 ../fontforge/autotrace.c:829
+#: ../fontforge/autotrace.c:831
+msgid "Can't run mf"
+msgstr "Não é possível executar programa mf"
+
+#: ../fontforge/autotrace.c:806 ../fontforge/autotrace.c:826
+msgid "Could not read (or perhaps find) mf output file"
+msgstr "Não foi possível ler (ou talvez encontrar) mf arquivo de resultado"
+
+#: ../fontforge/autotrace.c:829
+msgid "MetaFont exited with an error"
+msgstr "MetaFont saiu com um erro"
+
+#: ../fontforge/autowidth.c:233 ../fontforge/autowidth.c:240
+#, c-format
+msgid "AutoWidth failure on %s\n"
+msgstr "Falha de largura automática em %s\n"
+
+#: ../fontforge/autowidth.c:1220 ../fontforge/encoding.c:587
+#: ../fontforge/fvimportbdf.c:2048 ../fontforge/palmfonts.c:394
+#: ../fontforge/winfonts.c:938
+msgid "Couldn't open file"
+msgstr "Não foi possível abrir o arquivo"
+
+#: ../fontforge/autowidth.c:1220 ../fontforge/encoding.c:587
+#: ../fontforge/fvimportbdf.c:2048 ../fontforge/palmfonts.c:394
+#, c-format
+msgid "Couldn't open file %.200s"
+msgstr "Não foi possível abrir o arquivo %.200s"
+
+#: ../fontforge/autowidth.c:1243
+msgid "No Kern Pairs"
+msgstr "Bem Pares de Kerning"
+
+#: ../fontforge/autowidth.c:1243
+#, c-format
+msgid "No kerning pairs found in %.200s"
+msgstr "Não pares de kerning encontrado em %.200s"
+
+#: ../fontforge/autowidth2.c:495 ../fontforge/autowidth2.c:567
+#: ../fontforge/autowidth2.c:642 ../fontforge/autowidth2.c:759
+#: ../fontforge/autowidth2.c:897
+#, c-format
+msgid "%s has a bounding box which is too big for this algorithm to work. Ignored."
+msgstr "%s tem uma caixa delimitadora que é muito grande para este algoritmo para trabalhar. Ignorados."
+
+#: ../fontforge/autowidth2.c:495 ../fontforge/autowidth2.c:567
+#: ../fontforge/autowidth2.c:642 ../fontforge/autowidth2.c:759
+#: ../fontforge/autowidth2.c:897
+msgid "Glyph too big"
+msgstr "Glifos muito grande"
+
+#: ../fontforge/autowidth2dlg.c:60 ../fontforge/kernclass.c:236
+#: ../fontforge/kernclass.c:286 ../fontforge/kernclass.c:1195
+#: ../fontforge/lookupui.c:2855 ../fontforge/lookupui.c:3440 ../fontforge/lookupui.c:3940
+#: ../fontforge/lookupui.c:5418
+msgid "Separation"
+msgstr "Espaço"
+
+#: ../fontforge/autowidth2dlg.c:61
+msgid "Min Bearing"
+msgstr "Rolamento Mínimo"
+
+#: ../fontforge/autowidth2dlg.c:62
+msgid "Max Bearing"
+msgstr "Rolamento Máxima"
+
+#: ../fontforge/autowidth2dlg.c:63 ../fontforge/charinfo.c:1374
+#: ../fontforge/cvpointer.c:1385 ../fontforge/cvstroke.c:1986
+#: ../fontforge/cvstroke.c:2102 ../fontforge/math.c:129 ../fontforge/tilepath.c:1547
+#: ../fontforge/tilepath.c:1588 ../fontforge/tilepath.c:1625
+msgid "Height"
+msgstr "Altura"
+
+#: ../fontforge/autowidth2dlg.c:64
+msgid "Loop Count"
+msgstr "Conta de Repetição"
+
+#: ../fontforge/autowidth2dlg.c:136
+msgid "Auto Width"
+msgstr "Largura Automática"
+
+#: ../fontforge/autowidth2dlg.c:149
+msgid ""
+"FontForge will attempt to adjust the left and right\n"
+"sidebearings of the selected glyphs so that the average\n"
+"separation between glyphs in a script will be the\n"
+"specified amount. You may also specify a minimum and\n"
+"maximum value for each glyph's sidebearings."
+msgstr ""
+"FontForge tentará ajustar os rolamentos laterais\n"
+"esquerda e direita dos glifos seleccionados de modo que\n"
+"a distância média entre os glifos em um script será o\n"
+"valor especificado. Você também pode especificar um\n"
+"valor mínimo e máximo para cada glifo rolamentos laterais."
+
+#: ../fontforge/autowidth2dlg.c:161
+msgid "_Separation:"
+msgstr "E_spaço:"
+
+#: ../fontforge/autowidth2dlg.c:188
+msgid "_Min:"
+msgstr "_Mín:"
+
+#: ../fontforge/autowidth2dlg.c:213
+msgid "Ma_x:"
+msgstr "Má_x:"
+
+#: ../fontforge/autowidth2dlg.c:237 ../fontforge/cvpointer.c:1552
+msgid "_Height:"
+msgstr "_H Altura:"
+
+#: ../fontforge/autowidth2dlg.c:256
+msgid "_Loops:"
+msgstr "_L Repetição:"
+
+#: ../fontforge/basedlg.c:71 ../fontforge/fontinfo.c:1270 ../fontforge/fontinfo.c:1275
+#: ../fontforge/fontinfo.c:1280 ../fontforge/justifydlg.c:51 ../fontforge/showatt.c:1135
+#: ../fontforge/showatt.c:1282
+msgid "Language"
+msgstr "Linguagem"
+
+#: ../fontforge/basedlg.c:72 ../fontforge/basedlg.c:78 ../fontforge/basedlg.c:154
+#: ../fontforge/charinfo.c:4806 ../fontforge/cvgetinfo.c:513
+msgid "Min"
+msgstr "Min"
+
+#: ../fontforge/basedlg.c:73 ../fontforge/basedlg.c:79 ../fontforge/basedlg.c:155
+#: ../fontforge/charinfo.c:4823 ../fontforge/cvgetinfo.c:520
+msgid "Max"
+msgstr "Máx"
+
+#: ../fontforge/basedlg.c:77 ../fontforge/lookupui.c:698 ../fontforge/macencui.c:1111
+msgid "Feature"
+msgstr "Função"
+
+#: ../fontforge/basedlg.c:154
+msgid "Min (descent)"
+msgstr "Mín (descida)"
+
+#: ../fontforge/basedlg.c:155
+msgid "Max (ascent)"
+msgstr "Máx (subida)"
+
+#: ../fontforge/basedlg.c:300
+#, c-format
+msgid "Horizontal Extents for %c%c%c%c"
+msgstr "Extensões Horizontais para %c%c%c%c"
+
+#: ../fontforge/basedlg.c:300
+#, c-format
+msgid "Vertical Extents for %c%c%c%c"
+msgstr "Extensões Verticais para %c%c%c%c"
+
+#: ../fontforge/basedlg.c:318
+msgid ""
+"Set the minimum and maximum values by which\n"
+"the glyphs in this script extend below and\n"
+"above the baseline. This may vary by language"
+msgstr ""
+"Definir os valores mínimo e máximo pelo qual\n"
+"os glifos neste script estendem abaixo e acima\n"
+"da linha de base. Isso pode variar de acordo\n"
+"com a linguagem."
+
+#: ../fontforge/basedlg.c:323
+msgid ""
+"Set the minimum and maximum values by which\n"
+"the glyphs in this script extend below and\n"
+"above the baseline when modified by a feature."
+msgstr ""
+"Definir os valores mínimo e máximo pelo qual\n"
+"os glifos neste script estendem abaixo e acima\n"
+"da linha de base quando modificado por uma função."
+
+#: ../fontforge/basedlg.c:375
+msgid "Set Feature Extents"
+msgstr "Definir Extensões de Função"
+
+#. GT: English uses "script" to mean a general writing system (latin, greek, kanji)
+#. GT: and the cursive handwriting style. Here we mean the general writing system.
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Script", ignore "writing system|"
+#. GT: English uses "script" to mean a general writing style (latin, greek, kanji)
+#. GT: and the cursive handwriting style. Here we mean the general writing system.
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Script", ignore "writing system|"
+#. GT: English uses "script" to me a general writing style (latin, greek, kanji)
+#. GT: and the cursive handwriting style. Here we mean the general writing system.
+#: ../fontforge/basedlg.c:412 ../fontforge/justifydlg.c:62 ../fontforge/lookupui.c:693
+#: ../fontforge/showatt.c:1871 ../fontforge/showatt.c:1909
+msgid "writing system|Script"
+msgstr "sistema de escrita|Script"
+
+#: ../fontforge/basedlg.c:413
+msgid "Default Baseline"
+msgstr "Linha de Base Default"
+
+#: ../fontforge/basedlg.c:616
+msgid "Bad default baseline"
+msgstr "Linha de base ruim default"
+
+#: ../fontforge/basedlg.c:616
+#, c-format
+msgid ""
+"Script '%c%c%c%c' claims baseline '%c%c%c%c' as its default, but that baseline is not "
+"currently active."
+msgstr ""
+"'%c%c%c%c' script afirma linha de base '%c%c%c%c' como ruim, mas essa linha de base "
+"não está ativo no momento."
+
+#: ../fontforge/basedlg.c:722
+msgid "Horizontal Baselines"
+msgstr "Linhas de Base Horizontais"
+
+#: ../fontforge/basedlg.c:722
+msgid "Vertical Baselines"
+msgstr "Linhas de Base Verticais"
+
+#: ../fontforge/basedlg.c:740
+msgid ""
+"From the list below, select the baselines for which you\n"
+"will provide data."
+msgstr "Da lista abaixo, selecione as linhas de base para que você vai dar de dados."
+
+#: ../fontforge/basedlg.c:748
+msgid "hang"
+msgstr "pendura"
+
+#: ../fontforge/basedlg.c:753
+msgid "Indic (& Tibetan) hanging baseline"
+msgstr "Indic (& Tibetano) linha de base aérea"
+
+#: ../fontforge/basedlg.c:759
+msgid "icfb"
+msgstr "icfb"
+
+#: ../fontforge/basedlg.c:764
+msgid "Ideographic character face bottom edge baseline"
+msgstr "Letras ideográfica enfrenta linha de base borda baixa"
+
+#: ../fontforge/basedlg.c:770
+msgid "icft"
+msgstr "icft"
+
+#: ../fontforge/basedlg.c:775
+msgid "Ideographic character face top edge baseline"
+msgstr "Letras ideográfica enfrenta linha de base borda alta"
+
+#: ../fontforge/basedlg.c:781
+msgid "ideo"
+msgstr "ideo"
+
+#: ../fontforge/basedlg.c:786
+msgid "Ideographic em-box bottom edge baseline"
+msgstr "Ideographic em-box bottom edge baseline"
+
+#: ../fontforge/basedlg.c:792
+msgid "idtp"
+msgstr "idtp"
+
+#: ../fontforge/basedlg.c:797
+msgid "Ideographic em-box top edge baseline"
+msgstr "Ideographic em-box top edge baseline"
+
+#: ../fontforge/basedlg.c:803
+msgid "math"
+msgstr "matemática"
+
+#: ../fontforge/basedlg.c:808
+msgid "Mathematical centerline"
+msgstr "Linha central matemático"
+
+#: ../fontforge/basedlg.c:814
+msgid "romn"
+msgstr "romn"
+
+#: ../fontforge/basedlg.c:819
+msgid "Baseline used for Latin, Greek, Cyrillic text."
+msgstr "Linha de base utilizada para o texto Latim, Grego, Cirílico."
+
+#: ../fontforge/basedlg.c:832
+msgid ""
+"If any of the above baselines are active then you should\n"
+"specify which one is the default baseline for each script\n"
+"in the font, and specify how to position glyphs in this\n"
+"script relative to all active baselines"
+msgstr ""
+"Se qualquer uma das linhas de base acima são ativos,\n"
+"então você deve especificar qual é a base padrão para\n"
+"cada script na fonte, e especificar como posicionar\n"
+"glifos neste relativa script para todas as linhas de\n"
+"base de ativos"
+
+#: ../fontforge/basedlg.c:885
+msgid "Set Extents"
+msgstr "Definir Extensões"
+
+#: ../fontforge/bdfinfo.c:171
+msgid "All characters in the value must be in ASCII"
+msgstr "Todas as letras no valor deve estar em ASCII"
+
+#: ../fontforge/bdfinfo.c:171
+msgid "Not ASCII"
+msgstr "Nem e letras ASCII"
+
+#: ../fontforge/bdfinfo.c:178 ../fontforge/bitmapview.c:1940 ../fontforge/cvstroke.c:2527
+#: ../fontforge/deltaui.c:67 ../fontforge/deltaui.c:98 ../fontforge/deltaui.c:101
+#: ../fontforge/deltaui.c:104 ../fontforge/fontview.c:1155 ../fontforge/fontview.c:2108
+#: ../fontforge/fontview.c:3333 ../fontforge/fontview.c:3872 ../fontforge/fontview.c:4806
+#: ../fontforge/fvimportbdf.c:1875 ../fontforge/kernclass.c:370
+#: ../fontforge/macencui.c:726 ../fontforge/macencui.c:1026 ../fontforge/prefs.c:1530
+#: ../fontforge/prefs.c:1536 ../fontforge/scstylesui.c:2301
+#: ../fontforge/ttfinstrsui.c:1039 ../fontforge/ttfinstrsui.c:1082
+#: ../gdraw/gresedit.c:755 ../gdraw/gresedit.c:786 ../gdraw/gresedit.c:798
+#: ../gdraw/gresedit.c:878 ../gdraw/gresedit.c:904 ../gdraw/gresedit.c:918
+msgid "Bad Number"
+msgstr "Número Ruim"
+
+#: ../fontforge/bdfinfo.c:178
+msgid "Must be a number"
+msgstr "Deve ser um número"
+
+#. GT: I am told that the use of "|" to provide contextual information in a
+#. GT: gettext string is non-standard. However it is documented in section
+#. GT: 10.2.6 of http://www.gnu.org/software/gettext/manual/html_mono/gettext.html
+#. GT:
+#. GT: Anyway here the word "Property" is used to provide context for "New..." and
+#. GT: the translator should only translate "New...". This is necessary because in
+#. GT: French (or any language where adjectives agree in gender/number with their
+#. GT: nouns) there are several different forms of "New" and the one chose depends
+#. GT: on the noun in question.
+#. GT: A french translation might be either msgstr "Nouveau..." or msgstr "Nouvelle..."
+#. GT:
+#. GT: I expect there are more cases where one english word needs to be translated
+#. GT: by several different words in different languages (in Japanese a different
+#. GT: word is used for the latin script and the latin language) and that you, as
+#. GT: a translator may need to ask me to disambiguate more strings. Please do so:
+#. GT:      <pfaedit@users.sourceforge.net>
+#: ../fontforge/bdfinfo.c:537
+msgid "Property|New..."
+msgstr "Propriedade|Novo..."
+
+#: ../fontforge/bdfinfo.c:588 ../fontforge/statemachine.c:214
+msgid "No Change"
+msgstr "Não há alteração"
+
+#: ../fontforge/bdfinfo.c:761
+#, c-format
+msgid "Strike Information for %.90s"
+msgstr "Informação Para Apagar %.90s"
+
+#: ../fontforge/bdfinfo.c:810 ../fontforge/cvstroke.c:2793 ../fontforge/cvstroke.c:2841
+#: ../fontforge/cvstroke.c:2989 ../fontforge/cvstroke.c:3037 ../fontforge/fontinfo.c:3113
+#: ../gdraw/gmatrixedit.c:2075
+msgid "Delete"
+msgstr "Apaga"
+
+#: ../fontforge/bdfinfo.c:819
+msgid "Default All"
+msgstr "Default All"
+
+#: ../fontforge/bdfinfo.c:828
+msgid "Default This"
+msgstr "Default This"
+
+#: ../fontforge/bezctx_ff.c:25
+msgid "Spiros did not converge"
+msgstr "Spiros não convergem"
+
+#: ../fontforge/bitmapcontrol.c:148
+msgid "Scaling Bitmaps"
+msgstr "Scaling Bitmaps"

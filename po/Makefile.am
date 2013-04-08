@@ -31,10 +31,10 @@ toengb_SOURCES = toengb.c
 endif MAINTAINER_TOOLS
 
 PO_FILES = ca.po el.po es.po it.po pl.po vi.po zh_TW.po de.po	\
-	en_GB.po fr.po ja.po ml.po ru.po uk.po zh_CN.po
+	en_GB.po fr.po ja.po ml.po ru.po uk.po zh_CN.po pt.po
 
 MO_FILES = ca.mo el.mo es.mo it.mo pl.mo vi.mo zh_TW.mo de.mo	\
-	en_GB.mo fr.mo ja.mo ml.mo ru.mo uk.mo zh_CN.mo
+	en_GB.mo fr.mo ja.mo ml.mo ru.mo uk.mo zh_CN.mo pt.mo
 
 .po.mo:
 	$(MSGFMT) --check --output-file=$@ $<
