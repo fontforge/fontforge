@@ -3841,6 +3841,8 @@ return( ret );
 }
 
 void SFGlyphRenameFixup(SplineFont *sf, char *old, char *new, int rename_related_glyphs) {
+/* NOTE: Existing GUI behaviour renames glyphs, rename_related_glyphs turns */
+/* off this behaviour for scripting - see github issue #523 */
     int k, gid, isv;
     int i,r;
     SplineFont *master = sf;
