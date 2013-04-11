@@ -299,11 +299,15 @@ GImage *GImageReadXpm(char * filename) {
 	return( NULL );
     }
 
-    fgets((char *) buf,sizeof(buf),fp);
+    /* If file begins with XPM then read lines using getstring;() */
+    /* otherwise for XPM2 read lines using function gww_getline() */
+    if ( (fgets((char *)buf,sizeof(buf),fp))<0 )
+	goto errorGImageReadXpm;
     if ( strstr((char *) buf,"XPM2")!=NULL )
 	getdata = gww_getline;
-    else if ( strstr((char *) buf,"/*")!=NULL && strstr((char *) buf,"XPM")!=NULL && strstr((char *) buf,"*/")!=NULL )
+    else if ( strstr((char *)buf,"/*")!=NULL && strstr((char *)buf,"XPM")!=NULL && strstr((char *)buf,"*/")!=NULL )
 	getdata = getstring;
+
     if ( getdata==NULL ||
 	    !getdata( buf,sizeof(buf),fp) ||
 	    sscanf((char *) buf,"%d %d %d %d", &width, &height, &cols, &nchar)!=4 ) {
@@ -352,5 +356,11 @@ return( NULL );
     }
     freetab(tab,nchar);
     fclose(fp);
-return( ret );
+    return( ret );
+
+errorGImageReadXpm:
+    fprintf(stderr,"Bad input file \"%s\"\n",filename );
+    fclose(fp);
+    return( NULL );
+
 }
