@@ -125,20 +125,19 @@ return( 0 );
 return(1 );
 }
 
-static int gww_getline(unsigned char *buf, int sz, FILE *fp) {
-    int ch;
+static int gww_getline(unsigned char *buf,int sz,FILE *fp) {
+/* get a single line of text (leave-out the '\n') */
+    int ch=0;
     unsigned char *pt=buf;
 
-    while ((ch=getc(fp))!=EOF && ch!='\n' && ch!='\r')
+    while ( --sz>0 && (ch=getc(fp))>=0 && ch!='\n' && ch!='\r' )
 	*pt++ = ch;
-    if ( ch=='\r' ) {
-	if ((ch = getc(fp))!='\n' )
-	    ungetc(ch,fp);
-    }
+    if ( ch=='\r' && (ch=getc(fp))!='\n' )
+	ungetc(ch,fp);
     *pt = '\0';
-    if ( ch==EOF && pt==buf )
-return( 0 );
-return(1 );
+    if ( ch<0 && pt==buf )
+	return( 0 );
+    return( 1 );
 }
 
 #define TRANS 0x1000000
@@ -310,8 +309,8 @@ GImage *GImageReadXpm(char * filename) {
 
     /* If no errors yet then go get width, height, colors, nchars */
     if ( getdata==NULL ||
-	    !getdata( buf,sizeof(buf),fp) ||
-	    sscanf((char *) buf,"%d %d %d %d", &width, &height, &cols, &nchar)!=4 )
+	    !getdata(buf,sizeof(buf),fp) ||
+	    sscanf((char *)buf,"%d %d %d %d",&width,&height,&cols,&nchar)!=4 )
 	goto errorGImageReadXpm;
 
     line = (unsigned char *) galloc(lsiz = nchar*width+20);
