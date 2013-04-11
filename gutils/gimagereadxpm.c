@@ -339,13 +339,15 @@ GImage *GImageReadXpm(char * filename) {
 	Color clut[257];
 	clut[256] = COLOR_UNKNOWN;
 	fillupclut(clut,tab,0,nchar);
-	ret = GImageCreate(it_index,width,height);
+	if ( (ret=GImageCreate(it_index,width,height))==NULL )
+	    goto errorGImageReadXpmMem;
 	ret->u.image->clut->clut_len = cols;
 	memcpy(ret->u.image->clut->clut,clut,cols*sizeof(Color));
 	ret->u.image->trans = clut[256];
 	ret->u.image->clut->trans_index = clut[256];
     } else {
-	ret = GImageCreate(it_true,width,height);
+	if ( (ret=GImageCreate(it_true,width,height))==NULL )
+	    goto errorGImageReadXpmMem;
 	ret->u.image->trans = TRANS;		/* TRANS isn't a valid Color, but it fits in our 32 bit pixels */
     }
     base = ret->u.image;
@@ -380,6 +382,7 @@ return( NULL );
 errorGImageReadXpm:
     fprintf(stderr,"Bad input file \"%s\"\n",filename );
 errorGImageReadXpmMem:
+    GImageDestroy(ret);
     free(line); freetab(tab,nchar);
     fclose(fp);
     return( NULL );
