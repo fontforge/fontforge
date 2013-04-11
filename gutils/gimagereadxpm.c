@@ -119,6 +119,7 @@ static int getstring(unsigned char *buf,int sz,FILE *fp) {
     if ( ch<0 )
 	return( 0 );
 
+    /* Get data within quote marks */
     while ( --sz>0 && (ch=getc(fp))>=0 && ch!='"' )
 	*buf++ = ch;
     if ( ch!='"' )
@@ -315,7 +316,12 @@ GImage *GImageReadXpm(char * filename) {
 	    sscanf((char *)buf,"%d %d %d %d",&width,&height,&cols,&nchar)!=4 )
 	goto errorGImageReadXpm;
 
-    line = (unsigned char *) galloc(lsiz = nchar*width+20);
+    /* Prepare to fetch one graphic line at a time for conversion */
+    if ( (line=(unsigned char *)malloc((lsiz=nchar*width+20)*sizeof(unsigned char)))==NULL ) {
+	NoMoreMemMessage();
+	goto errorGImageReadXpmMem;
+    }
+
     tab = parse_colors(fp,line,lsiz,cols,nchar,getdata);
     if ( cols<=256 ) {
 	Color clut[257];
@@ -361,6 +367,7 @@ return( NULL );
 
 errorGImageReadXpm:
     fprintf(stderr,"Bad input file \"%s\"\n",filename );
+errorGImageReadXpmMem:
     fclose(fp);
     return( NULL );
 
