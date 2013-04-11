@@ -308,12 +308,12 @@ GImage *GImageReadXpm(char * filename) {
     else if ( strstr((char *)buf,"/*")!=NULL && strstr((char *)buf,"XPM")!=NULL && strstr((char *)buf,"*/")!=NULL )
 	getdata = getstring;
 
+    /* If no errors yet then go get width, height, colors, nchars */
     if ( getdata==NULL ||
 	    !getdata( buf,sizeof(buf),fp) ||
-	    sscanf((char *) buf,"%d %d %d %d", &width, &height, &cols, &nchar)!=4 ) {
-	fclose(fp);
-return( NULL );
-    }
+	    sscanf((char *) buf,"%d %d %d %d", &width, &height, &cols, &nchar)!=4 )
+	goto errorGImageReadXpm;
+
     line = (unsigned char *) galloc(lsiz = nchar*width+20);
     tab = parse_colors(fp,line,lsiz,cols,nchar,getdata);
     if ( cols<=256 ) {
