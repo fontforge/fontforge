@@ -1079,6 +1079,7 @@ static int AI_TypeChanged(GGadget *g, GEvent *e) {
 	else if ( GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_CursExit)) )
 	    ap->type = at_cexit;
 	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_LigIndex),ap->type==at_baselig);
+	_CVCharChangedUpdate(&ci->cv->b,2);
     }
 return( true );
 }
@@ -1136,6 +1137,7 @@ return( true );
 	    index = max+1;
 	}
 	ap->lig_index = index;
+	_CVCharChangedUpdate(&ci->cv->b,2);
     }
 return( true );
 }
