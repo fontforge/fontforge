@@ -1,4 +1,5 @@
 /* Copyright (C) 2000-2012 by George Williams */
+/* 2013apr11, additional fixes and error checks done, Jose Da Silva */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -292,7 +293,8 @@ static union hash *parse_colors(FILE *fp,unsigned char *line, int lsiz, int ncol
 }
 
 GImage *GImageReadXpm(char * filename) {
-/* Import an *.xpm image, else return NULL if error */
+/* Import an *.xpm image, else cleanup and return NULL if error */
+/* TODO: There is an XPM3 library that takes care of all cases. */
    FILE *fp;
    GImage *ret=NULL;
    struct _GImage *base;
@@ -350,14 +352,12 @@ GImage *GImageReadXpm(char * filename) {
 	    goto errorGImageReadXpmMem;
 	ret->u.image->trans = TRANS;		/* TRANS isn't a valid Color, but it fits in our 32 bit pixels */
     }
+
+    /* Get image */
     base = ret->u.image;
     for ( y=0; y<height; ++y ) {
-	if ( !getdata(line,lsiz,fp)) {
-	    GImageDestroy(ret);
-	    freetab(tab,nchar);
-	    fclose(fp);
-return( NULL );
-	}
+	if ( !getdata(line,lsiz,fp))
+	    goto errorGImageReadXpm;
 	pt = (uint8 *) (base->data+y*base->bytes_per_line); ipt = NULL; end = pt+width;
 	if ( cols>256 )
 	    ipt = (unsigned long *) pt;
