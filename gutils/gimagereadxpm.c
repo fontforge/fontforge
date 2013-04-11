@@ -152,12 +152,12 @@ union hash {
 static void freetab(union hash *tab, int nchars) {
     int i;
 
-    if ( nchars>1 ) {
+    if ( tab && nchars>1 ) {
 	for ( i=0; i<256; ++i )
 	    if ( tab[i].table!=NULL )
 		freetab(tab[i].table,nchars-1);
     }
-    gfree(tab);
+    free(tab);
 }
 
 static int fillupclut(Color *clut, union hash *tab,int index,int nchars) {
@@ -186,13 +186,13 @@ static long parsecol(char *start, char *end) {
     int ch;
 
     while ( !isspace(*start) && *start!='\0' ) ++start;
-    while ( isspace(*start)) ++start;
-    while ( end>start && isspace(end[-1])) --end;
+    while ( isspace(*start) ) ++start;
+    while ( end>start && isspace(end[-1]) ) --end;
     ch = *end; *end = '\0';
 
     if ( strcmp(start,"None")==0 )
-	ret = TRANS;
-    else if ( *start=='#' || *start=='%') {
+	ret = TRANS; /* no color=transparent */
+    else if ( *start=='#' || *start=='%' ) {
 	if ( end-start==4 ) {
 	    sscanf(start+1,"%lx",&ret);
 	    ret = ((ret&0xf00)<<12) | ((ret&0xf0)<<8) | ((ret&0xf)<<4);
@@ -208,7 +208,7 @@ static long parsecol(char *start, char *end) {
 	    /* How do I translate from HSB to RGB???? */
 	    ;
 	}
-    } else if (( ret=LookupXColorName(start))!=-1 ) {
+    } else if ( (ret=LookupXColorName(start))!=-1 ) {
     } else if ( strcmp(start,"white")==0 ) {
 	ret = COLOR_CREATE(255,255,255);
     } else {
@@ -230,12 +230,12 @@ static char *findnextkey(char *str) {
 		    (*str=='g' && isspace(str[1])) ||
 		    (*str=='g' && str[1]=='4' && isspace(str[2])) ||
 		    (*str=='s' && isspace(str[1])) )
-return( str );
+		return( str );
 	    oktostart = false;
 	}
 	++str;
     }
-return( str );
+    return( str );
 }
 
 static long findcol(char *str) {
@@ -247,13 +247,12 @@ static long findcol(char *str) {
 	while ( *pt ) {
 	    end = findnextkey(pt+2);
 	    if ( *pt==*try_order )
-return( parsecol(pt,end));
+		return( parsecol(pt,end) );
 	    pt = end;
 	}
 	++try_order;
     }
-
-return 0;
+    return( 0 );
 }
 
 static union hash *parse_colors(FILE *fp,unsigned char *line, int lsiz, int ncols, int nchars,
@@ -270,14 +269,18 @@ static union hash *parse_colors(FILE *fp,unsigned char *line, int lsiz, int ncol
     if ( nchars==1 )
 	memset(tab,-1,256*sizeof(union hash));
     for ( i=0; i<ncols; ++i ) {
-	if ( !getdata(line,lsiz,fp)) {
+	if ( !getdata(line,lsiz,fp) ) {
 	    freetab(tab,nchars);
-return( NULL );
+	    return( NULL );
 	}
 	sub = tab;
 	for ( j=0; j<nchars-1; ++j ) {
 	    if ( sub[line[j]].table==NULL ) {
-		sub[line[j]].table = (union hash *) galloc(256*sizeof(union hash));
+		if ( (sub[line[j]].table=(union hash *)malloc(256*sizeof(union hash)))==NULL ) {
+		    NoMoreMemMessage();
+		    freetab(tab,nchars);
+		    return( NULL );
+		}
 		if ( j==nchars-2 )
 		    memset(sub[line[j]].table,-1,256*sizeof(union hash));
 	    }
@@ -285,7 +288,7 @@ return( NULL );
 	}
 	sub[line[j]].color = findcol((char *) line+j+1);
     }
-return( tab );
+    return( tab );
 }
 
 GImage *GImageReadXpm(char * filename) {
@@ -306,7 +309,7 @@ GImage *GImageReadXpm(char * filename) {
 	return( NULL );
     }
 
-    line=NULL; tab=NULL;
+    line=NULL; tab=NULL; nchar=0;
     /* If file begins with XPM then read lines using getstring;() */
     /* otherwise for XPM2 read lines using function gww_getline() */
     if ( (fgets((char *)buf,sizeof(buf),fp))<0 )
@@ -377,8 +380,7 @@ return( NULL );
 errorGImageReadXpm:
     fprintf(stderr,"Bad input file \"%s\"\n",filename );
 errorGImageReadXpmMem:
-    free(line); free(tab);
+    free(line); freetab(tab,nchar);
     fclose(fp);
     return( NULL );
-
 }
