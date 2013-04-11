@@ -66,7 +66,7 @@ good they are.
 */
 /* There seems to be another, similar format XPM2 which is the same except
     nothing is in a string.  Example:
-! XPM2  
+! XPM2
 64 64 2 1
   c #FFFFFFFFFFFF
 . c #000000000000
@@ -157,7 +157,7 @@ static void freetab(union hash *tab, int nchars) {
     }
     gfree(tab);
 }
-	
+
 static int fillupclut(Color *clut, union hash *tab,int index,int nchars) {
     int i;
 
@@ -178,7 +178,7 @@ static int fillupclut(Color *clut, union hash *tab,int index,int nchars) {
     }
 return( index );
 }
-	    
+
 static long parsecol(char *start, char *end) {
     long ret = -1;
     int ch;
@@ -250,7 +250,7 @@ return( parsecol(pt,end));
 	}
 	++try_order;
     }
-	
+
 return 0;
 }
 
@@ -282,6 +282,7 @@ return( tab );
 }
 
 GImage *GImageReadXpm(char * filename) {
+/* Import an *.xpm image, else return NULL if error */
    FILE *fp;
    GImage *ret=NULL;
    struct _GImage *base;
@@ -293,7 +294,7 @@ GImage *GImageReadXpm(char * filename) {
    unsigned char *pt, *end; unsigned long *ipt;
    int (*getdata)(unsigned char *,int,FILE *) = NULL;
 
-    if ( (fp=fopen(filename,"rb"))==NULL ) {
+    if ( (fp=fopen(filename,"r"))==NULL ) {
 	fprintf(stderr,"Can't open \"%s\"\n", filename);
 	return( NULL );
     }
