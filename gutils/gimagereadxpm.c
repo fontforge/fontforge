@@ -258,9 +258,14 @@ return 0;
 
 static union hash *parse_colors(FILE *fp,unsigned char *line, int lsiz, int ncols, int nchars,
 	int (*getdata)(unsigned char *,int,FILE *)) {
-    union hash *tab = (union hash *) galloc(256*sizeof(union hash));
+    union hash *tab;
     union hash *sub;
     int i, j;
+
+    if ( (tab=(union hash *)malloc(256*sizeof(union hash)))==NULL ) {
+	NoMoreMemMessage();
+	return( NULL );
+    }
 
     if ( nchars==1 )
 	memset(tab,-1,256*sizeof(union hash));
@@ -301,6 +306,7 @@ GImage *GImageReadXpm(char * filename) {
 	return( NULL );
     }
 
+    line=NULL; tab=NULL;
     /* If file begins with XPM then read lines using getstring;() */
     /* otherwise for XPM2 read lines using function gww_getline() */
     if ( (fgets((char *)buf,sizeof(buf),fp))<0 )
@@ -322,7 +328,10 @@ GImage *GImageReadXpm(char * filename) {
 	goto errorGImageReadXpmMem;
     }
 
-    tab = parse_colors(fp,line,lsiz,cols,nchar,getdata);
+    /* Fetch color table */
+    if ( (tab=parse_colors(fp,line,lsiz,cols,nchar,getdata))==NULL )
+	goto errorGImageReadXpmMem;
+
     if ( cols<=256 ) {
 	Color clut[257];
 	clut[256] = COLOR_UNKNOWN;
@@ -368,6 +377,7 @@ return( NULL );
 errorGImageReadXpm:
     fprintf(stderr,"Bad input file \"%s\"\n",filename );
 errorGImageReadXpmMem:
+    free(line); free(tab);
     fclose(fp);
     return( NULL );
 
