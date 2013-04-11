@@ -98,31 +98,33 @@ return( ((ret.red>>8)<<16) | (ret.green&0xff00) | (ret.blue>>8) );
 return( COLOR_UNKNOWN );
 }
 
-/* Don't handle backslash sequences, nor concatenated strings */
-static int getstring(unsigned char *buf, int sz, FILE *fp) {
+static int getstring(unsigned char *buf,int sz,FILE *fp) {
+/* get a string of text within "" marks and skip */
+/* backslash sequences, or concatenated strings. */
     int ch, incomment=0;
 
-    while ((ch=getc(fp))!=EOF ) {
+    while ( (ch=getc(fp))>=0 ) {
 	if ( ch=='"' && !incomment )
-    break;
+	    break;
 	if ( !incomment && ch=='/' ) {
-	    ch = getc(fp);
+	    if ( (ch=getc(fp))<0 ) break;
 	    if ( ch=='*' ) incomment=true;
 	    else ungetc(ch,fp);
 	} else if ( incomment && ch=='*' ) {
-	    ch = getc(fp);
-	    if ( ch=='/' ) incomment = false;
+	    if ( (ch=getc(fp))<0 ) break;
+	    if ( ch=='/' ) incomment=false;
 	    else ungetc(ch,fp);
 	}
     }
-    if ( ch==EOF )
-return( 0 );
-    while ( (ch=getc(fp))!=EOF && ch!='"' ) {
-	if ( --sz>0 )
-	    *buf++ = ch;
-    }
+    if ( ch<0 )
+	return( 0 );
+
+    while ( --sz>0 && (ch=getc(fp))>=0 && ch!='"' )
+	*buf++ = ch;
+    if ( ch!='"' )
+	return( 0 );
     *buf = '\0';
-return(1 );
+    return( 1 );
 }
 
 static int gww_getline(unsigned char *buf,int sz,FILE *fp) {
