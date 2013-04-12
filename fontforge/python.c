@@ -6041,7 +6041,7 @@ return( -1 );
 return( -1 );
     }
 
-    SFGlyphRenameFixup(self->sc->parent,self->sc->name,str);
+    SFGlyphRenameFixup(self->sc->parent,self->sc->name,str,false);
     self->sc->namechanged = self->sc->changed = true;
     free( self->sc->name );
     self->sc->name = copy(str);
