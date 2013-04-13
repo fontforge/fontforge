@@ -48,12 +48,18 @@ int GImageWriteXpm(GImage *gi, char *filename) {
     struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
     FILE *file;
     char stem[256];
-    char *pt; uint8 *scanline;
+    char *pt,*color_type; uint8 *scanline;
     int i,j;
 
-    /* This routine only exports color-indexed type images */
-    if ( base->image_type!=it_index )
+    /* This routine only exports mono or color-indexed type images */
+    if ( base->image_type==it_mono )
+	color_type = "m";
+    else if ( base->image_type==it_index )
+	color_type = "c";
+    else {
+	fprintf(stderr,"Image must be mono or color-indexed.\n");
 	return( -1 );
+    }
 
     /* get filename stem (255chars max) */
     if ( (pt=strrchr(filename,'/'))!=NULL )
@@ -72,22 +78,35 @@ int GImageWriteXpm(GImage *gi, char *filename) {
     fprintf(file,"/* XPM */\n" );
     fprintf(file,"static char *%s[] = {\n",stem);
     fprintf(file,"/* width height ncolors chars_per_pixel */\n");
-    fprintf(file,"\"%d %d %d %d\"\n", (int) base->width, (int) base->height, base->clut->clut_len,
+    if ( base->image_type==it_mono )
+	fprintf(file,"\"%d %d 2 1\"\n", (int) base->width, (int) base->height );
+    else
+	fprintf(file,"\"%d %d %d %d\"\n", (int) base->width, (int) base->height, base->clut->clut_len,
 	    base->clut->clut_len>95?2:1 );
     fprintf(file,"/* colors */\n");
-    for ( i=0; i<base->clut->clut_len; ++i )
-	fprintf(file,"\"%s c #%06x\"\n", pixname(i,base->clut->clut_len),
+    if ( base->image_type==it_mono ) {
+	fprintf(file,"\"%s m #%06x\"\n", pixname(0,2),0);
+	fprintf(file,"\"%s m #%06x\"\n", pixname(1,2),0xffffff);
+    } else {
+	for ( i=0; i<base->clut->clut_len; ++i )
+	    fprintf(file,"\"%s c #%06x\"\n", pixname(i,base->clut->clut_len),
 		(int) base->clut->clut[i]);
+    }
     fprintf(file,"/* image */\n");
     for ( i=0; i<base->height; ++i ) {
 	fprintf(file,"\"" );
 	scanline = base->data + i*base->bytes_per_line;
-	for ( j=0; j<base->width; ++j )
-	    fprintf(file,"%s", pixname(*scanline++,base->clut->clut_len));
+	if ( base->image_type==it_mono )
+	    for ( j=0; j<base->width; ++j )
+		fprintf(file,"%s", pixname((scanline[j>>3]>>(7-(j&7)))&1,2));
+	else
+	    for ( j=0; j<base->width; ++j )
+		fprintf(file,"%s", pixname(*scanline++,base->clut->clut_len));
 	fprintf(file,"\"%s\n", i==base->height-1?"":"," );
     }
     fprintf(file,"};\n" );
     fflush(file);
+
     i=ferror(file);
     fclose(file);
     return( i );
