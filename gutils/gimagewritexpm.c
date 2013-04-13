@@ -1,4 +1,5 @@
 /* Copyright (C) 2000-2012 by George Williams */
+/* 2013apr13, added mono + grey Jose Da Silva */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -54,9 +55,14 @@ int GImageWriteXpm(GImage *gi, char *filename) {
     /* This routine only exports mono or color-indexed type images */
     if ( base->image_type==it_mono )
 	color_type = "m";
-    else if ( base->image_type==it_index )
+    else if ( base->image_type==it_index ) {
 	color_type = "c";
-    else {
+	if ( base->clut->is_grey ) {
+	    color_type = "g";
+	    if ( base->clut->clut_len<=4 )
+		color_type = "g4";
+	}
+    } else {
 	fprintf(stderr,"Image must be mono or color-indexed.\n");
 	return( -1 );
     }
@@ -89,7 +95,7 @@ int GImageWriteXpm(GImage *gi, char *filename) {
 	fprintf(file,"\"%s m #%06x\"\n", pixname(1,2),0xffffff);
     } else {
 	for ( i=0; i<base->clut->clut_len; ++i )
-	    fprintf(file,"\"%s c #%06x\"\n", pixname(i,base->clut->clut_len),
+	    fprintf(file,"\"%s %s #%06x\"\n", pixname(i,base->clut->clut_len),color_type,
 		(int) base->clut->clut[i]);
     }
     fprintf(file,"/* image */\n");
