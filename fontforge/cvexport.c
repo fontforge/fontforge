@@ -488,6 +488,7 @@ return( ret );
 }
 
 int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixelsize, int bitsperpixel) {
+/* 0=*.xbm, 1=*.bmp, 2=*.png, 3=*.xpm, 4=*.c(fontforge-internal) */
     struct _GImage base;
     GImage gi;
     GClut clut;
@@ -539,6 +540,10 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
 	else if ( format==2 )
 	    ret = GImageWritePng(&gi,filename,false);
 #endif
+	else if ( format==3 )
+	    ret = !GImageWriteXpm(&gi,filename);
+	else if ( format==4 )
+	    ret = !GImageWriteGImage(&gi,filename);
 	else
 	    ret = GImageWriteBmp(&gi,filename);
 	BDFCharFree(bdfc);
@@ -611,6 +616,10 @@ int BCExportXBM(char *filename,BDFChar *bdfc, int format) {
 	else if ( format==2 )
 	    ret = GImageWritePng(&gi,filename,false);
 #endif
+	else if ( format==3 )
+	    ret = !GImageWriteXpm(&gi,filename);
+	else if ( format==4 )
+	    ret = !GImageWriteGImage(&gi,filename);
 	else
 	    ret = GImageWriteBmp(&gi,filename);
 	/* And back to normal */
