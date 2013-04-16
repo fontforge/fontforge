@@ -3182,6 +3182,27 @@ SetGasp([8,2,16,1,65535,3])
 	    If there is no unicode annotation for this value, or no library available,
 	    then return empty string "". It can execute with no current font.
 	  <DT>
+	    <A NAME="UnicodeBlockEndFromLib">U</A>nicodeBlockEndFromLib(val)
+	  <DD>
+	    Returns the Unicode Block end value as described by www.unicode.org.
+	    Currently, the blocks are {0..233}, spanning unicode values {uni0..uni10FFFF}.
+	    If there is no value, or no library available, then return -1.
+	    This can execute with no current font.
+	  <DT>
+	    <A NAME="UnicodeBlockNameFromLib">U</A>nicodeBlockNameFromLib(val)
+	  <DD>
+	    Returns the Unicode Block Name as described by www.unicode.org.
+	    Currently, the blocks are {0..233}, spanning unicode values {uni0..uni10FFFF}.
+	    If there is no value, or no library available, then return empty string "".
+	    This can execute with no current font.
+	  <DT>
+	    <A NAME="UnicodeBlockStartFromLib">U</A>nicodeBlockStartFromLib(val)
+	  <DD>
+	    Returns the Unicode Block start value as described by www.unicode.org.
+	    Currently, the blocks are {0..233}, spanning unicode values {uni0..uni10FFFF}.
+	    If there is no value, or no library available, then return -1.
+	    This can execute with no current font.
+	  <DT>
 	    <A NAME="UnicodeFromName">U</A>nicodeFromName(name)
 	  <DD>
 	    Looks the string "name" up in FontForge's database of commonly used glyph

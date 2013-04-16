@@ -2769,6 +2769,10 @@ extern int SFFindOrder(SplineFont *sf);
 extern void inituninameannot(void);
 extern char *unicode_name(int32 unienc);
 extern char *unicode_annot(int32 unienc);
+extern int32 unicode_block_start(int32 block_i);
+extern int32 unicode_block_end(int32 block_i);
+extern char *unicode_block_name(int32 block_i);
+
 
 extern const char *UnicodeRange(int unienc);
 extern SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i);
