@@ -232,11 +232,14 @@ struct gfc_data {
 
 
 static GTextInfo bcformats[] = {
+/* 0=*.xbm, 1=*.bmp, 2=*.png, 3=*.xpm, 4=*.c(fontforge-internal) */
     { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, (void *) 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("BMP"), NULL, 0, 0, (void *) 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #ifndef _NO_LIBPNG
     { (unichar_t *) N_("png"), NULL, 0, 0, (void *) 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #endif
+    { (unichar_t *) N_("X Pixmap"), NULL, 0, 0, (void *) 3, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("C FontForge"), NULL, 0, 0, (void *) 4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     GTEXTINFO_EMPTY
 };
 
@@ -248,11 +251,14 @@ static GTextInfo formats[] = {
     { (unichar_t *) N_("PDF"), NULL, 0, 0, (void *) 4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("Raph's plate"), NULL, 0, 0, (void *) 5, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #define BITMAP_FORMAT_START	6
+    /* 0=*.xbm, 1=*.bmp, 2=*.png, 3=*.xpm, 4=*.c(fontforge-internal) */
     { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, (void *) BITMAP_FORMAT_START, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("BMP"), NULL, 0, 0, (void *) (BITMAP_FORMAT_START+1), 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #ifndef _NO_LIBPNG
     { (unichar_t *) N_("png"), NULL, 0, 0, (void *) (BITMAP_FORMAT_START+2), 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #endif
+    { (unichar_t *) N_("X Pixmap"), NULL, 0, 0, (void *) (BITMAP_FORMAT_START+3), 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("C FontForge"), NULL, 0, 0, (void *) (BITMAP_FORMAT_START+4), 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     GTEXTINFO_EMPTY
 };
 static int last_format = 0;
@@ -354,7 +360,12 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	if ( pt==NULL )
 	    pt = f2+u_strlen(f2);
 	if ( d->bc!=NULL )
-	    uc_strcpy(pt,format==0?".xbm":format==1?".bmp":".png");
+	    uc_strcpy(pt,format==0?".xbm":
+			 format==1?".bmp":
+			//format==2?".png":
+			 format==3?".xpm":
+			 format==4?".c":
+				   ".png");
 #ifndef _NO_PYTHON
 	else if ( format>=fv_pythonbase )
 	    uc_strcpy(pt+1,py_ie[format-fv_pythonbase].extension);
@@ -368,7 +379,10 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 			 format==5?".plate":
 			 format==6?".xbm":
 			 format==7?".bmp":
-				   ".png");
+			//format==8?".png":
+			 format==9?".xpm":
+			 format==10?".c":
+				    ".png");
 	GGadgetSetTitle(d->gfc,f2);
 	free(f2);
     }
