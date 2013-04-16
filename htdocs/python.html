@@ -280,6 +280,30 @@
 	then return empty string "". It can execute with no current font.</TD>
     </TR>
     <TR>
+      <TD><CODE>UnicodeBlockEndFromLib</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Returns the Unicode Block end value as described by www.unicode.org.
+	Currently, the blocks are {0..233}, spanning unicode values {uni0..uni10FFFF}.
+	If there is no value, or no library available, then return -1.
+	This can execute with no current font.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>UnicodeBlockNameFromLib</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Returns the Unicode Block Name as described by www.unicode.org.
+	Currently, the blocks are {0..233}, spanning unicode values {uni0..uni10FFFF}.
+	If there is no value, or no library available, then return empty string "".
+	This can execute with no current font.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>UnicodeBlockStartFromLib</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Returns the Unicode Block start value as described by www.unicode.org.
+	Currently, the blocks are {0..233}, spanning unicode values {uni0..uni10FFFF}.
+	If there is no value, or no library available, then return -1.
+	This can execute with no current font.</TD>
+    </TR>
+    <TR>
       <TD><CODE>unicodeFromName</CODE></TD>
       <TD><CODE>(glyphname)</CODE></TD>
       <TD>Looks up glyph name in its dictionary and if it is associated with a
