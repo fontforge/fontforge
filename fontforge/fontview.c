@@ -7071,8 +7071,7 @@ void FontViewRemove(FontView *fv) {
 	for ( n=fv_list; n->b.next!=&fv->b; n=(FontView *) (n->b.next) );
 	n->b.next = fv->b.next;
     }
-    if ( fv_list!=NULL )		/* Freeing a large font can take forever, and if we're just going to exit there's no real reason to do so... */
-	FontViewFree(&fv->b);
+    FontViewFree(&fv->b);
 }
 
 static int fv_e_h(GWindow gw, GEvent *event) {
