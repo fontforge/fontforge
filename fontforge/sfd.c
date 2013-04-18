@@ -2674,7 +2674,9 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	    }
 	}
 	if ( !todir )
-	    fprintf(sfd, "BeginChars: %d %d\n", enccount, realcnt );
+	    fprintf(sfd, "BeginChars: %d %d\n",
+	        enccount<map->enc->char_cnt? map->enc->char_cnt : enccount,
+	        realcnt );
 	for ( i=0; i<sf->glyphcnt; ++i ) {
 	    if ( !SFDOmit(sf->glyphs[i]) ) {
 		if ( !todir )
@@ -8040,6 +8042,10 @@ exit( 1 );
 	} else if ( strmatch(tok,"BeginChars:")==0 ) {
 	    int charcnt;
 	    getint(sfd,&charcnt);
+	    if (charcnt<enc->char_cnt) {
+		IError("SFD file specifies too few slots for its encoding.\n" );
+exit( 1 );
+	    }
 	    if ( getint(sfd,&realcnt)!=1 || realcnt==-1 )
 		realcnt = charcnt;
 	    else
