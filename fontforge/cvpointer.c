@@ -1008,7 +1008,7 @@ return(false);
 	SplinePointListSpiroTransform(cv->b.layerheads[cv->b.drawmode]->splines,transform,false);
     else
 	SplinePointListTransform(cv->b.layerheads[cv->b.drawmode]->splines,transform,
-		tpt_OnlySelectedInterpCPs);
+		interpCPsOnMotion?tpt_OnlySelectedInterpCPs:tpt_OnlySelected);
 
     for ( refs = cv->b.layerheads[cv->b.drawmode]->refs; refs!=NULL; refs=refs->next ) if ( refs->selected ) {
 	refs->transform[4] += transform[4];
@@ -1606,4 +1606,5 @@ void CVSelectPointAt(CharView *cv) {
     while ( !pa.done )
 	GDrawProcessOneEvent(NULL);
     GDrawSetVisible(pa.gw,false);
+
 }
