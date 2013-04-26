@@ -67,7 +67,6 @@ static int fillbmpheader(FILE *fp,struct bmpheader *head) {
     int i;
     long temp;
 
-    memset(head,'\0',sizeof(*head));
     if ( fgetc(fp)!='B' || getc(fp)!='M' ||	/* Bad format */ \
 	 getlong(fp,&head->size)	|| \
 	 (head->mbz1=getshort(fp))<0	|| \
@@ -166,19 +165,6 @@ static int readpixels(FILE *file,struct bmpheader *head) {
     int i,ii,j,ll,excess;
 
     fseek(file,head->offset,0);
-    if ( head->bitsperpixel>=16 ) {
-	head->int32_pixels = (uint32 *) galloc(head->height* 4*head->width );
-	if ( head->int32_pixels==NULL )
-return( 0 );
-    } else if ( head->bitsperpixel!=1 ) {
-	head->byte_pixels = (unsigned char *) galloc(head->height* head->width );
-	if ( head->byte_pixels==NULL )
-return( 0 );
-    } else {
-	head->byte_pixels = (unsigned char *) galloc(head->height* ((head->width+7)/8) );
-	if ( head->byte_pixels==NULL )
-return( 0 );
-    }
 
     ll = head->width;
     if ( head->bitsperpixel==8 && head->compression==0 ) {
@@ -340,9 +326,7 @@ return( 0 );
     }
 
     if ( feof(file )) {		/* Did we get an incomplete file? */
-	if ( head->bitsperpixel>=16 ) gfree( head->int32_pixels );
-	else gfree( head->byte_pixels );
-return( 0 );
+	return( 0 );
     }
 
 return( 1 );
@@ -355,11 +339,25 @@ GImage *GImageRead_Bmp(FILE *file) {
     struct _GImage *base;
 
     if ( file==NULL )
-return( NULL );
+	return( NULL );
+
+    /* First, read-in header information */
+    memset(&bmp,'\0',sizeof(bmp));
     if ( fillbmpheader(file,&bmp) )
-return( NULL );
-    if ( !readpixels(file,&bmp))
-return( NULL );
+	goto errorGImageReadBmp;
+
+    /* Create memory-space to read-in bmp file */
+    if ( (bmp.bitsperpixel>=16 && \
+	 (bmp.int32_pixels=(uint32 *)(malloc(bmp.height*bmp.width*4)))==NULL) || \
+	 (bmp.bitsperpixel==1  && \
+	 (bmp.byte_pixels=(unsigned char *)(malloc(bmp.height*((bmp.width+7)/8))))==NULL) || \
+	 (bmp.byte_pixels=(unsigned char *)(malloc(bmp.height*bmp.width)))==NULL ) {
+	NoMoreMemMessage();
+	return( NULL );
+    }
+
+    if ( !readpixels(file,&bmp) )
+	goto errorGImageReadBmp;
 
     if ( !bmp.invert ) {
 	ret = _GImage_Create(bmp.bitsperpixel>=16?it_true:bmp.bitsperpixel!=1?it_index:it_mono,
@@ -406,7 +404,12 @@ return( NULL );
 	memcpy(ret->u.image->clut->clut,bmp.clut,bmp.colorsused*sizeof(Color));
 	ret->u.image->clut->trans_index = COLOR_UNKNOWN;
     }
-return( ret );
+    return( ret );
+
+errorGImageReadBmp:
+    if ( bmp.bitsperpixel>=16 ) free(bmp.int32_pixels);
+    else free(bmp.byte_pixels);
+    return( NULL );
 }
 
 GImage *GImageReadBmp(char *filename) {
