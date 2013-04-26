@@ -383,11 +383,14 @@ return( ret );
 }
 
 GImage *GImageReadBmp(char *filename) {
-    FILE *file = fopen(filename,"rb");
+/* Import a BMP image, else cleanup and return NULL if error found */
+    FILE *file;			/* source file */
     GImage *ret;
 
-    if ( file==NULL )
-return( NULL );
+    if ( (file=fopen(filename,"rb"))==NULL ) {
+	fprintf(stderr,"Can't open \"%s\"\n", filename);
+	return( NULL );
+    }
 
     ret = GImageRead_Bmp(file);
     fclose(file);
