@@ -39,11 +39,17 @@ GImage *_GImage_Create(enum image_type type, int32 width, int32 height);
     return( (ch2<<8) | ch1 );
 }
 
-static long getl(FILE *file) {
-    long temp1 = getc(file);
-    long temp2 = getc(file);
-    long temp3 = getc(file);
-return( (getc(file)<<24) | (temp3<<16) | (temp2<<8) | temp1 );
++static long getlong(FILE *fp, long *value) {
+/* Get Little-Endian long 32bit int value. Return 0 if okay, -1 if error. */
+    int ch1, ch2, ch3, ch4;
+
+    if ( (ch1=fgetc(fp))<0 || (ch2=fgetc(fp))<0 || \
+	 (ch3=fgetc(fp))<0 || (ch4=fgetc(fp))<0 ) {
+	*value=0;
+	return( -1 );
+    }
+    *value=(long)( (ch4<<24)|(ch3<<16)|(ch2<<8)|ch1 );
+    return( 0 );
 }
 
 static int bitshift(unsigned long mask) {
@@ -56,90 +62,104 @@ return( 0 );
 return( off+(8-len) );
 }
 
-static int fillbmpheader(FILE *file,struct bmpheader *head) {
+static int fillbmpheader(FILE *fp,struct bmpheader *head) {
+/* Get BMPheader info. Return 0 if read the header okay, -1 if read error */
     int i;
+    long temp;
 
     memset(head,'\0',sizeof(*head));
-    if ( getc(file)!='B' || getc(file)!='M' )
-return 0;			/* Bad format */
-    head->size = getl(file);
-    head->mbz1 = getshort(file);
-    head->mbz2 = getshort(file);
-    head->offset = getl(file);
-    head->headersize = getl(file);
+    if ( fgetc(fp)!='B' || getc(fp)!='M' ||	/* Bad format */ \
+	 getlong(fp,&head->size)	|| \
+	 (head->mbz1=getshort(fp))<0	|| \
+	 (head->mbz2=getshort(fp))<0	|| \
+	 getlong(fp,&head->offset)	|| \
+	 getlong(fp,&head->headersize)	)
+	return( -1 );
+
     if ( head->headersize==12 ) {	/* Windows 2.0 format, also OS/2 */
-	head->width = getshort(file);
-	head->height = getshort(file);
-	head->planes = getshort(file);
-	head->bitsperpixel = getshort(file);
-	head->colorsused = 0;
-	head->compression = 0;
+	if ( (head->width=getshort(fp))<0	|| \
+	     (head->height=getshort(fp))<0	|| \
+	     (head->planes=getshort(fp))<0	|| \
+	     (head->bitsperpixel=getshort(fp))<0 )
+	    return( -1 );
+	//head->colorsused=0;
+	//head->compression=0;
     } else {
-	head->width = getl(file);
-	head->height = getl(file);
-	head->planes = getshort(file);
-	head->bitsperpixel = getshort(file);
-	head->compression = getl(file);
-	head->imagesize = getl(file);
-	head->ignore1 = getl(file);
-	head->ignore2 = getl(file);
-	head->colorsused = getl(file);
-	head->colorsimportant = getl(file);
+	if ( getlong(fp,&head->width)		|| \
+	     getlong(fp,&head->height)		|| \
+	     (head->planes=getshort(fp))<0	|| \
+	     (head->bitsperpixel=getshort(fp))<0 || \
+	     getlong(fp,&head->compression)	|| \
+	     getlong(fp,&head->imagesize)	|| \
+	     getlong(fp,&head->ignore1)		|| \
+	     getlong(fp,&head->ignore2)		|| \
+	     getlong(fp,&head->colorsused)	|| \
+	     getlong(fp,&head->colorsimportant) )
+	    return( -1 );
     }
     if ( head->height<0 )
 	head->height = -head->height;
     else
 	head->invert = true;
+
     if ( head->bitsperpixel!=1 && head->bitsperpixel!=4 && head->bitsperpixel!=8 &&
 	    head->bitsperpixel!=16 && head->bitsperpixel!=24 && head->bitsperpixel!=32 )
-return( 0 );
-    if ( head->compression==3 && ( head->bitsperpixel==16 || head->bitsperpixel==32 ))
+	return( -1 );
+
+    if ( head->compression==3 && ( head->bitsperpixel==16 || head->bitsperpixel==32 ) )
 	/* Good */;
-    else if ( head->compression==0 && ( head->bitsperpixel<=8 || head->bitsperpixel==24 || head->bitsperpixel==32 ))
+    else if ( head->compression==0 && ( head->bitsperpixel<=8 || head->bitsperpixel==24 || head->bitsperpixel==32 ) )
 	/* Good */;
     else if ( head->compression==1 && head->bitsperpixel==8 )
 	/* Good */;
     else if ( head->compression==2 && head->bitsperpixel==4 )
 	/* Good */;
     else
-return( 0 );
+	return( -1 );
+
     if ( head->colorsused==0 )
 	head->colorsused = 1<<head->bitsperpixel;
     if ( head->bitsperpixel>=16 )
 	head->colorsused = 0;
     if ( head->colorsused>(1<<head->bitsperpixel) )
-return( 0 );
+	return( -1 );
+
     for ( i=0; i<head->colorsused; ++i ) {
-	int b = getc(file), g = getc(file), r=getc(file);
-	head->clut[i] = COLOR_CREATE(r,g,b);
-	if ( head->headersize!=12 )
-	    getc(file);
+	int b,g,r;
+	if ( (b=fgetc(fp))<0 || (g=fgetc(fp))<0 || (r=fgetc(fp))<0 )
+	    return( -1 );
+	head->clut[i]=COLOR_CREATE(r,g,b);
+	if ( head->headersize!=12 && fgetc(fp)<0 )
+	    return( -1 );
     }
     if ( head->compression==3 || head->headersize==108 ) {
-	head->red_mask = getl(file);
-	head->green_mask = getl(file);
-	head->blue_mask = getl(file);
+	if ( getlong(fp,&head->red_mask)	|| \
+	     getlong(fp,&head->green_mask)	|| \
+	     getlong(fp,&head->blue_mask) )
+	    return( -1 );
 	head->red_shift = bitshift(head->red_mask);
 	head->green_shift = bitshift(head->green_mask);
 	head->blue_shift = bitshift(head->blue_mask);
     }
-    if ( head->headersize==108 ) {
-	getl(file);		/* alpha_mask */
-	getl(file);		/* color space type */
-	getl(file);		/* redx */
-	getl(file);		/* redy */
-	getl(file);		/* redz */
-	getl(file);		/* greenx */
-	getl(file);		/* greeny */
-	getl(file);		/* greenz */
-	getl(file);		/* bluex */
-	getl(file);		/* bluey */
-	getl(file);		/* bluez */
-	getl(file);		/* gammared */
-	getl(file);		/* gammagreen */
-	getl(file);		/* gammablue */
-    }
-return( 1 );
+
+    if ( head->headersize==108 && (
+	 getlong(fp,&temp) ||	/* alpha_mask */ \
+	 getlong(fp,&temp) ||	/* color space type */ \
+	 getlong(fp,&temp) ||	/* redx */ \
+	 getlong(fp,&temp) ||	/* redy */ \
+	 getlong(fp,&temp) ||	/* redz */ \
+	 getlong(fp,&temp) ||	/* greenx */ \
+	 getlong(fp,&temp) ||	/* greeny */ \
+	 getlong(fp,&temp) ||	/* greenz */ \
+	 getlong(fp,&temp) ||	/* bluex */ \
+	 getlong(fp,&temp) ||	/* bluey */ \
+	 getlong(fp,&temp) ||	/* bluez */ \
+	 getlong(fp,&temp) ||	/* gammared */ \
+	 getlong(fp,&temp) ||	/* gammagreen */ \
+	 getlong(fp,&temp) )	/* gammablue */ )
+	return( -1 );
+
+    return( 0 );
 }
 
 static int readpixels(FILE *file,struct bmpheader *head) {
@@ -309,7 +329,9 @@ return( 0 );
 	for ( i=0; i<head->height; ++i ) {
 	    ii = i*head->width;
 	    for ( j=0; j<head->width; ++j ) {
-		int pix = getl(file);
+		long pix;
+		if ( getlong(file,&pix) )
+		    return( 1 );
 		head->int32_pixels[ii+j] = COLOR_CREATE((pix&head->red_mask)>>head->red_shift,
 			(pix&head->green_mask)>>head->green_shift,
 			(pix&head->blue_mask)>>head->blue_shift);
@@ -334,7 +356,7 @@ GImage *GImageRead_Bmp(FILE *file) {
 
     if ( file==NULL )
 return( NULL );
-    if ( !fillbmpheader(file,&bmp))
+    if ( fillbmpheader(file,&bmp) )
 return( NULL );
     if ( !readpixels(file,&bmp))
 return( NULL );
