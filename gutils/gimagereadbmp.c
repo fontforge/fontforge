@@ -333,9 +333,10 @@ return( 1 );
 }
 
 GImage *GImageRead_Bmp(FILE *file) {
+/* Import a BMP image (based on file handle), cleanup & return NULL if error */
     struct bmpheader bmp;
     int i,l;
-    GImage *ret;
+    GImage *ret = NULL;
     struct _GImage *base;
 
     if ( file==NULL )
@@ -348,10 +349,10 @@ GImage *GImageRead_Bmp(FILE *file) {
 
     /* Create memory-space to read-in bmp file */
     if ( (bmp.bitsperpixel>=16 && \
-	 (bmp.int32_pixels=(uint32 *)(malloc(bmp.height*bmp.width*4)))==NULL) || \
+	 (bmp.int32_pixels=(uint32 *)(malloc(bmp.height*bmp.width*sizeof(uint32))))==NULL) || \
 	 (bmp.bitsperpixel==1  && \
-	 (bmp.byte_pixels=(unsigned char *)(malloc(bmp.height*((bmp.width+7)/8))))==NULL) || \
-	 (bmp.byte_pixels=(unsigned char *)(malloc(bmp.height*bmp.width)))==NULL ) {
+	 (bmp.byte_pixels=(unsigned char *)(malloc(bmp.height*((bmp.width+7)/8)*sizeof(unsigned char))))==NULL) || \
+	 (bmp.byte_pixels=(unsigned char *)(malloc(bmp.height*bmp.width*sizeof(unsigned char))))==NULL ) {
 	NoMoreMemMessage();
 	return( NULL );
     }
@@ -360,8 +361,11 @@ GImage *GImageRead_Bmp(FILE *file) {
 	goto errorGImageReadBmp;
 
     if ( !bmp.invert ) {
-	ret = _GImage_Create(bmp.bitsperpixel>=16?it_true:bmp.bitsperpixel!=1?it_index:it_mono,
-		bmp.width, bmp.height);
+	if ( (ret=_GImage_Create(bmp.bitsperpixel>=16?it_true:bmp.bitsperpixel!=1?it_index:it_mono,
+		bmp.width, bmp.height))==NULL ) {
+	    NoMoreMemMessage();
+	    goto errorGImageMemBmp;
+	}
 	if ( bmp.bitsperpixel>=16 ) {
 	    ret->u.image->data = (uint8 *) bmp.int32_pixels;
 	} else if ( bmp.bitsperpixel!=1 ) {
@@ -369,29 +373,38 @@ GImage *GImageRead_Bmp(FILE *file) {
 	}
     } else {
 	if ( bmp.bitsperpixel>=16 ) {
-	    ret = GImageCreate(it_true,bmp.width, bmp.height);
+	    if ( (ret=GImageCreate(it_true,bmp.width, bmp.height))==NULL ) {
+		NoMoreMemMessage();
+		goto errorGImageMemBmp;
+	    }
 	    base = ret->u.image;
 	    for ( i=0; i<bmp.height; ++i ) {
 		l = bmp.height-1-i;
 		memcpy(base->data+l*base->bytes_per_line,bmp.int32_pixels+i*bmp.width,bmp.width*sizeof(uint32));
 	    }
-	    gfree( bmp.int32_pixels );
+	    free(bmp.int32_pixels);
 	} else if ( bmp.bitsperpixel!=1 ) {
-	    ret = GImageCreate(it_index,bmp.width, bmp.height);
+	    if ( (ret=GImageCreate(it_index,bmp.width, bmp.height))==NULL ) {
+		NoMoreMemMessage();
+		goto errorGImageMemBmp;
+	    }
 	    base = ret->u.image;
 	    for ( i=0; i<bmp.height; ++i ) {
 		l = bmp.height-1-i;
 		memcpy(base->data+l*base->bytes_per_line,bmp.byte_pixels+i*bmp.width,bmp.width);
 	    }
-	    gfree( bmp.byte_pixels );
+	    free(bmp.byte_pixels);
 	} else {
-	    ret = GImageCreate(it_mono,bmp.width, bmp.height);
+	    if ( (ret=GImageCreate(it_mono,bmp.width, bmp.height))==NULL ) {
+		NoMoreMemMessage();
+		goto errorGImageMemBmp;
+	    }
 	    base = ret->u.image;
 	    for ( i=0; i<bmp.height; ++i ) {
 		l = bmp.height-1-i;
 		memcpy(base->data+l*base->bytes_per_line,bmp.byte_pixels+i*base->bytes_per_line,base->bytes_per_line);
 	    }
-	    gfree( bmp.byte_pixels );
+	    free(bmp.byte_pixels);
 	}
     }
     if ( ret->u.image->image_type==it_index ) {
@@ -399,7 +412,10 @@ GImage *GImageRead_Bmp(FILE *file) {
 	memcpy(ret->u.image->clut->clut,bmp.clut,bmp.colorsused*sizeof(Color));
 	ret->u.image->clut->trans_index = COLOR_UNKNOWN;
     } else if ( ret->u.image->image_type==it_mono && bmp.colorsused!=0 ) {
-	ret->u.image->clut = (GClut *) gcalloc(1,sizeof(GClut));
+	if ( (ret->u.image->clut=(GClut *)(calloc(1,sizeof(GClut))))==NULL ) {
+	    NoMoreMemMessage();
+	    goto errorGImageMemBmp;
+	}
 	ret->u.image->clut->clut_len = bmp.colorsused;
 	memcpy(ret->u.image->clut->clut,bmp.clut,bmp.colorsused*sizeof(Color));
 	ret->u.image->clut->trans_index = COLOR_UNKNOWN;
@@ -407,6 +423,9 @@ GImage *GImageRead_Bmp(FILE *file) {
     return( ret );
 
 errorGImageReadBmp:
+    fprintf(stderr,"Bad input file\n");
+errorGImageMemBmp:
+    GImageDestroy(ret);
     if ( bmp.bitsperpixel>=16 ) free(bmp.int32_pixels);
     else free(bmp.byte_pixels);
     return( NULL );
@@ -424,5 +443,5 @@ GImage *GImageReadBmp(char *filename) {
 
     ret = GImageRead_Bmp(file);
     fclose(file);
-return( ret );
+    return( ret );
 }
