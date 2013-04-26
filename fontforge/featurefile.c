@@ -5384,7 +5384,7 @@ return;
     /*  multiples */
     /* Another approach would be to make two lookups, but this is easier... */
     has_single = has_multiple = false;
-    for ( item=tok->sofar ; item!=NULL && item->type!=ft_lookup_start; item=item->next ) {
+    for ( item=tok->sofar ; item!=NULL && item->type!=ft_feat_start; item=item->next ) {
 	enum otlookup_type cur = fea_LookupTypeFromItem(item);
 	if ( cur==gsub_multiple )
 	    has_multiple = true;
@@ -5392,7 +5392,7 @@ return;
 	    has_single = true;
     }
     if ( has_multiple && has_single ) {
-	for ( item=tok->sofar ; item!=NULL && item->type!=ft_lookup_start; item=item->next ) {
+	for ( item=tok->sofar ; item!=NULL && item->type!=ft_feat_start; item=item->next ) {
 	    enum otlookup_type cur = fea_LookupTypeFromItem(item);
 	    if ( cur==gsub_single )
 		item->u2.pst->type = pst_multiple;
