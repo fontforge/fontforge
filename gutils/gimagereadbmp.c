@@ -29,9 +29,14 @@
 #include <string.h>
 GImage *_GImage_Create(enum image_type type, int32 width, int32 height);
 
-static int getshort(FILE *file) {
-    int temp = getc(file);
-return( (getc(file)<<8) | temp );
++static int getshort(FILE *fp) {
+/* Get Little-Endian short 16bit value. Return value if okay, -1 if error */
+    int ch1, ch2;
+
+    if ( (ch1=fgetc(fp))<0 || (ch2=fgetc(fp))<0 )
+	return( -1 );
+
+    return( (ch2<<8) | ch1 );
 }
 
 static long getl(FILE *file) {
