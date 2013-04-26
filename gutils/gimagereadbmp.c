@@ -29,7 +29,7 @@
 #include <string.h>
 GImage *_GImage_Create(enum image_type type, int32 width, int32 height);
 
-+static int getshort(FILE *fp) {
+static int getshort(FILE *fp) {
 /* Get Little-Endian short 16bit value. Return value if okay, -1 if error */
     int ch1, ch2;
 
@@ -39,7 +39,7 @@ GImage *_GImage_Create(enum image_type type, int32 width, int32 height);
     return( (ch2<<8) | ch1 );
 }
 
-+static long getlong(FILE *fp, long *value) {
+static long getlong(FILE *fp, long *value) {
 /* Get Little-Endian long 32bit int value. Return 0 if okay, -1 if error. */
     int ch1, ch2, ch3, ch4;
 
