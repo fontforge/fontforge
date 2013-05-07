@@ -287,7 +287,6 @@ fi
 # Checks for typedefs, structures, and compiler characteristics.
 
 AC_C_BIGENDIAN
-AC_HEADER_STDBOOL
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
 AC_TYPE_INT8_T
