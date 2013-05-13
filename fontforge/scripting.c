@@ -1097,11 +1097,8 @@ static void bUnicodeBlockEndFromLib(Context *c) {
     else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
 	ScriptError( c, "Bad type for argument" );
     c->return_val.type=v_int;
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    c->return_val.u.ival=-1;
-#else
+
     c->return_val.u.ival=unicode_block_end(c->a.vals[1].u.ival);
-#endif
 }
 
 static void bUnicodeBlockNameFromLib(Context *c) {
@@ -1113,13 +1110,9 @@ static void bUnicodeBlockNameFromLib(Context *c) {
     else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
 	ScriptError( c, "Bad type for argument" );
     c->return_val.type = v_str;
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    temp=NULL;
-#else
-    temp=unicode_block_name(c->a.vals[1].u.ival);
-#endif
-    if ( temp==NULL ) {
-	temp=galloc(1*sizeof(char)); temp='\0';
+
+    if ( (temp=unicode_block_name(c->a.vals[1].u.ival))==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
     }
     c->return_val.u.sval=temp;
 }
@@ -1131,11 +1124,8 @@ static void bUnicodeBlockStartFromLib(Context *c) {
     else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
 	ScriptError( c, "Bad type for argument" );
     c->return_val.type=v_int;
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    c->return_val.u.ival=-1;
-#else
+
     c->return_val.u.ival=unicode_block_start(c->a.vals[1].u.ival);
-#endif
 }
 
 static void bUnicodeNameFromLib(Context *c) {
@@ -1147,13 +1137,9 @@ static void bUnicodeNameFromLib(Context *c) {
     else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
 	ScriptError( c, "Bad type for argument" );
     c->return_val.type = v_str;
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    temp = NULL;
-#else
-    temp = unicode_name(c->a.vals[1].u.ival);
-#endif
-    if ( temp==NULL ) {
-	temp = galloc(1*sizeof(char)); temp = '\0';
+
+    if ( (temp=unicode_name(c->a.vals[1].u.ival))==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
     }
     c->return_val.u.sval = temp;
 }
@@ -1166,14 +1152,24 @@ static void bUnicodeAnnotationFromLib(Context *c) {
     else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
 	ScriptError( c, "Bad type for argument" );
     c->return_val.type = v_str;
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    temp = NULL;
-#else
-    temp = unicode_annot(c->a.vals[1].u.ival);
-#endif
-    if ( temp==NULL ) {
-	temp = galloc(1*sizeof(char)); temp = '\0';
+
+    if ( (temp=unicode_annot(c->a.vals[1].u.ival))==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
     }
+    c->return_val.u.sval = temp;
+}
+
+static void bUnicodeNamesListVersion(Context *c) {
+/* If the library is available, then return the Nameslist Version */
+    char *temp;
+
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments" );
+
+    if ( (temp=unicode_library_version())==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
+    }
+    c->return_val.type = v_str;
     c->return_val.u.sval = temp;
 }
 
@@ -8172,6 +8168,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "UnicodeBlockStartFromLib", bUnicodeBlockStartFromLib, 1 },
     { "UnicodeNameFromLib", bUnicodeNameFromLib, 1 },
     { "UnicodeAnnotationFromLib", bUnicodeAnnotationFromLib, 1 },
+    { "UnicodeNamesListVersion", bUnicodeNamesListVersion, 1 },
     { "Chr", bChr, 1 },
     { "Ord", bOrd, 1 },
     { "Real", bReal, 1 },
