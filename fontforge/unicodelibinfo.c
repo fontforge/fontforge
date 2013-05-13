@@ -297,3 +297,24 @@ char *unicode_block_name(int32 block_i) {
     return( name_data );
 #endif
 }
+
+char *unicode_library_version(void) {
+/* Return the unicode version for this library. Sometimes users still use */
+/* older libuninameslist or libunincodenames libraries because they don't */
+/* realize that these need to be updated to keep current too but not made */
+/* at same time that FontForge is released (release dates not in sync).   */
+
+#if !(_NO_LIBUNINAMESLIST) && _LIBUNINAMESLIST_FUN
+    /* libuninameslist-0.3.20130501-1 and later have a "version" function */
+    char *version_str;
+
+    version_str=copy(uniNamesList_NamesListVersion());
+
+    return( version_str );
+#else
+    /* Libunicodenames and older versions of libuninames don't have a ver */
+    /* function so we need to either test various annotations to find out */
+    /* what version we have, or we keep it simple and just return nothing */
+    return( NULL );
+#endif
+}
