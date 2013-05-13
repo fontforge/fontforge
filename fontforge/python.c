@@ -882,19 +882,13 @@ static PyObject *PyFF_UnicodeAnnotationFromLib(PyObject *UNUSED(self), PyObject 
 /* This function may be used in conjunction with UnicodeNameFromLib(n) */
     PyObject *ret;
     char *temp;
-
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    temp=NULL;
-#else
     long val;
 
     if ( !PyArg_ParseTuple(args,"|i",&val) )
 	return( NULL );
 
-    temp=unicode_annot(val);
-#endif
-    if ( temp==NULL ) {
-	temp=galloc(1*sizeof(char)); temp='\0';
+    if ( (temp=unicode_annot(val))==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
     }
     ret=Py_BuildValue("s",temp); free(temp);
     return( ret );
@@ -905,19 +899,13 @@ static PyObject *PyFF_UnicodeNameFromLib(PyObject *UNUSED(self), PyObject *args)
 /* This function may be used in conjunction with UnicodeAnnotationFromLib(n) */
     PyObject *ret;
     char *temp;
-
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    temp=NULL;
-#else
     long val;
 
     if ( !PyArg_ParseTuple(args,"|i",&val) )
 	return( NULL );
 
-    temp=unicode_name(val);
-#endif
-    if ( temp==NULL ) {
-	temp=galloc(1*sizeof(char)); temp='\0';
+    if ( (temp=unicode_name(val))==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
     }
     ret=Py_BuildValue("s",temp); free(temp);
     return( ret );
@@ -926,33 +914,23 @@ static PyObject *PyFF_UnicodeNameFromLib(PyObject *UNUSED(self), PyObject *args)
 static PyObject *PyFF_UnicodeBlockStartFromLib(PyObject *UNUSED(self), PyObject *args) {
 /* If the library is available, then get the official start for this unicode block */
 /* Use this function with UnicodeBlockNameFromLib(n) & UnicodeBlockEndFromLib(n). */
-
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    return( Py_BuildValue("i", -1) );
-#else
     long val;
 
     if ( !PyArg_ParseTuple(args,"|i",&val) )
 	return( NULL );
 
     return( Py_BuildValue("i", unicode_block_start(val)) );
-#endif
 }
 
 static PyObject *PyFF_UnicodeBlockEndFromLib(PyObject *UNUSED(self), PyObject *args) {
 /* If the library is available, then get the official end for this unicode block. */
 /* Use this function with UnicodeBlockStartFromLib(n), UnicodeBlockNameFromLib(n) */
-
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    return( Py_BuildValue("i", -1) );
-#else
     long val;
 
     if ( !PyArg_ParseTuple(args,"|i",&val) )
 	return( NULL );
 
     return( Py_BuildValue("i", unicode_block_end(val)) );
-#endif
 }
 
 static PyObject *PyFF_UnicodeBlockNameFromLib(PyObject *UNUSED(self), PyObject *args) {
@@ -960,19 +938,25 @@ static PyObject *PyFF_UnicodeBlockNameFromLib(PyObject *UNUSED(self), PyObject *
 /* Use this function with UnicodeBlockStartFromLib(n), UnicodeBlockEndFromLib(n). */
     PyObject *ret;
     char *temp;
-
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    temp=NULL;
-#else
     long val;
 
     if ( !PyArg_ParseTuple(args,"|i",&val) )
 	return( NULL );
 
-    temp=unicode_block_name(val);
-#endif
-    if ( temp==NULL ) {
-	temp=galloc(1*sizeof(char)); temp='\0';
+    if ( (temp=unicode_block_name(val))==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
+    }
+    ret=Py_BuildValue("s",temp); free(temp);
+    return( ret );
+}
+
+static PyObject *PyFF_UnicodeNamesListVersion(PyObject *UNUSED(self), PyObject *args) {
+/* If the library is available, then return the Nameslist Version number */
+    PyObject *ret;
+    char *temp;
+
+    if ( (temp=unicode_library_version())==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
     }
     ret=Py_BuildValue("s",temp); free(temp);
     return( ret );
@@ -18110,6 +18094,7 @@ static PyMethodDef module_fontforge_methods[] = {
     { "UnicodeBlockStartFromLib", PyFF_UnicodeBlockStartFromLib, METH_VARARGS, "Return the www.unicode.org block start, for example block[0]={0..127} -> 0" },
     { "UnicodeBlockEndFromLib", PyFF_UnicodeBlockEndFromLib, METH_VARARGS, "Return the www.unicode.org block end, for example block[1]={128..255} -> 255" },
     { "UnicodeBlockNameFromLib", PyFF_UnicodeBlockNameFromLib, METH_VARARGS, "Return the www.unicode.org block name, for example block[2]={256..383} -> Latin Extended-A" },
+    { "UnicodeNamesListVersion", PyFF_UnicodeNamesListVersion, METH_NOARGS, "Return the www.unicode.org NamesList version for this library" },
     { "version", PyFF_Version, METH_NOARGS, "Returns a string containing the current version of FontForge, as 20061116" },
     { "runInitScripts", PyFF_RunInitScripts, METH_NOARGS, "Run the system and user initialization scripts, if not already run" },
     { "scriptPath", PyFF_GetScriptPath, METH_NOARGS, "Returns a list of the directories searched for scripts"},
