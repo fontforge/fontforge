@@ -1612,4 +1612,5 @@ void CVSelectPointAt(CharView *cv) {
     while ( !pa.done )
 	GDrawProcessOneEvent(NULL);
     GDrawSetVisible(pa.gw,false);
+
 }

@@ -1080,7 +1080,7 @@ return( false );
     sc->unicodeenc = unienc;
     if ( sc->name==NULL || strcmp(name,sc->name)!=0 ) {
 	if ( sc->name!=NULL )
-	    SFGlyphRenameFixup(sf,sc->name,name);
+	    SFGlyphRenameFixup(sf,sc->name,name,false);
 	free(sc->name);
 	sc->name = copy(name);
 	sc->namechanged = true;

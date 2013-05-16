@@ -1090,6 +1090,44 @@ static void bNameFromUnicode(Context *c) {
     c->return_val.u.sval = copy(StdGlyphName(buffer,c->a.vals[1].u.ival,uniinterp,for_new_glyphs));
 }
 
+static void bUnicodeBlockEndFromLib(Context *c) {
+/* If the library is available, then get the official Nth block end */
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
+	ScriptError( c, "Bad type for argument" );
+    c->return_val.type=v_int;
+
+    c->return_val.u.ival=unicode_block_end(c->a.vals[1].u.ival);
+}
+
+static void bUnicodeBlockNameFromLib(Context *c) {
+/* If the library is available, then get the official Nth block name */
+    char *temp;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
+	ScriptError( c, "Bad type for argument" );
+    c->return_val.type = v_str;
+
+    if ( (temp=unicode_block_name(c->a.vals[1].u.ival))==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
+    }
+    c->return_val.u.sval=temp;
+}
+
+static void bUnicodeBlockStartFromLib(Context *c) {
+/* If the library is available, then get the official Nth block start */
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
+	ScriptError( c, "Bad type for argument" );
+    c->return_val.type=v_int;
+
+    c->return_val.u.ival=unicode_block_start(c->a.vals[1].u.ival);
+}
+
 static void bUnicodeNameFromLib(Context *c) {
 /* If the library is available, then get the official name for this unicode value */
     char *temp;
@@ -1099,13 +1137,9 @@ static void bUnicodeNameFromLib(Context *c) {
     else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
 	ScriptError( c, "Bad type for argument" );
     c->return_val.type = v_str;
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    temp = NULL;
-#else
-    temp = unicode_name(c->a.vals[1].u.ival);
-#endif
-    if ( temp==NULL ) {
-	temp = galloc(1*sizeof(char)); temp = '\0';
+
+    if ( (temp=unicode_name(c->a.vals[1].u.ival))==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
     }
     c->return_val.u.sval = temp;
 }
@@ -1118,14 +1152,24 @@ static void bUnicodeAnnotationFromLib(Context *c) {
     else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
 	ScriptError( c, "Bad type for argument" );
     c->return_val.type = v_str;
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    temp = NULL;
-#else
-    temp = unicode_annot(c->a.vals[1].u.ival);
-#endif
-    if ( temp==NULL ) {
-	temp = galloc(1*sizeof(char)); temp = '\0';
+
+    if ( (temp=unicode_annot(c->a.vals[1].u.ival))==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
     }
+    c->return_val.u.sval = temp;
+}
+
+static void bUnicodeNamesListVersion(Context *c) {
+/* If the library is available, then return the Nameslist Version */
+    char *temp;
+
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments" );
+
+    if ( (temp=unicode_library_version())==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
+    }
+    c->return_val.type = v_str;
     c->return_val.u.sval = temp;
 }
 
@@ -8119,8 +8163,12 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "GetEnv", bGetEnv, 1 },
     { "UnicodeFromName", bUnicodeFromName, 1 },
     { "NameFromUnicode", bNameFromUnicode, 1 },
+    { "UnicodeBlockEndFromLib", bUnicodeBlockEndFromLib, 1 },
+    { "UnicodeBlockNameFromLib", bUnicodeBlockNameFromLib, 1},
+    { "UnicodeBlockStartFromLib", bUnicodeBlockStartFromLib, 1 },
     { "UnicodeNameFromLib", bUnicodeNameFromLib, 1 },
     { "UnicodeAnnotationFromLib", bUnicodeAnnotationFromLib, 1 },
+    { "UnicodeNamesListVersion", bUnicodeNamesListVersion, 1 },
     { "Chr", bChr, 1 },
     { "Ord", bOrd, 1 },
     { "Real", bReal, 1 },
@@ -10100,7 +10148,7 @@ return( def_py );
 
 static void _CheckIsScript(int argc, char *argv[]) {
     int i, is_python = DefaultLangPython();
-    char *arg;
+    char *pt;
 
 #ifndef _NO_PYTHON
 /*# ifndef GWW_TEST*/
@@ -10110,15 +10158,15 @@ static void _CheckIsScript(int argc, char *argv[]) {
     if ( argc==1 )
 return;
     for ( i=1; i<argc; ++i ) {
-	arg = argv[i];
-	if ( *arg=='-' && arg[1]=='-' ) ++arg;
-	if ( strcmp(arg,"-nosplash")==0 )
+	pt = argv[i];
+	if ( *pt=='-' && pt[1]=='-' && pt[2]!='\0' ) ++pt;
+	if ( strcmp(pt,"-nosplash")==0 )
 	    /* Skip it */;
-	else if ( strcmp(argv[i],"-lang=py")==0 )
+	else if ( strcmp(pt,"-lang=py")==0 )
 	    is_python = true;
-	else if ( strcmp(argv[i],"-lang=ff")==0 || strcmp(argv[i],"-lang=pe")==0 )
+	else if ( strcmp(pt,"-lang=ff")==0 || strcmp(pt,"-lang=pe")==0 )
 	    is_python = false;
-	else if ( strcmp(argv[i],"-lang")==0 && i+1<argc &&
+	else if ( strcmp(pt,"-lang")==0 && i+1<argc &&
 		(strcmp(argv[i+1],"py")==0 || strcmp(argv[i+1],"ff")==0 || strcmp(argv[i+1],"pe")==0)) {
 	    ++i;
 	    is_python = strcmp(argv[i],"py")==0;
@@ -10133,10 +10181,10 @@ return;
 #elif !defined(_NO_FFSCRIPT)
 	    ProcessNativeScript(argc, argv,stdin);
 #endif
-	} else if ( strcmp(argv[i],"-script")==0 ||
-		strcmp(argv[i],"-dry")==0 || strcmp(argv[i],"-c")==0 ) {
+	} else if ( strcmp(pt,"-script")==0 ||
+		strcmp(pt,"-dry")==0 || strcmp(argv[i],"-c")==0 ) {
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
-	    if ( is_python==-1 && strcmp(argv[i],"-script")==0 )
+	    if ( is_python==-1 && strcmp(pt,"-script")==0 )
 		is_python = PythonLangFromExt(argv[i+1]);
 	    if ( is_python )
 		PyFF_Main(argc,argv,i);

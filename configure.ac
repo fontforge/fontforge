@@ -118,7 +118,6 @@ AC_PROG_SED
 PKG_PROG_PKG_CONFIG
 AC_PATH_PROG([MSGFMT],[msgfmt],[msgfmt])
 AC_PATH_PROG([XGETTEXT],[xgettext],[xgettext])
-AC_PATH_PROG([CPROTO],[cproto],[cproto])
 AC_PATH_PROG([INDENT],[indent],[indent])
 AC_PATH_PROG([UNZIP],[unzip],[unzip])
 AC_PATH_PROG([UPDATE_MIME_DATABASE],[update-mime-database],[update-mime-database])
@@ -288,7 +287,6 @@ fi
 # Checks for typedefs, structures, and compiler characteristics.
 
 AC_C_BIGENDIAN
-AC_HEADER_STDBOOL
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
 AC_TYPE_INT8_T
@@ -306,6 +304,9 @@ fi
 AX_PTHREAD
 
 #--------------------------------------------------------------------------
+AC_LANG_PUSH([C]) dnl NOTE: try not to push/pop too often
+# Check to see if "this" compiler can use these flags and/or warnings.
+# Enable the flags that can be used and skip flags that are unknown.
 FONTFORGE_COMPILER_FLAGS([WARNING_CFLAGS],
         [-Wunused -Wreturn-type
          -Wparentheses -Wformat -Wchar-subscripts
@@ -317,7 +318,7 @@ FONTFORGE_COMPILER_FLAGS([WARNING_CFLAGS],
          -Werror=implicit])
 # Sep2012, There's a bug in <py3 with Py_True/False that will propagate
 # with GCC's "strict-aliasing" rules. -Wstrict-aliasing
-
+AC_LANG_POP
 #--------------------------------------------------------------------------
 # Bypass older autoscan recommendations (if anyone decides to run autoscan)
 # These packages promises to not use malloc(0) or realloc(n, 0) so we don't

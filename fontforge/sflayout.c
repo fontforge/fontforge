@@ -1093,7 +1093,7 @@ static Array *SFDefaultScriptsLines(Array *arr,SplineFont *sf) {
 	    /* Chinese Tranditional */
 	    lines[lcnt++] = copy("道可道非常道，名可名非常名。");
 	    /* Japanese */
-	    str = "吾輩は猫で∂る（夏ｭﾚ漱⽯）：吾輩は猫で∂る";
+        str = "吾輩は猫である（夏目漱石）：吾輩は猫である";
 	  break;
 	  case CHR('k','a','n','a'):
 	      /* Hiragana */

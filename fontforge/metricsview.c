@@ -5255,8 +5255,7 @@ GResInfo metricsview_ri = {
 
 void MVSelectFirstKerningTable(struct metricsview *mv)
 {
-    SplineFont *sf = mv->sf;
-
+    /* SplineFont *sf = mv->sf; */
     /* printf("MVSelectFirstKerningTable() kerns:%p\n", sf->kerns ); */
     /* if( sf->kerns ) */
     /* { */
@@ -5271,9 +5270,9 @@ void MVSelectFirstKerningTable(struct metricsview *mv)
     {
 	return;
     }
-    
+
     GTextInfo **ti=NULL;
-    int32 len, sc;
+    int32 len;
     ti = GGadgetGetList(mv->features,&len);
     GGadgetSelectOneListItem(mv->features,0);
     MVRemetric(mv);

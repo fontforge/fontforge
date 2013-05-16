@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="1024"
+   height="1024"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="layout_tiled.svg">
+  <title
+     id="title3058">t</title>
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#959595"
+     bordercolor="#000000"
+     borderopacity="0.70196078"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.7"
+     inkscape:cx="467.86435"
+     inkscape:cy="498.36117"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:showpageshadow="false"
+     showborder="true"
+     inkscape:window-width="1454"
+     inkscape:window-height="997"
+     inkscape:window-x="65"
+     inkscape:window-y="50"
+     inkscape:window-maximized="0"
+     inkscape:object-nodes="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid2985"
+       empspacing="4"
+       visible="true"
+       enabled="true"
+       snapvisiblegridlinesonly="true"
+       originx="0px"
+       spacingx="64px"
+       spacingy="64px" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>t</dc:title>
+        <cc:license
+           rdf:resource="" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-28.362183)">
+    <path
+       id="rect3010"
+       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       d="m 704,796.36218 0,64 128,0 0,-64 -128,0 z m -512,0 0,64 128,0 0,-64 -128,0 z m 448,-128 320,0 0,320 -320,0 0,-320 z m -64,-64 0,64 0,320 0,64.00002 320,0 128,0 0,-128.00002 0,-320 -64,0 -384,0 z m -384,-64 0,64 128,0 0,-64 -128,0 z m 512,-256 0,64 128,0 0,-64 -128,0 z m -512,0 0,64 128,0 0,-64 -128,0 z m 448,-128 320,0 0,320 -320,0 0,-320 z m -576,0 384,0 0,832 -384,0 0,-832 z M 128,28.362183 c -70.912,0 -128,57.088006 -128,127.999997 l 0,384 0,384 0,128.00002 128,0 384,0 0,-64.00002 0,-832 64,0 0,320 0,64 64,0 320,0 64,0 0,-384 C 1024,85.450189 966.912,28.362183 896,28.362183 l -768,0 z" />
+  </g>
+</svg>

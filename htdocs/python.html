@@ -273,10 +273,60 @@
 	namelist is specified the name will be taken from that.</TD>
     </TR>
     <TR>
+      <TD><CODE>UnicodeAnnotationFromLib</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Returns the Unicode Annotations for this value as described by www.unicode.org.
+	If there is no unicode annotation for this value, or no library available,
+	then return empty string "". It can execute with no current font.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>UnicodeBlockEndFromLib</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Returns the Unicode Block end value as described by www.unicode.org.
+	Currently, the blocks are {0..233}, spanning unicode values {uni0..uni10FFFF}.
+	If there is no value, or no library available, then return -1.
+	This can execute with no current font.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>UnicodeBlockNameFromLib</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Returns the Unicode Block Name as described by www.unicode.org.
+	Currently, the blocks are {0..233}, spanning unicode values {uni0..uni10FFFF}.
+	If there is no value, or no library available, then return empty string "".
+	This can execute with no current font.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>UnicodeBlockStartFromLib</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Returns the Unicode Block start value as described by www.unicode.org.
+	Currently, the blocks are {0..233}, spanning unicode values {uni0..uni10FFFF}.
+	If there is no value, or no library available, then return -1.
+	This can execute with no current font.</TD>
+    </TR>
+    <TR>
       <TD><CODE>unicodeFromName</CODE></TD>
       <TD><CODE>(glyphname)</CODE></TD>
       <TD>Looks up glyph name in its dictionary and if it is associated with a
 	unicode code point returns that number. Otherwise it returns -1</TD>
+    </TR>
+    <TR>
+      <TD><CODE>UnicodeNameFromLib</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Returns the Unicode Name for this value as described by www.unicode.org.
+	If there is no unicode name for this value, or no library available,
+	then return empty string "". It can execute with no current font.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>UnicodeNamesListVersion</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Return the Unicode Nameslist Version (as described by www.unicode.org).
+	libuninameslist and libunicodenames are released on schedules depending on
+	when www.unicode.org releases new information. These dates do not match
+	FontForge release dates, therefore users might not keep this optional library
+	upto current updates. This instruction can be used to test if the Nameslist
+	library is recent for your script. This function currently works only for
+	libuninameslist ver_0.3.20130501 or later, else it returns empty string "".
+	This can execute with no current font.</TD>
     </TR>
     <TR>
       <TD><CODE>version</CODE></TD>

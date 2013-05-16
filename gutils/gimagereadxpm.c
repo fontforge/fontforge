@@ -1,4 +1,5 @@
 /* Copyright (C) 2000-2012 by George Williams */
+/* 2013apr11, additional fixes and error checks done, Jose Da Silva */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -66,19 +67,19 @@ good they are.
 */
 /* There seems to be another, similar format XPM2 which is the same except
     nothing is in a string.  Example:
-! XPM2  
+! XPM2
 64 64 2 1
-  c #FFFFFFFFFFFF
-. c #000000000000
-                     ..       .   .                             
- .                                    .  ..                     
-  .                                                             
-     .                 .                                        
-        ..                                  .                   
-                                                                
-                                                                
-                                                .               
-                            .                                   
+. c #FFFFFFFFFFFF
++ c #000000000000
+.....................++.......+...+.............................
+.+....................................+..++.....................
+..+.............................................................
+.....+.................+........................................
+........++..................................+...................
+................................................................
+................................................................
+................................................+...............
+............................+...................................
 */
 
 static long LookupXColorName(char *name) {
@@ -98,47 +99,49 @@ return( ((ret.red>>8)<<16) | (ret.green&0xff00) | (ret.blue>>8) );
 return( COLOR_UNKNOWN );
 }
 
-/* Don't handle backslash sequences, nor concatenated strings */
-static int getstring(unsigned char *buf, int sz, FILE *fp) {
+static int getstring(unsigned char *buf,int sz,FILE *fp) {
+/* get a string of text within "" marks and skip */
+/* backslash sequences, or concatenated strings. */
     int ch, incomment=0;
 
-    while ((ch=getc(fp))!=EOF ) {
+    while ( (ch=getc(fp))>=0 ) {
 	if ( ch=='"' && !incomment )
-    break;
+	    break;
 	if ( !incomment && ch=='/' ) {
-	    ch = getc(fp);
+	    if ( (ch=getc(fp))<0 ) break;
 	    if ( ch=='*' ) incomment=true;
 	    else ungetc(ch,fp);
 	} else if ( incomment && ch=='*' ) {
-	    ch = getc(fp);
-	    if ( ch=='/' ) incomment = false;
+	    if ( (ch=getc(fp))<0 ) break;
+	    if ( ch=='/' ) incomment=false;
 	    else ungetc(ch,fp);
 	}
     }
-    if ( ch==EOF )
-return( 0 );
-    while ( (ch=getc(fp))!=EOF && ch!='"' ) {
-	if ( --sz>0 )
-	    *buf++ = ch;
-    }
+    if ( ch<0 )
+	return( 0 );
+
+    /* Get data within quote marks */
+    while ( --sz>0 && (ch=getc(fp))>=0 && ch!='"' )
+	*buf++ = ch;
+    if ( ch!='"' )
+	return( 0 );
     *buf = '\0';
-return(1 );
+    return( 1 );
 }
 
-static int gww_getline(unsigned char *buf, int sz, FILE *fp) {
-    int ch;
+static int gww_getline(unsigned char *buf,int sz,FILE *fp) {
+/* get a single line of text (leave-out the '\n') */
+    int ch=0;
     unsigned char *pt=buf;
 
-    while ((ch=getc(fp))!=EOF && ch!='\n' && ch!='\r')
+    while ( --sz>0 && (ch=getc(fp))>=0 && ch!='\n' && ch!='\r' )
 	*pt++ = ch;
-    if ( ch=='\r' ) {
-	if ((ch = getc(fp))!='\n' )
-	    ungetc(ch,fp);
-    }
+    if ( ch=='\r' && (ch=getc(fp))!='\n' )
+	ungetc(ch,fp);
     *pt = '\0';
-    if ( ch==EOF && pt==buf )
-return( 0 );
-return(1 );
+    if ( ch<0 && pt==buf )
+	return( 0 );
+    return( 1 );
 }
 
 #define TRANS 0x1000000
@@ -150,14 +153,14 @@ union hash {
 static void freetab(union hash *tab, int nchars) {
     int i;
 
-    if ( nchars>1 ) {
+    if ( tab && nchars>1 ) {
 	for ( i=0; i<256; ++i )
 	    if ( tab[i].table!=NULL )
 		freetab(tab[i].table,nchars-1);
     }
-    gfree(tab);
+    free(tab);
 }
-	
+
 static int fillupclut(Color *clut, union hash *tab,int index,int nchars) {
     int i;
 
@@ -178,19 +181,19 @@ static int fillupclut(Color *clut, union hash *tab,int index,int nchars) {
     }
 return( index );
 }
-	    
+
 static long parsecol(char *start, char *end) {
     long ret = -1;
     int ch;
 
     while ( !isspace(*start) && *start!='\0' ) ++start;
-    while ( isspace(*start)) ++start;
-    while ( end>start && isspace(end[-1])) --end;
+    while ( isspace(*start) ) ++start;
+    while ( end>start && isspace(end[-1]) ) --end;
     ch = *end; *end = '\0';
 
     if ( strcmp(start,"None")==0 )
-	ret = TRANS;
-    else if ( *start=='#' || *start=='%') {
+	ret = TRANS; /* no_color==transparent */
+    else if ( *start=='#' || *start=='%' ) {
 	if ( end-start==4 ) {
 	    sscanf(start+1,"%lx",&ret);
 	    ret = ((ret&0xf00)<<12) | ((ret&0xf0)<<8) | ((ret&0xf)<<4);
@@ -206,7 +209,7 @@ static long parsecol(char *start, char *end) {
 	    /* How do I translate from HSB to RGB???? */
 	    ;
 	}
-    } else if (( ret=LookupXColorName(start))!=-1 ) {
+    } else if ( (ret=LookupXColorName(start))!=-1 ) {
     } else if ( strcmp(start,"white")==0 ) {
 	ret = COLOR_CREATE(255,255,255);
     } else {
@@ -228,12 +231,12 @@ static char *findnextkey(char *str) {
 		    (*str=='g' && isspace(str[1])) ||
 		    (*str=='g' && str[1]=='4' && isspace(str[2])) ||
 		    (*str=='s' && isspace(str[1])) )
-return( str );
+		return( str );
 	    oktostart = false;
 	}
 	++str;
     }
-return( str );
+    return( str );
 }
 
 static long findcol(char *str) {
@@ -245,32 +248,40 @@ static long findcol(char *str) {
 	while ( *pt ) {
 	    end = findnextkey(pt+2);
 	    if ( *pt==*try_order )
-return( parsecol(pt,end));
+		return( parsecol(pt,end) );
 	    pt = end;
 	}
 	++try_order;
     }
-	
-return 0;
+    return( 0 );
 }
 
 static union hash *parse_colors(FILE *fp,unsigned char *line, int lsiz, int ncols, int nchars,
 	int (*getdata)(unsigned char *,int,FILE *)) {
-    union hash *tab = (union hash *) galloc(256*sizeof(union hash));
+    union hash *tab;
     union hash *sub;
     int i, j;
+
+    if ( (tab=(union hash *)malloc(256*sizeof(union hash)))==NULL ) {
+	NoMoreMemMessage();
+	return( NULL );
+    }
 
     if ( nchars==1 )
 	memset(tab,-1,256*sizeof(union hash));
     for ( i=0; i<ncols; ++i ) {
-	if ( !getdata(line,lsiz,fp)) {
+	if ( !getdata(line,lsiz,fp) ) {
 	    freetab(tab,nchars);
-return( NULL );
+	    return( NULL );
 	}
 	sub = tab;
 	for ( j=0; j<nchars-1; ++j ) {
 	    if ( sub[line[j]].table==NULL ) {
-		sub[line[j]].table = (union hash *) galloc(256*sizeof(union hash));
+		if ( (sub[line[j]].table=(union hash *)malloc(256*sizeof(union hash)))==NULL ) {
+		    NoMoreMemMessage();
+		    freetab(tab,nchars);
+		    return( NULL );
+		}
 		if ( j==nchars-2 )
 		    memset(sub[line[j]].table,-1,256*sizeof(union hash));
 	    }
@@ -278,10 +289,12 @@ return( NULL );
 	}
 	sub[line[j]].color = findcol((char *) line+j+1);
     }
-return( tab );
+    return( tab );
 }
 
 GImage *GImageReadXpm(char * filename) {
+/* Import an *.xpm image, else cleanup and return NULL if error */
+/* TODO: There is an XPM3 library that takes care of all cases. */
    FILE *fp;
    GImage *ret=NULL;
    struct _GImage *base;
@@ -293,45 +306,58 @@ GImage *GImageReadXpm(char * filename) {
    unsigned char *pt, *end; unsigned long *ipt;
    int (*getdata)(unsigned char *,int,FILE *) = NULL;
 
-    if ( (fp=fopen(filename,"rb"))==NULL ) {
+    if ( (fp=fopen(filename,"r"))==NULL ) {
 	fprintf(stderr,"Can't open \"%s\"\n", filename);
 	return( NULL );
     }
 
-    fgets((char *) buf,sizeof(buf),fp);
+    line=NULL; tab=NULL; nchar=0;
+    /* If file begins with XPM then read lines using getstring;() */
+    /* otherwise for XPM2 read lines using function gww_getline() */
+    if ( (fgets((char *)buf,sizeof(buf),fp))<0 )
+	goto errorGImageReadXpm;
     if ( strstr((char *) buf,"XPM2")!=NULL )
 	getdata = gww_getline;
-    else if ( strstr((char *) buf,"/*")!=NULL && strstr((char *) buf,"XPM")!=NULL && strstr((char *) buf,"*/")!=NULL )
+    else if ( strstr((char *)buf,"/*")!=NULL && strstr((char *)buf,"XPM")!=NULL && strstr((char *)buf,"*/")!=NULL )
 	getdata = getstring;
+
+    /* If no errors yet then go get width, height, colors, nchars */
     if ( getdata==NULL ||
-	    !getdata( buf,sizeof(buf),fp) ||
-	    sscanf((char *) buf,"%d %d %d %d", &width, &height, &cols, &nchar)!=4 ) {
-	fclose(fp);
-return( NULL );
+	    !getdata(buf,sizeof(buf),fp) ||
+	    sscanf((char *)buf,"%d %d %d %d",&width,&height,&cols,&nchar)!=4 )
+	goto errorGImageReadXpm;
+
+    /* Prepare to fetch one graphic line at a time for conversion */
+    if ( (line=(unsigned char *)malloc((lsiz=nchar*width+20)*sizeof(unsigned char)))==NULL ) {
+	NoMoreMemMessage();
+	goto errorGImageReadXpmMem;
     }
-    line = (unsigned char *) galloc(lsiz = nchar*width+20);
-    tab = parse_colors(fp,line,lsiz,cols,nchar,getdata);
+
+    /* Fetch color table */
+    if ( (tab=parse_colors(fp,line,lsiz,cols,nchar,getdata))==NULL )
+	goto errorGImageReadXpmMem;
+
     if ( cols<=256 ) {
 	Color clut[257];
 	clut[256] = COLOR_UNKNOWN;
 	fillupclut(clut,tab,0,nchar);
-	ret = GImageCreate(it_index,width,height);
+	if ( (ret=GImageCreate(it_index,width,height))==NULL )
+	    goto errorGImageReadXpmMem;
 	ret->u.image->clut->clut_len = cols;
 	memcpy(ret->u.image->clut->clut,clut,cols*sizeof(Color));
 	ret->u.image->trans = clut[256];
 	ret->u.image->clut->trans_index = clut[256];
     } else {
-	ret = GImageCreate(it_true,width,height);
+	if ( (ret=GImageCreate(it_true,width,height))==NULL )
+	    goto errorGImageReadXpmMem;
 	ret->u.image->trans = TRANS;		/* TRANS isn't a valid Color, but it fits in our 32 bit pixels */
     }
+
+    /* Get image */
     base = ret->u.image;
     for ( y=0; y<height; ++y ) {
-	if ( !getdata(line,lsiz,fp)) {
-	    GImageDestroy(ret);
-	    freetab(tab,nchar);
-	    fclose(fp);
-return( NULL );
-	}
+	if ( !getdata(line,lsiz,fp))
+	    goto errorGImageReadXpm;
 	pt = (uint8 *) (base->data+y*base->bytes_per_line); ipt = NULL; end = pt+width;
 	if ( cols>256 )
 	    ipt = (unsigned long *) pt;
@@ -349,7 +375,16 @@ return( NULL );
 	    ++pt; ++ipt; ++lpt;
 	}
     }
+    free(line);
     freetab(tab,nchar);
     fclose(fp);
-return( ret );
+    return( ret );
+
+errorGImageReadXpm:
+    fprintf(stderr,"Bad input file \"%s\"\n",filename );
+errorGImageReadXpmMem:
+    GImageDestroy(ret);
+    free(line); freetab(tab,nchar);
+    fclose(fp);
+    return( NULL );
 }

@@ -30,6 +30,7 @@
 #ifndef _NO_LIBUNICODENAMES
 #include <libunicodenames.h>	/* need to open a database when we start */
 extern uninm_names_db names_db; /* Unicode character names and annotations database */
+extern uninm_blocks_db blocks_db;
 #endif
 #include <gfile.h>
 #include <gresource.h>
@@ -705,15 +706,15 @@ static int uses_local_x(int argc,char **argv) {
     for ( i=1; i<argc; ++i ) {
 	arg = argv[i];
 	if ( *arg=='-' ) {
-	    if ( arg[0]=='-' && arg[1]=='-' )
+	    if ( arg[0]=='-' && arg[1]=='-' && arg[2]!='\0')
 		++arg;
 	    if ( strcmp(arg,"-display")==0 )
 return( i+1<argc && strcmp(argv[i+1],":0")!=0 && strcmp(argv[i+1],":0.0")!=0? 2 : 0 );
-	    if ( strcmp(arg,"-c")==0 )
+	    if ( strcmp(argv[i],"-c")==0 )
 return( false );		/* we use a script string, no x display at all */
 	    if ( strcmp(arg,"-script")==0 )
 return( false );		/* we use a script, no x display at all */
-	    if ( strcmp(arg,"-")==0 )
+	    if ( strcmp(argv[i],"-")==0 )
 return( false );		/* script on stdin */
 	} else {
 	    /* Is this argument a script file ? */
@@ -1155,7 +1156,7 @@ exit( 0 );
 	char *pt = argv[i];
 
 	GDrawProcessPendingEvents(NULL);
-	if ( pt[0]=='-' && pt[1]=='-' )
+	if ( pt[0]=='-' && pt[1]=='-' && pt[2]!='\0')
 	    ++pt;
 	if ( strcmp(pt,"-new")==0 ) {
 	    FontNew();
@@ -1249,6 +1250,7 @@ exit( 0 );
 
 #ifndef _NO_LIBUNICODENAMES
     uninm_names_db_close(names_db);	/* close this database before exiting */
+    uninm_blocks_db_close(blocks_db);
 #endif
 
     lt_dlexit();

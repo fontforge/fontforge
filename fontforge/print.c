@@ -2379,32 +2379,31 @@ static char *_hangulsijo[] = {
     NULL
 };
 /* Chinese traditional */
-/* Laautzyy */
-static char *_YihKing[] = {
+/* https://en.wikipedia.org/wiki/Tao_Te_Ching */
+static char *_TaoTeChing[] = {
     "道可道非常道，",
     "名可名非常名。",
     NULL
 };
-static char *_LiiBair[] = {
+/* http://gan.wikipedia.org/wiki/%E5%B0%87%E9%80%B2%E9%85%92 */
+static char *_LiBai[] = {
     "將進酒",
     "",
     "君不見 黃河之水天上來 奔流到海不復回",
     "君不見 高堂明鏡悲白髮 朝如青絲暮成雪",
-    "人生得意須盡歡 莫使金樽空對⺝",
+    "人生得意須盡歡 莫使金樽空對月",
     "天生我材必有用 千金散盡還復來",
     "烹羊宰牛且為樂 會須一飲三百杯",
     "岑夫子 丹丘生 將進酒 君莫停",
     "與君歌一曲 請君為我側耳聽",
-    "",
     "鐘鼓饌玉不足貴 但願長醉不願醒",
     "古來聖賢皆寂寞 惟有飲者留其名",
     "陳王昔時宴平樂 斗酒十千恣讙謔",
     "主人何為言少錢 徑須沽取對君酌",
-    "五花馬 千金裘 呼兒將出換美酒",
-    "與爾同消萬古愁",
+    "五花馬 千金裘 呼兒將出換美酒 與爾同消萬古愁",
     NULL
 };
-static char *_LiiBairShort[] = {
+static char *_LiBaiShort[] = {
     "將進酒",
     "",
     "君不見 黃河之水天上來 奔流到海不復回",
@@ -2412,12 +2411,14 @@ static char *_LiiBairShort[] = {
     NULL
 };
 /* Japanese */
+/* https://ja.wikipedia.org/wiki/%E6%BA%90%E6%B0%8F%E7%89%A9%E8%AA%9E */
 static char *_Genji[] = {
-    "源⽒物語（紫式部）：いづれの御時にか、⼥御更⾐∂またさぶらひたまひける中に、いとやむごとなき際には∂らぬが、すぐれて時めきたまふ∂りけり",
+    "源氏物語（紫式部）：いづれの御時にか、女御・更衣あまた さぶらひたまひけるなかに、いとやむごとなき 際にはあらぬが、すぐれてときめきたまふありけり。",
     NULL
 };
+/* http://www.geocities.jp/sybrma/42souseki.neko.html */
 static char *_IAmACat[] = {
-    "吾輩は猫で∂る（夏ｭﾚ漱⽯）：吾輩は猫で∂る",
+    "吾輩は猫である（夏目漱石）：吾輩は猫である",
     NULL
 };
 
@@ -2557,8 +2558,8 @@ static struct langsamples {
     { _hebrew, "he", sc_hebrew, CHR('h','e','b','r'), CHR('I','W','R',' ') },
     { _arabic, "ar", sc_arabic, CHR('a','r','a','b'), CHR('A','R','A',' ')},
     { _hangulsijo, "ko", sc_hangul, CHR('h','a','n','g'), CHR('K','O','R',' ')},
-    { _YihKing, "zh", sc_chinesetrad, CHR('h','a','n','i'), CHR('Z','H','T',' ')},
-    { _LiiBair, "zh", sc_chinesetrad, CHR('h','a','n','i'), CHR('Z','H','T',' ')},
+    { _TaoTeChing, "zh", sc_chinesetrad, CHR('h','a','n','i'), CHR('Z','H','T',' ')},
+    { _LiBai, "zh", sc_chinesetrad, CHR('h','a','n','i'), CHR('Z','H','T',' ')},
     { _Genji, "ja", sc_kanji, CHR('h','a','n','i'), CHR('J','A','N',' ')},
     { _IAmACat, "ja", sc_kanji, CHR('h','a','n','i'), CHR('J','A','N',' ')},
     { _donquixote, "es", sc_latin, CHR('l','a','t','n'), CHR('E','S','P',' ')},
@@ -2720,8 +2721,8 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 	    cur = sample[i].sample;
 	    for ( j=0; cur[j]!=NULL && gotem; ++j )
 		gotem = AllChars(sf,cur[j]);
-	    if ( !gotem && sample[i].sample==_LiiBair ) {
-		cur = _LiiBairShort;
+	    if ( !gotem && sample[i].sample==_LiBai ) {
+		cur = _LiBaiShort;
 		gotem = true;
 		for ( j=0; cur[j]!=NULL && gotem; ++j )
 		    gotem = AllChars(sf,cur[j]);

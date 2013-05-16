@@ -3840,7 +3840,9 @@ return( false );
 return( ret );
 }
 
-void SFGlyphRenameFixup(SplineFont *sf, char *old, char *new) {
+void SFGlyphRenameFixup(SplineFont *sf, char *old, char *new, int rename_related_glyphs) {
+/* NOTE: Existing GUI behaviour renames glyphs, rename_related_glyphs turns */
+/* off this behaviour for scripting - see github issue #523 */
     int k, gid, isv;
     int i,r;
     SplineFont *master = sf;
@@ -3863,10 +3865,10 @@ void SFGlyphRenameFixup(SplineFont *sf, char *old, char *new) {
     do {
 	sf = k<master->subfontcnt ? master->subfonts[k] : master;
 	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
-	    if ( glyphnameIsComponent(sc->name,old)) {
+	    if ( rename_related_glyphs && glyphnameIsComponent(sc->name,old) ) {
 		char *newer = copy(sc->name);
 		rplglyphname(&newer,old,new);
-		SFGlyphRenameFixup(master,sc->name,newer);
+		SFGlyphRenameFixup(master,sc->name,newer,true);
 		free(sc->name);
 		sc->name = newer;
 		sc->namechanged = sc->changed = true;

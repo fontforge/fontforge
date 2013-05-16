@@ -885,7 +885,25 @@ MATH:ScriptScriptPercentScaleDown: 60
   <P>
   This means that the font's encoding has room for 285 characters and that
   there are a total of 253 glyphs defined (usually control characters are not
-  defined). A character looks like:
+  defined).
+  <P>
+  Most encodings entail specific constraints on how many encoding slots
+  must exist and how they must be used (which glyphs where, and in what
+  order).  That is what an encoding means.  For instance, in the UnicodeBmp
+  encoding, there must be at least 65536 slots numbered 0 to 65535
+  for the Unicode characters U+0000 to U+FFFF.  Glyphs with Unicode code
+  points in that range must be encoded in those slots in order according
+  to their code points.  Glyphs without Unicode code points must be encoded
+  in additional slots numbered consecutively starting from 65536.  A file
+  with a BeginChars: line inconsistent with its encoding or inconsistent
+  with the number of glyphs it actually contains is not an SFD file.
+  FontForge may, but does not promise to, treat attempts to load
+  invalid files as fatal errors, or renumber or reorder glyphs to make them
+  match the requirements of the encoding.  Consider using "Custom"
+  or "Original" encodings if the requirements of other encodings are
+  not appropriate; these encodings are less restrictive than the others.
+  <P>
+  A character looks like:
   <BLOCKQUOTE>
     <PRE>StartChar: exclam
 Encoding: 33 33 3
