@@ -439,6 +439,12 @@ void CVCheckResizeCursors(CharView *cv) {
 	SetCur(cv);
 }
 
+Undoes *CVPreserveMaybeState(CharView *cv, int isTState) {
+    if( isTState )
+	return CVPreserveTState( cv );
+    return CVPreserveState( cv );
+}
+
 Undoes *CVPreserveTState(CharView *cv) {
     int anyrefs;
 

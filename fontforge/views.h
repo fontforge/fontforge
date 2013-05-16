@@ -954,6 +954,11 @@ extern void CVSetWidth(CharView *cv,enum widthtype wtype);
 extern void GenericVSetWidth(FontView *fv,SplineChar* sc,enum widthtype wtype);
 extern void CVChangeSC(CharView *cv, SplineChar *sc );
 extern Undoes *CVPreserveTState(CharView *cv);
+/**
+ * If isTState > 0 then CVPreserveTState(cv)
+ * otherwise CVPreserveState(cv)
+ */
+extern Undoes *CVPreserveMaybeState(CharView *cv, int isTState );
 extern void CVRestoreTOriginalState(CharView *cv);
 extern void CVUndoCleanup(CharView *cv);
 
