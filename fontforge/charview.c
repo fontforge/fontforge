@@ -8083,9 +8083,12 @@ static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
 
     if ( cv->b.layerheads[cv->b.drawmode]->undoes!=NULL &&
 	    cv->b.layerheads[cv->b.drawmode]->undoes->undotype==ut_tstate )
+    {
 	CVDoUndo(&cv->b);
+    }
+    
     if ( flags&fvt_revert )
-return;
+	return;
 
     cv->p.transany = CVAnySel(cv,NULL,NULL,NULL,&anya);
     if ( flags&fvt_justapply )
@@ -8096,7 +8099,8 @@ return;
 	    for ( l=0; l<cv->b.sc->layer_cnt; ++l ) if ( l!=cvlayer )
 		SCPreserveLayer(cv->b.sc,l,false);
     }
-    CVPreserveState(&cv->b);
+
+    CVPreserveMaybeState( cv, flags&fvt_justapply );
     CVTransFunc(cv,transform,flags);
     CVCharChangedUpdate(&cv->b);
     collabclient_sendRedo( &cv->b );

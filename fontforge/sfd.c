@@ -871,6 +871,7 @@ void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, char* keyPrefix, int idx ) 
 
     switch( u->undotype )
     {
+        case ut_tstate:
         case ut_state:
             fprintf(sfd, "Width: %d\n",           u->u.state.width );
             fprintf(sfd, "VWidth: %d\n",          u->u.state.vwidth );
@@ -3980,6 +3981,7 @@ Undoes *SFDGetUndo( SplineFont *sf, FILE *sfd, SplineChar *sc,
 
         switch( u->undotype )
         {
+	case ut_tstate:
 	case ut_state:
 	    if ( !strmatch(tok,"Width:"))          { getint(sfd,&i); u->u.state.width = i; }
 	    if ( !strmatch(tok,"VWidth:"))         { getint(sfd,&i); u->u.state.vwidth = i; }
