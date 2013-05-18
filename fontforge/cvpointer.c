@@ -442,7 +442,7 @@ void CVCheckResizeCursors(CharView *cv) {
 Undoes *CVPreserveMaybeState(CharView *cv, int isTState) {
     if( isTState )
 	return CVPreserveTState( cv );
-    return CVPreserveState( cv );
+    return CVPreserveState( &cv->b );
 }
 
 Undoes *CVPreserveTState(CharView *cv) {

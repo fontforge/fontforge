@@ -5199,8 +5199,11 @@ return( (PyObject * ) ly );
 static CharView* pyFF_maybeCallCVPreserveState( PyFF_Glyph *self )
 {
     if( !inPythonStartedCollabSession )
-	return;
-
+	return 0;
+#ifndef BUILD_COLLAB
+    return 0;
+#else
+    
     CharView* cv = 0;
     static GHashTable* ht = 0;
     if( !ht )
@@ -5216,7 +5219,7 @@ static CharView* pyFF_maybeCallCVPreserveState( PyFF_Glyph *self )
     }
     
     SplineFont *sf = self->sc->parent;
-    FontViewBase* fv = FontViewFind( FontViewFind_bySplineFont, sf );
+    FontView* fv = FontViewFind( FontViewFind_bySplineFont, sf );
     if( !fv )
     {
 	fprintf(stderr,"Collab error: can not find fontview for the SplineFont of the active char\n");
@@ -5238,6 +5241,7 @@ static CharView* pyFF_maybeCallCVPreserveState( PyFF_Glyph *self )
     }
 
     return cv;
+#endif
 }
 	    
 
@@ -15543,7 +15547,7 @@ static PyObject *PyFFFont_CollabSessionStart(PyFF_Font *self, PyObject *args)
 	
     void* cc = collabclient_new( address, port );
     fv->collabClient = cc;
-    collabclient_sessionStart( cc, fv );
+    collabclient_sessionStart( cc, (FontView*)fv );
     printf("connecting to server...sent the sfd for session start.\n");
     inPythonStartedCollabSession = 1;
 
@@ -15573,7 +15577,7 @@ static PyObject *PyFFFont_CollabSessionJoin(PyFF_Font *self, PyObject *args)
     printf("PyFFFont_CollabSessionJoin() address:%s cc1:%p\n", address, cc );
     fv->collabClient = cc;
     printf("PyFFFont_CollabSessionJoin() address:%s cc2:%p\n", address, fv->collabClient );
-    FontViewBase* newfv = collabclient_sessionJoin( cc, fv );
+    FontViewBase* newfv = collabclient_sessionJoin( cc, (FontView*)fv );
     // here fv->collabClient is 0 and there is a new fontview.
     printf("PyFFFont_CollabSessionJoin() address:%s cc3:%p\n", address, fv->collabClient );
     printf("PyFFFont_CollabSessionJoin() address:%s cc4:%p\n", address, newfv->collabClient );
@@ -15606,6 +15610,7 @@ static void InvokeCollabSessionSetUpdatedCallback(PyFF_Font *self)
 
 static PyObject *PyFFFont_CollabSessionRunMainLoop(PyFF_Font *self, PyObject *args)
 {
+#ifdef BUILD_COLLAB
     int timeoutMS = 1000;
     int iterationTime = 50;
     int64_t originalSeq = collabclient_getCurrentSequenceNumber( self->fv->collabClient );
@@ -15629,7 +15634,7 @@ static PyObject *PyFFFont_CollabSessionRunMainLoop(PyFF_Font *self, PyObject *ar
 	printf("***********************\n");
 	InvokeCollabSessionSetUpdatedCallback( self );
     }
-    
+#endif    
 
     Py_RETURN( self );
 }
