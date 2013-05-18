@@ -30,6 +30,7 @@
 #include <glib.h>
 #undef GTimer
 
+#include "inc/config.h"
 #include "inc/ustring.h"
 #include "collabclient.h"
 #include "inc/gfile.h"
@@ -40,16 +41,10 @@
 int pref_collab_sessionJoinTimeoutMS = 1000;
 int pref_collab_roundTripTimerMS = 2000;
 
-
-#ifndef _NO_LIBZMQ
-#define BUILD_COLLAB
-#endif
-
 #ifdef BUILD_COLLAB
 #include "collab/zmq_kvmsg.h"
 #include "czmq.h"
 #endif
-
 
 #define MAGIC_VALUE 0xbeef
 #define SUBTREE "/client/"

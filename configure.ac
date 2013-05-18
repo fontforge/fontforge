@@ -256,6 +256,15 @@ FONTFORGE_ARG_WITH_ICONV
 FONTFORGE_ARG_WITH_ZEROMQ
 FONTFORGE_ARG_WITH_LIBREADLINE
 
+if test x"${i_do_have_x}" = xyes; then
+   AC_DEFINE(HAVE_GUI,[1],[Have GUI])
+fi
+if test x"${i_do_have_x}" = xyes; then
+   if test x"${i_do_have_libzmq}" = xyes; then 
+      AC_DEFINE(BUILD_COLLAB,[1],[Build the Collab Code])
+   fi
+fi
+
 # We have both libraries but did not choose which one to use yet
 if test x"${i_do_have_libuninameslist}" = xyes; then
    if test x"${i_do_have_libunicodenames}" = xyes; then

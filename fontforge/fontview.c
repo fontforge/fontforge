@@ -3580,13 +3580,13 @@ static void FontViewSetTitle(FontView *fv) {
 return;
 
     char* collabStateString = "";
-    if( collabclient_inSessionFV( fv ))
+    if( collabclient_inSessionFV( &fv->b ))
     {
 	printf("collabclient_getState( fv ) %d %d\n",
 	       fv->b.collabState,
-	       collabclient_getState( fv ) );
+	       collabclient_getState( &fv->b ) );
 	collabStateString = collabclient_stateToString(
-	    collabclient_getState( fv ));
+	    collabclient_getState( &fv->b ));
     }
     
     enc = SFEncodingName(fv->b.sf,fv->b.normal?fv->b.normal:fv->b.map);
@@ -5668,7 +5668,7 @@ static void FVMenuCollabCloseLocalServer(GWindow gw, struct gmenuitem *UNUSED(mi
     }
     
     collabclient_sessionDisconnect( &fv->b );
-    collabclient_closeLocalServer( fv );
+    collabclient_closeLocalServer( &fv->b );
 }
 
 static void collablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
@@ -7461,47 +7461,12 @@ return( -1 );
 return( fv->rowoff*fv->colcnt );
 }
 
-int FontViewFind_byXUID( FontView* fv, void* udata )
-{
-    if( !fv || !fv->b.sf )
-	return 0;
-    return !strcmp( fv->b.sf->xuid, (char*)udata );
-}
-
-int FontViewFind_byXUIDConnected( FontView* fv, void* udata )
-{
-    if( !fv || !fv->b.sf )
-	return 0;
-    return ( fv->b.collabState == cs_server || fv->b.collabState == cs_client )
-	&& !strcmp( fv->b.sf->xuid, (char*)udata );
-}
-
-int FontViewFind_byCollabPtr( FontView* fv, void* udata )
-{
-    if( !fv || !fv->b.sf )
-	return 0;
-    return fv->b.collabClient == udata;
-}
-
-int FontViewFind_bySplineFont( FontView* fv, void* udata )
-{
-    if( !fv || !fv->b.sf )
-	return 0;
-    return fv->b.sf == udata;
-}
 
 
 
-FontView* FontViewFind( int (*testFunc)( FontView*, void* udata ), void* udata )
-{
-    FontView *fv;
-    for ( fv=fv_list; fv!=NULL; fv=(FontView *) (fv->b.next) )
-    {
-	if( testFunc( fv, udata ))
-	    return fv;
-    }
-    return 0;
-}
+
+
+
 
 
 static FontViewBase *FVAny(void) { return (FontViewBase *) fv_list; }
@@ -8033,6 +7998,57 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     GDrawDestroyWindow(gs.gw);
 return( ret );
 }
+
+
+
+/****************************************/
+/****************************************/
+/****************************************/
+
+int FontViewFind_byXUID( FontView* fv, void* udata )
+{
+    if( !fv || !fv->b.sf )
+	return 0;
+    return !strcmp( fv->b.sf->xuid, (char*)udata );
+}
+
+int FontViewFind_byXUIDConnected( FontView* fv, void* udata )
+{
+    if( !fv || !fv->b.sf )
+	return 0;
+    return ( fv->b.collabState == cs_server || fv->b.collabState == cs_client )
+	&& !strcmp( fv->b.sf->xuid, (char*)udata );
+}
+
+int FontViewFind_byCollabPtr( FontView* fv, void* udata )
+{
+    if( !fv || !fv->b.sf )
+	return 0;
+    return fv->b.collabClient == udata;
+}
+
+int FontViewFind_bySplineFont( FontView* fv, void* udata )
+{
+    if( !fv || !fv->b.sf )
+	return 0;
+    return fv->b.sf == udata;
+}
+
+FontView* FontViewFind( int (*testFunc)( FontView*, void* udata ), void* udata )
+{
+    FontView *fv;
+    for ( fv=fv_list; fv!=NULL; fv=(FontView *) (fv->b.next) )
+    {
+	if( testFunc( fv, udata ))
+	    return fv;
+    }
+    return 0;
+}
+
+/****************************************/
+/****************************************/
+/****************************************/
+
 
 /* local variables: */
 /* tab-width: 8     */

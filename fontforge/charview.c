@@ -4022,7 +4022,7 @@ return;
 	    // If we are in a collab session, we might like to preserve here
 	    // so that we can send a change of selected points to other members
 	    // of the group
-	    if( collabclient_inSession( cv ) )
+	    if( collabclient_inSession( &cv->b ) )
 	    {
 		CVPreserveState(&cv->b);
 		selectionChanged = 1;
@@ -6904,12 +6904,12 @@ static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
 	/*     printf("r.len:%d\n", len ); */
 	/* } */
 	
-	if( collabclient_inSession( cv ) )
+	if( collabclient_inSession( &cv->b ) )
 	{
 	    printf("in-session!\n");
-	    collabclient_performLocalUndo( cv );
+	    collabclient_performLocalUndo( &cv->b );
 	    cv->lastselpt = NULL;
-	    _CVCharChangedUpdate(cv,1);
+	    _CVCharChangedUpdate(&cv->b,1);
 	    return;
 	}
     }
@@ -6924,12 +6924,12 @@ static void CVRedo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
     Undoes *undo = cv->b.layerheads[cv->b.drawmode]->redoes;
     if( undo )
     {
-	if( collabclient_inSession( cv ) )
+	if( collabclient_inSession( &cv->b ) )
 	{
 	    printf("in-session (redo)!\n");
-	    collabclient_performLocalRedo( cv );
+	    collabclient_performLocalRedo( &cv->b );
 	    cv->lastselpt = NULL;
-	    _CVCharChangedUpdate(cv,1);
+	    _CVCharChangedUpdate(&cv->b,1);
 	    return;
 	}
     }
