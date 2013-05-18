@@ -137,12 +137,16 @@ return( false );
 		FontViewCreate(sf,false);
 	    fprintf( stderr, " Done\n" );
 
+	    
 	    /* Ask user to save-as file */
+#ifdef HAVE_GUI
 	    char *buts[4];
 	    buts[0] = _("_OK");
 	    buts[1] = 0;
 	    gwwv_ask( _("Recovery Complete"),(const char **) buts,0,1,_("Your file %s has been recovered.\nYou must now Save your file to continue working on it."), sf->filename );
-	    _FVMenuSaveAs( sf->fv );
+	    _FVMenuSaveAs( (FontView*)sf->fv );
+#endif
+	    
 	}
     }
     closedir(dir);
