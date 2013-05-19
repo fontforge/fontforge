@@ -30,7 +30,7 @@
 #include <glib.h>
 #undef GTimer
 
-#include "inc/config.h"
+#include "inc/fontforge-config.h"
 #include "inc/ustring.h"
 #include "collabclient.h"
 #include "inc/gfile.h"
