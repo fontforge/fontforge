@@ -8001,54 +8001,6 @@ return( ret );
 
 
 
-/****************************************/
-/****************************************/
-/****************************************/
-
-int FontViewFind_byXUID( FontView* fv, void* udata )
-{
-    if( !fv || !fv->b.sf )
-	return 0;
-    return !strcmp( fv->b.sf->xuid, (char*)udata );
-}
-
-int FontViewFind_byXUIDConnected( FontView* fv, void* udata )
-{
-    if( !fv || !fv->b.sf )
-	return 0;
-    return ( fv->b.collabState == cs_server || fv->b.collabState == cs_client )
-	&& !strcmp( fv->b.sf->xuid, (char*)udata );
-}
-
-int FontViewFind_byCollabPtr( FontView* fv, void* udata )
-{
-    if( !fv || !fv->b.sf )
-	return 0;
-    return fv->b.collabClient == udata;
-}
-
-int FontViewFind_bySplineFont( FontView* fv, void* udata )
-{
-    if( !fv || !fv->b.sf )
-	return 0;
-    return fv->b.sf == udata;
-}
-
-FontView* FontViewFind( int (*testFunc)( FontView*, void* udata ), void* udata )
-{
-    FontView *fv;
-    for ( fv=fv_list; fv!=NULL; fv=(FontView *) (fv->b.next) )
-    {
-	if( testFunc( fv, udata ))
-	    return fv;
-    }
-    return 0;
-}
-
-/****************************************/
-/****************************************/
-/****************************************/
-
 
 /* local variables: */
 /* tab-width: 8     */

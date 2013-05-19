@@ -2096,3 +2096,52 @@ struct mv_interface *mv_interface = &noui_mv;
 void FF_SetMVInterface(struct mv_interface *mvi) {
     mv_interface = mvi;
 }
+
+
+/****************************************/
+/****************************************/
+/****************************************/
+
+int FontViewFind_byXUID( FontViewBase* fv, void* udata )
+{
+    if( !fv || !fv->sf )
+	return 0;
+    return !strcmp( fv->sf->xuid, (char*)udata );
+}
+
+int FontViewFind_byXUIDConnected( FontViewBase* fv, void* udata )
+{
+    if( !fv || !fv->sf )
+	return 0;
+    return ( fv->collabState == cs_server || fv->collabState == cs_client )
+	&& !strcmp( fv->sf->xuid, (char*)udata );
+}
+
+int FontViewFind_byCollabPtr( FontViewBase* fv, void* udata )
+{
+    if( !fv || !fv->sf )
+	return 0;
+    return fv->collabClient == udata;
+}
+
+int FontViewFind_bySplineFont( FontViewBase* fv, void* udata )
+{
+    if( !fv || !fv->sf )
+	return 0;
+    return fv->sf == udata;
+}
+
+FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* udata ), void* udata )
+{
+    FontViewBase *fv;
+    for ( fv=fv_list; fv!=NULL; fv=(FontViewBase *) (fv->next) )
+    {
+	if( testFunc( fv, udata ))
+	    return fv;
+    }
+    return 0;
+}
+
+/****************************************/
+/****************************************/
+/****************************************/
