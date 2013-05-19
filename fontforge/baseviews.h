@@ -666,4 +666,10 @@ extern void AutoKern2BuildClasses(SplineFont *sf,int layer,
 
 extern void MVSelectFirstKerningTable(struct metricsview *mv);
 
+extern FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* ), void* udata );
+extern int FontViewFind_byXUID(      FontViewBase* fv, void* udata );
+extern int FontViewFind_byXUIDConnected( FontViewBase* fv, void* udata );
+extern int FontViewFind_byCollabPtr(  FontViewBase* fv, void* udata );
+extern int FontViewFind_bySplineFont( FontViewBase* fv, void* udata );
+
 #endif
