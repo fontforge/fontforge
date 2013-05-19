@@ -1842,7 +1842,7 @@ static void CVDrawAnchorPoints(CharView *cv,GWindow pixmap) {
     int x,y, len, sel;
     Color col = anchorcol;
     AnchorPoint *ap;
-    char *name, ubuf[40];
+    char *name, ubuf[50];
     GRect r;
 
     if ( cv->b.drawmode!=dm_fore || cv->b.sc->anchor==NULL || !cv->showanchor )
@@ -1857,19 +1857,20 @@ return;
 	continue;
 
 	    DrawAnchorPoint(pixmap,x,y,ap->selected);
+	    ubuf[30]=0;
 	    if ( ap->anchor->type==act_mkmk ) {
-		strncpy(ubuf,ap->anchor->name,20);
+		strncpy(ubuf,ap->anchor->name,30);
 		strcat(ubuf," ");
 		strcat(ubuf,ap->type==at_basemark ? _("Base") : _("Mark") );
 		name = ubuf;
 	    } else if ( ap->type==at_basechar || ap->type==at_mark || ap->type==at_basemark ) {
 		name = ap->anchor->name;
 	    } else if ( ap->type==at_centry || ap->type==at_cexit ) {
-		strncpy(ubuf,ap->anchor->name,20);
+		strncpy(ubuf,ap->anchor->name,30);
 		strcat(ubuf,ap->type==at_centry ? _("Entry") : _("Exit") );
 		name = ubuf;
 	    } else if ( ap->type==at_baselig ) {
-		strncpy(ubuf,ap->anchor->name,20);
+		strncpy(ubuf,ap->anchor->name,30);
 		sprintf(ubuf+strlen(ubuf),"#%d", ap->lig_index);
 		name = ubuf;
 	    } else
