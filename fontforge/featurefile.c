@@ -1,5 +1,6 @@
 /* Copyright (C) 2000-2012 by George Williams */
 /* Copyright (C) 2012 by Khaled Hosny */
+/* Copyright (C) 2013 by Matthew Skala */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -3563,23 +3564,25 @@ return;
 }
 
 static void fea_ParseMarkClass(struct parseState *tok) {
-    char *glyphs;
+    char *class_string;
     AnchorPoint *ap;
     struct gpos_mark *gm, *ngm;
 
     fea_ParseTok(tok);
-	    if ( tok->type==tk_name )
-		item->u1.class = fea_glyphname_validate(tok,tok->tokbuf);
-	    else if ( tok->type==tk_cid )
-		item->u1.class = fea_cid_validate(tok,tok->value);
-	    else if ( tok->type == tk_class || (tok->type==tk_char && tok->tokbuf[0]=='['))
-		item->u1.class = fea_ParseGlyphClassGuarded(tok);
-	    else {
-		LogError(_("Expected name or class on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-		++tok->err_count;
-		fea_skip_to_semi(tok);
-    continue;
-	    }
+    if ( tok->type==tk_name )
+        class_string = fea_glyphname_validate(tok,tok->tokbuf);
+    else if ( tok->type==tk_cid )
+        class_string = fea_cid_validate(tok,tok->value);
+    else if ( tok->type == tk_class ||
+              ( tok->type==tk_char && tok->tokbuf[0]=='[' ))
+        class_string = fea_ParseGlyphClassGuarded(tok);
+    else {
+        LogError(_("Expected name or class on line %d of %s"),
+            tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+        ++tok->err_count;
+        fea_skip_to_semi(tok);
+return;
+    }
     fea_ParseTok(tok);
     if ( tok->type!=tk_char || tok->tokbuf[0]!='<' ) {
 	LogError(_("Expected anchor in mark class definition on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
@@ -3598,7 +3601,7 @@ return;
 return;
     }
     gm = chunkalloc(sizeof(*gm));
-    gm->glyphs = glyphs;
+    gm->glyphs = class_string;
     gm->ap = ap;
     for ( ngm=tok->gpos_mark; ngm!=NULL; ngm=ngm->next )
 	if ( strcmp(ngm->name,tok->tokbuf)==0 )
