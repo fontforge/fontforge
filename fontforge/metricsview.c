@@ -986,7 +986,7 @@ static real GGadgetToReal(GGadget *g)
  */
 static void MV_handle_collabclient_sendRedo( MetricsView *mv, SplineChar *sc )
 {
-    if( collabclient_inSessionFV( mv->fv ) )
+    if( collabclient_inSessionFV( &mv->fv->b ) )
     {
 	collabclient_sendRedo_SC( sc );
 	
@@ -1018,7 +1018,7 @@ return( true );
 	else if ( !mv->vertical && val!=sc->width ) {
 //	    dumpUndoChain( "before SCPreserveWidth...", sc, &sc->layers[ly_fore].undoes );
 	    SCPreserveWidth(sc);
-	    if( collabclient_inSessionFV( mv->fv ) )
+	    if( collabclient_inSessionFV( &mv->fv->b ) )
 	    {
 		int dohints = 0;
 		SCPreserveState( sc, dohints );
@@ -1084,7 +1084,7 @@ return( true );
 	if (!isValidInt(end))
 	    GDrawBeep(NULL);
 	else if ( !mv->vertical && val!=bb.minx ) {
-	    if( collabclient_inSessionFV( mv->fv ) )
+	    if( collabclient_inSessionFV( &mv->fv->b ) )
 	    {
 		int dohints = 0;
 		SCPreserveState( sc, dohints );
@@ -1142,7 +1142,7 @@ return( true );
 	    /* Width is an integer. Adjust the lbearing so that the rbearing */
 	    /*  remains what was just typed in */
 	    if ( newwidth!=bb.maxx+val ) {
-		if( collabclient_inSessionFV( mv->fv ) )
+		if( collabclient_inSessionFV( &mv->fv->b ) )
 		{
 		    int dohints = 0;
 		    SCPreserveState( sc, dohints );

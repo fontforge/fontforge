@@ -33,6 +33,7 @@ dist_hicolor22x22_DATA = icons/22x22/apps/fontforge.png
 dist_hicolor24x24_DATA = icons/24x24/apps/fontforge.png
 dist_hicolor32x32_DATA = icons/32x32/apps/fontforge.png
 dist_hicolor48x48_DATA = icons/48x48/apps/fontforge.png
+dist_hicolor256x256_DATA = icons/256x256/apps/fontforge.png
 dist_hicolorscalable_DATA = icons/scalable/apps/fontforge.svg
 dist_mimepackages_DATA = fontforge.xml
 
@@ -49,7 +50,7 @@ update-desktop-database:
 	$(UPDATE_DESKTOP_DATABASE) ${applicationsdir}
 
 EXTRA_DIST = icons/src/icon-16x16-apps-fontforge.svg	\
-	icons/src/icon-24x24-apps-fontforge.svg				\
+	icons/src/icon-24x24-apps-fontforge.svg		\
 	icons/src/icon-32x32-apps-fontforge.svg
 
 -include $(top_srcdir)/git.mk

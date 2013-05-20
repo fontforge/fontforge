@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="1024"
+   height="1024"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="New document 1">
+  <title
+     id="title3079">greater</title>
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#959595"
+     bordercolor="#000000"
+     borderopacity="0.70196078"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.7"
+     inkscape:cx="666.43578"
+     inkscape:cy="509.04247"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:showpageshadow="false"
+     showborder="true"
+     inkscape:window-width="1694"
+     inkscape:window-height="962"
+     inkscape:window-x="49"
+     inkscape:window-y="39"
+     inkscape:window-maximized="0"
+     inkscape:snap-bbox="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid2985"
+       empspacing="8"
+       visible="true"
+       enabled="true"
+       snapvisiblegridlinesonly="true"
+       originx="0px"
+       spacingx="32px"
+       spacingy="32px" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>greater</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-28.362183)">
+    <path
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       d="m 0,384 192,0 256,-256 0,768 L 192,640 0,640 z"
+       id="path2983"
+       inkscape:connector-curvature="0"
+       transform="translate(0,28.362183)" />
+    <path
+       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       d="M 887 0 L 813.96875 65.96875 C 886.65171 198.32761 928 350.33686 928 512 C 928 673.66313 886.65171 825.67239 813.96875 958.03125 L 887 1024 C 974.13326 873.37934 1024 698.52214 1024 512 C 1024 325.47787 974.13326 150.62066 887 0 z M 740.46875 132.3125 L 666.40625 199.1875 C 711.0506 294.12404 736 400.14359 736 512 C 736 623.85641 711.0506 729.87596 666.40625 824.8125 L 740.46875 891.6875 C 798.96584 777.85564 832 648.78911 832 512 C 832 375.21089 798.96584 246.14436 740.46875 132.3125 z M 591.375 266.9375 L 514.875 336.03125 C 533.73529 391.22774 544 450.41542 544 512 C 544 573.58458 533.73529 632.77226 514.875 687.96875 L 591.375 757.0625 C 622.69014 681.57754 640 598.81553 640 512 C 640 425.18447 622.69014 342.42246 591.375 266.9375 z "
+       transform="translate(0,28.362183)"
+       id="path3020" />
+  </g>
+</svg>

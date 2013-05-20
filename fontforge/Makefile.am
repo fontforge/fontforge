@@ -135,17 +135,6 @@ endif LIBZMQ
 # absence of a well defined ABI.
 libfontforge_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) $(LIBZMQ_LIBS) -release $(VERSION)
 
-EXTRA_SCRIPTS = generate_codepoint_selector.py
-
-# "make is_LIGATURE" or "make -C fontforge is_LIGATURE" to regenerate
-# is_LIGATURE.[ch]. You need LibUnicodeNames with Python bindings, and
-# you need cproto.
-is_LIGATURE:
-	$(PYTHON) $(srcdir)/generate_codepoint_selector.py \
-		'LIGATURE|VULGAR FRACTION' \
-		is_LIGATURE_or_VULGAR_FRACTION > $(srcdir)/is_LIGATURE.c
-	$(CPROTO) $(srcdir)/is_LIGATURE.c > $(srcdir)/is_LIGATURE.h
-
 #--------------------------------------------------------------------------
 
 if GRAPHICAL_USER_INTERFACE

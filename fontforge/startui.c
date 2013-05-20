@@ -30,6 +30,7 @@
 #ifndef _NO_LIBUNICODENAMES
 #include <libunicodenames.h>	/* need to open a database when we start */
 extern uninm_names_db names_db; /* Unicode character names and annotations database */
+extern uninm_blocks_db blocks_db;
 #endif
 #include <gfile.h>
 #include <gresource.h>
@@ -781,6 +782,15 @@ static void ensureDotFontForgeIsSetup() {
     ffensuredir( basedir, ".FontForge/python", S_IRWXU );
 }
 
+static void DoAutoRecoveryPostRecover_PromptUserGraphically(SplineFont *sf)
+{
+    /* Ask user to save-as file */
+    char *buts[4];
+    buts[0] = _("_OK");
+    buts[1] = 0;
+    gwwv_ask( _("Recovery Complete"),(const char **) buts,0,1,_("Your file %s has been recovered.\nYou must now Save your file to continue working on it."), sf->filename );
+    _FVMenuSaveAs( (FontView*)sf->fv );
+}
 
 
 int fontforge_main( int argc, char **argv ) {
@@ -1147,7 +1157,11 @@ exit( 0 );
     if ( recover==-1 )
 	CleanAutoRecovery();
     else if ( recover )
-	any = DoAutoRecovery(recover-1);
+    {
+	any = DoAutoRecoveryExtended( recover-1,
+				      DoAutoRecoveryPostRecover_PromptUserGraphically );
+    }
+    
 
     openflags = 0;
     for ( i=1; i<argc; ++i ) {
@@ -1249,6 +1263,7 @@ exit( 0 );
 
 #ifndef _NO_LIBUNICODENAMES
     uninm_names_db_close(names_db);	/* close this database before exiting */
+    uninm_blocks_db_close(blocks_db);
 #endif
 
     lt_dlexit();

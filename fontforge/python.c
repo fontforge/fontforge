@@ -887,13 +887,8 @@ static PyObject *PyFF_UnicodeAnnotationFromLib(PyObject *UNUSED(self), PyObject 
     if ( !PyArg_ParseTuple(args,"|i",&val) )
 	return( NULL );
 
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    temp=NULL;
-#else
-    temp=unicode_annot(val);
-#endif
-    if ( temp==NULL ) {
-	temp=galloc(1*sizeof(char)); temp='\0';
+    if ( (temp=unicode_annot(val))==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
     }
     ret=Py_BuildValue("s",temp); free(temp);
     return( ret );
@@ -909,13 +904,59 @@ static PyObject *PyFF_UnicodeNameFromLib(PyObject *UNUSED(self), PyObject *args)
     if ( !PyArg_ParseTuple(args,"|i",&val) )
 	return( NULL );
 
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    temp=NULL;
-#else
-    temp=unicode_name(val);
-#endif
-    if ( temp==NULL ) {
-	temp=galloc(1*sizeof(char)); temp='\0';
+    if ( (temp=unicode_name(val))==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
+    }
+    ret=Py_BuildValue("s",temp); free(temp);
+    return( ret );
+}
+
+static PyObject *PyFF_UnicodeBlockStartFromLib(PyObject *UNUSED(self), PyObject *args) {
+/* If the library is available, then get the official start for this unicode block */
+/* Use this function with UnicodeBlockNameFromLib(n) & UnicodeBlockEndFromLib(n). */
+    long val;
+
+    if ( !PyArg_ParseTuple(args,"|i",&val) )
+	return( NULL );
+
+    return( Py_BuildValue("i", unicode_block_start(val)) );
+}
+
+static PyObject *PyFF_UnicodeBlockEndFromLib(PyObject *UNUSED(self), PyObject *args) {
+/* If the library is available, then get the official end for this unicode block. */
+/* Use this function with UnicodeBlockStartFromLib(n), UnicodeBlockNameFromLib(n) */
+    long val;
+
+    if ( !PyArg_ParseTuple(args,"|i",&val) )
+	return( NULL );
+
+    return( Py_BuildValue("i", unicode_block_end(val)) );
+}
+
+static PyObject *PyFF_UnicodeBlockNameFromLib(PyObject *UNUSED(self), PyObject *args) {
+/* If the library is available, then get the official name for this unicode block */
+/* Use this function with UnicodeBlockStartFromLib(n), UnicodeBlockEndFromLib(n). */
+    PyObject *ret;
+    char *temp;
+    long val;
+
+    if ( !PyArg_ParseTuple(args,"|i",&val) )
+	return( NULL );
+
+    if ( (temp=unicode_block_name(val))==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
+    }
+    ret=Py_BuildValue("s",temp); free(temp);
+    return( ret );
+}
+
+static PyObject *PyFF_UnicodeNamesListVersion(PyObject *UNUSED(self), PyObject *args) {
+/* If the library is available, then return the Nameslist Version number */
+    PyObject *ret;
+    char *temp;
+
+    if ( (temp=unicode_library_version())==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
     }
     ret=Py_BuildValue("s",temp); free(temp);
     return( ret );
@@ -5158,8 +5199,11 @@ return( (PyObject * ) ly );
 static CharView* pyFF_maybeCallCVPreserveState( PyFF_Glyph *self )
 {
     if( !inPythonStartedCollabSession )
-	return;
-
+	return 0;
+#ifndef BUILD_COLLAB
+    return 0;
+#else
+    
     CharView* cv = 0;
     static GHashTable* ht = 0;
     if( !ht )
@@ -5175,7 +5219,7 @@ static CharView* pyFF_maybeCallCVPreserveState( PyFF_Glyph *self )
     }
     
     SplineFont *sf = self->sc->parent;
-    FontViewBase* fv = FontViewFind( FontViewFind_bySplineFont, sf );
+    FontView* fv = FontViewFind( FontViewFind_bySplineFont, sf );
     if( !fv )
     {
 	fprintf(stderr,"Collab error: can not find fontview for the SplineFont of the active char\n");
@@ -5197,6 +5241,7 @@ static CharView* pyFF_maybeCallCVPreserveState( PyFF_Glyph *self )
     }
 
     return cv;
+#endif
 }
 	    
 
@@ -6041,7 +6086,7 @@ return( -1 );
 return( -1 );
     }
 
-    SFGlyphRenameFixup(self->sc->parent,self->sc->name,str);
+    SFGlyphRenameFixup(self->sc->parent,self->sc->name,str,false);
     self->sc->namechanged = self->sc->changed = true;
     free( self->sc->name );
     self->sc->name = copy(str);
@@ -10476,11 +10521,7 @@ static PyObject *fontiter_iternextkey(fontiterobject *di) {
 #ifdef _HAS_LONGLONG
 	    const char *dictfmt = "{sKsKsK}";
 #else
-<<<<<<< local
-	    const char *dictfmt = "{sksksk}"
-=======
 	    const char *dictfmt = "{sksksk}";
->>>>>>> other
 #endif
 	    PyObject *glyph, *tempdict;
 	    PyObject *matched;
@@ -15506,7 +15547,7 @@ static PyObject *PyFFFont_CollabSessionStart(PyFF_Font *self, PyObject *args)
 	
     void* cc = collabclient_new( address, port );
     fv->collabClient = cc;
-    collabclient_sessionStart( cc, fv );
+    collabclient_sessionStart( cc, (FontView*)fv );
     printf("connecting to server...sent the sfd for session start.\n");
     inPythonStartedCollabSession = 1;
 
@@ -15536,7 +15577,7 @@ static PyObject *PyFFFont_CollabSessionJoin(PyFF_Font *self, PyObject *args)
     printf("PyFFFont_CollabSessionJoin() address:%s cc1:%p\n", address, cc );
     fv->collabClient = cc;
     printf("PyFFFont_CollabSessionJoin() address:%s cc2:%p\n", address, fv->collabClient );
-    FontViewBase* newfv = collabclient_sessionJoin( cc, fv );
+    FontViewBase* newfv = collabclient_sessionJoin( cc, (FontView*)fv );
     // here fv->collabClient is 0 and there is a new fontview.
     printf("PyFFFont_CollabSessionJoin() address:%s cc3:%p\n", address, fv->collabClient );
     printf("PyFFFont_CollabSessionJoin() address:%s cc4:%p\n", address, newfv->collabClient );
@@ -15569,6 +15610,7 @@ static void InvokeCollabSessionSetUpdatedCallback(PyFF_Font *self)
 
 static PyObject *PyFFFont_CollabSessionRunMainLoop(PyFF_Font *self, PyObject *args)
 {
+#ifdef BUILD_COLLAB
     int timeoutMS = 1000;
     int iterationTime = 50;
     int64_t originalSeq = collabclient_getCurrentSequenceNumber( self->fv->collabClient );
@@ -15592,7 +15634,7 @@ static PyObject *PyFFFont_CollabSessionRunMainLoop(PyFF_Font *self, PyObject *ar
 	printf("***********************\n");
 	InvokeCollabSessionSetUpdatedCallback( self );
     }
-    
+#endif    
 
     Py_RETURN( self );
 }
@@ -18054,6 +18096,10 @@ static PyMethodDef module_fontforge_methods[] = {
     { "nameFromUnicode", PyFF_NameFromUnicode, METH_VARARGS, "Given a unicode code point and (optionally) a namelist, find the corresponding glyph name" },
     { "UnicodeNameFromLib", PyFF_UnicodeNameFromLib, METH_VARARGS, "Return the www.unicode.org name for a given unicode character value" },
     { "UnicodeAnnotationFromLib", PyFF_UnicodeAnnotationFromLib, METH_VARARGS, "Return the www.unicode.org annotation(s) for a given unicode character value" },
+    { "UnicodeBlockStartFromLib", PyFF_UnicodeBlockStartFromLib, METH_VARARGS, "Return the www.unicode.org block start, for example block[0]={0..127} -> 0" },
+    { "UnicodeBlockEndFromLib", PyFF_UnicodeBlockEndFromLib, METH_VARARGS, "Return the www.unicode.org block end, for example block[1]={128..255} -> 255" },
+    { "UnicodeBlockNameFromLib", PyFF_UnicodeBlockNameFromLib, METH_VARARGS, "Return the www.unicode.org block name, for example block[2]={256..383} -> Latin Extended-A" },
+    { "UnicodeNamesListVersion", PyFF_UnicodeNamesListVersion, METH_NOARGS, "Return the www.unicode.org NamesList version for this library" },
     { "version", PyFF_Version, METH_NOARGS, "Returns a string containing the current version of FontForge, as 20061116" },
     { "runInitScripts", PyFF_RunInitScripts, METH_NOARGS, "Run the system and user initialization scripts, if not already run" },
     { "scriptPath", PyFF_GetScriptPath, METH_NOARGS, "Returns a list of the directories searched for scripts"},

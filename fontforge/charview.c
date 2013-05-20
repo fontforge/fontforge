@@ -1842,7 +1842,7 @@ static void CVDrawAnchorPoints(CharView *cv,GWindow pixmap) {
     int x,y, len, sel;
     Color col = anchorcol;
     AnchorPoint *ap;
-    char *name, ubuf[40];
+    char *name, ubuf[50];
     GRect r;
 
     if ( cv->b.drawmode!=dm_fore || cv->b.sc->anchor==NULL || !cv->showanchor )
@@ -1857,19 +1857,20 @@ return;
 	continue;
 
 	    DrawAnchorPoint(pixmap,x,y,ap->selected);
+	    ubuf[30]=0;
 	    if ( ap->anchor->type==act_mkmk ) {
-		strncpy(ubuf,ap->anchor->name,20);
+		strncpy(ubuf,ap->anchor->name,30);
 		strcat(ubuf," ");
 		strcat(ubuf,ap->type==at_basemark ? _("Base") : _("Mark") );
 		name = ubuf;
 	    } else if ( ap->type==at_basechar || ap->type==at_mark || ap->type==at_basemark ) {
 		name = ap->anchor->name;
 	    } else if ( ap->type==at_centry || ap->type==at_cexit ) {
-		strncpy(ubuf,ap->anchor->name,20);
+		strncpy(ubuf,ap->anchor->name,30);
 		strcat(ubuf,ap->type==at_centry ? _("Entry") : _("Exit") );
 		name = ubuf;
 	    } else if ( ap->type==at_baselig ) {
-		strncpy(ubuf,ap->anchor->name,20);
+		strncpy(ubuf,ap->anchor->name,30);
 		sprintf(ubuf+strlen(ubuf),"#%d", ap->lig_index);
 		name = ubuf;
 	    } else
@@ -4022,7 +4023,7 @@ return;
 	    // If we are in a collab session, we might like to preserve here
 	    // so that we can send a change of selected points to other members
 	    // of the group
-	    if( collabclient_inSession( cv ) )
+	    if( collabclient_inSession( &cv->b ) )
 	    {
 		CVPreserveState(&cv->b);
 		selectionChanged = 1;
@@ -6904,12 +6905,12 @@ static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
 	/*     printf("r.len:%d\n", len ); */
 	/* } */
 	
-	if( collabclient_inSession( cv ) )
+	if( collabclient_inSession( &cv->b ) )
 	{
 	    printf("in-session!\n");
-	    collabclient_performLocalUndo( cv );
+	    collabclient_performLocalUndo( &cv->b );
 	    cv->lastselpt = NULL;
-	    _CVCharChangedUpdate(cv,1);
+	    _CVCharChangedUpdate(&cv->b,1);
 	    return;
 	}
     }
@@ -6924,12 +6925,12 @@ static void CVRedo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
     Undoes *undo = cv->b.layerheads[cv->b.drawmode]->redoes;
     if( undo )
     {
-	if( collabclient_inSession( cv ) )
+	if( collabclient_inSession( &cv->b ) )
 	{
 	    printf("in-session (redo)!\n");
-	    collabclient_performLocalRedo( cv );
+	    collabclient_performLocalRedo( &cv->b );
 	    cv->lastselpt = NULL;
-	    _CVCharChangedUpdate(cv,1);
+	    _CVCharChangedUpdate(&cv->b,1);
 	    return;
 	}
     }
@@ -8083,9 +8084,12 @@ static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
 
     if ( cv->b.layerheads[cv->b.drawmode]->undoes!=NULL &&
 	    cv->b.layerheads[cv->b.drawmode]->undoes->undotype==ut_tstate )
+    {
 	CVDoUndo(&cv->b);
+    }
+    
     if ( flags&fvt_revert )
-return;
+	return;
 
     cv->p.transany = CVAnySel(cv,NULL,NULL,NULL,&anya);
     if ( flags&fvt_justapply )
@@ -8096,7 +8100,8 @@ return;
 	    for ( l=0; l<cv->b.sc->layer_cnt; ++l ) if ( l!=cvlayer )
 		SCPreserveLayer(cv->b.sc,l,false);
     }
-    CVPreserveState(&cv->b);
+
+    CVPreserveMaybeState( cv, flags&fvt_justapply );
     CVTransFunc(cv,transform,flags);
     CVCharChangedUpdate(&cv->b);
     collabclient_sendRedo( &cv->b );

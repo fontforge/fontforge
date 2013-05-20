@@ -8,7 +8,7 @@ INSTALLATION NOTES:
 
 INSTALLATION WITH DYNAMIC LIBRARIES
  contains two executables:
- 	fontforge -- a font editor
+	fontforge -- a font editor
 	sfddiff -- a program for comparing fonts
  man pages for the above
 	fontforge.1
@@ -33,7 +33,7 @@ INSTALLATION WITHOUT DYNAMIC LIBRARIES
 	fontforge    -- the executable
 	fontforge.1  --	the man page.
     You should:
-    	$ su
+	$ su
 	# mkdir -p /usr/local/bin /usr/local/man/man1 /usr/local/share/fontforge
 	# mv fontforge /usr/local/bin
 	# mv *.1 /usr/local/man/man1
@@ -42,10 +42,10 @@ INSTALLATION WITHOUT DYNAMIC LIBRARIES
     You may need to add /usr/local/bin to your PATH environment variable (and
     /usr/local/man to your MANPATH environment variable). If you use bash edit
     ~/.bashrc and add
-    	PATH=${PATH}:/usr/local/bin
+	PATH=${PATH}:/usr/local/bin
 	MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
     Or if you use csh, tcsh, etc. edit your ~/.cshrc and add:
-    	setenv PATH ${PATH}:/usr/local/bin
+	setenv PATH ${PATH}:/usr/local/bin
 	if ( $?MANPATH == "0" ) then
 	    setenv MANPATH /usr/local/man
 	else
@@ -111,7 +111,7 @@ BITMAP FONTS
  installed on your machine.
    Sources of unicode fonts:
 	http://czyborra.com/unifont/
-	http://clr.nmsu.edu/~mleisher/cu.html
+	http://math.nmsu.edu/~mleisher/Software/cu/
 	http://savannah.nongnu.org/projects/freefont
         http://bibliofile.mc.duke.edu/gww/fonts/{Monospace,Caliban}
 

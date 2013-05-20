@@ -871,6 +871,7 @@ void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, char* keyPrefix, int idx ) 
 
     switch( u->undotype )
     {
+        case ut_tstate:
         case ut_state:
             fprintf(sfd, "Width: %d\n",           u->u.state.width );
             fprintf(sfd, "VWidth: %d\n",          u->u.state.vwidth );
@@ -2674,7 +2675,9 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	    }
 	}
 	if ( !todir )
-	    fprintf(sfd, "BeginChars: %d %d\n", enccount, realcnt );
+	    fprintf(sfd, "BeginChars: %d %d\n",
+	        enccount<map->enc->char_cnt? map->enc->char_cnt : enccount,
+	        realcnt );
 	for ( i=0; i<sf->glyphcnt; ++i ) {
 	    if ( !SFDOmit(sf->glyphs[i]) ) {
 		if ( !todir )
@@ -3980,6 +3983,7 @@ Undoes *SFDGetUndo( SplineFont *sf, FILE *sfd, SplineChar *sc,
 
         switch( u->undotype )
         {
+	case ut_tstate:
 	case ut_state:
 	    if ( !strmatch(tok,"Width:"))          { getint(sfd,&i); u->u.state.width = i; }
 	    if ( !strmatch(tok,"VWidth:"))         { getint(sfd,&i); u->u.state.vwidth = i; }
@@ -8040,6 +8044,10 @@ exit( 1 );
 	} else if ( strmatch(tok,"BeginChars:")==0 ) {
 	    int charcnt;
 	    getint(sfd,&charcnt);
+	    if (charcnt<enc->char_cnt) {
+		IError("SFD file specifies too few slots for its encoding.\n" );
+exit( 1 );
+	    }
 	    if ( getint(sfd,&realcnt)!=1 || realcnt==-1 )
 		realcnt = charcnt;
 	    else

@@ -790,8 +790,9 @@ int GFileWriteAll(char* filepath, char *data)
 {
     FILE* fp = fopen( filepath, "w" );
     int bwrite = fwrite( data, 1, strlen(data), fp );
-    printf("GFileWriteAll() data.len:%d bwrite:%d\n", strlen(data), bwrite );
+    printf("GFileWriteAll() data.len:%ld bwrite:%d\n", strlen(data), bwrite );
     fclose(fp);
+    return 0;
 }
 
 

@@ -2766,9 +2766,16 @@ extern char **NamesReadMacBinary(char *filename);
 extern void SFSetOrder(SplineFont *sf,int order2);
 extern int SFFindOrder(SplineFont *sf);
 
+/* These functions are used with uninameslist or unicodenames library, if */
+/* available  (oldest function listed first, latest function listed last) */
 extern void inituninameannot(void);
 extern char *unicode_name(int32 unienc);
 extern char *unicode_annot(int32 unienc);
+extern int32 unicode_block_start(int32 block_i);
+extern int32 unicode_block_end(int32 block_i);
+extern char *unicode_block_name(int32 block_i);
+extern char *unicode_library_version(void);
+
 
 extern const char *UnicodeRange(int unienc);
 extern SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i);
@@ -2846,6 +2853,8 @@ extern char *getPfaEditDir(char *buffer);
 extern void _DoAutoSaves(struct fontviewbase *);
 extern void CleanAutoRecovery(void);
 extern int DoAutoRecovery(int);
+typedef void (*DoAutoRecoveryPostRecoverFunc)(SplineFont *sf);
+extern int DoAutoRecoveryExtended(int inquire, DoAutoRecoveryPostRecoverFunc PostRecoverFunc );
 extern SplineFont *SFRecoverFile(char *autosavename,int inquire, int *state);
 extern void SFAutoSave(SplineFont *sf,EncMap *map);
 extern void SFClearAutoSave(SplineFont *sf);
@@ -3123,7 +3132,7 @@ extern void OTLookupsCopyInto(SplineFont *into_sf,SplineFont *from_sf,
 extern struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 script, uint32 lang,
 	int pixelsize, SplineChar **glyphs);
 extern int VerticalKernFeature(SplineFont *sf, OTLookup *otl, int ask);
-extern void SFGlyphRenameFixup(SplineFont *sf, char *old, char *new);
+extern void SFGlyphRenameFixup(SplineFont *sf, char *old, char *new, int rename_related_glyphs);
 
 struct sllk { uint32 script; int cnt, max; OTLookup **lookups; int lcnt, lmax; uint32 *langs; };
 extern void SllkFree(struct sllk *sllk,int sllk_cnt);

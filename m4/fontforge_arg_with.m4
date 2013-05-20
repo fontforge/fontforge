@@ -33,7 +33,7 @@ AC_DEFUN([FONTFORGE_ARG_WITH],
 
 dnl FONTFORGE_ARG_WITH_LIBNAMESLIST
 dnl -------------------------------
-dnl Check if libuninameslist exists, and if yes, then also see if it has 2 newer functions in it
+dnl Check if libuninameslist exists, and if yes, then also see if it has 3 newer functions in it
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST],
 [
    FONTFORGE_ARG_WITH_BASE([libuninameslist],
@@ -46,8 +46,8 @@ AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST],
          [i_do_have_libuninameslist=yes
           AC_SUBST([LIBUNINAMESLIST_CFLAGS],[""])
           AC_SUBST([LIBUNINAMESLIST_LIBS],["${found_lib}"])
-          AC_CHECK_FUNC([uniNamesList_name],[AC_DEFINE([_LIBUNINAMESLIST_FUN],
-                        [1],[Libuninameslist library has 2 new functions.])])],
+          AC_CHECK_FUNC([uniNamesList_NamesListVersion],[AC_DEFINE([_LIBUNINAMESLIST_FUN],
+                        [1],[Libuninameslist library has 3 new functions.])])],
          [i_do_have_libuninameslist=no])
        ])
 ])
