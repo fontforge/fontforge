@@ -84,7 +84,7 @@ extern void RunApplicationEventLoop(void);
 #define sleep(n) Sleep(1000 * (n))
 #endif
 
-#include "collabclient.h"
+#include "collabclientui.h"
 
 extern int AutoSaveFrequency;
 int splash = 1;
@@ -1001,6 +1001,11 @@ int fontforge_main( int argc, char **argv ) {
 	default_encoding=FindOrMakeEncoding("ISO8859-1");
     if ( default_encoding==NULL )
 	default_encoding=&custom;	/* In case iconv is broken */
+
+    // This check also starts the embedded python,
+    // we must call PythonUI_Init() before CheckIsScript()
+    // to allow GUI code to potentially add extra methods to the
+    // python objects.
     CheckIsScript(argc,argv); /* Will run the script and exit if it is a script */
 					/* If there is no UI, there is always a script */
 			                /*  and we will never return from the above */
