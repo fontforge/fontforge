@@ -38,7 +38,7 @@
 #include <math.h>
 #include <unistd.h>
 
-#include "collabclient.h"
+#include "collabclientui.h"
 #include "inc/gnetwork.h"
 
 
