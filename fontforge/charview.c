@@ -4020,20 +4020,32 @@ return;
 	if( lastSel.lastselpt != fs.p->sp
 	    || lastSel.lastselcp != fs.p->spiro )
 	{
+#define BASEPOINT_IS_EMPTY(p) ( p.x == p.y == (real)0.0 )
+	    
 	    // If we are in a collab session, we might like to preserve here
 	    // so that we can send a change of selected points to other members
 	    // of the group
 	    if( collabclient_inSession( &cv->b ) )
 	    {
-		CVPreserveState(&cv->b);
-		selectionChanged = 1;
+		if( BASEPOINT_IS_EMPTY( fs.p->cp ) )
+		{
+		    //
+		    // Do not send clicks on bezier control points.
+		    //
+		    printf("skipping!\n");
+		}
+		else
+		{
+		    CVPreserveState(&cv->b);
+		    selectionChanged = 1;
+		}
 	    }
 	}
 	cv->lastselpt = fs.p->sp;
 	cv->lastselcp = fs.p->spiro;
 	if( selectionChanged )
 	{
-	    collabclient_sendRedo( &cv->b );    
+//	    collabclient_sendRedo( &cv->b );    
 	}
 	break;
       case cvt_magnify: case cvt_minify:

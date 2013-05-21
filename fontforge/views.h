@@ -1331,6 +1331,11 @@ extern void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, char* keyPrefix, int
 extern void Prefs_LoadDefaultPreferences( void );
 
 
+extern FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* ), void* udata );
+extern int FontViewFind_byXUID(      FontViewBase* fv, void* udata );
+extern int FontViewFind_byXUIDConnected( FontViewBase* fv, void* udata );
+extern int FontViewFind_byCollabPtr(  FontViewBase* fv, void* udata );
+extern int FontViewFind_bySplineFont( FontViewBase* fv, void* udata );
 
 
 #endif	/* _VIEWS_H */
