@@ -133,3 +133,154 @@ extern PyObject *PySC_From_SC(SplineChar *sc);
 extern PyObject *PyFV_From_FV(FontViewBase *fv);
 extern int FlagsFromTuple(PyObject *tuple,struct flaglist *flags,const char *flagkind);
 extern void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer);
+
+
+/********************************************************************************/
+/** Allow both python.c and pythonui.c to aceess the python objects.          ***/
+/********************************************************************************/
+
+/* Other sentinel values for end-of-array initialization */
+#define PYMETHODDEF_EMPTY  { NULL, NULL, 0, NULL }
+#define PYGETSETDEF_EMPTY { NULL, NULL, NULL, NULL, NULL }
+
+typedef struct ff_point {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    float x,y;
+    uint8 on_curve;
+    uint8 selected;
+} PyFF_Point;
+static PyTypeObject PyFF_PointType;
+
+typedef struct ff_contour {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    int pt_cnt, pt_max;
+    struct ff_point **points;
+    short is_quadratic, closed;		/* bit flags, but access to short is faster */
+    spiro_cp *spiros;
+    int spiro_cnt;
+    char *name;
+} PyFF_Contour;
+static PyTypeObject PyFF_ContourType;
+
+typedef struct ff_layer {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    short cntr_cnt, cntr_max;
+    struct ff_contour **contours;
+    int is_quadratic;		/* bit flags, but access to int is faster */
+} PyFF_Layer;
+static PyTypeObject PyFF_LayerType;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    SplineChar *sc;
+    uint8 replace;
+    uint8 ended;
+    uint8 changed;
+    int layer;
+} PyFF_GlyphPen;
+static PyTypeObject PyFF_GlyphPenType;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    SplineChar *sc;
+} PyFF_LayerArray;
+static PyTypeObject PyFF_LayerArrayType;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    SplineChar *sc;
+} PyFF_RefArray;
+static PyTypeObject PyFF_RefArrayType;
+
+typedef struct glyphmathkernobject {
+    PyObject_HEAD
+    SplineChar *sc;
+} PyFF_MathKern;
+static PyTypeObject PyFF_MathKernType;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    SplineChar *sc;
+    PyFF_LayerArray *layers;
+    PyFF_RefArray *refs;
+    PyFF_MathKern *mk;
+    int layer;
+} PyFF_Glyph;
+static PyTypeObject PyFF_GlyphType;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    SplineFont *sf;
+    int layer;
+} PyFF_LayerInfo;
+static PyTypeObject PyFF_LayerInfoType;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    SplineFont *sf;
+} PyFF_LayerInfoArray;
+static PyTypeObject PyFF_LayerInfoArrayType;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    SplineFont *sf;
+    FontViewBase *fv;
+} PyFF_Private;
+static PyTypeObject PyFF_PrivateType;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    FontViewBase *fv;
+    int by_glyphs;
+} PyFF_Selection;
+static PyTypeObject PyFF_SelectionType;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    SplineFont *sf;
+    struct ttf_table *cvt;
+} PyFF_Cvt;
+static PyTypeObject PyFF_CvtType;
+
+typedef struct fontmathobject {
+    PyObject_HEAD
+    SplineFont *sf;
+} PyFF_Math;
+static PyTypeObject PyFF_MathType;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    FontViewBase *fv;
+    PyFF_LayerInfoArray *layers;
+    PyFF_Private *private;
+    PyFF_Cvt *cvt;
+    PyFF_Selection *selection;
+    PyFF_Math *math;
+} PyFF_Font;
+static PyTypeObject PyFF_FontType;
+
+extern PyMethodDef PyFF_Font_methods[];
+PyObject *PyFV_From_FV_I(FontViewBase *fv);
+
+// return is really a CharView*
+typedef void* (*pyFF_maybeCallCVPreserveState_Func_t)( PyFF_Glyph *self );
+pyFF_maybeCallCVPreserveState_Func_t get_pyFF_maybeCallCVPreserveState_Func( void );
+void set_pyFF_maybeCallCVPreserveState_Func( pyFF_maybeCallCVPreserveState_Func_t f );
+
+typedef void (*pyFF_sendRedoIfInSession_Func_t)( void* cv );
+pyFF_sendRedoIfInSession_Func_t get_pyFF_sendRedoIfInSession_Func( void );
+void set_pyFF_sendRedoIfInSession_Func( pyFF_sendRedoIfInSession_Func_t f );
+

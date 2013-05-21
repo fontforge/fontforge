@@ -35,7 +35,7 @@
 #include <utype.h>
 #include <math.h>
 
-#include "collabclient.h"
+#include "collabclientui.h"
 #include "gfile.h"
 extern char* SFDCreateUndoForLookup( SplineFont *sf, int lookup_type ) ;
 
