@@ -67,7 +67,7 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
     byte* data = kvmsg_body (kvmsg);
     size_t data_size = kvmsg_size (kvmsg);
 
-    printf("uuid:%s\n", uuid );
+    printf("cc process_update() uuid:%s\n", uuid );
     FontView* fv = FontViewFind( FontViewFind_byXUIDConnected, uuid );
     printf("fv:%p\n", fv );
     if( fv )
