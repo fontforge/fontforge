@@ -46,6 +46,13 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE) atlocal.in
 TESTSUITE = $(srcdir)/testsuite
 
+# test linking
+link_test_SOURCES = link_test.c
+link_test_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_builddir)/fontforge
+link_test_LDADD = $(top_builddir)/fontforge/libfontforge.la
+
+noinst_PROGRAMS = link_test
+
 check-local: atconfig atlocal $(TESTSUITE)
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
 
