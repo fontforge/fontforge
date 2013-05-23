@@ -1,5 +1,6 @@
 /* Copyright (C) 2000-2012 by George Williams */
 /* Copyright (C) 2012 by Khaled Hosny */
+/* Copyright (C) 2013 by Matthew Skala */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -1643,10 +1644,10 @@ return;					/* No anchor positioning, no ligature carets */
 
     for ( i=0; i<lcnt; ++i ) {
 	PST *pst = glyphs[i].pst;
-	fprintf( out, "  LigatureCaret " );
+	fprintf( out, "  LigatureCaretByPos " ); //by position
 	dump_glyphname(out,glyphs[i].sc);
 	for ( k=0; k<pst->u.lcaret.cnt; ++k ) {
-	    fprintf( out, " <caret %d>", pst->u.lcaret.carets[k]);
+	    fprintf( out, " %d", pst->u.lcaret.carets[k]); //output <caret %d>
 	}
 	fprintf( out, ";\n" );
     }
@@ -3563,12 +3564,25 @@ return;
 }
 
 static void fea_ParseMarkClass(struct parseState *tok) {
-    char *glyphs;
+    char *class_string;
     AnchorPoint *ap;
     struct gpos_mark *gm, *ngm;
 
     fea_ParseTok(tok);
-    glyphs = fea_ParseGlyphClass(tok);
+    if ( tok->type==tk_name )
+        class_string = fea_glyphname_validate(tok,tok->tokbuf);
+    else if ( tok->type==tk_cid )
+        class_string = fea_cid_validate(tok,tok->value);
+    else if ( tok->type == tk_class ||
+              ( tok->type==tk_char && tok->tokbuf[0]=='[' ))
+        class_string = fea_ParseGlyphClassGuarded(tok);
+    else {
+        LogError(_("Expected name or class on line %d of %s"),
+            tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+        ++tok->err_count;
+        fea_skip_to_semi(tok);
+return;
+    }
     fea_ParseTok(tok);
     if ( tok->type!=tk_char || tok->tokbuf[0]!='<' ) {
 	LogError(_("Expected anchor in mark class definition on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
@@ -3587,7 +3601,7 @@ return;
 return;
     }
     gm = chunkalloc(sizeof(*gm));
-    gm->glyphs = glyphs;
+    gm->glyphs = class_string;
     gm->ap = ap;
     for ( ngm=tok->gpos_mark; ngm!=NULL; ngm=ngm->next )
 	if ( strcmp(ngm->name,tok->tokbuf)==0 )
@@ -5582,7 +5596,13 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 		break;
 		}
 	    }
-	} else if ( strcmp(tok->tokbuf,"LigatureCaret")==0 ) {
+	} else if ( strcmp(tok->tokbuf,"LigatureCaret")==0 || /* FF backwards compatibility */ \
+		 /* strcmp(tok->tokbuf,"LigatureCaretByIndex")==0  TODO should include this */ \
+		    strcmp(tok->tokbuf,"LigatureCaretByPos")==0 ) {
+	    /* Older versions of FontForge was using LigatureCaret but there is actually */
+	    /* LigatureCaretByPos and LigatureCaretByIndex which we need to watch (2013) */
+	    /* 2013may16 TODO: We need to update all this featurefile stuff according to */
+	    /* http://www.adobe.com/devnet/opentype/afdko/topic_feature_file_syntax.html */
 	    carets=NULL;
 	    len=0;
 	    item = chunkalloc(sizeof(struct feat_item));

@@ -84,7 +84,7 @@ extern void RunApplicationEventLoop(void);
 #define sleep(n) Sleep(1000 * (n))
 #endif
 
-#include "collabclient.h"
+#include "collabclientui.h"
 
 extern int AutoSaveFrequency;
 int splash = 1;
@@ -782,6 +782,15 @@ static void ensureDotFontForgeIsSetup() {
     ffensuredir( basedir, ".FontForge/python", S_IRWXU );
 }
 
+static void DoAutoRecoveryPostRecover_PromptUserGraphically(SplineFont *sf)
+{
+    /* Ask user to save-as file */
+    char *buts[4];
+    buts[0] = _("_OK");
+    buts[1] = 0;
+    gwwv_ask( _("Recovery Complete"),(const char **) buts,0,1,_("Your file %s has been recovered.\nYou must now Save your file to continue working on it."), sf->filename );
+    _FVMenuSaveAs( (FontView*)sf->fv );
+}
 
 
 int fontforge_main( int argc, char **argv ) {
@@ -992,6 +1001,11 @@ int fontforge_main( int argc, char **argv ) {
 	default_encoding=FindOrMakeEncoding("ISO8859-1");
     if ( default_encoding==NULL )
 	default_encoding=&custom;	/* In case iconv is broken */
+
+    // This check also starts the embedded python,
+    // we must call PythonUI_Init() before CheckIsScript()
+    // to allow GUI code to potentially add extra methods to the
+    // python objects.
     CheckIsScript(argc,argv); /* Will run the script and exit if it is a script */
 					/* If there is no UI, there is always a script */
 			                /*  and we will never return from the above */
@@ -1148,7 +1162,11 @@ exit( 0 );
     if ( recover==-1 )
 	CleanAutoRecovery();
     else if ( recover )
-	any = DoAutoRecovery(recover-1);
+    {
+	any = DoAutoRecoveryExtended( recover-1,
+				      DoAutoRecoveryPostRecover_PromptUserGraphically );
+    }
+    
 
     openflags = 0;
     for ( i=1; i<argc; ++i ) {

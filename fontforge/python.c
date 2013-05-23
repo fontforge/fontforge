@@ -74,11 +74,6 @@
 
 extern int prefRevisionsToRetain;
 
-/**
- * Use this to track if the script has joined a collab session.
- * if not then we get to very quickly avoid the collab code path :)
- */
-static int inPythonStartedCollabSession = 0;
 
 
 /* This defines the name of the Python entry function that is expected
@@ -157,9 +152,6 @@ typedef struct {
 #endif
 
 
-/* Other sentinel values for end-of-array initialization */
-#define PYMETHODDEF_EMPTY  { NULL, NULL, 0, NULL }
-#define PYGETSETDEF_EMPTY { NULL, NULL, NULL, NULL, NULL }
 
 /* ----------------------------------------------------- */
 
@@ -246,134 +238,7 @@ static void PyFF_PickleTypesInit(void);
 /*  quadratic contours may also have two adjacent off-curve points, in which case an on-curve point is interpolated between (as in truetype) */
 /* A layer is a set of contours all to be drawn together */
 
-typedef struct ff_point {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    float x,y;
-    uint8 on_curve;
-    uint8 selected;
-} PyFF_Point;
-static PyTypeObject PyFF_PointType;
 
-typedef struct ff_contour {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    int pt_cnt, pt_max;
-    struct ff_point **points;
-    short is_quadratic, closed;		/* bit flags, but access to short is faster */
-    spiro_cp *spiros;
-    int spiro_cnt;
-    char *name;
-} PyFF_Contour;
-static PyTypeObject PyFF_ContourType;
-
-typedef struct ff_layer {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    short cntr_cnt, cntr_max;
-    struct ff_contour **contours;
-    int is_quadratic;		/* bit flags, but access to int is faster */
-} PyFF_Layer;
-static PyTypeObject PyFF_LayerType;
-
-typedef struct {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    SplineChar *sc;
-    uint8 replace;
-    uint8 ended;
-    uint8 changed;
-    int layer;
-} PyFF_GlyphPen;
-static PyTypeObject PyFF_GlyphPenType;
-
-typedef struct {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    SplineChar *sc;
-} PyFF_LayerArray;
-static PyTypeObject PyFF_LayerArrayType;
-
-typedef struct {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    SplineChar *sc;
-} PyFF_RefArray;
-static PyTypeObject PyFF_RefArrayType;
-
-typedef struct glyphmathkernobject {
-    PyObject_HEAD
-    SplineChar *sc;
-} PyFF_MathKern;
-static PyTypeObject PyFF_MathKernType;
-
-typedef struct {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    SplineChar *sc;
-    PyFF_LayerArray *layers;
-    PyFF_RefArray *refs;
-    PyFF_MathKern *mk;
-    int layer;
-} PyFF_Glyph;
-static PyTypeObject PyFF_GlyphType;
-
-typedef struct {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    SplineFont *sf;
-    int layer;
-} PyFF_LayerInfo;
-static PyTypeObject PyFF_LayerInfoType;
-
-typedef struct {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    SplineFont *sf;
-} PyFF_LayerInfoArray;
-static PyTypeObject PyFF_LayerInfoArrayType;
-
-typedef struct {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    SplineFont *sf;
-    FontViewBase *fv;
-} PyFF_Private;
-static PyTypeObject PyFF_PrivateType;
-
-typedef struct {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    FontViewBase *fv;
-    int by_glyphs;
-} PyFF_Selection;
-static PyTypeObject PyFF_SelectionType;
-
-typedef struct {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    SplineFont *sf;
-    struct ttf_table *cvt;
-} PyFF_Cvt;
-static PyTypeObject PyFF_CvtType;
-
-typedef struct fontmathobject {
-    PyObject_HEAD
-    SplineFont *sf;
-} PyFF_Math;
-static PyTypeObject PyFF_MathType;
-
-typedef struct {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    FontViewBase *fv;
-    PyFF_LayerInfoArray *layers;
-    PyFF_Private *private;
-    PyFF_Cvt *cvt;
-    PyFF_Selection *selection;
-    PyFF_Math *math;
-} PyFF_Font;
-static PyTypeObject PyFF_FontType;
 
 static int SSSelectOnCurve(SplineSet *ss,int pos);
 static SplineSet *SSFromContour(PyFF_Contour *, int *start);
@@ -595,7 +460,7 @@ Py_RETURN_NONE;
 return( fv->python_fv_object );
 }
 
-static PyObject *PyFV_From_FV_I(FontViewBase *fv) {
+PyObject *PyFV_From_FV_I(FontViewBase *fv) {
     PyObject *f = PyFV_From_FV(fv);
     Py_INCREF(f);
 return( f );
@@ -882,19 +747,13 @@ static PyObject *PyFF_UnicodeAnnotationFromLib(PyObject *UNUSED(self), PyObject 
 /* This function may be used in conjunction with UnicodeNameFromLib(n) */
     PyObject *ret;
     char *temp;
-
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    temp=NULL;
-#else
     long val;
 
     if ( !PyArg_ParseTuple(args,"|i",&val) )
 	return( NULL );
 
-    temp=unicode_annot(val);
-#endif
-    if ( temp==NULL ) {
-	temp=galloc(1*sizeof(char)); temp='\0';
+    if ( (temp=unicode_annot(val))==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
     }
     ret=Py_BuildValue("s",temp); free(temp);
     return( ret );
@@ -905,19 +764,13 @@ static PyObject *PyFF_UnicodeNameFromLib(PyObject *UNUSED(self), PyObject *args)
 /* This function may be used in conjunction with UnicodeAnnotationFromLib(n) */
     PyObject *ret;
     char *temp;
-
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    temp=NULL;
-#else
     long val;
 
     if ( !PyArg_ParseTuple(args,"|i",&val) )
 	return( NULL );
 
-    temp=unicode_name(val);
-#endif
-    if ( temp==NULL ) {
-	temp=galloc(1*sizeof(char)); temp='\0';
+    if ( (temp=unicode_name(val))==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
     }
     ret=Py_BuildValue("s",temp); free(temp);
     return( ret );
@@ -926,33 +779,23 @@ static PyObject *PyFF_UnicodeNameFromLib(PyObject *UNUSED(self), PyObject *args)
 static PyObject *PyFF_UnicodeBlockStartFromLib(PyObject *UNUSED(self), PyObject *args) {
 /* If the library is available, then get the official start for this unicode block */
 /* Use this function with UnicodeBlockNameFromLib(n) & UnicodeBlockEndFromLib(n). */
-
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    return( Py_BuildValue("i", -1) );
-#else
     long val;
 
     if ( !PyArg_ParseTuple(args,"|i",&val) )
 	return( NULL );
 
     return( Py_BuildValue("i", unicode_block_start(val)) );
-#endif
 }
 
 static PyObject *PyFF_UnicodeBlockEndFromLib(PyObject *UNUSED(self), PyObject *args) {
 /* If the library is available, then get the official end for this unicode block. */
 /* Use this function with UnicodeBlockStartFromLib(n), UnicodeBlockNameFromLib(n) */
-
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    return( Py_BuildValue("i", -1) );
-#else
     long val;
 
     if ( !PyArg_ParseTuple(args,"|i",&val) )
 	return( NULL );
 
     return( Py_BuildValue("i", unicode_block_end(val)) );
-#endif
 }
 
 static PyObject *PyFF_UnicodeBlockNameFromLib(PyObject *UNUSED(self), PyObject *args) {
@@ -960,19 +803,25 @@ static PyObject *PyFF_UnicodeBlockNameFromLib(PyObject *UNUSED(self), PyObject *
 /* Use this function with UnicodeBlockStartFromLib(n), UnicodeBlockEndFromLib(n). */
     PyObject *ret;
     char *temp;
-
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
-    temp=NULL;
-#else
     long val;
 
     if ( !PyArg_ParseTuple(args,"|i",&val) )
 	return( NULL );
 
-    temp=unicode_block_name(val);
-#endif
-    if ( temp==NULL ) {
-	temp=galloc(1*sizeof(char)); temp='\0';
+    if ( (temp=unicode_block_name(val))==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
+    }
+    ret=Py_BuildValue("s",temp); free(temp);
+    return( ret );
+}
+
+static PyObject *PyFF_UnicodeNamesListVersion(PyObject *UNUSED(self), PyObject *args) {
+/* If the library is available, then return the Nameslist Version number */
+    PyObject *ret;
+    char *temp;
+
+    if ( (temp=unicode_library_version())==NULL ) {
+	temp=galloc(1*sizeof(char)); *temp='\0';
     }
     ret=Py_BuildValue("s",temp); free(temp);
     return( ret );
@@ -5212,49 +5061,47 @@ return( NULL );
 return( (PyObject * ) ly );
 }
 
-static CharView* pyFF_maybeCallCVPreserveState( PyFF_Glyph *self )
+
+/**
+ * For non-ui/non collab builds we don't need to worry about this
+ */
+static void* pyFF_maybeCallCVPreserveState_DoNothinImpl( PyFF_Glyph *self )
 {
-    if( !inPythonStartedCollabSession )
-	return;
-
-    CharView* cv = 0;
-    static GHashTable* ht = 0;
-    if( !ht )
-    {
-	ht = g_hash_table_new( g_direct_hash, g_direct_equal );
-    }
-    fprintf(stderr,"hash size:%d\n", g_hash_table_size(ht));
-
-    gpointer cache = g_hash_table_lookup( ht, self->sc );
-    if( cache )
-    {
-	return cache;
-    }
-    
-    SplineFont *sf = self->sc->parent;
-    FontViewBase* fv = FontViewFind( FontViewFind_bySplineFont, sf );
-    if( !fv )
-    {
-	fprintf(stderr,"Collab error: can not find fontview for the SplineFont of the active char\n");
-    }
-    else
-    {
-	int old_no_windowing_ui = no_windowing_ui;
-	no_windowing_ui = 0;
-
-	// FIXME: need to find the existing cv if available!
-	cv = CharViewCreate( self->sc, fv, -1 );
-	g_hash_table_insert( ht, self->sc, cv );
-        fprintf(stderr,"added... hash size:%d\n", g_hash_table_size(ht));
-	CVPreserveState( &cv->b );
-	collabclient_CVPreserveStateCalled( &cv->b );
-	    
-	no_windowing_ui = old_no_windowing_ui;
-	printf("called CVPreserveState()\n");
-    }
-
-    return cv;
+    return 0;
 }
+
+static pyFF_maybeCallCVPreserveState_Func_t
+/**/   pyFF_maybeCallCVPreserveState_Func = pyFF_maybeCallCVPreserveState_DoNothinImpl;
+
+pyFF_maybeCallCVPreserveState_Func_t
+get_pyFF_maybeCallCVPreserveState_Func( void )
+{
+    return pyFF_maybeCallCVPreserveState_Func;
+}
+
+void set_pyFF_maybeCallCVPreserveState_Func( pyFF_maybeCallCVPreserveState_Func_t f )
+{
+    pyFF_maybeCallCVPreserveState_Func = f;
+}
+
+static void pyFF_sendRedoIfInSession_Func_DoNothingImpl( void* cv )
+{
+}
+static pyFF_sendRedoIfInSession_Func_t
+/**/   pyFF_sendRedoIfInSession_Func = pyFF_sendRedoIfInSession_Func_DoNothingImpl;
+
+pyFF_sendRedoIfInSession_Func_t
+get_pyFF_sendRedoIfInSession_Func( void )
+{
+    return pyFF_sendRedoIfInSession_Func;
+}
+								   
+void set_pyFF_sendRedoIfInSession_Func( pyFF_sendRedoIfInSession_Func_t f )
+{
+    pyFF_sendRedoIfInSession_Func = f;
+}
+
+
 	    
 
 static int PyFF_Glyph_set_a_layer(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure), int layeri) {
@@ -5281,7 +5128,7 @@ return( -1 );
 return( -1 );
     }
 
-    CharView* cv = pyFF_maybeCallCVPreserveState( self );
+    CharView* cv = (CharView*)get_pyFF_maybeCallCVPreserveState_Func()( self );
     
     if ( layer->order2!=isquad ) {
 	if ( layer->order2 )
@@ -5296,12 +5143,7 @@ return( -1 );
 
     SCCharChangedUpdate(sc,self->layer);
 
-    if( inPythonStartedCollabSession && cv )
-    {
-	collabclient_sendRedo( &cv->b );    
-	printf("collabclient_sendRedo()...\n");
-    }
-    
+    get_pyFF_sendRedoIfInSession_Func()( cv );
     
 return( 0 );
 }
@@ -10533,11 +10375,7 @@ static PyObject *fontiter_iternextkey(fontiterobject *di) {
 #ifdef _HAS_LONGLONG
 	    const char *dictfmt = "{sKsKsK}";
 #else
-<<<<<<< local
-	    const char *dictfmt = "{sksksk}"
-=======
 	    const char *dictfmt = "{sksksk}";
->>>>>>> other
 #endif
 	    PyObject *glyph, *tempdict;
 	    PyObject *matched;
@@ -15525,157 +15363,6 @@ return( NULL );
 return( fontiter_New( self,index,NULL) );
 }
 
-static PyObject *CollabSessionSetUpdatedCallback = NULL;
-
-static PyObject *PyFFFont_CollabSessionStart(PyFF_Font *self, PyObject *args)
-{
-#ifdef BUILD_COLLAB
-
-    int port_default = collabclient_getDefaultBasePort();
-    int port = port_default;
-    char address[IPADDRESS_STRING_LENGTH_T];
-    if( !getNetworkAddress( address ))
-    {
-	snprintf( address, IPADDRESS_STRING_LENGTH_T-1,
-		  "%s", HostPortPack( "127.0.0.1", port ));
-    }
-    else
-    {
-	snprintf( address, IPADDRESS_STRING_LENGTH_T-1,
-		  "%s", HostPortPack( address, port ));
-    }
-
-    if ( PySequence_Size(args) == 1 )
-    {
-	char* uaddr = 0;
-	if ( !PyArg_ParseTuple(args,"es","UTF-8",&uaddr) )
-	    return( NULL );
-
-	strcpy( address, uaddr );
-    }
-    FontViewBase *fv = self->fv;
-
-    
-    HostPortUnpack( address, &port, port_default );
-    
-    printf("address:%s\n", address );
-    printf("port:%d\n", port );
-	
-    void* cc = collabclient_new( address, port );
-    fv->collabClient = cc;
-    collabclient_sessionStart( cc, fv );
-    printf("connecting to server...sent the sfd for session start.\n");
-    inPythonStartedCollabSession = 1;
-
-#endif
-    Py_RETURN( self );
-}
-    
-static PyObject *PyFFFont_CollabSessionJoin(PyFF_Font *self, PyObject *args)
-{
-#ifdef BUILD_COLLAB
-
-    char* address = collabclient_makeAddressString(
-	"localhost", collabclient_getDefaultBasePort());
-    
-    if ( PySequence_Size(args) == 1 )
-    {
-	char* uaddr = 0;
-	if ( !PyArg_ParseTuple(args,"es","UTF-8",&uaddr) )
-	    return( NULL );
-
-	address = uaddr;
-    }
-    FontViewBase *fv = self->fv;
-
-    printf("PyFFFont_CollabSessionJoin() address:%s fv:%p\n", address, self->fv );
-    void* cc = collabclient_newFromPackedAddress( address );
-    printf("PyFFFont_CollabSessionJoin() address:%s cc1:%p\n", address, cc );
-    fv->collabClient = cc;
-    printf("PyFFFont_CollabSessionJoin() address:%s cc2:%p\n", address, fv->collabClient );
-    FontViewBase* newfv = collabclient_sessionJoin( cc, fv );
-    // here fv->collabClient is 0 and there is a new fontview.
-    printf("PyFFFont_CollabSessionJoin() address:%s cc3:%p\n", address, fv->collabClient );
-    printf("PyFFFont_CollabSessionJoin() address:%s cc4:%p\n", address, newfv->collabClient );
-
-    
-    
-    
-    inPythonStartedCollabSession = 1;
-    PyObject* ret = PyFV_From_FV_I( newfv );
-    Py_RETURN( ret );
-
-#endif
-
-    Py_RETURN( self );
-}
-
-static void InvokeCollabSessionSetUpdatedCallback(PyFF_Font *self)
-{
-    if( CollabSessionSetUpdatedCallback )
-    {
-	PyObject *arglist;
-	PyObject *result;
-
-	arglist = Py_BuildValue("(O)", self);
-	result = PyObject_CallObject(CollabSessionSetUpdatedCallback, arglist);
-	Py_DECREF(arglist);
-    }
-}
-
-
-static PyObject *PyFFFont_CollabSessionRunMainLoop(PyFF_Font *self, PyObject *args)
-{
-    int timeoutMS = 1000;
-    int iterationTime = 50;
-    int64_t originalSeq = collabclient_getCurrentSequenceNumber( self->fv->collabClient );
-
-    printf("PyFFFont_CollabSessionRunMainLoop() called fv:%p\n", self->fv );
-    printf("PyFFFont_CollabSessionRunMainLoop() called cc:%p\n", self->fv->collabClient );
-    for( ; timeoutMS > 0; timeoutMS -= iterationTime )
-    {
-	g_usleep( iterationTime * 1000 );
-	MacServiceReadFDs();
-    }
-
-    printf("originalSeq:%ld\n",(long int)(originalSeq));
-    printf("     newSeq:%ld\n",(long int)(collabclient_getCurrentSequenceNumber( self->fv->collabClient )));
-
-    if( originalSeq < collabclient_getCurrentSequenceNumber( self->fv->collabClient ))
-    {
-	printf("***********************\n");
-	printf("*********************** calling python updated function!!\n");
-	printf("***********************\n");
-	printf("***********************\n");
-	InvokeCollabSessionSetUpdatedCallback( self );
-    }
-    
-
-    Py_RETURN( self );
-}
-
-
-
-static PyObject *PyFFFont_CollabSessionSetUpdatedCallback(PyFF_Font *self, PyObject *args)
-{
-    PyObject *result = NULL;
-    PyObject *temp;
-
-    if (PyArg_ParseTuple(args, "O:set_callback", &temp)) {
-        if (!PyCallable_Check(temp)) {
-            PyErr_SetString(PyExc_TypeError, "parameter must be callable");
-            return NULL;
-        }
-        Py_XINCREF(temp);
-        Py_XDECREF(CollabSessionSetUpdatedCallback);
-        CollabSessionSetUpdatedCallback = temp;
-        /* Boilerplate to return "None" */
-        Py_INCREF(Py_None);
-        result = Py_None;
-    }
-    return result;
-}
-
 
 static PyObject *PyFFFont_Save(PyFF_Font *self, PyObject *args) {
     char *filename;
@@ -17347,7 +17034,7 @@ return( Py_BuildValue("i", SFValidate(sf,fv->active_layer,force)));
 }
 
 
-static PyMethodDef PyFF_Font_methods[] = {
+PyMethodDef PyFF_Font_methods[] = {
     { "appendSFNTName", (PyCFunction) PyFFFont_appendSFNTName, METH_VARARGS, "Adds or replaces a name in the sfnt 'name' table. Takes three arguments, a language, a string id, and the string value" },
     { "close", (PyCFunction) PyFFFont_close, METH_NOARGS, "Frees up memory for the current font. Any python pointers to it will become invalid." },
     { "compareFonts", (PyCFunction) PyFFFont_compareFonts, METH_VARARGS, "Compares two fonts and stores the result into a file"},
@@ -17444,13 +17131,25 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "nltransform", (PyCFunction)PyFFFont_NLTransform, METH_VARARGS, "Transform a font by non-linear expessions for x and y." },
     { "validate", (PyCFunction)PyFFFont_validate, METH_VARARGS, "Check whether a font is valid and return True if it is." },
 
-    { "CollabSessionStart", (PyCFunction) PyFFFont_CollabSessionStart, METH_VARARGS, "Start a collab session at the given address (or the public IP address by default)" },
+//    { "CollabSessionStart", (PyCFunction) PyFFFont_CollabSessionStart, METH_VARARGS, "Start a collab session at the given address (or the public IP address by default)" },
     
-    { "CollabSessionJoin", (PyCFunction) PyFFFont_CollabSessionJoin, METH_VARARGS, "Join a collab session at the given address (or localhost by default)" },
-    { "CollabSessionRunMainLoop", (PyCFunction) PyFFFont_CollabSessionRunMainLoop, METH_VARARGS, "Run the main loop, checking for and reacting to Collab messages for the given number of milliseconds (or 1 second by default)" },
-    { "CollabSessionSetUpdatedCallback", (PyCFunction) PyFFFont_CollabSessionSetUpdatedCallback, METH_VARARGS, "Python function to call after a new collab update has been applied" },
+//    { "CollabSessionJoin", (PyCFunction) PyFFFont_CollabSessionJoin, METH_VARARGS, "Join a collab session at the given address (or localhost by default)" },
+//    { "CollabSessionRunMainLoop", (PyCFunction) PyFFFont_CollabSessionRunMainLoop, METH_VARARGS, "Run the main loop, checking for and reacting to Collab messages for the given number of milliseconds (or 1 second by default)" },
+//    { "CollabSessionSetUpdatedCallback", (PyCFunction) PyFFFont_CollabSessionSetUpdatedCallback, METH_VARARGS, "Python function to call after a new collab update has been applied" },
 
-
+    // Leave some sentinel slots here so that the UI
+    // code can add it's methods to the end of the object declaration.
+    PYMETHODDEF_EMPTY,
+    PYMETHODDEF_EMPTY,
+    PYMETHODDEF_EMPTY, 
+    PYMETHODDEF_EMPTY,
+    PYMETHODDEF_EMPTY,
+    PYMETHODDEF_EMPTY,
+    PYMETHODDEF_EMPTY,
+    PYMETHODDEF_EMPTY,
+    PYMETHODDEF_EMPTY,
+    PYMETHODDEF_EMPTY,
+    PYMETHODDEF_EMPTY,
     PYMETHODDEF_EMPTY /* Sentinel */
 };
 
@@ -18114,6 +17813,7 @@ static PyMethodDef module_fontforge_methods[] = {
     { "UnicodeBlockStartFromLib", PyFF_UnicodeBlockStartFromLib, METH_VARARGS, "Return the www.unicode.org block start, for example block[0]={0..127} -> 0" },
     { "UnicodeBlockEndFromLib", PyFF_UnicodeBlockEndFromLib, METH_VARARGS, "Return the www.unicode.org block end, for example block[1]={128..255} -> 255" },
     { "UnicodeBlockNameFromLib", PyFF_UnicodeBlockNameFromLib, METH_VARARGS, "Return the www.unicode.org block name, for example block[2]={256..383} -> Latin Extended-A" },
+    { "UnicodeNamesListVersion", PyFF_UnicodeNamesListVersion, METH_NOARGS, "Return the www.unicode.org NamesList version for this library" },
     { "version", PyFF_Version, METH_NOARGS, "Returns a string containing the current version of FontForge, as 20061116" },
     { "runInitScripts", PyFF_RunInitScripts, METH_NOARGS, "Run the system and user initialization scripts, if not already run" },
     { "scriptPath", PyFF_GetScriptPath, METH_NOARGS, "Returns a list of the directories searched for scripts"},
@@ -18662,6 +18362,7 @@ static PyObject *InitializePythonMainNamespace() {
 }
 
 static void CreateAllPyModules(void) {
+    printf("CreateAllPyModules()\n");
     int i;
     for ( i=0; i<NUM_MODULES; i++ ) {
         CreatePyModule( all_modules[i] );

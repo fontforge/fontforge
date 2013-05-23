@@ -3216,6 +3216,17 @@ SetGasp([8,2,16,1,65535,3])
 	    If there is no unicode name for this value, or no library available,
 	    then return empty string "". It can execute with no current font.
 	  <DT>
+	    <A NAME="UnicodeNamesListVersion">U</A>nicodeNamesListVersion()
+	  <DD>
+	    Return the Unicode Nameslist Version (as described by www.unicode.org).
+	    libuninameslist and libunicodenames are released on schedules depending on
+	    when www.unicode.org releases new information. These dates do not match
+	    FontForge release dates, therefore users might not keep this optional library
+	    upto current updates. This instruction can be used to test if the Nameslist
+	    library is recent for your script. This function currently works only for
+	    libuninameslist ver_0.3.20130501 or later, else it returns empty string "".
+	    This can execute with no current font.
+	  <DT>
 	    <A NAME="UnlinkReference" HREF="editmenu.html#Unlink">UnlinkReference</A>
 	  <DD>
 	    Unlinks all references within all selected glyphs

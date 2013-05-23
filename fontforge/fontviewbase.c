@@ -1910,7 +1910,8 @@ static FontViewBase *FontViewBase_Create(SplineFont *sf,int hide) {
 return( fv );
 }
 
-static FontViewBase *FontViewBase_Append(FontViewBase *fv) {
+static FontViewBase *FontViewBase_Append(FontViewBase *fv)
+{
     /* Normally fontviews get added to the fv list when their windows are */
     /*  created. but we don't create any windows here, so... */
     FontViewBase *test;
@@ -2096,3 +2097,4 @@ struct mv_interface *mv_interface = &noui_mv;
 void FF_SetMVInterface(struct mv_interface *mvi) {
     mv_interface = mvi;
 }
+

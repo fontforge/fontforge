@@ -116,7 +116,7 @@ libfontforge_la_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c	\
 	ttfspecial.c ufo.c unicoderange.c utils.c winfonts.c zapfnomen.c	\
 	groups.c langfreq.c ftdelta.c autowidth2.c woff.c stamp.c			\
 	activeinui.c pluginloading.c is_LIGATURE.c flaglist.c strlist.c \
-	collabclient.c collabclient.h unicodelibinfo.c
+	unicodelibinfo.c collabclient.c collabclient.h collabclientpriv.h 
 nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
@@ -134,17 +134,6 @@ endif LIBZMQ
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
 libfontforge_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) $(LIBZMQ_LIBS) -release $(VERSION)
-
-EXTRA_SCRIPTS = generate_codepoint_selector.py
-
-# "make is_LIGATURE" or "make -C fontforge is_LIGATURE" to regenerate
-# is_LIGATURE.[ch]. You need LibUnicodeNames with Python bindings, and
-# you need cproto.
-is_LIGATURE:
-	$(PYTHON) $(srcdir)/generate_codepoint_selector.py \
-		'LIGATURE|VULGAR FRACTION' \
-		is_LIGATURE_or_VULGAR_FRACTION > $(srcdir)/is_LIGATURE.c
-	$(CPROTO) $(srcdir)/is_LIGATURE.c > $(srcdir)/is_LIGATURE.h
 
 #--------------------------------------------------------------------------
 
@@ -165,7 +154,7 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	\
 	splashimage.c startui.c statemachine.c tilepath.c transform.c	\
 	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
-	usermenu.c macobjective.h
+	usermenu.c macobjective.h collabclientui.c collabclientui.h 
 
 else !GRAPHICAL_USER_INTERFACE
 

@@ -666,4 +666,5 @@ extern void AutoKern2BuildClasses(SplineFont *sf,int layer,
 
 extern void MVSelectFirstKerningTable(struct metricsview *mv);
 
+
 #endif

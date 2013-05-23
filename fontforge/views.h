@@ -954,6 +954,11 @@ extern void CVSetWidth(CharView *cv,enum widthtype wtype);
 extern void GenericVSetWidth(FontView *fv,SplineChar* sc,enum widthtype wtype);
 extern void CVChangeSC(CharView *cv, SplineChar *sc );
 extern Undoes *CVPreserveTState(CharView *cv);
+/**
+ * If isTState > 0 then CVPreserveTState(cv)
+ * otherwise CVPreserveState(cv)
+ */
+extern Undoes *CVPreserveMaybeState(CharView *cv, int isTState );
 extern void CVRestoreTOriginalState(CharView *cv);
 extern void CVUndoCleanup(CharView *cv);
 
@@ -1325,10 +1330,12 @@ extern void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, char* keyPrefix, int
 
 extern void Prefs_LoadDefaultPreferences( void );
 
-extern FontView* FontViewFind( int (*testFunc)( FontView*, void* ), void* udata );
-extern int FontViewFind_byXUID(          FontView* fv, void* udata );
-extern int FontViewFind_byCollabPtr(     FontView* fv, void* udata );
-extern int FontViewFind_byXUIDConnected( FontView* fv, void* udata );
-extern int FontViewFind_bySplineFont(    FontView* fv, void* udata );
+
+extern FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* ), void* udata );
+extern int FontViewFind_byXUID(      FontViewBase* fv, void* udata );
+extern int FontViewFind_byXUIDConnected( FontViewBase* fv, void* udata );
+extern int FontViewFind_byCollabPtr(  FontViewBase* fv, void* udata );
+extern int FontViewFind_bySplineFont( FontViewBase* fv, void* udata );
+
 
 #endif	/* _VIEWS_H */
