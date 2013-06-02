@@ -72,7 +72,7 @@ return( NULL );
 	    spiros[n-1].ty = '}';
 	}
 
-	if ( !any )
+	if ( !any ) {
 #if _LIBSPIRO_FUN
 	    if ( TaggedSpiroCPsToBezier0(spiros,bc)==0 ) {
 		return( NULL );
@@ -80,7 +80,7 @@ return( NULL );
 #else
 	    TaggedSpiroCPsToBezier(spiros,bc);
 #endif
-	else {
+	} else {
 	    nspiros = galloc((n+1)*sizeof(spiro_cp));
 	    memcpy(nspiros,spiros,(n+1)*sizeof(spiro_cp));
 	    for ( n=0; nspiros[n].ty!=SPIRO_END; ++n )
