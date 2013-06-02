@@ -73,13 +73,26 @@ return( NULL );
 	}
 
 	if ( !any )
+#if _LIBSPIRO_FUN
+	    if ( TaggedSpiroCPsToBezier0(spiros,bc)==0 ) {
+		return( NULL );
+	    }
+#else
 	    TaggedSpiroCPsToBezier(spiros,bc);
+#endif
 	else {
 	    nspiros = galloc((n+1)*sizeof(spiro_cp));
 	    memcpy(nspiros,spiros,(n+1)*sizeof(spiro_cp));
 	    for ( n=0; nspiros[n].ty!=SPIRO_END; ++n )
 		nspiros[n].ty &= ~0x80;
+#if _LIBSPIRO_FUN
+	    if ( TaggedSpiroCPsToBezier0(nspiros,bc)==0 ) {
+		free(nspiros);
+		return( NULL );
+	    }
+#else
 	    TaggedSpiroCPsToBezier(nspiros,bc);
+#endif
 	    free(nspiros);
 	}
 	ss = bezctx_ff_close(bc);
