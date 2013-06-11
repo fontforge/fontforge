@@ -38,6 +38,8 @@
 
 #include <glib.h>
 
+#include "gutils/unicodelibinfo.h"
+
 int32 unicode_from_adobestd[256];
 struct lconv localeinfo;
 char *coord_sep = ",";

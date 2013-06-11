@@ -74,6 +74,7 @@
 
 extern int prefRevisionsToRetain;
 
+#include "gutils/unicodelibinfo.h"
 
 
 /* This defines the name of the Python entry function that is expected

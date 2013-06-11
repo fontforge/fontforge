@@ -26,7 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "fontforge.h"
+#include "unicodelibinfo.h"
 #include <ustring.h>
 
 
@@ -45,6 +45,8 @@ const struct unicode_block *_UnicodeBlock = NULL;
 uninm_names_db names_db; /* Unicode character names and annotations database */
 uninm_blocks_db blocks_db;
 #endif
+
+#warning "INCLUDED xxx INCLUDED xxx INCLUDED xxx INCLUDED xxx INCLUDED xxx INCLUDED xxx INCLUDED xxx INCLUDED xxx "
 
 void inituninameannot(void) {
 /* Initialize unicode name-annotation library access for FontForge */
