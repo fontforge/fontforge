@@ -34,6 +34,7 @@
 #include <gresource.h>
 #include <gresedit.h>
 
+#include "gutils/unicodelibinfo.h"
 
 int bv_width = 270, bv_height=250;
 

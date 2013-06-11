@@ -29,7 +29,9 @@
 #include <ustring.h>
 #include <gio.h>
 #include "gdraw.h"
-#include <sys/select.h>
+#if __Mac
+#  include <sys/select.h>
+#endif
 
 /* Functions for font metrics:
     rectangle of text (left side bearing of first char, right of last char)
@@ -1051,6 +1053,7 @@ GDrawRemoveReadFD( GDisplay *gdisp,
 
 void MacServiceReadFDs()
 {
+#if !defined(__MINGW32__)
     int ret = 0;
     
     GDisplay *gdisp = GDrawGetDisplayOfWindow(0);
@@ -1078,6 +1081,7 @@ void MacServiceReadFDs()
 	if( FD_ISSET(cb->fd,&read))
 	    cb->callback( cb->fd, cb->udata );
     }
+#endif
 }
 
 
