@@ -46,8 +46,6 @@ uninm_names_db names_db; /* Unicode character names and annotations database */
 uninm_blocks_db blocks_db;
 #endif
 
-#warning "INCLUDED xxx INCLUDED xxx INCLUDED xxx INCLUDED xxx INCLUDED xxx INCLUDED xxx INCLUDED xxx INCLUDED xxx "
-
 void inituninameannot(void) {
 /* Initialize unicode name-annotation library access for FontForge */
 /* TODO: Library pluginloading currently disabled - see 20120731-b */
