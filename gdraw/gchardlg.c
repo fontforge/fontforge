@@ -36,7 +36,8 @@
 #include <gresource.h>
 #include "ggadgetP.h"		/* For the font family names */
 
-#include "../fontforge/unicodelibinfo.c"
+#include "gutils/unicodelibinfo.h"
+//#include "../fontforge/unicodelibinfo.c"
 
 #define INSCHR_CharSet	1
 #define INSCHR_Char	2

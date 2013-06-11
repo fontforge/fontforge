@@ -41,6 +41,7 @@
 #include "collabclientui.h"
 #include "inc/gnetwork.h"
 
+#include "gutils/unicodelibinfo.h"
 
 int OpenCharsInNewWindow = 0;
 char *RecentFiles[RECENT_MAX] = { NULL };

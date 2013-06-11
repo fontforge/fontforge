@@ -45,6 +45,8 @@ extern int _GScrollBar_Width;
 #include "gutils/prefs.h"
 #include "collabclientui.h"
 
+#include "gutils/unicodelibinfo.h"
+
 /* Barry wants to be able to redefine menu bindings only in the charview (I think) */
 /*  the menu parser will first check for something like "CV*Open|Ctl+O", and */
 /*  if that fails will strip off "CV*" and check for "Open|Ctl+O" */
