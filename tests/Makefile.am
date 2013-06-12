@@ -51,7 +51,12 @@ link_test_SOURCES = link_test.c
 link_test_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_builddir)/fontforge
 link_test_LDADD = $(top_builddir)/fontforge/libfontforge.la
 
-noinst_PROGRAMS = link_test
+if BUILD_LINK_TEST
+LINKTESTS = link_test
+endif
+
+noinst_PROGRAMS = $(LINKTESTS)
+
 
 check-local: atconfig atlocal $(TESTSUITE)
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
