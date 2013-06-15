@@ -960,21 +960,6 @@ int fontforge_main( int argc, char **argv ) {
     bindtextdomain("FontForge", getLocaleDir());
     textdomain("FontForge");
     GResourceUseGetText();
-#if defined(__MINGW32__)
-    {
-	size_t len = strlen(GResourceProgramDir);
-	char*  path = galloc(len + 64);
-	strcpy(path, GResourceProgramDir);
-
-	strcpy(path+len, "/share/fontforge/pixmaps"); /* PixmapDir */
-	GGadgetSetImageDir(path);
-
-	strcpy(path+len, "/share/fontforge/resources/fontforge.resource"); /* Resource File */
-	GResourceAddResourceFile(path, GResourceProgramName, false);
-
-	gfree(path);
-    }
-#else
     {
 	char shareDir[PATH_MAX];
 	char* sd = getShareDir();
@@ -990,7 +975,6 @@ int fontforge_main( int argc, char **argv ) {
 	snprintf(path, PATH_MAX, "%s%s", shareDir, "/resources/fontforge.resource" );
 	GResourceAddResourceFile(path, GResourceProgramName,false);
     }
-#endif
     hotkeysLoad();
 //    loadPrefsFiles();
     Prefs_LoadDefaultPreferences();
