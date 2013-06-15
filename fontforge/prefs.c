@@ -1297,6 +1297,9 @@ static void PrefsUI_LoadPrefs(void)
     {
 	fprintf(stderr,"no xdefs_filename!\n");
 	char path[PATH_MAX];
+	printf("TESTING: getPixmapDir:%s\n", getPixmapDir() );
+	printf("TESTING: getShareDir:%s\n", getShareDir() );
+	printf("TESTING: GResourceProgramDir:%s\n", GResourceProgramDir );
 	snprintf(path, PATH_MAX, "%s/%s", getPixmapDir(), "resources" );
 	fprintf(stderr,"trying default theme:%s\n", path );
 	if(GFileExists(path)) {
