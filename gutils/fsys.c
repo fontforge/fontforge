@@ -659,6 +659,8 @@ char *getShareDir(void) {
     len = (pt-GResourceProgramDir)+strlen("/share/fontforge")+1;
     sharedir = galloc(len);
     strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
+    printf("TESTING: pt:%s\n", pt );
+    printf("TESTING: sharedir1:%s\n", sharedir );
     strcpy(sharedir+(pt-GResourceProgramDir),"/share/fontforge");
     return( sharedir );
 }
