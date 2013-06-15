@@ -644,8 +644,10 @@ char *getShareDir(void) {
 
     set = true;
 
+    printf("TESTING: GResourceProgramDir:%s\n", GResourceProgramDir );
     pt = strstr(GResourceProgramDir,"/bin");
     if ( pt==NULL ) {
+	printf("TESTING: doesn't end in /bin\n" );
 #ifdef SHAREDIR
 	return( sharedir = SHAREDIR );
 #elif defined( PREFIX )
