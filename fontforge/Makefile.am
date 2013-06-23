@@ -174,6 +174,9 @@ libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
 libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) $(LIBZMQ_LIBS) -release $(VERSION)
+if LIBZMQ
+libfontforgeexe_la_LDFLAGS += $(top_srcdir)/collab/libzmqcollab.la
+endif
 
 #--------------------------------------------------------------------------
 
