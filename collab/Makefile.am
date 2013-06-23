@@ -36,7 +36,7 @@ libzmqcollab_la_CPPFLAGS = \
  $(MY_CFLAGS) $(LIBZMQ_CFLAGS) $(GLIB_CFLAGS)
 
 libzmqcollab_la_LIBADD = 
-libzmqcollab_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) $(GLIB_LIBS) -release $(VERSION)
+libzmqcollab_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) $(GLIB_LIBS) $(LIBZMQ_LIBS) -release $(VERSION)
 
 #--------------------------------------------------------------------------
 
