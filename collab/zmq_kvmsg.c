@@ -57,6 +57,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "zlist.h"
 
 #include <glib.h>
+#include <inttypes.h>
 
 #define DEBUG zclock_log
 
