@@ -92,7 +92,10 @@ if THE_PROGRAMS
 fontforge_SOURCES = main.c
 fontforge_CPPFLAGS = $(AM_CPPFLAGS)
 fontforge_LDADD = libfontforgeexe.la libfontforge.la $(LDADD)
-fontforge_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) $(LIBZMQ_LIBS) -export-dynamic
+fontforge_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -export-dynamic
+if LIBZMQ
+fontforge_LDFLAGS += $(LIBZMQ_LIBS) $(top_srcdir)/collab/libzmqcollab.la
+endif
 
 endif THE_PROGRAMS
 
