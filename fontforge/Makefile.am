@@ -94,7 +94,8 @@ fontforge_CPPFLAGS = $(AM_CPPFLAGS)
 fontforge_LDADD = libfontforgeexe.la libfontforge.la $(LDADD)
 fontforge_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -export-dynamic
 if LIBZMQ
-fontforge_LDFLAGS += $(LIBZMQ_LIBS) $(top_srcdir)/collab/libzmqcollab.la
+fontforge_LDFLAGS += $(LIBZMQ_LIBS)
+fontforge_LDADD += $(top_srcdir)/collab/libzmqcollab.la
 endif
 
 endif THE_PROGRAMS
