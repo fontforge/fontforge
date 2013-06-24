@@ -76,6 +76,8 @@ AS_CASE([$host],
 
    [*sparc*],[AC_DEFINE([_Keyboard],[2])],
 
+   [*mingw*],[ LDFLAGS="$LDFLAGS -lws2_32 -lplibc" ],
+
    [*-pc-cygwin*],[
 
       AC_DEFINE([_BrokenBitmapImages],[1],[Platform specific stuff])

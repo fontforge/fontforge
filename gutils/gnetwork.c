@@ -38,6 +38,7 @@
 #if defined(__MINGW32__)
 #  include <winsock2.h>
 #  include <windows.h>
+#  include <plibc.h>
 #else
 extern int h_errno;
 #  include <netdb.h>
