@@ -118,7 +118,7 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 	    printf("have charview:%p\n", cv );
 	    
 	    char filename[PATH_MAX];
-	    snprintf(filename, PATH_MAX, "/tmp/fontforge-collab-inx-%d.sfd", getpid() );
+	    snprintf(filename, PATH_MAX, "%s/fontforge-collab-inx-%d.sfd", getTempDir(), getpid() );
 	    GFileWriteAll( filename, (char*)data);
 	    FILE* file = fopen( filename, "r" );
 	    Undoes* undo = SFDGetUndo( sf, file, sc,
@@ -452,7 +452,7 @@ static int collabclient_sessionJoin_processmsg_foreach_fn( kvmsg_t* msg, void *a
     
 /*     int idx = 0; */
 /*     char filename[PATH_MAX]; */
-/*     snprintf(filename, PATH_MAX, "/tmp/fontforge-collab-x.sfd"); */
+/*     snprintf(filename, PATH_MAX, "%s/fontforge-collab-x.sfd", getTempDir() ); */
 /*     FILE* f = fopen( filename, "w" ); */
 /*     SFDDumpUndo( f, cv->sc, undo, "Undo", idx ); */
 /*     fclose(f); */
@@ -497,7 +497,7 @@ collabclient_sendRedo_Internal( FontViewBase *fv, SplineChar *sc, Undoes *undo, 
     
     int idx = 0;
     char filename[PATH_MAX];
-    snprintf(filename, PATH_MAX, "/tmp/fontforge-collab-x.sfd");
+    snprintf(filename, PATH_MAX, "%s/fontforge-collab-x.sfd", getTempDir() );
     FILE* f = fopen( filename, "w" );
     SFDDumpUndo( f, sc, undo, "Undo", idx );
     fclose(f);
@@ -593,7 +593,7 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
     printf("Starting a session, sending it the current SFD as a baseline...\n");
     int s2d = 0;
     char filename[PATH_MAX];
-    snprintf(filename, PATH_MAX, "/tmp/fontforge-collab-start-%d.sfd", getpid());
+    snprintf(filename, PATH_MAX, "%s/fontforge-collab-start-%d.sfd", getTempDir(), getpid());
     int ok = SFDWrite(filename,fv->b.sf,fv->b.map,fv->b.normal,s2d);
     printf("connecting to server...3 ok:%d\n",ok);
     if ( ok )
@@ -704,7 +704,7 @@ FontViewBase* collabclient_sessionJoin( void* ccvp, FontView *fv )
     {
 	int openflags = 0;
 	char filename[PATH_MAX];
-	snprintf(filename, PATH_MAX, "/tmp/fontforge-collab-import-%d.sfd",getpid());
+	snprintf(filename, PATH_MAX, "%s/fontforge-collab-import-%d.sfd",getTempDir(),getpid());
 	GFileWriteAll( filename, kvmsg_body (lastSFD) );
 
 	/*
