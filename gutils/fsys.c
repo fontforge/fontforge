@@ -32,6 +32,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>		/* for mkdir */
 #include <unistd.h>
+#include <glib.h>
 
 
 #ifdef _WIN32
@@ -784,4 +785,8 @@ int GFileWriteAll(char* filepath, char *data)
     return 0;
 }
 
+char *getTempDir(void)
+{
+    return g_get_tmp_dir();
+}
 
