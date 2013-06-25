@@ -752,7 +752,7 @@ return( NULL );
 return( editdir );
 }
 
-int GFileGetSize(char *name)
+int GFileGetSize( char* name )
 {
     struct stat buf;
     int rc = stat( name, &buf );
@@ -761,7 +761,7 @@ int GFileGetSize(char *name)
     return buf.st_size;
 }
 
-char* GFileReadAll(char *name)
+char* GFileReadAll( char* name )
 {
     int sz = GFileGetSize( name );
     char* ret = calloc( 1, sz+1 );
