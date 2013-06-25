@@ -501,12 +501,17 @@ collabclient_sendRedo_Internal( FontViewBase *fv, SplineChar *sc, Undoes *undo, 
     FILE* f = fopen( filename, "w" );
     SFDDumpUndo( f, sc, undo, "Undo", idx );
     fclose(f);
+    printf("wrote undo sfd...\n" );
     char* sfd = GFileReadAll( filename );
+    printf("read undo sfd, data:%p\n", sfd );
     if( DEBUG_SHOW_SFD_CHUNKS )
 	printf("SENDING: %s\n\n", sfd );
 
+    printf("timers1...\n" );
     cc->roundTripTimerWaitingSeq = cc->publisher_sendseq;
     BackgroundTimer_touch( cc->roundTripTimer );
+    printf("timers2...\n" );
+    printf("sfd:%p...\n", sfd );
 
     kvmsg_t *kvmsg = kvmsg_new(0);
     kvmsg_fmt_key  (kvmsg, "%s%d", SUBTREE, cc->publisher_sendseq++);
