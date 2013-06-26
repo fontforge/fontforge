@@ -775,7 +775,7 @@ char* GFileReadAll( char* name )
 
 #if defined(__MINGW32__)
     // some terminating bytes on win32
-    if( bread+2 => sz )
+    if( bread+2 >= sz )
 	return ret;
 #endif
     
