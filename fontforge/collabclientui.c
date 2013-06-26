@@ -501,7 +501,7 @@ collabclient_sendRedo_Internal( FontViewBase *fv, SplineChar *sc, Undoes *undo, 
     FILE* f = fopen( filename, "w" );
     SFDDumpUndo( f, sc, undo, "Undo", idx );
     fclose(f);
-    printf("wrote undo sfd...\n" );
+    printf("wrote undo sfd... filename: %s\n", filename );
     char* sfd = GFileReadAll( filename );
     printf("read undo sfd, data:%p\n", sfd );
     if( DEBUG_SHOW_SFD_CHUNKS )
