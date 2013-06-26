@@ -764,9 +764,13 @@ int GFileGetSize( char* name )
 char* GFileReadAll( char* name )
 {
     int sz = GFileGetSize( name );
+    printf("GFileReadAll() name:%s sz:%d\n", name, sz );
     char* ret = calloc( 1, sz+1 );
+    printf("GFileReadAll() ret ptr:%p\n", ret );
     FILE* fp = fopen( name, "r" );
+    printf("GFileReadAll() fp:%p\n", fp );
     size_t bread = fread( ret, 1, sz, fp );
+    printf("GFileReadAll() bread:%d\n", bread );
     fclose(fp);
     if( bread == sz )
 	return ret;
