@@ -772,6 +772,13 @@ char* GFileReadAll( char* name )
     size_t bread = fread( ret, 1, sz, fp );
     printf("GFileReadAll() bread:%d\n", bread );
     fclose(fp);
+
+#if defined(__MINGW32__)
+    // some terminating bytes on win32
+    if( bread+2 => sz )
+	return ret;
+#endif
+    
     if( bread == sz )
 	return ret;
 
