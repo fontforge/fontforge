@@ -120,7 +120,7 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 	    char filename[PATH_MAX];
 	    snprintf(filename, PATH_MAX, "%s/fontforge-collab-inx-%d.sfd", getTempDir(), getpid() );
 	    GFileWriteAll( filename, (char*)data);
-	    FILE* file = fopen( filename, "r" );
+	    FILE* file = fopen( filename, "rb" );
 	    Undoes* undo = SFDGetUndo( sf, file, sc,
 				       "UndoOperation",
 				       "EndUndoOperation",
@@ -498,7 +498,7 @@ collabclient_sendRedo_Internal( FontViewBase *fv, SplineChar *sc, Undoes *undo, 
     int idx = 0;
     char filename[PATH_MAX];
     snprintf(filename, PATH_MAX, "%s/fontforge-collab-x.sfd", getTempDir() );
-    FILE* f = fopen( filename, "w" );
+    FILE* f = fopen( filename, "wb" );
     SFDDumpUndo( f, sc, undo, "Undo", idx );
     fclose(f);
     printf("wrote undo sfd... filename: %s\n", filename );
