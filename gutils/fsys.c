@@ -773,9 +773,21 @@ char* GFileReadAll( char* name )
     printf("GFileReadAll() bread:%d\n", bread );
     fclose(fp);
 
+#if defined(__WINDOWS__)
+    printf("GFileReadAll(d-windows)\n");
+#endif
 #if defined(__MINGW32__)
+    printf("GFileReadAll(d-MINGW32)\n");
+#endif
+    
+#if defined(__MINGW32__)
+    
+    printf("GFileReadAll(w32) v1 bread:%d\n", bread );
+    printf("GFileReadAll(w32) v1 sz:%d\n", name, sz );
+    bread += 2;
+    printf("GFileReadAll(w32) v2 bread:%d\n", bread );
     // some terminating bytes on win32
-    if( bread+2 >= sz )
+    if( bread >= sz )
 	return ret;
 #endif
     
