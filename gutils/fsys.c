@@ -764,33 +764,11 @@ int GFileGetSize( char* name )
 char* GFileReadAll( char* name )
 {
     int sz = GFileGetSize( name );
-    printf("GFileReadAll() name:%s sz:%d\n", name, sz );
     char* ret = calloc( 1, sz+1 );
-    printf("GFileReadAll() ret ptr:%p\n", ret );
-    FILE* fp = fopen( name, "r" );
-    printf("GFileReadAll() fp:%p\n", fp );
+    FILE* fp = fopen( name, "rb" );
     size_t bread = fread( ret, 1, sz, fp );
-    printf("GFileReadAll() bread:%d\n", bread );
     fclose(fp);
 
-#if defined(__WINDOWS__)
-    printf("GFileReadAll(d-windows)\n");
-#endif
-#if defined(__MINGW32__)
-    printf("GFileReadAll(d-MINGW32)\n");
-#endif
-    
-#if defined(__MINGW32__)
-    
-    printf("GFileReadAll(w32) v1 bread:%d\n", bread );
-    printf("GFileReadAll(w32) v1 sz:%d\n", name, sz );
-    bread += 2;
-    printf("GFileReadAll(w32) v2 bread:%d\n", bread );
-    // some terminating bytes on win32
-    if( bread >= sz )
-	return ret;
-#endif
-    
     if( bread == sz )
 	return ret;
 
@@ -801,9 +779,8 @@ char* GFileReadAll( char* name )
 
 int GFileWriteAll(char* filepath, char *data)
 {
-    FILE* fp = fopen( filepath, "w" );
+    FILE* fp = fopen( filepath, "wb" );
     int bwrite = fwrite( data, 1, strlen(data), fp );
-    printf("GFileWriteAll() data.len:%ld bwrite:%d\n", strlen(data), bwrite );
     fclose(fp);
     return 0;
 }
