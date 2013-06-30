@@ -2163,7 +2163,7 @@ static int IsNeeded(enum overlap_type ot,int winding, int nwinding, int ew, int 
 return( winding==0 || nwinding==0 );
     } else if ( ot==over_intersect || ot==over_intersel ) {
 return( !( (winding>-2 && winding<2 && nwinding>-2 && nwinding<2) ||
-		    ((winding<=-2 || winding>=2) && (nwinding<=-2 && nwinding>=2))));
+		    ((winding<=-2 || winding>=2) && (nwinding<=-2 || nwinding>=2))));
     } else if ( ot == over_exclude ) {
 return( !( (( winding==0 || nwinding==0 ) && ew==0 && new==0 ) ||
 		    (winding!=0 && (( ew!=0 && new==0 ) || ( ew==0 && new!=0))) ));
@@ -2242,7 +2242,7 @@ static void FigureNeeds(Monotonic *ms,int which, extended test, Monotonic **spac
 		m->other-space[i-1]->other > -close_level )	/* In case we reversed things */
 	    close = true;
 	/* On our first pass through the list, don't set needed/unneeded */
-	/*  when to monotonics are close together. (We get rounding errors */
+	/*  when two monotonics are close together. (We get rounding errors */
 	/*  when things are too close and get confused about the order */
 	if ( !close ) {
 	    if ( nm!=NULL && nm->other-m->other < .01 ) {
@@ -2437,7 +2437,7 @@ static void TestForBadDirections(Intersection *ilist) {
     /*  one counter, and these two intersect, then our algorithm will */
     /*  not remove what appears to the user to be an overlap. Warn about */
     /*  this. */
-    /* I think it happens iff all exits from an intersection are needed */
+    /* I think it happens if all exits from an intersection are needed */
     MList *ml, *ml2;
     int cnt, ncnt;
     Intersection *il;
