@@ -492,7 +492,7 @@ BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,
     if ( FT_Set_Char_Size(ftc->face,(int) (ptsize*64),(int) (ptsize*64), dpi, dpi))
  goto fail;
     if ( FT_Load_Glyph(ftc->face,ftc->glyph_indeces[gid],
-	    depth==1?(FT_LOAD_RENDER|FT_LOAD_TARGET_MONO):FT_LOAD_RENDER))
+	    depth==1?(FT_LOAD_NO_AUTOHINT|FT_LOAD_RENDER|FT_LOAD_TARGET_MONO):(FT_LOAD_NO_AUTOHINT|FT_LOAD_RENDER)))
  goto fail;
 
     slot = ftc->face->glyph;
@@ -725,7 +725,7 @@ return( NULL );
 return( NULL );	/* Error Return */
 
     if ( FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],
-	depth==1 ? (FT_LOAD_NO_BITMAP|FT_LOAD_TARGET_MONO) : FT_LOAD_NO_BITMAP))
+	depth==1 ? (FT_LOAD_NO_AUTOHINT|FT_LOAD_NO_BITMAP|FT_LOAD_TARGET_MONO) : (FT_LOAD_NO_AUTOHINT|FT_LOAD_NO_BITMAP)))
 return( NULL );
 
     slot = ftc->face->glyph;
@@ -773,7 +773,7 @@ return( NULL );
 return( NULL );	/* Error Return */
 
     if ( FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],
-	depth==1? (FT_LOAD_NO_BITMAP|FT_LOAD_TARGET_MONO) : FT_LOAD_NO_BITMAP))
+	depth==1? (FT_LOAD_NO_AUTOHINT|FT_LOAD_NO_BITMAP|FT_LOAD_TARGET_MONO) : (FT_LOAD_NO_AUTOHINT|FT_LOAD_NO_BITMAP)))
 return( NULL );
 
     slot = ((FT_Face) (ftc->face))->glyph;

@@ -32,6 +32,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>		/* for mkdir */
 #include <unistd.h>
+#include <glib.h>
 
 
 #ifdef _WIN32
@@ -644,16 +645,6 @@ char *getShareDir(void) {
 
     set = true;
 
-#if defined(__MINGW32__)
-
-    len = strlen(GResourceProgramDir) + strlen("/share/fontforge") +2;
-    sharedir = galloc(len);
-    strcpy(sharedir, GResourceProgramDir);
-    strcat(sharedir, "/share/fontforge");
-    return sharedir;
-
-#else
-
     pt = strstr(GResourceProgramDir,"/bin");
     if ( pt==NULL ) {
 #ifdef SHAREDIR
@@ -669,7 +660,6 @@ char *getShareDir(void) {
     strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
     strcpy(sharedir+(pt-GResourceProgramDir),"/share/fontforge");
     return( sharedir );
-#endif
 }
 
 
@@ -762,7 +752,7 @@ return( NULL );
 return( editdir );
 }
 
-int GFileGetSize(char *name)
+int GFileGetSize( char* name )
 {
     struct stat buf;
     int rc = stat( name, &buf );
@@ -771,13 +761,14 @@ int GFileGetSize(char *name)
     return buf.st_size;
 }
 
-char* GFileReadAll(char *name)
+char* GFileReadAll( char* name )
 {
     int sz = GFileGetSize( name );
     char* ret = calloc( 1, sz+1 );
-    FILE* fp = fopen( name, "r" );
+    FILE* fp = fopen( name, "rb" );
     size_t bread = fread( ret, 1, sz, fp );
     fclose(fp);
+
     if( bread == sz )
 	return ret;
 
@@ -788,11 +779,14 @@ char* GFileReadAll(char *name)
 
 int GFileWriteAll(char* filepath, char *data)
 {
-    FILE* fp = fopen( filepath, "w" );
+    FILE* fp = fopen( filepath, "wb" );
     int bwrite = fwrite( data, 1, strlen(data), fp );
-    printf("GFileWriteAll() data.len:%ld bwrite:%d\n", strlen(data), bwrite );
     fclose(fp);
     return 0;
 }
 
+char *getTempDir(void)
+{
+    return g_get_tmp_dir();
+}
 

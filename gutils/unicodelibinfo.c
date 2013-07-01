@@ -26,7 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "fontforge.h"
+#include "unicodelibinfo.h"
 #include <ustring.h>
 
 

@@ -93,6 +93,10 @@ fontforge_SOURCES = main.c
 fontforge_CPPFLAGS = $(AM_CPPFLAGS)
 fontforge_LDADD = libfontforgeexe.la libfontforge.la $(LDADD)
 fontforge_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -export-dynamic
+if LIBZMQ
+fontforge_LDFLAGS += $(LIBZMQ_LIBS)
+fontforge_LDADD += $(top_srcdir)/collab/libzmqcollab.la
+endif
 
 endif THE_PROGRAMS
 
@@ -116,7 +120,7 @@ libfontforge_la_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c	\
 	ttfspecial.c ufo.c unicoderange.c utils.c winfonts.c zapfnomen.c	\
 	groups.c langfreq.c ftdelta.c autowidth2.c woff.c stamp.c			\
 	activeinui.c pluginloading.c is_LIGATURE.c flaglist.c strlist.c \
-	unicodelibinfo.c collabclient.c collabclient.h collabclientpriv.h 
+	collabclient.c collabclient.h collabclientpriv.h 
 nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
@@ -173,7 +177,10 @@ libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $
 
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
-libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -release $(VERSION)
+libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) $(LIBZMQ_LIBS) -release $(VERSION)
+if LIBZMQ
+libfontforgeexe_la_LDFLAGS += $(top_srcdir)/collab/libzmqcollab.la
+endif
 
 #--------------------------------------------------------------------------
 

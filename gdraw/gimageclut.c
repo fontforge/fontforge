@@ -28,6 +28,11 @@
 #include "colorP.h"
 #include "charset.h"
 #include "ustring.h"
+#include "gutils.h"
+
+#if defined(__MINGW32__)
+#  include "../gutils/divisors.c"
+#endif
 
 struct clutinf {
     Color col;
@@ -696,7 +701,6 @@ return( rc );
 
 static RevCMap *_GClutReverse(int side_cnt,int range,struct revcol *basecol,
 	struct revcol *cols,struct revcol *outercols) {
-    extern int16 div_tables[256][2];
     RevCMap *rev;
     int i, s2, s3, side_size;
     struct revcol *test;

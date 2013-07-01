@@ -33,10 +33,16 @@
 #include <sys/stat.h>
 #include "gfile.h"
 
+#ifdef HAVE_PTHREAD_H
 #include <pthread.h>
-#ifndef __VMS
-# include <sched.h>
 #endif
+
+#ifndef __VMS
+#if !defined(__MINGW32__)
+#   include <sched.h>
+#endif
+#endif
+
 #include <setjmp.h>
 #include <signal.h>
 
@@ -52,6 +58,14 @@ extern GBox _ggadget_Default_Box;
 #if defined(__MINGW32__)
 # define SIGUSR1 18
 #endif
+
+#if defined(__MINGW32__)
+
+void OFLibBrowse(void) {
+}
+int oflib_automagic_preview = false;
+
+#else
 
 /* A dialog for browsing through fonts on the Open Font Library website */
 
@@ -2146,3 +2160,4 @@ return;
     gwwv_post_notice_timeout(-1,_("Checking for new fonts"),_("Checking server for additional fonts"));
     GDrawSetVisible(gw,true);
 }
+#endif

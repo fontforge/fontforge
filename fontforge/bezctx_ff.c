@@ -5,38 +5,43 @@
 
 #ifndef _NO_LIBSPIRO
 #include "bezctx_ff.h"
-#include "fontforgevw.h"		/* For LogError, else splinefont.h */
+#include "fontforgevw.h"	/* For LogError, else splinefont.h */
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
 #include <math.h>
 
 typedef struct {
-    bezctx base;
+    bezctx base;		/* This is a superclass of bezctx, and this is the entry for the base */
     int is_open;
-    int gotnans;
-    SplineSet *ss;
+    int gotnans;		/* Sometimes spiro fails to converge and we get NaNs. */
+				/* Complain the first time this happens, but not thereafter */
+    SplineSet *ss;		/* The fontforge contour which we build up as we go along */
 } bezctx_ff;
 
-static void
+static void 
 nancheck(bezctx_ff *bc) {
 
-    if ( !bc->gotnans ) {
+    if ( !bc->gotnans ) {	/* Called when we get passed a NaN. Complain the first time that happens */
 	LogError(_("Spiros did not converge") );
 	bc->gotnans = true;
     }
 }
 
+/* This routine starts a new contour */
+/* So we allocate a new SplineSet, and then add the first point to it */
 static void
 bezctx_ff_moveto(bezctx *z, double x, double y, int is_open) {
     bezctx_ff *bc = (bezctx_ff *)z;
 
-    if ( !finite(x) || !finite(y)) {
+    if ( !finite(x) || !finite(y)) {	/* Protection against NaNs */
 	nancheck(bc);
 	x = y = 0;
     }
     if (!bc->is_open) {
-	SplineSet *ss = chunkalloc(sizeof(SplineSet));
+	SplineSet *ss;
+	if ( (ss=(SplineSet *)calloc(1,sizeof(SplineSet)))==NULL )
+	    return;
 	ss->next = bc->ss;
 	bc->ss = ss;
     }
@@ -44,6 +49,7 @@ bezctx_ff_moveto(bezctx *z, double x, double y, int is_open) {
     bc->is_open = is_open;
 }
 
+/* This routine creates a linear spline from the previous point specified to this one */
 static void
 bezctx_ff_lineto(bezctx *z, double x, double y) {
     bezctx_ff *bc = (bezctx_ff *)z;
@@ -58,6 +64,8 @@ bezctx_ff_lineto(bezctx *z, double x, double y) {
     bc->ss->last = sp;
 }
 
+/* This could create a quadratic spline, except FontForge only is prepared */
+/* to deal with cubics, so convert the quadratic into the equivalent cubic */
 static void
 bezctx_ff_quadto(bezctx *z, double xm, double ym, double x3, double y3)
 {
@@ -88,6 +96,7 @@ bezctx_ff_quadto(bezctx *z, double xm, double ym, double x3, double y3)
     bc->ss->last = sp;
 }
 
+/* And this creates a cubic */
 static void
 bezctx_ff_curveto(bezctx *z, double x1, double y1, double x2, double y2,
 		  double x3, double y3)
@@ -110,9 +119,13 @@ bezctx_ff_curveto(bezctx *z, double x1, double y1, double x2, double y2,
     bc->ss->last = sp;
 }
 
+/* Allocates and initializes a new FontForge bezier context */
 bezctx *
 new_bezctx_ff(void) {
-    bezctx_ff *result = chunkalloc(sizeof(bezctx_ff));
+    bezctx_ff *result;
+
+    if ( (result=(bezctx_ff *)calloc(1,sizeof(bezctx_ff)))==NULL )
+	return NULL;
 
     result->base.moveto = bezctx_ff_moveto;
     result->base.lineto = bezctx_ff_lineto;
@@ -125,6 +138,7 @@ new_bezctx_ff(void) {
     return &result->base;
 }
 
+/* Finishes an old FontForge bezier context, and returns the contour which was created */
 struct splinepointlist *
 bezctx_ff_close(bezctx *z)
 {
@@ -146,7 +160,7 @@ bezctx_ff_close(bezctx *z)
 	    ss->last = ss->first;
 	}
     }
-    chunkfree(bc,sizeof(bezctx_ff));
-return( ss );
+    free(bc);
+    return( ss );
 }
 #endif

@@ -74,5 +74,6 @@ extern char *getLocaleDir(void);
 extern char *getPixmapDir(void);
 extern char *getHelpDir(void);
 extern char *getDotFontForgeDir(void);
+extern char *getTempDir(void);
 
 #endif

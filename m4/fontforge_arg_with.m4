@@ -199,7 +199,9 @@ FONTFORGE_ARG_WITH_BASE([libspiro],
          [i_do_have_libspiro=yes
           AC_SUBST([LIBSPIRO_CFLAGS],[""])
           AC_SUBST([LIBSPIRO_LIBS],["${found_lib}"])
-          FONTFORGE_WARN_PKG_FALLBACK([LIBSPIRO])],
+          FONTFORGE_WARN_PKG_FALLBACK([LIBSPIRO])
+          AC_CHECK_FUNC([TaggedSpiroCPsToBezier0],[AC_DEFINE([_LIBSPIRO_FUN],
+                        [1],[Libspiro returns true or false.])])],
          [i_do_have_libspiro=no])
    ])
 ])
