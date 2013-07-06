@@ -19,6 +19,7 @@ sed -i -e "s|Gdraw.ScreenWidthCentimeters:.*|Gdraw.ScreenWidthCentimeters: 34|g"
 sed -i -e "s|Gdraw.GMenu.MacIcons:.*|Gdraw.GMenu.MacIcons: True|g" \
        "$bundle_res/opt/local/share/fontforge/pixmaps/resources"
 
+
 cd $bundle_bin
 dylibbundler --overwrite-dir --bundle-deps --fix-file \
   ./fontforge \
@@ -28,6 +29,16 @@ dylibbundler --overwrite-dir --bundle-deps --fix-file \
   ./FontForgeInternal/fontforge-internal-collab-server \
   --install-path @executable_path/collablib \
   --dest-dir ./FontForgeInternal/collablib
+
+cp -av /usr/lib/libedit* $bundle_lib/
+cp -av /usr/lib/libedit* $bundle_bin/FontForgeInternal/collablib/
+
+#########
+# libedit.2 is on some older machines.
+install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/../lib/libedit.3.dylib fontforge 
+cd ./FontForgeInternal
+install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/collablib/libedit.3.dylib fontforge-internal-collab-server
+cd ..
 
 mkdir -p $bundle_lib
 cp -av /opt/local/lib/pango   $bundle_lib
