@@ -4802,7 +4802,7 @@ return( NULL );			/* No variation selectors */
     }
 
     for ( i=0; i<vs_cnt; ++i ) {
-	memset(avail,0,unicode4_size);
+	memset(avail,0,unicode4_size*sizeof(uint32));
 	any = 0;
 	for ( gid=mingid; gid<=maxgid; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
 	    for ( altuni = sc->altuni; altuni!=NULL; altuni=altuni->next ) {
