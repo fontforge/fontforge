@@ -733,7 +733,7 @@ static void ttfdumpmetrics(SplineChar *sc,struct glyphinfo *gi,DBounds *b) {
     if ( sc->parent->hasvmetrics ) {
 	if ( sc->ttf_glyph<=gi->lastvwidth )
 	    putshort(gi->vmtx,vwidth);
-	putshort(gi->vmtx,/*sc->parent->vertical_origin-*/b->maxy);
+	putshort(gi->vmtx, sc->parent->ascent - b->maxy);
     }
     if ( sc->ttf_glyph==gi->lasthwidth )
 	gi->hfullcnt = sc->ttf_glyph+1;
