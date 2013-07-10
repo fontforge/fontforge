@@ -4002,22 +4002,6 @@ return;
 	    fs.c_xl -= fs.fudge; fs.c_xh += fs.fudge;
 	    fs.c_yl -= fs.fudge; fs.c_yh += fs.fudge;
 	}
-	    /* printf("fs.fudge:%f hs:%f hsd:%f\n", fs.fudge, */
-	    /* 	   prefs_cvEditHandleSize, prefs_cvEditHandleSize_default ); */
-	    
-	    /* /\* If they have really large control points then expand */
-	    /*  * the selection range to allow them to still click on the */
-	    /*  * very edge of the control point to select it. */
-	    /*  *\/ */
-	    /* if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default ) */
-	    /* { */
-	    /* 	float delta = prefs_cvEditHandleSize - prefs_cvEditHandleSize_default; */
-	    /* 	delta *= 2; */
-		
-	    /* 	fs.c_xl -= delta; fs.c_xh += delta; */
-	    /* 	fs.c_yl -= delta; fs.c_yh += delta; */
-	    /* } */
-	
 	if ( cv->showpointnumbers && cv->b.layerheads[cv->b.drawmode]->order2 )
 	    fs.all_controls = true;
 	lastSel.lastselpt = cv->lastselpt;
