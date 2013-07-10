@@ -72,6 +72,9 @@ int DrawOpenPathsWithHighlight = 1;
 int cv_width = default_cv_width;
 int cv_height = default_cv_height;
 
+#define prefs_cvEditHandleSize_default 5.0
+float prefs_cvEditHandleSize = prefs_cvEditHandleSize_default;
+
 extern struct lconv localeinfo;
 extern char *coord_sep;
 struct cvshows CVShows = {
@@ -768,12 +771,15 @@ return;
 return;
     r.x = x-2;
     r.y = y-2;
-    r.width = r.height = 5;
+    r.width = r.height = 0;
+    r.width  += prefs_cvEditHandleSize;
+    r.height += prefs_cvEditHandleSize;
     if ( sp->selected )
 	GDrawSetLineWidth(pixmap,selectedpointwidth);
     isfake = false;
     if ( cv->b.layerheads[cv->b.drawmode]->order2 &&
-	    cv->b.layerheads[cv->b.drawmode]->refs==NULL ) {
+	    cv->b.layerheads[cv->b.drawmode]->refs==NULL )
+    {
 	int mightbe_fake = SPInterpolate(sp);
         if ( !mightbe_fake && sp->ttfindex==0xffff )
 	    sp->ttfindex = 0xfffe;	/* if we have no instructions we won't call instrcheck and won't notice when a point stops being fake */
@@ -782,19 +788,26 @@ return;
 	isfake = sp->ttfindex==0xffff;
     }
     if ( onlynumber )
+    {
 	/* Draw Nothing */;
-    else if ( sp->pointtype==pt_curve ) {
+    }
+    else if ( sp->pointtype==pt_curve )
+    {
 	--r.x; --r.y; r.width +=2; r.height += 2;
 	if ( sp->selected || isfake )
 	    GDrawDrawElipse(pixmap,&r,col);
 	else
 	    GDrawFillElipse(pixmap,&r,col);
-    } else if ( sp->pointtype==pt_corner ) {
+    }
+    else if ( sp->pointtype==pt_corner )
+    {
 	if ( sp->selected || isfake )
 	    GDrawDrawRect(pixmap,&r,col);
 	else
 	    GDrawFillRect(pixmap,&r,col);
-    } else if ( sp->pointtype==pt_hvcurve ) {
+    }
+    else if ( sp->pointtype==pt_hvcurve )
+    {
 	GPoint gp[5];
 	gp[0].x = r.x-1; gp[0].y = r.y+2;
 	gp[1].x = r.x+2; gp[1].y = r.y+5;
@@ -805,7 +818,9 @@ return;
 	    GDrawDrawPoly(pixmap,gp,5,col);
 	else
 	    GDrawFillPoly(pixmap,gp,5,col);
-    } else {
+    }
+    else
+    {
 	BasePoint *cp=NULL;
 	BasePoint unit;
 
@@ -2726,13 +2741,20 @@ return;
     }
 }
 
-static void FVRedrawAllCharViews(SplineFont *sf) {
+
+static void FVRedrawAllCharViewsSF(SplineFont *sf)
+{
     int i;
     CharView *cv;
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
 	for ( cv = (CharView *) (sf->glyphs[i]->views); cv!=NULL; cv=(CharView *) (cv->b.next) )
 	    GDrawRequestExpose(cv->v,NULL,false);
+}
+
+void FVRedrawAllCharViews(FontView *fv)
+{
+    FVRedrawAllCharViewsSF( fv->b.sf );
 }
 
 static void SCRegenFills(SplineChar *sc) {
@@ -3714,6 +3736,18 @@ static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
     p->cy = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale;
 
     fs->fudge = (cv->active_tool==cvt_ruler ? snapdistancemeasuretool : snapdistance)/cv->scale;
+
+    /* If they have really large control points then expand
+     * the selection range to allow them to still click on the
+     * very edge of the control point to select it.
+     */
+    if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+    {
+	float delta = prefs_cvEditHandleSize - prefs_cvEditHandleSize_default;
+	delta *= 1.5;
+	fs->fudge += delta;
+    }
+    
     fs->c_xl = fs->xl = p->cx - fs->fudge;
     fs->c_xh = fs->xh = p->cx + fs->fudge;
     fs->c_yl = fs->yl = p->cy - fs->fudge;
@@ -3968,6 +4002,22 @@ return;
 	    fs.c_xl -= fs.fudge; fs.c_xh += fs.fudge;
 	    fs.c_yl -= fs.fudge; fs.c_yh += fs.fudge;
 	}
+	    /* printf("fs.fudge:%f hs:%f hsd:%f\n", fs.fudge, */
+	    /* 	   prefs_cvEditHandleSize, prefs_cvEditHandleSize_default ); */
+	    
+	    /* /\* If they have really large control points then expand */
+	    /*  * the selection range to allow them to still click on the */
+	    /*  * very edge of the control point to select it. */
+	    /*  *\/ */
+	    /* if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default ) */
+	    /* { */
+	    /* 	float delta = prefs_cvEditHandleSize - prefs_cvEditHandleSize_default; */
+	    /* 	delta *= 2; */
+		
+	    /* 	fs.c_xl -= delta; fs.c_xh += delta; */
+	    /* 	fs.c_yl -= delta; fs.c_yh += delta; */
+	    /* } */
+	
 	if ( cv->showpointnumbers && cv->b.layerheads[cv->b.drawmode]->order2 )
 	    fs.all_controls = true;
 	lastSel.lastselpt = cv->lastselpt;
@@ -4267,7 +4317,7 @@ static void _CV_CharChangedUpdate(CharView *cv,int changed) {
 	SCUpdateAll(cv->b.sc);
     } else /* if ( cv->b.drawmode==dm_grid )*/ {
 	/* If we changed the grid then any character needs to know it */
-	FVRedrawAllCharViews(cv->b.sc->parent);
+	FVRedrawAllCharViewsSF(cv->b.sc->parent);
     }
     cv->recentchange = false;
     cv->p.sp = NULL;		/* Might have been deleted */
@@ -5207,7 +5257,7 @@ static void CVAddGuide(CharView *cv,int is_v,int guide_pos) {
 	ss->contour_name = NULL;
     }
 
-    FVRedrawAllCharViews(sf);
+    FVRedrawAllCharViewsSF(sf);
     if ( !sf->changed ) {
 	sf->changed = true;
 	FVSetTitles(sf);
