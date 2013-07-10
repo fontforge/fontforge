@@ -166,6 +166,7 @@ extern int cv_width;			/* in charview.c */
 extern int cv_height;			/* in charview.c */
 extern int interpCPsOnMotion;			/* in charview.c */
 extern int DrawOpenPathsWithHighlight;          /* in charview.c */
+extern float prefs_cvEditHandleSize;            /* in charview.c */
 extern int mv_width;				/* in metricsview.c */
 extern int mv_height;				/* in metricsview.c */
 extern int bv_width;				/* in bitmapview.c */
@@ -220,6 +221,12 @@ static int pointless;
 #define CID_PrefsBase	1000
 #define CID_PrefsOffset	100
 #define CID_PrefsBrowseOffset	(CID_PrefsOffset/2)
+
+//////////////////////////////////
+// The _oldval_ are used to cache the setting when the prefs window
+// is created so that a redraw can be performed only when the
+// value has changed.
+float prefs_oldval_cvEditHandleSize = 0;
 
 /* ************************************************************************** */
 /* *****************************    mac data    ***************************** */
@@ -352,6 +359,7 @@ static struct prefs_list {
 	{ N_("AutoKernDialog"), pr_bool, &default_autokern_dlg, NULL, NULL, '\0', NULL, 0, N_("Open AutoKern dialog for new kerning subtables") },
 	{ N_("MetricsShiftSkip"), pr_int, &pref_mv_shift_and_arrow_skip, NULL, NULL, '\0', NULL, 0, N_("Number of units to increment/decrement a table value by in the metrics window when shift is held") },
 	{ N_("MetricsControlShiftSkip"), pr_int, &pref_mv_control_shift_and_arrow_skip, NULL, NULL, '\0', NULL, 0, N_("Number of units to increment/decrement a table value by in the metrics window when both control and shift is held") },
+	{ N_("EditHandleSize"), pr_real, &prefs_cvEditHandleSize, NULL, NULL, '\0', NULL, 0, N_("The size of the handles showing control points and other interesting points in the glyph editor (default is 5).") },
 	PREFS_LIST_EMPTY
 },
   sync_list[] = {
@@ -1958,6 +1966,21 @@ return( true );
 	if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
 	    fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
 	GDrawEnableCairo(prefs_usecairo);
+
+	int force_redraw_charviews = 0;
+	if( prefs_oldval_cvEditHandleSize != prefs_cvEditHandleSize )
+	{
+	    force_redraw_charviews = 1;
+	}
+
+	if( force_redraw_charviews )
+	{
+	    FontView *fv;
+	    for ( fv=fv_list ; fv!=NULL; fv=(FontView *) (fv->b.next) )
+	    {
+		FVRedrawAllCharViews( fv );
+	    }
+	}
     }
 return( true );
 }
@@ -2042,6 +2065,9 @@ void DoPrefs(void) {
 	}
 	if ( line>line_max ) line_max = line;
     }
+
+    prefs_oldval_cvEditHandleSize = prefs_cvEditHandleSize;
+    
 
     memset(&p,'\0',sizeof(p));
     memset(&wattrs,0,sizeof(wattrs));
