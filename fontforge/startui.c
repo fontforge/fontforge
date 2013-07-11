@@ -1244,6 +1244,7 @@ exit( 0 );
     GDrawEventLoop(NULL);
 
     hotkeysSave();
+    LastFonts_Save();
 
 #ifndef _NO_LIBUNICODENAMES
     uninm_names_db_close(names_db);	/* close this database before exiting */

@@ -911,19 +911,16 @@ static void _MenuExit(void *UNUSED(junk)) {
 
     FontView *fv, *next;
 
-    LastFonts_Activate();
+    LastFonts_Save();
     for ( fv = fv_list; fv!=NULL; fv = next ) {
 	next = (FontView *) (fv->b.next);
-	if ( !_FVMenuClose(fv)) {
-	    LastFonts_End(false);
+	if ( !_FVMenuClose(fv))
 return;
-	}
 	if ( fv->b.nextsame!=NULL || fv->b.sf->fv!=&fv->b ) {
 	    GDrawSync(NULL);
 	    GDrawProcessPendingEvents(NULL);
 	}
     }
-    LastFonts_End(true);
     exit(0);
 }
 

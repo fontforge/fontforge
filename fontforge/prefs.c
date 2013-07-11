@@ -88,8 +88,6 @@ extern char *BDFFoundry;
 extern char *TTFFoundry;
 extern char *xuid;
 extern char *SaveTablesPref;
-static char *LastFonts[2*RECENT_MAX];
-static int LastFontIndex=0, LastFontsPreserving=0;
 /*struct cvshows CVShows = { 1, 1, 1, 1, 1, 0, 1 };*/ /* in charview */
 /* int default_fv_font_size = 24; */	/* in fontview */
 /* int default_fv_antialias = false */	/* in fontview */
@@ -2630,41 +2628,30 @@ void RecentFilesRemember(char *filename) {
 	RecentFiles[0] = copy(filename);
     }
 
-    if ( LastFontsPreserving ) {
-	for ( i=0; i<LastFontIndex ; ++i )
-	    if ( strcmp(filename,LastFonts[i])==0 )
-	break;
-	if ( LastFontIndex<RECENT_MAX && i==LastFontIndex )
-	    LastFonts[LastFontIndex++] = copy(filename);
-    }
     PrefsUI_SavePrefs(true);
 }
 
-void LastFonts_Activate() {
-    LastFontsPreserving = true;
-    for ( ; LastFontIndex>0; --LastFontIndex )
-	free(LastFonts[LastFontIndex-1]);
-    LastFontIndex = 0;
-}
-
-void LastFonts_End(int success) {
+void LastFonts_Save(void) {
+    FontView *fv, *next;
     char buffer[1024];
     char *ffdir = getPfaEditDir(buffer);
-    FILE *preserve;
-    int i;
+    FILE *preserve = NULL;
 
-    LastFontsPreserving = false;
-    if ( !success )
-return;
-    if ( ffdir==NULL )
-return;
-    sprintf( buffer, "%s/FontsOpenAtLastQuit", ffdir );
-    preserve = fopen(buffer,"w");
-    if ( preserve==NULL )
-return;
-    for ( i=0; i<LastFontIndex; ++i )
-	fprintf( preserve, "%s\n", LastFonts[i]);
-    fclose(preserve);
+    if ( ffdir ) {
+        sprintf(buffer, "%s/FontsOpenAtLastQuit", ffdir);
+        preserve = fopen(buffer,"w");
+    }
+
+    for ( fv = fv_list; fv!=NULL; fv = next ) {
+	next = (FontView *) (fv->b.next);
+        if ( preserve ) {
+            SplineFont *sf = fv->b.cidmaster?fv->b.cidmaster:fv->b.sf;
+            fprintf(preserve, "%s\n", sf->filename?sf->filename:sf->origname);
+        }
+    }
+
+    if ( preserve )
+        fclose(preserve);
 }
 
 struct prefs_interface gdraw_prefs_interface = {

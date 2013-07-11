@@ -693,8 +693,7 @@ extern void SCStroke(SplineChar *sc);
 
 extern void PfaEditSetFallback(void);
 extern void RecentFilesRemember(char *filename);
-extern void LastFontsClear(void);
-
+extern void LastFonts_Save(void);
 
 struct debugger_context;
 extern void DebuggerTerminate(struct debugger_context *dc);
@@ -1030,8 +1029,6 @@ extern GTextInfo *SLOfFont(SplineFont *sf);
 extern void DoPrefs(void);
 extern void DoXRes(void);
 extern void PointerDlg(CharView *cv);
-extern void LastFonts_Activate(void);
-extern void LastFonts_End(int success);
 extern void GListAddStr(GGadget *list,unichar_t *str, void *ud);
 extern void GListReplaceStr(GGadget *list,int index, unichar_t *str, void *ud);
 extern struct macname *NameGadgetsGetNames( GWindow gw );
