@@ -660,12 +660,7 @@ return( false );
     if ( old==NULL )
 return( false );
     while ( fgets(buffer,sizeof(buffer),old)!=NULL ) {
-	int len = strlen( buffer );
-	if ( buffer[len-1]=='\n' )
-	    buffer[--len] = '\0';
-	if ( buffer[len-1]=='\r' )
-	    buffer[--len] = '\0';
-	if ( ViewPostScriptFont(buffer,0)!=0 )
+	if ( ViewPostScriptFont(g_strchomp(buffer),0)!=0 )
 	    any = 1;
     }
     fclose(old);
