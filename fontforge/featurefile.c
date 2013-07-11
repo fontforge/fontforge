@@ -1736,10 +1736,10 @@ static gboolean dump_header_languagesystem_hash_fe( gpointer key,
     return 0;
 }
 
-static void donothing(gpointer data)
-{
+static gint tree_strcasecmp (gconstpointer a, gconstpointer b, gpointer user_data) {
+    (void)user_data;
+    return g_ascii_strcasecmp (a, b);
 }
-
 
 static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
     int isgpos;
@@ -1748,7 +1748,7 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
     FeatureScriptLangList *fl;
     struct scriptlanglist *sl;
 
-    GTree* ht = g_tree_new_full( (GCompareDataFunc)g_ascii_strcasecmp, 0, free, donothing );
+    GTree* ht = g_tree_new_full( tree_strcasecmp, 0, free, NULL );
     
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	uint32 *feats = SFFeaturesInScriptLang(sf,isgpos,0xffffffff,0xffffffff);
