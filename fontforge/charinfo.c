@@ -1256,7 +1256,7 @@ static int CI_CheckMetaData(CharInfo *ci,SplineChar *oldsc,char *name,int unienc
     for ( alt=oldsc->altuni; alt!=NULL && (alt->unienc!=unienc || alt->vs!=-1 || alt->fid!=0); alt=alt->next );
     if ( unienc==oldsc->unicodeenc || alt!=NULL )
 	sameuni=true;
-    samename = ( strcmp(name,oldsc->name)==0 );
+    samename = ( oldsc->name!=NULL && strcmp(name,oldsc->name)==0 );
     
     isnotdef = strcmp(name,".notdef")==0;
     if (( !sameuni && unienc!=-1) || (!samename && !isnotdef) ) {
