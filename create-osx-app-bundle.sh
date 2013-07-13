@@ -43,7 +43,16 @@ do
   ldd  $if | grep libedit
   install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/../lib/libedit.3.dylib $if
 done
+cd $bundle_bin/FontForgeInternal/collablib/
+for if in *dylib 
+do 
+  echo $if 
+  ldd  $if | grep libedit
+  install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/../lib/libedit.3.dylib $if
+done
 
+
+cd $bundle_bin
 install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/../lib/libedit.3.dylib fontforge 
 cd ./FontForgeInternal
 install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/collablib/libedit.3.dylib fontforge-internal-collab-server
