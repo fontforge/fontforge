@@ -35,10 +35,19 @@ cp -av /usr/lib/libedit* $bundle_bin/FontForgeInternal/collablib/
 
 #########
 # libedit.2 is on some older machines.
+mkdir -p $bundle_lib
+cd $bundle_lib
+for if in *dylib 
+do 
+  echo $if 
+  ldd  $if | grep libedit
+  install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/../lib/libedit.3.dylib $if
+done
+
 install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/../lib/libedit.3.dylib fontforge 
 cd ./FontForgeInternal
 install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/collablib/libedit.3.dylib fontforge-internal-collab-server
-cd ..
+cd $bundle_bin
 
 mkdir -p $bundle_lib
 cp -av /opt/local/lib/pango   $bundle_lib
