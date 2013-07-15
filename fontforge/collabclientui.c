@@ -701,7 +701,7 @@ FontViewBase* collabclient_sessionJoin( void* ccvp, FontView *fv )
 
     if( !lastSFD )
     {
-	gwwv_post_error(_("FontForge Collaboration"), _("No Font Snapshot recevied from the server"));
+	gwwv_post_error(_("FontForge Collaboration"), _("No Font Snapshot received from the server"));
 	return 0;
     }
     
