@@ -165,6 +165,7 @@ extern int cv_height;			/* in charview.c */
 extern int interpCPsOnMotion;			/* in charview.c */
 extern int DrawOpenPathsWithHighlight;          /* in charview.c */
 extern float prefs_cvEditHandleSize;            /* in charview.c */
+extern int prefs_cvInactiveHandleAlpha;         /* in charview.c */
 extern int mv_width;				/* in metricsview.c */
 extern int mv_height;				/* in metricsview.c */
 extern int bv_width;				/* in bitmapview.c */
@@ -225,6 +226,7 @@ static int pointless;
 // is created so that a redraw can be performed only when the
 // value has changed.
 float prefs_oldval_cvEditHandleSize = 0;
+int   prefs_oldval_cvInactiveHandleAlpha = 0;
 
 /* ************************************************************************** */
 /* *****************************    mac data    ***************************** */
@@ -358,6 +360,7 @@ static struct prefs_list {
 	{ N_("MetricsShiftSkip"), pr_int, &pref_mv_shift_and_arrow_skip, NULL, NULL, '\0', NULL, 0, N_("Number of units to increment/decrement a table value by in the metrics window when shift is held") },
 	{ N_("MetricsControlShiftSkip"), pr_int, &pref_mv_control_shift_and_arrow_skip, NULL, NULL, '\0', NULL, 0, N_("Number of units to increment/decrement a table value by in the metrics window when both control and shift is held") },
 	{ N_("EditHandleSize"), pr_real, &prefs_cvEditHandleSize, NULL, NULL, '\0', NULL, 0, N_("The size of the handles showing control points and other interesting points in the glyph editor (default is 5).") },
+	{ N_("InactiveHandleAlpha"), pr_int, &prefs_cvInactiveHandleAlpha, NULL, NULL, '\0', NULL, 0, N_("Inactive handles in the glyph editor use will be drawn with alpha value (range: 0-255 default is 255).") },
 	PREFS_LIST_EMPTY
 },
   sync_list[] = {
@@ -1967,9 +1970,10 @@ return( true );
 
 	int force_redraw_charviews = 0;
 	if( prefs_oldval_cvEditHandleSize != prefs_cvEditHandleSize )
-	{
 	    force_redraw_charviews = 1;
-	}
+	if( prefs_oldval_cvInactiveHandleAlpha != prefs_cvInactiveHandleAlpha )
+	    force_redraw_charviews = 1;
+	    
 
 	if( force_redraw_charviews )
 	{
@@ -2065,7 +2069,7 @@ void DoPrefs(void) {
     }
 
     prefs_oldval_cvEditHandleSize = prefs_cvEditHandleSize;
-    
+    prefs_oldval_cvInactiveHandleAlpha = prefs_cvInactiveHandleAlpha;
 
     memset(&p,'\0',sizeof(p));
     memset(&wattrs,0,sizeof(wattrs));
