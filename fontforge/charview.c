@@ -75,6 +75,8 @@ int cv_height = default_cv_height;
 #define prefs_cvEditHandleSize_default 5.0
 float prefs_cvEditHandleSize = prefs_cvEditHandleSize_default;
 
+int   prefs_cvInactiveHandleAlpha = 255;
+
 extern struct lconv localeinfo;
 extern char *coord_sep;
 struct cvshows CVShows = {
@@ -610,9 +612,11 @@ static GPointList *MakePoly(CharView *cv, SplinePointList *spl) {
 return( head );
 }
 
-static void DrawTangentPoint(GWindow pixmap, int x, int y,
-	BasePoint *unit, int outline, Color col) {
+static void DrawTangentPoint( GWindow pixmap, int x, int y,
+			      BasePoint *unit, int outline, Color col )
+{
     int dir;
+    const int gp_sz = 4;
     GPoint gp[5];
 
     dir = 0;
@@ -634,24 +638,33 @@ static void DrawTangentPoint(GWindow pixmap, int x, int y,
 	}
     }
 
+    float sizedelta = 4;
+    if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+	sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+    
     if ( dir==1 /* left */ || dir==0 /* right */) {
-	gp[0].y = y; gp[0].x = (dir==0)?x+4:x-4;
-	gp[1].y = y-4; gp[1].x = x;
-	gp[2].y = y+4; gp[2].x = x;
+	gp[0].y = y; gp[0].x = (dir==0)?x+sizedelta:x-sizedelta;
+	gp[1].y = y-sizedelta; gp[1].x = x;
+	gp[2].y = y+sizedelta; gp[2].x = x;
     } else if ( dir==2 /* up */ || dir==3 /* down */ ) {
-	gp[0].x = x; gp[0].y = dir==2?y-4:y+4;	/* remember screen coordinates are backwards in y from character coords */
-	gp[1].x = x-4; gp[1].y = y;
-	gp[2].x = x+4; gp[2].y = y;
+	gp[0].x = x; gp[0].y = dir==2?y-sizedelta:y+sizedelta;	/* remember screen coordinates are backwards in y from character coords */
+	gp[1].x = x-sizedelta; gp[1].y = y;
+	gp[2].x = x+sizedelta; gp[2].y = y;
     } else {
 	/* at a 45 angle, a value of 4 looks too small. I probably want 4*1.414 */
-	int xdiff= unit->x>0?5:-5, ydiff = unit->y>0?-5:5;
+	sizedelta = 5;
+	if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+	    sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+	int xdiff = unit->x > 0 ?   sizedelta  : -1*sizedelta;
+	int ydiff = unit->y > 0 ? -1*sizedelta :    sizedelta;
+	
 	gp[0].x = x+xdiff/2; gp[0].y = y+ydiff/2;
 	gp[1].x = gp[0].x-xdiff; gp[1].y = gp[0].y;
 	gp[2].x = gp[0].x; gp[2].y = gp[0].y-ydiff;
     }
     gp[3] = gp[0];
     if ( outline )
-	GDrawDrawPoly(pixmap,gp,4,col);
+	GDrawDrawPoly(pixmap,gp,gp_sz,col);
     else
 	GDrawFillPoly(pixmap,gp,4,col);
 }
@@ -679,6 +692,22 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
 	 col = extremepointcol;
     if ( sp->selected )
 	 col = selectedpointcol;
+
+    if ( DrawOpenPathsWithHighlight
+	 && cv->b.drawmode==dm_fore
+	 && spl->first
+	 && spl->first->prev==NULL )
+    {
+    }
+    else
+    {
+	if( !sp->selected )
+	{
+	    col = col&0x00ffffff;
+	    col |= prefs_cvInactiveHandleAlpha << 24;
+	}
+    }
+    
 
     x =  cv->xoff + rint(sp->me.x*cv->scale);
     y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
@@ -808,16 +837,29 @@ return;
     }
     else if ( sp->pointtype==pt_hvcurve )
     {
+	const int gp_sz = 5;
 	GPoint gp[5];
-	gp[0].x = r.x-1; gp[0].y = r.y+2;
-	gp[1].x = r.x+2; gp[1].y = r.y+5;
-	gp[2].x = r.x+5; gp[2].y = r.y+2;
-	gp[3].x = r.x+2; gp[3].y = r.y-1;
+
+	float sizedelta = 3;
+	float offsetdelta = 2;
+	if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+	{
+	    sizedelta   *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+	    offsetdelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+	}
+	
+	float basex = r.x + offsetdelta;
+	float basey = r.y + offsetdelta;
+	gp[0].x = basex - sizedelta; gp[0].y = basey + 0;
+	gp[1].x = basex + 0;         gp[1].y = basey + sizedelta;
+	gp[2].x = basex + sizedelta; gp[2].y = basey + 0;
+	gp[3].x = basex + 0;         gp[3].y = basey - sizedelta;
 	gp[4] = gp[0];
+
 	if ( sp->selected || isfake )
-	    GDrawDrawPoly(pixmap,gp,5,col);
+	    GDrawDrawPoly(pixmap,gp,gp_sz,col);
 	else
-	    GDrawFillPoly(pixmap,gp,5,col);
+	    GDrawFillPoly(pixmap,gp,gp_sz,col);
     }
     else
     {
