@@ -1331,7 +1331,7 @@ return( pds_missingblue );
 	if ( *end!='\0' || end==test || bluescale<0 )
 	    errs |= pds_badbluescale;
     }
-    magicpointsize = rint( bluescale*240 - 0.49 );
+    magicpointsize = rint( bluescale*240 + 0.49 );
 
     if ( (blues = PSDictHasEntry(sf->private,"BlueValues"))==NULL )
 	errs |= pds_missingblue;
