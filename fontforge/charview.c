@@ -822,7 +822,9 @@ return;
     }
     else if ( sp->pointtype==pt_curve )
     {
-	--r.x; --r.y; r.width +=2; r.height += 2;
+	r.width +=2; r.height += 2;
+	r.x = x - r.width  / 2;
+	r.y = y - r.height / 2;
 	if ( sp->selected || isfake )
 	    GDrawDrawElipse(pixmap,&r,col);
 	else
@@ -830,6 +832,8 @@ return;
     }
     else if ( sp->pointtype==pt_corner )
     {
+	r.x = x - r.width  / 2;
+	r.y = y - r.height / 2;
 	if ( sp->selected || isfake )
 	    GDrawDrawRect(pixmap,&r,col);
 	else
@@ -841,15 +845,15 @@ return;
 	GPoint gp[5];
 
 	float sizedelta = 3;
-	float offsetdelta = 2;
+	float offsetdelta = 0; // 4 * cv->scale;
 	if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
 	{
 	    sizedelta   *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
 	    offsetdelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
 	}
 	
-	float basex = r.x + offsetdelta;
-	float basey = r.y + offsetdelta;
+	float basex = r.x + 3 + offsetdelta;
+	float basey = r.y + 3 + offsetdelta;
 	gp[0].x = basex - sizedelta; gp[0].y = basey + 0;
 	gp[1].x = basex + 0;         gp[1].y = basey + sizedelta;
 	gp[2].x = basex + sizedelta; gp[2].y = basey + 0;
