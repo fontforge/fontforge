@@ -671,3 +671,4 @@ CharView.Menu.View.Show.Tab.Tab3: Alt+4
 CharView.Menu.View.Show.Tab.Tab4: Alt+5
 CharView.Menu.View.Show.Tab.Tab5: Alt+6
 
++CharView._ImmediateKeys.TogglePreview:`

@@ -47,6 +47,8 @@ extern int _GScrollBar_Width;
 
 #include "gutils/unicodelibinfo.h"
 
+#include "gdraw/hotkeys.h"
+
 /* Barry wants to be able to redefine menu bindings only in the charview (I think) */
 /*  the menu parser will first check for something like "CV*Open|Ctl+O", and */
 /*  if that fails will strip off "CV*" and check for "Open|Ctl+O" */
@@ -3357,6 +3359,7 @@ static uint16 HaveModifiers = 0;
 static uint16 PressingTilde = 0;
 static uint16 PrevCharEventWasCharUpOnControl = 0;
 
+
 static void CVCharUp(CharView *cv, GEvent *event ) {
 
     if ( !event->u.chr.autorepeat && !HaveModifiers && event->u.chr.keysym==' ' ) {
@@ -3366,12 +3369,12 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 //    printf("CVCharUp() ag:%d key:%d\n", cv_auto_goto, event->u.chr.keysym );
     if( !cv_auto_goto )
     {
-	if( event->u.chr.keysym=='`' ) {
+	bool isImmediateKeyTogglePreview = isImmediateKey( cv->gw, "TogglePreview", event );
+	if( isImmediateKeyTogglePreview ) {
 	    PressingTilde = 1;
 	}
 
-	if( PrevCharEventWasCharUpOnControl
-	    && event->u.chr.keysym=='`' )
+	if( PrevCharEventWasCharUpOnControl && isImmediateKeyTogglePreview )
 	{
 	    HaveModifiers = 0;
 	    PrevCharEventWasCharUpOnControl = 0;
@@ -3389,16 +3392,16 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 	    }
 	}
 	
-	if ( !event->u.chr.autorepeat && !HaveModifiers && event->u.chr.keysym=='`' ) {
+	if ( !event->u.chr.autorepeat && !HaveModifiers && isImmediateKeyTogglePreview ) {
 	    PressingTilde = 0;
 	    CVPreviewModeSet( cv->gw, false );
 	    return;
 	}
 	
-	if ( !event->u.chr.autorepeat && event->u.chr.keysym=='`' ) {
+	if ( !event->u.chr.autorepeat && isImmediateKeyTogglePreview ) {
 	    PressingTilde = 0;
 	}
-	if ( event->u.chr.autorepeat && HaveModifiers && event->u.chr.keysym=='`' ) {
+	if ( event->u.chr.autorepeat && HaveModifiers && isImmediateKeyTogglePreview ) {
 	    return;
 	}
     }
@@ -6492,14 +6495,16 @@ void CVChar(CharView *cv, GEvent *event ) {
     extern float arrowAmount, arrowAccelFactor;
     extern int navigation_mask;
 
-    if( !cv_auto_goto ) {
+    if( !cv_auto_goto )
+    {
 	if( event->u.chr.keysym == GK_Control_L
 	    || event->u.chr.keysym == GK_Control_R )
 	{
 	    HaveModifiers = 1;
 	}
-	
-	if( !HaveModifiers && event->u.chr.keysym=='`' ) {
+	bool isImmediateKeyTogglePreview = isImmediateKey( cv->gw, "TogglePreview", event );
+
+	if( !HaveModifiers && isImmediateKeyTogglePreview ) {
 	    PressingTilde = 1;
 	    CVPreviewModeSet( cv->gw, true );
 	    return;
