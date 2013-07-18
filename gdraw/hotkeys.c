@@ -369,6 +369,28 @@ static Hotkey* hotkeyFindByAction( char* action ) {
     return 0;
 }
 
+Hotkey* isImmediateKey( GWindow w, char* path, GEvent *event )
+{
+    char* wt = GDrawGetWindowTypeName(w);
+    if(!wt)
+	return 0;
+
+    char* subMenuName = "_ImmediateKeys";
+    char line[PATH_MAX+1];
+    snprintf(line,PATH_MAX,"%s.%s.%s",wt, subMenuName, path );
+//    printf("line:%s\n",line);
+    Hotkey* hk = hotkeyFindByAction( line );
+    if( !hk )
+	return 0;
+    if( hk && !hk->action )
+	return 0;
+    
+    if( event->u.chr.keysym == hk->keysym )
+	return hk;
+
+    return 0;
+}
+
 Hotkey* hotkeyFindByMenuPathInSubMenu( GWindow w, char* subMenuName, char* path ) {
 
     char* wt = GDrawGetWindowTypeName(w);
