@@ -1905,7 +1905,8 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	    if( !skipkey )
 	    {
 		mi = GMenuSearchAction(mb->g.base,mb->mi,hk->action,event,mb->child==NULL);
-		if ( mi ) {
+		if ( mi )
+		{
 		    if ( mi->ti.checkable && !mi->ti.disabled )
 			mi->ti.checked = !mi->ti.checked;
 		    if ( mi->invoke!=NULL && !mi->ti.disabled )
@@ -1913,8 +1914,10 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 		    if ( mb->child != NULL )
 			GMenuDestroy(mb->child);
 		    return( true );
-		} else {
-		    printf("hotkey found for event must be a non menu action... action:%s\n", hk->action );
+		}
+		else
+		{
+//		    printf("hotkey found for event must be a non menu action... action:%s\n", hk->action );
 		
 		}
 	    }
