@@ -671,6 +671,20 @@ static void DrawTangentPoint( GWindow pixmap, int x, int y,
 	GDrawFillPoly(pixmap,gp,4,col);
 }
 
+static GRect* DrawPoint_SetupRectForSize( GRect* r, int cx, int cy, int sz )
+{
+    float sizedelta = sz;
+    if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+	sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+	    
+    r->x = cx - sizedelta;
+    r->y = cy - sizedelta;
+    r->width  = 1 + sizedelta * 2;
+    r->height = 1 + sizedelta * 2;
+    return r;
+}
+
+
 static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
 	SplineSet *spl, int onlynumber, int truetype_markup) {
     GRect r;
@@ -717,7 +731,8 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
 return;
 
     /* draw the control points if it's selected */
-    if ( sp->selected || cv->showpointnumbers || cv->show_ft_results || cv->dv ) {
+    if ( sp->selected || cv->showpointnumbers || cv->show_ft_results || cv->dv )
+    {
 	int iscurrent = sp==(cv->p.sp!=NULL?cv->p.sp:cv->lastselpt);
 	if ( !sp->nonextcp ) {
 	    cx =  cv->xoff + rint(sp->nextcp.x*cv->scale);
@@ -737,27 +752,32 @@ return;
 		cy = cv->height+100;
 	    }
 	    subcol = nextcpcol;
-	    if ( iscurrent && cv->p.nextcp && !onlynumber ) {
-		r.x = cx-3; r.y = cy-3; r.width = r.height = 7;
+
+	    if ( iscurrent && cv->p.nextcp && !onlynumber )
+	    {
+		DrawPoint_SetupRectForSize( &r, cx, cy, 3 );
 		GDrawFillRect(pixmap,&r, nextcpcol);
 		subcol = selectedcpcol;
 	    } else if ( truetype_markup ) {
 		if ( sp->flexy ) {
 		    /* cp is about to be moved (or changed in some other way) */
-		    r.x = cx-3; r.y = cy-3; r.width = r.height = 7;
+		    DrawPoint_SetupRectForSize( &r, cx, cy, 3 );
 		    GDrawFillRect(pixmap,&r, selectedpointcol);
 		}
 		if ( sp->flexx ) {
 		    /* cp is a reference point */
-		    r.x = cx-5; r.y = cy-5;
-		    r.width = r.height = 11;
+		    DrawPoint_SetupRectForSize( &r, cx, cy, 5 );
 		    GDrawDrawElipse(pixmap,&r,selectedpointcol );
 		}
 	    }
 	    if ( !onlynumber ) {
+
+		float sizedelta = 3;
+		if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+		    sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
 		GDrawDrawLine(pixmap,x,y,cx,cy, nextcpcol);
-		GDrawDrawLine(pixmap,cx-3,cy-3,cx+3,cy+3,subcol);
-		GDrawDrawLine(pixmap,cx+3,cy-3,cx-3,cy+3,subcol);
+		GDrawDrawLine(pixmap,cx-sizedelta,cy-sizedelta,cx+sizedelta,cy+sizedelta,subcol);
+		GDrawDrawLine(pixmap,cx+sizedelta,cy-sizedelta,cx-sizedelta,cy+sizedelta,subcol);
 	    }
 	    if ( cv->showpointnumbers || cv->show_ft_results || cv->dv ) {
 		pnum = sp->nextcpindex;
@@ -786,14 +806,17 @@ return;
 	    }
 	    subcol = prevcpcol;
 	    if ( iscurrent && cv->p.prevcp && !onlynumber ) {
-		r.x = cx-3; r.y = cy-3; r.width = r.height = 7;
+		DrawPoint_SetupRectForSize( &r, cx, cy, 3 );
 		GDrawFillRect(pixmap,&r, prevcpcol);
 		subcol = selectedcpcol;
 	    }
 	    if ( !onlynumber ) {
+		float sizedelta = 3;
+		if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+		    sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
 		GDrawDrawLine(pixmap,x,y,cx,cy, prevcpcol);
-		GDrawDrawLine(pixmap,cx-3,cy-3,cx+3,cy+3,subcol);
-		GDrawDrawLine(pixmap,cx+3,cy-3,cx-3,cy+3,subcol);
+		GDrawDrawLine(pixmap,cx-sizedelta,cy-sizedelta,cx+sizedelta,cy+sizedelta,subcol);
+		GDrawDrawLine(pixmap,cx+sizedelta,cy-sizedelta,cx-sizedelta,cy+sizedelta,subcol);
 	    }
 	}
     }
@@ -1049,7 +1072,7 @@ static void CVMarkInterestingLocations(CharView *cv, GWindow pixmap,
     extended interesting[6];
     int i, ecnt, cnt;
     GRect r;
-
+    
     for ( s=spl->first->next, first=NULL; s!=NULL && s!=first; s=s->to->next ) {
 	if ( first==NULL ) first = s;
 	cnt = ecnt = 0;
