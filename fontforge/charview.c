@@ -1622,11 +1622,14 @@ static void CVDrawBlues(CharView *cv,GWindow pixmap,char *bluevals,char *others,
 	Color col) {
     double blues[24];
     char *pt, *end;
+    char oldloc[24];
     int i=0, bcnt=0;
     GRect r;
     char buf[20];
     int len,len2;
 
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
     if ( bluevals!=NULL ) {
 	for ( pt = bluevals; isspace( *pt ) || *pt=='['; ++pt);
 	while ( i<14 && *pt!='\0' && *pt!=']' ) {
@@ -1651,6 +1654,7 @@ static void CVDrawBlues(CharView *cv,GWindow pixmap,char *bluevals,char *others,
 	}
 	if ( i&1 ) --i;
     }
+    setlocale(LC_NUMERIC,oldloc);
     bcnt = i;
     if ( i==0 )
 return;
