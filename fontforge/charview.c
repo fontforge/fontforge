@@ -4128,8 +4128,8 @@ return;
 	if( lastSel.lastselpt != fs.p->sp
 	    || lastSel.lastselcp != fs.p->spiro )
 	{
-#define BASEPOINT_IS_EMPTY(p) ( p.x == p.y == (real)0.0 )
-	    
+#define BASEPOINT_IS_EMPTY(p) ( p.x == (real)0.0 && p.y == (real)0.0 )
+
 	    // If we are in a collab session, we might like to preserve here
 	    // so that we can send a change of selected points to other members
 	    // of the group
