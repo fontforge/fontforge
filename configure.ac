@@ -272,8 +272,13 @@ fi
 # We have both libraries but did not choose which one to use yet
 if test x"${i_do_have_libuninameslist}" = xyes; then
    if test x"${i_do_have_libunicodenames}" = xyes; then
-      i_do_have_libuninameslist=no
-      AC_DEFINE(_NO_LIBUNINAMESLIST)
+      if test x"${i_do_have_libuninamesfun}" = xyes; then
+	  i_do_have_libunicodenames=no
+	  AC_DEFINE(_NO_LIBUNICODENAMES)
+      else
+	  i_do_have_libuninameslist=no
+	  AC_DEFINE(_NO_LIBUNINAMESLIST)
+      fi
    fi
 fi
 
