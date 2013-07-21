@@ -46,7 +46,8 @@ AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST],
          [i_do_have_libuninameslist=yes
           AC_SUBST([LIBUNINAMESLIST_CFLAGS],[""])
           AC_SUBST([LIBUNINAMESLIST_LIBS],["${found_lib}"])
-          AC_CHECK_FUNC([uniNamesList_NamesListVersion],[AC_DEFINE([_LIBUNINAMESLIST_FUN],
+          AC_CHECK_FUNC([uniNamesList_NamesListVersion],[i_do_have_libuninamesfun=yes
+			AC_DEFINE([_LIBUNINAMESLIST_FUN],
                         [1],[Libuninameslist library has 3 new functions.])])],
          [i_do_have_libuninameslist=no])
        ])
