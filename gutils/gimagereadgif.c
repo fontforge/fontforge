@@ -152,7 +152,7 @@ GImage *GImageReadGif(char *filename) {
     GifFileType *gif;
     int i,il;
 
-    if ( (gif=DGifOpenFileName(filename))==NULL ) {
+    if ( (gif=DGifOpenFileName(filename, NULL))==NULL ) {
 	fprintf( stderr,"Can't open \"%s\"\n",filename );
 	return( NULL );
     }
