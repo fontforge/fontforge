@@ -30,7 +30,7 @@
 #include <utype.h>
 #include "inc/gfile.h"
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__)||defined(__CYGWIN__)
 // no backtrace on windows yet
 #else
     #include <execinfo.h>

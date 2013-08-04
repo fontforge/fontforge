@@ -1053,7 +1053,7 @@ GDrawRemoveReadFD( GDisplay *gdisp,
 
 void MacServiceReadFDs()
 {
-#if !defined(__MINGW32__)
+#if (!defined(__MINGW32__))&&(!defined(__CYGWIN__))
     int ret = 0;
     
     GDisplay *gdisp = GDrawGetDisplayOfWindow(0);
