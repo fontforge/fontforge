@@ -152,7 +152,22 @@ GImage *GImageReadGif(char *filename) {
     GifFileType *gif;
     int i,il;
 
-    if ( (gif=DGifOpenFileName(filename, NULL))==NULL ) {
+    //
+    // MIQ: As at mid 2013 giflib version 4 is still the current
+    // version in some environments. Given that this function call
+    // seems to be the only incompatible change in what FontForge uses
+    // as at that time, I added a smoother macro here to allow v4 to
+    // still work OK for the time being.
+    // 
+#if GIFLIB_MAJOR == 4
+#define ffDGifOpenFileName(fn)               DGifOpenFileName(fn)
+#define ffDGifOpenFileNameWithError(fn,err)  DGifOpenFileName(fn)
+#else
+#define ffDGifOpenFileName(fn)               DGifOpenFileName(fn,NULL)
+#define ffDGifOpenFileNameWithError(fn,err)  DGifOpenFileName(fn,err)
+#endif
+    
+    if ( (gif=ffDGifOpenFileName(filename))==NULL ) {
 	fprintf( stderr,"Can't open \"%s\"\n",filename );
 	return( NULL );
     }
