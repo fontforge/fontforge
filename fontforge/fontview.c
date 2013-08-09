@@ -632,6 +632,19 @@ int _FVMenuSaveAs(FontView *fv) {
     if( prefs_ensure_correct_extension ) {
 	FilenameFunc = GFileChooserSaveAsInputFilenameFunc;
     }
+
+    //
+    // If they are "saving as" but there is no path, lets help
+    // the poor user by starting someplace sane rather than in `pwd`
+    //
+    if( !GFileIsAbsolute(temp) )
+    {
+	char* defaultSaveDir = GFileGetHomeDocumentsDir();
+	char* temp2 = GFileAppendFile( defaultSaveDir, temp, 0 );
+	gfree(temp);
+	temp = temp2;
+    }
+
     ret = GWidgetSaveAsFileWithGadget8(_("Save as..."),temp,0,NULL,
 				       _FVSaveAsFilterFunc, FilenameFunc,
 				       &gcd );
@@ -979,9 +992,11 @@ void MenuOpen(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED
     char *eod, *fpt, *file, *full;
     FontView *test; int fvcnt, fvtest;
 
+    char* defaultOpenDir = GFileGetHomeDocumentsDir();
+    
     for ( fvcnt=0, test=fv_list; test!=NULL; ++fvcnt, test=(FontView *) (test->b.next) );
     do {
-	temp = GetPostScriptFontName(NULL,true);
+	temp = GetPostScriptFontName(defaultOpenDir,true);
 	if ( temp==NULL )
 return;
 	eod = strrchr(temp,'/');
