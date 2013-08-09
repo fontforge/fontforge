@@ -820,3 +820,18 @@ char *GFileGetHomeDocumentsDir(void)
     return ret;
 }
 
+char *GFileDirName(const char *path)
+{
+    char ret[PATH_MAX+1];
+    char splitchar = '/';
+#if defined(__MINGW32__)
+    splitchar = '\\';
+#endif
+
+    strncpy( ret, path, PATH_MAX );
+    char *pt = strrchr( ret, splitchar );
+    if ( pt )
+	*pt = '\0';
+    return ret;
+}
+
