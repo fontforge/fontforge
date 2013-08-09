@@ -987,16 +987,25 @@ static void FVMenuMergeKern(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UN
     MergeKernInfo(fv->b.sf,fv->b.map);
 }
 
-void MenuOpen(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+void MenuOpen(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
+{
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
     char *temp;
     char *eod, *fpt, *file, *full;
     FontView *test; int fvcnt, fvtest;
 
-    char* defaultOpenDir = GFileGetHomeDocumentsDir();
+    char* OpenDir = GFileGetHomeDocumentsDir();
+    if( fv && fv->b.sf && fv->b.sf->filename )
+    {
+	printf("existing name:%s\n", fv->b.sf->filename );
+	char* dname = GFileDirName( fv->b.sf->filename );
+	OpenDir = dname;
+    }
+    
     
     for ( fvcnt=0, test=fv_list; test!=NULL; ++fvcnt, test=(FontView *) (test->b.next) );
     do {
-	temp = GetPostScriptFontName(defaultOpenDir,true);
+	temp = GetPostScriptFontName(OpenDir,true);
 	if ( temp==NULL )
 return;
 	eod = strrchr(temp,'/');
