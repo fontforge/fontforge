@@ -816,7 +816,11 @@ char *GFileGetHomeDocumentsDir(void)
     ret = copy( my_documents );
     return ret;
 #endif
-    ret = GFileAppendFile( GFileGetHomeDir(), "/Documents", 1 );
+
+    // For Linux and OSX it was decided that this should be just the
+    // home directory itself.
+//    ret = GFileAppendFile( GFileGetHomeDir(), "/Documents", 1 );
+    ret = GFileGetHomeDir();
     return ret;
 }
 

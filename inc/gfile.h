@@ -77,7 +77,7 @@ extern char *getDotFontForgeDir(void);
 extern char *getTempDir(void);
 
 /**
- * This is the full path of ~/Documents on OSX and Linux
+ * This is the full path of ~ on OSX and Linux
  * and something like c:\Users\foo\Documents on windows
  */
 extern char *GFileGetHomeDocumentsDir(void);
