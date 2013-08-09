@@ -633,18 +633,21 @@ int _FVMenuSaveAs(FontView *fv) {
 	FilenameFunc = GFileChooserSaveAsInputFilenameFunc;
     }
 
+#if defined(__MINGW32__)
     //
     // If they are "saving as" but there is no path, lets help
     // the poor user by starting someplace sane rather than in `pwd`
     //
     if( !GFileIsAbsolute(temp) )
     {
-	char* defaultSaveDir = GFileGetHomeDocumentsDir();
-	char* temp2 = GFileAppendFile( defaultSaveDir, temp, 0 );
-	gfree(temp);
-	temp = temp2;
+    	char* defaultSaveDir = GFileGetHomeDocumentsDir();
+	printf("save-as:%s\n", temp );
+    	char* temp2 = GFileAppendFile( defaultSaveDir, temp, 0 );
+    	gfree(temp);
+    	temp = temp2;
     }
-
+#endif
+    
     ret = GWidgetSaveAsFileWithGadget8(_("Save as..."),temp,0,NULL,
 				       _FVSaveAsFilterFunc, FilenameFunc,
 				       &gcd );
@@ -994,14 +997,16 @@ void MenuOpen(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
     char *eod, *fpt, *file, *full;
     FontView *test; int fvcnt, fvtest;
 
-    char* OpenDir = GFileGetHomeDocumentsDir();
+    char* OpenDir = NULL;
+#if defined(__MINGW32__)
+    OpenDir = GFileGetHomeDocumentsDir();
     if( fv && fv->b.sf && fv->b.sf->filename )
     {
 	printf("existing name:%s\n", fv->b.sf->filename );
 	char* dname = GFileDirName( fv->b.sf->filename );
 	OpenDir = dname;
     }
-    
+#endif
     
     for ( fvcnt=0, test=fv_list; test!=NULL; ++fvcnt, test=(FontView *) (test->b.next) );
     do {
