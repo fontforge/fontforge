@@ -49,6 +49,10 @@ static char dirname_[1024];
 #endif
 
 #if defined(__MINGW32__)
+#include <shlobj.h>
+#endif
+
+#if defined(__MINGW32__)
 static void _backslash_to_slash(char* c){
     for(; *c; c++)
 	if(*c == '\\')
@@ -60,6 +64,7 @@ static void _u_backslash_to_slash(unichar_t* c){
 	    *c = '/';
 }
 #endif
+
 
 char *GFileGetHomeDir(void) {
 #if defined(__MINGW32__)
@@ -788,5 +793,30 @@ int GFileWriteAll(char* filepath, char *data)
 char *getTempDir(void)
 {
     return g_get_tmp_dir();
+}
+
+char *GFileGetHomeDocumentsDir(void)
+{
+    static char* ret = 0;
+    if( ret )
+	return ret;
+    
+#if defined(__MINGW32__)
+
+    CHAR my_documents[MAX_PATH+2];
+    HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents );
+    if (result != S_OK)
+    {
+    	fprintf(stderr,"Error: Cant get My Documents path!'\n");
+        return ret;
+    }
+    int pos = strlen(my_documents);
+    my_documents[ pos++ ] = '\\';
+    my_documents[ pos++ ] = '\0';
+    ret = copy( my_documents );
+    return ret;
+#endif
+    ret = GFileAppendFile( GFileGetHomeDir(), "/Documents", 1 );
+    return ret;
 }
 
