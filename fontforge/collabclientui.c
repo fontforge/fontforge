@@ -591,7 +591,7 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
 		getGResourceProgramDir() );
 #if defined(__MINGW32__)
 	chdir(getGResourceProgramDir());
-	sprintf(command_line, "ffcollab.bat" );
+	sprintf(command_line, "./ffcollab.bat" );
 #endif	
 	printf("command_line:%s\n", command_line );
 	GError * error = 0;
