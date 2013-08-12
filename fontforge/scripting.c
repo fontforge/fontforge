@@ -8124,6 +8124,14 @@ static void bValidate(Context *c) {
     c->return_val.u.ival = SFValidate(c->curfv->sf, ly_fore, force );
 }
 
+static void bDebugCrashFontForge(Context *c)
+{
+    fprintf(stderr,"FontForge is crashing because you asked it to using the DebugCrashFontForge command\n");
+    int *ptr = NULL;
+    *ptr = 1;
+}
+
+
 static struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[] = {
 /* Generic utilities */
     { "Print", bPrint, 1 },
@@ -8452,6 +8460,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "CompareGlyphs", bCompareGlyphs, 0 },
     { "CompareFonts", bCompareFonts, 0 },
     { "Validate", bValidate, 0 },
+    { "DebugCrashFontForge", bDebugCrashFontForge, 0 },
     { NULL, 0, 0 }
 };
 
