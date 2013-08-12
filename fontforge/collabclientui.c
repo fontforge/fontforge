@@ -589,7 +589,9 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
 	sprintf(command_line,
 		"%s/FontForgeInternal/fontforge-internal-collab-server",
 		getGResourceProgramDir() );
-	
+#if defined(__MINGW32__)
+	strcat(command_line,"-batch.bat");
+#endif	
 	printf("command_line:%s\n", command_line );
 	GError * error = 0;
 	if(!getenv("FONTFORGE_USE_EXISTING_SERVER"))
