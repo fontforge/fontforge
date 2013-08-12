@@ -589,10 +589,19 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
 	sprintf(command_line,
 		"%s/FontForgeInternal/fontforge-internal-collab-server",
 		getGResourceProgramDir() );
+	
 	printf("command_line:%s\n", command_line );
 	GError * error = 0;
 	if(!getenv("FONTFORGE_USE_EXISTING_SERVER"))
-	    g_spawn_command_line_async( command_line, &error );
+	{
+	    int rc = g_spawn_command_line_async( command_line, &error );
+	    if( !rc )
+	    {
+		fprintf(stderr, "Error starting collab server\n");
+		if( error )
+		    fprintf(stderr, "code:%d message:%s\n", error->code, error->message );
+	    }
+	}
     }
     
     printf("Starting a session, sending it the current SFD as a baseline...\n");

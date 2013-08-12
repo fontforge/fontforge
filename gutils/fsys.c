@@ -63,6 +63,11 @@ static void _u_backslash_to_slash(unichar_t* c){
 	if(*c == '\\')
 	    *c = '/';
 }
+#else
+static void _backslash_to_slash(char* c){
+}
+static void _u_backslash_to_slash(unichar_t* c){
+}
 #endif
 
 
@@ -824,18 +829,29 @@ char *GFileGetHomeDocumentsDir(void)
     return ret;
 }
 
+
 char *GFileDirName(const char *path)
 {
     char ret[PATH_MAX+1];
-    char splitchar = '/';
-#if defined(__MINGW32__)
-    splitchar = '\\';
-#endif
-
     strncpy( ret, path, PATH_MAX );
-    char *pt = strrchr( ret, splitchar );
+    _backslash_to_slash( ret );
+    char *pt = strrchr( ret, '/' );
     if ( pt )
 	*pt = '\0';
     return ret;
 }
 
+/**
+ * Filesystem split char, on osx and linux this is /
+ * on windows it is \
+ * 
+ * NOTE: it is probably better to normalize paths on windows to use / internally.
+ */
+static char getFilesystemSplitChar( void )
+{
+    char splitchar = '/';
+#if defined(__MINGW32__)
+    splitchar = '\\';
+#endif
+    return splitchar;
+}
