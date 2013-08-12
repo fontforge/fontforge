@@ -590,8 +590,10 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
 		"%s/FontForgeInternal/fontforge-internal-collab-server",
 		getGResourceProgramDir() );
 #if defined(__MINGW32__)
-	chdir(getGResourceProgramDir());
-	sprintf(command_line, "ffcollab.bat" );
+//	chdir(getGResourceProgramDir());
+//	sprintf(command_line, "ffcollab.bat" );
+
+	sprintf(command_line, "'%s/ffcollab.bat'", getGResourceProgramDir() );
 #endif	
 	printf("command_line:%s\n", command_line );
 	GError * error = 0;
