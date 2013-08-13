@@ -295,6 +295,8 @@ void GDrawSetUserData(GWindow gw, void *ud) {
 }
 
 void *GDrawGetUserData(GWindow gw) {
+    if( !gw )
+	return 0;
 return( gw->user_data );
 }
 
