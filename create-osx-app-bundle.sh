@@ -19,7 +19,35 @@ sed -i -e "s|Gdraw.ScreenWidthCentimeters:.*|Gdraw.ScreenWidthCentimeters: 34|g"
 sed -i -e "s|Gdraw.GMenu.MacIcons:.*|Gdraw.GMenu.MacIcons: True|g" \
        "$bundle_res/opt/local/share/fontforge/pixmaps/resources"
 
+#
+# This block updates the metadata that finder will show for the app.
+# by sorting fontforge-config.h prefix names will come first, eg
+# FONTFORGE_MODTIME before FONTFORGE_MODTIME_RAW so that the head -1
+# will pick the prefix name from the sorted include file.
+#
+osxmetadata_file=$TEMPDIR/FontForge.app/Contents/Resources/English.lproj/InfoPlist.string
+sort ./inc/fontforge-config.h >|/tmp/fontforge-config-sorted
 
+FONTFORGE_MODTIME_STR=$(grep FONTFORGE_MODTIME_STR /tmp/fontforge-config-sorted | head -1 | sed 's/^[^ ]*[ ][^ ]*[ ]//g')
+FONTFORGE_VERSIONDATE_RAW=$(grep FONTFORGE_VERSIONDATE_RAW /tmp/fontforge-config-sorted | head -1 | sed 's/^[^ ]*[ ][^ ]*[ ]//g')
+FONTFORGE_MODTIME_STR_RAW=$(grep FONTFORGE_MODTIME_STR_RAW /tmp/fontforge-config-sorted | head -1 | sed 's/^[^ ]*[ ][^ ]*[ ]//g')
+FONTFORGE_GIT_VERSION=$(grep FONTFORGE_GIT_VERSION /tmp/fontforge-config-sorted | head -1 | sed 's/^[^ ]*[ ][^ ]*[ ]//g')
+FONTFORGE_GIT_VERSION=$(echo $FONTFORGE_GIT_VERSION | sed 's/"//g')
+echo "got: modtime     = $FONTFORGE_MODTIME_STR"
+echo "got: versiondata = $FONTFORGE_VERSIONDATE_RAW"
+echo "got: git ver     = $FONTFORGE_GIT_VERSION"
+
+CFBundleShortVersionString="Version $FONTFORGE_VERSIONDATE_RAW"
+CFBundleGetInfoString="FontForge version $FONTFORGE_VERSIONDATE_RAW based on sources from $FONTFORGE_MODTIME_STR_RAW git:$FONTFORGE_GIT_VERSION";
+sed -i -e "s/CFBundleShortVersionString.*/CFBundleShortVersionString = \"$CFBundleShortVersionString\"/g" $osxmetadata_file
+sed -i -e "s/CFBundleGetInfoString.*/CFBundleGetInfoString = \"$CFBundleGetInfoString\"/g" $osxmetadata_file
+
+sed -i -e "s/CFBundleGetInfoStringChangeMe/$CFBundleGetInfoString/g" $TEMPDIR/FontForge.app/Contents/Info.plist
+
+#
+# Now to fix the binaries to have shared library paths that are all inside
+# the distrubtion instead of off into /opt/local or where macports puts things.
+#
 cd $bundle_bin
 dylibbundler --overwrite-dir --bundle-deps --fix-file \
   ./fontforge \
@@ -96,6 +124,7 @@ cp -av /opt/local/share/mime/magic      opt/local/share/mime
 
 
 cd $TEMPDIR
+find FontForge.app -exec touch {} \;
 rm -f  ~/FontForge.app.zip
 zip -9 -r ~/FontForge.app.zip FontForge.app
 cp -f  ~/FontForge.app.zip /tmp/
