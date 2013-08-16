@@ -545,6 +545,12 @@ return;
 	    (!dotah || !cv->tah_sel) &&
 	    !(event->u.mouse.state&ksm_shift))
 	needsupdate = CVClearSel(cv);
+
+    printf("CVMouseDownPointer() dowidth:%d doic:%d dotah:%d dovw:%d nc:%d \n",
+	   dowidth, doic, dotah, dovwidth, nearcaret );
+    printf("!anysel:%d mc:%d  shift:%d \n",
+	   !fs->p->anysel, event->u.mouse.clicks, (event->u.mouse.state&ksm_shift) );
+    
     if ( !fs->p->anysel ) {
 	/* Nothing else... unless they clicked on the width line, check that */
 	if ( dowidth ) {
@@ -716,6 +722,7 @@ return;
 	if ( CVSetSel(cv,-1)) needsupdate = true;
     }
 
+    printf("needsupdate:%d\n", needsupdate );
     if ( needsupdate )
     {
 	SCUpdateAll(cv->b.sc);
@@ -858,6 +865,18 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
     CVSetCharChanged(cv,true);
 }
 
+static bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp )
+{
+    if( !sp || !sf )
+	return 0;
+    if( !sf->grid.splines )
+	return 0;
+    
+    SplinePointList* spl = sf->grid.splines;
+    return SplinePointListContainsPoint( spl, sp );
+}
+
+
 static void CVAdjustSpline(CharView *cv) {
     Spline *old = cv->p.spline;
     TPoint tp[5];
@@ -867,6 +886,33 @@ static void CVAdjustSpline(CharView *cv) {
 
     if ( cv->b.layerheads[cv->b.drawmode]->order2 )
 return;
+
+    //
+    // Click + drag on a guide moves the guide to where your mouse is at
+    //
+    if( cv->b.drawmode == dm_grid
+	&& isSplinePointPartOfGuide( cv->b.sc->parent, cv->p.spline->from )
+	&& isSplinePointPartOfGuide( cv->b.sc->parent, cv->p.spline->to ) )
+    {
+	printf("CVAdjustSpline() moving guide!\n");
+	if( cv->p.spline->from->me.y == cv->p.spline->to->me.y )
+	{
+	    int newy = cv->info.y;
+	    cv->p.spline->from->me.y = newy;
+	    cv->p.spline->to->me.y = newy;
+	    cv->p.spline->splines[1].d = newy;
+	}
+	else
+	{
+	    int newx = cv->info.x;
+	    cv->p.spline->from->me.x = newx;
+	    cv->p.spline->to->me.x = newx;
+	    cv->p.spline->splines[0].d = newx;
+	}
+	CVSetCharChanged(cv,true);
+	return;
+    }
+    
 
     tp[0].x = cv->info.x; tp[0].y = cv->info.y; tp[0].t = cv->p.t;
     t = cv->p.t/10;

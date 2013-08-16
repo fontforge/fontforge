@@ -5018,16 +5018,22 @@ return( false );
 return( false );
 	if ( xspline->c==0 && yspline->c==0 ) 	/* It's a point. */
 return( true );
+	printf("NearSpline(a) dy>dx:%d \n", dy>dx );
 	if ( dy>dx ) {
 	    t = (fs->p->cy-yspline->d)/yspline->c;
 	    fs->p->t = t;
 	    x = xspline->c*t + xspline->d;
+	    printf("NearSpline(a.1) t:%f \n", t );
+	    printf("NearSpline(a.1) %f %f %f %f\n", xspline->a, xspline->b, xspline->c, xspline->d );
 	    if ( fs->xl<x && fs->xh>x && t>=0 && t<=1 )
 return( true );
 	} else {
 	    t = (fs->p->cx-xspline->d)/xspline->c;
 	    fs->p->t = t;
 	    y = yspline->c*t + yspline->d;
+	    printf("NearSpline(a.2) t:%f \n", t );
+	    printf("NearSpline(a.2) yl:%f y:%f yh:%f y:%f\n", fs->yl, y, fs->yh, y );
+	    printf("NearSpline(a.2) %f %f %f %f\n", yspline->a, yspline->b, yspline->c, yspline->d );
 	    if ( fs->yl<y && fs->yh>y && t>=0 && t<=1 )
 return( true );
 	}

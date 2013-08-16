@@ -2009,3 +2009,30 @@ int SplinePointListContains( SplinePointList* container, SplinePointList* sought
     return 0;
 }
 
+int SplinePointListContainsPoint( SplinePointList* container, SplinePoint* sought )
+{
+    if( !sought )
+	return 0;
+    
+    SplinePointList *spl;
+    for ( spl = container; spl!=NULL; spl = spl->next )
+    {
+	SplinePoint* p   = spl->first;
+	SplinePoint* end = spl->last;
+//	printf("want:%p spl:%p p:%p end:%p\n", sought, spl, p, end );
+
+	Spline *s;
+	for ( s=spl->first->next; s; s=s->to->next )
+	{
+//	    printf("want:%p from:%p\n", sought, s->from );
+//	    printf("want:%p to  :%p\n", sought, s->to );
+	    if( s->from == sought
+		|| s->to == sought )
+	    {
+		return 1;
+	    }
+	}
+    }
+    return 0;
+}
+

@@ -3294,4 +3294,10 @@ extern void SCRemoveVKern(SplineChar* sc);
  */
 extern int SplinePointListContains( SplinePointList* container, SplinePointList* sought );
 
+/**
+ * Return falise if the container does not contain the single splint point "sp",
+ * Return true if "sp" is in the container.
+ */
+extern int SplinePointListContainsPoint( SplinePointList* container, SplinePoint* sp );
+    
 #endif
