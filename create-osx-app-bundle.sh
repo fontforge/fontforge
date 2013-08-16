@@ -9,6 +9,7 @@ bundle_res=$TEMPDIR/FontForge.app/Contents/Resources
 bundle_bin="$bundle_res/opt/local/bin"
 bundle_lib="$bundle_res/opt/local/lib"
 bundle_etc="$bundle_res/opt/local/etc"
+bundle_share="$bundle_res/opt/local/share"
 
 cp ./fontforge/MacFontForgeAppBuilt.zip $TEMPDIR/
 unzip -d $TEMPDIR $TEMPDIR/MacFontForgeAppBuilt.zip
@@ -121,6 +122,9 @@ mkdir -p opt/local/share/mime
 cp -av /opt/local/share/mime/mime.cache opt/local/share/mime
 cp -av /opt/local/share/mime/globs      opt/local/share/mime
 cp -av /opt/local/share/mime/magic      opt/local/share/mime
+
+mkdir -p $bundle_share/X11
+cp -av /opt/local/share/X11/locale $bundle_share/X11
 
 
 cd $TEMPDIR
