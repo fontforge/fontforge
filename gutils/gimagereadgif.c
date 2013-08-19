@@ -159,20 +159,16 @@ GImage *GImageReadGif(char *filename) {
     // as at that time, I added a smoother macro here to allow v4 to
     // still work OK for the time being.
     // 
-#if GIFLIB_MAJOR == 4
-#define ffDGifOpenFileName(fn)               DGifOpenFileName(fn)
-#define ffDGifOpenFileNameWithError(fn,err)  DGifOpenFileName(fn)
+#if defined(GIFLIB_MAJOR) && GIFLIB_MAJOR >= 5 || defined(_GIFLIB_5PLUS)
+    if ( (gif=DGifOpenFileName(filename,NULL))==NULL ) {
 #else
-#define ffDGifOpenFileName(fn)               DGifOpenFileName(fn,NULL)
-#define ffDGifOpenFileNameWithError(fn,err)  DGifOpenFileName(fn,err)
+    if ( (gif=DGifOpenFileName(filename))==NULL ) {
 #endif
-    
-    if ( (gif=ffDGifOpenFileName(filename))==NULL ) {
 	fprintf( stderr,"Can't open \"%s\"\n",filename );
 	return( NULL );
     }
 
-    if ( DGifSlurp(gif)==GIF_ERROR ) {
+    if ( DGifSlurp(gif)!=GIF_OK ) {
 	fprintf(stderr,"Bad input file \"%s\"\n",filename );
 	DGifCloseFile(gif);
 	return( NULL );

@@ -223,6 +223,10 @@ if test x"${i_do_have_giflib}" = xyes -a x"${GIFLIB_LIBS}" = x; then
                   [AC_SUBST([GIFLIB_LIBS],["${found_lib}"])],
                   [i_do_have_giflib=no])
 fi
+if test x"${i_do_have_giflib}" = xyes -a x"${GIFLIB_LIBS}" = x; then
+   FONTFORGE_SEARCH_LIBS([EGifGetGifVersion],[gif ungif],
+                  [AC_SUBST([GIFLIB_VER5P],["${found_lib}"])],[])
+fi
 if test x"${i_do_have_giflib}" = xyes -a x"${GIFLIB_CFLAGS}" = x; then
    AC_CHECK_HEADER(gif_lib.h,[AC_SUBST([GIFLIB_CFLAGS],[""])],[i_do_have_giflib=no])
    if test x"${i_do_have_giflib}" = xyes; then
@@ -241,7 +245,6 @@ if test x"${i_do_have_giflib}" != xyes; then
    AC_DEFINE([_NO_LIBUNGIF],1,[Define if not using giflib or libungif.)])
 fi
 ])
-
 
 dnl There is no pkg-config support for libjpeg, at least on Gentoo. (17 Jul 2012)
 dnl
