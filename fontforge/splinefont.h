@@ -1090,6 +1090,14 @@ typedef struct spline1d {
     real a, b, c, d;
 } Spline1D;
 
+/**
+ *
+ * 2013Note: If you are altering from->me.x and y then you will
+ *           probably have to modify splines[] to match your change.
+ *           eg, moving both ends of a spline up/down by changing their
+ *           to/from will also probably need an update to splines[ 0 | 1 ].d to
+ *           match.
+ */
 typedef struct spline {
     unsigned int islinear: 1;		/* No control points */
     unsigned int isquadratic: 1;	/* probably read in from ttf */
@@ -3293,5 +3301,55 @@ extern void SCRemoveVKern(SplineChar* sc);
  * Return true if sought is in the container.
  */
 extern int SplinePointListContains( SplinePointList* container, SplinePointList* sought );
+
+/**
+ * Return falise if the container does not contain the single splint point "sp",
+ * Return true if "sp" is in the container.
+ */
+extern int SplinePointListContainsPoint( SplinePointList* container, SplinePoint* sp );
+
+typedef void (*SPLFirstVisitor)( SplinePoint* splfirst, Spline* s, void* udata );
+extern void SPLFirstVisitorDebug(SplinePoint* splfirst, Spline* spline, void* udata );
+
+/**
+ * Given a SplinePointList* that you want to visit each spline in the iteration
+ * is not as simple as it could be, so you can call this function passing
+ * spl->first as 'splfirst' and a visitor function which will see each spline
+ * in the splfirst colleciton.
+ *
+ * For debug, you can pass  SPLFirstVisitorDebug which will print information for each
+ * item in the splfirst collection.
+ * 
+ * You can pass any arbitrary data in as udata and SPLFirstVisit()
+ * will pass that udata to your visitor function without change. If
+ * you want a return value from your visitor, pass a pointer to a
+ * struct as udata. eg:
+ *
+ * typedef struct SPLFirstVisitorFoundSoughtDataS
+ * {
+ *    SplinePoint* sought;
+ *    int found;
+ * } SPLFirstVisitorFoundSoughtData;
+ * 
+ * // ...
+ * 
+ *	SPLFirstVisitorFoundSoughtData d;
+ *	d.sought = sought;
+ *	d.found  = 0;
+ *	SPLFirstVisit( spl->first, SPLFirstVisitorFoundSought, &d );
+ *	if( d.found )
+ *           return 1;
+ * 
+ */
+extern void SPLFirstVisit( SplinePoint* splfirst, SPLFirstVisitor f, void* udata );
+
+
+/**
+ * True if the spline with from/to is part of the guide splines.
+ * 
+ * Handy for telling if the user has just clicked on a guide for example,
+ * you might want to also check the active layer first with cv->b.drawmode == dm_grid
+ */
+extern bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp );
 
 #endif

@@ -545,6 +545,7 @@ return;
 	    (!dotah || !cv->tah_sel) &&
 	    !(event->u.mouse.state&ksm_shift))
 	needsupdate = CVClearSel(cv);
+
     if ( !fs->p->anysel ) {
 	/* Nothing else... unless they clicked on the width line, check that */
 	if ( dowidth ) {
@@ -858,6 +859,17 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
     CVSetCharChanged(cv,true);
 }
 
+bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp )
+{
+    if( !sp || !sf )
+	return 0;
+    if( !sf->grid.splines )
+	return 0;
+    
+    SplinePointList* spl = sf->grid.splines;
+    return SplinePointListContainsPoint( spl, sp );
+}
+
 static void CVAdjustSpline(CharView *cv) {
     Spline *old = cv->p.spline;
     TPoint tp[5];
@@ -867,6 +879,40 @@ static void CVAdjustSpline(CharView *cv) {
 
     if ( cv->b.layerheads[cv->b.drawmode]->order2 )
 return;
+
+    //
+    // Click + drag on a guide moves the guide to where your mouse is at
+    //
+    if( cv->b.drawmode == dm_grid
+	&& isSplinePointPartOfGuide( cv->b.sc->parent, cv->p.spline->from )
+	&& isSplinePointPartOfGuide( cv->b.sc->parent, cv->p.spline->to ) )
+    {
+	if( 0 == cv->p.spline->splines[0].a
+	    && 0 == cv->p.spline->splines[0].b
+	    && 0 == cv->p.spline->splines[1].a
+	    && 0 == cv->p.spline->splines[1].b
+	    && ( (cv->p.spline->splines[0].c && cv->p.spline->from->me.y == cv->p.spline->to->me.y)
+		 || (cv->p.spline->splines[1].c && cv->p.spline->from->me.x == cv->p.spline->to->me.x )))
+	{
+	    if( cv->p.spline->from->me.y == cv->p.spline->to->me.y )
+	    {
+		int newy = cv->info.y;
+		cv->p.spline->from->me.y = newy;
+		cv->p.spline->to->me.y = newy;
+		cv->p.spline->splines[1].d = newy;
+	    }
+	    else
+	    {
+		int newx = cv->info.x;
+		cv->p.spline->from->me.x = newx;
+		cv->p.spline->to->me.x = newx;
+		cv->p.spline->splines[0].d = newx;
+	    }
+	    CVSetCharChanged(cv,true);
+	    return;
+	}
+    }
+    
 
     tp[0].x = cv->info.x; tp[0].y = cv->info.y; tp[0].t = cv->p.t;
     t = cv->p.t/10;

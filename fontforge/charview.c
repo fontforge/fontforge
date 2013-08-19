@@ -3722,6 +3722,7 @@ return( false /*true*/ );	/* Check if there's a point where we are first */
 	/* if there is use it, if not (because anysel is true) we'll fall back */
 	/* here */
     }
+    
 return( false );
 }
 
@@ -3823,7 +3824,7 @@ static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
 	delta *= 1.5;
 	fs->fudge += delta;
     }
-    
+
     fs->c_xl = fs->xl = p->cx - fs->fudge;
     fs->c_xh = fs->xh = p->cx + fs->fudge;
     fs->c_yl = fs->yl = p->cy - fs->fudge;
@@ -4047,7 +4048,7 @@ static void CVMouseDown(CharView *cv, GEvent *event ) {
     GEvent fake;
     lastSelectedPoint lastSel;
     memset( &lastSel, 0, sizeof(lastSelectedPoint));
-    
+
     if ( event->u.mouse.button==2 && event->u.mouse.device!=NULL &&
 	    strcmp(event->u.mouse.device,"stylus")==0 )
 return;		/* I treat this more like a modifier key change than a button press */
