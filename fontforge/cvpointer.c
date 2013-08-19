@@ -546,11 +546,6 @@ return;
 	    !(event->u.mouse.state&ksm_shift))
 	needsupdate = CVClearSel(cv);
 
-    printf("CVMouseDownPointer() dowidth:%d doic:%d dotah:%d dovw:%d nc:%d \n",
-	   dowidth, doic, dotah, dovwidth, nearcaret );
-    printf("!anysel:%d mc:%d  shift:%d \n",
-	   !fs->p->anysel, event->u.mouse.clicks, (event->u.mouse.state&ksm_shift) );
-    
     if ( !fs->p->anysel ) {
 	/* Nothing else... unless they clicked on the width line, check that */
 	if ( dowidth ) {
@@ -722,7 +717,6 @@ return;
 	if ( CVSetSel(cv,-1)) needsupdate = true;
     }
 
-    printf("needsupdate:%d\n", needsupdate );
     if ( needsupdate )
     {
 	SCUpdateAll(cv->b.sc);
@@ -865,7 +859,7 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
     CVSetCharChanged(cv,true);
 }
 
-static bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp )
+bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp )
 {
     if( !sp || !sf )
 	return 0;
@@ -875,7 +869,6 @@ static bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp )
     SplinePointList* spl = sf->grid.splines;
     return SplinePointListContainsPoint( spl, sp );
 }
-
 
 static void CVAdjustSpline(CharView *cv) {
     Spline *old = cv->p.spline;
@@ -894,23 +887,30 @@ return;
 	&& isSplinePointPartOfGuide( cv->b.sc->parent, cv->p.spline->from )
 	&& isSplinePointPartOfGuide( cv->b.sc->parent, cv->p.spline->to ) )
     {
-	printf("CVAdjustSpline() moving guide!\n");
-	if( cv->p.spline->from->me.y == cv->p.spline->to->me.y )
+	if( 0 == cv->p.spline->splines[0].a
+	    && 0 == cv->p.spline->splines[0].b
+	    && 0 == cv->p.spline->splines[1].a
+	    && 0 == cv->p.spline->splines[1].b
+	    && ( (cv->p.spline->splines[0].c && cv->p.spline->from->me.y == cv->p.spline->to->me.y)
+		 || (cv->p.spline->splines[1].c && cv->p.spline->from->me.x == cv->p.spline->to->me.x )))
 	{
-	    int newy = cv->info.y;
-	    cv->p.spline->from->me.y = newy;
-	    cv->p.spline->to->me.y = newy;
-	    cv->p.spline->splines[1].d = newy;
+	    if( cv->p.spline->from->me.y == cv->p.spline->to->me.y )
+	    {
+		int newy = cv->info.y;
+		cv->p.spline->from->me.y = newy;
+		cv->p.spline->to->me.y = newy;
+		cv->p.spline->splines[1].d = newy;
+	    }
+	    else
+	    {
+		int newx = cv->info.x;
+		cv->p.spline->from->me.x = newx;
+		cv->p.spline->to->me.x = newx;
+		cv->p.spline->splines[0].d = newx;
+	    }
+	    CVSetCharChanged(cv,true);
+	    return;
 	}
-	else
-	{
-	    int newx = cv->info.x;
-	    cv->p.spline->from->me.x = newx;
-	    cv->p.spline->to->me.x = newx;
-	    cv->p.spline->splines[0].d = newx;
-	}
-	CVSetCharChanged(cv,true);
-	return;
     }
     
 

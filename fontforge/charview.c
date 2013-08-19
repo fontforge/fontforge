@@ -3654,8 +3654,6 @@ return( false );
 
 static int CheckPoint(FindSel *fs, SplinePoint *sp, SplineSet *spl) {
 
-//    printf("CheckPoint() p.x:%d xrange %d %d \n", sp->me.x, fs->xl, fs->xh );
-//    printf("CheckPoint() p.y:%d yrange %d %d \n", sp->me.y, fs->yl, fs->yh );
     if ( fs->xl<=sp->me.x && fs->xh>=sp->me.x &&
 	    fs->yl<=sp->me.y && fs->yh >= sp->me.y ) {
 	fs->p->sp = sp;
@@ -3711,18 +3709,11 @@ return( false );
 
 static int CheckSpline(FindSel *fs, Spline *spline, SplineSet *spl) {
 
-    printf("CheckSpline() spline:%p spl:%p\n", spline, spl );
     /* Anything else is better than a spline */
     if ( fs->p->anysel )
 return( false );
 
     if ( NearSpline(fs,spline)) {
-	printf("CheckSpline(MATCH) spline:%p spl:%p\n", spline, spl );
-	printf("CheckSpline(M...) knownlin:%d\n", spline->knownlinear );
-	printf("CheckSpline(M...) from/to  %f %f %f %f \n",
-	       spline->from->me.x, spline->from->me.y, spline->to->me.x, spline->to->me.y );
-	printf("CheckSpline(M...) fs u/l   %f %f %f %f \n",
-	       fs->xl, fs->xh, fs->yl, fs->yh );
 	fs->p->spline = spline;
 	fs->p->spl = spl;
 	fs->p->anysel = true;
@@ -3730,14 +3721,6 @@ return( false );
 return( false /*true*/ );	/* Check if there's a point where we are first */
 	/* if there is use it, if not (because anysel is true) we'll fall back */
 	/* here */
-    }
-    else
-    {
-	printf("CheckSpline(F...) knownlin:%d\n", spline->knownlinear );
-	printf("CheckSpline(F...) from/to  %f %f %f %f \n",
-	       spline->from->me.x, spline->from->me.y, spline->to->me.x, spline->to->me.y );
-	printf("CheckSpline(F...) fs u/l   %f %f %f %f \n",
-	       fs->xl, fs->xh, fs->yl, fs->yh );
     }
     
 return( false );
@@ -3842,7 +3825,6 @@ static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
 	fs->fudge += delta;
     }
 
-    printf("setFS() ********************** p.xy  %f  %f  %f\n", p->cx, p->cy, fs->fudge );
     fs->c_xl = fs->xl = p->cx - fs->fudge;
     fs->c_xh = fs->xh = p->cx + fs->fudge;
     fs->c_yl = fs->yl = p->cy - fs->fudge;
@@ -4067,7 +4049,6 @@ static void CVMouseDown(CharView *cv, GEvent *event ) {
     lastSelectedPoint lastSel;
     memset( &lastSel, 0, sizeof(lastSelectedPoint));
 
-    printf("CVMouseDown(1)\n");
     if ( event->u.mouse.button==2 && event->u.mouse.device!=NULL &&
 	    strcmp(event->u.mouse.device,"stylus")==0 )
 return;		/* I treat this more like a modifier key change than a button press */
@@ -4085,14 +4066,12 @@ return;
     cv->active_tool = cv->showing_tool;
     cv->needsrasterize = false;
     cv->recentchange = false;
-    printf("CVMouseDown(2)\n");
 
     SetFS(&fs,&cv->p,cv,event);
     if ( event->u.mouse.state&ksm_shift )
 	event = CVConstrainedMouseDown(cv,event,&fake);
 
     if ( cv->active_tool == cvt_pointer ) {
-    printf("CVMouseDown(2.1)\n");
 	fs.select_controls = true;
 	if ( event->u.mouse.state&ksm_alt ) {
 	    fs.seek_controls = true;
@@ -4111,23 +4090,19 @@ return;
     } else if ( cv->active_tool == cvt_curve || cv->active_tool == cvt_corner ||
 	    cv->active_tool == cvt_tangent || cv->active_tool == cvt_hvcurve ||
 	    cv->active_tool == cvt_pen || cv->active_tool == cvt_ruler ) {
-    printf("CVMouseDown(2.2)\n");
 	/* Snap to points and splines */
 	InSplineSet(&fs,cv->b.layerheads[cv->b.drawmode]->splines,cv->b.sc->inspiro && hasspiro());
 	if ( fs.p->sp==NULL && fs.p->spline==NULL )
 	    CVDoSnaps(cv,&fs);
     } else {
-    printf("CVMouseDown(2.e)\n");
 	/* Just snap to points */
 	NearSplineSetPoints(&fs,cv->b.layerheads[cv->b.drawmode]->splines,cv->b.sc->inspiro && hasspiro());
 	if ( fs.p->sp==NULL && fs.p->spline==NULL )
 	    CVDoSnaps(cv,&fs);
     }
-    printf("CVMouseDown(5)\n");
 
     cv->e.x = event->u.mouse.x; cv->e.y = event->u.mouse.y;
     if ( cv->p.sp!=NULL ) {
-    printf("CVMouseDown(5.1)\n");
 	BasePoint *p;
 	if ( cv->p.nextcp )
 	    p = &cv->p.sp->nextcp;
@@ -4139,24 +4114,20 @@ return;
 	cv->info.y = p->y;
 	cv->p.cx = p->x; cv->p.cy = p->y;
     } else if ( cv->p.spiro!=NULL ) {
-    printf("CVMouseDown(5.2)\n");
 	cv->info.x = cv->p.spiro->x;
 	cv->info.y = cv->p.spiro->y;
 	cv->p.cx = cv->p.spiro->x; cv->p.cy = cv->p.spiro->y;
     } else {
-    printf("CVMouseDown(5.3)\n");
 	cv->info.x = cv->p.cx;
 	cv->info.y = cv->p.cy;
     }
     cv->info_within = true;
     CVInfoDraw(cv,cv->gw);
     CVSetConstrainPoint(cv,event);
-    printf("CVMouseDown(7)\n");
 
     int selectionChanged = 0;
     switch ( cv->active_tool ) {
       case cvt_pointer:
-    printf("CVMouseDown(7.2)\n");
 	CVMouseDownPointer(cv, &fs, event);
 //	printf("lastSel.lastselpt:%p  fs.p->sp:%p\n", lastSel.lastselpt, fs.p->sp );
 	if( lastSel.lastselpt != fs.p->sp

@@ -2009,29 +2009,75 @@ int SplinePointListContains( SplinePointList* container, SplinePointList* sought
     return 0;
 }
 
+
+void SPLFirstVisitorDebug(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    printf("   splfirst:%p spline:%p udata:%p\n", splfirst, spline, udata );
+}
+
+
+void SPLFirstVisit( SplinePoint* splfirst, SPLFirstVisitor f, void* udata )
+{
+    Spline *spline=0;
+    Spline *first=0;
+    Spline *next=0;
+    
+    if ( splfirst!=NULL )
+    {
+	first = NULL;
+	for ( spline = splfirst->next; spline!=NULL && spline!=first; spline = next )
+	{
+	    next = spline->to->next;
+
+	    // callback
+	    f( splfirst, spline, udata );
+	    
+	    if ( first==NULL )
+	    {
+		first = spline;
+	    }
+	}
+    }
+}
+
+
+typedef struct SPLFirstVisitorFoundSoughtDataS
+{
+    SplinePoint* sought;
+    int found;
+} SPLFirstVisitorFoundSoughtData;
+
+static void SPLFirstVisitorFoundSought(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    SPLFirstVisitorFoundSoughtData* d = (SPLFirstVisitorFoundSoughtData*)udata;
+//    printf("SPLFirstVisitorFoundSought()   splfirst:%p spline:%p udata:%p\n", splfirst, spline, udata );
+//    printf("SPLFirstVisitorFoundSought()   sought:%p from:%p to:%p\n", d->sought, spline->from, spline->to );
+    
+    if( spline->from == d->sought || spline->to == d->sought )
+    {
+//	printf("got it!\n");
+	d->found = 1;
+    }
+}
+
 int SplinePointListContainsPoint( SplinePointList* container, SplinePoint* sought )
 {
     if( !sought )
 	return 0;
     
+//    printf("\n\n\nSplinePointListContainsPoint(top) want:%p\n", sought );
     SplinePointList *spl;
     for ( spl = container; spl!=NULL; spl = spl->next )
     {
 	SplinePoint* p   = spl->first;
 	SplinePoint* end = spl->last;
-//	printf("want:%p spl:%p p:%p end:%p\n", sought, spl, p, end );
 
-	Spline *s;
-	for ( s=spl->first->next; s; s=s->to->next )
-	{
-//	    printf("want:%p from:%p\n", sought, s->from );
-//	    printf("want:%p to  :%p\n", sought, s->to );
-	    if( s->from == sought
-		|| s->to == sought )
-	    {
-		return 1;
-	    }
-	}
+	SPLFirstVisitorFoundSoughtData d;
+	d.sought = sought;
+	d.found  = 0;
+	SPLFirstVisit( spl->first, SPLFirstVisitorFoundSought, &d );
+	if( d.found )
+	    return 1;
     }
     return 0;
 }
