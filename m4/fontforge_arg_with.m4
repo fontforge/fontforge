@@ -223,9 +223,10 @@ if test x"${i_do_have_giflib}" = xyes -a x"${GIFLIB_LIBS}" = x; then
                   [AC_SUBST([GIFLIB_LIBS],["${found_lib}"])],
                   [i_do_have_giflib=no])
 fi
+dnl version 5+ breaks basic interface, so must use enhanced "DGifOpenFileName"
 if test x"${i_do_have_giflib}" = xyes -a x"${GIFLIB_LIBS}" = x; then
    FONTFORGE_SEARCH_LIBS([EGifGetGifVersion],[gif ungif],
-                  [AC_SUBST([GIFLIB_VER5P],["${found_lib}"])],[])
+                  [AC_SUBST([_GIFLIB_5PLUS],["${found_lib}"])],[])
 fi
 if test x"${i_do_have_giflib}" = xyes -a x"${GIFLIB_CFLAGS}" = x; then
    AC_CHECK_HEADER(gif_lib.h,[AC_SUBST([GIFLIB_CFLAGS],[""])],[i_do_have_giflib=no])
