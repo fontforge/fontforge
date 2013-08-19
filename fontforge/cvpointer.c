@@ -935,6 +935,13 @@ return;
         SPChangePointType(old->from, pt_hvcurve);
     if ( oldtopointtype == pt_hvcurve )
         SPChangePointType(old->to, pt_hvcurve);
+    //
+    // dont go changing pt_curve points into pt_corner without explicit consent.
+    //
+    if( oldfrompointtype == pt_curve )
+	old->from->pointtype = oldfrompointtype;
+    if( oldtopointtype == pt_curve )
+	old->to->pointtype = oldtopointtype;
 
     old->from->nextcpdef = old->to->prevcpdef = false;
     SplineFree(old);
