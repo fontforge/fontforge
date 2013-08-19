@@ -1801,8 +1801,9 @@ static void TransformPTsInterpolateCPs(BasePoint *fromorig,Spline *spline,
 	spline->to->me = totrans;
 }
 
-SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6],
-	enum transformPointType tpt ) {
+
+SplinePointList *SplinePointListTransformExtended(SplinePointList *base, real transform[6],
+						  enum transformPointType tpt, enum transformPointMask tpmask ) {
     Spline *spline, *first;
     SplinePointList *spl;
     SplinePoint *spt, *pfirst;
@@ -1870,22 +1871,27 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 	/* Figuring out where the edges of the selection are is difficult */
 	/*  so let's just tweak all points, it shouldn't matter */
 	/* It does matter. Let's tweak all default points */
-	if ( tpt!=tpt_AllPoints && !allsel && spl->first->next!=NULL && !spl->first->next->order2 ) {
-	    pfirst = NULL;
-	    for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to ) {
-		if ( pfirst==NULL ) pfirst = spt;
-		if ( spt->selected && spt->prev!=NULL && !spt->prev->from->selected &&
-			spt->prev->from->pointtype == pt_tangent )
-		    SplineCharTangentPrevCP(spt->prev->from);
-		if ( spt->selected && spt->next!=NULL && !spt->next->to->selected &&
-			spt->next->to->pointtype == pt_tangent )
-		    SplineCharTangentNextCP(spt->next->to);
-		if ( spt->prev!=NULL && spt->prevcpdef && tpt==tpt_OnlySelected )
-		    SplineCharDefaultPrevCP(spt);
-		if ( spt->next==NULL )
-	    break;
-		if ( spt->nextcpdef && tpt==tpt_OnlySelected )
-		    SplineCharDefaultNextCP(spt);
+	if( !(tpmask & tpmask_dontFixControlPoints))
+	{
+	    if ( tpt!=tpt_AllPoints && !allsel && spl->first->next!=NULL && !spl->first->next->order2 )
+	    {
+		pfirst = NULL;
+		for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to )
+		{
+		    if ( pfirst==NULL ) pfirst = spt;
+		    if ( spt->selected && spt->prev!=NULL && !spt->prev->from->selected && 
+			 spt->prev->from->pointtype == pt_tangent )
+			SplineCharTangentPrevCP(spt->prev->from);
+		    if ( spt->selected && spt->next!=NULL && !spt->next->to->selected &&
+			 spt->next->to->pointtype == pt_tangent )
+			SplineCharTangentNextCP(spt->next->to);
+		    if ( spt->prev!=NULL && spt->prevcpdef && tpt==tpt_OnlySelected )
+			SplineCharDefaultPrevCP(spt);
+		    if ( spt->next==NULL )
+			break;
+		    if ( spt->nextcpdef && tpt==tpt_OnlySelected )
+			SplineCharDefaultNextCP(spt);
+		}
 	    }
 	}
 	first = NULL;
@@ -1895,6 +1901,13 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 	}
     }
 return( base );
+}
+
+SplinePointList *SplinePointListTransform( SplinePointList *base, real transform[6],
+					   enum transformPointType tpt )
+{
+    enum transformPointMask tpmask = 0;
+    return SplinePointListTransformExtended( base, transform, tpt, tpmask );
 }
 
 SplinePointList *SplinePointListSpiroTransform(SplinePointList *base, real transform[6], int allpoints ) {

@@ -1063,11 +1063,15 @@ return(false);
 	}
     }
 
+    enum transformPointMask tpmask = 0;
+    tpmask |= tpmask_dontFixControlPoints;
+    
     if ( cv->b.sc->inspiro && hasspiro())
 	SplinePointListSpiroTransform(cv->b.layerheads[cv->b.drawmode]->splines,transform,false);
     else
-	SplinePointListTransform(cv->b.layerheads[cv->b.drawmode]->splines,transform,
-		interpCPsOnMotion?tpt_OnlySelectedInterpCPs:tpt_OnlySelected);
+	SplinePointListTransformExtended(cv->b.layerheads[cv->b.drawmode]->splines,transform,
+					 interpCPsOnMotion?tpt_OnlySelectedInterpCPs:tpt_OnlySelected,
+					 tpmask );
 
     for ( refs = cv->b.layerheads[cv->b.drawmode]->refs; refs!=NULL; refs=refs->next ) if ( refs->selected ) {
 	refs->transform[4] += transform[4];

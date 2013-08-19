@@ -2337,7 +2337,16 @@ extern void ApTransform(AnchorPoint *ap, real transform[6]);
 /* The order of the enum elements below doesn't make much sense, but it's done*/
 /*  this way to preserve binary compatibility */
 enum transformPointType { tpt_OnlySelected, tpt_AllPoints, tpt_OnlySelectedInterpCPs };
+/*
+ * As SplinePointListTransform() does a few things, this is a mask to selectively be
+ * able to disable some of them.
+ */ 
+enum transformPointMask {
+    tpmask_dontFixControlPoints = 1 << 1
+};
 extern SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6], enum transformPointType allpoints );
+extern SplinePointList *SplinePointListTransformExtended(SplinePointList *base, real transform[6],
+							 enum transformPointType tpt, enum transformPointMask tpmask );
 extern SplinePointList *SplinePointListSpiroTransform(SplinePointList *base, real transform[6], int allpoints );
 extern SplinePointList *SplinePointListShift(SplinePointList *base, real xoff, enum transformPointType allpoints );
 extern HintMask *HintMaskFromTransformedRef(RefChar *ref,BasePoint *trans,
