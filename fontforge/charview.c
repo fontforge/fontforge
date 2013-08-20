@@ -40,6 +40,9 @@ extern int _GScrollBar_Width;
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
 #include "dlist.h"
+#define GTimer GTimer_GTK
+#include <glib.h>
+#undef GTimer
 
 
 #include "gutils/prefs.h"
@@ -753,12 +756,14 @@ return;
 	    }
 	    subcol = nextcpcol;
 
-	    if ( iscurrent && cv->p.nextcp && !onlynumber )
+	    if( !onlynumber && SPIsNextCPSelected( sp, cv ))
 	    {
 		DrawPoint_SetupRectForSize( &r, cx, cy, 3 );
 		GDrawFillRect(pixmap,&r, nextcpcol);
 		subcol = selectedcpcol;
-	    } else if ( truetype_markup ) {
+	    }
+	    else if ( truetype_markup )
+	    {
 		if ( sp->flexy ) {
 		    /* cp is about to be moved (or changed in some other way) */
 		    DrawPoint_SetupRectForSize( &r, cx, cy, 3 );
@@ -770,7 +775,8 @@ return;
 		    GDrawDrawElipse(pixmap,&r,selectedpointcol );
 		}
 	    }
-	    if ( !onlynumber ) {
+	    if ( !onlynumber )
+	    {
 
 		float sizedelta = 3;
 		if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
@@ -805,7 +811,7 @@ return;
 		cy = cv->height+100;
 	    }
 	    subcol = prevcpcol;
-	    if ( iscurrent && cv->p.prevcp && !onlynumber ) {
+	    if( !onlynumber && SPIsPrevCPSelected( sp, cv )) {
 		DrawPoint_SetupRectForSize( &r, cx, cy, 3 );
 		GDrawFillRect(pixmap,&r, prevcpcol);
 		subcol = selectedcpcol;
@@ -3677,6 +3683,7 @@ return( true );
 		seln = false;
 	}
 	if ( seln ) {
+	    printf("seln!\n");
 	    fs->p->sp = sp;
 	    fs->p->spline = NULL;
 	    fs->p->spl = spl;
@@ -3688,6 +3695,7 @@ return( true );
 		fs->p->cp.y = sp->me.y + (sp->me.y-sp->prevcp.y);
 	    }
 	    sp->selected = true;
+	    sp->nextcpselected = true;
 return( true );
 	} else if ( selp ) {
 	    fs->p->sp = sp;
@@ -3701,6 +3709,7 @@ return( true );
 		fs->p->cp.y = sp->me.y + (sp->me.y-sp->nextcp.y);
 	    }
 	    sp->selected = true;
+	    sp->prevcpselected = true;
 return( true );
 	}
     }
@@ -6519,6 +6528,62 @@ static void CVMenuChangeChar(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)
     _CVMenuChangeChar(cv,mi->mid);
 }
 
+
+static void getSelectedControlPointsVisitor(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    GHashTable* ret = (GHashTable*)udata;
+    printf("getSelectedControlPointsVisitor()\n");
+    if( spline->to->nextcpselected )
+	g_hash_table_insert( ret, spline->to, 0 );
+    if( spline->to->prevcpselected )
+	g_hash_table_insert( ret, spline->to, 0 );
+}
+
+static GHashTable* getSelectedControlPoints( PressedOn *p )
+{
+    GHashTable* ret = g_hash_table_new( g_direct_hash, g_direct_equal );
+    SPLFirstVisit( p->spl->first, getSelectedControlPointsVisitor, ret );
+    return ret;
+}
+
+
+
+typedef struct FE_adjustBCPByDeltaDataS
+{
+    CharView *cv;
+    real dx;
+    real dy;
+    
+} FE_adjustBCPByDeltaData;
+
+static void FE_adjustBCPByDelta( gpointer key,
+				 gpointer value,
+				 gpointer udata )
+{
+    extern float arrowAmount;
+    FE_adjustBCPByDeltaData* data = (FE_adjustBCPByDeltaData*)udata;
+
+    SplinePoint* sp = (SplinePoint*)key;
+    if( sp->nextcpselected )
+    {
+	BasePoint *which = &sp->nextcp;
+	BasePoint to;
+	to.x = which->x + data->dx * arrowAmount;
+	to.y = which->y + data->dy * arrowAmount;
+	CVAdjustControl( data->cv, which, &to );
+    }
+    if( sp->prevcpselected )
+    {
+	BasePoint *which = &sp->prevcp;
+	BasePoint to;
+	to.x = which->x + data->dx * arrowAmount;
+	to.y = which->y + data->dy * arrowAmount;
+	CVAdjustControl( data->cv, which, &to );
+    }
+    
+}
+
+
 void CVChar(CharView *cv, GEvent *event ) {
     extern float arrowAmount, arrowAccelFactor;
     extern int navigation_mask;
@@ -6649,25 +6714,49 @@ return;
 		CVVScroll(cv,&sb);
 	    else
 		CVHScroll(cv,&sb);
-	} else {
+	}
+	else
+	{
+	    printf("CVChar()...\n");
 	    if ( event->u.chr.state & ksm_meta ) {
 		dx *= arrowAccelFactor; dy *= arrowAccelFactor;
 	    }
 	    if ( event->u.chr.state & (ksm_shift) )
 		dx -= dy*tan((cv->b.sc->parent->italicangle)*(3.1415926535897932/180) );
 	    if (( cv->p.sp!=NULL || cv->lastselpt!=NULL ) &&
-		    (cv->p.nextcp || cv->p.prevcp) ) {
+		    (cv->p.nextcp || cv->p.prevcp) )
+	    {
+		printf("FIXME: this code moves control points!...\n");
+
+		GHashTable* col = getSelectedControlPoints( &cv->p );
+		printf("selected BCP:%d\n", g_hash_table_size( col ));
 		SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
 		SplinePoint *old = cv->p.sp;
-		BasePoint *which = cv->p.nextcp ? &sp->nextcp : &sp->prevcp;
-		BasePoint to;
-		to.x = which->x + dx*arrowAmount;
-		to.y = which->y + dy*arrowAmount;
-		cv->p.sp = sp;
-		CVPreserveState(&cv->b);
-		CVAdjustControl(cv,which,&to);
+		if( g_hash_table_size( col ) )
+		{
+		    CVPreserveState(&cv->b);
+		    FE_adjustBCPByDeltaData d;
+		    d.cv = cv;
+		    d.dx = dx;
+		    d.dy = dy;
+		    g_hash_table_foreach( col, FE_adjustBCPByDelta, &d );
+		}
 		cv->p.sp = old;
 		SCUpdateAll(cv->b.sc);
+		
+
+		
+		/* SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt; */
+		/* SplinePoint *old = cv->p.sp; */
+		/* BasePoint *which = cv->p.nextcp ? &sp->nextcp : &sp->prevcp; */
+		/* BasePoint to; */
+		/* to.x = which->x + dx*arrowAmount; */
+		/* to.y = which->y + dy*arrowAmount; */
+		/* cv->p.sp = sp; */
+		/* CVPreserveState(&cv->b); */
+		/* CVAdjustControl(cv,which,&to); */
+		/* cv->p.sp = old; */
+		/* SCUpdateAll(cv->b.sc); */
 	    } else if ( CVAnySel(cv,NULL,NULL,NULL,&anya) || cv->widthsel || cv->vwidthsel ) {
 		CVPreserveState(&cv->b);
 		CVMoveSelection(cv,dx*arrowAmount,dy*arrowAmount, event->u.chr.state);
@@ -11693,3 +11782,26 @@ GResInfo charview_ri = {
 
 
 
+bool SPIsNextCPSelected( SplinePoint *sp, CharView *cv )
+{
+    if( cv )
+    {
+	int iscurrent = sp == (cv->p.sp!=NULL?cv->p.sp:cv->lastselpt);
+	if( iscurrent && cv->p.nextcp )
+	    return true;
+    }
+    
+    return sp->nextcpselected;
+}
+
+bool SPIsPrevCPSelected( SplinePoint *sp, CharView *cv )
+{
+    if( cv )
+    {
+	int iscurrent = sp == (cv->p.sp!=NULL?cv->p.sp:cv->lastselpt);
+	if( iscurrent && cv->p.prevcp )
+	    return true;
+    }
+    
+    return sp->prevcpselected;
+}

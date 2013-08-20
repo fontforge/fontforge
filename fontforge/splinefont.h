@@ -1041,6 +1041,8 @@ typedef struct splinepoint {
     unsigned int nextcpdef:1;
     unsigned int prevcpdef:1;
     unsigned int selected:1;	/* for UI */
+    unsigned int nextcpselected: 2; /* Is the cursor on the "next" control point of the spline point */
+    unsigned int prevcpselected: 2; /* Is the cursor on the "prev" control point of the spline point */
     unsigned int pointtype:2;
     unsigned int isintersection: 1;
     unsigned int flexy: 1;	/* When "freetype_markup" is on in charview.c:DrawPoint */
@@ -3319,6 +3321,7 @@ extern int SplinePointListContainsPoint( SplinePointList* container, SplinePoint
 
 typedef void (*SPLFirstVisitor)( SplinePoint* splfirst, Spline* s, void* udata );
 extern void SPLFirstVisitorDebug(SplinePoint* splfirst, Spline* spline, void* udata );
+extern void SPLFirstVisitorDebugSelectionState(SplinePoint* splfirst, Spline* spline, void* udata );
 
 /**
  * Given a SplinePointList* that you want to visit each spline in the iteration
@@ -3360,5 +3363,6 @@ extern void SPLFirstVisit( SplinePoint* splfirst, SPLFirstVisitor f, void* udata
  * you might want to also check the active layer first with cv->b.drawmode == dm_grid
  */
 extern bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp );
+
 
 #endif

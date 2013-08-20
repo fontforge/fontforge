@@ -1335,5 +1335,7 @@ extern int FontViewFind_byXUIDConnected( FontViewBase* fv, void* udata );
 extern int FontViewFind_byCollabPtr(  FontViewBase* fv, void* udata );
 extern int FontViewFind_bySplineFont( FontViewBase* fv, void* udata );
 
+extern bool SPIsNextCPSelected( SplinePoint *sp, CharView *cv );
+extern bool SPIsPrevCPSelected( SplinePoint *sp, CharView *cv );
 
 #endif	/* _VIEWS_H */
