@@ -1123,13 +1123,21 @@ exit( 0 );
     splash_italic = GDrawInstanciateFont(NULL,&rq);
     splash_italic = GResourceFindFont("Splash.ItalicFont",splash_italic);
     GDrawSetFont(splashw,splash_font);
-    GDrawWindowFontMetrics(splashw,splash_font,&as,&ds,&ld);
-    fh = as+ds+ld;
+
     SplashLayout();
     localsplash = splash;
 
-    if ( localsplash && !listen_to_apple_events )
+   if ( localsplash && !listen_to_apple_events )
 	start_splash_screen();
+    
+    //
+    // The below call will initialize the fontconfig cache if required.
+    // That can take a while the first time it happens.
+    //
+   printf("before GDrawWindowFontMetrics()\n");
+   GDrawWindowFontMetrics(splashw,splash_font,&as,&ds,&ld);
+   printf("after GDrawWindowFontMetrics()\n");
+   fh = as+ds+ld;
 
     if ( AutoSaveFrequency>0 )
 	autosave_timer=GDrawRequestTimer(splashw,2*AutoSaveFrequency*1000,AutoSaveFrequency*1000,NULL);

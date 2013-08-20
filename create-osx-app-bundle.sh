@@ -5,6 +5,7 @@ TEMPDIR=/tmp/fontforge-app-bundle
 rm -rf /tmp/fontforge-app-bundle
 mkdir $TEMPDIR
 
+scriptdir=$TEMPDIR/FontForge.app/Contents/MacOS
 bundle_res=$TEMPDIR/FontForge.app/Contents/Resources
 bundle_bin="$bundle_res/opt/local/bin"
 bundle_lib="$bundle_res/opt/local/lib"
@@ -61,6 +62,20 @@ dylibbundler --overwrite-dir --bundle-deps --fix-file \
 
 cp -av /usr/lib/libedit* $bundle_lib/
 cp -av /usr/lib/libedit* $bundle_bin/FontForgeInternal/collablib/
+
+############
+# Grab fc-cache so we can show the cache update before the actual
+# fontforge process is run
+#
+mkdir -p $scriptdir/fc
+cp /opt/local/bin/fc-cache $scriptdir/fc
+chmod +x $scriptdir/fc
+cd $scriptdir/fc
+dylibbundler --overwrite-dir --bundle-deps --fix-file \
+  $scriptdir/fc/fc-cache \
+  --install-path @executable_path/lib \
+  --dest-dir $scriptdir/fc/lib
+cd $bundle_bin
 
 #########
 # libedit.2 is on some older machines.
