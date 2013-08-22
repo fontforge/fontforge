@@ -1265,7 +1265,27 @@ return( false );
 	    CVDrawRubberRect(cv->v,cv);
     } else if ( cv->p.nextcp ) {
 	if ( !cv->recentchange ) CVPreserveState(&cv->b);
-	CVAdjustControl(cv,&cv->p.sp->nextcp,&cv->info);
+	printf("move cv->p.nextcp\n");
+	FE_adjustBCPByDeltaData d;
+	d.cv = cv;
+	d.dx = cv->info.x - cv->p.sp->nextcp.x;
+	d.dy = cv->info.y - cv->p.sp->nextcp.y;
+	d.dx = cv->info.x;
+	d.dx -= cv->p.sp->nextcp.x;
+	printf("move sp:%p ncp:%p \n",
+	       cv->p.sp, &(cv->p.sp->nextcp)  );
+	printf("move me.x:%f me.y:%f\n", cv->p.sp->me.x, cv->p.sp->me.y );
+	printf("move ncp.x:%f ncp.y:%f ix:%f iy:%f\n",
+	       cv->p.sp->nextcp.x, cv->p.sp->nextcp.y,
+	       cv->info.x, cv->info.y );
+	printf("move dx:%f dy:%f\n",  d.dx, d.dy );
+	printf("move dx:%f \n", cv->info.x - cv->p.sp->nextcp.x );
+	CVFindAndVisitSelectedControlPoints( cv, false,
+					     FE_adjustBCPByDelta, &d );
+	
+//	BasePoint *which = cv->p.nextcp ? &sp->nextcp : &sp->prevcp; */
+	
+//	CVAdjustControl(cv,&cv->p.sp->nextcp,&cv->info);
 	CPUpdateInfo(cv,event);
 	needsupdate = true;
     } else if ( cv->p.prevcp ) {

@@ -1335,7 +1335,33 @@ extern int FontViewFind_byXUIDConnected( FontViewBase* fv, void* udata );
 extern int FontViewFind_byCollabPtr(  FontViewBase* fv, void* udata );
 extern int FontViewFind_bySplineFont( FontViewBase* fv, void* udata );
 
+extern bool SPIsNextCPSelectedSingle( SplinePoint *sp, CharView *cv );
+extern bool SPIsPrevCPSelectedSingle( SplinePoint *sp, CharView *cv );
 extern bool SPIsNextCPSelected( SplinePoint *sp, CharView *cv );
 extern bool SPIsPrevCPSelected( SplinePoint *sp, CharView *cv );
+
+typedef struct FE_adjustBCPByDeltaDataS
+{
+    CharView *cv;
+    real dx;
+    real dy;
+    
+} FE_adjustBCPByDeltaData;
+
+typedef void (*visitSelectedControlPointsVisitor) ( void* key,
+						    void* value,
+						    SplinePoint* sp,
+						    BasePoint *which,
+						    bool isnext,
+						    void* udata );
+extern void FE_adjustBCPByDelta( void* key,
+				 void* value,
+				 SplinePoint* sp,
+				 BasePoint *which,
+				 bool isnext,
+				 void* udata );
+
+extern void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
+						 visitSelectedControlPointsVisitor f, void* udata );
 
 #endif	/* _VIEWS_H */
