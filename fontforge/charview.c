@@ -6588,6 +6588,17 @@ static GHashTable* getSelectedControlPoints( PressedOn *p )
     
 /* } */
 
+void FE_unselectBCP( void* key,
+		     void* value,
+		     SplinePoint* sp,
+		     BasePoint *which,
+		     bool isnext,
+		     void* udata )
+{
+    sp->nextcpselected = 0;
+    sp->prevcpselected = 0;
+}
+
 void FE_adjustBCPByDelta( void* key,
 			  void* value,
 			  SplinePoint* sp,

@@ -1360,8 +1360,16 @@ extern void FE_adjustBCPByDelta( void* key,
 				 BasePoint *which,
 				 bool isnext,
 				 void* udata );
+extern void FE_unselectBCP( void* key,
+			    void* value,
+			    SplinePoint* sp,
+			    BasePoint *which,
+			    bool isnext,
+			    void* udata );
 
 extern void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
 						 visitSelectedControlPointsVisitor f, void* udata );
+
+extern void CVUnselectAllBCP( CharView *cv );
 
 #endif	/* _VIEWS_H */

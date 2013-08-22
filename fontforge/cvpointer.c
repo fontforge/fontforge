@@ -536,6 +536,13 @@ return( true );
 return( false );
 }
 
+void CVUnselectAllBCP( CharView *cv )
+{
+    CVFindAndVisitSelectedControlPoints( cv, false,
+					 FE_unselectBCP, 0 );
+    
+}
+
 void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     int needsupdate = false;
     int dowidth, dovwidth, doic, dotah, nearcaret;
@@ -665,11 +672,15 @@ return;
 	}
     } else if ( event->u.mouse.clicks<=1 && !(event->u.mouse.state&ksm_shift)) {
 	printf("CVMouseDownPointer(2) not shifting\n");
+	printf("CVMouseDownPointer(2) cv->p.sp:%p\n", cv->p.sp );
 	printf("CVMouseDownPointer(2) n:%p p:%p sp:%p spline:%p ap:%p\n",
 	       fs->p->nextcp,fs->p->prevcp, fs->p->sp, fs->p->spline, fs->p->ap );
 	printf("CVMouseDownPointer(2) spl:%p\n", fs->p->spl );
 	SPLFirstVisit( fs->p->spl->first, SPLFirstVisitorDebugSelectionState, 0 );
-	
+	CVUnselectAllBCP( cv );
+	printf("CVMouseDownPointer(2.2) spl:%p\n", fs->p->spl );
+	SPLFirstVisit( fs->p->spl->first, SPLFirstVisitorDebugSelectionState, 0 );
+	    
 	if ( fs->p->nextcp || fs->p->prevcp ) {
 	    CPStartInfo(cv,event);
 	    /* Needs update to draw control points selected */
@@ -1265,13 +1276,12 @@ return( false );
 	    CVDrawRubberRect(cv->v,cv);
     } else if ( cv->p.nextcp ) {
 	if ( !cv->recentchange ) CVPreserveState(&cv->b);
+	
 	printf("move cv->p.nextcp\n");
 	FE_adjustBCPByDeltaData d;
 	d.cv = cv;
 	d.dx = cv->info.x - cv->p.sp->nextcp.x;
 	d.dy = cv->info.y - cv->p.sp->nextcp.y;
-	d.dx = cv->info.x;
-	d.dx -= cv->p.sp->nextcp.x;
 	printf("move sp:%p ncp:%p \n",
 	       cv->p.sp, &(cv->p.sp->nextcp)  );
 	printf("move me.x:%f me.y:%f\n", cv->p.sp->me.x, cv->p.sp->me.y );
@@ -1290,7 +1300,15 @@ return( false );
 	needsupdate = true;
     } else if ( cv->p.prevcp ) {
 	if ( !cv->recentchange ) CVPreserveState(&cv->b);
-	CVAdjustControl(cv,&cv->p.sp->prevcp,&cv->info);
+
+	FE_adjustBCPByDeltaData d;
+	d.cv = cv;
+	d.dx = cv->info.x - cv->p.sp->prevcp.x;
+	d.dy = cv->info.y - cv->p.sp->prevcp.y;
+	CVFindAndVisitSelectedControlPoints( cv, false,
+					     FE_adjustBCPByDelta, &d );
+	
+//	CVAdjustControl(cv,&cv->p.sp->prevcp,&cv->info);
 	CPUpdateInfo(cv,event);
 	needsupdate = true;
     } else if ( cv->p.spline!=NULL && (!cv->b.sc->inspiro || !hasspiro())) {
