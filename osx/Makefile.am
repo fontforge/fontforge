@@ -26,4 +26,5 @@
 
 include $(top_srcdir)/mk/layout.am
 SUBDIRS = FontForge.app
+EXTRA_DIST = create-osx-app-bundle.sh
 -include $(top_srcdir)/git.mk
