@@ -26,6 +26,13 @@
  */
 /*			   Python Interface to FontForge		      */
 
+#define GTimer GTimer_GTK
+#define GList  GList_Glib
+#include <glib.h>
+#include <glib-object.h>
+#undef GTimer
+#undef GList
+
 #include <fontforge-config.h>
 
 #ifndef _NO_PYTHON
@@ -50,10 +57,6 @@
 #include "collab/zmq_kvmsg.h"
 #endif
 #include "collabclientui.h"
-#define GTimer GTimer_GTK
-#include <glib.h>
-#include <glib-object.h>
-#undef GTimer
 
 /**
  * Use this to track if the script has joined a collab session.

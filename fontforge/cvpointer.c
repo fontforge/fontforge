@@ -108,31 +108,64 @@ int CVClearSel(CharView *cv) {
     AnchorPoint *ap;
 
     cv->lastselpt = NULL; cv->lastselcp = NULL;
-    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
-	if ( spl->first->selected ) { needsupdate = true; spl->first->selected = false; }
+    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next )
+    {
+	if ( spl->first->selected )
+	{
+	    needsupdate = true;
+	    spl->first->selected = false;
+	    spl->first->nextcpselected = false;
+	    spl->first->prevcpselected = false;
+	}
 	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next )
+	{
 	    if ( spline->to->selected )
-		{ needsupdate = true; spline->to->selected = false; }
-	    if ( first==NULL ) first = spline;
+	    {
+		needsupdate = true;
+		spline->to->selected = false;
+		spline->to->nextcpselected = false;
+		spline->to->prevcpselected = false;
+	    }
+	    if ( first==NULL )
+		first = spline;
 	}
 	for ( i=0 ; i<spl->spiro_cnt-1; ++i )
 	    if ( SPIRO_SELECTED(&spl->spiros[i]))
-		{ needsupdate = true; SPIRO_DESELECT(&spl->spiros[i]); }
+	    {
+		needsupdate = true;
+		SPIRO_DESELECT(&spl->spiros[i]);
+	    }
     }
     for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL; rf = rf->next )
-	if ( rf->selected ) { needsupdate = true; rf->selected = false; }
+	if ( rf->selected )
+	{
+	    needsupdate = true;
+	    rf->selected = false;
+	}
     if ( cv->b.drawmode == dm_fore )
 	for ( ap=cv->b.sc->anchor; ap!=NULL; ap = ap->next )
-	    if ( ap->selected ) { if ( cv->showanchor ) needsupdate = true; ap->selected = false; }
+	    if ( ap->selected )
+	    {
+		if ( cv->showanchor )
+		    needsupdate = true;
+		ap->selected = false;
+	    }
     for ( img=cv->b.layerheads[cv->b.drawmode]->images; img!=NULL; img = img->next )
-	if ( img->selected ) { needsupdate = true; img->selected = false; }
+	if ( img->selected )
+	{
+	    needsupdate = true;
+	    img->selected = false;
+	}
     if ( cv->p.nextcp || cv->p.prevcp || cv->widthsel || cv->vwidthsel ||
 	    cv->icsel || cv->tah_sel )
+    {
 	needsupdate = true;
+    }
     cv->p.nextcp = cv->p.prevcp = false;
     cv->widthsel = cv->vwidthsel = cv->icsel = cv->tah_sel = false;
-return( needsupdate );
+    
+    return( needsupdate );
 }
 
 int CVSetSel(CharView *cv,int mask) {
@@ -503,6 +536,18 @@ return( true );
 return( false );
 }
 
+void CVUnselectAllBCP( CharView *cv )
+{
+    CVFindAndVisitSelectedControlPoints( cv, false,
+					 FE_unselectBCP, 0 );
+
+    // This should happen, but it effects the single selection with mouse
+    // codepaths in bad ways as at 2013.Aug
+    /* cv->p.nextcp = 0; */
+    /* cv->p.prevcp = 0; */
+    
+}
+
 void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     int needsupdate = false;
     int dowidth, dovwidth, doic, dotah, nearcaret;
@@ -544,8 +589,10 @@ return;
 	    (!doic || !cv->icsel) &&
 	    (!dotah || !cv->tah_sel) &&
 	    !(event->u.mouse.state&ksm_shift))
+    {
 	needsupdate = CVClearSel(cv);
-
+    }
+    
     if ( !fs->p->anysel ) {
 	/* Nothing else... unless they clicked on the width line, check that */
 	if ( dowidth ) {
@@ -626,6 +673,14 @@ return;
 		CVPreserveState(&cv->b);
 	}
     } else if ( event->u.mouse.clicks<=1 && !(event->u.mouse.state&ksm_shift)) {
+	/* printf("CVMouseDownPointer(2) not shifting\n"); */
+	/* printf("CVMouseDownPointer(2) cv->p.sp:%p\n", cv->p.sp ); */
+	/* printf("CVMouseDownPointer(2) n:%p p:%p sp:%p spline:%p ap:%p\n", */
+	/*        fs->p->nextcp,fs->p->prevcp, fs->p->sp, fs->p->spline, fs->p->ap ); */
+	/* printf("CVMouseDownPointer(2) spl:%p\n", fs->p->spl ); */
+	/* SPLFirstVisit( fs->p->spl->first, SPLFirstVisitorDebugSelectionState, 0 ); */
+	CVUnselectAllBCP( cv );
+	    
 	if ( fs->p->nextcp || fs->p->prevcp ) {
 	    CPStartInfo(cv,event);
 	    /* Needs update to draw control points selected */
@@ -652,13 +707,18 @@ return;
 	    fs->p->ap->selected = true;
 	}
     } else if ( event->u.mouse.clicks<=1 ) {
+	/* printf("CVMouseDownPointer(3) with shift... n:%p p:%p sp:%p spline:%p ap:%p\n", */
+	/*        fs->p->nextcp,fs->p->prevcp, fs->p->sp, fs->p->spline, fs->p->ap ); */
+	/* printf("CVMouseDownPointer(3) spl:%p\n", fs->p->spl ); */
+	/* SPLFirstVisit( fs->p->spl->first, SPLFirstVisitorDebugSelectionState, 0 ); */
+
 	if ( fs->p->nextcp || fs->p->prevcp ) {
 	    /* Needs update to draw control points selected */
 	    needsupdate = true;
 	} else if ( fs->p->sp!=NULL ) {
 	    needsupdate = true;
 	    fs->p->sp->selected = !fs->p->sp->selected;
-	    
+	    printf("CVMouseDownPointer(3.1)\n");
 	} else if ( fs->p->spiro!=NULL ) {
 	    needsupdate = true;
 	    fs->p->spiro->ty ^= 0x80;
@@ -1173,6 +1233,7 @@ return( true );
 }
 
 int CVMouseMovePointer(CharView *cv, GEvent *event) {
+    extern float arrowAmount;
     int needsupdate = false;
     int did_a_merge = false;
 
@@ -1216,12 +1277,35 @@ return( false );
 	    CVDrawRubberRect(cv->v,cv);
     } else if ( cv->p.nextcp ) {
 	if ( !cv->recentchange ) CVPreserveState(&cv->b);
-	CVAdjustControl(cv,&cv->p.sp->nextcp,&cv->info);
+	
+//	printf("move cv->p.nextcp\n");
+	FE_adjustBCPByDeltaData d;
+	d.cv = cv;
+	d.dx = (cv->info.x - cv->p.sp->nextcp.x) * arrowAmount;
+	d.dy = (cv->info.y - cv->p.sp->nextcp.y) * arrowAmount;
+	/* printf("move sp:%p ncp:%p \n", */
+	/*        cv->p.sp, &(cv->p.sp->nextcp)  ); */
+	/* printf("move me.x:%f me.y:%f\n", cv->p.sp->me.x, cv->p.sp->me.y ); */
+	/* printf("move ncp.x:%f ncp.y:%f ix:%f iy:%f\n", */
+	/*        cv->p.sp->nextcp.x, cv->p.sp->nextcp.y, */
+	/*        cv->info.x, cv->info.y ); */
+	/* printf("move dx:%f dy:%f\n",  d.dx, d.dy ); */
+	/* printf("move dx:%f \n", cv->info.x - cv->p.sp->nextcp.x ); */
+	CVFindAndVisitSelectedControlPoints( cv, false,
+					     FE_adjustBCPByDelta, &d );
+	
 	CPUpdateInfo(cv,event);
 	needsupdate = true;
     } else if ( cv->p.prevcp ) {
 	if ( !cv->recentchange ) CVPreserveState(&cv->b);
-	CVAdjustControl(cv,&cv->p.sp->prevcp,&cv->info);
+
+	FE_adjustBCPByDeltaData d;
+	d.cv = cv;
+	d.dx = (cv->info.x - cv->p.sp->prevcp.x) * arrowAmount;
+	d.dy = (cv->info.y - cv->p.sp->prevcp.y) * arrowAmount;
+	CVFindAndVisitSelectedControlPoints( cv, false,
+					     FE_adjustBCPByDelta, &d );
+	
 	CPUpdateInfo(cv,event);
 	needsupdate = true;
     } else if ( cv->p.spline!=NULL && (!cv->b.sc->inspiro || !hasspiro())) {
