@@ -540,6 +540,11 @@ void CVUnselectAllBCP( CharView *cv )
 {
     CVFindAndVisitSelectedControlPoints( cv, false,
 					 FE_unselectBCP, 0 );
+
+    // This should happen, but it effects the single selection with mouse
+    // codepaths in bad ways as at 2013.Aug
+    /* cv->p.nextcp = 0; */
+    /* cv->p.prevcp = 0; */
     
 }
 
@@ -549,7 +554,6 @@ void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     RefChar *usemymetrics = HasUseMyMetrics(cv->b.sc,CVLayer((CharViewBase *) cv));
     int i;
 
-    printf("CVMouseDownPointer(top)\n");
     if ( cv->pressed==NULL )
 	cv->pressed = GDrawRequestTimer(cv->v,200,100,NULL);
     cv->last_c.x = cv->info.x; cv->last_c.y = cv->info.y;
@@ -586,12 +590,10 @@ return;
 	    (!dotah || !cv->tah_sel) &&
 	    !(event->u.mouse.state&ksm_shift))
     {
-	printf("CVMouseDownPointer(clearing)\n");
 	needsupdate = CVClearSel(cv);
     }
     
     if ( !fs->p->anysel ) {
-	printf("CVMouseDownPointer(nothing selected...)\n");
 	/* Nothing else... unless they clicked on the width line, check that */
 	if ( dowidth ) {
 	    if ( event->u.mouse.state&ksm_shift )
@@ -671,15 +673,13 @@ return;
 		CVPreserveState(&cv->b);
 	}
     } else if ( event->u.mouse.clicks<=1 && !(event->u.mouse.state&ksm_shift)) {
-	printf("CVMouseDownPointer(2) not shifting\n");
-	printf("CVMouseDownPointer(2) cv->p.sp:%p\n", cv->p.sp );
-	printf("CVMouseDownPointer(2) n:%p p:%p sp:%p spline:%p ap:%p\n",
-	       fs->p->nextcp,fs->p->prevcp, fs->p->sp, fs->p->spline, fs->p->ap );
-	printf("CVMouseDownPointer(2) spl:%p\n", fs->p->spl );
-	SPLFirstVisit( fs->p->spl->first, SPLFirstVisitorDebugSelectionState, 0 );
+	/* printf("CVMouseDownPointer(2) not shifting\n"); */
+	/* printf("CVMouseDownPointer(2) cv->p.sp:%p\n", cv->p.sp ); */
+	/* printf("CVMouseDownPointer(2) n:%p p:%p sp:%p spline:%p ap:%p\n", */
+	/*        fs->p->nextcp,fs->p->prevcp, fs->p->sp, fs->p->spline, fs->p->ap ); */
+	/* printf("CVMouseDownPointer(2) spl:%p\n", fs->p->spl ); */
+	/* SPLFirstVisit( fs->p->spl->first, SPLFirstVisitorDebugSelectionState, 0 ); */
 	CVUnselectAllBCP( cv );
-	printf("CVMouseDownPointer(2.2) spl:%p\n", fs->p->spl );
-	SPLFirstVisit( fs->p->spl->first, SPLFirstVisitorDebugSelectionState, 0 );
 	    
 	if ( fs->p->nextcp || fs->p->prevcp ) {
 	    CPStartInfo(cv,event);
@@ -707,10 +707,10 @@ return;
 	    fs->p->ap->selected = true;
 	}
     } else if ( event->u.mouse.clicks<=1 ) {
-	printf("CVMouseDownPointer(3) with shift... n:%p p:%p sp:%p spline:%p ap:%p\n",
-	       fs->p->nextcp,fs->p->prevcp, fs->p->sp, fs->p->spline, fs->p->ap );
-	printf("CVMouseDownPointer(3) spl:%p\n", fs->p->spl );
-	SPLFirstVisit( fs->p->spl->first, SPLFirstVisitorDebugSelectionState, 0 );
+	/* printf("CVMouseDownPointer(3) with shift... n:%p p:%p sp:%p spline:%p ap:%p\n", */
+	/*        fs->p->nextcp,fs->p->prevcp, fs->p->sp, fs->p->spline, fs->p->ap ); */
+	/* printf("CVMouseDownPointer(3) spl:%p\n", fs->p->spl ); */
+	/* SPLFirstVisit( fs->p->spl->first, SPLFirstVisitorDebugSelectionState, 0 ); */
 
 	if ( fs->p->nextcp || fs->p->prevcp ) {
 	    /* Needs update to draw control points selected */
@@ -1233,6 +1233,7 @@ return( true );
 }
 
 int CVMouseMovePointer(CharView *cv, GEvent *event) {
+    extern float arrowAmount;
     int needsupdate = false;
     int did_a_merge = false;
 
@@ -1277,25 +1278,22 @@ return( false );
     } else if ( cv->p.nextcp ) {
 	if ( !cv->recentchange ) CVPreserveState(&cv->b);
 	
-	printf("move cv->p.nextcp\n");
+//	printf("move cv->p.nextcp\n");
 	FE_adjustBCPByDeltaData d;
 	d.cv = cv;
-	d.dx = cv->info.x - cv->p.sp->nextcp.x;
-	d.dy = cv->info.y - cv->p.sp->nextcp.y;
-	printf("move sp:%p ncp:%p \n",
-	       cv->p.sp, &(cv->p.sp->nextcp)  );
-	printf("move me.x:%f me.y:%f\n", cv->p.sp->me.x, cv->p.sp->me.y );
-	printf("move ncp.x:%f ncp.y:%f ix:%f iy:%f\n",
-	       cv->p.sp->nextcp.x, cv->p.sp->nextcp.y,
-	       cv->info.x, cv->info.y );
-	printf("move dx:%f dy:%f\n",  d.dx, d.dy );
-	printf("move dx:%f \n", cv->info.x - cv->p.sp->nextcp.x );
+	d.dx = (cv->info.x - cv->p.sp->nextcp.x) * arrowAmount;
+	d.dy = (cv->info.y - cv->p.sp->nextcp.y) * arrowAmount;
+	/* printf("move sp:%p ncp:%p \n", */
+	/*        cv->p.sp, &(cv->p.sp->nextcp)  ); */
+	/* printf("move me.x:%f me.y:%f\n", cv->p.sp->me.x, cv->p.sp->me.y ); */
+	/* printf("move ncp.x:%f ncp.y:%f ix:%f iy:%f\n", */
+	/*        cv->p.sp->nextcp.x, cv->p.sp->nextcp.y, */
+	/*        cv->info.x, cv->info.y ); */
+	/* printf("move dx:%f dy:%f\n",  d.dx, d.dy ); */
+	/* printf("move dx:%f \n", cv->info.x - cv->p.sp->nextcp.x ); */
 	CVFindAndVisitSelectedControlPoints( cv, false,
 					     FE_adjustBCPByDelta, &d );
 	
-//	BasePoint *which = cv->p.nextcp ? &sp->nextcp : &sp->prevcp; */
-	
-//	CVAdjustControl(cv,&cv->p.sp->nextcp,&cv->info);
 	CPUpdateInfo(cv,event);
 	needsupdate = true;
     } else if ( cv->p.prevcp ) {
@@ -1303,12 +1301,11 @@ return( false );
 
 	FE_adjustBCPByDeltaData d;
 	d.cv = cv;
-	d.dx = cv->info.x - cv->p.sp->prevcp.x;
-	d.dy = cv->info.y - cv->p.sp->prevcp.y;
+	d.dx = (cv->info.x - cv->p.sp->prevcp.x) * arrowAmount;
+	d.dy = (cv->info.y - cv->p.sp->prevcp.y) * arrowAmount;
 	CVFindAndVisitSelectedControlPoints( cv, false,
 					     FE_adjustBCPByDelta, &d );
 	
-//	CVAdjustControl(cv,&cv->p.sp->prevcp,&cv->info);
 	CPUpdateInfo(cv,event);
 	needsupdate = true;
     } else if ( cv->p.spline!=NULL && (!cv->b.sc->inspiro || !hasspiro())) {

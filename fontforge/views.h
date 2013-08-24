@@ -27,10 +27,15 @@
 #ifndef _VIEWS_H
 #define _VIEWS_H
 
+#define GTimer GTimer_GTK
+#include <glib.h>
+#undef GTimer
+
 #include "baseviews.h"
 
 #include <ggadget.h>
 #include "dlist.h"
+
 
 struct gfi_data;
 struct contextchaindlg;
@@ -1335,31 +1340,77 @@ extern int FontViewFind_byXUIDConnected( FontViewBase* fv, void* udata );
 extern int FontViewFind_byCollabPtr(  FontViewBase* fv, void* udata );
 extern int FontViewFind_bySplineFont( FontViewBase* fv, void* udata );
 
+/**
+ * Is the next BCP for the sp selected, and is it the primary BCP for the selection
+ * @see SPIsNextCPSelected
+ */
 extern bool SPIsNextCPSelectedSingle( SplinePoint *sp, CharView *cv );
+/**
+ * Is the prev BCP for the sp selected, and is it the primary BCP for the selection
+ * @see SPIsNextCPSelected
+ */
 extern bool SPIsPrevCPSelectedSingle( SplinePoint *sp, CharView *cv );
+/**
+ * Is the next BCP for the sp selected, it can be the primary or any
+ * of the secondary selected BCP
+ *
+ * The last selected BCP is the 'primary' selected BCP. Code which
+ * only handles a single selected BCP will only honor the primary
+ * selected BCP
+ *
+ * There can also be one or more seconday selected BCP. These might be
+ * drawn with slightly less highlight graphically and are only handled
+ * by code which has been updated to allow mutliple selected BCP to be
+ * operated on at once.
+ */
 extern bool SPIsNextCPSelected( SplinePoint *sp, CharView *cv );
+/**
+ * Is the prev BCP for the sp selected, it can be the primary or any of the secondary selected BCP
+ *
+ * @see SPIsNextCPSelected
+ */
 extern bool SPIsPrevCPSelected( SplinePoint *sp, CharView *cv );
 
 typedef struct FE_adjustBCPByDeltaDataS
 {
-    CharView *cv;
-    real dx;
-    real dy;
+    CharView *cv; //< used to update view
+    real dx;      //< Add this to the BCP x
+    real dy;      //< Add this to the BCP y
     
 } FE_adjustBCPByDeltaData;
 
+/**
+ * Visitor function type for visitSelectedControlPoints()
+ */
 typedef void (*visitSelectedControlPointsVisitor) ( void* key,
 						    void* value,
 						    SplinePoint* sp,
 						    BasePoint *which,
 						    bool isnext,
 						    void* udata );
+
+/**
+ * Visitor function to move each BCP by data->dx/data->dy
+ * 
+ *
+ * Visitor: visitSelectedControlPointsVisitor
+ * UsedBy:  CVFindAndVisitSelectedControlPoints
+ */
 extern void FE_adjustBCPByDelta( void* key,
 				 void* value,
 				 SplinePoint* sp,
 				 BasePoint *which,
 				 bool isnext,
 				 void* udata );
+/**
+ * Visitor function to unselect every BCP passed
+ * 
+ * Visitor: visitSelectedControlPointsVisitor
+ * UsedBy:  CVFindAndVisitSelectedControlPoints
+ *          CVUnselectAllBCP
+ *
+ * @see SPIsNextCPSelected
+ */
 extern void FE_unselectBCP( void* key,
 			    void* value,
 			    SplinePoint* sp,
@@ -1367,9 +1418,35 @@ extern void FE_unselectBCP( void* key,
 			    bool isnext,
 			    void* udata );
 
+/**
+ * Find all the selected BCP and apply the visitor function f to them
+ * passing the user data pointer udata to the 'f' visitor.
+ *
+ * This function doesn't use udata at all, it simply passes it on to
+ * your visitor function so it may do something with it like record
+ * results or take optional parameters.
+ *
+ * If preserveState is true and there are selected BCP then
+ * CVPreserveState() is called before the visitor function.
+ */
 extern void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
 						 visitSelectedControlPointsVisitor f, void* udata );
 
+/**
+ * Unselect all the BCP which are currently selected.
+ */
 extern void CVUnselectAllBCP( CharView *cv );
+
+
+/**
+ * This will call your visitor function 'f' on any selected BCP. This
+ * is regardless of if the BCP is the next or prev BCP for it's
+ * splinepoint.
+ * 
+ * This function doesn't use udata at all, it simply passes it on to
+ * your visitor function so it may do something with it like record
+ * results or take optional parameters.
+ */
+extern void visitSelectedControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata );
 
 #endif	/* _VIEWS_H */

@@ -52,7 +52,6 @@ extern int _GScrollBar_Width;
 
 #include "gdraw/hotkeys.h"
 
-
 /* Barry wants to be able to redefine menu bindings only in the charview (I think) */
 /*  the menu parser will first check for something like "CV*Open|Ctl+O", and */
 /*  if that fails will strip off "CV*" and check for "Open|Ctl+O" */
@@ -357,7 +356,6 @@ void CVDrawRubberRect(GWindow pixmap, CharView *cv) {
     GRect r;
     if ( !cv->p.rubberbanding )
 return;
-    printf("CVDrawRubberRect(top)\n");
     r.x =  cv->xoff + rint(cv->p.cx*cv->scale);
     r.y = -cv->yoff + cv->height - rint(cv->p.cy*cv->scale);
     r.width = rint( (cv->p.ex-cv->p.cx)*cv->scale );
@@ -758,6 +756,13 @@ return;
 	    }
 	    subcol = nextcpcol;
 
+	    //
+	    // If the next BCP is selected we should decorate the
+	    // drawing to let the user know that. The primary (last)
+	    // selected BCP is drawn with a backing rectangle of size
+	    // 3, the secondary BCP (2nd, 3rd, 4th last selected BCP)
+	    // are drawn with slightly smaller highlights.
+	    //
 	    if( !onlynumber && SPIsNextCPSelected( sp, cv ))
 	    {
 		float sz = 2;
@@ -3216,7 +3221,6 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
 	blayer = ly_back;
     cv->b.layerheads[dm_back] = &sc->layers[blayer];
     cv->b.layerheads[dm_grid] = &sc->parent->grid;
-    printf("******************************** CVChangeSC()\n");
     cv->p.sp = cv->lastselpt = NULL;
     cv->p.spiro = cv->lastselcp = NULL;
     cv->apmine = cv->apmatch = NULL; cv->apsc = NULL;
@@ -3693,7 +3697,6 @@ return( true );
 		seln = false;
 	}
 	if ( seln ) {
-	    printf("seln!\n");
 	    fs->p->sp = sp;
 	    fs->p->spline = NULL;
 	    fs->p->spl = spl;
@@ -4308,7 +4311,6 @@ void SCClearSelPt(SplineChar *sc) {
     CharView *cv;
 
     for ( cv=(CharView *) (sc->views); cv!=NULL; cv=(CharView *) (cv->b.next) ) {
-	printf("******************************** XXXX2()\n");
 	cv->lastselpt = cv->p.sp = NULL;
 	cv->p.spiro = cv->lastselcp = NULL;
     }
@@ -4401,7 +4403,6 @@ static void _CV_CharChangedUpdate(CharView *cv,int changed) {
 	FVRedrawAllCharViewsSF(cv->b.sc->parent);
     }
     cv->recentchange = false;
-printf("******************************** XXXX3()\n");
     cv->p.sp = NULL;		/* Might have been deleted */
 }
 
@@ -6540,17 +6541,24 @@ static void CVMenuChangeChar(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)
     _CVMenuChangeChar(cv,mi->mid);
 }
 
-
+/**
+ * If the prev/next BCP is selected than add those to the hash table
+ * at "ret".
+ */
 static void getSelectedControlPointsVisitor(SplinePoint* splfirst, Spline* spline, void* udata )
 {
     GHashTable* ret = (GHashTable*)udata;
-    printf("getSelectedControlPointsVisitor()\n");
     if( spline->to->nextcpselected )
 	g_hash_table_insert( ret, spline->to, 0 );
     if( spline->to->prevcpselected )
 	g_hash_table_insert( ret, spline->to, 0 );
 }
 
+/**
+ * Get a hash table with all the selected BCP in it.
+ * 
+ * The caller must call g_hash_table_destroy() on the return value.
+ */
 static GHashTable* getSelectedControlPoints( PressedOn *p )
 {
     GHashTable* ret = g_hash_table_new( g_direct_hash, g_direct_equal );
@@ -6558,35 +6566,6 @@ static GHashTable* getSelectedControlPoints( PressedOn *p )
     return ret;
 }
 
-
-
-
-/* static void FE_adjustBCPByDelta( gpointer key, */
-/* 				 gpointer value, */
-/* 				 gpointer udata ) */
-/* { */
-/*     extern float arrowAmount; */
-/*     FE_adjustBCPByDeltaData* data = (FE_adjustBCPByDeltaData*)udata; */
-
-/*     SplinePoint* sp = (SplinePoint*)key; */
-/*     if( sp->nextcpselected ) */
-/*     { */
-/* 	BasePoint *which = &sp->nextcp; */
-/* 	BasePoint to; */
-/* 	to.x = which->x + data->dx * arrowAmount; */
-/* 	to.y = which->y + data->dy * arrowAmount; */
-/* 	CVAdjustControl( data->cv, which, &to ); */
-/*     } */
-/*     if( sp->prevcpselected ) */
-/*     { */
-/* 	BasePoint *which = &sp->prevcp; */
-/* 	BasePoint to; */
-/* 	to.x = which->x + data->dx * arrowAmount; */
-/* 	to.y = which->y + data->dy * arrowAmount; */
-/* 	CVAdjustControl( data->cv, which, &to ); */
-/*     } */
-    
-/* } */
 
 void FE_unselectBCP( void* key,
 		     void* value,
@@ -6606,28 +6585,36 @@ void FE_adjustBCPByDelta( void* key,
 			  bool isnext,
 			  void* udata )
 {
-    printf("FE_adjustBCPByDelta %p %d\n", which, isnext );
-    extern float arrowAmount;
     FE_adjustBCPByDeltaData* data = (FE_adjustBCPByDeltaData*)udata;
-    BasePoint to;
-    to.x = which->x + data->dx * arrowAmount;
-    to.y = which->y + data->dy * arrowAmount;
-//    CVAdjustControl( data->cv, which, &to );
-
     CharView *cv = data->cv;
+
+//    printf("FE_adjustBCPByDelta %p %d\n", which, isnext );
+    BasePoint to;
+    to.x = which->x + data->dx;
+    to.y = which->y + data->dy;
     SPAdjustControl(sp,which,&to,cv->b.layerheads[cv->b.drawmode]->order2);
     CVSetCharChanged(cv,true);
 }
 
-
+/**
+ * Container for arguments to FE_visitSelectedControlPoints.
+ */
 typedef struct visitSelectedControlPoints_CallbackDataS 
 {
-    int count;
+    int count;                              // number of times visitor is called.
     int sel;
-    visitSelectedControlPointsVisitor func;
-    gpointer udata;
+    visitSelectedControlPointsVisitor func; // Visitor function to delegate to
+    gpointer udata;                         // user data to use when calling above func()
    
 } visitSelectedControlPoints_CallbackData;
+
+/**
+ * Visitor function: calls a delegate visitor function for any prev
+ * and next BCP which are selected for each spline point. This is a
+ * handy visitor when your BCP handling code for the most part doesn't
+ * care if it will operate on the next or prev BCP, ie your visitor
+ * simply wants to visit all the selected BCP.
+ */
 static void FE_visitSelectedControlPoints( gpointer key,
 					   gpointer value,
 					   gpointer udata )
@@ -6635,13 +6622,7 @@ static void FE_visitSelectedControlPoints( gpointer key,
     visitSelectedControlPoints_CallbackData* d = (visitSelectedControlPoints_CallbackData*)udata;
     SplinePoint* sp = (SplinePoint*)key;
 
-
     d->count++;
-//    printf("FE_visitSelectedControlPoints(top) count:%d sel:%d\n", d->count, d->sel );
-//    if( d->count != d->sel )
-//	return;
-//    printf("FE_visitSelectedControlPoints(2) count:%d sel:%d\n", d->count, d->sel );
-    
     if( sp->nextcpselected )
     {
 	BasePoint *which = &sp->nextcp;
@@ -6654,11 +6635,8 @@ static void FE_visitSelectedControlPoints( gpointer key,
     }
 }
 
-extern void visitSelectedControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata );
-
 void visitSelectedControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata )
 {
-    printf("visitSelectedControlPoints(top)\n" );
     visitSelectedControlPoints_CallbackData d;
     d.func = f;
     d.udata = udata;
@@ -6669,7 +6647,7 @@ void visitSelectedControlPoints( GHashTable *col, visitSelectedControlPointsVisi
 void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
 					  visitSelectedControlPointsVisitor f, void* udata )
 {
-    printf("CVFindAndVisitSelectedControlPoints(top) cv->p.sp:%p\n", cv->p.sp );
+//    printf("CVFindAndVisitSelectedControlPoints(top) cv->p.sp:%p\n", cv->p.sp );
     GHashTable* col = getSelectedControlPoints( &cv->p );
     SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
     if( g_hash_table_size( col ) )
@@ -6816,59 +6794,30 @@ return;
 	}
 	else
 	{
-	    printf("CVChar()...\n");
 	    if ( event->u.chr.state & ksm_meta ) {
 		dx *= arrowAccelFactor; dy *= arrowAccelFactor;
 	    }
 	    if ( event->u.chr.state & (ksm_shift) )
 		dx -= dy*tan((cv->b.sc->parent->italicangle)*(3.1415926535897932/180) );
-	    if (( cv->p.sp!=NULL || cv->lastselpt!=NULL ) &&
+	    
+	    if ((  cv->p.sp!=NULL || cv->lastselpt!=NULL ) &&
 		    (cv->p.nextcp || cv->p.prevcp) )
 	    {
-		printf("FIXME: this code moves control points!...\n");
+		// This code moves 1 or more BCP
 
 		SplinePoint *old = cv->p.sp;
 		FE_adjustBCPByDeltaData d;
 		d.cv = cv;
-		d.dx = dx;
-		d.dy = dy;
+		d.dx = dx * arrowAmount;
+		d.dy = dy * arrowAmount;
 		CVFindAndVisitSelectedControlPoints( cv, true,
 						     FE_adjustBCPByDelta, &d );
 		cv->p.sp = old;
 		SCUpdateAll(cv->b.sc);
 		
-/* 		GHashTable* col = getSelectedControlPoints( &cv->p ); */
-/* 		printf("selected BCP:%d\n", g_hash_table_size( col )); */
-/* 		SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt; */
-/* 		SplinePoint *old = cv->p.sp; */
-/* 		if( g_hash_table_size( col ) ) */
-/* 		{ */
-/* 		    CVPreserveState(&cv->b); */
-/* 		    FE_adjustBCPByDeltaData d; */
-/* 		    d.cv = cv; */
-/* 		    d.dx = dx; */
-/* 		    d.dy = dy; */
-/* //		    visitSelectedControlPoints( col, FE_adjustBCPByDelta, &d ); */
-/* 		    g_hash_table_foreach( col, FE_adjustBCPByDelta, &d ); */
-/* 		} */
-/* 		g_hash_table_destroy(col); */
-/* 		cv->p.sp = old; */
-/* 		SCUpdateAll(cv->b.sc); */
-		
-
-		
-		/* SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt; */
-		/* SplinePoint *old = cv->p.sp; */
-		/* BasePoint *which = cv->p.nextcp ? &sp->nextcp : &sp->prevcp; */
-		/* BasePoint to; */
-		/* to.x = which->x + dx*arrowAmount; */
-		/* to.y = which->y + dy*arrowAmount; */
-		/* cv->p.sp = sp; */
-		/* CVPreserveState(&cv->b); */
-		/* CVAdjustControl(cv,which,&to); */
-		/* cv->p.sp = old; */
-		/* SCUpdateAll(cv->b.sc); */
-	    } else if ( CVAnySel(cv,NULL,NULL,NULL,&anya) || cv->widthsel || cv->vwidthsel ) {
+	    }
+	    else if ( CVAnySel(cv,NULL,NULL,NULL,&anya) || cv->widthsel || cv->vwidthsel )
+	    {
 		CVPreserveState(&cv->b);
 		CVMoveSelection(cv,dx*arrowAmount,dy*arrowAmount, event->u.chr.state);
 		if ( cv->widthsel )
@@ -7109,7 +7058,6 @@ return;
 	selpt->selected = false;
     if ( other!=NULL )
 	other->selected = true;
-    printf("******************************** CVNextPrevPt()\n");
     cv->p.sp = NULL;
     cv->lastselpt = other;
     cv->p.spiro = cv->lastselcp = NULL;
@@ -7359,7 +7307,6 @@ static void CVDoClear(CharView *cv) {
     if ( anyimages )
 	SCOutOfDateBackground(cv->b.sc);
     if ( cv->lastselpt!=NULL || cv->p.sp!=NULL || cv->p.spiro!=NULL || cv->lastselcp!=NULL ) {
-	printf("******************************** XXXX1()\n");
 	cv->lastselpt = NULL; cv->p.sp = NULL;
 	cv->p.spiro = cv->lastselcp = NULL;
 	CVInfoDraw(cv,cv->gw);
