@@ -2015,6 +2015,20 @@ void SPLFirstVisitorDebug(SplinePoint* splfirst, Spline* spline, void* udata )
     printf("   splfirst:%p spline:%p udata:%p\n", splfirst, spline, udata );
 }
 
+void SPLFirstVisitorDebugSelectionState(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    printf("   splfirst:%p spline:%p udata:%p", splfirst, spline, udata );
+    printf("   from.selected:%d n:%d p:%d to.selected:%d n:%d p:%d\n",
+	   ( spline->from ? spline->from->selected       : -1 ),
+	   ( spline->from ? spline->from->nextcpselected : -1 ),
+	   ( spline->from ? spline->from->prevcpselected : -1 ),
+	   ( spline->to   ? spline->to->selected         : -1 ),
+	   ( spline->to   ? spline->to->nextcpselected   : -1 ),
+	   ( spline->to   ? spline->to->prevcpselected   : -1 )
+	);
+}
+
+
 
 void SPLFirstVisit( SplinePoint* splfirst, SPLFirstVisitor f, void* udata )
 {
@@ -2081,4 +2095,5 @@ int SplinePointListContainsPoint( SplinePointList* container, SplinePoint* sough
     }
     return 0;
 }
+
 

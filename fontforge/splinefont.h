@@ -1041,6 +1041,8 @@ typedef struct splinepoint {
     unsigned int nextcpdef:1;
     unsigned int prevcpdef:1;
     unsigned int selected:1;	/* for UI */
+    unsigned int nextcpselected: 2; /* Is the next BCP selected */
+    unsigned int prevcpselected: 2; /* Is the prev BCP selected */
     unsigned int pointtype:2;
     unsigned int isintersection: 1;
     unsigned int flexy: 1;	/* When "freetype_markup" is on in charview.c:DrawPoint */
@@ -3317,17 +3319,35 @@ extern int SplinePointListContains( SplinePointList* container, SplinePointList*
  */
 extern int SplinePointListContainsPoint( SplinePointList* container, SplinePoint* sp );
 
+/**
+ * Visitor for SPLFirstVisit() 
+ */
 typedef void (*SPLFirstVisitor)( SplinePoint* splfirst, Spline* s, void* udata );
+
+/**
+ * Visitor Function: print debug information about each spline
+ * 
+ * Visitor for SPLFirstVisit() 
+ */
 extern void SPLFirstVisitorDebug(SplinePoint* splfirst, Spline* spline, void* udata );
 
 /**
- * Given a SplinePointList* that you want to visit each spline in the iteration
- * is not as simple as it could be, so you can call this function passing
- * spl->first as 'splfirst' and a visitor function which will see each spline
- * in the splfirst colleciton.
+ * Visitor Function: print debug information about the current
+ * selection state including the secondary BCP selection for each
+ * spline
+ * 
+ * Visitor for SPLFirstVisit() 
+ */
+extern void SPLFirstVisitorDebugSelectionState(SplinePoint* splfirst, Spline* spline, void* udata );
+
+/**
+ * Given a SplinePointList* that you want to visit each spline in the
+ * iteration is not as simple as it could be, so you can call this
+ * function passing spl->first as 'splfirst' and a visitor function
+ * which will see each spline in the splfirst colleciton.
  *
- * For debug, you can pass  SPLFirstVisitorDebug which will print information for each
- * item in the splfirst collection.
+ * For debug, you can pass SPLFirstVisitorDebug which will print
+ * information for each item in the splfirst collection.
  * 
  * You can pass any arbitrary data in as udata and SPLFirstVisit()
  * will pass that udata to your visitor function without change. If
@@ -3360,5 +3380,6 @@ extern void SPLFirstVisit( SplinePoint* splfirst, SPLFirstVisitor f, void* udata
  * you might want to also check the active layer first with cv->b.drawmode == dm_grid
  */
 extern bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp );
+
 
 #endif

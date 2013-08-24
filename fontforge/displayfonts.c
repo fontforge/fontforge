@@ -24,6 +24,12 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#define GTimer GTimer_GTK
+#define GList  GList_Glib
+#include <glib.h>
+#undef GTimer
+#undef GList
+
 #include "fontforgeui.h"
 #include "sftextfieldP.h"
 #include <stdlib.h>

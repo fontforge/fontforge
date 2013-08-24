@@ -25,6 +25,13 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#define GTimer GTimer_GTK
+#define GList  GList_Glib
+#include <glib.h>
+#include <glib-object.h>
+#undef GTimer
+#undef GList
+
 #include <fontforge-config.h>
 #include "fontforgeui.h"
 #ifndef _NO_LIBUNICODENAMES

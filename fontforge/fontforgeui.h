@@ -27,6 +27,12 @@
 #ifndef _PFAEDITUI_H_
 #define _PFAEDITUI_H_
 
+#define GTimer GTimer_GTK
+#define GList  GList_Glib
+#include <glib.h>
+#undef GTimer
+#undef GList
+
 #include "fontforgevw.h"
 #include <gprogress.h>
 
