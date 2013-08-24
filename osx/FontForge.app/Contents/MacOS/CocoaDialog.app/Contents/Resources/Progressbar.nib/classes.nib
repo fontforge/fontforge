@@ -1,0 +1,13 @@
+{
+    IBClasses = (
+        {CLASS = CDControl; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            CLASS = CDProgressbarControl; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {label = NSTextField; panel = NSPanel; progressBar = NSProgressIndicator; }; 
+            SUPERCLASS = CDControl; 
+        }, 
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }
+    ); 
+    IBVersion = 1; 
+}

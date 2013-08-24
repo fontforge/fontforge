@@ -1,0 +1,55 @@
+{
+    IBClasses = (
+        {CLASS = CDControl; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {button1Pressed = id; button2Pressed = id; button3Pressed = id; }; 
+            CLASS = CDInputboxControl; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                button1 = NSButton; 
+                button2 = NSButton; 
+                button3 = NSButton; 
+                label = NSTextField; 
+                panel = NSPanel; 
+                textField = NSTextField; 
+            }; 
+            SUPERCLASS = CDControl; 
+        }, 
+        {
+            ACTIONS = {selectionChanged = id; }; 
+            CLASS = CDPopUpButtonControl; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {popup = NSPopUpButton; }; 
+            SUPERCLASS = CDThreeButtonControl; 
+        }, 
+        {
+            ACTIONS = {button1Pressed = id; button2Pressed = id; button3Pressed = id; }; 
+            CLASS = CDTextboxControl; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                button1 = NSButton; 
+                button2 = NSButton; 
+                button3 = NSButton; 
+                label = NSTextField; 
+                panel = NSPanel; 
+                textView = NSTextView; 
+            }; 
+            SUPERCLASS = CDControl; 
+        }, 
+        {
+            ACTIONS = {button1Pressed = id; button2Pressed = id; button3Pressed = id; timeout = id; }; 
+            CLASS = CDThreeButtonControl; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                button1 = NSButton; 
+                button2 = NSButton; 
+                button3 = NSButton; 
+                expandingLabel = NSTextField; 
+                panel = NSPanel; 
+            }; 
+            SUPERCLASS = CDControl; 
+        }, 
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }
+    ); 
+    IBVersion = 1; 
+}

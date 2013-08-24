@@ -12,9 +12,11 @@ bundle_lib="$bundle_res/opt/local/lib"
 bundle_etc="$bundle_res/opt/local/etc"
 bundle_share="$bundle_res/opt/local/share"
 
-cp ./fontforge/MacFontForgeAppBuilt.zip $TEMPDIR/
-unzip -d $TEMPDIR $TEMPDIR/MacFontForgeAppBuilt.zip
+#cp ./fontforge/MacFontForgeAppBuilt.zip $TEMPDIR/
+#unzip -d $TEMPDIR $TEMPDIR/MacFontForgeAppBuilt.zip
 DESTDIR=$bundle_res make install
+rsync -av $bundle_res/opt/local/share/fontforge/osx/FontForge.app $TEMPDIR/
+
 
 sed -i -e "s|Gdraw.ScreenWidthCentimeters:.*|Gdraw.ScreenWidthCentimeters: 34|g" \
        "$bundle_res/opt/local/share/fontforge/pixmaps/resources"
