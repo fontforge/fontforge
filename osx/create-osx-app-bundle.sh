@@ -1,5 +1,7 @@
 #!/bin/bash
 
+alias ldd='otool -L'
+
 ORIGDIR=`pwd`
 TEMPDIR=/tmp/fontforge-app-bundle
 rm -rf /tmp/fontforge-app-bundle
@@ -51,6 +53,8 @@ sed -i -e "s/CFBundleGetInfoString.*/CFBundleGetInfoString = \"$CFBundleGetInfoS
 # Replace version strings in Info.plist 
 sed -i -e "s/CFBundleShortVersionStringChangeMe/$CFBundleShortVersionString/g" $TEMPDIR/FontForge.app/Contents/Info.plist 
 sed -i -e "s/CFBundleGetInfoStringChangeMe/$CFBundleGetInfoString/g" $TEMPDIR/FontForge.app/Contents/Info.plist
+sed -i -e "s/CFBundleVersionChangeMe/$FONTFORGE_VERSIONDATE_RAW/g" $TEMPDIR/FontForge.app/Contents/Info.plist
+
 
 #
 # Now to fix the binaries to have shared library paths that are all inside
@@ -90,14 +94,14 @@ cd $bundle_lib
 for if in *dylib 
 do 
   echo $if 
-  ldd  $if | grep libedit
+  otool -L  $if | grep libedit
   install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/../lib/libedit.3.dylib $if
 done
 cd $bundle_bin/FontForgeInternal/collablib/
 for if in *dylib 
 do 
   echo $if 
-  ldd  $if | grep libedit
+  otool -L  $if | grep libedit
   install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/../lib/libedit.3.dylib $if
 done
 
