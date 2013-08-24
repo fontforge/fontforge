@@ -219,40 +219,6 @@ MOSTLYCLEANFILES = fontimage fontlint sfddiff libstamp.c	\
 
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
-
-if MACINTOSH
-
-# FIXME: All of this needs testing on Mac OS X.
-
-# put the FontForge.app zipfile in the share directory
-pkgdata_DATA = MacFontForgeAppBuilt.zip
-
-install-exec-local: FontForge.app/Contents/Info.plist
-	$(SHELL) -x darwinsetup
-
-FontForge.app/Contents/Info.plist: $(srcdir)/MacFontForgeApp.zip $(srcdir)/stamp.c clean-darwin-stuff
-	$(UNZIP) $(srcdir)/MacFontForgeApp.zip
-	mkdir -p darwinsetup_tmpdir
-	cp FontForge.app/Contents/Info.plist darwinsetup_tmpdir
-	( VERSION=`$(GREP) FONTFORGE_VERSIONDATE_RAW ../inc/fontforge-config.h | $(SED) 's/.*RAW //g'` ; $(SED) s/20080810/$$VERSION/ < darwinsetup_tmpdir/Info.plist > FontForge.app/Contents/Info.plist )
-
-BUILT_SOURCES = MacFontForgeAppBuilt.zip
-
-MacFontForgeAppBuilt.zip: FontForge.app/Contents/Info.plist
-	zip -r $(srcdir)/MacFontForgeAppBuilt.zip FontForge.app
-
-mostlyclean-local: clean-darwin-stuff
-
-clean-darwin-stuff:
-	@if test -d darwinsetup_tmpdir; then rm -r -f darwinsetup_tmpdir;	\
-		echo rm -r -f darwinsetup_tmpdir; else :; fi
-	@if test -d FontForge.app; then rm -r -f FontForge.app;	\
-		echo rm -r -f FontForge.app; else :; fi
-	@if test -d __MACOSX; then rm -r -f __MACOSX;	\
-		echo rm -r -f __MACOSX; else :; fi
-
-endif MACINTOSH
-
 #--------------------------------------------------------------------------
 
 -include $(top_srcdir)/git.mk

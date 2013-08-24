@@ -46,7 +46,7 @@ include $(top_srcdir)/mk/layout.am
 
 #--------------------------------------------------------------------------
 
-SUBDIRS = inc libltdl Unicode gutils hotkeys share
+SUBDIRS = inc libltdl Unicode gutils hotkeys share osx
 
 if LIBZMQ
 SUBDIRS += collab
@@ -80,7 +80,7 @@ endif FONTTOOLS
 nodist_pkgconfig_DATA = libfontforge.pc libfontforgeexe.pc
 
 EXTRA_DIST += LICENSE README-Mac.html README-MS.html README-unix	\
-	README-Unix.html Readme.VMS create-osx-app-bundle.sh Portfile
+	README-Unix.html Readme.VMS Portfile
 
 uninstall-local:
 	(cd desktop; $(MAKE) $(AM_MAKEFLAGS) uninstall)
