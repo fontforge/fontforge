@@ -4631,6 +4631,13 @@ return;
     }
 }
 
+void SPTouchControl(SplinePoint *sp,BasePoint *which, int order2)
+{
+    BasePoint to = *which;
+    SPAdjustControl( sp, which, &to, order2 );
+}
+
+
 void SPAdjustControl(SplinePoint *sp,BasePoint *cp, BasePoint *to,int order2) {
     BasePoint *othercp = cp==&sp->nextcp?&sp->prevcp:&sp->nextcp;
     int refig = false, otherchanged = false;
