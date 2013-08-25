@@ -2563,6 +2563,15 @@ extern void SplineCharDefaultPrevCP(SplinePoint *base);
 extern void SplineCharDefaultNextCP(SplinePoint *base);
 extern void SplineCharTangentNextCP(SplinePoint *sp);
 extern void SplineCharTangentPrevCP(SplinePoint *sp);
+/**
+ * This is like SPAdjustControl but you have not wanting to move the
+ * BCP at all, but you would like the current location of the passed
+ * BCP to reshape the spline through the splinepoint. For example, if
+ * you drag the spline between two points then you might like to touch
+ * the inside BCP between the two splinepoints to reshape the whole
+ * curve through a curve point.
+ */
+extern void SPTouchControl(SplinePoint *sp,BasePoint *which, int order2);
 extern void SPAdjustControl(SplinePoint *sp,BasePoint *cp, BasePoint *to,int order2);
 extern void SPHVCurveForce(SplinePoint *sp);
 extern void SPSmoothJoint(SplinePoint *sp);

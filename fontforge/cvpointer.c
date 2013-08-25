@@ -999,9 +999,15 @@ return;
     // dont go changing pt_curve points into pt_corner without explicit consent.
     //
     if( oldfrompointtype == pt_curve )
+    {
 	old->from->pointtype = oldfrompointtype;
+	SPTouchControl( old->from, &old->from->nextcp, cv->b.layerheads[cv->b.drawmode]->order2 );
+    }
     if( oldtopointtype == pt_curve )
+    {
 	old->to->pointtype = oldtopointtype;
+	SPTouchControl( old->to, &old->to->prevcp, cv->b.layerheads[cv->b.drawmode]->order2 );
+    }
 
     old->from->nextcpdef = old->to->prevcpdef = false;
     SplineFree(old);
