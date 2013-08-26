@@ -229,6 +229,7 @@ CharView.Menu.View.Grid Fit.Bigger Point Size:Ctl+Alt++
 CharView.Menu.View.Grid Fit.Smaller Point Size:Ctl+Alt+-
 CharView.Menu.View.Grid Fit.Grid Fit Anti Alias:Ctl+Alt+Shft+#
 CharView.Menu.View.Show.Points:Ctl+D
+CharView.Menu.View.Show.Control Points (Always):Ctl+Alt+D
 CharView.Menu.View.Show.Control Point Info: No Shortcut
 CharView.Menu.View.Show.Extrema: No Shortcut
 CharView.Menu.View.Show.Points of Inflection: No Shortcut
