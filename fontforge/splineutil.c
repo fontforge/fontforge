@@ -1730,25 +1730,74 @@ void ApTransform(AnchorPoint *ap, real transform[6]) {
     BpTransform(&ap->me,&ap->me,transform);
 }
 
-static void TransformPoint(SplinePoint *sp, real transform[6]) {
-
-    BpTransform(&sp->me,&sp->me,transform);
-    if ( !sp->nonextcp ) {
-	BpTransform(&sp->nextcp,&sp->nextcp,transform);
-    } else
-	sp->nextcp = sp->me;
-    if ( !sp->noprevcp ) {
-	BpTransform(&sp->prevcp,&sp->prevcp,transform);
-    } else
-	sp->prevcp = sp->me;
-    if ( sp->pointtype == pt_hvcurve ) {
-	if ( 
-		((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x && sp->nextcp.y!=sp->me.y) ||
-		 (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y && sp->nextcp.x!=sp->me.x)))
-	    /* Do Nothing */;
-	else
-	    sp->pointtype = pt_curve;
+static void TransformPointExtended(SplinePoint *sp, real transform[6], enum transformPointMask tpmask )
+{
+    /**
+     * If we are to transform selected BCP instead of their base splinepoint
+     * then lets do that.
+     */
+    if( tpmask & tpmask_operateOnSelectedBCP
+	&& (sp->nextcpselected || sp->prevcpselected ))
+    {
+	if( sp->nextcpselected )
+	{
+	    int order2 = sp->next ? sp->next->order2 : 0;
+	    BpTransform(&sp->nextcp,&sp->nextcp,transform);
+	    SPTouchControl( sp, &sp->nextcp, order2 );
+	}
+	else if( sp->prevcpselected )
+	{
+	    int order2 = sp->next ? sp->next->order2 : 0;
+	    BpTransform(&sp->prevcp,&sp->prevcp,transform);
+	    SPTouchControl( sp, &sp->prevcp, order2 );
+	}
     }
+    else
+    {
+	/**
+	 * Transform the base splinepoints.
+	 */
+	BpTransform(&sp->me,&sp->me,transform);
+
+	if ( !sp->nonextcp )
+	{
+	    BpTransform(&sp->nextcp,&sp->nextcp,transform);
+	}
+	else
+	{
+	    sp->nextcp = sp->me;
+	}
+    
+	if ( !sp->noprevcp )
+	{
+	    BpTransform(&sp->prevcp,&sp->prevcp,transform);
+	}
+	else
+	{
+	    sp->prevcp = sp->me;
+	}
+    }
+
+
+    
+    if ( sp->pointtype == pt_hvcurve )
+    {
+	if( 
+	    ((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x && sp->nextcp.y!=sp->me.y) ||
+	     (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y && sp->nextcp.x!=sp->me.x)))
+	{
+	    /* Do Nothing */;
+	}
+	else
+	{
+	    sp->pointtype = pt_curve;
+	}
+    }
+}
+
+static void TransformPoint(SplinePoint *sp, real transform[6])
+{
+    TransformPointExtended( sp, transform, 0 );
 }
 
 static void TransformSpiro(spiro_cp *cp, real transform[6]) {
@@ -1832,7 +1881,7 @@ SplinePointList *SplinePointListTransformExtended(SplinePointList *base, real tr
 	    for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to ) {
 		if ( pfirst==NULL ) pfirst = spt;
 		if ( tpt==tpt_AllPoints || spt->selected ) {
-		    TransformPoint(spt,transform);
+		    TransformPointExtended(spt,transform,tpmask);
 		    if ( tpt!=tpt_AllPoints ) {
 			if ( spt->next!=NULL && spt->next->order2 && !spt->next->to->selected && spt->next->to->ttfindex==0xffff ) {
 			    SplinePoint *to = spt->next->to;
