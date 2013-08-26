@@ -8296,7 +8296,7 @@ void CVTransFuncLayer(CharView *cv,Layer *ly,real transform[6], enum fvtrans_fla
     else
     {
 	if( cv->active_tool==cvt_scale )
-	    tpmask |= tpmask_operateOnBCP;
+	    tpmask |= tpmask_operateOnSelectedBCP;
 	
 	SplinePointListTransformExtended(
 	    ly->splines, transform,

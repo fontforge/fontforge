@@ -2345,7 +2345,7 @@ enum transformPointType { tpt_OnlySelected, tpt_AllPoints, tpt_OnlySelectedInter
  */ 
 enum transformPointMask {
     tpmask_dontFixControlPoints = 1 << 1,
-    tpmask_operateOnBCP         = 1 << 2
+    tpmask_operateOnSelectedBCP = 1 << 2
 };
 extern SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6], enum transformPointType allpoints );
 extern SplinePointList *SplinePointListTransformExtended(SplinePointList *base, real transform[6],

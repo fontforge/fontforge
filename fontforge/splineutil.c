@@ -1736,7 +1736,7 @@ static void TransformPointExtended(SplinePoint *sp, real transform[6], enum tran
      * If we are to transform selected BCP instead of their base splinepoint
      * then lets do that.
      */
-    if( tpmask & tpmask_operateOnBCP
+    if( tpmask & tpmask_operateOnSelectedBCP
 	&& (sp->nextcpselected || sp->prevcpselected ))
     {
 	if( sp->nextcpselected )
