@@ -2344,7 +2344,8 @@ enum transformPointType { tpt_OnlySelected, tpt_AllPoints, tpt_OnlySelectedInter
  * able to disable some of them.
  */ 
 enum transformPointMask {
-    tpmask_dontFixControlPoints = 1 << 1
+    tpmask_dontFixControlPoints = 1 << 1,
+    tpmask_operateOnBCP         = 1 << 2
 };
 extern SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6], enum transformPointType allpoints );
 extern SplinePointList *SplinePointListTransformExtended(SplinePointList *base, real transform[6],

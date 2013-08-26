@@ -8289,12 +8289,21 @@ void CVTransFuncLayer(CharView *cv,Layer *ly,real transform[6], enum fvtrans_fla
     KernPair *kp;
     PST *pst;
     int l, cvlayer;
+    enum transformPointMask tpmask = 0;
 
     if ( cv->b.sc->inspiro && hasspiro() )
 	SplinePointListSpiroTransform(ly->splines,transform,!anysel);
     else
-	SplinePointListTransform(ly->splines,transform,!anysel?tpt_AllPoints:
-		interpCPsOnMotion?tpt_OnlySelectedInterpCPs:tpt_OnlySelected);
+    {
+	if( cv->active_tool==cvt_scale )
+	    tpmask |= tpmask_operateOnBCP;
+	
+	SplinePointListTransformExtended(
+	    ly->splines, transform,
+	    !anysel?tpt_AllPoints: interpCPsOnMotion?tpt_OnlySelectedInterpCPs:tpt_OnlySelected,
+	    tpmask );
+    }
+    
     if ( flags&fvt_round_to_int )
 	SplineSetsRound2Int(ly->splines,1.0,cv->b.sc->inspiro && hasspiro(),!anysel);
     if ( ly->images!=NULL ) {
