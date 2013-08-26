@@ -63,6 +63,7 @@ extern struct cvshows {
     int hvoffset;
     int checkselfintersects;	/* Not really something shown, but convenient to keep it here */
     int showdebugchanges;	/* Changes the way changing rasters are displayed in tt debug mode */
+    int alwaysshowcontrolpoints; //< Always show the BCP even when their splinepoint is not selected
 } CVShows;
 
 extern struct bvshows {
@@ -147,6 +148,7 @@ typedef struct charview {
     unsigned int showvhints:1;
     unsigned int showdhints:1;
     unsigned int showpoints:1;
+    unsigned int alwaysshowcontrolpoints:1;
     unsigned int showfilled:1;
     unsigned int showrulers:1;
     unsigned int showrounds:2;		/* 0=>no, 1=>auto, 2=>always */
@@ -440,6 +442,8 @@ typedef struct findsel {
     unsigned int select_controls: 1;	/* notice control points */
     unsigned int seek_controls: 1;	/* notice control points before base points */
     unsigned int all_controls: 1;	/* notice control points even if the base points aren't selected (in truetype point numbering mode where all cps are visible) */
+    unsigned int alwaysshowcontrolpoints:1; /* if the BCP are forced on, then we want the selection code paths
+					     * to also know that so the user can drag the BCP of a non selected splinepoint */
     real scale;
     PressedOn *p;
 } FindSel;

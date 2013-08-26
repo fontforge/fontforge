@@ -688,6 +688,8 @@ static GRect* DrawPoint_SetupRectForSize( GRect* r, int cx, int cy, float sz )
 }
 
 
+
+
 static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
 	SplineSet *spl, int onlynumber, int truetype_markup) {
     GRect r;
@@ -734,7 +736,11 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
 return;
 
     /* draw the control points if it's selected */
-    if ( sp->selected || cv->showpointnumbers || cv->show_ft_results || cv->dv )
+    if ( sp->selected
+	 || cv->showpointnumbers
+	 || cv->alwaysshowcontrolpoints
+	 || cv->show_ft_results
+	 || cv->dv )
     {
 	int iscurrent = sp==(cv->p.sp!=NULL?cv->p.sp:cv->lastselpt);
 	if ( !sp->nonextcp ) {
@@ -788,7 +794,6 @@ return;
 	    }
 	    if ( !onlynumber )
 	    {
-
 		float sizedelta = 3;
 		if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
 		    sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
@@ -822,7 +827,8 @@ return;
 		cy = cv->height+100;
 	    }
 	    subcol = prevcpcol;
-	    if( !onlynumber && SPIsPrevCPSelected( sp, cv )) {
+	    if( !onlynumber && SPIsPrevCPSelected( sp, cv ))
+	    {
 		float sz = 2;
 		if( SPIsPrevCPSelectedSingle( sp, cv ))
 		    sz *= 1.5;
@@ -3683,7 +3689,10 @@ static int CheckPoint(FindSel *fs, SplinePoint *sp, SplineSet *spl) {
 	if ( !fs->seek_controls )
 return( true );
     }
-    if ( (sp->selected && fs->select_controls) || fs->all_controls ) {
+    if ( (sp->selected && fs->select_controls)
+	 || fs->all_controls
+	 || fs->alwaysshowcontrolpoints )
+    {
 	int seln=false, selp=false;
 	if ( fs->c_xl<=sp->nextcp.x && fs->c_xh>=sp->nextcp.x &&
 		fs->c_yl<=sp->nextcp.y && fs->c_yh >= sp->nextcp.y )
@@ -4103,6 +4112,7 @@ return;
 	}
 	if ( cv->showpointnumbers && cv->b.layerheads[cv->b.drawmode]->order2 )
 	    fs.all_controls = true;
+	fs.alwaysshowcontrolpoints = cv->alwaysshowcontrolpoints;
 	lastSel.lastselpt = cv->lastselpt;
 	lastSel.lastselcp = cv->lastselcp;
 	cv->lastselpt = NULL;
@@ -5495,6 +5505,7 @@ return( true );
 #define MID_ZoomIn	2002
 #define MID_ZoomOut	2003
 #define MID_HidePoints	2004
+#define MID_HideControlPoints	2005
 #define MID_Fill	2006
 #define MID_Next	2007
 #define MID_Prev	2008
@@ -6000,6 +6011,12 @@ static void CVMenuShowHide(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
     GDrawRequestExpose(cv->v,NULL,false);
 }
 
+static void CVMenuShowHideControlPoints(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    CVShows.alwaysshowcontrolpoints = cv->alwaysshowcontrolpoints = !cv->alwaysshowcontrolpoints;
+    GDrawRequestExpose(cv->v,NULL,false);
+}
+
 static void CVMenuNumberPoints(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
@@ -6211,6 +6228,7 @@ static struct cvshows* cvshowsCopyTo( struct cvshows* dst, CharView* src )
     dst->showvhints = src->showvhints;
     dst->showdhints = src->showdhints;
     dst->showpoints = src->showpoints;
+    dst->alwaysshowcontrolpoints = src->alwaysshowcontrolpoints;
     dst->showfilled = src->showfilled;
     dst->showrulers = src->showrulers;
     dst->showrounds = src->showrounds;
@@ -6244,6 +6262,7 @@ static CharView* cvshowsCopyFrom( CharView* dst, struct cvshows* src )
     dst->showvhints = src->showvhints;
     dst->showdhints = src->showdhints;
     dst->showpoints = src->showpoints;
+    dst->alwaysshowcontrolpoints = src->alwaysshowcontrolpoints;
     dst->showfilled = src->showfilled;
     dst->showrulers = src->showrulers;
     dst->showrounds = src->showrounds;
@@ -6283,6 +6302,7 @@ static void CVPreviewModeSet(GWindow gw, int checked ) {
         cv->showvhints = 0;
         cv->showdhints = 0;
         cv->showpoints = 0;
+	cv->alwaysshowcontrolpoints = 0;
         cv->showfilled = 1;
         cv->showrounds = 0;
         cv->showanchor = 0;
@@ -10103,6 +10123,9 @@ static void swlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  case MID_HidePoints:
 	    mi->ti.checked = cv->showpoints;
 	  break;
+	case MID_HideControlPoints:
+	    mi->ti.checked = cv->alwaysshowcontrolpoints;
+	    break;
 	  case MID_HideRulers:
 	    mi->ti.checked = cv->showrulers;
 	  break;
@@ -10850,6 +10873,7 @@ static GMenuItem2 gflist[] = {
 
 static GMenuItem2 swlist[] = {
     { { (unichar_t *) N_("_Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Points|Ctl+D"), NULL, NULL, CVMenuShowHide, MID_HidePoints },
+    { { (unichar_t *) N_("Control Points (Always_)"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, ')' }, H_("Points|Ctl+Alt+D"), NULL, NULL, CVMenuShowHideControlPoints, MID_HideControlPoints },
     { { (unichar_t *) N_("_Control Point Info"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Control Point Info|No Shortcut"), NULL, NULL, CVMenuShowCPInfo, MID_ShowCPInfo },
     { { (unichar_t *) N_("_Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Extrema|No Shortcut"), NULL, NULL, CVMenuMarkExtrema, MID_MarkExtrema },
     { { (unichar_t *) N_("Points of _Inflection"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Points of Inflection|No Shortcut"), NULL, NULL, CVMenuMarkPointsOfInflection, MID_MarkPointsOfInflection },
@@ -11126,6 +11150,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     cv->showvhints = CVShows.showvhints;
     cv->showdhints = CVShows.showdhints;
     cv->showpoints = CVShows.showpoints;
+    cv->alwaysshowcontrolpoints = CVShows.alwaysshowcontrolpoints;
     cv->showrulers = CVShows.showrulers;
     cv->showfilled = CVShows.showfilled;
     cv->showrounds = CVShows.showrounds;
