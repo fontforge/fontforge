@@ -87,6 +87,8 @@ static SplineChar* getSelectedChar( MetricsView* mv ) {
 }
 
 
+
+
 void MVColInit( void ) {
     static int cinit=false;
     GResStruct mvcolors[] = {
@@ -583,6 +585,7 @@ return;
 	MVSelectSubtable(mv,sub);
 }
 
+
 static void MVSelectChar(MetricsView *mv, int i) {
 
     if ( i>=mv->glyphcnt || i<0 )
@@ -606,6 +609,19 @@ static void MVDoSelect(MetricsView *mv, int i) {
 	if ( j!=i && mv->perchar[j].selected )
 	    MVDeselectChar(mv,j);
     MVSelectChar(mv,i);
+}
+
+static void MVSelectSetForAll(MetricsView *mv, int selected )
+{
+    int i;
+    
+    for ( i=0 ; i<mv->glyphcnt; ++i )
+    {
+	if( selected )
+	    MVSelectChar(mv,i);
+	else
+	    MVDeselectChar(mv,i);
+    }
 }
 
 void MVRefreshChar(MetricsView *mv, SplineChar *sc) {
@@ -1651,6 +1667,7 @@ static void MVVScroll(MetricsView *mv,struct sbevent *sb) {
 
 static int MVFakeUnicodeOfSc(MetricsView *mv, SplineChar *sc) {
 
+    printf("MVFakeUnicodeOfSc() sc:%p\n", sc );
     if ( sc->unicodeenc!=-1 )
 return( sc->unicodeenc );
 
@@ -1753,6 +1770,15 @@ static void MVTextChanged(MetricsView *mv) {
     int direction_change = false;
     SplineChar **hold = NULL;
 
+    {
+	char* v = GGadgetGetTitle8(mv->text);
+	printf("text changed: %s\n", v );
+	for( ; *v; ++v )
+	{
+	    printf("ch: %d\n", (int)*v );
+	}
+    }
+    
     ret = _GGadgetGetTitle(mv->text);
     if (( ret[0]<0x10000 && isrighttoleft(ret[0]) && !mv->right_to_left ) ||
 	    ( ret[0]<0x10000 && !isrighttoleft(ret[0]) && mv->right_to_left )) {
@@ -1822,6 +1848,29 @@ return;					/* Nothing changed */
     mv->clen = u_strlen(ret)-missing;
     mv->chars[mv->clen] = NULL;
     MVRemetric(mv);
+
+    // handle selecting the default glyph if desired this is slightly
+    // complex because we need to handle when there is no selected
+    // entry, which is the case just after loading a word list, and
+    // then the first line is the right line.
+    GTextInfo* gt = GGadgetGetListItemSelected(mv->text);
+    if( !gt )
+    {
+	GTextInfo **ti=NULL;
+	int32 len;
+	ti = GGadgetGetList(mv->text,&len);
+	if( len )
+	    gt = ti[0];
+    }
+    if( gt )
+    {
+	MVSelectSetForAll( mv, 0 );
+	if( gt->userdata > 0 )
+	{
+	    int selectGlyph = (int)gt->userdata;
+	    MVSelectChar( mv, selectGlyph );
+	}
+    }
     GDrawRequestExpose(mv->v,NULL,false);
 }
 
@@ -1874,19 +1923,81 @@ static void MVFigureGlyphNames(MetricsView *mv,const unichar_t *names) {
 
     GGadgetSetTitle(mv->text,newtext);
     free(newtext);
-
+   
     GDrawRequestExpose(mv->v,NULL,false);
 }
+
+static bool MVLoadWordListIsLineBreak( char ch )
+{
+    return ch == '\n' || ch == '\r';
+}
+static char MVLoadWordListHandleMaybeSkipComment( FILE *file, char ch )
+{
+    if( ch == '#' )
+    {
+	while( ch != EOF )
+	{
+	    printf("MVLoadWordListHandleMaybeSkipComment() ch:%c\n", ch );
+	    if( MVLoadWordListIsLineBreak(ch))
+		break;
+	    ch=getc(file);
+	}
+    }
+    return ch;
+}
+
+static bool MVLoadWordList_isLineAllWhiteSpace( char* buffer )
+{
+    char* p = buffer;
+    for( ; *p; ++p )
+    {
+	if( !isspace( *p ))
+	    return false;
+    }
+    
+    return true;
+}
+
+static char MVLoadWordList_readGlyphName( FILE *file, char ch, char* glyphname )
+{
+    if( ch != '/' )
+	return ch;
+    
+    if( ch == '/' )
+	ch=getc(file);
+
+    memset( glyphname, '\0', PATH_MAX );
+    while( ch != EOF && ch != '/' && !MVLoadWordListIsLineBreak( ch ) )
+    {
+	*glyphname = ch;
+	++glyphname;
+	ch=getc(file);
+    }
+
+//    if( ch == '/' )
+//	ch=getc(file);
+    
+    return ch;
+}
+
+/* typedef struct gtextinfoselectable */
+/* { */
+/* //    GTextInfo b; */
+/*     char* selectionStart; */
+/*     char* selectionEnd; */
+/* } GTextInfoSelectable; */
 
 static void MVLoadWordList(MetricsView *mv,int type) {
     GTextInfo **words;
     int cnt;
-    int dblQuoteCount = 0;
     char buffer[300], *pt;
     int ch;
     char *filename, *temp;
     FILE *file;
 
+    
+    
+    printf("MVLoadWordList() type:%d\n", type );
     filename = gwwv_open_filename(type==-1 ? "File of Kerning Words":"File of glyphname lists",NULL,"*.txt",NULL);
     if ( filename==NULL )
     {
@@ -1904,45 +2015,121 @@ static void MVLoadWordList(MetricsView *mv,int type) {
     }
     free(filename);
 
+
+    
+    
     words = galloc(1002*sizeof(GTextInfo *));
 
     cnt = 0;
     if ( type==-1 )
     {
+	// Kerning words
 	ch = getc(file);
 	while ( ch!=EOF )
 	{
-	    // skip leading whitespace
-	    while ( isspace(ch) && ch<0x80 )
+//	    // skip leading whitespace
+//	    while ( isspace(ch) && ch<0x80 )
+//		ch=getc(file);
+
+	    printf("top...\n" );
+	    while( ch != EOF && MVLoadWordListIsLineBreak(ch))
 		ch=getc(file);
 	    
+
+	    int currentCharCount = -1;
+	    char* selectionStart = 0;
+	    char* selectionEnd   = 0;
+ 	    memset( buffer, '\0', 200 );
 	    for ( pt = buffer; ch!=EOF; ch=getc(file))
 	    {
-		// We are either quoted or not, no nesting for now.
-		if( ch == '"' )
-		    dblQuoteCount = !dblQuoteCount;
+		currentCharCount++;
+		printf("got %s\n", buffer );
+
+		// Skip from comment to EOL
+		ch = MVLoadWordListHandleMaybeSkipComment( file, ch );
+
+		if( MVLoadWordListIsLineBreak(ch) )
+		    break;
+
+		if( ch == '[' && !selectionStart )
+		{
+		    selectionStart = pt;
+		    selectionStart = (char*)currentCharCount;
+		    printf("*********** currentCharCount:%d\n", currentCharCount );
+		    continue;
+		}
+		if( ch == ']' && !selectionEnd )
+		{
+		    selectionEnd = pt;
+		    continue;
+		}
 		
-		if( (isspace(ch) && ch<0x80) )
-		    if( !dblQuoteCount )
-			break;
-	    
+		if( ch == '/' )
+		{
+		    // start of a glyph name
+		    char glyphname[ PATH_MAX+1 ];
+		    ch = MVLoadWordList_readGlyphName( file, ch, glyphname );
+		    printf("glyphname:%s\n", glyphname );
+		    SplineChar* sc = SFGetChar( mv->sf, -1, glyphname );
+		    printf("sc:%p\n", sc );
+		    if( sc )
+		    {
+			int n = MVFakeUnicodeOfSc( mv, sc );
+			printf("n:%d\n", n );
+
+			pt = utf8_idpb( pt, n );
+			continue;
+			
+			// Use utf8_idpb() to convert n to a utf8 string?
+			unichar_t tmp[10];
+			memset( tmp,'\0', 5*sizeof(unichar_t) );
+			tmp[0] = n;
+			char * p = u_to_c( tmp );
+			printf("p:%s\n", p );
+			for( ; *p; ++p )
+			{
+			    printf("ch: %d\n", (int)*p );
+			}
+			
+		    }
+		    
+		}
+		
 		if ( pt<buffer+sizeof(buffer)-2)
 		    *pt++=ch;
 	    }
 	    
 	    *pt = '\0';
 	    if ( buffer[0]=='\0' )
-		break;
+		continue;
 	    if ( cnt>1000-3 )
 		break;
+	    if( MVLoadWordList_isLineAllWhiteSpace( buffer ))
+		continue;
 	    words[cnt] = gcalloc(1,sizeof(GTextInfo));
 	    words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
 	    words[cnt]->text = (unichar_t *) utf82def_copy( buffer );
+	    printf("Adding word -->%s<--\n", buffer );
+	    printf("Selection Start:%p end:%p\n", selectionStart, selectionEnd );
+	    if( selectionStart && selectionEnd )
+	    {
+//		GTextInfoSelectable* sw = gcalloc(1,sizeof(GTextInfoSelectable));
+		words[cnt]->userdata = selectionStart;
+//		sw->selectionStart = (selectionStart - buffer);
+		/* sw->selectionStart = selectionStart; */
+		/* sw->selectionEnd   = (selectionEnd - buffer); */
+		/* printf("sw:%p\n",       sw ); */
+		/* printf("sw.   ud:%p\n",    words[cnt]->userdata ); */
+		/* printf("sw.  txt:%p\n",    words[cnt]->text ); */
+		/* printf("sw.start:%p\n", sw->selectionStart ); */
+		/* printf("sw.  end:%p\n", sw->selectionEnd ); */
+	    }
 	    words[cnt++]->text_is_1byte = true;
 	}
     }
     else
     {
+	// glyphname lists
 	strcpy(buffer,"​");		/* Zero width space: 0x200b, I use as a flag */
 	while ( fgets(buffer+3,sizeof(buffer)-3,file)!=NULL )
 	{
@@ -1958,8 +2145,10 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 	    words[cnt++]->text_is_1byte = true;
 	}
     }
+    
     fclose(file);
-    if ( cnt!=0 ) {
+    if ( cnt!=0 )
+    {
 	words[cnt] = gcalloc(1,sizeof(GTextInfo));
 	words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
 	words[cnt++]->line = true;
@@ -1980,7 +2169,9 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 	    MVFigureGlyphNames(mv,_GGadgetGetTitle(mv->text)+1);
 	GTextInfoArrayFree(words);
 	mv->word_index = 0;
-    } else {
+    }
+    else
+    {
 	GGadgetSetTitle8(mv->text,"");
 	free(words);
     }
@@ -4106,6 +4297,28 @@ static void MVChar(MetricsView *mv,GEvent *event)
 		else
 		    MVTextChanged(mv);
 		ti = NULL;
+
+		GTextInfo* gt = GGadgetGetListItemSelected(mv->text);
+		printf("gt   :%p\n",    gt );
+		printf("gt.udata:%p\n", gt->userdata );
+		printf("text    :%p\n", gt->text );
+//		GTextInfoSelectable* gtsel = gt->userdata;
+		MVSelectSetForAll( mv, 0 );
+		if( gt->userdata > 0 )
+		{
+		    int selectGlyph = (int)gt->userdata;
+//		printf("gtsel:%p\n",    gtsel );
+//		    if( gtsel )
+		    {
+//			printf("selStart:%p\n", gtsel->selectionStart );
+//			printf("selEnd  :%p\n", gtsel->selectionEnd );
+			printf("clen:%d\n", mv->clen );
+			MVSelectChar( mv, selectGlyph );
+		    }
+		}
+		
+		//GGadgetSetList(mv->text,words,true);
+
 	    }
 	}
     }
