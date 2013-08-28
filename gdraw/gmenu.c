@@ -1832,7 +1832,7 @@ int GGadgetUndoMacEnglishOptionCombinations(GEvent *event) {
 }
 
 
-int osx_handle_keysyms( int k )
+static int osx_handle_keysyms( int k )
 {
     switch( k )
     {
