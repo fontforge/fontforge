@@ -56,6 +56,9 @@ static Color rbearinglinecol = 0x000080;
 int pref_mv_shift_and_arrow_skip = 10;
 int pref_mv_control_shift_and_arrow_skip = 5;
 
+static void MVSelectChar(MetricsView *mv, int i);
+static void MVSelectSetForAll(MetricsView *mv, int selected );
+
 /**
  * This doesn't need to be a perfect test by any means. It should
  * return true if the currently active kerning lookup includes some
@@ -86,6 +89,21 @@ static SplineChar* getSelectedChar( MetricsView* mv ) {
     return 0;
 }
 
+
+static void selectUserChosenWordListGlyphs( MetricsView *mv, void* userdata )
+{
+    MVSelectSetForAll( mv, 0 );
+    if( userdata > 0 )
+    {
+	GArray* selected = (GArray*)userdata;
+	int i = 0;
+	for (i = 0; i < selected->len; i++)
+	{
+	    int v = g_array_index (selected, gint, i);
+	    MVSelectChar( mv, v );
+	}
+    }
+}
 
 
 
@@ -1864,12 +1882,7 @@ return;					/* Nothing changed */
     }
     if( gt )
     {
-	MVSelectSetForAll( mv, 0 );
-	if( gt->userdata > 0 )
-	{
-	    int selectGlyph = (int)gt->userdata;
-	    MVSelectChar( mv, selectGlyph );
-	}
+	selectUserChosenWordListGlyphs( mv, gt->userdata );
     }
     GDrawRequestExpose(mv->v,NULL,false);
 }
@@ -1980,12 +1993,6 @@ static char MVLoadWordList_readGlyphName( FILE *file, char ch, char* glyphname )
     return ch;
 }
 
-/* typedef struct gtextinfoselectable */
-/* { */
-/* //    GTextInfo b; */
-/*     char* selectionStart; */
-/*     char* selectionEnd; */
-/* } GTextInfoSelectable; */
 
 static void MVLoadWordList(MetricsView *mv,int type) {
     GTextInfo **words;
@@ -2034,15 +2041,13 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 	    printf("top...\n" );
 	    while( ch != EOF && MVLoadWordListIsLineBreak(ch))
 		ch=getc(file);
-	    
 
-	    int currentCharCount = -1;
-	    char* selectionStart = 0;
-	    char* selectionEnd   = 0;
+	    GArray* selected = g_array_new( 1, 1, sizeof(int));
+	    int addingGlyphsToSelected = 0;
+	    int currentGlyphIndex = -1;
  	    memset( buffer, '\0', 200 );
 	    for ( pt = buffer; ch!=EOF; ch=getc(file))
 	    {
-		currentCharCount++;
 		printf("got %s\n", buffer );
 
 		// Skip from comment to EOL
@@ -2051,18 +2056,25 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 		if( MVLoadWordListIsLineBreak(ch) )
 		    break;
 
-		if( ch == '[' && !selectionStart )
+		if( ch == '[' )
 		{
-		    selectionStart = pt;
-		    selectionStart = (char*)currentCharCount;
-		    printf("*********** currentCharCount:%d\n", currentCharCount );
+		    addingGlyphsToSelected = 1;
 		    continue;
 		}
-		if( ch == ']' && !selectionEnd )
+		if( ch == ']' )
 		{
-		    selectionEnd = pt;
+		    addingGlyphsToSelected = 0;
 		    continue;
 		}
+		
+		currentGlyphIndex++;
+		if( addingGlyphsToSelected )
+		{
+		    int selectGlyph = currentGlyphIndex;
+		    printf("*********** adding to selected:%d\n", selectGlyph );
+		    g_array_append_val( selected, selectGlyph );
+		}
+		
 		
 		if( ch == '/' )
 		{
@@ -2110,21 +2122,21 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 	    words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
 	    words[cnt]->text = (unichar_t *) utf82def_copy( buffer );
 	    printf("Adding word -->%s<--\n", buffer );
-	    printf("Selection Start:%p end:%p\n", selectionStart, selectionEnd );
-	    if( selectionStart && selectionEnd )
+	    if( selected->len )
 	    {
-//		GTextInfoSelectable* sw = gcalloc(1,sizeof(GTextInfoSelectable));
-		words[cnt]->userdata = selectionStart;
-//		sw->selectionStart = (selectionStart - buffer);
-		/* sw->selectionStart = selectionStart; */
-		/* sw->selectionEnd   = (selectionEnd - buffer); */
-		/* printf("sw:%p\n",       sw ); */
-		/* printf("sw.   ud:%p\n",    words[cnt]->userdata ); */
-		/* printf("sw.  txt:%p\n",    words[cnt]->text ); */
-		/* printf("sw.start:%p\n", sw->selectionStart ); */
-		/* printf("sw.  end:%p\n", sw->selectionEnd ); */
+		words[cnt]->userdata = selected;
+		g_array_ref( words[cnt]->userdata );
+
+		int i=0;
+		printf("Selected size:%d\n", selected->len );
+		for (i = 0; i < selected->len; i++)
+		{
+		    int v = g_array_index (selected, gint, i);
+		    printf("i:%d v:%d\n", i, v );
+		}
 	    }
 	    words[cnt++]->text_is_1byte = true;
+	    g_array_unref( selected );
 	}
     }
     else
@@ -4302,23 +4314,7 @@ static void MVChar(MetricsView *mv,GEvent *event)
 		printf("gt   :%p\n",    gt );
 		printf("gt.udata:%p\n", gt->userdata );
 		printf("text    :%p\n", gt->text );
-//		GTextInfoSelectable* gtsel = gt->userdata;
-		MVSelectSetForAll( mv, 0 );
-		if( gt->userdata > 0 )
-		{
-		    int selectGlyph = (int)gt->userdata;
-//		printf("gtsel:%p\n",    gtsel );
-//		    if( gtsel )
-		    {
-//			printf("selStart:%p\n", gtsel->selectionStart );
-//			printf("selEnd  :%p\n", gtsel->selectionEnd );
-			printf("clen:%d\n", mv->clen );
-			MVSelectChar( mv, selectGlyph );
-		    }
-		}
-		
-		//GGadgetSetList(mv->text,words,true);
-
+		selectUserChosenWordListGlyphs( mv, gt->userdata );
 	    }
 	}
     }
