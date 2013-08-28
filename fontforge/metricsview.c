@@ -2107,7 +2107,7 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 		    }
 		    
 		}
-		
+
 		if ( pt<buffer+sizeof(buffer)-2)
 		    *pt++=ch;
 	    }
