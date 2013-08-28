@@ -1832,6 +1832,53 @@ int GGadgetUndoMacEnglishOptionCombinations(GEvent *event) {
 }
 
 
+static int osx_handle_keysyms( int k )
+{
+    switch( k )
+    {
+    case 8211:  return 45; // Command + Alt + -
+    case 177:   return 43; // Command + Alt + Shift + =
+    case 197:   return 65; // Command + Alt + Shift + A
+    case 305:   return 66; // Command + Alt + Shift + B
+    case 199:   return 67; // Command + Alt + Shift + C
+    case 206:   return 68; // Command + Alt + Shift + D
+    case 180:   return 69; // Command + Alt + Shift + E
+    case 207:   return 70; // Command + Alt + Shift + F
+    case 733:   return 71; // Command + Alt + Shift + G
+    case 211:   return 72; // Command + Alt + Shift + H
+    case 710:   return 73; // Command + Alt + Shift + I
+    case 212:   return 74; // Command + Alt + Shift + J
+    case 63743: return 75; // Command + Alt + Shift + K
+    case 210:   return 76; // Command + Alt + Shift + L
+    case 194:   return 77; // Command + Alt + Shift + M
+    case 732:   return 78; // Command + Alt + Shift + N
+    case 216:   return 79; // Command + Alt + Shift + O
+    case 8719:  return 80; // Command + Alt + Shift + P
+    case 65505: return 81; // Command + Alt + Shift + Q
+    case 8240:  return 82; // Command + Alt + Shift + R
+    case 205:   return 83; // Command + Alt + Shift + S
+    case 711:   return 84; // Command + Alt + Shift + T
+    case 168:   return 85; // Command + Alt + Shift + U
+    case 9674:  return 86; // Command + Alt + Shift + V
+    case 8222:  return 87; // Command + Alt + Shift + W
+    case 731:   return 88; // Command + Alt + Shift + X
+    case 193:   return 89; // Command + Alt + Shift + Y
+    case 184:   return 90; // Command + Alt + Shift + Z
+
+    case 8260:  return 33; // Command + Alt + Shift + 1
+    case 8360:  return 64; // Command + Alt + Shift + 2
+    case 8249:  return 35; // Command + Alt + Shift + 3
+    case 8250:  return 36; // Command + Alt + Shift + 4
+    case 64257: return 37; // Command + Alt + Shift + 5
+    case 64258: return 94; // Command + Alt + Shift + 6
+    case 8225:  return 38; // Command + Alt + Shift + 7
+    case 176:   return 42; // Command + Alt + Shift + 8
+    case 183:   return 40; // Command + Alt + Shift + 9
+    case 8218:  return 41; // Command + Alt + Shift + 0
+    }
+    return k;
+}
+
 
 int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     int i;
@@ -1839,7 +1886,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     GMenuItem *mi;
     unichar_t keysym = event->u.chr.keysym;
 
-//    printf("GMenuBarCheckKey() keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
+//    printf("GMenuBarCheckKey(top) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
 
     if ( g==NULL || keysym==0 ) return( false ); /* exit if no gadget or key */
 
@@ -1862,10 +1909,13 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	    }
 	}
     }
+//    printf("GMenuBarCheckKey(2) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
 
     /* First check for an open menu underscore key being pressed */
     mi = GMenuSearchShortcut(mb->g.base,mb->mi,event,mb->child==NULL);
     if ( mi ) {
+//	printf("GMenuBarCheckKey(3) have mi... :%p\n", mi );
+//	printf("GMenuBarCheckKey(3) have mitext:%s\n", u_to_c(mi->ti.text) );
 	if ( mi->ti.checkable && !mi->ti.disabled )
 	    mi->ti.checked = !mi->ti.checked;
 	if ( mi->invoke!=NULL && !mi->ti.disabled )
@@ -1877,8 +1927,6 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 
     /* then look for hotkeys everywhere */
 	
-//    printf("looking1 for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
-
     if( hotkeySystemGetCanUseMacCommand() )
     {
 	// If Mac command key was pressed, swap with the control key.
@@ -1886,13 +1934,36 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	    event->u.chr.state ^= (ksm_cmdmacosx|ksm_control);
 	}
     }
+#ifdef __Mac
+
+    //
+    // Command + Alt + Shift + F on OSX doesn't give the keysym one
+    // might expect if they have been testing on a Linux Machine.
+    //
+    printf("looking2 for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
+    printf("     has ksm_control:%d\n", (event->u.chr.state & ksm_control ));
+    printf("     has ksm_cmdmacosx:%d\n", (event->u.chr.state & ksm_cmdmacosx ));
+    printf("     has ksm_cmdmacosx|control:%d\n", ((event->u.chr.state & (ksm_cmdmacosx|ksm_control)) == ksm_cmdmacosx) );
+    printf("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
+    printf("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
+    printf("     has ksm_option:%d\n",   (event->u.chr.state & ksm_option ));
     
-	
+    if( event->u.chr.state & ksm_option )
+	event->u.chr.state ^= ksm_option;
+
+    event->u.chr.keysym = osx_handle_keysyms( event->u.chr.keysym );
+    printf(" 3   has ksm_option:%d\n",   (event->u.chr.state & ksm_option ));
+
+#endif
+
+    
 	struct dlistnodeExternal* node= hotkeyFindAllByEvent( top, event );
 	struct dlistnode* hklist = (struct dlistnode*)node;
 	for( ; node; node=(struct dlistnodeExternal*)(node->next) ) {
 	    Hotkey* hk = (Hotkey*)node->ptr;
-//	    printf("hotkey found by event! hk:%p\n", hk );
+	    printf("hotkey found by event! hk:%p\n", hk );
+	    printf("hotkey found by event! action:%s\n", hk->action );
+	    
 	    int skipkey = false;
 
 	    if( cv_auto_goto )
@@ -1907,6 +1978,8 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 		mi = GMenuSearchAction(mb->g.base,mb->mi,hk->action,event,mb->child==NULL);
 		if ( mi )
 		{
+//		    printf("GMenuBarCheckKey(x) have mi... :%p\n", mi );
+//		    printf("GMenuBarCheckKey(x) have mitext:%s\n", u_to_c(mi->ti.text) );
 		    if ( mi->ti.checkable && !mi->ti.disabled )
 			mi->ti.checked = !mi->ti.checked;
 		    if ( mi->invoke!=NULL && !mi->ti.disabled )

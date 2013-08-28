@@ -145,7 +145,7 @@ CharView.Menu.Element.Reverse Direction: No Shortcut
 CharView.Menu.Element.Insert Text Outlines: No Shortcut
 CharView.Menu.Element.Compare Layers...: No Shortcut
 CharView.Menu.Element.Align.Average Points:Ctl+Shft+@
-CharView.Menu.Element.Align.Space Points:Ctl+Shft+#
+CharView.Menu.Element.Align.Space Points: No Shortcut
 CharView.Menu.Element.Align.Space Regions...: No Shortcut
 CharView.Menu.Element.Align.Make Parallel...: No Shortcut
 CharView.Menu.Element.Simplify.Simplify:Ctl+Shft+M
@@ -223,11 +223,11 @@ CharView.Menu.View.Number Points.None: No Shortcut
 CharView.Menu.View.Number Points.TrueType: No Shortcut
 CharView.Menu.View.Number Points.PostScript: No Shortcut
 CharView.Menu.View.Number Points.SVG: No Shortcut
-CharView.Menu.View.Grid Fit.Show Grid Fit...:Ctl+#
+CharView.Menu.View.Grid Fit.Show Grid Fit...:Ctl+Shft+#
 CharView.Menu.View.Grid Fit.Grid Fit Off:Ctl+Alt+#
-CharView.Menu.View.Grid Fit.Bigger Point Size:Ctl+Alt++
-CharView.Menu.View.Grid Fit.Smaller Point Size:Ctl+Alt+-
-CharView.Menu.View.Grid Fit.Grid Fit Anti Alias:Ctl+Alt+Shft+#
+CharView.Menu.View.Grid Fit.Bigger Point Size:Alt+=
+CharView.Menu.View.Grid Fit.Smaller Point Size:Alt+-
+CharView.Menu.View.Grid Fit.Anti Alias:Ctl+Alt+Shft+#
 CharView.Menu.View.Show.Points:Ctl+D
 CharView.Menu.View.Show.Control Points (Always):Ctl+Shft+D
 CharView.Menu.View.Show.Control Point Info: No Shortcut
