@@ -1997,7 +1997,7 @@ static char MVLoadWordList_readGlyphName( FILE *file, char ch, char* glyphname )
 static void MVLoadWordList(MetricsView *mv,int type) {
     GTextInfo **words;
     int cnt;
-    char buffer[300], *pt;
+    char buffer[PATH_MAX], *pt;
     int ch;
     char *filename, *temp;
     FILE *file;
@@ -2024,8 +2024,9 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 
 
     
-    
-    words = galloc(1002*sizeof(GTextInfo *));
+
+    int words_max = 1024*128;
+    words = galloc( words_max * sizeof(GTextInfo *));
 
     cnt = 0;
     if ( type==-1 )
@@ -2137,6 +2138,9 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 	    }
 	    words[cnt++]->text_is_1byte = true;
 	    g_array_unref( selected );
+
+	    if( cnt >= words_max )
+		break;
 	}
     }
     else
