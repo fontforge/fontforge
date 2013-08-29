@@ -1899,7 +1899,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     GMenuItem *mi;
     unichar_t keysym = event->u.chr.keysym;
 
-//    printf("GMenuBarCheckKey(top) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
+    printf("GMenuBarCheckKey(top) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
 
     if ( g==NULL || keysym==0 ) return( false ); /* exit if no gadget or key */
 
@@ -1922,13 +1922,13 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	    }
 	}
     }
-//    printf("GMenuBarCheckKey(2) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
+    printf("GMenuBarCheckKey(2) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
 
     /* First check for an open menu underscore key being pressed */
     mi = GMenuSearchShortcut(mb->g.base,mb->mi,event,mb->child==NULL);
     if ( mi ) {
-//	printf("GMenuBarCheckKey(3) have mi... :%p\n", mi );
-//	printf("GMenuBarCheckKey(3) have mitext:%s\n", u_to_c(mi->ti.text) );
+	printf("GMenuBarCheckKey(3) have mi... :%p\n", mi );
+	printf("GMenuBarCheckKey(3) have mitext:%s\n", u_to_c(mi->ti.text) );
 	if ( mi->ti.checkable && !mi->ti.disabled )
 	    mi->ti.checked = !mi->ti.checked;
 	if ( mi->invoke!=NULL && !mi->ti.disabled )
@@ -1969,6 +1969,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 
 #endif
 
+    printf("about to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
     
 	struct dlistnodeExternal* node= hotkeyFindAllByEvent( top, event );
 	struct dlistnode* hklist = (struct dlistnode*)node;
