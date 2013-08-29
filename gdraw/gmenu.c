@@ -1831,7 +1831,16 @@ int GGadgetUndoMacEnglishOptionCombinations(GEvent *event) {
     return( keysym );
 }
 
-
+/**
+ * On OSX the XEvents have some extra translation performed to try to be handier.
+ * For example, in xev you might notice that alt+- gives a keysym of endash.
+ *
+ * Under Linux this translation doesn't happen and you get the alt
+ * modifier and the minus keysym. The hotkey code is expecting
+ * modifier(s) + base keysym not what osx gives (modifier(s) +
+ * alternate-keysym). So this little function is designed to convert
+ * the osx "enhanced" keysym back to their basic keysym.
+ */
 static int osx_handle_keysyms( int k )
 {
     switch( k )
@@ -1875,6 +1884,10 @@ static int osx_handle_keysyms( int k )
     case 176:   return 42; // Command + Alt + Shift + 8
     case 183:   return 40; // Command + Alt + Shift + 9
     case 8218:  return 41; // Command + Alt + Shift + 0
+	
+    case 2730:  return 45; // Alt + -
+    case 2237:  return 61; // Alt + = (can avoid shift on this one for simpler up/down)
+    case 8800:  return 61; // Alt + = (can avoid shift on this one for simpler up/down)
     }
     return k;
 }
@@ -1886,7 +1899,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     GMenuItem *mi;
     unichar_t keysym = event->u.chr.keysym;
 
-//    printf("GMenuBarCheckKey(top) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
+    printf("GMenuBarCheckKey(top) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
 
     if ( g==NULL || keysym==0 ) return( false ); /* exit if no gadget or key */
 
@@ -1909,13 +1922,13 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	    }
 	}
     }
-//    printf("GMenuBarCheckKey(2) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
+    printf("GMenuBarCheckKey(2) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
 
     /* First check for an open menu underscore key being pressed */
     mi = GMenuSearchShortcut(mb->g.base,mb->mi,event,mb->child==NULL);
     if ( mi ) {
-//	printf("GMenuBarCheckKey(3) have mi... :%p\n", mi );
-//	printf("GMenuBarCheckKey(3) have mitext:%s\n", u_to_c(mi->ti.text) );
+	printf("GMenuBarCheckKey(3) have mi... :%p\n", mi );
+	printf("GMenuBarCheckKey(3) have mitext:%s\n", u_to_c(mi->ti.text) );
 	if ( mi->ti.checkable && !mi->ti.disabled )
 	    mi->ti.checked = !mi->ti.checked;
 	if ( mi->invoke!=NULL && !mi->ti.disabled )
@@ -1956,6 +1969,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 
 #endif
 
+    printf("about to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
     
 	struct dlistnodeExternal* node= hotkeyFindAllByEvent( top, event );
 	struct dlistnode* hklist = (struct dlistnode*)node;
