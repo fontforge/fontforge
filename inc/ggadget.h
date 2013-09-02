@@ -56,6 +56,7 @@ typedef struct gtextinfo {
     unsigned int changed: 1;			/* If a row/column widget changed this */
     unichar_t mnemonic;				/* Only for menus and menubars */
 						/* should really be in menuitem, but that wastes space and complicates GTextInfoDraw */
+    char* text_untranslated;                    /* used to simplify hotkey lookup for menus. */
 } GTextInfo;
 
 #define GTEXTINFO_EMPTY { NULL, NULL, 0x000000, 0x000000, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, '\0' }
