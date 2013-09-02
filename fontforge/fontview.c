@@ -5770,7 +5770,7 @@ GMenuItem fvpopupmenu[] = {
 };
 
 static GMenuItem2 mblist[] = {
-    { { (unichar_t *) N_("_File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, NULL, fllist, fllistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("File|No Shortcut"), fllist, fllistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Edit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'E' }, NULL, edlist, edlistcheck, NULL, 0 },
     { { (unichar_t *) N_("E_lement"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, ellist, ellistcheck, NULL, 0 },
 #ifndef _NO_PYTHON
@@ -7262,7 +7262,13 @@ static void FontViewInit(void) {
 return;
 
     done = true;
+    printf("1 mblist[0].text notrans: %s\n", mblist[0].ti.text );
     mb2DoGetText(mblist);
+    printf("2 mblist[0].text        : %s\n", u_to_c(mblist[0].ti.text) );
+    printf("2 mblist[0].text notrans: %s\n", mblist[0].ti.text_untranslated );
+
+    printf("2 mblist[0]->fileopen .text        : %s\n", u_to_c(mblist[0].sub[1].ti.text) );
+    printf("2 mblist[0]->fileopen .text notrans: %s\n", mblist[0].sub[1].ti.text_untranslated );
     mbDoGetText(fvpopupmenu);
 }
 
