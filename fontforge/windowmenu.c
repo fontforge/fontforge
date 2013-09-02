@@ -264,6 +264,10 @@ void mbDoGetText(GMenuItem *mb) {
     if ( mb==NULL )
 return;
     for ( i=0; mb[i].ti.text!=NULL || mb[i].ti.line || mb[i].ti.image!=NULL; ++i ) {
+	if( mb[i].shortcut )
+	    mb[i].ti.text_untranslated = mb[i].shortcut;
+	else
+	    mb[i].ti.text_untranslated = mb[i].ti.text;
 	if ( mb[i].ti.text!=NULL ) {
 	    mb[i].ti.text = (unichar_t *) S_((char *) mb[i].ti.text);
 	    if ( mb[i].sub!=NULL )
@@ -279,6 +283,10 @@ void mb2DoGetText(GMenuItem2 *mb) {
     if ( mb==NULL )
 return;
     for ( i=0; mb[i].ti.text!=NULL || mb[i].ti.line || mb[i].ti.image!=NULL; ++i ) {
+	if( mb[i].shortcut )
+	    mb[i].ti.text_untranslated = mb[i].shortcut;
+	else
+	    mb[i].ti.text_untranslated = mb[i].ti.text;
 	if ( mb[i].ti.text!=NULL ) {
 	    mb[i].ti.text = (unichar_t *) S_((char *) mb[i].ti.text);
 	    if ( mb[i].sub!=NULL )
