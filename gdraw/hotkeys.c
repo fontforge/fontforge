@@ -424,6 +424,16 @@ char* hotkeyTextWithoutModifiers( char* hktext ) {
     char* p = strrchr( hktext, '+' );
     if( !p )
 	return hktext;
+
+    //
+    // Handle Control++ by moving back over the last plus
+    //
+    if( p > hktext )
+    {
+	char* pp = p - 1;
+	if( *pp == '+' )
+	    --p;
+    }
     return p+1;
 }
 

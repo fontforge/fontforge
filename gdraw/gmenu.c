@@ -1937,57 +1937,71 @@ int GGadgetUndoMacEnglishOptionCombinations(GEvent *event) {
  * alternate-keysym). So this little function is designed to convert
  * the osx "enhanced" keysym back to their basic keysym.
  */
-static int osx_handle_keysyms( int k )
+static int osx_handle_keysyms( int st, int k )
 {
-    switch( k )
-    {
-    case 8211:  return 45; // Command + Alt + -
-    case 177:   return 43; // Command + Alt + Shift + =
-    case 197:   return 65; // Command + Alt + Shift + A
-    case 305:   return 66; // Command + Alt + Shift + B
-    case 199:   return 67; // Command + Alt + Shift + C
-    case 206:   return 68; // Command + Alt + Shift + D
-    case 180:   return 69; // Command + Alt + Shift + E
-    case 207:   return 70; // Command + Alt + Shift + F
-    case 733:   return 71; // Command + Alt + Shift + G
-    case 211:   return 72; // Command + Alt + Shift + H
-    case 710:   return 73; // Command + Alt + Shift + I
-    case 212:   return 74; // Command + Alt + Shift + J
-    case 63743: return 75; // Command + Alt + Shift + K
-    case 210:   return 76; // Command + Alt + Shift + L
-    case 194:   return 77; // Command + Alt + Shift + M
-    case 732:   return 78; // Command + Alt + Shift + N
-    case 216:   return 79; // Command + Alt + Shift + O
-    case 8719:  return 80; // Command + Alt + Shift + P
-    case 65505: return 81; // Command + Alt + Shift + Q
-    case 8240:  return 82; // Command + Alt + Shift + R
-    case 205:   return 83; // Command + Alt + Shift + S
-    case 711:   return 84; // Command + Alt + Shift + T
-    case 168:   return 85; // Command + Alt + Shift + U
-    case 9674:  return 86; // Command + Alt + Shift + V
-    case 8222:  return 87; // Command + Alt + Shift + W
-    case 731:   return 88; // Command + Alt + Shift + X
-    case 193:   return 89; // Command + Alt + Shift + Y
-    case 184:   return 90; // Command + Alt + Shift + Z
+//    printf("osx_handle_keysyms() st:%d k:%d\n", st, k );
 
-    case 8260:  return 33; // Command + Alt + Shift + 1
-    case 8360:  return 64; // Command + Alt + Shift + 2
-    case 8249:  return 35; // Command + Alt + Shift + 3
-    case 8250:  return 36; // Command + Alt + Shift + 4
-    case 64257: return 37; // Command + Alt + Shift + 5
-    case 64258: return 94; // Command + Alt + Shift + 6
-    case 8225:  return 38; // Command + Alt + Shift + 7
-    case 176:   return 42; // Command + Alt + Shift + 8
-    case 183:   return 40; // Command + Alt + Shift + 9
-    case 8218:  return 41; // Command + Alt + Shift + 0
-	
-    case 2730:  return 45; // Alt + -
-    case 2237:  return 61; // Alt + = (can avoid shift on this one for simpler up/down)
-    case 8800:  return 61; // Alt + = (can avoid shift on this one for simpler up/down)
-    }
+    if( (st & ksm_control) && (st & ksm_meta) )
+	switch( k )
+	{
+	case 8211:  return 45; // Command + Alt + -
+	}
+    
+    if( (st & ksm_control) && (st & ksm_meta) && (st & ksm_shift) )
+	switch( k )
+	{
+	case 177:   return 43; // Command + Alt + Shift + =
+	case 197:   return 65; // Command + Alt + Shift + A
+	case 305:   return 66; // Command + Alt + Shift + B
+	case 199:   return 67; // Command + Alt + Shift + C
+	case 206:   return 68; // Command + Alt + Shift + D
+	case 180:   return 69; // Command + Alt + Shift + E
+	case 207:   return 70; // Command + Alt + Shift + F
+	case 733:   return 71; // Command + Alt + Shift + G
+	case 211:   return 72; // Command + Alt + Shift + H
+	case 710:   return 73; // Command + Alt + Shift + I
+	case 212:   return 74; // Command + Alt + Shift + J
+	case 63743: return 75; // Command + Alt + Shift + K
+	case 210:   return 76; // Command + Alt + Shift + L
+	case 194:   return 77; // Command + Alt + Shift + M
+	case 732:   return 78; // Command + Alt + Shift + N
+	case 216:   return 79; // Command + Alt + Shift + O
+	case 8719:  return 80; // Command + Alt + Shift + P
+	case 65505: return 81; // Command + Alt + Shift + Q
+	case 8240:  return 82; // Command + Alt + Shift + R
+	case 205:   return 83; // Command + Alt + Shift + S
+	case 711:   return 84; // Command + Alt + Shift + T
+	case 168:   return 85; // Command + Alt + Shift + U
+	case 9674:  return 86; // Command + Alt + Shift + V
+	case 8222:  return 87; // Command + Alt + Shift + W
+	case 731:   return 88; // Command + Alt + Shift + X
+	case 193:   return 89; // Command + Alt + Shift + Y
+	case 184:   return 90; // Command + Alt + Shift + Z
+
+	case 8260:  return 33; // Command + Alt + Shift + 1
+	case 8360:  return 64; // Command + Alt + Shift + 2
+	case 8249:  return 35; // Command + Alt + Shift + 3
+	case 8250:  return 36; // Command + Alt + Shift + 4
+	case 64257: return 37; // Command + Alt + Shift + 5
+	case 64258: return 94; // Command + Alt + Shift + 6
+	case 8225:  return 38; // Command + Alt + Shift + 7
+	case 176:   return 42; // Command + Alt + Shift + 8
+	case 183:   return 40; // Command + Alt + Shift + 9
+	case 8218:  return 41; // Command + Alt + Shift + 0
+	}
+    
+    if( st & ksm_meta )
+	switch( k )
+	{
+	case 2730:  return 45; // Alt + -
+	case 2237:  return 61; // Alt + = (can avoid shift on this one for simpler up/down)
+	case 8800:  return 61; // Alt + = (can avoid shift on this one for simpler up/down)
+	}
+    
     return k;
 }
 
+extern int osx_fontview_copy_cut_counter;
 
 int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     int i;
@@ -2060,9 +2074,15 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     if( event->u.chr.state & ksm_option )
 	event->u.chr.state ^= ksm_option;
 
-    event->u.chr.keysym = osx_handle_keysyms( event->u.chr.keysym );
+    event->u.chr.keysym = osx_handle_keysyms( event->u.chr.state, event->u.chr.keysym );
     printf(" 3   has ksm_option:%d\n",   (event->u.chr.state & ksm_option ));
 
+    // Command-c or Command-x
+    if( event->u.chr.state == ksm_control
+	&& (event->u.chr.keysym == 99 || event->u.chr.keysym == 120 ))
+    {
+	osx_fontview_copy_cut_counter++;
+    }
 #endif
 
 //    printf("about to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );

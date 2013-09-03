@@ -7102,6 +7102,13 @@ void FontViewRemove(FontView *fv) {
     FontViewFree(&fv->b);
 }
 
+/**
+ * In some cases fontview gets an et_selclear event when using copy
+ * and paste on the OSX. So this guard lets us quietly ignore that
+ * event when we have just done command+c or command+x.
+ */
+int osx_fontview_copy_cut_counter = 0;
+
 static int fv_e_h(GWindow gw, GEvent *event) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
@@ -7112,6 +7119,17 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 
     switch ( event->type ) {
       case et_selclear:
+#ifdef __Mac
+	  // For some reason command + c and command + x wants
+	  // to send a clear to us, even if that key was pressed
+	  // on a charview.
+	  if( osx_fontview_copy_cut_counter )
+	  {
+	     osx_fontview_copy_cut_counter--;
+	     break;
+          }
+	  printf("fontview et_selclear\n");
+#endif
 	ClipboardClear();
       break;
       case et_expose:
