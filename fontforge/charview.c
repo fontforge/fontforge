@@ -11498,16 +11498,18 @@ static void CharViewInit(void) {
     if ( done )
 return;
     done = true;
-
-    printf("CharViewInit 1 mblist[0].text notrans: %s\n", mblist[0].ti.text );
+//    printf("CharViewInit(top) mblist[0].text before translation: %s\n", mblist[0].ti.text );
     
     mb2DoGetText(mblist);
-    printf("CharViewInit 2 mblist[0].text        : %s\n", u_to_c(mblist[0].ti.text) );
-    printf("CharViewInit 2 mblist[0].text notrans: %s\n", mblist[0].ti.text_untranslated );
+    
+//    printf("CharViewInit(2) mblist[0].text after    translation: %s\n", u_to_c(mblist[0].ti.text) );
+//    printf("CharViewInit(2) mblist[0].text_untranslated notrans: %s\n", mblist[0].ti.text_untranslated );
 
     mb2DoGetText(spiroptlist);
     for ( i=0; mblist_nomm[i].ti.text!=NULL; ++i )
     {
+	// Note that because we are doing this ourself we have to set
+	// the text_untranslated ourself too.
  	if( mblist_nomm[i].shortcut )
 	    mblist_nomm[i].ti.text_untranslated = mblist_nomm[i].shortcut;
 	else
