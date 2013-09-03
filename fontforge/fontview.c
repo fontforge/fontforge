@@ -247,7 +247,7 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 	    /* rasterized specially for this purpose), then we can't use it directly, as bitmap */
 	    /* glyphs may contain selections and references. So create a temporary copy of */
 	    /* the glyph merging all such elements into a single bitmap */
-	    bdfc = fv->show->piecemeal ? 
+	    bdfc = fv->show->piecemeal ?
 		fv->show->glyphs[feat_gid] : BDFGetMergedChar( fv->show->glyphs[feat_gid] );
 
 	    memset(&gi,'\0',sizeof(gi));
@@ -647,7 +647,7 @@ int _FVMenuSaveAs(FontView *fv) {
     	temp = temp2;
     }
 #endif
-    
+
     ret = GWidgetSaveAsFileWithGadget8(_("Save as..."),temp,0,NULL,
 				       _FVSaveAsFilterFunc, FilenameFunc,
 				       &gcd );
@@ -992,13 +992,13 @@ static void FVMenuMergeKern(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UN
 
 void MenuOpen(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
     char *temp;
     char *eod, *fpt, *file, *full;
     FontView *test; int fvcnt, fvtest;
 
     char* OpenDir = NULL;
 #if defined(__MINGW32__)
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
     OpenDir = GFileGetHomeDocumentsDir();
     if( fv && fv->b.sf && fv->b.sf->filename )
     {
@@ -1007,7 +1007,7 @@ void MenuOpen(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 	OpenDir = dname;
     }
 #endif
-    
+
     for ( fvcnt=0, test=fv_list; test!=NULL; ++fvcnt, test=(FontView *) (test->b.next) );
     do {
 	temp = GetPostScriptFontName(OpenDir,true);
@@ -1080,7 +1080,7 @@ return( false );
     }
 return( true );
 }
-	
+
 static void FVMenuOpenOutline(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i;
@@ -1595,11 +1595,11 @@ static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontViewBase * fvb = (FontViewBase *) fv;
     SplineFont *sf = fvb->sf;
     char* sfdchunk = 0;
-    
+
     // printf("we currently have %d splinefont level undoes\n", dlist_size((struct dlistnode **)&sf->undoes));
     if( !sf->undoes )
 	return;
-    
+
     struct sfundoes *undo = sf->undoes;
     // printf("font level undo msg:%s\n", undo->msg );
     switch(undo->type) {
@@ -1611,7 +1611,7 @@ static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    sfundoRemoveAndFree( sf, undo );
 	    return;
 	}
-	
+
 	// Roll it on back!
 	FILE* sfd = MakeTemporaryFile();
 	fwrite( sfdchunk, strlen(sfdchunk), 1, sfd );
@@ -1642,7 +1642,7 @@ static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    }
 	    free(name);
 	}
-	
+
 	if( undo->type == sfut_lookups_kerns ) {
 	    SFDFixupRefs( sf );
 	}
@@ -2015,7 +2015,7 @@ static void FVSelectByScript(FontView *fv,int merge) {
     GGadgetsCreate(gw,boxes);
     GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
     GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
-    
+
 
     GHVBoxFitWindow(boxes[0].ret);
 
@@ -2057,7 +2057,7 @@ static void FVSelectByScript(FontView *fv,int merge) {
     if ( done==1 )
 return;
     tag = (tagbuf[0]<<24) | (tagbuf[1]<<16) | (tagbuf[2]<<8) | tagbuf[3];
-	
+
     for ( j=0; j<map->enccount; ++j ) if ( (gid=map->map[j])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
 	doit = ( SCScriptFromUnicode(sc)==tag );
 	if ( doit ) {
@@ -2277,7 +2277,7 @@ static void FVMenuSelectByName(GWindow _gw, struct gmenuitem *UNUSED(mi), GEvent
     GGadgetsCreate(gw,boxes);
     GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
     GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
-    
+
 
     GHVBoxFitWindow(boxes[0].ret);
 
@@ -2393,7 +2393,7 @@ static void FVMenuSelectChanged(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
 	doit = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && sf->glyphs[gid]->changed );
 	fv->b.selected[i] = mergefunc[ merge + (fv->b.selected[i]?2:0) + doit ];
     }
-	    
+
     GDrawRequestExpose(fv->v,NULL,false);
 }
 
@@ -2726,7 +2726,7 @@ static void FVMenuCluster(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUS
 static void FVMenuAutotrace(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     GCursor ct=0;
-    
+
     if ( fv->v!=NULL ) {
 	ct = GDrawGetCursor(fv->v);
 	GDrawSetCursor(fv->v,ct_watch);
@@ -3176,7 +3176,7 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi, GEvent *UNUSED(
     label[0].text = (unichar_t *) _("Baseline");
     label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
-    gcd[0].gd.pos.x = 8; gcd[0].gd.pos.y = 8; 
+    gcd[0].gd.pos.x = 8; gcd[0].gd.pos.y = 8;
     gcd[0].gd.flags = gg_enabled|gg_visible|(metrics&fvm_baseline?gg_cb_on:0);
     gcd[0].gd.cid = fvm_baseline;
     gcd[0].creator = GCheckBoxCreate;
@@ -3201,7 +3201,7 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi, GEvent *UNUSED(
     label[3].text = (unichar_t *) _("Advance Width as a Bar");
     label[3].text_is_1byte = true;
     gcd[3].gd.label = &label[3];
-    gcd[3].gd.pos.x = 8; gcd[3].gd.pos.y = gcd[2].gd.pos.y+16; 
+    gcd[3].gd.pos.x = 8; gcd[3].gd.pos.y = gcd[2].gd.pos.y+16;
     gcd[3].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|(metrics&fvm_advanceto?gg_cb_on:0);
     gcd[3].gd.cid = fvm_advanceto;
     gcd[3].gd.popup_msg = (unichar_t *) _("Display the advance width as a bar under the glyph\nshowing the extent of the advance");
@@ -3227,7 +3227,7 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi, GEvent *UNUSED(
     gcd[5].creator = GButtonCreate;
 
     GGadgetsCreate(gw,gcd);
-    
+
     GDrawSetVisible(gw,true);
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);
@@ -3615,7 +3615,7 @@ return;
 	collabStateString = collabclient_stateToString(
 	    collabclient_getState( &fv->b ));
     }
-    
+
     enc = SFEncodingName(fv->b.sf,fv->b.normal?fv->b.normal:fv->b.map);
     len = strlen(fv->b.sf->fontname)+1 + strlen(enc)+6;
     if ( fv->b.normal ) len += strlen(_("Compact"))+1;
@@ -4179,7 +4179,7 @@ static void edlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  case MID_CopyLookupData:
 	    mi->ti.disabled = pos==-1 || (fv->b.sf->gpos_lookups==NULL && fv->b.sf->gsub_lookups==NULL);
 	  break;
-	  case MID_CopyVWidth: 
+	  case MID_CopyVWidth:
 	    mi->ti.disabled = pos==-1 || !fv->b.sf->hasvmetrics;
 	  break;
 	  case MID_ClearBackground:
@@ -4348,7 +4348,7 @@ static void mtlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
-	  case MID_Center: case MID_Thirds: case MID_SetWidth: 
+	  case MID_Center: case MID_Thirds: case MID_SetWidth:
 	  case MID_SetLBearing: case MID_SetRBearing: case MID_SetBearings:
 	    mi->ti.disabled = anychars==-1;
 	  break;
@@ -4868,7 +4868,7 @@ static void FVMenuDetachAndRemoveGlyphs(GWindow gw, struct gmenuitem *UNUSED(mi)
     buts[0] = _("_Remove");
     buts[1] = _("_Cancel");
     buts[2] = NULL;
-    
+
     if ( gwwv_ask(_("Detach & Remove Glyphs"),(const char **) buts,0,1,_("Are you sure you wish to remove these glyphs? This operation cannot be undone."))==1 )
 return;
 
@@ -5186,7 +5186,7 @@ static void lylistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     }
     GMenuItemArrayFree(mi->sub);
     mi->sub = sub;
-}	
+}
 
 static GMenuItem2 vwlist[] = {
     { { (unichar_t *) N_("_Next Glyph"), (GImage *) "viewnext.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("Next Glyph|No Shortcut"), NULL, NULL, FVMenuChangeChar, MID_Next },
@@ -5471,7 +5471,7 @@ static void cdlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	cdlist[base-1].ti.line = false;
     } else {
 	cdlist[base-1].ti.line = true;
-	for ( j = 0, i=base; 
+	for ( j = 0, i=base;
 		i<sizeof(cdlist)/sizeof(cdlist[0])-1 && j<cidmaster->subfontcnt;
 		++i, ++j ) {
 	    sub = cidmaster->subfonts[j];
@@ -5635,10 +5635,10 @@ static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
     if( res )
     {
 	HostPortUnpack( address, &port, port_default );
-	
+
 	printf("address:%s\n", address );
 	printf("port:%d\n", port );
-	
+
 	void* cc = collabclient_new( address, port );
 	fv->b.collabClient = cc;
 	collabclient_sessionStart( cc, fv );
@@ -5663,7 +5663,7 @@ static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
 	char address[IPADDRESS_STRING_LENGTH_T];
 	strncpy( address, res, IPADDRESS_STRING_LENGTH_T-1 );
 	HostPortUnpack( address, &port, port_default );
-	
+
 	void* cc = collabclient_new( address, port );
 	fv->b.collabClient = cc;
 	collabclient_sessionJoin( cc, fv );
@@ -5694,7 +5694,7 @@ static void FVMenuCollabCloseLocalServer(GWindow gw, struct gmenuitem *UNUSED(mi
 	    return;
 	}
     }
-    
+
     collabclient_sessionDisconnect( &fv->b );
     collabclient_closeLocalServer( &fv->b );
 }
@@ -5818,7 +5818,7 @@ return;
     for ( fv=(FontView *) (fv->b.sf->fv); fv!=NULL; fv = (FontView *) (fv->b.nextsame) ) {
 	if( !fv->colcnt )
 	    continue;
-    
+
 	for ( mv=fv->b.sf->metrics; mv!=NULL; mv=mv->next )
 	    MVRefreshChar(mv,fv->b.sf->glyphs[gid]);
 	if ( fv->show==fv->filled )
@@ -6017,7 +6017,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
     }
     for ( i=0; i<=fv->colcnt; ++i )
 	GDrawDrawLine(pixmap,i*fv->cbw,0,i*fv->cbw,fv->height,def_fg);
-    for ( i=event->u.expose.rect.y/fv->cbh; i<=fv->rowcnt && 
+    for ( i=event->u.expose.rect.y/fv->cbh; i<=fv->rowcnt &&
 	    (event->u.expose.rect.y+event->u.expose.rect.height+fv->cbh-1)/fv->cbh; ++i ) for ( j=0; j<fv->colcnt; ++j ) {
 	int index = (i+fv->rowoff)*fv->colcnt+j;
 	SplineChar *sc;
@@ -7519,7 +7519,7 @@ static SplineFont *FontOfFilename(const char *filename) {
     char buffer[1025];
     FontView *fv;
 
-    GFileGetAbsoluteName((char *) filename,buffer,sizeof(buffer)); 
+    GFileGetAbsoluteName((char *) filename,buffer,sizeof(buffer));
     for ( fv=fv_list; fv!=NULL ; fv=(FontView *) (fv->b.next) ) {
 	if ( fv->b.sf->filename!=NULL && strcmp(fv->b.sf->filename,buffer)==0 )
 return( fv->b.sf );
@@ -7638,7 +7638,7 @@ static void FVCopyInnards(FontView *fv,GRect *pos,int infoh,
     memcpy(fv->b.selected,fvorig->b.selected,fv->b.map->enccount);
     fv->rowoff = (fvorig->rowoff*fvorig->colcnt)/fv->colcnt;
 }
-    
+
 void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable) {
     GGadgetData gd;
     GRect pos, gsize, sbsize;
@@ -7816,7 +7816,7 @@ return( true );
 return( GGadgetDispatchEvent(active_fv->vsb,event));
     }
 
-    
+
     switch ( event->type ) {
       case et_expose:
 	FVDrawInfo(active_fv,pixmap,event);
