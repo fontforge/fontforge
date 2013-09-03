@@ -184,12 +184,13 @@ spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16 *_cnt) {
     spiro_cp *nspiros;
 
     if ( spiros==NULL )
-return( NULL );
+	return( NULL );
     for ( n=0; spiros[n].ty!='z'; ++n );
-    nspiros = galloc((n+1)*sizeof(spiro_cp));
+    if ( (nspiros=(spiro_cp*)calloc((n+1),sizeof(spiro_cp)))==NULL )
+	return( NULL );
     memcpy(nspiros,spiros,(n+1)*sizeof(spiro_cp));
     if ( _cnt != NULL ) *_cnt = n+1;
-return( nspiros );
+    return( nspiros );
 }
 
 void SSRegenerateFromSpiros(SplineSet *spl) {
