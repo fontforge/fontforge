@@ -7262,14 +7262,16 @@ static void FontViewInit(void) {
 return;
 
     done = true;
-    printf("1 mblist[0].text notrans: %s\n", mblist[0].ti.text );
+//    printf("FontViewInit(top) mblist[0].text: %s\n", mblist[0].ti.text );
+    
     mb2DoGetText(mblist);
-    printf("2 mblist[0].text        : %s\n", u_to_c(mblist[0].ti.text) );
-    printf("2 mblist[0].text notrans: %s\n", mblist[0].ti.text_untranslated );
-
-    printf("2 mblist[0]->fileopen .text        : %s\n", u_to_c(mblist[0].sub[1].ti.text) );
-    printf("2 mblist[0]->fileopen .text notrans: %s\n", mblist[0].sub[1].ti.text_untranslated );
     mbDoGetText(fvpopupmenu);
+
+
+//    printf("FontViewInit(end) mblist[0].text        : %s\n", u_to_c(mblist[0].ti.text) );
+//    printf("FontViewInit(end) mblist[0].text notrans: %s\n", mblist[0].ti.text_untranslated );
+//    printf("FontViewInit(end) mblist[0]->fileopen .text        : %s\n", u_to_c(mblist[0].sub[1].ti.text) );
+//    printf("FontViewInit(end) mblist[0]->fileopen .text notrans: %s\n", mblist[0].sub[1].ti.text_untranslated );
 }
 
 static struct resed fontview_re[] = {

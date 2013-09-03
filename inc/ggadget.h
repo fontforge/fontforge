@@ -57,6 +57,21 @@ typedef struct gtextinfo {
     unichar_t mnemonic;				/* Only for menus and menubars */
 						/* should really be in menuitem, but that wastes space and complicates GTextInfoDraw */
     char* text_untranslated;                    /* used to simplify hotkey lookup for menus. */
+    /* 
+     * text_untranslated is either the GMenuItem2 shortcut or the GTextInfo prior
+     * to translation occurring. The shortcut text is considered first
+     * to allow the code to make the value explicit. This is useful in
+     * cases where the menu text to be translated (GTextInfo.text
+     * prior to calling sgettext() on it) is specially designed for
+     * translation, like File|New is. Having the hotkey of "New|No
+     * Shortcut" will give a text_untranslated of "New|No Shortcut".
+     * See HKTextInfoToUntranslatedText() for stripping out any
+     * potential underscore and the trailing "|Rest" string.
+     *
+     * Using a pointer like this relies on the GMenuItems used to make
+     * the menus are a static structure that outlasts the
+     * menu/gtextinfo itself.
+     **/
 } GTextInfo;
 
 #define GTEXTINFO_EMPTY { NULL, NULL, 0x000000, 0x000000, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, '\0' }
