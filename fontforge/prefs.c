@@ -1304,25 +1304,27 @@ static void PrefsUI_LoadPrefs(void)
     //
     if ( !xdefs_filename )
     {
-	fprintf(stderr,"no xdefs_filename!\n");
 	char path[PATH_MAX];
-	printf("TESTING: getPixmapDir:%s\n", getPixmapDir() );
-	printf("TESTING: getShareDir:%s\n", getShareDir() );
-	printf("TESTING: GResourceProgramDir:%s\n", GResourceProgramDir );
-	snprintf(path, PATH_MAX, "%s/%s", getPixmapDir(), "resources" );
-	fprintf(stderr,"trying default theme:%s\n", path );
-	if(GFileExists(path)) {
-	    change_res_filename( path );
+
+	fprintf(stderr,"no xdefs_filename!\n");
+	if (!quiet) {
+	    fprintf(stderr,"TESTING: getPixmapDir:%s\n", getPixmapDir() );
+	    fprintf(stderr,"TESTING: getShareDir:%s\n", getShareDir() );
+	    fprintf(stderr,"TESTING: GResourceProgramDir:%s\n", GResourceProgramDir );
 	}
+	snprintf(path, PATH_MAX, "%s/%s", getPixmapDir(), "resources" );
+	if (!quiet)
+	    fprintf(stderr,"trying default theme:%s\n", path );
+	if(GFileExists(path))
+	    change_res_filename( path );
     }
     if ( xdefs_filename!=NULL )
 	GResourceAddResourceFile(xdefs_filename,GResourceProgramName,true);
     if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
 	fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
 	
-    if ( glyph_2_name_map ) {
+    if ( glyph_2_name_map )
 	old_sfnt_flags |= ttf_flag_glyphmap;
-    }
     LoadNamelistDir(NULL);
     ProcessFileChooserPrefs();
     GDrawEnableCairo( prefs_usecairo );

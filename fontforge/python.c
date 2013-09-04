@@ -18363,8 +18363,11 @@ static PyObject *InitializePythonMainNamespace() {
 }
 
 static void CreateAllPyModules(void) {
-    printf("CreateAllPyModules()\n");
     int i;
+
+    if (!quiet)
+        printf("CreateAllPyModules()\n");
+
     for ( i=0; i<NUM_MODULES; i++ ) {
         CreatePyModule( all_modules[i] );
     }

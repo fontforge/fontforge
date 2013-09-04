@@ -43,6 +43,7 @@
 int32 unicode_from_adobestd[256];
 struct lconv localeinfo;
 char *coord_sep = ",";
+int quiet = 0;
 
 static void initadobeenc(void) {
     int i,j;

@@ -602,7 +602,8 @@ copyUIMethodsToBaseTable( PyMethodDef* ui, PyMethodDef* md )
 
 
 void PythonUI_Init(void) {
-    printf("PythonUI_Init()\n");
+    if (!quiet)
+        printf("PythonUI_Init()\n");
     FfPy_Replace_MenuItemStub(PyFF_registerMenuItem);
     set_pyFF_maybeCallCVPreserveState_Func( pyFF_maybeCallCVPreserveState );
     set_pyFF_sendRedoIfInSession_Func( pyFF_sendRedoIfInSession_Func_Real );
