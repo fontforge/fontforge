@@ -79,6 +79,7 @@ extern char *printcommand, *printlazyprinter;
 
 extern Encoding *enclist;
 
+extern int quiet;
 
 #define SCRIPT_MENU_MAX	10
 
