@@ -252,13 +252,13 @@ CharView.Menu.View.Show.Debug Raster Changes: No Shortcut
 CharView.Menu.View.Show.Hori_zontal Metric Lines: No Shortcut
 CharView.Menu.View.Show.Vertical Metric Lines: No Shortcut
 CharView.Menu.View.Show.Snap Outlines to Pixel Grid: No Shortcut
-CharView.Menu.View.Zoom out: x
-CharView.Menu.View.Zoom out: -
 CharView.Menu.View.Zoom out:Alt+Ctl+-
-CharView.Menu.View.Zoom in: Shft++
-CharView.Menu.View.Zoom in: z
-CharView.Menu.View.Zoom in: =
+CharView.Menu.View.Zoom out: -
+CharView.Menu.View.Zoom out: x
 CharView.Menu.View.Zoom in:Alt+Ctl+Shft++
+CharView.Menu.View.Zoom in: Shft++
+CharView.Menu.View.Zoom in: =
+CharView.Menu.View.Zoom in: z
 
 CharView.Menu.Metrics.Center in Width: No Shortcut
 CharView.Menu.Metrics.Thirds in Width: No Shortcut
