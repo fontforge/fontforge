@@ -109,6 +109,7 @@ static void _dousage(void) {
     printf( "\t-recover none|auto|inquire|clean (control error recovery)\n" );
     printf( "\t-allglyphs\t\t (load all glyphs in the 'glyf' table\n\t\t\t of a truetype collection)\n" );
     printf( "\t-nosplash\t\t (no splash screen)\n" );
+    printf( "\t-quiet\t\t\t (don't print non-essential information to stderr)\n" );
     printf( "\t-unique\t\t\t (if a fontforge is already running open\n\t\t\t all arguments in it and have this process exit)\n" );
     printf( "\t-display display-name\t (sets the X display)\n" );
     printf( "\t-depth val\t\t (sets the display depth if possible)\n" );
@@ -813,25 +814,6 @@ int fontforge_main( int argc, char **argv ) {
 
     g_type_init();
 
-    fprintf( stderr, "Copyright (c) 2000-2012 by George Williams. See AUTHORS for contributors.\n" );
-    fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
-    fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
-    fprintf( stderr, " Executable based on sources from %s"
-	    "-ML"
-#ifdef FREETYPE_HAS_DEBUGGER
-	    "-TtfDb"
-#endif
-#ifdef _NO_PYTHON
-	    "-NoPython"
-#endif
-#ifdef FONTFORGE_CONFIG_USE_DOUBLE
-	    "-D"
-#endif
-	    ".\n",
-	    source_modtime_str );
-    fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
-    fprintf( stderr, " Based on source from git with hash:%s\n", FONTFORGE_GIT_VERSION );
-
     /* Must be done before we cache the current directory */
     /* Change to HOME dir if specified on the commandline */
     for ( i=1; i<argc; ++i ) {
@@ -844,8 +826,31 @@ int fontforge_main( int argc, char **argv ) {
 	    if (getenv("HOME")!=NULL) chdir(getenv("HOME"));
 	    break;	/* Done - Unnecessary to check more arguments */
 	}
+	if (strcmp(pt,"-quiet")==0)
+	    quiet = 1;
     }
-	
+
+    if (!quiet) {
+        fprintf( stderr, "Copyright (c) 2000-2012 by George Williams. See AUTHORS for contributors.\n" );
+        fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
+        fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
+        fprintf( stderr, " Executable based on sources from %s"
+	        "-ML"
+#ifdef FREETYPE_HAS_DEBUGGER
+	        "-TtfDb"
+#endif
+#ifdef _NO_PYTHON
+	        "-NoPython"
+#endif
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
+	        "-D"
+#endif
+	        ".\n",
+	        source_modtime_str );
+        fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
+        fprintf( stderr, " Based on source from git with hash:%s\n", FONTFORGE_GIT_VERSION );
+    }
+
 #if defined(__Mac)
     /* Start X if they haven't already done so. Well... try anyway */
     /* Must be before we change DYLD_LIBRARY_PATH or X won't start */
@@ -1029,6 +1034,8 @@ int fontforge_main( int argc, char **argv ) {
 		GDrawEnableCairo(true);
 	} else if ( strcmp(pt,"-nosplash")==0 )
 	    splash = 0;
+	else if ( strcmp(pt,"-quiet")==0 )
+	    /* already checked for this earlier, no need to do it again */;
 	else if ( strcmp(pt,"-unique")==0 )
 	    unique = 1;
 	else if ( strcmp(pt,"-recover")==0 && i<argc-1 ) {
@@ -1141,9 +1148,7 @@ exit( 0 );
     // The below call will initialize the fontconfig cache if required.
     // That can take a while the first time it happens.
     //
-   printf("before GDrawWindowFontMetrics()\n");
    GDrawWindowFontMetrics(splashw,splash_font,&as,&ds,&ld);
-   printf("after GDrawWindowFontMetrics()\n");
    fh = as+ds+ld;
 
     if ( AutoSaveFrequency>0 )
@@ -1187,7 +1192,7 @@ exit( 0 );
 		strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 ||
 		strcmp(pt,"-dontopenxdevices")==0 || strcmp(pt,"-unique")==0 ||
 		strncmp(pt,"-usecairo",strlen("-usecairo"))==0 ||
-		strcmp(pt,"-home")==0 )
+		strcmp(pt,"-home")==0 || strcmp(pt,"-quiet")==0 )
 	    /* Already done, needed to be before display opened */;
 	else if ( strncmp(pt,"-psn_",5)==0 )
 	    /* Already done */;
