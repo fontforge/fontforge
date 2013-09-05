@@ -1,5 +1,6 @@
 GlyphAutoGoto: 0 
 PrefMaxBackupsToKeep: 32
-ShowCPInfo:	0
-EditHandleSize:	9
-InactiveHandleAlpha:	120
+ShowCPInfo: 0
+EditHandleSize: 9
+InactiveHandleAlpha: 120
+ExportClipboard: 0
