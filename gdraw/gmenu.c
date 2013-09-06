@@ -336,7 +336,7 @@ static char* GMenuGetMenuPath( GMenuItem *basemi, GMenuItem *targetmi ) {
 	}
 	else if( stack[i]->ti.text )
 	{
-	    printf("WARNING: Hotkey system adding translated text! %s\n", HKTextInfoToUntranslatedText( u_to_c(&stack[i]->ti.text)));
+	    printf("WARNING: Hotkey system adding translated text! %s\n", u_to_c(stack[i]->ti.text));
 	    cu_strcat(buffer,stack[i]->ti.text);
 	}
 //	printf("GMenuGetMenuPath() stack at i:%d  mi %s\n", i, u_to_c(stack[i]->ti.text));
