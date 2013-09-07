@@ -2085,14 +2085,17 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     }
 #endif
 
-//    printf("about to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
+    printf("about to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
+    printf("     has ksm_control:%d\n", (event->u.chr.state & ksm_control ));
+    printf("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
+    printf("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
     
 	struct dlistnodeExternal* node= hotkeyFindAllByEvent( top, event );
 	struct dlistnode* hklist = (struct dlistnode*)node;
 	for( ; node; node=(struct dlistnodeExternal*)(node->next) ) {
 	    Hotkey* hk = (Hotkey*)node->ptr;
-//	    printf("hotkey found by event! hk:%p\n", hk );
-//	    printf("hotkey found by event! action:%s\n", hk->action );
+	    printf("hotkey found by event! hk:%p\n", hk );
+	    printf("hotkey found by event! action:%s\n", hk->action );
 	    
 	    int skipkey = false;
 
@@ -2108,8 +2111,8 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 		mi = GMenuSearchAction(mb->g.base,mb->mi,hk->action,event,mb->child==NULL);
 		if ( mi )
 		{
-//		    printf("GMenuBarCheckKey(x) have mi... :%p\n", mi );
-//		    printf("GMenuBarCheckKey(x) have mitext:%s\n", u_to_c(mi->ti.text) );
+		    printf("GMenuBarCheckKey(x) have mi... :%p\n", mi );
+		    printf("GMenuBarCheckKey(x) have mitext:%s\n", u_to_c(mi->ti.text) );
 		    if ( mi->ti.checkable && !mi->ti.disabled )
 			mi->ti.checked = !mi->ti.checked;
 		    if ( mi->invoke!=NULL && !mi->ti.disabled )
