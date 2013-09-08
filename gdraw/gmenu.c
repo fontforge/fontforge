@@ -1178,18 +1178,18 @@ static char* str_remove_all_single_char( char * ret, char ch )
  *
  * The return value is owned by this function, do not free it.
  */
-static char* HKTextInfoToUntranslatedText( char* text_untranslated )
-{
-    char ret[PATH_MAX];
-    strcpy( ret, text_untranslated );
-    char* pt = 0;
+static char* HKTextInfoToUntranslatedText(char *text_untranslated) {
+    char ret[PATH_MAX+1];
+    char* pt;
 
-    if( pt = strchr( ret, '*' ))
+    strncpy(ret,text_untranslated,PATH_MAX);
+
+    if( (pt=strchr(ret,'*')) )
 	strcpy( ret, pt+1 );
-    if( pt = strchr( ret, '|' ))
+    if( (pt=strchr(ret,'|')) )
 	*pt = '\0';
     str_remove_all_single_char( ret, '_' );
-    return ret;
+    return copy(ret);
 }
 
 /**
