@@ -329,7 +329,7 @@ return( sf );
 }
 
 SplineFont *SFReadPalmPdb(char *filename,int toback) {
-    char name[32];
+    char name[33];
     FILE *file;
     int num_records, i, file_end;
     int offset, next_offset;
@@ -345,6 +345,7 @@ return( NULL );
 
     if ( fread(name,1,32,file)==-1 )
   goto fail;
+    name[32]=0;
     fseek(file,0x2c,SEEK_CUR);		/* Find start of record list */
     num_records = getushort(file);
     if ( num_records<=0 )
@@ -429,7 +430,7 @@ return( NULL );
     }
 return(file);
 }
-    
+
 static BDFFont *getbdfsize(SplineFont *sf, int32 size) {
     BDFFont *bdf;
 
@@ -444,7 +445,7 @@ struct FontTag {
   int16 maxWidth;
   int16 kernMax;
   int16 nDescent;
-  int16 fRectWidth; 
+  int16 fRectWidth;
   int16 fRectHeight;
   int16 owTLoc;
   int16 ascent;
@@ -585,7 +586,7 @@ return( NULL );
 	(*offsets)[i+1-fn->firstChar] = rbits;
     for ( i=0; i<map->enccount; i++ ) if (( gid=map->map[i])!=-1 && ( bdfc = bdf->glyphs[gid] ) != NULL )
 	BCRestoreAfterOutput( bdfc );
-return( image );    
+return( image );
 }
 
 int WritePalmBitmaps(char *filename,SplineFont *sf, int32 *sizes,EncMap *map) {
@@ -646,7 +647,7 @@ return( false );
 	    fontcnt = 2;
     } else
 	fonttype = 4;
-	
+
     memset(&fn,0,sizeof(fn));
     fn.fontType = 0x9000;
     fn.firstChar = -1;
@@ -667,7 +668,7 @@ return( false );
     notdefpos = SFFindNotdef(sf,-2);
     if ( notdefpos > base->glyphcnt || base->glyphs[notdefpos] == NULL )
 	notdefpos = -1;
-	    
+
     file = MakeFewRecordPdb(filename,fontcnt);
     if ( file==NULL )
 return( false );

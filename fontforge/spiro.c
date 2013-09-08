@@ -186,7 +186,7 @@ spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16 *_cnt) {
     if ( spiros==NULL )
 	return( NULL );
     for ( n=0; spiros[n].ty!='z'; ++n );
-    if ( (nspiros=(spiro_cp*)calloc((n+1),sizeof(spiro_cp)))==NULL )
+    if ( (nspiros=(spiro_cp*)malloc((n+1)*sizeof(spiro_cp)))==NULL )
 	return( NULL );
     memcpy(nspiros,spiros,(n+1)*sizeof(spiro_cp));
     if ( _cnt != NULL ) *_cnt = n+1;

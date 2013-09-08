@@ -569,7 +569,7 @@ static int pdf_findfonts(struct pdfcontext *pc) {
 		if ( *pt=='/' || *pt=='(' )
 		    ++pt;
 		tpt = copy(pt);
-		
+
 		dnum = pdf_getdescendantfont( pc,dnum );
 		if ( dnum > 0 ) {
 		    pc->fontobjs[k] = dnum;
@@ -595,7 +595,7 @@ static int pdf_findfonts(struct pdfcontext *pc) {
 		    ((pt=PSDictHasEntry(&pc->pdfdict,"BaseFont"))!=NULL ||
 		    /* Type3 fonts are named by "Name" rather than BaseFont */
 			(pt=PSDictHasEntry(&pc->pdfdict,"Name"))!=NULL) ) {
-		
+
 		for (j=0; j<k && pc->fontobjs[j] != i; j++);
 		if (j < k )
     continue;
@@ -1273,11 +1273,12 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
     DashType dashes[DASH_MAX];
     int dash_offset = 0;
     Entity *ent;
-    char oldloc[24];
+    char oldloc[25];
     char tokbuf[100];
     const int tokbufsize = 100;
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
 
     transform[0] = transform[3] = 1.0;
@@ -1660,7 +1661,7 @@ return( NULL );
     fclose(glyph_stream);
 return( ec.splines );
 }
-    
+
 /* ************************************************************************** */
 /* ****************************** End graphics ****************************** */
 /* ************************************************************************** */
@@ -1689,7 +1690,7 @@ static void add_mapping(SplineFont *basesf, long *mappings, int *uvals, int nuni
 	sprintf(suffix, ".alt%d", ndups);
 	strcat(name, suffix);
     }
-    
+
     /* embedded TTF fonts may contain a 8-bit cmap table, denoted as platform ID 1 format 0 */
     /* (Apple). In fact this mapping has nothing to do both with Unicode and Apple, and rather */
     /* stores a custom order used to refer to glyphs from this particular PDF. */
@@ -1698,7 +1699,7 @@ static void add_mapping(SplineFont *basesf, long *mappings, int *uvals, int nuni
     /* stored in the file */
     pos = cmap_from_cid || sf->map == NULL ? gid : sf->map->map[gid];
     sc = sf->glyphs[pos];
-    
+
     if (pos >= 0 && pos < sf->glyphcnt && (sc->unicodeenc != uvals[0] || nuni > 1)) {
 	/* Sometimes FF instead of assigning proper Unicode values to TTF glyphs keeps */
 	/* them encoded to the same codepoint, but creates for each glyph an alternate */
@@ -1738,14 +1739,14 @@ return;
     if ( file==NULL )
 return;
     rewind(file);
-    
+
     mappings = gcalloc(sf->glyphcnt,sizeof(long));
     while ( pdf_getprotectedtok(file,tok) >= 0 ) {
 	if ( strcmp(tok,"beginbfchar") == 0 && sscanf(prevtok,"%d",&nchars)) {
 	    for (i=0; i<nchars; i++) {
 		if (pdf_skip_brackets(file,tok) >= 0 && sscanf(tok,"%x",&gid) &&
 		    pdf_skip_brackets(file,tok) >= 0 && sscanf(tok,"%lx",&mappings[cur])) {
-		    
+
 		    /* Values we store in the 'mappings' array are just unique identifiers, */
 		    /* so they should not necessarily correspond to any valid Unicode codepoints. */
 		    /* In order to get the real Unicode value mapped to a glyph we should parse the */

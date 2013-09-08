@@ -558,7 +558,7 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 		dummy->props[pcnt].type |= prt_property;
 	    ++pcnt;
 	}
-    
+
 	if ( strcmp(tok,"FONT")==0 ) {
 	    if ( sscanf(buf,"-%*[^-]-%99[^-]-%99[^-]-%99[^-]-%*[^-]-", family, weight, italic )!=0 ) {
 		char *pt=buf;
@@ -1441,13 +1441,15 @@ static int pcf_properties(FILE *file,struct toc *toc, int *_as, int *_ds,
 	char *filename) {
     int pixelsize = -1, point_size = -1, res = -1;
     int ascent= -1, descent= -1, enc=0;
-    char encname[100], weight[100], italic[100];
+    char encname[101], weight[101], italic[101];
     int cnt, i, format, strl, dash_cnt;
     struct props { int name_offset; int isStr; int val; char *name; char *value; } *props;
     char *strs, *pt;
 
     family[0] = '\0'; full[0] = '\0';
-    encname[0] = '\0'; weight[0] = '\0'; italic[0] = '\0';
+    encname[0] = encname[100] = '\0';
+    weight[0] = weight[100] = '\0';
+    italic[0] = italic[100] = '\0';
     if ( !pcfSeekToType(file,toc,PCF_PROPERTIES))
 return(-2);
     format = getint32(file);
@@ -1463,7 +1465,8 @@ return(-2);
     if ( cnt&3 )
 	fseek(file,4-(cnt&3),SEEK_CUR);
     strl = getformint32(file,format);
-    strs = galloc(strl);
+    strs = galloc(strl+1);
+    strs[strl]=0;
     fread(strs,1,strl,file);
     for ( i=0; i<cnt; ++i ) {
 	props[i].name = strs+props[i].name_offset;
@@ -1487,13 +1490,13 @@ return(-2);
 	    if ( strcmp(props[i].name,"FAMILY_NAME")==0 )
 		strcpy(family,props[i].value);
 	    else if ( strcmp(props[i].name,"WEIGHT_NAME")==0 )
-		strcpy(weight,props[i].value);
+		strncpy(weight,props[i].value,sizeof(weight)-1);
 	    else if ( strcmp(props[i].name,"FULL_NAME")==0 )
 		strcpy(full,props[i].value);
 	    else if ( strcmp(props[i].name,"SLANT")==0 )
-		strcpy(italic,props[i].value);
+		strncpy(italic,props[i].value,sizeof(italic)-1);
 	    else if ( strcmp(props[i].name,"CHARSET_REGISTRY")==0 )
-		strcpy(encname,props[i].value);
+		strncpy(encname,props[i].value,sizeof(encname)-1);
 	    else if ( strcmp(props[i].name,"CHARSET_ENCODING")==0 )
 		enc = strtol(props[i].value,NULL,10);
 	    else if ( strcmp(props[i].name,"FONT")==0 ) {
@@ -1536,7 +1539,7 @@ return(-2);
     }
     pixelsize = default_ascent_descent(_as, _ds, ascent, descent, pixelsize,
 	    -1, point_size, res, filename );
-    
+
     *_enc = BDFParseEnc(encname,enc);
 
     if ( strmatch(italic,"I")==0 )

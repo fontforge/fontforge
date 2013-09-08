@@ -236,7 +236,7 @@ return( enc );
     }
 
     enc = uni = -1;
-	
+
     enc = SFFindSlot(sf,map,-1,name);
     if ( enc!=-1 ) {
 	free(freeme);
@@ -570,7 +570,7 @@ return( false );
 	sf->changed = true;
 	FVSetTitles(sf);
     }
-	
+
 return( true );
 }
 
@@ -765,7 +765,7 @@ return( onlydirfont );
     free(files);
 return( name );
 }
-    
+
 #define TOC_NAME	"ff-archive-table-of-contents"
 
 char *Unarchive(char *name, char **_archivedir) {
@@ -912,7 +912,7 @@ return(copy(tmpfilename));			/* The filename does not exist */
 /*  by LoadSplineFont (which does) and by RevertFile (which knows what it's doing) */
 SplineFont *_ReadSplineFont(FILE *file,char *filename,enum openflags openflags) {
     SplineFont *sf;
-    char ubuf[250], *temp;
+    char ubuf[251], *temp;
     int fromsfd = false;
     int i;
     char *pt, *ext2, *strippedname, *oldstrippedname, *tmpfile=NULL, *paren=NULL, *fullname=filename, *rparen;
@@ -1006,7 +1006,7 @@ return( NULL );
 
     /* If there are no pfaedit windows, give them something to look at */
     /*  immediately. Otherwise delay a bit */
-    strcpy(ubuf,_("Loading font from "));
+    strncpy(ubuf,_("Loading font from "),sizeof(ubuf-1));
     len = strlen(ubuf);
     if ( !wasurl || i==-1 )	/* If it wasn't compressed, or it wasn't an url, then the fullname is reasonable, else use the original name */
 	strncat(ubuf,temp = def2utf8_copy(GFileNameTail(fullname)),100);
@@ -1809,7 +1809,7 @@ static void SnapSet(struct psdict *private,real stemsnap[12], real snapcnt[12],
     char buffer[211];
 
     mi = -1;
-    for ( i=0; stemsnap[i]!=0 && i<12; ++i )
+    for ( i=0; i<12 && stemsnap[i]!=0; ++i )
 	if ( mi==-1 ) mi = i;
 	else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
     if ( mi==-1 )
@@ -1952,7 +1952,7 @@ return;
     }
     if ( name==NULL || *name=='\0' )
 	name = _("Back");
-    
+
     l = sf->layer_cnt;
     ++sf->layer_cnt;
     sf->layers = grealloc(sf->layers,(l+1)*sizeof(LayerInfo));
@@ -2035,7 +2035,7 @@ void SPLFirstVisit( SplinePoint* splfirst, SPLFirstVisitor f, void* udata )
     Spline *spline=0;
     Spline *first=0;
     Spline *next=0;
-    
+
     if ( splfirst!=NULL )
     {
 	first = NULL;
@@ -2045,7 +2045,7 @@ void SPLFirstVisit( SplinePoint* splfirst, SPLFirstVisitor f, void* udata )
 
 	    // callback
 	    f( splfirst, spline, udata );
-	    
+
 	    if ( first==NULL )
 	    {
 		first = spline;
@@ -2066,7 +2066,7 @@ static void SPLFirstVisitorFoundSought(SplinePoint* splfirst, Spline* spline, vo
     SPLFirstVisitorFoundSoughtData* d = (SPLFirstVisitorFoundSoughtData*)udata;
 //    printf("SPLFirstVisitorFoundSought()   splfirst:%p spline:%p udata:%p\n", splfirst, spline, udata );
 //    printf("SPLFirstVisitorFoundSought()   sought:%p from:%p to:%p\n", d->sought, spline->from, spline->to );
-    
+
     if( spline->from == d->sought || spline->to == d->sought )
     {
 //	printf("got it!\n");
@@ -2078,13 +2078,13 @@ int SplinePointListContainsPoint( SplinePointList* container, SplinePoint* sough
 {
     if( !sought )
 	return 0;
-    
+
 //    printf("\n\n\nSplinePointListContainsPoint(top) want:%p\n", sought );
     SplinePointList *spl;
     for ( spl = container; spl!=NULL; spl = spl->next )
     {
-	SplinePoint* p   = spl->first;
-	SplinePoint* end = spl->last;
+	//SplinePoint* p   = spl->first;
+	//SplinePoint* end = spl->last;
 
 	SPLFirstVisitorFoundSoughtData d;
 	d.sought = sought;

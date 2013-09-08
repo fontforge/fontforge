@@ -149,7 +149,7 @@ static DumpChar startfileencoding(DumpChar dumpchar,void *data,
     func(randombytes[3],fed);
 return( func );
 }
-    
+
 /* Encode a string in adobe's format. choose a different set of initial random*/
 /*  bytes every time. (the expected value of leniv is 4. we have some support */
 /*  for values bigger than 5 but not as much as for values <=4) */
@@ -719,7 +719,7 @@ struct psfilter {
     void (*dumpchar)(int ch,void *data);
     void *data;
 };
-    
+
 static void InitFilter(struct psfilter *ps,void (*dumpchar)(int ch,void *data), void *data) {
     ps->ascii85encode = 0;
     ps->ascii85n = 0;
@@ -1175,12 +1175,12 @@ static void dumpproc(void (*dumpchar)(int ch,void *data), void *data, SplineChar
     if ( sc->dependents!=NULL )
 	dumpstr(dumpchar,data,"dup -1 ne { ");
     if ( !SCSetsColor(sc) ) {
-	dumpf(dumpchar,data,"%d 0 %d %d %d %d setcachedevice", 
+	dumpf(dumpchar,data,"%d 0 %d %d %d %d setcachedevice",
 		(int) sc->width, (int) floor(b.minx), (int) floor(b.miny),
 		(int) ceil(b.maxx), (int) ceil(b.maxy) );
     } else {
 	/* can't cache it if we set colour/grey within */
-	dumpf(dumpchar,data,"%d 0 setcharwidth", 
+	dumpf(dumpchar,data,"%d 0 setcharwidth",
 		(int) sc->width );
     }
     if ( sc->dependents!=NULL )
@@ -1535,7 +1535,7 @@ return( false );
     if ( !hash ) {
 	FindHStems(sf,stemsnaph,snapcnt);
 	mi = -1;
-	for ( i=0; stemsnaph[i]!=0 && i<12; ++i )
+	for ( i=0; i<12 && stemsnaph[i]!=0; ++i )
 	    if ( mi==-1 ) mi = i;
 	    else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
 	if ( mi!=-1 ) stdhw[0] = stemsnaph[mi];
@@ -1627,7 +1627,7 @@ return( false );
 	dumpf(dumpchar,data,"/BlueScale %g def\n", bluescale );
     if ( isbold && !hasbold )
 	dumpf(dumpchar,data,"/ForceBold true def\n" );
-    if ( !haslg && iscjk ) 
+    if ( !haslg && iscjk )
 	dumpf(dumpchar,data,"/LanguageGroup 1 def\n" );
     if ( sf->tempuniqueid!=0 && sf->tempuniqueid!=-1 && sf->use_uniqueid )
 	dumpf(dumpchar,data,"/UniqueID %d def\n", sf->tempuniqueid );
@@ -1721,7 +1721,7 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
     }
     if ( sf->weight )
 	dumpf(dumpchar,data," /Weight (%s) readonly def\n", sf->weight );
-    if ( sf->pfminfo.fstype!=-1 ) 
+    if ( sf->pfminfo.fstype!=-1 )
 	dumpf(dumpchar,data," /FSType %d def\n", sf->pfminfo.fstype );
     if ( sf->subfontcnt==0 ) {
 	dumpf(dumpchar,data," /ItalicAngle %g def\n", (double) sf->italicangle );

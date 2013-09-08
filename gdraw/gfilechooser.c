@@ -161,8 +161,9 @@ enum fchooserret GFileChooserDefFilter(GGadget *g,GDirEntry *ent,const unichar_t
     GFileChooser *gfc = (GFileChooser *) g;
     int i;
     char *mime;
-    char utf8_ent_name[PATH_MAX];
-    strcpy( utf8_ent_name, u_to_c( ent->name ) );
+    char utf8_ent_name[PATH_MAX+1];
+    utf8_ent_name[PATH_MAX]=0;
+    strncpy( utf8_ent_name, u_to_c( ent->name ), PATH_MAX );
 
     if ( uc_strcmp(ent->name,".")==0 )	/* Don't show the current directory entry */
 	return( fc_hide );
@@ -189,7 +190,7 @@ enum fchooserret GFileChooserDefFilter(GGadget *g,GDirEntry *ent,const unichar_t
     {
 	mime = GIOGetMimeType(utf8_ent_name, false);
     }
-    
+
     for ( i=0; gfc->mimetypes[i]!=NULL; ++i )
 	if (strcasecmp(u_to_c(gfc->mimetypes[i]), mime) == 0)
 	    return( fc_show );
@@ -199,8 +200,9 @@ enum fchooserret GFileChooserDefFilter(GGadget *g,GDirEntry *ent,const unichar_t
 
 static GImage *GFileChooserPickIcon(GDirEntry *e)
 {
-    char mime[PATH_MAX];
-    char utf8_ent_name[PATH_MAX];
+    char mime[PATH_MAX+1];
+    char utf8_ent_name[PATH_MAX+1];
+    mime[PATH_MAX] = utf8_ent_name[PATH_MAX] = 0;
     strncpy( mime,          u_to_c(e->mimetype), PATH_MAX );
     strncpy( utf8_ent_name, u_to_c( e->name ),   PATH_MAX );
 
@@ -212,7 +214,7 @@ static GImage *GFileChooserPickIcon(GDirEntry *e)
 	return( &_GIcon_dir );
     }
     if ( !e->mimetype ) {
-	strcpy( mime, GIOGetMimeType(utf8_ent_name, false));
+	strncpy( mime, GIOGetMimeType(utf8_ent_name, false), PATH_MAX );
     }
     if (strncasecmp("text/", mime, 5) == 0) {
 	if (strcasecmp("text/html", mime) == 0)
@@ -278,7 +280,7 @@ static GImage *GFileChooserPickIcon(GDirEntry *e)
 	strcasecmp("application/x-font-snf", mime) == 0) {
 	return( &_GIcon_textfontbdf );
     }
-    
+
     return( &_GIcon_unknown );
 }
 
@@ -395,7 +397,7 @@ static void GFileChooserErrorDir(GIOControl *gc) {
 	gfc->lastname=NULL;
     } else
 	GGadgetSetTitle(&gfc->name->g,nullstr);
-    if ( gfc->filterb!=NULL && gfc->ok!=NULL ) 
+    if ( gfc->filterb!=NULL && gfc->ok!=NULL )
 	_GWidget_MakeDefaultButton(&gfc->ok->g);
     GIOcancel(gc);
     gfc->outstanding = NULL;
@@ -498,7 +500,7 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 static int GFileChooserTextChanged(GGadget *t,GEvent *e) {
     GFileChooser *gfc;
     GGadget *g = (GGadget *)GGadgetGetUserData(t);
-    
+
     const unichar_t *pt, *spt;
     unichar_t * pt_toFree = 0;
     if ( e->type!=et_controlevent || e->u.control.subtype!=et_textchanged )
@@ -524,7 +526,7 @@ return( true );
     /*  approximation to it */
     if ( *pt=='\0' ) {
 	GGadgetScrollListToText(&gfc->files->g,spt,true);
-	if ( gfc->filterb!=NULL && gfc->ok!=NULL ) 
+	if ( gfc->filterb!=NULL && gfc->ok!=NULL )
 	    _GWidget_MakeDefaultButton(&gfc->ok->g);
     } else if ( *pt=='/' && e->u.control.u.tf_changed.from_pulldown!=-1 ) {
 #if 1
@@ -544,7 +546,7 @@ return( true );
 	free(temp);
 #endif
     } else {
-	if ( gfc->filterb!=NULL && gfc->ok!=NULL ) 
+	if ( gfc->filterb!=NULL && gfc->ok!=NULL )
 	    _GWidget_MakeDefaultButton(&gfc->filterb->g);
     }
     free(gfc->lastname); gfc->lastname = NULL;
@@ -554,7 +556,7 @@ return( true );
     if(gfc->inputfilenameprevchar)
 	free(gfc->inputfilenameprevchar);
     gfc->inputfilenameprevchar = u_copy(_GGadgetGetTitle(t));
-    
+
 return( true );
 }
 
@@ -588,7 +590,7 @@ return( NULL );		/* Can't complete if not in cur directory or has wildcards */
 			u_strcpy(ret[cnt],ti[i]->text);
 			ret[cnt][len] = '/';
 			ret[cnt][len+1] = '\0';
-		    } else 
+		    } else
 			ret[cnt] = u_copy(ti[i]->text);
 		}
 		++cnt;
@@ -1203,7 +1205,7 @@ return( gfc->filter );
 
 /**
  * no change to the current filename by default
- * 
+ *
  * if a change is desired, then currentFilename should point to the
  * new string and return 1 to allow the caller to free this new
  * string.
@@ -1229,7 +1231,7 @@ int GFileChooserSaveAsInputFilenameFunc( GGadget *g,
 	    return 1;
 	}
     }
-    
+
     /**
      * If there is not a correct extension there already, then we will
      * add one for the user to be helpful.
@@ -1264,18 +1266,18 @@ GFileChooserInputFilenameFuncType GFileChooserGetInputFilenameFunc(GGadget *g) {
 }
 
 
-void GFileChooserSetFilename(GGadget *g,const unichar_t *defaultfile) 
+void GFileChooserSetFilename(GGadget *g,const unichar_t *defaultfile)
 {
     GFileChooser *gfc = (GFileChooser *) g;
 
     GGadgetSetTitle(g,defaultfile);
-    
+
     // if this is the first time we are here, we assume
     // the current filename is what it was before. Less NULL
     // checks in the callback function below.
     if(!gfc->inputfilenameprevchar)
 	gfc->inputfilenameprevchar = u_copy(_GGadgetGetTitle(&gfc->name->g));
-    
+
 }
 
 
@@ -1476,7 +1478,7 @@ static void gfilechooser_resize(GGadget *g, int32 width, int32 height ) {
 
 #if 1
     GGadgetResize(&gfc->topbox->g,width,height);
-#else    
+#else
     if ( width!=gfc->g.r.width ) {
 	int space = 8 + (width>100) ? (width-100)/12 : 0;
 	GGadgetResize(&gfc->directories->g,width-gfc->up->g.r.width-gfc->home->g.r.width-space,gfc->directories->g.r.height);

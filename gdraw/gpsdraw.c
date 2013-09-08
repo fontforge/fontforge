@@ -464,7 +464,7 @@ static void PSMyArc(GPSWindow ps, double cx, double cy, double radx, double rady
 	sa = temp;
     }
 }
-    
+
 static void PSDrawElipse(GPSWindow ps, GRect *rct,char *command) {
     float cx, cy, radx, rady;
     /* This does not make a very good stroked elipse if it isn't a circle */
@@ -505,7 +505,7 @@ static void PSDrawDoPoly(GPSWindow ps, GPoint *pt, int cnt, char *command) {
 		_GSPDraw_XPos(ps,pt[0].x), _GSPDraw_YPos(ps,pt[0].y));
     } else {
 	PSMoveTo(ps,pt[0].x,pt[0].y);
-	for ( i=1; i<cnt; ++i ) 
+	for ( i=1; i<cnt; ++i )
 	    PSLineTo(ps,pt[i].x,pt[i].y);
     }
     fprintf( ps->output_file, "closepath %s %%Polygon\n", command );
@@ -1055,13 +1055,13 @@ static int PSQueueFile(GPSWindow ps) {
 	char *argv[30];
 	int argc=0;
 	char pbuf[200], cbuf[40];
-	char buffer[1000];
+	char buffer[1025];
 	char *parg, *carg, *spt, *pt;
 
 	close(in);
 	dup2(fileno(ps->init_file),in);
 	close(fileno(ps->init_file));
-	
+
 	if ( gdisp->use_lpr ) {
 	    prog = "lpr";
 	    parg = "P";
@@ -1083,7 +1083,7 @@ static int PSQueueFile(GPSWindow ps) {
 	    argv[argc++] = pbuf;
 	}
 	if ( gdisp->lpr_args!=NULL ) {
-	    strcpy(buffer, gdisp->lpr_args );
+	    strncpy(buffer, gdisp->lpr_args,sizeof(buffer)-1 );
 	    for ( spt = buffer; *spt==' '; ++spt );
 	    while ( (pt = strchr(spt,' '))!=NULL ) {
 		argv[argc++] = spt;
@@ -1362,7 +1362,7 @@ static struct displayfuncs psfuncs = {
 
     PSDrawPushClip,
     PSDrawPopClip,
-    
+
     PSDrawClear,
     PSDrawDrawLine,
     PSDrawDrawArrowLine,
@@ -1469,7 +1469,7 @@ return( NULL );
 
     gdisp->def_background = COLOR_CREATE(0xff,0xff,0xff);
     gdisp->def_background = COLOR_CREATE(0x00,0x00,0x00);
-    
+
     (gdisp->funcs->init)((GDisplay *) gdisp);
 return( (GDisplay *) gdisp);
 }

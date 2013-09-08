@@ -83,7 +83,7 @@ static void DumpPyObject( FILE *file, PyObject *value );
 static void DumpPythonLib(FILE *file,void *python_persistent,SplineChar *sc) {
     StemInfo *h;
     int has_hints = (sc!=NULL && (sc->hstem!=NULL || sc->vstem!=NULL ));
-	
+
 #ifdef _NO_PYTHON
     if ( has_hints ) {
 	/* Not officially part of the UFO/glif spec, but used by robofab */
@@ -100,7 +100,7 @@ static void DumpPythonLib(FILE *file,void *python_persistent,SplineChar *sc) {
 	    fprintf( file, "    <dict>\n" );
 	}
 	if ( has_hints ) {
-#endif	
+#endif
 	    fprintf( file, "      <key>com.fontlab.hintData</key>\n" );
 	    fprintf( file, "      <dict>\n" );
 	    if ( sc->hstem!=NULL ) {
@@ -1410,7 +1410,7 @@ return;
 	    SCReinstanciateRefChar(sc,r,ly_fore);
 	}
     }
-}    
+}
 
 static void UFOLoadGlyphs(SplineFont *sf,char *glyphdir) {
     char *glyphlist = buildname(glyphdir,"contents.plist");
@@ -1466,7 +1466,7 @@ return;
     for ( i=0; i<sf->glyphcnt; ++i )
 	UFORefFixup(sf,sf->glyphs[i]);
 }
-    
+
 static void UFOHandleKern(SplineFont *sf,char *basedir,int isv) {
     char *fname = buildname(basedir,isv ? "vkerning.plist" : "kerning.plist");
     xmlDocPtr doc=NULL;
@@ -1657,7 +1657,7 @@ SplineFont *SFReadUFO(char *basedir, int flags) {
     xmlChar *keyname, *valname;
     char *stylename=NULL;
     char *temp, *glyphlist, *glyphdir;
-    char oldloc[24], *end;
+    char oldloc[25], *end;
     int as = -1, ds= -1, em= -1;
 
     if ( !libxml_init_base()) {
@@ -1690,7 +1690,8 @@ return( NULL );
     }
 
     sf = SplineFontEmpty();
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
 	for ( value = keys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
@@ -1995,7 +1996,7 @@ return( sf );
 SplineSet *SplinePointListInterpretGlif(char *filename,char *memory, int memlen,
 	int em_size,int ascent,int is_stroked) {
     xmlDocPtr doc;
-    char oldloc[24];
+    char oldloc[25];
     SplineChar *sc;
     SplineSet *ss;
 
@@ -2010,7 +2011,8 @@ return( NULL );
     if ( doc==NULL )
 return( NULL );
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
     sc = _UFOLoadGlyph(doc,filename);
     setlocale(LC_NUMERIC,oldloc);
