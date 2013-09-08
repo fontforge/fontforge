@@ -57,7 +57,7 @@ char *TTFFoundry=NULL;
 	name		various names associated with the font
 	post		postscript names and other stuff
 Required by windows but not mac
-	OS/2		bleah. 
+	OS/2		bleah.
 Required for TrueType
 	loca		pointers to the glyphs
 	glyf		character shapes
@@ -359,7 +359,7 @@ const char *ttfstandardnames[258] = {
 "ccaron",
 "dcroat"
 };
-/* Relates Unicode blocks as in 
+/* Relates Unicode blocks as in
  	http://unicode.org/Public/UNIDATA/Blocks.txt
    to bit positions in the OpenType standard Unicode Character Range
    field 'ulUnicodeRange'.
@@ -841,7 +841,7 @@ static void dumppointarrays(struct glyphinfo *gi,BasePoint *bp, char *fs, int pc
 	else if ( bp[i].y-last.y>-256 && bp[i].y-last.y<255 ) {
 	    flags |= _Y_Short;
 	    if ( bp[i].y>=last.y )
-		flags |= _Y_Same;		/* In this context it means positive */	
+		flags |= _Y_Same;		/* In this context it means positive */
 	}
 	last = bp[i];
 	if ( lastflag==-1 ) {
@@ -1298,7 +1298,7 @@ return;
     gi->pointcounts[gi->next_glyph++] = ptcnt;
 
     dumpinstrs(gi,isc->ttf_instrs,isc->ttf_instrs_len);
-	
+
     dumppointarrays(gi,bp,fs,ptcnt);
     SplinePointListsFree(ttfss);
     free(bp);
@@ -1392,7 +1392,7 @@ static int AssignTTFGlyph(struct glyphinfo *gi,SplineFont *sf,EncMap *map,int is
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	SplineChar *sc = sf->glyphs[i];
-	if ( SCWorthOutputting(sc) && sc->ttf_glyph==-1 
+	if ( SCWorthOutputting(sc) && sc->ttf_glyph==-1
 #if HANYANG
 		&& (!iscff || !sc->compositionunit)
 #endif
@@ -3052,7 +3052,7 @@ void SFDefaultOS2Simple(struct pfminfo *pfminfo,SplineFont *sf) {
     pfminfo->os2_winascent = pfminfo->os2_windescent = 0;
 
     if ( sf->subfonts!=NULL ) sf = sf->subfonts[0];
-    pfminfo->linegap = pfminfo->vlinegap = pfminfo->os2_typolinegap = 
+    pfminfo->linegap = pfminfo->vlinegap = pfminfo->os2_typolinegap =
 	    rint(.09*(sf->ascent+sf->descent));
 }
 
@@ -3427,14 +3427,14 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
 	    os2->fsSel |= 256;
     }
 /* David Lemon @Adobe.COM
-1)  The sTypoAscender and sTypoDescender values should sum to 2048 in 
-a 2048-unit font. They indicate the position of the em square 
+1)  The sTypoAscender and sTypoDescender values should sum to 2048 in
+a 2048-unit font. They indicate the position of the em square
 relative to the baseline.
 GWW: Almost, sTypoAscender-sTypoDescender == EmSize
 
-2)  The usWinAscent and usWinDescent values represent the maximum 
-height and depth of specific glyphs within the font, and some 
-applications will treat them as the top and bottom of the font 
+2)  The usWinAscent and usWinDescent values represent the maximum
+height and depth of specific glyphs within the font, and some
+applications will treat them as the top and bottom of the font
 bounding box. (the "ANSI" glyphs)
 GWW: That's what's documented. But it means non-ANSI glyphs get clipped. So the
 docs are wrong.
@@ -4188,7 +4188,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 		    "This font has a name table which is %d bytes and is bigger than this limit.\n"),
 		    at->namelen);
 #endif
-    
+
 }
 
 static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format) {
@@ -4402,7 +4402,7 @@ return( NULL );		/* Doesn't have the single byte entries */
 	if ( map->map[i]!=-1 && sf->glyphs[map->map[i]]!=NULL &&
 		sf->glyphs[map->map[i]]->ttf_glyph!=-1 )
 	    glyphs[i] = sf->glyphs[map->map[i]]->ttf_glyph;
-    
+
     pos = 1;
 
     complained = false;
@@ -5141,7 +5141,7 @@ int32 filechecksum(FILE *file) {
     }
 return( sum );
 }
-    
+
 static void AbortTTF(struct alltabs *at, SplineFont *sf) {
     int i;
 
@@ -5741,7 +5741,7 @@ static void buildtablestructures(struct alltabs *at, SplineFont *sf,
     }
     if ( tab!=NULL )
 	IError("Some user supplied tables omitted. Up sizeof tabs array in struct tabdir in ttf.h" );
-    
+
     at->tabdir.numtab = i;
     at->tabdir.searchRange = (i<16?8:i<32?16:i<64?32:64)*16;
     at->tabdir.entrySel = (i<16?3:i<32?4:i<64?5:6);
@@ -5803,7 +5803,7 @@ return( false );
 	AbortTTF(at,sf);
 return( false );
     }
-	
+
 
     ATmaxpInit(at,sf,format);
     if ( format==ff_otf )
@@ -6175,13 +6175,14 @@ static void ATinit(struct alltabs *at,SplineFont *sf,EncMap *map,int flags, int 
 int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *map, int layer) {
     struct alltabs at;
-    char oldloc[24];
+    char oldloc[25];
     int i, anyglyphs;
 
     /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
-    
+
     if ( format==ff_otfcid || format== ff_cffcid ) {
 	if ( sf->cidmaster ) sf = sf->cidmaster;
     } else {
@@ -6311,7 +6312,7 @@ static void dumphex(struct hexout *hexout,FILE *temp,int length) {
     }
     fprintf( hexout->type42, "\n  00\n >\n" );
 }
-    
+
 static void dumptype42(FILE *type42,struct alltabs *at, enum fontformat format) {
     FILE *temp = tmpfile();
     struct hexout hexout;
@@ -6358,11 +6359,12 @@ static void dumptype42(FILE *type42,struct alltabs *at, enum fontformat format) 
 int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
 	int flags,EncMap *map,int layer) {
     struct alltabs at;
-    char oldloc[24];
+    char oldloc[25];
     int i;
 
     /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
 
     if ( sf->subfontcnt!=0 ) sf = sf->subfonts[0];
@@ -6892,7 +6894,7 @@ static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
 		all[i].tabdir.tabs[j].length = dup;
 	    }
 	}
-	
+
 	/* And now dump those tables into the file. I don't see how I could */
 	/*  order them meaningfully */
 	for ( j=0 ; j<all[i].tabdir.numtab; ++j ) {

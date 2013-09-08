@@ -263,7 +263,7 @@ struct macbinaryheader {
     uint32 type;
     uint32 creator;
 };
-	    
+
 static struct resource *PSToResources(FILE *res,FILE *pfbfile) {
     /* split the font up into as many small resources as we need and return */
     /*  an array pointing to the start of each */
@@ -314,7 +314,7 @@ return( NULL );
     resstarts[cnt].pos = 0;
 return( resstarts );
 }
-	    
+
 static uint32 TTFToResource(FILE *res,FILE *ttffile) {
     /* A truetype font just gets dropped into a resource */
     struct stat statb;
@@ -1041,7 +1041,7 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
 	    psfaces[psstyle] = sfi;
     }
     sf = faces[0]->sf;
-    
+
     putlong(res,0);			/* Fill in length later */
     putshort(res,IsMacMonospaced(sf,faces[0]->map)?0x9000:0x1000);
     putshort(res,id);
@@ -1352,15 +1352,12 @@ static void DumpResourceMap(FILE *res,struct resourcetype *rtypes,enum fontforma
 
 long mactime(void) {
     time_t now;
-    int i;
 
     time(&now);
     /* convert from 1970 based time to 1904 based time */
-    now += (1970-1904)*365L*24*60*60;
-    for ( i=1904; i<1970; i+=4 )
-	now += 24*60*60;
+    now += (1970-1904)*365L*24*60*60+((1970-1904)>>2)*24*60*60;
     /* Ignore any leap seconds -- Sorry Steve */
-return( now );
+    return( now );
 }
 
 static int DumpMacBinaryHeader(FILE *res,struct macbinaryheader *mb) {
@@ -1374,7 +1371,7 @@ static int DumpMacBinaryHeader(FILE *res,struct macbinaryheader *mb) {
 	char *pt = strrchr(mb->binfilename,'/');
 	if ( pt==NULL ) pt = mb->binfilename;
 	else ++pt;
-	strcpy(buffer,pt);
+	strncpy(buffer,pt,sizeof(buffer)-1);
 	dpt = strrchr(buffer,'.');
 	if ( dpt==NULL ) {
 	    buffer[0] = '_';
