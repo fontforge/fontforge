@@ -2083,8 +2083,8 @@ int SplinePointListContainsPoint( SplinePointList* container, SplinePoint* sough
     SplinePointList *spl;
     for ( spl = container; spl!=NULL; spl = spl->next )
     {
-	SplinePoint* p   = spl->first;
-	SplinePoint* end = spl->last;
+	//SplinePoint* p   = spl->first;
+	//SplinePoint* end = spl->last;
 
 	SPLFirstVisitorFoundSoughtData d;
 	d.sought = sought;
