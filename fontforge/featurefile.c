@@ -1749,7 +1749,7 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
     struct scriptlanglist *sl;
 
     GTree* ht = g_tree_new_full( tree_strcasecmp, 0, free, NULL );
-    
+
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	uint32 *feats = SFFeaturesInScriptLang(sf,isgpos,0xffffffff,0xffffffff);
 	if ( feats[0]!=0 ) {
@@ -1778,7 +1778,7 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
 	    }
 	}
     }
-    
+
     g_tree_foreach( ht, dump_header_languagesystem_hash_fe, out );
     fprintf( out, "\n" );
 }
@@ -7101,7 +7101,7 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     struct namedanchor *nap, *napnext;
     struct namedvalue *nvr, *nvrnext;
     int i,j;
-    char oldloc[24];
+    char oldloc[25];
 
     memset(&tok,0,sizeof(tok));
     tok.line[0] = 1;
@@ -7111,7 +7111,8 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     if ( sf->cidmaster ) sf = sf->cidmaster;
     tok.sf = sf;
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
     fea_ParseFeatureFile(&tok);
     setlocale(LC_NUMERIC,oldloc);

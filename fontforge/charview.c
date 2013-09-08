@@ -293,7 +293,7 @@ int CVCountSelectedPoints(CharView *cv) {
 }
 
 
-	
+
 /* floor(pt) would _not_ be more correct, as we want
  * shapes not to cross axes multiple times while scaling.
  */
@@ -646,7 +646,7 @@ static void DrawTangentPoint( GWindow pixmap, int x, int y,
     float sizedelta = 4;
     if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
 	sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
-    
+
     if ( dir==1 /* left */ || dir==0 /* right */) {
 	gp[0].y = y; gp[0].x = (dir==0)?x+sizedelta:x-sizedelta;
 	gp[1].y = y-sizedelta; gp[1].x = x;
@@ -662,7 +662,7 @@ static void DrawTangentPoint( GWindow pixmap, int x, int y,
 	    sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
 	int xdiff = unit->x > 0 ?   sizedelta  : -1*sizedelta;
 	int ydiff = unit->y > 0 ? -1*sizedelta :    sizedelta;
-	
+
 	gp[0].x = x+xdiff/2; gp[0].y = y+ydiff/2;
 	gp[1].x = gp[0].x-xdiff; gp[1].y = gp[0].y;
 	gp[2].x = gp[0].x; gp[2].y = gp[0].y-ydiff;
@@ -679,7 +679,7 @@ static GRect* DrawPoint_SetupRectForSize( GRect* r, int cx, int cy, float sz )
     float sizedelta = sz;
     if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
 	sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
-	    
+
     r->x = cx - sizedelta;
     r->y = cy - sizedelta;
     r->width  = 1 + sizedelta * 2;
@@ -707,8 +707,8 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
 	if( sp!=spl->first )
 	    col = openpathcol;
     }
-    
-    
+
+
     if ( cv->markextrema && SpIsExtremum(sp) )
 	 col = extremepointcol;
     if ( sp->selected )
@@ -728,7 +728,7 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
 	    col |= prefs_cvInactiveHandleAlpha << 24;
 	}
     }
-    
+
 
     x =  cv->xoff + rint(sp->me.x*cv->scale);
     y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
@@ -774,7 +774,7 @@ return;
 		float sz = 2;
 		if( SPIsNextCPSelectedSingle( sp, cv ))
 		    sz *= 1.5;
-		
+
 		DrawPoint_SetupRectForSize( &r, cx, cy, sz );
 		GDrawFillRect(pixmap,&r, nextcpcol);
 		subcol = selectedcpcol;
@@ -902,7 +902,7 @@ return;
 	    sizedelta   *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
 	    offsetdelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
 	}
-	
+
 	float basex = r.x + 3 + offsetdelta;
 	float basey = r.y + 3 + offsetdelta;
 	gp[0].x = basex - sizedelta; gp[0].y = basey + 0;
@@ -1098,7 +1098,7 @@ static void CVMarkInterestingLocations(CharView *cv, GWindow pixmap,
     extended interesting[6];
     int i, ecnt, cnt;
     GRect r;
-    
+
     for ( s=spl->first->next, first=NULL; s!=NULL && s!=first; s=s->to->next ) {
 	if ( first==NULL ) first = s;
 	cnt = ecnt = 0;
@@ -1288,7 +1288,7 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
     if( strokeFillMode == sfm_fill ) {
     	GDrawFillRuleSetWinding(pixmap);
     }
-    
+
     for ( spl = set; spl!=NULL; spl = spl->next ) {
 
 	Color fc  = spl->is_clip_path ? clippathcol : fg;
@@ -1308,7 +1308,7 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 	{
 	    fc = openpathcol;
 	}
-	
+
 	if ( GDrawHasCairo(pixmap)&gc_buildpath ) {
 	    Spline *first, *spline;
 	    double x,y, cx1, cy1, cx2, cy2, dx,dy;
@@ -1354,7 +1354,7 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 		GDrawPathClose(pixmap);
 
 	    switch( strokeFillMode ) {
-	    case sfm_stroke: 
+	    case sfm_stroke:
 		GDrawPathStroke( pixmap, fc | 0xff000000 );
 		break;
 	    case sfm_fill:
@@ -1390,7 +1390,7 @@ void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePointList *s
     Spline *spline, *first;
     SplinePointList *spl;
     int truetype_markup = set==cv->b.gridfit && cv->dv!=NULL;
-    
+
     if ( cv->inactive )
 	dopoints = false;
 
@@ -1449,7 +1449,7 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
 	Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode ) {
     int active = cv->b.layerheads[cv->b.drawmode]==layer;
     int ml = cv->b.sc->parent->multilayer;
-    
+
     if ( ml && layer->dostroke ) {
 	if ( layer->stroke_pen.brush.col!=COLOR_INHERITED &&
 		layer->stroke_pen.brush.col!=view_bgcol )
@@ -1673,13 +1673,14 @@ static void CVDrawBlues(CharView *cv,GWindow pixmap,char *bluevals,char *others,
 	Color col) {
     double blues[24];
     char *pt, *end;
-    char oldloc[24];
+    char oldloc[25];
     int i=0, bcnt=0;
     GRect r;
     char buf[20];
     int len,len2;
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
     if ( bluevals!=NULL ) {
 	for ( pt = bluevals; isspace( *pt ) || *pt=='['; ++pt);
@@ -2692,7 +2693,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    			  cv->showpoints ,&clip, strokeFillMode );
 	}
     }
-    
+
 
     if ( cv->freehand.current_trace )
     	CVDrawSplineSet( cv,pixmap,cv->freehand.current_trace,tracecol,
@@ -2794,7 +2795,7 @@ void CVRegenFill(CharView *cv) {
 	int layer = CVLayer((CharViewBase *) cv);
 	int size = cv->scale*(cv->b.fv->sf->ascent+cv->b.fv->sf->descent);
 	int clut_len= 2;
-        
+
         if ( layer==-1 ) layer=ly_fore; /* otherwise crashes when using guides layer! */
 
 	/* Generally I don't think there's much point in doing an anti-aliased*/
@@ -3328,7 +3329,7 @@ return;
 static void CVSwitchToTab(CharView *cv,int tnum ) {
     if( tnum >= cv->former_cnt )
 	return;
-    
+
     SplineFont *sf = cv->b.fv->sf;
     char* n = cv->former_names[tnum];
     int unienc = UniFromName(n,sf->uni_interp,cv->b.fv->map->enc);
@@ -3434,7 +3435,7 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 	    return;
 	}
 	PrevCharEventWasCharUpOnControl = 0;
-	
+
 	if( !event->u.chr.autorepeat
 	    && (event->u.chr.keysym == GK_Control_L
 		|| event->u.chr.keysym == GK_Control_R ))
@@ -3444,13 +3445,13 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 		HaveModifiers = 0;
 	    }
 	}
-	
+
 	if ( !event->u.chr.autorepeat && !HaveModifiers && isImmediateKeyTogglePreview ) {
 	    PressingTilde = 0;
 	    CVPreviewModeSet( cv->gw, false );
 	    return;
 	}
-	
+
 	if ( !event->u.chr.autorepeat && isImmediateKeyTogglePreview ) {
 	    PressingTilde = 0;
 	}
@@ -3458,9 +3459,9 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 	    return;
 	}
     }
-    
-    
-    
+
+
+
 #if _ModKeysAutoRepeat
     /* Under cygwin these keys auto repeat, they don't under normal X */
     if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ||
@@ -3505,7 +3506,7 @@ void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     real xdiff, ydiff;
     SplinePoint *sp, dummy;
     spiro_cp *cp;
-    
+
     GDrawSetFont(pixmap,cv->small);
     r.x = RPT_DATA; r.width = 60;
     r.y = cv->mbh; r.height = cv->infoh-1;
@@ -3541,7 +3542,7 @@ void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 
     const int layernamesz = 100;
     char layername[layernamesz+1];
-    strcpy(layername,_("Guide"));
+    strncpy(layername,_("Guide"),layernamesz);
     if(cv->b.drawmode!=dm_grid) {
 	int idx = CVLayer((CharViewBase *) cv);
 	if(idx >= 0 && idx < cv->b.sc->parent->layer_cnt) {
@@ -3753,7 +3754,7 @@ return( false /*true*/ );	/* Check if there's a point where we are first */
 	/* if there is use it, if not (because anysel is true) we'll fall back */
 	/* here */
     }
-    
+
 return( false );
 }
 
@@ -4068,12 +4069,12 @@ return( _CVTestSelectFromEvent(cv,&fs));
 /**
  * A cache for the selected spline point or spiro control point
  */
-typedef struct lastselectedpoint 
+typedef struct lastselectedpoint
 {
     SplinePoint *lastselpt;
     spiro_cp *lastselcp;
 } lastSelectedPoint;
-    
+
 static void CVMouseDown(CharView *cv, GEvent *event ) {
     FindSel fs;
     GEvent fake;
@@ -4190,7 +4191,7 @@ return;
 	cv->lastselcp = fs.p->spiro;
 	if( selectionChanged )
 	{
-//	    collabclient_sendRedo( &cv->b );    
+//	    collabclient_sendRedo( &cv->b );
 	}
 	break;
       case cvt_magnify: case cvt_minify:
@@ -4773,7 +4774,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
     dlist_foreach( &cv->pointInfoDialogs, (dlist_foreach_func_type)PIChangePoint );
 
 //    printf("cvmouseup!\n");
-    collabclient_sendRedo( &cv->b );    
+    collabclient_sendRedo( &cv->b );
 }
 
 static void CVTimer(CharView *cv,GEvent *event) {
@@ -6576,7 +6577,7 @@ static void getSelectedControlPointsVisitor(SplinePoint* splfirst, Spline* splin
 
 /**
  * Get a hash table with all the selected BCP in it.
- * 
+ *
  * The caller must call g_hash_table_destroy() on the return value.
  */
 static GHashTable* getSelectedControlPoints( PressedOn *p )
@@ -6619,13 +6620,13 @@ void FE_adjustBCPByDelta( void* key,
 /**
  * Container for arguments to FE_visitSelectedControlPoints.
  */
-typedef struct visitSelectedControlPoints_CallbackDataS 
+typedef struct visitSelectedControlPoints_CallbackDataS
 {
     int count;                              // number of times visitor is called.
     int sel;
     visitSelectedControlPointsVisitor func; // Visitor function to delegate to
     gpointer udata;                         // user data to use when calling above func()
-   
+
 } visitSelectedControlPoints_CallbackData;
 
 /**
@@ -6700,7 +6701,7 @@ void CVChar(CharView *cv, GEvent *event ) {
 	    return;
 	}
     }
-	
+
 #if _ModKeysAutoRepeat
 	/* Under cygwin these keys auto repeat, they don't under normal X */
 	if ( cv->autorpt!=NULL ) {
@@ -6819,7 +6820,7 @@ return;
 	    }
 	    if ( event->u.chr.state & (ksm_shift) )
 		dx -= dy*tan((cv->b.sc->parent->italicangle)*(3.1415926535897932/180) );
-	    
+
 	    if ((  cv->p.sp!=NULL || cv->lastselpt!=NULL ) &&
 		    (cv->p.nextcp || cv->p.prevcp) )
 	    {
@@ -6834,7 +6835,7 @@ return;
 						     FE_adjustBCPByDelta, &d );
 		cv->p.sp = old;
 		SCUpdateAll(cv->b.sc);
-		
+
 	    }
 	    else if ( CVAnySel(cv,NULL,NULL,NULL,&anya) || cv->widthsel || cv->vwidthsel )
 	    {
@@ -7200,7 +7201,7 @@ static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
 	/* 	len++; */
 	/*     printf("r.len:%d\n", len ); */
 	/* } */
-	
+
 	if( collabclient_inSession( &cv->b ) )
 	{
 	    printf("in-session!\n");
@@ -7210,7 +7211,7 @@ static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
 	    return;
 	}
     }
-    
+
     CVDoUndo(&cv->b);
     cv->lastselpt = NULL;
 }
@@ -7230,8 +7231,8 @@ static void CVRedo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
 	    return;
 	}
     }
-    
-    
+
+
     CVDoRedo(&cv->b);
     cv->lastselpt = NULL;
 }
@@ -7635,7 +7636,7 @@ static char* getValueFromUser( CharView *cv, const char* windowTitle, const char
     DATA.cv = cv;
     DATA.ret = ret;
     ret[0] = '\0';
-    
+
     if ( DATA.gw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -7665,7 +7666,7 @@ static char* getValueFromUser( CharView *cv, const char* windowTitle, const char
 	harray1[0] = GCD_Glue;
 	harray1[1] = &gcd[0];
 	harray1[2] = 0;
-            
+
 	label[1].text = (unichar_t *) defaultValue;
 	label[1].text_is_1byte = true;
 	DATA.label = label[1];
@@ -7678,7 +7679,7 @@ static char* getValueFromUser( CharView *cv, const char* windowTitle, const char
 	gcd[1].creator = GTextFieldCreate;
 	harray2[0] = &gcd[1];
 	harray2[1] = 0;
-            
+
 	int idx = 2;
 	gcd[idx].gd.pos.x = 20-3;
 	gcd[idx].gd.pos.y = 17+37;
@@ -7695,7 +7696,7 @@ static char* getValueFromUser( CharView *cv, const char* windowTitle, const char
 	barray[0] = GCD_Glue;
 	barray[1] = &gcd[idx];
 	barray[2] = GCD_Glue;
-	
+
 	++idx;
 	gcd[idx].gd.pos.x = -20;
 	gcd[idx].gd.pos.y = 17+37+3;
@@ -7742,7 +7743,7 @@ static char* getValueFromUser( CharView *cv, const char* windowTitle, const char
 	boxes[0].gd.flags = gg_enabled|gg_visible;
 	boxes[0].gd.u.boxelements = varray[0];
 	boxes[0].creator = GHVGroupCreate;
-	
+
 	GGadgetsCreate(gw,boxes);
 	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
 	GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
@@ -8297,13 +8298,13 @@ void CVTransFuncLayer(CharView *cv,Layer *ly,real transform[6], enum fvtrans_fla
     {
 	if( cv->active_tool==cvt_scale )
 	    tpmask |= tpmask_operateOnSelectedBCP;
-	
+
 	SplinePointListTransformExtended(
 	    ly->splines, transform,
 	    !anysel?tpt_AllPoints: interpCPsOnMotion?tpt_OnlySelectedInterpCPs:tpt_OnlySelected,
 	    tpmask );
     }
-    
+
     if ( flags&fvt_round_to_int )
 	SplineSetsRound2Int(ly->splines,1.0,cv->b.sc->inspiro && hasspiro(),!anysel);
     if ( ly->images!=NULL ) {
@@ -8392,7 +8393,7 @@ static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
     {
 	CVDoUndo(&cv->b);
     }
-    
+
     if ( flags&fvt_revert )
 	return;
 
@@ -11296,7 +11297,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
 	{
 	    GDrawSetVisible(cv->gw,true);
 	}
-	
+
     if ( (CharView *) (sc->views)==NULL && updateflex )
 	SplineCharIsFlexible(sc,CVLayer((CharViewBase *) cv));
     if ( sc->inspiro && !hasspiro() && !sc->parent->complained_about_spiros ) {
@@ -11307,7 +11308,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
 	ff_post_error(_("You may not use spiros"),_("This glyph should display spiro points, but unfortunately FontForge was unable to load libspiro, spiros are not available for use, and normal bezier points will be displayed instead."));
 #endif
     }
-    
+
 }
 
 void DefaultY(GRect *pos) {
@@ -11383,7 +11384,7 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     cv->gw = gw = GDrawCreateTopWindow(NULL,&pos,cv_e_h,cv,&wattrs);
     free( (unichar_t *) wattrs.icon_title );
     GDrawSetWindowTypeName(cv->gw, "CharView");
-    
+
 
     GDrawGetSize(GDrawGetRoot(screen_display),&zoom);
     zoom.x = CVPalettesWidth(); zoom.width -= zoom.x-10;
@@ -11499,9 +11500,9 @@ static void CharViewInit(void) {
 return;
     done = true;
 //    printf("CharViewInit(top) mblist[0].text before translation: %s\n", mblist[0].ti.text );
-    
+
     mb2DoGetText(mblist);
-    
+
 //    printf("CharViewInit(2) mblist[0].text after    translation: %s\n", u_to_c(mblist[0].ti.text) );
 //    printf("CharViewInit(2) mblist[0].text_untranslated notrans: %s\n", mblist[0].ti.text_untranslated );
 
@@ -11514,7 +11515,7 @@ return;
 	    mblist_nomm[i].ti.text_untranslated = mblist_nomm[i].shortcut;
 	else
 	    mblist_nomm[i].ti.text_untranslated = mblist_nomm[i].ti.text;
-	
+
 	mblist_nomm[i].ti.text = (unichar_t *) _((char *) mblist_nomm[i].ti.text);
     }
 }
