@@ -1384,7 +1384,7 @@ char *_GetModifiers(char *fontname, char *familyname,char *weight) {
     if ( fpt!=NULL ) {
 	for ( i=0; mods[i]!=NULL; ++i ) for ( j=0; mods[i][j]!=NULL; ++j ) {
 	    if ( strcmp(fpt,mods[i][j])==0 ) {
-		strcpy(space,fullmods[i][j]);
+		strncpy(space,fullmods[i][j],sizeof(space)-1);
 return(space);
 	    }
 	}
