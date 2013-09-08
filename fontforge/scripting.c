@@ -797,7 +797,7 @@ static void bStrftime(Context *c) {
 
 static void bisupper(Context *c) {
     const char *pt;
-    int ch;
+    long ch;
 
     c->return_val.type = v_int;
     if ( c->a.argc!=2 )
@@ -805,7 +805,7 @@ static void bisupper(Context *c) {
     else if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = ch>=0 && ch<=0x10000?isupper(ch):0;
+	c->return_val.u.ival = ch>=0 && ch<0x10000?isupper(ch):0;
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = isupper(c->a.vals[1].u.ival);
     else
@@ -814,7 +814,7 @@ static void bisupper(Context *c) {
 
 static void bislower(Context *c) {
     const char *pt;
-    int ch;
+    long ch;
 
     c->return_val.type = v_int;
     if ( c->a.argc!=2 )
@@ -822,7 +822,7 @@ static void bislower(Context *c) {
     else if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = ch>=0 && ch<=0x10000?islower(ch):0;
+	c->return_val.u.ival = ch>=0 && ch<0x10000?islower(ch):0;
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = islower(c->a.vals[1].u.ival);
     else
@@ -831,7 +831,7 @@ static void bislower(Context *c) {
 
 static void bisdigit(Context *c) {
     const char *pt;
-    int ch;
+    long ch;
 
     c->return_val.type = v_int;
     if ( c->a.argc!=2 )
@@ -839,7 +839,7 @@ static void bisdigit(Context *c) {
     else if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = ch>=0 && ch<=0x10000?isdigit(ch):0;
+	c->return_val.u.ival = ch>=0 && ch<0x10000?isdigit(ch):0;
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = isdigit(c->a.vals[1].u.ival);
     else
@@ -848,7 +848,7 @@ static void bisdigit(Context *c) {
 
 static void bishexdigit(Context *c) {
     const char *pt;
-    int ch;
+    long ch;
 
     c->return_val.type = v_int;
     if ( c->a.argc!=2 )
@@ -856,7 +856,7 @@ static void bishexdigit(Context *c) {
     else if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = ch>=0 && ch<=0x10000?ishexdigit(ch):0;
+	c->return_val.u.ival = ch>=0 && ch<0x10000?ishexdigit(ch):0;
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = ishexdigit(c->a.vals[1].u.ival);
     else
@@ -865,7 +865,7 @@ static void bishexdigit(Context *c) {
 
 static void bisalpha(Context *c) {
     const char *pt;
-    int ch;
+    long ch;
 
     c->return_val.type = v_int;
     if ( c->a.argc!=2 )
@@ -873,7 +873,7 @@ static void bisalpha(Context *c) {
     else if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = ch>=0 && ch<=0x10000?isalpha(ch):0;
+	c->return_val.u.ival = ch>=0 && ch<0x10000?isalpha(ch):0;
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = isalpha(c->a.vals[1].u.ival);
     else
@@ -882,7 +882,7 @@ static void bisalpha(Context *c) {
 
 static void bisalnum(Context *c) {
     const char *pt;
-    int ch;
+    long ch;
 
     c->return_val.type = v_int;
     if ( c->a.argc!=2 )
@@ -890,7 +890,7 @@ static void bisalnum(Context *c) {
     else if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = ch>=0 && ch<=0x10000?isalnum(ch):0;
+	c->return_val.u.ival = ch>=0 && ch<0x10000?isalnum(ch):0;
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = isalnum(c->a.vals[1].u.ival);
     else
@@ -899,7 +899,7 @@ static void bisalnum(Context *c) {
 
 static void bisspace(Context *c) {
     const char *pt;
-    int ch;
+    long ch;
 
     c->return_val.type = v_int;
     if ( c->a.argc!=2 )
@@ -907,7 +907,7 @@ static void bisspace(Context *c) {
     else if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = ch>=0 && ch<=0x10000?isspace(ch):0;
+	c->return_val.u.ival = ch>=0 && ch<0x10000?isspace(ch):0;
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = isspace(c->a.vals[1].u.ival);
     else
@@ -916,7 +916,7 @@ static void bisspace(Context *c) {
 
 static void btoupper(Context *c) {
     char *pt; const char *ipt;
-    int ch;
+    long ch;
 
     if ( c->a.argc!=2 )
 	ScriptError( c, "Wrong number of arguments" );
@@ -940,7 +940,7 @@ static void btoupper(Context *c) {
 
 static void btolower(Context *c) {
     char *pt; const char *ipt;
-    int ch;
+    long ch;
 
     if ( c->a.argc!=2 )
 	ScriptError( c, "Wrong number of arguments" );
@@ -964,7 +964,7 @@ static void btolower(Context *c) {
 
 static void btomirror(Context *c) {
     char *pt; const char *ipt;
-    int ch;
+    long ch;
 
     if ( c->a.argc!=2 )
 	ScriptError( c, "Wrong number of arguments" );

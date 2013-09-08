@@ -288,7 +288,7 @@ return( false );
 int GFileIsDir(const char *file) {
   struct stat info;
   if ( stat(file, &info)==-1 )
-return 0;     
+return 0;
   else
 return( S_ISDIR(info.st_mode) );
 }
@@ -302,15 +302,16 @@ return( access(file,02)==0 );
 }
 
 int GFileModifyableDir(const char *file) {
-    char buffer[1024], *pt;
+    char buffer[1025], *pt;
 
-    strcpy(buffer,file);
+    buffer[1024]=0;
+    strncpy(buffer,file,1024);
     pt = strrchr(buffer,'/');
     if ( pt==NULL )
 	strcpy(buffer,".");
     else
 	*pt='\0';
-return( GFileModifyable(buffer));
+    return( GFileModifyable(buffer) );
 }
 
 int GFileReadable(char *file) {
@@ -715,7 +716,7 @@ char *getHelpDir(void) {
     char* prefix = getShareDir();
 #if defined(DOCDIR)
     prefix = DOCDIR;
-#endif    
+#endif
     char* postfix = "/../doc/fontforge/";
     int len = strlen(prefix) + strlen(postfix) + 2;
     sharedir = galloc(len);
@@ -805,7 +806,7 @@ char *GFileGetHomeDocumentsDir(void)
     static char* ret = 0;
     if( ret )
 	return ret;
-    
+
 #if defined(__MINGW32__)
 
     CHAR my_documents[MAX_PATH+2];
@@ -844,7 +845,7 @@ char *GFileDirName(const char *path)
 /**
  * Filesystem split char, on osx and linux this is /
  * on windows it is \
- * 
+ *
  * NOTE: it is probably better to normalize paths on windows to use / internally.
  */
 static char getFilesystemSplitChar( void )

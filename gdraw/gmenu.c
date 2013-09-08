@@ -291,7 +291,7 @@ static char* GMenuGetMenuPath( GMenuItem *basemi, GMenuItem *targetmi ) {
     memset(stack, 0, sizeof(stack));
     if( !targetmi->ti.text )
 	return 0;
-    
+
 //    printf("GMenuGetMenuPath() base   %s\n", u_to_c(basemi->ti.text));
 //    printf("GMenuGetMenuPath() target %s\n", u_to_c(targetmi->ti.text));
 
@@ -305,7 +305,7 @@ static char* GMenuGetMenuPath( GMenuItem *basemi, GMenuItem *targetmi ) {
     /* 	} */
     /* } */
     /* printf("GMenuGetMenuPath() starting...\n"); */
-    
+
     GMenuItem *mi = basemi;
     int i;
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
@@ -323,7 +323,7 @@ static char* GMenuGetMenuPath( GMenuItem *basemi, GMenuItem *targetmi ) {
     if( stack[0] == 0 ) {
 	return 0;
     }
-    
+
     static char buffer[PATH_MAX];
     buffer[0] = '\0';
     for( i=0; stack[i]; i++ ) {
@@ -356,8 +356,8 @@ static int GMenuDrawMacIcons(struct gmenu *m, Color fg, int ybase, int x, int ma
 	    mask ^= ksm_control;
 	}
     }
-    
-    
+
+
     if ( mask&ksm_cmdmacosx ) {
 	GDrawDrawLine(m->w,x,ybase-1,x,ybase-(seg-1),fg);
 	GDrawDrawLine(m->w,x,ybase-(2*seg),x,ybase-(h-2),fg);
@@ -421,10 +421,10 @@ static int GMenuMacIconsWidth(struct gmenu *m, int mask ) {
 	if( mask & ksm_control )
 	{
 	    mask |= ksm_cmdmacosx;
-	    mask ^= ksm_control; 
+	    mask ^= ksm_control;
 	}
     }
-    
+
     if ( mask&ksm_cmdmacosx ) {
 	x += h+seg-1;
     }
@@ -439,7 +439,7 @@ static int GMenuMacIconsWidth(struct gmenu *m, int mask ) {
     }
 return( x );
 }
-	
+
 static void GMenuDrawCheckMark(struct gmenu *m, Color fg, int ybase, int r2l) {
     int as = m->as;
     int pt = GDrawPointsToPixels(m->w,1);
@@ -547,7 +547,7 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
     //printf("GMenuDrawMenuLine(top)\n");
     /* if(mi->ti.text) */
     /* 	printf("GMenuDrawMenuLine() mi:%s\n",u_to_c(mi->ti.text)); */
-	
+
     new.x = m->tickoff; new.width = m->rightedge-m->tickoff;
     new.y = y; new.height = GTextInfoGetHeight(pixmap,&mi->ti,m->font);
     GDrawPushClip(pixmap,&new,&old);
@@ -599,15 +599,15 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	    hk = hotkeyFindByMenuPath( toplevel->g.base,
 				       GMenuGetMenuPath( toplevel->mi, mi ));
 	}
-	else if( m->owner && strlen(m->subMenuName) ) 
+	else if( m->owner && strlen(m->subMenuName) )
 	{
 	    hk = hotkeyFindByMenuPathInSubMenu( m->owner, m->subMenuName,
 						GMenuGetMenuPath( m->mi, mi ));
 	}
-	
+
 	short_mask = 0;
 	uc_strcpy(shortbuf,"");
-	
+
 	if( hk )
 	{
 	    /* printf("m->menubar->mi: %p\n", toplevel->mi ); */
@@ -621,7 +621,7 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	    }
 	    uc_strcpy( shortbuf, keydesc );
 	}
-	
+
 	width = GDrawGetTextWidth(pixmap,shortbuf,-1);
 	if( mac_menu_icons )
 	    width += GMenuMacIconsWidth( m, short_mask );
@@ -640,7 +640,7 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	    GDrawDrawText(pixmap,x,ybase,shortbuf,-1,fg);
 	}
     }
-    
+
     GDrawPopClip(pixmap,&old);
 return( y + h );
 }
@@ -676,7 +676,7 @@ static int gmenu_expose(struct gmenu *m, GEvent *event,GWindow pixmap) {
     GDrawPopClip(pixmap,&old1);
 return( true );
 }
-	    
+
 static void GMenuDrawLines(struct gmenu *m, int ln, int cnt) {
     GRect r, old1, old2, winrect;
 
@@ -1159,7 +1159,7 @@ static char* str_remove_all_single_char( char * ret, char ch )
     {
 	if( *src == ch )
 	    continue;
-	
+
 	*dst = *src;
 	dst++;
     }
@@ -1169,7 +1169,7 @@ static char* str_remove_all_single_char( char * ret, char ch )
 
 /**
  * Given a text_untranslated which may be either the hotkey of format:
- * 
+ *
  * Foo|ShortCutKey
  * Win*Foo|ShortCutKey
  * _Foo
@@ -1220,13 +1220,13 @@ static int HKActionMatchesFirstPartOf( char* action, char* prefix_const, int mun
     char* pt = 0;
     strncpy( prefix, prefix_const, PATH_MAX );
     if( munge )
-	strcpy( prefix, HKTextInfoToUntranslatedText( prefix_const ));
+	strncpy( prefix, HKTextInfoToUntranslatedText( prefix_const ),PATH_MAX );
 //    printf("munge:%d prefix2:%s\n", munge, prefix );
-    
+
     pt = strchr(action,'.');
     if( !pt )
 	return( 0==strcmp(action,prefix) );
-    
+
     int l = pt - action;
     if( strlen(prefix) < l )
 	return 0;
@@ -1260,7 +1260,7 @@ static GMenuItem *GMenuSearchActionRecursive( GWindow gw,
 					      char* action,
 					      GEvent *event,
 					      int call_moveto) {
-    
+
 //    printf("GMenuSearchAction() action:%s\n", action );
     int i;
     for ( i=0; mi[i].ti.text || mi[i].ti.text_untranslated || mi[i].ti.image || mi[i].ti.line; ++i ) {
@@ -1286,7 +1286,7 @@ static GMenuItem *GMenuSearchActionRecursive( GWindow gw,
 		return &mi[i];
 	    }
 	}
-	
+
     }
 return( NULL );
 }
@@ -1497,7 +1497,7 @@ return( true );
 	for ( ; m->child!=NULL ; m = m->child );
 return( GMenuSpecialKeys(m,event->u.chr.keysym,event));
     }
-    
+
 return( false );
 }
 
@@ -1631,7 +1631,7 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
 	if ( mi[i].ti.checkable )
 	    m->hasticks = true;
 	temp = GTextInfoGetWidth(m->w,&mi[i].ti,m->font);
-	if ( temp>width ) 
+	if ( temp>width )
 	    width = temp;
 
 	uc_strcpy(buffer,"");
@@ -1658,7 +1658,7 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
 	    hk = hotkeyFindByMenuPathInSubMenu( owner, m->subMenuName,
 						GMenuGetMenuPath( mi, &mi[i] ));
 	}
-	
+
 //	printf("hk:%p\n", hk);
 	if( hk )
 	{
@@ -1669,13 +1669,13 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
 		keydesc = hotkeyTextWithoutModifiers( keydesc );
 	    }
 	    uc_strcpy( buffer, keydesc );
-	    
+
 	    temp = GDrawGetTextWidth(m->w,buffer,-1);
 	    if( short_mask && mac_menu_icons ) {
 		temp += GMenuMacIconsWidth( m, short_mask );
 	    }
 	}
-	
+
 	if ( temp>keywidth ) keywidth=temp;
 	if ( mi[i].sub!=NULL && 3*m->as>keywidth )
 	    keywidth = 3*m->as;
@@ -1762,7 +1762,7 @@ static GMenu *GMenuCreateSubMenu(GMenu *parent,GMenuItem *mi,int disable) {
     GPoint p;
     GMenu *m;
     char *subMenuName = 0;
-    
+
     p.x = parent->width;
     p.y = (parent->line_with_mouse-parent->offtop)*parent->fh + parent->bp;
     GDrawTranslateCoordinates(parent->w,GDrawGetRoot(GDrawGetDisplayOfWindow(parent->w)),&p);
@@ -1946,7 +1946,7 @@ static int osx_handle_keysyms( int st, int k )
 	{
 	case 8211:  return 45; // Command + Alt + -
 	}
-    
+
     if( (st & ksm_control) && (st & ksm_meta) && (st & ksm_shift) )
 	switch( k )
 	{
@@ -1989,7 +1989,7 @@ static int osx_handle_keysyms( int st, int k )
 	case 183:   return 40; // Command + Alt + Shift + 9
 	case 8218:  return 41; // Command + Alt + Shift + 0
 	}
-    
+
     if( st & ksm_meta )
 	switch( k )
 	{
@@ -1997,7 +1997,7 @@ static int osx_handle_keysyms( int st, int k )
 	case 2237:  return 61; // Alt + = (can avoid shift on this one for simpler up/down)
 	case 8800:  return 61; // Alt + = (can avoid shift on this one for simpler up/down)
 	}
-    
+
     return k;
 }
 
@@ -2049,7 +2049,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     }
 
     /* then look for hotkeys everywhere */
-	
+
     if( hotkeySystemGetCanUseMacCommand() )
     {
 	// If Mac command key was pressed, swap with the control key.
@@ -2070,7 +2070,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     printf("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
     printf("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
     printf("     has ksm_option:%d\n",   (event->u.chr.state & ksm_option ));
-    
+
     if( event->u.chr.state & ksm_option )
 	event->u.chr.state ^= ksm_option;
 
@@ -2089,14 +2089,14 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     printf("     has ksm_control:%d\n", (event->u.chr.state & ksm_control ));
     printf("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
     printf("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
-    
+
 	struct dlistnodeExternal* node= hotkeyFindAllByEvent( top, event );
 	struct dlistnode* hklist = (struct dlistnode*)node;
 	for( ; node; node=(struct dlistnodeExternal*)(node->next) ) {
 	    Hotkey* hk = (Hotkey*)node->ptr;
 	    printf("hotkey found by event! hk:%p\n", hk );
 	    printf("hotkey found by event! action:%s\n", hk->action );
-	    
+
 	    int skipkey = false;
 
 	    if( cv_auto_goto )
@@ -2105,7 +2105,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 		    skipkey = true;
 //		printf("hotkey state:%d skip:%d\n", hk->state, skipkey );
 	    }
-	    
+
 	    if( !skipkey )
 	    {
 		mi = GMenuSearchAction(mb->g.base,mb->mi,hk->action,event,mb->child==NULL);
@@ -2124,14 +2124,14 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 		else
 		{
 //		    printf("hotkey found for event must be a non menu action... action:%s\n", hk->action );
-		
+
 		}
 	    }
-	    
+
 //	    printf("END hotkey found by event! hk:%p\n", hk );
 	}
 	dlist_free_external(&hklist);
-	
+
     if ( mb->child!=NULL ) {
 	GMenu *m;
 	// m = last(mb->child);
@@ -2521,7 +2521,7 @@ return( false );
 	keysym = toupper(keysym);
 
     memset(&foo,0,sizeof(foo));
-    
+
     GMenuItemParseShortCut(&foo,shortcut);
 
 return( (menumask&event->u.chr.state)==foo.short_mask && foo.shortcut == keysym );

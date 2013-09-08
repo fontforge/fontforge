@@ -219,9 +219,10 @@ int32 *ParseBitmapSizes(GGadget *g,char *msg,int *err) {
     const unichar_t *val = _GGadgetGetTitle(g), *pt; unichar_t *end, *end2;
     int i;
     int32 *sizes;
-    char oldloc[24];
+    char oldloc[25];
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
 
     *err = false;
@@ -476,7 +477,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdLayers),flags&ttf_flag_pfed_layers);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_TeXTable),flags&ttf_flag_TeXtable);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap),flags&ttf_flag_glyphmap);
-#if 0 
+#if 0
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_BrokenSize),flags&ttf_flag_brokensize);
 #endif
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OldKern),
@@ -984,7 +985,7 @@ return( -1 );
 	label[0].text = (unichar_t *) _("BDF Resolution");
 	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
-	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 7; 
+	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 7;
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
 	harray2[0] = GCD_Glue; harray2[1] = &gcd[0]; harray2[2] = GCD_Glue; harray2[3] = NULL;
@@ -1010,7 +1011,7 @@ return( -1 );
 	label[2].text_is_1byte = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.mnemonic = '1';
-	gcd[2].gd.pos.x = 20; gcd[2].gd.pos.y = gcd[1].gd.pos.y+17; 
+	gcd[2].gd.pos.x = 20; gcd[2].gd.pos.y = gcd[1].gd.pos.y+17;
 	gcd[2].gd.flags = gg_enabled|gg_visible;
 	if ( (bf==bf_bdf ? 100 : 120)==def_res )
 	    gcd[2].gd.flags |= gg_cb_on;
@@ -1134,25 +1135,25 @@ return( -1 );
 static char *SearchDirForWernerFile(char *dir,char *filename) {
     char buffer[1025], buf2[200];
     FILE *file;
-    int good = false;
+    int good = 0;
 
-    if ( dir==NULL )
-return( NULL );
+    if ( dir==NULL || filename==NULL || \
+	 strlen(dir)+strlen(filename)>sizeof(buffer)-2 )
+	return( NULL );
 
     strcpy(buffer,dir);
     strcat(buffer,"/");
     strcat(buffer,filename);
-    file = fopen(buffer,"r");
-    if ( file==NULL )
-return( NULL );
-    if ( fgets(buf2,sizeof(buf2),file)!=NULL &&
-	    strncmp(buf2,pfaeditflag,strlen(pfaeditflag))==0 )
-	good = true;
+    if ( (file=fopen(buffer,"r"))==NULL )
+	return( NULL );
+    if ( fgets(buf2,sizeof(buf2),file)!=NULL && \
+	  strncmp(buf2,pfaeditflag,strlen(pfaeditflag))==0 )
+	good = 1;
     fclose( file );
     if ( good )
-return( copy(buffer));
+	return( copy(buffer) );
 
-return( NULL );
+    return( NULL );
 }
 
 static char *SearchNoLibsDirForWernerFile(char *dir,char *filename) {
@@ -1295,7 +1296,7 @@ static int OFLibUploadGather(struct gfc_data *d,unichar_t *path) {
 	help(uploadcontrol);
 	free(uploadcontrol);
     }
-    
+
     if ( ret && GGadgetIsChecked(GWidgetGetControl(d->gw,CID_OFLibRememberMe))) {
 	free(oflib_username); free(oflib_password);
 	oflib_username = copy( oflib.username );
@@ -1324,7 +1325,7 @@ static void prepend_timestamp(struct gfc_data *d){
   if (d->sf->familyname_with_timestamp)
     free(d->sf->familyname_with_timestamp);
   d->sf->familyname_with_timestamp = NULL;
-  
+
   if (will_prepend_timestamp){
     //prepend "YYMMDDHHMM-"
 
@@ -1390,7 +1391,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 	ff_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
 return;
     }
-    
+
     for ( i=d->sf->glyphcnt-1; i>=1; --i ) if ( i!=notdef_pos )
 	if ( d->sf->glyphs[i]!=NULL && strcmp(d->sf->glyphs[i]->name,".notdef")==0 &&
 		(d->sf->glyphs[i]->layers[ly_fore].splines!=NULL || AnyRefs(d->sf->glyphs[i]->layers[ly_fore].refs )))
@@ -1593,7 +1594,7 @@ return;
 	char *old_fontlog_contents;
 	int res = -1;
 	if ( oldformatstate == ff_multiple )
-	    wernersfdname = GetWernerSFDFile(d->sf,d->map);	
+	    wernersfdname = GetWernerSFDFile(d->sf,d->map);
 	if (( oldbitmapstate==bf_bdf || oldbitmapstate==bf_fnt ||
 		oldbitmapstate==bf_fon ) && ask_user_for_resolution ) {
 	    ff_progress_pause_timer();
@@ -1974,7 +1975,7 @@ static int GFD_ToggleFontLog(GGadget *g, GEvent *e) {
 	    if ( g!=NULL )
 		GGadgetSetVisible(g,visible);
 	}
-	    
+
 	GWidgetToDesiredSize(d->gw);
     }
 return( true );
@@ -1984,7 +1985,7 @@ static int GFD_ToggleOFLib(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	static int cids[] = {
-	    CID_OFLibUsername, CID_OFLibPassword, CID_OFLibRememberMe, 
+	    CID_OFLibUsername, CID_OFLibPassword, CID_OFLibRememberMe,
 	    CID_OFLibOFL, CID_OFLibPD,
 	    CID_OFLibName, CID_OFLibTags, CID_OFLibDescription, CID_OFLibArtists,
 	    CID_OFLibNotSafe,
@@ -2001,7 +2002,7 @@ static int GFD_ToggleOFLib(GGadget *g, GEvent *e) {
 	    if ( g!=NULL )
 		GGadgetSetVisible(g,visible);
 	}
-	    
+
 	GWidgetToDesiredSize(d->gw);
     }
 return( true );
@@ -2279,7 +2280,7 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
 			if ( i<48 && familysfs[fc][i]->fondname!=NULL &&
 				strcmp(familysfs[fc][i]->fondname,fv->b.sf->fondname)==0 ) {
 			    if ( familysfs[fc][psstyle]==fv->b.sf )
-				/* several windows may point to same font */; 
+				/* several windows may point to same font */;
 			    else if ( familysfs[fc][psstyle]!=NULL ) {
 				dup = fv->b.sf;
 			        dupstyle = psstyle;
@@ -2360,7 +2361,7 @@ return( 0 );
     gcd[1].gd.label = &label[1];
     gcd[1].gd.handle_controlevent = GFD_SaveOk;
     gcd[1].creator = GButtonCreate;
-    harray[0] = GCD_Glue; harray[1] = &gcd[1]; 
+    harray[0] = GCD_Glue; harray[1] = &gcd[1];
 
     gcd[2].gd.pos.x = -(spacing+bs)*100/GIntGetResource(_NUM_ScaleFactor)-12; gcd[2].gd.pos.y = y;
     gcd[2].gd.pos.width = -1;
@@ -2372,7 +2373,7 @@ return( 0 );
     gcd[2].gd.label = &label[2];
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
-    harray[2] = GCD_Glue; harray[3] = &gcd[2]; 
+    harray[2] = GCD_Glue; harray[3] = &gcd[2];
 
     gcd[3].gd.pos.x = -12; gcd[3].gd.pos.y = y; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
@@ -2396,7 +2397,7 @@ return( 0 );
     gcd[4].gd.label = &label[4];
     gcd[4].gd.handle_controlevent = GFD_NewDir;
     gcd[4].creator = GButtonCreate;
-    harray[4] = GCD_Glue; harray[5] = &gcd[4]; 
+    harray[4] = GCD_Glue; harray[5] = &gcd[4];
 
     boxes[2].gd.flags = gg_enabled|gg_visible;
     boxes[2].gd.u.boxelements = harray;
@@ -2832,7 +2833,7 @@ return( 0 );
 	oflarray[1][0] = GCD_Glue; oflarray[1][1] = &gcd[k-1];
 	oflarray[1][2] = oflarray[1][3] = GCD_ColSpan;
 	oflarray[1][4] = NULL;
-	
+
 
 	label[k].text = (unichar_t *) _("OFLib Name:");
 	label[k].text_is_1byte = true;
@@ -3166,7 +3167,7 @@ return( 0 );
     GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
     GHVBoxFitWindow(boxes[0].ret);
-    
+
     GGadgetSetUserData(gcd[2].ret,gcd[0].ret);
     free(namelistnames);
     free(lynames);
