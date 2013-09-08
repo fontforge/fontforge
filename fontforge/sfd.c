@@ -8183,7 +8183,7 @@ return( dval );
 
 static SplineFont *SFD_Read(char *filename,FILE *sfd, int fromdir) {
     SplineFont *sf=NULL;
-    char oldloc[24], tok[2000];
+    char oldloc[25], tok[2000];
     double version;
 
     if ( sfd==NULL ) {
@@ -8195,7 +8195,8 @@ static SplineFont *SFD_Read(char *filename,FILE *sfd, int fromdir) {
     }
     if ( sfd==NULL )
 return( NULL );
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
     ff_progress_change_stages(2);
     if ( (version = SFDStartsCorrectly(sfd,tok))!=-1 )
@@ -8524,7 +8525,7 @@ return( true );
 SplineFont *SFRecoverFile(char *autosavename,int inquire,int *state) {
     FILE *asfd = fopen( autosavename,"r");
     SplineFont *ret;
-    char oldloc[24], tok[1025];
+    char oldloc[25], tok[1025];
 
     if ( asfd==NULL )
 return(NULL);
@@ -8532,7 +8533,8 @@ return(NULL);
 	fclose( asfd );
 return( NULL );
     }
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
     ret = SlurpRecovery(asfd,tok,sizeof(tok));
     if ( ret==NULL ) {
