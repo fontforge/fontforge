@@ -1302,6 +1302,7 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 	if ( cv->b.drawmode!=dm_grid
 	     && DrawOpenPathsWithHighlight
 	     && activelayer < cv->b.sc->layer_cnt
+	     && activelayer >= 0 
 	     && SplinePointListContains( cv->b.sc->layers[activelayer].splines, spl )
 	     && spl->first
 	     && spl->first->prev==NULL )
