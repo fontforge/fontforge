@@ -3686,7 +3686,8 @@ return( NULL );
 	}
     }
     free(fonts);
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
     sf = SVGParseFont(font);
     setlocale(LC_NUMERIC,oldloc);
