@@ -790,10 +790,15 @@ char* GFileReadAll( char* name )
 
 int GFileWriteAll(char* filepath, char *data)
 {
-    FILE* fp = fopen( filepath, "wb" );
-    int bwrite = fwrite( data, 1, strlen(data), fp );
-    fclose(fp);
-    return 0;
+    size_t bwrite = strlen(data);
+    FILE* fp;
+    if ( (fp = fopen( filepath, "wb" )) != NULL ) {
+	if ( (fwrite( data, 1, bwrite, fp ) == bwrite) && \
+	     (fflush(fp) == 0) && \
+	     (fclose(fp) == 0) )
+	return 0;
+    }
+    return -1;
 }
 
 char *getTempDir(void)
