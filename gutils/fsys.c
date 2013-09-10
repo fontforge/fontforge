@@ -796,7 +796,8 @@ int GFileWriteAll(char* filepath, char *data)
 	if ( (fwrite( data, 1, bwrite, fp ) == bwrite) && \
 	     (fflush(fp) == 0) && \
 	     (fclose(fp) == 0) )
-	return 0;
+	    return 0;
+	fclose(fp);
     }
     return -1;
 }
