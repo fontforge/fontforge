@@ -2090,6 +2090,19 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     printf("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
     printf("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
 
+    event->u.chr.state |= ksm_numlock;
+    printf("about2 to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
+    
+    /**
+     * Mask off the parts we don't explicitly care about
+     */
+    event->u.chr.state &= ( ksm_control | ksm_meta | ksm_shift | ksm_option );
+    
+    printf("about3 to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
+    printf("     has ksm_control:%d\n", (event->u.chr.state & ksm_control ));
+    printf("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
+    printf("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
+    
 	struct dlistnodeExternal* node= hotkeyFindAllByEvent( top, event );
 	struct dlistnode* hklist = (struct dlistnode*)node;
 	for( ; node; node=(struct dlistnodeExternal*)(node->next) ) {
