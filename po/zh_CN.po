@@ -34496,9 +34496,7 @@ msgstr ""
 
 #: tottfaat.c:260
 #, c-format
-msgid ""
-"On Windows many apps will have problems with this font's kerning, because %d "
-"of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs"
+msgid "Note: On Windows many apps can have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs (eg, they have a Unicode value of -1)"
 msgstr ""
 
 #: tottf.c:600

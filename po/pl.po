@@ -31971,12 +31971,8 @@ msgstr "Kerning raczej nie zadziała w Windows"
 
 #: ../fontforge/tottfaat.c:260
 #, c-format
-msgid ""
-"On Windows many apps will have problems with this font's kerning, because %d of its "
-"glyph kern pairs cannot be mapped to unicode-BMP kern pairs"
-msgstr ""
-"Wiele aplikacji systemu Windows będzie miało kłopot z kerningiem tego fontu, ponieważ "
-"%d par kerningu nie może być zmapowanych do unidoce-BMP."
+msgid "Note: On Windows many apps can have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs (eg, they have a Unicode value of -1)"
+msgstr "Uwaga: Wiele aplikacji Windows mogą mieć problemy z tym kerningu czcionki jako, ponieważ %d par kerningu nie może być zmapowanych do unicode-BMP."
 
 #: ../fontforge/tottfgpos.c:1092
 #, c-format

@@ -33350,13 +33350,8 @@ msgstr "Ймовірно, кернінґ буде помилковим у Window
 
 #: ../fontforge/tottfaat.c:260
 #, c-format
-msgid ""
-"On Windows many apps will have problems with this font's kerning, because %d "
-"of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs"
-msgstr ""
-"У Windows значна частина програм матиме проблеми з цим кернінґом шрифту, "
-"оскільки %d з його пар гліфів не можна відобразити на пари кернінґу unicode-"
-"BMP."
+msgid "Note: On Windows many apps can have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs (eg, they have a Unicode value of -1)"
+msgstr "Примітка: У Windows значна частина програм матиме проблеми з цим кернінґом шрифту, оскільки %d з його пар гліфів не можна відобразити на пари кернінґу unicode-BMP (Наприклад, вони мають значення Юнікоду -1)"
 
 #: ../fontforge/tottfgpos.c:1092
 #, c-format
