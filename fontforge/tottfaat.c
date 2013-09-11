@@ -257,7 +257,7 @@ return;
 
     if( winfail > 0 )
 	ff_post_error(_("Kerning is likely to fail on Windows"),_(
-		"Note: On Windows many apps can have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs (eg, they have a Unicode value of -1)"),
+		"Note: On Windows many apps can have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs (eg, they have a Unicode value of -1) To avoid this, go to Generate, Options, and uncheck Old Style kern for OpenType."),
 	    winfail);
 
     if ( at->applemode ) for ( isv=0; isv<2; ++isv ) {

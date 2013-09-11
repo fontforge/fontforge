@@ -31983,7 +31983,7 @@ msgstr "És probable que l'interlletratge no funcioni bé al Windows"
 
 #: tottfaat.c:260
 #, c-format
-msgid "Note: On Windows many apps can have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs (eg, they have a Unicode value of -1)"
+msgid "Note: On Windows many apps can have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs (eg, they have a Unicode value of -1) To avoid this, go to Generate, Options, and uncheck Old Style kern for OpenType."
 msgstr ""
 
 #: tottf.c:510

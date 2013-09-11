@@ -30995,8 +30995,8 @@ msgstr "Trên hệ điều hành Windows thì chức năng định chỗ rất c
 
 #: tottfaat.c:257
 #, c-format
-msgid "Note: On Windows many apps can have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs (eg, they have a Unicode value of -1)"
-msgstr "Lưu ý: Trên hệ điều hành Windows thì rất nhiều ứng dụng có thể gặp khó khăn trong việc định chỗ của phông chữ này, vì %d của các cặp định chỗ hình tượng của nó không ánh xạ được tới cặp định chỗ BMP Unicode (ví dụ, họ có một giá trị Unicode của -1)"
+msgid "Note: On Windows many apps can have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs (eg, they have a Unicode value of -1) To avoid this, go to Generate, Options, and uncheck Old Style kern for OpenType."
+msgstr "Lưu ý: Trên hệ điều hành Windows thì rất nhiều ứng dụng có thể gặp khó khăn trong việc định chỗ của phông chữ này, vì %d của các cặp định chỗ hình tượng của nó không ánh xạ được tới cặp định chỗ BMP Unicode (ví dụ, họ có một giá trị Unicode của -1) Để tránh điều này, hãy để Tạo, Options và bỏ chọn Old Style kern cho OpenType."
 
 #: tottf.c:4257
 #: tottf.c:4263
