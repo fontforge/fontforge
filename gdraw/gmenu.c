@@ -1181,11 +1181,13 @@ static char* str_remove_all_single_char( char * ret, char ch )
 static char* HKTextInfoToUntranslatedText(char *text_untranslated) {
     char ret[PATH_MAX+1];
     char* pt;
+    int i;
 
     strncpy(ret,text_untranslated,PATH_MAX);
 
     if( (pt=strchr(ret,'*')) )
-	strcpy( ret, pt+1 );
+        for (i=0; pt[i]!='\0'; i++)
+            ret[i]=pt[i+1];
     if( (pt=strchr(ret,'|')) )
 	*pt = '\0';
     str_remove_all_single_char( ret, '_' );
