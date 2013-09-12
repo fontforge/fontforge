@@ -214,8 +214,8 @@ CharView.Menu.View.Combinations.Anchor Glyph at Point.Detach:No Shortcut
 CharView.Menu.View.Combinations.Kern Pairs:No Shortcut
 CharView.Menu.View.Combinations.Anchored Pairs:No Shortcut
 CharView.Menu.View.Combinations.Ligatures:No Shortcut
-CharView.Menu.View.Number Points.None:No Shortcut
-CharView.Menu.View.Number Points.TrueType:No Shortcut
+CharView.Menu.View.Number Points.None:Alt+n
+CharView.Menu.View.Number Points.TrueType:Alt+t
 CharView.Menu.View.Number Points.PostScript:No Shortcut
 CharView.Menu.View.Number Points.SVG:No Shortcut
 CharView.Menu.View.Grid Fit.Show Grid Fit...:Ctl+Shft+#
