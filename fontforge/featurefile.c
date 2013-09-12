@@ -3816,6 +3816,7 @@ return( NULL );
     if ( tok->type!=tk_char || tok->tokbuf[0]!='<' ) {
 	LogError(_("Expected an anchor (after ligature) on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
+	free(cur->name_or_class); free(cur);
 return( NULL );
     }
     lc_max = 8;

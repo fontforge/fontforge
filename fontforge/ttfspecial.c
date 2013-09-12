@@ -570,7 +570,7 @@ static int pfed_guide_dump_pos_name(FILE *guid, struct pos_name *pn, int namesta
     }
 return( namestart );
 }
-    
+
 static void PfEd_Guides(SplineFont *sf, struct PfEd_subtabs *pfed ) {
     int h,v, i;
     SplineSet *ss;
@@ -632,7 +632,7 @@ return;
 	fputs(hs[i].name,guid);
 	putc('\0',guid);
     }
-	
+
     pfed_glyph_layer(guid,&sf->grid,false);
 
     if ( ftell(guid) & 1 )
@@ -812,6 +812,7 @@ return;
 	putc('\0',layr);
     if ( ftell(layr) & 2 )
 	putshort(layr,0);
+    free(otherlayers);
 }
 
 void pfed_dump(struct alltabs *at, SplineFont *sf) {
@@ -964,7 +965,7 @@ static void pfed_readcvtcomments(FILE *ttf,struct ttfinfo *info,uint32 base ) {
     if ( getushort(ttf)!=0 )
 return;			/* Bad version number */
     count = getushort(ttf);
-    
+
     offsets = galloc(count*sizeof(uint16));
     info->cvt_names = galloc((count+1)*sizeof(char *));
     for ( i=0; i<count; ++i )
@@ -1175,7 +1176,7 @@ return;
 	    } else if ( v==V_QVImplicit ) {
 		offy = pfed_get_coord(ttf,m);
 	    }
-	    
+
 	    current->nextcp.x = current->me.x+offx;
 	    current->nextcp.y = current->me.y+offy;
 	    current->nonextcp = false;
@@ -1319,7 +1320,7 @@ static void pfed_read_glyph_layer(FILE *ttf,struct ttfinfo *info,Layer *ly,
 	    last->next = cur;
 	last = cur;
     }
-    
+
     ss = ly->splines;			/* Only relevant for spiros where they live in someone else's layer */
     for ( i=0; i<cc; ++i ) {
 	if ( type!=1 ) {		/* Not spiros */
@@ -1919,11 +1920,11 @@ return;
 	USHORT	strikeCount	: number of strikes in table
 	ULONG	stringTable	: offset (from start of BDF table) to string table
 
-followed by an array of 'strikeCount' descriptors that look like: 
+followed by an array of 'strikeCount' descriptors that look like:
 	USHORT	ppem		: vertical pixels-per-EM for this strike
 	USHORT	num_items	: number of items (properties and atoms), max is 255
 
-this array is followed by 'strikeCount' value sets. Each "value set" is 
+this array is followed by 'strikeCount' value sets. Each "value set" is
 an array of (num_items) items that look like:
 	ULONG	item_name	: offset in string table to item name
 	USHORT	item_type	: item type: 0 => non-property string (e.g. COMMENT)
@@ -1932,7 +1933,7 @@ an array of (num_items) items that look like:
 					     3 => non-property uint32
 					  0x10 => flag for a property, ored
 						  with above value types)
-	ULONG	item_value	: item value. 
+	ULONG	item_value	: item value.
 				strings	 => an offset into the string table
 					  to the corresponding string,
 					  without the surrending double-quotes
@@ -1995,7 +1996,7 @@ return( copy( "" ));
     str[len-1] = '\0';
 return( str );
 }
-    
+
 #define AMAX	50
 
 int ttf_bdf_dump(SplineFont *sf,struct alltabs *at,int32 *sizes) {
@@ -2014,7 +2015,7 @@ int ttf_bdf_dump(SplineFont *sf,struct alltabs *at,int32 *sizes) {
     }
     if ( spcnt==0 )	/* No strikes with properties */
 return(true);
-	
+
     at->bdf = tmpfile();
     strings = tmpfile();
 

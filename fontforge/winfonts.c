@@ -32,7 +32,7 @@
 #include <string.h>
 #include <utype.h>
 
-/* Look for 
+/* Look for
 Source: Microsoft Windows 2.0 SDK Programmer's Refrence, pages 639 through 645
         Microsoft Windows Device Driver Kit, Device Driver Adaptaion Guide, pages 13-1-13-15
 
@@ -847,8 +847,8 @@ int FONFontDump(char *filename,SplineFont *sf, int32 *sizes,int resol,
     ff_progress_change_line1(_("Saving Bitmap Font(s)"));
     ff_progress_change_stages(i);
     num_files = i;
-    fntarray = galloc(num_files*sizeof(FILE **));
-    file_lens = galloc(num_files*sizeof(int));
+    fntarray = (FILE **)galloc(num_files*sizeof(FILE *));
+    file_lens = (int *)galloc(num_files*sizeof(int));
 
     for ( i=0; sizes[i]!=0; ++i ) {
 	for ( bdf=sf->bitmaps; bdf!=NULL &&
@@ -1056,7 +1056,7 @@ return( false );
 
     /* FONTDIR resource */
     lputshort(fon,num_files);
-    
+
     for(res = first_res, i = 0; i < num_files; i++, res++) {
         lputshort(fon,res);
 
