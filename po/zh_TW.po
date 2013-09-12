@@ -30996,7 +30996,7 @@ msgstr "字距微調似乎會在 Windows 中失敗"
 #: tottfaat.c:260
 #, fuzzy, c-format
 msgid "Note: On Windows many apps can have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs (eg, they have a Unicode value of -1) To avoid this, go to Generate, Options, and uncheck Old Style kern for OpenType."
-msgstr ""於 Windows 許多 apps 可能有問題與這個字型字距微調，因為因為 %d 的它的字圖字距微 "調對無法映射到 unicode-BMP 字距微調對（例如，他们有一个Unicode值-1）为了避免这种情况，去生成选项，取消旧风格克恩。"
+msgstr "於 Windows 許多 apps 可能有問題與這個字型字距微調，因為因為 %d 的它的字圖字距微 "調對無法映射到 unicode-BMP 字距微調對（例如，他们有一个Unicode值-1）为了避免这种情况，去生成选项，取消旧风格克恩。"
 
 #: tottfgpos.c:1133
 #, fuzzy, c-format
