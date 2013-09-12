@@ -1504,16 +1504,16 @@ static struct langstyle regs[] = { {0x409, regulareng}, { 0x40c, regularfren }, 
 	{ 0x408, "κανονική"}, { 0x42a, "Chuẩn"}, { 0x418, "Normal"}, LANGSTYLE_EMPTY};
 static struct langstyle meds[] = { {0x409, mediumeng}, { 0x410, mediumital },
 	{ 0x40c, mediumfren }, { 0x407, mediumgerm }, { 0x40e, mediumhu },
-	{ 0x406, mediumdanish}, {0x415, mediumpl }, { 0x804, "中等"}, 
-	{ 0x408, "µεσαία"}, { 0x42a, "Vừa"}, { 0x413, mediumdutch}, 
+	{ 0x406, mediumdanish}, {0x415, mediumpl }, { 0x804, "中等"},
+	{ 0x408, "µεσαία"}, { 0x42a, "Vừa"}, { 0x413, mediumdutch},
         { 0x418, "Mediu"}, LANGSTYLE_EMPTY};
 static struct langstyle books[] = { {0x409, bookeng}, { 0x410, bookital },
 	{ 0x407, bookgerm }, { 0x40e, bookhu }, { 0x40e, bookhu2 },
 	{ 0x415, bookpl}, { 0x804, "书体"}, { 0x408, "ßιßλίου"},
 	{ 0x42a, "Sách"}, { 0x413, bookdutch}, { 0x418, "Carte"}, LANGSTYLE_EMPTY};
-static struct langstyle bolds[] = { {0x409, boldeng}, { 0x410, boldital }, { 0x40c, boldfren }, { 0x407, boldgerm }, { 0x407, boldgerm2 }, { 0x40a, boldspan}, { 0x419, boldru }, { 0x40e, boldhu }, { 0x40e, boldhu2 }, 
+static struct langstyle bolds[] = { {0x409, boldeng}, { 0x410, boldital }, { 0x40c, boldfren }, { 0x407, boldgerm }, { 0x407, boldgerm2 }, { 0x40a, boldspan}, { 0x419, boldru }, { 0x40e, boldhu }, { 0x40e, boldhu2 },
 	{ 0x413, bolddutch}, { 0x41d, boldswed }, { 0x414, boldnor },
-	{ 0x406, bolddanish}, { 0x415, boldpl}, { 0x804, "粗体"},  
+	{ 0x406, bolddanish}, { 0x415, boldpl}, { 0x804, "粗体"},
 	{ 0x408, "έντονη"}, { 0x42a, "Đậm"}, {0x418,"Aldin"}, LANGSTYLE_EMPTY};
 static struct langstyle italics[] = { {0x409, italiceng}, { 0x410, italicital }, { 0x40c, italicfren }, { 0x407, italicgerm }, { 0x40a, italicspan}, { 0x419, italicru }, { 0x40e, italichu },
 	{ 0x413, italicdutch}, { 0x413, italicdutch2}, { 0x41d, italicswed }, { 0x414, italicnor },
@@ -1523,20 +1523,20 @@ static struct langstyle obliques[] = { {0x409, obliqueeng}, { 0x410, obliqueital
 	{ 0x40c, obliquefren }, { 0x407, obliquegerm }, { 0x419, obliqueru },
 	{ 0x40e, obliquehu }, { 0x40e, obliquehu2 }, {0x415, obliquepl},
 	{ 0x804, "斜体"}, { 0x408, "πλάγια"},
-	{ 0x42a, "Xiên" }, { 0x413, obliquedutch}, { 0x413, obliquedutch2}, 
+	{ 0x42a, "Xiên" }, { 0x413, obliquedutch}, { 0x413, obliquedutch2},
         { 0x418, "Înclinat"}, LANGSTYLE_EMPTY};
 static struct langstyle demibolds[] = { {0x409, demiboldeng}, {0x409, demiboldeng3}, {0x409, demiboldeng5},
 	{ 0x410, demiboldital }, { 0x40c, demiboldfren }, { 0x40c, demiboldfren2 }, { 0x407, demiboldgerm }, { 0x407, demiboldgerm2 },
 	{ 0x419, demiboldru }, { 0x40e, demiboldhu }, { 0x40e, demiboldhu2 },
 	{ 0x406, demibolddanish}, { 0x415, demiboldpl },
 	{ 0x804, "略粗"}, { 0x408, "ηµιέντονη"},
-	{ 0x42a, "Nửa đậm"}, { 0x413, demibolddutch}, 
+	{ 0x42a, "Nửa đậm"}, { 0x413, demibolddutch},
         {0x418, "Semialdin"}, LANGSTYLE_EMPTY};
 static struct langstyle heavys[] = { {0x409, heavyeng}, { 0x410, heavyital },
 	{ 0x419, heavyru }, { 0x40e, heavyhu }, { 0x40e, heavyhu2 },
 	{ 0x415, heavypl }, { 0x804, "粗"}, LANGSTYLE_EMPTY};
-static struct langstyle blacks[] = { {0x409, blackeng}, { 0x410, blackital }, { 0x40c, blackfren }, { 0x407, blackgerm }, { 0x419, blackru }, { 0x40e, blackhu }, { 0x40e, blackhu2 }, { 0x40a, blackspan }, 
-	{ 0x413, blackdutch}, { 0x41d, blackswed }, { 0x414, blacknor }, { 0x406, blackdanish}, 
+static struct langstyle blacks[] = { {0x409, blackeng}, { 0x410, blackital }, { 0x40c, blackfren }, { 0x407, blackgerm }, { 0x419, blackru }, { 0x40e, blackhu }, { 0x40e, blackhu2 }, { 0x40a, blackspan },
+	{ 0x413, blackdutch}, { 0x41d, blackswed }, { 0x414, blacknor }, { 0x406, blackdanish},
 	{ 0x415, heavypl }, { 0x804, "黑"},  { 0x408, "µαύρα"},
 	{ 0x42a, "Đen"}, { 0x418, "Negru"}, LANGSTYLE_EMPTY };
 static struct langstyle thins[] = { {0x409, thineng}, { 0x410, thinital },
@@ -1544,16 +1544,16 @@ static struct langstyle thins[] = { {0x409, thineng}, { 0x410, thinital },
 	{ 0x804, "细"}, LANGSTYLE_EMPTY};
 static struct langstyle extralights[] = { {0x409, extralighteng}, {0x409, extralighteng2},
 	{ 0x804, "极细"}, LANGSTYLE_EMPTY};
-static struct langstyle lights[] = { {0x409, lighteng}, {0x410, lightital}, {0x40c, lightfren}, {0x407, lightgerm}, { 0x419, lightru }, { 0x40e, lighthu }, { 0x40a, lightspan }, 
+static struct langstyle lights[] = { {0x409, lighteng}, {0x410, lightital}, {0x40c, lightfren}, {0x407, lightgerm}, { 0x419, lightru }, { 0x40e, lighthu }, { 0x40a, lightspan },
 	{ 0x413, lightdutch}, { 0x41d, lightswed }, { 0x414, lightnor },
 	{ 0x406, lightdanish}, { 0x415, lightpl}, { 0x804, "细"},
 	{ 0x408, "λεπτή"}, { 0x42a, "Nhẹ" }, { 0x418, "Subțire"}, LANGSTYLE_EMPTY};
-static struct langstyle condenseds[] = { {0x409, condensedeng}, {0x410, condensedital}, {0x40c, condensedfren}, {0x407, condensedgerm}, { 0x419, condensedru }, { 0x40e, condensedhu }, { 0x40a, condensedspan }, 
+static struct langstyle condenseds[] = { {0x409, condensedeng}, {0x410, condensedital}, {0x40c, condensedfren}, {0x407, condensedgerm}, { 0x419, condensedru }, { 0x40e, condensedhu }, { 0x40a, condensedspan },
 	{ 0x413, condenseddutch}, { 0x41d, condensedswed },
 	{ 0x414, condensednor }, { 0x406, condenseddanish},
 	{ 0x415, condensedpl }, { 0x804, "压缩"},
 	{ 0x408, "πυκνή"}, { 0x42a, "Hẹp" }, { 0x418, "Îngust"}, LANGSTYLE_EMPTY};
-static struct langstyle expandeds[] = { {0x409, expandedeng}, {0x410, expandedital}, {0x40c, expandedfren}, {0x407, expandedgerm}, { 0x419, expandedru }, { 0x40e, expandedhu }, { 0x40a, expandedspan }, 
+static struct langstyle expandeds[] = { {0x409, expandedeng}, {0x410, expandedital}, {0x40c, expandedfren}, {0x407, expandedgerm}, { 0x419, expandedru }, { 0x40e, expandedhu }, { 0x40a, expandedspan },
 	{ 0x413, expandeddutch}, { 0x41d, expandedswed }, { 0x414, expandednor },
 	{ 0x406, expandeddanish}, { 0x415, expandedpl }, { 0x804, "加宽"},
 	{ 0x408, "αραιή"}, { 0x42a, "Rộng" }, { 0x418, "Expandat"}, LANGSTYLE_EMPTY};
@@ -2515,7 +2515,7 @@ void GListDelSelected(GGadget *list) {
 GTextInfo *GListChangeLine(GGadget *list,int pos, const unichar_t *line) {
     GTextInfo **old, **new;
     int32 i,len;
-    
+
     old = GGadgetGetList(list,&len);
     new = gcalloc(len+1,sizeof(GTextInfo *));
     for ( i=0; i<len; ++i ) {
@@ -2535,7 +2535,7 @@ return( new[pos]);
 GTextInfo *GListAppendLine(GGadget *list,const unichar_t *line,int select) {
     GTextInfo **old, **new;
     int32 i,len;
-    
+
     old = GGadgetGetList(list,&len);
     new = gcalloc(len+2,sizeof(GTextInfo *));
     for ( i=0; i<len; ++i ) {
@@ -2558,7 +2558,7 @@ return( new[i]);
 GTextInfo *GListChangeLine8(GGadget *list,int pos, const char *line) {
     GTextInfo **old, **new;
     int32 i,len;
-    
+
     old = GGadgetGetList(list,&len);
     new = gcalloc(len+1,sizeof(GTextInfo *));
     for ( i=0; i<len; ++i ) {
@@ -2578,7 +2578,7 @@ return( new[pos]);
 GTextInfo *GListAppendLine8(GGadget *list,const char *line,int select) {
     GTextInfo **old, **new;
     int32 i,len;
-    
+
     old = GGadgetGetList(list,&len);
     new = gcalloc(len+2,sizeof(GTextInfo *));
     for ( i=0; i<len; ++i ) {
@@ -3179,7 +3179,7 @@ static void TNMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     }
     for ( i=0; i<cnt; ++i ) if ( md[3*cnt].u.md_ival==0x409 ) {
 	for ( j=0; ttfspecials[j]!=-1 && ttfspecials[j]!=md[3*cnt+1].u.md_ival; ++j );
-	md[3*i].user_bits = md[3*i+1].user_bits = md[3*i+2].user_bits = 
+	md[3*i].user_bits = md[3*i+1].user_bits = md[3*i+2].user_bits =
 		( ttfspecials[j]!=-1 );
     }
     mi->matrix_data = md;
@@ -3491,7 +3491,7 @@ static void Layers_BackgroundEnable(GGadget *g,GMenuItem *mi, int r, int c) {
     mi[0].ti.disabled = disable;
     mi[1].ti.disabled = disable;
 }
-    
+
 static int Layers_CanDelete(GGadget *g,int row) {
 return( row>ly_fore );
 }
@@ -3754,7 +3754,7 @@ static void StoreTTFNames(struct gfi_data *d) {
 		    "them. Don't ask me why they believe this.\n"
 		    "This font will have a 'name' table bigger than that."));
 #endif
-    
+
     TTF_PSDupsDefault(sf);
 }
 
@@ -4652,7 +4652,7 @@ return( true );
 
 static int GFI_ShowPanoseDocs(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	help("http://panose.com/");	
+	help("http://panose.com/");
     }
 return( true );
 }
@@ -4661,7 +4661,7 @@ static void GFI_SetPanoseLists(struct gfi_data *d) {
     int kind = GGadgetGetFirstListSelectedItem(GWidgetGetControl(d->gw,CID_PanFamily));
     int i;
 
-    if ( kind!=d->last_panose_family ) {
+    if ( kind>=0 && kind!=d->last_panose_family ) {
 	if ( kind>6 ) kind=6;	/* No data for any kinds beyond 5, so anything bigger is just undefined, and that's 6 */
 	for ( i=1; i<10; ++i ) {
 	    GGadget *lab = GWidgetGetControl(d->gw,CID_PanFamilyLab+i);
@@ -4822,7 +4822,7 @@ static void TTFSetup(struct gfi_data *d) {
     }
     GGadgetSetChecked(GWidgetGetControl(d->gw,CID_UseTypoMetrics),d->sf->use_typo_metrics);
     GGadgetSetChecked(GWidgetGetControl(d->gw,CID_WeightWidthSlopeOnly),d->sf->weight_width_slope_only);
-    
+
     for ( i=0; ibmfamily[i].text!=NULL; ++i )
 	if ( (intpt) (ibmfamily[i].userdata)==info.os2_family_class ) {
 	    GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_IBMFamily),i);
@@ -4925,7 +4925,7 @@ static char *mathpopups[] = { N_("Amount to raise baseline for numerators in dis
     N_("Amount to lower baseline for subscripts in non-display styles"),
     N_("Amount above top of large box to place baseline of superscripts"),
     N_("Amount below bottom of large box to place baseline of subscripts"),
-    N_("Size of comb delimiters in display styles"), 
+    N_("Size of comb delimiters in display styles"),
     N_("Size of comb delimiters in non-display styles"),
     N_("Height of fraction bar above base line"),
     0 };
@@ -6154,7 +6154,7 @@ static int GFI_LookupMergeLookup(GGadget *g, GEvent *e) {
 	LookupParseSelection(lk,&sel);
 	if ( !sel.sub_table_mergeable && !sel.lookup_mergeable )
 return( true );
-	
+
 	buts[0] = _("Do it");
 	buts[1] = _("_Cancel");
 	buts[2] = NULL;
@@ -6371,7 +6371,7 @@ static int GFI_LookupImportLookup(GGadget *g, GEvent *e) {
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 12; gcd[i].gd.pos.y = 6+6; 
+	gcd[i].gd.pos.x = 12; gcd[i].gd.pos.y = 6+6;
 	gcd[i].gd.flags = gg_visible | gg_enabled;
 	gcd[i].creator = GLabelCreate;
 	varray[0] = &gcd[i++]; varray[1] = NULL;
@@ -6429,7 +6429,7 @@ static int GFI_LookupImportLookup(GGadget *g, GEvent *e) {
 	GHVBoxFitWindow(gcd[i].ret);
 	GTextInfoListFree(ti);
 	GDrawSetVisible(gw,true);
- 
+
 	while ( !done )
 	    GDrawProcessOneEvent(NULL);
 	if ( done==2 ) {
@@ -6841,7 +6841,7 @@ return;
 return;
 	    AALTRemoveOld(gfi->sf,lk);
 	}
-	AALTCreateNew(gfi->sf,lk);	      
+	AALTCreateNew(gfi->sf,lk);
 	GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+0)),NULL,false);
     } else if ( mi->mid==CID_AddDFLT ) {
 	struct selection_bits sel;
@@ -6999,7 +6999,7 @@ static void LookupMenu(struct gfi_data *gfi,struct lkdata *lk,int isgpos, GEvent
     }
     GMenuCreatePopupMenu(event->w,event, lookuppopupmenu);
 }
-    
+
 
 static int LookupIndex(struct gfi_data *othergfi, int isgpos, GWindow gw,
 	GWindow othergw, GEvent *event, int *subindex) {
@@ -7262,7 +7262,7 @@ return( false );		/* Mixed lookups and subtables */
     gfi->first_sel_subtable = first_s;
 return( true );
 }
-    
+
 static void LookupMouse(struct gfi_data *gfi, int isgpos, GEvent *event) {
     struct lkdata *lk = &gfi->tables[isgpos];
     int l = (event->u.mouse.y-LK_MARGIN)/gfi->fh + lk->off_top;
@@ -7524,7 +7524,7 @@ return;
     nlabel[0].text_is_1byte = true;
     nlabel[0].text_in_resource = true;
     ngcd[0].gd.label = &nlabel[0];
-    ngcd[0].gd.pos.x = 12; ngcd[0].gd.pos.y = 6+6; 
+    ngcd[0].gd.pos.x = 12; ngcd[0].gd.pos.y = 6+6;
     ngcd[0].gd.flags = gg_visible | gg_enabled;
     ngcd[0].creator = GLabelCreate;
 
@@ -7541,7 +7541,7 @@ return;
     nlabel[2].text_is_1byte = true;
     nlabel[2].text_in_resource = true;
     ngcd[2].gd.label = &nlabel[2];
-    ngcd[2].gd.pos.x = 12; ngcd[2].gd.pos.y = ngcd[0].gd.pos.y+26; 
+    ngcd[2].gd.pos.x = 12; ngcd[2].gd.pos.y = ngcd[0].gd.pos.y+26;
     ngcd[2].gd.flags = gg_visible | gg_enabled;
     ngcd[2].creator = GLabelCreate;
 
@@ -7579,7 +7579,7 @@ return;
     nlabel[6].text_is_1byte = true;
     nlabel[6].text_in_resource = true;
     ngcd[6].gd.label = &nlabel[6];
-    ngcd[6].gd.pos.x = ngcd[4].gd.pos.x; ngcd[6].gd.pos.y = ngcd[4].gd.pos.y+26; 
+    ngcd[6].gd.pos.x = ngcd[4].gd.pos.x; ngcd[6].gd.pos.y = ngcd[4].gd.pos.y+26;
     ngcd[6].gd.flags = gg_visible | gg_enabled;
     ngcd[6].creator = GLabelCreate;
 
@@ -8989,7 +8989,7 @@ return;
     panlabel[i].text = (unichar_t *) _( "http://panose.com/");
     panlabel[i].text_is_1byte = true;
     pangcd[i].gd.label = &panlabel[i];
-    pangcd[i].gd.pos.x = 12; ugcd[1].gd.pos.y = 10; 
+    pangcd[i].gd.pos.x = 12; ugcd[1].gd.pos.y = 10;
     pangcd[i].gd.flags = gg_visible | gg_enabled | gg_dontcopybox;
     pangcd[i].gd.box = &small_blue_box;
     pangcd[i].gd.handle_controlevent = GFI_ShowPanoseDocs;
@@ -9307,7 +9307,7 @@ return;
     cbox[0].gd.flags = gg_enabled|gg_visible;
     cbox[0].gd.u.boxelements = cvarray;
     cbox[0].creator = GVBoxCreate;
-    
+
 /******************************************************************************/
 
     memset(&vagcd,0,sizeof(vagcd));
@@ -9364,7 +9364,7 @@ return;
     for ( g=0; gaspversions[g].text!=NULL; ++g )
 	gaspversions[g].selected = false;
     g = ( sf->gasp_version>=0 && sf->gasp_version<g ) ? sf->gasp_version : 0;
-    
+
     gaspversions[g].selected = true;
     gaspgcd[i].gd.flags = gg_visible | gg_enabled;
     gaspgcd[i].gd.cid = CID_GaspVersion;
@@ -9658,7 +9658,7 @@ return;
     mkgcd[2].gd.pos.width = -1;
     mkgcd[2].gd.flags = gg_visible | gg_enabled;
 
-    mkarray[0] = &mkgcd[0]; mkarray[1] = &mkgcd[1]; 
+    mkarray[0] = &mkgcd[0]; mkarray[1] = &mkgcd[1];
       mkarray[2] = NULL;
     memset(mkbox,0,sizeof(mkbox));
     mkbox[0].gd.flags = gg_enabled|gg_visible;
@@ -9698,7 +9698,7 @@ return;
     msgcd[1].gd.u.matrix = &marks_mi;
     msgcd[1].creator = GMatrixEditCreate;
 
-    msarray[0] = &msgcd[0]; msarray[1] = &msgcd[1]; 
+    msarray[0] = &msgcd[0]; msarray[1] = &msgcd[1];
       msarray[2] = NULL;
     memset(msbox,0,sizeof(msbox));
     msbox[0].gd.flags = gg_enabled|gg_visible;
@@ -10312,7 +10312,7 @@ return;
     lkbox[5].gd.flags = gg_enabled|gg_visible;
     lkbox[5].gd.u.boxelements = lkharray;
     lkbox[5].creator = GHBoxCreate;
-    
+
 
 /******************************************************************************/
     memset(&mfgcd,0,sizeof(mfgcd));
@@ -10329,7 +10329,7 @@ return;
     dlabel[0].text_is_1byte = true;
     dlabel[0].text_in_resource = true;
     dgcd[0].gd.label = &dlabel[0];
-    dgcd[0].gd.pos.x = 12; dgcd[0].gd.pos.y = 6+6; 
+    dgcd[0].gd.pos.x = 12; dgcd[0].gd.pos.y = 6+6;
     dgcd[0].gd.flags = gg_visible | gg_enabled;
     dgcd[0].creator = GLabelCreate;
 
@@ -10348,7 +10348,7 @@ return;
     dlabel[2].text_is_1byte = true;
     dlabel[2].text_in_resource = true;
     dgcd[2].gd.label = &dlabel[2];
-    dgcd[2].gd.pos.x = 12; dgcd[2].gd.pos.y = dgcd[0].gd.pos.y+14; 
+    dgcd[2].gd.pos.x = 12; dgcd[2].gd.pos.y = dgcd[0].gd.pos.y+14;
     dgcd[2].gd.flags = gg_visible | gg_enabled;
     dgcd[2].creator = GLabelCreate;
 
@@ -10384,14 +10384,14 @@ return;
 	    "Range field, change the pane to");
     ulabel[0].text_is_1byte = true;
     ugcd[0].gd.label = &ulabel[0];
-    ugcd[0].gd.pos.x = 12; ugcd[0].gd.pos.y = 10; 
+    ugcd[0].gd.pos.x = 12; ugcd[0].gd.pos.y = 10;
     ugcd[0].gd.flags = gg_visible | gg_enabled;
     ugcd[0].creator = GLabelCreate;
 
     ulabel[1].text = (unichar_t *) _( "OS/2 -> Charsets");
     ulabel[1].text_is_1byte = true;
     ugcd[1].gd.label = &ulabel[1];
-    ugcd[1].gd.pos.x = 12; ugcd[1].gd.pos.y = 10; 
+    ugcd[1].gd.pos.x = 12; ugcd[1].gd.pos.y = 10;
     ugcd[1].gd.flags = gg_visible | gg_enabled | gg_dontcopybox;
     ugcd[1].gd.box = &small_blue_box;
     ugcd[1].gd.handle_controlevent = GFI_URangeAspectChange;
@@ -10406,7 +10406,7 @@ return;
     ulabel[2].text_is_1byte = true;
     ulabel[2].text_in_resource = true;
     ugcd[2].gd.label = &ulabel[2];
-    ugcd[2].gd.pos.x = 12; ugcd[2].gd.pos.y = 10; 
+    ugcd[2].gd.pos.x = 12; ugcd[2].gd.pos.y = 10;
     ugcd[2].gd.flags = gg_visible | gg_enabled;
     ugcd[2].gd.handle_controlevent = GFI_UnicodeEmptiesChange;
     ugcd[2].gd.cid = CID_UnicodeEmpties;
@@ -10712,7 +10712,7 @@ return;
 
     GFI_LookupEnableButtons(d,true);
     GFI_LookupEnableButtons(d,false);
-    
+
     OS2_UnicodeChange(GWidgetGetControl(gw,CID_UnicodeRanges),NULL);
     OS2_CodePageChange(GWidgetGetControl(gw,CID_CodePageRanges),NULL);
 
@@ -10820,7 +10820,7 @@ return;
 
     for ( tl=&panoses[0][0]; tl->name!=NULL; ++tl )
 	tl->name = S_(tl->name);
- 
+
     LookupUIInit();
     LookupInit();
 }

@@ -283,6 +283,7 @@ static int Trans_TypeChange(GGadget *g, GEvent *e) {
 	GWindow bw = GGadgetGetWindow(g);
 	int offset = GGadgetGetCid(g)-CID_Type;
 	int index = GGadgetGetFirstListSelectedItem(g);
+	if ( index < 0 ) return( false );
 	int mask = (intpt) transformtypes[index].userdata;
 	int i;
 
@@ -362,7 +363,7 @@ static GGadgetCreateData *MakeTransBlock(TransData *td,int bnum,
     label[1].text_is_1byte = true;
     label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];
-    gcd[1].gd.pos.x = TBlock_XStart; gcd[1].gd.pos.y = 15; 
+    gcd[1].gd.pos.x = TBlock_XStart; gcd[1].gd.pos.y = 15;
     gcd[1].gd.flags = bnum==0? (gg_enabled|gg_visible) : gg_enabled;
     gcd[1].data = (void *) 0x49;
     gcd[1].gd.cid = CID_XLab+offset;
@@ -381,7 +382,7 @@ static GGadgetCreateData *MakeTransBlock(TransData *td,int bnum,
     label[3].text_is_1byte = true;
     label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
-    gcd[3].gd.pos.x = TBlock_XStart+70; gcd[3].gd.pos.y = 15; 
+    gcd[3].gd.pos.x = TBlock_XStart+70; gcd[3].gd.pos.y = 15;
     gcd[3].gd.flags = bnum==0? (gg_enabled|gg_visible) : gg_enabled;
     gcd[3].data = (void *) 0x49;
     gcd[3].gd.cid = CID_YLab+offset;
@@ -482,7 +483,7 @@ static GGadgetCreateData *MakeTransBlock(TransData *td,int bnum,
     label[14].text = (unichar_t *) _("%");
     label[14].text_is_1byte = true;
     gcd[14].gd.label = &label[14];
-    gcd[14].gd.pos.x = TBlock_XStart+51; gcd[14].gd.pos.y = 15; 
+    gcd[14].gd.pos.x = TBlock_XStart+51; gcd[14].gd.pos.y = 15;
     gcd[14].gd.flags = gg_enabled;
     gcd[14].data = (void *) 0xc;
     gcd[14].gd.cid = CID_XPercent+offset;
@@ -491,7 +492,7 @@ static GGadgetCreateData *MakeTransBlock(TransData *td,int bnum,
     label[15].text = (unichar_t *) _("%");
     label[15].text_is_1byte = true;
     gcd[15].gd.label = &label[15];
-    gcd[15].gd.pos.x = TBlock_XStart+121; gcd[15].gd.pos.y = 15; 
+    gcd[15].gd.pos.x = TBlock_XStart+121; gcd[15].gd.pos.y = 15;
     gcd[15].gd.flags = gg_enabled;
     gcd[15].data = (void *) 0x8;
     gcd[15].gd.cid = CID_YPercent+offset;
@@ -500,7 +501,7 @@ static GGadgetCreateData *MakeTransBlock(TransData *td,int bnum,
     label[16].text = (unichar_t *) U_("°");
     label[16].text_is_1byte = true;
     gcd[16].gd.label = &label[16];
-    gcd[16].gd.pos.x = TBlock_XStart+51; gcd[16].gd.pos.y = 15; 
+    gcd[16].gd.pos.x = TBlock_XStart+51; gcd[16].gd.pos.y = 15;
     gcd[16].gd.flags = gg_enabled;
     gcd[16].data = (void *) 0x40;
     gcd[16].gd.cid = CID_XDegree+offset;
@@ -509,7 +510,7 @@ static GGadgetCreateData *MakeTransBlock(TransData *td,int bnum,
     label[17].text = (unichar_t *) U_("°");
     label[17].text_is_1byte = true;
     gcd[17].gd.label = &label[17];
-    gcd[17].gd.pos.x = TBlock_XStart+121; gcd[17].gd.pos.y = 15; 
+    gcd[17].gd.pos.x = TBlock_XStart+121; gcd[17].gd.pos.y = 15;
     gcd[17].gd.flags = gg_enabled;
     gcd[17].data = (void *) 0x40;
     gcd[17].gd.cid = CID_YDegree+offset;
@@ -829,7 +830,7 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 
     for ( i=0; i<TCnt; ++i ) {
 	int index = GGadgetGetFirstListSelectedItem(GWidgetGetControl(td.gw,CID_Type+i*TBlock_CIDOffset));
-	if ( selcid[index]!=0 ) {
+	if ( selcid[index]>0 ) {
 	    GGadget *tf = GWidgetGetControl(td.gw,selcid[index]+i*TBlock_CIDOffset);
 	    GWidgetIndicateFocusGadget(tf);
 	    GTextFieldSelect(tf,0,-1);

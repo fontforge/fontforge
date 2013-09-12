@@ -1817,12 +1817,13 @@ return( true );
 
 static void BitmapName(struct gfc_data *d) {
     int bf = GGadgetGetFirstListSelectedItem(d->bmptype);
-    unichar_t *ret = GGadgetGetTitle(d->gfc);
-    unichar_t *dup, *pt, *tpt;
     int format = GGadgetGetFirstListSelectedItem(d->pstype);
 
-    if ( format!=ff_none )
+    if ( bf<0 || format<0 || format!=ff_none )
 return;
+
+    unichar_t *ret = GGadgetGetTitle(d->gfc);
+    unichar_t *dup, *pt, *tpt;
 
     dup = galloc((u_strlen(ret)+30)*sizeof(unichar_t));
     u_strcpy(dup,ret);
