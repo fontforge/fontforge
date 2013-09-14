@@ -394,8 +394,8 @@ FONTFORGE_CREATE_SYSTEMSPECIFIC
 FONTFORGE_CONFIG_TESTSUITE
 
 FONTFORGE_GIT_VERSION=""
-if test -d ${top_srcdir}/.git; then
-  FONTFORGE_GIT_VERSION=`cd ${top_srcdir} && git log --pretty=format:'%H' -n 1`
+if test -d ${srcdir}/.git; then
+  FONTFORGE_GIT_VERSION=`cd ${srcdir} && git log --pretty=format:'%H' -n 1`
 fi
 FONTFORGE_MODTIME="`date '+%s'`L"
 FONTFORGE_MODTIME_STR="`date +'%H:%M %Z %e-%b-%Y'`"
