@@ -5096,14 +5096,14 @@ get_pyFF_sendRedoIfInSession_Func( void )
 {
     return pyFF_sendRedoIfInSession_Func;
 }
-								   
+
 void set_pyFF_sendRedoIfInSession_Func( pyFF_sendRedoIfInSession_Func_t f )
 {
     pyFF_sendRedoIfInSession_Func = f;
 }
 
 
-	    
+
 
 static int PyFF_Glyph_set_a_layer(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure), int layeri) {
     SplineChar *sc = self->sc;
@@ -5130,7 +5130,7 @@ return( -1 );
     }
 
     CharView* cv = (CharView*)get_pyFF_maybeCallCVPreserveState_Func()( self );
-    
+
     if ( layer->order2!=isquad ) {
 	if ( layer->order2 )
 	    newss = SplineSetsTTFApprox(ss);
@@ -5145,7 +5145,7 @@ return( -1 );
     SCCharChangedUpdate(sc,self->layer);
 
     get_pyFF_sendRedoIfInSession_Func()( cv );
-    
+
 return( 0 );
 }
 
@@ -13995,8 +13995,10 @@ return( false );
 	first = GlyphsFromTuple(fv->sf,list1);
 	second = GlyphsFromTuple(fv->sf,list2);
     }
-    if ( first==NULL || second==NULL )
+    if ( first==NULL || second==NULL ) {
+	free(second); free(first);
 return( false );
+    }
     AutoKern2BuildClasses(fv->sf,fv->active_layer,first,second,sub,
 	    sub->separation,0,sub->kerning_by_touch, sub->onlyCloser,
 	    !sub->dontautokern,
@@ -14220,8 +14222,10 @@ return( NULL );
     offs = galloc(cnt1*cnt2*sizeof(int16));
     for ( i=0 ; i<cnt1*cnt2; ++i ) {
 	offs[i] = PyInt_AsLong(PySequence_GetItem(offsets,i));
-	if ( PyErr_Occurred())
+	if ( PyErr_Occurred()) {
+	    free(offs); free(class2_strs); free(class2_strs);
 return( NULL );
+	}
     }
 
     KernClassFreeContents(sub->kc);
@@ -14354,8 +14358,10 @@ return( NULL );
     } else {
 	first = second = GlyphsFromSelection(fv);
     }
-    if ( first==NULL || second==NULL )
+    if ( first==NULL || second==NULL ) {
+	free(second); free(first);
 return( NULL );
+    }
     if ( sub->lookup->lookup_flags & pst_r2l ) {
 	left = second;
 	right = first;
@@ -17133,7 +17139,7 @@ PyMethodDef PyFF_Font_methods[] = {
     { "validate", (PyCFunction)PyFFFont_validate, METH_VARARGS, "Check whether a font is valid and return True if it is." },
 
 //    { "CollabSessionStart", (PyCFunction) PyFFFont_CollabSessionStart, METH_VARARGS, "Start a collab session at the given address (or the public IP address by default)" },
-    
+
 //    { "CollabSessionJoin", (PyCFunction) PyFFFont_CollabSessionJoin, METH_VARARGS, "Join a collab session at the given address (or localhost by default)" },
 //    { "CollabSessionRunMainLoop", (PyCFunction) PyFFFont_CollabSessionRunMainLoop, METH_VARARGS, "Run the main loop, checking for and reacting to Collab messages for the given number of milliseconds (or 1 second by default)" },
 //    { "CollabSessionSetUpdatedCallback", (PyCFunction) PyFFFont_CollabSessionSetUpdatedCallback, METH_VARARGS, "Python function to call after a new collab update has been applied" },
@@ -17142,7 +17148,7 @@ PyMethodDef PyFF_Font_methods[] = {
     // code can add it's methods to the end of the object declaration.
     PYMETHODDEF_EMPTY,
     PYMETHODDEF_EMPTY,
-    PYMETHODDEF_EMPTY, 
+    PYMETHODDEF_EMPTY,
     PYMETHODDEF_EMPTY,
     PYMETHODDEF_EMPTY,
     PYMETHODDEF_EMPTY,
