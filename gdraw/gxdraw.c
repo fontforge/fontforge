@@ -1221,6 +1221,11 @@ return( NULL );
 	width &= 0x7fff;
 	wamcairo = true;
     }
+    // icon windows.
+    if ( width == 48 ) {
+	wamcairo = true;
+    }
+    
     gw->display = (GXDisplay *) gdisp;
     gw->is_pixmap = 1;
     gw->parent = NULL;
