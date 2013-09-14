@@ -1925,6 +1925,7 @@ return( NULL );
 	xmlFreeDoc(doc);
 	setlocale(LC_NUMERIC,oldloc);
 	SplineFontFree(sf);
+	free(glyphdir);
 return( NULL );
     }
     sf->ascent = as; sf->descent = ds;

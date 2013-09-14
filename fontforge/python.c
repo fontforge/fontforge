@@ -13451,8 +13451,10 @@ return( NULL );
 	instrs = galloc(icnt);
 	for ( i=0; i<icnt; ++i ) {
 	    instrs[i] = PyInt_AsLong(PySequence_GetItem(tuple,i));
-	    if ( PyErr_Occurred())
+	    if ( PyErr_Occurred()) {
+		free(instrs);
 return( NULL );
+	    }
 	}
     }
     TableAddInstrs(self->fv->sf,tag,true,instrs,icnt);
@@ -14150,6 +14152,7 @@ return( NULL );
 return( NULL );
     if ( sub->lookup->lookup_type!=gpos_pair ) {
 	PyErr_Format(PyExc_EnvironmentError, "Cannot add kerning data to %s, it has the wrong lookup type", lookup );
+	free(offs);
 return( NULL );
     }
     sub->per_glyph_pst_or_kern = false;
@@ -15108,8 +15111,10 @@ return( NULL );
     }
 
     new_subtable = addLookupSubtable(sf, lookup, subtable, after_str);
-    if ( new_subtable==NULL )
+    if ( new_subtable==NULL ) {
+	free(backclassnames); free(mathclasses); free(forclasses);
 return( NULL );
+    }
     fpst = chunkalloc(sizeof(FPST));
     fpst->subtable = new_subtable;
     new_subtable->fpst = fpst;
