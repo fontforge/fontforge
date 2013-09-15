@@ -862,7 +862,7 @@ static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,struct lookup_subtable *
 		IError( "Device Table offsets wrong in simple positioning 2");
 	}
     } else {
-	int vr_size = 
+	int vr_size =
 		sizeof(int16)*((bits&0x1?1:0) + (bits&0x2?1:0) + (bits&0x4?1:0) + (bits&0x8?1:0) +
 		    (bits&0x10?1:0) + (bits&0x20?1:0) + (bits&0x40?1:0) + (bits&0x80?1:0));
 	int next_dev_tab = ftell(gpos)-coverage_pos+2+2+vr_size*cnt;
@@ -1000,7 +1000,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 		if ( test[j].other_gid != test2[j].other_gid )
 	    break;
 		if ( test[j].kp!=NULL && test2[j].kp!=NULL &&
-			test[j].kp->off == test2[j].kp->off 
+			test[j].kp->off == test2[j].kp->off
 			&& DevTabsSame(test[j].kp->adjust,test2[j].kp->adjust)
 			)
 		    /* So far, so good */;
@@ -2425,7 +2425,7 @@ return( true );
 return( false );
     }
     /* Should never get here, but gcc probably thinks we might */
-return( true );		    
+return( true );
 }
 
 static void otf_dumpALookup(FILE *lfile, OTLookup *otl, SplineFont *sf,
@@ -2745,7 +2745,7 @@ return;
 	}
     }
 }
-		
+
 
 static void dump_script_table(FILE *g___,struct scriptset *ss,struct ginfo *ginfo) {
     int i, lcnt, dflt_lang = -1;
@@ -2798,7 +2798,7 @@ static void dump_script_table(FILE *g___,struct scriptset *ss,struct ginfo *ginf
 	}
     }
 }
-    
+
 static FILE *g___FigureExtensionSubTables(OTLookup *all,int startoffset,int is_gpos) {
     OTLookup *otf;
     struct lookup_subtable *sub;
@@ -3089,7 +3089,7 @@ return( NULL );
 		    putshort(g___,offset+sub->extra_subtables[i]);
 	    } else
 		putshort(g___,offset+sub->subtable_offset);
-	    
+
 	    /* Offset to lookup data which is in the temp file */
 	    /* we keep adjusting offset so it reflects the distance between */
 	    /* here and the place where the temp file will start, and then */
@@ -3689,7 +3689,7 @@ static void ttf_math_dump_mathkern(FILE *mathf,struct alltabs *at, SplineFont *s
     if ( ftell(mathf)!=midpos2)
 	IError("Actual midpoint2 did not match expected midpoint2 in mathkern table, expected=%d, actual=%d",
 		midpos2, ftell(mathf) );
-    
+
     for ( i=0; i<len; ++i ) {
 	struct mathkern *mk = glyphs[i]->mathkern;
 	if ( mk->top_right.cnt!=0 )
@@ -4407,13 +4407,15 @@ return( 0 );
     if ( cnt==0 )
 return( 0 );
 
-    here = ftell(jstf);
+    if ( (here=ftell(jstf))<0 )
+return( 0 );
 
     putshort( jstf,cnt );
     for ( i=0; maxes[i]!=NULL; ++i ) if ( !maxes[i]->unused )
 	putshort( jstf,0 );
     for ( cnt=i=0; maxes[i]!=NULL; ++i ) if ( !maxes[i]->unused ) {
-	lbase = ftell(jstf);
+	if ( (lbase=ftell(jstf))<0 )
+return( 0 );
 	fseek(jstf,here+2+2*cnt,SEEK_SET);
 	putshort(jstf,lbase-here);
 	fseek(jstf,lbase,SEEK_SET);
