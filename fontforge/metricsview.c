@@ -2159,23 +2159,23 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 		if( MVLoadWordListIsLineBreak(ch) )
 		    break;
 
-		/* if( ch == '[' ) */
-		/* { */
-		/*     addingGlyphsToSelected = 1; */
-		/*     continue; */
-		/* } */
-		/* if( ch == ']' ) */
-		/* { */
-		/*     addingGlyphsToSelected = 0; */
-		/*     continue; */
-		/* } */
+		if( ch == '[' )
+		{
+		    addingGlyphsToSelected = 1;
+		    continue;
+		}
+		if( ch == ']' )
+		{
+		    addingGlyphsToSelected = 0;
+		    continue;
+		}
 		
-		/* currentGlyphIndex++; */
-		/* if( addingGlyphsToSelected ) */
-		/* { */
-		/*     int selectGlyph = currentGlyphIndex; */
-		/*     g_array_append_val( selected, selectGlyph ); */
-		/* } */
+		currentGlyphIndex++;
+		if( addingGlyphsToSelected )
+		{
+		    int selectGlyph = currentGlyphIndex;
+		    g_array_append_val( selected, selectGlyph );
+		}
 		
 		
 		if( ch == '/' || ch == '\\' )
