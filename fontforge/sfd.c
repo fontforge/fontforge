@@ -1481,7 +1481,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
     SFDDumpAnchorPoints(sfd,sc->anchor);
     fprintf( sfd, "LayerCount: %d\n", sc->layer_cnt );
     for ( i=0; i<sc->layer_cnt; ++i ) {
-        if( saveUndoes ) {
+        if( saveUndoes && UndoRedoLimitToSave > 0) {
             if( sc->layers[i].undoes || sc->layers[i].redoes ) {
                 fprintf(sfd, "UndoRedoHistory\n" );
                 fprintf(sfd, "Layer: %d\n", i );
