@@ -656,6 +656,8 @@ static void MVRefreshValues(MetricsView *mv, int i) {
 
     SplineCharFindBounds(sc,&bb);
 
+    if( !mv->perchar[i].name )
+	return;
     GGadgetSetTitle8(mv->perchar[i].name,sc->name);
 
 if( !mv->perchar[i].width )
@@ -1958,26 +1960,141 @@ static bool MVLoadWordList_isLineAllWhiteSpace( char* buffer )
     return true;
 }
 
-static char MVLoadWordList_readGlyphName( FILE *file, char ch, char* glyphname )
-{
-    if( ch != '/' )
-	return ch;
+/* static char MVLoadWordList_readGlyphName( FILE *file, char ch, char* glyphname ) */
+/* { */
+/*     printf("MVLoadWordList_readGlyphName(top)\n"); */
+	
+/*     if( ch != '/' ) */
+/* 	return ch; */
     
-    if( ch == '/' )
+/*     if( ch == '/' ) */
+/* 	ch=getc(file); */
+
+/*     memset( glyphname, '\0', PATH_MAX ); */
+/*     while( ch != EOF && ch != '/' && ch != ' ' && !MVLoadWordListIsLineBreak( ch ) ) */
+/*     { */
+/* 	printf("MVLoadWordList_readGlyphName(add) %c\n",ch); */
+/* 	*glyphname = ch; */
+/* 	++glyphname; */
+/* 	ch=getc(file); */
+/*     } */
+
+/*     printf("MVLoadWordList_readGlyphName(end) gn:%s\n", glyphname ); */
+/*     return ch; */
+/* } */
+
+
+
+static SplineChar* MVLoadWordList_readGlyphName( SplineFont *sf, FILE *file, char ch, char* glyphname )
+{
+    printf("MVLoadWordList_readGlyphName(top)\n");
+
+    int startedWithBackSlash = (ch == '\\');
+    if( ch != '/' && ch != '\\' )
+	return 0;
+    
+    if( ch == '/' || ch == '\\' )
 	ch=getc(file);
 
+    long startpos = ftell( file );
+    
+    // Get the largest possible 'glyphname' from the input stream.
     memset( glyphname, '\0', PATH_MAX );
-    while( ch != EOF && ch != '/' && !MVLoadWordListIsLineBreak( ch ) )
+    char* outname = glyphname;
+    while( ch != EOF && ch != '/' && ch != ' ' && !MVLoadWordListIsLineBreak( ch ) )
     {
-	*glyphname = ch;
-	++glyphname;
+	printf("MVLoadWordList_readGlyphName(add) %c\n",ch);
+	*outname = ch;
+	++outname;
 	ch=getc(file);
     }
+    if( ch == ' ' )
+    {
+	ch=getc(file);
+    }
+    long maxpos = ftell( file );
+    long endpos = maxpos-1;
+    printf("MVLoadWordList_readGlyphName(x) %c %d %d\n",ch,startpos,endpos);
+    // This will treat // as non special, ie it will not effect
+    // the next char as a glyph lookup
+    /* if( endpos < startpos && ch=='/' ) */
+    /* { */
+    /* 	endpos++; */
+    /* 	strcpy(glyphname,"slash"); */
+    /* } */
 
-//    if( ch == '/' )
-//	ch=getc(file);
+    /* if( endpos < startpos && ch=='\\' ) */
+    /* { */
+    /* 	endpos++; */
+    /* 	strcpy(glyphname,"backslash"); */
+    /* } */
     
-    return ch;
+    int firstLookup = 1;
+    for( ; endpos >= startpos; endpos-- )
+    {
+	printf("MVLoadWordList_readGlyphName(trim loop top) gn:%s\n", glyphname );
+	SplineChar* sc = 0;
+	if( startedWithBackSlash )
+	{
+	    if( glyphname[0] == 'u' )
+		glyphname++;
+
+	    char* endptr = 0;
+	    long unicodepoint = strtoul( glyphname+1, &endptr, 16 );
+	    sc = SFGetChar( sf, unicodepoint, 0 );
+	    if( sc && endptr )
+	    {
+		char* endofglyphname = glyphname + strlen(glyphname);
+		printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname );
+		for( ; endptr != endofglyphname; endptr++ )
+		    --endpos;
+	    }
+	    if( !sc )
+	    {
+		printf("MVLoadWordList_readGlyphName() no char found for backslashed unicodepoint:%d\n", unicodepoint );
+		strcpy(glyphname,"backslash");
+		sc = SFGetChar( sf, -1, glyphname );
+		endpos = startpos;
+		fseek( file, startpos, SEEK_SET );
+//		return 0;
+	    }
+	}
+	else
+	{
+	    if( firstLookup && glyphname[0] == '#' )
+	    {
+		char* endptr = 0;
+		long unicodepoint = strtoul( glyphname+1, &endptr, 16 );
+		printf("MVLoadWordList_readGlyphName() unicodepoint:%d\n", unicodepoint );
+		sc = SFGetChar( sf, unicodepoint, 0 );
+		if( sc && endptr )
+		{
+		    char* endofglyphname = glyphname + strlen(glyphname);
+		    printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname );
+		    for( ; endptr != endofglyphname; endptr++ )
+			--endpos;
+		}
+//	    firstLookup = 0;
+	    }
+	    if( !sc )
+	    {
+		sc = SFGetChar( sf, -1, glyphname );
+	    }
+	}
+	
+	if( sc )
+	{
+	    printf("MVLoadWordList_readGlyphName(found!) gn:%s\n", glyphname );
+	    fseek( file, endpos, SEEK_SET );
+	    return sc;
+	}
+	if( glyphname[0] != '\0' )
+	    glyphname[ strlen(glyphname)-1 ] = '\0';
+    }
+    
+    fseek( file, endpos, SEEK_SET );
+    printf("MVLoadWordList_readGlyphName(end) gn:%s\n", glyphname );
+    return 0;
 }
 
 
@@ -2031,10 +2148,10 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 	    GArray* selected = g_array_new( 1, 1, sizeof(int));
 	    int addingGlyphsToSelected = 0;
 	    int currentGlyphIndex = -1;
- 	    memset( buffer, '\0', 200 );
+ 	    memset( buffer, '\0', PATH_MAX-1 );
 	    for ( pt = buffer; ch!=EOF; ch=getc(file))
 	    {
-//		printf("got %s\n", buffer );
+		printf("got ch:%c buf:%s\n", ch, buffer );
 
 		// Skip from comment to EOL
 		ch = MVLoadWordListHandleMaybeSkipComment( file, ch );
@@ -2061,12 +2178,12 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 		}
 		
 		
-		if( ch == '/' )
+		if( ch == '/' || ch == '\\' )
 		{
 		    // start of a glyph name
 		    char glyphname[ PATH_MAX+1 ];
-		    ch = MVLoadWordList_readGlyphName( file, ch, glyphname );
-		    SplineChar* sc = SFGetChar( mv->sf, -1, glyphname );
+		    SplineChar* sc = MVLoadWordList_readGlyphName( mv->sf, file, ch, glyphname );
+//		    SplineChar* sc = SFGetChar( mv->sf, -1, glyphname );
 		    if( sc )
 		    {
 			int n = MVFakeUnicodeOfSc( mv, sc );
@@ -2089,7 +2206,7 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 	    words[cnt] = gcalloc(1,sizeof(GTextInfo));
 	    words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
 	    words[cnt]->text = (unichar_t *) utf82def_copy( buffer );
-//	    printf("Adding word -->%s<--\n", buffer );
+	    printf("Adding word -->%s<--\n", buffer );
 	    if( selected->len )
 	    {
 		words[cnt]->userdata = selected;
