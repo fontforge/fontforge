@@ -299,7 +299,7 @@ static int RC_OK(GGadget *g, GEvent *e) {
 	if ( err )
 return(true);
 	SpaceMany(rcd->cv,rcd->b, dir, size, rcd->cnt);
-	
+
 	rcd->done = true;
     }
 return( true );
@@ -355,7 +355,7 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	label[0].text = (unichar_t *) _("Coordinate along which to space");
 	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
-	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 6; 
+	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 6;
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
 	hvarray[0][0] = &gcd[0]; hvarray[0][1] = NULL;
@@ -364,7 +364,7 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	label[1].text_is_1byte = true;
 	label[1].text_in_resource = true;
 	gcd[1].gd.label = &label[1];
-	gcd[1].gd.pos.x = 25; gcd[1].gd.pos.y = gcd[0].gd.pos.y+13; 
+	gcd[1].gd.pos.x = 25; gcd[1].gd.pos.y = gcd[0].gd.pos.y+13;
 	gcd[1].gd.flags = gg_enabled|gg_visible;
 	gcd[1].creator = GRadioCreate;
 	gcd[1].gd.cid = CID_X;
@@ -374,7 +374,7 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	label[2].text_is_1byte = true;
 	label[2].text_in_resource = true;
 	gcd[2].gd.label = &label[2];
-	gcd[2].gd.pos.x = 60; gcd[2].gd.pos.y = gcd[2].gd.pos.y; 
+	gcd[2].gd.pos.x = 60; //FIXME: gcd[2].gd.pos.y = gcd[2].gd.pos.y;
 	gcd[2].gd.flags = gg_enabled|gg_visible;
 	gcd[2].gd.cid = CID_Y;
 	gcd[2].creator = GRadioCreate;
@@ -395,7 +395,7 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	label[3].text_is_1byte = true;
 	label[3].text_in_resource = true;
 	gcd[3].gd.label = &label[3];
-	gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = gcd[1].gd.pos.y+16; 
+	gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = gcd[1].gd.pos.y+16;
 	gcd[3].gd.flags = gg_enabled|gg_visible;
 	gcd[3].creator = GLabelCreate;
 	hvarray[2][0] = &gcd[3]; hvarray[2][1] = NULL;

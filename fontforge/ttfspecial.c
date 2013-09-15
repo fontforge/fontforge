@@ -2102,6 +2102,7 @@ static char *getstring(FILE *ttf,long start) {
     int len, ch;
     char *str, *pt;
 
+    if ( here<0 ) return( NULL );
     fseek(ttf,start,SEEK_SET);
     for ( len=1; (ch=getc(ttf))>0 ; ++len );
     fseek(ttf,start,SEEK_SET);

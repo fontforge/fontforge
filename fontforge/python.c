@@ -15112,7 +15112,7 @@ return( NULL );
 
     new_subtable = addLookupSubtable(sf, lookup, subtable, after_str);
     if ( new_subtable==NULL ) {
-	free(backclassnames); free(mathclasses); free(forclasses);
+	free(backclassnames); free(matchclasses); free(forclasses);
 return( NULL );
     }
     fpst = chunkalloc(sizeof(FPST));
