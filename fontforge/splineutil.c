@@ -1426,6 +1426,7 @@ static SplinePointList *SplinePointListCopySpiroSelected1(SplinePointList *spl) 
 	for ( j=i; j<spl->spiro_cnt-1 && SPIRO_SELECTED(&list[j]); ++j );
 	temp = galloc((j-i+2)*sizeof(spiro_cp));
 	memcpy(temp,list+i,(j-i)*sizeof(spiro_cp));
+	if ( freeme!=NULL ) free(list);
 	temp[0].ty = SPIRO_OPEN_CONTOUR;
 	memset(temp+(j-i),0,sizeof(spiro_cp));
 	temp[j-i].ty = SPIRO_END;
@@ -6874,7 +6875,7 @@ int SCRoundToCluster(SplineChar *sc,int layer,int sel,bigreal within,bigreal max
     int l,k,changed;
     SplineSet *spl;
     SplinePoint *sp;
-    SplinePoint **ptspace;
+    SplinePoint **ptspace = NULL;
     struct cluster *cspace;
     Spline *s, *first;
 
@@ -6922,8 +6923,10 @@ int SCRoundToCluster(SplineChar *sc,int layer,int sel,bigreal within,bigreal max
 	if ( sel && selcnt==0 )
 	    sel = false;
 	if ( sel ) ptcnt = selcnt;
-	if ( ptcnt<=1 )
+	if ( ptcnt<=1 ) {
+	    free(ptspace);
 return(false);				/* Can't be any clusters */
+	}
 	if ( k==0 )
 	    ptspace = galloc((ptcnt+1)*sizeof(SplinePoint *));
 	else

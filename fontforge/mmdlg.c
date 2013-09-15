@@ -957,6 +957,7 @@ return( true );
 	    GListChangeLine(esd->list,esd->index,name)->userdata = mn;
 	}
 	esd->done = true;
+	free(name);
     }
 return( true );
 }
