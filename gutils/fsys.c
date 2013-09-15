@@ -763,35 +763,41 @@ return( NULL );
 return( editdir );
 }
 
-int GFileGetSize( char* name )
-{
+long GFileGetSize(char *name) {
+/* Get the binary file size for file 'name'. Return -1 if error. */
     struct stat buf;
-    int rc = stat( name, &buf );
-    if( rc != 0 )
-	return -1;
-    return buf.st_size;
+    long rc;
+
+    if ( (rc=stat(name,&buf)) )
+	return( -1 );
+    return( buf.st_size );
 }
 
-char* GFileReadAll( char* name )
-{
-    int sz = GFileGetSize( name );
-    char* ret = calloc( 1, sz+1 );
-    FILE* fp = fopen( name, "rb" );
-    size_t bread = fread( ret, 1, sz, fp );
-    fclose(fp);
+char *GFileReadAll(char *name) {
+/* Read file 'name' all into one large string. Return 0 if error. */
+    char *ret;
+    long sz;
 
-    if( bread == sz )
-	return ret;
+    if ( (sz=GFileGetSize(name))>=0 && \
+	 (ret=calloc(1,sz+1))!=NULL ) {
+	FILE *fp;
+	if ( (fp=fopen(name,"rb"))!=NULL ) {
+	    size_t bread=fread(ret,1,sz,fp);
+	    fclose(fp);
 
-    free(ret);
-    return 0;
+	    if( bread==sz )
+		return( ret );
+	}
+	free(ret);
+    }
+    return( 0 );
 }
 
-
-int GFileWriteAll(char* filepath, char *data)
-{
+int GFileWriteAll(char *filepath, char *data) {
+/* Write char string 'data' into file 'name'. Return -1 if error. */
     size_t bwrite = strlen(data);
     FILE* fp;
+
     if ( (fp = fopen( filepath, "wb" )) != NULL ) {
 	if ( (fwrite( data, 1, bwrite, fp ) == bwrite) && \
 	     (fflush(fp) == 0) && \
