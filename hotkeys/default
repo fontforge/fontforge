@@ -636,8 +636,8 @@ MetricsView.Menu.Element.Correct Direction:Ctl+Shft+D
 MetricsView.Menu.View.Combinations.Kern Pairs:No Shortcut
 MetricsView.Menu.View.Combinations.Anchored Pairs:No Shortcut
 MetricsView.Menu.View.Combinations.Ligatures:No Shortcut
-MetricsView.Menu.View.Zoom out:Ctl+-
-MetricsView.Menu.View.Zoom in:Ctl+=
+MetricsView.Menu.View.Zoom out:Ctl+Alt+-
+MetricsView.Menu.View.Zoom in:Ctl+Alt+=
 MetricsView.Menu.View.Insert Glyph After...:No Shortcut
 MetricsView.Menu.View.Insert Glyph Before...:No Shortcut
 MetricsView.Menu.View.Replace Glyph...:Ctl+G
@@ -646,7 +646,7 @@ MetricsView.Menu.View.Prev Glyph:Ctl+[
 MetricsView.Menu.View.Next Defined Glyph:Alt+Ctl+]
 MetricsView.Menu.View.Prev Defined Glyph:Alt+Ctl+[
 MetricsView.Menu.View.Find In Font View:Ctl+Shft+<
-MetricsView.Menu.View.Anti Alias:Ctl+Alt+=
+MetricsView.Menu.View.Anti Alias:Ctl+=
 MetricsView.Menu.View.Vertical:No Shortcut
 MetricsView.Menu.View.Size set from Window:No Shortcut
 MetricsView.Menu.View.Set Point Size:No Shortcut
