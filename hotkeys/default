@@ -250,8 +250,7 @@ CharView.Menu.View.Show.Snap Outlines to Pixel Grid:No Shortcut
 CharView.Menu.View.Zoom out:Alt+Ctl+-
 CharView.Menu.View.Zoom out:-
 CharView.Menu.View.Zoom out:x
-CharView.Menu.View.Zoom in:Alt+Ctl+Shft++
-CharView.Menu.View.Zoom in:Shft++
+CharView.Menu.View.Zoom in:Alt+Ctl+=
 CharView.Menu.View.Zoom in:=
 CharView.Menu.View.Zoom in:z
 
