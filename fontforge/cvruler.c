@@ -911,6 +911,8 @@ return;
 
 void CPUpdateInfo(CharView *cv, GEvent *event) {
 
+    printf("CPUpdateInfo() showcp:%d pressed:%d rw:%p\n", cv->showcpinfo, cv->p.pressed, cv->ruler_w );
+    
     if ( !cv->showcpinfo )
 return;
     if ( !cv->p.pressed ) {
