@@ -998,12 +998,12 @@ return;
     //
     // dont go changing pt_curve points into pt_corner without explicit consent.
     //
-    if( oldfrompointtype == pt_curve )
+    if( oldfrompointtype == pt_curve || oldfrompointtype == pt_tangent )
     {
 	old->from->pointtype = oldfrompointtype;
 	SPTouchControl( old->from, &old->from->nextcp, cv->b.layerheads[cv->b.drawmode]->order2 );
     }
-    if( oldtopointtype == pt_curve )
+    if( oldtopointtype == pt_curve || oldtopointtype == pt_tangent )
     {
 	old->to->pointtype = oldtopointtype;
 	SPTouchControl( old->to, &old->to->prevcp, cv->b.layerheads[cv->b.drawmode]->order2 );
@@ -1238,11 +1238,22 @@ static int CVExpandEdge(CharView *cv) {
 return( true );
 }
 
+static void touchControlPointsVisitor ( void* key,
+				 void* value,
+				 SplinePoint* sp,
+				 BasePoint *which,
+				 bool isnext,
+				 void* udata )
+{
+    SPTouchControl( sp, which, (int)udata );
+}
+
 int CVMouseMovePointer(CharView *cv, GEvent *event) {
     extern float arrowAmount;
     int needsupdate = false;
     int did_a_merge = false;
-
+    int touch_control_points = false;
+    
     /* if we haven't moved from the original location (ever) then this is a noop */
     if ( !cv->p.rubberbanding && !cv->recentchange &&
 	    RealNear(cv->info.x,cv->p.cx) && RealNear(cv->info.y,cv->p.cy) )
@@ -1276,6 +1287,7 @@ return( false );
 	needsupdate = CVRectSelect(cv,cv->info.x,cv->info.y);
 	if ( !needsupdate && cv->p.rubberbanding )
 	    CVDrawRubberRect(cv->v,cv);
+	printf("moving2 cx:%d cy:%d\n", cv->p.cx, cv->p.cy );
 	cv->p.ex = cv->info.x;
 	cv->p.ey = cv->info.y;
 	cv->p.rubberbanding = true;
@@ -1319,18 +1331,38 @@ return( false );
 	CVAdjustSpline(cv);
 	CVSetCharChanged(cv,true);
 	needsupdate = true;
+	touch_control_points = true;
     } else {
 	if ( !cv->recentchange ) CVPreserveState(&cv->b);
 	did_a_merge = CVMoveSelection(cv,
 		cv->info.x-cv->last_c.x,cv->info.y-cv->last_c.y,
 		event->u.mouse.state);
 	needsupdate = true;
+	touch_control_points = true;
     }
     if ( needsupdate )
 	SCUpdateAll(cv->b.sc);
+
+    if ( touch_control_points )
+    {
+	// We should really only need to visit the Adjacent CP
+	// visiting all is a hammer left below in case it might be needed.
+	CVVisitAdjacentToSelectedControlPoints( cv, false,
+						touchControlPointsVisitor,
+						(void*)cv->b.layerheads[cv->b.drawmode]->order2 );
+	/* CVVisitAllControlPoints( cv, false, */
+	/* 			 touchControlPointsVisitor, */
+	/* 			 (void*)cv->b.layerheads[cv->b.drawmode]->order2 ); */
+	
+	GDrawRequestExpose(cv->v,NULL,false);
+    }
+    
     cv->last_c.x = cv->info.x; cv->last_c.y = cv->info.y;
 return( did_a_merge );
 }
+
+
+
 
 void CVMouseUpPointer(CharView *cv ) {
     static char *buts[3];

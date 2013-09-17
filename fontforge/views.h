@@ -1435,6 +1435,11 @@ extern void FE_unselectBCP( void* key,
  */
 extern void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
 						 visitSelectedControlPointsVisitor f, void* udata );
+/**
+ * NOTE: doesn't do all, just all on selected spline.
+ */
+extern void CVVisitAllControlPoints( CharView *cv, bool preserveState,
+				     visitSelectedControlPointsVisitor f, void* udata );
 
 /**
  * Unselect all the BCP which are currently selected.
@@ -1452,5 +1457,12 @@ extern void CVUnselectAllBCP( CharView *cv );
  * results or take optional parameters.
  */
 extern void visitSelectedControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata );
+/**
+ * NOTE: doesn't do all, just all on selected spline.
+ */
+extern void visitAllControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata );
+
+extern void CVVisitAdjacentToSelectedControlPoints( CharView *cv, bool preserveState,
+						    visitSelectedControlPointsVisitor f, void* udata );
 
 #endif	/* _VIEWS_H */
