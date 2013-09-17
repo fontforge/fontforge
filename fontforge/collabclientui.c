@@ -862,9 +862,10 @@ void collabclient_sendRedo_SC( SplineChar *sc )
 	Undoes* undo = sc->layers[ly_fore].undoes;
 	while( undo && undo->undotype == ut_statehint )
 	{
-	    sc->layers[ly_fore].undoes = undo->next;
+	    undo = undo->next;
 	    // FIXME: throwing away the statehints for now.
 	}
+	sc->layers[ly_fore].undoes = undo;
     }
     
     SCDoUndo( sc, ly_fore );
