@@ -6588,17 +6588,33 @@ static void getAllControlPointsVisitor(SplinePoint* splfirst, Spline* spline, vo
  *
  * The caller must call g_hash_table_destroy() on the return value.
  */
-static GHashTable* getSelectedControlPoints( PressedOn *p )
+static GHashTable* getSelectedControlPoints( CharView *cv, PressedOn *p )
 {
+    Layer* l = cv->b.layerheads[cv->b.drawmode];
+    if( !l || !l->splines )
+	return 0;
+
     GHashTable* ret = g_hash_table_new( g_direct_hash, g_direct_equal );
-    SPLFirstVisit( p->spl->first, getSelectedControlPointsVisitor, ret );
+    SplinePointList* spl = l->splines;
+    for( ; spl; spl = spl->next )
+    {
+	SPLFirstVisit( spl->first, getSelectedControlPointsVisitor, ret );
+    }
+    
     return ret;
 }
-static GHashTable* getAllControlPoints( PressedOn *p )
+static GHashTable* getAllControlPoints( CharView *cv, PressedOn *p )
 {
+    Layer* l = cv->b.layerheads[cv->b.drawmode];
+    if( !l || !l->splines )
+	return 0;
+
     GHashTable* ret = g_hash_table_new( g_direct_hash, g_direct_equal );
-    SPLFirstVisit( p->spl->first, getAllControlPointsVisitor, ret );
-    return ret;
+    SplinePointList* spl = l->splines;
+    for( ; spl; spl = spl->next )
+    {
+	SPLFirstVisit( spl->first, getAllControlPointsVisitor, ret );
+    }
 }
 
 
@@ -6739,7 +6755,7 @@ void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
 					  visitSelectedControlPointsVisitor f, void* udata )
 {
 //    printf("CVFindAndVisitSelectedControlPoints(top) cv->p.sp:%p\n", cv->p.sp );
-    GHashTable* col = getSelectedControlPoints( &cv->p );
+    GHashTable* col = getSelectedControlPoints( cv, &cv->p );
     SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
     if( g_hash_table_size( col ) )
     {
@@ -6757,7 +6773,7 @@ void CVVisitAllControlPoints( CharView *cv, bool preserveState,
     if( !cv->p.spl || !cv->p.sp )
 	return;
     
-    GHashTable* col = getAllControlPoints( &cv->p );
+    GHashTable* col = getAllControlPoints( cv, &cv->p );
     SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
     if( g_hash_table_size( col ) )
     {
@@ -6775,7 +6791,7 @@ void CVVisitAdjacentToSelectedControlPoints( CharView *cv, bool preserveState,
     if( !cv->p.spl || !cv->p.sp )
 	return;
     
-    GHashTable* col = getAllControlPoints( &cv->p );
+    GHashTable* col = getAllControlPoints( cv, &cv->p );
     SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
     if( g_hash_table_size( col ) )
     {
