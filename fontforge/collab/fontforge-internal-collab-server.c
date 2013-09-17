@@ -292,7 +292,7 @@ int main (void)
     self->ctx = zctx_new ();
     self->kvmap = zhash_new ();
     self->loop = zloop_new ();
-    zloop_set_verbose (self->loop, FALSE);
+    zloop_set_verbose (self->loop, false);
 
     //  Set up our clone server sockets
     self->snapshot  = zsocket_new (self->ctx, ZMQ_ROUTER);
