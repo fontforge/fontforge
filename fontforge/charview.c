@@ -8066,29 +8066,6 @@ static void CVMenuPointType(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
 	_CVMenuSpiroPointType(cv, mi);
     else
 	_CVMenuPointType(cv, mi);
-
-    printf("CVMenuPointType() active  spl:%p sp:%p\n", cv->active_spl, cv->active_sp );
-    printf("CVMenuPointType() lastselpt:%p\n", cv->lastselpt );
-    printf("CVMenuPointType() sc:%p\n", cv->b.sc );
-    printf("CVMenuPointType() dm:%d\n", cv->b.drawmode );
-    printf("CVMenuPointType() layer_cnt:%d\n", cv->b.sc->layer_cnt );
-    printf("CVMenuPointType() layer:%p\n", cv->b.sc->layers[cv->b.drawmode] );
-    printf("CVMenuPointType(1) layer.spl:%p\n", cv->b.sc->layers[cv->b.drawmode].splines );
-    printf("CVMenuPointType(2) layer.spl:%p\n", cv->b.sc->layers[ly_fore].splines );
-    Layer* l = &(cv->b.sc->layers[cv->b.drawmode]);
-    printf("CVMenuPointType(3) layer.spl:%p\n", l->splines );
-    printf("CVMenuPointType() layer.spl:%p\n", cv->b.sc->layers[0].splines );
-    printf("CVMenuPointType() layer.spl:%p\n", cv->b.sc->layers[1].splines );
-    printf("CVMenuPointType() layer.spl:%p\n", cv->b.sc->layers[2].splines );
-
-    
-    cv->p.spl = cv->b.sc->layers[ly_fore].splines;
-    cv->p.sp  = cv->lastselpt;
-
-    CVVisitAllControlPoints( cv, false,
-    			     touchControlPointsVisitor,
-    			     (void*)cv->b.layerheads[cv->b.drawmode]->order2 );
-    
 }
 
 static void _CVMenuImplicit(CharView *cv, struct gmenuitem *mi) {
