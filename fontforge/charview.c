@@ -934,7 +934,9 @@ return;
 	DrawTangentPoint(pixmap, x, y, &unit, sp->selected || isfake, col);
     }
     GDrawSetLineWidth(pixmap,0);
-    if ( (cv->showpointnumbers || cv->show_ft_results || cv->dv ) && sp->ttfindex!=0xffff ) {
+    if ( (cv->showpointnumbers || cv->show_ft_results || cv->dv )
+	 && sp->ttfindex!=0xffff )
+    {
 	if ( sp->ttfindex==0xfffe )
 	    strcpy(buf,"??");
 	else {
@@ -5707,9 +5709,12 @@ return( true );
 #define MID_VKernClass  2715
 #define MID_VKernFromHKern 2716
 
+#define MID_ShowGridFitLiveUpdate 2720
+
 #define MID_MMReblend	2800
 #define MID_MMAll	2821
 #define MID_MMNone	2822
+
 
 #define MID_Warnings	3000
 
@@ -6334,7 +6339,17 @@ static void CVMenuShowGridFit(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     if ( !hasFreeType() || cv->dv!=NULL )
-return;
+	return;
+    cv->show_ft_results_live_update = 0;
+    CVFtPpemDlg(cv,false);
+}
+
+static void CVMenuShowGridFitLiveUpdate(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    if ( !hasFreeType() || cv->dv!=NULL )
+	return;
+    cv->show_ft_results_live_update = 1;
     CVFtPpemDlg(cv,false);
 }
 
@@ -6346,6 +6361,8 @@ return;
 
     if ( mi->mid==MID_GridFitOff ) {
 	cv->show_ft_results = false;
+	cv->show_ft_results_live_update = false;
+	
 	SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	GDrawRequestExpose(cv->v,NULL,false);
@@ -10219,6 +10236,10 @@ static void gflistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    mi->ti.disabled = !hasFreeType() || cv->dv!=NULL;
 	    mi->ti.checked = cv->show_ft_results;
 	  break;
+	  case MID_ShowGridFitLiveUpdate:
+	    mi->ti.disabled = !hasFreeType() || cv->dv!=NULL;
+	    mi->ti.checked = cv->show_ft_results_live_update;
+	  break;
 	  case MID_Bigger:
 	    mi->ti.disabled = !cv->show_ft_results;
 	  break;
@@ -11018,6 +11039,7 @@ static GMenuItem2 nplist[] = {
 
 static GMenuItem2 gflist[] = {
     { { (unichar_t *) N_("Show _Grid Fit..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Show Grid Fit...|No Shortcut"), NULL, NULL, CVMenuShowGridFit, MID_ShowGridFit },
+    { { (unichar_t *) N_("Show _Grid Fit (Live Update)..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Show Grid Fit (Live Update)...|No Shortcut"), NULL, NULL, CVMenuShowGridFitLiveUpdate, MID_ShowGridFitLiveUpdate },
     { { (unichar_t *) N_("_Bigger Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Bigger Point Size|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_Bigger },
     { { (unichar_t *) N_("_Smaller Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Smaller Point Size|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_Smaller },
     { { (unichar_t *) N_("_Anti Alias"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("Grid Fit Anti Alias|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_GridFitAA },
