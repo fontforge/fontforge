@@ -114,14 +114,20 @@ void CVMouseMoveTransform(CharView *cv) {
 	CVTransFunc(cv,transform,false);
     }
     SCUpdateAll(cv->b.sc);
+    CVGridHandlePossibleFitChar(cv);
 }
 
 void CVMouseUpTransform(CharView *cv) {
-    if ( cv->info.x == cv->p.cx && cv->info.y == cv->p.cy ) {
+    if ( cv->info.x == cv->p.cx && cv->info.y == cv->p.cy )
+    {
 	/* Nothing happened */
 	cv->needsrasterize = cv->recentchange = false;
 	CVRemoveTopUndo(&cv->b);
 	SCUpdateAll(cv->b.sc);
-    } else
+	CVGridHandlePossibleFitChar(cv);
+    }
+    else
+    {
 	CVUndoCleanup(cv);
+    }
 }

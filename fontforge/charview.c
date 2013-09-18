@@ -82,6 +82,8 @@ float prefs_cvEditHandleSize = prefs_cvEditHandleSize_default;
 
 int   prefs_cvInactiveHandleAlpha = 255;
 
+int prefs_cv_show_control_points_always_initially = 0;
+
 extern struct lconv localeinfo;
 extern char *coord_sep;
 struct cvshows CVShows = {
@@ -932,7 +934,9 @@ return;
 	DrawTangentPoint(pixmap, x, y, &unit, sp->selected || isfake, col);
     }
     GDrawSetLineWidth(pixmap,0);
-    if ( (cv->showpointnumbers || cv->show_ft_results || cv->dv ) && sp->ttfindex!=0xffff ) {
+    if ( (cv->showpointnumbers || cv->show_ft_results || cv->dv )
+	 && sp->ttfindex!=0xffff )
+    {
 	if ( sp->ttfindex==0xfffe )
 	    strcpy(buf,"??");
 	else {
@@ -5705,9 +5709,12 @@ return( true );
 #define MID_VKernClass  2715
 #define MID_VKernFromHKern 2716
 
+#define MID_ShowGridFitLiveUpdate 2720
+
 #define MID_MMReblend	2800
 #define MID_MMAll	2821
 #define MID_MMNone	2822
+
 
 #define MID_Warnings	3000
 
@@ -6332,7 +6339,17 @@ static void CVMenuShowGridFit(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     if ( !hasFreeType() || cv->dv!=NULL )
-return;
+	return;
+    cv->show_ft_results_live_update = 0;
+    CVFtPpemDlg(cv,false);
+}
+
+static void CVMenuShowGridFitLiveUpdate(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    if ( !hasFreeType() || cv->dv!=NULL )
+	return;
+    cv->show_ft_results_live_update = 1;
     CVFtPpemDlg(cv,false);
 }
 
@@ -6344,6 +6361,8 @@ return;
 
     if ( mi->mid==MID_GridFitOff ) {
 	cv->show_ft_results = false;
+	cv->show_ft_results_live_update = false;
+	
 	SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	GDrawRequestExpose(cv->v,NULL,false);
@@ -6575,16 +6594,46 @@ static void getSelectedControlPointsVisitor(SplinePoint* splfirst, Spline* splin
     if( spline->to->prevcpselected )
 	g_hash_table_insert( ret, spline->to, 0 );
 }
+static void getAllControlPointsVisitor(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    GHashTable* ret = (GHashTable*)udata;
+    g_hash_table_insert( ret, spline->to, 0 );
+    g_hash_table_insert( ret, spline->to, 0 );
+}
+
 
 /**
  * Get a hash table with all the selected BCP in it.
  *
  * The caller must call g_hash_table_destroy() on the return value.
  */
-static GHashTable* getSelectedControlPoints( PressedOn *p )
+static GHashTable* getSelectedControlPoints( CharView *cv, PressedOn *p )
 {
+    Layer* l = cv->b.layerheads[cv->b.drawmode];
+    if( !l || !l->splines )
+	return 0;
+
     GHashTable* ret = g_hash_table_new( g_direct_hash, g_direct_equal );
-    SPLFirstVisit( p->spl->first, getSelectedControlPointsVisitor, ret );
+    SplinePointList* spl = l->splines;
+    for( ; spl; spl = spl->next )
+    {
+	SPLFirstVisit( spl->first, getSelectedControlPointsVisitor, ret );
+    }
+    
+    return ret;
+}
+static GHashTable* getAllControlPoints( CharView *cv, PressedOn *p )
+{
+    Layer* l = cv->b.layerheads[cv->b.drawmode];
+    if( !l || !l->splines )
+	return 0;
+
+    GHashTable* ret = g_hash_table_new( g_direct_hash, g_direct_equal );
+    SplinePointList* spl = l->splines;
+    for( ; spl; spl = spl->next )
+    {
+	SPLFirstVisit( spl->first, getAllControlPointsVisitor, ret );
+    }
     return ret;
 }
 
@@ -6656,6 +6705,45 @@ static void FE_visitSelectedControlPoints( gpointer key,
 	d->func( key, value, sp, which, false, d->udata );
     }
 }
+static void FE_visitAllControlPoints( gpointer key,
+				      gpointer value,
+				      gpointer udata )
+{
+    visitSelectedControlPoints_CallbackData* d = (visitSelectedControlPoints_CallbackData*)udata;
+    SplinePoint* sp = (SplinePoint*)key;
+
+    d->count++;
+    {
+	BasePoint *which = &sp->nextcp;
+	d->func( key, value, sp, which, true, d->udata );
+    }
+    {
+	BasePoint *which = &sp->prevcp;
+	d->func( key, value, sp, which, false, d->udata );
+    }
+}
+static void FE_visitAdjacentToSelectedControlPoints( gpointer key,
+						     gpointer value,
+						     gpointer udata )
+{
+    visitSelectedControlPoints_CallbackData* d = (visitSelectedControlPoints_CallbackData*)udata;
+    SplinePoint* sp = (SplinePoint*)key;
+
+    if( sp->selected )
+	return;
+    
+    d->count++;
+    if( sp->prev && sp->prev->from && sp->prev->from->selected )
+    {
+	d->func( key, value, sp, &sp->nextcp, true, d->udata );
+	d->func( key, value, sp, &sp->prevcp, true, d->udata );
+    }
+    if( sp->next && sp->next->to && sp->next->to->selected )
+    {
+	d->func( key, value, sp, &sp->nextcp, true, d->udata );
+	d->func( key, value, sp, &sp->prevcp, true, d->udata );
+    }
+}
 
 void visitSelectedControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata )
 {
@@ -6666,17 +6754,76 @@ void visitSelectedControlPoints( GHashTable *col, visitSelectedControlPointsVisi
     g_hash_table_foreach( col, FE_visitSelectedControlPoints, &d );
 }
 
+void visitAllControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata )
+{
+    visitSelectedControlPoints_CallbackData d;
+    d.func = f;
+    d.udata = udata;
+    d.count = 0;
+    g_hash_table_foreach( col, FE_visitAllControlPoints, &d );
+}
+static void visitAdjacentToSelectedControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata )
+{
+    visitSelectedControlPoints_CallbackData d;
+    d.func = f;
+    d.udata = udata;
+    d.count = 0;
+    g_hash_table_foreach( col, FE_visitAdjacentToSelectedControlPoints, &d );
+}
+
 void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
 					  visitSelectedControlPointsVisitor f, void* udata )
 {
 //    printf("CVFindAndVisitSelectedControlPoints(top) cv->p.sp:%p\n", cv->p.sp );
-    GHashTable* col = getSelectedControlPoints( &cv->p );
+    GHashTable* col = getSelectedControlPoints( cv, &cv->p );
+    if(!col)
+	return;
+    
     SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
     if( g_hash_table_size( col ) )
     {
 	if( preserveState )
 	    CVPreserveState(&cv->b);
 	visitSelectedControlPoints( col, f, udata );
+    }
+    g_hash_table_destroy(col);
+}
+
+void CVVisitAllControlPoints( CharView *cv, bool preserveState,
+			      visitSelectedControlPointsVisitor f, void* udata )
+{
+    printf("CVVisitAllControlPoints(top) cv->p.spl:%p cv->p.sp:%p\n", cv->p.spl, cv->p.sp );
+    if( !cv->p.spl || !cv->p.sp )
+	return;
+    
+    GHashTable* col = getAllControlPoints( cv, &cv->p );
+    SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
+    if( g_hash_table_size( col ) )
+    {
+	if( preserveState )
+	    CVPreserveState(&cv->b);
+	visitAllControlPoints( col, f, udata );
+    }
+    g_hash_table_destroy(col);
+}
+
+void CVVisitAdjacentToSelectedControlPoints( CharView *cv, bool preserveState,
+					     visitSelectedControlPointsVisitor f, void* udata )
+{
+//    printf("CVVisitAdjacentToSelectedControlPoints(top) cv->p.sp:%p\n", cv->p.sp );
+    if( !cv->p.spl || !cv->p.sp )
+	return;
+    
+    GHashTable* col = getAllControlPoints( cv, &cv->p );
+    if( !col )
+	return;
+    
+    SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
+    if( g_hash_table_size( col ) )
+    {
+	if( preserveState )
+	    CVPreserveState(&cv->b);
+	visitAdjacentToSelectedControlPoints( col, f, udata );
     }
     g_hash_table_destroy(col);
 }
@@ -7942,6 +8089,17 @@ static void _CVMenuSpiroPointType(CharView *cv, struct gmenuitem *mi) {
 	    SSRegenerateFromSpiros(spl);
     }
     CVCharChangedUpdate(&cv->b);
+}
+
+static void touchControlPointsVisitor ( void* key,
+				 void* value,
+				 SplinePoint* sp,
+				 BasePoint *which,
+				 bool isnext,
+				 void* udata )
+{
+    printf("touchControlPointsVisitor() which:%p\n", which );
+    SPTouchControl( sp, which, (int)udata );
 }
 
 static void CVMenuPointType(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
@@ -10078,6 +10236,10 @@ static void gflistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    mi->ti.disabled = !hasFreeType() || cv->dv!=NULL;
 	    mi->ti.checked = cv->show_ft_results;
 	  break;
+	  case MID_ShowGridFitLiveUpdate:
+	    mi->ti.disabled = !hasFreeType() || cv->dv!=NULL;
+	    mi->ti.checked = cv->show_ft_results_live_update;
+	  break;
 	  case MID_Bigger:
 	    mi->ti.disabled = !cv->show_ft_results;
 	  break;
@@ -10774,6 +10936,8 @@ static void CVMenuVKernFromHKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static GMenuItem2 mtlist[] = {
+    { { (unichar_t *) N_("New _Metrics Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("New Metrics Window|No Shortcut"), NULL, NULL, CVMenuOpenMetrics, 0 },
+    GMENUITEM2_LINE,
     { { (unichar_t *) N_("_Center in Width"), (GImage *) "metricscenter.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Center in Width|No Shortcut"), NULL, NULL, CVMenuCenter, MID_Center },
     { { (unichar_t *) N_("_Thirds in Width"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Thirds in Width|No Shortcut"), NULL, NULL, CVMenuCenter, MID_Thirds },
     { { (unichar_t *) N_("Set _Width..."), (GImage *) "metricssetwidth.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Set Width...|No Shortcut"), NULL, NULL, CVMenuSetWidth, MID_SetWidth },
@@ -10875,6 +11039,7 @@ static GMenuItem2 nplist[] = {
 
 static GMenuItem2 gflist[] = {
     { { (unichar_t *) N_("Show _Grid Fit..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Show Grid Fit...|No Shortcut"), NULL, NULL, CVMenuShowGridFit, MID_ShowGridFit },
+    { { (unichar_t *) N_("Show _Grid Fit (Live Update)..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Show Grid Fit (Live Update)...|No Shortcut"), NULL, NULL, CVMenuShowGridFitLiveUpdate, MID_ShowGridFitLiveUpdate },
     { { (unichar_t *) N_("_Bigger Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Bigger Point Size|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_Bigger },
     { { (unichar_t *) N_("_Smaller Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Smaller Point Size|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_Smaller },
     { { (unichar_t *) N_("_Anti Alias"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("Grid Fit Anti Alias|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_GridFitAA },
@@ -11140,6 +11305,14 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
 
     if ( !cvcolsinited )
 	CVColInit();
+
+    static int firstCharView = 1;
+    if( firstCharView )
+    {
+	firstCharView = 0;
+	CVShows.alwaysshowcontrolpoints = prefs_cv_show_control_points_always_initially;
+    }
+    
 
     cv->b.sc = sc;
     cv->scale = .5;

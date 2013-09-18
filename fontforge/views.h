@@ -174,6 +174,7 @@ typedef struct charview {
     unsigned int tah_sel:1;
     unsigned int inactive:1;			/* When in a search view */
     unsigned int show_ft_results: 1;	/* 32 */
+    unsigned int show_ft_results_live_update : 1;
     unsigned int coderange: 2;			/* For the debugger */
     unsigned int autonomous_ruler_w: 1;
     unsigned int showcpinfo: 1;
@@ -1095,6 +1096,11 @@ extern int ii_v_e_h(GWindow gw, GEvent *event);
 extern void instr_scroll(struct instrinfo *ii,struct sbevent *sb);
 
 extern void CVGridFitChar(CharView *cv);
+/**
+ * If a live preview of grid fit is somehow in effect, call CVGridFitChar() for us.
+ * A caller can call here after a change and any CVGridFitChar() will be updated if need be.
+ */
+extern void CVGridHandlePossibleFitChar(CharView *cv);
 extern void CVFtPpemDlg(CharView *cv,int debug);
 extern void SCDeGridFit(SplineChar *sc);
 extern void SCReGridFit(SplineChar *sc,int layer);
@@ -1435,6 +1441,11 @@ extern void FE_unselectBCP( void* key,
  */
 extern void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
 						 visitSelectedControlPointsVisitor f, void* udata );
+/**
+ * NOTE: doesn't do all, just all on selected spline.
+ */
+extern void CVVisitAllControlPoints( CharView *cv, bool preserveState,
+				     visitSelectedControlPointsVisitor f, void* udata );
 
 /**
  * Unselect all the BCP which are currently selected.
@@ -1452,5 +1463,12 @@ extern void CVUnselectAllBCP( CharView *cv );
  * results or take optional parameters.
  */
 extern void visitSelectedControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata );
+/**
+ * NOTE: doesn't do all, just all on selected spline.
+ */
+extern void visitAllControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata );
+
+extern void CVVisitAdjacentToSelectedControlPoints( CharView *cv, bool preserveState,
+						    visitSelectedControlPointsVisitor f, void* udata );
 
 #endif	/* _VIEWS_H */

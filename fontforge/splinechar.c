@@ -626,13 +626,17 @@ return;
 	    SplineCharTangentPrevCP(sp);
 	    if ( sp->prev ) SplineRefigure(sp->prev);
 	}
-    } else if ( (BpColinear(&sp->prevcp,&sp->me,&sp->nextcp) ||
+    } else if ( pointtype!=pt_curve
+		&& ((BpColinear(&sp->prevcp,&sp->me,&sp->nextcp) ||
 	    ( sp->nonextcp ^ sp->noprevcp )) &&
 	    ( pointtype!=pt_hvcurve ||
 		(sp->nextcp.x == sp->me.x && sp->nextcp.y != sp->me.y ) ||
-		(sp->nextcp.y == sp->me.y && sp->nextcp.x != sp->me.x ) )) {
+	      (sp->nextcp.y == sp->me.y && sp->nextcp.x != sp->me.x ) )))
+    {
 	/* Retain the old control points */
-    } else {
+    }
+    else
+    {
 	unitnext.x = sp->nextcp.x-sp->me.x; unitnext.y = sp->nextcp.y-sp->me.y;
 	nextlen = sqrt(unitnext.x*unitnext.x + unitnext.y*unitnext.y);
 	unitprev.x = sp->prevcp.x-sp->me.x; unitprev.y = sp->prevcp.y-sp->me.y;
@@ -672,6 +676,9 @@ return;
 		sp->prev->from->nextcp = pcp;
 	    makedflt = false;
 	}
+	if( pointtype==pt_curve )
+	    makedflt = true;
+	
 	if ( makedflt ) {
 	    sp->nextcpdef = sp->prevcpdef = true;
 	    if (( sp->prev!=NULL && sp->prev->order2 ) ||
