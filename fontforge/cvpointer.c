@@ -1340,9 +1340,14 @@ return( false );
 	needsupdate = true;
 	touch_control_points = true;
     }
-    if ( needsupdate )
-	SCUpdateAll(cv->b.sc);
 
+
+    if ( needsupdate )
+    {
+	SCUpdateAll(cv->b.sc);
+	CVGridHandlePossibleFitChar( cv );
+    }
+    
     if ( touch_control_points )
     {
 	// We should really only need to visit the Adjacent CP
