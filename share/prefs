@@ -5,3 +5,4 @@ EditHandleSize: 9
 InactiveHandleAlpha: 120
 ExportClipboard: 0
 SnapToInt:	1
+ShowControlPointsAlways: 1

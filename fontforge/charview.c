@@ -82,6 +82,8 @@ float prefs_cvEditHandleSize = prefs_cvEditHandleSize_default;
 
 int   prefs_cvInactiveHandleAlpha = 255;
 
+int prefs_cv_show_control_points_always_initially = 0;
+
 extern struct lconv localeinfo;
 extern char *coord_sep;
 struct cvshows CVShows = {
@@ -11279,6 +11281,14 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
 
     if ( !cvcolsinited )
 	CVColInit();
+
+    static int firstCharView = 1;
+    if( firstCharView )
+    {
+	firstCharView = 0;
+	CVShows.alwaysshowcontrolpoints = prefs_cv_show_control_points_always_initially;
+    }
+    
 
     cv->b.sc = sc;
     cv->scale = .5;
