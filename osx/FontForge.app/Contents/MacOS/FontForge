@@ -46,6 +46,7 @@ if [ x"$1" == "x--debug" ]; then
    exit
 fi
 
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f FontForge.app
 $scriptdir/fcprogress.pl >|/tmp/zz 2>&1
 
 echo $WRAPPER $bundle_bin/fontforge "$@" > /tmp/oo
