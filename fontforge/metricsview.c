@@ -2008,13 +2008,11 @@ static SplineChar* MVLoadWordList_readGlyphName( SplineFont *sf, FILE *file, cha
 	++outname;
 	ch=getc(file);
     }
-    if( ch == ' ' )
-    {
-	ch=getc(file);
-    }
+    bool FullMatchEndsOnSpace = (ch == ' ');
     long maxpos = ftell( file );
     long endpos = maxpos-1;
-    printf("MVLoadWordList_readGlyphName(x) %c %d %d\n",ch,startpos,endpos);
+    printf("MVLoadWordList_readGlyphName(x1) -->:%s:<--\n", glyphname);
+    printf("MVLoadWordList_readGlyphName(x2) %c %d %d\n",ch,startpos,endpos);
     // This will treat // as non special, ie it will not effect
     // the next char as a glyph lookup
     /* if( endpos < startpos && ch=='/' ) */
@@ -2028,9 +2026,10 @@ static SplineChar* MVLoadWordList_readGlyphName( SplineFont *sf, FILE *file, cha
     /* 	endpos++; */
     /* 	strcpy(glyphname,"backslash"); */
     /* } */
-    
+
+    int loopCounter = 0;
     int firstLookup = 1;
-    for( ; endpos >= startpos; endpos-- )
+    for( ; endpos >= startpos; endpos--, loopCounter++ )
     {
 	printf("MVLoadWordList_readGlyphName(trim loop top) gn:%s\n", glyphname );
 	SplineChar* sc = 0;
@@ -2084,8 +2083,13 @@ static SplineChar* MVLoadWordList_readGlyphName( SplineFont *sf, FILE *file, cha
 	
 	if( sc )
 	{
-	    printf("MVLoadWordList_readGlyphName(found!) gn:%s\n", glyphname );
+	    printf("MVLoadWordList_readGlyphName(found!) gn:%s start:%d end:%d\n", glyphname, startpos, endpos );
 	    fseek( file, endpos, SEEK_SET );
+	    if( !loopCounter && FullMatchEndsOnSpace )
+	    {
+		ch=getc(file);
+	    }
+	    
 	    return sc;
 	}
 	if( glyphname[0] != '\0' )
