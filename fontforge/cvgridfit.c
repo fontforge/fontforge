@@ -45,6 +45,12 @@ void SCDeGridFit(SplineChar *sc) {
     }
 }
 
+void CVGridHandlePossibleFitChar(CharView *cv)
+{
+    if( cv->show_ft_results_live_update )
+	CVGridFitChar(cv);
+}
+
 void CVGridFitChar(CharView *cv) {
     void *single_glyph_context;
     SplineFont *sf = cv->b.sc->parent;
