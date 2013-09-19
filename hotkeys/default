@@ -651,6 +651,8 @@ MetricsView.Menu.View.Size set from Window:No Shortcut
 MetricsView.Menu.View.Set Point Size:No Shortcut
 MetricsView.Menu.View.Bigger Point Size:Ctl+Shft++
 MetricsView.Menu.View.Smaller Point Size:Ctl+-
+MetricsView.Menu.View.Next Line in Word List:Ctl+.
+MetricsView.Menu.View.Previous Line in Word List:Ctl+,
 MetricsView.Menu.View.Outline:No Shortcut
 
 MetricsView.Menu.Help.Help:F1
