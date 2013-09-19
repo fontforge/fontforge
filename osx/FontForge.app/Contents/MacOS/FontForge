@@ -49,5 +49,5 @@ fi
 /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f FontForge.app
 $scriptdir/fcprogress.pl >|/tmp/zz 2>&1
 
-echo $WRAPPER $bundle_bin/fontforge "$@" > /tmp/oo
-$WRAPPER $bundle_bin/fontforge "$@"
+echo $WRAPPER $bundle_bin/fontforge -new "$@" > /tmp/oo
+$WRAPPER $bundle_bin/fontforge -new "$@"
