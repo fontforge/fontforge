@@ -176,20 +176,24 @@ return;
 #endif /* USE_OUR_MEMORY */
 
 char *strconcat(const char *str1,const char *str2) {
+    char *ret;
     int len1 = strlen(str1);
-    char *ret = galloc(len1+strlen(str2)+1);
-    strcpy(ret,str1);
-    strcpy(ret+len1,str2);
-return( ret );
+    if ( (ret=malloc(len1+strlen(str2)+1))!=NULL ) {
+	strcpy(ret,str1);
+	strcpy(ret+len1,str2);
+    }
+    return( ret );
 }
 
 char *strconcat3(const char *str1,const char *str2, const char *str3) {
+    char *ret;
     int len1 = strlen(str1), len2 = strlen(str2);
-    char *ret = galloc(len1+len2+strlen(str3)+1);
-    strcpy(ret,str1);
-    strcpy(ret+len1,str2);
-    strcpy(ret+len1+len2,str3);
-return( ret );
+    if ( (ret=malloc(len1+len2+strlen(str3)+1))!=NULL ) {
+	strcpy(ret,str1);
+	strcpy(ret+len1,str2);
+	strcpy(ret+len1+len2,str3);
+    }
+    return( ret );
 }
 
 void LineListFree(LineList *ll) {
