@@ -90,14 +90,15 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
 	    TaggedSpiroCPsToBezier(spiros,bc);
 #endif
 	} else {
+	    int i;
 	    spiro_cp *nspiros;
 	    if ( (nspiros=malloc((n+1)*sizeof(spiro_cp)))==NULL ) {
 		if ( lastty ) spiros[n-1].ty = lastty;
 		return( NULL );
 	    }
 	    memcpy(nspiros,spiros,(n+1)*sizeof(spiro_cp));
-	    for ( n=0; nspiros[n].ty!=SPIRO_END; ++n )
-		nspiros[n].ty &= ~0x80;
+	    for ( i=0; nspiros[i].ty!=SPIRO_END; ++i )
+		nspiros[i].ty &= ~0x80;
 #if _LIBSPIRO_FUN
 	    if ( TaggedSpiroCPsToBezier0(nspiros,bc)==0 ) {
 		if ( lastty ) spiros[n-1].ty = lastty;
@@ -193,15 +194,15 @@ int hasspiro(void) {
 }
 
 spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16 *_cnt) {
-    int n = 0;
+    int ch, n = 0;
     spiro_cp *nspiros;
 
     if ( spiros==NULL )
 	return( NULL );
-    while ( spiros[n++].ty!='z' );
-    if ( (nspiros=(spiro_cp*)malloc((n)*sizeof(spiro_cp)))==NULL )
+    while ( (ch=spiros[n++].ty)!='z' && ch!='}' );
+    if ( (nspiros=(spiro_cp*)malloc(n*sizeof(spiro_cp)))==NULL )
 	return( NULL );
-    memcpy(nspiros,spiros,(n)*sizeof(spiro_cp));
+    memcpy(nspiros,spiros,n*sizeof(spiro_cp));
     if ( _cnt != NULL ) *_cnt = n;
     return( nspiros );
 }
