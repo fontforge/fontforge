@@ -1945,7 +1945,7 @@ return( NULL );
 	sf->familyname = copy(sf->fontname);
     free(stylename);
     if ( sf->weight==NULL )
-	sf->weight = copy("Medium");
+	sf->weight = copy("Regular");
     if ( sf->version==NULL && sf->names!=NULL &&
 	    sf->names->names[ttf_version]!=NULL &&
 	    strncmp(sf->names->names[ttf_version],"Version ",8)==0 )

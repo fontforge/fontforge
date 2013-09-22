@@ -8956,7 +8956,7 @@ msgid "300 Light"
 msgstr "300 Nhẹ"
 
 #: fontinfo.c:96
-msgid "400 Book"
+msgid "400 Regular"
 msgstr "400 Quyển"
 
 #: fontinfo.c:97
@@ -8964,7 +8964,7 @@ msgid "500 Medium"
 msgstr "500 Vừa"
 
 #: fontinfo.c:98
-msgid "600 Demi-Bold"
+msgid "600 Semi-Bold"
 msgstr "600 Nửa đậm"
 
 #: fontinfo.c:99
@@ -8972,7 +8972,7 @@ msgid "700 Bold"
 msgstr "700 Đậm"
 
 #: fontinfo.c:100
-msgid "800 Heavy"
+msgid "800 Extra-Bold"
 msgstr "800 Nặng"
 
 #: fontinfo.c:101

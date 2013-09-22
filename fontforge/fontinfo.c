@@ -95,11 +95,11 @@ static GTextInfo weightclass[] = {
     { (unichar_t *) N_("100 Thin"), NULL, 0, 0, (void *) 100, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("200 Extra-Light"), NULL, 0, 0, (void *) 200, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("300 Light"), NULL, 0, 0, (void *) 300, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("400 Book"), NULL, 0, 0, (void *) 400, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("400 Regular"), NULL, 0, 0, (void *) 400, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("500 Medium"), NULL, 0, 0, (void *) 500, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("600 Demi-Bold"), NULL, 0, 0, (void *) 600, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("600 Semi-Bold"), NULL, 0, 0, (void *) 600, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("700 Bold"), NULL, 0, 0, (void *) 700, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("800 Heavy"), NULL, 0, 0, (void *) 800, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("800 Extra-Bold"), NULL, 0, 0, (void *) 800, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("900 Black"), NULL, 0, 0, (void *) 900, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     GTEXTINFO_EMPTY
 };

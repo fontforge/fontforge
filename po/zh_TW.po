@@ -7758,7 +7758,7 @@ msgid "300 Light"
 msgstr "300 細體字"
 
 #: fontinfo.c:93
-msgid "400 Book"
+msgid "400 Regular"
 msgstr "400 書體"
 
 #: fontinfo.c:94
@@ -7766,7 +7766,7 @@ msgid "500 Medium"
 msgstr "500 中等"
 
 #: fontinfo.c:95
-msgid "600 Demi-Bold"
+msgid "600 Semi-Bold"
 msgstr "600 半粗體"
 
 #: fontinfo.c:96
@@ -7774,7 +7774,7 @@ msgid "700 Bold"
 msgstr "700 粗體"
 
 #: fontinfo.c:97
-msgid "800 Heavy"
+msgid "800 Extra-Bold"
 msgstr "800 特粗體"
 
 #: fontinfo.c:98

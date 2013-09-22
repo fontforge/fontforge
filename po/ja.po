@@ -6374,24 +6374,24 @@ msgid "300 Light"
 msgstr "300 Light"
 
 #: ../fontforge/fontinfo.c:98
-msgid "400 Book"
-msgstr "400 Book"
+msgid "400 Regular"
+msgstr "400 Regular"
 
 #: ../fontforge/fontinfo.c:99
 msgid "500 Medium"
 msgstr "500 Medium"
 
 #: ../fontforge/fontinfo.c:100
-msgid "600 Demi-Bold"
-msgstr "600 Demi-Bold"
+msgid "600 Semi-Bold"
+msgstr "600 Semi-Bold"
 
 #: ../fontforge/fontinfo.c:101
 msgid "700 Bold"
 msgstr "700 Bold"
 
 #: ../fontforge/fontinfo.c:102
-msgid "800 Heavy"
-msgstr "800 Heavy"
+msgid "800 Extra-Bold"
+msgstr "800 Extra-Bold"
 
 #: ../fontforge/fontinfo.c:103
 msgid "900 Black"

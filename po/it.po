@@ -1035,19 +1035,19 @@ msgstr "200 Extra-chiaro"
 msgid "300 Light"
 msgstr "300 Chiaro"
 
-msgid "400 Book"
+msgid "400 Regular"
 msgstr "400 Libro"
 
 msgid "500 Medium"
 msgstr "500 Medio"
 
-msgid "600 Demi-Bold"
+msgid "600 Semi-Bold"
 msgstr "600 Neretto"
 
 msgid "700 Bold"
 msgstr "700 Nero"
 
-msgid "800 Heavy"
+msgid "800 Extra-Bold"
 msgstr "800 Nerissimo"
 
 msgid "900 Black"
