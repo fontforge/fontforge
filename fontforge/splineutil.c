@@ -176,20 +176,24 @@ return;
 #endif /* USE_OUR_MEMORY */
 
 char *strconcat(const char *str1,const char *str2) {
+    char *ret;
     int len1 = strlen(str1);
-    char *ret = galloc(len1+strlen(str2)+1);
-    strcpy(ret,str1);
-    strcpy(ret+len1,str2);
-return( ret );
+    if ( (ret=malloc(len1+strlen(str2)+1))!=NULL ) {
+	strcpy(ret,str1);
+	strcpy(ret+len1,str2);
+    }
+    return( ret );
 }
 
 char *strconcat3(const char *str1,const char *str2, const char *str3) {
+    char *ret;
     int len1 = strlen(str1), len2 = strlen(str2);
-    char *ret = galloc(len1+len2+strlen(str3)+1);
-    strcpy(ret,str1);
-    strcpy(ret+len1,str2);
-    strcpy(ret+len1+len2,str3);
-return( ret );
+    if ( (ret=malloc(len1+len2+strlen(str3)+1))!=NULL ) {
+	strcpy(ret,str1);
+	strcpy(ret+len1,str2);
+	strcpy(ret+len1+len2,str3);
+    }
+    return( ret );
 }
 
 void LineListFree(LineList *ll) {
@@ -219,13 +223,15 @@ void SplineFree(Spline *spline) {
 }
 
 SplinePoint *SplinePointCreate(real x, real y) {
-    SplinePoint *sp = chunkalloc(sizeof(SplinePoint));
-    sp->me.x = x; sp->me.y = y;
-    sp->nextcp = sp->prevcp = sp->me;
-    sp->nonextcp = sp->noprevcp = true;
-    sp->nextcpdef = sp->prevcpdef = false;
-    sp->ttfindex = sp->nextcpindex = 0xfffe;
-return( sp );
+    SplinePoint *sp;
+    if ( (sp=chunkalloc(sizeof(SplinePoint)))!=NULL ) {
+	sp->me.x = x; sp->me.y = y;
+	sp->nextcp = sp->prevcp = sp->me;
+	sp->nonextcp = sp->noprevcp = true;
+	sp->nextcpdef = sp->prevcpdef = false;
+	sp->ttfindex = sp->nextcpindex = 0xfffe;
+    }
+    return( sp );
 }
 
 Spline *SplineMake3(SplinePoint *from, SplinePoint *to) {
@@ -270,8 +276,8 @@ void SplinePointsFree(SplinePointList *spl) {
 
     if ( spl==NULL )
 return;
-    nonext = spl->first->next==NULL;
     if ( spl->first!=NULL ) {
+	nonext = spl->first->next==NULL;
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
 	    next = spline->to->next;
@@ -285,46 +291,16 @@ return;
 }
 
 void SplineSetBeziersClear(SplinePointList *spl) {
-    Spline *first, *spline, *next;
-    int nonext;
 
-    if ( spl==NULL )
-return;
-
-    if ( spl->first!=NULL ) {
-	nonext = spl->first->next==NULL;
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
-	    next = spline->to->next;
-	    SplinePointFree(spline->to);
-	    SplineFree(spline);
-	    if ( first==NULL ) first = spline;
-	}
-	if ( spl->last!=spl->first || nonext )
-	    SplinePointFree(spl->first);
-    }
+    if ( spl==NULL ) return;
+    SplinePointsFree(spl);
     spl->first = spl->last = NULL;
 }
 
 void SplinePointListFree(SplinePointList *spl) {
-    Spline *first, *spline, *next;
-    int nonext;
 
-    if ( spl==NULL )
-return;
-
-    if ( spl->first!=NULL ) {
-	nonext = spl->first->next==NULL;
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
-	    next = spline->to->next;
-	    SplinePointFree(spline->to);
-	    SplineFree(spline);
-	    if ( first==NULL ) first = spline;
-	}
-	if ( spl->last!=spl->first || nonext )
-	    SplinePointFree(spl->first);
-    }
+    if ( spl==NULL ) return;
+    SplinePointsFree(spl);
     free(spl->spiros);
     free(spl->contour_name);
     chunkfree(spl,sizeof(SplinePointList));

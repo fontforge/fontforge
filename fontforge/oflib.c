@@ -124,16 +124,17 @@ static char *strconcat_free(char *str1, char *str2) {
     int len;
 
     if ( str1==NULL )
-return( str2 );
+	return( str2 );
     if ( str2==NULL )
-return( str1 );
+	return( str1 );
 
     len = strlen(str1);
-    ret = galloc(len+strlen(str2)+1);
-    strcpy(ret,str1);
-    strcpy(ret+len,str2);
+    if ( (ret=malloc(len+strlen(str2)+1))!=NULL ) {
+	strcpy(ret,str1);
+	strcpy(ret+len,str2);
+    }
     free(str1); free(str2);
-return( ret );
+    return( ret );
 }
 
 static char *despace(char *str) {
@@ -411,7 +412,7 @@ static void oflfiFreeContents(struct ofl_font_info *oflfi) {
     if ( oflfi->preview!=NULL )
 	GImageDestroy(oflfi->preview);
 }
-    
+
 static int OflInfoMerge(struct ofl_state *all,struct ofl_font_info *block) {
     int i,j,k,l,tot,lastj,anymatches;
     /* We return whether any of the new font_infos were the same as */
@@ -1077,7 +1078,7 @@ pthread_exit(NULL);
 
     /* Remove the notice window (if it's still around) */
     ff_post_notice(NULL,NULL);
-    
+
 }
 
 static void cancel_handler(int sig) {
@@ -1731,7 +1732,7 @@ return( i );
     *du = NULL;
 return( -1 );
 }
-	
+
 static int oflib_fonts_e_h(GWindow gw, GEvent *event) {
     OFLibDlg *d = GDrawGetUserData(gw);
 
