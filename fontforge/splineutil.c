@@ -223,13 +223,15 @@ void SplineFree(Spline *spline) {
 }
 
 SplinePoint *SplinePointCreate(real x, real y) {
-    SplinePoint *sp = chunkalloc(sizeof(SplinePoint));
-    sp->me.x = x; sp->me.y = y;
-    sp->nextcp = sp->prevcp = sp->me;
-    sp->nonextcp = sp->noprevcp = true;
-    sp->nextcpdef = sp->prevcpdef = false;
-    sp->ttfindex = sp->nextcpindex = 0xfffe;
-return( sp );
+    SplinePoint *sp;
+    if ( (sp=chunkalloc(sizeof(SplinePoint)))!=NULL ) {
+	sp->me.x = x; sp->me.y = y;
+	sp->nextcp = sp->prevcp = sp->me;
+	sp->nonextcp = sp->noprevcp = true;
+	sp->nextcpdef = sp->prevcpdef = false;
+	sp->ttfindex = sp->nextcpindex = 0xfffe;
+    }
+    return( sp );
 }
 
 Spline *SplineMake3(SplinePoint *from, SplinePoint *to) {
