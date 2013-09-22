@@ -35,7 +35,7 @@
 static int has_spiro = false;
 
 SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
-return( NULL );
+    return( NULL );
 }
 
 spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *cnt) {
@@ -49,24 +49,31 @@ return( NULL );
 static int has_spiro = true;
 
 SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
+/* Create a SplineSet from the given spiros_code_points.*/
     int n;
     int any = 0;
-    spiro_cp *nspiros;
     SplineSet *ss;
     int lastty = 0;
 
     if ( spiros==NULL )
-return( NULL );
+	return( NULL );
     for ( n=0; spiros[n].ty!=SPIRO_END; ++n )
 	if ( SPIRO_SELECTED(&spiros[n]) )
 	    ++any;
     if ( n==0 )
-return( NULL );
+	return( NULL );
     if ( n==1 ) {
-	ss = chunkalloc(sizeof(SplineSet));
-	ss->first = ss->last = SplinePointCreate(spiros[0].x,spiros[0].y);
+	/* Spiro only haS 1 code point sofar (no conversion needed yet) */
+	if ( (ss=chunkalloc(sizeof(SplineSet)))==NULL || \
+	     (ss->first=ss->last=SplinePointCreate(spiros[0].x,spiros[0].y))==NULL ) {
+	    chunkfree(ss,sizeof(SplineSet));
+	    return( NULL );
+	}
     } else {
-	bezctx *bc = new_bezctx_ff();
+	/* Spiro needs to be converted to bezier curves using libspiro. */
+	bezctx *bc;
+	if ( (bc=new_bezctx_ff())==NULL )
+	    return( NULL );
 	if ( (spiros[0].ty&0x7f)=='{' ) {
 	    lastty = spiros[n-1].ty;
 	    spiros[n-1].ty = '}';
@@ -75,18 +82,26 @@ return( NULL );
 	if ( !any ) {
 #if _LIBSPIRO_FUN
 	    if ( TaggedSpiroCPsToBezier0(spiros,bc)==0 ) {
+		if ( lastty ) spiros[n-1].ty = lastty;
+		free(bc);
 		return( NULL );
 	    }
 #else
 	    TaggedSpiroCPsToBezier(spiros,bc);
 #endif
 	} else {
-	    nspiros = galloc((n+1)*sizeof(spiro_cp));
+	    int i;
+	    spiro_cp *nspiros;
+	    if ( (nspiros=malloc((n+1)*sizeof(spiro_cp)))==NULL ) {
+		if ( lastty ) spiros[n-1].ty = lastty;
+		return( NULL );
+	    }
 	    memcpy(nspiros,spiros,(n+1)*sizeof(spiro_cp));
-	    for ( n=0; nspiros[n].ty!=SPIRO_END; ++n )
-		nspiros[n].ty &= ~0x80;
+	    for ( i=0; nspiros[i].ty!=SPIRO_END; ++i )
+		nspiros[i].ty &= ~0x80;
 #if _LIBSPIRO_FUN
 	    if ( TaggedSpiroCPsToBezier0(nspiros,bc)==0 ) {
+		if ( lastty ) spiros[n-1].ty = lastty;
 		free(nspiros);
 		return( NULL );
 	    }
@@ -95,15 +110,14 @@ return( NULL );
 #endif
 	    free(nspiros);
 	}
-	ss = bezctx_ff_close(bc);
+	if ( lastty ) spiros[n-1].ty = lastty;
 
-	if ( (spiros[0].ty&0x7f)=='{' )
-	    spiros[n-1].ty = lastty;
+	if ( (ss=bezctx_ff_close(bc))==NULL ) return( NULL );
     }
     ss->spiros = spiros;
     ss->spiro_cnt = ss->spiro_max = n+1;
     SPLCatagorizePoints(ss);
-return( ss );
+    return( ss );
 }
 
 spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt) {
@@ -180,43 +194,52 @@ int hasspiro(void) {
 }
 
 spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16 *_cnt) {
-    int n;
+/* Make a copy of a (closed='z' or open='{}') spiro */
+    int ch, n = 0;
     spiro_cp *nspiros;
 
     if ( spiros==NULL )
 	return( NULL );
-    for ( n=0; spiros[n].ty!='z'; ++n );
-    if ( (nspiros=(spiro_cp*)malloc((n+1)*sizeof(spiro_cp)))==NULL )
+    while ( (ch=spiros[n++].ty)!='z' && ch!='}' );
+    if ( (nspiros=(spiro_cp*)malloc(n*sizeof(spiro_cp)))==NULL )
 	return( NULL );
-    memcpy(nspiros,spiros,(n+1)*sizeof(spiro_cp));
-    if ( _cnt != NULL ) *_cnt = n+1;
+    memcpy(nspiros,spiros,n*sizeof(spiro_cp));
+    if ( _cnt != NULL ) *_cnt = n;
     return( nspiros );
 }
 
 void SSRegenerateFromSpiros(SplineSet *spl) {
-    SplineSet *temp;
+/* Regenerate an updated SplineSet from SpiroCPs after edits are done. */
+    if ( spl->spiro_cnt<=1 || !has_spiro )
+	return;
 
-    if ( spl->spiro_cnt<=1 )
-return;
-	if ( !has_spiro)
-return;
-
-    SplineSetBeziersClear(spl);
-    temp = SpiroCP2SplineSet(spl->spiros);
+    SplineSet *temp = SpiroCP2SplineSet(spl->spiros);
+    //static int q=0; /* test 'other' branch */
+    //if ((++q>20 && q<100) || (q>200 && q<300)) {
+    //	free(temp); temp = NULL;
+    //}
     if ( temp!=NULL ) {
+	/* Regenerated new SplineSet. Discard old copy. Keep new copy. */
+	SplineSetBeziersClear(spl);
 	spl->first = temp->first;
 	spl->last = temp->last;
 	chunkfree(temp,sizeof(SplineSet));
     } else {
-	/* didn't converge... or something */
+	/* Didn't converge... or something ...therefore let's fake-it. */
 	int i;
-	SplinePoint *sp, *last;
-	last = spl->first = SplinePointCreate(spl->spiros[0].x, spl->spiros[0].y);
+	SplinePoint *sp, *first, *last;
+	if ( (last=first=SplinePointCreate(spl->spiros[0].x,spl->spiros[0].y))==NULL )
+	    return;
 	for ( i=1; i<spl->spiro_cnt; ++i ) {
-	    sp = SplinePointCreate(spl->spiros[i].x, spl->spiros[i].y);
-	    SplineMake3(last,sp);
-	    last = sp;
+	    if ( (sp=SplinePointCreate(spl->spiros[i].x,spl->spiros[i].y)) ) {
+		SplineMake3(last,sp);
+		last = sp;
+	    } else
+		break; /* ...have problem, but keep what we got so far */
 	}
+	/* dump the prior SplineSet and now show this line-art instead */
+	SplineSetBeziersClear(spl);
+	spl->first = first;
 	if ( SPIRO_SPL_OPEN(spl))
 	    spl->last = last;
 	else {
