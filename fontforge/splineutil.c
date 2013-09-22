@@ -274,8 +274,8 @@ void SplinePointsFree(SplinePointList *spl) {
 
     if ( spl==NULL )
 return;
-    nonext = spl->first->next==NULL;
     if ( spl->first!=NULL ) {
+	nonext = spl->first->next==NULL;
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
 	    next = spline->to->next;
@@ -289,46 +289,16 @@ return;
 }
 
 void SplineSetBeziersClear(SplinePointList *spl) {
-    Spline *first, *spline, *next;
-    int nonext;
 
-    if ( spl==NULL )
-return;
-
-    if ( spl->first!=NULL ) {
-	nonext = spl->first->next==NULL;
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
-	    next = spline->to->next;
-	    SplinePointFree(spline->to);
-	    SplineFree(spline);
-	    if ( first==NULL ) first = spline;
-	}
-	if ( spl->last!=spl->first || nonext )
-	    SplinePointFree(spl->first);
-    }
+    if ( spl==NULL ) return;
+    SplinePointsFree(spl);
     spl->first = spl->last = NULL;
 }
 
 void SplinePointListFree(SplinePointList *spl) {
-    Spline *first, *spline, *next;
-    int nonext;
 
-    if ( spl==NULL )
-return;
-
-    if ( spl->first!=NULL ) {
-	nonext = spl->first->next==NULL;
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
-	    next = spline->to->next;
-	    SplinePointFree(spline->to);
-	    SplineFree(spline);
-	    if ( first==NULL ) first = spline;
-	}
-	if ( spl->last!=spl->first || nonext )
-	    SplinePointFree(spl->first);
-    }
+    if ( spl==NULL ) return;
+    SplinePointsFree(spl);
     free(spl->spiros);
     free(spl->contour_name);
     chunkfree(spl,sizeof(SplinePointList));
