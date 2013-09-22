@@ -35,7 +35,7 @@
 static int has_spiro = false;
 
 SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
-return( NULL );
+    return( NULL );
 }
 
 spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *cnt) {
@@ -194,6 +194,7 @@ int hasspiro(void) {
 }
 
 spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16 *_cnt) {
+/* Make a copy of a (closed='z' or open='{}') spiro */
     int ch, n = 0;
     spiro_cp *nspiros;
 
@@ -208,29 +209,37 @@ spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16 *_cnt) {
 }
 
 void SSRegenerateFromSpiros(SplineSet *spl) {
-    SplineSet *temp;
+/* Regenerate an updated SplineSet from SpiroCPs after edits are done. */
+    if ( spl->spiro_cnt<=1 || !has_spiro )
+	return;
 
-    if ( spl->spiro_cnt<=1 )
-return;
-	if ( !has_spiro)
-return;
-
-    SplineSetBeziersClear(spl);
-    temp = SpiroCP2SplineSet(spl->spiros);
+    SplineSet *temp = SpiroCP2SplineSet(spl->spiros);
+    //static int q=0; /* test 'other' branch */
+    //if ((++q>20 && q<100) || (q>200 && q<300)) {
+    //	free(temp); temp = NULL;
+    //}
     if ( temp!=NULL ) {
+	/* Regenerated new SplineSet. Discard old copy. Keep new copy. */
+	SplineSetBeziersClear(spl);
 	spl->first = temp->first;
 	spl->last = temp->last;
 	chunkfree(temp,sizeof(SplineSet));
     } else {
-	/* didn't converge... or something */
+	/* Didn't converge... or something ...therefore let's fake-it. */
 	int i;
-	SplinePoint *sp, *last;
-	last = spl->first = SplinePointCreate(spl->spiros[0].x, spl->spiros[0].y);
+	SplinePoint *sp, *first, *last;
+	if ( (last=first=SplinePointCreate(spl->spiros[0].x,spl->spiros[0].y))==NULL )
+	    return;
 	for ( i=1; i<spl->spiro_cnt; ++i ) {
-	    sp = SplinePointCreate(spl->spiros[i].x, spl->spiros[i].y);
-	    SplineMake3(last,sp);
-	    last = sp;
+	    if ( (sp=SplinePointCreate(spl->spiros[i].x,spl->spiros[i].y)) ) {
+		SplineMake3(last,sp);
+		last = sp;
+	    } else
+		break; /* ...have problem, but keep what we got so far */
 	}
+	/* dump the prior SplineSet and now show this line-art instead */
+	SplineSetBeziersClear(spl);
+	spl->first = first;
 	if ( SPIRO_SPL_OPEN(spl))
 	    spl->last = last;
 	else {
