@@ -294,6 +294,9 @@ static void GHVBoxResize(GGadget *g, int32 width, int32 height) {
     GHVBoxGatherSizeInfo(gb,&si);
     width -= 2*bp; height -= 2*bp;
 
+    if(width < si.minwidth) width = si.minwidth;
+    if(height < si.minheight) height = si.minheight;
+
     gb->g.inner.x = gb->g.r.x + bp; gb->g.inner.y = gb->g.r.y + bp;
     if ( gb->label!=NULL ) {
         gb->label_height = si.label_height;
