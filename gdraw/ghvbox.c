@@ -294,9 +294,6 @@ static void GHVBoxResize(GGadget *g, int32 width, int32 height) {
     GHVBoxGatherSizeInfo(gb,&si);
     width -= 2*bp; height -= 2*bp;
 
-    if(width < si.minwidth) width = si.minwidth;
-    if(height < si.minheight) height = si.minheight;
-
     gb->g.inner.x = gb->g.r.x + bp; gb->g.inner.y = gb->g.r.y + bp;
     if ( gb->label!=NULL ) {
         gb->label_height = si.label_height;
@@ -323,37 +320,37 @@ static void GHVBoxResize(GGadget *g, int32 width, int32 height) {
                         si.cols[i].sized -= reduce_pad;
                 si.width -= vcols*reduce_pad;
             }
-            if(gb->grow_col==gb_expandglue || gb->grow_col==gb_expandgluesame ) {
-                for ( i=glue_cnt=0; i<gb->cols; ++i )
-                    if ( si.cols[i].allglue )
-                        ++glue_cnt;
-                if ( glue_cnt!=0 && width>si.width ) {
-                    plus = (width-si.width)/glue_cnt;
-                    extra = (width-si.width-glue_cnt*plus);
-                    for ( i=0; i<gb->cols; ++i ) if ( si.cols[i].allglue ) {
-                        si.cols[i].sized += plus + (extra>0);
-                        si.width += plus + (extra>0);
-                        --extra;
-                    }
+        }
+        if((width > si.width) && (gb->grow_col==gb_expandglue || gb->grow_col==gb_expandgluesame )) {
+            for ( i=glue_cnt=0; i<gb->cols; ++i )
+                if ( si.cols[i].allglue )
+                    ++glue_cnt;
+            if ( glue_cnt!=0 ) {
+                plus = (width-si.width)/glue_cnt;
+                extra = (width-si.width-glue_cnt*plus);
+                for ( i=0; i<gb->cols; ++i ) if ( si.cols[i].allglue ) {
+                    si.cols[i].sized += plus + (extra>0);
+                    si.width += plus + (extra>0);
+                    --extra;
                 }
-            } 
-            else if ((width != si.width) && gb->grow_col>=0 ) {
-                int * ss = &(si.cols[gb->grow_col].sized);
-                int w = si.width - *ss;
-                *ss += (width-si.width);
-                if(*ss < gb->hpad + 3)
-                    *ss = gb->hpad + 3;
-                si.width = w + *ss;
-            } 
-            if ((width > si.width) && (vcols1!=0)) {
-                plus = (width-si.width)/vcols1;
-                extra = (width-si.width-vcols1*plus);
-                for ( i=0; i<gb->cols; ++i ) {
-                    if ( si.cols[i].sized>0 ) {
-                        si.cols[i].sized += plus + (extra>0);
-                        si.width += plus + (extra>0);
-                        --extra;
-                    }
+            }
+        } 
+        if ((width != si.width) && gb->grow_col>=0 ) {
+            int * ss = &(si.cols[gb->grow_col].sized);
+            int w = si.width - *ss;
+            *ss += (width-si.width);
+            if(*ss < gb->hpad + 3)
+                *ss = gb->hpad + 3;
+            si.width = w + *ss;
+        } 
+        if ((width > si.width) && (vcols1!=0)) {
+            plus = (width-si.width)/vcols1;
+            extra = (width-si.width-vcols1*plus);
+            for ( i=0; i<gb->cols; ++i ) {
+                if ( si.cols[i].sized>0 ) {
+                    si.cols[i].sized += plus + (extra>0);
+                    si.width += plus + (extra>0);
+                    --extra;
                 }
             }
         }
@@ -381,11 +378,11 @@ static void GHVBoxResize(GGadget *g, int32 width, int32 height) {
                 si.height -= vrows*reduce_pad;
             }
         }
-        if(gb->grow_row==gb_expandglue || gb->grow_row==gb_expandgluesame ) {
+        if((height > si.height) && (gb->grow_row==gb_expandglue || gb->grow_row==gb_expandgluesame )) {
             for ( i=glue_cnt=0; i<gb->rows; ++i )
                 if ( si.rows[i].allglue )
                     ++glue_cnt;
-            if ( glue_cnt!=0 && height>si.height) {
+            if ( glue_cnt!=0 ){
                 plus = (height-si.height)/glue_cnt;
                 extra = (height-si.height-glue_cnt*plus);
                 for ( i=0; i<gb->rows; ++i ) if ( si.rows[i].allglue ) {
@@ -395,7 +392,7 @@ static void GHVBoxResize(GGadget *g, int32 width, int32 height) {
                 }
             }
         } 
-        else if ((height != si.height) && gb->grow_row>=0 ) {
+        if ((height != si.height) && gb->grow_row>=0 ) {
             int * ss = &(si.rows[gb->grow_row].sized);
             int h = si.height - *ss;
             *ss += (height-si.height);
@@ -444,10 +441,6 @@ static void GHVBoxResize(GGadget *g, int32 width, int32 height) {
                 es = GBoxExtraSpace(g);
                 xes = si.cols[c].extra_space - es;
                 yes = si.rows[r].extra_space - es;
-                if(2 * xes > totc) xes = totc / 2;
-                if(2 * yes > totr) yes = totr / 2;
-                //debug
-                fprintf(stderr, "child height %d\n", totr-2*yes);
                 if ( g->state!=gs_invisible )
                     GGadgetResize(g,totc-2*xes,totr-2*yes);
                 GGadgetMove(g,x+xes,y+yes);
