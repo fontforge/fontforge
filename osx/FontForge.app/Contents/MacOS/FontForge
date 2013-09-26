@@ -39,11 +39,19 @@ export XLOCALEDIR="$bundle_share/X11/locale"
 WRAPPER=
 
 if [ x"$1" == "x--debug" ]; then
-   WRAPPER="gdb --args"
-   WRAPPER="script $HOME/FontForge-Debug-Output.txt lldb --debug --source /Applications/FontForge.app/Contents/MacOS/debug-script -- "
-   $WRAPPER
-   #$WRAPPER $bundle_bin/fontforge "$2" "$3" "$4" "$5" "$6"
-   exit
+    if command -v lldb 2>/dev/null; then
+        WRAPPER="gdb --args"
+        WRAPPER="script $HOME/FontForge-Debug-Output.txt lldb --debug --source /Applications/FontForge.app/Contents/MacOS/debug-script -- "
+        $WRAPPER
+        # $WRAPPER $bundle_bin/fontforge "$2" "$3" "$4" "$5" "$6"
+        exit
+    else
+        echo "You must installed the XCode Command Lines Tools to run FontForge"
+        echo "in debug mode. For 10.7 they are available in the App Store. For"
+        echo "10.6, install XCode from the App Store then install them by running"
+        echo "XCode and looking in Preferences."
+        exit
+    fi
 fi
 
 /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f FontForge.app
