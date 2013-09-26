@@ -4091,7 +4091,7 @@ SplineFont *SplineFontBlank(int charcnt) {
     if ( author!=NULL )
 	sprintf( buffer, "Copyright (c) %d, %.50s", tm->tm_year+1900, author );
     else
-	strcpy( buffer, "Copyright (c) %d, Anonymous", tm->tm_year+1900 );
+	sprintf( buffer, "Copyright (c) %d, Anonymous", tm->tm_year+1900 );
     sf->copyright = copy(buffer);
     if ( xuid!=NULL ) {
 	sf->xuid = galloc(strlen(xuid)+20);
