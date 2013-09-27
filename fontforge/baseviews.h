@@ -77,10 +77,10 @@ typedef struct pressedOn {
 enum cvtools {
 	cvt_pointer, cvt_magnify,
 	cvt_freehand, cvt_hand,
+	cvt_knife, cvt_ruler,
 	cvt_curve, cvt_hvcurve,
 	cvt_corner, cvt_tangent,
 	cvt_pen, cvt_spiro,
-	cvt_knife, cvt_ruler,
 	cvt_scale, cvt_rotate,
 	cvt_flip, cvt_skew,
 	cvt_3d_rotate, cvt_perspective,
