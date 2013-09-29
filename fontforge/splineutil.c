@@ -339,12 +339,13 @@ void SplinePointListsMDFree(SplineChar *sc,SplinePointList *spl) {
     }
 }
 
-void SplinePointListsFree(SplinePointList *head) {
-    SplinePointList *spl, *next;
+void SplinePointListsFree(SplinePointList *spl) {
+    SplinePointList *next;
 
-    for ( spl=head; spl!=NULL; spl=next ) {
+    while ( spl!=NULL ) {
 	next = spl->next;
 	SplinePointListFree(spl);
+	spl = next;
     }
 }
 
