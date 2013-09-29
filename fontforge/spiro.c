@@ -1,4 +1,5 @@
 /* Copyright (C) 2007-2012 by George Williams */
+/* 2013sep19-22, error handling and cleanup fixes in Spiro.c, Jose Da Silva */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -214,10 +215,6 @@ void SSRegenerateFromSpiros(SplineSet *spl) {
 	return;
 
     SplineSet *temp = SpiroCP2SplineSet(spl->spiros);
-    //static int q=0; /* test 'other' branch */
-    //if ((++q>20 && q<100) || (q>200 && q<300)) {
-    //	free(temp); temp = NULL;
-    //}
     if ( temp!=NULL ) {
 	/* Regenerated new SplineSet. Discard old copy. Keep new copy. */
 	SplineSetBeziersClear(spl);
