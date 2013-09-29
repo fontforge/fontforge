@@ -11357,10 +11357,13 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     cv->showtabs = CVShows.showtabs;
     cv->inPreviewMode = 0;
     cv->checkselfintersects = CVShows.checkselfintersects;
-
+ 
     cv->showdebugchanges = CVShows.showdebugchanges;
 
     cv->infoh = 13;
+#if defined(__MINGW32__)||defined(__CYGWIN__)
+    cv->infoh = 26;
+#endif
     cv->rulerh = 16;
 
     GDrawGetSize(cv->gw,&pos);
