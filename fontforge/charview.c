@@ -106,7 +106,7 @@ struct cvshows CVShows = {
 	1,		/* show blue values */
 	1,		/* show family blues too */
 	1,		/* show anchor points */
-	1,		/* show control point info when moving them */
+	0,		/* show control point info when moving them */
 	1,		/* show tabs containing names of former glyphs */
 	1,		/* show side bearings */
 	1,		/* show the names of references */
@@ -977,37 +977,59 @@ static void DrawSpiroPoint(CharView *cv, GWindow pixmap, spiro_cp *cp,
     if ( selected )
 	 col = selectedpointcol;
 
+    if( !selected )
+    {
+	col = col & 0x00ffffff;
+	col |= prefs_cvInactiveHandleAlpha << 24;
+    }
+    
     x =  cv->xoff + rint(cp->x*cv->scale);
     y = -cv->yoff + cv->height - rint(cp->y*cv->scale);
     if ( x<-4 || y<-4 || x>cv->width+4 || y>=cv->height+4 )
 return;
 
-    r.x = x-2;
-    r.y = y-2;
-    r.width = r.height = 5;
+    DrawPoint_SetupRectForSize( &r, x, y, 2 );
+    /* r.x = x-2; */
+    /* r.y = y-2; */
+    /* r.width = r.height = 5; */
     if ( selected )
 	GDrawSetLineWidth(pixmap,selectedpointwidth);
 
+    float sizedelta = 3;
+    if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+	sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+    
     if ( ty == SPIRO_RIGHT ) {
 	GDrawSetLineWidth(pixmap,2);
-	gp[0].x = x-3; gp[0].y = y-3;
-	gp[1].x = x;   gp[1].y = y-3;
-	gp[2].x = x;   gp[2].y = y+3;
-	gp[3].x = x-3; gp[3].y = y+3;
+	gp[0].x = x-sizedelta; gp[0].y = y-sizedelta;
+	gp[1].x = x;           gp[1].y = y-sizedelta;
+	gp[2].x = x;           gp[2].y = y+sizedelta;
+	gp[3].x = x-sizedelta; gp[3].y = y+sizedelta;
 	GDrawDrawPoly(pixmap,gp,4,col);
     } else if ( ty == SPIRO_LEFT ) {
 	GDrawSetLineWidth(pixmap,2);
-	gp[0].x = x+3; gp[0].y = y-3;
-	gp[1].x = x;   gp[1].y = y-3;
-	gp[2].x = x;   gp[2].y = y+3;
-	gp[3].x = x+3; gp[3].y = y+3;
+	gp[0].x = x+sizedelta; gp[0].y = y-sizedelta;
+	gp[1].x = x;           gp[1].y = y-sizedelta;
+	gp[2].x = x;           gp[2].y = y+sizedelta;
+	gp[3].x = x+sizedelta; gp[3].y = y+sizedelta;
 	GDrawDrawPoly(pixmap,gp,4,col);
     } else if ( ty == SPIRO_G2 ) {
 	GPoint gp[5];
-	gp[0].x = r.x-1; gp[0].y = r.y+2;
-	gp[1].x = r.x+2; gp[1].y = r.y+5;
-	gp[2].x = r.x+5; gp[2].y = r.y+2;
-	gp[3].x = r.x+2; gp[3].y = r.y-1;
+
+	float sizedelta = 3;
+	float offsetdelta = 1;
+	if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+	{
+	    sizedelta   *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+	    offsetdelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+	}
+
+	float basex = r.x + 1 + offsetdelta;
+	float basey = r.y + 1 + offsetdelta;
+	gp[0].x = basex - sizedelta; gp[0].y = basey + 0;
+	gp[1].x = basex + 0;         gp[1].y = basey + sizedelta;
+	gp[2].x = basex + sizedelta; gp[2].y = basey + 0;
+	gp[3].x = basex + 0;         gp[3].y = basey - sizedelta;
 	gp[4] = gp[0];
 	if ( selected )
 	    GDrawDrawPoly(pixmap,gp,5,col);
@@ -11311,6 +11333,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     {
 	firstCharView = 0;
 	CVShows.alwaysshowcontrolpoints = prefs_cv_show_control_points_always_initially;
+	CVShows.showcpinfo = 0;
     }
     
 
@@ -11357,10 +11380,13 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     cv->showtabs = CVShows.showtabs;
     cv->inPreviewMode = 0;
     cv->checkselfintersects = CVShows.checkselfintersects;
-
+ 
     cv->showdebugchanges = CVShows.showdebugchanges;
 
     cv->infoh = 13;
+#if defined(__MINGW32__)||defined(__CYGWIN__)
+    cv->infoh = 26;
+#endif
     cv->rulerh = 16;
 
     GDrawGetSize(cv->gw,&pos);
