@@ -106,7 +106,7 @@ struct cvshows CVShows = {
 	1,		/* show blue values */
 	1,		/* show family blues too */
 	1,		/* show anchor points */
-	1,		/* show control point info when moving them */
+	0,		/* show control point info when moving them */
 	1,		/* show tabs containing names of former glyphs */
 	1,		/* show side bearings */
 	1,		/* show the names of references */
@@ -11333,6 +11333,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     {
 	firstCharView = 0;
 	CVShows.alwaysshowcontrolpoints = prefs_cv_show_control_points_always_initially;
+	CVShows.showcpinfo = 0;
     }
     
 
