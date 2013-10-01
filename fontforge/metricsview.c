@@ -1886,13 +1886,13 @@ static SplineChar* MVEscpaedInputStringToRealString_readGlyphName( SplineFont *s
 
 static unichar_t* MVEscpaedInputStringToRealString( MetricsView *mv, unichar_t* input_const, GArray** selected_out )
 {
-    char* input = copy( u_to_c( input_const ));
+    char* input = u2utf8_copy(input_const);
     
     // truncate insanely long lines rather than crash
     if( strlen(input) > PATH_MAX )
 	input[PATH_MAX] = '\0';
 
-    printf("MVEscpaedInputStringToRealString() input:%s\n", input );
+    printf("MVEscpaedInputStringToRealString(top) input:%s\n", input );
     int  buffer_sz = PATH_MAX;
     char buffer[PATH_MAX+1];
     memset( buffer, '\0', buffer_sz );
