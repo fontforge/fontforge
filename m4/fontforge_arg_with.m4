@@ -294,14 +294,32 @@ dnl ---------------------------
 AC_DEFUN([FONTFORGE_WARN_PKG_FALLBACK],
    [AC_MSG_WARN([No pkg-config file was found for $1, but the library is present and we will try to use it.])])
 
+AC_DEFUN([CHECK_LIBUUID],
+	[
+	PKG_CHECK_MODULES([LIBUUID], [uuid >= 1.41.2], [LIBUUID_FOUND=yes], [LIBUUID_FOUND=no])
+	if test "$LIBUUID_FOUND" = "no" ; then
+	    PKG_CHECK_MODULES([LIBUUID], [uuid], [LIBUUID_FOUND=yes], [LIBUUID_FOUND=no])
+	    if test "$LIBUUID_FOUND" = "no" ; then
+                AC_MSG_ERROR([libuuid development files required])
+            else
+                LIBUUID_CFLAGS+=" -I$(pkg-config --variable=includedir uuid)/uuid "
+            fi
+	fi
+	AC_SUBST([LIBUUID_CFLAGS])
+	AC_SUBST([LIBUUID_LIBS])
+	])
 
 dnl FONTFORGE_ARG_WITH_ZEROMQ
 dnl -------------------------
 AC_DEFUN([FONTFORGE_ARG_WITH_ZEROMQ],
 [
+CHECK_LIBUUID
 FONTFORGE_ARG_WITH([libzmq],
         [AS_HELP_STRING([--without-libzmq],[build without libzmq])],
         [ libczmq libzmq > 3.2.0 ],
         [FONTFORGE_WARN_PKG_NOT_FOUND([LIBZMQ])],
         [_NO_LIBZMQ])
+LIBZMQ_CFLAGS+=" $LIBUUID_CFLAGS"
+LIBZMQ_LIBS+=" $LIBUUID_LIBS"
+
 ])
