@@ -182,6 +182,24 @@ typedef struct gmenu {
     GGadget *vsb;
 } GMenu;
 
+static void
+translate_shortcut (int i, char *modifier)
+{
+  char buffer[32];
+  char *temp;
+
+  sprintf (buffer, "Flag0x%02x", 1 << i);
+  temp = dgettext (GMenuGetShortcutDomain (), buffer);
+
+  if (strcmp (temp, buffer) != 0)
+      modifier = temp;
+  else
+      modifier = dgettext (GMenuGetShortcutDomain (), modifier);
+
+}
+
+
+
 static void _shorttext(int shortcut, int short_mask, unichar_t *buf) {
     unichar_t *pt = buf;
     static int initted = false;
@@ -198,15 +216,39 @@ static void _shorttext(int shortcut, int short_mask, unichar_t *buf) {
     int i;
     char buffer[32];
 
-    if ( !initted ) {
+    if ( !initted )
+    {
 	char *temp;
-	for ( i=0; i<8; ++i ) {
-	    sprintf( buffer,"Flag0x%02x", 1<<i );
-	    temp = dgettext(GMenuGetShortcutDomain(),buffer);
-	    if ( strcmp(temp,buffer)!=0 )
-		mods[i].modifier = temp;
-	    else
-		mods[i].modifier = dgettext(GMenuGetShortcutDomain(),mods[i].modifier);
+	for ( i=0; i<8; ++i )
+	{
+	    /* sprintf( buffer,"Flag0x%02x", 1<<i ); */
+	    /* temp = dgettext(GMenuGetShortcutDomain(),buffer); */
+	    /* if ( strcmp(temp,buffer)!=0 ) */
+	    /* 	mods[i].modifier = temp; */
+	    /* else */
+	    /* 	mods[i].modifier = dgettext(GMenuGetShortcutDomain(),mods[i].modifier); */
+
+          if (mac_menu_icons)
+	  {
+              if (mods[i].mask == ksm_cmdmacosx)
+		  mods[i].modifier = "⌘";
+              else if (mods[i].mask == ksm_control)
+		  mods[i].modifier = "⌃";
+              else if (mods[i].mask == ksm_meta)
+		  mods[i].modifier = "⎇";
+              else if (mods[i].mask == ksm_shift)
+		  mods[i].modifier = "⇧";
+              else
+		  translate_shortcut (i, mods[i].modifier);
+	  }
+	  else
+	  {
+              translate_shortcut (i, mods[i].modifier);
+	  }
+
+
+
+	    
 	}
 	/* It used to be that the Command key was available to X on the mac */
 	/*  but no longer. So we used to use it, but we can't now */
@@ -343,6 +385,7 @@ static char* GMenuGetMenuPath( GMenuItem *basemi, GMenuItem *targetmi ) {
     return buffer;
 }
 
+#if 0
 static int GMenuDrawMacIcons(struct gmenu *m, Color fg, int ybase, int x, int mask ) {
     int h = 3*(m->as/3);
     int seg = h/3;
@@ -438,6 +481,7 @@ static int GMenuMacIconsWidth(struct gmenu *m, int mask ) {
     }
 return( x );
 }
+#endif
 
 static void GMenuDrawCheckMark(struct gmenu *m, Color fg, int ybase, int r2l) {
     int as = m->as;
@@ -622,20 +666,20 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	}
 
 	width = GDrawGetTextWidth(pixmap,shortbuf,-1);
-	if( mac_menu_icons )
-	    width += GMenuMacIconsWidth( m, short_mask );
+	/* if( mac_menu_icons ) */
+	/*     width += GMenuMacIconsWidth( m, short_mask ); */
 
 	if ( r2l )
 	{
 	    int x = GDrawDrawText(pixmap,m->bp,ybase,shortbuf,-1,fg);
-	    if( mac_menu_icons )
-		GMenuDrawMacIcons(m,fg,ybase, x, short_mask);
+	    /* if( mac_menu_icons ) */
+	    /* 	GMenuDrawMacIcons(m,fg,ybase, x, short_mask); */
 	}
 	else
 	{
 	    int x = m->rightedge-width;
-	    if( mac_menu_icons )
-		x = GMenuDrawMacIcons(m,fg,ybase,m->rightedge-width, short_mask);
+	    /* if( mac_menu_icons ) */
+	    /* 	x = GMenuDrawMacIcons(m,fg,ybase,m->rightedge-width, short_mask); */
 	    GDrawDrawText(pixmap,x,ybase,shortbuf,-1,fg);
 	}
     }
@@ -1672,9 +1716,9 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
 	    uc_strcpy( buffer, keydesc );
 
 	    temp = GDrawGetTextWidth(m->w,buffer,-1);
-	    if( short_mask && mac_menu_icons ) {
-		temp += GMenuMacIconsWidth( m, short_mask );
-	    }
+	    /* if( short_mask && mac_menu_icons ) { */
+	    /* 	temp += GMenuMacIconsWidth( m, short_mask ); */
+	    /* } */
 	}
 
 	if ( temp>keywidth ) keywidth=temp;
