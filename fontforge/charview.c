@@ -11333,7 +11333,6 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     {
 	firstCharView = 0;
 	CVShows.alwaysshowcontrolpoints = prefs_cv_show_control_points_always_initially;
-	CVShows.showcpinfo = 0;
     }
     
 
