@@ -27,10 +27,7 @@
 #ifndef _VIEWS_H
 #define _VIEWS_H
 
-#define GTimer GTimer_GTK
-#include <glib.h>
-#undef GTimer
-
+#include "ffglib.h"
 #include "baseviews.h"
 
 #include <ggadget.h>
@@ -910,6 +907,12 @@ extern int CVValid(SplineFont *sf, SplineChar *sc, CharView *cv);
 extern void CVSetCharChanged(CharView *cv,int changed);
 extern int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya);
 extern int CVAnySelPoints(CharView *cv);
+
+/**
+ * Get all the selected points in the current cv.
+ * Caller must g_list_free() the returned value.
+ */
+extern GList_Glib* CVGetSelectedPoints(CharView *cv);
 extern void CVSelectPointAt(CharView *cv);
 extern int CVClearSel(CharView *cv);
 extern int CVSetSel(CharView *cv,int mask);
@@ -1349,6 +1352,10 @@ extern int FontViewFind_byXUID(      FontViewBase* fv, void* udata );
 extern int FontViewFind_byXUIDConnected( FontViewBase* fv, void* udata );
 extern int FontViewFind_byCollabPtr(  FontViewBase* fv, void* udata );
 extern int FontViewFind_bySplineFont( FontViewBase* fv, void* udata );
+
+extern void SPSelectNextPoint( SplinePoint *sp, int state );
+extern void SPSelectPrevPoint( SplinePoint *sp, int state );
+
 
 /**
  * Is the next BCP for the sp selected, and is it the primary BCP for the selection

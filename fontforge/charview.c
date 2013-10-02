@@ -40,9 +40,6 @@ extern int _GScrollBar_Width;
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
 #include "dlist.h"
-#define GTimer GTimer_GTK
-#include <glib.h>
-#undef GTimer
 
 
 #include "gutils/prefs.h"
@@ -3406,6 +3403,7 @@ static void CVHScroll(CharView *cv,struct sbevent *sb);
 static void CVVScroll(CharView *cv,struct sbevent *sb);
 /*static void CVElide(GWindow gw,struct gmenuitem *mi,GEvent *e);*/
 static void CVMerge(GWindow gw,struct gmenuitem *mi,GEvent *e);
+static void CVMergeToLine(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVPreviewModeSet(GWindow gw, int checked);
@@ -5615,6 +5613,7 @@ return( true );
 #define MID_SelPointAt	2138
 #define MID_CopyLookupData	2139
 #define MID_SelectOpenContours	2140
+#define MID_MergeToLine	2141
 #define MID_Clockwise	2201
 #define MID_Counter	2202
 #define MID_GetInfo	2203
@@ -7555,6 +7554,32 @@ static void CVMerge(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
     _CVMerge(cv,false);
 }
 
+static void _CVMergeToLine(CharView *cv, int elide) {
+    int anyp = 0;
+
+    if ( !CVAnySel(cv,&anyp,NULL,NULL,NULL) || !anyp)
+	return;
+    CVPreserveState(&cv->b);
+    SplineCharMerge(cv->b.sc,&cv->b.layerheads[cv->b.drawmode]->splines,!elide);
+
+    // Select the other side of the new curve
+    GList_Glib* gl = CVGetSelectedPoints( cv );
+    if( g_list_first(gl) )
+	SPSelectPrevPoint( (SplinePoint*)g_list_first(gl)->data, 1 );
+    g_list_free( gl );
+
+    // And make the curve between the two active points a line
+    _CVMenuMakeLine( cv, 0, 0 );
+    SCClearSelPt(cv->b.sc);
+    CVCharChangedUpdate(&cv->b);
+}
+
+static void CVMergeToLine(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    _CVMergeToLine(cv,false);
+
+}
+
 #if 0
 static void CVElide(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
@@ -7984,6 +8009,9 @@ static void cv_edlistcheck(CharView *cv, struct gmenuitem *mi) {
 	    mi->ti.disabled = cv->b.layerheads[cv->b.drawmode]->splines==NULL;
 	  break;
 	  case MID_Merge:
+	    mi->ti.disabled = !anypoints;
+	  break;
+	  case MID_MergeToLine:
 	    mi->ti.disabled = !anypoints;
 	  break;
 #if 0
@@ -10633,6 +10661,7 @@ static GMenuItem2 edlist[] = {
     { { (unichar_t *) N_("C_lear"), (GImage *) "editclear.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Clear|Delete"), NULL, NULL, CVClear, MID_Clear },
     { { (unichar_t *) N_("Clear _Background"), (GImage *) "editclearback.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Clear Background|No Shortcut"), NULL, NULL, CVClearBackground, 0 },
     { { (unichar_t *) N_("points|_Merge"), (GImage *) "editmerge.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Merge|No Shortcut"), NULL, NULL, CVMerge, MID_Merge },
+    { { (unichar_t *) N_("points|Merge to Line"), (GImage *) "editmergetoline.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Merge to Line|No Shortcut"), NULL, NULL, CVMergeToLine, MID_MergeToLine },
     /*{ { (unichar_t *) N_("_Elide"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Elide|No Shortcut"), NULL, NULL, CVElide, MID_Elide },*/
     { { (unichar_t *) N_("_Join"), (GImage *) "editjoin.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'J' }, H_("Join|No Shortcut"), NULL, NULL, CVJoin, MID_Join },
     { { (unichar_t *) N_("Copy _Fg To Bg"), (GImage *) "editcopyfg2bg.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Copy Fg To Bg|No Shortcut"), NULL, NULL, CVCopyFgBg, MID_CopyFgToBg },
@@ -12085,6 +12114,29 @@ GResInfo charview_ri = {
     NULL,
     NULL
 };
+
+
+void SPSelectNextPoint( SplinePoint *sp, int state )
+{
+    if( !sp )
+	return;
+    if( !sp->next )
+	return;
+    if( !sp->next->to )
+	return;
+    sp->next->to->selected = state;
+}
+
+void SPSelectPrevPoint( SplinePoint *sp, int state )
+{
+    if( !sp )
+	return;
+    if( !sp->prev )
+	return;
+    if( !sp->prev->from )
+	return;
+    sp->prev->from->selected = state;
+}
 
 
 
