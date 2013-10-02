@@ -75,7 +75,7 @@ sfddiff: sfddiff.pe
 #--------------------------------------------------------------------------
 
 noinst_HEADERS = fontforgeui.h sftextfieldP.h configure-fontforge.h	\
-	views.h is_LIGATURE.h flaglist.h strlist.h
+	views.h is_LIGATURE.h flaglist.h strlist.h 
 pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	libffstamp.h psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
 	lookups.h savefont.h ttf.h baseviews.h fvmetrics.h mm.h			\
@@ -83,7 +83,7 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	uiinterface.h bezctx_ff.h edgelist.h groups.h nonlineartrans.h		\
 	sd.h unicoderange.h bitmapcontrol.h encoding.h ofl.h search.h		\
 	usermenu.h fffreetype.h PfEd.h sfd1.h ffpython.h			\
-	plugins.h sflayoutP.h print.h splinefont.h cvruler.h
+	plugins.h sflayoutP.h print.h splinefont.h cvruler.h ffglib.h
 
 #--------------------------------------------------------------------------
 
