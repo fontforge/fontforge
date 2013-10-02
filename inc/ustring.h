@@ -183,4 +183,23 @@ extern int u_endswith(const unichar_t *haystack,const unichar_t *needle);
  */
 extern char* str_rfind( char* s, char ch );
 
+/**
+ * In the string 's' replace all occurances of 'orig' with 'replacement'.
+ * If you set free_s to true then the string 's' will be freed by this function.
+ * Normally you want to set free_s to 0 to avoid that. The case you will want to
+ * use free_s to 1 is chaining many calls like:
+ * 
+ * char* s = copy( input );
+ * s = str_replace_all( s, "foo", "bar", 1 );
+ * s = str_replace_all( s, "baz", "gah", 1 );
+ * // use s
+ * free(s);
+ * // no leaks in the above.
+ *
+ * Note that 's' is first copied before the first call to replace_all in the above
+ * so it can be freed without concern. This also allows the ordering of replace_all
+ * in the above to be changed without having to worry about the free_s flag.
+ */
+extern char* str_replace_all( char* s, char* orig, char* replacement, int free_s );
+
 #endif
