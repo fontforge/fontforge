@@ -67,10 +67,7 @@
 #include "collab/zmq_kvmsg.h"
 #endif
 #include "collabclient.h"
-#define GTimer GTimer_GTK
-#include <glib.h>
-#include <glib-object.h>
-#undef GTimer
+#include "ffglib.h"
 
 extern int prefRevisionsToRetain;
 

@@ -36,10 +36,7 @@
 #ifndef _ALREADY_INCLUDED_FF_COLLAB_CLIENT_PRIV_H
 #define _ALREADY_INCLUDED_FF_COLLAB_CLIENT_PRIV_H
 
-#define GTimer GTimer_GTK
-#include <glib.h>
-#undef GTimer
-
+#include "ffglib.h"
 #include "inc/fontforge-config.h"
 #include "inc/ustring.h"
 #include "collabclient.h"
