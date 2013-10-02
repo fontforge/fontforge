@@ -182,11 +182,12 @@ typedef struct gmenu {
     GGadget *vsb;
 } GMenu;
 
-static void
+static char*
 translate_shortcut (int i, char *modifier)
 {
   char buffer[32];
   char *temp;
+  printf("translate_shortcut(top) i:%d modifier:%s\n", i, modifier );
 
   sprintf (buffer, "Flag0x%02x", 1 << i);
   temp = dgettext (GMenuGetShortcutDomain (), buffer);
@@ -196,6 +197,9 @@ translate_shortcut (int i, char *modifier)
   else
       modifier = dgettext (GMenuGetShortcutDomain (), modifier);
 
+  printf("translate_shortcut(end) i:%d modifier:%s\n", i, modifier );
+
+  return modifier;
 }
 
 
@@ -216,6 +220,11 @@ static void _shorttext(int shortcut, int short_mask, unichar_t *buf) {
     int i;
     char buffer[32];
 
+    uc_strcpy(pt,"xx⎇");
+    pt += u_strlen(pt);
+    *pt = '\0';
+    return;
+    
     if ( !initted )
     {
 	char *temp;
@@ -230,6 +239,8 @@ static void _shorttext(int shortcut, int short_mask, unichar_t *buf) {
 
           if (mac_menu_icons)
 	  {
+	      printf("mods[i].mask: %s\n", mods[i].modifier );
+	      
               if (mods[i].mask == ksm_cmdmacosx)
 		  mods[i].modifier = "⌘";
               else if (mods[i].mask == ksm_control)
@@ -239,7 +250,7 @@ static void _shorttext(int shortcut, int short_mask, unichar_t *buf) {
               else if (mods[i].mask == ksm_shift)
 		  mods[i].modifier = "⇧";
               else
-		  translate_shortcut (i, mods[i].modifier);
+		  mods[i].modifier = translate_shortcut (i, mods[i].modifier);
 	  }
 	  else
 	  {
@@ -259,6 +270,7 @@ static void _shorttext(int shortcut, int short_mask, unichar_t *buf) {
 	    mods[3].modifier = keyboard==kb_ibm?"Alt+":keyboard==kb_mac?"Opt+":keyboard==kb_ppc?"Cmd+":"Meta+";
     }
 
+   
     if ( shortcut==0 ) {
 	*pt = '\0';
 return;
@@ -271,6 +283,7 @@ return;
 	}
     }
 
+ 
     if ( shortcut>=0xff00 && GDrawKeysyms[shortcut-0xff00] ) {
     	cu_strcpy(buffer,GDrawKeysyms[shortcut-0xff00]);
     	utf82u_strcpy(pt,dgettext(GMenuGetShortcutDomain(),buffer));
@@ -660,26 +673,21 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	    char* keydesc = hk->text;
 	    if( mac_menu_icons )
 	    {
-		keydesc = hotkeyTextWithoutModifiers( keydesc );
+		keydesc = hotkeyTextToMacModifiers( keydesc );
 	    }
-	    uc_strcpy( shortbuf, keydesc );
+	    utf82u_strcpy( shortbuf, keydesc );
+	    if( keydesc != hk->text )
+		free( keydesc );
 	}
 
 	width = GDrawGetTextWidth(pixmap,shortbuf,-1);
-	/* if( mac_menu_icons ) */
-	/*     width += GMenuMacIconsWidth( m, short_mask ); */
-
 	if ( r2l )
 	{
 	    int x = GDrawDrawText(pixmap,m->bp,ybase,shortbuf,-1,fg);
-	    /* if( mac_menu_icons ) */
-	    /* 	GMenuDrawMacIcons(m,fg,ybase, x, short_mask); */
 	}
 	else
 	{
 	    int x = m->rightedge-width;
-	    /* if( mac_menu_icons ) */
-	    /* 	x = GMenuDrawMacIcons(m,fg,ybase,m->rightedge-width, short_mask); */
 	    GDrawDrawText(pixmap,x,ybase,shortbuf,-1,fg);
 	}
     }
@@ -1711,7 +1719,7 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
 	    char* keydesc = hk->text;
 	    if( mac_menu_icons )
 	    {
-		keydesc = hotkeyTextWithoutModifiers( keydesc );
+//		keydesc = hotkeyTextWithoutModifiers( keydesc );
 	    }
 	    uc_strcpy( buffer, keydesc );
 

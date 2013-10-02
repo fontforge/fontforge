@@ -981,3 +981,52 @@ char* str_rfind( char* s, char ch )
     return strrchr( s, ch );
 }
 
+char* str_replace_all( char* s, char* orig, char* replacement, int free_s )
+{
+    char* p = strstr( s, orig );
+    if( !p )
+    {
+	if( free_s )
+	    return s;
+	return copy( s );
+    }
+    
+    int count = 0;
+    p = s;
+    while( p )
+    {
+	p = strstr( p, orig );
+	if( !p )
+	    break;
+	p++;
+	count++;
+    }
+    count++;
+    
+    // more than strictly needed, but always enough RAM.
+    int retsz = strlen(s) + count*strlen(replacement) + 1;
+    char* ret = (char *) galloc( retsz );
+    memset( ret, '\0', retsz );
+    char* output = ret;
+    char* remains = s;
+    p = remains;
+    while( p )
+    {
+	p = strstr( remains, orig );
+	if( !p )
+	{
+	    strcpy( output, remains );
+	    break;
+	}
+	if( p > remains )
+	    strncpy( output, remains, p-remains );
+	strcat( output, replacement );
+	output += strlen(output);
+	remains = p + strlen(orig);
+    }
+
+    if( free_s )
+	free(s);
+    return ret;
+}
+

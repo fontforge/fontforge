@@ -182,6 +182,12 @@ extern struct dlistnodeExternal* hotkeyFindAllByEvent( GWindow w, GEvent *event 
 extern char*   hotkeyTextWithoutModifiers( char* hktext );
 
 /**
+ * Convert text like Control to the command key unicode value.
+ * Caller must free the returned value
+ */
+extern char* hotkeyTextToMacModifiers( char* keydesc );
+
+/**
  * Given a menu path like File/Open find the hotkey which will trigger
  * that menu item. The window is needed because there might be a
  * menuitem with the same text path in fontview and charview which the
