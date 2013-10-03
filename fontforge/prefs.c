@@ -189,6 +189,8 @@ extern int UndoRedoLimitToSave;  /* sfd.c */
 extern int UndoRedoLimitToLoad;  /* sfd.c */
 extern int prefRevisionsToRetain; /* sfd.c */
 extern int prefs_cv_show_control_points_always_initially; /* from charview.c */
+extern int prefs_create_dragging_comparison_outline;      /* from charview.c */
+
 extern NameList *force_names_when_opening;
 extern NameList *force_names_when_saving;
 extern NameList *namelist_for_new_fonts;
@@ -457,6 +459,7 @@ static struct prefs_list {
 	{ "MarkPointsOfInflect", pr_int, &CVShows.markpoi, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "ShowRulers", pr_bool, &CVShows.showrulers, NULL, NULL, '\0', NULL, 1, N_("Display rulers in the Outline Glyph View") },
 	{ "ShowCPInfo", pr_int, &CVShows.showcpinfo, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "CreateDraggingComparisonOutline", pr_int, &prefs_create_dragging_comparison_outline, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "InfoWindowDistance", pr_int, &infowindowdistance, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "ShowSideBearings", pr_int, &CVShows.showsidebearings, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "ShowRefNames", pr_int, &CVShows.showrefnames, NULL, NULL, '\0', NULL, 1, NULL },
