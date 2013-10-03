@@ -80,6 +80,7 @@ float prefs_cvEditHandleSize = prefs_cvEditHandleSize_default;
 int   prefs_cvInactiveHandleAlpha = 255;
 
 int prefs_cv_show_control_points_always_initially = 0;
+int prefs_create_dragging_comparison_outline = 0;
 
 extern struct lconv localeinfo;
 extern char *coord_sep;
@@ -171,6 +172,9 @@ static Color fillcol = 0x80707070;		/* Translucent */
 static Color tracecol = 0x008000;
 static Color rulerbigtickcol = 0x008000;
 static Color previewfillcol = 0x0f0f0f;
+static Color DraggingComparisonOutlineColor = 0x22AA0000;
+
+// Format is 0x AA RR GG BB.
 
 
 static int cvcolsinited = false;
@@ -199,6 +203,7 @@ static struct resed charview_re[] = {
     { N_("Conflict Hint Color"), "ConflictHintColor", rt_color, &conflicthintcol, N_("The color used to draw a hint which conflicts with another"), NULL, { 0 }, 0, 0 },
     { N_("HHint Active Color"), "HHintActiveColor", rt_color, &hhintactivecol, N_("The color used to draw the active horizontal hint which the Review Hints dialog is examining"), NULL, { 0 }, 0, 0 },
     { N_("VHint Active Color"), "VHintActiveColor", rt_color, &vhintactivecol, N_("The color used to draw the active vertical hint which the Review Hints dialog is examining"), NULL, { 0 }, 0, 0 },
+    { N_("Dragging Comparison Outline Color"), "DraggingComparisonOutlineColor", rt_coloralpha, &DraggingComparisonOutlineColor, N_("The color used to draw the outline of the old spline when you are interactively modifying a glyph"), NULL, { 0 }, 0, 0 },
     RESED_EMPTY
 };
 
@@ -1378,6 +1383,9 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 		GDrawPathClose(pixmap);
 
 	    switch( strokeFillMode ) {
+	    case sfm_stroke_trans:
+		GDrawPathStroke( pixmap, fc );
+		break;
 	    case sfm_stroke:
 		GDrawPathStroke( pixmap, fc | 0xff000000 );
 		break;
@@ -1458,7 +1466,8 @@ void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePointList *s
 	 * clip path splines which will possibly have a different stroke color
 	 */
 	CVDrawSplineSetOutlineOnly( cv, pixmap, set,
-				    fg, dopoints, clip, sfm_stroke );
+				    fg, dopoints, clip,
+				    ( strokeFillMode==sfm_stroke_trans ? sfm_stroke_trans : sfm_stroke ) );
     }
 
     for ( spl = set; spl!=NULL; spl = spl->next ) {
@@ -2668,6 +2677,18 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     /*  draw the current layer -- unless they've turned on grid fit. Then they*/
     /*  might want to hide the active layer. */
     layer = cvlayer;
+
+
+    /*
+     * If we have a pretransform_spl and the user wants to see it then show it to them
+     */
+     if( cv->p.pretransform_spl )
+     {
+	 int dopoints = 1;
+	 CVDrawSplineSetSpecialized( cv, pixmap, cv->p.pretransform_spl,
+				     DraggingComparisonOutlineColor,
+				     dopoints, &clip, sfm_stroke_trans );
+     }    
 
     /* The call to CVExposeGlyphFill() above will have rendered a filled glyph already. */
     /* We draw the outline only at this stage so as to have it layered */
@@ -4100,6 +4121,21 @@ typedef struct lastselectedpoint
     spiro_cp *lastselcp;
 } lastSelectedPoint;
 
+static void CVMaybeCreateDraggingComparisonOutline( CharView* cv, SplinePointList* spl )
+{
+    if( !prefs_create_dragging_comparison_outline )
+	return;
+    if( !cv )
+	return;
+    if( !spl )
+	return;
+    if( cv->p.pretransform_spl )
+	SplinePointListFree( cv->p.pretransform_spl );
+    
+    cv->p.pretransform_spl = SplinePointListCopy( spl );
+}
+
+
 static void CVMouseDown(CharView *cv, GEvent *event ) {
     FindSel fs;
     GEvent fake;
@@ -4144,6 +4180,7 @@ return;
 	cv->lastselpt = NULL;
 	cv->lastselcp = NULL;
 	_CVTestSelectFromEvent(cv,&fs);
+	CVMaybeCreateDraggingComparisonOutline( cv, cv->p.spl );
 	fs.p = &cv->p;
     } else if ( cv->active_tool == cvt_curve || cv->active_tool == cvt_corner ||
 	    cv->active_tool == cvt_tangent || cv->active_tool == cvt_hvcurve ||
@@ -4718,7 +4755,12 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	cv->pressed = NULL;
     }
     cv->p.pressed = false;
-
+    if( cv->p.pretransform_spl )
+    {
+	printf("have pretransform_spl:%p\n", cv->p.pretransform_spl );
+	SplinePointListFree( cv->p.pretransform_spl );
+	cv->p.pretransform_spl = 0;
+    }
     update_spacebar_hand_tool(cv); /* needed? (left from MINGW) */
 
     if ( cv->p.rubberbanding ) {
@@ -5537,6 +5579,7 @@ return( true );
 #define MID_Prev	2008
 #define MID_HideRulers	2009
 #define MID_Preview     2010
+#define MID_DraggingComparisonOutline 2011
 #define MID_NextDef	2012
 #define MID_PrevDef	2013
 #define MID_DisplayCompositions	2014
@@ -6355,6 +6398,21 @@ static void CVMenuPreview(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     }
     CVPreviewModeSet(gw, checked);
 }
+
+static void CVMenuDraggingComparisonOutline(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
+{
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    int checked = mi->ti.checked;
+    if( cv->p.pretransform_spl )
+    {
+	SplinePointListFree( cv->p.pretransform_spl );
+    }
+    cv->p.pretransform_spl = 0;
+    prefs_create_dragging_comparison_outline = checked;
+    SavePrefs(true);
+}
+
 
 static void CVMenuShowGridFit(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
@@ -10333,6 +10391,9 @@ static void swlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  case MID_ShowCPInfo:
 	    mi->ti.checked = cv->showcpinfo;
 	  break;
+          case MID_DraggingComparisonOutline:
+	    mi->ti.checked = prefs_create_dragging_comparison_outline;
+	    break;
 	  case MID_ShowSideBearings:
 	    mi->ti.checked = cv->showsidebearings;
 	  break;
@@ -11111,6 +11172,7 @@ static GMenuItem2 swlist[] = {
     { { (unichar_t *) N_("Reference Names"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Reference Names|No Shortcut"), NULL, NULL, CVMenuShowRefNames, MID_ShowRefNames },
     { { (unichar_t *) N_("_Fill"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Fill|No Shortcut"), NULL, NULL, CVMenuFill, MID_Fill },
     { { (unichar_t *) N_("Previe_w"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Preview|No Shortcut"), NULL, NULL, CVMenuPreview, MID_Preview },
+    { { (unichar_t *) N_("Dragging Comparison Outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Dragging Comparison Outline|No Shortcut"), NULL, NULL, CVMenuDraggingComparisonOutline, MID_DraggingComparisonOutline },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Pale_ttes"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Palettes|No Shortcut"), pllist, pllistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Glyph Tabs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Glyph Tabs|No Shortcut"), NULL, NULL, CVMenuShowTabs, MID_ShowTabs },
@@ -11373,7 +11435,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     cv->b.fv = &fv->b;
     cv->map_of_enc = fv->b.map;
     cv->enc = enc;
-
+    cv->p.pretransform_spl = 0;
     cv->b.drawmode = dm_fore;
 
     memset(cv->showback,-1,sizeof(cv->showback));
