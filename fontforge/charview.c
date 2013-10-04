@@ -177,6 +177,10 @@ static Color DraggingComparisonOutlineColor = 0x22AA0000;
 // Format is 0x AA RR GG BB.
 
 
+
+static void isAnyControlPointSelectedVisitor(SplinePoint* splfirst, Spline* spline, void* udata );
+
+
 static int cvcolsinited = false;
 static struct resed charview_re[] = {
     { N_("Point Color"), "PointColor", rt_color, &pointcol, N_("The color of an on-curve point"), NULL, { 0 }, 0, 0 },
@@ -2534,6 +2538,24 @@ static int CVExposeGlyphFill(CharView *cv, GWindow pixmap, GEvent *event, DRect*
     return(filled);
 }
 
+struct CVExpose_PreTransformSPL_ud
+{
+    int dopoints;
+    CharView *cv;
+    GWindow pixmap;
+    Color fg;
+    DRect* clip;
+    enum outlinesfm_flags strokeFillMode;
+};
+
+
+static void CVExpose_PreTransformSPL_fe( SplinePointList *spl, struct CVExpose_PreTransformSPL_ud* d )
+{
+    CVDrawSplineSetSpecialized( d->cv, d->pixmap, spl,
+				d->fg, d->dopoints, d->clip, d->strokeFillMode );
+}
+
+
 static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     SplineFont *sf = cv->b.sc->parent;
     RefChar *rf;
@@ -2684,10 +2706,14 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
      */
      if( cv->p.pretransform_spl )
      {
-	 int dopoints = 1;
-	 CVDrawSplineSetSpecialized( cv, pixmap, cv->p.pretransform_spl,
-				     DraggingComparisonOutlineColor,
-				     dopoints, &clip, sfm_stroke_trans );
+	 struct CVExpose_PreTransformSPL_ud d;
+	 d.dopoints = 1;
+	 d.cv = cv;
+	 d.pixmap = pixmap;
+	 d.fg = DraggingComparisonOutlineColor;
+	 d.clip = &clip;
+	 d.strokeFillMode = sfm_stroke_trans;
+	 g_list_foreach( cv->p.pretransform_spl, CVExpose_PreTransformSPL_fe, &d );
      }    
 
     /* The call to CVExposeGlyphFill() above will have rendered a filled glyph already. */
@@ -4121,18 +4147,42 @@ typedef struct lastselectedpoint
     spiro_cp *lastselcp;
 } lastSelectedPoint;
 
-static void CVMaybeCreateDraggingComparisonOutline( CharView* cv, SplinePointList* spl )
+
+static void CVFreePreTransformSPL( CharView* cv )
+{
+    if( cv->p.pretransform_spl )
+    {
+	g_list_free_full( cv->p.pretransform_spl, SplinePointListFree );
+    }
+    cv->p.pretransform_spl = 0;
+}
+
+static void CVMaybeCreateDraggingComparisonOutline( CharView* cv )
 {
     if( !prefs_create_dragging_comparison_outline )
 	return;
     if( !cv )
 	return;
-    if( !spl )
-	return;
     if( cv->p.pretransform_spl )
-	SplinePointListFree( cv->p.pretransform_spl );
+	CVFreePreTransformSPL( cv );
     
-    cv->p.pretransform_spl = SplinePointListCopy( spl );
+    Layer* l = cv->b.layerheads[cv->b.drawmode];
+    if( !l || !l->splines )
+	return 0;
+
+    GHashTable* ret = g_hash_table_new( g_direct_hash, g_direct_equal );
+    SplinePointList* spl = l->splines;
+    for( ; spl; spl = spl->next )
+    {
+	int anySel = 0;
+	SPLFirstVisit( spl->first, isAnyControlPointSelectedVisitor, &anySel );
+	if( anySel )
+	{
+	    cv->p.pretransform_spl = g_list_append( cv->p.pretransform_spl,
+						    SplinePointListCopy(spl) );
+	}
+    }
+    
 }
 
 
@@ -4180,7 +4230,7 @@ return;
 	cv->lastselpt = NULL;
 	cv->lastselcp = NULL;
 	_CVTestSelectFromEvent(cv,&fs);
-	CVMaybeCreateDraggingComparisonOutline( cv, cv->p.spl );
+	CVMaybeCreateDraggingComparisonOutline( cv );
 	fs.p = &cv->p;
     } else if ( cv->active_tool == cvt_curve || cv->active_tool == cvt_corner ||
 	    cv->active_tool == cvt_tangent || cv->active_tool == cvt_hvcurve ||
@@ -4755,12 +4805,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	cv->pressed = NULL;
     }
     cv->p.pressed = false;
-    if( cv->p.pretransform_spl )
-    {
-	printf("have pretransform_spl:%p\n", cv->p.pretransform_spl );
-	SplinePointListFree( cv->p.pretransform_spl );
-	cv->p.pretransform_spl = 0;
-    }
+    CVFreePreTransformSPL( cv );
     update_spacebar_hand_tool(cv); /* needed? (left from MINGW) */
 
     if ( cv->p.rubberbanding ) {
@@ -6404,11 +6449,7 @@ static void CVMenuDraggingComparisonOutline(GWindow gw, struct gmenuitem *mi, GE
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     int checked = mi->ti.checked;
-    if( cv->p.pretransform_spl )
-    {
-	SplinePointListFree( cv->p.pretransform_spl );
-    }
-    cv->p.pretransform_spl = 0;
+    CVFreePreTransformSPL( cv );
     prefs_create_dragging_comparison_outline = checked;
     SavePrefs(true);
 }
@@ -6678,6 +6719,12 @@ static void getAllControlPointsVisitor(SplinePoint* splfirst, Spline* spline, vo
     GHashTable* ret = (GHashTable*)udata;
     g_hash_table_insert( ret, spline->to, 0 );
     g_hash_table_insert( ret, spline->to, 0 );
+}
+static void isAnyControlPointSelectedVisitor(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    int* ret = (int*)udata;
+    if( spline->to->selected )
+	(*ret) = 1;
 }
 
 
