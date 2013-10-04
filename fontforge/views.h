@@ -372,6 +372,7 @@ typedef struct metricsview {
     unsigned int antialias: 1;
     unsigned int vertical: 1;
     unsigned int type: 2;		/* enum mv_type */
+    unsigned int usehinting: 1;         /* should the hints be used during the render */
     unsigned int pixelsize_set_by_window;
     int xp, yp, ap_owner;
     BasePoint ap_start;

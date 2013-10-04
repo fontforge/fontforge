@@ -1838,7 +1838,10 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int ptsize,int dpi,
 	bdf->ascent = rint(sf->ascent*scale);
     }
     if ( flags&pf_ft_nohints )
+    {
+	printf("SplineFontPieceMeal() going unhinted...\n");
 	bdf->unhinted_freetype = true;
+    }
     else if ( flags&pf_ft_recontext )
 	bdf->recontext_freetype = true;
 
@@ -1858,8 +1861,11 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int ptsize,int dpi,
 
     if ( ftc==NULL && (bdf->recontext_freetype || bdf->unhinted_freetype) &&
 	    !hasFreeType())
+    {
+	printf("WARNING: SplineFontPieceMeal() turning off unhinted_freetype\n");
 	bdf->recontext_freetype = bdf->unhinted_freetype = false;
-
+    }
+    
     if ( (ftc || bdf->recontext_freetype || bdf->recontext_freetype) && (flags&pf_antialias) )
 	BDFClut(bdf,16);
     else if ( flags&pf_antialias )
