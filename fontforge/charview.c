@@ -4831,6 +4831,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
       case cvt_curve: case cvt_corner: case cvt_tangent: case cvt_hvcurve:
       case cvt_pen:
 	CVMouseUpPoint(cv,event);
+	CVGridHandlePossibleFitChar( cv );
       break;
       case cvt_magnify: case cvt_minify:
 	if ( cv->p.x>=event->u.mouse.x-6 && cv->p.x<=event->u.mouse.x+6 &&
@@ -4872,6 +4873,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
       break;
       case cvt_rect: case cvt_elipse: case cvt_poly: case cvt_star:
 	CVMouseUpShape(cv);
+	CVGridHandlePossibleFitChar( cv );
       break;
     }
     cv->active_tool = cvt_none;
@@ -7120,6 +7122,7 @@ return;
 		_CV_CharChangedUpdate(cv,2);
 		CVInfoDraw(cv,cv->gw);
 	    }
+	    CVGridHandlePossibleFitChar( cv );
 	}
     } else if ( event->u.chr.keysym == GK_Page_Up ||
 	    event->u.chr.keysym == GK_KP_Page_Up ||
@@ -7615,6 +7618,7 @@ static void CVClear(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
     if ( !CVAnySel(cv,NULL,NULL,NULL,&anyanchor))
 return;
     CVDoClear(cv);
+    CVGridHandlePossibleFitChar( cv );
     CVCharChangedUpdate(&cv->b);
 }
 
