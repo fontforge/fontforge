@@ -4168,7 +4168,7 @@ static void CVMaybeCreateDraggingComparisonOutline( CharView* cv )
     
     Layer* l = cv->b.layerheads[cv->b.drawmode];
     if( !l || !l->splines )
-	return 0;
+	return;
 
     GHashTable* ret = g_hash_table_new( g_direct_hash, g_direct_equal );
     SplinePointList* spl = l->splines;
