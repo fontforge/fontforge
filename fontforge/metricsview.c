@@ -108,6 +108,19 @@ static void selectUserChosenWordListGlyphs( MetricsView *mv, void* userdata )
     }
 }
 
+static int MVGetSplineFontPieceMealFlags( MetricsView *mv )
+{
+    int ret = 0;
+
+    ret = pf_ft_recontext;
+    
+    if( mv->antialias )
+	ret |= pf_antialias;
+    if( !mv->usehinting )
+	ret |= pf_ft_nohints;
+	
+    return ret;
+}
 
 
 void MVColInit( void ) {
@@ -990,7 +1003,7 @@ return;
     } else if ( bdf==NULL ) {
 	BDFFontFree(mv->show);
 	mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->ptsize,mv->dpi,
-		mv->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
+				       MVGetSplineFontPieceMealFlags( mv ), NULL );
     }
     mv->bdf = bdf;
     MVRemetric(mv);
@@ -1480,7 +1493,8 @@ static void MVToggleVertical(MetricsView *mv) {
 	    mv->dpi = 72;
 	    if ( mv->bdf==NULL ) {
 		BDFFontFree(mv->show);
-		mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,mv->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
+		mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,
+					       MVGetSplineFontPieceMealFlags( mv ), NULL );
 	    }
 	    MVRemetric(mv);
 	}
@@ -2673,6 +2687,7 @@ return( true );
 
 #define  MID_NextLineInWordList 2720
 #define  MID_PrevLineInWordList 2721
+#define MID_RenderUsingHinting	2722
 
 
 #define MID_Warnings	3000
@@ -3315,7 +3330,8 @@ static void _MVMenuScale( MetricsView *mv, int mid ) {
 	mv->pixelsize = mv_scales[mv->scale_index]*(mv->vheight - 2);
 	if ( mv->bdf==NULL ) {
 	    BDFFontFree(mv->show);
-	    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,mv->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
+	    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,
+					   MVGetSplineFontPieceMealFlags( mv ), NULL );
 	} else
 	    mv->pixelsize_set_by_window = false;
     }
@@ -3454,8 +3470,21 @@ static void MVMenuAA(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)
     mv->bdf = NULL;
     BDFFontFree(mv->show);
     mv->show = SplineFontPieceMeal(mv->sf, mv->layer, mv->ptsize, mv->dpi,
-                    mv->antialias ? (pf_antialias|pf_ft_recontext) : pf_ft_recontext,
+                    MVGetSplineFontPieceMealFlags( mv ),
                     NULL);
+    GDrawRequestExpose(mv->v,NULL,false);
+}
+
+
+static void MVMenuRenderUsingHinting(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+
+    mv->usehinting = !mv->usehinting;
+    mv->bdf = NULL;
+    BDFFontFree(mv->show);
+    mv->show = SplineFontPieceMeal(mv->sf, mv->layer, mv->ptsize, mv->dpi,
+				   MVGetSplineFontPieceMealFlags( mv ),
+				   NULL);
     GDrawRequestExpose(mv->v,NULL,false);
 }
 
@@ -3574,7 +3603,7 @@ return( true );
 	    BDFFontFree(mv->show);
 	mv->bdf = NULL;
 	mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->ptsize,mv->dpi,
-		mv->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
+				       MVGetSplineFontPieceMealFlags( mv ), NULL );
 
 	MVReKern(mv);
 	MVSetVSb(mv);
@@ -3726,7 +3755,7 @@ static void MVMenuSizeWindow(GWindow mgw, struct gmenuitem *UNUSED(mi), GEvent *
         BDFFontFree(mv->show);
         mv->show = SplineFontPieceMeal(
                         mv->sf, mv->layer, mv->pixelsize, 72,
-                        mv->antialias ? (pf_antialias|pf_ft_recontext) : pf_ft_recontext,
+			MVGetSplineFontPieceMealFlags( mv ),
                         NULL);
     }
     MVReKern(mv);
@@ -3747,7 +3776,7 @@ return;
         BDFFontFree(mv->show);
     mv->bdf = NULL;
     mv->show = SplineFontPieceMeal(mv->sf, mv->layer, mv->ptsize, mv->dpi,
-                    mv->antialias ? (pf_antialias|pf_ft_recontext) : pf_ft_recontext, NULL);
+				   MVGetSplineFontPieceMealFlags( mv ), NULL);
 
     MVReKern(mv);
     MVSetVSb(mv);
@@ -3759,7 +3788,7 @@ static void MVMenuChangeLayer(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e
     mv->layer = mi->mid;
     BDFFontFree(mv->show);
     mv->show = SplineFontPieceMeal(mv->sf, mv->layer, mv->ptsize, mv->dpi,
-                mv->antialias ? (pf_antialias|pf_ft_recontext) : pf_ft_recontext, NULL);
+				   MVGetSplineFontPieceMealFlags( mv ), NULL);
     MVRemetric(mv);
     GDrawRequestExpose(mv->v,NULL,false);
 }
@@ -4114,6 +4143,7 @@ static GMenuItem2 vwlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Show _Grid"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'G' }, H_("Show Grid|No Shortcut"), gdlist, gdlistcheck, MVMenuShowGrid, MID_ShowGrid },
     { { (unichar_t *) N_("_Anti Alias"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'A' }, H_("Anti Alias|No Shortcut"), NULL, NULL, MVMenuAA, MID_AntiAlias },
+    { { (unichar_t *) N_("Render using Hinting"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'A' }, H_("Render using Hinting|No Shortcut"), NULL, NULL, MVMenuRenderUsingHinting, MID_RenderUsingHinting },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Vertical"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, '\0' }, H_("Vertical|No Shortcut"), NULL, NULL, MVMenuVertical, MID_Vertical },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
@@ -4373,6 +4403,10 @@ static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    vwlist[i].ti.checked = mv->antialias;
 	    vwlist[i].ti.disabled = mv->bdf!=NULL;
 	  break;
+	  case MID_RenderUsingHinting:
+	    vwlist[i].ti.checked = mv->usehinting;
+	    vwlist[i].ti.disabled = mv->bdf!=NULL;
+	  break;
 	  case MID_SizeWindow:
 	    vwlist[i].ti.disabled = mv->pixelsize_set_by_window;
 	    vwlist[i].ti.checked = mv->pixelsize_set_by_window;
@@ -4505,7 +4539,7 @@ return;
 	if ( mv->bdf==NULL ) {
 	    BDFFontFree(mv->show);
 	    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->ptsize,mv->dpi,
-		    mv->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
+					   MVGetSplineFontPieceMealFlags( mv ), NULL );
 	}
     }
 
