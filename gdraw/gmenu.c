@@ -1998,6 +1998,7 @@ static int osx_handle_keysyms( int st, int k )
 	switch( k )
 	{
 	case 8211:  return 45; // Command + Alt + -
+	case 8804:  return 44; // Command + Alt + ,
 	}
 
     if( (st & ksm_control) && (st & ksm_meta) && (st & ksm_shift) )
