@@ -696,7 +696,7 @@ return( val );
 
 char *utf8_idpb(char *utf8_text,uint32 ch) {
     /* Increment and deposit character */
-    if ( ch<0 || ch>=17*65536 )
+    if ( ch>=17*65536 )
 return( utf8_text );
 
     if ( ch<=127 )
@@ -881,7 +881,7 @@ char *StripToASCII(const char *utf8_str) {
     *pt = '\0';
 return( newcr );
 }
-    
+
 int AllAscii(const char *txt) {
     for ( ; *txt!='\0'; ++txt ) {
 	if ( *txt=='\t' || *txt=='\n' || *txt=='\r' )
@@ -990,7 +990,7 @@ char* str_replace_all( char* s, char* orig, char* replacement, int free_s )
 	    return s;
 	return copy( s );
     }
-    
+
     int count = 0;
     p = s;
     while( p )
@@ -1002,7 +1002,7 @@ char* str_replace_all( char* s, char* orig, char* replacement, int free_s )
 	count++;
     }
     count++;
-    
+
     // more than strictly needed, but always enough RAM.
     int retsz = strlen(s) + count*strlen(replacement) + 1;
     char* ret = (char *) galloc( retsz );
