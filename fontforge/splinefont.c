@@ -2097,3 +2097,134 @@ int SplinePointListContainsPoint( SplinePointList* container, SplinePoint* sough
 }
 
 
+typedef struct SPLFirstVisitorFoundSoughtXYDataS
+{
+    int use_x;
+    int use_y;
+    real x;
+    real y;
+
+    // outputs
+    int found;
+    Spline* spline;
+    SplinePoint* sp;
+    
+} SPLFirstVisitorFoundSoughtXYData;
+
+static void SPLFirstVisitorFoundSoughtXY(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    SPLFirstVisitorFoundSoughtXYData* d = (SPLFirstVisitorFoundSoughtXYData*)udata;
+    int found = 0;
+
+    if( d->found )
+	return;
+    
+    printf("SPLFirstVisitorFoundSoughtXY() %f %f %f\n", d->x, spline->from->me.x, spline->to->me.x );
+    if( d->use_x )
+    {
+	if( spline->from->me.x == d->x )
+	{
+	    found = 1;
+	    d->spline = spline;
+	    d->sp = spline->from;
+	}
+	
+	if( spline->to->me.x == d->x )
+	{
+	    found = 1;
+	    d->spline = spline;
+	    d->sp = spline->to;
+	}
+    }
+    if( d->use_x && found && d->use_y )
+    {
+	if( d->sp->me.y != d->y )
+	{
+	    found = 0;
+	}
+    }
+    else if( d->use_y )
+    {
+	if( spline->from->me.y == d->y )
+	{
+	    found = 1;
+	    d->spline = spline;
+	    d->sp = spline->from;
+	}
+	
+	if( spline->to->me.y == d->y )
+	{
+	    found = 1;
+	    d->spline = spline;
+	    d->sp = spline->to;
+	}
+    }
+
+    if( found )
+    {
+	d->found = found;
+	d->spline = spline;
+    }
+    else
+    {
+	d->sp = 0;
+    }
+}
+
+
+SplinePoint* SplinePointListContainsPointAtX( SplinePointList* container, real x )
+{
+    SplinePointList *spl;
+    for ( spl = container; spl!=NULL; spl = spl->next )
+    {
+	SPLFirstVisitorFoundSoughtXYData d;
+	d.use_x  = 1;
+	d.use_y  = 0;
+	d.x      = x;
+	d.y      = 0;
+	d.found  = 0;
+	SPLFirstVisit( spl->first, SPLFirstVisitorFoundSoughtXY, &d );
+	if( d.found )
+	    return d.sp;
+    }
+    return 0;
+}
+
+SplinePoint* SplinePointListContainsPointAtY( SplinePointList* container, real y )
+{
+    SplinePointList *spl;
+    for ( spl = container; spl!=NULL; spl = spl->next )
+    {
+	SPLFirstVisitorFoundSoughtXYData d;
+	d.use_x  = 0;
+	d.use_y  = 1;
+	d.x      = 0;
+	d.y      = y;
+	d.found  = 0;
+	SPLFirstVisit( spl->first, SPLFirstVisitorFoundSoughtXY, &d );
+	if( d.found )
+	    return d.sp;
+    }
+    return 0;
+}
+
+SplinePoint* SplinePointListContainsPointAtXY( SplinePointList* container, real x, real y )
+{
+    SplinePointList *spl;
+    for ( spl = container; spl!=NULL; spl = spl->next )
+    {
+	SPLFirstVisitorFoundSoughtXYData d;
+	d.use_x  = 1;
+	d.use_y  = 1;
+	d.x      = x;
+	d.y      = y;
+	d.found  = 0;
+	SPLFirstVisit( spl->first, SPLFirstVisitorFoundSoughtXY, &d );
+	if( d.found )
+	    return d.sp;
+    }
+    return 0;
+}
+
+
+

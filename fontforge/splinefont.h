@@ -3382,6 +3382,14 @@ extern void SPLFirstVisitorDebugSelectionState(SplinePoint* splfirst, Spline* sp
  */
 extern void SPLFirstVisit( SplinePoint* splfirst, SPLFirstVisitor f, void* udata );
 
+/**
+ * Applies a visitor to the container and returns false if no point in the SPL
+ * has an x coordinate of 'x'.
+ */
+extern SplinePoint* SplinePointListContainsPointAtX( SplinePointList* container, real x );
+extern SplinePoint* SplinePointListContainsPointAtY( SplinePointList* container, real y );
+extern SplinePoint* SplinePointListContainsPointAtXY( SplinePointList* container, real x, real y );
+
 
 /**
  * True if the spline with from/to is part of the guide splines.
