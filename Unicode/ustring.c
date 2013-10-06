@@ -695,30 +695,47 @@ return( val );
 }
 
 char *utf8_idpb(char *utf8_text,uint32 ch) {
-    /* Increment and deposit character */
-    if ( ch>=17*65536 )
-return( utf8_text );
+    /* Increment and deposit character, no '\0' appended */
+    /* NOTE: Unicode only needs range of 17x65535 values */
+    /* and strings must be long enough to hold +4 chars. */
+    /* ISO/IEC 10646 description of UTF8 allows encoding */
+    /* character values up to U+7FFFFFFF before RFC3629. */
 
-    if ( ch<=127 )
-	*utf8_text++ = ch;
-    else if ( ch<=0x7ff ) {
-	*utf8_text++ = 0xc0 | (ch>>6);
-	*utf8_text++ = 0x80 | (ch&0x3f);
-    } else if ( ch<=0xffff ) {
-	*utf8_text++ = 0xe0 | (ch>>12);
-	*utf8_text++ = 0x80 | ((ch>>6)&0x3f);
-	*utf8_text++ = 0x80 | (ch&0x3f);
-    } else {
-	uint32 val = ch-0x10000;
-	int u = ((val&0xf0000)>>16)+1, z=(val&0x0f000)>>12, y=(val&0x00fc0)>>6, x=val&0x0003f;
-	*utf8_text++ = 0xf0 | (u>>2);
-	*utf8_text++ = 0x80 | ((u&3)<<4) | z;
-	*utf8_text++ = 0x80 | y;
-	*utf8_text++ = 0x80 | x;
+    if ( ch>0x7fffffff )
+	return( utf8_text ); /* Error, ch is out of range */
+
+    if ( ch>127 ) {
+	if ( ch<=0x7ff )
+	    // (ch>=0x80 && ch<=0x7ff)
+	    *utf8_text++ = 0xc0 | (ch>>6);
+	else {
+	    if ( ch<=0xffff )
+		// (ch>=0x800 && ch<=0xffff)
+		*utf8_text++ = 0xe0 | (ch>>12);
+	    else {
+		if ( ch<=0x1fffff )
+		    // (ch>=0x10000 && ch<=0x1fffff)
+		    *utf8_text++ = 0xf0 | (ch>>18);
+		else {
+		    if ( ch<=0x3ffffff )
+			// (ch>=0x200000 && ch<=0x3ffffff)
+			*utf8_text++ = 0xf8 | (ch>>24);
+		    else {
+			// (ch>=0x4000000 && ch<=0x7fffffff)
+			*utf8_text++ = 0xfc | (ch>>30);
+			*utf8_text++ = 0x80 | ((ch>>24)&0x3f);
+		    }
+		    *utf8_text++ = 0x80 | ((ch>>18)&0x3f);
+		}
+		*utf8_text++ = 0x80 | ((ch>>12)&0x3f);
+	    }
+	    *utf8_text++ = 0x80 | ((ch>>6)&0x3f);
+	}
+	ch = 0x80 | (ch&0x3f);
     }
-return( utf8_text );
+    *utf8_text++ = ch;
+    return( utf8_text );
 }
-
 
 char *utf8_ib(char *utf8_text) {
     int ch;
