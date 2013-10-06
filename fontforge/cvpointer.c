@@ -134,6 +134,7 @@ CVGetSelectedPoints(CharView *cv)
 }
 
 
+
 int CVClearSel(CharView *cv) {
     SplinePointList *spl;
     int i;

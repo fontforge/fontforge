@@ -63,6 +63,20 @@ static char *spreads[] = { "pad", "reflect", "repeat", NULL };
 int prefRevisionsToRetain = 32;
 
 
+#define SFD_PTFLAG_TYPE_MASK          0x3
+#define SFD_PTFLAG_IS_SELECTED        0x4
+#define SFD_PTFLAG_NEXTCP_IS_DEFAULT  0x8
+#define SFD_PTFLAG_PREVCP_IS_DEFAULT  0x10
+#define SFD_PTFLAG_ROUND_IN_X         0x20
+#define SFD_PTFLAG_ROUND_IN_Y         0x40
+#define SFD_PTFLAG_INTERPOLATE        0x80
+#define SFD_PTFLAG_INTERPOLATE_NEVER  0x100
+#define SFD_PTFLAG_PREV_EXTREMA_MARKED_ACCEPTABLE  0x200
+#define SFD_PTFLAG_FORCE_OPEN_PATH    0x400
+
+
+
+
 /* I will retain this list in case there are still some really old sfd files */
 /*  including numeric encodings.  This table maps them to string encodings */
 static const char *charset_names[] = {
@@ -650,12 +664,23 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 			(double) sp->prevcp.x, (double) sp->prevcp.y,
 			(double) sp->me.x, (double) sp->me.y );
 #endif
-	    fprintf(sfd, "%d", sp->pointtype|(sp->selected<<2)|
-			(sp->nextcpdef<<3)|(sp->prevcpdef<<4)|
-			(sp->roundx<<5)|(sp->roundy<<6)|
-			(sp->ttfindex==0xffff?(1<<7):0)|
-			(sp->dontinterpolate<<8)|
-			((sp->prev && sp->prev->acceptableextrema)<<9) );
+	    int ptflags = 0;
+	    ptflags = sp->pointtype|(sp->selected<<2)|
+		(sp->nextcpdef<<3)|(sp->prevcpdef<<4)|
+		(sp->roundx<<5)|(sp->roundy<<6)|
+		(sp->ttfindex==0xffff?(1<<7):0)|
+		(sp->dontinterpolate<<8)|
+		((sp->prev && sp->prev->acceptableextrema)<<9);
+
+	    // Last point in the splineset, and we are an open path.
+	    if( !sp->next
+		&& spl->first && !spl->first->prev )
+	    {
+		ptflags |= SFD_PTFLAG_FORCE_OPEN_PATH;
+	    }
+	    
+
+	    fprintf(sfd, "%d", ptflags );
 	    if ( order2 ) {
 		if ( sp->ttfindex!=0xfffe && sp->nextcpindex!=0xfffe ) {
 		    putc(',',sfd);
@@ -3777,6 +3802,9 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd,int order2) {
     current.x = current.y = 0;
     lastacceptable = 0;
     while ( 1 ) {
+	int have_read_val = 0;
+	int val = 0;
+	
 	while ( getreal(sfd,&stack[sp])==1 )
 	    if ( sp<99 )
 		++sp;
@@ -3840,8 +3868,30 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd,int order2) {
 		sp = 0;
 	} else if ( ch=='c' ) {
 	    if ( sp>=6 ) {
+		getint(sfd,&val);
+		have_read_val = 1;
+
+		
 		current.x = stack[sp-2];
 		current.y = stack[sp-1];
+		real original_current_x = current.x;
+		if( val & SFD_PTFLAG_FORCE_OPEN_PATH )
+		{
+		    // Find somewhere vacant to put the point.x for now
+		    // we need to do this check in case we choose a point that is already
+		    // on the spline and this connect back to that point instead of creating
+		    // an open path
+		    while( 1 )
+		    {
+			real offset = 0.1;
+			current.x += offset;
+			if( !SplinePointListContainsPointAtX( cur, current.x ))
+			{
+			    break;
+			}
+		    }
+		}
+		
 		if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
 		    cur->last->nextcp.x = stack[sp-6];
 		    cur->last->nextcp.y = stack[sp-5];
@@ -3858,24 +3908,32 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd,int order2) {
 		    SplineMake(cur->last,pt,order2);
 		    cur->last = pt;
 		}
+
+		// Move the point back to the same location it was
+		// but do not connect it back to the point that is
+		// already there.
+		if( val & SFD_PTFLAG_FORCE_OPEN_PATH )
+		    current.x = original_current_x;
+		
 		sp -= 6;
 	    } else
 		sp = 0;
 	}
 	if ( pt!=NULL ) {
-	    int val;
-	    getint(sfd,&val);
-	    pt->pointtype = (val&3);
-	    pt->selected = val&4?1:0;
-	    pt->nextcpdef = val&8?1:0;
-	    pt->prevcpdef = val&0x10?1:0;
-	    pt->roundx = val&0x20?1:0;
-	    pt->roundy = val&0x40?1:0;
-	    pt->dontinterpolate = val&0x100?1:0;
+	    if( !have_read_val )
+		getint(sfd,&val);
+	    
+	    pt->pointtype = (val & SFD_PTFLAG_TYPE_MASK);
+	    pt->selected  = (val & SFD_PTFLAG_IS_SELECTED) > 0;
+	    pt->nextcpdef = (val & SFD_PTFLAG_NEXTCP_IS_DEFAULT) > 0;
+	    pt->prevcpdef = (val & SFD_PTFLAG_PREVCP_IS_DEFAULT) > 0;
+	    pt->roundx    = (val & SFD_PTFLAG_ROUND_IN_X) > 0;
+	    pt->roundy    = (val & SFD_PTFLAG_ROUND_IN_Y) > 0;
+	    pt->dontinterpolate = (val & SFD_PTFLAG_INTERPOLATE_NEVER) > 0;
 	    if ( pt->prev!=NULL )
-		pt->prev->acceptableextrema = val&0x200?1:0;
+		pt->prev->acceptableextrema = (val & SFD_PTFLAG_PREV_EXTREMA_MARKED_ACCEPTABLE) > 0;
 	    else
-		lastacceptable = val&0x200?1:0;
+		lastacceptable = (val & SFD_PTFLAG_PREV_EXTREMA_MARKED_ACCEPTABLE) > 0;
 	    if ( val&0x80 )
 		pt->ttfindex = 0xffff;
 	    else

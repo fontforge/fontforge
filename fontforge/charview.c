@@ -4024,7 +4024,7 @@ static void CVSetConstrainPoint(CharView *cv, GEvent *event) {
 
 static void CVDoSnaps(CharView *cv, FindSel *fs) {
     PressedOn *p = fs->p;
-
+    
 #if 1
     if ( cv->b.drawmode!=dm_grid && cv->b.layerheads[dm_grid]->splines!=NULL ) {
 	PressedOn temp;
