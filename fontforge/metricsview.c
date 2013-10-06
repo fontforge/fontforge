@@ -113,12 +113,12 @@ static int MVGetSplineFontPieceMealFlags( MetricsView *mv )
     int ret = 0;
 
     ret = pf_ft_recontext;
-    
+
     if( mv->antialias )
 	ret |= pf_antialias;
     if( !mv->usehinting )
 	ret |= pf_ft_nohints;
-	
+
     return ret;
 }
 
@@ -648,7 +648,7 @@ static void MVDoSelect(MetricsView *mv, int i) {
 static void MVSelectSetForAll(MetricsView *mv, int selected )
 {
     int i;
-    
+
     for ( i=0 ; i<mv->glyphcnt; ++i )
     {
 	if( selected )
@@ -777,7 +777,7 @@ static void MVCreateFields(MetricsView *mv,int i) {
     int j;
     extern GBox _GGadget_gtextfield_box;
     int udaidx = 1; // we leave element zero to be NULL to allow bounds checking.
-    
+
     small = _GGadget_gtextfield_box;
     small.flags = 0;
     small.border_type = bt_none;
@@ -827,7 +827,7 @@ static void MVCreateFields(MetricsView *mv,int i) {
 	    mv->perchar[i-1].updownkparray[udaidx] = mv->perchar[i].kern;
 	}
 	mv->perchar[i].updownkparray[udaidx++] = mv->perchar[i].kern;
-	
+
 	if ( i>=mv->glyphcnt ) {
 	    for ( j=mv->glyphcnt+1; j<=i ; ++ j )
 		mv->perchar[j].dx = mv->perchar[j-1].dx;
@@ -968,7 +968,7 @@ void MVRegenChar(MetricsView *mv, SplineChar *sc) {
 	    mv->show->glyphs[sc->orig_pos] = NULL;
 	}
     }
-    
+
     for ( i=0; i<mv->glyphcnt; ++i ) {
 	MVRefreshValues(mv,i);
     }
@@ -1025,7 +1025,7 @@ static int GGadgetToInt(GGadget *g)
 }
 */
 
-static real GGadgetToReal(GGadget *g) 
+static real GGadgetToReal(GGadget *g)
 {
     unichar_t *end;
     real val = u_strtod(_GGadgetGetTitle(g),&end);
@@ -1041,7 +1041,7 @@ static void MV_handle_collabclient_sendRedo( MetricsView *mv, SplineChar *sc )
     if( collabclient_inSessionFV( &mv->fv->b ) )
     {
 	collabclient_sendRedo_SC( sc );
-	
+
 	/* CharViewBase* cv = sc->views; */
 	/* if( !cv ) */
 	/*     cv = CharViewCreate( sc, mv->fv, -1 ); */
@@ -1075,7 +1075,7 @@ return( true );
 		int dohints = 0;
 		SCPreserveState( sc, dohints );
 	    }
-	    
+
 	    // set i to the correct column that has the active width gadget
 	    for ( i=0; i<mv->glyphcnt; ++i ) {
 		if ( mv->perchar[i].width == g )
@@ -1097,7 +1097,7 @@ return( true );
 	    SCSynchronizeWidth(sc,val,sc->width,NULL);
 	    SCCharChangedUpdate(sc,ly_none);
 	    MV_handle_collabclient_sendRedo( mv, sc );
-	    
+
 	} else if ( mv->vertical && val!=sc->vwidth ) {
 	    SCPreserveVWidth(sc);
 	    sc->vwidth = val;
@@ -1139,7 +1139,7 @@ return( true );
 		int dohints = 0;
 		SCPreserveState( sc, dohints );
 	    }
-	    
+
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[5] = 0;
@@ -1148,7 +1148,7 @@ return( true );
 
 //	    dumpUndoChain( "LBearing Changed...e", sc, &sc->layers[ly_fore].undoes );
 	    MV_handle_collabclient_sendRedo( mv, sc );
-	    
+
 	} else if ( mv->vertical && val!=sc->parent->ascent-bb.maxy ) {
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
@@ -1156,7 +1156,7 @@ return( true );
 	    transform[5] = sc->parent->ascent-bb.maxy-val;
 	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL, fvt_dontmovewidth | fvt_alllayers );
 	}
-	
+
     } else if ( e->u.control.subtype == et_textfocuschanged &&
 	    e->u.control.u.tf_focus.gained_focus ) {
 	for ( i=0 ; i<mv->glyphcnt; ++i )
@@ -1197,7 +1197,7 @@ return( true );
 		    int dohints = 0;
 		    SCPreserveState( sc, dohints );
 		}
-		
+
 		real transform[6];
 		transform[0] = transform[3] = 1.0;
 		transform[1] = transform[2] = transform[5] = 0;
@@ -1345,7 +1345,7 @@ return( false );
     int16 newkernafter = iscale * (offset*mv->pixelsize)/
 	(mv->sf->ascent+mv->sf->descent);
     mv->perchar[which-1].kernafter = newkernafter;
-    
+
     if ( mv->vertical ) {
 	for ( i=which; i<mv->glyphcnt; ++i ) {
 	    mv->perchar[i].dy = mv->perchar[i-1].dy+mv->perchar[i-1].dheight +
@@ -1393,7 +1393,7 @@ return( false );
 							 mv->glyphs[i-1].sc->name );
 		/*
 		 * Same value for firsts in the kernclass matrix
-		 */ 
+		 */
 		if( pidx == pscidx )
 		{
 		    int idx = KernClassFindIndexContaining( kc->seconds,
@@ -1404,7 +1404,7 @@ return( false );
 		     * First and Second match, we have the same cell
 		     * in the kernclass and thus the same kern value
 		     * should be applied.
-		     */ 
+		     */
 		    if( scidx == idx )
 		    {
 			// update the kern text entry box in the lower part of
@@ -1466,7 +1466,7 @@ return( true );
 	MVRemetric(mv);
 	GDrawRequestExpose(mv->v,NULL,false);
     }
-    
+
 return( true );
 }
 
@@ -1808,7 +1808,7 @@ static SplineChar* MVEscpaedInputStringToRealString_readGlyphName( SplineFont *s
     // move over the delimiter that we know we are on
     in++;
     char* startpos = in;
-    
+
     // Get the largest possible 'glyphname' from the input stream.
     memset( glyphname, '\0', PATH_MAX );
     char* outname = glyphname;
@@ -1849,7 +1849,7 @@ static SplineChar* MVEscpaedInputStringToRealString_readGlyphName( SplineFont *s
 	    }
 	    if( !sc )
 	    {
-		printf("MVEscpaedInputStringToRealString_readGlyphName() no char found for backslashed unicodepoint:%d\n", unicodepoint );
+		printf("MVEscpaedInputStringToRealString_readGlyphName() no char found for backslashed unicodepoint:%ld\n", unicodepoint );
 		strcpy(glyphname,"backslash");
 		sc = SFGetChar( sf, -1, glyphname );
 		endpos = startpos;
@@ -1861,7 +1861,7 @@ static SplineChar* MVEscpaedInputStringToRealString_readGlyphName( SplineFont *s
 	    {
 		char* endptr = 0;
 		long unicodepoint = strtoul( glyphname+1, &endptr, 16 );
-		printf("MVEscpaedInputStringToRealString_readGlyphName() unicodepoint:%d\n", unicodepoint );
+		printf("MVEscpaedInputStringToRealString_readGlyphName() unicodepoint:%ld\n", unicodepoint );
 		sc = SFGetChar( sf, unicodepoint, 0 );
 		if( sc && endptr )
 		{
@@ -1877,10 +1877,10 @@ static SplineChar* MVEscpaedInputStringToRealString_readGlyphName( SplineFont *s
 		sc = SFGetChar( sf, -1, glyphname );
 	    }
 	}
-	
+
 	if( sc )
 	{
-	    printf("MVEscpaedInputStringToRealString_readGlyphName(found!) gn:%s start:%d end:%d\n", glyphname, startpos, endpos );
+	    printf("MVEscpaedInputStringToRealString_readGlyphName(found!) gn:%s start:%p end:%p\n", glyphname, startpos, endpos );
 	    if( !loopCounter && FullMatchEndsOnSpace )
 	    {
 		endpos++;
@@ -1892,7 +1892,7 @@ static SplineChar* MVEscpaedInputStringToRealString_readGlyphName( SplineFont *s
 	    glyphname[ strlen(glyphname)-1 ] = '\0';
     }
 
-    
+
     *updated_in = endpos;
     printf("MVEscpaedInputStringToRealString_readGlyphName(end) gn:%s\n", glyphname );
     return 0;
@@ -1901,7 +1901,7 @@ static SplineChar* MVEscpaedInputStringToRealString_readGlyphName( SplineFont *s
 static unichar_t* MVEscpaedInputStringToRealString( MetricsView *mv, unichar_t* input_const, GArray** selected_out )
 {
     char* input = u2utf8_copy(input_const);
-    
+
     // truncate insanely long lines rather than crash
     if( strlen(input) > PATH_MAX )
 	input[PATH_MAX] = '\0';
@@ -1932,7 +1932,7 @@ static unichar_t* MVEscpaedInputStringToRealString( MetricsView *mv, unichar_t* 
     in_end = input + strlen(input);
 
     printf("MVEscpaedInputStringToRealString() in:%p in_end:%p\n", in, in_end );
-    
+
     GArray* selected = g_array_new( 1, 1, sizeof(int));
     *selected_out = selected;
     int addingGlyphsToSelected = 0;
@@ -1958,7 +1958,7 @@ static unichar_t* MVEscpaedInputStringToRealString( MetricsView *mv, unichar_t* 
 	    int selectGlyph = currentGlyphIndex;
 	    g_array_append_val( selected, selectGlyph );
 	}
-		
+
 	if( ch == '/' || ch == '\\' )
 	{
 	    // start of a glyph name
@@ -1975,7 +1975,7 @@ static unichar_t* MVEscpaedInputStringToRealString( MetricsView *mv, unichar_t* 
 		continue;
 	    }
 	}
-	
+
 	*out++ = ch;
     }
 
@@ -2001,7 +2001,7 @@ static void MVTextChanged(MetricsView *mv) {
     ret = retnew;
     printf("MVTextChanged(done processing) p:%p ret:%s\n", ret, u_to_c(ret));
 
-    
+
     if (( ret[0]<0x10000 && isrighttoleft(ret[0]) && !mv->right_to_left ) ||
 	    ( ret[0]<0x10000 && !isrighttoleft(ret[0]) && mv->right_to_left )) {
 	direction_change = true;
@@ -2141,7 +2141,7 @@ static void MVFigureGlyphNames(MetricsView *mv,const unichar_t *names) {
 
     GGadgetSetTitle(mv->text,newtext);
     free(newtext);
-   
+
     GDrawRequestExpose(mv->v,NULL,false);
 }
 
@@ -2171,7 +2171,7 @@ static bool MVLoadWordList_isLineAllWhiteSpace( char* buffer )
 	if( !isspace( *p ))
 	    return false;
     }
-    
+
     return true;
 }
 
@@ -2184,12 +2184,12 @@ static SplineChar* MVLoadWordList_readGlyphName( SplineFont *sf, FILE *file, cha
     int startedWithBackSlash = (ch == '\\');
     if( ch != '/' && ch != '\\' )
 	return 0;
-    
+
     if( ch == '/' || ch == '\\' )
 	ch=getc(file);
 
     long startpos = ftell( file );
-    
+
     // Get the largest possible 'glyphname' from the input stream.
     memset( glyphname, '\0', PATH_MAX );
     char* outname = glyphname;
@@ -2204,7 +2204,7 @@ static SplineChar* MVLoadWordList_readGlyphName( SplineFont *sf, FILE *file, cha
     long maxpos = ftell( file );
     long endpos = maxpos-1;
     printf("MVLoadWordList_readGlyphName(x1) -->:%s:<--\n", glyphname);
-    printf("MVLoadWordList_readGlyphName(x2) %c %d %d\n",ch,startpos,endpos);
+    printf("MVLoadWordList_readGlyphName(x2) %c %ld %ld\n",ch,startpos,endpos);
     // This will treat // as non special, ie it will not effect
     // the next char as a glyph lookup
     /* if( endpos < startpos && ch=='/' ) */
@@ -2242,7 +2242,7 @@ static SplineChar* MVLoadWordList_readGlyphName( SplineFont *sf, FILE *file, cha
 	    }
 	    if( !sc )
 	    {
-		printf("MVLoadWordList_readGlyphName() no char found for backslashed unicodepoint:%d\n", unicodepoint );
+		printf("MVLoadWordList_readGlyphName() no char found for backslashed unicodepoint:%ld\n", unicodepoint );
 		strcpy(glyphname,"backslash");
 		sc = SFGetChar( sf, -1, glyphname );
 		endpos = startpos;
@@ -2256,7 +2256,7 @@ static SplineChar* MVLoadWordList_readGlyphName( SplineFont *sf, FILE *file, cha
 	    {
 		char* endptr = 0;
 		long unicodepoint = strtoul( glyphname+1, &endptr, 16 );
-		printf("MVLoadWordList_readGlyphName() unicodepoint:%d\n", unicodepoint );
+		printf("MVLoadWordList_readGlyphName() unicodepoint:%ld\n", unicodepoint );
 		sc = SFGetChar( sf, unicodepoint, 0 );
 		if( sc && endptr )
 		{
@@ -2272,22 +2272,22 @@ static SplineChar* MVLoadWordList_readGlyphName( SplineFont *sf, FILE *file, cha
 		sc = SFGetChar( sf, -1, glyphname );
 	    }
 	}
-	
+
 	if( sc )
 	{
-	    printf("MVLoadWordList_readGlyphName(found!) gn:%s start:%d end:%d\n", glyphname, startpos, endpos );
+	    printf("MVLoadWordList_readGlyphName(found!) gn:%s start:%ld end:%ld\n", glyphname, startpos, endpos );
 	    fseek( file, endpos, SEEK_SET );
 	    if( !loopCounter && FullMatchEndsOnSpace )
 	    {
 		ch=getc(file);
 	    }
-	    
+
 	    return sc;
 	}
 	if( glyphname[0] != '\0' )
 	    glyphname[ strlen(glyphname)-1 ] = '\0';
     }
-    
+
     fseek( file, endpos, SEEK_SET );
     printf("MVLoadWordList_readGlyphName(end) gn:%s\n", glyphname );
     return 0;
@@ -2302,8 +2302,8 @@ static void MVLoadWordList(MetricsView *mv,int type) {
     char *filename, *temp;
     FILE *file;
 
-    
-    
+
+
     filename = gwwv_open_filename(type==-1 ? "File of Kerning Words":"File of glyphname lists",NULL,"*.txt",NULL);
     if ( filename==NULL )
     {
@@ -2322,7 +2322,7 @@ static void MVLoadWordList(MetricsView *mv,int type) {
     free(filename);
 
 
-    
+
 
     int words_max = 1024*128;
     words = galloc( words_max * sizeof(GTextInfo *));
@@ -2348,7 +2348,7 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 		free(buffer);
 		continue;
 	    }
-	    
+
 	    words[cnt] = gcalloc(1,sizeof(GTextInfo));
 	    words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
 	    words[cnt]->text = (unichar_t *) utf82def_copy( buffer );
@@ -2358,9 +2358,9 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 	    if( cnt >= words_max )
 		break;
 
-	    
-#if 0	    
-	    
+
+#if 0
+
 //	    GArray* selected = g_array_new( 1, 1, sizeof(int));
 	    int addingGlyphsToSelected = 0;
 	    int currentGlyphIndex = -1;
@@ -2385,15 +2385,15 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 		/*     addingGlyphsToSelected = 0; */
 		/*     continue; */
 		/* } */
-		
+
 		currentGlyphIndex++;
 		/* if( addingGlyphsToSelected ) */
 		/* { */
 		/*     int selectGlyph = currentGlyphIndex; */
 		/*     g_array_append_val( selected, selectGlyph ); */
 		/* } */
-		
-		
+
+
 		if( ch == '/' || ch == '\\' )
 		{
 		    // start of a glyph name
@@ -2411,7 +2411,7 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 		if ( pt<buffer+sizeof(buffer)-2)
 		    *pt++=ch;
 	    }
-	    
+
 	    *pt = '\0';
 	    if ( buffer[0]=='\0' )
 		continue;
@@ -2454,7 +2454,7 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 	    words[cnt++]->text_is_1byte = true;
 	}
     }
-    
+
     fclose(file);
     if ( cnt!=0 )
     {
@@ -4154,7 +4154,7 @@ static GMenuItem2 vwlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Next _Line in Word List"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'O' }, H_("Next Line in Word List|No Shortcut"), NULL, NULL, MVMenuNextLineInWordList, MID_NextLineInWordList },
     { { (unichar_t *) N_("Previous Line in _Word List"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'O' }, H_("Previous Line in Word List|No Shortcut"), NULL, NULL, MVMenuPrevLineInWordList, MID_PrevLineInWordList },
-	
+
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'O' }, H_("Outline|No Shortcut"), NULL, NULL, MVMenuShowBitmap, MID_Outline },
     GMENUITEM2_EMPTY,
@@ -4204,7 +4204,7 @@ return;
     printf("MVMenuSetWidth() sc:%p\n",sc);
     if(!sc)
  	return;
-    
+
     GenericVSetWidth(mv->fv,sc,
 		     mi->mid==MID_SetWidth?wt_width:
 		     mi->mid==MID_SetLBearing?wt_lbearing:
@@ -4462,7 +4462,7 @@ static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 static void mtlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     SplineChar* sc = getSelectedChar(mv);
-    
+
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
         switch ( mi->mid ) {
 	  case MID_VKernClass:
@@ -4476,7 +4476,7 @@ static void mtlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	case MID_RemoveVKerns:
 	    mi->ti.disabled = sc ? sc->vkerns==NULL : 1;
 	  break;
-	    
+
 	}
     }
 }
@@ -4599,7 +4599,7 @@ static void MVChar(MetricsView *mv,GEvent *event)
 				toSelect =  mv->perchar[i].updownkparray[j+dir];
 			    } else {
 				int newidx = i;
-				if( event->u.chr.keysym == GK_Left || event->u.chr.keysym==GK_KP_Left ) 
+				if( event->u.chr.keysym == GK_Left || event->u.chr.keysym==GK_KP_Left )
 				    newidx--;
 				if( event->u.chr.keysym == GK_Right || event->u.chr.keysym==GK_KP_Right )
 				    newidx++;
@@ -4610,7 +4610,7 @@ static void MVChar(MetricsView *mv,GEvent *event)
 			}
 		    }
 		}
-	    } 
+	    }
 	    if( toSelect ) {
 		GWidgetIndicateFocusGadget(toSelect);
 	    }
@@ -4926,7 +4926,7 @@ static void MVSubMouse(MetricsView *mv,GEvent *event) {
 	_MVSubVMouse(mv,event);
 return;
     }
-    
+
     ybase = mv->ybaseline - mv->yoff;
     within = -1;
     for ( i=0; i<mv->glyphcnt; ++i ) {
@@ -5100,12 +5100,12 @@ return;
 	mv->pressed_x = event->u.mouse.x;
     } else if ( event->type == et_mousemove && mv->pressed ) {
 //	printf("move & pressed pressedwidth:%d pressedkern:%d type!=mv_kernonly:%d\n",mv->pressedwidth,mv->pressedkern,(mv->type!=mv_kernonly));
-	
+
 	for ( i=0; i<mv->glyphcnt && !mv->perchar[i].selected; ++i )
 	{
 	    // nothing
 	}
-	
+
 	if ( mv->pressedwidth ) {
 	    int ow = mv->perchar[i].dwidth;
 	    if ( mv->right_to_left ) diff = -diff;
@@ -5160,7 +5160,7 @@ return;
 	{
 	    // nothing
 	}
-	
+
 	mv->pressed = false;
 	mv->activeoff = 0;
 	sc = mv->glyphs[i].sc;
@@ -5372,7 +5372,7 @@ static int mv_e_h(GWindow gw, GEvent *event) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     SplineFont *sf;
 //    printf("mv_e_h()  event->type:%d\n", event->type );
-    
+
     switch ( event->type ) {
       case et_selclear:
 	ClipboardClear();
@@ -5697,7 +5697,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     wattrs.cursor = ct_mypointer;
     mv->v = GWidgetCreateSubWindow(mv->gw,&pos,mv_v_e_h,mv,&wattrs);
     GDrawSetWindowTypeName(mv->v, "MetricsView");
-    
+
     MVSetFeatures(mv);
     MVMakeLabels(mv);
     MVResize(mv);
