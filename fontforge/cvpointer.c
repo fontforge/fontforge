@@ -201,7 +201,7 @@ int CVClearSel(CharView *cv) {
     }
     cv->p.nextcp = cv->p.prevcp = false;
     cv->widthsel = cv->vwidthsel = cv->icsel = cv->tah_sel = false;
-    
+
     return( needsupdate );
 }
 
@@ -582,7 +582,7 @@ void CVUnselectAllBCP( CharView *cv )
     // codepaths in bad ways as at 2013.Aug
     /* cv->p.nextcp = 0; */
     /* cv->p.prevcp = 0; */
-    
+
 }
 
 void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
@@ -629,7 +629,7 @@ return;
     {
 	needsupdate = CVClearSel(cv);
     }
-    
+
     if ( !fs->p->anysel ) {
 	/* Nothing else... unless they clicked on the width line, check that */
 	if ( dowidth ) {
@@ -717,7 +717,7 @@ return;
 	/* printf("CVMouseDownPointer(2) spl:%p\n", fs->p->spl ); */
 	/* SPLFirstVisit( fs->p->spl->first, SPLFirstVisitorDebugSelectionState, 0 ); */
 	CVUnselectAllBCP( cv );
-	    
+
 	if ( fs->p->nextcp || fs->p->prevcp ) {
 	    CPStartInfo(cv,event);
 	    /* Needs update to draw control points selected */
@@ -818,7 +818,7 @@ return;
     {
 	SCUpdateAll(cv->b.sc);
     }
-    
+
     /* lastselpt is set by our caller */
 }
 
@@ -962,7 +962,7 @@ bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp )
 	return 0;
     if( !sf->grid.splines )
 	return 0;
-    
+
     SplinePointList* spl = sf->grid.splines;
     return SplinePointListContainsPoint( spl, sp );
 }
@@ -1009,7 +1009,7 @@ return;
 	    return;
 	}
     }
-    
+
 
     tp[0].x = cv->info.x; tp[0].y = cv->info.y; tp[0].t = cv->p.t;
     t = cv->p.t/10;
@@ -1168,7 +1168,7 @@ return(false);
 
     enum transformPointMask tpmask = 0;
     tpmask |= tpmask_dontFixControlPoints;
-    
+
     if ( cv->b.sc->inspiro && hasspiro())
 	SplinePointListSpiroTransform(cv->b.layerheads[cv->b.drawmode]->splines,transform,false);
     else
@@ -1290,7 +1290,7 @@ int CVMouseMovePointer(CharView *cv, GEvent *event) {
     int needsupdate = false;
     int did_a_merge = false;
     int touch_control_points = false;
-    
+
     /* if we haven't moved from the original location (ever) then this is a noop */
     if ( !cv->p.rubberbanding && !cv->recentchange &&
 	    RealNear(cv->info.x,cv->p.cx) && RealNear(cv->info.y,cv->p.cy) )
@@ -1324,7 +1324,7 @@ return( false );
 	needsupdate = CVRectSelect(cv,cv->info.x,cv->info.y);
 	if ( !needsupdate && cv->p.rubberbanding )
 	    CVDrawRubberRect(cv->v,cv);
-	printf("moving2 cx:%d cy:%d\n", cv->p.cx, cv->p.cy );
+	printf("moving2 cx:%g cy:%g\n", cv->p.cx, cv->p.cy );
 	cv->p.ex = cv->info.x;
 	cv->p.ey = cv->info.y;
 	cv->p.rubberbanding = true;
@@ -1332,7 +1332,7 @@ return( false );
 	    CVDrawRubberRect(cv->v,cv);
     } else if ( cv->p.nextcp ) {
 	if ( !cv->recentchange ) CVPreserveState(&cv->b);
-	
+
 //	printf("move cv->p.nextcp\n");
 	FE_adjustBCPByDeltaData d;
 	d.cv = cv;
@@ -1348,7 +1348,7 @@ return( false );
 	/* printf("move dx:%f \n", cv->info.x - cv->p.sp->nextcp.x ); */
 	CVFindAndVisitSelectedControlPoints( cv, false,
 					     FE_adjustBCPByDelta, &d );
-	
+
 	CPUpdateInfo(cv,event);
 	needsupdate = true;
     } else if ( cv->p.prevcp ) {
@@ -1360,7 +1360,7 @@ return( false );
 	d.dy = (cv->info.y - cv->p.sp->prevcp.y) * arrowAmount;
 	CVFindAndVisitSelectedControlPoints( cv, false,
 					     FE_adjustBCPByDelta, &d );
-	
+
 	CPUpdateInfo(cv,event);
 	needsupdate = true;
     } else if ( cv->p.spline!=NULL && (!cv->b.sc->inspiro || !hasspiro())) {
@@ -1384,7 +1384,7 @@ return( false );
 	SCUpdateAll(cv->b.sc);
 	CVGridHandlePossibleFitChar( cv );
     }
-    
+
     if ( touch_control_points )
     {
 	// We should really only need to visit the Adjacent CP
@@ -1395,10 +1395,10 @@ return( false );
 	/* CVVisitAllControlPoints( cv, false, */
 	/* 			 touchControlPointsVisitor, */
 	/* 			 (void*)cv->b.layerheads[cv->b.drawmode]->order2 ); */
-	
+
 	GDrawRequestExpose(cv->v,NULL,false);
     }
-    
+
     cv->last_c.x = cv->info.x; cv->last_c.y = cv->info.y;
 return( did_a_merge );
 }
