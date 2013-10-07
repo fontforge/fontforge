@@ -411,11 +411,11 @@ collabclient_remakeSockets( cloneclient_t *cc )
 	cc->port + socket_offset_snapshot));
     
     cc->subscriber = zsocket_new (cc->ctx, ZMQ_SUB);
-//    zsockopt_set_subscribe (cc->subscriber, "");
+    zsocket_set_subscribe (cc->subscriber, "");
     zsocket_connect (cc->subscriber,
 	collabclient_makeAddressString( cc->address,
 	cc->port + socket_offset_subscriber));
-//    zsockopt_set_subscribe (cc->subscriber, SUBTREE);
+    zsocket_set_subscribe (cc->subscriber, SUBTREE);
 
     cc->publisher = zsocket_new (cc->ctx, ZMQ_PUSH);
     zsocket_connect (cc->publisher,
@@ -746,20 +746,6 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
 
     collabclient_setHaveLocalServer( 1 );
 
-    
-    /* //  Broadcast on the zyre port */
-    /* beacon_announce_t ba; */
-    /* memset( &ba, 0, sizeof(ba)); */
-
-    /* strcpy( ba.protocol, "fontforge-collab" ); */
-    /* ba.version = 1; */
-    /* ff_uuid_generate( ba.uuid ); */
-    /* strncpy( ba.username,    GetAuthor(), beacon_announce_username_sz ); */
-    /* ff_gethostname( ba.machinename, beacon_announce_machinename_sz ); */
-    /* ba.port = htons( cc->port ); */
-    /* zbeacon_t *service_beacon = zbeacon_new( 5670 ); */
-    /* zbeacon_publish (service_beacon, (byte*)&ba, sizeof(ba)); */
-    
 #endif
 }
 
