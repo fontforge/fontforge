@@ -219,10 +219,10 @@ kvmsg_recv_full (void *socket, int sockopts )
         }
         //  Verify multipart framing
         int rcvmore = (frame_nbr < KVMSG_FRAMES - 1)? 1: 0;
-        if (zsockopt_rcvmore (socket) != rcvmore) {
-            kvmsg_destroy (&self);
-            break;
-        }
+        /* if (zsockopt_rcvmore (socket) != rcvmore) { */
+        /*     kvmsg_destroy (&self); */
+        /*     break; */
+        /* } */
     }
     if (self)
         s_decode_props (self);
@@ -461,6 +461,8 @@ kvmsg_uuid (kvmsg_t *self)
     else
         return NULL;
 }
+
+
 
 //  Sets the UUID to a random generated value
 void

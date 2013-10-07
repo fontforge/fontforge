@@ -37,7 +37,7 @@ libgutils_la_SOURCES = divisors.c fsys.c gcol.c gimage.c				\
 	gimagewritexbm.c gimagewritexpm.c gwwintl.c gio.c giofile.c			\
 	giohosts.c giomime.c giothread.c giotrans.c gimagebmpP.h			\
 	giofuncP.h gioP.h dlist.c prefs.c prefs.h gnetwork.c                            \
-        unicodelibinfo.c unicodelibinfo.h
+        unicodelibinfo.c unicodelibinfo.h gutils.c
 
 libgutils_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	$(MY_CFLAGS)
