@@ -32,6 +32,15 @@
 int  collabclient_setHaveLocalServer( int v );
 
 #ifdef BUILD_COLLAB
+  // client beacon for discovery
+  static zbeacon_t* client_beacon = 0;
+  static GHashTable* peers = 0;
+  static int client_beacon_timerID = 0;
+#endif
+
+
+
+#ifdef BUILD_COLLAB
 
 
 static zctx_t* obtainMainZMQContext()
@@ -220,6 +229,7 @@ static void zeromq_subscriber_fd_callback(int zeromq_fd, void* datas )
 }
 
 
+
 static void zeromq_beacon_show_peers( cloneclient_t* cc )
 {
     printf("--- zeromq_beacon_show_peers(top)\n" );
@@ -227,7 +237,7 @@ static void zeromq_beacon_show_peers( cloneclient_t* cc )
     GHashTableIter iter;
     gpointer key, value;
 
-    g_hash_table_iter_init (&iter, cc->peers);
+    g_hash_table_iter_init (&iter, peers);
     while (g_hash_table_iter_next (&iter, &key, &value)) 
     {
 	beacon_announce_t* ba = (beacon_announce_t*)value;
@@ -247,25 +257,25 @@ static void zeromq_beacon_show_peers( cloneclient_t* cc )
 
 static void zeromq_beacon_fd_callback(int zeromq_fd, void* datas )
 {
-    cloneclient_t* cc = (cloneclient_t*)datas;
+//    cloneclient_t* cc = (cloneclient_t*)datas;
 
     printf("zeromq_beacon_fd_callback(top)\n");
     
     int opt = 0;
     size_t optsz = sizeof(int);
-    zmq_getsockopt( zbeacon_socket (cc->client_beacon), ZMQ_EVENTS, &opt, &optsz );
+    zmq_getsockopt( zbeacon_socket (client_beacon), ZMQ_EVENTS, &opt, &optsz );
 
     if( opt & ZMQ_POLLIN )
     {
-	printf("zeromq_beacon_fd_callback() have message! cc:%p\n",cc);
+	printf("zeromq_beacon_fd_callback() have message!\n");
 
 	while( 1 )
 	{
-	    char *ipaddress = zstr_recv_nowait (zbeacon_socket (cc->client_beacon));
+	    char *ipaddress = zstr_recv_nowait (zbeacon_socket (client_beacon));
 	    if( ipaddress )
 	    {
 		printf("zeromq_beacon_fd_callback() have message! ip:%s\n", ipaddress );
-		zframe_t *content = zframe_recv_nowait (zbeacon_socket (cc->client_beacon));
+		zframe_t *content = zframe_recv_nowait (zbeacon_socket (client_beacon));
 		if( content )
 		{
 		    beacon_announce_t* ba = (beacon_announce_t*)zframe_data(content);
@@ -278,7 +288,7 @@ static void zeromq_beacon_fd_callback(int zeromq_fd, void* datas )
 		    copy->last_msg_from_peer_time = time(0);
 		    copy->port = ntohs( copy->port );
 		    strncpy( copy->ip, ipaddress, beacon_announce_ip_sz );
-		    g_hash_table_replace( cc->peers, copy->uuid, copy );
+		    g_hash_table_replace( peers, copy->uuid, copy );
 		    zframe_destroy (&content);
 		}
 		free (ipaddress);
@@ -287,13 +297,13 @@ static void zeromq_beacon_fd_callback(int zeromq_fd, void* datas )
 		break;
 	}
     }
-    zeromq_beacon_show_peers(cc);
+    zeromq_beacon_show_peers(0);
 }
 
 static void zeromq_beacon_timer_callback( void* ccvp )
 {
-    cloneclient_t *cc = (cloneclient_t*)ccvp;
-    zeromq_beacon_fd_callback( 0, cc );
+//    cloneclient_t *cc = (cloneclient_t*)ccvp;
+    zeromq_beacon_fd_callback( 0, 0 );
 }
 
 
@@ -362,6 +372,36 @@ void collabclient_sessionDisconnect( FontViewBase* fv )
 
 #ifdef BUILD_COLLAB
 
+void
+collabclient_ensureClientBeacon(void)
+{
+    if( client_beacon )
+	return;
+    
+    peers = g_hash_table_new_full( g_str_hash, g_str_equal, 0, free );
+    client_beacon_timerID = 0;
+    
+    
+    client_beacon = zbeacon_new (5670);
+    zbeacon_subscribe (client_beacon, NULL, 0);
+    int fd = 0;
+    size_t fdsz = sizeof(fd);
+    int rc = zmq_getsockopt( zbeacon_socket(client_beacon), ZMQ_FD, &fd, &fdsz );
+    printf("beacon rc:%d fd:%d\n", rc, fd );
+//    GDrawAddReadFD( 0, fd, cc, zeromq_beacon_fd_callback );
+    client_beacon_timerID = BackgroundTimer_new( 1000, zeromq_beacon_timer_callback, 0 );
+}
+
+#else
+void collabclient_ensureClientBeacon()
+{
+}
+#endif
+
+
+#ifdef BUILD_COLLAB
+
+
 static void
 collabclient_remakeSockets( cloneclient_t *cc )
 {
@@ -387,15 +427,7 @@ collabclient_remakeSockets( cloneclient_t *cc )
     int rc = zmq_getsockopt( cc->subscriber, ZMQ_FD, &fd, &fdsz );
     printf("subscriber rc:%d fd:%d\n", rc, fd );
     GDrawAddReadFD( 0, fd, cc, zeromq_subscriber_fd_callback );
-
-    cc->client_beacon = zbeacon_new (5670);
-    zbeacon_subscribe (cc->client_beacon, NULL, 0);
-    rc = zmq_getsockopt( zbeacon_socket(cc->client_beacon), ZMQ_FD, &fd, &fdsz );
-    printf("beacon rc:%d fd:%d\n", rc, fd );
-//    GDrawAddReadFD( 0, fd, cc, zeromq_beacon_fd_callback );
-
-    cc->client_beacon_timerID = BackgroundTimer_new( 1000, zeromq_beacon_timer_callback, cc );
-    
+  
 }
 
 #endif
@@ -439,8 +471,6 @@ void* collabclient_new( char* address, int port )
     cc->sequence = 0;
     cc->preserveUndo = 0;
     cc->roundTripTimerWaitingSeq = 0;
-    cc->peers = g_hash_table_new_full( g_str_hash, g_str_equal, 0, free );
-    cc->client_beacon_timerID = 0;
     collabclient_remakeSockets( cc );
 
     int32 roundTripTimerMS = pref_collab_roundTripTimerMS;
@@ -488,8 +518,6 @@ void collabclient_free( void** ccvp )
 	fv->b.collabClient = 0;
     }
 
-    BackgroundTimer_remove( cc->client_beacon_timerID );
-    g_hash_table_destroy( cc->peers );
     zhash_destroy (&cc->kvmap);
     free(cc->address);
     free(cc);
@@ -1131,4 +1159,15 @@ int64_t collabclient_getCurrentSequenceNumber(void* ccvp)
     return 0;
 }
 
+GHashTable* collabclient_getPeers( void** ccvp )
+{
+#ifdef BUILD_COLLAB
+//    if( !ccvp )
+//	return 0;
+    
+//    cloneclient_t *cc = (cloneclient_t *)ccvp;
+    return peers;
+#endif
+    return 0;
+}
 

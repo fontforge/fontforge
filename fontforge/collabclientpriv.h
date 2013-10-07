@@ -67,6 +67,7 @@
 #define DEBUG_SHOW_SFD_CHUNKS 0
 
 
+
 #ifdef BUILD_COLLAB
 
 #define beacon_announce_protocol_sz     20
@@ -89,8 +90,9 @@ typedef struct {
     byte ip[beacon_announce_ip_sz];
 } beacon_announce_t;
 
-#endif
+extern GHashTable* collabclient_getPeers( void** ccvp );
 
+#endif
 
 
 typedef struct {
@@ -135,10 +137,6 @@ typedef struct {
     // to the publisher
     int publisher_sendseq;         
 
-    // client beacon for discovery
-    zbeacon_t* client_beacon;
-    GHashTable* peers;
-    int client_beacon_timerID;
     
 #endif    
 } cloneclient_t;
