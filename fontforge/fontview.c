@@ -5665,7 +5665,7 @@ static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
 
 //	void* cc = collabclient_new( "localhost", 8090 );
 //	sleep(2);
-	GHashTable* peers = collabclient_getPeers( 0 );
+	GHashTable* peers = collabclient_getServersFromBeaconInfomration();
 	GHashTableIter iter;
 	gpointer key, value;
 

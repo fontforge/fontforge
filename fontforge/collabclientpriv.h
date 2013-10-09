@@ -90,7 +90,19 @@ typedef struct {
     byte ip[beacon_announce_ip_sz];
 } beacon_announce_t;
 
-extern GHashTable* collabclient_getPeers( void** ccvp );
+/**
+ * After collabclient_ensureClientBeacon() is called, a list of
+ * servers is collected over time. This function gives full access to
+ * that list and should be treated with caution, its ok to use
+ * internally in fontforge but it uses the above struct which might
+ * change over time, so its not a client API.
+ *
+ * The return is a hash of beacon_announce_t instances.
+ *
+ * Do NOT free the return value or any of it's contents, none of it is
+ * yours.
+ */
+extern GHashTable* collabclient_getServersFromBeaconInfomration( void );
 
 #endif
 

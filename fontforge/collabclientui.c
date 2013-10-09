@@ -1145,13 +1145,9 @@ int64_t collabclient_getCurrentSequenceNumber(void* ccvp)
     return 0;
 }
 
-GHashTable* collabclient_getPeers( void** ccvp )
+GHashTable* collabclient_getServersFromBeaconInfomration( void )
 {
 #ifdef BUILD_COLLAB
-//    if( !ccvp )
-//	return 0;
-    
-//    cloneclient_t *cc = (cloneclient_t *)ccvp;
     return peers;
 #endif
     return 0;
