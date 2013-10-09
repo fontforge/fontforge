@@ -313,7 +313,9 @@ dnl FONTFORGE_ARG_WITH_ZEROMQ
 dnl -------------------------
 AC_DEFUN([FONTFORGE_ARG_WITH_ZEROMQ],
 [
-CHECK_LIBUUID
+if test "x${WINDOWS_CROSS_COMPILE}" = x; then
+   CHECK_LIBUUID
+fi
 FONTFORGE_ARG_WITH([libzmq],
         [AS_HELP_STRING([--without-libzmq],[build without libzmq])],
         [ libczmq >= 2.0.1 libzmq >= 4.0.0 ],

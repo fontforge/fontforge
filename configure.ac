@@ -174,6 +174,11 @@ FONTFORGE_ARG_DISABLE([link-test],
         [_NO_FFLINKTEST])
 AM_CONDITIONAL([BUILD_LINK_TEST],[test x"${i_do_have_link_test}" = xyes])
 
+AC_ARG_ENABLE([windows-cross-compile],
+        [AS_HELP_STRING([--enable-windows-cross-compile],
+                [enable cross compile for windows extra support])],
+        [WINDOWS_CROSS_COMPILE=yes])
+
 ##################
 # Theme selection.
 #
