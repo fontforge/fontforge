@@ -45,6 +45,26 @@ extern int h_errno;
 #  include <arpa/inet.h>
 #endif
 
+#if !defined(__MINGW32__)
+#include <uuid/uuid.h>
+#endif
+
+
+char* ff_gethostname( char* outstring, int outstring_sz )
+{
+    char hostname[PATH_MAX+1];
+    int rc = 0;
+
+    rc = gethostname( hostname, PATH_MAX );
+    if( rc == -1 )
+    {
+	strncpy( outstring, "localhost", outstring_sz );
+	return outstring;
+    }
+    
+    strncpy( outstring, hostname, outstring_sz );
+    return outstring;
+}
 
 
 char* getNetworkAddress( char* outstring )
@@ -96,4 +116,16 @@ char* HostPortUnpack( char* packed, int* port, int port_default )
 }
 
 
-
+//
+// target must be at least 1b4e28ba-2fa1-11d2-883f-0016d3cca427 + null in length.
+//
+char* ff_uuid_generate( char* target )
+{
+    strcpy( target, "" );
+#if !defined(__MINGW32__)
+    uuid_t uuid;
+    uuid_generate (uuid);
+    uuid_unparse_lower( uuid, target );
+#endif
+    return target;
+}

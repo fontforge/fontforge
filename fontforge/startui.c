@@ -1249,6 +1249,7 @@ exit( 0 );
     if ( !any && !doopen )
 	any = ReopenLastFonts();
 
+    collabclient_ensureClientBeacon();
     collabclient_sniffForLocalServer();
 
 #if defined(__Mac)
