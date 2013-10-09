@@ -47,6 +47,11 @@
 #include "collabclientui.h"
 #include "collabclientpriv.h"
 
+// Clash on windows for a define to PrintDlgA
+#ifdef PrintDlg
+#undef PrintDlg
+#endif
+
 int OpenCharsInNewWindow = 0;
 char *RecentFiles[RECENT_MAX] = { NULL };
 int save_to_dir = 0;			/* use sfdir rather than sfd */
