@@ -316,7 +316,7 @@ AC_DEFUN([FONTFORGE_ARG_WITH_ZEROMQ],
 CHECK_LIBUUID
 FONTFORGE_ARG_WITH([libzmq],
         [AS_HELP_STRING([--without-libzmq],[build without libzmq])],
-        [ libczmq libzmq > 3.2.0 ],
+        [ libczmq >= 2.0.1 libzmq >= 4.0.0 ],
         [FONTFORGE_WARN_PKG_NOT_FOUND([LIBZMQ])],
         [_NO_LIBZMQ])
 LIBZMQ_CFLAGS+=" $LIBUUID_CFLAGS"
