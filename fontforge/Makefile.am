@@ -124,7 +124,7 @@ libfontforge_la_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c	\
 nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
-libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_LIBS)
+libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
 libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD) $(LIBLTDL)
 
 if PLUGIN_GB12345
@@ -172,7 +172,7 @@ if MACINTOSH
 MACFFEXE_LIBADD=macobjective.o
 endif MACINTOSH
 
-libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS)
+libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
 libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MACFFEXE_LIBADD)
 
 # Using -release instead of -version-info seems appropriate in the

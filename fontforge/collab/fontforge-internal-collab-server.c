@@ -48,6 +48,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 *******************************************************************************
 ******************************************************************************/
 
+#include "fontforge/collabclientpriv.h"
 #include "fontforge-internal-collab-server.h"
 #include "collab/zmq_kvmsg.h"
 
@@ -314,6 +315,21 @@ int main (void)
     poller.socket = self->ping;
     zloop_poller (self->loop, &poller, s_ping, self);
 
+    // setup the beacon
+    //  Broadcast on the zyre port
+    beacon_announce_t ba;
+    memset( &ba, 0, sizeof(ba));
+
+    strcpy( ba.protocol, "fontforge-collab" );
+    ba.version = 1;
+    ff_uuid_generate( ba.uuid );
+    strncpy( ba.username,    GetAuthor(), beacon_announce_username_sz );
+    ff_gethostname( ba.machinename, beacon_announce_machinename_sz );
+    ba.port = htons( self->port );
+    zbeacon_t *service_beacon = zbeacon_new( 5670 );
+    zbeacon_publish (service_beacon, (byte*)&ba, sizeof(ba));
+    
+    
     DEBUG ("I: server up and running...");
     //  Run reactor until process interrupted
     zloop_start (self->loop);

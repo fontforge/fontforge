@@ -146,5 +146,7 @@ extern void collabclient_closeLocalServer( FontViewBase* fv );
  */
 extern int64_t collabclient_getCurrentSequenceNumber(void* ccvp);
 
+extern void collabclient_ensureClientBeacon(void);
+
 #endif
 

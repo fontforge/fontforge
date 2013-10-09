@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+
 #include "fontforgeui.h"
 #include "groups.h"
 #include "psfont.h"
@@ -38,10 +40,12 @@
 #include <math.h>
 #include <unistd.h>
 
-#include "collabclientui.h"
 #include "inc/gnetwork.h"
 
 #include "gutils/unicodelibinfo.h"
+
+#include "collabclientui.h"
+#include "collabclientpriv.h"
 
 int OpenCharsInNewWindow = 0;
 char *RecentFiles[RECENT_MAX] = { NULL };
@@ -5654,22 +5658,86 @@ static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
 
     printf("connecting to server...\n");
 
-    char* res = gwwv_ask_string(
-	"Connect to Collab Server",
-	"localhost",
-	"Please enter the network location of the Collab server you wish to connect to...");
-    if( res )
     {
-	int port_default = 5556;
-	int port = port_default;
-	char address[IPADDRESS_STRING_LENGTH_T];
-	strncpy( address, res, IPADDRESS_STRING_LENGTH_T-1 );
-	HostPortUnpack( address, &port, port_default );
+	int choices_sz = 100;
+	char* choices[101];
+	memset( choices, 0, sizeof(choices));
 
-	void* cc = collabclient_new( address, port );
-	fv->b.collabClient = cc;
-	collabclient_sessionJoin( cc, fv );
+//	void* cc = collabclient_new( "localhost", 8090 );
+//	sleep(2);
+	GHashTable* peers = collabclient_getServersFromBeaconInfomration();
+	GHashTableIter iter;
+	gpointer key, value;
+
+	int i=0;
+	int max = 12;
+	int maxUserNameLength = 1;
+	g_hash_table_iter_init (&iter, peers);
+	for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ ) 
+	{
+	    beacon_announce_t* ba = (beacon_announce_t*)value;
+	    maxUserNameLength = imax( maxUserNameLength, strlen(ba->username) );
+	}
+	
+	g_hash_table_iter_init (&iter, peers);
+	for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ ) 
+	{
+	    beacon_announce_t* ba = (beacon_announce_t*)value;
+
+	    printf("user:%s\n", ba->username );
+	    printf("mach:%s\n", ba->machinename );
+
+	    char format[20];
+	    sprintf( format, "%%%d", maxUserNameLength );
+	    strcat( format, "s %s");
+	    char buf[101];
+	    snprintf( buf, 100, format, ba->username, ba->machinename );
+	    choices[i] = copy( buf );
+	    if( i >= max )
+		break;
+	}
+	int cnt = i;
+	int choice = gwwv_choose(_("Connect to Collab Server"),(const char **) choices, cnt,
+				 0,_("Select a collab server to connect to..."));
+	printf("you wanted %d\n", choice );
+	if( choice <= max )
+	{
+	    g_hash_table_iter_init (&iter, peers);
+	    for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ ) 
+	    {
+		beacon_announce_t* ba = (beacon_announce_t*)value;
+		if( i != choice )
+		    continue;
+		
+		int port = ba->port;
+		char address[IPADDRESS_STRING_LENGTH_T];
+		strncpy( address, ba->ip, IPADDRESS_STRING_LENGTH_T-1 );
+		void* cc = collabclient_new( address, port );
+		fv->b.collabClient = cc;
+		collabclient_sessionJoin( cc, fv );
+	    }
+	}
     }
+    
+    
+    
+    
+    /* char* res = gwwv_ask_string( */
+    /* 	"Connect to Collab Server", */
+    /* 	"localhost", */
+    /* 	"Please enter the network location of the Collab server you wish to connect to..."); */
+    /* if( res ) */
+    /* { */
+    /* 	int port_default = 5556; */
+    /* 	int port = port_default; */
+    /* 	char address[IPADDRESS_STRING_LENGTH_T]; */
+    /* 	strncpy( address, res, IPADDRESS_STRING_LENGTH_T-1 ); */
+    /* 	HostPortUnpack( address, &port, port_default ); */
+
+    /* 	void* cc = collabclient_new( address, port ); */
+    /* 	fv->b.collabClient = cc; */
+    /* 	collabclient_sessionJoin( cc, fv ); */
+    /* } */
 
     printf("FVMenuCollabConnect(done)\n");
 }
