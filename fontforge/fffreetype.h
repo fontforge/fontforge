@@ -32,6 +32,9 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H
+#if FREETYPE_MINOR >= 5
+# include FT_TRUETYPE_DRIVER_H
+#endif
 #if defined(FREETYPE_HAS_DEBUGGER) && FREETYPE_MINOR>=2
 # if defined(__MINGW32__)
 #  include <freetype/internal/internal.h>
