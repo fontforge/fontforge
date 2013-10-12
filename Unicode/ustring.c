@@ -636,18 +636,16 @@ return( lbuf );
 }
 
 char *u2utf8_copy(const unichar_t *ubuf) {
-    int len;
-    char *utf8buf;
+/* Make a utf8 string copy of unichar string ubuf */
 
     if ( ubuf==NULL )
-return( NULL );
+	return( NULL );
 
-    len = u_strlen(ubuf);
-    utf8buf = (char *) galloc((len+1)*4);
-return( u2utf8_strcpy(utf8buf,ubuf));
+    return( u2utf8_copyn(ubuf,u_strlen(ubuf)) );
 }
 
 char *u2utf8_copyn(const unichar_t *ubuf,int len) {
+/* Make a utf8 string copy of unichar string ubuf[0..len] */
     char *utf8buf, *pt;
 
     if ( ubuf==NULL || len<=0 || (utf8buf=pt=(char *)malloc(len*6+1))==NULL )
@@ -696,11 +694,11 @@ return( val );
 }
 
 char *utf8_idpb(char *utf8_text,uint32 ch) {
-    /* Increment and deposit character, no '\0' appended */
-    /* NOTE: Unicode only needs range of 17x65535 values */
-    /* and strings must be long enough to hold +4 chars. */
-    /* ISO/IEC 10646 description of UTF8 allows encoding */
-    /* character values up to U+7FFFFFFF before RFC3629. */
+/* Increment and deposit character, no '\0' appended */
+/* NOTE: Unicode only needs range of 17x65535 values */
+/* and strings must be long enough to hold +4 chars. */
+/* ISO/IEC 10646 description of UTF8 allows encoding */
+/* character values up to U+7FFFFFFF before RFC3629. */
 
     if ( ch>0x7fffffff )
 	return( 0 ); /* Error, ch is out of range */
