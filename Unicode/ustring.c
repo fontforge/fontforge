@@ -549,30 +549,17 @@ void utf82u_strcat(unichar_t *to,const char *from) {
 }
 
 char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
+/* Copy unichar string 'ubuf' into utf8 buffer string 'utf8buf' */
     char *pt = utf8buf;
 
-    while ( *ubuf ) {
-	if ( *ubuf<0x80 )
-	    *pt++ = *ubuf;
-	else if ( *ubuf<0x800 ) {
-	    *pt++ = 0xc0 | (*ubuf>>6);
-	    *pt++ = 0x80 | (*ubuf&0x3f);
-	} else if ( *ubuf < 0x10000 ) {
-	    *pt++ = 0xe0 | (*ubuf>>12);
-	    *pt++ = 0x80 | ((*ubuf>>6)&0x3f);
-	    *pt++ = 0x80 | (*ubuf&0x3f);
-	} else {
-	    uint32 val = *ubuf-0x10000;
-	    int u = ((val&0xf0000)>>16)+1, z=(val&0x0f000)>>12, y=(val&0x00fc0)>>6, x=val&0x0003f;
-	    *pt++ = 0xf0 | (u>>2);
-	    *pt++ = 0x80 | ((u&3)<<4) | z;
-	    *pt++ = 0x80 | y;
-	    *pt++ = 0x80 | x;
+    if ( ubuf!=NULL ) {
+	while ( *ubuf && (pt=utf8_idpb(pt,*ubuf++)) );
+	if ( pt )
+	    *pt = '\0';
+	    return( utf8buf );
 	}
-	++ubuf;
     }
-    *pt = '\0';
-return( utf8buf );
+    return( NULL );
 }
 
 char *utf8_strchr(const char *str, int search) {
