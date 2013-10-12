@@ -276,7 +276,7 @@ msgstr "C_opia il riferimento"
 msgid "_Paste"
 msgstr "Inco_lla"
 
-msgid "C_lear"
+msgid "C_hop"
 msgstr "Pulisci(_E)"
 
 msgid "Clear _Background"

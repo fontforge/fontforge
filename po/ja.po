@@ -1312,7 +1312,7 @@ msgstr "貼り付け(_P)"
 #: ../fontforge/bitmapview.c:2141 ../fontforge/combinations.c:898
 #: ../fontforge/fontview.c:4418 ../fontforge/fontview.c:5451
 #: ../fontforge/uiutil.c:652
-msgid "C_lear"
+msgid "C_hop"
 msgstr "クリア(_L)"
 
 #: ../fontforge/charview.c:9963 ../fontforge/fontview.c:4419

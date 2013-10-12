@@ -1436,7 +1436,7 @@ msgstr "_Dán"
 #: fontview.c:5333
 #: metricsview.c:3059
 #: uiutil.c:602
-msgid "C_lear"
+msgid "C_hop"
 msgstr "_Gột"
 
 #: bitmapview.c:2123

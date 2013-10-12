@@ -1368,7 +1368,7 @@ msgstr "Вст_авить"
 #: ../fontforge/fontview.c:5557
 #: ../fontforge/metricsview.c:3183
 #: ../fontforge/uiutil.c:648
-msgid "C_lear"
+msgid "C_hop"
 msgstr "О_чистить"
 
 #: ../fontforge/bitmapview.c:2143

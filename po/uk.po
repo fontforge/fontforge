@@ -1157,7 +1157,7 @@ msgstr "Вст_авити"
 #: ../fontforge/combinations.c:898 ../fontforge/fontview.c:4551
 #: ../fontforge/fontview.c:5721 ../fontforge/metricsview.c:3371
 #: ../fontforge/uiutil.c:671
-msgid "C_lear"
+msgid "C_hop"
 msgstr "Сп_орожнити"
 
 #: ../fontforge/bitmapview.c:2144 ../fontforge/charview.c:10194

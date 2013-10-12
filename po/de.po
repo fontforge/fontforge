@@ -668,7 +668,7 @@ msgstr "Ein_fügen"
 
 #: bitmapview.c:1692 charview.c:7641 charview.c:8733 combinations.c:996
 #: fontview.c:6408 fontview.c:7618 metricsview.c:2677
-msgid "C_lear"
+msgid "C_hop"
 msgstr "_Löschen"
 
 #: bitmapview.c:1694 charview.c:7607 charview.c:8714 fontview.c:6376
