@@ -5113,7 +5113,7 @@ static struct nameid *fea_ParseNameId(struct parseState *tok,int strid) {
 	} else
 	    nm = NULL;
 	max = 0;
-	pt = start = NULL;
+	pt = 0; start = NULL;
 	while ( (ch=getc(in))!=EOF && ch!='"' ) {
 	    if ( ch=='\n' || ch=='\r' )
 	continue;		/* Newline characters are ignored here */
@@ -5148,13 +5148,12 @@ static struct nameid *fea_ParseNameId(struct parseState *tok,int strid) {
 	    }
 	}
 	if ( nm!=NULL ) {
-	    if ( pt==NULL )
-		nm->utf8_str = copy("");
-	    else {
+	    if ( pt ) {
 		*pt = '\0';
 		nm->utf8_str = copy(start);
 		free(start);
-	    }
+	    } else
+		nm->utf8_str = copy("");
 	}
 	if ( tok->type!=tk_char || tok->tokbuf[0]!='"' ) {
 	    LogError(_("End of file found in string on line %d of %s"),

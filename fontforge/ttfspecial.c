@@ -923,11 +923,13 @@ static char *pfed_read_ucs2_len(FILE *ttf,uint32 offset,int len) {
 return( NULL );
 
     len>>=1;
-    pt = str = galloc(3*len);
+    if ( (pt=str=malloc(len>0 ? 3*len:1))==NULL )
+	return( NULL );
     fseek(ttf,offset,SEEK_SET);
     for ( i=0; i<len; ++i ) {
 	uch = getushort(ttf);
 	if ( uch>=0xd800 && uch<0xdc00 ) {
+	    /* Is this a possible utf16 surrogate value? */
 	    uch2 = getushort(ttf);
 	    if ( uch2>=0xdc00 && uch2<0xe000 )
 		uch = ((uch-0xd800)<<10) | (uch2&0x3ff);

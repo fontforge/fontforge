@@ -648,17 +648,18 @@ return( u2utf8_strcpy(utf8buf,ubuf));
 }
 
 char *u2utf8_copyn(const unichar_t *ubuf,int len) {
-    int i;
     char *utf8buf, *pt;
 
-    if ( ubuf==NULL )
-return( NULL );
+    if ( ubuf==NULL || len<=0 || (utf8buf=pt=(char *)malloc(len*6+1))==NULL )
+	return( NULL );
 
-    utf8buf = pt = (char *) galloc((len+1)*4);
-    for ( i=0; i<len && *ubuf!='\0'; ++i )
-	pt = utf8_idpb(pt, *ubuf++);
-    *pt = '\0';
-return( utf8buf );
+    while ( (pt=utf8_idpb(pt,*ubuf++)) && --len );
+    if ( pt ) {
+	*pt = '\0';
+	return( utf8buf );
+    }
+    free( utf8buf );
+    return( NULL );
 }
 
 int32 utf8_ildb(const char **_text) {
@@ -702,7 +703,7 @@ char *utf8_idpb(char *utf8_text,uint32 ch) {
     /* character values up to U+7FFFFFFF before RFC3629. */
 
     if ( ch>0x7fffffff )
-	return( utf8_text ); /* Error, ch is out of range */
+	return( 0 ); /* Error, ch is out of range */
 
     if ( ch>127 ) {
 	if ( ch<=0x7ff )
