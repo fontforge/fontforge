@@ -628,7 +628,7 @@ char *u2utf8_copy(const unichar_t *ubuf) {
     if ( ubuf==NULL )
 	return( NULL );
 
-    return( u2utf8_copyn(ubuf,u_strlen(ubuf)) );
+    return( u2utf8_copyn(ubuf,u_strlen(ubuf)+1) );
 }
 
 char *u2utf8_copyn(const unichar_t *ubuf,int len) {
