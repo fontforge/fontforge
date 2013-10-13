@@ -387,7 +387,7 @@ static char *SFDReadUTF7Str(FILE *sfd) {
 	ungetc(ch1,sfd);
     if ( ch1!='"' )
 return( NULL );
-    pt = NULL;
+    pt = 0;
     while ( (ch1=nlgetc(sfd))!=EOF && ch1!='"' ) {
 	done = 0;
 	if ( !done && !in ) {
@@ -442,7 +442,7 @@ return( NULL );
 		done = true;
 	    }
 	}
-	if ( pt+10>=end ) {
+	if ( pt && pt+10>=end ) {
 	    if ( buffer==NULL ) {
 		pt = buffer = galloc(400);
 		end = buffer+400;
@@ -453,12 +453,16 @@ return( NULL );
 		buffer = temp;
 	    }
 	}
-	if ( done )
+	if ( pt && done )
 	    pt = utf8_idpb(pt,ch1);
 	if ( prev_cnt==2 ) {
 	    prev_cnt = 0;
-	    if ( prev!=0 )
+	    if ( pt && prev!=0 )
 		pt = utf8_idpb(pt,prev);
+	}
+	if ( pt==0 ) {
+	    free(buffer);
+	    return( NULL );
 	}
     }
     if ( buffer==NULL )
@@ -539,12 +543,16 @@ return( NULL );
 	    end = temp+(end-buffer+400);
 	    buffer = temp;
 	}
-	if ( done )
+	if ( pt && done )
 	    pt = utf8_idpb(pt,ch1);
 	if ( prev_cnt==2 ) {
 	    prev_cnt = 0;
-	    if ( prev!=0 )
+	    if ( pt && prev!=0 )
 		pt = utf8_idpb(pt,prev);
+	}
+	if ( pt==0 ) {
+	    free(buffer);
+	    return( NULL );
 	}
     }
     *pt = '\0';
@@ -678,7 +686,7 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 	    {
 		ptflags |= SFD_PTFLAG_FORCE_OPEN_PATH;
 	    }
-	    
+
 
 	    fprintf(sfd, "%d", ptflags );
 	    if ( order2 ) {
@@ -3804,7 +3812,7 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd,int order2) {
     while ( 1 ) {
 	int have_read_val = 0;
 	int val = 0;
-	
+
 	while ( getreal(sfd,&stack[sp])==1 )
 	    if ( sp<99 )
 		++sp;
@@ -3871,7 +3879,7 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd,int order2) {
 		getint(sfd,&val);
 		have_read_val = 1;
 
-		
+
 		current.x = stack[sp-2];
 		current.y = stack[sp-1];
 		real original_current_x = current.x;
@@ -3891,7 +3899,7 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd,int order2) {
 			}
 		    }
 		}
-		
+
 		if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
 		    cur->last->nextcp.x = stack[sp-6];
 		    cur->last->nextcp.y = stack[sp-5];
@@ -3914,7 +3922,7 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd,int order2) {
 		// already there.
 		if( val & SFD_PTFLAG_FORCE_OPEN_PATH )
 		    current.x = original_current_x;
-		
+
 		sp -= 6;
 	    } else
 		sp = 0;
@@ -3922,7 +3930,7 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd,int order2) {
 	if ( pt!=NULL ) {
 	    if( !have_read_val )
 		getint(sfd,&val);
-	    
+
 	    pt->pointtype = (val & SFD_PTFLAG_TYPE_MASK);
 	    pt->selected  = (val & SFD_PTFLAG_IS_SELECTED) > 0;
 	    pt->nextcpdef = (val & SFD_PTFLAG_NEXTCP_IS_DEFAULT) > 0;

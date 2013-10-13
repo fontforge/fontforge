@@ -89,7 +89,7 @@ extern double u_strtod(const unichar_t *,unichar_t **);
  * Convert the integer 'v' to a string and return it.
  * You do not own the return value, it is an internal buffer
  * so you should copy it before using the function again
- */ 
+ */
 extern char*  c_itostr( int v );
 
 extern char *strstart(const char *initial,const char *full);
@@ -188,7 +188,7 @@ extern char* str_rfind( char* s, char ch );
  * If you set free_s to true then the string 's' will be freed by this function.
  * Normally you want to set free_s to 0 to avoid that. The case you will want to
  * use free_s to 1 is chaining many calls like:
- * 
+ *
  * char* s = copy( input );
  * s = str_replace_all( s, "foo", "bar", 1 );
  * s = str_replace_all( s, "baz", "gah", 1 );

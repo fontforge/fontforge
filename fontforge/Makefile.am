@@ -51,7 +51,10 @@ macobjective.o: macobjective.m
 
 #--------------------------------------------------------------------------
 
-SUBDIRS = pixmaps collab
+SUBDIRS = pixmaps
+if LIBZMQ
+SUBDIRS += collab
+endif LIBZMQ
 
 FFSCRIPT_HEADER = "\#!$(bindir)/fontforge -lang=ff"
 
@@ -75,7 +78,7 @@ sfddiff: sfddiff.pe
 #--------------------------------------------------------------------------
 
 noinst_HEADERS = fontforgeui.h sftextfieldP.h configure-fontforge.h	\
-	views.h is_LIGATURE.h flaglist.h strlist.h 
+	views.h is_LIGATURE.h flaglist.h strlist.h
 pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	libffstamp.h psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
 	lookups.h savefont.h ttf.h baseviews.h fvmetrics.h mm.h			\
@@ -119,8 +122,10 @@ libfontforge_la_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c	\
 	tottfaat.c tottfgpos.c tottf.c tottfvar.c ttfinstrs.c				\
 	ttfspecial.c ufo.c unicoderange.c utils.c winfonts.c zapfnomen.c	\
 	groups.c langfreq.c ftdelta.c autowidth2.c woff.c stamp.c			\
-	activeinui.c pluginloading.c is_LIGATURE.c flaglist.c strlist.c \
-	collabclient.c collabclient.h collabclientpriv.h 
+	activeinui.c pluginloading.c is_LIGATURE.c flaglist.c strlist.c
+if LIBZMQ
+libfontforge_la_SOURCES += collabclient.c collabclient.h collabclientpriv.h
+endif
 nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
@@ -158,7 +163,10 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	\
 	splashimage.c startui.c statemachine.c tilepath.c transform.c	\
 	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
-	usermenu.c macobjective.h collabclientui.c collabclientui.h 
+	usermenu.c macobjective.h
+if LIBZMQ
+libfontforgeexe_la_SOURCES += collabclientui.c collabclientui.h
+endif
 
 else !GRAPHICAL_USER_INTERFACE
 
@@ -213,7 +221,7 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 
 EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe libstamp.pre	\
 	exelibstamp.pre fontimage.1 fontlint.1 sfddiff.1			\
-	MacFontForgeApp.zip darwinsetup.in macobjective.m 
+	MacFontForgeApp.zip darwinsetup.in macobjective.m
 MOSTLYCLEANFILES = fontimage fontlint sfddiff libstamp.c	\
 	exelibstamp.c
 
