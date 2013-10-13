@@ -1415,7 +1415,7 @@ msgstr "Engan_xa"
 #: fontview.c:5448
 #: metricsview.c:3077
 #: uiutil.c:654
-msgid "C_lear"
+msgid "C_hop"
 msgstr "S_uprimeix"
 
 #: bitmapview.c:2134

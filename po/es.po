@@ -329,7 +329,7 @@ msgstr "Pegar a continuación de"
 msgid "Sa_me Glyph As"
 msgstr "Igual carácter que(_M)"
 
-msgid "C_lear"
+msgid "C_hop"
 msgstr "E_liminar"
 
 msgid "Clear _Background"

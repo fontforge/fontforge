@@ -849,7 +849,7 @@ msgstr "Co_ller"
 
 #: bitmapview.c:1752 charview.c:9045 combinations.c:997 fontview.c:6928
 #: fontview.c:8114 metricsview.c:2510
-msgid "C_lear"
+msgid "C_hop"
 msgstr "Supprim_er"
 
 #: bitmapview.c:1754 charview.c:9010 fontview.c:6894 metricsview.c:2513
