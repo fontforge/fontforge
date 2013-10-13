@@ -554,7 +554,7 @@ char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
 
     if ( ubuf!=NULL ) {
 	while ( *ubuf && (pt=utf8_idpb(pt,*ubuf++)) );
-	if ( pt )
+	if ( pt ) {
 	    *pt = '\0';
 	    return( utf8buf );
 	}
@@ -692,22 +692,22 @@ char *utf8_idpb(char *utf8_text,uint32 ch) {
 
     if ( ch>127 ) {
 	if ( ch<=0x7ff )
-	    // (ch>=0x80 && ch<=0x7ff)
+	    /* ch>=0x80 && ch<=0x7ff */
 	    *utf8_text++ = 0xc0 | (ch>>6);
 	else {
 	    if ( ch<=0xffff )
-		// (ch>=0x800 && ch<=0xffff)
+		/* ch>=0x800 && ch<=0xffff */
 		*utf8_text++ = 0xe0 | (ch>>12);
 	    else {
 		if ( ch<=0x1fffff )
-		    // (ch>=0x10000 && ch<=0x1fffff)
+		    /* ch>=0x10000 && ch<=0x1fffff */
 		    *utf8_text++ = 0xf0 | (ch>>18);
 		else {
 		    if ( ch<=0x3ffffff )
-			// (ch>=0x200000 && ch<=0x3ffffff)
+			/* ch>=0x200000 && ch<=0x3ffffff */
 			*utf8_text++ = 0xf8 | (ch>>24);
 		    else {
-			// (ch>=0x4000000 && ch<=0x7fffffff)
+			/* ch>=0x4000000 && ch<=0x7fffffff */
 			*utf8_text++ = 0xfc | (ch>>30);
 			*utf8_text++ = 0x80 | ((ch>>24)&0x3f);
 		    }
