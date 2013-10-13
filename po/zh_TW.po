@@ -1032,7 +1032,7 @@ msgstr "貼上(_P)"
 
 #: bitmapview.c:2132 charview.c:9385 combinations.c:897 fontview.c:4407
 #: fontview.c:5422 metricsview.c:3077 uiutil.c:654
-msgid "C_lear"
+msgid "C_hop"
 msgstr "清除(_L)"
 
 #: bitmapview.c:2134 charview.c:9350 fontview.c:4365 metricsview.c:3080

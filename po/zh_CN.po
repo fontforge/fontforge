@@ -1143,7 +1143,7 @@ msgstr "粘贴(_P)"
 #
 #: bitmapview.c:2137 charview.c:9408 combinations.c:897 fontview.c:4411
 #: fontview.c:5452 metricsview.c:3106 uiutil.c:654
-msgid "C_lear"
+msgid "C_hop"
 msgstr "清除(_L)"
 
 #

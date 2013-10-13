@@ -1097,7 +1097,7 @@ msgstr "Wkl_ej"
 #: ../fontforge/bitmapview.c:2142 ../fontforge/charview.c:10611
 #: ../fontforge/combinations.c:898 ../fontforge/fontview.c:4581
 #: ../fontforge/fontview.c:5753 ../fontforge/metricsview.c:3901 ../fontforge/uiutil.c:671
-msgid "C_lear"
+msgid "C_hop"
 msgstr "W_yczyść"
 
 #: ../fontforge/bitmapview.c:2144 ../fontforge/charview.c:10576

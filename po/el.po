@@ -626,7 +626,7 @@ msgstr "Επι_κόλληση"
 
 #: bitmapview.c:1706 charview.c:7644 charview.c:8736 combinations.c:996
 #: fontview.c:6500 fontview.c:7710 metricsview.c:2677
-msgid "C_lear"
+msgid "C_hop"
 msgstr "Κα_θαρισμός"
 
 #: bitmapview.c:1708 charview.c:7610 charview.c:8717 fontview.c:6468
