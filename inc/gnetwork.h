@@ -28,6 +28,9 @@
 #ifndef _ALREADY_INCLUDED_GNETWORK_H_
 #define _ALREADY_INCLUDED_GNETWORK_H_
 
+#include <fontforge-config.h>
+#ifdef BUILD_COLLAB
+
 #define IPADDRESS_STRING_LENGTH_T 100
 
 /**
@@ -41,7 +44,7 @@ char* ff_gethostname( char* outstring, int outstring_sz );
 
 /**
  * Get the network accessible IP address of the local machine.
- * 
+ *
  * If the machine is multihomed you had better hope that traffic
  * from the network can reach all NICs on the host.
  *
@@ -65,4 +68,5 @@ extern char* HostPortUnpack( char* packed, int* port, int port_default );
  */
 char* ff_uuid_generate( char* target );
 
+#endif
 #endif

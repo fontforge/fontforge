@@ -43,8 +43,9 @@ extern int _GScrollBar_Width;
 
 
 #include "gutils/prefs.h"
+#ifdef BUILD_COLLAB
 #include "collabclientui.h"
-
+#endif
 #include "gutils/unicodelibinfo.h"
 
 #include "gdraw/hotkeys.h"
@@ -988,7 +989,7 @@ static void DrawSpiroPoint(CharView *cv, GWindow pixmap, spiro_cp *cp,
 	col = col & 0x00ffffff;
 	col |= prefs_cvInactiveHandleAlpha << 24;
     }
-    
+
     x =  cv->xoff + rint(cp->x*cv->scale);
     y = -cv->yoff + cv->height - rint(cp->y*cv->scale);
     if ( x<-4 || y<-4 || x>cv->width+4 || y>=cv->height+4 )
@@ -1004,7 +1005,7 @@ return;
     float sizedelta = 3;
     if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
 	sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
-    
+
     if ( ty == SPIRO_RIGHT ) {
 	GDrawSetLineWidth(pixmap,2);
 	gp[0].x = x-sizedelta; gp[0].y = y-sizedelta;
@@ -1334,7 +1335,7 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 	if ( cv->b.drawmode!=dm_grid
 	     && DrawOpenPathsWithHighlight
 	     && activelayer < cv->b.sc->layer_cnt
-	     && activelayer >= 0 
+	     && activelayer >= 0
 	     && SplinePointListContains( cv->b.sc->layers[activelayer].splines, spl )
 	     && spl->first
 	     && spl->first->prev==NULL )
@@ -2714,7 +2715,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	 d.clip = &clip;
 	 d.strokeFillMode = sfm_stroke_trans;
 	 g_list_foreach( cv->p.pretransform_spl, CVExpose_PreTransformSPL_fe, &d );
-     }    
+     }
 
     /* The call to CVExposeGlyphFill() above will have rendered a filled glyph already. */
     /* We draw the outline only at this stage so as to have it layered */
@@ -4024,7 +4025,7 @@ static void CVSetConstrainPoint(CharView *cv, GEvent *event) {
 
 static void CVDoSnaps(CharView *cv, FindSel *fs) {
     PressedOn *p = fs->p;
-    
+
 #if 1
     if ( cv->b.drawmode!=dm_grid && cv->b.layerheads[dm_grid]->splines!=NULL ) {
 	PressedOn temp;
@@ -4165,7 +4166,7 @@ static void CVMaybeCreateDraggingComparisonOutline( CharView* cv )
 	return;
     if( cv->p.pretransform_spl )
 	CVFreePreTransformSPL( cv );
-    
+
     Layer* l = cv->b.layerheads[cv->b.drawmode];
     if( !l || !l->splines )
 	return;
@@ -4182,7 +4183,7 @@ static void CVMaybeCreateDraggingComparisonOutline( CharView* cv )
 						    SplinePointListCopy(spl) );
 	}
     }
-    
+
 }
 
 
@@ -4274,12 +4275,10 @@ return;
     switch ( cv->active_tool ) {
       case cvt_pointer:
 	CVMouseDownPointer(cv, &fs, event);
+#ifdef BUILD_COLLAB
 //	printf("lastSel.lastselpt:%p  fs.p->sp:%p\n", lastSel.lastselpt, fs.p->sp );
-	if( lastSel.lastselpt != fs.p->sp
-	    || lastSel.lastselcp != fs.p->spiro )
-	{
+	if( lastSel.lastselpt != fs.p->sp || lastSel.lastselcp != fs.p->spiro )	{
 #define BASEPOINT_IS_EMPTY(p) ( p.x == (real)0.0 && p.y == (real)0.0 )
-
 	    // If we are in a collab session, we might like to preserve here
 	    // so that we can send a change of selected points to other members
 	    // of the group
@@ -4299,13 +4298,15 @@ return;
 		}
 	    }
 	}
+#endif
 	cv->lastselpt = fs.p->sp;
 	cv->lastselcp = fs.p->spiro;
-	if( selectionChanged )
-	{
+#ifdef BUILD_COLLAB
+	if( selectionChanged ) {
 //	    collabclient_sendRedo( &cv->b );
 	}
-	break;
+#endif
+      break;
       case cvt_magnify: case cvt_minify:
       break;
       case cvt_hand:
@@ -4887,8 +4888,10 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 
     dlist_foreach( &cv->pointInfoDialogs, (dlist_foreach_func_type)PIChangePoint );
 
+#ifdef BUILD_COLLAB
 //    printf("cvmouseup!\n");
     collabclient_sendRedo( &cv->b );
+#endif
 }
 
 static void CVTimer(CharView *cv,GEvent *event) {
@@ -6484,7 +6487,7 @@ return;
     if ( mi->mid==MID_GridFitOff ) {
 	cv->show_ft_results = false;
 	cv->show_ft_results_live_update = false;
-	
+
 	SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	GDrawRequestExpose(cv->v,NULL,false);
@@ -6747,7 +6750,7 @@ static GHashTable* getSelectedControlPoints( CharView *cv, PressedOn *p )
     {
 	SPLFirstVisit( spl->first, getSelectedControlPointsVisitor, ret );
     }
-    
+
     return ret;
 }
 static GHashTable* getAllControlPoints( CharView *cv, PressedOn *p )
@@ -6859,7 +6862,7 @@ static void FE_visitAdjacentToSelectedControlPoints( gpointer key,
 
     if( sp->selected )
 	return;
-    
+
     d->count++;
     if( sp->prev && sp->prev->from && sp->prev->from->selected )
     {
@@ -6906,7 +6909,7 @@ void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
     GHashTable* col = getSelectedControlPoints( cv, &cv->p );
     if(!col)
 	return;
-    
+
     SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
     if( g_hash_table_size( col ) )
     {
@@ -6923,7 +6926,7 @@ void CVVisitAllControlPoints( CharView *cv, bool preserveState,
     printf("CVVisitAllControlPoints(top) cv->p.spl:%p cv->p.sp:%p\n", cv->p.spl, cv->p.sp );
     if( !cv->p.spl || !cv->p.sp )
 	return;
-    
+
     GHashTable* col = getAllControlPoints( cv, &cv->p );
     SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
     if( g_hash_table_size( col ) )
@@ -6941,11 +6944,11 @@ void CVVisitAdjacentToSelectedControlPoints( CharView *cv, bool preserveState,
 //    printf("CVVisitAdjacentToSelectedControlPoints(top) cv->p.sp:%p\n", cv->p.sp );
     if( !cv->p.spl || !cv->p.sp )
 	return;
-    
+
     GHashTable* col = getAllControlPoints( cv, &cv->p );
     if( !col )
 	return;
-    
+
     SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
     if( g_hash_table_size( col ) )
     {
@@ -7478,15 +7481,17 @@ static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
 	/* 	len++; */
 	/*     printf("r.len:%d\n", len ); */
 	/* } */
-
-	if( collabclient_inSession( &cv->b ) )
-	{
+#ifdef BUILD_COLLAB
+	if ( collabclient_inSession( &cv->b ) )	{
 	    printf("in-session!\n");
 	    collabclient_performLocalUndo( &cv->b );
 	    cv->lastselpt = NULL;
 	    _CVCharChangedUpdate(&cv->b,1);
 	    return;
 	}
+#else
+	;
+#endif
     }
 
     CVDoUndo(&cv->b);
@@ -7497,10 +7502,9 @@ static void CVRedo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     Undoes *undo = cv->b.layerheads[cv->b.drawmode]->redoes;
-    if( undo )
-    {
-	if( collabclient_inSession( &cv->b ) )
-	{
+#ifdef BUILD_COLLAB
+    if ( undo ) {
+	if ( collabclient_inSession(&cv->b) )	{
 	    printf("in-session (redo)!\n");
 	    collabclient_performLocalRedo( &cv->b );
 	    cv->lastselpt = NULL;
@@ -7508,7 +7512,7 @@ static void CVRedo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
 	    return;
 	}
     }
-
+#endif
 
     CVDoRedo(&cv->b);
     cv->lastselpt = NULL;
@@ -8728,7 +8732,9 @@ static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
     CVPreserveMaybeState( cv, flags&fvt_justapply );
     CVTransFunc(cv,transform,flags);
     CVCharChangedUpdate(&cv->b);
+#ifdef BUILD_COLLAB
     collabclient_sendRedo( &cv->b );
+#endif
 }
 
 void CVDoTransform(CharView *cv, enum cvtools cvt ) {
@@ -11476,7 +11482,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
 	firstCharView = 0;
 	CVShows.alwaysshowcontrolpoints = prefs_cv_show_control_points_always_initially;
     }
-    
+
 
     cv->b.sc = sc;
     cv->scale = .5;
@@ -11521,7 +11527,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     cv->showtabs = CVShows.showtabs;
     cv->inPreviewMode = 0;
     cv->checkselfintersects = CVShows.checkselfintersects;
- 
+
     cv->showdebugchanges = CVShows.showdebugchanges;
 
     cv->infoh = 13;

@@ -3,7 +3,7 @@
 *******************************************************************************
 
     Copyright (C) 2013 Ben Martin
-    
+
     This file is part of FontForge.
 
     FontForge is free software: you can redistribute it and/or modify
@@ -29,6 +29,8 @@
 #ifndef _ALREADY_INCLUDED_FF_COLLAB_CLIENT_H
 #define _ALREADY_INCLUDED_FF_COLLAB_CLIENT_H
 
+#include <fontforge-config.h>
+#ifdef BUILD_COLLAB
 #include "baseviews.h"
 #include "views.h"
 
@@ -43,7 +45,7 @@ extern int pref_collab_roundTripTimerMS;
  * complex set of tests and nested calls. To help that code, the
  * CVAddUndo() calls this function to inform the collab code that a
  * new undo has infact been created.
- * 
+ *
  * So the client code can just call sendRedo() and if there was no new
  * undo created then nothing is sent to the collab session. On the
  * other hand if an undo was created, then it will have called here
@@ -115,6 +117,5 @@ extern int collabclient_inSessionFV( FontViewBase* fv );
 extern enum collabState_t collabclient_getState( FontViewBase* fv );
 extern char*         collabclient_stateToString( enum collabState_t s );
 
-
 #endif
-
+#endif

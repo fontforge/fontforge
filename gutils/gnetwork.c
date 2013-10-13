@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <fontforge-config.h>
+#ifdef BUILD_COLLAB
 
 #include "inc/gnetwork.h"
 #include "inc/ustring.h"
@@ -61,7 +63,7 @@ char* ff_gethostname( char* outstring, int outstring_sz )
 	strncpy( outstring, "localhost", outstring_sz );
 	return outstring;
     }
-    
+
     strncpy( outstring, hostname, outstring_sz );
     return outstring;
 }
@@ -87,7 +89,7 @@ char* getNetworkAddress( char* outstring )
     {
 	return 0;
     }
-    
+
     inet_ntop( he->h_addrtype, he->h_addr_list[0],
 	       outstring, IPADDRESS_STRING_LENGTH_T-1 );
 
@@ -129,3 +131,4 @@ char* ff_uuid_generate( char* target )
 #endif
     return target;
 }
+#endif

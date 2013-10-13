@@ -36,7 +36,9 @@
     #include <execinfo.h>
 #endif
 
+#ifdef BUILD_COLLAB
 #include "collabclient.h"
+#endif
 
 extern char *coord_sep;
 
@@ -68,8 +70,8 @@ void BackTraceFD( int fd ) {
     const int arraysz = 500;
     void* array[arraysz];
     size_t size;
-    
-    size = backtrace( array, arraysz ); 
+
+    size = backtrace( array, arraysz );
     backtrace_symbols_fd( array, size, fd );
 #endif
 }
@@ -512,7 +514,7 @@ void UndoesFreeButRetainFirstN( Undoes** undopp, int retainAmount )
         *undopp = 0;
         return;
     }
-    
+
     Undoes* undoprev = undo;
     for( ; retainAmount > 0 && undo ; retainAmount-- )
     {
@@ -522,7 +524,7 @@ void UndoesFreeButRetainFirstN( Undoes** undopp, int retainAmount )
     // not enough items to need to do a trim.
     if( retainAmount > 0 )
         return;
-    
+
     // break off and free the tail
     UndoesFree( undo );
     undoprev->next = 0;
@@ -615,13 +617,12 @@ static Undoes *CVAddUndo(CharViewBase *cv,Undoes *undo) {
     Undoes* ret = AddUndo( undo,
 			   &cv->layerheads[cv->drawmode]->undoes,
 			   &cv->layerheads[cv->drawmode]->redoes );
-    
-    //
-    // Let the collab system know that a new undo state was pushed since
-    // it last sent a message.
-    //
+
+#ifdef BUILD_COLLAB
+    /* Let collab system know that a new undo state */
+    /* was pushed now since it last sent a message. */
     collabclient_CVPreserveStateCalled( cv );
-    
+#endif
     return( ret );
 }
 
@@ -667,7 +668,7 @@ return(NULL);
     // will modify the local state, and that modification is what we
     // are interested in sending on the wire, not the old undo state.
     // collabclient_sendRedo( cv );
-    
+
 return( CVAddUndo(cv,undo));
 }
 
@@ -763,7 +764,9 @@ Undoes *SCPreserveState(SplineChar *sc,int dohints) {
 	    SCPreserveLayer(sc,i,false);
 
     Undoes* ret = SCPreserveLayer( sc, ly_fore, dohints );
+#ifdef BUILD_COLLAB
     collabclient_SCPreserveStateCalled( sc );
+#endif
     return( ret );
 }
 
@@ -874,12 +877,11 @@ return(NULL);
 
     Undoes* ret = AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes);
 
-    //
-    // Let the collab system know that a new undo state was pushed since
-    // it last sent a message.
-    //
+#ifdef BUILD_COLLAB
+    /* Let collab system know that a new undo state */
+    /* was pushed now since it last sent a message. */
     collabclient_SCPreserveStateCalled( sc );
-
+#endif
     return(ret);
 }
 
@@ -1031,7 +1033,7 @@ void CVDoUndo(CharViewBase *cv) {
     printf("CVDoUndo() undo:%p u->next:%p\n", undo, ( undo ? undo->next : 0 ) );
     if ( undo==NULL )		/* Shouldn't happen */
 	return;
-    
+
     cv->layerheads[cv->drawmode]->undoes = undo->next;
     undo->next = NULL;
 
@@ -1039,10 +1041,11 @@ void CVDoUndo(CharViewBase *cv) {
     undo->next = cv->layerheads[cv->drawmode]->redoes;
     cv->layerheads[cv->drawmode]->redoes = undo;
 
-    if( !collabclient_generatingUndoForWire( cv ))
-    {
+#ifdef BUILD_COLLAB
+    if ( !collabclient_generatingUndoForWire(cv) ) {
 	_CVCharChangedUpdate(cv,undo->was_modified);
     }
+#endif
 }
 
 void CVDoRedo(CharViewBase *cv) {
@@ -2064,7 +2067,7 @@ return( false );
 
 static int BCRefersToBC( BDFChar *parent, BDFChar *child ) {
     BDFRefChar *head;
-    
+
     if ( parent==child )
 return( true );
     for ( head=child->refs; head!=NULL; head=head->next ) {
@@ -3282,7 +3285,7 @@ static Undoes *BCCopyAll(BDFChar *bc,int pixelsize, int depth, enum fvcopy_type 
 	    cur->u.bmpstate.bitmap = bmpcopy(bc->bitmap,bc->bytes_per_line,
 		bc->ymax-bc->ymin+1);
 	    cur->u.bmpstate.selection = BDFFloatCopy(bc->selection);
-	    
+
 	    for ( head = bc->refs; head != NULL; head = head->next ) {
 		ref = gcalloc( 1,sizeof( BDFRefChar ));
 		memcpy( ref,head,sizeof( BDFRefChar ));
@@ -3940,4 +3943,4 @@ void dumpUndoChain( char* msg, SplineChar* sc, Undoes *undo )
     printf("dumpUndoChain(end) %s\n", msg );
 }
 
-    
+

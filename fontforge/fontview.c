@@ -40,12 +40,12 @@
 #include <math.h>
 #include <unistd.h>
 
+#ifdef BUILD_COLLAB
 #include "inc/gnetwork.h"
-
-#include "gutils/unicodelibinfo.h"
-
 #include "collabclientui.h"
 #include "collabclientpriv.h"
+#endif
+#include "gutils/unicodelibinfo.h"
 
 // Clash on windows for a define to PrintDlgA
 #ifdef PrintDlg
@@ -1408,10 +1408,12 @@ static void FVMenuCondense(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 #define MID_ModifyComposition	20902
 #define MID_BuildSyllables	20903
 
+#ifdef BUILD_COLLAB
 #define MID_CollabStart         22000
 #define MID_CollabConnect       22001
 #define MID_CollabDisconnect    22002
 #define MID_CollabCloseLocalServer  22003
+#endif
 
 #define MID_Warnings	3000
 
@@ -3615,15 +3617,14 @@ static void FontViewSetTitle(FontView *fv) {
     if ( fv->gw==NULL )		/* In scripting */
 return;
 
+#ifdef BUILD_COLLAB
     char* collabStateString = "";
-    if( collabclient_inSessionFV( &fv->b ))
-    {
+    if( collabclient_inSessionFV( &fv->b )) {
 	printf("collabclient_getState( fv ) %d %d\n",
-	       fv->b.collabState,
-	       collabclient_getState( &fv->b ) );
-	collabStateString = collabclient_stateToString(
-	    collabclient_getState( &fv->b ));
+	       fv->b.collabState, collabclient_getState( &fv->b ));
+	collabStateString = collabclient_stateToString(collabclient_getState( &fv->b ));
     }
+#endif
 
     enc = SFEncodingName(fv->b.sf,fv->b.normal?fv->b.normal:fv->b.map);
     len = strlen(fv->b.sf->fontname)+1 + strlen(enc)+6;
@@ -3635,17 +3636,20 @@ return;
 	if ( (file = fv->b.sf->filename)==NULL )
 	    file = fv->b.sf->origname;
     }
+#ifdef BUILD_COLLAB
     len += strlen(collabStateString);
+#endif
     if ( file!=NULL )
 	len += 2+strlen(file);
     title = galloc((len+1)*sizeof(unichar_t));
     uc_strcpy(title,"");
 
-    if(*collabStateString)
-    {
+#ifdef BUILD_COLLAB
+    if(*collabStateString) {
 	uc_strcat(title, collabStateString);
 	uc_strcat(title, " - ");
     }
+#endif
     uc_strcat(title,fv->b.sf->fontname);
     if ( fv->b.sf->changed )
 	uc_strcat(title,"*");
@@ -5614,6 +5618,7 @@ static void FVWindowMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *e) {
     }
 }
 
+#ifdef BUILD_COLLAB
 static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -5678,14 +5683,14 @@ static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
 	int max = 12;
 	int maxUserNameLength = 1;
 	g_hash_table_iter_init (&iter, peers);
-	for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ ) 
+	for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
 	{
 	    beacon_announce_t* ba = (beacon_announce_t*)value;
 	    maxUserNameLength = imax( maxUserNameLength, strlen(ba->username) );
 	}
-	
+
 	g_hash_table_iter_init (&iter, peers);
-	for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ ) 
+	for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
 	{
 	    beacon_announce_t* ba = (beacon_announce_t*)value;
 
@@ -5708,12 +5713,12 @@ static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
 	if( choice <= max )
 	{
 	    g_hash_table_iter_init (&iter, peers);
-	    for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ ) 
+	    for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
 	    {
 		beacon_announce_t* ba = (beacon_announce_t*)value;
 		if( i != choice )
 		    continue;
-		
+
 		int port = ba->port;
 		char address[IPADDRESS_STRING_LENGTH_T];
 		strncpy( address, ba->ip, IPADDRESS_STRING_LENGTH_T-1 );
@@ -5723,10 +5728,10 @@ static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
 	    }
 	}
     }
-    
-    
-    
-    
+
+
+
+
     /* char* res = gwwv_ask_string( */
     /* 	"Connect to Collab Server", */
     /* 	"localhost", */
@@ -5805,6 +5810,7 @@ static GMenuItem2 collablist[] = {
 
     GMENUITEM2_EMPTY,				/* Extra room to show sub-font names */
 };
+#endif
 
 GMenuItem2 helplist[] = {
     { { (unichar_t *) N_("_Help"), (GImage *) "helphelp.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Help|F1"), NULL, NULL, FVMenuContextualHelp, 0 },
@@ -5862,7 +5868,7 @@ static GMenuItem2 mblist[] = {
 /* GT: Here (and following) MM means "MultiMaster" */
     { { (unichar_t *) N_("MM"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("MM|No Shortcut"), mmlist, mmlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Window|No Shortcut"), wnmenu, FVWindowMenuBuild, NULL, 0 },
-#ifndef _NO_LIBZMQ
+#ifdef BUILD_COLLAB
     { { (unichar_t *) N_("C_ollaborate"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Collaborate|No Shortcut"), collablist, collablistcheck, NULL, 0 },
 #endif
     { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Help|No Shortcut"), helplist, NULL, NULL, 0 },
@@ -7356,7 +7362,7 @@ return;
 
     done = true;
 //    printf("FontViewInit(top) mblist[0].text: %s\n", mblist[0].ti.text );
-    
+
     mb2DoGetText(mblist);
     mbDoGetText(fvpopupmenu);
 
@@ -8133,7 +8139,7 @@ return( ret );
 /****************************************/
 /****************************************/
 
-
+#ifdef BUILD_COLLAB
 int FontViewFind_byXUID( FontViewBase* fv, void* udata )
 {
     if( !fv || !fv->sf )
@@ -8174,15 +8180,12 @@ FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* udata ), void*
     }
     return 0;
 }
-
+#endif
 
 /****************************************/
 /****************************************/
 /****************************************/
-
-
 
 /* local variables: */
 /* tab-width: 8     */
 /* end:             */
-

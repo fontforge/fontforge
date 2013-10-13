@@ -52,7 +52,9 @@
 #include <glib.h>
 #undef GTimer
 
+#ifdef BUILD_COLLAB
 #include "collabclient.h"
+#endif
 
 #define RAD2DEG	(180/3.1415926535897932)
 
@@ -364,7 +366,7 @@ static struct prefs_list {
 	{ N_("EditHandleSize"), pr_real, &prefs_cvEditHandleSize, NULL, NULL, '\0', NULL, 0, N_("The size of the handles showing control points and other interesting points in the glyph editor (default is 5).") },
 	{ N_("InactiveHandleAlpha"), pr_int, &prefs_cvInactiveHandleAlpha, NULL, NULL, '\0', NULL, 0, N_("Inactive handles in the glyph editor will be drawn with this alpha value (range: 0-255 default is 255).") },
 	{ N_("ShowControlPointsAlways"), pr_bool, &prefs_cv_show_control_points_always_initially, NULL, NULL, '\0', NULL, 0, N_("Always show the control points when editing a glyph.\nThis can be turned off in the menu View/Show, this setting will effect if control points are shown initially.\nChange requires a restart of fontforge.") },
-	
+
 	PREFS_LIST_EMPTY
 },
   sync_list[] = {
@@ -429,11 +431,13 @@ static struct prefs_list {
 	{ N_("UseNewIndicScripts"), pr_bool, &use_second_indic_scripts, NULL, NULL, 'C', NULL, 0, N_("MS has changed (in August 2006) the inner workings of their Indic shaping\nengine, and to disambiguate this change has created a parallel set of script\ntags (generally ending in '2') for Indic writing systems. If you are working\nwith the new system set this flag, if you are working with the old unset it.\n(if you aren't doing Indic work, this flag is irrelevant).") },
 	PREFS_LIST_EMPTY
 },
+#ifdef BUILD_COLLAB
  collab_list[] = {
 	{ N_("SessionJoinTimeout"), pr_int, &pref_collab_sessionJoinTimeoutMS, NULL, NULL, 'C', NULL, 0, N_("The number of milliseconds to wait for a connection to the collaboration server to happen. FontForge may be unresponsive during this session connection time. (default 1000 which is 1 second)") },
 	{ N_("RoundTripMessageMaxTime"), pr_int, &pref_collab_roundTripTimerMS, NULL, NULL, 'C', NULL, 0, N_("The number of milliseconds that are allowed to pass between sending an update to the server and hearing it sent back as a message to all clients. The FontForge user interface may be unresponsive during this time. A change requires a restart of FontForge. (default 2000 which is 2 seconds)") },
 	PREFS_LIST_EMPTY
 },
+#endif
 /* These are hidden, so will never appear in preference ui, hence, no "N_(" */
 /*  They are controled elsewhere AntiAlias is a menu item in the font window's View menu */
 /*  etc. */
@@ -536,8 +540,16 @@ static struct prefs_list {
 	{ "DefaultOTFflags", pr_int, &old_otf_flags, NULL, NULL, '\0', NULL, 1, NULL },
 	PREFS_LIST_EMPTY
 },
- *prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list, collab_list, hidden_list, NULL },
- *load_prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list, collab_list, hidden_list, oldnames, NULL };
+ *prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list,
+#ifdef BUILD_COLLAB
+ collab_list,
+#endif
+ hidden_list, NULL },
+ *load_prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list,
+#ifdef BUILD_COLLAB
+ collab_list,
+#endif
+ hidden_list, oldnames, NULL };
 
 struct visible_prefs_list { char *tab_name; int nest; struct prefs_list *pl; } visible_prefs_list[] = {
     { N_("Generic"), 0, general_list},
@@ -554,7 +566,9 @@ struct visible_prefs_list { char *tab_name; int nest; struct prefs_list *pl; } v
     { N_("PS Hints"), 1, hints_list},
     { N_("TT Instrs"), 1, instrs_list},
     { N_("OpenType"), 1, opentype_list},
+#ifdef BUILD_COLLAB
     { N_("Collaboration"), 0, collab_list},
+#endif
     { NULL, 0, NULL }
 };
 
@@ -652,7 +666,7 @@ static int PrefsUI_GetPrefs(char *name,Val *val) {
     /* Support for obsolete preferences */
     alwaysgenapple=(old_sfnt_flags&ttf_flag_applemode)?1:0;
     alwaysgenopentype=(old_sfnt_flags&ttf_flag_otmode)?1:0;
-    
+
     for ( i=0; prefs_list[i]!=NULL; ++i ) for ( j=0; prefs_list[i][j].name!=NULL; ++j ) {
 	if ( strcmp(prefs_list[i][j].name,name)==0 ) {
 	    struct prefs_list *pf = &prefs_list[i][j];
@@ -1184,7 +1198,7 @@ void Prefs_LoadDefaultPreferences( void )
 {
     char filename[PATH_MAX+1];
     char* sharedir = getShareDir();
-    
+
     snprintf(filename,PATH_MAX,"%s/prefs", sharedir );
     PrefsUI_LoadPrefs_FromFile( filename );
 }
@@ -1327,7 +1341,7 @@ static void PrefsUI_LoadPrefs(void)
 	GResourceAddResourceFile(xdefs_filename,GResourceProgramName,true);
     if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
 	fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
-	
+
     if ( glyph_2_name_map )
 	old_sfnt_flags |= ttf_flag_glyphmap;
     LoadNamelistDir(NULL);
@@ -1601,7 +1615,7 @@ return( true );
     }
 return( true );
 }
-    
+
 static unichar_t *AskSetting(struct macsettingname *temp,GGadget *list, int index,GGadget *flist) {
     GRect pos;
     GWindow gw;
@@ -1667,7 +1681,7 @@ static unichar_t *AskSetting(struct macsettingname *temp,GGadget *list, int inde
     label[4].text_is_1byte = true;
     label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
-    gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[3].gd.pos.y+26; 
+    gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[3].gd.pos.y+26;
     gcd[4].gd.flags = gg_enabled|gg_visible;
     gcd[4].creator = GLabelCreate;
 
@@ -1980,7 +1994,7 @@ return( true );
 	    force_redraw_charviews = 1;
 	if( prefs_oldval_cvInactiveHandleAlpha != prefs_cvInactiveHandleAlpha )
 	    force_redraw_charviews = 1;
-	    
+
 
 	if( force_redraw_charviews )
 	{
@@ -2416,7 +2430,7 @@ void DoPrefs(void) {
 		plabel[gc].text = (unichar_t *) U_("°");
 		plabel[gc].text_is_1byte = true;
 		pgcd[gc].gd.label = &plabel[gc];
-		pgcd[gc].gd.pos.x = pgcd[gc-1].gd.pos.x+gcd[gc-1].gd.pos.width+2; pgcd[gc].gd.pos.y = pgcd[gc-1].gd.pos.y; 
+		pgcd[gc].gd.pos.x = pgcd[gc-1].gd.pos.x+gcd[gc-1].gd.pos.width+2; pgcd[gc].gd.pos.y = pgcd[gc-1].gd.pos.y;
 		pgcd[gc].gd.flags = gg_enabled|gg_visible;
 		pgcd[gc++].creator = GLabelCreate;
 		hvarray[si++] = &pgcd[gc-1];
@@ -2560,7 +2574,7 @@ void DoPrefs(void) {
     GHVBoxSetExpandableRow(sboxes[0].ret,gb_expandglue);
     for ( k=0; k<TOPICS; ++k )
 	GHVBoxSetExpandableRow(boxes[2*k].ret,gb_expandglue);
-    
+
     memset(&rq,0,sizeof(rq));
     rq.utf8_family_name = MONO_UI_FAMILIES;
     rq.point_size = 12;
@@ -2709,7 +2723,7 @@ static int PrefsSubSet_Ok(GGadget *g, GEvent *e) {
     int i=0,j=0;
     int err=0, enc;
     const unichar_t *ret;
-    
+
     p->done = true;
 
     for ( i=0, pl=plist; pl->name; ++i, ++pl ) {
@@ -2766,7 +2780,7 @@ static int PrefsSubSet_Ok(GGadget *g, GEvent *e) {
 	    break;
 	}
     }
-    
+
     return( true );
 }
 
@@ -2835,7 +2849,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&p,&wattrs);
 
 
-    
+
     for ( i=0, pl=plist; pl->name; ++i, ++pl ) {
 
 	    plabel[gc].text = (unichar_t *) _(pl->name);
@@ -2990,7 +3004,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
 		plabel[gc].text = (unichar_t *) U_("°");
 		plabel[gc].text_is_1byte = true;
 		pgcd[gc].gd.label = &plabel[gc];
-		pgcd[gc].gd.pos.x = pgcd[gc-1].gd.pos.x+gcd[gc-1].gd.pos.width+2; pgcd[gc].gd.pos.y = pgcd[gc-1].gd.pos.y; 
+		pgcd[gc].gd.pos.x = pgcd[gc-1].gd.pos.x+gcd[gc-1].gd.pos.width+2; pgcd[gc].gd.pos.y = pgcd[gc-1].gd.pos.y;
 		pgcd[gc].gd.flags = gg_enabled|gg_visible;
 		pgcd[gc++].creator = GLabelCreate;
 		hvarray[si++] = &pgcd[gc-1];
@@ -3000,7 +3014,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
 	    }
 	    ++line;
 	    hvarray[si++] = NULL;
-	
+
     }
 
     harray[4] = 0;
@@ -3022,7 +3036,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
     gcd[gc++].creator = GButtonCreate;
     harray[0] = GCD_Glue; harray[1] = &gcd[gc-1]; harray[2] = GCD_Glue; harray[3] = GCD_Glue;
 
-    
+
     memset(mboxes,0,sizeof(mboxes));
     memset(mboxes2,0,sizeof(mboxes2));
 
@@ -3031,7 +3045,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
     mboxes[2].gd.flags = gg_enabled|gg_visible;
     mboxes[2].gd.u.boxelements = harray;
     mboxes[2].creator = GHBoxCreate;
-    
+
     mboxes[0].gd.pos.x = mboxes[0].gd.pos.y = 2;
     mboxes[0].gd.flags = gg_enabled|gg_visible;
     mboxes[0].gd.u.boxelements = hvarray;
@@ -3048,7 +3062,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
     /* varray[2] = 0; */
     /* varray[3] = 0; */
     /* varray[4] = 0; */
-    
+
     mboxes2[0].gd.pos.x = 4;
     mboxes2[0].gd.pos.y = 4;
     mboxes2[0].gd.flags = gg_enabled|gg_visible;
@@ -3056,7 +3070,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
     mboxes2[0].creator = GVBoxCreate;
 
     GGadgetsCreate(gw,mboxes2);
-    
+
 
     GDrawSetVisible(gw,true);
     while ( !p.done )

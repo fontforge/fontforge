@@ -91,7 +91,9 @@ extern void RunApplicationEventLoop(void);
 #define sleep(n) Sleep(1000 * (n))
 #endif
 
+#ifdef BUILD_COLLAB
 #include "collabclientui.h"
+#endif
 
 extern int AutoSaveFrequency;
 int splash = 1;
@@ -238,12 +240,12 @@ static void SplashLayout() {
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcat(pt, FONTFORGE_GIT_VERSION);
-    
+
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcpy(pt,"  Version: ");;
     uc_strcat(pt,source_modtime_str);
-    
+
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcat(pt,"           (");
@@ -536,7 +538,7 @@ static void install_mac_timer(void) {
 	    .001*kEventDurationSecond,.001*kEventDurationSecond,
 	    NewEventLoopTimerUPP(DoRealStuff), NULL,
 	    &timer);
-}	    
+}
 #endif
 
 static int splash_e_h(GWindow gw, GEvent *event) {
@@ -761,12 +763,12 @@ static void GrokNavigationMask(void) {
 
 /**
  * Create the directory basedir/dirname with the given mode.
- * Silently ignore any errors that might happen. 
+ * Silently ignore any errors that might happen.
  */
 static void ffensuredir( const char* basedir, const char* dirname, mode_t mode ) {
     const int buffersz = PATH_MAX;
     char buffer[buffersz+1];
-    
+
     snprintf(buffer,buffersz,"%s/%s", basedir, dirname );
     // ignore errors, this is just to help the user aftre all.
 #if !defined(__MINGW32__)
@@ -889,7 +891,7 @@ int fontforge_main( int argc, char **argv ) {
 	}
     }
 #endif
-    
+
     FF_SetUiInterface(&gdraw_ui_interface);
     FF_SetPrefsInterface(&gdraw_prefs_interface);
     FF_SetSCInterface(&gdraw_sc_interface);
@@ -940,7 +942,7 @@ int fontforge_main( int argc, char **argv ) {
 
 	if ( local_x && useCommandKey ) {
 	    hotkeySystemSetCanUseMacCommand( 1 );
-	    
+
 	    /* Ok, we get the command key */
 	    if ( getenv("LANG")==NULL && getenv("LC_MESSAGES")==NULL ) {
 		setenv("LC_MESSAGES","en_US.UTF-8",0);
@@ -978,7 +980,7 @@ int fontforge_main( int argc, char **argv ) {
 	char path[PATH_MAX];
 	snprintf(path, PATH_MAX, "%s%s", shareDir, "/pixmaps" );
 	GGadgetSetImageDir( path );
-	
+
 	snprintf(path, PATH_MAX, "%s%s", shareDir, "/resources/fontforge.resource" );
 	GResourceAddResourceFile(path, GResourceProgramName,false);
     }
@@ -1143,7 +1145,7 @@ exit( 0 );
 
    if ( localsplash && !listen_to_apple_events )
 	start_splash_screen();
-    
+
     //
     // The below call will initialize the fontconfig cache if required.
     // That can take a while the first time it happens.
@@ -1165,7 +1167,7 @@ exit( 0 );
 	any = DoAutoRecoveryExtended( recover-1,
 				      DoAutoRecoveryPostRecover_PromptUserGraphically );
     }
-    
+
 
     openflags = 0;
     for ( i=1; i<argc; ++i ) {
@@ -1197,8 +1199,8 @@ exit( 0 );
 	else if ( strncmp(pt,"-psn_",5)==0 )
 	    /* Already done */;
 	else if ( (strcmp(pt,"-depth")==0 || strcmp(pt,"-vc")==0 ||
-		    strcmp(pt,"-cmap")==0 || strcmp(pt,"-colormap")==0 || 
-		    strcmp(pt,"-keyboard")==0 || 
+		    strcmp(pt,"-cmap")==0 || strcmp(pt,"-colormap")==0 ||
+		    strcmp(pt,"-keyboard")==0 ||
 		    strcmp(pt,"-display")==0 || strcmp(pt,"-recover")==0 ) &&
 		i<argc-1 )
 	    ++i; /* Already done, needed to be before display opened */
@@ -1249,8 +1251,10 @@ exit( 0 );
     if ( !any && !doopen )
 	any = ReopenLastFonts();
 
+#ifdef BUILD_COLLAB
     collabclient_ensureClientBeacon();
     collabclient_sniffForLocalServer();
+#endif
 
 #if defined(__Mac)
     if ( listen_to_apple_events ) {
