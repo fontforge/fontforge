@@ -28,8 +28,9 @@
 #include "fontforgeui.h"
 #include <utype.h>
 #include <math.h>
+#ifdef BUILD_COLLAB
 #include "collabclient.h"
-
+#endif
 
 int stop_at_join = false;
 extern int interpCPsOnMotion;
@@ -700,8 +701,8 @@ return;
 	    cv->expandedge = ee_right;
 	    SetCur(cv);
 	}
-	else
-	{
+#ifdef BUILD_COLLAB
+	else {
 	    //
 	    // Allow dragging a box around some points to send that information
 	    // to the other clients in the collab session
@@ -709,7 +710,8 @@ return;
 	    if( collabclient_inSession( &cv->b ))
 		CVPreserveState(&cv->b);
 	}
-    } else if ( event->u.mouse.clicks<=1 && !(event->u.mouse.state&ksm_shift)) {
+#endif
+      } else if ( event->u.mouse.clicks<=1 && !(event->u.mouse.state&ksm_shift)) {
 	/* printf("CVMouseDownPointer(2) not shifting\n"); */
 	/* printf("CVMouseDownPointer(2) cv->p.sp:%p\n", cv->p.sp ); */
 	/* printf("CVMouseDownPointer(2) n:%p p:%p sp:%p spline:%p ap:%p\n", */

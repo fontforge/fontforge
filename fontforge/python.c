@@ -62,11 +62,11 @@
 #include <wchar.h>
 #endif
 
-#include "gnetwork.h"
 #ifdef BUILD_COLLAB
+#include "gnetwork.h"
 #include "collab/zmq_kvmsg.h"
-#endif
 #include "collabclient.h"
+#endif
 #include "ffglib.h"
 
 extern int prefRevisionsToRetain;
@@ -5126,8 +5126,9 @@ return( -1 );
 return( -1 );
     }
 
+#ifdef BUILD_COLLAB
     CharView* cv = (CharView*)get_pyFF_maybeCallCVPreserveState_Func()( self );
-
+#endif
     if ( layer->order2!=isquad ) {
 	if ( layer->order2 )
 	    newss = SplineSetsTTFApprox(ss);
@@ -5141,8 +5142,9 @@ return( -1 );
 
     SCCharChangedUpdate(sc,self->layer);
 
+#ifdef BUILD_COLLAB
     get_pyFF_sendRedoIfInSession_Func()( cv );
-
+#endif
 return( 0 );
 }
 

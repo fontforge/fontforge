@@ -52,10 +52,9 @@
 #include <stdarg.h>
 #include "ffpython.h"
 
-#include "gnetwork.h"
 #ifdef BUILD_COLLAB
+#include "gnetwork.h"
 #include "collab/zmq_kvmsg.h"
-#endif
 #include "collabclientui.h"
 
 /**
@@ -63,6 +62,7 @@
  * if not then we get to very quickly avoid the collab code path :)
  */
 static int inPythonStartedCollabSession = 0;
+#endif
 
 static struct python_menu_info {
     PyObject *func;
@@ -382,12 +382,12 @@ static PyObject *PyFFFont_CollabSessionStart(PyFF_Font *self, PyObject *args)
     }
     FontViewBase *fv = self->fv;
 
-    
+
     HostPortUnpack( address, &port, port_default );
-    
+
     printf("address:%s\n", address );
     printf("port:%d\n", port );
-	
+
     void* cc = collabclient_new( address, port );
     fv->collabClient = cc;
     collabclient_sessionStart( cc, (FontView*)fv );
@@ -398,14 +398,13 @@ static PyObject *PyFFFont_CollabSessionStart(PyFF_Font *self, PyObject *args)
     Py_RETURN( self );
 }
 
-static void* pyFF_maybeCallCVPreserveState( PyFF_Glyph *self )
-{
-    if( !inPythonStartedCollabSession )
-	return 0;
+static void* pyFF_maybeCallCVPreserveState( PyFF_Glyph *self ) {
 #ifndef BUILD_COLLAB
     return 0;
 #else
-    
+    if( !inPythonStartedCollabSession )
+	return 0;
+
     CharView* cv = 0;
     static GHashTable* ht = 0;
     if( !ht )
@@ -419,7 +418,7 @@ static void* pyFF_maybeCallCVPreserveState( PyFF_Glyph *self )
     {
 	return cache;
     }
-    
+
     SplineFont *sf = self->sc->parent;
     FontView* fv = (FontView*)FontViewFind( FontViewFind_bySplineFont, sf );
     if( !fv )
@@ -437,7 +436,7 @@ static void* pyFF_maybeCallCVPreserveState( PyFF_Glyph *self )
         fprintf(stderr,"added... hash size:%d\n", g_hash_table_size(ht));
 	CVPreserveState( &cv->b );
 	collabclient_CVPreserveStateCalled( &cv->b );
-	    
+
 	no_windowing_ui = old_no_windowing_ui;
 	printf("called CVPreserveState()\n");
     }
@@ -448,17 +447,20 @@ static void* pyFF_maybeCallCVPreserveState( PyFF_Glyph *self )
 
 static void pyFF_sendRedoIfInSession_Func_Real( void* cvv )
 {
+#ifdef BUILD_COLLAB
     CharView* cv = (CharView*)cvv;
     if( inPythonStartedCollabSession && cv )
     {
-	collabclient_sendRedo( &cv->b );    
+	collabclient_sendRedo( &cv->b );
 	printf("collabclient_sendRedo()...\n");
     }
-    
+#endif
 }
 
 
+#ifdef BUILD_COLLAB
 static PyObject *CollabSessionSetUpdatedCallback = NULL;
+#endif
 
 static PyObject *PyFFFont_CollabSessionJoin(PyFF_Font *self, PyObject *args)
 {
@@ -466,7 +468,7 @@ static PyObject *PyFFFont_CollabSessionJoin(PyFF_Font *self, PyObject *args)
 
     char* address = collabclient_makeAddressString(
 	"localhost", collabclient_getDefaultBasePort());
-    
+
     if ( PySequence_Size(args) == 1 )
     {
 	char* uaddr = 0;
@@ -487,21 +489,17 @@ static PyObject *PyFFFont_CollabSessionJoin(PyFF_Font *self, PyObject *args)
     printf("PyFFFont_CollabSessionJoin() address:%s cc3:%p\n", address, fv->collabClient );
     printf("PyFFFont_CollabSessionJoin() address:%s cc4:%p\n", address, newfv->collabClient );
 
-    
-    
-    
     inPythonStartedCollabSession = 1;
     PyObject* ret = PyFV_From_FV_I( newfv );
     Py_RETURN( ret );
-
 #endif
 
     Py_RETURN( self );
 }
 
 
-static void InvokeCollabSessionSetUpdatedCallback(PyFF_Font *self)
-{
+#ifdef BUILD_COLLAB
+static void InvokeCollabSessionSetUpdatedCallback(PyFF_Font *self) {
     if( CollabSessionSetUpdatedCallback )
     {
 	PyObject *arglist;
@@ -512,6 +510,7 @@ static void InvokeCollabSessionSetUpdatedCallback(PyFF_Font *self)
 	Py_DECREF(arglist);
     }
 }
+#endif
 
 
 static PyObject *PyFFFont_CollabSessionRunMainLoop(PyFF_Font *self, PyObject *args)
@@ -540,7 +539,7 @@ static PyObject *PyFFFont_CollabSessionRunMainLoop(PyFF_Font *self, PyObject *ar
 	printf("***********************\n");
 	InvokeCollabSessionSetUpdatedCallback( self );
     }
-#endif    
+#endif
 
     Py_RETURN( self );
 }
@@ -549,6 +548,7 @@ static PyObject *PyFFFont_CollabSessionRunMainLoop(PyFF_Font *self, PyObject *ar
 static PyObject *PyFFFont_CollabSessionSetUpdatedCallback(PyFF_Font *self, PyObject *args)
 {
     PyObject *result = NULL;
+#ifdef BUILD_COLLAB
     PyObject *temp;
 
     if (PyArg_ParseTuple(args, "O:set_callback", &temp)) {
@@ -563,6 +563,7 @@ static PyObject *PyFFFont_CollabSessionSetUpdatedCallback(PyFF_Font *self, PyObj
         Py_INCREF(Py_None);
         result = Py_None;
     }
+#endif
     return result;
 }
 
@@ -578,7 +579,7 @@ static PyObject *PyFFFont_CollabSessionSetUpdatedCallback(PyFF_Font *self, PyObj
 
 PyMethodDef PyFF_FontUI_methods[] = {
    { "CollabSessionStart", (PyCFunction) PyFFFont_CollabSessionStart, METH_VARARGS, "Start a collab session at the given address (or the public IP address by default)" },
-    
+
    { "CollabSessionJoin", (PyCFunction) PyFFFont_CollabSessionJoin, METH_VARARGS, "Join a collab session at the given address (or localhost by default)" },
    { "CollabSessionRunMainLoop", (PyCFunction) PyFFFont_CollabSessionRunMainLoop, METH_VARARGS, "Run the main loop, checking for and reacting to Collab messages for the given number of milliseconds (or 1 second by default)" },
    { "CollabSessionSetUpdatedCallback", (PyCFunction) PyFFFont_CollabSessionSetUpdatedCallback, METH_VARARGS, "Python function to call after a new collab update has been applied" },
@@ -609,8 +610,8 @@ void PythonUI_Init(void) {
     set_pyFF_sendRedoIfInSession_Func( pyFF_sendRedoIfInSession_Func_Real );
 
     copyUIMethodsToBaseTable( PyFF_FontUI_methods, PyFF_Font_methods );
-    
-    
+
+
 }
 #endif
 

@@ -3,7 +3,7 @@
 *******************************************************************************
 
     Copyright (C) 2013 Ben Martin
-    
+
     This file is part of FontForge.
 
     FontForge is free software: you can redistribute it and/or modify
@@ -36,6 +36,7 @@
 #ifndef _ALREADY_INCLUDED_FF_COLLAB_CLIENT_PRIV_H
 #define _ALREADY_INCLUDED_FF_COLLAB_CLIENT_PRIV_H
 
+#ifdef BUILD_COLLAB
 #include "ffglib.h"
 #include "inc/fontforge-config.h"
 #include "inc/ustring.h"
@@ -45,12 +46,9 @@
 #include "inc/gwidget.h"
 #include "inc/gnetwork.h"
 
-
-#ifdef BUILD_COLLAB
 #include "collab/zmq_kvmsg.h"
 #include "czmq.h"
 #include <zbeacon.h>
-#endif
 
 #define MAGIC_VALUE 0xbeef
 #define SUBTREE "/client/"
@@ -68,13 +66,11 @@
 
 
 
-#ifdef BUILD_COLLAB
-
 #define beacon_announce_protocol_sz     20
 #define beacon_announce_uuid_sz         40
 #define beacon_announce_username_sz     50
-#define beacon_announce_machinename_sz  50 
-#define beacon_announce_ip_sz           20 
+#define beacon_announce_machinename_sz  50
+#define beacon_announce_ip_sz           20
 
 typedef struct {
     byte protocol   [beacon_announce_protocol_sz];
@@ -104,14 +100,11 @@ typedef struct {
  */
 extern GHashTable* collabclient_getServersFromBeaconInfomration( void );
 
-#endif
-
 
 typedef struct {
 
     int magic_number;    //  Magic number to test if the pointer is likely valid
 
-#ifdef BUILD_COLLAB
     zctx_t *ctx;         //  Main zeromq Context
     zloop_t *loop;       //  main zloop reactor
     char* address;       //  address of the server
@@ -129,10 +122,10 @@ typedef struct {
      * sequence that we sent to the server. If we don't get a reply to
      * the update that we sent on subscriber within the timeout then
      * we assume there is a network problem and alert the user.
-     */ 
-    BackgroundTimer_t* roundTripTimer; 
-    int                roundTripTimerWaitingSeq;         
-    
+     */
+    BackgroundTimer_t* roundTripTimer;
+    int                roundTripTimerWaitingSeq;
+
     //
     // A DEALER that we receive snapshot requests from the server on
     void *snapshot;
@@ -147,12 +140,11 @@ typedef struct {
 
     // Monotonically increasing number used to tag outgoing msgs
     // to the publisher
-    int publisher_sendseq;         
+    int publisher_sendseq;
 
-    
-#endif    
+
 } cloneclient_t;
 
 
-
+#endif
 #endif
