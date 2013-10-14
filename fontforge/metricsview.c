@@ -1976,7 +1976,7 @@ static unichar_t* MVEscpaedInputStringToRealString( MetricsView *mv, unichar_t* 
 		in = updated_in;
 		int n = MVFakeUnicodeOfSc( mv, sc );
 		printf("ToRealString have an sc!... n:%d\n", n );
-		out = utf8_idpb( out, n );
+		out = utf8_idpb( out, n, 0);
 		continue;
 	    }
 	}
@@ -2408,7 +2408,7 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 		    if( sc )
 		    {
 			int n = MVFakeUnicodeOfSc( mv, sc );
-			pt = utf8_idpb( pt, n );
+			pt = utf8_idpb( pt, n, 0 );
 			continue;
 		    }
 		}
@@ -5651,7 +5651,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     for ( cnt=0; cnt<mv->clen; ++cnt )
 	pt = utf8_idpb(pt,
 		mv->chars[cnt]->unicodeenc==-1?
-		MVFakeUnicodeOfSc(mv,mv->chars[cnt]): mv->chars[cnt]->unicodeenc);
+		MVFakeUnicodeOfSc(mv,mv->chars[cnt]): mv->chars[cnt]->unicodeenc,0);
     *pt = '\0';
 
     memset(&gd,0,sizeof(gd));

@@ -454,11 +454,11 @@ return( NULL );
 	    }
 	}
 	if ( pt && done )
-	    pt = utf8_idpb(pt,ch1);
+	    pt = utf8_idpb(pt,ch1,0);
 	if ( prev_cnt==2 ) {
 	    prev_cnt = 0;
 	    if ( pt && prev!=0 )
-		pt = utf8_idpb(pt,prev);
+		pt = utf8_idpb(pt,prev,0);
 	}
 	if ( pt==0 ) {
 	    free(buffer);
@@ -544,11 +544,11 @@ return( NULL );
 	    buffer = temp;
 	}
 	if ( pt && done )
-	    pt = utf8_idpb(pt,ch1);
+	    pt = utf8_idpb(pt,ch1,0);
 	if ( prev_cnt==2 ) {
 	    prev_cnt = 0;
 	    if ( pt && prev!=0 )
-		pt = utf8_idpb(pt,prev);
+		pt = utf8_idpb(pt,prev,0);
 	}
 	if ( pt==0 ) {
 	    free(buffer);

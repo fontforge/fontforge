@@ -38,6 +38,8 @@
 
 #ifdef BUILD_COLLAB
 #include "collabclient.h"
+#else
+extern void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u,char* keyPrefix,int idx);
 #endif
 
 extern char *coord_sep;

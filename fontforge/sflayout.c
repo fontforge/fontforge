@@ -87,7 +87,7 @@ return( x );
 	}
 	x += fd->bdf->ascent/2;
     } else {
-	bdfc = fd->fonttype==sftf_bitmap ? 
+	bdfc = fd->fonttype==sftf_bitmap ?
 	    BDFGetMergedChar( fd->bdf->glyphs[gid] ) : fd->bdf->glyphs[gid];
 	if ( col!=-1 ) {
 	    if ( !fd->antialias )
@@ -295,7 +295,7 @@ static void LIFigureLineHeight(LayoutInfo *li,int l,int p) {
 	    }
 	}
     }
-	
+
     for ( i=0; line[i]!=NULL; ++i ) {
 	FontData *fd = ((struct fontlist *) (line[i]->fl))->fd;
 	BDFFont *bdf = fd->bdf;
@@ -1109,7 +1109,7 @@ static Array *SFDefaultScriptsLines(Array *arr,SplineFont *sf) {
 	    if ( end-start>50 ) end = start+50;
 	    pt = buffer;
 	    for ( i=start; i<=end; ++i )
-		pt = utf8_idpb(pt,i);
+		pt = utf8_idpb(pt,i,0);
 	    *pt = '\0';
 	    str = buffer;
 	  break;
@@ -1139,7 +1139,7 @@ static Array *SFDefaultScriptsLines(Array *arr,SplineFont *sf) {
 	  pt = buffer;
 	  for ( gid=i=0; gid<sf->glyphcnt && pt<buffer+sizeof(buffer)-4 && i<50; ++gid ) {
 	      if ( (sc=sf->glyphs[gid])!=NULL && sc->unicodeenc!=-1 ) {
-		  pt = utf8_idpb(pt,sc->unicodeenc);
+		  pt = utf8_idpb(pt,sc->unicodeenc,0);
 		  ++i;
 	      }
 	  }
@@ -1193,7 +1193,7 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     len = 1;
     for ( i=0; i<cnt; ++i )
 	len += utf8_strlen( arr->vals[2*i+1].u.sval )+1;
-    
+
     li->text = galloc(len*sizeof(unichar_t));
     len = 0;
     last = NULL;
@@ -1220,7 +1220,7 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
 	last->feats = LI_TagsCopy(StdFeaturesOfScript(script));
     }
     li->text[len++] = '\0';
-    
+
     LayoutInfoRefigureLines(li,0,-1,width==-1 ? 0xff00 : width);
     if ( width==-1 )
 	width = li->xmax+2;

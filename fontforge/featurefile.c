@@ -5144,7 +5144,7 @@ static struct nameid *fea_ParseNameId(struct parseState *tok,int strid) {
 		    start = grealloc(start,(max+=100)+1);
 		    pt = start+off;
 		}
-		pt = utf8_idpb(pt,value);
+		pt = utf8_idpb(pt,value,UTF8IDPB_LIMIT);
 	    }
 	}
 	if ( nm!=NULL ) {
