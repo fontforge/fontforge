@@ -2329,7 +2329,7 @@ void DoPrefs(void) {
 	      break;
 	      case pr_unicode:
 		/*sprintf(buf,"U+%04x", *((int *) pl->val));*/
-		{ char *pt; pt = buf; pt = utf8_idpb(pt, *((int *) pl->val)); *pt='\0'; }
+		{ char *pt; pt=buf; pt=utf8_idpb(pt,*((int *)pl->val,UTF8IDPB_NOZERO&UTF8IDPB_LIMIT)); *pt='\0'; }
 		plabel[gc].text = (unichar_t *) copy( buf );
 		pgcd[gc++].creator = GTextFieldCreate;
 		hvarray[si++] = &pgcd[gc-1];
@@ -2903,7 +2903,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
 	      break;
 	      case pr_unicode:
 		/*sprintf(buf,"U+%04x", *((int *) pl->val));*/
-		{ char *pt; pt = buf; pt = utf8_idpb(pt, *((int *) pl->val)); *pt='\0'; }
+		{ char *pt; pt=buf; pt=utf8_idpb(pt,*((int *)pl->val,UTF8IDPB_NOZERO&UTF8IDPB_LIMIT)); *pt='\0'; }
 		plabel[gc].text = (unichar_t *) copy( buf );
 		pgcd[gc++].creator = GTextFieldCreate;
 		hvarray[si++] = &pgcd[gc-1];

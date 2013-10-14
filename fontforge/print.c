@@ -854,7 +854,7 @@ static int pdf_charproc(PI *pi, SplineChar *sc) {
 	if ( ref!=NULL )
     break;
     }
-	    
+
     if ( i==sc->layer_cnt ) {
 	/* We never set the color, use d1 to specify metrics */
 	DBounds b;
@@ -1245,7 +1245,7 @@ static void dump_pdftrailer(PI *pi) {
     /*fprintf( pi->out, "  /Encoding /WinAnsiEncoding\n" );*/
     fprintf( pi->out, ">>\n" );
     fprintf( pi->out, "endobj\n\n" );
-    
+
     xrefloc = ftell(pi->out);
     fprintf( pi->out, "xref\n" );
     fprintf( pi->out, " 0 %d\n", pi->next_object );
@@ -2223,7 +2223,7 @@ static char *_annakarenena[] = {
     NULL
 };
 /* Serbian (Cyrillic) */
-static char *_serbcyriljohn[] = { 
+static char *_serbcyriljohn[] = {
     "У почетку беше Реч Божија, и та Реч беше у Бога, и Бог беше Реч.",
     NULL
 };
@@ -2822,7 +2822,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 	    pt = buffer;
 	    for ( gid=i=0; gid<sf->glyphcnt && pt<buffer+sizeof(buffer)-4 && i<50; ++gid ) {
 		if ( (sc=sf->glyphs[gid])!=NULL && sc->unicodeenc!=-1 ) {
-		    pt = utf8_idpb(pt,sc->unicodeenc);
+		    pt = utf8_idpb(pt,sc->unicodeenc,UTF8IDPB_LIMIT);
 		    ++i;
 		}
 	    }

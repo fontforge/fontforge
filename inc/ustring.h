@@ -99,7 +99,10 @@ extern unichar_t *cu_strstartmatch(const char *initial, const unichar_t *full);
 
 #define utf82u_strncpy utf82U_strncpy
 extern int32 utf8_ildb(const char **utf8_text);
-extern char *utf8_idpb(char *utf8_text,uint32 ch);
+#define UTF8IDPB_NOZERO 1	/* Allow for 0 encoded as a non-zero utf8 0xc0:0x80 char */
+#define UTF8IDPB_LIMIT 2	/* Today's utf8 is agreed to be limited to {0..0x10FFFF} */
+#define UTF8IDPB_SURROGATES 4	/* Encode {0x10000...0x10ffff} as utf16 surrogate values */
+extern char *utf8_idpb(char *utf8_text,uint32 ch,int flags);
 extern char *utf8_db(char *utf8_text);
 extern char *utf8_ib(char *utf8_text);
 extern int utf8_valid(const char *str);

@@ -553,7 +553,7 @@ char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
     char *pt = utf8buf;
 
     if ( ubuf!=NULL ) {
-	while ( *ubuf && (pt=utf8_idpb(pt,*ubuf++)) );
+	while ( *ubuf && (pt=utf8_idpb(pt,*ubuf++,UTF8IDPB_LIMIT)) );
 	if ( pt ) {
 	    *pt = '\0';
 	    return( utf8buf );
@@ -638,7 +638,7 @@ char *u2utf8_copyn(const unichar_t *ubuf,int len) {
     if ( ubuf==NULL || len<=0 || (utf8buf=pt=(char *)malloc(len*6+1))==NULL )
 	return( NULL );
 
-    while ( (pt=utf8_idpb(pt,*ubuf++)) && --len );
+    while ( (pt=utf8_idpb(pt,*ubuf++,UTF8IDPB_LIMIT)) && --len );
     if ( pt ) {
 	*pt = '\0';
 	return( utf8buf );
@@ -680,17 +680,29 @@ int32 utf8_ildb(const char **_text) {
 return( val );
 }
 
-char *utf8_idpb(char *utf8_text,uint32 ch) {
+char *utf8_idpb(char *utf8_text,uint32 ch,int flags) {
 /* Increment and deposit character, no '\0' appended */
 /* NOTE: Unicode only needs range of 17x65535 values */
 /* and strings must be long enough to hold +4 chars. */
 /* ISO/IEC 10646 description of UTF8 allows encoding */
 /* character values up to U+7FFFFFFF before RFC3629. */
 
-    if ( ch>0x7fffffff )
+    if ( ch>0x7fffffff || (flags>1 && ((ch>=0xd800 && ch<=0xdfff) || ch>=17*65536)) )
 	return( 0 ); /* Error, ch is out of range */
 
-    if ( ch>127 ) {
+    if ( (flags&UTF8IDPB_SURROGATES) && ch>0xffff ) {
+	// (ch>=0x10000 && ch<=0x10ffff surrogates)
+	unsigned long us;
+	if ( ch>=0xd800 && ch<=0xdfff )
+	    return( 0 ); /* Error, ch is out of range */
+	ch -= 0x10000;
+	us = (ch>>10)+0xd800;
+	*utf8_text++ = us>>8;
+	*utf8_text++ = us&0xff;
+	ch = (ch&0x3ff)+0xdc00;
+	*utf8_text++ = ch>>8;
+	ch = ch&0xff;
+    } else if ( ch>127 || (ch==0 && (flags&UTF8IDPB_NOZERO)) ) {
 	if ( ch<=0x7ff )
 	    /* ch>=0x80 && ch<=0x7ff */
 	    *utf8_text++ = 0xc0 | (ch>>6);

@@ -71,7 +71,7 @@ typedef struct kernclassdlg {
     int iskernpair;
     SplineChar *scf, *scs;
     struct kernclassdlg *next;
-    
+
 } KernClassDlg;
 
 typedef struct kernclasslistdlg {
@@ -448,7 +448,7 @@ static void KCD_KernMouse(KernClassDlg *kcd,GEvent *event) {
     int kern, pkern;
     double scale;
 //    printf("KCD_KernMouse()\n");
-    
+
     scale = kcd->pixelsize/(double) (kcd->sf->ascent+kcd->sf->descent);
     kern = u_strtol(_GGadgetGetTitle(GWidgetGetControl(kcd->gw,CID_KernOffset)),NULL,10);
     pkern = kcd->magfactor*rint( kern*scale );	/* rounding can't include magnification */
@@ -648,13 +648,13 @@ static void KCD_UpdateGlyphFromName(KernClassDlg *kcd,int which,char* glyphname)
     char* p = 0;
     if((p = strstr( localglyphname, " " )))
 	*p = '\0';
-    
+
     BDFCharFree(*scpos);
     *scpos = NULL;
 
     *possc = sc = SFGetChar( kcd->sf, -1, localglyphname);
     free( localglyphname );
-    
+
     if ( sc==NULL )
 	return;
 
@@ -669,7 +669,7 @@ static void KCD_UpdateGlyphFromName(KernClassDlg *kcd,int which,char* glyphname)
     {
 	*scpos = SplineCharAntiAlias(sc,kcd->layer,kcd->pixelsize,4);
     }
-    
+
     printf("KCD_UpdateGlyph() scpos:%p\n", *scpos );
 }
 
@@ -680,7 +680,7 @@ static void KCD_UpdateGlyph(KernClassDlg *kcd,int which) {
     char *temp;
     void *freetypecontext=NULL;
 //    printf("KCD_UpdateGlyph() which:%d iskp:%d\n", which, kcd->iskernpair);
-    
+
     BDFCharFree(*scpos);
     *scpos = NULL;
     if ( kcd->iskernpair )
@@ -720,7 +720,7 @@ static void KCD_UpdateGlyph(KernClassDlg *kcd,int which) {
     {
 	*scpos = SplineCharAntiAlias(sc,kcd->layer,kcd->pixelsize,4);
     }
-    
+
 //    printf("KCD_UpdateGlyph() scpos:%p\n", *scpos );
 }
 
@@ -1392,7 +1392,7 @@ static void KCD_Mouse(KernClassDlg *kcd,GEvent *event) {
 	GGadgetDispatchEvent(kcd->vsb,event);
 return;
     }
-    
+
     if ( event->u.mouse.x<kcd->xstart || event->u.mouse.x>kcd->xstart2+kcd->fullwidth ||
 	    event->u.mouse.y<kcd->ystart || event->u.mouse.y>kcd->ystart2+kcd->height )
 return;
@@ -1449,7 +1449,7 @@ static int KCD_NameClass(SplineFont *sf,char *buf,int blen,char *class_str) {
     SplineChar *sc;
 
     if ( class_str==NULL ) {
-	utf8_idpb(buf,0x2205);		/* Empty set glyph */
+	utf8_idpb(buf,0x2205,0);	/* Empty set glyph */
 return( true );
     }
     if ( isEverythingElse(class_str)) {
@@ -1484,7 +1484,7 @@ return( false );
 	*bpt = '\0';
 return( false );
     }
-    
+
     ch = *pt; *pt='\0';
     sc = SFGetChar(sf,-1,start);
     if ( sc==NULL ) {
@@ -1494,7 +1494,7 @@ return( true );
     } else if ( sc->unicodeenc==-1 || isprivateuse(sc->unicodeenc))	/* Pango complains that privateuse code points are "Invalid UTF8 strings" */
 	snprintf( buf, blen, "%s", start );
     else {
-	char *bpt = utf8_idpb(buf,sc->unicodeenc);
+	char *bpt = utf8_idpb(buf,sc->unicodeenc,0);
 	*bpt = '\0';
     }
     *pt = ch;
@@ -1884,7 +1884,7 @@ void ME_ListCheck(GGadget *g,int r, int c, SplineFont *sf) {
 	if ( *eow1=='(' ) {
 	    while ( *eow1!='\0' && *eow1!=')' ) ++eow1;
 	    if ( *eow1==')' ) ++eow1;
-	} 
+	}
 	while ( *eow1==' ' ) ++eow1;
 	ch1 = *pt1; *pt1='\0';
 	if ( sf!=NULL && !isEverythingElse( start1 )) {
@@ -1949,7 +1949,7 @@ void ME_SetCheckUnique(GGadget *g,int r, int c, SplineFont *sf) {
 	if ( *eow1=='(' ) {
 	    while ( *eow1!='\0' && *eow1!=')' ) ++eow1;
 	    if ( *eow1==')' ) ++eow1;
-	} 
+	}
 	while ( *eow1==' ' ) ++eow1;
 	ch1 = *pt1; *pt1='\0';
 	if ( sf!=NULL && !isEverythingElse( start1 )) {
@@ -2144,7 +2144,7 @@ static char *KCD_PickGlyphsForClass(GGadget *g,int r, int c) {
     {
 	KCD_UpdateGlyphFromName(kcd,!which,other);
     }
-    
+
     GDrawRequestExpose(kcd->subw,NULL,false);
 
 return( new );
@@ -2232,7 +2232,7 @@ static void KCD_DeleteClass(GGadget *g,int whichclass) {
 	kcd->offsets = newoffs;
 	free(kcd->adjusts);
 	kcd->adjusts = newadj;
-    }    
+    }
 }
 
 static void KCD_ClassSelectionChanged(GGadget *g,int whichclass, int c) {
@@ -2730,7 +2730,7 @@ return;
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	gcd[i].gd.popup_msg = (unichar_t *) _(
 	    "Add entries to the lookup trying to make the optical\n"
@@ -2755,7 +2755,7 @@ return;
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	gcd[i].gd.popup_msg = (unichar_t *) _(
 	    "Any computed kerning change whose absolute value is less\n"
@@ -2779,7 +2779,7 @@ return;
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	if ( kc->subtable->kerning_by_touch )
 	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
@@ -2833,7 +2833,7 @@ return;
 	hbox.gd.flags = gg_enabled|gg_visible;
 	hbox.gd.u.boxelements = h5array;
 	hbox.creator = GHBoxCreate;
-	
+
 	varray[j++] = &hbox; varray[j++] = NULL;
 
     gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = GDrawPointsToPixels(gw,gcd[i-1].gd.pos.y+17);
@@ -3064,10 +3064,10 @@ static int KCL_Done(GGadget *g, GEvent *e) {
 	if( kcld && kcld->sf )
 	{
 	    SplineFont *sf = kcld->sf;
-	    
+
 	    MVReFeatureAll( sf );
 	    MVReKernAll( sf );
-	    
+
 	    /* KernClass* kc = sf->kerns; */
 	    /* int i = 0; */
 	    /* for( ; kc; kc = kc->next ) */
@@ -3077,7 +3077,7 @@ static int KCL_Done(GGadget *g, GEvent *e) {
 	    MetricsView *mv;
 	    for ( mv=sf->metrics; mv!=NULL; mv=mv->next )
 		MVSelectFirstKerningTable( mv );
-	    
+
 	}
 	GDrawDestroyWindow(kcld->gw);
     }
@@ -3303,7 +3303,7 @@ void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int layer,int isv)
     }
     if ( sc2==NULL && sc1!=NULL && (isv ? sc1->vkerns : sc1->kerns)!=NULL )
 	sc2 = (isv ? sc1->vkerns : sc1->kerns)->sc;
-    
+
     memset(&kcd,0,sizeof(kcd));
     kcd.sf = sf;
     kcd.layer = layer;
