@@ -6169,7 +6169,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 		} else if ( uni>0 && uni<unicode4_size ) {
 		    char *pt = utf8_buf;
 		    use_utf8 = true;
-		    pt = utf8_idpb(pt,uni);
+		    pt = utf8_idpb(pt,uni,0);
 		    *pt = '\0';
 		} else {
 		    char *pt = strchr(sc->name,'.');

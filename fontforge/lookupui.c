@@ -936,7 +936,7 @@ static void LK_NewScript(GGadget *g,int row) {
     /* What's a good default lang list for a new script? */
     /*  well it depends on what the script is, but we don't know that yet */
     /* dflt is safe */
-	
+
     strings[2*row+1].u.md_str = copy("dflt");
 }
 
@@ -1141,7 +1141,7 @@ static char *LK_ScriptsDlg(GGadget *g, int r, int c) {
     gcd[k].creator = GMatrixEditCreate;
     varray[j++] = &gcd[k++]; varray[j++] = NULL;
 
-    gcd[k].gd.pos.x = 30-3; 
+    gcd[k].gd.pos.x = 30-3;
     gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[k].text = (unichar_t *) _("_OK");
@@ -1171,7 +1171,7 @@ static char *LK_ScriptsDlg(GGadget *g, int r, int c) {
     boxes[0].gd.u.boxelements = harray3;
     boxes[0].creator = GHBoxCreate;
     varray[j++] = &boxes[0]; varray[j++] = NULL; varray[j] = NULL;
-    
+
     boxes[1].gd.pos.x = boxes[1].gd.pos.y = 2;
     boxes[1].gd.flags = gg_enabled|gg_visible;
     boxes[1].gd.u.boxelements = varray;
@@ -1355,7 +1355,7 @@ static void LK_NewFeature(GGadget *g,int row) {
     }
     if ( bpos>0 )
 	buf[bpos-1] = '\0';
-	
+
     strings[2*row+1].u.md_str = copy(buf);
     free(buf);
 }
@@ -1731,7 +1731,7 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
     label[0].text_is_1byte = true;
     label[0].text_in_resource = true;
     gcd[0].gd.label = &label[0];
-    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6+6; 
+    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6+6;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GLabelCreate;
 
@@ -1822,7 +1822,7 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
 	label[7].text = (unichar_t *) _("Mark Class:");
 	label[7].text_is_1byte = true;
 	gcd[7].gd.label = &label[7];
-	gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = gcd[6].gd.pos.y+16; 
+	gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = gcd[6].gd.pos.y+16;
 	gcd[7].gd.flags = sf->mark_class_cnt<=1 ? gg_visible : (gg_enabled|gg_visible);
 	gcd[7].creator = GLabelCreate;
 	flaghvarray[0] = &gcd[7];
@@ -1872,7 +1872,7 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
     label[11].text = (unichar_t *) _("Lookup Name:");
     label[11].text_is_1byte = true;
     gcd[11].gd.label = &label[11];
-    gcd[11].gd.pos.x = 5; gcd[11].gd.pos.y = gcd[8].gd.pos.y+16; 
+    gcd[11].gd.pos.x = 5; gcd[11].gd.pos.y = gcd[8].gd.pos.y+16;
     gcd[11].gd.flags = gg_enabled|gg_visible;
     gcd[11].creator = GLabelCreate;
     harray2[0] = &gcd[11];
@@ -1910,7 +1910,7 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
 	k = 14; vpos = 10;
     }
 
-    gcd[k].gd.pos.x = 30-3; 
+    gcd[k].gd.pos.x = 30-3;
     gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[k].text = (unichar_t *) _("_OK");
@@ -1940,7 +1940,7 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
     boxes[4].gd.u.boxelements = harray3;
     boxes[4].creator = GHBoxCreate;
     varray[vpos++] = &boxes[4]; varray[vpos++] = NULL; varray[vpos] = NULL;
-    
+
     boxes[5].gd.pos.x = boxes[5].gd.pos.y = 2;
     boxes[5].gd.flags = gg_enabled|gg_visible;
     boxes[5].gd.u.boxelements = varray;
@@ -2398,7 +2398,7 @@ static void SortUnPrep(struct matrix_data *md) {
 
     md->u.md_str = si->glyphname;
 }
-    
+
 static int _md_cmp(const struct sortinfo *md1, const struct sortinfo *md2) {
 
     if ( md1->sc==NULL || md2->sc==NULL ) {
@@ -2431,7 +2431,7 @@ return( -1 );
 	    uni2 = (md2->base->unicodeenc!=-1)? md2->base->unicodeenc : 0xffffff;
 	    if ( uni1<0x10000 && islower(uni1)) uni1 = toupper(uni1);
 	    if ( uni2<0x10000 && islower(uni2)) uni2 = toupper(uni2);
-	
+
 	    if ( uni1>uni2 )
 return( 1 );
 	    else if ( uni1<uni2 )
@@ -3347,7 +3347,7 @@ static void PSTKD_DoPopulate(PSTKernDlg *pstkd,char *suffix, enum pop_type pt) {
 		    psts[rows*cols+0].u.md_str = copy(sc->name);
 		    ++rows;
 		}
-		if ( alt!=NULL ) 
+		if ( alt!=NULL )
 		    psts[pos*cols+1].u.md_str = copy(alt->name);
 		else if ( allsame && pos!=0 ) {
 		    psts[pos*cols+SIM_DX].u.md_ival = psts[0+SIM_DX].u.md_ival;
@@ -3679,7 +3679,7 @@ static void SCKernsSort( SplineChar *sc ) {
 		// nothing is always sorted already!
 		continue;
 	    }
-	    
+
 	    KernPair** ordered = galloc( sizeof(KernPair*) * length+1 );
 	    // copy to temp array
 	    idx = 0;
@@ -3716,7 +3716,7 @@ extern char* SFDCreateUndoForLookup( SplineFont *sf, int lookup_type );
  *
  * The caller needs to free() the returned string value.
  */
-char* SFDCreateUndoForLookup( SplineFont *sf, int lookup_type ) 
+char* SFDCreateUndoForLookup( SplineFont *sf, int lookup_type )
 {
     int gid = 0;
     SplineChar *sc = 0;
@@ -3805,7 +3805,7 @@ static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
     if( !newstr ) {
 	return 0;
     }
-    
+
     FILE* of   = MakeTemporaryFile();
     FILE* nf   = MakeTemporaryFile();
     FILE* retf = MakeTemporaryFile();
@@ -3833,12 +3833,12 @@ static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
 	fwrite( "\n", 1, 1, retf );
 	free(oline);
     }
-    
+
     while (oglyph) {
 	oline = getquotedeol(of);
 	SplineChar* oldsc = SCFindByGlyphName( sf, oglyph );
 	int newGlyphsSeen = 0;
-	
+
 	while ((nglyph = SFDMoveToNextStartChar(nf))) {
 	    newGlyphsSeen++;
 	    SplineChar* newsc = SCFindByGlyphName( sf, nglyph );
@@ -3860,7 +3860,7 @@ static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
 		oline = getquotedeol(of);
 		oldsc = SCFindByGlyphName( sf, oglyph );
 	    }
-	    
+
 	    nline = getquotedeol(nf);
 	    if( !oline || !nline ) {
 		fprintf(stderr,"failed to read new or old files during SFD diff. Returning entire new data as diff!\n");
@@ -3873,12 +3873,12 @@ static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
 		free(nline);
 		continue;
 	    }
-	    
+
 	    if( !strcmp( oline, nline )) {
 		// printf("old and new have the same data, skipping glyph:%s\n", oglyph );
 		break;
 	    }
-	    
+
 	    glyphsWithUndoInfoCount++;
 	    SFDTrimUndoOldToNew_Output( retf, oglyph, oline );
 	    free(nline);
@@ -3912,7 +3912,7 @@ static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
 
     if( !glyphsWithUndoInfoCount )
 	return 0;
-    
+
     char* ret = FileToAllocatedString( retf );
     return ret;
 }
@@ -4046,11 +4046,11 @@ return( true );
 	if( !pstkd->sf->subfontcnt ) {
 	    sf = pstkd->sf;
 	    oldsfd = SFDCreateUndoForLookup( sf, lookup_type );
-	    
-	    if( DEBUG )	    
+
+	    if( DEBUG )
 		GFileWriteAll( "/tmp/old-lookup-table.sfd", oldsfd );
 	}
-	
+
 	/* Then mark all the current things as unused */
 	k=0;
 	do {
@@ -4065,7 +4065,7 @@ return( true );
 	 */
 	if ( lookup_type!=gpos_pair ) {
 	    for ( r=0; r<rows; ++r ) {
-		
+
 		sc = SFGetChar(pstkd->sf,-1,psts[cols*r+0].u.md_str);
 		for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
 		    if ( pst->subtable == pstkd->sub && !pst->ticked )
@@ -4164,7 +4164,7 @@ return( true );
 	 * trim the undo operation of superfluious data
 	 */
 	if( oldsfd ) {
-	    
+
 	    int shouldCreateUndoEntry = 1;
 	    sf = pstkd->sf;
 	    char* str = SFDCreateUndoForLookup( sf, lookup_type );
@@ -4273,7 +4273,7 @@ return( copy(str));
 		!( sc->unicodeenc<0x7f && isalpha(sc->unicodeenc)) &&
 		!isprivateuse(sc->unicodeenc)) {
 	    *rpt++ = '(';
-	    rpt = utf8_idpb(rpt,sc->unicodeenc);
+	    rpt = utf8_idpb(rpt,sc->unicodeenc,0);
 	    *rpt++ = ')';
 	}
 	*rpt++ = ' ';
@@ -4306,7 +4306,7 @@ return( copy(sc->name));
 	    !isprivateuse(sc->unicodeenc)) {
 	pt = temp+len;
 	*pt++ = '(';
-	pt = utf8_idpb(pt,sc->unicodeenc);
+	pt = utf8_idpb(pt,sc->unicodeenc,0);
 	*pt++ = ')';
 	*pt = '\0';
     }
@@ -4332,7 +4332,7 @@ return( NULL );
     }
 return( temp );
 }
-    
+
 unichar_t **SFGlyphNameCompletion(SplineFont *sf,GGadget *t,int from_tab,
 	int new_name_after_space) {
     unichar_t *pt, *spt, *basept, *wild; unichar_t **ret;
@@ -4493,7 +4493,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	    sub->separation = 15*(sf->ascent+sf->descent)/100;
 	sub->minkern = sub->separation/10;
     }
-	    
+
     memset(&pstkd,0,sizeof(pstkd));
     pstkd.sf = sf;
     pstkd.def_layer = def_layer;
@@ -4524,7 +4524,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
     gcd[i].gd.flags = isalphabetic ? (gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup) : (gg_enabled|gg_visible|gg_utf8_popup);
     gcd[i].gd.popup_msg = (unichar_t *) _("Sort this display based on the alphabetic name of the glyph");
     gcd[i].gd.handle_controlevent = PSTKD_Sort;
@@ -4536,7 +4536,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
     gcd[i].gd.flags = !isalphabetic ? (gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup) : (gg_enabled|gg_visible|gg_utf8_popup);
     gcd[i].gd.popup_msg = (unichar_t *) _("Sort this display based on the unicode code of the glyph");
     gcd[i].gd.handle_controlevent = PSTKD_Sort;
@@ -4548,7 +4548,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
     gcd[i].gd.flags = stemming ? (gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup) : (gg_enabled|gg_visible|gg_utf8_popup);
     gcd[i].gd.popup_msg = (unichar_t *) _("Sort first using the base glyph (if any).\nThus Agrave would sort with A");
     gcd[i].gd.handle_controlevent = PSTKD_Sort;
@@ -4560,7 +4560,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
     gcd[i].gd.flags = byscripts ? (gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup) : (gg_enabled|gg_visible|gg_utf8_popup);
     gcd[i].gd.popup_msg = (unichar_t *) _("Sort first using the glyph's script.\nThus A and Z would sort together\nwhile Alpha would sort with Omega and not A");
     if ( sub->lookup->features==NULL ||
@@ -4583,7 +4583,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
 	gcd[i].gd.flags = lookup_hideunused ? (gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup) : (gg_enabled|gg_visible|gg_utf8_popup);
 	gcd[i].gd.popup_msg = (unichar_t *) _("Don't display columns of 0s.\nThe OpenType lookup allows for up to 8 kinds\nof data, but almost all lookups will use just one or two.\nOmitting the others makes the behavior clearer.");
 	gcd[i].gd.handle_controlevent = PSTKD_HideUnused;
@@ -4672,7 +4672,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	gcd[i].gd.popup_msg = (unichar_t *) _(
 	    "Add entries to the lookup based on the following suffix.\n"
@@ -4703,7 +4703,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup;
 	if ( is_boundsFeat(sub)!=0 )
 	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
@@ -4711,13 +4711,13 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	gcd[i].gd.cid = CID_AllSame;
 	gcd[i].creator = GCheckBoxCreate;
 	varray[k++] = &gcd[i++]; varray[k++] = NULL;
-    
+
     } else if ( sub->lookup->lookup_type == gpos_pair ) {
 	label[i].text = (unichar_t *) _("_Default Separation:");
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	gcd[i].gd.popup_msg = (unichar_t *) _(
 	    "Add entries to the lookup trying to make the optical\n"
@@ -4742,7 +4742,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	gcd[i].gd.popup_msg = (unichar_t *) _(
 	    "Any computed kerning change whose absolute value is less\n"
@@ -4766,7 +4766,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	if ( sub->kerning_by_touch )
 	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
@@ -5238,7 +5238,7 @@ return;
 
     memset(&size,0,sizeof(size));
     size.height = fv->mbh + kf->infoh + kf->fh+4 + 2*(height-fv->mbh) + kf->fh + 2;
-    size.width = width; 
+    size.width = width;
     GGadgetSetDesiredSize(kf->guts,NULL, &size);
     GHVBoxFitWindow(kf->topbox);
 }
@@ -5315,7 +5315,7 @@ return( true );
 	    (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
 return( GGadgetDispatchEvent(active_fv->vsb,event));
     }
-    
+
     switch ( event->type ) {
       case et_expose:
 	FVDrawInfo(active_fv,pixmap,event);
@@ -5610,7 +5610,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
     gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
     gcd[i].gd.popup_msg = (unichar_t *) _(
 	"This is roughly (very roughly) the number off em-units\n"
@@ -5645,7 +5645,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	gcd[i].gd.popup_msg = (unichar_t *) _(
 	    "Add entries to the lookup trying to make the optical\n"
@@ -5670,7 +5670,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	gcd[i].gd.popup_msg = (unichar_t *) _(
 	    "Any computed kerning change whose absolute value is less\n"
@@ -5694,7 +5694,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	if ( sub->kerning_by_touch )
 	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;

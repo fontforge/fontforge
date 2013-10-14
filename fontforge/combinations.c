@@ -71,7 +71,7 @@ void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
 			pt += strlen(pt);
 			if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 ) {
 			    *pt++='(';
-			    pt = utf8_idpb(pt,sc->unicodeenc);
+			    pt = utf8_idpb(pt,sc->unicodeenc,0);
 			    *pt++=')';
 			}
 			/* *pt++ = 0x21d0;*/ /* left arrow */
@@ -441,7 +441,7 @@ static void BaseFillFromBDFC(struct _GImage *base,BDFChar *bdfc) {
     base->width = bdfc->xmax-bdfc->xmin+1;
     base->height = bdfc->ymax-bdfc->ymin+1;
 }
-    
+
 static void KP_ExposeKerns(KPData *kpd,GWindow pixmap,GRect *rect) {
     GRect old, subclip, subold, sel;
     struct _GImage base;
@@ -618,11 +618,11 @@ static void KP_SetCursor(KPData *kpd, int ismove ) {
 	kpd->movecursor = ismove;
     }
 }
-	    
+
 static BDFChar *KP_Cursor(KPData *kpd, GEvent *e) {
     if ( kpd->ac==NULL ) {
 	BDFChar *bdfc2 = KP_Inside(kpd,e);
-    
+
 	KP_SetCursor(kpd,bdfc2!=NULL );
 return( bdfc2 );
     }
@@ -1117,7 +1117,7 @@ return;
     label[0].text_is_1byte = true;
     label[0].text_in_resource = true;
     gcd[0].gd.label = &label[0];
-    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5+6; 
+    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5+6;
     gcd[0].gd.flags = gg_enabled|gg_visible;
     gcd[0].creator = GLabelCreate;
     hvarray[0][0] = &gcd[0];
@@ -1134,7 +1134,7 @@ return;
     label[2].text = (unichar_t *) _("Sort By:");
     label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
-    gcd[2].gd.pos.x = gcd[0].gd.pos.x; gcd[2].gd.pos.y = gcd[0].gd.pos.y+25; 
+    gcd[2].gd.pos.x = gcd[0].gd.pos.x; gcd[2].gd.pos.y = gcd[0].gd.pos.y+25;
     gcd[2].gd.flags = gg_enabled|gg_visible;
     gcd[2].creator = GLabelCreate;
     hvarray[1][0] = &gcd[2];

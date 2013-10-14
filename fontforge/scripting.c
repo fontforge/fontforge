@@ -928,7 +928,7 @@ static void btoupper(Context *c) {
 	    if ( ch==-1 )
 	break;
 	    if ( ch<0x10000 ) ch = toupper(ch);
-	    pt = utf8_idpb(pt,ch);
+	    pt = utf8_idpb(pt,ch,UTF8IDPB_NOZERO);
 	}
 	*pt = '\0';
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode ) {
@@ -952,7 +952,7 @@ static void btolower(Context *c) {
 	    if ( ch==-1 )
 	break;
 	    if ( ch<0x10000 ) ch = tolower(ch);
-	    pt = utf8_idpb(pt,ch);
+	    pt = utf8_idpb(pt,ch,UTF8IDPB_NOZERO);
 	}
 	*pt = '\0';
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode ) {
@@ -976,7 +976,7 @@ static void btomirror(Context *c) {
 	    if ( ch==-1 )
 	break;
 	    if ( ch<0x10000 ) ch = tomirror(ch);
-	    pt = utf8_idpb(pt,ch);
+	    pt = utf8_idpb(pt,ch,UTF8IDPB_NOZERO);
 	}
 	*pt = '\0';
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode ) {

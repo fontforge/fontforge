@@ -934,11 +934,11 @@ return( NULL );
 	    if ( uch2>=0xdc00 && uch2<0xe000 )
 		uch = ((uch-0xd800)<<10) | (uch2&0x3ff);
 	    else {
-		pt = utf8_idpb(pt,uch);
+		pt = utf8_idpb(pt,uch,0);
 		uch = uch2;
 	    }
 	}
-	pt = utf8_idpb(pt,uch);
+	pt = utf8_idpb(pt,uch,0);
     }
     *pt++ = 0;
 return( grealloc(str,pt-str) );
