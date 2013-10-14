@@ -37,8 +37,8 @@ AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_TESTDIR([tests],[fontforge])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
-AC_CONFIG_HEADERS([inc/fontforge-config.h])
-AM_INIT_AUTOMAKE([foreign -Wall])
+AC_CONFIG_HEADER([inc/fontforge-config.h])
+AM_INIT_AUTOMAKE([foreign -Wall subdir-objects])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
@@ -187,7 +187,7 @@ AC_ARG_ENABLE([windows-cross-compile],
 themename=tango
 
 #
-# Retain the old 2012 theme for those who like it. 
+# Retain the old 2012 theme for those who like it.
 #
 FONTFORGE_ARG_ENABLE([theme-2012],
         [AS_HELP_STRING([--enable-theme-2012],
@@ -269,7 +269,7 @@ if test x"${i_do_have_x}" = xyes; then
    AC_DEFINE(HAVE_GUI,[1],[Have GUI])
 fi
 if test x"${i_do_have_x}" = xyes; then
-   if test x"${i_do_have_libzmq}" = xyes; then 
+   if test x"${i_do_have_libzmq}" = xyes; then
       AC_DEFINE(BUILD_COLLAB,[1],[Build the Collab Code])
    fi
 fi

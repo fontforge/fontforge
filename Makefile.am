@@ -46,7 +46,7 @@ include $(top_srcdir)/mk/layout.am
 
 #--------------------------------------------------------------------------
 
-SUBDIRS = inc libltdl Unicode gutils hotkeys share osx
+SUBDIRS = inc libltdl Unicode gutils hotkeys share
 
 if LIBZMQ
 SUBDIRS += collab
@@ -66,7 +66,7 @@ SUBDIRS += pyhook
 endif PYTHON_EXTENSION
 
 if MACINTOSH
-SUBDIRS += mackeys
+SUBDIRS += mackeys osx
 endif MACINTOSH
 
 if DESKTOP
