@@ -442,11 +442,11 @@ return( NULL );
 		done = true;
 	    }
 	}
-	if ( pt && pt+10>=end ) {
+	if ( pt+10>=end ) {
 	    if ( buffer==NULL ) {
 		pt = buffer = galloc(400);
 		end = buffer+400;
-	    } else {
+	    } else if (pt) {
 		char *temp = grealloc(buffer,end-buffer+400);
 		pt = temp+(pt-buffer);
 		end = temp+(end-buffer+400);
