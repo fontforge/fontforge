@@ -2929,7 +2929,7 @@ return( NULL );
 	    points = freeme = galloc(self->pt_cnt*sizeof(struct PyFF_Point *));
 	    for ( i=start; i<self->pt_cnt; ++i )
 		points[i-start] = self->points[i];
-	    off = i;
+	    off = self->pt_cnt - start;
 	    for ( i=0; i<start; ++i )
 		points[i+off] = self->points[i];
 	}
