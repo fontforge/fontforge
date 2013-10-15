@@ -18375,8 +18375,10 @@ static PyObject *InitializePythonMainNamespace() {
 static void CreateAllPyModules(void) {
     int i;
 
+    /*
     if (!quiet)
         printf("CreateAllPyModules()\n");
+    */
 
     for ( i=0; i<NUM_MODULES; i++ ) {
         CreatePyModule( all_modules[i] );
@@ -18810,6 +18812,7 @@ return;
     /* (If we loaded from an sfd file) */
     obj = NULL;
     if ( sf->python_persistent!=NULL && PyMapping_Check(sf->python_persistent) &&
+	 PyMapping_HasKeyString(sf->python_persistent,"initScriptString") &&
 	    (obj = PyMapping_GetItemString(sf->python_persistent,"initScriptString"))!=NULL &&
 	    STRING_CHECK(obj)) {
 	char *str = PyBytes_AsString(obj);

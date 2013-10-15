@@ -48,7 +48,7 @@ TESTSUITE = $(srcdir)/testsuite
 
 # test linking
 link_test_SOURCES = link_test.c
-link_test_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_builddir)/fontforge
+link_test_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/fontforge -I$(top_srcdir)/inc
 link_test_LDADD = $(top_builddir)/fontforge/libfontforge.la
 
 if BUILD_LINK_TEST
