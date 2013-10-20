@@ -40,11 +40,10 @@
 #include <math.h>
 #include <unistd.h>
 
-#ifdef BUILD_COLLAB
 #include "inc/gnetwork.h"
 #include "collabclientui.h"
 #include "collabclientpriv.h"
-#endif
+
 #include "gutils/unicodelibinfo.h"
 
 // Clash on windows for a define to PrintDlgA
@@ -1407,13 +1406,10 @@ static void FVMenuCondense(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 #define MID_BlendToNew	2904
 #define MID_ModifyComposition	20902
 #define MID_BuildSyllables	20903
-
-#ifdef BUILD_COLLAB
 #define MID_CollabStart         22000
 #define MID_CollabConnect       22001
 #define MID_CollabDisconnect    22002
 #define MID_CollabCloseLocalServer  22003
-#endif
 
 #define MID_Warnings	3000
 
@@ -3617,14 +3613,12 @@ static void FontViewSetTitle(FontView *fv) {
     if ( fv->gw==NULL )		/* In scripting */
 return;
 
-#ifdef BUILD_COLLAB
     char* collabStateString = "";
     if( collabclient_inSessionFV( &fv->b )) {
 	printf("collabclient_getState( fv ) %d %d\n",
 	       fv->b.collabState, collabclient_getState( &fv->b ));
 	collabStateString = collabclient_stateToString(collabclient_getState( &fv->b ));
     }
-#endif
 
     enc = SFEncodingName(fv->b.sf,fv->b.normal?fv->b.normal:fv->b.map);
     len = strlen(fv->b.sf->fontname)+1 + strlen(enc)+6;
@@ -3636,20 +3630,16 @@ return;
 	if ( (file = fv->b.sf->filename)==NULL )
 	    file = fv->b.sf->origname;
     }
-#ifdef BUILD_COLLAB
     len += strlen(collabStateString);
-#endif
     if ( file!=NULL )
 	len += 2+strlen(file);
     title = galloc((len+1)*sizeof(unichar_t));
     uc_strcpy(title,"");
 
-#ifdef BUILD_COLLAB
     if(*collabStateString) {
 	uc_strcat(title, collabStateString);
 	uc_strcat(title, " - ");
     }
-#endif
     uc_strcat(title,fv->b.sf->fontname);
     if ( fv->b.sf->changed )
 	uc_strcat(title,"*");
@@ -5618,7 +5608,6 @@ static void FVWindowMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *e) {
     }
 }
 
-#ifdef BUILD_COLLAB
 static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -5810,7 +5799,6 @@ static GMenuItem2 collablist[] = {
 
     GMENUITEM2_EMPTY,				/* Extra room to show sub-font names */
 };
-#endif
 
 GMenuItem2 helplist[] = {
     { { (unichar_t *) N_("_Help"), (GImage *) "helphelp.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Help|F1"), NULL, NULL, FVMenuContextualHelp, 0 },
@@ -8139,7 +8127,6 @@ return( ret );
 /****************************************/
 /****************************************/
 
-#ifdef BUILD_COLLAB
 int FontViewFind_byXUID( FontViewBase* fv, void* udata )
 {
     if( !fv || !fv->sf )
@@ -8180,7 +8167,6 @@ FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* udata ), void*
     }
     return 0;
 }
-#endif
 
 /****************************************/
 /****************************************/

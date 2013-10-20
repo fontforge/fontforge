@@ -52,9 +52,7 @@
 #include <glib.h>
 #undef GTimer
 
-#ifdef BUILD_COLLAB
 #include "collabclient.h"
-#endif
 
 #define RAD2DEG	(180/3.1415926535897932)
 
@@ -431,13 +429,11 @@ static struct prefs_list {
 	{ N_("UseNewIndicScripts"), pr_bool, &use_second_indic_scripts, NULL, NULL, 'C', NULL, 0, N_("MS has changed (in August 2006) the inner workings of their Indic shaping\nengine, and to disambiguate this change has created a parallel set of script\ntags (generally ending in '2') for Indic writing systems. If you are working\nwith the new system set this flag, if you are working with the old unset it.\n(if you aren't doing Indic work, this flag is irrelevant).") },
 	PREFS_LIST_EMPTY
 },
-#ifdef BUILD_COLLAB
  collab_list[] = {
 	{ N_("SessionJoinTimeout"), pr_int, &pref_collab_sessionJoinTimeoutMS, NULL, NULL, 'C', NULL, 0, N_("The number of milliseconds to wait for a connection to the collaboration server to happen. FontForge may be unresponsive during this session connection time. (default 1000 which is 1 second)") },
 	{ N_("RoundTripMessageMaxTime"), pr_int, &pref_collab_roundTripTimerMS, NULL, NULL, 'C', NULL, 0, N_("The number of milliseconds that are allowed to pass between sending an update to the server and hearing it sent back as a message to all clients. The FontForge user interface may be unresponsive during this time. A change requires a restart of FontForge. (default 2000 which is 2 seconds)") },
 	PREFS_LIST_EMPTY
 },
-#endif
 /* These are hidden, so will never appear in preference ui, hence, no "N_(" */
 /*  They are controled elsewhere AntiAlias is a menu item in the font window's View menu */
 /*  etc. */
@@ -541,14 +537,10 @@ static struct prefs_list {
 	PREFS_LIST_EMPTY
 },
  *prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list,
-#ifdef BUILD_COLLAB
  collab_list,
-#endif
  hidden_list, NULL },
  *load_prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list,
-#ifdef BUILD_COLLAB
  collab_list,
-#endif
  hidden_list, oldnames, NULL };
 
 struct visible_prefs_list { char *tab_name; int nest; struct prefs_list *pl; } visible_prefs_list[] = {

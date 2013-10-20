@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <fontforge-config.h>
-#ifdef BUILD_COLLAB
 
 #include "inc/gnetwork.h"
 #include "inc/ustring.h"
@@ -47,8 +46,10 @@ extern int h_errno;
 #  include <arpa/inet.h>
 #endif
 
+#ifdef BUILD_COLLAB
 #if !defined(__MINGW32__)
 #include <uuid/uuid.h>
+#endif
 #endif
 
 
@@ -124,11 +125,14 @@ char* HostPortUnpack( char* packed, int* port, int port_default )
 char* ff_uuid_generate( char* target )
 {
     strcpy( target, "" );
+
+#ifdef BUILD_COLLAB
 #if !defined(__MINGW32__)
     uuid_t uuid;
     uuid_generate (uuid);
     uuid_unparse_lower( uuid, target );
 #endif
+#endif // collab guard.
+
     return target;
 }
-#endif

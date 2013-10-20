@@ -36,12 +36,7 @@
 #else
     #include <execinfo.h>
 #endif
-
-#ifdef BUILD_COLLAB
 #include "collabclient.h"
-#else
-extern void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u,char* keyPrefix,int idx);
-#endif
 
 extern char *coord_sep;
 
@@ -621,11 +616,9 @@ static Undoes *CVAddUndo(CharViewBase *cv,Undoes *undo) {
 			   &cv->layerheads[cv->drawmode]->undoes,
 			   &cv->layerheads[cv->drawmode]->redoes );
 
-#ifdef BUILD_COLLAB
     /* Let collab system know that a new undo state */
     /* was pushed now since it last sent a message. */
     collabclient_CVPreserveStateCalled( cv );
-#endif
     return( ret );
 }
 
@@ -767,9 +760,7 @@ Undoes *SCPreserveState(SplineChar *sc,int dohints) {
 	    SCPreserveLayer(sc,i,false);
 
     Undoes* ret = SCPreserveLayer( sc, ly_fore, dohints );
-#ifdef BUILD_COLLAB
     collabclient_SCPreserveStateCalled( sc );
-#endif
     return( ret );
 }
 
@@ -880,11 +871,9 @@ return(NULL);
 
     Undoes* ret = AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes);
 
-#ifdef BUILD_COLLAB
     /* Let collab system know that a new undo state */
     /* was pushed now since it last sent a message. */
     collabclient_SCPreserveStateCalled( sc );
-#endif
     return(ret);
 }
 
@@ -1044,11 +1033,9 @@ void CVDoUndo(CharViewBase *cv) {
     undo->next = cv->layerheads[cv->drawmode]->redoes;
     cv->layerheads[cv->drawmode]->redoes = undo;
 
-#ifdef BUILD_COLLAB
     if ( !collabclient_generatingUndoForWire(cv) ) {
 	_CVCharChangedUpdate(cv,undo->was_modified);
     }
-#endif
 }
 
 void CVDoRedo(CharViewBase *cv) {

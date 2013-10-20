@@ -29,7 +29,6 @@
 #define _ALREADY_INCLUDED_GNETWORK_H_
 
 #include <fontforge-config.h>
-#ifdef BUILD_COLLAB
 
 #define IPADDRESS_STRING_LENGTH_T 100
 
@@ -68,5 +67,4 @@ extern char* HostPortUnpack( char* packed, int* port, int port_default );
  */
 char* ff_uuid_generate( char* target );
 
-#endif
 #endif

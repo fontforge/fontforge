@@ -122,10 +122,9 @@ libfontforge_la_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c	\
 	tottfaat.c tottfgpos.c tottf.c tottfvar.c ttfinstrs.c				\
 	ttfspecial.c ufo.c unicoderange.c utils.c winfonts.c zapfnomen.c	\
 	groups.c langfreq.c ftdelta.c autowidth2.c woff.c stamp.c			\
-	activeinui.c pluginloading.c is_LIGATURE.c flaglist.c strlist.c
-if LIBZMQ
-libfontforge_la_SOURCES += collabclient.c collabclient.h collabclientpriv.h
-endif
+	activeinui.c pluginloading.c is_LIGATURE.c flaglist.c strlist.c \
+        collabclient.c collabclient.h collabclientpriv.h
+
 nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
@@ -158,15 +157,13 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	encodingui.c fontinfo.c fontview.c freetypeui.c fvfontsdlg.c	\
 	fvmetricsdlg.c gotodlg.c groupsdlg.c histograms.c images.c		\
 	kernclass.c layer2layer.c lookupui.c macencui.c math.c			\
-	metricsview.c mmdlg.c nonlineartransui.c oflib.c openfontdlg.c	\
+	metricsview.c mmdlg.c nonlineartransui.c oflib.c openfontdlg.c	        \
 	prefs.c problems.c pythonui.c savefontdlg.c scriptingdlg.c		\
-	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	\
-	splashimage.c startui.c statemachine.c tilepath.c transform.c	\
+	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	        \
+	splashimage.c startui.c statemachine.c tilepath.c transform.c	        \
 	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
-	usermenu.c macobjective.h
-if LIBZMQ
-libfontforgeexe_la_SOURCES += collabclientui.c collabclientui.h
-endif
+	usermenu.c macobjective.h                                               \
+        collabclientui.c collabclientui.h
 
 else !GRAPHICAL_USER_INTERFACE
 

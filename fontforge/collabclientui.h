@@ -29,7 +29,6 @@
 #ifndef _ALREADY_INCLUDED_FF_COLLAB_CLIENT_UI_H
 #define _ALREADY_INCLUDED_FF_COLLAB_CLIENT_UI_H
 
-#ifdef BUILD_COLLAB
 #include "collabclient.h"
 
 
@@ -149,5 +148,4 @@ extern int64_t collabclient_getCurrentSequenceNumber(void* ccvp);
 
 extern void collabclient_ensureClientBeacon(void);
 
-#endif
 #endif
