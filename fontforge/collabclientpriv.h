@@ -29,26 +29,14 @@
 /**
  *
  * These are definitions that both collabclient and collabclientui
- * should share, but which are not really intended to be public. This file
- * should only be included from the aforementioned files.
+ * should share, but which are not really intended to be public. This
+ * file should only be included from the aforementioned files.
+ *
+ * At the moment this file must be included within a BUILD_COLLAB guard.
  *
  */
 #ifndef _ALREADY_INCLUDED_FF_COLLAB_CLIENT_PRIV_H
 #define _ALREADY_INCLUDED_FF_COLLAB_CLIENT_PRIV_H
-
-#ifdef BUILD_COLLAB
-#include "ffglib.h"
-#include "inc/fontforge-config.h"
-#include "inc/ustring.h"
-#include "collabclient.h"
-#include "inc/gfile.h"
-#include "views.h"
-#include "inc/gwidget.h"
-#include "inc/gnetwork.h"
-
-#include "collab/zmq_kvmsg.h"
-#include "czmq.h"
-#include <zbeacon.h>
 
 #define MAGIC_VALUE 0xbeef
 #define SUBTREE "/client/"
@@ -72,18 +60,32 @@
 #define beacon_announce_machinename_sz  50
 #define beacon_announce_ip_sz           20
 
+
+
+#include "ffglib.h"
+#include "inc/fontforge-config.h"
+#include "inc/ustring.h"
+#include "collabclient.h"
+#include "inc/gfile.h"
+#include "views.h"
+#include "inc/gwidget.h"
+#include "inc/gnetwork.h"
+
+
+
+
 typedef struct {
-    byte protocol   [beacon_announce_protocol_sz];
-    byte version;
-    byte uuid       [beacon_announce_uuid_sz];
-    byte username   [beacon_announce_username_sz];
-    byte machinename[beacon_announce_machinename_sz];
+    uint8_t protocol   [beacon_announce_protocol_sz];
+    uint8_t version;
+    uint8_t uuid       [beacon_announce_uuid_sz];
+    uint8_t username   [beacon_announce_username_sz];
+    uint8_t machinename[beacon_announce_machinename_sz];
     uint16_t port; // network byte order //
 
     // The following dont have any value to sending, they
     // are only used in the local hash version of this data structure.
     time_t last_msg_from_peer_time;
-    byte ip[beacon_announce_ip_sz];
+    uint8_t ip[beacon_announce_ip_sz];
 } beacon_announce_t;
 
 /**
@@ -100,6 +102,13 @@ typedef struct {
  */
 extern GHashTable* collabclient_getServersFromBeaconInfomration( void );
 
+
+
+#ifdef BUILD_COLLAB
+
+#include "collab/zmq_kvmsg.h"
+#include "czmq.h"
+#include <zbeacon.h>
 
 typedef struct {
 
@@ -145,6 +154,5 @@ typedef struct {
 
 } cloneclient_t;
 
-
-#endif
-#endif
+#endif // build_collab
+#endif // already_included_ff_collab_client_priv_h

@@ -36,9 +36,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#ifdef BUILD_COLLAB
 #include "collabclientui.h"
-#endif
 #include "gfile.h"
 extern char* SFDCreateUndoForLookup( SplineFont *sf, int lookup_type ) ;
 
@@ -1034,7 +1032,6 @@ static real GGadgetToReal(GGadget *g)
     return val;
 }
 
-#ifdef BUILD_COLLAB
 /* If we are in a collab session, then send the redo through */
 /* to the server to update other clients to our state.	     */
 static void MV_handle_collabclient_sendRedo( MetricsView *mv, SplineChar *sc ) {
@@ -1047,7 +1044,6 @@ static void MV_handle_collabclient_sendRedo( MetricsView *mv, SplineChar *sc ) {
 	/* collabclient_sendRedo( cv ); */
     }
 }
-#endif
 
 static int MV_WidthChanged(GGadget *g, GEvent *e) {
 /* This routines called during "Advanced Width Metrics" viewing */
@@ -1069,12 +1065,10 @@ return( true );
 	else if ( !mv->vertical && val!=sc->width ) {
 //	    dumpUndoChain( "before SCPreserveWidth...", sc, &sc->layers[ly_fore].undoes );
 	    SCPreserveWidth(sc);
-#ifdef BUILD_COLLAB
 	    if( collabclient_inSessionFV( &mv->fv->b ) ) {
 		int dohints = 0;
 		SCPreserveState( sc, dohints );
 	    }
-#endif
 
 	    // set i to the correct column that has the active width gadget
 	    for ( i=0; i<mv->glyphcnt; ++i ) {
@@ -1096,9 +1090,7 @@ return( true );
 
 	    SCSynchronizeWidth(sc,val,sc->width,NULL);
 	    SCCharChangedUpdate(sc,ly_none);
-#ifdef BUILD_COLLAB
 	    MV_handle_collabclient_sendRedo(mv,sc);
-#endif
 
 	} else if ( mv->vertical && val!=sc->vwidth ) {
 	    SCPreserveVWidth(sc);
@@ -1136,12 +1128,10 @@ return( true );
 	if (!isValidInt(end))
 	    GDrawBeep(NULL);
 	else if ( !mv->vertical && val!=bb.minx ) {
-#ifdef BUILD_COLLAB
 	    if ( collabclient_inSessionFV(&mv->fv->b) ) {
 		int dohints = 0;
 		SCPreserveState( sc, dohints );
 	    }
-#endif
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[5] = 0;
@@ -1149,9 +1139,7 @@ return( true );
 	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,0 | fvt_alllayers );
 
 //	    dumpUndoChain( "LBearing Changed...e", sc, &sc->layers[ly_fore].undoes );
-#ifdef BUILD_COLLAB
 	    MV_handle_collabclient_sendRedo(mv,sc);
-#endif
 	} else if ( mv->vertical && val!=sc->parent->ascent-bb.maxy ) {
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
@@ -1195,12 +1183,10 @@ return( true );
 	    /* Width is an integer. Adjust the lbearing so that the rbearing */
 	    /*  remains what was just typed in */
 	    if ( newwidth!=bb.maxx+val ) {
-#ifdef BUILD_COLLAB
 		if ( collabclient_inSessionFV(&mv->fv->b) ) {
 		    int dohints = 0;
 		    SCPreserveState( sc, dohints );
 		}
-#endif
 		real transform[6];
 		transform[0] = transform[3] = 1.0;
 		transform[1] = transform[2] = transform[5] = 0;
@@ -1211,9 +1197,7 @@ return( true );
 	    SCCharChangedUpdate(sc,ly_none);
 
 //	    dumpUndoChain( "RBearing Changed...2", sc, &sc->layers[ly_fore].undoes );
-#ifdef BUILD_COLLAB
 	    MV_handle_collabclient_sendRedo(mv,sc);
-#endif
 	} else if ( mv->vertical && val!=sc->vwidth-(sc->parent->ascent-bb.miny) ) {
 	    double vw = val+(sc->parent->ascent-bb.miny);
 	    SCPreserveWidth(sc);
@@ -5177,9 +5161,7 @@ return;
 		SCPreserveWidth(sc);
 		SCSynchronizeWidth(sc,sc->width+diff,sc->width,NULL);
 		SCCharChangedUpdate(sc,ly_none);
-#ifdef BUILD_COLLAB
 		MV_handle_collabclient_sendRedo(mv,sc);
-#endif
 	    }
 	} else if ( mv->pressedkern ) {
 	    mv->pressedkern = false;

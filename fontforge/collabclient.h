@@ -30,7 +30,6 @@
 #define _ALREADY_INCLUDED_FF_COLLAB_CLIENT_H
 
 #include <fontforge-config.h>
-#ifdef BUILD_COLLAB
 #include "baseviews.h"
 #include "views.h"
 
@@ -117,5 +116,4 @@ extern int collabclient_inSessionFV( FontViewBase* fv );
 extern enum collabState_t collabclient_getState( FontViewBase* fv );
 extern char*         collabclient_stateToString( enum collabState_t s );
 
-#endif
 #endif

@@ -25,9 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
-#ifdef BUILD_COLLAB
 #include "collabclientui.h"
-#endif
 #include <math.h>
 
 #if defined(KNIFE_CONTINUOUS)	/* Use this code to do cuts as we move along. Probably a bad idea, let's wait till the end */
@@ -305,9 +303,7 @@ void CVMouseUpKnife(CharView *cv, GEvent *event)
 	    spl->ticked = false;
 	}
 	CVCharChangedUpdate(   &cv->b );
-#ifdef BUILD_COLLAB
 	collabclient_sendRedo( &cv->b );
-#endif
     }
 #endif
 }

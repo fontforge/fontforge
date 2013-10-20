@@ -52,9 +52,10 @@
 #include <stdarg.h>
 #include "ffpython.h"
 
-#ifdef BUILD_COLLAB
 #include "gnetwork.h"
+#ifdef BUILD_COLLAB
 #include "collab/zmq_kvmsg.h"
+#endif
 #include "collabclientui.h"
 
 /**
@@ -62,7 +63,6 @@
  * if not then we get to very quickly avoid the collab code path :)
  */
 static int inPythonStartedCollabSession = 0;
-#endif
 
 static struct python_menu_info {
     PyObject *func;
@@ -357,7 +357,6 @@ Py_RETURN_NONE;
 static PyObject *PyFFFont_CollabSessionStart(PyFF_Font *self, PyObject *args)
 {
 #ifdef BUILD_COLLAB
-
     int port_default = collabclient_getDefaultBasePort();
     int port = port_default;
     char address[IPADDRESS_STRING_LENGTH_T];
@@ -458,9 +457,7 @@ static void pyFF_sendRedoIfInSession_Func_Real( void* cvv )
 }
 
 
-#ifdef BUILD_COLLAB
 static PyObject *CollabSessionSetUpdatedCallback = NULL;
-#endif
 
 static PyObject *PyFFFont_CollabSessionJoin(PyFF_Font *self, PyObject *args)
 {
@@ -498,7 +495,6 @@ static PyObject *PyFFFont_CollabSessionJoin(PyFF_Font *self, PyObject *args)
 }
 
 
-#ifdef BUILD_COLLAB
 static void InvokeCollabSessionSetUpdatedCallback(PyFF_Font *self) {
     if( CollabSessionSetUpdatedCallback )
     {
@@ -510,7 +506,6 @@ static void InvokeCollabSessionSetUpdatedCallback(PyFF_Font *self) {
 	Py_DECREF(arglist);
     }
 }
-#endif
 
 
 static PyObject *PyFFFont_CollabSessionRunMainLoop(PyFF_Font *self, PyObject *args)
@@ -548,7 +543,6 @@ static PyObject *PyFFFont_CollabSessionRunMainLoop(PyFF_Font *self, PyObject *ar
 static PyObject *PyFFFont_CollabSessionSetUpdatedCallback(PyFF_Font *self, PyObject *args)
 {
     PyObject *result = NULL;
-#ifdef BUILD_COLLAB
     PyObject *temp;
 
     if (PyArg_ParseTuple(args, "O:set_callback", &temp)) {
@@ -563,7 +557,6 @@ static PyObject *PyFFFont_CollabSessionSetUpdatedCallback(PyFF_Font *self, PyObj
         Py_INCREF(Py_None);
         result = Py_None;
     }
-#endif
     return result;
 }
 

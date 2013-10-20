@@ -91,9 +91,7 @@ extern void RunApplicationEventLoop(void);
 #define sleep(n) Sleep(1000 * (n))
 #endif
 
-#ifdef BUILD_COLLAB
 #include "collabclientui.h"
-#endif
 
 extern int AutoSaveFrequency;
 int splash = 1;
@@ -1251,10 +1249,8 @@ exit( 0 );
     if ( !any && !doopen )
 	any = ReopenLastFonts();
 
-#ifdef BUILD_COLLAB
     collabclient_ensureClientBeacon();
     collabclient_sniffForLocalServer();
-#endif
 
 #if defined(__Mac)
     if ( listen_to_apple_events ) {
