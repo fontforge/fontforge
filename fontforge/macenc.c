@@ -1159,7 +1159,7 @@ return( NULL );
     ret = galloc(strlen(str)*4+1);
     for ( rpt = ret; *ustr; ++ustr ) {
 	int ch = table[*ustr];
-	rpt = utf8_idpb(rpt,ch,UTF8IDPB_LIMIT);
+	rpt = utf8_idpb(rpt,ch,0);
     }
     *rpt = '\0';
 return( ret );
