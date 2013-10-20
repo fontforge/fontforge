@@ -553,7 +553,7 @@ char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
     char *pt = utf8buf;
 
     if ( ubuf!=NULL ) {
-	while ( *ubuf && (pt=utf8_idpb(pt,*ubuf++,UTF8IDPB_LIMIT)) );
+	while ( *ubuf && (pt=utf8_idpb(pt,*ubuf++,0)) );
 	if ( pt ) {
 	    *pt = '\0';
 	    return( utf8buf );
@@ -638,7 +638,7 @@ char *u2utf8_copyn(const unichar_t *ubuf,int len) {
     if ( ubuf==NULL || len<=0 || (utf8buf=pt=(char *)malloc(len*6+1))==NULL )
 	return( NULL );
 
-    while ( (pt=utf8_idpb(pt,*ubuf++,UTF8IDPB_LIMIT)) && --len );
+    while ( (pt=utf8_idpb(pt,*ubuf++,0)) && --len );
     if ( pt ) {
 	*pt = '\0';
 	return( utf8buf );
@@ -687,21 +687,29 @@ char *utf8_idpb(char *utf8_text,uint32 ch,int flags) {
 /* ISO/IEC 10646 description of UTF8 allows encoding */
 /* character values up to U+7FFFFFFF before RFC3629. */
 
-    if ( ch>0x7fffffff || (flags>1 && ((ch>=0xd800 && ch<=0xdfff) || ch>=17*65536)) )
+    if ( ch>0x7fffffff || \
+	 (!(flags&UTF8IDPB_OLDLIMIT) && ((ch>=0xd800 && ch<=0xdfff) || ch>=17*65536)) )
 	return( 0 ); /* Error, ch is out of range */
 
-    if ( (flags&UTF8IDPB_SURROGATES) && ch>0xffff ) {
-	// (ch>=0x10000 && ch<=0x10ffff surrogates)
-	unsigned long us;
-	if ( ch>=0xd800 && ch<=0xdfff )
+    if ( (flags&(UTF8IDPB_UCS2|UTF8IDPB_UTF16|UTF8IDPB_UTF32)) ) {
+	if ( (flags&UTF8IDPB_UCS2) && ch>0xffff )
 	    return( 0 ); /* Error, ch is out of range */
-	ch -= 0x10000;
-	us = (ch>>10)+0xd800;
-	*utf8_text++ = us>>8;
-	*utf8_text++ = us&0xff;
-	ch = (ch&0x3ff)+0xdc00;
+	if ( (flags&UTF8IDPB_UTF32) ) {
+	    *utf8_text++ = ((ch>>24)&0xff);
+	    *utf8_text++ = ((ch>>16)&0xff);
+	    ch &= 0xffff;
+	}
+	if ( ch>0xffff ) {
+	    /* ...here if a utf16 encoded value */
+	    unsigned long us;
+	    ch -= 0x10000;
+	    us = (ch>>10)+0xd800;
+	    *utf8_text++ = us>>8;
+	    *utf8_text++ = us&0xff;
+	    ch = (ch&0x3ff)+0xdc00;
+	}
 	*utf8_text++ = ch>>8;
-	ch = ch&0xff;
+	ch &= 0xff;
     } else if ( ch>127 || (ch==0 && (flags&UTF8IDPB_NOZERO)) ) {
 	if ( ch<=0x7ff )
 	    /* ch>=0x80 && ch<=0x7ff */
@@ -736,19 +744,23 @@ char *utf8_idpb(char *utf8_text,uint32 ch,int flags) {
 }
 
 char *utf8_ib(char *utf8_text) {
-    int ch;
+/* Increment to next utf8 character */
+    unsigned char ch;
 
-    /* Increment character */
-    if ( (ch = *utf8_text)=='\0' )
-return( utf8_text );
+    if ( (ch = (unsigned char) *utf8_text)=='\0' )
+	return( utf8_text );
     else if ( ch<=127 )
-return( utf8_text+1 );
+	return( utf8_text+1 );
     else if ( ch<0xe0 )
-return( utf8_text+2 );
+	return( utf8_text+2 );
     else if ( ch<0xf0 )
-return( utf8_text+3 );
+	return( utf8_text+3 );
+    else if ( ch<0xf8 )
+	return( utf8_text+4 );
+    else if ( ch<0xfc )
+	return( utf8_text+5 );
     else
-return( utf8_text+4 );
+	return( utf8_text+6 );
 }
 
 int utf8_valid(const char *str) {
@@ -781,27 +793,29 @@ return;
 }
 
 char *utf8_db(char *utf8_text) {
-    /* Decrement utf8 pointer */
+/* Decrement utf8 pointer to previous utf8 character.*/
+/* NOTE: This should never happen but if the pointer */
+/* was looking at an intermediate character, it will */
+/* be properly positioned at the start of a new char */
+/* and not the previous character.		     */
     unsigned char *pt = (unsigned char *) utf8_text;
 
     --pt;
-    if ( *pt>=0xc0 )
-	/* This should never happen. The pointer was looking at an intermediate */
-	/*  character. However, if it does happen then we are now properly */
-	/*  positioned at the start of a new char */;
-    else if ( *pt>=0x80 ) {
+    if ( *pt>=0x80 && *pt<0xc0 ) {
 	--pt;
-	if ( *pt>=0xc0 )
-	    /* Done */;
-	else if ( *pt>=0x80 ) {
+	if ( *pt>=0x80 && *pt<0xc0 ) {
 	    --pt;
-	    if ( *pt>=0xc0 )
-		/* Done */;
-	    else if ( *pt>=0x80 )
+	    if ( *pt>=0x80 && *pt<0xc0 ) {
 		--pt;
+		if ( *pt>=0x80 && *pt<0xc0 ) {
+		    --pt;
+		    if ( *pt>=0x80 && *pt<0xc0 )
+			--pt;
+		}
+	    }
 	}
     }
-return( (char *) pt );
+    return( (char *) pt );
 }
 
 int utf8_strlen(const char *utf8_str) {

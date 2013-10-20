@@ -2822,7 +2822,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 	    pt = buffer;
 	    for ( gid=i=0; gid<sf->glyphcnt && pt<buffer+sizeof(buffer)-4 && i<50; ++gid ) {
 		if ( (sc=sf->glyphs[gid])!=NULL && sc->unicodeenc!=-1 ) {
-		    pt = utf8_idpb(pt,sc->unicodeenc,UTF8IDPB_LIMIT);
+		    pt = utf8_idpb(pt,sc->unicodeenc,0);
 		    ++i;
 		}
 	    }
