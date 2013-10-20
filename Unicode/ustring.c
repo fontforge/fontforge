@@ -744,19 +744,23 @@ char *utf8_idpb(char *utf8_text,uint32 ch,int flags) {
 }
 
 char *utf8_ib(char *utf8_text) {
-    int ch;
+/* Increment to next utf8 character */
+    unsigned char ch;
 
-    /* Increment character */
-    if ( (ch = *utf8_text)=='\0' )
-return( utf8_text );
+    if ( (ch = (unsigned char) *utf8_text)=='\0' )
+	return( utf8_text );
     else if ( ch<=127 )
-return( utf8_text+1 );
+	return( utf8_text+1 );
     else if ( ch<0xe0 )
-return( utf8_text+2 );
+	return( utf8_text+2 );
     else if ( ch<0xf0 )
-return( utf8_text+3 );
+	return( utf8_text+3 );
+    else if ( ch<0xf8 )
+	return( utf8_text+4 );
+    else if ( ch<0xfc )
+	return( utf8_text+5 );
     else
-return( utf8_text+4 );
+	return( utf8_text+6 );
 }
 
 int utf8_valid(const char *str) {
@@ -789,27 +793,29 @@ return;
 }
 
 char *utf8_db(char *utf8_text) {
-    /* Decrement utf8 pointer */
+/* Decrement utf8 pointer to previous utf8 character.*/
+/* NOTE: This should never happen but if the pointer */
+/* was looking at an intermediate character, it will */
+/* be properly positioned at the start of a new char */
+/* and not the previous character.		     */
     unsigned char *pt = (unsigned char *) utf8_text;
 
     --pt;
-    if ( *pt>=0xc0 )
-	/* This should never happen. The pointer was looking at an intermediate */
-	/*  character. However, if it does happen then we are now properly */
-	/*  positioned at the start of a new char */;
-    else if ( *pt>=0x80 ) {
+    if ( *pt>=0x80 && *pt<0xc0 ) {
 	--pt;
-	if ( *pt>=0xc0 )
-	    /* Done */;
-	else if ( *pt>=0x80 ) {
+	if ( *pt>=0x80 && *pt<0xc0 ) {
 	    --pt;
-	    if ( *pt>=0xc0 )
-		/* Done */;
-	    else if ( *pt>=0x80 )
+	    if ( *pt>=0x80 && *pt<0xc0 ) {
 		--pt;
+		if ( *pt>=0x80 && *pt<0xc0 ) {
+		    --pt;
+		    if ( *pt>=0x80 && *pt<0xc0 )
+			--pt;
+		}
+	    }
 	}
     }
-return( (char *) pt );
+    return( (char *) pt );
 }
 
 int utf8_strlen(const char *utf8_str) {
