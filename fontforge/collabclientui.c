@@ -534,7 +534,7 @@ void collabclient_free( void** ccvp )
 
 #ifdef BUILD_COLLAB
 
-static void collabclient_sendSFD( void* ccvp, char* sfd )
+static void collabclient_sendSFD( void* ccvp, char* sfd, char* fontname )
 {
     cloneclient_t* cc = (cloneclient_t*)ccvp;
 
@@ -542,6 +542,7 @@ static void collabclient_sendSFD( void* ccvp, char* sfd )
     kvmsg_fmt_key  (kvmsg, "%s%d", SUBTREE, cc->publisher_sendseq++);
     kvmsg_set_body (kvmsg, sfd, strlen(sfd));
     kvmsg_set_prop (kvmsg, "type", MSG_TYPE_SFD );
+    kvmsg_set_prop (kvmsg, "fontname", fontname );
 //    kvmsg_set_prop (kvmsg, "ttl", "%d", randof (30));
     kvmsg_send     (kvmsg, cc->publisher);
     kvmsg_destroy (&kvmsg);
@@ -739,7 +740,7 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
     {
 	char* sfd = GFileReadAll( filename );
 	printf("connecting to server...4 sfd:%p\n", sfd );
-	collabclient_sendSFD( cc, sfd );
+	collabclient_sendSFD( cc, sfd, fv->b.sf->fontname );
     }
     GFileUnlink(filename);
     printf("connecting to server...sent the sfd for session start.\n");

@@ -219,6 +219,31 @@ s_collector (zloop_t *loop, zmq_pollitem_t *poller, void *args)
     if (kvmsg) {
         kvmsg_set_sequence (kvmsg, ++self->sequence);
 	kvmsg_fmt_key(kvmsg, "%s%d", SUBTREE, self->sequence-1 );
+
+	if( !strcmp(MSG_TYPE_SFD, kvmsg_get_prop (kvmsg, "type")))
+	{
+	    // setup the beacon
+	    //  Broadcast on the zyre port
+	    beacon_announce_t ba;
+	    memset( &ba, 0, sizeof(ba));
+	    strcpy( ba.protocol, "fontforge-collab" );
+	    ba.version = 1;
+	    ff_uuid_generate( ba.uuid );
+	    strncpy( ba.username,    GetAuthor(), beacon_announce_username_sz );
+	    ff_gethostname( ba.machinename, beacon_announce_machinename_sz );
+	    ba.port = htons( self->port );
+	    strcpy( ba.fontname, "" );
+	    
+	    char* fontname = kvmsg_get_prop (kvmsg, "fontname" );
+	    if( fontname )
+	    {
+		strcpy( ba.fontname, fontname );
+	    }
+
+	    zbeacon_t *service_beacon = zbeacon_new( 5670 );
+	    zbeacon_publish (service_beacon, (byte*)&ba, sizeof(ba));
+	}
+	
 	
         kvmsg_send (kvmsg, self->publisher);
 //        int ttl = atoi (kvmsg_get_prop (kvmsg, "ttl"));
@@ -315,19 +340,6 @@ int main (void)
     poller.socket = self->ping;
     zloop_poller (self->loop, &poller, s_ping, self);
 
-    // setup the beacon
-    //  Broadcast on the zyre port
-    beacon_announce_t ba;
-    memset( &ba, 0, sizeof(ba));
-
-    strcpy( ba.protocol, "fontforge-collab" );
-    ba.version = 1;
-    ff_uuid_generate( ba.uuid );
-    strncpy( ba.username,    GetAuthor(), beacon_announce_username_sz );
-    ff_gethostname( ba.machinename, beacon_announce_machinename_sz );
-    ba.port = htons( self->port );
-    zbeacon_t *service_beacon = zbeacon_new( 5670 );
-    zbeacon_publish (service_beacon, (byte*)&ba, sizeof(ba));
     
     
     DEBUG ("I: server up and running...");
