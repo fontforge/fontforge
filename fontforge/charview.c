@@ -171,7 +171,8 @@ static Color fillcol = 0x80707070;		/* Translucent */
 static Color tracecol = 0x008000;
 static Color rulerbigtickcol = 0x008000;
 static Color previewfillcol = 0x0f0f0f;
-static Color DraggingComparisonOutlineColor = 0x22AA0000;
+static Color DraggingComparisonOutlineColor = 0x8800BB00;
+static Color DraggingComparisonAlphaChannelOverride = 0x88000000;
 
 // Format is 0x AA RR GG BB.
 
@@ -207,6 +208,7 @@ static struct resed charview_re[] = {
     { N_("HHint Active Color"), "HHintActiveColor", rt_color, &hhintactivecol, N_("The color used to draw the active horizontal hint which the Review Hints dialog is examining"), NULL, { 0 }, 0, 0 },
     { N_("VHint Active Color"), "VHintActiveColor", rt_color, &vhintactivecol, N_("The color used to draw the active vertical hint which the Review Hints dialog is examining"), NULL, { 0 }, 0, 0 },
     { N_("Dragging Comparison Outline Color"), "DraggingComparisonOutlineColor", rt_coloralpha, &DraggingComparisonOutlineColor, N_("The color used to draw the outline of the old spline when you are interactively modifying a glyph"), NULL, { 0 }, 0, 0 },
+    { N_("Dragging Comparison Outline Color"), "DraggingComparisonAlphaChannelOverride", rt_coloralpha, &DraggingComparisonAlphaChannelOverride, N_("Only the alpha value is used and if non zero it will set the alpha channel for the control points, bezier information and other non spline indicators for the Dragging Comparison Outline spline"), NULL, { 0 }, 0, 0 },
     RESED_EMPTY
 };
 
@@ -695,10 +697,21 @@ static GRect* DrawPoint_SetupRectForSize( GRect* r, int cx, int cy, float sz )
 }
 
 
+static Color MaybeMaskColorToAlphaChannelOverride( Color c, Color AlphaChannelOverride )
+{
+    if( AlphaChannelOverride )
+    {
+	c &= 0x00FFFFFF;
+	c |= (AlphaChannelOverride & 0xFF000000);
+    }
+    return c;
+}
 
 
-static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
-	SplineSet *spl, int onlynumber, int truetype_markup) {
+static void DrawPoint( CharView *cv, GWindow pixmap, SplinePoint *sp,
+		       SplineSet *spl, int onlynumber, int truetype_markup,
+                       Color AlphaChannelOverride )
+{
     GRect r;
     int x, y, cx, cy;
     Color col = sp==spl->first ? firstpointcol : pointcol, subcol;
@@ -736,7 +749,13 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
 	}
     }
 
-
+    col = MaybeMaskColorToAlphaChannelOverride( col, AlphaChannelOverride );
+    Color subcolmasked    = MaybeMaskColorToAlphaChannelOverride( subcol, AlphaChannelOverride );
+    Color nextcpcolmasked = MaybeMaskColorToAlphaChannelOverride( nextcpcol, AlphaChannelOverride );
+    Color prevcpcolmasked = MaybeMaskColorToAlphaChannelOverride( prevcpcol, AlphaChannelOverride );
+    Color selectedpointcolmasked = MaybeMaskColorToAlphaChannelOverride( selectedpointcol, AlphaChannelOverride );
+    Color selectedcpcolmasked = MaybeMaskColorToAlphaChannelOverride( selectedcpcol, AlphaChannelOverride );
+    
     x =  cv->xoff + rint(sp->me.x*cv->scale);
     y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
     if ( x<-4000 || y<-4000 || x>cv->width+4000 || y>=cv->height+4000 )
@@ -767,7 +786,7 @@ return;
 		cx = cy==y ? y : (cx-x) * (double)(cv->height+100-y)/(cy-y) + x;
 		cy = cv->height+100;
 	    }
-	    subcol = nextcpcol;
+	    subcolmasked = nextcpcolmasked;
 
 	    //
 	    // If the next BCP is selected we should decorate the
@@ -784,7 +803,7 @@ return;
 
 		DrawPoint_SetupRectForSize( &r, cx, cy, sz );
 		GDrawFillRect(pixmap,&r, nextcpcol);
-		subcol = selectedcpcol;
+		subcolmasked = selectedcpcolmasked;
 	    }
 	    else if ( truetype_markup )
 	    {
@@ -804,9 +823,9 @@ return;
 		float sizedelta = 3;
 		if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
 		    sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
-		GDrawDrawLine(pixmap,x,y,cx,cy, nextcpcol);
-		GDrawDrawLine(pixmap,cx-sizedelta,cy-sizedelta,cx+sizedelta,cy+sizedelta,subcol);
-		GDrawDrawLine(pixmap,cx+sizedelta,cy-sizedelta,cx-sizedelta,cy+sizedelta,subcol);
+		GDrawDrawLine(pixmap,x,y,cx,cy, nextcpcolmasked );
+		GDrawDrawLine(pixmap,cx-sizedelta,cy-sizedelta,cx+sizedelta,cy+sizedelta,subcolmasked);
+		GDrawDrawLine(pixmap,cx+sizedelta,cy-sizedelta,cx-sizedelta,cy+sizedelta,subcolmasked);
 	    }
 	    if ( cv->showpointnumbers || cv->show_ft_results || cv->dv ) {
 		pnum = sp->nextcpindex;
@@ -833,7 +852,7 @@ return;
 		cx = cy==y ? y : (cx-x) * (double)(cv->height+100-y)/(cy-y) + x;
 		cy = cv->height+100;
 	    }
-	    subcol = prevcpcol;
+	    subcolmasked = prevcpcolmasked;
 	    if( !onlynumber && SPIsPrevCPSelected( sp, cv ))
 	    {
 		float sz = 2;
@@ -841,15 +860,15 @@ return;
 		    sz *= 1.5;
 		DrawPoint_SetupRectForSize( &r, cx, cy, sz );
 		GDrawFillRect(pixmap,&r, prevcpcol);
-		subcol = selectedcpcol;
+		subcolmasked = selectedcpcolmasked;
 	    }
 	    if ( !onlynumber ) {
 		float sizedelta = 3;
 		if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
 		    sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
-		GDrawDrawLine(pixmap,x,y,cx,cy, prevcpcol);
-		GDrawDrawLine(pixmap,cx-sizedelta,cy-sizedelta,cx+sizedelta,cy+sizedelta,subcol);
-		GDrawDrawLine(pixmap,cx+sizedelta,cy-sizedelta,cx-sizedelta,cy+sizedelta,subcol);
+		GDrawDrawLine(pixmap,x,y,cx,cy, prevcpcolmasked);
+		GDrawDrawLine(pixmap,cx-sizedelta,cy-sizedelta,cx+sizedelta,cy+sizedelta,subcolmasked);
+		GDrawDrawLine(pixmap,cx+sizedelta,cy-sizedelta,cx-sizedelta,cy+sizedelta,subcolmasked);
 	    }
 	}
     }
@@ -952,7 +971,7 @@ return;
     if ( truetype_markup && sp->roundx ) {
 	r.x = x-5; r.y = y-5;
 	r.width = r.height = 11;
-	GDrawDrawElipse(pixmap,&r,selectedpointcol);
+	GDrawDrawElipse(pixmap,&r,selectedpointcolmasked);
     } else if ( !onlynumber && !truetype_markup ) {
 	if ((( sp->roundx || sp->roundy ) &&
 		 (((cv->showrounds&1) && cv->scale>=.3) || (cv->showrounds&2))) ||
@@ -965,13 +984,16 @@ return;
 	if (( sp->flexx && cv->showhhints ) || (sp->flexy && cv->showvhints)) {
 	    r.x = x-5; r.y = y-5;
 	    r.width = r.height = 11;
-	    GDrawDrawElipse(pixmap,&r,sp->flexx ? hflexhintcol : vflexhintcol );
+	    GDrawDrawElipse(pixmap,&r,
+			    MaybeMaskColorToAlphaChannelOverride( sp->flexx ? hflexhintcol : vflexhintcol,
+								  AlphaChannelOverride ));
 	}
     }
 }
 
-static void DrawSpiroPoint(CharView *cv, GWindow pixmap, spiro_cp *cp,
-	SplineSet *spl, int cp_i) {
+static void DrawSpiroPoint( CharView *cv, GWindow pixmap, spiro_cp *cp,
+			    SplineSet *spl, int cp_i, Color AlphaChannelOverride )
+{
     GRect r;
     int x, y;
     Color col = cp==&spl->spiros[0] ? firstpointcol : pointcol;
@@ -988,6 +1010,9 @@ static void DrawSpiroPoint(CharView *cv, GWindow pixmap, spiro_cp *cp,
 	col |= prefs_cvInactiveHandleAlpha << 24;
     }
 
+    col = MaybeMaskColorToAlphaChannelOverride( col, AlphaChannelOverride );
+    
+    
     x =  cv->xoff + rint(cp->x*cv->scale);
     y = -cv->yoff + cv->height - rint(cp->y*cv->scale);
     if ( x<-4 || y<-4 || x>cv->width+4 || y>=cv->height+4 )
@@ -1306,7 +1331,7 @@ return;
 
 void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	Color fg, int dopoints, DRect *clip ) {
-    CVDrawSplineSetSpecialized( cv, pixmap, set, fg, dopoints, clip, sfm_stroke );
+    CVDrawSplineSetSpecialized( cv, pixmap, set, fg, dopoints, clip, sfm_stroke, 0 );
 }
 
 
@@ -1419,8 +1444,10 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 }
 
 
-void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePointList *set,
-				Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode )
+void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *set,
+				 Color fg, int dopoints, DRect *clip,
+				 enum outlinesfm_flags strokeFillMode,
+				 Color AlphaChannelOverride )
 {
     Spline *spline, *first;
     SplinePointList *spl;
@@ -1450,15 +1477,15 @@ void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePointList *s
 			spl->spiro_max = spl->spiro_cnt;
 		    }
 		    for ( i=0; i<spl->spiro_cnt-1; ++i )
-			DrawSpiroPoint(cv,pixmap,&spl->spiros[i],spl,i);
+			DrawSpiroPoint(cv,pixmap,&spl->spiros[i],spl,i, AlphaChannelOverride );
 		}
 	    } else {
 		for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-		    DrawPoint(cv,pixmap,spline->from,spl,dopoints<0,truetype_markup);
+		    DrawPoint(cv,pixmap,spline->from,spl,dopoints<0,truetype_markup, AlphaChannelOverride );
 		    if ( first==NULL ) first = spline;
 		}
 		if ( spline==NULL )
-		    DrawPoint(cv,pixmap,spl->last,spl,dopoints<0,truetype_markup);
+		    DrawPoint(cv,pixmap,spl->last,spl,dopoints<0,truetype_markup, AlphaChannelOverride );
 	    }
 	}
     }
@@ -1502,7 +1529,7 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
     }
     if ( ml && !active && layer!=&cv->b.sc->layers[ly_back] )
 	GDrawSetDashedLine(pixmap,5,5,cv->xoff+cv->height-cv->yoff);
-    CVDrawSplineSetSpecialized(cv,pixmap,layer->splines,fg,dopoints && active,clip,strokeFillMode);
+    CVDrawSplineSetSpecialized(cv,pixmap,layer->splines,fg,dopoints && active,clip,strokeFillMode,0);
     if ( ml && !active && layer!=&cv->b.sc->layers[ly_back] )
 	GDrawSetDashedLine(pixmap,0,0,0);
 #if 0
@@ -2551,7 +2578,8 @@ struct CVExpose_PreTransformSPL_ud
 static void CVExpose_PreTransformSPL_fe( SplinePointList *spl, struct CVExpose_PreTransformSPL_ud* d )
 {
     CVDrawSplineSetSpecialized( d->cv, d->pixmap, spl,
-				d->fg, d->dopoints, d->clip, d->strokeFillMode );
+				d->fg, d->dopoints, d->clip, d->strokeFillMode,
+				DraggingComparisonAlphaChannelOverride );
 }
 
 
@@ -2744,7 +2772,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		refsfm = sfm_fill;
 	    }
 	    for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
-		CVDrawSplineSetSpecialized(cv,pixmap,rf->layers[rlayer].splines,foreoutlinecol,-1,&clip, refsfm);
+		CVDrawSplineSetSpecialized(cv,pixmap,rf->layers[rlayer].splines,foreoutlinecol,-1,&clip, refsfm, 0);
 	    if ( rf->selected && cv->b.layerheads[cv->b.drawmode]==&cv->b.sc->layers[layer])
 		CVDrawBB(cv,pixmap,&rf->bb);
 	}
@@ -4175,7 +4203,7 @@ static void CVMaybeCreateDraggingComparisonOutline( CharView* cv )
     {
 	int anySel = 0;
 	SPLFirstVisit( spl->first, isAnyControlPointSelectedVisitor, &anySel );
-	if( anySel )
+	if( anySel || (cv->b.sc->inspiro && hasspiro()))
 	{
 	    cv->p.pretransform_spl = g_list_append( cv->p.pretransform_spl,
 						    SplinePointListCopy(spl) );
