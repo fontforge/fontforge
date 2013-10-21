@@ -818,26 +818,23 @@ char *utf8_db(char *utf8_text) {
     return( (char *) pt );
 }
 
-int utf8_strlen(const char *utf8_str) {
-    /* how many characters in the string NOT bytes */
-    int len = 0;
+long utf8_strlen(const char *utf8_str) {
+/* Count how many characters in the string NOT bytes */
+    long len = 0;
 
-    while ( utf8_ildb(&utf8_str)>0 )
-	++len;
-return( len );
+    while ( utf8_ildb(&utf8_str)>0 && ++len>0 );
+    return( len );
 }
 
-int utf82u_strlen(const char *utf8_str) {
-    /* how many shorts needed to represent it in UCS2 */
-    int ch;
-    int len = 0;
+long utf82u_strlen(const char *utf8_str) {
+/* Count how many shorts needed to represent in UCS2 */
+    int32 ch;
+    long len = 0;
 
-    while ( (ch = utf8_ildb(&utf8_str))>0 )
-	if ( ch>0x10000 )
-	    len += 2;
-	else
+    while ( (ch = utf8_ildb(&utf8_str))>0 && ++len>0 )
+	if ( ch>=0x10000 )
 	    ++len;
-return( len );
+    return( len );
 }
 
 void utf8_strncpy(register char *to, const char *from, int len) {
