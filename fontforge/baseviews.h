@@ -27,6 +27,7 @@
 #ifndef _BASEVIEWS_H
 #define _BASEVIEWS_H
 
+#include "ffglib.h"
 #include "splinefont.h"
 
 #define free_with_debug(x) { fprintf(stderr,"%p FREE()\n",x); free(x); }
@@ -71,17 +72,20 @@ typedef struct pressedOn {
     int spiro_index;		/* index of a clicked spiro_cp, or */
 			/* if they clicked on the spline between spiros, */
 			/* this is the spiro indexof the preceding spiro */
+    GList_Glib*      pretransform_spl; /* If we want to draw an image of the original spl while doing something
+					* this is a copy of that original spl */
 } PressedOn;
 
 /* Note: These are ordered as they are displayed in the tools palette */
-enum cvtools { cvt_pointer, cvt_magnify,
+enum cvtools {
+	cvt_pointer, cvt_magnify,
 	cvt_freehand, cvt_hand,
+	cvt_knife, cvt_ruler,
+	cvt_pen, cvt_spiro,
 	cvt_curve, cvt_hvcurve,
 	cvt_corner, cvt_tangent,
-	cvt_pen, cvt_spiro,
-	cvt_knife, cvt_ruler,
-	cvt_scale, cvt_flip,
-	cvt_rotate, cvt_skew,
+	cvt_scale, cvt_rotate,
+	cvt_flip, cvt_skew,
 	cvt_3d_rotate, cvt_perspective,
 	cvt_rect, cvt_poly,
 	cvt_elipse, cvt_star,

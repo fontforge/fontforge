@@ -64,9 +64,9 @@ extern int u_GFileReadable(unichar_t *file);
 extern int u_GFileMkDir(unichar_t *name);
 extern int u_GFileRmDir(unichar_t *name);
 extern int u_GFileUnlink(unichar_t *name);
-extern int GFileGetSize(char *name);
-extern char* GFileReadAll(char *name);
-extern int   GFileWriteAll(char* filepath, char *data);
+extern long GFileGetSize(char *name);
+extern char *GFileReadAll(char *name);
+extern int   GFileWriteAll(char *filepath, char *data);
 extern char* getGResourceProgramDir(void);
 extern void  FindProgDir(char *prog);
 extern char *getShareDir(void);
@@ -75,5 +75,24 @@ extern char *getPixmapDir(void);
 extern char *getHelpDir(void);
 extern char *getDotFontForgeDir(void);
 extern char *getTempDir(void);
+
+/**
+ * This is the full path of ~ on OSX and Linux
+ * and something like c:\Users\foo\Documents on windows
+ */
+extern char *GFileGetHomeDocumentsDir(void);
+
+/**
+ * Return the directory name for the full path 'path'.
+ * This is like the shell "dirname" command, for example:
+ * GFileDirName("/a/b/c/foo.sfd") returns "/a/b/c".
+ * This will also handle mingw paths as expected.
+ *
+ * The return value is owned by the function which is not reenterant.
+ * Do not try to free the return value.
+ */
+extern char *GFileDirName(const char *path );
+
+
 
 #endif

@@ -843,10 +843,10 @@ static int SMD_Ok(GGadget *g, GEvent *e) {
   struct ggadget * classControl = GWidgetGetControl(smd->gw,CID_Classes);
   int rows;
   struct matrix_data *classes = GMatrixEditGet(classControl,&rows);
-  
+
 	ASM *sm = smd->sm;
 	char *upt;
-	
+
 	for ( i=4; i<sm->class_cnt; ++i )
 	    free(sm->classes[i]);
 	free(sm->classes);
@@ -887,7 +887,7 @@ static void SMD_Mouse(SMD *smd,GEvent *event) {
 	GGadgetDispatchEvent(smd->vsb,event);
 return;
     }
-    
+
     if ( event->u.mouse.x<smd->xstart || event->u.mouse.x>smd->xstart2+smd->width ||
 	    event->u.mouse.y<smd->ystart || event->u.mouse.y>smd->ystart2+smd->height )
 return;
@@ -936,7 +936,7 @@ static void SMD_Expose(SMD *smd,GWindow pixmap,GEvent *event) {
     GRect clip,old1,old2;
     int len, off, i, j, x, y, kddd=false;
     unichar_t ubuf[8];
-    char buf[100];
+    char buf[101];
 
     if ( area->y+area->height<smd->ystart )
 return;
@@ -1038,7 +1038,7 @@ return;
 
 	    buf[0] = '\0';
 	    if ( smd->sm->type==asm_indic ) {
-		strcpy(buf,indicverbs[1][this->flags&0xf]);
+		strncpy(buf,indicverbs[1][this->flags&0xf],sizeof(buf)-1);
 	    } else if ( smd->sm->type==asm_context ) {
 		if ( this->u.context.cur_lookup!=NULL ) {
 		    strncpy(buf,this->u.context.cur_lookup->lookup_name,6);

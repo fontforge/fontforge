@@ -293,146 +293,164 @@ static void GHVBoxResize(GGadget *g, int32 width, int32 height) {
 
     GHVBoxGatherSizeInfo(gb,&si);
     width -= 2*bp; height -= 2*bp;
+
+    if(width < si.minwidth) width = si.minwidth;
+    if(height < si.minheight) height = si.minheight;
+
     gb->g.inner.x = gb->g.r.x + bp; gb->g.inner.y = gb->g.r.y + bp;
     if ( gb->label!=NULL ) {
-	gb->label_height = si.label_height;
-	g->inner.y += si.label_height;
+        gb->label_height = si.label_height;
+        g->inner.y += si.label_height;
     }
 
     if ( si.width!=width ) {
-	int vcols=0;
-	for ( i=0; i<gb->cols; ++i )
-	    if ( si.cols[i].sized>0 )
-		++vcols;
-	if ( width<si.width ) {
-	    for ( i=0; i<gb->cols; ++i )
-		si.cols[i].sized = si.cols[i].min;
-	    si.width = si.minwidth;
-	    if ( width<si.width && gb->hpad>1 && vcols>1 ) {
-		int reduce_pad = (si.width-width+vcols-1)/(vcols-1);
-		if ( reduce_pad>gb->hpad-1 ) reduce_pad = gb->hpad-1;
-		for ( i=0; i<gb->cols-1; ++i )
-		    if ( si.cols[i].sized!=0 )
-			si.cols[i].sized -= reduce_pad;
-		si.width -= (vcols-1)*reduce_pad;
-	    }
-	}
-	for ( i=glue_cnt=0; i<gb->cols; ++i )
-	    if ( si.cols[i].allglue )
-		++glue_cnt;
-	if ( width!=si.width ) {
-	    if ( glue_cnt!=0 && width>si.width &&
-		    (gb->grow_col==gb_expandglue || gb->grow_col==gb_expandgluesame )) {
-		plus = (width-si.width)/glue_cnt;
-		extra = (width-si.width-glue_cnt*plus);
-		for ( i=0; i<gb->cols; ++i ) if ( si.cols[i].allglue ) {
-		    si.cols[i].sized += plus + (extra>0);
-		    --extra;
-		}
-	    } else if ( gb->grow_col>=0 &&
-		    si.cols[gb->grow_col].sized+(width-si.width)-gb->hpad>2 ) {
-		si.cols[gb->grow_col].sized += width-si.width;
-	    } else {
-		if ( vcols!=0 ) {
-		    plus = (width-si.width)/vcols;
-		    if ( width<si.width )
-			--plus;
-		    extra = (width-si.width-vcols*plus);
-		    for ( i=0; i<gb->cols; ++i ) {
-			if ( si.cols[i].sized>0 ) {
-			    si.cols[i].sized += plus + (extra>0);
-			    --extra;
-			}
-		    }
-		}
-	    }
-	}
+        int vcols=0;
+        for ( i=0; i<gb->cols-1; ++i )
+            if ( si.cols[i].sized>0 )
+                ++vcols;
+        int vcols1 = vcols;
+        if(si.cols[gb->cols-1].sized > 0)
+            ++ vcols1;
+        if ( width<si.width ) {
+            for ( i=0; i<gb->cols; ++i )
+                si.cols[i].sized = si.cols[i].min;
+            si.width = si.minwidth;
+            if ( width<si.width && gb->hpad>1 && vcols>0 ) {
+                int reduce_pad = (si.width-width)/vcols + 1;
+                if ( reduce_pad>gb->hpad-1 ) reduce_pad = gb->hpad-1;
+                for ( i=0; i<gb->cols-1; ++i )
+                    if ( si.cols[i].sized > 0 )
+                        si.cols[i].sized -= reduce_pad;
+                si.width -= vcols*reduce_pad;
+            }
+        }
+        if((width > si.width) && (gb->grow_col==gb_expandglue || gb->grow_col==gb_expandgluesame )) {
+            for ( i=glue_cnt=0; i<gb->cols; ++i )
+                if ( si.cols[i].allglue )
+                    ++glue_cnt;
+            if ( glue_cnt!=0 ) {
+                plus = (width-si.width)/glue_cnt;
+                extra = (width-si.width-glue_cnt*plus);
+                for ( i=0; i<gb->cols; ++i ) if ( si.cols[i].allglue ) {
+                    si.cols[i].sized += plus + (extra>0);
+                    si.width += plus + (extra>0);
+                    --extra;
+                }
+            }
+        } 
+        if ((width != si.width) && gb->grow_col>=0 ) {
+            int * ss = &(si.cols[gb->grow_col].sized);
+            int w = si.width - *ss;
+            *ss += (width-si.width);
+            if(*ss < gb->hpad + 3)
+                *ss = gb->hpad + 3;
+            si.width = w + *ss;
+        } 
+        if ((width > si.width) && (vcols1!=0)) {
+            plus = (width-si.width)/vcols1;
+            extra = (width-si.width-vcols1*plus);
+            for ( i=0; i<gb->cols; ++i ) {
+                if ( si.cols[i].sized>0 ) {
+                    si.cols[i].sized += plus + (extra>0);
+                    si.width += plus + (extra>0);
+                    --extra;
+                }
+            }
+        }
+        width = si.width;
     }
 
     if ( si.height!=height ) {
-	int vrows=0;
-	for ( i=0; i<gb->rows; ++i )
-	    if ( si.rows[i].sized>0 )
-		++vrows;
-	if ( height<si.height ) {
-	    for ( i=0; i<gb->rows; ++i )
-		si.rows[i].sized = si.rows[i].min;
-	    si.height = si.minheight;
-	    if ( height<si.height && gb->hpad>1 && vrows>1 ) {
-		int reduce_pad = (si.height-height+vrows-1)/(vrows-1);
-		if ( reduce_pad>gb->hpad-1 ) reduce_pad = gb->hpad-1;
-		for ( i=0; i<gb->rows-1; ++i )
-		    if ( si.rows[i].sized!=0 )
-			si.rows[i].sized -= reduce_pad;
-		si.height -= (vrows-1)*reduce_pad;
-	    }
-	}
-	for ( i=glue_cnt=0; i<gb->rows; ++i )
-	    if ( si.rows[i].allglue )
-		++glue_cnt;
-	if ( height!=si.height ) {
-	    if ( glue_cnt!=0 && height>si.height &&
-		    (gb->grow_row==gb_expandglue || gb->grow_row==gb_expandgluesame )) {
-		plus = (height-si.height)/glue_cnt;
-		extra = (height-si.height-glue_cnt*plus);
-		for ( i=0; i<gb->rows; ++i ) if ( si.rows[i].allglue ) {
-		    si.rows[i].sized += plus + (extra>0);
-		    --extra;
-		}
-	    } else if ( gb->grow_row>=0 &&
-		    si.rows[gb->grow_row].sized+(height-si.height)-gb->vpad>2 ) {
-		si.rows[gb->grow_row].sized += height-si.height;
-	    } else {
-		if ( vrows!=0 ) {
-		    plus = (height-si.height)/vrows;
-		    if ( height<si.height )
-			--plus;
-		    extra = (height-si.height-gb->rows*plus);
-		    for ( i=0; i<gb->rows; ++i ) {
-			if ( si.rows[i].sized>0 ) {
-			    si.rows[i].sized += plus + (extra>0);
-			    --extra;
-			}
-		    }
-		}
-	    }
-	}
+        int vrows=0;
+        for ( i=0; i<gb->rows-1; ++i )
+            if ( si.rows[i].sized>0 )
+                ++vrows;
+        int vrows1 = vrows;
+        if(si.rows[gb->rows-1].sized > 0)
+            ++ vrows1;
+        if ( height<si.height ) {
+            for ( i=0; i<gb->rows; ++i )
+                si.rows[i].sized = si.rows[i].min;
+            si.height = si.minheight;
+            if ( height<si.height && gb->vpad>1 && vrows>0 ) {
+                int reduce_pad = (si.height-height)/vrows + 1;
+                if ( reduce_pad>gb->vpad-1 ) reduce_pad = gb->vpad-1;
+                for ( i=0; i<gb->rows-1; ++i )
+                    if ( si.rows[i].sized > 0 )
+                        si.rows[i].sized -= reduce_pad;
+                si.height -= vrows*reduce_pad;
+            }
+        }
+        if((height > si.height) && (gb->grow_row==gb_expandglue || gb->grow_row==gb_expandgluesame )) {
+            for ( i=glue_cnt=0; i<gb->rows; ++i )
+                if ( si.rows[i].allglue )
+                    ++glue_cnt;
+            if ( glue_cnt!=0 ){
+                plus = (height-si.height)/glue_cnt;
+                extra = (height-si.height-glue_cnt*plus);
+                for ( i=0; i<gb->rows; ++i ) if ( si.rows[i].allglue ) {
+                    si.rows[i].sized += plus + (extra>0);
+                    si.height += plus + (extra>0);
+                    --extra;
+                }
+            }
+        } 
+        if ((height != si.height) && gb->grow_row>=0 ) {
+            int * ss = &(si.rows[gb->grow_row].sized);
+            int h = si.height - *ss;
+            *ss += (height-si.height);
+            if(*ss < gb->vpad + 3)
+                *ss = gb->vpad + 3;
+            si.height = h + *ss;
+        } 
+        if ((height > si.height) && (vrows1!=0)) {
+            plus = (height-si.height)/vrows1;
+            extra = (height-si.height-vrows1*plus);
+            for ( i=0; i<gb->rows; ++i ) {
+                if ( si.rows[i].sized>0 ) {
+                    si.rows[i].sized += plus + (extra>0);
+                    si.height += plus + (extra>0);
+                    --extra;
+                }
+            }
+        }
+        height = si.height;
     }
 
     y = gb->g.inner.y;
     if ( gb->label!=NULL ) {
-	if ( gb->label->state!=gs_invisible )
-	    GGadgetResize( gb->label, si.label_width, si.label_height);
-	GGadgetMove( gb->label, gb->g.inner.x+10, y-si.label_height-bp/2);
+        if ( gb->label->state!=gs_invisible )
+            GGadgetResize( gb->label, si.label_width, si.label_height);
+        GGadgetMove( gb->label, gb->g.inner.x+10, y-si.label_height-bp/2);
     }
     for ( r=0; r<gb->rows; ++r ) {
-	x = gb->g.inner.x;
-	for ( c=0; c<gb->cols; ++c ) {
-	    GGadget *g = gb->children[r*gb->cols+c];
-	    if ( g==GG_Glue || g==GG_ColSpan || g==GG_RowSpan || g==GG_HPad10 )
-		/* Skip it */;
-	    else {
-		int xes, yes, es;
-		totr = si.rows[r].sized;
-		for ( spanr=1; r+spanr<gb->rows &&
-			gb->children[(r+spanr)*gb->cols+c]==GG_RowSpan; ++spanr )
-		    totr += si.rows[r+spanr].sized;
-		totc = si.cols[c].sized;
-		for ( spanc=1; c+spanc<gb->cols &&
-			gb->children[r*gb->cols+c+spanc]==GG_ColSpan; ++spanc )
-		    totc += si.cols[c+spanc].sized;
-		if ( r+spanr!=gb->rows ) totr -= gb->vpad;
-		if ( c+spanc!=gb->cols ) totc -= gb->hpad;
-		es = GBoxExtraSpace(g);
-		xes = si.cols[c].extra_space - es;
-		yes = si.rows[r].extra_space - es;
-		if ( g->state!=gs_invisible )
-		    GGadgetResize(g,totc-2*xes,totr-2*yes);
-		GGadgetMove(g,x+xes,y+yes);
-	    }
-	    x += si.cols[c].sized;
-	}
-	y += si.rows[r].sized;
+        x = gb->g.inner.x;
+        for ( c=0; c<gb->cols; ++c ) {
+            GGadget *g = gb->children[r*gb->cols+c];
+            if ( g==GG_Glue || g==GG_ColSpan || g==GG_RowSpan || g==GG_HPad10 )
+                /* Skip it */;
+            else {
+                int xes, yes, es;
+                totr = si.rows[r].sized;
+                for ( spanr=1; r+spanr<gb->rows &&
+                        gb->children[(r+spanr)*gb->cols+c]==GG_RowSpan; ++spanr )
+                    totr += si.rows[r+spanr].sized;
+                totc = si.cols[c].sized;
+                for ( spanc=1; c+spanc<gb->cols &&
+                        gb->children[r*gb->cols+c+spanc]==GG_ColSpan; ++spanc )
+                    totc += si.cols[c+spanc].sized;
+                if ( r+spanr!=gb->rows ) totr -= gb->vpad;
+                if ( c+spanc!=gb->cols ) totc -= gb->hpad;
+                es = GBoxExtraSpace(g);
+                xes = si.cols[c].extra_space - es;
+                yes = si.rows[r].extra_space - es;
+                if ( g->state!=gs_invisible )
+                    GGadgetResize(g,totc-2*xes,totr-2*yes);
+                GGadgetMove(g,x+xes,y+yes);
+            }
+            x += si.cols[c].sized;
+        }
+        y += si.rows[r].sized;
     }
 
     free(si.cols); free(si.rows);

@@ -1436,7 +1436,7 @@ msgstr "_Dán"
 #: fontview.c:5333
 #: metricsview.c:3059
 #: uiutil.c:602
-msgid "C_lear"
+msgid "C_hop"
 msgstr "_Gột"
 
 #: bitmapview.c:2123
@@ -8956,7 +8956,7 @@ msgid "300 Light"
 msgstr "300 Nhẹ"
 
 #: fontinfo.c:96
-msgid "400 Book"
+msgid "400 Regular"
 msgstr "400 Quyển"
 
 #: fontinfo.c:97
@@ -8964,7 +8964,7 @@ msgid "500 Medium"
 msgstr "500 Vừa"
 
 #: fontinfo.c:98
-msgid "600 Demi-Bold"
+msgid "600 Semi-Bold"
 msgstr "600 Nửa đậm"
 
 #: fontinfo.c:99
@@ -8972,7 +8972,7 @@ msgid "700 Bold"
 msgstr "700 Đậm"
 
 #: fontinfo.c:100
-msgid "800 Heavy"
+msgid "800 Extra-Bold"
 msgstr "800 Nặng"
 
 #: fontinfo.c:101
@@ -30995,8 +30995,8 @@ msgstr "Trên hệ điều hành Windows thì chức năng định chỗ rất c
 
 #: tottfaat.c:257
 #, c-format
-msgid "On Windows many apps will have problems with this font's kerning, because because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs"
-msgstr "Trên hệ điều hành Windows thì rất nhiều ứng dụng sẽ gặp khó khăn trong việc định chỗ của phông chữ này, vì %d của các cặp định chỗ hình tượng của nó không ánh xạ được tới cặp định chỗ BMP Unicode"
+msgid "Note: On Windows many apps can have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs (eg, they have a Unicode value of -1) To avoid this, go to Generate, Options, and uncheck Old Style kern for OpenType."
+msgstr "Lưu ý: Trên hệ điều hành Windows thì rất nhiều ứng dụng có thể gặp khó khăn trong việc định chỗ của phông chữ này, vì %d của các cặp định chỗ hình tượng của nó không ánh xạ được tới cặp định chỗ BMP Unicode (ví dụ, họ có một giá trị Unicode của -1) Để tránh điều này, hãy để Tạo, Options và bỏ chọn Old Style kern cho OpenType."
 
 #: tottf.c:4257
 #: tottf.c:4263

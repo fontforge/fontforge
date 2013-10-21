@@ -46,7 +46,8 @@ AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST],
          [i_do_have_libuninameslist=yes
           AC_SUBST([LIBUNINAMESLIST_CFLAGS],[""])
           AC_SUBST([LIBUNINAMESLIST_LIBS],["${found_lib}"])
-          AC_CHECK_FUNC([uniNamesList_NamesListVersion],[AC_DEFINE([_LIBUNINAMESLIST_FUN],
+          AC_CHECK_FUNC([uniNamesList_NamesListVersion],[i_do_have_libuninamesfun=yes
+			AC_DEFINE([_LIBUNINAMESLIST_FUN],
                         [1],[Libuninameslist library has 3 new functions.])])],
          [i_do_have_libuninameslist=no])
        ])
@@ -222,6 +223,11 @@ if test x"${i_do_have_giflib}" = xyes -a x"${GIFLIB_LIBS}" = x; then
                   [AC_SUBST([GIFLIB_LIBS],["${found_lib}"])],
                   [i_do_have_giflib=no])
 fi
+dnl version 5+ breaks basic interface, so must use enhanced "DGifOpenFileName"
+if test x"${i_do_have_giflib}" = xyes -a x"${GIFLIB_LIBS}" = x; then
+   FONTFORGE_SEARCH_LIBS([EGifGetGifVersion],[gif ungif],
+                  [AC_SUBST([_GIFLIB_5PLUS],["${found_lib}"])],[])
+fi
 if test x"${i_do_have_giflib}" = xyes -a x"${GIFLIB_CFLAGS}" = x; then
    AC_CHECK_HEADER(gif_lib.h,[AC_SUBST([GIFLIB_CFLAGS],[""])],[i_do_have_giflib=no])
    if test x"${i_do_have_giflib}" = xyes; then
@@ -240,7 +246,6 @@ if test x"${i_do_have_giflib}" != xyes; then
    AC_DEFINE([_NO_LIBUNGIF],1,[Define if not using giflib or libungif.)])
 fi
 ])
-
 
 dnl There is no pkg-config support for libjpeg, at least on Gentoo. (17 Jul 2012)
 dnl
@@ -289,6 +294,20 @@ dnl ---------------------------
 AC_DEFUN([FONTFORGE_WARN_PKG_FALLBACK],
    [AC_MSG_WARN([No pkg-config file was found for $1, but the library is present and we will try to use it.])])
 
+AC_DEFUN([CHECK_LIBUUID],
+	[
+	PKG_CHECK_MODULES([LIBUUID], [uuid >= 1.41.2], [LIBUUID_FOUND=yes], [LIBUUID_FOUND=no])
+	if test "$LIBUUID_FOUND" = "no" ; then
+	    PKG_CHECK_MODULES([LIBUUID], [uuid], [LIBUUID_FOUND=yes], [LIBUUID_FOUND=no])
+	    if test "$LIBUUID_FOUND" = "no" ; then
+                AC_MSG_ERROR([libuuid development files required])
+            else
+                LIBUUID_CFLAGS+=" -I$(pkg-config --variable=includedir uuid)/uuid "
+            fi
+	fi
+	AC_SUBST([LIBUUID_CFLAGS])
+	AC_SUBST([LIBUUID_LIBS])
+	])
 
 dnl FONTFORGE_ARG_WITH_ZEROMQ
 dnl -------------------------
@@ -296,7 +315,17 @@ AC_DEFUN([FONTFORGE_ARG_WITH_ZEROMQ],
 [
 FONTFORGE_ARG_WITH([libzmq],
         [AS_HELP_STRING([--without-libzmq],[build without libzmq])],
-        [ libczmq libzmq > 3.2.0 ],
+        [ libczmq >= 2.0.1 libzmq >= 4.0.0 ],
         [FONTFORGE_WARN_PKG_NOT_FOUND([LIBZMQ])],
-        [_NO_LIBZMQ])
+        [_NO_LIBZMQ], [NO_LIBZMQ=1])
+if test "x$i_do_have_libzmq" = xyes; then
+   if test "x${WINDOWS_CROSS_COMPILE}" = x; then
+      AC_MSG_WARN([Using zeromq enables collab, which needs libuuid, so I'm checking for that now...])
+      CHECK_LIBUUID
+   fi
+fi
+
+LIBZMQ_CFLAGS+=" $LIBUUID_CFLAGS"
+LIBZMQ_LIBS+=" $LIBUUID_LIBS"
+
 ])

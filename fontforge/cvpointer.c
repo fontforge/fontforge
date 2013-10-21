@@ -24,6 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include "fontforgeui.h"
 #include <utype.h>
 #include <math.h>
@@ -98,6 +99,41 @@ return( true );
 return( false );
 }
 
+GList_Glib*
+CVGetSelectedPoints(CharView *cv)
+{
+    GList_Glib* ret = 0;
+    /* if there are any points selected */
+    SplinePointList *spl;
+    Spline *spline, *first;
+    int i;
+
+    for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next )
+    {
+	if ( cv->b.sc->inspiro && hasspiro())
+	{
+	    for ( i=0; i<spl->spiro_cnt-1; ++i )
+		if ( SPIRO_SELECTED(&spl->spiros[i]))
+		    ret = g_list_append( ret, &spl->spiros[i] );
+	}
+	else
+	{
+	    if ( spl->first->selected )
+		ret = g_list_append( ret, spl->first );
+	    first = NULL;
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next )
+	    {
+		if ( spline->to->selected )
+		    ret = g_list_append( ret, spline->to );
+		if ( first==NULL ) first = spline;
+	    }
+	}
+    }
+    return ret;
+}
+
+
+
 int CVClearSel(CharView *cv) {
     SplinePointList *spl;
     int i;
@@ -107,32 +143,68 @@ int CVClearSel(CharView *cv) {
     int needsupdate = 0;
     AnchorPoint *ap;
 
+    CVFreePreTransformSPL( cv );
+    
     cv->lastselpt = NULL; cv->lastselcp = NULL;
-    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
-	if ( spl->first->selected ) { needsupdate = true; spl->first->selected = false; }
+    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next )
+    {
+	if ( spl->first->selected )
+	{
+	    needsupdate = true;
+	    spl->first->selected = false;
+	    spl->first->nextcpselected = false;
+	    spl->first->prevcpselected = false;
+	}
 	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next )
+	{
 	    if ( spline->to->selected )
-		{ needsupdate = true; spline->to->selected = false; }
-	    if ( first==NULL ) first = spline;
+	    {
+		needsupdate = true;
+		spline->to->selected = false;
+		spline->to->nextcpselected = false;
+		spline->to->prevcpselected = false;
+	    }
+	    if ( first==NULL )
+		first = spline;
 	}
 	for ( i=0 ; i<spl->spiro_cnt-1; ++i )
 	    if ( SPIRO_SELECTED(&spl->spiros[i]))
-		{ needsupdate = true; SPIRO_DESELECT(&spl->spiros[i]); }
+	    {
+		needsupdate = true;
+		SPIRO_DESELECT(&spl->spiros[i]);
+	    }
     }
     for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL; rf = rf->next )
-	if ( rf->selected ) { needsupdate = true; rf->selected = false; }
+	if ( rf->selected )
+	{
+	    needsupdate = true;
+	    rf->selected = false;
+	}
     if ( cv->b.drawmode == dm_fore )
 	for ( ap=cv->b.sc->anchor; ap!=NULL; ap = ap->next )
-	    if ( ap->selected ) { if ( cv->showanchor ) needsupdate = true; ap->selected = false; }
+	    if ( ap->selected )
+	    {
+		if ( cv->showanchor )
+		    needsupdate = true;
+		ap->selected = false;
+	    }
     for ( img=cv->b.layerheads[cv->b.drawmode]->images; img!=NULL; img = img->next )
-	if ( img->selected ) { needsupdate = true; img->selected = false; }
+	if ( img->selected )
+	{
+	    needsupdate = true;
+	    img->selected = false;
+	}
     if ( cv->p.nextcp || cv->p.prevcp || cv->widthsel || cv->vwidthsel ||
 	    cv->icsel || cv->tah_sel )
+    {
 	needsupdate = true;
+    }
     cv->p.nextcp = cv->p.prevcp = false;
     cv->widthsel = cv->vwidthsel = cv->icsel = cv->tah_sel = false;
-return( needsupdate );
+
+    needsupdate = 1;
+    return( needsupdate );
 }
 
 int CVSetSel(CharView *cv,int mask) {
@@ -503,6 +575,18 @@ return( true );
 return( false );
 }
 
+void CVUnselectAllBCP( CharView *cv )
+{
+    CVFindAndVisitSelectedControlPoints( cv, false,
+					 FE_unselectBCP, 0 );
+
+    // This should happen, but it effects the single selection with mouse
+    // codepaths in bad ways as at 2013.Aug
+    /* cv->p.nextcp = 0; */
+    /* cv->p.prevcp = 0; */
+
+}
+
 void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     int needsupdate = false;
     int dowidth, dovwidth, doic, dotah, nearcaret;
@@ -544,8 +628,12 @@ return;
 	    (!doic || !cv->icsel) &&
 	    (!dotah || !cv->tah_sel) &&
 	    !(event->u.mouse.state&ksm_shift))
+    {
 	needsupdate = CVClearSel(cv);
+    }
+
     if ( !fs->p->anysel ) {
+//	printf("mousedown !anysel dow:%d dov:%d doid:%d dotah:%d nearcaret:%d\n", dowidth, dovwidth, doic, dotah, nearcaret );
 	/* Nothing else... unless they clicked on the width line, check that */
 	if ( dowidth ) {
 	    if ( event->u.mouse.state&ksm_shift )
@@ -617,6 +705,7 @@ return;
 	}
 	else
 	{
+//	    printf("mousedown !anysel ELSE\n");
 	    //
 	    // Allow dragging a box around some points to send that information
 	    // to the other clients in the collab session
@@ -624,7 +713,15 @@ return;
 	    if( collabclient_inSession( &cv->b ))
 		CVPreserveState(&cv->b);
 	}
-    } else if ( event->u.mouse.clicks<=1 && !(event->u.mouse.state&ksm_shift)) {
+      } else if ( event->u.mouse.clicks<=1 && !(event->u.mouse.state&ksm_shift)) {
+	/* printf("CVMouseDownPointer(2) not shifting\n"); */
+	/* printf("CVMouseDownPointer(2) cv->p.sp:%p\n", cv->p.sp ); */
+	/* printf("CVMouseDownPointer(2) n:%p p:%p sp:%p spline:%p ap:%p\n", */
+	/*        fs->p->nextcp,fs->p->prevcp, fs->p->sp, fs->p->spline, fs->p->ap ); */
+	/* printf("CVMouseDownPointer(2) spl:%p\n", fs->p->spl ); */
+	/* SPLFirstVisit( fs->p->spl->first, SPLFirstVisitorDebugSelectionState, 0 ); */
+	CVUnselectAllBCP( cv );
+
 	if ( fs->p->nextcp || fs->p->prevcp ) {
 	    CPStartInfo(cv,event);
 	    /* Needs update to draw control points selected */
@@ -651,13 +748,18 @@ return;
 	    fs->p->ap->selected = true;
 	}
     } else if ( event->u.mouse.clicks<=1 ) {
+	/* printf("CVMouseDownPointer(3) with shift... n:%p p:%p sp:%p spline:%p ap:%p\n", */
+	/*        fs->p->nextcp,fs->p->prevcp, fs->p->sp, fs->p->spline, fs->p->ap ); */
+	/* printf("CVMouseDownPointer(3) spl:%p\n", fs->p->spl ); */
+	/* SPLFirstVisit( fs->p->spl->first, SPLFirstVisitorDebugSelectionState, 0 ); */
+
 	if ( fs->p->nextcp || fs->p->prevcp ) {
 	    /* Needs update to draw control points selected */
 	    needsupdate = true;
 	} else if ( fs->p->sp!=NULL ) {
 	    needsupdate = true;
 	    fs->p->sp->selected = !fs->p->sp->selected;
-	    
+	    printf("CVMouseDownPointer(3.1)\n");
 	} else if ( fs->p->spiro!=NULL ) {
 	    needsupdate = true;
 	    fs->p->spiro->ty ^= 0x80;
@@ -676,6 +778,7 @@ return;
 	    fs->p->ap->selected = !fs->p->ap->selected;
 	}
     } else if ( event->u.mouse.clicks==2 ) {
+	/* printf("mouse down click==2\n"); */
 	CPEndInfo(cv);
 	if ( fs->p->spl!=NULL ) {
 	    if ( cv->b.sc->inspiro && hasspiro()) {
@@ -708,10 +811,12 @@ return;
 		    }
 	}
     } else if ( event->u.mouse.clicks==3 ) {
+	/* printf("mouse down click==3\n"); */
 	if ( CVSetSel(cv,1)) needsupdate = true;
 		/* don't select width or anchor points for three clicks */
 		/*  but select all points, refs */
     } else {
+	/* printf("mouse down ELSE\n"); */
 	/* Select everything */
 	if ( CVSetSel(cv,-1)) needsupdate = true;
     }
@@ -720,7 +825,7 @@ return;
     {
 	SCUpdateAll(cv->b.sc);
     }
-    
+
     /* lastselpt is set by our caller */
 }
 
@@ -858,6 +963,17 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
     CVSetCharChanged(cv,true);
 }
 
+bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp )
+{
+    if( !sp || !sf )
+	return 0;
+    if( !sf->grid.splines )
+	return 0;
+
+    SplinePointList* spl = sf->grid.splines;
+    return SplinePointListContainsPoint( spl, sp );
+}
+
 static void CVAdjustSpline(CharView *cv) {
     Spline *old = cv->p.spline;
     TPoint tp[5];
@@ -867,6 +983,40 @@ static void CVAdjustSpline(CharView *cv) {
 
     if ( cv->b.layerheads[cv->b.drawmode]->order2 )
 return;
+
+    //
+    // Click + drag on a guide moves the guide to where your mouse is at
+    //
+    if( cv->b.drawmode == dm_grid
+	&& isSplinePointPartOfGuide( cv->b.sc->parent, cv->p.spline->from )
+	&& isSplinePointPartOfGuide( cv->b.sc->parent, cv->p.spline->to ) )
+    {
+	if( 0 == cv->p.spline->splines[0].a
+	    && 0 == cv->p.spline->splines[0].b
+	    && 0 == cv->p.spline->splines[1].a
+	    && 0 == cv->p.spline->splines[1].b
+	    && ( (cv->p.spline->splines[0].c && cv->p.spline->from->me.y == cv->p.spline->to->me.y)
+		 || (cv->p.spline->splines[1].c && cv->p.spline->from->me.x == cv->p.spline->to->me.x )))
+	{
+	    if( cv->p.spline->from->me.y == cv->p.spline->to->me.y )
+	    {
+		int newy = cv->info.y;
+		cv->p.spline->from->me.y = newy;
+		cv->p.spline->to->me.y = newy;
+		cv->p.spline->splines[1].d = newy;
+	    }
+	    else
+	    {
+		int newx = cv->info.x;
+		cv->p.spline->from->me.x = newx;
+		cv->p.spline->to->me.x = newx;
+		cv->p.spline->splines[0].d = newx;
+	    }
+	    CVSetCharChanged(cv,true);
+	    return;
+	}
+    }
+
 
     tp[0].x = cv->info.x; tp[0].y = cv->info.y; tp[0].t = cv->p.t;
     t = cv->p.t/10;
@@ -889,6 +1039,19 @@ return;
         SPChangePointType(old->from, pt_hvcurve);
     if ( oldtopointtype == pt_hvcurve )
         SPChangePointType(old->to, pt_hvcurve);
+    //
+    // dont go changing pt_curve points into pt_corner without explicit consent.
+    //
+    if( oldfrompointtype == pt_curve || oldfrompointtype == pt_tangent )
+    {
+	old->from->pointtype = oldfrompointtype;
+	SPTouchControl( old->from, &old->from->nextcp, cv->b.layerheads[cv->b.drawmode]->order2 );
+    }
+    if( oldtopointtype == pt_curve || oldtopointtype == pt_tangent )
+    {
+	old->to->pointtype = oldtopointtype;
+	SPTouchControl( old->to, &old->to->prevcp, cv->b.layerheads[cv->b.drawmode]->order2 );
+    }
 
     old->from->nextcpdef = old->to->prevcpdef = false;
     SplineFree(old);
@@ -1010,11 +1173,15 @@ return(false);
 	}
     }
 
+    enum transformPointMask tpmask = 0;
+    tpmask |= tpmask_dontFixControlPoints;
+
     if ( cv->b.sc->inspiro && hasspiro())
 	SplinePointListSpiroTransform(cv->b.layerheads[cv->b.drawmode]->splines,transform,false);
     else
-	SplinePointListTransform(cv->b.layerheads[cv->b.drawmode]->splines,transform,
-		interpCPsOnMotion?tpt_OnlySelectedInterpCPs:tpt_OnlySelected);
+	SplinePointListTransformExtended(cv->b.layerheads[cv->b.drawmode]->splines,transform,
+					 interpCPsOnMotion?tpt_OnlySelectedInterpCPs:tpt_OnlySelected,
+					 tpmask );
 
     for ( refs = cv->b.layerheads[cv->b.drawmode]->refs; refs!=NULL; refs=refs->next ) if ( refs->selected ) {
 	refs->transform[4] += transform[4];
@@ -1115,9 +1282,21 @@ static int CVExpandEdge(CharView *cv) {
 return( true );
 }
 
+static void touchControlPointsVisitor ( void* key,
+				 void* value,
+				 SplinePoint* sp,
+				 BasePoint *which,
+				 bool isnext,
+				 void* udata )
+{
+    SPTouchControl( sp, which, (int)udata );
+}
+
 int CVMouseMovePointer(CharView *cv, GEvent *event) {
+    extern float arrowAmount;
     int needsupdate = false;
     int did_a_merge = false;
+    int touch_control_points = false;
 
     /* if we haven't moved from the original location (ever) then this is a noop */
     if ( !cv->p.rubberbanding && !cv->recentchange &&
@@ -1152,6 +1331,7 @@ return( false );
 	needsupdate = CVRectSelect(cv,cv->info.x,cv->info.y);
 	if ( !needsupdate && cv->p.rubberbanding )
 	    CVDrawRubberRect(cv->v,cv);
+	printf("moving2 cx:%g cy:%g\n", cv->p.cx, cv->p.cy );
 	cv->p.ex = cv->info.x;
 	cv->p.ey = cv->info.y;
 	cv->p.rubberbanding = true;
@@ -1159,12 +1339,35 @@ return( false );
 	    CVDrawRubberRect(cv->v,cv);
     } else if ( cv->p.nextcp ) {
 	if ( !cv->recentchange ) CVPreserveState(&cv->b);
-	CVAdjustControl(cv,&cv->p.sp->nextcp,&cv->info);
+
+//	printf("move cv->p.nextcp\n");
+	FE_adjustBCPByDeltaData d;
+	d.cv = cv;
+	d.dx = (cv->info.x - cv->p.sp->nextcp.x) * arrowAmount;
+	d.dy = (cv->info.y - cv->p.sp->nextcp.y) * arrowAmount;
+	/* printf("move sp:%p ncp:%p \n", */
+	/*        cv->p.sp, &(cv->p.sp->nextcp)  ); */
+	/* printf("move me.x:%f me.y:%f\n", cv->p.sp->me.x, cv->p.sp->me.y ); */
+	/* printf("move ncp.x:%f ncp.y:%f ix:%f iy:%f\n", */
+	/*        cv->p.sp->nextcp.x, cv->p.sp->nextcp.y, */
+	/*        cv->info.x, cv->info.y ); */
+	/* printf("move dx:%f dy:%f\n",  d.dx, d.dy ); */
+	/* printf("move dx:%f \n", cv->info.x - cv->p.sp->nextcp.x ); */
+	CVFindAndVisitSelectedControlPoints( cv, false,
+					     FE_adjustBCPByDelta, &d );
+
 	CPUpdateInfo(cv,event);
 	needsupdate = true;
     } else if ( cv->p.prevcp ) {
 	if ( !cv->recentchange ) CVPreserveState(&cv->b);
-	CVAdjustControl(cv,&cv->p.sp->prevcp,&cv->info);
+
+	FE_adjustBCPByDeltaData d;
+	d.cv = cv;
+	d.dx = (cv->info.x - cv->p.sp->prevcp.x) * arrowAmount;
+	d.dy = (cv->info.y - cv->p.sp->prevcp.y) * arrowAmount;
+	CVFindAndVisitSelectedControlPoints( cv, false,
+					     FE_adjustBCPByDelta, &d );
+
 	CPUpdateInfo(cv,event);
 	needsupdate = true;
     } else if ( cv->p.spline!=NULL && (!cv->b.sc->inspiro || !hasspiro())) {
@@ -1172,18 +1375,43 @@ return( false );
 	CVAdjustSpline(cv);
 	CVSetCharChanged(cv,true);
 	needsupdate = true;
+	touch_control_points = true;
     } else {
 	if ( !cv->recentchange ) CVPreserveState(&cv->b);
 	did_a_merge = CVMoveSelection(cv,
 		cv->info.x-cv->last_c.x,cv->info.y-cv->last_c.y,
 		event->u.mouse.state);
 	needsupdate = true;
+	touch_control_points = true;
     }
+
+
     if ( needsupdate )
+    {
 	SCUpdateAll(cv->b.sc);
+	CVGridHandlePossibleFitChar( cv );
+    }
+
+    if ( touch_control_points )
+    {
+	// We should really only need to visit the Adjacent CP
+	// visiting all is a hammer left below in case it might be needed.
+	CVVisitAdjacentToSelectedControlPoints( cv, false,
+						touchControlPointsVisitor,
+						(void*)cv->b.layerheads[cv->b.drawmode]->order2 );
+	/* CVVisitAllControlPoints( cv, false, */
+	/* 			 touchControlPointsVisitor, */
+	/* 			 (void*)cv->b.layerheads[cv->b.drawmode]->order2 ); */
+
+	GDrawRequestExpose(cv->v,NULL,false);
+    }
+
     cv->last_c.x = cv->info.x; cv->last_c.y = cv->info.y;
 return( did_a_merge );
 }
+
+
+
 
 void CVMouseUpPointer(CharView *cv ) {
     static char *buts[3];

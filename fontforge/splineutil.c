@@ -33,6 +33,7 @@
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
+#include <locale.h>
 
 /*#define DEBUG 1*/
 
@@ -175,20 +176,24 @@ return;
 #endif /* USE_OUR_MEMORY */
 
 char *strconcat(const char *str1,const char *str2) {
+    char *ret;
     int len1 = strlen(str1);
-    char *ret = galloc(len1+strlen(str2)+1);
-    strcpy(ret,str1);
-    strcpy(ret+len1,str2);
-return( ret );
+    if ( (ret=malloc(len1+strlen(str2)+1))!=NULL ) {
+	strcpy(ret,str1);
+	strcpy(ret+len1,str2);
+    }
+    return( ret );
 }
 
 char *strconcat3(const char *str1,const char *str2, const char *str3) {
+    char *ret;
     int len1 = strlen(str1), len2 = strlen(str2);
-    char *ret = galloc(len1+len2+strlen(str3)+1);
-    strcpy(ret,str1);
-    strcpy(ret+len1,str2);
-    strcpy(ret+len1+len2,str3);
-return( ret );
+    if ( (ret=malloc(len1+len2+strlen(str3)+1))!=NULL ) {
+	strcpy(ret,str1);
+	strcpy(ret+len1,str2);
+	strcpy(ret+len1+len2,str3);
+    }
+    return( ret );
 }
 
 void LineListFree(LineList *ll) {
@@ -218,13 +223,15 @@ void SplineFree(Spline *spline) {
 }
 
 SplinePoint *SplinePointCreate(real x, real y) {
-    SplinePoint *sp = chunkalloc(sizeof(SplinePoint));
-    sp->me.x = x; sp->me.y = y;
-    sp->nextcp = sp->prevcp = sp->me;
-    sp->nonextcp = sp->noprevcp = true;
-    sp->nextcpdef = sp->prevcpdef = false;
-    sp->ttfindex = sp->nextcpindex = 0xfffe;
-return( sp );
+    SplinePoint *sp;
+    if ( (sp=chunkalloc(sizeof(SplinePoint)))!=NULL ) {
+	sp->me.x = x; sp->me.y = y;
+	sp->nextcp = sp->prevcp = sp->me;
+	sp->nonextcp = sp->noprevcp = true;
+	sp->nextcpdef = sp->prevcpdef = false;
+	sp->ttfindex = sp->nextcpindex = 0xfffe;
+    }
+    return( sp );
 }
 
 Spline *SplineMake3(SplinePoint *from, SplinePoint *to) {
@@ -243,7 +250,7 @@ void SplinePointFree(SplinePoint *sp) {
 
 void SplinePointMDFree(SplineChar *sc, SplinePoint *sp) {
     MinimumDistance *md, *prev, *next;
-    
+
     if ( sc!=NULL ) {
 	prev = NULL;
 	for ( md = sc->md; md!=NULL; md = next ) {
@@ -269,8 +276,8 @@ void SplinePointsFree(SplinePointList *spl) {
 
     if ( spl==NULL )
 return;
-    nonext = spl->first->next==NULL;
     if ( spl->first!=NULL ) {
+	nonext = spl->first->next==NULL;
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
 	    next = spline->to->next;
@@ -284,46 +291,16 @@ return;
 }
 
 void SplineSetBeziersClear(SplinePointList *spl) {
-    Spline *first, *spline, *next;
-    int nonext;
 
-    if ( spl==NULL )
-return;
-    
-    if ( spl->first!=NULL ) {
-	nonext = spl->first->next==NULL;
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
-	    next = spline->to->next;
-	    SplinePointFree(spline->to);
-	    SplineFree(spline);
-	    if ( first==NULL ) first = spline;
-	}
-	if ( spl->last!=spl->first || nonext )
-	    SplinePointFree(spl->first);
-    }
+    if ( spl==NULL ) return;
+    SplinePointsFree(spl);
     spl->first = spl->last = NULL;
 }
 
 void SplinePointListFree(SplinePointList *spl) {
-    Spline *first, *spline, *next;
-    int nonext;
 
-    if ( spl==NULL )
-return;
-    
-    if ( spl->first!=NULL ) {
-	nonext = spl->first->next==NULL;
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
-	    next = spline->to->next;
-	    SplinePointFree(spline->to);
-	    SplineFree(spline);
-	    if ( first==NULL ) first = spline;
-	}
-	if ( spl->last!=spl->first || nonext )
-	    SplinePointFree(spl->first);
-    }
+    if ( spl==NULL ) return;
+    SplinePointsFree(spl);
     free(spl->spiros);
     free(spl->contour_name);
     chunkfree(spl,sizeof(SplinePointList));
@@ -362,12 +339,13 @@ void SplinePointListsMDFree(SplineChar *sc,SplinePointList *spl) {
     }
 }
 
-void SplinePointListsFree(SplinePointList *head) {
-    SplinePointList *spl, *next;
+void SplinePointListsFree(SplinePointList *spl) {
+    SplinePointList *next;
 
-    for ( spl=head; spl!=NULL; spl=next ) {
+    while ( spl!=NULL ) {
 	next = spl->next;
 	SplinePointListFree(spl);
+	spl = next;
     }
 }
 
@@ -430,7 +408,7 @@ void RefCharsFree(RefChar *ref) {
 
 /* Remove line segments which are just one point long */
 /* Merge colinear line segments */
-/* Merge two segments each of which involves a single pixel change in one dimension (cut corners) */ 
+/* Merge two segments each of which involves a single pixel change in one dimension (cut corners) */
 static void SimplifyLineList(LineList *prev) {
     LineList *next, *lines;
 
@@ -1019,7 +997,7 @@ return;
     bounds->maxx = bounds->maxy = -1e10;
 
     SplineSetQuickBounds(sc->layers[layer].splines,bounds);
-    
+
     for ( ref = sc->layers[layer].refs; ref!=NULL; ref = ref->next ) {
 	SplineSetQuickBounds(ref->layers[0].splines,&temp);
 	if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 )
@@ -1425,6 +1403,7 @@ static SplinePointList *SplinePointListCopySpiroSelected1(SplinePointList *spl) 
 	for ( j=i; j<spl->spiro_cnt-1 && SPIRO_SELECTED(&list[j]); ++j );
 	temp = galloc((j-i+2)*sizeof(spiro_cp));
 	memcpy(temp,list+i,(j-i)*sizeof(spiro_cp));
+	if ( freeme!=NULL ) free(list);
 	temp[0].ty = SPIRO_OPEN_CONTOUR;
 	memset(temp+(j-i),0,sizeof(spiro_cp));
 	temp[j-i].ty = SPIRO_END;
@@ -1729,25 +1708,74 @@ void ApTransform(AnchorPoint *ap, real transform[6]) {
     BpTransform(&ap->me,&ap->me,transform);
 }
 
-static void TransformPoint(SplinePoint *sp, real transform[6]) {
-
-    BpTransform(&sp->me,&sp->me,transform);
-    if ( !sp->nonextcp ) {
-	BpTransform(&sp->nextcp,&sp->nextcp,transform);
-    } else
-	sp->nextcp = sp->me;
-    if ( !sp->noprevcp ) {
-	BpTransform(&sp->prevcp,&sp->prevcp,transform);
-    } else
-	sp->prevcp = sp->me;
-    if ( sp->pointtype == pt_hvcurve ) {
-	if ( 
-		((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x && sp->nextcp.y!=sp->me.y) ||
-		 (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y && sp->nextcp.x!=sp->me.x)))
-	    /* Do Nothing */;
-	else
-	    sp->pointtype = pt_curve;
+static void TransformPointExtended(SplinePoint *sp, real transform[6], enum transformPointMask tpmask )
+{
+    /**
+     * If we are to transform selected BCP instead of their base splinepoint
+     * then lets do that.
+     */
+    if( tpmask & tpmask_operateOnSelectedBCP
+	&& (sp->nextcpselected || sp->prevcpselected ))
+    {
+	if( sp->nextcpselected )
+	{
+	    int order2 = sp->next ? sp->next->order2 : 0;
+	    BpTransform(&sp->nextcp,&sp->nextcp,transform);
+	    SPTouchControl( sp, &sp->nextcp, order2 );
+	}
+	else if( sp->prevcpselected )
+	{
+	    int order2 = sp->next ? sp->next->order2 : 0;
+	    BpTransform(&sp->prevcp,&sp->prevcp,transform);
+	    SPTouchControl( sp, &sp->prevcp, order2 );
+	}
     }
+    else
+    {
+	/**
+	 * Transform the base splinepoints.
+	 */
+	BpTransform(&sp->me,&sp->me,transform);
+
+	if ( !sp->nonextcp )
+	{
+	    BpTransform(&sp->nextcp,&sp->nextcp,transform);
+	}
+	else
+	{
+	    sp->nextcp = sp->me;
+	}
+
+	if ( !sp->noprevcp )
+	{
+	    BpTransform(&sp->prevcp,&sp->prevcp,transform);
+	}
+	else
+	{
+	    sp->prevcp = sp->me;
+	}
+    }
+
+
+
+    if ( sp->pointtype == pt_hvcurve )
+    {
+	if(
+	    ((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x && sp->nextcp.y!=sp->me.y) ||
+	     (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y && sp->nextcp.x!=sp->me.x)))
+	{
+	    /* Do Nothing */;
+	}
+	else
+	{
+	    sp->pointtype = pt_curve;
+	}
+    }
+}
+
+static void TransformPoint(SplinePoint *sp, real transform[6])
+{
+    TransformPointExtended( sp, transform, 0 );
 }
 
 static void TransformSpiro(spiro_cp *cp, real transform[6]) {
@@ -1800,8 +1828,9 @@ static void TransformPTsInterpolateCPs(BasePoint *fromorig,Spline *spline,
 	spline->to->me = totrans;
 }
 
-SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6],
-	enum transformPointType tpt ) {
+
+SplinePointList *SplinePointListTransformExtended(SplinePointList *base, real transform[6],
+						  enum transformPointType tpt, enum transformPointMask tpmask ) {
     Spline *spline, *first;
     SplinePointList *spl;
     SplinePoint *spt, *pfirst;
@@ -1830,7 +1859,7 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 	    for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to ) {
 		if ( pfirst==NULL ) pfirst = spt;
 		if ( tpt==tpt_AllPoints || spt->selected ) {
-		    TransformPoint(spt,transform);
+		    TransformPointExtended(spt,transform,tpmask);
 		    if ( tpt!=tpt_AllPoints ) {
 			if ( spt->next!=NULL && spt->next->order2 && !spt->next->to->selected && spt->next->to->ttfindex==0xffff ) {
 			    SplinePoint *to = spt->next->to;
@@ -1869,22 +1898,27 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 	/* Figuring out where the edges of the selection are is difficult */
 	/*  so let's just tweak all points, it shouldn't matter */
 	/* It does matter. Let's tweak all default points */
-	if ( tpt!=tpt_AllPoints && !allsel && spl->first->next!=NULL && !spl->first->next->order2 ) {
-	    pfirst = NULL;
-	    for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to ) {
-		if ( pfirst==NULL ) pfirst = spt;
-		if ( spt->selected && spt->prev!=NULL && !spt->prev->from->selected &&
-			spt->prev->from->pointtype == pt_tangent )
-		    SplineCharTangentPrevCP(spt->prev->from);
-		if ( spt->selected && spt->next!=NULL && !spt->next->to->selected &&
-			spt->next->to->pointtype == pt_tangent )
-		    SplineCharTangentNextCP(spt->next->to);
-		if ( spt->prev!=NULL && spt->prevcpdef && tpt==tpt_OnlySelected )
-		    SplineCharDefaultPrevCP(spt);
-		if ( spt->next==NULL )
-	    break;
-		if ( spt->nextcpdef && tpt==tpt_OnlySelected )
-		    SplineCharDefaultNextCP(spt);
+	if( !(tpmask & tpmask_dontFixControlPoints))
+	{
+	    if ( tpt!=tpt_AllPoints && !allsel && spl->first->next!=NULL && !spl->first->next->order2 )
+	    {
+		pfirst = NULL;
+		for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to )
+		{
+		    if ( pfirst==NULL ) pfirst = spt;
+		    if ( spt->selected && spt->prev!=NULL && !spt->prev->from->selected &&
+			 spt->prev->from->pointtype == pt_tangent )
+			SplineCharTangentPrevCP(spt->prev->from);
+		    if ( spt->selected && spt->next!=NULL && !spt->next->to->selected &&
+			 spt->next->to->pointtype == pt_tangent )
+			SplineCharTangentNextCP(spt->next->to);
+		    if ( spt->prev!=NULL && spt->prevcpdef && tpt==tpt_OnlySelected )
+			SplineCharDefaultPrevCP(spt);
+		    if ( spt->next==NULL )
+			break;
+		    if ( spt->nextcpdef && tpt==tpt_OnlySelected )
+			SplineCharDefaultNextCP(spt);
+		}
 	    }
 	}
 	first = NULL;
@@ -1896,12 +1930,19 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 return( base );
 }
 
+SplinePointList *SplinePointListTransform( SplinePointList *base, real transform[6],
+					   enum transformPointType tpt )
+{
+    enum transformPointMask tpmask = 0;
+    return SplinePointListTransformExtended( base, transform, tpt, tpmask );
+}
+
 SplinePointList *SplinePointListSpiroTransform(SplinePointList *base, real transform[6], int allpoints ) {
     SplinePointList *spl;
     int allsel, anysel;
     int i;
 
-    
+
     if ( allpoints )
 return( SplinePointListTransform(base,transform,tpt_AllPoints));
 
@@ -2573,6 +2614,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *
 
 static SplineFont *SplineFontFromMMType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
     char *pt, *end, *origweight;
+    char oldloc[25];
     MMSet *mm;
     int ipos, apos, ppos, item, i;
     real blends[12];	/* At most twelve points/axis in a blenddesignmap */
@@ -2589,6 +2631,9 @@ return( NULL );
     mm = chunkalloc(sizeof(MMSet));
 
     pt = fd->weightvector;
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
+    setlocale(LC_NUMERIC,"C");
     while ( *pt==' ' || *pt=='[' ) ++pt;
     while ( *pt!=']' && *pt!='\0' ) {
 	pscontext->blend_values[ pscontext->instance_count ] =
@@ -2664,7 +2709,7 @@ return( NULL );
 	} else
 	    ++pt;
     }
-    
+
     mm->axismaps = gcalloc(mm->axis_count,sizeof(struct axismap));
     pt = fd->fontinfo->blenddesignmap;
     while ( *pt==' ' ) ++pt;
@@ -2745,6 +2790,7 @@ return( NULL );
 		}
 	    }
 	}
+	setlocale(LC_NUMERIC,oldloc);
 	fd->private->private = PSDictCopy(sf->private);
 	if ( fd->blendprivate!=NULL ) {
 	    static char *arrnames[] = { "BlueValues", "OtherBlues", "FamilyBlues", "FamilyOtherBlues", "StdHW", "StdVW", "StemSnapH", "StemSnapV", NULL };
@@ -2989,7 +3035,7 @@ return;
 	    for ( subref=rsc->layers[i].refs; subref!=NULL; subref=subref->next )
 		cnt += subref->layer_cnt;
 	}
-    
+
 	rf->layer_cnt = cnt;
 	rf->layers = gcalloc(cnt,sizeof(struct reflayer));
 	cnt = 0;
@@ -3092,7 +3138,7 @@ static void _SFReinstanciateRefs(SplineFont *sf) {
 	++cnt;
     }
 }
-	    
+
 void SFReinstanciateRefs(SplineFont *sf) {
     int i;
 
@@ -3708,7 +3754,7 @@ return(tmin);
 return(tmax);
     if (( low<0 && high>0 ) ||
 	    ( low>0 && high<0 )) {
-	
+
 	forever {
 	    t = (tmax+tmin)/2;
 	    if ( t==tmax || t==tmin )
@@ -4495,7 +4541,7 @@ return( false );
 
 return( true );
 }
-    
+
 /* returns 0=>no intersection, 1=>at least one, location in pts, t1s, t2s */
 /*  -1 => We couldn't figure it out in a closed form, have to do a numerical */
 /*  approximation */
@@ -5236,7 +5282,7 @@ int SSPointWithin(SplineSet *spl,BasePoint *pt) {
 	}
 	spl = spl->next;
     }
-return( cnt!=0 );	
+return( cnt!=0 );
 }
 
 void StemInfoFree(StemInfo *h) {
@@ -6320,7 +6366,7 @@ void OtfFeatNameListFree(struct otffeatname *fn) {
 
 EncMap *EncMapNew(int enccount,int backmax,Encoding *enc) {
     EncMap *map = chunkalloc(sizeof(EncMap));
-    
+
     map->enccount = map->encmax = enccount;
     map->backmax = backmax;
     map->map = galloc(enccount*sizeof(int));
@@ -6335,7 +6381,7 @@ EncMap *EncMap1to1(int enccount) {
     EncMap *map = chunkalloc(sizeof(EncMap));
     /* Used for CID fonts where CID is same as orig_pos */
     int i;
-    
+
     map->enccount = map->encmax = map->backmax = enccount;
     map->map = galloc(enccount*sizeof(int));
     map->backmap = galloc(enccount*sizeof(int));
@@ -6452,7 +6498,7 @@ void BaseScriptFree(struct basescript *bs) {
 	bs = next;
     }
 }
-	
+
 void BaseFree(struct Base *base) {
     if ( base==NULL )
 return;
@@ -6475,7 +6521,7 @@ return( NULL );
     ret[i] = NULL;
 return( ret );
 }
-    
+
 struct jstf_lang *JstfLangsCopy(struct jstf_lang *jl) {
     struct jstf_lang *head=NULL, *last=NULL, *cur;
     int i;
@@ -6699,7 +6745,7 @@ static void countcluster(SplinePoint **ptspace, struct cluster *cspace,
     break;
     }
 }
-	
+
 static int _SplineCharRoundToCluster(SplineChar *sc,SplinePoint **ptspace,
 	struct cluster *cspace,int ptcnt,int is_y,int dohints,
 	int layer, int changed,
@@ -6806,7 +6852,7 @@ int SCRoundToCluster(SplineChar *sc,int layer,int sel,bigreal within,bigreal max
     int l,k,changed;
     SplineSet *spl;
     SplinePoint *sp;
-    SplinePoint **ptspace;
+    SplinePoint **ptspace = NULL;
     struct cluster *cspace;
     Spline *s, *first;
 
@@ -6854,8 +6900,10 @@ int SCRoundToCluster(SplineChar *sc,int layer,int sel,bigreal within,bigreal max
 	if ( sel && selcnt==0 )
 	    sel = false;
 	if ( sel ) ptcnt = selcnt;
-	if ( ptcnt<=1 )
+	if ( ptcnt<=1 ) {
+	    free(ptspace);
 return(false);				/* Can't be any clusters */
+	}
 	if ( k==0 )
 	    ptspace = galloc((ptcnt+1)*sizeof(SplinePoint *));
 	else

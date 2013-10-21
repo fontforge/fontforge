@@ -25,6 +25,13 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#define GTimer GTimer_GTK
+#define GList  GList_Glib
+#include <glib.h>
+#include <glib-object.h>
+#undef GTimer
+#undef GList
+
 #include <fontforge-config.h>
 #include "fontforgeui.h"
 #ifndef _NO_LIBUNICODENAMES
@@ -102,6 +109,7 @@ static void _dousage(void) {
     printf( "\t-recover none|auto|inquire|clean (control error recovery)\n" );
     printf( "\t-allglyphs\t\t (load all glyphs in the 'glyf' table\n\t\t\t of a truetype collection)\n" );
     printf( "\t-nosplash\t\t (no splash screen)\n" );
+    printf( "\t-quiet\t\t\t (don't print non-essential information to stderr)\n" );
     printf( "\t-unique\t\t\t (if a fontforge is already running open\n\t\t\t all arguments in it and have this process exit)\n" );
     printf( "\t-display display-name\t (sets the X display)\n" );
     printf( "\t-depth val\t\t (sets the display depth if possible)\n" );
@@ -230,12 +238,12 @@ static void SplashLayout() {
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcat(pt, FONTFORGE_GIT_VERSION);
-    
+
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcpy(pt,"  Version: ");;
     uc_strcat(pt,source_modtime_str);
-    
+
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcat(pt,"           (");
@@ -528,7 +536,7 @@ static void install_mac_timer(void) {
 	    .001*kEventDurationSecond,.001*kEventDurationSecond,
 	    NewEventLoopTimerUPP(DoRealStuff), NULL,
 	    &timer);
-}	    
+}
 #endif
 
 static int splash_e_h(GWindow gw, GEvent *event) {
@@ -660,12 +668,7 @@ return( false );
     if ( old==NULL )
 return( false );
     while ( fgets(buffer,sizeof(buffer),old)!=NULL ) {
-	int len = strlen( buffer );
-	if ( buffer[len-1]=='\n' )
-	    buffer[--len] = '\0';
-	if ( buffer[len-1]=='\r' )
-	    buffer[--len] = '\0';
-	if ( ViewPostScriptFont(buffer,0)!=0 )
+	if ( ViewPostScriptFont(g_strchomp(buffer),0)!=0 )
 	    any = 1;
     }
     fclose(old);
@@ -758,12 +761,12 @@ static void GrokNavigationMask(void) {
 
 /**
  * Create the directory basedir/dirname with the given mode.
- * Silently ignore any errors that might happen. 
+ * Silently ignore any errors that might happen.
  */
 static void ffensuredir( const char* basedir, const char* dirname, mode_t mode ) {
     const int buffersz = PATH_MAX;
     char buffer[buffersz+1];
-    
+
     snprintf(buffer,buffersz,"%s/%s", basedir, dirname );
     // ignore errors, this is just to help the user aftre all.
 #if !defined(__MINGW32__)
@@ -811,25 +814,6 @@ int fontforge_main( int argc, char **argv ) {
 
     g_type_init();
 
-    fprintf( stderr, "Copyright (c) 2000-2012 by George Williams. See AUTHORS for contributors.\n" );
-    fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
-    fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
-    fprintf( stderr, " Executable based on sources from %s"
-	    "-ML"
-#ifdef FREETYPE_HAS_DEBUGGER
-	    "-TtfDb"
-#endif
-#ifdef _NO_PYTHON
-	    "-NoPython"
-#endif
-#ifdef FONTFORGE_CONFIG_USE_DOUBLE
-	    "-D"
-#endif
-	    ".\n",
-	    source_modtime_str );
-    fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
-    fprintf( stderr, " Based on source from git with hash:%s\n", FONTFORGE_GIT_VERSION );
-
     /* Must be done before we cache the current directory */
     /* Change to HOME dir if specified on the commandline */
     for ( i=1; i<argc; ++i ) {
@@ -842,8 +826,31 @@ int fontforge_main( int argc, char **argv ) {
 	    if (getenv("HOME")!=NULL) chdir(getenv("HOME"));
 	    break;	/* Done - Unnecessary to check more arguments */
 	}
+	if (strcmp(pt,"-quiet")==0)
+	    quiet = 1;
     }
-	
+
+    if (!quiet) {
+        fprintf( stderr, "Copyright (c) 2000-2012 by George Williams. See AUTHORS for contributors.\n" );
+        fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
+        fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
+        fprintf( stderr, " Executable based on sources from %s"
+	        "-ML"
+#ifdef FREETYPE_HAS_DEBUGGER
+	        "-TtfDb"
+#endif
+#ifdef _NO_PYTHON
+	        "-NoPython"
+#endif
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
+	        "-D"
+#endif
+	        ".\n",
+	        source_modtime_str );
+        fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
+        fprintf( stderr, " Based on source from git with hash:%s\n", FONTFORGE_GIT_VERSION );
+    }
+
 #if defined(__Mac)
     /* Start X if they haven't already done so. Well... try anyway */
     /* Must be before we change DYLD_LIBRARY_PATH or X won't start */
@@ -882,7 +889,7 @@ int fontforge_main( int argc, char **argv ) {
 	}
     }
 #endif
-    
+
     FF_SetUiInterface(&gdraw_ui_interface);
     FF_SetPrefsInterface(&gdraw_prefs_interface);
     FF_SetSCInterface(&gdraw_sc_interface);
@@ -933,7 +940,7 @@ int fontforge_main( int argc, char **argv ) {
 
 	if ( local_x && useCommandKey ) {
 	    hotkeySystemSetCanUseMacCommand( 1 );
-	    
+
 	    /* Ok, we get the command key */
 	    if ( getenv("LANG")==NULL && getenv("LC_MESSAGES")==NULL ) {
 		setenv("LC_MESSAGES","en_US.UTF-8",0);
@@ -971,7 +978,7 @@ int fontforge_main( int argc, char **argv ) {
 	char path[PATH_MAX];
 	snprintf(path, PATH_MAX, "%s%s", shareDir, "/pixmaps" );
 	GGadgetSetImageDir( path );
-	
+
 	snprintf(path, PATH_MAX, "%s%s", shareDir, "/resources/fontforge.resource" );
 	GResourceAddResourceFile(path, GResourceProgramName,false);
     }
@@ -1027,6 +1034,8 @@ int fontforge_main( int argc, char **argv ) {
 		GDrawEnableCairo(true);
 	} else if ( strcmp(pt,"-nosplash")==0 )
 	    splash = 0;
+	else if ( strcmp(pt,"-quiet")==0 )
+	    /* already checked for this earlier, no need to do it again */;
 	else if ( strcmp(pt,"-unique")==0 )
 	    unique = 1;
 	else if ( strcmp(pt,"-recover")==0 && i<argc-1 ) {
@@ -1128,13 +1137,19 @@ exit( 0 );
     splash_italic = GDrawInstanciateFont(NULL,&rq);
     splash_italic = GResourceFindFont("Splash.ItalicFont",splash_italic);
     GDrawSetFont(splashw,splash_font);
-    GDrawWindowFontMetrics(splashw,splash_font,&as,&ds,&ld);
-    fh = as+ds+ld;
+
     SplashLayout();
     localsplash = splash;
 
-    if ( localsplash && !listen_to_apple_events )
+   if ( localsplash && !listen_to_apple_events )
 	start_splash_screen();
+
+    //
+    // The below call will initialize the fontconfig cache if required.
+    // That can take a while the first time it happens.
+    //
+   GDrawWindowFontMetrics(splashw,splash_font,&as,&ds,&ld);
+   fh = as+ds+ld;
 
     if ( AutoSaveFrequency>0 )
 	autosave_timer=GDrawRequestTimer(splashw,2*AutoSaveFrequency*1000,AutoSaveFrequency*1000,NULL);
@@ -1150,7 +1165,7 @@ exit( 0 );
 	any = DoAutoRecoveryExtended( recover-1,
 				      DoAutoRecoveryPostRecover_PromptUserGraphically );
     }
-    
+
 
     openflags = 0;
     for ( i=1; i<argc; ++i ) {
@@ -1177,13 +1192,13 @@ exit( 0 );
 		strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 ||
 		strcmp(pt,"-dontopenxdevices")==0 || strcmp(pt,"-unique")==0 ||
 		strncmp(pt,"-usecairo",strlen("-usecairo"))==0 ||
-		strcmp(pt,"-home")==0 )
+		strcmp(pt,"-home")==0 || strcmp(pt,"-quiet")==0 )
 	    /* Already done, needed to be before display opened */;
 	else if ( strncmp(pt,"-psn_",5)==0 )
 	    /* Already done */;
 	else if ( (strcmp(pt,"-depth")==0 || strcmp(pt,"-vc")==0 ||
-		    strcmp(pt,"-cmap")==0 || strcmp(pt,"-colormap")==0 || 
-		    strcmp(pt,"-keyboard")==0 || 
+		    strcmp(pt,"-cmap")==0 || strcmp(pt,"-colormap")==0 ||
+		    strcmp(pt,"-keyboard")==0 ||
 		    strcmp(pt,"-display")==0 || strcmp(pt,"-recover")==0 ) &&
 		i<argc-1 )
 	    ++i; /* Already done, needed to be before display opened */
@@ -1234,6 +1249,7 @@ exit( 0 );
     if ( !any && !doopen )
 	any = ReopenLastFonts();
 
+    collabclient_ensureClientBeacon();
     collabclient_sniffForLocalServer();
 
 #if defined(__Mac)
@@ -1249,6 +1265,7 @@ exit( 0 );
     GDrawEventLoop(NULL);
 
     hotkeysSave();
+    LastFonts_Save();
 
 #ifndef _NO_LIBUNICODENAMES
     uninm_names_db_close(names_db);	/* close this database before exiting */

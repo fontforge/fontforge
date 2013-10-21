@@ -93,7 +93,7 @@ msgstr "ഒട്ടിക്കുക"
 
 #: bitmapview.c:1752 charview.c:9045 combinations.c:997 fontview.c:6928
 #: fontview.c:8114 metricsview.c:2510
-msgid "C_lear"
+msgid "C_hop"
 msgstr "വൃത്തിയാക്കുക"
 
 #: charview.c:9049 fontview.c:6931 metricsview.c:2511

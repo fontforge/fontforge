@@ -27,6 +27,7 @@
 #ifndef _PFAEDITUI_H_
 #define _PFAEDITUI_H_
 
+#include "ffglib.h"
 #include "fontforgevw.h"
 #include <gprogress.h>
 

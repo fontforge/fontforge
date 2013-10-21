@@ -43,7 +43,7 @@
 #include <ustring.h>
 #include <locale.h>
 
-#include <glib.h>
+#include "ffglib.h"
 
 /* Adobe's opentype feature file */
 /* Which suffers incompatible changes according to Adobe's whim */
@@ -1736,10 +1736,10 @@ static gboolean dump_header_languagesystem_hash_fe( gpointer key,
     return 0;
 }
 
-static void donothing(gpointer data)
-{
+static gint tree_strcasecmp (gconstpointer a, gconstpointer b, gpointer user_data) {
+    (void)user_data;
+    return g_ascii_strcasecmp (a, b);
 }
-
 
 static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
     int isgpos;
@@ -1748,8 +1748,8 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
     FeatureScriptLangList *fl;
     struct scriptlanglist *sl;
 
-    GTree* ht = g_tree_new_full( (GCompareDataFunc)g_ascii_strcasecmp, 0, free, donothing );
-    
+    GTree* ht = g_tree_new_full( tree_strcasecmp, 0, free, NULL );
+
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	uint32 *feats = SFFeaturesInScriptLang(sf,isgpos,0xffffffff,0xffffffff);
 	if ( feats[0]!=0 ) {
@@ -1778,7 +1778,7 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
 	    }
 	}
     }
-    
+
     g_tree_foreach( ht, dump_header_languagesystem_hash_fe, out );
     fprintf( out, "\n" );
 }
@@ -3816,6 +3816,7 @@ return( NULL );
     if ( tok->type!=tk_char || tok->tokbuf[0]!='<' ) {
 	LogError(_("Expected an anchor (after ligature) on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
+	free(cur->name_or_class); free(cur);
 return( NULL );
     }
     lc_max = 8;
@@ -5112,7 +5113,7 @@ static struct nameid *fea_ParseNameId(struct parseState *tok,int strid) {
 	} else
 	    nm = NULL;
 	max = 0;
-	pt = start = NULL;
+	pt = 0; start = NULL;
 	while ( (ch=getc(in))!=EOF && ch!='"' ) {
 	    if ( ch=='\n' || ch=='\r' )
 	continue;		/* Newline characters are ignored here */
@@ -5143,17 +5144,16 @@ static struct nameid *fea_ParseNameId(struct parseState *tok,int strid) {
 		    start = grealloc(start,(max+=100)+1);
 		    pt = start+off;
 		}
-		pt = utf8_idpb(pt,value);
+		pt = utf8_idpb(pt,value,0);
 	    }
 	}
 	if ( nm!=NULL ) {
-	    if ( pt==NULL )
-		nm->utf8_str = copy("");
-	    else {
+	    if ( pt ) {
 		*pt = '\0';
 		nm->utf8_str = copy(start);
 		free(start);
-	    }
+	    } else
+		nm->utf8_str = copy("");
 	}
 	if ( tok->type!=tk_char || tok->tokbuf[0]!='"' ) {
 	    LogError(_("End of file found in string on line %d of %s"),
@@ -7101,7 +7101,7 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     struct namedanchor *nap, *napnext;
     struct namedvalue *nvr, *nvrnext;
     int i,j;
-    char oldloc[24];
+    char oldloc[25];
 
     memset(&tok,0,sizeof(tok));
     tok.line[0] = 1;
@@ -7111,7 +7111,8 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     if ( sf->cidmaster ) sf = sf->cidmaster;
     tok.sf = sf;
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
     fea_ParseFeatureFile(&tok);
     setlocale(LC_NUMERIC,oldloc);

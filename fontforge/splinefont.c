@@ -236,7 +236,7 @@ return( enc );
     }
 
     enc = uni = -1;
-	
+
     enc = SFFindSlot(sf,map,-1,name);
     if ( enc!=-1 ) {
 	free(freeme);
@@ -570,7 +570,7 @@ return( false );
 	sf->changed = true;
 	FVSetTitles(sf);
     }
-	
+
 return( true );
 }
 
@@ -765,7 +765,7 @@ return( onlydirfont );
     free(files);
 return( name );
 }
-    
+
 #define TOC_NAME	"ff-archive-table-of-contents"
 
 char *Unarchive(char *name, char **_archivedir) {
@@ -912,7 +912,7 @@ return(copy(tmpfilename));			/* The filename does not exist */
 /*  by LoadSplineFont (which does) and by RevertFile (which knows what it's doing) */
 SplineFont *_ReadSplineFont(FILE *file,char *filename,enum openflags openflags) {
     SplineFont *sf;
-    char ubuf[250], *temp;
+    char ubuf[251], *temp;
     int fromsfd = false;
     int i;
     char *pt, *ext2, *strippedname, *oldstrippedname, *tmpfile=NULL, *paren=NULL, *fullname=filename, *rparen;
@@ -1006,7 +1006,7 @@ return( NULL );
 
     /* If there are no pfaedit windows, give them something to look at */
     /*  immediately. Otherwise delay a bit */
-    strcpy(ubuf,_("Loading font from "));
+    strncpy(ubuf,_("Loading font from "),sizeof(ubuf-1));
     len = strlen(ubuf);
     if ( !wasurl || i==-1 )	/* If it wasn't compressed, or it wasn't an url, then the fullname is reasonable, else use the original name */
 	strncat(ubuf,temp = def2utf8_copy(GFileNameTail(fullname)),100);
@@ -1384,7 +1384,7 @@ char *_GetModifiers(char *fontname, char *familyname,char *weight) {
     if ( fpt!=NULL ) {
 	for ( i=0; mods[i]!=NULL; ++i ) for ( j=0; mods[i][j]!=NULL; ++j ) {
 	    if ( strcmp(fpt,mods[i][j])==0 ) {
-		strcpy(space,fullmods[i][j]);
+		strncpy(space,fullmods[i][j],sizeof(space)-1);
 return(space);
 	    }
 	}
@@ -1809,7 +1809,7 @@ static void SnapSet(struct psdict *private,real stemsnap[12], real snapcnt[12],
     char buffer[211];
 
     mi = -1;
-    for ( i=0; stemsnap[i]!=0 && i<12; ++i )
+    for ( i=0; i<12 && stemsnap[i]!=0; ++i )
 	if ( mi==-1 ) mi = i;
 	else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
     if ( mi==-1 )
@@ -1952,7 +1952,7 @@ return;
     }
     if ( name==NULL || *name=='\0' )
 	name = _("Back");
-    
+
     l = sf->layer_cnt;
     ++sf->layer_cnt;
     sf->layers = grealloc(sf->layers,(l+1)*sizeof(LayerInfo));
@@ -2008,4 +2008,223 @@ int SplinePointListContains( SplinePointList* container, SplinePointList* sought
     }
     return 0;
 }
+
+
+void SPLFirstVisitorDebug(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    printf("   splfirst:%p spline:%p udata:%p\n", splfirst, spline, udata );
+}
+
+void SPLFirstVisitorDebugSelectionState(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    printf("   splfirst:%p spline:%p udata:%p", splfirst, spline, udata );
+    printf("   from.selected:%d n:%d p:%d to.selected:%d n:%d p:%d\n",
+	   ( spline->from ? spline->from->selected       : -1 ),
+	   ( spline->from ? spline->from->nextcpselected : -1 ),
+	   ( spline->from ? spline->from->prevcpselected : -1 ),
+	   ( spline->to   ? spline->to->selected         : -1 ),
+	   ( spline->to   ? spline->to->nextcpselected   : -1 ),
+	   ( spline->to   ? spline->to->prevcpselected   : -1 )
+	);
+}
+
+
+
+void SPLFirstVisit( SplinePoint* splfirst, SPLFirstVisitor f, void* udata )
+{
+    Spline *spline=0;
+    Spline *first=0;
+    Spline *next=0;
+
+    if ( splfirst!=NULL )
+    {
+	first = NULL;
+	for ( spline = splfirst->next; spline!=NULL && spline!=first; spline = next )
+	{
+	    next = spline->to->next;
+
+	    // callback
+	    f( splfirst, spline, udata );
+
+	    if ( first==NULL )
+	    {
+		first = spline;
+	    }
+	}
+    }
+}
+
+
+typedef struct SPLFirstVisitorFoundSoughtDataS
+{
+    SplinePoint* sought;
+    int found;
+} SPLFirstVisitorFoundSoughtData;
+
+static void SPLFirstVisitorFoundSought(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    SPLFirstVisitorFoundSoughtData* d = (SPLFirstVisitorFoundSoughtData*)udata;
+//    printf("SPLFirstVisitorFoundSought()   splfirst:%p spline:%p udata:%p\n", splfirst, spline, udata );
+//    printf("SPLFirstVisitorFoundSought()   sought:%p from:%p to:%p\n", d->sought, spline->from, spline->to );
+
+    if( spline->from == d->sought || spline->to == d->sought )
+    {
+//	printf("got it!\n");
+	d->found = 1;
+    }
+}
+
+int SplinePointListContainsPoint( SplinePointList* container, SplinePoint* sought )
+{
+    if( !sought )
+	return 0;
+
+//    printf("\n\n\nSplinePointListContainsPoint(top) want:%p\n", sought );
+    SplinePointList *spl;
+    for ( spl = container; spl!=NULL; spl = spl->next )
+    {
+	//SplinePoint* p   = spl->first;
+	//SplinePoint* end = spl->last;
+
+	SPLFirstVisitorFoundSoughtData d;
+	d.sought = sought;
+	d.found  = 0;
+	SPLFirstVisit( spl->first, SPLFirstVisitorFoundSought, &d );
+	if( d.found )
+	    return 1;
+    }
+    return 0;
+}
+
+
+typedef struct SPLFirstVisitorFoundSoughtXYDataS
+{
+    int use_x;
+    int use_y;
+    real x;
+    real y;
+
+    // outputs
+    int found;
+    Spline* spline;
+    SplinePoint* sp;
+    
+} SPLFirstVisitorFoundSoughtXYData;
+
+static void SPLFirstVisitorFoundSoughtXY(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    SPLFirstVisitorFoundSoughtXYData* d = (SPLFirstVisitorFoundSoughtXYData*)udata;
+    int found = 0;
+
+    if( d->found )
+	return;
+    
+    printf("SPLFirstVisitorFoundSoughtXY() %f %f %f\n", d->x, spline->from->me.x, spline->to->me.x );
+    if( d->use_x )
+    {
+	if( spline->from->me.x == d->x )
+	{
+	    found = 1;
+	    d->spline = spline;
+	    d->sp = spline->from;
+	}
+	
+	if( spline->to->me.x == d->x )
+	{
+	    found = 1;
+	    d->spline = spline;
+	    d->sp = spline->to;
+	}
+    }
+    if( d->use_x && found && d->use_y )
+    {
+	if( d->sp->me.y != d->y )
+	{
+	    found = 0;
+	}
+    }
+    else if( d->use_y )
+    {
+	if( spline->from->me.y == d->y )
+	{
+	    found = 1;
+	    d->spline = spline;
+	    d->sp = spline->from;
+	}
+	
+	if( spline->to->me.y == d->y )
+	{
+	    found = 1;
+	    d->spline = spline;
+	    d->sp = spline->to;
+	}
+    }
+
+    if( found )
+    {
+	d->found = found;
+	d->spline = spline;
+    }
+    else
+    {
+	d->sp = 0;
+    }
+}
+
+
+SplinePoint* SplinePointListContainsPointAtX( SplinePointList* container, real x )
+{
+    SplinePointList *spl;
+    for ( spl = container; spl!=NULL; spl = spl->next )
+    {
+	SPLFirstVisitorFoundSoughtXYData d;
+	d.use_x  = 1;
+	d.use_y  = 0;
+	d.x      = x;
+	d.y      = 0;
+	d.found  = 0;
+	SPLFirstVisit( spl->first, SPLFirstVisitorFoundSoughtXY, &d );
+	if( d.found )
+	    return d.sp;
+    }
+    return 0;
+}
+
+SplinePoint* SplinePointListContainsPointAtY( SplinePointList* container, real y )
+{
+    SplinePointList *spl;
+    for ( spl = container; spl!=NULL; spl = spl->next )
+    {
+	SPLFirstVisitorFoundSoughtXYData d;
+	d.use_x  = 0;
+	d.use_y  = 1;
+	d.x      = 0;
+	d.y      = y;
+	d.found  = 0;
+	SPLFirstVisit( spl->first, SPLFirstVisitorFoundSoughtXY, &d );
+	if( d.found )
+	    return d.sp;
+    }
+    return 0;
+}
+
+SplinePoint* SplinePointListContainsPointAtXY( SplinePointList* container, real x, real y )
+{
+    SplinePointList *spl;
+    for ( spl = container; spl!=NULL; spl = spl->next )
+    {
+	SPLFirstVisitorFoundSoughtXYData d;
+	d.use_x  = 1;
+	d.use_y  = 1;
+	d.x      = x;
+	d.y      = y;
+	d.found  = 0;
+	SPLFirstVisit( spl->first, SPLFirstVisitorFoundSoughtXY, &d );
+	if( d.found )
+	    return d.sp;
+    }
+    return 0;
+}
+
+
 

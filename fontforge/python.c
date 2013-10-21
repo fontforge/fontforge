@@ -67,10 +67,7 @@
 #include "collab/zmq_kvmsg.h"
 #endif
 #include "collabclient.h"
-#define GTimer GTimer_GTK
-#include <glib.h>
-#include <glib-object.h>
-#undef GTimer
+#include "ffglib.h"
 
 extern int prefRevisionsToRetain;
 
@@ -2932,7 +2929,7 @@ return( NULL );
 	    points = freeme = galloc(self->pt_cnt*sizeof(struct PyFF_Point *));
 	    for ( i=start; i<self->pt_cnt; ++i )
 		points[i-start] = self->points[i];
-	    off = i;
+	    off = self->pt_cnt - start;
 	    for ( i=0; i<start; ++i )
 		points[i+off] = self->points[i];
 	}
@@ -5096,14 +5093,14 @@ get_pyFF_sendRedoIfInSession_Func( void )
 {
     return pyFF_sendRedoIfInSession_Func;
 }
-								   
+
 void set_pyFF_sendRedoIfInSession_Func( pyFF_sendRedoIfInSession_Func_t f )
 {
     pyFF_sendRedoIfInSession_Func = f;
 }
 
 
-	    
+
 
 static int PyFF_Glyph_set_a_layer(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure), int layeri) {
     SplineChar *sc = self->sc;
@@ -5130,7 +5127,6 @@ return( -1 );
     }
 
     CharView* cv = (CharView*)get_pyFF_maybeCallCVPreserveState_Func()( self );
-    
     if ( layer->order2!=isquad ) {
 	if ( layer->order2 )
 	    newss = SplineSetsTTFApprox(ss);
@@ -5143,9 +5139,7 @@ return( -1 );
     layer->splines = ss;
 
     SCCharChangedUpdate(sc,self->layer);
-
     get_pyFF_sendRedoIfInSession_Func()( cv );
-    
 return( 0 );
 }
 
@@ -13451,8 +13445,10 @@ return( NULL );
 	instrs = galloc(icnt);
 	for ( i=0; i<icnt; ++i ) {
 	    instrs[i] = PyInt_AsLong(PySequence_GetItem(tuple,i));
-	    if ( PyErr_Occurred())
+	    if ( PyErr_Occurred()) {
+		free(instrs);
 return( NULL );
+	    }
 	}
     }
     TableAddInstrs(self->fv->sf,tag,true,instrs,icnt);
@@ -13995,8 +13991,10 @@ return( false );
 	first = GlyphsFromTuple(fv->sf,list1);
 	second = GlyphsFromTuple(fv->sf,list2);
     }
-    if ( first==NULL || second==NULL )
+    if ( first==NULL || second==NULL ) {
+	free(second); free(first);
 return( false );
+    }
     AutoKern2BuildClasses(fv->sf,fv->active_layer,first,second,sub,
 	    sub->separation,0,sub->kerning_by_touch, sub->onlyCloser,
 	    !sub->dontautokern,
@@ -14148,6 +14146,7 @@ return( NULL );
 return( NULL );
     if ( sub->lookup->lookup_type!=gpos_pair ) {
 	PyErr_Format(PyExc_EnvironmentError, "Cannot add kerning data to %s, it has the wrong lookup type", lookup );
+	free(offs);
 return( NULL );
     }
     sub->per_glyph_pst_or_kern = false;
@@ -14220,8 +14219,10 @@ return( NULL );
     offs = galloc(cnt1*cnt2*sizeof(int16));
     for ( i=0 ; i<cnt1*cnt2; ++i ) {
 	offs[i] = PyInt_AsLong(PySequence_GetItem(offsets,i));
-	if ( PyErr_Occurred())
+	if ( PyErr_Occurred()) {
+	    free(offs); free(class2_strs); free(class2_strs);
 return( NULL );
+	}
     }
 
     KernClassFreeContents(sub->kc);
@@ -14354,8 +14355,10 @@ return( NULL );
     } else {
 	first = second = GlyphsFromSelection(fv);
     }
-    if ( first==NULL || second==NULL )
+    if ( first==NULL || second==NULL ) {
+	free(second); free(first);
 return( NULL );
+    }
     if ( sub->lookup->lookup_flags & pst_r2l ) {
 	left = second;
 	right = first;
@@ -15102,8 +15105,10 @@ return( NULL );
     }
 
     new_subtable = addLookupSubtable(sf, lookup, subtable, after_str);
-    if ( new_subtable==NULL )
+    if ( new_subtable==NULL ) {
+	free(backclassnames); free(matchclasses); free(forclasses);
 return( NULL );
+    }
     fpst = chunkalloc(sizeof(FPST));
     fpst->subtable = new_subtable;
     new_subtable->fpst = fpst;
@@ -17133,7 +17138,7 @@ PyMethodDef PyFF_Font_methods[] = {
     { "validate", (PyCFunction)PyFFFont_validate, METH_VARARGS, "Check whether a font is valid and return True if it is." },
 
 //    { "CollabSessionStart", (PyCFunction) PyFFFont_CollabSessionStart, METH_VARARGS, "Start a collab session at the given address (or the public IP address by default)" },
-    
+
 //    { "CollabSessionJoin", (PyCFunction) PyFFFont_CollabSessionJoin, METH_VARARGS, "Join a collab session at the given address (or localhost by default)" },
 //    { "CollabSessionRunMainLoop", (PyCFunction) PyFFFont_CollabSessionRunMainLoop, METH_VARARGS, "Run the main loop, checking for and reacting to Collab messages for the given number of milliseconds (or 1 second by default)" },
 //    { "CollabSessionSetUpdatedCallback", (PyCFunction) PyFFFont_CollabSessionSetUpdatedCallback, METH_VARARGS, "Python function to call after a new collab update has been applied" },
@@ -17142,7 +17147,7 @@ PyMethodDef PyFF_Font_methods[] = {
     // code can add it's methods to the end of the object declaration.
     PYMETHODDEF_EMPTY,
     PYMETHODDEF_EMPTY,
-    PYMETHODDEF_EMPTY, 
+    PYMETHODDEF_EMPTY,
     PYMETHODDEF_EMPTY,
     PYMETHODDEF_EMPTY,
     PYMETHODDEF_EMPTY,
@@ -18363,8 +18368,13 @@ static PyObject *InitializePythonMainNamespace() {
 }
 
 static void CreateAllPyModules(void) {
-    printf("CreateAllPyModules()\n");
     int i;
+
+    /*
+    if (!quiet)
+        printf("CreateAllPyModules()\n");
+    */
+
     for ( i=0; i<NUM_MODULES; i++ ) {
         CreatePyModule( all_modules[i] );
     }
@@ -18797,6 +18807,7 @@ return;
     /* (If we loaded from an sfd file) */
     obj = NULL;
     if ( sf->python_persistent!=NULL && PyMapping_Check(sf->python_persistent) &&
+	 PyMapping_HasKeyString(sf->python_persistent,"initScriptString") &&
 	    (obj = PyMapping_GetItemString(sf->python_persistent,"initScriptString"))!=NULL &&
 	    STRING_CHECK(obj)) {
 	char *str = PyBytes_AsString(obj);

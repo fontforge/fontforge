@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "collabclientui.h"
 #include <math.h>
 
 #if defined(KNIFE_CONTINUOUS)	/* Use this code to do cuts as we move along. Probably a bad idea, let's wait till the end */
@@ -67,7 +68,7 @@ return;					/* Already cut here */
 	nspl->last = p->spl->last;
 	p->spl->last = p->sp;
     }
-    
+
     cv->lastknife.x = cv->info.x;
     cv->lastknife.y = cv->info.y;
     CVSetCharChanged(cv,true);
@@ -169,8 +170,9 @@ static void SplitSpirosAndAddAndCut(SplineSet *spl,SplineSet *spl2,int spiro_ind
     }
 }
 #endif
-	
-void CVMouseUpKnife(CharView *cv, GEvent *event) {
+
+void CVMouseUpKnife(CharView *cv, GEvent *event)
+{
 #if !defined(KNIFE_CONTINUOUS)
     /* draw a line from (cv->p.cx,cv->p.cy) to (cv->info.x,cv->info.y) */
     /*  and cut anything intersected by it */
@@ -300,7 +302,8 @@ void CVMouseUpKnife(CharView *cv, GEvent *event) {
 		SSRegenerateFromSpiros(spl);
 	    spl->ticked = false;
 	}
-	CVCharChangedUpdate(&cv->b);
+	CVCharChangedUpdate(   &cv->b );
+	collabclient_sendRedo( &cv->b );
     }
 #endif
 }

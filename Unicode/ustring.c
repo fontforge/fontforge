@@ -483,6 +483,8 @@ return(NULL);
 }
 
 char *u_to_c(const unichar_t *ubuf) {
+    if( !ubuf )
+	return 0;
     static char buf[400];
     cu_strncpy(buf,ubuf,sizeof(buf));
 return( buf );
@@ -547,30 +549,17 @@ void utf82u_strcat(unichar_t *to,const char *from) {
 }
 
 char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
+/* Copy unichar string 'ubuf' into utf8 buffer string 'utf8buf' */
     char *pt = utf8buf;
 
-    while ( *ubuf ) {
-	if ( *ubuf<0x80 )
-	    *pt++ = *ubuf;
-	else if ( *ubuf<0x800 ) {
-	    *pt++ = 0xc0 | (*ubuf>>6);
-	    *pt++ = 0x80 | (*ubuf&0x3f);
-	} else if ( *ubuf < 0x10000 ) {
-	    *pt++ = 0xe0 | (*ubuf>>12);
-	    *pt++ = 0x80 | ((*ubuf>>6)&0x3f);
-	    *pt++ = 0x80 | (*ubuf&0x3f);
-	} else {
-	    uint32 val = *ubuf-0x10000;
-	    int u = ((val&0xf0000)>>16)+1, z=(val&0x0f000)>>12, y=(val&0x00fc0)>>6, x=val&0x0003f;
-	    *pt++ = 0xf0 | (u>>2);
-	    *pt++ = 0x80 | ((u&3)<<4) | z;
-	    *pt++ = 0x80 | y;
-	    *pt++ = 0x80 | x;
+    if ( ubuf!=NULL ) {
+	while ( *ubuf && (pt=utf8_idpb(pt,*ubuf++,0)) );
+	if ( pt ) {
+	    *pt = '\0';
+	    return( utf8buf );
 	}
-	++ubuf;
     }
-    *pt = '\0';
-return( utf8buf );
+    return( NULL );
 }
 
 char *utf8_strchr(const char *str, int search) {
@@ -634,29 +623,28 @@ return( lbuf );
 }
 
 char *u2utf8_copy(const unichar_t *ubuf) {
-    int len;
-    char *utf8buf;
+/* Make a utf8 string copy of unichar string ubuf */
 
     if ( ubuf==NULL )
-return( NULL );
+	return( NULL );
 
-    len = u_strlen(ubuf);
-    utf8buf = (char *) galloc((len+1)*4);
-return( u2utf8_strcpy(utf8buf,ubuf));
+    return( u2utf8_copyn(ubuf,u_strlen(ubuf)+1) );
 }
 
 char *u2utf8_copyn(const unichar_t *ubuf,int len) {
-    int i;
+/* Make a utf8 string copy of unichar string ubuf[0..len] */
     char *utf8buf, *pt;
 
-    if ( ubuf==NULL )
-return( NULL );
+    if ( ubuf==NULL || len<=0 || (utf8buf=pt=(char *)malloc(len*6+1))==NULL )
+	return( NULL );
 
-    utf8buf = pt = (char *) galloc((len+1)*4);
-    for ( i=0; i<len && *ubuf!='\0'; ++i )
-	pt = utf8_idpb(pt, *ubuf++);
-    *pt = '\0';
-return( utf8buf );
+    while ( (pt=utf8_idpb(pt,*ubuf++,0)) && --len );
+    if ( pt ) {
+	*pt = '\0';
+	return( utf8buf );
+    }
+    free( utf8buf );
+    return( NULL );
 }
 
 int32 utf8_ildb(const char **_text) {
@@ -692,46 +680,87 @@ int32 utf8_ildb(const char **_text) {
 return( val );
 }
 
-char *utf8_idpb(char *utf8_text,uint32 ch) {
-    /* Increment and deposit character */
-    if ( ch<0 || ch>=17*65536 )
-return( utf8_text );
+char *utf8_idpb(char *utf8_text,uint32 ch,int flags) {
+/* Increment and deposit character, no '\0' appended */
+/* NOTE: Unicode only needs range of 17x65535 values */
+/* and strings must be long enough to hold +4 chars. */
+/* ISO/IEC 10646 description of UTF8 allows encoding */
+/* character values up to U+7FFFFFFF before RFC3629. */
 
-    if ( ch<=127 )
-	*utf8_text++ = ch;
-    else if ( ch<=0x7ff ) {
-	*utf8_text++ = 0xc0 | (ch>>6);
-	*utf8_text++ = 0x80 | (ch&0x3f);
-    } else if ( ch<=0xffff ) {
-	*utf8_text++ = 0xe0 | (ch>>12);
-	*utf8_text++ = 0x80 | ((ch>>6)&0x3f);
-	*utf8_text++ = 0x80 | (ch&0x3f);
-    } else {
-	uint32 val = ch-0x10000;
-	int u = ((val&0xf0000)>>16)+1, z=(val&0x0f000)>>12, y=(val&0x00fc0)>>6, x=val&0x0003f;
-	*utf8_text++ = 0xf0 | (u>>2);
-	*utf8_text++ = 0x80 | ((u&3)<<4) | z;
-	*utf8_text++ = 0x80 | y;
-	*utf8_text++ = 0x80 | x;
+    if ( ch>0x7fffffff || \
+	 (!(flags&UTF8IDPB_OLDLIMIT) && ((ch>=0xd800 && ch<=0xdfff) || ch>=17*65536)) )
+	return( 0 ); /* Error, ch is out of range */
+
+    if ( (flags&(UTF8IDPB_UCS2|UTF8IDPB_UTF16|UTF8IDPB_UTF32)) ) {
+	if ( (flags&UTF8IDPB_UCS2) && ch>0xffff )
+	    return( 0 ); /* Error, ch is out of range */
+	if ( (flags&UTF8IDPB_UTF32) ) {
+	    *utf8_text++ = ((ch>>24)&0xff);
+	    *utf8_text++ = ((ch>>16)&0xff);
+	    ch &= 0xffff;
+	}
+	if ( ch>0xffff ) {
+	    /* ...here if a utf16 encoded value */
+	    unsigned long us;
+	    ch -= 0x10000;
+	    us = (ch>>10)+0xd800;
+	    *utf8_text++ = us>>8;
+	    *utf8_text++ = us&0xff;
+	    ch = (ch&0x3ff)+0xdc00;
+	}
+	*utf8_text++ = ch>>8;
+	ch &= 0xff;
+    } else if ( ch>127 || (ch==0 && (flags&UTF8IDPB_NOZERO)) ) {
+	if ( ch<=0x7ff )
+	    /* ch>=0x80 && ch<=0x7ff */
+	    *utf8_text++ = 0xc0 | (ch>>6);
+	else {
+	    if ( ch<=0xffff )
+		/* ch>=0x800 && ch<=0xffff */
+		*utf8_text++ = 0xe0 | (ch>>12);
+	    else {
+		if ( ch<=0x1fffff )
+		    /* ch>=0x10000 && ch<=0x1fffff */
+		    *utf8_text++ = 0xf0 | (ch>>18);
+		else {
+		    if ( ch<=0x3ffffff )
+			/* ch>=0x200000 && ch<=0x3ffffff */
+			*utf8_text++ = 0xf8 | (ch>>24);
+		    else {
+			/* ch>=0x4000000 && ch<=0x7fffffff */
+			*utf8_text++ = 0xfc | (ch>>30);
+			*utf8_text++ = 0x80 | ((ch>>24)&0x3f);
+		    }
+		    *utf8_text++ = 0x80 | ((ch>>18)&0x3f);
+		}
+		*utf8_text++ = 0x80 | ((ch>>12)&0x3f);
+	    }
+	    *utf8_text++ = 0x80 | ((ch>>6)&0x3f);
+	}
+	ch = 0x80 | (ch&0x3f);
     }
-return( utf8_text );
+    *utf8_text++ = ch;
+    return( utf8_text );
 }
 
-
 char *utf8_ib(char *utf8_text) {
-    int ch;
+/* Increment to next utf8 character */
+    unsigned char ch;
 
-    /* Increment character */
-    if ( (ch = *utf8_text)=='\0' )
-return( utf8_text );
+    if ( (ch = (unsigned char) *utf8_text)=='\0' )
+	return( utf8_text );
     else if ( ch<=127 )
-return( utf8_text+1 );
+	return( utf8_text+1 );
     else if ( ch<0xe0 )
-return( utf8_text+2 );
+	return( utf8_text+2 );
     else if ( ch<0xf0 )
-return( utf8_text+3 );
+	return( utf8_text+3 );
+    else if ( ch<0xf8 )
+	return( utf8_text+4 );
+    else if ( ch<0xfc )
+	return( utf8_text+5 );
     else
-return( utf8_text+4 );
+	return( utf8_text+6 );
 }
 
 int utf8_valid(const char *str) {
@@ -764,49 +793,48 @@ return;
 }
 
 char *utf8_db(char *utf8_text) {
-    /* Decrement utf8 pointer */
+/* Decrement utf8 pointer to previous utf8 character.*/
+/* NOTE: This should never happen but if the pointer */
+/* was looking at an intermediate character, it will */
+/* be properly positioned at the start of a new char */
+/* and not the previous character.		     */
     unsigned char *pt = (unsigned char *) utf8_text;
 
     --pt;
-    if ( *pt>=0xc0 )
-	/* This should never happen. The pointer was looking at an intermediate */
-	/*  character. However, if it does happen then we are now properly */
-	/*  positioned at the start of a new char */;
-    else if ( *pt>=0x80 ) {
+    if ( *pt>=0x80 && *pt<0xc0 ) {
 	--pt;
-	if ( *pt>=0xc0 )
-	    /* Done */;
-	else if ( *pt>=0x80 ) {
+	if ( *pt>=0x80 && *pt<0xc0 ) {
 	    --pt;
-	    if ( *pt>=0xc0 )
-		/* Done */;
-	    else if ( *pt>=0x80 )
+	    if ( *pt>=0x80 && *pt<0xc0 ) {
 		--pt;
+		if ( *pt>=0x80 && *pt<0xc0 ) {
+		    --pt;
+		    if ( *pt>=0x80 && *pt<0xc0 )
+			--pt;
+		}
+	    }
 	}
     }
-return( (char *) pt );
+    return( (char *) pt );
 }
 
-int utf8_strlen(const char *utf8_str) {
-    /* how many characters in the string NOT bytes */
-    int len = 0;
+long utf8_strlen(const char *utf8_str) {
+/* Count how many characters in the string NOT bytes */
+    long len = 0;
 
-    while ( utf8_ildb(&utf8_str)>0 )
-	++len;
-return( len );
+    while ( utf8_ildb(&utf8_str)>0 && ++len>0 );
+    return( len );
 }
 
-int utf82u_strlen(const char *utf8_str) {
-    /* how many shorts needed to represent it in UCS2 */
-    int ch;
-    int len = 0;
+long utf82u_strlen(const char *utf8_str) {
+/* Count how many shorts needed to represent in UCS2 */
+    int32 ch;
+    long len = 0;
 
-    while ( (ch = utf8_ildb(&utf8_str))>0 )
-	if ( ch>0x10000 )
-	    len += 2;
-	else
+    while ( (ch = utf8_ildb(&utf8_str))>0 && ++len>0 )
+	if ( ch>=0x10000 )
 	    ++len;
-return( len );
+    return( len );
 }
 
 void utf8_strncpy(register char *to, const char *from, int len) {
@@ -879,7 +907,7 @@ char *StripToASCII(const char *utf8_str) {
     *pt = '\0';
 return( newcr );
 }
-    
+
 int AllAscii(const char *txt) {
     for ( ; *txt!='\0'; ++txt ) {
 	if ( *txt=='\t' || *txt=='\n' || *txt=='\r' )
@@ -977,5 +1005,54 @@ char* c_itostr( int v )
 char* str_rfind( char* s, char ch )
 {
     return strrchr( s, ch );
+}
+
+char* str_replace_all( char* s, char* orig, char* replacement, int free_s )
+{
+    char* p = strstr( s, orig );
+    if( !p )
+    {
+	if( free_s )
+	    return s;
+	return copy( s );
+    }
+
+    int count = 0;
+    p = s;
+    while( p )
+    {
+	p = strstr( p, orig );
+	if( !p )
+	    break;
+	p++;
+	count++;
+    }
+    count++;
+
+    // more than strictly needed, but always enough RAM.
+    int retsz = strlen(s) + count*strlen(replacement) + 1;
+    char* ret = (char *) galloc( retsz );
+    memset( ret, '\0', retsz );
+    char* output = ret;
+    char* remains = s;
+    p = remains;
+    while( p )
+    {
+	p = strstr( remains, orig );
+	if( !p )
+	{
+	    strcpy( output, remains );
+	    break;
+	}
+	if( p > remains )
+	    strncpy( output, remains, p-remains );
+	strcat( output, replacement );
+	output += strlen(output);
+	remains = p + strlen(orig);
+    }
+
+    if( free_s )
+	free(s);
+    return ret;
 }
 

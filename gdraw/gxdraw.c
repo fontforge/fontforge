@@ -1221,6 +1221,11 @@ return( NULL );
 	width &= 0x7fff;
 	wamcairo = true;
     }
+    // icon windows.
+    if ( width == 48 ) {
+	wamcairo = true;
+    }
+    
     gw->display = (GXDisplay *) gdisp;
     gw->is_pixmap = 1;
     gw->parent = NULL;
@@ -1462,7 +1467,10 @@ static void GXDrawSetVisible(GWindow w, int visible) {
 	    s_h.y = gw->pos.y + gdisp->off_y;
 	    XSetNormalHints(gdisp->display,gw->w,&s_h);
 	}
-	XUnmapWindow(gdisp->display,gw->w);
+	if (gw->is_toplevel)
+		XWithdrawWindow(gdisp->display,gw->w,gdisp->screen);
+	else
+		XUnmapWindow(gdisp->display,gw->w);
 	_GXDraw_RemoveRedirects(gdisp,gw);
     }
 }

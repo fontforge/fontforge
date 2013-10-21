@@ -1368,7 +1368,7 @@ msgstr "Вст_авить"
 #: ../fontforge/fontview.c:5557
 #: ../fontforge/metricsview.c:3183
 #: ../fontforge/uiutil.c:648
-msgid "C_lear"
+msgid "C_hop"
 msgstr "О_чистить"
 
 #: ../fontforge/bitmapview.c:2143
@@ -9001,7 +9001,7 @@ msgid "300 Light"
 msgstr "300 Светлый"
 
 #: ../fontforge/fontinfo.c:98
-msgid "400 Book"
+msgid "400 Regular"
 msgstr "400 Книжный"
 
 #: ../fontforge/fontinfo.c:99
@@ -9009,7 +9009,7 @@ msgid "500 Medium"
 msgstr "500 Средний"
 
 #: ../fontforge/fontinfo.c:100
-msgid "600 Demi-Bold"
+msgid "600 Semi-Bold"
 msgstr "600 Полужирный"
 
 #: ../fontforge/fontinfo.c:101
@@ -9017,7 +9017,7 @@ msgid "700 Bold"
 msgstr "700 Жирный"
 
 #: ../fontforge/fontinfo.c:102
-msgid "800 Heavy"
+msgid "800 Extra-Bold"
 msgstr "800 Очень жирный"
 
 #: ../fontforge/fontinfo.c:103
@@ -32708,7 +32708,7 @@ msgstr ""
 
 #: ../fontforge/tottfaat.c:260
 #, c-format
-msgid "On Windows many apps will have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs"
+msgid "Note: On Windows many apps can have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs (eg, they have a Unicode value of -1) To avoid this, go to Generate, Options, and uncheck Old Style kern for OpenType."
 msgstr ""
 
 #: ../fontforge/tottfgpos.c:1092

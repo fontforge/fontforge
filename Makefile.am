@@ -66,7 +66,7 @@ SUBDIRS += pyhook
 endif PYTHON_EXTENSION
 
 if MACINTOSH
-SUBDIRS += mackeys
+SUBDIRS += mackeys osx
 endif MACINTOSH
 
 if DESKTOP
@@ -80,7 +80,7 @@ endif FONTTOOLS
 nodist_pkgconfig_DATA = libfontforge.pc libfontforgeexe.pc
 
 EXTRA_DIST += LICENSE README-Mac.html README-MS.html README-unix	\
-	README-Unix.html Readme.VMS create-osx-app-bundle.sh Portfile
+	README-Unix.html Readme.VMS Portfile
 
 uninstall-local:
 	(cd desktop; $(MAKE) $(AM_MAKEFLAGS) uninstall)

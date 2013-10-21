@@ -88,8 +88,6 @@ extern char *BDFFoundry;
 extern char *TTFFoundry;
 extern char *xuid;
 extern char *SaveTablesPref;
-static char *LastFonts[2*RECENT_MAX];
-static int LastFontIndex=0, LastFontsPreserving=0;
 /*struct cvshows CVShows = { 1, 1, 1, 1, 1, 0, 1 };*/ /* in charview */
 /* int default_fv_font_size = 24; */	/* in fontview */
 /* int default_fv_antialias = false */	/* in fontview */
@@ -166,6 +164,8 @@ extern int cv_width;			/* in charview.c */
 extern int cv_height;			/* in charview.c */
 extern int interpCPsOnMotion;			/* in charview.c */
 extern int DrawOpenPathsWithHighlight;          /* in charview.c */
+extern float prefs_cvEditHandleSize;            /* in charview.c */
+extern int prefs_cvInactiveHandleAlpha;         /* in charview.c */
 extern int mv_width;				/* in metricsview.c */
 extern int mv_height;				/* in metricsview.c */
 extern int bv_width;				/* in bitmapview.c */
@@ -188,6 +188,8 @@ extern int AutoSaveFrequency;			/* autosave.c */
 extern int UndoRedoLimitToSave;  /* sfd.c */
 extern int UndoRedoLimitToLoad;  /* sfd.c */
 extern int prefRevisionsToRetain; /* sfd.c */
+extern int prefs_cv_show_control_points_always_initially; /* from charview.c */
+extern int prefs_create_dragging_comparison_outline;      /* from charview.c */
 
 extern NameList *force_names_when_opening;
 extern NameList *force_names_when_saving;
@@ -220,6 +222,13 @@ static int pointless;
 #define CID_PrefsBase	1000
 #define CID_PrefsOffset	100
 #define CID_PrefsBrowseOffset	(CID_PrefsOffset/2)
+
+//////////////////////////////////
+// The _oldval_ are used to cache the setting when the prefs window
+// is created so that a redraw can be performed only when the
+// value has changed.
+float prefs_oldval_cvEditHandleSize = 0;
+int   prefs_oldval_cvInactiveHandleAlpha = 0;
 
 /* ************************************************************************** */
 /* *****************************    mac data    ***************************** */
@@ -352,6 +361,10 @@ static struct prefs_list {
 	{ N_("AutoKernDialog"), pr_bool, &default_autokern_dlg, NULL, NULL, '\0', NULL, 0, N_("Open AutoKern dialog for new kerning subtables") },
 	{ N_("MetricsShiftSkip"), pr_int, &pref_mv_shift_and_arrow_skip, NULL, NULL, '\0', NULL, 0, N_("Number of units to increment/decrement a table value by in the metrics window when shift is held") },
 	{ N_("MetricsControlShiftSkip"), pr_int, &pref_mv_control_shift_and_arrow_skip, NULL, NULL, '\0', NULL, 0, N_("Number of units to increment/decrement a table value by in the metrics window when both control and shift is held") },
+	{ N_("EditHandleSize"), pr_real, &prefs_cvEditHandleSize, NULL, NULL, '\0', NULL, 0, N_("The size of the handles showing control points and other interesting points in the glyph editor (default is 5).") },
+	{ N_("InactiveHandleAlpha"), pr_int, &prefs_cvInactiveHandleAlpha, NULL, NULL, '\0', NULL, 0, N_("Inactive handles in the glyph editor will be drawn with this alpha value (range: 0-255 default is 255).") },
+	{ N_("ShowControlPointsAlways"), pr_bool, &prefs_cv_show_control_points_always_initially, NULL, NULL, '\0', NULL, 0, N_("Always show the control points when editing a glyph.\nThis can be turned off in the menu View/Show, this setting will effect if control points are shown initially.\nChange requires a restart of fontforge.") },
+
 	PREFS_LIST_EMPTY
 },
   sync_list[] = {
@@ -446,6 +459,7 @@ static struct prefs_list {
 	{ "MarkPointsOfInflect", pr_int, &CVShows.markpoi, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "ShowRulers", pr_bool, &CVShows.showrulers, NULL, NULL, '\0', NULL, 1, N_("Display rulers in the Outline Glyph View") },
 	{ "ShowCPInfo", pr_int, &CVShows.showcpinfo, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "CreateDraggingComparisonOutline", pr_int, &prefs_create_dragging_comparison_outline, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "InfoWindowDistance", pr_int, &infowindowdistance, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "ShowSideBearings", pr_int, &CVShows.showsidebearings, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "ShowRefNames", pr_int, &CVShows.showrefnames, NULL, NULL, '\0', NULL, 1, NULL },
@@ -522,8 +536,12 @@ static struct prefs_list {
 	{ "DefaultOTFflags", pr_int, &old_otf_flags, NULL, NULL, '\0', NULL, 1, NULL },
 	PREFS_LIST_EMPTY
 },
- *prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list, collab_list, hidden_list, NULL },
- *load_prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list, collab_list, hidden_list, oldnames, NULL };
+ *prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list,
+ collab_list,
+ hidden_list, NULL },
+ *load_prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list,
+ collab_list,
+ hidden_list, oldnames, NULL };
 
 struct visible_prefs_list { char *tab_name; int nest; struct prefs_list *pl; } visible_prefs_list[] = {
     { N_("Generic"), 0, general_list},
@@ -540,7 +558,9 @@ struct visible_prefs_list { char *tab_name; int nest; struct prefs_list *pl; } v
     { N_("PS Hints"), 1, hints_list},
     { N_("TT Instrs"), 1, instrs_list},
     { N_("OpenType"), 1, opentype_list},
+#ifdef BUILD_COLLAB
     { N_("Collaboration"), 0, collab_list},
+#endif
     { NULL, 0, NULL }
 };
 
@@ -638,7 +658,7 @@ static int PrefsUI_GetPrefs(char *name,Val *val) {
     /* Support for obsolete preferences */
     alwaysgenapple=(old_sfnt_flags&ttf_flag_applemode)?1:0;
     alwaysgenopentype=(old_sfnt_flags&ttf_flag_otmode)?1:0;
-    
+
     for ( i=0; prefs_list[i]!=NULL; ++i ) for ( j=0; prefs_list[i][j].name!=NULL; ++j ) {
 	if ( strcmp(prefs_list[i][j].name,name)==0 ) {
 	    struct prefs_list *pf = &prefs_list[i][j];
@@ -1170,7 +1190,7 @@ void Prefs_LoadDefaultPreferences( void )
 {
     char filename[PATH_MAX+1];
     char* sharedir = getShareDir();
-    
+
     snprintf(filename,PATH_MAX,"%s/prefs", sharedir );
     PrefsUI_LoadPrefs_FromFile( filename );
 }
@@ -1295,25 +1315,27 @@ static void PrefsUI_LoadPrefs(void)
     //
     if ( !xdefs_filename )
     {
-	fprintf(stderr,"no xdefs_filename!\n");
 	char path[PATH_MAX];
-	printf("TESTING: getPixmapDir:%s\n", getPixmapDir() );
-	printf("TESTING: getShareDir:%s\n", getShareDir() );
-	printf("TESTING: GResourceProgramDir:%s\n", GResourceProgramDir );
-	snprintf(path, PATH_MAX, "%s/%s", getPixmapDir(), "resources" );
-	fprintf(stderr,"trying default theme:%s\n", path );
-	if(GFileExists(path)) {
-	    change_res_filename( path );
+
+	fprintf(stderr,"no xdefs_filename!\n");
+	if (!quiet) {
+	    fprintf(stderr,"TESTING: getPixmapDir:%s\n", getPixmapDir() );
+	    fprintf(stderr,"TESTING: getShareDir:%s\n", getShareDir() );
+	    fprintf(stderr,"TESTING: GResourceProgramDir:%s\n", GResourceProgramDir );
 	}
+	snprintf(path, PATH_MAX, "%s/%s", getPixmapDir(), "resources" );
+	if (!quiet)
+	    fprintf(stderr,"trying default theme:%s\n", path );
+	if(GFileExists(path))
+	    change_res_filename( path );
     }
     if ( xdefs_filename!=NULL )
 	GResourceAddResourceFile(xdefs_filename,GResourceProgramName,true);
     if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
 	fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
-	
-    if ( glyph_2_name_map ) {
+
+    if ( glyph_2_name_map )
 	old_sfnt_flags |= ttf_flag_glyphmap;
-    }
     LoadNamelistDir(NULL);
     ProcessFileChooserPrefs();
     GDrawEnableCairo( prefs_usecairo );
@@ -1585,7 +1607,7 @@ return( true );
     }
 return( true );
 }
-    
+
 static unichar_t *AskSetting(struct macsettingname *temp,GGadget *list, int index,GGadget *flist) {
     GRect pos;
     GWindow gw;
@@ -1651,7 +1673,7 @@ static unichar_t *AskSetting(struct macsettingname *temp,GGadget *list, int inde
     label[4].text_is_1byte = true;
     label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
-    gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[3].gd.pos.y+26; 
+    gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[3].gd.pos.y+26;
     gcd[4].gd.flags = gg_enabled|gg_visible;
     gcd[4].creator = GLabelCreate;
 
@@ -1958,6 +1980,22 @@ return( true );
 	if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
 	    fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
 	GDrawEnableCairo(prefs_usecairo);
+
+	int force_redraw_charviews = 0;
+	if( prefs_oldval_cvEditHandleSize != prefs_cvEditHandleSize )
+	    force_redraw_charviews = 1;
+	if( prefs_oldval_cvInactiveHandleAlpha != prefs_cvInactiveHandleAlpha )
+	    force_redraw_charviews = 1;
+
+
+	if( force_redraw_charviews )
+	{
+	    FontView *fv;
+	    for ( fv=fv_list ; fv!=NULL; fv=(FontView *) (fv->b.next) )
+	    {
+		FVRedrawAllCharViews( fv );
+	    }
+	}
     }
 return( true );
 }
@@ -2042,6 +2080,9 @@ void DoPrefs(void) {
 	}
 	if ( line>line_max ) line_max = line;
     }
+
+    prefs_oldval_cvEditHandleSize = prefs_cvEditHandleSize;
+    prefs_oldval_cvInactiveHandleAlpha = prefs_cvInactiveHandleAlpha;
 
     memset(&p,'\0',sizeof(p));
     memset(&wattrs,0,sizeof(wattrs));
@@ -2280,7 +2321,7 @@ void DoPrefs(void) {
 	      break;
 	      case pr_unicode:
 		/*sprintf(buf,"U+%04x", *((int *) pl->val));*/
-		{ char *pt; pt = buf; pt = utf8_idpb(pt, *((int *) pl->val)); *pt='\0'; }
+		{ char *pt; pt=buf; pt=utf8_idpb(pt,*((int *)pl->val),UTF8IDPB_NOZERO); *pt='\0'; }
 		plabel[gc].text = (unichar_t *) copy( buf );
 		pgcd[gc++].creator = GTextFieldCreate;
 		hvarray[si++] = &pgcd[gc-1];
@@ -2381,7 +2422,7 @@ void DoPrefs(void) {
 		plabel[gc].text = (unichar_t *) U_("°");
 		plabel[gc].text_is_1byte = true;
 		pgcd[gc].gd.label = &plabel[gc];
-		pgcd[gc].gd.pos.x = pgcd[gc-1].gd.pos.x+gcd[gc-1].gd.pos.width+2; pgcd[gc].gd.pos.y = pgcd[gc-1].gd.pos.y; 
+		pgcd[gc].gd.pos.x = pgcd[gc-1].gd.pos.x+gcd[gc-1].gd.pos.width+2; pgcd[gc].gd.pos.y = pgcd[gc-1].gd.pos.y;
 		pgcd[gc].gd.flags = gg_enabled|gg_visible;
 		pgcd[gc++].creator = GLabelCreate;
 		hvarray[si++] = &pgcd[gc-1];
@@ -2525,7 +2566,7 @@ void DoPrefs(void) {
     GHVBoxSetExpandableRow(sboxes[0].ret,gb_expandglue);
     for ( k=0; k<TOPICS; ++k )
 	GHVBoxSetExpandableRow(boxes[2*k].ret,gb_expandglue);
-    
+
     memset(&rq,0,sizeof(rq));
     rq.utf8_family_name = MONO_UI_FAMILIES;
     rq.point_size = 12;
@@ -2604,41 +2645,30 @@ void RecentFilesRemember(char *filename) {
 	RecentFiles[0] = copy(filename);
     }
 
-    if ( LastFontsPreserving ) {
-	for ( i=0; i<LastFontIndex ; ++i )
-	    if ( strcmp(filename,LastFonts[i])==0 )
-	break;
-	if ( LastFontIndex<RECENT_MAX && i==LastFontIndex )
-	    LastFonts[LastFontIndex++] = copy(filename);
-    }
     PrefsUI_SavePrefs(true);
 }
 
-void LastFonts_Activate() {
-    LastFontsPreserving = true;
-    for ( ; LastFontIndex>0; --LastFontIndex )
-	free(LastFonts[LastFontIndex-1]);
-    LastFontIndex = 0;
-}
-
-void LastFonts_End(int success) {
+void LastFonts_Save(void) {
+    FontView *fv, *next;
     char buffer[1024];
     char *ffdir = getPfaEditDir(buffer);
-    FILE *preserve;
-    int i;
+    FILE *preserve = NULL;
 
-    LastFontsPreserving = false;
-    if ( !success )
-return;
-    if ( ffdir==NULL )
-return;
-    sprintf( buffer, "%s/FontsOpenAtLastQuit", ffdir );
-    preserve = fopen(buffer,"w");
-    if ( preserve==NULL )
-return;
-    for ( i=0; i<LastFontIndex; ++i )
-	fprintf( preserve, "%s\n", LastFonts[i]);
-    fclose(preserve);
+    if ( ffdir ) {
+        sprintf(buffer, "%s/FontsOpenAtLastQuit", ffdir);
+        preserve = fopen(buffer,"w");
+    }
+
+    for ( fv = fv_list; fv!=NULL; fv = next ) {
+	next = (FontView *) (fv->b.next);
+        if ( preserve ) {
+            SplineFont *sf = fv->b.cidmaster?fv->b.cidmaster:fv->b.sf;
+            fprintf(preserve, "%s\n", sf->filename?sf->filename:sf->origname);
+        }
+    }
+
+    if ( preserve )
+        fclose(preserve);
 }
 
 struct prefs_interface gdraw_prefs_interface = {
@@ -2685,7 +2715,7 @@ static int PrefsSubSet_Ok(GGadget *g, GEvent *e) {
     int i=0,j=0;
     int err=0, enc;
     const unichar_t *ret;
-    
+
     p->done = true;
 
     for ( i=0, pl=plist; pl->name; ++i, ++pl ) {
@@ -2742,7 +2772,7 @@ static int PrefsSubSet_Ok(GGadget *g, GEvent *e) {
 	    break;
 	}
     }
-    
+
     return( true );
 }
 
@@ -2811,7 +2841,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&p,&wattrs);
 
 
-    
+
     for ( i=0, pl=plist; pl->name; ++i, ++pl ) {
 
 	    plabel[gc].text = (unichar_t *) _(pl->name);
@@ -2865,7 +2895,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
 	      break;
 	      case pr_unicode:
 		/*sprintf(buf,"U+%04x", *((int *) pl->val));*/
-		{ char *pt; pt = buf; pt = utf8_idpb(pt, *((int *) pl->val)); *pt='\0'; }
+		{ char *pt; pt=buf; pt=utf8_idpb(pt,*((int *)pl->val),UTF8IDPB_NOZERO); *pt='\0'; }
 		plabel[gc].text = (unichar_t *) copy( buf );
 		pgcd[gc++].creator = GTextFieldCreate;
 		hvarray[si++] = &pgcd[gc-1];
@@ -2966,7 +2996,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
 		plabel[gc].text = (unichar_t *) U_("°");
 		plabel[gc].text_is_1byte = true;
 		pgcd[gc].gd.label = &plabel[gc];
-		pgcd[gc].gd.pos.x = pgcd[gc-1].gd.pos.x+gcd[gc-1].gd.pos.width+2; pgcd[gc].gd.pos.y = pgcd[gc-1].gd.pos.y; 
+		pgcd[gc].gd.pos.x = pgcd[gc-1].gd.pos.x+gcd[gc-1].gd.pos.width+2; pgcd[gc].gd.pos.y = pgcd[gc-1].gd.pos.y;
 		pgcd[gc].gd.flags = gg_enabled|gg_visible;
 		pgcd[gc++].creator = GLabelCreate;
 		hvarray[si++] = &pgcd[gc-1];
@@ -2976,7 +3006,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
 	    }
 	    ++line;
 	    hvarray[si++] = NULL;
-	
+
     }
 
     harray[4] = 0;
@@ -2998,7 +3028,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
     gcd[gc++].creator = GButtonCreate;
     harray[0] = GCD_Glue; harray[1] = &gcd[gc-1]; harray[2] = GCD_Glue; harray[3] = GCD_Glue;
 
-    
+
     memset(mboxes,0,sizeof(mboxes));
     memset(mboxes2,0,sizeof(mboxes2));
 
@@ -3007,7 +3037,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
     mboxes[2].gd.flags = gg_enabled|gg_visible;
     mboxes[2].gd.u.boxelements = harray;
     mboxes[2].creator = GHBoxCreate;
-    
+
     mboxes[0].gd.pos.x = mboxes[0].gd.pos.y = 2;
     mboxes[0].gd.flags = gg_enabled|gg_visible;
     mboxes[0].gd.u.boxelements = hvarray;
@@ -3024,7 +3054,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
     /* varray[2] = 0; */
     /* varray[3] = 0; */
     /* varray[4] = 0; */
-    
+
     mboxes2[0].gd.pos.x = 4;
     mboxes2[0].gd.pos.y = 4;
     mboxes2[0].gd.flags = gg_enabled|gg_visible;
@@ -3032,7 +3062,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
     mboxes2[0].creator = GVBoxCreate;
 
     GGadgetsCreate(gw,mboxes2);
-    
+
 
     GDrawSetVisible(gw,true);
     while ( !p.done )

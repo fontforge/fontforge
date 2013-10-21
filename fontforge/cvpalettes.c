@@ -244,37 +244,36 @@ void cvtoollist_check(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 /* Note: If you change this ordering, change enum cvtools */
-static char *popupsres[] = { N_("Pointer"), N_("Magnify (Minify with alt)"),
-				    N_("Draw a freehand curve"), N_("Scroll by hand"),
-				    N_("Add a curve point"), N_("Add a curve point always either horizontal or vertical"),
-			            N_("Add a corner point"), N_("Add a tangent point"),
-			            N_("Add a point, then drag out its control points"), N_("Change whether spiro is active or not"),
-			            N_("Cut splines in two"), N_("Measure distance, angle between points"),
-			            N_("Scale the selection"), N_("Flip the selection"),
-			            N_("Rotate the selection"), N_("Skew the selection"),
-			            N_("Rotate the selection in 3D and project back to plain"), N_("Perform a perspective transformation on the selection"),
-			            N_("Rectangle or Ellipse"), N_("Polygon or Star"),
-			            N_("Rectangle or Ellipse"), N_("Polygon or Star")};
+static char *popupsres[] = {
+    N_("Pointer"),               N_("Magnify (Minify with alt)"),
+    N_("Draw a freehand curve"), N_("Scroll by hand"),
+    N_("Cut splines in two"),    N_("Measure distance, angle between points"),
+    N_("Add a point, then drag out its control points"), N_("Change whether spiro is active or not"),
+    N_("Add a curve point"),     N_("Add a curve point always either horizontal or vertical"),
+    N_("Add a corner point"),    N_("Add a tangent point"),
+    N_("Scale the selection"),   N_("Rotate the selection"),
+    N_("Flip the selection"),  N_("Skew the selection"),
+    N_("Rotate the selection in 3D and project back to plain"), N_("Perform a perspective transformation on the selection"),
+    N_("Rectangle or Ellipse"),  N_("Polygon or Star"),
+    N_("Rectangle or Ellipse"),  N_("Polygon or Star")};
 GMenuItem2 cvtoollist[] = {
     { { (unichar_t *) N_("_Pointer"), (GImage *) "toolspointer.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Pointer|No Shortcut"), NULL, NULL, CVMenuTool, cvt_pointer },
     { { (unichar_t *) N_("_Magnify"), (GImage *) "toolsmagnify.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Magnify|No Shortcut"), NULL, NULL, CVMenuTool, cvt_magnify },
     { { (unichar_t *) N_("_Freehand"), (GImage *) "toolsfreehand.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Freehand|No Shortcut"), NULL, NULL, CVMenuTool, cvt_freehand },
     { { (unichar_t *) N_("_Scroll"), (GImage *) "toolsscroll.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Scroll|No Shortcut"), NULL, NULL, CVMenuTool, cvt_hand },
+    { { (unichar_t *) N_("_Knife"), (GImage *) "toolsknife.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Knife|No Shortcut"), NULL, NULL, CVMenuTool, cvt_knife },
+    { { (unichar_t *) N_("_Ruler"), (GImage *) "toolsruler.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Ruler|No Shortcut"), NULL, NULL, CVMenuTool, cvt_ruler },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
+    { { (unichar_t *) N_("P_en"), (GImage *) "toolspen.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Pen|No Shortcut"), NULL, NULL, CVMenuTool, cvt_pen },
+    { { (unichar_t *) N_("_Activate Spiro"), (GImage *) "toolsspiro.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Activate Spiro|No Shortcut"), NULL, NULL, CVMenuSpiroSet, cvt_spiro },
     { { (unichar_t *) N_("_Curve"), (GImage *) "pointscurve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Curve Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_curve },
     { { (unichar_t *) N_("_HVCurve"), (GImage *) "pointshvcurve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("HVCurve Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_hvcurve },
     { { (unichar_t *) N_("C_orner"), (GImage *) "pointscorner.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Corner Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_corner },
     { { (unichar_t *) N_("_Tangent"), (GImage *) "pointstangent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Tangent Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_tangent },
-    { { (unichar_t *) N_("P_en"), (GImage *) "toolspen.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Pen|No Shortcut"), NULL, NULL, CVMenuTool, cvt_pen },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Activate Spiro"), (GImage *) "toolsspiro.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Activate Spiro|No Shortcut"), NULL, NULL, CVMenuSpiroSet, cvt_spiro },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Knife"), (GImage *) "toolsknife.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Knife|No Shortcut"), NULL, NULL, CVMenuTool, cvt_knife },
-    { { (unichar_t *) N_("_Ruler"), (GImage *) "toolsruler.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Ruler|No Shortcut"), NULL, NULL, CVMenuTool, cvt_ruler },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Sca_le"), (GImage *) "toolsscale.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Scale|No Shortcut"), NULL, NULL, CVMenuTool, cvt_scale },
-    { { (unichar_t *) N_("Flip"), (GImage *) "toolsflip.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Flip|No Shortcut"), NULL, NULL, CVMenuTool, cvt_flip },
     { { (unichar_t *) N_("Rotate"), (GImage *) "toolsrotate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Rotate|No Shortcut"), NULL, NULL, CVMenuTool, cvt_rotate },
+    { { (unichar_t *) N_("Flip"), (GImage *) "toolsflip.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Flip|No Shortcut"), NULL, NULL, CVMenuTool, cvt_flip },
     { { (unichar_t *) N_("Ske_w"), (GImage *) "toolsskew.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Skew|No Shortcut"), NULL, NULL, CVMenuTool, cvt_skew },
     { { (unichar_t *) N_("_3D Rotate"), (GImage *) "tools3drotate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("3D Rotate|No Shortcut"), NULL, NULL, CVMenuTool, cvt_3d_rotate },
     { { (unichar_t *) N_("Perspecti_ve"), (GImage *) "toolsperspective.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Perspective|No Shortcut"), NULL, NULL, CVMenuTool, cvt_perspective },
@@ -290,23 +289,24 @@ GMenuItem2 cvspirotoollist[] = {
     { { (unichar_t *) N_("_Magnify"), (GImage *) "toolsmagnify.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Magnify|No Shortcut"), NULL, NULL, CVMenuTool, cvt_magnify },
     { { (unichar_t *) N_("_Freehand"), (GImage *) "toolsfreehand.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Freehand|No Shortcut"), NULL, NULL, CVMenuTool, cvt_freehand },
     { { (unichar_t *) N_("_Scroll"), (GImage *) "toolsscroll.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Scroll|No Shortcut"), NULL, NULL, CVMenuTool, cvt_hand },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("G_4"), (GImage *) "pointscurve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("G4 Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spirog4 },
-    { { (unichar_t *) N_("G_2"), (GImage *) "pointsG2curve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("G2 Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spirog2 },
-    { { (unichar_t *) N_("C_orner"), (GImage *) "pointscorner.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Corner Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spirocorner },
-    { { (unichar_t *) N_("Lef_t"), (GImage *) "pointsspiroprev.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Left Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spiroleft },
-    { { (unichar_t *) N_("Rig_ht"), (GImage *) "pointsspironext.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Right Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spiroright },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("De_activate Spiro"), (GImage *) "toolsspiro.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Activate Spiro|No Shortcut"), NULL, NULL, CVMenuSpiroSet, cvt_spiro },
+    { { (unichar_t *) N_("_Knife"), (GImage *) "toolsknife.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Knife|No Shortcut"), NULL, NULL, CVMenuTool, cvt_knife },
+    { { (unichar_t *) N_("_Ruler"), (GImage *) "toolsruler.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Ruler|No Shortcut"), NULL, NULL, CVMenuTool, cvt_ruler },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Knife"), (GImage *) "toolsknife.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Knife|No Shortcut"), NULL, NULL, CVMenuTool, cvt_knife },
     { { (unichar_t *) N_("_Ruler"), (GImage *) "toolsruler.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Ruler|No Shortcut"), NULL, NULL, CVMenuTool, cvt_ruler },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
+    { { (unichar_t *) N_("De_activate Spiro"), (GImage *) "toolsspiro.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Activate Spiro|No Shortcut"), NULL, NULL, CVMenuSpiroSet, cvt_spiro },
+    { { (unichar_t *) N_("C_orner"), (GImage *) "pointscorner.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Corner Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spirocorner },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
+    { { (unichar_t *) N_("G_4"), (GImage *) "pointscurve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("G4 Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spirog4 },
+    { { (unichar_t *) N_("G_2"), (GImage *) "pointsG2curve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("G2 Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spirog2 },
+    { { (unichar_t *) N_("Lef_t"), (GImage *) "pointsspiroprev.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Left Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spiroleft },
+    { { (unichar_t *) N_("Rig_ht"), (GImage *) "pointsspironext.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Right Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spiroright },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Sca_le"), (GImage *) "toolsscale.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Scale|No Shortcut"), NULL, NULL, CVMenuTool, cvt_scale },
+    { { (unichar_t *) N_("Rotate"), (GImage *) "toolsrotate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Rotate|No Shortcut"), NULL, NULL, CVMenuTool, cvt_rotate },
     { { (unichar_t *) N_("Flip"), (GImage *) "toolsflip.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Flip|No Shortcut"), NULL, NULL, CVMenuTool, cvt_flip },
-    { { (unichar_t *) N_("Rotate"), (GImage *) "toolsrotate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Rotate|No Shortcut"), NULL, NULL, CVMenuTool, cvt_rotate },
     { { (unichar_t *) N_("Ske_w"), (GImage *) "toolsskew.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Skew|No Shortcut"), NULL, NULL, CVMenuTool, cvt_skew },
-    { { (unichar_t *) N_("Rotate"), (GImage *) "toolsrotate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Rotate|No Shortcut"), NULL, NULL, CVMenuTool, cvt_rotate },
     { { (unichar_t *) N_("_3D Rotate"), (GImage *) "tools3drotate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("3D Rotate|No Shortcut"), NULL, NULL, CVMenuTool, cvt_3d_rotate },
     { { (unichar_t *) N_("Perspecti_ve"), (GImage *) "toolsperspective.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Perspective|No Shortcut"), NULL, NULL, CVMenuTool, cvt_perspective },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
@@ -777,45 +777,45 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     /* Note: If you change this ordering, change enum cvtools */
     static GImage *normbuttons[][2] = { { &GIcon_pointer, &GIcon_magnify },
 				    { &GIcon_freehand, &GIcon_hand },
+			            { &GIcon_knife, &GIcon_ruler },
+			            { &GIcon_pen, &GIcon_spirodisabled },
 				    { &GIcon_curve, &GIcon_hvcurve },
 			            { &GIcon_corner, &GIcon_tangent},
-			            { &GIcon_pen, &GIcon_spirodisabled },
-			            { &GIcon_knife, &GIcon_ruler },
-			            { &GIcon_scale, &GIcon_flip },
-			            { &GIcon_rotate, &GIcon_skew },
+			            { &GIcon_scale, &GIcon_rotate },
+			            { &GIcon_flip, &GIcon_skew },
 			            { &GIcon_3drotate, &GIcon_perspective },
 			            { &GIcon_rect, &GIcon_poly},
 			            { &GIcon_elipse, &GIcon_star}};
     static GImage *spirobuttons[][2] = { { &GIcon_pointer, &GIcon_magnify },
 				    { &GIcon_freehand, &GIcon_hand },
+			            { &GIcon_knife, &GIcon_ruler },
+			            { &GIcon_spiroright, &GIcon_spirodown },
 				    { &GIcon_spirocurve, &GIcon_spirog2curve },
 			            { &GIcon_spirocorner, &GIcon_spiroleft },
-			            { &GIcon_spiroright, &GIcon_spirodown },
-			            { &GIcon_knife, &GIcon_ruler },
-			            { &GIcon_scale, &GIcon_flip },
-			            { &GIcon_rotate, &GIcon_skew },
+			            { &GIcon_scale, &GIcon_rotate },
+			            { &GIcon_flip, &GIcon_skew },
 			            { &GIcon_3drotate, &GIcon_perspective },
 			            { &GIcon_rect, &GIcon_poly},
 			            { &GIcon_elipse, &GIcon_star}};
     static GImage *normsmalls[] = { &GIcon_smallpointer, &GIcon_smallmag,
 				    &GIcon_smallpencil, &GIcon_smallhand,
+			            &GIcon_smallknife, &GIcon_smallruler,
+			            &GIcon_smallpen, NULL,
 				    &GIcon_smallcurve, &GIcon_smallhvcurve,
 			            &GIcon_smallcorner, &GIcon_smalltangent,
-			            &GIcon_smallpen, NULL,
-			            &GIcon_smallknife, &GIcon_smallruler,
-			            &GIcon_smallscale, &GIcon_smallflip,
-			            &GIcon_smallrotate, &GIcon_smallskew,
+			            &GIcon_smallscale, &GIcon_smallrotate,
+			            &GIcon_smallflip, &GIcon_smallskew,
 			            &GIcon_small3drotate, &GIcon_smallperspective,
 			            &GIcon_smallrect, &GIcon_smallpoly,
 			            &GIcon_smallelipse, &GIcon_smallstar };
     static GImage *spirosmalls[] = { &GIcon_smallpointer, &GIcon_smallmag,
 				    &GIcon_smallpencil, &GIcon_smallhand,
+			            &GIcon_smallknife, &GIcon_smallruler,
+			            &GIcon_smallspiroright, NULL,
 				    &GIcon_smallspirocurve, &GIcon_smallspirog2curve,
 			            &GIcon_smallspirocorner, &GIcon_smallspiroleft,
-			            &GIcon_smallspiroright, NULL,
-			            &GIcon_smallknife, &GIcon_smallruler,
-			            &GIcon_smallscale, &GIcon_smallflip,
-			            &GIcon_smallrotate, &GIcon_smallskew,
+			            &GIcon_smallscale, &GIcon_smallrotate,
+			            &GIcon_smallflip, &GIcon_smallskew,
 			            &GIcon_small3drotate, &GIcon_smallperspective,
 			            &GIcon_smallrect, &GIcon_smallpoly,
 			            &GIcon_smallelipse, &GIcon_smallstar };
@@ -832,7 +832,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     GImage *(*buttons)[2] = inspiro ? spirobuttons : normbuttons;
     GImage **smalls = inspiro ? spirosmalls : normsmalls;
 
-    normbuttons[4][1] = canspiro ? &GIcon_spiroup : &GIcon_spirodisabled;
+    normbuttons[3][1] = canspiro ? &GIcon_spiroup : &GIcon_spirodisabled;
 
     GDrawPushClip(pixmap,r,&old);
     GDrawFillRect(pixmap,r,GDrawGetDefaultBackground(NULL));
@@ -856,7 +856,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     GDrawFillRect(pixmap,&temp,GDrawGetDefaultBackground(NULL));
     for ( j=0; j<4; ++j ) {
 	GDrawDrawText(pixmap,2,i*27+j*12+10,(unichar_t *) _Mouse[j],-1,GDrawGetDefaultForeground(NULL));
-	if ( (&cv->b1_tool)[j]!=cvt_none )
+	if ( (&cv->b1_tool)[j]!=cvt_none && smalls[(&cv->b1_tool)[j]])
 	    GDrawDrawImage(pixmap,smalls[(&cv->b1_tool)[j]],NULL,52-16,i*27+j*12);
     }
     GDrawPopClip(pixmap,&old);

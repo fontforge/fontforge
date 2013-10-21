@@ -1256,7 +1256,7 @@ static int CI_CheckMetaData(CharInfo *ci,SplineChar *oldsc,char *name,int unienc
     for ( alt=oldsc->altuni; alt!=NULL && (alt->unienc!=unienc || alt->vs!=-1 || alt->fid!=0); alt=alt->next );
     if ( unienc==oldsc->unicodeenc || alt!=NULL )
 	sameuni=true;
-    samename = ( strcmp(name,oldsc->name)==0 );
+    samename = ( oldsc->name!=NULL && strcmp(name,oldsc->name)==0 );
     
     isnotdef = strcmp(name,".notdef")==0;
     if (( !sameuni && unienc!=-1) || (!samename && !isnotdef) ) {
@@ -3491,8 +3491,8 @@ static int isbaseline(int uni) {
 	    uni==0x3b0 || uni==0x3b4 || uni==0x3b5 || (uni>=0x3b8 && uni<0x3bb) ||
 	    uni==0x3bd || uni==0x3bf || uni==0x3c0 || (uni>=0x3c2 && uni<0x3c6) ||
 	    uni==0x3c8 || uni==0x3c7 || uni==0x3c9 ||
-	    (uni>=0x390 || uni<0x3af) ||
-	    (uni>=0x400 && uni>0x40f) || (uni>=0x410 && uni<=0x413) ||
+	    (uni>=0x391 && uni<0x3aa) ||
+	    (uni>=0x400 && uni<0x40f) || (uni>=0x410 && uni<=0x413) ||
 	    (uni>=0x415 && uni<0x425) || uni==0x427 || uni==0x428 ||
 	    (uni>=0x42a && uni<0x433) || (uni>=0x435 && uni<0x45e) )
 return( true );

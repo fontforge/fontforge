@@ -1032,7 +1032,7 @@ msgstr "貼上(_P)"
 
 #: bitmapview.c:2132 charview.c:9385 combinations.c:897 fontview.c:4407
 #: fontview.c:5422 metricsview.c:3077 uiutil.c:654
-msgid "C_lear"
+msgid "C_hop"
 msgstr "清除(_L)"
 
 #: bitmapview.c:2134 charview.c:9350 fontview.c:4365 metricsview.c:3080
@@ -7758,7 +7758,7 @@ msgid "300 Light"
 msgstr "300 細體字"
 
 #: fontinfo.c:93
-msgid "400 Book"
+msgid "400 Regular"
 msgstr "400 書體"
 
 #: fontinfo.c:94
@@ -7766,7 +7766,7 @@ msgid "500 Medium"
 msgstr "500 中等"
 
 #: fontinfo.c:95
-msgid "600 Demi-Bold"
+msgid "600 Semi-Bold"
 msgstr "600 半粗體"
 
 #: fontinfo.c:96
@@ -7774,7 +7774,7 @@ msgid "700 Bold"
 msgstr "700 粗體"
 
 #: fontinfo.c:97
-msgid "800 Heavy"
+msgid "800 Extra-Bold"
 msgstr "800 特粗體"
 
 #: fontinfo.c:98
@@ -30995,12 +30995,8 @@ msgstr "字距微調似乎會在 Windows 中失敗"
 
 #: tottfaat.c:260
 #, fuzzy, c-format
-msgid ""
-"On Windows many apps will have problems with this font's kerning, because %d "
-"of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs"
-msgstr ""
-"於 Windows 許多 apps 將有問題與這個字型字距微調，因為因為 %d 的它的字圖字距微"
-"調對無法映射到 unicode-BMP 字距微調對"
+msgid "Note: On Windows many apps can have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs (eg, they have a Unicode value of -1) To avoid this, go to Generate, Options, and uncheck Old Style kern for OpenType."
+msgstr "於 Windows 許多 apps 可能有問題與這個字型字距微調，因為因為 %d 的它的字圖字距微 調對無法映射到 unicode-BMP 字距微調對（例如，他们有一个Unicode值-1）为了避免这种情况，去生成选项，取消旧风格克恩。"
 
 #: tottfgpos.c:1133
 #, fuzzy, c-format

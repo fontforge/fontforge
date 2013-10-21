@@ -44,8 +44,9 @@ extern int _GScrollBar_Width;
 
 #include "gutils/prefs.h"
 #include "collabclientui.h"
-
 #include "gutils/unicodelibinfo.h"
+
+#include "gdraw/hotkeys.h"
 
 /* Barry wants to be able to redefine menu bindings only in the charview (I think) */
 /*  the menu parser will first check for something like "CV*Open|Ctl+O", and */
@@ -72,6 +73,14 @@ int DrawOpenPathsWithHighlight = 1;
 int cv_width = default_cv_width;
 int cv_height = default_cv_height;
 
+#define prefs_cvEditHandleSize_default 5.0
+float prefs_cvEditHandleSize = prefs_cvEditHandleSize_default;
+
+int   prefs_cvInactiveHandleAlpha = 255;
+
+int prefs_cv_show_control_points_always_initially = 0;
+int prefs_create_dragging_comparison_outline = 0;
+
 extern struct lconv localeinfo;
 extern char *coord_sep;
 struct cvshows CVShows = {
@@ -94,7 +103,7 @@ struct cvshows CVShows = {
 	1,		/* show blue values */
 	1,		/* show family blues too */
 	1,		/* show anchor points */
-	1,		/* show control point info when moving them */
+	0,		/* show control point info when moving them */
 	1,		/* show tabs containing names of former glyphs */
 	1,		/* show side bearings */
 	1,		/* show the names of references */
@@ -162,6 +171,14 @@ static Color fillcol = 0x80707070;		/* Translucent */
 static Color tracecol = 0x008000;
 static Color rulerbigtickcol = 0x008000;
 static Color previewfillcol = 0x0f0f0f;
+static Color DraggingComparisonOutlineColor = 0x8800BB00;
+static Color DraggingComparisonAlphaChannelOverride = 0x88000000;
+
+// Format is 0x AA RR GG BB.
+
+
+
+static void isAnyControlPointSelectedVisitor(SplinePoint* splfirst, Spline* spline, void* udata );
 
 
 static int cvcolsinited = false;
@@ -190,6 +207,8 @@ static struct resed charview_re[] = {
     { N_("Conflict Hint Color"), "ConflictHintColor", rt_color, &conflicthintcol, N_("The color used to draw a hint which conflicts with another"), NULL, { 0 }, 0, 0 },
     { N_("HHint Active Color"), "HHintActiveColor", rt_color, &hhintactivecol, N_("The color used to draw the active horizontal hint which the Review Hints dialog is examining"), NULL, { 0 }, 0, 0 },
     { N_("VHint Active Color"), "VHintActiveColor", rt_color, &vhintactivecol, N_("The color used to draw the active vertical hint which the Review Hints dialog is examining"), NULL, { 0 }, 0, 0 },
+    { N_("Dragging Comparison Outline Color"), "DraggingComparisonOutlineColor", rt_coloralpha, &DraggingComparisonOutlineColor, N_("The color used to draw the outline of the old spline when you are interactively modifying a glyph"), NULL, { 0 }, 0, 0 },
+    { N_("Dragging Comparison Outline Color"), "DraggingComparisonAlphaChannelOverride", rt_coloralpha, &DraggingComparisonAlphaChannelOverride, N_("Only the alpha value is used and if non zero it will set the alpha channel for the control points, bezier information and other non spline indicators for the Dragging Comparison Outline spline"), NULL, { 0 }, 0, 0 },
     RESED_EMPTY
 };
 
@@ -283,7 +302,7 @@ int CVCountSelectedPoints(CharView *cv) {
 }
 
 
-	
+
 /* floor(pt) would _not_ be more correct, as we want
  * shapes not to cross axes multiple times while scaling.
  */
@@ -607,9 +626,11 @@ static GPointList *MakePoly(CharView *cv, SplinePointList *spl) {
 return( head );
 }
 
-static void DrawTangentPoint(GWindow pixmap, int x, int y,
-	BasePoint *unit, int outline, Color col) {
+static void DrawTangentPoint( GWindow pixmap, int x, int y,
+			      BasePoint *unit, int outline, Color col )
+{
     int dir;
+    const int gp_sz = 4;
     GPoint gp[5];
 
     dir = 0;
@@ -631,30 +652,66 @@ static void DrawTangentPoint(GWindow pixmap, int x, int y,
 	}
     }
 
+    float sizedelta = 4;
+    if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+	sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+
     if ( dir==1 /* left */ || dir==0 /* right */) {
-	gp[0].y = y; gp[0].x = (dir==0)?x+4:x-4;
-	gp[1].y = y-4; gp[1].x = x;
-	gp[2].y = y+4; gp[2].x = x;
+	gp[0].y = y; gp[0].x = (dir==0)?x+sizedelta:x-sizedelta;
+	gp[1].y = y-sizedelta; gp[1].x = x;
+	gp[2].y = y+sizedelta; gp[2].x = x;
     } else if ( dir==2 /* up */ || dir==3 /* down */ ) {
-	gp[0].x = x; gp[0].y = dir==2?y-4:y+4;	/* remember screen coordinates are backwards in y from character coords */
-	gp[1].x = x-4; gp[1].y = y;
-	gp[2].x = x+4; gp[2].y = y;
+	gp[0].x = x; gp[0].y = dir==2?y-sizedelta:y+sizedelta;	/* remember screen coordinates are backwards in y from character coords */
+	gp[1].x = x-sizedelta; gp[1].y = y;
+	gp[2].x = x+sizedelta; gp[2].y = y;
     } else {
 	/* at a 45 angle, a value of 4 looks too small. I probably want 4*1.414 */
-	int xdiff= unit->x>0?5:-5, ydiff = unit->y>0?-5:5;
+	sizedelta = 5;
+	if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+	    sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+	int xdiff = unit->x > 0 ?   sizedelta  : -1*sizedelta;
+	int ydiff = unit->y > 0 ? -1*sizedelta :    sizedelta;
+
 	gp[0].x = x+xdiff/2; gp[0].y = y+ydiff/2;
 	gp[1].x = gp[0].x-xdiff; gp[1].y = gp[0].y;
 	gp[2].x = gp[0].x; gp[2].y = gp[0].y-ydiff;
     }
     gp[3] = gp[0];
     if ( outline )
-	GDrawDrawPoly(pixmap,gp,4,col);
+	GDrawDrawPoly(pixmap,gp,gp_sz,col);
     else
 	GDrawFillPoly(pixmap,gp,4,col);
 }
 
-static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
-	SplineSet *spl, int onlynumber, int truetype_markup) {
+static GRect* DrawPoint_SetupRectForSize( GRect* r, int cx, int cy, float sz )
+{
+    float sizedelta = sz;
+    if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+	sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+
+    r->x = cx - sizedelta;
+    r->y = cy - sizedelta;
+    r->width  = 1 + sizedelta * 2;
+    r->height = 1 + sizedelta * 2;
+    return r;
+}
+
+
+static Color MaybeMaskColorToAlphaChannelOverride( Color c, Color AlphaChannelOverride )
+{
+    if( AlphaChannelOverride )
+    {
+	c &= 0x00FFFFFF;
+	c |= (AlphaChannelOverride & 0xFF000000);
+    }
+    return c;
+}
+
+
+static void DrawPoint( CharView *cv, GWindow pixmap, SplinePoint *sp,
+		       SplineSet *spl, int onlynumber, int truetype_markup,
+                       Color AlphaChannelOverride )
+{
     GRect r;
     int x, y, cx, cy;
     Color col = sp==spl->first ? firstpointcol : pointcol, subcol;
@@ -670,20 +727,47 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
 	if( sp!=spl->first )
 	    col = openpathcol;
     }
-    
-    
+
+
     if ( cv->markextrema && SpIsExtremum(sp) )
 	 col = extremepointcol;
     if ( sp->selected )
 	 col = selectedpointcol;
 
+    if ( DrawOpenPathsWithHighlight
+	 && cv->b.drawmode==dm_fore
+	 && spl->first
+	 && spl->first->prev==NULL )
+    {
+    }
+    else
+    {
+	if( !sp->selected )
+	{
+	    col = col&0x00ffffff;
+	    col |= prefs_cvInactiveHandleAlpha << 24;
+	}
+    }
+
+    col = MaybeMaskColorToAlphaChannelOverride( col, AlphaChannelOverride );
+    Color subcolmasked    = MaybeMaskColorToAlphaChannelOverride( subcol, AlphaChannelOverride );
+    Color nextcpcolmasked = MaybeMaskColorToAlphaChannelOverride( nextcpcol, AlphaChannelOverride );
+    Color prevcpcolmasked = MaybeMaskColorToAlphaChannelOverride( prevcpcol, AlphaChannelOverride );
+    Color selectedpointcolmasked = MaybeMaskColorToAlphaChannelOverride( selectedpointcol, AlphaChannelOverride );
+    Color selectedcpcolmasked = MaybeMaskColorToAlphaChannelOverride( selectedcpcol, AlphaChannelOverride );
+    
     x =  cv->xoff + rint(sp->me.x*cv->scale);
     y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
     if ( x<-4000 || y<-4000 || x>cv->width+4000 || y>=cv->height+4000 )
 return;
 
     /* draw the control points if it's selected */
-    if ( sp->selected || cv->showpointnumbers || cv->show_ft_results || cv->dv ) {
+    if ( sp->selected
+	 || cv->showpointnumbers
+	 || cv->alwaysshowcontrolpoints
+	 || cv->show_ft_results
+	 || cv->dv )
+    {
 	int iscurrent = sp==(cv->p.sp!=NULL?cv->p.sp:cv->lastselpt);
 	if ( !sp->nonextcp ) {
 	    cx =  cv->xoff + rint(sp->nextcp.x*cv->scale);
@@ -702,28 +786,46 @@ return;
 		cx = cy==y ? y : (cx-x) * (double)(cv->height+100-y)/(cy-y) + x;
 		cy = cv->height+100;
 	    }
-	    subcol = nextcpcol;
-	    if ( iscurrent && cv->p.nextcp && !onlynumber ) {
-		r.x = cx-3; r.y = cy-3; r.width = r.height = 7;
+	    subcolmasked = nextcpcolmasked;
+
+	    //
+	    // If the next BCP is selected we should decorate the
+	    // drawing to let the user know that. The primary (last)
+	    // selected BCP is drawn with a backing rectangle of size
+	    // 3, the secondary BCP (2nd, 3rd, 4th last selected BCP)
+	    // are drawn with slightly smaller highlights.
+	    //
+	    if( !onlynumber && SPIsNextCPSelected( sp, cv ))
+	    {
+		float sz = 2;
+		if( SPIsNextCPSelectedSingle( sp, cv ))
+		    sz *= 1.5;
+
+		DrawPoint_SetupRectForSize( &r, cx, cy, sz );
 		GDrawFillRect(pixmap,&r, nextcpcol);
-		subcol = selectedcpcol;
-	    } else if ( truetype_markup ) {
+		subcolmasked = selectedcpcolmasked;
+	    }
+	    else if ( truetype_markup )
+	    {
 		if ( sp->flexy ) {
 		    /* cp is about to be moved (or changed in some other way) */
-		    r.x = cx-3; r.y = cy-3; r.width = r.height = 7;
+		    DrawPoint_SetupRectForSize( &r, cx, cy, 3 );
 		    GDrawFillRect(pixmap,&r, selectedpointcol);
 		}
 		if ( sp->flexx ) {
 		    /* cp is a reference point */
-		    r.x = cx-5; r.y = cy-5;
-		    r.width = r.height = 11;
+		    DrawPoint_SetupRectForSize( &r, cx, cy, 5 );
 		    GDrawDrawElipse(pixmap,&r,selectedpointcol );
 		}
 	    }
-	    if ( !onlynumber ) {
-		GDrawDrawLine(pixmap,x,y,cx,cy, nextcpcol);
-		GDrawDrawLine(pixmap,cx-3,cy-3,cx+3,cy+3,subcol);
-		GDrawDrawLine(pixmap,cx+3,cy-3,cx-3,cy+3,subcol);
+	    if ( !onlynumber )
+	    {
+		float sizedelta = 3;
+		if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+		    sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+		GDrawDrawLine(pixmap,x,y,cx,cy, nextcpcolmasked );
+		GDrawDrawLine(pixmap,cx-sizedelta,cy-sizedelta,cx+sizedelta,cy+sizedelta,subcolmasked);
+		GDrawDrawLine(pixmap,cx+sizedelta,cy-sizedelta,cx-sizedelta,cy+sizedelta,subcolmasked);
 	    }
 	    if ( cv->showpointnumbers || cv->show_ft_results || cv->dv ) {
 		pnum = sp->nextcpindex;
@@ -750,16 +852,23 @@ return;
 		cx = cy==y ? y : (cx-x) * (double)(cv->height+100-y)/(cy-y) + x;
 		cy = cv->height+100;
 	    }
-	    subcol = prevcpcol;
-	    if ( iscurrent && cv->p.prevcp && !onlynumber ) {
-		r.x = cx-3; r.y = cy-3; r.width = r.height = 7;
+	    subcolmasked = prevcpcolmasked;
+	    if( !onlynumber && SPIsPrevCPSelected( sp, cv ))
+	    {
+		float sz = 2;
+		if( SPIsPrevCPSelectedSingle( sp, cv ))
+		    sz *= 1.5;
+		DrawPoint_SetupRectForSize( &r, cx, cy, sz );
 		GDrawFillRect(pixmap,&r, prevcpcol);
-		subcol = selectedcpcol;
+		subcolmasked = selectedcpcolmasked;
 	    }
 	    if ( !onlynumber ) {
-		GDrawDrawLine(pixmap,x,y,cx,cy, prevcpcol);
-		GDrawDrawLine(pixmap,cx-3,cy-3,cx+3,cy+3,subcol);
-		GDrawDrawLine(pixmap,cx+3,cy-3,cx-3,cy+3,subcol);
+		float sizedelta = 3;
+		if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+		    sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+		GDrawDrawLine(pixmap,x,y,cx,cy, prevcpcolmasked);
+		GDrawDrawLine(pixmap,cx-sizedelta,cy-sizedelta,cx+sizedelta,cy+sizedelta,subcolmasked);
+		GDrawDrawLine(pixmap,cx+sizedelta,cy-sizedelta,cx-sizedelta,cy+sizedelta,subcolmasked);
 	    }
 	}
     }
@@ -768,12 +877,15 @@ return;
 return;
     r.x = x-2;
     r.y = y-2;
-    r.width = r.height = 5;
+    r.width = r.height = 0;
+    r.width  += prefs_cvEditHandleSize;
+    r.height += prefs_cvEditHandleSize;
     if ( sp->selected )
 	GDrawSetLineWidth(pixmap,selectedpointwidth);
     isfake = false;
     if ( cv->b.layerheads[cv->b.drawmode]->order2 &&
-	    cv->b.layerheads[cv->b.drawmode]->refs==NULL ) {
+	    cv->b.layerheads[cv->b.drawmode]->refs==NULL )
+    {
 	int mightbe_fake = SPInterpolate(sp);
         if ( !mightbe_fake && sp->ttfindex==0xffff )
 	    sp->ttfindex = 0xfffe;	/* if we have no instructions we won't call instrcheck and won't notice when a point stops being fake */
@@ -782,30 +894,56 @@ return;
 	isfake = sp->ttfindex==0xffff;
     }
     if ( onlynumber )
+    {
 	/* Draw Nothing */;
-    else if ( sp->pointtype==pt_curve ) {
-	--r.x; --r.y; r.width +=2; r.height += 2;
+    }
+    else if ( sp->pointtype==pt_curve )
+    {
+	r.width +=2; r.height += 2;
+	r.x = x - r.width  / 2;
+	r.y = y - r.height / 2;
 	if ( sp->selected || isfake )
 	    GDrawDrawElipse(pixmap,&r,col);
 	else
 	    GDrawFillElipse(pixmap,&r,col);
-    } else if ( sp->pointtype==pt_corner ) {
+    }
+    else if ( sp->pointtype==pt_corner )
+    {
+	r.x = x - r.width  / 2;
+	r.y = y - r.height / 2;
 	if ( sp->selected || isfake )
 	    GDrawDrawRect(pixmap,&r,col);
 	else
 	    GDrawFillRect(pixmap,&r,col);
-    } else if ( sp->pointtype==pt_hvcurve ) {
+    }
+    else if ( sp->pointtype==pt_hvcurve )
+    {
+	const int gp_sz = 5;
 	GPoint gp[5];
-	gp[0].x = r.x-1; gp[0].y = r.y+2;
-	gp[1].x = r.x+2; gp[1].y = r.y+5;
-	gp[2].x = r.x+5; gp[2].y = r.y+2;
-	gp[3].x = r.x+2; gp[3].y = r.y-1;
+
+	float sizedelta = 3;
+	float offsetdelta = 0; // 4 * cv->scale;
+	if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+	{
+	    sizedelta   *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+	    offsetdelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+	}
+
+	float basex = r.x + 3 + offsetdelta;
+	float basey = r.y + 3 + offsetdelta;
+	gp[0].x = basex - sizedelta; gp[0].y = basey + 0;
+	gp[1].x = basex + 0;         gp[1].y = basey + sizedelta;
+	gp[2].x = basex + sizedelta; gp[2].y = basey + 0;
+	gp[3].x = basex + 0;         gp[3].y = basey - sizedelta;
 	gp[4] = gp[0];
+
 	if ( sp->selected || isfake )
-	    GDrawDrawPoly(pixmap,gp,5,col);
+	    GDrawDrawPoly(pixmap,gp,gp_sz,col);
 	else
-	    GDrawFillPoly(pixmap,gp,5,col);
-    } else {
+	    GDrawFillPoly(pixmap,gp,gp_sz,col);
+    }
+    else
+    {
 	BasePoint *cp=NULL;
 	BasePoint unit;
 
@@ -820,7 +958,9 @@ return;
 	DrawTangentPoint(pixmap, x, y, &unit, sp->selected || isfake, col);
     }
     GDrawSetLineWidth(pixmap,0);
-    if ( (cv->showpointnumbers || cv->show_ft_results || cv->dv ) && sp->ttfindex!=0xffff ) {
+    if ( (cv->showpointnumbers || cv->show_ft_results || cv->dv )
+	 && sp->ttfindex!=0xffff )
+    {
 	if ( sp->ttfindex==0xfffe )
 	    strcpy(buf,"??");
 	else {
@@ -831,7 +971,7 @@ return;
     if ( truetype_markup && sp->roundx ) {
 	r.x = x-5; r.y = y-5;
 	r.width = r.height = 11;
-	GDrawDrawElipse(pixmap,&r,selectedpointcol);
+	GDrawDrawElipse(pixmap,&r,selectedpointcolmasked);
     } else if ( !onlynumber && !truetype_markup ) {
 	if ((( sp->roundx || sp->roundy ) &&
 		 (((cv->showrounds&1) && cv->scale>=.3) || (cv->showrounds&2))) ||
@@ -844,13 +984,16 @@ return;
 	if (( sp->flexx && cv->showhhints ) || (sp->flexy && cv->showvhints)) {
 	    r.x = x-5; r.y = y-5;
 	    r.width = r.height = 11;
-	    GDrawDrawElipse(pixmap,&r,sp->flexx ? hflexhintcol : vflexhintcol );
+	    GDrawDrawElipse(pixmap,&r,
+			    MaybeMaskColorToAlphaChannelOverride( sp->flexx ? hflexhintcol : vflexhintcol,
+								  AlphaChannelOverride ));
 	}
     }
 }
 
-static void DrawSpiroPoint(CharView *cv, GWindow pixmap, spiro_cp *cp,
-	SplineSet *spl, int cp_i) {
+static void DrawSpiroPoint( CharView *cv, GWindow pixmap, spiro_cp *cp,
+			    SplineSet *spl, int cp_i, Color AlphaChannelOverride )
+{
     GRect r;
     int x, y;
     Color col = cp==&spl->spiros[0] ? firstpointcol : pointcol;
@@ -861,37 +1004,62 @@ static void DrawSpiroPoint(CharView *cv, GWindow pixmap, spiro_cp *cp,
     if ( selected )
 	 col = selectedpointcol;
 
+    if( !selected )
+    {
+	col = col & 0x00ffffff;
+	col |= prefs_cvInactiveHandleAlpha << 24;
+    }
+
+    col = MaybeMaskColorToAlphaChannelOverride( col, AlphaChannelOverride );
+    
+    
     x =  cv->xoff + rint(cp->x*cv->scale);
     y = -cv->yoff + cv->height - rint(cp->y*cv->scale);
     if ( x<-4 || y<-4 || x>cv->width+4 || y>=cv->height+4 )
 return;
 
-    r.x = x-2;
-    r.y = y-2;
-    r.width = r.height = 5;
+    DrawPoint_SetupRectForSize( &r, x, y, 2 );
+    /* r.x = x-2; */
+    /* r.y = y-2; */
+    /* r.width = r.height = 5; */
     if ( selected )
 	GDrawSetLineWidth(pixmap,selectedpointwidth);
 
+    float sizedelta = 3;
+    if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+	sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+
     if ( ty == SPIRO_RIGHT ) {
 	GDrawSetLineWidth(pixmap,2);
-	gp[0].x = x-3; gp[0].y = y-3;
-	gp[1].x = x;   gp[1].y = y-3;
-	gp[2].x = x;   gp[2].y = y+3;
-	gp[3].x = x-3; gp[3].y = y+3;
+	gp[0].x = x-sizedelta; gp[0].y = y-sizedelta;
+	gp[1].x = x;           gp[1].y = y-sizedelta;
+	gp[2].x = x;           gp[2].y = y+sizedelta;
+	gp[3].x = x-sizedelta; gp[3].y = y+sizedelta;
 	GDrawDrawPoly(pixmap,gp,4,col);
     } else if ( ty == SPIRO_LEFT ) {
 	GDrawSetLineWidth(pixmap,2);
-	gp[0].x = x+3; gp[0].y = y-3;
-	gp[1].x = x;   gp[1].y = y-3;
-	gp[2].x = x;   gp[2].y = y+3;
-	gp[3].x = x+3; gp[3].y = y+3;
+	gp[0].x = x+sizedelta; gp[0].y = y-sizedelta;
+	gp[1].x = x;           gp[1].y = y-sizedelta;
+	gp[2].x = x;           gp[2].y = y+sizedelta;
+	gp[3].x = x+sizedelta; gp[3].y = y+sizedelta;
 	GDrawDrawPoly(pixmap,gp,4,col);
     } else if ( ty == SPIRO_G2 ) {
 	GPoint gp[5];
-	gp[0].x = r.x-1; gp[0].y = r.y+2;
-	gp[1].x = r.x+2; gp[1].y = r.y+5;
-	gp[2].x = r.x+5; gp[2].y = r.y+2;
-	gp[3].x = r.x+2; gp[3].y = r.y-1;
+
+	float sizedelta = 3;
+	float offsetdelta = 1;
+	if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+	{
+	    sizedelta   *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+	    offsetdelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
+	}
+
+	float basex = r.x + 1 + offsetdelta;
+	float basey = r.y + 1 + offsetdelta;
+	gp[0].x = basex - sizedelta; gp[0].y = basey + 0;
+	gp[1].x = basex + 0;         gp[1].y = basey + sizedelta;
+	gp[2].x = basex + sizedelta; gp[2].y = basey + 0;
+	gp[3].x = basex + 0;         gp[3].y = basey - sizedelta;
 	gp[4] = gp[0];
 	if ( selected )
 	    GDrawDrawPoly(pixmap,gp,5,col);
@@ -1163,7 +1331,7 @@ return;
 
 void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	Color fg, int dopoints, DRect *clip ) {
-    CVDrawSplineSetSpecialized( cv, pixmap, set, fg, dopoints, clip, sfm_stroke );
+    CVDrawSplineSetSpecialized( cv, pixmap, set, fg, dopoints, clip, sfm_stroke, 0 );
 }
 
 
@@ -1176,7 +1344,7 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
     if( strokeFillMode == sfm_fill ) {
     	GDrawFillRuleSetWinding(pixmap);
     }
-    
+
     for ( spl = set; spl!=NULL; spl = spl->next ) {
 
 	Color fc  = spl->is_clip_path ? clippathcol : fg;
@@ -1190,13 +1358,14 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 	if ( cv->b.drawmode!=dm_grid
 	     && DrawOpenPathsWithHighlight
 	     && activelayer < cv->b.sc->layer_cnt
+	     && activelayer >= 0
 	     && SplinePointListContains( cv->b.sc->layers[activelayer].splines, spl )
 	     && spl->first
 	     && spl->first->prev==NULL )
 	{
 	    fc = openpathcol;
 	}
-	
+
 	if ( GDrawHasCairo(pixmap)&gc_buildpath ) {
 	    Spline *first, *spline;
 	    double x,y, cx1, cy1, cx2, cy2, dx,dy;
@@ -1242,7 +1411,10 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 		GDrawPathClose(pixmap);
 
 	    switch( strokeFillMode ) {
-	    case sfm_stroke: 
+	    case sfm_stroke_trans:
+		GDrawPathStroke( pixmap, fc );
+		break;
+	    case sfm_stroke:
 		GDrawPathStroke( pixmap, fc | 0xff000000 );
 		break;
 	    case sfm_fill:
@@ -1272,13 +1444,15 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 }
 
 
-void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePointList *set,
-				Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode )
+void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *set,
+				 Color fg, int dopoints, DRect *clip,
+				 enum outlinesfm_flags strokeFillMode,
+				 Color AlphaChannelOverride )
 {
     Spline *spline, *first;
     SplinePointList *spl;
     int truetype_markup = set==cv->b.gridfit && cv->dv!=NULL;
-    
+
     if ( cv->inactive )
 	dopoints = false;
 
@@ -1303,15 +1477,15 @@ void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePointList *s
 			spl->spiro_max = spl->spiro_cnt;
 		    }
 		    for ( i=0; i<spl->spiro_cnt-1; ++i )
-			DrawSpiroPoint(cv,pixmap,&spl->spiros[i],spl,i);
+			DrawSpiroPoint(cv,pixmap,&spl->spiros[i],spl,i, AlphaChannelOverride );
 		}
 	    } else {
 		for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-		    DrawPoint(cv,pixmap,spline->from,spl,dopoints<0,truetype_markup);
+		    DrawPoint(cv,pixmap,spline->from,spl,dopoints<0,truetype_markup, AlphaChannelOverride );
 		    if ( first==NULL ) first = spline;
 		}
 		if ( spline==NULL )
-		    DrawPoint(cv,pixmap,spl->last,spl,dopoints<0,truetype_markup);
+		    DrawPoint(cv,pixmap,spl->last,spl,dopoints<0,truetype_markup, AlphaChannelOverride );
 	    }
 	}
     }
@@ -1322,7 +1496,8 @@ void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePointList *s
 	 * clip path splines which will possibly have a different stroke color
 	 */
 	CVDrawSplineSetOutlineOnly( cv, pixmap, set,
-				    fg, dopoints, clip, sfm_stroke );
+				    fg, dopoints, clip,
+				    ( strokeFillMode==sfm_stroke_trans ? sfm_stroke_trans : sfm_stroke ) );
     }
 
     for ( spl = set; spl!=NULL; spl = spl->next ) {
@@ -1337,7 +1512,7 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
 	Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode ) {
     int active = cv->b.layerheads[cv->b.drawmode]==layer;
     int ml = cv->b.sc->parent->multilayer;
-    
+
     if ( ml && layer->dostroke ) {
 	if ( layer->stroke_pen.brush.col!=COLOR_INHERITED &&
 		layer->stroke_pen.brush.col!=view_bgcol )
@@ -1354,7 +1529,7 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
     }
     if ( ml && !active && layer!=&cv->b.sc->layers[ly_back] )
 	GDrawSetDashedLine(pixmap,5,5,cv->xoff+cv->height-cv->yoff);
-    CVDrawSplineSetSpecialized(cv,pixmap,layer->splines,fg,dopoints && active,clip,strokeFillMode);
+    CVDrawSplineSetSpecialized(cv,pixmap,layer->splines,fg,dopoints && active,clip,strokeFillMode,0);
     if ( ml && !active && layer!=&cv->b.sc->layers[ly_back] )
 	GDrawSetDashedLine(pixmap,0,0,0);
 #if 0
@@ -1561,11 +1736,15 @@ static void CVDrawBlues(CharView *cv,GWindow pixmap,char *bluevals,char *others,
 	Color col) {
     double blues[24];
     char *pt, *end;
+    char oldloc[25];
     int i=0, bcnt=0;
     GRect r;
     char buf[20];
     int len,len2;
 
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
+    setlocale(LC_NUMERIC,"C");
     if ( bluevals!=NULL ) {
 	for ( pt = bluevals; isspace( *pt ) || *pt=='['; ++pt);
 	while ( i<14 && *pt!='\0' && *pt!=']' ) {
@@ -1590,6 +1769,7 @@ static void CVDrawBlues(CharView *cv,GWindow pixmap,char *bluevals,char *others,
 	}
 	if ( i&1 ) --i;
     }
+    setlocale(LC_NUMERIC,oldloc);
     bcnt = i;
     if ( i==0 )
 return;
@@ -2384,6 +2564,25 @@ static int CVExposeGlyphFill(CharView *cv, GWindow pixmap, GEvent *event, DRect*
     return(filled);
 }
 
+struct CVExpose_PreTransformSPL_ud
+{
+    int dopoints;
+    CharView *cv;
+    GWindow pixmap;
+    Color fg;
+    DRect* clip;
+    enum outlinesfm_flags strokeFillMode;
+};
+
+
+static void CVExpose_PreTransformSPL_fe( SplinePointList *spl, struct CVExpose_PreTransformSPL_ud* d )
+{
+    CVDrawSplineSetSpecialized( d->cv, d->pixmap, spl,
+				d->fg, d->dopoints, d->clip, d->strokeFillMode,
+				DraggingComparisonAlphaChannelOverride );
+}
+
+
 static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     SplineFont *sf = cv->b.sc->parent;
     RefChar *rf;
@@ -2528,6 +2727,22 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     /*  might want to hide the active layer. */
     layer = cvlayer;
 
+
+    /*
+     * If we have a pretransform_spl and the user wants to see it then show it to them
+     */
+     if( cv->p.pretransform_spl )
+     {
+	 struct CVExpose_PreTransformSPL_ud d;
+	 d.dopoints = 1;
+	 d.cv = cv;
+	 d.pixmap = pixmap;
+	 d.fg = DraggingComparisonOutlineColor;
+	 d.clip = &clip;
+	 d.strokeFillMode = sfm_stroke_trans;
+	 g_list_foreach( cv->p.pretransform_spl, CVExpose_PreTransformSPL_fe, &d );
+     }
+
     /* The call to CVExposeGlyphFill() above will have rendered a filled glyph already. */
     /* We draw the outline only at this stage so as to have it layered */
     /* over the control points if they are currently visible. */
@@ -2557,7 +2772,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		refsfm = sfm_fill;
 	    }
 	    for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
-		CVDrawSplineSetSpecialized(cv,pixmap,rf->layers[rlayer].splines,foreoutlinecol,-1,&clip, refsfm);
+		CVDrawSplineSetSpecialized(cv,pixmap,rf->layers[rlayer].splines,foreoutlinecol,-1,&clip, refsfm, 0);
 	    if ( rf->selected && cv->b.layerheads[cv->b.drawmode]==&cv->b.sc->layers[layer])
 		CVDrawBB(cv,pixmap,&rf->bb);
 	}
@@ -2576,7 +2791,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    			  cv->showpoints ,&clip, strokeFillMode );
 	}
     }
-    
+
 
     if ( cv->freehand.current_trace )
     	CVDrawSplineSet( cv,pixmap,cv->freehand.current_trace,tracecol,
@@ -2678,7 +2893,7 @@ void CVRegenFill(CharView *cv) {
 	int layer = CVLayer((CharViewBase *) cv);
 	int size = cv->scale*(cv->b.fv->sf->ascent+cv->b.fv->sf->descent);
 	int clut_len= 2;
-        
+
         if ( layer==-1 ) layer=ly_fore; /* otherwise crashes when using guides layer! */
 
 	/* Generally I don't think there's much point in doing an anti-aliased*/
@@ -2726,13 +2941,20 @@ return;
     }
 }
 
-static void FVRedrawAllCharViews(SplineFont *sf) {
+
+static void FVRedrawAllCharViewsSF(SplineFont *sf)
+{
     int i;
     CharView *cv;
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
 	for ( cv = (CharView *) (sf->glyphs[i]->views); cv!=NULL; cv=(CharView *) (cv->b.next) )
 	    GDrawRequestExpose(cv->v,NULL,false);
+}
+
+void FVRedrawAllCharViews(FontView *fv)
+{
+    FVRedrawAllCharViewsSF( fv->b.sf );
 }
 
 static void SCRegenFills(SplineChar *sc) {
@@ -3205,7 +3427,7 @@ return;
 static void CVSwitchToTab(CharView *cv,int tnum ) {
     if( tnum >= cv->former_cnt )
 	return;
-    
+
     SplineFont *sf = cv->b.fv->sf;
     char* n = cv->former_names[tnum];
     int unienc = UniFromName(n,sf->uni_interp,cv->b.fv->map->enc);
@@ -3255,6 +3477,7 @@ static void CVHScroll(CharView *cv,struct sbevent *sb);
 static void CVVScroll(CharView *cv,struct sbevent *sb);
 /*static void CVElide(GWindow gw,struct gmenuitem *mi,GEvent *e);*/
 static void CVMerge(GWindow gw,struct gmenuitem *mi,GEvent *e);
+static void CVMergeToLine(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVPreviewModeSet(GWindow gw, int checked);
@@ -3289,6 +3512,7 @@ static uint16 HaveModifiers = 0;
 static uint16 PressingTilde = 0;
 static uint16 PrevCharEventWasCharUpOnControl = 0;
 
+
 static void CVCharUp(CharView *cv, GEvent *event ) {
 
     if ( !event->u.chr.autorepeat && !HaveModifiers && event->u.chr.keysym==' ' ) {
@@ -3298,19 +3522,19 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 //    printf("CVCharUp() ag:%d key:%d\n", cv_auto_goto, event->u.chr.keysym );
     if( !cv_auto_goto )
     {
-	if( event->u.chr.keysym=='`' ) {
+	bool isImmediateKeyTogglePreview = isImmediateKey( cv->gw, "TogglePreview", event );
+	if( isImmediateKeyTogglePreview ) {
 	    PressingTilde = 1;
 	}
 
-	if( PrevCharEventWasCharUpOnControl
-	    && event->u.chr.keysym=='`' )
+	if( PrevCharEventWasCharUpOnControl && isImmediateKeyTogglePreview )
 	{
 	    HaveModifiers = 0;
 	    PrevCharEventWasCharUpOnControl = 0;
 	    return;
 	}
 	PrevCharEventWasCharUpOnControl = 0;
-	
+
 	if( !event->u.chr.autorepeat
 	    && (event->u.chr.keysym == GK_Control_L
 		|| event->u.chr.keysym == GK_Control_R ))
@@ -3320,23 +3544,23 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 		HaveModifiers = 0;
 	    }
 	}
-	
-	if ( !event->u.chr.autorepeat && !HaveModifiers && event->u.chr.keysym=='`' ) {
+
+	if ( !event->u.chr.autorepeat && !HaveModifiers && isImmediateKeyTogglePreview ) {
 	    PressingTilde = 0;
 	    CVPreviewModeSet( cv->gw, false );
 	    return;
 	}
-	
-	if ( !event->u.chr.autorepeat && event->u.chr.keysym=='`' ) {
+
+	if ( !event->u.chr.autorepeat && isImmediateKeyTogglePreview ) {
 	    PressingTilde = 0;
 	}
-	if ( event->u.chr.autorepeat && HaveModifiers && event->u.chr.keysym=='`' ) {
+	if ( event->u.chr.autorepeat && HaveModifiers && isImmediateKeyTogglePreview ) {
 	    return;
 	}
     }
-    
-    
-    
+
+
+
 #if _ModKeysAutoRepeat
     /* Under cygwin these keys auto repeat, they don't under normal X */
     if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ||
@@ -3381,7 +3605,7 @@ void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     real xdiff, ydiff;
     SplinePoint *sp, dummy;
     spiro_cp *cp;
-    
+
     GDrawSetFont(pixmap,cv->small);
     r.x = RPT_DATA; r.width = 60;
     r.y = cv->mbh; r.height = cv->infoh-1;
@@ -3417,7 +3641,7 @@ void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 
     const int layernamesz = 100;
     char layername[layernamesz+1];
-    strcpy(layername,_("Guide"));
+    strncpy(layername,_("Guide"),layernamesz);
     if(cv->b.drawmode!=dm_grid) {
 	int idx = CVLayer((CharViewBase *) cv);
 	if(idx >= 0 && idx < cv->b.sc->parent->layer_cnt) {
@@ -3565,7 +3789,10 @@ static int CheckPoint(FindSel *fs, SplinePoint *sp, SplineSet *spl) {
 	if ( !fs->seek_controls )
 return( true );
     }
-    if ( (sp->selected && fs->select_controls) || fs->all_controls ) {
+    if ( (sp->selected && fs->select_controls)
+	 || fs->all_controls
+	 || fs->alwaysshowcontrolpoints )
+    {
 	int seln=false, selp=false;
 	if ( fs->c_xl<=sp->nextcp.x && fs->c_xh>=sp->nextcp.x &&
 		fs->c_yl<=sp->nextcp.y && fs->c_yh >= sp->nextcp.y )
@@ -3590,6 +3817,7 @@ return( true );
 		fs->p->cp.y = sp->me.y + (sp->me.y-sp->prevcp.y);
 	    }
 	    sp->selected = true;
+	    sp->nextcpselected = true;
 return( true );
 	} else if ( selp ) {
 	    fs->p->sp = sp;
@@ -3603,6 +3831,7 @@ return( true );
 		fs->p->cp.y = sp->me.y + (sp->me.y-sp->nextcp.y);
 	    }
 	    sp->selected = true;
+	    sp->prevcpselected = true;
 return( true );
 	}
     }
@@ -3624,6 +3853,7 @@ return( false /*true*/ );	/* Check if there's a point where we are first */
 	/* if there is use it, if not (because anysel is true) we'll fall back */
 	/* here */
     }
+
 return( false );
 }
 
@@ -3714,6 +3944,18 @@ static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
     p->cy = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale;
 
     fs->fudge = (cv->active_tool==cvt_ruler ? snapdistancemeasuretool : snapdistance)/cv->scale;
+
+    /* If they have really large control points then expand
+     * the selection range to allow them to still click on the
+     * very edge of the control point to select it.
+     */
+    if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
+    {
+	float delta = prefs_cvEditHandleSize - prefs_cvEditHandleSize_default;
+	delta *= 1.5;
+	fs->fudge += delta;
+    }
+
     fs->c_xl = fs->xl = p->cx - fs->fudge;
     fs->c_xh = fs->xh = p->cx + fs->fudge;
     fs->c_yl = fs->yl = p->cy - fs->fudge;
@@ -3926,18 +4168,57 @@ return( _CVTestSelectFromEvent(cv,&fs));
 /**
  * A cache for the selected spline point or spiro control point
  */
-typedef struct lastselectedpoint 
+typedef struct lastselectedpoint
 {
     SplinePoint *lastselpt;
     spiro_cp *lastselcp;
 } lastSelectedPoint;
-    
+
+
+void CVFreePreTransformSPL( CharView* cv )
+{
+    if( cv->p.pretransform_spl )
+    {
+	g_list_free_full( cv->p.pretransform_spl, SplinePointListFree );
+    }
+    cv->p.pretransform_spl = 0;
+}
+
+static void CVMaybeCreateDraggingComparisonOutline( CharView* cv )
+{
+    if( !prefs_create_dragging_comparison_outline )
+	return;
+    if( !cv )
+	return;
+    if( cv->p.pretransform_spl )
+	CVFreePreTransformSPL( cv );
+
+    Layer* l = cv->b.layerheads[cv->b.drawmode];
+    if( !l || !l->splines )
+	return;
+
+    GHashTable* ret = g_hash_table_new( g_direct_hash, g_direct_equal );
+    SplinePointList* spl = l->splines;
+    for( ; spl; spl = spl->next )
+    {
+	int anySel = 0;
+	SPLFirstVisit( spl->first, isAnyControlPointSelectedVisitor, &anySel );
+	if( anySel || (cv->b.sc->inspiro && hasspiro()))
+	{
+	    cv->p.pretransform_spl = g_list_append( cv->p.pretransform_spl,
+						    SplinePointListCopy(spl) );
+	}
+    }
+
+}
+
+
 static void CVMouseDown(CharView *cv, GEvent *event ) {
     FindSel fs;
     GEvent fake;
     lastSelectedPoint lastSel;
     memset( &lastSel, 0, sizeof(lastSelectedPoint));
-    
+
     if ( event->u.mouse.button==2 && event->u.mouse.device!=NULL &&
 	    strcmp(event->u.mouse.device,"stylus")==0 )
 return;		/* I treat this more like a modifier key change than a button press */
@@ -3970,6 +4251,7 @@ return;
 	}
 	if ( cv->showpointnumbers && cv->b.layerheads[cv->b.drawmode]->order2 )
 	    fs.all_controls = true;
+	fs.alwaysshowcontrolpoints = cv->alwaysshowcontrolpoints;
 	lastSel.lastselpt = cv->lastselpt;
 	lastSel.lastselcp = cv->lastselcp;
 	cv->lastselpt = NULL;
@@ -4018,12 +4300,9 @@ return;
     switch ( cv->active_tool ) {
       case cvt_pointer:
 	CVMouseDownPointer(cv, &fs, event);
-//	printf("lastSel.lastselpt:%p  fs.p->sp:%p\n", lastSel.lastselpt, fs.p->sp );
-	if( lastSel.lastselpt != fs.p->sp
-	    || lastSel.lastselcp != fs.p->spiro )
-	{
-#define BASEPOINT_IS_EMPTY(p) ( p.x == p.y == (real)0.0 )
-	    
+	CVMaybeCreateDraggingComparisonOutline( cv );
+	if( lastSel.lastselpt != fs.p->sp || lastSel.lastselcp != fs.p->spiro )	{
+#define BASEPOINT_IS_EMPTY(p) ( p.x == (real)0.0 && p.y == (real)0.0 )
 	    // If we are in a collab session, we might like to preserve here
 	    // so that we can send a change of selected points to other members
 	    // of the group
@@ -4045,11 +4324,10 @@ return;
 	}
 	cv->lastselpt = fs.p->sp;
 	cv->lastselcp = fs.p->spiro;
-	if( selectionChanged )
-	{
-//	    collabclient_sendRedo( &cv->b );    
+	if( selectionChanged ) {
+//	    collabclient_sendRedo( &cv->b );
 	}
-	break;
+      break;
       case cvt_magnify: case cvt_minify:
       break;
       case cvt_hand:
@@ -4267,7 +4545,7 @@ static void _CV_CharChangedUpdate(CharView *cv,int changed) {
 	SCUpdateAll(cv->b.sc);
     } else /* if ( cv->b.drawmode==dm_grid )*/ {
 	/* If we changed the grid then any character needs to know it */
-	FVRedrawAllCharViews(cv->b.sc->parent);
+	FVRedrawAllCharViewsSF(cv->b.sc->parent);
     }
     cv->recentchange = false;
     cv->p.sp = NULL;		/* Might have been deleted */
@@ -4549,7 +4827,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	cv->pressed = NULL;
     }
     cv->p.pressed = false;
-
+    CVFreePreTransformSPL( cv );
     update_spacebar_hand_tool(cv); /* needed? (left from MINGW) */
 
     if ( cv->p.rubberbanding ) {
@@ -4575,6 +4853,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
       case cvt_curve: case cvt_corner: case cvt_tangent: case cvt_hvcurve:
       case cvt_pen:
 	CVMouseUpPoint(cv,event);
+	CVGridHandlePossibleFitChar( cv );
       break;
       case cvt_magnify: case cvt_minify:
 	if ( cv->p.x>=event->u.mouse.x-6 && cv->p.x<=event->u.mouse.x+6 &&
@@ -4616,6 +4895,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
       break;
       case cvt_rect: case cvt_elipse: case cvt_poly: case cvt_star:
 	CVMouseUpShape(cv);
+	CVGridHandlePossibleFitChar( cv );
       break;
     }
     cv->active_tool = cvt_none;
@@ -4628,9 +4908,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	_CV_CharChangedUpdate(cv,2);
 
     dlist_foreach( &cv->pointInfoDialogs, (dlist_foreach_func_type)PIChangePoint );
-
-//    printf("cvmouseup!\n");
-    collabclient_sendRedo( &cv->b );    
+    collabclient_sendRedo( &cv->b );
 }
 
 static void CVTimer(CharView *cv,GEvent *event) {
@@ -5207,7 +5485,7 @@ static void CVAddGuide(CharView *cv,int is_v,int guide_pos) {
 	ss->contour_name = NULL;
     }
 
-    FVRedrawAllCharViews(sf);
+    FVRedrawAllCharViewsSF(sf);
     if ( !sf->changed ) {
 	sf->changed = true;
 	FVSetTitles(sf);
@@ -5362,11 +5640,13 @@ return( true );
 #define MID_ZoomIn	2002
 #define MID_ZoomOut	2003
 #define MID_HidePoints	2004
+#define MID_HideControlPoints	2005
 #define MID_Fill	2006
 #define MID_Next	2007
 #define MID_Prev	2008
 #define MID_HideRulers	2009
 #define MID_Preview     2010
+#define MID_DraggingComparisonOutline 2011
 #define MID_NextDef	2012
 #define MID_PrevDef	2013
 #define MID_DisplayCompositions	2014
@@ -5443,6 +5723,7 @@ return( true );
 #define MID_SelPointAt	2138
 #define MID_CopyLookupData	2139
 #define MID_SelectOpenContours	2140
+#define MID_MergeToLine	2141
 #define MID_Clockwise	2201
 #define MID_Counter	2202
 #define MID_GetInfo	2203
@@ -5559,9 +5840,12 @@ return( true );
 #define MID_VKernClass  2715
 #define MID_VKernFromHKern 2716
 
+#define MID_ShowGridFitLiveUpdate 2720
+
 #define MID_MMReblend	2800
 #define MID_MMAll	2821
 #define MID_MMNone	2822
+
 
 #define MID_Warnings	3000
 
@@ -5867,6 +6151,12 @@ static void CVMenuShowHide(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
     GDrawRequestExpose(cv->v,NULL,false);
 }
 
+static void CVMenuShowHideControlPoints(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    CVShows.alwaysshowcontrolpoints = cv->alwaysshowcontrolpoints = !cv->alwaysshowcontrolpoints;
+    GDrawRequestExpose(cv->v,NULL,false);
+}
+
 static void CVMenuNumberPoints(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
@@ -6078,6 +6368,7 @@ static struct cvshows* cvshowsCopyTo( struct cvshows* dst, CharView* src )
     dst->showvhints = src->showvhints;
     dst->showdhints = src->showdhints;
     dst->showpoints = src->showpoints;
+    dst->alwaysshowcontrolpoints = src->alwaysshowcontrolpoints;
     dst->showfilled = src->showfilled;
     dst->showrulers = src->showrulers;
     dst->showrounds = src->showrounds;
@@ -6111,6 +6402,7 @@ static CharView* cvshowsCopyFrom( CharView* dst, struct cvshows* src )
     dst->showvhints = src->showvhints;
     dst->showdhints = src->showdhints;
     dst->showpoints = src->showpoints;
+    dst->alwaysshowcontrolpoints = src->alwaysshowcontrolpoints;
     dst->showfilled = src->showfilled;
     dst->showrulers = src->showrulers;
     dst->showrounds = src->showrounds;
@@ -6150,6 +6442,7 @@ static void CVPreviewModeSet(GWindow gw, int checked ) {
         cv->showvhints = 0;
         cv->showdhints = 0;
         cv->showpoints = 0;
+	cv->alwaysshowcontrolpoints = 0;
         cv->showfilled = 1;
         cv->showrounds = 0;
         cv->showanchor = 0;
@@ -6173,11 +6466,32 @@ static void CVMenuPreview(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CVPreviewModeSet(gw, checked);
 }
 
+static void CVMenuDraggingComparisonOutline(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
+{
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    int checked = mi->ti.checked;
+    CVFreePreTransformSPL( cv );
+    prefs_create_dragging_comparison_outline = checked;
+    SavePrefs(true);
+}
+
+
 static void CVMenuShowGridFit(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     if ( !hasFreeType() || cv->dv!=NULL )
-return;
+	return;
+    cv->show_ft_results_live_update = 0;
+    CVFtPpemDlg(cv,false);
+}
+
+static void CVMenuShowGridFitLiveUpdate(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    if ( !hasFreeType() || cv->dv!=NULL )
+	return;
+    cv->show_ft_results_live_update = 1;
     CVFtPpemDlg(cv,false);
 }
 
@@ -6189,6 +6503,8 @@ return;
 
     if ( mi->mid==MID_GridFitOff ) {
 	cv->show_ft_results = false;
+	cv->show_ft_results_live_update = false;
+
 	SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	GDrawRequestExpose(cv->v,NULL,false);
@@ -6408,24 +6724,280 @@ static void CVMenuChangeChar(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)
     _CVMenuChangeChar(cv,mi->mid);
 }
 
+/**
+ * If the prev/next BCP is selected than add those to the hash table
+ * at "ret".
+ */
+static void getSelectedControlPointsVisitor(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    GHashTable* ret = (GHashTable*)udata;
+    if( spline->to->nextcpselected )
+	g_hash_table_insert( ret, spline->to, 0 );
+    if( spline->to->prevcpselected )
+	g_hash_table_insert( ret, spline->to, 0 );
+}
+static void getAllControlPointsVisitor(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    GHashTable* ret = (GHashTable*)udata;
+    g_hash_table_insert( ret, spline->to, 0 );
+    g_hash_table_insert( ret, spline->to, 0 );
+}
+static void isAnyControlPointSelectedVisitor(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    int* ret = (int*)udata;
+    if( spline->to->selected )
+	(*ret) = 1;
+}
+
+
+/**
+ * Get a hash table with all the selected BCP in it.
+ *
+ * The caller must call g_hash_table_destroy() on the return value.
+ */
+static GHashTable* getSelectedControlPoints( CharView *cv, PressedOn *p )
+{
+    Layer* l = cv->b.layerheads[cv->b.drawmode];
+    if( !l || !l->splines )
+	return 0;
+
+    GHashTable* ret = g_hash_table_new( g_direct_hash, g_direct_equal );
+    SplinePointList* spl = l->splines;
+    for( ; spl; spl = spl->next )
+    {
+	SPLFirstVisit( spl->first, getSelectedControlPointsVisitor, ret );
+    }
+
+    return ret;
+}
+static GHashTable* getAllControlPoints( CharView *cv, PressedOn *p )
+{
+    Layer* l = cv->b.layerheads[cv->b.drawmode];
+    if( !l || !l->splines )
+	return 0;
+
+    GHashTable* ret = g_hash_table_new( g_direct_hash, g_direct_equal );
+    SplinePointList* spl = l->splines;
+    for( ; spl; spl = spl->next )
+    {
+	SPLFirstVisit( spl->first, getAllControlPointsVisitor, ret );
+    }
+    return ret;
+}
+
+
+void FE_unselectBCP( void* key,
+		     void* value,
+		     SplinePoint* sp,
+		     BasePoint *which,
+		     bool isnext,
+		     void* udata )
+{
+    sp->nextcpselected = 0;
+    sp->prevcpselected = 0;
+}
+
+void FE_adjustBCPByDelta( void* key,
+			  void* value,
+			  SplinePoint* sp,
+			  BasePoint *which,
+			  bool isnext,
+			  void* udata )
+{
+    FE_adjustBCPByDeltaData* data = (FE_adjustBCPByDeltaData*)udata;
+    CharView *cv = data->cv;
+
+//    printf("FE_adjustBCPByDelta %p %d\n", which, isnext );
+    BasePoint to;
+    to.x = which->x + data->dx;
+    to.y = which->y + data->dy;
+    SPAdjustControl(sp,which,&to,cv->b.layerheads[cv->b.drawmode]->order2);
+    CVSetCharChanged(cv,true);
+}
+
+/**
+ * Container for arguments to FE_visitSelectedControlPoints.
+ */
+typedef struct visitSelectedControlPoints_CallbackDataS
+{
+    int count;                              // number of times visitor is called.
+    int sel;
+    visitSelectedControlPointsVisitor func; // Visitor function to delegate to
+    gpointer udata;                         // user data to use when calling above func()
+
+} visitSelectedControlPoints_CallbackData;
+
+/**
+ * Visitor function: calls a delegate visitor function for any prev
+ * and next BCP which are selected for each spline point. This is a
+ * handy visitor when your BCP handling code for the most part doesn't
+ * care if it will operate on the next or prev BCP, ie your visitor
+ * simply wants to visit all the selected BCP.
+ */
+static void FE_visitSelectedControlPoints( gpointer key,
+					   gpointer value,
+					   gpointer udata )
+{
+    visitSelectedControlPoints_CallbackData* d = (visitSelectedControlPoints_CallbackData*)udata;
+    SplinePoint* sp = (SplinePoint*)key;
+
+    d->count++;
+    if( sp->nextcpselected )
+    {
+	BasePoint *which = &sp->nextcp;
+	d->func( key, value, sp, which, true, d->udata );
+    }
+    if( sp->prevcpselected )
+    {
+	BasePoint *which = &sp->prevcp;
+	d->func( key, value, sp, which, false, d->udata );
+    }
+}
+static void FE_visitAllControlPoints( gpointer key,
+				      gpointer value,
+				      gpointer udata )
+{
+    visitSelectedControlPoints_CallbackData* d = (visitSelectedControlPoints_CallbackData*)udata;
+    SplinePoint* sp = (SplinePoint*)key;
+
+    d->count++;
+    {
+	BasePoint *which = &sp->nextcp;
+	d->func( key, value, sp, which, true, d->udata );
+    }
+    {
+	BasePoint *which = &sp->prevcp;
+	d->func( key, value, sp, which, false, d->udata );
+    }
+}
+static void FE_visitAdjacentToSelectedControlPoints( gpointer key,
+						     gpointer value,
+						     gpointer udata )
+{
+    visitSelectedControlPoints_CallbackData* d = (visitSelectedControlPoints_CallbackData*)udata;
+    SplinePoint* sp = (SplinePoint*)key;
+
+    if( sp->selected )
+	return;
+
+    d->count++;
+    if( sp->prev && sp->prev->from && sp->prev->from->selected )
+    {
+	d->func( key, value, sp, &sp->nextcp, true, d->udata );
+	d->func( key, value, sp, &sp->prevcp, true, d->udata );
+    }
+    if( sp->next && sp->next->to && sp->next->to->selected )
+    {
+	d->func( key, value, sp, &sp->nextcp, true, d->udata );
+	d->func( key, value, sp, &sp->prevcp, true, d->udata );
+    }
+}
+
+void visitSelectedControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata )
+{
+    visitSelectedControlPoints_CallbackData d;
+    d.func = f;
+    d.udata = udata;
+    d.count = 0;
+    g_hash_table_foreach( col, FE_visitSelectedControlPoints, &d );
+}
+
+void visitAllControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata )
+{
+    visitSelectedControlPoints_CallbackData d;
+    d.func = f;
+    d.udata = udata;
+    d.count = 0;
+    g_hash_table_foreach( col, FE_visitAllControlPoints, &d );
+}
+static void visitAdjacentToSelectedControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata )
+{
+    visitSelectedControlPoints_CallbackData d;
+    d.func = f;
+    d.udata = udata;
+    d.count = 0;
+    g_hash_table_foreach( col, FE_visitAdjacentToSelectedControlPoints, &d );
+}
+
+void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
+					  visitSelectedControlPointsVisitor f, void* udata )
+{
+//    printf("CVFindAndVisitSelectedControlPoints(top) cv->p.sp:%p\n", cv->p.sp );
+    GHashTable* col = getSelectedControlPoints( cv, &cv->p );
+    if(!col)
+	return;
+
+    SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
+    if( g_hash_table_size( col ) )
+    {
+	if( preserveState )
+	    CVPreserveState(&cv->b);
+	visitSelectedControlPoints( col, f, udata );
+    }
+    g_hash_table_destroy(col);
+}
+
+void CVVisitAllControlPoints( CharView *cv, bool preserveState,
+			      visitSelectedControlPointsVisitor f, void* udata )
+{
+    printf("CVVisitAllControlPoints(top) cv->p.spl:%p cv->p.sp:%p\n", cv->p.spl, cv->p.sp );
+    if( !cv->p.spl || !cv->p.sp )
+	return;
+
+    GHashTable* col = getAllControlPoints( cv, &cv->p );
+    SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
+    if( g_hash_table_size( col ) )
+    {
+	if( preserveState )
+	    CVPreserveState(&cv->b);
+	visitAllControlPoints( col, f, udata );
+    }
+    g_hash_table_destroy(col);
+}
+
+void CVVisitAdjacentToSelectedControlPoints( CharView *cv, bool preserveState,
+					     visitSelectedControlPointsVisitor f, void* udata )
+{
+//    printf("CVVisitAdjacentToSelectedControlPoints(top) cv->p.sp:%p\n", cv->p.sp );
+    if( !cv->p.spl || !cv->p.sp )
+	return;
+
+    GHashTable* col = getAllControlPoints( cv, &cv->p );
+    if( !col )
+	return;
+
+    SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
+    if( g_hash_table_size( col ) )
+    {
+	if( preserveState )
+	    CVPreserveState(&cv->b);
+	visitAdjacentToSelectedControlPoints( col, f, udata );
+    }
+    g_hash_table_destroy(col);
+}
+
+
+
 void CVChar(CharView *cv, GEvent *event ) {
     extern float arrowAmount, arrowAccelFactor;
     extern int navigation_mask;
 
-    if( !cv_auto_goto ) {
+    if( !cv_auto_goto )
+    {
 	if( event->u.chr.keysym == GK_Control_L
 	    || event->u.chr.keysym == GK_Control_R )
 	{
 	    HaveModifiers = 1;
 	}
-	
-	if( !HaveModifiers && event->u.chr.keysym=='`' ) {
+	bool isImmediateKeyTogglePreview = isImmediateKey( cv->gw, "TogglePreview", event );
+
+	if( !HaveModifiers && isImmediateKeyTogglePreview ) {
 	    PressingTilde = 1;
 	    CVPreviewModeSet( cv->gw, true );
 	    return;
 	}
     }
-	
+
 #if _ModKeysAutoRepeat
 	/* Under cygwin these keys auto repeat, they don't under normal X */
 	if ( cv->autorpt!=NULL ) {
@@ -6536,26 +7108,33 @@ return;
 		CVVScroll(cv,&sb);
 	    else
 		CVHScroll(cv,&sb);
-	} else {
+	}
+	else
+	{
 	    if ( event->u.chr.state & ksm_meta ) {
 		dx *= arrowAccelFactor; dy *= arrowAccelFactor;
 	    }
 	    if ( event->u.chr.state & (ksm_shift) )
 		dx -= dy*tan((cv->b.sc->parent->italicangle)*(3.1415926535897932/180) );
-	    if (( cv->p.sp!=NULL || cv->lastselpt!=NULL ) &&
-		    (cv->p.nextcp || cv->p.prevcp) ) {
-		SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
+
+	    if ((  cv->p.sp!=NULL || cv->lastselpt!=NULL ) &&
+		    (cv->p.nextcp || cv->p.prevcp) )
+	    {
+		// This code moves 1 or more BCP
+
 		SplinePoint *old = cv->p.sp;
-		BasePoint *which = cv->p.nextcp ? &sp->nextcp : &sp->prevcp;
-		BasePoint to;
-		to.x = which->x + dx*arrowAmount;
-		to.y = which->y + dy*arrowAmount;
-		cv->p.sp = sp;
-		CVPreserveState(&cv->b);
-		CVAdjustControl(cv,which,&to);
+		FE_adjustBCPByDeltaData d;
+		d.cv = cv;
+		d.dx = dx * arrowAmount;
+		d.dy = dy * arrowAmount;
+		CVFindAndVisitSelectedControlPoints( cv, true,
+						     FE_adjustBCPByDelta, &d );
 		cv->p.sp = old;
 		SCUpdateAll(cv->b.sc);
-	    } else if ( CVAnySel(cv,NULL,NULL,NULL,&anya) || cv->widthsel || cv->vwidthsel ) {
+
+	    }
+	    else if ( CVAnySel(cv,NULL,NULL,NULL,&anya) || cv->widthsel || cv->vwidthsel )
+	    {
 		CVPreserveState(&cv->b);
 		CVMoveSelection(cv,dx*arrowAmount,dy*arrowAmount, event->u.chr.state);
 		if ( cv->widthsel )
@@ -6563,6 +7142,7 @@ return;
 		_CV_CharChangedUpdate(cv,2);
 		CVInfoDraw(cv,cv->gw);
 	    }
+	    CVGridHandlePossibleFitChar( cv );
 	}
     } else if ( event->u.chr.keysym == GK_Page_Up ||
 	    event->u.chr.keysym == GK_KP_Page_Up ||
@@ -6903,32 +7483,14 @@ static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
 //    printf("CVUndo() undo:%p u->next:%p\n", undo, ( undo ? undo->next : 0 ) );
     if( undo )
     {
-	/* printf("undo:\n%s\n", UndoToString( cv->b.sc, undo ) ); */
-	/* { */
-	/*     int len = 0; */
-	/*     Undoes *p = undo; */
-	/*     for( ; p; p = p->next ) */
-	/* 	len++; */
-	/*     printf("u.len:%d\n", len ); */
-	/* } */
-	/* { */
-	/*     int len = 0; */
-	/*     Undoes *p = cv->b.layerheads[cv->b.drawmode]->redoes; */
-	/*     for( ; p; p = p->next ) */
-	/* 	len++; */
-	/*     printf("r.len:%d\n", len ); */
-	/* } */
-	
-	if( collabclient_inSession( &cv->b ) )
-	{
-	    printf("in-session!\n");
+	if ( collabclient_inSession( &cv->b ) )	{
 	    collabclient_performLocalUndo( &cv->b );
 	    cv->lastselpt = NULL;
 	    _CVCharChangedUpdate(&cv->b,1);
 	    return;
 	}
     }
-    
+
     CVDoUndo(&cv->b);
     cv->lastselpt = NULL;
 }
@@ -6937,10 +7499,8 @@ static void CVRedo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     Undoes *undo = cv->b.layerheads[cv->b.drawmode]->redoes;
-    if( undo )
-    {
-	if( collabclient_inSession( &cv->b ) )
-	{
+    if ( undo ) {
+	if ( collabclient_inSession(&cv->b) )	{
 	    printf("in-session (redo)!\n");
 	    collabclient_performLocalRedo( &cv->b );
 	    cv->lastselpt = NULL;
@@ -6948,8 +7508,7 @@ static void CVRedo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
 	    return;
 	}
     }
-    
-    
+
     CVDoRedo(&cv->b);
     cv->lastselpt = NULL;
 }
@@ -7058,6 +7617,7 @@ static void CVClear(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
     if ( !CVAnySel(cv,NULL,NULL,NULL,&anyanchor))
 return;
     CVDoClear(cv);
+    CVGridHandlePossibleFitChar( cv );
     CVCharChangedUpdate(&cv->b);
 }
 
@@ -7100,6 +7660,32 @@ return;
 static void CVMerge(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     _CVMerge(cv,false);
+}
+
+static void _CVMergeToLine(CharView *cv, int elide) {
+    int anyp = 0;
+
+    if ( !CVAnySel(cv,&anyp,NULL,NULL,NULL) || !anyp)
+	return;
+    CVPreserveState(&cv->b);
+    SplineCharMerge(cv->b.sc,&cv->b.layerheads[cv->b.drawmode]->splines,!elide);
+
+    // Select the other side of the new curve
+    GList_Glib* gl = CVGetSelectedPoints( cv );
+    if( g_list_first(gl) )
+	SPSelectPrevPoint( (SplinePoint*)g_list_first(gl)->data, 1 );
+    g_list_free( gl );
+
+    // And make the curve between the two active points a line
+    _CVMenuMakeLine( cv, 0, 0 );
+    SCClearSelPt(cv->b.sc);
+    CVCharChangedUpdate(&cv->b);
+}
+
+static void CVMergeToLine(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    _CVMergeToLine(cv,false);
+
 }
 
 #if 0
@@ -7353,7 +7939,7 @@ static char* getValueFromUser( CharView *cv, const char* windowTitle, const char
     DATA.cv = cv;
     DATA.ret = ret;
     ret[0] = '\0';
-    
+
     if ( DATA.gw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -7383,7 +7969,7 @@ static char* getValueFromUser( CharView *cv, const char* windowTitle, const char
 	harray1[0] = GCD_Glue;
 	harray1[1] = &gcd[0];
 	harray1[2] = 0;
-            
+
 	label[1].text = (unichar_t *) defaultValue;
 	label[1].text_is_1byte = true;
 	DATA.label = label[1];
@@ -7396,7 +7982,7 @@ static char* getValueFromUser( CharView *cv, const char* windowTitle, const char
 	gcd[1].creator = GTextFieldCreate;
 	harray2[0] = &gcd[1];
 	harray2[1] = 0;
-            
+
 	int idx = 2;
 	gcd[idx].gd.pos.x = 20-3;
 	gcd[idx].gd.pos.y = 17+37;
@@ -7413,7 +7999,7 @@ static char* getValueFromUser( CharView *cv, const char* windowTitle, const char
 	barray[0] = GCD_Glue;
 	barray[1] = &gcd[idx];
 	barray[2] = GCD_Glue;
-	
+
 	++idx;
 	gcd[idx].gd.pos.x = -20;
 	gcd[idx].gd.pos.y = 17+37+3;
@@ -7460,7 +8046,7 @@ static char* getValueFromUser( CharView *cv, const char* windowTitle, const char
 	boxes[0].gd.flags = gg_enabled|gg_visible;
 	boxes[0].gd.u.boxelements = varray[0];
 	boxes[0].creator = GHVGroupCreate;
-	
+
 	GGadgetsCreate(gw,boxes);
 	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
 	GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
@@ -7531,6 +8117,9 @@ static void cv_edlistcheck(CharView *cv, struct gmenuitem *mi) {
 	    mi->ti.disabled = cv->b.layerheads[cv->b.drawmode]->splines==NULL;
 	  break;
 	  case MID_Merge:
+	    mi->ti.disabled = !anypoints;
+	  break;
+	  case MID_MergeToLine:
 	    mi->ti.disabled = !anypoints;
 	  break;
 #if 0
@@ -7658,6 +8247,17 @@ static void _CVMenuSpiroPointType(CharView *cv, struct gmenuitem *mi) {
 	    SSRegenerateFromSpiros(spl);
     }
     CVCharChangedUpdate(&cv->b);
+}
+
+static void touchControlPointsVisitor ( void* key,
+				 void* value,
+				 SplinePoint* sp,
+				 BasePoint *which,
+				 bool isnext,
+				 void* udata )
+{
+    printf("touchControlPointsVisitor() which:%p\n", which );
+    SPTouchControl( sp, which, (int)udata );
 }
 
 static void CVMenuPointType(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
@@ -8007,12 +8607,21 @@ void CVTransFuncLayer(CharView *cv,Layer *ly,real transform[6], enum fvtrans_fla
     KernPair *kp;
     PST *pst;
     int l, cvlayer;
+    enum transformPointMask tpmask = 0;
 
     if ( cv->b.sc->inspiro && hasspiro() )
 	SplinePointListSpiroTransform(ly->splines,transform,!anysel);
     else
-	SplinePointListTransform(ly->splines,transform,!anysel?tpt_AllPoints:
-		interpCPsOnMotion?tpt_OnlySelectedInterpCPs:tpt_OnlySelected);
+    {
+	if( cv->active_tool==cvt_scale )
+	    tpmask |= tpmask_operateOnSelectedBCP;
+
+	SplinePointListTransformExtended(
+	    ly->splines, transform,
+	    !anysel?tpt_AllPoints: interpCPsOnMotion?tpt_OnlySelectedInterpCPs:tpt_OnlySelected,
+	    tpmask );
+    }
+
     if ( flags&fvt_round_to_int )
 	SplineSetsRound2Int(ly->splines,1.0,cv->b.sc->inspiro && hasspiro(),!anysel);
     if ( ly->images!=NULL ) {
@@ -8101,7 +8710,7 @@ static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
     {
 	CVDoUndo(&cv->b);
     }
-    
+
     if ( flags&fvt_revert )
 	return;
 
@@ -9785,6 +10394,10 @@ static void gflistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    mi->ti.disabled = !hasFreeType() || cv->dv!=NULL;
 	    mi->ti.checked = cv->show_ft_results;
 	  break;
+	  case MID_ShowGridFitLiveUpdate:
+	    mi->ti.disabled = !hasFreeType() || cv->dv!=NULL;
+	    mi->ti.checked = cv->show_ft_results_live_update;
+	  break;
 	  case MID_Bigger:
 	    mi->ti.disabled = !cv->show_ft_results;
 	  break;
@@ -9828,6 +10441,9 @@ static void swlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  case MID_ShowCPInfo:
 	    mi->ti.checked = cv->showcpinfo;
 	  break;
+          case MID_DraggingComparisonOutline:
+	    mi->ti.checked = prefs_create_dragging_comparison_outline;
+	    break;
 	  case MID_ShowSideBearings:
 	    mi->ti.checked = cv->showsidebearings;
 	  break;
@@ -9841,6 +10457,9 @@ static void swlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  case MID_HidePoints:
 	    mi->ti.checked = cv->showpoints;
 	  break;
+	case MID_HideControlPoints:
+	    mi->ti.checked = cv->alwaysshowcontrolpoints;
+	    break;
 	  case MID_HideRulers:
 	    mi->ti.checked = cv->showrulers;
 	  break;
@@ -10045,9 +10664,9 @@ return;
 }
 
 static GMenuItem2 wnmenu[] = {
-    { { (unichar_t *) N_("New O_utline Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("New Outline Window|Ctl+H"), NULL, NULL, /* No function, never avail */NULL, 0 },
-    { { (unichar_t *) N_("New _Bitmap Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("New Bitmap Window|Ctl+J"), NULL, NULL, CVMenuOpenBitmap, MID_OpenBitmap },
-    { { (unichar_t *) N_("New _Metrics Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("New Metrics Window|Ctl+K"), NULL, NULL, CVMenuOpenMetrics, 0 },
+    { { (unichar_t *) N_("New O_utline Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("New Outline Window|No Shortcut"), NULL, NULL, /* No function, never avail */NULL, 0 },
+    { { (unichar_t *) N_("New _Bitmap Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("New Bitmap Window|No Shortcut"), NULL, NULL, CVMenuOpenBitmap, MID_OpenBitmap },
+    { { (unichar_t *) N_("New _Metrics Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("New Metrics Window|No Shortcut"), NULL, NULL, CVMenuOpenMetrics, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Warnings"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Warnings|No Shortcut"), NULL, NULL, _MenuWarnings, MID_Warnings },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
@@ -10084,51 +10703,51 @@ static GMenuItem2 dummyitem[] = {
     GMENUITEM2_EMPTY
 };
 static GMenuItem2 fllist[] = {
-    { { (unichar_t *) N_("Font|_New"), (GImage *) "filenew.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("New|Ctl+N"), NULL, NULL, MenuNew, MID_New },
-    { { (unichar_t *) N_("_Open"), (GImage *) "fileopen.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Open|Ctl+O"), NULL, NULL, MenuOpen, MID_Open },
+    { { (unichar_t *) N_("Font|_New"), (GImage *) "filenew.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("New|No Shortcut"), NULL, NULL, MenuNew, MID_New },
+    { { (unichar_t *) N_("_Open"), (GImage *) "fileopen.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Open|No Shortcut"), NULL, NULL, MenuOpen, MID_Open },
     { { (unichar_t *) N_("Recen_t"), (GImage *) "filerecent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, NULL, dummyitem, MenuRecentBuild, NULL, MID_Recent },
-    { { (unichar_t *) N_("_Close"), (GImage *) "fileclose.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Close|Ctl+Shft+Q"), NULL, NULL, CVMenuClose, MID_Close },
+    { { (unichar_t *) N_("_Close"), (GImage *) "fileclose.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Close|No Shortcut"), NULL, NULL, CVMenuClose, MID_Close },
     { { (unichar_t *) N_("C_lose Tab"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Close Tab|No Shortcut"), NULL, NULL, CVMenuCloseTab, MID_CloseTab },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Save"), (GImage *) "filesave.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Save|Ctl+S"), NULL, NULL, CVMenuSave, 0 },
-    { { (unichar_t *) N_("S_ave as..."), (GImage *) "filesaveas.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'a' }, H_("Save as...|Ctl+Shft+S"), NULL, NULL, CVMenuSaveAs, 0 },
-    { { (unichar_t *) N_("_Generate Fonts..."), (GImage *) "filegenerate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'G' }, H_("Generate Fonts...|Ctl+Shft+G"), NULL, NULL, CVMenuGenerate, 0 },
-    { { (unichar_t *) N_("Generate Mac _Family..."), (GImage *) "filegeneratefamily.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Generate Mac Family...|Alt+Ctl+G"), NULL, NULL, CVMenuGenerateFamily, 0 },
+    { { (unichar_t *) N_("_Save"), (GImage *) "filesave.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Save|No Shortcut"), NULL, NULL, CVMenuSave, 0 },
+    { { (unichar_t *) N_("S_ave as..."), (GImage *) "filesaveas.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'a' }, H_("Save as...|No Shortcut"), NULL, NULL, CVMenuSaveAs, 0 },
+    { { (unichar_t *) N_("_Generate Fonts..."), (GImage *) "filegenerate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'G' }, H_("Generate Fonts...|No Shortcut"), NULL, NULL, CVMenuGenerate, 0 },
+    { { (unichar_t *) N_("Generate Mac _Family..."), (GImage *) "filegeneratefamily.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Generate Mac Family...|No Shortcut"), NULL, NULL, CVMenuGenerateFamily, 0 },
     { { (unichar_t *) N_("Generate TTC..."), (GImage *) "filegeneratefamily.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Generate TTC...|No Shortcut"), NULL, NULL, CVMenuGenerateTTC, MID_GenerateTTC },
     { { (unichar_t *) N_("E_xport..."), (GImage *) "fileexport.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, H_("Export...|No Shortcut"), NULL, NULL, CVMenuExport, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Import..."), (GImage *) "fileimport.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Import...|Ctl+Shft+I"), NULL, NULL, CVMenuImport, 0 },
-    { { (unichar_t *) N_("_Revert File"), (GImage *) "filerevert.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert File|Ctl+Shft+R"), NULL, NULL, CVMenuRevert, MID_Revert },
-    { { (unichar_t *) N_("Revert Gl_yph"), (GImage *) "filerevertglyph.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert Glyph|Alt+Ctl+R"), NULL, NULL, CVMenuRevertGlyph, MID_RevertGlyph },
+    { { (unichar_t *) N_("_Import..."), (GImage *) "fileimport.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Import...|No Shortcut"), NULL, NULL, CVMenuImport, 0 },
+    { { (unichar_t *) N_("_Revert File"), (GImage *) "filerevert.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert File|No Shortcut"), NULL, NULL, CVMenuRevert, MID_Revert },
+    { { (unichar_t *) N_("Revert Gl_yph"), (GImage *) "filerevertglyph.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert Glyph|No Shortcut"), NULL, NULL, CVMenuRevertGlyph, MID_RevertGlyph },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Print..."), (GImage *) "fileprint.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Print...|Ctl+P"), NULL, NULL, CVMenuPrint, 0 },
+    { { (unichar_t *) N_("_Print..."), (GImage *) "fileprint.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Print...|No Shortcut"), NULL, NULL, CVMenuPrint, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
 #if !defined(_NO_PYTHON)
-    { { (unichar_t *) N_("E_xecute Script..."), (GImage *) "python.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Execute Script...|Ctl+."), NULL, NULL, CVMenuExecute, 0 },
+    { { (unichar_t *) N_("E_xecute Script..."), (GImage *) "python.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Execute Script...|No Shortcut"), NULL, NULL, CVMenuExecute, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
 #endif
     { { (unichar_t *) N_("Pr_eferences..."), (GImage *) "fileprefs.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Preferences...|No Shortcut"), NULL, NULL, MenuPrefs, 0 },
     { { (unichar_t *) N_("_X Resource Editor..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("X Resource Editor...|No Shortcut"), NULL, NULL, MenuXRes, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Quit"), (GImage *) "filequit.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'Q' }, H_("Quit|Ctl+Q"), NULL, NULL, MenuExit, MID_Quit },
+    { { (unichar_t *) N_("_Quit"), (GImage *) "filequit.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'Q' }, H_("Quit|No Shortcut"), NULL, NULL, MenuExit, MID_Quit },
     GMENUITEM2_EMPTY
 };
 
 static GMenuItem2 sllist[] = {
-    { { (unichar_t *) N_("Select _All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Select All|Ctl+A"), NULL, NULL, CVSelectAll, MID_SelAll },
-    { { (unichar_t *) N_("_Invert Selection"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Invert Selection|Ctl+Escape"), NULL, NULL, CVSelectInvert, MID_SelInvert },
+    { { (unichar_t *) N_("Select _All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Select All|No Shortcut"), NULL, NULL, CVSelectAll, MID_SelAll },
+    { { (unichar_t *) N_("_Invert Selection"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Invert Selection|No Shortcut"), NULL, NULL, CVSelectInvert, MID_SelInvert },
     { { (unichar_t *) N_("_Deselect All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Deselect All|Escape"), NULL, NULL, CVSelectNone, MID_SelNone },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_First Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("First Point|Ctl+."), NULL, NULL, CVMenuNextPrevPt, MID_FirstPt },
-    { { (unichar_t *) N_("First P_oint, Next Contour"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("First Point, Next Contour|Alt+Ctl+."), NULL, NULL, CVMenuNextPrevPt, MID_FirstPtNextCont },
-    { { (unichar_t *) N_("_Next Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("Next Point|Ctl+Shft+}"), NULL, NULL, CVMenuNextPrevPt, MID_NextPt },
-    { { (unichar_t *) N_("_Prev Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Prev Point|Ctl+Shft+{"), NULL, NULL, CVMenuNextPrevPt, MID_PrevPt },
-    { { (unichar_t *) N_("Ne_xt Control Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Next Control Point|Ctl+;"), NULL, NULL, CVMenuNextPrevCPt, MID_NextCP },
-    { { (unichar_t *) N_("P_rev Control Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Prev Control Point|Ctl+Shft+:"), NULL, NULL, CVMenuNextPrevCPt, MID_PrevCP },
-    { { (unichar_t *) N_("Points on Selected _Contours"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Points on Selected Contours|Alt+Ctl+,"), NULL, NULL, CVMenuSelectContours, MID_Contours },
-    { { (unichar_t *) N_("Point A_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Point At|Ctl+,"), NULL, NULL, CVMenuSelectPointAt, MID_SelPointAt },
+    { { (unichar_t *) N_("_First Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("First Point|No Shortcut"), NULL, NULL, CVMenuNextPrevPt, MID_FirstPt },
+    { { (unichar_t *) N_("First P_oint, Next Contour"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("First Point, Next Contour|No Shortcut"), NULL, NULL, CVMenuNextPrevPt, MID_FirstPtNextCont },
+    { { (unichar_t *) N_("_Next Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("Next Point|No Shortcut"), NULL, NULL, CVMenuNextPrevPt, MID_NextPt },
+    { { (unichar_t *) N_("_Prev Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Prev Point|No Shortcut"), NULL, NULL, CVMenuNextPrevPt, MID_PrevPt },
+    { { (unichar_t *) N_("Ne_xt Control Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Next Control Point|No Shortcut"), NULL, NULL, CVMenuNextPrevCPt, MID_NextCP },
+    { { (unichar_t *) N_("P_rev Control Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Prev Control Point|No Shortcut"), NULL, NULL, CVMenuNextPrevCPt, MID_PrevCP },
+    { { (unichar_t *) N_("Points on Selected _Contours"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Points on Selected Contours|No Shortcut"), NULL, NULL, CVMenuSelectContours, MID_Contours },
+    { { (unichar_t *) N_("Point A_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Point At|No Shortcut"), NULL, NULL, CVMenuSelectPointAt, MID_SelPointAt },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Select All _Points & Refs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Select All Points & Refs|Alt+Ctl+A"), NULL, NULL, CVSelectAll, MID_SelectAllPoints },
+    { { (unichar_t *) N_("Select All _Points & Refs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Select All Points & Refs|No Shortcut"), NULL, NULL, CVSelectAll, MID_SelectAllPoints },
     { { (unichar_t *) N_("Select Open Contours"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Select Open Contours|No Shortcut"), NULL, NULL, CVSelectOpenContours, MID_SelectOpenContours },
     { { (unichar_t *) N_("Select Anc_hors"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'c' }, H_("Select Anchors|No Shortcut"), NULL, NULL, CVSelectAll, MID_SelectAnchors },
     { { (unichar_t *) N_("_Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Width|No Shortcut"), NULL, NULL, CVSelectWidth, MID_SelectWidth },
@@ -10139,48 +10758,49 @@ static GMenuItem2 sllist[] = {
 };
 
 static GMenuItem2 edlist[] = {
-    { { (unichar_t *) N_("_Undo"), (GImage *) "editundo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Undo|Ctl+Z"), NULL, NULL, CVUndo, MID_Undo },
-    { { (unichar_t *) N_("_Redo"), (GImage *) "editredo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Redo|Ctl+Y"), NULL, NULL, CVRedo, MID_Redo },
+    { { (unichar_t *) N_("_Undo"), (GImage *) "editundo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Undo|No Shortcut"), NULL, NULL, CVUndo, MID_Undo },
+    { { (unichar_t *) N_("_Redo"), (GImage *) "editredo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Redo|No Shortcut"), NULL, NULL, CVRedo, MID_Redo },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Cu_t"), (GImage *) "editcut.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, H_("Cut|Ctl+X"), NULL, NULL, CVCut, MID_Cut },
-    { { (unichar_t *) N_("_Copy"), (GImage *) "editcopy.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Copy|Ctl+C"), NULL, NULL, CVCopy, MID_Copy },
-    { { (unichar_t *) N_("C_opy Reference"), (GImage *) "editcopyref.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Copy Reference|Ctl+G"), NULL, NULL, CVCopyRef, MID_CopyRef },
-    { { (unichar_t *) N_("Copy Loo_kup Data"), (GImage *) "editcopylookupdata.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Copy Lookup Data|Alt+Ctl+C"), NULL, NULL, CVCopyLookupData, MID_CopyLookupData },
-    { { (unichar_t *) N_("Copy _Width"), (GImage *) "editcopywidth.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Copy Width|Ctl+W"), NULL, NULL, CVCopyWidth, MID_CopyWidth },
+    { { (unichar_t *) N_("Cu_t"), (GImage *) "editcut.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, H_("Cut|No Shortcut"), NULL, NULL, CVCut, MID_Cut },
+    { { (unichar_t *) N_("_Copy"), (GImage *) "editcopy.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Copy|No Shortcut"), NULL, NULL, CVCopy, MID_Copy },
+    { { (unichar_t *) N_("C_opy Reference"), (GImage *) "editcopyref.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Copy Reference|No Shortcut"), NULL, NULL, CVCopyRef, MID_CopyRef },
+    { { (unichar_t *) N_("Copy Loo_kup Data"), (GImage *) "editcopylookupdata.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Copy Lookup Data|No Shortcut"), NULL, NULL, CVCopyLookupData, MID_CopyLookupData },
+    { { (unichar_t *) N_("Copy _Width"), (GImage *) "editcopywidth.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Copy Width|No Shortcut"), NULL, NULL, CVCopyWidth, MID_CopyWidth },
     { { (unichar_t *) N_("Co_py LBearing"), (GImage *) "editcopylbearing.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'p' }, H_("Copy LBearing|No Shortcut"), NULL, NULL, CVCopyWidth, MID_CopyLBearing },
     { { (unichar_t *) N_("Copy RBearin_g"), (GImage *) "editcopyrbearing.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'g' }, H_("Copy RBearing|No Shortcut"), NULL, NULL, CVCopyWidth, MID_CopyRBearing },
-    { { (unichar_t *) N_("_Paste"), (GImage *) "editpaste.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Paste|Ctl+V"), NULL, NULL, CVPaste, MID_Paste },
-    { { (unichar_t *) N_("C_lear"), (GImage *) "editclear.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Clear|Delete"), NULL, NULL, CVClear, MID_Clear },
+    { { (unichar_t *) N_("_Paste"), (GImage *) "editpaste.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Paste|No Shortcut"), NULL, NULL, CVPaste, MID_Paste },
+    { { (unichar_t *) N_("C_hop"), (GImage *) "editclear.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'h' }, H_("Chop|Delete"), NULL, NULL, CVClear, MID_Clear },
     { { (unichar_t *) N_("Clear _Background"), (GImage *) "editclearback.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Clear Background|No Shortcut"), NULL, NULL, CVClearBackground, 0 },
-    { { (unichar_t *) N_("points|_Merge"), (GImage *) "editmerge.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Merge|Ctl+M"), NULL, NULL, CVMerge, MID_Merge },
-    /*{ { (unichar_t *) N_("_Elide"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Elide|Alt+Ctl+M"), NULL, NULL, CVElide, MID_Elide },*/
-    { { (unichar_t *) N_("_Join"), (GImage *) "editjoin.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'J' }, H_("Join|Ctl+Shft+J"), NULL, NULL, CVJoin, MID_Join },
-    { { (unichar_t *) N_("Copy _Fg To Bg"), (GImage *) "editcopyfg2bg.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Copy Fg To Bg|Ctl+Shft+C"), NULL, NULL, CVCopyFgBg, MID_CopyFgToBg },
+    { { (unichar_t *) N_("points|_Merge"), (GImage *) "editmerge.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Merge|No Shortcut"), NULL, NULL, CVMerge, MID_Merge },
+    { { (unichar_t *) N_("points|Merge to Line"), (GImage *) "editmergetoline.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Merge to Line|No Shortcut"), NULL, NULL, CVMergeToLine, MID_MergeToLine },
+    /*{ { (unichar_t *) N_("_Elide"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Elide|No Shortcut"), NULL, NULL, CVElide, MID_Elide },*/
+    { { (unichar_t *) N_("_Join"), (GImage *) "editjoin.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'J' }, H_("Join|No Shortcut"), NULL, NULL, CVJoin, MID_Join },
+    { { (unichar_t *) N_("Copy _Fg To Bg"), (GImage *) "editcopyfg2bg.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Copy Fg To Bg|No Shortcut"), NULL, NULL, CVCopyFgBg, MID_CopyFgToBg },
     { { (unichar_t *) N_("Cop_y Layer To Layer..."), (GImage *) "editcopylayer2layer.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Copy Layer To Layer...|No Shortcut"), NULL, NULL, CVMenuCopyL2L, MID_CopyBgToFg },
     { { (unichar_t *) N_("Copy Gri_d Fit"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Copy Grid Fit|No Shortcut"), NULL, NULL, CVMenuCopyGridFit, MID_CopyGridFit },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Select"), (GImage *) "editselect.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, NULL, sllist, sllistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_Select"), (GImage *) "editselect.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Select|No Shortcut"), sllist, sllistcheck, NULL, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("U_nlink Reference"), (GImage *) "editunlink.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Unlink Reference|Ctl+U"), NULL, NULL, CVUnlinkRef, MID_UnlinkRef },
+    { { (unichar_t *) N_("U_nlink Reference"), (GImage *) "editunlink.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Unlink Reference|No Shortcut"), NULL, NULL, CVUnlinkRef, MID_UnlinkRef },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Remo_ve Undoes..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Remove Undoes|No Shortcut"), NULL, NULL, CVRemoveUndoes, MID_RemoveUndoes },
     GMENUITEM2_EMPTY
 };
 
 static GMenuItem2 ptlist[] = {
-    { { (unichar_t *) N_("_Curve"), (GImage *) "pointscurve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Curve|Ctl+2"), NULL, NULL, CVMenuPointType, MID_Curve },
+    { { (unichar_t *) N_("_Curve"), (GImage *) "pointscurve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Curve|No Shortcut"), NULL, NULL, CVMenuPointType, MID_Curve },
     { { (unichar_t *) N_("_HVCurve"), (GImage *) "pointshvcurve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("HVCurve|No Shortcut"), NULL, NULL, CVMenuPointType, MID_HVCurve },
-    { { (unichar_t *) N_("C_orner"), (GImage *) "pointscorner.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Corner|Ctl+3"), NULL, NULL, CVMenuPointType, MID_Corner },
-    { { (unichar_t *) N_("_Tangent"), (GImage *) "pointstangent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Tangent|Ctl+4"), NULL, NULL, CVMenuPointType, MID_Tangent },
+    { { (unichar_t *) N_("C_orner"), (GImage *) "pointscorner.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Corner|No Shortcut"), NULL, NULL, CVMenuPointType, MID_Corner },
+    { { (unichar_t *) N_("_Tangent"), (GImage *) "pointstangent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Tangent|No Shortcut"), NULL, NULL, CVMenuPointType, MID_Tangent },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
 /* GT: Make this (selected) point the first point in the glyph */
-    { { (unichar_t *) N_("_Make First"),  (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make First|Ctl+1"), NULL, NULL, CVMenuMakeFirst, MID_MakeFirst },
+    { { (unichar_t *) N_("_Make First"),  (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make First|No Shortcut"), NULL, NULL, CVMenuMakeFirst, MID_MakeFirst },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Can Be _Interpolated"),  (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Can Be Interpolated|No Shortcut"), NULL, NULL, CVMenuImplicit, MID_ImplicitPt },
     { { (unichar_t *) N_("Can't _Be Interpolated"),  (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Can't Be Interpolated|No Shortcut"), NULL, NULL, CVMenuImplicit, MID_NoImplicitPt },
     { { (unichar_t *) N_("Center Bet_ween Control Points"),  (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Center Between Control Points|No Shortcut"), NULL, NULL, CVMenuCenterCP, MID_CenterCP },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Add Anchor"), (GImage *) "pointsaddanchor.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Add Anchor|Ctl+0"), NULL, NULL, CVMenuAddAnchor, MID_AddAnchor },
+    { { (unichar_t *) N_("_Add Anchor"), (GImage *) "pointsaddanchor.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Add Anchor|No Shortcut"), NULL, NULL, CVMenuAddAnchor, MID_AddAnchor },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Acceptable _Extrema"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Acceptable Extrema|No Shortcut"), NULL, NULL, CVMenuAcceptableExtrema, MID_AcceptableExtrema },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
@@ -10190,21 +10810,21 @@ static GMenuItem2 ptlist[] = {
     { { (unichar_t *) N_("_Name Contour"),  (GImage *) "pointsnamecontour.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Name Contour|No Shortcut"), NULL, NULL, CVMenuNameContour, MID_NameContour },
     { { (unichar_t *) N_("Make Clip _Path"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make Clip Path|No Shortcut"), NULL, NULL, CVMenuClipPath, MID_ClipPath },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Tool_s"),  (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, NULL, cvtoollist, cvtoollist_check, NULL, MID_Tools },
+    { { (unichar_t *) N_("Tool_s"),  (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Tools|No Shortcut"), cvtoollist, cvtoollist_check, NULL, MID_Tools },
     GMENUITEM2_EMPTY
 };
 
 static GMenuItem2 spiroptlist[] = {
-    { { (unichar_t *) N_("G4 _Curve"), (GImage *) "pointscurve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("G4 Curve|Ctl+2"), NULL, NULL, CVMenuPointType, MID_SpiroG4 },
+    { { (unichar_t *) N_("G4 _Curve"), (GImage *) "pointscurve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("G4 Curve|No Shortcut"), NULL, NULL, CVMenuPointType, MID_SpiroG4 },
     { { (unichar_t *) N_("_G2 Curve"), (GImage *) "pointsG2curve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("G2 Curve|No Shortcut"), NULL, NULL, CVMenuPointType, MID_SpiroG2 },
-    { { (unichar_t *) N_("C_orner"), (GImage *) "pointscorner.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Corner|Ctl+3"), NULL, NULL, CVMenuPointType, MID_SpiroCorner },
-    { { (unichar_t *) N_("_Left Constraint"), (GImage *) "pointsspiroprev.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Prev Constraint|Ctl+4"), NULL, NULL, CVMenuPointType, MID_SpiroLeft },
-    { { (unichar_t *) N_("_Right Constraint"), (GImage *) "pointsspironext.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Next Constraint|Ctl+5"), NULL, NULL, CVMenuPointType, MID_SpiroRight },
+    { { (unichar_t *) N_("C_orner"), (GImage *) "pointscorner.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Corner|No Shortcut"), NULL, NULL, CVMenuPointType, MID_SpiroCorner },
+    { { (unichar_t *) N_("_Left Constraint"), (GImage *) "pointsspiroprev.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Prev Constraint|No Shortcut"), NULL, NULL, CVMenuPointType, MID_SpiroLeft },
+    { { (unichar_t *) N_("_Right Constraint"), (GImage *) "pointsspironext.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Next Constraint|No Shortcut"), NULL, NULL, CVMenuPointType, MID_SpiroRight },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
 /* GT: Make this (selected) point the first point in the glyph */
-    { { (unichar_t *) N_("_Make First"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make First|Ctl+1"), NULL, NULL, CVMenuSpiroMakeFirst, MID_SpiroMakeFirst },
+    { { (unichar_t *) N_("_Make First"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make First|No Shortcut"), NULL, NULL, CVMenuSpiroMakeFirst, MID_SpiroMakeFirst },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Add Anchor"), (GImage *) "pointsaddanchor.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Add Anchor|Ctl+0"), NULL, NULL, CVMenuAddAnchor, MID_AddAnchor },
+    { { (unichar_t *) N_("_Add Anchor"), (GImage *) "pointsaddanchor.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Add Anchor|No Shortcut"), NULL, NULL, CVMenuAddAnchor, MID_AddAnchor },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Name Contour"), (GImage *) "pointsnamecontour.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Name Contour|No Shortcut"), NULL, NULL, CVMenuNameContour, MID_NameContour },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
@@ -10214,8 +10834,8 @@ static GMenuItem2 spiroptlist[] = {
 
 static GMenuItem2 allist[] = {
 /* GT: Align these points to their average position */
-    { { (unichar_t *) N_("_Average Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Average Points|Ctl+Shft+@"), NULL, NULL, CVMenuConstrain, MID_Average },
-    { { (unichar_t *) N_("_Space Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Space Points|Ctl+Shft+#"), NULL, NULL, CVMenuConstrain, MID_SpacePts },
+    { { (unichar_t *) N_("_Average Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Average Points|No Shortcut"), NULL, NULL, CVMenuConstrain, MID_Average },
+    { { (unichar_t *) N_("_Space Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Space Points|No Shortcut"), NULL, NULL, CVMenuConstrain, MID_SpacePts },
     { { (unichar_t *) N_("Space _Regions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Space Regions...|No Shortcut"), NULL, NULL, CVMenuConstrain, MID_SpaceRegion },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Make _Parallel..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Make Parallel...|No Shortcut"), NULL, NULL, CVMenuMakeParallel, MID_MakeParallel },
@@ -10223,8 +10843,8 @@ static GMenuItem2 allist[] = {
 };
 
 static GMenuItem2 smlist[] = {
-    { { (unichar_t *) N_("_Simplify"), (GImage *) "elementsimplify.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Simplify|Ctl+Shft+M"), NULL, NULL, CVMenuSimplify, MID_Simplify },
-    { { (unichar_t *) N_("Simplify More..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Simplify More...|Alt+Ctl+Shft+M"), NULL, NULL, CVMenuSimplifyMore, MID_SimplifyMore },
+    { { (unichar_t *) N_("_Simplify"), (GImage *) "elementsimplify.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Simplify|No Shortcut"), NULL, NULL, CVMenuSimplify, MID_Simplify },
+    { { (unichar_t *) N_("Simplify More..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Simplify More...|No Shortcut"), NULL, NULL, CVMenuSimplifyMore, MID_SimplifyMore },
     { { (unichar_t *) N_("Clea_nup Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'n' }, H_("Cleanup Glyph|No Shortcut"), NULL, NULL, CVMenuCleanupGlyph, MID_CleanupGlyph },
     { { (unichar_t *) N_("Canonical Start _Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'n' }, H_("Canonical Start Point|No Shortcut"), NULL, NULL, CVMenuCanonicalStart, MID_CanonicalStart },
     { { (unichar_t *) N_("Canonical _Contours"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'n' }, H_("Canonical Contours|No Shortcut"), NULL, NULL, CVMenuCanonicalContours, MID_CanonicalContours },
@@ -10297,7 +10917,7 @@ static void orlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 }
 
 static GMenuItem2 rmlist[] = {
-    { { (unichar_t *) N_("_Remove Overlap"), (GImage *) "overlaprm.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Remove Overlap|Ctl+Shft+O"), NULL, NULL, CVMenuOverlap, MID_RmOverlap },
+    { { (unichar_t *) N_("_Remove Overlap"), (GImage *) "overlaprm.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Remove Overlap|No Shortcut"), NULL, NULL, CVMenuOverlap, MID_RmOverlap },
     { { (unichar_t *) N_("_Intersect"), (GImage *) "overlapintersection.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Intersect|No Shortcut"), NULL, NULL, CVMenuOverlap, MID_Intersection },
     { { (unichar_t *) N_("_Exclude"), (GImage *) "overlapexclude.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'E' }, H_("Exclude|No Shortcut"), NULL, NULL, CVMenuOverlap, MID_Exclude },
     { { (unichar_t *) N_("_Find Intersections"), (GImage *) "overlapfindinter.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Find Intersections|No Shortcut"), NULL, NULL, CVMenuOverlap, MID_FindInter },
@@ -10305,7 +10925,7 @@ static GMenuItem2 rmlist[] = {
 };
 
 static GMenuItem2 eflist[] = {
-    { { (unichar_t *) N_("Change _Weight..."), (GImage *) "styleschangeweight.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Change Weight...|Ctl+Shft+!"), NULL, NULL, CVMenuEmbolden, MID_Embolden },
+    { { (unichar_t *) N_("Change _Weight..."), (GImage *) "styleschangeweight.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Change Weight...|No Shortcut"), NULL, NULL, CVMenuEmbolden, MID_Embolden },
     { { (unichar_t *) N_("_Italic..."), (GImage *) "stylesitalic.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Italic...|No Shortcut"), NULL, NULL, CVMenuItalic, MID_Italic },
     { { (unichar_t *) N_("Obli_que..."), (GImage *) "stylesoblique.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Oblique...|No Shortcut"), NULL, NULL, CVMenuOblique, 0 },
     { { (unichar_t *) N_("_Condense/Extend..."), (GImage *) "stylesextendcondense.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Condense...|No Shortcut"), NULL, NULL, CVMenuCondense, MID_Condense },
@@ -10320,80 +10940,80 @@ static GMenuItem2 eflist[] = {
 };
 
 static GMenuItem2 balist[] = {
-    { { (unichar_t *) N_("_Build Accented Glyph"), (GImage *) "elementbuildaccent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("Build Accented Glyph|Ctl+Shft+A"), NULL, NULL, CVMenuBuildAccent, MID_BuildAccent },
+    { { (unichar_t *) N_("_Build Accented Glyph"), (GImage *) "elementbuildaccent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("Build Accented Glyph|No Shortcut"), NULL, NULL, CVMenuBuildAccent, MID_BuildAccent },
     { { (unichar_t *) N_("Build _Composite Glyph"), (GImage *) "elementbuildcomposite.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Build Composite Glyph|No Shortcut"), NULL, NULL, CVMenuBuildComposite, MID_BuildComposite },
     GMENUITEM2_EMPTY
 };
 
 static GMenuItem2 delist[] = {
-    { { (unichar_t *) N_("_References..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("References...|Alt+Ctl+I"), NULL, NULL, CVMenuShowDependentRefs, MID_ShowDependentRefs },
+    { { (unichar_t *) N_("_References..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("References...|No Shortcut"), NULL, NULL, CVMenuShowDependentRefs, MID_ShowDependentRefs },
     { { (unichar_t *) N_("_Substitutions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Substitutions...|No Shortcut"), NULL, NULL, CVMenuShowDependentSubs, MID_ShowDependentSubs },
     GMENUITEM2_EMPTY
 };
 
 static GMenuItem2 trlist[] = {
-    { { (unichar_t *) N_("_Transform..."), (GImage *) "elementtransform.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Transform...|Ctl+\\"), NULL, NULL, CVMenuTransform, 0 },
-    { { (unichar_t *) N_("_Point of View Projection..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Point of View Projection...|Ctl+Shft+<"), NULL, NULL, CVMenuPOV, 0 },
-    { { (unichar_t *) N_("_Non Linear Transform..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Non Linear Transform...|Ctl+Shft+|"), NULL, NULL, CVMenuNLTransform, 0 },
+    { { (unichar_t *) N_("_Transform..."), (GImage *) "elementtransform.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Transform...|No Shortcut"), NULL, NULL, CVMenuTransform, 0 },
+    { { (unichar_t *) N_("_Point of View Projection..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Point of View Projection...|No Shortcut"), NULL, NULL, CVMenuPOV, 0 },
+    { { (unichar_t *) N_("_Non Linear Transform..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Non Linear Transform...|No Shortcut"), NULL, NULL, CVMenuNLTransform, 0 },
     GMENUITEM2_EMPTY
 };
 
 static GMenuItem2 rndlist[] = {
-    { { (unichar_t *) N_("To _Int"), (GImage *) "elementround.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("To Int|Ctl+Shft+_"), NULL, NULL, CVMenuRound2Int, MID_Round },
+    { { (unichar_t *) N_("To _Int"), (GImage *) "elementround.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("To Int|No Shortcut"), NULL, NULL, CVMenuRound2Int, MID_Round },
     { { (unichar_t *) N_("To _Hundredths"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("To Hundredths|No Shortcut"), NULL, NULL, CVMenuRound2Hundredths, 0 },
     { { (unichar_t *) N_("_Cluster"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Cluster|No Shortcut"), NULL, NULL, CVMenuCluster, MID_RoundToCluster },
     GMENUITEM2_EMPTY
 };
 
 static GMenuItem2 ellist[] = {
-    { { (unichar_t *) N_("_Font Info..."), (GImage *) "elementfontinfo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Font Info...|Ctl+Shft+F"), NULL, NULL, CVMenuFontInfo, MID_FontInfo },
-    { { (unichar_t *) N_("_Glyph Info..."), (GImage *) "elementglyphinfo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Glyph Info...|Alt+Ctl+Shft+I"), NULL, NULL, CVMenuCharInfo, MID_CharInfo },
-    { { (unichar_t *) N_("Get _Info..."), (GImage *) "elementgetinfo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Get Info...|Ctl+I"), NULL, NULL, CVMenuGetInfo, MID_GetInfo },
-    { { (unichar_t *) N_("S_how Dependent"), (GImage *) "elementshowdep.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'D' }, NULL, delist, delistcheck, NULL, MID_ShowDependentRefs },
-    { { (unichar_t *) N_("Find Proble_ms..."), (GImage *) "elementfindprobs.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Find Problems...|Ctl+E"), NULL, NULL, CVMenuFindProblems, MID_FindProblems },
+    { { (unichar_t *) N_("_Font Info..."), (GImage *) "elementfontinfo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Font Info...|No Shortcut"), NULL, NULL, CVMenuFontInfo, MID_FontInfo },
+    { { (unichar_t *) N_("_Glyph Info..."), (GImage *) "elementglyphinfo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Glyph Info...|No Shortcut"), NULL, NULL, CVMenuCharInfo, MID_CharInfo },
+    { { (unichar_t *) N_("Get _Info..."), (GImage *) "elementgetinfo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Get Info...|No Shortcut"), NULL, NULL, CVMenuGetInfo, MID_GetInfo },
+    { { (unichar_t *) N_("S_how Dependent"), (GImage *) "elementshowdep.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Show Dependent|No Shortcut"), delist, delistcheck, NULL, MID_ShowDependentRefs },
+    { { (unichar_t *) N_("Find Proble_ms..."), (GImage *) "elementfindprobs.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Find Problems...|No Shortcut"), NULL, NULL, CVMenuFindProblems, MID_FindProblems },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Bitm_ap strikes Available..."), (GImage *) "elementbitmapsavail.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Bitmap strikes Available...|Ctl+Shft+B"), NULL, NULL, CVMenuBitmaps, MID_AvailBitmaps },
-    { { (unichar_t *) N_("Regenerate _Bitmap Glyphs..."), (GImage *) "elementregenbitmaps.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Regenerate Bitmap Glyphs...|Ctl+B"), NULL, NULL, CVMenuBitmaps, MID_RegenBitmaps },
+    { { (unichar_t *) N_("Bitm_ap strikes Available..."), (GImage *) "elementbitmapsavail.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Bitmap strikes Available...|No Shortcut"), NULL, NULL, CVMenuBitmaps, MID_AvailBitmaps },
+    { { (unichar_t *) N_("Regenerate _Bitmap Glyphs..."), (GImage *) "elementregenbitmaps.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Regenerate Bitmap Glyphs...|No Shortcut"), NULL, NULL, CVMenuBitmaps, MID_RegenBitmaps },
     { { (unichar_t *) N_("Remove Bitmap Glyphs..."), (GImage *) "elementremovebitmaps.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Remove Bitmap Glyphs...|No Shortcut"), NULL, NULL, CVMenuBitmaps, MID_RemoveBitmaps },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("St_yles"), (GImage *) "elementstyles.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, NULL, eflist, NULL, NULL, MID_Styles },
+    { { (unichar_t *) N_("St_yles"), (GImage *) "elementstyles.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Styles|No Shortcut"), eflist, NULL, NULL, MID_Styles },
     { { (unichar_t *) N_("_Transformations"), (GImage *) "elementtransform.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Transformations|No Shortcut"), trlist, NULL, NULL, 0 },
-    { { (unichar_t *) N_("_Expand Stroke..."), (GImage *) "elementexpandstroke.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'E' }, H_("Expand Stroke...|Ctl+Shft+E"), NULL, NULL, CVMenuStroke, MID_Stroke },
+    { { (unichar_t *) N_("_Expand Stroke..."), (GImage *) "elementexpandstroke.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'E' }, H_("Expand Stroke...|No Shortcut"), NULL, NULL, CVMenuStroke, MID_Stroke },
 #ifdef FONTFORGE_CONFIG_TILEPATH
     { { (unichar_t *) N_("Tile _Path..."), (GImage *) "elementtilepath.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Tile Path...|No Shortcut"), NULL, NULL, CVMenuTilePath, MID_TilePath },
     { { (unichar_t *) N_("Tile Pattern..."), (GImage *) "elementtilepattern.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Tile Pattern...|No Shortcut"), NULL, NULL, CVMenuPatternTile, 0 },
 #endif
-    { { (unichar_t *) N_("O_verlap"), (GImage *) "overlaprm.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'v' }, NULL, rmlist, NULL, NULL, MID_RmOverlap },
-    { { (unichar_t *) N_("_Simplify"), (GImage *) "elementsimplify.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, NULL, smlist, smlistcheck, NULL, MID_Simplify },
-    { { (unichar_t *) N_("Add E_xtrema"), (GImage *) "elementaddextrema.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Extrema|Ctl+Shft+X"), NULL, NULL, CVMenuAddExtrema, MID_AddExtrema },
-    { { (unichar_t *) N_("Autot_race"), (GImage *) "elementautotrace.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Autotrace|Ctl+Shft+T"), NULL, NULL, CVMenuAutotrace, MID_Autotrace },
+    { { (unichar_t *) N_("O_verlap"), (GImage *) "overlaprm.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'v' }, H_("Overlap|No Shortcut"), rmlist, NULL, NULL, MID_RmOverlap },
+    { { (unichar_t *) N_("_Simplify"), (GImage *) "elementsimplify.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Simplify|No Shortcut"), smlist, smlistcheck, NULL, MID_Simplify },
+    { { (unichar_t *) N_("Add E_xtrema"), (GImage *) "elementaddextrema.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Extrema|No Shortcut"), NULL, NULL, CVMenuAddExtrema, MID_AddExtrema },
+    { { (unichar_t *) N_("Autot_race"), (GImage *) "elementautotrace.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Autotrace|No Shortcut"), NULL, NULL, CVMenuAutotrace, MID_Autotrace },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("A_lign"), (GImage *) "elementalign.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, allist, allistcheck, NULL, MID_Align },
-    { { (unichar_t *) N_("Roun_d"), (GImage *) "elementround.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, NULL, rndlist, rndlistcheck, NULL, MID_Round },
-    { { (unichar_t *) N_("_Order"), (GImage *) "elementorder.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, NULL, orlist, orlistcheck, NULL, 0 },
+    { { (unichar_t *) N_("A_lign"), (GImage *) "elementalign.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Align|No Shortcut"), allist, allistcheck, NULL, MID_Align },
+    { { (unichar_t *) N_("Roun_d"), (GImage *) "elementround.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Round|No Shortcut"), rndlist, rndlistcheck, NULL, MID_Round },
+    { { (unichar_t *) N_("_Order"), (GImage *) "elementorder.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Order|No Shortcut"), orlist, orlistcheck, NULL, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Check Self-Intersection"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Clockwise|No Shortcut"), NULL, NULL, CVMenuCheckSelf, MID_CheckSelf },
     { { (unichar_t *) N_("Glyph Self-Intersects"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Clockwise|No Shortcut"), NULL, NULL, CVMenuGlyphSelfIntersects, MID_GlyphSelfIntersects },
     { { (unichar_t *) N_("Cloc_kwise"), (GImage *) "elementclockwise.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Clockwise|No Shortcut"), NULL, NULL, CVMenuDir, MID_Clockwise },
     { { (unichar_t *) N_("Cou_nter Clockwise"), (GImage *) "elementanticlock.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'n' }, H_("Counter Clockwise|No Shortcut"), NULL, NULL, CVMenuDir, MID_Counter },
-    { { (unichar_t *) N_("_Correct Direction"), (GImage *) "elementcorrectdir.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Correct Direction|Ctl+Shft+D"), NULL, NULL, CVMenuCorrectDir, MID_Correct },
+    { { (unichar_t *) N_("_Correct Direction"), (GImage *) "elementcorrectdir.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Correct Direction|No Shortcut"), NULL, NULL, CVMenuCorrectDir, MID_Correct },
     { { (unichar_t *) N_("Reverse Direction"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Reverse Direction|No Shortcut"), NULL, NULL, CVMenuReverseDir, MID_ReverseDir },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Insert Text Outlines..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Insert Text Outlines|No Shortcut"), NULL, NULL, CVMenuInsertText, MID_InsertText },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("B_uild"), (GImage *) "elementbuildaccent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, NULL, balist, balistcheck, NULL, MID_BuildAccent },
+    { { (unichar_t *) N_("B_uild"), (GImage *) "elementbuildaccent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("Build|No Shortcut"), balist, balistcheck, NULL, MID_BuildAccent },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Compare Layers..."), (GImage *) "elementcomparelayers.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("Compare Layers...|No Shortcut"), NULL, NULL, CVMenuCompareL2L, 0 },
     GMENUITEM2_EMPTY
 };
 
 static GMenuItem2 htlist[] = {
-    { { (unichar_t *) N_("Auto_Hint"), (GImage *) "hintsautohint.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("AutoHint|Ctl+Shft+H"), NULL, NULL, CVMenuAutoHint, MID_AutoHint },
+    { { (unichar_t *) N_("Auto_Hint"), (GImage *) "hintsautohint.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("AutoHint|No Shortcut"), NULL, NULL, CVMenuAutoHint, MID_AutoHint },
     { { (unichar_t *) N_("Hint _Substitution Pts"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Hint Substitution Pts|No Shortcut"), NULL, NULL, CVMenuAutoHintSubs, MID_HintSubsPt },
     { { (unichar_t *) N_("Auto _Counter Hint"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Auto Counter Hint|No Shortcut"), NULL, NULL, CVMenuAutoCounter, MID_AutoCounter },
     { { (unichar_t *) N_("_Don't AutoHint"), (GImage *) "hintsdontautohint.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'H' }, H_("Don't AutoHint|No Shortcut"), NULL, NULL, CVMenuDontAutoHint, MID_DontAutoHint },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Auto_Instr"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("AutoInstr|Ctl+T"), NULL, NULL, CVMenuNowakAutoInstr, MID_AutoInstr },
+    { { (unichar_t *) N_("Auto_Instr"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("AutoInstr|No Shortcut"), NULL, NULL, CVMenuNowakAutoInstr, MID_AutoInstr },
     { { (unichar_t *) N_("_Edit Instructions..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Edit Instructions...|No Shortcut"), NULL, NULL, CVMenuEditInstrs, MID_EditInstructions },
     { { (unichar_t *) N_("_Debug..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Debug...|No Shortcut"), NULL, NULL, CVMenuDebug, MID_Debug },
     { { (unichar_t *) N_("S_uggest Deltas..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Suggest Deltas|No Shortcut"), NULL, NULL, CVMenuDeltas, MID_Deltas },
@@ -10409,7 +11029,7 @@ static GMenuItem2 htlist[] = {
     { { (unichar_t *) N_("Crea_te HHint..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Create HHint...|No Shortcut"), NULL, NULL, CVMenuCreateHint, MID_CreateHHint },
     { { (unichar_t *) N_("Cr_eate VHint..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Create VHint...|No Shortcut"), NULL, NULL, CVMenuCreateHint, MID_CreateVHint },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Review Hints..."), (GImage *) "hintsreviewhints.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Review Hints...|Alt+Ctl+H"), NULL, NULL, CVMenuReviewHints, MID_ReviewHints },
+    { { (unichar_t *) N_("_Review Hints..."), (GImage *) "hintsreviewhints.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Review Hints...|No Shortcut"), NULL, NULL, CVMenuReviewHints, MID_ReviewHints },
     GMENUITEM2_EMPTY
 };
 
@@ -10478,11 +11098,13 @@ static void CVMenuVKernFromHKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static GMenuItem2 mtlist[] = {
+    { { (unichar_t *) N_("New _Metrics Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("New Metrics Window|No Shortcut"), NULL, NULL, CVMenuOpenMetrics, 0 },
+    GMENUITEM2_LINE,
     { { (unichar_t *) N_("_Center in Width"), (GImage *) "metricscenter.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Center in Width|No Shortcut"), NULL, NULL, CVMenuCenter, MID_Center },
     { { (unichar_t *) N_("_Thirds in Width"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Thirds in Width|No Shortcut"), NULL, NULL, CVMenuCenter, MID_Thirds },
-    { { (unichar_t *) N_("Set _Width..."), (GImage *) "metricssetwidth.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Set Width...|Ctl+Shft+L"), NULL, NULL, CVMenuSetWidth, MID_SetWidth },
-    { { (unichar_t *) N_("Set _LBearing..."), (GImage *) "metricssetlbearing.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'L' }, H_("Set LBearing...|Ctl+L"), NULL, NULL, CVMenuSetWidth, MID_SetLBearing },
-    { { (unichar_t *) N_("Set _RBearing..."), (GImage *) "metricssetrbearing.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Set RBearing...|Ctl+R"), NULL, NULL, CVMenuSetWidth, MID_SetRBearing },
+    { { (unichar_t *) N_("Set _Width..."), (GImage *) "metricssetwidth.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Set Width...|No Shortcut"), NULL, NULL, CVMenuSetWidth, MID_SetWidth },
+    { { (unichar_t *) N_("Set _LBearing..."), (GImage *) "metricssetlbearing.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'L' }, H_("Set LBearing...|No Shortcut"), NULL, NULL, CVMenuSetWidth, MID_SetLBearing },
+    { { (unichar_t *) N_("Set _RBearing..."), (GImage *) "metricssetrbearing.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Set RBearing...|No Shortcut"), NULL, NULL, CVMenuSetWidth, MID_SetRBearing },
     { { (unichar_t *) N_("Set Both Bearings..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Set Both Bearings...|No Shortcut"), NULL, NULL, CVMenuSetWidth, MID_SetBearings },
     GMENUITEM2_LINE,
     { { (unichar_t *) N_("Set _Vertical Advance..."), (GImage *) "metricssetvwidth.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Set Vertical Advance...|No Shortcut"), NULL, NULL, CVMenuSetWidth, MID_SetVWidth },
@@ -10563,31 +11185,33 @@ return;
 static GMenuItem2 cblist[] = {
     { { (unichar_t *) N_("_Kern Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'K' }, H_("Kern Pairs|No Shortcut"), NULL, NULL, CVMenuKernPairs, MID_KernPairs },
     { { (unichar_t *) N_("_Anchored Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Anchored Pairs|No Shortcut"), NULL, NULL, CVMenuAnchorPairs, MID_AnchorPairs },
-    { { (unichar_t *) N_("_Anchor Control..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, NULL, ap2list, ap2listbuild, NULL, MID_AnchorControl },
-    { { (unichar_t *) N_("Anchor _Glyph at Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, NULL, aplist, aplistcheck, NULL, MID_AnchorGlyph },
+    { { (unichar_t *) N_("_Anchor Control..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Anchor Control...|No Shortcut"), ap2list, ap2listbuild, NULL, MID_AnchorControl },
+    { { (unichar_t *) N_("Anchor _Glyph at Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Anchor Glyph at Point|No Shortcut"), aplist, aplistcheck, NULL, MID_AnchorGlyph },
     { { (unichar_t *) N_("_Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'L' }, H_("Ligatures|No Shortcut"), NULL, NULL, CVMenuLigatures, MID_Ligatures },
     GMENUITEM2_EMPTY
 };
 
 static GMenuItem2 nplist[] = {
     { { (unichar_t *) N_("PointNumbers|_None"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'K' }, H_("None|No Shortcut"), NULL, NULL, CVMenuNumberPoints, MID_PtsNone },
-    { { (unichar_t *) N_("TrueType"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'A' }, H_("TrueType|No Shortcut"), NULL, NULL, CVMenuNumberPoints, MID_PtsTrue },
-    { { (unichar_t *) NU_("PostScript®"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("PostScript|No Shortcut"), NULL, NULL, CVMenuNumberPoints, MID_PtsPost },
-    { { (unichar_t *) N_("SVG"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("SVG|No Shortcut"), NULL, NULL, CVMenuNumberPoints, MID_PtsSVG },
+    { { (unichar_t *) N_("_TrueType"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'A' }, H_("TrueType|No Shortcut"), NULL, NULL, CVMenuNumberPoints, MID_PtsTrue },
+    { { (unichar_t *) NU_("_PostScript®"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("PostScript|No Shortcut"), NULL, NULL, CVMenuNumberPoints, MID_PtsPost },
+    { { (unichar_t *) N_("_SVG"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("SVG|No Shortcut"), NULL, NULL, CVMenuNumberPoints, MID_PtsSVG },
     GMENUITEM2_EMPTY
 };
 
 static GMenuItem2 gflist[] = {
     { { (unichar_t *) N_("Show _Grid Fit..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Show Grid Fit...|No Shortcut"), NULL, NULL, CVMenuShowGridFit, MID_ShowGridFit },
-    { { (unichar_t *) N_("_Bigger Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Bigger Point Size|Ctl+Shft++"), NULL, NULL, CVMenuChangePointSize, MID_Bigger },
-    { { (unichar_t *) N_("_Smaller Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Smaller Point Size|Ctl+-"), NULL, NULL, CVMenuChangePointSize, MID_Smaller },
+    { { (unichar_t *) N_("Show _Grid Fit (Live Update)..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Show Grid Fit (Live Update)...|No Shortcut"), NULL, NULL, CVMenuShowGridFitLiveUpdate, MID_ShowGridFitLiveUpdate },
+    { { (unichar_t *) N_("_Bigger Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Bigger Point Size|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_Bigger },
+    { { (unichar_t *) N_("_Smaller Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Smaller Point Size|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_Smaller },
     { { (unichar_t *) N_("_Anti Alias"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("Grid Fit Anti Alias|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_GridFitAA },
     { { (unichar_t *) N_("_Off"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Grid Fit Off|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_GridFitOff },
     GMENUITEM2_EMPTY
 };
 
 static GMenuItem2 swlist[] = {
-    { { (unichar_t *) N_("_Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Points|Ctl+D"), NULL, NULL, CVMenuShowHide, MID_HidePoints },
+    { { (unichar_t *) N_("_Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Points|No Shortcut"), NULL, NULL, CVMenuShowHide, MID_HidePoints },
+    { { (unichar_t *) N_("Control Points (Always_)"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, ')' }, H_("Control Points (Always)|No Shortcut"), NULL, NULL, CVMenuShowHideControlPoints, MID_HideControlPoints },
     { { (unichar_t *) N_("_Control Point Info"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Control Point Info|No Shortcut"), NULL, NULL, CVMenuShowCPInfo, MID_ShowCPInfo },
     { { (unichar_t *) N_("_Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Extrema|No Shortcut"), NULL, NULL, CVMenuMarkExtrema, MID_MarkExtrema },
     { { (unichar_t *) N_("Points of _Inflection"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Points of Inflection|No Shortcut"), NULL, NULL, CVMenuMarkPointsOfInflection, MID_MarkPointsOfInflection },
@@ -10597,9 +11221,10 @@ static GMenuItem2 swlist[] = {
     { { (unichar_t *) N_("_Side Bearings"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Side Bearings|No Shortcut"), NULL, NULL, CVMenuShowSideBearings, MID_ShowSideBearings },
     { { (unichar_t *) N_("Reference Names"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Reference Names|No Shortcut"), NULL, NULL, CVMenuShowRefNames, MID_ShowRefNames },
     { { (unichar_t *) N_("_Fill"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Fill|No Shortcut"), NULL, NULL, CVMenuFill, MID_Fill },
-    { { (unichar_t *) N_("Previe_w"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Preview|Ctl+`"), NULL, NULL, CVMenuPreview, MID_Preview },
+    { { (unichar_t *) N_("Previe_w"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Preview|No Shortcut"), NULL, NULL, CVMenuPreview, MID_Preview },
+    { { (unichar_t *) N_("Dragging Comparison Outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Dragging Comparison Outline|No Shortcut"), NULL, NULL, CVMenuDraggingComparisonOutline, MID_DraggingComparisonOutline },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Pale_ttes"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, NULL, pllist, pllistcheck, NULL, 0 },
+    { { (unichar_t *) N_("Pale_ttes"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Palettes|No Shortcut"), pllist, pllistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Glyph Tabs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Glyph Tabs|No Shortcut"), NULL, NULL, CVMenuShowTabs, MID_ShowTabs },
     { { (unichar_t *) N_("_Rulers"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Rulers|No Shortcut"), NULL, NULL, CVMenuShowHideRulers, MID_HideRulers },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
@@ -10623,27 +11248,27 @@ static GMenuItem2 swlist[] = {
 };
 
 static GMenuItem2 vwlist[] = {
-    { { (unichar_t *) N_("_Fit"), (GImage *) "viewfit.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Fit|Ctl+F"), NULL, NULL, CVMenuScale, MID_Fit },
-    { { (unichar_t *) N_("Z_oom out"), (GImage *) "viewzoomout.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Zoom out|Alt+Ctl+-"), NULL, NULL, CVMenuScale, MID_ZoomOut },
-    { { (unichar_t *) N_("Zoom _in"), (GImage *) "viewzoomin.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'i' }, H_("Zoom in|Alt+Ctl+Shft++"), NULL, NULL, CVMenuScale, MID_ZoomIn },
+    { { (unichar_t *) N_("_Fit"), (GImage *) "viewfit.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Fit|No Shortcut"), NULL, NULL, CVMenuScale, MID_Fit },
+    { { (unichar_t *) N_("Z_oom out"), (GImage *) "viewzoomout.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Zoom out|No Shortcut"), NULL, NULL, CVMenuScale, MID_ZoomOut },
+    { { (unichar_t *) N_("Zoom _in"), (GImage *) "viewzoomin.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'i' }, H_("Zoom in|No Shortcut"), NULL, NULL, CVMenuScale, MID_ZoomIn },
 #if HANYANG
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Display Compositions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'i' }, H_("Display Compositions...|No Shortcut"), NULL, NULL, CVDisplayCompositions, MID_DisplayCompositions },
 #endif
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Next Glyph"), (GImage *) "viewnext.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("Next Glyph|Ctl+]"), NULL, NULL, CVMenuChangeChar, MID_Next },
-    { { (unichar_t *) N_("_Prev Glyph"), (GImage *) "viewprev.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Prev Glyph|Ctl+["), NULL, NULL, CVMenuChangeChar, MID_Prev },
-    { { (unichar_t *) N_("Next _Defined Glyph"), (GImage *) "viewnextdef.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Next Defined Glyph|Alt+Ctl+]"), NULL, NULL, CVMenuChangeChar, MID_NextDef },
-    { { (unichar_t *) N_("Prev Defined Gl_yph"), (GImage *) "viewprevdef.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'a' }, H_("Prev Defined Glyph|Alt+Ctl+["), NULL, NULL, CVMenuChangeChar, MID_PrevDef },
-    { { (unichar_t *) N_("Form_er Glyph"), (GImage *) "viewformer.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'a' }, H_("Former Glyph|Ctl+Shft+<"), NULL, NULL, CVMenuChangeChar, MID_Former },
-    { { (unichar_t *) N_("_Goto"), (GImage *) "viewgoto.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'G' }, H_("Goto|Ctl+Shft+>"), NULL, NULL, CVMenuGotoChar, MID_Goto },
-    { { (unichar_t *) N_("Find In Font _View"), (GImage *) "viewfindinfont.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Find In Font View|Ctl+Shft+<"), NULL, NULL, CVMenuFindInFontView, MID_FindInFontView },
+    { { (unichar_t *) N_("_Next Glyph"), (GImage *) "viewnext.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("Next Glyph|No Shortcut"), NULL, NULL, CVMenuChangeChar, MID_Next },
+    { { (unichar_t *) N_("_Prev Glyph"), (GImage *) "viewprev.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Prev Glyph|No Shortcut"), NULL, NULL, CVMenuChangeChar, MID_Prev },
+    { { (unichar_t *) N_("Next _Defined Glyph"), (GImage *) "viewnextdef.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Next Defined Glyph|No Shortcut"), NULL, NULL, CVMenuChangeChar, MID_NextDef },
+    { { (unichar_t *) N_("Prev Defined Gl_yph"), (GImage *) "viewprevdef.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'a' }, H_("Prev Defined Glyph|No Shortcut"), NULL, NULL, CVMenuChangeChar, MID_PrevDef },
+    { { (unichar_t *) N_("Form_er Glyph"), (GImage *) "viewformer.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'a' }, H_("Former Glyph|No Shortcut"), NULL, NULL, CVMenuChangeChar, MID_Former },
+    { { (unichar_t *) N_("_Goto"), (GImage *) "viewgoto.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'G' }, H_("Goto|No Shortcut"), NULL, NULL, CVMenuGotoChar, MID_Goto },
+    { { (unichar_t *) N_("Find In Font _View"), (GImage *) "viewfindinfont.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Find In Font View|No Shortcut"), NULL, NULL, CVMenuFindInFontView, MID_FindInFontView },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("N_umber Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, NULL, nplist, nplistcheck, NULL, 0 },
-    { { (unichar_t *) N_("Grid Fi_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, gflist, gflistcheck, NULL, MID_ShowGridFit },
-    { { (unichar_t *) N_("Sho_w"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, swlist, swlistcheck, NULL, 0 },
+    { { (unichar_t *) N_("N_umber Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Number Points|No Shortcut"), nplist, nplistcheck, NULL, 0 },
+    { { (unichar_t *) N_("Grid Fi_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Grid Fit|No Shortcut"), gflist, gflistcheck, NULL, MID_ShowGridFit },
+    { { (unichar_t *) N_("Sho_w"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Show|No Shortcut"), swlist, swlistcheck, NULL, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Com_binations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'b' }, NULL, cblist, cblistcheck, NULL, 0 },
+    { { (unichar_t *) N_("Com_binations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'b' }, H_("Combinations|No Shortcut"), cblist, cblistcheck, NULL, 0 },
     GMENUITEM2_EMPTY
 };
 
@@ -10789,42 +11414,42 @@ static void CVMenuContextualHelp(GWindow UNUSED(gw), struct gmenuitem *UNUSED(mi
 }
 
 static GMenuItem2 mblist[] = {
-    { { (unichar_t *) N_("_File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, NULL, fllist, fllistcheck, NULL, 0 },
-    { { (unichar_t *) N_("_Edit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'E' }, NULL, edlist, edlistcheck, NULL, 0 },
-    { { (unichar_t *) N_("_Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, NULL, ptlist, ptlistcheck, NULL, 0 },
-    { { (unichar_t *) N_("E_lement"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, ellist, ellistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("File|No Shortcut"), fllist, fllistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_Edit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'E' }, H_("Edit|No Shortcut"), edlist, edlistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Point|No Shortcut"), ptlist, ptlistcheck, NULL, 0 },
+    { { (unichar_t *) N_("E_lement"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Element|No Shortcut"), ellist, ellistcheck, NULL, 0 },
 #ifndef _NO_PYTHON
-    { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, NULL, cvpy_tllistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools|No Shortcut"), NULL, cvpy_tllistcheck, NULL, 0 },
 #endif
 #ifdef NATIVE_CALLBACKS
-    { { (unichar_t *) N_("Tools_2"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, NULL, cv_tl2listcheck, NULL, 0},
+    { { (unichar_t *) N_("Tools_2"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools 2|No Shortcut"), NULL, cv_tl2listcheck, NULL, 0},
 #endif
-    { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, NULL, htlist, htlistcheck, NULL, 0 },
-    { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, NULL, vwlist, vwlistcheck, NULL, 0 },
-    { { (unichar_t *) N_("_Metrics"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, NULL, mtlist, mtlistcheck, NULL, 0 },
+    { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Hints|No Shortcut"), htlist, htlistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("View|No Shortcut"), vwlist, vwlistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_Metrics"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Metrics|No Shortcut"), mtlist, mtlistcheck, NULL, 0 },
 /* GT: Here (and following) MM means "MultiMaster" */
-    { { (unichar_t *) N_("MM"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, NULL, mmlist, mmlistcheck, NULL, 0 },
-    { { (unichar_t *) N_("_Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, NULL, wnmenu, CVWindowMenuBuild, NULL, 0 },
-    { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, NULL, helplist, NULL, NULL, 0 },
+    { { (unichar_t *) N_("MM"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("MM|No Shortcut"), mmlist, mmlistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Window|No Shortcut"), wnmenu, CVWindowMenuBuild, NULL, 0 },
+    { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Help|No Shortcut"), helplist, NULL, NULL, 0 },
     GMENUITEM2_EMPTY
 };
 
 static GMenuItem2 mblist_nomm[] = {
-    { { (unichar_t *) N_("_File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, NULL, fllist, fllistcheck, NULL, 0 },
-    { { (unichar_t *) N_("_Edit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'E' }, NULL, edlist, edlistcheck, NULL, 0 },
-    { { (unichar_t *) N_("_Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, NULL, ptlist, ptlistcheck, NULL, 0 },
-    { { (unichar_t *) N_("E_lement"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, ellist, ellistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("File|No Shortcut"), fllist, fllistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_Edit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'E' }, H_("Edit|No Shortcut"), edlist, edlistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Point|No Shortcut"), ptlist, ptlistcheck, NULL, 0 },
+    { { (unichar_t *) N_("E_lement"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Element|No Shortcut"), ellist, ellistcheck, NULL, 0 },
 #ifndef _NO_PYTHON
-    { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, NULL, cvpy_tllistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools|No Shortcut"), NULL, cvpy_tllistcheck, NULL, 0 },
 #endif
 #ifdef NATIVE_CALLBACKS
-    { { (unichar_t *) N_("Tools_2"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, NULL, cv_tl2listcheck, NULL, 0},
+    { { (unichar_t *) N_("Tools_2"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools 2|No Shortcut"), NULL, cv_tl2listcheck, NULL, 0},
 #endif
-    { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, NULL, htlist, htlistcheck, NULL, 0 },
-    { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, NULL, vwlist, vwlistcheck, NULL, 0 },
-    { { (unichar_t *) N_("_Metrics"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, NULL, mtlist, mtlistcheck, NULL, 0 },
-    { { (unichar_t *) N_("_Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, NULL, wnmenu, CVWindowMenuBuild, NULL, 0 },
-    { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, NULL, helplist, NULL, NULL, 0 },
+    { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Hints|No Shortcut"), htlist, htlistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("View|No Shortcut"), vwlist, vwlistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_Metrics"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Metrics|No Shortcut"), mtlist, mtlistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Window|No Shortcut"), wnmenu, CVWindowMenuBuild, NULL, 0 },
+    { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Help|No Shortcut"), helplist, NULL, NULL, 0 },
     GMENUITEM2_EMPTY
 };
 
@@ -10844,6 +11469,14 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     if ( !cvcolsinited )
 	CVColInit();
 
+    static int firstCharView = 1;
+    if( firstCharView )
+    {
+	firstCharView = 0;
+	CVShows.alwaysshowcontrolpoints = prefs_cv_show_control_points_always_initially;
+    }
+
+
     cv->b.sc = sc;
     cv->scale = .5;
     cv->xoff = cv->yoff = 20;
@@ -10852,7 +11485,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     cv->b.fv = &fv->b;
     cv->map_of_enc = fv->b.map;
     cv->enc = enc;
-
+    cv->p.pretransform_spl = 0;
     cv->b.drawmode = dm_fore;
 
     memset(cv->showback,-1,sizeof(cv->showback));
@@ -10864,6 +11497,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     cv->showvhints = CVShows.showvhints;
     cv->showdhints = CVShows.showdhints;
     cv->showpoints = CVShows.showpoints;
+    cv->alwaysshowcontrolpoints = CVShows.alwaysshowcontrolpoints;
     cv->showrulers = CVShows.showrulers;
     cv->showfilled = CVShows.showfilled;
     cv->showrounds = CVShows.showrounds;
@@ -10890,6 +11524,9 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     cv->showdebugchanges = CVShows.showdebugchanges;
 
     cv->infoh = 13;
+#if defined(__MINGW32__)||defined(__CYGWIN__)
+    cv->infoh = 26;
+#endif
     cv->rulerh = 16;
 
     GDrawGetSize(cv->gw,&pos);
@@ -11000,7 +11637,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
 	{
 	    GDrawSetVisible(cv->gw,true);
 	}
-	
+
     if ( (CharView *) (sc->views)==NULL && updateflex )
 	SplineCharIsFlexible(sc,CVLayer((CharViewBase *) cv));
     if ( sc->inspiro && !hasspiro() && !sc->parent->complained_about_spiros ) {
@@ -11011,7 +11648,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
 	ff_post_error(_("You may not use spiros"),_("This glyph should display spiro points, but unfortunately FontForge was unable to load libspiro, spiros are not available for use, and normal bezier points will be displayed instead."));
 #endif
     }
-    
+
 }
 
 void DefaultY(GRect *pos) {
@@ -11087,7 +11724,7 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     cv->gw = gw = GDrawCreateTopWindow(NULL,&pos,cv_e_h,cv,&wattrs);
     free( (unichar_t *) wattrs.icon_title );
     GDrawSetWindowTypeName(cv->gw, "CharView");
-    
+
 
     GDrawGetSize(GDrawGetRoot(screen_display),&zoom);
     zoom.x = CVPalettesWidth(); zoom.width -= zoom.x-10;
@@ -11202,11 +11839,25 @@ static void CharViewInit(void) {
     if ( done )
 return;
     done = true;
+//    printf("CharViewInit(top) mblist[0].text before translation: %s\n", mblist[0].ti.text );
 
     mb2DoGetText(mblist);
+
+//    printf("CharViewInit(2) mblist[0].text after    translation: %s\n", u_to_c(mblist[0].ti.text) );
+//    printf("CharViewInit(2) mblist[0].text_untranslated notrans: %s\n", mblist[0].ti.text_untranslated );
+
     mb2DoGetText(spiroptlist);
     for ( i=0; mblist_nomm[i].ti.text!=NULL; ++i )
+    {
+	// Note that because we are doing this ourself we have to set
+	// the text_untranslated ourself too.
+ 	if( mblist_nomm[i].shortcut )
+	    mblist_nomm[i].ti.text_untranslated = mblist_nomm[i].shortcut;
+	else
+	    mblist_nomm[i].ti.text_untranslated = mblist_nomm[i].ti.text;
+
 	mblist_nomm[i].ti.text = (unichar_t *) _((char *) mblist_nomm[i].ti.text);
+    }
 }
 
 static int nested_cv_e_h(GWindow gw, GEvent *event) {
@@ -11577,6 +12228,65 @@ GResInfo charview_ri = {
 };
 
 
+void SPSelectNextPoint( SplinePoint *sp, int state )
+{
+    if( !sp )
+	return;
+    if( !sp->next )
+	return;
+    if( !sp->next->to )
+	return;
+    sp->next->to->selected = state;
+}
+
+void SPSelectPrevPoint( SplinePoint *sp, int state )
+{
+    if( !sp )
+	return;
+    if( !sp->prev )
+	return;
+    if( !sp->prev->from )
+	return;
+    sp->prev->from->selected = state;
+}
 
 
 
+bool SPIsNextCPSelectedSingle( SplinePoint *sp, CharView *cv )
+{
+    if( cv )
+    {
+	int iscurrent = sp == (cv->p.sp!=NULL?cv->p.sp:cv->lastselpt);
+	if( iscurrent && cv->p.nextcp )
+	    return true;
+    }
+    return false;
+}
+
+
+bool SPIsNextCPSelected( SplinePoint *sp, CharView *cv )
+{
+    if( SPIsNextCPSelectedSingle( sp, cv ))
+	return true;
+    return sp->nextcpselected;
+}
+
+bool SPIsPrevCPSelectedSingle( SplinePoint *sp, CharView *cv )
+{
+    if( cv )
+    {
+	int iscurrent = sp == (cv->p.sp!=NULL?cv->p.sp:cv->lastselpt);
+	if( iscurrent && cv->p.prevcp )
+	    return true;
+    }
+    return false;
+}
+
+bool SPIsPrevCPSelected( SplinePoint *sp, CharView *cv )
+{
+    if( SPIsPrevCPSelectedSingle( sp, cv ))
+    {
+	return true;
+    }
+    return sp->prevcpselected;
+}

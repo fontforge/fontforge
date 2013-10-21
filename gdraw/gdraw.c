@@ -295,6 +295,8 @@ void GDrawSetUserData(GWindow gw, void *ud) {
 }
 
 void *GDrawGetUserData(GWindow gw) {
+    if( !gw )
+	return 0;
 return( gw->user_data );
 }
 
@@ -1053,7 +1055,7 @@ GDrawRemoveReadFD( GDisplay *gdisp,
 
 void MacServiceReadFDs()
 {
-#if !defined(__MINGW32__)
+#if (!defined(__MINGW32__))&&(!defined(__CYGWIN__))
     int ret = 0;
     
     GDisplay *gdisp = GDrawGetDisplayOfWindow(0);

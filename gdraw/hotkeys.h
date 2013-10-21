@@ -182,6 +182,12 @@ extern struct dlistnodeExternal* hotkeyFindAllByEvent( GWindow w, GEvent *event 
 extern char*   hotkeyTextWithoutModifiers( char* hktext );
 
 /**
+ * Convert text like Control to the command key unicode value.
+ * Caller must free the returned value
+ */
+extern char* hotkeyTextToMacModifiers( char* keydesc );
+
+/**
  * Given a menu path like File/Open find the hotkey which will trigger
  * that menu item. The window is needed because there might be a
  * menuitem with the same text path in fontview and charview which the
@@ -191,6 +197,18 @@ extern char*   hotkeyTextWithoutModifiers( char* hktext );
  */
 extern Hotkey* hotkeyFindByMenuPath( GWindow w, char* path );
 extern Hotkey* hotkeyFindByMenuPathInSubMenu( GWindow w, char* subMenuName, char* path );
+
+/**
+ * Immediate keys are hotkeys like the ` key to turn on preview mode in charview.
+ * They are perhaps toggle keys, or just keys which code wants to respond to a keypress
+ * but also allow the user to configure what that key is using their hotkeys file.
+ * Instead of doing event->u.chr.keysym == '`' code can pass the event and a text name
+ * like "TogglePreview" and a window (to determine the prefix like CharView) and this
+ * function will tell you if that event matches the key that the user has defined to
+ * trigger your event.
+ */
+extern Hotkey* isImmediateKey( GWindow w, char* path, GEvent *event );
+
 
 
 /**

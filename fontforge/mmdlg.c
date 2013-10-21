@@ -97,10 +97,11 @@ static int ExecConvertDesignVector(real *designs, int dcnt, char *ndv, char *cdv
 	real *stack) {
     char *temp, dv[101];
     int j, len, cnt;
-    char oldloc[24];
+    char oldloc[25];
 
     /* PostScript parses things in "C" locale too */
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
     len = 0;
     for ( j=0; j<dcnt; ++j ) {
@@ -956,6 +957,7 @@ return( true );
 	    GListChangeLine(esd->list,esd->index,name)->userdata = mn;
 	}
 	esd->done = true;
+	free(name);
     }
 return( true );
 }
@@ -1407,7 +1409,7 @@ return( copy(buffer));
     free(elsepart);
 return( ret );
 }
-    
+
 static char *NormalizeAxis(char *header,struct axismap *axis) {
     char *ret;
     char buffer[200];
@@ -1651,7 +1653,7 @@ static GTextInfo **FontList(MMW *mmw, int instance, int *sel) {
 	    ++cnt;
     }
     cnt += mmw->lcnt;
-    
+
     ++cnt;	/* New */
     ++cnt;	/* Browse... */
 
@@ -2858,7 +2860,7 @@ void MMWizard(MMSet *mm) {
 
 	k = GCDBuildNames(axisgcd[i],axislabel[i],k,mm==NULL || i>=mm->axis_count ? NULL :
 		mm->axismaps[i].axisnames);
-	
+
 	axisaspects[i].text = (unichar_t *) _(axistablab[i]);
 	axisaspects[i].text_is_1byte = true;
 	axisaspects[i].gcd = axisgcd[i];

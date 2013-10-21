@@ -626,13 +626,17 @@ return;
 	    SplineCharTangentPrevCP(sp);
 	    if ( sp->prev ) SplineRefigure(sp->prev);
 	}
-    } else if ( (BpColinear(&sp->prevcp,&sp->me,&sp->nextcp) ||
+    } else if ( pointtype!=pt_curve
+		&& ((BpColinear(&sp->prevcp,&sp->me,&sp->nextcp) ||
 	    ( sp->nonextcp ^ sp->noprevcp )) &&
 	    ( pointtype!=pt_hvcurve ||
 		(sp->nextcp.x == sp->me.x && sp->nextcp.y != sp->me.y ) ||
-		(sp->nextcp.y == sp->me.y && sp->nextcp.x != sp->me.x ) )) {
+	      (sp->nextcp.y == sp->me.y && sp->nextcp.x != sp->me.x ) )))
+    {
 	/* Retain the old control points */
-    } else {
+    }
+    else
+    {
 	unitnext.x = sp->nextcp.x-sp->me.x; unitnext.y = sp->nextcp.y-sp->me.y;
 	nextlen = sqrt(unitnext.x*unitnext.x + unitnext.y*unitnext.y);
 	unitprev.x = sp->prevcp.x-sp->me.x; unitprev.y = sp->prevcp.y-sp->me.y;
@@ -672,6 +676,9 @@ return;
 		sp->prev->from->nextcp = pcp;
 	    makedflt = false;
 	}
+	if( pointtype==pt_curve )
+	    makedflt = true;
+	
 	if ( makedflt ) {
 	    sp->nextcpdef = sp->prevcpdef = true;
 	    if (( sp->prev!=NULL && sp->prev->order2 ) ||
@@ -1018,7 +1025,7 @@ return( true );
 
 return( false );
 }
-		
+
 int SCSetMetaData(SplineChar *sc,char *name,int unienc,const char *comment) {
     SplineFont *sf = sc->parent;
     int i, mv=0;
@@ -1174,7 +1181,11 @@ static int CheckBluePair(char *blues, char *others, int bluefuzz,
     int bluevals[10+14], cnt, pos=0, maxzoneheight;
     int err = 0;
     char *end;
+    char oldloc[25];
 
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
+    setlocale(LC_NUMERIC,"C");
     if ( others!=NULL ) {
 	while ( *others==' ' ) ++others;
 	if ( *others=='[' || *others=='{' ) ++others;
@@ -1240,12 +1251,14 @@ static int CheckBluePair(char *blues, char *others, int bluefuzz,
 
     if ( maxzoneheight>0 && (magicpointsize-.49)*maxzoneheight>=240 )
 	err |= pds_toobig;
+    setlocale(LC_NUMERIC,oldloc);
 
 return( err );
 }
 
 static int CheckStdW(struct psdict *dict,char *key ) {
     char *str_val, *end;
+    char oldloc[25];
     bigreal val;
 
     if ( (str_val = PSDictHasEntry(dict,key))==NULL )
@@ -1255,7 +1268,11 @@ return( true );
 return( false );
     ++str_val;
 
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
+    setlocale(LC_NUMERIC,"C");
     val = strtod(str_val,&end);
+    setlocale(LC_NUMERIC,oldloc);
     while ( *end==' ' ) ++end;
     if ( *end!=']' && *end!='}' )
 return( false );
@@ -1269,6 +1286,7 @@ return( true );
 
 static int CheckStemSnap(struct psdict *dict,char *snapkey, char *stdkey ) {
     char *str_val, *end;
+    char oldloc[25];
     bigreal std_val = -1;
     bigreal stems[12], temp;
     int cnt, found;
@@ -1277,7 +1295,11 @@ static int CheckStemSnap(struct psdict *dict,char *snapkey, char *stdkey ) {
     if ( (str_val = PSDictHasEntry(dict,stdkey))!=NULL ) {
 	while ( *str_val==' ' ) ++str_val;
 	if ( *str_val=='[' && *str_val!='{' ) ++str_val;
+	strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+	oldloc[24]=0;
+	setlocale(LC_NUMERIC,"C");
 	std_val = strtod(str_val,&end);
+	setlocale(LC_NUMERIC,oldloc);
     }
 
     if ( (str_val = PSDictHasEntry(dict,snapkey))==NULL )
@@ -1292,7 +1314,11 @@ return( false );
 	while ( *str_val==' ' ) ++str_val;
 	if ( *str_val==']' && *str_val!='}' )
     break;
-	temp = strtod(str_val,&end);
+	strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+	oldloc[24]=0;
+	setlocale(LC_NUMERIC,"C");
+       temp = strtod(str_val,&end);
+	setlocale(LC_NUMERIC,oldloc);
 	if ( end==str_val )
 return( false );
 	str_val = end;
@@ -1313,6 +1339,7 @@ return( true );
 int ValidatePrivate(SplineFont *sf) {
     int errs = 0;
     char *blues, *bf, *test, *end;
+    char oldloc[25];
     int fuzz = 1;
     bigreal bluescale = .039625;
     int magicpointsize;
@@ -1327,11 +1354,15 @@ return( pds_missingblue );
     }
 
     if ( (test=PSDictHasEntry(sf->private,"BlueScale"))!=NULL ) {
-	bluescale = strtod(test,&end);
+	strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+	oldloc[24]=0;
+	setlocale(LC_NUMERIC,"C");
+        bluescale = strtod(test,&end);
+	setlocale(LC_NUMERIC,oldloc);
 	if ( *end!='\0' || end==test || bluescale<0 )
 	    errs |= pds_badbluescale;
     }
-    magicpointsize = rint( bluescale*240 - 0.49 );
+    magicpointsize = rint( bluescale*240 + 0.49 );
 
     if ( (blues = PSDictHasEntry(sf->private,"BlueValues"))==NULL )
 	errs |= pds_missingblue;
@@ -1769,7 +1800,7 @@ int SCValidate(SplineChar *sc, int layer, int force) {
 	}
 	++k;
     } while ( k<cid->subfontcnt );
-		
+
   end:;
     /* This test is intentionally here and should be done even if the glyph */
     /*  hasn't changed. If the lookup changed it could make the glyph invalid */
@@ -1782,7 +1813,7 @@ return( sc->layers[layer].validation_state&~(vs_known|vs_selfintersects) );
 
 return( sc->layers[layer].validation_state&~vs_known );
 }
-    
+
 int SFValidate(SplineFont *sf, int layer, int force) {
     int k, gid;
     SplineFont *sub;
@@ -1821,7 +1852,7 @@ int SFValidate(SplineFont *sf, int layer, int force) {
 return( -1 );
 	    } else if ( SCValidateAnchors(sc)!=NULL )
 		sc->layers[layer].validation_state |= vs_missinganchor;
-	    
+
 	    if ( sc->unlink_rm_ovrlp_save_undo )
 		any |= sc->layers[layer].validation_state&~vs_selfintersects;
 	    else

@@ -8,7 +8,7 @@
 
     FontForge is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    the Free Software Foundation,either version 3 of the License, or
     (at your option) any later version.
 
     FontForge is distributed in the hope that it will be useful,
@@ -32,6 +32,16 @@
 int  collabclient_setHaveLocalServer( int v );
 
 #ifdef BUILD_COLLAB
+  // client beacon for discovery
+  static zbeacon_t* client_beacon = 0;
+  static GHashTable* peers = 0;
+  static int client_beacon_timerID = 0;
+#endif
+
+
+
+#ifdef BUILD_COLLAB
+
 
 static zctx_t* obtainMainZMQContext()
 {
@@ -219,6 +229,86 @@ static void zeromq_subscriber_fd_callback(int zeromq_fd, void* datas )
 }
 
 
+
+static void zeromq_beacon_show_peers( cloneclient_t* cc )
+{
+    return;
+    
+    printf("--- zeromq_beacon_show_peers(top)\n" );
+    time_t tt = time(0);
+    GHashTableIter iter;
+    gpointer key, value;
+
+    g_hash_table_iter_init (&iter, peers);
+    while (g_hash_table_iter_next (&iter, &key, &value)) 
+    {
+	beacon_announce_t* ba = (beacon_announce_t*)value;
+	printf("----------\n" );
+	printf("uuid:%s\n", ba->uuid );
+	printf("user:%s\n", ba->username );
+	printf("mach:%s\n", ba->machinename );
+	printf("ip  :%s\n", ba->ip );
+	printf("port:%d\n", ba->port );
+	printf("seconds since last msg:%d\n", tt - ba->last_msg_from_peer_time );
+	
+    }
+    printf("--- zeromq_beacon_show_peers(end)\n" );
+}
+
+
+
+static void zeromq_beacon_fd_callback(int zeromq_fd, void* datas )
+{
+//    cloneclient_t* cc = (cloneclient_t*)datas;
+
+//    printf("zeromq_beacon_fd_callback(top)\n");
+    
+    int opt = 0;
+    size_t optsz = sizeof(int);
+    zmq_getsockopt( zbeacon_socket (client_beacon), ZMQ_EVENTS, &opt, &optsz );
+
+    if( opt & ZMQ_POLLIN )
+    {
+//	printf("zeromq_beacon_fd_callback() have message!\n");
+
+	while( 1 )
+	{
+	    char *ipaddress = zstr_recv_nowait (zbeacon_socket (client_beacon));
+	    if( ipaddress )
+	    {
+//		printf("zeromq_beacon_fd_callback() have message! ip:%s\n", ipaddress );
+		zframe_t *content = zframe_recv_nowait (zbeacon_socket (client_beacon));
+		if( content )
+		{
+		    beacon_announce_t* ba = (beacon_announce_t*)zframe_data(content);
+		    /* printf("uuid:%s\n", ba->uuid ); */
+		    /* printf("user:%s\n", ba->username ); */
+		    /* printf("mach:%s\n", ba->machinename ); */
+
+		    beacon_announce_t* copy = malloc( sizeof(beacon_announce_t));
+		    memcpy( copy, ba, sizeof(beacon_announce_t));
+		    copy->last_msg_from_peer_time = time(0);
+		    copy->port = ntohs( copy->port );
+		    strncpy( copy->ip, ipaddress, beacon_announce_ip_sz );
+		    g_hash_table_replace( peers, copy->uuid, copy );
+		    zframe_destroy (&content);
+		}
+		free (ipaddress);
+	    }
+	    else
+		break;
+	}
+    }
+    zeromq_beacon_show_peers(0);
+}
+
+static void zeromq_beacon_timer_callback( void* ccvp )
+{
+//    cloneclient_t *cc = (cloneclient_t*)ccvp;
+    zeromq_beacon_fd_callback( 0, 0 );
+}
+
+
 /**
  * A timeout function which is called after a given idle period to
  * alert the user if we have not received a reply from the server yet.
@@ -284,6 +374,36 @@ void collabclient_sessionDisconnect( FontViewBase* fv )
 
 #ifdef BUILD_COLLAB
 
+void
+collabclient_ensureClientBeacon(void)
+{
+    if( client_beacon )
+	return;
+    
+    peers = g_hash_table_new_full( g_str_hash, g_str_equal, 0, free );
+    client_beacon_timerID = 0;
+    
+    
+    client_beacon = zbeacon_new (5670);
+    zbeacon_subscribe (client_beacon, NULL, 0);
+    int fd = 0;
+    size_t fdsz = sizeof(fd);
+    int rc = zmq_getsockopt( zbeacon_socket(client_beacon), ZMQ_FD, &fd, &fdsz );
+    printf("beacon rc:%d fd:%d\n", rc, fd );
+//    GDrawAddReadFD( 0, fd, cc, zeromq_beacon_fd_callback );
+    client_beacon_timerID = BackgroundTimer_new( 1000, zeromq_beacon_timer_callback, 0 );
+}
+
+#else
+void collabclient_ensureClientBeacon()
+{
+}
+#endif
+
+
+#ifdef BUILD_COLLAB
+
+
 static void
 collabclient_remakeSockets( cloneclient_t *cc )
 {
@@ -293,11 +413,11 @@ collabclient_remakeSockets( cloneclient_t *cc )
 	cc->port + socket_offset_snapshot));
     
     cc->subscriber = zsocket_new (cc->ctx, ZMQ_SUB);
-    zsockopt_set_subscribe (cc->subscriber, "");
+    zsocket_set_subscribe (cc->subscriber, "");
     zsocket_connect (cc->subscriber,
 	collabclient_makeAddressString( cc->address,
 	cc->port + socket_offset_subscriber));
-    zsockopt_set_subscribe (cc->subscriber, SUBTREE);
+    zsocket_set_subscribe (cc->subscriber, SUBTREE);
 
     cc->publisher = zsocket_new (cc->ctx, ZMQ_PUSH);
     zsocket_connect (cc->publisher,
@@ -307,9 +427,9 @@ collabclient_remakeSockets( cloneclient_t *cc )
     int fd = 0;
     size_t fdsz = sizeof(fd);
     int rc = zmq_getsockopt( cc->subscriber, ZMQ_FD, &fd, &fdsz );
-    printf("rc:%d fd:%d\n", rc, fd );
+    printf("subscriber rc:%d fd:%d\n", rc, fd );
     GDrawAddReadFD( 0, fd, cc, zeromq_subscriber_fd_callback );
-    
+  
 }
 
 #endif
@@ -353,7 +473,6 @@ void* collabclient_new( char* address, int port )
     cc->sequence = 0;
     cc->preserveUndo = 0;
     cc->roundTripTimerWaitingSeq = 0;
-
     collabclient_remakeSockets( cc );
 
     int32 roundTripTimerMS = pref_collab_roundTripTimerMS;
@@ -400,7 +519,7 @@ void collabclient_free( void** ccvp )
     {
 	fv->b.collabClient = 0;
     }
-        
+
     zhash_destroy (&cc->kvmap);
     free(cc->address);
     free(cc);
@@ -415,7 +534,7 @@ void collabclient_free( void** ccvp )
 
 #ifdef BUILD_COLLAB
 
-static void collabclient_sendSFD( void* ccvp, char* sfd )
+static void collabclient_sendSFD( void* ccvp, char* sfd, char* fontname )
 {
     cloneclient_t* cc = (cloneclient_t*)ccvp;
 
@@ -423,6 +542,7 @@ static void collabclient_sendSFD( void* ccvp, char* sfd )
     kvmsg_fmt_key  (kvmsg, "%s%d", SUBTREE, cc->publisher_sendseq++);
     kvmsg_set_body (kvmsg, sfd, strlen(sfd));
     kvmsg_set_prop (kvmsg, "type", MSG_TYPE_SFD );
+    kvmsg_set_prop (kvmsg, "fontname", fontname );
 //    kvmsg_set_prop (kvmsg, "ttl", "%d", randof (30));
     kvmsg_send     (kvmsg, cc->publisher);
     kvmsg_destroy (&kvmsg);
@@ -575,6 +695,7 @@ static void collabclient_sniffForLocalServer_timer( void* udata )
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+
 void collabclient_sessionStart( void* ccvp, FontView *fv )
 {
 #ifdef BUILD_COLLAB
@@ -589,10 +710,24 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
 	sprintf(command_line,
 		"%s/FontForgeInternal/fontforge-internal-collab-server",
 		getGResourceProgramDir() );
+#if defined(__MINGW32__)
+//	chdir(getGResourceProgramDir());
+//	sprintf(command_line, "ffcollab.bat" );
+
+	sprintf(command_line, "'%s/ffcollab.bat'", getGResourceProgramDir() );
+#endif	
 	printf("command_line:%s\n", command_line );
 	GError * error = 0;
 	if(!getenv("FONTFORGE_USE_EXISTING_SERVER"))
-	    g_spawn_command_line_async( command_line, &error );
+	{
+	    int rc = g_spawn_command_line_async( command_line, &error );
+	    if( !rc )
+	    {
+		fprintf(stderr, "Error starting collab server\n");
+		if( error )
+		    fprintf(stderr, "code:%d message:%s\n", error->code, error->message );
+	    }
+	}
     }
     
     printf("Starting a session, sending it the current SFD as a baseline...\n");
@@ -605,7 +740,7 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
     {
 	char* sfd = GFileReadAll( filename );
 	printf("connecting to server...4 sfd:%p\n", sfd );
-	collabclient_sendSFD( cc, sfd );
+	collabclient_sendSFD( cc, sfd, fv->b.sf->fontname );
     }
     GFileUnlink(filename);
     printf("connecting to server...sent the sfd for session start.\n");
@@ -613,7 +748,7 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
     FVTitleUpdate( &fv->b );
 
     collabclient_setHaveLocalServer( 1 );
-    
+
 #endif
 }
 
@@ -701,7 +836,7 @@ FontViewBase* collabclient_sessionJoin( void* ccvp, FontView *fv )
 
     if( !lastSFD )
     {
-	gwwv_post_error(_("FontForge Collaboration"), _("No Font Snapshot recevied from the server"));
+	gwwv_post_error(_("FontForge Collaboration"), _("No Font Snapshot received from the server"));
 	return 0;
     }
     
@@ -848,9 +983,10 @@ void collabclient_sendRedo_SC( SplineChar *sc )
 	Undoes* undo = sc->layers[ly_fore].undoes;
 	while( undo && undo->undotype == ut_statehint )
 	{
-	    sc->layers[ly_fore].undoes = undo->next;
+	    undo = undo->next;
 	    // FIXME: throwing away the statehints for now.
 	}
+	sc->layers[ly_fore].undoes = undo;
     }
     
     SCDoUndo( sc, ly_fore );
@@ -1012,4 +1148,11 @@ int64_t collabclient_getCurrentSequenceNumber(void* ccvp)
     return 0;
 }
 
+GHashTable* collabclient_getServersFromBeaconInfomration( void )
+{
+#ifdef BUILD_COLLAB
+    return peers;
+#endif
+    return 0;
+}
 

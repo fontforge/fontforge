@@ -169,7 +169,7 @@ static char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"abs", "round", "ceiling", "floor", "truncate", "max", "min",
 	"ne", "eq", "gt", "ge", "lt", "le", "and", "or", "xor", "not",
 	"exp", "sqrt", "ln", "log", "atan", "sin", "cos",
-	"true", "false", 
+	"true", "false",
 	"if", "ifelse", "for", "loop", "repeat", "exit",
 	"stopped", "stop",
 	"def", "bind", "load",
@@ -1155,7 +1155,7 @@ return( sp-5 );
 return( sp-5 );
     }
     polarity = stack[sp-3].u.tf;
-    
+
     if ( stack[sp-4].type!=ps_num || stack[sp-5].type!=ps_num ) {
 	LogError( _("First and second arguments of imagemask must be integers.\n" ));
 return( sp-5 );
@@ -1277,7 +1277,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     DashType dashes[DASH_MAX];
     int dash_offset = 0;
     Entity *ent;
-    char oldloc[24];
+    char oldloc[25];
     int warned = 0;
     struct garbage tofrees;
     SplineSet *clippath = NULL;
@@ -1286,7 +1286,8 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 
     tokbuf = galloc(tokbufsize);
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
 
     memset(&gb,'\0',sizeof(GrowBuf));
@@ -1438,7 +1439,7 @@ printf( "-%s-\n", toknames[tok]);
 	    } else if ( strcmp(tokbuf,"togNS_")==0 ) {
 		wrapper->top->fogns = !wrapper->top->fogns;
     continue;
-	    } 
+	    }
 	}
 	switch ( tok ) {
 	  case pt_number:
@@ -3284,7 +3285,7 @@ static void SCInterpretPS(FILE *ps,SplineChar *sc, int *flags) {
     sc->layers[ly_fore].refs = revrefs(ec.refs);
     free(wrapper.top);
 }
-    
+
 void PSFontInterpretPS(FILE *ps,struct charprocs *cp,char **encoding) {
     char tokbuf[100];
     int tok,i, j;

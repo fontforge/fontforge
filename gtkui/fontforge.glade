@@ -13175,7 +13175,7 @@
 			    <widget class="GtkListItem" id="listitem401">
 			      <property name="visible">True</property>
 			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">600 Demi-Bold</property>
+			      <property name="label" translatable="yes">600 Semi-Bold</property>
 			    </widget>
 			  </child>
 
@@ -13191,7 +13191,7 @@
 			    <widget class="GtkListItem" id="listitem403">
 			      <property name="visible">True</property>
 			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">800 Heavy</property>
+			      <property name="label" translatable="yes">800 Extra-Bold</property>
 			    </widget>
 			  </child>
 

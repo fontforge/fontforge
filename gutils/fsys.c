@@ -49,6 +49,10 @@ static char dirname_[1024];
 #endif
 
 #if defined(__MINGW32__)
+#include <shlobj.h>
+#endif
+
+#if defined(__MINGW32__)
 static void _backslash_to_slash(char* c){
     for(; *c; c++)
 	if(*c == '\\')
@@ -59,7 +63,13 @@ static void _u_backslash_to_slash(unichar_t* c){
 	if(*c == '\\')
 	    *c = '/';
 }
+#else
+static void _backslash_to_slash(char* c){
+}
+static void _u_backslash_to_slash(unichar_t* c){
+}
 #endif
+
 
 char *GFileGetHomeDir(void) {
 #if defined(__MINGW32__)
@@ -278,7 +288,7 @@ return( false );
 int GFileIsDir(const char *file) {
   struct stat info;
   if ( stat(file, &info)==-1 )
-return 0;     
+return 0;
   else
 return( S_ISDIR(info.st_mode) );
 }
@@ -292,15 +302,16 @@ return( access(file,02)==0 );
 }
 
 int GFileModifyableDir(const char *file) {
-    char buffer[1024], *pt;
+    char buffer[1025], *pt;
 
-    strcpy(buffer,file);
+    buffer[1024]=0;
+    strncpy(buffer,file,1024);
     pt = strrchr(buffer,'/');
     if ( pt==NULL )
 	strcpy(buffer,".");
     else
 	*pt='\0';
-return( GFileModifyable(buffer));
+    return( GFileModifyable(buffer) );
 }
 
 int GFileReadable(char *file) {
@@ -705,7 +716,7 @@ char *getHelpDir(void) {
     char* prefix = getShareDir();
 #if defined(DOCDIR)
     prefix = DOCDIR;
-#endif    
+#endif
     char* postfix = "/../doc/fontforge/";
     int len = strlen(prefix) + strlen(postfix) + 2;
     sharedir = galloc(len);
@@ -752,37 +763,49 @@ return( NULL );
 return( editdir );
 }
 
-int GFileGetSize( char* name )
-{
+long GFileGetSize(char *name) {
+/* Get the binary file size for file 'name'. Return -1 if error. */
     struct stat buf;
-    int rc = stat( name, &buf );
-    if( rc != 0 )
-	return -1;
-    return buf.st_size;
+    long rc;
+
+    if ( (rc=stat(name,&buf)) )
+	return( -1 );
+    return( buf.st_size );
 }
 
-char* GFileReadAll( char* name )
-{
-    int sz = GFileGetSize( name );
-    char* ret = calloc( 1, sz+1 );
-    FILE* fp = fopen( name, "rb" );
-    size_t bread = fread( ret, 1, sz, fp );
-    fclose(fp);
+char *GFileReadAll(char *name) {
+/* Read file 'name' all into one large string. Return 0 if error. */
+    char *ret;
+    long sz;
 
-    if( bread == sz )
-	return ret;
+    if ( (sz=GFileGetSize(name))>=0 && \
+	 (ret=calloc(1,sz+1))!=NULL ) {
+	FILE *fp;
+	if ( (fp=fopen(name,"rb"))!=NULL ) {
+	    size_t bread=fread(ret,1,sz,fp);
+	    fclose(fp);
 
-    free(ret);
-    return 0;
+	    if( bread==sz )
+		return( ret );
+	}
+	free(ret);
+    }
+    return( 0 );
 }
 
+int GFileWriteAll(char *filepath, char *data) {
+/* Write char string 'data' into file 'name'. Return -1 if error. */
+    size_t bwrite = strlen(data);
+    FILE* fp;
 
-int GFileWriteAll(char* filepath, char *data)
-{
-    FILE* fp = fopen( filepath, "wb" );
-    int bwrite = fwrite( data, 1, strlen(data), fp );
-    fclose(fp);
-    return 0;
+    if ( (fp = fopen( filepath, "wb" )) != NULL ) {
+	if ( (fwrite( data, 1, bwrite, fp ) == bwrite) && \
+	     (fflush(fp) == 0) && \
+	     (fclose(fp) == 0) )
+	    return 0;
+	fclose(fp);
+    }
+    return -1;
 }
 
 char *getTempDir(void)
@@ -790,3 +813,58 @@ char *getTempDir(void)
     return g_get_tmp_dir();
 }
 
+char *GFileGetHomeDocumentsDir(void)
+{
+    static char* ret = 0;
+    if( ret )
+	return ret;
+
+#if defined(__MINGW32__)
+
+    CHAR my_documents[MAX_PATH+2];
+    HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents );
+    if (result != S_OK)
+    {
+    	fprintf(stderr,"Error: Cant get My Documents path!'\n");
+        return ret;
+    }
+    int pos = strlen(my_documents);
+    my_documents[ pos++ ] = '\\';
+    my_documents[ pos++ ] = '\0';
+    ret = copy( my_documents );
+    return ret;
+#endif
+
+    // For Linux and OSX it was decided that this should be just the
+    // home directory itself.
+//    ret = GFileAppendFile( GFileGetHomeDir(), "/Documents", 1 );
+    ret = GFileGetHomeDir();
+    return ret;
+}
+
+
+char *GFileDirName(const char *path)
+{
+    char ret[PATH_MAX+1];
+    strncpy( ret, path, PATH_MAX );
+    _backslash_to_slash( ret );
+    char *pt = strrchr( ret, '/' );
+    if ( pt )
+	*pt = '\0';
+    return ret;
+}
+
+/**
+ * Filesystem split char, on osx and linux this is /
+ * on windows it is \
+ *
+ * NOTE: it is probably better to normalize paths on windows to use / internally.
+ */
+static char getFilesystemSplitChar( void )
+{
+    char splitchar = '/';
+#if defined(__MINGW32__)
+    splitchar = '\\';
+#endif
+    return splitchar;
+}

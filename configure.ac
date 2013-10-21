@@ -37,8 +37,8 @@ AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_TESTDIR([tests],[fontforge])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
-AC_CONFIG_HEADERS([inc/fontforge-config.h])
-AM_INIT_AUTOMAKE([foreign -Wall])
+AC_CONFIG_HEADER([inc/fontforge-config.h])
+AM_INIT_AUTOMAKE([foreign -Wall subdir-objects])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
@@ -84,9 +84,9 @@ freetype_url="http://www.freetype.org/"
 giflib_url="http://giflib.sourceforge.net/"
 libpng_url="http://www.libpng.org/"
 libxml_url="http://www.xmlsoft.org/"
-libspiro_url="http://libspiro.sourceforge.net/"
+libspiro_url="https://github.com/fontforge/libspiro"
 libuninameslist_url="https://github.com/fontforge/libuninameslist"
-libunicodenames_url="https://github.com/sortsmill/libunicodenames"
+libunicodenames_url="https://bitbucket.org/sortsmill/libunicodenames"
 libzmq_url="http://www.zeromq.org/"
 libreadline_url="http://www.gnu.org/software/readline"
 
@@ -174,6 +174,11 @@ FONTFORGE_ARG_DISABLE([link-test],
         [_NO_FFLINKTEST])
 AM_CONDITIONAL([BUILD_LINK_TEST],[test x"${i_do_have_link_test}" = xyes])
 
+AC_ARG_ENABLE([windows-cross-compile],
+        [AS_HELP_STRING([--enable-windows-cross-compile],
+                [enable cross compile for windows extra support])],
+        [WINDOWS_CROSS_COMPILE=yes])
+
 ##################
 # Theme selection.
 #
@@ -182,7 +187,7 @@ AM_CONDITIONAL([BUILD_LINK_TEST],[test x"${i_do_have_link_test}" = xyes])
 themename=tango
 
 #
-# Retain the old 2012 theme for those who like it. 
+# Retain the old 2012 theme for those who like it.
 #
 FONTFORGE_ARG_ENABLE([theme-2012],
         [AS_HELP_STRING([--enable-theme-2012],
@@ -264,7 +269,7 @@ if test x"${i_do_have_x}" = xyes; then
    AC_DEFINE(HAVE_GUI,[1],[Have GUI])
 fi
 if test x"${i_do_have_x}" = xyes; then
-   if test x"${i_do_have_libzmq}" = xyes; then 
+   if test x"${i_do_have_libzmq}" = xyes; then
       AC_DEFINE(BUILD_COLLAB,[1],[Build the Collab Code])
    fi
 fi
@@ -272,8 +277,13 @@ fi
 # We have both libraries but did not choose which one to use yet
 if test x"${i_do_have_libuninameslist}" = xyes; then
    if test x"${i_do_have_libunicodenames}" = xyes; then
-      i_do_have_libuninameslist=no
-      AC_DEFINE(_NO_LIBUNINAMESLIST)
+      if test x"${i_do_have_libuninamesfun}" = xyes; then
+	  i_do_have_libunicodenames=no
+	  AC_DEFINE(_NO_LIBUNICODENAMES)
+      else
+	  i_do_have_libuninameslist=no
+	  AC_DEFINE(_NO_LIBUNINAMESLIST)
+      fi
    fi
 fi
 
@@ -389,8 +399,8 @@ FONTFORGE_CREATE_SYSTEMSPECIFIC
 FONTFORGE_CONFIG_TESTSUITE
 
 FONTFORGE_GIT_VERSION=""
-if test -d .git; then
-  FONTFORGE_GIT_VERSION=`git log --pretty=format:'%H' -n 1`
+if test -d ${srcdir}/.git; then
+  FONTFORGE_GIT_VERSION=`cd ${srcdir} && git log --pretty=format:'%H' -n 1`
 fi
 FONTFORGE_MODTIME="`date '+%s'`L"
 FONTFORGE_MODTIME_STR="`date +'%H:%M %Z %e-%b-%Y'`"

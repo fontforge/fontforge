@@ -626,7 +626,7 @@ msgstr "Επι_κόλληση"
 
 #: bitmapview.c:1706 charview.c:7644 charview.c:8736 combinations.c:996
 #: fontview.c:6500 fontview.c:7710 metricsview.c:2677
-msgid "C_lear"
+msgid "C_hop"
 msgstr "Κα_θαρισμός"
 
 #: bitmapview.c:1708 charview.c:7610 charview.c:8717 fontview.c:6468
@@ -7155,7 +7155,7 @@ msgid "300 Light"
 msgstr ""
 
 #: fontinfo.c:112
-msgid "400 Book"
+msgid "400 Regular"
 msgstr ""
 
 #: fontinfo.c:113
@@ -7163,7 +7163,7 @@ msgid "500 Medium"
 msgstr ""
 
 #: fontinfo.c:114
-msgid "600 Demi-Bold"
+msgid "600 Semi-Bold"
 msgstr ""
 
 #: fontinfo.c:115
@@ -7171,7 +7171,7 @@ msgid "700 Bold"
 msgstr ""
 
 #: fontinfo.c:116
-msgid "800 Heavy"
+msgid "800 Extra-Bold"
 msgstr ""
 
 #: fontinfo.c:117

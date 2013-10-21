@@ -27,10 +27,12 @@
 #ifndef _VIEWS_H
 #define _VIEWS_H
 
+#include "ffglib.h"
 #include "baseviews.h"
 
 #include <ggadget.h>
 #include "dlist.h"
+
 
 struct gfi_data;
 struct contextchaindlg;
@@ -58,6 +60,7 @@ extern struct cvshows {
     int hvoffset;
     int checkselfintersects;	/* Not really something shown, but convenient to keep it here */
     int showdebugchanges;	/* Changes the way changing rasters are displayed in tt debug mode */
+    int alwaysshowcontrolpoints; //< Always show the BCP even when their splinepoint is not selected
 } CVShows;
 
 extern struct bvshows {
@@ -142,6 +145,7 @@ typedef struct charview {
     unsigned int showvhints:1;
     unsigned int showdhints:1;
     unsigned int showpoints:1;
+    unsigned int alwaysshowcontrolpoints:1;
     unsigned int showfilled:1;
     unsigned int showrulers:1;
     unsigned int showrounds:2;		/* 0=>no, 1=>auto, 2=>always */
@@ -167,6 +171,7 @@ typedef struct charview {
     unsigned int tah_sel:1;
     unsigned int inactive:1;			/* When in a search view */
     unsigned int show_ft_results: 1;	/* 32 */
+    unsigned int show_ft_results_live_update : 1;
     unsigned int coderange: 2;			/* For the debugger */
     unsigned int autonomous_ruler_w: 1;
     unsigned int showcpinfo: 1;
@@ -182,6 +187,7 @@ typedef struct charview {
     unsigned int checkselfintersects: 1;
     unsigned int showdebugchanges: 1;
     unsigned int inPreviewMode: 1;
+    unsigned int inDraggingComparisonOutline: 1;
     int hvoffset;		/* for showalmosthvlines */
     int layers_off_top;
     real scale;
@@ -366,6 +372,7 @@ typedef struct metricsview {
     unsigned int antialias: 1;
     unsigned int vertical: 1;
     unsigned int type: 2;		/* enum mv_type */
+    unsigned int usehinting: 1;         /* should the hints be used during the render */
     unsigned int pixelsize_set_by_window;
     int xp, yp, ap_owner;
     BasePoint ap_start;
@@ -435,6 +442,8 @@ typedef struct findsel {
     unsigned int select_controls: 1;	/* notice control points */
     unsigned int seek_controls: 1;	/* notice control points before base points */
     unsigned int all_controls: 1;	/* notice control points even if the base points aren't selected (in truetype point numbering mode where all cps are visible) */
+    unsigned int alwaysshowcontrolpoints:1; /* if the BCP are forced on, then we want the selection code paths
+					     * to also know that so the user can drag the BCP of a non selected splinepoint */
     real scale;
     PressedOn *p;
 } FindSel;
@@ -693,8 +702,7 @@ extern void SCStroke(SplineChar *sc);
 
 extern void PfaEditSetFallback(void);
 extern void RecentFilesRemember(char *filename);
-extern void LastFontsClear(void);
-
+extern void LastFonts_Save(void);
 
 struct debugger_context;
 extern void DebuggerTerminate(struct debugger_context *dc);
@@ -816,9 +824,11 @@ extern void SFPrivateInfo(SplineFont *sf);
 extern void FVDelay(FontView *fv,void (*func)(FontView *));
 extern void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, int success);
 extern void SCPreparePopup(GWindow gw,SplineChar *sc, struct remap *remap, int enc, int actualuni);
-enum outlinesfm_flags { sfm_stroke=0x1, sfm_fill=0x2, sfm_nothing=0x4 };
-extern void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePointList *set,
-	Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode );
+enum outlinesfm_flags { sfm_stroke=0x1, sfm_fill=0x2, sfm_nothing=0x4, sfm_stroke_trans = (0x1|0x8) };
+extern void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *set,
+					Color fg, int dopoints, DRect *clip,
+					enum outlinesfm_flags strokeFillMode,
+					Color AlphaChannelOverride );
 extern void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	Color fg, int dopoints, DRect *clip );
 extern void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *set,
@@ -901,6 +911,12 @@ extern int CVValid(SplineFont *sf, SplineChar *sc, CharView *cv);
 extern void CVSetCharChanged(CharView *cv,int changed);
 extern int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya);
 extern int CVAnySelPoints(CharView *cv);
+
+/**
+ * Get all the selected points in the current cv.
+ * Caller must g_list_free() the returned value.
+ */
+extern GList_Glib* CVGetSelectedPoints(CharView *cv);
 extern void CVSelectPointAt(CharView *cv);
 extern int CVClearSel(CharView *cv);
 extern int CVSetSel(CharView *cv,int mask);
@@ -1030,8 +1046,6 @@ extern GTextInfo *SLOfFont(SplineFont *sf);
 extern void DoPrefs(void);
 extern void DoXRes(void);
 extern void PointerDlg(CharView *cv);
-extern void LastFonts_Activate(void);
-extern void LastFonts_End(int success);
 extern void GListAddStr(GGadget *list,unichar_t *str, void *ud);
 extern void GListReplaceStr(GGadget *list,int index, unichar_t *str, void *ud);
 extern struct macname *NameGadgetsGetNames( GWindow gw );
@@ -1089,6 +1103,11 @@ extern int ii_v_e_h(GWindow gw, GEvent *event);
 extern void instr_scroll(struct instrinfo *ii,struct sbevent *sb);
 
 extern void CVGridFitChar(CharView *cv);
+/**
+ * If a live preview of grid fit is somehow in effect, call CVGridFitChar() for us.
+ * A caller can call here after a change and any CVGridFitChar() will be updated if need be.
+ */
+extern void CVGridHandlePossibleFitChar(CharView *cv);
 extern void CVFtPpemDlg(CharView *cv,int debug);
 extern void SCDeGridFit(SplineChar *sc);
 extern void SCReGridFit(SplineChar *sc,int layer);
@@ -1234,6 +1253,7 @@ extern void CVColInit( void );
 extern void FontViewRemove(FontView *fv);
 extern void FVChar(FontView *fv,GEvent *event);
 extern void FVDrawInfo(FontView *fv,GWindow pixmap,GEvent *event);
+extern void FVRedrawAllCharViews(FontView *fv);
 extern void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable);
 extern char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current);
 extern void ME_ListCheck(GGadget *g,int r, int c, SplineFont *sf);
@@ -1337,5 +1357,131 @@ extern int FontViewFind_byXUIDConnected( FontViewBase* fv, void* udata );
 extern int FontViewFind_byCollabPtr(  FontViewBase* fv, void* udata );
 extern int FontViewFind_bySplineFont( FontViewBase* fv, void* udata );
 
+extern void SPSelectNextPoint( SplinePoint *sp, int state );
+extern void SPSelectPrevPoint( SplinePoint *sp, int state );
+
+
+/**
+ * Is the next BCP for the sp selected, and is it the primary BCP for the selection
+ * @see SPIsNextCPSelected
+ */
+extern bool SPIsNextCPSelectedSingle( SplinePoint *sp, CharView *cv );
+/**
+ * Is the prev BCP for the sp selected, and is it the primary BCP for the selection
+ * @see SPIsNextCPSelected
+ */
+extern bool SPIsPrevCPSelectedSingle( SplinePoint *sp, CharView *cv );
+/**
+ * Is the next BCP for the sp selected, it can be the primary or any
+ * of the secondary selected BCP
+ *
+ * The last selected BCP is the 'primary' selected BCP. Code which
+ * only handles a single selected BCP will only honor the primary
+ * selected BCP
+ *
+ * There can also be one or more seconday selected BCP. These might be
+ * drawn with slightly less highlight graphically and are only handled
+ * by code which has been updated to allow mutliple selected BCP to be
+ * operated on at once.
+ */
+extern bool SPIsNextCPSelected( SplinePoint *sp, CharView *cv );
+/**
+ * Is the prev BCP for the sp selected, it can be the primary or any of the secondary selected BCP
+ *
+ * @see SPIsNextCPSelected
+ */
+extern bool SPIsPrevCPSelected( SplinePoint *sp, CharView *cv );
+
+typedef struct FE_adjustBCPByDeltaDataS
+{
+    CharView *cv; //< used to update view
+    real dx;      //< Add this to the BCP x
+    real dy;      //< Add this to the BCP y
+    
+} FE_adjustBCPByDeltaData;
+
+/**
+ * Visitor function type for visitSelectedControlPoints()
+ */
+typedef void (*visitSelectedControlPointsVisitor) ( void* key,
+						    void* value,
+						    SplinePoint* sp,
+						    BasePoint *which,
+						    bool isnext,
+						    void* udata );
+
+/**
+ * Visitor function to move each BCP by data->dx/data->dy
+ * 
+ *
+ * Visitor: visitSelectedControlPointsVisitor
+ * UsedBy:  CVFindAndVisitSelectedControlPoints
+ */
+extern void FE_adjustBCPByDelta( void* key,
+				 void* value,
+				 SplinePoint* sp,
+				 BasePoint *which,
+				 bool isnext,
+				 void* udata );
+/**
+ * Visitor function to unselect every BCP passed
+ * 
+ * Visitor: visitSelectedControlPointsVisitor
+ * UsedBy:  CVFindAndVisitSelectedControlPoints
+ *          CVUnselectAllBCP
+ *
+ * @see SPIsNextCPSelected
+ */
+extern void FE_unselectBCP( void* key,
+			    void* value,
+			    SplinePoint* sp,
+			    BasePoint *which,
+			    bool isnext,
+			    void* udata );
+
+/**
+ * Find all the selected BCP and apply the visitor function f to them
+ * passing the user data pointer udata to the 'f' visitor.
+ *
+ * This function doesn't use udata at all, it simply passes it on to
+ * your visitor function so it may do something with it like record
+ * results or take optional parameters.
+ *
+ * If preserveState is true and there are selected BCP then
+ * CVPreserveState() is called before the visitor function.
+ */
+extern void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
+						 visitSelectedControlPointsVisitor f, void* udata );
+/**
+ * NOTE: doesn't do all, just all on selected spline.
+ */
+extern void CVVisitAllControlPoints( CharView *cv, bool preserveState,
+				     visitSelectedControlPointsVisitor f, void* udata );
+
+/**
+ * Unselect all the BCP which are currently selected.
+ */
+extern void CVUnselectAllBCP( CharView *cv );
+
+
+/**
+ * This will call your visitor function 'f' on any selected BCP. This
+ * is regardless of if the BCP is the next or prev BCP for it's
+ * splinepoint.
+ * 
+ * This function doesn't use udata at all, it simply passes it on to
+ * your visitor function so it may do something with it like record
+ * results or take optional parameters.
+ */
+extern void visitSelectedControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata );
+/**
+ * NOTE: doesn't do all, just all on selected spline.
+ */
+extern void visitAllControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata );
+
+extern void CVVisitAdjacentToSelectedControlPoints( CharView *cv, bool preserveState,
+						    visitSelectedControlPointsVisitor f, void* udata );
+
+extern void CVFreePreTransformSPL( CharView* cv );
 
 #endif	/* _VIEWS_H */

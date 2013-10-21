@@ -2,53 +2,82 @@ George Williams
 10 years and approximately 600,000 lines of code.
 
 Aktado <aktado@users.sourceforge.jp>
+Alex Raftis
+Anand
 Arthaey Angosii
 Alexey Kryukov - nowakowskittfinstr.c
 Alexandre Prokoudine
 Barry Schwartz
 Baruch Even - (debian upstream) baruch
+Bastien Dejean
+Behnam Esfahbod
 Ben Martin - hotkeys.c, hotkeys.h
+Claudio Beccari
 Craig Lennox
-Dave Crossland
+Dave Crossland (dave@lab6.com)
 Deron Meranda
 Dave Levine
 Dong Yang
+Eddie Yuen
 Edward Lee
 Frank Trampe
 Georg Duffner
+Giuseppe Bilotta
+Giuseppe Ghibo
+Greg Ford
+Grzegorz
+Harald Harders
+Horváth Balázs
 J. Jansen - gv - ANALYZE_MAP.COM
+Jacob Jansen
+James Cloos
 Jason Pagura
+Jim Killock
 Johannes Plass - gv = ANALYZE_MAP.COM
 Jon Banquer
 Jonathan Hanna
 Jonathan Hue
 Jose Da Silva
 Joshua Richardson
-KANOU
+Jouk Jansen
+Juergen Buntrock
+KANOU Hiroki
+Kauzuyuki
 Kemie Guaida - Tango PixMaps
 Kevin Fenzi
 Khaled Hosny
 Lu Wang
+Martin Hosken
 Matthew Petroff
 Matthew Skala
 Max Rabkin - excepthook.py
+Maxim Iorsh
 Michal Mazurek
 Michal Nowakowski - nowakowskittfinstr.c
+Phil Lindsay
 Qmpel
 R.L. Horn
+R.P.C. Rodgers
 Rajeesh K Nambiar
+Reuben Thomas
+Ryusei Yamaguchi
 Scott Pakin - Packaging
 serval2412
+Silvan Toledo
 Steve White - ASMO 708 codepage, & more
+TANIGAWA Takashi
 Timothy O. Theisen - gv = ANALYZE_MAP.COM
 Tom Harvey - fontforge.1
 Tom Lechner
+Uli Schlachter
 Ulrich Klauer
+Vadim Belman
 Valek Filippov
 Vernon Adams
 Ville Skytta
 Werner Lemberg
 yannis
+Yuri Chornoivan
 Yi Yang (ahyangyi)
 
 ...more coders to add here later since this is a long list!
@@ -60,7 +89,7 @@ Philipp Poll - de - Deutsch
 Apostolos Syropoulos - el - Greek
 George Williams - en_GB
 Walter Echarri, es - Spanish
-Pierre HANSER, fr - French
+Pierre Hanser, fr - French
 Yannis Haralambous - French
 Claudio Beccari, it - Italian
 KANOU Hiroki, ja - Japanese
@@ -68,6 +97,7 @@ TANIGAWA Takashi, ja - Japanese
 OKANO Takayoshi, ja - Japanese
 Hiran - ml - Malayalam
 Michal Nowakowski - po - Polish
+Jose Da Silva - pt - Portuguese
 Alexandre Prokoudine - ru - Russian
 Valek Filippov - ru - Russian
 Yuri Chornoivan - uk - Ukrainian

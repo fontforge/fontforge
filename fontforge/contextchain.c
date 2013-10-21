@@ -294,7 +294,7 @@ return( len );
 static char *addseqlookups(char *pt, struct fpst_rule *r) {
     int i;
 
-    pt = utf8_idpb(pt, 0x21d2);
+    pt = utf8_idpb(pt, 0x21d2,0);
     for ( i=0; i<r->lookup_cnt; ++i ) {
 	sprintf( pt," %d <%s>,", r->lookups[i].seq, r->lookups[i].lookup->lookup_name);
 	pt += strlen(pt);

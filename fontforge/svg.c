@@ -291,7 +291,7 @@ static void svg_dumpfill(FILE *file, struct brush *cbrush, struct brush *fallbac
 	fprintf( file, "fill=\"none\" " );
 return;
     }
-    
+
     brush = *cbrush;
     if ( fallback!=NULL ) {
 	if ( brush.col==COLOR_INHERITED ) brush.col = fallback->col;
@@ -815,7 +815,7 @@ static void svg_notdefdump(FILE *file, SplineFont *sf,int defwid,int layer) {
     int notdefpos;
 
     notdefpos = SFFindNotdef(sf,-2);
-    
+
     if ( notdefpos!=-1 ) {
 	SplineChar *sc = sf->glyphs[notdefpos];
 
@@ -922,10 +922,11 @@ return( uni==-1 || uni>=0x10000 ||
 
 static void svg_sfdump(FILE *file,SplineFont *sf,int layer) {
     int defwid, i, formeduni;
-    char oldloc[24];
+    char oldloc[25];
     struct altuni *altuni;
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
@@ -1040,7 +1041,7 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
     strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
     setlocale(LC_NUMERIC,"C");
     fprintf(svg, "<?xml version=\"1.0\" standalone=\"no\"?>\n" );
-    fprintf(svg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\" >\n" ); 
+    fprintf(svg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\" >\n" );
     fprintf(svg, "<svg viewBox=\"%d %d %d %d\">\n",
 	    (int) floor(b.minx), (int) floor(b.miny),
 	    (int) ceil(b.maxx), (int) ceil(b.maxy));
@@ -2151,7 +2152,7 @@ return;
 	MatMultiply(trans,st->transform,st->transform);
     }
 }
-	    
+
 static real parseGCoord(xmlChar *prop,int bb_units,real bb_low, real bb_high) {
     char *end;
     double val = strtod((char *) prop,&end);
@@ -3552,7 +3553,7 @@ return( NULL );
     for ( i=0; i<sf->glyphcnt; ++i )
 	map->map[i] = map->backmap[i] = i;
     sf->map = map;
-    
+
 return( sf );
 }
 
@@ -3568,7 +3569,7 @@ return( s->order2 );
 	}
 	ss = ss->next;
     }
-return( -1 );    
+return( -1 );
 }
 
 static int EntFindOrder(Entity *ent) {
@@ -3582,7 +3583,7 @@ return( ret );
 	}
 	ent = ent->next;
     }
-return( -1 );    
+return( -1 );
 }
 
 int SFFindOrder(SplineFont *sf) {
@@ -3665,7 +3666,7 @@ void SFSetOrder(SplineFont *sf,int order2) {
 static SplineFont *_SFReadSVG(xmlDocPtr doc, char *filename) {
     xmlNodePtr *fonts, font;
     SplineFont *sf;
-    char oldloc[24];
+    char oldloc[25];
     char *chosenname = NULL;
 
     fonts = FindSVGFontNodes(doc);
@@ -3685,7 +3686,8 @@ return( NULL );
 	}
     }
     free(fonts);
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
     sf = SVGParseFont(font);
     setlocale(LC_NUMERIC,oldloc);
@@ -3793,7 +3795,7 @@ return( ret );
 Entity *EntityInterpretSVG(char *filename,char *memory, int memlen,int em_size,int ascent) {
     xmlDocPtr doc;
     xmlNodePtr top;
-    char oldloc[24];
+    char oldloc[25];
     Entity *ret;
     int order2;
 
@@ -3817,7 +3819,8 @@ return( NULL );
 return( NULL );
     }
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
     ret = SVGParseSVG(top,em_size,ascent);
     setlocale(LC_NUMERIC,oldloc);

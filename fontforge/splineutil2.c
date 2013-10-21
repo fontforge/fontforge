@@ -4085,19 +4085,19 @@ SplineFont *SplineFontBlank(int charcnt) {
     sf->familyname = copy(sf->fontname);
     sprintf( buffer, "%s.sfd", sf->fontname);
     sf->origname = ToAbsolute(buffer);
-    sf->weight = copy("Medium");
+    sf->weight = copy("Regular");
+    time(&now);
+    tm = localtime(&now);
     if ( author!=NULL )
-	sprintf( buffer, "Created by %.50s with FontForge 2.0 (http://fontforge.sf.net)", author );
+	sprintf( buffer, "Copyright (c) %d, %.50s", tm->tm_year+1900, author );
     else
-	strcpy( buffer, "Created with FontForge 2.0 (http://fontforge.sf.net)" );
+	sprintf( buffer, "Copyright (c) %d, Anonymous", tm->tm_year+1900 );
     sf->copyright = copy(buffer);
     if ( xuid!=NULL ) {
 	sf->xuid = galloc(strlen(xuid)+20);
 	sprintf(sf->xuid,"[%s %d]", xuid, (rand()&0xffffff));
     }
-    time(&now);
-    tm = localtime(&now);
-    sprintf( buffer, "%d-%d-%d: Created.", tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday );
+    sprintf( buffer, "%d-%d-%d: Created with FontForge (http://fontforge.org)", tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday );
     sf->comments = copy(buffer);
     sf->version = copy("001.000");
     sf->ascent = rint(new_em_size*.8); sf->descent = new_em_size-sf->ascent;
@@ -4630,6 +4630,13 @@ return;
 	}
     }
 }
+
+void SPTouchControl(SplinePoint *sp,BasePoint *which, int order2)
+{
+    BasePoint to = *which;
+    SPAdjustControl( sp, which, &to, order2 );
+}
+
 
 void SPAdjustControl(SplinePoint *sp,BasePoint *cp, BasePoint *to,int order2) {
     BasePoint *othercp = cp==&sp->nextcp?&sp->prevcp:&sp->nextcp;

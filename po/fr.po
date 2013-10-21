@@ -849,7 +849,7 @@ msgstr "Co_ller"
 
 #: bitmapview.c:1752 charview.c:9045 combinations.c:997 fontview.c:6928
 #: fontview.c:8114 metricsview.c:2510
-msgid "C_lear"
+msgid "C_hop"
 msgstr "Supprim_er"
 
 #: bitmapview.c:1754 charview.c:9010 fontview.c:6894 metricsview.c:2513
@@ -6242,7 +6242,7 @@ msgid "300 Light"
 msgstr "300 Maigre"
 
 #: fontinfo.c:88
-msgid "400 Book"
+msgid "400 Regular"
 msgstr "400 Livre"
 
 #: fontinfo.c:89
@@ -6250,7 +6250,7 @@ msgid "500 Medium"
 msgstr "500 Moyenne"
 
 #: fontinfo.c:90
-msgid "600 Demi-Bold"
+msgid "600 Semi-Bold"
 msgstr "600 Demi-grasse"
 
 #: fontinfo.c:91
@@ -6258,7 +6258,7 @@ msgid "700 Bold"
 msgstr "700 Grasse"
 
 #: fontinfo.c:92
-msgid "800 Heavy"
+msgid "800 Extra-Bold"
 msgstr "800 Extra-grasse"
 
 #: fontinfo.c:93

@@ -1156,10 +1156,10 @@ return( NULL );
     if ( table==NULL )
 return( NULL );
 
-    ret = galloc((strlen(str)+1)*3);
+    ret = galloc(strlen(str)*4+1);
     for ( rpt = ret; *ustr; ++ustr ) {
 	int ch = table[*ustr];
-	rpt = utf8_idpb(rpt,ch);
+	rpt = utf8_idpb(rpt,ch,0);
     }
     *rpt = '\0';
 return( ret );

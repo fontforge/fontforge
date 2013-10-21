@@ -400,6 +400,20 @@ return( NULL );
 return( NULL );
     }
 
+#if FREETYPE_MINOR >= 5
+    {
+	int tt_version = TT_INTERPRETER_VERSION_35;
+
+	if ( FT_Property_Set( dc->context,
+			      "truetype",
+			      "interpreter-version",
+			      &tt_version )) {
+	    free(dc);
+return( NULL );
+	}
+    }
+#endif
+
     FT_Set_Debug_Hook( dc->context,
 		       FT_DEBUG_HOOK_TRUETYPE,
 		       (FT_DebugHook_Func)PauseIns );

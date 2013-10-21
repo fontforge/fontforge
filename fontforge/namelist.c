@@ -484,17 +484,18 @@ return( namelist_for_new_fonts );
 }
 
 NameList *NameListByName(char *name) {
+    const char *nameTex = "ΤεΧ Names";
     NameList *nl;
 
     /* ΤεΧ is hard tp type e.g. from scripting, so accept TeX as alias */
     if (strcmp(name,"TeX Names")==0)
-	name = copy("ΤεΧ Names");
+	name = (char *)nameTex;
 
     for ( nl = &agl; nl!=NULL; nl=nl->next ) {
 	if ( strcmp(_(nl->title),name)==0 || strcmp(nl->title,name)==0 )
-return( nl );
+	    return( nl );
     }
-return( NULL );
+    return( NULL );
 }
 
 static void NameListFreeContents(NameList *nl) {
@@ -692,7 +693,7 @@ return;
     diro = opendir(dir);
     if ( diro==NULL )		/* It's ok not to have any */
 return;
-    
+
     while ( (ent = readdir(diro))!=NULL ) {
 	if ( isnamelist(ent->d_name) ) {
 	    sprintf( buffer, "%s/%s", dir, ent->d_name );

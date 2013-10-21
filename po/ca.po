@@ -1415,7 +1415,7 @@ msgstr "Engan_xa"
 #: fontview.c:5448
 #: metricsview.c:3077
 #: uiutil.c:654
-msgid "C_lear"
+msgid "C_hop"
 msgstr "S_uprimeix"
 
 #: bitmapview.c:2134
@@ -8851,15 +8851,15 @@ msgid "300 Light"
 msgstr "300 Fina"
 
 #: fontinfo.c:93
-msgid "400 Book"
-msgstr "400 Normal (book)"
+msgid "400 Regular"
+msgstr "400 Regular (book)"
 
 #: fontinfo.c:94
 msgid "500 Medium"
 msgstr "500 Normal (medium)"
 
 #: fontinfo.c:95
-msgid "600 Demi-Bold"
+msgid "600 Semi-Bold"
 msgstr "600 Seminegra"
 
 #: fontinfo.c:96
@@ -8867,7 +8867,7 @@ msgid "700 Bold"
 msgstr "700 Negreta"
 
 #: fontinfo.c:97
-msgid "800 Heavy"
+msgid "800 Extra-Bold"
 msgstr "800 Pesant"
 
 #: fontinfo.c:98
@@ -31983,7 +31983,7 @@ msgstr "És probable que l'interlletratge no funcioni bé al Windows"
 
 #: tottfaat.c:260
 #, c-format
-msgid "On Windows many apps will have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs"
+msgid "Note: On Windows many apps can have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs (eg, they have a Unicode value of -1) To avoid this, go to Generate, Options, and uncheck Old Style kern for OpenType."
 msgstr ""
 
 #: tottf.c:510

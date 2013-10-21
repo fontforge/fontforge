@@ -3,7 +3,7 @@
 *******************************************************************************
 
     Copyright (C) 2013 Ben Martin
-    
+
     This file is part of FontForge.
 
     FontForge is free software: you can redistribute it and/or modify
@@ -46,13 +46,13 @@ extern int pref_collab_roundTripTimerMS;
  * Typically, the process that started the server will then call
  * sessionStart() to send the SFD over to that server. Other folks
  * who want to join the collab session will use Join() instead.
- * 
+ *
  * Both methods of starting the client will register for published
  * events from the server and apply them automatically to the fontview
  * (and its charviews etc). So the difference of how the session was
  * started becomes much less after the initial call to sessionStart or
  * sessionJoin.
- * 
+ *
  */
 extern void* collabclient_new( char* address, int port );
 /**
@@ -146,5 +146,6 @@ extern void collabclient_closeLocalServer( FontViewBase* fv );
  */
 extern int64_t collabclient_getCurrentSequenceNumber(void* ccvp);
 
-#endif
+extern void collabclient_ensureClientBeacon(void);
 
+#endif

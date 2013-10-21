@@ -149,7 +149,7 @@ static DumpChar startfileencoding(DumpChar dumpchar,void *data,
     func(randombytes[3],fed);
 return( func );
 }
-    
+
 /* Encode a string in adobe's format. choose a different set of initial random*/
 /*  bytes every time. (the expected value of leniv is 4. we have some support */
 /*  for values bigger than 5 but not as much as for values <=4) */
@@ -719,7 +719,7 @@ struct psfilter {
     void (*dumpchar)(int ch,void *data);
     void *data;
 };
-    
+
 static void InitFilter(struct psfilter *ps,void (*dumpchar)(int ch,void *data), void *data) {
     ps->ascii85encode = 0;
     ps->ascii85n = 0;
@@ -1175,12 +1175,12 @@ static void dumpproc(void (*dumpchar)(int ch,void *data), void *data, SplineChar
     if ( sc->dependents!=NULL )
 	dumpstr(dumpchar,data,"dup -1 ne { ");
     if ( !SCSetsColor(sc) ) {
-	dumpf(dumpchar,data,"%d 0 %d %d %d %d setcachedevice", 
+	dumpf(dumpchar,data,"%d 0 %d %d %d %d setcachedevice",
 		(int) sc->width, (int) floor(b.minx), (int) floor(b.miny),
 		(int) ceil(b.maxx), (int) ceil(b.maxy) );
     } else {
 	/* can't cache it if we set colour/grey within */
-	dumpf(dumpchar,data,"%d 0 setcharwidth", 
+	dumpf(dumpchar,data,"%d 0 setcharwidth",
 		(int) sc->width );
     }
     if ( sc->dependents!=NULL )
@@ -1535,7 +1535,7 @@ return( false );
     if ( !hash ) {
 	FindHStems(sf,stemsnaph,snapcnt);
 	mi = -1;
-	for ( i=0; stemsnaph[i]!=0 && i<12; ++i )
+	for ( i=0; i<12 && stemsnaph[i]!=0; ++i )
 	    if ( mi==-1 ) mi = i;
 	    else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
 	if ( mi!=-1 ) stdhw[0] = stemsnaph[mi];
@@ -1627,7 +1627,7 @@ return( false );
 	dumpf(dumpchar,data,"/BlueScale %g def\n", bluescale );
     if ( isbold && !hasbold )
 	dumpf(dumpchar,data,"/ForceBold true def\n" );
-    if ( !haslg && iscjk ) 
+    if ( !haslg && iscjk )
 	dumpf(dumpchar,data,"/LanguageGroup 1 def\n" );
     if ( sf->tempuniqueid!=0 && sf->tempuniqueid!=-1 && sf->use_uniqueid )
 	dumpf(dumpchar,data,"/UniqueID %d def\n", sf->tempuniqueid );
@@ -1721,7 +1721,7 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
     }
     if ( sf->weight )
 	dumpf(dumpchar,data," /Weight (%s) readonly def\n", sf->weight );
-    if ( sf->pfminfo.fstype!=-1 ) 
+    if ( sf->pfminfo.fstype!=-1 )
 	dumpf(dumpchar,data," /FSType %d def\n", sf->pfminfo.fstype );
     if ( sf->subfontcnt==0 ) {
 	dumpf(dumpchar,data," /ItalicAngle %g def\n", (double) sf->italicangle );
@@ -1775,48 +1775,49 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
     dumpstr(dumpchar,data,"end readonly def\n");
 }
 
-const char *GetAuthor(void) {
-#if defined(__MINGW32__)
-    static char author[200] = { '\0' };
-    if ( author[0] == '\0' ){
-	char* name = getenv("USER");
-	if(!name) return NULL;
-	strncpy(author, name, sizeof(author));
-	author[sizeof(author)-1] = '\0';
-    }
-    return author;
-#else
-    struct passwd *pwd;
-    static char author[200] = { '\0' };
-    const char *ret = NULL, *pt;
+// moved to gutils/gutils.c
+/* const char *GetAuthor(void) { */
+/* #if defined(__MINGW32__) */
+/*     static char author[200] = { '\0' }; */
+/*     if ( author[0] == '\0' ){ */
+/* 	char* name = getenv("USER"); */
+/* 	if(!name) return NULL; */
+/* 	strncpy(author, name, sizeof(author)); */
+/* 	author[sizeof(author)-1] = '\0'; */
+/*     } */
+/*     return author; */
+/* #else */
+/*     struct passwd *pwd; */
+/*     static char author[200] = { '\0' }; */
+/*     const char *ret = NULL, *pt; */
 
-    if ( author[0]!='\0' )
-return( author );
+/*     if ( author[0]!='\0' ) */
+/* return( author ); */
 
-/* Can all be commented out if no pwd routines */
-    pwd = getpwuid(getuid());
-#ifndef __VMS
-    if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' ) {
-	strncpy(author,pwd->pw_gecos,sizeof(author));
-	author[sizeof(author)-1] = '\0';
-	ret = author;
-    } else if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' ) {
-#else
-    if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' ) {
-#endif
-	strncpy(author,pwd->pw_name,sizeof(author));
-	author[sizeof(author)-1] = '\0';
-	ret = author;
-    } else if ( (pt=getenv("USER"))!=NULL ) {
-	strncpy(author,pt,sizeof(author));
-	author[sizeof(author)-1] = '\0';
-	ret = author;
-    }
-    endpwent();
-/* End comment */
-return( ret );
-#endif
-}
+/* /\* Can all be commented out if no pwd routines *\/ */
+/*     pwd = getpwuid(getuid()); */
+/* #ifndef __VMS */
+/*     if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' ) { */
+/* 	strncpy(author,pwd->pw_gecos,sizeof(author)); */
+/* 	author[sizeof(author)-1] = '\0'; */
+/* 	ret = author; */
+/*     } else if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' ) { */
+/* #else */
+/*     if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' ) { */
+/* #endif */
+/* 	strncpy(author,pwd->pw_name,sizeof(author)); */
+/* 	author[sizeof(author)-1] = '\0'; */
+/* 	ret = author; */
+/*     } else if ( (pt=getenv("USER"))!=NULL ) { */
+/* 	strncpy(author,pt,sizeof(author)); */
+/* 	author[sizeof(author)-1] = '\0'; */
+/* 	ret = author; */
+/*     } */
+/*     endpwent(); */
+/* /\* End comment *\/ */
+/* return( ret ); */
+/* #endif */
+/* } */
 
 static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
 	SplineFont *sf, int format ) {

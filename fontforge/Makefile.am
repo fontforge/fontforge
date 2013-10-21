@@ -51,7 +51,10 @@ macobjective.o: macobjective.m
 
 #--------------------------------------------------------------------------
 
-SUBDIRS = pixmaps collab
+SUBDIRS = pixmaps
+if LIBZMQ
+SUBDIRS += collab
+endif LIBZMQ
 
 FFSCRIPT_HEADER = "\#!$(bindir)/fontforge -lang=ff"
 
@@ -83,7 +86,7 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	uiinterface.h bezctx_ff.h edgelist.h groups.h nonlineartrans.h		\
 	sd.h unicoderange.h bitmapcontrol.h encoding.h ofl.h search.h		\
 	usermenu.h fffreetype.h PfEd.h sfd1.h ffpython.h			\
-	plugins.h sflayoutP.h print.h splinefont.h cvruler.h
+	plugins.h sflayoutP.h print.h splinefont.h cvruler.h ffglib.h
 
 #--------------------------------------------------------------------------
 
@@ -120,11 +123,12 @@ libfontforge_la_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c	\
 	ttfspecial.c ufo.c unicoderange.c utils.c winfonts.c zapfnomen.c	\
 	groups.c langfreq.c ftdelta.c autowidth2.c woff.c stamp.c			\
 	activeinui.c pluginloading.c is_LIGATURE.c flaglist.c strlist.c \
-	collabclient.c collabclient.h collabclientpriv.h 
+        collabclient.c collabclient.h collabclientpriv.h
+
 nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
-libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_LIBS)
+libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
 libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD) $(LIBLTDL)
 
 if PLUGIN_GB12345
@@ -153,12 +157,13 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	encodingui.c fontinfo.c fontview.c freetypeui.c fvfontsdlg.c	\
 	fvmetricsdlg.c gotodlg.c groupsdlg.c histograms.c images.c		\
 	kernclass.c layer2layer.c lookupui.c macencui.c math.c			\
-	metricsview.c mmdlg.c nonlineartransui.c oflib.c openfontdlg.c	\
+	metricsview.c mmdlg.c nonlineartransui.c oflib.c openfontdlg.c	        \
 	prefs.c problems.c pythonui.c savefontdlg.c scriptingdlg.c		\
-	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	\
-	splashimage.c startui.c statemachine.c tilepath.c transform.c	\
+	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	        \
+	splashimage.c startui.c statemachine.c tilepath.c transform.c	        \
 	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
-	usermenu.c macobjective.h collabclientui.c collabclientui.h 
+	usermenu.c macobjective.h                                               \
+        collabclientui.c collabclientui.h
 
 else !GRAPHICAL_USER_INTERFACE
 
@@ -172,7 +177,7 @@ if MACINTOSH
 MACFFEXE_LIBADD=macobjective.o
 endif MACINTOSH
 
-libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS)
+libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
 libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MACFFEXE_LIBADD)
 
 # Using -release instead of -version-info seems appropriate in the
@@ -213,46 +218,12 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 
 EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe libstamp.pre	\
 	exelibstamp.pre fontimage.1 fontlint.1 sfddiff.1			\
-	MacFontForgeApp.zip darwinsetup.in macobjective.m 
+	MacFontForgeApp.zip darwinsetup.in macobjective.m
 MOSTLYCLEANFILES = fontimage fontlint sfddiff libstamp.c	\
 	exelibstamp.c
 
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
-
-if MACINTOSH
-
-# FIXME: All of this needs testing on Mac OS X.
-
-# put the FontForge.app zipfile in the share directory
-pkgdata_DATA = MacFontForgeAppBuilt.zip
-
-install-exec-local: FontForge.app/Contents/Info.plist
-	$(SHELL) -x darwinsetup
-
-FontForge.app/Contents/Info.plist: $(srcdir)/MacFontForgeApp.zip $(srcdir)/stamp.c clean-darwin-stuff
-	$(UNZIP) $(srcdir)/MacFontForgeApp.zip
-	mkdir -p darwinsetup_tmpdir
-	cp FontForge.app/Contents/Info.plist darwinsetup_tmpdir
-	( VERSION=`$(GREP) FONTFORGE_VERSIONDATE_RAW ../inc/fontforge-config.h | $(SED) 's/.*RAW //g'` ; $(SED) s/20080810/$$VERSION/ < darwinsetup_tmpdir/Info.plist > FontForge.app/Contents/Info.plist )
-
-BUILT_SOURCES = MacFontForgeAppBuilt.zip
-
-MacFontForgeAppBuilt.zip: FontForge.app/Contents/Info.plist
-	zip -r $(srcdir)/MacFontForgeAppBuilt.zip FontForge.app
-
-mostlyclean-local: clean-darwin-stuff
-
-clean-darwin-stuff:
-	@if test -d darwinsetup_tmpdir; then rm -r -f darwinsetup_tmpdir;	\
-		echo rm -r -f darwinsetup_tmpdir; else :; fi
-	@if test -d FontForge.app; then rm -r -f FontForge.app;	\
-		echo rm -r -f FontForge.app; else :; fi
-	@if test -d __MACOSX; then rm -r -f __MACOSX;	\
-		echo rm -r -f __MACOSX; else :; fi
-
-endif MACINTOSH
-
 #--------------------------------------------------------------------------
 
 -include $(top_srcdir)/git.mk
