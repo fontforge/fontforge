@@ -59,7 +59,7 @@
 #define beacon_announce_username_sz     50
 #define beacon_announce_machinename_sz  50
 #define beacon_announce_ip_sz           20
-
+#define beacon_announce_fontname_sz     40
 
 
 #include "ffglib.h"
@@ -86,6 +86,7 @@ typedef struct {
     // are only used in the local hash version of this data structure.
     time_t last_msg_from_peer_time;
     uint8_t ip[beacon_announce_ip_sz];
+    uint8_t fontname[beacon_announce_fontname_sz];
 } beacon_announce_t;
 
 /**

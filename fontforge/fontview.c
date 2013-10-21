@@ -5686,11 +5686,11 @@ static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
 	    printf("user:%s\n", ba->username );
 	    printf("mach:%s\n", ba->machinename );
 
-	    char format[20];
-	    sprintf( format, "%%%d", maxUserNameLength );
+	    char format[50];
+	    sprintf( format, "%s %%%d", "%s", maxUserNameLength );
 	    strcat( format, "s %s");
 	    char buf[101];
-	    snprintf( buf, 100, format, ba->username, ba->machinename );
+	    snprintf( buf, 100, format, ba->fontname, ba->username, ba->machinename );
 	    choices[i] = copy( buf );
 	    if( i >= max )
 		break;
