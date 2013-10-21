@@ -313,14 +313,18 @@ dnl FONTFORGE_ARG_WITH_ZEROMQ
 dnl -------------------------
 AC_DEFUN([FONTFORGE_ARG_WITH_ZEROMQ],
 [
-if test "x${WINDOWS_CROSS_COMPILE}" = x; then
-   CHECK_LIBUUID
-fi
 FONTFORGE_ARG_WITH([libzmq],
         [AS_HELP_STRING([--without-libzmq],[build without libzmq])],
         [ libczmq >= 2.0.1 libzmq >= 4.0.0 ],
         [FONTFORGE_WARN_PKG_NOT_FOUND([LIBZMQ])],
-        [_NO_LIBZMQ])
+        [_NO_LIBZMQ], [NO_LIBZMQ=1])
+if test "x$i_do_have_libzmq" = xyes; then
+   if test "x${WINDOWS_CROSS_COMPILE}" = x; then
+      AC_MSG_WARN([Using zeromq enables collab, which needs libuuid, so I'm checking for that now...])
+      CHECK_LIBUUID
+   fi
+fi
+
 LIBZMQ_CFLAGS+=" $LIBUUID_CFLAGS"
 LIBZMQ_LIBS+=" $LIBUUID_LIBS"
 
