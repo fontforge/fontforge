@@ -4147,7 +4147,7 @@ typedef struct lastselectedpoint
 } lastSelectedPoint;
 
 
-static void CVFreePreTransformSPL( CharView* cv )
+void CVFreePreTransformSPL( CharView* cv )
 {
     if( cv->p.pretransform_spl )
     {
@@ -4229,7 +4229,6 @@ return;
 	cv->lastselpt = NULL;
 	cv->lastselcp = NULL;
 	_CVTestSelectFromEvent(cv,&fs);
-	CVMaybeCreateDraggingComparisonOutline( cv );
 	fs.p = &cv->p;
     } else if ( cv->active_tool == cvt_curve || cv->active_tool == cvt_corner ||
 	    cv->active_tool == cvt_tangent || cv->active_tool == cvt_hvcurve ||
@@ -4273,6 +4272,7 @@ return;
     switch ( cv->active_tool ) {
       case cvt_pointer:
 	CVMouseDownPointer(cv, &fs, event);
+	CVMaybeCreateDraggingComparisonOutline( cv );
 	if( lastSel.lastselpt != fs.p->sp || lastSel.lastselcp != fs.p->spiro )	{
 #define BASEPOINT_IS_EMPTY(p) ( p.x == (real)0.0 && p.y == (real)0.0 )
 	    // If we are in a collab session, we might like to preserve here

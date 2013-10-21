@@ -1480,4 +1480,6 @@ extern void visitAllControlPoints( GHashTable *col, visitSelectedControlPointsVi
 extern void CVVisitAdjacentToSelectedControlPoints( CharView *cv, bool preserveState,
 						    visitSelectedControlPointsVisitor f, void* udata );
 
+extern void CVFreePreTransformSPL( CharView* cv );
+
 #endif	/* _VIEWS_H */

@@ -143,6 +143,8 @@ int CVClearSel(CharView *cv) {
     int needsupdate = 0;
     AnchorPoint *ap;
 
+    CVFreePreTransformSPL( cv );
+    
     cv->lastselpt = NULL; cv->lastselcp = NULL;
     for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next )
     {
@@ -201,6 +203,7 @@ int CVClearSel(CharView *cv) {
     cv->p.nextcp = cv->p.prevcp = false;
     cv->widthsel = cv->vwidthsel = cv->icsel = cv->tah_sel = false;
 
+    needsupdate = 1;
     return( needsupdate );
 }
 
@@ -630,6 +633,7 @@ return;
     }
 
     if ( !fs->p->anysel ) {
+//	printf("mousedown !anysel dow:%d dov:%d doid:%d dotah:%d nearcaret:%d\n", dowidth, dovwidth, doic, dotah, nearcaret );
 	/* Nothing else... unless they clicked on the width line, check that */
 	if ( dowidth ) {
 	    if ( event->u.mouse.state&ksm_shift )
@@ -699,7 +703,9 @@ return;
 	    cv->expandedge = ee_right;
 	    SetCur(cv);
 	}
-	else {
+	else
+	{
+//	    printf("mousedown !anysel ELSE\n");
 	    //
 	    // Allow dragging a box around some points to send that information
 	    // to the other clients in the collab session
@@ -772,6 +778,7 @@ return;
 	    fs->p->ap->selected = !fs->p->ap->selected;
 	}
     } else if ( event->u.mouse.clicks==2 ) {
+	/* printf("mouse down click==2\n"); */
 	CPEndInfo(cv);
 	if ( fs->p->spl!=NULL ) {
 	    if ( cv->b.sc->inspiro && hasspiro()) {
@@ -804,10 +811,12 @@ return;
 		    }
 	}
     } else if ( event->u.mouse.clicks==3 ) {
+	/* printf("mouse down click==3\n"); */
 	if ( CVSetSel(cv,1)) needsupdate = true;
 		/* don't select width or anchor points for three clicks */
 		/*  but select all points, refs */
     } else {
+	/* printf("mouse down ELSE\n"); */
 	/* Select everything */
 	if ( CVSetSel(cv,-1)) needsupdate = true;
     }

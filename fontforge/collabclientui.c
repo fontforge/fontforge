@@ -232,6 +232,8 @@ static void zeromq_subscriber_fd_callback(int zeromq_fd, void* datas )
 
 static void zeromq_beacon_show_peers( cloneclient_t* cc )
 {
+    return;
+    
     printf("--- zeromq_beacon_show_peers(top)\n" );
     time_t tt = time(0);
     GHashTableIter iter;
@@ -259,7 +261,7 @@ static void zeromq_beacon_fd_callback(int zeromq_fd, void* datas )
 {
 //    cloneclient_t* cc = (cloneclient_t*)datas;
 
-    printf("zeromq_beacon_fd_callback(top)\n");
+//    printf("zeromq_beacon_fd_callback(top)\n");
     
     int opt = 0;
     size_t optsz = sizeof(int);
@@ -267,21 +269,21 @@ static void zeromq_beacon_fd_callback(int zeromq_fd, void* datas )
 
     if( opt & ZMQ_POLLIN )
     {
-	printf("zeromq_beacon_fd_callback() have message!\n");
+//	printf("zeromq_beacon_fd_callback() have message!\n");
 
 	while( 1 )
 	{
 	    char *ipaddress = zstr_recv_nowait (zbeacon_socket (client_beacon));
 	    if( ipaddress )
 	    {
-		printf("zeromq_beacon_fd_callback() have message! ip:%s\n", ipaddress );
+//		printf("zeromq_beacon_fd_callback() have message! ip:%s\n", ipaddress );
 		zframe_t *content = zframe_recv_nowait (zbeacon_socket (client_beacon));
 		if( content )
 		{
 		    beacon_announce_t* ba = (beacon_announce_t*)zframe_data(content);
-		    printf("uuid:%s\n", ba->uuid );
-		    printf("user:%s\n", ba->username );
-		    printf("mach:%s\n", ba->machinename );
+		    /* printf("uuid:%s\n", ba->uuid ); */
+		    /* printf("user:%s\n", ba->username ); */
+		    /* printf("mach:%s\n", ba->machinename ); */
 
 		    beacon_announce_t* copy = malloc( sizeof(beacon_announce_t));
 		    memcpy( copy, ba, sizeof(beacon_announce_t));
