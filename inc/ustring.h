@@ -112,8 +112,8 @@ extern void utf8_truncatevalid(char *str);
 extern char *latin1_2_utf8_strcpy(char *utf8buf,const char *lbuf);
 extern char *latin1_2_utf8_copy(const char *lbuf);
 extern char *utf8_2_latin1_copy(const char *utf8buf);
-extern int utf8_strlen(const char *utf8_str); /* how many characters in the string */
-extern int utf82u_strlen(const char *utf8_str); /* how many long would this be in shorts (UCS2) */
+extern long utf8_strlen(const char *utf8_str);	 /* Count how many characters in the string NOT bytes */
+extern long utf82u_strlen(const char *utf8_str); /* Count how many shorts needed to represent in UCS2 */
 extern void utf8_strncpy(register char *to, const char *from, int len); /* copy n characters NOT bytes */
 extern char *def2utf8_copy(const char *from);
 extern char *utf82def_copy(const char *ufrom);
