@@ -108,6 +108,9 @@ int default_fv_showhmetrics=false, default_fv_showvmetrics=false,
 #define METRICS_ADVANCE	 0x008000
 FontView *fv_list=NULL;
 
+static void AskAndMaybeCloseLocalCollabServers( void );
+
+
 static void FV_ToggleCharChanged(SplineChar *sc) {
     int i, j;
     int pos;
@@ -935,6 +938,11 @@ static void _MenuExit(void *UNUSED(junk)) {
 
     FontView *fv, *next;
 
+    if( collabclient_haveLocalServer() )
+    {
+	AskAndMaybeCloseLocalCollabServers();
+    }
+    
     LastFonts_Save();
     for ( fv = fv_list; fv!=NULL; fv = next ) {
 	next = (FontView *) (fv->b.next);
@@ -5639,6 +5647,8 @@ static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 
     if( res )
     {
+	printf("res:%s\n", res );
+	strncpy( address, res, IPADDRESS_STRING_LENGTH_T );
 	HostPortUnpack( address, &port, port_default );
 
 	printf("address:%s\n", address );
@@ -5651,6 +5661,73 @@ static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
     }
 }
 
+static int collab_MakeChoicesArray( GHashTable* peers, char** choices, int choices_sz, int localOnly )
+{
+    GHashTableIter iter;
+    gpointer key, value;
+    int lastidx = 0;
+    memset( choices, 0, sizeof(char*) * choices_sz );
+
+    int i=0;
+    int maxUserNameLength = 1;
+    g_hash_table_iter_init (&iter, peers);
+    for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
+    {
+	beacon_announce_t* ba = (beacon_announce_t*)value;
+	maxUserNameLength = imax( maxUserNameLength, strlen(ba->username) );
+    }
+    
+    g_hash_table_iter_init (&iter, peers);
+    for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
+    {
+	beacon_announce_t* ba = (beacon_announce_t*)value;
+	if( localOnly && !collabclient_isAddressLocal( ba->ip ))
+	    continue;
+	
+	printf("user:%s\n", ba->username );
+	printf("mach:%s\n", ba->machinename );
+
+	char buf[101];
+	if( localOnly )
+	{
+	    snprintf( buf, 100, "%s", ba->fontname );
+	}
+	else
+	{
+	    char format[50];
+	    sprintf( format, "%s %%%d", "%s", maxUserNameLength );
+	    strcat( format, "s %s");
+	    snprintf( buf, 100, format, ba->fontname, ba->username, ba->machinename );
+	}
+	choices[i] = copy( buf );
+	if( i >= choices_sz )
+	    break;
+	lastidx++;
+    }
+    
+    return lastidx;
+}
+
+static beacon_announce_t* collab_getBeaconFromChoicesArray( GHashTable* peers, int choice, int localOnly )
+{
+    GHashTableIter iter;
+    gpointer key, value;
+    int i=0;
+    
+    g_hash_table_iter_init (&iter, peers);
+    for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
+    {
+	beacon_announce_t* ba = (beacon_announce_t*)value;
+	if( localOnly && !collabclient_isAddressLocal( ba->ip ))
+	    continue;
+	if( i != choice )
+	    continue;
+	return ba;
+    }
+    return 0;
+}
+
+
 static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -5662,52 +5739,19 @@ static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
 	char* choices[101];
 	memset( choices, 0, sizeof(choices));
 
-//	void* cc = collabclient_new( "localhost", 8090 );
-//	sleep(2);
+	collabclient_trimOldBeaconInformation( 0 );
 	GHashTable* peers = collabclient_getServersFromBeaconInfomration();
-	GHashTableIter iter;
-	gpointer key, value;
-
-	int i=0;
-	int max = 12;
-	int maxUserNameLength = 1;
-	g_hash_table_iter_init (&iter, peers);
-	for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
-	{
-	    beacon_announce_t* ba = (beacon_announce_t*)value;
-	    maxUserNameLength = imax( maxUserNameLength, strlen(ba->username) );
-	}
-
-	g_hash_table_iter_init (&iter, peers);
-	for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
-	{
-	    beacon_announce_t* ba = (beacon_announce_t*)value;
-
-	    printf("user:%s\n", ba->username );
-	    printf("mach:%s\n", ba->machinename );
-
-	    char format[50];
-	    sprintf( format, "%s %%%d", "%s", maxUserNameLength );
-	    strcat( format, "s %s");
-	    char buf[101];
-	    snprintf( buf, 100, format, ba->fontname, ba->username, ba->machinename );
-	    choices[i] = copy( buf );
-	    if( i >= max )
-		break;
-	}
-	int cnt = i;
-	int choice = gwwv_choose(_("Connect to Collab Server"),(const char **) choices, cnt,
+	int localOnly = 0;
+	int max = collab_MakeChoicesArray( peers, choices, choices_sz, localOnly );
+	int choice = gwwv_choose(_("Connect to Collab Server"),(const char **) choices, max,
 				 0,_("Select a collab server to connect to..."));
 	printf("you wanted %d\n", choice );
 	if( choice <= max )
 	{
-	    g_hash_table_iter_init (&iter, peers);
-	    for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
+	    beacon_announce_t* ba = collab_getBeaconFromChoicesArray( peers, choice, localOnly );
+	    
+	    if( ba )
 	    {
-		beacon_announce_t* ba = (beacon_announce_t*)value;
-		if( i != choice )
-		    continue;
-
 		int port = ba->port;
 		char address[IPADDRESS_STRING_LENGTH_T];
 		strncpy( address, ba->ip, IPADDRESS_STRING_LENGTH_T-1 );
@@ -5747,25 +5791,80 @@ static void FVMenuCollabDisconnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEv
     collabclient_sessionDisconnect( &fv->b );
 }
 
+static void AskAndMaybeCloseLocalCollabServers()
+{
+    char *buts[3];
+    buts[0] = _("_OK");
+    buts[1] = _("_Cancel");
+    buts[2] = NULL;
+
+    int i=0;
+    int choices_sz = 100;
+    char* choices[101];
+    collabclient_trimOldBeaconInformation( 0 );
+    GHashTable* peers = collabclient_getServersFromBeaconInfomration();
+    int localOnly = 1;
+    int max = collab_MakeChoicesArray( peers, choices, choices_sz, localOnly );
+    if( !max )
+	return;
+	
+    char sel[101];
+    memset( sel, 1, max );
+    int choice = gwwv_choose_multiple(_("Close Collab Server(s)"),
+				      (const char **) choices, sel, max,
+				      buts, _("Select which servers you wish to close..."));
+
+    int allServersSelected = 1;
+    printf("you wanted %d\n", choice );
+    for( i=0; i < max; i++ )
+    {
+	printf("sel[%d] is %d\n", i, sel[i] );
+	beacon_announce_t* ba = collab_getBeaconFromChoicesArray( peers, choice, localOnly );
+	    
+	if( sel[i] && ba )
+	{
+	    int port = ba->port;
+
+	    if( sel[i] )
+	    {
+		FontViewBase* fv = FontViewFind( FontViewFind_byCollabBasePort, port );
+		if( fv )
+		    collabclient_sessionDisconnect( fv ); 
+		printf("CLOSING port:%d fv:%p\n", port, fv );
+		collabclient_closeLocalServer( port );
+	    }
+	}
+	else
+	{
+	    allServersSelected = 0;
+	}
+    }
+
+    printf("allServersSelected:%d\n", allServersSelected );
+    if( allServersSelected )
+	collabclient_closeAllLocalServersForce();
+	    
+
+	
+	/* if ( gwwv_ask(_("Close Server"),(const char **) buts,0,1,_("Please make sure you have saved the font before you close the server. Closing the server will force all clients which might be connected to it to also disconnect. Really close the local server"))==1 ) */
+	/* { */
+	/*     return; */
+	/* } */
+
+    /* collabclient_sessionDisconnect( &fv->b ); */
+    /* collabclient_closeLocalServer( &fv->b ); */
+	
+}
+
 static void FVMenuCollabCloseLocalServer(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
-    enum collabState_t st = collabclient_getState( &fv->b );
-    if( st >= cs_server )
+//    enum collabState_t st = collabclient_getState( &fv->b );
+//    if( st >= cs_server )
     {
-	char *buts[3];
-	buts[0] = _("_OK");
-	buts[1] = _("_Cancel");
-	buts[2] = NULL;
-	if ( gwwv_ask(_("Close Server"),(const char **) buts,0,1,_("Please make sure you have saved the font before you close the server. Closing the server will force all clients which might be connected to it to also disconnect. Really close the local server"))==1 )
-	{
-	    return;
-	}
+	AskAndMaybeCloseLocalCollabServers();
     }
-
-    collabclient_sessionDisconnect( &fv->b );
-    collabclient_closeLocalServer( &fv->b );
 }
 
 static void collablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
@@ -8147,6 +8246,14 @@ int FontViewFind_byCollabPtr( FontViewBase* fv, void* udata )
     if( !fv || !fv->sf )
 	return 0;
     return fv->collabClient == udata;
+}
+
+int FontViewFind_byCollabBasePort( FontViewBase* fv, void* udata )
+{
+    if( !fv || !fv->sf || !fv->collabClient )
+	return 0;
+    int port = (int)udata;
+    return port == collabclient_getBasePort( fv->collabClient );
 }
 
 int FontViewFind_bySplineFont( FontViewBase* fv, void* udata )
