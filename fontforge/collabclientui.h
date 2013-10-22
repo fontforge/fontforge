@@ -134,7 +134,13 @@ extern void collabclient_sniffForLocalServer( void );
  * if fontforge itself crashes (on the server too). However, closing
  * the server process will end it.
  */
-extern void collabclient_closeLocalServer( FontViewBase* fv );
+extern void collabclient_closeLocalServer( int port );
+
+/**
+ * We don't care about the server really, so it might as well die right now
+ * Rather than having it floating around and possibly having multiple servers
+ */
+extern void collabclient_closeAllLocalServersForce( void );
 
 
 
@@ -147,5 +153,10 @@ extern void collabclient_closeLocalServer( FontViewBase* fv );
 extern int64_t collabclient_getCurrentSequenceNumber(void* ccvp);
 
 extern void collabclient_ensureClientBeacon(void);
+
+extern int collabclient_getBasePort(void* ccvp);
+extern void collabclient_trimOldBeaconInformation( int secondsCutOff );
+extern int collabclient_isAddressLocal( char* address );
+
 
 #endif

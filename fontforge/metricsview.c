@@ -2282,6 +2282,20 @@ static SplineChar* MVLoadWordList_readGlyphName( SplineFont *sf, FILE *file, cha
     return 0;
 }
 
+static int g_io_channel_getc(GIOChannel *channel)
+{
+    gchar buf[10];
+    gsize count = 1;
+    gsize bytes_read = 0;
+    
+    GIOError e = g_io_channel_read( channel, buf, count, &bytes_read );
+    if( e == G_IO_ERROR_NONE && bytes_read == count )
+    {
+	return buf[0];
+    }
+    return EOF;
+}
+
 
 static void MVLoadWordList(MetricsView *mv,int type) {
     GTextInfo **words;
@@ -2289,8 +2303,6 @@ static void MVLoadWordList(MetricsView *mv,int type) {
     char buffer[PATH_MAX], *pt;
     int ch;
     char *filename, *temp;
-    FILE *file;
-
 
 
     filename = gwwv_open_filename(type==-1 ? "File of Kerning Words":"File of glyphname lists",NULL,"*.txt",NULL);
@@ -2300,9 +2312,9 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 	return;
     }
     temp = utf82def_copy(filename);
-    file = fopen( temp, "r" );
+    GIOChannel* file = g_io_channel_new_file( temp, "r", 0 );
     free(temp);
-    if ( file==NULL )
+    if ( !file )
     {
 	ff_post_error("Could not open", "Could not open %s", filename );
 	GGadgetSetTitle8(mv->text,"");
@@ -2322,13 +2334,14 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 	// Kerning words
 	while( true )
 	{
-	    size_t len = 0;
-	    char* buffer = 0;
-	    ssize_t sz = getline( &buffer, &len, file );
-	    printf("getline sz:%d \n", sz );
-	    if( sz == -1 )
+	    gsize len = 0;
+	    gchar* buffer = 0;
+	    GIOStatus status = g_io_channel_read_line( file, &buffer, &len, 0, 0 );
+	    
+	    printf("getline status:%d \n", status );
+	    if( status != G_IO_STATUS_NORMAL )
 		break;
-
+    
 	    chomp(buffer);
 	    if ( buffer[0]=='\0'
 		 || MVLoadWordListIsLineBreak(buffer)
@@ -2347,89 +2360,18 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 	    if( cnt >= words_max )
 		break;
 
-
-#if 0
-
-//	    GArray* selected = g_array_new( 1, 1, sizeof(int));
-	    int addingGlyphsToSelected = 0;
-	    int currentGlyphIndex = -1;
- 	    memset( buffer, '\0', PATH_MAX-1 );
-	    for ( pt = buffer; ch!=EOF; ch=getc(file))
-	    {
-		printf("got ch:%c buf:%s\n", ch, buffer );
-
-		// Skip from comment to EOL
-		ch = MVLoadWordListHandleMaybeSkipComment( file, ch );
-
-		if( MVLoadWordListIsLineBreak(ch) )
-		    break;
-
-		/* if( ch == '[' ) */
-		/* { */
-		/*     addingGlyphsToSelected = 1; */
-		/*     continue; */
-		/* } */
-		/* if( ch == ']' ) */
-		/* { */
-		/*     addingGlyphsToSelected = 0; */
-		/*     continue; */
-		/* } */
-
-		currentGlyphIndex++;
-		/* if( addingGlyphsToSelected ) */
-		/* { */
-		/*     int selectGlyph = currentGlyphIndex; */
-		/*     g_array_append_val( selected, selectGlyph ); */
-		/* } */
-
-
-		if( ch == '/' || ch == '\\' )
-		{
-		    // start of a glyph name
-		    char glyphname[ PATH_MAX+1 ];
-		    SplineChar* sc = MVLoadWordList_readGlyphName( mv->sf, file, ch, glyphname );
-//		    SplineChar* sc = SFGetChar( mv->sf, -1, glyphname );
-		    if( sc )
-		    {
-			int n = MVFakeUnicodeOfSc( mv, sc );
-			pt = utf8_idpb( pt, n, 0 );
-			continue;
-		    }
-		}
-
-		if ( pt<buffer+sizeof(buffer)-2)
-		    *pt++=ch;
-	    }
-
-	    *pt = '\0';
-	    if ( buffer[0]=='\0' )
-		continue;
-	    if ( cnt>1000-3 )
-		break;
-	    if( MVLoadWordList_isLineAllWhiteSpace( buffer ))
-		continue;
-	    words[cnt] = gcalloc(1,sizeof(GTextInfo));
-	    words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
-	    words[cnt]->text = (unichar_t *) utf82def_copy( buffer );
-	    printf("Adding word -->%s<--\n", buffer );
-	    /* if( selected->len ) */
-	    /* { */
-	    /* 	words[cnt]->userdata = selected; */
-	    /* 	g_array_ref( words[cnt]->userdata ); */
-	    /* } */
-	    words[cnt++]->text_is_1byte = true;
-	    /* g_array_unref( selected ); */
-
-	    if( cnt >= words_max )
-		break;
-#endif
 	}
     }
     else
     {
 	// glyphname lists
 	strcpy(buffer,"​");		/* Zero width space: 0x200b, I use as a flag */
-	while ( fgets(buffer+3,sizeof(buffer)-3,file)!=NULL )
+	gsize bytes_read = 0;
+	while( G_IO_STATUS_NORMAL == g_io_channel_read_chars( file,
+							      buffer+3,
+							      sizeof(buffer)-3,
+							      &bytes_read,
+							      0 ))
 	{
 	    if ( buffer[3]=='\n' || buffer[3]=='#' )
 		continue;
@@ -2444,7 +2386,8 @@ static void MVLoadWordList(MetricsView *mv,int type) {
 	}
     }
 
-    fclose(file);
+    g_io_channel_shutdown( file, 1, 0 );
+    g_io_channel_unref( file );
     if ( cnt!=0 )
     {
 	words[cnt] = gcalloc(1,sizeof(GTextInfo));
@@ -2709,6 +2652,13 @@ static void MVMenuAddWordList(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     MVLoadWordList(mv,-1);
+    GWidgetIndicateFocusGadget( mv->text );
+
+    GEvent e;
+    e.type = et_controlevent;
+    e.u.control.subtype = et_textchanged;
+    e.u.control.u.tf_changed.from_pulldown = 0;
+    MV_TextChanged(mv->text, &e );
 }
 
 

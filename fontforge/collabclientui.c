@@ -261,7 +261,7 @@ static void zeromq_beacon_fd_callback(int zeromq_fd, void* datas )
 {
 //    cloneclient_t* cc = (cloneclient_t*)datas;
 
-//    printf("zeromq_beacon_fd_callback(top)\n");
+    printf("zeromq_beacon_fd_callback(top)\n");
     
     int opt = 0;
     size_t optsz = sizeof(int);
@@ -269,21 +269,21 @@ static void zeromq_beacon_fd_callback(int zeromq_fd, void* datas )
 
     if( opt & ZMQ_POLLIN )
     {
-//	printf("zeromq_beacon_fd_callback() have message!\n");
+	printf("zeromq_beacon_fd_callback() have message!\n");
 
 	while( 1 )
 	{
 	    char *ipaddress = zstr_recv_nowait (zbeacon_socket (client_beacon));
 	    if( ipaddress )
 	    {
-//		printf("zeromq_beacon_fd_callback() have message! ip:%s\n", ipaddress );
+		printf("zeromq_beacon_fd_callback() have message! ip:%s\n", ipaddress );
 		zframe_t *content = zframe_recv_nowait (zbeacon_socket (client_beacon));
 		if( content )
 		{
 		    beacon_announce_t* ba = (beacon_announce_t*)zframe_data(content);
-		    /* printf("uuid:%s\n", ba->uuid ); */
-		    /* printf("user:%s\n", ba->username ); */
-		    /* printf("mach:%s\n", ba->machinename ); */
+		    printf("uuid:%s\n", ba->uuid );
+		    printf("user:%s\n", ba->username );
+		    printf("mach:%s\n", ba->machinename );
 
 		    beacon_announce_t* copy = malloc( sizeof(beacon_announce_t));
 		    memcpy( copy, ba, sizeof(beacon_announce_t));
@@ -701,20 +701,20 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
 #ifdef BUILD_COLLAB
 
     cloneclient_t* cc = (cloneclient_t*)ccvp;
-
+    
     //
     // Fire up the fontforge-internal-collab-server process...
     //
     {
 	char command_line[PATH_MAX+1];
 	sprintf(command_line,
-		"%s/FontForgeInternal/fontforge-internal-collab-server",
-		getGResourceProgramDir() );
+		"%s/FontForgeInternal/fontforge-internal-collab-server %d",
+		getGResourceProgramDir(), cc->port );
 #if defined(__MINGW32__)
 //	chdir(getGResourceProgramDir());
 //	sprintf(command_line, "ffcollab.bat" );
 
-	sprintf(command_line, "'%s/ffcollab.bat'", getGResourceProgramDir() );
+	sprintf(command_line, "'%s/ffcollab.bat' %d", getGResourceProgramDir(), cc->port );
 #endif	
 	printf("command_line:%s\n", command_line );
 	GError * error = 0;
@@ -1105,25 +1105,38 @@ collabclient_sniffForLocalServer( void )
 }
 
 void
-collabclient_closeLocalServer( FontViewBase* fv )
+collabclient_closeLocalServer( int port )
 {
 #ifdef BUILD_COLLAB
 
     collabclient_sniffForLocalServer_t* cc = &collabclient_sniffForLocalServer_singleton;
     zctx_t* ctx = obtainMainZMQContext();
-    int port_default = collabclient_getDefaultBasePort();
+    int beacon_port = port;
+    if( !port )
+	port = collabclient_getDefaultBasePort();
 
+    printf("collabclient_closeLocalServer() port:%d\n");
     void* socket = zsocket_new ( ctx, ZMQ_REQ );
     zsocket_connect ( socket,
 		      collabclient_makeAddressString("localhost",
-						     port_default + socket_offset_ping));
+						     port + socket_offset_ping));
     zstr_send( socket, "quit" );
     cc->haveServer = 0;
 
-    //
-    // We don't care about the server really, so it might as well die right now
-    // Rather than having it floating around and possibly having multiple servers
-    //
+    if( beacon_port )
+    {
+	g_hash_table_remove_all( peers );
+    }
+    collabclient_sniffForLocalServer();
+    
+#endif
+}
+
+void
+collabclient_closeAllLocalServersForce()
+{
+#ifdef BUILD_COLLAB
+
     char command_line[PATH_MAX+1];
     sprintf(command_line, "killall -9 fontforge-internal-collab-server" );
     printf("command_line:%s\n", command_line );
@@ -1132,6 +1145,7 @@ collabclient_closeLocalServer( FontViewBase* fv )
     
 #endif
 }
+
 
 int64_t collabclient_getCurrentSequenceNumber(void* ccvp)
 {
@@ -1148,6 +1162,34 @@ int64_t collabclient_getCurrentSequenceNumber(void* ccvp)
     return 0;
 }
 
+void collabclient_trimOldBeaconInformation( int secondsCutOff )
+{
+#ifdef BUILD_COLLAB
+
+    GHashTableIter iter;
+    gpointer key, value;
+    int i=0;
+    time_t tt = time(0);
+    if( !secondsCutOff )
+	secondsCutOff = 2;
+
+    g_hash_table_iter_init (&iter, peers);
+    for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
+    {
+	beacon_announce_t* ba = (beacon_announce_t*)value;
+	int seconds_since_last_msg = tt - ba->last_msg_from_peer_time;
+	
+	printf("seconds since last msg:%d\n", tt - ba->last_msg_from_peer_time );
+	if( seconds_since_last_msg > secondsCutOff )
+	{
+	    g_hash_table_remove( peers, ba->uuid );
+	}
+    }
+    
+    
+#endif
+}
+
 GHashTable* collabclient_getServersFromBeaconInfomration( void )
 {
 #ifdef BUILD_COLLAB
@@ -1156,3 +1198,33 @@ GHashTable* collabclient_getServersFromBeaconInfomration( void )
     return 0;
 }
 
+int collabclient_getBasePort(void* ccvp)
+{
+#ifdef BUILD_COLLAB
+
+    if( !ccvp )
+	return 0;
+
+    cloneclient_t *cc = (cloneclient_t *)ccvp;
+    return cc->port;
+#endif
+    
+    return 0;
+}
+
+
+int collabclient_isAddressLocal( char* address )
+{
+    char a[IPADDRESS_STRING_LENGTH_T];
+    if(getNetworkAddress( a ))
+    {
+	if( !strcmp( address, a ))
+	    return 1;
+    }
+    if( !strcmp( address, "127.0.0.1" ))
+	return 1;
+    if( !strcmp( address, "localhost" ))
+	return 1;
+    
+    return 0;
+}

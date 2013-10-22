@@ -54,6 +54,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #define SUBTREE "/client/"
 
+zbeacon_t *service_beacon = 0;
 
 /**
  * The server is modeled on "Clone server Model Five" from the zguide.
@@ -240,7 +241,8 @@ s_collector (zloop_t *loop, zmq_pollitem_t *poller, void *args)
 		strcpy( ba.fontname, fontname );
 	    }
 
-	    zbeacon_t *service_beacon = zbeacon_new( 5670 );
+	    service_beacon = zbeacon_new( 5670 );
+	    zbeacon_set_interval (service_beacon, 300 );
 	    zbeacon_publish (service_beacon, (byte*)&ba, sizeof(ba));
 	}
 	
@@ -269,6 +271,8 @@ s_ping (zloop_t *loop, zmq_pollitem_t *poller, void *args)
     char* p = zstr_recv_nowait( self->ping );
     if( p && !strcmp(p,"quit"))
     {
+	if( service_beacon )
+	    zbeacon_destroy( &service_beacon );
 	exit(0);
     }
     zstr_send( self->ping, "pong" );
@@ -309,10 +313,12 @@ s_flush_ttl (zloop_t *loop, zmq_pollitem_t *poller, void *args)
 }
 
 
-int main (void)
+int main (int argc, char** argv)
 {
     int port = 5556;
-
+    if( argc >= 2 )
+	port = atoi( argv[1] );
+	
     clonesrv_t *self = (clonesrv_t *) zmalloc (sizeof (clonesrv_t));
     self->port = port;
     self->ctx = zctx_new ();
@@ -342,7 +348,7 @@ int main (void)
 
     
     
-    DEBUG ("I: server up and running...");
+    DEBUG ("I: server up and running on port:%d...", port );
     //  Run reactor until process interrupted
     zloop_start (self->loop);
 
