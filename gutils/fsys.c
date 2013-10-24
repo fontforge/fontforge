@@ -851,7 +851,7 @@ char *GFileDirName(const char *path)
     char *pt = strrchr( ret, '/' );
     if ( pt )
 	*pt = '\0';
-    return ret;
+    return strdup(ret);
 }
 
 /**
