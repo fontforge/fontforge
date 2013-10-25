@@ -44,7 +44,7 @@ test x"${i_do_have_gui}" = xyes && __private_exe_deps="${__private_exe_deps} -lg
 AC_SUBST([LIBFONTFORGE_PKGCONFIG_VERSION],["${__cleaned_version}"])
 AC_SUBST([LIBFONTFORGE_PKGCONFIG_REQUIRES],[])
 AC_SUBST([LIBFONTFORGE_PKGCONFIG_REQUIRES_PRIVATE],["${__pkg_deps}"])
-AC_SUBST([LIBFONTFORGE_PKGCONFIG_LIBS],["-L${libdir} -lfontforge -lgunicode"])
+AC_SUBST([LIBFONTFORGE_PKGCONFIG_LIBS],["-L${libdir} -lfontforge -lgunicode -lgutils"])
 AC_SUBST([LIBFONTFORGE_PKGCONFIG_LIBS_PRIVATE],["${__private_deps}"])
 
 AC_SUBST([LIBFONTFORGEEXE_PKGCONFIG_VERSION],["${__cleaned_version}"])
