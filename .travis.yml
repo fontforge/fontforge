@@ -8,9 +8,10 @@ install:
   - pushd zeromq-4.0.1 && ./configure --prefix=/usr && make && sudo make install && popd
   - wget 'https://bitbucket.org/sortsmill/libunicodenames/downloads/libunicodenames-1.1.0_beta1.tar.xz' -O - | tar -Jxvf -
   - pushd libunicodenames-1.1.0_beta1 && ./configure --prefix=/usr && make && sudo make install && popd
+  - apt-get source libfreetype6
 script:
   - ./autogen.sh
-  - ./configure --prefix=/usr
+  - ./configure --prefix=/usr --withou-freetype=source=../freetype-2.4.12
   - make
   - tests/link_test
   - sudo make install
