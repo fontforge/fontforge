@@ -3,6 +3,9 @@ compiler: gcc
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq autotools-dev libjpeg-dev libtiff4-dev libpng12-dev libgif-dev libxt-dev libfreetype6-dev autoconf automake libtool bzip2 libxml2-dev libuninameslist-dev libspiro-dev python-dev libpango1.0-dev libcairo2-dev chrpath
+install:
+  - wget 'http://download.zeromq.org/zeromq-4.0.1.tar.gz' -O - | tar -zxvf -
+  - cd zeromq-4.0.1 && ./configure --prefix=/usr && make && sudo make install
 script:
   - ./autogen.sh
   - ./configure --prefix=/usr
