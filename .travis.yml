@@ -7,6 +7,7 @@ script:
   - ./autogen.sh
   - ./configure --prefix=/usr
   - make
+  - tests/link_test
   - sudo make install
   - fontforge -version
 branches:
