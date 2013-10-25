@@ -17,7 +17,7 @@ install:
 script:
   - ./autogen.sh
   - ./configure --prefix=/usr --with-freetype-source=../freetype-2.5.0
-  - make
+  - make V=1
   - tests/link_test
   - sudo make install
   - fontforge -version
