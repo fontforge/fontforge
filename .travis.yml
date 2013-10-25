@@ -5,7 +5,7 @@ before_install:
   - sudo apt-get install -qq autotools-dev libjpeg-dev libtiff4-dev libpng12-dev libgif-dev libxt-dev libfreetype6-dev autoconf automake libtool bzip2 libxml2-dev libuninameslist-dev libspiro-dev python-dev libpango1.0-dev libcairo2-dev chrpath
 script:
   - ./autogen.sh
-  - ./configure
+  - ./configure --prefix=/usr
   - make
   - sudo make install
   - fontforge -version
