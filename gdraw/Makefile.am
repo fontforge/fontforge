@@ -45,12 +45,12 @@ libgdraw_la_SOURCES = choosericons.c ctlvalues.c drawboxborder.c		\
 libgdraw_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	"-DSHAREDIR=\"${MY_SHAREDIR}\"" $(MY_CFLAGS) 
 
-libgdraw_la_LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
+libgdraw_la_LIBADD = $(MY_LIBS) $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la
 
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
-libgdraw_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -release $(VERSION)
+libgdraw_la_LDFLAGS = $(MY_CFLAGS) -release $(VERSION)
 
 
 -include $(top_srcdir)/git.mk

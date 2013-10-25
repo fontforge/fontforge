@@ -35,8 +35,8 @@ libzmqcollab_la_CPPFLAGS = \
  "-I$(top_srcdir)/inc" \
  $(MY_CFLAGS) $(LIBZMQ_CFLAGS) $(GLIB_CFLAGS)
 
-libzmqcollab_la_LIBADD = 
-libzmqcollab_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) $(GLIB_LIBS) $(LIBZMQ_LIBS) -release $(VERSION)
+libzmqcollab_la_LIBADD = $(MY_LIBS) $(GLIB_LIBS) $(LIBZMQ_LIBS)
+libzmqcollab_la_LDFLAGS = $(MY_CFLAGS) -release $(VERSION)
 
 #--------------------------------------------------------------------------
 
