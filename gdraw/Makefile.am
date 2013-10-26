@@ -55,7 +55,7 @@ endif GRAPHICAL_USER_INTERFACE
 
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
-libgdraw_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -release $(VERSION)
+libgdraw_la_LDFLAGS = $(MY_CFLAGS) -release $(VERSION)
 
 
 -include $(top_srcdir)/git.mk

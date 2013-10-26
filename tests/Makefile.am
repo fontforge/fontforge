@@ -57,7 +57,6 @@ endif
 
 noinst_PROGRAMS = $(LINKTESTS)
 
-
 check-local: atconfig atlocal $(TESTSUITE)
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
 
