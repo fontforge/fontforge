@@ -20,7 +20,6 @@ script:
   - ./autogen.sh
   - ./configure --with-freetype-source=../freetype-2.5.0.1
   - make V=1
-  - tests/link_test
   - sudo make install
   - fontforge -version
 branches:
