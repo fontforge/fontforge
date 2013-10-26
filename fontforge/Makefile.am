@@ -32,18 +32,6 @@ include $(top_srcdir)/mk/layout.am
 lib_LTLIBRARIES = libfontforge.la 
 
 #--------------------------------------------------------------------------
-
-macobjective.o: macobjective.m
-	clang -g -arch x86_64 -arch i386 -c "${srcdir}/macobjective.m" -o macobjective.o
-
-
-#--------------------------------------------------------------------------
-
-SUBDIRS = pixmaps
-if LIBZMQ
-SUBDIRS += collab
-endif LIBZMQ
-
 .pre.c:
 	$(SED) -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(VERSION_MAJOR)/'	\
 	       -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(VERSION_MINOR)/'	\
@@ -67,8 +55,6 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la			\
 	$(top_builddir)/gutils/libgioftp.la
-
-LDADD = $(LIBADD) 
 
 AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
 	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
@@ -126,9 +112,9 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 
 #--------------------------------------------------------------------------
 
-EXTRA_DIST = libstamp.pre exelibstamp.pre \
-	MacFontForgeApp.zip darwinsetup.in macobjective.m
-MOSTLYCLEANFILES = libstamp.c exelibstamp.c
+EXTRA_DIST = libstamp.pre \
+	MacFontForgeApp.zip 
+MOSTLYCLEANFILES = libstamp.c 
 
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
