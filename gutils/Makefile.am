@@ -54,11 +54,10 @@ libgioftp_la_SOURCES = gioftp.c gioftpP.h
 libgioftp_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	$(MY_CFLAGS)
 
-libgioftp_la_LIBADD = $(top_builddir)/Unicode/libgunicode.la
+libgioftp_la_LIBADD = $(MY_LIBS) $(top_builddir)/Unicode/libgunicode.la
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
 libgioftp_la_LDFLAGS = $(MY_CFLAGS) -release $(VERSION)
-libgioftp_la_LIBADD = $(MY_LIBS)
 
 #--------------------------------------------------------------------------
 
