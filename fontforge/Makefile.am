@@ -29,19 +29,7 @@ include $(top_srcdir)/mk/layout.am
 
 #--------------------------------------------------------------------------
 
-if THE_PROGRAMS
-
-bin_PROGRAMS = fontforge
-dist_man_MANS = fontforge.1
-
-if NATIVE_SCRIPTING
-nodist_bin_SCRIPTS = fontimage fontlint sfddiff
-dist_man_MANS += fontimage.1 fontlint.1 sfddiff.1
-endif NATIVE_SCRIPTING
-
-endif THE_PROGRAMS
-
-lib_LTLIBRARIES = libfontforge.la libfontforgeexe.la
+lib_LTLIBRARIES = libfontforge.la 
 
 #--------------------------------------------------------------------------
 
@@ -90,18 +78,21 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 
 #--------------------------------------------------------------------------
 
-if THE_PROGRAMS
+LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
+	$(top_builddir)/gutils/libgutils.la			\
+	$(top_builddir)/gutils/libgioftp.la
 
-fontforge_SOURCES = main.c
-fontforge_CPPFLAGS = $(AM_CPPFLAGS)
-fontforge_LDADD = libfontforgeexe.la libfontforge.la $(LDADD)
-fontforge_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -export-dynamic
-if LIBZMQ
-fontforge_LDFLAGS += $(LIBZMQ_LIBS)
-fontforge_LDADD += $(top_srcdir)/collab/libzmqcollab.la
-endif
+GUILIBADD =
+if GRAPHICAL_USER_INTERFACE
+GUILIBADD += $(top_builddir)/gdraw/libgdraw.la $(XINPUT_LIBS)	\
+	$(XKB_LIBS)
+endif GRAPHICAL_USER_INTERFACE
 
-endif THE_PROGRAMS
+LDADD = $(LIBADD) $(GUILIBADD)
+
+AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
+	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
+	"-DPLUGINDIR=\"${MY_PLUGINDIR}\"" $(MY_CFLAGS)
 
 #--------------------------------------------------------------------------
 
@@ -143,67 +134,6 @@ endif LIBZMQ
 # absence of a well defined ABI.
 libfontforge_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) $(LIBZMQ_LIBS) -release $(VERSION)
 
-#--------------------------------------------------------------------------
-
-if GRAPHICAL_USER_INTERFACE
-
-libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
-	autowidth2dlg.c basedlg.c bdfinfo.c bitmapdlg.c bitmapview.c	\
-	charinfo.c charview.c clipui.c combinations.c contextchain.c	\
-	cursors.c cvaddpoints.c cvdebug.c cvdgloss.c cvexportdlg.c		\
-	cvfreehand.c cvgetinfo.c cvgridfit.c cvhand.c cvhints.c			\
-	cvimportdlg.c cvknife.c cvpalettes.c cvpointer.c cvruler.c 		\
-	cvshapes.c cvstroke.c cvtranstools.c displayfonts.c effectsui.c	\
-	encodingui.c fontinfo.c fontview.c freetypeui.c fvfontsdlg.c	\
-	fvmetricsdlg.c gotodlg.c groupsdlg.c histograms.c images.c		\
-	kernclass.c layer2layer.c lookupui.c macencui.c math.c			\
-	metricsview.c mmdlg.c nonlineartransui.c oflib.c openfontdlg.c	        \
-	prefs.c problems.c pythonui.c savefontdlg.c scriptingdlg.c		\
-	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	        \
-	splashimage.c startui.c statemachine.c tilepath.c transform.c	        \
-	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
-	usermenu.c macobjective.h                                               \
-        collabclientui.c collabclientui.h
-
-else !GRAPHICAL_USER_INTERFACE
-
-libfontforgeexe_la_SOURCES = startnoui.c
-
-endif !GRAPHICAL_USER_INTERFACE
-
-nodist_libfontforgeexe_la_SOURCES = exelibstamp.c
-
-if MACINTOSH
-MACFFEXE_LIBADD=macobjective.o
-endif MACINTOSH
-
-libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
-libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MACFFEXE_LIBADD)
-
-# Using -release instead of -version-info seems appropriate in the
-# absence of a well defined ABI.
-libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) $(LIBZMQ_LIBS) -release $(VERSION)
-if LIBZMQ
-libfontforgeexe_la_LDFLAGS += $(top_srcdir)/collab/libzmqcollab.la
-endif
-
-#--------------------------------------------------------------------------
-
-LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
-	$(top_builddir)/gutils/libgutils.la			\
-	$(top_builddir)/gutils/libgioftp.la
-
-GUILIBADD =
-if GRAPHICAL_USER_INTERFACE
-GUILIBADD += $(top_builddir)/gdraw/libgdraw.la $(XINPUT_LIBS)	\
-	$(XKB_LIBS)
-endif GRAPHICAL_USER_INTERFACE
-
-LDADD = $(LIBADD) $(GUILIBADD)
-
-AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
-	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
-	"-DPLUGINDIR=\"${MY_PLUGINDIR}\"" $(MY_CFLAGS)
 
 #--------------------------------------------------------------------------
 
@@ -216,11 +146,9 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 
 #--------------------------------------------------------------------------
 
-EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe libstamp.pre	\
-	exelibstamp.pre fontimage.1 fontlint.1 sfddiff.1			\
+EXTRA_DIST = libstamp.pre exelibstamp.pre \
 	MacFontForgeApp.zip darwinsetup.in macobjective.m
-MOSTLYCLEANFILES = fontimage fontlint sfddiff libstamp.c	\
-	exelibstamp.c
+MOSTLYCLEANFILES = libstamp.c exelibstamp.c
 
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------

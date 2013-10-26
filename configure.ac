@@ -338,7 +338,8 @@ FONTFORGE_COMPILER_FLAGS([WARNING_CFLAGS],
          -Werror=missing-prototypes
          -Werror=pointer-arith
          -Wclobbered
-         -Werror=implicit])
+         -Werror=implicit
+         -Wl,--no-undefined])
 # Sep2012, There's a bug in <py3 with Py_True/False that will propagate
 # with GCC's "strict-aliasing" rules. -Wstrict-aliasing
 AC_LANG_POP
