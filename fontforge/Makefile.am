@@ -112,8 +112,7 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 
 #--------------------------------------------------------------------------
 
-EXTRA_DIST = libstamp.pre \
-	MacFontForgeApp.zip 
+EXTRA_DIST = libstamp.pre 
 MOSTLYCLEANFILES = libstamp.c 
 
 #--------------------------------------------------------------------------
