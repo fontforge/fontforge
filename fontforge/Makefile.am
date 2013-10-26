@@ -44,20 +44,6 @@ if LIBZMQ
 SUBDIRS += collab
 endif LIBZMQ
 
-FFSCRIPT_HEADER = "\#!$(bindir)/fontforge -lang=ff"
-
-fontimage: fontimage.pe
-	echo "${FFSCRIPT_HEADER}" | cat - "${srcdir}/fontimage.pe" > fontimage
-	chmod +x fontimage
-
-fontlint: fontlint.pe
-	echo "${FFSCRIPT_HEADER}" | cat - "${srcdir}/fontlint.pe" > fontlint
-	chmod +x fontlint
-
-sfddiff: sfddiff.pe
-	echo "${FFSCRIPT_HEADER}" | cat - "${srcdir}/sfddiff.pe" > sfddiff
-	chmod +x sfddiff
-
 .pre.c:
 	$(SED) -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(VERSION_MAJOR)/'	\
 	       -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(VERSION_MINOR)/'	\
@@ -82,13 +68,7 @@ LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la			\
 	$(top_builddir)/gutils/libgioftp.la
 
-GUILIBADD =
-if GRAPHICAL_USER_INTERFACE
-GUILIBADD += $(top_builddir)/gdraw/libgdraw.la $(XINPUT_LIBS)	\
-	$(XKB_LIBS)
-endif GRAPHICAL_USER_INTERFACE
-
-LDADD = $(LIBADD) $(GUILIBADD)
+LDADD = $(LIBADD) 
 
 AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
 	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
@@ -120,7 +100,7 @@ nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
 libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
-libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD) $(LIBLTDL)
+libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD) $(LIBLTDL) $(MY_LIBS) $(LIBZMQ_LIBS) 
 
 if PLUGIN_GB12345
 libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/gb12345.la
@@ -132,7 +112,7 @@ endif LIBZMQ
 
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
-libfontforge_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) $(LIBZMQ_LIBS) -release $(VERSION)
+libfontforge_la_LDFLAGS = $(MY_CFLAGS) -release $(VERSION)
 
 
 #--------------------------------------------------------------------------
