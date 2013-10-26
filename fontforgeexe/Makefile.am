@@ -98,10 +98,9 @@ if THE_PROGRAMS
 fontforge_SOURCES = main.c
 fontforge_CPPFLAGS = $(AM_CPPFLAGS)
 fontforge_LDADD = libfontforgeexe.la $(LDADD)
-fontforge_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -export-dynamic
+fontforge_LDFLAGS = $(MY_CFLAGS) -export-dynamic
 if LIBZMQ
-fontforge_LDFLAGS += $(LIBZMQ_LIBS)
-fontforge_LDADD += $(top_builddir)/collab/libzmqcollab.la
+fontforge_LDADD += $(top_builddir)/collab/libzmqcollab.la $(MY_LIBS) $(LIBZMQ_LIBS)
 endif
 
 endif THE_PROGRAMS
@@ -141,14 +140,14 @@ MACFFEXE_LIBADD=macobjective.o
 endif MACINTOSH
 
 libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
-libfontforgeexe_la_LIBADD = $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MACFFEXE_LIBADD)
+libfontforgeexe_la_LIBADD = $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MACFFEXE_LIBADD) $(MY_LIBS) 
+if LIBZMQ
+libfontforgeexe_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la $(LIBZMQ_LIBS) 
+endif
 
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
-libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) $(LIBZMQ_LIBS) -release $(VERSION)
-if LIBZMQ
-libfontforgeexe_la_LDFLAGS += $(top_builddir)/collab/libzmqcollab.la
-endif
+libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) -release $(VERSION)
 
 #--------------------------------------------------------------------------
 
