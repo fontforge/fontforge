@@ -853,11 +853,14 @@ enum undotype { ut_none=0, ut_state, ut_tstate, ut_statehint, ut_statename,
 		ut_hints, ut_bitmap, ut_bitmapsel, ut_composit, ut_multiple, ut_layers,
 		ut_noop };
 
+#define UNDO_LAYER_UNKNOWN -1
+
 typedef struct undoes {
     struct undoes *next;
     enum undotype undotype;
     unsigned int was_modified: 1;
     unsigned int was_order2: 1;
+    int layer; /* the layer the undo is assoicated with or -1 if unknown */
     union {
 	struct {
 	    int16 width, vwidth;

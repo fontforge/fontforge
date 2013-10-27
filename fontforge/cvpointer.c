@@ -1383,16 +1383,12 @@ return( false );
     } else if ( cv->p.spline
 		&& !cv->p.splineAdjacentPointsSelected
 		&& (!cv->b.sc->inspiro || !hasspiro())) {
-	int adjselected = cv->p.spline->from && cv->p.spline->to
-	    && cv->p.spline->from->selected && cv->p.spline->to->selected;
-	printf("movep moving spline adjselected:%d\n", adjselected);
 	if ( !cv->recentchange ) CVPreserveState(&cv->b);
 	CVAdjustSpline(cv);
 	CVSetCharChanged(cv,true);
 	needsupdate = true;
 	touch_control_points = true;
     } else {
-	printf("movep ELSE\n");
 	if ( !cv->recentchange ) CVPreserveState(&cv->b);
 	did_a_merge = CVMoveSelection(cv,
 		cv->info.x-cv->last_c.x,cv->info.y-cv->last_c.y,

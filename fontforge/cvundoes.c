@@ -656,8 +656,8 @@ return(NULL);
     undo->u.state.dofill = cv->layerheads[cv->drawmode]->dofill;
     undo->u.state.dostroke = cv->layerheads[cv->drawmode]->dostroke;
     undo->u.state.fillfirst = cv->layerheads[cv->drawmode]->fillfirst;
-
-    // printf("CVPreserveState() new undo is at %p\n", undo );
+    undo->layer = cv->drawmode;
+    printf("CVPreserveState() dm:%d layer:%d new undo is at %p\n", cv->drawmode, layer, undo );
 
     // MIQ: Note, this is the wrong time to call sendRedo as we are
     // currently taking the undo state snapshot, after that the app
