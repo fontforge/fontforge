@@ -901,7 +901,11 @@ void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, char* keyPrefix, int idx ) 
     fprintf(sfd, "Type: %d\n",         u->undotype );
     fprintf(sfd, "WasModified: %d\n",  u->was_modified );
     fprintf(sfd, "WasOrder2: %d\n",    u->was_order2 );
-
+    if( u->layer != UNDO_LAYER_UNKNOWN )
+    {
+	fprintf(sfd, "Layer: %d\n",    u->layer );
+    }
+    
     switch( u->undotype )
     {
         case ut_tstate:
@@ -4006,6 +4010,7 @@ Undoes *SFDGetUndo( SplineFont *sf, FILE *sfd, SplineChar *sc,
 
     u = chunkalloc(sizeof(Undoes));
     u->undotype = ut_state;
+    u->layer = UNDO_LAYER_UNKNOWN;
 
     while ( 1 )
     {
@@ -4046,6 +4051,10 @@ Undoes *SFDGetUndo( SplineFont *sf, FILE *sfd, SplineChar *sc,
         if ( !strmatch(tok,"WasOrder2:")) {
             getint(sfd,&i);
             u->was_order2 = i;
+        }
+        if ( !strmatch(tok,"Layer:")) {
+            getint(sfd,&i);
+            u->layer = i;
         }
 
         switch( u->undotype )

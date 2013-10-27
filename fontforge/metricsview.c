@@ -1036,7 +1036,7 @@ static real GGadgetToReal(GGadget *g)
 /* to the server to update other clients to our state.	     */
 static void MV_handle_collabclient_sendRedo( MetricsView *mv, SplineChar *sc ) {
     if( collabclient_inSessionFV( &mv->fv->b ) ) {
-	collabclient_sendRedo_SC( sc );
+	collabclient_sendRedo_SC( sc, UNDO_LAYER_UNKNOWN );
 
 	/* CharViewBase* cv = sc->views; */
 	/* if( !cv ) */
