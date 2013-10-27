@@ -593,6 +593,14 @@ void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     RefChar *usemymetrics = HasUseMyMetrics(cv->b.sc,CVLayer((CharViewBase *) cv));
     int i;
 
+    cv->p.splineAdjacentPointsSelected = 0;
+    if( cv->p.spline )
+    {
+	cv->p.splineAdjacentPointsSelected =
+	    cv->p.spline->from && cv->p.spline->to
+	    && cv->p.spline->from->selected && cv->p.spline->to->selected;
+    }
+    
     if ( cv->pressed==NULL )
 	cv->pressed = GDrawRequestTimer(cv->v,200,100,NULL);
     cv->last_c.x = cv->info.x; cv->last_c.y = cv->info.y;
@@ -631,6 +639,7 @@ return;
     {
 	needsupdate = CVClearSel(cv);
     }
+
 
     if ( !fs->p->anysel ) {
 //	printf("mousedown !anysel dow:%d dov:%d doid:%d dotah:%d nearcaret:%d\n", dowidth, dovwidth, doic, dotah, nearcaret );
@@ -821,6 +830,7 @@ return;
 	if ( CVSetSel(cv,-1)) needsupdate = true;
     }
 
+    
     if ( needsupdate )
     {
 	SCUpdateAll(cv->b.sc);
@@ -1331,7 +1341,7 @@ return( false );
 	needsupdate = CVRectSelect(cv,cv->info.x,cv->info.y);
 	if ( !needsupdate && cv->p.rubberbanding )
 	    CVDrawRubberRect(cv->v,cv);
-	printf("moving2 cx:%g cy:%g\n", cv->p.cx, cv->p.cy );
+	/* printf("moving2 cx:%g cy:%g\n", cv->p.cx, cv->p.cy ); */
 	cv->p.ex = cv->info.x;
 	cv->p.ey = cv->info.y;
 	cv->p.rubberbanding = true;
@@ -1370,7 +1380,9 @@ return( false );
 
 	CPUpdateInfo(cv,event);
 	needsupdate = true;
-    } else if ( cv->p.spline!=NULL && (!cv->b.sc->inspiro || !hasspiro())) {
+    } else if ( cv->p.spline
+		&& !cv->p.splineAdjacentPointsSelected
+		&& (!cv->b.sc->inspiro || !hasspiro())) {
 	if ( !cv->recentchange ) CVPreserveState(&cv->b);
 	CVAdjustSpline(cv);
 	CVSetCharChanged(cv,true);

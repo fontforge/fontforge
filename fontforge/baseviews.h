@@ -59,6 +59,9 @@ typedef struct pressedOn {
     unsigned int rubberlining: 1;
     unsigned int transany: 1;
     unsigned int transanyrefs: 1;
+    unsigned int splineAdjacentPointsSelected: 1; /* were the points on both ends of the current clicked
+						   * spline both selected during the mouse down operation
+						   **/
     Spline *spline;
     real t;			/* location on the spline where we pressed */
     RefChar *ref;
