@@ -261,7 +261,7 @@ static void zeromq_beacon_fd_callback(int zeromq_fd, void* datas )
 {
 //    cloneclient_t* cc = (cloneclient_t*)datas;
 
-    printf("zeromq_beacon_fd_callback(top)\n");
+//    printf("zeromq_beacon_fd_callback(top)\n");
     
     int opt = 0;
     size_t optsz = sizeof(int);
