@@ -1418,7 +1418,8 @@ static void FVMenuCondense(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 #define MID_CollabConnect       22001
 #define MID_CollabDisconnect    22002
 #define MID_CollabCloseLocalServer  22003
-
+#define MID_CollabConnectToExplicitAddress 22004
+ 
 #define MID_Warnings	3000
 
 
@@ -5762,25 +5763,31 @@ static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
 	}
     }
 
+    printf("FVMenuCollabConnect(done)\n");
+}
 
+static void FVMenuCollabConnectToExplicitAddress(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
+{
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
 
+    printf("connecting to server... explicit address...\n");
 
-    /* char* res = gwwv_ask_string( */
-    /* 	"Connect to Collab Server", */
-    /* 	"localhost", */
-    /* 	"Please enter the network location of the Collab server you wish to connect to..."); */
-    /* if( res ) */
-    /* { */
-    /* 	int port_default = 5556; */
-    /* 	int port = port_default; */
-    /* 	char address[IPADDRESS_STRING_LENGTH_T]; */
-    /* 	strncpy( address, res, IPADDRESS_STRING_LENGTH_T-1 ); */
-    /* 	HostPortUnpack( address, &port, port_default ); */
+    char* res = gwwv_ask_string(
+    	"Connect to Collab Server",
+    	"localhost",
+    	"Please enter the network location of the Collab server you wish to connect to...");
+    if( res )
+    {
+    	int port_default = 5556;
+    	int port = port_default;
+    	char address[IPADDRESS_STRING_LENGTH_T];
+    	strncpy( address, res, IPADDRESS_STRING_LENGTH_T-1 );
+    	HostPortUnpack( address, &port, port_default );
 
-    /* 	void* cc = collabclient_new( address, port ); */
-    /* 	fv->b.collabClient = cc; */
-    /* 	collabclient_sessionJoin( cc, fv ); */
-    /* } */
+    	void* cc = collabclient_new( address, port );
+    	fv->b.collabClient = cc;
+    	collabclient_sessionJoin( cc, fv );
+    }
 
     printf("FVMenuCollabConnect(done)\n");
 }
@@ -5892,6 +5899,7 @@ static void collablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
 static GMenuItem2 collablist[] = {
     { { (unichar_t *) N_("_Start Session..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Start Session...|No Shortcut"), NULL, NULL, FVMenuCollabStart, MID_CollabStart },
     { { (unichar_t *) N_("_Connect to Session..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Connect to Session...|No Shortcut"), NULL, NULL, FVMenuCollabConnect, MID_CollabConnect },
+    { { (unichar_t *) N_("_Connect to Session (ip:port)..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Connect to Session (ip:port)...|No Shortcut"), NULL, NULL, FVMenuCollabConnectToExplicitAddress, MID_CollabConnectToExplicitAddress },
     { { (unichar_t *) N_("_Disconnect"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Disconnect|No Shortcut"), NULL, NULL, FVMenuCollabDisconnect, MID_CollabDisconnect },
     GMENUITEM2_LINE,
     { { (unichar_t *) N_("Close local server"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Close local server|No Shortcut"), NULL, NULL, FVMenuCollabCloseLocalServer, MID_CollabCloseLocalServer },
