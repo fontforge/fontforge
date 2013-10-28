@@ -1,0 +1,53 @@
+body { background: white; color: black; }
+section { display: block; float: left; margin: 0; width: 100%; }
+h1, h2, h3, h4 { font-family: arial, sans-serif; font-weight: normal; }
+
+#dropcontainer { width: 920px; margin: 0 20px; padding: 0px; }
+header { background: #ccc; }
+header h1 { margin: 0; padding: 30px 16px; }
+
+#toggleotfeatures { float: left; width: 880px; margin: 0 20px; padding: 8px 20px; background-color: #bababa; }
+#otfeatures { float: left; width: 920px; margin: 0px 20px 10px; padding: 0px 0px 8px; background: #bababa; }
+#otfeatures table td { padding: 4px 20px;}
+
+#toggleotfeatures, #otfeatures { font-family: "Lucida Grande","Lucida Sans Unicode", arial, sans-serif !important; font-size: small}
+#toggleotfeatures a { color: #fff; text-decoration:none; text-shadow: 1px 1px 2px black; }
+
+p#generatedcode { margin: 0; padding: 0; font: normal 10px/1 "Lucida Grande","Lucida Sans Unicode", arial, sans-serif; }
+p#csscode { margin: 0; padding: 0; font: normal 10px/1 "Lucida Grande","Lucida Sans Unicode", arial, sans-serif; }
+
+#fonts { margin: 0;  padding: 0; background: #eee; position: fixed; left: 28px; top: 8px; width: 920px; }
+
+#fonts li { display: inline;  list-style: none; cursor: pointer; margin: 0 0.5em; }
+#fonts li span { margin: 2em 0.2em 0 0.2em; }
+#fonts li.active { background: #CCCCCC; }
+
+#custom { margin: 0; padding: 0; }
+#custom p { margin: 0; padding: 0; }
+#custom p.sizelabel {  color: #666;  font-family: "Lucida Grande","Lucida Sans Unicode", arial, sans-serif !important; font-size: 10px; line-height: 10px; font-style: normal; }
+
+UL.tabNavigation { list-style: none; margin: 16px 0 0 20px; padding: 0 0 2px; width: 920px; }
+UL.tabNavigation LI { display: inline; font-family: arial, sans-serif; }
+UL.tabNavigation LI A { padding: 4px 6px; margin: 0; background-color: #ccc; color: #000; text-decoration: none; }
+UL.tabNavigation LI A.selected, UL.tabNavigation LI A:hover { background-color: #333; color: #fff; padding-top: 8px; }
+UL.tabNavigation LI A:focus { outline: 0; }
+div.tabs > div { padding: 20px; }
+div.tabs > div h2 { margin-top: 0; }
+
+.textsettingCol1 { width: 450px; float: left; }
+.textsettingCol2 { width: 450px; float: right; }
+
+#ruder td { font-size: 32px; line-height: 1; margin: 0; padding: 4px; }
+
+#pie { padding: 20px; width: 920px; }
+#pie p { color: #666;  font-family: "Lucida Grande","Lucida Sans Unicode", arial, sans-serif !important;  font-size: 10px;  line-height: 18px;  font-style: normal; margin: 0; }
+#pie p a { color: #666; }
+
+.multicolumn3 {
+	-moz-column-count: 3;
+	-moz-column-gap: 20px;
+	-webkit-column-count: 3;
+	-webkit-column-gap: 20px;
+	column-count: 3;
+	column-gap: 20px;
+}
