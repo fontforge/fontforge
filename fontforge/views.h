@@ -432,6 +432,7 @@ typedef struct fontview {
     int sel_index;
     struct lookup_subtable *cur_subtable;
     struct qg_data *qg;
+    GPid pid_webfontserver;
 } FontView;
 
 typedef struct findsel {

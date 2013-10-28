@@ -62,6 +62,7 @@ SUBDIRS += fontforgeexe
 
 SUBDIRS += plugins
 SUBDIRS += po htdocs pycontrib
+SUBDIRS += nodejs
 SUBDIRS += cidmap
 SUBDIRS += tests
 

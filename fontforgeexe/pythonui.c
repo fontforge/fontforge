@@ -563,6 +563,28 @@ static PyObject *PyFFFont_CollabSessionSetUpdatedCallback(PyFF_Font *self, PyObj
 
 
 
+static PyObject *PyFF_getLastChangedName(PyObject *UNUSED(self), PyObject *args) {
+    PyObject *ret;
+    ret = Py_BuildValue("s", Collab_getLastChangedName() );
+    return( ret );
+}
+static PyObject *PyFF_getLastChangedPos(PyObject *UNUSED(self), PyObject *args) {
+    PyObject *ret;
+    ret = Py_BuildValue("i", Collab_getLastChangedPos() );
+    return( ret );
+}
+static PyObject *PyFF_getLastChangedCodePoint(PyObject *UNUSED(self), PyObject *args) {
+    PyObject *ret;
+    ret = Py_BuildValue("i", Collab_getLastChangedCodePoint() );
+    return( ret );
+}
+static PyObject *PyFF_getLastSeq(PyFF_Font *self, PyObject *args)
+{
+    int64_t seq = collabclient_getCurrentSequenceNumber( self->fv->collabClient );
+    PyObject *ret;
+    ret = Py_BuildValue("i", seq );
+    return( ret );
+}
 
 
 
@@ -576,12 +598,19 @@ PyMethodDef PyFF_FontUI_methods[] = {
    { "CollabSessionJoin", (PyCFunction) PyFFFont_CollabSessionJoin, METH_VARARGS, "Join a collab session at the given address (or localhost by default)" },
    { "CollabSessionRunMainLoop", (PyCFunction) PyFFFont_CollabSessionRunMainLoop, METH_VARARGS, "Run the main loop, checking for and reacting to Collab messages for the given number of milliseconds (or 1 second by default)" },
    { "CollabSessionSetUpdatedCallback", (PyCFunction) PyFFFont_CollabSessionSetUpdatedCallback, METH_VARARGS, "Python function to call after a new collab update has been applied" },
+
+   { "CollabLastChangedName", (PyCFunction) PyFF_getLastChangedName, METH_VARARGS, "" },
+   { "CollabLastChangedPos", (PyCFunction) PyFF_getLastChangedPos, METH_VARARGS, "" },
+   { "CollabLastChangedCodePoint", (PyCFunction) PyFF_getLastChangedCodePoint, METH_VARARGS, "" },
+   { "CollabLastSeq", (PyCFunction) PyFF_getLastSeq, METH_VARARGS, "" },
+   
    PYMETHODDEF_EMPTY /* Sentinel */
 };
 
 static PyMethodDef*
 copyUIMethodsToBaseTable( PyMethodDef* ui, PyMethodDef* md )
 {
+    printf("copyUIMethodsToBaseTable()\n");
     // move md to the first target slot
     for( ; md->ml_name; )
     {
@@ -594,10 +623,8 @@ copyUIMethodsToBaseTable( PyMethodDef* ui, PyMethodDef* md )
     return md;
 }
 
-
 void PythonUI_Init(void) {
-    /* if (!quiet)
-        printf("PythonUI_Init()\n"); */
+    printf("PythonUI_Init()\n"); 
     FfPy_Replace_MenuItemStub(PyFF_registerMenuItem);
     set_pyFF_maybeCallCVPreserveState_Func( pyFF_maybeCallCVPreserveState );
     set_pyFF_sendRedoIfInSession_Func( pyFF_sendRedoIfInSession_Func_Real );

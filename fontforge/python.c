@@ -18434,6 +18434,12 @@ void FontForge_InitializeEmbeddedPython(void) {
 #endif
 static ARGV_CHAR_TYPE ** copy_argv(char *arg0, int argc ,char **argv);
 
+/* static void HandleSigTerm(int sig) */
+/* { */
+/*     _exit(0); */
+/* } */
+
+
 void PyFF_Main(int argc,char **argv,int start) {
     char *arg;
     ARGV_CHAR_TYPE **newargv;
@@ -18442,6 +18448,10 @@ void PyFF_Main(int argc,char **argv,int start) {
 
     no_windowing_ui = running_script = true;
 
+#if !defined(__MINGW32__)
+//    signal( 15, HandleSigTerm );
+#endif
+    
     PyFF_ProcessInitFiles();
 
     /* Skip '-script' option */
