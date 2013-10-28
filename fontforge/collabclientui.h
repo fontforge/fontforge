@@ -159,4 +159,8 @@ extern void collabclient_trimOldBeaconInformation( int secondsCutOff );
 extern int collabclient_isAddressLocal( char* address );
 
 
+extern char* Collab_getLastChangedName( void );
+extern int Collab_getLastChangedPos( void );
+extern int Collab_getLastChangedCodePoint( void );
+
 #endif

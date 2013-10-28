@@ -109,6 +109,7 @@ int default_fv_showhmetrics=false, default_fv_showvmetrics=false,
 FontView *fv_list=NULL;
 
 static void AskAndMaybeCloseLocalCollabServers( void );
+static void FVStopWebFontServer( FontView *fv );
 
 
 static void FV_ToggleCharChanged(SplineChar *sc) {
@@ -942,13 +943,22 @@ static void _MenuExit(void *UNUSED(junk)) {
     {
 	AskAndMaybeCloseLocalCollabServers();
     }
+
+    for ( fv = fv_list; fv!=NULL; fv = next )
+    {
+	next = (FontView *) (fv->b.next);
+	printf("fv:%p running webfont server:%d\n", fv, fv->pid_webfontserver );
+	FVStopWebFontServer( fv );
+    }
     
     LastFonts_Save();
-    for ( fv = fv_list; fv!=NULL; fv = next ) {
+    for ( fv = fv_list; fv!=NULL; fv = next )
+    {
 	next = (FontView *) (fv->b.next);
 	if ( !_FVMenuClose(fv))
-return;
-	if ( fv->b.nextsame!=NULL || fv->b.sf->fv!=&fv->b ) {
+	    return;
+	if ( fv->b.nextsame!=NULL || fv->b.sf->fv!=&fv->b )
+	{
 	    GDrawSync(NULL);
 	    GDrawProcessPendingEvents(NULL);
 	}
@@ -1419,7 +1429,10 @@ static void FVMenuCondense(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 #define MID_CollabDisconnect    22002
 #define MID_CollabCloseLocalServer  22003
 #define MID_CollabConnectToExplicitAddress 22004
- 
+#define MID_StartWebFontServer      22005
+#define MID_StopWebFontServer       22006
+
+
 #define MID_Warnings	3000
 
 
@@ -5874,6 +5887,56 @@ static void FVMenuCollabCloseLocalServer(GWindow gw, struct gmenuitem *UNUSED(mi
     }
 }
 
+static void FVMenuStartWebFontServer(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
+{
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    char command_line[PATH_MAX+1];
+    sprintf(command_line, "%s/nodejs/collabwebview/collabwebview.sh", getShareDir() );
+    printf("command_line:%s\n", command_line );
+    char* argv[5];
+    argv[0] = command_line;
+    argv[1] = 0;
+    gchar **envp = 0;
+    GSpawnFlags flags = 0;
+    GPid child_pid;
+    GError * error = 0;
+    gboolean rc = g_spawn_async( getTempDir(),
+				 argv,
+				 envp,
+				 flags,
+				 0, 0,
+				 &fv->pid_webfontserver,
+				 &error );
+    if( !rc )
+    {
+	fv->pid_webfontserver = 0;
+	fprintf(stderr, "Error starting collab webfont server\n");
+	if( error )
+	    fprintf(stderr, "code:%d message:%s\n", error->code, error->message );
+    }
+    
+    
+}
+
+static void FVStopWebFontServer( FontView *fv )
+{
+    printf("stop %d\n", fv->pid_webfontserver );
+    if( fv->pid_webfontserver )
+    {
+	kill( fv->pid_webfontserver, SIGTERM );
+	g_spawn_close_pid( fv->pid_webfontserver );
+    }
+}
+
+static void FVMenuStopWebFontServer(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
+{
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    FVStopWebFontServer( fv );
+}
+
+
+
 static void collablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -5903,6 +5966,9 @@ static GMenuItem2 collablist[] = {
     { { (unichar_t *) N_("_Disconnect"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Disconnect|No Shortcut"), NULL, NULL, FVMenuCollabDisconnect, MID_CollabDisconnect },
     GMENUITEM2_LINE,
     { { (unichar_t *) N_("Close local server"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Close local server|No Shortcut"), NULL, NULL, FVMenuCollabCloseLocalServer, MID_CollabCloseLocalServer },
+    GMENUITEM2_LINE,
+    { { (unichar_t *) N_("Start Webfont server"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Start Webfont server|No Shortcut"), NULL, NULL, FVMenuStartWebFontServer, MID_StartWebFontServer },
+    { { (unichar_t *) N_("Stop Webfont server"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Stop Webfont server|No Shortcut"), NULL, NULL, FVMenuStopWebFontServer, MID_StopWebFontServer },
 
     GMENUITEM2_EMPTY,				/* Extra room to show sub-font names */
 };
@@ -7446,6 +7512,9 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 #ifndef _NO_PYTHON
     PyFF_InitFontHook((FontViewBase *)fv);
 #endif
+
+    fv->pid_webfontserver = 0;
+    
 return( fv );
 }
 

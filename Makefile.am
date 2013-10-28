@@ -58,6 +58,7 @@ endif GRAPHICAL_USER_INTERFACE
 
 SUBDIRS += plugins
 SUBDIRS += fontforge po htdocs pycontrib
+SUBDIRS += nodejs
 SUBDIRS += cidmap
 SUBDIRS += tests
 

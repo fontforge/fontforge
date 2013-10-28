@@ -32,6 +32,27 @@
 
 int  collabclient_setHaveLocalServer( int v );
 
+char lastChangedName[1024];
+int lastChangedPos;
+char lastChangedEncoding[1024];
+int lastChangedCodePoint;
+
+char* Collab_getLastChangedName( void )
+{
+    return lastChangedName;
+}
+
+int Collab_getLastChangedPos( void )
+{
+    return lastChangedPos;
+}
+
+int Collab_getLastChangedCodePoint( void )
+{
+    return lastChangedCodePoint;
+}
+
+
 #ifdef BUILD_COLLAB
   // client beacon for discovery
   static zbeacon_t* client_beacon = 0;
