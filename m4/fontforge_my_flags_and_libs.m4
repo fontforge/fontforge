@@ -5,6 +5,26 @@ dnl -----------------------
 AC_DEFUN([FONTFORGE_SET_MY_CFLAGS],
 [
 my_cflags="${WARNING_CFLAGS}"
+dnl add --no-undefined if supported
+dnl TODO: move it to my_ldflags
+dnl https://mail.gnome.org/archives/commits-list/2011-October/msg10575.html
+dnl http://femass.com.br/Net-SNMP/configure.d/config_os_progs
+case $host in
+  dnl FreeBSD (et al.) does not complete linking for shared objects when pthreads
+  dnl are requested, as different implementations are present; to avoid problems
+  dnl use -Wl,-z,defs only for those platform not behaving this way.
+  *-freebsd* | *-openbsd*) ;;
+  *)
+    saved_LDFLAGS=$LDFLAGS
+    AC_MSG_CHECKING([whether the linker supports --no-undefined])
+    LDFLAGS="$saved_LDFLAGS -Wl,--no-undefined"
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],
+    [AC_MSG_RESULT([yes]); my_cflags="${my_cflags} -Wl,--no-undefined"],
+    [AC_MSG_RESULT([no])]
+    )
+    LDFLAGS="$saved_LDFLAGS"
+  ;;
+esac
 if test x"${i_do_have_freetype_debugger}" != xno; then
    my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/src/truetype"
    my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/include"
