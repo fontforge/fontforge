@@ -2074,7 +2074,7 @@ FILE* MakeTemporaryFile() {
     fd = g_mkstemp( template );
     printf("MakeTemporaryFile() fd:%d template:%s\n", fd, template );
     ret = fdopen( fd, "rw+" );
-////    unlink( template );
+    unlink( template );
     return ret;
 }
 
@@ -8024,23 +8024,16 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
     SplineFont *sf;
     int realcnt, i, eof, mappos=-1, ch;
     struct table_ordering *lastord = NULL;
-//    KernClass *lastkc=NULL, *kc, *lastvkc=NULL;
-//    OTLookup *lastpotl=NULL, *lastsotl = NULL;
     struct axismap *lastaxismap = NULL;
     struct named_instance *lastnamedinstance = NULL;
     int pushedbacktok = false;
     Encoding *enc = &custom;
     struct remap *remap = NULL;
     int hadtimes=false, haddupenc;
-//    int old;
     int old_style_order2 = false;
-//    struct Base *last_base = NULL;
-//    struct basescript *last_base_script = NULL;
     int had_layer_cnt=false;
 
     orig_pos = 0;		/* Only used for compatibility with extremely old sfd files */
-
-//    lastttf[0] = lastttf[1] = NULL;
 
     sf = SplineFontEmpty();
     if ( sfdversion<2 ) {
