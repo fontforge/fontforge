@@ -103,6 +103,7 @@ extern void collabclient_sessionDisconnect( FontViewBase* fv );
  */
 extern void collabclient_sendRedo_SC( SplineChar *sc, int layer );
 extern void collabclient_sendRedo( CharViewBase *cv );
+extern void collabclient_sendFontLevelRedo( SplineFont* sf );
 extern void collabclient_performLocalUndo( CharViewBase *cv );
 extern void collabclient_performLocalRedo( CharViewBase *cv );
 

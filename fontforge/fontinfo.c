@@ -33,6 +33,8 @@
 #include "unicoderange.h"
 #include <locale.h>
 #include "lookups.h"
+#include "sfundo.h"
+#include "collabclientui.h"
 
 extern int _GScrollBar_Width;
 extern GBox _ggadget_Default_Box;
@@ -3979,11 +3981,32 @@ static int GFI_SetLayers(struct gfi_data *d) {
 return( changed );
 }
 
+
+char* DumpSplineFontMetadata( SplineFont *sf )
+{
+    FILE* sfd = MakeTemporaryFile();
+    SFD_DumpSplineFontMetadata( sfd, sf );
+    char* str = FileToAllocatedString( sfd );
+    return(str);
+}
+
 static int GFI_OK(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate )
+    {
 	GWindow gw = GGadgetGetWindow(g);
 	struct gfi_data *d = GDrawGetUserData(gw);
 	SplineFont *sf = d->sf, *_sf;
+
+	printf("at top of GFI_OK\n");
+
+	char* sfdfrag  = DumpSplineFontMetadata( sf );
+	SFUndoes* undo = SFUndoCreateSFD( sfut_fontinfo,
+					  _("Font Information Dialog"),
+					  sfdfrag );
+	SFUndoPushFront( &sf->undoes, undo );
+
+	
+	
 	int interp;
 	int reformat_fv=0, retitle_fv=false;
 	int upos, uwid, as, des, err = false, weight=0;
@@ -4539,6 +4562,9 @@ return(true);
 	SFReplaceFontnameBDFProps(sf);
 	MVReFeatureAll(sf);
 	MVReKernAll(sf);
+
+	collabclient_sendFontLevelRedo( sf );
+	
     }
 return( true );
 }

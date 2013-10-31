@@ -36,6 +36,7 @@
 #include <gkeysym.h>
 #include "lookups.h"
 #include "gfile.h"
+#include "sfundo.h"
 
 int add_char_to_name_list = true;
 int default_autokern_dlg = true;
@@ -3917,10 +3918,6 @@ static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
     return ret;
 }
 
-static void SFUndoCleanup( struct sfundoes *undo ) {
-    if( undo->u.lookupatomic.sfdchunk )
-	free( undo->u.lookupatomic.sfdchunk );
-}
 
 
 static int PSTKD_Ok(GGadget *g, GEvent *e) {
@@ -4184,18 +4181,13 @@ return( true );
 	    if( shouldCreateUndoEntry ) {
 
 		dlist_trim_to_limit( (struct dlistnode **)&sf->undoes, fontlevel_undo_limit,
-				     (dlist_visitor_func_type)SFUndoCleanup );
+				     (dlist_visitor_func_type)SFUndoFreeAssociated );
 
-		struct sfundoes *undo;
-		undo = chunkalloc(sizeof(SFUndoes));
-		undo->ln.next = 0;
-		undo->ln.prev = 0;
-		undo->msg  = _("Lookup Table Edit");
-		undo->type = sfut_lookups;
+		enum sfundotype t = sfut_lookups;
 		if( lookup_type == gpos_pair ) {
-		    undo->type = sfut_lookups_kerns;
+		    t = sfut_lookups_kerns;
 		}
-		undo->u.lookupatomic.sfdchunk = str;
+		SFUndoes* undo = SFUndoCreateSFD( t, _("Lookup Table Edit"), str );
 		dlist_pushfront( (struct dlistnode **)&sf->undoes, (struct dlistnode *)undo );
 	    }
 //	    printf("we now have %d splinefont level undoes\n", dlist_size((struct dlistnode **)&sf->undoes));

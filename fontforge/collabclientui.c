@@ -29,6 +29,7 @@
 #include "collabclientpriv.h"
 #include "collabclientui.h"
 #include "uiinterface.h"
+#include "sfundo.h"
 
 int  collabclient_setHaveLocalServer( int v );
 
@@ -98,6 +99,7 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
     char* uuid = kvmsg_get_prop (kvmsg, "uuid" );
     byte* data = kvmsg_body (kvmsg);
     size_t data_size = kvmsg_size (kvmsg);
+    byte* msgtype = kvmsg_get_prop (kvmsg, "type" );
 
     printf("cc process_update() uuid:%s\n", uuid );
     FontView* fv = FontViewFind( FontViewFind_byXUIDConnected, uuid );
@@ -116,6 +118,16 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 	    printf("ERROR: font view does not have the splinefont set!\n" );
 	    return;
 	}
+
+	if( !strcmp( msgtype, MSG_TYPE_UNDO_FONTLEVEL ))
+	{
+	    SFUndoes* u = SFUndoFromString( (char*)data );
+	    SFUndoPerform( u, sf );
+	    printf ("I: processed update=%d\n", (int) cc->sequence);
+	    return;
+	    
+	}
+	
 	
 	char* pos  = kvmsg_get_prop (kvmsg, "pos" );
 	char* name = kvmsg_get_prop (kvmsg, "name" );
@@ -598,50 +610,63 @@ static int collabclient_sessionJoin_processmsg_foreach_fn( kvmsg_t* msg, void *a
     return 0;
 }
 
-/* static void */
-/* collabclient_sendRedo_Internal( CharViewBase *cv, Undoes *undo, int isLocalUndo ) */
-/* { */
-/*     printf("collabclient_sendRedo_Internal()\n"); */
-/*     cloneclient_t* cc = cv->fv->collabClient; */
-/*     if( !cc ) */
-/* 	return; */
-/*     char* uuid = cv->fv->sf->xuid; */
-/*     printf("uuid:%s\n", uuid ); */
+
+static void
+collabclient_sendRedo_sfdfragment( cloneclient_t* cc,
+				   SplineFont* sf,
+				   SplineChar *sc, /* optional */
+				   char* sfdfrag,  /* SFD that makes sense for redo */
+				   char* msgtype,  /* will be MSG_TYPE_UNDO if set to zero */
+				   int isLocalUndo )
+{
+    printf("collabclient_sendRedo_sfdfragment(top)\n");
+    if( !cc )
+	return;
+    if( !msgtype )
+	msgtype = MSG_TYPE_UNDO;
     
-/*     int idx = 0; */
-/*     char filename[PATH_MAX]; */
-/*     snprintf(filename, PATH_MAX, "%s/fontforge-collab-x.sfd", getTempDir() ); */
-/*     FILE* f = fopen( filename, "w" ); */
-/*     SFDDumpUndo( f, cv->sc, undo, "Undo", idx ); */
-/*     fclose(f); */
-/*     char* sfd = GFileReadAll( filename ); */
-/* //    printf("SENDING: %s\n\n", sfd ); */
+    char pos[100];
+    char* uuid = sf->xuid;
+    printf("uuid:%s\n", uuid );
 
-/*     cc->roundTripTimerWaitingSeq = cc->publisher_sendseq; */
-/*     BackgroundTimer_touch( cc->roundTripTimer ); */
+    int idx = 0;
+    char* sfd = sfdfrag;
+    printf("read undo sfd, data:%p\n", sfd );
+    if( DEBUG_SHOW_SFD_CHUNKS )
+	printf("SENDING: %s\n\n", sfd );
 
-/*     kvmsg_t *kvmsg = kvmsg_new(0); */
-/*     kvmsg_fmt_key  (kvmsg, "%s%d", SUBTREE, cc->publisher_sendseq++); */
-/*     kvmsg_set_body (kvmsg, sfd, strlen(sfd) ); */
-/*     kvmsg_set_prop (kvmsg, "type", MSG_TYPE_UNDO ); */
-/*     kvmsg_set_prop (kvmsg, "uuid", uuid ); */
-/*     char pos[100]; */
-/*     sprintf(pos, "%d", cv->sc->orig_pos ); */
-/*     printf("pos:%s\n", pos ); */
-/*     printf("sc.name:%s\n", cv->sc->name ); */
+    printf("timers1...\n" );
+    cc->roundTripTimerWaitingSeq = cc->publisher_sendseq;
+    BackgroundTimer_touch( cc->roundTripTimer );
+    printf("timers2...\n" );
+    printf("sfd:%p...\n", sfd );
+
+    kvmsg_t *kvmsg = kvmsg_new(0);
+    kvmsg_fmt_key  (kvmsg, "%s%d", SUBTREE, cc->publisher_sendseq++);
+    kvmsg_set_body (kvmsg, sfd, strlen(sfd) );
+    kvmsg_set_prop (kvmsg, "type", msgtype );
+    kvmsg_set_prop (kvmsg, "uuid", uuid );
+    if( sc )
+    {
+	sprintf(pos, "%d", sc->orig_pos );
+	printf("pos:%s\n", pos );
+	printf("sc.name:%s\n", sc->name );
+    }
     
-/*     size_t data_size = kvmsg_size (kvmsg); */
-/*     printf("data.size:%ld\n", data_size ); */
+    size_t data_size = kvmsg_size (kvmsg);
+    printf("data.size:%ld\n", data_size );
 
-/*     kvmsg_set_prop (kvmsg, "pos", pos ); */
-/*     kvmsg_set_prop (kvmsg, "name", cv->sc->name ); */
-/*     sprintf(pos, "%d", isLocalUndo ); */
-/*     kvmsg_set_prop (kvmsg, "isLocalUndo", pos ); */
-/*     kvmsg_send     (kvmsg, cc->publisher); */
-/*     kvmsg_destroy (&kvmsg); */
-/*     DEBUG("Sent a undo chunk of %d bytes to the server\n",strlen(sfd)); */
-/*     free(sfd); */
-/* } */
+    kvmsg_set_prop (kvmsg, "pos", pos );
+    if( sc )
+	kvmsg_set_prop (kvmsg, "name", sc->name );
+    sprintf(pos, "%d", isLocalUndo );
+    kvmsg_set_prop (kvmsg, "isLocalUndo", pos );
+    kvmsg_send     (kvmsg, cc->publisher);
+    kvmsg_destroy  (&kvmsg);
+    DEBUG("Sent a undo chunk of %d bytes to the server\n",strlen(sfd));
+    free(sfd);
+}
+
 
 static void
 collabclient_sendRedo_Internal( FontViewBase *fv, SplineChar *sc, Undoes *undo, int isLocalUndo )
@@ -1094,6 +1119,52 @@ void collabclient_sendRedo( CharViewBase *cv )
     /* } */
     /* cc->preserveUndo = 0; */
 
+#endif
+}
+
+void collabclient_sendFontLevelRedo( SplineFont* sf )
+{
+#ifdef BUILD_COLLAB
+    
+    printf("collabclient_sendFontLevelRedo() sf:%p\n", sf );
+    if( !sf->undoes )
+	return;
+    
+    struct sfundoes *undo = sf->undoes;
+    printf("font level undo msg:%s\n", undo->msg );
+
+    //
+    // create the "redo" based on what the last undo type was
+    //
+    undo = SFUndoCreateRedo( undo, sf );
+    char* sfdfrag = SFUndoToString( undo );
+    
+    /* switch(undo->type) */
+    /* { */
+    /* case sfut_fontinfo: */
+    /* 	printf("font info!\n"); */
+    /* 	sfdfrag = DumpSplineFontMetadata( sf ); */
+    /* 	break; */
+    /* } */
+    
+    if( sfdfrag )
+    {
+	printf("have sfd frag len:%d\n", strlen(sfdfrag));
+	printf("have sfd frag\n%s\n\n", sfdfrag);
+
+	FontViewBase* fv = sf->fv;
+	cloneclient_t* cc = fv->collabClient;
+	if( !cc )
+	    return;
+
+	printf("have cc too!\n");
+
+	int isLocalUndo = 0;
+	collabclient_sendRedo_sfdfragment( cc, sf, 0, sfdfrag, MSG_TYPE_UNDO_FONTLEVEL, isLocalUndo );
+    }
+    
+    
+    
 #endif
 }
 

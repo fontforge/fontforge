@@ -163,7 +163,8 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	splashimage.c startui.c statemachine.c tilepath.c transform.c	        \
 	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
 	usermenu.c macobjective.h                                               \
-        collabclientui.c collabclientui.h
+        collabclientui.c collabclientui.h \
+	sfundo.c sfundo.h
 
 else !GRAPHICAL_USER_INTERFACE
 
