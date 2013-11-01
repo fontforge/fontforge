@@ -211,7 +211,10 @@ typedef struct charview {
     GIC *gwgic;
     int width, height;
     float xoff, yoff; /* must be floating point, for precise zoom by scroll */
-    int mbh, infoh, rulerh;
+    int mbh;    //< menu bar height
+    int charselectorh;  //< char selection input box height
+    int infoh;  //< info bar height
+    int rulerh; //< ruler height
     int16 sas, sfh, sdh, nas, nfh;
     BasePoint info;
     SplinePoint *info_sp;
@@ -275,6 +278,8 @@ typedef struct charview {
     struct qg_data *qg;
     int16 note_x, note_y;
     struct dlistnode* pointInfoDialogs;
+    GGadget* charselector; //< let the user type in more than one char to view at once.
+    SplineChar* additionalCharsToShowOnRight[21]; //< additionalCharsToShowOnRightLimit + 1 in size
 } CharView;
 
 typedef struct bitmapview {

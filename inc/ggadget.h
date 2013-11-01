@@ -377,6 +377,7 @@ void GGadgetSetDesiredSize(GGadget *g,GRect *outer, GRect *inner);
 int GGadgetGetCid(GGadget *g);
 void GGadgetResize(GGadget *g,int32 width, int32 height );
 void GGadgetMove(GGadget *g,int32 x, int32 y );
+void GGadgetMoveAddToY(GGadget *g, int32 yoffset );
 int32 GGadgetGetX(GGadget *g);
 int32 GGadgetGetY(GGadget *g);
 void  GGadgetSetY(GGadget *g, int32 y );

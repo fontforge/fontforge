@@ -1089,6 +1089,15 @@ void GGadgetMove(GGadget *g,int32 x, int32 y ) {
     (g->funcs->move)(g,x,y);
 }
 
+void GGadgetMoveAddToY(GGadget *g, int32 yoffset )
+{
+    GRect sz;
+    GGadgetGetSize( g, &sz );
+    GGadgetMove( g, sz.x, sz.y + yoffset );
+}
+
+
+
 int32 GGadgetGetX(GGadget *g)
 {
     return g->r.x;
