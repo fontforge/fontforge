@@ -4289,23 +4289,21 @@ return;
 	_CVTestSelectFromEvent(cv,&fs);
 	fs.p = &cv->p;
 
-	printf("cvmousedown cv->xoff:%d\n", cv->xoff );
-	printf("cvmousedown x:%d y:%d\n",   event->u.mouse.x, event->u.mouse.y );
+//	printf("cvmousedown cv->xoff:%d\n", cv->xoff );
+//	printf("cvmousedown x:%d y:%d\n",   event->u.mouse.x, event->u.mouse.y );
 	if( !cv->p.anysel && cv->b.drawmode != dm_grid )
 	{
-	    printf("cvmousedown no sel\n" );
-	    printf("cvmousedown no sel dm:%d\n", cv->b.drawmode );
+//	    printf("cvmousedown no sel\n" );
 	    
 	    int i=0;
 	    FindSel fsadjusted = fs;
-//	    real orig = fsadjusted.p->cx;
 	    fsadjusted.c_xl -= 2*fsadjusted.fudge;
 	    fsadjusted.c_xh += 2*fsadjusted.fudge;
 	    fsadjusted.xl -= 2*fsadjusted.fudge;
 	    fsadjusted.xh += 2*fsadjusted.fudge;
 		
 	    int offset = cv->b.sc->width;
-	    printf("first offset:%d original cx:%f \n", offset, fsadjusted.p->cx );
+//	    printf("first offset:%d original cx:%f \n", offset, fsadjusted.p->cx );
 	    for( i=1; i< additionalCharsToShowOnRightLimit; i++ )
 	    {
 		SplineChar* xc = cv->additionalCharsToShowOnRight[i];
@@ -4334,15 +4332,12 @@ return;
 		if( found )
 		{
 		    printf("FOUND FOUND FOUND FOUND FOUND FOUND FOUND FOUND FOUND FOUND FOUND FOUND FOUND FOUND FOUND \n");
-//		    CharView* ncv = CharViewCreate( xc, cv->b.fv, -1 );
 		    CVChangeSC(cv,xc);
-
 		    break;
 		}
 		
 		offset = xc->width;
 	    }
-//	    fsadjusted.p->cx = orig;
 	}
 	
     } else if ( cv->active_tool == cvt_curve || cv->active_tool == cvt_corner ||
@@ -11906,7 +11901,7 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     GGadgetGetSize(cv->mb,&gsize);
     cv->mbh = gsize.height;
     
-    printf("pos.x:%d pos.y:%d pos.w:%d pos.h:%d\n", pos.x, pos.y, pos.width, pos.height );
+//    printf("pos.x:%d pos.y:%d pos.w:%d pos.h:%d\n", pos.x, pos.y, pos.width, pos.height );
     GDrawGetSize(cv->gw,&pos);
     memset(&gd,0,sizeof(gd));
 //    gd.pos.x = pos.x;
