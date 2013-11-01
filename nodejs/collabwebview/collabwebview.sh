@@ -21,9 +21,10 @@ closeem() {
     exit
 }
 
+>|/tmp/python-log.txt
 node server.js &
 nodepid=$!
-../../python/collab/sessionjoin.py > /dev/null 2>&1 &
+../../python/collab/sessionjoin.py >> /tmp/python-log.txt 2>&1 &
 pypid=$!
 
 # wait
@@ -38,7 +39,7 @@ do
 
   if ! kill -0 $pypid >/dev/null 2>/dev/null; then
       echo "restarting python collab script..."
-      ../../python/collab/sessionjoin.py > /dev/null 2>&1 &
+      ../../python/collab/sessionjoin.py >> /tmp/python-log.txt 2>&1 &
       pypid=$!
   fi
 
