@@ -56,6 +56,7 @@ extern int _GScrollBar_Width;
 
 extern void UndoesFreeButRetainFirstN( Undoes** undopp, int retainAmount );
 
+int additionalCharsToShowOnRightLimit = 20;
 
 int ItalicConstrained=true;
 float arrowAmount=1;
@@ -2789,6 +2790,30 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	{
 	    CVDrawLayerSplineSet( cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
 	    			  cv->showpoints ,&clip, strokeFillMode );
+
+	    if( cv->additionalCharsToShowOnRight[1] )
+	    {
+		int i = 1;
+		int originalxoff = cv->xoff;
+		int offset = cv->scale * cv->b.sc->width;
+		for( i=1; i< additionalCharsToShowOnRightLimit; i++ )
+		{
+		    SplineChar* xc = cv->additionalCharsToShowOnRight[i];
+		    if( !xc )
+			break;
+
+		    printf("scale:%f\n", cv->scale );
+		    printf("sc.width:%d\n", xc->width );
+		    cv->xoff += offset;
+		    int showpoints = 0;
+		    CVDrawLayerSplineSet( cv, pixmap, &xc->layers[layer], foreoutlinecol,
+					  showpoints ,&clip, strokeFillMode );
+		    offset = cv->scale * xc->width;
+		}
+		
+		cv->xoff = originalxoff;
+	    }
+	    
 	}
     }
 
@@ -3253,15 +3278,17 @@ return;
 	cv->height -= gsize.height;
 	GGadgetMove(cv->vsb,sbsize.x,sbsize.y+gsize.height);
 	GGadgetResize(cv->vsb,sbsize.width,sbsize.height-gsize.height);
+	GGadgetMoveAddToY( cv->charselector, gsize.height );
     } else {
 	cv->mbh -= gsize.height;
 	cv->height += gsize.height;
 	GGadgetMove(cv->vsb,sbsize.x,sbsize.y-gsize.height);
 	GGadgetResize(cv->vsb,sbsize.width,sbsize.height+gsize.height);
+	GGadgetMoveAddToY( cv->charselector, -1*gsize.height );
     }
     GGadgetSetVisible(cv->tabs,makevisible);
     cv->back_img_out_of_date = true;
-    pos.x = 0; pos.y = cv->mbh+cv->infoh;
+    pos.x = 0; pos.y = cv->mbh+cv->charselectorh+cv->infoh;
     pos.width = cv->width; pos.height = cv->height;
     if ( cv->showrulers ) {
 	pos.x += cv->rulerh;
@@ -3299,6 +3326,8 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     if ( old_layer>=sc->layer_cnt )
 	old_layer = ly_fore;		/* Can happen in type3 fonts where each glyph has a different layer cnt */
 
+    memset( cv->additionalCharsToShowOnRight, 0, sizeof(SplineChar*) * additionalCharsToShowOnRightLimit );
+    
     CVDebugFree(cv->dv);
 
     if ( cv->expandedge != ee_none ) {
@@ -3350,6 +3379,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     free(title);
     _CVPaletteActivate(cv,true);
 
+    GGadgetSetTitle8(cv->charselector,sc->name);
     if ( cv->tabs!=NULL ) {
 	for ( i=0; i<cv->former_cnt; ++i )
 	    if ( strcmp(cv->former_names[i],sc->name)==0 )
@@ -3601,14 +3631,14 @@ void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     Color fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap));
     const int buffersz = 150;
     char buffer[buffersz+1];
-    int ybase = cv->mbh+(cv->infoh-cv->sfh)/2+cv->sas;
+    int ybase = cv->mbh+cv->charselectorh+(cv->infoh-cv->sfh)/2+cv->sas;
     real xdiff, ydiff;
     SplinePoint *sp, dummy;
     spiro_cp *cp;
 
     GDrawSetFont(pixmap,cv->small);
     r.x = RPT_DATA; r.width = 60;
-    r.y = cv->mbh; r.height = cv->infoh-1;
+    r.y = cv->mbh+cv->charselectorh; r.height = cv->infoh-1;
     GDrawFillRect(pixmap,&r,bg);
     r.x = SPT_DATA; r.width = 60;
     GDrawFillRect(pixmap,&r,bg);
@@ -3735,7 +3765,7 @@ return;
 }
 
 static void CVInfoDrawRulers(CharView *cv, GWindow pixmap ) {
-    int rstart = cv->mbh+cv->infoh;
+    int rstart = cv->mbh+cv->charselectorh+cv->infoh;
     GDrawSetXORMode(pixmap);
     GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
     GDrawSetLineWidth(pixmap,0);
@@ -4258,6 +4288,58 @@ return;
 	cv->lastselcp = NULL;
 	_CVTestSelectFromEvent(cv,&fs);
 	fs.p = &cv->p;
+
+//	printf("cvmousedown cv->xoff:%d\n", cv->xoff );
+//	printf("cvmousedown x:%d y:%d\n",   event->u.mouse.x, event->u.mouse.y );
+	if( !cv->p.anysel && cv->b.drawmode != dm_grid )
+	{
+//	    printf("cvmousedown no sel\n" );
+	    
+	    int i=0;
+	    FindSel fsadjusted = fs;
+	    fsadjusted.c_xl -= 2*fsadjusted.fudge;
+	    fsadjusted.c_xh += 2*fsadjusted.fudge;
+	    fsadjusted.xl -= 2*fsadjusted.fudge;
+	    fsadjusted.xh += 2*fsadjusted.fudge;
+		
+	    int offset = cv->b.sc->width;
+//	    printf("first offset:%d original cx:%f \n", offset, fsadjusted.p->cx );
+	    for( i=1; i< additionalCharsToShowOnRightLimit; i++ )
+	    {
+		SplineChar* xc = cv->additionalCharsToShowOnRight[i];
+		if( !xc )
+		    break;
+
+		/* fsadjusted.xl   += offset; */
+		/* fsadjusted.xh   += offset; */
+
+//		fsadjusted.p->cx -= offset;
+		printf("1 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh);
+		printf("1 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh);
+		printf("1 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy );
+		
+		fsadjusted.c_xl -= offset;
+		fsadjusted.c_xh -= offset;
+		fsadjusted.xl   -= offset;
+		fsadjusted.xh   -= offset;
+		printf("2 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh);
+		printf("2 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh);
+		printf("2 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy );
+		int found = InSplineSet( &fsadjusted,
+					 xc->layers[cv->b.drawmode-1].splines,
+					 xc->inspiro && hasspiro());
+		printf("cvmousedown i:%d found:%d\n", i, found );
+		if( found )
+		{
+		    printf("FOUND FOUND FOUND FOUND FOUND FOUND FOUND FOUND FOUND FOUND FOUND FOUND FOUND FOUND FOUND \n");
+		    CVChangeSC(cv,xc);
+		    break;
+		}
+		
+		offset = xc->width;
+	    }
+	}
+	
     } else if ( cv->active_tool == cvt_curve || cv->active_tool == cvt_corner ||
 	    cv->active_tool == cvt_tangent || cv->active_tool == cvt_hvcurve ||
 	    cv->active_tool == cvt_pen || cv->active_tool == cvt_ruler ) {
@@ -5111,7 +5193,7 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
     real xmin, xmax, ymin, ymax;
     real onehundred, pos;
     real units, littleunits;
-    int ybase = cv->mbh+cv->infoh;
+    int ybase = cv->mbh+cv->charselectorh+cv->infoh;
     int x,y;
     GRect rect;
     Color def_fg = GDrawGetDefaultForeground(NULL);
@@ -5150,8 +5232,8 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
     rect.y = ybase; rect.height = cv->height+cv->rulerh; rect.x = 0; rect.width = cv->rulerh;
     GDrawFillRect(pixmap,&rect,GDrawGetDefaultBackground(NULL));
     GDrawSetLineWidth(pixmap,0);
-    GDrawDrawLine(pixmap,cv->rulerh,cv->mbh+cv->infoh+cv->rulerh-1,8096,cv->mbh+cv->infoh+cv->rulerh-1,def_fg);
-    GDrawDrawLine(pixmap,cv->rulerh-1,cv->mbh+cv->infoh+cv->rulerh,cv->rulerh-1,8096,def_fg);
+    GDrawDrawLine(pixmap,cv->rulerh,cv->mbh+cv->charselectorh+cv->infoh+cv->rulerh-1,8096,cv->mbh+cv->infoh+cv->rulerh-1,def_fg);
+    GDrawDrawLine(pixmap,cv->rulerh-1,cv->mbh+cv->charselectorh+cv->infoh+cv->rulerh,cv->rulerh-1,8096,def_fg);
 
     GDrawSetFont(pixmap,cv->small);
     if ( xmax-xmin<1 && cv->width>100 ) {
@@ -5191,25 +5273,25 @@ static void InfoExpose(CharView *cv, GWindow pixmap, GEvent *expose) {
     Color def_fg = GDrawGetDefaultForeground(NULL);
 
     if ( expose->u.expose.rect.y + expose->u.expose.rect.height < cv->mbh ||
-	    (!cv->showrulers && expose->u.expose.rect.y >= cv->mbh+cv->infoh ))
+	    (!cv->showrulers && expose->u.expose.rect.y >= cv->mbh+cv->charselectorh+cv->infoh ))
 return;
 
     GDrawPushClip(pixmap,&expose->u.expose.rect,&old1);
     GDrawSetLineWidth(pixmap,0);
-    if ( expose->u.expose.rect.y< cv->mbh+cv->infoh ) {
+    if ( expose->u.expose.rect.y< cv->mbh+cv->charselectorh+cv->infoh ) {
 #if 0
 	r.x = 0; r.width = 8096;
 	r.y = cv->mbh; r.height = cv->infoh;
 #endif
 	GDrawPushClip(pixmap,&expose->u.expose.rect,&old2);
 
-	GDrawDrawLine(pixmap,0,cv->mbh+cv->infoh-1,8096,cv->mbh+cv->infoh-1,def_fg);
-	GDrawDrawImage(pixmap,&GIcon_rightpointer,NULL,RPT_BASE,cv->mbh+2);
-	GDrawDrawImage(pixmap,&GIcon_selectedpoint,NULL,SPT_BASE,cv->mbh+2);
-	GDrawDrawImage(pixmap,&GIcon_sel2ptr,NULL,SOF_BASE,cv->mbh+2);
-	GDrawDrawImage(pixmap,&GIcon_distance,NULL,SDS_BASE,cv->mbh+2);
-	GDrawDrawImage(pixmap,&GIcon_angle,NULL,SAN_BASE,cv->mbh+2);
-	GDrawDrawImage(pixmap,&GIcon_mag,NULL,MAG_BASE,cv->mbh+2);
+	GDrawDrawLine(pixmap,0,cv->mbh+cv->charselectorh+cv->infoh-1,8096,cv->mbh+cv->charselectorh+cv->infoh-1,def_fg);
+	GDrawDrawImage(pixmap,&GIcon_rightpointer,NULL,RPT_BASE,cv->mbh+cv->charselectorh+2);
+	GDrawDrawImage(pixmap,&GIcon_selectedpoint,NULL,SPT_BASE,cv->mbh+cv->charselectorh+2);
+	GDrawDrawImage(pixmap,&GIcon_sel2ptr,NULL,SOF_BASE,cv->mbh+cv->charselectorh+2);
+	GDrawDrawImage(pixmap,&GIcon_distance,NULL,SDS_BASE,cv->mbh+cv->charselectorh+2);
+	GDrawDrawImage(pixmap,&GIcon_angle,NULL,SAN_BASE,cv->mbh+cv->charselectorh+2);
+	GDrawDrawImage(pixmap,&GIcon_mag,NULL,MAG_BASE,cv->mbh+cv->charselectorh+2);
 	CVInfoDrawText(cv,pixmap);
 	GDrawPopClip(pixmap,&old2);
     }
@@ -5227,7 +5309,7 @@ void CVResize(CharView *cv ) {
     GDrawGetSize(cv->gw,&size);
     {
 	int newwidth = size.width-sbsize,
-	    newheight = size.height-sbsize - cv->mbh-cv->infoh;
+	    newheight = size.height-sbsize - cv->mbh-cv->charselectorh-cv->infoh;
 	int sbwidth = newwidth, sbheight = newheight;
 
 	if ( cv->dv!=NULL ) {
@@ -5238,14 +5320,14 @@ void CVResize(CharView *cv ) {
 	    if ( newwidth<30 )
 		newwidth = 30+sbsize+(cv->dv!=NULL ? cv->dv->dwidth : 0);
 	    if ( newheight<50 )
-		newheight = 50+sbsize+cv->mbh+cv->infoh;
+		newheight = 50+sbsize+cv->mbh+cv->charselectorh+cv->infoh;
 	    GDrawResize(cv->gw,newwidth,newheight);
 return;
 	}
 
 	if ( cv->dv!=NULL ) {
-	    int dvheight = size.height-(cv->mbh+cv->infoh);
-	    GDrawMove(cv->dv->dv,size.width-cv->dv->dwidth,cv->mbh+cv->infoh);
+	    int dvheight = size.height-(cv->mbh+cv->charselectorh+cv->infoh);
+	    GDrawMove(cv->dv->dv,size.width-cv->dv->dwidth,cv->mbh+cv->charselectorh+cv->infoh);
 	    GDrawResize(cv->dv->dv,cv->dv->dwidth,dvheight);
 	    GDrawResize(cv->dv->ii.v,cv->dv->dwidth-sbsize,dvheight-cv->dv->toph);
 	    GGadgetResize(cv->dv->ii.vsb,sbsize,dvheight-cv->dv->toph);
@@ -5268,7 +5350,7 @@ return;
 
 	/* MenuBar takes care of itself */
 	GDrawResize(cv->v,newwidth,newheight);
-	GGadgetMove(cv->vsb,sbwidth, cv->mbh+cv->infoh);
+	GGadgetMove(cv->vsb,sbwidth, cv->mbh+cv->charselectorh+cv->infoh);
 	GGadgetResize(cv->vsb,sbsize,sbheight);
 	GGadgetMove(cv->hsb,0,size.height-sbsize);
 	GGadgetResize(cv->hsb,sbwidth,sbsize);
@@ -5337,7 +5419,7 @@ static void CVHScroll(CharView *cv, struct sbevent *sb) {
 	}
 	if ( cv->showrulers ) {
 	    GRect r;
-	    r.y = cv->infoh+cv->mbh; r.height = cv->rulerh; r.x = 0; r.width = cv->rulerh+cv->width;
+	    r.y = cv->infoh+cv->mbh+cv->charselectorh; r.height = cv->rulerh; r.x = 0; r.width = cv->rulerh+cv->width;
 	    GDrawRequestExpose(cv->gw,&r,false);
 	}
     }
@@ -5400,7 +5482,7 @@ static void CVVScroll(CharView *cv, struct sbevent *sb) {
 	}
 	if ( cv->showrulers ) {
 	    GRect r;
-	    r.x = 0; r.width = cv->rulerh; r.y = cv->infoh+cv->mbh; r.height = cv->rulerh+cv->height;
+	    r.x = 0; r.width = cv->rulerh; r.y = cv->infoh+cv->charselectorh+cv->mbh; r.height = cv->rulerh+cv->height;
 	    GDrawRequestExpose(cv->gw,&r,false);
 	}
     }
@@ -5434,7 +5516,7 @@ static void CVLogoExpose(CharView *cv,GWindow pixmap,GEvent *event) {
     GRect r;
 
     r.x = cv->width+rh;
-    r.y = cv->height+cv->mbh+cv->infoh+rh;
+    r.y = cv->height+cv->mbh+cv->charselectorh+cv->infoh+rh;
     LogoExpose(pixmap,event,&r,cv->b.drawmode==dm_grid? dm_grid :
 	    cv->b.layerheads[cv->b.drawmode]->background ? dm_back : dm_fore );
 }
@@ -5566,7 +5648,7 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 	if ( cv->inactive )
 	    (cv->b.container->funcs->activateMe)(cv->b.container,&cv->b);
 	if ( cv->showrulers ) {
-	    int is_h = event->u.mouse.y>cv->mbh+cv->infoh && event->u.mouse.y<cv->mbh+cv->infoh+cv->rulerh;
+	    int is_h = event->u.mouse.y>cv->mbh+cv->charselectorh+cv->infoh && event->u.mouse.y<cv->mbh+cv->charselectorh+cv->infoh+cv->rulerh;
 	    int is_v = event->u.mouse.x<cv->rulerh;
 	    if ( cv->gwgic!=NULL && event->type==et_mousedown)
 		GDrawSetGIC(gw,cv->gwgic,0,20);
@@ -5597,7 +5679,7 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 		else if ( cv->ruler_pressedv )
 		    CVAddGuide(cv,true,event->u.mouse.x-cv->rulerh);
 		else
-		    CVAddGuide(cv,false,event->u.mouse.y-(cv->mbh+cv->infoh+cv->rulerh));
+		    CVAddGuide(cv,false,event->u.mouse.y-(cv->mbh+cv->charselectorh+cv->infoh+cv->rulerh));
 	    }
 	}
       break;
@@ -5605,7 +5687,7 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 	if ( cv->ruler_pressed ) {
 	    CVDrawGuideLine(cv,cv->guide_pos);
 	    cv->e.x = event->u.mouse.x - cv->rulerh;
-	    cv->e.y = event->u.mouse.y-(cv->mbh+cv->infoh+cv->rulerh);
+	    cv->e.y = event->u.mouse.y-(cv->mbh+cv->charselectorh+cv->infoh+cv->rulerh);
 	    cv->info.x = (cv->e.x-cv->xoff)/cv->scale;
 	    cv->info.y = (cv->height-cv->e.y-cv->yoff)/cv->scale;
 	    if ( cv->ruler_pressedv )
@@ -6328,7 +6410,7 @@ static void _CVMenuShowHideRulers(CharView *cv) {
     GRect pos;
 
     CVShows.showrulers = cv->showrulers = !cv->showrulers;
-    pos.y = cv->mbh+cv->infoh;
+    pos.y = cv->mbh+cv->charselectorh+cv->infoh;
     pos.x = 0;
     if ( cv->showrulers ) {
 	cv->height -= cv->rulerh;
@@ -11529,11 +11611,15 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
 #endif
     cv->rulerh = 16;
 
+
+
+
+    
     GDrawGetSize(cv->gw,&pos);
     memset(&gd,0,sizeof(gd));
-    gd.pos.y = cv->mbh+cv->infoh;
+    gd.pos.y = cv->mbh+cv->charselectorh+cv->infoh;
     gd.pos.width = sbsize = GDrawPointsToPixels(cv->gw,_GScrollBar_Width);
-    gd.pos.height = pos.height-cv->mbh-cv->infoh - sbsize;
+    gd.pos.height = pos.height-cv->mbh-cv->charselectorh-cv->infoh - sbsize;
     gd.pos.x = pos.width-sbsize;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
     cv->vsb = GScrollBarCreate(cv->gw,&gd,cv);
@@ -11544,8 +11630,10 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
     cv->hsb = GScrollBarCreate(cv->gw,&gd,cv);
 
+
+    
     GDrawGetSize(cv->gw,&pos);
-    pos.y = cv->mbh+cv->infoh; pos.height -= cv->mbh + sbsize + cv->infoh;
+    pos.y = cv->mbh+cv->charselectorh+cv->infoh; pos.height -= cv->mbh + cv->charselectorh + sbsize + cv->infoh;
     pos.x = 0; pos.width -= sbsize;
     if ( cv->showrulers ) {
 	pos.y += cv->rulerh; pos.height -= cv->rulerh;
@@ -11627,6 +11715,8 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
 
     CVFit(cv);
     GDrawSetVisible(cv->v,true);
+    GWindowClearFocusGadgetOfWindow(cv->v);
+
     /*if ( cv_auto_goto )*/		/* Chinese input method steals hot key key-strokes */
 	/* But if we don't do this, then people can't type menu short-cuts */
 	cv->gic   = GDrawCreateInputContext(cv->v,gic_root|gic_orlesser);
@@ -11687,6 +11777,50 @@ void DefaultY(GRect *pos) {
 
 static void CharViewInit(void);
 
+static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
+{
+    CharView* cv = GGadgetGetUserData(g);
+    SplineChar *sc = cv->b.sc;
+    SplineFont* sf = sc->parent;
+    
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged )
+    {
+	char* txt = GGadgetGetTitle8( cv->charselector );
+	printf("text changed: %s\n", txt );
+
+	memset( cv->additionalCharsToShowOnRight, 0, sizeof(SplineChar*) * additionalCharsToShowOnRightLimit );
+
+	if( txt[0] == '\0' )
+	{
+	    GGadgetSetTitle8( cv->charselector, cv->b.sc->name );
+	}
+	else if( strlen(txt) > 1 )
+	{
+	    int i=1;
+	    int max = imin( strlen(txt), additionalCharsToShowOnRightLimit );
+	    for( i=1; i<max; i++ )
+	    {
+		char ch = txt[i];
+
+		char name[10];
+		sprintf(name, "%c", ch );
+		SplineChar* xc = SFGetOrMakeChar( sf, -1, name );
+		cv->additionalCharsToShowOnRight[i] = xc;
+	    }
+	}
+
+	int i=1;
+	for( i=1; cv->additionalCharsToShowOnRight[i]; i++ )
+	{
+	    printf("i:%d %p .. ", i, cv->additionalCharsToShowOnRight[i] );
+	    printf(" %s\n", cv->additionalCharsToShowOnRight[i]->name );
+	}
+
+	GDrawRequestExpose(cv->v,NULL,false);
+    }
+    return( true );
+}
+
 CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show )
 {
     CharView *cv = gcalloc(1,sizeof(CharView));
@@ -11705,6 +11839,13 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     cv->enc = enc;
     cv->map_of_enc = fv->b.map;		/* I know this is done again in _CharViewCreate, but it needs to be done before creating the title */
 
+    cv->infoh = 13;
+#if defined(__MINGW32__)||defined(__CYGWIN__)
+    cv->infoh = 26;
+#endif
+    cv->rulerh = 16;
+
+    
     SCLigCaretCheck(sc,false);
 
     memset(&wattrs,0,sizeof(wattrs));
@@ -11725,7 +11866,15 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     free( (unichar_t *) wattrs.icon_title );
     GDrawSetWindowTypeName(cv->gw, "CharView");
 
+    // FIXME: cant do this until gw is shown?
+    GTextBounds textbounds;
+    GDrawGetText8Bounds(cv->gw,"0123456789hl",10,&textbounds);
+    printf("XXXXXX as:%d  ds:%d\n",  textbounds.as, textbounds.ds );
+    cv->charselectorh = textbounds.as+textbounds.ds+1;
+    printf("XXXXXX h:%d\n", GDrawGetText8Height( cv->gw, "0123456AZgplh", 10));
+    cv->charselectorh = 35;
 
+    
     GDrawGetSize(GDrawGetRoot(screen_display),&zoom);
     zoom.x = CVPalettesWidth(); zoom.width -= zoom.x-10;
     zoom.height -= 30;			/* Room for title bar & such */
@@ -11751,6 +11900,19 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     cv->mb = GMenu2BarCreate( gw, &gd, NULL);
     GGadgetGetSize(cv->mb,&gsize);
     cv->mbh = gsize.height;
+    
+//    printf("pos.x:%d pos.y:%d pos.w:%d pos.h:%d\n", pos.x, pos.y, pos.width, pos.height );
+    GDrawGetSize(cv->gw,&pos);
+    memset(&gd,0,sizeof(gd));
+//    gd.pos.x = pos.x;
+    gd.pos.x = 3;
+    gd.pos.y = cv->mbh+2;
+    gd.pos.height = cv->charselectorh-4;
+    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_text_xim;
+    gd.handle_controlevent = CV_OnCharSelectorTextChanged;
+//    gd.u.list = mv_text_init;
+    cv->charselector = GListFieldCreate(cv->gw,&gd,cv);
+    printf("XXXXXXX charselectorh:%d\n", cv->charselectorh );
 
     memset(aspects,0,sizeof(aspects));
     aspects[0].text = (unichar_t *) sc->name;

@@ -45,6 +45,7 @@
 #include "collabclientpriv.h"
 
 #include "gutils/unicodelibinfo.h"
+#include "sfundo.h"
 
 // Clash on windows for a define to PrintDlgA
 #ifdef PrintDlg
@@ -1607,77 +1608,80 @@ static int pstLength( struct generic_pst * pst ) {
 }
 */
 
-/**
- * Remove undo from the font level undoes on splinefont 'sf' and
- * completely free the given undo from memory.
- */
-static void sfundoRemoveAndFree( SplineFont *sf, struct sfundoes *undo ) {
-
-    if( undo->u.lookupatomic.sfdchunk )
-	free( undo->u.lookupatomic.sfdchunk );
-    dlist_erase( (struct dlistnode **)&sf->undoes, (struct dlistnode *)undo );
-    free(undo);
-}
 
 static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     FontViewBase * fvb = (FontViewBase *) fv;
     SplineFont *sf = fvb->sf;
     char* sfdchunk = 0;
-
+    FILE* sfd = 0;
+    
     // printf("we currently have %d splinefont level undoes\n", dlist_size((struct dlistnode **)&sf->undoes));
     if( !sf->undoes )
 	return;
 
     struct sfundoes *undo = sf->undoes;
-    // printf("font level undo msg:%s\n", undo->msg );
-    switch(undo->type) {
-    case sfut_lookups_kerns:
-    case sfut_lookups:
-	sfdchunk = undo->u.lookupatomic.sfdchunk;
-	if( !sfdchunk ) {
-	    ff_post_error(_("Undo information incomplete"),_("There is a splinefont level undo, but it does not contain any information to perform the undo. This is an application error, please report what you last did to the lookup tables so the developers can try to reproduce the issue and fix it."));
-	    sfundoRemoveAndFree( sf, undo );
-	    return;
-	}
+    printf("font level undo msg:%s\n", undo->msg );
+    SFUndoPerform( undo, sf );
+    
+    /* switch(undo->type) { */
+    /* case sfut_fontinfo: */
+    /* 	sfdchunk = undo->sfdchunk; */
+    /* 	printf("font level undo, font info sfd:%s\n", sfdchunk ); */
+    /* 	sfd = MakeTemporaryFile(); */
+    /* 	fwrite( sfdchunk, strlen(sfdchunk), 1, sfd ); */
+    /* 	fseek( sfd, 0, SEEK_SET ); */
 
-	// Roll it on back!
-	FILE* sfd = MakeTemporaryFile();
-	fwrite( sfdchunk, strlen(sfdchunk), 1, sfd );
-	fseek( sfd, 0, SEEK_SET );
+    /* 	SFD_GetFontMetaDataData d; */
+    /* 	SFD_GetFontMetaDataData_Init( &d ); */
+    /* 	visitSFDFragment( sfd, sf, SFD_GetFontMetaData, &d ); */
+    /* 	break; */
+    /* case sfut_lookups_kerns: */
+    /* case sfut_lookups: */
+    /* 	sfdchunk = undo->sfdchunk; */
+    /* 	if( !sfdchunk ) { */
+    /* 	    ff_post_error(_("Undo information incomplete"),_("There is a splinefont level undo, but it does not contain any information to perform the undo. This is an application error, please report what you last did to the lookup tables so the developers can try to reproduce the issue and fix it.")); */
+    /* 	    SFUndoRemoveAndFree( sf, undo ); */
+    /* 	    return; */
+    /* 	} */
 
-	while( 1 ) {
-	    char* name = SFDMoveToNextStartChar( sfd );
-	    if( !name )
-		break;
+    /* 	// Roll it on back! */
+    /* 	sfd = MakeTemporaryFile(); */
+    /* 	fwrite( sfdchunk, strlen(sfdchunk), 1, sfd ); */
+    /* 	fseek( sfd, 0, SEEK_SET ); */
 
-	    int unienc = 0;
-	    SplineChar *sc;
-	    sc = SFGetChar( sf, unienc, name );
-	    if( !sc ) {
-		ff_post_error(_("Bad undo"),_("couldn't find the character %s"), name );
-		break;
-	    }
-	    if( sc ) {
-		// Free the stuff in sc->psts so we don't leak it.
-		if( undo->type == sfut_lookups ) {
-		    PSTFree(sc->possub);
-		    sc->possub = 0;
-		}
-		char tok[2000];
-		getname( sfd, tok );
-		SFDGetPSTs( sfd, sc, tok );
-		SFDGetKerns( sfd, sc, tok );
-	    }
-	    free(name);
-	}
+    /* 	while( 1 ) { */
+    /* 	    char* name = SFDMoveToNextStartChar( sfd ); */
+    /* 	    if( !name ) */
+    /* 		break; */
 
-	if( undo->type == sfut_lookups_kerns ) {
-	    SFDFixupRefs( sf );
-	}
-	break;
-    }
-    sfundoRemoveAndFree( sf, undo );
+    /* 	    int unienc = 0; */
+    /* 	    SplineChar *sc; */
+    /* 	    sc = SFGetChar( sf, unienc, name ); */
+    /* 	    if( !sc ) { */
+    /* 		ff_post_error(_("Bad undo"),_("couldn't find the character %s"), name ); */
+    /* 		break; */
+    /* 	    } */
+    /* 	    if( sc ) { */
+    /* 		// Free the stuff in sc->psts so we don't leak it. */
+    /* 		if( undo->type == sfut_lookups ) { */
+    /* 		    PSTFree(sc->possub); */
+    /* 		    sc->possub = 0; */
+    /* 		} */
+    /* 		char tok[2000]; */
+    /* 		getname( sfd, tok ); */
+    /* 		SFDGetPSTs( sfd, sc, tok ); */
+    /* 		SFDGetKerns( sfd, sc, tok ); */
+    /* 	    } */
+    /* 	    free(name); */
+    /* 	} */
+
+    /* 	if( undo->type == sfut_lookups_kerns ) { */
+    /* 	    SFDFixupRefs( sf ); */
+    /* 	} */
+    /* 	break; */
+    /* } */
+    SFUndoRemoveAndFree( sf, undo );
 }
 
 static void FVMenuCut(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {

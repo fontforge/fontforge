@@ -906,6 +906,15 @@ typedef struct undoes {
     struct splinefont *copied_from;
 } Undoes;
 
+enum sfundotype
+{
+    sfut_none=0,
+    sfut_lookups,
+    sfut_lookups_kerns,
+    sfut_fontinfo,
+    sfut_noop
+};
+
 /**
  * A spline font level undo stack. undoes are doubly linked using the
  * 'ln' member and carry some user presentable description of what the
@@ -921,14 +930,11 @@ typedef struct undoes {
 typedef struct sfundoes {
     struct dlistnode ln;
     char* msg;
-    enum sfundotype { sfut_none=0, sfut_lookups, sfut_lookups_kerns,
-		      sfut_noop } type;
+    enum sfundotype type;
     union {
 	int dummy;
-	struct {
-	    char* sfdchunk;
-	} lookupatomic;
     } u;
+    char* sfdchunk;
 } SFUndoes;
     
 
@@ -2731,6 +2737,38 @@ extern void SFKernClassTempDecompose(SplineFont *sf,int isv);
 extern void SFKernCleanup(SplineFont *sf,int isv);
 extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,
 	const char *comment);
+
+extern int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf );
+typedef struct sfd_getfontmetadatadata
+{
+
+    // these indicate if we saw some metadata or not.
+    // perhaps the caller wants to do something special
+    // if the metadata was present/missing.
+    int hadtimes;
+    int had_layer_cnt;
+
+    // state that is mostly interesting to SFD_GetFontMetaData() only
+    struct Base*        last_base;
+    struct basescript*  last_base_script;
+    OTLookup*           lastpotl;
+    OTLookup*           lastsotl;
+    KernClass*          lastkc;
+    KernClass*          lastvkc;
+    FPST*               lastfp;
+    ASM*                lastsm;
+    struct ttf_table*   lastttf[2];
+    
+} SFD_GetFontMetaDataData;
+extern void SFD_GetFontMetaDataData_Init( SFD_GetFontMetaDataData* d );
+extern void SFD_GetFontMetaData( FILE *sfd,
+				 char *tok,
+				 SplineFont *sf,
+				 SFD_GetFontMetaDataData* d );
+typedef (*visitSFDFragmentFunc)( FILE *sfd, char *tokbuf, SplineFont *sf, void* udata );
+extern void visitSFDFragment( FILE *sfd, SplineFont *sf, visitSFDFragmentFunc ufunc, void* udata );
+extern char* DumpSplineFontMetadata( SplineFont *sf );
+
 
 extern void SFD_DumpLookup( FILE *sfd, SplineFont *sf );
 extern enum uni_interp interp_from_encoding(Encoding *enc,enum uni_interp interp);

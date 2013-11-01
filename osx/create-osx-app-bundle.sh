@@ -134,6 +134,42 @@ install_name_tool -change /opt/local/Library/Frameworks/Python.framework/Version
 cd $bundle_bin
 
 
+#########
+# we want nodejs in the bundle for collab
+
+mkdir -p $bundle_lib  $bundle_bin
+cd $bundle_bin
+cp -av /opt/local/bin/node .
+cd $bundle_lib
+if [ ! -f ../lib/libssl.1.0.0.dylib ]; then
+    cp -av /opt/local/lib/libssl*dylib ../lib/
+fi
+if [ ! -f ../lib/libcrypto.1.0.0.dylib ]; then
+    cp -av /opt/local/lib/libcrypto*dylib ../lib/
+fi
+
+cd $bundle_bin
+install_name_tool -change /opt/local/lib/libssl.1.0.0.dylib    @executable_path/../lib/libssl.1.0.0.dylib node 
+install_name_tool -change /opt/local/lib/libcrypto.1.0.0.dylib @executable_path/../lib/libcrypto.1.0.0.dylib node 
+cd $bundle_lib
+for if in libssl.1.0.0.dylib libcrypto.1.0.0.dylib;
+do
+    install_name_tool -change /opt/local/lib/libcrypto.1.0.0.dylib @executable_path/../lib/libcrypto.1.0.0.dylib $if
+    install_name_tool -change /opt/local/lib/libssl.1.0.0.dylib    @executable_path/../lib/libssl.1.0.0.dylib $if
+    install_name_tool -change /opt/local/lib/libz.1.dylib          @executable_path/../lib/libz.1.dylib $if
+done
+cd $bundle_share/fontforge/nodejs/collabwebview
+# this will npm install socket.io locally, without network/build interaction.
+cp -av ~/macports/categories/fontforge/node/node_modules .
+cd $bundle_bin
+
+
+
+
+
+
+#########
+
 
 mkdir -p $bundle_lib
 cp -av /opt/local/lib/pango   $bundle_lib

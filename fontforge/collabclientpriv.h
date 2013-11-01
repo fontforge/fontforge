@@ -45,6 +45,7 @@
 
 #define MSG_TYPE_SFD  "msg_type_sfd"
 #define MSG_TYPE_UNDO "msg_type_undo"
+#define MSG_TYPE_UNDO_FONTLEVEL "msg_type_undo_fontlevel"
 
 //
 // Set to true if you want to see the raw SFD undo fragments which

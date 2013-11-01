@@ -2068,11 +2068,12 @@ FILE* MakeTemporaryFile() {
     char template[PATH_MAX+1];
     int fd;
 
-    strncpy( template, getSlashTempName(),template[PATH_MAX]-1-1-22 );
+    strncpy( template, getSlashTempName(), PATH_MAX-2-strlen("fontforge-stemp-XXXXXX") );
     strcat( template, "/" );
     strcat( template, "fontforge-stemp-XXXXXX" );
     fd = g_mkstemp( template );
-    ret = fdopen( fd, "r+" );
+    printf("MakeTemporaryFile() fd:%d template:%s\n", fd, template );
+    ret = fdopen( fd, "rw+" );
     unlink( template );
     return ret;
 }
@@ -2165,27 +2166,21 @@ void SFD_DumpLookup( FILE *sfd, SplineFont *sf ) {
     }
 }
 
-
-static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
-	int todir, char *dirname) {
-    int i, j, realcnt;
-    BDFFont *bdf;
+int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
+{
+    int i, j;
     struct ttflangname *ln;
     struct ttf_table *tab;
     KernClass *kc;
     FPST *fpst;
     ASM *sm;
     int isv;
-    int *newgids = NULL;
     int err = false;
     int isgpos;
     OTLookup *otl;
     struct lookup_subtable *sub;
     FeatureScriptLangList *fl;
     struct scriptlanglist *sl;
-
-    if ( normal!=NULL )
-	map = normal;
 
     fprintf(sfd, "FontName: %s\n", sf->fontname );
     if ( sf->fullname!=NULL )
@@ -2206,6 +2201,7 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	SFDDumpUTF7Str(sfd,sf->fontlog);
 	putc('\n',sfd);
     }
+    
     if ( sf->version!=NULL )
 	fprintf(sfd, "Version: %s\n", sf->version );
     if ( sf->fondname!=NULL )
@@ -2577,6 +2573,24 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	SFDDumpDesignSize(sfd,sf);
     if ( sf->feat_names!=NULL )
 	SFDDumpOtfFeatNames(sfd,sf);
+    
+return( err );
+}
+
+
+static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
+		     int todir, char *dirname)
+{
+    int i, realcnt;
+    BDFFont *bdf;
+    int *newgids = NULL;
+    int err = false;
+
+    if ( normal!=NULL )
+	map = normal;
+
+    SFD_DumpSplineFontMetadata( sfd, sf ); //, map, normal, todir, dirname );
+    
     if ( sf->MATH!=NULL ) {
 	struct MATH *math = sf->MATH;
 	for ( i=0; math_constants_descriptor[i].script_name!=NULL; ++i ) {
@@ -3198,6 +3212,24 @@ static int geteol(FILE *sfd, char *tokbuf) {
     *pt='\0';
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
+
+void visitSFDFragment( FILE *sfd, SplineFont *sf,
+		       visitSFDFragmentFunc ufunc, void* udata )
+{
+    int eof;
+    char tok[2000];
+    while ( 1 ) {
+	if ( (eof = getname(sfd,tok))!=1 ) {
+	    if ( eof==-1 )
+		break;
+	    geteol(sfd,tok);
+	    continue;
+	}
+
+	ufunc( sfd, tok, sf, udata );
+    }
+}
+
 
 static int getprotectedname(FILE *sfd, char *tokbuf) {
     char *pt=tokbuf, *end = tokbuf+100-2; int ch;
@@ -7280,31 +7312,728 @@ static void SFDParseJustify(FILE *sfd, SplineFont *sf, char *tok) {
     }
 }
 
-static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
-	int fromdir, char *dirname, float sfdversion) {
+
+
+void SFD_GetFontMetaDataData_Init( SFD_GetFontMetaDataData* d )
+{
+    memset( d, 0, sizeof(SFD_GetFontMetaDataData));
+}
+
+
+void SFD_GetFontMetaData( FILE *sfd,
+			  char *tok,
+			  SplineFont *sf,
+			  SFD_GetFontMetaDataData* d )
+{
+    int ch;
+    int i;
+    KernClass* kc = 0;
+    int old;
+    
+    // This allows us to assume we can dereference d
+    // at all times
+    static SFD_GetFontMetaDataData my_static_d;
+    static int my_static_d_is_virgin = 1;
+    if( !d )
+    {
+	if( my_static_d_is_virgin )
+	{
+	    my_static_d_is_virgin = 0;
+	    SFD_GetFontMetaDataData_Init( &my_static_d );
+	}
+	d = &my_static_d;
+    }
+    
+    if ( strmatch(tok,"FontName:")==0 )
+    {
+	getname(sfd,tok);
+	sf->fontname = copy(tok);
+    }
+    else if ( strmatch(tok,"FullName:")==0 )
+    {
+	geteol(sfd,tok);
+	sf->fullname = copy(tok);
+    }
+    else if ( strmatch(tok,"FamilyName:")==0 )
+    {
+	geteol(sfd,tok);
+	sf->familyname = copy(tok);
+    }
+    else if ( strmatch(tok,"DefaultBaseFilename:")==0 )
+    {
+	geteol(sfd,tok);
+	sf->defbasefilename = copy(tok);
+    }
+    else if ( strmatch(tok,"Weight:")==0 )
+    {
+	getprotectedname(sfd,tok);
+	sf->weight = copy(tok);
+    }
+    else if ( strmatch(tok,"Copyright:")==0 )
+    {
+	sf->copyright = getquotedeol(sfd);
+    }
+    else if ( strmatch(tok,"Comments:")==0 )
+    {
+	char *temp = getquotedeol(sfd);
+	sf->comments = latin1_2_utf8_copy(temp);
+	free(temp);
+    }
+    else if ( strmatch(tok,"UComments:")==0 )
+    {
+	sf->comments = SFDReadUTF7Str(sfd);
+    }
+    else if ( strmatch(tok,"FontLog:")==0 )
+    {
+	sf->fontlog = SFDReadUTF7Str(sfd);
+    }
+    else if ( strmatch(tok,"Version:")==0 )
+    {
+	geteol(sfd,tok);
+	sf->version = copy(tok);
+    }
+    else if ( strmatch(tok,"FONDName:")==0 )
+    {
+	geteol(sfd,tok);
+	sf->fondname = copy(tok);
+    }
+    else if ( strmatch(tok,"ItalicAngle:")==0 )
+    {
+	getreal(sfd,&sf->italicangle);
+    }
+    else if ( strmatch(tok,"StrokeWidth:")==0 )
+    {
+	getreal(sfd,&sf->strokewidth);
+    }
+    else if ( strmatch(tok,"UnderlinePosition:")==0 )
+    {
+	getreal(sfd,&sf->upos);
+    }
+    else if ( strmatch(tok,"UnderlineWidth:")==0 )
+    {
+	getreal(sfd,&sf->uwidth);
+    }
+    else if ( strmatch(tok,"ModificationTime:")==0 )
+    {
+	getlonglong(sfd,&sf->modificationtime);
+    }
+    else if ( strmatch(tok,"CreationTime:")==0 )
+    {
+	getlonglong(sfd,&sf->creationtime);
+	d->hadtimes = true;
+    }
+    else if ( strmatch(tok,"PfmFamily:")==0 )
+    {
+	int temp;
+	getint(sfd,&temp);
+	sf->pfminfo.pfmfamily = temp;
+	sf->pfminfo.pfmset = true;
+    }
+    else if ( strmatch(tok,"LangName:")==0 )
+    {
+	sf->names = SFDGetLangName(sfd,sf->names);
+    }
+    else if ( strmatch(tok,"GaspTable:")==0 )
+    {
+	SFDGetGasp(sfd,sf);
+    }
+    else if ( strmatch(tok,"DesignSize:")==0 )
+    {
+	SFDGetDesignSize(sfd,sf);
+    }
+    else if ( strmatch(tok,"OtfFeatName:")==0 )
+    {
+	SFDGetOtfFeatName(sfd,sf);
+    }
+    else if ( strmatch(tok,"PfmWeight:")==0 || strmatch(tok,"TTFWeight:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.weight);
+	sf->pfminfo.pfmset = true;
+    }
+    else if ( strmatch(tok,"TTFWidth:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.width);
+	sf->pfminfo.pfmset = true;
+    }
+    else if ( strmatch(tok,"Panose:")==0 )
+    {
+	int temp,i;
+	for ( i=0; i<10; ++i )
+	{
+	    getint(sfd,&temp);
+	    sf->pfminfo.panose[i] = temp;
+	}
+	sf->pfminfo.panose_set = true;
+    }
+    else if ( strmatch(tok,"LineGap:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.linegap);
+	sf->pfminfo.pfmset = true;
+    }
+    else if ( strmatch(tok,"VLineGap:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.vlinegap);
+	sf->pfminfo.pfmset = true;
+    }
+    else if ( strmatch(tok,"HheadAscent:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.hhead_ascent);
+    }
+    else if ( strmatch(tok,"HheadAOffset:")==0 )
+    {
+	int temp;
+	getint(sfd,&temp); sf->pfminfo.hheadascent_add = temp;
+    }
+    else if ( strmatch(tok,"HheadDescent:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.hhead_descent);
+    }
+    else if ( strmatch(tok,"HheadDOffset:")==0 )
+    {
+	int temp;
+	getint(sfd,&temp); sf->pfminfo.hheaddescent_add = temp;
+    }
+    else if ( strmatch(tok,"OS2TypoLinegap:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_typolinegap);
+    }
+    else if ( strmatch(tok,"OS2TypoAscent:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_typoascent);
+    }
+    else if ( strmatch(tok,"OS2TypoAOffset:")==0 )
+    {
+	int temp;
+	getint(sfd,&temp); sf->pfminfo.typoascent_add = temp;
+    }
+    else if ( strmatch(tok,"OS2TypoDescent:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_typodescent);
+    }
+    else if ( strmatch(tok,"OS2TypoDOffset:")==0 )
+    {
+	int temp;
+	getint(sfd,&temp); sf->pfminfo.typodescent_add = temp;
+    }
+    else if ( strmatch(tok,"OS2WinAscent:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_winascent);
+    }
+    else if ( strmatch(tok,"OS2WinDescent:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_windescent);
+    }
+    else if ( strmatch(tok,"OS2WinAOffset:")==0 )
+    {
+	int temp;
+	getint(sfd,&temp); sf->pfminfo.winascent_add = temp;
+    }
+    else if ( strmatch(tok,"OS2WinDOffset:")==0 )
+    {
+	int temp;
+	getint(sfd,&temp); sf->pfminfo.windescent_add = temp;
+    }
+    else if ( strmatch(tok,"HHeadAscent:")==0 )
+    {
+	// DUPLICATE OF ABOVE
+	getsint(sfd,&sf->pfminfo.hhead_ascent);
+    }
+    else if ( strmatch(tok,"HHeadDescent:")==0 )
+    {
+	// DUPLICATE OF ABOVE
+	getsint(sfd,&sf->pfminfo.hhead_descent);
+    }
+
+    else if ( strmatch(tok,"HHeadAOffset:")==0 )
+    {
+	// DUPLICATE OF ABOVE
+	int temp;
+	getint(sfd,&temp); sf->pfminfo.hheadascent_add = temp;
+    }
+    else if ( strmatch(tok,"HHeadDOffset:")==0 )
+    {
+	// DUPLICATE OF ABOVE
+	int temp;
+	getint(sfd,&temp); sf->pfminfo.hheaddescent_add = temp;
+    }
+    else if ( strmatch(tok,"MacStyle:")==0 )
+    {
+	getsint(sfd,&sf->macstyle);
+    }
+    else if ( strmatch(tok,"OS2SubXSize:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_subxsize);
+	sf->pfminfo.subsuper_set = true;
+    }
+    else if ( strmatch(tok,"OS2SubYSize:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_subysize);
+    }
+    else if ( strmatch(tok,"OS2SubXOff:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_subxoff);
+    }
+    else if ( strmatch(tok,"OS2SubYOff:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_subyoff);
+    }
+    else if ( strmatch(tok,"OS2SupXSize:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_supxsize);
+    }
+    else if ( strmatch(tok,"OS2SupYSize:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_supysize);
+    }
+    else if ( strmatch(tok,"OS2SupXOff:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_supxoff);
+    }
+    else if ( strmatch(tok,"OS2SupYOff:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_supyoff);
+    }
+    else if ( strmatch(tok,"OS2StrikeYSize:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_strikeysize);
+    }
+    else if ( strmatch(tok,"OS2StrikeYPos:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_strikeypos);
+    }
+    else if ( strmatch(tok,"OS2FamilyClass:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_family_class);
+    }
+    else if ( strmatch(tok,"OS2Vendor:")==0 )
+    {
+	while ( isspace(nlgetc(sfd)));
+	sf->pfminfo.os2_vendor[0] = nlgetc(sfd);
+	sf->pfminfo.os2_vendor[1] = nlgetc(sfd);
+	sf->pfminfo.os2_vendor[2] = nlgetc(sfd);
+	sf->pfminfo.os2_vendor[3] = nlgetc(sfd);
+	(void) nlgetc(sfd);
+    }
+    else if ( strmatch(tok,"OS2CodePages:")==0 )
+    {
+	gethexints(sfd,sf->pfminfo.codepages,2);
+	sf->pfminfo.hascodepages = true;
+    }
+    else if ( strmatch(tok,"OS2UnicodeRanges:")==0 )
+    {
+	gethexints(sfd,sf->pfminfo.unicoderanges,4);
+	sf->pfminfo.hasunicoderanges = true;
+    }
+    else if ( strmatch(tok,"TopEncoding:")==0 )
+    {
+	/* Obsolete */
+	getint(sfd,&sf->top_enc);
+    }
+    else if ( strmatch(tok,"Ascent:")==0 )
+    {
+	getint(sfd,&sf->ascent);
+    }
+    else if ( strmatch(tok,"Descent:")==0 )
+    {
+	getint(sfd,&sf->descent);
+    }
+    else if ( strmatch(tok,"woffMajor:")==0 )
+    {
+	getint(sfd,&sf->woffMajor);
+    }
+    else if ( strmatch(tok,"woffMinor:")==0 )
+    {
+	getint(sfd,&sf->woffMinor);
+    }
+    else if ( strmatch(tok,"woffMetadata:")==0 )
+    {
+	sf->woffMetadata = SFDReadUTF7Str(sfd);
+    }
+    else if ( strmatch(tok,"UFOAscent:")==0 )
+    {
+	    getreal(sfd,&sf->ufo_ascent);
+    }
+    else if ( strmatch(tok,"UFODescent:")==0 )
+    {
+	getreal(sfd,&sf->ufo_descent);
+    }
+    else if ( strmatch(tok,"sfntRevision:")==0 )
+    {
+	    gethex(sfd,&sf->sfntRevision);
+    }
+    else if ( strmatch(tok,"LayerCount:")==0 )
+    {
+	d->had_layer_cnt = true;
+	getint(sfd,&sf->layer_cnt);
+	if ( sf->layer_cnt>2 ) {
+	    sf->layers = grealloc(sf->layers,sf->layer_cnt*sizeof(LayerInfo));
+	    memset(sf->layers+2,0,(sf->layer_cnt-2)*sizeof(LayerInfo));
+	}
+    }
+    else if ( strmatch(tok,"Layer:")==0 )
+    {
+	int layer, o2, bk;
+	getint(sfd,&layer);
+	if ( layer>=sf->layer_cnt ) {
+	    sf->layers = grealloc(sf->layers,(layer+1)*sizeof(LayerInfo));
+	    memset(sf->layers+sf->layer_cnt,0,((layer+1)-sf->layer_cnt)*sizeof(LayerInfo));
+	    sf->layer_cnt = layer+1;
+	}
+	getint(sfd,&o2);
+	sf->layers[layer].order2 = o2;
+	sf->layers[layer].background = layer==ly_back;
+	/* Used briefly, now background is after layer name */
+	while ( (ch=nlgetc(sfd))==' ' );
+	ungetc(ch,sfd);
+	if ( ch!='"' ) {
+	    getint(sfd,&bk);
+	    sf->layers[layer].background = bk;
+	}
+	/* end of section for obsolete format */
+	sf->layers[layer].name = SFDReadUTF7Str(sfd);
+	while ( (ch=nlgetc(sfd))==' ' );
+	ungetc(ch,sfd);
+	if ( ch!='\n' ) {
+	    getint(sfd,&bk);
+	    sf->layers[layer].background = bk;
+	}
+    }
+    else if ( strmatch(tok,"StrokedFont:")==0 )
+    {
+	int temp;
+	getint(sfd,&temp);
+	sf->strokedfont = temp;
+    }
+    else if ( strmatch(tok,"MultiLayer:")==0 )
+    {
+	int temp;
+	getint(sfd,&temp);
+	sf->multilayer = temp;
+    }
+    else if ( strmatch(tok,"NeedsXUIDChange:")==0 )
+    {
+	int temp;
+	getint(sfd,&temp);
+	sf->changed_since_xuidchanged = temp;
+    }
+    else if ( strmatch(tok,"VerticalOrigin:")==0 )
+    {
+	// this doesn't seem to be written ever.
+	int temp;
+	getint(sfd,&temp);
+	sf->hasvmetrics = true;
+    }
+    else if ( strmatch(tok,"HasVMetrics:")==0 )
+    {
+	int temp;
+	getint(sfd,&temp);
+	sf->hasvmetrics = temp;
+    }
+    else if ( strmatch(tok,"Justify:")==0 )
+    {
+	SFDParseJustify(sfd,sf,tok);
+    }
+    else if ( strmatch(tok,"BaseHoriz:")==0 )
+    {
+	sf->horiz_base = SFDParseBase(sfd);
+	d->last_base = sf->horiz_base;
+	d->last_base_script = NULL;
+    }
+    else if ( strmatch(tok,"BaseVert:")==0 )
+    {
+	sf->vert_base = SFDParseBase(sfd);
+	d->last_base = sf->vert_base;
+	d->last_base_script = NULL;
+    }
+    else if ( strmatch(tok,"BaseScript:")==0 )
+    {
+	struct basescript *bs = SFDParseBaseScript(sfd,d->last_base,tok);
+	if ( d->last_base==NULL )
+	{
+	    BaseScriptFree(bs);
+	    bs = NULL;
+	}
+	else if ( d->last_base_script!=NULL )
+	    d->last_base_script->next = bs;
+	else
+	    d->last_base->scripts = bs;
+	d->last_base_script = bs;
+    }
+    else if ( strmatch(tok,"FSType:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.fstype);
+    }
+    else if ( strmatch(tok,"OS2Version:")==0 )
+    {
+	getsint(sfd,&sf->os2_version);
+    }
+    else if ( strmatch(tok,"OS2_WeightWidthSlopeOnly:")==0 )
+    {
+	int temp;
+	getint(sfd,&temp);
+	sf->weight_width_slope_only = temp;
+    }
+    else if ( strmatch(tok,"OS2_UseTypoMetrics:")==0 )
+    {
+	int temp;
+	getint(sfd,&temp);
+	sf->use_typo_metrics = temp;
+    }
+    else if ( strmatch(tok,"UseUniqueID:")==0 )
+    {
+	int temp;
+	getint(sfd,&temp);
+	sf->use_uniqueid = temp;
+    }
+    else if ( strmatch(tok,"UseXUID:")==0 )
+    {
+	int temp;
+	getint(sfd,&temp);
+	sf->use_xuid = temp;
+    }
+    else if ( strmatch(tok,"UniqueID:")==0 )
+    {
+	getint(sfd,&sf->uniqueid);
+    }
+    else if ( strmatch(tok,"XUID:")==0 )
+    {
+	geteol(sfd,tok);
+	sf->xuid = copy(tok);
+    }
+    else if ( strmatch(tok,"Lookup:")==0 )
+    {
+	OTLookup *otl;
+	int temp;
+	if ( sf->sfd_version<2 ) {
+	    IError( "Lookups should not happen in version 1 sfd files." );
+	    exit(1);
+	}
+	otl = chunkalloc(sizeof(OTLookup));
+	getint(sfd,&temp); otl->lookup_type = temp;
+	getint(sfd,&temp); otl->lookup_flags = temp;
+	getint(sfd,&temp); otl->store_in_afm = temp;
+	otl->lookup_name = SFDReadUTF7Str(sfd);
+	if ( otl->lookup_type<gpos_single ) {
+	    if ( d->lastsotl==NULL )
+		sf->gsub_lookups = otl;
+	    else
+		d->lastsotl->next = otl;
+	    d->lastsotl = otl;
+	} else {
+	    if ( d->lastpotl==NULL )
+		sf->gpos_lookups = otl;
+	    else
+		d->lastpotl->next = otl;
+	    d->lastpotl = otl;
+	}
+	SFDParseLookup(sfd,sf,otl);
+    }
+    else if ( strmatch(tok,"MarkAttachClasses:")==0 )
+    {
+	getint(sfd,&sf->mark_class_cnt);
+	sf->mark_classes = galloc(sf->mark_class_cnt*sizeof(char *));
+	sf->mark_class_names = galloc(sf->mark_class_cnt*sizeof(char *));
+	sf->mark_classes[0] = NULL; sf->mark_class_names[0] = NULL;
+	for ( i=1; i<sf->mark_class_cnt; ++i )
+	{
+	    /* Class 0 is unused */
+	    int temp;
+	    while ( (temp=nlgetc(sfd))=='\n' || temp=='\r' ); ungetc(temp,sfd);
+	    sf->mark_class_names[i] = SFDReadUTF7Str(sfd);
+	    getint(sfd,&temp);
+	    sf->mark_classes[i] = galloc(temp+1); sf->mark_classes[i][temp] = '\0';
+	    nlgetc(sfd);	/* skip space */
+	    fread(sf->mark_classes[i],1,temp,sfd);
+	}
+    }
+    else if ( strmatch(tok,"MarkAttachSets:")==0 )
+    {
+	getint(sfd,&sf->mark_set_cnt);
+	sf->mark_sets = galloc(sf->mark_set_cnt*sizeof(char *));
+	sf->mark_set_names = galloc(sf->mark_set_cnt*sizeof(char *));
+	for ( i=0; i<sf->mark_set_cnt; ++i )
+	{
+	    /* Set 0 is used */
+	    int temp;
+	    while ( (temp=nlgetc(sfd))=='\n' || temp=='\r' ); ungetc(temp,sfd);
+	    sf->mark_set_names[i] = SFDReadUTF7Str(sfd);
+	    getint(sfd,&temp);
+	    sf->mark_sets[i] = galloc(temp+1); sf->mark_sets[i][temp] = '\0';
+	    nlgetc(sfd);	/* skip space */
+	    fread(sf->mark_sets[i],1,temp,sfd);
+	}
+    }
+    else if ( strmatch(tok,"KernClass2:")==0 || strmatch(tok,"VKernClass2:")==0 ||
+	      strmatch(tok,"KernClass:")==0 || strmatch(tok,"VKernClass:")==0 )
+    {
+	int temp, classstart=1;
+	int isv = tok[0]=='V';
+	int old = strchr(tok,'2')==NULL;
+
+	if ( (sf->sfd_version<2)!=old ) {
+	    IError( "Version mixup in Kerning Classes of sfd file." );
+	    exit(1);
+	}
+	kc = chunkalloc(old ? sizeof(KernClass1) : sizeof(KernClass));
+	getint(sfd,&kc->first_cnt);
+	ch=nlgetc(sfd);
+	if ( ch=='+' )
+	    classstart = 0;
+	else
+	    ungetc(ch,sfd);
+	getint(sfd,&kc->second_cnt);
+	if ( old ) {
+	    getint(sfd,&temp); ((KernClass1 *) kc)->sli = temp;
+	    getint(sfd,&temp); ((KernClass1 *) kc)->flags = temp;
+	} else {
+	    kc->subtable = SFFindLookupSubtableAndFreeName(sf,SFDReadUTF7Str(sfd));
+	    if ( kc->subtable!=NULL && kc->subtable->kc==NULL )
+		kc->subtable->kc = kc;
+	    else {
+		if ( kc->subtable==NULL )
+		    LogError(_("Bad SFD file, missing subtable in kernclass defn.\n") );
+		else
+		    LogError(_("Bad SFD file, two kerning classes assigned to the same subtable: %s\n"), kc->subtable->subtable_name );
+		kc->subtable = NULL;
+	    }
+	}
+	kc->firsts = galloc(kc->first_cnt*sizeof(char *));
+	kc->seconds = galloc(kc->second_cnt*sizeof(char *));
+	kc->offsets = galloc(kc->first_cnt*kc->second_cnt*sizeof(int16));
+	kc->adjusts = gcalloc(kc->first_cnt*kc->second_cnt,sizeof(DeviceTable));
+	kc->firsts[0] = NULL;
+	for ( i=classstart; i<kc->first_cnt; ++i ) {
+	    getint(sfd,&temp);
+	    kc->firsts[i] = galloc(temp+1); kc->firsts[i][temp] = '\0';
+	    nlgetc(sfd);	/* skip space */
+	    fread(kc->firsts[i],1,temp,sfd);
+	}
+	kc->seconds[0] = NULL;
+	for ( i=1; i<kc->second_cnt; ++i ) {
+	    getint(sfd,&temp);
+	    kc->seconds[i] = galloc(temp+1); kc->seconds[i][temp] = '\0';
+	    nlgetc(sfd);	/* skip space */
+	    fread(kc->seconds[i],1,temp,sfd);
+	}
+	for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i ) {
+	    getint(sfd,&temp);
+	    kc->offsets[i] = temp;
+	    SFDReadDeviceTable(sfd,&kc->adjusts[i]);
+	}
+	if ( !old && kc->subtable == NULL ) {
+	    /* Error. Ignore it. Free it. Whatever */;
+	} else if ( !isv ) {
+	    if ( d->lastkc==NULL )
+		sf->kerns = kc;
+	    else
+		d->lastkc->next = kc;
+	    d->lastkc = kc;
+	} else {
+	    if ( d->lastvkc==NULL )
+		sf->vkerns = kc;
+	    else
+		d->lastvkc->next = kc;
+	    d->lastvkc = kc;
+	}
+    }
+    else if ( strmatch(tok,"ContextPos2:")==0 || strmatch(tok,"ContextSub2:")==0 ||
+	      strmatch(tok,"ChainPos2:")==0 || strmatch(tok,"ChainSub2:")==0 ||
+	      strmatch(tok,"ReverseChain2:")==0 ||
+	      strmatch(tok,"ContextPos:")==0 || strmatch(tok,"ContextSub:")==0 ||
+	      strmatch(tok,"ChainPos:")==0 || strmatch(tok,"ChainSub:")==0 ||
+	      strmatch(tok,"ReverseChain:")==0 )
+    {
+	FPST *fpst;
+	int old;
+	if ( strchr(tok,'2')!=NULL ) {
+	    old = false;
+	    fpst = chunkalloc(sizeof(FPST));
+	} else {
+	    old = true;
+	    fpst = chunkalloc(sizeof(FPST1));
+	}
+	if ( (sf->sfd_version<2)!=old ) {
+	    IError( "Version mixup in FPST of sfd file." );
+	    exit(1);
+	}
+	if ( d->lastfp==NULL )
+	    sf->possub = fpst;
+	else
+	    d->lastfp->next = fpst;
+	d->lastfp = fpst;
+	SFDParseChainContext(sfd,sf,fpst,tok,old);
+    }
+    else if ( strmatch(tok,"MacIndic2:")==0 || strmatch(tok,"MacContext2:")==0 ||
+	      strmatch(tok,"MacLigature2:")==0 || strmatch(tok,"MacSimple2:")==0 ||
+	      strmatch(tok,"MacKern2:")==0 || strmatch(tok,"MacInsert2:")==0 ||
+	      strmatch(tok,"MacIndic:")==0 || strmatch(tok,"MacContext:")==0 ||
+	      strmatch(tok,"MacLigature:")==0 || strmatch(tok,"MacSimple:")==0 ||
+	      strmatch(tok,"MacKern:")==0 || strmatch(tok,"MacInsert:")==0 )
+    {
+	ASM *sm;
+	if ( strchr(tok,'2')!=NULL ) {
+	    old = false;
+	    sm = chunkalloc(sizeof(ASM));
+	} else {
+	    old = true;
+	    sm = chunkalloc(sizeof(ASM1));
+	}
+	if ( (sf->sfd_version<2)!=old ) {
+	    IError( "Version mixup in state machine of sfd file." );
+	    exit(1);
+	}
+	if ( d->lastsm==NULL )
+	    sf->sm = sm;
+	else
+	    d->lastsm->next = sm;
+	d->lastsm = sm;
+	SFDParseStateMachine(sfd,sf,sm,tok,old);
+    }
+    else if ( strmatch(tok,"MacFeat:")==0 )
+    {
+	sf->features = SFDParseMacFeatures(sfd,tok);
+    }
+    else if ( strmatch(tok,"TtfTable:")==0 )
+    {
+	/* Old, binary format */
+	/* still used for maxp and unknown tables */
+	SFDGetTtfTable(sfd,sf,d->lastttf);		
+    }
+    else if ( strmatch(tok,"TtTable:")==0 )
+    {
+	/* text instruction format */
+	SFDGetTtTable(sfd,sf,d->lastttf);
+    }
+    
+    
+    ///////////////////
+    
+    else if ( strmatch(tok,"ShortTable:")==0 )
+    {
+	// only read, not written.
+	/* text number format */
+	SFDGetShortTable(sfd,sf,d->lastttf);
+    }
+    
+}
+
+
+static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
+				int fromdir, char *dirname, float sfdversion )
+{
     SplineFont *sf;
     int realcnt, i, eof, mappos=-1, ch;
     struct table_ordering *lastord = NULL;
-    struct ttf_table *lastttf[2];
-    KernClass *lastkc=NULL, *kc, *lastvkc=NULL;
-    FPST *lastfp=NULL;
-    ASM *lastsm=NULL;
-    OTLookup *lastpotl=NULL, *lastsotl = NULL;
     struct axismap *lastaxismap = NULL;
     struct named_instance *lastnamedinstance = NULL;
     int pushedbacktok = false;
     Encoding *enc = &custom;
     struct remap *remap = NULL;
     int hadtimes=false, haddupenc;
-    int old;
     int old_style_order2 = false;
-    struct Base *last_base = NULL;
-    struct basescript *last_base_script = NULL;
     int had_layer_cnt=false;
 
     orig_pos = 0;		/* Only used for compatibility with extremely old sfd files */
-
-    lastttf[0] = lastttf[1] = NULL;
 
     sf = SplineFontEmpty();
     if ( sfdversion<2 ) {
@@ -7325,173 +8054,30 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    geteol(sfd,tok);
     continue;
 	}
-	if ( strmatch(tok,"FontName:")==0 ) {
-	    getname(sfd,tok);
-	    sf->fontname = copy(tok);
-	} else if ( strmatch(tok,"FullName:")==0 ) {
-	    geteol(sfd,tok);
-	    sf->fullname = copy(tok);
-	} else if ( strmatch(tok,"FamilyName:")==0 ) {
-	    geteol(sfd,tok);
-	    sf->familyname = copy(tok);
-	} else if ( strmatch(tok,"DefaultBaseFilename:")==0 ) {
-	    geteol(sfd,tok);
-	    sf->defbasefilename = copy(tok);
-	} else if ( strmatch(tok,"Weight:")==0 ) {
-	    getprotectedname(sfd,tok);
-	    sf->weight = copy(tok);
-	} else if ( strmatch(tok,"Copyright:")==0 ) {
-	    sf->copyright = getquotedeol(sfd);
-	} else if ( strmatch(tok,"Comments:")==0 ) {
-	    char *temp = getquotedeol(sfd);
-	    sf->comments = latin1_2_utf8_copy(temp);
-	    free(temp);
-	} else if ( strmatch(tok,"UComments:")==0 ) {
-	    sf->comments = SFDReadUTF7Str(sfd);
-	} else if ( strmatch(tok,"FontLog:")==0 ) {
-	    sf->fontlog = SFDReadUTF7Str(sfd);
-	} else if ( strmatch(tok,"Version:")==0 ) {
-	    geteol(sfd,tok);
-	    sf->version = copy(tok);
-	} else if ( strmatch(tok,"FONDName:")==0 ) {
-	    geteol(sfd,tok);
-	    sf->fondname = copy(tok);
-	} else if ( strmatch(tok,"ItalicAngle:")==0 ) {
-	    getreal(sfd,&sf->italicangle);
-	} else if ( strmatch(tok,"StrokeWidth:")==0 ) {
-	    getreal(sfd,&sf->strokewidth);
-	} else if ( strmatch(tok,"UnderlinePosition:")==0 ) {
-	    getreal(sfd,&sf->upos);
-	} else if ( strmatch(tok,"UnderlineWidth:")==0 ) {
-	    getreal(sfd,&sf->uwidth);
-	} else if ( strmatch(tok,"ModificationTime:")==0 ) {
-	    getlonglong(sfd,&sf->modificationtime);
-	} else if ( strmatch(tok,"CreationTime:")==0 ) {
-	    getlonglong(sfd,&sf->creationtime);
-	    hadtimes = true;
-	} else if ( strmatch(tok,"PfmFamily:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp);
-	    sf->pfminfo.pfmfamily = temp;
-	    sf->pfminfo.pfmset = true;
-	} else if ( strmatch(tok,"LangName:")==0 ) {
-	    sf->names = SFDGetLangName(sfd,sf->names);
-	} else if ( strmatch(tok,"GaspTable:")==0 ) {
-	    SFDGetGasp(sfd,sf);
-	} else if ( strmatch(tok,"DesignSize:")==0 ) {
-	    SFDGetDesignSize(sfd,sf);
-	} else if ( strmatch(tok,"OtfFeatName:")==0 ) {
-	    SFDGetOtfFeatName(sfd,sf);
-	} else if ( strmatch(tok,"PfmWeight:")==0 || strmatch(tok,"TTFWeight:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.weight);
-	    sf->pfminfo.pfmset = true;
-	} else if ( strmatch(tok,"TTFWidth:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.width);
-	    sf->pfminfo.pfmset = true;
-	} else if ( strmatch(tok,"Panose:")==0 ) {
-	    int temp,i;
-	    for ( i=0; i<10; ++i ) {
-		getint(sfd,&temp);
-		sf->pfminfo.panose[i] = temp;
-	    }
-	    sf->pfminfo.panose_set = true;
-	} else if ( strmatch(tok,"LineGap:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.linegap);
-	    sf->pfminfo.pfmset = true;
-	} else if ( strmatch(tok,"VLineGap:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.vlinegap);
-	    sf->pfminfo.pfmset = true;
-	} else if ( strmatch(tok,"HheadAscent:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.hhead_ascent);
-	} else if ( strmatch(tok,"HheadAOffset:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp); sf->pfminfo.hheadascent_add = temp;
-	} else if ( strmatch(tok,"HheadDescent:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.hhead_descent);
-	} else if ( strmatch(tok,"HheadDOffset:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp); sf->pfminfo.hheaddescent_add = temp;
-	} else if ( strmatch(tok,"OS2TypoLinegap:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.os2_typolinegap);
-	} else if ( strmatch(tok,"OS2TypoAscent:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.os2_typoascent);
-	} else if ( strmatch(tok,"OS2TypoAOffset:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp); sf->pfminfo.typoascent_add = temp;
-	} else if ( strmatch(tok,"OS2TypoDescent:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.os2_typodescent);
-	} else if ( strmatch(tok,"OS2TypoDOffset:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp); sf->pfminfo.typodescent_add = temp;
-	} else if ( strmatch(tok,"OS2WinAscent:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.os2_winascent);
-	} else if ( strmatch(tok,"OS2WinDescent:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.os2_windescent);
-	} else if ( strmatch(tok,"OS2WinAOffset:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp); sf->pfminfo.winascent_add = temp;
-	} else if ( strmatch(tok,"OS2WinDOffset:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp); sf->pfminfo.windescent_add = temp;
-	} else if ( strmatch(tok,"HHeadAscent:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.hhead_ascent);
-	} else if ( strmatch(tok,"HHeadDescent:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.hhead_descent);
-	} else if ( strmatch(tok,"HHeadAOffset:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp); sf->pfminfo.hheadascent_add = temp;
-	} else if ( strmatch(tok,"HHeadDOffset:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp); sf->pfminfo.hheaddescent_add = temp;
-	} else if ( strmatch(tok,"MacStyle:")==0 ) {
-	    getsint(sfd,&sf->macstyle);
-	} else if ( strmatch(tok,"OS2SubXSize:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.os2_subxsize);
-	    sf->pfminfo.subsuper_set = true;
-	} else if ( strmatch(tok,"OS2SubYSize:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.os2_subysize);
-	} else if ( strmatch(tok,"OS2SubXOff:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.os2_subxoff);
-	} else if ( strmatch(tok,"OS2SubYOff:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.os2_subyoff);
-	} else if ( strmatch(tok,"OS2SupXSize:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.os2_supxsize);
-	} else if ( strmatch(tok,"OS2SupYSize:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.os2_supysize);
-	} else if ( strmatch(tok,"OS2SupXOff:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.os2_supxoff);
-	} else if ( strmatch(tok,"OS2SupYOff:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.os2_supyoff);
-	} else if ( strmatch(tok,"OS2StrikeYSize:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.os2_strikeysize);
-	} else if ( strmatch(tok,"OS2StrikeYPos:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.os2_strikeypos);
-	} else if ( strmatch(tok,"OS2FamilyClass:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.os2_family_class);
-	} else if ( strmatch(tok,"OS2Vendor:")==0 ) {
-	    while ( isspace(nlgetc(sfd)));
-	    sf->pfminfo.os2_vendor[0] = nlgetc(sfd);
-	    sf->pfminfo.os2_vendor[1] = nlgetc(sfd);
-	    sf->pfminfo.os2_vendor[2] = nlgetc(sfd);
-	    sf->pfminfo.os2_vendor[3] = nlgetc(sfd);
-	    (void) nlgetc(sfd);
-	} else if ( strmatch(tok,"OS2CodePages:")==0 ) {
-	    gethexints(sfd,sf->pfminfo.codepages,2);
-	    sf->pfminfo.hascodepages = true;
-	} else if ( strmatch(tok,"OS2UnicodeRanges:")==0 ) {
-	    gethexints(sfd,sf->pfminfo.unicoderanges,4);
-	    sf->pfminfo.hasunicoderanges = true;
-	} else if ( strmatch(tok,"DisplaySize:")==0 ) {
+
+	
+	SFD_GetFontMetaDataData d;
+	SFD_GetFontMetaDataData_Init( &d );
+	SFD_GetFontMetaData( sfd, tok, sf, &d );
+
+	if ( strmatch(tok,"DisplaySize:")==0 )
+	{
 	    getint(sfd,&sf->display_size);
-	} else if ( strmatch(tok,"DisplayLayer:")==0 ) {
+	}
+	else if ( strmatch(tok,"DisplayLayer:")==0 )
+	{
 	    getint(sfd,&sf->display_layer);
-	} else if ( strmatch(tok,"ExtremaBound:")==0 ) {
+	}
+	else if ( strmatch(tok,"ExtremaBound:")==0 )
+	{
 	    getint(sfd,&sf->extrema_bound);
-	} else if ( strmatch(tok,"WidthSeparation:")==0 ) {
+	}
+	else if ( strmatch(tok,"WidthSeparation:")==0 )
+	{
 	    getint(sfd,&sf->width_separation);
-	} else if ( strmatch(tok,"TopEncoding:")==0 ) {	/* Obsolete */
-	    getint(sfd,&sf->top_enc);
-	} else if ( strmatch(tok,"WinInfo:")==0 ) {
+	}
+	else if ( strmatch(tok,"WinInfo:")==0 )
+	{
 	    int temp1, temp2;
 	    getint(sfd,&sf->top_enc);
 	    getint(sfd,&temp1);
@@ -7501,158 +8087,72 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    if ( temp2<=0 ) temp2 = 4;
 	    sf->desired_col_cnt = temp1;
 	    sf->desired_row_cnt = temp2;
-	} else if ( strmatch(tok,"AntiAlias:")==0 ) {
+	}
+	else if ( strmatch(tok,"AntiAlias:")==0 )
+	{
 	    int temp;
 	    getint(sfd,&temp);
 	    sf->display_antialias = temp;
-	} else if ( strmatch(tok,"FitToEm:")==0 ) {
+	}
+	else if ( strmatch(tok,"FitToEm:")==0 )
+	{
 	    int temp;
 	    getint(sfd,&temp);
 	    sf->display_bbsized = temp;
-	} else if ( strmatch(tok,"OnlyBitmaps:")==0 ) {
+	}
+	else if ( strmatch(tok,"OnlyBitmaps:")==0 )
+	{
 	    int temp;
 	    getint(sfd,&temp);
 	    sf->onlybitmaps = temp;
-	} else if ( strmatch(tok,"Ascent:")==0 ) {
-	    getint(sfd,&sf->ascent);
-	} else if ( strmatch(tok,"Descent:")==0 ) {
-	    getint(sfd,&sf->descent);
-	} else if ( strmatch(tok,"woffMajor:")==0 ) {
-	    getint(sfd,&sf->woffMajor);
-	} else if ( strmatch(tok,"woffMinor:")==0 ) {
-	    getint(sfd,&sf->woffMinor);
-	} else if ( strmatch(tok,"woffMetadata:")==0 ) {
-	    sf->woffMetadata = SFDReadUTF7Str(sfd);
-	} else if ( strmatch(tok,"UFOAscent:")==0 ) {
-	    getreal(sfd,&sf->ufo_ascent);
-	} else if ( strmatch(tok,"UFODescent:")==0 ) {
-	    getreal(sfd,&sf->ufo_descent);
-	} else if ( strmatch(tok,"sfntRevision:")==0 ) {
-	    gethex(sfd,&sf->sfntRevision);
-	} else if ( strmatch(tok,"Order2:")==0 ) {
+	}
+	else if ( strmatch(tok,"Order2:")==0 )
+	{
 	    getint(sfd,&old_style_order2);
 	    sf->grid.order2 = old_style_order2;
 	    sf->layers[ly_back].order2 = old_style_order2;
 	    sf->layers[ly_fore].order2 = old_style_order2;
-	} else if ( strmatch(tok,"GridOrder2:")==0 ) {
+	}
+	else if ( strmatch(tok,"GridOrder2:")==0 )
+	{
 	    int o2;
 	    getint(sfd,&o2);
 	    sf->grid.order2 = o2;
-	} else if ( strmatch(tok,"LayerCount:")==0 ) {
-	    had_layer_cnt = true;
-	    getint(sfd,&sf->layer_cnt);
-	    if ( sf->layer_cnt>2 ) {
-		sf->layers = grealloc(sf->layers,sf->layer_cnt*sizeof(LayerInfo));
-		memset(sf->layers+2,0,(sf->layer_cnt-2)*sizeof(LayerInfo));
-	    }
-	} else if ( strmatch(tok,"Layer:")==0 ) {
-	    int layer, o2, bk;
-	    getint(sfd,&layer);
-	    if ( layer>=sf->layer_cnt ) {
-		sf->layers = grealloc(sf->layers,(layer+1)*sizeof(LayerInfo));
-		memset(sf->layers+sf->layer_cnt,0,((layer+1)-sf->layer_cnt)*sizeof(LayerInfo));
-		sf->layer_cnt = layer+1;
-	    }
-	    getint(sfd,&o2);
-	    sf->layers[layer].order2 = o2;
-	    sf->layers[layer].background = layer==ly_back;
-	/* Used briefly, now background is after layer name */
-	    while ( (ch=nlgetc(sfd))==' ' );
-	    ungetc(ch,sfd);
-	    if ( ch!='"' ) {
-		getint(sfd,&bk);
-		sf->layers[layer].background = bk;
-	    }
-	/* end of section for obsolete format */
-	    sf->layers[layer].name = SFDReadUTF7Str(sfd);
-	    while ( (ch=nlgetc(sfd))==' ' );
-	    ungetc(ch,sfd);
-	    if ( ch!='\n' ) {
-		getint(sfd,&bk);
-		sf->layers[layer].background = bk;
-	    }
-	} else if ( strmatch(tok,"StrokedFont:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp);
-	    sf->strokedfont = temp;
-	} else if ( strmatch(tok,"MultiLayer:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp);
-	    sf->multilayer = temp;
-	} else if ( strmatch(tok,"NeedsXUIDChange:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp);
-	    sf->changed_since_xuidchanged = temp;
-	} else if ( strmatch(tok,"VerticalOrigin:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp);
-	    sf->hasvmetrics = true;
-	} else if ( strmatch(tok,"HasVMetrics:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp);
-	    sf->hasvmetrics = temp;
-	} else if ( strmatch(tok,"Justify:")==0 ) {
-	    SFDParseJustify(sfd,sf,tok);
-	} else if ( strmatch(tok,"BaseHoriz:")==0 ) {
-	    sf->horiz_base = SFDParseBase(sfd);
-	    last_base = sf->horiz_base;
-	    last_base_script = NULL;
-	} else if ( strmatch(tok,"BaseVert:")==0 ) {
-	    sf->vert_base = SFDParseBase(sfd);
-	    last_base = sf->vert_base;
-	    last_base_script = NULL;
-	} else if ( strmatch(tok,"BaseScript:")==0 ) {
-	    struct basescript *bs = SFDParseBaseScript(sfd,last_base,tok);
-	    if ( last_base==NULL ) {
-		BaseScriptFree(bs);
-		bs = NULL;
-	    } else if ( last_base_script!=NULL )
-		last_base_script->next = bs;
-	    else
-		last_base->scripts = bs;
-	    last_base_script = bs;
-	} else if ( strmatch(tok,"FSType:")==0 ) {
-	    getsint(sfd,&sf->pfminfo.fstype);
-	} else if ( strmatch(tok,"OS2Version:")==0 ) {
-	    getsint(sfd,&sf->os2_version);
-	} else if ( strmatch(tok,"OS2_WeightWidthSlopeOnly:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp);
-	    sf->weight_width_slope_only = temp;
-	} else if ( strmatch(tok,"OS2_UseTypoMetrics:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp);
-	    sf->use_typo_metrics = temp;
-	} else if ( strmatch(tok,"UseUniqueID:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp);
-	    sf->use_uniqueid = temp;
-	} else if ( strmatch(tok,"UseXUID:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp);
-	    sf->use_xuid = temp;
-	} else if ( strmatch(tok,"UniqueID:")==0 ) {
-	    getint(sfd,&sf->uniqueid);
-	} else if ( strmatch(tok,"XUID:")==0 ) {
-	    geteol(sfd,tok);
-	    sf->xuid = copy(tok);
-	} else if ( strmatch(tok,"Encoding:")==0 ) {
+	}
+	else if ( strmatch(tok,"Encoding:")==0 )
+	{
 	    enc = SFDGetEncoding(sfd,tok,sf);
 	    if ( sf->map!=NULL ) sf->map->enc = enc;
-	} else if ( strmatch(tok,"OldEncoding:")==0 ) {
+	}
+	else if ( strmatch(tok,"OldEncoding:")==0 )
+	{
 	    /* old_encname =*/ (void) SFDGetEncoding(sfd,tok,sf);
-	} else if ( strmatch(tok,"UnicodeInterp:")==0 ) {
+	}
+	else if ( strmatch(tok,"UnicodeInterp:")==0 )
+	{
 	    sf->uni_interp = SFDGetUniInterp(sfd,tok,sf);
-	} else if ( strmatch(tok,"NameList:")==0 ) {
+	}
+	else if ( strmatch(tok,"NameList:")==0 )
+	{
 	    SFDGetNameList(sfd,tok,sf);
-	} else if ( strmatch(tok,"Compacted:")==0 ) {
+	}
+	else if ( strmatch(tok,"Compacted:")==0 )
+	{
 	    int temp;
 	    getint(sfd,&temp);
 	    sf->compacted = temp;
-	} else if ( strmatch(tok,"Registry:")==0 ) {
+	}
+	else if ( strmatch(tok,"Registry:")==0 )
+	{
 	    geteol(sfd,tok);
 	    sf->cidregistry = copy(tok);
-	} else if ( strmatch(tok,"Ordering:")==0 ) {
+	}
+	
+	
+	//////////
+
+	
+	else if ( strmatch(tok,"Ordering:")==0 ) {
 	    geteol(sfd,tok);
 	    sf->ordering = copy(tok);
 	} else if ( strmatch(tok,"Supplement:")==0 ) {
@@ -7706,181 +8206,6 @@ exit(1);
 		    }
 		}
 	    }
-	} else if ( strmatch(tok,"Lookup:")==0 ) {
-	    OTLookup *otl;
-	    int temp;
-	    if ( sf->sfd_version<2 ) {
-		IError( "Lookups should not happen in version 1 sfd files." );
-exit(1);
-	    }
-	    otl = chunkalloc(sizeof(OTLookup));
-	    getint(sfd,&temp); otl->lookup_type = temp;
-	    getint(sfd,&temp); otl->lookup_flags = temp;
-	    getint(sfd,&temp); otl->store_in_afm = temp;
-	    otl->lookup_name = SFDReadUTF7Str(sfd);
-	    if ( otl->lookup_type<gpos_single ) {
-		if ( lastsotl==NULL )
-		    sf->gsub_lookups = otl;
-		else
-		    lastsotl->next = otl;
-		lastsotl = otl;
-	    } else {
-		if ( lastpotl==NULL )
-		    sf->gpos_lookups = otl;
-		else
-		    lastpotl->next = otl;
-		lastpotl = otl;
-	    }
-	    SFDParseLookup(sfd,sf,otl);
-	} else if ( strmatch(tok,"MarkAttachClasses:")==0 ) {
-	    getint(sfd,&sf->mark_class_cnt);
-	    sf->mark_classes = galloc(sf->mark_class_cnt*sizeof(char *));
-	    sf->mark_class_names = galloc(sf->mark_class_cnt*sizeof(char *));
-	    sf->mark_classes[0] = NULL; sf->mark_class_names[0] = NULL;
-	    for ( i=1; i<sf->mark_class_cnt; ++i ) {	/* Class 0 is unused */
-		int temp;
-		while ( (temp=nlgetc(sfd))=='\n' || temp=='\r' ); ungetc(temp,sfd);
-		sf->mark_class_names[i] = SFDReadUTF7Str(sfd);
-		getint(sfd,&temp);
-		sf->mark_classes[i] = galloc(temp+1); sf->mark_classes[i][temp] = '\0';
-		nlgetc(sfd);	/* skip space */
-		fread(sf->mark_classes[i],1,temp,sfd);
-	    }
-	} else if ( strmatch(tok,"MarkAttachSets:")==0 ) {
-	    getint(sfd,&sf->mark_set_cnt);
-	    sf->mark_sets = galloc(sf->mark_set_cnt*sizeof(char *));
-	    sf->mark_set_names = galloc(sf->mark_set_cnt*sizeof(char *));
-	    for ( i=0; i<sf->mark_set_cnt; ++i ) {	/* Set 0 is used */
-		int temp;
-		while ( (temp=nlgetc(sfd))=='\n' || temp=='\r' ); ungetc(temp,sfd);
-		sf->mark_set_names[i] = SFDReadUTF7Str(sfd);
-		getint(sfd,&temp);
-		sf->mark_sets[i] = galloc(temp+1); sf->mark_sets[i][temp] = '\0';
-		nlgetc(sfd);	/* skip space */
-		fread(sf->mark_sets[i],1,temp,sfd);
-	    }
-	} else if ( strmatch(tok,"KernClass2:")==0 || strmatch(tok,"VKernClass2:")==0 ||
-		strmatch(tok,"KernClass:")==0 || strmatch(tok,"VKernClass:")==0 ) {
-	    int temp, classstart=1;
-	    int isv = tok[0]=='V';
-	    int old = strchr(tok,'2')==NULL;
-
-	    if ( (sf->sfd_version<2)!=old ) {
-		IError( "Version mixup in Kerning Classes of sfd file." );
-exit(1);
-	    }
-	    kc = chunkalloc(old ? sizeof(KernClass1) : sizeof(KernClass));
-	    getint(sfd,&kc->first_cnt);
-	    ch=nlgetc(sfd);
-	    if ( ch=='+' )
-		classstart = 0;
-	    else
-		ungetc(ch,sfd);
-	    getint(sfd,&kc->second_cnt);
-	    if ( old ) {
-		getint(sfd,&temp); ((KernClass1 *) kc)->sli = temp;
-		getint(sfd,&temp); ((KernClass1 *) kc)->flags = temp;
-	    } else {
-		kc->subtable = SFFindLookupSubtableAndFreeName(sf,SFDReadUTF7Str(sfd));
-		if ( kc->subtable!=NULL && kc->subtable->kc==NULL )
-		    kc->subtable->kc = kc;
-		else {
-		    if ( kc->subtable==NULL )
-			LogError(_("Bad SFD file, missing subtable in kernclass defn.\n") );
-		    else
-			LogError(_("Bad SFD file, two kerning classes assigned to the same subtable: %s\n"), kc->subtable->subtable_name );
-		    kc->subtable = NULL;
-		}
-	    }
-	    kc->firsts = galloc(kc->first_cnt*sizeof(char *));
-	    kc->seconds = galloc(kc->second_cnt*sizeof(char *));
-	    kc->offsets = galloc(kc->first_cnt*kc->second_cnt*sizeof(int16));
-	    kc->adjusts = gcalloc(kc->first_cnt*kc->second_cnt,sizeof(DeviceTable));
-	    kc->firsts[0] = NULL;
-	    for ( i=classstart; i<kc->first_cnt; ++i ) {
-		getint(sfd,&temp);
-		kc->firsts[i] = galloc(temp+1); kc->firsts[i][temp] = '\0';
-		nlgetc(sfd);	/* skip space */
-		fread(kc->firsts[i],1,temp,sfd);
-	    }
-	    kc->seconds[0] = NULL;
-	    for ( i=1; i<kc->second_cnt; ++i ) {
-		getint(sfd,&temp);
-		kc->seconds[i] = galloc(temp+1); kc->seconds[i][temp] = '\0';
-		nlgetc(sfd);	/* skip space */
-		fread(kc->seconds[i],1,temp,sfd);
-	    }
-	    for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i ) {
-		getint(sfd,&temp);
-		kc->offsets[i] = temp;
-		SFDReadDeviceTable(sfd,&kc->adjusts[i]);
-	    }
-	    if ( !old && kc->subtable == NULL ) {
-		/* Error. Ignore it. Free it. Whatever */;
-	    } else if ( !isv ) {
-		if ( lastkc==NULL )
-		    sf->kerns = kc;
-		else
-		    lastkc->next = kc;
-		lastkc = kc;
-	    } else {
-		if ( lastvkc==NULL )
-		    sf->vkerns = kc;
-		else
-		    lastvkc->next = kc;
-		lastvkc = kc;
-	    }
-	} else if ( strmatch(tok,"ContextPos2:")==0 || strmatch(tok,"ContextSub2:")==0 ||
-		strmatch(tok,"ChainPos2:")==0 || strmatch(tok,"ChainSub2:")==0 ||
-		strmatch(tok,"ReverseChain2:")==0 ||
-		 strmatch(tok,"ContextPos:")==0 || strmatch(tok,"ContextSub:")==0 ||
-		strmatch(tok,"ChainPos:")==0 || strmatch(tok,"ChainSub:")==0 ||
-		strmatch(tok,"ReverseChain:")==0 ) {
-	    FPST *fpst;
-	    int old;
-	    if ( strchr(tok,'2')!=NULL ) {
-		old = false;
-		fpst = chunkalloc(sizeof(FPST));
-	    } else {
-		old = true;
-		fpst = chunkalloc(sizeof(FPST1));
-	    }
-	    if ( (sf->sfd_version<2)!=old ) {
-		IError( "Version mixup in FPST of sfd file." );
-exit(1);
-	    }
-	    if ( lastfp==NULL )
-		sf->possub = fpst;
-	    else
-		lastfp->next = fpst;
-	    lastfp = fpst;
-	    SFDParseChainContext(sfd,sf,fpst,tok,old);
-	} else if ( strmatch(tok,"MacIndic2:")==0 || strmatch(tok,"MacContext2:")==0 ||
-		strmatch(tok,"MacLigature2:")==0 || strmatch(tok,"MacSimple2:")==0 ||
-		strmatch(tok,"MacKern2:")==0 || strmatch(tok,"MacInsert2:")==0 ||
-		 strmatch(tok,"MacIndic:")==0 || strmatch(tok,"MacContext:")==0 ||
-		strmatch(tok,"MacLigature:")==0 || strmatch(tok,"MacSimple:")==0 ||
-		strmatch(tok,"MacKern:")==0 || strmatch(tok,"MacInsert:")==0 ) {
-	    ASM *sm;
-	    if ( strchr(tok,'2')!=NULL ) {
-		old = false;
-		sm = chunkalloc(sizeof(ASM));
-	    } else {
-		old = true;
-		sm = chunkalloc(sizeof(ASM1));
-	    }
-	    if ( (sf->sfd_version<2)!=old ) {
-		IError( "Version mixup in state machine of sfd file." );
-exit(1);
-	    }
-	    if ( lastsm==NULL )
-		sf->sm = sm;
-	    else
-		lastsm->next = sm;
-	    lastsm = sm;
-	    SFDParseStateMachine(sfd,sf,sm,tok,old);
-	} else if ( strmatch(tok,"MacFeat:")==0 ) {
-	    sf->features = SFDParseMacFeatures(sfd,tok);
 	} else if ( strmatch(tok,"TeXData:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);
@@ -7975,12 +8300,6 @@ exit(1);
 		    lastan->next = an;
 		lastan = an;
 	    }
-	} else if ( strmatch(tok,"TtfTable:")==0 ) {	/* Old, binary format */
-	    SFDGetTtfTable(sfd,sf,lastttf);		/* still used for maxp and unknown tables */
-	} else if ( strmatch(tok,"TtTable:")==0 ) {	/* text instruction format */
-	    SFDGetTtTable(sfd,sf,lastttf);
-	} else if ( strmatch(tok,"ShortTable:")==0 ) {	/* text number format */
-	    SFDGetShortTable(sfd,sf,lastttf);
 	} else if ( strncmp(tok,"MATH:",5)==0 ) {
 	    SFDParseMathItem(sfd,sf,tok);
 	} else if ( strmatch(tok,"TableOrder:")==0 ) {
