@@ -2765,7 +2765,7 @@ extern void SFD_GetFontMetaData( FILE *sfd,
 				 char *tok,
 				 SplineFont *sf,
 				 SFD_GetFontMetaDataData* d );
-typedef (*visitSFDFragmentFunc)( FILE *sfd, char *tokbuf, SplineFont *sf, void* udata );
+typedef void (*visitSFDFragmentFunc)( FILE *sfd, char *tokbuf, SplineFont *sf, void* udata );
 extern void visitSFDFragment( FILE *sfd, SplineFont *sf, visitSFDFragmentFunc ufunc, void* udata );
 extern char* DumpSplineFontMetadata( SplineFont *sf );
 

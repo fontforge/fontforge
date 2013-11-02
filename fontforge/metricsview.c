@@ -1406,7 +1406,8 @@ return( false );
 			// still all fit as expected.
 			//
 			mv->perchar[i-1].kernafter = newkernafter;
-			for ( int j=i; j<mv->glyphcnt; ++j ) {
+			int j;
+			for ( j=i; j<mv->glyphcnt; ++j ) {
 			    mv->perchar[j].dx = mv->perchar[j-1].dx + mv->perchar[j-1].dwidth +
 				mv->perchar[j-1].kernafter;
 			}
