@@ -8775,7 +8775,8 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags)
 
 void CVTransFuncAllLayers(CharView *cv,real transform[6], enum fvtrans_flags flags)
 {
-    for( int idx = 0; idx < cv->b.sc->layer_cnt; ++idx )
+    int idx;
+    for( idx = 0; idx < cv->b.sc->layer_cnt; ++idx )
     {
 	Layer *ly = &cv->b.sc->layers[ idx ];
 	CVTransFuncLayer( cv, ly, transform, flags );
