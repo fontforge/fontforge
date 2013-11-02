@@ -4,6 +4,7 @@ echo $0
 BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "base dir $BASEDIR"
 cd "$BASEDIR"
+export PATH="$PATH:/Applications/FontForge.app/Contents/Resources/opt/local/bin"
 ls -l ../../python/collab/sessionjoin.py
 nodepid=0
 
