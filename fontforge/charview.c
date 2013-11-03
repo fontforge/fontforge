@@ -2807,8 +2807,12 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		    printf("sc.width:%d\n", xc->width );
 		    cv->xoff += offset;
 		    int showpoints = 0;
+		    enum outlinesfm_flags sm = sfm_stroke;
+		    if( cv->inPreviewMode ) {
+			sm = sfm_fill;
+		    }
 		    CVDrawLayerSplineSet( cv, pixmap, &xc->layers[layer], foreoutlinecol,
-					  showpoints ,&clip, strokeFillMode );
+					  showpoints ,&clip, sm );
 		    offset = cv->scale * xc->width;
 		}
 		
