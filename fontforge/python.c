@@ -14220,7 +14220,7 @@ return( NULL );
     for ( i=0 ; i<cnt1*cnt2; ++i ) {
 	offs[i] = PyInt_AsLong(PySequence_GetItem(offsets,i));
 	if ( PyErr_Occurred()) {
-	    free(offs); free(class2_strs); free(class2_strs);
+	    free(offs); free(class2_strs); free(class1_strs);
 return( NULL );
 	}
     }
@@ -18451,7 +18451,7 @@ void PyFF_Main(int argc,char **argv,int start) {
 #if !defined(__MINGW32__)
 //    signal( 15, HandleSigTerm );
 #endif
-    
+
     PyFF_ProcessInitFiles();
 
     /* Skip '-script' option */

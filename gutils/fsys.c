@@ -800,9 +800,8 @@ int GFileWriteAll(char *filepath, char *data) {
 
     if ( (fp = fopen( filepath, "wb" )) != NULL ) {
 	if ( (fwrite( data, 1, bwrite, fp ) == bwrite) && \
-	     (fflush(fp) == 0) && \
-	     (fclose(fp) == 0) )
-	    return 0;
+	     (fflush(fp) == 0) )
+	    return( (fclose(fp) == 0 ? 0: -1) );
 	fclose(fp);
     }
     return -1;

@@ -95,6 +95,7 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
 	    spiro_cp *nspiros;
 	    if ( (nspiros=malloc((n+1)*sizeof(spiro_cp)))==NULL ) {
 		if ( lastty ) spiros[n-1].ty = lastty;
+		free(bc);
 		return( NULL );
 	    }
 	    memcpy(nspiros,spiros,(n+1)*sizeof(spiro_cp));
@@ -104,6 +105,7 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
 	    if ( TaggedSpiroCPsToBezier0(nspiros,bc)==0 ) {
 		if ( lastty ) spiros[n-1].ty = lastty;
 		free(nspiros);
+		free(bc);
 		return( NULL );
 	    }
 #else
