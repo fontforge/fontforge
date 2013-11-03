@@ -3982,12 +3982,15 @@ return( changed );
 }
 
 
-char* DumpSplineFontMetadata( SplineFont *sf )
-{
-    FILE* sfd = MakeTemporaryFile();
-    SFD_DumpSplineFontMetadata( sfd, sf );
-    char* str = FileToAllocatedString( sfd );
-    return(str);
+char* DumpSplineFontMetadata(SplineFont *sf) {
+    FILE *sfd;
+    if ( (sfd=MakeTemporaryFile()) ) {
+	SFD_DumpSplineFontMetadata( sfd, sf );
+	char *str = FileToAllocatedString( sfd );
+	fclose(sfd);
+	return( str );
+    }
+    return( 0 );
 }
 
 static int GFI_OK(GGadget *g, GEvent *e) {
@@ -4005,8 +4008,8 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 					  sfdfrag );
 	SFUndoPushFront( &sf->undoes, undo );
 
-	
-	
+
+
 	int interp;
 	int reformat_fv=0, retitle_fv=false;
 	int upos, uwid, as, des, err = false, weight=0;
@@ -4564,7 +4567,7 @@ return(true);
 	MVReKernAll(sf);
 
 	collabclient_sendFontLevelRedo( sf );
-	
+
     }
 return( true );
 }
