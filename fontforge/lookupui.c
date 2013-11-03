@@ -3760,6 +3760,7 @@ char* SFDCreateUndoForLookup( SplineFont *sf, int lookup_type )
     }
 
     char* str = FileToAllocatedString( sfd );
+    fclose(sfd);
     return(str);
 }
 
@@ -3800,16 +3801,19 @@ static void SFDTrimUndoOldToNew_Output( FILE* retf, char* glyph, char* line ) {
  */
 static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
 
-    if( !oldstr ) {
-	return 0;
-    }
-    if( !newstr ) {
+    if( !oldstr || !newstr ) {
 	return 0;
     }
 
-    FILE* of   = MakeTemporaryFile();
-    FILE* nf   = MakeTemporaryFile();
-    FILE* retf = MakeTemporaryFile();
+    /* open temporary files */
+    FILE *of, *nf, *retf;
+    if ( !(retf=MakeTemporaryFile()) )
+	goto error0SFDTrimUndoOldToNew;
+    if ( !(of=MakeTemporaryFile()) )
+	goto error1SFDTrimUndoOldToNew;
+    if ( !(nf=MakeTemporaryFile()) )
+	goto error2SFDTrimUndoOldToNew;
+
     int glyphsWithUndoInfoCount = 0;
     fwrite( oldstr, strlen(oldstr), 1, of );
     fwrite( newstr, strlen(newstr), 1, nf );
@@ -3844,7 +3848,7 @@ static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
 	    newGlyphsSeen++;
 	    SplineChar* newsc = SCFindByGlyphName( sf, nglyph );
 	    if( !newsc || !oldsc ) {
-		return 0;
+		goto error3SFDTrimUndoOldToNew;
 	    }
 	    /**
 	     * If the user has deleted a whole glyph from the SFD
@@ -3865,7 +3869,7 @@ static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
 	    nline = getquotedeol(nf);
 	    if( !oline || !nline ) {
 		fprintf(stderr,"failed to read new or old files during SFD diff. Returning entire new data as diff!\n");
-		return 0;
+		goto error3SFDTrimUndoOldToNew;
 	    }
 	    if( strcmp( oglyph, nglyph )) {
 //		fprintf(stderr,"mismatch between old and new SFD fragments. Skipping new glyph that is not in old...\n");
@@ -3898,6 +3902,7 @@ static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
 	free(oline);
 	oglyph = SFDMoveToNextStartChar(of);
     }
+    fclose(of);
 
     /* Trailing new glyph data that has nothing in the old file.
      *
@@ -3910,12 +3915,20 @@ static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
 	glyphsWithUndoInfoCount++;
 	SFDTrimUndoOldToNew_Output( retf, nglyph, "Kerns2: " );
     }
+    fclose(nf);
 
     if( !glyphsWithUndoInfoCount )
-	return 0;
+	goto error1SFDTrimUndoOldToNew;
 
     char* ret = FileToAllocatedString( retf );
+    fclose(retf);
     return ret;
+
+error3SFDTrimUndoOldToNew: free(of);
+error2SFDTrimUndoOldToNew: free(nf);
+error1SFDTrimUndoOldToNew: free(retf);
+error0SFDTrimUndoOldToNew:
+    return 0;
 }
 
 
