@@ -83,8 +83,8 @@ char* SFUndoToString( SFUndoes* undo )
 
 static char* findterm( char** str, char* term )
 {
-    char* p = 0;
-    if( p = strstr( str, term ))
+    char* p;
+    if( (p = strstr( str, term )) )
     {
 	p += strlen( term );
 	char* e = p;
@@ -108,10 +108,10 @@ SFUndoes* SFUndoFromString( char* str )
 
     if( !strncmp( str, "BeginFontLevelUndo", strlen("BeginFontLevelUndo")))
     {
-	char* p = 0;
-	if( p = findterm( &str, "FontLevelUndoType:" ))
+	char* p;
+	if( (p = findterm( &str, "FontLevelUndoType:" )) )
 	    t = atoi(p);
-	if( p = findterm( &str, "FontLevelUndoMessage:" ))
+	if( (p = findterm( &str, "FontLevelUndoMessage:" )) )
 	    staticmsg = p;
     }
 
