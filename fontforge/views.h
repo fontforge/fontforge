@@ -370,7 +370,7 @@ typedef struct metricsview {
     int16 topend;		/* y value of the end of the region containing the text field */
     int16 displayend;		/* y value of the end of the region showing filled characters */
     int16 fh, as;
-    int16 cmax, clen; 
+    int16 cmax, clen;
     SplineChar **chars;		/* Character input stream */
     struct opentype_str *glyphs;/* after going through the various gsub/gpos transformations */
     struct metricchar *perchar;	/* One for each glyph above */
@@ -1309,6 +1309,8 @@ extern Undoes *SFDGetUndo( SplineFont *sf, FILE *sfd, SplineChar *sc,
  * The caller can fclose() the returned file. Other applications will
  * not be able to find the file by name anymore when this call
  * returns.
+ *
+ * This function returns 0 if error encountered.
  */
 extern FILE* MakeTemporaryFile(void);
 
@@ -1416,7 +1418,7 @@ typedef struct FE_adjustBCPByDeltaDataS
     CharView *cv; //< used to update view
     real dx;      //< Add this to the BCP x
     real dy;      //< Add this to the BCP y
-    
+
 } FE_adjustBCPByDeltaData;
 
 /**
@@ -1431,7 +1433,7 @@ typedef void (*visitSelectedControlPointsVisitor) ( void* key,
 
 /**
  * Visitor function to move each BCP by data->dx/data->dy
- * 
+ *
  *
  * Visitor: visitSelectedControlPointsVisitor
  * UsedBy:  CVFindAndVisitSelectedControlPoints
@@ -1444,7 +1446,7 @@ extern void FE_adjustBCPByDelta( void* key,
 				 void* udata );
 /**
  * Visitor function to unselect every BCP passed
- * 
+ *
  * Visitor: visitSelectedControlPointsVisitor
  * UsedBy:  CVFindAndVisitSelectedControlPoints
  *          CVUnselectAllBCP
@@ -1487,7 +1489,7 @@ extern void CVUnselectAllBCP( CharView *cv );
  * This will call your visitor function 'f' on any selected BCP. This
  * is regardless of if the BCP is the next or prev BCP for it's
  * splinepoint.
- * 
+ *
  * This function doesn't use udata at all, it simply passes it on to
  * your visitor function so it may do something with it like record
  * results or take optional parameters.
