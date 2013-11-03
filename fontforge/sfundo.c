@@ -3,7 +3,7 @@
 *******************************************************************************
 
     Copyright (C) 2013 Ben Martin
-    
+
     This file is part of FontForge.
 
     FontForge is free software: you can redistribute it and/or modify
@@ -64,22 +64,27 @@ SFUndoes* SFUndoCreateSFD( enum sfundotype t, char* staticmsg, char* sfdfrag )
 
 char* SFUndoToString( SFUndoes* undo )
 {
-    FILE* sfd = MakeTemporaryFile();
-    fprintf(sfd,"BeginFontLevelUndo\n");
-    fprintf(sfd,"FontLevelUndoType:%d\n",undo->type);
-    fprintf(sfd,"FontLevelUndoMessage:%s\n",undo->msg);
-    if( undo->sfdchunk )
-	fprintf(sfd,"%s\n", undo->sfdchunk );
-    fprintf(sfd,"EndFontLevelUndo\n");
+    FILE* sfd;
+    if( (sfd = MakeTemporaryFile()) )
+    {
+	fprintf(sfd,"BeginFontLevelUndo\n");
+	fprintf(sfd,"FontLevelUndoType:%d\n",undo->type);
+	fprintf(sfd,"FontLevelUndoMessage:%s\n",undo->msg);
+	if( undo->sfdchunk )
+	    fprintf(sfd,"%s\n", undo->sfdchunk );
+	fprintf(sfd,"EndFontLevelUndo\n");
 
-    char* str = FileToAllocatedString( sfd );
-    return(str);
+	char* str = FileToAllocatedString( sfd );
+	fclose( sfd );
+	return str;
+    }
+    return 0;
 }
 
 static char* findterm( char** str, char* term )
 {
-    char* p = 0;
-    if( p = strstr( str, term ))
+    char* p;
+    if( (p = strstr( str, term )) )
     {
 	p += strlen( term );
 	char* e = p;
@@ -103,13 +108,13 @@ SFUndoes* SFUndoFromString( char* str )
 
     if( !strncmp( str, "BeginFontLevelUndo", strlen("BeginFontLevelUndo")))
     {
-	char* p = 0;
-	if( p = findterm( &str, "FontLevelUndoType:" ))
+	char* p;
+	if( (p = findterm( &str, "FontLevelUndoType:" )) )
 	    t = atoi(p);
-	if( p = findterm( &str, "FontLevelUndoMessage:" ))
+	if( (p = findterm( &str, "FontLevelUndoMessage:" )) )
 	    staticmsg = p;
     }
-    
+
     SFUndoes* ret = SFUndoCreateSFD( t, staticmsg, sfdfrag );
     return ret;
 }
@@ -137,7 +142,7 @@ void SFUndoPerform( SFUndoes* undo, SplineFont* sf )
 {
     char* sfdchunk = 0;
     FILE* sfd = 0;
-    
+
     switch(undo->type) {
     case sfut_fontinfo:
 	sfdchunk = undo->sfdchunk;

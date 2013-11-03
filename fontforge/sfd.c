@@ -905,7 +905,7 @@ void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, char* keyPrefix, int idx ) 
     {
 	fprintf(sfd, "Layer: %d\n",    u->layer );
     }
-    
+
     switch( u->undotype )
     {
         case ut_tstate:
@@ -2064,7 +2064,7 @@ static char* getSlashTempName() {
 
 
 FILE* MakeTemporaryFile() {
-    FILE * ret = 0;
+    FILE * ret;
     char template[PATH_MAX+1];
     int fd;
 
@@ -2073,7 +2073,7 @@ FILE* MakeTemporaryFile() {
     strcat( template, "fontforge-stemp-XXXXXX" );
     fd = g_mkstemp( template );
     printf("MakeTemporaryFile() fd:%d template:%s\n", fd, template );
-    ret = fdopen( fd, "rw+" );
+    if ( (ret=fdopen(fd,"rw+"))==NULL ) ret=0;
     unlink( template );
     return ret;
 }
@@ -2201,7 +2201,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	SFDDumpUTF7Str(sfd,sf->fontlog);
 	putc('\n',sfd);
     }
-    
+
     if ( sf->version!=NULL )
 	fprintf(sfd, "Version: %s\n", sf->version );
     if ( sf->fondname!=NULL )
@@ -2573,7 +2573,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	SFDDumpDesignSize(sfd,sf);
     if ( sf->feat_names!=NULL )
 	SFDDumpOtfFeatNames(sfd,sf);
-    
+
 return( err );
 }
 
@@ -2590,7 +2590,7 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 	map = normal;
 
     SFD_DumpSplineFontMetadata( sfd, sf ); //, map, normal, todir, dirname );
-    
+
     if ( sf->MATH!=NULL ) {
 	struct MATH *math = sf->MATH;
 	for ( i=0; math_constants_descriptor[i].script_name!=NULL; ++i ) {
@@ -7329,7 +7329,7 @@ void SFD_GetFontMetaData( FILE *sfd,
     int i;
     KernClass* kc = 0;
     int old;
-    
+
     // This allows us to assume we can dereference d
     // at all times
     static SFD_GetFontMetaDataData my_static_d;
@@ -7343,7 +7343,7 @@ void SFD_GetFontMetaData( FILE *sfd,
 	}
 	d = &my_static_d;
     }
-    
+
     if ( strmatch(tok,"FontName:")==0 )
     {
 	getname(sfd,tok);
@@ -7997,24 +7997,24 @@ void SFD_GetFontMetaData( FILE *sfd,
     {
 	/* Old, binary format */
 	/* still used for maxp and unknown tables */
-	SFDGetTtfTable(sfd,sf,d->lastttf);		
+	SFDGetTtfTable(sfd,sf,d->lastttf);
     }
     else if ( strmatch(tok,"TtTable:")==0 )
     {
 	/* text instruction format */
 	SFDGetTtTable(sfd,sf,d->lastttf);
     }
-    
-    
+
+
     ///////////////////
-    
+
     else if ( strmatch(tok,"ShortTable:")==0 )
     {
 	// only read, not written.
 	/* text number format */
 	SFDGetShortTable(sfd,sf,d->lastttf);
     }
-    
+
 }
 
 
@@ -8055,7 +8055,7 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
     continue;
 	}
 
-	
+
 	SFD_GetFontMetaDataData d;
 	SFD_GetFontMetaDataData_Init( &d );
 	SFD_GetFontMetaData( sfd, tok, sf, &d );
@@ -8147,11 +8147,11 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	    geteol(sfd,tok);
 	    sf->cidregistry = copy(tok);
 	}
-	
-	
+
+
 	//////////
 
-	
+
 	else if ( strmatch(tok,"Ordering:")==0 ) {
 	    geteol(sfd,tok);
 	    sf->ordering = copy(tok);
