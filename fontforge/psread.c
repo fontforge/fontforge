@@ -1062,6 +1062,7 @@ return( NULL );
 	}
     } else if ( *pt!='<' ) {
 	LogError( _("Unknown string type\n" ));
+	free(base);
 return( NULL );
     } else if ( pt[1]!='~' ) {
 	/* A hex string. Ignore any characters which aren't hex */
@@ -1234,11 +1235,15 @@ return;		/* Hunh. I don't understand it. I give up */
 return;		/* Hunh. I don't understand it. I give up */
     glyphname = copy(tokbuf);
    tok = nextpstoken(wrapper,&dval,tokbuf,toksize);
-   if ( strcmp(tokbuf,"get")!=0 )
-return;		/* Hunh. I don't understand it. I give up */
+   if ( strcmp(tokbuf,"get")!=0 ) {
+	free(glyphname);
+	return;	/* Hunh. I don't understand it. I give up */
+   }
    tok = nextpstoken(wrapper,&dval,tokbuf,toksize);
-   if ( strcmp(tokbuf,"exec")!=0 )
-return;		/* Hunh. I don't understand it. I give up */
+   if ( strcmp(tokbuf,"exec")!=0 ) {
+	free(glyphname);
+	return;	/* Hunh. I don't understand it. I give up */
+    }
 
     /* Ok, it looks very much like a reference to glyphname */
     ref = RefCharCreate();
