@@ -180,6 +180,7 @@ static Color DraggingComparisonAlphaChannelOverride = 0x88000000;
 
 
 static void isAnyControlPointSelectedVisitor(SplinePoint* splfirst, Spline* spline, void* udata );
+static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e );
 
 
 static int cvcolsinited = false;
@@ -3315,6 +3316,29 @@ static void CVCheckPoints(CharView *cv) {
     }
 }
 
+static void CVChangeSC_storeTab( CharView *cv, int tabnumber )
+{
+    printf("CVChangeSC_storeTab() %d\n", tabnumber );
+    if( tabnumber < charview_cvtabssz )
+    {
+	CharViewTab* t = &cv->cvtabs[tabnumber];
+	strncpy( t->charselected,
+		 GGadgetGetTitle8(cv->charselector),
+		 charviewtab_charselectedsz );
+    }
+}
+
+static void CVChangeSC_fetchTab( CharView *cv, int tabnumber )
+{
+    printf("CVChangeSC_fetchTab() %d\n", tabnumber );
+    if( tabnumber < charview_cvtabssz )
+    {
+	CharViewTab* t = &cv->cvtabs[tabnumber];
+	printf("CVChangeSC_fetchTab() %s\n", t->charselected );
+	GGadgetSetTitle8(cv->charselector, t->charselected );
+    }
+}
+
 void CVChangeSC(CharView *cv, SplineChar *sc ) {
     char *title;
     char buf[300];
@@ -3322,7 +3346,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     int i;
     int old_layer = CVLayer((CharViewBase *) cv), blayer;
     int was_fitted = cv->dv==NULL && cv->b.gridfit!=NULL;
-
+    
     if ( old_layer>=sc->layer_cnt )
 	old_layer = ly_fore;		/* Can happen in type3 fonts where each glyph has a different layer cnt */
 
@@ -3379,14 +3403,33 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     free(title);
     _CVPaletteActivate(cv,true);
 
-    GGadgetSetTitle8(cv->charselector,sc->name);
     if ( cv->tabs!=NULL ) {
 	for ( i=0; i<cv->former_cnt; ++i )
 	    if ( strcmp(cv->former_names[i],sc->name)==0 )
 	break;
 	if ( i!=cv->former_cnt && cv->showtabs )
+	{
+	    CVChangeSC_storeTab( cv, cv->oldtabnum );
+	    CVChangeSC_fetchTab( cv, i );
+	    cv->oldtabnum = i;
 	    GTabSetSetSel(cv->tabs,i);
-	else {
+	}
+	else
+	{
+	    // Only need to store here, as we are about to make a new tab.
+	    CVChangeSC_storeTab( cv, cv->oldtabnum );
+	    cv->oldtabnum = 0;
+	    // have to shuffle the cvtabs along to be in sync with cv->tabs
+	    {
+		int i = 0;
+		for( i=charview_cvtabssz-1; i > 0; i-- )
+		{
+		    cv->cvtabs[i] = cv->cvtabs[i-1];
+		}
+	    }
+	    GGadgetSetTitle8(cv->charselector,sc->name);
+	    
+	    
 	    if ( cv->former_cnt==FORMER_MAX )
 		free(cv->former_names[FORMER_MAX-1]);
 	    for ( i=cv->former_cnt<FORMER_MAX?cv->former_cnt-1:FORMER_MAX-2; i>=0; --i )
@@ -3402,6 +3445,8 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
 		CVChangeTabsVisibility(cv,true);
 	}
     }
+    if( !strcmp(GGadgetGetTitle8(cv->charselector),""))
+	GGadgetSetTitle8(cv->charselector,sc->name);
 
     if ( sc->inspiro && !hasspiro() && !sc->parent->complained_about_spiros ) {
 	sc->parent->complained_about_spiros = true;
@@ -3414,6 +3459,12 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
 
     if ( was_fitted )
 	CVGridFitChar(cv);
+
+    // Force any extra chars to be setup and drawn
+    GEvent e;
+    e.type=et_controlevent;
+    e.u.control.subtype = et_textchanged;
+    CV_OnCharSelectorTextChanged( cv->charselector, &e );
 }
 
 static void CVChangeChar(CharView *cv, int i ) {
@@ -4260,6 +4311,9 @@ return;		/* I treat this more like a modifier key change than a button press */
 return;
     }
 
+    if( cv->charselector && cv->charselector == GWindowGetFocusGadgetOfWindow(cv->gw))
+	GWindowClearFocusGadgetOfWindow(cv->gw);
+    
     update_spacebar_hand_tool(cv); /* needed?  (left from MINGW) */
 
     CVToolsSetCursor(cv,event->u.mouse.state|(1<<(7+event->u.mouse.button)), event->u.mouse.device );
@@ -7113,6 +7167,7 @@ return;
 
     CVPaletteActivate(cv);
     CVToolsSetCursor(cv,TrueCharState(event),NULL);
+
 	/* The window check is to prevent infinite loops since DVChar can */
 	/*  call CVChar too */
     if ( cv->dv!=NULL && (event->w==cv->gw || event->w==cv->v) && DVChar(cv->dv,event))
@@ -11822,6 +11877,7 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
     return( true );
 }
 
+
 CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show )
 {
     CharView *cv = gcalloc(1,sizeof(CharView));
@@ -11912,8 +11968,10 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_text_xim;
     gd.handle_controlevent = CV_OnCharSelectorTextChanged;
 //    gd.u.list = mv_text_init;
-    cv->charselector = GListFieldCreate(cv->gw,&gd,cv);
-    printf("XXXXXXX charselectorh:%d\n", cv->charselectorh );
+//    cv->charselector = GListFieldCreate(cv->gw,&gd,cv);
+    cv->charselector = GTextFieldCreate(cv->gw,&gd,cv);
+    GGadgetSetTitle8(cv->charselector,sc->name);
+    GGadgetSetSkipHotkeyProcessing( cv->charselector, 1 );
 
     memset(aspects,0,sizeof(aspects));
     aspects[0].text = (unichar_t *) sc->name;

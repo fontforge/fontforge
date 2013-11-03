@@ -1444,3 +1444,22 @@ GResInfo *_GGadgetRIHead(void) {
 	GGadgetInit();
 return( &popup_ri );
 }
+
+void GGadgetSetSkipHotkeyProcessing( GGadget *g, int v )
+{
+    if( !g )
+	return;
+
+    printf("GGadgetSetSkipHotkeyProcessing1 %d\n", g->state );
+    g->gg_skip_hotkey_processing = v;
+    printf("GGadgetSetSkipHotkeyProcessing2 %d\n", g->state );
+}
+
+int GGadgetGetSkipHotkeyProcessing( GGadget *g )
+{
+    if( !g )
+	return 0;
+
+    return (g->gg_skip_hotkey_processing);
+}
+

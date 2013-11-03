@@ -204,6 +204,7 @@ enum gg_flags { gg_visible=1, gg_enabled=2, gg_pos_in_pixels=4,
 		gg_dontcopybox=0x10000000,
 		gg_pos_use0=0x20000000, gg_pos_under=0x40000000,
 		gg_pos_newline = (int) 0x80000000,
+		gg_skip_hotkey_processing = (int) 0x100000000,
 		/* Reuse some flag values for different widgets */
 		gg_file_pulldown=gg_sb_vert, gg_file_multiple = gg_list_multiplesel,
 		gg_text_xim = gg_tabset_scroll,
@@ -624,5 +625,8 @@ extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
 extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
 
 extern void GVisibilityBoxSetToMinWH(GGadget *g);
+
+extern void GGadgetSetSkipHotkeyProcessing( GGadget *g, int v );
+extern int GGadgetGetSkipHotkeyProcessing( GGadget *g );
 
 #endif

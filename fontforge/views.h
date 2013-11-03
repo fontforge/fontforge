@@ -136,6 +136,15 @@ struct freehand {
 enum expandedge { ee_none, ee_nw, ee_up, ee_ne, ee_right, ee_se, ee_down,
 		  ee_sw, ee_left, ee_max };
 
+enum { charviewtab_charselectedsz = 1024 };
+typedef struct charviewtab
+{
+    char charselected[ charviewtab_charselectedsz + 1 ];
+} CharViewTab;
+
+enum { charview_cvtabssz = 100 };
+
+
 typedef struct charview {
     CharViewBase b;
     uint32 showback[BACK_LAYER_MAX/32];
@@ -280,6 +289,9 @@ typedef struct charview {
     struct dlistnode* pointInfoDialogs;
     GGadget* charselector; //< let the user type in more than one char to view at once.
     SplineChar* additionalCharsToShowOnRight[21]; //< additionalCharsToShowOnRightLimit + 1 in size
+
+    CharViewTab cvtabs[ charview_cvtabssz+1 ];
+    int oldtabnum;
 } CharView;
 
 typedef struct bitmapview {
