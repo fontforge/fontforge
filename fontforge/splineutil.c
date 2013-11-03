@@ -1403,7 +1403,6 @@ static SplinePointList *SplinePointListCopySpiroSelected1(SplinePointList *spl) 
 	for ( j=i; j<spl->spiro_cnt-1 && SPIRO_SELECTED(&list[j]); ++j );
 	temp = galloc((j-i+2)*sizeof(spiro_cp));
 	memcpy(temp,list+i,(j-i)*sizeof(spiro_cp));
-	if ( freeme!=NULL ) free(list);
 	temp[0].ty = SPIRO_OPEN_CONTOUR;
 	memset(temp+(j-i),0,sizeof(spiro_cp));
 	temp[j-i].ty = SPIRO_END;
