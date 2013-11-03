@@ -2057,6 +2057,9 @@ static int osx_handle_keysyms( int st, int k )
 
 extern int osx_fontview_copy_cut_counter;
 
+
+
+
 int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     int i;
     GMenuBar *mb = (GMenuBar *) g;
@@ -2064,6 +2067,15 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     unichar_t keysym = event->u.chr.keysym;
 
 //    printf("GMenuBarCheckKey(top) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
+
+    // see if we should skip processing
+    {
+	GWindow w = GGadgetGetWindow(g);
+	GGadget* focus = GWindowGetFocusGadgetOfWindow(w);
+	if( GGadgetGetSkipHotkeyProcessing(focus))
+	    return 0;
+    }
+    
 
     if ( g==NULL || keysym==0 ) return( false ); /* exit if no gadget or key */
 
