@@ -2069,6 +2069,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 //    printf("GMenuBarCheckKey(top) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
 
     // see if we should skip processing
+    if( g )
     {
 	GWindow w = GGadgetGetWindow(g);
 	GGadget* focus = GWindowGetFocusGadgetOfWindow(w);
