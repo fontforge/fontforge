@@ -2170,56 +2170,60 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     printf("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
     printf("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
     
-	struct dlistnodeExternal* node= hotkeyFindAllByEvent( top, event );
-	struct dlistnode* hklist = (struct dlistnode*)node;
-	for( ; node; node=(struct dlistnodeExternal*)(node->next) ) {
-	    Hotkey* hk = (Hotkey*)node->ptr;
-	    printf("hotkey found by event! hk:%p\n", hk );
-	    printf("hotkey found by event! action:%s\n", hk->action );
+    struct dlistnodeExternal* node= hotkeyFindAllByEvent( top, event );
+    struct dlistnode* hklist = (struct dlistnode*)node;
+    for( ; node; node=(struct dlistnodeExternal*)(node->next) ) {
+	Hotkey* hk = (Hotkey*)node->ptr;
+	printf("hotkey found by event! hk:%p\n", hk );
+	printf("hotkey found by event! action:%s\n", hk->action );
 
-	    int skipkey = false;
+	int skipkey = false;
 
-	    if( cv_auto_goto )
-	    {
-		if( !hk->state )
-		    skipkey = true;
+	if( cv_auto_goto )
+	{
+	    if( !hk->state )
+		skipkey = true;
 //		printf("hotkey state:%d skip:%d\n", hk->state, skipkey );
-	    }
+	}
 
-	    if( !skipkey )
+	if( !skipkey )
+	{
+	    mi = GMenuSearchAction(mb->g.base,mb->mi,hk->action,event,mb->child==NULL);
+	    if ( mi )
 	    {
-		mi = GMenuSearchAction(mb->g.base,mb->mi,hk->action,event,mb->child==NULL);
-		if ( mi )
-		{
-		    printf("GMenuBarCheckKey(x) have mi... :%p\n", mi );
-		    printf("GMenuBarCheckKey(x) have mitext:%s\n", u_to_c(mi->ti.text) );
-		    if ( mi->ti.checkable && !mi->ti.disabled )
-			mi->ti.checked = !mi->ti.checked;
-		    if ( mi->invoke!=NULL && !mi->ti.disabled )
-			(mi->invoke)(mb->g.base,mi,NULL);
-		    if ( mb->child != NULL )
-			GMenuDestroy(mb->child);
-		    return( true );
-		}
-		else
-		{
+		printf("GMenuBarCheckKey(x) have mi... :%p\n", mi );
+		printf("GMenuBarCheckKey(x) have mitext:%s\n", u_to_c(mi->ti.text) );
+		if ( mi->ti.checkable && !mi->ti.disabled )
+		    mi->ti.checked = !mi->ti.checked;
+		if ( mi->invoke!=NULL && !mi->ti.disabled )
+		    (mi->invoke)(mb->g.base,mi,NULL);
+		if ( mb->child != NULL )
+		    GMenuDestroy(mb->child);
+		return( true );
+	    }
+	    else
+	    {
 //		    printf("hotkey found for event must be a non menu action... action:%s\n", hk->action );
 
-		}
 	    }
+	}
 
 //	    printf("END hotkey found by event! hk:%p\n", hk );
-	}
-	dlist_free_external(&hklist);
+    }
+    dlist_free_external(&hklist);
 
-    if ( mb->child!=NULL ) {
+    printf("menubarcheckkey(e1)\n");
+	
+    if ( mb->child )
+    {
 	GMenu *m;
-	// m = last(mb->child);
-	for ( m=mb->child; m->child!=NULL; m = m->child ) {
+	for ( m=mb->child; m->child!=NULL; m = m->child )
+	{
 	}
 	return( GMenuSpecialKeys(m,event->u.chr.keysym,event));
     }
 
+    printf("menubarcheckkey(e2)\n");
     if ( event->u.chr.keysym==GK_Menu )
 	GMenuCreatePopupMenu(event->w,event, mb->mi);
 

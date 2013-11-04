@@ -1143,6 +1143,41 @@ static int CVCheckMerges(CharView *cv ) {
 return( cnt>0 && stop_at_join );
 }
 
+static void FE_interpCPsOnMotionBCPKeepDistance( void* key,
+						 void* value,
+						 SplinePoint* sp,
+						 BasePoint *which,
+						 bool isnext,
+						 void* udata )
+{
+    printf("FE_interpCPsOnMotionBCPKeepDistance() which:%p sp:%p\n", which, sp );
+    if( sp->selected )
+    {
+	printf("    sp loc %f %f\n", sp->me.x, sp->me.y );
+	printf("  next loc %f %f\n", sp->nextcp.x, sp->nextcp.y );
+	printf("  prev loc %f %f\n", sp->prevcp.x, sp->prevcp.y );
+
+	real cutoff = 30;
+	bigreal d = DistanceBetweenPoints(&sp->me,&sp->prevcp);
+	printf("  distance.next %lf\n", d );
+	if( d < cutoff )
+	{
+	    printf("  TOO CLOSE!\n");
+	    if( d )
+	    {
+		sp->prevcp.x *= (cutoff / d );
+		sp->prevcp.y *= (cutoff / d );
+	    }
+	}
+	
+
+	// if distance is too close, then move the nextcp/prevcp away a little bit
+	
+    }
+    
+//    SPTouchControl( sp, which, (int)udata );
+}
+
 /* Move the selection and return whether we did a merge */
 int CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state) {
     real transform[6];
@@ -1189,9 +1224,26 @@ return(false);
     if ( cv->b.sc->inspiro && hasspiro())
 	SplinePointListSpiroTransform(cv->b.layerheads[cv->b.drawmode]->splines,transform,false);
     else
+    {
+	bool interp = CVShouldInterpolateCPsOnMotion( cv );
+
 	SplinePointListTransformExtended(cv->b.layerheads[cv->b.drawmode]->splines,transform,
-					 interpCPsOnMotion?tpt_OnlySelectedInterpCPs:tpt_OnlySelected,
+					 interp ? tpt_OnlySelectedInterpCPs : tpt_OnlySelected,
 					 tpmask );
+
+	if( interp )
+	{
+	    bool preserveState = false;
+	    CVVisitAllControlPoints( cv, preserveState,
+	    			     FE_touchControlPoint,
+	    			     (void*)cv->b.layerheads[cv->b.drawmode]->order2 );
+
+	    /* CVVisitAllControlPoints( cv, preserveState, */
+	    /* 			     FE_interpCPsOnMotionBCPKeepDistance, 0 ); */
+	    
+	}
+    }
+    
 
     for ( refs = cv->b.layerheads[cv->b.drawmode]->refs; refs!=NULL; refs=refs->next ) if ( refs->selected ) {
 	refs->transform[4] += transform[4];

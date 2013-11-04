@@ -363,6 +363,7 @@ const int input_em_cnt = sizeof(input_em)/sizeof(input_em[0])-1;
 #define MAG_DATA	344		/* Any text for it */
 #define LAYER_DATA	404		/* Text to show the current layer */
 #define CODERANGE_DATA	474		/* Text to show the current code range (if the debugger be active) */
+#define FLAGS_DATA	650		/* Text to show the current drawmode flags */
 
 void CVDrawRubberRect(GWindow pixmap, CharView *cv) {
     GRect r;
@@ -3604,6 +3605,13 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 	update_spacebar_hand_tool(cv);
     }
 
+    cv->activeModifierControl &= ~( event->u.chr.keysym == GK_Control_L || event->u.chr.keysym == GK_Control_R );
+    cv->activeModifierAlt     &= ~( event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R
+				    || event->u.chr.keysym == GK_Meta_L || event->u.chr.keysym == GK_Meta_R );
+
+    
+    
+
 //    printf("CVCharUp() ag:%d key:%d\n", cv_auto_goto, event->u.chr.keysym );
     if( !cv_auto_goto )
     {
@@ -3709,6 +3717,8 @@ void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     GDrawFillRect(pixmap,&r,bg);
     r.x = CODERANGE_DATA; r.width = 200;
     GDrawFillRect(pixmap,&r,bg);
+    r.x = FLAGS_DATA; r.width = 200;
+    GDrawFillRect(pixmap,&r,bg);
 
     if ( cv->info_within ) {
 	if ( cv->info.x>=1000 || cv->info.x<=-1000 || cv->info.y>=1000 || cv->info.y<=-1000 )
@@ -3742,6 +3752,17 @@ void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 		_("Fore") ),
 	      layername );
     GDrawDrawText8(pixmap,LAYER_DATA,ybase,buffer,-1,fg);
+    GDrawDrawText8(pixmap,LAYER_DATA,ybase,buffer,-1,fg);
+
+    if ( cv->coderange==cr_none )
+    {
+	snprintf( buffer, buffersz, _("Modes: "));
+	if( CVShouldInterpolateCPsOnMotion(cv) )
+	    strcat( buffer, "Interpolate" );
+	GDrawDrawText8(pixmap,FLAGS_DATA,ybase,buffer,-1,fg);
+    }
+    
+    
     if ( cv->coderange!=cr_none ) {
 	GDrawDrawText8(pixmap,CODERANGE_DATA,ybase,
 		cv->coderange==cr_fpgm ? _("'fpgm'") :
@@ -6931,6 +6952,16 @@ static GHashTable* getAllControlPoints( CharView *cv, PressedOn *p )
     return ret;
 }
 
+void FE_touchControlPoint( void* key,
+			   void* value,
+			   SplinePoint* sp,
+			   BasePoint *which,
+			   bool isnext,
+			   void* udata )
+{
+    printf("FE_touchControlPoint() which:%p\n", which );
+    SPTouchControl( sp, which, (int)udata );
+}
 
 void FE_unselectBCP( void* key,
 		     void* value,
@@ -7144,6 +7175,18 @@ void CVChar(CharView *cv, GEvent *event ) {
 	}
     }
 
+    int oldactiveModifierControl = cv->activeModifierControl;
+    int oldactiveModifierAlt = cv->activeModifierAlt;
+    cv->activeModifierControl |= ( event->u.chr.keysym == GK_Control_L || event->u.chr.keysym == GK_Control_R );
+    cv->activeModifierAlt     |= ( event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R
+				   || event->u.chr.keysym == GK_Meta_L || event->u.chr.keysym == GK_Meta_R );
+    if( oldactiveModifierControl != cv->activeModifierControl
+	|| oldactiveModifierAlt != cv->activeModifierAlt )
+    {
+	CVInfoDraw(cv,cv->gw);
+    }
+    
+    
 #if _ModKeysAutoRepeat
 	/* Under cygwin these keys auto repeat, they don't under normal X */
 	if ( cv->autorpt!=NULL ) {
@@ -8408,16 +8451,6 @@ static void _CVMenuSpiroPointType(CharView *cv, struct gmenuitem *mi) {
     CVCharChangedUpdate(&cv->b);
 }
 
-static void touchControlPointsVisitor ( void* key,
-				 void* value,
-				 SplinePoint* sp,
-				 BasePoint *which,
-				 bool isnext,
-				 void* udata )
-{
-    printf("touchControlPointsVisitor() which:%p\n", which );
-    SPTouchControl( sp, which, (int)udata );
-}
 
 static void CVMenuPointType(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
@@ -12636,3 +12669,14 @@ bool SPIsPrevCPSelected( SplinePoint *sp, CharView *cv )
     }
     return sp->prevcpselected;
 }
+
+bool CVShouldInterpolateCPsOnMotion( CharView* cv )
+{
+    bool ret = interpCPsOnMotion;
+
+    if( cv->activeModifierControl && cv->activeModifierAlt )
+	ret = !ret;
+    
+    return ret;
+}
+

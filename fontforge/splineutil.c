@@ -1841,6 +1841,7 @@ SplinePointList *SplinePointListTransformExtended(SplinePointList *base, real tr
 	allsel = true; anysel=false;
 	if ( tpt==tpt_OnlySelectedInterpCPs && spl->first->next!=NULL && !spl->first->next->order2 ) {
 	    lastpointorig = firstpointorig = spl->first->me;
+	    printf("SplinePointListTransformExtended() spl->first->selected %d\n", spl->first->selected );
 	    if ( spl->first->selected ) {
 		anysel = true;
 		BpTransform(&spl->first->me,&spl->first->me,transform);
@@ -1850,10 +1851,15 @@ SplinePointList *SplinePointListTransformExtended(SplinePointList *base, real tr
 		if ( first==NULL ) first = spline;
 		orig = spline->to->me;
 		if ( spline->from->selected || spline->to->selected )
-		    TransformPTsInterpolateCPs(&lastpointorig,spline,spl->first==spline->to?&firstpointorig:&spline->to->me,transform);
+		{
+		    TransformPTsInterpolateCPs( &lastpointorig, spline,
+						spl->first==spline->to? &firstpointorig : &spline->to->me,
+						transform );
+		}
 		lastpointorig = orig;
 		if ( spline->to->selected ) anysel = true; else allsel = false;
 	    }
+	    
 	} else {
 	    for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to ) {
 		if ( pfirst==NULL ) pfirst = spt;
@@ -7597,3 +7603,14 @@ return;
     strcpy((char *)gb->pt, str);
     gb->pt += n;
 }
+
+bigreal DistanceBetweenPoints( BasePoint *p1, BasePoint *p2 )
+{
+    bigreal t = pow(p1->x - p2->x,2) + pow(p1->y - p2->y,2);
+    if( !t )
+	return t;
+    
+    t = sqrt( t );
+    return t;
+}
+
