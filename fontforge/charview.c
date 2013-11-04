@@ -47,6 +47,7 @@ extern int _GScrollBar_Width;
 #include "gutils/unicodelibinfo.h"
 
 #include "gdraw/hotkeys.h"
+#include "wordlistparser.h"
 
 /* Barry wants to be able to redefine menu bindings only in the charview (I think) */
 /*  the menu parser will first check for something like "CV*Open|Ctl+O", and */
@@ -2803,8 +2804,6 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		    if( !xc )
 			break;
 
-		    printf("scale:%f\n", cv->scale );
-		    printf("sc.width:%d\n", xc->width );
 		    cv->xoff += offset;
 		    int showpoints = 0;
 		    enum outlinesfm_flags sm = sfm_stroke;
@@ -3468,6 +3467,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     GEvent e;
     e.type=et_controlevent;
     e.u.control.subtype = et_textchanged;
+    e.u.control.u.tf_changed.from_pulldown = 0;
     CV_OnCharSelectorTextChanged( cv->charselector, &e );
 }
 
@@ -6151,6 +6151,12 @@ return;
     }
 }
 
+static void CVAddWordList(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
+{
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    WordlistLoadToGTextInfo( cv->charselector, &cv->charselectoridx );
+}
+
 static void CVMenuPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
@@ -7226,7 +7232,19 @@ return;
 	    event->u.chr.keysym == GK_KP_Left ||
 	    event->u.chr.keysym == GK_KP_Up ||
 	    event->u.chr.keysym == GK_KP_Right ||
-	    event->u.chr.keysym == GK_KP_Down ) {
+	    event->u.chr.keysym == GK_KP_Down )
+    {
+	GGadget *active = GWindowGetFocusGadgetOfWindow(cv->gw);
+	if( active == cv->charselector )
+	{
+	    printf("up/down on the charselector!\n");
+	    int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? -1 : 1;
+	    Wordlist_MoveByOffset( cv->charselector, &cv->charselectoridx, dir );
+
+	    return;
+	}
+	
+	
 	real dx=0, dy=0; int anya;
 	switch ( event->u.chr.keysym ) {
 	  case GK_Left: case GK_KP_Left:
@@ -10862,6 +10880,8 @@ static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("_Revert File"), (GImage *) "filerevert.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert File|No Shortcut"), NULL, NULL, CVMenuRevert, MID_Revert },
     { { (unichar_t *) N_("Revert Gl_yph"), (GImage *) "filerevertglyph.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert Glyph|No Shortcut"), NULL, NULL, CVMenuRevertGlyph, MID_RevertGlyph },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
+    { { (unichar_t *) N_("Add Word List..."), (GImage *) 0, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Add Word List...|No Shortcut"), NULL, NULL, CVAddWordList, 0 },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Print..."), (GImage *) "fileprint.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Print...|No Shortcut"), NULL, NULL, CVMenuPrint, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
 #if !defined(_NO_PYTHON)
@@ -11837,6 +11857,48 @@ void DefaultY(GRect *pos) {
 
 static void CharViewInit(void);
 
+static SplineChar *SCFromUnicode(CharView* cv, SplineFont *sf, EncMap *map, int ch,BDFFont *bdf) {
+    int i;
+    SplineChar *sc;
+
+    i = SFFindSlot(sf,map,ch,NULL);
+    if ( i==-1 )
+	return( NULL );
+    else
+    {
+	sc = SFMakeChar(sf,map,i);
+	if ( bdf!=NULL )
+	    BDFMakeChar(bdf,map,i);
+    }
+    return( sc );
+}
+
+/* static void CVLoadWordList( CharView* cv ) */
+/* { */
+/*     SplineChar *sc = cv->b.sc; */
+/*     SplineFont* sf = sc->parent; */
+
+/*     int words_max = 1024*128; */
+/*     GTextInfo** words = WordlistLoadFileToGTextInfoBasic( words_max ); */
+/*     if( !words ) */
+/*     { */
+/* 	GGadgetSetTitle8(cv->charselector,""); */
+/* 	return 0; */
+/*     } */
+
+/*     if( words[0] ) */
+/*     { */
+/* 	GGadgetSetList(cv->charselector,words,true); */
+/* 	GGadgetSetTitle8(cv->charselector,(char *) (words[0]->text)); */
+/* 	GTextInfoArrayFree(words); */
+/* 	cv->charselectoridx = 0; */
+/* 	GGadgetSelectOneListItem( cv->charselector, cv->charselectoridx ); */
+/* 	Wordlist_touch( cv->charselector ); */
+/* 	return 0; */
+/*     } */
+/*     return 1; */
+/* } */
+
 static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 {
     CharView* cv = GGadgetGetUserData(g);
@@ -11845,6 +11907,43 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged )
     {
+	int pos = e->u.control.u.tf_changed.from_pulldown;
+
+	if ( pos!=-1 )
+	{
+	    int32 len;
+	    GTextInfo **ti = GGadgetGetList(g,&len);
+	    GTextInfo *cur = ti[pos];
+	    int type = (intpt) cur->userdata;
+	    if ( type < 0 )
+	    {
+		printf("load wordlist...!\n");
+
+		WordlistLoadToGTextInfo( cv->charselector, &cv->charselectoridx );
+//		CVLoadWordList( cv );
+		return 0;
+		
+		/* int words_max = 1024*128; */
+		/* GTextInfo** words = WordlistLoadFileToGTextInfoBasic( words_max ); */
+		/* if( !words ) */
+		/* { */
+		/*     GGadgetSetTitle8(cv->charselector,""); */
+		/*     return 0; */
+		/* } */
+
+		/* if( words[0] ) */
+		/* { */
+		/*     GGadgetSetList(cv->charselector,words,true); */
+		/*     GGadgetSetTitle8(cv->charselector,(char *) (words[0]->text)); */
+		/*     GTextInfoArrayFree(words); */
+		/*     cv->charselectoridx = 0; */
+		/*     return 0; */
+		/* } */
+	    }
+	}
+	
+	
+	cv->charselectoridx = pos;
 	char* txt = GGadgetGetTitle8( cv->charselector );
 	printf("text changed: %s\n", txt );
 
@@ -11857,16 +11956,30 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	else if( strlen(txt) > 1 )
 	{
 	    int i=1;
-	    int max = imin( strlen(txt), additionalCharsToShowOnRightLimit );
-	    for( i=1; i<max; i++ )
-	    {
-		char ch = txt[i];
+	    const unichar_t *ret = GGadgetGetTitle( cv->charselector );
+	    GArray* selected = 0;
+	    ret = WordlistEscpaedInputStringToRealStringBasic( sf, ret, &selected );
+	    g_array_unref( selected );
 
-		char name[10];
-		sprintf(name, "%c", ch );
-		SplineChar* xc = SFGetOrMakeChar( sf, -1, name );
-		cv->additionalCharsToShowOnRight[i] = xc;
+	    const unichar_t *pt, *ept, *tpt;
+	    pt = ret;
+	    ept=ret+u_strlen(ret);
+	    for ( tpt=pt; tpt<ept; ++tpt )
+	    {
+		int ch = *tpt;
+		if( tpt == pt )
+		{
+		    // skip your own char at the leading of the text
+		    continue;
+		}
+		
+		cv->additionalCharsToShowOnRight[i] = SFGetOrMakeCharFromUnicodeBasic( sf, ch );
+
+		i++;
+		if( i >= additionalCharsToShowOnRightLimit )
+		    break;
 	    }
+	    free(ret);
 	}
 	free(txt);
 
@@ -11881,6 +11994,14 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
     }
     return( true );
 }
+
+GTextInfo cv_charselector_init[] = {
+    { (unichar_t *) "", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { NULL, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, 0, '\0'},
+    { (unichar_t *) N_("Load Word List..."), NULL, 0, 0, (void *) -1, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+//    { (unichar_t *) N_("Load Glyph Name List..."), NULL, 0, 0, (void *) -2, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    GTEXTINFO_EMPTY
+};
 
 
 CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show )
@@ -11972,9 +12093,8 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     gd.pos.height = cv->charselectorh-4;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_text_xim;
     gd.handle_controlevent = CV_OnCharSelectorTextChanged;
-//    gd.u.list = mv_text_init;
-//    cv->charselector = GListFieldCreate(cv->gw,&gd,cv);
-    cv->charselector = GTextFieldCreate(cv->gw,&gd,cv);
+    gd.u.list = cv_charselector_init;
+    cv->charselector = GListFieldCreate(cv->gw,&gd,cv);
     GGadgetSetTitle8(cv->charselector,sc->name);
     GGadgetSetSkipHotkeyProcessing( cv->charselector, 1 );
 

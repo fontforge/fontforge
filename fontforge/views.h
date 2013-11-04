@@ -288,6 +288,7 @@ typedef struct charview {
     int16 note_x, note_y;
     struct dlistnode* pointInfoDialogs;
     GGadget* charselector; //< let the user type in more than one char to view at once.
+    int charselectoridx;
     SplineChar* additionalCharsToShowOnRight[21]; //< additionalCharsToShowOnRightLimit + 1 in size
 
     CharViewTab cvtabs[ charview_cvtabssz+1 ];
