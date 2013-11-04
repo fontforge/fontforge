@@ -2904,6 +2904,8 @@ extern int SFCIDFindCID(SplineFont *sf, int unienc, const char *name );
 extern SplineChar *SFGetChar(SplineFont *sf, int unienc, const char *name );
 extern int SFHasChar(SplineFont *sf, int unienc, const char *name );
 extern SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, const char *name );
+extern SplineChar *SFGetOrMakeCharFromUnicode( SplineFont *sf, EncMap *map, int ch );
+extern SplineChar *SFGetOrMakeCharFromUnicodeBasic( SplineFont *sf, int ch );
 extern int SFFindExistingSlot(SplineFont *sf, int unienc, const char *name );
 extern int SFCIDFindExistingChar(SplineFont *sf, int unienc, const char *name );
 extern int SFHasCID(SplineFont *sf, int cid);
