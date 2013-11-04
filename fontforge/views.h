@@ -197,6 +197,9 @@ typedef struct charview {
     unsigned int showdebugchanges: 1;
     unsigned int inPreviewMode: 1;
     unsigned int inDraggingComparisonOutline: 1;
+    unsigned int activeModifierControl: 1; //< Is control being held right now?
+    unsigned int activeModifierAlt: 1;     //< Is alt being held right now?
+    
     int hvoffset;		/* for showalmosthvlines */
     int layers_off_top;
     real scale;
@@ -293,6 +296,7 @@ typedef struct charview {
 
     CharViewTab cvtabs[ charview_cvtabssz+1 ];
     int oldtabnum;
+    
 } CharView;
 
 typedef struct bitmapview {
@@ -1461,6 +1465,13 @@ extern void FE_unselectBCP( void* key,
 			    bool isnext,
 			    void* udata );
 
+extern void FE_touchControlPoint( void* key,
+				  void* value,
+				  SplinePoint* sp,
+				  BasePoint *which,
+				  bool isnext,
+				  void* udata );
+
 /**
  * Find all the selected BCP and apply the visitor function f to them
  * passing the user data pointer udata to the 'f' visitor.
@@ -1505,5 +1516,7 @@ extern void CVVisitAdjacentToSelectedControlPoints( CharView *cv, bool preserveS
 						    visitSelectedControlPointsVisitor f, void* udata );
 
 extern void CVFreePreTransformSPL( CharView* cv );
+
+extern bool CVShouldInterpolateCPsOnMotion( CharView* cv );
 
 #endif	/* _VIEWS_H */

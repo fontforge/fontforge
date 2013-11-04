@@ -3443,4 +3443,7 @@ extern SplinePoint* SplinePointListContainsPointAtXY( SplinePointList* container
 extern bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp );
 
 
+extern bigreal DistanceBetweenPoints( BasePoint *p1, BasePoint *p2 );
+
+
 #endif
