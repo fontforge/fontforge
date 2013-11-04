@@ -4336,16 +4336,43 @@ return;		/* I treat this more like a modifier key change than a button press */
 return;
     }
 
+    printf("tool:%d pointer:%d ctl:%d alt:%d\n",
+	   cv->showing_tool,
+	   (cv->showing_tool == cvt_pointer),
+	   cv->activeModifierControl, cv->activeModifierAlt );
+
+    int8 override_showing_tool = cvt_none;
+    int8 old_showing_tool = cv->showing_tool;
+    if( cv->showing_tool == cvt_pointer
+	&& cv->activeModifierControl
+	&& cv->activeModifierAlt )
+    {
+	FindSel fs;
+	SetFS(&fs,&cv->p,cv,event);
+	int found = InSplineSet( &fs, cv->b.layerheads[cv->b.drawmode]->splines,
+				 cv->b.sc->inspiro && hasspiro());
+	printf("in spline set:%d\n", found );
+
+	//
+	// Only overwrite to create a point if the user has clicked a spline.
+	//
+	if( found )
+	    override_showing_tool = cvt_curve;
+    }
+    
     if( cv->charselector && cv->charselector == GWindowGetFocusGadgetOfWindow(cv->gw))
 	GWindowClearFocusGadgetOfWindow(cv->gw);
 
     update_spacebar_hand_tool(cv); /* needed?  (left from MINGW) */
 
     CVToolsSetCursor(cv,event->u.mouse.state|(1<<(7+event->u.mouse.button)), event->u.mouse.device );
+    if( override_showing_tool != cvt_none )
+	cv->showing_tool = override_showing_tool;
     cv->active_tool = cv->showing_tool;
     cv->needsrasterize = false;
     cv->recentchange = false;
 
+    
     SetFS(&fs,&cv->p,cv,event);
     if ( event->u.mouse.state&ksm_shift )
 	event = CVConstrainedMouseDown(cv,event,&fake);
@@ -4421,7 +4448,8 @@ return;
 
     } else if ( cv->active_tool == cvt_curve || cv->active_tool == cvt_corner ||
 	    cv->active_tool == cvt_tangent || cv->active_tool == cvt_hvcurve ||
-	    cv->active_tool == cvt_pen || cv->active_tool == cvt_ruler ) {
+	    cv->active_tool == cvt_pen || cv->active_tool == cvt_ruler )
+    {
 	/* Snap to points and splines */
 	InSplineSet(&fs,cv->b.layerheads[cv->b.drawmode]->splines,cv->b.sc->inspiro && hasspiro());
 	if ( fs.p->sp==NULL && fs.p->spline==NULL )
@@ -4515,6 +4543,7 @@ return;
 	CVMouseDownShape(cv,event);
       break;
     }
+    cv->showing_tool = old_showing_tool;
 }
 
 static void _SCHintsChanged(SplineChar *sc) {
