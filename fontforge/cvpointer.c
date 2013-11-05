@@ -29,6 +29,7 @@
 #include <utype.h>
 #include <math.h>
 #include "collabclient.h"
+extern void BackTrace( const char* msg );
 
 int stop_at_join = false;
 extern int interpCPsOnMotion;
@@ -1359,7 +1360,8 @@ int CVMouseMovePointer(CharView *cv, GEvent *event) {
     int needsupdate = false;
     int did_a_merge = false;
     int touch_control_points = false;
-
+    
+    
     /* if we haven't moved from the original location (ever) then this is a noop */
     if ( !cv->p.rubberbanding && !cv->recentchange &&
 	    RealNear(cv->info.x,cv->p.cx) && RealNear(cv->info.y,cv->p.cy) )
@@ -1399,14 +1401,18 @@ return( false );
 	cv->p.rubberbanding = true;
 	if ( !needsupdate )
 	    CVDrawRubberRect(cv->v,cv);
-    } else if ( cv->p.nextcp ) {
-	if ( !cv->recentchange ) CVPreserveState(&cv->b);
+    }
+    else if ( cv->p.nextcp )
+    {
+	if ( !cv->recentchange )
+	    CVPreserveState(&cv->b);
 
-//	printf("move cv->p.nextcp\n");
 	FE_adjustBCPByDeltaData d;
+	memset( &d, 0, sizeof(FE_adjustBCPByDeltaData));
 	d.cv = cv;
 	d.dx = (cv->info.x - cv->p.sp->nextcp.x) * arrowAmount;
 	d.dy = (cv->info.y - cv->p.sp->nextcp.y) * arrowAmount;
+	visitSelectedControlPointsVisitor func = FE_adjustBCPByDelta;
 	/* printf("move sp:%p ncp:%p \n", */
 	/*        cv->p.sp, &(cv->p.sp->nextcp)  ); */
 	/* printf("move me.x:%f me.y:%f\n", cv->p.sp->me.x, cv->p.sp->me.y ); */
@@ -1415,33 +1421,49 @@ return( false );
 	/*        cv->info.x, cv->info.y ); */
 	/* printf("move dx:%f dy:%f\n",  d.dx, d.dy ); */
 	/* printf("move dx:%f \n", cv->info.x - cv->p.sp->nextcp.x ); */
-	CVFindAndVisitSelectedControlPoints( cv, false,
-					     FE_adjustBCPByDelta, &d );
+	if( cv->activeModifierAlt )
+	    func = FE_adjustBCPByDeltaWhilePreservingBCPAngle;
 
+	CVFindAndVisitSelectedControlPoints( cv, false, func, &d );
 	CPUpdateInfo(cv,event);
 	needsupdate = true;
-    } else if ( cv->p.prevcp ) {
-	if ( !cv->recentchange ) CVPreserveState(&cv->b);
+    }
+    else if ( cv->p.prevcp )
+    {
+	if ( !cv->recentchange )
+	    CVPreserveState(&cv->b);
 
 	FE_adjustBCPByDeltaData d;
+	memset( &d, 0, sizeof(FE_adjustBCPByDeltaData));
 	d.cv = cv;
 	d.dx = (cv->info.x - cv->p.sp->prevcp.x) * arrowAmount;
 	d.dy = (cv->info.y - cv->p.sp->prevcp.y) * arrowAmount;
-	CVFindAndVisitSelectedControlPoints( cv, false,
-					     FE_adjustBCPByDelta, &d );
-
+	visitSelectedControlPointsVisitor func = FE_adjustBCPByDelta;
+	
+	if( cv->activeModifierAlt )
+	    func = FE_adjustBCPByDeltaWhilePreservingBCPAngle;
+	
+	CVFindAndVisitSelectedControlPoints( cv, false, func, &d );
 	CPUpdateInfo(cv,event);
 	needsupdate = true;
-    } else if ( cv->p.spline
+    }
+    else if ( cv->p.spline
 		&& !cv->p.splineAdjacentPointsSelected
-		&& (!cv->b.sc->inspiro || !hasspiro())) {
-	if ( !cv->recentchange ) CVPreserveState(&cv->b);
+		&& (!cv->b.sc->inspiro || !hasspiro()))
+    {
+	if ( !cv->recentchange )
+	    CVPreserveState(&cv->b);
+	
 	CVAdjustSpline(cv);
 	CVSetCharChanged(cv,true);
 	needsupdate = true;
 	touch_control_points = true;
-    } else {
-	if ( !cv->recentchange ) CVPreserveState(&cv->b);
+    }
+    else
+    {
+	if ( !cv->recentchange )
+	    CVPreserveState(&cv->b);
+	
 	did_a_merge = CVMoveSelection(cv,
 		cv->info.x-cv->last_c.x,cv->info.y-cv->last_c.y,
 		event->u.mouse.state);

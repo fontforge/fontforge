@@ -1423,8 +1423,10 @@ typedef struct FE_adjustBCPByDeltaDataS
     CharView *cv; //< used to update view
     real dx;      //< Add this to the BCP x
     real dy;      //< Add this to the BCP y
+    int keyboarddx;
 
 } FE_adjustBCPByDeltaData;
+
 
 /**
  * Visitor function type for visitSelectedControlPoints()
@@ -1449,6 +1451,14 @@ extern void FE_adjustBCPByDelta( void* key,
 				 BasePoint *which,
 				 bool isnext,
 				 void* udata );
+
+extern void FE_adjustBCPByDeltaWhilePreservingBCPAngle( void* key,
+							void* value,
+							SplinePoint* sp,
+							BasePoint *which,
+							bool isnext,
+							void* udata );
+
 /**
  * Visitor function to unselect every BCP passed
  *

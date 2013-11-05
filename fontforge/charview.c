@@ -7021,6 +7021,84 @@ void FE_adjustBCPByDelta( void* key,
     CVSetCharChanged(cv,true);
 }
 
+void FE_adjustBCPByDeltaWhilePreservingBCPAngle( void* key,
+						 void* value,
+						 SplinePoint* sp,
+						 BasePoint *which,
+						 bool isnext,
+						 void* udata )
+{
+    FE_adjustBCPByDeltaData* data = (FE_adjustBCPByDeltaData*)udata;
+    CharView *cv = data->cv;
+
+//    printf("FE_adjustBCPByDeltaWhilePreservingBCPAngle which:%p data:%p isnext:%d\n", which, data, isnext );
+//    printf("FE_adjustBCPByDeltaWhilePreservingBCPAngle    delta %f %f\n", data->dx, data->dy );
+    BasePoint to;
+    to.x = which->x + data->dx;
+    to.y = which->y + data->dy;
+
+    // work out near and far BCP for this movement
+    BasePoint* near = &sp->nextcp;
+    BasePoint* far  = &sp->prevcp;
+    if( !isnext )
+    {
+	near = &sp->prevcp;
+	far  = &sp->nextcp;
+    }
+
+    real dx = near->x - far->x;
+    if( !fabs(dx) )
+    {
+	// flatline protection
+	to.x = which->x + data->dx;
+	to.y = which->y + data->dy;
+    }
+    else
+    {
+	// we have a workable gradient
+	real m = (near->y - far->y) / dx;
+
+	// should we lean to x or y for the change?
+	// all this is based on m = y2-y1/x2-x1
+	// we use m from near and far and extrapolate to the new location
+	// based on either x or y and calculate the other ordinate from the
+	// gradiant function above.
+	if( fabs(m) < 1.0 )
+	{
+	    real datadx = data->dx;
+	    if( data->keyboarddx && !datadx )
+	    {
+		datadx = data->dy;
+		if( m < 0 )
+		    datadx *= -1;
+	    }
+	    
+	    real dx = near->x - far->x;
+	    real m = (near->y - far->y) / dx;
+	    to.x = which->x + datadx;
+	    to.y = m * (to.x - near->x) + near->y;
+	}
+	else
+	{
+	    real datady = data->dy;
+	    if( data->keyboarddx && !datady )
+	    {
+		datady = data->dx;
+		if( m < 0 )
+		    datady *= -1;
+	    }
+	    real dx = near->x - far->x;
+	    real m = (near->y - far->y) / dx;
+	    to.y = which->y + datady;
+	    to.x = (to.y - near->y + m*near->x) / m;
+	}
+    }
+
+    // move the point and update
+    SPAdjustControl(sp,which,&to,cv->b.layerheads[cv->b.drawmode]->order2);
+    CVSetCharChanged(cv,true);
+}
+
 /**
  * Container for arguments to FE_visitSelectedControlPoints.
  */
@@ -7342,24 +7420,35 @@ return;
 	}
 	else
 	{
-	    if ( event->u.chr.state & ksm_meta ) {
+	    printf("cvchar( moving points? ) shift:%d\n", ( event->u.chr.state & (ksm_shift) ));
+	    FE_adjustBCPByDeltaData d;
+	    memset( &d, 0, sizeof(FE_adjustBCPByDeltaData));
+	    visitSelectedControlPointsVisitor func = FE_adjustBCPByDelta;
+	    if ( event->u.chr.state & ksm_meta )
+	    {
+		// move the bcp 1 unit in the direction it already has
+		func = FE_adjustBCPByDeltaWhilePreservingBCPAngle;
+		// allow that func to work it's magic on any gradient
+		d.keyboarddx = 1;
+	    }
+	    /* if ( event->u.chr.state & (ksm_shift) ) */
+	    /* 	dx -= dy*tan((cv->b.sc->parent->italicangle)*(3.1415926535897932/180) ); */
+	    if ( event->u.chr.state & (ksm_shift) )
+	    {
 		dx *= arrowAccelFactor; dy *= arrowAccelFactor;
 	    }
-	    if ( event->u.chr.state & (ksm_shift) )
-		dx -= dy*tan((cv->b.sc->parent->italicangle)*(3.1415926535897932/180) );
-
+	    
 	    if ((  cv->p.sp!=NULL || cv->lastselpt!=NULL ) &&
 		    (cv->p.nextcp || cv->p.prevcp) )
 	    {
 		// This code moves 1 or more BCP
 
 		SplinePoint *old = cv->p.sp;
-		FE_adjustBCPByDeltaData d;
 		d.cv = cv;
 		d.dx = dx * arrowAmount;
 		d.dy = dy * arrowAmount;
 		CVFindAndVisitSelectedControlPoints( cv, true,
-						     FE_adjustBCPByDelta, &d );
+						     func, &d );
 		cv->p.sp = old;
 		SCUpdateAll(cv->b.sc);
 
