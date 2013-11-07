@@ -57,8 +57,6 @@ extern int _GScrollBar_Width;
 
 extern void UndoesFreeButRetainFirstN( Undoes** undopp, int retainAmount );
 
-int additionalCharsToShowOnRightLimit = 20;
-int additionalCharsToShowOnLeftLimit  = 20;
 int additionalCharsToShowLimit = 50;
 
 int ItalicConstrained=true;
@@ -2810,7 +2808,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		int i = 1;
 		int originalxoff = cv->xoff;
 		int offset = cv->scale * cv->b.sc->width;
-		for( i=ridx; i < additionalCharsToShowOnRightLimit; i++ )
+		for( i=ridx; i < additionalCharsToShowLimit; i++ )
 		{
 //		    printf("expose(right) loop:%d\n", i );
 		    SplineChar* xc = cv->additionalCharsToShow[i];
@@ -2926,10 +2924,7 @@ static void SC_UpdateAll(SplineChar *sc) {
     FontView *fv;
 
     for ( cv=(CharView *) (sc->views); cv!=NULL; cv=(CharView *) (cv->b.next) )
-    {
-	printf("sc_updateall() sc->views:%p\n", sc->views );
 	GDrawRequestExpose(cv->v,NULL,false);
-    }
     for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next )
 	SCUpdateAll(dlist->sc);
     if ( sc->parent!=NULL ) {
@@ -3387,8 +3382,6 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
 
     if ( old_layer>=sc->layer_cnt )
 	old_layer = ly_fore;		/* Can happen in type3 fonts where each glyph has a different layer cnt */
-
-    memset( cv->additionalCharsToShowOnRight, 0, sizeof(SplineChar*) * additionalCharsToShowOnRightLimit );
 
     memset( cv->additionalCharsToShow, 0, sizeof(SplineChar*) * additionalCharsToShowLimit );
     cv->additionalCharsToShowActiveIndex = 0;
@@ -4421,48 +4414,8 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
     cv->b.next = sc->views;
     sc->views = &cv->b;
 
-    
-
 //    if ( CVClearSel(cv))
 //	SCUpdateAll(cv->b.sc);
-    
-    
-    
-    /* memset( cv->additionalCharsToShowOnLeft, 0, sizeof(SplineChar*) * additionalCharsToShowOnLeftLimit ); */
-    /* int ridx = idx; */
-    /* for( i=0; i < (additionalCharsToShowOnLeftLimit-idx); i++ ) */
-    /* { */
-    /* 	if( !cv->additionalCharsToShowOnRight[ridx-i] ) */
-    /* 	    break; */
-    /* 	printf("CVSwitchActiveSC() LEFT ridx-i:%d char:%s\n", ridx-i, cv->additionalCharsToShowOnRight[ridx-i]->name ); */
-    /* 	cv->additionalCharsToShowOnLeft[i] = cv->additionalCharsToShowOnRight[ridx-i]; */
-    /* } */
-    /* cv->additionalCharsToShowOnLeft[i] = oldsc; */
-    /* printf("CVSwitchActiveSC() LEFT oldsc to:%d\n", i ); */
-    
-
-    
-    /* for( i=0; i < (additionalCharsToShowOnRightLimit-idx); i++ ) */
-    /* { */
-    /* 	if( !cv->additionalCharsToShowOnRight[idx+i] ) */
-    /* 	    break; */
-    /* 	cv->additionalCharsToShowOnRight[i] = cv->additionalCharsToShowOnRight[idx+i+1]; */
-    /* } */
-    /* printf("CVSwitchActiveSC() end:%d\n", i ); */
-    /* memset( &cv->additionalCharsToShowOnRight[i], 0, sizeof(SplineChar*) ); */
-    
-    
-//    memset( cv->additionalCharsToShowOnRight, 0, sizeof(SplineChar*) * additionalCharsToShowOnRightLimit );
-
-    /* for( i=0; i < additionalCharsToShowOnRightLimit; i++ ) */
-    /* 	if( cv->additionalCharsToShowOnLeft[i] ) */
-    /* 	    printf("CVSwitchActiveSC(e) LEFT i:%d char:%s\n", i, cv->additionalCharsToShowOnRight[i] */
-    /* 		   ? cv->additionalCharsToShowOnLeft[i]->name : "N/A" ); */
-    
-    /* for( i=0; i < additionalCharsToShowOnRightLimit; i++ ) */
-    /* 	if( cv->additionalCharsToShowOnRight[i] ) */
-    /* 	    printf("CVSwitchActiveSC(e) RIGHT i:%d char:%s\n", i, cv->additionalCharsToShowOnRight[i] */
-    /* 		   ? cv->additionalCharsToShowOnRight[i]->name : "N/A" ); */
     
 }
 
@@ -4550,8 +4503,6 @@ return;
 	    
 	if( !cv->p.anysel && cv->b.drawmode != dm_grid )
 	{
-	    printf("cvmousedown no sel\n" );
-	    
 	    int i=0;
 	    FindSel fsadjusted = fs;
 	    fsadjusted.c_xl -= 2*fsadjusted.fudge;
@@ -4561,9 +4512,6 @@ return;
 	    SplineChar* xc = 0;
 	    int xcidx = -1;
 	    
-    /* SplineChar* additionalCharsToShow [51]; //<  additionalCharsToShowLimit + 1 in size */
-    /* int additionalCharsToShowActiveIndex; */
-
 	    {
 		int offset = cv->b.sc->width;
 //	        printf("first offset:%d original cx:%f \n", offset, fsadjusted.p->cx );
@@ -5456,7 +5404,6 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 	if ( cv->inactive )
 	    (cv->b.container->funcs->activateMe)(cv->b.container,&cv->b);
 	CVMouseDown(cv,event);
-	printf("et_mousedown(1 end)\n");
       break;
       case et_mousemove:
 	if ( cv->p.pressed || cv->spacebar_hold)
@@ -5465,7 +5412,6 @@ return( GGadgetDispatchEvent(cv->vsb,event));
       break;
       case et_mouseup:
 	CVMouseUp(cv,event);
-	printf("et_mouseup(1 end)\n");
       break;
       case et_char:
 	if ( cv->b.container!=NULL )
@@ -12337,8 +12283,6 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	    
 	}
 	
-	memset( cv->additionalCharsToShowOnRight, 0, sizeof(SplineChar*) * additionalCharsToShowOnRightLimit );
-
 	memset( cv->additionalCharsToShow, 0, sizeof(SplineChar*) * additionalCharsToShowLimit );
 	cv->additionalCharsToShowActiveIndex = 0;
 	cv->additionalCharsToShow[0] = cv->b.sc;
@@ -12371,7 +12315,6 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 		}
 		
 		cv->additionalCharsToShow[i] = SFGetOrMakeCharFromUnicodeBasic( sf, ch );
-//		cv->additionalCharsToShowOnRight[i-1] = SFGetOrMakeCharFromUnicodeBasic( sf, ch );
 
 		i++;
 		if( i >= additionalCharsToShowLimit )

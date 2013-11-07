@@ -293,7 +293,6 @@ typedef struct charview {
     struct dlistnode* pointInfoDialogs;
     GGadget* charselector; //< let the user type in more than one char to view at once.
     int charselectoridx;
-    SplineChar* additionalCharsToShowOnRight[21]; //< additionalCharsToShowOnRightLimit + 1 in size
     SplineChar* additionalCharsToShow [51]; //<  additionalCharsToShowLimit + 1 in size
     int additionalCharsToShowActiveIndex;
 
