@@ -140,6 +140,7 @@ enum { charviewtab_charselectedsz = 1024 };
 typedef struct charviewtab
 {
     char charselected[ charviewtab_charselectedsz + 1 ];
+    char tablabeltxt[ charviewtab_charselectedsz + 1 ];
 } CharViewTab;
 
 enum { charview_cvtabssz = 100 };
@@ -292,7 +293,8 @@ typedef struct charview {
     struct dlistnode* pointInfoDialogs;
     GGadget* charselector; //< let the user type in more than one char to view at once.
     int charselectoridx;
-    SplineChar* additionalCharsToShowOnRight[21]; //< additionalCharsToShowOnRightLimit + 1 in size
+    SplineChar* additionalCharsToShow [51]; //<  additionalCharsToShowLimit + 1 in size
+    int additionalCharsToShowActiveIndex;
 
     CharViewTab cvtabs[ charview_cvtabssz+1 ];
     int oldtabnum;

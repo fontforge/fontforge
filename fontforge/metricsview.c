@@ -5620,3 +5620,4 @@ void MVSelectFirstKerningTable(struct metricsview *mv)
     GDrawRequestExpose(mv->v,NULL,false);
 }
 
+
