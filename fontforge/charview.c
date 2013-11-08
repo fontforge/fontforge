@@ -705,7 +705,7 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
     int x, y, cx, cy;
     Color col = sp==spl->first ? firstpointcol : pointcol, subcol;
     int pnum;
-    char buf[12];
+    char buf[16];
     int isfake;
 
     if ( DrawOpenPathsWithHighlight
@@ -813,7 +813,10 @@ return;
 	    if ( cv->showpointnumbers || cv->show_ft_results || cv->dv ) {
 		pnum = sp->nextcpindex;
 		if ( pnum!=0xffff && pnum!=0xfffe ) {
-		    sprintf( buf,"%d", pnum );
+                    if (cv->showpointnumbers == 2)
+                        sprintf( buf, "(%d,%d)", (int)(sp->me.x), (int)(sp->me.y) );
+                    else
+		        sprintf( buf,"%d", pnum );
 		    GDrawDrawText8(pixmap,cx,cy-6,buf,-1,nextcpcol);
 		}
 	    }
@@ -946,9 +949,10 @@ return;
     {
 	if ( sp->ttfindex==0xfffe )
 	    strcpy(buf,"??");
-	else {
+        else if (cv->showpointnumbers == 2)
+            sprintf( buf, "(%d,%d)", (int)(sp->nextcp.x), (int)(sp->nextcp.y) );
+	else
 	    sprintf( buf,"%d", sp->ttfindex );
-	}
 	GDrawDrawText8(pixmap,x,y-6,buf,-1,col);
     }
     if ( truetype_markup && sp->roundx ) {
@@ -5829,6 +5833,7 @@ return( true );
 #define MID_MMAll	2821
 #define MID_MMNone	2822
 
+#define MID_PtsPos      2823
 
 #define MID_Warnings	3000
 
@@ -6145,19 +6150,22 @@ static void CVMenuNumberPoints(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(
 
     switch ( mi->mid ) {
       case MID_PtsNone:
-	cv->showpointnumbers = false;
+	cv->showpointnumbers = 0;
       break;
       case MID_PtsTrue:
-	cv->showpointnumbers = true;
+	cv->showpointnumbers = 1;
 	CVCheckPoints(cv);
       break;
       case MID_PtsPost:
-	cv->showpointnumbers = true;
+	cv->showpointnumbers = 1;
 	cv->b.sc->numberpointsbackards = true;
       break;
       case MID_PtsSVG:
-	cv->showpointnumbers = true;
+	cv->showpointnumbers = 1;
 	cv->b.sc->numberpointsbackards = false;
+      break;
+      case MID_PtsPos:
+        cv->showpointnumbers = 2;
       break;
     }
     SCNumberPoints(cv->b.sc,CVLayer((CharViewBase *) cv));
@@ -10374,7 +10382,7 @@ static void cv_nplistcheck(CharView *cv, struct gmenuitem *mi) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_PtsNone:
-	    mi->ti.checked = !cv->showpointnumbers;
+	    mi->ti.checked = (cv->showpointnumbers == 0);
 	  break;
 	  case MID_PtsTrue:
 	    mi->ti.disabled = !order2;
@@ -10388,6 +10396,8 @@ static void cv_nplistcheck(CharView *cv, struct gmenuitem *mi) {
 	    mi->ti.disabled = order2;
 	    mi->ti.checked = cv->showpointnumbers && !order2 && !sc->numberpointsbackards;
 	  break;
+          case MID_PtsPos:
+            mi->ti.checked = (cv->showpointnumbers == 2);
 	}
     }
 }
@@ -11203,6 +11213,7 @@ static GMenuItem2 nplist[] = {
     { { (unichar_t *) N_("_TrueType"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'A' }, H_("TrueType|No Shortcut"), NULL, NULL, CVMenuNumberPoints, MID_PtsTrue },
     { { (unichar_t *) NU_("_PostScript®"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("PostScript|No Shortcut"), NULL, NULL, CVMenuNumberPoints, MID_PtsPost },
     { { (unichar_t *) N_("_SVG"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("SVG|No Shortcut"), NULL, NULL, CVMenuNumberPoints, MID_PtsSVG },
+    { { (unichar_t *) N_("P_ositions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("Positions|No Shortcut"), NULL, NULL, CVMenuNumberPoints, MID_PtsPos },
     GMENUITEM2_EMPTY
 };
 
