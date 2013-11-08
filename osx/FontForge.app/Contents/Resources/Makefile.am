@@ -27,7 +27,9 @@
 include $(top_srcdir)/mk/layout.am
 
 SUBDIRS = English.lproj
-FFAPP_FILES = *.icns
+FFAPP_FILES = buttonFF.icns fontforge_backup.icns fontforge_dfont.icns FontForge.icns \
+                fontforge_otf.icns fontforge_ps3.icns fontforge_ps.icns fontforge_sfd.icns \
+                fontforge_ttf.icns
 ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/Resources
 
 ffapp_DATA = $(FFAPP_FILES)

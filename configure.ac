@@ -38,7 +38,7 @@ AC_CONFIG_TESTDIR([tests],[fontforge])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CONFIG_HEADER([inc/fontforge-config.h])
-AM_INIT_AUTOMAKE([foreign -Wall subdir-objects])
+AM_INIT_AUTOMAKE([foreign -Wall subdir-objects tar-pax])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 

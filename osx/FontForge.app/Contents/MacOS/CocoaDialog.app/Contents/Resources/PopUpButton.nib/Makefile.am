@@ -26,7 +26,7 @@
 
 include $(top_srcdir)/mk/layout.am
 
-FFAPP_FILES = *nib
+FFAPP_FILES = $(wildcard *.nib)
 ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/PopUpButton.nib
 
 ffapp_DATA = $(FFAPP_FILES)

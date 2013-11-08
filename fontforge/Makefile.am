@@ -45,9 +45,10 @@ lib_LTLIBRARIES = libfontforge.la libfontforgeexe.la
 
 #--------------------------------------------------------------------------
 
+if MACINTOSH
 macobjective.o: macobjective.m
 	clang -g -arch x86_64 -arch i386 -c "${srcdir}/macobjective.m" -o macobjective.o
-
+endif MACINTOSH
 
 #--------------------------------------------------------------------------
 
@@ -162,10 +163,8 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	        \
 	splashimage.c startui.c statemachine.c tilepath.c transform.c	        \
 	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
-	usermenu.c macobjective.h                                               \
-        collabclientui.c collabclientui.h                                       \
-	sfundo.c sfundo.h                                                       \
-	wordlistparser.c wordlistparser.h
+	usermenu.c collabclientui.c collabclientui.h                    \
+	sfundo.c sfundo.h wordlistparser.c wordlistparser.h
 
 else !GRAPHICAL_USER_INTERFACE
 
@@ -176,6 +175,7 @@ endif !GRAPHICAL_USER_INTERFACE
 nodist_libfontforgeexe_la_SOURCES = exelibstamp.c
 
 if MACINTOSH
+libfontforgeexe_la_SOURCES += macobjective.h
 MACFFEXE_LIBADD=macobjective.o
 endif MACINTOSH
 
@@ -220,8 +220,12 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 #--------------------------------------------------------------------------
 
 EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe libstamp.pre	\
-	exelibstamp.pre fontimage.1 fontlint.1 sfddiff.1			\
-	MacFontForgeApp.zip darwinsetup.in macobjective.m
+	exelibstamp.pre fontimage.1 fontlint.1 sfddiff.1
+
+if MACINTOSH
+EXTRA_DIST += MacFontForgeApp.zip darwinsetup.in macobjective.m
+endif MACINTOSH
+
 MOSTLYCLEANFILES = fontimage fontlint sfddiff libstamp.c	\
 	exelibstamp.c
 
