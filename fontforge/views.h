@@ -166,7 +166,7 @@ typedef struct charview {
     unsigned int showblues:1;	/* 16 */
     unsigned int showfamilyblues:1;
     unsigned int showanchor:1;
-    unsigned int showpointnumbers:1;
+    unsigned int showpointnumbers:2;
     unsigned int markextrema:1;
     unsigned int markpoi:1;
     unsigned int needsrasterize:1;		/* Rasterization (of fill or fontview) needed on mouse up */
@@ -179,8 +179,8 @@ typedef struct charview {
     unsigned int vwidthsel:1;
     unsigned int icsel:1;
     unsigned int tah_sel:1;
-    unsigned int inactive:1;			/* When in a search view */
-    unsigned int show_ft_results: 1;	/* 32 */
+    unsigned int inactive:1;			/* When in a search view (32) */
+    unsigned int show_ft_results: 1;
     unsigned int show_ft_results_live_update : 1;
     unsigned int coderange: 2;			/* For the debugger */
     unsigned int autonomous_ruler_w: 1;
