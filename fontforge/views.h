@@ -177,6 +177,7 @@ typedef struct charview {
     unsigned int joinvalid:1;
     unsigned int widthsel:1;
     unsigned int vwidthsel:1;
+    unsigned int lbearingsel:1;
     unsigned int icsel:1;
     unsigned int tah_sel:1;
     unsigned int inactive:1;			/* When in a search view */
@@ -268,6 +269,7 @@ typedef struct charview {
     struct jamodisplay *jamodisplay;
 #endif
     real oldwidth, oldvwidth;
+    real oldlbearing;
     int16 oldic, oldtah;
 #if _ModKeysAutoRepeat
     GTimer *autorpt;
