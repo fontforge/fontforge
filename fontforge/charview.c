@@ -5197,10 +5197,11 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 
     if ( cv->active_tool == cvt_pointer )
     {
-	FindSel fs;
-	SetFS(&fs,&cv->p,cv,event);
-	_CVTestSelectFromEvent(cv,&fs);
-	fs.p = &cv->p;
+	// If this is active code it messes with keyboard input changing BCP
+//	FindSel fs;
+//	SetFS(&fs,&cv->p,cv,event);
+//	_CVTestSelectFromEvent(cv,&fs);
+//	fs.p = &cv->p;
 	
 	
 	
@@ -7564,6 +7565,8 @@ return;
 	    event->u.chr.keysym == GK_KP_Right ||
 	    event->u.chr.keysym == GK_KP_Down )
     {
+//	printf("key left/right/up/down...\n");
+	
 	GGadget *active = GWindowGetFocusGadgetOfWindow(cv->gw);
 	if( active == cv->charselector )
 	{
@@ -7604,7 +7607,7 @@ return;
 	}
 	else
 	{
-	    printf("cvchar( moving points? ) shift:%d\n", ( event->u.chr.state & (ksm_shift) ));
+//	    printf("cvchar( moving points? ) shift:%d\n", ( event->u.chr.state & (ksm_shift) ));
 	    FE_adjustBCPByDeltaData d;
 	    memset( &d, 0, sizeof(FE_adjustBCPByDeltaData));
 	    visitSelectedControlPointsVisitor func = FE_adjustBCPByDelta;
@@ -7621,7 +7624,7 @@ return;
 	    {
 		dx *= arrowAccelFactor; dy *= arrowAccelFactor;
 	    }
-	    
+
 	    if ((  cv->p.sp!=NULL || cv->lastselpt!=NULL ) &&
 		    (cv->p.nextcp || cv->p.prevcp) )
 	    {
