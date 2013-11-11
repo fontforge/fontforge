@@ -3639,7 +3639,7 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 
     cv->activeModifierControl &= ~( event->u.chr.keysym == GK_Control_L || event->u.chr.keysym == GK_Control_R );
     cv->activeModifierAlt     &= ~( event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R
-				    || event->u.chr.keysym == GK_Meta_L || event->u.chr.keysym == GK_Meta_R );
+				    || event->u.chr.keysym == XK_Mode_switch );
 
     
     
@@ -7467,7 +7467,8 @@ void CVChar(CharView *cv, GEvent *event ) {
     int oldactiveModifierAlt = cv->activeModifierAlt;
     cv->activeModifierControl |= ( event->u.chr.keysym == GK_Control_L || event->u.chr.keysym == GK_Control_R );
     cv->activeModifierAlt     |= ( event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R
-				   || event->u.chr.keysym == GK_Meta_L || event->u.chr.keysym == GK_Meta_R );
+				   || event->u.chr.keysym == XK_Mode_switch );
+
     if( oldactiveModifierControl != cv->activeModifierControl
 	|| oldactiveModifierAlt != cv->activeModifierAlt )
     {
