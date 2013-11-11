@@ -15,8 +15,8 @@ if ( ! -d "/Applications/FontForge.app/Contents/Resources/opt/local/var/cache/fo
 } 
 my $fcproc = IO::File->new("$dirname/fc/fc-cache $forcecache  -v|");
 
-my $bodypreamble = "This takes time the first time..";
-my $args = '--title "FontForge is scanning for fonts..." --text "This takes time the first time.."';
+my $bodypreamble = "This setup is only run once...";
+my $args = '--title "FontForge is scanning for fonts" --text "This setup is only run once..."';
 my $fh;
 
 my $msg = 1;
@@ -44,7 +44,7 @@ while( <$fcproc> ) {
     $msg = $msg + 1;
 }
 
-print "COMPLETE!\n\n";
+print "Done!\n\n";
 if(defined($fh)) { $fh->close(); }
 $fcproc->close();
 
