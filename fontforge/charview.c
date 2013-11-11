@@ -3637,11 +3637,20 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 	update_spacebar_hand_tool(cv);
     }
 
+    int oldactiveModifierControl = cv->activeModifierControl;
+    int oldactiveModifierAlt = cv->activeModifierAlt;
     cv->activeModifierControl &= ~( event->u.chr.keysym == GK_Control_L || event->u.chr.keysym == GK_Control_R );
     cv->activeModifierAlt     &= ~( event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R
 				    || event->u.chr.keysym == XK_Mode_switch );
+    // helps with keys on the mac
+    if( (event->u.chr.state&ksm_meta) )
+        cv->activeModifierAlt = 0;
+    if( oldactiveModifierControl != cv->activeModifierControl
+	|| oldactiveModifierAlt != cv->activeModifierAlt )
+    {
+	CVInfoDraw(cv,cv->gw);
+    }
 
-    
     
 
 //    printf("CVCharUp() ag:%d key:%d\n", cv_auto_goto, event->u.chr.keysym );
@@ -4454,12 +4463,12 @@ return;
 	SetFS(&fs,&cv->p,cv,event);
 	int found = InSplineSet( &fs, cv->b.layerheads[cv->b.drawmode]->splines,
 				 cv->b.sc->inspiro && hasspiro());
-	printf("in spline set:%d\n", found );
+	printf("in spline set:%d cv->p.sp:%p\n", found, cv->p.sp );
 
 	//
 	// Only overwrite to create a point if the user has clicked a spline.
 	//
-	if( found )
+	if( found && !cv->p.sp )
 	    override_showing_tool = cvt_curve;
     }
     
