@@ -135,6 +135,7 @@ static Color selectedcpcol = 0xffffff;
 static Color coordcol = 0x808080;
 Color widthcol = 0x000000;
 static Color widthselcol = 0x00ff00;
+static Color lbearingselcol = 0x00ff00;
 static Color widthgridfitcol = 0x009800;
 static Color lcaretcol = 0x909040;
 static Color rastercol = 0xffa0a0a0;		/* Translucent */
@@ -182,6 +183,7 @@ static Color DraggingComparisonAlphaChannelOverride = 0x88000000;
 
 static void isAnyControlPointSelectedVisitor(SplinePoint* splfirst, Spline* spline, void* udata );
 static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e );
+static void CVHScrollSetPos( CharView *cv, int newpos );
 
 
 static int cvcolsinited = false;
@@ -218,6 +220,7 @@ static struct resed charview_re[] = {
 static struct resed charview2_re[] = {
     { N_("Width Color"), "WidthColor", rt_color, &widthcol, N_("The color of the line marking the advance width"), NULL, { 0 }, 0, 0 },
     { N_("Selected Width Color"), "WidthSelColor", rt_color, &widthselcol, N_("The color of the line marking the advance width when it is selected"), NULL, { 0 }, 0, 0 },
+    { N_("Selected LBearing Color"), "LBearingSelColor", rt_color, &lbearingselcol, N_("The color of the line marking the left bearing when it is selected"), NULL, { 0 }, 0, 0 },
     { N_("Grid Fit Width Color"), "GridFitWidthColor", rt_color, &widthgridfitcol, N_("The color of the line marking the grid-fit advance width"), NULL, { 0 }, 0, 0 },
     { N_("Ligature Caret Color"), "LigatureCaretColor", rt_color, &lcaretcol, N_("The color of the line(s) marking ligature carets"), NULL, { 0 }, 0, 0 },
     { N_("Anchor Color"), "AnchorColor", rt_color, &anchorcol, N_("The color of anchor stars"), NULL, { 0 }, 0, 0 },
@@ -2662,7 +2665,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		    cv->showpoints && cv->b.drawmode==dm_grid,&clip);
 	}
 	if ( cv->showhmetrics ) {
-	    DrawVLine(cv,pixmap,0,coordcol,false,NULL,NULL);
+	    Color lbcolor = (!cv->inactive && cv->lbearingsel) ? lbearingselcol : coordcol;
+	    DrawVLine(cv,pixmap,0,lbcolor,false,NULL,NULL);
 	    DrawLine(cv,pixmap,-8096,0,8096,0,coordcol);
 	    DrawLine(cv,pixmap,-8096,sf->ascent,8096,sf->ascent,coordcol);
 	    DrawLine(cv,pixmap,-8096,-sf->descent,8096,-sf->descent,coordcol);
@@ -4076,6 +4080,17 @@ return( true );
 return( fs->p->anysel );
 }
 
+static int16 MouseToCX( CharView *cv, int16 mx )
+{
+    return( mx - cv->xoff ) / cv->scale;
+}
+static int16 MouseToCY( CharView *cv, int16 my )
+{
+    return( my - cv->yoff ) / cv->scale;
+}
+
+
+    
 static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
     extern int snaptoint;
 
@@ -4390,6 +4405,38 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
 	if( cv->additionalCharsToShow[i] )
 	    printf("CVSwitchActiveSC(b) toshow.. i:%d char:%s\n", i, cv->additionalCharsToShow[i]
 		   ? cv->additionalCharsToShow[i]->name : "N/A" );
+
+
+    //
+    // Work out how far we should scroll the panel to keep
+    // the display from jumping around. First look right then
+    // check left.
+    int scroll_offset = 0;
+    if( idx > cv->additionalCharsToShowActiveIndex )
+    {
+	SplineChar* xc = 0;
+	int i = 0;
+	scroll_offset = cv->b.sc->width;
+	int ridx = cv->additionalCharsToShowActiveIndex+1;
+	for( i=ridx; i < idx; i++ )
+	{
+	    if((xc = cv->additionalCharsToShow[i]))
+		scroll_offset += xc->width;
+	}
+    }
+    if( idx < cv->additionalCharsToShowActiveIndex )
+    {
+	SplineChar* xc = 0;
+	int i = 0;
+	scroll_offset = 0;
+	int ridx = cv->additionalCharsToShowActiveIndex-1;
+	for( i=ridx; i >= idx; i-- )
+	{
+	    if((xc = cv->additionalCharsToShow[i]))
+		scroll_offset -= xc->width;
+	}
+    }
+    
     
 
 
@@ -4423,6 +4470,12 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
     cv->b.next = sc->views;
     sc->views = &cv->b;
 
+    // Move the scrollbar so that it appears the selection
+    // box has moved rather than all the characters.
+    if( scroll_offset )
+	CVHScrollSetPos( cv, cv->xoff + scroll_offset * cv->scale );
+    
+    
 //    if ( CVClearSel(cv))
 //	SCUpdateAll(cv->b.sc);
     
@@ -5204,16 +5257,18 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	cv->p.rubberlining = false;
     }
 
-    if ( cv->active_tool == cvt_pointer )
+    // This is needed to allow characters to the left of the
+    // active one to be picked with the mouse,
+    // but outright it does mess with keyboard input changing BCP
+    // so we only do it for mouse up to the left of the left side
+    // bearing, because that click can not currently activate any BCP
+    if ( cv->active_tool == cvt_pointer &&
+	 MouseToCX( cv, event->u.mouse.x ) < -2 )
     {
-	// If this is active code it messes with keyboard input changing BCP
-//	FindSel fs;
-//	SetFS(&fs,&cv->p,cv,event);
-//	_CVTestSelectFromEvent(cv,&fs);
-//	fs.p = &cv->p;
-	
-	
-	
+	FindSel fs;
+	SetFS(&fs,&cv->p,cv,event);
+	_CVTestSelectFromEvent(cv,&fs);
+	fs.p = &cv->p;
     }
     
     
@@ -5663,6 +5718,37 @@ return;
     }
 }
 
+static void CVHScrollSetPos( CharView *cv, int newpos )
+{
+    printf("CVHScrollSetPos(1) cvxoff:%d newpos:%d\n", cv->xoff, newpos );
+    if ( newpos<-(32000*cv->scale-cv->width) )
+        newpos = -(32000*cv->scale-cv->width);
+    if ( newpos>8000*cv->scale ) newpos = 8000*cv->scale;
+    printf("CVHScrollSetPos(2) cvxoff:%d newpos:%d\n", cv->xoff, newpos );
+    if ( newpos!=cv->xoff ) {
+	int diff = newpos-cv->xoff;
+	cv->xoff = newpos;
+	cv->back_img_out_of_date = true;
+	GScrollBarSetPos(cv->hsb,-newpos);
+	GDrawScroll(cv->v,NULL,diff,0);
+	if (( cv->showhhints && cv->b.sc->hstem!=NULL ) || cv->showblues || cv->showvmetrics ) {
+	    GRect r;
+	    r.y = 0; r.height = cv->height;
+	    r.width = 6*cv->sfh+10;
+	    if ( diff>0 )
+		r.x = cv->width-r.width;
+	    else
+		r.x = cv->width+diff-r.width;
+	    GDrawRequestExpose(cv->v,&r,false);
+	}
+	if ( cv->showrulers ) {
+	    GRect r;
+	    r.y = cv->infoh+cv->mbh+cv->charselectorh; r.height = cv->rulerh; r.x = 0; r.width = cv->rulerh+cv->width;
+	    GDrawRequestExpose(cv->gw,&r,false);
+	}
+    }
+}
+
 static void CVHScroll(CharView *cv, struct sbevent *sb) {
     int newpos = cv->xoff;
 
@@ -5696,31 +5782,8 @@ static void CVHScroll(CharView *cv, struct sbevent *sb) {
         newpos -= cv->width/30;
       break;
     }
-    if ( newpos<-(32000*cv->scale-cv->width) )
-        newpos = -(32000*cv->scale-cv->width);
-    if ( newpos>8000*cv->scale ) newpos = 8000*cv->scale;
-    if ( newpos!=cv->xoff ) {
-	int diff = newpos-cv->xoff;
-	cv->xoff = newpos;
-	cv->back_img_out_of_date = true;
-	GScrollBarSetPos(cv->hsb,-newpos);
-	GDrawScroll(cv->v,NULL,diff,0);
-	if (( cv->showhhints && cv->b.sc->hstem!=NULL ) || cv->showblues || cv->showvmetrics ) {
-	    GRect r;
-	    r.y = 0; r.height = cv->height;
-	    r.width = 6*cv->sfh+10;
-	    if ( diff>0 )
-		r.x = cv->width-r.width;
-	    else
-		r.x = cv->width+diff-r.width;
-	    GDrawRequestExpose(cv->v,&r,false);
-	}
-	if ( cv->showrulers ) {
-	    GRect r;
-	    r.y = cv->infoh+cv->mbh+cv->charselectorh; r.height = cv->rulerh; r.x = 0; r.width = cv->rulerh+cv->width;
-	    GDrawRequestExpose(cv->gw,&r,false);
-	}
-    }
+
+    CVHScrollSetPos( cv, newpos );
 }
 
 static void CVVScroll(CharView *cv, struct sbevent *sb) {
