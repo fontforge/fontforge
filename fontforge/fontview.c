@@ -5930,8 +5930,8 @@ static void FVMenuStartWebFontServer(GWindow gw, struct gmenuitem *UNUSED(mi), G
 static int kill( int pid, int sig )
 {
     HANDLE hHandle;
-    hHandle = ::OpenProcess( PROCESS_ALL_ACCESS, 0, pid );
-    ::TerminateProcess(hHandle, 0);
+    hHandle = OpenProcess( PROCESS_ALL_ACCESS, 0, pid );
+    TerminateProcess( hHandle, 0 );
 }
 #endif
 
