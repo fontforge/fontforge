@@ -5923,6 +5923,18 @@ static void FVMenuStartWebFontServer(GWindow gw, struct gmenuitem *UNUSED(mi), G
     
 }
 
+#if defined(__MINGW32__)||defined(__CYGWIN__)
+//
+// This is an imperfect implemenation of kill() for windows.
+//
+static int kill( int pid, int sig )
+{
+    HANDLE hHandle;
+    hHandle = ::OpenProcess( PROCESS_ALL_ACCESS, 0, pid );
+    ::TerminateProcess(hHandle, 0);
+}
+#endif
+
 static void FVStopWebFontServer( FontView *fv )
 {
     printf("stop %d\n", fv->pid_webfontserver );
