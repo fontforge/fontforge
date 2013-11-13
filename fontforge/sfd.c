@@ -8276,22 +8276,27 @@ exit(1);
 		    else
 			an->type = act_mark;
 		} else {
-		    switch ( an->subtable->lookup->lookup_type ) {
-		      case gpos_cursive:
-			an->type = act_curs;
-		      break;
-		      case gpos_mark2base:
-			an->type = act_mark;
-		      break;
-		      case gpos_mark2ligature:
-			an->type = act_mklg;
-		      break;
-		      case gpos_mark2mark:
-			an->type = act_mkmk;
-		      break;
-		      default:
-			an->type = act_mark;
-		      break;
+		    an->type = act_mark;
+		    if( an->subtable && an->subtable->lookup )
+		    {
+			switch ( an->subtable->lookup->lookup_type )
+			{
+			case gpos_cursive:
+			    an->type = act_curs;
+			    break;
+			case gpos_mark2base:
+			    an->type = act_mark;
+			    break;
+			case gpos_mark2ligature:
+			    an->type = act_mklg;
+			    break;
+			case gpos_mark2mark:
+			    an->type = act_mkmk;
+			    break;
+			default:
+			    an->type = act_mark;
+			    break;
+			}
 		    }
 		}
 		if ( lastan==NULL )
