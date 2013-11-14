@@ -24004,7 +24004,7 @@ msgstr ""
 #: ../fontforge/noprefs.c:247
 #: ../fontforge/prefs.c:334
 #: ../fontforge/prefs.c:2536
-msgid "Holding down the Alt (or Meta) key will speed up arrow key motion by this factor"
+msgid "Holding down the Shift key will speed up arrow key motion by this factor"
 msgstr ""
 
 #: ../fontforge/noprefs.c:248

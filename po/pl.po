@@ -22918,8 +22918,8 @@ msgid "ArrowAccelFactor"
 msgstr "Przyspieszenie kursora"
 
 #: ../fontforge/noprefs.c:251 ../fontforge/prefs.c:346 ../fontforge/prefs.c:2690
-msgid "Holding down the Alt (or Meta) key will speed up arrow key motion by this factor"
-msgstr "Ile razy przyspieszyć kursor, jeśli wciśnięty jest klawisz Alt (Meta)."
+msgid "Holding down the Shift key will speed up arrow key motion by this factor"
+msgstr "Ile razy przyspieszyć kursor, jeśli wciśnięty jest klawisz Shift."
 
 #: ../fontforge/noprefs.c:252 ../fontforge/prefs.c:349
 msgid "SnapDistance"

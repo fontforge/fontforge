@@ -22561,8 +22561,8 @@ msgstr "Tăng Tốc Mũi Tên"
 
 #: noprefs.c:247
 #: prefs.c:305
-msgid "Holding down the Alt (or Meta) key will speed up arrow key motion by this factor"
-msgstr "Ấn giữ phím Alt (hay Meta) thì tăng tốc sự chuyển động của phím mũi tên theo hệ số đã đặt"
+msgid "Holding down the Shift key will speed up arrow key motion by this factor"
+msgstr "Ấn giữ phím Shift thì tăng tốc sự chuyển động của phím mũi tên theo hệ số đã đặt"
 
 #: noprefs.c:248
 #: prefs.c:306

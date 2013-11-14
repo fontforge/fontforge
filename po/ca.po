@@ -23775,10 +23775,10 @@ msgstr "Acceleració dels cursors"
 
 #: noprefs.c:245
 #: prefs.c:311
-msgid "Holding down the Alt (or Meta) key will speed up arrow key motion by this factor"
+msgid "Holding down the Shift key will speed up arrow key motion by this factor"
 msgstr ""
 "Factor d'acceleració de les tecles de cursor\n"
-"en mantenir premuda la tecla «Alt» o «Meta»."
+"en mantenir premuda la tecla «Shift»."
 
 #: noprefs.c:246
 #: prefs.c:313
