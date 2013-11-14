@@ -181,7 +181,7 @@ static Color DraggingComparisonAlphaChannelOverride = 0x88000000;
 
 
 
-static void isAnyControlPointSelectedVisitor(SplinePoint* splfirst, Spline* spline, void* udata );
+static void isAnyControlPointSelectedVisitor(SplinePoint* splfirst, Spline* s, SplinePoint* sp, void* udata );
 static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e );
 static void CVHScrollSetPos( CharView *cv, int newpos );
 
@@ -4375,7 +4375,7 @@ static void CVMaybeCreateDraggingComparisonOutline( CharView* cv )
     for( ; spl; spl = spl->next )
     {
 	int anySel = 0;
-	SPLFirstVisit( spl->first, isAnyControlPointSelectedVisitor, &anySel );
+	SPLFirstVisitPoints( spl->first, isAnyControlPointSelectedVisitor, &anySel );
 	if( anySel || (cv->b.sc->inspiro && hasspiro()))
 	{
 	    cv->p.pretransform_spl = g_list_append( cv->p.pretransform_spl,
@@ -7203,24 +7203,24 @@ static void CVMenuChangeChar(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)
  * If the prev/next BCP is selected than add those to the hash table
  * at "ret".
  */
-static void getSelectedControlPointsVisitor(SplinePoint* splfirst, Spline* spline, void* udata )
+static void getSelectedControlPointsVisitor(SplinePoint* splfirst, Spline* s, SplinePoint* sp, void* udata )
 {
     GHashTable* ret = (GHashTable*)udata;
-    if( spline->to->nextcpselected )
-	g_hash_table_insert( ret, spline->to, 0 );
-    if( spline->to->prevcpselected )
-	g_hash_table_insert( ret, spline->to, 0 );
+    if( sp->nextcpselected )
+	g_hash_table_insert( ret, sp, 0 );
+    if( sp->prevcpselected )
+	g_hash_table_insert( ret, sp, 0 );
 }
-static void getAllControlPointsVisitor(SplinePoint* splfirst, Spline* spline, void* udata )
+static void getAllControlPointsVisitor(SplinePoint* splfirst, Spline* s, SplinePoint* sp, void* udata )
 {
     GHashTable* ret = (GHashTable*)udata;
-    g_hash_table_insert( ret, spline->to, 0 );
-    g_hash_table_insert( ret, spline->to, 0 );
+    g_hash_table_insert( ret, sp, 0 );
+    g_hash_table_insert( ret, sp, 0 );
 }
-static void isAnyControlPointSelectedVisitor(SplinePoint* splfirst, Spline* spline, void* udata )
+static void isAnyControlPointSelectedVisitor(SplinePoint* splfirst, Spline* s, SplinePoint* sp, void* udata )
 {
     int* ret = (int*)udata;
-    if( spline->to->selected )
+    if( sp->selected )
 	(*ret) = 1;
 }
 
@@ -7240,7 +7240,7 @@ static GHashTable* getSelectedControlPoints( CharView *cv, PressedOn *p )
     SplinePointList* spl = l->splines;
     for( ; spl; spl = spl->next )
     {
-	SPLFirstVisit( spl->first, getSelectedControlPointsVisitor, ret );
+	SPLFirstVisitPoints( spl->first, getSelectedControlPointsVisitor, ret );
     }
 
     return ret;
@@ -7255,7 +7255,7 @@ static GHashTable* getAllControlPoints( CharView *cv, PressedOn *p )
     SplinePointList* spl = l->splines;
     for( ; spl; spl = spl->next )
     {
-	SPLFirstVisit( spl->first, getAllControlPointsVisitor, ret );
+	SPLFirstVisitPoints( spl->first, getAllControlPointsVisitor, ret );
     }
     return ret;
 }
@@ -7489,7 +7489,7 @@ void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
     GHashTable* col = getSelectedControlPoints( cv, &cv->p );
     if(!col)
 	return;
-
+    
     SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
     if( g_hash_table_size( col ) )
     {
