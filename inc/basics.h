@@ -92,5 +92,7 @@ static inline int imax(int a, int b)
     return (a < b) ? b : a;
 }
 
+#define IS_IN_ORDER3( a, b, c )   ( ((a)<=(b)) && ((b)<=(c)) )
+
 #endif
 

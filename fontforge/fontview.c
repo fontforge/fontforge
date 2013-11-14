@@ -6983,6 +6983,7 @@ return;
 		break;
 	    if ( gid!=-1 ) {
 		CharView *cv = (CharView *) (sf->glyphs[gid]->views);
+		printf("calling CVChangeSC() sc:%p %s\n", sc, sc->name );
 		CVChangeSC(cv,sc);
 		GDrawSetVisible(cv->gw,true);
 		GDrawRaise(cv->gw);

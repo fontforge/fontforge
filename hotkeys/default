@@ -255,6 +255,8 @@ CharView.Menu.View.Zoom out:x
 CharView.Menu.View.Zoom in:Alt+Ctl+=
 CharView.Menu.View.Zoom in:=
 CharView.Menu.View.Zoom in:z
+CharView.Menu.View.Next Line in Word List:Ctl+.
+CharView.Menu.View.Previous Line in Word List:Ctl+,
 
 CharView.Menu.Metrics.Center in Width:No Shortcut
 CharView.Menu.Metrics.Thirds in Width:No Shortcut
