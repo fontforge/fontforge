@@ -1424,7 +1424,7 @@ int CVMouseMovePointer(CharView *cv, GEvent *event) {
     int needsupdate = false;
     int did_a_merge = false;
     int touch_control_points = false;
-    
+
     
     /* if we haven't moved from the original location (ever) then this is a noop */
     if ( !cv->p.rubberbanding && !cv->recentchange &&

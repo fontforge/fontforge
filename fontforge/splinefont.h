@@ -3373,9 +3373,9 @@ extern int SplinePointListContains( SplinePointList* container, SplinePointList*
 extern int SplinePointListContainsPoint( SplinePointList* container, SplinePoint* sp );
 
 /**
- * Visitor for SPLFirstVisit() 
+ * Visitor for SPLFirstVisitSplines() 
  */
-typedef void (*SPLFirstVisitor)( SplinePoint* splfirst, Spline* s, void* udata );
+typedef void (*SPLFirstVisitSplinesVisitor)( SplinePoint* splfirst, Spline* s, void* udata );
 
 /**
  * Visitor Function: print debug information about each spline
@@ -3423,7 +3423,19 @@ extern void SPLFirstVisitorDebugSelectionState(SplinePoint* splfirst, Spline* sp
  *           return 1;
  * 
  */
-extern void SPLFirstVisit( SplinePoint* splfirst, SPLFirstVisitor f, void* udata );
+extern void SPLFirstVisitSplines( SplinePoint* splfirst, SPLFirstVisitSplinesVisitor f, void* udata );
+
+/**
+ * Visitor for SPLFirstVisitPoints() 
+ */
+typedef void (*SPLFirstVisitPointsVisitor)( SplinePoint* splfirst, Spline* s, SplinePoint* sp, void* udata );
+
+/**
+ * Visit all the SplinePoints on the spline starting at splfirst.
+ */
+extern void SPLFirstVisitPoints( SplinePoint* splfirst, SPLFirstVisitPointsVisitor f, void* udata );
+
+
 
 /**
  * Applies a visitor to the container and returns false if no point in the SPL
