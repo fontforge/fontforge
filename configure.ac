@@ -454,9 +454,6 @@ AC_CONFIG_FILES([GNUmakefile])
 AC_CONFIG_FILES([fontforge/GNUmakefile])
 AC_CONFIG_FILES([po/GNUmakefile])
 
-# GNUmakefile snippets for use with "include".
-AC_CONFIG_FILES([mk/xgettext_search.mk])
-
 #--------------------------------------------------------------------------
 
 FONTFORGE_CREATE_PKGCONFIG_FILES
