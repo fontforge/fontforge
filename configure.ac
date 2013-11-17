@@ -327,21 +327,22 @@ fi
 AX_PTHREAD
 
 #--------------------------------------------------------------------------
-AC_LANG_PUSH([C]) dnl NOTE: try not to push/pop too often
-# Check to see if "this" compiler can use these flags and/or warnings.
+# Check to see if "this" compiler can use these flags, errors, or warnings.
 # Enable the flags that can be used and skip flags that are unknown.
-FONTFORGE_COMPILER_FLAGS([WARNING_CFLAGS],
-        [-Wunused -Wreturn-type
-         -Wparentheses -Wformat -Wchar-subscripts
-         -Wno-unused-but-set-variable -Wno-unused-result
-         -Wcast-align
-         -Werror=missing-prototypes
-         -Werror=pointer-arith
-         -Wclobbered
-         -Werror=implicit])
-# Sep2012, There's a bug in <py3 with Py_True/False that will propagate
-# with GCC's "strict-aliasing" rules. -Wstrict-aliasing
+AC_LANG_PUSH([C]) dnl NOTE: configure.ac - try not to push/pop too often
+AC_SUBST([WARNING_CFLAGS],[])
+FFW_FLAGS="-Wunused -Wreturn-type -Wparentheses -Wformat -Wchar-subscripts \
+ -Wno-unused-but-set-variable -Wno-unused-result -Wcast-align -Wclobbered  \
+ -Werror=missing-prototypes -Werror=pointer-arith -Werror=implicit"
+dnl Sep2012, There's a bug in <py3 with Py_True/False that will propagate
+dnl with GCC's "strict-aliasing" rules. -Wstrict-aliasing
+
+for arg in ${FFW_FLAGS}; do
+   AX_CHECK_COMPILE_FLAG([$arg],[WARNING_CFLAGS+=" $arg"])
+done
+
 AC_LANG_POP
+
 #--------------------------------------------------------------------------
 # Bypass older autoscan recommendations (if anyone decides to run autoscan)
 # These packages promises to not use malloc(0) or realloc(n, 0) so we don't
@@ -376,9 +377,9 @@ AC_CHECK_FUNC([snprintf],[:],[AC_DEFINE([_NO_SNPRINTF],1,[Define if not using sn
 AC_CHECK_FUNC([tzset],[:],[AC_DEFINE([_NO_TZSET],1,[Define if not using tzset.])])
 
 #--------------------------------------------------------------------------
-# Put ifdef wrapper around the new fontforge-config.h so we don't repeatedly call it.
-AH_TOP([#ifndef _FF_CONFIG_H])
-AH_TOP([#define _FF_CONFIG_H 1])
+# Put ifndef wrapper on fontforge-config.h so we don't call it repeatedly.
+AH_TOP([#ifndef _FF_CONFIG_H
+#define _FF_CONFIG_H 1])
 AH_BOTTOM([#endif])
 #--------------------------------------------------------------------------
 
@@ -391,8 +392,58 @@ AM_CONDITIONAL([MACINTOSH],[test x"${gww_ismac}" = xyes])
 AM_CONDITIONAL([DESKTOP],[test x != x])
 AM_CONDITIONAL([FONTTOOLS],[test x != x])
 
-FONTFORGE_SET_MY_CFLAGS
-FONTFORGE_SET_MY_LIBS
+#--------------------------------------------------------------------------
+# Create and Set FontForge Compiler Flags
+
+my_cflags="${WARNING_CFLAGS}"
+if test x"${i_do_have_freetype_debugger}" != xno; then
+   my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/src/truetype"
+   my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/include"
+   my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/include/freetype"
+fi
+my_cflags="${my_cflags} ${ZLIB_CFLAGS}"
+my_cflags="${my_cflags} ${GLIB_CFLAGS}"
+my_cflags="${my_cflags} ${CAIRO_CFLAGS}"
+my_cflags="${my_cflags} ${PANGO_CFLAGS}"
+my_cflags="${my_cflags} ${PANGOCAIRO_CFLAGS}"
+my_cflags="${my_cflags} ${FREETYPE_CFLAGS}"
+my_cflags="${my_cflags} ${GIFLIB_CFLAGS}"
+my_cflags="${my_cflags} ${LIBJPEG_CFLAGS}"
+my_cflags="${my_cflags} ${LIBPNG_CFLAGS}"
+my_cflags="${my_cflags} ${LIBTIFF_CFLAGS}"
+my_cflags="${my_cflags} ${LIBSPIRO_CFLAGS}"
+my_cflags="${my_cflags} ${LIBUNINAMESLIST_CFLAGS}"
+my_cflags="${my_cflags} ${LIBUNICODENAMES_CFLAGS}"
+my_cflags="${my_cflags} ${LIBXML_CFLAGS}"
+my_cflags="${my_cflags} ${PYTHON_CFLAGS}"
+my_cflags="${my_cflags} ${PTHREAD_CFLAGS}"
+my_cflags="${my_cflags} ${LIBREADLINE_CFLAGS}"
+test x"${SDK}" = x || my_cflags="${my_cflags} -I${SDK}"
+test x"${LTDLINCL}" = x || my_cflags="${my_cflags} -I${LTDLINCL}"
+AC_SUBST([MY_CFLAGS],[${my_cflags}])
+
+#--------------------------------------------------------------------------
+# Create and Set FontForge Library Flags
+
+test x"${i_do_have_python_scripting}" = xyes && my_libs="${my_libs} ${PYTHON_LIBS}"
+test x"${i_do_have_giflib}" = xyes && my_libs="${my_libs} ${GIFLIB_LIBS}"
+test x"${i_do_have_libjpeg}" = xyes && my_libs="${my_libs} ${LIBJPEG_LIBS}"
+test x"${i_do_have_libpng}" = xyes && my_libs="${my_libs} ${LIBPNG_LIBS}"
+test x"${i_do_have_libtiff}" = xyes && my_libs="${my_libs} ${LIBTIFF_LIBS}"
+test x"${i_do_have_libuninameslist}" = xyes && my_libs="${my_libs} ${LIBUNINAMESLIST_LIBS}"
+test x"${i_do_have_libunicodenames}" = xyes && my_libs="${my_libs} ${LIBUNICODENAMES_LIBS}"
+test x"${i_do_have_libxml}" = xyes && my_libs="${my_libs} ${LIBXML_LIBS}"
+test x"${i_do_have_libspiro}" = xyes && my_libs="${my_libs} ${LIBSPIRO_LIBS}"
+test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${CAIRO_LIBS}"
+test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
+test x"${i_do_have_gui}" = xyes && my_libs="${my_libs} ${PANGO_LIBS}"
+test x"${i_do_have_x}" = xyes && my_libs="${my_libs} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS}"
+test x"${i_do_have_libreadline}" = xyes && my_libs="${my_libs} ${LIBREADLINE_LIBS}"
+my_libs="${my_libs} ${FREETYPE_LIBS}"
+my_libs="${my_libs} ${PTHREAD_LIBS}"
+my_libs="${my_libs} ${ZLIB_LIBS}"
+my_libs="${my_libs} ${GLIB_LIBS}"
+AC_SUBST([MY_LIBS],[${my_libs}])
 
 #--------------------------------------------------------------------------
 # Output commands - Create FontForge Portable Makefiles
