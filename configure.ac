@@ -327,21 +327,22 @@ fi
 AX_PTHREAD
 
 #--------------------------------------------------------------------------
-AC_LANG_PUSH([C]) dnl NOTE: try not to push/pop too often
-# Check to see if "this" compiler can use these flags and/or warnings.
+# Check to see if "this" compiler can use these flags, errors, or warnings.
 # Enable the flags that can be used and skip flags that are unknown.
-FONTFORGE_COMPILER_FLAGS([WARNING_CFLAGS],
-        [-Wunused -Wreturn-type
-         -Wparentheses -Wformat -Wchar-subscripts
-         -Wno-unused-but-set-variable -Wno-unused-result
-         -Wcast-align
-         -Werror=missing-prototypes
-         -Werror=pointer-arith
-         -Wclobbered
-         -Werror=implicit])
-# Sep2012, There's a bug in <py3 with Py_True/False that will propagate
-# with GCC's "strict-aliasing" rules. -Wstrict-aliasing
+AC_LANG_PUSH([C]) dnl NOTE: configure.ac - try not to push/pop too often
+AC_SUBST([WARNING_CFLAGS],[])
+FFW_FLAGS="-Wunused -Wreturn-type -Wparentheses -Wformat -Wchar-subscripts \
+ -Wno-unused-but-set-variable -Wno-unused-result -Wcast-align -Wclobbered  \
+ -Werror=missing-prototypes -Werror=pointer-arith -Werror=implicit"
+dnl Sep2012, There's a bug in <py3 with Py_True/False that will propagate
+dnl with GCC's "strict-aliasing" rules. -Wstrict-aliasing
+
+for arg in ${FFW_FLAGS}; do
+   AX_CHECK_COMPILE_FLAG([$arg],[WARNING_CFLAGS+=" $arg"])
+done
+
 AC_LANG_POP
+
 #--------------------------------------------------------------------------
 # Bypass older autoscan recommendations (if anyone decides to run autoscan)
 # These packages promises to not use malloc(0) or realloc(n, 0) so we don't
