@@ -377,9 +377,9 @@ AC_CHECK_FUNC([snprintf],[:],[AC_DEFINE([_NO_SNPRINTF],1,[Define if not using sn
 AC_CHECK_FUNC([tzset],[:],[AC_DEFINE([_NO_TZSET],1,[Define if not using tzset.])])
 
 #--------------------------------------------------------------------------
-# Put ifdef wrapper around the new fontforge-config.h so we don't repeatedly call it.
-AH_TOP([#ifndef _FF_CONFIG_H])
-AH_TOP([#define _FF_CONFIG_H 1])
+# Put ifndef wrapper on fontforge-config.h so we don't call it repeatedly.
+AH_TOP([#ifndef _FF_CONFIG_H
+#define _FF_CONFIG_H 1])
 AH_BOTTOM([#endif])
 #--------------------------------------------------------------------------
 
