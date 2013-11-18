@@ -30,6 +30,41 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 AC_PREREQ([2.68])
+#--------------------------------------------------------------------------
+# PackageTimestamp version
+#m4_define([fontforge_package_stamp], "20131117") <-revert to this method
+m4_define([fontforge_package_stamp], "0_beta1")
+#--------------------------------------------------------------------------
+# Making point releases:
+#   fontforge_major_version += 0;
+#   fontforge_minor_version += 1; (patches or added function(s))
+#
+# If any new functions have been added:
+#   fontforge_major_version += 0;
+#   fontforge_minor_version += 1; (added function(s))
+#
+# If backwards compatibility has been broken:
+#   fontforge_major_version += 1;
+#   fontforge_minor_version = 0;
+#
+m4_define([fontforge_major_version], '2')
+m4_define([fontforge_minor_version], '0')
+m4_define([libfontforge_major_version], '2') dnl 20120731-b was 1.0
+m4_define([libfontforge_minor_version], '0')
+m4_define([libgdraw_major_version], '5') dnl 20120731-b was 4.10
+m4_define([libgdraw_minor_version], '0')
+m4_define([libgutils_major_version], '2') dnl 20120731-b was 1.3
+m4_define([libgutils_minor_version], '0')
+m4_define([libunicode_major_version], '4') dnl 20120731-b was 3.2
+m4_define([libunicode_minor_version], '0')
+
+m4_define([fontforge_version],
+          [fontforge_major_version.fontforge_minor_version.fontforge_package_stamp])
+#m4_define([fontforge_info],
+#          [fontforge_major_version:fontforge_minor_version:0])
+#m4_define([fontforge_package_name], ["fontforge"])
+
+#--------------------------------------------------------------------------
 AC_INIT([fontforge],[2.0.0_beta1],[fontforge-devel@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([Unicode/ArabicForms.c])
 AC_CONFIG_MACRO_DIR([m4])
