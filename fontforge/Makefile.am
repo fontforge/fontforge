@@ -57,8 +57,6 @@ LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgioftp.la
 
 
-LDADD = $(LIBADD) 
-
 AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
 	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
 	"-DPLUGINDIR=\"${MY_PLUGINDIR}\"" $(MY_CFLAGS)
