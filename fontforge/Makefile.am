@@ -56,21 +56,6 @@ LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la			\
 	$(top_builddir)/gutils/libgioftp.la
 
-#TODO
-fontforge_SOURCES = main.c
-fontforge_CPPFLAGS = $(AM_CPPFLAGS)
-fontforge_LDADD = $(MY_LIBS) libfontforgeexe.la libfontforge.la $(LDADD)
-fontforge_LDFLAGS = $(MY_CFLAGS) -export-dynamic
-if LIBZMQ
-fontforge_LDADD += $(LIBZMQ_LIBS) $(top_srcdir)/collab/libzmqcollab.la
-endif
-
-GUILIBADD =
-if GRAPHICAL_USER_INTERFACE
-GUILIBADD += $(top_builddir)/gdraw/libgdraw.la $(XINPUT_LIBS)	\
-	$(XKB_LIBS)
-endif GRAPHICAL_USER_INTERFACE
-#//
 
 LDADD = $(LIBADD) 
 
@@ -104,14 +89,14 @@ nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
 libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
-libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD) $(LIBLTDL) $(MY_LIBS) $(LIBZMQ_LIBS) 
+libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD) $(LIBLTDL) 
 
 if PLUGIN_GB12345
 libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/gb12345.la
 endif PLUGIN_GB12345
 
 if LIBZMQ
-libfontforge_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la
+libfontforge_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la $(LIBZMQ_LIBS) 
 endif LIBZMQ
 
 # Using -release instead of -version-info seems appropriate in the
@@ -119,69 +104,6 @@ endif LIBZMQ
 libfontforge_la_LDFLAGS = $(MY_CFLAGS) -release $(VERSION)
 libfontforge_la_LIBADD += $(MY_LIBS) $(LIBZMQ_LIBS) 
 
-#TODO
-#--------------------------------------------------------------------------
-
-if GRAPHICAL_USER_INTERFACE
-
-libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
-	autowidth2dlg.c basedlg.c bdfinfo.c bitmapdlg.c bitmapview.c	\
-	charinfo.c charview.c clipui.c combinations.c contextchain.c	\
-	cursors.c cvaddpoints.c cvdebug.c cvdgloss.c cvexportdlg.c		\
-	cvfreehand.c cvgetinfo.c cvgridfit.c cvhand.c cvhints.c			\
-	cvimportdlg.c cvknife.c cvpalettes.c cvpointer.c cvruler.c 		\
-	cvshapes.c cvstroke.c cvtranstools.c displayfonts.c effectsui.c	\
-	encodingui.c fontinfo.c fontview.c freetypeui.c fvfontsdlg.c	\
-	fvmetricsdlg.c gotodlg.c groupsdlg.c histograms.c images.c		\
-	kernclass.c layer2layer.c lookupui.c macencui.c math.c			\
-	metricsview.c mmdlg.c nonlineartransui.c oflib.c openfontdlg.c	        \
-	prefs.c problems.c pythonui.c savefontdlg.c scriptingdlg.c		\
-	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	        \
-	splashimage.c startui.c statemachine.c tilepath.c transform.c	        \
-	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
-	usermenu.c macobjective.h                                               \
-        collabclientui.c collabclientui.h                                       \
-	sfundo.c sfundo.h                                                       \
-	wordlistparser.c wordlistparser.h
-
-else !GRAPHICAL_USER_INTERFACE
-
-libfontforgeexe_la_SOURCES = startnoui.c
-
-endif !GRAPHICAL_USER_INTERFACE
-
-nodist_libfontforgeexe_la_SOURCES = exelibstamp.c
-
-if MACINTOSH
-MACFFEXE_LIBADD=macobjective.o
-endif MACINTOSH
-
-libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
-libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MACFFEXE_LIBADD)
-
-# Using -release instead of -version-info seems appropriate in the
-# absence of a well defined ABI.
-libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) -release $(VERSION)
-libfontforgeexe_la_LIBADD += $(MY_LIBS) $(LIBZMQ_LIBS) 
-if LIBZMQ
-libfontforgeexe_la_LIBADD += $(top_srcdir)/collab/libzmqcollab.la
-endif
-
-#--------------------------------------------------------------------------
-
-LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
-	$(top_builddir)/gutils/libgutils.la			\
-	$(top_builddir)/gutils/libgioftp.la
-
-GUILIBADD =
-if GRAPHICAL_USER_INTERFACE
-GUILIBADD += $(top_builddir)/gdraw/libgdraw.la $(XINPUT_LIBS)	\
-	$(XKB_LIBS)
-endif GRAPHICAL_USER_INTERFACE
-
-LDADD = $(LIBADD) $(GUILIBADD)
-
-#//
 
 #--------------------------------------------------------------------------
 

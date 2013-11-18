@@ -1,3 +1,6 @@
+# Copyright (C) 2000-2012 by George Williams
+# Copyright (C) 2012 by Barry Schwartz
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #
@@ -125,7 +128,9 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	splashimage.c startui.c statemachine.c tilepath.c transform.c	        \
 	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
 	usermenu.c macobjective.h                                               \
-        collabclientui.c collabclientui.h
+    collabclientui.c collabclientui.h                                       \
+	sfundo.c sfundo.h                                                       \
+	wordlistparser.c wordlistparser.h
 
 else !GRAPHICAL_USER_INTERFACE
 
@@ -141,13 +146,13 @@ endif MACINTOSH
 
 libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
 libfontforgeexe_la_LIBADD = $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MACFFEXE_LIBADD) $(MY_LIBS) 
-if LIBZMQ
-libfontforgeexe_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la $(LIBZMQ_LIBS) 
-endif
 
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
 libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) -release $(VERSION)
+if LIBZMQ
+libfontforgeexe_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la $(LIBZMQ_LIBS) 
+endif
 
 #--------------------------------------------------------------------------
 
