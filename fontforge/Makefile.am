@@ -56,9 +56,6 @@ LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la			\
 	$(top_builddir)/gutils/libgioftp.la
 
-
-LDADD = $(LIBADD) 
-
 AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
 	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
 	"-DPLUGINDIR=\"${MY_PLUGINDIR}\"" $(MY_CFLAGS)
@@ -88,7 +85,7 @@ libfontforge_la_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c	\
 nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
-libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
+libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS)
 libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD) $(LIBLTDL) 
 
 if PLUGIN_GB12345
@@ -96,13 +93,14 @@ libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/gb12345.la
 endif PLUGIN_GB12345
 
 if LIBZMQ
+libfontforge_la_CPPFLAGS += $(LIBZMQ_CFLAGS)
 libfontforge_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la $(LIBZMQ_LIBS) 
 endif LIBZMQ
 
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
 libfontforge_la_LDFLAGS = $(MY_CFLAGS) -release $(VERSION)
-libfontforge_la_LIBADD += $(MY_LIBS) $(LIBZMQ_LIBS) 
+libfontforge_la_LIBADD += $(MY_LIBS)
 
 
 #--------------------------------------------------------------------------

@@ -49,11 +49,9 @@ libgdraw_la_LIBADD = $(MY_LIBS) $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la \
 	$(top_builddir)/fontforge/libfontforge.la
 
-#TODO
 if GRAPHICAL_USER_INTERFACE
 libgdraw_la_LIBADD += $(XINPUT_LIBS)
 endif GRAPHICAL_USER_INTERFACE
-#//
 
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
