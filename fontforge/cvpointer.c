@@ -477,7 +477,7 @@ return( i );
 return( -1 );
 }
 
-static int CVNearRBearingLine( CharView* cv, real x, real fudge )
+int CVNearRBearingLine( CharView* cv, real x, real fudge )
 {
     RefChar *usemymetrics = HasUseMyMetrics(cv->b.sc,CVLayer((CharViewBase *) cv));
     return( cv->showhmetrics
@@ -486,7 +486,7 @@ static int CVNearRBearingLine( CharView* cv, real x, real fudge )
 	    && !cv->b.container
 	    && !usemymetrics );
 }
-static int CVNearLBearingLine( CharView* cv, real x, real fudge )
+int CVNearLBearingLine( CharView* cv, real x, real fudge )
 {
     RefChar *usemymetrics = HasUseMyMetrics(cv->b.sc,CVLayer((CharViewBase *) cv));
     return( cv->showhmetrics
