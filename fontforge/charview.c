@@ -2833,7 +2833,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    {
 		int i = 1;
 		int originalxoff = cv->xoff;
-		int offset = cv->scale * cv->b.sc->width;
+		int offset = 0;
 		    
 		for( i=cv->additionalCharsToShowActiveIndex-1; i >= 0; i-- )
 		{
@@ -2842,10 +2842,10 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		    if( !xc )
 			break;
 
+		    offset = cv->scale * xc->width;
 		    cv->xoff -= offset;
 		    CVDrawLayerSplineSet( cv, pixmap, &xc->layers[layer], foreoutlinecol,
 					  showpoints ,&clip, sm );
-		    offset = cv->scale * xc->width;
 		}
 		cv->xoff = originalxoff;
 	    }
