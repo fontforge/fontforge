@@ -1441,7 +1441,12 @@ return( false );
     /*  done by move selection */
     if ( cv->expandedge!=ee_none && !cv->widthsel && !cv->vwidthsel && !cv->lbearingsel
 	 && cv->nearcaret==-1 && !cv->icsel && !cv->tah_sel )
-	needsupdate = CVExpandEdge(cv);
+    {
+	if( !cv->changedActiveGlyph )
+	{
+	    needsupdate = CVExpandEdge(cv);
+	}
+    }
     else if ( cv->nearcaret!=-1 && cv->lcarets!=NULL ) {
 	if ( cv->info.x!=cv->last_c.x ) {
 	    if ( !cv->recentchange ) SCPreserveLayer(cv->b.sc,CVLayer((CharViewBase *) cv),2);
@@ -1601,17 +1606,24 @@ void CVMouseUpPointer(CharView *cv ) {
 	cv->lcarets = NULL;
 	GDrawSetCursor(cv->v,ct_mypointer);
     }
-    if ( cv->expandedge!=ee_none )
+    if( cv->changedActiveGlyph )
     {
-	CVUndoCleanup(cv);
-	cv->expandedge = ee_none;
-	GDrawSetCursor(cv->v,ct_mypointer);
+	cv->changedActiveGlyph = 0;
     }
-    else if ( CVAllSelected(cv) && cv->b.drawmode==dm_fore && cv->p.spline==NULL
-	      && !cv->p.prevcp && !cv->p.nextcp && cv->info.y==cv->p.cy )
+    else
     {
-	SCUndoSetLBearingChange(cv->b.sc,(int) rint(cv->info.x-cv->p.cx));
-	SCSynchronizeLBearing(cv->b.sc,cv->info.x-cv->p.cx,CVLayer((CharViewBase *) cv));
+	if ( cv->expandedge!=ee_none )
+	{
+	    CVUndoCleanup(cv);
+	    cv->expandedge = ee_none;
+	    GDrawSetCursor(cv->v,ct_mypointer);
+	}
+	else if ( CVAllSelected(cv) && cv->b.drawmode==dm_fore && cv->p.spline==NULL
+		  && !cv->p.prevcp && !cv->p.nextcp && cv->info.y==cv->p.cy )
+	{
+	    SCUndoSetLBearingChange(cv->b.sc,(int) rint(cv->info.x-cv->p.cx));
+	    SCSynchronizeLBearing(cv->b.sc,cv->info.x-cv->p.cx,CVLayer((CharViewBase *) cv));
+	}
     }
     CPEndInfo(cv);
 }

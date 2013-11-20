@@ -201,6 +201,7 @@ typedef struct charview {
     unsigned int inDraggingComparisonOutline: 1;
     unsigned int activeModifierControl: 1; //< Is control being held right now?
     unsigned int activeModifierAlt: 1;     //< Is alt being held right now?
+    unsigned int changedActiveGlyph: 1;    //< Set in CVSwitchActiveSC() cleared in cvmouseup()
     
     int hvoffset;		/* for showalmosthvlines */
     int layers_off_top;

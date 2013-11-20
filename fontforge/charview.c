@@ -4410,7 +4410,7 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
 	}
     }
     
-    
+    cv->changedActiveGlyph = 1;
     printf("CVSwitchActiveSC(b) activeidx:%d newidx:%d\n", cv->additionalCharsToShowActiveIndex, idx );
     for( i=0; i < additionalCharsToShowLimit; i++ )
 	if( cv->additionalCharsToShow[i] )
@@ -4584,6 +4584,7 @@ return;
 	    fsadjusted.xh += 2*fsadjusted.fudge;
 	    SplineChar* xc = 0;
 	    int xcidx = -1;
+	    int borderFudge = 20;
 	    
 	    {
 		int offset = cv->b.sc->width;
@@ -4597,6 +4598,12 @@ return;
 		    xc = cv->additionalCharsToShow[i];
 		    if( !xc )
 			break;
+		    int OffsetForDoingCharNextToActive = 0;
+		    if( i == ridx )
+		    {
+			OffsetForDoingCharNextToActive = borderFudge;
+		    }
+		    
 
 		    cumulativeLeftSideBearing += offset;
 		    /* printf("1 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
@@ -4615,9 +4622,10 @@ return;
 		    printf("A:%d\n", cumulativeLeftSideBearing );
 		    printf("B:%f\n", fsadjusted.p->cx );
 		    printf("C:%d\n", cumulativeLeftSideBearing+xc->width );
-		    int found = IS_IN_ORDER3( cumulativeLeftSideBearing,
-					      fsadjusted.p->cx,
-					      cumulativeLeftSideBearing+xc->width );
+		    int found = IS_IN_ORDER3(
+			cumulativeLeftSideBearing + OffsetForDoingCharNextToActive,
+			fsadjusted.p->cx,
+			cumulativeLeftSideBearing+xc->width );
 		    printf("CVMOUSEDOWN i:%d found:%d\n", i, found );
 		    if( found )
 		    {
@@ -4653,6 +4661,11 @@ return;
 		    if( !xc )
 			break;
 		    cumulativeLeftSideBearing -= xc->width;
+		    int OffsetForDoingCharNextToActive = 0;
+		    if( i == lidx )
+		    {
+			OffsetForDoingCharNextToActive = borderFudge;
+		    }
 
 		    /* printf("1 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
 		    /* printf("1 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
@@ -4670,9 +4683,10 @@ return;
 		    printf("A:%d\n", cumulativeLeftSideBearing );
 		    printf("B:%f\n", fsadjusted.p->cx );
 		    printf("C:%d\n", cumulativeLeftSideBearing+xc->width );
-		    int found = IS_IN_ORDER3( cumulativeLeftSideBearing,
-					      fsadjusted.p->cx,
-					      cumulativeLeftSideBearing+xc->width );
+		    int found = IS_IN_ORDER3(
+			cumulativeLeftSideBearing,
+			fsadjusted.p->cx,
+			cumulativeLeftSideBearing + xc->width - OffsetForDoingCharNextToActive );
 		    
 		    printf("cvmousedown i:%d found:%d\n", i, found );
 		    if( found )
