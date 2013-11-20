@@ -12608,6 +12608,7 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     gd.pos.x = 3;
     gd.pos.y = cv->mbh+2;
     gd.pos.height = cv->charselectorh-4;
+    gd.pos.width  = cv_width / 2;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_text_xim;
     gd.handle_controlevent = CV_OnCharSelectorTextChanged;
     gd.u.list = cv_charselector_init;
