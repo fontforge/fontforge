@@ -4576,140 +4576,145 @@ return;
 	    
 	if( !cv->p.anysel && cv->b.drawmode != dm_grid )
 	{
-	    int i=0;
-	    FindSel fsadjusted = fs;
-	    fsadjusted.c_xl -= 2*fsadjusted.fudge;
-	    fsadjusted.c_xh += 2*fsadjusted.fudge;
-	    fsadjusted.xl -= 2*fsadjusted.fudge;
-	    fsadjusted.xh += 2*fsadjusted.fudge;
-	    SplineChar* xc = 0;
-	    int xcidx = -1;
-	    int borderFudge = 20;
-	    
+	    // If we are in left-right arrow cursor mode to move
+	    // those bearings then don't even think about changing
+	    // the char right now.
+	    if( !CVNearRBearingLine( cv, cv->p.cx, fs.fudge )
+		&& !CVNearLBearingLine( cv, cv->p.cx, fs.fudge ))
 	    {
-		int offset = cv->b.sc->width;
-		int cumulativeLeftSideBearing = 0;
-//	        printf("first offset:%d original cx:%f \n", offset, fsadjusted.p->cx );
-		int ridx = cv->additionalCharsToShowActiveIndex+1;
-		for( i=ridx; i < additionalCharsToShowLimit; i++ )
+		int i=0;
+		FindSel fsadjusted = fs;
+		fsadjusted.c_xl -= 2*fsadjusted.fudge;
+		fsadjusted.c_xh += 2*fsadjusted.fudge;
+		fsadjusted.xl -= 2*fsadjusted.fudge;
+		fsadjusted.xh += 2*fsadjusted.fudge;
+		SplineChar* xc = 0;
+		int xcidx = -1;
+		int borderFudge = 20;
+	    
 		{
-		    if( i == cv->additionalCharsToShowActiveIndex )
-			continue;
-		    xc = cv->additionalCharsToShow[i];
-		    if( !xc )
-			break;
-		    int OffsetForDoingCharNextToActive = 0;
-		    if( i == ridx )
+		    int offset = cv->b.sc->width;
+		    int cumulativeLeftSideBearing = 0;
+//	        printf("first offset:%d original cx:%f \n", offset, fsadjusted.p->cx );
+		    int ridx = cv->additionalCharsToShowActiveIndex+1;
+		    for( i=ridx; i < additionalCharsToShowLimit; i++ )
 		    {
-			OffsetForDoingCharNextToActive = borderFudge;
-		    }
+			if( i == cv->additionalCharsToShowActiveIndex )
+			    continue;
+			xc = cv->additionalCharsToShow[i];
+			if( !xc )
+			    break;
+			int OffsetForDoingCharNextToActive = 0;
+			if( i == ridx )
+			{
+			    OffsetForDoingCharNextToActive = borderFudge;
+			}
 		    
 
-		    cumulativeLeftSideBearing += offset;
-		    /* printf("1 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
-		    /* printf("1 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
-		    /* printf("1 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
-		    /* fsadjusted.c_xl -= offset; */
-		    /* fsadjusted.c_xh -= offset; */
-		    /* fsadjusted.xl   -= offset; */
-		    /* fsadjusted.xh   -= offset; */
-		    /* printf("2 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
-		    /* printf("2 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
-		    /* printf("2 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
-		    /* int found = InSplineSet( &fsadjusted, */
-		    /* 			     xc->layers[cv->b.drawmode-1].splines, */
-		    /* 			     xc->inspiro && hasspiro()); */
-		    printf("A:%d\n", cumulativeLeftSideBearing );
-		    printf("B:%f\n", fsadjusted.p->cx );
-		    printf("C:%d\n", cumulativeLeftSideBearing+xc->width );
-		    int found = IS_IN_ORDER3(
-			cumulativeLeftSideBearing + OffsetForDoingCharNextToActive,
-			fsadjusted.p->cx,
-			cumulativeLeftSideBearing+xc->width );
-		    printf("CVMOUSEDOWN i:%d found:%d\n", i, found );
-		    if( found )
-		    {
-			printf("FOUND FOUND FOUND FOUND FOUND FOUND FOUND \n");
+			cumulativeLeftSideBearing += offset;
+			/* printf("1 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
+			/* printf("1 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
+			/* printf("1 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
+			/* fsadjusted.c_xl -= offset; */
+			/* fsadjusted.c_xh -= offset; */
+			/* fsadjusted.xl   -= offset; */
+			/* fsadjusted.xh   -= offset; */
+			/* printf("2 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
+			/* printf("2 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
+			/* printf("2 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
+			/* int found = InSplineSet( &fsadjusted, */
+			/* 			     xc->layers[cv->b.drawmode-1].splines, */
+			/* 			     xc->inspiro && hasspiro()); */
+			printf("A:%d\n", cumulativeLeftSideBearing );
+			printf("B:%f\n", fsadjusted.p->cx );
+			printf("C:%d\n", cumulativeLeftSideBearing+xc->width );
+			int found = IS_IN_ORDER3(
+			    cumulativeLeftSideBearing + OffsetForDoingCharNextToActive,
+			    fsadjusted.p->cx,
+			    cumulativeLeftSideBearing+xc->width );
+			printf("CVMOUSEDOWN i:%d found:%d\n", i, found );
+			if( found )
+			{
+			    printf("FOUND FOUND FOUND FOUND FOUND FOUND FOUND \n");
 			
-			xcidx = i;
+			    xcidx = i;
 //		    CVChangeSC(cv,xc);
-			break;
+			    break;
+			}
+
+			offset = xc->width;
 		    }
-
-		    offset = xc->width;
 		}
-	    }
 
-	    fsadjusted = fs;
-	    fsadjusted.c_xl -= 2*fsadjusted.fudge;
-	    fsadjusted.c_xh += 2*fsadjusted.fudge;
-	    fsadjusted.xl -= 2*fsadjusted.fudge;
-	    fsadjusted.xh += 2*fsadjusted.fudge;
+		fsadjusted = fs;
+		fsadjusted.c_xl -= 2*fsadjusted.fudge;
+		fsadjusted.c_xh += 2*fsadjusted.fudge;
+		fsadjusted.xl -= 2*fsadjusted.fudge;
+		fsadjusted.xh += 2*fsadjusted.fudge;
 
-	    if( !xc && cv->additionalCharsToShowActiveIndex > 0 )
-	    {
-		xc = cv->additionalCharsToShow[cv->additionalCharsToShowActiveIndex-1];
-		int offset = xc->width;
-		int cumulativeLeftSideBearing = 0;
-//	        printf("first offset:%d original cx:%f \n", offset, fsadjusted.p->cx );
-		int lidx = cv->additionalCharsToShowActiveIndex-1;
-		for( i=lidx; i>=0; i-- )
+		if( !xc && cv->additionalCharsToShowActiveIndex > 0 )
 		{
-		    if( i == cv->additionalCharsToShowActiveIndex )
-			continue;
-		    xc = cv->additionalCharsToShow[i];
-		    if( !xc )
-			break;
-		    cumulativeLeftSideBearing -= xc->width;
-		    int OffsetForDoingCharNextToActive = 0;
-		    if( i == lidx )
+		    xc = cv->additionalCharsToShow[cv->additionalCharsToShowActiveIndex-1];
+		    int offset = xc->width;
+		    int cumulativeLeftSideBearing = 0;
+//	        printf("first offset:%d original cx:%f \n", offset, fsadjusted.p->cx );
+		    int lidx = cv->additionalCharsToShowActiveIndex-1;
+		    for( i=lidx; i>=0; i-- )
 		    {
-			OffsetForDoingCharNextToActive = borderFudge;
-		    }
+			if( i == cv->additionalCharsToShowActiveIndex )
+			    continue;
+			xc = cv->additionalCharsToShow[i];
+			if( !xc )
+			    break;
+			cumulativeLeftSideBearing -= xc->width;
+			int OffsetForDoingCharNextToActive = 0;
+			if( i == lidx )
+			{
+			    OffsetForDoingCharNextToActive = borderFudge;
+			}
 
-		    /* printf("1 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
-		    /* printf("1 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
-		    /* printf("1 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
-		    /* fsadjusted.c_xl += offset; */
-		    /* fsadjusted.c_xh += offset; */
-		    /* fsadjusted.xl   += offset; */
-		    /* fsadjusted.xh   += offset; */
-		    /* printf("2 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
-		    /* printf("2 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
-		    /* printf("2 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
-		    /* int found = InSplineSet( &fsadjusted, */
-		    /* 			     xc->layers[cv->b.drawmode-1].splines, */
-		    /* 			     xc->inspiro && hasspiro()); */
-		    printf("A:%d\n", cumulativeLeftSideBearing );
-		    printf("B:%f\n", fsadjusted.p->cx );
-		    printf("C:%d\n", cumulativeLeftSideBearing+xc->width );
-		    int found = IS_IN_ORDER3(
-			cumulativeLeftSideBearing,
-			fsadjusted.p->cx,
-			cumulativeLeftSideBearing + xc->width - OffsetForDoingCharNextToActive );
+			/* printf("1 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
+			/* printf("1 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
+			/* printf("1 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
+			/* fsadjusted.c_xl += offset; */
+			/* fsadjusted.c_xh += offset; */
+			/* fsadjusted.xl   += offset; */
+			/* fsadjusted.xh   += offset; */
+			/* printf("2 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
+			/* printf("2 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
+			/* printf("2 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
+			/* int found = InSplineSet( &fsadjusted, */
+			/* 			     xc->layers[cv->b.drawmode-1].splines, */
+			/* 			     xc->inspiro && hasspiro()); */
+			printf("A:%d\n", cumulativeLeftSideBearing );
+			printf("B:%f\n", fsadjusted.p->cx );
+			printf("C:%d\n", cumulativeLeftSideBearing+xc->width );
+			int found = IS_IN_ORDER3(
+			    cumulativeLeftSideBearing,
+			    fsadjusted.p->cx,
+			    cumulativeLeftSideBearing + xc->width - OffsetForDoingCharNextToActive );
 		    
-		    printf("cvmousedown i:%d found:%d\n", i, found );
-		    if( found )
-		    {
-			printf("FOUND FOUND FOUND FOUND FOUND FOUND FOUND i:%d\n", i);
-			xcidx = i;
-			break;
-		    }
+			printf("cvmousedown i:%d found:%d\n", i, found );
+			if( found )
+			{
+			    printf("FOUND FOUND FOUND FOUND FOUND FOUND FOUND i:%d\n", i);
+			    xcidx = i;
+			    break;
+			}
 
-		    offset = xc->width;
+			offset = xc->width;
+		    }
+		}
+
+		printf("have xc:%p xcidx:%d\n", xc, xcidx );
+		printf("    idx:%d active:%d\n", xcidx, cv->additionalCharsToShowActiveIndex );
+		if( xc && xcidx >= 0 )
+		{
+		    CVSwitchActiveSC( cv, xc, xcidx );
+		    GDrawRequestExpose(cv->v,NULL,false);
+		    return;
 		}
 	    }
-
-	    printf("have xc:%p xcidx:%d\n", xc, xcidx );
-	    printf("    idx:%d active:%d\n", xcidx, cv->additionalCharsToShowActiveIndex );
-	    if( xc && xcidx >= 0 )
-	    {
-		CVSwitchActiveSC( cv, xc, xcidx );
-		GDrawRequestExpose(cv->v,NULL,false);
-		return;
-	    }
-	    
-	    
 	}
 	    
 	    
