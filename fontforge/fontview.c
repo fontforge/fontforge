@@ -4947,7 +4947,7 @@ static void FVMenuMakeNamelist(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent 
     char *filename, *temp;
     FILE *file;
 
-    snprintf(buffer, sizeof(buffer),"%s/%s.nam", getPfaEditDir(buffer), fv->b.sf->fontname );
+    snprintf(buffer, sizeof(buffer),"%s/%s.nam", getFontForgeUserDir(Config), fv->b.sf->fontname );
     temp = def2utf8_copy(buffer);
     filename = gwwv_save_filename(_("Make Namelist"), temp,"*.nam");
     free(temp);
@@ -4986,7 +4986,7 @@ return;				/* Cancelled */
 	pt = temp;
     else
 	++pt;
-    snprintf(buffer,sizeof(buffer),"%s/%s", getPfaEditDir(buffer), pt);
+    snprintf(buffer,sizeof(buffer),"%s/%s", getFontForgeUserDir(Config), pt);
     if ( access(buffer,F_OK)==0 ) {
 	buts[0] = _("_Replace");
 	buts[1] = _("_Cancel");

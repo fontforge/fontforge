@@ -544,9 +544,9 @@ static char *getOFLibDir(void) {
 
     if ( oflibdir!=NULL )
 return( oflibdir );
-    if ( getPfaEditDir(buffer)==NULL )
+    if ( getFontForgeUserDir(Config)==NULL )
 return( NULL );
-    sprintf(buffer,"%s/OFLib", getPfaEditDir(buffer));
+    sprintf(buffer,"%s/OFLib", getFontForgeUserDir(Config));
     if ( access(buffer,F_OK)==-1 )
 	if ( GFileMkDir(buffer)==-1 )
 return( NULL );
