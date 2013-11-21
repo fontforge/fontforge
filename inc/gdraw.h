@@ -103,10 +103,10 @@ enum keystate_mask { ksm_shift=1, ksm_capslock=2, ksm_control=4, ksm_meta=8,
 	};
 enum mnemonic_focus { mf_normal, mf_tab, mf_mnemonic, mf_shortcut };
 
-enum event_type { et_noevent = -1, et_char, et_charup,
+enum event_type { et_noevent = -1, et_char, et_charup, // is 1
 		  et_mousemove, et_mousedown, et_mouseup,
 		  et_crossing,	/* these four are assumed to be consecutive */
-		  et_focus,
+		  et_focus, // is 7
 		  et_expose, et_visibility, et_resize, et_timer,
 		  et_close/*request by user*/, et_create,
 		  et_map, et_destroy/*window being freed*/,
