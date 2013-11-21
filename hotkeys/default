@@ -47,7 +47,7 @@ CharView.Menu.Edit.Copy Width:Ctl+W
 CharView.Menu.Edit.Copy LBearing:No Shortcut
 CharView.Menu.Edit.Copy RBearing:No Shortcut
 CharView.Menu.Edit.Paste:Ctl+V
-CharView.Menu.Edit.Clear:Delete
+CharView.Menu.Edit.Chop:Delete
 CharView.Menu.Edit.Clear Background:No Shortcut
 CharView.Menu.Edit.Merge:Ctl+M
 CharView.Menu.Edit.Merge to Line:Alt+Ctl+M
