@@ -3382,7 +3382,7 @@ static void CVChangeSC_fetchTab( CharView *cv, int tabnumber )
 
 static void CVSetCharSelectorValueFromSC( CharView *cv, SplineChar *sc )
 {
-    char* title = g_strdup_printf( "/%s", sc->name );
+    char* title = g_strdup_printf( "/%s/", sc->name );
     printf("CVSetCharSelectorValueFromSC() title:%s\n", title );
     GGadgetSetTitle8(cv->charselector, title);
     g_free(title);
@@ -12231,6 +12231,8 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	char* txt = GGadgetGetTitle8( cv->charselector );
 	printf("text changed: %s\n", txt );
 
+	
+
 	if( 1 )
 	{
 	    int tabnum = GTabSetGetSel(cv->tabs);
@@ -12258,6 +12260,7 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	    int i=0;
 	    const unichar_t *ret = GGadgetGetTitle( cv->charselector );
 	    GArray* selected = 0;
+	    WordlistTrimTrailingSingleSlash( ret );
 	    ret = WordlistEscpaedInputStringToRealStringBasic( sf, ret, &selected );
 
 	    const unichar_t *pt, *ept, *tpt;

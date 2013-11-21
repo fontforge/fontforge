@@ -56,5 +56,7 @@ extern void Wordlist_touch( GGadget* g );
 
 extern void WordlistLoadToGTextInfo( GGadget* g, int* idx  );
 
+extern void WordlistTrimTrailingSingleSlash( unichar_t* txt );
+
 
 #endif
