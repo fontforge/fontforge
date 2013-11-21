@@ -140,7 +140,7 @@ CharView.Menu.Element.Correct Direction:Ctl+Shft+D
 CharView.Menu.Element.Reverse Direction:No Shortcut
 CharView.Menu.Element.Insert Text Outlines:No Shortcut
 CharView.Menu.Element.Compare Layers...:No Shortcut
-CharView.Menu.Element.Align.Average Points:Ctl+Shft+@
+CharView.Menu.Element.Align.Align Points:Ctl+Shft+@
 CharView.Menu.Element.Align.Space Points:No Shortcut
 CharView.Menu.Element.Align.Space Regions...:No Shortcut
 CharView.Menu.Element.Align.Make Parallel...:No Shortcut
