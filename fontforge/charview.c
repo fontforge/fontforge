@@ -3710,6 +3710,23 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
     }
 
 
+    if( event->u.chr.keysym == XK_Escape )
+    {
+	printf("escape char.......!\n");
+	GGadget *active = GWindowGetFocusGadgetOfWindow(cv->gw);
+	if( active == cv->charselector )
+	{
+	    printf("was on charselector\n");
+	    printf("was on charselector\n");
+	    GWidgetIndicateFocusGadget( cv->hsb );
+	}
+	else
+	{
+	    printf("was on NOT charselector\n");
+	    GWidgetIndicateFocusGadget( cv->charselector );
+	}
+    }
+    
 
 #if _ModKeysAutoRepeat
     /* Under cygwin these keys auto repeat, they don't under normal X */
@@ -7376,8 +7393,8 @@ void CVChar(CharView *cv, GEvent *event ) {
 	}
     }
 
-    printf("GK_Control_L:%d\n", ( event->u.chr.keysym == GK_Control_L ));
-    printf("GK_Meta_L:%d\n", ( event->u.chr.keysym == GK_Meta_L ));
+    /* printf("GK_Control_L:%d\n", ( event->u.chr.keysym == GK_Control_L )); */
+    /* printf("GK_Meta_L:%d\n", ( event->u.chr.keysym == GK_Meta_L )); */
     
     int oldactiveModifierControl = cv->activeModifierControl;
     int oldactiveModifierAlt = cv->activeModifierAlt;
@@ -7474,7 +7491,8 @@ return;
 	    _CVMenuScale(cv, MID_ZoomOut);
     } else if ( (event->u.chr.state&ksm_control) && (event->u.chr.keysym=='=' || event->u.chr.keysym==0xffab/*XK_KP_Add*/) ){
 	    _CVMenuScale(cv, MID_ZoomIn);
-    } else if ( event->u.chr.keysym == GK_Left ||
+    }
+    else if ( event->u.chr.keysym == GK_Left ||
 	    event->u.chr.keysym == GK_Up ||
 	    event->u.chr.keysym == GK_Right ||
 	    event->u.chr.keysym == GK_Down ||
@@ -11980,7 +11998,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     gd.pos.y = pos.height-sbsize; gd.pos.height = sbsize;
     gd.pos.width = pos.width - sbsize;
     gd.pos.x = 0;
-    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_text_xim;
     cv->hsb = GScrollBarCreate(cv->gw,&gd,cv);
 
 
@@ -12178,6 +12196,7 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
     SplineChar *sc = cv->b.sc;
     SplineFont* sf = sc->parent;
 
+    printf("CV_OnCharSelectorTextChanged(top)\n");
     /* if( e->type == et_char ) */
     /* { */
     /* 	printf("CV_OnCharSelectorTextChanged() char is-left:%d\n", e->u.chr.keysym == GK_Left ); */
