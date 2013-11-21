@@ -629,5 +629,7 @@ extern void GVisibilityBoxSetToMinWH(GGadget *g);
 
 extern void GGadgetSetSkipHotkeyProcessing( GGadget *g, int v );
 extern int GGadgetGetSkipHotkeyProcessing( GGadget *g );
+extern void GGadgetSetSkipUnQualifiedHotkeyProcessing( GGadget *g, int v );
+extern int GGadgetGetSkipUnQualifiedHotkeyProcessing( GGadget *g );
 
 #endif

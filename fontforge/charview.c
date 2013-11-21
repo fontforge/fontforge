@@ -7452,22 +7452,6 @@ return;
     {
 	/* All Done */;
     }
-    else if( cv->activeModifierControl
-	&& event->u.chr.keysym == ',' || event->u.chr.keysym == '.' )
-    {
-	GGadget *active = GWindowGetFocusGadgetOfWindow(cv->gw);
-	if( active == cv->charselector )
-	{
-	    if( event->u.chr.keysym == ',' )
-	    {
-		CVMoveInWordListByOffset( cv, -1 );
-	    }
-	    else if( event->u.chr.keysym == '.' )
-	    {
-		CVMoveInWordListByOffset( cv, 1 );
-	    }
-	}
-    }
     else if ( event->u.chr.keysym=='s' &&
 	    (event->u.chr.state&ksm_control) &&
 	    (event->u.chr.state&ksm_meta) )
@@ -12449,7 +12433,7 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     gd.u.list = cv_charselector_init;
     cv->charselector = GListFieldCreate(cv->gw,&gd,cv);
     CVSetCharSelectorValueFromSC( cv, sc );
-    GGadgetSetSkipHotkeyProcessing( cv->charselector, 1 );
+    GGadgetSetSkipUnQualifiedHotkeyProcessing( cv->charselector, 1 );
 
     memset(aspects,0,sizeof(aspects));
     aspects[0].text = (unichar_t *) sc->name;

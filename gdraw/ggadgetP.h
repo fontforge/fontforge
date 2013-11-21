@@ -99,6 +99,7 @@ struct ggadget {
     unsigned int prevlabel: 1;			/* For groupboxes */
     unsigned int contained: 1;			/* is part of a bigger ggadget (ie. a scrollbar is part of a listbox) */
     unsigned int gg_skip_hotkey_processing: 1;
+    unsigned int gg_skip_unqualified_hotkey_processing: 1;
     short cid;
     void *data;
     GBox *box;
