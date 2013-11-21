@@ -481,9 +481,9 @@ static char *getPfaEditEncodings(void) {
 
     if ( encfile!=NULL )
 return( encfile );
-    if ( getPfaEditDir(buffer)==NULL )
+    if ( getFontForgeUserDir(Config)==NULL )
 return( NULL );
-    sprintf(buffer,"%s/Encodings.ps", getPfaEditDir(buffer));
+    sprintf(buffer,"%s/Encodings.ps", getFontForgeUserDir(Config));
     encfile = copy(buffer);
 return( encfile );
 }

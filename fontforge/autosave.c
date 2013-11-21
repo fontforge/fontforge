@@ -82,7 +82,7 @@ return( editdir );
 }
 
 static char *getAutoDirName(char *buffer) {
-    char *dir=getPfaEditDir(buffer);
+    char *dir=getFontForgeUserDir(Config);
 
     if ( dir==NULL )
 return( NULL );

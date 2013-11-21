@@ -85,8 +85,8 @@ static void initlibltdl(void) {
 
     if (!plugins_are_initialized()) {
         init_plugins();
-        if (getPfaEditDir(buffer)!=NULL ) {
-            strcpy(buffer,getPfaEditDir(buffer));
+        if (getFontForgeUserDir(Config)!=NULL ) {
+            strcpy(buffer,getFontForgeUserDir(Config));
             strcat(buffer,"/plugins");
             lt_dladdsearchdir(strdup(buffer));
         }
