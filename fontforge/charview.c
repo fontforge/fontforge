@@ -3381,7 +3381,7 @@ static void CVChangeSC_fetchTab( CharView *cv, int tabnumber )
 
 static void CVSetCharSelectorValueFromSC( CharView *cv, SplineChar *sc )
 {
-    char* title = g_strdup_printf( "/%s/", sc->name );
+    char* title = g_strdup_printf( "/%s", sc->name );
     printf("CVSetCharSelectorValueFromSC() title:%s\n", title );
     GGadgetSetTitle8(cv->charselector, title);
     g_free(title);
