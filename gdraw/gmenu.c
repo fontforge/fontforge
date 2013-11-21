@@ -2068,6 +2068,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 
 //    printf("GMenuBarCheckKey(top) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
 
+    int SkipUnQualifiedHotkeyProcessing = 0;
     // see if we should skip processing
     if( g )
     {
@@ -2075,6 +2076,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	GGadget* focus = GWindowGetFocusGadgetOfWindow(w);
 	if( GGadgetGetSkipHotkeyProcessing(focus))
 	    return 0;
+	SkipUnQualifiedHotkeyProcessing = GGadgetGetSkipUnQualifiedHotkeyProcessing(focus);
     }
     
 
@@ -2169,6 +2171,13 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     printf("     has ksm_control:%d\n", (event->u.chr.state & ksm_control ));
     printf("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
     printf("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
+
+    if( SkipUnQualifiedHotkeyProcessing && !event->u.chr.state )
+    {
+	printf("skipping unqualified hotkey for widget g:%p\n", g);
+	return 0;
+    }
+    
     
     struct dlistnodeExternal* node= hotkeyFindAllByEvent( top, event );
     struct dlistnode* hklist = (struct dlistnode*)node;
