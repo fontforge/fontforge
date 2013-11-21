@@ -5309,10 +5309,15 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
     if ( cv->active_tool == cvt_pointer &&
 	 MouseToCX( cv, event->u.mouse.x ) < -2 )
     {
-	FindSel fs;
-	SetFS(&fs,&cv->p,cv,event);
-	_CVTestSelectFromEvent(cv,&fs);
-	fs.p = &cv->p;
+	// Since we allow clicking anywhere now, instead of having
+	// to check if you clicked on a spline of a prev char,
+	// then we don't need this. It also causes an issue with the arrow
+	// keys moving a BCP on a spline left of the lbearing line.
+	// (comment included just in case this click on spline feature is desired in the future)
+	/* FindSel fs; */
+	/* SetFS(&fs,&cv->p,cv,event); */
+	/* _CVTestSelectFromEvent(cv,&fs); */
+	/* fs.p = &cv->p; */
     }
     
     
@@ -7311,7 +7316,7 @@ void FE_adjustBCPByDelta( void* key,
     FE_adjustBCPByDeltaData* data = (FE_adjustBCPByDeltaData*)udata;
     CharView *cv = data->cv;
 
-//    printf("FE_adjustBCPByDelta %p %d\n", which, isnext );
+    printf("FE_adjustBCPByDelta %p %d\n", which, isnext );
     BasePoint to;
     to.x = which->x + data->dx;
     to.y = which->y + data->dy;
@@ -7687,7 +7692,7 @@ return;
 	    event->u.chr.keysym == GK_KP_Right ||
 	    event->u.chr.keysym == GK_KP_Down )
     {
-//	printf("key left/right/up/down...\n");
+	printf("key left/right/up/down...\n");
 	
 	GGadget *active = GWindowGetFocusGadgetOfWindow(cv->gw);
 	if( active == cv->charselector )
