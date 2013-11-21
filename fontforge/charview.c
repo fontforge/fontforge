@@ -58,6 +58,7 @@ extern int _GScrollBar_Width;
 #define H_(str) ("CV*" str)
 
 extern void UndoesFreeButRetainFirstN( Undoes** undopp, int retainAmount );
+static void CVMoveInWordListByOffset( CharView* cv, int offset );
 
 int additionalCharsToShowLimit = 50;
 
@@ -7444,10 +7445,29 @@ return;
     CVPaletteActivate(cv);
     CVToolsSetCursor(cv,TrueCharState(event),NULL);
 
+    
 	/* The window check is to prevent infinite loops since DVChar can */
 	/*  call CVChar too */
     if ( cv->dv!=NULL && (event->w==cv->gw || event->w==cv->v) && DVChar(cv->dv,event))
+    {
 	/* All Done */;
+    }
+    else if( cv->activeModifierControl
+	&& event->u.chr.keysym == ',' || event->u.chr.keysym == '.' )
+    {
+	GGadget *active = GWindowGetFocusGadgetOfWindow(cv->gw);
+	if( active == cv->charselector )
+	{
+	    if( event->u.chr.keysym == ',' )
+	    {
+		CVMoveInWordListByOffset( cv, -1 );
+	    }
+	    else if( event->u.chr.keysym == '.' )
+	    {
+		CVMoveInWordListByOffset( cv, 1 );
+	    }
+	}
+    }
     else if ( event->u.chr.keysym=='s' &&
 	    (event->u.chr.state&ksm_control) &&
 	    (event->u.chr.state&ksm_meta) )
