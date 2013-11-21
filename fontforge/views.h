@@ -1538,4 +1538,5 @@ extern int CVNearRBearingLine( CharView* cv, real x, real fudge );
 extern int CVNearLBearingLine( CharView* cv, real x, real fudge );
 
 
+
 #endif	/* _VIEWS_H */
