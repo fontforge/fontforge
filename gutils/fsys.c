@@ -70,6 +70,25 @@ static void _u_backslash_to_slash(unichar_t* c){
 }
 #endif
 
+char *smprintf(char *fmt, ...) {
+    va_list fmtargs;
+    char *ret;
+    int len;
+
+    va_start(fmtargs, fmt);
+    len = vsnprintf(NULL, 0, fmt, fmtargs);
+    va_end(fmtargs);
+    ret = malloc(++len);
+    if (ret == NULL) {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+    }
+
+    va_start(fmtargs, fmt);
+    vsnprintf(ret, len, fmt, fmtargs);
+    va_end(fmtargs);
+    return ret;
+}
 
 char *GFileGetHomeDir(void) {
 #if defined(__MINGW32__)
@@ -761,6 +780,75 @@ return( NULL );
 return( NULL );
     editdir = copy(buffer);
 return( editdir );
+}
+
+char *getUserHomeDir(void) {
+#if defined(__MINGW32__)
+    char* dir = getenv("APPDATA");
+    if( dir==NULL )
+        dir = getenv("USERPROFILE");
+    if( dir!=NULL ) {
+        _backslash_to_slash(buffer);
+        return buffer;
+    }
+    return NULL;
+#else
+    int uid;
+    struct passwd *pw;
+    char *home = getenv("HOME");
+
+    if( home!=NULL )
+        return home;
+
+    uid = getuid();
+    while( (pw=getpwent())!=NULL ) {
+        if ( pw->pw_uid==uid ) {
+            home = pw->pw_dir;
+            endpwent();
+            return home;
+        }
+    }
+    endpwent();
+    return NULL;
+#endif
+}
+
+char *getFontForgeUserDir(int dir) {
+    char *def, *home, *xdg;
+    char *buf = NULL;
+
+    /* find home directory first, it is needed if any of the xdg env vars are
+     * not set */
+    if (!(home = getUserHomeDir())) {
+        fprintf(stderr, "%s\n", "cannot find home directory");
+        exit(1);
+    }
+#if defined(__MINGW32__)
+    return home;
+#else
+    switch(dir) {
+        case Cache:
+            xdg = getenv("XDG_CACHE_HOME");
+            def = ".cache";
+            break;
+        case Config:
+            xdg = getenv("XDG_CONFIG_HOME");
+            def = ".config";
+            break;
+        case Data:
+            xdg = getenv("XDG_DATA_HOME");
+            def = ".local/share";
+            break;
+        default:
+            fprintf(stderr, "%s\n", "invalid input");
+            exit(1);
+    }
+    if(xdg != NULL)
+        buf = smprintf("%s/fontforge", xdg);
+    else
+        buf = smprintf("%s/%s/fontforge", home, def);
+    return buf;
+#endif
 }
 
 long GFileGetSize(char *name) {

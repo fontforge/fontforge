@@ -440,9 +440,9 @@ static char *getPfaEditPrefs(void) {
 
     if ( prefs!=NULL )
 return( prefs );
-    if ( getPfaEditDir(buffer)==NULL )
+    if ( getFontForgeUserDir(Config)==NULL )
 return( NULL );
-    sprintf(buffer,"%s/prefs", getPfaEditDir(buffer));
+    sprintf(buffer,"%s/prefs", getFontForgeUserDir(Config));
     prefs = copy(buffer);
 return( prefs );
 }

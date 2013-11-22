@@ -41,8 +41,6 @@
 
 static int hotkeySystemCanUseMacCommand = 0;
 
-extern char *getPfaEditDir(char *buffer);
-
 struct dlistnode* hotkeys = 0;
 
 static char* hotkeyGetWindowTypeString( Hotkey* hk ) 
@@ -159,14 +157,14 @@ static char *getHotkeyFilename( char* extension ) {
     char *ret=NULL;
     char buffer[1025];
 
-    if ( getPfaEditDir(buffer)==NULL ) {
+    if ( getFontForgeUserDir(Config)==NULL ) {
 	fprintf(stderr,_("Can not work out where your hotkey definition file is!\n"));
 	return( NULL );
     }
     if( !extension )
 	extension = "";
     
-    sprintf(buffer,"%s/hotkeys%s", getPfaEditDir(buffer), extension);
+    sprintf(buffer,"%s/hotkeys%s", getFontForgeUserDir(Config), extension);
     ret = copy(buffer);
     return( ret );
 }

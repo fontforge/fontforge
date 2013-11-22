@@ -27,6 +27,11 @@
 #ifndef _GFILE_H
 #define _GFILE_H
 
+/* home directories for fontforge */
+enum { Cache, Config, Data };
+
+char *smprintf(char *fmt, ...);
+
 extern char* GFileGetHomeDir(void);
 extern unichar_t* u_GFileGetHomeDir(void);
 
@@ -74,6 +79,8 @@ extern char *getLocaleDir(void);
 extern char *getPixmapDir(void);
 extern char *getHelpDir(void);
 extern char *getDotFontForgeDir(void);
+extern char *getUserHomeDir(void);
+extern char *getFontForgeUserDir(int dir);
 extern char *getTempDir(void);
 
 /**
