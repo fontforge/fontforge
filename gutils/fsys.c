@@ -70,6 +70,7 @@ static void _u_backslash_to_slash(unichar_t* c){
 }
 #endif
 
+/* Wrapper for formatted variable list printing. */
 char *smprintf(char *fmt, ...) {
     va_list fmtargs;
     char *ret;
@@ -782,14 +783,16 @@ return( NULL );
 return( editdir );
 }
 
+/* reimplementation of GFileGetHomeDir, avoiding copy().  Returns NULL if home
+ * directory cannot be found */
 char *getUserHomeDir(void) {
 #if defined(__MINGW32__)
     char* dir = getenv("APPDATA");
     if( dir==NULL )
         dir = getenv("USERPROFILE");
     if( dir!=NULL ) {
-        _backslash_to_slash(buffer);
-        return buffer;
+        _backslash_to_slash(dir);
+        return dir;
     }
     return NULL;
 #else
@@ -813,6 +816,15 @@ char *getUserHomeDir(void) {
 #endif
 }
 
+/* Find the directory in which FontForge places all of its configurations and
+ * save files.  On Unix-likes, the argument `dir` (see the below case switch,
+ * enum in inc/gfile.h) determines which directory is returned according to the
+ * XDG Base Directory Specification.  On Windows, the argument is ignored--the
+ * home directory as obtained by getUserHomeDir() is returned.  On error, NULL
+ * is returned.
+ *
+ * http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
+ */
 char *getFontForgeUserDir(int dir) {
     char *def, *home, *xdg;
     char *buf = NULL;
@@ -820,12 +832,18 @@ char *getFontForgeUserDir(int dir) {
     /* find home directory first, it is needed if any of the xdg env vars are
      * not set */
     if (!(home = getUserHomeDir())) {
+        /* if getUserHomeDir returns NULL, pass NULL to calling function */
         fprintf(stderr, "%s\n", "cannot find home directory");
-        exit(1);
+        return NULL;
     }
 #if defined(__MINGW32__)
+    /* If we are on Windows, just use the home directory (%APPDATA% or
+     * %USERPROFILE% in that order) for everything */
     return home;
 #else
+    /* Home directory exists, so check for environment variables.  For each of
+     * XDG_{CACHE,CONFIG,DATA}_HOME, assign `def` as the corresponding fallback
+     * for if the environment variable does not exist. */
     switch(dir) {
         case Cache:
             xdg = getenv("XDG_CACHE_HOME");
@@ -840,12 +858,17 @@ char *getFontForgeUserDir(int dir) {
             def = ".local/share";
             break;
         default:
+            /* for an invalid argument, return NULL */
             fprintf(stderr, "%s\n", "invalid input");
-            exit(1);
+            return NULL;
     }
     if(xdg != NULL)
+        /* if, for example, XDG_CACHE_HOME exists, assign the value
+         * "$XDG_CACHE_HOME/fontforge" */
         buf = smprintf("%s/fontforge", xdg);
     else
+        /* if, for example, XDG_CACHE_HOME does not exist, instead assign
+         * the value "$HOME/.cache/fontforge" */
         buf = smprintf("%s/%s/fontforge", home, def);
     return buf;
 #endif
