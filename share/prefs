@@ -10,3 +10,4 @@ CreateDraggingComparisonOutline: 1
 ShowSideBearings: 0
 SnapOutlines: 0
 SnapDistance: 8
+MarkExtrema: 1
