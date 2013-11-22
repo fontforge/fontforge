@@ -72,23 +72,23 @@ static void _u_backslash_to_slash(unichar_t* c){
 
 /* Wrapper for formatted variable list printing. */
 char *smprintf(char *fmt, ...) {
-    va_list fmtargs;
-    char *ret;
-    int len;
+	va_list fmtargs;
+	char *ret;
+	int len;
 
-    va_start(fmtargs, fmt);
-    len = vsnprintf(NULL, 0, fmt, fmtargs);
-    va_end(fmtargs);
-    ret = malloc(++len);
-    if (ret == NULL) {
-        perror("malloc");
-        exit(EXIT_FAILURE);
-    }
+	va_start(fmtargs, fmt);
+	len = vsnprintf(NULL, 0, fmt, fmtargs);
+	va_end(fmtargs);
+	ret = malloc(++len);
+	if (ret == NULL) {
+	perror("malloc");
+exit(EXIT_FAILURE);
+	}
 
-    va_start(fmtargs, fmt);
-    vsnprintf(ret, len, fmt, fmtargs);
-    va_end(fmtargs);
-    return ret;
+	va_start(fmtargs, fmt);
+	vsnprintf(ret, len, fmt, fmtargs);
+	va_end(fmtargs);
+return ret;
 }
 
 char *GFileGetHomeDir(void) {
@@ -746,73 +746,36 @@ char *getHelpDir(void) {
     return sharedir;
 }
 
-char *getDotFontForgeDir(void) {
-    char buffer[PATH_MAX];
-    static char *editdir = NULL;
-    char *dir;
-    char olddir[1024];
-
-    if ( editdir!=NULL )
-return( editdir );
-
-    dir = GFileGetHomeDir();
-    if ( dir==NULL )
-return( NULL );
-#ifdef __VMS
-   sprintf(buffer,"%s/_FontForge", dir);
-#else
-   sprintf(buffer,"%s/.FontForge", dir);
-#endif
-   /* We used to use .PfaEdit. So if we don't find a .FontForge look for that*/
-    /*  if there is a .PfaEdit, then rename it to .FontForge */
-    if ( access(buffer,F_OK)==-1 ) {
-#ifdef __VMS
-       snprintf(olddir,sizeof(olddir),"%s/_PfaEdit", dir);
-#else
-       snprintf(olddir,sizeof(olddir),"%s/.PfaEdit", dir);
-#endif
-       if ( access(olddir,F_OK)==0 )
-	    rename(olddir,buffer);
-    }
-    free(dir);
-    /* If we still can't find it, create it */
-    if ( access(buffer,F_OK)==-1 )
-	if ( GFileMkDir(buffer)==-1 )
-return( NULL );
-    editdir = copy(buffer);
-return( editdir );
-}
-
 /* reimplementation of GFileGetHomeDir, avoiding copy().  Returns NULL if home
  * directory cannot be found */
 char *getUserHomeDir(void) {
 #if defined(__MINGW32__)
-    char* dir = getenv("APPDATA");
-    if( dir==NULL )
-        dir = getenv("USERPROFILE");
-    if( dir!=NULL ) {
-        _backslash_to_slash(dir);
-        return dir;
-    }
-    return NULL;
+	char* dir = getenv("APPDATA");
+	if( dir==NULL )
+	dir = getenv("USERPROFILE");
+	if( dir!=NULL ) {
+	_backslash_to_slash(dir);
+return dir;
+	}
+return NULL;
 #else
-    int uid;
-    struct passwd *pw;
-    char *home = getenv("HOME");
+	int uid;
+	struct passwd *pw;
+	char *home = getenv("HOME");
 
-    if( home!=NULL )
-        return home;
+	if( home!=NULL )
+return home;
 
-    uid = getuid();
-    while( (pw=getpwent())!=NULL ) {
-        if ( pw->pw_uid==uid ) {
-            home = pw->pw_dir;
-            endpwent();
-            return home;
-        }
-    }
-    endpwent();
-    return NULL;
+	uid = getuid();
+	while( (pw=getpwent())!=NULL ) {
+	if ( pw->pw_uid==uid ) {
+		home = pw->pw_dir;
+		endpwent();
+return home;
+	}
+	}
+	endpwent();
+return NULL;
 #endif
 }
 
@@ -826,51 +789,51 @@ char *getUserHomeDir(void) {
  * http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
  */
 char *getFontForgeUserDir(int dir) {
-    char *def, *home, *xdg;
-    char *buf = NULL;
+	char *def, *home, *xdg;
+	char *buf = NULL;
 
-    /* find home directory first, it is needed if any of the xdg env vars are
-     * not set */
-    if (!(home = getUserHomeDir())) {
-        /* if getUserHomeDir returns NULL, pass NULL to calling function */
-        fprintf(stderr, "%s\n", "cannot find home directory");
-        return NULL;
-    }
+	/* find home directory first, it is needed if any of the xdg env vars are
+	 * not set */
+	if (!(home = getUserHomeDir())) {
+	/* if getUserHomeDir returns NULL, pass NULL to calling function */
+	fprintf(stderr, "%s\n", "cannot find home directory");
+return NULL;
+	}
 #if defined(__MINGW32__)
-    /* If we are on Windows, just use the home directory (%APPDATA% or
-     * %USERPROFILE% in that order) for everything */
-    return home;
+	/* If we are on Windows, just use the home directory (%APPDATA% or
+	 * %USERPROFILE% in that order) for everything */
+return home;
 #else
-    /* Home directory exists, so check for environment variables.  For each of
-     * XDG_{CACHE,CONFIG,DATA}_HOME, assign `def` as the corresponding fallback
-     * for if the environment variable does not exist. */
-    switch(dir) {
-        case Cache:
-            xdg = getenv("XDG_CACHE_HOME");
-            def = ".cache";
-            break;
-        case Config:
-            xdg = getenv("XDG_CONFIG_HOME");
-            def = ".config";
-            break;
-        case Data:
-            xdg = getenv("XDG_DATA_HOME");
-            def = ".local/share";
-            break;
-        default:
-            /* for an invalid argument, return NULL */
-            fprintf(stderr, "%s\n", "invalid input");
-            return NULL;
-    }
-    if(xdg != NULL)
-        /* if, for example, XDG_CACHE_HOME exists, assign the value
-         * "$XDG_CACHE_HOME/fontforge" */
-        buf = smprintf("%s/fontforge", xdg);
-    else
-        /* if, for example, XDG_CACHE_HOME does not exist, instead assign
-         * the value "$HOME/.cache/fontforge" */
-        buf = smprintf("%s/%s/fontforge", home, def);
-    return buf;
+	/* Home directory exists, so check for environment variables.  For each of
+	 * XDG_{CACHE,CONFIG,DATA}_HOME, assign `def` as the corresponding fallback
+	 * for if the environment variable does not exist. */
+	switch(dir) {
+	  case Cache:
+	xdg = getenv("XDG_CACHE_HOME");
+	def = ".cache";
+	  break;
+	  case Config:
+	xdg = getenv("XDG_CONFIG_HOME");
+	def = ".config";
+	  break;
+	  case Data:
+	xdg = getenv("XDG_DATA_HOME");
+	def = ".local/share";
+	  break;
+	  default:
+	/* for an invalid argument, return NULL */
+	fprintf(stderr, "%s\n", "invalid input");
+return NULL;
+	}
+	if(xdg != NULL)
+	/* if, for example, XDG_CACHE_HOME exists, assign the value
+	 * "$XDG_CACHE_HOME/fontforge" */
+	buf = smprintf("%s/fontforge", xdg);
+	else
+	/* if, for example, XDG_CACHE_HOME does not exist, instead assign
+	 * the value "$HOME/.cache/fontforge" */
+	buf = smprintf("%s/%s/fontforge", home, def);
+return buf;
 #endif
 }
 
