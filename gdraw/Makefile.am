@@ -46,7 +46,12 @@ libgdraw_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	"-DSHAREDIR=\"${MY_SHAREDIR}\"" $(MY_CFLAGS) 
 
 libgdraw_la_LIBADD = $(MY_LIBS) $(top_builddir)/Unicode/libgunicode.la	\
-	$(top_builddir)/gutils/libgutils.la
+	$(top_builddir)/gutils/libgutils.la \
+	$(top_builddir)/fontforge/libfontforge.la
+
+if GRAPHICAL_USER_INTERFACE
+libgdraw_la_LIBADD += $(XINPUT_LIBS)
+endif GRAPHICAL_USER_INTERFACE
 
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
