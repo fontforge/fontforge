@@ -78,7 +78,6 @@ extern char *getShareDir(void);
 extern char *getLocaleDir(void);
 extern char *getPixmapDir(void);
 extern char *getHelpDir(void);
-extern char *getDotFontForgeDir(void);
 extern char *getUserHomeDir(void);
 extern char *getFontForgeUserDir(int dir);
 extern char *getTempDir(void);
