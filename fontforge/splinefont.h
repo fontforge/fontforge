@@ -871,7 +871,7 @@ typedef struct undoes {
 	    PST *possub;			/* only for ut_statename */
 	    struct splinepointlist *splines;
 	    struct refchar *refs;
-	    
+
 	    struct imagelist *images;
 	    void *hints;			/* ut_statehint, ut_statename */
 	    uint8 *instrs;
@@ -919,7 +919,7 @@ enum sfundotype
  * A spline font level undo stack. undoes are doubly linked using the
  * 'ln' member and carry some user presentable description of what the
  * undo relates to in 'msg'.
- * 
+ *
  * The sfdchunk is a pointer to an SFD fragment which will apply the
  * undo to the current state. For example, it might contain
  * information about the old value of kerning pairs which can be used
@@ -936,7 +936,7 @@ typedef struct sfundoes {
     } u;
     char* sfdchunk;
 } SFUndoes;
-    
+
 
 typedef struct enc {
     char *enc_name;
@@ -1371,7 +1371,7 @@ enum privatedict_state {
     pds_stemsnapnostdh = 0x0800000,
     pds_stemsnapnostdv = 0x1000000,
     pds_badblueshift   = 0x2000000
-    
+
 };
 
 enum validation_state { vs_unknown = 0,
@@ -2150,7 +2150,7 @@ extern char *_GetModifiers(char *fontname, char *familyname,char *weight);
 extern char *SFGetModifiers(SplineFont *sf);
 extern const unichar_t *_uGetModifiers(const unichar_t *fontname, const unichar_t *familyname,
 	const unichar_t *weight);
-extern void SFSetFontName(SplineFont *sf, char *family, char *mods, char *full);
+extern void SFSetFontName(SplineFont *sf, char *family, char *mods, char *fullname);
 extern void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes);
 extern void ttfdumpbitmapscaling(SplineFont *sf,struct alltabs *at,int32 *sizes);
 extern void SplineFontSetUnChanged(SplineFont *sf);
@@ -2351,7 +2351,7 @@ enum transformPointType { tpt_OnlySelected, tpt_AllPoints, tpt_OnlySelectedInter
 /*
  * As SplinePointListTransform() does a few things, this is a mask to selectively be
  * able to disable some of them.
- */ 
+ */
 enum transformPointMask {
     tpmask_dontFixControlPoints = 1 << 1,
     tpmask_operateOnSelectedBCP = 1 << 2
@@ -2758,7 +2758,7 @@ typedef struct sfd_getfontmetadatadata
     FPST*               lastfp;
     ASM*                lastsm;
     struct ttf_table*   lastttf[2];
-    
+
 } SFD_GetFontMetaDataData;
 extern void SFD_GetFontMetaDataData_Init( SFD_GetFontMetaDataData* d );
 extern void SFD_GetFontMetaData( FILE *sfd,
@@ -3372,14 +3372,14 @@ extern int SplinePointListContains( SplinePointList* container, SplinePointList*
 extern int SplinePointListContainsPoint( SplinePointList* container, SplinePoint* sp );
 
 /**
- * Visitor for SPLFirstVisitSplines() 
+ * Visitor for SPLFirstVisitSplines()
  */
 typedef void (*SPLFirstVisitSplinesVisitor)( SplinePoint* splfirst, Spline* s, void* udata );
 
 /**
  * Visitor Function: print debug information about each spline
- * 
- * Visitor for SPLFirstVisit() 
+ *
+ * Visitor for SPLFirstVisit()
  */
 extern void SPLFirstVisitorDebug(SplinePoint* splfirst, Spline* spline, void* udata );
 
@@ -3387,8 +3387,8 @@ extern void SPLFirstVisitorDebug(SplinePoint* splfirst, Spline* spline, void* ud
  * Visitor Function: print debug information about the current
  * selection state including the secondary BCP selection for each
  * spline
- * 
- * Visitor for SPLFirstVisit() 
+ *
+ * Visitor for SPLFirstVisit()
  */
 extern void SPLFirstVisitorDebugSelectionState(SplinePoint* splfirst, Spline* spline, void* udata );
 
@@ -3400,7 +3400,7 @@ extern void SPLFirstVisitorDebugSelectionState(SplinePoint* splfirst, Spline* sp
  *
  * For debug, you can pass SPLFirstVisitorDebug which will print
  * information for each item in the splfirst collection.
- * 
+ *
  * You can pass any arbitrary data in as udata and SPLFirstVisit()
  * will pass that udata to your visitor function without change. If
  * you want a return value from your visitor, pass a pointer to a
@@ -3411,21 +3411,21 @@ extern void SPLFirstVisitorDebugSelectionState(SplinePoint* splfirst, Spline* sp
  *    SplinePoint* sought;
  *    int found;
  * } SPLFirstVisitorFoundSoughtData;
- * 
+ *
  * // ...
- * 
+ *
  *	SPLFirstVisitorFoundSoughtData d;
  *	d.sought = sought;
  *	d.found  = 0;
  *	SPLFirstVisit( spl->first, SPLFirstVisitorFoundSought, &d );
  *	if( d.found )
  *           return 1;
- * 
+ *
  */
 extern void SPLFirstVisitSplines( SplinePoint* splfirst, SPLFirstVisitSplinesVisitor f, void* udata );
 
 /**
- * Visitor for SPLFirstVisitPoints() 
+ * Visitor for SPLFirstVisitPoints()
  */
 typedef void (*SPLFirstVisitPointsVisitor)( SplinePoint* splfirst, Spline* s, SplinePoint* sp, void* udata );
 
@@ -3447,7 +3447,7 @@ extern SplinePoint* SplinePointListContainsPointAtXY( SplinePointList* container
 
 /**
  * True if the spline with from/to is part of the guide splines.
- * 
+ *
  * Handy for telling if the user has just clicked on a guide for example,
  * you might want to also check the active layer first with cv->b.drawmode == dm_grid
  */

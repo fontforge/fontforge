@@ -68,6 +68,7 @@ return( copy( StdGlyphName(buf,*(unsigned char *) fpt,ui_none,(NameList *) -1)) 
 	char buffer[20];
 	static int unique = 0;
 	sprintf( buffer, "$u%d", ++unique );
+	free(temp);
 return( copy( buffer ));
     }
 
@@ -1935,14 +1936,19 @@ return;
 	SFForceEncoding(sf,map,enc);
 }
 
-void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
+void SFSetFontName(SplineFont *sf, char *family, char *mods,char *fullname) {
+    char *full;
     char *n;
     char *pt, *tpt;
 
     n = galloc(strlen(family)+strlen(mods)+2);
     strcpy(n,family); strcat(n," "); strcat(n,mods);
-    if ( full==NULL || *full == '\0' )
+    if ( fullname==NULL || *fullname == '\0' )
 	full = copy(n);
+    else
+	full = copy(fullname);
+    free(sf->fullname); sf->fullname = full;
+
     for ( pt=tpt=n; *pt; ) {
 	if ( !isspace(*pt))
 	    *tpt++ = *pt++;
@@ -1960,14 +1966,13 @@ void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
     *tpt = '\0';
 #endif
 
-    free(sf->fullname); sf->fullname = copy(full);
-
     /* In the URW world fontnames aren't just a simple concatenation of */
     /*  family name and modifiers, so neither the family name nor the modifiers */
     /*  changed, then don't change the font name */
     if ( strcmp(family,sf->familyname)==0 && strcmp(n,sf->fontname)==0 )
-	/* Don't change the fontname */;
+	/* Don't change the fontname */
 	/* or anything else */
+	free(n);
     else {
 	free(sf->fontname); sf->fontname = n;
 	free(sf->familyname); sf->familyname = copy(family);
