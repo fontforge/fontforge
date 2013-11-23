@@ -33,6 +33,7 @@
 #include <sys/stat.h>		/* for mkdir */
 #include <unistd.h>
 #include <glib.h>
+#include <errno.h>			/* for mkdir_p */
 
 
 #ifdef _WIN32
@@ -69,6 +70,48 @@ static void _backslash_to_slash(char* c){
 static void _u_backslash_to_slash(unichar_t* c){
 }
 #endif
+
+/* make directories.  make parent directories as needed,  with no error if
+ * the path already exists */
+int mkdir_p(const char *path, mode_t mode) {
+	struct stat st;
+	const char *e;
+	char *p = NULL;
+	char tmp[1024];
+	size_t len;
+	int r;
+
+	/* ensure the path is valid */
+	if(!(e = strrchr(path, '/')))
+return -EINVAL;
+	/* ensure path is a directory */
+	r = stat(path, &st);
+	if (r == 0 && !S_ISDIR(st.st_mode))
+return -ENOTDIR;
+
+	/* copy the pathname */
+	snprintf(tmp, sizeof(tmp),"%s", path);
+	len = strlen(tmp);
+	if(tmp[len - 1] == '/')
+	tmp[len - 1] = 0;
+
+	/* iterate mkdir over the path */
+	for(p = tmp + 1; *p; p++)
+	if(*p == '/') {
+		*p = 0;
+		r = mkdir(tmp, mode);
+		if (r < 0 && errno != EEXIST)
+return -errno;
+		*p = '/';
+	}
+
+	/* try to make the whole path */
+	r = mkdir(tmp, mode);
+	if(r < 0 && errno != EEXIST)
+return -errno;
+	/* creation successful or the file already exists */
+return EXIT_SUCCESS;
+}
 
 /* Wrapper for formatted variable list printing. */
 char *smprintf(char *fmt, ...) {
@@ -833,7 +876,14 @@ return NULL;
 	/* if, for example, XDG_CACHE_HOME does not exist, instead assign
 	 * the value "$HOME/.cache/fontforge" */
 	buf = smprintf("%s/%s/fontforge", home, def);
+	if(buf != NULL) {
+	/* try to create buf.  If creating the directory fails, return NULL
+	 * because nothing will get saved into an inaccessible directory.  */
+	if(mkdir_p(buf, 0755) != EXIT_SUCCESS)
+return NULL;
 return buf;
+	}
+return NULL;
 #endif
 }
 

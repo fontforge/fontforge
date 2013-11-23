@@ -30,6 +30,7 @@
 /* home directories for fontforge */
 enum { Cache, Config, Data };
 
+int mkdir_p(const char *path, mode_t mode);
 char *smprintf(char *fmt, ...);
 
 extern char* GFileGetHomeDir(void);
