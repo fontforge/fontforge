@@ -2207,7 +2207,7 @@ static int MapAddEnc(SplineFont *sf,SplineChar *sc,EncMap *basemap, EncMap *map,
     }
     if ( basemap!=NULL && map->enc==basemap->enc && baseenc!=-1 ) {
 	if ( baseenc>=map->enccount ) {
-	    if ( map==fv->map )
+	    if ( fv && map==fv->map )
 		FVAddEncodingSlot(fv,gid);
 	    else
 		MapAddEncodingSlot(map,gid);
