@@ -943,7 +943,7 @@ static PyObject *XMLEntryToPython(xmlDocPtr doc,xmlNodePtr entry);
 
 static PyObject *LibToPython(xmlDocPtr doc,xmlNodePtr dict) {
     PyObject *pydict = PyDict_New();
-    PyObject *item;
+    PyObject *item = NULL;
     xmlNodePtr keys, temp;
 
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
@@ -953,6 +953,7 @@ static PyObject *LibToPython(xmlDocPtr doc,xmlNodePtr dict) {
 		if ( xmlStrcmp(temp->name,(const xmlChar *) "text")!=0 )
 	    break;
 	    }
+		if ( temp!=NULL )
 	    item = XMLEntryToPython(doc,temp);
 	    if ( item!=NULL )
 		PyDict_SetItemString(pydict, keyname, item );
