@@ -142,7 +142,7 @@ msgstr "_Familienname:"
 
 #: fontinfo.c:6561
 msgid "Name For Human_s:"
-msgstr "_Vorzeigename:"
+msgstr "_Angezeigter Name für Benutzer:"
 
 #: fontinfo.c:6579 fontinfo.c:7900
 msgid "_Weight"
