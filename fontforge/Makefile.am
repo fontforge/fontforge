@@ -29,7 +29,7 @@ include $(top_srcdir)/mk/layout.am
 
 #--------------------------------------------------------------------------
 
-lib_LTLIBRARIES = libfontforge.la 
+lib_LTLIBRARIES = libfontforge.la
 
 #--------------------------------------------------------------------------
 .pre.c:
@@ -87,20 +87,20 @@ nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
 libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
-libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD) $(LIBLTDL) 
+libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD) $(LIBLTDL)
 
 if PLUGIN_GB12345
 libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/gb12345.la
 endif PLUGIN_GB12345
 
 if LIBZMQ
-libfontforge_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la $(LIBZMQ_LIBS) 
+libfontforge_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la $(LIBZMQ_LIBS)
 endif LIBZMQ
 
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
 libfontforge_la_LDFLAGS = $(MY_CFLAGS) -release $(VERSION)
-libfontforge_la_LIBADD += $(MY_LIBS) $(LIBZMQ_LIBS) 
+libfontforge_la_LIBADD += $(MY_LIBS) $(LIBZMQ_LIBS)
 
 
 #--------------------------------------------------------------------------
@@ -114,11 +114,35 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 
 #--------------------------------------------------------------------------
 
-EXTRA_DIST = libstamp.pre 
-MOSTLYCLEANFILES = libstamp.c 
+EXTRA_DIST = libstamp.pre
+MOSTLYCLEANFILES = libstamp.c
 
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
+
+FontForge-MenuShortCuts.pot: *.c
+	$(XGETTEXT) -kH_ -oFontForge-MenuShortCuts.pot *.c ../fontforgeexe/*c ../gdraw/*.c ../gutils/*.c ../inc/*.h
+	-patch < potmstitle.patch
+
+FontForge.pot: *.c utf8.pot
+	echo "If this doesn't work try make fontforge-old.pot instead"
+	$(XGETTEXT) --from-code=utf-8 -k_ -kN_ -kS_ -kU_ -kNU_ -kP_:1,2 --add-comments=GT: -oFontForge.pot *.c ../fontforgeexe/*c ../gdraw/*.c ../gutils/*.c ../inc/*.h
+	-patch < pottitle.patch
+
+# xgettext has caniptions and strips any non-ASCII characters from my strings
+# but I do occasionally want to use unicode characters (TeX, arrows, Increment)
+# so I have put these messages in utf8.pot which I manage by hand. non-ASCII
+# strings work just fine as keys. It does mean that my pot files should be
+# viewed in utf8 though.
+
+# I am told that new versions of xgettext support an option --from-code=UTF-8
+# unfortunately this works on none of the systems I use, and I haven't found
+# it documented. If it worked I would not need utf8.pot.
+FontForge-old.pot: *.c utf8.pot
+	$(XGETTEXT) -k_ -kN_ -kS_ -kP_:1,2 --add-comments=GT: -oFontForge.pot *.c ../fontforgeexe/*c ../gdraw/*.c ../gutils/*.c ../inc/*.h
+	cat utf8.pot >> FontForge.pot
+	-patch < pottitle.patch
+
 #--------------------------------------------------------------------------
 
 -include $(top_srcdir)/git.mk
