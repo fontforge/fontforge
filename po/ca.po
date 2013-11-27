@@ -3239,7 +3239,7 @@ msgid "Name this contour"
 msgstr "Nom del traçat"
 
 #: charview.c:4811
-msgid "You may attach a text label to this guideline if you wish to"
+msgid "Name this guideline or cancel to create it without a name"
 msgstr "Podeu associar una etiqueta de text a la guia"
 
 #: charview.c:5288

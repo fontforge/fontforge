@@ -3008,7 +3008,7 @@ msgid "Name this contour"
 msgstr "Назвати цей контур"
 
 #: ../fontforge/charview.c:5280
-msgid "You may attach a text label to this guideline if you wish to"
+msgid "Name this guideline or cancel to create it without a name"
 msgstr "Ви можете долучити текстову мітку до цієї напрямної, якщо бажаєте"
 
 #: ../fontforge/charview.c:5761 ../fontforge/fontviewbase.c:1763

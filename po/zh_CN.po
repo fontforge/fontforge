@@ -2926,7 +2926,7 @@ msgid "Name this contour"
 msgstr "命名此轮廓"
 
 #: charview.c:4834
-msgid "You may attach a text label to this guideline if you wish to"
+msgid "Name this guideline or cancel to create it without a name"
 msgstr "你可以给这条引导线附加一个文本标签"
 
 #

@@ -5923,7 +5923,7 @@ static void CVAddGuide(CharView *cv,int is_v,int guide_pos) {
     ss->next = sf->grid.splines;
     sf->grid.splines = ss;
     ss->contour_name = gwwv_ask_string(_("Name this contour"),NULL,
-		_("You may attach a text label to this guideline if you wish to"));
+		_("Name this guideline or cancel to create it without a name"));
     if ( ss->contour_name!=NULL && *ss->contour_name=='\0' ) {
 	free(ss->contour_name);
 	ss->contour_name = NULL;

@@ -3239,7 +3239,7 @@ msgid "Name this contour"
 msgstr "Дать имя контуру"
 
 #: ../fontforge/charview.c:5115
-msgid "You may attach a text label to this guideline if you wish to"
+msgid "Name this guideline or cancel to create it without a name"
 msgstr "Вы можете прицепить к направляющей текстовую метку:"
 
 #: ../fontforge/charview.c:5596

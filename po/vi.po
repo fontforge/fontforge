@@ -3223,7 +3223,7 @@ msgid "Name this contour"
 msgstr "Đặt tên cho đường viền này"
 
 #: charview.c:4754
-msgid "You may attach a text label to this guideline if you wish to"
+msgid "Name this guideline or cancel to create it without a name"
 msgstr "Bạn cũng có thể gắn một nhãn văn bản với nét dẫn"
 
 #: charview.c:5200

@@ -2652,7 +2652,7 @@ msgid "Name this contour"
 msgstr "命名這個輪廓"
 
 #: charview.c:4811
-msgid "You may attach a text label to this guideline if you wish to"
+msgid "Name this guideline or cancel to create it without a name"
 msgstr "如果您想要的話，可以附加文字標籤到這個指引"
 
 #: charview.c:5288 fontviewbase.c:1758

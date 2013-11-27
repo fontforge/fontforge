@@ -789,7 +789,7 @@ msgid "Name this contour"
 msgstr "同じ輪郭上の次の点"
 
 #: ../fontforge/charview.c:5087
-msgid "You may attach a text label to this guideline if you wish to"
+msgid "Name this guideline or cancel to create it without a name"
 msgstr ""
 
 #: ../fontforge/charview.c:5568 ../fontforge/fontviewbase.c:1761

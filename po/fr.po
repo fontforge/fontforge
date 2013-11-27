@@ -1968,7 +1968,7 @@ msgid "Name this contour"
 msgstr "nommer ce contour"
 
 #: charview.c:4684
-msgid "You may attach a text label to this guideline if you wish to"
+msgid "Name this guideline or cancel to create it without a name"
 msgstr ""
 
 #: charview.c:5095 fontview.c:1532

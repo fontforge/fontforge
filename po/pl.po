@@ -2868,7 +2868,7 @@ msgid "Name this contour"
 msgstr "Nazwa konturu"
 
 #: ../fontforge/charview.c:5353
-msgid "You may attach a text label to this guideline if you wish to"
+msgid "Name this guideline or cancel to create it without a name"
 msgstr "Tą prowadnicę można podpisać"
 
 #: ../fontforge/charview.c:5838 ../fontforge/fontviewbase.c:1763
