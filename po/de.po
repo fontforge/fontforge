@@ -13792,10 +13792,6 @@ msgstr "Exportieren..."
 msgid "Revert Gl_yph"
 msgstr "Zeichen zur_ücksetzen"
 
-#: ../fontforgeexe/charview.c:11161
-msgid "Load Word List..."
-msgstr ""
-
 #: ../fontforgeexe/charview.c:11163 ../fontforgeexe/fontview.c:4524
 #: ../fontforgeexe/metricsview.c:3697
 msgid "_Print..."
