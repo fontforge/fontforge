@@ -34,7 +34,7 @@ CharView.Menu.File.Import...:Ctl+Shft+I
 CharView.Menu.File.Revert File:Ctl+Shft+R
 CharView.Menu.File.Revert Glyph:Alt+Ctl+R
 CharView.Menu.File.Print...:Ctl+P
-CharView.Menu.File.Execute Script...:Ctl+.
+CharView.Menu.File.Execute Script...:Ctl+Alt+r
 CharView.Menu.File.Quit:Ctl+Q
 
 CharView.Menu.Edit.Undo:Ctl+Z
@@ -47,7 +47,7 @@ CharView.Menu.Edit.Copy Width:Ctl+W
 CharView.Menu.Edit.Copy LBearing:No Shortcut
 CharView.Menu.Edit.Copy RBearing:No Shortcut
 CharView.Menu.Edit.Paste:Ctl+V
-CharView.Menu.Edit.Clear:Delete
+CharView.Menu.Edit.Chop:Delete
 CharView.Menu.Edit.Clear Background:No Shortcut
 CharView.Menu.Edit.Merge:Ctl+M
 CharView.Menu.Edit.Merge to Line:Alt+Ctl+M
@@ -67,7 +67,7 @@ CharView.Menu.Edit.Select.Prev Point:Ctl+Shft+{
 CharView.Menu.Edit.Select.Next Control Point:Ctl+;
 CharView.Menu.Edit.Select.Prev Control Point:Ctl+Shft+:
 CharView.Menu.Edit.Select.Points on Selected Contours:Alt+Ctl+,
-CharView.Menu.Edit.Select.Point At:Ctl+,
+CharView.Menu.Edit.Select.Point At:No Shortcut
 CharView.Menu.Edit.Select.Select All Points & Refs:Alt+Ctl+A
 CharView.Menu.Edit.Select.Select Open Contours:No Shortcut
 CharView.Menu.Edit.Select.Select Anchors:No Shortcut
@@ -140,7 +140,7 @@ CharView.Menu.Element.Correct Direction:Ctl+Shft+D
 CharView.Menu.Element.Reverse Direction:No Shortcut
 CharView.Menu.Element.Insert Text Outlines:No Shortcut
 CharView.Menu.Element.Compare Layers...:No Shortcut
-CharView.Menu.Element.Align.Average Points:Ctl+Shft+@
+CharView.Menu.Element.Align.Align Points:Ctl+Shft+@
 CharView.Menu.Element.Align.Space Points:No Shortcut
 CharView.Menu.Element.Align.Space Regions...:No Shortcut
 CharView.Menu.Element.Align.Make Parallel...:No Shortcut
@@ -255,6 +255,8 @@ CharView.Menu.View.Zoom out:x
 CharView.Menu.View.Zoom in:Alt+Ctl+=
 CharView.Menu.View.Zoom in:=
 CharView.Menu.View.Zoom in:z
+CharView.Menu.View.Next Line in Word List:Ctl+.
+CharView.Menu.View.Previous Line in Word List:Ctl+,
 
 CharView.Menu.Metrics.Center in Width:No Shortcut
 CharView.Menu.Metrics.Thirds in Width:No Shortcut

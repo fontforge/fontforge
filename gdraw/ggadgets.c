@@ -1463,3 +1463,18 @@ int GGadgetGetSkipHotkeyProcessing( GGadget *g )
     return (g->gg_skip_hotkey_processing);
 }
 
+void GGadgetSetSkipUnQualifiedHotkeyProcessing( GGadget *g, int v )
+{
+    if( !g )
+	return;
+    g->gg_skip_unqualified_hotkey_processing = v;
+}
+
+int GGadgetGetSkipUnQualifiedHotkeyProcessing( GGadget *g )
+{
+    if( !g )
+	return 0;
+
+    return (g->gg_skip_unqualified_hotkey_processing);
+}
+

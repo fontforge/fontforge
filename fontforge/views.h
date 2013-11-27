@@ -201,6 +201,7 @@ typedef struct charview {
     unsigned int inDraggingComparisonOutline: 1;
     unsigned int activeModifierControl: 1; //< Is control being held right now?
     unsigned int activeModifierAlt: 1;     //< Is alt being held right now?
+    unsigned int changedActiveGlyph: 1;    //< Set in CVSwitchActiveSC() cleared in cvmouseup()
     
     int hvoffset;		/* for showalmosthvlines */
     int layers_off_top;
@@ -1532,5 +1533,10 @@ extern void CVVisitAdjacentToSelectedControlPoints( CharView *cv, bool preserveS
 extern void CVFreePreTransformSPL( CharView* cv );
 
 extern bool CVShouldInterpolateCPsOnMotion( CharView* cv );
+
+extern int CVNearRBearingLine( CharView* cv, real x, real fudge );
+extern int CVNearLBearingLine( CharView* cv, real x, real fudge );
+
+
 
 #endif	/* _VIEWS_H */

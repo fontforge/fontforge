@@ -33,6 +33,7 @@
 #include <sys/stat.h>		/* for mkdir */
 #include <unistd.h>
 #include <glib.h>
+#include <errno.h>			/* for mkdir_p */
 
 
 #ifdef _WIN32
@@ -70,6 +71,68 @@ static void _u_backslash_to_slash(unichar_t* c){
 }
 #endif
 
+/* make directories.  make parent directories as needed,  with no error if
+ * the path already exists */
+int mkdir_p(const char *path, mode_t mode) {
+	struct stat st;
+	const char *e;
+	char *p = NULL;
+	char tmp[1024];
+	size_t len;
+	int r;
+
+	/* ensure the path is valid */
+	if(!(e = strrchr(path, '/')))
+return -EINVAL;
+	/* ensure path is a directory */
+	r = stat(path, &st);
+	if (r == 0 && !S_ISDIR(st.st_mode))
+return -ENOTDIR;
+
+	/* copy the pathname */
+	snprintf(tmp, sizeof(tmp),"%s", path);
+	len = strlen(tmp);
+	if(tmp[len - 1] == '/')
+	tmp[len - 1] = 0;
+
+	/* iterate mkdir over the path */
+	for(p = tmp + 1; *p; p++)
+	if(*p == '/') {
+		*p = 0;
+		r = mkdir(tmp, mode);
+		if (r < 0 && errno != EEXIST)
+return -errno;
+		*p = '/';
+	}
+
+	/* try to make the whole path */
+	r = mkdir(tmp, mode);
+	if(r < 0 && errno != EEXIST)
+return -errno;
+	/* creation successful or the file already exists */
+return EXIT_SUCCESS;
+}
+
+/* Wrapper for formatted variable list printing. */
+char *smprintf(char *fmt, ...) {
+	va_list fmtargs;
+	char *ret;
+	int len;
+
+	va_start(fmtargs, fmt);
+	len = vsnprintf(NULL, 0, fmt, fmtargs);
+	va_end(fmtargs);
+	ret = malloc(++len);
+	if (ret == NULL) {
+	perror("malloc");
+exit(EXIT_FAILURE);
+	}
+
+	va_start(fmtargs, fmt);
+	vsnprintf(ret, len, fmt, fmtargs);
+	va_end(fmtargs);
+return ret;
+}
 
 char *GFileGetHomeDir(void) {
 #if defined(__MINGW32__)
@@ -726,41 +789,102 @@ char *getHelpDir(void) {
     return sharedir;
 }
 
-char *getDotFontForgeDir(void) {
-    char buffer[PATH_MAX];
-    static char *editdir = NULL;
-    char *dir;
-    char olddir[1024];
-
-    if ( editdir!=NULL )
-return( editdir );
-
-    dir = GFileGetHomeDir();
-    if ( dir==NULL )
-return( NULL );
-#ifdef __VMS
-   sprintf(buffer,"%s/_FontForge", dir);
+/* reimplementation of GFileGetHomeDir, avoiding copy().  Returns NULL if home
+ * directory cannot be found */
+char *getUserHomeDir(void) {
+#if defined(__MINGW32__)
+	char* dir = getenv("APPDATA");
+	if( dir==NULL )
+	dir = getenv("USERPROFILE");
+	if( dir!=NULL ) {
+	_backslash_to_slash(dir);
+return dir;
+	}
+return NULL;
 #else
-   sprintf(buffer,"%s/.FontForge", dir);
+	int uid;
+	struct passwd *pw;
+	char *home = getenv("HOME");
+
+	if( home!=NULL )
+return home;
+
+	uid = getuid();
+	while( (pw=getpwent())!=NULL ) {
+	if ( pw->pw_uid==uid ) {
+		home = pw->pw_dir;
+		endpwent();
+return home;
+	}
+	}
+	endpwent();
+return NULL;
 #endif
-   /* We used to use .PfaEdit. So if we don't find a .FontForge look for that*/
-    /*  if there is a .PfaEdit, then rename it to .FontForge */
-    if ( access(buffer,F_OK)==-1 ) {
-#ifdef __VMS
-       snprintf(olddir,sizeof(olddir),"%s/_PfaEdit", dir);
+}
+
+/* Find the directory in which FontForge places all of its configurations and
+ * save files.  On Unix-likes, the argument `dir` (see the below case switch,
+ * enum in inc/gfile.h) determines which directory is returned according to the
+ * XDG Base Directory Specification.  On Windows, the argument is ignored--the
+ * home directory as obtained by getUserHomeDir() is returned.  On error, NULL
+ * is returned.
+ *
+ * http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
+ */
+char *getFontForgeUserDir(int dir) {
+	char *def, *home, *xdg;
+	char *buf = NULL;
+
+	/* find home directory first, it is needed if any of the xdg env vars are
+	 * not set */
+	if (!(home = getUserHomeDir())) {
+	/* if getUserHomeDir returns NULL, pass NULL to calling function */
+	fprintf(stderr, "%s\n", "cannot find home directory");
+return NULL;
+	}
+#if defined(__MINGW32__)
+	/* If we are on Windows, just use the home directory (%APPDATA% or
+	 * %USERPROFILE% in that order) for everything */
+return home;
 #else
-       snprintf(olddir,sizeof(olddir),"%s/.PfaEdit", dir);
+	/* Home directory exists, so check for environment variables.  For each of
+	 * XDG_{CACHE,CONFIG,DATA}_HOME, assign `def` as the corresponding fallback
+	 * for if the environment variable does not exist. */
+	switch(dir) {
+	  case Cache:
+	xdg = getenv("XDG_CACHE_HOME");
+	def = ".cache";
+	  break;
+	  case Config:
+	xdg = getenv("XDG_CONFIG_HOME");
+	def = ".config";
+	  break;
+	  case Data:
+	xdg = getenv("XDG_DATA_HOME");
+	def = ".local/share";
+	  break;
+	  default:
+	/* for an invalid argument, return NULL */
+	fprintf(stderr, "%s\n", "invalid input");
+return NULL;
+	}
+	if(xdg != NULL)
+	/* if, for example, XDG_CACHE_HOME exists, assign the value
+	 * "$XDG_CACHE_HOME/fontforge" */
+	buf = smprintf("%s/fontforge", xdg);
+	else
+	/* if, for example, XDG_CACHE_HOME does not exist, instead assign
+	 * the value "$HOME/.cache/fontforge" */
+	buf = smprintf("%s/%s/fontforge", home, def);
+	if(buf != NULL) {
+	/* try to create buf.  If creating the directory fails, return NULL
+	 * because nothing will get saved into an inaccessible directory.  */
+	if(mkdir_p(buf, 0755) != EXIT_SUCCESS)
+return NULL;
+return buf;
+	}
+return NULL;
 #endif
-       if ( access(olddir,F_OK)==0 )
-	    rename(olddir,buffer);
-    }
-    free(dir);
-    /* If we still can't find it, create it */
-    if ( access(buffer,F_OK)==-1 )
-	if ( GFileMkDir(buffer)==-1 )
-return( NULL );
-    editdir = copy(buffer);
-return( editdir );
 }
 
 long GFileGetSize(char *name) {

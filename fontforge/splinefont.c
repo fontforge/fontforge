@@ -2030,7 +2030,8 @@ void SPLFirstVisitorDebugSelectionState(SplinePoint* splfirst, Spline* spline, v
 
 
 
-void SPLFirstVisit( SplinePoint* splfirst, SPLFirstVisitor f, void* udata )
+
+void SPLFirstVisitSplines( SplinePoint* splfirst, SPLFirstVisitSplinesVisitor f, void* udata )
 {
     Spline *spline=0;
     Spline *first=0;
@@ -2053,6 +2054,33 @@ void SPLFirstVisit( SplinePoint* splfirst, SPLFirstVisitor f, void* udata )
 	}
     }
 }
+
+void SPLFirstVisitPoints( SplinePoint* splfirst, SPLFirstVisitPointsVisitor f, void* udata )
+{
+    Spline *spline=0;
+    Spline *first=0;
+    Spline *next=0;
+
+    if ( splfirst!=NULL )
+    {
+	first = NULL;
+	for ( spline = splfirst->next; spline!=NULL && spline!=first; spline = next )
+	{
+	    next = spline->to->next;
+
+	    // callback
+	    if( splfirst && splfirst->next == spline )
+		f( splfirst, spline, spline->from, udata );
+	    f( splfirst, spline, spline->to, udata );
+
+	    if ( first==NULL )
+	    {
+		first = spline;
+	    }
+	}
+    }
+}
+
 
 
 typedef struct SPLFirstVisitorFoundSoughtDataS
@@ -2089,7 +2117,7 @@ int SplinePointListContainsPoint( SplinePointList* container, SplinePoint* sough
 	SPLFirstVisitorFoundSoughtData d;
 	d.sought = sought;
 	d.found  = 0;
-	SPLFirstVisit( spl->first, SPLFirstVisitorFoundSought, &d );
+	SPLFirstVisitSplines( spl->first, SPLFirstVisitorFoundSought, &d );
 	if( d.found )
 	    return 1;
     }
@@ -2183,7 +2211,7 @@ SplinePoint* SplinePointListContainsPointAtX( SplinePointList* container, real x
 	d.x      = x;
 	d.y      = 0;
 	d.found  = 0;
-	SPLFirstVisit( spl->first, SPLFirstVisitorFoundSoughtXY, &d );
+	SPLFirstVisitSplines( spl->first, SPLFirstVisitorFoundSoughtXY, &d );
 	if( d.found )
 	    return d.sp;
     }
@@ -2201,7 +2229,7 @@ SplinePoint* SplinePointListContainsPointAtY( SplinePointList* container, real y
 	d.x      = 0;
 	d.y      = y;
 	d.found  = 0;
-	SPLFirstVisit( spl->first, SPLFirstVisitorFoundSoughtXY, &d );
+	SPLFirstVisitSplines( spl->first, SPLFirstVisitorFoundSoughtXY, &d );
 	if( d.found )
 	    return d.sp;
     }
@@ -2219,7 +2247,7 @@ SplinePoint* SplinePointListContainsPointAtXY( SplinePointList* container, real 
 	d.x      = x;
 	d.y      = y;
 	d.found  = 0;
-	SPLFirstVisit( spl->first, SPLFirstVisitorFoundSoughtXY, &d );
+	SPLFirstVisitSplines( spl->first, SPLFirstVisitorFoundSoughtXY, &d );
 	if( d.found )
 	    return d.sp;
     }

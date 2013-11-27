@@ -76,9 +76,9 @@ static char *getPfaEditGroups(void) {
 
     if ( groupname!=NULL )
 return( groupname );
-    if ( getPfaEditDir(buffer)==NULL )
+    if ( getFontForgeUserDir(Config)==NULL )
 return( NULL );
-    sprintf(buffer,"%s/groups", getPfaEditDir(buffer));
+    sprintf(buffer,"%s/groups", getFontForgeUserDir(Config));
     groupname = copy(buffer);
 return( groupname );
 }

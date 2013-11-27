@@ -781,9 +781,9 @@ static char *getPfaEditPrefs(void) {
 
     if ( prefs!=NULL )
 return( prefs );
-    if ( getPfaEditDir(buffer)==NULL )
+    if ( getFontForgeUserDir(Config)==NULL )
 return( NULL );
-    sprintf(buffer,"%s/prefs", getPfaEditDir(buffer));
+    sprintf(buffer,"%s/prefs", getFontForgeUserDir(Config));
     prefs = copy(buffer);
 return( prefs );
 }
@@ -2651,7 +2651,7 @@ void RecentFilesRemember(char *filename) {
 void LastFonts_Save(void) {
     FontView *fv, *next;
     char buffer[1024];
-    char *ffdir = getPfaEditDir(buffer);
+    char *ffdir = getFontForgeUserDir(Config);
     FILE *preserve = NULL;
 
     if ( ffdir ) {

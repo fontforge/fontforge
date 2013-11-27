@@ -52,12 +52,16 @@ if LIBZMQ
 SUBDIRS += collab
 endif
 
+SUBDIRS += fontforge
+
 if GRAPHICAL_USER_INTERFACE
 SUBDIRS += gdraw
 endif GRAPHICAL_USER_INTERFACE
 
+SUBDIRS += fontforgeexe
+
 SUBDIRS += plugins
-SUBDIRS += fontforge po htdocs pycontrib
+SUBDIRS += po htdocs pycontrib
 SUBDIRS += nodejs
 SUBDIRS += cidmap
 SUBDIRS += tests

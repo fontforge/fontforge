@@ -456,9 +456,9 @@ static void SetCur(CharView *cv) {
 
     if ( cursors[ee_nw]==0 ) {
 	cursors[ee_none] = ct_mypointer;
-	cursors[ee_nw] = cursors[ee_se] = ct_nwse; cursors[ee_ne] = cursors[ee_sw] = ct_nesw;
+	cursors[ee_nw]   = cursors[ee_se] = ct_nwse; cursors[ee_ne] = cursors[ee_sw] = ct_nesw;
 	cursors[ee_left] = cursors[ee_right] = ct_leftright;
-	cursors[ee_up] = cursors[ee_down] = ct_updown;
+	cursors[ee_up]   = cursors[ee_down] = ct_updown;
     }
     GDrawSetCursor(cv->v,cursors[cv->expandedge]);
 }
@@ -477,6 +477,25 @@ return( i );
 return( -1 );
 }
 
+int CVNearRBearingLine( CharView* cv, real x, real fudge )
+{
+    RefChar *usemymetrics = HasUseMyMetrics(cv->b.sc,CVLayer((CharViewBase *) cv));
+    return( cv->showhmetrics
+	    && x>cv->b.sc->width-fudge
+	    && x<cv->b.sc->width+fudge
+	    && !cv->b.container
+	    && !usemymetrics );
+}
+int CVNearLBearingLine( CharView* cv, real x, real fudge )
+{
+    RefChar *usemymetrics = HasUseMyMetrics(cv->b.sc,CVLayer((CharViewBase *) cv));
+    return( cv->showhmetrics
+	    && x>0-fudge
+	    && x<0+fudge
+	    && !cv->b.container && !usemymetrics );
+}
+
+
 void CVCheckResizeCursors(CharView *cv) {
     RefChar *ref;
     ImageList *img;
@@ -491,10 +510,13 @@ void CVCheckResizeCursors(CharView *cv) {
 	}
 	if ( cv->expandedge == ee_none ) {
 	    RefChar *usemymetrics = HasUseMyMetrics(cv->b.sc,CVLayer((CharViewBase *) cv));
-	    if ( cv->showhmetrics && cv->info.x > cv->b.sc->width-fudge &&
-		    cv->info.x<cv->b.sc->width+fudge && cv->b.container==NULL &&
-		    usemymetrics==NULL )
+	    /* if ( cv->showhmetrics && cv->info.x > cv->b.sc->width-fudge && */
+	    /* 	 cv->info.x<cv->b.sc->width+fudge && cv->b.container==NULL && */
+	    /* 	 usemymetrics==NULL ) */
+	    if( CVNearRBearingLine( cv, cv->info.x, fudge ))
 		cv->expandedge = ee_right;
+	    else if( CVNearLBearingLine( cv, cv->info.x, fudge ))
+		cv->expandedge = ee_left;
 	    else if ( cv->showhmetrics && NearCaret(cv->b.sc,cv->info.x,fudge)!=-1 &&
 		    usemymetrics==NULL )
 		cv->expandedge = ee_right;
@@ -610,13 +632,8 @@ void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     /*  selected, or if the user held the shift key down */
     if ( ImgRefEdgeSelected(cv,fs,event))
 return;
-    dowidth = ( cv->showhmetrics && cv->p.cx>cv->b.sc->width-fs->fudge &&
-		cv->p.cx<cv->b.sc->width+fs->fudge && cv->b.container==NULL &&
-		usemymetrics==NULL );
-    dolbearing = ( cv->showhmetrics
-		   && cv->p.cx>0-fs->fudge
-		   && cv->p.cx<0+fs->fudge
-		   && !cv->b.container && !usemymetrics );
+    dowidth    = CVNearRBearingLine( cv, cv->p.cx, fs->fudge );
+    dolbearing = CVNearLBearingLine( cv, cv->p.cx, fs->fudge );
     doic = ( cv->showhmetrics && cv->b.sc->italic_correction!=TEX_UNDEF &&
 		cv->b.sc->italic_correction!=0 &&
 		cv->p.cx>cv->b.sc->width+cv->b.sc->italic_correction-fs->fudge &&
@@ -632,17 +649,17 @@ return;
 		usemymetrics==NULL );
     cv->nearcaret = nearcaret = -1;
     if ( cv->showhmetrics ) nearcaret = NearCaret(cv->b.sc,cv->p.cx,fs->fudge);
-    if ( (fs->p->sp==NULL || !fs->p->sp->selected) &&
-	    (fs->p->spiro==NULL || !SPIRO_SELECTED(fs->p->spiro)) &&
-	    (fs->p->ref==NULL || !fs->p->ref->selected) &&
-	    (fs->p->img==NULL || !fs->p->img->selected) &&
-	    (fs->p->ap==NULL || !fs->p->ap->selected) &&
-	    (!dowidth || !cv->widthsel) &&
+    if ( (fs->p->sp==NULL    || !fs->p->sp->selected) &&
+	 (fs->p->spiro==NULL || !SPIRO_SELECTED(fs->p->spiro)) &&
+	 (fs->p->ref==NULL   || !fs->p->ref->selected) &&
+	 (fs->p->img==NULL   || !fs->p->img->selected) &&
+	 (fs->p->ap==NULL    || !fs->p->ap->selected) &&
+	 (!dowidth    || !cv->widthsel) &&
 	 (!dolbearing || !cv->lbearingsel) && 
-	    (!dovwidth || !cv->vwidthsel) &&
-	    (!doic || !cv->icsel) &&
-	    (!dotah || !cv->tah_sel) &&
-	    !(event->u.mouse.state&ksm_shift))
+	 (!dovwidth   || !cv->vwidthsel) &&
+	 (!doic  || !cv->icsel) &&
+	 (!dotah || !cv->tah_sel) &&
+	 !(event->u.mouse.state&ksm_shift))
     {
 	needsupdate = CVClearSel(cv);
     }
@@ -1424,7 +1441,7 @@ int CVMouseMovePointer(CharView *cv, GEvent *event) {
     int needsupdate = false;
     int did_a_merge = false;
     int touch_control_points = false;
-    
+
     
     /* if we haven't moved from the original location (ever) then this is a noop */
     if ( !cv->p.rubberbanding && !cv->recentchange &&
@@ -1441,7 +1458,12 @@ return( false );
     /*  done by move selection */
     if ( cv->expandedge!=ee_none && !cv->widthsel && !cv->vwidthsel && !cv->lbearingsel
 	 && cv->nearcaret==-1 && !cv->icsel && !cv->tah_sel )
-	needsupdate = CVExpandEdge(cv);
+    {
+	if( !cv->changedActiveGlyph )
+	{
+	    needsupdate = CVExpandEdge(cv);
+	}
+    }
     else if ( cv->nearcaret!=-1 && cv->lcarets!=NULL ) {
 	if ( cv->info.x!=cv->last_c.x ) {
 	    if ( !cv->recentchange ) SCPreserveLayer(cv->b.sc,CVLayer((CharViewBase *) cv),2);
@@ -1601,17 +1623,24 @@ void CVMouseUpPointer(CharView *cv ) {
 	cv->lcarets = NULL;
 	GDrawSetCursor(cv->v,ct_mypointer);
     }
-    if ( cv->expandedge!=ee_none )
+    if( cv->changedActiveGlyph )
     {
-	CVUndoCleanup(cv);
-	cv->expandedge = ee_none;
-	GDrawSetCursor(cv->v,ct_mypointer);
+	cv->changedActiveGlyph = 0;
     }
-    else if ( CVAllSelected(cv) && cv->b.drawmode==dm_fore && cv->p.spline==NULL
-	      && !cv->p.prevcp && !cv->p.nextcp && cv->info.y==cv->p.cy )
+    else
     {
-	SCUndoSetLBearingChange(cv->b.sc,(int) rint(cv->info.x-cv->p.cx));
-	SCSynchronizeLBearing(cv->b.sc,cv->info.x-cv->p.cx,CVLayer((CharViewBase *) cv));
+	if ( cv->expandedge!=ee_none )
+	{
+	    CVUndoCleanup(cv);
+	    cv->expandedge = ee_none;
+	    GDrawSetCursor(cv->v,ct_mypointer);
+	}
+	else if ( CVAllSelected(cv) && cv->b.drawmode==dm_fore && cv->p.spline==NULL
+		  && !cv->p.prevcp && !cv->p.nextcp && cv->info.y==cv->p.cy )
+	{
+	    SCUndoSetLBearingChange(cv->b.sc,(int) rint(cv->info.x-cv->p.cx));
+	    SCSynchronizeLBearing(cv->b.sc,cv->info.x-cv->p.cx,CVLayer((CharViewBase *) cv));
+	}
     }
     CPEndInfo(cv);
 }

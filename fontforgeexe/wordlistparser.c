@@ -236,6 +236,28 @@ unichar_t* WordlistEscpaedInputStringToRealString(
     return(ret);
 }
 
+//
+// If there is only one trailing slash, then remove it.
+//
+void WordlistTrimTrailingSingleSlash( unichar_t* txt )
+{
+    int len = u_strlen(txt);
+    printf("text changed, len :%d -1:%c -2:%c\n", len, txt[ len-1 ], txt[ len-2 ]  );
+    if( len >= 1 )
+    {
+	if( len >= 2 && txt[ len-1 ]=='/' && txt[ len-2 ]=='/' )
+	{
+	    // nothing
+	}
+	else
+	{
+	    if( txt[ len-1 ]=='/' )
+		txt[ len-1 ] = '\0';
+	}
+    }
+}
+
+
 unichar_t* WordlistEscpaedInputStringToRealStringBasic(
     SplineFont* sf,
     unichar_t* input_const,

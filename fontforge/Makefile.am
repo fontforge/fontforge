@@ -29,47 +29,9 @@ include $(top_srcdir)/mk/layout.am
 
 #--------------------------------------------------------------------------
 
-if THE_PROGRAMS
-
-bin_PROGRAMS = fontforge
-dist_man_MANS = fontforge.1
-
-if NATIVE_SCRIPTING
-nodist_bin_SCRIPTS = fontimage fontlint sfddiff
-dist_man_MANS += fontimage.1 fontlint.1 sfddiff.1
-endif NATIVE_SCRIPTING
-
-endif THE_PROGRAMS
-
-lib_LTLIBRARIES = libfontforge.la libfontforgeexe.la
+lib_LTLIBRARIES = libfontforge.la
 
 #--------------------------------------------------------------------------
-
-macobjective.o: macobjective.m
-	clang -g -arch x86_64 -arch i386 -c "${srcdir}/macobjective.m" -o macobjective.o
-
-
-#--------------------------------------------------------------------------
-
-SUBDIRS = pixmaps
-if LIBZMQ
-SUBDIRS += collab
-endif LIBZMQ
-
-FFSCRIPT_HEADER = "\#!$(bindir)/fontforge -lang=ff"
-
-fontimage: fontimage.pe
-	echo "${FFSCRIPT_HEADER}" | cat - "${srcdir}/fontimage.pe" > fontimage
-	chmod +x fontimage
-
-fontlint: fontlint.pe
-	echo "${FFSCRIPT_HEADER}" | cat - "${srcdir}/fontlint.pe" > fontlint
-	chmod +x fontlint
-
-sfddiff: sfddiff.pe
-	echo "${FFSCRIPT_HEADER}" | cat - "${srcdir}/sfddiff.pe" > sfddiff
-	chmod +x sfddiff
-
 .pre.c:
 	$(SED) -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(VERSION_MAJOR)/'	\
 	       -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(VERSION_MINOR)/'	\
@@ -78,7 +40,7 @@ sfddiff: sfddiff.pe
 #--------------------------------------------------------------------------
 
 noinst_HEADERS = fontforgeui.h sftextfieldP.h configure-fontforge.h	\
-	views.h is_LIGATURE.h flaglist.h strlist.h
+	views.h is_LIGATURE.h flaglist.h strlist.h charview_private.h
 pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	libffstamp.h psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
 	lookups.h savefont.h ttf.h baseviews.h fvmetrics.h mm.h			\
@@ -90,17 +52,14 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 
 #--------------------------------------------------------------------------
 
-if THE_PROGRAMS
+LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
+	$(top_builddir)/gutils/libgutils.la			\
+	$(top_builddir)/gutils/libgioftp.la
 
-fontforge_SOURCES = main.c
-fontforge_CPPFLAGS = $(AM_CPPFLAGS)
-fontforge_LDADD = $(MY_LIBS) libfontforgeexe.la libfontforge.la $(LDADD)
-fontforge_LDFLAGS = $(MY_CFLAGS) -export-dynamic
-if LIBZMQ
-fontforge_LDADD += $(LIBZMQ_LIBS) $(top_srcdir)/collab/libzmqcollab.la
-endif
 
-endif THE_PROGRAMS
+AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
+	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
+	"-DPLUGINDIR=\"${MY_PLUGINDIR}\"" $(MY_CFLAGS)
 
 #--------------------------------------------------------------------------
 
@@ -135,78 +94,14 @@ libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/gb12345.la
 endif PLUGIN_GB12345
 
 if LIBZMQ
-libfontforge_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la
+libfontforge_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la $(LIBZMQ_LIBS)
 endif LIBZMQ
 
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
 libfontforge_la_LDFLAGS = $(MY_CFLAGS) -release $(VERSION)
-libfontforge_la_LIBADD += $(MY_LIBS) $(LIBZMQ_LIBS) 
+libfontforge_la_LIBADD += $(MY_LIBS) $(LIBZMQ_LIBS)
 
-#--------------------------------------------------------------------------
-
-if GRAPHICAL_USER_INTERFACE
-
-libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
-	autowidth2dlg.c basedlg.c bdfinfo.c bitmapdlg.c bitmapview.c	\
-	charinfo.c charview.c clipui.c combinations.c contextchain.c	\
-	cursors.c cvaddpoints.c cvdebug.c cvdgloss.c cvexportdlg.c		\
-	cvfreehand.c cvgetinfo.c cvgridfit.c cvhand.c cvhints.c			\
-	cvimportdlg.c cvknife.c cvpalettes.c cvpointer.c cvruler.c 		\
-	cvshapes.c cvstroke.c cvtranstools.c displayfonts.c effectsui.c	\
-	encodingui.c fontinfo.c fontview.c freetypeui.c fvfontsdlg.c	\
-	fvmetricsdlg.c gotodlg.c groupsdlg.c histograms.c images.c		\
-	kernclass.c layer2layer.c lookupui.c macencui.c math.c			\
-	metricsview.c mmdlg.c nonlineartransui.c oflib.c openfontdlg.c	        \
-	prefs.c problems.c pythonui.c savefontdlg.c scriptingdlg.c		\
-	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	        \
-	splashimage.c startui.c statemachine.c tilepath.c transform.c	        \
-	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
-	usermenu.c macobjective.h                                               \
-        collabclientui.c collabclientui.h                                       \
-	sfundo.c sfundo.h                                                       \
-	wordlistparser.c wordlistparser.h
-
-else !GRAPHICAL_USER_INTERFACE
-
-libfontforgeexe_la_SOURCES = startnoui.c
-
-endif !GRAPHICAL_USER_INTERFACE
-
-nodist_libfontforgeexe_la_SOURCES = exelibstamp.c
-
-if MACINTOSH
-MACFFEXE_LIBADD=macobjective.o
-endif MACINTOSH
-
-libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
-libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MACFFEXE_LIBADD)
-
-# Using -release instead of -version-info seems appropriate in the
-# absence of a well defined ABI.
-libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) -release $(VERSION)
-libfontforgeexe_la_LIBADD += $(MY_LIBS) $(LIBZMQ_LIBS) 
-if LIBZMQ
-libfontforgeexe_la_LIBADD += $(top_srcdir)/collab/libzmqcollab.la
-endif
-
-#--------------------------------------------------------------------------
-
-LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
-	$(top_builddir)/gutils/libgutils.la			\
-	$(top_builddir)/gutils/libgioftp.la
-
-GUILIBADD =
-if GRAPHICAL_USER_INTERFACE
-GUILIBADD += $(top_builddir)/gdraw/libgdraw.la $(XINPUT_LIBS)	\
-	$(XKB_LIBS)
-endif GRAPHICAL_USER_INTERFACE
-
-LDADD = $(LIBADD) $(GUILIBADD)
-
-AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
-	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
-	"-DPLUGINDIR=\"${MY_PLUGINDIR}\"" $(MY_CFLAGS)
 
 #--------------------------------------------------------------------------
 
@@ -219,14 +114,35 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 
 #--------------------------------------------------------------------------
 
-EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe libstamp.pre	\
-	exelibstamp.pre fontimage.1 fontlint.1 sfddiff.1			\
-	MacFontForgeApp.zip darwinsetup.in macobjective.m
-MOSTLYCLEANFILES = fontimage fontlint sfddiff libstamp.c	\
-	exelibstamp.c
+EXTRA_DIST = libstamp.pre
+MOSTLYCLEANFILES = libstamp.c
 
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
+
+FontForge-MenuShortCuts.pot: *.c
+	$(XGETTEXT) -kH_ -oFontForge-MenuShortCuts.pot *.c ../fontforgeexe/*c ../gdraw/*.c ../gutils/*.c ../inc/*.h
+	-patch < potmstitle.patch
+
+FontForge.pot: *.c utf8.pot
+	echo "If this doesn't work try make fontforge-old.pot instead"
+	$(XGETTEXT) --from-code=utf-8 -k_ -kN_ -kS_ -kU_ -kNU_ -kP_:1,2 --add-comments=GT: -oFontForge.pot *.c ../fontforgeexe/*c ../gdraw/*.c ../gutils/*.c ../inc/*.h
+	-patch < pottitle.patch
+
+# xgettext has caniptions and strips any non-ASCII characters from my strings
+# but I do occasionally want to use unicode characters (TeX, arrows, Increment)
+# so I have put these messages in utf8.pot which I manage by hand. non-ASCII
+# strings work just fine as keys. It does mean that my pot files should be
+# viewed in utf8 though.
+
+# I am told that new versions of xgettext support an option --from-code=UTF-8
+# unfortunately this works on none of the systems I use, and I haven't found
+# it documented. If it worked I would not need utf8.pot.
+FontForge-old.pot: *.c utf8.pot
+	$(XGETTEXT) -k_ -kN_ -kS_ -kP_:1,2 --add-comments=GT: -oFontForge.pot *.c ../fontforgeexe/*c ../gdraw/*.c ../gutils/*.c ../inc/*.h
+	cat utf8.pot >> FontForge.pot
+	-patch < pottitle.patch
+
 #--------------------------------------------------------------------------
 
 -include $(top_srcdir)/git.mk

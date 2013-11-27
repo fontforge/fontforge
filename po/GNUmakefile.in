@@ -31,7 +31,6 @@
 # for GNU Make.
 
 include Makefile
-include $(top_builddir)/mk/xgettext_search.mk
 
 XGETTEXT_OPTIONS = --keyword=_ --keyword=N_ --keyword=S_ --keyword=U_	\
 --keyword=NU_ --keyword=P_:1,2 --add-comments=GT: --from-code=utf-8		\
@@ -45,7 +44,7 @@ MY_POTFILE = FontForge.pot
 $(MY_POTFILE): potfile
 
 potfile:
-	$(XGETTEXT) $(XGETTEXT_OPTIONS) --output=$(MY_POTFILE) $(xgettext_search_files)
+	$(XGETTEXT) $(XGETTEXT_OPTIONS) --output=$(MY_POTFILE) $(top_srcdir)/fontforge/*.c $(top_srcdir)/fontforge/*.pre $(top_srcdir)/gdraw/*.c
 	$(SED) -i -e '1,4d' $(MY_POTFILE)
 	$(SED) -i -e "1i\
 # Template of user interface strings for $(PACKAGE), in US English.\n\

@@ -481,9 +481,9 @@ static char *getPfaEditEncodings(void) {
 
     if ( encfile!=NULL )
 return( encfile );
-    if ( getPfaEditDir(buffer)==NULL )
+    if ( getFontForgeUserDir(Config)==NULL )
 return( NULL );
-    sprintf(buffer,"%s/Encodings.ps", getPfaEditDir(buffer));
+    sprintf(buffer,"%s/Encodings.ps", getFontForgeUserDir(Config));
     encfile = copy(buffer);
 return( encfile );
 }
@@ -2207,7 +2207,7 @@ static int MapAddEnc(SplineFont *sf,SplineChar *sc,EncMap *basemap, EncMap *map,
     }
     if ( basemap!=NULL && map->enc==basemap->enc && baseenc!=-1 ) {
 	if ( baseenc>=map->enccount ) {
-	    if ( map==fv->map )
+	    if ( fv && map==fv->map )
 		FVAddEncodingSlot(fv,gid);
 	    else
 		MapAddEncodingSlot(map,gid);
