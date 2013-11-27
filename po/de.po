@@ -13793,7 +13793,7 @@ msgid "Revert Gl_yph"
 msgstr "Zeichen zur_ücksetzen"
 
 #: ../fontforgeexe/charview.c:11161
-msgid "Add Word List..."
+msgid "Load Word List..."
 msgstr ""
 
 #: ../fontforgeexe/charview.c:11163 ../fontforgeexe/fontview.c:4524
@@ -27105,7 +27105,7 @@ msgid "Point Size:"
 msgstr "Pixelgrößen:"
 
 #: ../fontforgeexe/metricsview.c:3695
-msgid "Add _Word List..."
+msgid "Load _Word List..."
 msgstr ""
 
 #: ../fontforgeexe/metricsview.c:3743
