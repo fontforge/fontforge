@@ -3047,10 +3047,6 @@ msgstr ""
 msgid "Revert Gl_yph"
 msgstr ""
 
-#: ../fontforge/charview.c:11324
-msgid "Load Word List..."
-msgstr ""
-
 #: ../fontforge/charview.c:11326 ../fontforge/fontview.c:4524
 #: ../fontforge/metricsview.c:3697
 msgid "_Print..."
