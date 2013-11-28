@@ -125,7 +125,7 @@ FontForge-MenuShortCuts.pot: *.c
 	-patch < potmstitle.patch
 
 FontForge.pot: *.c utf8.pot
-	echo "If this doesn't work try make fontforge-old.pot instead"
+	echo "If this doesn't work try make FontForge-old.pot instead"
 	$(XGETTEXT) --from-code=utf-8 -k_ -kN_ -kS_ -kU_ -kNU_ -kP_:1,2 --add-comments=GT: -oFontForge.pot *.c ../fontforgeexe/*c ../gdraw/*.c ../gutils/*.c ../inc/*.h
 	-patch < pottitle.patch
 
