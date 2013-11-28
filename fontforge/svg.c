@@ -2662,12 +2662,14 @@ static void SVGFigureStyle(struct svg_state *st,char *name,
 	    *pt = '\0';
 	    while ( *name!=':' && *name!=';' && *name!='\0' ) ++name;
 	    if ( *name==':' ) ++name;
+
+	    /* fetch prop value */
 	    while ( isspace(*name) ) ++name;
 	    propbuf[0] = '\0';
 	    if ( *name!='\0' && *name!=';' ) {
 		pt = propbuf;
 		while ( *name!='\0' && *name!=';' && !isspace(*name) ) {
-		    if ( pt<namebuf+sizeof(namebuf)-1 )
+		    if ( pt<propbuf+sizeof(propbuf)-1 )
 			*pt++ = *name;
 		    ++name;
 		}
