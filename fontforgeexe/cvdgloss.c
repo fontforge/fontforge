@@ -926,10 +926,10 @@ return(1);
       case 0x18: case 0x19:
       case 0x3D:
       case 0x76: case 0x77: case 0x7a: case 0x7c: case 0x7d:
-	scrprintf(&scr, operator==0x7a?" set Rounding down to grid":
+	scrprintf(&scr, operator==0x7a?" set Rounding off":
 			operator==0x7c?" set Rounding up to grid":
 			operator==0x77?" set Rounding to Super 45":
-			operator==0x7d?" set Rounding Off":
+			operator==0x7d?" set Rounding down to grid":
 			operator==0x18?" set Rounding to grid":
 			operator==0x3D?" set Rounding to double grid":
 			operator==0x19?" set Rounding to half grid":
