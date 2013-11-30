@@ -585,6 +585,11 @@ int32 GScrollBarGetPos(GGadget *g) {
 return( ((GScrollBar *) g)->sb_pos );
 }
 
+int32 GScrollBarAddToPos(GGadget *g,int32 pos) {
+    return GScrollBarSetPos( g, GScrollBarGetPos(g) + pos );
+}
+
+
 int32 GScrollBarSetPos(GGadget *g,int32 pos) {
     GScrollBar *gsb = (GScrollBar *) g;
 

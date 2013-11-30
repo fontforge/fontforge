@@ -49,6 +49,8 @@ extern int _GScrollBar_Width;
 #include "gdraw/hotkeys.h"
 #include "wordlistparser.h"
 
+#include "charview_private.h"
+
 /* Barry wants to be able to redefine menu bindings only in the charview (I think) */
 /*  the menu parser will first check for something like "CV*Open|Ctl+O", and */
 /*  if that fails will strip off "CV*" and check for "Open|Ctl+O" */
@@ -56,6 +58,7 @@ extern int _GScrollBar_Width;
 #define H_(str) ("CV*" str)
 
 extern void UndoesFreeButRetainFirstN( Undoes** undopp, int retainAmount );
+static void CVMoveInWordListByOffset( CharView* cv, int offset );
 
 int additionalCharsToShowLimit = 50;
 
@@ -135,6 +138,7 @@ static Color selectedcpcol = 0xffffff;
 static Color coordcol = 0x808080;
 Color widthcol = 0x000000;
 static Color widthselcol = 0x00ff00;
+static Color lbearingselcol = 0x00ff00;
 static Color widthgridfitcol = 0x009800;
 static Color lcaretcol = 0x909040;
 static Color rastercol = 0xffa0a0a0;		/* Translucent */
@@ -180,8 +184,9 @@ static Color DraggingComparisonAlphaChannelOverride = 0x88000000;
 
 
 
-static void isAnyControlPointSelectedVisitor(SplinePoint* splfirst, Spline* spline, void* udata );
+static void isAnyControlPointSelectedVisitor(SplinePoint* splfirst, Spline* s, SplinePoint* sp, void* udata );
 static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e );
+static void CVHScrollSetPos( CharView *cv, int newpos );
 
 
 static int cvcolsinited = false;
@@ -218,6 +223,7 @@ static struct resed charview_re[] = {
 static struct resed charview2_re[] = {
     { N_("Width Color"), "WidthColor", rt_color, &widthcol, N_("The color of the line marking the advance width"), NULL, { 0 }, 0, 0 },
     { N_("Selected Width Color"), "WidthSelColor", rt_color, &widthselcol, N_("The color of the line marking the advance width when it is selected"), NULL, { 0 }, 0, 0 },
+    { N_("Selected LBearing Color"), "LBearingSelColor", rt_color, &lbearingselcol, N_("The color of the line marking the left bearing when it is selected"), NULL, { 0 }, 0, 0 },
     { N_("Grid Fit Width Color"), "GridFitWidthColor", rt_color, &widthgridfitcol, N_("The color of the line marking the grid-fit advance width"), NULL, { 0 }, 0, 0 },
     { N_("Ligature Caret Color"), "LigatureCaretColor", rt_color, &lcaretcol, N_("The color of the line(s) marking ligature carets"), NULL, { 0 }, 0, 0 },
     { N_("Anchor Color"), "AnchorColor", rt_color, &anchorcol, N_("The color of anchor stars"), NULL, { 0 }, 0, 0 },
@@ -287,14 +293,15 @@ int CVCountSelectedPoints(CharView *cv) {
 
     for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	first = NULL;
-	if ( spl->first->selected ) {
-	    ret++;
-	}
-	first = NULL;
-
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+	    if( spline == spl->first->next ) {
+		if ( spline->from->selected ) {
+		    ret++;
+		}
+	    }
 	    if ( spline->to->selected ) {
-		ret++;
+		if( spline->to != spl->first->next->from )
+		    ret++;
 	    }
 	    if ( first==NULL ) {
 		first = spline;
@@ -2553,13 +2560,13 @@ return;				/* no points. no side bearings */
 static int CVExposeGlyphFill(CharView *cv, GWindow pixmap, GEvent *event, DRect* clip ) {
     int layer, cvlayer = CVLayer((CharViewBase *) cv);
     int filled = 0;
-    if (( cv->showfore || cv->b.drawmode==dm_fore ) && cv->showfilled &&
-	cv->filled!=NULL ) {
-	GDrawDrawImage(pixmap, &cv->gi, NULL,
-		       cv->xoff + cv->filled->xmin,
-		       -cv->yoff + cv->height-cv->filled->ymax);
-	filled = 1;
-    }
+    /* if (( cv->showfore || cv->b.drawmode==dm_fore ) && cv->showfilled && */
+    /* 	cv->filled!=NULL ) { */
+    /* 	GDrawDrawImage(pixmap, &cv->gi, NULL, */
+    /* 		       cv->xoff + cv->filled->xmin, */
+    /* 		       -cv->yoff + cv->height-cv->filled->ymax); */
+    /* 	filled = 1; */
+    /* } */
 
     if( shouldShowFilledUsingCairo(cv) ) {
 	layer = cvlayer;
@@ -2666,7 +2673,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		    cv->showpoints && cv->b.drawmode==dm_grid,&clip);
 	}
 	if ( cv->showhmetrics ) {
-	    DrawVLine(cv,pixmap,0,coordcol,false,NULL,NULL);
+	    Color lbcolor = (!cv->inactive && cv->lbearingsel) ? lbearingselcol : coordcol;
+	    DrawVLine(cv,pixmap,0,lbcolor,false,NULL,NULL);
 	    DrawLine(cv,pixmap,-8096,0,8096,0,coordcol);
 	    DrawLine(cv,pixmap,-8096,sf->ascent,8096,sf->ascent,coordcol);
 	    DrawLine(cv,pixmap,-8096,-sf->descent,8096,-sf->descent,coordcol);
@@ -2833,7 +2841,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    {
 		int i = 1;
 		int originalxoff = cv->xoff;
-		int offset = cv->scale * cv->b.sc->width;
+		int offset = 0;
 		    
 		for( i=cv->additionalCharsToShowActiveIndex-1; i >= 0; i-- )
 		{
@@ -2842,10 +2850,10 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		    if( !xc )
 			break;
 
+		    offset = cv->scale * xc->width;
 		    cv->xoff -= offset;
 		    CVDrawLayerSplineSet( cv, pixmap, &xc->layers[layer], foreoutlinecol,
 					  showpoints ,&clip, sm );
-		    offset = cv->scale * xc->width;
 		}
 		cv->xoff = originalxoff;
 	    }
@@ -3376,7 +3384,16 @@ static void CVChangeSC_fetchTab( CharView *cv, int tabnumber )
     }
 }
 
-void CVChangeSC(CharView *cv, SplineChar *sc ) {
+static void CVSetCharSelectorValueFromSC( CharView *cv, SplineChar *sc )
+{
+    char* title = g_strdup_printf( "/%s/", sc->name );
+    printf("CVSetCharSelectorValueFromSC() title:%s\n", title );
+    GGadgetSetTitle8(cv->charselector, title);
+    g_free(title);
+}
+	    
+
+void CVChangeSC( CharView *cv, SplineChar *sc ) {
     char *title;
     char buf[300];
     extern int updateflex;
@@ -3467,7 +3484,8 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
 		    cv->cvtabs[i] = cv->cvtabs[i-1];
 		}
 	    }
-	    GGadgetSetTitle8(cv->charselector,sc->name);
+	    CVSetCharSelectorValueFromSC( cv, sc );
+	    
 
 
 	    if ( cv->former_cnt==FORMER_MAX )
@@ -3486,7 +3504,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
 	}
     }
     if( !strcmp(GGadgetGetTitle8(cv->charselector),""))
-	GGadgetSetTitle8(cv->charselector,sc->name);
+	CVSetCharSelectorValueFromSC( cv, sc );
 
     if ( sc->inspiro && !hasspiro() && !sc->parent->complained_about_spiros ) {
 	sc->parent->complained_about_spiros = true;
@@ -3598,8 +3616,6 @@ static void CVMouseUp(CharView *cv, GEvent *event );
 static void CVHScroll(CharView *cv,struct sbevent *sb);
 static void CVVScroll(CharView *cv,struct sbevent *sb);
 /*static void CVElide(GWindow gw,struct gmenuitem *mi,GEvent *e);*/
-static void CVMerge(GWindow gw,struct gmenuitem *mi,GEvent *e);
-static void CVMergeToLine(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVPreviewModeSet(GWindow gw, int checked);
@@ -3641,11 +3657,21 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 	update_spacebar_hand_tool(cv);
     }
 
-    cv->activeModifierControl &= ~( event->u.chr.keysym == GK_Control_L || event->u.chr.keysym == GK_Control_R );
-    cv->activeModifierAlt     &= ~( event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R
+    int oldactiveModifierControl = cv->activeModifierControl;
+    int oldactiveModifierAlt = cv->activeModifierAlt;
+    cv->activeModifierControl &= ~( event->u.chr.keysym == GK_Control_L || event->u.chr.keysym == GK_Control_R
 				    || event->u.chr.keysym == GK_Meta_L || event->u.chr.keysym == GK_Meta_R );
+    cv->activeModifierAlt     &= ~( event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R
+				    || event->u.chr.keysym == XK_Mode_switch );
+    // helps with keys on the mac
+    if( (event->u.chr.state&ksm_meta) )
+        cv->activeModifierAlt = 0;
+    if( oldactiveModifierControl != cv->activeModifierControl
+	|| oldactiveModifierAlt != cv->activeModifierAlt )
+    {
+	CVInfoDraw(cv,cv->gw);
+    }
 
-    
     
 
 //    printf("CVCharUp() ag:%d key:%d\n", cv_auto_goto, event->u.chr.keysym );
@@ -3689,6 +3715,23 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
     }
 
 
+    if( event->u.chr.keysym == XK_Escape )
+    {
+	printf("escape char.......!\n");
+	GGadget *active = GWindowGetFocusGadgetOfWindow(cv->gw);
+	if( active == cv->charselector )
+	{
+	    printf("was on charselector\n");
+	    printf("was on charselector\n");
+	    GWidgetIndicateFocusGadget( cv->hsb );
+	}
+	else
+	{
+	    printf("was on NOT charselector\n");
+	    GWidgetIndicateFocusGadget( cv->charselector );
+	}
+    }
+    
 
 #if _ModKeysAutoRepeat
     /* Under cygwin these keys auto repeat, they don't under normal X */
@@ -4071,6 +4114,17 @@ return( true );
 return( fs->p->anysel );
 }
 
+static int16 MouseToCX( CharView *cv, int16 mx )
+{
+    return( mx - cv->xoff ) / cv->scale;
+}
+static int16 MouseToCY( CharView *cv, int16 my )
+{
+    return( my - cv->yoff ) / cv->scale;
+}
+
+
+    
 static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
     extern int snaptoint;
 
@@ -4344,7 +4398,7 @@ static void CVMaybeCreateDraggingComparisonOutline( CharView* cv )
     for( ; spl; spl = spl->next )
     {
 	int anySel = 0;
-	SPLFirstVisit( spl->first, isAnyControlPointSelectedVisitor, &anySel );
+	SPLFirstVisitPoints( spl->first, isAnyControlPointSelectedVisitor, &anySel );
 	if( anySel || (cv->b.sc->inspiro && hasspiro()))
 	{
 	    cv->p.pretransform_spl = g_list_append( cv->p.pretransform_spl,
@@ -4379,12 +4433,44 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
 	}
     }
     
-    
+    cv->changedActiveGlyph = 1;
     printf("CVSwitchActiveSC(b) activeidx:%d newidx:%d\n", cv->additionalCharsToShowActiveIndex, idx );
     for( i=0; i < additionalCharsToShowLimit; i++ )
 	if( cv->additionalCharsToShow[i] )
 	    printf("CVSwitchActiveSC(b) toshow.. i:%d char:%s\n", i, cv->additionalCharsToShow[i]
 		   ? cv->additionalCharsToShow[i]->name : "N/A" );
+
+
+    //
+    // Work out how far we should scroll the panel to keep
+    // the display from jumping around. First look right then
+    // check left.
+    int scroll_offset = 0;
+    if( idx > cv->additionalCharsToShowActiveIndex )
+    {
+	SplineChar* xc = 0;
+	int i = 0;
+	scroll_offset = cv->b.sc->width;
+	int ridx = cv->additionalCharsToShowActiveIndex+1;
+	for( i=ridx; i < idx; i++ )
+	{
+	    if((xc = cv->additionalCharsToShow[i]))
+		scroll_offset += xc->width;
+	}
+    }
+    if( idx < cv->additionalCharsToShowActiveIndex )
+    {
+	SplineChar* xc = 0;
+	int i = 0;
+	scroll_offset = 0;
+	int ridx = cv->additionalCharsToShowActiveIndex-1;
+	for( i=ridx; i >= idx; i-- )
+	{
+	    if((xc = cv->additionalCharsToShow[i]))
+		scroll_offset -= xc->width;
+	}
+    }
+    
     
 
 
@@ -4418,6 +4504,12 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
     cv->b.next = sc->views;
     sc->views = &cv->b;
 
+    // Move the scrollbar so that it appears the selection
+    // box has moved rather than all the characters.
+    if( scroll_offset )
+	CVHScrollSetPos( cv, cv->xoff + scroll_offset * cv->scale );
+    
+    
 //    if ( CVClearSel(cv))
 //	SCUpdateAll(cv->b.sc);
     
@@ -4438,9 +4530,11 @@ return;		/* I treat this more like a modifier key change than a button press */
 
     if ( cv->expandedge != ee_none )
 	GDrawSetCursor(cv->v,ct_mypointer);
-    if ( event->u.mouse.button==3 ) {
+    if ( event->u.mouse.button==3 )
+    {
+	/* context menu */
 	CVToolsPopup(cv,event);
-return;
+	return;
     }
 
     printf("tool:%d pointer:%d ctl:%d alt:%d\n",
@@ -4458,12 +4552,12 @@ return;
 	SetFS(&fs,&cv->p,cv,event);
 	int found = InSplineSet( &fs, cv->b.layerheads[cv->b.drawmode]->splines,
 				 cv->b.sc->inspiro && hasspiro());
-	printf("in spline set:%d\n", found );
+	printf("in spline set:%d cv->p.sp:%p\n", found, cv->p.sp );
 
 	//
 	// Only overwrite to create a point if the user has clicked a spline.
 	//
-	if( found )
+	if( found && !cv->p.sp )
 	    override_showing_tool = cvt_curve;
     }
     
@@ -4507,112 +4601,145 @@ return;
 	    
 	if( !cv->p.anysel && cv->b.drawmode != dm_grid )
 	{
-	    int i=0;
-	    FindSel fsadjusted = fs;
-	    fsadjusted.c_xl -= 2*fsadjusted.fudge;
-	    fsadjusted.c_xh += 2*fsadjusted.fudge;
-	    fsadjusted.xl -= 2*fsadjusted.fudge;
-	    fsadjusted.xh += 2*fsadjusted.fudge;
-	    SplineChar* xc = 0;
-	    int xcidx = -1;
-	    
+	    // If we are in left-right arrow cursor mode to move
+	    // those bearings then don't even think about changing
+	    // the char right now.
+	    if( !CVNearRBearingLine( cv, cv->p.cx, fs.fudge )
+		&& !CVNearLBearingLine( cv, cv->p.cx, fs.fudge ))
 	    {
-		int offset = cv->b.sc->width;
-//	        printf("first offset:%d original cx:%f \n", offset, fsadjusted.p->cx );
-		int ridx = cv->additionalCharsToShowActiveIndex+1;
-		for( i=ridx; i < additionalCharsToShowLimit; i++ )
+		int i=0;
+		FindSel fsadjusted = fs;
+		fsadjusted.c_xl -= 2*fsadjusted.fudge;
+		fsadjusted.c_xh += 2*fsadjusted.fudge;
+		fsadjusted.xl -= 2*fsadjusted.fudge;
+		fsadjusted.xh += 2*fsadjusted.fudge;
+		SplineChar* xc = 0;
+		int xcidx = -1;
+		int borderFudge = 20;
+	    
 		{
-		    if( i == cv->additionalCharsToShowActiveIndex )
-			continue;
-		    xc = cv->additionalCharsToShow[i];
-		    if( !xc )
-			break;
-
-		    printf("1 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh);
-		    printf("1 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh);
-		    printf("1 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy );
-
-		    fsadjusted.c_xl -= offset;
-		    fsadjusted.c_xh -= offset;
-		    fsadjusted.xl   -= offset;
-		    fsadjusted.xh   -= offset;
-
-		    printf("2 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh);
-		    printf("2 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh);
-		    printf("2 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy );
-		    int found = InSplineSet( &fsadjusted,
-					     xc->layers[cv->b.drawmode-1].splines,
-					     xc->inspiro && hasspiro());
-		    printf("CVMOUSEDOWN i:%d found:%d\n", i, found );
-		    if( found )
+		    int offset = cv->b.sc->width;
+		    int cumulativeLeftSideBearing = 0;
+//	        printf("first offset:%d original cx:%f \n", offset, fsadjusted.p->cx );
+		    int ridx = cv->additionalCharsToShowActiveIndex+1;
+		    for( i=ridx; i < additionalCharsToShowLimit; i++ )
 		    {
-			printf("FOUND FOUND FOUND FOUND FOUND FOUND FOUND \n");
+			if( i == cv->additionalCharsToShowActiveIndex )
+			    continue;
+			xc = cv->additionalCharsToShow[i];
+			if( !xc )
+			    break;
+			int OffsetForDoingCharNextToActive = 0;
+			if( i == ridx )
+			{
+			    OffsetForDoingCharNextToActive = borderFudge;
+			}
+		    
+
+			cumulativeLeftSideBearing += offset;
+			/* printf("1 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
+			/* printf("1 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
+			/* printf("1 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
+			/* fsadjusted.c_xl -= offset; */
+			/* fsadjusted.c_xh -= offset; */
+			/* fsadjusted.xl   -= offset; */
+			/* fsadjusted.xh   -= offset; */
+			/* printf("2 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
+			/* printf("2 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
+			/* printf("2 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
+			/* int found = InSplineSet( &fsadjusted, */
+			/* 			     xc->layers[cv->b.drawmode-1].splines, */
+			/* 			     xc->inspiro && hasspiro()); */
+			printf("A:%d\n", cumulativeLeftSideBearing );
+			printf("B:%f\n", fsadjusted.p->cx );
+			printf("C:%d\n", cumulativeLeftSideBearing+xc->width );
+			int found = IS_IN_ORDER3(
+			    cumulativeLeftSideBearing + OffsetForDoingCharNextToActive,
+			    fsadjusted.p->cx,
+			    cumulativeLeftSideBearing+xc->width );
+			printf("CVMOUSEDOWN i:%d found:%d\n", i, found );
+			if( found )
+			{
+			    printf("FOUND FOUND FOUND FOUND FOUND FOUND FOUND \n");
 			
-			xcidx = i;
+			    xcidx = i;
 //		    CVChangeSC(cv,xc);
-			break;
+			    break;
+			}
+
+			offset = xc->width;
 		    }
-
-		    offset = xc->width;
 		}
-	    }
 
-	    fsadjusted = fs;
-	    fsadjusted.c_xl -= 2*fsadjusted.fudge;
-	    fsadjusted.c_xh += 2*fsadjusted.fudge;
-	    fsadjusted.xl -= 2*fsadjusted.fudge;
-	    fsadjusted.xh += 2*fsadjusted.fudge;
+		fsadjusted = fs;
+		fsadjusted.c_xl -= 2*fsadjusted.fudge;
+		fsadjusted.c_xh += 2*fsadjusted.fudge;
+		fsadjusted.xl -= 2*fsadjusted.fudge;
+		fsadjusted.xh += 2*fsadjusted.fudge;
 
-	    if( !xc && cv->additionalCharsToShowActiveIndex > 0 )
-	    {
-		xc = cv->additionalCharsToShow[cv->additionalCharsToShowActiveIndex-1];
-		int offset = xc->width;
-//	        printf("first offset:%d original cx:%f \n", offset, fsadjusted.p->cx );
-		int lidx = cv->additionalCharsToShowActiveIndex-1;
-		for( i=lidx; i>=0; i-- )
+		if( !xc && cv->additionalCharsToShowActiveIndex > 0 )
 		{
-		    if( i == cv->additionalCharsToShowActiveIndex )
-			continue;
-		    xc = cv->additionalCharsToShow[i];
-		    if( !xc )
-			break;
-
-		    printf("1 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh);
-		    printf("1 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh);
-		    printf("1 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy );
-
-		    fsadjusted.c_xl += offset;
-		    fsadjusted.c_xh += offset;
-		    fsadjusted.xl   += offset;
-		    fsadjusted.xh   += offset;
-
-		    printf("2 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh);
-		    printf("2 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh);
-		    printf("2 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy );
-		    int found = InSplineSet( &fsadjusted,
-					     xc->layers[cv->b.drawmode-1].splines,
-					     xc->inspiro && hasspiro());
-		    printf("cvmousedown i:%d found:%d\n", i, found );
-		    if( found )
+		    xc = cv->additionalCharsToShow[cv->additionalCharsToShowActiveIndex-1];
+		    int offset = xc->width;
+		    int cumulativeLeftSideBearing = 0;
+//	        printf("first offset:%d original cx:%f \n", offset, fsadjusted.p->cx );
+		    int lidx = cv->additionalCharsToShowActiveIndex-1;
+		    for( i=lidx; i>=0; i-- )
 		    {
-			printf("FOUND FOUND FOUND FOUND FOUND FOUND FOUND i:%d\n", i);
-			xcidx = i;
-			break;
-		    }
+			if( i == cv->additionalCharsToShowActiveIndex )
+			    continue;
+			xc = cv->additionalCharsToShow[i];
+			if( !xc )
+			    break;
+			cumulativeLeftSideBearing -= xc->width;
+			int OffsetForDoingCharNextToActive = 0;
+			if( i == lidx )
+			{
+			    OffsetForDoingCharNextToActive = borderFudge;
+			}
 
-		    offset = xc->width;
+			/* printf("1 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
+			/* printf("1 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
+			/* printf("1 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
+			/* fsadjusted.c_xl += offset; */
+			/* fsadjusted.c_xh += offset; */
+			/* fsadjusted.xl   += offset; */
+			/* fsadjusted.xh   += offset; */
+			/* printf("2 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
+			/* printf("2 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
+			/* printf("2 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
+			/* int found = InSplineSet( &fsadjusted, */
+			/* 			     xc->layers[cv->b.drawmode-1].splines, */
+			/* 			     xc->inspiro && hasspiro()); */
+			printf("A:%d\n", cumulativeLeftSideBearing );
+			printf("B:%f\n", fsadjusted.p->cx );
+			printf("C:%d\n", cumulativeLeftSideBearing+xc->width );
+			int found = IS_IN_ORDER3(
+			    cumulativeLeftSideBearing,
+			    fsadjusted.p->cx,
+			    cumulativeLeftSideBearing + xc->width - OffsetForDoingCharNextToActive );
+		    
+			printf("cvmousedown i:%d found:%d\n", i, found );
+			if( found )
+			{
+			    printf("FOUND FOUND FOUND FOUND FOUND FOUND FOUND i:%d\n", i);
+			    xcidx = i;
+			    break;
+			}
+
+			offset = xc->width;
+		    }
+		}
+
+		printf("have xc:%p xcidx:%d\n", xc, xcidx );
+		printf("    idx:%d active:%d\n", xcidx, cv->additionalCharsToShowActiveIndex );
+		if( xc && xcidx >= 0 )
+		{
+		    CVSwitchActiveSC( cv, xc, xcidx );
+		    GDrawRequestExpose(cv->v,NULL,false);
+		    return;
 		}
 	    }
-
-	    printf("have xc:%p xcidx:%d\n", xc, xcidx );
-	    printf("    idx:%d active:%d\n", xcidx, cv->additionalCharsToShowActiveIndex );
-	    if( xc && xcidx >= 0 )
-	    {
-		CVSwitchActiveSC( cv, xc, xcidx );
-		return;
-	    }
-	    
-	    
 	}
 	    
 	    
@@ -5199,15 +5326,23 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	cv->p.rubberlining = false;
     }
 
-    if ( cv->active_tool == cvt_pointer )
+    // This is needed to allow characters to the left of the
+    // active one to be picked with the mouse,
+    // but outright it does mess with keyboard input changing BCP
+    // so we only do it for mouse up to the left of the left side
+    // bearing, because that click can not currently activate any BCP
+    if ( cv->active_tool == cvt_pointer &&
+	 MouseToCX( cv, event->u.mouse.x ) < -2 )
     {
-	FindSel fs;
-	SetFS(&fs,&cv->p,cv,event);
-	_CVTestSelectFromEvent(cv,&fs);
-	fs.p = &cv->p;
-	
-	
-	
+	// Since we allow clicking anywhere now, instead of having
+	// to check if you clicked on a spline of a prev char,
+	// then we don't need this. It also causes an issue with the arrow
+	// keys moving a BCP on a spline left of the lbearing line.
+	// (comment included just in case this click on spline feature is desired in the future)
+	/* FindSel fs; */
+	/* SetFS(&fs,&cv->p,cv,event); */
+	/* _CVTestSelectFromEvent(cv,&fs); */
+	/* fs.p = &cv->p; */
     }
     
     
@@ -5657,6 +5792,37 @@ return;
     }
 }
 
+static void CVHScrollSetPos( CharView *cv, int newpos )
+{
+    printf("CVHScrollSetPos(1) cvxoff:%d newpos:%d\n", cv->xoff, newpos );
+    if ( newpos<-(32000*cv->scale-cv->width) )
+        newpos = -(32000*cv->scale-cv->width);
+    if ( newpos>8000*cv->scale ) newpos = 8000*cv->scale;
+    printf("CVHScrollSetPos(2) cvxoff:%d newpos:%d\n", cv->xoff, newpos );
+    if ( newpos!=cv->xoff ) {
+	int diff = newpos-cv->xoff;
+	cv->xoff = newpos;
+	cv->back_img_out_of_date = true;
+	GScrollBarSetPos(cv->hsb,-newpos);
+	GDrawScroll(cv->v,NULL,diff,0);
+	if (( cv->showhhints && cv->b.sc->hstem!=NULL ) || cv->showblues || cv->showvmetrics ) {
+	    GRect r;
+	    r.y = 0; r.height = cv->height;
+	    r.width = 6*cv->sfh+10;
+	    if ( diff>0 )
+		r.x = cv->width-r.width;
+	    else
+		r.x = cv->width+diff-r.width;
+	    GDrawRequestExpose(cv->v,&r,false);
+	}
+	if ( cv->showrulers ) {
+	    GRect r;
+	    r.y = cv->infoh+cv->mbh+cv->charselectorh; r.height = cv->rulerh; r.x = 0; r.width = cv->rulerh+cv->width;
+	    GDrawRequestExpose(cv->gw,&r,false);
+	}
+    }
+}
+
 static void CVHScroll(CharView *cv, struct sbevent *sb) {
     int newpos = cv->xoff;
 
@@ -5690,31 +5856,8 @@ static void CVHScroll(CharView *cv, struct sbevent *sb) {
         newpos -= cv->width/30;
       break;
     }
-    if ( newpos<-(32000*cv->scale-cv->width) )
-        newpos = -(32000*cv->scale-cv->width);
-    if ( newpos>8000*cv->scale ) newpos = 8000*cv->scale;
-    if ( newpos!=cv->xoff ) {
-	int diff = newpos-cv->xoff;
-	cv->xoff = newpos;
-	cv->back_img_out_of_date = true;
-	GScrollBarSetPos(cv->hsb,-newpos);
-	GDrawScroll(cv->v,NULL,diff,0);
-	if (( cv->showhhints && cv->b.sc->hstem!=NULL ) || cv->showblues || cv->showvmetrics ) {
-	    GRect r;
-	    r.y = 0; r.height = cv->height;
-	    r.width = 6*cv->sfh+10;
-	    if ( diff>0 )
-		r.x = cv->width-r.width;
-	    else
-		r.x = cv->width+diff-r.width;
-	    GDrawRequestExpose(cv->v,&r,false);
-	}
-	if ( cv->showrulers ) {
-	    GRect r;
-	    r.y = cv->infoh+cv->mbh+cv->charselectorh; r.height = cv->rulerh; r.x = 0; r.width = cv->rulerh+cv->width;
-	    GDrawRequestExpose(cv->gw,&r,false);
-	}
-    }
+
+    CVHScrollSetPos( cv, newpos );
 }
 
 static void CVVScroll(CharView *cv, struct sbevent *sb) {
@@ -5853,7 +5996,7 @@ static void CVAddGuide(CharView *cv,int is_v,int guide_pos) {
     ss->next = sf->grid.splines;
     sf->grid.splines = ss;
     ss->contour_name = gwwv_ask_string(_("Name this contour"),NULL,
-		_("You may attach a text label to this guideline if you wish to"));
+		_("Name this guideline or cancel to create it without a name"));
     if ( ss->contour_name!=NULL && *ss->contour_name=='\0' ) {
 	free(ss->contour_name);
 	ss->contour_name = NULL;
@@ -7112,24 +7255,24 @@ static void CVMenuChangeChar(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)
  * If the prev/next BCP is selected than add those to the hash table
  * at "ret".
  */
-static void getSelectedControlPointsVisitor(SplinePoint* splfirst, Spline* spline, void* udata )
+static void getSelectedControlPointsVisitor(SplinePoint* splfirst, Spline* s, SplinePoint* sp, void* udata )
 {
     GHashTable* ret = (GHashTable*)udata;
-    if( spline->to->nextcpselected )
-	g_hash_table_insert( ret, spline->to, 0 );
-    if( spline->to->prevcpselected )
-	g_hash_table_insert( ret, spline->to, 0 );
+    if( sp->nextcpselected )
+	g_hash_table_insert( ret, sp, 0 );
+    if( sp->prevcpselected )
+	g_hash_table_insert( ret, sp, 0 );
 }
-static void getAllControlPointsVisitor(SplinePoint* splfirst, Spline* spline, void* udata )
+static void getAllControlPointsVisitor(SplinePoint* splfirst, Spline* s, SplinePoint* sp, void* udata )
 {
     GHashTable* ret = (GHashTable*)udata;
-    g_hash_table_insert( ret, spline->to, 0 );
-    g_hash_table_insert( ret, spline->to, 0 );
+    g_hash_table_insert( ret, sp, 0 );
+    g_hash_table_insert( ret, sp, 0 );
 }
-static void isAnyControlPointSelectedVisitor(SplinePoint* splfirst, Spline* spline, void* udata )
+static void isAnyControlPointSelectedVisitor(SplinePoint* splfirst, Spline* s, SplinePoint* sp, void* udata )
 {
     int* ret = (int*)udata;
-    if( spline->to->selected )
+    if( sp->selected )
 	(*ret) = 1;
 }
 
@@ -7149,7 +7292,7 @@ static GHashTable* getSelectedControlPoints( CharView *cv, PressedOn *p )
     SplinePointList* spl = l->splines;
     for( ; spl; spl = spl->next )
     {
-	SPLFirstVisit( spl->first, getSelectedControlPointsVisitor, ret );
+	SPLFirstVisitPoints( spl->first, getSelectedControlPointsVisitor, ret );
     }
 
     return ret;
@@ -7164,7 +7307,7 @@ static GHashTable* getAllControlPoints( CharView *cv, PressedOn *p )
     SplinePointList* spl = l->splines;
     for( ; spl; spl = spl->next )
     {
-	SPLFirstVisit( spl->first, getAllControlPointsVisitor, ret );
+	SPLFirstVisitPoints( spl->first, getAllControlPointsVisitor, ret );
     }
     return ret;
 }
@@ -7201,7 +7344,7 @@ void FE_adjustBCPByDelta( void* key,
     FE_adjustBCPByDeltaData* data = (FE_adjustBCPByDeltaData*)udata;
     CharView *cv = data->cv;
 
-//    printf("FE_adjustBCPByDelta %p %d\n", which, isnext );
+    printf("FE_adjustBCPByDelta %p %d\n", which, isnext );
     BasePoint to;
     to.x = which->x + data->dx;
     to.y = which->y + data->dy;
@@ -7398,7 +7541,7 @@ void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
     GHashTable* col = getSelectedControlPoints( cv, &cv->p );
     if(!col)
 	return;
-
+    
     SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
     if( g_hash_table_size( col ) )
     {
@@ -7470,11 +7613,16 @@ void CVChar(CharView *cv, GEvent *event ) {
 	}
     }
 
+    /* printf("GK_Control_L:%d\n", ( event->u.chr.keysym == GK_Control_L )); */
+    /* printf("GK_Meta_L:%d\n", ( event->u.chr.keysym == GK_Meta_L )); */
+    
     int oldactiveModifierControl = cv->activeModifierControl;
     int oldactiveModifierAlt = cv->activeModifierAlt;
-    cv->activeModifierControl |= ( event->u.chr.keysym == GK_Control_L || event->u.chr.keysym == GK_Control_R );
-    cv->activeModifierAlt     |= ( event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R
+    cv->activeModifierControl |= ( event->u.chr.keysym == GK_Control_L || event->u.chr.keysym == GK_Control_R
 				   || event->u.chr.keysym == GK_Meta_L || event->u.chr.keysym == GK_Meta_R );
+    cv->activeModifierAlt     |= ( event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R
+				   || event->u.chr.keysym == XK_Mode_switch );
+
     if( oldactiveModifierControl != cv->activeModifierControl
 	|| oldactiveModifierAlt != cv->activeModifierAlt )
     {
@@ -7516,10 +7664,13 @@ return;
     CVPaletteActivate(cv);
     CVToolsSetCursor(cv,TrueCharState(event),NULL);
 
+    
 	/* The window check is to prevent infinite loops since DVChar can */
 	/*  call CVChar too */
     if ( cv->dv!=NULL && (event->w==cv->gw || event->w==cv->v) && DVChar(cv->dv,event))
+    {
 	/* All Done */;
+    }
     else if ( event->u.chr.keysym=='s' &&
 	    (event->u.chr.state&ksm_control) &&
 	    (event->u.chr.state&ksm_meta) )
@@ -7563,7 +7714,8 @@ return;
 	    _CVMenuScale(cv, MID_ZoomOut);
     } else if ( (event->u.chr.state&ksm_control) && (event->u.chr.keysym=='=' || event->u.chr.keysym==0xffab/*XK_KP_Add*/) ){
 	    _CVMenuScale(cv, MID_ZoomIn);
-    } else if ( event->u.chr.keysym == GK_Left ||
+    }
+    else if ( event->u.chr.keysym == GK_Left ||
 	    event->u.chr.keysym == GK_Up ||
 	    event->u.chr.keysym == GK_Right ||
 	    event->u.chr.keysym == GK_Down ||
@@ -7572,6 +7724,8 @@ return;
 	    event->u.chr.keysym == GK_KP_Right ||
 	    event->u.chr.keysym == GK_KP_Down )
     {
+	printf("key left/right/up/down...\n");
+	
 	GGadget *active = GWindowGetFocusGadgetOfWindow(cv->gw);
 	if( active == cv->charselector )
 	{
@@ -7612,7 +7766,7 @@ return;
 	}
 	else
 	{
-	    printf("cvchar( moving points? ) shift:%d\n", ( event->u.chr.state & (ksm_shift) ));
+//	    printf("cvchar( moving points? ) shift:%d\n", ( event->u.chr.state & (ksm_shift) ));
 	    FE_adjustBCPByDeltaData d;
 	    memset( &d, 0, sizeof(FE_adjustBCPByDeltaData));
 	    visitSelectedControlPointsVisitor func = FE_adjustBCPByDelta;
@@ -7629,7 +7783,7 @@ return;
 	    {
 		dx *= arrowAccelFactor; dy *= arrowAccelFactor;
 	    }
-	    
+
 	    if ((  cv->p.sp!=NULL || cv->lastselpt!=NULL ) &&
 		    (cv->p.nextcp || cv->p.prevcp) )
 	    {
@@ -8169,7 +8323,7 @@ return;
     CVCharChangedUpdate(&cv->b);
 }
 
-static void CVMerge(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+void CVMerge(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     _CVMerge(cv,false);
 }
@@ -8194,7 +8348,7 @@ static void _CVMergeToLine(CharView *cv, int elide) {
     CVCharChangedUpdate(&cv->b);
 }
 
-static void CVMergeToLine(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+void CVMergeToLine(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     _CVMergeToLine(cv,false);
 
@@ -8762,7 +8916,7 @@ static void _CVMenuSpiroPointType(CharView *cv, struct gmenuitem *mi) {
 }
 
 
-static void CVMenuPointType(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
+void CVMenuPointType(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     if ( cv->b.sc->inspiro && hasspiro())
 	_CVMenuSpiroPointType(cv, mi);
@@ -11225,7 +11379,7 @@ static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("_Revert File"), (GImage *) "filerevert.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert File|No Shortcut"), NULL, NULL, CVMenuRevert, MID_Revert },
     { { (unichar_t *) N_("Revert Gl_yph"), (GImage *) "filerevertglyph.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert Glyph|No Shortcut"), NULL, NULL, CVMenuRevertGlyph, MID_RevertGlyph },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Add Word List..."), (GImage *) 0, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Add Word List...|No Shortcut"), NULL, NULL, CVAddWordList, 0 },
+    { { (unichar_t *) N_("Load Word List..."), (GImage *) 0, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Load Word List...|No Shortcut"), NULL, NULL, CVAddWordList, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Print..."), (GImage *) "fileprint.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Print...|No Shortcut"), NULL, NULL, CVMenuPrint, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
@@ -11341,7 +11495,7 @@ static GMenuItem2 spiroptlist[] = {
 
 static GMenuItem2 allist[] = {
 /* GT: Align these points to their average position */
-    { { (unichar_t *) N_("_Average Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Average Points|No Shortcut"), NULL, NULL, CVMenuConstrain, MID_Average },
+    { { (unichar_t *) N_("_Align Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Align Points|No Shortcut"), NULL, NULL, CVMenuConstrain, MID_Average },
     { { (unichar_t *) N_("_Space Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Space Points|No Shortcut"), NULL, NULL, CVMenuConstrain, MID_SpacePts },
     { { (unichar_t *) N_("Space _Regions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Space Regions...|No Shortcut"), NULL, NULL, CVMenuConstrain, MID_SpaceRegion },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
@@ -11689,6 +11843,20 @@ return;
     GMenuItem2ArrayFree(mit);
 }
 
+static void CVMoveInWordListByOffset( CharView* cv, int offset )
+{
+    Wordlist_MoveByOffset( cv->charselector, &cv->charselectoridx, offset );
+}
+
+static void CVMenuNextLineInWordList(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
+    CharView* cv = (CharView*) GDrawGetUserData(gw);
+    CVMoveInWordListByOffset( cv, 1 );
+}
+static void CVMenuPrevLineInWordList(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
+    CharView* cv = (CharView*) GDrawGetUserData(gw);
+    CVMoveInWordListByOffset( cv, -1 );
+}
+
 static GMenuItem2 cblist[] = {
     { { (unichar_t *) N_("_Kern Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'K' }, H_("Kern Pairs|No Shortcut"), NULL, NULL, CVMenuKernPairs, MID_KernPairs },
     { { (unichar_t *) N_("_Anchored Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Anchored Pairs|No Shortcut"), NULL, NULL, CVMenuAnchorPairs, MID_AnchorPairs },
@@ -11777,6 +11945,9 @@ static GMenuItem2 vwlist[] = {
     { { (unichar_t *) N_("Sho_w"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Show|No Shortcut"), swlist, swlistcheck, NULL, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Com_binations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'b' }, H_("Combinations|No Shortcut"), cblist, cblistcheck, NULL, 0 },
+    GMENUITEM2_LINE,
+    { { (unichar_t *) N_("Next _Line in Word List"),     NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'L' }, H_("Next Line in Word List|No Shortcut"), NULL, NULL, CVMenuNextLineInWordList, MID_NextLineInWordList },
+    { { (unichar_t *) N_("Previous Line in _Word List"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Previous Line in Word List|No Shortcut"), NULL, NULL, CVMenuPrevLineInWordList, MID_PrevLineInWordList },
     GMENUITEM2_EMPTY
 };
 
@@ -12053,7 +12224,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     gd.pos.y = pos.height-sbsize; gd.pos.height = sbsize;
     gd.pos.width = pos.width - sbsize;
     gd.pos.x = 0;
-    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_text_xim;
     cv->hsb = GScrollBarCreate(cv->gw,&gd,cv);
 
 
@@ -12251,6 +12422,7 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
     SplineChar *sc = cv->b.sc;
     SplineFont* sf = sc->parent;
 
+    printf("CV_OnCharSelectorTextChanged(top)\n");
     /* if( e->type == et_char ) */
     /* { */
     /* 	printf("CV_OnCharSelectorTextChanged() char is-left:%d\n", e->u.chr.keysym == GK_Left ); */
@@ -12281,6 +12453,8 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	char* txt = GGadgetGetTitle8( cv->charselector );
 	printf("text changed: %s\n", txt );
 
+	
+
 	if( 1 )
 	{
 	    int tabnum = GTabSetGetSel(cv->tabs);
@@ -12297,18 +12471,19 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	memset( cv->additionalCharsToShow, 0, sizeof(SplineChar*) * additionalCharsToShowLimit );
 	cv->additionalCharsToShowActiveIndex = 0;
 	cv->additionalCharsToShow[0] = cv->b.sc;
-	
+
+	int hadSelection = 0;
 	if( txt[0] == '\0' )
 	{
-	    GGadgetSetTitle8( cv->charselector, cv->b.sc->name );
+	    CVSetCharSelectorValueFromSC( cv, cv->b.sc );
 	}
 	else if( strlen(txt) > 1 )
 	{
 	    int i=0;
 	    const unichar_t *ret = GGadgetGetTitle( cv->charselector );
 	    GArray* selected = 0;
+	    WordlistTrimTrailingSingleSlash( ret );
 	    ret = WordlistEscpaedInputStringToRealStringBasic( sf, ret, &selected );
-	    g_array_unref( selected );
 
 	    const unichar_t *pt, *ept, *tpt;
 	    pt = ret;
@@ -12332,6 +12507,38 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 		    break;
 	    }
 	    free(ret);
+
+	    if( selected )
+	    {
+		int i = 0;
+		for (i = 0; i < selected->len; i++)
+		{
+		    int v = g_array_index (selected, gint, i);
+		    printf("selection i:%d v:%d\n", i, v );
+		    if( !v )
+		    {
+			// first char selected, nothing to do!
+			break;
+		    }
+
+		    if( v < additionalCharsToShowLimit )
+		    {
+			SplineChar* xc = cv->additionalCharsToShow[v];
+			if( xc )
+			{
+			    printf("selected v:%d xc:%s\n", v, xc->name );
+			    int xoff = cv->xoff;
+			    CVSwitchActiveSC( cv, xc, v );
+			    CVHScrollSetPos( cv, xoff );
+			    hadSelection = 1;
+			}
+		    }
+		    break;
+		}
+	    }
+	    
+	    g_array_unref( selected );
+	    
 	}
 	free(txt);
 
@@ -12342,7 +12549,8 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	    printf(" %s\n", cv->additionalCharsToShow[i]->name );
 	}
 
-	CVSwitchActiveSC( cv, 0, 0 );
+	if( !hadSelection )
+	    CVSwitchActiveSC( cv, 0, 0 );
 	GDrawRequestExpose(cv->v,NULL,false);
     }
     return( true );
@@ -12444,12 +12652,13 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     gd.pos.x = 3;
     gd.pos.y = cv->mbh+2;
     gd.pos.height = cv->charselectorh-4;
+    gd.pos.width  = cv_width / 2;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_text_xim;
     gd.handle_controlevent = CV_OnCharSelectorTextChanged;
     gd.u.list = cv_charselector_init;
     cv->charselector = GListFieldCreate(cv->gw,&gd,cv);
-    GGadgetSetTitle8(cv->charselector,sc->name);
-    GGadgetSetSkipHotkeyProcessing( cv->charselector, 1 );
+    CVSetCharSelectorValueFromSC( cv, sc );
+    GGadgetSetSkipUnQualifiedHotkeyProcessing( cv->charselector, 1 );
 
     memset(aspects,0,sizeof(aspects));
     aspects[0].text = (unichar_t *) sc->name;

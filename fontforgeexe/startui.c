@@ -657,7 +657,7 @@ static void  AddR(char *program_name, char *window_name, char *cmndline_val) {
 
 static int ReopenLastFonts(void) {
     char buffer[1024];
-    char *ffdir = getPfaEditDir(buffer);
+    char *ffdir = getFontForgeUserDir(Config);
     FILE *old;
     int any = 0;
 
@@ -777,12 +777,12 @@ static void ffensuredir( const char* basedir, const char* dirname, mode_t mode )
 }
 
 static void ensureDotFontForgeIsSetup() {
-    char *basedir = GFileGetHomeDir();
+    char *basedir = getFontForgeUserDir(Config);
     if ( !basedir ) {
 	return;
     }
-    ffensuredir( basedir, ".FontForge",        S_IRWXU );
-    ffensuredir( basedir, ".FontForge/python", S_IRWXU );
+    ffensuredir( basedir, "",       S_IRWXU );
+    ffensuredir( basedir, "python", S_IRWXU );
 }
 
 static void DoAutoRecoveryPostRecover_PromptUserGraphically(SplineFont *sf)

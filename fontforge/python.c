@@ -18711,7 +18711,7 @@ static struct string_list *default_pyinit_dirs(void) {
     snprintf(subdir, sizeof(subdir), "python%d", PY_MAJOR_VERSION);
 
     sharedir = getFontForgeShareDir();
-    userdir = getPfaEditDir(buffer);
+    userdir = getFontForgeUserDir(Config);
 
     if ( sharedir!=NULL ) {
 	snprintf(buffer,sizeof(buffer),"%s/%s",sharedir,subdir);

@@ -28,6 +28,7 @@
 #define _FONTFORGEVW_H_
 
 #include "fontforge.h"
+#include "gfile.h"
 #include "gimage.h"
 #include "baseviews.h"
 

@@ -30,6 +30,41 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 AC_PREREQ([2.68])
+#--------------------------------------------------------------------------
+# PackageTimestamp version
+#m4_define([fontforge_package_stamp], "20131117") <-revert to this method
+m4_define([fontforge_package_stamp], "0_beta1")
+#--------------------------------------------------------------------------
+# Making point releases:
+#   fontforge_major_version += 0;
+#   fontforge_minor_version += 1; (patches or added function(s))
+#
+# If any new functions have been added:
+#   fontforge_major_version += 0;
+#   fontforge_minor_version += 1; (added function(s))
+#
+# If backwards compatibility has been broken:
+#   fontforge_major_version += 1;
+#   fontforge_minor_version = 0;
+#
+m4_define([fontforge_major_version], '2')
+m4_define([fontforge_minor_version], '0')
+m4_define([libfontforge_major_version], '2') dnl 20120731-b was 1.0
+m4_define([libfontforge_minor_version], '0')
+m4_define([libgdraw_major_version], '5') dnl 20120731-b was 4.10
+m4_define([libgdraw_minor_version], '0')
+m4_define([libgutils_major_version], '2') dnl 20120731-b was 1.3
+m4_define([libgutils_minor_version], '0')
+m4_define([libunicode_major_version], '4') dnl 20120731-b was 3.2
+m4_define([libunicode_minor_version], '0')
+
+m4_define([fontforge_version],
+          [fontforge_major_version.fontforge_minor_version.fontforge_package_stamp])
+#m4_define([fontforge_info],
+#          [fontforge_major_version:fontforge_minor_version:0])
+#m4_define([fontforge_package_name], ["fontforge"])
+
+#--------------------------------------------------------------------------
 AC_INIT([fontforge],[2.0.0_beta1],[fontforge-devel@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([Unicode/ArabicForms.c])
 AC_CONFIG_MACRO_DIR([m4])
@@ -327,21 +362,43 @@ fi
 AX_PTHREAD
 
 #--------------------------------------------------------------------------
-AC_LANG_PUSH([C]) dnl NOTE: try not to push/pop too often
-# Check to see if "this" compiler can use these flags and/or warnings.
+# Check to see if "this" compiler can use these flags, errors, or warnings.
 # Enable the flags that can be used and skip flags that are unknown.
-FONTFORGE_COMPILER_FLAGS([WARNING_CFLAGS],
-        [-Wunused -Wreturn-type
-         -Wparentheses -Wformat -Wchar-subscripts
-         -Wno-unused-but-set-variable -Wno-unused-result
-         -Wcast-align
-         -Werror=missing-prototypes
-         -Werror=pointer-arith
-         -Wclobbered
-         -Werror=implicit])
-# Sep2012, There's a bug in <py3 with Py_True/False that will propagate
-# with GCC's "strict-aliasing" rules. -Wstrict-aliasing
+AC_LANG_PUSH([C]) dnl NOTE: configure.ac - try not to push/pop too often
+AC_SUBST([WARNING_CFLAGS],[])
+FFW_FLAGS="-Wunused -Wreturn-type -Wparentheses -Wformat -Wchar-subscripts \
+ -Wno-unused-but-set-variable -Wno-unused-result -Wcast-align -Wclobbered  \
+ -Werror=missing-prototypes -Werror=pointer-arith -Werror=implicit"
+dnl Sep2012, There's a bug in <py3 with Py_True/False that will propagate
+dnl with GCC's "strict-aliasing" rules. -Wstrict-aliasing
+
+for arg in ${FFW_FLAGS}; do
+   AX_CHECK_COMPILE_FLAG([$arg],[WARNING_CFLAGS+=" $arg"])
+done
+
+dnl add --no-undefined if supported. Based on information seen here:
+dnl https://mail.gnome.org/archives/commits-list/2011-October/msg10575.html
+dnl http://femass.com.br/Net-SNMP/configure.d/config_os_progs
+case $host in
+   dnl FreeBSD (et al.) does not complete linking for shared objects when
+   dnl pthreads are requested, as different implementations are present; to
+   dnl avoid problems, use -Wl,-z,defs only for those platform not behaving
+   dnl this way.
+   *-freebsd* | *-openbsd*)
+      ;;
+   *) saved_LDFLAGS=$LDFLAGS
+      AC_MSG_CHECKING([whether the linker supports --no-undefined])
+      LDFLAGS="$saved_LDFLAGS -Wl,--no-undefined"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],
+         [AC_MSG_RESULT([yes]);
+          AX_CHECK_COMPILE_FLAG([-Wl,--no-undefined],[WARNING_CFLAGS+=" -Wl,--no-undefined"])],
+         [AC_MSG_RESULT([no])])
+      LDFLAGS="$saved_LDFLAGS"
+      ;;
+esac
+
 AC_LANG_POP
+
 #--------------------------------------------------------------------------
 # Bypass older autoscan recommendations (if anyone decides to run autoscan)
 # These packages promises to not use malloc(0) or realloc(n, 0) so we don't
@@ -376,9 +433,9 @@ AC_CHECK_FUNC([snprintf],[:],[AC_DEFINE([_NO_SNPRINTF],1,[Define if not using sn
 AC_CHECK_FUNC([tzset],[:],[AC_DEFINE([_NO_TZSET],1,[Define if not using tzset.])])
 
 #--------------------------------------------------------------------------
-# Put ifdef wrapper around the new fontforge-config.h so we don't repeatedly call it.
-AH_TOP([#ifndef _FF_CONFIG_H])
-AH_TOP([#define _FF_CONFIG_H 1])
+# Put ifndef wrapper on fontforge-config.h so we don't call it repeatedly.
+AH_TOP([#ifndef _FF_CONFIG_H
+#define _FF_CONFIG_H 1])
 AH_BOTTOM([#endif])
 #--------------------------------------------------------------------------
 
@@ -391,9 +448,122 @@ AM_CONDITIONAL([MACINTOSH],[test x"${gww_ismac}" = xyes])
 AM_CONDITIONAL([DESKTOP],[test x != x])
 AM_CONDITIONAL([FONTTOOLS],[test x != x])
 
-FONTFORGE_SET_MY_CFLAGS
-FONTFORGE_SET_MY_LIBS
-FONTFORGE_CREATE_MAKEFILES
+#--------------------------------------------------------------------------
+# Create and Set FontForge Compiler Flags
+
+my_cflags="${WARNING_CFLAGS}"
+if test x"${i_do_have_freetype_debugger}" != xno; then
+   my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/src/truetype"
+   my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/include"
+   my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/include/freetype"
+fi
+my_cflags="${my_cflags} ${ZLIB_CFLAGS}"
+my_cflags="${my_cflags} ${GLIB_CFLAGS}"
+my_cflags="${my_cflags} ${CAIRO_CFLAGS}"
+my_cflags="${my_cflags} ${PANGO_CFLAGS}"
+my_cflags="${my_cflags} ${PANGOCAIRO_CFLAGS}"
+my_cflags="${my_cflags} ${FREETYPE_CFLAGS}"
+my_cflags="${my_cflags} ${GIFLIB_CFLAGS}"
+my_cflags="${my_cflags} ${LIBJPEG_CFLAGS}"
+my_cflags="${my_cflags} ${LIBPNG_CFLAGS}"
+my_cflags="${my_cflags} ${LIBTIFF_CFLAGS}"
+my_cflags="${my_cflags} ${LIBSPIRO_CFLAGS}"
+my_cflags="${my_cflags} ${LIBUNINAMESLIST_CFLAGS}"
+my_cflags="${my_cflags} ${LIBUNICODENAMES_CFLAGS}"
+my_cflags="${my_cflags} ${LIBXML_CFLAGS}"
+my_cflags="${my_cflags} ${PYTHON_CFLAGS}"
+my_cflags="${my_cflags} ${PTHREAD_CFLAGS}"
+my_cflags="${my_cflags} ${LIBREADLINE_CFLAGS}"
+test x"${SDK}" = x || my_cflags="${my_cflags} -I${SDK}"
+test x"${LTDLINCL}" = x || my_cflags="${my_cflags} -I${LTDLINCL}"
+AC_SUBST([MY_CFLAGS],[${my_cflags}])
+
+#--------------------------------------------------------------------------
+# Create and Set FontForge Library Flags
+
+test x"${i_do_have_python_scripting}" = xyes && my_libs="${my_libs} ${PYTHON_LIBS}"
+test x"${i_do_have_giflib}" = xyes && my_libs="${my_libs} ${GIFLIB_LIBS}"
+test x"${i_do_have_libjpeg}" = xyes && my_libs="${my_libs} ${LIBJPEG_LIBS}"
+test x"${i_do_have_libpng}" = xyes && my_libs="${my_libs} ${LIBPNG_LIBS}"
+test x"${i_do_have_libtiff}" = xyes && my_libs="${my_libs} ${LIBTIFF_LIBS}"
+test x"${i_do_have_libuninameslist}" = xyes && my_libs="${my_libs} ${LIBUNINAMESLIST_LIBS}"
+test x"${i_do_have_libunicodenames}" = xyes && my_libs="${my_libs} ${LIBUNICODENAMES_LIBS}"
+test x"${i_do_have_libxml}" = xyes && my_libs="${my_libs} ${LIBXML_LIBS}"
+test x"${i_do_have_libspiro}" = xyes && my_libs="${my_libs} ${LIBSPIRO_LIBS}"
+test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${CAIRO_LIBS}"
+test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
+test x"${i_do_have_gui}" = xyes && my_libs="${my_libs} ${PANGO_LIBS}"
+test x"${i_do_have_x}" = xyes && my_libs="${my_libs} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS}"
+test x"${i_do_have_libreadline}" = xyes && my_libs="${my_libs} ${LIBREADLINE_LIBS}"
+my_libs="${my_libs} ${FREETYPE_LIBS}"
+my_libs="${my_libs} ${PTHREAD_LIBS}"
+my_libs="${my_libs} ${ZLIB_LIBS}"
+my_libs="${my_libs} ${GLIB_LIBS}"
+AC_SUBST([MY_LIBS],[${my_libs}])
+
+#--------------------------------------------------------------------------
+# Output commands - Create FontForge Portable Makefiles
+
+AC_CONFIG_FILES([
+Makefile
+inc/Makefile
+libltdl/Makefile
+Unicode/Makefile
+gutils/Makefile
+collab/Makefile
+hotkeys/Makefile
+share/Makefile
+gdraw/Makefile
+fontforge/Makefile
+fontforgeexe/Makefile
+fontforgeexe/pixmaps/Makefile
+fontforgeexe/pixmaps/2012/Makefile
+fontforgeexe/pixmaps/tango/Makefile
+fontforgeexe/collab/Makefile
+po/Makefile
+mackeys/Makefile
+htdocs/Makefile
+pycontrib/Makefile
+pycontrib/simple/Makefile
+pycontrib/collab/Makefile
+nodejs/Makefile
+nodejs/collabwebview/Makefile
+nodejs/collabwebview/css/Makefile
+nodejs/collabwebview/js/Makefile
+nodejs/collabwebview/js/contentEditable/Makefile
+pyhook/Makefile
+cidmap/Makefile
+plugins/Makefile
+tests/Makefile
+desktop/Makefile
+fonttools/Makefile
+osx/Makefile
+osx/FontForge.app/Makefile
+osx/FontForge.app/Contents/Makefile
+osx/FontForge.app/Contents/Resources/Makefile
+osx/FontForge.app/Contents/Resources/English.lproj/Makefile
+osx/FontForge.app/Contents/MacOS/Makefile
+osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Makefile
+osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Makefile
+osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/MacOS/Makefile
+osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Makefile
+osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Inputbox.nib/Makefile
+osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/MainMenu.nib/Makefile
+osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Msgbox.nib/Makefile
+osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/PopUpButton.nib/Makefile
+osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Progressbar.nib/Makefile
+osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/SecureInputbox.nib/Makefile
+osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Textbox.nib/Makefile
+])
+
+# GNUmakefiles that act as wrappers around portable makefiles and
+# provide additional targets.
+AC_CONFIG_FILES([GNUmakefile])
+AC_CONFIG_FILES([fontforge/GNUmakefile])
+AC_CONFIG_FILES([po/GNUmakefile])
+
+#--------------------------------------------------------------------------
+
 FONTFORGE_CREATE_PKGCONFIG_FILES
 FONTFORGE_CREATE_SYSTEMSPECIFIC
 FONTFORGE_CONFIG_TESTSUITE

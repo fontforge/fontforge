@@ -2944,7 +2944,7 @@ void FontViewMenu_SaveNamelist(GtkMenuItem *menuitem, gpointer user_data) {
     SplineChar *sc;
     int i;
 
-    snprintf(buffer, sizeof(buffer),"%s/%s.nam", getPfaEditDir(buffer), fv->b.sf->fontname );
+    snprintf(buffer, sizeof(buffer),"%s/%s.nam", getFontForgeUserDir(Config), fv->b.sf->fontname );
     temp = g_filename_to_utf8(buffer,-1,&read,&written,NULL);
     filename = gwwv_saveas_filename(_("Save Namelist of font"), temp,"*.nam");
     free(temp);
@@ -2988,7 +2988,7 @@ return;				/* Cancelled */
 	pt = temp;
     else
 	++pt;
-    snprintf(buffer,sizeof(buffer),"%s/%s", getPfaEditDir(buffer), pt);
+    snprintf(buffer,sizeof(buffer),"%s/%s", getFontForgeUserDir(Config), pt);
     if ( access(buffer,F_OK)==0 ) {
 	buts[0] = _("_Replace");
 	buts[1] = GTK_STOCK_CANCEL;

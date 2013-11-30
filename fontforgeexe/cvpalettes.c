@@ -40,6 +40,7 @@ extern int interpCPsOnMotion;
 #include <ustring.h>
 #include <utype.h>
 #include <gresource.h>
+#include "charview_private.h"
 
 static void CVLCheckLayerCount(CharView *cv, int resize);
 
@@ -3116,7 +3117,63 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 
     memset(mi,'\0',sizeof(mi));
     anysel = CVTestSelectFromEvent(cv,event);
-    if( !anysel ) {
+
+    if( anysel )
+    {
+	    mi[i].ti.text = (unichar_t *) _("Curve");
+	    mi[i].ti.text_is_1byte = true;
+	    mi[i].ti.fg = COLOR_DEFAULT;
+	    mi[i].ti.bg = COLOR_DEFAULT;
+	    mi[i].mid = MID_Curve;
+	    mi[i].invoke = CVMenuPointType;
+	    i++;
+	    mi[i].ti.text = (unichar_t *) _("HVCurve");
+	    mi[i].ti.text_is_1byte = true;
+	    mi[i].ti.fg = COLOR_DEFAULT;
+	    mi[i].ti.bg = COLOR_DEFAULT;
+	    mi[i].mid = MID_HVCurve;
+	    mi[i].invoke = CVMenuPointType;
+	    i++;
+	    mi[i].ti.text = (unichar_t *) _("Corner");
+	    mi[i].ti.text_is_1byte = true;
+	    mi[i].ti.fg = COLOR_DEFAULT;
+	    mi[i].ti.bg = COLOR_DEFAULT;
+	    mi[i].mid = MID_Corner;
+	    mi[i].invoke = CVMenuPointType;
+	    i++;
+	    mi[i].ti.text = (unichar_t *) _("Tangent");
+	    mi[i].ti.text_is_1byte = true;
+	    mi[i].ti.fg = COLOR_DEFAULT;
+	    mi[i].ti.bg = COLOR_DEFAULT;
+	    mi[i].mid = MID_Tangent;
+	    mi[i].invoke = CVMenuPointType;
+	    i++;
+
+	    mi[i].ti.line = true;
+	    mi[i].ti.fg = COLOR_DEFAULT;
+	    mi[i].ti.bg = COLOR_DEFAULT;
+	    i++;
+
+	    mi[i].ti.text = (unichar_t *) _("Merge");
+	    mi[i].ti.text_is_1byte = true;
+	    mi[i].ti.fg = COLOR_DEFAULT;
+	    mi[i].ti.bg = COLOR_DEFAULT;
+	    mi[i].mid = MID_Merge;
+	    mi[i].invoke = CVMerge;
+	    i++;
+	    mi[i].ti.text = (unichar_t *) _("Merge to Line");
+	    mi[i].ti.text_is_1byte = true;
+	    mi[i].ti.fg = COLOR_DEFAULT;
+	    mi[i].ti.bg = COLOR_DEFAULT;
+	    mi[i].mid = MID_MergeToLine;
+	    mi[i].invoke = CVMergeToLine;
+	    i++;
+	    
+    }
+    
+    
+    if( !anysel )
+    {
 	for ( i=0;i<=cvt_skew; ++i ) {
 	    char *msg = _(popupsres[i]);
 	    if ( cv->b.sc->inspiro && hasspiro()) {
@@ -3136,7 +3193,8 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	}
     }
     
-    if( !anysel ) {
+    if( !anysel )
+    {
 	if ( cvlayers!=NULL && !cv->b.sc->parent->multilayer ) {
 	    mi[i].ti.line = true;
 	    mi[i].ti.fg = COLOR_DEFAULT;
@@ -3159,17 +3217,26 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i++].ti.bg = COLOR_DEFAULT;
     }
     
-    for ( j=0;selectables[j]!=0; ++j, ++i ) {
+    for ( j=0; selectables[j]!=0; ++j )
+    {
+	if ( (!anysel && j!=2 ) ||
+		( j==0 && cv->p.spline ) ||
+		( j==1 && !cv->p.ref ))
+	{
+	    // don't show them a disabled item
+	    continue;
+	    
+	    // or, if the above "continue;" is commented then keep the entry
+	    // but don't let them select it 
+	    mi[i].ti.disabled = true; 
+	}
 	mi[i].ti.text = (unichar_t *) _(selectables[j]);
 	mi[i].ti.text_is_1byte = true;
-	if ( (!anysel && j!=2 ) ||
-		( j==0 && cv->p.spline!=NULL ) ||
-		( j==1 && cv->p.ref==NULL ))
-	    mi[i].ti.disabled = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = j;
 	mi[i].invoke = CVPopupSelectInvoked;
+	i++;
     }
 
     if ( cv->b.sc->parent->multilayer ) {
@@ -3183,6 +3250,7 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
     }
 
     int cnt = CVCountSelectedPoints(cv);
+    printf(".... count:%d\n", cnt );
     if( cnt > 1 ) {
 	mi[i].ti.text = (unichar_t *) _("Make Line");
 	mi[i].ti.text_is_1byte = true;

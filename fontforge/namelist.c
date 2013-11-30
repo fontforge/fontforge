@@ -680,13 +680,12 @@ return( false );
 }
 
 void LoadNamelistDir(char *dir) {
-    char prefdir[1024];
     DIR *diro;
     struct dirent *ent;
     char buffer[1025];
 
     if ( dir == NULL )
-	dir = getPfaEditDir(prefdir);
+	dir = getFontForgeUserDir(Config);
     if ( dir == NULL )
 return;
 

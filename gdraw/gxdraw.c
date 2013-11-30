@@ -3087,6 +3087,7 @@ return;
 	gevent.u.chr.time = event->xkey.time;
 	gevent.u.chr.state = event->xkey.state;
 	gevent.u.chr.autorepeat = 0;
+//	printf("event->xkey.state:%d\n", event->xkey.state );
 /*#ifdef __Mac*/
 	/* On mac os x, map the command key to the control key. So Comand-Q=>^Q=>Quit */
 	/* No... don't. Let the user have access to the command key as distinct from control */

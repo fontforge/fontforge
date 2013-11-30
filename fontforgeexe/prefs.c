@@ -345,7 +345,7 @@ static struct prefs_list {
   editing_list[] = {
 	{ N_("ItalicConstrained"), pr_bool, &ItalicConstrained, NULL, NULL, '\0', NULL, 0, N_("In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than constraining it to be vertical.") },
 	{ N_("ArrowMoveSize"), pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, N_("The number of em-units by which an arrow key will move a selected point") },
-	{ N_("ArrowAccelFactor"), pr_real, &arrowAccelFactor, NULL, NULL, '\0', NULL, 0, N_("Holding down the Alt (or Meta) key will speed up arrow key motion by this factor") },
+	{ N_("ArrowAccelFactor"), pr_real, &arrowAccelFactor, NULL, NULL, '\0', NULL, 0, N_("Holding down the Shift key will speed up arrow key motion by this factor") },
 	{ N_("DrawOpenPathsWithHighlight"), pr_bool, &DrawOpenPathsWithHighlight, NULL, NULL, '\0', NULL, 0, N_("Open paths should be drawn in a special highlight color to make them more apparent.") },
 	{ N_("InterpolateCPsOnMotion"), pr_bool, &interpCPsOnMotion, NULL, NULL, '\0', NULL, 0, N_("When moving one end point of a spline but not the other\ninterpolate the control points between the two.") },
 	{ N_("SnapDistance"), pr_real, &snapdistance, NULL, NULL, '\0', NULL, 0, N_("When the mouse pointer is within this many pixels\nof one of the various interesting features (baseline,\nwidth, grid splines, etc.) the pointer will snap\nto that feature.") },
@@ -781,9 +781,9 @@ static char *getPfaEditPrefs(void) {
 
     if ( prefs!=NULL )
 return( prefs );
-    if ( getPfaEditDir(buffer)==NULL )
+    if ( getFontForgeUserDir(Config)==NULL )
 return( NULL );
-    sprintf(buffer,"%s/prefs", getPfaEditDir(buffer));
+    sprintf(buffer,"%s/prefs", getFontForgeUserDir(Config));
     prefs = copy(buffer);
 return( prefs );
 }
@@ -2651,7 +2651,7 @@ void RecentFilesRemember(char *filename) {
 void LastFonts_Save(void) {
     FontView *fv, *next;
     char buffer[1024];
-    char *ffdir = getPfaEditDir(buffer);
+    char *ffdir = getFontForgeUserDir(Config);
     FILE *preserve = NULL;
 
     if ( ffdir ) {
@@ -2696,7 +2696,7 @@ void DoXRes(void) {
 
 struct prefs_list pointer_dialog_list[] = {
     { N_("ArrowMoveSize"), pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, N_("The number of em-units by which an arrow key will move a selected point") },
-    { N_("ArrowAccelFactor"), pr_real, &arrowAccelFactor, NULL, NULL, '\0', NULL, 0, N_("Holding down the Alt (or Meta) key will speed up arrow key motion by this factor") },
+    { N_("ArrowAccelFactor"), pr_real, &arrowAccelFactor, NULL, NULL, '\0', NULL, 0, N_("Holding down the Shift key will speed up arrow key motion by this factor") },
     { N_("InterpolateCPsOnMotion"), pr_bool, &interpCPsOnMotion, NULL, NULL, '\0', NULL, 0, N_("When moving one end point of a spline but not the other\ninterpolate the control points between the two.") },
     PREFS_LIST_EMPTY
 };

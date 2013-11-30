@@ -442,6 +442,7 @@ void GTabSetRemoveTabByName(GGadget *g, char *name);
 
 int32 GScrollBarGetPos(GGadget *g);
 int32 GScrollBarSetPos(GGadget *g,int32 pos);
+int32 GScrollBarAddToPos(GGadget *g,int32 offset);
 void GScrollBarSetMustShow(GGadget *g, int32 sb_min, int32 sb_max, int32 sb_pagesize,
 	int32 sb_mustshow);
 void GScrollBarSetBounds(GGadget *g, int32 sb_min, int32 sb_max, int32 sb_pagesize );
@@ -628,5 +629,7 @@ extern void GVisibilityBoxSetToMinWH(GGadget *g);
 
 extern void GGadgetSetSkipHotkeyProcessing( GGadget *g, int v );
 extern int GGadgetGetSkipHotkeyProcessing( GGadget *g );
+extern void GGadgetSetSkipUnQualifiedHotkeyProcessing( GGadget *g, int v );
+extern int GGadgetGetSkipUnQualifiedHotkeyProcessing( GGadget *g );
 
 #endif

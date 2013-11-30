@@ -31,7 +31,6 @@
 # for GNU Make.
 
 include Makefile
-include $(top_builddir)/mk/xgettext_search.mk
 
 XGETTEXT_OPTIONS = --keyword=H_ --from-code=utf-8 --language=C	\
 --sort-by-file
@@ -44,7 +43,7 @@ $(MY_POTFILE): shortcuts-template
 shortcuts-template:
 	@echo ''
 	@echo Creating the template file $(MY_POTFILE) ...
-	@$(XGETTEXT) $(XGETTEXT_OPTIONS) --output=$(MY_POTFILE) $(xgettext_search_files)
+	@$(XGETTEXT) $(XGETTEXT_OPTIONS) --output=$(MY_POTFILE) $(top_srcdir)/fontforge/*.c $(top_srcdir)/fontforge/*.pre $(top_srcdir)/gdraw/*.c
 	@echo Editing the file ...
 	@$(SED) -i -e '1,4d' $(MY_POTFILE)
 	@$(SED) -i -e "1i\
