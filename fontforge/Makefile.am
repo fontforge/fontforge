@@ -120,13 +120,15 @@ MOSTLYCLEANFILES = libstamp.c
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
 
+XGETTEXT_SEARCH_DIRS = $(srcdir)/*.c $(top_srcdir)/fontforgeexe/*.c $(top_srcdir)/gdraw/*.c $(top_srcdir)/gutils/*.c $(top_srcdir)/inc/*.h
+
 FontForge-MenuShortCuts.pot: *.c
-	$(XGETTEXT) -kH_ -oFontForge-MenuShortCuts.pot *.c ../fontforgeexe/*c ../gdraw/*.c ../gutils/*.c ../inc/*.h
+	$(XGETTEXT) -kH_ -oFontForge-MenuShortCuts.pot $(XGETTEXT_SEARCH_DIRS)
 	-patch < potmstitle.patch
 
 FontForge.pot: *.c utf8.pot
 	echo "If this doesn't work try make FontForge-old.pot instead"
-	$(XGETTEXT) --from-code=utf-8 -k_ -kN_ -kS_ -kU_ -kNU_ -kP_:1,2 --add-comments=GT: -oFontForge.pot *.c ../fontforgeexe/*c ../gdraw/*.c ../gutils/*.c ../inc/*.h
+	$(XGETTEXT) --from-code=utf-8 -k_ -kN_ -kS_ -kU_ -kNU_ -kP_:1,2 --add-comments=GT: -oFontForge.pot $(XGETTEXT_SEARCH_DIRS)
 	-patch < pottitle.patch
 
 # xgettext has caniptions and strips any non-ASCII characters from my strings
@@ -139,7 +141,7 @@ FontForge.pot: *.c utf8.pot
 # unfortunately this works on none of the systems I use, and I haven't found
 # it documented. If it worked I would not need utf8.pot.
 FontForge-old.pot: *.c utf8.pot
-	$(XGETTEXT) -k_ -kN_ -kS_ -kP_:1,2 --add-comments=GT: -oFontForge.pot *.c ../fontforgeexe/*c ../gdraw/*.c ../gutils/*.c ../inc/*.h
+	$(XGETTEXT) -k_ -kN_ -kS_ -kP_:1,2 --add-comments=GT: -oFontForge.pot $(XGETTEXT_SEARCH_DIRS)
 	cat utf8.pot >> FontForge.pot
 	-patch < pottitle.patch
 
