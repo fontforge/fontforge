@@ -139,18 +139,18 @@ static void DumpPythonLib(FILE *file,void *python_persistent,SplineChar *sc) {
 	    items = PyMapping_Items(dict);
 	    len = PySequence_Size(items);
 	    for ( i=0; i<len; ++i ) {
-		PyObject *item = PySequence_GetItem(items,i);
-		key = PyTuple_GetItem(item,0);
-		if ( !PyBytes_Check(key))		/* Keys need not be strings */
-	    continue;
-		str = PyBytes_AsString(key);
-		if ( strcmp(str,"com.fontlab.hintData")==0 && sc!=NULL )	/* Already done */
-	    continue;
-		value = PyTuple_GetItem(item,1);
-		if ( !PyObjDumpable(value))
-	    continue;
-		fprintf( file, "    <key>%s</key>\n", str );
-		DumpPyObject( file, value );
+			PyObject *item = PySequence_GetItem(items,i);
+			key = PyTuple_GetItem(item,0);
+			if ( !PyBytes_Check(key))		/* Keys need not be strings */
+			continue;
+			str = PyBytes_AsString(key);
+			if ( !str || strcmp(str,"com.fontlab.hintData")==0 && sc!=NULL )	/* Already done */
+			continue;
+			value = PyTuple_GetItem(item,1);
+			if ( !value || !PyObjDumpable(value))
+			continue;
+			fprintf( file, "    <key>%s</key>\n", str );
+			DumpPyObject( file, value );
 	    }
 	}
 #endif
@@ -167,6 +167,8 @@ static int PyObjDumpable(PyObject *value) {
 return( true );
     if ( PyFloat_Check(value))
 return( true );
+	if ( PyDict_Check(value))
+return( true );
     if ( PySequence_Check(value))		/* Catches strings and tuples */
 return( true );
     if ( PyMapping_Check(value))
@@ -180,11 +182,19 @@ return( false );
 }
 
 static void DumpPyObject( FILE *file, PyObject *value ) {
-    if ( PyMapping_Check(value))
-	DumpPythonLib(file,value,NULL);
-    else if ( PyBytes_Check(value)) {		/* Must precede the sequence check */
-	char *str = PyBytes_AsString(value);
-	fprintf( file, "      <string>%s</string>\n", str );
+    if (PyDict_Check(value)) {
+		fprintf( file, "      <dict>\n" );
+		DumpPythonLib(file,value,NULL);
+		fprintf( file, "      </dict>\n" );
+	} else if ( PyMapping_Check(value)) {
+		fprintf( file, "      <dict>\n" );
+		DumpPythonLib(file,value,NULL);
+		fprintf( file, "      </dict>\n" );
+	} else if ( PyBytes_Check(value)) {		/* Must precede the sequence check */
+		char *str = PyBytes_AsString(value);
+		if (str != NULL) {
+			fprintf( file, "      <string>%s</string>\n", str );
+		}
     } else if ( value==Py_True )
 	fprintf( file, "      <true/>\n" );
     else if ( value==Py_False )
@@ -193,7 +203,7 @@ static void DumpPyObject( FILE *file, PyObject *value ) {
 	fprintf( file, "      <none/>\n" );
     else if (PyInt_Check(value))
 	fprintf( file, "      <integer>%ld</integer>\n", PyInt_AsLong(value) );
-    else if (PyInt_Check(value))
+    else if (PyFloat_Check(value))
 	fprintf( file, "      <real>%g</real>\n", PyFloat_AsDouble(value) );
     else if (PySequence_Check(value)) {
 	int i, len = PySequence_Size(value);
@@ -942,26 +952,31 @@ return( NULL );
 static PyObject *XMLEntryToPython(xmlDocPtr doc,xmlNodePtr entry);
 
 static PyObject *LibToPython(xmlDocPtr doc,xmlNodePtr dict) {
+	// This function is responsible for parsing keys in dicts.
     PyObject *pydict = PyDict_New();
     PyObject *item;
     xmlNodePtr keys, temp;
 
+	// Get the first item, then iterate through all items in the dict.
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
-	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")== 0 ) {
-	    char *keyname = (char *) xmlNodeListGetString(doc,keys->children,true);
-	    for ( temp=keys->next; temp!=NULL; temp=temp->next ) {
-		if ( xmlStrcmp(temp->name,(const xmlChar *) "text")!=0 )
-	    break;
-	    }
-	    item = XMLEntryToPython(doc,temp);
-	    if ( item!=NULL )
-		PyDict_SetItemString(pydict, keyname, item );
-	    if ( temp==NULL )
-	break;
-	    else if ( xmlStrcmp(temp->name,(const xmlChar *) "key")!=0 )
-		keys = temp->next;
-	    free(keyname);
-	}
+		// See that the item is in fact a key.
+		if ( xmlStrcmp(keys->name,(const xmlChar *) "key")== 0 ) {
+			// Fetch the name, which, according to the libxml specification, is the first child.
+			char *keyname = (char *) xmlNodeListGetString(doc,keys->children,true);
+			// In a property list, the value is a sibling of the key name.
+			// Iterate through the following siblings (including keys (!)) until we find a text entry.
+			for ( temp=keys->next; temp!=NULL; temp=temp->next ) {
+				if ( xmlStrcmp(temp->name,(const xmlChar *) "text")!=0 ) break;
+			}
+			// Convert the X.M.L. entry into a Python object.
+			item = NULL;
+			if ( temp!=NULL) item = XMLEntryToPython(doc,temp);
+			if ( item!=NULL ) PyDict_SetItemString(pydict, keyname, item );
+			if ( temp==NULL ) break;
+			else if ( xmlStrcmp(temp->name,(const xmlChar *) "key")!=0 ) keys = temp->next;
+			// If and only if the parsing succeeds, jump over any entries we read when searching for a text block.
+			free(keyname);
+		}
     }
 return( pydict );
 }
