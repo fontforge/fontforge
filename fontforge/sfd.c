@@ -8045,6 +8045,8 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
     sf->sfd_version = sfdversion;
     sf->cidmaster = cidmaster;
     sf->uni_interp = ui_unset;
+	SFD_GetFontMetaDataData d;
+	SFD_GetFontMetaDataData_Init( &d );
     while ( 1 ) {
 	if ( pushedbacktok )
 	    pushedbacktok = false;
@@ -8056,8 +8058,6 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	}
 
 
-	SFD_GetFontMetaDataData d;
-	SFD_GetFontMetaDataData_Init( &d );
 	SFD_GetFontMetaData( sfd, tok, sf, &d );
 
 	if ( strmatch(tok,"DisplaySize:")==0 )
