@@ -10064,7 +10064,8 @@ void ProcessNativeScript(int argc, char *argv[], FILE *script) {
 	if ( argc<2 || strcmp(argv[1],"-")!=0 )
 	    i = 0;
     } else {
-	if ( argc>i+1 && (strcmp(argv[i],"-nosplash")==0 || strcmp(argv[i],"--nosplash")==0 ))
+	if ( argc>i+1 && (strcmp(argv[i],"-nosplash")==0 || strcmp(argv[i],"--nosplash")==0 
+                        || strcmp(argv[i],"-quiet")==0 || strcmp(argv[i],"--quiet")==0 ))
 	    ++i;
 	if ( argc>i+1 && (strncmp(argv[i],"-lang=",6)==0 || strncmp(argv[i],"--lang=",7)==0 ))
 	    ++i;
@@ -10189,7 +10190,7 @@ return;
     for ( i=1; i<argc; ++i ) {
 	pt = argv[i];
 	if ( *pt=='-' && pt[1]=='-' && pt[2]!='\0' ) ++pt;
-	if ( strcmp(pt,"-nosplash")==0 )
+	if ( strcmp(pt,"-nosplash")==0 || strcmp(pt,"-quiet")==0 )
 	    /* Skip it */;
 	else if ( strcmp(pt,"-lang=py")==0 )
 	    is_python = true;
