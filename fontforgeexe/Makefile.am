@@ -129,7 +129,7 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
 	usermenu.c macobjective.h                                               \
     collabclientui.c collabclientui.h                                       \
-	sfundo.c sfundo.h                                                       \
+	sfundo.c \
 	wordlistparser.c wordlistparser.h
 
 else !GRAPHICAL_USER_INTERFACE
@@ -158,7 +158,8 @@ endif
 
 EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe \
 	exelibstamp.pre fontimage.1 fontlint.1 sfddiff.1			\
-	MacFontForgeApp.zip darwinsetup.in macobjective.m
+	darwinsetup.in macobjective.m
+# MacFontForgeApp.zip 
 MOSTLYCLEANFILES = fontimage fontlint sfddiff exelibstamp.c
 
 #--------------------------------------------------------------------------

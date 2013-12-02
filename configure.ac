@@ -73,7 +73,7 @@ AC_CONFIG_TESTDIR([tests],[fontforge])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CONFIG_HEADER([inc/fontforge-config.h])
-AM_INIT_AUTOMAKE([foreign -Wall subdir-objects])
+AM_INIT_AUTOMAKE([foreign -Wall subdir-objects tar-pax])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
@@ -169,6 +169,14 @@ AC_ARG_ENABLE([programs],
 AM_CONDITIONAL([THE_PROGRAMS],[test x"${i_do_have_programs}" = xyes])
 AC_SUBST([THE_PROGRAMS],["${i_do_have_programs}"])
 
+FONTFORGE_ARG_ENABLE([debug],
+        [AS_HELP_STRING([--enable-debug],[Turn on debug build and FONTFORGE_DEBUG conditional code])],
+        [FONTFORGE_DEBUG])
+if test x$enable_debug = xyes ; then
+    CFLAGS="$CFLAGS -g -O0"
+    CPPFLAGS="$CPPFLAGS -g -O0"
+fi
+
 FONTFORGE_ARG_DISABLE([native-scripting],
         [AS_HELP_STRING([--disable-native-scripting],[disable the legacy fontforge scripting language])],
         [_NO_FFSCRIPT])
@@ -188,6 +196,7 @@ AC_ARG_ENABLE([freetype-debugger],
                 [AS_HELP_STRING([--with-freetype-source[[=DIR]]],[synonym for --enable-freetype-debugger])],
                 [i_do_have_freetype_debugger="${withval}"],
                 [i_do_have_freetype_debugger=no])])
+# ' make syntax checkers happy
 
 FONTFORGE_ARG_ENABLE([capslock-for-alt],
         [AS_HELP_STRING([--enable-capslock-for-alt],

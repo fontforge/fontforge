@@ -6482,7 +6482,10 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok,
 	    ungetc(ch,sfd);
     } else {
 	fpst->subtable = SFFindLookupSubtableAndFreeName(sf,SFDReadUTF7Str(sfd));
-	fpst->subtable->fpst = fpst;
+        if ( !fpst->subtable )
+            LogError(_("Missing Subtable definition found in chained context"));
+        else
+	    fpst->subtable->fpst = fpst;
     }
     fscanf(sfd, "%hu %hu %hu %hu", &fpst->nccnt, &fpst->bccnt, &fpst->fccnt, &fpst->rule_cnt );
     if ( fpst->nccnt!=0 || fpst->bccnt!=0 || fpst->fccnt!=0 ) {
@@ -8045,6 +8048,8 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
     sf->sfd_version = sfdversion;
     sf->cidmaster = cidmaster;
     sf->uni_interp = ui_unset;
+	SFD_GetFontMetaDataData d;
+	SFD_GetFontMetaDataData_Init( &d );
     while ( 1 ) {
 	if ( pushedbacktok )
 	    pushedbacktok = false;
@@ -8056,8 +8061,6 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	}
 
 
-	SFD_GetFontMetaDataData d;
-	SFD_GetFontMetaDataData_Init( &d );
 	SFD_GetFontMetaData( sfd, tok, sf, &d );
 
 	if ( strmatch(tok,"DisplaySize:")==0 )

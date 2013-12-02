@@ -27,6 +27,8 @@
 #ifndef _UIINTERFACE_H
 #define _UIINTERFACE_H
 # include <basics.h>
+#include <fontforge-config.h>
+
 /* This encapsulates a set of callbacks and stubs. The callbacks get activated*/
 /*  when an event happens (a glyph in a font changes for example, then all */
 /*  charviews looking at it must be updated), and the stubs provide some simple*/
@@ -124,6 +126,12 @@ struct ui_interface {
     int (*stroke_flags)(void);
 };
 extern struct ui_interface *ui_interface;
+
+#ifdef FONTFORGE_DEBUG
+#define TRACE(...) printf(__VA_ARGS__)
+#else
+#define TRACE(...)
+#endif
 
 #define IError			(ui_interface->ierror)
 #define LogError		(ui_interface->logwarning)
