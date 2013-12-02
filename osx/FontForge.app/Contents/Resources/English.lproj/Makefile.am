@@ -26,7 +26,7 @@
 
 include $(top_srcdir)/mk/layout.am
 
-FFAPP_FILES = *.string
+FFAPP_FILES = InfoPlist.string
 ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/Resources/English.lproj
 
 ffapp_DATA = $(FFAPP_FILES)

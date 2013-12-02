@@ -384,13 +384,13 @@ static PyObject *PyFFFont_CollabSessionStart(PyFF_Font *self, PyObject *args)
 
     HostPortUnpack( address, &port, port_default );
 
-    printf("address:%s\n", address );
-    printf("port:%d\n", port );
+    TRACE("address:%s\n", address );
+    TRACE("port:%d\n", port );
 
     void* cc = collabclient_new( address, port );
     fv->collabClient = cc;
     collabclient_sessionStart( cc, (FontView*)fv );
-    printf("connecting to server...sent the sfd for session start.\n");
+    TRACE("connecting to server...sent the sfd for session start.\n");
     inPythonStartedCollabSession = 1;
 
 #endif
@@ -476,15 +476,15 @@ static PyObject *PyFFFont_CollabSessionJoin(PyFF_Font *self, PyObject *args)
     }
     FontViewBase *fv = self->fv;
 
-    printf("PyFFFont_CollabSessionJoin() address:%s fv:%p\n", address, self->fv );
+    TRACE("PyFFFont_CollabSessionJoin() address:%s fv:%p\n", address, self->fv );
     void* cc = collabclient_newFromPackedAddress( address );
-    printf("PyFFFont_CollabSessionJoin() address:%s cc1:%p\n", address, cc );
+    TRACE("PyFFFont_CollabSessionJoin() address:%s cc1:%p\n", address, cc );
     fv->collabClient = cc;
-    printf("PyFFFont_CollabSessionJoin() address:%s cc2:%p\n", address, fv->collabClient );
+    TRACE("PyFFFont_CollabSessionJoin() address:%s cc2:%p\n", address, fv->collabClient );
     FontViewBase* newfv = collabclient_sessionJoin( cc, (FontView*)fv );
     // here fv->collabClient is 0 and there is a new fontview.
-    printf("PyFFFont_CollabSessionJoin() address:%s cc3:%p\n", address, fv->collabClient );
-    printf("PyFFFont_CollabSessionJoin() address:%s cc4:%p\n", address, newfv->collabClient );
+    TRACE("PyFFFont_CollabSessionJoin() address:%s cc3:%p\n", address, fv->collabClient );
+    TRACE("PyFFFont_CollabSessionJoin() address:%s cc4:%p\n", address, newfv->collabClient );
 
     inPythonStartedCollabSession = 1;
     PyObject* ret = PyFV_From_FV_I( newfv );
@@ -515,16 +515,16 @@ static PyObject *PyFFFont_CollabSessionRunMainLoop(PyFF_Font *self, PyObject *ar
     int iterationTime = 50;
     int64_t originalSeq = collabclient_getCurrentSequenceNumber( self->fv->collabClient );
 
-    printf("PyFFFont_CollabSessionRunMainLoop() called fv:%p\n", self->fv );
-    printf("PyFFFont_CollabSessionRunMainLoop() called cc:%p\n", self->fv->collabClient );
+    TRACE("PyFFFont_CollabSessionRunMainLoop() called fv:%p\n", self->fv );
+    TRACE("PyFFFont_CollabSessionRunMainLoop() called cc:%p\n", self->fv->collabClient );
     for( ; timeoutMS > 0; timeoutMS -= iterationTime )
     {
 	g_usleep( iterationTime * 1000 );
 	MacServiceReadFDs();
     }
 
-    printf("originalSeq:%ld\n",(long int)(originalSeq));
-    printf("     newSeq:%ld\n",(long int)(collabclient_getCurrentSequenceNumber( self->fv->collabClient )));
+    TRACE("originalSeq:%ld\n",(long int)(originalSeq));
+    TRACE("     newSeq:%ld\n",(long int)(collabclient_getCurrentSequenceNumber( self->fv->collabClient )));
 
     if( originalSeq < collabclient_getCurrentSequenceNumber( self->fv->collabClient ))
     {
@@ -610,7 +610,7 @@ PyMethodDef PyFF_FontUI_methods[] = {
 static PyMethodDef*
 copyUIMethodsToBaseTable( PyMethodDef* ui, PyMethodDef* md )
 {
-    printf("copyUIMethodsToBaseTable()\n");
+    TRACE("copyUIMethodsToBaseTable()\n");
     // move md to the first target slot
     for( ; md->ml_name; )
     {
@@ -624,7 +624,7 @@ copyUIMethodsToBaseTable( PyMethodDef* ui, PyMethodDef* md )
 }
 
 void PythonUI_Init(void) {
-    printf("PythonUI_Init()\n"); 
+    TRACE("PythonUI_Init()\n"); 
     FfPy_Replace_MenuItemStub(PyFF_registerMenuItem);
     set_pyFF_maybeCallCVPreserveState_Func( pyFF_maybeCallCVPreserveState );
     set_pyFF_sendRedoIfInSession_Func( pyFF_sendRedoIfInSession_Func_Real );

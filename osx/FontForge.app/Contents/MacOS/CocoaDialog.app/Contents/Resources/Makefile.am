@@ -27,7 +27,7 @@
 include $(top_srcdir)/mk/layout.am
 
 SUBDIRS = Inputbox.nib  MainMenu.nib  Msgbox.nib  PopUpButton.nib  Progressbar.nib  SecureInputbox.nib  Textbox.nib
-FFAPP_FILES = *icns
+FFAPP_FILES = $(wildcard *.cns)
 ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources
 
 ffapp_DATA = $(FFAPP_FILES)

@@ -32,10 +32,6 @@
 /libfontforge.pc
 /libfontforgeexe.pc
 /libtool
-/mk/xgettext_search.mk
 /so_locations
 /stamp-h1
 /tags
-z1.ufo
-z2.ufo
-*.sfd
