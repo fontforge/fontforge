@@ -6482,7 +6482,10 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok,
 	    ungetc(ch,sfd);
     } else {
 	fpst->subtable = SFFindLookupSubtableAndFreeName(sf,SFDReadUTF7Str(sfd));
-	fpst->subtable->fpst = fpst;
+        if ( !fpst->subtable )
+            LogError(_("Missing Subtable definition found in chained context"));
+        else
+	    fpst->subtable->fpst = fpst;
     }
     fscanf(sfd, "%hu %hu %hu %hu", &fpst->nccnt, &fpst->bccnt, &fpst->fccnt, &fpst->rule_cnt );
     if ( fpst->nccnt!=0 || fpst->bccnt!=0 || fpst->fccnt!=0 ) {
