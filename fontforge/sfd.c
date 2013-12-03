@@ -4767,7 +4767,7 @@ void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok ) {
 		sub = SFFindLookupSubtableAndFreeName(sf,SFDReadUTF7Str(sfd));
 		if ( sub==NULL ) {
 		    LogError(_("KernPair with no subtable name.\n"));
-	    break;
+	    	    break;
 		}
 		kernCount++;
 		kp = chunkalloc(sizeof(KernPair1));
@@ -6141,30 +6141,27 @@ void SFDFixupRefs(SplineFont *sf) {
 
 		    next = kp->next;
 		    // be impotent if the reference is already to the correct location
-		    if( index < sf->glyphcnt ) {
-
-			if ( !kp->kcid ) {	/* It's encoded (old sfds), else orig */
-			    if ( index>=map->encmax || map->map[index]==-1 )
-				index = sf->glyphcnt;
-			    else
-				index = map->map[index];
-			}
-			kp->kcid = false;
-			ksf = sf;
-			if ( cidmaster!=sf ) {
-			    for ( l=0; l<cidmaster->subfontcnt; ++l ) {
-				ksf = cidmaster->subfonts[l];
-				if ( index<ksf->glyphcnt && ksf->glyphs[index]!=NULL )
-				    break;
-			    }
-			}
-			if ( index>=ksf->glyphcnt || ksf->glyphs[index]==NULL ) {
-			    IError( "Bad kerning information in glyph %s\n", sc->name );
-			    kp->sc = NULL;
-			} else {
-			    kp->sc = ksf->glyphs[index];
-			}
-		    }
+                    if ( !kp->kcid ) {	/* It's encoded (old sfds), else orig */
+                        if ( index>=map->encmax || map->map[index]==-1 )
+                            index = sf->glyphcnt;
+                        else
+                            index = map->map[index];
+                    }
+                    kp->kcid = false;
+                    ksf = sf;
+                    if ( cidmaster!=sf ) {
+                        for ( l=0; l<cidmaster->subfontcnt; ++l ) {
+                            ksf = cidmaster->subfonts[l];
+                            if ( index<ksf->glyphcnt && ksf->glyphs[index]!=NULL )
+                                break;
+                        }
+                    }
+                    if ( index>=ksf->glyphcnt || ksf->glyphs[index]==NULL ) {
+                        IError( "Bad kerning information in glyph %s\n", sc->name );
+                        kp->sc = NULL;
+                    } else {
+                        kp->sc = ksf->glyphs[index];
+                    }
 
 		    if ( kp->sc!=NULL )
 			prev = kp;
