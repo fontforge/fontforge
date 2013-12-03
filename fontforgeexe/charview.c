@@ -182,12 +182,9 @@ static Color DraggingComparisonAlphaChannelOverride = 0x88000000;
 
 // Format is 0x AA RR GG BB.
 
-
-
 static void isAnyControlPointSelectedVisitor(SplinePoint* splfirst, Spline* s, SplinePoint* sp, void* udata );
 static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e );
 static void CVHScrollSetPos( CharView *cv, int newpos );
-
 
 static int cvcolsinited = false;
 static struct resed charview_re[] = {
@@ -2814,7 +2811,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    }
 
 	    int ridx = cv->additionalCharsToShowActiveIndex+1;
-//	    printf("expose(b) additionalCharsToShowActiveIndex:%d\n", cv->additionalCharsToShowActiveIndex );
+//	    TRACE("expose(b) additionalCharsToShowActiveIndex:%d\n", cv->additionalCharsToShowActiveIndex );
 	    if( cv->additionalCharsToShow[ ridx ] )
 	    {
 		int i = 1;
@@ -2822,7 +2819,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		int offset = cv->scale * cv->b.sc->width;
 		for( i=ridx; i < additionalCharsToShowLimit; i++ )
 		{
-//		    printf("expose(right) loop:%d\n", i );
+//		    TRACE("expose(right) loop:%d\n", i );
 		    SplineChar* xc = cv->additionalCharsToShow[i];
 		    if( !xc )
 			break;
@@ -2845,7 +2842,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		    
 		for( i=cv->additionalCharsToShowActiveIndex-1; i >= 0; i-- )
 		{
-//		    printf("expose(left) loop:%d\n", i );
+//		    TRACE("expose(left) loop:%d\n", i );
 		    SplineChar* xc = cv->additionalCharsToShow[i];
 		    if( !xc )
 			break;
@@ -2858,7 +2855,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		cv->xoff = originalxoff;
 	    }
 		
-//	    printf("expose(e) ridx:%d\n", ridx );
+//	    TRACE("expose(e) ridx:%d\n", ridx );
 
 	}
     }
@@ -3363,7 +3360,7 @@ static void CVCheckPoints(CharView *cv) {
 
 static void CVChangeSC_storeTab( CharView *cv, int tabnumber )
 {
-    printf("CVChangeSC_storeTab() %d\n", tabnumber );
+    TRACE("CVChangeSC_storeTab() %d\n", tabnumber );
     if( tabnumber < charview_cvtabssz )
     {
 	CharViewTab* t = &cv->cvtabs[tabnumber];
@@ -3375,11 +3372,11 @@ static void CVChangeSC_storeTab( CharView *cv, int tabnumber )
 
 static void CVChangeSC_fetchTab( CharView *cv, int tabnumber )
 {
-    printf("CVChangeSC_fetchTab() %d\n", tabnumber );
+    TRACE("CVChangeSC_fetchTab() %d\n", tabnumber );
     if( tabnumber < charview_cvtabssz )
     {
 	CharViewTab* t = &cv->cvtabs[tabnumber];
-	printf("CVChangeSC_fetchTab() %s\n", t->charselected );
+	TRACE("CVChangeSC_fetchTab() %s\n", t->charselected );
 	GGadgetSetTitle8(cv->charselector, t->charselected );
     }
 }
@@ -3387,7 +3384,7 @@ static void CVChangeSC_fetchTab( CharView *cv, int tabnumber )
 static void CVSetCharSelectorValueFromSC( CharView *cv, SplineChar *sc )
 {
     char* title = g_strdup_printf( "/%s/", sc->name );
-    printf("CVSetCharSelectorValueFromSC() title:%s\n", title );
+    TRACE("CVSetCharSelectorValueFromSC() title:%s\n", title );
     GGadgetSetTitle8(cv->charselector, title);
     g_free(title);
 }
@@ -3674,7 +3671,7 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 
     
 
-//    printf("CVCharUp() ag:%d key:%d\n", cv_auto_goto, event->u.chr.keysym );
+//    TRACE("CVCharUp() ag:%d key:%d\n", cv_auto_goto, event->u.chr.keysym );
     if( !cv_auto_goto )
     {
 	bool isImmediateKeyTogglePreview = isImmediateKey( cv->gw, "TogglePreview", event );
@@ -3717,17 +3714,16 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 
     if( event->u.chr.keysym == XK_Escape )
     {
-	printf("escape char.......!\n");
+	TRACE("escape char.......!\n");
 	GGadget *active = GWindowGetFocusGadgetOfWindow(cv->gw);
 	if( active == cv->charselector )
 	{
-	    printf("was on charselector\n");
-	    printf("was on charselector\n");
+	    TRACE("was on charselector\n");
 	    GWidgetIndicateFocusGadget( cv->hsb );
 	}
 	else
 	{
-	    printf("was on NOT charselector\n");
+	    TRACE("was on NOT charselector\n");
 	    GWidgetIndicateFocusGadget( cv->charselector );
 	}
     }
@@ -4416,7 +4412,7 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
     FontViewBase *fv = cv->b.fv;
     char buf[300];
 
-    printf("CVSwitchActiveSC() idx:%d active:%d\n", idx, cv->additionalCharsToShowActiveIndex );
+    TRACE("CVSwitchActiveSC() idx:%d active:%d\n", idx, cv->additionalCharsToShowActiveIndex );
     if( !sc )
     {
 	sc = cv->additionalCharsToShow[i];
@@ -4434,10 +4430,10 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
     }
     
     cv->changedActiveGlyph = 1;
-    printf("CVSwitchActiveSC(b) activeidx:%d newidx:%d\n", cv->additionalCharsToShowActiveIndex, idx );
+    TRACE("CVSwitchActiveSC(b) activeidx:%d newidx:%d\n", cv->additionalCharsToShowActiveIndex, idx );
     for( i=0; i < additionalCharsToShowLimit; i++ )
 	if( cv->additionalCharsToShow[i] )
-	    printf("CVSwitchActiveSC(b) toshow.. i:%d char:%s\n", i, cv->additionalCharsToShow[i]
+	    TRACE("CVSwitchActiveSC(b) toshow.. i:%d char:%s\n", i, cv->additionalCharsToShow[i]
 		   ? cv->additionalCharsToShow[i]->name : "N/A" );
 
 
@@ -4491,15 +4487,10 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
     CVInfoDraw(cv,cv->gw);
     free(title);
     _CVPaletteActivate(cv,true);
-
     
-    
-    printf("CVSwitchActiveSC() idx:%d\n", idx );
-
-
+    TRACE("CVSwitchActiveSC() idx:%d\n", idx );
 
     cv->additionalCharsToShowActiveIndex = idx;
-
 
     cv->b.next = sc->views;
     sc->views = &cv->b;
@@ -4509,14 +4500,10 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
     if( scroll_offset )
 	CVHScrollSetPos( cv, cv->xoff + scroll_offset * cv->scale );
     
-    
 //    if ( CVClearSel(cv))
 //	SCUpdateAll(cv->b.sc);
     
 }
-
-
-
 
 static void CVMouseDown(CharView *cv, GEvent *event ) {
     FindSel fs;
@@ -4537,7 +4524,7 @@ return;		/* I treat this more like a modifier key change than a button press */
 	return;
     }
 
-    printf("tool:%d pointer:%d ctl:%d alt:%d\n",
+    TRACE("tool:%d pointer:%d ctl:%d alt:%d\n",
 	   cv->showing_tool,
 	   (cv->showing_tool == cvt_pointer),
 	   cv->activeModifierControl, cv->activeModifierAlt );
@@ -4552,7 +4539,7 @@ return;		/* I treat this more like a modifier key change than a button press */
 	SetFS(&fs,&cv->p,cv,event);
 	int found = InSplineSet( &fs, cv->b.layerheads[cv->b.drawmode]->splines,
 				 cv->b.sc->inspiro && hasspiro());
-	printf("in spline set:%d cv->p.sp:%p\n", found, cv->p.sp );
+	TRACE("in spline set:%d cv->p.sp:%p\n", found, cv->p.sp );
 
 	//
 	// Only overwrite to create a point if the user has clicked a spline.
@@ -4596,8 +4583,8 @@ return;		/* I treat this more like a modifier key change than a button press */
 	_CVTestSelectFromEvent(cv,&fs);
 	fs.p = &cv->p;
 
-//	printf("cvmousedown cv->xoff:%d\n", cv->xoff );
-//	printf("cvmousedown x:%d y:%d\n",   event->u.mouse.x, event->u.mouse.y );
+//	TRACE("cvmousedown cv->xoff:%d\n", cv->xoff );
+//	TRACE("cvmousedown x:%d y:%d\n",   event->u.mouse.x, event->u.mouse.y );
 	    
 	if( !cv->p.anysel && cv->b.drawmode != dm_grid )
 	{
@@ -4620,7 +4607,7 @@ return;		/* I treat this more like a modifier key change than a button press */
 		{
 		    int offset = cv->b.sc->width;
 		    int cumulativeLeftSideBearing = 0;
-//	        printf("first offset:%d original cx:%f \n", offset, fsadjusted.p->cx );
+//	        TRACE("first offset:%d original cx:%f \n", offset, fsadjusted.p->cx );
 		    int ridx = cv->additionalCharsToShowActiveIndex+1;
 		    for( i=ridx; i < additionalCharsToShowLimit; i++ )
 		    {
@@ -4637,30 +4624,30 @@ return;		/* I treat this more like a modifier key change than a button press */
 		    
 
 			cumulativeLeftSideBearing += offset;
-			/* printf("1 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
-			/* printf("1 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
-			/* printf("1 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
+			/* TRACE("1 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
+			/* TRACE("1 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
+			/* TRACE("1 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
 			/* fsadjusted.c_xl -= offset; */
 			/* fsadjusted.c_xh -= offset; */
 			/* fsadjusted.xl   -= offset; */
 			/* fsadjusted.xh   -= offset; */
-			/* printf("2 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
-			/* printf("2 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
-			/* printf("2 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
+			/* TRACE("2 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
+			/* TRACE("2 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
+			/* TRACE("2 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
 			/* int found = InSplineSet( &fsadjusted, */
 			/* 			     xc->layers[cv->b.drawmode-1].splines, */
 			/* 			     xc->inspiro && hasspiro()); */
-			printf("A:%d\n", cumulativeLeftSideBearing );
-			printf("B:%f\n", fsadjusted.p->cx );
-			printf("C:%d\n", cumulativeLeftSideBearing+xc->width );
+			TRACE("A:%d\n", cumulativeLeftSideBearing );
+			TRACE("B:%f\n", fsadjusted.p->cx );
+			TRACE("C:%d\n", cumulativeLeftSideBearing+xc->width );
 			int found = IS_IN_ORDER3(
 			    cumulativeLeftSideBearing + OffsetForDoingCharNextToActive,
 			    fsadjusted.p->cx,
 			    cumulativeLeftSideBearing+xc->width );
-			printf("CVMOUSEDOWN i:%d found:%d\n", i, found );
+			TRACE("CVMOUSEDOWN i:%d found:%d\n", i, found );
 			if( found )
 			{
-			    printf("FOUND FOUND FOUND FOUND FOUND FOUND FOUND \n");
+			    TRACE("FOUND FOUND FOUND FOUND FOUND FOUND FOUND \n");
 			
 			    xcidx = i;
 //		    CVChangeSC(cv,xc);
@@ -4682,7 +4669,7 @@ return;		/* I treat this more like a modifier key change than a button press */
 		    xc = cv->additionalCharsToShow[cv->additionalCharsToShowActiveIndex-1];
 		    int offset = xc->width;
 		    int cumulativeLeftSideBearing = 0;
-//	        printf("first offset:%d original cx:%f \n", offset, fsadjusted.p->cx );
+//	        TRACE("first offset:%d original cx:%f \n", offset, fsadjusted.p->cx );
 		    int lidx = cv->additionalCharsToShowActiveIndex-1;
 		    for( i=lidx; i>=0; i-- )
 		    {
@@ -4698,31 +4685,31 @@ return;		/* I treat this more like a modifier key change than a button press */
 			    OffsetForDoingCharNextToActive = borderFudge;
 			}
 
-			/* printf("1 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
-			/* printf("1 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
-			/* printf("1 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
+			/* TRACE("1 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
+			/* TRACE("1 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
+			/* TRACE("1 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
 			/* fsadjusted.c_xl += offset; */
 			/* fsadjusted.c_xh += offset; */
 			/* fsadjusted.xl   += offset; */
 			/* fsadjusted.xh   += offset; */
-			/* printf("2 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
-			/* printf("2 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
-			/* printf("2 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
+			/* TRACE("2 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
+			/* TRACE("2 adj.cx:%f %f\n",fsadjusted.c_xl,fsadjusted.c_xh); */
+			/* TRACE("2 p.  cx:%f %f\n",fsadjusted.p->cx,fsadjusted.p->cy ); */
 			/* int found = InSplineSet( &fsadjusted, */
 			/* 			     xc->layers[cv->b.drawmode-1].splines, */
 			/* 			     xc->inspiro && hasspiro()); */
-			printf("A:%d\n", cumulativeLeftSideBearing );
-			printf("B:%f\n", fsadjusted.p->cx );
-			printf("C:%d\n", cumulativeLeftSideBearing+xc->width );
+			TRACE("A:%d\n", cumulativeLeftSideBearing );
+			TRACE("B:%f\n", fsadjusted.p->cx );
+			TRACE("C:%d\n", cumulativeLeftSideBearing+xc->width );
 			int found = IS_IN_ORDER3(
 			    cumulativeLeftSideBearing,
 			    fsadjusted.p->cx,
 			    cumulativeLeftSideBearing + xc->width - OffsetForDoingCharNextToActive );
 		    
-			printf("cvmousedown i:%d found:%d\n", i, found );
+			TRACE("cvmousedown i:%d found:%d\n", i, found );
 			if( found )
 			{
-			    printf("FOUND FOUND FOUND FOUND FOUND FOUND FOUND i:%d\n", i);
+			    TRACE("FOUND FOUND FOUND FOUND FOUND FOUND FOUND i:%d\n", i);
 			    xcidx = i;
 			    break;
 			}
@@ -4731,8 +4718,8 @@ return;		/* I treat this more like a modifier key change than a button press */
 		    }
 		}
 
-		printf("have xc:%p xcidx:%d\n", xc, xcidx );
-		printf("    idx:%d active:%d\n", xcidx, cv->additionalCharsToShowActiveIndex );
+		TRACE("have xc:%p xcidx:%d\n", xc, xcidx );
+		TRACE("    idx:%d active:%d\n", xcidx, cv->additionalCharsToShowActiveIndex );
 		if( xc && xcidx >= 0 )
 		{
 		    CVSwitchActiveSC( cv, xc, xcidx );
@@ -4800,7 +4787,7 @@ return;		/* I treat this more like a modifier key change than a button press */
 		    //
 		    // Do not send clicks on bezier control points.
 		    //
-		    printf("skipping!\n");
+		    TRACE("skipping!\n");
 		}
 		else
 		{
@@ -5053,7 +5040,7 @@ static void CVMouseMove(CharView *cv, GEvent *event ) {
     int spacebar_changed;
 
 #if 0		/* Debug wacom !!!! */
- printf( "dev=%s (%d,%d) 0x%x\n", event->u.mouse.device!=NULL?event->u.mouse.device:"<None>",
+ TRACE( "dev=%s (%d,%d) 0x%x\n", event->u.mouse.device!=NULL?event->u.mouse.device:"<None>",
      event->u.mouse.x, event->u.mouse.y, event->u.mouse.state);
 #endif
 
@@ -5794,11 +5781,11 @@ return;
 
 static void CVHScrollSetPos( CharView *cv, int newpos )
 {
-    printf("CVHScrollSetPos(1) cvxoff:%d newpos:%d\n", cv->xoff, newpos );
+    TRACE("CVHScrollSetPos(1) cvxoff:%d newpos:%d\n", cv->xoff, newpos );
     if ( newpos<-(32000*cv->scale-cv->width) )
         newpos = -(32000*cv->scale-cv->width);
     if ( newpos>8000*cv->scale ) newpos = 8000*cv->scale;
-    printf("CVHScrollSetPos(2) cvxoff:%d newpos:%d\n", cv->xoff, newpos );
+    TRACE("CVHScrollSetPos(2) cvxoff:%d newpos:%d\n", cv->xoff, newpos );
     if ( newpos!=cv->xoff ) {
 	int diff = newpos-cv->xoff;
 	cv->xoff = newpos;
@@ -7319,7 +7306,7 @@ void FE_touchControlPoint( void* key,
 			   bool isnext,
 			   void* udata )
 {
-    printf("FE_touchControlPoint() which:%p\n", which );
+    TRACE("FE_touchControlPoint() which:%p\n", which );
     SPTouchControl( sp, which, (int)udata );
 }
 
@@ -7344,7 +7331,7 @@ void FE_adjustBCPByDelta( void* key,
     FE_adjustBCPByDeltaData* data = (FE_adjustBCPByDeltaData*)udata;
     CharView *cv = data->cv;
 
-    printf("FE_adjustBCPByDelta %p %d\n", which, isnext );
+    TRACE("FE_adjustBCPByDelta %p %d\n", which, isnext );
     BasePoint to;
     to.x = which->x + data->dx;
     to.y = which->y + data->dy;
@@ -7362,8 +7349,8 @@ void FE_adjustBCPByDeltaWhilePreservingBCPAngle( void* key,
     FE_adjustBCPByDeltaData* data = (FE_adjustBCPByDeltaData*)udata;
     CharView *cv = data->cv;
 
-//    printf("FE_adjustBCPByDeltaWhilePreservingBCPAngle which:%p data:%p isnext:%d\n", which, data, isnext );
-//    printf("FE_adjustBCPByDeltaWhilePreservingBCPAngle    delta %f %f\n", data->dx, data->dy );
+//    TRACE("FE_adjustBCPByDeltaWhilePreservingBCPAngle which:%p data:%p isnext:%d\n", which, data, isnext );
+//    TRACE("FE_adjustBCPByDeltaWhilePreservingBCPAngle    delta %f %f\n", data->dx, data->dy );
     BasePoint to;
     to.x = which->x + data->dx;
     to.y = which->y + data->dy;
@@ -7537,7 +7524,7 @@ static void visitAdjacentToSelectedControlPoints( GHashTable *col, visitSelected
 void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
 					  visitSelectedControlPointsVisitor f, void* udata )
 {
-//    printf("CVFindAndVisitSelectedControlPoints(top) cv->p.sp:%p\n", cv->p.sp );
+//    TRACE("CVFindAndVisitSelectedControlPoints(top) cv->p.sp:%p\n", cv->p.sp );
     GHashTable* col = getSelectedControlPoints( cv, &cv->p );
     if(!col)
 	return;
@@ -7555,7 +7542,7 @@ void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
 void CVVisitAllControlPoints( CharView *cv, bool preserveState,
 			      visitSelectedControlPointsVisitor f, void* udata )
 {
-    printf("CVVisitAllControlPoints(top) cv->p.spl:%p cv->p.sp:%p\n", cv->p.spl, cv->p.sp );
+    TRACE("CVVisitAllControlPoints(top) cv->p.spl:%p cv->p.sp:%p\n", cv->p.spl, cv->p.sp );
     if( !cv->p.spl || !cv->p.sp )
 	return;
 
@@ -7573,7 +7560,7 @@ void CVVisitAllControlPoints( CharView *cv, bool preserveState,
 void CVVisitAdjacentToSelectedControlPoints( CharView *cv, bool preserveState,
 					     visitSelectedControlPointsVisitor f, void* udata )
 {
-//    printf("CVVisitAdjacentToSelectedControlPoints(top) cv->p.sp:%p\n", cv->p.sp );
+//    TRACE("CVVisitAdjacentToSelectedControlPoints(top) cv->p.sp:%p\n", cv->p.sp );
     if( !cv->p.spl || !cv->p.sp )
 	return;
 
@@ -7613,8 +7600,8 @@ void CVChar(CharView *cv, GEvent *event ) {
 	}
     }
 
-    /* printf("GK_Control_L:%d\n", ( event->u.chr.keysym == GK_Control_L )); */
-    /* printf("GK_Meta_L:%d\n", ( event->u.chr.keysym == GK_Meta_L )); */
+    /* TRACE("GK_Control_L:%d\n", ( event->u.chr.keysym == GK_Control_L )); */
+    /* TRACE("GK_Meta_L:%d\n", ( event->u.chr.keysym == GK_Meta_L )); */
     
     int oldactiveModifierControl = cv->activeModifierControl;
     int oldactiveModifierAlt = cv->activeModifierAlt;
@@ -7724,16 +7711,16 @@ return;
 	    event->u.chr.keysym == GK_KP_Right ||
 	    event->u.chr.keysym == GK_KP_Down )
     {
-	printf("key left/right/up/down...\n");
+	TRACE("key left/right/up/down...\n");
 	
 	GGadget *active = GWindowGetFocusGadgetOfWindow(cv->gw);
 	if( active == cv->charselector )
 	{
 	    if ( event->u.chr.keysym == GK_Left ||event->u.chr.keysym == GK_Right )
 	    {
-		printf("left/right on the charselector!\n");
+		TRACE("left/right on the charselector!\n");
 	    }
-	    printf("up/down/l/r on the charselector!\n");
+	    TRACE("up/down/l/r on the charselector!\n");
 	    int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? -1 : 1;
 	    Wordlist_MoveByOffset( cv->charselector, &cv->charselectoridx, dir );
 
@@ -7766,7 +7753,7 @@ return;
 	}
 	else
 	{
-//	    printf("cvchar( moving points? ) shift:%d\n", ( event->u.chr.state & (ksm_shift) ));
+//	    TRACE("cvchar( moving points? ) shift:%d\n", ( event->u.chr.state & (ksm_shift) ));
 	    FE_adjustBCPByDeltaData d;
 	    memset( &d, 0, sizeof(FE_adjustBCPByDeltaData));
 	    visitSelectedControlPointsVisitor func = FE_adjustBCPByDelta;
@@ -8146,7 +8133,7 @@ static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
 
     Undoes *undo = cv->b.layerheads[cv->b.drawmode]->undoes;
 
-//    printf("CVUndo() undo:%p u->next:%p\n", undo, ( undo ? undo->next : 0 ) );
+//    TRACE("CVUndo() undo:%p u->next:%p\n", undo, ( undo ? undo->next : 0 ) );
     if( undo )
     {
 	if ( collabclient_inSession( &cv->b ) )	{
@@ -8167,7 +8154,7 @@ static void CVRedo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
     Undoes *undo = cv->b.layerheads[cv->b.drawmode]->redoes;
     if ( undo ) {
 	if ( collabclient_inSession(&cv->b) )	{
-	    printf("in-session (redo)!\n");
+	    TRACE("in-session (redo)!\n");
 	    collabclient_performLocalRedo( &cv->b );
 	    cv->lastselpt = NULL;
 	    _CVCharChangedUpdate(&cv->b,1);
@@ -12155,7 +12142,6 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
 	CVShows.alwaysshowcontrolpoints = prefs_cv_show_control_points_always_initially;
     }
 
-
     cv->b.sc = sc;
     cv->scale = .5;
     cv->xoff = cv->yoff = 20;
@@ -12208,10 +12194,6 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
 #endif
     cv->rulerh = 16;
 
-
-
-
-
     GDrawGetSize(cv->gw,&pos);
     memset(&gd,0,sizeof(gd));
     gd.pos.y = cv->mbh+cv->charselectorh+cv->infoh;
@@ -12226,8 +12208,6 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     gd.pos.x = 0;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_text_xim;
     cv->hsb = GScrollBarCreate(cv->gw,&gd,cv);
-
-
 
     GDrawGetSize(cv->gw,&pos);
     pos.y = cv->mbh+cv->charselectorh+cv->infoh; pos.height -= cv->mbh + cv->charselectorh + sbsize + cv->infoh;
@@ -12422,12 +12402,12 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
     SplineChar *sc = cv->b.sc;
     SplineFont* sf = sc->parent;
 
-    printf("CV_OnCharSelectorTextChanged(top)\n");
+    TRACE("CV_OnCharSelectorTextChanged(top)\n");
     /* if( e->type == et_char ) */
     /* { */
-    /* 	printf("CV_OnCharSelectorTextChanged() char is-left:%d\n", e->u.chr.keysym == GK_Left ); */
+    /* 	TRACE("CV_OnCharSelectorTextChanged() char is-left:%d\n", e->u.chr.keysym == GK_Left ); */
     /* } */
-    /* printf("subtype: %d\n", e->u.control.subtype ); */
+    /* TRACE("subtype: %d\n", e->u.control.subtype ); */
     
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged )
     {
@@ -12441,7 +12421,7 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	    int type = (intpt) cur->userdata;
 	    if ( type < 0 )
 	    {
-		printf("load wordlist...! pos:%d\n",pos);
+		TRACE("load wordlist...! pos:%d\n",pos);
 
 		WordlistLoadToGTextInfo( cv->charselector, &cv->charselectoridx );
 		return 0;
@@ -12451,14 +12431,12 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	
 	cv->charselectoridx = pos;
 	char* txt = GGadgetGetTitle8( cv->charselector );
-	printf("text changed: %s\n", txt );
-
-	
+	TRACE("text changed: %s\n", txt );
 
 	if( 1 )
 	{
 	    int tabnum = GTabSetGetSel(cv->tabs);
-	    printf("tab num:%d\n", tabnum );
+	    TRACE("tab num:%d\n", tabnum );
 
 	    CharViewTab* t = &cv->cvtabs[tabnum];
 	    strncpy( t->tablabeltxt, txt, charviewtab_charselectedsz );
@@ -12514,7 +12492,7 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 		for (i = 0; i < selected->len; i++)
 		{
 		    int v = g_array_index (selected, gint, i);
-		    printf("selection i:%d v:%d\n", i, v );
+		    TRACE("selection i:%d v:%d\n", i, v );
 		    if( !v )
 		    {
 			// first char selected, nothing to do!
@@ -12526,7 +12504,7 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 			SplineChar* xc = cv->additionalCharsToShow[v];
 			if( xc )
 			{
-			    printf("selected v:%d xc:%s\n", v, xc->name );
+			    TRACE("selected v:%d xc:%s\n", v, xc->name );
 			    int xoff = cv->xoff;
 			    CVSwitchActiveSC( cv, xc, v );
 			    CVHScrollSetPos( cv, xoff );
@@ -12545,8 +12523,8 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	int i=0;
 	for( i=0; cv->additionalCharsToShow[i]; i++ )
 	{
-	    printf("i:%d %p .. ", i, cv->additionalCharsToShow[i] );
-	    printf(" %s\n", cv->additionalCharsToShow[i]->name );
+	    TRACE("i:%d %p .. ", i, cv->additionalCharsToShow[i] );
+	    TRACE(" %s\n", cv->additionalCharsToShow[i]->name );
 	}
 
 	if( !hadSelection )
@@ -12613,9 +12591,9 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     // FIXME: cant do this until gw is shown?
     GTextBounds textbounds;
     GDrawGetText8Bounds(cv->gw,"0123456789hl",10,&textbounds);
-    printf("XXXXXX as:%d  ds:%d\n",  textbounds.as, textbounds.ds );
+    TRACE("XXXXXX as:%d  ds:%d\n",  textbounds.as, textbounds.ds );
     cv->charselectorh = textbounds.as+textbounds.ds+1;
-    printf("XXXXXX h:%d\n", GDrawGetText8Height( cv->gw, "0123456AZgplh", 10));
+    TRACE("XXXXXX h:%d\n", GDrawGetText8Height( cv->gw, "0123456AZgplh", 10));
     cv->charselectorh = 35;
 
 
@@ -12645,7 +12623,7 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     GGadgetGetSize(cv->mb,&gsize);
     cv->mbh = gsize.height;
 
-//    printf("pos.x:%d pos.y:%d pos.w:%d pos.h:%d\n", pos.x, pos.y, pos.width, pos.height );
+//    TRACE("pos.x:%d pos.y:%d pos.w:%d pos.h:%d\n", pos.x, pos.y, pos.width, pos.height );
     GDrawGetSize(cv->gw,&pos);
     memset(&gd,0,sizeof(gd));
 //    gd.pos.x = pos.x;
@@ -12747,12 +12725,12 @@ static void CharViewInit(void) {
     if ( done )
 return;
     done = true;
-//    printf("CharViewInit(top) mblist[0].text before translation: %s\n", mblist[0].ti.text );
+//    TRACE("CharViewInit(top) mblist[0].text before translation: %s\n", mblist[0].ti.text );
 
     mb2DoGetText(mblist);
 
-//    printf("CharViewInit(2) mblist[0].text after    translation: %s\n", u_to_c(mblist[0].ti.text) );
-//    printf("CharViewInit(2) mblist[0].text_untranslated notrans: %s\n", mblist[0].ti.text_untranslated );
+//    TRACE("CharViewInit(2) mblist[0].text after    translation: %s\n", u_to_c(mblist[0].ti.text) );
+//    TRACE("CharViewInit(2) mblist[0].text_untranslated notrans: %s\n", mblist[0].ti.text_untranslated );
 
     mb2DoGetText(spiroptlist);
     for ( i=0; mblist_nomm[i].ti.text!=NULL; ++i )
