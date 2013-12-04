@@ -975,7 +975,7 @@ return;
 	if ( sp->ttfindex==0xfffe )
 	    strcpy(buf,"??");
         else if (cv->showpointnumbers == 2)
-            sprintf( buf, "(%d,%d)", (int)(sp->nextcp.x), (int)(sp->nextcp.y) );
+            sprintf( buf, "(%d,%d)", (int)(sp->me.x), (int)(sp->me.y) );
 	else
 	    sprintf( buf,"%d", sp->ttfindex );
 	GDrawDrawText8(pixmap,x,y-6,buf,-1,col);
