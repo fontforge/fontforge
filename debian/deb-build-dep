@@ -121,7 +121,7 @@ def main():
     # return ret
 
     # Print extra compilation info
-    packages = ["libfontforge1", "libgdraw4", "fontforge-nox", "fontforge",
+    packages = ["libfontforge1", "libgdraw4", "fontforge",
             "python-fontforge", "fontforge-dbg"]
     if ret == 0 or args.debug:
         print(
