@@ -646,7 +646,7 @@ int _FVMenuSaveAs(FontView *fv) {
 	FilenameFunc = GFileChooserSaveAsInputFilenameFunc;
     }
 
-#if defined(__MINGW32__)||defined(__CYGWIN__)
+#if defined(__MINGW32__)
     //
     // If they are "saving as" but there is no path, lets help
     // the poor user by starting someplace sane rather than in `pwd`
@@ -1024,7 +1024,7 @@ void MenuOpen(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
     FontView *test; int fvcnt, fvtest;
 
     char* OpenDir = NULL;
-#if defined(__MINGW32__)||defined(__CYGWIN__)
+#if defined(__MINGW32__)
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     OpenDir = GFileGetHomeDocumentsDir();
     if( fv && fv->b.sf && fv->b.sf->filename )
