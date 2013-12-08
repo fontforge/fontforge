@@ -337,7 +337,7 @@ fontforge.FontView.ChangedColor: #204a87
 fontforge.FontView.DoubleStruckFamily: doublestruck,serif
 fontforge.FontView.EmptySlotFgColor: #cccbca
 fontforge.FontView.FontFamily: dejavu sans,fontview,courier,monospace,clearlyu,unifont
-fontforge.FontView.FontSize: 10
+fontforge.FontView.FontSize: 12
 fontforge.FontView.FrakturFamily: fraktur,serif
 fontforge.FontView.GlyphInfoColor: #598ec6
 fontforge.FontView.HintingNeededColor: #598ec6
