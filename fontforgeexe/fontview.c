@@ -5923,7 +5923,7 @@ static void FVMenuStartWebFontServer(GWindow gw, struct gmenuitem *UNUSED(mi), G
     
 }
 
-#if defined(__MINGW32__)||defined(__CYGWIN__)
+#if defined(__MINGW32__)
 //
 // This is an imperfect implemenation of kill() for windows.
 //
