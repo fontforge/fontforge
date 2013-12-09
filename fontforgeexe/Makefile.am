@@ -145,21 +145,21 @@ MACFFEXE_LIBADD=macobjective.o
 endif MACINTOSH
 
 libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
-libfontforgeexe_la_LIBADD = $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MACFFEXE_LIBADD) $(MY_LIBS) 
+libfontforgeexe_la_LIBADD = $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MACFFEXE_LIBADD) $(MY_LIBS)
 
 # Using -release instead of -version-info seems appropriate in the
 # absence of a well defined ABI.
 libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) -release $(VERSION)
 if LIBZMQ
-libfontforgeexe_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la $(LIBZMQ_LIBS) 
+libfontforgeexe_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la $(LIBZMQ_LIBS)
 endif
 
 #--------------------------------------------------------------------------
 
 EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe \
-	exelibstamp.pre fontimage.1 fontlint.1 sfddiff.1			\
+	exelibstamp.pre fontimage.1 fontlint.1 sfddiff.1		\
 	darwinsetup.in macobjective.m
-# MacFontForgeApp.zip 
+# MacFontForgeApp.zip
 MOSTLYCLEANFILES = fontimage fontlint sfddiff exelibstamp.c
 
 #--------------------------------------------------------------------------

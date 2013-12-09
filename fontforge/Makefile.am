@@ -90,25 +90,26 @@ AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
 
 #--------------------------------------------------------------------------
 
-libfontforge_la_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c	\
-	autowidth.c bezctx_ff.c bitmapchar.c bitmapcontrol.c bvedit.c		\
-	clipnoui.c crctab.c cvexport.c cvimages.c cvundoes.c dumpbdf.c		\
-	dumppfa.c effects.c encoding.c featurefile.c fontviewbase.c			\
-	freetype.c fvcomposite.c fvfonts.c fvimportbdf.c fvmetrics.c		\
-	glyphcomp.c http.c ikarus.c lookups.c macbinary.c macenc.c			\
-	mathconstants.c mm.c namelist.c nonlineartrans.c noprefs.c			\
-	nouiutil.c nowakowskittfinstr.c ofl.c othersubrs.c palmfonts.c		\
-	parsepdf.c parsepfa.c parsettfatt.c parsettfbmf.c parsettf.c		\
-	parsettfvar.c plugins.c print.c psread.c pua.c python.c				\
-	savefont.c scripting.c scstyles.c search.c sfd1.c sfd.c				\
-	sflayout.c spiro.c splinechar.c splinefill.c splinefont.c			\
-	splineorder2.c splineoverlap.c splinesaveafm.c splinesave.c			\
-	splinestroke.c splineutil2.c splineutil.c start.c stemdb.c svg.c	\
-	tottfaat.c tottfgpos.c tottf.c tottfvar.c ttfinstrs.c				\
-	ttfspecial.c ufo.c unicoderange.c utils.c winfonts.c zapfnomen.c	\
-	groups.c langfreq.c ftdelta.c autowidth2.c woff.c stamp.c			\
-	activeinui.c pluginloading.c is_LIGATURE.c flaglist.c strlist.c \
-    sfundo.h collabclient.c collabclient.h collabclientpriv.h
+libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
+	autotrace.c autowidth.c autowidth2.c bezctx_ff.c bitmapchar.c	\
+	bitmapcontrol.c bvedit.c collabclient.c collabclient.h		\
+	collabclientpriv.h clipnoui.c crctab.c cvexport.c cvimages.c	\
+	cvundoes.c dumpbdf.c dumppfa.c effects.c encoding.c		\
+	featurefile.c flaglist.c fontviewbase.c freetype.c		\
+	fvcomposite.c fvfonts.c fvimportbdf.c fvmetrics.c ftdelta.c	\
+	glyphcomp.c groups.c http.c ikarus.c is_LIGATURE.c langfreq.c	\
+	lookups.c macbinary.c macenc.c mathconstants.c mm.c namelist.c	\
+	nonlineartrans.c noprefs.c nouiutil.c nowakowskittfinstr.c	\
+	ofl.c othersubrs.c palmfonts.c parsepdf.c parsepfa.c		\
+	parsettfatt.c parsettfbmf.c parsettf.c parsettfvar.c plugins.c	\
+	pluginloading.c print.c psread.c pua.c python.c savefont.c	\
+	scripting.c scstyles.c search.c sfd1.c sfd.c sflayout.c		\
+	sfundo.h spiro.c splinechar.c splinefill.c splinefont.c		\
+	splineorder2.c splineoverlap.c splinesaveafm.c splinesave.c	\
+	splinestroke.c splineutil2.c splineutil.c stamp.c start.c	\
+	stemdb.c strlist.c svg.c tottfaat.c tottfgpos.c tottf.c		\
+	tottfvar.c ttfinstrs.c ttfspecial.c ufo.c unicoderange.c	\
+	utils.c winfonts.c woff.c zapfnomen.c
 
 nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
@@ -124,54 +125,8 @@ if LIBZMQ
 libfontforge_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la $(LIBZMQ_LIBS)
 endif LIBZMQ
 
-# Using -release instead of -version-info seems appropriate in the
-# absence of a well defined ABI.
-libfontforge_la_LDFLAGS = $(MY_CFLAGS) -release $(VERSION)
+libfontforge_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBFONTFORGE_VERSION)
 libfontforge_la_LIBADD += $(MY_LIBS) $(LIBZMQ_LIBS)
-
-if GRAPHICAL_USER_INTERFACE
-
-libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
-	autowidth2dlg.c basedlg.c bdfinfo.c bitmapdlg.c bitmapview.c	\
-	charinfo.c charview.c clipui.c combinations.c contextchain.c	\
-	cursors.c cvaddpoints.c cvdebug.c cvdgloss.c cvexportdlg.c		\
-	cvfreehand.c cvgetinfo.c cvgridfit.c cvhand.c cvhints.c			\
-	cvimportdlg.c cvknife.c cvpalettes.c cvpointer.c cvruler.c 		\
-	cvshapes.c cvstroke.c cvtranstools.c displayfonts.c effectsui.c	\
-	encodingui.c fontinfo.c fontview.c freetypeui.c fvfontsdlg.c	\
-	fvmetricsdlg.c gotodlg.c groupsdlg.c histograms.c images.c		\
-	kernclass.c layer2layer.c lookupui.c macencui.c math.c			\
-	metricsview.c mmdlg.c nonlineartransui.c oflib.c openfontdlg.c	        \
-	prefs.c problems.c pythonui.c savefontdlg.c scriptingdlg.c		\
-	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	        \
-	splashimage.c startui.c statemachine.c tilepath.c transform.c	        \
-	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
-	usermenu.c collabclientui.c collabclientui.h                    \
-	sfundo.c wordlistparser.c wordlistparser.h
-
-else !GRAPHICAL_USER_INTERFACE
-
-libfontforgeexe_la_SOURCES = startnoui.c
-
-endif !GRAPHICAL_USER_INTERFACE
-
-nodist_libfontforgeexe_la_SOURCES = exelibstamp.c
-
-if MACINTOSH
-libfontforgeexe_la_SOURCES += macobjective.h
-MACFFEXE_LIBADD=macobjective.o
-endif MACINTOSH
-
-libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
-libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MACFFEXE_LIBADD)
-
-# Using -release instead of -version-info seems appropriate in the
-# absence of a well defined ABI.
-libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) -release $(VERSION)
-libfontforgeexe_la_LIBADD += $(MY_LIBS) $(LIBZMQ_LIBS) 
-if LIBZMQ
-libfontforgeexe_la_LIBADD += $(top_srcdir)/collab/libzmqcollab.la
-endif
 
 #--------------------------------------------------------------------------
 
