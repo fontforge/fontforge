@@ -53,16 +53,28 @@ m4_define([libfontforge_major_version], '2') dnl 20120731-b was 1.0
 m4_define([libfontforge_minor_version], '0')
 m4_define([libgdraw_major_version], '5') dnl 20120731-b was 4.10
 m4_define([libgdraw_minor_version], '0')
+m4_define([libgioftp_major_version], '2') dnl 20120731-b was 1.0
+m4_define([libgioftp_minor_version], '0')
+m4_define([libgunicode_major_version], '4') dnl 20120731-b was 3.2
+m4_define([libgunicode_minor_version], '0')
 m4_define([libgutils_major_version], '2') dnl 20120731-b was 1.3
 m4_define([libgutils_minor_version], '0')
-m4_define([libunicode_major_version], '4') dnl 20120731-b was 3.2
-m4_define([libunicode_minor_version], '0')
+m4_define([libzmqcollab_major_version], '2') dnl n/a
+m4_define([libzmqcollab_minor_version], '0')
 
+#--------------------------------------------------------------------------
+# Setup variables before running AC_INIT()
 m4_define([fontforge_version],
           [fontforge_major_version.fontforge_minor_version.fontforge_package_stamp])
 #m4_define([fontforge_info],
 #          [fontforge_major_version:fontforge_minor_version:0])
 #m4_define([fontforge_package_name], ["fontforge"])
+m4_define([libfontforge_info],[libfontforge_major_version:libfontforge_minor_version:0])
+m4_define([libgdraw_info],[libgdraw_major_version:libgdraw_minor_version:0])
+m4_define([libgioftp_info],[libgioftp_major_version:libgioftp_minor_version:0])
+m4_define([libgunicode_info],[libgunicode_major_version:libgunicode_minor_version:0])
+m4_define([libgutils_info],[libgutils_major_version:libgutils_minor_version:0])
+m4_define([libzmqcollab_info],[libzmqcollab_major_version:libzmqcollab_minor_version:0])
 
 #--------------------------------------------------------------------------
 AC_INIT([fontforge],[2.0.0_beta1],[fontforge-devel@lists.sourceforge.net])
@@ -110,6 +122,14 @@ AC_SUBST([VERSION_MAJOR])
 AC_SUBST([VERSION_MINOR])
 AC_SUBST([VERSION_PATCH])
 
+#--------------------------------------------------------------------------
+# Pass library version variables to several MAKEFILE.AM
+AC_SUBST([LIBFONTFORGE_VERSION],[$libfontforge_info])
+AC_SUBST([LIBGDRAW_VERSION],[$libgdraw_info])
+AC_SUBST([LIBGIOFTP_VERSION],[$libgioftp_info])
+AC_SUBST([LIBGUNICODE_VERSION],[$libgunicode_info])
+AC_SUBST([LIBGUTILS_VERSION],[$libgutils_info])
+AC_SUBST([LIBZMQCOLLAB_VERSION],[$libzmqcollab_info])
 #--------------------------------------------------------------------------
 #
 # URLs for dependencies.
