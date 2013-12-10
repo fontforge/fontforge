@@ -7329,6 +7329,7 @@ void SFD_GetFontMetaData( FILE *sfd,
     int i;
     KernClass* kc = 0;
     int old;
+	char val[2000];
 
     // This allows us to assume we can dereference d
     // at all times
@@ -7346,28 +7347,28 @@ void SFD_GetFontMetaData( FILE *sfd,
 
     if ( strmatch(tok,"FontName:")==0 )
     {
-	getname(sfd,tok);
-	sf->fontname = copy(tok);
+	geteol(sfd,val);
+	sf->fontname = copy(val);
     }
     else if ( strmatch(tok,"FullName:")==0 )
     {
-	geteol(sfd,tok);
-	sf->fullname = copy(tok);
+	geteol(sfd,val);
+	sf->fullname = copy(val);
     }
     else if ( strmatch(tok,"FamilyName:")==0 )
     {
-	geteol(sfd,tok);
-	sf->familyname = copy(tok);
+	geteol(sfd,val);
+	sf->familyname = copy(val);
     }
     else if ( strmatch(tok,"DefaultBaseFilename:")==0 )
     {
-	geteol(sfd,tok);
-	sf->defbasefilename = copy(tok);
+	geteol(sfd,val);
+	sf->defbasefilename = copy(val);
     }
     else if ( strmatch(tok,"Weight:")==0 )
     {
-	getprotectedname(sfd,tok);
-	sf->weight = copy(tok);
+	getprotectedname(sfd,val);
+	sf->weight = copy(val);
     }
     else if ( strmatch(tok,"Copyright:")==0 )
     {
@@ -7389,13 +7390,13 @@ void SFD_GetFontMetaData( FILE *sfd,
     }
     else if ( strmatch(tok,"Version:")==0 )
     {
-	geteol(sfd,tok);
-	sf->version = copy(tok);
+	geteol(sfd,val);
+	sf->version = copy(val);
     }
     else if ( strmatch(tok,"FONDName:")==0 )
     {
-	geteol(sfd,tok);
-	sf->fondname = copy(tok);
+	geteol(sfd,val);
+	sf->fondname = copy(val);
     }
     else if ( strmatch(tok,"ItalicAngle:")==0 )
     {
