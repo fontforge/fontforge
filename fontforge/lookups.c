@@ -308,14 +308,14 @@ uint32 *SFScriptsInLookups(SplineFont *sf,int gpos) {
 /* Sergey Malkin from MicroSoft tells me:
     Each shaping engine in Uniscribe can decide on its requirements for
     layout tables - some of them require both GSUB and GPOS, in some cases
-    any table present is enough, or it can work without any table. 
+    any table present is enough, or it can work without any table.
 
     Sometimes, purpose of the check is to determine if font is supporting
     particular script - if required tables are not there font is just
     rejected by this shaping engine. Sometimes, shaping engine can not just
     reject the font because there are fonts using older shaping technologies
     we still have to support, so it uses some logic when to fallback to
-    legacy layout code. 
+    legacy layout code.
 
     In your case this is Hebrew, where both tables are required to use
     OpenType processing. Arabic requires both tables too, Latin requires
@@ -595,9 +595,12 @@ return( SCWorthOutputting(SFGetChar(sf,-1,pst->u.pair.paired)) );
 	    for ( pt=start; *pt && *pt!=' '; ++pt );
 	    ch = *pt; *pt = '\0';
 	    ret = SCWorthOutputting(SFGetChar(sf,-1,start));
-	    *pt = ch;
-	    if ( !ret )
+	    if ( !ret ) {
+		LogError(_("Lookup subtable contains unused glyph %s making the whole subtable invalid"), start);
+		*pt = ch;
 return( false );
+	    }
+	    *pt = ch;
 	    if ( ch==0 )
 		start = pt;
 	    else
@@ -1145,7 +1148,7 @@ void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub) {
     free(sub->suffix);
     chunkfree(sub,sizeof(struct lookup_subtable));
 }
-	
+
 void SFRemoveLookup(SplineFont *sf,OTLookup *otl) {
     OTLookup *test, *prev;
     int isgpos;
@@ -1655,7 +1658,7 @@ static void LangOrder(struct scriptlanglist *sl) {
 	}
     }
 }
-	
+
 static struct scriptlanglist *SLOrder(struct scriptlanglist *sl) {
     int i,j, cnt;
     struct scriptlanglist *sl2, *space[30], **allocked=NULL, **test = space;
@@ -1683,7 +1686,7 @@ return( sl );
     free( allocked );
 return( sl );
 }
-    
+
 FeatureScriptLangList *FLOrder(FeatureScriptLangList *fl) {
     int i,j, cnt;
     FeatureScriptLangList *fl2, *space[30], **allocked=NULL, **test = space;
@@ -1753,7 +1756,7 @@ return( NULL );
     newfl->scripts = SListCopy(fl->scripts);
 return( newfl );
 }
-    
+
 static void LangMerge(struct scriptlanglist *into, struct scriptlanglist *from) {
     int i,j;
     uint32 flang, tlang;
@@ -2266,7 +2269,7 @@ static void SF_AddPSTKern(struct sfmergecontext *mc,struct lookup_subtable *from
 
 int _FeatureOrderId( int isgpos,uint32 tag ) {
     /* This is the order in which features should be executed */
-    
+
     if ( !isgpos ) switch ( tag ) {
 /* GSUB ordering */
       case CHR('c','c','m','p'):	/* Must be first? */
@@ -2340,7 +2343,7 @@ return( 312 );
 return( 313 );
       case CHR('c','l','i','g'):
 return( 314 );
-      
+
       case CHR('h','a','l','n'):
 return( 320 );
 /* end indic ordering */
@@ -3308,7 +3311,7 @@ return( pos+1 );
 
 return( 0 );
 }
-		    
+
 static int ApplyContextual(struct lookup_subtable *sub,struct lookup_data *data,int pos) {
     /* On this level there is no difference between GPOS/GSUB contextuals */
     /*  If the contextual matches, then we apply the lookups, otherwise we */
@@ -3427,7 +3430,7 @@ return( pos+1 );
 	    }
 	}
     }
-	    
+
 return( 0 );
 }
 
@@ -4424,7 +4427,7 @@ int KernClassFindIndexContaining( char **firsts_or_seconds,
 	    break;
 	}
     }
-    
+
     return ret;
 }
 
