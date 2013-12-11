@@ -144,7 +144,7 @@ static void DumpPythonLib(FILE *file,void *python_persistent,SplineChar *sc) {
 			if ( !PyBytes_Check(key))		/* Keys need not be strings */
 			continue;
 			str = PyBytes_AsString(key);
-			if ( !str || strcmp(str,"com.fontlab.hintData")==0 && sc!=NULL )	/* Already done */
+			if ( !str || (strcmp(str,"com.fontlab.hintData")==0 && sc!=NULL) )	/* Already done */
 			continue;
 			value = PyTuple_GetItem(item,1);
 			if ( !value || !PyObjDumpable(value))
