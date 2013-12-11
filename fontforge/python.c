@@ -2840,9 +2840,9 @@ return( Py_BuildValue("((dddd)(dddd))", 0,end.x-start.x-cx,cx,start.x,
 					0,end.y-start.y-cy,cy,start.y ));
     } else {
 	if ( self->points[pnum]->on_curve ) {
-	    if ( ( --pnum )<0 ) prev = self->pt_cnt-1;
+	    if ( ( --pnum )<0 ) pnum = self->pt_cnt-1;
 	    if ( self->points[pnum]->on_curve ) {
-		if ( ( --pnum )<0 ) prev = self->pt_cnt-1;
+		if ( ( --pnum )<0 ) pnum = self->pt_cnt-1;
 	    }
 	}
 	start.x = self->points[pnum]->x; start.y = self->points[pnum]->y;
