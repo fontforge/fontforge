@@ -2849,7 +2849,7 @@ return( Py_BuildValue("((dddd)(dddd))", 0,end.x-start.x-cx,cx,start.x,
 	if ( ++pnum>=self->pt_cnt ) pnum = 0;
 	if ( self->points[pnum]->on_curve ) {
 	    end.x = self->points[pnum]->x; end.y = self->points[pnum]->y;
-return( Py_BuildValue("((dddd)(dddd))", 0,0,end.x-start.x,start.x, 0,0,end.y-start.y,start.y ));
+	    return( Py_BuildValue("((dddd)(dddd))", 0.0,0.0,end.x-start.x,start.x, 0.0,0.0,end.y-start.y,start.y ));
 	}
 	ncp.x = self->points[pnum]->x; ncp.y = self->points[pnum]->y;
 	if ( ++pnum>=self->pt_cnt ) pnum = 0;
