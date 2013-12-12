@@ -8060,6 +8060,7 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 
 
 	SFD_GetFontMetaData( sfd, tok, sf, &d );
+	had_layer_cnt = d.had_layer_cnt;
 
 	if ( strmatch(tok,"DisplaySize:")==0 )
 	{
