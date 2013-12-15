@@ -7783,6 +7783,18 @@ return;
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
 		    ;
 	    c->return_val.u.ival = i;
+	} else if ( strmatch( c->a.vals[1].u.sval, "Class") == 0 ) {
+	    c->return_val.type = v_str;
+	    switch (sc->glyph_class) {
+	    case 0: c->return_val.u.sval = copy("automatic"); break;
+	    case 1: c->return_val.u.sval = copy("none"); break;
+	    case 2: c->return_val.u.sval = copy("base"); break;
+	    case 3: c->return_val.u.sval = copy("ligature"); break;
+	    case 4: c->return_val.u.sval = copy("mark"); break;
+	    case 5: c->return_val.u.sval = copy("component"); break;
+	    default:
+		c->return_val.u.sval = copy("unknown"); break;
+	    }
 	} else if ( strmatch( c->a.vals[1].u.sval,"RefName")==0 ||
 		strmatch( c->a.vals[1].u.sval,"RefNames")==0 ) {
 	    for ( i=0, layer=0; layer<sc->layer_cnt; ++layer )
