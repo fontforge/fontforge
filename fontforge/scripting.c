@@ -9023,14 +9023,32 @@ static void docall(Context *c,char *name,Val *val) {
 	} else {
 	    if ( strchr(name,'/')==NULL && strchr(c->filename,'/')!=NULL ) {
 		char *pt;
-		sub.filename = galloc(strlen(c->filename)+strlen(name)+1);
+		sub.filename = galloc(strlen(c->filename)+strlen(name)+4);
 		strcpy(sub.filename,c->filename);
 		pt = strrchr(sub.filename,'/');
 		strcpy(pt+1,name);
 	    }
 	    sub.script = fopen(sub.filename,"r");
 	    if ( sub.script==NULL ) {
-		ScriptErrorString(c, "No built-in function or script-file", name);
+		char *pt;
+		if ( sub.filename==name ) {
+		    sub.filename = galloc(strlen(name)+4);
+		    strcpy(sub.filename,name);
+		}
+		pt = sub.filename + strlen(sub.filename);
+		strcpy(pt, ".ff");
+		sub.script = fopen(sub.filename,"r");
+		if ( sub.script==NULL ) {
+		    strcpy(pt, ".pe");
+		    sub.script = fopen(sub.filename,"r");
+		}
+		if ( sub.script==NULL ) {
+		    *pt = '\0';
+		}
+	    }
+	    sub.script = fopen(sub.filename,"r");
+	    if ( sub.script==NULL ) {
+		ScriptErrorString(c, "No built-in function or script file", name);
 	    } else {
 		sub.lineno = 1;
 		while ( !sub.returned && !sub.broken && (tok = ff_NextToken(&sub))!=tt_eof ) {
