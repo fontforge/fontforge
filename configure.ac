@@ -47,10 +47,8 @@ m4_define([fontforge_package_stamp], "0_beta1")
 #   fontforge_major_version += 1;
 #   fontforge_minor_version = 0;
 #
-m4_define([fontforge_major_version], '2')
+m4_define([fontforge_major_version], '2') dnl 20120731-b was 1.0
 m4_define([fontforge_minor_version], '0')
-m4_define([libfontforge_major_version], '2') dnl 20120731-b was 1.0
-m4_define([libfontforge_minor_version], '0')
 m4_define([libgdraw_major_version], '5') dnl 20120731-b was 4.10
 m4_define([libgdraw_minor_version], '0')
 m4_define([libgioftp_major_version], '2') dnl 20120731-b was 1.0
@@ -61,6 +59,10 @@ m4_define([libgutils_major_version], '2') dnl 20120731-b was 1.3
 m4_define([libgutils_minor_version], '0')
 m4_define([libzmqcollab_major_version], '2') dnl n/a
 m4_define([libzmqcollab_minor_version], '0')
+m4_define([libfontforgeexe_major_version], [fontforge_major_version]) dnl matches fontforge
+m4_define([libfontforgeexe_minor_version], [fontforge_minor_version])
+m4_define([libfontforge_major_version], [fontforge_major_version]) dnl matches fontforge
+m4_define([libfontforge_minor_version], [fontforge_minor_version])
 
 #--------------------------------------------------------------------------
 # Setup variables before running AC_INIT()
@@ -69,6 +71,7 @@ m4_define([fontforge_version],
 #m4_define([fontforge_info],
 #          [fontforge_major_version:fontforge_minor_version:0])
 #m4_define([fontforge_package_name], ["fontforge"])
+m4_define([libfontforgeexe_info],[libfontforgeexe_major_version:libfontforgeexe_minor_version:0])
 m4_define([libfontforge_info],[libfontforge_major_version:libfontforge_minor_version:0])
 m4_define([libgdraw_info],[libgdraw_major_version:libgdraw_minor_version:0])
 m4_define([libgioftp_info],[libgioftp_major_version:libgioftp_minor_version:0])
@@ -123,13 +126,24 @@ AC_SUBST([VERSION_MINOR])
 AC_SUBST([VERSION_PATCH])
 
 #--------------------------------------------------------------------------
+# Pass version variables to fontforge-config.h
+AC_DEFINE([FONTFORGE_VERSION_MAJOR],[fontforge_major_version],[FontForge Major Version])
+AC_DEFINE([FONTFORGE_VERSION_MINOR],[fontforge_minor_version],[FontForge Minor Version])
+AC_DEFINE([FONTFORGE_LIBFFE_VERSION_MAJOR],[libfontforgeexe_major_version],[ExeLibFontForge Major Version])
+AC_DEFINE([FONTFORGE_LIBFFE_VERSION_MINOR],[libfontforgeexe_minor_version],[ExeLibFontForge Minor Version])
+AC_DEFINE([FONTFORGE_LIBFF_VERSION_MAJOR],[libfontforge_major_version],[LibFontForge Major Version])
+AC_DEFINE([FONTFORGE_LIBFF_VERSION_MINOR],[libfontforge_minor_version],[LibFontForge Minor Version])
+
+#--------------------------------------------------------------------------
 # Pass library version variables to several MAKEFILE.AM
+AC_SUBST([LIBFONTFORGEEXE_VERSION],[$libfontforgeexe_info])
 AC_SUBST([LIBFONTFORGE_VERSION],[$libfontforge_info])
 AC_SUBST([LIBGDRAW_VERSION],[$libgdraw_info])
 AC_SUBST([LIBGIOFTP_VERSION],[$libgioftp_info])
 AC_SUBST([LIBGUNICODE_VERSION],[$libgunicode_info])
 AC_SUBST([LIBGUTILS_VERSION],[$libgutils_info])
 AC_SUBST([LIBZMQCOLLAB_VERSION],[$libzmqcollab_info])
+
 #--------------------------------------------------------------------------
 #
 # URLs for dependencies.
