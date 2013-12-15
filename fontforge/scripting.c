@@ -4622,8 +4622,7 @@ static void bSmallCaps(Context *c) {
     struct smallcaps small = {};
     struct position_maps maps[2] = {{ .cur_width = -1 }, { .cur_width = 1 }};
     struct genericchange genchange = {
-	.stem_height_scale = 0.93, .stem_width_scale = 0.93,
-	.hcounter_scale = 0.66,	.lsb_scale = 0.66, .rsb_scale = 0.66,
+	.hcounter_scale = 0.66, .lsb_scale = 0.66, .rsb_scale = 0.66,
 	.v_scale = 0.675,
 	.gc = gc_smallcaps,
 	.extension_for_letters = "sc",
@@ -4633,13 +4632,65 @@ static void bSmallCaps(Context *c) {
 	.m = { .cnt = 2, .maps = maps },
 	.small = &small
     };
+    double h_scale, v_scale = 0.66;
+    double stem_h, stem_w = 0.93;
 
-    if ( c->a.argc>1 )
+    /* Arguments:
+       1 => vertical scale: make smallcap height this fraction of full caps.
+       2 => horizontal scale: make smallcap width this fraction of full caps,
+              defaults to vertical scale if omitted or zero.
+       3 => stem width scale: scale vstems by this much.
+       4 => stem height scale: scale hstems by this much,
+              defaults to stem width scale if omitted or zero.
+    */
+
+    if ( c->a.argc>5 )
 	ScriptError( c, "Wrong number of arguments");
+
     SmallCapsFindConstants(&small,c->curfv->sf,c->curfv->active_layer);
 
+    if ( c->a.argc>1 ) {
+	if ( c->a.vals[1].type==v_real )
+	    v_scale = c->a.vals[1].u.fval;
+	else if ( c->a.vals[1].type==v_int )
+	    v_scale = c->a.vals[1].u.ival;
+	else
+	    ScriptError(c,"Bad argument 1 type in SmallCaps");
+    }
+    small.vscale = small.hscale = genchange.v_scale = h_scale = v_scale;
+    if ( c->a.argc>2 && c->a.vals[2].u.ival != 0) {
+	if ( c->a.vals[2].type==v_real )
+	    h_scale = c->a.vals[2].u.fval;
+	else if ( c->a.vals[2].type==v_int )
+	    h_scale = c->a.vals[2].u.ival;
+	else
+	    ScriptError(c,"Bad argument 2 type in SmallCaps");
+    }
+    genchange.hcounter_scale = genchange.lsb_scale = genchange.rsb_scale = h_scale;
+    
+    if ( c->a.argc>3 ) {
+	if ( c->a.vals[3].type==v_real )
+	    stem_w = c->a.vals[3].u.fval;
+	else if ( c->a.vals[3].type==v_int )
+	    stem_w = c->a.vals[3].u.ival;
+	else
+	    ScriptError(c,"Bad argument 3 type in SmallCaps");
+    }
+    stem_h = stem_w;
+
+    if ( c->a.argc>4 && c->a.vals[4].u.ival != 0) {
+	if ( c->a.vals[4].type==v_real )
+	    stem_h = c->a.vals[4].u.fval;
+	else if ( c->a.vals[4].type==v_int )
+	    stem_h = c->a.vals[4].u.ival;
+	else
+	    ScriptError(c,"Bad argument 4 type in SmallCaps");
+    }
+    genchange.stem_height_scale = stem_h;
+    genchange.stem_width_scale = stem_w;
+
     maps[1].current = small.capheight;
-    maps[1].desired = small.scheight;
+    maps[1].desired = small.scheight = small.capheight * small.vscale;
 
     FVAddSmallCaps(c->curfv,&genchange);
 }
