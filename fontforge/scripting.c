@@ -4672,6 +4672,28 @@ static void bItalic(Context *c) {
     MakeItalic(c->curfv,NULL,&default_ii);
 }
 
+static void bChangeWeight(Context *c) {
+    enum embolden_type type = embolden_auto;
+    struct lcg_zones zones;
+
+    if ( c->a.argc>2 )
+	ScriptError( c, "Wrong number of arguments");
+
+    memset(&zones, 0, sizeof(zones));
+    zones.counter_type = ct_auto;
+    zones.serif_fuzz = 0.9;
+    zones.removeoverlap = 1;
+
+    if ( c->a.vals[1].type==v_real )
+	zones.stroke_width = c->a.vals[1].u.fval;
+    else if ( c->a.vals[1].type==v_int )
+	zones.stroke_width = c->a.vals[1].u.ival;
+    else
+	ScriptError(c,"Bad argument type in ChangeWeight");
+
+    FVEmbolden(c->curfv,type, &zones);
+}
+
 static void bSmallCaps(Context *c) {
     struct smallcaps small = {};
     struct position_maps maps[2] = {{ .cur_width = -1 }, { .cur_width = 1 }};
@@ -8436,6 +8458,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Move", bMove, 0 },
     { "ScaleToEm", bScaleToEm, 0 },
     { "Italic", bItalic, 0 },
+    { "ChangeWeight", bChangeWeight, 0 },
     { "SmallCaps", bSmallCaps, 0 },
     { "MoveReference", bMoveReference, 0 },
     { "PositionReference", bPositionReference, 0 },
