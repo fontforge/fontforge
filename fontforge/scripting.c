@@ -2973,6 +2973,60 @@ static void bSelectWorthOutputting(Context *c) {
     }
 }
 
+static void bSelectGlyphsSplines(Context *c) {
+    FontViewBase *fv = c->curfv;
+    int i, gid;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    int layer = fv->active_layer;
+    int add = 0;
+
+    if ( c->a.argc!=1 && c->a.argc!=2 )
+	ScriptError( c, "Too many arguments");
+    if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_int )
+	    ScriptError( c, "Bad type for argument" );
+	add = c->a.vals[1].u.ival;
+    }
+
+    if ( add ) {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] |= ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		sf->glyphs[gid]->layers[layer].splines!=NULL );
+    } else {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		sf->glyphs[gid]->layers[layer].splines!=NULL );
+    }
+}
+
+static void bSelectGlyphsReferences(Context *c) {
+    FontViewBase *fv = c->curfv;
+    int i, gid;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    int layer = fv->active_layer;
+    int add = 0;
+
+    if ( c->a.argc!=1 && c->a.argc!=2 )
+	ScriptError( c, "Too many arguments");
+    if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_int )
+	    ScriptError( c, "Bad type for argument" );
+	add = c->a.vals[1].u.ival;
+    }
+
+    if ( add ) {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] |= ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		sf->glyphs[gid]->layers[layer].refs!=NULL );
+    } else {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		sf->glyphs[gid]->layers[layer].refs!=NULL);
+    }
+}
+
 static void bSelectGlyphsBoth(Context *c) {
     FontViewBase *fv = c->curfv;
     int i, gid;
@@ -8324,6 +8378,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SelectChanged", bSelectChanged, 0 },
     { "SelectHintingNeeded", bSelectHintingNeeded, 0 },
     { "SelectWorthOutputting", bSelectWorthOutputting, 0 },
+    { "SelectGlyphsSplines", bSelectGlyphsSplines },
+    { "SelectGlyphsReferences", bSelectGlyphsReferences },
     { "SelectGlyphsBoth", bSelectGlyphsBoth, 0 },
     { "SelectByATT", bSelectByATT, 0 },
     { "SelectByPosSub", bSelectByPosSub, 0 },
