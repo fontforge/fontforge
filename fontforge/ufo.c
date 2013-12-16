@@ -290,7 +290,6 @@ return( false );
 	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
 	    fprintf( glif, "    <contour>\n" );
 	    for ( sp=spl->first; sp!=NULL; ) {
-		nameatt = 
 		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
 		if ( !isquad || /*sp==spl->first ||*/ !SPInterpolate(sp) )
 		    fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\"%s%s%s%s/>\n",
@@ -302,7 +301,7 @@ return( false );
 			    sp->pointtype!=pt_corner?" smooth=\"yes\"":"",
 				sp->name?" name=\"":"",
 				sp->name?sp->name:"",
-				sp->name?"\"","" );
+				sp->name?"\"":"" );
 		if ( sp->next==NULL )
 	    break;
 		if ( !sp->next->knownlinear )
@@ -1217,7 +1216,7 @@ return( NULL );
 
 		    ss = chunkalloc(sizeof(SplineSet));
 		    for ( points = contour->children; points!=NULL; points=points->next ) {
-			char *xs, *ys, *type;
+			char *xs, *ys, *type, *pname;
 			double x,y;
 			// We discard any entities in the splineset that are not points.
 			if ( xmlStrcmp(points->name,(const xmlChar *) "point")!=0 )
@@ -1336,6 +1335,7 @@ return( NULL );
 				if (xs != NULL) { free(xs); xs = NULL; }
 				if (ys != NULL) { free(ys); ys = NULL; }
 				if (type != NULL) { free(type); type = NULL; }
+				if (pname != NULL) { free(pname); pname = NULL; }
 		    }
 		    if ( !open ) {
 			if ( precnt!=0 ) {
@@ -1349,7 +1349,6 @@ return( NULL );
 			    int i;
 			    for ( i=0; i<initcnt-1; ++i ) {
 				sp = SplinePointCreate((init[i+1].x+init[i].x)/2,(init[i+1].y+init[i].y)/2);
-				if (pname != NULL) { sc->name = copy(pname); }
 			        sp->prevcp = ss->last->nextcp = init[i];
 			        sp->noprevcp = ss->last->nonextcp = false;
 			        SplineMake(ss->last,sp,true);
@@ -1371,7 +1370,6 @@ return( NULL );
 		    else
 			last->next = ss;
 		    last = ss;
-			if (pname != NULL) { free(pname); pname = NULL; }
 		}
 	    }
 	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "lib")==0 ) {

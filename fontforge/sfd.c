@@ -708,6 +708,7 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 		}
 	    }
 	    putc('\n',sfd);
+		if (sp->name != NULL) fprintf(sfd, "NamedP: %s\n", sp->name);
 	    if ( sp==first )
 	break;
 	    if ( first==NULL ) first = sp;
@@ -3837,8 +3838,9 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd,int order2) {
     BasePoint current;
     real stack[100];
     int sp=0;
-    SplinePoint *pt;
+    SplinePoint *pt = NULL;
     int ch;
+	int ch2;
     char tok[100];
     int ttfindex = 0;
     int lastacceptable;
@@ -3859,14 +3861,16 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd,int order2) {
 	    ungetc(ch,sfd);
 	    SFDGetSpiros(sfd,cur);
     continue;
-	} else if ( ch=='N' ) {
-	    nlgetc(sfd);		/* a */
-	    nlgetc(sfd);		/* m */
-	    nlgetc(sfd);		/* e */
-	    nlgetc(sfd);		/* d */
-	    nlgetc(sfd);		/* : */
-	    cur->contour_name = SFDReadUTF7Str(sfd);
-    continue;
+	} else if (( ch=='N' ) &&
+	    nlgetc(sfd)=='a' &&	/* a */
+	    nlgetc(sfd)=='m' &&	/* m */
+	    nlgetc(sfd)=='e' &&	/* e */
+	    nlgetc(sfd)=='d' ) /* d */ {
+	    ch2 = nlgetc(sfd);		/* : */
+		// We are either fetching a splineset name (Named:) or a point name (NamedP:).
+		if (ch2=='P') { if ((nlgetc(sfd)==':') && (pt!=NULL)) { if (pt->name!=NULL) {free(pt->name);} pt->name = SFDReadUTF7Str(sfd); } }
+		else if (ch2==':') cur->contour_name = SFDReadUTF7Str(sfd);
+        continue;
 	} else if ( ch=='P' ) {
 	    int flags;
 	    nlgetc(sfd);		/* a */
