@@ -2984,6 +2984,31 @@ SetGasp([8,2,16,1,65535,3])
 	  <DD>
 	    All selected glyphs will be skewed by the given angle.
 	  <DT>
+	    <A NAME="SmallCaps"></A>SmallCaps([v-scale[,h-scale[,stemw-scale[,stemh-scale]]]])
+	  <DD>
+	    Create small capitals from the selected glyphs.  The
+	    following optional arguments are accepted:
+	    <DL>
+	      <DT>v-scale</DT>
+	      <DD>
+	        The height of the small caps will be this fraction of the height of normal caps.
+	      </DD>
+	      <DT>h-scale</DT>
+	      <DD>
+		The width of the small caps will be this fraction of the width of normal caps.
+	        If unspecified or zero, defaults to the value of v-scale.
+	      </DD>
+	      <DT>stemw-scale</DT>
+	      <DD>
+	        Vertical stems will be scaled by this factor
+	      </DD>
+	      <DT>stemh-scale</DT>
+	      <DD>
+		Horizontal stems will be scaled by this factor.
+		If unspecified or zero, defaults to the value of stemw-scale.
+	      </DD>
+	    </DL>
+	  <DT>
 	    <A NAME="Sqrt">S</A>qrt(val)
 	  <DD>
 	    Returns the square root. It can execute with no current font.
