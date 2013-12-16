@@ -1762,6 +1762,67 @@ SetLBearing(lbearing)
 	    a unicode or a string. The first two cases are treated as unicode code points,
 	    the third looks at the first (utf8) character in the string. It can execute
 	    with no current font.
+	  <DT>
+	    <A NAME="Italic">Italic</A>([angle[,[xscale[,flags[,serif[,bearings[,stems[,counters[,lcstems[,lccounters]]]]]]]]]])</DT>
+	  <DD>
+	    Converts the selected glyphs to italics, similar to the <A HREF="elementmenu.html#Italic">Italic</A> menu command.<BR>
+	    The following optional arguments are accepted:
+	    <DL>
+	      <DT>angle</DT>
+	      <DD>
+		Glyphs are slanted by the given angle in degrees.  If unspecified, defaults to -13.
+	      </DD>
+	      <DT>xscale</DT>
+	      <DD>
+		Points at the x-height of the font are scaled by this factor.
+	      </DD>
+	      <DT>flags</DT>
+	      <DD>
+		Flags controlling various italic features, composed of the following bit values:
+		<TABLE BORDER CELLPADDING="2">
+		  <TR><TD>0x0001</TD><TD>Transform bottom serifs</TD></TR>
+		  <TR><TD>0x0002</TD><TD>Transform serifs at x-height</TD></TR>
+		  <TR><TD>0x0004</TD><TD>Transform serifs on ascenders</TD></TR>
+		  <TR><TD>0x0008</TD><TD>Transform diagonal serifs</TD></TR>
+		  <TR><TD>0x0010</TD><TD>Create italic <I>a</I> from the bottom half of italic <I>d</I></TD></TR>
+		  <TR><TD>0x0020</TD><TD>Give italic <I>f</I> a long tail</TD></TR>
+		  <TR><TD>0x0040</TD><TD>Give italic <I>f</I> a hooked tail</TD></TR>
+		  <TR><TD>0x0080</TD><TD>Remove serifs from descenders</TD></TR>
+		  <TR><TD>0x0100</TD><TD>Special handling for Cyrillic <I>phi</I></TD></TR>
+		  <TR><TD>0x0200</TD><TD>Special handling for Cyrillic <I>i</I></TD></TR>
+		  <TR><TD>0x0400</TD><TD>Special handling for Cyrillic <I>pi</I></TD></TR>
+		  <TR><TD>0x0800</TD><TD>Special handling for Cyrillic <I>te</I></TD></TR>
+		  <TR><TD>0x1000</TD><TD>Special handling for Cyrillic <I>sha</I></TD></TR>
+		  <TR><TD>0x2000</TD><TD>Special handling for Cyrillic <I>dje</I></TD></TR>
+		  <TR><TD>0x4000</TD><TD>Special handling for Cyrillic <I>dzhe</I></TD></TR>
+		</TABLE>
+	      </DD>
+	      <DT>serif</DT>
+	      <DD>
+		Specifies the type of italic serif: 1=flat, 2=simple slant, 3=complex slant.  Defaults to 1.
+	      </DD>
+	      <DT>bearings</DT>
+	      <DD>
+		Side bearings are scaled by this amount.
+	      </DD>
+	      <DT>stems</DT>
+	      <DD>
+		Stem widths are scaled by this amount.
+	      </DD>
+	      <DT>counters</DT>
+	      <DD>
+		Counters are scaled by this amount.
+	      </DD>
+	      <DT>lcstems</DT>
+	      <DD>
+		Stem widths of lowercase letters are scaled by this amount, overriding the amount specified for stems, above.
+	      </DD>
+	      <DT>lccounters</DT>
+	      <DD>
+		Counters of lowercase letters are scaled by this amount, overriding the amount specified for counters, above.
+	      </DD>
+	    </DL>
+	  </DD>
 	</DL>
       </TD>
     </TR>
