@@ -1515,11 +1515,14 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 		vertical positions on the contours of the glyph at the given horizontal position.
 		If the position is beyond the glyph's bounding box the minimum value will
 		be set to 1 and the max to 0 (ie. max&lt;min which is impossible).
+              <LI>
+		"Class" returns the glyph's class as one of the following strings:
+		"automatic", "none", "base", "ligature", "mark", "component", or "unknown".
 	      <LI>
 		"Color" returns the glyph's color as a 24bit rgb value (or -2 if no color
 		has been assigned to the glyph).
 	      <LI>
-		"Comment" returns the glyph's comment (it will be converted from unicode
+p		"Comment" returns the glyph's comment (it will be converted from unicode
 		into the default encoding).
 	      <LI>
 		"Changed" returns whether the glyph has been changed since the last save
