@@ -471,6 +471,12 @@ a[4][0] = "Nested array";
 	    indexed by key. (all values must be strings even if they represent numbers
 	    in PostScript)
 	  <DT>
+	    <A NAME="ChangeWeight">ChangeWeight</A>(em-units)<DT>
+	  <DD>
+	    <A HREF="elementmenu.html#Embolden">Emboldens</A> the selected glyphs by the given amount in em units.
+	    If em-units is a negative number, the glyphs are made less bold.
+	  </DD>
+	  <DT>
 	    <A NAME="CharCnt">C</A>harCnt()
 	  <DD>
 	    Returns the number of encoding slots (or encoding slots + unencoded glyphs)
@@ -1509,11 +1515,14 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 		vertical positions on the contours of the glyph at the given horizontal position.
 		If the position is beyond the glyph's bounding box the minimum value will
 		be set to 1 and the max to 0 (ie. max&lt;min which is impossible).
+              <LI>
+		"Class" returns the glyph's class as one of the following strings:
+		"automatic", "none", "base", "ligature", "mark", "component", or "unknown".
 	      <LI>
 		"Color" returns the glyph's color as a 24bit rgb value (or -2 if no color
 		has been assigned to the glyph).
 	      <LI>
-		"Comment" returns the glyph's comment (it will be converted from unicode
+p		"Comment" returns the glyph's comment (it will be converted from unicode
 		into the default encoding).
 	      <LI>
 		"Changed" returns whether the glyph has been changed since the last save
@@ -2570,9 +2579,17 @@ SetLBearing(lbearing)
 	    Same as <A HREF="scripting-alpha.html#SelectSingletons">SelectSingletons</A>
 	    except it removes single glyphs from the current selection.
 	  <DT>
-	    SelectGlyphsBoth()
+	    <A NAME="SelectGlyphsBoth">SelectGlyphsBoth</A>()
 	  <DD>
 	    Selects glyphs with both references and contours.
+	  <DT>
+	    <A NAME="SelectGlyphsReferences">SelectGlyphsReferences</A>()
+	  <DD>
+	    Selects glyphs with only references.
+	  <DT>
+	    <A NAME="SelectGlyphsSplines">SelectGlyphsSplines</A>()
+	  <DD>
+	    Selects glyphs with only contours.
 	  <DT>
 	    <A NAME="SelectHintingNeeded" HREF="editmenu.html#SelHinting">SelectHintingNeeded</A>([merge])
 	  <DD>

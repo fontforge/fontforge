@@ -2973,6 +2973,60 @@ static void bSelectWorthOutputting(Context *c) {
     }
 }
 
+static void bSelectGlyphsSplines(Context *c) {
+    FontViewBase *fv = c->curfv;
+    int i, gid;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    int layer = fv->active_layer;
+    int add = 0;
+
+    if ( c->a.argc!=1 && c->a.argc!=2 )
+	ScriptError( c, "Too many arguments");
+    if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_int )
+	    ScriptError( c, "Bad type for argument" );
+	add = c->a.vals[1].u.ival;
+    }
+
+    if ( add ) {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] |= ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		sf->glyphs[gid]->layers[layer].splines!=NULL );
+    } else {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		sf->glyphs[gid]->layers[layer].splines!=NULL );
+    }
+}
+
+static void bSelectGlyphsReferences(Context *c) {
+    FontViewBase *fv = c->curfv;
+    int i, gid;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    int layer = fv->active_layer;
+    int add = 0;
+
+    if ( c->a.argc!=1 && c->a.argc!=2 )
+	ScriptError( c, "Too many arguments");
+    if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_int )
+	    ScriptError( c, "Bad type for argument" );
+	add = c->a.vals[1].u.ival;
+    }
+
+    if ( add ) {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] |= ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		sf->glyphs[gid]->layers[layer].refs!=NULL );
+    } else {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		sf->glyphs[gid]->layers[layer].refs!=NULL);
+    }
+}
+
 static void bSelectGlyphsBoth(Context *c) {
     FontViewBase *fv = c->curfv;
     int i, gid;
@@ -4616,6 +4670,28 @@ static void bItalic(Context *c) {
 	    ScriptError(c,"Bad argument type in Italic");
     }
     MakeItalic(c->curfv,NULL,&default_ii);
+}
+
+static void bChangeWeight(Context *c) {
+    enum embolden_type type = embolden_auto;
+    struct lcg_zones zones;
+
+    if ( c->a.argc>2 )
+	ScriptError( c, "Wrong number of arguments");
+
+    memset(&zones, 0, sizeof(zones));
+    zones.counter_type = ct_auto;
+    zones.serif_fuzz = 0.9;
+    zones.removeoverlap = 1;
+
+    if ( c->a.vals[1].type==v_real )
+	zones.stroke_width = c->a.vals[1].u.fval;
+    else if ( c->a.vals[1].type==v_int )
+	zones.stroke_width = c->a.vals[1].u.ival;
+    else
+	ScriptError(c,"Bad argument type in ChangeWeight");
+
+    FVEmbolden(c->curfv,type, &zones);
 }
 
 static void bSmallCaps(Context *c) {
@@ -7707,6 +7783,18 @@ return;
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
 		    ;
 	    c->return_val.u.ival = i;
+	} else if ( strmatch( c->a.vals[1].u.sval, "Class") == 0 ) {
+	    c->return_val.type = v_str;
+	    switch (sc->glyph_class) {
+	    case 0: c->return_val.u.sval = copy("automatic"); break;
+	    case 1: c->return_val.u.sval = copy("none"); break;
+	    case 2: c->return_val.u.sval = copy("base"); break;
+	    case 3: c->return_val.u.sval = copy("ligature"); break;
+	    case 4: c->return_val.u.sval = copy("mark"); break;
+	    case 5: c->return_val.u.sval = copy("component"); break;
+	    default:
+		c->return_val.u.sval = copy("unknown"); break;
+	    }
 	} else if ( strmatch( c->a.vals[1].u.sval,"RefName")==0 ||
 		strmatch( c->a.vals[1].u.sval,"RefNames")==0 ) {
 	    for ( i=0, layer=0; layer<sc->layer_cnt; ++layer )
@@ -8324,6 +8412,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SelectChanged", bSelectChanged, 0 },
     { "SelectHintingNeeded", bSelectHintingNeeded, 0 },
     { "SelectWorthOutputting", bSelectWorthOutputting, 0 },
+    { "SelectGlyphsSplines", bSelectGlyphsSplines },
+    { "SelectGlyphsReferences", bSelectGlyphsReferences },
     { "SelectGlyphsBoth", bSelectGlyphsBoth, 0 },
     { "SelectByATT", bSelectByATT, 0 },
     { "SelectByPosSub", bSelectByPosSub, 0 },
@@ -8380,6 +8470,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Move", bMove, 0 },
     { "ScaleToEm", bScaleToEm, 0 },
     { "Italic", bItalic, 0 },
+    { "ChangeWeight", bChangeWeight, 0 },
     { "SmallCaps", bSmallCaps, 0 },
     { "MoveReference", bMoveReference, 0 },
     { "PositionReference", bPositionReference, 0 },
