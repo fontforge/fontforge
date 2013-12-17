@@ -1240,7 +1240,9 @@ return( NULL );
 					    strcmp(type,"qcurve")==0 )) {
 				// We create and label the point.
 			    sp = SplinePointCreate(x,y);
-				if (pname != NULL) { sp->name = copy(pname); }
+				if (pname != NULL) {
+					sp->name = copy(pname); }
+				}
 			    if ( strcmp(type,"move")==0 ) {
 				open = true;
 			        ss->first = ss->last = sp;
@@ -1270,7 +1272,9 @@ return( NULL );
 				wasquad = true;
 				if ( precnt==2 ) {
 				    SplinePoint *sp = SplinePointCreate((pre[1].x+pre[0].x)/2,(pre[1].y+pre[0].y)/2);
-					if (pname != NULL) { sp->name = copy(pname); }
+					if (pname != NULL) {
+						sp->name = copy(pname);
+					}
 				    sp->prevcp = ss->last->nextcp = pre[0];
 				    sp->noprevcp = ss->last->nonextcp = false;
 				    SplineMake(ss->last,sp,true);
@@ -1290,7 +1294,9 @@ return( NULL );
 					memcpy(init,pre,sizeof(pre));
 					initcnt = 1;
 					sp = SplinePointCreate((pre[1].x+pre[0].x)/2,(pre[1].y+pre[0].y)/2);
-					if (pname != NULL) { sp->name = copy(pname); }
+					if (pname != NULL) {
+						sp->name = copy(pname);
+					}
 			        sp->nextcp = pre[1];
 			        sp->nonextcp = false;
 			        if ( ss->first==NULL )
@@ -1312,7 +1318,9 @@ return( NULL );
 					wasquad = true;
 			    } else if ( wasquad==true && precnt==1 ) {
 				sp = SplinePointCreate((x+pre[0].x)/2,(y+pre[0].y)/2);
-				if (pname != NULL) { sp->name = copy(pname); }
+				if (pname != NULL) {
+					sp->name = copy(pname);
+				}
 			        sp->prevcp = pre[0];
 			        sp->noprevcp = false;
 			        if ( ss->last==NULL ) {
