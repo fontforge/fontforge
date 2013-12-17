@@ -207,13 +207,13 @@ return( fd );
 }
 
 static char *mytempdir(void) {
-    char buffer[300];
+    char buffer[1025];
     char *dir, *eon;
     static int cnt=0;
     int tries=0;
 
     if ( (dir=getenv("TMPDIR"))!=NULL )
-	strcpy(buffer,dir);
+	strncpy(buffer,dir,sizeof(buffer)-1-5);
 #ifndef P_tmpdir
 #define P_tmpdir	"/tmp"
 #endif
@@ -822,7 +822,7 @@ return( NULL );
 			if ( !ff_progress_next())
 		    break;
 		    }
-		} else 
+		} else
 		    ff_post_error(_("Can't run mf"),_("Could not read (or perhaps find) mf output file"));
 	    }
 	} else

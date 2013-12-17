@@ -2511,6 +2511,7 @@ return( NULL );
 	    leniv = cidbytes->fds[cidbytes->fdind[i]].leniv;
 	    dumpt1str(chrs,chars->values[i],chars->lens[i],leniv);
 	    if ( !ff_progress_next()) {
+		PSCharsFree(chars);
 		fclose(chrs);
 return( NULL );
 	    }

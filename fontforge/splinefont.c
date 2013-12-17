@@ -1006,7 +1006,7 @@ return( NULL );
 
     /* If there are no pfaedit windows, give them something to look at */
     /*  immediately. Otherwise delay a bit */
-    strncpy(ubuf,_("Loading font from "),sizeof(ubuf-1));
+    strncpy(ubuf,_("Loading font from "),sizeof(ubuf)-1);
     len = strlen(ubuf);
     if ( !wasurl || i==-1 )	/* If it wasn't compressed, or it wasn't an url, then the fullname is reasonable, else use the original name */
 	strncat(ubuf,temp = def2utf8_copy(GFileNameTail(fullname)),100);
@@ -2136,7 +2136,7 @@ typedef struct SPLFirstVisitorFoundSoughtXYDataS
     int found;
     Spline* spline;
     SplinePoint* sp;
-    
+
 } SPLFirstVisitorFoundSoughtXYData;
 
 static void SPLFirstVisitorFoundSoughtXY(SplinePoint* splfirst, Spline* spline, void* udata )
@@ -2146,7 +2146,7 @@ static void SPLFirstVisitorFoundSoughtXY(SplinePoint* splfirst, Spline* spline, 
 
     if( d->found )
 	return;
-    
+
     printf("SPLFirstVisitorFoundSoughtXY() %f %f %f\n", d->x, spline->from->me.x, spline->to->me.x );
     if( d->use_x )
     {
@@ -2156,7 +2156,7 @@ static void SPLFirstVisitorFoundSoughtXY(SplinePoint* splfirst, Spline* spline, 
 	    d->spline = spline;
 	    d->sp = spline->from;
 	}
-	
+
 	if( spline->to->me.x == d->x )
 	{
 	    found = 1;
@@ -2179,7 +2179,7 @@ static void SPLFirstVisitorFoundSoughtXY(SplinePoint* splfirst, Spline* spline, 
 	    d->spline = spline;
 	    d->sp = spline->from;
 	}
-	
+
 	if( spline->to->me.y == d->y )
 	{
 	    found = 1;

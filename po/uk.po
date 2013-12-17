@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-07-15 19:09+0300\n"
-"PO-Revision-Date: 2013-07-15 20:30+0300\n"
+"PO-Revision-Date: 2013-12-15 08:55+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <kde-i18n-uk@kde.org>\n"
 "Language: uk\n"
@@ -6476,11 +6476,10 @@ msgid "ArrowAccelFactor"
 msgstr "Коефіцієнт прискорення стрілки"
 
 #: noprefs.c:251 ../fontforgeexe/prefs.c:348 ../fontforgeexe/prefs.c:2699
-#, fuzzy
 msgid ""
 "Holding down the Shift key will speed up arrow key motion by this factor"
 msgstr ""
-"Утримування натиснутою клавіші Alt (або Meta) збільшить швидкість руху за "
+"Утримування натиснутою клавіші Shift збільшить швидкість руху за "
 "допомогою клавіш зі стрілками у вказану кількість разів."
 
 #: noprefs.c:252 ../fontforgeexe/prefs.c:351
@@ -11872,13 +11871,12 @@ msgid "Problem decompressing '%c%c%c%c' table."
 msgstr "Проблема під час видобування таблиці «%c%c%c%c»."
 
 #: ../fontforgeexe/alignment.c:212 ../fontforgeexe/alignment.c:331
-#, fuzzy
 msgid "Align Points"
-msgstr "_Осереднені точки"
+msgstr "Вирівняти точки"
 
 #: ../fontforgeexe/alignment.c:212 ../fontforgeexe/alignment.c:331
 msgid "How to align these points?"
-msgstr ""
+msgstr "У який спосіб вирівняти ці точки?"
 
 #: ../fontforgeexe/alignment.c:461 ../fontforgeexe/anchorsaway.c:1233
 #: ../fontforgeexe/combinations.c:1116 ../fontforgeexe/cvhints.c:483
@@ -12735,9 +12733,8 @@ msgstr "Вст_авити"
 #: ../fontforgeexe/bitmapview.c:2142 ../fontforgeexe/combinations.c:898
 #: ../fontforgeexe/fontview.c:4610 ../fontforgeexe/fontview.c:6009
 #: ../fontforgeexe/metricsview.c:3718 ../fontforgeexe/uiutil.c:671
-#, fuzzy
 msgid "C_lear"
-msgstr "Спорожнити"
+msgstr "Сп_орожнити"
 
 #: ../fontforgeexe/bitmapview.c:2144 ../fontforgeexe/charview.c:11177
 #: ../fontforgeexe/fontview.c:4569 ../fontforgeexe/metricsview.c:3721
@@ -14114,16 +14111,15 @@ msgstr ""
 
 #: ../fontforgeexe/charview.c:218 ../fontforgeexe/charview.c:219
 msgid "Dragging Comparison Outline Color"
-msgstr ""
+msgstr "Колір перетягуваного контуру порівняння"
 
 #: ../fontforgeexe/charview.c:218
-#, fuzzy
 msgid ""
 "The color used to draw the outline of the old spline when you are "
 "interactively modifying a glyph"
 msgstr ""
-"Колір, який буде використано для малювання «наступної» контрольної точки на "
-"кривій"
+"Колір, який буде використано для малювання контуру старого сплайна, коли ви "
+"інтерактивно змінюватимете гліф."
 
 #: ../fontforgeexe/charview.c:219
 msgid ""
@@ -14131,6 +14127,10 @@ msgid ""
 "for the control points, bezier information and other non spline indicators "
 "for the Dragging Comparison Outline spline"
 msgstr ""
+"Використовується лише значення прозорості. Якщо вказано ненульове значення, "
+"буде встановлено канал прозорості для контрольних точок, даних кривих Безьє "
+"та інших несплайнових індикаторів для сплайнів перетягуваного контуру "
+"порівняння."
 
 #: ../fontforgeexe/charview.c:224
 msgid "Width Color"
@@ -14149,14 +14149,13 @@ msgid "The color of the line marking the advance width when it is selected"
 msgstr "Колір лінії, що позначає ширину у разі позначення"
 
 #: ../fontforgeexe/charview.c:226
-#, fuzzy
 msgid "Selected LBearing Color"
-msgstr "Колір тла"
+msgstr "Колір позначеної лівої опори"
 
 #: ../fontforgeexe/charview.c:226
-#, fuzzy
 msgid "The color of the line marking the left bearing when it is selected"
-msgstr "Колір лінії, що позначає ширину у разі позначення"
+msgstr ""
+"Колір лінії, що використовуватиметься для лівої опори, якщо її позначено"
 
 #: ../fontforgeexe/charview.c:227
 msgid "Grid Fit Width Color"
@@ -14490,9 +14489,9 @@ msgid "Active Layer: %s (%s)"
 msgstr "Активний шар: %s (%s)"
 
 #: ../fontforgeexe/charview.c:3834
-#, fuzzy, c-format
+#, c-format
 msgid "Modes: "
-msgstr "Модерн"
+msgstr "Режими: "
 
 #: ../fontforgeexe/charview.c:3843
 msgid "'fpgm'"
@@ -14744,9 +14743,8 @@ msgid "points|_Merge"
 msgstr "_Об’єднати"
 
 #: ../fontforgeexe/charview.c:11215
-#, fuzzy
 msgid "points|Merge to Line"
-msgstr "_Об’єднати"
+msgstr "Об’єднати з лінією"
 
 #: ../fontforgeexe/charview.c:11217 ../fontforgeexe/fontview.c:4614
 #: ../fontforgeexe/metricsview.c:3719
@@ -14860,9 +14858,8 @@ msgstr "Обмеження _праворуч"
 
 #. GT: Align these points to their average position
 #: ../fontforgeexe/charview.c:11277
-#, fuzzy
 msgid "_Align Points"
-msgstr "_Осереднені точки"
+msgstr "_Вирівняти точки"
 
 #: ../fontforgeexe/charview.c:11278
 msgid "_Space Points"
@@ -15312,27 +15309,24 @@ msgid "PointNumbers|_None"
 msgstr "_Немає"
 
 #: ../fontforgeexe/charview.c:11650
-#, fuzzy
 msgid "_TrueType"
-msgstr "TrueType"
+msgstr "_TrueType"
 
 #: ../fontforgeexe/charview.c:11651
-#, fuzzy
 msgid "_PostScript®"
-msgstr "PostScript®"
+msgstr "_PostScript®"
 
 #: ../fontforgeexe/charview.c:11652
 msgid "_SVG"
-msgstr ""
+msgstr "_SVG"
 
 #: ../fontforgeexe/charview.c:11657
 msgid "Show _Grid Fit..."
 msgstr "Показати п_іксельну сітку…"
 
 #: ../fontforgeexe/charview.c:11658
-#, fuzzy
 msgid "Show _Grid Fit (Live Update)..."
-msgstr "Показати п_іксельну сітку…"
+msgstr "Показати п_іксельну сітку (інтерактивне оновлення)…"
 
 #: ../fontforgeexe/charview.c:11659 ../fontforgeexe/metricsview.c:3940
 msgid "_Bigger Point Size"
@@ -15356,9 +15350,8 @@ msgid "_Points"
 msgstr "_Точки"
 
 #: ../fontforgeexe/charview.c:11668
-#, fuzzy
 msgid "Control Points (Always_)"
-msgstr "Відомості _щодо контрольної точки"
+msgstr "Контрольні точки (_завжди)"
 
 #: ../fontforgeexe/charview.c:11669
 msgid "_Control Point Info"
@@ -15401,9 +15394,8 @@ msgid "Previe_w"
 msgstr "Пере_гляд"
 
 #: ../fontforgeexe/charview.c:11679
-#, fuzzy
 msgid "Dragging Comparison Outline"
-msgstr "Порівняти _каркаси"
+msgstr "Перетягуваний контур порівняння"
 
 #: ../fontforgeexe/charview.c:11681
 msgid "Pale_ttes"
@@ -15486,11 +15478,11 @@ msgstr "Ко_мбінації"
 
 #: ../fontforgeexe/charview.c:11727 ../fontforgeexe/metricsview.c:3943
 msgid "Next _Line in Word List"
-msgstr ""
+msgstr "Наступний _рядок у списку слів"
 
 #: ../fontforgeexe/charview.c:11728 ../fontforgeexe/metricsview.c:3944
 msgid "Previous Line in _Word List"
-msgstr ""
+msgstr "П_опередній рядок у списку слів"
 
 #: ../fontforgeexe/charview.c:11749
 msgid "SubFonts|_All"
@@ -17376,29 +17368,24 @@ msgid "Add Anchor"
 msgstr "Додати прив’язку"
 
 #: ../fontforgeexe/cvpalettes.c:3123
-#, fuzzy
 msgid "Curve"
-msgstr "_Крива"
+msgstr "Крива"
 
 #: ../fontforgeexe/cvpalettes.c:3130
-#, fuzzy
 msgid "HVCurve"
-msgstr "_Гор./Верт. крива"
+msgstr "Гор./Верт. крива"
 
 #: ../fontforgeexe/cvpalettes.c:3144
-#, fuzzy
 msgid "Tangent"
-msgstr "_Дотична"
+msgstr "Дотична"
 
 #: ../fontforgeexe/cvpalettes.c:3157
-#, fuzzy
 msgid "Merge"
-msgstr "_Об’єднати"
+msgstr "Об’єднати"
 
 #: ../fontforgeexe/cvpalettes.c:3164
-#, fuzzy
 msgid "Merge to Line"
-msgstr "Об’єднання шрифтів"
+msgstr "Об’єднати з лінією"
 
 #: ../fontforgeexe/cvpalettes.c:3183
 msgid "Add a left \"tangent\" point"
@@ -21981,9 +21968,8 @@ msgid "Bad hex number in %s"
 msgstr "Помилкове шістнадцяткове число у %s"
 
 #: ../fontforgeexe/fontinfo.c:4007 ../fontforgeexe/sfundo.c:132
-#, fuzzy
 msgid "Font Information Dialog"
-msgstr "Відомості щодо шрифту для %.90s"
+msgstr "Діалогове вікно відомостей щодо шрифту"
 
 #: ../fontforgeexe/fontinfo.c:4053
 msgid "Bad Grid Fitting table"
@@ -24721,22 +24707,20 @@ msgid "MM Change Default _Weights..."
 msgstr "З_мінити типові насиченості багатоосновного…"
 
 #: ../fontforgeexe/fontview.c:5764
-#, fuzzy
 msgid "Connect to Collab Server"
-msgstr "Сервер Collab"
+msgstr "З’єднатися із сервером Collab"
 
 #: ../fontforgeexe/fontview.c:5765
 msgid "Select a collab server to connect to..."
-msgstr ""
+msgstr "Виберіть сервер спільної роботи для з’єднання…"
 
 #: ../fontforgeexe/fontview.c:5837
-#, fuzzy
 msgid "Close Collab Server(s)"
-msgstr "Сервер Collab"
+msgstr "Завершити роботу серверів Collab"
 
 #: ../fontforgeexe/fontview.c:5839
 msgid "Select which servers you wish to close..."
-msgstr ""
+msgstr "Виберіть сервери, зв’язок з якими слід розірвати…"
 
 #: ../fontforgeexe/fontview.c:5979
 msgid "_Start Session..."
@@ -24747,9 +24731,8 @@ msgid "_Connect to Session..."
 msgstr "_Приєднатися до сеансу…"
 
 #: ../fontforgeexe/fontview.c:5981
-#, fuzzy
 msgid "_Connect to Session (ip:port)..."
-msgstr "_Приєднатися до сеансу…"
+msgstr "_Приєднатися до сеансу (IP:порт)…"
 
 #: ../fontforgeexe/fontview.c:5984
 msgid "Close local server"
@@ -24757,11 +24740,11 @@ msgstr "Закрити локальний сервер"
 
 #: ../fontforgeexe/fontview.c:5986
 msgid "Start Webfont server"
-msgstr ""
+msgstr "Запустити сервер Webfont"
 
 #: ../fontforgeexe/fontview.c:5987
 msgid "Stop Webfont server"
-msgstr ""
+msgstr "Зупинити роботу сервера Webfont"
 
 #: ../fontforgeexe/fontview.c:5994
 msgid "_Overview"
@@ -28088,9 +28071,8 @@ msgid "Point Size:"
 msgstr "Розмір точки:"
 
 #: ../fontforgeexe/metricsview.c:3695
-#, fuzzy
 msgid "Load _Word List..."
-msgstr "Завантажити список слів…"
+msgstr "Завантажити список с_лів…"
 
 #: ../fontforgeexe/metricsview.c:3743
 msgid "_Inline"
@@ -28142,7 +28124,7 @@ msgstr "Показати _сітку"
 
 #: ../fontforgeexe/metricsview.c:3934
 msgid "Render using Hinting"
-msgstr ""
+msgstr "Обробка з використанням гінтінґу"
 
 #: ../fontforgeexe/metricsview.c:3938
 msgid "Size set from _Window"
@@ -29116,9 +29098,8 @@ msgstr ""
 "значенням прозорості (діапазон: 0-255, типове значення — 255)."
 
 #: ../fontforgeexe/prefs.c:366
-#, fuzzy
 msgid "ShowControlPointsAlways"
-msgstr "Типове"
+msgstr "Завжди показувати контрольні точки"
 
 #: ../fontforgeexe/prefs.c:366
 msgid ""
@@ -29127,6 +29108,11 @@ msgid ""
 "control points are shown initially.\n"
 "Change requires a restart of fontforge."
 msgstr ""
+"Завжди показувати контрольні точки під час редагування гліфа.\n"
+"Вимкнути показ можна за допомогою пункту меню «Перегляд → Показувати». Цей "
+"параметр використовуватиметься, лише якщо контрольні точки показано від "
+"початку.\n"
+"Щоб зміни набули чинності, слід перезапустити fontforge."
 
 #: ../fontforgeexe/prefs.c:377
 msgid ""

@@ -187,7 +187,7 @@ translate_shortcut (int i, char *modifier)
 {
   char buffer[32];
   char *temp;
-  printf("translate_shortcut(top) i:%d modifier:%s\n", i, modifier );
+  TRACE("translate_shortcut(top) i:%d modifier:%s\n", i, modifier );
 
   sprintf (buffer, "Flag0x%02x", 1 << i);
   temp = dgettext (GMenuGetShortcutDomain (), buffer);
@@ -197,7 +197,7 @@ translate_shortcut (int i, char *modifier)
   else
       modifier = dgettext (GMenuGetShortcutDomain (), modifier);
 
-  printf("translate_shortcut(end) i:%d modifier:%s\n", i, modifier );
+  TRACE("translate_shortcut(end) i:%d modifier:%s\n", i, modifier );
 
   return modifier;
 }
@@ -239,7 +239,7 @@ static void _shorttext(int shortcut, int short_mask, unichar_t *buf) {
 
           if (mac_menu_icons)
 	  {
-	      printf("mods[i].mask: %s\n", mods[i].modifier );
+	      TRACE("mods[i].mask: %s\n", mods[i].modifier );
 	      
               if (mods[i].mask == ksm_cmdmacosx)
 		  mods[i].modifier = "⌘";
@@ -307,9 +307,9 @@ static int GMenuGetMenuPathRecurse( GMenuItem** stack,
     GMenuItem *mi = basemi;
     int i;
     for ( i=0; mi[i].ti.text || mi[i].ti.text_untranslated || mi[i].ti.image || mi[i].ti.line; ++i ) {
-//	printf("text_untranslated: %s\n", mi[i].ti.text_untranslated );
+//	TRACE("text_untranslated: %s\n", mi[i].ti.text_untranslated );
 	if ( mi[i].sub ) {
-//	    printf("GMenuGetMenuPathRecurse() going down on %s\n", u_to_c(mi[i].ti.text));
+//	    TRACE("GMenuGetMenuPathRecurse() going down on %s\n", u_to_c(mi[i].ti.text));
 	    stack[0] = &mi[i];
 	    int rc = GMenuGetMenuPathRecurse( &stack[1], mi[i].sub, targetmi );
 	    if( rc == 1 )
@@ -317,7 +317,7 @@ static int GMenuGetMenuPathRecurse( GMenuItem** stack,
 	    stack[0] = 0;
 	}
 	if( mi[i].ti.text ) {
-//	    printf("GMenuGetMenuPathRecurse() inspecting %s %p %p\n", u_to_c(mi[i].ti.text),mi[i],targetmi);
+//	    TRACE("GMenuGetMenuPathRecurse() inspecting %s %p %p\n", u_to_c(mi[i].ti.text),mi[i],targetmi);
 	    GMenuItem* cur = &mi[i];
 	    if( cur == targetmi ) {
 		stack[0] = cur;
@@ -347,30 +347,30 @@ static char* GMenuGetMenuPath( GMenuItem *basemi, GMenuItem *targetmi ) {
     if( !targetmi->ti.text )
 	return 0;
 
-//    printf("GMenuGetMenuPath() base   %s\n", u_to_c(basemi->ti.text));
-//    printf("GMenuGetMenuPath() target %s\n", u_to_c(targetmi->ti.text));
+//    TRACE("GMenuGetMenuPath() base   %s\n", u_to_c(basemi->ti.text));
+//    TRACE("GMenuGetMenuPath() target %s\n", u_to_c(targetmi->ti.text));
 
     /* { */
     /* 	int i=0; */
     /* 	GMenuItem *mi = basemi; */
     /* 	for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) { */
     /* 	    if( mi[i].ti.text ) { */
-    /* 		printf("GMenuGetMenuPath() xbase   %s\n", u_to_c(mi[i].ti.text)); */
+    /* 		TRACE("GMenuGetMenuPath() xbase   %s\n", u_to_c(mi[i].ti.text)); */
     /* 	    } */
     /* 	} */
     /* } */
-    /* printf("GMenuGetMenuPath() starting...\n"); */
+    /* TRACE("GMenuGetMenuPath() starting...\n"); */
 
     GMenuItem *mi = basemi;
     int i;
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
 	if( mi[i].ti.text ) {
 	    memset(stack, 0, sizeof(stack));
-//	    printf("GMenuGetMenuPath() xbase   %s\n", u_to_c(mi[i].ti.text));
-//	    printf("GMenuGetMenuPath() untrans %s\n", mi[i].ti.text_untranslated);
+//	    TRACE("GMenuGetMenuPath() xbase   %s\n", u_to_c(mi[i].ti.text));
+//	    TRACE("GMenuGetMenuPath() untrans %s\n", mi[i].ti.text_untranslated);
 	    GMenuGetMenuPathRecurse( stack, &mi[i], targetmi );
 	    if( stack[0] != 0 ) {
-//		printf("GMenuGetMenuPath() have stack[0]...\n");
+//		TRACE("GMenuGetMenuPath() have stack[0]...\n");
 		break;
 	    }
 	}
@@ -386,14 +386,14 @@ static char* GMenuGetMenuPath( GMenuItem *basemi, GMenuItem *targetmi ) {
 	    strcat(buffer,".");
 	if( stack[i]->ti.text_untranslated )
 	{
-//	    printf("adding %s\n", HKTextInfoToUntranslatedTextFromTextInfo( &stack[i]->ti ));
+//	    TRACE("adding %s\n", HKTextInfoToUntranslatedTextFromTextInfo( &stack[i]->ti ));
 	    strcat( buffer, HKTextInfoToUntranslatedTextFromTextInfo( &stack[i]->ti ));
 	}
 	else if( stack[i]->ti.text )
 	{
 	    cu_strcat(buffer,stack[i]->ti.text);
 	}
-//	printf("GMenuGetMenuPath() stack at i:%d  mi %s\n", i, u_to_c(stack[i]->ti.text));
+//	TRACE("GMenuGetMenuPath() stack at i:%d  mi %s\n", i, u_to_c(stack[i]->ti.text));
     }
     return buffer;
 }
@@ -602,7 +602,7 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 
     //printf("GMenuDrawMenuLine(top)\n");
     /* if(mi->ti.text) */
-    /* 	printf("GMenuDrawMenuLine() mi:%s\n",u_to_c(mi->ti.text)); */
+    /* 	TRACE("GMenuDrawMenuLine() mi:%s\n",u_to_c(mi->ti.text)); */
 
     new.x = m->tickoff; new.width = m->rightedge-m->tickoff;
     new.y = y; new.height = GTextInfoGetHeight(pixmap,&mi->ti,m->font);
@@ -638,9 +638,9 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	_shorttext(mi->shortcut,0,shortbuf);
 	uint16 short_mask = mi->short_mask;
 
-	/* printf("m->menubar: %p\n", m->menubar ); */
-	/* printf("m->parent: %p\n", m->parent ); */
-	/* printf("m->toplevel: %p\n", getTopLevelMenubar(m)); */
+	/* TRACE("m->menubar: %p\n", m->menubar ); */
+	/* TRACE("m->parent: %p\n", m->parent ); */
+	/* TRACE("m->toplevel: %p\n", getTopLevelMenubar(m)); */
 
 	/**
 	 * Grab the hotkey if there is one. First we work out the
@@ -666,9 +666,9 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 
 	if( hk )
 	{
-	    /* printf("m->menubar->mi: %p\n", toplevel->mi ); */
-	    /* printf("m->menubar->window: %p\n", toplevel->g.base ); */
-	    /* printf("drawline... hk: %p\n", hk ); */
+	    /* TRACE("m->menubar->mi: %p\n", toplevel->mi ); */
+	    /* TRACE("m->menubar->window: %p\n", toplevel->g.base ); */
+	    /* TRACE("drawline... hk: %p\n", hk ); */
 	    short_mask = hk->state;
 	    char* keydesc = hk->text;
 	    if( mac_menu_icons )
@@ -701,7 +701,7 @@ static int gmenu_expose(struct gmenu *m, GEvent *event,GWindow pixmap) {
     GRect r;
     int i;
 
-    /* printf("gmenu_expose() m:%p ev:%p\n",m,event); */
+    /* TRACE("gmenu_expose() m:%p ev:%p\n",m,event); */
     GDrawPushClip(pixmap,&event->u.expose.rect,&old1);
     r.x = 0; r.width = m->width; r.y = 0; r.height = m->height;
     GBoxDrawBackground(pixmap,&r,m->box,gs_active,false);
@@ -802,7 +802,7 @@ static void GMenuHideAll(struct gmenu *m) {
 
 static void GMenuDismissAll(struct gmenu *m) {
 #if 0
- printf("DismissAll\n");
+ TRACE("DismissAll\n");
 #endif
     if ( m!=NULL ) {
 	while ( m->parent ) m = m->parent;
@@ -978,7 +978,7 @@ return( true );
 	}
     } else if ( event->type == et_mouseup && m->child==NULL ) {
 #if 0
- printf("\nActivate menu\n");
+ TRACE("\nActivate menu\n");
 #endif
 	if ( m->scrollit!=NULL ) {
 	    GDrawCancelTimer(m->scrollit);
@@ -1274,7 +1274,7 @@ static int HKActionMatchesFirstPartOf( char* action, char* prefix_const, int mun
     strncpy( prefix, prefix_const, PATH_MAX );
     if( munge )
 	strncpy( prefix, HKTextInfoToUntranslatedText( prefix_const ),PATH_MAX );
-//    printf("munge:%d prefix2:%s\n", munge, prefix );
+//    TRACE("munge:%d prefix2:%s\n", munge, prefix );
 
     pt = strchr(action,'.');
     if( !pt )
@@ -1314,12 +1314,12 @@ static GMenuItem *GMenuSearchActionRecursive( GWindow gw,
 					      GEvent *event,
 					      int call_moveto) {
 
-//    printf("GMenuSearchAction() action:%s\n", action );
+//    TRACE("GMenuSearchAction() action:%s\n", action );
     int i;
     for ( i=0; mi[i].ti.text || mi[i].ti.text_untranslated || mi[i].ti.image || mi[i].ti.line; ++i ) {
 //	if( mi[i].ti.text )
-//	    printf("GMenuSearchActionRecursive() text             : %s\n", u_to_c(mi[i].ti.text) );
-//	printf("GMenuSearchActionRecursive() text_untranslated: %s\n", mi[i].ti.text_untranslated );
+//	    TRACE("GMenuSearchActionRecursive() text             : %s\n", u_to_c(mi[i].ti.text) );
+//	TRACE("GMenuSearchActionRecursive() text_untranslated: %s\n", mi[i].ti.text_untranslated );
 	if ( call_moveto && mi[i].moveto != NULL)
 	    (mi[i].moveto)(gw,&(mi[i]),event);
 
@@ -1327,15 +1327,15 @@ static GMenuItem *GMenuSearchActionRecursive( GWindow gw,
 	    if( HKActionMatchesFirstPartOfTextInfo( action, &mi[i].ti )) {
 		char* subaction = HKActionPointerPastLeftmostKey(action);
 
-//		printf("GMenuSearchAction() action:%s decending menu:%s\n", action, u_to_c(mi[i].ti.text) );
+//		TRACE("GMenuSearchAction() action:%s decending menu:%s\n", action, u_to_c(mi[i].ti.text) );
 		GMenuItem *ret = GMenuSearchActionRecursive(gw,mi[i].sub,subaction,event,call_moveto);
 		if ( ret!=NULL )
 		    return( ret );
 	    }
 	} else {
-//	    printf("GMenuSearchAction() action:%s testing menu:%s\n", action, u_to_c(mi[i].ti.text) );
+//	    TRACE("GMenuSearchAction() action:%s testing menu:%s\n", action, u_to_c(mi[i].ti.text) );
 	    if( HKActionMatchesFirstPartOfTextInfo( action, &mi[i].ti )) {
-//		printf("GMenuSearchAction() matching final menu part! action:%s\n", action );
+//		TRACE("GMenuSearchAction() matching final menu part! action:%s\n", action );
 		return &mi[i];
 	    }
 	}
@@ -1351,7 +1351,7 @@ static GMenuItem *GMenuSearchAction( GWindow gw,
     char* windowType = GDrawGetWindowTypeName( gw );
     if( !windowType )
 	return 0;
-//    printf("GMenuSearchAction() windowtype:%s\n", windowType );
+//    TRACE("GMenuSearchAction() windowtype:%s\n", windowType );
     int actionlen = strlen(action);
     int prefixlen = strlen(windowType) + 1 + strlen("Menu.");
     if( actionlen < prefixlen ) {
@@ -1556,7 +1556,7 @@ return( false );
 
 static int gmenu_destroy(struct gmenu *m) {
 #if 0
- printf("gmenu_destroy\n");
+ TRACE("gmenu_destroy\n");
 #endif
     if ( most_recent_popup_menu==m )
 	most_recent_popup_menu = NULL;
@@ -1699,7 +1699,7 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
 	 * first and then add the modifier icons if there are to be
 	 * any for the key combination.
 	 */
-//	printf("_gmenu_create() toplevel:%p owner:%p\n", toplevel, owner );
+//	TRACE("_gmenu_create() toplevel:%p owner:%p\n", toplevel, owner );
 
 	Hotkey* hk = 0;
 	if( toplevel ) {
@@ -1712,7 +1712,7 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
 						GMenuGetMenuPath( mi, &mi[i] ));
 	}
 
-//	printf("hk:%p\n", hk);
+//	TRACE("hk:%p\n", hk);
 	if( hk )
 	{
 	    short_mask = hk->state;
@@ -1992,7 +1992,7 @@ int GGadgetUndoMacEnglishOptionCombinations(GEvent *event) {
  */
 static int osx_handle_keysyms( int st, int k )
 {
-//    printf("osx_handle_keysyms() st:%d k:%d\n", st, k );
+//    TRACE("osx_handle_keysyms() st:%d k:%d\n", st, k );
 
     if( (st & ksm_control) && (st & ksm_meta) )
 	switch( k )
@@ -2066,7 +2066,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     GMenuItem *mi;
     unichar_t keysym = event->u.chr.keysym;
 
-//    printf("GMenuBarCheckKey(top) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
+//    TRACE("GMenuBarCheckKey(top) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
 
     int SkipUnQualifiedHotkeyProcessing = 0;
     // see if we should skip processing
@@ -2101,13 +2101,13 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	    }
 	}
     }
-//    printf("GMenuBarCheckKey(2) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
+//    TRACE("GMenuBarCheckKey(2) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
 
     /* First check for an open menu underscore key being pressed */
     mi = GMenuSearchShortcut(mb->g.base,mb->mi,event,mb->child==NULL);
     if ( mi ) {
-//	printf("GMenuBarCheckKey(3) have mi... :%p\n", mi );
-//	printf("GMenuBarCheckKey(3) have mitext:%s\n", u_to_c(mi->ti.text) );
+//	TRACE("GMenuBarCheckKey(3) have mi... :%p\n", mi );
+//	TRACE("GMenuBarCheckKey(3) have mitext:%s\n", u_to_c(mi->ti.text) );
 	if ( mi->ti.checkable && !mi->ti.disabled )
 	    mi->ti.checked = !mi->ti.checked;
 	if ( mi->invoke!=NULL && !mi->ti.disabled )
@@ -2132,19 +2132,19 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     // Command + Alt + Shift + F on OSX doesn't give the keysym one
     // might expect if they have been testing on a Linux Machine.
     //
-    printf("looking2 for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
-    printf("     has ksm_control:%d\n", (event->u.chr.state & ksm_control ));
-    printf("     has ksm_cmdmacosx:%d\n", (event->u.chr.state & ksm_cmdmacosx ));
-    printf("     has ksm_cmdmacosx|control:%d\n", ((event->u.chr.state & (ksm_cmdmacosx|ksm_control)) == ksm_cmdmacosx) );
-    printf("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
-    printf("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
-    printf("     has ksm_option:%d\n",   (event->u.chr.state & ksm_option ));
+    TRACE("looking2 for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
+    TRACE("     has ksm_control:%d\n", (event->u.chr.state & ksm_control ));
+    TRACE("     has ksm_cmdmacosx:%d\n", (event->u.chr.state & ksm_cmdmacosx ));
+    TRACE("     has ksm_cmdmacosx|control:%d\n", ((event->u.chr.state & (ksm_cmdmacosx|ksm_control)) == ksm_cmdmacosx) );
+    TRACE("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
+    TRACE("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
+    TRACE("     has ksm_option:%d\n",   (event->u.chr.state & ksm_option ));
 
     if( event->u.chr.state & ksm_option )
 	event->u.chr.state ^= ksm_option;
 
     event->u.chr.keysym = osx_handle_keysyms( event->u.chr.state, event->u.chr.keysym );
-    printf(" 3   has ksm_option:%d\n",   (event->u.chr.state & ksm_option ));
+    TRACE(" 3   has ksm_option:%d\n",   (event->u.chr.state & ksm_option ));
 
     // Command-c or Command-x
     if( event->u.chr.state == ksm_control
@@ -2154,27 +2154,27 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     }
 #endif
 
-    printf("about to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
-    printf("     has ksm_control:%d\n", (event->u.chr.state & ksm_control ));
-    printf("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
-    printf("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
+    TRACE("about to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
+    TRACE("     has ksm_control:%d\n", (event->u.chr.state & ksm_control ));
+    TRACE("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
+    TRACE("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
 
     event->u.chr.state |= ksm_numlock;
-    printf("about2 to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
+    TRACE("about2 to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
     
     /**
      * Mask off the parts we don't explicitly care about
      */
     event->u.chr.state &= ( ksm_control | ksm_meta | ksm_shift | ksm_option );
     
-    printf("about3 to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
-    printf("     has ksm_control:%d\n", (event->u.chr.state & ksm_control ));
-    printf("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
-    printf("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
+    TRACE("about3 to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
+    TRACE("     has ksm_control:%d\n", (event->u.chr.state & ksm_control ));
+    TRACE("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
+    TRACE("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
 
     if( SkipUnQualifiedHotkeyProcessing && !event->u.chr.state )
     {
-	printf("skipping unqualified hotkey for widget g:%p\n", g);
+	TRACE("skipping unqualified hotkey for widget g:%p\n", g);
 	return 0;
     }
     
@@ -2183,8 +2183,8 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     struct dlistnode* hklist = (struct dlistnode*)node;
     for( ; node; node=(struct dlistnodeExternal*)(node->next) ) {
 	Hotkey* hk = (Hotkey*)node->ptr;
-	printf("hotkey found by event! hk:%p\n", hk );
-	printf("hotkey found by event! action:%s\n", hk->action );
+	TRACE("hotkey found by event! hk:%p\n", hk );
+	TRACE("hotkey found by event! action:%s\n", hk->action );
 
 	int skipkey = false;
 
@@ -2192,7 +2192,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	{
 	    if( !hk->state )
 		skipkey = true;
-//		printf("hotkey state:%d skip:%d\n", hk->state, skipkey );
+//		TRACE("hotkey state:%d skip:%d\n", hk->state, skipkey );
 	}
 
 	if( !skipkey )
@@ -2200,8 +2200,8 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	    mi = GMenuSearchAction(mb->g.base,mb->mi,hk->action,event,mb->child==NULL);
 	    if ( mi )
 	    {
-		printf("GMenuBarCheckKey(x) have mi... :%p\n", mi );
-		printf("GMenuBarCheckKey(x) have mitext:%s\n", u_to_c(mi->ti.text) );
+		TRACE("GMenuBarCheckKey(x) have mi... :%p\n", mi );
+		TRACE("GMenuBarCheckKey(x) have mitext:%s\n", u_to_c(mi->ti.text) );
 		if ( mi->ti.checkable && !mi->ti.disabled )
 		    mi->ti.checked = !mi->ti.checked;
 		if ( mi->invoke!=NULL && !mi->ti.disabled )
@@ -2212,16 +2212,16 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	    }
 	    else
 	    {
-//		    printf("hotkey found for event must be a non menu action... action:%s\n", hk->action );
+//		    TRACE("hotkey found for event must be a non menu action... action:%s\n", hk->action );
 
 	    }
 	}
 
-//	    printf("END hotkey found by event! hk:%p\n", hk );
+//	    TRACE("END hotkey found by event! hk:%p\n", hk );
     }
     dlist_free_external(&hklist);
 
-    printf("menubarcheckkey(e1)\n");
+    TRACE("menubarcheckkey(e1)\n");
 	
     if ( mb->child )
     {
@@ -2232,7 +2232,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	return( GMenuSpecialKeys(m,event->u.chr.keysym,event));
     }
 
-    printf("menubarcheckkey(e2)\n");
+    TRACE("menubarcheckkey(e2)\n");
     if ( event->u.chr.keysym==GK_Menu )
 	GMenuCreatePopupMenu(event->w,event, mb->mi);
 

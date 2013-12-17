@@ -127,12 +127,6 @@ struct ui_interface {
 };
 extern struct ui_interface *ui_interface;
 
-#ifdef FONTFORGE_DEBUG
-#define TRACE(...) printf(__VA_ARGS__)
-#else
-#define TRACE(...)
-#endif
-
 #define IError			(ui_interface->ierror)
 #define LogError		(ui_interface->logwarning)
 #define ff_post_notice		(ui_interface->post_warning)

@@ -820,7 +820,7 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,
     geoffset = ftell(res);
     putlong(res,0);			/* Offset to glyph encoding table */ /* Fill in later */
     putlong(res,0);			/* Reserved, MBZ */
-    if ( strnmatch(sf->familyname,sf->fontname,strlen(sf->familyname))!=0 )
+    if ( !sf->familyname || strnmatch(sf->familyname,sf->fontname,strlen(sf->familyname))!=0 )
 	strcnt = 1;
     else if ( strmatch(sf->familyname,sf->fontname)==0 )
 	strcnt = 1;
@@ -831,7 +831,6 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,
     for ( k=0; k<48; ++k )
 	putc(strcnt==1?1:2,res);	/* All indeces point to this font */
     putshort(res,strcnt);		/* strcnt strings */
-    pt = sf->fontname+strlen(sf->familyname);
     if ( strcnt==1 ) {
 	putc(strlen(sf->fontname),res);	/* basename is full name */
 	/* Mac expects this to be upper case */
@@ -839,6 +838,7 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,
 	else putc(*sf->fontname,res);
 	fwrite(sf->fontname+1,1,strlen(sf->fontname+1),res);
     } else {
+        pt = sf->fontname+strlen(sf->familyname);
 	putc(strlen(sf->familyname),res);/* basename */
 	if ( islower(*sf->familyname)) putc(toupper(*sf->familyname),res);
 	else putc(*sf->familyname,res);

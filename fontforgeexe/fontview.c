@@ -5923,7 +5923,7 @@ static void FVMenuStartWebFontServer(GWindow gw, struct gmenuitem *UNUSED(mi), G
     
 }
 
-#if defined(__MINGW32__)||defined(__CYGWIN__)
+#if defined(__MINGW32__)
 //
 // This is an imperfect implemenation of kill() for windows.
 //
@@ -6346,8 +6346,9 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 		} else if ( uni>0 && uni<unicode4_size ) {
 		    char *pt = utf8_buf;
 		    use_utf8 = true;
+			*pt = '\0'; // We terminate the string in case the appendage (?) fails.
 		    pt = utf8_idpb(pt,uni,0);
-		    *pt = '\0';
+		    if (pt) *pt = '\0'; else fprintf(stderr, "Invalid Unicode alert.\n");
 		} else {
 		    char *pt = strchr(sc->name,'.');
 		    buf[0] = '?';

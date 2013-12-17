@@ -1421,6 +1421,7 @@ static void comparebitmapstrikes(struct font_diff *fd) {
 
 static void NameCompare(struct font_diff *fd,char *name1, char *name2, char *id) {
 
+    if (!name1) name1=""; if (!name2) name2="";
     if ( strcmp(name1,name2)!=0 ) {
 	if ( !fd->top_diff )
 	    fprintf( fd->diffs, "Names\n" );
@@ -1448,6 +1449,7 @@ static void TtfNameCompare(struct font_diff *fd,char *name1,char *name2,
 	int lang,int strid) {
     char strnamebuf[200];
 
+    if (!name1) name1=""; if (!name2) name2="";
     if ( strcmp(name1,name2)==0 )
 return;
     sprintf( strnamebuf, "%.90s %.90s", TTFNameIds(strid), MSLangString(lang));

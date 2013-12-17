@@ -2973,6 +2973,60 @@ static void bSelectWorthOutputting(Context *c) {
     }
 }
 
+static void bSelectGlyphsSplines(Context *c) {
+    FontViewBase *fv = c->curfv;
+    int i, gid;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    int layer = fv->active_layer;
+    int add = 0;
+
+    if ( c->a.argc!=1 && c->a.argc!=2 )
+	ScriptError( c, "Too many arguments");
+    if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_int )
+	    ScriptError( c, "Bad type for argument" );
+	add = c->a.vals[1].u.ival;
+    }
+
+    if ( add ) {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] |= ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		sf->glyphs[gid]->layers[layer].splines!=NULL );
+    } else {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		sf->glyphs[gid]->layers[layer].splines!=NULL );
+    }
+}
+
+static void bSelectGlyphsReferences(Context *c) {
+    FontViewBase *fv = c->curfv;
+    int i, gid;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    int layer = fv->active_layer;
+    int add = 0;
+
+    if ( c->a.argc!=1 && c->a.argc!=2 )
+	ScriptError( c, "Too many arguments");
+    if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_int )
+	    ScriptError( c, "Bad type for argument" );
+	add = c->a.vals[1].u.ival;
+    }
+
+    if ( add ) {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] |= ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		sf->glyphs[gid]->layers[layer].refs!=NULL );
+    } else {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		sf->glyphs[gid]->layers[layer].refs!=NULL);
+    }
+}
+
 static void bSelectGlyphsBoth(Context *c) {
     FontViewBase *fv = c->curfv;
     int i, gid;
@@ -4603,39 +4657,243 @@ static ItalicInfo default_ii = {
 };
 
 static void bItalic(Context *c) {
+    double pct = 1.0;
     int i;
 
-    if ( c->a.argc>2 )
+    if ( c->a.argc>10 )
 	ScriptError( c, "Wrong number of arguments");
-    for ( i=1; i<c->a.argc; ++i ) {
-	if ( c->a.vals[i].type==v_real )
-	    default_ii.italic_angle = c->a.vals[i].u.fval;
-	else if ( c->a.vals[i].type==v_int )
-	    default_ii.italic_angle = c->a.vals[i].u.ival;
-	else
-	    ScriptError(c,"Bad argument type in Italic");
+
+    for (i = 1; i < c->a.argc; ++i) {
+	switch (i) {
+	case 1:
+	    /* Argument 1: italic angle */
+	    if ( c->a.vals[1].type==v_real )
+		default_ii.italic_angle = c->a.vals[1].u.fval;
+	    else if ( c->a.vals[1].type==v_int )
+		default_ii.italic_angle = c->a.vals[1].u.ival;
+	    else
+		break;
+	    continue;
+
+	case 2:
+	    /* Argument 2: xheight percentage */
+	    if ( c->a.vals[i].type==v_real )
+		default_ii.xheight_percent = c->a.vals[i].u.fval;
+	    else if ( c->a.vals[i].type==v_int )
+		default_ii.xheight_percent = c->a.vals[i].u.ival;
+	    else
+		break;
+	    continue;
+
+	case 3:
+	    /* Argument 3: flags */
+	    if ( c->a.vals[i].type==v_int ) {
+		int flags = c->a.vals[i].u.ival;
+		if (flags >= 0) {
+		    default_ii.transform_bottom_serifs = (flags & 0x0001) ? 1 : 0;
+		    default_ii.transform_top_xh_serifs = (flags & 0x0002) ? 1 : 0;
+		    default_ii.transform_top_as_serifs = (flags & 0x0004) ? 1 : 0;
+		    default_ii.transform_diagon_serifs = (flags & 0x0008) ? 1 : 0;
+		    
+		    default_ii.a_from_d = (flags & 0x0010) ? 1 : 0;
+		    default_ii.f_long_tail = (flags & 0x0020) ? 1 : 0;
+		    default_ii.f_rotate_top = (flags & 0x0040) ? 1 : 0;
+		    default_ii.pq_deserif = (flags & 0x0080) ? 1 : 0;
+		    
+		    default_ii.cyrl_phi = (flags & 0x0100) ? 1 : 0;
+		    default_ii.cyrl_i = (flags & 0x0200) ? 1 : 0;
+		    default_ii.cyrl_pi = (flags & 0x0400) ? 1 : 0;
+		    default_ii.cyrl_te = (flags & 0x0800) ? 1 : 0;
+		    
+		    default_ii.cyrl_sha = (flags & 0x1000) ? 1 : 0;
+		    default_ii.cyrl_dje = (flags & 0x2000) ? 1 : 0;
+		    default_ii.cyrl_dzhe = (flags & 0x4000) ? 1 : 0;
+		}
+		continue;
+	    }
+	    break;
+
+	case 4:
+	    /* Argument 4: serif type: 1=flat, 2=simpleslant, 3=complexslant,
+	       others ignored */
+	    if ( c->a.vals[i].type==v_int ) {
+		switch (c->a.vals[i].u.ival) {
+		case 1: default_ii.secondary_serif = srf_flat; break;
+		case 2: default_ii.secondary_serif = srf_simpleslant; break;
+		case 3: default_ii.secondary_serif = srf_complexslant; break;
+		}
+		continue;
+	    }
+	    break;
+
+	case 5:
+	    /* Argument 5: left side bearings change, percentage */
+	    if ( c->a.vals[i].type==v_real )
+		pct = c->a.vals[i].u.fval;
+	    else if ( c->a.vals[i].type==v_int )
+		pct = c->a.vals[i].u.ival;
+	    else
+		break;
+	    default_ii.lc.lsb_percent = default_ii.lc.rsb_percent = 
+		default_ii.uc.lsb_percent = default_ii.uc.rsb_percent = 
+		default_ii.neither.lsb_percent =
+		default_ii.neither.rsb_percent = pct;
+	    continue;
+
+	case 6:
+	    /* Argument 6: stem width change, percentage */
+	    if ( c->a.vals[i].type==v_real )
+		pct = c->a.vals[i].u.fval;
+	    else if ( c->a.vals[i].type==v_int )
+		pct = c->a.vals[i].u.ival;
+	    else
+		break;
+	    default_ii.lc.stem_percent =
+		default_ii.uc.stem_percent =
+		default_ii.neither.stem_percent = pct;
+	    continue;
+
+	case 7:
+	    /* Argument 7: counters change, percentage */
+	    if ( c->a.vals[i].type==v_real )
+		pct = c->a.vals[i].u.fval;
+	    else if ( c->a.vals[i].type==v_int )
+		pct = c->a.vals[i].u.ival;
+	    else
+		break;
+	    default_ii.lc.counter_percent =
+		default_ii.uc.counter_percent =
+		default_ii.neither.counter_percent = pct;
+	    continue;
+
+	case 8:
+	    /* Argument 8: lowercase stem width change, percentage
+	       (defaults to argument 6) */
+	    if ( c->a.vals[i].type==v_real )
+		pct = c->a.vals[i].u.fval;
+	    else if ( c->a.vals[i].type==v_int )
+		pct = c->a.vals[i].u.ival;
+	    else
+		break;
+	    default_ii.lc.stem_percent = pct;
+	    continue;
+
+	case 9:
+	    /* Argument 9: lowercase counters change, percentage
+	       (defaults to argument 7) */
+	    if ( c->a.vals[i].type==v_real )
+		pct = c->a.vals[i].u.fval;
+	    else if ( c->a.vals[i].type==v_int )
+		pct = c->a.vals[i].u.ival;
+	    else
+		break;
+	    default_ii.lc.counter_percent = pct;
+	    continue;
+	}
+	{
+	    char errmsg[40];
+	    snprintf(errmsg, sizeof(errmsg), "Bad argument %d type in Italic", i);
+	    ScriptError(c, errmsg);
+	}
     }
     MakeItalic(c->curfv,NULL,&default_ii);
 }
 
-static void bSmallCaps(Context *c) {
-    struct smallcaps small;
-    struct genericchange genchange;
+static void bChangeWeight(Context *c) {
+    enum embolden_type type = embolden_auto;
+    struct lcg_zones zones;
 
-    if ( c->a.argc>1 )
+    if ( c->a.argc>2 )
 	ScriptError( c, "Wrong number of arguments");
-    SmallCapsFindConstants(&small,c->curfv->sf,c->curfv->active_layer);
-    memset(&genchange,0,sizeof(genchange));
-    genchange.small = &small;
-    genchange.gc = gc_smallcaps;
-    genchange.extension_for_letters = "sc";
-    genchange.extension_for_symbols = "taboldstyle";
 
-    genchange.stem_width_scale  = small.lc_stem_width / small.uc_stem_width;
-    genchange.stem_height_scale = genchange.stem_width_scale;
-    genchange.v_scale           = small.xheight / small.capheight;
-    genchange.hcounter_scale    = genchange.v_scale;
-    genchange.lsb_scale = genchange.rsb_scale = genchange.v_scale;
+    memset(&zones, 0, sizeof(zones));
+    zones.counter_type = ct_auto;
+    zones.serif_fuzz = 0.9;
+    zones.removeoverlap = 1;
+
+    if ( c->a.vals[1].type==v_real )
+	zones.stroke_width = c->a.vals[1].u.fval;
+    else if ( c->a.vals[1].type==v_int )
+	zones.stroke_width = c->a.vals[1].u.ival;
+    else
+	ScriptError(c,"Bad argument type in ChangeWeight");
+
+    FVEmbolden(c->curfv,type, &zones);
+}
+
+static void bSmallCaps(Context *c) {
+    struct smallcaps small = {};
+    struct position_maps maps[2] = {{ .cur_width = -1 }, { .cur_width = 1 }};
+    struct genericchange genchange = {
+	.hcounter_scale = 0.66, .lsb_scale = 0.66, .rsb_scale = 0.66,
+	.v_scale = 0.675,
+	.gc = gc_smallcaps,
+	.extension_for_letters = "sc",
+	.extension_for_symbols = "taboldstyle",
+	.use_vert_mapping = 1,
+	.dstem_control = 1,
+	.m = { .cnt = 2, .maps = maps },
+	.small = &small
+    };
+    double h_scale, v_scale = 0.66;
+    double stem_h, stem_w = 0.93;
+
+    /* Arguments:
+       1 => vertical scale: make smallcap height this fraction of full caps.
+       2 => horizontal scale: make smallcap width this fraction of full caps,
+              defaults to vertical scale if omitted or zero.
+       3 => stem width scale: scale vstems by this much.
+       4 => stem height scale: scale hstems by this much,
+              defaults to stem width scale if omitted or zero.
+    */
+
+    if ( c->a.argc>5 )
+	ScriptError( c, "Wrong number of arguments");
+
+    SmallCapsFindConstants(&small,c->curfv->sf,c->curfv->active_layer);
+
+    if ( c->a.argc>1 ) {
+	if ( c->a.vals[1].type==v_real )
+	    v_scale = c->a.vals[1].u.fval;
+	else if ( c->a.vals[1].type==v_int )
+	    v_scale = c->a.vals[1].u.ival;
+	else
+	    ScriptError(c,"Bad argument 1 type in SmallCaps");
+    }
+    small.vscale = small.hscale = genchange.v_scale = h_scale = v_scale;
+    if ( c->a.argc>2 && c->a.vals[2].u.ival != 0) {
+	if ( c->a.vals[2].type==v_real )
+	    h_scale = c->a.vals[2].u.fval;
+	else if ( c->a.vals[2].type==v_int )
+	    h_scale = c->a.vals[2].u.ival;
+	else
+	    ScriptError(c,"Bad argument 2 type in SmallCaps");
+    }
+    genchange.hcounter_scale = genchange.lsb_scale = genchange.rsb_scale = h_scale;
+    
+    if ( c->a.argc>3 ) {
+	if ( c->a.vals[3].type==v_real )
+	    stem_w = c->a.vals[3].u.fval;
+	else if ( c->a.vals[3].type==v_int )
+	    stem_w = c->a.vals[3].u.ival;
+	else
+	    ScriptError(c,"Bad argument 3 type in SmallCaps");
+    }
+    stem_h = stem_w;
+
+    if ( c->a.argc>4 && c->a.vals[4].u.ival != 0) {
+	if ( c->a.vals[4].type==v_real )
+	    stem_h = c->a.vals[4].u.fval;
+	else if ( c->a.vals[4].type==v_int )
+	    stem_h = c->a.vals[4].u.ival;
+	else
+	    ScriptError(c,"Bad argument 4 type in SmallCaps");
+    }
+    genchange.stem_height_scale = stem_h;
+    genchange.stem_width_scale = stem_w;
+
+    maps[1].current = small.capheight;
+    maps[1].desired = small.scheight = small.capheight * small.vscale;
 
     FVAddSmallCaps(c->curfv,&genchange);
 }
@@ -7652,6 +7910,18 @@ return;
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
 		    ;
 	    c->return_val.u.ival = i;
+	} else if ( strmatch( c->a.vals[1].u.sval, "Class") == 0 ) {
+	    c->return_val.type = v_str;
+	    switch (sc->glyph_class) {
+	    case 0: c->return_val.u.sval = copy("automatic"); break;
+	    case 1: c->return_val.u.sval = copy("none"); break;
+	    case 2: c->return_val.u.sval = copy("base"); break;
+	    case 3: c->return_val.u.sval = copy("ligature"); break;
+	    case 4: c->return_val.u.sval = copy("mark"); break;
+	    case 5: c->return_val.u.sval = copy("component"); break;
+	    default:
+		c->return_val.u.sval = copy("unknown"); break;
+	    }
 	} else if ( strmatch( c->a.vals[1].u.sval,"RefName")==0 ||
 		strmatch( c->a.vals[1].u.sval,"RefNames")==0 ) {
 	    for ( i=0, layer=0; layer<sc->layer_cnt; ++layer )
@@ -8269,6 +8539,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SelectChanged", bSelectChanged, 0 },
     { "SelectHintingNeeded", bSelectHintingNeeded, 0 },
     { "SelectWorthOutputting", bSelectWorthOutputting, 0 },
+    { "SelectGlyphsSplines", bSelectGlyphsSplines },
+    { "SelectGlyphsReferences", bSelectGlyphsReferences },
     { "SelectGlyphsBoth", bSelectGlyphsBoth, 0 },
     { "SelectByATT", bSelectByATT, 0 },
     { "SelectByPosSub", bSelectByPosSub, 0 },
@@ -8325,6 +8597,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Move", bMove, 0 },
     { "ScaleToEm", bScaleToEm, 0 },
     { "Italic", bItalic, 0 },
+    { "ChangeWeight", bChangeWeight, 0 },
     { "SmallCaps", bSmallCaps, 0 },
     { "MoveReference", bMoveReference, 0 },
     { "PositionReference", bPositionReference, 0 },
@@ -9023,14 +9296,32 @@ static void docall(Context *c,char *name,Val *val) {
 	} else {
 	    if ( strchr(name,'/')==NULL && strchr(c->filename,'/')!=NULL ) {
 		char *pt;
-		sub.filename = galloc(strlen(c->filename)+strlen(name)+1);
+		sub.filename = galloc(strlen(c->filename)+strlen(name)+4);
 		strcpy(sub.filename,c->filename);
 		pt = strrchr(sub.filename,'/');
 		strcpy(pt+1,name);
 	    }
 	    sub.script = fopen(sub.filename,"r");
 	    if ( sub.script==NULL ) {
-		ScriptErrorString(c, "No built-in function or script-file", name);
+		char *pt;
+		if ( sub.filename==name ) {
+		    sub.filename = galloc(strlen(name)+4);
+		    strcpy(sub.filename,name);
+		}
+		pt = sub.filename + strlen(sub.filename);
+		strcpy(pt, ".ff");
+		sub.script = fopen(sub.filename,"r");
+		if ( sub.script==NULL ) {
+		    strcpy(pt, ".pe");
+		    sub.script = fopen(sub.filename,"r");
+		}
+		if ( sub.script==NULL ) {
+		    *pt = '\0';
+		}
+	    }
+	    sub.script = fopen(sub.filename,"r");
+	    if ( sub.script==NULL ) {
+		ScriptErrorString(c, "No built-in function or script file", name);
 	    } else {
 		sub.lineno = 1;
 		while ( !sub.returned && !sub.broken && (tok = ff_NextToken(&sub))!=tt_eof ) {

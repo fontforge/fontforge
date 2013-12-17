@@ -67,6 +67,14 @@ typedef uint32 unichar_t;
 # define UNUSED(x) x
 #endif
 
+/* A macro to print a string for debug purposes
+ */
+#ifdef FONTFORGE_DEBUG
+#define TRACE(...) printf(__VA_ARGS__)
+#else
+#define TRACE(...)
+#endif
+
 #ifdef USE_OUR_MEMORY
 extern void *galloc(long size);
 extern void *gcalloc(int cnt, long size);

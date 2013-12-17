@@ -29,21 +29,21 @@ include $(top_srcdir)/mk/layout.am
 
 lib_LTLIBRARIES = libgdraw.la
 
-libgdraw_la_SOURCES = choosericons.c ctlvalues.c drawboxborder.c		\
-	gaskdlg.c gbuttons.c gcolor.c gchardlg.c gcontainer.c gdraw.c		\
-	gdrawbuildchars.c gdrawerror.c gdrawtxt.c gdrawtxtinit.c			\
-	gfilechooser.c gfiledlg.c ggadgets.c ggroupbox.c gimageclut.c		\
-	gimagecvt.c gimagepsdraw.c gimagewriteeps.c gdrawgimage.c			\
-	gimagexdraw.c gkeysym.c glist.c gmenu.c gprogress.c gpsdraw.c		\
-	gpstxtinit.c gradio.c gresource.c gresourceimage.c gresedit.c		\
-	gsavefiledlg.c gscrollbar.c gtabset.c gtextfield.c gtextinfo.c		\
-	gwidgets.c gxdraw.c gxcdraw.c ghvbox.c gmatrixedit.c gdrawable.c	\
-	gspacer.c xkeysyms_unicode.c colorP.h gdrawP.h gimagebmpP.h			\
-	gresourceP.h gxcdrawP.h fontP.h ggadgetP.h gpsdrawP.h gwidgetP.h	\
-	gxdrawP.h hotkeys.c hotkeys.h
+libgdraw_la_SOURCES = choosericons.c ctlvalues.c drawboxborder.c	\
+	gaskdlg.c gbuttons.c gcolor.c gchardlg.c gcontainer.c gdraw.c	\
+	gdrawbuildchars.c gdrawerror.c gdrawtxt.c gdrawtxtinit.c	\
+	gfilechooser.c gfiledlg.c ggadgets.c ggroupbox.c gimageclut.c	\
+	gimagecvt.c gimagepsdraw.c gimagewriteeps.c gdrawgimage.c	\
+	gimagexdraw.c gkeysym.c glist.c gmenu.c gprogress.c gpsdraw.c	\
+	gpstxtinit.c gradio.c gresource.c gresourceimage.c gresedit.c	\
+	gsavefiledlg.c gscrollbar.c gtabset.c gtextfield.c gtextinfo.c	\
+	gwidgets.c gxdraw.c gxcdraw.c ghvbox.c gmatrixedit.c		\
+	gdrawable.c gspacer.c xkeysyms_unicode.c colorP.h gdrawP.h	\
+	gimagebmpP.h gresourceP.h gxcdrawP.h fontP.h ggadgetP.h		\
+	gpsdrawP.h gwidgetP.h gxdrawP.h hotkeys.c hotkeys.h
 
 libgdraw_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
-	"-DSHAREDIR=\"${MY_SHAREDIR}\"" $(MY_CFLAGS) 
+	"-DSHAREDIR=\"${MY_SHAREDIR}\"" $(MY_CFLAGS)
 
 libgdraw_la_LIBADD = $(MY_LIBS) $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la \
@@ -53,9 +53,7 @@ if GRAPHICAL_USER_INTERFACE
 libgdraw_la_LIBADD += $(XINPUT_LIBS)
 endif GRAPHICAL_USER_INTERFACE
 
-# Using -release instead of -version-info seems appropriate in the
-# absence of a well defined ABI.
-libgdraw_la_LDFLAGS = $(MY_CFLAGS) -release $(VERSION)
+libgdraw_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGDRAW_VERSION)
 
 
 -include $(top_srcdir)/git.mk
