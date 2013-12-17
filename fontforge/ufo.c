@@ -1241,7 +1241,7 @@ return( NULL );
 				// We create and label the point.
 			    sp = SplinePointCreate(x,y);
 				if (pname != NULL) {
-					sp->name = copy(pname); }
+					sp->name = copy(pname);
 				}
 			    if ( strcmp(type,"move")==0 ) {
 				open = true;
