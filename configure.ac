@@ -603,7 +603,6 @@ osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Textbox.nib/
 # provide additional targets.
 AC_CONFIG_FILES([GNUmakefile])
 AC_CONFIG_FILES([fontforge/GNUmakefile])
-AC_CONFIG_FILES([po/GNUmakefile])
 
 #--------------------------------------------------------------------------
 
