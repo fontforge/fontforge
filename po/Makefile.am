@@ -25,6 +25,9 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+noinst_FILES = FontForge.pot FontForge-MenuShortCuts.pot FontForge-MenuShortCuts.pot.orig FontForge-old.pot
+nodist_FILES = $(noinst_FILES)
+
 if MAINTAINER_TOOLS
 noinst_PROGRAMS = toengb
 toengb_SOURCES = toengb.c
@@ -55,6 +58,7 @@ uninstall-local:
 		rm -f "$(DESTDIR)$(localedir)/$${locale}/LC_MESSAGES/FontForge.mo"; \
 	done)
 
+#--------------------------------------------------------------------------
 # Update Project-Id-Version string for each PO file with the current PACKAGE VERSION values.
 # Based on example at https://answers.launchpad.net/launchpad/+question/121821 given
 # by Jeroen T. Vermeulen (jtv) on 2010-08-20. Modified to use in Fontforge by JDS-2012sep27
@@ -64,7 +68,38 @@ update-project-id:
 		mv -b -- "$${localefile}.new" "$${localefile}"; \
 	done)
 
+#--------------------------------------------------------------------------
+# These 'make FontForge*' potfiles are created in $(builddir).
+
+XGETTEXT_SEARCH_DIRS = $(top_srcdir)/fontforge/*.c $(top_srcdir)/fontforgeexe/*.c $(top_srcdir)/gdraw/*.c $(top_srcdir)/gutils/*.c $(top_srcdir)/inc/*.h
+
+FontForge.pot:
+	echo "If this doesn't work try make FontForge-old.pot instead"
+	$(XGETTEXT) --from-code=utf-8 -k_ -kN_ -kS_ -kU_ -kNU_ -kP_:1,2 --add-comments=GT: -oFontForge.pot $(XGETTEXT_SEARCH_DIRS)
+	-patch < pottitle.patch
+
+FontForge-MenuShortCuts.pot:
+	$(XGETTEXT) -kH_ -oFontForge-MenuShortCuts.pot $(XGETTEXT_SEARCH_DIRS)
+	-patch < potmstitle.patch
+
+# This command (below) is for systems with older less capable xgettext.
+# xgettext has caniptions and strips non-ASCII characters from my strings
+# but I occasionally want to use unicode characters (TeX, arrows, Increment)
+# so I have put these messages in utf8.pot which I manage by hand. non-ASCII
+# strings work just fine as keys. It does mean that my pot files should be
+# viewed in utf8 though.
+
+# I am told that new versions of xgettext support option --from-code=utf-8
+# unfortunately this works on none of the systems I use and I have not
+# found it documented. If it worked I would not need utf8.pot.
+FontForge-old.pot: utf8.pot
+	$(XGETTEXT) -k_ -kN_ -kS_ -kP_:1,2 --add-comments=GT: -oFontForge.pot $(XGETTEXT_SEARCH_DIRS)
+	cat utf8.pot >> FontForge.pot
+	-patch < pottitle.patch
+
+#--------------------------------------------------------------------------
+
 EXTRA_DIST = $(PO_FILES)
-MOSTLYCLEANFILES = $(MO_FILES)
+MOSTLYCLEANFILES = $(MO_FILES) $(noinst_FILES)
 
 -include $(top_srcdir)/git.mk
