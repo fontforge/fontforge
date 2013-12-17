@@ -230,6 +230,7 @@ SplinePoint *SplinePointCreate(real x, real y) {
 	sp->nonextcp = sp->noprevcp = true;
 	sp->nextcpdef = sp->prevcpdef = false;
 	sp->ttfindex = sp->nextcpindex = 0xfffe;
+	sp->name = NULL;
     }
     return( sp );
 }
@@ -268,6 +269,7 @@ void SplinePointMDFree(SplineChar *sc, SplinePoint *sp) {
     }
 
     chunkfree(sp->hintmask,sizeof(HintMask));
+	if (sp->name != NULL) free(sp->name);
     chunkfree(sp,sizeof(SplinePoint));
 }
 
@@ -1267,6 +1269,9 @@ SplinePointList *SplinePointListCopy1(const SplinePointList *spl) {
 	    cpt->hintmask = chunkalloc(sizeof(HintMask));
 	    memcpy(cpt->hintmask,pt->hintmask,sizeof(HintMask));
 	}
+	if ( pt->name!=NULL ) {
+		cpt->name = copy(pt->name);
+	}
 	cpt->next = cpt->prev = NULL;
 	if ( cur->first==NULL )
 	    cur->first = cur->last = cpt;
@@ -1346,6 +1351,7 @@ static SplinePointList *SplinePointListCopySelected1(SplinePointList *spl) {
 	    cpt = chunkalloc(sizeof(SplinePoint));
 	    *cpt = *start;
 	    cpt->hintmask = NULL;
+		cpt->name = NULL;
 	    cpt->next = cpt->prev = NULL;
 	    if ( cur->first==NULL )
 		cur->first = cur->last = cpt;
