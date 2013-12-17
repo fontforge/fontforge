@@ -1071,6 +1071,7 @@ typedef struct splinepoint {
     struct spline *next;
     struct spline *prev;
     HintMask *hintmask;
+	char* name;
 } SplinePoint;
 
 enum linelist_flags { cvli_onscreen=0x1, cvli_clipped=0x2 };

@@ -292,13 +292,16 @@ return( false );
 	    for ( sp=spl->first; sp!=NULL; ) {
 		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
 		if ( !isquad || /*sp==spl->first ||*/ !SPInterpolate(sp) )
-		    fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\"%s/>\n",
+		    fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\"%s%s%s%s/>\n",
 			    (double) sp->me.x, (double) sp->me.y,
 			    sp->prev==NULL        ? "move"   :
 			    sp->prev->knownlinear ? "line"   :
 			    isquad 		      ? "qcurve" :
 						    "curve",
-			    sp->pointtype!=pt_corner?" smooth=\"yes\"":"" );
+			    sp->pointtype!=pt_corner?" smooth=\"yes\"":"",
+				sp->name?" name=\"":"",
+				sp->name?sp->name:"",
+				sp->name?"\"":"" );
 		if ( sp->next==NULL )
 	    break;
 		if ( !sp->next->knownlinear )
@@ -1213,21 +1216,33 @@ return( NULL );
 
 		    ss = chunkalloc(sizeof(SplineSet));
 		    for ( points = contour->children; points!=NULL; points=points->next ) {
-			char *xs, *ys, *type;
+			char *xs, *ys, *type, *pname;
 			double x,y;
+			// We discard any entities in the splineset that are not points.
 			if ( xmlStrcmp(points->name,(const xmlChar *) "point")!=0 )
 		    continue;
+			// Read as strings from xml.
 			xs = (char *) xmlGetProp(points,(xmlChar *) "x");
 			ys = (char *) xmlGetProp(points,(xmlChar *) "y");
 			type = (char *) xmlGetProp(points,(xmlChar *) "type");
-			if ( xs==NULL || ys == NULL )
-		    continue;
+			pname = (char *) xmlGetProp(points,(xmlChar *) "name");
+			if ( xs==NULL || ys == NULL ) {
+				if (xs != NULL) { free(xs); xs = NULL; }
+				if (ys != NULL) { free(ys); ys = NULL; }
+				if (type != NULL) { free(type); type = NULL; }
+				if (pname != NULL) { free(pname); pname = NULL; }
+		    	continue;
+			}
 			x = strtod(xs,NULL); y = strtod(ys,NULL);
 			if ( type!=NULL && (strcmp(type,"move")==0 ||
 					    strcmp(type,"line")==0 ||
 					    strcmp(type,"curve")==0 ||
 					    strcmp(type,"qcurve")==0 )) {
+				// We create and label the point.
 			    sp = SplinePointCreate(x,y);
+				if (pname != NULL) {
+					sp->name = copy(pname);
+				}
 			    if ( strcmp(type,"move")==0 ) {
 				open = true;
 			        ss->first = ss->last = sp;
@@ -1257,6 +1272,9 @@ return( NULL );
 				wasquad = true;
 				if ( precnt==2 ) {
 				    SplinePoint *sp = SplinePointCreate((pre[1].x+pre[0].x)/2,(pre[1].y+pre[0].y)/2);
+					if (pname != NULL) {
+						sp->name = copy(pname);
+					}
 				    sp->prevcp = ss->last->nextcp = pre[0];
 				    sp->noprevcp = ss->last->nonextcp = false;
 				    SplineMake(ss->last,sp,true);
@@ -1273,30 +1291,36 @@ return( NULL );
 			} else {
 			    if ( wasquad==-1 && precnt==2 ) {
 				/* Undocumented fact: If there are no on-curve points (and therefore no indication of quadratic/cubic), assume truetype implied points */
-				memcpy(init,pre,sizeof(pre));
-				initcnt = 1;
-				sp = SplinePointCreate((pre[1].x+pre[0].x)/2,(pre[1].y+pre[0].y)/2);
+					memcpy(init,pre,sizeof(pre));
+					initcnt = 1;
+					sp = SplinePointCreate((pre[1].x+pre[0].x)/2,(pre[1].y+pre[0].y)/2);
+					if (pname != NULL) {
+						sp->name = copy(pname);
+					}
 			        sp->nextcp = pre[1];
 			        sp->nonextcp = false;
 			        if ( ss->first==NULL )
-				    ss->first = sp;
-				else {
-				    ss->last->nextcp = sp->prevcp = pre[0];
+				    	ss->first = sp;
+					else {
+				    	ss->last->nextcp = sp->prevcp = pre[0];
 			            ss->last->nonextcp = sp->noprevcp = false;
 			            initcnt = 0;
 			            SplineMake(ss->last,sp,true);
-				}
+					}
 			        ss->last = sp;
-				sp = SplinePointCreate((x+pre[1].x)/2,(y+pre[1].y)/2);
+					sp = SplinePointCreate((x+pre[1].x)/2,(y+pre[1].y)/2);
 			        sp->prevcp = pre[1];
 			        sp->noprevcp = false;
 			        SplineMake(ss->last,sp,true);
 			        ss->last = sp;
 			        pre[0].x = x; pre[0].y = y;
 			        precnt = 1;
-				wasquad = true;
+					wasquad = true;
 			    } else if ( wasquad==true && precnt==1 ) {
 				sp = SplinePointCreate((x+pre[0].x)/2,(y+pre[0].y)/2);
+				if (pname != NULL) {
+					sp->name = copy(pname);
+				}
 			        sp->prevcp = pre[0];
 			        sp->noprevcp = false;
 			        if ( ss->last==NULL ) {
@@ -1316,7 +1340,10 @@ return( NULL );
 			        ++precnt;
 			    }
 			}
-			free(xs); free(ys); free(type);
+				if (xs != NULL) { free(xs); xs = NULL; }
+				if (ys != NULL) { free(ys); ys = NULL; }
+				if (type != NULL) { free(type); type = NULL; }
+				if (pname != NULL) { free(pname); pname = NULL; }
 		    }
 		    if ( !open ) {
 			if ( precnt!=0 ) {
