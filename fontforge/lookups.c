@@ -1155,7 +1155,7 @@ void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub, int remo
     chunkfree(sub,sizeof(struct lookup_subtable));
 }
 
-void SFRemoveLookup(SplineFont *sf,OTLookup *otl) {
+void SFRemoveLookup(SplineFont *sf,OTLookup *otl,int remove_acs) {
     OTLookup *test, *prev;
     int isgpos;
     struct lookup_subtable *sub, *subnext;
@@ -1164,7 +1164,7 @@ void SFRemoveLookup(SplineFont *sf,OTLookup *otl) {
 
     for ( sub = otl->subtables; sub!=NULL; sub=subnext ) {
 	subnext = sub->next;
-	SFRemoveLookupSubTable(sf,sub);
+	SFRemoveLookupSubTable(sf,sub,remove_acs);
     }
 
     for ( prev=NULL, test=sf->gpos_lookups; test!=NULL && test!=otl; prev=test, test=test->next );
@@ -4086,7 +4086,7 @@ static void AALTRemoveOld(SplineFont *sf) {
 	for ( fl = otl->features; fl!=NULL; prev=fl, fl=fl->next ) {
 	    if ( fl->featuretag==CHR('a','a','l','t') ) {
 		if ( fl==otl->features && fl->next==NULL && !LookupUsedNested(sf,otl))
-		    SFRemoveLookup(sf,otl);
+		    SFRemoveLookup(sf,otl,0);
 		else {
 		    if ( prev==NULL )
 			otl->features = fl->next;

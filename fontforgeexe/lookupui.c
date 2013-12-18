@@ -2040,15 +2040,21 @@ static AnchorClass *SFAddAnchorClass(SplineFont *sf,struct lookup_subtable *sub,
 	char *name) {
     AnchorClass *ac;
 
-    ac = chunkalloc(sizeof(AnchorClass));
-    ac->name = copy(name);
+    for ( ac=sf->anchor; ac!=NULL; ac=ac->next) {
+        if ( strcmp(ac->name,name)==0 && ac->subtable==NULL )
+    break;
+    }
+    if ( ac==NULL ) {
+        ac = chunkalloc(sizeof(AnchorClass));
+        ac->name = copy(name);
+        ac->next = sf->anchor;
+        sf->anchor = ac;
+    }
     ac->type = sub->lookup->lookup_type == gpos_mark2base ? act_mark :
 		sub->lookup->lookup_type == gpos_mark2ligature ? act_mklg :
 		sub->lookup->lookup_type == gpos_cursive ? act_curs :
 							act_mkmk;
     ac->subtable = sub;
-    ac->next = sf->anchor;
-    sf->anchor = ac;
 return( ac );
 }
 
@@ -2067,7 +2073,7 @@ static int AnchorClassD_ShowAnchors(GGadget *g, GEvent *e) {
 	if ( row==-1 )
 return( true );
 	ac = classes[2*row+1].u.md_addr;
-	if ( ac==NULL ) {
+	if ( ac==NULL || ac->subtable==NULL) {
 	    ac = SFAddAnchorClass(acd->sf,acd->sub,classes[2*row+1].u.md_str);
 	} else if ( ac->subtable!=acd->sub ) {
 	    ff_post_error(_("Name in use"),_("The name, %.80s, has already been used to identify an anchor class in a different lookup subtable (%.80s)"),
@@ -2107,7 +2113,7 @@ return( true );
 		}
 	    }
 	    for ( actest = acd->sf->anchor; actest!=NULL; actest=actest->next )
-		if ( actest->subtable!=acd->sub &&
+		if ( actest->subtable!=NULL && actest->subtable!=acd->sub &&
 			strcmp(actest->name,classes[2*i+0].u.md_str)==0 )
 	    break;
 	    if ( actest!=NULL ) {
@@ -2127,10 +2133,15 @@ return( true );
 	for ( ac = acd->sf->anchor; ac!=NULL; ac=ac->next ) {
 	    if ( !ac->processed && ac->subtable == acd->sub ) {
 		char *buts[3];
+                int askresult = 0;
+    /* want to support keeping APs when class is removed from subtable */
 		buts[0] = _("_Remove"); buts[1] = _("_Cancel"); buts[2]=NULL;
-		if ( gwwv_ask(_("Remove Anchor Class?"),(const char **) buts,0,1,_("Do you really want to remove the anchor class, %.80s?\nThis will remove all anchor points associated with that class."),
-			ac->name )==1 )
+		askresult = gwwv_ask(_("Remove Anchor Class?"),(const char **) buts,0,1,2,_("Do you really want to remove the anchor class, %.80s?\nThis will remove all anchor points associated with that class."),
+			ac->name );
+                if ( askresult==1 )
 return( true );
+                else
+                    ac->ticked = askresult==2 ? 0 : 1;
 	    }
 	}
 
@@ -2138,7 +2149,7 @@ return( true );
 	    if ( *classes[2*i+0].u.md_str=='\0' )
 	continue;			/* Ignore blank lines. They pressed return once too much or something */
 	    ac = classes[2*i+1].u.md_addr;
-	    if ( ac==NULL ) {
+	    if ( ac==NULL || ac->subtable==NULL ) {
 		ac = SFAddAnchorClass(acd->sf,acd->sub,classes[2*i+0].u.md_str);
 		ac->processed = true;
 	    } else {
@@ -2150,7 +2161,12 @@ return( true );
 	for ( ac = acd->sf->anchor; ac!=NULL; ac=acnext ) {
 	    acnext = ac->next;
 	    if ( !ac->processed && ac->subtable == acd->sub ) {
-		SFRemoveAnchorClass(acd->sf,ac);
+                if ( ac->ticked )
+		    SFRemoveAnchorClass(acd->sf,ac);
+                else {
+                    ac->ticked = 0;
+                    ac->subtable = NULL;
+                }
 	    }
 	}
 	acd->done = true;

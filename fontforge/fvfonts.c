@@ -202,7 +202,7 @@ return( mc->acs[a].to );
 
     mc->acs[a].to = newac = chunkalloc(sizeof(AnchorClass));
     newac->name = strconcat(mc->prefix,ac->name);
-    newac->subtable = MCConvertSubtable(mc,ac->subtable);
+    newac->subtable = ac->subtable ? MCConvertSubtable(mc,ac->subtable) : NULL;
     newac->next = mc->sf_to->anchor;
     mc->sf_to->anchor = newac;
 return( newac );
@@ -340,7 +340,7 @@ static void AnchorClassesAdd(SplineFont *into, SplineFont *from, struct sfmergec
 	    *cur = *fac;
 	    cur->next = NULL;
 	    cur->name = copy(cur->name);
-	    cur->subtable = MCConvertSubtable(mc,cur->subtable);
+	    cur->subtable = cur->subtable ? MCConvertSubtable(mc,cur->subtable) : NULL;
 	    if ( last==NULL )
 		into->anchor = cur;
 	    else

@@ -2434,10 +2434,10 @@ static void GFI_CancelClose(struct gfi_data *d) {
 	struct lkdata *lk = &d->tables[isgpos];
 	for ( i=0; i<lk->cnt; ++i ) {
 	    if ( lk->all[i].new )
-		SFRemoveLookup(d->sf,lk->all[i].lookup);
+		SFRemoveLookup(d->sf,lk->all[i].lookup,0);
 	    else for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
 		if ( lk->all[i].subtables[j].new )
-		    SFRemoveLookupSubTable(d->sf,lk->all[i].subtables[j].subtable);
+		    SFRemoveLookupSubTable(d->sf,lk->all[i].subtables[j].subtable,0);
 	    }
 	    free(lk->all[i].subtables);
 	}
@@ -3835,10 +3835,10 @@ static void GFI_ApplyLookupChanges(struct gfi_data *gfi) {
 	struct lkdata *lk = &gfi->tables[isgpos];
 	for ( i=0; i<lk->cnt; ++i ) {
 	    if ( lk->all[i].deleted )
-		SFRemoveLookup(gfi->sf,lk->all[i].lookup);
+		SFRemoveLookup(gfi->sf,lk->all[i].lookup,0);
 	    else for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
 		if ( lk->all[i].subtables[j].deleted )
-		    SFRemoveLookupSubTable(gfi->sf,lk->all[i].subtables[j].subtable);
+		    SFRemoveLookupSubTable(gfi->sf,lk->all[i].subtables[j].subtable,0);
 	    }
 	}
 	last = NULL;
@@ -6282,11 +6282,11 @@ static int GFI_LookupRevertLookup(GGadget *g, GEvent *e) {
 	/* First remove any new lookups, subtables */
 	for ( i=0; i<lk->cnt; ++i ) {
 	    if ( lk->all[i].new )
-		SFRemoveLookup(gfi->sf,lk->all[i].lookup);
+		SFRemoveLookup(gfi->sf,lk->all[i].lookup,0);
 	    else {
 		for ( j=0; j<lk->all[i].subtable_cnt; ++j )
 		    if ( lk->all[i].subtables[j].new )
-			SFRemoveLookupSubTable(gfi->sf,lk->all[i].subtables[j].subtable);
+			SFRemoveLookupSubTable(gfi->sf,lk->all[i].subtables[j].subtable,0);
 	    }
 	}
 

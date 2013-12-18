@@ -522,7 +522,7 @@ typedef struct valdev {		/* Value records can have four associated device tables
     DeviceTable yadv;
 } ValDevTab;
 
-enum anchorclass_type { act_mark, act_mkmk, act_curs, act_mklg };
+enum anchorclass_type { act_mark, act_mkmk, act_curs, act_mklg, act_unknown };
 typedef struct anchorclass {
     char *name;			/* in utf8 */
     struct lookup_subtable *subtable;
@@ -3155,7 +3155,7 @@ extern void SFRemoveUnusedLookupSubTables(SplineFont *sf,
 	int remove_incomplete_anchorclasses,
 	int remove_unused_lookups);
 extern void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub,int remove_acs);
-extern void SFRemoveLookup(SplineFont *sf,OTLookup *otl);
+extern void SFRemoveLookup(SplineFont *sf,OTLookup *otl,int remove_acs);
 extern struct lookup_subtable *SFFindLookupSubtable(SplineFont *sf,char *name);
 extern struct lookup_subtable *SFFindLookupSubtableAndFreeName(SplineFont *sf,char *name);
 extern OTLookup *SFFindLookup(SplineFont *sf,char *name);
