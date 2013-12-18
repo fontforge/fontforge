@@ -1445,19 +1445,19 @@ return( NULL );
 
     for ( ac=sf->anchor; ac!=NULL; ac=ac->next ) {
 	ac->ticked = 0;
-	ac->subtable->ticked = 0;
+	if ( ac->subtable ) ac->subtable->ticked = 0;
     }
 
     for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
 	if ( ap->type==at_basechar || ap->type==at_basemark ) {
 	    ac = ap->anchor;
 	    ac->ticked = true;
-	    ac->subtable->ticked = true;
+	    if ( ac->subtable ) ac->subtable->ticked = true;
 	}
     }
 
     for ( ac=sf->anchor; ac!=NULL; ac=ac->next ) {
-	if ( !ac->ticked && ac->subtable->ticked )
+	if ( !ac->ticked && ac->subtable && ac->subtable->ticked )
 return( ac );
     }
 return( NULL );

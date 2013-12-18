@@ -803,6 +803,8 @@ void SFFindUnusedLookups(SplineFont *sf) {
     /* Also, even if unused, as long as the anchor class exists we must keep */
     /*  the subtable around */
     for ( ac = _sf->anchor; ac!=NULL; ac=ac->next ) {
+        if ( ac->subtable==NULL )
+    continue;
 	ac->subtable->anchor_classes = true;
 	if ( ac->has_mark && ac->has_base )
 	    ac->subtable->unused = false;
@@ -1043,7 +1045,7 @@ void SFRemoveUnusedLookupSubTables(SplineFont *sf,
     }
 }
 
-void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub) {
+void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub, int remove_acs) {
     OTLookup *otl = sub->lookup;
     struct lookup_subtable *subprev, *subtest;
 
@@ -1092,8 +1094,12 @@ void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub) {
 	AnchorClass *ac, *acnext;
 	for ( ac=sf->anchor; ac!=NULL; ac=acnext ) {
 	    acnext = ac->next;
-	    if ( ac->subtable==sub )
-		SFRemoveAnchorClass(sf,ac);
+	    if ( ac->subtable==sub ) {
+                if ( remove_acs )
+		    SFRemoveAnchorClass(sf,ac);
+                else
+                    ac->subtable = NULL;
+            }
 	}
     } else {
 	int i,k,v;

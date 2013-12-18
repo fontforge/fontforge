@@ -6293,6 +6293,7 @@ static void fea_ApplyLookupListMark2(struct parseState *tok,
 		*pt = ch; start = pt;
 		if ( sc==NULL )
 	    continue;
+/* what if an existing AP exists with the same name, in the glyph? */
 		ap = AnchorPointsCopy(sames->ap);
 		ap->type = at_mark;
 		ap->anchor = acs[i];
@@ -7062,6 +7063,7 @@ static void fea_NameLookups(struct parseState *tok) {
 	    } while ( an!=NULL );
 	    ac->name = copy(buf);
 	}
+/* this allows multiple ac's with the same name. Shouldn't we merge them? */
 	ac->next = sf->anchor;
 	sf->anchor = ac;
     }
