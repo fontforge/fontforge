@@ -1213,6 +1213,7 @@ return( NULL );
 		    SplinePoint *sp;
 		    BasePoint pre[2], init[4];
 		    int precnt=0, initcnt=0, open=0;
+			wasquad = -1;
 
 		    ss = chunkalloc(sizeof(SplineSet));
 		    for ( points = contour->children; points!=NULL; points=points->next ) {
