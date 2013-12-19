@@ -4391,6 +4391,11 @@ int IsAnchorClassUsed(SplineChar *sc,AnchorClass *an) {
 		    sawexit = true;
 		else
 		    sawentry = true;
+            } else if ( an->type==act_unknown ) {
+                if ( ap->type==at_basechar )
+                    sawexit = true;
+                else
+                    sawentry = true;
 	    } else if ( ap->type!=at_baselig )
 return( -1 );
 	    else if ( waslig<ap->lig_index+1 )

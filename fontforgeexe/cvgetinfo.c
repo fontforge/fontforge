@@ -796,7 +796,8 @@ return(NULL);
     ap->type = an->type==act_mark ? at_basechar :
 		an->type==act_mkmk ? at_basemark :
 		an->type==act_mklg ? at_baselig :
-		at_centry;
+		an->type==act_curs ? at_centry :
+                                     at_basechar;
     for ( pst = cv->b.sc->possub; pst!=NULL && pst->type!=pst_ligature; pst=pst->next );
     if ( waslig<-1 && an->type==act_mkmk ) {
 	ap->type = waslig==-2 ? at_basemark : at_mark;
@@ -836,7 +837,7 @@ static void AI_DisplayClass(GIData *ci,AnchorPoint *ap) {
     AnchorPoint *aps;
     int saw[at_max];
 
-    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseChar),ac->type==act_mark);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseChar),ac->type==act_mark || ac->type==act_unknown);
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseLig),ac->type==act_mklg);
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseMark),ac->type==act_mkmk);
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_CursEntry),ac->type==act_curs);
