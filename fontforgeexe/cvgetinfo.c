@@ -1062,6 +1062,25 @@ return( true );
 return( true );
 }
 
+static int AI_NewClass(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+        SplineFont *sf = ci->sc->parent;
+        AnchorClass *ac;
+        GTextInfo **ti;
+        int j;
+        char *name = gwwv_ask_string(_("Anchor Class Name"),"",_("Please enter the name of a Anchor point class to create"));
+        if ( name==NULL )
+return( true );
+        ac = SFFindOrAddAnchorClass(sf,name,NULL);
+	GGadgetSetList(GWidgetGetControl(ci->gw,CID_NameList),
+		    ti = AnchorClassesLList(sf),false);
+	for ( j=0; ti[j]->text!=NULL && ti[j]->userdata!=ac; ++j )
+	GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_NameList),j);
+    }
+return( true );
+}
+
 static int AI_TypeChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
@@ -1328,9 +1347,9 @@ void ApGetInfo(CharView *cv, AnchorPoint *ap) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[24], boxes[10], *varray[21], *harray1[5], *harray2[3],
-	*hvarray[13], *harray3[4], *harray4[4], *harray5[6], *harray6[7];
-    GTextInfo label[24];
+    GGadgetCreateData gcd[25], boxes[10], *varray[21], *harray1[5], *harray2[3],
+	*hvarray[13], *harray3[4], *harray4[6], *harray5[6], *harray6[7];
+    GTextInfo label[25];
     int j;
     SplineFont *sf;
     GTextInfo **ti;
@@ -1567,6 +1586,19 @@ return;
 	harray4[0] = &gcd[j]; harray4[1] = GCD_Glue;
 	++j;
 
+	label[j].text = (unichar_t *) S_("AnchorClass|New _Class");
+	label[j].text_is_1byte = true;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 30; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
+	gcd[j].gd.pos.width = -1;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_New;
+	gcd[j].gd.handle_controlevent = AI_NewClass;
+	gcd[j].creator = GButtonCreate;
+	harray4[2] = &gcd[j]; harray4[3] = GCD_Glue;
+	++j;
+
 	label[j].text = (unichar_t *) _("_Delete");
 	label[j].text_is_1byte = true;
 	label[j].text_in_resource = true;
@@ -1577,7 +1609,7 @@ return;
 	gcd[j].gd.cid = CID_Delete;
 	gcd[j].gd.handle_controlevent = AI_Delete;
 	gcd[j].creator = GButtonCreate;
-	harray4[2] = &gcd[j]; harray4[3] = NULL;
+	harray4[4] = &gcd[j]; harray4[5] = NULL;
 	++j;
 
 	boxes[6].gd.flags = gg_enabled|gg_visible;
