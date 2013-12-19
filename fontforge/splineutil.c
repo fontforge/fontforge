@@ -5457,6 +5457,38 @@ static AnchorPoint *AnchorPointsRemoveName(AnchorPoint *alist,AnchorClass *an) {
 return( alist );
 }
 
+/* Finds or adds an AnchorClass of the given name. Resets it to have the given subtable if not NULL */
+AnchorClass *SFFindOrAddAnchorClass(SplineFont *sf,char *name,struct lookup_subtable *sub) {
+    AnchorClass *ac;
+    int actype = act_unknown;
+
+    for ( ac=sf->anchor; ac!=NULL; ac=ac->next )
+        if (strcmp(name,ac->name)==0)
+    break;
+    if ( ac!=NULL && ( sub==NULL || ac->subtable==sub ) )
+return( ac );
+
+    if ( sub!=NULL )
+        actype = sub->lookup->lookup_type==gpos_cursive             ? act_curs :
+                    sub->lookup->lookup_type==gpos_mark2base        ? act_mark :
+                    sub->lookup->lookup_type==gpos_mark2ligature    ? act_mklg :
+                    sub->lookup->lookup_type==gpos_mark2mark        ? act_mkmk :
+                                                                      act_unknown;
+    if ( ac==NULL ) {
+        ac = chunkalloc(sizeof(AnchorClass));
+        ac->subtable = sub;
+        ac->type = actype;
+        ac->name = copy( name );
+        ac->next = sf->anchor;
+        sf->anchor = ac;
+    }
+    else if ( sub!=NULL && ac->subtable!=sub ) {
+        ac->subtable = sub;
+        ac->type = actype;
+    }
+return( ac );
+}
+
 static void SCRemoveAnchorClass(SplineChar *sc,AnchorClass *an) {
     Undoes *test;
 

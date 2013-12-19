@@ -235,6 +235,7 @@ static int _GlifDump(FILE *glif,SplineChar *sc,int layer) {
     int isquad = sc->layers[layer].order2;
     SplineSet *spl;
     SplinePoint *sp;
+    AnchorPoint *ap;
     RefChar *ref;
     int err;
 
@@ -287,6 +288,13 @@ return( false );
 	    }
 	    free(refs);
 	}
+        for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+            int ismark = (ap->type==at_mark || ap->type==at_centry);
+            fprintf( glif, "    <contour>\n" );
+            fprintf( glif, "      <point x=\"%g\" y=\"%g\" name=\"%s%s\"/>\n", ap->me.x, ap->me.y,
+                            ismark ? "_" : "", ap->anchor->name );
+            fprintf( glif, "    </contour>\n" );
+        }
 	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
 	    fprintf( glif, "    <contour>\n" );
 	    for ( sp=spl->first; sp!=NULL; ) {
@@ -1120,7 +1128,7 @@ static StemInfo *GlifParseHints(xmlDocPtr doc,xmlNodePtr dict,char *hinttype) {
 return( head );
 }
 
-static SplineChar *_UFOLoadGlyph(xmlDocPtr doc,char *glifname) {
+static SplineChar *_UFOLoadGlyph(SplineFont *sf,xmlDocPtr doc,char *glifname) {
     xmlNodePtr glyph, kids, contour, points;
     SplineChar *sc;
     xmlChar *format, *width, *height, *u;
@@ -1209,13 +1217,48 @@ return( NULL );
 		    }
 		    free(xs); free(ys); free(xys); free(yxs); free(xo); free(yo);
 		} else if ( xmlStrcmp(contour->name,(const xmlChar *) "contour")==0 ) {
+                    xmlNodePtr npoints;
 		    SplineSet *ss;
 		    SplinePoint *sp;
 		    BasePoint pre[2], init[4];
 		    int precnt=0, initcnt=0, open=0;
+                    char *sname;
 
+                    for ( points=contour->children; points!=NULL; points=points->next )
+                        if ( xmlStrcmp(points->name,(const xmlChar *) "point")==0 )
+                    break;
+                    for ( npoints=points->next; npoints!=NULL; npoints=npoints->next )
+                        if ( xmlStrcmp(npoints->name,(const xmlChar *) "point")==0 )
+                    break; 
+                    if ( points!=NULL && npoints==NULL ) {
+                        sname = (char *) xmlGetProp(points, (xmlChar *) "name");
+                        if ( sname!=NULL) {
+                            /* make an AP and if necessary an AC */
+                            AnchorPoint *ap = chunkalloc(sizeof(AnchorPoint));
+                            AnchorClass *ac;
+                            char *namep = *sname=='_' ? sname + 1 : sname;
+                            char *xs = (char *) xmlGetProp(points, (xmlChar *) "x");
+                            char *ys = (char *) xmlGetProp(points, (xmlChar *) "y");
+                            ap->me.x = strtod(xs,NULL);
+                            ap->me.y = strtod(ys,NULL);
+                            
+                            ac = SFFindOrAddAnchorClass(sf,namep,NULL);
+                            if (*sname=='_')
+                                ap->type = ac->type==act_curs ? at_centry : at_mark;
+                            else
+                                ap->type = ac->type==act_mkmk   ? at_basemark :
+                                            ac->type==act_curs  ? at_cexit :
+                                            ac->type==act_mklg  ? at_baselig :
+                                                                  at_basechar;
+                            ap->anchor = ac;
+                            ap->next = sc->anchor;
+                            sc->anchor = ap;
+                            free(xs); free(ys); free(sname);
+                continue;
+                        }
+                    }
 		    ss = chunkalloc(sizeof(SplineSet));
-		    for ( points = contour->children; points!=NULL; points=points->next ) {
+		    for ( ; points!=NULL; points=points->next ) {
 			char *xs, *ys, *type, *pname;
 			double x,y;
 			// We discard any entities in the splineset that are not points.
@@ -1414,7 +1457,7 @@ return( NULL );
 return( sc );
 }
 
-static SplineChar *UFOLoadGlyph(char *glifname) {
+static SplineChar *UFOLoadGlyph(SplineFont *sf,char *glifname) {
     xmlDocPtr doc;
 
     doc = xmlParseFile(glifname);
@@ -1422,7 +1465,7 @@ static SplineChar *UFOLoadGlyph(char *glifname) {
 	LogError(_("Bad glif file %s"), glifname);
 return( NULL );
     }
-return( _UFOLoadGlyph(doc,glifname));
+return( _UFOLoadGlyph(sf,doc,glifname));
 }
 
 
@@ -1490,7 +1533,7 @@ return;
 	    valname = (char *) xmlNodeListGetString(doc,value->children,true);
 	    glyphfname = buildname(glyphdir,valname);
 	    free(valname);
-	    sc = UFOLoadGlyph(glyphfname);
+	    sc = UFOLoadGlyph(sf,glyphfname);
 	    if ( sc!=NULL ) {
 		sc->parent = sf;
 		if ( sf->glyphcnt>=sf->glyphmax )
@@ -2036,7 +2079,7 @@ return( NULL );
 return( sf );
 }
 
-SplineSet *SplinePointListInterpretGlif(char *filename,char *memory, int memlen,
+SplineSet *SplinePointListInterpretGlif(SplineFont *sf,char *filename,char *memory, int memlen,
 	int em_size,int ascent,int is_stroked) {
     xmlDocPtr doc;
     char oldloc[25];
@@ -2057,7 +2100,7 @@ return( NULL );
     strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
-    sc = _UFOLoadGlyph(doc,filename);
+    sc = _UFOLoadGlyph(sf,doc,filename);
     setlocale(LC_NUMERIC,oldloc);
 
     if ( sc==NULL )

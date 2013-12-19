@@ -2195,6 +2195,7 @@ extern void KernPairsFree(KernPair *kp);
 extern void SCOrderAP(SplineChar *sc);
 extern void AnchorPointsFree(AnchorPoint *ap);
 extern AnchorPoint *AnchorPointsCopy(AnchorPoint *alist);
+extern AnchorClass *SFFindOrAddAnchorClass(SplineFont *sf,char *name,struct lookup_subtable *sub);
 extern void SFRemoveAnchorClass(SplineFont *sf,AnchorClass *an);
 extern int AnchorClassesNextMerge(AnchorClass *ac);
 extern int IsAnchorClassUsed(SplineChar *sc,AnchorClass *an);
@@ -2876,7 +2877,7 @@ extern int getAdobeEnc(char *name);
 extern void SFSplinesFromLayers(SplineFont *sf,int tostroke);
 extern void SFSetLayerWidthsStroked(SplineFont *sf, real strokewidth);
 extern SplineSet *SplinePointListInterpretSVG(char *filename,char *memory, int memlen, int em_size, int ascent,int stroked);
-extern SplineSet *SplinePointListInterpretGlif(char *filename,char *memory, int memlen, int em_size, int ascent,int stroked);
+extern SplineSet *SplinePointListInterpretGlif(SplineFont *sf,char *filename,char *memory, int memlen, int em_size, int ascent,int stroked);
 #define UNDEFINED_WIDTH	-999999
 extern SplinePointList *SplinePointListInterpretPS(FILE *ps,int flags,int stroked,int *width);
 extern void PSFontInterpretPS(FILE *ps,struct charprocs *cp,char **encoding);

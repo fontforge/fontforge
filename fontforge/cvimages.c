@@ -331,7 +331,7 @@ return;
 void SCImportGlif(SplineChar *sc,int layer,char *path,char *memory, int memlen, int doclear) {
     SplinePointList *spl, *espl, **head;
 
-    spl = SplinePointListInterpretGlif(path,memory,memlen,sc->parent->ascent+sc->parent->descent,
+    spl = SplinePointListInterpretGlif(sc->parent,path,memory,memlen,sc->parent->ascent+sc->parent->descent,
 	    sc->parent->ascent,sc->parent->strokedfont);
     for ( espl = spl; espl!=NULL && espl->first->next==NULL; espl=espl->next );
     if ( espl!=NULL )
