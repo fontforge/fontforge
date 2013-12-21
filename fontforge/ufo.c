@@ -1603,6 +1603,9 @@ return;
 		    free(keyname);
 		    if ( ssc==NULL )
 		continue;
+		    for ( kp=isv?sc->vkerns:sc->kerns; kp!=NULL && kp->sc!=ssc; kp=kp->next );
+		    if ( kp!=NULL )
+		continue;
 		    subkeys = value;
 		    valname = (char *) xmlNodeListGetString(doc,value->children,true);
 		    offset = strtol(valname,&end,10);
@@ -2043,9 +2046,6 @@ return( NULL );
 
     UFOLoadGlyphs(sf,glyphdir);
 
-    UFOHandleKern(sf,basedir,0);
-    UFOHandleKern(sf,basedir,1);
-
     sf->layers[ly_fore].order2 = sf->layers[ly_back].order2 = sf->grid.order2 =
 	    SFFindOrder(sf);
     SFSetOrder(sf,sf->layers[ly_fore].order2);
@@ -2057,6 +2057,9 @@ return( NULL );
     if ( GFileExists(temp))
 	SFApplyFeatureFilename(sf,temp);
     free(temp);
+
+    UFOHandleKern(sf,basedir,0);
+    UFOHandleKern(sf,basedir,1);
 
 #ifndef _NO_PYTHON
     temp = buildname(basedir,"lib.plist");
