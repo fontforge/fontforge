@@ -70,11 +70,6 @@ sfddiff: sfddiff.pe
 	echo "${FFSCRIPT_HEADER}" | cat - "${srcdir}/sfddiff.pe" > sfddiff
 	chmod +x sfddiff
 
-.pre.c:
-	$(SED) -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(VERSION_MAJOR)/'	\
-	       -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(VERSION_MINOR)/'	\
-	    < $< > $@
-
 #--------------------------------------------------------------------------
 
 LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
