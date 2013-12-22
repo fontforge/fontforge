@@ -70,11 +70,6 @@ sfddiff: sfddiff.pe
 	echo "${FFSCRIPT_HEADER}" | cat - "${srcdir}/sfddiff.pe" > sfddiff
 	chmod +x sfddiff
 
-.pre.c:
-	$(SED) -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(VERSION_MAJOR)/'	\
-	       -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(VERSION_MINOR)/'	\
-	    < $< > $@
-
 #--------------------------------------------------------------------------
 
 LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
@@ -130,15 +125,13 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	usermenu.c macobjective.h                                               \
     collabclientui.c collabclientui.h                                       \
 	sfundo.c \
-	wordlistparser.c wordlistparser.h
+	wordlistparser.c wordlistparser.h exelibstamp.c
 
 else !GRAPHICAL_USER_INTERFACE
 
 libfontforgeexe_la_SOURCES = startnoui.c
 
 endif !GRAPHICAL_USER_INTERFACE
-
-nodist_libfontforgeexe_la_SOURCES = exelibstamp.c
 
 if MACINTOSH
 MACFFEXE_LIBADD=macobjective.o
@@ -155,10 +148,10 @@ endif
 #--------------------------------------------------------------------------
 
 EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe \
-	exelibstamp.pre fontimage.1 fontlint.1 sfddiff.1		\
+	fontimage.1 fontlint.1 sfddiff.1		\
 	darwinsetup.in macobjective.m
 # MacFontForgeApp.zip
-MOSTLYCLEANFILES = fontimage fontlint sfddiff exelibstamp.c
+MOSTLYCLEANFILES = fontimage fontlint sfddiff
 
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------

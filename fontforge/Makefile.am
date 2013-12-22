@@ -59,11 +59,6 @@ sfddiff: sfddiff.pe
 	echo "${FFSCRIPT_HEADER}" | cat - "${srcdir}/sfddiff.pe" > sfddiff
 	chmod +x sfddiff
 
-.pre.c:
-	$(SED) -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(VERSION_MAJOR)/'	\
-	       -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(VERSION_MINOR)/'	\
-	    < $< > $@
-
 #--------------------------------------------------------------------------
 
 noinst_HEADERS = fontforgeui.h sftextfieldP.h configure-fontforge.h	\
@@ -109,9 +104,8 @@ libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
 	splinestroke.c splineutil2.c splineutil.c stamp.c start.c	\
 	stemdb.c strlist.c svg.c tottfaat.c tottfgpos.c tottf.c		\
 	tottfvar.c ttfinstrs.c ttfspecial.c ufo.c unicoderange.c	\
-	utils.c winfonts.c woff.c zapfnomen.c
+	utils.c winfonts.c woff.c zapfnomen.c libstamp.c
 
-nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
 libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
@@ -157,17 +151,14 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 
 #--------------------------------------------------------------------------
 
-EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe libstamp.pre	\
-	exelibstamp.pre fontimage.1 fontlint.1 sfddiff.1
+EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe fontimage.1 fontlint.1	\
+	sfddiff.1
 
 if MACINTOSH
 EXTRA_DIST += MacFontForgeApp.zip darwinsetup.in macobjective.m
 endif MACINTOSH
 
-MOSTLYCLEANFILES = fontimage fontlint sfddiff libstamp.c	\
-	exelibstamp.c
-EXTRA_DIST = libstamp.pre
-MOSTLYCLEANFILES = libstamp.c
+MOSTLYCLEANFILES = fontimage fontlint sfddiff
 
 #--------------------------------------------------------------------------
 
