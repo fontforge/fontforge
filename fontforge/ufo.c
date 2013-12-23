@@ -1293,7 +1293,7 @@ return( NULL );
 						}
 						// Now we connect the real point.
 						sp->prevcp = ss->last->nextcp = pre[precnt-1];
-						ss->noprevcp = ss->last->nonextcp = false;
+						sp->noprevcp = ss->last->nonextcp = false;
 					}
 					SplineMake(ss->last,sp,true);
 					ss->last = sp;
