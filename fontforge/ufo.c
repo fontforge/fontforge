@@ -291,7 +291,8 @@ return( false );
 	    fprintf( glif, "    <contour>\n" );
 	    for ( sp=spl->first; sp!=NULL; ) {
 		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
-		if ( !isquad || /*sp==spl->first ||*/ !SPInterpolate(sp) )
+		/* if ( !isquad || !SPInterpolate(sp) ) */
+		// Frank disabled the preceding line since it seems to inhibit writing of qcurve points.
 		    fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\"%s%s%s%s/>\n",
 			    (double) sp->me.x, (double) sp->me.y,
 			    sp->prev==NULL        ? "move"   :
