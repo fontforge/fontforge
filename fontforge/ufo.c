@@ -1210,6 +1210,7 @@ return( NULL );
 		} else if ( xmlStrcmp(contour->name,(const xmlChar *) "contour")==0 ) {
 		    SplineSet *ss;
 		    SplinePoint *sp;
+			SplinePoint *sp2;
 		    BasePoint pre[2], init[4];
 		    int precnt=0, initcnt=0, open=0;
 			// precnt seems to count control points leading into the next on-curve point. pre stores those points.
@@ -1269,33 +1270,33 @@ return( NULL );
 				wasquad = false;
 				if ( precnt==2 ) {
 				    ss->last->nextcp = pre[0];
-			            ss->last->nonextcp = false;
-			            sp->prevcp = pre[1];
-			            sp->noprevcp = false;
+			        ss->last->nonextcp = false;
+			        sp->prevcp = pre[1];
+			        sp->noprevcp = false;
 				} else if ( precnt==1 ) {
 				    ss->last->nextcp = sp->prevcp = pre[0];
-			            ss->last->nonextcp = sp->noprevcp = false;
+			        ss->last->nonextcp = sp->noprevcp = false;
 				}
 				SplineMake(ss->last,sp,false);
 			        ss->last = sp;
 			    } else if ( strcmp(type,"qcurve")==0 ) {
-				wasquad = true;
-				if ( precnt==2 ) {
-				    sp = SplinePointCreate((pre[1].x+pre[0].x)/2,(pre[1].y+pre[0].y)/2);
-					if (pname != NULL) {
-						sp->name = copy(pname);
+					wasquad = true;
+					if ( precnt>0 && precnt<=2 ) {
+						if ( precnt==2 ) {
+							// If we have two cached control points and the end point is quadratic, we need an implied point between the two control points.
+							sp2 = SplinePointCreate((pre[1].x+pre[0].x)/2,(pre[1].y+pre[0].y)/2);
+							sp2->prevcp = ss->last->nextcp = pre[0];
+							sp2->noprevcp = ss->last->nonextcp = false;
+							SplineMake(ss->last,sp2,true);
+							ss->last = sp2;
+
+						}
+						// Now we connect the real point.
+						sp->prevcp = ss->last->nextcp = pre[precnt-1];
+						ss->noprevcp = ss->last->nonextcp = false;
 					}
-				    sp->prevcp = ss->last->nextcp = pre[0];
-				    sp->noprevcp = ss->last->nonextcp = false;
-				    SplineMake(ss->last,sp,true);
-				    ss->last = sp;
-				}
-			        if ( precnt>=1 ) {
-				    ss->last->nextcp = sp->prevcp = pre[precnt-1];
-			            ss->last->nonextcp = sp->noprevcp = false;
-				}
-				SplineMake(ss->last,sp,true);
-			        ss->last = sp;
+					SplineMake(ss->last,sp,true);
+					ss->last = sp;
 			    }
 			    precnt = 0;
 			} else {
