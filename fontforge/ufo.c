@@ -290,30 +290,31 @@ return( false );
 	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
 	    fprintf( glif, "    <contour>\n" );
 	    for ( sp=spl->first; sp!=NULL; ) {
-		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
-		/* if ( !isquad || !SPInterpolate(sp) ) */
-		// Frank disabled the preceding line since it seems to inhibit writing of qcurve points.
-		    fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\"%s%s%s%s/>\n",
-			    (double) sp->me.x, (double) sp->me.y,
-			    sp->prev==NULL        ? "move"   :
-			    sp->prev->knownlinear ? "line"   :
-			    isquad 		      ? "qcurve" :
-						    "curve",
-			    sp->pointtype!=pt_corner?" smooth=\"yes\"":"",
-				sp->name?" name=\"":"",
-				sp->name?sp->name:"",
-				sp->name?"\"":"" );
-		if ( sp->next==NULL )
-	    break;
-		if ( !sp->next->knownlinear )
-		    fprintf( glif, "      <point x=\"%g\" y=\"%g\"/>\n",
-			    (double) sp->nextcp.x, (double) sp->nextcp.y );
-		sp = sp->next->to;
-		if ( !isquad && !sp->prev->knownlinear )
-		    fprintf( glif, "      <point x=\"%g\" y=\"%g\"/>\n",
-			    (double) sp->prevcp.x, (double) sp->prevcp.y );
-		if ( sp==spl->first )
-	    break;
+			/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
+			// We write the next on-curve point.
+			if (!isquad || sp->ttfindex != 0xffff || !SPInterpolate(sp) || sp->pointtype!=curve || sp->name != NULL)
+				fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\"%s%s%s%s/>\n",
+					(double) sp->me.x, (double) sp->me.y,
+					sp->prev==NULL        ? "move"   :
+					sp->prev->knownlinear ? "line"   :
+					isquad 		      ? "qcurve" :
+								"curve",
+					sp->pointtype!=pt_corner?" smooth=\"yes\"":"",
+					sp->name?" name=\"":"",
+					sp->name?sp->name:"",
+					sp->name?"\"":"" );
+			if ( sp->next==NULL )
+	    	break;
+			// We write control points.
+			if ( !sp->next->knownlinear )
+		    	fprintf( glif, "      <point x=\"%g\" y=\"%g\"/>\n",
+				    (double) sp->nextcp.x, (double) sp->nextcp.y );
+			sp = sp->next->to;
+			if ( !isquad && !sp->prev->knownlinear )
+		    	fprintf( glif, "      <point x=\"%g\" y=\"%g\"/>\n",
+				    (double) sp->prevcp.x, (double) sp->prevcp.y );
+			if ( sp==spl->first )
+	    		break;
 	    }
 	    fprintf( glif, "    </contour>\n" );
 	}
@@ -1224,8 +1225,9 @@ return( NULL );
 		    ss = chunkalloc(sizeof(SplineSet));
 			ss->first = NULL;
 		    for ( points = contour->children; points!=NULL; points=points->next ) {
-			char *xs, *ys, *type, *pname;
+			char *xs, *ys, *type, *pname, *smooths;
 			double x,y;
+			int smooth = 0;
 			// We discard any entities in the splineset that are not points.
 			if ( xmlStrcmp(points->name,(const xmlChar *) "point")!=0 )
 		    continue;
@@ -1234,6 +1236,11 @@ return( NULL );
 			ys = (char *) xmlGetProp(points,(xmlChar *) "y");
 			type = (char *) xmlGetProp(points,(xmlChar *) "type");
 			pname = (char *) xmlGetProp(points,(xmlChar *) "name");
+			smooths = (char *) xmlGetProp(points,(xmlChar *) "smooth");
+			if (smooths != NULL) {
+				if (strcmp(smooths,"yes") == 0) smooth = 1;
+				free(smooths); smooths=NULL;
+			}
 			if ( xs==NULL || ys == NULL ) {
 				if (xs != NULL) { free(xs); xs = NULL; }
 				if (ys != NULL) { free(ys); ys = NULL; }
@@ -1288,9 +1295,9 @@ return( NULL );
 							sp2 = SplinePointCreate((pre[1].x+pre[0].x)/2,(pre[1].y+pre[0].y)/2);
 							sp2->prevcp = ss->last->nextcp = pre[0];
 							sp2->noprevcp = ss->last->nonextcp = false;
+							sp2->ttfindex = 0xffff;
 							SplineMake(ss->last,sp2,true);
 							ss->last = sp2;
-
 						}
 						// Now we connect the real point.
 						sp->prevcp = ss->last->nextcp = pre[precnt-1];
@@ -1312,6 +1319,7 @@ return( NULL );
 					initcnt = 1;
 					// We make the point between the two already cached control points.
 					sp = SplinePointCreate((pre[1].x+pre[0].x)/2,(pre[1].y+pre[0].y)/2);
+					sp->ttfindex = 0xffff;
 					if (pname != NULL) {
 						sp->name = copy(pname);
 					}
@@ -1333,6 +1341,7 @@ return( NULL );
 					sp = SplinePointCreate((x+pre[1].x)/2,(y+pre[1].y)/2);
 			        sp->prevcp = pre[1];
 			        sp->noprevcp = false;
+					sp->ttfindex = 0xffff;
 			        SplineMake(ss->last,sp,true);
 			        ss->last = sp;
 			        pre[0].x = x; pre[0].y = y;
