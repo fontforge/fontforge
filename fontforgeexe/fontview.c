@@ -951,7 +951,7 @@ static void _MenuExit(void *UNUSED(junk)) {
 	printf("fv:%p running webfont server:%d\n", fv, fv->pid_webfontserver );
 	FVStopWebFontServer( fv );
     }
-    
+
     LastFonts_Save();
     for ( fv = fv_list; fv!=NULL; fv = next )
     {
@@ -1613,9 +1613,9 @@ static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     FontViewBase * fvb = (FontViewBase *) fv;
     SplineFont *sf = fvb->sf;
-    char* sfdchunk = 0;
-    FILE* sfd = 0;
-    
+    /* char* sfdchunk = 0; */
+    /* FILE* sfd = 0; */
+
     // printf("we currently have %d splinefont level undoes\n", dlist_size((struct dlistnode **)&sf->undoes));
     if( !sf->undoes )
 	return;
@@ -1623,7 +1623,7 @@ static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     struct sfundoes *undo = sf->undoes;
     printf("font level undo msg:%s\n", undo->msg );
     SFUndoPerform( undo, sf );
-    
+
     /* switch(undo->type) { */
     /* case sfut_fontinfo: */
     /* 	sfdchunk = undo->sfdchunk; */
@@ -5694,14 +5694,14 @@ static int collab_MakeChoicesArray( GHashTable* peers, char** choices, int choic
 	beacon_announce_t* ba = (beacon_announce_t*)value;
 	maxUserNameLength = imax( maxUserNameLength, strlen(ba->username) );
     }
-    
+
     g_hash_table_iter_init (&iter, peers);
     for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
     {
 	beacon_announce_t* ba = (beacon_announce_t*)value;
 	if( localOnly && !collabclient_isAddressLocal( ba->ip ))
 	    continue;
-	
+
 	printf("user:%s\n", ba->username );
 	printf("mach:%s\n", ba->machinename );
 
@@ -5722,7 +5722,7 @@ static int collab_MakeChoicesArray( GHashTable* peers, char** choices, int choic
 	    break;
 	lastidx++;
     }
-    
+
     return lastidx;
 }
 
@@ -5731,7 +5731,7 @@ static beacon_announce_t* collab_getBeaconFromChoicesArray( GHashTable* peers, i
     GHashTableIter iter;
     gpointer key, value;
     int i=0;
-    
+
     g_hash_table_iter_init (&iter, peers);
     for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
     {
@@ -5767,7 +5767,7 @@ static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
 	if( choice <= max )
 	{
 	    beacon_announce_t* ba = collab_getBeaconFromChoicesArray( peers, choice, localOnly );
-	    
+
 	    if( ba )
 	    {
 		int port = ba->port;
@@ -5831,7 +5831,7 @@ static void AskAndMaybeCloseLocalCollabServers()
     int max = collab_MakeChoicesArray( peers, choices, choices_sz, localOnly );
     if( !max )
 	return;
-	
+
     char sel[101];
     memset( sel, 1, max );
     int choice = gwwv_choose_multiple(_("Close Collab Server(s)"),
@@ -5844,7 +5844,7 @@ static void AskAndMaybeCloseLocalCollabServers()
     {
 	printf("sel[%d] is %d\n", i, sel[i] );
 	beacon_announce_t* ba = collab_getBeaconFromChoicesArray( peers, choice, localOnly );
-	    
+
 	if( sel[i] && ba )
 	{
 	    int port = ba->port;
@@ -5853,7 +5853,7 @@ static void AskAndMaybeCloseLocalCollabServers()
 	    {
 		FontViewBase* fv = FontViewFind( FontViewFind_byCollabBasePort, port );
 		if( fv )
-		    collabclient_sessionDisconnect( fv ); 
+		    collabclient_sessionDisconnect( fv );
 		printf("CLOSING port:%d fv:%p\n", port, fv );
 		collabclient_closeLocalServer( port );
 	    }
@@ -5867,9 +5867,9 @@ static void AskAndMaybeCloseLocalCollabServers()
     printf("allServersSelected:%d\n", allServersSelected );
     if( allServersSelected )
 	collabclient_closeAllLocalServersForce();
-	    
 
-	
+
+
 	/* if ( gwwv_ask(_("Close Server"),(const char **) buts,0,1,_("Please make sure you have saved the font before you close the server. Closing the server will force all clients which might be connected to it to also disconnect. Really close the local server"))==1 ) */
 	/* { */
 	/*     return; */
@@ -5877,7 +5877,7 @@ static void AskAndMaybeCloseLocalCollabServers()
 
     /* collabclient_sessionDisconnect( &fv->b ); */
     /* collabclient_closeLocalServer( &fv->b ); */
-	
+
 }
 
 static void FVMenuCollabCloseLocalServer(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
@@ -5919,8 +5919,8 @@ static void FVMenuStartWebFontServer(GWindow gw, struct gmenuitem *UNUSED(mi), G
 	if( error )
 	    fprintf(stderr, "code:%d message:%s\n", error->code, error->message );
     }
-    
-    
+
+
 }
 
 #if defined(__MINGW32__)
@@ -7532,7 +7532,7 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 #endif
 
     fv->pid_webfontserver = 0;
-    
+
 return( fv );
 }
 
