@@ -1259,6 +1259,8 @@ return( NULL );
 				if (pname != NULL) {
 					sp->name = copy(pname);
 				}
+				if (smooth == 1) sp->pointtype = pt_curve;
+				else sp->pointtype = pt_corner;
 			    if ( strcmp(type,"move")==0 ) {
 					open = true;
 			        ss->first = ss->last = sp;
