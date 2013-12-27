@@ -3,7 +3,7 @@
 *******************************************************************************
 
     Copyright (C) 2013 Ben Martin
-    
+
     This file is part of FontForge.
 
     FontForge is free software: you can redistribute it and/or modify
@@ -222,7 +222,7 @@ unichar_t* WordlistEscpaedInputStringToRealString(
 		int n = getUnicodeFunc( sc, udata );
 		printf("ToRealString have an sc!... n:%d\n", n );
 		printf("sc->unic:%d\n",sc->unicodeenc);
-		
+
 		out = utf8_idpb( out, n, 0);
 		continue;
 	    }
@@ -311,8 +311,7 @@ GTextInfo** WordlistLoadFileToGTextInfo( int type, int words_max )
 {
     GTextInfo **words = 0;
     int cnt;
-    char buffer[PATH_MAX], *pt;
-    int ch;
+    char buffer[PATH_MAX];
     char *filename, *temp;
 
     filename = gwwv_open_filename(type==-1 ? "File of Kerning Words":"File of glyphname lists",NULL,"*.txt",NULL);
@@ -341,11 +340,11 @@ GTextInfo** WordlistLoadFileToGTextInfo( int type, int words_max )
 	    gsize len = 0;
 	    gchar* buffer = 0;
 	    GIOStatus status = g_io_channel_read_line( file, &buffer, &len, 0, 0 );
-	    
+
 	    printf("getline status:%d \n", status );
 	    if( status != G_IO_STATUS_NORMAL )
 		break;
-    
+
 	    chomp(buffer);
 	    if ( buffer[0]=='\0'
 		 || WordlistLoadFileToGTextInfo_IsLineBreak(buffer[0])
