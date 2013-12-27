@@ -2013,7 +2013,7 @@ return( NULL );
 	if ( stylename!=NULL && sf->familyname!=NULL )
 	    sf->fontname = strconcat3(sf->familyname,"-",stylename);
 	else
-	    sf->fontname = "Untitled";
+	    sf->fontname = copy("Untitled");
     }
     if ( sf->fullname==NULL ) {
 	if ( stylename!=NULL && sf->familyname!=NULL )
