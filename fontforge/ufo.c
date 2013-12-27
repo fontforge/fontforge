@@ -292,7 +292,7 @@ return( false );
 	    for ( sp=spl->first; sp!=NULL; ) {
 			/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
 			// We write the next on-curve point.
-			if (!isquad || sp->ttfindex != 0xffff || !SPInterpolate(sp) || sp->pointtype!=curve || sp->name != NULL)
+			if (!isquad || sp->ttfindex != 0xffff || !SPInterpolate(sp) || sp->pointtype!=pt_curve || sp->name != NULL)
 				fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\"%s%s%s%s/>\n",
 					(double) sp->me.x, (double) sp->me.y,
 					sp->prev==NULL        ? "move"   :
