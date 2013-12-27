@@ -1256,6 +1256,7 @@ return( NULL );
 				// This handles only actual points.
 				// We create and label the point.
 			    sp = SplinePointCreate(x,y);
+				sp->dontinterpolate = 1;
 				if (pname != NULL) {
 					sp->name = copy(pname);
 				}
@@ -1360,6 +1361,7 @@ return( NULL );
 					}
 			        sp->prevcp = pre[0];
 			        sp->noprevcp = false;
+					sp->ttfindex = 0xffff;
 			        if ( ss->last==NULL ) {
 				    	ss->first = sp;
 			            memcpy(init,pre,sizeof(pre));
