@@ -224,10 +224,10 @@ static void _shorttext(int shortcut, int short_mask, unichar_t *buf) {
     pt += u_strlen(pt);
     *pt = '\0';
     return;
-    
+
     if ( !initted )
     {
-	char *temp;
+	/* char *temp; */
 	for ( i=0; i<8; ++i )
 	{
 	    /* sprintf( buffer,"Flag0x%02x", 1<<i ); */
@@ -240,7 +240,7 @@ static void _shorttext(int shortcut, int short_mask, unichar_t *buf) {
           if (mac_menu_icons)
 	  {
 	      TRACE("mods[i].mask: %s\n", mods[i].modifier );
-	      
+
               if (mods[i].mask == ksm_cmdmacosx)
 		  mods[i].modifier = "⌘";
               else if (mods[i].mask == ksm_control)
@@ -259,7 +259,7 @@ static void _shorttext(int shortcut, int short_mask, unichar_t *buf) {
 
 
 
-	    
+
 	}
 	/* It used to be that the Command key was available to X on the mac */
 	/*  but no longer. So we used to use it, but we can't now */
@@ -270,7 +270,7 @@ static void _shorttext(int shortcut, int short_mask, unichar_t *buf) {
 	    mods[3].modifier = keyboard==kb_ibm?"Alt+":keyboard==kb_mac?"Opt+":keyboard==kb_ppc?"Cmd+":"Meta+";
     }
 
-   
+
     if ( shortcut==0 ) {
 	*pt = '\0';
 return;
@@ -283,7 +283,7 @@ return;
 	}
     }
 
- 
+
     if ( shortcut>=0xff00 && GDrawKeysyms[shortcut-0xff00] ) {
     	cu_strcpy(buffer,GDrawKeysyms[shortcut-0xff00]);
     	utf82u_strcpy(pt,dgettext(GMenuGetShortcutDomain(),buffer));
@@ -2078,7 +2078,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	    return 0;
 	SkipUnQualifiedHotkeyProcessing = GGadgetGetSkipUnQualifiedHotkeyProcessing(focus);
     }
-    
+
 
     if ( g==NULL || keysym==0 ) return( false ); /* exit if no gadget or key */
 
@@ -2161,12 +2161,12 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 
     event->u.chr.state |= ksm_numlock;
     TRACE("about2 to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
-    
+
     /**
      * Mask off the parts we don't explicitly care about
      */
     event->u.chr.state &= ( ksm_control | ksm_meta | ksm_shift | ksm_option );
-    
+
     TRACE("about3 to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
     TRACE("     has ksm_control:%d\n", (event->u.chr.state & ksm_control ));
     TRACE("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
@@ -2177,8 +2177,8 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	TRACE("skipping unqualified hotkey for widget g:%p\n", g);
 	return 0;
     }
-    
-    
+
+
     struct dlistnodeExternal* node= hotkeyFindAllByEvent( top, event );
     struct dlistnode* hklist = (struct dlistnode*)node;
     for( ; node; node=(struct dlistnodeExternal*)(node->next) ) {
@@ -2222,7 +2222,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     dlist_free_external(&hklist);
 
     TRACE("menubarcheckkey(e1)\n");
-	
+
     if ( mb->child )
     {
 	GMenu *m;
