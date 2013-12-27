@@ -1382,8 +1382,10 @@ return( NULL );
 				if (type != NULL) { free(type); type = NULL; }
 				if (pname != NULL) { free(pname); pname = NULL; }
 		    }
-			// We are finished looping, so it's time to close the curve.
+			// We are finished looping, so it's time to close the curve if it is to be closed.
 		    if ( !open ) {
+			// init has a list of control points leading into the first point. pre has a list of control points trailing the last processed on-curve point.
+			// We merge pre into init and use init as the list of control points between the last processed on-curve point and the first on-curve point.
 			if ( precnt!=0 ) {
 			    BasePoint temp[2];
 			    memcpy(temp,init,sizeof(temp));
@@ -1392,11 +1394,14 @@ return( NULL );
 			    initcnt += precnt;
 			}
 			if ( (firstpointsaidquad==true && initcnt>0) || initcnt==1 ) {
+				// If the final curve is declared quadratic or is assumed to be by control point count, we proceed accordingly.
 			    int i;
 			    for ( i=0; i<initcnt-1; ++i ) {
-				sp = SplinePointCreate((init[i+1].x+init[i].x)/2,(init[i+1].y+init[i].y)/2);
+					// If the final curve is declared quadratic but has more than one control point, we add implied points.
+					sp = SplinePointCreate((init[i+1].x+init[i].x)/2,(init[i+1].y+init[i].y)/2);
 			        sp->prevcp = ss->last->nextcp = init[i];
 			        sp->noprevcp = ss->last->nonextcp = false;
+					sp->ttfindex = 0xffff;
 			        SplineMake(ss->last,sp,true);
 			        ss->last = sp;
 			    }
@@ -1407,6 +1412,7 @@ return( NULL );
 			    ss->last->nextcp = init[0];
 			    ss->first->prevcp = init[1];
 			    ss->last->nonextcp = ss->first->noprevcp = false;
+				wasquad = false;
 			}
 			SplineMake(ss->last,ss->first,firstpointsaidquad);
 			ss->last = ss->first;
