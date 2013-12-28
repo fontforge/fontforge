@@ -614,6 +614,8 @@ FONTFORGE_CREATE_SYSTEMSPECIFIC
 # individually as 'fontforge --lang=XX --script=testXXXX.XX'
 AC_CONFIG_FILES([tests/atlocal])
 
+rm -f tests/*.pe tests/*.py
+
 if test x$i_do_have_native_scripting = xyes; then
   ff_script_files="helper107 helper118A helper118B svg2ttf test001	\
 	test002 test003 test004 test005 test006 test007 test008 test009	\
