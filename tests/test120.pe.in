@@ -1,9 +1,9 @@
-#!/usr/local/bin/fontforge
+#!@abs_top_builddir@/fontforgeexe/fontforge
 #Needs: fonts/NumberPoints.sfd
 
 #Another point number test based on glyphs from deja-vu
 
-Open("fonts/NumberPoints.sfd")
+Open("@abs_srcdir@/fonts/NumberPoints.sfd")
 Reencode("original")
 cnt=CharCnt()
 ptcnts = Array(cnt)
@@ -20,8 +20,8 @@ while ( i<cnt )
 endloop
 cnt = j
 
-Generate("results/NumberPoints.ttf")
-Open("results/NumberPoints.ttf")
+Generate("@abs_builddir@/results/NumberPoints.ttf")
+Open("@abs_builddir@/results/NumberPoints.ttf")
 
 i=0
 while ( i<cnt )

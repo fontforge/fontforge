@@ -1,4 +1,4 @@
-#!/usr/local/bin/fontforge
+#!@abs_top_builddir@/fontforgeexe/fontforge
 #Needs:
 
 # Check that detach glyph works

@@ -1,4 +1,4 @@
-#!/usr/local/bin/fontforge
+#!@abs_top_builddir@/fontforgeexe/fontforge
 
 # test that the encodings of these two fonts match
 

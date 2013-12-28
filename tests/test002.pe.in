@@ -1,22 +1,22 @@
-#!/usr/local/bin/fontforge
+#!@abs_top_builddir@/fontforgeexe/fontforge
 #Needs: fonts/HanSans-Bold.otf
 # but any other otf cid font would do.
 
-Open("fonts/HanSans-Bold.otf");
+Open("@abs_srcdir@/fonts/HanSans-Bold.otf");
 Print( "...Read HanSans-Bold.otf")
-Generate("results/HansSansBold.otf");
+Generate("@abs_builddir@/results/HansSansBold.otf");
 Print( "...Generated otf (cid)")
-Generate("results/HansSansBold.cid");
+Generate("@abs_builddir@/results/HansSansBold.cid");
 Print( "...Generated ps cid")
-Save("results/HansSansBold.sfd");
+Save("@abs_builddir@/results/HansSansBold.sfd");
 Print( "...Saved cid sfd")
-Save("results/HansSansBold.sfdir");
+Save("@abs_builddir@/results/HansSansBold.sfdir");
 Print( "...Saved cid sfdir")
 Close();
-Open("results/HansSansBold.sfdir");
+Open("@abs_builddir@/results/HansSansBold.sfdir");
 Print( "...Opened cid sfdir")
 Close();
-Open("results/HansSansBold.sfd");
+Open("@abs_builddir@/results/HansSansBold.sfd");
 Print( "...Opened cid sfd")
 Close();
 Quit()

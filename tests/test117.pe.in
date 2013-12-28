@@ -1,8 +1,8 @@
-#!/usr/local/bin/fontforge
+#!@abs_top_builddir@/fontforgeexe/fontforge
 #Needs: fonts/ecrm1000.pfa fonts/ecrm1000.tfm
 
-Open("fonts/ecrm1000.pfa")
-MergeKern("fonts/ecrm1000.tfm")
-Generate("results/ecrm.ttf","",0x200)
-Open("results/ecrm.ttf")
+Open("@abs_srcdir@/fonts/ecrm1000.pfa")
+MergeKern("@abs_srcdir@/fonts/ecrm1000.tfm")
+Generate("@abs_builddir@/results/ecrm.ttf","",0x200)
+Open("@abs_builddir@/results/ecrm.ttf")
 Quit()

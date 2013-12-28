@@ -1,7 +1,7 @@
-#!/usr/local/bin/fontforge
+#!@abs_top_builddir@/fontforgeexe/fontforge
 #Needs: fonts/n019003l.pfb
 
-Open("fonts/n019003l.pfb");
+Open("@abs_srcdir@/fonts/n019003l.pfb");
 SelectAll();
 ReplaceWithReference();
 Quit()

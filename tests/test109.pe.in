@@ -1,12 +1,12 @@
-#!/usr/local/bin/fontforge
+#!@abs_top_builddir@/fontforgeexe/fontforge
 #Needs: fonts/OverlapBugs.sfd
 #Needs: fonts/feta20.pfb
 #Make sure remove overlap sort of works...
 
-Open("fonts/OverlapBugs.sfd")
+Open("@abs_srcdir@/fonts/OverlapBugs.sfd")
 SelectAll();
 RemoveOverlap();
 
-Open("fonts/feta20.pfb");
+Open("@abs_srcdir@/fonts/feta20.pfb");
 SelectAll();
 RemoveOverlap();

@@ -1,5 +1,5 @@
-#!/usr/local/bin/fontforge
-// This script prints 'Unexpected endif found' error message 
+#!@abs_top_builddir@/fontforgeexe/fontforge
+// This script prints 'Unexpected endif found' error message
 // if $1 equals "1", after "aa" and "cc" is printed.
 
 foo="1"

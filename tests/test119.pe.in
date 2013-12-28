@@ -1,11 +1,11 @@
-#!/usr/local/bin/fontforge
+#!@abs_top_builddir@/fontforgeexe/fontforge
 #Needs: fonts/DejaVuSerif.sfd
 
-#The "i" glyph contains a point that could be interpolated between its
-#  control points, but must not be because the instructions depend on it
-#  being there.
+# The "i" glyph contains a point that could be interpolated between its
+# control points, but must not be because the instructions depend on it
+# being there.
 
-Open("fonts/DejaVuSerif.sfd")
+Open("@abs_srcdir@/fonts/DejaVuSerif.sfd")
 Reencode("original")
 cnt=CharCnt()
 ptcnts = Array(cnt)
@@ -22,8 +22,8 @@ while ( i<cnt )
 endloop
 cnt = j
 
-Generate("results/DejaVuSerif1.ttf")
-Open("results/DejaVuSerif1.ttf")
+Generate("@abs_builddir@/results/DejaVuSerif1.ttf")
+Open("@abs_builddir@/results/DejaVuSerif1.ttf")
 
 i=0
 while ( i<cnt )
@@ -34,8 +34,8 @@ while ( i<cnt )
   ++i;
 endloop
 
-Generate("results/DejaVuSerif2.ttf")
-Open("results/DejaVuSerif2.ttf")
+Generate("@abs_builddir@/results/DejaVuSerif2.ttf")
+Open("@abs_builddir@/results/DejaVuSerif2.ttf")
 
 i=0
 while ( i<cnt )

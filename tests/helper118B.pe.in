@@ -1,4 +1,4 @@
-#!/usr/local/bin/fontforge
+#!@abs_top_builddir@/fontforgeexe/fontforge
 
 # tests whether the bounding boxes of all glyphs match.
 # This is designed to make sure that we get postscript references right
