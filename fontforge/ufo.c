@@ -1328,7 +1328,6 @@ return( NULL );
 				SplineMake(ss->last,sp,false);
 			        ss->last = sp;
 			    } else if ( strcmp(type,"curve")==0 ) {
-                                char *smooths = xmlGetProp(points, (xmlChar *) "smooth");
 				wasquad = false;
 				if ( precnt==2 ) {
 				    ss->last->nextcp = pre[0];
@@ -1341,9 +1340,6 @@ return( NULL );
 				}
 				SplineMake(ss->last,sp,false);
 			        ss->last = sp;
-                                if ( smooths!=NULL && strcmp(smooths,"yes")==0 )
-                                    sp->pointtype = pt_curve;
-                                if ( smooths!=NULL ) free(smooths);
 			    } else if ( strcmp(type,"qcurve")==0 ) {
 					wasquad = true;
 					if ( precnt>0 && precnt<=2 ) {
