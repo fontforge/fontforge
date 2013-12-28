@@ -43,6 +43,10 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 		echo '  [$(PACKAGE_URL)])'; \
 	} >'$(srcdir)/package.m4'
 
+# mirror providing free access to this file
+#MunhwaGothic-Bold:
+#	$(WGET) "http://mirror.1000mbps.com/freebsd/ports/distfiles/MunhwaGothic-Bold" -O fonts/MunhwaGothic-Bold
+
 noinst_FILES = * fonts/* results/* results
 
 EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE) atlocal.in
