@@ -1229,6 +1229,7 @@ return( NULL );
 			// This is important for determining the order of the closing curve.
 			// A further improvement would be to prefetch the entire list so as to know the declared order of a curve before processing the point.
 
+			// We now look for anchor points.
             char *sname;
 
             for ( points=contour->children; points!=NULL; points=points->next )
@@ -1265,6 +1266,8 @@ return( NULL );
         			continue; // We stop processing the contour at this point.
                 }
             }
+
+			// If we have not identified the contour as holding an anchor point, we continue processing it as a rendered shape.
 			int wasquad = -1; // This tracks whether we identified the previous curve as quadratic. (-1 means undefined.)
 			int firstpointsaidquad = -1; // This tracks the declared order of the curve leading into the first on-curve point.
 
