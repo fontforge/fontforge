@@ -1039,7 +1039,8 @@ BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,int layer,
 
     if ( !hasFreeType())
 return( NULL );
-    if ( sc->layers[layer].order2 && sc->parent->strokedfont )
+    if ( sc->parent->strokedfont &&
+	( sc->layers[layer].order2 || (int)sc->parent->strokewidth == 0 ) )
 return( NULL );
     if ( sc->layers[layer].order2 && sc->parent->multilayer ) {
 	/* I don't support stroking of order2 splines */
