@@ -13,7 +13,6 @@ m4_defun([run_pedit],[(fontforge -lang ff -script "${abs_builddir}/$1" || /bin/f
 # $3 test for this file (some files are external and need to be impoted)
 m4_defun([check_pedit],[
 AT_SETUP([$1])
-AT_SKIP_IF([${skip_ff_script}])
 AT_SKIP_IF([test ! -r "${abs_builddir}/$2"])
 m4_ifblank([$3],[],[AT_SKIP_IF([test ! -r "${abs_srcdir}/fonts/$3"])])
 AT_CHECK([run_pedit([$2])],[0],[ignore],[ignore])
@@ -32,7 +31,6 @@ m4_defun([run_python],[(fontforge -lang py -script "${abs_builddir}/$1" || /bin/
 # $3 test for this file (some files are external and need to be impoted)
 m4_defun([check_python],[
 AT_SETUP([$1])
-AT_SKIP_IF([${skip_python}])
 AT_SKIP_IF([test ! -r "${abs_builddir}/$2"])
 m4_ifblank([$3],[],[AT_SKIP_IF([test ! -r "${abs_srcdir}/fonts/$3"])])
 AT_CHECK([run_python([$2])],[0],[ignore],[ignore])
@@ -41,7 +39,6 @@ AT_CLEANUP
 
 m4_defun([check_python_inconsistent],[
 AT_SETUP([$1 (passes inconsistently; skipping)])
-AT_SKIP_IF([${skip_python}])
 AT_SKIP_IF([/bin/true])
 m4_ifblank([$3],[],[AT_SKIP_IF([test ! -r "${abs_srcdir}/fonts/$3"])])
 AT_CHECK([(run_python([$2]) || exit 77)],[0],[ignore],[ignore])

@@ -608,7 +608,34 @@ AC_CONFIG_FILES([fontforge/GNUmakefile])
 
 FONTFORGE_CREATE_PKGCONFIG_FILES
 FONTFORGE_CREATE_SYSTEMSPECIFIC
-FONTFORGE_CONFIG_TESTSUITE
+
+#--------------------------------------------------------------------------
+# Create FontForge and Python test scripts to be used with 'make check' or
+# individually as 'fontforge --lang=XX --script=testXXXX.XX'
+AC_CONFIG_FILES([tests/atlocal])
+
+if test x$i_do_have_native_scripting = xyes; then
+  ff_script_files="helper107 helper118A helper118B svg2ttf test001	\
+	test002 test003 test004 test005 test006 test007 test008 test009	\
+	test010 test101 test102 test103 test104 test105 test106 test107	\
+	test108 test109 test110 test111 test112 test113 test114 test115	\
+	test116 test117 test118 test119 test120 test121 test122 test123	\
+	test124 test125 test126 test127"
+  for arg in ${ff_script_files}; do
+    AC_CONFIG_FILES([tests/$arg.pe])
+  done
+fi
+
+if test x$i_do_have_python_scripting = xyes; then
+  py_script_files="findoverlapbugs test0001 test0101 test1001a test1001b \
+	test1001c test1001 test1002 test1003 test1004 test1005 test1006	\
+	test1007"
+  for arg in ${py_script_files}; do
+    AC_CONFIG_FILES([tests/$arg.py])
+  done
+fi
+
+#--------------------------------------------------------------------------
 
 FONTFORGE_GIT_VERSION=""
 if test -d ${srcdir}/.git; then
