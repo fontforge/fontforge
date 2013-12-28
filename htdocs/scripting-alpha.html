@@ -2396,13 +2396,14 @@ SetLBearing(lbearing)
 	    See <A HREF="#RemoveLookupSubtable">RemoveLookupSubtable</A> or
 	    <A HREF="#RemovePosSub">RemovePosSub</A>
 	  <DT>
-	    <A NAME="RemoveLookup">R</A>emoveLookup(lookup-name)
+	    <A NAME="RemoveLookup">R</A>emoveLookup(lookup-name[,remove_acs])
 	  <DD>
-	    Remove the lookup (and any subtables within it).
+	    Remove the lookup (and any subtables within it). remove_acs specifies to remove
+        associated anchor classes and points.
 	  <DT>
-	    <A NAME="RemoveLookupSubtable">R</A>emoveLookupSubtable(subtable-name)
+	    <A NAME="RemoveLookupSubtable">R</A>emoveLookupSubtable(subtable-name[,remove_acs])
 	  <DD>
-	    Remove the subtable.
+	    Remove the subtable. remove_acs specifies to remove associated anchor classes and points.
 	  <DT>
 	    <A NAME="RemovePosSub">R</A>emovePosSub(subtable-name)
 	  <DD>

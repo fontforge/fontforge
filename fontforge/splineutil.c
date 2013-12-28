@@ -1134,7 +1134,7 @@ void SplinePointCatagorize(SplinePoint *sp) {
     } else {
 	BasePoint ndir, ncdir, ncunit, pdir, pcdir, pcunit;
 	bigreal nlen, nclen, plen, pclen;
-	bigreal dot;
+	bigreal cross, bounds;
 
 	ncdir.x = sp->nextcp.x - sp->me.x; ncdir.y = sp->nextcp.y - sp->me.y;
 	pcdir.x = sp->prevcp.x - sp->me.x; pcdir.y = sp->prevcp.y - sp->me.y;
@@ -1155,20 +1155,24 @@ void SplinePointCatagorize(SplinePoint *sp) {
 	if ( nlen!=0 ) { ndir.x /= nlen; ndir.y /= nlen; }
 	if ( plen!=0 ) { pdir.x /= plen; pdir.y /= plen; }
 
-	/* find out which side has the shorter control vector. Dot that vector */
+	/* find out which side has the shorter control vector. Cross that vector */
 	/*  with the normal of the unit vector on the other side. If the */
 	/*  result is less than 1 em-unit then we've got colinear control points */
 	/*  (within the resolution of the integer grid) */
 	/* Not quite... they could point in the same direction */
+        if ( oldpointtype==pt_curve )
+            bounds = 4.0;
+        else
+            bounds = 1.0;
 	if ( nclen!=0 && pclen!=0 &&
-		((nclen>=pclen && (dot = pcdir.x*ncunit.y - pcdir.y*ncunit.x)<1.0 && dot>-1.0 ) ||
-		 (pclen>nclen && (dot = ncdir.x*pcunit.y - ncdir.y*pcunit.x)<1.0 && dot>-1.0 )) &&
+		((nclen>=pclen && (cross = pcdir.x*ncunit.y - pcdir.y*ncunit.x)<bounds && cross>-bounds ) ||
+		 (pclen>nclen && (cross = ncdir.x*pcunit.y - ncdir.y*pcunit.x)<bounds && cross>-bounds )) &&
 		 ncdir.x*pcdir.x + ncdir.y*pcdir.y < 0 )
 	    sp->pointtype = pt_curve;
-	/* Dot product of control point with unit vector normal to line in */
+	/* Cross product of control point with unit vector normal to line in */
 	/*  opposite direction should be less than an em-unit for a tangent */
-	else if (( nclen==0 && pclen!=0 && (dot = pcdir.x*ndir.y-pcdir.y*ndir.x)<1.0 && dot>-1.0 ) ||
-		( pclen==0 && nclen!=0 && (dot = ncdir.x*pdir.y-ncdir.y*pdir.x)<1.0 && dot>-1.0 ))
+	else if (( nclen==0 && pclen!=0 && (cross = pcdir.x*ndir.y-pcdir.y*ndir.x)<bounds && cross>-bounds ) ||
+		( pclen==0 && nclen!=0 && (cross = ncdir.x*pdir.y-ncdir.y*pdir.x)<bounds && cross>-bounds ))
 	    sp->pointtype = pt_tangent;
 
 	/* If a point started out hv, and could still be hv, them make it so */
@@ -5457,6 +5461,38 @@ static AnchorPoint *AnchorPointsRemoveName(AnchorPoint *alist,AnchorClass *an) {
 	    prev = ap;
     }
 return( alist );
+}
+
+/* Finds or adds an AnchorClass of the given name. Resets it to have the given subtable if not NULL */
+AnchorClass *SFFindOrAddAnchorClass(SplineFont *sf,char *name,struct lookup_subtable *sub) {
+    AnchorClass *ac;
+    int actype = act_unknown;
+
+    for ( ac=sf->anchor; ac!=NULL; ac=ac->next )
+        if (strcmp(name,ac->name)==0)
+    break;
+    if ( ac!=NULL && ( sub==NULL || ac->subtable==sub ) )
+return( ac );
+
+    if ( sub!=NULL )
+        actype = sub->lookup->lookup_type==gpos_cursive             ? act_curs :
+                    sub->lookup->lookup_type==gpos_mark2base        ? act_mark :
+                    sub->lookup->lookup_type==gpos_mark2ligature    ? act_mklg :
+                    sub->lookup->lookup_type==gpos_mark2mark        ? act_mkmk :
+                                                                      act_unknown;
+    if ( ac==NULL ) {
+        ac = chunkalloc(sizeof(AnchorClass));
+        ac->subtable = sub;
+        ac->type = actype;
+        ac->name = copy( name );
+        ac->next = sf->anchor;
+        sf->anchor = ac;
+    }
+    else if ( sub!=NULL && ac->subtable!=sub ) {
+        ac->subtable = sub;
+        ac->type = actype;
+    }
+return( ac );
 }
 
 static void SCRemoveAnchorClass(SplineChar *sc,AnchorClass *an) {

@@ -522,7 +522,7 @@ typedef struct valdev {		/* Value records can have four associated device tables
     DeviceTable yadv;
 } ValDevTab;
 
-enum anchorclass_type { act_mark, act_mkmk, act_curs, act_mklg };
+enum anchorclass_type { act_mark, act_mkmk, act_curs, act_mklg, act_unknown };
 typedef struct anchorclass {
     char *name;			/* in utf8 */
     struct lookup_subtable *subtable;
@@ -2195,6 +2195,7 @@ extern void KernPairsFree(KernPair *kp);
 extern void SCOrderAP(SplineChar *sc);
 extern void AnchorPointsFree(AnchorPoint *ap);
 extern AnchorPoint *AnchorPointsCopy(AnchorPoint *alist);
+extern AnchorClass *SFFindOrAddAnchorClass(SplineFont *sf,char *name,struct lookup_subtable *sub);
 extern void SFRemoveAnchorClass(SplineFont *sf,AnchorClass *an);
 extern int AnchorClassesNextMerge(AnchorClass *ac);
 extern int IsAnchorClassUsed(SplineChar *sc,AnchorClass *an);
@@ -2876,7 +2877,7 @@ extern int getAdobeEnc(char *name);
 extern void SFSplinesFromLayers(SplineFont *sf,int tostroke);
 extern void SFSetLayerWidthsStroked(SplineFont *sf, real strokewidth);
 extern SplineSet *SplinePointListInterpretSVG(char *filename,char *memory, int memlen, int em_size, int ascent,int stroked);
-extern SplineSet *SplinePointListInterpretGlif(char *filename,char *memory, int memlen, int em_size, int ascent,int stroked);
+extern SplineSet *SplinePointListInterpretGlif(SplineFont *sf,char *filename,char *memory, int memlen, int em_size, int ascent,int stroked);
 #define UNDEFINED_WIDTH	-999999
 extern SplinePointList *SplinePointListInterpretPS(FILE *ps,int flags,int stroked,int *width);
 extern void PSFontInterpretPS(FILE *ps,struct charprocs *cp,char **encoding);
@@ -3154,8 +3155,8 @@ extern int LookupUsedNested(SplineFont *sf,OTLookup *checkme);
 extern void SFRemoveUnusedLookupSubTables(SplineFont *sf,
 	int remove_incomplete_anchorclasses,
 	int remove_unused_lookups);
-extern void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub);
-extern void SFRemoveLookup(SplineFont *sf,OTLookup *otl);
+extern void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub,int remove_acs);
+extern void SFRemoveLookup(SplineFont *sf,OTLookup *otl,int remove_acs);
 extern struct lookup_subtable *SFFindLookupSubtable(SplineFont *sf,char *name);
 extern struct lookup_subtable *SFFindLookupSubtableAndFreeName(SplineFont *sf,char *name);
 extern OTLookup *SFFindLookup(SplineFont *sf,char *name);

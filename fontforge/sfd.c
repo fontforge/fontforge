@@ -2671,8 +2671,10 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 	fprintf(sfd, "AnchorClass2: ");
 	for ( an=sf->anchor; an!=NULL; an=an->next ) {
 	    SFDDumpUTF7Str(sfd,an->name);
-	    putc(' ',sfd);
-	    SFDDumpUTF7Str(sfd,an->subtable->subtable_name );
+            if ( an->subtable!=NULL ) {
+	        putc(' ',sfd);
+	        SFDDumpUTF7Str(sfd,an->subtable->subtable_name );
+            }
 	}
 	putc('\n',sfd);
     }
@@ -8265,8 +8267,11 @@ exit(1);
 			((AnchorClass1 *) an)->merge_with = temp;
 		    } else
 			((AnchorClass1 *) an)->merge_with = 0xffff;			/* Will be fixed up later */
-		} else
-		    an->subtable = SFFindLookupSubtableAndFreeName(sf,SFDReadUTF7Str(sfd));
+		} else {
+                    char *subtable_name = SFDReadUTF7Str(sfd);
+                    if ( subtable_name!=NULL)                                           /* subtable is optional */
+		        an->subtable = SFFindLookupSubtableAndFreeName(sf,subtable_name);
+                }
 		while ( (ch=nlgetc(sfd))==' ' || ch=='\t' );
 		ungetc(ch,sfd);
 		if ( isdigit(ch) ) {

@@ -235,6 +235,7 @@ static int _GlifDump(FILE *glif,SplineChar *sc,int layer) {
     int isquad = sc->layers[layer].order2;
     SplineSet *spl;
     SplinePoint *sp;
+    AnchorPoint *ap;
     RefChar *ref;
     int err;
 
@@ -287,6 +288,13 @@ return( false );
 	    }
 	    free(refs);
 	}
+        for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+            int ismark = (ap->type==at_mark || ap->type==at_centry);
+            fprintf( glif, "    <contour>\n" );
+            fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"move\" name=\"%s%s\"/>\n", ap->me.x, ap->me.y,
+                            ismark ? "_" : "", ap->anchor->name );
+            fprintf( glif, "    </contour>\n" );
+        }
 	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
 	    fprintf( glif, "    <contour>\n" );
 	    for ( sp=spl->first; sp!=NULL; ) {
@@ -1122,7 +1130,7 @@ static StemInfo *GlifParseHints(xmlDocPtr doc,xmlNodePtr dict,char *hinttype) {
 return( head );
 }
 
-static SplineChar *_UFOLoadGlyph(xmlDocPtr doc,char *glifname) {
+static SplineChar *_UFOLoadGlyph(SplineFont *sf,xmlDocPtr doc,char *glifname) {
     xmlNodePtr glyph, kids, contour, points;
     SplineChar *sc;
     xmlChar *format, *width, *height, *u;
@@ -1210,6 +1218,7 @@ return( NULL );
 		    }
 		    free(xs); free(ys); free(xys); free(yxs); free(xo); free(yo);
 		} else if ( xmlStrcmp(contour->name,(const xmlChar *) "contour")==0 ) {
+		    xmlNodePtr npoints;
 		    SplineSet *ss;
 		    SplinePoint *sp;
 			SplinePoint *sp2;
@@ -1218,13 +1227,51 @@ return( NULL );
 			// precnt seems to count control points leading into the next on-curve point. pre stores those points.
 			// initcnt counts the control points that appear before the first on-curve point. This can get updated at the beginning and/or the end of the list.
 			// This is important for determining the order of the closing curve.
-			// A further improvement would be to prefetch the entire list so as to know the declared order of a curve before processing the points.
+			// A further improvement would be to prefetch the entire list so as to know the declared order of a curve before processing the point.
+
+            char *sname;
+
+            for ( points=contour->children; points!=NULL; points=points->next )
+                if ( xmlStrcmp(points->name,(const xmlChar *) "point")==0 )
+            break;
+            for ( npoints=points->next; npoints!=NULL; npoints=npoints->next )
+                if ( xmlStrcmp(npoints->name,(const xmlChar *) "point")==0 )
+            break;
+			// If the contour has a single point without another point after it, we assume it to be an anchor point.
+            if ( points!=NULL && npoints==NULL ) {
+                sname = (char *) xmlGetProp(points, (xmlChar *) "name");
+                if ( sname!=NULL) {
+                    /* make an AP and if necessary an AC */
+                    AnchorPoint *ap = chunkalloc(sizeof(AnchorPoint));
+                    AnchorClass *ac;
+                    char *namep = *sname=='_' ? sname + 1 : sname;
+                    char *xs = (char *) xmlGetProp(points, (xmlChar *) "x");
+                    char *ys = (char *) xmlGetProp(points, (xmlChar *) "y");
+                    ap->me.x = strtod(xs,NULL);
+                    ap->me.y = strtod(ys,NULL);
+                    
+                    ac = SFFindOrAddAnchorClass(sf,namep,NULL);
+                    if (*sname=='_')
+                        ap->type = ac->type==act_curs ? at_centry : at_mark;
+                    else
+                        ap->type = ac->type==act_mkmk   ? at_basemark :
+                                    ac->type==act_curs  ? at_cexit :
+                                    ac->type==act_mklg  ? at_baselig :
+                                                          at_basechar;
+                    ap->anchor = ac;
+                    ap->next = sc->anchor;
+                    sc->anchor = ap;
+                    free(xs); free(ys); free(sname);
+        			continue; // We stop processing the contour at this point.
+                }
+            }
 			int wasquad = -1; // This tracks whether we identified the previous curve as quadratic. (-1 means undefined.)
 			int firstpointsaidquad = -1; // This tracks the declared order of the curve leading into the first on-curve point.
 
 		    ss = chunkalloc(sizeof(SplineSet));
 			ss->first = NULL;
-		    for ( points = contour->children; points!=NULL; points=points->next ) {
+
+			for ( points = contour->children; points!=NULL; points=points->next ) {
 			char *xs, *ys, *type, *pname, *smooths;
 			double x,y;
 			int smooth = 0;
@@ -1278,6 +1325,7 @@ return( NULL );
 				SplineMake(ss->last,sp,false);
 			        ss->last = sp;
 			    } else if ( strcmp(type,"curve")==0 ) {
+                                char *smooths = xmlGetProp(points, (xmlChar *) "smooth");
 				wasquad = false;
 				if ( precnt==2 ) {
 				    ss->last->nextcp = pre[0];
@@ -1290,6 +1338,9 @@ return( NULL );
 				}
 				SplineMake(ss->last,sp,false);
 			        ss->last = sp;
+                                if ( smooths!=NULL && strcmp(smooths,"yes")==0 )
+                                    sp->pointtype = pt_curve;
+                                if ( smooths!=NULL ) free(smooths);
 			    } else if ( strcmp(type,"qcurve")==0 ) {
 					wasquad = true;
 					if ( precnt>0 && precnt<=2 ) {
@@ -1338,7 +1389,7 @@ return( NULL );
 			            ss->last->nonextcp = sp->noprevcp = false;
 			            initcnt = 0;
 			            SplineMake(ss->last,sp,true);
-					}
+                    }
 			        ss->last = sp;
 					// We make the point between the previously cached control point and the new control point.
 					sp = SplinePointCreate((x+pre[1].x)/2,(y+pre[1].y)/2);
@@ -1379,10 +1430,10 @@ return( NULL );
 			        ++precnt;
 			    }
 			}
-				if (xs != NULL) { free(xs); xs = NULL; }
-				if (ys != NULL) { free(ys); ys = NULL; }
-				if (type != NULL) { free(type); type = NULL; }
-				if (pname != NULL) { free(pname); pname = NULL; }
+                        if (xs != NULL) { free(xs); xs = NULL; }
+                        if (ys != NULL) { free(ys); ys = NULL; }
+                        if (type != NULL) { free(type); type = NULL; }
+                        if (pname != NULL) { free(pname); pname = NULL; }
 		    }
 			// We are finished looping, so it's time to close the curve if it is to be closed.
 		    if ( !open ) {
@@ -1460,7 +1511,7 @@ return( NULL );
 return( sc );
 }
 
-static SplineChar *UFOLoadGlyph(char *glifname) {
+static SplineChar *UFOLoadGlyph(SplineFont *sf,char *glifname) {
     xmlDocPtr doc;
 
     doc = xmlParseFile(glifname);
@@ -1468,7 +1519,7 @@ static SplineChar *UFOLoadGlyph(char *glifname) {
 	LogError(_("Bad glif file %s"), glifname);
 return( NULL );
     }
-return( _UFOLoadGlyph(doc,glifname));
+return( _UFOLoadGlyph(sf,doc,glifname));
 }
 
 
@@ -1536,7 +1587,7 @@ return;
 	    valname = (char *) xmlNodeListGetString(doc,value->children,true);
 	    glyphfname = buildname(glyphdir,valname);
 	    free(valname);
-	    sc = UFOLoadGlyph(glyphfname);
+	    sc = UFOLoadGlyph(sf,glyphfname);
 	    if ( sc!=NULL ) {
 		sc->parent = sf;
 		if ( sf->glyphcnt>=sf->glyphmax )
@@ -1601,6 +1652,9 @@ return;
 		    ssc = SFGetChar(sf,-1,keyname);
 		    free(keyname);
 		    if ( ssc==NULL )
+		continue;
+		    for ( kp=isv?sc->vkerns:sc->kerns; kp!=NULL && kp->sc!=ssc; kp=kp->next );
+		    if ( kp!=NULL )
 		continue;
 		    subkeys = value;
 		    valname = (char *) xmlNodeListGetString(doc,value->children,true);
@@ -2042,9 +2096,6 @@ return( NULL );
 
     UFOLoadGlyphs(sf,glyphdir);
 
-    UFOHandleKern(sf,basedir,0);
-    UFOHandleKern(sf,basedir,1);
-
     sf->layers[ly_fore].order2 = sf->layers[ly_back].order2 = sf->grid.order2 =
 	    SFFindOrder(sf);
     SFSetOrder(sf,sf->layers[ly_fore].order2);
@@ -2056,6 +2107,9 @@ return( NULL );
     if ( GFileExists(temp))
 	SFApplyFeatureFilename(sf,temp);
     free(temp);
+
+    UFOHandleKern(sf,basedir,0);
+    UFOHandleKern(sf,basedir,1);
 
 #ifndef _NO_PYTHON
     temp = buildname(basedir,"lib.plist");
@@ -2082,7 +2136,7 @@ return( NULL );
 return( sf );
 }
 
-SplineSet *SplinePointListInterpretGlif(char *filename,char *memory, int memlen,
+SplineSet *SplinePointListInterpretGlif(SplineFont *sf,char *filename,char *memory, int memlen,
 	int em_size,int ascent,int is_stroked) {
     xmlDocPtr doc;
     char oldloc[25];
@@ -2103,7 +2157,7 @@ return( NULL );
     strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
-    sc = _UFOLoadGlyph(doc,filename);
+    sc = _UFOLoadGlyph(sf,doc,filename);
     setlocale(LC_NUMERIC,oldloc);
 
     if ( sc==NULL )

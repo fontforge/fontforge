@@ -181,13 +181,13 @@ return;
 
 static void AlignTwoMaybeAsk(CharView *cv,SplinePoint *sp1, SplinePoint *sp2)
 {
-    real xoff, yoff, xpos, ypos, pos0, pos1;
+    real xoff, yoff, xpos, ypos;
     int HorizontalAlignment = 0;
-    
+
     xoff = sp1->me.x - sp2->me.x;
     yoff = sp1->me.y - sp2->me.y;
     printf("AlignTwo() %f %f, %f %f,   xoff:%f  yoff:%f\n",
-	   sp1->me.x, sp2->me.x, 
+	   sp1->me.x, sp2->me.x,
 	   sp1->me.y, sp2->me.y,
 	   xoff, yoff );
 
@@ -238,7 +238,7 @@ static void AlignTwoMaybeAsk(CharView *cv,SplinePoint *sp1, SplinePoint *sp2)
 	sp2->nextcp.x += xpos-sp2->me.x;
 	sp1->me.x = sp2->me.x = xpos;
     }
-    
+
     if ( sp1->prev ) SplineRefigure(sp1->prev);
     if ( sp1->next ) SplineRefigure(sp1->next);
     if ( sp2->prev ) SplineRefigure(sp2->prev);
@@ -249,11 +249,11 @@ static void AlignTwoMaybeAsk(CharView *cv,SplinePoint *sp1, SplinePoint *sp2)
 static void AverageTwo(CharView *cv,SplinePoint *sp1, SplinePoint *sp2) {
     real xoff, yoff, xpos, ypos, pos0, pos1;
 
-    
+
     xoff = sp1->me.x - sp2->me.x;
     yoff = sp1->me.y - sp2->me.y;
     printf("AverageTwo() %f %f, %f %f,   xoff:%f  yoff:%f\n",
-	   sp1->me.x, sp2->me.x, 
+	   sp1->me.x, sp2->me.x,
 	   sp1->me.y, sp2->me.y,
 	   xoff, yoff );
     CVPreserveState((CharViewBase *) cv);
@@ -333,7 +333,7 @@ static void AlignManyMaybeAsk(CharView *cv,DBounds *b) {
 	if( asked == 2 )
 	    return;
     }
-    
+
     CVPreserveState((CharViewBase *) cv);
     if ( HorizontalAlignment == 0 )
     {

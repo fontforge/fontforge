@@ -6293,6 +6293,7 @@ static void fea_ApplyLookupListMark2(struct parseState *tok,
 		*pt = ch; start = pt;
 		if ( sc==NULL )
 	    continue;
+/* what if an existing AP exists with the same name, in the glyph? */
 		ap = AnchorPointsCopy(sames->ap);
 		ap->type = at_mark;
 		ap->anchor = acs[i];
@@ -7062,8 +7063,61 @@ static void fea_NameLookups(struct parseState *tok) {
 	    } while ( an!=NULL );
 	    ac->name = copy(buf);
 	}
-	ac->next = sf->anchor;
-	sf->anchor = ac;
+        for ( an=sf->anchor; an!=NULL && strcmp(an->name,ac->name)!=0; an=an->next );
+        if ( an!=NULL ) {
+            /* merge acs, only one ap mark and one ap base per ac per glyph */
+            int gid;
+            SplineChar *sc;
+            AnchorPoint *newapb, *newapbprev, *newapm, *newapmprev, *oldapb, *oldapm, *ap, *lastap;
+            for ( gid=0; gid<sf->glyphcnt; ++gid ) {
+                newapb = NULL;
+                newapm = NULL;
+                oldapb = NULL;
+                oldapm = NULL;
+                lastap = NULL;
+                sc = sf->glyphs[gid];
+                for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+                    if ( ap->anchor==ac ) {
+                        if ( ap->type==at_mark || ap->type==at_centry ) {
+                            newapm = ap;
+                            newapmprev = lastap;
+                        } else {
+                            newapb = ap;
+                            newapbprev = lastap;
+                        }
+                    } else if ( ap->anchor==an ) {
+                        if (ap->type==at_mark || ap->type==at_centry )
+                            oldapm = ap;
+                        else
+                            oldapb = ap;
+                    }
+                    lastap = ap;
+                }
+                if ( oldapb!=NULL && newapb!=NULL ) {
+                    oldapb->type = newapb->type;
+                    if ( newapbprev!=NULL )
+                        newapbprev->next = newapb->next;
+                    else
+                        sc->anchor = newapb->next;
+                } else if ( newapb!=NULL )
+                    newapb->anchor = an;
+
+                if ( oldapm!=NULL && newapm!=NULL ) {
+                    oldapm->type = newapm->type;
+                    if ( newapmprev!=NULL )
+                        newapmprev->next = newapm->next;
+                    else
+                        sc->anchor = newapm->next;
+                } else if ( newapm!=NULL )
+                    newapm->anchor = an;
+            }
+            an->subtable = ac->subtable;
+            an->type = ac->type;
+            an->has_base = ac->has_base;
+        } else {
+	    ac->next = sf->anchor;
+	    sf->anchor = ac;
+        }
     }
 
     /* attach any new gdef mark classes */

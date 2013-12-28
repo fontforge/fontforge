@@ -803,6 +803,8 @@ void SFFindUnusedLookups(SplineFont *sf) {
     /* Also, even if unused, as long as the anchor class exists we must keep */
     /*  the subtable around */
     for ( ac = _sf->anchor; ac!=NULL; ac=ac->next ) {
+        if ( ac->subtable==NULL )
+    continue;
 	ac->subtable->anchor_classes = true;
 	if ( ac->has_mark && ac->has_base )
 	    ac->subtable->unused = false;
@@ -1043,7 +1045,7 @@ void SFRemoveUnusedLookupSubTables(SplineFont *sf,
     }
 }
 
-void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub) {
+void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub, int remove_acs) {
     OTLookup *otl = sub->lookup;
     struct lookup_subtable *subprev, *subtest;
 
@@ -1092,8 +1094,12 @@ void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub) {
 	AnchorClass *ac, *acnext;
 	for ( ac=sf->anchor; ac!=NULL; ac=acnext ) {
 	    acnext = ac->next;
-	    if ( ac->subtable==sub )
-		SFRemoveAnchorClass(sf,ac);
+	    if ( ac->subtable==sub ) {
+                if ( remove_acs )
+		    SFRemoveAnchorClass(sf,ac);
+                else
+                    ac->subtable = NULL;
+            }
 	}
     } else {
 	int i,k,v;
@@ -1149,7 +1155,7 @@ void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub) {
     chunkfree(sub,sizeof(struct lookup_subtable));
 }
 
-void SFRemoveLookup(SplineFont *sf,OTLookup *otl) {
+void SFRemoveLookup(SplineFont *sf,OTLookup *otl,int remove_acs) {
     OTLookup *test, *prev;
     int isgpos;
     struct lookup_subtable *sub, *subnext;
@@ -1158,7 +1164,7 @@ void SFRemoveLookup(SplineFont *sf,OTLookup *otl) {
 
     for ( sub = otl->subtables; sub!=NULL; sub=subnext ) {
 	subnext = sub->next;
-	SFRemoveLookupSubTable(sf,sub);
+	SFRemoveLookupSubTable(sf,sub,remove_acs);
     }
 
     for ( prev=NULL, test=sf->gpos_lookups; test!=NULL && test!=otl; prev=test, test=test->next );
@@ -4080,7 +4086,7 @@ static void AALTRemoveOld(SplineFont *sf) {
 	for ( fl = otl->features; fl!=NULL; prev=fl, fl=fl->next ) {
 	    if ( fl->featuretag==CHR('a','a','l','t') ) {
 		if ( fl==otl->features && fl->next==NULL && !LookupUsedNested(sf,otl))
-		    SFRemoveLookup(sf,otl);
+		    SFRemoveLookup(sf,otl,0);
 		else {
 		    if ( prev==NULL )
 			otl->features = fl->next;
@@ -4385,6 +4391,11 @@ int IsAnchorClassUsed(SplineChar *sc,AnchorClass *an) {
 		    sawexit = true;
 		else
 		    sawentry = true;
+            } else if ( an->type==act_unknown ) {
+                if ( ap->type==at_basechar )
+                    sawexit = true;
+                else
+                    sawentry = true;
 	    } else if ( ap->type!=at_baselig )
 return( -1 );
 	    else if ( waslig<ap->lig_index+1 )

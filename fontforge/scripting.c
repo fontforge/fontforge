@@ -6821,8 +6821,8 @@ static void bAddAnchorClass(Context *c) {
 	ScriptErrorString(c,"This font already contains an anchor class with this name: ", c->a.vals[1].u.sval );
 
     ac->subtable = SFFindLookupSubtable(sf,c->a.vals[3].u.sval);
-    if ( ac->subtable==NULL )
-	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[3].u.sval);
+    /* if ( ac->subtable==NULL )
+	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[3].u.sval); */
 
     if ( strmatch(c->a.vals[2].u.sval,"default")==0 || strmatch(c->a.vals[2].u.sval,"mark")==0 )
 	ac->type = act_mark;
@@ -7049,14 +7049,16 @@ static void bRemoveATT(Context *c) {
 static void bRemoveLookup(Context *c) {
     OTLookup *otl;
 
-    if ( c->a.argc!=2 )
+    if ( c->a.argc!=2 || c->a.argc!=3 )
 	ScriptError( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type for argument");
+	ScriptError( c, "Bad type for argument 1");
+    else if ( c->a.argc==3 && c->a.vals[2].type!=v_int )
+        ScriptError( c, "Bad type for argument 2");
     otl = SFFindLookup(c->curfv->sf,c->a.vals[1].u.sval);
     if ( otl==NULL )
 	ScriptErrorString(c,"Unknown lookup",c->a.vals[1].u.sval);
-    SFRemoveLookup(c->curfv->sf,otl);
+    SFRemoveLookup(c->curfv->sf,otl,c->a.argc==3?c->a.vals[2].u.ival:1);
 }
 
 static void bMergeLookups(Context *c) {
@@ -7086,20 +7088,22 @@ static void bMergeLookups(Context *c) {
 	sub->next = otl2->subtables;
     }
     otl2->subtables = NULL;
-    SFRemoveLookup(c->curfv->sf,otl2);
+    SFRemoveLookup(c->curfv->sf,otl2,0);
 }
 
 static void bRemoveLookupSubtable(Context *c) {
     struct lookup_subtable *sub;
 
-    if ( c->a.argc!=2 )
+    if ( c->a.argc!=2 || c->a.argc!=3 )
 	ScriptError( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type for argument");
+    else if ( c->a.argc==3 && c->a.vals[2].type!=v_int )
+        ScriptError( c, "Bad type for argument 2");
     sub = SFFindLookupSubtable(c->curfv->sf,c->a.vals[1].u.sval);
     if ( sub==NULL )
 	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[1].u.sval);
-    SFRemoveLookupSubTable(c->curfv->sf,sub);
+    SFRemoveLookupSubTable(c->curfv->sf,sub, c->a.argc==3 ? c->a.vals[2].u.ival : 1);
 }
 
 static void bMergeLookupSubtables(Context *c) {
@@ -7118,7 +7122,7 @@ static void bMergeLookupSubtables(Context *c) {
     if ( sub1->lookup!=sub2->lookup )
 	ScriptError(c,"When merging two lookup subtables they must be in the same lookup.");
     SFSubTablesMerge(c->curfv->sf,sub1,sub2);
-    SFRemoveLookupSubTable(c->curfv->sf,sub2);
+    SFRemoveLookupSubTable(c->curfv->sf,sub2,0);
 }
 
 static int32 ParseTag(Context *c,Val *tagstr,int macok,int *wasmac) {
@@ -7562,7 +7566,7 @@ static void bGetSubtableOfAnchorClass(Context *c) {
     if ( ac==NULL )
 	ScriptErrorString(c,"Unknown anchor class",c->a.vals[1].u.sval);
     c->return_val.type = v_str;
-    c->return_val.u.sval = copy( ac->subtable->subtable_name );
+    c->return_val.u.sval = copy( ac->subtable ? ac->subtable->subtable_name : "" );
 }
 
 static void bAddSizeFeature(Context *c) {

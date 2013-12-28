@@ -6718,8 +6718,12 @@ return( NULL );
     break;
     }
     if ( ac==NULL ) {
-	PyErr_Format(PyExc_TypeError, "No anchor class named %s", ac_name);
-return( NULL );
+        ac = chunkalloc(sizeof(AnchorClass));
+        ac->name = copy( ac_name );
+        ac->subtable = NULL;
+        ac->type = act_unknown;
+        ac->next = sf->anchor;
+        sf->anchor = ac;
     }
     switch ( ac->type ) {
       case act_mark:
@@ -6746,6 +6750,7 @@ return( NULL );
 return( NULL );
 	}
       break;
+      /* leave act_unknown to allow anything until we resolve it by associating with a subtable */
     }
     if ( lig_index==-1 && aptype==at_baselig ) {
 	PyErr_Format(PyExc_TypeError, "You must specify a ligature index for a ligature anchor point" );
@@ -13844,24 +13849,36 @@ Py_RETURN( self );
 
 static PyObject *PyFFFont_addAnchorClass(PyFF_Font *self, PyObject *args) {
     SplineFont *sf;
-    char *subtable, *anchor_name;
+    char *subtable, *anchor_name, *typename;
     struct lookup_subtable *sub;
     AnchorClass *ac;
-    int lookup_type;
+    int ac_type, aptype;
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
     sf = self->fv->sf;
-    if ( !PyArg_ParseTuple(args,"ss", &subtable, &anchor_name ))
+    if ( !PyArg_ParseTuple(args,"ss|s", &subtable, &anchor_name, &typename ))
 return( NULL );
 
     sub = SFFindLookupSubtable(sf,subtable);
-    if ( sub==NULL ) {
+    if ( sub==NULL && !typename ) {
 	PyErr_Format(PyExc_EnvironmentError, "No subtable named %s", subtable );
 return( NULL );
     }
-    lookup_type = sub->lookup->lookup_type;
-    if ( lookup_type<gpos_cursive || lookup_type>gpos_mark2mark ) {
+    else if ( sub==NULL) {
+        aptype = FlagsFromString(typename,ap_types,"anchor type");
+        ac_type = aptype==at_basechar                           ? act_mark :
+                        aptype==at_baselig                      ? act_mklg :
+                        aptype==at_cexit || aptype==at_centry   ? act_curs :
+                                                                  act_mkmk ;
+    }
+    else
+        ac_type = sub->lookup->lookup_type==gpos_cursive                ? act_curs :
+                        sub->lookup->lookup_type==gpos_mark2base        ? act_mark :
+                        sub->lookup->lookup_type==gpos_mark2ligature    ? act_mklg :
+                        sub->lookup->lookup_type==gpos_mark2mark        ? act_mkmk :
+                                                                          act_unknown;
+    if ( ac_type == act_unknown ) {
 	PyErr_Format(PyExc_EnvironmentError, "Cannot add an anchor class to %s, it has the wrong lookup type", subtable );
 return( NULL );
     }
@@ -13869,19 +13886,22 @@ return( NULL );
 	if ( strcmp(ac->name,anchor_name)==0 )
     break;
     }
-    if ( ac!=NULL ) {
+    if ( ac!=NULL && ac->subtable!=NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "An anchor class named %s already exists", anchor_name );
 return( NULL );
     }
-    ac = chunkalloc(sizeof(AnchorClass));
-    ac->name = copy( anchor_name );
-    ac->subtable = sub;
-    ac->type = lookup_type==gpos_cursive        ? act_curs :
-		lookup_type==gpos_mark2base     ? act_mark :
-		lookup_type==gpos_mark2ligature ? act_mklg :
-						  act_mkmk ;
-    ac->next = sf->anchor;
-    sf->anchor = ac;
+    else if ( ac!=NULL ) {  /* we are associating an existing implicit anchor class */
+        ac->subtable = sub;
+        ac->type = ac_type;
+    }
+    else {
+        ac = chunkalloc(sizeof(AnchorClass));
+        ac->name = copy( anchor_name );
+        ac->subtable = sub;
+        ac->type = ac_type;
+        ac->next = sf->anchor;
+        sf->anchor = ac;
+    }
 
 Py_RETURN( self );
 }
@@ -14379,11 +14399,12 @@ static PyObject *PyFFFont_removeLookup(PyFF_Font *self, PyObject *args) {
     SplineFont *sf;
     char *lookup;
     OTLookup *otl;
+    int remove_acs = 0;
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
     sf = self->fv->sf;
-    if ( !PyArg_ParseTuple(args,"s", &lookup ))
+    if ( !PyArg_ParseTuple(args,"s|i", &lookup, &remove_acs ))
 return( NULL );
 
     otl = SFFindLookup(sf,lookup);
@@ -14391,7 +14412,7 @@ return( NULL );
 	PyErr_Format(PyExc_EnvironmentError, "No lookup named %s exists", lookup );
 return( NULL );
     }
-    SFRemoveLookup(sf,otl);
+    SFRemoveLookup(sf,otl,remove_acs);
 Py_RETURN( self );
 }
 
@@ -14432,7 +14453,7 @@ return( NULL );
 	sub->next = otl2->subtables;
     }
     otl2->subtables = NULL;
-    SFRemoveLookup(sf,otl2);
+    SFRemoveLookup(sf,otl2,0);
 Py_RETURN( self );
 }
 
@@ -14440,11 +14461,12 @@ static PyObject *PyFFFont_removeLookupSubtable(PyFF_Font *self, PyObject *args) 
     SplineFont *sf;
     char *subtable;
     struct lookup_subtable *sub;
+    int remove_acs = 0;
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
     sf = self->fv->sf;
-    if ( !PyArg_ParseTuple(args,"s", &subtable ))
+    if ( !PyArg_ParseTuple(args,"s|i", &subtable, &remove_acs ))
 return( NULL );
 
     sub = SFFindLookupSubtable(sf,subtable);
@@ -14452,7 +14474,7 @@ return( NULL );
 	PyErr_Format(PyExc_EnvironmentError, "No subtable named %s exists", subtable );
 return( NULL );
     }
-    SFRemoveLookupSubTable(sf,sub);
+    SFRemoveLookupSubTable(sf,sub,remove_acs);
 Py_RETURN( self );
 }
 
@@ -14482,7 +14504,7 @@ return( NULL );
 return( NULL );
     }
     SFSubTablesMerge(sf,sub1,sub2);
-    SFRemoveLookupSubTable(sf,sub2);
+    SFRemoveLookupSubTable(sf,sub2,0);
 Py_RETURN( self );
 }
 
@@ -15243,7 +15265,7 @@ return( NULL );
 
     for ( ac=sf->anchor; ac!=NULL; ac=ac->next )
 	if ( strcmp(ac->name,anchorclass)==0 )
-return( Py_BuildValue("s", ac->subtable->subtable_name ));
+return( Py_BuildValue("s", ac->subtable ? ac->subtable->subtable_name : ""));
 
     PyErr_Format(PyExc_EnvironmentError, "No anchor class named %s", anchorclass );
 return( NULL );

@@ -1261,7 +1261,7 @@ void FVRemoveKerns(FontViewBase *fv) {
 	notl = otl->next;
 	if ( otl->lookup_type==gpos_pair &&
 		FeatureTagInFeatureScriptList(CHR('k','e','r','n'),otl->features)) {
-	    SFRemoveLookup(sf,otl);
+	    SFRemoveLookup(sf,otl,0);
 	    changed = true;
 	}
     }
@@ -1282,7 +1282,7 @@ void FVRemoveVKerns(FontViewBase *fv) {
 	notl = otl->next;
 	if ( otl->lookup_type==gpos_pair &&
 		FeatureTagInFeatureScriptList(CHR('v','k','r','n'),otl->features)) {
-	    SFRemoveLookup(sf,otl);
+	    SFRemoveLookup(sf,otl,0);
 	    changed = true;
 	}
     }

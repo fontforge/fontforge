@@ -4745,13 +4745,15 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>removeLookup</CODE></TD>
-      <TD><CODE>(lookup-name)</CODE></TD>
-      <TD>Remove the lookup (and any subtables within it).</TD>
+      <TD><CODE>(lookup-name[,remove_acs])</CODE></TD>
+      <TD>Remove the lookup (and any subtables within it). remove_acs (0 or 1),
+        specifies whether to remove associated anchor classes and points.</TD>
     </TR>
     <TR>
       <TD><CODE>removeLookupSubtable</CODE></TD>
-      <TD><CODE>(subtable-name)</CODE></TD>
-      <TD>Remove the subtable (and all data associated with it).</TD>
+      <TD><CODE>(subtable-name[,remove_acs])</CODE></TD>
+      <TD>Remove the subtable (and all data associated with it). remove_acs (0 or 1),
+        specifies whether to remove associated anchor classes and points</TD>
     </TR>
     <TR>
       <TD><CODE>removeGlyph</CODE></TD>
