@@ -1690,7 +1690,7 @@ return( spline );
 }
 
 Spline *SplineMake(SplinePoint *from, SplinePoint *to, int order2) {
-    if ( order2 )
+    if (order2 > 0)
 return( SplineMake2(from,to));
     else
 return( SplineMake3(from,to));

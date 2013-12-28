@@ -2355,14 +2355,16 @@ return( ret );
 static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
     int em;
 
-    sf->fontname = utf8_verify_copy(fd->cidfontname?fd->cidfontname:fd->fontname);
+    if ( fd->cidfontname || fd->fontname ) sf->fontname = utf8_verify_copy(fd->cidfontname?fd->cidfontname:fd->fontname);
     sf->display_size = -default_fv_font_size;
     sf->display_antialias = default_fv_antialias;
     if ( fd->fontinfo!=NULL ) {
 	if ( sf->fontname==NULL && fd->fontinfo->fullname!=NULL ) {
 	    sf->fontname = EnforcePostScriptName(fd->fontinfo->fullname);
 	}
-	if ( sf->fontname==NULL ) sf->fontname = EnforcePostScriptName(fd->fontinfo->familyname);
+	if ( sf->fontname==NULL && fd->fontinfo->familyname!=NULL ){
+		sf->fontname = EnforcePostScriptName(fd->fontinfo->familyname);
+	}
 	sf->fullname = copyparse(fd->fontinfo->fullname);
 	sf->familyname = copyparse(fd->fontinfo->familyname);
 	sf->weight = copyparse(fd->fontinfo->weight);

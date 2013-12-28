@@ -298,29 +298,31 @@ return( false );
 	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
 	    fprintf( glif, "    <contour>\n" );
 	    for ( sp=spl->first; sp!=NULL; ) {
-		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
-		if ( !isquad || /*sp==spl->first ||*/ !SPInterpolate(sp) )
-		    fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\"%s%s%s%s/>\n",
-			    (double) sp->me.x, (double) sp->me.y,
-			    sp->prev==NULL        ? "move"   :
-			    sp->prev->knownlinear ? "line"   :
-			    isquad 		      ? "qcurve" :
-						    "curve",
-			    sp->pointtype!=pt_corner?" smooth=\"yes\"":"",
-				sp->name?" name=\"":"",
-				sp->name?sp->name:"",
-				sp->name?"\"":"" );
-		if ( sp->next==NULL )
-	    break;
-		if ( !sp->next->knownlinear )
-		    fprintf( glif, "      <point x=\"%g\" y=\"%g\"/>\n",
-			    (double) sp->nextcp.x, (double) sp->nextcp.y );
-		sp = sp->next->to;
-		if ( !isquad && !sp->prev->knownlinear )
-		    fprintf( glif, "      <point x=\"%g\" y=\"%g\"/>\n",
-			    (double) sp->prevcp.x, (double) sp->prevcp.y );
-		if ( sp==spl->first )
-	    break;
+			/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
+			// We write the next on-curve point.
+			if (!isquad || sp->ttfindex != 0xffff || !SPInterpolate(sp) || sp->pointtype!=pt_curve || sp->name != NULL)
+				fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\"%s%s%s%s/>\n",
+					(double) sp->me.x, (double) sp->me.y,
+					sp->prev==NULL        ? "move"   :
+					sp->prev->knownlinear ? "line"   :
+					isquad 		      ? "qcurve" :
+								"curve",
+					sp->pointtype!=pt_corner?" smooth=\"yes\"":"",
+					sp->name?" name=\"":"",
+					sp->name?sp->name:"",
+					sp->name?"\"":"" );
+			if ( sp->next==NULL )
+	    	break;
+			// We write control points.
+			if ( !sp->next->knownlinear )
+		    	fprintf( glif, "      <point x=\"%g\" y=\"%g\"/>\n",
+				    (double) sp->nextcp.x, (double) sp->nextcp.y );
+			sp = sp->next->to;
+			if ( !isquad && !sp->prev->knownlinear )
+		    	fprintf( glif, "      <point x=\"%g\" y=\"%g\"/>\n",
+				    (double) sp->prevcp.x, (double) sp->prevcp.y );
+			if ( sp==spl->first )
+	    		break;
 	    }
 	    fprintf( glif, "    </contour>\n" );
 	}
@@ -1135,7 +1137,6 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf,xmlDocPtr doc,char *glifname) {
     char *name;
     int uni;
     char *cpt;
-    int wasquad = -1;	/* Unspecified */
     SplineSet *last = NULL;
 
     glyph = xmlDocGetRootElement(doc);
@@ -1217,50 +1218,66 @@ return( NULL );
 		    }
 		    free(xs); free(ys); free(xys); free(yxs); free(xo); free(yo);
 		} else if ( xmlStrcmp(contour->name,(const xmlChar *) "contour")==0 ) {
-                    xmlNodePtr npoints;
+		    xmlNodePtr npoints;
 		    SplineSet *ss;
 		    SplinePoint *sp;
+			SplinePoint *sp2;
 		    BasePoint pre[2], init[4];
 		    int precnt=0, initcnt=0, open=0;
-                    char *sname;
+			// precnt seems to count control points leading into the next on-curve point. pre stores those points.
+			// initcnt counts the control points that appear before the first on-curve point. This can get updated at the beginning and/or the end of the list.
+			// This is important for determining the order of the closing curve.
+			// A further improvement would be to prefetch the entire list so as to know the declared order of a curve before processing the point.
 
-                    for ( points=contour->children; points!=NULL; points=points->next )
-                        if ( xmlStrcmp(points->name,(const xmlChar *) "point")==0 )
-                    break;
-                    for ( npoints=points->next; npoints!=NULL; npoints=npoints->next )
-                        if ( xmlStrcmp(npoints->name,(const xmlChar *) "point")==0 )
-                    break; 
-                    if ( points!=NULL && npoints==NULL ) {
-                        sname = (char *) xmlGetProp(points, (xmlChar *) "name");
-                        if ( sname!=NULL) {
-                            /* make an AP and if necessary an AC */
-                            AnchorPoint *ap = chunkalloc(sizeof(AnchorPoint));
-                            AnchorClass *ac;
-                            char *namep = *sname=='_' ? sname + 1 : sname;
-                            char *xs = (char *) xmlGetProp(points, (xmlChar *) "x");
-                            char *ys = (char *) xmlGetProp(points, (xmlChar *) "y");
-                            ap->me.x = strtod(xs,NULL);
-                            ap->me.y = strtod(ys,NULL);
-                            
-                            ac = SFFindOrAddAnchorClass(sf,namep,NULL);
-                            if (*sname=='_')
-                                ap->type = ac->type==act_curs ? at_centry : at_mark;
-                            else
-                                ap->type = ac->type==act_mkmk   ? at_basemark :
-                                            ac->type==act_curs  ? at_cexit :
-                                            ac->type==act_mklg  ? at_baselig :
-                                                                  at_basechar;
-                            ap->anchor = ac;
-                            ap->next = sc->anchor;
-                            sc->anchor = ap;
-                            free(xs); free(ys); free(sname);
-                continue;
-                        }
-                    }
+			// We now look for anchor points.
+            char *sname;
+
+            for ( points=contour->children; points!=NULL; points=points->next )
+                if ( xmlStrcmp(points->name,(const xmlChar *) "point")==0 )
+            break;
+            for ( npoints=points->next; npoints!=NULL; npoints=npoints->next )
+                if ( xmlStrcmp(npoints->name,(const xmlChar *) "point")==0 )
+            break;
+			// If the contour has a single point without another point after it, we assume it to be an anchor point.
+            if ( points!=NULL && npoints==NULL ) {
+                sname = (char *) xmlGetProp(points, (xmlChar *) "name");
+                if ( sname!=NULL) {
+                    /* make an AP and if necessary an AC */
+                    AnchorPoint *ap = chunkalloc(sizeof(AnchorPoint));
+                    AnchorClass *ac;
+                    char *namep = *sname=='_' ? sname + 1 : sname;
+                    char *xs = (char *) xmlGetProp(points, (xmlChar *) "x");
+                    char *ys = (char *) xmlGetProp(points, (xmlChar *) "y");
+                    ap->me.x = strtod(xs,NULL);
+                    ap->me.y = strtod(ys,NULL);
+                    
+                    ac = SFFindOrAddAnchorClass(sf,namep,NULL);
+                    if (*sname=='_')
+                        ap->type = ac->type==act_curs ? at_centry : at_mark;
+                    else
+                        ap->type = ac->type==act_mkmk   ? at_basemark :
+                                    ac->type==act_curs  ? at_cexit :
+                                    ac->type==act_mklg  ? at_baselig :
+                                                          at_basechar;
+                    ap->anchor = ac;
+                    ap->next = sc->anchor;
+                    sc->anchor = ap;
+                    free(xs); free(ys); free(sname);
+        			continue; // We stop processing the contour at this point.
+                }
+            }
+
+			// If we have not identified the contour as holding an anchor point, we continue processing it as a rendered shape.
+			int wasquad = -1; // This tracks whether we identified the previous curve as quadratic. (-1 means undefined.)
+			int firstpointsaidquad = -1; // This tracks the declared order of the curve leading into the first on-curve point.
+
 		    ss = chunkalloc(sizeof(SplineSet));
-		    for ( ; points!=NULL; points=points->next ) {
-			char *xs, *ys, *type, *pname;
+			ss->first = NULL;
+
+			for ( points = contour->children; points!=NULL; points=points->next ) {
+			char *xs, *ys, *type, *pname, *smooths;
 			double x,y;
+			int smooth = 0;
 			// We discard any entities in the splineset that are not points.
 			if ( xmlStrcmp(points->name,(const xmlChar *) "point")!=0 )
 		    continue;
@@ -1269,6 +1286,11 @@ return( NULL );
 			ys = (char *) xmlGetProp(points,(xmlChar *) "y");
 			type = (char *) xmlGetProp(points,(xmlChar *) "type");
 			pname = (char *) xmlGetProp(points,(xmlChar *) "name");
+			smooths = (char *) xmlGetProp(points,(xmlChar *) "smooth");
+			if (smooths != NULL) {
+				if (strcmp(smooths,"yes") == 0) smooth = 1;
+				free(smooths); smooths=NULL;
+			}
 			if ( xs==NULL || ys == NULL ) {
 				if (xs != NULL) { free(xs); xs = NULL; }
 				if (ys != NULL) { free(ys); ys = NULL; }
@@ -1281,108 +1303,128 @@ return( NULL );
 					    strcmp(type,"line")==0 ||
 					    strcmp(type,"curve")==0 ||
 					    strcmp(type,"qcurve")==0 )) {
-                            // We create and label the point.
+				// This handles only actual points.
+				// We create and label the point.
 			    sp = SplinePointCreate(x,y);
-                            if (pname != NULL) {
-                                sp->name = copy(pname);
-                            }
+				sp->dontinterpolate = 1;
+				if (pname != NULL) {
+					sp->name = copy(pname);
+				}
+				if (smooth == 1) sp->pointtype = pt_curve;
+				else sp->pointtype = pt_corner;
 			    if ( strcmp(type,"move")==0 ) {
-				open = true;
+					open = true;
 			        ss->first = ss->last = sp;
 			    } else if ( ss->first==NULL ) {
-				ss->first = ss->last = sp;
+					ss->first = ss->last = sp;
 			        memcpy(init,pre,sizeof(pre));
 			        initcnt = precnt;
 			        if ( strcmp(type,"qcurve")==0 )
 				    wasquad = true;
+					if ( strcmp(type,"curve")==0 )
+					wasquad = false;
+					firstpointsaidquad = wasquad;
 			    } else if ( strcmp(type,"line")==0 ) {
 				SplineMake(ss->last,sp,false);
 			        ss->last = sp;
 			    } else if ( strcmp(type,"curve")==0 ) {
-                                char *smooths = xmlGetProp(points, (xmlChar *) "smooth");
 				wasquad = false;
 				if ( precnt==2 ) {
 				    ss->last->nextcp = pre[0];
-			            ss->last->nonextcp = false;
-			            sp->prevcp = pre[1];
-			            sp->noprevcp = false;
+			        ss->last->nonextcp = false;
+			        sp->prevcp = pre[1];
+			        sp->noprevcp = false;
 				} else if ( precnt==1 ) {
 				    ss->last->nextcp = sp->prevcp = pre[0];
-			            ss->last->nonextcp = sp->noprevcp = false;
+			        ss->last->nonextcp = sp->noprevcp = false;
 				}
 				SplineMake(ss->last,sp,false);
 			        ss->last = sp;
-                                if ( smooths!=NULL && strcmp(smooths,"yes")==0 )
-                                    sp->pointtype = pt_curve;
-                                if ( smooths!=NULL ) free(smooths);
 			    } else if ( strcmp(type,"qcurve")==0 ) {
-				wasquad = true;
-				if ( precnt==2 ) {
-				    SplinePoint *sp = SplinePointCreate((pre[1].x+pre[0].x)/2,(pre[1].y+pre[0].y)/2);
-					if (pname != NULL) {
-						sp->name = copy(pname);
+					wasquad = true;
+					if ( precnt>0 && precnt<=2 ) {
+						if ( precnt==2 ) {
+							// If we have two cached control points and the end point is quadratic, we need an implied point between the two control points.
+							sp2 = SplinePointCreate((pre[1].x+pre[0].x)/2,(pre[1].y+pre[0].y)/2);
+							sp2->prevcp = ss->last->nextcp = pre[0];
+							sp2->noprevcp = ss->last->nonextcp = false;
+							sp2->ttfindex = 0xffff;
+							SplineMake(ss->last,sp2,true);
+							ss->last = sp2;
+						}
+						// Now we connect the real point.
+						sp->prevcp = ss->last->nextcp = pre[precnt-1];
+						sp->noprevcp = ss->last->nonextcp = false;
 					}
-				    sp->prevcp = ss->last->nextcp = pre[0];
-				    sp->noprevcp = ss->last->nonextcp = false;
-				    SplineMake(ss->last,sp,true);
-				    ss->last = sp;
-				}
-			        if ( precnt>=1 ) {
-				    ss->last->nextcp = sp->prevcp = pre[precnt-1];
-			            ss->last->nonextcp = sp->noprevcp = false;
-				}
-				SplineMake(ss->last,sp,true);
-			        ss->last = sp;
+					SplineMake(ss->last,sp,true);
+					ss->last = sp;
 			    }
 			    precnt = 0;
 			} else {
+				// This handles non-end-points (control points).
 			    if ( wasquad==-1 && precnt==2 ) {
+				// We don't know whether the current curve is quadratic or cubic, but, if we're hitting three off-curve points in a row, something is off.
+				// As mentioned below, we assume in this case that we're dealing with a quadratic TrueType curve that needs implied points.
+				// We create those points since they are adjustable in Fontforge.
+				// There is not a valid case as far as Frank knows in which a cubic curve would have implied points.
 				/* Undocumented fact: If there are no on-curve points (and therefore no indication of quadratic/cubic), assume truetype implied points */
-                                memcpy(init,pre,sizeof(pre));
-                                initcnt = 1;
-                                sp = SplinePointCreate((pre[1].x+pre[0].x)/2,(pre[1].y+pre[0].y)/2);
-                                if (pname != NULL) {
-                                    sp->name = copy(pname);
-                                }
+					memcpy(init,pre,sizeof(pre));
+					initcnt = 1;
+					// We make the point between the two already cached control points.
+					sp = SplinePointCreate((pre[1].x+pre[0].x)/2,(pre[1].y+pre[0].y)/2);
+					sp->ttfindex = 0xffff;
+					if (pname != NULL) {
+						sp->name = copy(pname);
+					}
 			        sp->nextcp = pre[1];
 			        sp->nonextcp = false;
-			        if ( ss->first==NULL )
+			        if ( ss->first==NULL ) {
+						// This is indeed possible if the first three points are control points.
 				    	ss->first = sp;
-                                else {
-                                    ss->last->nextcp = sp->prevcp = pre[0];
+						memcpy(init,pre,sizeof(pre));
+			            initcnt = 1;
+					} else {
+				    	ss->last->nextcp = sp->prevcp = pre[0];
 			            ss->last->nonextcp = sp->noprevcp = false;
 			            initcnt = 0;
 			            SplineMake(ss->last,sp,true);
-                                }
+                    }
 			        ss->last = sp;
-                                sp = SplinePointCreate((x+pre[1].x)/2,(y+pre[1].y)/2);
+					// We make the point between the previously cached control point and the new control point.
+					sp = SplinePointCreate((x+pre[1].x)/2,(y+pre[1].y)/2);
 			        sp->prevcp = pre[1];
 			        sp->noprevcp = false;
+					sp->ttfindex = 0xffff;
 			        SplineMake(ss->last,sp,true);
 			        ss->last = sp;
 			        pre[0].x = x; pre[0].y = y;
 			        precnt = 1;
-                                wasquad = true;
-			    } else if ( wasquad==true && precnt==1 ) {
-				sp = SplinePointCreate((x+pre[0].x)/2,(y+pre[0].y)/2);
-				if (pname != NULL) {
-                                    sp->name = copy(pname);
-				}
+					wasquad = true;
+			    } else if ( wasquad==true && precnt==1 && 0 ) {
+					// Frank thinks that this might generate false positives for qcurves.
+					// The only case in which this would create a qcurve missed by the previous condition block
+					// and the point type reader would, it seems, be a cubic curve trailing a quadratic curve.
+					// This seems not to be the best way to handle it.
+					sp = SplinePointCreate((x+pre[0].x)/2,(y+pre[0].y)/2);
+					if (pname != NULL) {
+						sp->name = copy(pname);
+					}
 			        sp->prevcp = pre[0];
 			        sp->noprevcp = false;
+					sp->ttfindex = 0xffff;
 			        if ( ss->last==NULL ) {
-				    ss->first = sp;
+				    	ss->first = sp;
 			            memcpy(init,pre,sizeof(pre));
 			            initcnt = 1;
-				} else {
-				    ss->last->nextcp = sp->prevcp;
+					} else {
+					    ss->last->nextcp = sp->prevcp;
 			            ss->last->nonextcp = false;
-				    SplineMake(ss->last,sp,true);
-				}
-				ss->last = sp;
+				    	SplineMake(ss->last,sp,true);
+					}
+					ss->last = sp;
 			        pre[0].x = x; pre[0].y = y;
 			    } else if ( precnt<2 ) {
-				pre[precnt].x = x;
+					pre[precnt].x = x;
 			        pre[precnt].y = y;
 			        ++precnt;
 			    }
@@ -1392,7 +1434,10 @@ return( NULL );
                         if (type != NULL) { free(type); type = NULL; }
                         if (pname != NULL) { free(pname); pname = NULL; }
 		    }
+			// We are finished looping, so it's time to close the curve if it is to be closed.
 		    if ( !open ) {
+			// init has a list of control points leading into the first point. pre has a list of control points trailing the last processed on-curve point.
+			// We merge pre into init and use init as the list of control points between the last processed on-curve point and the first on-curve point.
 			if ( precnt!=0 ) {
 			    BasePoint temp[2];
 			    memcpy(temp,init,sizeof(temp));
@@ -1400,12 +1445,15 @@ return( NULL );
 			    memcpy(init+precnt,temp,sizeof(temp));
 			    initcnt += precnt;
 			}
-			if ( (wasquad==true && initcnt>0) || initcnt==1 ) {
+			if ( (firstpointsaidquad==true && initcnt>0) || initcnt==1 ) {
+				// If the final curve is declared quadratic or is assumed to be by control point count, we proceed accordingly.
 			    int i;
 			    for ( i=0; i<initcnt-1; ++i ) {
-				sp = SplinePointCreate((init[i+1].x+init[i].x)/2,(init[i+1].y+init[i].y)/2);
+					// If the final curve is declared quadratic but has more than one control point, we add implied points.
+					sp = SplinePointCreate((init[i+1].x+init[i].x)/2,(init[i+1].y+init[i].y)/2);
 			        sp->prevcp = ss->last->nextcp = init[i];
 			        sp->noprevcp = ss->last->nonextcp = false;
+					sp->ttfindex = 0xffff;
 			        SplineMake(ss->last,sp,true);
 			        ss->last = sp;
 			    }
@@ -1416,8 +1464,9 @@ return( NULL );
 			    ss->last->nextcp = init[0];
 			    ss->first->prevcp = init[1];
 			    ss->last->nonextcp = ss->first->noprevcp = false;
+				wasquad = false;
 			}
-			SplineMake(ss->last,ss->first,wasquad);
+			SplineMake(ss->last,ss->first,firstpointsaidquad);
 			ss->last = ss->first;
 		    }
 		    if ( last==NULL )
@@ -2025,7 +2074,7 @@ return( NULL );
 	if ( stylename!=NULL && sf->familyname!=NULL )
 	    sf->fontname = strconcat3(sf->familyname,"-",stylename);
 	else
-	    sf->fontname = "Untitled";
+	    sf->fontname = copy("Untitled");
     }
     if ( sf->fullname==NULL ) {
 	if ( stylename!=NULL && sf->familyname!=NULL )
