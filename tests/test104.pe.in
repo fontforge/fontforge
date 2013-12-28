@@ -1,0 +1,11 @@
+#!@abs_top_builddir@/fontforgeexe/fontforge
+#Needs: fonts/SplineOverlapBug1.sfd
+#KANOU has provided a patch which fixes at some of my remove overlap
+# problems
+
+Open("@abs_srcdir@/fonts/SplineOverlapBug1.sfd");
+SelectAll()
+RemoveOverlap()
+#Used to generate many error messages
+RemoveOverlap()
+#Used to crash here

@@ -1,7 +1,0 @@
-#!/usr/local/bin/fontforge
-#Needs: fonts/SimplifyBugs.sfd
-#Make sure simplify works...
-
-Open("fonts/SimplifyBugs.sfd")
-SelectAll();
-Simplify(28,1);

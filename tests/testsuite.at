@@ -1,11 +1,37 @@
 AT_INIT
-AT_COPYRIGHT([Copyright (C) 2012 by George Williams])
+AT_COPYRIGHT([Copyright(C) 2014 George Williams & Contributors])
 
-m4_defun([run_python],[(fontforge -lang py -script "${abs_builddir}/$1" || /bin/false)])
+#--------------------------------------------------------------------------
+# Fontforge Native Scripting test functions
 
+m4_defun([run_pedit],[(${abs_top_builddir}/fontforgeexe/fontforge -lang ff -script "${abs_builddir}/$1" || /bin/false)])
+
+# check_pedit( name_of_test=$1, use test#=$2, skip_if_file_not_exist=$3 )
+# Test FontForge Native Scripting commands using various testXXXX.pe files.
+# $1 descriptive title of test
+# $2 is test to run (skipped if FontForge built without python scripting)
+# $3 test for this file (some files are external and need to be impoted)
+m4_defun([check_pedit],[
+AT_SETUP([$1])
+AT_SKIP_IF([test ! -r "${abs_builddir}/$2"])
+m4_ifblank([$3],[],[AT_SKIP_IF([test ! -r "${abs_srcdir}/fonts/$3"])])
+AT_CHECK([run_pedit([$2])],[0],[ignore],[ignore])
+AT_CLEANUP
+])
+
+#--------------------------------------------------------------------------
+# Fontforge Python Scripting test functions
+
+m4_defun([run_python],[(${abs_top_builddir}/fontforgeexe/fontforge -lang py -script "${abs_builddir}/$1" || /bin/false)])
+
+# check_python( name_of_test=$1, use test#=$2, skip_if_file_not_exist=$3 )
+# Test FontForge Python Scripting commands using various testXXXX.py files.
+# $1 descriptive title of test
+# $2 is test to run (skipped if FontForge built without python scripting)
+# $3 test for this file (some files are external and need to be impoted)
 m4_defun([check_python],[
 AT_SETUP([$1])
-AT_SKIP_IF([${skip_python}])
+AT_SKIP_IF([test ! -r "${abs_builddir}/$2"])
 m4_ifblank([$3],[],[AT_SKIP_IF([test ! -r "${abs_srcdir}/fonts/$3"])])
 AT_CHECK([run_python([$2])],[0],[ignore],[ignore])
 AT_CLEANUP
@@ -13,7 +39,6 @@ AT_CLEANUP
 
 m4_defun([check_python_inconsistent],[
 AT_SETUP([$1 (passes inconsistently; skipping)])
-AT_SKIP_IF([${skip_python}])
 AT_SKIP_IF([/bin/true])
 m4_ifblank([$3],[],[AT_SKIP_IF([test ! -r "${abs_srcdir}/fonts/$3"])])
 AT_CHECK([(run_python([$2]) || exit 77)],[0],[ignore],[ignore])
@@ -22,20 +47,65 @@ AT_CLEANUP
 
 #--------------------------------------------------------------------------
 
-AT_BANNER([Python scripting])
+AT_COLOR_TESTS
+AT_TESTED([fontforge])
 
-check_python([Ambrosia.sfd],[test0001.py])
-check_python([LucidaGrande.ttc],[test0101.py],[LucidaGrande.ttc])
+AT_BANNER([FontForge Native Scripting Tests])
+
+check_pedit([generate a few font files],[test001.pe].[Zapfino-4.0d3.dfont]) 'also needs Caliban.sfd Zapfino-4.1d6.dfont
+check_pedit([otf cid font check],[test002.pe],[HanSans-Bold.otf])
+check_pedit([non-otf cid font check],[test003.pe],[MunhwaGothic-Bold])
+check_pedit([chunk of memory check],[test004.pe],[mingliu.ttc])
+check_pedit([kerning information checks],[test005.pe],[VKern.sfd])
+check_pedit([incorrect names and count checks],[test006.pe],[mingliu.ttc]) ' also needs GillSans.dfont, ItalicHand.sfd, ItalicHand.svg, MunhwaGothic-Bold, Caliban.otf
+check_pedit([contextual chaining tables dont crash],[test007.pe],[FormalScript.sfd])
+check_pedit([contextual chaining tables dont crash],[test008.pe],[n019003l.pfb])
+check_pedit([read and generate type3 fonts],[test009.pe],[Ambrosia.pt3])
+check_pedit([generate some error messages],[test010.pe],[GillSans.dfont])
+check_pedit([check for Unexpected endif],[test101.pe])
+check_pedit([infinite loop test on 0 length spline],[test102.pe])
+check_pedit([Copy/Paste clipboard test for crash],[test103.pe])
+check_pedit([Remove overlap test #1],[test104.pe],[SplineOverlapBug1.sfd])
+check_pedit([while loop check, loop 10x],[test105.pe])
+check_pedit([simple 'Bad Kerning' check],[test106.pe],[OmittedCharBugs.sfd])
+check_pedit([generate a font family],[test107.pe],[Ambrosia.sfd]) # also calls 'helper107.pe'
+check_pedit([make GPOS, GSUB, morx without crashing],[test108.pe],[ItalicHand.sfd])
+check_pedit([Remove overlap test #2],[test109.pe],[OverlapBugs.sfd])
+check_pedit([make sure simplify works],[test110.pe],[SimplifyBugs.sfd])
+check_pedit([make sure merge fonts works],[test111.pe],[cmbsy10.pfb])
+check_pedit([make sure quadratic conversion works],[test112.pe],[CourierNew.ttf])
+check_pedit([count contour points properly],[test113.pe],[CourierNew.ttf])
+check_pedit([generate, save and open a *.pfa file],[test114.pe],[CaslonMM.sfd])
+check_pedit([replace with reference],[test115.pe],[n019003l.pfb])
+check_pedit([merged],[test116.pe],[merged.cff])
+check_pedit([merge kern],[test117.pe],[ecrm1000.pfa])
+check_pedit([test if we get unicode encodings right],[test118.pe],[NimbusLGCUni-Regular.sfd]) 'also uses helper118A.pe helper118B.pe
+check_pedit([the 'i' glyph test],[test119.pe],[DejaVuSerif.sfd])
+check_pedit([Another deja-vu point number],[test120.pe],[NumberPoints.sfd])
+check_pedit([don't distort the curve (by much)],[test121.pe],[AddExtremumTest.sfd])
+check_pedit([check AutoHint works and retains hints],[test122.pe],[Hinting.sfd])
+check_pedit([produce equivalent font in cff check],[test123.pe],[MinionPro-Regular.otf])
+check_pedit([check that detach glyph works #1],[test124.pe])
+check_pedit([check that detach glyph works #2],[test125.pe],[MinionPro-Regular.fea])
+check_pedit([try svg and pt3],[test126.pe],[DataURI.sfd])
+check_pedit([test if generate truetype instructions],[test127.pe],[Ambrosia.sfd])
+#check_pedit([],[svg2ttf.pe])
+
+AT_BANNER([FontForge Python Scripting Tests])
+
+check_python([FontForge sfd file open check],[test0001.py],[Ambrosia.sfd])
+check_python([FontForge ttc file open check],[test0101.py],[LucidaGrande.ttc])
 #check_python_inconsistent([Caliban.sfd],[test1001.py])
-check_python([Caliban.sfd],[test1001.py])
-check_python([Zapfino-4.0d3.dfont],[test1001a.py],[Zapfino-4.0d3.dfont])
-check_python([Zapfino-4.1d6.dfont],[test1001b.py],[Zapfino-4.1d6.dfont])
+check_python([generate several font files],[test1001.py],[Caliban.sfd])
+check_python([pointcount check],[test1001a.py],[Zapfino-4.0d3.dfont])
+check_python([odd morx test without crashing],[test1001b.py],[Zapfino-4.1d6.dfont])
 check_python([make new font],[test1001c.py])
-check_python([nuvo-medium-woff-demo.woff],[test1002.py],[nuvo-medium-woff-demo.woff])
-check_python([StrokeTests.sfd],[test1003.py])
-check_python([DirectionTest.sfd],[test1004.py])
-check_python([AddExtremaTest2.sfd],[test1005.py])
-check_python([math table],[test1006.py])
-check_python([ayn+meem.init.svg],[test1007.py])
+check_python([woff major minor meta check],[test1002.py],[nuvo-medium-woff-demo.woff])
+check_python([various stroke tests],[test1003.py],[StrokeTests.sfd])
+check_python([clockwise direction test],[test1004.py],[DirectionTest.sfd])
+check_python([generate duplicate fonts test],[test1005.py],[AddExtremaTest2.sfd])
+check_python([math table test],[test1006.py])
+check_python([check for splinestroke 0 len fail],[test1007.py],[ayn+meem.init.svg])
+#check_python([find overlap bug],[findoverlapbugs.py])
 
 #--------------------------------------------------------------------------

@@ -188,6 +188,7 @@ PKG_PROG_PKG_CONFIG
 AC_PATH_PROG([MSGFMT],[msgfmt],[msgfmt])
 AC_PATH_PROG([XGETTEXT],[xgettext],[xgettext])
 AC_PATH_PROG([INDENT],[indent],[indent])
+AC_PATH_PROG([WGET],[wget],[wget])
 AC_PATH_PROG([UNZIP],[unzip],[unzip])
 AC_PATH_PROG([UPDATE_MIME_DATABASE],[update-mime-database],[update-mime-database])
 AC_PATH_PROG([UPDATE_DESKTOP_DATABASE],[update-desktop-database],[update-desktop-database])
@@ -608,7 +609,36 @@ AC_CONFIG_FILES([fontforge/GNUmakefile])
 
 FONTFORGE_CREATE_PKGCONFIG_FILES
 FONTFORGE_CREATE_SYSTEMSPECIFIC
-FONTFORGE_CONFIG_TESTSUITE
+
+#--------------------------------------------------------------------------
+# Create FontForge and Python test scripts to be used with 'make check' or
+# individually as 'fontforge --lang=XX --script=testXXXX.XX'
+AC_CONFIG_FILES([tests/atlocal])
+
+rm -f tests/*.pe tests/*.py
+
+if test x$i_do_have_native_scripting = xyes; then
+  ff_script_files="helper107 helper118A helper118B svg2ttf test001	\
+	test002 test003 test004 test005 test006 test007 test008 test009	\
+	test010 test101 test102 test103 test104 test105 test106 test107	\
+	test108 test109 test110 test111 test112 test113 test114 test115	\
+	test116 test117 test118 test119 test120 test121 test122 test123	\
+	test124 test125 test126 test127"
+  for arg in ${ff_script_files}; do
+    AC_CONFIG_FILES([tests/$arg.pe])
+  done
+fi
+
+if test x$i_do_have_python_scripting = xyes; then
+  py_script_files="findoverlapbugs test0001 test0101 test1001a test1001b \
+	test1001c test1001 test1002 test1003 test1004 test1005 test1006	\
+	test1007"
+  for arg in ${py_script_files}; do
+    AC_CONFIG_FILES([tests/$arg.py])
+  done
+fi
+
+#--------------------------------------------------------------------------
 
 FONTFORGE_GIT_VERSION=""
 if test -d ${srcdir}/.git; then
@@ -633,33 +663,40 @@ AC_OUTPUT
 
 AC_MSG_NOTICE([
 
+Configuration:
+
+  Source code location	${srcdir}
+  Build code location	${builddir}
+  Destination prefix	${prefix}
+  Compiler		${CC}
+
 Summary of optional features:
 
-  real (floating pt) ${my_real_type}
-  programs           ${i_do_have_programs}
-  native scripting   ${i_do_have_native_scripting}
-  python scripting   ${i_do_have_python_scripting}
-  python extension   ${i_do_have_python_extension}
-  freetype debugger  ${i_do_have_freetype_debugger}
-  capslock for alt   ${i_do_have_capslock_for_alt}
-  raw points mode    ${i_do_have_debug_raw_points}
-  tile path          ${i_do_have_tile_path}
-  gb12345 encoding   ${i_do_have_gb12345}
+  real (floating pt)	${my_real_type}
+  programs		${i_do_have_programs}
+  native scripting	${i_do_have_native_scripting}
+  python scripting	${i_do_have_python_scripting}
+  python extension	${i_do_have_python_extension}
+  freetype debugger	${i_do_have_freetype_debugger}
+  capslock for alt	${i_do_have_capslock_for_alt}
+  raw points mode	${i_do_have_debug_raw_points}
+  tile path		${i_do_have_tile_path}
+  gb12345 encoding	${i_do_have_gb12345}
 
 Summary of optional dependencies:
 
-  cairo              ${i_do_have_cairo}  	${cairo_url}
-  giflib             ${i_do_have_giflib}  	${giflib_url}
-  libjpeg            ${i_do_have_libjpeg}  	${libjpeg_url}
-  libpng             ${i_do_have_libpng}  	${libpng_url}
-  libtiff            ${i_do_have_libtiff}  	${libtiff_url}
-  libxml             ${i_do_have_libxml}  	${libxml_url}
-  libspiro           ${i_do_have_libspiro}  	${libspiro_url}
-  libuninameslist    ${i_do_have_libuninameslist}  	${libuninameslist_url}
-  libunicodenames    ${i_do_have_libunicodenames}  	${libunicodenames_url}
-  zeromq             ${i_do_have_libzmq}  	${libzmq_url}
-  libreadline        ${i_do_have_libreadline}  	${libreadline_url}
-  X Window System    ${i_do_have_x}
+  cairo			${i_do_have_cairo}  	${cairo_url}
+  giflib		${i_do_have_giflib}  	${giflib_url}
+  libjpeg		${i_do_have_libjpeg}  	${libjpeg_url}
+  libpng		${i_do_have_libpng}  	${libpng_url}
+  libtiff		${i_do_have_libtiff}  	${libtiff_url}
+  libxml		${i_do_have_libxml}  	${libxml_url}
+  libspiro		${i_do_have_libspiro}  	${libspiro_url}
+  libuninameslist	${i_do_have_libuninameslist}  	${libuninameslist_url}
+  libunicodenames	${i_do_have_libunicodenames}  	${libunicodenames_url}
+  zeromq (libzmq)	${i_do_have_libzmq}  	${libzmq_url}
+  libreadline		${i_do_have_libreadline}  	${libreadline_url}
+  X Window System	${i_do_have_x}
 ])
 
 #--------------------------------------------------------------------------

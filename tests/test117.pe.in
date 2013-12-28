@@ -1,0 +1,8 @@
+#!@abs_top_builddir@/fontforgeexe/fontforge
+#Needs: fonts/ecrm1000.pfa fonts/ecrm1000.tfm
+
+Open("@abs_srcdir@/fonts/ecrm1000.pfa")
+MergeKern("@abs_srcdir@/fonts/ecrm1000.tfm")
+Generate("@abs_builddir@/results/ecrm.ttf","",0x200)
+Open("@abs_builddir@/results/ecrm.ttf")
+Quit()

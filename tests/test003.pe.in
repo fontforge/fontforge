@@ -1,0 +1,12 @@
+#!@abs_top_builddir@/fontforgeexe/fontforge
+#Needs: fonts/MunhwaGothic-Bold
+# but any other non-otf cid font would do.
+
+Open("@abs_srcdir@/fonts/MunhwaGothic-Bold");
+Print( "...Read MunhwaGothic-Bold (ps cid)")
+Generate("@abs_builddir@/results/MunhwaGothic-Bold.otf");
+Print( "...Generated otf (cid)")
+Generate("@abs_builddir@/results/MunhwaGothic-Bold.cid");
+Print( "...Generated cid")
+Close();
+Quit()

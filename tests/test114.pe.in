@@ -1,0 +1,8 @@
+#!@abs_top_builddir@/fontforgeexe/fontforge
+#Needs: fonts/CaslonMM.sfd
+
+Open("@abs_srcdir@/fonts/CaslonMM.sfd");
+Generate("@abs_builddir@/results/Caslon.mm.pfa")
+Close()
+Open("@abs_builddir@/results/Caslon.mm.pfa")
+Quit()
