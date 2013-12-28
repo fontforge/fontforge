@@ -4,7 +4,7 @@ AT_COPYRIGHT([Copyright(C) 2014 George Williams & Contributors])
 #--------------------------------------------------------------------------
 # Fontforge Native Scripting test functions
 
-m4_defun([run_pedit],[(fontforge -lang ff -script "${abs_builddir}/$1" || /bin/false)])
+m4_defun([run_pedit],[(${abs_top_builddir}/fontforgeexe/fontforge -lang ff -script "${abs_builddir}/$1" || /bin/false)])
 
 # check_pedit( name_of_test=$1, use test#=$2, skip_if_file_not_exist=$3 )
 # Test FontForge Native Scripting commands using various testXXXX.pe files.
@@ -22,7 +22,7 @@ AT_CLEANUP
 #--------------------------------------------------------------------------
 # Fontforge Python Scripting test functions
 
-m4_defun([run_python],[(fontforge -lang py -script "${abs_builddir}/$1" || /bin/false)])
+m4_defun([run_python],[(${abs_top_builddir}/fontforgeexe/fontforge -lang py -script "${abs_builddir}/$1" || /bin/false)])
 
 # check_python( name_of_test=$1, use test#=$2, skip_if_file_not_exist=$3 )
 # Test FontForge Python Scripting commands using various testXXXX.py files.
