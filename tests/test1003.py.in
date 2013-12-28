@@ -1,4 +1,4 @@
-#!@abs_top_builddir@/fontforge/fontforge
+#!@abs_top_builddir@/fontforgeexe/fontforge
 #Needs: fonts/StrokeTests.sfd
 
 import os

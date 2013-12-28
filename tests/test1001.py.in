@@ -1,4 +1,4 @@
-#!@abs_top_builddir@/fontforge/fontforge
+#!@abs_top_builddir@/fontforgeexe/fontforge
 #Needs: fonts/Caliban.sfd
 
 import os, shutil, tempfile, fontforge;

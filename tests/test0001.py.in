@@ -1,4 +1,4 @@
-#!@abs_top_builddir@/fontforge/fontforge
+#!@abs_top_builddir@/fontforgeexe/fontforge
 #Needs: fonts/Ambrosia.sfd
 
 #Test the fontforge module (but not its types)
@@ -7,18 +7,18 @@ import os, fontforge;
 foo = fontforge.getPrefs("DetectDiagonalStems")
 fontforge.setPrefs("DetectDiagonalStems",~foo)
 fontforge.loadPrefs();
-# fontforge.savePrefs() 
+# fontforge.savePrefs()
 fontforge.defaultOtherSubrs();
-# fontforge.readOtherSubrsFile(); 
+# fontforge.readOtherSubrsFile();
 
 foo = fontforge.hasSpiro()
 
-# fontforge.loadEncodingFile() 
-# fontforge.loadNamelist() 
-# fontforge.loadNamelistDir() 
-# fontforge.loadPlugin() 
-# fontforge.loadPluginDir() 
-# fontforge.preloadCidmap() 
+# fontforge.loadEncodingFile()
+# fontforge.loadNamelist()
+# fontforge.loadNamelistDir()
+# fontforge.loadPlugin()
+# fontforge.loadPluginDir()
+# fontforge.preloadCidmap()
 
 fontforge.printSetup("lpr")
 
