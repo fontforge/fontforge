@@ -262,16 +262,11 @@ AC_ARG_ENABLE([windows-cross-compile],
                 [enable cross compile for windows extra support])],
         [WINDOWS_CROSS_COMPILE=yes])
 
-##################
-# Theme selection.
-#
-# go with tango by default
-#
+#--------------------------------------------------------------------------
+# Theme pixmap ICON selection.
+# Go with tango by default. Retain older 2012 theme for those who like it.
 themename=tango
 
-#
-# Retain the old 2012 theme for those who like it.
-#
 FONTFORGE_ARG_ENABLE([theme-2012],
         [AS_HELP_STRING([--enable-theme-2012],
                 [use old circa 2012 icons instead of using the tango default icons])],
@@ -281,9 +276,10 @@ if test x$enable_theme_2012 = xyes; then
 fi
 
 # select the theme.
-AM_CONDITIONAL(USE_THEME_2012,  test x"$themename" = x2012)
-AM_CONDITIONAL(USE_THEME_TANGO, test x"$themename" = xtango)
+AM_CONDITIONAL([USE_THEME_2012],[test x"$themename" = x2012])
+AM_CONDITIONAL([USE_THEME_TANGO],[test x"$themename" = xtango])
 
+#--------------------------------------------------------------------------
 
 FONTFORGE_ARG_ENABLE([gb12345],
         [AS_HELP_STRING([--enable-gb12345],
