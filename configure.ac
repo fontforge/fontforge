@@ -92,12 +92,16 @@ AM_INIT_AUTOMAKE([foreign -Wall subdir-objects tar-pax])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
-# I am going to try enabling silent-rules by default, so builders are
-# more likely to see warnings. Use --disable-silent-rules or "make
-# V=1" if you need to see the rules.
-m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+#--------------------------------------------------------------------------
+# automake 1.12 requires AM_PROG_AR but automake 1.11 doesn't recognize it.
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
-m4_ifdef([AM_PROG_AR],[AM_PROG_AR])
+#--------------------------------------------------------------------------
+# Enable silent build rules by default, this requires atleast Automake-1.11
+# Disable by passing --disable-silent-rules to configure or using make V=1
+m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])],[AC_SUBST([AM_DEFAULT_VERBOSITY],[1])])
+
+
 LT_CONFIG_LTDL_DIR([libltdl])
 LT_INIT([dlopen])
 LTDL_INIT([recursive convenience])
