@@ -608,7 +608,10 @@ AC_CONFIG_FILES([fontforge/GNUmakefile])
 #--------------------------------------------------------------------------
 
 FONTFORGE_CREATE_PKGCONFIG_FILES
-FONTFORGE_CREATE_SYSTEMSPECIFIC
+
+#--------------------------------------------------------------------------
+# Create FontForge Operating System Specific files
+AC_CONFIG_FILES([fontforgeexe/darwinsetup],[chmod +x fontforgeexe/darwinsetup])
 
 #--------------------------------------------------------------------------
 # Create FontForge and Python test scripts to be used with 'make check' or
