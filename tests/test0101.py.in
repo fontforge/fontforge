@@ -1,4 +1,4 @@
-#!@abs_top_builddir@/fontforge/fontforge
+#!@abs_top_builddir@/fontforgeexe/fontforge
 #Needs: fonts/LucidaGrande.ttc
 
 #Test the fontforge module (but not its types)

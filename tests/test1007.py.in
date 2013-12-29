@@ -1,4 +1,4 @@
-#!@abs_top_builddir@/fontforge/fontforge
+#!@abs_top_builddir@/fontforgeexe/fontforge
 #Needs: fonts/ayn+meem.init.svg
 
 # At one point splinestroke failed if the first spline on a contour had a length of 0

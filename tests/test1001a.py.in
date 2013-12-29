@@ -1,4 +1,4 @@
-#!@abs_top_builddir@/fontforge/fontforge
+#!@abs_top_builddir@/fontforgeexe/fontforge
 #Needs: fonts/Zapfino-4.0d3.dfont
 
 import os, shutil, tempfile, fontforge;
