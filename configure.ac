@@ -149,7 +149,6 @@ AC_SUBST([LIBGUTILS_VERSION],[$libgutils_info])
 AC_SUBST([LIBZMQCOLLAB_VERSION],[$libzmqcollab_info])
 
 #--------------------------------------------------------------------------
-#
 # URLs for dependencies.
 
 cairo_url="http://www.cairographics.org/"
@@ -602,7 +601,6 @@ osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Textbox.nib/
 
 # GNUmakefiles that act as wrappers around portable makefiles and
 # provide additional targets.
-AC_CONFIG_FILES([GNUmakefile])
 AC_CONFIG_FILES([fontforge/GNUmakefile])
 
 #--------------------------------------------------------------------------
