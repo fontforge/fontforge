@@ -92,12 +92,16 @@ AM_INIT_AUTOMAKE([foreign -Wall subdir-objects tar-pax])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
-# I am going to try enabling silent-rules by default, so builders are
-# more likely to see warnings. Use --disable-silent-rules or "make
-# V=1" if you need to see the rules.
-m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+#--------------------------------------------------------------------------
+# automake 1.12 requires AM_PROG_AR but automake 1.11 doesn't recognize it.
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
-m4_ifdef([AM_PROG_AR],[AM_PROG_AR])
+#--------------------------------------------------------------------------
+# Enable silent build rules by default, this requires atleast Automake-1.11
+# Disable by passing --disable-silent-rules to configure or using make V=1
+m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])],[AC_SUBST([AM_DEFAULT_VERBOSITY],[1])])
+
+
 LT_CONFIG_LTDL_DIR([libltdl])
 LT_INIT([dlopen])
 LTDL_INIT([recursive convenience])
@@ -145,7 +149,6 @@ AC_SUBST([LIBGUTILS_VERSION],[$libgutils_info])
 AC_SUBST([LIBZMQCOLLAB_VERSION],[$libzmqcollab_info])
 
 #--------------------------------------------------------------------------
-#
 # URLs for dependencies.
 
 cairo_url="http://www.cairographics.org/"
@@ -258,16 +261,11 @@ AC_ARG_ENABLE([windows-cross-compile],
                 [enable cross compile for windows extra support])],
         [WINDOWS_CROSS_COMPILE=yes])
 
-##################
-# Theme selection.
-#
-# go with tango by default
-#
+#--------------------------------------------------------------------------
+# Theme pixmap ICON selection.
+# Go with tango by default. Retain older 2012 theme for those who like it.
 themename=tango
 
-#
-# Retain the old 2012 theme for those who like it.
-#
 FONTFORGE_ARG_ENABLE([theme-2012],
         [AS_HELP_STRING([--enable-theme-2012],
                 [use old circa 2012 icons instead of using the tango default icons])],
@@ -277,9 +275,10 @@ if test x$enable_theme_2012 = xyes; then
 fi
 
 # select the theme.
-AM_CONDITIONAL(USE_THEME_2012,  test x"$themename" = x2012)
-AM_CONDITIONAL(USE_THEME_TANGO, test x"$themename" = xtango)
+AM_CONDITIONAL([USE_THEME_2012],[test x"$themename" = x2012])
+AM_CONDITIONAL([USE_THEME_TANGO],[test x"$themename" = xtango])
 
+#--------------------------------------------------------------------------
 
 FONTFORGE_ARG_ENABLE([gb12345],
         [AS_HELP_STRING([--enable-gb12345],
@@ -602,13 +601,15 @@ osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Textbox.nib/
 
 # GNUmakefiles that act as wrappers around portable makefiles and
 # provide additional targets.
-AC_CONFIG_FILES([GNUmakefile])
 AC_CONFIG_FILES([fontforge/GNUmakefile])
 
 #--------------------------------------------------------------------------
 
 FONTFORGE_CREATE_PKGCONFIG_FILES
-FONTFORGE_CREATE_SYSTEMSPECIFIC
+
+#--------------------------------------------------------------------------
+# Create FontForge Operating System Specific files
+AC_CONFIG_FILES([fontforgeexe/darwinsetup],[chmod +x fontforgeexe/darwinsetup])
 
 #--------------------------------------------------------------------------
 # Create FontForge and Python test scripts to be used with 'make check' or
