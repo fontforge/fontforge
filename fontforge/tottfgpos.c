@@ -1758,6 +1758,9 @@ static void dumpGSUBmultiplesubs(FILE *gsub,SplineFont *sf,struct lookup_subtabl
     offset = 6+2*cnt;
     for ( cnt = 0; glyphs[cnt]!=NULL; ++cnt ) {
 	putshort(gsub,offset);
+	if (maps[cnt] == NULL) {
+		fprintf( stderr, "maps[%d] is null; glyphs[%d] is \"%s\"." , cnt , cnt , glyphs[cnt]->name ? glyphs[cnt]->name : "" ) ;
+	}
 	for ( gc=0; maps[cnt][gc]!=NULL; ++gc );
 	offset += 2+2*gc;
     }
