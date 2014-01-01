@@ -32,8 +32,7 @@
 AC_PREREQ([2.68])
 #--------------------------------------------------------------------------
 # PackageTimestamp version
-#m4_define([fontforge_package_stamp], "20131117") <-revert to this method
-m4_define([fontforge_package_stamp], "0_beta1")
+m4_define([fontforge_package_stamp], [20140101])
 #--------------------------------------------------------------------------
 # Making point releases:
 #   fontforge_major_version += 0;
@@ -80,7 +79,8 @@ m4_define([libgutils_info],[libgutils_major_version:libgutils_minor_version:0])
 m4_define([libzmqcollab_info],[libzmqcollab_major_version:libzmqcollab_minor_version:0])
 
 #--------------------------------------------------------------------------
-AC_INIT([fontforge],[2.0.0_beta1],[fontforge-devel@lists.sourceforge.net])
+AC_INIT([fontforge],[fontforge_version],[fontforge-devel@lists.sourceforge.net],
+	[fontforge_package_name],[https://github.com/fontforge/fontforge])
 AC_CONFIG_SRCDIR([Unicode/ArabicForms.c])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([config])
@@ -122,13 +122,6 @@ AC_SUBST([MACAPP])
 
 FONTFORGE_PLATFORM_SPECIFICS
 
-VERSION_MAJOR=`AS_ECHO(["${PACKAGE_VERSION}"]) | sed -e 's/^\([[0-9]][[0-9]]*\).*/\1/'`
-VERSION_MINOR=`AS_ECHO(["${PACKAGE_VERSION}"]) | sed -e 's/^[[0-9]][[0-9]]*\.\([[0-9]][[0-9]]*\).*/\1/'`
-VERSION_PATCH=`AS_ECHO(["${PACKAGE_VERSION}"]) | sed -e 's/^[[0-9]][[0-9]]*\.[[0-9]][[0-9]]*\.\([[0-9]][[0-9]]*\).*/\1/'`
-AC_SUBST([VERSION_MAJOR])
-AC_SUBST([VERSION_MINOR])
-AC_SUBST([VERSION_PATCH])
-
 #--------------------------------------------------------------------------
 # Pass version variables to fontforge-config.h
 AC_DEFINE([FONTFORGE_VERSION_MAJOR],[fontforge_major_version],[FontForge Major Version])
@@ -140,6 +133,7 @@ AC_DEFINE([FONTFORGE_LIBFF_VERSION_MINOR],[libfontforge_minor_version],[LibFontF
 
 #--------------------------------------------------------------------------
 # Pass library version variables to several MAKEFILE.AM
+AC_SUBST([FONTFORGE_VERSION],[fontforge_version])
 AC_SUBST([LIBFONTFORGEEXE_VERSION],[libfontforgeexe_info])
 AC_SUBST([LIBFONTFORGE_VERSION],[libfontforge_info])
 AC_SUBST([LIBGDRAW_VERSION],[libgdraw_info])
@@ -147,6 +141,10 @@ AC_SUBST([LIBGIOFTP_VERSION],[libgioftp_info])
 AC_SUBST([LIBGUNICODE_VERSION],[libgunicode_info])
 AC_SUBST([LIBGUTILS_VERSION],[libgutils_info])
 AC_SUBST([LIBZMQCOLLAB_VERSION],[libzmqcollab_info])
+
+AC_SUBST([VERSION_MAJOR],[fontforge_major_version])
+AC_SUBST([VERSION_MINOR],[fontforge_minor_version])
+AC_SUBST([VERSION_PATCH],[fontforge_package_stamp])
 
 #--------------------------------------------------------------------------
 # URLs for dependencies.
@@ -597,6 +595,7 @@ osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/PopUpButton.
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Progressbar.nib/Makefile
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/SecureInputbox.nib/Makefile
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Textbox.nib/Makefile
+fontforge.pc
 ])
 
 # GNUmakefiles that act as wrappers around portable makefiles and
@@ -640,6 +639,7 @@ if test x$i_do_have_python_scripting = xyes; then
 fi
 
 #--------------------------------------------------------------------------
+# Collect "GIT" compile-time information to help when debugging FontForge.
 
 FONTFORGE_GIT_VERSION=""
 if test -d ${srcdir}/.git; then
@@ -658,7 +658,7 @@ AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_STR_RAW,$FONTFORGE_MODTIME_STR,
 	"A user friendly date that that configure was run at: For example 01:48 GMT 6-Sep-2012 (no quotes)")
 AC_DEFINE_UNQUOTED(FONTFORGE_VERSIONDATE_RAW,$FONTFORGE_VERSIONDATE,"YYYYMMDD as number when configure was run (no quotes)")
 
-
+#--------------------------------------------------------------------------
 
 AC_OUTPUT
 
