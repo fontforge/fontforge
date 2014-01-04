@@ -13,7 +13,7 @@ PortSystem      1.0
 name            fontforge
 version         2.0.0_beta1
 set docversion  2.0.0_beta1
-revision        1380859508
+revision        1388833269
 categories      graphics fonts
 platforms       darwin
 maintainers     Ben Martin
@@ -50,13 +50,26 @@ worksrcdir      ${name}-${version}
 ## git.branch      master
 use_autoreconf  yes
 
-
-fetch.type      git       
-git.branch      master    
-git.url         /usr/local/src/github-fontforge/fontforge 
-
 #git.branch      vanilla
 #git.url         /usr/local/src/monkeyiq.github.com/fontforge-fork
+
+
+#
+# To save on bandwidth, it is assumed that you have
+# a git clone of https://github.com/fontforge/fontforge.git
+# which has been pull/merged to the level that you want 
+# from the main github repo.
+# 
+# otherwise, use one of the above url/branch combinations to directly fetch.
+#
+# If you are tracking pull requests then you can set the branch to build a
+# bundle from an unmerged PR.
+#
+fetch.type      git       
+git.url         /usr/local/src/github-fontforge/fontforge 
+git.branch      master    
+##git.branch      pr/880    
+
 
 
 worksrcdir      ${name}-${version}
@@ -117,10 +130,10 @@ post-configure {
     # nasty compiler bug when generating 32bit code for this file. 
     # but lets not throw our hands up and avoid -O2 for the rest
     # of the files!
-    puts "XXXXXXXXX patching the optimizer flags for metricsview!"
-    system "sed -i -e 's/-c -o libfontforgeexe_la-metricsview.lo/-O0 -c -o libfontforgeexe_la-metricsview.lo/g' ${worksrcpath}/fontforge/Makefile.in"
-    puts "path: ${worksrcpath}/fontforge/Makefile.in"
-    system "grep libfontforgeexe_la-metricsview.lo  ${worksrcpath}/fontforge/Makefile.in"
+    puts "XXXXXXXXX patching the optimizer flags for metricsview! ffexe"
+    system "sed -i -e 's/-c -o libfontforgeexe_la-metricsview.lo/-O0 -c -o libfontforgeexe_la-metricsview.lo/g' ${worksrcpath}/fontforgeexe/Makefile.in"
+    puts "path: ${worksrcpath}/fontforgeexe/Makefile.in"
+    system "grep libfontforgeexe_la-metricsview.lo  ${worksrcpath}/fontforgeexe/Makefile.in"
 
 }
 
