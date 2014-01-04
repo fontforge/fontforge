@@ -715,6 +715,58 @@ static Color MaybeMaskColorToAlphaChannelOverride( Color c, Color AlphaChannelOv
     return c;
 }
 
+/*
+ * Format the given real value to .001 precision, discarding trailing
+ * zeroes, and the decimal point if not needed.
+ */
+static int FmtReal(char *buf, int buflen, real r)
+{
+    if (buf && buflen > 0) {
+	int ct;
+
+	if ((ct = snprintf(buf, buflen, "%.3f", r)) >= buflen)
+	    ct = buflen-1;
+    
+	if (strchr(buf, '.')) {
+	    while (buf[ct-1] == '0') {
+		--ct;
+	    }
+	    if (buf[ct-1] == '.') {
+		--ct;
+	    }
+	    buf[ct] = '\0';
+	}
+	return ct;
+    }
+    return -1;
+}	    
+	
+/*
+ * Write the given spline point's coordinates in the form (xxx,yyy)
+ * into the buffer provided, rounding fractions to the nearest .001
+ * and discarding trailing zeroes.
+ */ 
+static int SplinePointCoords(char *buf, int buflen, SplinePoint *sp)
+{
+    if (buf && buflen > 0) {
+	int ct = 0, clen;
+
+	/* 4 chars for parens, comma and trailing NUL, then divide what
+	   remains between the two coords */
+	clen = (buflen - 4) / 2;
+	if (clen > 0) {
+	    buf[ct++] = '(';
+	    ct += FmtReal(buf+ct, clen, sp->me.x);
+	    buf[ct++] = ',';
+	    ct += FmtReal(buf+ct, clen, sp->me.y);
+	    buf[ct++] = ')';
+	}
+	buf[ct] = '\0';
+
+	return ct;
+    }
+    return -1;
+}
 
 static void DrawPoint( CharView *cv, GWindow pixmap, SplinePoint *sp,
 		       SplineSet *spl, int onlynumber, int truetype_markup,
@@ -839,7 +891,7 @@ return;
 		pnum = sp->nextcpindex;
 		if ( pnum!=0xffff && pnum!=0xfffe ) {
                     if (cv->showpointnumbers == 2)
-                        sprintf( buf, "(%d,%d)", (int)(sp->me.x), (int)(sp->me.y) );
+			SplinePointCoords( buf, sizeof(buf), sp);
                     else
 		        sprintf( buf,"%d", pnum );
 		    GDrawDrawText8(pixmap,cx,cy-6,buf,-1,nextcpcol);
@@ -975,7 +1027,7 @@ return;
 	if ( sp->ttfindex==0xfffe )
 	    strcpy(buf,"??");
         else if (cv->showpointnumbers == 2)
-            sprintf( buf, "(%d,%d)", (int)(sp->me.x), (int)(sp->me.y) );
+	    SplinePointCoords(buf, sizeof(buf), sp);
 	else
 	    sprintf( buf,"%d", sp->ttfindex );
 	GDrawDrawText8(pixmap,x,y-6,buf,-1,col);
