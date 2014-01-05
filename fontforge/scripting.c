@@ -222,6 +222,9 @@ static void traceback(Context *c) {
     int cnt = 0;
     while ( c!=NULL ) {
 	if (c->interactive) {
+	    if ( c->err_env!=NULL ) {
+		longjmp(*c->err_env,1);
+	    }
 	    c->error = true;
 	    return;
 	}
@@ -10348,6 +10351,7 @@ void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     enum token_type tok;
     char *string=NULL;
     int dry = 0;
+    jmp_buf env;
 
     no_windowing_ui = true;
     running_script = true;
@@ -10420,6 +10424,10 @@ void ProcessNativeScript(int argc, char *argv[], FILE *script) {
 	ScriptError(&c, "No such file");
     else {
 	c.lineno = 1;
+	
+	while (setjmp(env))
+	    ;
+	c.err_env = &env;
 	while ( !c.returned && !c.broken && (tok = ff_NextToken(&c))!=tt_eof ) {
 	    ff_backuptok(&c);
 	    ff_statement(&c);

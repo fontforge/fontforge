@@ -511,6 +511,8 @@ int SFScaleToEm(SplineFont *sf, int as, int des) {
     real transform[6];
     BVTFunc bvts;
     uint8 *oldselected = sf->fv->selected;
+    enum fvtrans_flags trans_flags =
+	fvt_alllayers|fvt_round_to_int|fvt_dontsetwidth|fvt_scalekernclasses|fvt_scalepstpos|fvt_dogrid;
 
     scale = (as+des)/(bigreal) (sf->ascent+sf->descent);
     sf->pfminfo.hhead_ascent = rint( sf->pfminfo.hhead_ascent * scale);
@@ -561,8 +563,13 @@ return( false );
 
     sf->ascent = as; sf->descent = des;
 
-    FVTransFunc(sf->fv,transform,0,&bvts,
-	    fvt_alllayers|fvt_round_to_int|fvt_dontsetwidth|fvt_scalekernclasses|fvt_scalepstpos|fvt_dogrid);
+    /* If someone has set an absurdly small em size, try to contain
+       the damage by not rounding to int. */
+    if ((as+des) < 32) {
+	trans_flags &= ~fvt_round_to_int;
+    }
+
+    FVTransFunc(sf->fv,transform,0,&bvts,trans_flags);
     free(sf->fv->selected);
     sf->fv->selected = oldselected;
 
