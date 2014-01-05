@@ -922,9 +922,9 @@ SplineFont *SFReadUFO(char *filename, int flags) {
 return( NULL );
 }
 
-SplineSet *SplinePointListInterpretGlif(char *filename,char *memory, int memlen,
+SplineSet *SplinePointListInterpretGlif(SplineFont *sf,char *filename,char *memory, int memlen,
 	int em_size,int ascent,int is_stroked) {
-return( NULL );
+    return( NULL );
 }
 #else
 
@@ -1250,7 +1250,7 @@ return( NULL );
                     char *ys = (char *) xmlGetProp(points, (xmlChar *) "y");
                     ap->me.x = strtod(xs,NULL);
                     ap->me.y = strtod(ys,NULL);
-                    
+
                     ac = SFFindOrAddAnchorClass(sf,namep,NULL);
                     if (*sname=='_')
                         ap->type = ac->type==act_curs ? at_centry : at_mark;
