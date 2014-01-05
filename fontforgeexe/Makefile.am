@@ -73,9 +73,9 @@ sfddiff: sfddiff.pe
 #--------------------------------------------------------------------------
 
 LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
-	$(top_builddir)/gutils/libgutils.la			\
-	$(top_builddir)/gutils/libgioftp.la \
-    $(top_builddir)/fontforge/libfontforge.la
+	$(top_builddir)/gutils/libgutils.la	\
+	$(top_builddir)/gutils/libgioftp.la	\
+	$(top_builddir)/fontforge/libfontforge.la
 
 GUILIBADD =
 if GRAPHICAL_USER_INTERFACE
@@ -147,11 +147,12 @@ endif
 
 #--------------------------------------------------------------------------
 
-EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe \
-	fontimage.1 fontlint.1 sfddiff.1		\
+EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe	\
+	fontimage.1 fontlint.1 sfddiff.1
 	darwinsetup.in macobjective.m
 # MacFontForgeApp.zip
 MOSTLYCLEANFILES = fontimage fontlint sfddiff
+DISTCLEANFILES = $(MOSTLYCLEANFILES)
 
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
