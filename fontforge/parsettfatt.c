@@ -1919,61 +1919,74 @@ return;
     max = 20;
     glyph2s = galloc(max*sizeof(uint16));
     for ( i=0; glyphs[i]!=0xffff; ++i ) {
-	PST *alt;
-	fseek(ttf,stoffset+offsets[i],SEEK_SET);
-	cnt = getushort(ttf);
-	if ( feof(ttf)) {
-	    LogError( _("Unexpected end of file in GSUB sub-table.\n"));
-	    info->bad_ot = true;
-return;
-	}
-	if ( cnt>max ) {
-	    max = cnt+30;
-	    glyph2s = grealloc(glyph2s,max*sizeof(uint16));
-	}
-	len = 0; bad = false;
-	for ( j=0; j<cnt; ++j ) {
-	    glyph2s[j] = getushort(ttf);
-	    if ( feof(ttf)) {
-		LogError( _("Unexpected end of file in GSUB sub-table.\n" ));
-		info->bad_ot = true;
-return;
-	    }
-	    if ( glyph2s[j]>=info->glyph_cnt ) {
-		if ( !justinuse )
-		    LogError( _("Bad Multiple/Alternate substitution glyph. GID %d not less than %d\n"),
-			    glyph2s[j], info->glyph_cnt );
-		info->bad_ot = true;
-		if ( ++badcnt>20 )
-return;
-		glyph2s[j] = 0;
-	    }
-	    if ( justinuse==git_justinuse )
-		/* Do Nothing */;
-	    else if ( info->chars[glyph2s[j]]==NULL )
-		bad = true;
-	    else
-		len += strlen( info->chars[glyph2s[j]]->name) +1;
-	}
-	if ( justinuse==git_justinuse ) {
-	    info->inuse[glyphs[i]] = 1;
-	    for ( j=0; j<cnt; ++j )
-		info->inuse[glyph2s[j]] = 1;
-	} else if ( info->chars[glyphs[i]]!=NULL && !bad ) {
-	    alt = chunkalloc(sizeof(PST));
-	    alt->type = l->otlookup->lookup_type==gsub_multiple?pst_multiple:pst_alternate;
-	    alt->subtable = subtable;
-	    alt->next = info->chars[glyphs[i]]->possub;
-	    info->chars[glyphs[i]]->possub = alt;
-	    pt = alt->u.subs.variant = galloc(len+1);
-	    *pt = '\0';
-	    for ( j=0; j<cnt; ++j ) {
-		strcat(pt,info->chars[glyph2s[j]]->name);
-		strcat(pt," ");
-	    }
-	    if ( *pt!='\0' && pt[strlen(pt)-1]==' ' )
-		pt[strlen(pt)-1] = '\0';
-	}
+		PST *alt;
+		fseek(ttf,stoffset+offsets[i],SEEK_SET);
+		cnt = getushort(ttf);
+		if ( feof(ttf)) {
+			LogError( _("Unexpected end of file in GSUB sub-table.\n"));
+			info->bad_ot = true;
+			free(offsets);
+			free(glyphs);
+			free(glyph2s);
+			return;
+		}
+		if ( cnt>max ) {
+			max = cnt+30;
+			glyph2s = grealloc(glyph2s,max*sizeof(uint16));
+		}
+		len = 0; bad = false;
+		for ( j=0; j<cnt; ++j ) {
+			glyph2s[j] = getushort(ttf);
+			if ( feof(ttf)) {
+				LogError( _("Unexpected end of file in GSUB sub-table.\n" ));
+				info->bad_ot = true;
+				free(offsets);
+				free(glyphs);
+				free(glyph2s);
+				return;
+			}
+			if ( glyph2s[j]>=info->glyph_cnt ) {
+			if ( !justinuse )
+				LogError( _("Bad Multiple/Alternate substitution glyph. GID %d not less than %d\n"),
+					glyph2s[j], info->glyph_cnt );
+			info->bad_ot = true;
+			if ( ++badcnt>20 ) {
+				free(offsets);
+				free(glyphs);
+				free(glyph2s);
+				return;
+			}
+			glyph2s[j] = 0;
+			}
+			if ( justinuse==git_justinuse )
+			/* Do Nothing */;
+			else if ( info->chars[glyph2s[j]]==NULL )
+			bad = true;
+			else
+			len += strlen( info->chars[glyph2s[j]]->name) +1;
+		}
+		if ( justinuse==git_justinuse ) {
+			info->inuse[glyphs[i]] = 1;
+			for ( j=0; j<cnt; ++j )
+			info->inuse[glyph2s[j]] = 1;
+		} else if ( info->chars[glyphs[i]]!=NULL && !bad ) {
+			alt = chunkalloc(sizeof(PST));
+			alt->type = l->otlookup->lookup_type==gsub_multiple?pst_multiple:pst_alternate;
+			alt->subtable = subtable;
+			alt->next = info->chars[glyphs[i]]->possub;
+			info->chars[glyphs[i]]->possub = alt;
+			pt = alt->u.subs.variant = galloc(len+1);
+			*pt = '\0';
+			for ( j=0; j<cnt; ++j ) {
+			strcat(pt,info->chars[glyph2s[j]]->name);
+			strcat(pt," ");
+			}
+			if ( *pt!='\0' && pt[strlen(pt)-1]==' ' )
+			pt[strlen(pt)-1] = '\0';
+		}
+		if (info->chars[glyphs[i]]->possub->u.subs.variant == NULL) {
+			fprintf( stderr , "info->chars[glyphs[%d]]->possub->u.subs.variant is null. glyphs[%d] = %d. info->chars[%d]->name = \"%s\".\n" , i , i , glyphs[i] , glyphs[i] , info->chars[glyphs[i]]->name ) ;
+		}
     }
     subtable->per_glyph_pst_or_kern = true;
     free(glyphs);
