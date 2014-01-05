@@ -70,6 +70,7 @@ $(TESTSUITE): $(srcdir)/testsuite.at $(srcdir)/package.m4
 	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at
 	mv $@.tmp $@
 
+# test fonts
 EXTRA_DIST += fonts/AddExtremaTest2.sfd fonts/AddExtremumTest.sfd	\
 	fonts/AHBugs.sfd fonts/Ambrosia.sfd fonts/AmbrosiaBold.sfd	\
 	fonts/AmbrosiaItalic.sfd fonts/ayn+meem.init.svg		\
@@ -83,6 +84,27 @@ EXTRA_DIST += fonts/AddExtremaTest2.sfd fonts/AddExtremumTest.sfd	\
 	fonts/SimplifyBugs.sfd fonts/SplineOverlapBug1.sfd		\
 	fonts/StrokeTests.sfd fonts/VKern.sfd README
 
-DISTCLEANFILES = atconfig
+# native test scripts
+EXTRA_DIST += helper107.pe.in helper118A.pe.in helper118B.pe.in		\
+	svg2ttf.pe.in test001.pe.in test002.pe.in test003.pe.in		\
+	test004.pe.in test005.pe.in test006.pe.in test007.pe.in		\
+	test008.pe.in test009.pe.in test010.pe.in test101.pe.in		\
+	test102.pe.in test103.pe.in test104.pe.in test105.pe.in		\
+	test106.pe.in test107.pe.in test108.pe.in test109.pe.in		\
+	test110.pe.in test111.pe.in test112.pe.in test113.pe.in		\
+	test114.pe.in test115.pe.in test116.pe.in test117.pe.in		\
+	test118.pe.in test119.pe.in test120.pe.in test121.pe.in		\
+	test122.pe.in test123.pe.in test124.pe.in test125.pe.in		\
+	test126.pe.in test127.pe.in
+
+# python test scripts
+EXTRA_DIST += findoverlapbugs.py.in test0001.py.in test0101.py.in	\
+	test1001.py.in test1001a.py.in test1001b.py.in test1001c.py.in	\
+	test1002.py.in test1003.py.in test1004.py.in test1005.py.in	\
+	test1006.py.in test1007.py.in
+
+EXTRA_DIST += link_test.c randomtest.c runtests build-aux/missing
+
+DISTCLEANFILES = atconfig *.pe *.py randomtest
 
 -include $(top_srcdir)/git.mk
