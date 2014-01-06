@@ -37,5 +37,10 @@ pkginclude_HEADERS = basics.h chardata.h charset.h dynamic.h	\
 
 noinst_HEADERS = pluginloading.h
 
+#--------------------------------------------------------------------------
+
+EXTRA_DIST = descrip.mms fontforge-config.h_vms
+
+#--------------------------------------------------------------------------
 
 -include $(top_srcdir)/git.mk
