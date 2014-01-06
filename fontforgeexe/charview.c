@@ -1455,6 +1455,113 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
     }
 }
 
+typedef struct CVDrawSplineSetSpecializedShrivelPointsCountIntersections_data
+{
+    Spline* s2;
+    int count;
+} CVDrawSplineSetSpecializedShrivelPointsCountIntersections_Data;
+
+static void CVDrawSplineSetSpecializedShrivelPointsCountIntersections_SPLFirstVisitSplinesVisitor(
+    SplinePoint* splfirst, Spline* s, void* udata )
+{
+    BasePoint pts[9];
+	extended t1s[10];
+    extended t2s[10];
+
+    CVDrawSplineSetSpecializedShrivelPointsCountIntersections_Data* d = (CVDrawSplineSetSpecializedShrivelPointsCountIntersections_Data*)udata;
+    Spline* s2 = d->s2;
+    int rc = SplinesIntersect( s, s2, pts, t1s, t2s );
+    d->count += rc;
+}
+
+
+static bool isInsideShape( SplinePoint* splfirst, real x, real y )
+{
+    int order2 = 1;
+    SplinePoint* from = SplinePointCreate( x, y );
+    SplinePoint* to   = SplinePointCreate( x, y );
+
+    to->me.x += 1000000;
+    Spline* s2 = SplineMake( from, to, order2 );
+    
+    CVDrawSplineSetSpecializedShrivelPointsCountIntersections_Data d;
+    d.s2 = s2;
+    d.count = 0;
+    SPLFirstVisitSplines( splfirst,
+                          CVDrawSplineSetSpecializedShrivelPointsCountIntersections_SPLFirstVisitSplinesVisitor,
+                          &d );
+    int countL = d.count;
+    int isOddL = (d.count % 2 == 1);
+    to->me.x -= 2000000;
+    s2 = SplineMake( from, to, order2 );
+    d.s2 = s2;
+    d.count = 0;
+    SPLFirstVisitSplines( splfirst,
+                          CVDrawSplineSetSpecializedShrivelPointsCountIntersections_SPLFirstVisitSplinesVisitor,
+                          &d );
+    int countR = d.count;
+    int isOddR = (d.count % 2 == 1);
+
+    printf("isInsideShape x:%f y:%f oddL:%d oddR:%d res:%d\n", x, y, countL, countR, isOddL && isOddR );
+    return isOddL && isOddR;
+}
+
+
+static void CVDrawSplineSetSpecializedShrivelPoints( SplinePoint* splfirst, Spline* s, SplinePoint* sp, void* udata )
+{
+    real x = sp->me.x;
+    real y = sp->me.y;
+    
+    if( isInsideShape( splfirst, x + 0.000001, y + 0.001 ) )
+    {
+        sp->me.y += (int)udata;
+    }
+    else
+    {
+        sp->me.y -= (int)udata;
+    }
+
+    if( isInsideShape( splfirst, x + 0.001, y + 0.000001 ) )
+    {
+        sp->me.x += (int)udata;
+    }
+    else
+    {
+        sp->me.x -= (int)udata;
+    }
+    
+    
+    int order2 = 0;
+    SplinePoint* from = SplinePointCreate( sp->me.x, sp->me.y );
+    SplinePoint* to   = SplinePointCreate( sp->me.x, sp->me.y );
+    from->me.y += (int)udata;
+    to->me.y += (int)udata;
+    from->me.x += (int)udata;
+    to->me.x += (int)udata;
+    to->me.x += 100000;
+    Spline* s2 = SplineMake( from, to, order2 );
+    
+    CVDrawSplineSetSpecializedShrivelPointsCountIntersections_Data d;
+    d.s2 = s2;
+    d.count = 0;
+    SPLFirstVisitSplines( splfirst,
+                          CVDrawSplineSetSpecializedShrivelPointsCountIntersections_SPLFirstVisitSplinesVisitor,
+                          &d );
+
+    if( d.count % 2 == 1 )
+    {
+        // we are inside the shape. move UPWARDS
+        sp->me.y += (int)udata;
+        sp->me.x += (int)udata;
+    }
+    else
+    {
+//        sp->me.y -= (int)udata;
+//        sp->me.x -= (int)udata;
+    }
+    
+}
+
 
 void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *set,
 				 Color fg, int dopoints, DRect *clip,
@@ -1508,8 +1615,30 @@ void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *
 	 * clip path splines which will possibly have a different stroke color
 	 */
 	CVDrawSplineSetOutlineOnly( cv, pixmap, set,
-				    fg, dopoints, clip,
-				    ( strokeFillMode==sfm_stroke_trans ? sfm_stroke_trans : sfm_stroke ) );
+                                fg, dopoints, clip,
+                                ( strokeFillMode==sfm_stroke_trans ? sfm_stroke_trans : sfm_stroke ) );
+
+    printf("at draw path\n");
+    SplinePointList *spl = 0;
+    for ( spl = set; spl!=NULL; spl = spl->next )
+    {
+        /* int strokeWidth = 5 * cv->scale; */
+        /* SplinePointList* t = SplinePointListCopy( spl ); */
+        /* SPLFirstVisitPoints( t->first, CVDrawSplineSetSpecializedShrivelPoints, (void*)strokeWidth ); */
+        /* t->first->me.y -= (int)strokeWidth; */
+        /* strokeWidth *= 2; */
+        /* Color strokefg = 0x20707070; */
+        /* spl->is_clip_path = 0; */
+        /* GDrawSetLineWidth(pixmap, strokeWidth ); */
+        /* CVDrawSplineSetOutlineOnly( cv, pixmap, t, */
+        /*                             strokefg, dopoints, clip, */
+        /*                             sfm_stroke_trans ); */
+        /* GDrawSetLineWidth(pixmap, 1); */
+        /* SplinePointListFree(t); */
+    }
+    
+    
+    
     }
 
     for ( spl = set; spl!=NULL; spl = spl->next ) {
