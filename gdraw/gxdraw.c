@@ -1978,6 +1978,21 @@ static int GXDrawSetline(GXDisplay *gdisp, GGC *mine) {
 return( true );
 }
 
+static void GXDrawPushClipOnly(GWindow w)
+{
+#ifndef _NO_LIBCAIRO
+    if ( ((GXWindow) w)->usecairo )
+        _GXCDraw_PushClipOnly((GXWindow) w);
+#endif
+}
+
+static void GXDrawClipPreserve(GWindow w)
+{
+    if ( ((GXWindow) w)->usecairo )
+        _GXCDraw_ClipPreserve((GXWindow) w);
+}
+
+
 static void GXDrawPushClip(GWindow w, GRect *rct, GRect *old) {
     /* return the current clip, and intersect the current clip with the desired */
     /*  clip to get the new */
@@ -2020,6 +2035,8 @@ static void GXDrawPopClip(GWindow w, GRect *old) {
 	_GXCDraw_PopClip((GXWindow) w);
 #endif
 }
+
+
 
 static void GXDrawClear(GWindow gw, GRect *rect) {
     GXWindow gxw = (GXWindow) gw;
@@ -4545,7 +4562,10 @@ static struct displayfuncs xfuncs = {
     GXDraw_LayoutLineCount,
     GXDraw_LayoutLineStart,
     GXDrawPathStartSubNew,
-    GXDrawFillRuleSetWinding
+    GXDrawFillRuleSetWinding,
+
+    GXDrawPushClipOnly,
+    GXDrawClipPreserve
 };
 
 static void GDrawInitXKB(GXDisplay *gdisp) {

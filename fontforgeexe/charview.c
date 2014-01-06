@@ -179,6 +179,9 @@ static Color rulerbigtickcol = 0x008000;
 static Color previewfillcol = 0x0f0f0f;
 static Color DraggingComparisonOutlineColor = 0x8800BB00;
 static Color DraggingComparisonAlphaChannelOverride = 0x88000000;
+static Color foreoutthicklinecol = 0x20707070;
+static Color backoutthicklinecol = 0x20707070;
+int prefs_cv_outline_thickness = 1;
 
 // Format is 0x AA RR GG BB.
 
@@ -232,6 +235,8 @@ static struct resed charview2_re[] = {
     { N_("Grid Fit Color"), "GridFitOutlineColor", rt_color, &gridfitoutlinecol, N_("The color of grid-fit outlines"), NULL, { 0 }, 0, 0 },
     { N_("Inactive Layer Color"), "BackgroundOutlineColor", rt_color, &backoutlinecol, N_("The color of outlines in inactive layers"), NULL, { 0 }, 0, 0 },
     { N_("Active Layer Color"), "ForegroundOutlineColor", rt_color, &foreoutlinecol, N_("The color of outlines in the active layer"), NULL, { 0 }, 0, 0 },
+    { N_("Inactive Thick Layer Color"), "BackgroundThickOutlineColor", rt_coloralpha, &backoutthicklinecol, N_("The color of thick outlines in inactive layers"), NULL, { 0 }, 0, 0 },
+    { N_("Active Thick Layer Color"), "ForegroundThickOutlineColor", rt_coloralpha, &foreoutthicklinecol, N_("The color of thick outlines in the active layer"), NULL, { 0 }, 0, 0 },
     { N_("Clip Path Color"), "ClipPathColor", rt_color, &clippathcol, N_("The color of the clip path"), NULL, { 0 }, 0, 0 },
     { N_("Open Path Color"), "OpenPathColor", rt_color, &openpathcol, N_("The color of the open path"), NULL, { 0 }, 0, 0 },
     { N_("Background Image Color"), "BackgroundImageColor", rt_coloralpha, &backimagecol, N_("The color used to draw bitmap (single bit) images which do not specify a clut"), NULL, { 0 }, 0, 0 },
@@ -1475,15 +1480,17 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 		GDrawPathClose(pixmap);
 
 	    switch( strokeFillMode ) {
-	    case sfm_stroke_trans:
-		GDrawPathStroke( pixmap, fc );
-		break;
-	    case sfm_stroke:
-		GDrawPathStroke( pixmap, fc | 0xff000000 );
-		break;
-	    case sfm_fill:
-	    case sfm_nothing:
-		break;
+            case sfm_stroke_trans:
+                GDrawPathStroke( pixmap, fc );
+                break;
+            case sfm_stroke:
+                GDrawPathStroke( pixmap, fc | 0xff000000 );
+                break;
+            case sfm_clip_preserve:
+                GDrawClipPreserve( pixmap );
+            case sfm_fill:
+            case sfm_nothing:
+                break;
 	    }
 	} else {
 	    GPointList *gpl = MakePoly(cv,spl), *cur;
@@ -1495,16 +1502,123 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 
     Color c = fillcol;
     switch( strokeFillMode ) {
-    case sfm_fill:
-	if( cv->inPreviewMode ) {
-	    c = previewfillcol;
-	}
-	GDrawPathFill( pixmap, c|0xff000000);
-	break;
-    case sfm_stroke:
-    case sfm_nothing:
-	break;
+        case sfm_fill:
+            if( cv->inPreviewMode ) {
+                c = previewfillcol;
+            }
+            GDrawPathFill( pixmap, c|0xff000000);
+            break;
+        case sfm_stroke:
+        case sfm_nothing:
+            break;
     }
+}
+
+typedef struct CVDrawSplineSetSpecializedShrivelPointsCountIntersections_data
+{
+    Spline* s2;
+    int count;
+} CVDrawSplineSetSpecializedShrivelPointsCountIntersections_Data;
+
+static void CVDrawSplineSetSpecializedShrivelPointsCountIntersections_SPLFirstVisitSplinesVisitor(
+    SplinePoint* splfirst, Spline* s, void* udata )
+{
+    BasePoint pts[9];
+	extended t1s[10];
+    extended t2s[10];
+
+    CVDrawSplineSetSpecializedShrivelPointsCountIntersections_Data* d = (CVDrawSplineSetSpecializedShrivelPointsCountIntersections_Data*)udata;
+    Spline* s2 = d->s2;
+    int rc = SplinesIntersect( s, s2, pts, t1s, t2s );
+    d->count += rc;
+}
+
+
+static bool isInsideShape( SplinePoint* splfirst, real x, real y )
+{
+    int order2 = 1;
+    SplinePoint* from = SplinePointCreate( x, y );
+    SplinePoint* to   = SplinePointCreate( x, y );
+
+    to->me.x += 1000000;
+    Spline* s2 = SplineMake( from, to, order2 );
+    
+    CVDrawSplineSetSpecializedShrivelPointsCountIntersections_Data d;
+    d.s2 = s2;
+    d.count = 0;
+    SPLFirstVisitSplines( splfirst,
+                          CVDrawSplineSetSpecializedShrivelPointsCountIntersections_SPLFirstVisitSplinesVisitor,
+                          &d );
+    int countL = d.count;
+    int isOddL = (d.count % 2 == 1);
+    to->me.x -= 2000000;
+    s2 = SplineMake( from, to, order2 );
+    d.s2 = s2;
+    d.count = 0;
+    SPLFirstVisitSplines( splfirst,
+                          CVDrawSplineSetSpecializedShrivelPointsCountIntersections_SPLFirstVisitSplinesVisitor,
+                          &d );
+    int countR = d.count;
+    int isOddR = (d.count % 2 == 1);
+
+    printf("isInsideShape x:%f y:%f oddL:%d oddR:%d res:%d\n", x, y, countL, countR, isOddL && isOddR );
+    return isOddL && isOddR;
+}
+
+
+static void CVDrawSplineSetSpecializedShrivelPoints( SplinePoint* splfirst, Spline* s, SplinePoint* sp, void* udata )
+{
+    real x = sp->me.x;
+    real y = sp->me.y;
+    
+    if( isInsideShape( splfirst, x + 0.000001, y + 0.001 ) )
+    {
+        sp->me.y += (int)udata;
+    }
+    else
+    {
+        sp->me.y -= (int)udata;
+    }
+
+    if( isInsideShape( splfirst, x + 0.001, y + 0.000001 ) )
+    {
+        sp->me.x += (int)udata;
+    }
+    else
+    {
+        sp->me.x -= (int)udata;
+    }
+    
+    
+    int order2 = 0;
+    SplinePoint* from = SplinePointCreate( sp->me.x, sp->me.y );
+    SplinePoint* to   = SplinePointCreate( sp->me.x, sp->me.y );
+    from->me.y += (int)udata;
+    to->me.y += (int)udata;
+    from->me.x += (int)udata;
+    to->me.x += (int)udata;
+    to->me.x += 100000;
+    Spline* s2 = SplineMake( from, to, order2 );
+    
+    CVDrawSplineSetSpecializedShrivelPointsCountIntersections_Data d;
+    d.s2 = s2;
+    d.count = 0;
+    SPLFirstVisitSplines( splfirst,
+                          CVDrawSplineSetSpecializedShrivelPointsCountIntersections_SPLFirstVisitSplinesVisitor,
+                          &d );
+
+    if( d.count % 2 == 1 )
+    {
+        // we are inside the shape. move UPWARDS
+        sp->me.y += (int)udata;
+        sp->me.x += (int)udata;
+    }
+    else
+    {
+//        sp->me.y -= (int)udata;
+//        sp->me.x -= (int)udata;
+    }
+    
 }
 
 
@@ -1560,8 +1674,52 @@ void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *
 	 * clip path splines which will possibly have a different stroke color
 	 */
 	CVDrawSplineSetOutlineOnly( cv, pixmap, set,
-				    fg, dopoints, clip,
-				    ( strokeFillMode==sfm_stroke_trans ? sfm_stroke_trans : sfm_stroke ) );
+                                fg, dopoints, clip,
+                                ( strokeFillMode==sfm_stroke_trans ? sfm_stroke_trans : sfm_stroke ) );
+
+    if( prefs_cv_outline_thickness > 1 )
+    {
+        printf("at draw path\n");
+        SplinePointList *spl = 0;
+        for ( spl = set; spl!=NULL; spl = spl->next )
+        {
+            // we only draw the inner half, so we double the user's expected
+            // thickness here.
+            int strokeWidth = prefs_cv_outline_thickness * 2 * cv->scale;
+            Color strokefg = foreoutthicklinecol;
+
+            GRect old;
+            GDrawPushClipOnly( pixmap );
+            CVDrawSplineSetOutlineOnly( cv, pixmap, spl,
+                                        strokefg, dopoints, clip,
+                                        sfm_clip_preserve );
+            int16 oldwidth = GDrawGetLineWidth( pixmap );
+            GDrawSetLineWidth( pixmap, strokeWidth );
+            CVDrawSplineSetOutlineOnly( cv, pixmap, spl,
+                                        strokefg, dopoints, clip,
+                                        sfm_stroke_trans );
+            GDrawPopClip( pixmap, &old );
+            GDrawSetLineWidth( pixmap, oldwidth );
+
+        
+            /* int strokeWidth = 5 * cv->scale; */
+            /* SplinePointList* t = SplinePointListCopy( spl ); */
+            /* SPLFirstVisitPoints( t->first, CVDrawSplineSetSpecializedShrivelPoints, (void*)strokeWidth ); */
+            /* t->first->me.y -= (int)strokeWidth; */
+            /* strokeWidth *= 2; */
+            /* Color strokefg = 0x20707070; */
+            /* spl->is_clip_path = 0; */
+            /* GDrawSetLineWidth(pixmap, strokeWidth ); */
+            /* CVDrawSplineSetOutlineOnly( cv, pixmap, t, */
+            /*                             strokefg, dopoints, clip, */
+            /*                             sfm_stroke_trans ); */
+            /* GDrawSetLineWidth(pixmap, 1); */
+            /* SplinePointListFree(t); */
+        }
+    }
+    
+    
+    
     }
 
     for ( spl = set; spl!=NULL; spl = spl->next ) {

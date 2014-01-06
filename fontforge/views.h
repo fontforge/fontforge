@@ -852,7 +852,13 @@ extern void SFPrivateInfo(SplineFont *sf);
 extern void FVDelay(FontView *fv,void (*func)(FontView *));
 extern void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, int success);
 extern void SCPreparePopup(GWindow gw,SplineChar *sc, struct remap *remap, int enc, int actualuni);
-enum outlinesfm_flags { sfm_stroke=0x1, sfm_fill=0x2, sfm_nothing=0x4, sfm_stroke_trans = (0x1|0x8) };
+enum outlinesfm_flags {
+    sfm_stroke=0x1,
+    sfm_fill=0x2,
+    sfm_nothing=0x4,
+    sfm_stroke_trans = (0x1|0x8),
+    sfm_clip_preserve = 0x16
+};
 extern void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *set,
 					Color fg, int dopoints, DRect *clip,
 					enum outlinesfm_flags strokeFillMode,
