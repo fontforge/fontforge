@@ -190,6 +190,7 @@ extern int UndoRedoLimitToLoad;  /* sfd.c */
 extern int prefRevisionsToRetain; /* sfd.c */
 extern int prefs_cv_show_control_points_always_initially; /* from charview.c */
 extern int prefs_create_dragging_comparison_outline;      /* from charview.c */
+extern int prefs_cv_outline_thickness; /* from charview.c */
 
 extern NameList *force_names_when_opening;
 extern NameList *force_names_when_saving;
@@ -364,7 +365,9 @@ static struct prefs_list {
 	{ N_("EditHandleSize"), pr_real, &prefs_cvEditHandleSize, NULL, NULL, '\0', NULL, 0, N_("The size of the handles showing control points and other interesting points in the glyph editor (default is 5).") },
 	{ N_("InactiveHandleAlpha"), pr_int, &prefs_cvInactiveHandleAlpha, NULL, NULL, '\0', NULL, 0, N_("Inactive handles in the glyph editor will be drawn with this alpha value (range: 0-255 default is 255).") },
 	{ N_("ShowControlPointsAlways"), pr_bool, &prefs_cv_show_control_points_always_initially, NULL, NULL, '\0', NULL, 0, N_("Always show the control points when editing a glyph.\nThis can be turned off in the menu View/Show, this setting will effect if control points are shown initially.\nChange requires a restart of fontforge.") },
+	{ N_("OutlineThickness"), pr_int, &prefs_cv_outline_thickness, NULL, NULL, '\0', NULL, 0, N_("Setting above 1 will cause a thick outline to be drawn for glyph paths\n which is only extended inwards from the edge of the glyph.\n See also the ForegroundThickOutlineColor Resource for the color of this outline.") },
 
+    
 	PREFS_LIST_EMPTY
 },
   sync_list[] = {

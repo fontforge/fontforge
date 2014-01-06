@@ -347,6 +347,19 @@ void GDrawPushClip(GWindow w, GRect *rct, GRect *old) {
     (w->display->funcs->pushClip)(w,rct,old);
 }
 
+void GDrawPushClipOnly(GWindow w)
+{
+    if( w->display->funcs->PushClipOnly )
+        (w->display->funcs->PushClipOnly)( w );
+}
+
+void GDrawClipPreserve(GWindow w)
+{
+    if( w->display->funcs->ClipPreserve )
+        (w->display->funcs->ClipPreserve)( w );
+}
+
+
 #if 0
 void GDrawClipClip(GWindow w, GRect *rct, GRect *old) {
     GRect temp = w->ggc->clip;
@@ -405,6 +418,12 @@ void GDrawSetStippled(GWindow w,int16 ts, int32 yoff,int32 xoff) {
 void GDrawSetLineWidth(GWindow w,int16 width) {
     w->ggc->line_width = width;
 }
+
+int16 GDrawGetLineWidth( GWindow w ) 
+{
+    return w->ggc->line_width;
+}
+
 
 void GDrawSetForeground(GWindow w,Color col) {
     w->ggc->fg = col;

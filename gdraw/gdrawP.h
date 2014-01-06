@@ -289,6 +289,10 @@ struct displayfuncs {
     int  (*layoutLineStart)(GWindow w,int line);
     void (*startNewSubPath)(GWindow w);
     int  (*fillRuleSetWinding)(GWindow w);
+
+    void (*PushClipOnly)(GWindow w);
+    void (*ClipPreserve)(GWindow w);
+    
 };
 
 extern GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname);

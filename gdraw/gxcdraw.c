@@ -215,6 +215,16 @@ void _GXCDraw_PopClip(GXWindow gw) {
     cairo_restore(gw->cc);
 }
 
+void _GXCDraw_PushClipOnly(GXWindow gw) {
+    cairo_save( gw->cc );
+}
+
+void _GXCDraw_ClipPreserve(GXWindow gw) {
+    cairo_clip_preserve( gw->cc );
+}
+
+
+
 /* ************************************************************************** */
 /* ***************************** Cairo Drawing ****************************** */
 /* ************************************************************************** */
