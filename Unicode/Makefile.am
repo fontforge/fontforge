@@ -37,4 +37,16 @@ libgunicode_la_CPPFLAGS = "-I$(top_builddir)/inc"	\
 libgunicode_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGUNICODE_VERSION)
 libgunicode_la_LIBADD = $(MY_LIBS)
 
+#--------------------------------------------------------------------------
+
+#dump_SOURCES = dump.c
+#makebuildtables_SOURCES = makebuildtables.c
+#makeutype_SOURCES = makeutype.c
+
+#noinst_PROGRAMS = dump makebuildtables makeutype
+
+EXTRA_DIST = descrip.mms dump.c makebuildtables.c makeutype.c README.TXT
+
+#--------------------------------------------------------------------------
+
 -include $(top_srcdir)/git.mk

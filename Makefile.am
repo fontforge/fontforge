@@ -99,6 +99,14 @@ uninstall-local:
 
 DISTCHECK_CONFIGURE_FLAGS = --enable-theme-2012 --enable-debug
 
+#	\
+#	--disable-native-scripting --disable-python-scripting	\
+#	--without-giflib --without-libjpeg --without-libpng	\
+#	--without-libtiff --without-libxml --without-libspiro	\
+#	--without-libuninameslist --without-libunicodenames	\
+#	--without-libzmq  --without-libreadline
+
+
 #--------------------------------------------------------------------------
 
 -include $(top_srcdir)/git.mk
