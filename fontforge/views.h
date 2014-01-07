@@ -1099,7 +1099,13 @@ extern void ShowAboutScreen(void);
 extern void DelayEvent(void (*func)(void *), void *data);
 
 extern void FindProblems(FontView *fv,CharView *cv,SplineChar *sc);
-extern void CVConstrainSelection(CharView *cv,int type);
+typedef enum
+{
+    constrainSelection_AveragePoints = 0,
+    constrainSelection_SpacePoints = 1,
+    constrainSelection_SpaceSelectedRegions = 2
+} constrainSelection_t;
+extern void CVConstrainSelection(CharView *cv, constrainSelection_t type);
 extern void CVMakeParallel(CharView *cv);
 
 extern void ScriptDlg(FontView *fv,CharView *cv);
@@ -1542,6 +1548,8 @@ extern bool CVShouldInterpolateCPsOnMotion( CharView* cv );
 
 extern int CVNearRBearingLine( CharView* cv, real x, real fudge );
 extern int CVNearLBearingLine( CharView* cv, real x, real fudge );
+
+extern void CVMenuConstrain(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e));
 
 
 

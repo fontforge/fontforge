@@ -9487,11 +9487,12 @@ static void CVMenuNLTransform(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
     NonLinearDlg(NULL,cv);
 }
 
-static void CVMenuConstrain(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
+void CVMenuConstrain(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    CVConstrainSelection(cv,mi->mid==MID_Average?0:
-			    mi->mid==MID_SpacePts?1:
-			    2);
+    CVConstrainSelection( cv,
+                          mi->mid==MID_Average  ? constrainSelection_AveragePoints :
+                          mi->mid==MID_SpacePts ? constrainSelection_SpacePoints   :
+                          constrainSelection_SpaceSelectedRegions );
 }
 
 static void CVMenuMakeParallel(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {

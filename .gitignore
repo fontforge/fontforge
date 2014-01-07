@@ -10,7 +10,6 @@
 /.dirstamp
 /.gitignore
 /.libs
-/GNUmakefile
 /GPATH
 /GRTAGS
 /GSYMS
@@ -29,6 +28,7 @@
 /configure
 /configure.lineno
 /fontforge-config.h
+/fontforge.pc
 /libfontforge.pc
 /libfontforgeexe.pc
 /libtool

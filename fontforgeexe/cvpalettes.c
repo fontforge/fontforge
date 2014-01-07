@@ -44,7 +44,6 @@ extern int interpCPsOnMotion;
 
 static void CVLCheckLayerCount(CharView *cv, int resize);
 
-
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
 #define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
@@ -3168,7 +3167,15 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	    mi[i].mid = MID_MergeToLine;
 	    mi[i].invoke = CVMergeToLine;
 	    i++;
-	    
+
+	    mi[i].ti.text = (unichar_t *) _("Align Points");
+	    mi[i].ti.text_is_1byte = true;
+	    mi[i].ti.fg = COLOR_DEFAULT;
+	    mi[i].ti.bg = COLOR_DEFAULT;
+	    mi[i].mid = MID_Average;
+	    mi[i].invoke = CVMenuConstrain;
+	    i++;
+        
     }
     
     
