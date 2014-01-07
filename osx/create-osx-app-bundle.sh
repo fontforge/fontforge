@@ -13,6 +13,7 @@ bundle_bin="$bundle_res/opt/local/bin"
 bundle_lib="$bundle_res/opt/local/lib"
 bundle_etc="$bundle_res/opt/local/etc"
 bundle_share="$bundle_res/opt/local/share"
+export PATH="$PATH:$scriptdir"
 
 #cp ./fontforge/MacFontForgeAppBuilt.zip $TEMPDIR/
 #unzip -d $TEMPDIR $TEMPDIR/MacFontForgeAppBuilt.zip
@@ -73,6 +74,16 @@ dylibbundler --overwrite-dir --bundle-deps --fix-file \
 cp -av /usr/lib/libedit* $bundle_lib/
 cp -av /usr/lib/libedit* $bundle_bin/FontForgeInternal/collablib/
 
+cd $bundle_lib
+for if in libXcomposite.1.dylib libXcursor.1.dylib libXdamage.1.dylib libXfixes.3.dylib libXinerama.1.dylib libXrandr.2.dylib libatk-1.0.0.dylib libgdk-x11-2.0.0.dylib libgdk_pixbuf-2.0.0.dylib libgtk-x11-2.0.0.dylib libtest-1.0.0.dylib
+do
+    cp -av /opt/local/lib/$if $bundle_lib/
+    library-paths-opt-local-to-absolute.sh $bundle_lib/$if 
+done
+cd $bundle_bin
+
+
+
 ############
 # Grab fc-cache so we can show the cache update before the actual
 # fontforge process is run
@@ -131,6 +142,35 @@ do
 done
 cd $bundle_bin
 install_name_tool -change /opt/local/Library/Frameworks/Python.framework/Versions/2.7/Python @executable_path/Python fontforge 
+cd $bundle_bin
+
+
+cd ./Python.framework.2.7/lib/
+cp -av /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/libpyglib-2.0-python2.7.0.dylib .
+for if in libpyglib-2.0-python*dylib
+do
+   library-paths-opt-local-to-absolute.sh $if
+done
+cd $bundle_bin
+
+cd ./Python.framework.2.7/lib/python2.7/site-packages
+for if in $(find . -name "*so")
+do
+    echo $if
+    library-paths-opt-local-to-absolute.sh $if
+    install_name_tool -change \
+       /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/libpyglib-2.0-python2.7.0.dylib \
+       /Applications/FontForge.app/Contents/Resources/opt/local/bin/Python.framework.2.7/lib/libpyglib-2.0-python2.7.0.dylib \
+       $if
+done
+
+cd $bundle_lib
+for if in libpango*dylib libgobject-2.0.0.dylib libglib-2.0.0.dylib libintl.8.dylib   libgmodule-2.0.0.dylib libgthread-2.0.0.dylib  libcairo.2.dylib libfontconfig.1.dylib  libfreetype.6.dylib  libxcb.1.dylib  libxcb-shm.0.dylib  libxcb-render.0.dylib libX*dylib libharfbuzz.0.dylib  libgio-2.0.0.dylib
+do    
+   library-paths-to-absolute.sh $if; 
+done
+
+
 cd $bundle_bin
 
 
@@ -199,6 +239,7 @@ do
       --install-path @executable_path/../lib \
       --dest-dir "$bundle_lib"
 done
+library-paths-to-absolute.sh pango-basic-fc.so
 
 
 cd $bundle_res
