@@ -393,6 +393,8 @@ extern void GDrawGetClip(GWindow w, GRect *ret);
 extern void GDrawSetClip(GWindow w, GRect *rct);
 extern void GDrawPushClip(GWindow w, GRect *rct, GRect *old);
 extern void GDrawPopClip(GWindow w, GRect *old);
+extern void GDrawPushClipOnly(GWindow w);
+extern void GDrawClipPreserve(GWindow w);
 extern GGC *GDrawGetWindowGGC(GWindow w);
 extern void GDrawSetXORBase(GWindow w,Color col);
 extern void GDrawSetXORMode(GWindow w);
@@ -401,6 +403,8 @@ extern void GDrawSetCopyThroughSubWindows(GWindow w,int16 through);
 extern void GDrawSetDashedLine(GWindow w,int16 dash_len, int16 skip_len, int16 off);
 extern void GDrawSetStippled(GWindow w,int16 ts, int32 yoff,int32 xoff);
 extern void GDrawSetLineWidth(GWindow w,int16 width);
+extern int16 GDrawGetLineWidth( GWindow w );
+
 extern void GDrawSetForeground(GWindow w,Color col);
 extern void GDrawSetBackground(GWindow w,Color col);
 

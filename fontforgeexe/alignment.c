@@ -627,7 +627,7 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
     GDrawDestroyWindow(gw);
 }
 
-void CVConstrainSelection(CharView *cv,int type) {
+void CVConstrainSelection(CharView *cv,constrainSelection_t type) {
     DBounds b;
     SplinePoint *first=NULL, *second=NULL, *other=NULL, *sp;
     SplineSet *spl;
@@ -659,7 +659,7 @@ void CVConstrainSelection(CharView *cv,int type) {
 	}
     }
 
-    if ( type==0 ) {
+    if ( type == constrainSelection_AveragePoints ) {
 	/* Average points */
 	if ( second==NULL )
 	    /* Do Nothing */;
@@ -667,7 +667,7 @@ void CVConstrainSelection(CharView *cv,int type) {
 	    AlignTwoMaybeAsk(cv,first,second);
 	else
 	    AlignManyMaybeAsk(cv,&b);
-    } else if ( type==1 ) {
+    } else if ( type == constrainSelection_SpacePoints ) {
 	/* Space points */
 	if ( other!=NULL )
 	    SpaceMany(cv,&b,-1,0,cnt);
@@ -678,7 +678,7 @@ void CVConstrainSelection(CharView *cv,int type) {
 	else {
 	    /* Nothing selected */;
 	}
-    } else if ( type==2 ) {
+    } else if ( type == constrainSelection_SpaceSelectedRegions ) {
 	/* Space selected regions */
 	if ( other==NULL )
 return; 	/* Do nothing, need at least three regions */

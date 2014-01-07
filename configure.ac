@@ -67,9 +67,9 @@ m4_define([libfontforge_minor_version], [fontforge_minor_version])
 # Setup variables before running AC_INIT()
 m4_define([fontforge_version],
           [fontforge_major_version.fontforge_minor_version.fontforge_package_stamp])
-#m4_define([fontforge_info],
-#          [fontforge_major_version:fontforge_minor_version:0])
-m4_define([fontforge_package_name], ["fontforge"])
+m4_define([fontforge_info],
+          [fontforge_major_version:fontforge_minor_version:0])
+m4_define([fontforge_package_name],[fontforge])
 m4_define([libfontforgeexe_info],[libfontforgeexe_major_version:libfontforgeexe_minor_version:0])
 m4_define([libfontforge_info],[libfontforge_major_version:libfontforge_minor_version:0])
 m4_define([libgdraw_info],[libgdraw_major_version:libgdraw_minor_version:0])

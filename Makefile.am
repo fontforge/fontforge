@@ -64,7 +64,6 @@ SUBDIRS += plugins
 SUBDIRS += po htdocs pycontrib
 SUBDIRS += nodejs
 SUBDIRS += cidmap
-SUBDIRS += tests
 
 if PYTHON_EXTENSION
 SUBDIRS += pyhook
@@ -82,68 +81,31 @@ if FONTTOOLS
 SUBDIRS += fonttools
 endif FONTTOOLS
 
+SUBDIRS += tests
+
+#--------------------------------------------------------------------------
+
 nodist_pkgconfig_DATA = libfontforge.pc libfontforgeexe.pc
 
 EXTRA_DIST += LICENSE README-Mac.html README-MS.html README-unix	\
-	README-Unix.html Readme.VMS Portfile
+	README-Unix.html Readme.VMS
+
+#--------------------------------------------------------------------------
 
 uninstall-local:
 	(cd desktop; $(MAKE) $(AM_MAKEFLAGS) uninstall)
 
 #--------------------------------------------------------------------------
 
-INDENT_DIRS = Unicode gutils gdraw fontforge pyhook tests fonttools
+DISTCHECK_CONFIGURE_FLAGS = --enable-theme-2012 --enable-debug
 
-INDENT_PROFILE = \
-	--k-and-r-style \
-	--line-length110 \
-	--indent-level4 \
-	--no-tabs \
-	--blank-lines-after-procedures \
-	--no-blank-lines-after-declarations \
-	--blank-before-sizeof \
-	--space-after-cast \
-	--space-after-for \
-	--space-after-if \
-	--space-after-while \
-	--space-special-semicolon \
-	--no-space-after-function-call-names \
-	--no-space-after-parentheses \
-	--dont-break-procedure-type \
-	--dont-break-function-decl-args \
-	--no-blank-lines-after-commas \
-	--break-after-boolean-operator \
-	--dont-line-up-parentheses \
-	--paren-indentation4 \
-	--braces-on-if-line \
-	--braces-on-func-def-line \
-	--braces-on-struct-decl-line \
-	--case-brace-indentation4 \
-	--declaration-indentation1 \
-	--cuddle-do-while \
-	--cuddle-else \
-	--honour-newlines \
-	--preprocessor-indentation1 \
-	--case-indentation0 \
-	--continue-at-parentheses \
-	--leave-preprocessor-space \
-	--dont-format-comments \
-	-T\ FILE \
-	-T\ AnchorPoint \
-	-T\ BDFFont \
-	-T\ MMSet \
-	-T\ SplineChar \
-	-T\ SplineFont
+#	\
+#	--disable-native-scripting --disable-python-scripting	\
+#	--without-giflib --without-libjpeg --without-libpng	\
+#	--without-libtiff --without-libxml --without-libspiro	\
+#	--without-libuninameslist --without-libunicodenames	\
+#	--without-libzmq  --without-libreadline
 
-write-indent-profiles:
-	@for dir in $(INDENT_DIRS); do \
-		rm -f "$(top_srcdir)/$${dir}/.indent.pro"; \
-		echo rm -f "$(top_srcdir)/$${dir}/.indent.pro"; \
-		for flag in $(value INDENT_PROFILE); do \
-			echo "" "$${flag}" >> "$(top_srcdir)/$${dir}/.indent.pro"; \
-			echo echo '""' "$${flag}" ">>" "$(top_srcdir)/$${dir}/.indent.pro"; \
-		done; \
-	done
 
 #--------------------------------------------------------------------------
 

@@ -179,6 +179,9 @@ static Color rulerbigtickcol = 0x008000;
 static Color previewfillcol = 0x0f0f0f;
 static Color DraggingComparisonOutlineColor = 0x8800BB00;
 static Color DraggingComparisonAlphaChannelOverride = 0x88000000;
+static Color foreoutthicklinecol = 0x20707070;
+static Color backoutthicklinecol = 0x20707070;
+int prefs_cv_outline_thickness = 1;
 
 // Format is 0x AA RR GG BB.
 
@@ -232,6 +235,8 @@ static struct resed charview2_re[] = {
     { N_("Grid Fit Color"), "GridFitOutlineColor", rt_color, &gridfitoutlinecol, N_("The color of grid-fit outlines"), NULL, { 0 }, 0, 0 },
     { N_("Inactive Layer Color"), "BackgroundOutlineColor", rt_color, &backoutlinecol, N_("The color of outlines in inactive layers"), NULL, { 0 }, 0, 0 },
     { N_("Active Layer Color"), "ForegroundOutlineColor", rt_color, &foreoutlinecol, N_("The color of outlines in the active layer"), NULL, { 0 }, 0, 0 },
+    { N_("Inactive Thick Layer Color"), "BackgroundThickOutlineColor", rt_coloralpha, &backoutthicklinecol, N_("The color of thick outlines in inactive layers"), NULL, { 0 }, 0, 0 },
+    { N_("Active Thick Layer Color"), "ForegroundThickOutlineColor", rt_coloralpha, &foreoutthicklinecol, N_("The color of thick outlines in the active layer"), NULL, { 0 }, 0, 0 },
     { N_("Clip Path Color"), "ClipPathColor", rt_color, &clippathcol, N_("The color of the clip path"), NULL, { 0 }, 0, 0 },
     { N_("Open Path Color"), "OpenPathColor", rt_color, &openpathcol, N_("The color of the open path"), NULL, { 0 }, 0, 0 },
     { N_("Background Image Color"), "BackgroundImageColor", rt_coloralpha, &backimagecol, N_("The color used to draw bitmap (single bit) images which do not specify a clut"), NULL, { 0 }, 0, 0 },
@@ -1475,15 +1480,17 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 		GDrawPathClose(pixmap);
 
 	    switch( strokeFillMode ) {
-	    case sfm_stroke_trans:
-		GDrawPathStroke( pixmap, fc );
-		break;
-	    case sfm_stroke:
-		GDrawPathStroke( pixmap, fc | 0xff000000 );
-		break;
-	    case sfm_fill:
-	    case sfm_nothing:
-		break;
+            case sfm_stroke_trans:
+                GDrawPathStroke( pixmap, fc );
+                break;
+            case sfm_stroke:
+                GDrawPathStroke( pixmap, fc | 0xff000000 );
+                break;
+            case sfm_clip_preserve:
+                GDrawClipPreserve( pixmap );
+            case sfm_fill:
+            case sfm_nothing:
+                break;
 	    }
 	} else {
 	    GPointList *gpl = MakePoly(cv,spl), *cur;
@@ -1495,17 +1502,18 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 
     Color c = fillcol;
     switch( strokeFillMode ) {
-    case sfm_fill:
-	if( cv->inPreviewMode ) {
-	    c = previewfillcol;
-	}
-	GDrawPathFill( pixmap, c|0xff000000);
-	break;
-    case sfm_stroke:
-    case sfm_nothing:
-	break;
+        case sfm_fill:
+            if( cv->inPreviewMode ) {
+                c = previewfillcol;
+            }
+            GDrawPathFill( pixmap, c|0xff000000);
+            break;
+        case sfm_stroke:
+        case sfm_nothing:
+            break;
     }
 }
+
 
 
 void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *set,
@@ -1560,8 +1568,36 @@ void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *
 	 * clip path splines which will possibly have a different stroke color
 	 */
 	CVDrawSplineSetOutlineOnly( cv, pixmap, set,
-				    fg, dopoints, clip,
-				    ( strokeFillMode==sfm_stroke_trans ? sfm_stroke_trans : sfm_stroke ) );
+                                fg, dopoints, clip,
+                                ( strokeFillMode==sfm_stroke_trans ? sfm_stroke_trans : sfm_stroke ) );
+
+    if( prefs_cv_outline_thickness > 1 )
+    {
+        SplinePointList *spl = 0;
+        for ( spl = set; spl!=NULL; spl = spl->next )
+        {
+            // we only draw the inner half, so we double the user's expected
+            // thickness here.
+            int strokeWidth = prefs_cv_outline_thickness * 2 * cv->scale;
+            Color strokefg = foreoutthicklinecol;
+
+            GRect old;
+            GDrawPushClipOnly( pixmap );
+            CVDrawSplineSetOutlineOnly( cv, pixmap, spl,
+                                        strokefg, dopoints, clip,
+                                        sfm_clip_preserve );
+            int16 oldwidth = GDrawGetLineWidth( pixmap );
+            GDrawSetLineWidth( pixmap, strokeWidth );
+            CVDrawSplineSetOutlineOnly( cv, pixmap, spl,
+                                        strokefg, dopoints, clip,
+                                        sfm_stroke_trans );
+            GDrawPopClip( pixmap, &old );
+            GDrawSetLineWidth( pixmap, oldwidth );
+        }
+    }
+    
+    
+    
     }
 
     for ( spl = set; spl!=NULL; spl = spl->next ) {
@@ -9451,11 +9487,12 @@ static void CVMenuNLTransform(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
     NonLinearDlg(NULL,cv);
 }
 
-static void CVMenuConstrain(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
+void CVMenuConstrain(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    CVConstrainSelection(cv,mi->mid==MID_Average?0:
-			    mi->mid==MID_SpacePts?1:
-			    2);
+    CVConstrainSelection( cv,
+                          mi->mid==MID_Average  ? constrainSelection_AveragePoints :
+                          mi->mid==MID_SpacePts ? constrainSelection_SpacePoints   :
+                          constrainSelection_SpaceSelectedRegions );
 }
 
 static void CVMenuMakeParallel(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {

@@ -33,36 +33,9 @@ lib_LTLIBRARIES = libfontforge.la
 
 #--------------------------------------------------------------------------
 
-if MACINTOSH
-macobjective.o: macobjective.m
-	clang -g -arch x86_64 -arch i386 -c "${srcdir}/macobjective.m" -o macobjective.o
-endif MACINTOSH
-
-#--------------------------------------------------------------------------
-
-#SUBDIRS = pixmaps
-#if LIBZMQ
-#SUBDIRS = collab
-#endif LIBZMQ
-
-FFSCRIPT_HEADER = "\#!$(bindir)/fontforge -lang=ff"
-
-fontimage: fontimage.pe
-	echo "${FFSCRIPT_HEADER}" | cat - "${srcdir}/fontimage.pe" > fontimage
-	chmod +x fontimage
-
-fontlint: fontlint.pe
-	echo "${FFSCRIPT_HEADER}" | cat - "${srcdir}/fontlint.pe" > fontlint
-	chmod +x fontlint
-
-sfddiff: sfddiff.pe
-	echo "${FFSCRIPT_HEADER}" | cat - "${srcdir}/sfddiff.pe" > sfddiff
-	chmod +x sfddiff
-
-#--------------------------------------------------------------------------
-
 noinst_HEADERS = fontforgeui.h sftextfieldP.h configure-fontforge.h	\
 	views.h is_LIGATURE.h flaglist.h strlist.h charview_private.h
+
 pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	libffstamp.h psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
 	lookups.h savefont.h ttf.h baseviews.h fvmetrics.h mm.h			\
@@ -75,7 +48,7 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 #--------------------------------------------------------------------------
 
 LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
-	$(top_builddir)/gutils/libgutils.la			\
+	$(top_builddir)/gutils/libgutils.la	\
 	$(top_builddir)/gutils/libgioftp.la
 
 
@@ -125,13 +98,12 @@ libfontforge_la_LIBADD += $(MY_LIBS) $(LIBZMQ_LIBS)
 #--------------------------------------------------------------------------
 
 LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
-	$(top_builddir)/gutils/libgutils.la			\
+	$(top_builddir)/gutils/libgutils.la	\
 	$(top_builddir)/gutils/libgioftp.la
 
 GUILIBADD =
 if GRAPHICAL_USER_INTERFACE
-GUILIBADD += $(top_builddir)/gdraw/libgdraw.la $(XINPUT_LIBS)	\
-	$(XKB_LIBS)
+GUILIBADD += $(top_builddir)/gdraw/libgdraw.la $(XINPUT_LIBS) $(XKB_LIBS)
 endif GRAPHICAL_USER_INTERFACE
 
 LDADD = $(LIBADD) $(GUILIBADD)
@@ -151,14 +123,10 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 
 #--------------------------------------------------------------------------
 
-EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe fontimage.1 fontlint.1	\
-	sfddiff.1
-
 if MACINTOSH
-EXTRA_DIST += MacFontForgeApp.zip darwinsetup.in macobjective.m
+EXTRA_DIST = MacFontForgeApp.zip
+MOSTLYCLEANFILES = MacFontForgeApp.zip
 endif MACINTOSH
-
-MOSTLYCLEANFILES = fontimage fontlint sfddiff
 
 #--------------------------------------------------------------------------
 
