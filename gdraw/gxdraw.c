@@ -29,8 +29,8 @@
 #endif
 
 #if defined(__MINGW32__)
-#include <windows.h>
 #include <winsock2.h>
+#include <windows.h>
 #endif
 
 #include "gxdrawP.h"
@@ -1988,8 +1988,10 @@ static void GXDrawPushClipOnly(GWindow w)
 
 static void GXDrawClipPreserve(GWindow w)
 {
+#ifndef _NO_LIBCAIRO
     if ( ((GXWindow) w)->usecairo )
         _GXCDraw_ClipPreserve((GXWindow) w);
+#endif
 }
 
 
