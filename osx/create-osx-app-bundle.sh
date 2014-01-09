@@ -17,10 +17,15 @@ export PATH="$PATH:$scriptdir"
 
 #cp ./fontforge/MacFontForgeAppBuilt.zip $TEMPDIR/
 #unzip -d $TEMPDIR $TEMPDIR/MacFontForgeAppBuilt.zip
+echo "...doing the make install..."
 DESTDIR=$bundle_res make install
+echo "...setup FontForge.app bundle..."
 rsync -av $bundle_res/opt/local/share/fontforge/osx/FontForge.app $TEMPDIR/
 
+echo "...patching..."
+patch -d $TEMPDIR/FontForge.app -p0 < osx/ipython-embed-fix.patch
 
+echo "...on with the rest..."
 sed -i -e "s|Gdraw.ScreenWidthCentimeters:.*|Gdraw.ScreenWidthCentimeters: 34|g" \
        "$bundle_res/opt/local/share/fontforge/pixmaps/resources"
 sed -i -e "s|Gdraw.GMenu.MacIcons:.*|Gdraw.GMenu.MacIcons: True|g" \
@@ -124,8 +129,10 @@ cd $bundle_bin
 
 
 
-#########
+##############################
+#
 # python can't be assumed to exist on the machine
+#
 cd $bundle_bin
 cp -av /opt/local/Library/Frameworks/Python.framework/Versions/2.7/Python .
 cd $bundle_bin
@@ -144,7 +151,10 @@ cd $bundle_bin
 install_name_tool -change /opt/local/Library/Frameworks/Python.framework/Versions/2.7/Python @executable_path/Python fontforge 
 cd $bundle_bin
 
-
+####
+#
+# pygtk
+#
 cd ./Python.framework.2.7/lib/
 cp -av /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/libpyglib-2.0-python2.7.0.dylib .
 for if in libpyglib-2.0-python*dylib
@@ -174,9 +184,33 @@ done
 cd $bundle_bin
 
 
-#########
-# we want nodejs in the bundle for collab
+####
+#
+# ipython
+#
 
+cd $bundle_bin
+cd ./Python.framework.2.7/lib/python2.7
+cp /opt/local/bin/Python.framework.2.7/lib/python2.7/md5.py .
+cd ./lib-dynload
+cp /opt/local/bin/Python.framework.2.7/lib/python2.7/lib-dynload/_hashlib.so .
+library-paths-opt-local-to-absolute.sh _hashlib.so
+library-paths-opt-local-to-absolute.sh readline.so
+cd ../lib/python2.7/site-packages/readline
+library-paths-opt-local-to-absolute.sh readline.so
+
+cd $bundle_lib
+for if in libncurses.5.dylib libedit.0.dylib
+do
+    cp -av /opt/local/lib/$if $bundle_lib/
+    library-paths-opt-local-to-absolute.sh $bundle_lib/$if 
+done
+
+
+########################
+#
+# we want nodejs in the bundle for collab
+#
 mkdir -p $bundle_lib  $bundle_bin
 cd $bundle_bin
 cp -av /opt/local/bin/node .
