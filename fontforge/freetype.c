@@ -1161,8 +1161,10 @@ return( NULL );
 	    if (clipmask != NULL)
 		free(clipmask);
 	}
-	free(temp.buffer);
     }
+
+    if (temp.buffer != NULL)
+	free(temp.buffer);
 
     free(outline.points);
     free(outline.tags);
