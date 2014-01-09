@@ -243,6 +243,8 @@ static PyObject *PyFF_registerMenuItem(PyObject *self, PyObject *args) {
     int flags;
     PyObject *utf8_name;
 
+    printf("PyFF_registerMenuItem(top)\n" );
+    
     if ( !no_windowing_ui ) {
 	cnt = PyTuple_Size(args);
 	if ( cnt<6 ) {
@@ -273,6 +275,7 @@ return( NULL );
 			"UTF-8",NULL);
 	    if ( utf8_name==NULL )
 return( NULL );
+        printf("utf8_name: %s\n", utf8_name );
 	    Py_DECREF(utf8_name);
 	}
 	if ( flags&menu_fv )

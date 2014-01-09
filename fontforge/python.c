@@ -1160,6 +1160,7 @@ return( ret );
 /* ************************************************************************** */
 
 static PyObject *PyFF_registerMenuItemStub(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+    printf("PyFF_registerMenuItemStub()\n");
     /* This is a stub which will be replaced when we've got a UI */
 Py_RETURN_NONE;
 }
