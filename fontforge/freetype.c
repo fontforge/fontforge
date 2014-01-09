@@ -1158,7 +1158,8 @@ return( NULL );
 		    }
 		}
 	    }
-	    free(clipmask);
+	    if (clipmask != NULL)
+		free(clipmask);
 	}
 	free(temp.buffer);
     }
