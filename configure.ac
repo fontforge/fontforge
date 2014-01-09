@@ -544,8 +544,13 @@ AC_SUBST([MY_LIBS],[${my_libs}])
 
 #--------------------------------------------------------------------------
 
+pythonbinary=python
+AC_ARG_WITH([pythonbinary],
+   [AS_HELP_STRING([--with-pythonbinary[[=/path/to/python2.7]]],[])],
+   [pythonbinary="${withval}"])
+
 have_ipython=no
-if $( python -c 'import IPython' ); then 
+if $( $pythonbinary -c 'import IPython' ); then 
    have_ipython=yes; 
    AC_DEFINE([HAVE_IPYTHON],[1],[have ipython])
 fi
