@@ -393,7 +393,7 @@ static void readin(void) {
 	    else if ( strncmp(pt,"GL",pt1-pt)==0 )
 		flg |= _NONEND|_NONSTART;
 	    else if ( strncmp(pt,"SP",pt1-pt)==0 || strncmp(pt,"HY",pt1-pt)==0 ||
-		    strncmp(pt,"BA",pt1-pt)==0 || 
+		    strncmp(pt,"BA",pt1-pt)==0 ||
 		    strncmp(pt,"ZW",pt1-pt)==0 )
 		flg |= _BREAKAFTEROK;
 	    else if ( strncmp(pt,"BB",pt1-pt)==0 )
@@ -1053,8 +1053,9 @@ static void visualalts(void) {
     alts[0x152][0] = 'O'; alts[0x152][1] = 'E';
     alts[0x153][0] = 'o'; alts[0x153][1] = 'e';
     /* I don't bother with AE, ae because they are in latin1 and so common */
-    
+
     /* Things which look alike to my eyes */
+    alts[0xb5][0] = 0x3bc;		/* Micro sign & Greek small Mu */
     alts[0x110][0] = 0xD0; alts[0x110][1] = '\0';
     alts[0x138][0] = 0x3ba;
     alts[0x182][0] = 0x402;
@@ -1114,6 +1115,7 @@ static void visualalts(void) {
     alts[0x3A5][0] = 'Y';
     alts[0x3A7][0] = 'X';
     alts[0x3ba][0] = 0x138;
+    alts[0x3bc][0] = 0xb5;		/* Greek small Mu & Micro sign */
     alts[0x3bf][0] = 'o';
     alts[0x3c1][0] = 'p';
     alts[0x3c7][0] = 'x';
@@ -1765,7 +1767,7 @@ static void cheat(void) {
     alts[0xf7fa][0] = 0xf775; alts[0xf7fa][1] = 0x301;
     alts[0xf7fb][0] = 0xf775; alts[0xf7fb][1] = 0x302;
     alts[0xf7fc][0] = 0xf775; alts[0xf7fc][1] = 0x308;
-   
+
     alts[0xf7fd][0] = 0xf779; alts[0xf7fd][1] = 0x301;
     alts[0xf7ff][0] = 0xf779; alts[0xf7ff][1] = 0x308;
 
