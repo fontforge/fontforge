@@ -1097,7 +1097,6 @@ return( NULL );
 
     if ( sc->parent->strokedfont ) {
 	SplineSet *stroked = StrokeOutline(&sc->layers[layer],sc);
-	memset(temp.buffer,0,temp.pitch*temp.rows);
 	FillOutline(stroked,&outline,&pmax,&cmax,
 		scale,&b,sc->layers[layer].order2,false);
 	err |= (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
@@ -1159,10 +1158,13 @@ return( NULL );
 		    }
 		}
 	    }
-	    free(clipmask);
+	    if (clipmask != NULL)
+		free(clipmask);
 	}
-	free(temp.buffer);
     }
+
+    if (temp.buffer != NULL)
+	free(temp.buffer);
 
     free(outline.points);
     free(outline.tags);
