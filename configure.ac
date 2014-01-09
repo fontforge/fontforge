@@ -543,6 +543,16 @@ my_libs="${my_libs} ${GLIB_LIBS}"
 AC_SUBST([MY_LIBS],[${my_libs}])
 
 #--------------------------------------------------------------------------
+
+have_ipython=no
+if $( python -c 'import IPython' ); then 
+   have_ipython=yes; 
+   AC_DEFINE([HAVE_IPYTHON],[1],[have ipython])
+fi
+AM_CONDITIONAL([HAVE_IPYTHON],[test x"${have_ipython}" = xyes])
+
+
+#--------------------------------------------------------------------------
 # Output commands - Create FontForge Portable Makefiles
 
 AC_CONFIG_FILES([
@@ -567,6 +577,7 @@ htdocs/Makefile
 pycontrib/Makefile
 pycontrib/simple/Makefile
 pycontrib/collab/Makefile
+pycontrib/graphicore/Makefile
 nodejs/Makefile
 nodejs/collabwebview/Makefile
 nodejs/collabwebview/css/Makefile
@@ -657,6 +668,8 @@ AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_RAW,$FONTFORGE_MODTIME,"Epoch time that con
 AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_STR_RAW,$FONTFORGE_MODTIME_STR,
 	"A user friendly date that that configure was run at: For example 01:48 GMT 6-Sep-2012 (no quotes)")
 AC_DEFINE_UNQUOTED(FONTFORGE_VERSIONDATE_RAW,$FONTFORGE_VERSIONDATE,"YYYYMMDD as number when configure was run (no quotes)")
+
+#--------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------
 
