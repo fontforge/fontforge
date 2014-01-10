@@ -2499,7 +2499,7 @@ static int CVLScanForItem(int x, int y, int *col) {
 }
 
 /* Called in response to some event where we want to change the current layer. */
-static void CVLSelectLayer(CharView *cv, int layer) {
+void CVLSelectLayer(CharView *cv, int layer) {
     enum drawmode dm = cv->b.drawmode;
 
     if ( layer<-1 || layer>=cv->b.sc->layer_cnt )
