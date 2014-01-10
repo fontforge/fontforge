@@ -1055,7 +1055,6 @@ static void visualalts(void) {
     /* I don't bother with AE, ae because they are in latin1 and so common */
 
     /* Things which look alike to my eyes */
-    alts[0xb5][0] = 0x3bc;		/* Micro sign & Greek small Mu */
     alts[0x110][0] = 0xD0; alts[0x110][1] = '\0';
     alts[0x138][0] = 0x3ba;
     alts[0x182][0] = 0x402;
@@ -1115,7 +1114,6 @@ static void visualalts(void) {
     alts[0x3A5][0] = 'Y';
     alts[0x3A7][0] = 'X';
     alts[0x3ba][0] = 0x138;
-    alts[0x3bc][0] = 0xb5;		/* Greek small Mu & Micro sign */
     alts[0x3bf][0] = 'o';
     alts[0x3c1][0] = 'p';
     alts[0x3c7][0] = 'x';
