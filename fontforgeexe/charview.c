@@ -7785,6 +7785,9 @@ return;
     } else if ( event->u.chr.keysym=='\\' && (event->u.chr.state&ksm_control) ) {
 	/* European keyboards need a funky modifier to get \ */
 	CVDoTransform(cv,cvt_none);
+    } else if ( (event->u.chr.keysym=='F' || event->u.chr.keysym=='B') &&
+            !(event->u.chr.state&(ksm_control|ksm_meta)) ) {
+        CVLSelectLayer(cv, event->u.chr.keysym=='F' ? 1 : 0);
     } else if ( (event->u.chr.state&ksm_control) && (event->u.chr.keysym=='-' || event->u.chr.keysym==0xffad/*XK_KP_Subtract*/) ){
 	    _CVMenuScale(cv, MID_ZoomOut);
     } else if ( (event->u.chr.state&ksm_control) && (event->u.chr.keysym=='=' || event->u.chr.keysym==0xffab/*XK_KP_Add*/) ){
