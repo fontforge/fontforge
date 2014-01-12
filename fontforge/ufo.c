@@ -1130,7 +1130,9 @@ static StemInfo *GlifParseHints(xmlDocPtr doc,xmlNodePtr dict,char *hinttype) {
 return( head );
 }
 
-static SplineChar *_UFOLoadGlyph(SplineFont *sf,xmlDocPtr doc,char *glifname) {
+// FTODO
+// Take a layer index or name (depending upon how splinechar layers map to splinefont layers) and a pointer to an existing SplineChar (which is null if it has not been read on any layer yet) and a count of layers (for SplineCharCreate).
+static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname) {
     xmlNodePtr glyph, kids, contour, points;
     SplineChar *sc;
     xmlChar *format, *width, *height, *u;
@@ -1550,6 +1552,8 @@ return;
     }
 }
 
+// FTODO
+// Take a null-terminated array of glyphdirs. Process foreground (public.default, ly_fore) first.
 static void UFOLoadGlyphs(SplineFont *sf,char *glyphdir) {
     char *glyphlist = buildname(glyphdir,"contents.plist");
     xmlDocPtr doc;
@@ -1572,31 +1576,33 @@ return;
 	xmlFreeDoc(doc);
 return;
     }
+	// Count glyphs for the benefit of measuring progress.
     for ( tot=0, keys=dict->children; keys!=NULL; keys=keys->next ) {
-	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 )
-	    ++tot;
+		if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 )
+		    ++tot;
     }
     ff_progress_change_total(tot);
+	// Start reading in glyph name to file name mappings.
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
-	for ( value = keys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
-		value = value->next );
-	if ( value==NULL )
-    break;
-	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
-	    valname = (char *) xmlNodeListGetString(doc,value->children,true);
-	    glyphfname = buildname(glyphdir,valname);
-	    free(valname);
-	    sc = UFOLoadGlyph(sf,glyphfname);
-	    if ( sc!=NULL ) {
-		sc->parent = sf;
-		if ( sf->glyphcnt>=sf->glyphmax )
-		    sf->glyphs = grealloc(sf->glyphs,(sf->glyphmax+=100)*sizeof(SplineChar *));
-		sc->orig_pos = sf->glyphcnt;
-		sf->glyphs[sf->glyphcnt++] = sc;
-	    }
-	    keys = value;
-	    ff_progress_next();
-	}
+		for ( value = keys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
+			value = value->next );
+		if ( value==NULL )
+			break;
+		if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
+			valname = (char *) xmlNodeListGetString(doc,value->children,true);
+			glyphfname = buildname(glyphdir,valname);
+			free(valname);
+			sc = UFOLoadGlyph(sf,glyphfname); // Perhaps we could modify this to take a target layer as well.
+			if ( sc!=NULL ) {
+				sc->parent = sf;
+				if ( sf->glyphcnt>=sf->glyphmax )
+					sf->glyphs = grealloc(sf->glyphs,(sf->glyphmax+=100)*sizeof(SplineChar *));
+				sc->orig_pos = sf->glyphcnt;
+				sf->glyphs[sf->glyphcnt++] = sc;
+			}
+			keys = value;
+			ff_progress_next();
+		}
     }
     xmlFreeDoc(doc);
 
