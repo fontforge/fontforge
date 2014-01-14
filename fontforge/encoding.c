@@ -796,25 +796,27 @@ int CID2NameUni(struct cidmap *map,int cid, char *buffer, int len) {
 return( enc );
 }
 
-int NameUni2CID(struct cidmap *map,int uni, const char *name) {
+int NameUni2CID(struct cidmap *map, int uni, const char *name) {
     int i;
     struct cidaltuni *alts;
 
     if ( map==NULL )
-return( -1 );
+		return( -1 );
     if ( uni!=-1 ) {
-	for ( i=0; i<map->namemax; ++i )
-	    if ( map->unicode[i]==uni )
-return( i );
-	for ( alts=map->alts; alts!=NULL; alts=alts->next )
-	    if ( alts->uni==uni )
-return( alts->cid );
+		// Search for a matching code.
+		for ( i=0; i<map->namemax; ++i )
+		    if ( map->unicode[i]==uni )
+				return( i );
+		for ( alts=map->alts; alts!=NULL; alts=alts->next )
+		    if ( alts->uni==uni )
+				return( alts->cid );
     } else {
-	for ( i=0; i<map->namemax; ++i )
-	    if ( map->name[i]!=NULL && strcmp(map->name[i],name)==0 )
-return( i );
+		// Search for a matching name.
+		for ( i=0; i<map->namemax; ++i )
+	    	if ( map->name[i]!=NULL && strcmp(map->name[i],name)==0 )
+				return( i );
     }
-return( -1 );
+	return( -1 );
 }
 
 struct altuni *CIDSetAltUnis(struct cidmap *map,int cid) {
