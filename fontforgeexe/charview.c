@@ -3411,12 +3411,16 @@ return;
 	GGadgetMove(cv->vsb,sbsize.x,sbsize.y+gsize.height);
 	GGadgetResize(cv->vsb,sbsize.width,sbsize.height-gsize.height);
 	GGadgetMoveAddToY( cv->charselector, gsize.height );
+	GGadgetMoveAddToY( cv->charselectorNext, gsize.height );
+	GGadgetMoveAddToY( cv->charselectorPrev, gsize.height );
     } else {
 	cv->mbh -= gsize.height;
 	cv->height += gsize.height;
 	GGadgetMove(cv->vsb,sbsize.x,sbsize.y-gsize.height);
 	GGadgetResize(cv->vsb,sbsize.width,sbsize.height+gsize.height);
 	GGadgetMoveAddToY( cv->charselector, -1*gsize.height );
+	GGadgetMoveAddToY( cv->charselectorNext, -1*gsize.height );
+	GGadgetMoveAddToY( cv->charselectorPrev, -1*gsize.height );
     }
     GGadgetSetVisible(cv->tabs,makevisible);
     cv->back_img_out_of_date = true;
@@ -6210,11 +6214,32 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 		cv->guide_pos = cv->e.y;
 	    CVDrawGuideLine(cv,cv->guide_pos);
 	    CVInfoDraw(cv,cv->gw);
-	} else if ( event->u.mouse.y>cv->mbh ) {
-	    int enc = CVCurEnc(cv);
-	    SCPreparePopup(cv->gw,cv->b.sc,cv->b.fv->map->remap,enc,
-		    UniFromEnc(enc,cv->b.fv->map->enc));
 	}
+    else if ( event->u.mouse.y > cv->mbh )
+    {
+	    GGadget *active = GWindowGetFocusGadgetOfWindow(cv->gw);
+        if( GGadgetContainsEventLocation( cv->charselectorPrev, event ))
+        {
+            GGadgetPreparePopup(cv->gw,c_to_u("Show the previous word in the current word list\n"
+                                              "Select the menu File / Load Word List... to load a wordlist."));
+        }
+        else if( GGadgetContainsEventLocation( cv->charselectorNext, event ))
+        {
+            GGadgetPreparePopup(cv->gw,c_to_u("Show the next word in the current word list\n"
+                                              "Select the menu File / Load Word List... to load a wordlist."));
+        }
+        else if( GGadgetContainsEventLocation( cv->charselector, event ))
+        {
+            GGadgetPreparePopup(cv->gw,c_to_u("This is a word list that you can step through to quickly see your glyphs in context\n"
+                                              "Select the menu File / Load Word List... to load a wordlist."));
+        }
+        else
+        {
+            int enc = CVCurEnc(cv);
+            SCPreparePopup(cv->gw,cv->b.sc,cv->b.fv->map->remap,enc,
+                           UniFromEnc(enc,cv->b.fv->map->enc));
+        }
+    }
       break;
       case et_drop:
 	CVDrop(cv,event);
@@ -7328,6 +7353,23 @@ return;
 static void CVMenuChangeChar(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     _CVMenuChangeChar(cv,mi->mid);
+}
+
+static int CVMoveToNextInWordList(GGadget *g, GEvent *e)
+{
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+        CharView *cv = GDrawGetUserData(GGadgetGetWindow(g));
+        CVMoveInWordListByOffset( cv, 1 );
+    }
+    return 1;
+}
+static int CVMoveToPrevInWordList(GGadget *g, GEvent *e)
+{
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+        CharView *cv = GDrawGetUserData(GGadgetGetWindow(g));
+        CVMoveInWordListByOffset( cv, -1 );
+    }
+    return 1;
 }
 
 /**
@@ -12649,6 +12691,7 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     GTabInfo aspects[2];
     GRect gsize;
     char buf[300];
+    GTextInfo label[9];
 
     CharViewInit();
 
@@ -12734,6 +12777,30 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     CVSetCharSelectorValueFromSC( cv, sc );
     GGadgetSetSkipUnQualifiedHotkeyProcessing( cv->charselector, 1 );
 
+    {
+        GGadgetData xgd = gd;
+        gd.pos.width += 2 * xgd.pos.height + 4;
+        memset(label, '\0', sizeof(GTextInfo));
+        xgd.pos.x += xgd.pos.width + 2;
+        xgd.pos.width = xgd.pos.height;
+        xgd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+        xgd.handle_controlevent = CVMoveToPrevInWordList;
+        xgd.label = &label[0];
+        label[0].text = (unichar_t *) "-";
+        label[0].text_is_1byte = true;
+        cv->charselectorPrev = GButtonCreate(cv->gw,&xgd,cv);
+        memset(label, '\0', sizeof(GTextInfo));
+        xgd.pos.x += xgd.pos.width + 2;
+        xgd.pos.width = xgd.pos.height;
+        xgd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+        xgd.handle_controlevent = CVMoveToNextInWordList;
+        xgd.label = &label[0];
+        label[0].text = (unichar_t *) "+";
+        label[0].text_is_1byte = true;
+        cv->charselectorNext = GButtonCreate(cv->gw,&xgd,cv);
+    }
+    
+
     memset(aspects,0,sizeof(aspects));
     aspects[0].text = (unichar_t *) sc->name;
     aspects[0].text_is_1byte = true;
@@ -12750,6 +12817,7 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     GGadgetTakesKeyboard(cv->tabs,false);
 
     _CharViewCreate( cv, sc, fv, enc, show );
+
     return( cv );
 }
 

@@ -369,6 +369,8 @@ GWindow GGadgetGetWindow(GGadget *g);
 void *GGadgetGetUserData(GGadget *g);
 void GGadgetSetUserData(GGadget *g, void *d);
 void GGadgetSetPopupMsg(GGadget *g, const unichar_t *msg);
+int GGadgetContains(GGadget *g, int x, int y );
+int GGadgetContainsEventLocation(GGadget *g, GEvent* e );
 GRect *GGadgetGetInnerSize(GGadget *g,GRect *rct);
 GRect *GGadgetGetSize(GGadget *g,GRect *rct);
 void GGadgetSetSize(GGadget *g,GRect *rct);
