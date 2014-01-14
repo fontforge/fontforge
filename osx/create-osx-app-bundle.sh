@@ -254,7 +254,8 @@ OLDPREFIX=/opt/local
 NEWPREFIX=/Applications/FontForge.app/Contents/Resources/opt/local
 
 mkdir -p $bundle_etc
-cp -av /opt/local/etc/fonts   $bundle_etc
+#cp -av /opt/local/etc/fonts   $bundle_etc
+cp -av /opt/local/etc/fonts/conf.d   $bundle_etc/fonts/
 cp -av /opt/local/etc/pango   $bundle_etc
 cd $bundle_etc/pango
 sed -i -e "s|$OLDPREFIX|$NEWPREFIX|g" pangorc
@@ -264,6 +265,8 @@ sed -i -e "s|$OLDPREFIX|$NEWPREFIX|g" pango.modules
 #cd $bundle_etc/fonts
 #sed -i -e "s|$OLDPREFIX|$NEWPREFIX|g" fonts.conf 
 #sed -i -e 's|<fontconfig>|<fontconfig><dir>/Applications/FontForge.app/Contents/Resources/opt/local/share/fontforge/pixmaps/</dir>|g' fonts.conf
+#cd $bundle_etc/fonts
+#cp -f ../../share/fontforge/osx/FontForge.app/Contents/Resources/opt/local/etc/fonts/fonts.conf .
 
 cd $bundle_lib/pango/
 cd `find . -type d -maxdepth 1 -mindepth 1`
