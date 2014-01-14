@@ -25,6 +25,10 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 include $(top_srcdir)/mk/layout.am
-SUBDIRS = FontForge.app
-EXTRA_DIST = create-osx-app-bundle.sh Portfile ipython-embed-fix.patch
+
+FFAPP_FILES = fonts.conf
+ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/Resources/opt/local/etc/fonts
+ffapp_DATA = $(FFAPP_FILES)
+EXTRA_DIST = $(FFAPP_FILES)
+
 -include $(top_srcdir)/git.mk

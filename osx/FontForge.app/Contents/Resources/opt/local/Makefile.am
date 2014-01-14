@@ -25,6 +25,5 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 include $(top_srcdir)/mk/layout.am
-SUBDIRS = FontForge.app
-EXTRA_DIST = create-osx-app-bundle.sh Portfile ipython-embed-fix.patch
+SUBDIRS = etc
 -include $(top_srcdir)/git.mk
