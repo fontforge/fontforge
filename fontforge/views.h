@@ -294,7 +294,9 @@ typedef struct charview {
     struct qg_data *qg;
     int16 note_x, note_y;
     struct dlistnode* pointInfoDialogs;
-    GGadget* charselector; //< let the user type in more than one char to view at once.
+    GGadget* charselector;     //< let the user type in more than one char to view at once.
+    GGadget* charselectorNext; //< move to next word in charselector
+    GGadget* charselectorPrev; //< move to prev word in charselector
     int charselectoridx;
     SplineChar* additionalCharsToShow [51]; //<  additionalCharsToShowLimit + 1 in size
     int additionalCharsToShowActiveIndex;

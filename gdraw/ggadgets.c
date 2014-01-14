@@ -1130,6 +1130,26 @@ void GGadgetSetSize(GGadget *g,GRect *rct)
 }
 
 
+int GGadgetContainsEventLocation(GGadget *g, GEvent* e )
+{
+    switch( e->type )
+    {
+        case et_mousemove:
+        case et_mouseup: case et_mousedown:
+            return( GGadgetContains( g, e->u.mouse.x, e->u.mouse.y ));
+    }
+    
+    return 0;
+}
+
+int GGadgetContains(GGadget *g, int x, int y )
+{
+    GRect r;
+    GGadgetGetSize( g, &r );
+    return r.x < x && r.x+r.width > x
+        && r.y < y && r.y+r.height > y;
+}
+
 GRect *GGadgetGetInnerSize(GGadget *g,GRect *rct) {
 return( (g->funcs->getinnersize)(g,rct) );
 }
