@@ -417,6 +417,8 @@ for arg in ${FFW_FLAGS}; do
    AX_CHECK_COMPILE_FLAG([$arg],[WARNING_CFLAGS+=" $arg"])
 done
 
+# Create LDFLAGS for libraries. Currently used to pass '-no-undefined' to libtool.
+my_lib_ldflags=""
 dnl add --no-undefined if supported. Based on information seen here:
 dnl https://mail.gnome.org/archives/commits-list/2011-October/msg10575.html
 dnl http://femass.com.br/Net-SNMP/configure.d/config_os_progs
@@ -435,8 +437,10 @@ case $host in
           AX_CHECK_COMPILE_FLAG([-Wl,--no-undefined],[WARNING_CFLAGS+=" -Wl,--no-undefined"])],
          [AC_MSG_RESULT([no])])
       LDFLAGS="$saved_LDFLAGS"
+	  my_lib_ldflags="${my_lib_ldflags} -no-undefined"
       ;;
 esac
+AC_SUBST([MY_LIB_LDFLAGS], [${my_lib_ldflags}])
 
 AC_LANG_POP
 
