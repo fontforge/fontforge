@@ -14,6 +14,8 @@ bundle_lib="$bundle_res/opt/local/lib"
 bundle_etc="$bundle_res/opt/local/etc"
 bundle_share="$bundle_res/opt/local/share"
 export PATH="$PATH:$scriptdir"
+srcdir=$(pwd)
+
 
 #cp ./fontforge/MacFontForgeAppBuilt.zip $TEMPDIR/
 #unzip -d $TEMPDIR $TEMPDIR/MacFontForgeAppBuilt.zip
@@ -257,9 +259,11 @@ cp -av /opt/local/etc/pango   $bundle_etc
 cd $bundle_etc/pango
 sed -i -e "s|$OLDPREFIX|$NEWPREFIX|g" pangorc
 sed -i -e "s|$OLDPREFIX|$NEWPREFIX|g" pango.modules
-cd $bundle_etc/fonts
-sed -i -e "s|$OLDPREFIX|$NEWPREFIX|g" fonts.conf 
-sed -i -e 's|<fontconfig>|<fontconfig><dir>/Applications/FontForge.app/Contents/Resources/opt/local/share/fontforge/pixmaps/</dir>|g' fonts.conf
+
+# This is now handled by shipping a fonts.conf which is hand made.
+#cd $bundle_etc/fonts
+#sed -i -e "s|$OLDPREFIX|$NEWPREFIX|g" fonts.conf 
+#sed -i -e 's|<fontconfig>|<fontconfig><dir>/Applications/FontForge.app/Contents/Resources/opt/local/share/fontforge/pixmaps/</dir>|g' fonts.conf
 
 cd $bundle_lib/pango/
 cd `find . -type d -maxdepth 1 -mindepth 1`
