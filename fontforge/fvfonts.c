@@ -838,36 +838,37 @@ return( -1 );
 SplineChar *SFGetChar(SplineFont *sf, int unienc, const char *name ) {
     int ind;
     int j;
-    char *pt, *start; int ch;
+    char *pt, *start, *tmp; int ch;
 
     if ( name==NULL )
-	ind = SFCIDFindCID(sf,unienc,NULL);
+		ind = SFCIDFindCID(sf,unienc,NULL);
     else {
-	for ( start=(char *) name; *start==' '; ++start );
-	for ( pt=start; *pt!='\0' && *pt!='('; ++pt );
-	ch = *pt;
-	if ( ch=='\0' )
-	    ind = SFCIDFindCID(sf,unienc,start);
-	else {
-	    *pt = '\0';
-	    ind = SFCIDFindCID(sf,unienc,start);
-	    *pt = ch;
-	}
+		for ( start=(char *) name; *start==' '; ++start );
+		for ( pt=start; *pt!='\0' && *pt!='('; ++pt );
+		ch = *pt;
+		if ( ch=='\0' )
+			ind = SFCIDFindCID(sf,unienc,start);
+		else if ( tmp = copy(name) ) {
+			*tmp[pt-name] = '\0';
+			ind = SFCIDFindCID(sf,unienc,tmp+(start-name));
+			*tmp[pt-name] = ch;
+			free(tmp);
+		}
     }
     if ( ind==-1 )
-return( NULL );
+		return( NULL );
 
     if ( sf->subfonts==NULL && sf->cidmaster==NULL )
-return( sf->glyphs[ind]);
+		return( sf->glyphs[ind]);
 
     if ( sf->cidmaster!=NULL )
 	sf=sf->cidmaster;
 
     j = SFHasCID(sf,ind);
     if ( j==-1 )
-return( NULL );
+		return( NULL );
 
-return( sf->subfonts[j]->glyphs[ind] );
+	return( sf->subfonts[j]->glyphs[ind] );
 }
 
 SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, const char *name ) {
