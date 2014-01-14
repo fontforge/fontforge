@@ -3346,11 +3346,12 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
 return( icon );
 }
 
-static int CVCurEnc(CharView *cv) {
+static int CVCurEnc(CharView *cv)
+{
     if ( cv->map_of_enc == ((FontView *) (cv->b.fv))->b.map && cv->enc!=-1 )
-return( cv->enc );
+        return( cv->enc );
 
-return( ((FontView *) (cv->b.fv))->b.map->backmap[cv->b.sc->orig_pos] );
+    return( ((FontView *) (cv->b.fv))->b.map->backmap[cv->b.sc->orig_pos] );
 }
 
 static char *CVMakeTitles(CharView *cv,char *buf) {
@@ -3478,7 +3479,8 @@ static void CVSetCharSelectorValueFromSC( CharView *cv, SplineChar *sc )
 }
 	    
 
-void CVChangeSC( CharView *cv, SplineChar *sc ) {
+void CVChangeSC( CharView *cv, SplineChar *sc )
+{
     char *title;
     char buf[300];
     extern int updateflex;
@@ -3514,6 +3516,7 @@ void CVChangeSC( CharView *cv, SplineChar *sc ) {
     cv->b.sc = sc;
     cv->b.next = sc->views;
     sc->views = &cv->b;
+    cv->enc = ( ((FontView *) (cv->b.fv))->b.map->backmap[cv->b.sc->orig_pos] );
     cv->b.layerheads[dm_fore] = &sc->layers[ly_fore];
     blayer = old_layer;
     if ( old_layer==ly_grid || old_layer==ly_fore ||
@@ -3611,7 +3614,8 @@ void CVChangeSC( CharView *cv, SplineChar *sc ) {
     CV_OnCharSelectorTextChanged( cv->charselector, &e );
 }
 
-static void CVChangeChar(CharView *cv, int i ) {
+static void CVChangeChar(CharView *cv, int i )
+{
     SplineChar *sc;
     SplineFont *sf = cv->b.sc->parent;
     EncMap *map = ((FontView *) (cv->b.fv))->b.map;
