@@ -12778,6 +12778,7 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     CVSetCharSelectorValueFromSC( cv, sc );
     GGadgetSetSkipUnQualifiedHotkeyProcessing( cv->charselector, 1 );
 
+    // Up and Down buttons for moving through the word list.
     {
         GGadgetData xgd = gd;
         gd.pos.width += 2 * xgd.pos.height + 4;
@@ -12787,7 +12788,7 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
         xgd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
         xgd.handle_controlevent = CVMoveToPrevInWordList;
         xgd.label = &label[0];
-        label[0].text = (unichar_t *) "-";
+        label[0].text = (unichar_t *) "⇞";
         label[0].text_is_1byte = true;
         cv->charselectorPrev = GButtonCreate(cv->gw,&xgd,cv);
         memset(label, '\0', sizeof(GTextInfo));
@@ -12796,7 +12797,7 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
         xgd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
         xgd.handle_controlevent = CVMoveToNextInWordList;
         xgd.label = &label[0];
-        label[0].text = (unichar_t *) "+";
+        label[0].text = (unichar_t *) "⇟";
         label[0].text_is_1byte = true;
         cv->charselectorNext = GButtonCreate(cv->gw,&xgd,cv);
     }

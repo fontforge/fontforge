@@ -373,7 +373,7 @@ typedef struct metricsview {
     BDFFont *show;		/*  Or the rasterized version of the outline font */
     GWindow gw, v;
     GFont *font;
-    GGadget *hsb, *vsb, *mb, *text, *script, *features, *subtable_list;
+    GGadget *hsb, *vsb, *mb, *text, *textPrev, *textNext, *script, *features, *subtable_list;
     GGadget *namelab, *widthlab, *lbearinglab, *rbearinglab, *kernlab;
     int16 xstart;
     int16 width, height, dwidth;
