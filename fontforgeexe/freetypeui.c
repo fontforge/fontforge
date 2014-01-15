@@ -37,11 +37,7 @@
 
 #if FREETYPE_HAS_DEBUGGER
 #include <pthread.h>
-#if defined(__MINGW32__)
-# include <freetype/truetype/tterrors.h>
-#else
-# include <tterrors.h>
-#endif
+#include <tterrors.h>
 
 typedef struct bpdata {
     int range;	/* tt_coderange_glyph, tt_coderange_font, tt_coderange_cvt */

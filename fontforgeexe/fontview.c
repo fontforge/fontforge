@@ -47,6 +47,10 @@
 #include "gutils/unicodelibinfo.h"
 #include "sfundo.h"
 
+#if defined (__MINGW32__)
+#include <windows.h>
+#endif
+
 // Clash on windows for a define to PrintDlgA
 #ifdef PrintDlg
 #undef PrintDlg
