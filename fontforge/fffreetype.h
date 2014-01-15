@@ -28,7 +28,7 @@
 #ifndef _FFFREETYPE_H
 #define _FFFREETYPE_H
 
-#if !defined(_NO_FREETYPE) && !defined(_NO_MMAP)
+#if !defined(_NO_FREETYPE)
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H
@@ -38,13 +38,14 @@
 #if defined(FREETYPE_HAS_DEBUGGER) && FREETYPE_MINOR>=2
 # include <internal/internal.h>
 #endif
-#include <unistd.h>
 
 #if defined(__MINGW32__)
-# include "winmmap.h"
+# include <Windows.h>
 #else
 # include <sys/mman.h>
 #endif
+
+#include <unistd.h>
 
 extern FT_Library ff_ft_context;
 
