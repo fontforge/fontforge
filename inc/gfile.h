@@ -27,6 +27,9 @@
 #ifndef _GFILE_H
 #define _GFILE_H
 
+/* For mode_t */
+#include <sys/types.h>
+
 /* home directories for fontforge */
 enum { Cache, Config, Data };
 
