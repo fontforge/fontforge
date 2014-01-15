@@ -36,6 +36,60 @@
 #include "wordlistparser.h"
 
 
+char* Wordlist_getSCName( SplineChar* sc )
+{
+    printf("Wordlist_getSCName() sc->name:%s\n", sc->name );
+    printf("Wordlist_getSCName() sc->len :%d\n", strlen(sc->name) );
+    printf("Wordlist_getSCName() is three:%d\n", strcmp( sc->name, "three" ) );
+        
+    static char ret[ 1024 ];
+    int simple = false;
+    if( strlen( sc->name ) == 1 )
+    {
+        char ch = sc->name[0];
+        
+        if( ch >= 'a' && ch <= 'z' )
+            simple = true;
+        else if( ch >= '0' && ch <= '9' )
+            simple = true;
+        if( ch >= 'A' && ch <= 'Z' )
+            simple = true;
+
+        if( simple )
+        {
+            strcpy( ret, sc->name );
+            return ret;
+        }
+    }
+
+    
+    if( !strcmp( sc->name, "zero" ))
+        return "0";
+    if( !strcmp( sc->name, "one" ))
+        return "1";
+    if( !strcmp( sc->name, "two" ))
+        return "2";
+    if( !strcmp( sc->name, "three" ))
+        return "3";
+    if( !strcmp( sc->name, "four" ))
+        return "4";
+    if( !strcmp( sc->name, "five" ))
+        return "5";
+    if( !strcmp( sc->name, "six" ))
+        return "6";
+    if( !strcmp( sc->name, "seven" ))
+        return "7";
+    if( !strcmp( sc->name, "eight" ))
+        return "8";
+    if( !strcmp( sc->name, "nine" ))
+        return "9";
+        
+    snprintf( ret, 1024, "/%s/", sc->name );
+    return ret;
+}
+
+
+
 static SplineChar* WordlistEscpaedInputStringToRealString_readGlyphName( SplineFont *sf, char* in, char* in_end, char** updated_in, char* glyphname )
 {
 //    printf("WordlistEscpaedInputStringToRealString_readGlyphName(top)\n");
@@ -468,3 +522,112 @@ void WordlistLoadToGTextInfo( GGadget* g, int* idx  )
     }
     return;
 }
+
+
+static GArray* Wordlist_selectedToBitmapArray( GArray* a )
+{
+    GArray* ret = g_array_new( 1, 1, sizeof(gint) );
+    ret = g_array_set_size( ret, PATH_MAX+1 );
+    
+    int i = 0;
+    for (i = 0; i < a->len; i++)
+    {
+        int v = g_array_index (a, gint, i);
+        int one = 1;
+        g_array_insert_val( ret, v, one );
+    }
+    return ret;
+}
+
+
+unichar_t* Wordlist_advanceSelectedCharsBy( SplineFont* sf, EncMap *map, unichar_t* txtu, int offset )
+{
+    static unichar_t ret[ PATH_MAX ];
+    int limit = PATH_MAX;
+    SplineChar* scarray[ PATH_MAX + 1 ];
+    GArray* selected = 0;
+    int i = 0;
+    WordlistTrimTrailingSingleSlash( txtu );
+    txtu = WordlistEscpaedInputStringToRealStringBasic( sf, txtu, &selected );
+
+    GArray* bv = Wordlist_selectedToBitmapArray( selected );
+    printf("selected->len:%d\n", selected->len );
+    if( !selected->len )
+    {
+        int one = 1;
+        g_array_insert_val( bv, 0, one );
+    }
+    g_array_unref( selected );
+    selected = 0;
+    
+    memset( scarray, 0, sizeof(SplineChar*) * limit+1 );
+    const unichar_t *pt, *ept, *tpt;
+    pt = txtu;
+    ept=txtu+u_strlen(txtu);
+    for ( tpt=pt; tpt<ept; ++tpt )
+    {
+        int ch = *tpt;
+        if( tpt == pt )
+        {
+            // your own char at the leading of the text
+            SplineChar* sc = SFGetOrMakeCharFromUnicodeBasic( sf, ch );
+            scarray[i] = sc;
+            i++;
+            continue;
+        }
+		
+        scarray[i] = SFGetOrMakeCharFromUnicodeBasic( sf, ch );
+
+        
+        i++;
+        if( i >= limit )
+            break;
+    }
+
+    
+
+    memset( ret, 0, sizeof(unichar_t) * PATH_MAX );
+    for( i = 0; scarray[i]; i++ )
+    {
+        int element_selected = g_array_index (bv, gint, i);
+
+        if( element_selected )
+        {
+            int pos = map->backmap[ scarray[i]->orig_pos ];
+            printf("pos1:%d\n", pos );
+            pos += offset;
+            printf("pos2:%d\n", pos );
+            printf("map:%d\n", map->map[ pos ] );
+            int gid = pos < 0 || pos >= map->enccount ? -2 : map->map[pos];
+            if( gid == -2 )
+                continue;
+            if( gid==-1 || !sf->glyphs[gid] ) 
+                scarray[i] = SFMakeChar( sf, map, pos );
+            else
+                scarray[i] = sf->glyphs[gid];
+        }
+        
+        
+        if( element_selected )
+            uc_strcat( ret, "[" );
+
+        /* uc_strcat( ret, "/" ); */
+        /* uc_strcat( ret, scarray[i]->name ); */
+        uc_strcat( ret, Wordlist_getSCName( scarray[i] ));
+
+        if( element_selected )
+            uc_strcat( ret, "]" );
+    }
+    
+    return ret;
+}
+
+
+
+
+
+
+
+
+
+

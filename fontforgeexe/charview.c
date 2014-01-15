@@ -3477,10 +3477,9 @@ static void CVChangeSC_fetchTab( CharView *cv, int tabnumber )
 
 static void CVSetCharSelectorValueFromSC( CharView *cv, SplineChar *sc )
 {
-    char* title = g_strdup_printf( "/%s/", sc->name );
+    char* title = Wordlist_getSCName( sc );
     TRACE("CVSetCharSelectorValueFromSC() title:%s\n", title );
     GGadgetSetTitle8(cv->charselector, title);
-    g_free(title);
 }
 	    
 
@@ -3589,7 +3588,14 @@ void CVChangeSC( CharView *cv, SplineChar *sc )
 	    if ( cv->former_cnt<FORMER_MAX )
 		++cv->former_cnt;
 	    for ( i=0; i<cv->former_cnt; ++i )
-		GTabSetChangeTabName(cv->tabs,cv->former_names[i],i);
+            {
+                if( i < charview_cvtabssz )
+                {
+                    CharViewTab* t = &cv->cvtabs[i];
+                    GTabSetChangeTabName(cv->tabs, t->charselected, i);
+                }
+            }
+            
 	    GTabSetRemetric(cv->tabs);
 	    GTabSetSetSel(cv->tabs,0);	/* This does a redraw */
 	    if ( !GGadgetIsVisible(cv->tabs) && cv->showtabs )
@@ -7298,10 +7304,41 @@ static void _CVMenuChangeChar(CharView *cv, int mid) {
 return;
     }
 
+    int curenc = CVCurEnc(cv);
+    
+    if( cv->charselector )
+    {
+        char* txt = GGadgetGetTitle8( cv->charselector );
+        if( txt && strlen(txt) > 1 )
+        {
+            printf("txt.len: %d\n", strlen( txt ));
+            int offset = 1;
+            if ( mid == MID_Prev )
+                offset = -1;
+
+	    const unichar_t *txtu = GGadgetGetTitle( cv->charselector );
+            printf("INPUT STRING : %s\n", u_to_c( txtu ));
+            unichar_t* r = Wordlist_advanceSelectedCharsBy( cv->b.sc->parent,
+                                                            ((FontView *) (cv->b.fv))->b.map,
+                                                            txtu, offset );
+            printf("UPDATED STRING : %s\n", u_to_c( r ));
+            free( txtu );
+
+	    GGadgetSetTitle( cv->charselector, r );
+            // Force any extra chars to be setup and drawn
+            GEvent e;
+            e.type=et_controlevent;
+            e.u.control.subtype = et_textchanged;
+            e.u.control.u.tf_changed.from_pulldown = 0;
+            CV_OnCharSelectorTextChanged( cv->charselector, &e );
+            return;
+        }
+    }
+    
     if ( mid == MID_Next ) {
-	pos = CVCurEnc(cv)+1;
+	pos = curenc+1;
     } else if ( mid == MID_Prev ) {
-	pos = CVCurEnc(cv)-1;
+	pos = curenc-1;
     } else if ( mid == MID_NextDef ) {
 	for ( pos = CVCurEnc(cv)+1; pos<map->enccount &&
 		((gid=map->map[pos])==-1 || !SCWorthOutputting(sf->glyphs[gid])); ++pos );
