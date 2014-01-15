@@ -60,6 +60,25 @@ int pref_mv_control_shift_and_arrow_skip = 5;
 
 static void MVSelectChar(MetricsView *mv, int i);
 static void MVSelectSetForAll(MetricsView *mv, int selected );
+static void MVMoveInWordListByOffset( MetricsView *mv, int offset );
+
+static int MVMoveToNextInWordList(GGadget *g, GEvent *e)
+{
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+        MetricsView *mv = GDrawGetUserData(GGadgetGetWindow(g));
+        MVMoveInWordListByOffset( mv, 1 );
+    }
+    return 1;
+}
+static int MVMoveToPrevInWordList(GGadget *g, GEvent *e)
+{
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+        MetricsView *mv = GDrawGetUserData(GGadgetGetWindow(g));
+        MVMoveInWordListByOffset( mv, -1 );
+    }
+    return 1;
+}
+
 
 /**
  * This doesn't need to be a perfect test by any means. It should
@@ -1902,7 +1921,7 @@ return;					/* Nothing changed */
     }
     if( selected )
     {
-	selectUserChosenWordListGlyphs( mv, selected );
+        selectUserChosenWordListGlyphs( mv, selected );
 	g_array_unref( selected );
     }
     GDrawRequestExpose(mv->v,NULL,false);
@@ -5159,6 +5178,7 @@ return( true );
 static int mv_e_h(GWindow gw, GEvent *event) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     SplineFont *sf;
+    GGadget *active = 0;
 //    printf("mv_e_h()  event->type:%d\n", event->type );
 
     switch ( event->type ) {
@@ -5185,6 +5205,28 @@ static int mv_e_h(GWindow gw, GEvent *event) {
 	  }
       break;
       case et_mouseup: case et_mousemove: case et_mousedown:
+          active = GWindowGetFocusGadgetOfWindow(mv->gw);
+          if( GGadgetContainsEventLocation( mv->textPrev, event ))
+          {
+              GGadgetPreparePopup(mv->gw,c_to_u("Show the previous word in the current word list\n"
+                                                "Select the menu File / Load Word List... to load a wordlist."));
+          }
+          else if( GGadgetContainsEventLocation( mv->textNext, event ))
+          {
+              GGadgetPreparePopup(mv->gw,c_to_u("Show the next word in the current word list\n"
+                                                "Select the menu File / Load Word List... to load a wordlist."));
+          }
+          else if( GGadgetContainsEventLocation( mv->text, event ))
+          {
+              GGadgetPreparePopup(mv->gw,c_to_u("This is a word list that you can step through to quickly see your glyphs in context\n"
+                                                "Select the menu File / Load Word List... to load a wordlist."));
+          }
+          else
+          {
+              GGadgetPreparePopup(mv->gw, 0);
+          }
+          
+          
 	if (( event->type==et_mouseup || event->type==et_mousedown ) &&
 		(event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
 	    int ish = event->u.mouse.button>5;
@@ -5457,6 +5499,32 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     gd.handle_controlevent = MV_TextChanged;
     gd.u.list = mv_text_init;
     mv->text = GListFieldCreate(gw,&gd,mv);
+
+    // Up and Down buttons for moving through the word list.
+    {
+        GTextInfo label[9];
+        GGadgetData xgd = gd;
+        gd.pos.width += 2 * xgd.pos.height + 4;
+        memset(label, '\0', sizeof(GTextInfo));
+        xgd.pos.x += xgd.pos.width + 2;
+        xgd.pos.width = xgd.pos.height;
+        xgd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+        xgd.handle_controlevent = MVMoveToPrevInWordList;
+        xgd.label = &label[0];
+        label[0].text = (unichar_t *) "⇞";
+        label[0].text_is_1byte = true;
+        mv->textPrev = GButtonCreate(mv->gw,&xgd,mv);
+        memset(label, '\0', sizeof(GTextInfo));
+        xgd.pos.x += xgd.pos.width + 2;
+        xgd.pos.width = xgd.pos.height;
+        xgd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+        xgd.handle_controlevent = MVMoveToNextInWordList;
+        xgd.label = &label[0];
+        label[0].text = (unichar_t *) "⇟";
+        label[0].text_is_1byte = true;
+        mv->textNext = GButtonCreate(mv->gw,&xgd,mv);
+    }
+    
 
     gd.pos.x = gd.pos.x+gd.pos.width+10; --gd.pos.y;
     gd.pos.width += 30;
