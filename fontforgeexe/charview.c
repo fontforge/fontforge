@@ -2645,19 +2645,20 @@ return;				/* no points. no side bearings */
 static int CVExposeGlyphFill(CharView *cv, GWindow pixmap, GEvent *event, DRect* clip ) {
     int layer, cvlayer = CVLayer((CharViewBase *) cv);
     int filled = 0;
-    /* if (( cv->showfore || cv->b.drawmode==dm_fore ) && cv->showfilled && */
-    /* 	cv->filled!=NULL ) { */
-    /* 	GDrawDrawImage(pixmap, &cv->gi, NULL, */
-    /* 		       cv->xoff + cv->filled->xmin, */
-    /* 		       -cv->yoff + cv->height-cv->filled->ymax); */
-    /* 	filled = 1; */
-    /* } */
 
     if( shouldShowFilledUsingCairo(cv) ) {
 	layer = cvlayer;
 	if ( layer>=0 ) {
 	    CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
 	    			 cv->showpoints, clip, sfm_fill );
+	    filled = 1;
+	}
+    } else {
+	if (( cv->showfore || cv->b.drawmode==dm_fore ) && cv->showfilled && 
+	    cv->filled!=NULL ) {
+	    GDrawDrawImage(pixmap, &cv->gi, NULL,
+			   cv->xoff + cv->filled->xmin,
+			   -cv->yoff + cv->height-cv->filled->ymax);
 	    filled = 1;
 	}
     }
