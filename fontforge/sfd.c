@@ -8804,7 +8804,8 @@ return( false );
 	getint(asfd,&o2);
 	if ( layer<sf->layer_cnt ) {
 	    sf->layers[layer].order2 = o2;
-	    free(sf->layers[layer].name);
+		if (sf->layers[layer].name)
+		    free(sf->layers[layer].name);
 	    sf->layers[layer].name = SFDReadUTF7Str(asfd);
 	}
 	if ( getname(asfd,tok)!=1 )

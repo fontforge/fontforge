@@ -1130,62 +1130,103 @@ static StemInfo *GlifParseHints(xmlDocPtr doc,xmlNodePtr dict,char *hinttype) {
 return( head );
 }
 
-// FTODO
-// Take a layer index or name (depending upon how splinechar layers map to splinefont layers) and a pointer to an existing SplineChar (which is null if it has not been read on any layer yet) and a count of layers (for SplineCharCreate).
-static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname) {
+static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, char* glyphname, SplineChar* existingglyph, int layerdest) {
     xmlNodePtr glyph, kids, contour, points;
     SplineChar *sc;
     xmlChar *format, *width, *height, *u;
-    char *name;
+    char *name, *tmpname;
     int uni;
     char *cpt;
     SplineSet *last = NULL;
+	int newsc = 0;
 
     glyph = xmlDocGetRootElement(doc);
     format = xmlGetProp(glyph,(xmlChar *) "format");
     if ( xmlStrcmp(glyph->name,(const xmlChar *) "glyph")!=0 ||
 	    (format!=NULL && xmlStrcmp(format,(xmlChar *) "1")!=0)) {
-	LogError(_("Expected glyph file with format==1"));
-	xmlFreeDoc(doc);
-	free(format);
-return( NULL );
+		LogError(_("Expected glyph file with format==1"));
+		xmlFreeDoc(doc);
+		free(format);
+		return( NULL );
     }
-    name = (char *) xmlGetProp(glyph,(xmlChar *) "name");
-    if ( name==NULL && glifname!=NULL ) {
-	char *pt = strrchr(glifname,'/');
-	name = copy(pt+1);
-	for ( pt=cpt=name; *cpt!='\0'; ++cpt ) {
-	    if ( *cpt=='@' )		/* VMS doesn't let me have two "." in a filename so I use @ instead when a "." is called for */
-		*cpt = '.';
-	    if ( *cpt!='_' )
-		*pt++ = *cpt;
-	    else if ( islower(*name))
-		*name = toupper(*name);
+	// We use the provided name from the glyph listing since the specification says to trust that one more.
+    name = copy(glyphname);
+	// But we still fetch the internally listed name for verification and fail on a mismatch.
+	tmpname = (char *) xmlGetProp(glyph,(xmlChar *) "name");
+	if ((name == NULL) || ((name != NULL) && (tmpname != NULL) && (strcmp(glyphname, name) != 0))) {
+		LogError(_("Bad glyph name."));
+		if ( tmpname != NULL ) { free(tmpname); tmpname = NULL; }
+		if ( name != NULL ) { free(name); name = NULL; }
+		free(format);
+		xmlFreeDoc(doc);
+		return NULL;
 	}
-	*pt = '\0';
+	free(format);
+	if ( tmpname != NULL ) { free(tmpname); tmpname = NULL; }
+    if ( name==NULL && glifname!=NULL ) {
+		char *pt = strrchr(glifname,'/');
+		name = copy(pt+1);
+		for ( pt=cpt=name; *cpt!='\0'; ++cpt ) {
+			if ( *cpt=='@' )		/* VMS doesn't let me have two "." in a filename so I use @ instead when a "." is called for */
+			*cpt = '.';
+			if ( *cpt!='_' )
+			*pt++ = *cpt;
+			else if ( islower(*name))
+			*name = toupper(*name);
+		}
+		*pt = '\0';
     } else if ( name==NULL )
-	name = copy("nameless");
-    sc = SplineCharCreate(2);
-    sc->name = name;
+		name = copy("nameless");
+	// We assign a placeholder name if no name exists.
+	// We create a new SplineChar 
+	if (existingglyph != NULL) {
+		sc = existingglyph;
+		free(name); name = NULL;
+	} else {
+    	sc = SplineCharCreate(2);
+    	sc->name = name;
+		newsc = 1;
+	}
+	if (sc == NULL) {
+		xmlFreeDoc(doc);
+		return NULL;
+	}
     last = NULL;
-
+	// Check layer availability here.
+	if ( layerdest>=sc->layer_cnt ) {
+		sc->layers = grealloc(sc->layers,(layerdest+1)*sizeof(Layer));
+		memset(sc->layers+sc->layer_cnt,0,(layerdest+1-sc->layer_cnt)*sizeof(Layer));
+		sc->layer_cnt = layerdest + 1;
+	}
+	if (sc->layers == NULL) {
+		if ((newsc == 1) && (sc != NULL)) {
+			SplineCharFree(sc);
+		}
+		xmlFreeDoc(doc);
+		return NULL;
+	}
     for ( kids = glyph->children; kids!=NULL; kids=kids->next ) {
 	if ( xmlStrcmp(kids->name,(const xmlChar *) "advance")==0 ) {
-	    width = xmlGetProp(kids,(xmlChar *) "width");
-	    height = xmlGetProp(kids,(xmlChar *) "height");
-	    if ( width!=NULL )
-		sc->width = strtol((char *) width,NULL,10);
-	    if ( height!=NULL )
-		sc->vwidth = strtol((char *) height,NULL,10);
-	    sc->widthset = true;
-	    free(width); free(height);
+		if ((layerdest == ly_fore) || newsc) {
+			width = xmlGetProp(kids,(xmlChar *) "width");
+			height = xmlGetProp(kids,(xmlChar *) "height");
+			if ( width!=NULL )
+			sc->width = strtol((char *) width,NULL,10);
+			if ( height!=NULL )
+			sc->vwidth = strtol((char *) height,NULL,10);
+			sc->widthset = true;
+			free(width); free(height);
+		}
 	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "unicode")==0 ) {
-	    u = xmlGetProp(kids,(xmlChar *) "hex");
-	    uni = strtol((char *) u,NULL,16);
-	    if ( sc->unicodeenc == -1 )
-		sc->unicodeenc = uni;
-	    else
-		AltUniAdd(sc,uni);
+		if ((layerdest == ly_fore) || newsc) {
+			u = xmlGetProp(kids,(xmlChar *) "hex");
+			uni = strtol((char *) u,NULL,16);
+			if ( sc->unicodeenc == -1 )
+			sc->unicodeenc = uni;
+			else
+			AltUniAdd(sc,uni);
+			free(u);
+		}
 	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "outline")==0 ) {
 	    for ( contour = kids->children; contour!=NULL; contour=contour->next ) {
 		if ( xmlStrcmp(contour->name,(const xmlChar *) "component")==0 ) {
@@ -1215,8 +1256,8 @@ return( NULL );
 			    r->transform[4] = strtod(xo,NULL);
 			if ( yo!=NULL )
 			    r->transform[5] = strtod(yo,NULL);
-			r->next = sc->layers[ly_fore].refs;
-			sc->layers[ly_fore].refs = r;
+			r->next = sc->layers[layerdest].refs;
+			sc->layers[layerdest].refs = r;
 		    }
 		    free(xs); free(ys); free(xys); free(yxs); free(xo); free(yo);
 		} else if ( xmlStrcmp(contour->name,(const xmlChar *) "contour")==0 ) {
@@ -1471,11 +1512,12 @@ return( NULL );
 			SplineMake(ss->last,ss->first,firstpointsaidquad);
 			ss->last = ss->first;
 		    }
-		    if ( last==NULL )
-			sc->layers[ly_fore].splines = ss;
-		    else
-			last->next = ss;
-		    last = ss;
+		    if ( last==NULL ) {
+				if (
+				sc->layers[layerdest].splines = ss;
+		    } else
+				last->next = ss;
+				last = ss;
 		}
 	    }
 	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "lib")==0 ) {
@@ -1484,22 +1526,27 @@ return( NULL );
 		for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
 		    if ( xmlStrcmp(keys->name,(const xmlChar *) "key")== 0 ) {
 			char *keyname = (char *) xmlNodeListGetString(doc,keys->children,true);
-			int found = strcmp(keyname,"com.fontlab.hintData")==0;
-			free(keyname);
-			if ( found ) {
+			if ( strcmp(keyname,"com.fontlab.hintData")==0 ) {
 			    for ( temp=keys->next; temp!=NULL; temp=temp->next ) {
-				if ( xmlStrcmp(temp->name,(const xmlChar *) "dict")==0 )
-			    break;
-			    }
-			    if ( temp!=NULL ) {
-				sc->hstem = GlifParseHints(doc,temp,"hhints");
-				sc->vstem = GlifParseHints(doc,temp,"vhints");
-			        SCGuessHHintInstancesList(sc,ly_fore);
-			        SCGuessVHintInstancesList(sc,ly_fore);
-			    }
-		break;
-			}
+					if ( xmlStrcmp(temp->name,(const xmlChar *) "dict")==0 )
+					    break;
+			    	}
+			    	if ( temp!=NULL ) {
+						if (layerdest == ly_fore) {
+							if (sc->hstem == NULL) {
+								sc->hstem = GlifParseHints(doc,temp,"hhints");
+								SCGuessHHintInstancesList(sc,ly_fore);
+							}
+							if (sc->vstem == NULL) {
+								sc->vstem = GlifParseHints(doc,temp,"vhints");
+			        			SCGuessVHintInstancesList(sc,ly_fore);
+			        		}
+						}
+			    	}
+					break;
+				}
 		    }
+			free(keyname);
 		}
 #ifndef _NO_PYTHON
 		sc->python_persistent = LibToPython(doc,dict);
@@ -1508,11 +1555,11 @@ return( NULL );
 	}
     }
     xmlFreeDoc(doc);
-    SPLCatagorizePoints(sc->layers[ly_fore].splines);
+    SPLCatagorizePoints(sc->layers[layerdest].splines);
 return( sc );
 }
 
-static SplineChar *UFOLoadGlyph(SplineFont *sf,char *glifname) {
+static SplineChar *UFOLoadGlyph(SplineFont *sf,char *glifname, char* glyphname, SplineChar* existingglyph, int layerdest) {
     xmlDocPtr doc;
 
     doc = xmlParseFile(glifname);
@@ -1552,9 +1599,7 @@ static void UFORefFixup(SplineFont *sf, SplineChar *sc ) {
     }
 }
 
-// FTODO
-// Take a null-terminated array of glyphdirs. Process foreground (public.default, ly_fore) first.
-static void UFOLoadGlyphs(SplineFont *sf,char *glyphdir) {
+static void UFOLoadGlyphs(SplineFont *sf,char *glyphdir, int layerdest) {
     char *glyphlist = buildname(glyphdir,"contents.plist");
     xmlDocPtr doc;
     xmlNodePtr plist, dict, keys, value;
@@ -1589,16 +1634,23 @@ return;
 		if ( value==NULL )
 			break;
 		if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
-			valname = (char *) xmlNodeListGetString(doc,value->children,true);
-			glyphfname = buildname(glyphdir,valname);
-			free(valname);
-			sc = UFOLoadGlyph(sf,glyphfname); // Perhaps we could modify this to take a target layer as well.
-			if ( sc!=NULL ) {
-				sc->parent = sf;
-				if ( sf->glyphcnt>=sf->glyphmax )
-					sf->glyphs = grealloc(sf->glyphs,(sf->glyphmax+=100)*sizeof(SplineChar *));
-				sc->orig_pos = sf->glyphcnt;
-				sf->glyphs[sf->glyphcnt++] = sc;
+			char * glyphname = (char *) xmlNodeListGetString(doc,key->children,true);
+			int newsc = 0;
+			SplineChar* existingglyph = NULL;
+			if (glyphname != NULL) {
+				existingglyph = SFGetChar(sf,-1,glyphname);
+				if (existingglyph == NULL) newsc = 1;
+				valname = (char *) xmlNodeListGetString(doc,value->children,true);
+				glyphfname = buildname(glyphdir,valname);
+				free(valname);
+				sc = UFOLoadGlyph(sf, glyphfname, glyphname, existingglyph, layerdest);
+				if ( ( sc!=NULL ) && newsc ) {
+					sc->parent = sf;
+					if ( sf->glyphcnt>=sf->glyphmax )
+						sf->glyphs = grealloc(sf->glyphs,(sf->glyphmax+=100)*sizeof(SplineChar *));
+					sc->orig_pos = sf->glyphcnt;
+					sf->glyphs[sf->glyphcnt++] = sc;
+				}
 			}
 			keys = value;
 			ff_progress_next();
@@ -1811,15 +1863,6 @@ SplineFont *SFReadUFO(char *basedir, int flags) {
 	LogError(_("Can't find libxml2."));
 return( NULL );
     }
-
-    glyphdir = buildname(basedir,"glyphs");
-    glyphlist = buildname(glyphdir,"contents.plist");
-    if ( !GFileExists(glyphlist)) {
-	LogError(_("No glyphs directory or no contents file"));
-	free(glyphlist);
-return( NULL );
-    }
-    free(glyphlist);
 
     temp = buildname(basedir,"fontinfo.plist");
     doc = xmlParseFile(temp);
@@ -2099,11 +2142,141 @@ return( NULL );
 	sf->version = copy(sf->names->names[ttf_version]+8);
     xmlFreeDoc(doc);
 
-    UFOLoadGlyphs(sf,glyphdir);
+	layercontentsname = buildname(basedir,"layercontents.plist");
+	if (layercontentsname == NULL) {
+		return( NULL );
+	} else if ( GFileExists(layercontentsname)) {
+		xmlDocPtr layercontentsdoc = NULL;
+		xmlNodePtr layercontentsplist = NULL;
+		xmlNodePtr layercontentsdict = NULL;
+		xmlNodePtr layercontentslayer = NULL;
+		xmlNodePtr layercontentsvalue = NULL;
+		int layercontentslayercount = 0;
+		int layernamesbuffersize = 0;
+		int layercontentsvaluecount = 0;
+		if ( layercontentsdoc = xmlParseFile(layercontentsname) ) {
+			// The layercontents plist contains an array of double-element arrays. There is no top-level dict. Note that the indices in the layercontents array may not match those in the Fontforge layers array due to reserved spaces.
+			if ( ( layercontentsplist = xmlDocGetRootElement(layercontentsdoc) ) && ( layercontentsdict = FindNode(layercontentsplist->children,"array") ) ) {
+				layercontentslayercount = 0;
+				layernamesbuffersize = 2;
+				layernames = malloc(2*sizeof(char*)*layernamesbuffersize);
+				// Look through the children of the top-level array. Stop if one of them is not an array.
+				for ( layercontentslayer = layercontentsdict->children ;
+				( layercontentslayer != NULL ) && ( xmlStrcmp(layercontentslayer->name,(const xmlChar *) "array")==0 ) ;
+				layercontentslayer = layercontentslayer->next ) {
+					xmlChar * layerlabel = NULL;
+					xmlChar * layerglyphdirname = NULL;
+					layercontentsvaluecount = 0;
+					// Look through the children (effectively columns) of the layer array (the row). Reject non-string values.
+					for ( layercontentsvalue = layercontentslayer->children ;
+					( layercontentsvalue != NULL ) && ( xmlStrcmp(layercontentsvalue->name,(const xmlChar *) "string")==0 ) ;
+					layercontentsvalue = layercontentscurrentlayer->next ) {
+						if (layercontentsvaluecount == 0) layerlabel = xmlNodeListGetString(layercontentsdoc, layercontentsvalue->xmlChildrenNode, true);
+						if (layercontentsvaluecount == 1) layerglyphdirname = xmlNodeListGetString(layercontentsdoc, layercontentsvalue->xmlChildrenNode, true);
+						layercontentsvaluecount++;
+					}
+					// We need two values (as noted above) per layer entry and ignore any layer lacking those.
+					if (layercontentsvaluecount > 1) && (layernamesbuffersize < INT_MAX/2) {
+						// Resize the layer names array as necessary.
+						if (layercontentslayercount >= layernamesbuffersize) {
+							layernamesbuffersize *= 2;
+							layernames = realloc(layernames, 2*sizeof(char*)*layernamesbuffersize);
+						}
+						// Fail silently on allocation failure; it's highly unlikely.
+						if (layernames != NULL) {
+							layernames[2*layercontentslayercount] = copy((char*)(layerlabel));
+							if (layernames[2*layercontentslayercount]) {
+								layernames[(2*layercontentslayercount)+1] = copy((char*)(layerglyphdirname));
+								if (layernames[(2*layercontentslayercount)+1])
+									layercontentslayercount++; // We increment only if both pointers are valid so as to avoid read problems later.
+								else
+									free(layernames[2*layercontentslayercount]);
+							}
+						}
+					}
+					if (layerlabel != NULL) { xmlFree(layerlabel); layerlabel = NULL; }
+					if (layerglyphdirname != NULL) { xmlFree(layerglyphdirname); layerglyphdirname = NULL; }
+				}
+				if (layernames != NULL)
+					int lcount = 0;
+					int auxpos = 2;
+					int layerdest = 0;
+					int bg = 1;
+					if (layercontentslayercount > 0) {
+						// Start reading layers.
+						for (lcount = 0; lcount < layercontentslayercount; lcount++) {
+							if (glyphdir = buildname(basedir,layernames[2*lcount+1])
+								if (glyphlist = buildname(glyphdir,"contents.plist")) {
+									if ( !GFileExists(glyphlist)) {
+										LogError(_("No glyphs directory or no contents file"));
+									} else {
+										// Only public.default gets mapped as a foreground layer.
+										bg = 1;
+										// public.default and public.background have fixed mappings. Other layers start at 2.
+										if (strcmp(layernames[2*lcount],"public.default")==0) {
+											layerdest = ly_fore;
+											bg = 0;
+										} else if (strcmp(layernames[2*lcount],"public.background")==0) {
+											layerdest = ly_back;
+										} else {
+											layerdest = auxpos++;
+										}
 
-    sf->layers[ly_fore].order2 = sf->layers[ly_back].order2 = sf->grid.order2 =
-	    SFFindOrder(sf);
-    SFSetOrder(sf,sf->layers[ly_fore].order2);
+										// We ensure that the splinefont layer list has sufficient space.
+										if ( layerdest+1>sf->layer_cnt ) {
+ 										    sf->layers = grealloc(sf->layers,(layerdest+1)*sizeof(LayerInfo));
+										    memset(sf->layers+sf->layer_cnt,0,((layerdest+1)-sf->layer_cnt)*sizeof(LayerInfo));
+										}
+										sf->layer_cnt = layerdest+1;
+
+										// The check is redundant, but it allows us to copy from sfd.c.
+										if (( layer<sf->layer_cnt ) && sf->layers) {
+											if (sf->layers[layer].name)
+												free(sf->layers[layer].name);
+											sf->layers[layer].name = strcmp(layernames[2*lcount];
+											sf->layers[layer].background = bg;
+											// Fetch glyphs.
+											UFOLoadGlyphs(sf,glyphdir,layerdest);
+											// Determine layer spline order.
+											sf->layers[layerdest].order2 = SFLFindOrder(sf,layerdest);
+											// Conform layer spline order (reworking control points if necessary).
+											SFLSetOrder(sf,layerdest,sf->layers[layerdest].order2);
+											// Set the grid order to the foreground order if appropriate.
+											if (layerrdest == ly_fore) sf->grid.order2 = sf->layers[layerdest].order2;
+										}
+									}
+									free(glyphlist);
+								}
+								free(glyphdir);
+							}
+						}
+					} else {
+						LogError(_("layercontents.plist lists no valid layers."));
+					}
+					// Free layer names.
+					for (lcount = 0; lcount < layercontentslayercount; lcount++) {
+						if (layernames[2*lcount]) free(layernames[2*lcount]);
+						if (layernames[2*lcount+1]) free(layernames[2*lcount+1]);
+					}
+					free(layernames);
+			}
+			xmlFreeDoc(layercontentsdoc);
+		}
+	} else {
+		glyphdir = buildname(basedir,"glyphs");
+    	glyphlist = buildname(glyphdir,"contents.plist");
+    	if ( !GFileExists(glyphlist)) {
+			LogError(_("No glyphs directory or no contents file"));
+    	} else {
+			UFOLoadGlyphs(sf,glyphdir,ly_fore);
+			sf->layers[ly_fore].order2 = sf->layers[ly_back].order2 = sf->grid.order2 =
+		    SFFindOrder(sf);
+   	    	SFSetOrder(sf,sf->layers[ly_fore].order2);
+		}
+	    free(glyphlist);
+		free(glyphdir);
+	}
+	free(layercontentsname);
 
     sf->map = EncMapFromEncoding(sf,FindOrMakeEncoding("Unicode"));
 

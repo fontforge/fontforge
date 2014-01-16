@@ -856,10 +856,10 @@ SplineChar *SFGetChar(SplineFont *sf, int unienc, const char *name ) {
 			ind = SFCIDFindCID(sf,unienc,start);
 		else {
 			char *tmp;
-			if ( tmp = copy(name) ) {
-				*tmp[pt-name] = '\0';
+			if ( (tmp = copy(name)) ) {
+				tmp[pt-name] = '\0';
 				ind = SFCIDFindCID(sf,unienc,tmp+(start-name));
-				*tmp[pt-name] = ch;
+				tmp[pt-name] = ch;
 				free(tmp);
 			}
 		}
