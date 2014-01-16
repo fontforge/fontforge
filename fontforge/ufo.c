@@ -1149,20 +1149,23 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		free(format);
 		return( NULL );
     }
-	// We use the provided name from the glyph listing since the specification says to trust that one more.
-    name = copy(glyphname);
-	// But we still fetch the internally listed name for verification and fail on a mismatch.
-	tmpname = (char *) xmlGetProp(glyph,(xmlChar *) "name");
-	if ((name == NULL) || ((name != NULL) && (tmpname != NULL) && (strcmp(glyphname, name) != 0))) {
-		LogError(_("Bad glyph name."));
-		if ( tmpname != NULL ) { free(tmpname); tmpname = NULL; }
-		if ( name != NULL ) { free(name); name = NULL; }
-		free(format);
-		xmlFreeDoc(doc);
-		return NULL;
-	}
 	free(format);
-	if ( tmpname != NULL ) { free(tmpname); tmpname = NULL; }
+	tmpname = (char *) xmlGetProp(glyph,(xmlChar *) "name");
+	if (glyphname != NULL) {
+		// We use the provided name from the glyph listing since the specification says to trust that one more.
+		name = copy(glyphname);
+		// But we still fetch the internally listed name for verification and fail on a mismatch.
+		if ((name == NULL) || ((name != NULL) && (tmpname != NULL) && (strcmp(glyphname, name) != 0))) {
+			LogError(_("Bad glyph name."));
+			if ( tmpname != NULL ) { free(tmpname); tmpname = NULL; }
+			if ( name != NULL ) { free(name); name = NULL; }
+			xmlFreeDoc(doc);
+			return NULL;
+		}
+		if ( tmpname != NULL ) { free(tmpname); tmpname = NULL; }
+	} else {
+		name = tmpname;
+	}
     if ( name==NULL && glifname!=NULL ) {
 		char *pt = strrchr(glifname,'/');
 		name = copy(pt+1);
@@ -1513,7 +1516,8 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			ss->last = ss->first;
 		    }
 		    if ( last==NULL ) {
-				if (
+				// FTODO
+				// Deal with existing splines somehow.
 				sc->layers[layerdest].splines = ss;
 		    } else
 				last->next = ss;
@@ -1525,11 +1529,11 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 	    if ( dict!=NULL ) {
 		for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
 		    if ( xmlStrcmp(keys->name,(const xmlChar *) "key")== 0 ) {
-			char *keyname = (char *) xmlNodeListGetString(doc,keys->children,true);
-			if ( strcmp(keyname,"com.fontlab.hintData")==0 ) {
-			    for ( temp=keys->next; temp!=NULL; temp=temp->next ) {
-					if ( xmlStrcmp(temp->name,(const xmlChar *) "dict")==0 )
-					    break;
+				char *keyname = (char *) xmlNodeListGetString(doc,keys->children,true);
+				if ( strcmp(keyname,"com.fontlab.hintData")==0 ) {
+			    	for ( temp=keys->next; temp!=NULL; temp=temp->next ) {
+						if ( xmlStrcmp(temp->name,(const xmlChar *) "dict")==0 )
+						    break;
 			    	}
 			    	if ( temp!=NULL ) {
 						if (layerdest == ly_fore) {
@@ -1545,8 +1549,8 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			    	}
 					break;
 				}
+				free(keyname);
 		    }
-			free(keyname);
 		}
 #ifndef _NO_PYTHON
 		sc->python_persistent = LibToPython(doc,dict);
@@ -1567,7 +1571,7 @@ static SplineChar *UFOLoadGlyph(SplineFont *sf,char *glifname, char* glyphname, 
 	LogError(_("Bad glif file %s"), glifname);
 return( NULL );
     }
-return( _UFOLoadGlyph(sf,doc,glifname));
+return( _UFOLoadGlyph(sf,doc,glifname,glyphname,existingglyph,layerdest));
 }
 
 
@@ -1634,7 +1638,7 @@ return;
 		if ( value==NULL )
 			break;
 		if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
-			char * glyphname = (char *) xmlNodeListGetString(doc,key->children,true);
+			char * glyphname = (char *) xmlNodeListGetString(doc,keys->children,true);
 			int newsc = 0;
 			SplineChar* existingglyph = NULL;
 			if (glyphname != NULL) {
@@ -2142,7 +2146,8 @@ return( NULL );
 	sf->version = copy(sf->names->names[ttf_version]+8);
     xmlFreeDoc(doc);
 
-	layercontentsname = buildname(basedir,"layercontents.plist");
+	char * layercontentsname = buildname(basedir,"layercontents.plist");
+	char ** layernames = NULL;
 	if (layercontentsname == NULL) {
 		return( NULL );
 	} else if ( GFileExists(layercontentsname)) {
@@ -2170,13 +2175,13 @@ return( NULL );
 					// Look through the children (effectively columns) of the layer array (the row). Reject non-string values.
 					for ( layercontentsvalue = layercontentslayer->children ;
 					( layercontentsvalue != NULL ) && ( xmlStrcmp(layercontentsvalue->name,(const xmlChar *) "string")==0 ) ;
-					layercontentsvalue = layercontentscurrentlayer->next ) {
+					layercontentsvalue = layercontentsvalue->next ) {
 						if (layercontentsvaluecount == 0) layerlabel = xmlNodeListGetString(layercontentsdoc, layercontentsvalue->xmlChildrenNode, true);
 						if (layercontentsvaluecount == 1) layerglyphdirname = xmlNodeListGetString(layercontentsdoc, layercontentsvalue->xmlChildrenNode, true);
 						layercontentsvaluecount++;
 					}
 					// We need two values (as noted above) per layer entry and ignore any layer lacking those.
-					if (layercontentsvaluecount > 1) && (layernamesbuffersize < INT_MAX/2) {
+					if ((layercontentsvaluecount > 1) && (layernamesbuffersize < INT_MAX/2)) {
 						// Resize the layer names array as necessary.
 						if (layercontentslayercount >= layernamesbuffersize) {
 							layernamesbuffersize *= 2;
@@ -2197,7 +2202,7 @@ return( NULL );
 					if (layerlabel != NULL) { xmlFree(layerlabel); layerlabel = NULL; }
 					if (layerglyphdirname != NULL) { xmlFree(layerglyphdirname); layerglyphdirname = NULL; }
 				}
-				if (layernames != NULL)
+				if (layernames != NULL) {
 					int lcount = 0;
 					int auxpos = 2;
 					int layerdest = 0;
@@ -2205,7 +2210,7 @@ return( NULL );
 					if (layercontentslayercount > 0) {
 						// Start reading layers.
 						for (lcount = 0; lcount < layercontentslayercount; lcount++) {
-							if (glyphdir = buildname(basedir,layernames[2*lcount+1])
+							if (glyphdir = buildname(basedir,layernames[2*lcount+1])) {
 								if (glyphlist = buildname(glyphdir,"contents.plist")) {
 									if ( !GFileExists(glyphlist)) {
 										LogError(_("No glyphs directory or no contents file"));
@@ -2230,11 +2235,11 @@ return( NULL );
 										sf->layer_cnt = layerdest+1;
 
 										// The check is redundant, but it allows us to copy from sfd.c.
-										if (( layer<sf->layer_cnt ) && sf->layers) {
-											if (sf->layers[layer].name)
-												free(sf->layers[layer].name);
-											sf->layers[layer].name = strcmp(layernames[2*lcount];
-											sf->layers[layer].background = bg;
+										if (( layerdest<sf->layer_cnt ) && sf->layers) {
+											if (sf->layers[layerdest].name)
+												free(sf->layers[layerdest].name);
+											sf->layers[layerdest].name = layernames[2*lcount];
+											sf->layers[layerdest].background = bg;
 											// Fetch glyphs.
 											UFOLoadGlyphs(sf,glyphdir,layerdest);
 											// Determine layer spline order.
@@ -2242,7 +2247,7 @@ return( NULL );
 											// Conform layer spline order (reworking control points if necessary).
 											SFLSetOrder(sf,layerdest,sf->layers[layerdest].order2);
 											// Set the grid order to the foreground order if appropriate.
-											if (layerrdest == ly_fore) sf->grid.order2 = sf->layers[layerdest].order2;
+											if (layerdest == ly_fore) sf->grid.order2 = sf->layers[layerdest].order2;
 										}
 									}
 									free(glyphlist);
@@ -2259,6 +2264,7 @@ return( NULL );
 						if (layernames[2*lcount+1]) free(layernames[2*lcount+1]);
 					}
 					free(layernames);
+				}
 			}
 			xmlFreeDoc(layercontentsdoc);
 		}
@@ -2296,18 +2302,18 @@ return( NULL );
 	doc = xmlParseFile(temp);
     free(temp);
     if ( doc!=NULL ) {
-	plist = xmlDocGetRootElement(doc);
-	dict = NULL;
-	if ( plist!=NULL )
-	    dict = FindNode(plist->children,"dict");
-	if ( plist==NULL ||
-		xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 ||
-		dict==NULL ) {
-	    LogError(_("Expected property list file"));
-	} else {
-	    sf->python_persistent = LibToPython(doc,dict);
-	}
-	xmlFreeDoc(doc);
+		plist = xmlDocGetRootElement(doc);
+		dict = NULL;
+		if ( plist!=NULL )
+			dict = FindNode(plist->children,"dict");
+		if ( plist==NULL ||
+			xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 ||
+			dict==NULL ) {
+			LogError(_("Expected property list file"));
+		} else {
+			sf->python_persistent = LibToPython(doc,dict);
+		}
+		xmlFreeDoc(doc);
     }
 #endif
     setlocale(LC_NUMERIC,oldloc);
@@ -2335,7 +2341,7 @@ return( NULL );
     strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
-    sc = _UFOLoadGlyph(sf,doc,filename);
+    sc = _UFOLoadGlyph(sf,doc,filename,NULL,NULL,ly_fore);
     setlocale(LC_NUMERIC,oldloc);
 
     if ( sc==NULL )
