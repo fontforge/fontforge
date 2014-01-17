@@ -99,7 +99,7 @@ FontForge-old.pot: utf8.pot
 
 #--------------------------------------------------------------------------
 
-EXTRA_DIST = $(PO_FILES)
+EXTRA_DIST = $(PO_FILES) potmstitle.patch pottitle.patch utf8.pot
 MOSTLYCLEANFILES = $(MO_FILES) $(noinst_FILES)
 
 -include $(top_srcdir)/git.mk
