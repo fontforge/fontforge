@@ -31,6 +31,6 @@ FFAPP_FILES = $(wildcard *.cns)
 ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources
 
 ffapp_DATA = $(FFAPP_FILES)
-EXTRA_DIST = $(FFAPP_FILES)
+EXTRA_DIST = $(FFAPP_FILES) Changelog $(srcdir)/*.icns $(srcdir)/*.plist $(srcdir)/*.strings
 
 -include $(top_srcdir)/git.mk
