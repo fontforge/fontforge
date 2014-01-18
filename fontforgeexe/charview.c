@@ -4474,7 +4474,8 @@ void CVFreePreTransformSPL( CharView* cv )
 {
     if( cv->p.pretransform_spl )
     {
-	g_list_free_full( cv->p.pretransform_spl, SplinePointListFree );
+	g_list_foreach( cv->p.pretransform_spl, (GFunc)SplinePointListFree, NULL );
+	g_list_free( cv->p.pretransform_spl );
     }
     cv->p.pretransform_spl = 0;
 }
