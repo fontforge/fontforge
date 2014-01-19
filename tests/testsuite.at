@@ -48,7 +48,8 @@ AT_CLEANUP
 #--------------------------------------------------------------------------
 
 AT_COLOR_TESTS
-AT_TESTED([fontforge])
+dnl it only checks for pre-installed fontforge
+dnl AT_TESTED([fontforge])
 
 AT_BANNER([FontForge Native Scripting Tests])
 
