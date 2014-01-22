@@ -2165,42 +2165,46 @@ return( NULL );
 				layercontentslayercount = 0;
 				layernamesbuffersize = 2;
 				layernames = malloc(2*sizeof(char*)*layernamesbuffersize);
-				// Look through the children of the top-level array. Stop if one of them is not an array.
+				// Look through the children of the top-level array. Stop if one of them is not an array. (Ignore text objects since these probably just have whitespace.)
 				for ( layercontentslayer = layercontentsdict->children ;
-				( layercontentslayer != NULL ) && ( xmlStrcmp(layercontentslayer->name,(const xmlChar *) "array")==0 ) ;
+				( layercontentslayer != NULL ) && ( ( xmlStrcmp(layercontentslayer->name,(const xmlChar *) "array")==0 ) || ( xmlStrcmp(layercontentslayer->name,(const xmlChar *) "text")==0 ) ) ;
 				layercontentslayer = layercontentslayer->next ) {
-					xmlChar * layerlabel = NULL;
-					xmlChar * layerglyphdirname = NULL;
-					layercontentsvaluecount = 0;
-					// Look through the children (effectively columns) of the layer array (the row). Reject non-string values.
-					for ( layercontentsvalue = layercontentslayer->children ;
-					( layercontentsvalue != NULL ) && ( xmlStrcmp(layercontentsvalue->name,(const xmlChar *) "string")==0 ) ;
-					layercontentsvalue = layercontentsvalue->next ) {
-						if (layercontentsvaluecount == 0) layerlabel = xmlNodeListGetString(layercontentsdoc, layercontentsvalue->xmlChildrenNode, true);
-						if (layercontentsvaluecount == 1) layerglyphdirname = xmlNodeListGetString(layercontentsdoc, layercontentsvalue->xmlChildrenNode, true);
-						layercontentsvaluecount++;
-					}
-					// We need two values (as noted above) per layer entry and ignore any layer lacking those.
-					if ((layercontentsvaluecount > 1) && (layernamesbuffersize < INT_MAX/2)) {
-						// Resize the layer names array as necessary.
-						if (layercontentslayercount >= layernamesbuffersize) {
-							layernamesbuffersize *= 2;
-							layernames = realloc(layernames, 2*sizeof(char*)*layernamesbuffersize);
+					if ( xmlStrcmp(layercontentslayer->name,(const xmlChar *) "array")==0 ) {
+						xmlChar * layerlabel = NULL;
+						xmlChar * layerglyphdirname = NULL;
+						layercontentsvaluecount = 0;
+						// Look through the children (effectively columns) of the layer array (the row). Reject non-string values.
+						for ( layercontentsvalue = layercontentslayer->children ;
+						( layercontentsvalue != NULL ) && ( ( xmlStrcmp(layercontentsvalue->name,(const xmlChar *) "string")==0 ) || ( xmlStrcmp(layercontentsvalue->name,(const xmlChar *) "text")==0 ) ) ;
+						layercontentsvalue = layercontentsvalue->next ) {
+							if ( xmlStrcmp(layercontentsvalue->name,(const xmlChar *) "string")==0 ) {
+								if (layercontentsvaluecount == 0) layerlabel = xmlNodeListGetString(layercontentsdoc, layercontentsvalue->xmlChildrenNode, true);
+								if (layercontentsvaluecount == 1) layerglyphdirname = xmlNodeListGetString(layercontentsdoc, layercontentsvalue->xmlChildrenNode, true);
+								layercontentsvaluecount++;
+								}
 						}
-						// Fail silently on allocation failure; it's highly unlikely.
-						if (layernames != NULL) {
-							layernames[2*layercontentslayercount] = copy((char*)(layerlabel));
-							if (layernames[2*layercontentslayercount]) {
-								layernames[(2*layercontentslayercount)+1] = copy((char*)(layerglyphdirname));
-								if (layernames[(2*layercontentslayercount)+1])
-									layercontentslayercount++; // We increment only if both pointers are valid so as to avoid read problems later.
-								else
-									free(layernames[2*layercontentslayercount]);
+						// We need two values (as noted above) per layer entry and ignore any layer lacking those.
+						if ((layercontentsvaluecount > 1) && (layernamesbuffersize < INT_MAX/2)) {
+							// Resize the layer names array as necessary.
+							if (layercontentslayercount >= layernamesbuffersize) {
+								layernamesbuffersize *= 2;
+								layernames = realloc(layernames, 2*sizeof(char*)*layernamesbuffersize);
+							}
+							// Fail silently on allocation failure; it's highly unlikely.
+							if (layernames != NULL) {
+								layernames[2*layercontentslayercount] = copy((char*)(layerlabel));
+								if (layernames[2*layercontentslayercount]) {
+									layernames[(2*layercontentslayercount)+1] = copy((char*)(layerglyphdirname));
+									if (layernames[(2*layercontentslayercount)+1])
+										layercontentslayercount++; // We increment only if both pointers are valid so as to avoid read problems later.
+									else
+										free(layernames[2*layercontentslayercount]);
+								}
 							}
 						}
+						if (layerlabel != NULL) { xmlFree(layerlabel); layerlabel = NULL; }
+						if (layerglyphdirname != NULL) { xmlFree(layerglyphdirname); layerglyphdirname = NULL; }
 					}
-					if (layerlabel != NULL) { xmlFree(layerlabel); layerlabel = NULL; }
-					if (layerglyphdirname != NULL) { xmlFree(layerglyphdirname); layerglyphdirname = NULL; }
 				}
 				if (layernames != NULL) {
 					int lcount = 0;
