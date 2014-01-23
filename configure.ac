@@ -191,9 +191,11 @@ AC_PATH_PROG([XGETTEXT],[xgettext],[xgettext])
 AC_PATH_PROG([INDENT],[indent],[indent])
 AC_PATH_PROG([WGET],[wget],[wget])
 AC_PATH_PROG([UNZIP],[unzip],[unzip])
-AC_PATH_PROG([UPDATE_MIME_DATABASE],[update-mime-database],[update-mime-database])
-AC_PATH_PROG([UPDATE_DESKTOP_DATABASE],[update-desktop-database],[update-desktop-database])
+AC_PATH_PROG([UPDATE_MIME_DATABASE],[update-mime-database],[:])
+AC_PATH_PROG([UPDATE_DESKTOP_DATABASE],[update-desktop-database],[:])
 AC_PATH_PROG([PLUTIL],[plutil],[:])
+
+AM_CONDITIONAL([DESKTOP],[test x"$UPDATE_MIME_DATABASE" != "x:" -a x"$UPDATE_DESKTOP_DATABASE" != "x:"])
 
 FONTFORGE_ARG_ENABLE_REAL
 
@@ -486,7 +488,6 @@ AM_CONDITIONAL([MACINTOSH],[test x"${gww_ismac}" = xyes])
 # The following conditionals are always false, so the directories
 # never get built by default. Nevertheless, they will be included by
 # "make dist".
-AM_CONDITIONAL([DESKTOP],[test x != x])
 AM_CONDITIONAL([FONTTOOLS],[test x != x])
 
 #--------------------------------------------------------------------------
