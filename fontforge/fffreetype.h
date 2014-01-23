@@ -28,7 +28,7 @@
 #ifndef _FFFREETYPE_H
 #define _FFFREETYPE_H
 
-#if !defined(_NO_FREETYPE) && !defined(_NO_MMAP)
+#if !defined(_NO_FREETYPE)
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H
@@ -36,32 +36,23 @@
 # include FT_TRUETYPE_DRIVER_H
 #endif
 #if defined(FREETYPE_HAS_DEBUGGER) && FREETYPE_MINOR>=2
-# if defined(__MINGW32__)
-#  include <freetype/internal/internal.h>
-# else
-#  include <internal/internal.h>
-# endif
+# include <internal/internal.h>
 #endif
-#include <unistd.h>
 
 #if defined(__MINGW32__)
-# include "winmmap.h"
+# include <Windows.h>
 #else
 # include <sys/mman.h>
 #endif
 
+#include <unistd.h>
+
 extern FT_Library ff_ft_context;
 
 #if FREETYPE_HAS_DEBUGGER
-# if defined(__MINGW32__)
-#  include "freetype/truetype/ttobjs.h"
-#  include "freetype/truetype/ttdriver.h"
-#  include "freetype/truetype/ttinterp.h"
-# else
-#  include "ttobjs.h"
-#  include "ttdriver.h"
-#  include "ttinterp.h"
-# endif
+# include "ttobjs.h"
+# include "ttdriver.h"
+# include "ttinterp.h"
 #endif
 
 typedef struct freetypecontext {

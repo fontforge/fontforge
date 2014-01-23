@@ -32,6 +32,7 @@
 #include "splinefont.h"
 #include "ffglib.h"
 
+char* Wordlist_getSCName( SplineChar* sc );
 
 typedef int (*WordlistEscpaedInputStringToRealString_getFakeUnicodeOfScFunc)( SplineChar *sc, void* udata );
 extern int WordlistEscpaedInputStringToRealString_getFakeUnicodeAsScUnicodeEnc( SplineChar *sc, void* udata );
@@ -58,5 +59,6 @@ extern void WordlistLoadToGTextInfo( GGadget* g, int* idx  );
 
 extern void WordlistTrimTrailingSingleSlash( unichar_t* txt );
 
+extern unichar_t* Wordlist_advanceSelectedCharsBy( SplineFont* sf, EncMap *map, unichar_t* txtu, int offset );
 
 #endif

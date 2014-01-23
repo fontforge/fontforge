@@ -28,7 +28,7 @@
 #include "fffreetype.h"
 #include <math.h>
 
-#if _NO_FREETYPE || _NO_MMAP
+#if _NO_FREETYPE
 
 int hasFreeType(void) {
 return( false );
@@ -227,7 +227,11 @@ return;
     if ( ftc->shared_ftc )
 return;
     if ( ftc->mappedfile )
-	munmap(ftc->mappedfile,ftc->len);
+#if defined(__MINGW32__)
+		UnmapViewOfFile(ftc->mappedfile);
+#else
+		munmap(ftc->mappedfile,ftc->len);
+#endif
     if ( ftc->file!=NULL )
 	fclose(ftc->file);
     free(ftc->glyph_indeces);
@@ -379,9 +383,27 @@ return( NULL );
 
 	fseek(ftc->file,0,SEEK_END);
 	ftc->len = ftell(ftc->file);
+#if defined (__MINGW32__)
+        ftc->mappedfile = NULL;
+        {
+            int fd = _fileno(ftc->file);
+            if (fd != -1) {
+                HANDLE handle = CreateFileMapping((HANDLE)_get_osfhandle(fd), 
+                                    NULL, PAGE_READONLY, 0, ftc->len, NULL);
+                if (handle != NULL) {
+                    ftc->mappedfile = MapViewOfFile(handle, FILE_MAP_READ,
+                                        0, 0, ftc->len);
+                    CloseHandle(handle);
+                }
+            }
+            if (ftc->mappedfile == NULL)
+                goto fail;
+        }
+#else
 	ftc->mappedfile = mmap(NULL,ftc->len,PROT_READ,MAP_PRIVATE,fileno(ftc->file),0);
 	if ( ftc->mappedfile==MAP_FAILED )
  goto fail;
+#endif
 	if ( sf->glyphs!=old ) {
 	    free(sf->glyphs);
 	    sf->glyphs = old;

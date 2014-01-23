@@ -26,5 +26,5 @@
 
 include $(top_srcdir)/mk/layout.am
 SUBDIRS = FontForge.app
-EXTRA_DIST = create-osx-app-bundle.sh
+EXTRA_DIST = create-osx-app-bundle.sh Portfile ipython-embed-fix.patch
 -include $(top_srcdir)/git.mk

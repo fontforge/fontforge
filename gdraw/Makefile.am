@@ -55,5 +55,6 @@ endif GRAPHICAL_USER_INTERFACE
 
 libgdraw_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGDRAW_VERSION)
 
+EXTRA_DIST = descrip.mms gdrawwacomdriver.c genkeysym.c growcol.c
 
 -include $(top_srcdir)/git.mk

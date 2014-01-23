@@ -378,7 +378,6 @@ static const unichar_t str_3ae[] = { 0x03b7, 0x0301, 0 };
 static const unichar_t str_3af[] = { 0x03b9, 0x0301, 0 };
 static const unichar_t str_3b0[] = { 0x03cb, 0x0301, 0 };
 static const unichar_t str_3ba[] = { 0x0138, 0 };
-static const unichar_t str_3bc[] = { 0x00b5, 0 };
 static const unichar_t str_3bf[] = { 0x006f, 0 };
 static const unichar_t str_3c1[] = { 0x0070, 0 };
 static const unichar_t str_3c7[] = { 0x0078, 0 };
@@ -4764,8 +4763,7 @@ str_3ae,
 str_3af,
 str_3b0,
 0, 0, 0, 0, 0, 0, 0, 0, 0, str_3ba,
-0, str_3bc,
-0, 0, str_3bf,
+0, 0, 0, 0, str_3bf,
 0, str_3c1,
 0, 0, 0, 0, 0, str_3c7,
 0, 0, str_3ca,
