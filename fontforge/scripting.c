@@ -10442,7 +10442,7 @@ void ProcessNativeScript(int argc, char *argv[], FILE *script) {
 		while (setjmp(env));
 		c.err_env = &env;
 		// Parse and execute.
-		while ( !c.returned && !c.broken && (tok = ff_NextToken(&c))!=tt_eof ) {
+		while ( c.script && !c.error && !c.returned && !c.broken && (tok = ff_NextToken(&c))!=tt_eof ) {
 			ff_backuptok(&c);
 			ff_statement(&c);
 		}
