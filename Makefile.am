@@ -73,9 +73,9 @@ if MACINTOSH
 SUBDIRS += mackeys osx
 endif MACINTOSH
 
-if DESKTOP
+if XDG_DESKTOP
 SUBDIRS += desktop
-endif DESKTOP
+endif XDG_DESKTOP
 
 if FONTTOOLS
 SUBDIRS += fonttools
@@ -89,11 +89,6 @@ nodist_pkgconfig_DATA = libfontforge.pc libfontforgeexe.pc
 
 EXTRA_DIST += LICENSE README-Mac.html README-MS.html README-unix	\
 	README-Unix.html Readme.VMS
-
-#--------------------------------------------------------------------------
-
-uninstall-local:
-	(cd desktop; $(MAKE) $(AM_MAKEFLAGS) uninstall)
 
 #--------------------------------------------------------------------------
 
