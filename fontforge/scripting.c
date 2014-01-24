@@ -214,8 +214,10 @@ static void calldatafree(Context *c) {
     }
     DictionaryFree(&c->locals);
 
-    if ( c->script!=NULL )
-	fclose(c->script);
+    if ( c->script!=NULL ) {
+		fclose(c->script);
+		c->script = NULL;
+	}
 }
 
 static void traceback(Context *c) {
@@ -10360,82 +10362,95 @@ void ProcessNativeScript(int argc, char *argv[], FILE *script) {
 
     i=1;
     if ( script!=NULL ) {
-	if ( argc<2 || strcmp(argv[1],"-")!=0 )
-	    i = 0;
+		if ( argc<2 || strcmp(argv[1],"-")!=0 )
+	    	i = 0;
     } else {
-	if ( argc>i+1 && (strcmp(argv[i],"-nosplash")==0 || strcmp(argv[i],"--nosplash")==0 
-                        || strcmp(argv[i],"-quiet")==0 || strcmp(argv[i],"--quiet")==0 ))
-	    ++i;
-	if ( argc>i+1 && (strncmp(argv[i],"-lang=",6)==0 || strncmp(argv[i],"--lang=",7)==0 ))
-	    ++i;
-	if ( argc>i+2 && (strncmp(argv[i],"-lang",5)==0 || strncmp(argv[i],"--lang",6)==0 ) &&
-		    (strcmp(argv[i+1],"py")==0 || strcmp(argv[i+1],"ff")==0 || strcmp(argv[i+1],"pe")==0))
-	    i+=2;
-	if ( strcmp(argv[i],"-script")==0 || strcmp(argv[i],"--script")==0 )
-	    ++i;
-	else if ( strcmp(argv[i],"-dry")==0 || strcmp(argv[i],"--dry")==0 ) {
-	    ++i;
-	    dry = 1;
-	} else if (( strcmp(argv[i],"-c")==0 || strcmp(argv[i],"--c")==0) &&
-		argc>=i+1 ) {
-	    ++i;
-	    string = argv[i];
-	}
+		// Count valid arguments but only allow one order. (?)
+		if ( argc>i+1 && (strcmp(argv[i],"-nosplash")==0 || strcmp(argv[i],"--nosplash")==0 
+		                    || strcmp(argv[i],"-quiet")==0 || strcmp(argv[i],"--quiet")==0 ))
+			++i;
+		if ( argc>i+1 && (strncmp(argv[i],"-lang=",6)==0 || strncmp(argv[i],"--lang=",7)==0 ))
+			++i;
+		if ( argc>i+2 && (strncmp(argv[i],"-lang",5)==0 || strncmp(argv[i],"--lang",6)==0 ) &&
+				(strcmp(argv[i+1],"py")==0 || strcmp(argv[i+1],"ff")==0 || strcmp(argv[i+1],"pe")==0))
+			i+=2;
+		if ( strcmp(argv[i],"-script")==0 || strcmp(argv[i],"--script")==0 )
+			++i;
+		else if ( strcmp(argv[i],"-dry")==0 || strcmp(argv[i],"--dry")==0 ) {
+			++i;
+			dry = 1;
+		} else if (( strcmp(argv[i],"-c")==0 || strcmp(argv[i],"--c")==0) &&
+			argc>=i+1 ) {
+			++i;
+			string = argv[i];
+		}
     }
+	// Clear the context.
     memset( &c,0,sizeof(c));
-    c.a.argc = argc-i;
+    c.a.argc = argc-i; // Remaining arguments belong to the context.
     c.a.vals = galloc(c.a.argc*sizeof(Val));
     c.dontfree = gcalloc(c.a.argc,sizeof(Array*));
     c.donteval = dry;
+	// Copy the context arguments.
     for ( j=i; j<argc; ++j ) {
-	char *t;
-	c.a.vals[j-i].type = v_str;
-	t = def2utf8_copy(argv[j]);
-	c.a.vals[j-i].u.sval = utf82script_copy(t);
-	free(t);
+		char *t;
+		c.a.vals[j-i].type = v_str;
+		t = def2utf8_copy(argv[j]);
+		c.a.vals[j-i].u.sval = utf82script_copy(t);
+		free(t);
     }
     c.return_val.type = v_void;
     if ( script!=NULL ) {
-	c.filename = "<stdin>";
-	c.script = script;
+		// If the function is called with a non-null script, use it and call it stdin.
+		c.filename = "<stdin>";
+		c.script = script;
     } else if ( string!=NULL ) {
-	c.filename = "<command-string>";
-	c.script = tmpfile();
-	fwrite(string,1,strlen(string),c.script);
-	rewind(c.script);
+		// If command line has a command string, copy it into a temporary file for easier use.
+		c.filename = "<command-string>";
+		c.script = tmpfile();
+		fwrite(string,1,strlen(string),c.script);
+		rewind(c.script);
     } else if ( i<argc && strcmp(argv[i],"-")!=0 ) {
-	c.filename = argv[i];
-	c.script = fopen(c.filename,"r");
+		// Take the first non-matched argument as a filename if it isn't a hyphen. (So the filename is not necessarily right after the -script argument.)
+		c.filename = argv[i];
+		c.script = fopen(c.filename,"r");
     } else {
-	c.filename = "<stdin>";
-	c.script = stdin;
+		// If there is no other source of commands, use stdin.
+		c.filename = "<stdin>";
+		c.script = stdin;
     }
+	// If the file is not seekable, we copy it into a seekable file.
     /* On Mac OS/X fseek/ftell appear to be broken and return success even */
     /*  for terminals. They should return -1, EBADF */
     if ( c.script!=NULL && (ftell(c.script)==-1 || isatty(fileno(c.script))) ) {
-	if (c.script == stdin) {
-	    c.script = tmpfile();
-	    if (c.script)
-		c.interactive = true;
-	} else
-	    c.script = CopyNonSeekableFile(c.script);
+		if (c.script == stdin) {
+			c.script = tmpfile();
+			if (c.script)
+				c.interactive = true;
+		} else {
+			FILE * tmpfile1 = CopyNonSeekableFile(c.script);
+			if ((c.script != stdin) && (c.script != script)) fclose(c.script);
+			c.script = tmpfile1;
+		}
     }
     if ( c.script==NULL )
-	ScriptError(&c, "No such file");
+		ScriptError(&c, "No such file");
     else {
-	c.lineno = 1;
-	
-	while (setjmp(env))
-	    ;
-	c.err_env = &env;
-	while ( !c.returned && !c.broken && (tok = ff_NextToken(&c))!=tt_eof ) {
-	    ff_backuptok(&c);
-	    ff_statement(&c);
-	}
-	fclose(c.script);
+		// If the script is accessible, we start to parse it.
+		c.lineno = 1;
+		// Set the jump environment for returning from the error reporter.
+		while (setjmp(env));
+		c.err_env = &env;
+		// Parse and execute.
+		while ( c.script && !c.error && !c.returned && !c.broken && (tok = ff_NextToken(&c))!=tt_eof ) {
+			ff_backuptok(&c);
+			ff_statement(&c);
+		}
+		if ((c.script != stdin) && (c.script != script) && (c.script !=NULL)) fclose(c.script);
     }
+	// Free previously copied arguments.
     for ( i=0; i<c.a.argc; ++i )
-	free(c.a.vals[i].u.sval);
+		free(c.a.vals[i].u.sval);
     free(c.a.vals);
     free(c.dontfree);
     exit(0);
