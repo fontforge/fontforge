@@ -795,28 +795,32 @@ return( -1 );
 }
 
 int SFCIDFindCID(SplineFont *sf, int unienc, const char *name ) {
+	// For a given SplineFont *sf, find the index of the SplineChar with code unienc or name *name.
     int j,ret;
     struct cidmap *cidmap;
-
+	
+	// If there is a cidmap or if there are multiple subfonts, do complicated things.
     if ( sf->cidmaster!=NULL || sf->subfontcnt!=0 ) {
-	if ( sf->cidmaster!=NULL )
-	    sf=sf->cidmaster;
-	cidmap = FindCidMap(sf->cidregistry,sf->ordering,sf->supplement,sf);
-	ret = NameUni2CID(cidmap,unienc,name);
-	if ( ret!=-1 )
-return( ret );
+		if ( sf->cidmaster!=NULL )
+			sf=sf->cidmaster;
+		cidmap = FindCidMap(sf->cidregistry,sf->ordering,sf->supplement,sf);
+		ret = NameUni2CID(cidmap,unienc,name);
+		if ( ret!=-1 )
+		    return( ret );
     }
 
+	// If things are simple, perform a flat map.
     if ( sf->subfonts==NULL && sf->cidmaster==NULL )
-return( SFFindGID(sf,unienc,name));
+	return( SFFindGID(sf,unienc,name));
 
+	// If the cid lookup from before failed, look through subfonts.
     if ( sf->cidmaster!=NULL )
-	sf=sf->cidmaster;
+		sf=sf->cidmaster;
     for ( j=0; j<sf->subfontcnt; ++j )
-	if (( ret = SFFindGID(sf,unienc,name))!=-1 )
-return( ret );
+		if (( ret = SFFindGID(sf,unienc,name))!=-1 )
+			return( ret );
 
-return( -1 );
+	return( -1 );
 }
 
 int SFHasCID(SplineFont *sf,int cid) {
@@ -836,38 +840,46 @@ return( -1 );
 }
 
 SplineChar *SFGetChar(SplineFont *sf, int unienc, const char *name ) {
-    int ind;
+	// This function presumably finds a glyph matching the code or name supplied. Undefined code is unienc = -1. Undefined name is name = NULL.
+    int ind = -1;
     int j;
     char *pt, *start; int ch;
 
     if ( name==NULL )
-	ind = SFCIDFindCID(sf,unienc,NULL);
+		ind = SFCIDFindCID(sf,unienc,NULL);
     else {
-	for ( start=(char *) name; *start==' '; ++start );
-	for ( pt=start; *pt!='\0' && *pt!='('; ++pt );
-	ch = *pt;
-	if ( ch=='\0' )
-	    ind = SFCIDFindCID(sf,unienc,start);
-	else {
-	    *pt = '\0';
-	    ind = SFCIDFindCID(sf,unienc,start);
-	    *pt = ch;
-	}
+		for ( start=(char *) name; *start==' '; ++start );
+		for ( pt=start; *pt!='\0' && *pt!='('; ++pt );
+		ch = *pt;
+		// We truncate any glyph name before parentheses.
+		if ( ch=='\0' )
+			ind = SFCIDFindCID(sf,unienc,start);
+		else {
+			char *tmp;
+			if ( (tmp = copy(name)) ) {
+				tmp[pt-name] = '\0';
+				ind = SFCIDFindCID(sf,unienc,tmp+(start-name));
+				tmp[pt-name] = ch;
+				free(tmp);
+			}
+		}
     }
     if ( ind==-1 )
-return( NULL );
+		return( NULL );
 
+	// If the typeface is simple, return the result from the flat glyph collection.
     if ( sf->subfonts==NULL && sf->cidmaster==NULL )
-return( sf->glyphs[ind]);
+		return( sf->glyphs[ind]);
 
     if ( sf->cidmaster!=NULL )
-	sf=sf->cidmaster;
+		sf=sf->cidmaster;
 
+	// Find a subfont that contains the glyph in question.
     j = SFHasCID(sf,ind);
     if ( j==-1 )
-return( NULL );
+		return( NULL );
 
-return( sf->subfonts[j]->glyphs[ind] );
+	return( sf->subfonts[j]->glyphs[ind] );
 }
 
 SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, const char *name ) {

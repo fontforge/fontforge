@@ -2836,7 +2836,9 @@ extern char **NamesReadUFO(char *filename);
 extern char **NamesReadMacBinary(char *filename);
 
 extern void SFSetOrder(SplineFont *sf,int order2);
+extern void SFLSetOrder(SplineFont *sf, int layerdest, int order2);
 extern int SFFindOrder(SplineFont *sf);
+extern int SFLFindOrder(SplineFont *sf, int layerdest);
 
 extern const char *UnicodeRange(int unienc);
 extern SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i);

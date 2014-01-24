@@ -3599,6 +3599,17 @@ return( ret );
 return( 0 );
 }
 
+int SFLFindOrder(SplineFont *sf, int layerdest) {
+    int i, ret;
+
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	ret = SPLFindOrder(sf->glyphs[i]->layers[layerdest].splines);
+	if ( ret!=-1 )
+return( ret );
+    }
+return( 0 );
+}
+
 static void SPLSetOrder(SplineSet *ss,int order2) {
     Spline *s, *first;
     SplinePoint *from, *to;
@@ -3662,6 +3673,15 @@ void SFSetOrder(SplineFont *sf,int order2) {
 	    SPLSetOrder(sf->glyphs[i]->layers[j].splines,order2);
 	    sf->glyphs[i]->layers[j].order2 = order2;
 	}
+    }
+}
+
+void SFLSetOrder(SplineFont *sf, int layerdest, int order2) {
+    int i,j;
+
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	    SPLSetOrder(sf->glyphs[i]->layers[layerdest].splines,order2);
+	    sf->glyphs[i]->layers[layerdest].order2 = order2;
     }
 }
 
