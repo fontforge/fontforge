@@ -87,8 +87,14 @@ SUBDIRS += \
 
 nodist_pkgconfig_DATA = libfontforge.pc libfontforgeexe.pc
 
-EXTRA_DIST += LICENSE README-Mac.html README-MS.html README-unix	\
-	README-Unix.html Readme.VMS
+EXTRA_DIST += \
+	LICENSE \
+	doc/README-Mac.html \
+	doc/README-MS.html \
+	doc/README-unix	\
+	doc/README-Unix.html \
+	doc/Readme.VMS \
+	$(NULL)
 
 #--------------------------------------------------------------------------
 
