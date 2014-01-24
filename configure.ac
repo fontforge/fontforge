@@ -593,6 +593,7 @@ pyhook/Makefile
 plugins/Makefile
 tests/Makefile
 desktop/Makefile
+contrib/Makefile
 contrib/cidmap/Makefile
 contrib/fonttools/Makefile
 osx/Makefile
