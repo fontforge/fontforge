@@ -569,7 +569,6 @@ libltdl/Makefile
 Unicode/Makefile
 gutils/Makefile
 collab/Makefile
-hotkeys/Makefile
 share/Makefile
 gdraw/Makefile
 fontforge/Makefile
