@@ -28,7 +28,10 @@
 include $(top_srcdir)/mk/layout.am
 
 FONTFORGESHARE_FILES = prefs
-fontforgeshares_DATA = $(FONTFORGESHARE_FILES)
+HOTKEY_FILES = default
 
-EXTRA_DIST = $(FONTFORGESHARE_FILES) 
+fontforgeshares_DATA = $(FONTFORGESHARE_FILES)
+hotkeys_DATA = $(HOTKEY_FILES)
+
+EXTRA_DIST = $(FONTFORGESHARE_FILES) $(HOTKEY_FILES)
 -include $(top_srcdir)/git.mk

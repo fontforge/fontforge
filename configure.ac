@@ -569,7 +569,6 @@ libltdl/Makefile
 Unicode/Makefile
 gutils/Makefile
 collab/Makefile
-hotkeys/Makefile
 share/Makefile
 gdraw/Makefile
 fontforge/Makefile
@@ -591,11 +590,12 @@ nodejs/collabwebview/css/Makefile
 nodejs/collabwebview/js/Makefile
 nodejs/collabwebview/js/contentEditable/Makefile
 pyhook/Makefile
-cidmap/Makefile
 plugins/Makefile
 tests/Makefile
 desktop/Makefile
-fonttools/Makefile
+contrib/Makefile
+contrib/cidmap/Makefile
+contrib/fonttools/Makefile
 osx/Makefile
 osx/FontForge.app/Makefile
 osx/FontForge.app/Contents/Makefile
