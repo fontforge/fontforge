@@ -44,7 +44,7 @@ update-mime-database:
 	if test -z "$(DESTDIR)"; then $(UPDATE_MIME_DATABASE) ${mimedir} || : ; fi
 
 update-desktop-database:
-	if test -z "$(DESTDIR)"; then $(UPDATE_DESKTOP_DATABASE) ${applicationsdir} || : ; fi
+	if test -z "$(DESTDIR)"; then $(UPDATE_DESKTOP_DATABASE) ${desktopdir} || : ; fi
 
 EXTRA_DIST = icons/src/icon-16x16-apps-fontforge.svg	\
 	icons/src/icon-24x24-apps-fontforge.svg		\
