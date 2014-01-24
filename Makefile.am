@@ -46,7 +46,7 @@ include $(top_srcdir)/mk/layout.am
 
 #--------------------------------------------------------------------------
 
-SUBDIRS = inc libltdl Unicode gutils share
+SUBDIRS = inc libltdl Unicode gutils
 
 if LIBZMQ
 SUBDIRS += collab
@@ -60,11 +60,6 @@ endif GRAPHICAL_USER_INTERFACE
 
 SUBDIRS += fontforgeexe
 
-SUBDIRS += plugins
-SUBDIRS += po htdocs pycontrib
-SUBDIRS += nodejs
-SUBDIRS += cidmap
-
 if PYTHON_EXTENSION
 SUBDIRS += pyhook
 endif PYTHON_EXTENSION
@@ -77,11 +72,16 @@ if XDG_DESKTOP
 SUBDIRS += desktop
 endif XDG_DESKTOP
 
-if FONTTOOLS
-SUBDIRS += fonttools
-endif FONTTOOLS
-
-SUBDIRS += tests
+SUBDIRS += \
+	contrib \
+	htdocs \
+	nodejs \
+	plugins \
+	po \
+	pycontrib \
+	share \
+	tests \
+	$(NULL)
 
 #--------------------------------------------------------------------------
 
