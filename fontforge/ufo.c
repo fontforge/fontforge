@@ -59,7 +59,7 @@
 /*  each followed by an <integer>, <real>, <true/>, <false/> or <string> element, */
 /*  or another <dict> */
 
-/* UFO format 2.0 includes an adobe feature file "feature.fea" and slightly */
+/* UFO format 2.0 includes an adobe feature file "features.fea" and slightly */
 /*  different/more tags in fontinfo.plist */
 
 static char *buildname(char *basedir,char *sub) {
@@ -765,7 +765,7 @@ return( true );
 
 #ifndef Version_1
 static int UFOOutputFeatures(char *basedir,SplineFont *sf) {
-    char *fname = buildname(basedir,"feature.fea");
+    char *fname = buildname(basedir,"features.fea");
     FILE *feats = fopen( fname, "w" );
     int err;
 
@@ -2291,7 +2291,7 @@ return( NULL );
     sf->map = EncMapFromEncoding(sf,FindOrMakeEncoding("Unicode"));
 
     /* Might as well check for feature files even if version 1 */
-    temp = buildname(basedir,"feature.fea");
+    temp = buildname(basedir,"features.fea");
     if ( GFileExists(temp))
 	SFApplyFeatureFilename(sf,temp);
     free(temp);
