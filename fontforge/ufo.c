@@ -1584,6 +1584,8 @@ static void UFORefFixup(SplineFont *sf, SplineChar *sc ) {
 		return;
     sc->ticked = true;
     prev = NULL;
+	// For each reference, attempt to locate the real splinechar matching the name stored in the fake splinechar.
+	// Free the fake splinechar afterwards.
     for ( r=sc->layers[ly_fore].refs; r!=NULL; r=r->next ) {
 		rsc = SFGetChar(sf,-1, r->sc->name);
 		if ( rsc==NULL ) {
@@ -1592,11 +1594,13 @@ static void UFORefFixup(SplineFont *sf, SplineChar *sc ) {
 			sc->layers[ly_fore].refs = r->next;
 			else
 			prev->next = r->next;
-			free((char *) r->sc);
+			free(r->sc->name);
+			SplineCharFree(r->sc);
 			/* Memory leak. We loose r */
 		} else {
 			UFORefFixup(sf,rsc);
-			free((char *) r->sc);
+			free(r->sc->name);
+			SplineCharFree(r->sc);
 			r->sc = rsc;
 			prev = r;
 			SCReinstanciateRefChar(sc,r,ly_fore);
