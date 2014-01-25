@@ -1594,12 +1594,10 @@ static void UFORefFixup(SplineFont *sf, SplineChar *sc ) {
 			sc->layers[ly_fore].refs = r->next;
 			else
 			prev->next = r->next;
-			free(r->sc->name);
 			SplineCharFree(r->sc);
 			/* Memory leak. We loose r */
 		} else {
 			UFORefFixup(sf,rsc);
-			free(r->sc->name);
 			SplineCharFree(r->sc);
 			r->sc = rsc;
 			prev = r;
