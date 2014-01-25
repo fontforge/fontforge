@@ -1242,25 +1242,26 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			*yo = (char *) xmlGetProp(contour,(xmlChar *) "yOffset");
 		    RefChar *r;
 		    if ( base==NULL )
-			LogError(_("component with no base glyph"));
+				LogError(_("component with no base glyph"));
 		    else {
-			r = RefCharCreate();
-			r->sc = (SplineChar *) base;
-			r->transform[0] = r->transform[3] = 1;
-			if ( xs!=NULL )
-			    r->transform[0] = strtod(xs,NULL);
-			if ( ys!=NULL )
-			    r->transform[3] = strtod(ys,NULL);
-			if ( xys!=NULL )
-			    r->transform[1] = strtod(xys,NULL);
-			if ( yxs!=NULL )
-			    r->transform[2] = strtod(yxs,NULL);
-			if ( xo!=NULL )
-			    r->transform[4] = strtod(xo,NULL);
-			if ( yo!=NULL )
-			    r->transform[5] = strtod(yo,NULL);
-			r->next = sc->layers[layerdest].refs;
-			sc->layers[layerdest].refs = r;
+				r = RefCharCreate();
+				r->sc = SplineCharCreate(0);
+				r->sc->name = base;
+				r->transform[0] = r->transform[3] = 1;
+				if ( xs!=NULL )
+					r->transform[0] = strtod(xs,NULL);
+				if ( ys!=NULL )
+					r->transform[3] = strtod(ys,NULL);
+				if ( xys!=NULL )
+					r->transform[1] = strtod(xys,NULL);
+				if ( yxs!=NULL )
+					r->transform[2] = strtod(yxs,NULL);
+				if ( xo!=NULL )
+					r->transform[4] = strtod(xo,NULL);
+				if ( yo!=NULL )
+					r->transform[5] = strtod(yo,NULL);
+				r->next = sc->layers[layerdest].refs;
+				sc->layers[layerdest].refs = r;
 		    }
 		    free(xs); free(ys); free(xys); free(yxs); free(xo); free(yo);
 		} else if ( xmlStrcmp(contour->name,(const xmlChar *) "contour")==0 ) {
