@@ -6152,8 +6152,8 @@ void SplineCharFreeContents(SplineChar *sc) {
 
     if ( sc==NULL )
 return;
-    free(sc->name);
-    free(sc->comment);
+    if (sc->name != NULL) free(sc->name);
+    if (sc->comment != NULL) free(sc->comment);
     for ( i=0; i<sc->layer_cnt; ++i )
 	LayerFreeContents(sc,i);
     StemInfosFree(sc->hstem);
@@ -6165,9 +6165,9 @@ return;
     AnchorPointsFree(sc->anchor);
     SplineCharListsFree(sc->dependents);
     PSTFree(sc->possub);
-    free(sc->ttf_instrs);
-    free(sc->countermasks);
-    free(sc->layers);
+    if (sc->ttf_instrs != NULL) free(sc->ttf_instrs);
+    if (sc->countermasks != NULL) free(sc->countermasks);
+    if (sc->layers != NULL) free(sc->layers);
     AltUniFree(sc->altuni);
     GlyphVariantsFree(sc->horiz_variants);
     GlyphVariantsFree(sc->vert_variants);
@@ -6175,7 +6175,7 @@ return;
     DeviceTableFree(sc->top_accent_adjusts);
     MathKernFree(sc->mathkern);
 #if defined(_NO_PYTHON)
-    free( sc->python_persistent );	/* It's a string of pickled data which we leave as a string */
+    if (sc->python_persistent != NULL) free( sc->python_persistent );	/* It's a string of pickled data which we leave as a string */
 #else
     PyFF_FreeSC(sc);
 #endif
