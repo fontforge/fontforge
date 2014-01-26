@@ -29,7 +29,32 @@ lib_LTLIBRARIES = libgunicode.la
 
 libgunicode_la_SOURCES =	\
 	charset/alphabet.c	\
-	charset/cjk.c		\
+	charset/big5.c		\
+	charset/big5hkscs.c	\
+	charset/gb2312.c	\
+	charset/iso_8859_10.c	\
+	charset/iso_8859_11.c	\
+	charset/iso_8859_13.c	\
+	charset/iso_8859_14.c	\
+	charset/iso_8859_15.c	\
+	charset/iso_8859_1.c	\
+	charset/iso_8859_2.c	\
+	charset/iso_8859_3.c	\
+	charset/iso_8859_4.c	\
+	charset/iso_8859_5.c	\
+	charset/iso_8859_6.c	\
+	charset/iso_8859_7.c	\
+	charset/iso_8859_8.c	\
+	charset/iso_8859_9.c	\
+	charset/jis201.c	\
+	charset/jis.c		\
+	charset/johab.c		\
+	charset/koi8_r.c	\
+	charset/ksc5601.c	\
+	charset/mac.c		\
+	charset/MacSymbol.c	\
+	charset/win.c		\
+	charset/ZapfDingbats.c	\
 	ArabicForms.c		\
 	backtrns.c		\
 	char.c			\
