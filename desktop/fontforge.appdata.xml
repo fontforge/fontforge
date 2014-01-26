@@ -13,7 +13,8 @@
   </p>
  </description>
  <screenshots>
-  <screenshot type="default" width="256" height="256">https://github.com/fontforge/fontforge/tree/master/desktop/icons/256x256</screenshot>
+  <screenshot type="default" width="599" height="253">https://github.com/fontforge/fontforge/blob/master/htdocs/Metal-fontforge-600.jpeg</screenshot>
+  <screenshot type="default" width="309" height="322">https://github.com/fontforge/fontforge/blob/master/htdocs/charwithhintmask.png</screenshot>
  </screenshots>
  <url type="homepage">https://github.com/fontforge/fontforge</url>
  <updatecontact>fontforge-devel@lists.sourceforge.net</updatecontact>
