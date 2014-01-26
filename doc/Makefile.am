@@ -1,4 +1,5 @@
-# Copyright (C) 2013 by Ben Martin
+# Copyright (C) 2000-2012 by George Williams
+# Copyright (C) 2014 by Abel Cheung
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -24,21 +25,8 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-lib_LTLIBRARIES = libzmqcollab.la
+include $(top_srcdir)/mk/layout.am
 
-#--------------------------------------------------------------------------
-
-libzmqcollab_la_SOURCES = zmq_kvmsg.c zmq_kvmsg.h
-
-libzmqcollab_la_CPPFLAGS = \
- "-I$(top_builddir)/inc" \
- "-I$(top_srcdir)/inc" \
- $(MY_CFLAGS) $(LIBZMQ_CFLAGS) $(GLIB_CFLAGS)
-
-libzmqcollab_la_LIBADD = $(MY_LIBS) $(GLIB_LIBS) $(LIBZMQ_LIBS)
-libzmqcollab_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBZMQCOLLAB_VERSION) \
-	${MY_LIB_LDFLAGS}
-
-#--------------------------------------------------------------------------
+SUBDIRS = html
 
 -include $(top_srcdir)/git.mk

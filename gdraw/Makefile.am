@@ -53,7 +53,8 @@ if GRAPHICAL_USER_INTERFACE
 libgdraw_la_LIBADD += $(XINPUT_LIBS)
 endif GRAPHICAL_USER_INTERFACE
 
-libgdraw_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGDRAW_VERSION)
+libgdraw_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGDRAW_VERSION) \
+	${MY_LIB_LDFLAGS}
 
 EXTRA_DIST = descrip.mms gdrawwacomdriver.c genkeysym.c growcol.c
 

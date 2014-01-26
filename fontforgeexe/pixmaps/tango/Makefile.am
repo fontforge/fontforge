@@ -31,3 +31,5 @@ ICON_FILES = $(srcdir)/*.png $(srcdir)/*.xbm $(srcdir)/*.txt $(srcdir)/*.ttf $(s
 EXTRA_DIST = $(ICON_FILES)
 dist_pixmaps_DATA = $(ICON_FILES)
 
+
+-include $(top_srcdir)/git.mk

@@ -34,7 +34,9 @@ libgunicode_la_SOURCES = ArabicForms.c alphabet.c backtrns.c char.c	\
 libgunicode_la_CPPFLAGS = "-I$(top_builddir)/inc"	\
 	"-I$(top_srcdir)/inc" $(MY_CFLAGS)
 
-libgunicode_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGUNICODE_VERSION)
+libgunicode_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGUNICODE_VERSION) \
+	${MY_LIB_LDFLAGS}
+
 libgunicode_la_LIBADD = $(MY_LIBS)
 
 #--------------------------------------------------------------------------
