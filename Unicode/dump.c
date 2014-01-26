@@ -1326,7 +1326,7 @@ return 1;
     fprintf( output, GeneratedFileMessage );
     fprintf( header, GeneratedFileMessage );
 
-    fprintf( header, "#include <basics.h>"\n\n" );
+    fprintf( header, "#include <basics.h>\n\n" );
     fprintf( header, "struct charmap {\n    int first, last;\n    unsigned char **table;\n    unichar_t *totable;\n};\n" );
     fprintf( header, "struct charmap2 {\n    int first, last;\n    unsigned short **table;\n    unichar_t *totable;\n};\n\n" );
 
