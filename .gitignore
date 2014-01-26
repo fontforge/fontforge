@@ -19,7 +19,9 @@
 /Makefile.in
 /TAGS
 /_libs
+/aclocal.m4
 /autom4te.cache
+/config
 /config.cache
 /config.log
 /config.lt
@@ -31,6 +33,7 @@
 /fontforge.pc
 /libfontforge.pc
 /libfontforgeexe.pc
+/libltdl
 /libtool
 /so_locations
 /stamp-h1
