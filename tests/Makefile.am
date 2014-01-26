@@ -52,7 +52,7 @@ noinst_FILES = * fonts/* results/* results
 EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE) atlocal.in
 TESTSUITE = $(srcdir)/testsuite
 
-check-local: atconfig atlocal $(TESTSUITE)
+check-local: atconfig atlocal $(TESTSUITE) $(top_builddir)/fontforgeexe/fontforge
 	$(MKDIR_P) $(builddir)/results
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
 
@@ -103,7 +103,7 @@ EXTRA_DIST += findoverlapbugs.py.in test0001.py.in test0101.py.in	\
 	test1002.py.in test1003.py.in test1004.py.in test1005.py.in	\
 	test1006.py.in test1007.py.in
 
-EXTRA_DIST += link_test.c randomtest.c runtests build-aux/missing
+EXTRA_DIST += link_test.c randomtest.c build-aux/missing
 
 DISTCLEANFILES = atconfig *.pe *.py randomtest
 

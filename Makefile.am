@@ -74,7 +74,7 @@ endif XDG_DESKTOP
 
 SUBDIRS += \
 	contrib \
-	htdocs \
+	doc \
 	nodejs \
 	plugins \
 	po \

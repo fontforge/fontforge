@@ -1,5 +1,5 @@
 # Copyright (C) 2000-2012 by George Williams
-# Copyright (C) 2013 by Ben Martin
+# Copyright (C) 2014 by Abel Cheung
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -27,9 +27,6 @@
 
 include $(top_srcdir)/mk/layout.am
 
-ICON_FILES = $(srcdir)/*.png $(srcdir)/*.xbm $(srcdir)/*.txt $(srcdir)/*.ttf $(srcdir)/resources
-EXTRA_DIST = $(ICON_FILES)
-dist_pixmaps_DATA = $(ICON_FILES)
-
+SUBDIRS = html
 
 -include $(top_srcdir)/git.mk
