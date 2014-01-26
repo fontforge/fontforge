@@ -300,11 +300,18 @@ FLAGS_DOC_LIST = flags/BrasilFlag.png flags/English.gif				\
 
 NONBMP_DOC_LIST = nonBMP/index.html
 
-INSTALLED_DOC_LIST = $(ROOT_DOC_LIST) $(NONBMP_DOC_LIST)	\
-	$(FLAGS_DOC_LIST) $(JA_DOC_LIST)
+INSTALLED_DOC_LIST = \
+	$(ROOT_DOC_LIST)	\
+	$(NONBMP_DOC_LIST)	\
+	$(FLAGS_DOC_LIST)	\
+	$(NULL)
 
-# FIXME: Are these wanted?
-UNINSTALLED_DOC_LIST = ListeDesGlyphes.nam englishkernpairs.txt
+# Japanese doc is vastly outdated
+UNINSTALLED_DOC_LIST = \
+	ListeDesGlyphes.nam		\
+	englishkernpairs.txt		\
+	$(JA_DOC_LIST)			\
+	$(NULL)
 
 DOC_LIST = $(INSTALLED_DOC_LIST) $(UNINSTALLED_DOC_LIST)
 
