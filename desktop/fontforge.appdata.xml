@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2014 Joe Da Silva <digital@joescat.com> -->
+<application>
+ <id type="desktop">fontforge.desktop</id>
+ <licence>CC0</licence>
+ <name>FontForge</name>
+ <summary>A Font Editor</summary>
+ <description>
+  <p>
+  FontForge is a font editor for outline and bitmap fonts that lets you create,
+  edit, or convert, a range of fonts, including PostScript, TrueType, OpenType,
+  cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) fonts,
+  </p>
+ </description>
+ <screenshots>
+  <screenshot type="default" width="256" height="256">https://github.com/fontforge/fontforge/tree/master/desktop/icons/256x256</screenshot>
+ </screenshots>
+ <url type="homepage">https://github.com/fontforge/fontforge</url>
+ <updatecontact>fontforge-devel@lists.sourceforge.net</updatecontact>
+</application>
