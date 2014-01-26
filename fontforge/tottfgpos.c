@@ -337,7 +337,7 @@ static SplineChar ***generateMapList(SplineChar **glyphs, struct lookup_subtable
 		sc = glyphs[i];
 		maps[i] = FindSubs(sc,sub);
 		if (maps[i] == NULL) {
-			fprintf( stderr, "maps[%d] is null; glyphs[%d] is \"%s\"; lookup name is \"%s\".\n" , i , i , (glyphs[cnt]->name ? glyphs[cnt]->name : ""), sub->subtable_name) ;
+			fprintf( stderr, "maps[%d] is null; glyphs[%d] is \"%s\"; lookup name is \"%s\".\n" , i , i , (glyphs[i]->name ? glyphs[i]->name : ""), sub->subtable_name) ;
 		}
     }
     maps[cnt] = NULL;
