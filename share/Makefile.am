@@ -33,5 +33,5 @@ HOTKEY_FILES = default
 fontforgeshares_DATA = $(FONTFORGESHARE_FILES)
 hotkeys_DATA = $(HOTKEY_FILES)
 
-EXTRA_DIST = $(FONTFORGESHARE_FILES) $(HOTKEY_FILES)
+EXTRA_DIST = $(FONTFORGESHARE_FILES) $(HOTKEY_FILES) default-n
 -include $(top_srcdir)/git.mk

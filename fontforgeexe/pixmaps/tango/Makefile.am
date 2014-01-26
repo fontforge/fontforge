@@ -28,7 +28,7 @@
 include $(top_srcdir)/mk/layout.am
 
 ICON_FILES = $(srcdir)/*.png $(srcdir)/*.xbm $(srcdir)/*.txt $(srcdir)/*.ttf $(srcdir)/resources
-EXTRA_DIST = $(ICON_FILES)
+EXTRA_DIST = $(ICON_FILES) resources-georgd
 dist_pixmaps_DATA = $(ICON_FILES)
 
 
