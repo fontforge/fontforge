@@ -579,7 +579,8 @@ fontforgeexe/pixmaps/tango/Makefile
 fontforgeexe/collab/Makefile
 po/Makefile
 mackeys/Makefile
-htdocs/Makefile
+doc/Makefile
+doc/html/Makefile
 pycontrib/Makefile
 pycontrib/simple/Makefile
 pycontrib/collab/Makefile
