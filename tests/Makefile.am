@@ -52,7 +52,7 @@ noinst_FILES = * fonts/* results/* results
 EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE) atlocal.in
 TESTSUITE = $(srcdir)/testsuite
 
-check-local: atconfig atlocal $(TESTSUITE)
+check-local: atconfig atlocal $(TESTSUITE) $(top_builddir)/fontforgeexe/fontforge
 	$(MKDIR_P) $(builddir)/results
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
 
