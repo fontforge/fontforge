@@ -740,7 +740,7 @@ void Default_Properties(BDFFont *bdf,EncMap *map,char *onlyme) {
 	BDFPropAddInt( bdf, "BITS_PER_PIXEL", BDFDepth(bdf),onlyme);
     BDFPropAddString(bdf,"FONT_NAME",bdf->sf->fontname,onlyme);
     BDFPropAddString(bdf,"FACE_NAME",bdf->sf->fullname,onlyme);	/* Used to be FULL_NAME */
-    if ( bdf->sf->copyright==NULL ) {
+    if ( bdf->sf->copyright!=NULL ) {
 	char *pt = strchr(bdf->sf->copyright,'\n'), *new;
 	if ( pt==NULL )
 	    BDFPropAddString(bdf,"COPYRIGHT",bdf->sf->copyright,onlyme);
