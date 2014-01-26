@@ -1,19 +1,13 @@
 This is a minimal testsuite for fontforge. I expect it will grow with time.
 
-You can execute the tests by:
-  $ <testdir>/runtests <fontforge>
-(where <testdir> is the directory of the testsuite, and <pfaedit> is the
- pathspec of the fontforge program)
+You can execute the tests with 'make check' on top level directory or in
+this testsuite directory.
 
-Before you execute any of the tests you must download the test fonts.
-I do not provide these because most of them aren't my work. If you can't find
-one of the requisit fonts, simply comment out the tests which use it. Each
-test file (*.pe) contains a list of fonts which it expects.
-
-These fonts must be placed in <testdir>/fonts/
+Some tests will need extra fonts not bundled with FontForge. You would like
+to download them externally and place them inside fonts/ folder in order to
+enable the extra tests; otherwise they will be skipped.
 
 test001.pe
-  Caliban.sfd		http://pfaedit.sf.net/sfds/Caliban.sfd.gz
   Zapfino-4.0d3.dfont
   Zapfino-4.1d6.dfont
 
