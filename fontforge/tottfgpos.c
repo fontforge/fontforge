@@ -275,7 +275,7 @@ static void GlyphMapFree(SplineChar ***map) {
     int i;
 
     if ( map==NULL )
-return;
+		return;
     for ( i=0; map[i]!=NULL; ++i )
 	free(map[i]);
     free(map);
@@ -290,39 +290,45 @@ static SplineChar **FindSubs(SplineChar *sc,struct lookup_subtable *sub) {
     PST *pst;
 
     for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
-	if ( pst->subtable==sub ) {
-	    pt = pst->u.subs.variant;
-	    while ( 1 ) {
-		while ( *pt==' ' ) ++pt;
-		start = pt;
-		pt = strchr(start,' ');
-		if ( pt!=NULL )
-		    *pt = '\0';
-		subssc = SFGetChar(sc->parent,-1,start);
-		if ( subssc!=NULL && subssc->ttf_glyph!=-1 ) {
-		    if ( cnt>=max ) {
-			if ( spc==space ) {
-			    space = galloc((max+=30)*sizeof(SplineChar *));
-			    memcpy(space,spc,(max-30)*sizeof(SplineChar *));
-			} else
-			    space = grealloc(space,(max+=30)*sizeof(SplineChar *));
-		    }
-		    space[cnt++] = subssc;
+		if ( pst->subtable==sub ) {
+			pt = pst->u.subs.variant;
+			while ( 1 ) {
+				while ( *pt==' ' ) ++pt; // Burn leading spaces.
+				// Start tokenizing the space-delimited list of references.
+				start = pt; // Note the beginning of the current item.
+				pt = strchr(start,' '); // Find the end of the current item.
+				if ( pt!=NULL )
+					*pt = '\0'; // Temporarily terminate the item.
+				subssc = SFGetChar(sc->parent,-1,start); // Find the corresponding SplineChar.
+				if ( subssc!=NULL && subssc->ttf_glyph!=-1 ) {
+					// Extend the list if necessary.
+					if ( cnt>=max ) {
+						if ( spc==space ) {
+							space = galloc((max+=30)*sizeof(SplineChar *));
+							memcpy(space,spc,(max-30)*sizeof(SplineChar *));
+						} else
+							space = grealloc(space,(max+=30)*sizeof(SplineChar *));
+					}
+					// Write the SplineChar to the list.
+					space[cnt++] = subssc;
+				}
+				if ( pt==NULL )
+					break; // No more items.
+				*pt=' '; // Repair the string from the tokenization process.
+			}
 		}
-		if ( pt==NULL )
-	    break;
-		*pt=' ';
-	    }
-	}
     }
+	// Returning NULL causes problems and seems to be unnecessary for now.
+#if 0
     if ( cnt==0 )	/* Might happen if the substitution names weren't in the font */
-return( NULL );
+		return( NULL );
+#endif
     ret = galloc((cnt+1)*sizeof(SplineChar *));
     memcpy(ret,space,cnt*sizeof(SplineChar *));
     ret[cnt] = NULL;
     if ( space!=spc )
-	free(space);
-return( ret );
+		free(space); // Free the temp space only if it is dynamically allocated.
+	return( ret );
 }
 
 static SplineChar ***generateMapList(SplineChar **glyphs, struct lookup_subtable *sub) {
