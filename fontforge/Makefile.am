@@ -131,7 +131,7 @@ EXTRA_DIST = descrip.mms
 # EXTRA_DIST += threaddummy.c xlib.opt
 
 if MACINTOSH
-EXTRA_DIST += MacFontForgeApp.zip
+EXTRA_DIST = $(EXTRA_DIST) MacFontForgeApp.zip
 MOSTLYCLEANFILES = MacFontForgeApp.zip
 endif MACINTOSH
 
