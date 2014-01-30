@@ -4,16 +4,16 @@
  <id type="desktop">fontforge.desktop</id>
  <licence>CC0</licence>
  <description>
-  <p xml:lang="en">
+  <p xml:lang="C">
   FontForge is a font editor for outline and bitmap fonts that lets you create,
   edit, or convert, a range of fonts, including PostScript, TrueType, OpenType,
   cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) fonts.
   </p>
-  <p xml:lang="en">
+  <p xml:lang="C">
   Learning to use FontForge is easy, and there are various tutorials available beginning
   with the basics up to more advanced features such as making and using scripts.
   </p>
-  <p xml:lang="en">
+  <p xml:lang="C">
   FontForge is free Open Source Software written to run on various computer operating
   systems. You can use FontForge Graphically or as a command-line tool.
   </p>
