@@ -355,7 +355,7 @@ if (! $charmaps{$maptype}) {
 }
 
 # no reliable way to check multibyte w/o reading files, so define manually
-$is_mb = 1 if grep (/^$maptype$/, ('big5', 'jis', 'jis208', 'jis212', 'johab', 'wansung'));
+$is_mb = 1 if grep (/^$maptype$/, ('big5', 'gb2312', 'jis', 'jis208', 'jis212', 'johab', 'wansung'));
 
 if ($opts{'o'}) {
 	# tempfile will be renamed later
