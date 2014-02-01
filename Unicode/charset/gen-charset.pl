@@ -13,45 +13,36 @@ my @struct = ("charmap", "charmap2");
 # For adobe CMap, column count starts from 0
 my %charmaps = (
 	'default' => {
-		'print_b2u'    => \&print_b2u,
-		'print_u2b'    => \&print_u2b,
 		'get_map'      => \&get_map_default,
+		'write_val'    => \&write_offset,    # no offset ( = 0 )
 	},
-	'zapf'    => {
-		'print_b2u'    => \&print_b2u,
-		'print_u2b'    => \&print_u2b,
+	'zapf'    => {	# VENDORS/ADOBE/zdingbat.txt
 		'get_map'      => \&get_map_zapf,
 	},
 	'big5'    => {
-		'print_b2u'    => \&print_b2u,
-		'print_u2b'    => \&print_u2b,
 		'get_map'      => \&get_map_default,
-		'offset'       => 0xA100,
+		'write_val'    => \&write_offset,    'offset' => 0xA100,
 	},
 	'jis'     => {},
-	'jis208'  => {
-		'print_b2u'    => \&print_b2u,
-		'print_u2b'    => \&print_u2b,
-		'get_map'      => \&get_map_adobe,
+	'jis208'  => {	# aj16/cid2code.txt
+		'get_map'      => \&get_map_adobe,   'bcol' =>  1, 'ucol' => 21,
 		'write_val'    => \&write_compact,
-		'bcol'         => 1,
-		'ucol'         => 21,
 	},
-	'jis212'  => {
-		'print_b2u'    => \&print_b2u,
-		'print_u2b'    => \&print_u2b,
-		'get_map'      => \&get_map_adobe,
+	'jis212'  => {	# aj20/cid2code.txt
+		'get_map'      => \&get_map_adobe,   'bcol' =>  1, 'ucol' => 6,
 		'write_val'    => \&write_compact,
-		'bcol'         => 1,
-		'ucol'         => 6,
 	},
-	'gb2312'  => {
-		'print_b2u'    => \&print_b2u,
-		'print_u2b'    => \&print_u2b,
-		'get_map'      => \&get_map_adobe,
+	'gb2312'  => {	# ag15/cid2code.txt
+		'get_map'      => \&get_map_adobe,   'bcol' =>  1, 'ucol' => 13,
 		'write_val'    => \&write_compact,
-		'bcol'         => 1,
-		'ucol'         => 13,
+	},
+	'wansung' => {	# ak12/cid2code.txt
+		'get_map'      => \&get_map_adobe,   'bcol' =>  1, 'ucol' => 10,
+		'write_val'    => \&write_compact,
+	},
+	'johab'   => {	# ak12/cid2code.txt
+		'get_map'      => \&get_map_adobe,   'bcol' =>  6, 'ucol' => 10,
+		'write_val'    => \&write_offset,    'offset' => 0x8400,
 	},
 );
 
@@ -82,12 +73,12 @@ _EOT_
 	exit 1;
 }
 
+# Corresponds to 'Format A' table in Unicode mirror
 # 2 columns: (byte value) (unicode code point)
 sub get_map_default {
 	my ($file, $barray, $uarray) = @_;
 	errmsg ("Can't open input file '$file': $!", 3) if (! open( my $fh, '<', $file ));
 
-	my $o = $charmaps{$maptype}->{'offset'} // 0;
 	while (<$fh>) {
 		next if (/^#/ || /^\s*$/);
 		if (! /^0x([[:xdigit:]]+)\s+0x([[:xdigit:]]+)\s/) {
@@ -96,13 +87,7 @@ sub get_map_default {
 			next;
 		}
 		my ($b, $u) = map {hex} ($1, $2);
-		print STDERR "Unicode code point beyond BMP at line $.\n" if ($u > 0xFFFF);
-		if ($is_mb) {
-			$barray->[$b - $o] = $u if ($b >= $o);
-		} else {
-			$barray->[$b] = $u;
-		}
-		$uarray->[$u >> 8][$u & 0xFF] = $b;
+		$charmaps{$maptype}->{'write_val'}->($b, $u, $barray, $uarray);
 	}
 	close $fh;
 	return ((@{$barray} > 0) && (@{$uarray} > 0));
@@ -175,7 +160,7 @@ sub eligible {
 
 sub get_map_adobe {
 	my ($file, $barray, $uarray, $flag, $dummy) = @_;
-	my (@cols, $bcol, $ucol);
+	my (@cols, $bcol, $ucol, $cid);
 
 	$bcol = $charmaps{$maptype}->{'bcol'};
 	$ucol = $charmaps{$maptype}->{'ucol'};
@@ -196,7 +181,7 @@ sub get_map_adobe {
 	while (<$fh>) {
 		next if (!/^\d/);
 		@cols = split /\s+/;
-		my ($b, $u) = ($cols[$bcol], $cols[$ucol]);
+		my ($b, $u, $cid) = ($cols[$bcol], $cols[$ucol], $cols[0]);
 
 		# Discard when:
 		# byte value or unicode code point doesn't exist
@@ -206,7 +191,14 @@ sub get_map_adobe {
 		if ($b !~ /[,v]/) {
 			$b = hex($b);
 		} else {
-			next if (eligible($b) != 1);
+			my $c = eligible($b);
+			if (!$c) {
+				print STDERR "No eligible character for CID $cid, skipped\n";
+				next;
+			} elsif ($c > 1) {
+				print STDERR "Multiple possible character for CID $cid, skipped\n";
+				next;
+			}
 			$b = pick_value($b);
 		}
 
@@ -251,6 +243,27 @@ sub write_compact {
 	$b -= 0x2121;
 	$b = ($b>>8) * 94 + ($b & 0xff);
 	$barray->[$b] = $u;
+}
+
+# big5, johab etc: some multibyte arrays are just dumped in straight
+# forward way, minus certain offset
+sub write_offset {
+	my ($b, $u, $barray, $uarray, $dummy) = @_;
+
+	if ($u > 0xffff) {
+		printf STDERR "Unicode beyond BMP: byte = %04x, unicode = %04x\n", $b, $u;
+		return;
+	}
+	if (my $o = $charmaps{$maptype}->{'offset'}) {
+		if ($b < $o) {
+			printf STDERR "Byte value is smaller than offset: %04x\n", $b;
+			return;
+		}
+		$barray->[$b-$o] = $u;
+	} else {
+		$barray->[$b] = $u;
+	}
+	$uarray->[$u >> 8][$u & 0xff] = $b;
 }
 
 sub print_header {
@@ -308,7 +321,7 @@ sub print_u2b {
 			($_ % 64) or printf $out_fh "/*** 0x%02x ***/\n  ", $_;
 			printf $out_fh ($is_mb ? "0x%04x%s" : "0x%02x%s"), $uarray->[$block][$_] // 0,
 				($_ == 255)  ? "\n" :
-				(($_+1) % 8) ? ", " : ",\n  ";
+				(($_+1) % ($is_mb?8:16)) ? ", " : ",\n  ";
 		}
 		print $out_fh "};\n\n";
 	}
@@ -325,7 +338,7 @@ sub print_u2b {
 	}
 	print $out_fh "};\n\n";
 
-	# final part
+	# final statement
 	print $out_fh "struct " . $struct[$is_mb] . " " . $name2 . "_from_unicode = { ";
 	printf $out_fh "%d, %d, ", $first, $last;
 	print $out_fh "(unsigned " . $size[$is_mb] . " **) " . $name2 .
@@ -342,7 +355,7 @@ if (! $charmaps{$maptype}) {
 }
 
 # no reliable way to check multibyte w/o reading files, so define manually
-$is_mb = 1 if grep ($maptype, ['big5', 'jis']);
+$is_mb = 1 if grep (/^$maptype$/, ('big5', 'jis', 'jis208', 'jis212', 'johab', 'wansung'));
 
 if ($opts{'o'}) {
 	# tempfile will be renamed later
@@ -354,22 +367,27 @@ if ($opts{'o'}) {
 if ( $maptype eq "jis" ) {
 	usage if (@ARGV != 2);
 
+	# Print only the byte->unicode part of JIS X 0208
 	$maptype = "jis208";
 	$infile = shift;
 	if (! $charmaps{$maptype}->{'get_map'}->( $infile, \@b2u, \@u2b ) ) {
 		errmsg ("Failed to parse file '$infile'", 4);
 	}
 	print_header;
-	$charmaps{$maptype}->{'print_b2u'}->( \@b2u, "jis208" );
+	print_b2u (\@b2u, "jis208");
 
+	# And then JIS X 0212, as well as combined unicode->byte
+	# array of both
 	$maptype = "jis212";
 	$infile = shift;
 	undef @b2u;
+	# reuse @u2b; extra argument indicating all byte values of JIS X 0212 
+	# will be or'ed with 0x8000 before writing
 	if (! $charmaps{$maptype}->{'get_map'}->( $infile, \@b2u, \@u2b, 1 ) ) {
 		errmsg ("Failed to parse file '$infile'", 4);
 	}
-	$charmaps{$maptype}->{'print_b2u'}->( \@b2u, "jis212" );
-	$charmaps{$maptype}->{'print_u2b'}->( \@u2b, "jis212", "jis" );
+	print_b2u (\@b2u, "jis212");
+	print_u2b (\@u2b, "jis212", "jis");
 
 } else {
 	usage if (@ARGV != 2);
@@ -378,8 +396,8 @@ if ( $maptype eq "jis" ) {
 		errmsg ("Failed to parse file '$infile'", 4);
 	}
 	print_header;
-	$charmaps{$maptype}->{'print_b2u'}->( \@b2u, $funcname );
-	$charmaps{$maptype}->{'print_u2b'}->( \@u2b, $funcname );
+	print_b2u (\@b2u, $funcname);
+	print_u2b (\@u2b, $funcname);
 }
 
 if (defined $outfile) {
