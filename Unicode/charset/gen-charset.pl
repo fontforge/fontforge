@@ -1,8 +1,49 @@
 #!/usr/bin/env perl
 
+###########################################################
+#
+# This script reads a raw character map file and dump corresponding
+# character map C source file, for inclusion in FontForge. Currently
+# supports Adobe CID mapping file, Unicode.org table Format A, as
+# well as specific table format for Zapf Dingbats.
+#
+# Although this script tries to emulate same function as
+# Unicode/dump.c in older versions of FontForge, it is not a 100%
+# faithful translation, especially in the character selection process
+# when multiple character correspond to a single Adobe CID value. As
+# a result, some ambiguous characters may gone missing (instead of
+# arbitrarily picking one).
+#
+###########################################################
+#
+# Copyright (C) 2014 Abel Cheung
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
+#
+# Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+#
+# The name of the author may not be used to endorse or promote products
+# derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 use strict;
 use warnings;
-use diagnostics;
 use File::Temp qw/tempfile/;
 use Getopt::Std;
 use constant VERTICAL => 1<<31;
@@ -65,9 +106,10 @@ Generates character map files for use in FontForge.
 Usage: $0 [-o out_file] map_type short_name in_file
 
 If <out_file> is not specified, default is printing to standard output.
-When <map_type> is 'jis', different invoking arguments will be used:
+When <map_type> is 'jis', different invoking arguments will be used,
+simultaneously reading two files:
 
-$0 [-o out_file] jis in_file1 in_file2
+       $0 [-o out_file] jis in_file1 in_file2
 
 _EOT_
 	exit 1;
