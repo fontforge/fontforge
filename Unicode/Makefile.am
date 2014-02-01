@@ -78,13 +78,13 @@ libgunicode_la_LIBADD = $(MY_LIBS)
 
 #--------------------------------------------------------------------------
 
-dump_SOURCES = dump.c
-makebuildtables_SOURCES = makebuildtables.c utype.c
-makeutype_SOURCES = makeutype.c
+#dump_SOURCES = dump.c
+#makebuildtables_SOURCES = makebuildtables.c utype.c
+#makeutype_SOURCES = makeutype.c
 
-noinst_PROGRAMS = dump makebuildtables makeutype
+#noinst_PROGRAMS = dump makebuildtables makeutype
 
-EXTRA_DIST = descrip.mms dump.c makebuildtables.c makeutype.c README.TXT
+EXTRA_DIST = descrip.mms README.TXT #dump.c makebuildtables.c makeutype.c
 
 #--------------------------------------------------------------------------
 
