@@ -130,7 +130,7 @@ done > generate.log 2>&1 <<_EOT_
 -o ZapfDingbats.c zapf ZapfDingbats raw/zdingbat.txt
 -o big5.c big5 big5 raw/CP950.TXT
 -o gb2312.c gb2312 gb2312 raw/ag15/cid2code.txt
--o jis.c jis aj16/cid2code.txt raw/aj20/cid2code.txt
+-o jis.c jis raw/aj16/cid2code.txt raw/aj20/cid2code.txt
 -o johab.c johab johab raw/ak12/cid2code.txt
 -o ksc5601.c wansung ksc5601 raw/ak12/cid2code.txt
 _EOT_
