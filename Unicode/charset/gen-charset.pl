@@ -60,7 +60,7 @@ my %charmaps = (
 	'zapf'    => {	# VENDORS/ADOBE/zdingbat.txt
 		'get_map'      => \&get_map_zapf,
 	},
-	'big5'    => {
+	'big5'    => {	# VENDORS/MICSFT/WINDOWS/CP950.TXT
 		'get_map'      => \&get_map_default,
 		'write_val'    => \&write_offset,    'offset' => 0xA100,
 	},
@@ -358,7 +358,7 @@ sub print_u2b {
 		next if (!defined $uarray->[$block]);
 		my $arrname = sprintf $name2 . "_from_unicode_%x", $block;
 		print $out_fh "static const unsigned " .
-			$size[$is_mb] . " " . $arrname . "[] = {\n  ";
+			$size[$is_mb] . " " . $arrname . "[256] = {\n  ";
 		for (0 .. 255) {
 			($_ % 64) or printf $out_fh "/*** 0x%02x ***/\n  ", $_;
 			printf $out_fh ($is_mb ? "0x%04x%s" : "0x%02x%s"), $uarray->[$block][$_] // 0,
