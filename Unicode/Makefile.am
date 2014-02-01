@@ -56,7 +56,6 @@ libgunicode_la_SOURCES =	\
 	charset/win.c		\
 	charset/ZapfDingbats.c	\
 	ArabicForms.c		\
-	backtrns.c		\
 	char.c			\
 	memory.c		\
 	ucharmap.c		\
