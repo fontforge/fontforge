@@ -28,6 +28,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ustring.h"
+#include "ffglib.h"
+#include <glib/gprintf.h>
 #include "gdraw.h"
 #include "gwidget.h"
 #include "ggadget.h"
@@ -164,13 +166,28 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,va_lis
     int as, ds, ld, fh;
     int w, maxw, bw, bspace;
     int i, y;
-    unichar_t ubuf[800];
+    gchar *buf, *qbuf;
+    unichar_t *ubuf;
     extern GBox _GGadget_defaultbutton_box;
 
     if ( d!=NULL )
 	memset(d,0,sizeof(*d));
     GGadgetInit();
-    u_vsnprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),question,ap);
+    /* u_vsnprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),question,ap);*/
+    /* u_vsnprintf() also assumes UCS4 string is null terminated */
+    qbuf = g_ucs4_to_utf8( (const gunichar *)question, -1, NULL, NULL, NULL );
+    if( !qbuf ) {
+	fprintf( stderr, "Failed to convert question string in DlgCreate()\n" );
+	return( NULL );
+    }
+    g_vasprintf(&buf, qbuf, ap);
+    g_free( qbuf );
+    ubuf = (unichar_t *) g_utf8_to_ucs4( (const gchar*) buf, -1, NULL, NULL, NULL );
+    g_free( buf );
+    if( !ubuf ) {
+	fprintf( stderr, "Failed to convert formatted string in DlgCreate()\n" );
+	return( NULL );
+    }
     if ( screen_display==NULL ) {
 	char *temp = u2def_copy(ubuf);
 	fprintf(stderr, "%s\n", temp);
@@ -447,19 +464,26 @@ static GWindow DlgCreate8(const char *title,const char *question,va_list ap,
     int as, ds, ld, fh;
     int w, maxw, bw, bspace;
     int i, y;
-    char buf[1600];
+    gchar *buf;
     unichar_t *ubuf;
     extern GBox _GGadget_defaultbutton_box;
 
     if ( d!=NULL )
 	memset(d,0,sizeof(*d));
-    vsnprintf(buf,sizeof(buf)/sizeof(buf[0]),question,ap);
+    /*vsnprintf(buf,sizeof(buf)/sizeof(buf[0]),question,ap);*/
+    g_vasprintf( &buf, (const gchar *) question, ap );
     if ( screen_display==NULL ) {
 	fprintf(stderr, "%s\n", buf );
 	if ( d!=NULL ) d->done = true;
 return( NULL );
     }
-    ubuf = utf82u_copy(buf);
+    /*ubuf = utf82u_copy(buf);*/
+    ubuf = (unichar_t *) g_utf8_to_ucs4( (const gchar *) buf, -1, NULL, NULL, NULL);
+    g_free( buf );
+    if( !ubuf ) {
+	fprintf( stderr, "Failed to convert question string in DlgCreate8()\n" );
+	return( NULL );
+    }
 
     GGadgetInit();
     GProgressPauseTimer();
