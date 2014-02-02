@@ -1181,11 +1181,16 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
+// This allows the init code to post only less agressive warning
+// messages during startup.
+static bool showPythonErrors = 1;
+
 static PyObject *PyFF_postError(PyObject *UNUSED(self), PyObject *args) {
     char *msg, *title;
     if ( !PyArg_ParseTuple(args,"eses","UTF-8", &title, "UTF-8", &msg) )
 return( NULL );
-    ff_post_error(title,msg);		/* Prints to stderr if no ui */
+    if( showPythonErrors )
+        ff_post_error(title,msg);		/* Prints to stderr if no ui */
 Py_RETURN_NONE;
 }
 
@@ -18699,6 +18704,7 @@ return;
 
     filelist = sort_string_list( filelist );
 
+    showPythonErrors = 0;
     for ( item=filelist; item!=NULL; item=item->next ) {
 	FILE *fp;
 	char *pathname = item->str;
@@ -18709,6 +18715,7 @@ return;
 	}
 	PyRun_SimpleFileEx(fp, pathname, 1/*close fp*/);
     }
+    showPythonErrors = 1;
     delete_string_list( filelist );
 }
 
