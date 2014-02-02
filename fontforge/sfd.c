@@ -3215,7 +3215,6 @@ static int geteol(FILE *sfd, char *tokbuf) {
     *pt='\0';
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
-
 void visitSFDFragment( FILE *sfd, SplineFont *sf,
 		       visitSFDFragmentFunc ufunc, void* udata )
 {
@@ -7325,8 +7324,14 @@ void SFD_GetFontMetaDataData_Init( SFD_GetFontMetaDataData* d )
     memset( d, 0, sizeof(SFD_GetFontMetaDataData));
 }
 
-
-void SFD_GetFontMetaData( FILE *sfd,
+/**
+ *
+ * @return true if the function matched the current token. If true
+ *         is returned the caller should avoid further processing of 'tok'
+ *         a return of false means that the caller might try
+ *         to handle the token with another function or drop it.
+ */
+bool SFD_GetFontMetaData( FILE *sfd,
 			  char *tok,
 			  SplineFont *sf,
 			  SFD_GetFontMetaDataData* d )
@@ -7335,7 +7340,7 @@ void SFD_GetFontMetaData( FILE *sfd,
     int i;
     KernClass* kc = 0;
     int old;
-	char val[2000];
+    char val[2000];
 
     // This allows us to assume we can dereference d
     // at all times
@@ -8021,7 +8026,14 @@ void SFD_GetFontMetaData( FILE *sfd,
 	/* text number format */
 	SFDGetShortTable(sfd,sf,d->lastttf);
     }
-
+    else
+    {
+        //
+        // We didn't have a match ourselves.
+        //
+        return false;
+    }
+    return true;
 }
 
 
@@ -8065,9 +8077,16 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	}
 
 
-	SFD_GetFontMetaData( sfd, tok, sf, &d );
+	bool wasMetadata = SFD_GetFontMetaData( sfd, tok, sf, &d );
 	had_layer_cnt = d.had_layer_cnt;
-
+        if( wasMetadata )
+        {
+            // we have handled the token entirely
+            // inside SFD_GetFontMetaData() move to next token.
+            continue;
+        }
+        
+        
 	if ( strmatch(tok,"DisplaySize:")==0 )
 	{
 	    getint(sfd,&sf->display_size);
