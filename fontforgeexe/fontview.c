@@ -7371,7 +7371,7 @@ void FontViewRemove(FontView *fv) {
  * and paste on the OSX. So this guard lets us quietly ignore that
  * event when we have just done command+c or command+x.
  */
-int osx_fontview_copy_cut_counter = 0;
+extern int osx_fontview_copy_cut_counter;
 
 static int fv_e_h(GWindow gw, GEvent *event) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);

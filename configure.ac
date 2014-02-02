@@ -431,6 +431,8 @@ case $host in
    dnl this way.
    *-freebsd* | *-openbsd*)
       ;;
+   *-apple-darwin*)
+      ;;
    *) saved_LDFLAGS=$LDFLAGS
       AC_MSG_CHECKING([whether the linker supports --no-undefined])
       LDFLAGS="$saved_LDFLAGS -Wl,--no-undefined"

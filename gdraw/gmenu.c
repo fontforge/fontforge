@@ -2055,7 +2055,7 @@ static int osx_handle_keysyms( int st, int k )
     return k;
 }
 
-extern int osx_fontview_copy_cut_counter;
+int osx_fontview_copy_cut_counter = 0;
 
 
 

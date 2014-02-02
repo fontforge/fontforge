@@ -23,6 +23,9 @@ AS_CASE([$host],
        MACAPP=""
       fi
 
+      RAW_COMPILE_PLATFORM_CFLAGS=" $CFLAGS -arch x86_64 -arch i386 "
+      AC_SUBST([RAW_COMPILE_PLATFORM_CFLAGS])
+
       dnl fink puts stuff under /sw
       dnl macports puts stuff under /opt/local
       dnl but when macport/fink overwrite a standard lib, I still want the standard
