@@ -88,12 +88,18 @@ SUBDIRS += \
 nodist_pkgconfig_DATA = libfontforge.pc libfontforgeexe.pc
 
 EXTRA_DIST += \
+	autogen.sh \
+	COPYING.gplv3 \
+	descrip.mms \
 	LICENSE \
 	doc/README-Mac.html \
 	doc/README-MS.html \
 	doc/README-unix	\
 	doc/README-Unix.html \
 	doc/Readme.VMS \
+	Packaging/FontForge-doc.spec \
+	Packaging/FontForge.spec \
+	Packaging/FontForge.static.spec \
 	$(NULL)
 
 #--------------------------------------------------------------------------
