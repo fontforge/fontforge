@@ -209,6 +209,15 @@ do
 done
 
 
+####
+#
+# python - even - http://xxyxyz.org/even/
+#
+cp -av /usr/local/src/even/build-even-Desktop-Debug/Even.app $scriptdir/
+rm -rf $scriptdir/Even.app/Contents/Resources/pypy
+ln -s  $scriptdir/Even.app/Contents/MacOS/Even $bundle_share/fontforge/python/Even
+
+
 ########################
 #
 # we want nodejs in the bundle for collab
