@@ -32,6 +32,8 @@
 #include "gresource.h"
 #include <string.h>
 #include <ustring.h>
+#include "../fontforge/ffglib.h"
+#include <glib/gprintf.h>
 
 #define DEL_SPACE	6
 
@@ -1543,7 +1545,7 @@ return;
 
 static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event) {
     int k, r,c, lastc, kludge;
-    char buf[20];
+    gchar *buf;
     char *str, *pt;
     GRect size;
     GRect clip, old;
@@ -1640,18 +1642,19 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		str = NULL;
 		if ( r+gme->off_top==gme->rows ) {
 		    if ( !gme->no_edit ) {
-			buf[0] = '<';
 			if ( gme->newtext!=NULL )
-			    strncpy(buf+1,gme->newtext,sizeof(buf)-2);
+			    buf = g_strdup_printf( "<%s>", (gchar *) gme->newtext );
 			else if ( _ggadget_use_gettext )
-			    strncpy(buf+1,S_("Row|New"),sizeof(buf)-2);
-			else
-			    u2utf8_strcpy(buf+1,GStringGetResource(_STR_New,NULL));
-			buf[18] = '\0';
-			k = strlen(buf);
-			buf[k] = '>'; buf[k+1] = '\0';
-			GDrawDrawText8(pixmap,gme->col_data[0].x - gme->off_left,y,
-				buf,-1,gmatrixedit_activecol);
+			    buf = g_strdup_printf( "<%s>", (gchar *) S_("Row|New") );
+			else {
+			    gchar *tmp = g_ucs4_to_utf8( (const gunichar *) GStringGetResource( _STR_New, NULL ),
+				   -1, NULL, NULL, NULL );
+			    buf = g_strdup_printf( "<%s>", tmp );
+			    g_free( tmp );
+			}
+			GDrawDrawText8( pixmap, gme->col_data[0].x - gme->off_left,y,
+				(char *) buf, -1, gmatrixedit_activecol );
+			g_free( buf );
 		    }
 		} else {
 		    data = &gme->data[(r+gme->off_top)*gme->cols+c];
