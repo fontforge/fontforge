@@ -36,7 +36,8 @@ export FONTCONFIG_FILE="$bundle_etc/fonts/fonts.conf"
 export LANG=en_US.UTF-8
 export XLOCALEDIR="$bundle_share/X11/locale"
 
-export PYTHONHOME="$bundle_bin/Python.framework.2.7"
+# setting PYTHONHOME gives the MAXREPEAT error and _socket.so symbol error.
+#export PYTHONHOME="$bundle_bin/Python.framework.2.7"
 export PYTHONPATH="/Applications/FontForge.app/Contents/MacOS/Even.app/Contents/Resources/lib/"
 
 
