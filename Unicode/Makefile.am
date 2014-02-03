@@ -62,10 +62,11 @@ libgunicode_la_SOURCES =	\
 	unialt.c		\
 	ustring.c		\
 	utype.c			\
-	usprintf.c		\
 	gwwiconv.c		\
 	combiners.h		\
 	$(NULL)
+
+#	usprintf.c
 
 libgunicode_la_CPPFLAGS = "-I$(top_builddir)/inc"	\
 	"-I$(top_srcdir)/inc" $(MY_CFLAGS)
