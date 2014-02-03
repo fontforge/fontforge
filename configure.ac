@@ -564,6 +564,13 @@ if $( $pythonbinary -c 'import IPython' ); then
 fi
 AM_CONDITIONAL([HAVE_IPYTHON],[test x"${have_ipython}" = xyes])
 
+#--------------------------------------------------------------------------
+
+AC_ARG_ENABLE([python-even],
+        [AS_HELP_STRING([--enable-python-even],
+                [enable a menu entry for Even])],
+        [have_python_even=yes])
+AM_CONDITIONAL([HAVE_PYTHON_EVEN],[test x"${have_python_even}" = xyes])
 
 #--------------------------------------------------------------------------
 # Output commands - Create FontForge Portable Makefiles

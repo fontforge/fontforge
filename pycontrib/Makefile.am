@@ -37,7 +37,12 @@ if HAVE_IPYTHON
 pkgpythondata_DATA += graphicore.py
 endif
 
-EXTRA_DIST = excepthook.py test.sfd README graphicore.py
+if HAVE_PYTHON_EVEN
+pkgpythondata_DATA += even.py
+endif
+
+
+EXTRA_DIST = excepthook.py test.sfd README graphicore.py even.py
 
 SUBDIRS =
 SUBDIRS += simple
