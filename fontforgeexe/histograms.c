@@ -31,6 +31,8 @@
 #include <utype.h>
 #include <math.h>
 #include "psfont.h"
+#include <ffglib.h>
+#include <glib/gprintf.h>
 
 /* This operations are designed to work on a single font. NOT a CID collection*/
 /*  A CID collection must be treated one sub-font at a time */
@@ -319,18 +321,16 @@ return;
     GGadgetPreparePopup8(hist->gw,buffer);
 }
 
-static unichar_t *ArrayOrder(const unichar_t *old,int args,int val1,int val2) {
-    unichar_t *end;
+static char *ArrayOrder(char *old,int args,int val1,int val2) {
+    char *end;
     double array[40];
     int i,j,k;
-    static unichar_t format[] = { '%', 'g', '\0' };
-    unichar_t *new, *pt;
-    unichar_t ubuf[40];
+    GString *new;
 
     if ( *old=='[' ) ++old;
 
     for ( i=0; i<40 && *old!=']' && *old!='\0'; ++i ) {
-	array[i] = u_strtod(old,&end);
+	array[i] = strtod(old,&end);
 	if ( old==end )
     break;
 	old = end;
@@ -345,27 +345,22 @@ static unichar_t *ArrayOrder(const unichar_t *old,int args,int val1,int val2) {
 	array[k] = temp;
     }
 
-    u_sprintf(ubuf,format,val1);
-    new = galloc(2*(u_strlen(ubuf)+u_strlen(old)+10)*sizeof(unichar_t));
-
-    pt = new;
-    *pt++ = '[';
+    new = g_string_new( "[" );
     for ( k=0; k<i; ++k ) {
-	u_sprintf(pt,format,array[k]);
-	pt += u_strlen(pt);
-	if ( k==i-1 )
-	    *pt++ = ']';
+	if (k == i-1)
+	    g_string_append_printf( new, "%g]", array[k] );
 	else
-	    *pt++ = ' ';
+	    g_string_append_printf( new, "%g ", array[k] );
     }
-    *pt = '\0';
-return( new );
+
+return( (char *) g_string_free( new, FALSE ) );
 }
 
+/* Handle clicks on histogram chart and update text fields below accordingly */
 static void HistPress(struct hist_dlg *hist,GEvent *e) {
+    char *old = NULL;
+    char *new = NULL;
     int x = e->u.mouse.x;
-    static unichar_t fullformat[] = { '[', '%', 'd', ']', '\0' };
-    unichar_t ubuf[20];
 
     x /= hist->barwidth;
     x += hist->hoff;
@@ -377,15 +372,13 @@ return;
 	    if ( x<hist->pending_blue )
 		ff_post_error(_("Bad Value"),_("The smaller number must be selected first in a pair of bluevalues"));
 	    else if ( x<0 ) {	/* OtherBlues */
-		const unichar_t *old = _GGadgetGetTitle(GWidgetGetControl(hist->gw,CID_SecondaryVal));
-		unichar_t *new = ArrayOrder(old,2,hist->pending_blue,x);
-		GGadgetSetTitle(GWidgetGetControl(hist->gw,CID_SecondaryVal),new);
-		free(new);
+		old = GGadgetGetTitle8( GWidgetGetControl( hist->gw, CID_SecondaryVal ));
+		new = ArrayOrder( old, 2, hist->pending_blue, x );
+		GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_SecondaryVal ), new );
 	    } else {
-		const unichar_t *old = _GGadgetGetTitle(GWidgetGetControl(hist->gw,CID_MainVal));
-		unichar_t *new = ArrayOrder(old,2,hist->pending_blue,x);
-		GGadgetSetTitle(GWidgetGetControl(hist->gw,CID_MainVal),new);
-		free(new);
+		old = GGadgetGetTitle8( GWidgetGetControl( hist->gw, CID_MainVal ));
+		new = ArrayOrder( old, 2, hist->pending_blue, x );
+		GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_MainVal ), new );
 	    }
 	    GDrawSetCursor(hist->gw,ct_pointer);
 	    hist->is_pending = false;
@@ -397,18 +390,19 @@ return;
 	GGadgetSetVisible(GWidgetGetControl(hist->gw,CID_MainVal),!hist->is_pending);
 	GGadgetSetVisible(GWidgetGetControl(hist->gw,CID_MainValL),!hist->is_pending);
 	GGadgetSetVisible(GWidgetGetControl(hist->gw,CID_BlueMsg),hist->is_pending);
-    } else {
+    } else { /* HStem and VStem */
 	if ( !( e->u.mouse.state&ksm_shift )) {
-	    u_sprintf(ubuf,fullformat,x);
-	    GGadgetSetTitle(GWidgetGetControl(hist->gw,CID_MainVal),ubuf);
-	    GGadgetSetTitle(GWidgetGetControl(hist->gw,CID_SecondaryVal),ubuf);
+	    new = (char *) g_strdup_printf( "[%d]", x );
+	    GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_MainVal ), new );
+	    GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_SecondaryVal ), new );
 	} else {
-	    const unichar_t *old = _GGadgetGetTitle(GWidgetGetControl(hist->gw,CID_SecondaryVal));
-	    unichar_t *new = ArrayOrder(old,1,x,0);
-	    GGadgetSetTitle(GWidgetGetControl(hist->gw,CID_SecondaryVal),new);
-	    free(new);
+	    old = GGadgetGetTitle8( GWidgetGetControl( hist->gw, CID_SecondaryVal ));
+	    new = ArrayOrder( old, 1, x, 0 );
+	    GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_SecondaryVal ), new );
 	}
     }
+    if( old != NULL ) free( old );
+    if( new != NULL ) free( new );
 }
 
 static void HistExpose(GWindow pixmap, struct hist_dlg *hist) {
