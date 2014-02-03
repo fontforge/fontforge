@@ -27,7 +27,7 @@
 include $(top_srcdir)/mk/layout.am
 
 SUBDIRS = CocoaDialog.app
-FFAPP_FILES = FontForge debug-script fcprogress.pl \
+FFAPP_FILES = FontForge FFPython debug-script fcprogress.pl \
     library-paths-opt-local-to-absolute.sh library-paths-to-absolute.sh
 ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/MacOS
 
