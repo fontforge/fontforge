@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include "ustring.h"
 
@@ -36,22 +35,9 @@ void NoMoreMemMessage(void) {
 }
 
 char *copy(const char *str) {
-    char *ret;
-
-    if ( str==NULL )
-return( NULL );
-    ret = (char *) malloc(strlen(str)+1);
-    strcpy(ret,str);
-return( ret );
+return str ? strdup(str) : NULL;
 }
 
 char *copyn(const char *str,long n) {
-    char *ret;
-
-    if ( str==NULL )
-return( NULL );
-    ret = (char *) malloc(n+1);
-    memcpy(ret,str,n);
-    ret[n]='\0';
-return( ret );
+return str ? strndup(str, n) : NULL;
 }
