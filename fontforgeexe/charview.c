@@ -7642,7 +7642,6 @@ void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
     if(!col)
 	return;
     
-    SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
     if( g_hash_table_size( col ) )
     {
 	if( preserveState )
@@ -7660,7 +7659,6 @@ void CVVisitAllControlPoints( CharView *cv, bool preserveState,
 	return;
 
     GHashTable* col = getAllControlPoints( cv, &cv->p );
-    SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
     if( g_hash_table_size( col ) )
     {
 	if( preserveState )
@@ -7681,7 +7679,6 @@ void CVVisitAdjacentToSelectedControlPoints( CharView *cv, bool preserveState,
     if( !col )
 	return;
 
-    SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
     if( g_hash_table_size( col ) )
     {
 	if( preserveState )
@@ -7704,7 +7701,7 @@ void CVChar(CharView *cv, GEvent *event ) {
 	{
 	    HaveModifiers = 1;
 	}
-	bool isImmediateKeyTogglePreview = isImmediateKey( cv->gw, "TogglePreview", event );
+	bool isImmediateKeyTogglePreview = isImmediateKey( cv->gw, "TogglePreview", event ) != NULL;
 
 	if( !HaveModifiers && isImmediateKeyTogglePreview ) {
 	    PressingTilde = 1;
@@ -12506,7 +12503,7 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	else if( strlen(txt) > 1 )
 	{
 	    int i=0;
-	    const unichar_t *ret = GGadgetGetTitle( cv->charselector );
+	    unichar_t *ret = GGadgetGetTitle( cv->charselector );
 	    GArray* selected = 0;
 	    WordlistTrimTrailingSingleSlash( ret );
 	    ret = WordlistEscpaedInputStringToRealStringBasic( sf, ret, &selected );

@@ -5487,6 +5487,7 @@ static void FVWindowMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *e) {
     }
 }
 
+#ifdef BUILD_COLLAB
 static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -5531,6 +5532,7 @@ static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 	printf("connecting to server...sent the sfd for session start.\n");
     }
 }
+#endif
 
 static int collab_MakeChoicesArray( GHashTable* peers, char** choices, int choices_sz, int localOnly )
 {
@@ -5599,6 +5601,7 @@ static beacon_announce_t* collab_getBeaconFromChoicesArray( GHashTable* peers, i
 }
 
 
+#ifdef BUILD_COLLAB
 static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -5667,6 +5670,7 @@ static void FVMenuCollabDisconnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEv
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     collabclient_sessionDisconnect( &fv->b );
 }
+#endif
 
 static void AskAndMaybeCloseLocalCollabServers()
 {
@@ -5722,6 +5726,7 @@ static void AskAndMaybeCloseLocalCollabServers()
 	collabclient_closeAllLocalServersForce();
 }
 
+#ifdef BUILD_COLLAB
 static void FVMenuCollabCloseLocalServer(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
     AskAndMaybeCloseLocalCollabServers();
@@ -5739,7 +5744,6 @@ static void FVMenuStartWebFontServer(GWindow gw, struct gmenuitem *UNUSED(mi), G
     argv[1] = 0;
     gchar **envp = 0;
     GSpawnFlags flags = 0;
-    GPid child_pid;
     GError * error = 0;
     gboolean rc = g_spawn_async( getTempDir(),
 				 argv,
@@ -5770,6 +5774,7 @@ static int kill( int pid, int sig )
     TerminateProcess( hHandle, 0 );
 }
 #endif
+#endif
 
 static void FVStopWebFontServer( FontView *fv )
 {
@@ -5781,6 +5786,7 @@ static void FVStopWebFontServer( FontView *fv )
     }
 }
 
+#ifdef BUILD_COLLAB
 static void FVMenuStopWebFontServer(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -5811,7 +5817,6 @@ static void collablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
     }
 }
 
-#ifdef BUILD_COLLAB
 static GMenuItem2 collablist[] = {
     { { (unichar_t *) N_("_Start Session..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Start Session...|No Shortcut"), NULL, NULL, FVMenuCollabStart, MID_CollabStart },
     { { (unichar_t *) N_("_Connect to Session..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Connect to Session...|No Shortcut"), NULL, NULL, FVMenuCollabConnect, MID_CollabConnect },
