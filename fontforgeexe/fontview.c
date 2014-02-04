@@ -6668,11 +6668,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
     }
 #endif
     else {
-#if defined( _NO_SNPRINTF )
-	sprintf( cspace, "%u 0x%x U+???? \"%.25s\" ", localenc, localenc, sc->name==NULL?"":sc->name );
-#else
 	snprintf( cspace, sizeof(cspace), "%u 0x%x U+???? \"%.25s\" ", localenc, localenc, sc->name==NULL?"":sc->name );
-#endif
 	uc_strcpy(space,cspace);
 	done = true;
     }
@@ -6681,38 +6677,20 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	char *uniname;
 	if ( (uniname=unicode_name(upos))!=NULL ) {
 	    /* uniname=unicode "Name" as defined in NameList.txt */
-#if defined( _NO_SNPRINTF )
-            sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
-                     uniname);
-#else
             snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
                       uniname);
-#endif
             utf82u_strcpy(space,cspace);
 	    free(uniname);
         } else if ( upos>=0xAC00 && upos<=0xD7A3 ) {
-#if defined( _NO_SNPRINTF )
-            sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
-                     localenc, localenc, upos, sc->name==NULL?"":sc->name,
-                     chosung[(upos-0xAC00)/(21*28)],
-                     jungsung[(upos-0xAC00)/28%21],
-                     jongsung[(upos-0xAC00)%28] );
-#else
             snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
                       localenc, localenc, upos, sc->name==NULL?"":sc->name,
                       chosung[(upos-0xAC00)/(21*28)],
                       jungsung[(upos-0xAC00)/28%21],
                       jongsung[(upos-0xAC00)%28] );
-#endif
             utf82u_strcpy(space,cspace);
         } else {
-#if defined( _NO_SNPRINTF )
-            sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
-                     UnicodeRange(upos));
-#else
             snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
                       UnicodeRange(upos));
-#endif
             utf82u_strcpy(space,cspace);
         }
     }
