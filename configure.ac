@@ -178,6 +178,7 @@ AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CC_C99
 AM_PROG_CC_C_O
+gl_EARLY
 AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_GREP
@@ -383,6 +384,7 @@ AC_CHECK_HEADERS([strings.h sys/ioctl.h sys/socket.h sys/time.h unistd.h])
 if test x"${i_do_want_iconv}" = xyes; then
    AC_CHECK_HEADERS([iconv.h])
 fi
+gl_INIT
 
 #--------------------------------------------------------------------------
 #
@@ -565,6 +567,7 @@ AM_CONDITIONAL([HAVE_PYTHON_EVEN],[test x"${have_python_even}" = xyes])
 AC_CONFIG_FILES([
 Makefile
 inc/Makefile
+lib/Makefile
 libltdl/Makefile
 Unicode/Makefile
 gutils/Makefile

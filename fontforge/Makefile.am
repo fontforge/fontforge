@@ -99,20 +99,12 @@ libfontforge_la_LIBADD += $(MY_LIBS) $(LIBZMQ_LIBS)
 
 #--------------------------------------------------------------------------
 
-LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
-	$(top_builddir)/gutils/libgutils.la	\
-	$(top_builddir)/gutils/libgioftp.la
-
 GUILIBADD =
 if GRAPHICAL_USER_INTERFACE
 GUILIBADD += $(top_builddir)/gdraw/libgdraw.la $(XINPUT_LIBS) $(XKB_LIBS)
 endif GRAPHICAL_USER_INTERFACE
 
 LDADD = $(LIBADD) $(GUILIBADD)
-
-AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
-	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
-	"-DPLUGINDIR=\"${MY_PLUGINDIR}\"" $(MY_CFLAGS)
 
 #--------------------------------------------------------------------------
 
@@ -131,7 +123,7 @@ EXTRA_DIST = descrip.mms
 # EXTRA_DIST += threaddummy.c xlib.opt
 
 if MACINTOSH
-EXTRA_DIST = $(EXTRA_DIST) MacFontForgeApp.zip
+EXTRA_DIST += MacFontForgeApp.zip
 MOSTLYCLEANFILES = MacFontForgeApp.zip
 endif MACINTOSH
 

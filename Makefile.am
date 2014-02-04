@@ -88,7 +88,9 @@ SUBDIRS += \
 nodist_pkgconfig_DATA = libfontforge.pc libfontforgeexe.pc
 
 EXTRA_DIST += \
-	autogen.sh \
+	m4/gnulib-cache.m4 \
+	bootstrap \
+	bootstrap.conf \
 	COPYING.gplv3 \
 	descrip.mms \
 	LICENSE \

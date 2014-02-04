@@ -8,13 +8,14 @@
 /.*.sw[nop]
 /.deps
 /.dirstamp
-/.gitignore
+/.gitmodules
 /.libs
 /GPATH
 /GRTAGS
 /GSYMS
 /GTAGS
 /ID
+/INSTALL
 /Makefile
 /Makefile.in
 /TAGS
@@ -31,6 +32,8 @@
 /configure.lineno
 /fontforge-config.h
 /fontforge.pc
+/gnulib
+/lib
 /libfontforge.pc
 /libfontforgeexe.pc
 /libltdl
@@ -38,3 +41,4 @@
 /so_locations
 /stamp-h1
 /tags
+/TAGS

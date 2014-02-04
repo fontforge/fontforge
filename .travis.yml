@@ -17,7 +17,7 @@ install:
   - pushd freetype-2.5.0.1 && ./configure && make && sudo make install && popd
   - popd
 script:
-  - ./autogen.sh
+  - ./bootstrap
   - ./configure --with-freetype-source=../freetype-2.5.0.1
   - make V=1
   - sudo make install
