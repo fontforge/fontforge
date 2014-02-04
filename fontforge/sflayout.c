@@ -34,6 +34,7 @@
 #include <ustring.h>
 #include <utype.h>
 #include <chardata.h>
+#include <ffglib.h>
 
 static uint32 simple_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('k','e','r','n'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
 static uint32 arab_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('i','s','o','l'), CHR('i','n','i','t'), CHR('m','e','d','i'),CHR('f','i','n','a'), CHR('r','l','i','g'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('k','e','r','n'), CHR('c','u','r','s'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
@@ -1192,7 +1193,7 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     cnt = arr->argc/2;
     len = 1;
     for ( i=0; i<cnt; ++i )
-	len += utf8_strlen( arr->vals[2*i+1].u.sval )+1;
+	len += g_utf8_strlen( arr->vals[2*i+1].u.sval, -1 )+1;
 
     li->text = malloc(len*sizeof(unichar_t));
     len = 0;
@@ -1211,7 +1212,7 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
 	script = DEFAULT_SCRIPT;
 	for ( upt = li->text+len; *upt && script==DEFAULT_SCRIPT; ++upt )
 	    script = ScriptFromUnicode(*upt,NULL);
-	len += utf8_strlen( arr->vals[2*i+1].u.sval );
+	len += g_utf8_strlen( arr->vals[2*i+1].u.sval, -1 );
 	li->text[len++] = '\n';
 
 	last->end = len-1;
