@@ -495,6 +495,7 @@ static PyObject *PyFFFont_CollabSessionJoin(PyFF_Font *self, PyObject *args)
 }
 
 
+#ifdef BUILD_COLLAB
 static void InvokeCollabSessionSetUpdatedCallback(PyFF_Font *self) {
     if( CollabSessionSetUpdatedCallback )
     {
@@ -506,7 +507,7 @@ static void InvokeCollabSessionSetUpdatedCallback(PyFF_Font *self) {
 	Py_DECREF(arglist);
     }
 }
-
+#endif
 
 static PyObject *PyFFFont_CollabSessionRunMainLoop(PyFF_Font *self, PyObject *args)
 {
