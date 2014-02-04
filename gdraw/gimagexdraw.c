@@ -1698,19 +1698,16 @@ static void check_image_buffers(GXDisplay *gdisp, int neww, int newh, int is_bit
 	if ( width<400 ) width = 400;
     }
     if ( width > gdisp->gg.iwidth || (gdisp->gg.img!=NULL && depth!=gdisp->gg.img->depth) ) {
+        free(gdisp->gg.red_dith);
+        free(gdisp->gg.green_dith);
+        free(gdisp->gg.blue_dith);
 	if ( depth<=8 ) {
-	    if ( gdisp->gg.red_dith!=NULL ) free(gdisp->gg.red_dith);
-	    if ( gdisp->gg.green_dith!=NULL ) free(gdisp->gg.green_dith);
-	    if ( gdisp->gg.blue_dith!=NULL ) free(gdisp->gg.blue_dith);
 	    gdisp->gg.red_dith = galloc(width*sizeof(short));
 	    gdisp->gg.green_dith = galloc(width*sizeof(short));
 	    gdisp->gg.blue_dith = galloc(width*sizeof(short));
 	    if ( gdisp->gg.red_dith==NULL || gdisp->gg.green_dith==NULL || gdisp->gg.blue_dith==NULL )
 		gdisp->do_dithering = 0;
 	} else {
-	    if ( gdisp->gg.red_dith!=NULL ) free(gdisp->gg.red_dith);
-	    if ( gdisp->gg.green_dith!=NULL ) free(gdisp->gg.green_dith);
-	    if ( gdisp->gg.blue_dith!=NULL ) free(gdisp->gg.blue_dith);
 	    gdisp->gg.red_dith = NULL;
 	    gdisp->gg.green_dith = NULL;
 	    gdisp->gg.blue_dith = NULL;

@@ -1698,12 +1698,10 @@ return;
 	    free(fp->fd->fontinfo->version);
 	    fp->fd->fontinfo->version = getstring(endtok,in);
 	} else if ( mycmp("Notice",line+1,endtok)==0 ) {
-	    if ( fp->fd->fontinfo->notice!=NULL )
-		free(fp->fd->fontinfo->notice);
+            free(fp->fd->fontinfo->notice);
 	    fp->fd->fontinfo->notice = getstring(endtok,in);
 	} else if ( mycmp("Copyright",line+1,endtok)==0 ) {		/* cff spec allows for copyright and notice */
-	    if ( fp->fd->fontinfo->notice!=NULL )
-		free(fp->fd->fontinfo->notice);
+            free(fp->fd->fontinfo->notice);
 	    fp->fd->fontinfo->notice = getstring(endtok,in);
 	} else if ( mycmp("FullName",line+1,endtok)==0 ) {
 	    if ( fp->fd->fontinfo->fullname==NULL )

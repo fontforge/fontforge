@@ -135,9 +135,8 @@ const char LineLengthBg[] = "Error with %s. Found line too long: %s\n";	/* exit(
 
 static void FreeNamesMemorySpace() {
     long index;
-    for ( index=0; index<MAXC ; ++index ) {
-	if ( names[index]!=NULL ) free( names[index] );
-    }
+    for ( index=0; index<MAXC ; ++index )
+	free( names[index] );
 }
 
 static void FigureAlternates(long index, char *apt, int normative) {

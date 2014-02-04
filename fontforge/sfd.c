@@ -2789,8 +2789,7 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 	    SFDDumpBitmapFont(sfd,bdf,map,newgids,todir,dirname);
     }
     fprintf(sfd, sf->cidmaster==NULL?"EndSplineFont\n":"EndSubSplineFont\n" );
-    if ( newgids!=NULL )
-	free(newgids);
+    free(newgids);
 return( err );
 }
 

@@ -1905,8 +1905,7 @@ return;
     for ( i=0; i<bdf->glyphcnt; ++i )
 	BDFCharFree(bdf->glyphs[i]);
     free(bdf->glyphs);
-    if ( bdf->clut!=NULL )
-	free(bdf->clut);
+    free(bdf->clut);
     if ( bdf->freetype_context!=NULL )
 	FreeTypeFreeContext(bdf->freetype_context);
     BDFPropsFree(bdf);

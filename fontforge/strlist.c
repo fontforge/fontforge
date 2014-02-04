@@ -17,8 +17,7 @@ void delete_string_list(struct string_list *list) {
     struct string_list *curr, *next;
     for ( curr=list; curr!=NULL; curr=next ) {
 	next = curr->next;
-	if ( curr->str!=NULL )
-	    free(curr->str);
+        free(curr->str);
 	free(curr);
     }
     return;

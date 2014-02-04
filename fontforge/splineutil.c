@@ -246,7 +246,7 @@ return( spline );
 
 void SplinePointFree(SplinePoint *sp) {
     chunkfree(sp->hintmask,sizeof(HintMask));
-	if (sp->name != NULL) free(sp->name);
+	free(sp->name);
     chunkfree(sp,sizeof(SplinePoint));
 }
 
@@ -269,7 +269,7 @@ void SplinePointMDFree(SplineChar *sc, SplinePoint *sp) {
     }
 
     chunkfree(sp->hintmask,sizeof(HintMask));
-	if (sp->name != NULL) free(sp->name);
+	free(sp->name);
     chunkfree(sp,sizeof(SplinePoint));
 }
 

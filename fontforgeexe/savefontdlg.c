@@ -3174,7 +3174,7 @@ return( 0 );
     free(lynames);
     free(label[9].text);
     if ( family ) {
-	for ( i=13; i<k; ++i ) if ( gcd[i].gd.popup_msg!=NULL )
+	for ( i=13; i<k; ++i )
 	    free((unichar_t *) gcd[i].gd.popup_msg);
     } else {
 	GHVBoxSetExpandableCol(boxes[6].ret,1);

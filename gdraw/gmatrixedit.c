@@ -155,9 +155,7 @@ static void GMatrixEdit_destroy(GGadget *g) {
     int c, i;
 
     free(gme->newtext);
-    /* The textfield lives in the nested window and doesn't need to be destroyed */
-    /* if ( gme->tf!=NULL ) */
-	/* GGadgetDestroy(gme->tf);*/
+    /* The textfield gme->tf lives in the nested window and doesn't need to be destroyed */
     if ( gme->vsb!=NULL )
 	GGadgetDestroy(gme->vsb);
     if ( gme->hsb!=NULL )

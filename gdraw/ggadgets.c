@@ -252,8 +252,7 @@ void *GResource_font_cvt(char *val, void *def) {
 		
     fi = GDrawInstanciateFont(NULL,&rq);
 
-    if ( freeme!=NULL )
-	free(freeme);
+    free(freeme);
 
     if ( fi==NULL )
 return( def );

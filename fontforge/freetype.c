@@ -1180,13 +1180,11 @@ return( NULL );
 		    }
 		}
 	    }
-	    if (clipmask != NULL)
-		free(clipmask);
+            free(clipmask);
 	}
     }
 
-    if (temp.buffer != NULL)
-	free(temp.buffer);
+    free(temp.buffer);
 
     free(outline.points);
     free(outline.tags);

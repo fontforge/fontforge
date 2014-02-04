@@ -136,10 +136,8 @@ static int dumpalphas(FILE *output, FILE *header) {
 		    fprintf( stderr, LineLengthBg,alphabets[j],buffer );
 		    fclose(file);
 		    for ( k=0; k<256; ++k ) {
-			if ( table[k] != NULL )
-			    free(table[k]);
-			if ( used[k] != NULL )
-			    free(used[k]);
+                        free(table[k]);
+                        free(used[k]);
 		    }
 return( 4 );
 		}
@@ -152,10 +150,8 @@ return( 4 );
 			fprintf( stderr, NoMoreMemory );
 			fclose(file);
 			for ( k=0; k<256; ++k ) {
-			    if ( table[k] != NULL )
-				free(table[k]);
-			    if ( used[k] != NULL )
-				free(used[k]);
+                            free(table[k]);
+                            free(used[k]);
 			}
 return( 3 );
 		    }
@@ -172,10 +168,8 @@ return( 3 );
 			fprintf( stderr, NoMoreMemory );
 			fclose(file);
 			for ( k=0; k<256; ++k ) {
-			    if ( table[k] != NULL )
-				free(table[k]);
-			    if ( used[k] != NULL )
-				free(used[k]);
+                            free(table[k]);
+                            free(used[k]);
 			}
 return( 3 );
 		    }
@@ -238,8 +232,7 @@ return( 3 );
     }
     if ( l ) {				/* missing files, shouldn't go any further */
 	for ( k=0; k<256; ++k )
-	    if ( used[k] != NULL )
-		free(used[k]);
+            free(used[k]);
 return( 2 );
     }
 
@@ -447,10 +440,8 @@ static int dumpjis(FILE *output,FILE *header) {
 		fprintf( stderr, LineLengthBg,adobecjk[j],buffer );
 		fclose(file);
 		for ( k=0; k<256; ++k ) {
-		    if ( table[k] != NULL )
-			free(table[k]);
-		    if ( used[k] != NULL )
-			free(used[k]);
+                    free(table[k]);
+                    free(used[k]);
 		}
 return( 4 );
 	    }
@@ -473,10 +464,8 @@ return( 4 );
 		    fprintf( stderr, NoMoreMemory );
 		    fclose(file);
 		    for ( k=0; k<256; ++k ) {
-			if ( table[k] != NULL )
-			    free(table[k]);
-			if ( used[k] != NULL )
-			    free(used[k]);
+                        free(table[k]);
+                        free(used[k]);
 		    }
 return( 3 );
 		}
@@ -492,10 +481,8 @@ return( 3 );
 			fprintf( stderr, NoMoreMemory );
 			fclose(file);
 			for ( k=0; k<256; ++k ) {
-			    if ( table[k] != NULL )
-				free(table[k]);
-			    if ( used[k] != NULL )
-				free(used[k]);
+                            free(table[k]);
+                            free(used[k]);
 			}
 return( 3 );
 		    }
@@ -517,10 +504,8 @@ return( 3 );
 		fprintf( stderr, LineLengthBg,adobecjk[j],buffer );
 		fclose(file);
 		for ( k=0; k<256; ++k ) {
-		    if ( table[k] != NULL )
-			free(table[k]);
-		    if ( used[k] != NULL )
-			free(used[k]);
+                    free(table[k]);
+                    free(used[k]);
 		}
 return( 4 );
 	    }
@@ -543,10 +528,8 @@ return( 4 );
 		    fprintf( stderr, NoMoreMemory );
 		    fclose(file);
 		    for ( k=0; k<256; ++k ) {
-			if ( table[k] != NULL )
-			    free(table[k]);
-			if ( used[k] != NULL )
-			    free(used[k]);
+                        free(table[k]);
+                        free(used[k]);
 		    }
 return( 3 );
 		}
@@ -565,10 +548,8 @@ return( 3 );
 			fprintf( stderr, NoMoreMemory );
 			fclose(file);
 			for ( k=0; k<256; ++k ) {
-			    if ( table[k] != NULL )
-				free(table[k]);
-			    if ( used[k] != NULL )
-				free(used[k]);
+                            free(table[k]);
+                            free(used[k]);
 			}
 return( 3 );
 		    }
@@ -661,10 +642,8 @@ static int dumpbig5(FILE *output,FILE *header) {
 		fprintf( stderr, LineLengthBg,adobecjk[j],buffer );
 		fclose(file);
 		for ( k=0; k<256; ++k ) {
-		    if ( table[k] != NULL )
-			free(table[k]);
-		    if ( used[k] != NULL )
-			free(used[k]);
+                    free(table[k]);
+                    free(used[k]);
 		}
 return( 4 );
 	    }
@@ -704,10 +683,8 @@ return( 4 );
 		    fprintf( stderr, NoMoreMemory );
 		    fclose(file);
 		    for ( k=0; k<256; ++k ) {
-			if ( table[k] != NULL )
-			    free(table[k]);
-			if ( used[k] != NULL )
-			    free(used[k]);
+                        free(table[k]);
+                        free(used[k]);
 		    }
 return( 3 );
 		}
@@ -717,10 +694,8 @@ return( 3 );
 		    fprintf( stderr, NoMoreMemory );
 		    fclose(file);
 		    for ( k=0; k<256; ++k ) {
-			if ( table[k] != NULL )
-			    free(table[k]);
-			if ( used[k] != NULL )
-			    free(used[k]);
+                        free(table[k]);
+                        free(used[k]);
 		    }
 return( 3 );
 		}
@@ -800,10 +775,8 @@ static int dumpbig5hkscs(FILE *output,FILE *header) {
 		fprintf( stderr, LineLengthBg,cjk[j],buffer );
 		fclose(file);
 		for ( k=0; k<256; ++k ) {
-		    if ( table[k] != NULL )
-			free(table[k]);
-		    if ( used[k] != NULL )
-			free(used[k]);
+                    free(table[k]);
+                    free(used[k]);
 		}
 return( 4 );
 	    }
@@ -823,10 +796,8 @@ return( 4 );
 		    fprintf( stderr, NoMoreMemory );
 		    fclose(file);
 		    for ( k=0; k<256; ++k ) {
-			if ( table[k] != NULL )
-			    free(table[k]);
-			if ( used[k] != NULL )
-			    free(used[k]);
+                        free(table[k]);
+                        free(used[k]);
 		    }
 return( 3 );
 		}
@@ -836,10 +807,8 @@ return( 3 );
 		    fprintf( stderr, NoMoreMemory );
 		    fclose(file);
 		    for ( k=0; k<256; ++k ) {
-			if ( table[k] != NULL )
-			    free(table[k]);
-			if ( used[k] != NULL )
-			    free(used[k]);
+                        free(table[k]);
+                        free(used[k]);
 		    }
 return( 3 );
 		}
@@ -923,12 +892,9 @@ static int dumpWansung(FILE *output,FILE *header) {
 		    fprintf( stderr, LineLengthBg,adobecjk[j],buffer );
 		    fclose(file);
 		    for ( k=0; k<256; ++k ) {
-			if ( table[k] != NULL )
-			    free(table[k]);
-			if ( jtable[k] != NULL )
-			    free(jtable[k]);
-			if ( used[k] != NULL )
-			    free(used[k]);
+                        free(table[k]);
+                        free(jtable[k]);
+                        free(used[k]);
 		    }
 return( 4 );
 		}
@@ -957,12 +923,9 @@ return( 4 );
 			    fprintf( stderr, NoMoreMemory );
 			    fclose(file);
 			    for ( k=0; k<256; ++k ) {
-				if ( table[k] != NULL )
-				    free(table[k]);
-				if ( jtable[k] != NULL )
-				    free(jtable[k]);
-				if ( used[k] != NULL )
-				    free(used[k]);
+                                free(table[k]);
+                                free(jtable[k]);
+                                free(used[k]);
 			    }
 return( 3 );
 			}
@@ -979,12 +942,9 @@ return( 3 );
 			    fprintf( stderr, NoMoreMemory );
 			    fclose(file);
 			    for ( k=0; k<256; ++k ) {
-				if ( table[k] != NULL )
-				    free(table[k]);
-				if ( jtable[k] != NULL )
-				    free(jtable[k]);
-				if ( used[k] != NULL )
-				    free(used[k]);
+                                free(table[k]);
+                                free(jtable[k]);
+                                free(used[k]);
 			    }
 return( 3 );
 			}
@@ -997,12 +957,9 @@ return( 3 );
 			    fprintf( stderr, NoMoreMemory );
 			    fclose(file);
 			    for ( k=0; k<256; ++k ) {
-				if ( table[k] != NULL )
-				    free(table[k]);
-				if ( jtable[k] != NULL )
-				    free(jtable[k]);
-				if ( used[k] != NULL )
-				    free(used[k]);
+                                free(table[k]);
+                                free(jtable[k]);
+                                free(used[k]);
 			    }
 return( 3 );
 			}
@@ -1014,12 +971,9 @@ return( 3 );
 			    fprintf( stderr, NoMoreMemory );
 			    fclose(file);
 			    for ( k=0; k<256; ++k ) {
-				if ( table[k] != NULL )
-				    free(table[k]);
-				if ( jtable[k] != NULL )
-				    free(jtable[k]);
-				if ( used[k] != NULL )
-				    free(used[k]);
+                                free(table[k]);
+                                free(jtable[k]);
+                                free(used[k]);
 			    }
 return( 3 );
 			}
@@ -1127,8 +1081,7 @@ return( 3 );
 	else for ( k=first; k<=last; ++k ) {
 	    free(table[k]);
 	    table[k]=NULL;
-	    if ( jtable[k] != NULL )
-		free(jtable[k]);
+            free(jtable[k]);
 	}
 return( 0 );				/* no errors encountered */
 }
@@ -1155,10 +1108,8 @@ static int dumpgb2312(FILE *output,FILE *header) {
 		    fprintf( stderr, LineLengthBg,adobecjk[j],buffer );
 		    fclose(file);
 		    for ( k=0; k<256; ++k ) {
-			if ( table[k] != NULL )
-			    free(table[k]);
-			if ( used[k] != NULL )
-			    free(used[k]);
+                        free(table[k]);
+                        free(used[k]);
 		    }
 return( 4 );
 		}
@@ -1181,10 +1132,8 @@ return( 4 );
 			fprintf( stderr, NoMoreMemory );
 			fclose(file);
 			for ( k=0; k<256; ++k ) {
-			    if ( table[k] != NULL )
-				free(table[k]);
-			    if ( used[k] != NULL )
-				free(used[k]);
+                            free(table[k]);
+                            free(used[k]);
 			}
 return( 3 );
 		    }
@@ -1197,10 +1146,8 @@ return( 3 );
 			fprintf( stderr, NoMoreMemory );
 			fclose(file);
 			for ( k=0; k<256; ++k ) {
-			    if ( table[k] != NULL )
-				free(table[k]);
-			    if ( used[k] != NULL )
-				free(used[k]);
+                            free(table[k]);
+                            free(used[k]);
 			}
 return( 3 );
 		    }
@@ -1366,9 +1313,7 @@ return 1;
 
     fclose(output); fclose(header);
 
-    for ( i=0; i<256; ++i ) {
-	if ( used[i] != NULL )
-	    free(used[i]);
-    }
+    for ( i=0; i<256; ++i )
+        free(used[i]);
 return 0;
 }

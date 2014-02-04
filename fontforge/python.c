@@ -1361,8 +1361,7 @@ return( NULL );
     ret = ff_ask_string(title,def,quest);
     free(title);
     free(quest);
-    if(def!=NULL)
-	free(def);
+    free(def);
     if ( ret==NULL )
 Py_RETURN_NONE;
     reto = Py_BuildValue("s",ret);
@@ -5264,8 +5263,7 @@ static PyTypeObject PyFF_LayerArrayIterType = {
 /* ************************************************************************** */
 
 static void PyFF_LayerArray_dealloc(PyFF_LayerArray *self) {
-    if ( self->sc!=NULL )
-	self->sc = NULL;
+    self->sc = NULL;
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
@@ -5434,8 +5432,7 @@ static PyTypeObject PyFF_LayerArrayType = {
 /* ************************************************************************** */
 
 static void PyFF_RefArray_dealloc(PyFF_RefArray *self) {
-    if ( self->sc!=NULL )
-	self->sc = NULL;
+    self->sc = NULL;
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
@@ -9542,8 +9539,7 @@ static PyTypeObject PyFF_LayerInfoArrayIterType = {
 /* ************************************************************************** */
 
 static void PyFF_LayerInfo_dealloc(PyFF_LayerInfo *self) {
-    if ( self->sf!=NULL )
-	self->sf = NULL;
+    self->sf = NULL;
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
@@ -9686,8 +9682,7 @@ static PyTypeObject PyFF_LayerInfoType = {
 /* ************************************************************************** */
 
 static void PyFF_LayerInfoArray_dealloc(PyFF_LayerInfoArray *self) {
-    if ( self->sf!=NULL )
-	self->sf = NULL;
+    self->sf = NULL;
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
@@ -10124,8 +10119,7 @@ static PyTypeObject PyFF_PrivateIterType = {
 /* ************************************************************************** */
 
 static void PyFF_Private_dealloc(PyFF_Private *self) {
-    if ( self->sf!=NULL )
-	self->sf = NULL;
+    self->sf = NULL;
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
@@ -14838,8 +14832,7 @@ return( NULL );
 	}
     } else {
 	PyErr_Format(PyExc_TypeError, "Unexpected type" );
-	if ( list!=NULL )
-	    free(list);
+        free(list);
 return( NULL );
     }
     OTLookupsCopyInto(sf,othersf,list,before);
@@ -15656,8 +15649,7 @@ static void freesflist(struct sflist* list) {
     for( ; list != NULL; list=next ) {
 	next = list->next;
 
-	if ( list->sizes!=NULL )
-	    free(list->sizes);
+        free(list->sizes);
 	chunkfree(list, sizeof(struct sflist));
     }
     return;
@@ -16163,8 +16155,7 @@ return( NULL );
     if ( arg_cnt>2 ) {
 	char *str = PyBytes_AsString(PyTuple_GetItem(args,2));
 	if ( str==NULL ) {
-	    if ( pointsizes!=NULL )
-		free(pointsizes);
+            free(pointsizes);
 return( NULL );
 	}
 	if ( inlinesample ) {
@@ -16178,12 +16169,9 @@ return( NULL );
     if ( arg_cnt>3 ) {
 	output = PyBytes_AsString(PyTuple_GetItem(args,3));
 	if ( output==NULL ) {
-	    if ( pointsizes!=NULL )
-		free(pointsizes);
-	    if ( locfilename!=NULL )
-		free(locfilename);
-	    if ( sample!=NULL )
-		free(sample);
+            free(pointsizes);
+            free(locfilename);
+            free(sample);
 return( NULL );
 	}
     }

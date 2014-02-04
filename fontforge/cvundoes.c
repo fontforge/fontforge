@@ -1235,8 +1235,7 @@ void CopyBufferFree(void) {
 	    brnext = brhead->next;
 	    free( brhead );
 	}
-	if ( copybuffer.u.bmpstate.bitmap != NULL )
-	    free( copybuffer.u.bmpstate.bitmap );
+        free( copybuffer.u.bmpstate.bitmap );
       break;
       case ut_multiple: case ut_layers:
 	UndoesFree( copybuffer.u.multiple.mult );

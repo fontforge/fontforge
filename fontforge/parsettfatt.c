@@ -3035,7 +3035,7 @@ return;
 	    }
 	    caret_base = ftell(ttf);
 	    pst->u.lcaret.cnt = getushort(ttf);
-	    if ( pst->u.lcaret.carets!=NULL ) free(pst->u.lcaret.carets);
+	    free(pst->u.lcaret.carets);
 	    offsets = galloc(pst->u.lcaret.cnt*sizeof(uint16));
 	    for ( j=0; j<pst->u.lcaret.cnt; ++j )
 		offsets[j] = getushort(ttf);

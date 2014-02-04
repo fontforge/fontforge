@@ -401,8 +401,8 @@ return;
 	    GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_SecondaryVal ), new );
 	}
     }
-    if( old != NULL ) free( old );
-    if( new != NULL ) free( new );
+    free( old );
+    free( new );
 }
 
 static void HistExpose(GWindow pixmap, struct hist_dlg *hist) {

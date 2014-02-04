@@ -5250,8 +5250,7 @@ static void AbortTTF(struct alltabs *at, SplineFont *sf) {
 	sf->glyphs = NULL;
 	sf->glyphcnt = sf->glyphmax = 0;
     }
-    if ( at->fds!=NULL )
-	free( at->fds );
+    free( at->fds );
     free( at->gi.bygid );
 }
 

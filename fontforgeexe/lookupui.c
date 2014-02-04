@@ -6115,7 +6115,7 @@ static GTextInfo *ScriptListOfFont(SplineFont *sf) {
     char tag[8];
 
     if ( ourscripts==NULL || ourscripts[0]==0 ) {
-	if ( ourscripts!=NULL ) free(ourscripts);
+	free(ourscripts);
 	ourscripts = galloc(2*sizeof(uint32));
 	ourscripts[0] = DEFAULT_SCRIPT;
 	ourscripts[1] = 0;
