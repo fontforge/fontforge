@@ -39,7 +39,7 @@
 char* Wordlist_getSCName( SplineChar* sc )
 {
     printf("Wordlist_getSCName() sc->name:%s\n", sc->name );
-    printf("Wordlist_getSCName() sc->len :%d\n", strlen(sc->name) );
+    printf("Wordlist_getSCName() sc->len :%zd\n", strlen(sc->name) );
     printf("Wordlist_getSCName() is three:%d\n", strcmp( sc->name, "three" ) );
         
     static char ret[ 1024 ];
