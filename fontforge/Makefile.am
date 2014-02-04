@@ -49,10 +49,12 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 
 LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la	\
-	$(top_builddir)/gutils/libgioftp.la
+	$(top_builddir)/gutils/libgioftp.la	\
+	$(top_builddir)/lib/libgnu.la
 
 
 AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
+	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
 	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
 	"-DPLUGINDIR=\"${MY_PLUGINDIR}\"" $(MY_CFLAGS)
 

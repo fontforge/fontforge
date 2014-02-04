@@ -42,8 +42,8 @@ internal_bin_PROGRAMS = fontforge-internal-collab-server
 
 fontforge_internal_collab_server_SOURCES = fontforge-internal-collab-server.c
 fontforge_internal_collab_server_CPPFLAGS = $(AM_CPPFLAGS) \
-  "-I$(top_builddir)/inc" \
-  "-I$(top_srcdir)/inc" \
+  "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc" \
+  "-I$(top_builddir)/lib" "-I$(top_srcdir)/lib" \
   $(MY_CFLAGS) $(LIBZMQ_CFLAGS)
 fontforge_internal_collab_server_LDADD = $(LDADD) \
    $(top_builddir)/collab/libzmqcollab.la \

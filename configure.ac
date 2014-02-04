@@ -451,22 +451,17 @@ m4_define([AN_FUNCTION], [m4_if([$1], [realloc], [],
 #--------------------------------------------------------------------------
 # Checks for library functions.
 
-AC_FUNC_ERROR_AT_LINE
 AC_FUNC_FORK
 AC_FUNC_MKTIME
 AC_FUNC_MMAP
 if test x"${ac_cv_func_mmap_fixed_mapped}" != xyes; then
    AC_DEFINE([_NO_MMAP],1,[Define if not using mmap.])
 fi
-AC_FUNC_STRCOLL
-AC_FUNC_STRTOD
-AC_CHECK_FUNCS([alarm atexit dup2 endpwent])
+AC_CHECK_FUNCS([alarm dup2 endpwent])
 AC_CHECK_FUNCS([getcwd gethostbyname gettimeofday])
 AC_CHECK_FUNCS([mkdir munmap])
 AC_CHECK_FUNCS([nl_langinfo putenv rmdir])
 AC_CHECK_FUNCS([select setenv socket])
-AC_CHECK_FUNCS([strcasecmp strdup])
-AC_CHECK_FUNCS([strncasecmp])
 AC_CHECK_FUNCS([tzset uname])
 AC_CHECK_FUNC([tzset],[:],[AC_DEFINE([_NO_TZSET],1,[Define if not using tzset.])])
 

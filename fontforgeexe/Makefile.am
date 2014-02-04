@@ -75,7 +75,8 @@ sfddiff: sfddiff.pe
 LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la	\
 	$(top_builddir)/gutils/libgioftp.la	\
-	$(top_builddir)/fontforge/libfontforge.la
+	$(top_builddir)/fontforge/libfontforge.la \
+	$(top_builddir)/lib/libgnu.la
 
 GUILIBADD =
 if GRAPHICAL_USER_INTERFACE
@@ -86,6 +87,7 @@ endif GRAPHICAL_USER_INTERFACE
 LDADD = $(LIBADD) $(GUILIBADD)
 
 AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
+	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
               "-I$(top_srcdir)/fontforge" \
 	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
 	"-DPLUGINDIR=\"${MY_PLUGINDIR}\"" $(MY_CFLAGS)
