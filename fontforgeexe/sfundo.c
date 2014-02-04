@@ -88,16 +88,16 @@ static char* findterm( char** str, char* term )
     {
 	p += strlen( term );
 	char* e = p;
-	while( e && e!='\n')
+	while( *e && *e!='\n')
 	    e++;
-	if( e )
+	if( *e )
 	{
 	    *e = '\0';
 	    (*str) = e+1;
 	    return p;
 	}
     }
-    return 0;
+    return NULL;
 }
 
 SFUndoes* SFUndoFromString( char* str )
