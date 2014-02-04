@@ -833,7 +833,6 @@ return;
 	 || cv->show_ft_results
 	 || cv->dv )
     {
-	int iscurrent = sp==(cv->p.sp!=NULL?cv->p.sp:cv->lastselpt);
 	if ( !sp->nonextcp ) {
 	    cx =  cv->xoff + rint(sp->nextcp.x*cv->scale);
 	    cy = -cv->yoff + cv->height - rint(sp->nextcp.y*cv->scale);
@@ -3769,7 +3768,7 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 //    TRACE("CVCharUp() ag:%d key:%d\n", cv_auto_goto, event->u.chr.keysym );
     if( !cv_auto_goto )
     {
-	bool isImmediateKeyTogglePreview = isImmediateKey( cv->gw, "TogglePreview", event );
+	bool isImmediateKeyTogglePreview = isImmediateKey( cv->gw, "TogglePreview", event ) != NULL;
 	if( isImmediateKeyTogglePreview ) {
 	    PressingTilde = 1;
 	}
@@ -4209,11 +4208,6 @@ static int16 MouseToCX( CharView *cv, int16 mx )
 {
     return( mx - cv->xoff ) / cv->scale;
 }
-static int16 MouseToCY( CharView *cv, int16 my )
-{
-    return( my - cv->yoff ) / cv->scale;
-}
-
 
     
 static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
@@ -4461,7 +4455,6 @@ static void CVMaybeCreateDraggingComparisonOutline( CharView* cv )
     if( !l || !l->splines )
 	return;
 
-    GHashTable* ret = g_hash_table_new( g_direct_hash, g_direct_equal );
     SplinePointList* spl = l->splines;
     for( ; spl; spl = spl->next )
     {
@@ -4480,7 +4473,6 @@ static void CVMaybeCreateDraggingComparisonOutline( CharView* cv )
 static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
 {
     int i=0;
-    SplineChar* oldsc = cv->b.sc;
     FontViewBase *fv = cv->b.fv;
     char buf[300];
 
@@ -6180,7 +6172,6 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 	}
     else if ( event->u.mouse.y > cv->mbh )
     {
-	    GGadget *active = GWindowGetFocusGadgetOfWindow(cv->gw);
         if( GGadgetContainsEventLocation( cv->charselectorPrev, event ))
         {
             GGadgetPreparePopup(cv->gw,c_to_u("Show the previous word in the current word list\n"
@@ -7264,17 +7255,14 @@ return;
         char* txt = GGadgetGetTitle8( cv->charselector );
         if( txt && strlen(txt) > 1 )
         {
-            printf("txt.len: %d\n", strlen( txt ));
             int offset = 1;
             if ( mid == MID_Prev )
                 offset = -1;
 
-	    const unichar_t *txtu = GGadgetGetTitle( cv->charselector );
-            printf("INPUT STRING : %s\n", u_to_c( txtu ));
+	    unichar_t *txtu = GGadgetGetTitle( cv->charselector );
             unichar_t* r = Wordlist_advanceSelectedCharsBy( cv->b.sc->parent,
                                                             ((FontView *) (cv->b.fv))->b.map,
                                                             txtu, offset );
-            printf("UPDATED STRING : %s\n", u_to_c( r ));
             free( txtu );
 
 	    GGadgetSetTitle( cv->charselector, r );
@@ -12463,48 +12451,6 @@ void DefaultY(GRect *pos) {
 
 static void CharViewInit(void);
 
-static SplineChar *SCFromUnicode(CharView* cv, SplineFont *sf, EncMap *map, int ch,BDFFont *bdf) {
-    int i;
-    SplineChar *sc;
-
-    i = SFFindSlot(sf,map,ch,NULL);
-    if ( i==-1 )
-	return( NULL );
-    else
-    {
-	sc = SFMakeChar(sf,map,i);
-	if ( bdf!=NULL )
-	    BDFMakeChar(bdf,map,i);
-    }
-    return( sc );
-}
-
-/* static void CVLoadWordList( CharView* cv ) */
-/* { */
-/*     SplineChar *sc = cv->b.sc; */
-/*     SplineFont* sf = sc->parent; */
-
-/*     int words_max = 1024*128; */
-/*     GTextInfo** words = WordlistLoadFileToGTextInfoBasic( words_max ); */
-/*     if( !words ) */
-/*     { */
-/* 	GGadgetSetTitle8(cv->charselector,""); */
-/* 	return 0; */
-/*     } */
-
-/*     if( words[0] ) */
-/*     { */
-/* 	GGadgetSetList(cv->charselector,words,true); */
-/* 	GGadgetSetTitle8(cv->charselector,(char *) (words[0]->text)); */
-/* 	GTextInfoArrayFree(words); */
-/* 	cv->charselectoridx = 0; */
-/* 	GGadgetSelectOneListItem( cv->charselector, cv->charselectoridx ); */
-/* 	Wordlist_touch( cv->charselector ); */
-/* 	return 0; */
-/*     } */
-/*     return 1; */
-/* } */
-
 static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 {
     CharView* cv = GGadgetGetUserData(g);
@@ -12512,11 +12458,6 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
     SplineFont* sf = sc->parent;
 
     TRACE("CV_OnCharSelectorTextChanged(top)\n");
-    /* if( e->type == et_char ) */
-    /* { */
-    /* 	TRACE("CV_OnCharSelectorTextChanged() char is-left:%d\n", e->u.chr.keysym == GK_Left ); */
-    /* } */
-    /* TRACE("subtype: %d\n", e->u.control.subtype ); */
     
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged )
     {
@@ -12542,7 +12483,6 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	char* txt = GGadgetGetTitle8( cv->charselector );
 	TRACE("text changed: %s\n", txt );
 
-	if( 1 )
 	{
 	    int tabnum = GTabSetGetSel(cv->tabs);
 	    TRACE("tab num:%d\n", tabnum );
@@ -12552,7 +12492,6 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	    GTabSetChangeTabName(cv->tabs,t->tablabeltxt,tabnum);
 	    GTabSetRemetric(cv->tabs);
 	    GTabSetSetSel(cv->tabs,tabnum);	/* This does a redraw */
-	    
 	}
 	
 	memset( cv->additionalCharsToShow, 0, sizeof(SplineChar*) * additionalCharsToShowLimit );
