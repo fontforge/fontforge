@@ -1534,13 +1534,6 @@ return;
 	cur->names[id] = str;
 	if ( plat==1 || plat==0 )
 	    cur->frommac[id/32] |= (1<<(id&0x1f));
-/* There's some wacky bug in gcc. If the optimizer is on then strcmp gets turned */
-/*  into some inline call. Which would be fine, except the following line goes */
-/*  bluey. "Called object is not a function", etc. Compiles fine if we turn off */
-/*  the inlining magic */
-#ifdef strcmp
-# undef strcmp
-#endif
     } else if ( strcmp(str,cur->names[id])==0 ) {
 	free(str);
 	if ( plat==3 )
