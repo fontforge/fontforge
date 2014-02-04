@@ -33,6 +33,7 @@
 #include <gio.h>
 #include <gresedit.h>
 #include <ustring.h>
+#include "../fontforge/ffglib.h"
 #include <gkeysym.h>
 #include <utype.h>
 #include <chardata.h>
@@ -6324,25 +6325,19 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
     GDrawSetDither(NULL, true);
 }
 
-static char *chosung[] = { "G", "GG", "N", "D", "DD", "L", "M", "B", "BB", "S", "SS", "", "J", "JJ", "C", "K", "T", "P", "H", NULL };
-static char *jungsung[] = { "A", "AE", "YA", "YAE", "EO", "E", "YEO", "YE", "O", "WA", "WAE", "OE", "YO", "U", "WEO", "WE", "WI", "YU", "EU", "YI", "I", NULL };
-static char *jongsung[] = { "", "G", "GG", "GS", "N", "NJ", "NH", "D", "L", "LG", "LM", "LB", "LS", "LT", "LP", "LH", "M", "B", "BS", "S", "SS", "NG", "J", "C", "K", "T", "P", "H", NULL };
-
 void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
     GRect old, r;
-    char buffer[250], *pt;
-    unichar_t ubuffer[250];
     Color bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap));
+    Color fg = fvglyphinfocol;
     SplineChar *sc, dummy;
     SplineFont *sf = fv->b.sf;
     EncMap *map = fv->b.map;
-    int gid;
-    int uni;
-    Color fg = fvglyphinfocol;
-    int ulen, tlen;
+    int gid, uni, localenc;
+    GString *output = g_string_new( "" );
+    gchar *uniname = NULL;
 
     if ( event->u.expose.rect.y+event->u.expose.rect.height<=fv->mbh )
-return;
+	return;
 
     GDrawSetFont(pixmap,fv->fontset[0]);
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
@@ -6354,25 +6349,23 @@ return;
 	fv->end_pos = fv->pressed_pos = -1;	/* Can happen after reencoding */
     if ( fv->end_pos == -1 ) {
 	GDrawPopClip(pixmap,&old);
-return;
+	return;
     }
 
+    localenc = fv->end_pos;
     if ( map->remap!=NULL ) {
-	int localenc = fv->end_pos;
 	struct remap *remap = map->remap;
 	while ( remap->infont!=-1 ) {
 	    if ( localenc>=remap->infont && localenc<=remap->infont+(remap->lastenc-remap->firstenc) ) {
 		localenc += remap->firstenc-remap->infont;
-	break;
+		break;
 	    }
 	    ++remap;
 	}
-	sprintf( buffer, "%-5d (0x%04x) ", localenc, localenc );
-    } else if ( map->enc->only_1byte ||
-	    (map->enc->has_1byte && fv->end_pos<256))
-	sprintf( buffer, "%-3d (0x%02x) ", fv->end_pos, fv->end_pos );
-    else
-	sprintf( buffer, "%-5d (0x%04x) ", fv->end_pos, fv->end_pos );
+    }
+
+    g_string_printf( output, "%d (0x%x) ", localenc, localenc );
+
     sc = (gid=fv->b.map->map[fv->end_pos])!=-1 ? sf->glyphs[gid] : NULL;
     if ( fv->b.cidmaster==NULL || fv->b.normal==NULL || sc==NULL )
 	SCBuildDummy(&dummy,sf,fv->b.map,fv->end_pos);
@@ -6380,48 +6373,42 @@ return;
 	dummy = *sc;
     if ( sc==NULL ) sc = &dummy;
     uni = dummy.unicodeenc!=-1 ? dummy.unicodeenc : sc->unicodeenc;
-    if ( uni!=-1 )
-	sprintf( buffer+strlen(buffer), "U+%04X", uni );
-    else
-	sprintf( buffer+strlen(buffer), "U+????" );
-    sprintf( buffer+strlen(buffer), "  %.*s", (int) (sizeof(buffer)-strlen(buffer)-1),
-	    sc->name );
 
-    strcat(buffer,"  ");
-    utf82u_strcpy(ubuffer,buffer);
-    ulen = u_strlen(ubuffer);
-
-    if ( uni==-1 && (pt=strchr(sc->name,'.'))!=NULL && pt-sc->name<30 ) {
-	strncpy(buffer,sc->name,pt-sc->name);
-	buffer[(pt-sc->name)] = '\0';
-	uni = UniFromName(buffer,fv->b.sf->uni_interp,map->enc);
-	if ( uni!=-1 ) {
-	    sprintf( buffer, "U+%04X ", uni );
-	    uc_strcat(ubuffer,buffer);
-	}
-	fg = 0x707070;
-    }
-
-    if (uni != -1) {
-	char *uniname;
-	if ( (uniname=unicode_name(uni))!=NULL ) {
-	    /* Show unicode "Name" as defined in NameList.txt */
-	    utf82u_strncpy(ubuffer+u_strlen(ubuffer),uniname,80);
-	    free(uniname);
-	} else if ( uni>=0xAC00 && uni<=0xD7A3 ) {
-            sprintf( buffer, "Hangul Syllable %s%s%s",
-		    chosung[(uni-0xAC00)/(21*28)],
-		    jungsung[(uni-0xAC00)/28%21],
-		    jongsung[(uni-0xAC00)%28] );
-            uc_strncat(ubuffer,buffer,80);
-	} else {
-            uc_strncat(ubuffer, UnicodeRange(uni),80);
+    /* last resort at guessing unicode code point from partial name */
+    if ( uni == -1 ) {
+	char *pt = strchr( sc->name, '.' );
+	if( pt != NULL ) {
+	    gchar *buf = g_strndup( (const gchar *) sc->name, pt - sc->name );
+	    uni = UniFromName( (char *) buf, fv->b.sf->uni_interp, map->enc );
+	    g_free( buf );
 	}
     }
 
-    tlen = GDrawDrawText(pixmap,10,fv->mbh+fv->lab_as,ubuffer,ulen,fvglyphinfocol);
-    GDrawDrawText(pixmap,10+tlen,fv->mbh+fv->lab_as,ubuffer+ulen,-1,fg);
-    GDrawPopClip(pixmap,&old);
+    if ( uni != -1 )
+	g_string_append_printf( output, "U+%04X", uni );
+    else {
+	output = g_string_append( output, "U+????" );
+    }
+
+    /* postscript name */
+    g_string_append_printf( output, " \"%s\" ", sc->name );
+
+    /* code point name or range name */
+    if( uni != -1 ) {
+	uniname = (gchar *) unicode_name( uni );
+	if ( uniname == NULL ) {
+	    uniname = g_strdup( UnicodeRange( uni ) );
+	}
+    }
+
+    if ( uniname != NULL ) {
+	output = g_string_append( output, uniname );
+	g_free( uniname );
+    }
+
+    GDrawDrawText8( pixmap, 10, fv->mbh+fv->lab_as, output->str, -1, fg );
+    g_string_free( output, TRUE );
+    GDrawPopClip( pixmap, &old );
 }
 
 static void FVShowInfo(FontView *fv) {
@@ -6681,13 +6668,6 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
                       uniname);
             utf82u_strcpy(space,cspace);
 	    free(uniname);
-        } else if ( upos>=0xAC00 && upos<=0xD7A3 ) {
-            snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
-                      localenc, localenc, upos, sc->name==NULL?"":sc->name,
-                      chosung[(upos-0xAC00)/(21*28)],
-                      jungsung[(upos-0xAC00)/28%21],
-                      jongsung[(upos-0xAC00)%28] );
-            utf82u_strcpy(space,cspace);
         } else {
             snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
                       UnicodeRange(upos));
