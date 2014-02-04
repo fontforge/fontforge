@@ -179,12 +179,6 @@ int endswith(const char *haystack,const char *needle);
 extern int u_endswith(const unichar_t *haystack,const unichar_t *needle);
 
 /**
- * Return a pointer to the last occurance of ch in 's' or null if it
- * doesn't appear. Very much like the strrchr() call.
- */
-extern char* str_rfind( char* s, char ch );
-
-/**
  * In the string 's' replace all occurances of 'orig' with 'replacement'.
  * If you set free_s to true then the string 's' will be freed by this function.
  * Normally you want to set free_s to 0 to avoid that. The case you will want to

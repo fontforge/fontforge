@@ -106,7 +106,7 @@ char* HostPortPack( char* hostname, int port )
 
 char* HostPortUnpack( char* packed, int* port, int port_default )
 {
-    char* colon = str_rfind( packed, ':' );
+    char* colon = strrchr( packed, ':' );
     if( !colon )
     {
 	*port = port_default;
