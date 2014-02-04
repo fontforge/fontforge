@@ -1002,11 +1002,6 @@ char* c_itostr( int v )
     return ret;
 }
 
-char* str_rfind( char* s, char ch )
-{
-    return strrchr( s, ch );
-}
-
 char* str_replace_all( char* s, char* orig, char* replacement, int free_s )
 {
     char* p = strstr( s, orig );
