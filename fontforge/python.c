@@ -10372,11 +10372,7 @@ static PyObject *fontiter_iternextkey(fontiterobject *di) {
     if ( di->sv!=NULL ) {
 	SplineChar *sc = SDFindNext(di->sv);
 	if ( sc!=NULL ) {
-#ifdef _HAS_LONGLONG
 	    const char *dictfmt = "{sKsKsK}";
-#else
-	    const char *dictfmt = "{sksksk}";
-#endif
 	    PyObject *glyph, *tempdict;
 	    PyObject *matched;
 	    glyph = PySC_From_SC_I( sc );

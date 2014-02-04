@@ -4,6 +4,7 @@
 # Copyright (C) 2000-2012 by George Williams
 # Copyright (C) 2012 by Barry Schwartz
 # Copyright (C) 2013 by Ben Martin
+# Copyright (C) 2014 by Reuben Thomas <rrt@sc3d.org>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -93,7 +94,7 @@ AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
 #--------------------------------------------------------------------------
-# automake 1.12 requires AM_PROG_AR but automake 1.11 doesn't recognize it.
+# automake 1.12 requires AM_PROG_AR but automake < 1.11.2 doesn't recognize it.
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
 #--------------------------------------------------------------------------
@@ -375,10 +376,10 @@ FONTFORGE_CONFIG_FREETYPE_DEBUGGER
 #
 # Checks for header files.
 
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h ieeefp.h inttypes.h])
-AC_CHECK_HEADERS([langinfo.h libintl.h limits.h locale.h])
-AC_CHECK_HEADERS([memory.h netdb.h netinet/in.h pthread.h stddef.h stdint.h stdlib.h])
-AC_CHECK_HEADERS([string.h strings.h sys/ioctl.h sys/socket.h sys/time.h unistd.h wchar.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h ieeefp.h])
+AC_CHECK_HEADERS([langinfo.h libintl.h])
+AC_CHECK_HEADERS([memory.h netdb.h netinet/in.h pthread.h])
+AC_CHECK_HEADERS([strings.h sys/ioctl.h sys/socket.h sys/time.h unistd.h])
 if test x"${i_do_want_iconv}" = xyes; then
    AC_CHECK_HEADERS([iconv.h])
 fi
@@ -388,20 +389,7 @@ fi
 # Checks for typedefs, structures, and compiler characteristics.
 
 AC_C_BIGENDIAN
-AC_TYPE_INT16_T
-AC_TYPE_INT32_T
-AC_TYPE_INT8_T
 AC_TYPE_PID_T
-AC_TYPE_SIZE_T
-AC_TYPE_UINT16_T
-AC_TYPE_UINT32_T
-AC_TYPE_UINT8_T
-
-AC_TYPE_LONG_LONG_INT
-if test x"${ac_cv_type_long_long_int}" = xyes; then
-   AC_DEFINE([_HAS_LONGLONG],1,[Define if using 'long long int'.])
-fi
-
 AX_PTHREAD
 
 #--------------------------------------------------------------------------
@@ -470,15 +458,14 @@ if test x"${ac_cv_func_mmap_fixed_mapped}" != xyes; then
 fi
 AC_FUNC_STRCOLL
 AC_FUNC_STRTOD
-AC_CHECK_FUNCS([alarm atexit dup2 endpwent floor])
+AC_CHECK_FUNCS([alarm atexit dup2 endpwent])
 AC_CHECK_FUNCS([getcwd gethostbyname gettimeofday])
-AC_CHECK_FUNCS([localeconv memmove memset mkdir munmap])
-AC_CHECK_FUNCS([nl_langinfo pow putenv rint rmdir])
-AC_CHECK_FUNCS([select setenv setlocale snprintf socket sqrt])
-AC_CHECK_FUNCS([strcasecmp strchr strdup strerror])
-AC_CHECK_FUNCS([strncasecmp strpbrk strrchr strstr])
-AC_CHECK_FUNCS([strtol strtoul tzset uname])
-AC_CHECK_FUNC([snprintf],[:],[AC_DEFINE([_NO_SNPRINTF],1,[Define if not using snprintf.])])
+AC_CHECK_FUNCS([mkdir munmap])
+AC_CHECK_FUNCS([nl_langinfo putenv rmdir])
+AC_CHECK_FUNCS([select setenv socket])
+AC_CHECK_FUNCS([strcasecmp strdup])
+AC_CHECK_FUNCS([strncasecmp])
+AC_CHECK_FUNCS([tzset uname])
 AC_CHECK_FUNC([tzset],[:],[AC_DEFINE([_NO_TZSET],1,[Define if not using tzset.])])
 
 #--------------------------------------------------------------------------

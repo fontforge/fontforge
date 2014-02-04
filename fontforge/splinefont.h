@@ -1863,13 +1863,8 @@ typedef struct splinefont {
     int mark_set_cnt;
     char **mark_sets;			/* glyph name list */
     char **mark_set_names;		/* used within ff, utf8 (the name we've given to this class of marks) */
-#ifdef _HAS_LONGLONG
     long long creationtime;		/* seconds since 1970 */
     long long modificationtime;
-#else
-    long creationtime;
-    long modificationtime;
-#endif
     short os2_version;			/* 0 means default rather than the real version 0 */
     short compression;			/* If we opened a compressed sfd file, then save it out compressed too */
     short gasp_version;			/* 0/1 currently */

@@ -2715,7 +2715,6 @@ return( true );
 return( false );
 }
 
-#ifdef _HAS_LONGLONG
 void cvt_unix_to_1904( long long time, int32 result[2]) {
     uint32 date1970[4], tm[4];
     uint32 year[2];
@@ -2725,17 +2724,6 @@ void cvt_unix_to_1904( long long time, int32 result[2]) {
     tm[1] = (time>>16)&0xffff;
     tm[2] = (time>>32)&0xffff;
     tm[3] = (time>>48)&0xffff;
-#else
-void cvt_unix_to_1904( long time, int32 result[2]) {
-    int32 date1970[4], tm[4];
-    uint32 year[2];
-    int i;
-
-    tm[0] =  time     &0xffff;
-    tm[1] = (time>>16)&0xffff;
-    tm[2] = 0;
-    tm[3] = 0;
-#endif
     memset(date1970,0,sizeof(date1970));
     year[0] = (60*60*24*365L)&0xffff;
     year[1] = (60*60*24*365L)>>16;

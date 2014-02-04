@@ -2242,13 +2242,8 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
     fprintf(sfd, "OS2Version: %d\n", sf->os2_version );
     fprintf(sfd, "OS2_WeightWidthSlopeOnly: %d\n", sf->weight_width_slope_only );
     fprintf(sfd, "OS2_UseTypoMetrics: %d\n", sf->use_typo_metrics );
-#ifdef _HAS_LONGLONG
     fprintf(sfd, "CreationTime: %lld\n", sf->creationtime );
     fprintf(sfd, "ModificationTime: %lld\n", sf->modificationtime );
-#else
-    fprintf(sfd, "CreationTime: %ld\n", sf->creationtime );
-    fprintf(sfd, "ModificationTime: %ld\n", sf->modificationtime );
-#endif
     if ( sf->pfminfo.pfmset ) {
 	fprintf(sfd, "PfmFamily: %d\n", sf->pfminfo.pfmfamily );
 	fprintf(sfd, "TTFWeight: %d\n", sf->pfminfo.weight );
@@ -3259,11 +3254,7 @@ static int getint(FILE *sfd, int *val) {
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
 
-#ifdef _HAS_LONGLONG
 static int getlonglong(FILE *sfd, long long *val) {
-#else
-static int getlonglong(FILE *sfd, long *val) {
-#endif
     char tokbuf[100]; int ch;
     char *pt=tokbuf, *end = tokbuf+100-2;
 
@@ -3278,11 +3269,7 @@ static int getlonglong(FILE *sfd, long *val) {
     }
     *pt='\0';
     ungetc(ch,sfd);
-#ifdef _HAS_LONGLONG
     *val = strtoll(tokbuf,NULL,10);
-#else
-    *val = strtol(tokbuf,NULL,10);
-#endif
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
 
