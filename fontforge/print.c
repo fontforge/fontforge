@@ -32,6 +32,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <ustring.h>
+#include <ffglib.h>
 #include "utype.h"
 #include <sys/types.h>
 #if !defined(__MINGW32__)
@@ -2739,7 +2740,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 		for ( j=0; cur[j]!=NULL; ++j ) {
 		    if ( ret )
 			utf82u_strcpy(ret+len,cur[j]);
-		    len += utf8_strlen(cur[j]);
+		    len += g_utf8_strlen( cur[j], -1 );
 		    if ( ret )
 			ret[len] = '\n';
 		    ++len;
@@ -2751,42 +2752,6 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 		    (langsyscallback)(tf,len,sample[i].otf_script,sample[i].lang);
 	    }
 	}
-
-#if 0
-	/* If no matches then put in "the quick brown...", in russian too if the encoding suggests it... */
-	if ( !ScriptInList(CHR('l','a','t','n'),scriptsdone,scnt) &&
-		ScriptInList(CHR('l','a','t','n'),scriptsthere,therecnt)) {
-	    for ( j=0; _simple[j]!=NULL; ++j ) {
-		if ( ret )
-		    utf82u_strcpy(ret+len,_simple[j]);
-		len += utf8_strlen(_simple[j]);
-		if ( ret )
-		    ret[len] = '\n';
-		++len;
-		if ( ret )
-		    ret[len] = '\n';
-		++len;
-		if ( ret && langsyscallback!=NULL )
-		    (langsyscallback)(tf,len,CHR('l','a','t','n'),CHR('E','N','G',' '));
-	    }
-	}
-	if ( !ScriptInList(CHR('c','y','r','l'),scriptsdone,scnt) &&
-		ScriptInList(CHR('c','y','r','l'),scriptsthere,therecnt)) {
-	    for ( j=0; _simplecyrill[j]!=NULL; ++j ) {
-		if ( ret )
-		    utf82u_strcpy(ret+len,_simplecyrill[j]);
-		len += utf8_strlen(_simplecyrill[j]);
-		if ( ret )
-		    ret[len] = '\n';
-		++len;
-		if ( ret )
-		    ret[len] = '\n';
-		++len;
-		if ( ret && langsyscallback!=NULL )
-		    (langsyscallback)(tf,len,CHR('c','y','r','l'),CHR('R','U','S',' '));
-	    }
-	}
-#endif
 
 	rcnt = 0;
 	for ( s=0; s<therecnt; ++s ) if ( !ScriptInList(scriptsthere[s],scriptsdone,scnt)) {
@@ -2806,7 +2771,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 		if ( *pt=='\0' )
 		    *randoms[rcnt] = '\0';
 		else {
-		    len += utf8_strlen( randoms[rcnt])+2;
+		    len += g_utf8_strlen( randoms[rcnt], -1 )+2;
 		    foundsomething = true;
 		}
 	    }
@@ -2836,7 +2801,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 		    if ( langsyscallback!=NULL )
 			(langsyscallback)(tf,len,DEFAULT_SCRIPT,DEFAULT_LANG);
 		} else
-		    len += utf8_strlen( buffer )+1;
+		    len += g_utf8_strlen( buffer, -1 )+1;
 	    }
 	}
 

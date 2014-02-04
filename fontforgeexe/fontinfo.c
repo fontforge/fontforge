@@ -3731,7 +3731,6 @@ static void StoreTTFNames(struct gfi_data *d) {
     GGadget *edit = GWidgetGetControl(d->gw,CID_TNames);
     int rows;
     struct matrix_data *strings = GMatrixEditGet(edit, &rows);
-    int len=0;
 
     TTFLangNamesFree(sf->names); sf->names = NULL;
 
@@ -3744,18 +3743,7 @@ static void StoreTTFNames(struct gfi_data *d) {
 	    sf->names = tln;
 	}
 	tln->names[strings[3*i+1].u.md_ival] = copy(strings[3*i+2].u.md_str );
-	if ( strings[3*i+2].u.md_str!=NULL )
-	    len += 2*utf8_strlen(strings[3*i+2].u.md_str);
     }
-#if 0
-    /* Windows has decided that this was an error */
-    if ( len>=5*1024 )
-	ff_post_notice(_("Name table too big for windows"),
-		    _("Windows has decided that fonts with 'name' tables\n"
-		    "bigger than 5K are insecure and will refuse to load\n"
-		    "them. Don't ask me why they believe this.\n"
-		    "This font will have a 'name' table bigger than that."));
-#endif
 
     TTF_PSDupsDefault(sf);
 }
