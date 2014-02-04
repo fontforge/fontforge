@@ -941,7 +941,7 @@ char *GFileGetHomeDocumentsDir(void)
     HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents );
     if (result != S_OK)
     {
-    	fprintf(stderr,"Error: Cant get My Documents path!'\n");
+    	fprintf(stderr,"Error: Can't get My Documents path!'\n");
         return ret;
     }
     int pos = strlen(my_documents);
@@ -951,9 +951,8 @@ char *GFileGetHomeDocumentsDir(void)
     return ret;
 #endif
 
-    // For Linux and OSX it was decided that this should be just the
+    // On GNU/Linux and OSX it was decided that this should be just the
     // home directory itself.
-//    ret = GFileAppendFile( GFileGetHomeDir(), "/Documents", 1 );
     ret = GFileGetHomeDir();
     return ret;
 }
