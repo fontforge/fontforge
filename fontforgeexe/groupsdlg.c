@@ -81,7 +81,7 @@ extern int _GScrollBar_Width;
 static Group *GroupFindLPos(Group *group,int lpos,int *depth) {
     int i;
 
-    forever {
+    for (;;) {
 	if ( group->lpos==lpos )
 return( group );
 	if ( !group->open )
@@ -113,7 +113,7 @@ static Group *GroupNext(Group *group,int *depth) {
 	++*depth;
 return( group->kids[0] );
     }
-    forever {
+    for (;;) {
 	int pos;
 	if ( group->parent==NULL )
 return( NULL );

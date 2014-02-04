@@ -1223,7 +1223,7 @@ return( SplineMake3(from,to));
 	nocnt = 0;
 	curdiff = SigmaDeltas(spline,mid,cnt,&b,&db);
 	totcnt = 0;
-	forever {
+	for (;;) {
 	    bigreal fadiff, fsdiff;
 	    bigreal tadiff, tsdiff;
 
@@ -3540,7 +3540,7 @@ Spline *SplineAddExtrema(Spline *s,int always,real lenbound, real offsetbound,
     memset(rmfrom,0,sizeof(rmfrom));
     memset(rmto,0,sizeof(rmto));
 
-    forever {
+    for (;;) {
 	if ( s->knownlinear )
 return(s);
 	p = 0;

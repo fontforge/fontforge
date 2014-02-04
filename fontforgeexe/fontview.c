@@ -4941,7 +4941,7 @@ return;				/* Cancelled */
 return;
     }
     pt = buffer;
-    forever {
+    for (;;) {
 	ch = getc(file);
 	if ( ch!=EOF && !isspace(ch)) {
 	    if ( pt<buffer+sizeof(buffer)-1 )

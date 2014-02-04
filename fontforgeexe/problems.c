@@ -2002,7 +2002,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     }
 
     if ( p->missinganchor && !p->finish ) {
-	forever {
+	for (;;) {
 	    p->missinganchor_class = SCValidateAnchors(sc);
 	    if ( p->missinganchor_class == NULL )
 	break;

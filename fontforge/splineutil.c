@@ -3449,7 +3449,7 @@ return( _CubicSolve(&sp,0,ts+1)+1);
 	    ts[zcnt++] = topt;
     continue;
 	}
-	forever {
+	for (;;) {
 	    t = (topt+bottomt)/2;
 	    if ( t==topt || t==bottomt ) {
 		ts[zcnt++] = t;
@@ -3593,7 +3593,7 @@ return(tmax);
     if (( low<0 && high>0 ) ||
 	    ( low>0 && high<0 )) {
 
-	forever {
+	for (;;) {
 	    t = (tmax+tmin)/2;
 	    if ( t==tmax || t==tmin )
 return( t );
@@ -4202,7 +4202,7 @@ static int ICBinarySearch(int cnt,BasePoint *foundpos,extended *foundt1,extended
 		    s1->splines[other].c)*t1low+s1->splines[other].d;
     o2o = ((s2->splines[other].a*t2low+s2->splines[other].b)*t2low+
 		    s2->splines[other].c)*t2low+s2->splines[other].d;
-    forever {
+    for (;;) {
 	t1 = (t1low+t1high)/2;
 	m = ((s1->splines[major].a*t1+s1->splines[major].b)*t1+
 			s1->splines[major].c)*t1+s1->splines[major].d;
@@ -4270,7 +4270,7 @@ return( 0 );
 		    s2->splines[other].c)*t2+s2->splines[other].d;
     if ( o1o==o2o )
 	cnt = ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2,maxcnt);
-    forever {
+    for (;;) {
 	if ( cnt>=maxcnt )
     break;
 	t1 += t1diff;
@@ -6519,7 +6519,7 @@ static int _SplineCharRoundToCluster(SplineChar *sc,SplinePoint **ptspace,
     for ( i=0; i<ptcnt; ++i )
 	countcluster(ptspace,cspace,ptcnt,is_y,i,within,max);
 
-    forever {
+    for (;;) {
 	j=0; best = cspace[0].cnt;
 	for ( i=1; i<ptcnt; ++i ) {
 	    if ( cspace[i].cnt>best ) {
@@ -7135,7 +7135,7 @@ static bigreal FindZero5(bigreal w[7],bigreal tlow, bigreal thigh) {
     test = ((((w[5]*t+w[4])*t+w[3])*t+w[2])*t+w[1])*t + w[0];
     bot_negative = test<0;
 
-    forever {
+    for (;;) {
 	t = (thigh+tlow)/2;
 	if ( thigh==t || tlow==t )
 return( t );		/* close as we can get */
@@ -7167,7 +7167,7 @@ static bigreal FindZero3(bigreal w[7],bigreal tlow, bigreal thigh) {
     test = ((w[3]*t+w[2])*t+w[1])*t + w[0];
     bot_negative = test<0;
 
-    forever {
+    for (;;) {
 	t = (thigh+tlow)/2;
 	if ( thigh==t || tlow==t )
 return( t );		/* close as we can get */

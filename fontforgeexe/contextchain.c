@@ -322,7 +322,7 @@ static void parseseqlookups(SplineFont *sf, const char *solooks, struct fpst_rul
     r->lookups = gcalloc(cnt,sizeof(struct seqlookup));
     cnt = 0;
     pt = solooks;
-    forever {
+    for (;;) {
 	char *end;
 	r->lookups[cnt].seq = strtol(pt,&end,10);
 	for ( pt = end+1; isspace( *pt ); ++pt );

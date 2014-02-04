@@ -306,7 +306,7 @@ static char *pdf_getdictvalue(struct pdfcontext *pc) {
 
     pdf_skipwhitespace(pc);
     ch = getc(pdf);
-    forever {
+    for (;;) {
 	if ( pt>=end ) {
 	    char *temp = grealloc(pc->tokbuf,(pc->tblen+=300));
 	    pt = temp + (pt-pc->tokbuf);
@@ -386,7 +386,7 @@ static int pdf_readdict(struct pdfcontext *pc) {
 return( false );
     getc(pdf);		/* Eat the second '<' */
 
-    forever {
+    for (;;) {
 	key = copy(pdf_getname(pc));
 	if ( key==NULL ) {
 	    if ( pc->compressed!=NULL ) {	/* We've read the whole object*/
@@ -727,7 +727,7 @@ static void pdf_85filter(FILE *to,FILE *from) {
     int cnt;
 
     rewind(from);
-    forever {
+    for (;;) {
 	while ( isspace(ch1=getc(from)));
 	if ( ch1==EOF || ch1=='~' )
     break;

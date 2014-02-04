@@ -409,7 +409,7 @@ static void Wacom_MovePointer(GXDisplay *gdisp) {
 
 	cur = gdisp->root;
 	x = ws->screenx; y = ws->screeny;
-	forever {
+	for (;;) {
 	    XQueryPointer(gdisp->display,cur,&root,&child,&junk,&junk,&x,&y,&state);
 	    if ( child==None )
 	break;

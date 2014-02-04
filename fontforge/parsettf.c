@@ -2789,7 +2789,7 @@ static void skipcfft2thing(FILE *ttf) {
 
 /* GT: DICT is a magic term inside CFF fonts, as is INDEX, and I guess CFF and type2 */
     LogError( _("FontForge does not support type2 programs embedded in CFF DICT INDICES.\n") );
-    forever {
+    for (;;) {
 	ch = getc(ttf);
 	if ( ch>=247 && ch<=254 )
 	    getc(ttf);		/* Two byte number */

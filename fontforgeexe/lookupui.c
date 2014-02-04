@@ -5017,7 +5017,7 @@ int EditSubtable(struct lookup_subtable *sub,int isgpos,SplineFont *sf,
 	    sprintf( def, "%s-%d", sub->lookup->lookup_name, name_search++ );
 	} while ( SubtableNameInUse(def,sf,sub));
     }
-    forever {
+    for (;;) {
 	def = gwwv_ask_string(_("Please name this subtable"),def,_("Please name this subtable"));
 	free(freeme);
 	if ( def==NULL )

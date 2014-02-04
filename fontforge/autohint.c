@@ -2609,14 +2609,14 @@ static void SplResolveSplitHints(SplineChar *scs[MmMax], SplineSet *spl[MmMax],
     StemInfo *h[MmMax], *v[MmMax];
     int i, anymore;
 
-    forever {
+    for (;;) {
 	for ( i=0; i<instance_count; ++i ) {
 	    if ( spl[i]!=NULL )
 		to[i] = spl[i]->first;
 	    else
 		to[i] = NULL;
 	}
-	forever {
+	for (;;) {
 	    for ( i=0; i<instance_count; ++i ) {
 		h[i] = OnHHint(to[i],scs[i]->hstem);
 		v[i] = OnVHint(to[i],scs[i]->vstem);
@@ -2719,14 +2719,14 @@ static int SplFigureHintMasks(SplineChar *scs[MmMax], SplineSet *spl[MmMax],
 	inited = true;
     }
 
-    forever {
+    for (;;) {
 	for ( i=0; i<instance_count; ++i ) {
 	    if ( spl[i]!=NULL )
 		to[i] = spl[i]->first;
 	    else
 		to[i] = NULL;
 	}
-	forever {
+	for (;;) {
 	    TestHintMask(scs,to,instance_count,mask);
 	    anymore = false;
 	    for ( i=0; i<instance_count; ++i ) if ( to[i]!=NULL ) {
@@ -2796,7 +2796,7 @@ return;						/* In an MM font we may still need to resolve things like different
 	ref[i] = scs[i]->layers[layer].refs;
     }
     inited = SplFigureHintMasks(scs,spl,instance_count,mask,false);
-    forever {
+    for (;;) {
 	for ( i=0; i<instance_count; ++i ) {
 	    if ( ref[i]!=NULL )
 		spl[i] = ref[i]->layers[0].splines;

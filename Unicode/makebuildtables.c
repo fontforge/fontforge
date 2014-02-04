@@ -29,9 +29,6 @@
 #include <string.h>
 #include <utype.h>
 
-/* figure out how to do divide, multiply, 1/4, 3/4 */
-#define forever for (;;)
-
 #define ACUTE		0x1
 #define GRAVE		0x2
 #define DIAERESIS	0x4
@@ -492,7 +489,7 @@ void ParseUnicodeFile(FILE *in) {
     continue;
 	pt += 6;
 	mask = 0;
-	forever {
+	for (;;) {
 	    for ( i=0; names2[i].name!=NULL; ++i ) {
 		if ( strncmp(pt,names2[i].name,strlen(names2[i].name))==0 )
 	    break;

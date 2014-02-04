@@ -73,10 +73,10 @@ return( true );
 return( false );
     }
 	    
-    forever {
+    for (;;) {
 	for ( i=0; i<=mm->instance_count; ++i )
 	    sp[i] = ss[i]->first;
-	forever {
+	for (;;) {
 	    allavg = alllines = true;
 	    for ( i=0; i<=mm->instance_count; ++i ) {
 		if ( !RealNear(sp[i]->me.x,(sp[i]->nextcp.x+sp[i]->prevcp.x)/2) ||

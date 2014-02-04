@@ -472,7 +472,7 @@ return;
 
     fprintf( plist, "\t<key>postscript%s</key>\n", key );
     fprintf( plist, "\t<array>\n" );
-    forever {
+    for (;;) {
 	fprintf( plist, "\t\t<integer>" );
 	skipping=0;
 	while ( *value!=']' && *value!='\0' && *value!=' ' ) {
@@ -856,7 +856,7 @@ static char *get_thingy(FILE *file,char *buffer,char *tag) {
     int ch;
     char *pt;
 
-    forever {
+    for (;;) {
 	while ( (ch=getc(file))!='<' && ch!=EOF );
 	if ( ch==EOF )
 return( NULL );

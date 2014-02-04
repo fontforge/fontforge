@@ -1142,7 +1142,7 @@ return;
     offx = pfed_get_coord(ttf,COM_MOD(verb));
     offy = pfed_get_coord(ttf,COM_MOD(verb));
     ss->first = current = SplinePointCreate(offx,offy);
-    forever {
+    for (;;) {
 	verb = getc(ttf);
 	v = COM_VERB(verb); m = COM_MOD(verb);
 	if ( m==3 ) {

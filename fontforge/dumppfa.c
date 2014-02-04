@@ -1380,7 +1380,7 @@ static double FindMaxDiffOfBlues(char *pt, double max_diff) {
     double p1, p2;
 
     while ( *pt==' ' || *pt=='[' ) ++pt;
-    forever {
+    for (;;) {
 	p1 = strtod(pt,&end);
 	if ( end==pt )
     break;

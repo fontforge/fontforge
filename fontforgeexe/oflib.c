@@ -300,7 +300,7 @@ return( NULL );
 	if ( (end = strstr(start,"</td>"))==NULL )
     break;
 	taglist = NULL;
-	forever {
+	for (;;) {
 	    test = skip_to_plain_text(start);
 	    if ( test==NULL || test>end )
 	break;
@@ -337,7 +337,7 @@ return( NULL );
 	if ( (end = strstr(start,"</div>"))==NULL )
     break;
 	duhead = dulast = NULL;
-	forever {
+	for (;;) {
 	    if ( (test = strstr(start,"<a href=\""))==NULL )
 	break;
 	    if ( test>end )
@@ -578,7 +578,7 @@ return;
 return;
     }
     cur = NULL;
-    forever {
+    for (;;) {
 	if ( ofl_gettoken(file,&tok)!= tok_name )
     break;
 	if ( strcmp(tok.buf,"Count:")==0 ) {
@@ -1086,7 +1086,7 @@ return(NULL);
     }
     signal(SIGUSR1,cancel_handler);
 
-    forever {
+    for (;;) {
 	if ( d->nextfont==0 )
 	    d->amount_read = HttpGetBuf( OFL_FONT_URL, d->databuf, &d->datalen, &d->http_thread_can_do_stuff );
 	else {
@@ -1098,7 +1098,7 @@ return(NULL);
 	    signal(SIGUSR1,SIG_DFL);		/* Restore normal behavior */
 return(NULL);
 	}
-	forever {
+	for (;;) {
 	    pthread_mutex_unlock(&d->http_thread_done);
 	    sleep(1);
 	    /* Give the parent a chance to run. */

@@ -370,7 +370,7 @@ static struct contexttree *TreeNext(struct contexttree *cur) {
     if ( cur->branch_cnt!=0 )
 return( cur->branches[0].branch );
     else {
-	forever {
+	for (;;) {
 	    p = cur->parent;
 	    if ( p==NULL )
 return( NULL );

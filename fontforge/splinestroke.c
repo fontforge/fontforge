@@ -693,7 +693,7 @@ return;		/* Essentially colinear */ /* Won't be perfect because control points l
 	    vector.y = pp->left.y -center.y;
 	}
 	rot = incr_angle; was_neg = false;
-	forever {
+	for (;;) {
 	    if ( c->cur >= c->max ) {
 		int extras = 400;
 		int off = pp-c->all;
@@ -2008,7 +2008,7 @@ return;
     nnsp = nsp->next->to;
     memset(&ndir,0,sizeof(ndir));
     removed = false;
-    forever {
+    for (;;) {
 	if ( sp==nsp )
     break;
 	if ( nsp->next->knownlinear ) {

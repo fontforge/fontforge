@@ -217,7 +217,7 @@ static int ContourMatch(const SplineSet *ss1, const SplineSet *ss2, real err) {
 	if ( !NearSplineSet(&s->from->me,ss2,&last_found,&last_t,err))
 return( false );
 	here = s->from->me;
-	forever {
+	for (;;) {
 	    adx = dx = (3*s->splines[0].a*t + 2*s->splines[0].b)*t + s->splines[0].c;
 	    ady = dy = (3*s->splines[1].a*t + 2*s->splines[1].b)*t + s->splines[1].c;
 	    if ( adx<0 ) adx = -adx;
@@ -277,7 +277,7 @@ static int AllPointsMatch(const SplinePoint *start1, const SplinePoint *start2,
     const SplinePoint *sp1=start1, *sp2=start2;
     SplinePoint *hmfail=NULL;
 
-    forever {
+    for (;;) {
 	if ( (dx = sp1->me.x-sp2->me.x)<=err && dx>=-err &&
 		(dy = sp1->me.y-sp2->me.y)<=err && dy>=-err &&
 		(dx = sp1->nextcp.x-sp2->nextcp.x)<=err && dx>=-err &&

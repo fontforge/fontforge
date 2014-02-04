@@ -288,7 +288,7 @@ static void TraceMassage(TraceData *head, TraceData *end) {
 
     for ( pt=head ; pt!=NULL ; pt=npt ) {
 	npt = TraceNextPoint(pt);
-	forever {
+	for (;;) {
 	    nnpt = TraceNextPoint(npt);
 	    if ( nnpt!=NULL &&
 		    ((pt->x==npt->x && npt->x==nnpt->x) ||
@@ -316,7 +316,7 @@ static void TraceMassage(TraceData *head, TraceData *end) {
     }
     for ( pt=head ; pt!=NULL ; pt=npt ) {
 	npt = pt;
-	forever {
+	for (;;) {
 	    npt = TraceNextPoint(pt);
 	    if ( npt == NULL || npt->constrained_corner )
 	break;
@@ -346,7 +346,7 @@ static void TraceMassage(TraceData *head, TraceData *end) {
 		    if ( lencur<16*lennext || lencur<16*lenprev ) {
 			/* Probably better done as one point */
 			int which = (pt->num+npt->num)/2;
-			forever {
+			for (;;) {
 			    pt->online = pt->use_as_pt = false;
 			    if ( pt->num==which )
 				pt->use_as_pt = true;
@@ -366,7 +366,7 @@ static void TraceMassage(TraceData *head, TraceData *end) {
 		else if ( pangle>0 && nangle<0 && pangle-nangle>=3.1415926 )
 		    nangle += 2*3.1415926535897932;
 		if ( nangle-pangle<1 && nangle-pangle>-1 ) {
-		    forever {
+		    for (;;) {
 			pt->online = pt->use_as_pt = false;
 			if ( pt==nnpt )
 		    break;

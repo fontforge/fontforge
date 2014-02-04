@@ -542,7 +542,7 @@ return;
 return;
 	}
     }
-    forever {
+    for (;;) {
 	if ( where->parent->parent==NULL ) {
 	    where->parent = NULL;
 	    where->offset = -1;

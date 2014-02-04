@@ -425,7 +425,7 @@ return( NULL );
 	if (( *pt!='\n' && *pt!='\r') || (pt>buffer && pt[-1]=='\\') ||
 		(pt>buffer+1 && pt[-2]=='\\' && isspace(pt[-1])) ) {
 	    bpt = copy("");
-	    forever {
+	    for (;;) {
 		loop = false;
 		if (( *pt!='\n' && *pt!='\r') || (pt>buffer && pt[-1]=='\\') ||
 			(pt>buffer+1 && pt[-2]=='\\' && isspace(pt[-1])) )
@@ -578,7 +578,7 @@ return( 0 );
     /*  as unencoded chars */
     /* We could just replace with splines, I suppose but that would make */
     /*  korean fonts huge */
-    forever {
+    for (;;) {
 	extras = 0;
 	for ( i=0; i<temp.glyphcnt; ++i ) if ( temp.glyphs[i]!=NULL ) {
 	    for ( ref=temp.glyphs[i]->layers[ly_fore].refs; ref!=NULL; ref=ref->next )

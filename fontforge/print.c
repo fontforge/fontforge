@@ -111,7 +111,7 @@ static void pdf_finishpage(PI *pi) {
 static int pfb_getsectionlength(FILE *pfb,int sec_type,int skip_sec) {
     int len=0, sublen, ch;
 
-    forever {
+    for (;;) {
 	ch = getc(pfb);
 	if ( ch!=0x80 ) {
 	    ungetc(ch,pfb);

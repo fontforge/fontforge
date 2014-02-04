@@ -976,7 +976,7 @@ static SplineChar *AddAnchor(AnchorDlg *a, SplineFont *sf, AnchorClass *ac,
     int i;
 
     def = copy(".notdef");
-    forever {
+    for (;;) {
 	ret = gwwv_ask_string(_("Provide a glyph name"),def,_("Please identify a glyph by name, and FontForge will add an anchor to that glyph."));
 	free(def);
 	if ( ret==NULL )

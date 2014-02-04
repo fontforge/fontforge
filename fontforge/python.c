@@ -10177,7 +10177,7 @@ return( Py_BuildValue("d",strtod(value,NULL)) );
     if ( *value=='[' ) {
 	int cnt = 0;
 	pt = value+1;
-	forever {
+	for (;;) {
 	    strtod(pt,&end);
 	    if ( pt==end )
 	break;
@@ -10189,7 +10189,7 @@ return( Py_BuildValue("d",strtod(value,NULL)) );
 	    tuple = PyTuple_New(cnt);
 	    cnt = 0;
 	    pt = value+1;
-	    forever {
+	    for (;;) {
 		temp = strtod(pt,&end);
 		if ( pt==end )
 	    break;

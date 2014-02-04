@@ -888,7 +888,7 @@ static unichar_t *ugetstr(FILE *file,int format,unichar_t *buffer,int len) {
 		ungetc(ch,file);
 	}
     } else {
-	forever {
+	for (;;) {
 	    ch = getc(file);
 	    ch2 = getc(file);
 	    if ( format==1 )

@@ -1376,7 +1376,7 @@ static SplineChar *RC_MakeNewGlyph(FontViewBase *fv,SplineChar *base, int index,
     SplineChar *ret;
 
     namebuf = galloc(strlen(base->name)+20);
-    forever {
+    for (;;) {
 	sprintf(namebuf, "%s.ref%d", base->name, index++ );
 	if ( SFGetChar(sf,-1,namebuf)==NULL )
     break;

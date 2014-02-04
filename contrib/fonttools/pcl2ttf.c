@@ -38,7 +38,6 @@
 
 #define true	1
 #define false	0
-#define forever	for (;;)
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
 
 /* ************************************************************************** */
@@ -125,7 +124,7 @@ return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
 static int skip2thingamy(FILE *pcl,char *thingamy) {
     int ch;
 
-    forever {
+    for (;;) {
 	while ( (ch=getc(pcl))!=EOF && ch!=escape_char );
 	if ( ch==EOF )
 return( false );
@@ -374,7 +373,7 @@ return( false );
     for ( i=0 ; i<hdr->fd_size-72; ++i )
 	getc(pcl);
 
-    forever {
+    for (;;) {
 	seg_id = getshort(pcl);
 	seg_size = getshort(pcl);
 	if ( seg_id == (('C'<<8)|'P') ) {

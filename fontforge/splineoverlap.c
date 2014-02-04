@@ -2254,7 +2254,7 @@ static SplinePoint *MonoFollowForward(Intersection **curil, MList *ml,
     SplinePoint *mid;
     Monotonic *m = ml->m, *mstart;
 
-    forever {
+    for (;;) {
 	for ( mstart = m; m->s==mstart->s; m=m->next) {
 	    if ( !m->isneeded )
 		SOError( "Expected needed monotonic @(%g,%g) (%g,%g)->(%g,%g).\n", (*curil)->inter.x, (*curil)->inter.y,
@@ -2298,7 +2298,7 @@ static SplinePoint *MonoFollowBackward(Intersection **curil, MList *ml,
     SplinePoint *mid;
     Monotonic *m = ml->m, *mstart;
 
-    forever {
+    for (;;) {
 	for ( mstart=m; m->s==mstart->s; m=m->prev) {
 	    if ( !m->isneeded )
 		SOError( "Expected needed monotonic (back) @(%g,%g) (%g,%g)->(%g,%g).\n", (double) (*curil)->inter.x, (double) (*curil)->inter.y,
@@ -2348,7 +2348,7 @@ static SplineSet *JoinAContour(Intersection *startil,MList *ml) {
 
     ss->first = last = SplinePointCreate(startil->inter.x,startil->inter.y);
     curil = startil;
-    forever {
+    for (;;) {
 	if ( allexclude && !ml->m->exclude ) allexclude = false;
 	finalm = NULL;
 	if ( ml->m->start==curil ) {
@@ -2470,7 +2470,7 @@ static SplineSet *JoinAllNeeded(Intersection *ilist) {
 
     for ( il=ilist; il!=NULL; il=il->next ) {
 	/* Try to preserve direction */
-	forever {
+	for (;;) {
 	    for ( ml=il->monos; ml!=NULL && (!ml->m->isneeded || ml->m->end==il); ml=ml->next );
 	    if ( ml==NULL )
 		for ( ml=il->monos; ml!=NULL && !ml->m->isneeded; ml=ml->next );

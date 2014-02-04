@@ -695,7 +695,7 @@ return( 0 );
     else if ( !lig->subtable->lookup->store_in_afm )
 return( 0 );
     pt = lig->u.lig.components;
-    forever {
+    for (;;) {
 	end = strchr(pt,' ');
 	if ( end!=NULL ) *end='\0';
 	sc = SFGetChar(sf,-1,pt);
@@ -2537,7 +2537,7 @@ static void SVGFigureStyle(struct svg_state *st,char *name,
     char *pt;
     char namebuf[200], propbuf[400];
 
-    forever {
+    for (;;) {
 	while ( isspace(*name)) ++name;
 	if ( *name==':' ) {
 	    /* Missing prop name, skip the value */

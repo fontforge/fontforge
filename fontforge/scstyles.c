@@ -4131,7 +4131,7 @@ static double BlueSearch(char *bluestring, double value, double bestvalue) {
     if ( *bluestring=='[' ) ++bluestring;
     if ( (bestdiff = bestvalue-value)<0 ) bestdiff = -bestdiff;
 
-    forever {
+    for (;;) {
 	try = strtod(bluestring,&end);
 	if ( bluestring==end )
 return( bestvalue );

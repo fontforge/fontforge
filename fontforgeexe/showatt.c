@@ -2151,7 +2151,7 @@ return( lpos );
 }
 
 static struct node *NodeFindLPos(struct node *node,int lpos,int *depth) {
-    forever {
+    for (;;) {
 	if ( node->lpos==lpos )
 return( node );
 	if ( node[1].label!=NULL && node[1].lpos<=lpos )
@@ -2170,7 +2170,7 @@ static struct node *NodeNext(struct node *node,int *depth) {
 	++*depth;
 return( node->children );
     }
-    forever {
+    for (;;) {
 	if ( node[1].label )
 return( node+1 );
 	node = node->parent;
@@ -2908,7 +2908,7 @@ static void ReadKids(struct nested_file *nf,int desired_nest,struct node *parent
     int i=0, max=0, j, k;
 
     ReadNestedLine(nf);
-    forever {
+    for (;;) {
 	if ( nf->read_nest < desired_nest )
     break;
 	if ( i>=max-1 ) {

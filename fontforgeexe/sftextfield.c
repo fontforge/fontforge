@@ -121,7 +121,7 @@ static int PSTComponentCount(PST *pst) {
     int cnt=0;
     char *pt = pst->u.lig.components;
 
-    forever {
+    for (;;) {
 	while ( *pt==' ' ) ++pt;
 	if ( *pt=='\0' )
 return( cnt );

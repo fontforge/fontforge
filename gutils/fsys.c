@@ -175,7 +175,7 @@ return dir;
 }
 
 static void savestrcpy(char *dest,const char *src) {
-    forever {
+    for (;;) {
 	*dest = *src;
 	if ( *dest=='\0' )
     break;

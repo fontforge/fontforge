@@ -859,7 +859,7 @@ return(0);
     initmods();
 
     mask = 0;
-    forever {
+    for (;;) {
 	pt = strchr(sh,'+');
 	if ( pt==sh || *sh=='\0' )
 return( mask );

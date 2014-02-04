@@ -1662,7 +1662,7 @@ static Window _GXDrawGetPointerWindow(GWindow w) {
     int x, y; unsigned int state;
 
     parent = gw->display->groot->w;
-    forever {
+    for (;;) {
 	child = None;
 	if ( !XQueryPointer(display,parent,&wjunk,&child,&junk,&junk,&x,&y,&state))
     break;
@@ -2869,7 +2869,7 @@ static void GXDrawWaitForEvent(GXDisplay *gdisp) {
     int fd,ret;
     int idx = 0;
 
-    forever {
+    for (;;) {
 	gettimeofday(&tv,NULL);
 	GXDrawCheckPendingTimers(gdisp);
 
@@ -3814,7 +3814,7 @@ static int GXDrawWaitForNotifyEvent(GXDisplay *gdisp,XEvent *event, Window w) {
     gettimeofday(&giveup,NULL);
     giveup.tv_sec += gdisp->SelNotifyTimeout;
     
-    forever {
+    for (;;) {
 	gettimeofday(&tv,NULL);
 	GXDrawCheckPendingTimers(gdisp);
 #ifdef _WACOM_DRV_BROKEN

@@ -930,7 +930,7 @@ static char *getstring(char *start,FILE *in) {
     int parencnt=0, len=0;
     char buffer[512];
 
-    forever {
+    for (;;) {
 	while ( *start!='\0' && *start!='(' ) ++start;
 	if ( *start=='\0' ) {
 	    if ( myfgetsNoNulls(buffer,sizeof(buffer),in)==NULL )
@@ -941,7 +941,7 @@ return( copy(""));
     }
     ++start;
     ret = NULL; len = 1;
-    forever {
+    for (;;) {
 	for ( end = start; *end!='\0' && (*end!=')' || parencnt>0); ++end ) {
 	    if ( *end=='\\' && (end[1]=='(' || end[1]==')'))
 		++end;
@@ -1155,7 +1155,7 @@ static void AddValue(struct fontparse *fp, struct psdict *dict, char *line, char
 	ContinueValue(fp,dict,endtok);
 return;
     }
-    forever {
+    for (;;) {
 	while ( pt-1>endtok && isspace(pt[-1])) --pt;
 	if ( pt-8>endtok && strncmp(pt-8,"noaccess",8)==0 )
 	    pt -= 8;
@@ -1264,7 +1264,7 @@ static void findnumbers(struct fontparse *fp,struct pschars *chars,char *str) {
     int val;
     char *end;
 
-    forever {
+    for (;;) {
 	int index = chars->next;
 	char *namestrt;
 

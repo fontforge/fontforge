@@ -277,7 +277,7 @@ static struct resource *PSToResources(FILE *res,FILE *pfbfile) {
     resstarts = gcalloc(cnt+1,sizeof(struct resource));
 
     cnt = 0;
-    forever {
+    for (;;) {
 	if ( getc(pfbfile)!=0x80 ) {
 	    IError("We made a pfb file, but didn't get one. Hunh?" );
 return( NULL );
