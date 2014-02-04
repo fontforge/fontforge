@@ -509,12 +509,8 @@ static  OSErr install_apple_event_handlers(void) {
  /* some debugging code, for now */
  if ( getenv("HOME")!=NULL ) {
   char buffer[1024];
-#ifdef __VMS
-    sprintf( buffer, "%s/_FontForge-LogFile.txt", getenv("HOME"));
-#else
-    sprintf( buffer, "%s/.FontForge-LogFile.txt", getenv("HOME"));
-#endif
-    logfile = fopen("/tmp/LogFile.txt","w");
+  sprintf( buffer, "%s/.FontForge-LogFile.txt", getenv("HOME"));
+  logfile = fopen("/tmp/LogFile.txt","w");
  }
  if ( logfile==NULL )
   logfile = stderr;

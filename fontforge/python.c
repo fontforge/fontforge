@@ -15393,16 +15393,9 @@ static PyObject *PyFFFont_Save(PyFF_Font *self, PyObject *args) {
 	locfilename = utf82def_copy(filename);
 	free(filename);
 
-#ifdef VMS
-	pt = strrchr(locfilename,'_');
-	if ( pt!=NULL && strmatch(pt,"_sfdir")==0 )
-	    s2d = true;
-#else
 	pt = strrchr(locfilename,'.');
 	if ( pt!=NULL && strmatch(pt,".sfdir")==0 )
 	    s2d = true;
-#endif
-
 
 	int rc = SFDWriteBakExtended( locfilename,
 				      fv->sf,fv->map,fv->normal,s2d,

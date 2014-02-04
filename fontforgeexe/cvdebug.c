@@ -2270,11 +2270,7 @@ void CVDebugPointPopup(CharView *cv) {
     break;
     }
     if ( i!=-1 ) {
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	sprintf(cspace,
-#else
 	snprintf(cspace,sizeof(cspace),
-#endif
 		"Point %d %s-curve\nCur (em): %7.2f,%7.2f\nCur (px): %7.2f,%7.2f\nOrg (em): %7.2f,%7.2f",
 		i, r->tags[i]&FT_Curve_Tag_On?"On":"Off",
 		pts[i].x*dv->scalex, pts[i].y*dv->scaley,
@@ -2293,11 +2289,7 @@ void CVDebugPointPopup(CharView *cv) {
 	}
 	if ( i==-1 )
   goto no_point;
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	sprintf(cspace,
-#else
 	snprintf(cspace,sizeof(cspace),
-#endif
 		"Interpolated between %d %d\nCur (em): %7.2f,%7.2f\nCur (px): %7.2f,%7.2f\nOrg (em): %7.2f,%7.2f",
 		l,i,
 		xx*dv->scalex, yy*dv->scaley,
@@ -2307,11 +2299,7 @@ void CVDebugPointPopup(CharView *cv) {
   goto showit;
 
   no_point:
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-    sprintf(cspace,
-#else
     snprintf(cspace,sizeof(cspace),
-#endif
 		"%.2f, %.2f", (double) (cv->info.x/dv->scalex/64.0), (double) (cv->info.y/dv->scaley/64.0) );
 
   showit:
@@ -2324,11 +2312,7 @@ void CVDebugPointPopup(CharView *cv) {
 		val = 0;	/* Not in raster */
 	    else
 		val = cv->raster->bitmap[y*cv->raster->bytes_per_row+x];
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	    sprintf(cspace+strlen(cspace),
-#else
 	    snprintf(cspace+strlen(cspace),sizeof(cspace)-strlen(cspace),
-#endif
 		    "\nRaster grey=0x%02x (%.2f)", val, val/256.0 );
 	} else {
 	    if ( x<0 || x>=cv->raster->cols || y<0 || y>=cv->raster->rows )
@@ -2350,11 +2334,7 @@ void CVDebugPointPopup(CharView *cv) {
 		val = 0;
 	    else
 		val = cv->oldraster->bitmap[y*cv->oldraster->bytes_per_row+x];
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	    sprintf(cspace+strlen(cspace),
-#else
 	    snprintf(cspace+strlen(cspace),sizeof(cspace)-strlen(cspace),
-#endif
 		"\nOld Raster grey=0x%02x (%.2f)", val, val/256.0 );
 	} else {
 	    if ( x<0 || x>=cv->oldraster->cols || y<0 || y>=cv->oldraster->rows )

@@ -553,26 +553,11 @@ static int SaveAs_FormatChange(GGadget *g, GEvent *e) {
 	int *_s2d = GGadgetGetUserData(g);
 	int s2d = GGadgetIsChecked(g);
 	char *pt, *newname = galloc(strlen(oldname)+8);
-#ifdef VMS
-	char *pt2;
-
-	strcpy(newname,oldname);
-	pt = strrchr(newname,'.');
-	pt2 = strrchr(newname,'_');
-	if ( pt==NULL )
-	    pt = pt2;
-	else if ( pt2!=NULL && pt<pt2 )
-	    pt = pt2;
-	if ( pt==NULL )
-	    pt = newname+strlen(newname);
-	strcpy(pt,s2d ? "_sfdir" : ".sfd" );
-#else
 	strcpy(newname,oldname);
 	pt = strrchr(newname,'.');
 	if ( pt==NULL )
 	    pt = newname+strlen(newname);
 	strcpy(pt,s2d ? ".sfdir" : ".sfd" );
-#endif
 	GGadgetSetTitle8(fc,newname);
 	save_to_dir = *_s2d = s2d;
 	SavePrefs(true);
@@ -626,11 +611,7 @@ int _FVMenuSaveAs(FontView *fv) {
 	    strcat(temp,"Var");
 	else
 	    strcat(temp,"MM");
-#ifdef VMS
-	strcat(temp,save_to_dir ? "_sfdir" : ".sfd");
-#else
 	strcat(temp,save_to_dir ? ".sfdir" : ".sfd");
-#endif
 	s2d = save_to_dir;
     }
 

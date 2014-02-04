@@ -617,17 +617,6 @@ return( NULL );
 	    if ( item==head && item->next==NULL )
 		strcpy(buf,_("Please name this encoding"));
 	    else {
-# if defined( _NO_SNPRINTF ) || defined( __VMS )
-		if ( i<=3 )
-		    sprintf(buf,
-			    _("Please name the %s encoding in this file"),
-			    i==1 ? _("First") :
-			    i==2 ? _("Second") :
-				    _("Third") );
-		else
-		    sprintf(buf, _("Please name the %dth encoding in this file"),
-			    i );
-# else
 		if ( i<=3 )
 		    snprintf(buf,sizeof(buf),
 			    _("Please name the %s encoding in this file"),
@@ -636,7 +625,6 @@ return( NULL );
 		    snprintf(buf,sizeof(buf),
 			    _("Please name the %dth encoding in this file"),
 			    i );
-# endif
 	    }
 	    name = ff_ask_string(buf,NULL,buf);
 	    if ( name!=NULL ) {
@@ -758,23 +746,6 @@ int CID2NameUni(struct cidmap *map,int cid, char *buffer, int len) {
     int enc = -1;
     const char *temp;
 
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-    if ( map==NULL )
-	sprintf(buffer,"cid-%d", cid);
-    else if ( cid<map->namemax && map->name[cid]!=NULL ) {
-	strncpy(buffer,map->name[cid],len);
-	buffer[len-1] = '\0';
-    } else if ( cid==0 || (cid<map->namemax && map->unicode[cid]!=0 )) {
-	if ( map->unicode==NULL || map->namemax==0 )
-	    enc = 0;
-	else
-	    enc = map->unicode[cid];
-	temp = StdGlyphName(buffer,enc,ui_none,(NameList *) -1);
-	if ( temp!=buffer )
-	    strcpy(buffer,temp);
-    } else
-	sprintf(buffer,"%s.%d", map->ordering, cid);
-#else
     if ( map==NULL )
 	snprintf(buffer,len,"cid-%d", cid);
     else if ( cid<map->namemax && map->name[cid]!=NULL ) {
@@ -792,7 +763,6 @@ int CID2NameUni(struct cidmap *map,int cid, char *buffer, int len) {
 	    strcpy(buffer,temp);
     } else
 	snprintf(buffer,len,"%s.%d", map->ordering, cid);
-#endif
 return( enc );
 }
 
@@ -1038,11 +1008,7 @@ return( maybe );
 
     if ( file==NULL ) {
 	char *uret;
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	sprintf(buf,"%s-%s-*.cidmap", registry, ordering );
-#else
 	snprintf(buf,sizeof(buf),"%s-%s-*.cidmap", registry, ordering );
-#endif
 	if ( maybe==NULL && maybefile==NULL ) {
 	    buts3[0] = _("_Browse"); buts3[1] = _("_Give Up"); buts3[2] = NULL;
 	    ret = ff_ask(_("No cidmap file..."),(const char **)buts3,0,1,_("FontForge was unable to find a cidmap file for this font. It is not essential to have one, but some things will work better if you do. If you have not done so you might want to download the cidmaps from:\n   http://FontForge.sourceforge.net/cidmaps.tgz\nand then gunzip and untar them and move them to:\n  %.80s\n\nWould you like to search your local disk for an appropriate file?"),

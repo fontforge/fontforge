@@ -25,10 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifdef __VMS
-#include <vms_x_fix.h>
-#endif
-
 #include "gxdrawP.h"
 #include "gxcdrawP.h"
 

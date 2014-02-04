@@ -1888,15 +1888,9 @@ static void bSave(Context *c) {
 
 	t = script2utf8_copy(c->a.vals[1].u.sval);
 	locfilename = utf82def_copy(t);
-#ifdef VMS
-	pt = strrchr(locfilename,'_');
-	if ( pt!=NULL && strmatch(pt,"_sfdir")==0 )
-	    s2d = true;
-#else
 	pt = strrchr(locfilename,'.');
 	if ( pt!=NULL && strmatch(pt,".sfdir")==0 )
 	    s2d = true;
-#endif
 
 	int rc = SFDWriteBakExtended( locfilename,
 				      sf,c->curfv->map,c->curfv->normal,s2d,

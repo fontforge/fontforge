@@ -883,11 +883,7 @@ char *Decompress(char *name, int compression) {
     strcat(tmpfile,"/");
     strcat(tmpfile,GFileNameTail(name));
     *strrchr(tmpfile,'.') = '\0';
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-    sprintf( buf, "%s < %s > %s", compressors[compression].decomp, name, tmpfile );
-#else
     snprintf( buf, sizeof(buf), "%s < %s > %s", compressors[compression].decomp, name, tmpfile );
-#endif
     if ( system(buf)==0 )
 return( tmpfile );
     free(tmpfile);

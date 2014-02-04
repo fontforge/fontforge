@@ -544,26 +544,11 @@ static int SaveAs_FormatChange(GtkWidget *g, gpointer data) {
     int *_s2d = data;
     int s2d = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g));
     char *pt, *newname = galloc(strlen(oldname)+8);
-#ifdef VMS
-    char *pt2;
-
-    strcpy(newname,oldname);
-    pt = strrchr(newname,'.');
-    pt2 = strrchr(newname,'_');
-    if ( pt==NULL )
-	pt = pt2;
-    else if ( pt2!=NULL && pt<pt2 )
-	pt = pt2;
-    if ( pt==NULL )
-	pt = newname+strlen(newname);
-    strcpy(pt,s2d ? "_sfdir" : ".sfd" );
-#else
     strcpy(newname,oldname);
     pt = strrchr(newname,'.');
     if ( pt==NULL )
 	pt = newname+strlen(newname);
     strcpy(pt,s2d ? ".sfdir" : ".sfd" );
-#endif
     gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dlg),newname);
     save_to_dir = *_s2d = s2d;
     SavePrefs(true);
@@ -603,11 +588,7 @@ int _FVMenuSaveAs(FontView *fv) {
 	    strcat(temp,"Var");
 	else
 	    strcat(temp,"MM");
-#ifdef VMS
-	strcat(temp,save_to_dir ? "_sfdir" : ".sfd");
-#else
 	strcat(temp,save_to_dir ? ".sfdir" : ".sfd");
-#endif
 	s2d = save_to_dir;
     }
 
@@ -4685,46 +4666,24 @@ void SCPreparePopup(GtkTooltips *tip,GtkWidget *v,SplineChar *sc,struct remap *r
     }
 #endif
     else {
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	sprintf( space, "%u 0x%x U+???? \"%.25s\" ", localenc, localenc, sc->name==NULL?"":sc->name );
-#else
 	snprintf( space, sizeof(space), "%u 0x%x U+???? \"%.25s\" ", localenc, localenc, sc->name==NULL?"":sc->name );
-#endif
 	done = true;
     }
     if ( done )
 	/* Do Nothing */;
     else if ( upos<0x110000 && _UnicodeNameAnnot!=NULL &&
 	    _UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].name!=NULL ) {
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	sprintf( space, "%u 0x%x U+%04x \"%.25s\"", localenc, localenc, upos, sc->name==NULL?"":sc->name,
-		_UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].name);
-#else
 	snprintf( space, sizeof(space), "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
 		_UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].name);
-#endif
     } else if ( upos>=0xAC00 && upos<=0xD7A3 ) {
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	sprintf( space, "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
-		localenc, localenc, upos, sc->name==NULL?"":sc->name,
-		chosung[(upos-0xAC00)/(21*28)],
-		jungsung[(upos-0xAC00)/28%21],
-		jongsung[(upos-0xAC00)%28] );
-#else
 	snprintf( space, sizeof(space), "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
 		localenc, localenc, upos, sc->name==NULL?"":sc->name,
 		chosung[(upos-0xAC00)/(21*28)],
 		jungsung[(upos-0xAC00)/28%21],
 		jongsung[(upos-0xAC00)%28] );
-#endif
     } else {
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	sprintf( space, "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
-	    	UnicodeRange(upos));
-#else
 	snprintf( space, sizeof(space), "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
 	    	UnicodeRange(upos));
-#endif
     }
     if ( upos>=0 && upos<0x110000 && _UnicodeNameAnnot!=NULL &&
 	    _UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].annot!=NULL ) {
