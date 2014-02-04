@@ -84,7 +84,7 @@ char* SFUndoToString( SFUndoes* undo )
 static char* findterm( char** str, char* term )
 {
     char* p;
-    if( (p = strstr( str, term )) )
+    if( (p = strstr( *str, term )) )
     {
 	p += strlen( term );
 	char* e = p;
