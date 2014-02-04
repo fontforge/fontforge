@@ -924,7 +924,7 @@ int GFileWriteAll(char *filepath, char *data) {
     return -1;
 }
 
-char *getTempDir(void)
+const char *getTempDir(void)
 {
     return g_get_tmp_dir();
 }
