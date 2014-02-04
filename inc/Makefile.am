@@ -26,6 +26,9 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+MAINTAINERCLEANFILES=fontforge-config.h.in
+DISTCLEANFILES=fontforge-config.h stamp-h1
+
 # FIXME: The installed headers need to be reworked for better system
 # installation. In particular, they ought to have <> instead of "" and
 # they should require a "fontforge/" prefix.
