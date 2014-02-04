@@ -1531,7 +1531,7 @@ return;
 }
 
 static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event) {
-    int k, r,c, lastc, kludge;
+    int r,c, lastc, kludge;
     gchar *buf;
     char *str, *pt;
     GRect size;

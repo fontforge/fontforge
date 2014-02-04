@@ -460,9 +460,7 @@ unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz) 
 	if ( buffer[u_strlen(buffer)-1]!='/' )
 	    uc_strcat(buffer,"/");
 	u_strcat(buffer,name);
-	#if defined(__MINGW32__)
 	_u_backslash_to_slash(buffer);
-	#endif
 
 	/* Normalize out any .. */
 	spt = rpt = buffer;
@@ -490,9 +488,7 @@ unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz) 
     if (result!=name) {
 	u_strncpy(result,name,rsiz);
 	result[rsiz-1]='\0';
-	#if defined(__MINGW32__)
 	_u_backslash_to_slash(result);
-	#endif
     }
 return(result);
 }
@@ -972,19 +968,4 @@ char *GFileDirName(const char *path)
     if ( pt )
 	*pt = '\0';
     return strdup(ret);
-}
-
-/**
- * Filesystem split char, on osx and linux this is /
- * on windows it is \
- *
- * NOTE: it is probably better to normalize paths on windows to use / internally.
- */
-static char getFilesystemSplitChar( void )
-{
-    char splitchar = '/';
-#if defined(__MINGW32__)
-    splitchar = '\\';
-#endif
-    return splitchar;
 }

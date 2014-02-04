@@ -2162,7 +2162,7 @@ return( NULL );
 		int layercontentslayercount = 0;
 		int layernamesbuffersize = 0;
 		int layercontentsvaluecount = 0;
-		if ( layercontentsdoc = xmlParseFile(layercontentsname) ) {
+		if ( (layercontentsdoc = xmlParseFile(layercontentsname)) ) {
 			// The layercontents plist contains an array of double-element arrays. There is no top-level dict. Note that the indices in the layercontents array may not match those in the Fontforge layers array due to reserved spaces.
 			if ( ( layercontentsplist = xmlDocGetRootElement(layercontentsdoc) ) && ( layercontentsdict = FindNode(layercontentsplist->children,"array") ) ) {
 				layercontentslayercount = 0;
@@ -2217,8 +2217,8 @@ return( NULL );
 					if (layercontentslayercount > 0) {
 						// Start reading layers.
 						for (lcount = 0; lcount < layercontentslayercount; lcount++) {
-							if (glyphdir = buildname(basedir,layernames[2*lcount+1])) {
-								if (glyphlist = buildname(glyphdir,"contents.plist")) {
+                                                	if ((glyphdir = buildname(basedir,layernames[2*lcount+1]))) {
+                                                        	if ((glyphlist = buildname(glyphdir,"contents.plist"))) {
 									if ( !GFileExists(glyphlist)) {
 										LogError(_("No glyphs directory or no contents file"));
 									} else {

@@ -585,7 +585,7 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	width = GDrawGetTextWidth(pixmap,shortbuf,-1);
 	if ( r2l )
 	{
-	    int x = GDrawDrawText(pixmap,m->bp,ybase,shortbuf,-1,fg);
+	    GDrawDrawText(pixmap,m->bp,ybase,shortbuf,-1,fg);
 	}
 	else
 	{
@@ -1736,6 +1736,7 @@ int GGadgetUndoMacEnglishOptionCombinations(GEvent *event) {
  * alternate-keysym). So this little function is designed to convert
  * the osx "enhanced" keysym back to their basic keysym.
  */
+#ifdef __Mac
 static int osx_handle_keysyms( int st, int k )
 {
 //    TRACE("osx_handle_keysyms() st:%d k:%d\n", st, k );
@@ -1800,6 +1801,7 @@ static int osx_handle_keysyms( int st, int k )
 
     return k;
 }
+#endif
 
 int osx_fontview_copy_cut_counter = 0;
 

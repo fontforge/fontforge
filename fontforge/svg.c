@@ -3568,7 +3568,7 @@ void SFSetOrder(SplineFont *sf,int order2) {
 }
 
 void SFLSetOrder(SplineFont *sf, int layerdest, int order2) {
-    int i,j;
+    int i;
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	    SPLSetOrder(sf->glyphs[i]->layers[layerdest].splines,order2);
