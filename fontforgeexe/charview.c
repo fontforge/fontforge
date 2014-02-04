@@ -12506,7 +12506,7 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	    unichar_t *ret = GGadgetGetTitle( cv->charselector );
 	    GArray* selected = 0;
 	    WordlistTrimTrailingSingleSlash( ret );
-	    ret = WordlistEscpaedInputStringToRealStringBasic( sf, ret, &selected );
+	    ret = WordlistEscapedInputStringToRealStringBasic( sf, ret, &selected );
 
 	    const unichar_t *pt, *ept, *tpt;
 	    pt = ret;

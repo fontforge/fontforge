@@ -1808,7 +1808,7 @@ void MVSetSCs(MetricsView *mv, SplineChar **scs) {
 }
 
 
-static int WordlistEscpaedInputStringToRealString_getFakeUnicodeAs_MVFakeUnicodeOfSc( SplineChar *sc, void* udata )
+static int WordlistEscapedInputStringToRealString_getFakeUnicodeAs_MVFakeUnicodeOfSc( SplineChar *sc, void* udata )
 {
     MetricsView *mv = (MetricsView *)udata;
     int n = MVFakeUnicodeOfSc( mv, sc );
@@ -1829,10 +1829,10 @@ static void MVTextChanged(MetricsView *mv) {
     // for the metrics window
     printf("MVTextChanged(top) p:%p ret:%s\n", ret, u_to_c(ret));
     GArray* selected = 0;
-    unichar_t* retnew = WordlistEscpaedInputStringToRealString(
+    unichar_t* retnew = WordlistEscapedInputStringToRealString(
 	mv->sf,
 	ret, &selected,
-	WordlistEscpaedInputStringToRealString_getFakeUnicodeAs_MVFakeUnicodeOfSc, mv );
+	WordlistEscapedInputStringToRealString_getFakeUnicodeAs_MVFakeUnicodeOfSc, mv );
     ret = retnew;
     printf("MVTextChanged(done processing) p:%p ret:%s\n", ret, u_to_c(ret));
 
@@ -1980,169 +1980,6 @@ static void MVFigureGlyphNames(MetricsView *mv,const unichar_t *names) {
     GDrawRequestExpose(mv->v,NULL,false);
 }
 
-/* static bool MVLoadWordListIsLineBreak( char ch ) */
-/* { */
-/*     return ch == '\n' || ch == '\r'; */
-/* } */
-/* static char MVLoadWordListHandleMaybeSkipComment( FILE *file, char ch ) */
-/* { */
-/*     if( ch == '#' ) */
-/*     { */
-/* 	while( ch != EOF ) */
-/* 	{ */
-/* 	    if( MVLoadWordListIsLineBreak(ch)) */
-/* 		break; */
-/* 	    ch=getc(file); */
-/* 	} */
-/*     } */
-/*     return ch; */
-/* } */
-
-/* static bool MVLoadWordList_isLineAllWhiteSpace( char* buffer ) */
-/* { */
-/*     char* p = buffer; */
-/*     for( ; *p; ++p ) */
-/*     { */
-/* 	if( !isspace( *p )) */
-/* 	    return false; */
-/*     } */
-
-/*     return true; */
-/* } */
-
-
-
-/* static SplineChar* MVLoadWordList_readGlyphName( SplineFont *sf, FILE *file, char ch, char* glyphname ) */
-/* { */
-/*     printf("MVLoadWordList_readGlyphName(top)\n"); */
-
-/*     int startedWithBackSlash = (ch == '\\'); */
-/*     if( ch != '/' && ch != '\\' ) */
-/* 	return 0; */
-
-/*     if( ch == '/' || ch == '\\' ) */
-/* 	ch=getc(file); */
-
-/*     long startpos = ftell( file ); */
-
-/*     // Get the largest possible 'glyphname' from the input stream. */
-/*     memset( glyphname, '\0', PATH_MAX ); */
-/*     char* outname = glyphname; */
-/*     while( ch != EOF && ch != '/' && ch != ' ' && ch != ']' && !MVLoadWordListIsLineBreak( ch ) ) */
-/*     { */
-/* 	printf("MVLoadWordList_readGlyphName(add) %c\n",ch); */
-/* 	*outname = ch; */
-/* 	++outname; */
-/* 	ch=getc(file); */
-/*     } */
-/*     bool FullMatchEndsOnSpace = (ch == ' '); */
-/*     long maxpos = ftell( file ); */
-/*     long endpos = maxpos-1; */
-/*     printf("MVLoadWordList_readGlyphName(x1) -->:%s:<--\n", glyphname); */
-/*     printf("MVLoadWordList_readGlyphName(x2) %c %ld %ld\n",ch,startpos,endpos); */
-/*     // This will treat // as non special, ie it will not effect */
-/*     // the next char as a glyph lookup */
-/*     /\* if( endpos < startpos && ch=='/' ) *\/ */
-/*     /\* { *\/ */
-/*     /\* 	endpos++; *\/ */
-/*     /\* 	strcpy(glyphname,"slash"); *\/ */
-/*     /\* } *\/ */
-
-/*     /\* if( endpos < startpos && ch=='\\' ) *\/ */
-/*     /\* { *\/ */
-/*     /\* 	endpos++; *\/ */
-/*     /\* 	strcpy(glyphname,"backslash"); *\/ */
-/*     /\* } *\/ */
-
-/*     int loopCounter = 0; */
-/*     int firstLookup = 1; */
-/*     for( ; endpos >= startpos; endpos--, loopCounter++ ) */
-/*     { */
-/* 	printf("MVLoadWordList_readGlyphName(trim loop top) gn:%s\n", glyphname ); */
-/* 	SplineChar* sc = 0; */
-/* 	if( startedWithBackSlash ) */
-/* 	{ */
-/* 	    if( glyphname[0] == 'u' ) */
-/* 		glyphname++; */
-
-/* 	    char* endptr = 0; */
-/* 	    long unicodepoint = strtoul( glyphname+1, &endptr, 16 ); */
-/* 	    sc = SFGetChar( sf, unicodepoint, 0 ); */
-/* 	    if( sc && endptr ) */
-/* 	    { */
-/* 		char* endofglyphname = glyphname + strlen(glyphname); */
-/* 		printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname ); */
-/* 		for( ; endptr != endofglyphname; endptr++ ) */
-/* 		    --endpos; */
-/* 	    } */
-/* 	    if( !sc ) */
-/* 	    { */
-/* 		printf("MVLoadWordList_readGlyphName() no char found for backslashed unicodepoint:%ld\n", unicodepoint ); */
-/* 		strcpy(glyphname,"backslash"); */
-/* 		sc = SFGetChar( sf, -1, glyphname ); */
-/* 		endpos = startpos; */
-/* 		fseek( file, startpos, SEEK_SET ); */
-/* //		return 0; */
-/* 	    } */
-/* 	} */
-/* 	else */
-/* 	{ */
-/* 	    if( firstLookup && glyphname[0] == '#' ) */
-/* 	    { */
-/* 		char* endptr = 0; */
-/* 		long unicodepoint = strtoul( glyphname+1, &endptr, 16 ); */
-/* 		printf("MVLoadWordList_readGlyphName() unicodepoint:%ld\n", unicodepoint ); */
-/* 		sc = SFGetChar( sf, unicodepoint, 0 ); */
-/* 		if( sc && endptr ) */
-/* 		{ */
-/* 		    char* endofglyphname = glyphname + strlen(glyphname); */
-/* 		    printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname ); */
-/* 		    for( ; endptr != endofglyphname; endptr++ ) */
-/* 			--endpos; */
-/* 		} */
-/* //	    firstLookup = 0; */
-/* 	    } */
-/* 	    if( !sc ) */
-/* 	    { */
-/* 		sc = SFGetChar( sf, -1, glyphname ); */
-/* 	    } */
-/* 	} */
-
-/* 	if( sc ) */
-/* 	{ */
-/* 	    printf("MVLoadWordList_readGlyphName(found!) gn:%s start:%ld end:%ld\n", glyphname, startpos, endpos ); */
-/* 	    fseek( file, endpos, SEEK_SET ); */
-/* 	    if( !loopCounter && FullMatchEndsOnSpace ) */
-/* 	    { */
-/* 		ch=getc(file); */
-/* 	    } */
-
-/* 	    return sc; */
-/* 	} */
-/* 	if( glyphname[0] != '\0' ) */
-/* 	    glyphname[ strlen(glyphname)-1 ] = '\0'; */
-/*     } */
-
-/*     fseek( file, endpos, SEEK_SET ); */
-/*     printf("MVLoadWordList_readGlyphName(end) gn:%s\n", glyphname ); */
-/*     return 0; */
-/* } */
-
-static int g_io_channel_getc(GIOChannel *channel)
-{
-    gchar buf[10];
-    gsize count = 1;
-    gsize bytes_read = 0;
-    
-    GIOError e = g_io_channel_read( channel, buf, count, &bytes_read );
-    if( e == G_IO_ERROR_NONE && bytes_read == count )
-    {
-	return buf[0];
-    }
-    return EOF;
-}
-
-
 static void MVLoadWordList(MetricsView *mv,int type)
 {
     int words_max = 1024*128;
@@ -2162,128 +1999,6 @@ static void MVLoadWordList(MetricsView *mv,int type)
 	GTextInfoArrayFree(words);
 	mv->word_index = 0;
     }
-    
-    
-
-    
-    /* GTextInfo **words; */
-    /* int cnt; */
-    /* char buffer[PATH_MAX], *pt; */
-    /* int ch; */
-    /* char *filename, *temp; */
-
-
-    /* filename = gwwv_open_filename(type==-1 ? "File of Kerning Words":"File of glyphname lists",NULL,"*.txt",NULL); */
-    /* if ( filename==NULL ) */
-    /* { */
-    /* 	GGadgetSetTitle8(mv->text,""); */
-    /* 	return; */
-    /* } */
-    /* temp = utf82def_copy(filename); */
-    /* GIOChannel* file = g_io_channel_new_file( temp, "r", 0 ); */
-    /* free(temp); */
-    /* if ( !file ) */
-    /* { */
-    /* 	ff_post_error("Could not open", "Could not open %s", filename ); */
-    /* 	GGadgetSetTitle8(mv->text,""); */
-    /* 	return; */
-    /* } */
-    /* free(filename); */
-
-
-
-
-    /* int words_max = 1024*128; */
-    /* words = galloc( words_max * sizeof(GTextInfo *)); */
-
-    /* cnt = 0; */
-    /* if ( type==-1 ) */
-    /* { */
-    /* 	// Kerning words */
-    /* 	while( true ) */
-    /* 	{ */
-    /* 	    gsize len = 0; */
-    /* 	    gchar* buffer = 0; */
-    /* 	    GIOStatus status = g_io_channel_read_line( file, &buffer, &len, 0, 0 ); */
-	    
-    /* 	    printf("getline status:%d \n", status ); */
-    /* 	    if( status != G_IO_STATUS_NORMAL ) */
-    /* 		break; */
-    
-    /* 	    chomp(buffer); */
-    /* 	    if ( buffer[0]=='\0' */
-    /* 		 || MVLoadWordListIsLineBreak(buffer) */
-    /* 		 || MVLoadWordList_isLineAllWhiteSpace( buffer )) */
-    /* 	    { */
-    /* 		free(buffer); */
-    /* 		continue; */
-    /* 	    } */
-
-    /* 	    words[cnt] = gcalloc(1,sizeof(GTextInfo)); */
-    /* 	    words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT; */
-    /* 	    words[cnt]->text = (unichar_t *) utf82def_copy( buffer ); */
-    /* 	    printf("Adding word -->%s<--\n", buffer ); */
-    /* 	    words[cnt++]->text_is_1byte = true; */
-    /* 	    free(buffer); */
-    /* 	    if( cnt >= words_max ) */
-    /* 		break; */
-
-    /* 	} */
-    /* } */
-    /* else */
-    /* { */
-    /* 	// glyphname lists */
-    /* 	strcpy(buffer,"​");		/\* Zero width space: 0x200b, I use as a flag *\/ */
-    /* 	gsize bytes_read = 0; */
-    /* 	while( G_IO_STATUS_NORMAL == g_io_channel_read_chars( file, */
-    /* 							      buffer+3, */
-    /* 							      sizeof(buffer)-3, */
-    /* 							      &bytes_read, */
-    /* 							      0 )) */
-    /* 	{ */
-    /* 	    if ( buffer[3]=='\n' || buffer[3]=='#' ) */
-    /* 		continue; */
-    /* 	    if ( cnt>1000-3 ) */
-    /* 		break; */
-    /* 	    if ( buffer[strlen(buffer)-1]=='\n' ) */
-    /* 		buffer[strlen(buffer)-1] = '\0'; */
-    /* 	    words[cnt] = gcalloc(1,sizeof(GTextInfo)); */
-    /* 	    words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT; */
-    /* 	    words[cnt]->text = (unichar_t *) copy( buffer ); */
-    /* 	    words[cnt++]->text_is_1byte = true; */
-    /* 	} */
-    /* } */
-
-    /* g_io_channel_shutdown( file, 1, 0 ); */
-    /* g_io_channel_unref( file ); */
-    /* if ( cnt!=0 ) */
-    /* { */
-    /* 	words[cnt] = gcalloc(1,sizeof(GTextInfo)); */
-    /* 	words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT; */
-    /* 	words[cnt++]->line = true; */
-    /* 	words[cnt] = gcalloc(1,sizeof(GTextInfo)); */
-    /* 	words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT; */
-    /* 	words[cnt]->text = (unichar_t *) copy( _("Load Word List...") ); */
-    /* 	words[cnt]->text_is_1byte = true; */
-    /* 	words[cnt++]->userdata = (void *) -1; */
-    /* 	words[cnt] = gcalloc(1,sizeof(GTextInfo)); */
-    /* 	words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT; */
-    /* 	words[cnt]->text = (unichar_t *) copy( _("Load Glyph Name List...") ); */
-    /* 	words[cnt]->text_is_1byte = true; */
-    /* 	words[cnt++]->userdata = (void *) -2; */
-    /* 	words[cnt] = gcalloc(1,sizeof(GTextInfo)); */
-    /* 	GGadgetSetList(mv->text,words,true); */
-    /* 	GGadgetSetTitle8(mv->text,(char *) (words[0]->text)); */
-    /* 	if ( type==-2 ) */
-    /* 	    MVFigureGlyphNames(mv,_GGadgetGetTitle(mv->text)+1); */
-    /* 	GTextInfoArrayFree(words); */
-    /* 	mv->word_index = 0; */
-    /* } */
-    /* else */
-    /* { */
-    /* 	GGadgetSetTitle8(mv->text,""); */
-    /* 	free(words); */
-    /* } */
 }
 
 static int MV_TextChanged(GGadget *g, GEvent *e) {
