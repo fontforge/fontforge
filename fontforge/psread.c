@@ -882,10 +882,6 @@ static void freestuff(struct psstack *stack, int sp, struct pskeydict *dict,
 	if ( stack[i].type==ps_string || stack[i].type==ps_instr ||
 		stack[i].type==ps_lit )
 	    free(stack[i].u.str);
-#if 0		/* Garbage collection should get these */
-	else if ( stack[i].type==ps_array || stack[i].type==ps_dict )
-	    dictfree(&stack[i].u.dict);
-#endif
     }
     garbagefree(tofrees);
 }
@@ -1363,28 +1359,6 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		}
 	    }
 	} else {
-#if 0	/* /ps{count /foo exch def count copy foo array astore ==}def */
-	/* printstack */
-int ii;
-for ( ii=0; ii<sp; ++ii )
- if ( stack[ii].type==ps_num )
-  printf( "%g ", stack[ii].u.val );
- else if ( stack[ii].type==ps_bool )
-  printf( "%s ", stack[ii].u.tf ? "true" : "false" );
- else if ( stack[ii].type==ps_string )
-  printf( "(%s) ", stack[ii].u.str );
- else if ( stack[ii].type==ps_lit )
-  printf( "/%s ", stack[ii].u.str );
- else if ( stack[ii].type==ps_instr )
-  printf( "-%s- ", stack[ii].u.str );
- else if ( stack[ii].type==ps_mark )
-  printf( "--mark-- " );
- else if ( stack[ii].type==ps_array )
-  printf( "--[]-- " );
- else
-  printf( "--" "???" "-- " );
-printf( "-%s-\n", toknames[tok]);
-#endif
 	if ( tok==pt_unknown ) {
 	    if ( strcmp(tokbuf,"Cache")==0 )	/* Fontographer type3s */
 		tok = pt_setcachedevice;
@@ -3155,9 +3129,6 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 		if ( si.cap == lc_inherited ) si.cap = lc_butt;
 		if ( si.join == lc_inherited ) si.join = lj_miter;
 		new = NULL;
-#if 0
-		SSBisectTurners(ent->u.splines.splines);
-#endif
 		MatInverse(inversetrans,ent->u.splines.transform);
 		transed = SplinePointListTransform(SplinePointListCopy(
 			ent->u.splines.splines),inversetrans,tpt_AllPoints);
@@ -4400,12 +4371,6 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		if ( context->painttype!=2 )
 		    closepath(cur,true);
 	    }
-#if 0	/* This doesn't work. It breaks type1 flex hinting. */
-	/* There's now a special hack just before returning which closes any */
-	/*  open paths */
-	    else if ( cur!=NULL && cur->first->prev==NULL )
-		closepath(cur,false);		/* Even in type1 fonts closepath is optional */
-#endif
 	  case 5: /* rlineto */
 	  case 6: /* hlineto */
 	  case 7: /* vlineto */

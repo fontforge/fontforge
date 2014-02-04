@@ -53,34 +53,6 @@ extern void *UHintCopy(SplineChar *sc,int docopy);
 extern void ExtractHints(SplineChar *sc,void *hints,int docopy);
 extern void UndoesFreeButRetainFirstN( Undoes** undopp, int retainAmount );
 
-#if 0 && defined( __GLIBC__ ) && !defined( __CygWin )
-/* backtrace functions if you need to debug FontForge - needs glibc */
-/* may be useful if you need to track where routine was called from */
-#include <execinfo.h>
-#include <stdio.h>
-
-extern void BackTraceFD( int fd );
-extern void BackTrace( const char* msg );
-
-void BackTraceFD( int fd ) {
-#if defined(__MINGW32__)
-#else
-    const int arraysz = 500;
-    void* array[arraysz];
-    size_t size;
-
-    size = backtrace( array, arraysz );
-    backtrace_symbols_fd( array, size, fd );
-#endif
-}
-
-void BackTrace( const char* msg ) {
-    
-    fprintf( stderr, msg );
-    BackTraceFD( 2 );
-}
-#endif
-
 /* ********************************* Undoes ********************************* */
 
 int maxundoes = 120;		/* -1 is infinite */
@@ -2736,16 +2708,6 @@ static void SCPasteLookups(SplineChar *sc,SplineChar *fromsc,int pasteinto,
     SplineChar *test, *test2;
     int changed = false;
 
-#if 0
-/* I don't think I want to do this. anything in the same lookup will be replaced */
-/*  anyway, and I don't think I should clear other entries */
-    if ( !pasteinto && sc!=fromsc ) {
-	PSTFree(sc->possub); sc->possub = NULL;
-	KernPairFree(sc->kerns); sc->kerns = NULL;
-	KernPairFree(sc->vkerns); sc->vkerns = NULL;
-    }
-#endif
-
     for ( frompst = fromsc->possub; frompst!=NULL; frompst=frompst->next ) {
 	if ( frompst->subtable==NULL )
     continue;
@@ -3120,32 +3082,6 @@ return;
 		    PasteNonExistantRefCheck(cvsc,paster,refs,&refstate);
 		}
 	    }
-#if 0
-	} else if ( paster->u.state.refs!=NULL && cv->drawmode==dm_back ) {
-	    /* Paste the CONTENTS of the referred character into this one */
-	    /*  (background contents I think) */
-	    RefChar *refs;
-	    SplineChar *sc;
-	    SplinePointList *new, *spl;
-	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
-		if ( cv->container==NULL )
-		    sc = FindCharacter(cvsc->parent,paster->copied_from,refs,NULL);
-		else if ( cv->container->funcs->type == cvc_searcher ||
-			cv->container->funcs->type == cvc_multiplepattern )
-		    sc = FindCharacter((cv->container->funcs->sf_of_container)(cv->container),paster->copied_from,refs,NULL);
-		else
-		    sc = NULL;
-		if ( sc!=NULL ) {
-		    new = SplinePointListTransform(SplinePointListCopy(sc->layers[ly_back].splines),refs->transform,tpt_AllPoints);
-		    SplinePointListSelect(new,true);
-		    if ( new!=NULL ) {
-			for ( spl = new; spl->next!=NULL; spl = spl->next );
-			spl->next = cvsc->layers[ly_back].splines;
-			cvsc->layers[ly_back].splines = new;
-		    }
-		}
-	    }
-#endif
 	}
 	if ( paster->undotype==ut_statename ) {
 	    SCSetMetaData(cvsc,paster->u.state.charname,

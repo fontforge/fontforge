@@ -537,17 +537,8 @@ void GuessOpticalOffset(SplineChar *sc,int layer,real *_loff, real *_roff,
     real loff, roff;
     RefChar *r = HasUseMyMetrics(sc,layer);
 
-    if ( r!=NULL ) {
-#if 0
-	/* What to do in the case of a letter like itilde where the accent */
-	/*  is wider than the use my metrics glyph? */
-	DBounds bb, rbb;
-	SplineCharLayerFindBounds(sc,layer,&bb);
-	SplineCharLayerFindBounds(r->sc,layer,&rbb);
-	if ( rbb.minx==bb.minx && rbb.maxx==bb.maxx )
-#endif
+    if ( r!=NULL )
 	    sc = r->sc;
-    }
 
     if ( chunk_height <= 0 )
 	chunk_height = (sf->ascent + sf->descent)/200;

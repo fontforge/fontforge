@@ -451,10 +451,6 @@ static void IkarusReadChar(SplineChar *sc,FILE *file) {
 
     n = getushort(file);
     number = getushort(file);
-#if 0
-    if ( enc!=sc->enc )
-	fprintf( stderr, "The font header said this should be character %d, the character header says it is %d\n", sc->enc, enc );
-#endif
     IkarusNameFromURWNumber(sc,number);
     following = getushort(file);
     if ( following!=0 )

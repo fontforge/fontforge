@@ -1641,10 +1641,6 @@ return( oldtop!=kcd->offtop || oldleft!=kcd->offleft );
 
 static void KCD_HShow(KernClassDlg *kcd, int pos) {
     if ( pos>=0 && pos<kcd->second_cnt ) {
-#if 0
-	if ( pos>=kcd->offleft && pos<kcd->offleft+(kcd->width/kcd->kernw) )
-return;		/* Already visible */
-#endif
 	--pos;	/* One line of context */
 	if ( pos + (kcd->width/kcd->kernw) >= kcd->second_cnt )
 	    pos = kcd->second_cnt - (kcd->width/kcd->kernw);
@@ -1705,10 +1701,6 @@ static void KCD_HScroll(KernClassDlg *kcd,struct sbevent *sb) {
 
 static void KCD_VShow(KernClassDlg *kcd, int pos) {
     if ( pos>=0 && pos<kcd->first_cnt ) {
-#if 0
-	if ( pos>=kcd->offtop && pos<kcd->offtop+(kcd->height/kcd->kernh) )
-return;		/* Already visible */
-#endif
 	--pos;	/* One line of context */
 	if ( pos + (kcd->height/kcd->kernh) >= kcd->first_cnt )
 	    pos = kcd->first_cnt - (kcd->height/kcd->kernh);

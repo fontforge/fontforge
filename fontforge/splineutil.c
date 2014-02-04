@@ -472,12 +472,6 @@ static void FigureSpline1(Spline1 *sp1,bigreal t0, bigreal t1, Spline1D *sp ) {
 	sp1->sp.c = s*(sp->c + t0*(2*sp->b + 3*sp->a*t0));
 	sp1->sp.b = s*s*(sp->b+3*sp->a*t0);
 	sp1->sp.a = s*s*s*sp->a;
-#if 0		/* Got invoked once on a perfectly good spline */
-	sp1->s1 = sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d;
-	if ( ((sp1->s1>.001 || sp1->s1<-.001) && !RealNear((bigreal) sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d,sp1->s1)) ||
-		!RealNear(sp1->sp.d,sp1->s0))
-	    IError( "Created spline does not work in FigureSpline1");
-#endif
     }
     sp1->c0 = sp1->sp.c/3 + sp1->sp.d;
     sp1->c1 = sp1->c0 + (sp1->sp.b+sp1->sp.c)/3;
@@ -3381,153 +3375,6 @@ return( false );
 return( true );
 }
 
-#if 0
-/* These methods purport to solve all quartics. But they don't solve mine */
-/*  so I may have miscopied or something, but I'll give up on algebraic solns*/
-static int QuarticAlternate(Quartic *q,bigreal ts[4],bigreal offset) {
-    Spline1D sp;
-    bigreal zs[3], h, j, temp;
-    int i;
-
-    sp.a = 1; sp.b = 2*q->c; sp.c = q->c*q->c-4*q->e;
-     sp.d = q->d*q->d;
-    if ( !_CubicSolve(&sp,0,zs))
-return(-1);
-    for ( i=0; i<3; ++i )
-	if ( zs[i]>0 )
-    break;
-    if ( i>=3 )
-return( -1 );
-    h = sqrt(zs[i]);
-    j = (q->c+zs[i]-q->d/h)/2;
-
-    /* Now the roots of q are the roots of y^2+hy+j and y^2-hy+(q->e)/j */
-    i = 0;
-    temp = h*h-4*j;
-    if ( temp>=0 ) {
-	temp = sqrt(temp);
-	ts[i++] = (-h+temp)/2 - offset;
-	ts[i++] = (-h-temp)/2 - offset;
-    }
-    temp = h*h-4*q->e/j;
-    if ( temp>=0 ) {
-	temp = sqrt(temp);
-	ts[i++] = (h+temp)/2 - offset;
-	ts[i++] = (h-temp)/2 - offset;
-    }
-return( i );
-}
-
-static int _QuarticSolve(Quartic *q,bigreal ts[4]) {
-    Quartic work;
-    bigreal zs[3], pq[2], r;
-    bigreal f,offset;
-    Spline1D sp;
-    int i,j;
-
-    ts[0] = ts[1] = ts[2] = ts[3] = -1;
-    if ( RealNear(q->a,0) ) {
-	/* I got a quadratic here once so this can happen ... */
-	i = 0;
-	if ( RealNear(q->b,0)) {
-	    if ( RealNear(q->c,0)) {
-		if ( !RealNear(q->d,0))
-		    ts[i++] = -q->e/q->d;
-	    } else {
-		f = q->d*q->d - 4*q->c*q->e;
-		if ( f>=0 ) {
-		    f=sqrt(f);
-		    ts[i++] = (-q->d + f)/(2*q->c);
-		    ts[i++] = (-q->d - f)/(2*q->c);
-		}
-	    }
-	} else {
-	    sp.a = q->b; sp.b = q->c; sp.c = q->d; sp.d = q->e;
-	    ts[3] = -1;
-	    if ( !CubicSolve(&sp,0,ts))
-return( -1 );
-	    for ( i=0; i<3 && ts[i]!=-1; ++i );
-	}
-    } else if ( RealNear(q->e,0)) {
-	sp.a = q->a; sp.b = q->b; sp.c = q->c; sp.d = q->d;
-	CubicSolve(&sp,0,ts);
-	for ( i=0; i<3 && ts[i]!=-1; ++i );
-	ts[i++] = 0;
-    } else {
-	/* http://mathforum.org/dr.math/faq/faq.cubic.equations.html */
-	/* divide by q->a, substitute t=s - q->b/4 */
-	offset = q->b/(4*q->a);
-
-	work.a = 1;
-	work.b = 0;
-	work.c = (q->c-3*q->b*q->b/(8*q->a))/q->a;
-	work.d = (q->b*q->b*q->b/(8*q->a*q->a) - q->b*q->c/(2*q->a) + q->d)/q->a;
-	work.e = (-3*q->b*q->b*q->b*q->b/(256*q->a*q->a*q->a) + (q->b*q->b*q->c)/(16*q->a*q->a) -
-		q->b*q->d/(4*q->a) + q->e)/q->a;
-
-	if ( RealNear(work.e,0)) {
-	    sp.a = work.a; sp.b = work.b; sp.c = work.c; sp.d = work.d;
-	    CubicSolve(&sp,0,ts);
-	    for ( i=0; i<3 && ts[i]!=-1; ++i );
-	    ts[i++] = 0;
-	    for ( j=0; j<i; ++j )
-		ts[j] -= offset;
-	} else if ( RealNear(work.d,0)) {
-	    /* now we have a quadratic in s^2 */
-	    bigreal b24ac = work.c*work.c - 4*work.e, t1, t2;
-	    if ( b24ac<0 && b24ac>-.0001 ) b24ac = 0;
-	    if ( b24ac < 0 )	/* All roots imaginary */
-return( -1 );
-	    b24ac = sqrt(b24ac);
-	    t1 = (-work.c + b24ac)/2;
-	    t2 = (-work.c - b24ac)/2;
-	    i = 0;
-	    if ( t1>0 ) {
-		ts[0] = sqrt(t1);
-		ts[1] = -ts[0];
-		i=2;
-	    } else if ( t1>-.0001 )
-		ts[i++] = 0;
-	    if ( t2>0 ) {
-		ts[i++] = sqrt(t2);
-		ts[i] = -ts[i-1];
-		++i;
-	    } else if ( t2>-.0001 )
-		ts[i++] = 0;
-	    for ( j=0; j<i ; ++j )
-		ts[j] -= offset;
-	    if ( i==0 )
-return( -1 );
-	} else {
-	    sp.a = 1;
-	    sp.b = work.c/2;
-	    sp.c = (work.c*work.c-4*work.e)/16;
-	    sp.d = work.d*work.d/64;
-	    if ( !_CubicSolve(&sp,0,zs) )
-return( QuarticAlternate(&work,ts,offset));
-
-	    j = 0;
-	    for ( i=0; zs[i]!=-999999; ++i )
-		if ( zs[i]>0 ) {
-		    pq[j++] = zs[i];
-		    if ( j==2 )
-	    break;
-		}
-	    if ( j!=2 )
-return( QuarticAlternate(&work,ts,offset));
-	    pq[0] = sqrt(pq[0]);
-	    pq[1] = sqrt(pq[1]);
-	    r = -work.d/(8 * pq[0] *pq[1]);
-	    ts[0] = pq[0]+pq[1]+r - offset;
-	    ts[1] = pq[0]-pq[1]-r - offset;
-	    ts[2] = -pq[0]+pq[1]-r - offset;
-	    ts[3] = -pq[0]-pq[1]+r - offset;
-	    i = 4;
-	}
-    }
-return( i );
-}
-#else
 static int _QuarticSolve(Quartic *q,extended ts[4]) {
     extended extrema[5];
     Spline1D sp;
@@ -3626,33 +3473,6 @@ return( _CubicSolve(&sp,0,ts+1)+1);
 	ts[i] = -999999;
 return( zcnt );
 }
-#endif
-
-#if 0
-static int QuarticSolve(Quartic *q,extended ts[4]) {
-    int i,j,k;
-
-    if ( _QuarticSolve(q,ts)==-1 )
-return( -1 );
-
-    for ( i=0; i<4 && ts[i]!=-999999; ++i ) {
-	if ( ts[i]>-.0001 && ts[i]<0 ) ts[i] = 0;
-	if ( ts[i]>1.0 && ts[i]<1.0001 ) ts[i] = 1;
-	if ( ts[i]>1.0 || ts[i]<0 ) ts[i] = -999999;
-    }
-    for ( i=3; i>=0 && ts[i]==-999999; --i );
-    if ( i==-1 )
-return( -1 );
-    for ( j=i ; j>=0 ; --j ) {
-	if ( ts[j]<0 ) {
-	    for ( k=j+1; k<=i; ++k )
-		ts[k-1] = ts[k];
-	    ts[i--] = -999999;
-	}
-    }
-return(i+1);
-}
-#endif
 
 extended SplineSolve(const Spline1D *sp, real tmin, real tmax, extended sought) {
     /* We want to find t so that spline(t) = sought */
@@ -4231,26 +4051,6 @@ return( false );			/* Effectively parallel */
 return( true );
 }
 
-#if 0
-static int CheckEndpoint(BasePoint *end,Spline *s,int te,BasePoint *pts,
-	real *tarray,real *ts,int soln) {
-    bigreal t;
-    int i;
-
-    for ( i=0; i<soln; ++i )
-	if ( end->x==pts[i].x && end->y==pts[i].y )
-return( soln );
-
-    t = SplineNearPoint(s,end,.01);
-    if ( t<=0 || t>=1 )		/* If both splines are at end points then it's a join not an intersection */
-return( soln );
-    tarray[soln] = te;
-    ts[soln] = t;
-    pts[soln] = *end;
-return( soln+1 );
-}
-#endif
-
 static int AddPoint(extended x,extended y,extended t,extended s,BasePoint *pts,
 	extended t1s[3],extended t2s[3], int soln) {
     int i;
@@ -4266,45 +4066,6 @@ return( soln );
     pts[soln].y = y;
 return( soln+1 );
 }
-
-#if 0
-static int AddQuadraticSoln(extended s,const Spline *s1, const Spline *s2, BasePoint pts[3],
-	extended t1s[3], extended t2s[3], int soln ) {
-    extended t, x, y, d;
-    int i;
-
-    if ( s<-.0001 || s>1.0001 )
-return( soln );
-    if ( s<0 ) s=0; else if ( s>1 ) s=1;
-
-    x = (s2->splines[0].b*s+s2->splines[0].c)*s+s2->splines[0].d;
-    y = (s2->splines[1].b*s+s2->splines[1].c)*s+s2->splines[1].d;
-
-    for ( i=0; i<soln; ++i )
-	if ( x==pts[i].x && y==pts[i].y )
-return( soln );
-
-    d = s1->splines[0].c*(extended) s1->splines[0].c-4*(extended) s1->splines[0].a*(s1->splines[0].d-x);
-    if ( RealNear(d,0)) d = 0;
-    if ( d<0 )
-return( soln );
-    t = (-s1->splines[0].c-d)/(2*s1->splines[0].b);
-    if ( t>-.0001 && t<1.0001 ) {
-	if ( t<=0 ) {t=0; x=s1->from->me.x; y = s1->from->me.y; }
-	else if ( t>=1 ) { t=1; x=s1->to->me.x; y = s1->to->me.y; }
-	if ( RealNear(y, (s1->splines[1].b*t+s1->splines[1].c)*t+s1->splines[1].d ) )
-return( AddPoint(x,y,t,s,pts,t1s,t2s,soln));
-    }
-    t = (-s1->splines[0].c+d)/(2*s1->splines[0].b);
-    if ( t>-.0001 && t<1.0001 ) {
-	if ( t<=0 ) {t=0; x=s1->from->me.x; y = s1->from->me.y; }
-	else if ( t>=1 ) { t=1; x=s1->to->me.x; y = s1->to->me.y; }
-	if ( RealNear(y, (s1->splines[1].b*t+s1->splines[1].c)*t+s1->splines[1].d) )
-return( AddPoint(x,y,t,s,pts,t1s,t2s,soln));
-    }
-return( soln );
-}
-#endif
 
 static void IterateSolve(const Spline1D *sp,extended ts[3]) {
     /* The closed form solution has too many rounding errors for my taste... */
@@ -4636,13 +4397,6 @@ return( 0 );
     if ( min1.x>max2.x || min2.x>max1.x || min1.y>max2.y || min2.y>max1.y )
 return( false );		/* no intersection of bounding boxes */
 
-#if 0
-    soln = CheckEndpoint(&s1->from->me,s2,0,pts,t1s,t2s,soln);
-    soln = CheckEndpoint(&s1->to->me,s2,1,pts,t1s,t2s,soln);
-    soln = CheckEndpoint(&s2->from->me,s1,0,pts,t2s,t1s,soln);
-    soln = CheckEndpoint(&s2->to->me,s1,1,pts,t2s,t1s,soln);
-#endif
-
     if ( s1->knownlinear ) {
 	spline.d = s1->splines[1].c*((bigreal) s2->splines[0].d-(bigreal) s1->splines[0].d)-
 		s1->splines[0].c*((bigreal) s2->splines[1].d-(bigreal) s1->splines[1].d);
@@ -4703,49 +4457,6 @@ return( false );
 	    soln = AddPoint(x,y,t,tempts[i],pts,t1s,t2s,soln);
 	}
 return( soln!=0 );
-#if 0		/* This doesn't work. */
-    } else if ( s1->isquadratic && s2->isquadratic ) {
-	temp.a = 0;
-	temp.b = s1->splines[1].b*s2->splines[0].b - s1->splines[0].b*s2->splines[1].b;
-	temp.c = s1->splines[1].b*s2->splines[0].c - s1->splines[0].b*s2->splines[1].c;
-	temp.d = s1->splines[1].b*(s2->splines[0].d-s1->splines[0].d) -
-		 s1->splines[0].b*(s2->splines[1].d-s1->splines[1].d);
-	d = s1->splines[1].b*s1->splines[0].c - s1->splines[0].b*s1->splines[1].c;
-	if ( RealNear(d,0)) d=0;
-	if ( d!=0 ) {
-	    temp.b /= d; temp.c /= d; temp.d /= d;
-	    /* At this point t= temp.b*s^2 + temp.c*s + temp.d */
-	    /* We substitute this back into one of our equations and get a */
-	    /*  quartic in s */
-	    quad.a = s1->splines[0].b*temp.b*temp.b;
-	    quad.b = s1->splines[0].b*2*temp.b*temp.c;
-	    quad.c = s1->splines[0].b*(2*temp.b*temp.d+temp.c*temp.c);
-	    quad.d = s1->splines[0].b*2*temp.d*temp.c;
-	    quad.e = s1->splines[0].b*temp.d*temp.d;
-	    quad.b+= s1->splines[0].c*temp.b;
-	    quad.c+= s1->splines[0].c*temp.c;
-	    quad.d+= s1->splines[0].c*temp.d;
-	    quad.e+= s1->splines[0].d;
-	    quad.e-= s2->splines[0].d;
-	    quad.d-= s2->splines[0].c;
-	    quad.c-= s2->splines[0].b;
-	    if ( QuarticSolve(&quad,tempts)==-1 )
-return( -1 );
-	    for ( i=0; i<4 && tempts[i]!=-999999; ++i )
-		soln = AddQuadraticSoln(tempts[i],s1,s2,pts,t1s,t2s,soln);
-	} else {
-	    d = temp.c*temp.c-4*temp.b*temp.c;
-	    if ( RealNear(d,0)) d = 0;
-	    if ( d<0 )
-return( soln!=0 );
-	    d = sqrt(d);
-	    s = (-temp.c-d)/(2*temp.b);
-	    soln = AddQuadraticSoln(s,s1,s2,pts,t1s,t2s,soln);
-	    s = (-temp.c+d)/(2*temp.b);
-	    soln = AddQuadraticSoln(s,s1,s2,pts,t1s,t2s,soln);
-	}
-return( soln!=0 );
-#endif
     }
     /* if one of the splines is quadratic then we can get an expression */
     /*  relating c*t+d to poly(s^3), and substituting this back we get */

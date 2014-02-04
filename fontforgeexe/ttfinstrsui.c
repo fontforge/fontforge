@@ -213,33 +213,6 @@ static void instr_resize(InstrDlg *iv,GEvent *event) {
     GDrawMove(ii->v,size.x,size.y);
     GDrawResize(ii->v,size.width,size.height);
     ii->vheight = size.height; ii->vwidth = size.width;
-#if 0
-    /* Multiple of the number of lines we've got */
-    if ( (event->u.resize.size.height-iv->oc_height-4)%ii->fh!=0 ) {
-	int lc = (event->u.resize.size.height-iv->oc_height+ii->fh/2)/ii->fh;
-	if ( lc<=0 ) lc = 1;
-	GDrawResize(iv->gw, event->u.resize.size.width,lc*ii->fh+iv->oc_height+4);
-return;
-    }
-
-    pos.width = GDrawPointsToPixels(iv->gw,_GScrollBar_Width);
-    pos.height = event->u.resize.size.height-iv->oc_height;
-    pos.x = event->u.resize.size.width-pos.width; pos.y = 0;
-    GGadgetResize(ii->vsb,pos.width,pos.height);
-    GGadgetMove(ii->vsb,pos.x,pos.y);
-    pos.width = pos.x; pos.x = 0;
-    GDrawResize(ii->v,pos.width,pos.height);
-
-    GGadgetResize(iv->text,event->u.resize.size.width,pos.height);
-
-    GGadgetGetSize(iv->cancel,&size);
-    GGadgetMove(iv->ok,10,event->u.resize.size.height-iv->oc_height+6);
-    GGadgetMove(iv->cancel,event->u.resize.size.width-13-size.width,event->u.resize.size.height-iv->oc_height+9);
-    GGadgetMove(iv->edit,(event->u.resize.size.width-size.width)/2,event->u.resize.size.height-iv->oc_height+9);
-    GGadgetMove(iv->parse,(event->u.resize.size.width-size.width)/2,event->u.resize.size.height-iv->oc_height+9);
-
-    ii->vheight = pos.height; ii->vwidth = pos.width;
-#endif
     lh = ii->lheight;
 
     GScrollBarSetBounds(ii->vsb,0,lh+2,ii->vheight<ii->fh ? 1 : ii->vheight/ii->fh);
@@ -646,10 +619,6 @@ static int iv_e_h(GWindow gw, GEvent *event) {
 
     switch ( event->type ) {
       case et_expose:
-#if 0
-	  GDrawDrawLine(gw,0,iv->instrinfo.vheight,
-		  iv->instrinfo.vwidth+400,iv->instrinfo.vheight,0x000000);
-#endif
       break;
       case et_resize:
 	instr_resize(iv,event);

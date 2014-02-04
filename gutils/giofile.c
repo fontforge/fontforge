@@ -49,14 +49,7 @@ static unichar_t err500[] = { ' ','I','n','t','e','r','n','a','l',' ','S','e','r
 
 void _GIO_reporterror(GIOControl *gc, int errn) {
 
-#if 1
     uc_strncpy(gc->status,strerror(errn),sizeof(gc->status)/sizeof(unichar_t));
-#else
-    if ( errn<sys_nerr )
-	uc_strncpy(gc->status,sys_errlist[errn],sizeof(gc->status)/sizeof(unichar_t));
-    else
-	gc->status[0] = '\0';
-#endif
 
     if ( errn==ENOENT || (gc->gf!=gf_dir && errn==ENOTDIR) ) {
 	gc->return_code = 404;
@@ -234,14 +227,6 @@ void _GIO_localDispatch(GIOControl *gc) {
       case gf_statfile:
 	_gio_file_statfile(gc,path);
       break;
-#if 0
-      case gf_getfile:
-	_gio_file_getfile(gc,path);
-      break;
-      case gf_putfile:
-	_gio_file_putfile(gc,path);
-      break;
-#endif
       case gf_mkdir:
 	_gio_file_mkdir(gc,path);
       break;
@@ -275,14 +260,6 @@ void *_GIO_fileDispatch(GIOControl *gc) {
       case gf_statfile:
 	_gio_file_statfile(gc,path);
       break;
-#if 0
-      case gf_getfile:
-	_gio_file_getfile(gc,path);
-      break;
-      case gf_putfile:
-	_gio_file_putfile(gc,path);
-      break;
-#endif
       case gf_mkdir:
 	_gio_file_mkdir(gc,path);
       break;

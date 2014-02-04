@@ -1047,14 +1047,6 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
 	    (int) ceil(b.maxx), (int) ceil(b.maxy));
     fprintf(svg, "  <g transform=\"matrix(1 0 0 -1 0 %d)\">\n",
 	    sc->parent->ascent );
-#if 0		/* Used to show the advance width, but as I don't in eps, probably should be consistent */
-    fprintf(svg, "   <g stroke=\"green\" stroke-width=\"1\">\n" );
-    fprintf(svg, "     <line x1=\"0\" y1=\"0\" x2=\"%d\" y2=\"0\" />\n", sc->width );
-    fprintf(svg, "     <line x1=\"0\" y1=\"10\" x2=\"0\" y2=\"-10\" />\n" );
-    fprintf(svg, "     <line x1=\"%d\" y1=\"10\" x2=\"%d\" y2=\"-10\" />\n",
-	    sc->width, sc->width );
-    fprintf(svg, "   </g>\n\n" );
-#endif
     if ( sc->parent->multilayer || sc->parent->strokedfont || !svg_sc_any(sc,layer)) {
 	fprintf(svg, "   <g ");
 	end = "   </g>\n";
@@ -1628,89 +1620,6 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 return( head );
 }
 
-#if 0
-static SplineSet *SVGAddSpiros(xmlChar *path, SplineSet *base) {
-    BasePoint current;
-    SplineSet *cur = NULL;
-    int type = 'M';
-    char *end;
-    spiro_cp cp;
-
-    current.x = current.y = 0;
-
-    while ( *path ) {
-	while ( *path==' ' ) ++path;
-	while ( isalpha(*path))
-	    type = *path++;
-	if ( *path=='\0' && type!='z' && type!='Z' )
-    break;
-	if ( type=='m' || type=='M' ) {
-	    if ( cur==NULL )
-		cur = base;
-	    else
-		cur = cur->next;
-	    if ( cur==NULL )
-    break;
-	    cur->spiros = galloc((cur->spiro_max=10)*sizeof(spiro_cp));
-	    cp.x = strtod((char *) path,&end);
-	    end = skipcomma(end);
-	    cp.y = strtod(end,&end);
-	    if ( type=='m' ) {
-		cp.x += current.x; cp.y += current.y;
-	    }
-	    cp.ty = SPIRO_OPEN_CONTOUR;
-	    cur->spiros[0] = cp;
-	    ++(cur->spiro_cnt);
-	    current.x = cp.x; current.y = cp.y;
-	    /* If you omit a command after a moveto then it defaults to lineto */
-	    if ( type=='m' ) type='l';
-	    else type = 'L';
-	} else if ( type=='z' || type=='Z' ) {
-	    if ( cur!=NULL && cur->spiros!=NULL && cur->spiros[0].ty == SPIRO_OPEN_CONTOUR ) {
-		if ( RealNear(cur->spiros[0].x,cur->spiros[cur->spiro_cnt-1].x) &&
-			RealNear(cur->spiros[0].y,cur->spiros[cur->spiro_cnt-1].y) ) {
-		    cur->spiros[0].ty = SPIRO_G4;
-		} else
-		    cur->spiros[0].ty = SPIRO_CORNER;
-		if ( cur->spiro_cnt>=cur->spiro_max )
-		    cur->spiros = grealloc(cur->spiros,(cur->spiro_max++)*sizeof(spiro_cp));
-		cp.x = current.x; cp.y = current.y; cp.ty = SPIRO_END;
-		cur->spiros[cur->spiro_cnt++] = cp;
-		current.x = cur->spiros[0].x; current.y = cur->spiros[0].y;
-	    }
-	    type = ' ';
-	    end = (char *) path;
-	} else {
-	    cp.x = strtod((char *) path,&end);
-	    end = skipcomma(end);
-	    cp.y = strtod(end,&end);
-	    if ( islower(type) ) {
-		cp.x += current.x; cp.y += current.y;
-	    }
-	    switch ( type ) {
-	      case 'l': case'L':
-	        cp.ty = SPIRO_CORNER;
-		if ( cur->spiro_cnt!=1 )
-		    cur->spiros[cur->spiro_cnt-1].ty = SPIRO_CORNER;
-	      break;
-	      case 'c': case'C':
-	        cp.ty = SPIRO_G4;
-	      break;
-	      default:
-		LogError( _("Unknown type '%c' found in path specification\n"), type );
-	      break;
-	    }
-	    if ( cur->spiro_cnt>=cur->spiro_max )
-		cur->spiros = grealloc(cur->spiros,(cur->spiro_max+=10)*sizeof(spiro_cp));
-	    cur->spiros[cur->spiro_cnt++] = cp;
-	    current.x = cp.x; current.y = cp.y;
-	}
-	path = (xmlChar *) skipcomma(end);
-    }
-return( base );
-}
-#endif
-
 static SplineSet *SVGParseExtendedPath(xmlNodePtr svg, xmlNodePtr top) {
     /* Inkscape exends paths by allowing a sprio representation */
     /* But their representation looks nothing like spiros and I can't guess at it */
@@ -1722,24 +1631,6 @@ static SplineSet *SVGParseExtendedPath(xmlNodePtr svg, xmlNodePtr top) {
 	head = SVGParsePath(outline);
 	xmlFree(outline);
     }
-#if 0
-    effect = xmlGetProp(svg,(xmlChar *) "path-effect"/*, (xmlChar *) "inkscape:"*/);
-    spirooutline = xmlGetProp(svg,(xmlChar *) "original-d"/*, (xmlChar *) "inkscape:"*/);
-    if ( effect!=NULL && spirooutline!=NULL && *effect=='#' ) {
-	xmlNodePtr effect_type = XmlFindID(top,effect+1);
-	xmlChar *type = NULL;
-	if ( effect_type!=NULL &&
-		(type=xmlGetProp(effect_type,"effect"))!=NULL &&
-		xmlStrcmp(type,(xmlChar *) "spiro")==0 )
-	    SVGAddSpiros(spirooutline,head);
-	if ( type!=NULL )
-	    xmlFree(type);
-    }
-    if ( effect!=NULL )
-	xmlFree(effect);
-    if ( spirooutline!=NULL )
-	xmlFree(spirooutline);
-#endif
 return( head );
 }
 

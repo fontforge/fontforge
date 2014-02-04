@@ -72,16 +72,6 @@ return( false );
 		if (( pos.y = rootsize.height - pos.height )<0 ) pos.y = 0;
 	    GDrawMove(gw,pos.x,pos.y);
 	}
-    } else if ( event->type == et_resize ) {
-#if 0
-	GRect size,pos;
-	GGadget *g = GWidgetGetControl(gw,d->bcnt);
-	if ( g!=NULL ) {
-	    GDrawGetSize(gw,&size);
-	    GGadgetGetSize(g,&pos);
-	    GGadgetResize(g,size.width-2*pos.x,pos.height);
-	}
-#endif
     } else if ( event->type == et_map ) {
 	/* Above palettes */
 	GDrawRaise(gw);
@@ -421,15 +411,6 @@ static int c_e_h(GWindow gw, GEvent *event) {
 	d->done = true;
 	d->ret = -1;
     } else if ( event->type==et_resize ) {
-#if 0
-	GGadgetResize(GWidgetGetControl(gw,CID_List),
-		event->u.resize.size.width - 2*GDrawPointsToPixels(gw,8),
-		event->u.resize.size.height - d->size_diff);
-	GGadgetMove(GWidgetGetControl(gw,CID_OK),GDrawPointsToPixels(gw,15)-3,
-		event->u.resize.size.height - GDrawPointsToPixels(gw,34)-3);
-	GGadgetMove(GWidgetGetControl(gw,CID_Cancel),event->u.resize.size.width - GDrawPointsToPixels(gw,GIntGetResource(_NUM_Buttonsize)+15),
-		event->u.resize.size.height - GDrawPointsToPixels(gw,34));
-#endif
 	GDrawRequestExpose(gw,NULL,false);
     } else if ( event->type==et_controlevent &&
 	    (event->u.control.subtype == et_buttonactivate ||
@@ -1068,13 +1049,7 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
 	GHVBoxSetExpandableCol(boxes[3].ret,gb_expandgluesame);
     if ( boxes[2].ret!=NULL )
 	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
-#if 0
-    pos.width = maxw;
-    pos.height = y + GDrawPointsToPixels(gw,34);
-    GDrawResize(gw,pos.width,pos.height);
-#else
     GHVBoxFitWindow(boxes[0].ret);
-#endif
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     d->ret = -1;

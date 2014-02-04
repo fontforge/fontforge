@@ -1843,17 +1843,6 @@ uint32 LigTagFromUnicode(int uni) {
 	tag = CHR('r','l','i','g');
       break;
     }
-#if 0
-    if ( tag==CHR('l','i','g','a') && uni!=-1 && uni<0x10000 ) {
-	const unichar_t *alt=NULL;
-	if ( isdecompositionnormative(uni) &&
-		    unicode_alternates[uni>>8]!=NULL &&
-		(alt = unicode_alternates[uni>>8][uni&0xff])!=NULL ) {
-	    if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2])))
-		tag = ((27<<16)|1);
-	}
-    }
-#endif
 return( tag );
 }
 

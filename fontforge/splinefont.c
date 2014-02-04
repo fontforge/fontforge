@@ -1111,10 +1111,6 @@ return( NULL );
 		unlink(spuriousname); free(spuriousname);
 	    }
 	    checked = 'S';
-#if 0		/* I'm not sure if this is a good test for mf files... */
-	} else if ( ch1=='%' && ch2==' ' ) {
-	    sf = SFFromMF(fullname);
-#endif
 	} else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) {
 	    sf = _SFDRead(fullname,file); file = NULL;
 	    checked = 'f';
@@ -1281,21 +1277,6 @@ return( NULL );
 	int ok = false;
 	FILE *test = fopen(filename,"rb");
 	if ( test!=NULL ) {
-#if 0
-	    int ch1 = getc(test);
-	    int ch2 = getc(test);
-	    int ch3 = getc(test);
-	    int ch4 = getc(test);
-	    if ( ch1=='%' ) ok = true;
-	    else if (( ch1==0 && ch2==1 && ch3==0 && ch4==0 ) ||
-		    (  ch1==0 && ch2==2 && ch3==0 && ch4==0 ) ||
-		    /* Windows 3.1 Chinese version used this version for some arphic fonts */
-		    /* See discussion on freetype list, july 2004 */
-		    (ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
-		    (ch1=='t' && ch2=='r' && ch3=='u' && ch4=='e') ||
-		    (ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) ok = true;
-	    else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) ok = true;
-#endif
 	    ok = true;		/* Mac resource files are too hard to check for */
 		    /* If file exists, assume good */
 	    fclose(test);

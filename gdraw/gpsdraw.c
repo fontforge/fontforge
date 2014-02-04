@@ -748,23 +748,6 @@ static void PSDrawDrawArc(GWindow w, GRect *rct,int32 sa, int32 ta, Color col) {
     cy = rct->y + rady;
     if ( radx==0 || rady==0 )
 return;
-#if 0
-    if ( radx!=rady ) {
-	sa = atan2((double) (sx-cx),(double) (sy-cy)*radx);
-	ea = atan2((double) (ex-cx),(double) (ey-cy)*rady);
-	fprintf( ps->output_file, "gsave %g %g translate 1.0 %g scale\n",
-		cx, cy, rady/radx );
-	cx = cy = 0;
-    } else {
-	sa = atan2((double) (sx-cx),(double) (sy-cy));
-	ea = atan2((double) (ex-cx),(double) (ey-cy));
-    }
-    PSDrawNewpath(ps);
-    fprintf( ps->output_file, "  %g %g %g %g %g arc\n", _GSPDraw_XPos(cx), _GSPDraw_YPos(cy), radx,
-		sa*(360./(2*3.1415926535897932)),
-		ea*(360./(2*3.1415926535897932)) );
-    fprintf( ps->output_file, "stroke %s\n", radx!=rady?"grestore":"" );
-#else
     PSDrawNewpath(ps);
     if ( radx!=rady )
 	PSMyArc(ps,cx,cy,radx,rady,sa/64.0,ta/64.0);
@@ -772,7 +755,6 @@ return;
 	fprintf( ps->output_file, "  %g %g %g %g %g arc", _GSPDraw_XPos(ps,cx), _GSPDraw_YPos(ps,cy), _GSPDraw_Distance(ps,radx),
 		    sa/64.0, (sa+ta)/64.0 );
     fprintf( ps->output_file, " stroke\n" );
-#endif
     ps->pnt_cnt = 0;
     ps->cur_x = ps->cur_y = -1;
 }

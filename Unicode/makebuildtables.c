@@ -31,11 +31,6 @@
 
 /* figure out how to do divide, multiply, 1/4, 3/4 */
 #define forever for (;;)
-/* already in basics.h */
-#if 0
-typedef unsigned short unichar_t;
-typedef unsigned int uint32;
-#endif
 
 #define ACUTE		0x1
 #define GRAVE		0x2

@@ -944,10 +944,6 @@ static void FillLineMetrics(struct bitmapSizeTable *size,BDFFont *bdf) {
     /* GRRRRR */
     /* Apple's ftxvalidator gets unhappy if there are no vertical line metrics*/
     /*  so even though I've no idea what they should be, I'll include something*/
-#if 0
-    size->vert.minoriginsb = size->hori.maxbeforebl;
-    size->vert.minAdvancesb = size->hori.minafterbl;
-#endif
     /* Apple seems to say that the vertical ascender/descender are half the */
     /*  pixel size (which makes sense), but MS does something else */
     size->vert.ascender = bdf->pixelsize/2;
@@ -1204,18 +1200,8 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
     /* aside from the names the version number is about the only difference */
     /*  I'm aware of. Oh MS adds a couple new sub-tables, but I haven't seen */
     /*  them used, and Apple also has a subtable MS doesn't support, but so what? */
-    /* Oh, of course. Apple documents version 0x10000, but it actually uses */
-    /*  version 0x20000. How silly of me to think the docs might be right */
-    /* (Apple now documents version 0x20000) */
-    /*if ( at->msbitmaps ) {*/
-	putlong(at->bdat,0x20000);
-	putlong(at->bloc,0x20000);
-#if 0
-    } else {
-	putlong(at->bdat,0x10000);
-	putlong(at->bloc,0x10000);
-    }
-#endif
+    putlong(at->bdat,0x20000);
+    putlong(at->bloc,0x20000);
     putlong(at->bloc,at->gi.strikecnt);
 
     /* leave space for the strike array at start of file */
@@ -1345,13 +1331,8 @@ void ttfdumpbitmapscaling(SplineFont *sf,struct alltabs *at,int32 *sizes) {
 	     putc(0,at->ebsc);
 	     putc(0,at->ebsc);
 	    /* Vertical line metrics */
-#if 1
 	     putc((int) rint(size.hori.ascender*expected_sizes[i]/bdf->pixelsize),at->ebsc);
 	     putc((int) rint(size.hori.descender*expected_sizes[i]/bdf->pixelsize),at->ebsc);
-#else
-	     putc((int) rint(size.vert.ascender*expected_sizes[i]/bdf->pixelsize),at->ebsc);
-	     putc((int) rint(size.vert.descender*expected_sizes[i]/bdf->pixelsize),at->ebsc);
-#endif
 	     putc((int) rint(size.vert.widthMax*expected_sizes[i]/bdf->pixelsize),at->ebsc);
 	     putc(size.vert.caretRise,at->ebsc);
 	     putc(size.vert.caretRun,at->ebsc);

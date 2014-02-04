@@ -212,11 +212,6 @@ static int figureProperEncoding(SplineFont *sf,EncMap *map, BDFFont *b, int enc,
 	if ( uni==-1 )
 	    uni = UniFromName(name,sf->uni_interp,map->enc);
 	i = EncFromUni(uni,map->enc);
-#if 0
-	if ( uni!=-1 && i>=sf->charcnt &&
-		(sf->encoding_name==em_iso8859_1 || sf->encoding_name==em_unicode))
-	    SFReencodeFont(sf,uni>0xffff ? em_unicode4 : em_unicode);
-#endif
 	if ( i==-1 ) {
 	    i = SFFindSlot(sf,map,uni,name);
 	    if ( i==-1 && sf->onlybitmaps && enc!=-1 &&
@@ -387,14 +382,6 @@ return;
 	    if ( ch2==EOF )
 	break;
 	}
-
-#if 0			/* This can't really happen, can it? */
-/* If we've just read the strike in, there will be no open views? */
-	{ BitmapView *bv;
-	for ( bv=bc->views; bv!=NULL; bv=bv->next )
-	    GDrawRequestExpose(bv->v,NULL,false);
-	}
-#endif
     } else {
 	int cnt;
 	if ( depth==1 )
@@ -1956,15 +1943,6 @@ void SFSetFontName(SplineFont *sf, char *family, char *mods,char *fullname) {
 	    ++pt;
     }
     *tpt = '\0';
-#if 0
-    for ( pt=tpt=family; *pt; ) {
-	if ( !isspace(*pt))
-	    *tpt++ = *pt++;
-	else
-	    ++pt;
-    }
-    *tpt = '\0';
-#endif
 
     /* In the URW world fontnames aren't just a simple concatenation of */
     /*  family name and modifiers, so neither the family name nor the modifiers */

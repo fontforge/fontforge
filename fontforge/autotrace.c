@@ -196,13 +196,6 @@ static int mytempnam(char *buffer) {
 	strcpy(buffer,P_tmpdir);
     strcat(buffer,"/PfaEdXXXXXX");
     fd = g_mkstemp(buffer);
-#if 0
-    old = copy(buffer);
-    strcat(buffer,".bmp");
-    if ( rename(old,buffer)==-1 )
-	strcpy(buffer,old);
-    free(old);
-#endif
 return( fd );
 }
 

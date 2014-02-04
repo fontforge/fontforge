@@ -364,10 +364,6 @@ return;
     	    } else if ( strcmp(skipwhite(pt),"FontSpecific")==0 &&
 		    fd->localname!=NULL && strcmp(fd->localname,"ZapfDingbats")==0 ) {
     		fd->map = em_zapfding;
-#if 0
-    	    } else if ( strcmp(skipwhite(pt),"ExtJIS12-88-CFEncoding")==0 ) {
-    		fd->map = em_jis208;
-#endif
     	    } else {
     		fd->map = _GDraw_ParseMapping(def2u_strncpy(ubuf,skipwhite(pt),sizeof(ubuf)/sizeof(ubuf[0])));
     		if ( fd->map==em_none ) {
@@ -375,12 +371,6 @@ return;
 			fd->charmap_name = uc_copy(skipwhite(pt));
 		    fd->map = em_max;
 		    /* Might turn out to be a user specified mapping later */
-#if 0
-    		    GDrawIError("Unknown font mapping %s in %s", skipwhite(pt), filename);
-    		    fclose(file);
-    		    gfree(fd);
-return;
-#endif
     		}
     		ti.is_8859_1 = (fd->map == em_iso8859_1);
     	    }
@@ -456,14 +446,6 @@ return;
 		}
 	    }
 	}
-#if 0	/* If we can't find a font file, assume it's resident on the printer */
-	if ( fd->fontfile==NULL ) {
-	    gfree(fd->metricsfile);
-	    gfree(fd->localname);
-	    gfree(fd);
-return;
-	}
-#endif
 	fn = _GDraw_HashFontFamily(fonts,
 		def2u_strncpy(ubuf,ti.family_name,sizeof(ubuf)/sizeof(ubuf[0])),
 		ti.prop);

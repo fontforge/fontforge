@@ -1078,14 +1078,6 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  break;
 	  case CHR('n','a','m','e'):
 	    info->copyright_start = offset;
-#if 0
-	    /* Windows changed its mind. This is OK again */
-	    if ( length>5*1024 && ( info->openflags & of_fontlint ))
-		LogError( _("Windows has decided that fonts with 'name' tables bigger than 5K are\n"
-		            "insecure and will refuse to load them. Don't ask me why they believe this.\n"
-			    "This font has a name table which is %d bytes and is bigger than this limit.\n"),
-			    length);
-#endif
 	  break;
 	  case CHR('p','o','s','t'):
 	    info->postscript_start = offset;
@@ -1109,11 +1101,6 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	    info->math_length = length;
 	  break;
 	      /* Apple stuff */
-#if 0
-	  case CHR('a','c','n','t'):
-	    info->acnt_start = offset;
-	  break;
-#endif
 	  case CHR('f','e','a','t'):
 	    info->feat_start = offset;
 	  break;
@@ -2146,16 +2133,6 @@ return;
 		    cur->transform[1]*cur->transform[1]);
 	    cur->transform[5] *= sqrt(cur->transform[2]*cur->transform[2]+
 		    cur->transform[3]*cur->transform[3]);
-#if 0
-	    /* Apple's Chicago is an example */
-	    if ( info->fontname!=NULL && strcmp(info->fontname,"CompositeMac")!=0 && !asked ) {
-		/* Not interested in the test font I generated myself */
-		asked = true;
-		fprintf( stderr, "Neat! You've got a font that actually uses Apple's scaled composite offsets.\n" );
-		fprintf( stderr, "  I've never seen one, could you send me a copy of %s?\n", info->fontname );
-		fprintf( stderr, "  Thanks.  gww@silcom.com\n" );
-	    }
-#endif
 	}
 	}
 	if ( cur->orig_pos>=info->glyph_cnt ) {
@@ -3691,11 +3668,7 @@ static void cffinfofillup(struct ttfinfo *info, struct topdicts *dict,
 	info->emsize = 1000;
     else
 	info->emsize = rint( 1/dict->fontmatrix[0] );
-#if 1
     info->ascent = .8*info->emsize;
-#else
-    info->ascent = dict->fontbb[3]*info->emsize/(dict->fontbb[3]-dict->fontbb[1]);
-#endif
     info->descent = info->emsize - info->ascent;
     if ( dict->copyright!=-1 || dict->notice!=-1 )
 	free( info->copyright );
@@ -4106,13 +4079,6 @@ static void dummywidthsfromstrike(FILE *ttf,struct ttfinfo *info) {
 
     if ( info->bitmaps==NULL )
 return;
-#if 0
-    for ( bdf=info->bitmaps; bdf->next!=NULL; bdf=bdf->next );
-    for ( i=0; i<bdf->glyphcnt; ++i ) if ( bdf->glyphs[i]!=NULL ) {
-	bdf->glyphs[i]->sc->width = info->emsize*bdf->glyphs[i]->width/bdf->pixelsize;
-	bdf->glyphs[i]->sc->widthset = true;
-    }
-#else
     for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL ) {
 	cnt = 0; scaled_sum = 0;
 	for ( bdf=info->bitmaps; bdf->next!=NULL; bdf=bdf->next ) {
@@ -4126,7 +4092,6 @@ return;
 	    info->chars[i]->widthset = true;
 	}
     }
-#endif
 }
 
 static void readttfvwidths(FILE *ttf,struct ttfinfo *info) {
@@ -4146,17 +4111,8 @@ static void readttfvwidths(FILE *ttf,struct ttfinfo *info) {
     for ( i=0; i<vwidth_cnt && i<info->glyph_cnt; ++i ) {
 	lastvwidth = getushort(ttf);
 	tsb = getushort(ttf);
-	if ( info->chars[i]!=NULL ) {		/* can happen in ttc files */
+	if ( info->chars[i]!=NULL )		/* can happen in ttc files */
 	    info->chars[i]->vwidth = lastvwidth;
-#if 0	/* this used to mean something once */
-	/* At one point I stored the ymax of loading the glyph in lsidebearing*/
-	/* I've removed that as it now seems pointless */
-	    if ( info->cff_start==0 ) {
-		voff += tsb + info->chars[i]->lsidebearing /* actually maxy */;
-		++cnt;
-	    }
-#endif
-	}
     }
     if ( i==0 ) {
 	LogError( _("Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n") );
@@ -5100,36 +5056,6 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
     }
 }
 
-#if 0
-static int cmapEncFromName(struct ttfinfo *info,const char *nm, int glyphid) {
-    int uni;
-    int i;
-
-    if ( info->map!=NULL )
-	uni = EncFromName(nm,info->uni_interp,info->map->enc);
-    else
-	uni = EncFromName(nm,ui_none,&custom);
-    if ( uni==-1 )
-return( -1 );
-
-    for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL ) {
-	if ( info->chars[i]->unicodeenc==uni ) {
-	    if ( info->complainedmultname )
-		/* Don't do it again */;
-	    else if ( info->chars[i]->name!=NULL && strcmp(info->chars[i]->name,nm)==0 )
-		LogError( _("Warning: Glyph %d has the same name (%s) as Glyph %d\n"),
-			i, nm, glyphid );
-	    else
-		LogError( _("Warning: Glyph %d is named %s which should mean it is mapped to\n Unicode U+%04X, but Glyph %d already has that encoding.\n"),
-			glyphid, nm, uni, i);
-	    info->complainedmultname = true;
-return( -1 );
-	}
-    }
-return( uni );
-}
-#endif
-
 static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     int i,j;
     int format, len, gc, gcbig, val;
@@ -5172,13 +5098,8 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    }
 
 	    /* if we are only loading bitmaps, we can get holes in our data */
-	    for ( i=0; i<258; ++i ) if ( indexes[i]!=0 || i==0 ) if ( indexes[i]<info->glyph_cnt && info->chars[indexes[i]]!=NULL ) {
-		info->chars[indexes[i]]->name = copy(ttfstandardnames[i]);
-#if 0			/* Too many fonts have badly named glyphs */
-		if ( info->chars[indexes[i]]->unicodeenc==-1 )
-		    info->chars[indexes[i]]->unicodeenc = cmapEncFromName(info,ttfstandardnames[i],indexes[i]);
-#endif
-	    }
+	    for ( i=0; i<258; ++i ) if ( indexes[i]!=0 || i==0 ) if ( indexes[i]<info->glyph_cnt && info->chars[indexes[i]]!=NULL )
+		info->chars[indexes[i]]->name = copy(ttfstandardnames[i]); /* Too many fonts have badly named glyphs to deduce encoding from name */
 	    gcbig += 258;
 	    for ( i=258; i<gcbig; ++i ) {
 		char *nm;
@@ -5189,13 +5110,8 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 		for ( j=0; j<len; ++j )
 		    nm[j] = getc(ttf);
 		nm[j] = '\0';
-		if ( indexes[i]<info->glyph_cnt && info->chars[indexes[i]]!=NULL ) {
-		    info->chars[indexes[i]]->name = nm;
-#if 0			/* Too many fonts have badly named glyphs */
-		    if ( info->chars[indexes[i]]->unicodeenc==-1 )
-			info->chars[indexes[i]]->unicodeenc = cmapEncFromName(info,nm,indexes[i]);
-#endif
-		}
+		if ( indexes[i]<info->glyph_cnt && info->chars[indexes[i]]!=NULL )
+		    info->chars[indexes[i]]->name = nm; /* Too many fonts have badly named glyphs to deduce encoding from name */
 	    }
 	    free(indexes);
 	    anynames = true;
@@ -5667,17 +5583,6 @@ static void NameConsistancyCheck(SplineFont *sf,EncMap *map) {
     /*  so now I just produce warnings */
     int gid, uni;
     SplineChar *sc;
-#if 0
-    char buffer[100];
-    int response, asked=-1;
-    char *buts[5];
-#endif
-
-#if 0
-    buts[0] = _("Yes"); buts[1] = _("Yes to _All");
-    buts[2] = _("No _to All"); buts[3] = _("No");
-    buts[4] = NULL;
-#endif
 
     for ( gid = 0 ; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
 	if ( sc->name!=NULL &&
@@ -5685,16 +5590,11 @@ static void NameConsistancyCheck(SplineFont *sf,EncMap *map) {
 		strcmp(sc->name,"nonmarkingreturn")!=0 &&
 		(uni = UniFromName(sc->name,sf->uni_interp,map==NULL ? &custom : map->enc))!= -1 &&
 		sc->unicodeenc != uni ) {
-#if 1
 	    if ( uni>=0xe000 && uni<=0xf8ff )
 		/* Don't complain about adobe's old PUA assignments for things like "eight.oldstyle" */;
 	    else if ( uni<0x20 )
 		/* Nor about control characters */;
 	    else if ( sc->unicodeenc==-1 ) {
-#if 0
-		LogError(_("The glyph named %.30s is not mapped to any unicode code point.\nBut its name indicates it should be mapped to U+%04X.\n"),
-			    sc->name,uni);
-#endif
 	    } else {
 		/* Ah, but suppose there's an altuni? */
 		struct altuni *alt;
@@ -5715,32 +5615,6 @@ static void NameConsistancyCheck(SplineFont *sf,EncMap *map) {
 		    sc->unicodeenc = uni;
 		}
 	    }
-#else
-	    if ( asked!=-1 )
-		response = asked;
-	    else if ( sc->unicodeenc==-1 )
-		response = ff_ask(_("Bad glyph name"),(const char **) buts,1,1,_("The glyph named %.30s is not mapped to any unicode code point. But its name indicates it should be mapped to U+%04X.\nWould you like to retain the name in spite of this?"),
-			sc->name,uni);
-	    else if ( strcmp(sc->name,"alefmaksurainitialarabic")==0 ||
-                        strcmp(sc->name,"alefmaksuramedialarabic")==0 )
-		response = ff_ask(_("Bad glyph name"),(const char **) buts,1,1,_("The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the Adobe Glyph List disagree with Unicode.  The use of these glyph names is therefore discouraged.\nWould you like to retain the name in spite of this?"));
-	    else
-		response = ff_ask(_("Bad glyph name"),(const char **) buts,1,1,_("The glyph named %.30s is mapped to U+%04X.\nBut its name indicates it should be mapped to U+%04X.\nWould you like to retain the name in spite of this?"),
-			sc->name,sc->unicodeenc, uni);
-	    if ( response==1 )
-		asked = response = 0;
-	    else if ( response==2 )
-		asked = response = 3;
-	    if ( response==3 ) {
-		free(sc->name);
-		if ( sc->unicodeenc==-1 )
-		    sc->name = StdGlyphName(buffer,sc->unicodeenc,sf->uni_interp,NULL);
-		else {
-		    sprintf( buffer, "glyph%d", gid );
-		    sc->name = copy( buffer );
-		}
-	    }
-#endif
 	}
     }
 }
@@ -6227,20 +6101,6 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     ASCIIcheck(&sf->version);
     
     TTF_PSDupsDefault(sf);
-#if 0
-    if ( info->gsub_start==0 && info->mort_start==0 && info->morx_start==0 ) {
-	/* Get default ligature values, etc. */
-	k=0;
-	do {
-	    _sf = k<sf->subfontcnt?sf->subfonts[k]:sf;
-	    for ( i=0; i<sf->glyphcnt; ++i ) {
-		if ( _sf->glyphs[i]!=NULL )		/* Might be null in ttc files */
-		    SCLigDefault(_sf->glyphs[i]);
-	    }
-	    ++k;
-	} while ( k<sf->subfontcnt );
-    }
-#endif
 
     /* I thought the languages were supposed to be ordered, but it seems */
     /*  that is not always the case. Order everything, just in case */

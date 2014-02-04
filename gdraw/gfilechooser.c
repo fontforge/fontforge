@@ -529,7 +529,6 @@ return( true );
 	if ( gfc->filterb!=NULL && gfc->ok!=NULL )
 	    _GWidget_MakeDefaultButton(&gfc->ok->g);
     } else if ( *pt=='/' && e->u.control.u.tf_changed.from_pulldown!=-1 ) {
-#if 1
 	GEvent e;
 	e.type = et_controlevent;
 	e.u.control.subtype = et_buttonactivate;
@@ -540,11 +539,6 @@ return( true );
 	    (e.u.control.g->handle_controlevent)(e.u.control.g,&e);
 	else
 	    GDrawPostEvent(&e);
-#else
-	unichar_t *temp = u_copy(spt);
-	GGadgetSetTitle((GGadget *) gfc,temp);
-	free(temp);
-#endif
     } else {
 	if ( gfc->filterb!=NULL && gfc->ok!=NULL )
 	    _GWidget_MakeDefaultButton(&gfc->filterb->g);
@@ -1386,15 +1380,6 @@ static void GFileChooser_destroy(GGadget *g) {
     if ( gfc->outstanding )
 	GIOcancel(gfc->outstanding);
     GGadgetDestroy(&gfc->topbox->g);	/* destroys everything */
-#if 0
-    GGadgetDestroy(&gfc->name->g);
-    GGadgetDestroy(&gfc->files->g);
-    GGadgetDestroy(&gfc->directories->g);
-    GGadgetDestroy(&gfc->up->g);
-    GGadgetDestroy(&gfc->home->g);
-    GGadgetDestroy(&gfc->bookmarks->g);
-    GGadgetDestroy(&gfc->config->g);
-#endif
     if ( gfc->paths!=NULL ) {
 	for ( i=0; gfc->paths[i]!=NULL; ++i )
 	    free(gfc->paths[i]);
@@ -1431,25 +1416,6 @@ return( true );
 return( false );
 }
 
-#if 0		/* Our subwidgets get the key events first and we never see anything */
-static int gfilechooser_key(GGadget *g, GEvent *event) {
-    GFileChooser *gfc = (GFileChooser *) g;
-
-    if ( event->type!=et_char  )
-return( false );
-    if ( (event->u.chr.state & ksm_control) &&
-	    (event->u.chr.chars[0] == 'b' || event->u.chr.chars[0]=='B')) {
-	if ( gfc->hpos>0 ) {
-	    --gfc->hpos;
-	    GFileChooserScanDir(gfc,gfc->history[gfc->hpos]);
-	}
-return( true );
-    }
-
-return( false );
-}
-#endif
-
 static int gfilechooser_noop(GGadget *g, GEvent *event) {
 return( false );
 }
@@ -1461,37 +1427,14 @@ return( false );
 static void gfilechooser_move(GGadget *g, int32 x, int32 y ) {
     GFileChooser *gfc = (GFileChooser *) g;
 
-#if 1
     GGadgetMove(&gfc->topbox->g,x,y);
-#else
-    GGadgetMove(&gfc->files->g,x+(gfc->files->g.r.x-g->r.x),y+(gfc->files->g.r.y-g->r.y));
-    GGadgetMove(&gfc->directories->g,x+(gfc->directories->g.r.x-g->r.x),y+(gfc->directories->g.r.y-g->r.y));
-    GGadgetMove(&gfc->name->g,x+(gfc->name->g.r.x-g->r.x),y+(gfc->name->g.r.y-g->r.y));
-    GGadgetMove(&gfc->up->g,x+(gfc->up->g.r.x-g->r.x),y+(gfc->up->g.r.y-g->r.y));
-    GGadgetMove(&gfc->home->g,x+(gfc->home->g.r.x-g->r.x),y+(gfc->home->g.r.y-g->r.y));
-#endif
     _ggadget_move(g,x,y);
 }
 
 static void gfilechooser_resize(GGadget *g, int32 width, int32 height ) {
     GFileChooser *gfc = (GFileChooser *) g;
 
-#if 1
     GGadgetResize(&gfc->topbox->g,width,height);
-#else
-    if ( width!=gfc->g.r.width ) {
-	int space = 8 + (width>100) ? (width-100)/12 : 0;
-	GGadgetResize(&gfc->directories->g,width-gfc->up->g.r.width-gfc->home->g.r.width-space,gfc->directories->g.r.height);
-	GGadgetMove(&gfc->directories->g,gfc->g.r.x+(width-gfc->directories->g.r.width)/2,gfc->g.r.y);
-	GGadgetMove(&gfc->up->g,gfc->g.r.x+width-gfc->up->g.r.width-2,gfc->up->g.r.y);
-
-	GGadgetMove(&gfc->name->g,gfc->g.r.x,gfc->g.r.y+height-gfc->name->g.r.height);
-	GGadgetResize(&gfc->name->g,width,gfc->name->g.r.height);
-    } else {
-	GGadgetMove(&gfc->name->g,gfc->name->g.r.x,gfc->g.r.y+height-gfc->name->g.r.height);
-    }
-    GGadgetResize(&gfc->files->g,width,height-gfc->directories->g.r.height-gfc->name->g.r.height-10);
-#endif
     _ggadget_resize(g,width,height);
 }
 

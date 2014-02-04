@@ -179,11 +179,6 @@ static void SaveOffsets(GWindow main, GWindow palette, GPoint *off) {
 	off->y = pr.y-mr.y;
 	if ( off->x<0 ) off->x = 0;
 	if ( off->y<0 ) off->y = 0;
-#if 0
- printf( "%s is offset (%d,%d)\n", palette==cvtools?"CVTools":
-     palette==cvlayers?"CVLayers":palette==bvtools?"BVTools":
-     palette==bvlayers?"BVLayers":"BVShades", off->x, off->y );
-#endif
     }
 }
 
@@ -1088,10 +1083,6 @@ return;			/* If the wm gave me a window the wrong size */
     /* we have two fewer buttons than commands as two bottons each control two commands */
     if ( pos<0 || pos>=cvt_max )
 	pos = cvt_none;
-#if 0
-    if ( pos==cvt_freehand && cv->b.sc->parent->order2 )
-return;			/* Not available in order2 spline mode */
-#endif
     if ( event->type == et_mousedown ) {
 	if ( isstylus && event->u.mouse.button==2 )
 	    /* Not a real button press, only touch counts. This is a modifier */;
@@ -3038,10 +3029,6 @@ static void CVPopupInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
     int pos;
 
     pos = mi->mid;
-#if 0	/* No longer show rect/poly tool */
-    if ( (pos==14 && rectelipse) || (pos==15 && polystar ))
-	pos += 2;
-#endif
     if ( pos==cvt_spiro ) {
 	CVChangeSpiroMode(cv);
     } else if ( cv->had_control ) {

@@ -1551,13 +1551,6 @@ return( true );
 		}
 	    }
 	}
-#if 0
-	if ( GetCalmInt8(ptd->gw,CID_PatternWidth,_("Width"),&err)!=ptd->sc_first.width &&
-		!err ) {
-	    sprintf( buffer,"%d",ptd->sc_first.width);
-	    GGadgetSetTitle8(GWidgetGetControl(ptd->gw,CID_PatternWidth),buffer);
-	}
-#endif
       } break;
       case et_map:
 	{
@@ -1958,18 +1951,6 @@ return;
     TPFree(&td);
     cv->lastselpt = NULL;
 }
-
-#if 0
-void SCPatternTile(SplineChar *sc,int layer) {
-    struct tiledata td;
-
-    if ( !TilePatternAsk(&td,sc->parent))
-return;
-
-    SCTilePattern(sc,layer,td.pattern, &td.patternSize, &td.repeatCnt);
-    TPFree(&td);
-}
-#endif
 
 void FVPatternTile(FontView *fv) {
     struct tiledata td;

@@ -100,17 +100,6 @@ static int cicntcomp(const void *_c1, const void *_c2) {
 return( c2->cnt-c1->cnt );
 }
 
-#if 0
-static int queuelength( struct clutinf *ci) {
-    int cnt = 0;
-    while ( ci!=NULL ) {
-	++cnt;
-	ci = ci->next;
-    }
-return( cnt );
-}
-#endif
-
 /* we have cnt different colors, the colors and their histogram is given in */
 /*  clutinf. We want to fit that into clutmax colors */
 /* first thing is to create a dithering cube which will fit in clutmax */

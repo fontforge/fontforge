@@ -3760,10 +3760,6 @@ void CVGetInfo(CharView *cv) {
     spiro_cp *scp;
 
     if ( !CVOneThingSel(cv,&sp,&spl,&ref,&img,&ap,&scp)) {
-#if 0
-	if ( (FontView *) (cv->b.fv)->b.cidmaster==NULL )
-	    SCCharInfo(cv->b.sc,(FontView *) (cv->b.fv)->b.map,CVCurEnc(cv));
-#endif
     } else if ( ref!=NULL )
 	RefGetInfo(cv,ref);
     else if ( img!=NULL )

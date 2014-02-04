@@ -1727,11 +1727,6 @@ const uint8 mergefunc[] = {
 /* mt_and */
 	0, 0,
 	0, 1,
-#if 0
-/* mt_xor */
-	0, 1,
-	1, 0
-#endif
 };
 
 static enum merge_type SelMergeType(GEvent *e) {
@@ -3170,12 +3165,6 @@ static int md_e_h(GWindow gw, GEvent *e) {
 	}
 	d->done = true;
     } else if ( e->type==et_char ) {
-#if 0
-	if ( e->u.chr.keysym == GK_F1 || e->u.chr.keysym == GK_Help ) {
-	    help("fontinfo.html");
-return( true );
-	}
-#endif
 return( false );
     }
 return( true );
@@ -3591,37 +3580,6 @@ static void FVMenuClearHints(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *U
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     FVClearHints(&fv->b);
 }
-
-#if 0
-static void FVMenuClearWidthMD(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i, changed, gid;
-    MinimumDistance *md, *prev, *next;
-
-    for ( i=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i] &&
-	    (gid = fv->b.map->map[i])!=-1 && SCWorthOutputting(fv->b.sf->glyphs[gid]) ) {
-	SplineChar *sc = fv->b.sf->glyphs[gid];
-	prev=NULL; changed = false;
-	for ( md=sc->md; md!=NULL; md=next ) {
-	    next = md->next;
-	    if ( md->sp2==NULL ) {
-		if ( prev==NULL )
-		    sc->md = next;
-		else
-		    prev->next = next;
-		chunkfree(md,sizeof(MinimumDistance));
-		changed = true;
-	    } else
-		prev = md;
-	}
-	if ( changed ) {
-	    sc->manualhints = true;
-	    SCOutOfDateBackground(sc);
-	    SCUpdateAll(sc);
-	}
-    }
-}
-#endif
 
 static void FVMenuHistograms(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -5167,11 +5125,6 @@ static void enlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  case MID_Reencode: case MID_ForceReencode:
 	    mi->ti.disabled = fv->b.cidmaster!=NULL;
 	  break;
-#if 0
-	  case MID_AddUnencoded:
-	    mi->ti.disabled = fv->b.normal!=NULL;
-	  break;
-#endif
 	  case MID_DetachGlyphs: case MID_DetachAndRemoveGlyphs:
 	    mi->ti.disabled = !anyglyphs;
 	  break;
@@ -6064,19 +6017,6 @@ void FVRefreshChar(FontView *fv,int gid) {
     /* Can happen in scripts */ /* Can happen if we do an AutoHint when generating a tiny font for freetype context */
     if ( fv->v==NULL || fv->colcnt==0 || fv->b.sf->glyphs[gid]== NULL )
 return;
-#if 0
-    /* What on earth was this code for? it breaks updates of things like "a.sc"*/
-    if ( fv->cur_subtable==NULL && strchr(fv->b.sf->glyphs[gid]->name,'.')!=NULL ) {
-	char *temp = copy(fv->b.sf->glyphs[gid]->name);
-	SplineChar *sc2;
-	*strchr(temp,'.') = '\0';
-	sc2 = SFGetChar(fv->b.sf,-1,temp);
-	if ( sc2!=NULL && sc2->orig_pos!=gid )
-	    gid = sc2->orig_pos;
-	free(temp);
-    }
-#endif
-
     for ( fv=(FontView *) (fv->b.sf->fv); fv!=NULL; fv = (FontView *) (fv->b.nextsame) ) {
 	if( !fv->colcnt )
 	    continue;
@@ -7278,12 +7218,8 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	FVTimer(fv,event);
       break;
       case et_focus:
-	if ( event->u.focus.gained_focus ) {
+	if ( event->u.focus.gained_focus )
 	    GDrawSetGIC(gw,fv->gic,0,20);
-#if 0
-	    CVPaletteDeactivate();
-#endif
-	}
       break;
     }
 return( true );

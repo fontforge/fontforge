@@ -640,12 +640,10 @@ static int encmatch(const char *enc,int subok) {
 	{ "UCS-2-INTERNAL", e_unicode },
 	{ "ISO-10646", e_unicode },
 	{ "ISO_10646", e_unicode },
-#if 0
-	{ "eucJP", e_euc },
-	{ "EUC-JP", e_euc },
-	{ "ujis", ??? },
-	{ "EUC-KR", e_euckorean },
-#endif
+	/* { "eucJP", e_euc }, */
+	/* { "EUC-JP", e_euc }, */
+	/* { "ujis", ??? }, */
+	/* { "EUC-KR", e_euckorean }, */
 	{ NULL }};
     int i;
     char buffer[80];
@@ -896,10 +894,6 @@ static void PrefsUI_LoadPrefs(void) {
 	}
 	fclose(p);
     }
-#if 0
-    if ( xdefs_filename!=NULL )
-	GResourceAddResourceFile(xdefs_filename,GResourceProgramName,true);
-#endif
     if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
 	fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
 	

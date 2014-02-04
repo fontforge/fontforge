@@ -641,20 +641,6 @@ static int GTBackPos(SFTextArea *st,int pos, int ismeta) {
 	newpos = SFTextAreaSelBackword(st->li.text,pos);
     else
 	newpos = pos-1;
-#if 0		/* Why did I think this mattered? */
-    /* Best just to step over each ligature component even if the cursor */
-    /*  stays put. Or that's what I think today */
-
-    /* There are some cases (a ligature of a ligature perhaps) where we can't */
-    /*  show a difference between pos and pos-1, so keep subtracting until we */
-    /*  can */
-    l = SFTextAreaFindLine(st,pos);
-    xloc = SFTextAreaGetXPosFromOffset(st,l,pos);
-    while ( newpos!=-1 &&
-	    SFTextAreaFindLine(st,newpos) == l &&
-	    xloc == SFTextAreaGetXPosFromOffset(st,l,newpos) )
-	--newpos;
-#endif
     if ( newpos==-1 ) newpos = 0;
 return( newpos );
 }
@@ -668,20 +654,6 @@ static int GTForePos(SFTextArea *st,int pos, int ismeta) {
 	if ( st->li.text[pos]!=0 )
 	    newpos = pos+1;
     }
-#if 0		/* Why did I think this mattered? */
-    /* Best just to step over each ligature component even if the cursor */
-    /*  stays put. Or that's what I think today */
-
-    /* There are some cases (a ligature of a ligature perhaps) where we can't */
-    /*  show a difference between pos and pos-1, so keep subtracting until we */
-    /*  can */
-    l = SFTextAreaFindLine(st,pos);
-    xloc = SFTextAreaGetXPosFromOffset(st,l,pos);
-    while ( st->li.text[newpos]!=0 &&
-	    SFTextAreaFindLine(st,newpos) == l &&
-	    xloc == SFTextAreaGetXPosFromOffset(st,l,newpos) )
-	++newpos;
-#endif
 return( newpos );
 }
 
@@ -1732,12 +1704,6 @@ static int sftextarea_sel(GGadget *g, GEvent *event) {
 
     if ( event->type == et_selclear ) {
 	if ( event->u.selclear.sel==sn_primary && st->sel_start!=st->sel_end ) {
-#if 0		/* Retain the drawn selection even if X says we don't own */
-		/*  the selection property. Otherwise we can't change the */
-		/*  fontsize (ie. must select the fontsize field) */
-	    st->sel_start = st->sel_end = st->sel_base;
-	    _ggadget_redraw(g);
-#endif
 return( true );
 	}
 return( false );

@@ -12520,37 +12520,6 @@ return( Py_BuildValue("i", 0));
 return( Py_BuildValue("i", 1));
 }
 
-#if 0
-static int PyFF_Font_set_is_cid(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
-    int i;
-    SplineFont *cidmaster, *sf;
-
-    if ( CheckIfFontClosed(self) )
-return (-1);
-    cidmaster = self->fv->cidmaster;
-    if ( !PyInt_Check(value)) {
-	PyErr_Format(PyExc_TypeError, "Expected boolean value" );
-return( -1 );
-    }
-
-    i = PyInt_AsLong(value);
-    if ( cidmaster==NULL && i==0 )
-return( 0 );
-    if ( cidmaster!=NULL && i!=0 )
-return( 0 );
-
-    if ( i==0 ) {
-	SFFlatten(cidmaster);
-    } else {
-    map = FindCidMap( c->a.vals[1].u.sval, c->a.vals[2].u.sval, c->a.vals[3].u.ival, sf);
-    if ( map == NULL )
-	ScriptError( c, "No cidmap matching given ROS" );
-    MakeCIDMaster(sf, c->curfv->map, false, NULL, map);
-/* **** FUNCTION WAS NEVER FINISHED **** */
-    }
-}
-#endif
-
 static PyObject *PyFF_Font_get_encoding(PyFF_Font *self, void *UNUSED(closure)) {
     if ( CheckIfFontClosed(self) )
 return (NULL);
@@ -17014,32 +16983,6 @@ static PyObject *PyFFFont_correctReferences(PyFF_Font *self, PyObject *UNUSED(ar
     FVCorrectReferences(self->fv);
 Py_RETURN( self );
 }
-
-#if 0
-static PyObject *PyFFFont_compareGlyphs(PyFF_Font *self, PyObject *args) {
-    /* Compare selected glyphs against the contents of the clipboard	*/
-    /* Three comparisons:						*/
-    /*	1) Compare the points (base & control) of all contours		*/
-    /*  2) Compare that the splines themselves don't get too far appart */
-    /*  3) Compare bitmaps						*/
-    /*  4) Compare hints/hintmasks					*/
-    double pt_err = .5, spline_err = 1, bitmaps = -1;
-    int bb_err=2, comp_hints=false, report_errors = true;
-    int ret;
-
-    if ( CheckIfFontClosed(self) )
-return (NULL);
-    if ( !PyArg_ParseTuple(args,"|dddiii",&pt_err,&spline_err,&bitmaps,
-	    &bb_err,&comp_hints,&report_errors) )
-return( NULL );
-    ret = CompareGlyphs(NULL, pt_err, spline_err, bitmaps, bb_err,
-		    comp_hints, report_errors );
-    if ( ret==-1 )
-return( NULL );
-
-return( Py_BuildValue("i", ret ));
-}
-#endif
 
 static PyObject *PyFFFont_validate(PyFF_Font *self, PyObject *args) {
     FontViewBase *fv;

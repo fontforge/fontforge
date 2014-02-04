@@ -464,21 +464,6 @@ char **AllNamelistNames(void) {
 return( names );
 }
 
-#if 0
-uint8 *AllNamelistUnicodes(void) {
-    NameList *nl;
-    int cnt;
-    uint8 *uses;
-
-    for ( nl = &agl, cnt=0; nl!=NULL; nl=nl->next, ++cnt );
-    uses = galloc((cnt+1) *sizeof(uint8));
-    for ( nl = &agl, cnt=0; nl!=NULL; nl=nl->next, ++cnt )
-	uses[cnt] = nl->uses_unicode;
-    uses[cnt] = 0xff;
-return( uses );
-}
-#endif
-
 NameList *DefaultNameListForNewFonts(void) {
 return( namelist_for_new_fonts );
 }

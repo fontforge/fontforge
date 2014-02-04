@@ -2512,12 +2512,7 @@ return;
 	GDrawRequestExpose(att->v,&r,false);
     } else if ( event->type == et_mousemove ) {
 	GGadgetEndPopup();
-#if 0
-	if ( node!=NULL && (strstr(node->label," => ")!=NULL ||
-			    strstr(node->label," <= ")!=NULL ) ||
-			    strstr(node->label," ∆x=")!=NULL )) {
-#endif
-	    ATTStartPopup(att,node);
+        ATTStartPopup(att,node);
     }
 }
 

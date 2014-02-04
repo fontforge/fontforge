@@ -1713,12 +1713,6 @@ void FontViewMenu_BuildComposite(GtkMenuItem *menuitem, gpointer user_data) {
     FVBuildAccent( (FontViewBase *) FV_From_MI(menuitem), false );
 }
 
-#if 0
-void FontViewMenu_BuildDuplicatem(GtkMenuItem *menuitem, gpointer user_data) {
-    FVBuildDuplicate( (FontViewBase *) FV_From_MI(menuitem));
-}
-#endif
-
 #ifdef KOREAN
 void FontViewMenu_ShowGroup(GtkMenuItem *menuitem, gpointer user_data) {
     ShowGroup( ((FontView *) FV_From_MI(menuitem))->b.sf );
@@ -2382,13 +2376,6 @@ void FontViewMenu_EditTable(GtkMenuItem *menuitem, gpointer user_data) {
 	    strcmp(name,"edit_fpgm1")==0?CHR('f','p','g','m'):
 	    strcmp(name,"edit_maxp1")==0?CHR('m','a','x','p'):
 				  CHR('c','v','t',' '));
-}
-
-void FontViewMenu_PrivateToCvt(GtkMenuItem *menuitem, gpointer user_data) {
-#if 0
-    FontView *fv = FV_From_MI(menuitem);
-    CVT_ImportPrivate(fv->b.sf);
-#endif
 }
 
 void FontViewMenu_ClearInstrs(GtkMenuItem *menuitem, gpointer user_data) {
@@ -3190,14 +3177,6 @@ void FontViewMenu_ActivateEdit(GtkMenuItem *menuitem, gpointer user_data) {
     /* I can only determine the contents of the clipboard asyncronously */
     /*  hence I can't check to see if it contains something that is pastable */
     /*  So all I can do with paste is check that something is selected */
-#if 0
-    int not_pasteable = pos==-1 ||
-		    (!CopyContainsSomething() &&
-		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/png") &&
-		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/svg") &&
-		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/bmp") &&
-		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/eps"));
-#endif
     GtkWidget *w;
     int gid;
     static char *poslist[] = { "cut2", "copy2", "copy_reference1", "copy_width1",
@@ -3993,11 +3972,6 @@ static PangoFontDescription *FVCheckFont(FontView *fv,int type) {
     int family = type>>2;
     char *fontnames;
 
-#if 0		/* How do I do this in gtk???? */
-    static char *resourcenames[] = { "FontView.SerifFamily", "FontView.ScriptFamily",
-	    "FontView.FrakturFamily", "FontView.DoubleStruckFamily",
-	    "FontView.SansFamily", "FontView.MonoFamily", NULL };
-#endif
     static char *defaultfontnames[] = {
 	    "times,serif,caslon,clearlyu,unifont",
 	    "script,formalscript,clearlyu,unifont",
@@ -4009,13 +3983,7 @@ static PangoFontDescription *FVCheckFont(FontView *fv,int type) {
 	};
 
     if ( fv->fontset[type]==NULL ) {
-#if 0
-	fontnames = GResourceFindString(resourcenames[family]);
-#else
-	fontnames = NULL;
-#endif
-	if ( fontnames==NULL )
-	    fontnames = defaultfontnames[family];
+        fontnames = defaultfontnames[family];
 
 	pfd = pango_font_description_new();
 	pango_font_description_set_family(pfd,fontnames);
@@ -4286,17 +4254,6 @@ gboolean FontViewView_Expose(GtkWidget *widget, GdkEventExpose *event, gpointer 
 		index = utf8_strlen(utf8_buf)-1;
 		pango_layout_index_to_pos(fv->vlayout,index,&pos);
 		width = (pos.x+pos.width)/1000;
-#if 0
-		if ( width==0 ) {
-		    utf8_buf[0] = 0xe0 | (0xfffd>>12);
-		    utf8_buf[1] = 0x80 | ((0xfffd>>6)&0x3f);
-		    utf8_buf[2] = 0x80 | (0xfffd&0x3f);
-		    utf8_buf[3] = 0;
-		    pango_layout_set_text( fv->vlayout, utf8_buf, -1);
-		    pango_layout_index_to_pos(fv->vlayout,0,&pos);
-		    width = (pos.x+pos.width)/1000;
-		}
-#endif
 		if ( width >= fv->cbw-1 ) {
 		    gdk_gc_set_clip_rectangle(gc,&r);
 		    width = fv->cbw-1;
@@ -4613,18 +4570,6 @@ return( true );
 	    if ( pos==end_pos ) ++pos;
 	    if ( pos>=fv->b.map->enccount ) pos = 0;
 	  break;
-#if 0
-	  case GDK_BackTab:
-	    pos = end_pos;
-	    do {
-		--pos;
-		if ( pos<0 ) pos = fv->b.map->enccount-1;
-	    } while ( pos!=end_pos &&
-		    ((gid=fv->b.map->map[pos])==-1 || !SCWorthOutputting(fv->b.sf->glyphs[gid])));
-	    if ( pos==end_pos ) --pos;
-	    if ( pos<0 ) pos = 0;
-	  break;
-#endif
 	  case GDK_Left: case GDK_KP_Left:
 	    pos = end_pos-1;
 	  break;

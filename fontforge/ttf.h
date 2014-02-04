@@ -588,12 +588,6 @@ struct vorg {
     uint16 minorVersion;		/* 0 */
     short defaultVertOriginY;	/* Y coord of default vertical origin in the design coordinate system */
     uint16 numVertOriginYMetrics;	/* exceptions to the above, elements in following array */
-#if 0
-    struct {
-	uint16 glyphindex;		/* ordered */
-	short vertOrigin;
-    } origins[];
-#endif
 };
 
 struct feat_name {

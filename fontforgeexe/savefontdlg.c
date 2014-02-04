@@ -351,10 +351,6 @@ return( false );
 		    d->sfnt_flags |= ttf_flag_oldkern;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_DummyDSIG)) )
 		    d->sfnt_flags |= ttf_flag_dummyDSIG;
-#if 0
-		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_BrokenSize)) )
-		    d->sfnt_flags |= ttf_flag_brokensize;
-#endif
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments)) )
 		    d->sfnt_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
@@ -477,25 +473,18 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdLayers),flags&ttf_flag_pfed_layers);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_TeXTable),flags&ttf_flag_TeXtable);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap),flags&ttf_flag_glyphmap);
-#if 0
-    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_BrokenSize),flags&ttf_flag_brokensize);
-#endif
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OldKern),
 	    (flags&ttf_flag_oldkern) && !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_AppleMode)));
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_DummyDSIG),flags&ttf_flag_dummyDSIG);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_FontLog),flags&ps_flag_outputfontlog);
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Hints),which!=1);
-    /*GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),which!=1);*/
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),which!=1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Round),which!=1);
     if ( which!=1 && (flags&ps_flag_nohints)) {
-	/*GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),false);*/
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),false);
-	/*GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),false);*/
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Flex),false);
     }
-    /*GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Restrict256),(which==0 || which==3) && !iscid);*/
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_AFM),which!=1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_AFMmarks),which!=1);
@@ -2118,31 +2107,6 @@ static unichar_t *uStyleName(SplineFont *sf) {
 return( uc_copy(buffer+1));
 }
 
-#if 0 && defined( HAVE_PTHREAD_H )
-static void *BackgroundValidate(void *_d) {
-    struct gfc_data *d = _d;
-    SplineFont *sf = d->sf, *ssf;
-    int k, gid;
-    SplineChar *sc;
-
-    if ( sf->cidmaster!=NULL )
-	sf = sf->cidmaster;
-    k=0;
-    do {
-	ssf = sf->subfontcnt==0 ? sf : sf->subfonts[k];
-	for ( gid = 0; gid<ssf->glyphcnt; ++gid ) if ( (sc=ssf->glyphs[gid])!=NULL ) {
-	    if ( d->please_die_thread )
-pthread_exit(NULL);
-	    if ( !(sc->validation_state&vs_known) )
-		SCValidate(sc,true);
-	}
-	++k;
-    } while ( k<sf->subfontcnt );
-
-return( NULL );
-}
-#endif
-
 static GTextInfo *SFUsableLayerNames(SplineFont *sf,int def_layer) {
     int gid, layer, cnt = 1, k, known;
     SplineFont *_sf;
@@ -2215,14 +2179,6 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
     memset(&d,'\0',sizeof(d));
     d.sf = sf;
     d.layer = layer;
-#if 0 && defined(HAVE_PTHREAD_H)
-    /* Drat. my allocation routines are not thread safe */
-    /* If I can't create the thread, that's not a real problem. The font just*/
-    /*  won't be prevalidated */
-    if ( !sf->multilayer && !sf->strokedfont && !sf->onlybitmaps )
-	if ( pthread_create(&d.validate_thread,NULL,BackgroundValidate,(void *) &d)==0 )
-	    d.thread_active = true;
-#endif
 
     if ( !done ) {
 	done = true;

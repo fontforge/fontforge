@@ -50,17 +50,6 @@ typedef struct gwidgetcreatedata {
     unsigned int do_cancel: 1;
     Color fore, back;
     void (*e_h)(GWindow, GEvent *);		/* User's event function for window, our eh will call it */
-#if 0 /* should expect these events: */
-    void (*create)(Widget *);
-    void (*close)(Widget *);
-    void (*expose)(Widget *,XEvent *);
-    void (*mouse)(Widget *,XEvent *,int count);
-    void (*key)(Widget *,XEvent *);
-    void (*resize)(Widget *,XEvent *);
-    void (*map)(Widget *,XEvent *);
-    void (*time)(Widget *,struct timer *timer);
-    void (*paste)(Widget *,void *data, long length);
-#endif
 } GWidgetData;
 
 typedef struct gwidgetcreatordata {
@@ -170,45 +159,4 @@ extern GIC *GWidgetCreateInputContext(GWindow w,enum gic_style def_style);
 extern GIC *GWidgetGetInputContext(GWindow w);
 
 
-#if 0
-Widget *CreateCenteredDialog(Widget *parent, WidgetData *wd,void *data);
-Widget *CreateDialog(Widget *parent, WidgetData *wd,void *data);
-Widget *CreateTopWindow(Widget *parent, WidgetData *wd,void *data);
-Widget *CreateCanvas(Widget *parent, WidgetData *wd,void *data);
-Widget *CreateWidgets(Widget *parent, WidgetCreateData *wcd);
-
-unichar_t *CreateFileDialog(unichar_t *title,unichar_t *dir,unichar_t *file,unichar_t *mimetypes, unichar_t *wildcard, unichar_t *open, unichar_t *cancel);
-int CreateQuestionDialog(unichar_t *title, unichar_t *question,unichar_t *but1, unichar_t *but2, unichar_t *but3, unichar_t *but4, unichar_t *but5);
-unichar_t *CreateStringDialog(unichar_t *title, unichar_t *question, unichar_t *def, unichar_t *ok, unichar_t *cancel);
-TextInfo *CreateListDialog(unichar_t *title, unichar_t *question, TextInfo *list, unichar_t *ok, unichar_t *cancel);
-void CreateNoteDlg(unichar_t *title,unichar_t *text,unichar_t *ok);	/* does not take focus, vanishes if ignored */
-void CreateWarningDlg(unichar_t *title,unichar_t *text,unichar_t *ok);	/* does not take focus, vanishes if ignored */
-void CreateErrorDlg(unichar_t *title,unichar_t *text,unichar_t *ok);	/* does take focus */
-void CreateFatalDlg(unichar_t *title,unichar_t *text,unichar_t *ok);	/* does not return, preallocated */
-void CreateCharDialog();	/* takes input even when a modal dlg is active */
-		/* but is not modal itself */
-void CreatePrefsDialog();
-
-void WidgetSetTitle(Widget *widg,unichar_t *title);
-unichar_t_t WidgetGetTitle(Widget *widg);
-
-void WidgetChangeMenu(Widget *widg,MenuItem *bar);
-void WidgetChangeInvisibleCommands(Widget *widg,MenuItem *invisible);
-MenuItem *WidgetGetMenu(Widget *widg);
-MenuItem *WidgetGetInvisibleCommands(Widget *widg);
-
-enum handler_mask { hm_close=1, hm_expose=2, hm_mouse=4, hm_key=8, hm_resize=16, hm_map=32, hm_time=64, hm_paste=128 };
-void WidgetSetHandlers(Widget *widg,enum handler_mask hm, WidgetData *wd);
-
-void WidgetMove(Widget *widg, int x, int y);
-void WidgetResize(Widget *widg, int width, int height);
-void WidgetReposition(Widget *widg, Rect *r);
-Rect *WidgetGetPos(Widget *widg);
-
-void WidgetRaise(Widget *widg);
-void WidgetLower(Widget *widg);
-
-void WidgetSetIconName(Widget *widg,unichar_t *name);
-void WidgetSetIconPixmap(Widget *widg,Pixmap p);
-#endif
 #endif

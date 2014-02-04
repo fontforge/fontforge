@@ -356,10 +356,6 @@ static void MarkTranslationRefs(SplineFont *sf,int layer) {
 static bigreal myround( bigreal pos, int round ) {
     if ( round )
 return( rint( pos ));
-#if 0
-    else if ( RealWithin(rint(pos*1000),pos*1000,.01) )
-return( rint( pos*1000. )/1000. );
-#endif
     else
 return( rint( pos*1024. )/1024. );
 }
@@ -373,17 +369,6 @@ static void AddNumber(GrowBuf *gb, real pos, int round) {
 	GrowBuffer(gb);
 
     if ( !round && pos!=floor(pos) ) {
-#if 0
-	if ( RealWithin(rint(pos*1000),pos*1000,.01) ) {
-	    if ( RealWithin(rint(pos*100),pos*100,.01) ) {
-		pos *= 100;
-		dodiv = 100;
-	    } else {
-		pos *= 1000;
-		dodiv = 1000;
-	    }
-	} else
-#endif
 	{
 	    if ( rint(pos*64)/64 == pos ) {
 		pos *= 64;
@@ -718,19 +703,6 @@ static int FindOrBuildHintSubr(struct hintdb *hdb, uint8 mask[12], int round) {
     for ( mh=hdb->sublist; mh!=NULL; mh=mh->next ) {
 	if ( memcmp(mask,mh->mask,sizeof(mask))==0 )
 return( mh->subr );
-#if 0
-	/* If we find a subr for which we have all the bits set (with extras */
-	/*  since we didn't match) then it is safe to replace the old subr */
-	/*  with ours. This will save use one subr entry, and maybe a call */
-
-	/* Hmm. Adobe doesn't do this in their code. Doubtless they know more */
-	/*  about what hints imply about counters than I do */
-	for ( i=0; i<12; ++i )
-	    if ( (mh->mask[i]&mask[i])!=mh->mask[i] )
-	break;
-	if ( i==12 )
-    break;
-#endif
     }
     SubrsCheck(hdb->subrs);
 
@@ -827,11 +799,6 @@ static void _moveto(GrowBuf *gb,DBasePoint *current,BasePoint *to,int instance_c
     if ( gb->pt+18 >= gb->end )
 	GrowBuffer(gb);
 
-#if 0
-    if ( current->x==to->x && current->y==to->y ) {
-	/* we're already here */ /* Yes, but sometimes a move is required anyway */
-    } else
-#endif
     for ( i=0; i<instance_count; ++i ) {
 	temp[i].x = myround(to[i].x,round);
 	temp[i].y = myround(to[i].y,round);
@@ -2235,10 +2202,6 @@ return( chrs );
 /* ********************** Type2 PostScript CharStrings ********************** */
 /* ************************************************************************** */
 
-#if 0
-static int real_warn = false;
-#endif
-
 static real myround2(real pos, int round) {
     if ( round )
 return( rint(pos));
@@ -2357,12 +2320,6 @@ static void moveto2(GrowBuf *gb,struct hintdb *hdb,SplinePoint *to, int round) {
 	temp.y = rint(tom->y);
 	tom = &temp;
     }
-#if 0
-    if ( hdb->current.x==tom->x && hdb->current.y==tom->y ) {
-	/* we're already here */
-	/* Yes, but a move is required anyway at char start */
-    } else
-#endif
     if ( hdb->current.x==tom->x ) {
 	AddNumber2(gb,tom->y-hdb->current.y,round);
 	*(gb->pt)++ = 4;		/* v move to */
@@ -3433,10 +3390,6 @@ struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
 	    Type2NotDefSplines(sf,&dummynotdef,layer);
 	    gi.gb[cnt].sc = sc;
 	    gi.gb[cnt].fd = i = cidmaster->subfontcnt-1;
-#if 0 && HANYANG			/* Too much stuff knows the glyph cnt, can't refigure it here at the end */
-	} else if ( sf->glyphs[cid]->compositionunit ) {
-	    sc=NULL;	/* don't output it, should be in a subroutine */;
-#endif
 	} else {
 	    gi.gb[cnt].sc = sc = sf->glyphs[cid];
 	    gi.gb[cnt].fd = i;

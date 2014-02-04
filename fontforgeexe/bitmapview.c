@@ -1424,10 +1424,6 @@ return( GGadgetDispatchEvent(bv->vsb,event));
 #endif
       break;
       case et_focus:
-#if 0
-	if ( event->u.focus.gained_focus )
-	    BVPaletteActivate(bv);
-#endif
       break;
       default:
       break;
@@ -1498,10 +1494,6 @@ return( GGadgetDispatchEvent(bv->vsb,event));
 		UniFromEnc(enc,bv->fv->b.map->enc));
       break;
       case et_focus:
-#if 0
-	if ( event->u.focus.gained_focus )
-	    BVPaletteActivate(bv);
-#endif
       break;
     }
 return( true );

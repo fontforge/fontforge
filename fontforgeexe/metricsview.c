@@ -4082,9 +4082,6 @@ static void edlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_Cut: case MID_Copy:
-#if 0	/* Copy/Cut should always be enabled so textfields will get the event */
-	    mi->ti.disabled = i==-1;
-#endif
 	  break;
 	  case MID_Join:
 	  case MID_CopyRef: case MID_CopyWidth:
@@ -4095,33 +4092,10 @@ static void edlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  case MID_CopyVWidth:
 	    mi->ti.disabled = i==-1 || !mv->sf->hasvmetrics;
 	  break;
-#if 0	/* Undo/Redo should always be enabled so textfields will get the event */
-	  case MID_Undo:
-	    mi->ti.disabled = i==-1 || mv->glyphs[i].sc->layers[mv->layer].undoes==NULL;
-	  break;
-	  case MID_Redo:
-	    mi->ti.disabled = i==-1 || mv->glyphs[i].sc->layers[mv->layer].redoes==NULL;
-	  break;
-#endif
 	  case MID_UnlinkRef:
 	    mi->ti.disabled = i==-1 || mv->glyphs[i].sc->layers[mv->layer].refs==NULL;
 	  break;
 	  case MID_Paste:
-#if 0	/* Paste should always be enabled so textfields will get the event */
-	    mi->ti.disabled = i==-1 ||
-		(!CopyContainsSomething() &&
-#ifndef _NO_LIBPNG
-		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/png") &&
-#endif
-#ifndef _NO_LIBXML
-		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/svg+xml") &&
-		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/svg-xml") &&
-		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/svg") &&
-#endif
-		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/bmp") &&
-		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/ps") &&
-		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/eps"));
-#endif
 	  break;
 	}
     }
@@ -4600,17 +4574,6 @@ static void _MVSubVMouse(MetricsView *mv,GEvent *event) {
 		    MVDoSelect(mv,within);
 		}
 	    }
-#if 0
-	} else if ( event->u.mouse.y<mv->perchar[mv->glyphcnt-1].dy+
-				    mv->perchar[mv->glyphcnt-1].dheight+
-			            mv->perchar[mv->glyphcnt-1].kernafter+3 &&
-			            mv->type!=mv_kernonly ) {
-	    mv->pressed = mv->pressedwidth = true;
-	    GDrawSetCursor(mv->gw,ct_rbearing);
-	    mv->cursor = ct_rbearing;
-	    if ( !mv->perchar[mv->glyphcnt-1].selected )
-		    MVDoSelect(mv,mv->glyphcnt-1);
-#endif
 	}
 	mv->pressed_y = event->u.mouse.y;
     } else if ( event->type == et_mousemove && mv->pressed ) {
@@ -4885,24 +4848,6 @@ return;
 		    MVDoSelect(mv,within);
 		}
 	    }
-#if 0
-	} else if ( !mv->right_to_left && mv->glyphcnt>=1 &&
-		event->u.mouse.x<mv->perchar[mv->glyphcnt-1].dx+mv->perchar[mv->glyphcnt-1].dwidth+mv->perchar[mv->glyphcnt-1].kernafter+3 &&
-		mv->type!=mv_kernonly ) {
-	    mv->pressed = mv->pressedwidth = true;
-	    GDrawSetCursor(mv->gw,ct_rbearing);
-	    mv->cursor = ct_rbearing;
-	    if ( !mv->perchar[mv->glyphcnt-1].selected )
-		    MVDoSelect(mv,mv->glyphcnt-1);
-	} else if ( mv->right_to_left && mv->glyphcnt>=1 &&
-		event->u.mouse.x>mv->dwidth - (mv->perchar[mv->glyphcnt-1].dx+mv->perchar[mv->glyphcnt-1].dwidth+mv->perchar[mv->glyphcnt-1].kernafter+3) &&
-		mv->type!=mv_kernonly ) {
-	    mv->pressed = mv->pressedwidth = true;
-	    GDrawSetCursor(mv->gw,ct_rbearing);
-	    mv->cursor = ct_rbearing;
-	    if ( !mv->perchar[mv->glyphcnt-1].selected )
-		    MVDoSelect(mv,mv->glyphcnt-1);
-#endif
 	}
 	mv->pressed_x = event->u.mouse.x;
     } else if ( event->type == et_mousemove && mv->pressed ) {
@@ -5279,10 +5224,6 @@ return( true );
 	MetricsViewFree(mv);
       break;
       case et_focus:
-#if 0
-	if ( event->u.focus.gained_focus )
-	    CVPaletteDeactivate();
-#endif
       break;
     }
 return( true );

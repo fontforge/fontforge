@@ -1691,19 +1691,6 @@ return;
     /*  is an error in the spec, but since I can't guess what they intend */
     /*  and they provide no example, and it is unimplemented (so subject to */
     /*  change) I shan't support it either. */
-#if 0
-    for ( script=axis->scripts, any=0; script!=NULL; script=script->next ) {
-	if ( script->langs!=NULL ) {
-	    any = true;
-    break;
-	}
-    }
-    if ( any ) {
-	fprintf( out, "  %sAxis.MinMax\n", key );
-	for ( script=axis->scripts; script!=NULL; script=script->next ) {
-	    uint32 scrtag = script->script;
-	    fprintf( out, "\t%c%c%c%c", scrtag>>24, scrtag>>16, scrtag>>8, scrtag );
-#endif
 }
 
 static void dump_base(FILE *out,SplineFont *sf) {
@@ -2901,7 +2888,6 @@ return( sc );
     }
 
 /* Not in the encoding, so add it */
-#if 1
     enc = map->enccount;
     sc = SFMakeChar(sf,map,enc);
     if ( sc!=NULL ) {
@@ -2910,20 +2896,6 @@ return( sc );
 	sc->name = copy(name);
 	sc->unicodeenc = UniFromName(name,ui_none,&custom);
     }
-#else
-/* Don't encode it (not in current encoding), just add it, so we needn't */
-/*  mess with maps or selections */
-    SFExpandGlyphCount(sf,sf->glyphcnt+1);
-    sc = SFSplineCharCreate(sf);
-    sc->name = copy(name);
-    sc->unicodeenc = UniFromName(name,ui_none,&custom);
-    sc->parent = sf;
-    sc->vwidth = (sf->ascent+sf->descent);
-    sc->width = 6*sc->vwidth/10;
-    sc->widthset = true;		/* So we don't lose the glyph */
-    sc->orig_pos = sf->glyphcnt-1;
-    sf->glyphs[sc->orig_pos] = sc;
-#endif
 return( sc );
 }
 

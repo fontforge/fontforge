@@ -82,23 +82,6 @@ good they are.
 ............................+...................................
 */
 
-static long LookupXColorName(char *name) {
-#if 0 && !defined( X_DISPLAY_MISSING )
-    XColor ret;
-    Display *display;
-
-    if ( screen_display==NULL )
-return( COLOR_UNKNOWN );
-
-    display = ((GXDisplay *) screen_display)->display;
-    if ( XParseColor(display,DefaultColormap(display,DefaultScreen(display)),
-	    name,&ret))
-return( ((ret.red>>8)<<16) | (ret.green&0xff00) | (ret.blue>>8) );
-#endif	/* NO X */
-
-return( COLOR_UNKNOWN );
-}
-
 static int getstring(unsigned char *buf,int sz,FILE *fp) {
 /* get a string of text within "" marks and skip */
 /* backslash sequences, or concatenated strings. */
@@ -209,7 +192,6 @@ static long parsecol(char *start, char *end) {
 	    /* How do I translate from HSB to RGB???? */
 	    ;
 	}
-    } else if ( (ret=LookupXColorName(start))!=-1 ) {
     } else if ( strcmp(start,"white")==0 ) {
 	ret = COLOR_CREATE(255,255,255);
     } else {

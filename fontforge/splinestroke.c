@@ -1695,67 +1695,6 @@ return;
 	c->all[c->cur++] = done;
 }
 
-#if 0
-static int ExtensiveHitTest(BasePoint *pt,StrokeContext *c,StrokePoint *other,
-	int hide_if_on_edge) {
-    bigreal t, tlow, thigh, incr, bestt;
-    BasePoint rel;
-    enum hittest hit;
-    bigreal distance, bestd;
-    /* Because we only sample every now and then, if the polygon has a sharp */
-    /*  point, we might find the magic point along the trace which actually */
-    /*  causes a hit. So if we get close to the polygon, then try harder to */
-    /*  find it. */
-
-    rel.x = pt->x-other->me.x;
-    rel.y = pt->y-other->me.y;
-    if ( (hit = PolygonHitTest(c->corners,c->slopes,c->n,&rel,&distance))==ht_Inside ||
-	    (hit==ht_OnEdge && hide_if_on_edge))
-return( true );
-    if ( distance<2*c->resolution && !other->line ) {
-	tlow = thigh = other->t;
-	if ( other->t>0 )
-	    tlow = (other[-1].t + other->t)/2;
-	if ( other->t<1.0 )
-	    thigh = (other->t + other[1].t)/2;
-	if ( tlow!=thigh ) {
-	    incr = (thigh-tlow)/16;
-	    bestd = 3e30; bestt = -1;
-	    for ( t=tlow; t<=thigh+incr/2; t+=incr ) {
-		if ( t+incr/2 >=thigh )
-		    t = thigh;
-		rel.x = pt->x - (((other->sp->splines[0].a*t + other->sp->splines[0].b)*t + other->sp->splines[0].c)*t + other->sp->splines[0].d);
-		rel.y = pt->y - (((other->sp->splines[1].a*t + other->sp->splines[1].b)*t + other->sp->splines[1].c)*t + other->sp->splines[1].d);
-		if ( (hit = PolygonHitTest(c->corners,c->slopes,c->n,&rel,&distance))==ht_Inside ||
-			(hit==ht_OnEdge && hide_if_on_edge) )
-return( true );
-		if ( distance<bestd ) {
-		    bestt = t;
-		    bestd = distance;
-		}
-	    }
-	    if ( bestd<c->resolution/10 ) {
-		tlow = bestt - 2*incr/3;
-		if ( tlow<0 ) tlow=0;
-		thigh = bestt + 2*incr/3;
-		if ( thigh>1 ) thigh = 1;
-		incr /= 16;
-		for ( t=tlow; t<=thigh+incr/2; t+=incr ) {
-		    if ( t+incr/2 >=thigh )
-			t = thigh;
-		    rel.x = pt->x - (((other->sp->splines[0].a*t + other->sp->splines[0].b)*t + other->sp->splines[0].c)*t + other->sp->splines[0].d);
-		    rel.y = pt->y - (((other->sp->splines[1].a*t + other->sp->splines[1].b)*t + other->sp->splines[1].c)*t + other->sp->splines[1].d);
-		    if ( (hit = PolygonHitTest(c->corners,c->slopes,c->n,&rel,&distance))==ht_Inside ||
-			    (hit==ht_OnEdge && hide_if_on_edge) )
-return( true );
-		}
-	    }
-	}
-    }
-return( false );
-}
-#endif
-
 static void HideStrokePointsPoly(StrokeContext *c) {
     int i,j;
     bigreal xdiff,ydiff, dist1sq, dist2sq;
@@ -3168,56 +3107,6 @@ return( ss );
 	SplinePointListFree(ss);
 return( NULL );
     }
-
-#if 0
-    while ( removed ) {
-	removed = false;
-	for ( sp=ss->first; ; ) {
-	    if ( sp->next->knownlinear && sp->prev->knownlinear &&
-			ReversedLines(sp->next,sp->prev, &start, &end)) {
-		/* Lines reverse at the current point */
-		if ( sp->next->to == sp->prev->from ) {
-		    /* Entire splineset is a reversed line */ /* Remove it all */
-		    SplinePointListFree(ss);
-return( NULL );
-		}
-		/* Force the two reversed lines to have the same length by adding*/
-		/*  an internal point if needed */
-		nsp = sp->next->to;
-		psp = sp->prev->from;
-		if ( nsp->me.x != psp->me.x || nsp->me.y != psp->me.y ) {
-		    if ( nsp==end )
-			psp = SplineInsertPoint(sp->prev,nsp);
-		    else
-			nsp = SplineInsertPoint(sp->next,psp);
-		}
-		/* And then get rid of the back and forth bit */
-		nsp = sp->next->to;
-		psp = sp->prev->from;
-		SplineFree(sp->next); SplineFree(sp->prev);
-		SplinePointFree(sp);
-		nsp->prev = psp->prev;
-		nsp->prevcp = psp->prevcp;
-		nsp->noprevcp = psp->noprevcp;
-		nsp->prev->to = nsp;
-		SplinePointFree(psp);
-		if ( ss->first==sp || ss->first==psp )
-		    ss->first = nsp;
-		if ( ss->last==sp || ss->last==psp )
-		    ss->last = nsp;
-		sp = nsp;
-		removed = true;
-		if ( nsp==ss->first )
-	break;
-		else
-	continue;
-	    }
-	    sp=sp->next->to;
-	    if ( sp==ss->first )
-	break;
-	}
-    }
-#endif
 
     /* OK, here we've gotten rid of all the places where the line doubles back */
     /*  mirrored by one of its end-points. But there could be line segments */

@@ -174,12 +174,6 @@ static void PSDrawMonoImg(GPSWindow ps,struct _GImage *base,GRect *src, int usef
 		COLOR2GREYR(col0), COLOR2GREYR(col1));
     } else {
 	fprintf(ps->output_file, "  /Decode [0 1]\n" );
-#if 0
-	fprintf(ps->output_file, "  /Decode [%g %g %g %g %g %g]\n",
-		COLOR_RED(col0)/255., COLOR_RED(col1)/255.,
-		COLOR_GREEN(col0)/255., COLOR_GREEN(col1)/255.,
-		COLOR_BLUE(col0)/255., COLOR_BLUE(col1)/255. );
-#endif
     }
     fprintf(ps->output_file, "  /Interpolate true\n" );
     fprintf(ps->output_file, "  /DataSource " );
@@ -236,13 +230,9 @@ static void PSBuildImageIndexString(GPSWindow ps,struct _GImage *base,GRect *src
 	while ( pt<end ) {
 	    val = *pt++;
 	    if ( do_color ) {
-#if 0
-		fprintf(ps->output_file,"%02lX%02lX%02lX",clut[val].red,clut[val].green,clut[val].blue);
-#else
 		if ( val>=clut_len )
 		    val = clut_len-1;
 		Filter(ps,val);
-#endif
 	    } else {
 		Filter(ps,clut[val].red);
 	    }

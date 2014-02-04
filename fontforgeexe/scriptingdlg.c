@@ -194,38 +194,10 @@ return( true );
 return( true );
 	}
 return( false );
-    } else if ( event->type == et_map ) {
-	/* Above palettes */
+    } else if ( event->type == et_map )	/* Above palettes */
 	GDrawRaise(gw);
-    } else if ( event->type == et_resize ) {
-#if 0
-	GRect newsize, gpos;
-	int space;
-	GDrawGetSize(gw,&newsize);
-	GGadgetGetSize(GWidgetGetControl(gw,CID_Script),&gpos);
-	space = sd->oldh - gpos.height;
-	GGadgetResize(GWidgetGetControl(gw,CID_Box),newsize.width-4,newsize.height-4);
-	GGadgetResize(GWidgetGetControl(gw,CID_Script),newsize.width-2*gpos.x,newsize.height-space);
-#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
-	GGadgetGetSize(GWidgetGetControl(gw,CID_Python),&gpos);
-	space = sd->oldh - gpos.y;
-	GGadgetMove(GWidgetGetControl(gw,CID_Python),gpos.x,newsize.height-space);
-	GGadgetGetSize(GWidgetGetControl(gw,CID_FF),&gpos);
-	GGadgetMove(GWidgetGetControl(gw,CID_FF),gpos.x,newsize.height-space);
-#endif
-	GGadgetGetSize(GWidgetGetControl(gw,CID_Call),&gpos);
-	space = sd->oldh - gpos.y;
-	GGadgetMove(GWidgetGetControl(gw,CID_Call),gpos.x,newsize.height-space);
-	GGadgetGetSize(GWidgetGetControl(gw,CID_OK),&gpos);
-	space = sd->oldh - gpos.y;
-	GGadgetMove(GWidgetGetControl(gw,CID_OK),gpos.x,newsize.height-space);
-	GGadgetGetSize(GWidgetGetControl(gw,CID_Cancel),&gpos);
-	space = sd->oldh - gpos.y;
-	GGadgetMove(GWidgetGetControl(gw,CID_Cancel),gpos.x,newsize.height-space);
-	sd->oldh = newsize.height;
-#endif
+    else if ( event->type == et_resize )
 	GDrawRequestExpose(gw,NULL,false);
-    }
 return( true );
 }
 

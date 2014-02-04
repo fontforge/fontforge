@@ -1002,12 +1002,8 @@ static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
 	    }
 	}
     }
-#if 0
     /* I shan't automagically generate bitmaps for any bdf fonts */
     /*  but I have copied over the ones which match */
-    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) if ( fvs->filled!=NULL )
-	fvs->filled->glyphs[i] = SplineCharRasterize(sc,fvs->filled->pixelsize);
-#endif
 }
 
 static void MergeFixupRefChars(SplineFont *sf) {
@@ -1504,20 +1500,8 @@ static void LayerInterpolate(Layer *to,Layer *base,Layer *other,real amount,Spli
     if ( base->fill_brush.gradient!=NULL || other->fill_brush.gradient!=NULL ||
 	    base->stroke_pen.brush.gradient!=NULL || other->stroke_pen.brush.gradient!=NULL )
 	LogError(_("I can't even imagine how to attempt to interpolate gradients in layer %d of %s\n"), lc, sc->name );
-#if 0
-    if ( base->fill_brush.pattern!=NULL && other->fill_brush.pattern!=NULL &&
-	    strcmp(base->fill_brush.pattern,other->fill_brush.pattern)==0 )
-	to->fill_brush.pattern = copy(base->fill_brush.pattern);
-    else
-#endif
     if ( base->fill_brush.pattern!=NULL || other->fill_brush.pattern!=NULL )
 	LogError(_("Different fill patterns in layer %d of %s\n"), lc, sc->name );
-#if 0
-    if ( base->stroke_pen.brush.pattern!=NULL && other->stroke_pen.brush.pattern!=NULL &&
-	    strcmp(base->stroke_pen.brush.pattern,other->stroke_pen.brush.pattern)==0 )
-	to->stroke_pen.brush.pattern = copy(base->stroke_pen.brush.pattern);
-    else
-#endif
     if ( base->stroke_pen.brush.pattern!=NULL || other->stroke_pen.brush.pattern!=NULL )
 	LogError(_("Different stroke patterns in layer %d of %s\n"), lc, sc->name );
 

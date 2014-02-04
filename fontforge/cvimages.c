@@ -626,62 +626,55 @@ return( q*u * (1 + u * (2 - u * u * (u+2))) );
 static void xsplineeval(BasePoint *ret,real t, struct xspline *xs) {
     /* By choosing t to range between [0,n-1] we set delta in the article to 1*/
     /*  and may therefore ignore it */
-#if 0
-    if ( t>=0 && t<=xs->n-1 ) {
-#endif
 
-	/* For any value of t there are four possible points that might be */
-	/*  influencing things. These are cp[k], cp[k+1], cp[k+2], cp[k+3] */
-	/*  where k+1<=t<k+2 */
-	int k = floor(t-1);
-	int k0, k1, k2, k3;
-	/* now we need to find the points near us (on the + side of cp[k] & */
-	/*  cp[k-1] and the - side of cp[k+2] & cp[k+3]) where the blending */
-	/*  function becomes 0. This depends on the tension values */
-	/* For negative tension values it doesn't happen, the curve itself */
-	/*  is changed */
-	real Tk0 = k+1 + (xs->s[k+1]>0?xs->s[k+1]:0);
-	real Tk1 = k+2 + (xs->s[k+2]>0?xs->s[k+2]:0);
-	real Tk2 = k+1 - (xs->s[k+1]>0?xs->s[k+1]:0);
-	real Tk3 = k+2 - (xs->s[k+2]>0?xs->s[k+2]:0);
-	/* Now each blending function has a "p" value that describes its shape*/
-	real p0 = 2*(k-Tk0)*(k-Tk0);
-	real p1 = 2*(k+1-Tk1)*(k+1-Tk1);
-	real p2 = 2*(k+2-Tk2)*(k+2-Tk2);
-	real p3 = 2*(k+3-Tk3)*(k+3-Tk3);
-	/* and each negative tension blending function has a "q" value */
-	real q0 = xs->s[k+1]<0?-xs->s[k+1]/2:0;
-	real q1 = xs->s[k+2]<0?-xs->s[k+2]/2:0;
-	real q2 = q0;
-	real q3 = q1;
-	/* the function f for positive s is the same as g if q==0 */
-	real A0, A1, A2, A3;
-	if ( t<=Tk0 )
-	    A0 = g( (t-Tk0)/(k-Tk0), q0, p0);
-	else if ( q0>0 )
-	    A0 = h( (t-Tk0)/(k-Tk0), q0 );
-	else
-	    A0 = 0;
-	A1 = g( (t-Tk1)/(k+1-Tk1), q1, p1);
-	A2 = g( (t-Tk2)/(k+2-Tk2), q2, p2);
-	if ( t>=Tk3 )
-	    A3 = g( (t-Tk3)/(k+3-Tk3), q3, p3);
-	else if ( q3>0 )
-	    A3 = h( (t-Tk3)/(k+3-Tk3), q3 );
-	else
-	    A3 = 0;
-	k0 = k; k1=k+1; k2=k+2; k3=k+3;
-	if ( k<0 ) { k0=xs->n-2; if ( !xs->closed ) A0 = 0; }
-	if ( k3>=xs->n ) { k3 -= xs->n; if ( !xs->closed ) A3 = 0; }
-	if ( k2>=xs->n ) { k2 -= xs->n; if ( !xs->closed ) A2 = 0; }
-	ret->x = A0*xs->cp[k0].x + A1*xs->cp[k1].x + A2*xs->cp[k2].x + A3*xs->cp[k3].x;
-	ret->y = A0*xs->cp[k0].y + A1*xs->cp[k1].y + A2*xs->cp[k2].y + A3*xs->cp[k3].y;
-	ret->x /= (A0+A1+A2+A3);
-	ret->y /= (A0+A1+A2+A3);
-#if 0
-    } else
-	ret->x = ret->y = 0;
-#endif
+    /* For any value of t there are four possible points that might be */
+    /*  influencing things. These are cp[k], cp[k+1], cp[k+2], cp[k+3] */
+    /*  where k+1<=t<k+2 */
+    int k = floor(t-1);
+    int k0, k1, k2, k3;
+    /* now we need to find the points near us (on the + side of cp[k] & */
+    /*  cp[k-1] and the - side of cp[k+2] & cp[k+3]) where the blending */
+    /*  function becomes 0. This depends on the tension values */
+    /* For negative tension values it doesn't happen, the curve itself */
+    /*  is changed */
+    real Tk0 = k+1 + (xs->s[k+1]>0?xs->s[k+1]:0);
+    real Tk1 = k+2 + (xs->s[k+2]>0?xs->s[k+2]:0);
+    real Tk2 = k+1 - (xs->s[k+1]>0?xs->s[k+1]:0);
+    real Tk3 = k+2 - (xs->s[k+2]>0?xs->s[k+2]:0);
+    /* Now each blending function has a "p" value that describes its shape*/
+    real p0 = 2*(k-Tk0)*(k-Tk0);
+    real p1 = 2*(k+1-Tk1)*(k+1-Tk1);
+    real p2 = 2*(k+2-Tk2)*(k+2-Tk2);
+    real p3 = 2*(k+3-Tk3)*(k+3-Tk3);
+    /* and each negative tension blending function has a "q" value */
+    real q0 = xs->s[k+1]<0?-xs->s[k+1]/2:0;
+    real q1 = xs->s[k+2]<0?-xs->s[k+2]/2:0;
+    real q2 = q0;
+    real q3 = q1;
+    /* the function f for positive s is the same as g if q==0 */
+    real A0, A1, A2, A3;
+    if ( t<=Tk0 )
+        A0 = g( (t-Tk0)/(k-Tk0), q0, p0);
+    else if ( q0>0 )
+        A0 = h( (t-Tk0)/(k-Tk0), q0 );
+    else
+        A0 = 0;
+    A1 = g( (t-Tk1)/(k+1-Tk1), q1, p1);
+    A2 = g( (t-Tk2)/(k+2-Tk2), q2, p2);
+    if ( t>=Tk3 )
+        A3 = g( (t-Tk3)/(k+3-Tk3), q3, p3);
+    else if ( q3>0 )
+        A3 = h( (t-Tk3)/(k+3-Tk3), q3 );
+    else
+        A3 = 0;
+    k0 = k; k1=k+1; k2=k+2; k3=k+3;
+    if ( k<0 ) { k0=xs->n-2; if ( !xs->closed ) A0 = 0; }
+    if ( k3>=xs->n ) { k3 -= xs->n; if ( !xs->closed ) A3 = 0; }
+    if ( k2>=xs->n ) { k2 -= xs->n; if ( !xs->closed ) A2 = 0; }
+    ret->x = A0*xs->cp[k0].x + A1*xs->cp[k1].x + A2*xs->cp[k2].x + A3*xs->cp[k3].x;
+    ret->y = A0*xs->cp[k0].y + A1*xs->cp[k1].y + A2*xs->cp[k2].y + A3*xs->cp[k3].y;
+    ret->x /= (A0+A1+A2+A3);
+    ret->y /= (A0+A1+A2+A3);
 }
 
 static void AdjustTs(TPoint *mids,SplinePoint *from, SplinePoint *to) {

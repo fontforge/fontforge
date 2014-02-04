@@ -79,95 +79,6 @@ Autokern has similar ideas, but is simpler:
 */
 
 
-/* We want to find some measure of the visual distance between the lbearing */
-/*  and the left edge of a character. For example serifs usually don't count */
-/*  in the "visual" left edge. Should we just average the left edges outside */
-/*  of serifs? No that would mean that "T" would be shifted too far left. */
-/*  Should we just take the minimum seperation outside of the serifs? No */
-/*  because "O" won't be shifted far enough left. So to shift "O" a little */
-/*  more to the left I will average the values close to the minimum */
-#if 0
-static real LineFindLeftDistance(struct charone *right,WidthInfo *wi) {
-    int i, base, enc;
-    real sum, cnt, min, fudge;
-
-    min = NOTREACHED;
-    base = right->base;
-    /* j often stick out far to the left under the baseline. This is almost */
-    /*  completely irrelevant because there are so few characters with descenders */
-    /*  so it is better fixed up with a kern. the stem of "j" should be about */
-    /*  where the stem of the "i" is and we should ignore the bowl down below */
-    if ( (enc=right->sc->unicodeenc)=='g' || enc=='j' || enc=='y' || enc==0x3f3 ||
-	    enc==0x443 || enc==0x458 || enc==0xf6be || enc==0x237 )
-	base = 0;
-    for ( i=base; i<=right->top; ++i ) {
-	if ( right->ledge[i-right->base]!=NOTREACHED &&
-		(i<wi->serifs[0][0] || i>wi->serifs[0][1]) &&
-		(i<wi->serifs[1][0] || i>wi->serifs[1][1]) &&
-		(i<wi->serifs[2][0] || i>wi->serifs[2][1]) &&
-		(i<wi->serifs[3][0] || i>wi->serifs[3][1]) ) {
-	    if ( min==NOTREACHED || min>right->ledge[i-right->base] )
-		min = right->ledge[i-right->base];
-	}
-    }
-
-    fudge = (wi->sf->ascent+wi->sf->descent)/100;
-    if ( min==NOTREACHED )
-return( 0 );
-    else {
-	sum = cnt = 0;
-	for ( i=base; i<=right->top; ++i ) {
-	    if ( right->ledge[i-right->base]!=NOTREACHED &&
-		    (i<wi->serifs[0][0] || i>wi->serifs[0][1]) &&
-		    (i<wi->serifs[1][0] || i>wi->serifs[1][1]) &&
-		    (i<wi->serifs[2][0] || i>wi->serifs[2][1]) &&
-		    (i<wi->serifs[3][0] || i>wi->serifs[3][1]) &&
-		     right->ledge[i-right->base]<=min+fudge ) {
-		++cnt;
-		sum += right->ledge[i-right->base];
-	    }
-	}
-return( (min+sum/cnt)/2-right->lbearing );
-    }
-}
-
-static real LineFindRightDistance(struct charone *left,WidthInfo *wi) {
-    int i;
-    real sum, cnt, max, fudge;
-
-    max = NOTREACHED;
-    for ( i=left->base; i<=left->top; ++i ) {
-	if ( left->redge[i-left->base]!=NOTREACHED &&
-		(i<wi->serifs[0][0] || i>wi->serifs[0][1]) &&
-		(i<wi->serifs[1][0] || i>wi->serifs[1][1]) &&
-		(i<wi->serifs[2][0] || i>wi->serifs[2][1]) &&
-		(i<wi->serifs[3][0] || i>wi->serifs[3][1]) ) {
-	    if ( max==NOTREACHED || max<left->redge[i-left->base] )
-		max = left->redge[i-left->base];
-	}
-    }
-
-    fudge = (wi->sf->ascent+wi->sf->descent)/100;
-    if ( max==NOTREACHED )
-return( 0 );
-    else {
-	sum = cnt = 0;
-	for ( i=left->base; i<=left->top; ++i ) {
-	    if ( left->redge[i-left->base]!=NOTREACHED &&
-		    (i<wi->serifs[0][0] || i>wi->serifs[0][1]) &&
-		    (i<wi->serifs[1][0] || i>wi->serifs[1][1]) &&
-		    (i<wi->serifs[2][0] || i>wi->serifs[2][1]) &&
-		    (i<wi->serifs[3][0] || i>wi->serifs[3][1]) &&
-		     left->redge[i-left->base]>=max-fudge ) {
-		++cnt;
-		sum += left->redge[i-left->base];
-	    }
-	}
-return( (max+sum/cnt)/2-left->rmax );
-    }
-}
-#endif		/* Not used */
-
 static void FigureLR(WidthInfo *wi) {
     int i;
     real sum, subsum, subsum_left_I, subsum_right_I, spacing;
@@ -633,10 +544,6 @@ void AW_FindFontParameters(WidthInfo *wi) {
     real caph, ds, xh, serifsize, angle, ca, seriflength = 0;
     int cnt;
     static unichar_t caps[] = { 'A', 'Z', 0x391, 0x3a9, 0x40f, 0x418, 0x41a, 0x42f, 0 };
-#if 0
-    static unichar_t ascent[] = { 'b','d','h','k','l',
-	    0x444, 0x452, 0x45b, 0x431, 0 };
-#endif
     static unichar_t descent[] = { 'p','q','g','y','j',
 	    0x3c8, 0x3b7, 0x3b3, 0x3b2, 0x3b6, 0x3bc, 0x3be, 0x3c1, 0x3c6,
 	    0x444, 0x443, 0x458, 0x434, 0 };
@@ -836,42 +743,6 @@ return( 0 );
     if ( angle<1 && angle>-1 ) angle = 0;
 return( angle );
 }
-
-#if 0
-void SFHasSerifs(SplineFont *sf,int layer) {
-    static unichar_t easyserif[] = { 'I','B','D','E','F','H','I','K','L','N','P','R',
-	    0x399, 0x406, 0x392, 0x393, 0x395, 0x397, 0x39a,
-	    0x3a0, 0x3a1, 0x40a, 0x412, 0x413, 0x415, 0x41a, 0x41d, 0x41f,
-	    0x420, 0x428, 0 };
-    int i,si;
-    real as, topx, bottomx, serifbottomx, seriftopx;
-    DBounds bb;
-
-    for ( i=0; easyserif[i]!='\0'; ++i )
-	if ( (si=SFFindExistingSlot(sf,easyserif[i],NULL))!=-1 && sf->glyphs[si]!=NULL )
-    break;
-    if ( easyserif[i]=='\0' )		/* Can't guess */
-return;
-
-    sf->serifcheck = true;
-
-    SplineCharLayerFindBounds(sf->glyphs[si],layer,&bb);
-    as = bb.maxy-bb.miny;
-
-    topx = SCFindMinXAtY(sf->glyphs[si],layer,2*as/3+bb.miny);
-    bottomx = SCFindMinXAtY(sf->glyphs[si],layer,as/3+bb.miny);
-    serifbottomx = SCFindMinXAtY(sf->glyphs[si],layer,1+bb.miny);
-    seriftopx = SCFindMinXAtY(sf->glyphs[si],layer,bb.maxy-1);
-    if ( RealNear(topx,bottomx) ) {
-	if ( RealNear(serifbottomx,bottomx) && RealNear(seriftopx,topx))
-	    sf->issans = true;
-	else if ( RealNear(serifbottomx,seriftopx) && topx-seriftopx>0 )
-	    sf->isserif = true;
-    } else {
-	/* It's Italic. I'm just going to give up.... */
-    }
-}
-#endif
 
 void AW_InitCharPairs(WidthInfo *wi) {
     int i, j;

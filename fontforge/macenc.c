@@ -1420,10 +1420,8 @@ struct macsettingname macfeat_otftag[] = {
     { 1, 0, CHR('r','l','i','g') },	/* Required ligatures */
     { 1, 2, CHR('l','i','g','a') },	/* Common ligatures */
     { 1, 4, CHR('d','l','i','g') },	/* rare ligatures => discretionary */
-#if 0
-    { 1, 4, CHR('h','l','i','g') },	/* rare ligatures => historic */
-    { 1, 4, CHR('a','l','i','g') },	/* rare ligatures => ?ancient? */
-#endif
+    /* { 1, 4, CHR('h','l','i','g') },	/\* rare ligatures => historic *\/ */
+    /* { 1, 4, CHR('a','l','i','g') },	/\* rare ligatures => ?ancient? *\/ */
     /* 2, 1, partially connected cursive */
     { 2, 2, CHR('i','s','o','l') },	/* Arabic forms */
     { 2, 2, CHR('c','a','l','t') },	/* ??? */
@@ -1433,22 +1431,16 @@ struct macsettingname macfeat_otftag[] = {
     /* 3, 4, initial caps */
     /* 3, 5, initial caps, small caps */
     { 4, 0, CHR('v','r','t','2') },	/* vertical forms => vertical rotation */
-#if 0
-    { 4, 0, CHR('v','k','n','a') },	/* vertical forms => vertical kana */
-#endif
+    /* { 4, 0, CHR('v','k','n','a') },	/\* vertical forms => vertical kana *\/ */
     { 6, 0, CHR('t','n','u','m') },	/* monospace numbers => Tabular numbers */
     { 10, 1, CHR('s','u','p','s') },	/* superior vertical position => superscript */
     { 10, 2, CHR('s','u','b','s') },	/* inferior vertical position => subscript */
-#if 0
-    { 10, 3, CHR('s','u','p','s') },	/* ordinal vertical position => superscript */
-#endif
+    /* { 10, 3, CHR('s','u','p','s') },	/\* ordinal vertical position => superscript *\/ */
     { 11, 1, CHR('a','f','r','c') },	/* vertical fraction => fraction ligature */
     { 11, 2, CHR('f','r','a','c') },	/* diagonal fraction => fraction ligature */
     { 16, 1, CHR('o','r','n','m') },	/* vertical fraction => fraction ligature */
     { 20, 0, CHR('t','r','a','d') },	/* traditional characters => traditional forms */
-#if 0
-    { 20, 0, CHR('t','n','a','m') },	/* traditional characters => traditional names */
-#endif
+    /* { 20, 0, CHR('t','n','a','m') },	/\* traditional characters => traditional names *\/ */
     { 20, 1, CHR('s','m','p','l') },	/* simplified characters */
     { 20, 2, CHR('j','p','7','8') },	/* jis 1978 */
     { 20, 3, CHR('j','p','8','3') },	/* jis 1983 */

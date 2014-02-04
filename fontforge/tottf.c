@@ -1136,13 +1136,6 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 		sc->parent->mm->normal->glyphs[sc->orig_pos] : sc;
     int arg1, arg2;
 
-#if 0
-    if ( autohint_before_generate && sc->changedsincelasthinted &&
-	    !sc->manualhints )
-	if ( !(gi->flags&ttf_flag_nohints) )
-	    SplineCharAutoHint(sc,NULL);
-#endif
-
     if ( gi->next_glyph!=sc->ttf_glyph )
 	IError("Glyph count wrong in ttf output");
     if ( gi->next_glyph>=gi->maxp->numGlyphs )
@@ -1564,36 +1557,6 @@ static int dumpnoglyphs(SplineFont *sf,struct glyphinfo *gi) {
     gi->glyph_len = 0;
     /* loca gets built in dummyloca */
 return( true );
-}
-
-static void ttfdumphdmx(SplineFont *sf,struct alltabs *at,int *bsizes) {
-    /* Create an 'hdmx' table. For now, only do this for the pixel sizes of */
-    /*  the bitmap strikes in the font (a user reports that windows doesn't */
-    /*  use the bitmap metrics data, only the vector data when calculating  */
-    /*  advance widths) */
-    /* Probably not a great idea, let's hold off */
-#if 0
-    int i,j;
-    BDFFont **strikes = NULL, *bdf;
-
-    if ( bsizes!=NULL ) {
-	for ( i=0; bsizes[i]!=0; ++i );
-	strikes = galloc(i*sizeof(BDFFont *));
-	for ( i=j=0; bsizes[i]!=0; ++i ) {
-	    if ( i!=0 && (bsizes[i-1]&0xffff) == (bsizes[i]&0xffff))
-	continue;		/* Same pixel size, different depths */
-	    for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(bsizes[i]&0xffff) || BDFDepth(bdf)!=(bsizes[i]>>16)); bdf=bdf->next );
-	    if ( bdf==NULL )
-	continue;
-	    strikes[j++] = bdf;
-	}
-    }
-    if ( true || j==0 )
-return;
-
-    /* what happens if a strike is missing a glyph????? */
-    at->hdmxf = tmpfile();
-#endif
 }
 
 static int storesid(struct alltabs *at,char *str) {
@@ -2300,15 +2263,7 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
     /*  which means it should default to [.001...] but it doesn't so the */
     /*  docs aren't completely accurate */
     /* I now see I've no idea what the FontMatrix means in a CID keyed font */
-    /*  it seems to be ignored everywhere */
-#if 0
-    dumpdbl(cfff,1.0);
-    dumpint(cfff,0);
-    dumpint(cfff,0);
-    dumpdbl(cfff,1.0);
-    dumpint(cfff,0);
-    dumpintoper(cfff,0,(12<<8)|7);
-#endif
+    /*  it seems to be ignored everywhere, so we omit it */
 
     CIDLayerFindBounds(sf,at->gi.layer,&b);
     at->gi.xmin = b.minx;
@@ -2330,16 +2285,14 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
 	if ( sf->changed_since_xuidchanged )
 	    SFIncrementXUID(sf);
     }
-#if 0
     /* Acrobat doesn't seem to care about a private dict here. Ghostscript */
     /*  dies.  Tech Note: 5176.CFF.PDF, top of page 23 says:		   */
     /*		A Private DICT is required, but may be specified as having */
     /*		a length of 0 if there are no non-default values to be stored*/
     /* No indication >where< it is required. I assumed everywhere. Perhaps */
-    /*  just in basefonts? 						   */
-    dumpint(cfff,0);			/* Docs say a private dict is required and they don't specifically omit CID top dicts */
-    dumpintoper(cfff,0,18);		/* But they do say it can be zero */
-#endif
+    /*  just in basefonts?                                                 */
+    /* Omit it.		                                                   */
+
     /* Offset to charset (oper=15) needed here */
     /* Offset to charstrings (oper=17) needed here */
     /* Offset to FDArray (oper=12,36) needed here */
@@ -3259,20 +3212,17 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 		++mac;
 	    else if ( uni==0x2665 && has_ascii )
 		CodePage[0] |= 1U<<30;		/* OEM */
-#if 0	/* the symbol bit doesn't mean it contains the glyphs in symbol */
+	/* the symbol bit doesn't mean it contains the glyphs in symbol */
 	    /* rather that one is using a symbol encoding. Or that there are */
 	    /* glyphs with unicode encoding between 0xf000 and 0xf0ff, in which */
 	    /* case those guys should be given a symbol encoding */
 	    /* There's a bug in the way otf fonts handle this (but not ttf) and */
-	    /*  they only seem to list the symbol glyphs */
-	    else if ( uni==0x21d4 )
-		CodePage[0] |= 1U<<31;		/* symbol */
-#else
+	    /*  they only seem to list the symbol glyphs. */
+            /* Hence we don't test uni==0x21d4 */
 	    /* This doesn't work well either. In ttf fonts the bit is ignored */
 	    /*  in otf fonts the bit means "ignore all other bits" */
 	    else if ( uni>=0xf000 && uni<=0xf0ff )
 		CodePage[0] |= 1U<<31;		/* symbol */
-#endif
 	    else if ( uni==0xc5 && has_ascii )
 		++cp865;
 	    else if ( uni==0xe9 && has_ascii )
@@ -3775,12 +3725,6 @@ static void redoos2(struct alltabs *at) {
 	putshort(at->os2f,0);
 }
 
-#if 0
-static int icomp(const void *a, const void *b) {
-    return *(int *)a - *(int *)b;
-}
-#endif
-
 static void dumpgasp(struct alltabs *at, SplineFont *sf) {
     int i;
 
@@ -3805,39 +3749,11 @@ static void dumpgasp(struct alltabs *at, SplineFont *sf) {
 	/* This table is always 32 bit aligned */
 }
 
-#if 0
-static void dumpmacstr(FILE *file,unichar_t *str) {
-    int ch;
-    unsigned char *table;
-
-    do {
-	ch = *str++;
-	if ( ch==0 )
-	    putc('\0',file);
-	else if ( (ch>>8)>=mac_from_unicode.first && (ch>>8)<=mac_from_unicode.last &&
-		(table = mac_from_unicode.table[(ch>>8)-mac_from_unicode.first])!=NULL &&
-		table[ch&0xff]!=0 )
-	    putc(table[ch&0xff],file);
-	else
-	    putc('?',file);	/* if we were to omit an unencoded char all our position calculations would be off */
-    } while ( ch!='\0' );
-}
-#endif
-
 static void dumpstr(FILE *file,char *str) {
     do {
 	putc(*str,file);
     } while ( *str++!='\0' );
 }
-
-#if 0
-static void dumpc2ustr(FILE *file,char *str) {
-    do {
-	putc('\0',file);
-	putc(*str,file);
-    } while ( *str++!='\0' );
-}
-#endif
 
 static void dumpustr(FILE *file,char *utf8_str) {
     unichar_t *ustr = utf82u_copy(utf8_str), *pt=ustr;
@@ -4123,14 +4039,11 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	for ( i=0; at->feat_name[i].strid!=0; ++i ) {
 	    for ( mn=at->feat_name[i].mn; mn!=NULL; mn=mn->next )
 		AddMacName(&nt,mn,at->feat_name[i].strid);
-#if 0	/* I'm not sure why I keep track of these alternates */
-	/*  Dumping them out like this is a bad idea. It might be worth */
+	/* I'm not sure why I keep track of these alternates (feat_name[i].smn) */
+	/*  Dumping them out is a bad idea. It might be worth */
 	/*  something if we searched through the alternate sets for languages */
 	/*  not found in the main set, but at the moment I don't think so */
-	/*  What happens now is that I get duplicate names output */
-	    for ( mn=at->feat_name[i].smn; mn!=NULL; mn=mn->next )
-		AddMacName(&nt,mn,at->feat_name[i].strid);
-#endif
+	/*  What happens now if I do it is that I get duplicate names output. */
 	}
     }
     /* And the names used by the fvar table aren't mac unicode either */
@@ -4180,15 +4093,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     free( nt.entries );
     free( at->feat_name );
 
-#if 0
-    /* Windows changed it's mind. This is ok again */
-    if ( at->namelen>5*1024 && !sf->internal_temp )
-	LogError( _("Windows has decided that fonts with 'name' tables bigger than 5K are\n"
-		    "insecure and will refuse to load them. Don't ask me why they believe this.\n"
-		    "This font has a name table which is %d bytes and is bigger than this limit.\n"),
-		    at->namelen);
-#endif
-
+    /* Windows at one point refused to load fonts with 'name' tables bigger than 5K (decided they were insecure). */
 }
 
 static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format) {
@@ -4347,13 +4252,6 @@ return( NULL );
 	    else if ( SCWorthOutputting(sf->glyphs[map->map[i]]))
 	break;
     }
-#if 0
-    if ( i==base || i==sf->glyphcnt )
-return( NULL );		/* Doesn't have the single byte entries */
-	/* Can use the normal 16 bit encoding scheme */
-	/* Always do an 8/16, and we'll do a unicode table too now... */
-#endif
-
     if ( base2!=-1 ) {
 	for ( i=base; i<=basebound && i<map->enccount; ++i )
 	    if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
@@ -5818,26 +5716,6 @@ return( false );
     } else if ( format==ff_none && at->msbitmaps ) {
 	aborted = !dumpglyphs(sf,&at->gi);
     } else {
-#if 0
-	/* I think the footnote I thought relevant actually refered to */
-	/*  something else */
-	struct ttf_table *tab;
-	/* There's a typo in Adobe's docs, and the instructions in these tables*/
-	/*  need to be included in the max glyph instruction length */
-	if ( (tab = SFFindTable(sf,CHR('f','p','g','m'))) != NULL ) {
-	    at->maxp.maxglyphInstr = tab->len;
-	    at->gi.has_instrs = true;
-	}
-	if ( (tab = SFFindTable(sf,CHR('p','r','e','p'))) != NULL ) {
-	    if ( at->maxp.maxglyphInstr < tab->len )
-		at->maxp.maxglyphInstr = tab->len;
-	    at->gi.has_instrs = true;
-	}
-#endif
-#if 0		/* Never use this info */
-	at->gi.has_instrs = (SFFindTable(sf,CHR('f','p','g','m')) != NULL ||
-		SFFindTable(sf,CHR('p','r','e','p')) != NULL);
-#endif
 	/* if format==ff_none the following will put out lots of space glyphs */
 	aborted = !dumpglyphs(sf,&at->gi);
     }
@@ -5847,8 +5725,6 @@ return( false );
 	if ( bsizes!=NULL && format==ff_none && at->msbitmaps )
 	    ttfdumpbitmapscaling(sf,at,bsizes);
     }
-    if ( !aborted && format>=ff_ttf && format<=ff_ttfdfont )	/* No hdmx table for cff or bitmap only fonts. Apple doesn't even want a hmtx, and otbitmap doesn't expect one */
-	ttfdumphdmx(sf,at,bsizes);
     if ( aborted ) {
 	AbortTTF(at,sf);
 return( false );

@@ -383,56 +383,6 @@ static void TraceMassage(TraceData *head, TraceData *end) {
     head->use_as_pt = end->use_as_pt = true;
 }
 
-#if 0
-static void MakeExtremum(SplinePoint *cur,enum extreme extremum) {
-    double len;
-    /* If we decided this point should be an exteme point, then make sure */
-    /*  the control points agree with that (ie. must be horizontal or vertical)*/
-
-    if ( cur->pointtype==pt_tangent )
-return;
-    if ( extremum>=e_ymin ) {
-	if ( cur->me.y!=cur->nextcp.y ) {
-	    len = sqrt((cur->nextcp.y-cur->me.y)*(cur->nextcp.y-cur->me.y) +
-			(cur->nextcp.x-cur->me.x)*(cur->nextcp.x-cur->me.x) );
-	    cur->nextcp.y = cur->me.y;
-	    if ( cur->me.x>cur->nextcp.x )
-		cur->nextcp.x = cur->me.x-len;
-	    else
-		cur->nextcp.x = cur->me.x+len;
-	}
-	if ( cur->me.y!=cur->prevcp.y ) {
-	    len = sqrt((cur->prevcp.y-cur->me.y)*(cur->prevcp.y-cur->me.y) +
-			(cur->prevcp.x-cur->me.x)*(cur->prevcp.x-cur->me.x) );
-	    cur->prevcp.y = cur->me.y;
-	    if ( cur->me.x>cur->prevcp.x )
-		cur->prevcp.x = cur->me.x-len;
-	    else
-		cur->prevcp.x = cur->me.x+len;
-	}
-    } else {
-	if ( cur->me.x!=cur->nextcp.x ) {
-	    len = sqrt((cur->nextcp.x-cur->me.x)*(cur->nextcp.x-cur->me.x) +
-			(cur->nextcp.y-cur->me.y)*(cur->nextcp.y-cur->me.y) );
-	    cur->nextcp.x = cur->me.x;
-	    if ( cur->me.y>cur->nextcp.y )
-		cur->nextcp.y = cur->me.y-len;
-	    else
-		cur->nextcp.y = cur->me.y+len;
-	}
-	if ( cur->me.x!=cur->prevcp.x ) {
-	    len = sqrt((cur->prevcp.x-cur->me.x)*(cur->prevcp.x-cur->me.x) +
-			(cur->prevcp.y-cur->me.y)*(cur->prevcp.y-cur->me.y) );
-	    cur->prevcp.x = cur->me.x;
-	    if ( cur->me.y>cur->prevcp.y )
-		cur->prevcp.y = cur->me.y-len;
-	    else
-		cur->prevcp.y = cur->me.y+len;
-	}
-    }
-}
-#endif
-
 static bigreal Trace_Factor(void *_cv,Spline *spline, real t) {
     CharView *cv = (CharView *) _cv;
     TraceData *head = cv->freehand.head, *pt, *from=NULL, *to=NULL;
@@ -634,33 +584,6 @@ static SplineSet *TraceCurve(CharView *cv) {
 	spl->last->pointtype = pt_corner;
     else
 	spl->last->pointtype = pt_curve;
-#if 0
-    if ( spl->first->next!=NULL ) {
-	pt = head;
-	for ( cur=spl->first->next->to; cur->next!=NULL ; cur = cur->next->to ) {
-	    if ( cur->nonextcp && cur->noprevcp )
-		cur->pointtype = pt_corner;
-	    else {
-		if ( !cur->nonextcp && !cur->noprevcp )
-		    cur->pointtype = pt_curve;
-		else
-		    cur->pointtype = pt_corner;
-		SPWeightedAverageCps(cur);
-		while ( pt!=NULL && pt->num<cur->ptindex ) pt=pt->next;
-		if ( pt!=NULL && pt->extremum!=e_none )
-		    MakeExtremum(cur,pt->extremum);
-		if ( !cur->noprevcp )
-		    ApproximateSplineFromPointsSlopes(cur->prev->from,cur,
-			    mids+cur->prev->from->ptindex+1,
-			    cur->ptindex-cur->prev->from->ptindex-1,false);
-	    }
-	}
-	if ( !cur->nonextcp )
-	    ApproximateSplineFromPointsSlopes(cur,cur->next->to,
-		    mids+cur->ptindex+1,
-		    cur->next->to->ptindex-cur->ptindex-1,false);
-    }
-#endif
 
     free(mids);
 
@@ -687,11 +610,6 @@ return; /* Eh? No points? How did that happen? */
 	new = chunkalloc(sizeof(TraceData));
 	*new = *cv->freehand.head;
 	new->time = event->u.mouse.time;
-#if 0	/* nope. Have to bring it completely back to start values */
-	new->pressure = (new->pressure + event->u.mouse.pressure)/2;
-	new->xtilt = (new->xtilt + event->u.mouse.xtilt)/2;
-	new->ytilt = (new->xtilt + event->u.mouse.ytilt)/2;
-#endif
 	new->wasconstrained = (event->u.mouse.state&ksm_shift)?1:0;
 
 	new->prev = cv->freehand.last;
@@ -775,73 +693,13 @@ return;
     SplineRefigure(trace->first->prev);
 }
 
-#if 0
-struct statistics {
-    double xmean, ymean, xsd, ysd;
-    int cnt;
-};
-
-static void TraceStatistics(TraceData *mid,struct statistics *stats) {
-    int i, cnt;
-    TraceData *test;
-    double x, x2, y, y2;
-
-    x = x2 = y = y2 = 0;
-    cnt = 0;
-
-    for ( test=mid->prev, i=0; test!=NULL && i<5; test=test->prev, ++i ) {
-	x += test->here.x;
-	x2 += test->here.x*test->here.x;
-	y += test->here.y;
-	y2 += test->here.y*test->here.y;
-	++cnt;
-    }
-    for ( test=mid->next, i=0; test!=NULL && i<5; test=test->next, ++i ) {
-	x += test->here.x;
-	x2 += test->here.x*test->here.x;
-	y += test->here.y;
-	y2 += test->here.y*test->here.y;
-	++cnt;
-    }
-    stats->cnt = cnt;
-    if ( cnt==0 || cnt==1 ) {
-	stats->xmean = mid->here.x;
-	stats->ymean = mid->here.y;
-	stats->xsd = stats->ysd = 1;
-    } else {
-	stats->xmean = x/cnt;
-	stats->ymean = y/cnt;
-	stats->xsd = sqrt(x2-x*x/cnt)/(cnt-1);
-	stats->ysd = sqrt(x2-x*x/cnt)/(cnt-1);
-    }
-}
-#endif
-
 static int TraceDataCleanup(CharView *cv) {
     TraceData *mid, *next;
     int cnt=0;
-#if 0
-    TraceData *prev;
-    struct statistics stats;
-#endif
 
     for ( mid = cv->freehand.head; mid!=NULL; mid=next ) {
 	++cnt;
 	next = mid->next;
-#if 0
-	TraceStatistics(mid,&stats);
-	if (( mid->here.x < stats.xmean-3*stats.xsd ||
-		mid->here.x > stats.xmean+3*stats.xsd ||
-		mid->here.y < stats.ymean-3*stats.ysd ||
-		mid->here.y > stats.ymean+3*stats.ysd ) &&
-		next!=NULL && mid->prev!=NULL ) {
-	    prev = mid->prev;
-	    prev->next = next;
-	    next->prev = prev;
-	    chunkfree(mid,sizeof(TraceData));
-	    --cnt;
-	}
-#endif
     }
 return( cnt );
 }

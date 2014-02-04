@@ -3589,32 +3589,6 @@ static void FigureStemActive( struct glyphdata *gd, struct stemdata *stem ) {
 	    activespace[acnt].sbase = activespace[acnt].ebase = proj;
 	    acnt++;
 	    ++i;
-	/* The following is probably not needed. Bounding box hints don't     */
-	/* correspond to any actual glyph features, and their "active" zones  */
-	/* usually look ugly when displayed. So we don't attempt to calculate */
-	/* those faked "active" zones and instead just exclude bounding       */
-	/* box hints from any validity checks based on the hint's "active"    */
-	/* length */
-	} else if ( chunk->stemcheat==4 && chunk->l!=NULL && chunk->r!=NULL ) {
-#if 0
-	    SplinePoint *sp = chunk->l->sp;
-	    SplinePoint *sp2 = chunk->r->sp;
-	    proj =  (sp->me.x - stem->left.x) *stem->unit.x +
-		    (sp->me.y - stem->left.y) *stem->unit.y;
-	    proj2 = (sp2->me.x - stem->left.x) *stem->unit.x +
-		    (sp2->me.y - stem->left.y) *stem->unit.y;
-	    activespace[acnt  ].curved = false;
-	    if ( proj2<proj ) {
-		activespace[acnt].start = proj2;
-		activespace[acnt].end = proj;
-	    } else {
-		activespace[acnt].start = proj;
-		activespace[acnt].end = proj2;
-	    }
-	    activespace[acnt].sbase = activespace[acnt].ebase = proj;
-	    acnt++;
-	    ++i;
-#endif
 	} else if ( chunk->stemcheat && chunk->l!=NULL && chunk->r!=NULL ) {
 	    SplinePoint *sp = chunk->l->sp;
 	    proj =  ( sp->me.x - stem->left.x ) * stem->unit.x +
@@ -5878,25 +5852,6 @@ return( NULL );
 	    FindMatchingEdge(gd,pd,2,&pd->bothedge);
     }
 
-#if 0
-    /* Consider the slash character. We have a diagonal stem capped with two */
-    /*  horizontal lines. From the upper right corner, a line drawn normal to*/
-    /*  the right diagonal stem will intersect the top cap, very close to the*/
-    /*  upper right corner. That isn't interesting information */
-    for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
-	pd = &gd->points[i];
-	if ( pd->nextedges[0] == pd->sp->prev && pd->next_e_t[0]>.9 &&
-		gd->points[pd->sp->prev->from->ptindex].prevedges[0] == pd->sp->next ) {
-	    pd->nextedges[0] = pd->sp->prev->from->prev;
-	    pd->next_e_t[0] = 1;
-	}
-	if ( pd->prevedges[0] == pd->sp->next && pd->prev_e_t[0]<.1 &&
-		gd->points[pd->sp->next->to->ptindex].nextedges[0] == pd->sp->prev ) {
-	    pd->prevedges[0] = pd->sp->next->to->next;
-	    pd->prev_e_t[0] = 0;
-	}
-    }
-#endif
 return( gd );
 }
 

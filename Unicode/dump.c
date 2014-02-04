@@ -236,22 +236,9 @@ return( 3 );
 return( 2 );
     }
 
-/*	Mac Symbol appears as a font even on unix.  Cyrillic does not but so what?
-    for ( j=0; alphabets[j]!=NULL; ++j )
-	if ( strcmp(alphabets[j],"MacSYMBOL.TXT")==0 ) alphabets[j]=NULL;
-*/
-
     fprintf( header, "\nextern unichar_t *unicode_from_alphabets[];\n" );
-#if 0
-    fprintf( output, "\n/* the windows charset is a superset of latin1.  Many PC centric users think */\n" );
-    fprintf( output, "/*  IT is the standard charset for the web and try to use &#153; for &#2122; */\n" );
-    fprintf( output, "/* so even if we expect latin1, let's check for windows too, can't hurt. */\n" );
-    fprintf( output, "unichar_t *unicode_from_alphabets[]={\n" );
-    fprintf( output, "    unicode_from_win, 0,0, unicode_from_win, \n" );
-#else
     fprintf( output, "unichar_t *unicode_from_alphabets[]={\n" );
     fprintf( output, "    (unichar_t *) unicode_from_win, 0,0,\n    (unichar_t *) unicode_from_i8859_1, \n" );
-#endif
     for ( j=1; alphabets[j]!=NULL; ++j )
 	fprintf( output, "    (unichar_t *) unicode_from_%s,\n", alnames[j] );
     fprintf( output, "    (unichar_t *) unicode_from_%s,\t/* Place holder for user-defined map */\n", alnames[0] );
@@ -277,74 +264,6 @@ return( 2 );
 	used[0][i] |= mask;
 return( 0 );				/* no errors encountered */
 }
-
-#if 0
-static char base64[64] = {
- 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
- 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
- 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
- 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
-
-static unsigned char nigori[48] = {
-    0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-};
-static unsigned char maru[48] = {
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-};
-
-static void dumprandom(FILE *output,FILE *header) {
-    int inbase64[128], i;
-
-    for ( i=0; i<128; ++i )
-	inbase64[i] = -1;
-    for ( i=0; i<64; ++i )
-	inbase64[base64[i]] = i;
-    fprintf( header, "extern signed char inbase64[128];\n" );
-    fprintf( output, "signed char inbase64[128] = {\n" );
-    for ( i=0; i<128; i+= 16 ) {
-	fprintf( output, "  %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d%s",
-		inbase64[i], inbase64[i+1], inbase64[i+2], inbase64[i+3],
-		inbase64[i+4], inbase64[i+5], inbase64[i+6], inbase64[i+7],
-		inbase64[i+8], inbase64[i+9], inbase64[i+10], inbase64[i+11],
-		inbase64[i+12], inbase64[i+13], inbase64[i+14], inbase64[i+15],
-		i==128-16?"":",");
-	add_data_comment_at_EOL(output, i);
-    }
-    fprintf( output, "};\n" );
-
-    fprintf( header, "/* Need to subtract 0xb0 from jis206 before indexing this array */\n" );
-    fprintf( header, "extern char nigori[48];\n" );
-    fprintf( output, "char nigori[48] = {\n" );
-    for ( i=0; i<48; i+= 16 ) {
-	fprintf( output, "  %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d%s",
-		nigori[i], nigori[i+1], nigori[i+2], nigori[i+3],
-		nigori[i+4], nigori[i+5], nigori[i+6], nigori[i+7],
-		nigori[i+8], nigori[i+9], nigori[i+10], nigori[i+11],
-		nigori[i+12], nigori[i+13], nigori[i+14], nigori[i+15],
-		i==48-16?"":",");
-	add_data_comment_at_EOL(output, i);
-    }
-    fprintf( output, "};\n\n" );
-
-    fprintf( header, "/* Need to subtract 0xb0 from jis206 before indexing this array */\n" );
-    fprintf( header, "extern char maru[48];\n" );
-    fprintf( output, "char maru[48] = {\n" );
-    for ( i=0; i<48; i+= 16 ) {
-	fprintf( output, "  %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d%s",
-		maru[i], maru[i+1], maru[i+2], maru[i+3],
-		maru[i+4], maru[i+5], maru[i+6], maru[i+7],
-		maru[i+8], maru[i+9], maru[i+10], maru[i+11],
-		maru[i+12], maru[i+13], maru[i+14], maru[i+15],
-		i==48-16?"":",");
-	add_data_comment_at_EOL(output, i);
-    }
-    fprintf( output, "};\n\n" );
-}
-#endif
 
 #define VERTMARK 0x1000000
 

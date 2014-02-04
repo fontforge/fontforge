@@ -2317,12 +2317,6 @@ return;
 	LogError(_("The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard.\n") );
     }
     fseek(ttf,here,SEEK_SET);
-
-#if 0
- printf( "pos=%d  size=%g, range=(%g,%g] id=%d name=%d\n", pos,
-	 info->design_size/10.0, info->design_range_bottom/10.0, info->design_range_top/10.0,
-	 info->fontstyle_id, info->fontstyle_name );
-#endif
 }
 
 static void readttffeatnameparameters(FILE *ttf,int32 pos,uint32 tag,
@@ -4223,40 +4217,6 @@ return( NULL );
     str[len-1] = '\0';
 return( str );
 }
-
-#if 0
-static void RunStateFindKernDepth_(ASM *as,int state,int kdepth,uint8 *used) {
-    int j, kd;
-
-    if ( used[state] )
-return;
-    used[state] = true;
-
-    for ( j=0; j<as->class_cnt; ++j ) {
-	kd = kdepth;
-	flags = as->state[state*as->class_cnt+j];
-	if ( flags&0x8000 )
-	    ++kd;
-	if ( (flags&0x3fff)!=0 ) {
-	    as->state[state*as->class_cnt+j].u.kern.kcnt = kd;
-	    kd = 0;
-	}
-	RunStateFindKernDepth_(as,as->state[state*as->class_cnt+j].next_state,kd,used);
-    }
-}
-
-static void RunStateFindKernDepth(ASM *as) {
-    uint8 *used = gcalloc(as->class_cnt);
-    int i;
-
-    for ( i=0; i<as->class_cnt*as->state_cnt; ++i ) {
-	as->state[i].u.kern.kerns = NULL;
-	as->state[i].u.kern.kcnt = (as->state[i].flags&0x3fff)==0 ? 0 : -1;
-    }
-    RunStateFindKernDepth_(as,0,0,used);
-    RunStateFindKernDepth_(as,1,0,used);
-}
-#endif
 
 static void KernReadKernList(FILE *ttf,uint32 pos, struct asm_state *trans) {
 /* Apple does not document how to detect the end of the list */

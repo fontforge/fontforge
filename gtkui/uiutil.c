@@ -320,24 +320,7 @@ return;
 	strcpy(fullspec,t1);
 	free(t1);
     }
-#if 0 && __Mac
-    /* Starting a Mac application is weird... system() can't do it */
-    /* Thanks to Edward H. Trager giving me an example... */
-    if ( strstr(browser,".app")!=NULL ) {
-	*strstr(browser,".app") = '\0';
-	pt = strrchr(browser,'/');
-	if ( pt==NULL ) pt = browser-1;
-	++pt;
-	temp = galloc(strlen(pt)+strlen(fullspec) +
-		strlen( "osascript -l AppleScript -e \"Tell application \"\" to getURL \"\"\"" )+
-		20);
-	/* this doesn't work on Max OS X.0 (osascript does not support -e) */
-	sprintf( temp, "osascript -l AppleScript -e \"Tell application \"%s\" to getURL \"%s\"\"",
-	    pt, fullspec);
-	system(temp);
-	ff_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
-    } else {
-#elif __Mac
+#if __Mac
     /* This seems a bit easier... Thanks to riggle */
     if ( strcmp(browser,"open")==0 ) {
 	temp = galloc(strlen(browser) + strlen(fullspec) + 20);

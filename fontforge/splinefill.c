@@ -906,89 +906,6 @@ static void BresenhamT(uint8 *bytemap,EdgeList *es,int x1,int x2,int y1,int y2,
     Bresenham(bytemap,es,x1,x2,y1,y2,grey,clipmask);
 }
 
-#if 0
-struct last_vector {
-    int x1,y1;
-    int x2,y2;
-};
-
-static void FillFromLast(uint8 *bytemap,struct last_vector *last,
-	int x1,int ox1,int y1,int oy1,EdgeList *es,int grey) {
-    int x2 = last->x1, y2 = last->y1;
-    int ox2 = last->x2, oy2 = last->y2;
-    int dx, dy, incr1, incr2, d, x, y;
-    int incr3;
-    int bytes_per_line = es->bytes_per_line<<3;
-    int ymax = es->cnt;
-
-    if ( last->x1==-8000 )
-return;
-
- printf( "last (%d,%d - %d,%d)\n", last->x1,last->y1,  last->x2, last->y2 );
-    BresenhamT(bytemap,es,x1,last->x1,y1,last->y1,grey);
-    BresenhamT(bytemap,es,x2,last->x2,y2,last->y2,grey);
-return;
-
-    if ( x1>x2 ) {
-	dx = x1; x1 = x2; x2 = dx;
-	dy = y1; y1 = y2; y2 = dy;
-	ox2 = ox1; oy2 = oy1;
-	ox1 = last->x2; oy1 = last->y2;
-    }
-
-    /* We are guarenteed x1<=x2 */
-    dx = x2-x1;
-    if ( (dy = y1-y2)<0 ) dy=-dy;
-    if ( dx>=dy ) {
-	d = 2 * dy - dx;
-	incr1 = 2*dy;
-	incr2 = 2*(dy-dx);
-	incr3 = y2>y1 ? 1 : -1;
-	x = x1;
-	y = y1;
-	if ( x>=0 && y>=0 && x<bytes_per_line && y<ymax )
-	    BresenhamT(bytemap,es,x,ox1-(x-x1),y,oy1-(y-y1),grey);
-	while ( x<x2 ) {
-	    ++x;
-	    if ( d<0 )
-		d += incr1;
-	    else {
-		y += incr3;
-		d += incr2;
-	    }
-	    if ( x>=0 && y>=0 && x<bytes_per_line && y<ymax )
-		BresenhamT(bytemap,es,x,ox1-(x-x1),y,oy1-(y-y1),grey);
-	}
-    } else {
-	if ( y1>y2 ) {
-	    incr1 = y1; y1 = y2; y2 = incr1;
-	    incr1 = x1; x1 = x2; x2 = incr1;
-	    incr1 = oy1; oy1 = oy2; oy2 = incr1;
-	    incr1 = ox1; ox1 = ox2; ox2 = incr1;
-	}
-	d = 2 * dx - dy;
-	incr1 = 2*dx;
-	incr2 = 2*(dx-dy);
-	incr3 = x2>x1 ? 1 : -1;
-	x = x1;
-	y = y1;
-	if ( x>=0 && y>=0 && x<bytes_per_line && y<ymax )
-	    BresenhamT(bytemap,es,x,ox1-(x-x1),y,oy1-(y-y1),grey);
-	while ( y<y2 ) {
-	    ++y;
-	    if ( d<0 )
-		d += incr1;
-	    else {
-		x += incr3;
-		d += incr2;
-	    }
-	    if ( x>=0 && y>=0 && x<bytes_per_line && y<ymax )
-		BresenhamT(bytemap,es,x,ox1-(x-x1),y,oy1-(y-y1),grey);
-	}
-    }
-}
-#endif
-
 static void StrokeLine(uint8 *bytemap,IPoint *from, IPoint *to,EdgeList *es,int grey,int width, uint8 *clipmask) {
     int x1, x2, y1, y2;
     int dx, dy;
@@ -1017,13 +934,6 @@ return;
 	if ( xoff<0 ) {
 	    xoff = -xoff; yoff = -yoff;
 	}
-#if 0
- printf( "normal (%d,%d)\n", xoff, yoff );
-
-	FillFromLast(bytemap,last,x1-xoff,x1+xoff,y1-yoff,y2+yoff,es,grey);
-	last->x1 = x2-xoff; last->y1 = y2-yoff;
-	last->x2 = x2+xoff; last->y2 = y2+yoff;
-#endif
 
 	if ( x1>x2 ) {
 	    dx = x1; x1 = x2; x2 = dx;

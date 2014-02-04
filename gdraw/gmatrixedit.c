@@ -274,17 +274,6 @@ return( 0 );
 		if ( cur>max ) max = cur;
 	    }
 	}
-#if 0
-	if ( gme->col_data[c].enum_vals!=NULL ) {
-	    GMenuItem *mi = gme->col_data[c].enum_vals;
-	    for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.line ; ++i ) {
-		if ( mi[i].ti.text!=NULL ) {
-		    cur = GDrawGetTextWidth(gme->g.base,mi[i].ti.text, -1);
-		    if ( cur>max ) max = cur;
-		}
-	    }
-	}
-#endif
 	cur = 6 * GDrawGetText8Width(gme->g.base,"n", 1);
 	if ( max<cur )
 	    max = cur;
@@ -1613,11 +1602,6 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		GDrawFillRect(pixmap,&clip,gme->g.box->disabled_background);
 	    else if ( gme->active_row==r+gme->off_top )
 		GDrawFillRect(pixmap,&clip,gmatrixedit_activebg);
-#if 0
-	    else
-		GDrawFillRect(pixmap,&clip,gme->g.box->main_background!=COLOR_DEFAULT?gme->g.box->main_background:
-			GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap)));
-#endif
 	    if ( gme->col_data[c].me_type == me_stringchoice ||
 		    gme->col_data[c].me_type == me_stringchoicetrans ||
 		    gme->col_data[c].me_type == me_stringchoicetag ||

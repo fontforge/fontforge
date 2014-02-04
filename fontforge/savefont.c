@@ -722,10 +722,6 @@ return( 1 );
     filecnt = 1;
     if ( (old_ps_flags&ps_flag_afm) )
 	filecnt = 2;
-#if 0
-    if ( oldbitmapstate==bf_bdf )
-	++filecnt;
-#endif
     path = def2utf8_copy(newname);
     ff_progress_start_indicator(10,_("Saving font"),
 	    _("Saving Multiple PostScript Fonts"),

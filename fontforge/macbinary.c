@@ -873,18 +873,7 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,
 	fseek(res,geoffset,SEEK_SET);
 	putlong(res,glyphenc-geoffset+2);
 	fseek(res,glyphenc,SEEK_SET);
-#if 1
 	putshort(res,0);
-#else
-	putshort(res,sf->charcnt>256?128:sf->charcnt-128);
-	for ( i=0x80; i<sf->charcnt && i<256; ++i ) {
-	    SplineChar *sc, dummy;
-	    putc(i,res);
-	    sc = SCBuildDummy(&dummy,sf,i);
-	    putc(strlen(sc->name),res);
-	    fwrite(sc->name,1,strlen(sc->name),res);
-	}
-#endif
     }
 
     end = ftell(res);

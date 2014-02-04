@@ -81,9 +81,7 @@ static uint32 scripts[][15] = {
  /* I'm not sure what the difference is between the 'hang' tag and the 'jamo' */
  /*  tag. 'Jamo' is said to be the precomposed forms, but what's 'hang'? */
 /* Hebrew */	{ CHR('h','e','b','r'), 0x0590, 0x05ff, 0xfb1e, 0xfb4f },
-#if 0	/* Hiragana used to have its own tag, but has since been merged with katakana */
-/* Hiragana */	{ CHR('h','i','r','a'), 0x3040, 0x309f },
-#endif
+/* Hiragana used to have its own tag 'hira', but has since been merged with katakana */
 /* Hangul Jamo*/{ CHR('j','a','m','o'), 0x1100, 0x11ff, 0x3130, 0x319f, 0xffa0, 0xffdf },
 /* Javanese */	{ CHR('j','a','v','a'), 0 },	/* MS has a tag, but there is no unicode range */
 /* Katakana */	{ CHR('k','a','n','a'), 0x3040, 0x30ff, 0xff60, 0xff9f },
@@ -319,10 +317,6 @@ static SplineChar **FindSubs(SplineChar *sc,struct lookup_subtable *sub) {
 		}
     }
 	// Returning NULL causes problems and seems to be unnecessary for now.
-#if 0
-    if ( cnt==0 )	/* Might happen if the substitution names weren't in the font */
-		return( NULL );
-#endif
     ret = galloc((cnt+1)*sizeof(SplineChar *));
     memcpy(ret,space,cnt*sizeof(SplineChar *));
     ret[cnt] = NULL;
@@ -3014,15 +3008,8 @@ return( NULL );
 	/*  they did not follow the spec, and the offset to the size parameters */
 	/*  was relative to the wrong location. They claim (Aug 2006) that */
 	/*  this has been fixed. FF used to do what Adobe did. Many programs */
-	/*  expect broken sizes tables now. Therefore allow the user to chose */
-	/*  which kind to output */
-	/* Well don't give the user the choice any more, but retain the old */
-	/*  code, just in case... */
-#if 0
-	putshort(g___,size_params_loc-((at->gi.flags&ttf_flag_brokensize)?feature_list_table_start:size_params_ptr));
-#else
+	/*  expect broken sizes tables now, but we don't supply them. */
 	putshort(g___,size_params_loc-size_params_ptr);
-#endif
 	fseek(g___,size_params_loc,SEEK_SET);
 	putshort(g___,sf->design_size);
 	if ( sf->fontstyle_id!=0 || sf->fontstyle_name!=NULL ) {
@@ -3379,7 +3366,7 @@ return;					/* No anchor positioning, no ligature carets */
 	/* Mark shouldn't conflict with anything */
 	/* Ligature is more important than Base */
 	/* Component is not used */
-#if 1		/* ttx can't seem to support class format type 1 so let's output type 2 */
+        /* ttx can't seem to support class format type 1 so let's output type 2 */
 	for ( j=0; j<2; ++j ) {
 	    cnt = 0;
 	    for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
@@ -3409,18 +3396,6 @@ return;					/* No anchor positioning, no ligature carets */
 		putshort(at->gdef,cnt);
 	    }
 	}
-#else
-	putshort(at->gdef,1);	/* class format 1 complete list of glyphs */
-	putshort(at->gdef,0);	/* First glyph */
-	putshort(at->gdef,at->maxp.numGlyphs );
-	j=0;
-	for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
-	    for ( ; j<i; ++j )
-		putshort(at->gdef,1);	/* Any hidden characters (like notdef) default to base */
-	    putshort(at->gdef,gdefclass(sf->glyphs[at->gi.bygid[i]]));
-	    ++j;
-	}
-#endif
     }
 
 	/* Ligature caret subtable. Always include this if we have a GDEF */

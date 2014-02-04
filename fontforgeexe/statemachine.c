@@ -411,15 +411,6 @@ return( false );
 	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag0800)) ) flags |= 0x0800;
 	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag0400)) ) flags |= 0x0400;
 
-#if 0
-	foo = GGadgetGetTitle8(GWidgetGetControl(smd->editgw,CID_InsMark));
-	if ( !CCD_NameListCheck(smd->sf,foo,false,_("Missing Glyph Name"))) {
-	    free(foo);
-return( false );
-	}
-	free(foo);
-#endif
-
 	mins = copy_count(smd->editgw,CID_InsMark,&cnt);
 	if ( cnt>31 ) {
 	    ff_post_error(_("Too Many Glyphs"),_("At most 31 glyphs may be specified in an insert list"));
@@ -428,14 +419,6 @@ return( false );
 	}
 	flags |= cnt<<5;
 
-#if 0
-	foo = GGadgetGetTitle8(GWidgetGetControl(smd->editgw,CID_InsCur));
-	if ( !CCD_NameListCheck(smd->sf,foo,false,_("Missing Glyph Name"))) {
-	    free(foo);
-return( false );
-	}
-	free(foo);
-#endif
 	cins = copy_count(smd->editgw,CID_InsCur,&cnt);
 	if ( cnt>31 ) {
 	    ff_post_error(_("Too Many Glyphs"),_("At most 31 glyphs may be specified in an insert list"));
@@ -1089,10 +1072,6 @@ return( oldtop!=smd->offtop || oldleft!=smd->offleft );
 static void SMD_HShow(SMD *smd, int pos) {
     if ( pos<0 || pos>=smd->class_cnt )
 return;
-#if 0
-    if ( pos>=smd->offleft && pos<smd->offleft+(smd->width/smd->statew) )
-return;		/* Already visible */
-#endif
     --pos;	/* One line of context */
     if ( pos + (smd->width/smd->statew) >= smd->class_cnt )
 	pos = smd->class_cnt - (smd->width/smd->statew);
@@ -1262,11 +1241,6 @@ return( false );
 	  break;
 	}
       break;
-#if 0
-      case et_drop:
-	smd_Drop(GDrawGetUserData(gw),event);
-      break;
-#endif
     }
 return( true );
 }

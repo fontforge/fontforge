@@ -901,23 +901,6 @@ return( ret );
 return( NULL );
 }
 
-#if 0
-static char *SearchNoLibsDirForCidMap(char *dir,char *registry,char *ordering,
-	int supplement,char **maybefile) {
-    char *ret;
-
-    if ( dir==NULL || strstr(dir,"/.libs")==NULL )
-return( NULL );
-
-    dir = copy(dir);
-    *strstr(dir,"/.libs") = '\0';
-
-    ret = SearchDirForCidMap(dir,registry,ordering,supplement,maybefile);
-    free(dir);
-return( ret );
-}
-#endif
-
 static struct cidmap *MakeDummyMap(char *registry,char *ordering,int supplement) {
     struct cidmap *ret = galloc(sizeof(struct cidmap));
 

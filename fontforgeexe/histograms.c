@@ -516,14 +516,6 @@ static void HistScroll(struct hist_dlg *hist,struct sbevent *sb) {
 	hist->hoff = newpos;
 	GScrollBarSetPos(g,hist->hoff);
 	GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(hist->gw,CID_Histogram)),NULL,false);
-#if 0
-	r.x = 1; r.y = 1;
-	r.width = hist->hwidth-1; r.height = hist->hheight-1;
-	GDrawScroll(hist->gw,&r,-diff*hist->barwidth,0);
-	r.x = 10; r.y = hist->y+hist->hheight-hist->fh+1;
-	r.width = hist->hwidth+2*(hist->x-10); r.height = hist->fh;
-	GDrawRequestExpose(hist->gw,&r,false);
-#endif
     }
 }
 

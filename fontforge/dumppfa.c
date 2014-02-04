@@ -244,23 +244,6 @@ return( 0 );
 return( 1 );
 }
 
-#if 0
-static void dumpsubarray(void (*dumpchar)(int ch,void *data), void *data, char *name,
-	struct pschars *subarr,int leniv) {
-    int i;
-
-    dumpf(dumpchar,data,"/%s %d array\n", name, subarr->cnt );
-    for ( i=0; i<subarr->cnt; ++i ) {
-	if ( subarr->values[i]==NULL )
-    break;
-	dumpf(dumpchar,data, "dup %d %d RD ", i, subarr->lens[i]+leniv );
-	encodestrout(dumpchar,data,subarr->values[i],subarr->lens[i],leniv);
-	dumpstr(dumpchar,data," NP\n");
-    }
-    dumpstr(dumpchar,data,"ND\n");
-}
-#endif
-
 static void dumpblues(void (*dumpchar)(int ch,void *data), void *data,
 	char *name, real *arr, int len, char *ND) {
     int i;
@@ -292,19 +275,6 @@ static void dumpdblarray(void (*dumpchar)(int ch,void *data), void *data,
 	dumpf( dumpchar,data,"%g ", arr[i]);
     dumpf( dumpchar,data,"%c%sdef\n", exec ? '}' : ']', modifiers );
 }
-
-#if 0
-static void dumpintmaxarray(void (*dumpchar)(int ch,void *data), void *data,
-	char *name, int *arr, int len, char *modifiers) {
-    int i;
-    for ( --len; len>=0 && arr[len]==0.0; --len );
-    ++len;
-    dumpf( dumpchar,data,"/%s [",name);
-    for ( i=0; i<len; ++i )
-	dumpf( dumpchar,data,"%d ", arr[i]);
-    dumpf( dumpchar,data,"]%sdef\n", modifiers );
-}
-#endif
 
 struct psdict *PSDictCopy(struct psdict *dict) {
     struct psdict *ret;
@@ -1691,10 +1661,6 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	/*  On the off chance that fontlab objects to them let's not generate them */
 	if ( sf->ascent != 8*(sf->ascent+sf->descent)/10 )
 	    ++cnt;		/* ascent */
-#if 0
-	++cnt;		/* em */
-	++cnt;		/* descent */
-#endif
     }
     if ( format==ff_mma || format==ff_mmb )
 	cnt += 3;
@@ -1739,10 +1705,6 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	}
 	if ( sf->ascent != 8*(sf->ascent+sf->descent)/10 )
 	    dumpf(dumpchar,data," /ascent %d def\n", sf->ascent );
-#if 0
-	dumpf(dumpchar,data," /em %d def\n", sf->ascent+sf->descent );
-	dumpf(dumpchar,data," /descent %d def\n", sf->descent );
-#endif
     }
     if ( format==ff_mma || format==ff_mmb ) {
 	MMSet *mm = sf->mm;
@@ -2347,14 +2309,10 @@ static char *dumpnotdefenc(FILE *out,SplineFont *sf) {
     char *notdefname;
     int i;
 
-#if 0		/* At one point I thought the unicode replacement char 0xfffd */
-		/*  was a good replacement for notdef if the font contained */
-		/*  no notdef. Probably not a good idea for a PS font */
-    if ( 0xfffd<sf->glyphcnt && sf->glyphs[0xfffd]!=NULL )
-	notdefname = sf->glyphs[0xfffd]->name;
-    else
-#endif
-	notdefname = ".notdef";
+    /* At one point I thought the unicode replacement char 0xfffd */
+    /*  was a good replacement for notdef if the font contained */
+    /*  no notdef. Probably not a good idea for a PS font */
+    notdefname = ".notdef";
     fprintf( out, "/%sBase /%sNotDef [\n", sf->fontname, sf->fontname );
     for ( i=0; i<256; ++i )
 	fprintf( out, " /%s\n", notdefname );

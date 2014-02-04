@@ -1083,10 +1083,6 @@ void GWidgetSetEH(GWindow gw, GDrawEH e_h ) {
 void GWidgetHidePalettes(void) {
     GTopLevelD *td, *palette;
 
-#if 0
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
-#endif
     if ( last_paletted_focus_window==NULL )
 return;
     td = (GTopLevelD *) (last_paletted_focus_window->widget_data);
@@ -1096,52 +1092,7 @@ return;
 	    palette->w->visible_request = true;
 	}
     }
-#if 0
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
-#endif
 }
-
-#if 0
-void GPaletteDock(GWindow palette,int x, int y) {
-    GTopLevelD *td = (GTopLevelD *) (palette->widget_data);
-
-    if ( !td->ispalette || td->isdocked )
-return;
-    GDrawReparentWindow(palette,td->owner->w,x,y);
-    td->isdocked = true;
-}
-
-void GPaletteUndock(GWindow palette,int x, int y) {
-    GTopLevelD *td = (GTopLevelD *) (palette->widget_data);
-    GPoint pt;
-    GWindow root;
-
-    if ( !td->ispalette || !td->isdocked )
-return;
-
-    pt.x = x; pt.y = y;
-    root = GDrawGetRoot(palette->display);
-    GDrawTranslateCoordinates(td->owner->w,root,&pt);
-    if ( pt.x<0 ) pt.x=0;
-    if ( pt.y<0 ) pt.y=0;
-    if ( pt.x+palette->pos.width>root->pos.width )
-	pt.x = root->pos.width-palette->pos.width;
-    if ( pt.y+palette->pos.height>root->pos.height )
-	pt.y = root->pos.height-palette->pos.height;
-
-    GDrawReparentWindow(palette,root,x,y);
-    td->isdocked = false;
-}
-
-int GPaletteIsDocked(GWindow palette) {
-    GTopLevelD *td = (GTopLevelD *) (palette->widget_data);
-    if ( !td->ispalette )
-return(false);
-
-return( td->isdocked );
-}
-#endif
 
 void GWidgetReparentWindow(GWindow child,GWindow newparent, int x,int y) {
     if ( !child->is_toplevel ) {

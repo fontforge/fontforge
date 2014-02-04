@@ -686,9 +686,6 @@ typedef struct generic_asm {		/* Apple State Machine */
     uint16 class_cnt, state_cnt;
     char **classes;
     struct asm_state *state;
-#if 0
-    uint32 opentype_tag;		/* If converted from opentype */
-#endif
 } ASM;
 /* State Flags:
  Indic:
@@ -2628,9 +2625,6 @@ extern int IntersectLinesClip(BasePoint *inter,
 	BasePoint *line1_1, BasePoint *line1_2,
 	BasePoint *line2_1, BasePoint *line2_2);
 
-#if 0
-extern void SSBisectTurners(SplineSet *spl);
-#endif
 extern void SSRemoveBacktracks(SplineSet *ss);
 extern enum PolyType PolygonIsConvex(BasePoint *poly,int n, int *badpointindex);
 extern SplineSet *UnitShape(int isrect);
@@ -2943,9 +2937,6 @@ extern void SCRound2Int(SplineChar *sc,int layer, real factor);
 extern int SCRoundToCluster(SplineChar *sc,int layer,int sel,bigreal within,bigreal max);
 extern int SplineSetsRemoveAnnoyingExtrema(SplineSet *ss,bigreal err);
 extern int hascomposing(SplineFont *sf,int u,SplineChar *sc);
-#if 0
-extern void SFFigureGrid(SplineFont *sf);
-#endif
 
 struct cidmap;			/* private structure to encoding.c */
 extern int CIDFromName(char *name,SplineFont *cidmaster);

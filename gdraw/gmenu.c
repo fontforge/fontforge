@@ -398,104 +398,6 @@ static char* GMenuGetMenuPath( GMenuItem *basemi, GMenuItem *targetmi ) {
     return buffer;
 }
 
-#if 0
-static int GMenuDrawMacIcons(struct gmenu *m, Color fg, int ybase, int x, int mask ) {
-    int h = 3*(m->as/3);
-    int seg = h/3;
-
-    if( hotkeySystemGetCanUseMacCommand() )
-    {
-	if( mask & ksm_control )
-	{
-	    mask |= ksm_cmdmacosx;
-	    mask ^= ksm_control;
-	}
-    }
-
-
-    if ( mask&ksm_cmdmacosx ) {
-	GDrawDrawLine(m->w,x,ybase-1,x,ybase-(seg-1),fg);
-	GDrawDrawLine(m->w,x,ybase-(2*seg),x,ybase-(h-2),fg);
-	GDrawDrawLine(m->w,x+h-1,ybase-1,x+h-1,ybase-(seg-1),fg);
-	GDrawDrawLine(m->w,x+h-1,ybase-(2*seg),x+h-1,ybase-(h-2),fg);
-	GDrawDrawLine(m->w,x+1,ybase,x+seg-1,ybase,fg);
-	GDrawDrawLine(m->w,x+2*seg,ybase,x+h-2,ybase,fg);
-	GDrawDrawLine(m->w,x+1,ybase-(h-1),x+seg-1,ybase-(h-1),fg);
-	GDrawDrawLine(m->w,x+2*seg,ybase-(h-1),x+h-2,ybase-(h-1),fg);
-
-	GDrawDrawLine(m->w,x+seg,ybase-1,x+seg,ybase-(h-2),fg);
-	GDrawDrawLine(m->w,x+2*seg-1,ybase-1,x+2*seg-1,ybase-(h-2),fg);
-	GDrawDrawLine(m->w,x+1,ybase-seg,x+h-2,ybase-seg,fg);
-	GDrawDrawLine(m->w,x+1,ybase-(2*seg-1),x+h-2,ybase-(2*seg-1),fg);
-	x += h+seg-1;
-    }
-    if ( mask&ksm_control ) {
-	int half = h/2;
-	int top = h-1, midy = top-half;
-	GPoint pts[3];
-	GDrawSetLineWidth(m->w,seg-1);
-	pts[0].x = x;          pts[0].y = ybase-midy;
-	pts[1].x = x+half;     pts[1].y = ybase-top;
-	pts[2].x = x+2*half;   pts[2].y = ybase-midy;
-	GDrawDrawPoly(m->w,pts,3,fg);
-	GDrawSetLineWidth(m->w,0);
-	x += h+seg-1;
-    }
-    if ( mask&ksm_meta ) {
-	int off = (seg-1)/2;
-	GDrawSetLineWidth(m->w,seg-1);
-	GDrawDrawLine(m->w,x,ybase-off,x+seg+1,ybase-off,fg);
-	GDrawDrawLine(m->w,x+seg+1,ybase-off,x+2*seg+1,ybase-(h-off-1),fg);
-	GDrawDrawLine(m->w,x+2*seg+1,ybase-(h-off-1),x+4*seg-1,ybase-(h-off-1),fg);
-	GDrawDrawLine(m->w,x+2*seg+1,ybase-off,x+4*seg-1,ybase-off,fg);
-	GDrawSetLineWidth(m->w,0);
-	x += h+2*seg-1;
-    }
-    if ( mask&ksm_shift ) {
-	int half = h/2;
-	int top = h-1, midy = top-half;
-	GDrawDrawLine(m->w,x,ybase-midy,x+half,ybase-top,fg);
-	GDrawDrawLine(m->w,x+2*half,ybase-midy,x+half,ybase-top,fg);
-	GDrawDrawLine(m->w,x,ybase-midy,x+seg-1,ybase-midy,fg);
-	GDrawDrawLine(m->w,x+2*half,ybase-midy,x+2*half-(seg-1),ybase-midy,fg);
-	GDrawDrawLine(m->w,x+seg-1,ybase-midy,x+seg-1,ybase,fg);
-	GDrawDrawLine(m->w,x+2*half-(seg-1),ybase-midy,x+2*half-(seg-1),ybase,fg);
-	GDrawDrawLine(m->w,x+seg-1,ybase,x+2*half-(seg-1),ybase,fg);
-	x += h+seg-1;
-    }
-return( x );
-}
-
-static int GMenuMacIconsWidth(struct gmenu *m, int mask ) {
-    int h = 3*(m->as/3);
-    int seg = h/3;
-    int x=0;
-
-    if( hotkeySystemGetCanUseMacCommand() )
-    {
-	if( mask & ksm_control )
-	{
-	    mask |= ksm_cmdmacosx;
-	    mask ^= ksm_control;
-	}
-    }
-
-    if ( mask&ksm_cmdmacosx ) {
-	x += h+seg-1;
-    }
-    if ( mask&ksm_shift ) {
-	x += h+seg-1;
-    }
-    if ( mask&ksm_control ) {
-	x += h+seg-1;
-    }
-    if ( mask&ksm_meta ) {
-	x += h+2*seg-1;
-    }
-return( x );
-}
-#endif
-
 static void GMenuDrawCheckMark(struct gmenu *m, Color fg, int ybase, int r2l) {
     int as = m->as;
     int pt = GDrawPointsToPixels(m->w,1);
@@ -801,9 +703,6 @@ static void GMenuHideAll(struct gmenu *m) {
 }
 
 static void GMenuDismissAll(struct gmenu *m) {
-#if 0
- TRACE("DismissAll\n");
-#endif
     if ( m!=NULL ) {
 	while ( m->parent ) m = m->parent;
 	GMenuDestroy(m);
@@ -977,9 +876,6 @@ return( true );
 		m->initial_press = true;
 	}
     } else if ( event->type == et_mouseup && m->child==NULL ) {
-#if 0
- TRACE("\nActivate menu\n");
-#endif
 	if ( m->scrollit!=NULL ) {
 	    GDrawCancelTimer(m->scrollit);
 	    m->scrollit = NULL;
@@ -1015,24 +911,12 @@ static int gmenu_timer(struct gmenu *m, GEvent *event) {
 	if ( m->offtop==0 )
 return(true);
 	if ( --m->offtop<0 ) m->offtop = 0;
-#if 0			/* If we were to put this in, then someone who was clicking through the menu to scroll it would find that his last click would both scroll and then invoke */
-	if ( m->offtop == 0 ) {
-	    GDrawCancelTimer(m->scrollit);
-	    m->scrollit = NULL;
-	}
-#endif
     } else {
 	if ( m->offtop == m->mcnt-m->lcnt )
 return( true );
 	++m->offtop;
 	if ( m->offtop + m->lcnt > m->mcnt )
 	    m->offtop = m->mcnt-m->lcnt;
-#if 0
-	if ( m->offtop == m->mcnt-m->lcnt ) {
-	    GDrawCancelTimer(m->scrollit);
-	    m->scrollit = NULL;
-	}
-#endif
     }
     GDrawRequestExpose(m->w, NULL, false);
 return( true );
@@ -1059,141 +943,6 @@ static int GMenuBarKeyInvoke(struct gmenubar *mb, int i) {
 	(mb->mi[i].invoke)(mb->g.base,&mb->mi[i],NULL);
 return( true );
 }
-
-#if 0
-static int getkey(int keysym, int option) {
-    if ( option && keysym>128 ) {
-	/* Under Mac 10.5 (but not under 10.4,3,2,1,0) if the option key is */
-	/*  depressed the keysym changes. Opt-A becomes ARing, etc. */
-	/* Er... I can't repeat this now. the Option modifier mask (meta) */
-	/*  should be stripped off before we call Xutf8LookupString so the */
-	/*  conversion shouldn't happen. And doesn't in my tests */
-	/* And 0x2000 is not set for option now anyway */
-	if ( keysym==0xc5 )
-	    keysym = 'a';
-	else if ( keysym==0xe5 )
-	    keysym = 'A';
-	else if ( keysym==0x8bf )
-	    keysym = 'b';
-	else if ( keysym==0x2b9 )
-	    keysym = 'B';
-	else if ( keysym==0xe7 )
-	    keysym = 'c';
-	else if ( keysym==0xc7 )
-	    keysym = 'C';
-	else if ( keysym==0x8ef )
-	    keysym = 'd';
-	else if ( keysym==0xce )
-	    keysym = 'D';
-	else if ( keysym==0xfe51 )
-	    keysym = 'e';
-	else if ( keysym==0xb4 )
-	    keysym = 'E';
-	else if ( keysym==0x8f6 )
-	    keysym = 'f';
-	else if ( keysym==0xcf )
-	    keysym = 'F';
-	else if ( keysym==0xa9 )
-	    keysym = 'g';
-	else if ( keysym==0x1bd )
-	    keysym = 'G';
-	else if ( keysym==0x1ff )
-	    keysym = 'h';
-	else if ( keysym==0xd3 )
-	    keysym = 'H';
-	else if ( keysym==0xfe52 )
-	    keysym = 'i';
-	else if ( keysym==0x2c6 )
-	    keysym = 'I';
-	else if ( keysym==0x2206 )
-	    keysym = 'j';
-	else if ( keysym==0xd4 )
-	    keysym = 'J';
-	else if ( keysym==0x2da )
-	    keysym = 'k';
-	else if ( keysym==0xf8ff )
-	    keysym = 'K';
-	else if ( keysym==0xac )
-	    keysym = 'l';
-	else if ( keysym==0xd2 )
-	    keysym = 'L';
-	else if ( keysym==0xb5 )
-	    keysym = 'm';
-	else if ( keysym==0xc2 )
-	    keysym = 'M';
-	else if ( keysym==0xfe53 )
-	    keysym = 'n';
-	else if ( keysym==0x2dc )
-	    keysym = 'N';
-	else if ( keysym==0xf8 )
-	    keysym = 'o';
-	else if ( keysym==0xd8 )
-	    keysym = 'O';
-	else if ( keysym==0x7f0 )
-	    keysym = 'p';
-	else if ( keysym==0x220f )
-	    keysym = 'P';
-	else if ( keysym==0x13bd )
-	    keysym = 'q';
-	else if ( keysym==0x13bc )
-	    keysym = 'Q';
-	else if ( keysym==0xae )
-	    keysym = 'r';
-	else if ( keysym==0x2030 )
-	    keysym = 'R';
-	else if ( keysym==0xdf )
-	    keysym = 's';
-	else if ( keysym==0xcd )
-	    keysym = 'S';
-	else if ( keysym==0xaf1 )
-	    keysym = 't';
-	else if ( keysym==0x1b7 )
-	    keysym = 'T';
-	else if ( keysym==0xfe57 )
-	    keysym = 'u';
-	else if ( keysym==0xa8 )
-	    keysym = 'U';
-	else if ( keysym==0x8d6 )
-	    keysym = 'v';
-	else if ( keysym==0x25ca )
-	    keysym = 'V';
-	else if ( keysym==0x2211 )
-	    keysym = 'w';
-	else if ( keysym==0xafe )
-	    keysym = 'W';
-	else if ( keysym==0x2248 )
-	    keysym = 'x';
-	else if ( keysym==0x1b2 )
-	    keysym = 'X';
-	else if ( keysym==0xa5 )
-	    keysym = 'y';
-	else if ( keysym==0xc1 )
-	    keysym = 'Y';
-	else if ( keysym==0x7d9 )
-	    keysym = 'z';
-	else if ( keysym==0xb8 )
-	    keysym = 'Z';
-	else if ( keysym==0xaaa )
-	    keysym = '-';
-	else if ( keysym==0xaa9 )
-	    keysym = '_';
-	else if ( keysym==0x8bd )
-	    keysym = '=';
-	else if ( keysym==0xb1 )
-	    keysym = '+';
-	else if ( keysym==0xad2 )
-	    keysym = '[';
-	else if ( keysym==0xad0 )
-	    keysym = ']';
-	else if ( keysym==0xad3 )
-	    keysym = '{';
-	else if ( keysym==0xad1 )
-	    keysym = '}';
-    }
-    if ( islower(keysym)) keysym = toupper(keysym);
-return( keysym );
-}
-#endif
 
 /**
  * Remove any instances of 'ch' from 'ret' and return 'ret'
@@ -1555,9 +1304,6 @@ return( false );
 }
 
 static int gmenu_destroy(struct gmenu *m) {
-#if 0
- TRACE("gmenu_destroy\n");
-#endif
     if ( most_recent_popup_menu==m )
 	most_recent_popup_menu = NULL;
     if ( m->donecallback )
@@ -2473,21 +2219,10 @@ static void GMenuBarFindXs(GMenuBar *mb) {
     int i, wid;
 
     GDrawSetFont(mb->g.base,mb->font);
-#if 1
     wid = GDrawPointsToPixels(mb->g.base,8);
     mb->xs[0] = GDrawPointsToPixels(mb->g.base,2);
     for ( i=0; i<mb->mtot; ++i )
 	mb->xs[i+1] = mb->xs[i]+wid+GTextInfoGetWidth(mb->g.base,&mb->mi[i].ti,NULL);
-#else
-    for ( i=wid=0; i<mb->mtot; ++i ) {
-	temp = GDrawGetTextWidth(mb->g.base,mb->mi[i].ti.text,-1);
-	if ( temp>wid ) wid = temp;
-    }
-    wid += GDrawPointsToPixels(mb->g.base,5);
-    mb->xs[0] = 0;
-    for ( i=0; i<mb->mtot; ++i )
-	mb->xs[i+1] = mb->xs[i]+wid;
-#endif
     GMenuBarTestSize(mb);
 }
 

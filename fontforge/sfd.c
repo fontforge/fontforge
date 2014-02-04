@@ -1691,11 +1691,7 @@ static void SFDDumpBitmapChar(FILE *sfd,BDFChar *bfc, int enc,int *newgids) {
 	}
     }
     SFDEnc85EndEnc(&encrypt);
-#if 0
-    fprintf(sfd,"\nEndBitmapChar\n" );
-#else
     fputc('\n',sfd);
-#endif
 }
 
 static void appendnames(char *dest,char *dir,char *dir_char,char *name,char *ext ) {
@@ -2752,17 +2748,8 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 	    }
 	    ff_progress_next();
 	}
-	if ( !todir ) {
+	if ( !todir )
 	    fprintf(sfd, "EndChars\n" );
-#if 0
-	    for ( i=0; i<map->enccount; ++i ) {
-		if ( map->map[i]!=-1 && map->backmap[map->map[i]]!=i &&
-			!SFDOmit(sf->glyphs[map->map[i]]) )
-		    fprintf( sfd, "DupEnc: %d %d\n", i,
-			    (int) (newgids!=NULL?newgids[map->map[i]]: map->map[i]));
-	    }
-#endif
-	}
     }
 
     if ( sf->bitmaps!=NULL )
@@ -5703,12 +5690,6 @@ exit(1);
 	} else if ( strmatch(tok,"EndChar")==0 ) {
 	    if ( sc->orig_pos<sf->glyphcnt )
 		sf->glyphs[sc->orig_pos] = sc;
-#if 0		/* Auto recovery fails if we do this */
-	    else {
-		SplineCharFree(sc);
-		sc = NULL;
-	    }
-#endif
             /* Recalculating hint active zones may be needed for old .sfd files. */
             /* Do this when we have finished with other glyph components, */
             /* so that splines are already available */
@@ -6366,10 +6347,6 @@ static Encoding *SFDGetEncoding(FILE *sfd, char *tok, SplineFont *sf) {
     }
     if ( enc==NULL )
 	enc = &custom;
-#if 0
-    if ( enc->is_compact )
-	sf->compacted = true;
-#endif
 return( enc );
 }
 

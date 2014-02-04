@@ -1310,37 +1310,6 @@ static char *rmbinary(char *line) {
     return( line );
 }
 
-#if 0
-/* used for debugging putBack, this routine can be removed */
-
-/* makePrintable():							*/
-/* Convert the given null-terminated string into one that has all	*/
-/* binary chars converted to corresponding hex encoding. Show binary as	*/
-/* hex-encoded for printability; Return value must be free() later.	*/
-/* go see "Re: [Fontforge-devel] stuck in infinite loop", 2012August22	*/
-static char *makePrintable(const char *line) {
-    unsigned bufflen = strlen(line) * 2 + 1;
-    char *retval = malloc(bufflen);
-    if ( retval==NULL ) {
-	LogError(_("makePrintable(): unable to alloc memory"));
-	return( NULL );
-    }
-    const char *rdpt;
-    char *wrpt = retval;
-    for (rdpt = line; *rdpt; ++rdpt) {
-	if ( ( *rdpt<' ' || *rdpt>=0x7f ) && *rdpt!='\n' ) {
-	    snprintf(wrpt, 3, "%.2x", *rdpt);
-	    wrpt += 2;
-	} else {
-	    *wrpt++ = *rdpt;
-	}
-    }
-    *wrpt = '\0';
-
-    return( retval );
-}
-#endif
-
 /* Does the buffer ending at "pt" end with "str"?  Look back as far as	*/
 /* "n" chars. "pt" should point to final character in buffer, and not	*/
 /* not a terminating null. Return 1 if matched, else 0 if error		*/
@@ -1964,13 +1933,6 @@ return;
 	    fp->fd->cidfontname = gettoken(endtok);
 	} else if ( mycmp("CIDFontVersion",line+1,endtok)==0 ) {
 	    fp->fd->cidversion = strtod(endtok,NULL);
-#if 0
-	    if ( fp->fd->fontinfo->version==NULL ) {
-		char temp[40];
-		sprintf(temp,"%f", fp->fd->cidversion);
-		fp->fd->fontinfo->version = copy(temp);
-	    }
-#endif
 	} else if ( mycmp("CIDFontType",line+1,endtok)==0 )
 	    fp->fd->cidfonttype = strtol(endtok,NULL,10);
 	else if ( mycmp("UIDBase",line+1,endtok)==0 )
@@ -2636,13 +2598,6 @@ return;
 	    fp->skipping_mbf = false;
     break;
 	}
-	/* Hmm. These lines were put in to handle parsing type42 fonts, but */
-	/*  they break multimaster fonts, and they don't seem to be needed */
-	/*  for type42s any more either. So... Away with them */
-#if 0
-	if ( strstr(buffer,"definefont")!=NULL )
-    break;
-#endif
     }
 
     if ( strstr(buffer,"%%BeginData: ")!=NULL ) {
@@ -2738,15 +2693,7 @@ return;
 
 static void PrivateFree(struct private *prv) {
     PSCharsFree(prv->subrs);
-#if 1
     PSDictFree(prv->private);
-#else
-    PSCharsFree(prv->othersubrs);
-    free(prv->minfeature);
-    free(prv->nd);
-    free(prv->np);
-    free(prv->rd);
-#endif
     free(prv);
 }
 

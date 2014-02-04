@@ -860,14 +860,10 @@ int fontforge_main( int argc, char **argv ) {
 	/* Don't start X if we're just going to quit. */
 	/* if X exists, it isn't needed. If X doesn't exist it's wrong */
 	if ( !hasquit(argc,argv)) {
-#if 1
 	    /* This sequence is supposed to bring up an app without a window */
 	    /*  but X still opens an xterm */
 	    system( "osascript -e 'tell application \"X11\" to launch'" );
 	    system( "osascript -e 'tell application \"X11\" to activate'" );
-#else
-	    system( "open /Applications/Utilities/X11.app/" );
-#endif
 	}
 	setenv("DISPLAY",":0.0",0);
     } else if ( local_x==1 && *getenv("DISPLAY")!='/' && strcmp(getenv("DISPLAY"),":0.0")!=0 && strcmp(getenv("DISPLAY"),":0")!=0 )

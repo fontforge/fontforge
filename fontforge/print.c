@@ -2428,10 +2428,6 @@ static char *_IAmACat[] = {
 /* Belorussian */
 static char *_belorussianjohn[] = {
     "У пачатку было Слова, і Слова было ў Бога, і Богам было Слова. Яно было ў пачатку ў Бога",
-#if 0		/* told this is actually russian */
-    "Вначале было Слово, и Слово было у Бога, и Слово было Бог.",
-    "Оно было в начале у Бога.",
-#endif
     NULL
 };
 /* basque */
@@ -2751,42 +2747,6 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 		    (langsyscallback)(tf,len,sample[i].otf_script,sample[i].lang);
 	    }
 	}
-
-#if 0
-	/* If no matches then put in "the quick brown...", in russian too if the encoding suggests it... */
-	if ( !ScriptInList(CHR('l','a','t','n'),scriptsdone,scnt) &&
-		ScriptInList(CHR('l','a','t','n'),scriptsthere,therecnt)) {
-	    for ( j=0; _simple[j]!=NULL; ++j ) {
-		if ( ret )
-		    utf82u_strcpy(ret+len,_simple[j]);
-		len += utf8_strlen(_simple[j]);
-		if ( ret )
-		    ret[len] = '\n';
-		++len;
-		if ( ret )
-		    ret[len] = '\n';
-		++len;
-		if ( ret && langsyscallback!=NULL )
-		    (langsyscallback)(tf,len,CHR('l','a','t','n'),CHR('E','N','G',' '));
-	    }
-	}
-	if ( !ScriptInList(CHR('c','y','r','l'),scriptsdone,scnt) &&
-		ScriptInList(CHR('c','y','r','l'),scriptsthere,therecnt)) {
-	    for ( j=0; _simplecyrill[j]!=NULL; ++j ) {
-		if ( ret )
-		    utf82u_strcpy(ret+len,_simplecyrill[j]);
-		len += utf8_strlen(_simplecyrill[j]);
-		if ( ret )
-		    ret[len] = '\n';
-		++len;
-		if ( ret )
-		    ret[len] = '\n';
-		++len;
-		if ( ret && langsyscallback!=NULL )
-		    (langsyscallback)(tf,len,CHR('c','y','r','l'),CHR('R','U','S',' '));
-	    }
-	}
-#endif
 
 	rcnt = 0;
 	for ( s=0; s<therecnt; ++s ) if ( !ScriptInList(scriptsthere[s],scriptsdone,scnt)) {

@@ -321,19 +321,6 @@ return( oldflags );
     gcd[k++].creator = GCheckBoxCreate;
     hvarray[1][0] = &gcd[k-1]; hvarray[1][1] = NULL;
 
-#if 0
-    rm_k = k;
-    label[k].text = (unichar_t *) _("Cleanup Self Intersect");
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup |
-	    (oldflags&sf_removeoverlap?gg_cb_on:0);
-    gcd[k].gd.popup_msg = (unichar_t *) _("When FontForge detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections");
-    gcd[k++].creator = GCheckBoxCreate;
-    hvarray[2][0] = &gcd[k-1]; hvarray[2][1] = NULL;
-#endif
-
     he_k = k;
     label[k].text = (unichar_t *) _("Handle Erasers");
     label[k].text_is_1byte = true;
@@ -381,10 +368,6 @@ return( oldflags );
     oldflags = 0;
     if ( GGadgetIsChecked(gcd[cd_k].ret) )
 	oldflags |= sf_correctdir;
-#if 0
-    if ( GGadgetIsChecked(gcd[rm_k].ret) )
-	oldflags |= sf_removeoverlap;
-#endif
     if ( GGadgetIsChecked(gcd[he_k].ret) )
 	oldflags |= sf_handle_eraser;
     GDrawDestroyWindow(gw);
@@ -783,10 +766,6 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     GFileChooserSetFilterText(gcd[0].ret,fv!=NULL?wildfnt[format]:wildchr[format]);
     GFileChooserRefreshList(gcd[0].ret);
     GHVBoxFitWindow(boxes[0].ret);
-#if 0
-    GFileChooserGetChildren(gcd[0].ret,&pulldown,&files,&tf);
-    GWidgetIndicateFocusGadget(tf);
-#endif
 
     memset(&d,'\0',sizeof(d));
     d.cv = cv;

@@ -220,30 +220,6 @@ static void FixIt(struct problems *p) {
     RefChar *r;
     int ncp_changed, pcp_changed;
 
-#if 0	/* The ultimate cause (the thing we need to fix) for these two errors */
-	/* is that the stem is wrong, it's too hard to fix that here, so best */
-	/* not to attempt to fix the proximal cause */
-    if ( p->explaining==_("This glyph contains a horizontal hint near the specified width") ) {
-	for ( h=p->sc->hstem; h!=NULL && !h->active; h=h->next );
-	if ( h!=NULL ) {
-	    h->width = p->widthval;
-	    SCOutOfDateBackground(p->sc);
-	    SCUpdateAll(p->sc);
-	} else
-	    IError("Could not find hint");
-return;
-    }
-    if ( p->explaining==_("This glyph contains a vertical hint near the specified width") ) {
-	for ( h=p->sc->vstem; h!=NULL && !h->active; h=h->next );
-	if ( h!=NULL ) {
-	    h->width = p->widthval;
-	    SCOutOfDateBackground(p->sc);
-	    SCUpdateAll(p->sc);
-	} else
-	    IError("Could not find hint");
-return;
-    }
-#endif
     if ( p->explaining==_("This reference has been flipped, so the paths in it are drawn backwards") ) {
 	for ( r=p->sc->layers[p->layer].refs; r!=NULL && !r->selected; r = r->next );
 	if ( r!=NULL ) {

@@ -389,26 +389,7 @@ return;
 	strncpy(fullspec,temp,sizeof(fullspec));
 	free(temp);
     }
-#if 0 && __Mac
-    /* Starting a Mac application is weird... system() can't do it */
-    /* Thanks to Edward H. Trager giving me an example... */
-    if ( strstr(browser,".app")!=NULL ) {
-	*strstr(browser,".app") = '\0';
-	pt = strrchr(browser,'/');
-	if ( pt==NULL ) pt = browser-1;
-	++pt;
-	if ( (temp=malloc(strlen(pt)+strlen(fullspec) +
-		strlen( "osascript -l AppleScript -e \"Tell application \"\" to getURL \"\"\"" )+
-		20))==NULL )
-	    return;;
-	/* this doesn't work on Max OS X.0 (osascript does not support -e) */
-	sprintf( temp, "osascript -l AppleScript -e \"Tell application \"%s\" to getURL \"%s\"\"",
-	    pt, fullspec);
-	system(temp);
-	ff_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
-	free(temp);
-    } else {
-#elif __Mac
+#if __Mac
     /* This seems a bit easier... Thanks to riggle */
     if ( strcmp(browser,"open")==0 ) {
 	char *str = "DYLD_LIBRARY_PATH=\"\"; open ";

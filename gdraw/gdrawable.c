@@ -71,10 +71,6 @@ static int gdrawable_expose(GWindow pixmap, GGadget *g, GEvent *event) {
 return( false );
 
     GDrawPushClip(pixmap,&g->r,&old);
-#if 0
-    GBoxDrawBackground(pixmap,&g->r,g->box,
-	    g->state==gs_enabled? gs_pressedactive: g->state,false);
-#endif
     GBoxDrawBorder(pixmap,&g->r,g->box,g->state,false);
 
     GDrawPopClip(pixmap,&old);

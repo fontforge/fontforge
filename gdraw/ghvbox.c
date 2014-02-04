@@ -617,12 +617,6 @@ static GHVBox *_GHVBoxCreate(struct gwindow *base, GGadgetData *gd,void *data,
 	if ( gd->u.boxelements[i]==NULL )
 	    ++i;
     }
-#if 0
-    GHVBoxGetDesiredSize(&gb->g,&outer,NULL);
-    if ( gd->pos.width!=0 ) outer.width = gd->pos.width;
-    if ( gd->pos.height!=0 ) outer.height = gd->pos.height;
-    GHVBoxResize(&gb->g,outer.width,outer.height);
-#endif
 return( gb );
 }
 

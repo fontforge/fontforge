@@ -1086,7 +1086,6 @@ return( n->up==e->up );
 return( false );
 }
 
-#if 1
 int EISkipExtremum(EI *e, real i, int major) {
     EI *n = e->aenext, *t;
 
@@ -1122,23 +1121,6 @@ return( n->up!=e->up );
     }
 return( false );
 }
-#else
-int EISkipExtremum(EI *e, real pos, int major) {
-    Spline1D *s;
-    real slopem, slopeo;
-
-    s = &e->spline->splines[major];
-    slopem = (3*s->a*e->tcur+2*s->b)*e->tcur+s->c;
-    s = &e->spline->splines[!major];
-    slopeo = (3*s->a*e->tcur+2*s->b)*e->tcur+s->c;
-    if ( !RealNear(slopeo,0)) {
-	slopem/=slopeo;
-	if ( slopem>-.15 && slopem<.15 )
-return( true );
-    }
-return( false );
-}
-#endif
 
 EI *EIActiveEdgesFindStem(EI *apt, real i, int major) {
     int cnt=apt->up?1:-1;

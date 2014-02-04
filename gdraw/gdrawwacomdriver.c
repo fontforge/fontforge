@@ -228,42 +228,9 @@ return;
 	    }
 	}
     }
-#if 0 /* This tells me whether these buttons exist. I don't see how to figure out whether they are pressed */
-/*  The only important stuff is the current tool */
-    if (bit[0][EV_KEY/8] & (1<<(EV_KEY%8)) ) {
-	ioctl(gdisp->wacom_fd, EVIOCGBIT(EV_KEY, KEY_MAX), bit[1]);
-	for (j = 0; j < KEY_MAX; j++) if (bit[1][j/8] & (1<<(j%8))) {
-	    switch (j) {
-	      case BTN_LEFT:
-		ws->mouse_button_state |= 0x100;
-	      break;
-	      case BTN_RIGHT:
-		ws->mouse_button_state |= 0x400;
-	      break;
-	      case BTN_MIDDLE:
-		ws->mouse_button_state |= 0x200;
-	      break;
-	      case BTN_STYLUS2:
-		ws->stylus_button_state |= 0x200;
-	      break;
-	      case BTN_TOOL_PEN:
-		ws->active_tool = at_stylus;
-	      break;
-	      case BTN_TOOL_RUBBER:
-		ws->active_tool = at_eraser;
-	      break;
-	      case BTN_TOOL_MOUSE:
-		ws->active_tool = at_mouse;
-	      break;
-	    }
-	}
-    }
-#endif
 
-#if 1
     fprintf( stderr, "Wacom XMax=%d YMax=%d PressureMax=%d\n",
 	    ws->sizex, ws->sizey, ws->max_pressure );
-#endif
     ws->sizex -= _WACOM_EXTRA_LEFT+_WACOM_EXTRA_RIGHT;
     ws->sizey -= _WACOM_EXTRA_TOP+_WACOM_EXTRA_BOTTOM;
     if ( ws->sizex<=0 )

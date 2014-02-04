@@ -660,11 +660,6 @@ void *GIO_dispatch(GIOControl *gc) {
   goto leave;
 	}
 	temppath = path;
-#if 0
-	temppath = path+1;
-	if ( *temppath=='\0' )
-	    temppath = ".";
-#endif
 	switch ( gc->gf ) {
 	  case gf_dir:
 	    ret = ftpgetdir(gc,ctl,temppath,tzoff);
@@ -672,14 +667,6 @@ void *GIO_dispatch(GIOControl *gc) {
 	  case gf_statfile:
 	    ret = ftpgetdir(gc,ctl,temppath,tzoff);
 	  break;
-#if 0
-	  case gf_getfile:
-	    ret = ftpgetfile(gc,ctl,temppath);
-	  break;
-	  case gf_putfile:
-	    ret = ftpputfile(gc,ctl,temppath);
-	  break;
-#endif
 	  case gf_mkdir:
 	    ret = ftpmkdir(gc,ctl,temppath);
 	  break;

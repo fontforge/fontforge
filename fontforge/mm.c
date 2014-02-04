@@ -914,17 +914,10 @@ return( true );
 
 static int HintsMatch(StemInfo *h1,StemInfo *h2) {
     while ( h1!=NULL && h2!=NULL ) {
-#if 0		/* Nope. May conflict in one instance and not in another */
-	if ( h1->hasconflicts != h2->hasconflicts )
-return( false );
-#endif
 	h1 = h1->next;
 	h2 = h2->next;
     }
-    if ( h1!=NULL || h2!=NULL )
-return( false );
-
-return( true );
+return ( h1==NULL && h2==NULL );
 }
 
 static int KernsMatch(SplineChar *sc1, SplineChar *sc2) {

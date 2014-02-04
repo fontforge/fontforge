@@ -96,25 +96,6 @@ static void _GXDraw_InitFonts(GXDisplay *gxdisplay) {
 #define RND_BY_0x11(x) (((x+8)*241)>>12)
 
 static void _GXDraw_FindVisual(GXDisplay *gdisp) {
-#if 0
-    Display *display = gdisp->display;
-    ScreenFormat *sf;
-    int i;
-
-    /* I can't get the code to work on Irix */
-    gdisp->visual = DefaultVisual(display,gdisp->screen);
-    gdisp->depth = DefaultDepth(display,gdisp->screen);
-    gdisp->bitmap_pad = gdisp->pixel_size = gdisp->depth;
-    for ( i=0; i<((_XPrivDisplay) display)->nformats; ++i ) {
-	sf = &((_XPrivDisplay) display)->pixmap_format[i];
-	if ( sf->depth == gdisp->depth ) {
-	    gdisp->pixel_size = sf->bits_per_pixel;
-	    gdisp->bitmap_pad = sf->scanline_pad;
-    break;
-	}
-    }
-    gdisp->cmap = DefaultColormap(display,gdisp->screen);
-#else
     /* In the old days before 24bit color was common, a 32 bit visual was */
     /* the standard way to go (extra 8 bits were ignored). Then came the */
     /* composite extension which supported alpha channels in images, and */
@@ -271,7 +252,6 @@ static void _GXDraw_FindVisual(GXDisplay *gdisp) {
 		AllocNone);
 	XInstallColormap(display,gdisp->cmap);
     }
-#endif
 }
 
 static int _GXDraw_AllocColors(GXDisplay *gdisp,XColor *x_colors) {
@@ -590,18 +570,10 @@ static int myerrorhandler(Display *disp, XErrorEvent *err) {
 
     if (err->request_code>0 && err->request_code<128)
 	majorcode = XProtocalCodes[err->request_code];
-#if 0		/* This varies. it is 146 on my machine, but not on everyone's */
-    else if ( err->request_code==146 )
-	majorcode = "XInputExtension";
-#endif
     else
 	majorcode = "";
     if ( err->request_code==45 && lastfontrequest!=NULL )
 	fprintf( stderr, "Error attempting to load font:\n  %s\nThe X Server clained the font existed, but when I asked for it,\nI got this error instead:\n\n", lastfontrequest );
-#if 0		/* This varies. it is 146 on my machine, but not on everyone's */
-    else if ( err->request_code==146 && err->minor_code==3 )
-	fprintf( stderr, "Error connecting to wacom tablet. Sometimes linux fails to configure\n it properly. Try typing\n$ su\n# insmod wacom\n" );
-#endif
     XGetErrorText(disp,err->error_code,buffer,sizeof(buffer));
     fprintf( stderr, "X Error of failed request: %s\n", buffer );
     fprintf( stderr, "  Major opcode of failed request:  %d.%d (%s)\n",
@@ -1412,25 +1384,7 @@ static void GXDrawReparentWindow(GWindow child,GWindow newparent, int x,int y) {
     GXDisplay *gdisp = gchild->display;
     /* Gnome won't let me reparent a top level window */
     /* It only pays attention to override-redirect if the window hasn't been mapped */
-#if 0
-    int reset = false;
-    XSetWindowAttributes sattr;
-    XWindowAttributes attr;
-
-    if ( gchild->is_toplevel && (GXWindow) newparent!=gdisp->groot ) {
-	XGetWindowAttributes(gdisp->display,gchild->w,&attr);
-	reset = !attr.override_redirect;
-	sattr.override_redirect = true;
-	XChangeWindowAttributes(gdisp->display,gchild->w,CWOverrideRedirect,&sattr);
-    }
-#endif
     XReparentWindow(gdisp->display,gchild->w,gpar->w,x,y);
-#if 0
-    if ( reset ) {
-	sattr.override_redirect = true;
-	XChangeWindowAttributes(gdisp->display,gchild->w,CWOverrideRedirect,&sattr);
-    }
-#endif
 }
 
 static void GXDrawSetVisible(GWindow w, int visible) {
@@ -2230,28 +2184,11 @@ static void GXDrawDrawElipse(GWindow gw, GRect *rect, Color col) {
 static void GXDrawDrawArc(GWindow gw, GRect *rect, int32 sangle, int32 tangle, Color col) {
     GXWindow gxw = (GXWindow) gw;
     GXDisplay *display = gxw->display;
-#if 0
-    int cx, cy;
-    double sa, ea;
-
-    cx = rect->x + (rect->width)/2;
-    cy = rect->y + (rect->height)/2;
-    sa = atan2((double) (sx-cx),(double) (sy-cy));
-    ea = atan2((double) (ex-cx),(double) (ey-cy));
-
-    gxw->ggc->fg = col;
-    GXDrawSetline(display,gxw->ggc);
-    XDrawArc(display->display,gxw->w,display->gcstate[w->ggc->bitmap_col].gc,rect->x,rect->y,
-	    rect->width,rect->height,
-	    (int) (sa*(360.*64./(2*3.1415926535897932))),
-	    (int) (ea*(360.*64./(2*3.1415926535897932))) );
-#else
     gxw->ggc->fg = col;
     GXDrawSetline(display,gxw->ggc);
     XDrawArc(display->display,gxw->w,display->gcstate[gxw->ggc->bitmap_col].gc,rect->x,rect->y,
 	    rect->width,rect->height,
 	    sangle,tangle );
-#endif
 }
 
 static void GXDrawFillElipse(GWindow gw, GRect *rect, Color col) {
@@ -2701,9 +2638,7 @@ return;
 return;
 	rect = &temp;
     }
-#if 0		/* don't do it this way, flicker is noticeable */
-    XClearArea(display->display,gxw->w,rect->x,rect->y,rect->width,rect->height, true );
-#else
+    /* Don't simply XClearArea with exposures == True, flicker is noticeable */
     if ( doclear )
 	XClearArea(display->display,gxw->w,rect->x,rect->y,rect->width,rect->height, false );
     if ( gw->eh!=NULL ) {
@@ -2715,7 +2650,6 @@ return;
 	event.native_window = gw->native_window;
 	(gw->eh)(gw,&event);
     }
-#endif
 }
 
 static void GTimerSetNext(GTimer *timer,int32 time_from_now) {

@@ -293,12 +293,6 @@ return( false );
 	    /* hm continues to match */;
 	else if ( sp1->hintmask!=NULL || sp2->hintmask!=NULL ) {
 	    hmfail=(SplinePoint *) sp1;
-#if 0
- printf( "HM Failure at (%g,%g) sp1 %s mask, sp2 %s mask\n",
-	 sp1->me.x, sp1->me.y,
-	 sp1->hintmask==NULL? "has no" : "has a",
-	 sp2->hintmask==NULL? "has no" : "has a" );
-#endif
 	}
 
 	if ( sp2->next==NULL && sp1->next==NULL ) {
@@ -629,16 +623,6 @@ int CompareLayer(Context *c, const SplineSet *ss1,const SplineSet *ss2,
 
     if ( pt_err<0 && spline_err<0 )
 return( SS_PointsMatch );
-#if 0
-    /* Unfortunately we can't do this because references in the clipboard */
-    /*  don't have inline copies of their splines */
-    if ( !RefCheck( refs1,refs2 )) {
-	val = SSRefCompare(ss1,ss2,refs1,refs2,pt_err,spline_err);
-	if ( val&SS_NoMatch )
-	    val |= SS_RefMismatch;
-    } else
-	val = SSsCompare(ss1,ss2, pt_err, spline_err,_hmfail);
-#else
     val = SSsCompare(ss1,ss2, pt_err, spline_err,_hmfail);
     refc = RefCheck( refs1,refs2 );
     if ( !refc ) {
@@ -648,7 +632,6 @@ return( SS_PointsMatch );
 	    val |= SS_RefMismatch;
     } else if ( refc==2 )
 	val |= SS_RefPtMismatch;
-#endif
     if ( (val&SS_NoMatch) && diffs_are_errors ) {
 	if ( val & SS_DiffContourCount )
 	    GCErrorString(c,"Spline mismatch (different number of contours) in glyph", name);

@@ -75,11 +75,6 @@ static char *realweights[] = { "Demi", "Bold", "Regular", "Medium", "Book", "Thi
 static char *modifierlist[] = { "Ital", "Obli", "Kursive", "Cursive", "Slanted",
 	"Expa", "Cond", NULL };
 static char **mods[] = { knownweights, modifierlist, NULL };
-#if 0
-static char *modifierlistfull[] = { "Italic", "Oblique", "Kursive", "Cursive",
-    "Expanded", "Condensed", NULL };
-static char **fullmods[] = { realweights, modifierlistfull, NULL };
-#endif
 
 
 static char *GuessFamily(char *fontname) {
@@ -131,13 +126,8 @@ static void readcoords(FILE *file,int is12, int *x, int *y) {
 	ch1 = getc(file);
 	ch2 = getc(file);
 	ch3 = getc(file);
-#if 0
-	ch1 = (ch1<<4)|(ch2>>4);
-	ch2 = ((ch2&0xf)<<8)|ch3;
-#else
 	ch1 = ch1|((ch2&0xf)<<8);
 	ch2 = (ch2>>4)|(ch3<<4);
-#endif
 	*x = (ch1<<(32-12))>>(32-12);		/* Sign extend */
 	*y = (ch2<<(32-12))>>(32-12);		/* Sign extend */
     } else {
@@ -789,16 +779,6 @@ return( NULL );
     /* Docs say that the word "Outlines" appears here, followed by a nul */
     /* That appears to be a lie. We seem to get a random comment */
     /* or perhaps a copyright notice */
-#if 0
-    if ( strcmp(buffer,"Outlines")!=0 ) {
-	fprintf( stderr, "Outlines keyword missing after fontname in %s\n", filename );
-	free(filename);
-	free(outline.chunk_offset);
-	free(outline.fontname);
-	fclose(file);
-return( NULL );
-    }
-#endif
     if ( outline.metrics_fontname!=NULL &&
 	    strmatch(outline.fontname,outline.metrics_fontname)!=0 )
 	fprintf( stderr, "Warning: Fontname in metrics (%s) and fontname in outline (%s)\n do not match.\n", outline.metrics_fontname, outline.fontname );

@@ -177,26 +177,11 @@ return( NULL );
 	/* PNG orders its bytes as AABBGGRR instead of 00RRGGBB */
 	uint32 *ipt, *iend;
 	for ( ipt = (uint32 *) (base->data), iend=ipt+base->width*base->height; ipt<iend; ++ipt ) {
-#if 0
-	    /* Minimal support for alpha channel. Assume default background of white */
-	    if ( __gimage_can_support_alpha )
-		/* Leave alpha channel unchanged */;
-	    else if ( (*ipt&0xff000000)==0xff000000 )
-		*ipt = COLOR_CREATE( ((*ipt)&0xff) , ((*ipt>>8)&0xff) , (*ipt>>16)&0xff );
-	    else {
-		int r, g, b, a = (*ipt>>24)&0xff;
-		r = ( ((*ipt    )&0xff) * a + (255-a)*0xff ) / 255;
-		g = ( ((*ipt>>8 )&0xff) * a + (255-a)*0xff ) / 255;
-		b = ( ((*ipt>>16)&0xff) * a + (255-a)*0xff ) / 255;
-		*ipt = COLOR_CREATE( r,g,b );
-	    }
-#else
 	    uint32 r, g, b, a = *ipt&0xff000000;
 	    r = (*ipt    )&0xff;
 	    g = (*ipt>>8 )&0xff;
 	    b = (*ipt>>16)&0xff;
 	    *ipt = COLOR_CREATE( r,g,b ) | a;
-#endif
 	}
     }
 
