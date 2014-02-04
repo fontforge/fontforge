@@ -431,7 +431,7 @@ return( _GImage_GetIndexedPixel/*Precise*/(col, gdisp->cs.rev)->pixel );
 
 /* ****************************** Error Handler ***************************** */
 
-static char *XProtocalCodes[] = {
+static char *XProtocolCodes[] = {
     "X_Undefined_0",
     "X_CreateWindow",
     "X_ChangeWindowAttributes",
@@ -569,7 +569,7 @@ static int myerrorhandler(Display *disp, XErrorEvent *err) {
     char buffer[200], *majorcode;
 
     if (err->request_code>0 && err->request_code<128)
-	majorcode = XProtocalCodes[err->request_code];
+	majorcode = XProtocolCodes[err->request_code];
     else
 	majorcode = "";
     if ( err->request_code==45 && lastfontrequest!=NULL )
