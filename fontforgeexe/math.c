@@ -240,7 +240,7 @@ return( gv );
     if ( gv==NULL )
 	gv = chunkalloc(sizeof(struct glyphvariants));
     gv->part_cnt = pcnt;
-    gv->parts = gcalloc(pcnt,sizeof(struct gv_part));
+    gv->parts = calloc(pcnt,sizeof(struct gv_part));
     pcnt = 0;
     for ( start = str ; ; ) {
 	while ( *start==' ' ) ++start;
@@ -275,7 +275,7 @@ return( NULL );
 		gv->parts[i].fullAdvance);
 	len += strlen( buffer );
     }
-    str = galloc(len+1);
+    str = malloc(len+1);
     for ( i=len=0; i<gv->part_cnt; ++i ) {
 	strcpy(str+len,gv->parts[i].component);
 	len += strlen(gv->parts[i].component);
@@ -379,7 +379,7 @@ static void MATH_Init(MathDlg *math) {
     for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL )
 	if ( sc->is_extended_shape )
 	    ++cnt;
-    mds = gcalloc(cnt*2,sizeof(struct matrix_data));
+    mds = calloc(cnt*2,sizeof(struct matrix_data));
     for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL )
 	if ( sc->is_extended_shape ) {
 	    mds[2*cnt+0].u.md_str = copy(sc->name);
@@ -397,7 +397,7 @@ static void MATH_Init(MathDlg *math) {
 		    (ta==1 && sc->top_accent_horiz!=TEX_UNDEF))
 		++cnt;
 	}
-	mds = gcalloc(cnt*cols,sizeof(struct matrix_data));
+	mds = calloc(cnt*cols,sizeof(struct matrix_data));
 	for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	    if ( ta==0 && sc->italic_correction!=TEX_UNDEF ) {
 		mds[cols*cnt+0].u.md_str = copy(sc->name);
@@ -420,7 +420,7 @@ static void MATH_Init(MathDlg *math) {
     for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL )
 	if ( sc->mathkern!=NULL )
 	    ++cnt;
-    mds = gcalloc(cnt*cols,sizeof(struct matrix_data));
+    mds = calloc(cnt*cols,sizeof(struct matrix_data));
     for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL )
 	if ( sc->mathkern!=NULL ) {
 	    mds[cols*cnt+0].u.md_str = copy(sc->name);
@@ -440,7 +440,7 @@ static void MATH_Init(MathDlg *math) {
 	    if ( gv!=NULL && gv->part_cnt!=0 )
 		++ccnt;
 	}
-	mds = gcalloc(cnt*cols,sizeof(struct matrix_data));
+	mds = calloc(cnt*cols,sizeof(struct matrix_data));
 	for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	    struct glyphvariants *gv = h ? sc->horiz_variants : sc->vert_variants;
 	    if ( gv!=NULL && gv->variants!=NULL ) {
@@ -454,7 +454,7 @@ static void MATH_Init(MathDlg *math) {
 	/* Glyph Construction */
 	g = GWidgetGetControl(math->gw,CID_VGlyphConst+2*h);
 	cols = GMatrixEditGetColCnt(g);
-	mds = gcalloc(ccnt*cols,sizeof(struct matrix_data));
+	mds = calloc(ccnt*cols,sizeof(struct matrix_data));
 	for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	    struct glyphvariants *gv = h ? sc->horiz_variants : sc->vert_variants;
 	    if ( gv!=NULL && gv->part_cnt!=0 ) {
@@ -1209,7 +1209,7 @@ static void MKD_SetGlyphList(MathKernDlg *mkd, SplineChar *sc) {
 	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (test=sf->glyphs[gid])!=NULL ) {
 	    if ( test==sc || test->mathkern!=NULL ) {
 		if ( k ) {
-		    tis[cnt] = gcalloc(1,sizeof(GTextInfo));
+		    tis[cnt] = calloc(1,sizeof(GTextInfo));
 		    tis[cnt]->text = utf82u_copy(test->name);
 		    tis[cnt]->userdata = test;
 		    tis[cnt]->selected = test==sc;
@@ -1219,9 +1219,9 @@ static void MKD_SetGlyphList(MathKernDlg *mkd, SplineChar *sc) {
 	    }
 	}
 	if ( !k )
-	    tis = galloc((cnt+1)*sizeof(GTextInfo *));
+	    tis = malloc((cnt+1)*sizeof(GTextInfo *));
 	else
-	    tis[cnt] = gcalloc(1,sizeof(GTextInfo));
+	    tis[cnt] = calloc(1,sizeof(GTextInfo));
     }
     GGadgetSetList(GWidgetGetControl(mkd->gw,CID_Glyph),tis,false);
 }
@@ -1449,7 +1449,7 @@ static void MKDFillup(MathKernDlg *mkd, SplineChar *sc) {
 	    struct matrix_data *md;
 
 	    if ( mkv!=NULL ) {
-		md = gcalloc(mkv->cnt*cols,sizeof(struct matrix_data));
+		md = calloc(mkv->cnt*cols,sizeof(struct matrix_data));
 		for ( j=0; j<mkv->cnt; ++j ) {
 		    md[j*cols+0].u.md_ival = mkv->mkd[j].height;
 		    md[j*cols+1].u.md_ival = mkv->mkd[j].kern;
@@ -1536,11 +1536,11 @@ static int MKD_Parse(MathKernDlg *mkd) {
 		    }
 		}
 		if ( !k )
-		    bases = galloc(cnt*sizeof(BasePoint *));
+		    bases = malloc(cnt*sizeof(BasePoint *));
 	    }
 	    qsort(bases,cnt,sizeof(BasePoint *),bp_order_height);
 	    if ( cnt>mkv->cnt ) {
-		mkv->mkd = grealloc(mkv->mkd,cnt*sizeof(struct mathkernvertex));
+		mkv->mkd = realloc(mkv->mkd,cnt*sizeof(struct mathkernvertex));
 		memset(mkv->mkd+mkv->cnt,0,(cnt-mkv->cnt)*sizeof(struct mathkernvertex));
 	    }
 	    for ( j=0; j<cnt; ++j ) {
@@ -1611,7 +1611,7 @@ return( false );
 		mkv->mkd[j].height_adjusts = mkv->mkd[j].kern_adjusts = NULL;
 	    }
 	    if ( rows>mkv->cnt ) {
-		mkv->mkd = grealloc(mkv->mkd,rows*sizeof(struct mathkerndata));
+		mkv->mkd = realloc(mkv->mkd,rows*sizeof(struct mathkerndata));
 		memset(mkv->mkd+mkv->cnt,0,(rows-mkv->cnt)*sizeof(struct mathkerndata));
 	    }
 	    for ( j=0; j<rows; ++j ) {
@@ -1783,7 +1783,7 @@ static void MKDInit(MathKernDlg *mkd,SplineChar *sc) {
 			    _("BottomLeft");
 	msc->parent = &mkd->dummy_sf;
 	msc->layer_cnt = 2;
-	msc->layers = gcalloc(2,sizeof(Layer));
+	msc->layers = calloc(2,sizeof(Layer));
 	LayerDefault(&msc->layers[0]);
 	LayerDefault(&msc->layers[1]);
 	mkd->chars[i] = msc;

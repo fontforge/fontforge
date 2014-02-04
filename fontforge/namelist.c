@@ -59,7 +59,7 @@ struct psbucket { const char *name; int uni; struct psbucket *prev; } *psbuckets
 
 static void psaddbucket(const char *name, int uni) {
     int hash = hashname(name);
-    struct psbucket *buck = gcalloc(1,sizeof(struct psbucket));
+    struct psbucket *buck = calloc(1,sizeof(struct psbucket));
 
     buck->name = name;
     buck->uni = uni;
@@ -401,7 +401,7 @@ char **AllGlyphNames(int uni, NameList *for_this_font, SplineChar *sc) {
 	}
 	if ( rcnt>1 && alluni && (uni<0 || (uni>=0xe000 && uni<0xf900) || uni>=0xf0000 ) ) {
 	    if ( names ) {
-		names[cnt] = galloc(4+4*rcnt);
+		names[cnt] = malloc(4+4*rcnt);
 		strcpy(names[cnt],"uni");
 		pt = names[cnt]+3;
 		for ( i=0; i<rcnt; ++i ) {
@@ -419,7 +419,7 @@ char **AllGlyphNames(int uni, NameList *for_this_font, SplineChar *sc) {
 	    if ( names ) {
 		for ( i=len=0; i<rcnt; ++i )
 		    len += strlen( refs[i]->name )+1;
-		names[cnt] = pt = galloc(len);
+		names[cnt] = pt = malloc(len);
 		for ( i=len=0; i<rcnt; ++i ) {
 		    strcpy(pt,refs[i]->name);
 		    pt += strlen(pt);
@@ -435,7 +435,7 @@ char **AllGlyphNames(int uni, NameList *for_this_font, SplineChar *sc) {
 	    ++cnt;
 	}
 	if ( k==0 ) {
-	    names = galloc((cnt+1)*sizeof(char *));
+	    names = malloc((cnt+1)*sizeof(char *));
 	    names[cnt] = NULL;
 	}
     }
@@ -457,7 +457,7 @@ char **AllNamelistNames(void) {
     char **names;
 
     for ( nl = &agl, cnt=0; nl!=NULL; nl=nl->next, ++cnt );
-    names = galloc((cnt+1) *sizeof(char *));
+    names = malloc((cnt+1) *sizeof(char *));
     for ( nl = &agl, cnt=0; nl!=NULL; nl=nl->next, ++cnt )
 	names[cnt] = copy(_(nl->title));
     names[cnt] = NULL;
@@ -577,7 +577,7 @@ return( NULL );
 return( NULL );
 	    }
 	    if ( rn_cnt>=rn_max-1 )
-		nl->renames = grealloc(nl->renames,(rn_max+=20)*sizeof(struct renames));
+		nl->renames = realloc(nl->renames,(rn_max+=20)*sizeof(struct renames));
 	    nl->renames[rn_cnt].from   = copy(pt);
 	    nl->renames[rn_cnt].to     = copy(test);
 	    nl->renames[++rn_cnt].from = NULL;		/* End mark */
@@ -619,9 +619,9 @@ return( NULL );
 	    ub = (uni&0xff00)>>8;
 	    uc = uni&0xff;
 	    if ( nl->unicode[up]==NULL )
-		nl->unicode[up] = gcalloc(256,sizeof(char **));
+		nl->unicode[up] = calloc(256,sizeof(char **));
 	    if ( nl->unicode[up][ub]==NULL )
-		nl->unicode[up][ub] = gcalloc(256,sizeof(char *));
+		nl->unicode[up][ub] = calloc(256,sizeof(char *));
 	    if ( nl->unicode[up][ub][uc]==NULL )
 		nl->unicode[up][ub][uc]=copy(pt);
 	    else {
@@ -834,7 +834,7 @@ static char *DoReplacements(struct bits *bits,int bc,char **_src,char *start) {
 	}
     } else {
 	int totlen = strlen(*_src);
-	last = ret = galloc(totlen + diff + 1);
+	last = ret = malloc(totlen + diff + 1);
 	last_orig = *_src;
 	for ( i=0; i<bc; ++i ) {
 	    if ( last_orig<bits[i].start ) {
@@ -982,7 +982,7 @@ char **SFTemporaryRenameGlyphsToNamelist(SplineFont *sf,NameList *new) {
     if ( new==NULL )
 return( NULL );
 
-    ret = gcalloc(sf->glyphcnt,sizeof(char *));
+    ret = calloc(sf->glyphcnt,sizeof(char *));
     for ( gid = 0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
 	name = RenameGlyphToNamelist(buffer,sc,sf->for_new_glyphs,new,ret);
 	if ( name!=sc->name ) {

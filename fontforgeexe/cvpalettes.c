@@ -1314,9 +1314,9 @@ static void CVLayers2Set(CharView *cv) {
     if ( cv->b.sc->layer_cnt+1>=layer2.max_layers ) {
 	top = cv->b.sc->layer_cnt+10;
 	if ( layer2.layers==NULL )
-	    layer2.layers = gcalloc(top,sizeof(BDFChar *));
+	    layer2.layers = calloc(top,sizeof(BDFChar *));
 	else {
-	    layer2.layers = grealloc(layer2.layers,top*sizeof(BDFChar *));
+	    layer2.layers = realloc(layer2.layers,top*sizeof(BDFChar *));
 	    for ( i=layer2.current_layers; i<top; ++i )
 		layer2.layers[i] = NULL;
 	}
@@ -1425,7 +1425,7 @@ return;
 	LayerDefault(&temp);
 	if ( !LayerDialog(&temp,cv->b.sc->parent))
 return;
-	sc->layers = grealloc(sc->layers,(sc->layer_cnt+1)*sizeof(Layer));
+	sc->layers = realloc(sc->layers,(sc->layer_cnt+1)*sizeof(Layer));
 	sc->layers[sc->layer_cnt] = temp;
 	cv->b.layerheads[dm_fore] = &sc->layers[sc->layer_cnt];
 	cv->b.layerheads[dm_back] = &sc->layers[ly_back];
@@ -1799,9 +1799,9 @@ static void CVLayers1Set(CharView *cv) {
     if ( cv->b.sc->layer_cnt+1>=layerinfo.max_layers ) {
 	top = cv->b.sc->layer_cnt+10;
 	if ( layerinfo.layers==NULL )
-	    layerinfo.layers = gcalloc(top,sizeof(BDFChar *));
+	    layerinfo.layers = calloc(top,sizeof(BDFChar *));
 	else {
-	    layerinfo.layers = grealloc(layerinfo.layers,top*sizeof(BDFChar *));
+	    layerinfo.layers = realloc(layerinfo.layers,top*sizeof(BDFChar *));
 	    for ( i=layerinfo.current_layers; i<top; ++i )
 		layerinfo.layers[i] = NULL;
 	}

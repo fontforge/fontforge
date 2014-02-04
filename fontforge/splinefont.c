@@ -387,7 +387,7 @@ static char *scaleString(char *string, double scale) {
 return( NULL );
 
     while ( *string==' ' ) ++string;
-    result = galloc(10*strlen(string)+1);
+    result = malloc(10*strlen(string)+1);
     if ( *string!='[' ) {
 	val = strtod(string,&end);
 	if ( end==string ) {
@@ -427,7 +427,7 @@ static char *iscaleString(char *string, double scale) {
 return( NULL );
 
     while ( *string==' ' ) ++string;
-    result = galloc(10*strlen(string)+1);
+    result = malloc(10*strlen(string)+1);
     if ( *string!='[' ) {
 	val = strtod(string,&end);
 	if ( end==string ) {
@@ -558,7 +558,7 @@ return( false );
     transform[0] = transform[3] = scale;
     transform[1] = transform[2] = transform[4] = transform[5] = 0;
     bvts.func = bvt_none;
-    sf->fv->selected = galloc(sf->fv->map->enccount);
+    sf->fv->selected = malloc(sf->fv->map->enccount);
     memset(sf->fv->selected,1,sf->fv->map->enccount);
 
     sf->ascent = as; sf->descent = des;
@@ -637,7 +637,7 @@ void ArchiveCleanup(char *archivedir) {
     /* Free this directory and all files within it */
     char *cmd;
 
-    cmd = galloc(strlen(archivedir) + 20);
+    cmd = malloc(strlen(archivedir) + 20);
     sprintf( cmd, "rm -rf %s", archivedir );
     system( cmd );
     free( cmd ); free(archivedir);
@@ -667,9 +667,9 @@ return( NULL );
     /* tar outputs its table of contents as a simple list of names */
     /* zip includes a bunch of other info, headers (and lines for directories)*/
 
-    linebuffer = galloc(linelenmax+3);
+    linebuffer = malloc(linelenmax+3);
     fcnt = 0;
-    files = galloc((nlcnt+1)*sizeof(char *));
+    files = malloc((nlcnt+1)*sizeof(char *));
 
     if ( ars == ars_tar ) {
 	pt = linebuffer;
@@ -806,17 +806,17 @@ return( NULL );
     }
 
     if ( dir==NULL ) dir = P_tmpdir;
-    archivedir = galloc(strlen(dir)+100);
+    archivedir = malloc(strlen(dir)+100);
     sprintf( archivedir, "%s/ffarchive-%d-%d", dir, getpid(), ++cnt );
     if ( GFileMkDir(archivedir)!=0 ) {
 	free(archivedir);
 return( NULL );
     }
 
-    listfile = galloc(strlen(archivedir)+strlen("/" TOC_NAME)+1);
+    listfile = malloc(strlen(archivedir)+strlen("/" TOC_NAME)+1);
     sprintf( listfile, "%s/" TOC_NAME, archivedir );
 
-    listcommand = galloc( strlen(archivers[i].unarchive) + 1 +
+    listcommand = malloc( strlen(archivers[i].unarchive) + 1 +
 			strlen( archivers[i].listargs) + 1 +
 			strlen( name ) + 3 +
 			strlen( listfile ) +4 );
@@ -838,7 +838,7 @@ return( NULL );
 
     /* I tried sending everything to stdout, but that doesn't work if the */
     /*  output is a directory file (ufo, sfdir) */
-    unarchivecmd = galloc( strlen(archivers[i].unarchive) + 1 +
+    unarchivecmd = malloc( strlen(archivers[i].unarchive) + 1 +
 			strlen( archivers[i].listargs) + 1 +
 			strlen( name ) + 1 +
 			strlen( desiredfile ) + 3 +
@@ -853,7 +853,7 @@ return( NULL );
     }
     free(unarchivecmd);
 
-    finalfile = galloc( strlen(archivedir) + 1 + strlen(desiredfile) + 1);
+    finalfile = malloc( strlen(archivedir) + 1 + strlen(desiredfile) + 1);
     sprintf( finalfile, "%s/%s", archivedir, desiredfile );
     free( desiredfile );
 
@@ -878,7 +878,7 @@ char *Decompress(char *name, int compression) {
     char *tmpfile;
 
     if ( dir==NULL ) dir = P_tmpdir;
-    tmpfile = galloc(strlen(dir)+strlen(GFileNameTail(name))+2);
+    tmpfile = malloc(strlen(dir)+strlen(GFileNameTail(name))+2);
     strcpy(tmpfile,dir);
     strcat(tmpfile,"/");
     strcat(tmpfile,GFileNameTail(name));
@@ -965,7 +965,7 @@ return( NULL );
 		if ( strippedname==NULL )
 return( NULL );
 		if ( strippedname!=filename && paren!=NULL ) {
-		    fullname = galloc(strlen(strippedname)+strlen(paren)+1);
+		    fullname = malloc(strlen(strippedname)+strlen(paren)+1);
 		    strcpy(fullname,strippedname);
 		    strcat(fullname,paren);
 		} else
@@ -1000,7 +1000,7 @@ return( NULL );
 	}
 	compression = i+1;
 	if ( strippedname!=filename && paren!=NULL ) {
-	    fullname = galloc(strlen(strippedname)+strlen(paren)+1);
+	    fullname = malloc(strlen(strippedname)+strlen(paren)+1);
 	    strcpy(fullname,strippedname);
 	    strcat(fullname,paren);
 	} else
@@ -1041,7 +1041,7 @@ return( NULL );
 /* checked == 'b'   => bdf */
 /* checked == 'i'   => ikarus */
     if ( !wasurl && GFileIsDir(strippedname) ) {
-	char *temp = galloc(strlen(strippedname)+strlen("/glyphs/contents.plist")+1);
+	char *temp = malloc(strlen(strippedname)+strlen("/glyphs/contents.plist")+1);
 	strcpy(temp,strippedname);
 	strcat(temp,"/glyphs/contents.plist");
 	if ( GFileExists(temp)) {
@@ -1198,7 +1198,7 @@ return( NULL );
 	    free(norm->filename); norm->filename = NULL;
 	    norm->new = true;
 	} else if ( sf->chosenname!=NULL && strippedname==filename ) {
-	    norm->origname = galloc(strlen(filename)+strlen(sf->chosenname)+8);
+	    norm->origname = malloc(strlen(filename)+strlen(sf->chosenname)+8);
 	    strcpy(norm->origname,filename);
 	    strcat(norm->origname,"(");
 	    strcat(norm->origname,sf->chosenname);
@@ -1278,7 +1278,7 @@ return( NULL );
 	    fclose(test);
 	}
 	if ( !ok ) {
-	    tobefreed1 = galloc(strlen(filename)+8);
+	    tobefreed1 = malloc(strlen(filename)+8);
 	    strcpy(tobefreed1,filename);
 	    ept = tobefreed1+strlen(tobefreed1);
 	    for ( i=0; extens[i]!=NULL; ++i ) {
@@ -1939,7 +1939,7 @@ return;
 
     l = sf->layer_cnt;
     ++sf->layer_cnt;
-    sf->layers = grealloc(sf->layers,(l+1)*sizeof(LayerInfo));
+    sf->layers = realloc(sf->layers,(l+1)*sizeof(LayerInfo));
     memset(&sf->layers[l],0,sizeof(LayerInfo));
     sf->layers[l].name = copy(name);
     sf->layers[l].order2 = order2;
@@ -1947,7 +1947,7 @@ return;
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
 	Layer *old = sc->layers;
-	sc->layers = grealloc(sc->layers,(l+1)*sizeof(Layer));
+	sc->layers = realloc(sc->layers,(l+1)*sizeof(Layer));
 	memset(&sc->layers[l],0,sizeof(Layer));
 	LayerDefault(&sc->layers[l]);
 	sc->layers[l].order2 = order2;

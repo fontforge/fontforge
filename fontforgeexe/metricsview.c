@@ -453,7 +453,7 @@ static void MVSetSubtables(SplineFont *sf) {
 			    otl->features)) {
 		    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
 			if ( doit ) {
-			    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+			    ti[cnt] = calloc(1,sizeof(GTextInfo));
 			    ti[cnt]->text = utf82u_copy(sub->subtable_name);
 			    ti[cnt]->userdata = sub;
 			    if ( sub==mvs->cur_subtable )
@@ -466,21 +466,21 @@ static void MVSetSubtables(SplineFont *sf) {
 		}
 	    }
 	    if ( !doit )
-		ti = gcalloc(cnt+3,sizeof(GTextInfo *));
+		ti = calloc(cnt+3,sizeof(GTextInfo *));
 	    else {
 		if ( cnt!=0 ) {
-		    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+		    ti[cnt] = calloc(1,sizeof(GTextInfo));
 		    ti[cnt]->line = true;
 		    ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
 		    ++cnt;
 		}
-		ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+		ti[cnt] = calloc(1,sizeof(GTextInfo));
 		ti[cnt]->text = utf82u_copy(_("New Lookup Subtable..."));
 		ti[cnt]->userdata = NULL;
 		ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
 		ti[cnt]->selected = !selected;
 		++cnt;
-		ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+		ti[cnt] = calloc(1,sizeof(GTextInfo));
 	    }
 	}
 	if ( !selected )
@@ -512,7 +512,7 @@ static void MVSetFeatures(MetricsView *mv) {
     else {		/* features list may have changed, but retain those set */
 	int32 len, sc;
 	ti = GGadgetGetList(mv->features,&len);
-	stds = galloc((len+1)*sizeof(uint32));
+	stds = malloc((len+1)*sizeof(uint32));
 	for ( i=sc=0; i<len; ++i ) if ( ti[i]->selected )
 	    stds[sc++] = (uint32) (intpt) ti[i]->userdata;
 	stds[sc] = 0;
@@ -524,9 +524,9 @@ static void MVSetFeatures(MetricsView *mv) {
 
     /*qsort(tags,cnt,sizeof(uint32),tag_comp);*/ /* The glist will do this for us */
 
-    ti = galloc((cnt+2)*sizeof(GTextInfo *));
+    ti = malloc((cnt+2)*sizeof(GTextInfo *));
     for ( i=0; i<cnt; ++i ) {
-	ti[i] = gcalloc( 1,sizeof(GTextInfo));
+	ti[i] = calloc( 1,sizeof(GTextInfo));
 	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
 	if ( (tags[i]>>24)<' ' || (tags[i]>>24)>0x7e )
 	    sprintf( buf, "<%d,%d>", tags[i]>>16, tags[i]&0xffff );
@@ -542,7 +542,7 @@ static void MVSetFeatures(MetricsView *mv) {
 	    }
 	}
     }
-    ti[i] = gcalloc(1,sizeof(GTextInfo));
+    ti[i] = calloc(1,sizeof(GTextInfo));
     GGadgetSetList(mv->features,ti,false);
     mv->oldscript = script; mv->oldlang = lang;
 }
@@ -914,7 +914,7 @@ static void MVRemetric(MetricsView *mv) {
     ti = GGadgetGetList(mv->features,&len);
     for ( i=cnt=0; i<len; ++i )
 	if ( ti[i]->selected ) ++cnt;
-    feats = gcalloc(cnt+1,sizeof(uint32));
+    feats = calloc(cnt+1,sizeof(uint32));
     for ( i=cnt=0; i<len; ++i )
 	if ( ti[i]->selected )
 	    feats[cnt++] = (intpt) ti[i]->userdata;
@@ -931,7 +931,7 @@ static void MVRemetric(MetricsView *mv) {
     if ( cnt>=mv->max ) {
 	int oldmax=mv->max;
 	mv->max = cnt+10;
-	mv->perchar = grealloc(mv->perchar,mv->max*sizeof(struct metricchar));
+	mv->perchar = realloc(mv->perchar,mv->max*sizeof(struct metricchar));
 	memset(mv->perchar+oldmax,'\0',(mv->max-oldmax)*sizeof(struct metricchar));
     }
     for ( i=cnt; i<mv->glyphcnt; ++i ) {
@@ -1792,7 +1792,7 @@ void MVSetSCs(MetricsView *mv, SplineChar **scs) {
     memcpy(mv->chars,scs,(len+1)*sizeof(SplineChar *));
     mv->clen = len;
 
-    ustr = galloc((len+1)*sizeof(unichar_t));
+    ustr = malloc((len+1)*sizeof(unichar_t));
     for ( len=0; scs[len]!=NULL; ++len )
 	if ( scs[len]->unicodeenc>0 )
 	    ustr[len] = scs[len]->unicodeenc;
@@ -1862,7 +1862,7 @@ return;					/* Nothing changed */
     if ( u_strlen(ret)>=mv->cmax ) {
 	int oldmax=mv->cmax;
 	mv->cmax = u_strlen(ret)+10;
-	mv->chars = grealloc(mv->chars,mv->cmax*sizeof(SplineChar *));
+	mv->chars = realloc(mv->chars,mv->cmax*sizeof(SplineChar *));
 	memset(mv->chars+oldmax,'\0',(mv->cmax-oldmax)*sizeof(SplineChar *));
     }
 
@@ -1877,7 +1877,7 @@ return;					/* Nothing changed */
     if ( ept-pt-missing > ei-i ) {
 	if ( i<mv->clen ) {
 	    int diff = (ept-pt-missing) - (ei-i);
-	    hold = galloc((mv->clen+diff+6)*sizeof(SplineChar *));
+	    hold = malloc((mv->clen+diff+6)*sizeof(SplineChar *));
 	    for ( j=mv->clen-1; j>=ei; --j )
 		hold[j+diff] = mv->chars[j];
 	    start = ei+diff; end = mv->clen+diff;
@@ -1960,9 +1960,9 @@ static void MVFigureGlyphNames(MetricsView *mv,const unichar_t *names) {
 
     if ( cnt>=mv->cmax ) {
 	mv->cmax = mv->clen+cnt+10;
-	mv->chars = grealloc(mv->chars,mv->cmax*sizeof(SplineChar *));
+	mv->chars = realloc(mv->chars,mv->cmax*sizeof(SplineChar *));
     }
-    newtext = galloc((cnt+1)*sizeof(unichar_t));
+    newtext = malloc((cnt+1)*sizeof(unichar_t));
     for ( i=0; i<cnt; ++i ) {
 	newtext[i] = founds[i]->unicodeenc==-1 ?
 						MVFakeUnicodeOfSc(mv,founds[i]) :
@@ -2812,7 +2812,7 @@ static void MVResetText(MetricsView *mv) {
     unichar_t *new, *pt;
     int i;
 
-    new = galloc((mv->clen+1)*sizeof(unichar_t));
+    new = malloc((mv->clen+1)*sizeof(unichar_t));
     for ( pt=new, i=0; i<mv->clen; ++i ) {
 	if ( mv->chars[i]->unicodeenc==-1 )
 	    *pt++ = MVFakeUnicodeOfSc(mv,mv->chars[i]);
@@ -2897,7 +2897,7 @@ return;
     if ( mv->clen+1>=mv->cmax ) {
 	int oldmax=mv->cmax;
 	mv->cmax = mv->clen+10;
-	mv->chars = grealloc(mv->chars,mv->cmax*sizeof(SplineChar *));
+	mv->chars = realloc(mv->chars,mv->cmax*sizeof(SplineChar *));
 	memset(mv->chars+oldmax,'\0',(mv->cmax-oldmax)*sizeof(SplineChar *));
     }
     for ( j=mv->clen; j>i; --j )
@@ -3604,7 +3604,7 @@ static void lylistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     int ly;
     GMenuItem *sub;
 
-    sub = gcalloc(sf->layer_cnt+1,sizeof(GMenuItem));
+    sub = calloc(sf->layer_cnt+1,sizeof(GMenuItem));
     for ( ly=ly_fore; ly<sf->layer_cnt; ++ly ) {
 	sub[ly-1].ti.text = utf82u_copy(sf->layers[ly].name);
 	sub[ly-1].ti.checkable = true;
@@ -4737,7 +4737,7 @@ return;
 	}
     }
 
-    founds = galloc(len*sizeof(SplineChar *));	/* Will be a vast over-estimate */
+    founds = malloc(len*sizeof(SplineChar *));	/* Will be a vast over-estimate */
     start = cnames;
     for ( i=0; *start; ) {
 	while ( *start==' ' ) ++start;
@@ -4761,10 +4761,10 @@ return;
 
     if ( mv->clen+cnt+1>=mv->cmax ) {
 	mv->cmax = mv->clen+cnt+10;
-	mv->chars = grealloc(mv->chars,mv->cmax*sizeof(SplineChar *));
+	mv->chars = realloc(mv->chars,mv->cmax*sizeof(SplineChar *));
     }
     oldtext = _GGadgetGetTitle(mv->text);
-    newtext = galloc((mv->clen+cnt+1)*sizeof(unichar_t));
+    newtext = malloc((mv->clen+cnt+1)*sizeof(unichar_t));
     u_strcpy(newtext,oldtext);
     newtext[mv->clen+cnt]='\0';
     for ( i=mv->clen+cnt; i>=within+cnt; --i ) {
@@ -4988,11 +4988,11 @@ return( NULL );
 		    lbuf[4] = 0;
 		    if ( lname==NULL )
 			lname = lbuf;
-		    temp = galloc(strlen(sname)+strlen(lname)+3);
+		    temp = malloc(strlen(sname)+strlen(lname)+3);
 		    strcpy(temp,sname); strcat(temp,"{"); strcat(temp,lname); strcat(temp,"}");
 		    ret[cnt].text = (unichar_t *) temp;
 		    ret[cnt].text_is_1byte = true;
-		    temp = galloc(11);
+		    temp = malloc(11);
 		    strcpy(temp,sbuf); temp[4] = '{'; strcpy(temp+5,lbuf); temp[9]='}'; temp[10] = 0;
 		    ret[cnt].userdata = temp;
 		}
@@ -5001,7 +5001,7 @@ return( NULL );
 	    free(langtags);
 	}
 	if ( !k )
-	    ret = gcalloc((cnt+1),sizeof(GTextInfo));
+	    ret = calloc((cnt+1),sizeof(GTextInfo));
     }
     free(scripttags);
 return( ret );
@@ -5030,7 +5030,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     GWindowAttrs wattrs;
     GGadgetData gd;
     GRect gsize;
-    MetricsView *mv = gcalloc(1,sizeof(MetricsView));
+    MetricsView *mv = calloc(1,sizeof(MetricsView));
     FontRequest rq;
     static GWindow icon = NULL;
     extern int _GScrollBar_Width;
@@ -5111,7 +5111,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->fh = as+ds; mv->as = as;
 
     pt = buf;
-    mv->chars = gcalloc(mv->cmax=20,sizeof(SplineChar *));
+    mv->chars = calloc(mv->cmax=20,sizeof(SplineChar *));
     if ( sc!=NULL ) {
 	mv->chars[mv->clen++] = sc;
     } else {

@@ -44,7 +44,7 @@ void SCAppendEntityLayers(SplineChar *sc, Entity *ent) {
 return;
     EntityDefaultStrokeFill(ent);
 
-    sc->layers = grealloc(sc->layers,(sc->layer_cnt+cnt)*sizeof(Layer));
+    sc->layers = realloc(sc->layers,(sc->layer_cnt+cnt)*sizeof(Layer));
     for ( pos = sc->layer_cnt, e=ent; e!=NULL ; e=enext, ++pos ) {
 	enext = e->next;
 	LayerDefault(&sc->layers[pos]);
@@ -219,7 +219,7 @@ return;
 return;
 	}
 	if ( cnt>=max )
-	    spiros = grealloc(spiros,(max+=30)*sizeof(spiro_cp));
+	    spiros = realloc(spiros,(max+=30)*sizeof(spiro_cp));
 	spiros[cnt].x = spiros[cnt].y = 0;
 	spiros[cnt].ty = ch;
 	if ( ch=='z' ) {
@@ -247,7 +247,7 @@ return;
     if ( cnt!=0 ) {
 	/* This happens when we've got an open contour */
 	if ( cnt>=max )
-	    spiros = grealloc(spiros,(max+=30)*sizeof(spiro_cp));
+	    spiros = realloc(spiros,(max+=30)*sizeof(spiro_cp));
 	spiros[cnt].x = spiros[cnt].y = 0;
 	spiros[cnt].ty = 'z';
 	spiros[0].ty = '{';		/* Open contour mark */
@@ -362,7 +362,7 @@ return;
 /**************************** Fig File Import *********************************/
 
 static BasePoint *slurppoints(FILE *fig,SplineFont *sf,int cnt ) {
-    BasePoint *bps = galloc((cnt+1)*sizeof(BasePoint));	/* spline code may want to add another point */
+    BasePoint *bps = malloc((cnt+1)*sizeof(BasePoint));	/* spline code may want to add another point */
     int x, y, i, ch;
     real scale = sf->ascent/(8.5*1200.0);
     real ascent = 11*1200*sf->ascent/(sf->ascent+sf->descent);
@@ -750,7 +750,7 @@ static SplineSet * slurpspline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
 	while ((ch=getc(fig))!='\n' && ch!=EOF);
     xs.n = cnt;
     xs.cp = slurppoints(fig,sc->parent,cnt);
-    xs.s = galloc((cnt+1)*sizeof(real));
+    xs.s = malloc((cnt+1)*sizeof(real));
     xs.closed = (sub&1);
     for ( i=0; i<cnt; ++i )
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
@@ -881,7 +881,7 @@ return( image );
 
     clut = base->clut;
     if ( clut==NULL ) {
-	clut=base->clut = gcalloc(1,sizeof(GClut));
+	clut=base->clut = calloc(1,sizeof(GClut));
 	clut->clut_len = 2;
 	clut->clut[0] = 0x808080;
 	if ( !no_windowing_ui )
@@ -909,7 +909,7 @@ void SCInsertImage(SplineChar *sc,GImage *image,real scale,real yoff,real xoff,
     ImageList *im;
 
     SCPreserveLayer(sc,layer,false);
-    im = galloc(sizeof(ImageList));
+    im = malloc(sizeof(ImageList));
     im->image = image;
     im->xoff = xoff;
     im->yoff = yoff;

@@ -623,7 +623,7 @@ static void BVDrawRefName(BitmapView *bv,GWindow pixmap,BDFRefChar *ref,int fg) 
     char *refinfo;
     IBounds bb;
 
-    refinfo = galloc(strlen(ref->bdfc->sc->name) +  30);
+    refinfo = malloc(strlen(ref->bdfc->sc->name) +  30);
     sprintf(refinfo,"%s XOff: %d YOff: %d", ref->bdfc->sc->name, ref->xoff, ref->yoff);
 
     bb.minx = ref->bdfc->xmin + ref->xoff;
@@ -2230,7 +2230,7 @@ return;
 }
 
 BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
-    BitmapView *bv = gcalloc(1,sizeof(BitmapView));
+    BitmapView *bv = calloc(1,sizeof(BitmapView));
     GRect pos, zoom, size;
     GWindow gw;
     GWindowAttrs wattrs;

@@ -270,7 +270,7 @@ static void SplashLayout() {
 }
 
 void DelayEvent(void (*func)(void *), void *data) {
-    struct delayed_event *info = gcalloc(1,sizeof(struct delayed_event));
+    struct delayed_event *info = calloc(1,sizeof(struct delayed_event));
 
     info->data = data;
     info->func = func;
@@ -1206,7 +1206,7 @@ exit( 0 );
 		GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
 	    if ( GFileIsDir(buffer) || (strstr(buffer,"://")!=NULL && buffer[strlen(buffer)-1]=='/')) {
 		char *fname;
-		fname = galloc(strlen(buffer)+strlen("/glyphs/contents.plist")+1);
+		fname = malloc(strlen(buffer)+strlen("/glyphs/contents.plist")+1);
 		strcpy(fname,buffer); strcat(fname,"/glyphs/contents.plist");
 		if ( GFileExists(fname)) {
 		    /* It's probably a Unified Font Object directory */

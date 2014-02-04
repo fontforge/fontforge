@@ -518,7 +518,7 @@ static SplineSet *TraceCurve(CharView *cv) {
     TraceMassage(head,cv->freehand.last);
 
     /* Calculate the mids array */
-    mids = galloc(cnt*sizeof(TPoint));
+    mids = malloc(cnt*sizeof(TPoint));
     for ( base=head; base!=NULL && base->next!=NULL; base = pt ) {
 	mids[base->num].x = base->here.x;
 	mids[base->num].y = base->here.y;

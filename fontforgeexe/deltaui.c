@@ -128,7 +128,7 @@ return( true );
 	}
 
 	if ( qg->cur >= qg->max )
-	    qg->qg = grealloc(qg->qg,(qg->max += 1) * sizeof(QuestionableGrid));
+	    qg->qg = realloc(qg->qg,(qg->max += 1) * sizeof(QuestionableGrid));
 	memset(qg->qg+qg->cur,0,sizeof(QuestionableGrid));
 	GDrawSetVisible(qg->gw,false);
 	StartDeltaDisplay(qg);
@@ -187,7 +187,7 @@ return;
     if ( delta_sizes==NULL )
 	delta_sizes = copy("7-40,72,80,88,96");
 
-    data = gcalloc(1,sizeof(QGData));
+    data = calloc(1,sizeof(QGData));
     data->fv = (FontViewBase *) fv;
     data->cv = cv;
     if ( cv!=NULL ) {
@@ -625,7 +625,7 @@ static void QGSecondLevel(QGData *qg, struct qgnode *parent) {
 	    }
 	}
 	parent->kid_cnt = cnt;
-	parent->kids = gcalloc(cnt,sizeof(struct qgnode));
+	parent->kids = calloc(cnt,sizeof(struct qgnode));
 	cnt = 0;
 	lstart = 0; size=-1;
 	for ( l=0; l<parent->qg_cnt; ++l ) {
@@ -659,7 +659,7 @@ static void QGSecondLevel(QGData *qg, struct qgnode *parent) {
 	    }
 	}
 	parent->kid_cnt = cnt;
-	parent->kids = gcalloc(cnt,sizeof(struct qgnode));
+	parent->kids = calloc(cnt,sizeof(struct qgnode));
 	cnt = 0;
 	lstart = 0; pt=-1;
 	for ( l=0; l<parent->qg_cnt; ++l ) {
@@ -693,7 +693,7 @@ static void QGSecondLevel(QGData *qg, struct qgnode *parent) {
 	    }
 	}
 	parent->kid_cnt = cnt;
-	parent->kids = gcalloc(cnt,sizeof(struct qgnode));
+	parent->kids = calloc(cnt,sizeof(struct qgnode));
 	cnt = 0;
 	lstart = 0;
 	sc = NULL;
@@ -748,7 +748,7 @@ static void QGDoSort(QGData *qg) {
 	    }
 	}
 	qg->list.kid_cnt = cnt;
-	qg->list.kids = gcalloc(cnt,sizeof(struct qgnode));
+	qg->list.kids = calloc(cnt,sizeof(struct qgnode));
 	cnt = 0;
 	lstart = 0; sc=NULL;
 	for ( l=0; l<qg->cur; ++l ) {
@@ -781,7 +781,7 @@ static void QGDoSort(QGData *qg) {
 	    }
 	}
 	qg->list.kid_cnt = cnt;
-	qg->list.kids = gcalloc(cnt,sizeof(struct qgnode));
+	qg->list.kids = calloc(cnt,sizeof(struct qgnode));
 	cnt = 0;
 	lstart = 0; size=-1;
 	for ( l=0; l<qg->cur; ++l ) {

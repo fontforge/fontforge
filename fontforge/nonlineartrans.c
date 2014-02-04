@@ -187,7 +187,7 @@ static struct expr *gete0(struct context *c) {
 
     switch ( op ) {
       case op_value: case op_x: case op_y:
-	ret = gcalloc(1,sizeof(struct expr));
+	ret = calloc(1,sizeof(struct expr));
 	ret->operator = op;
 	ret->value = val;
 return( ret );
@@ -204,7 +204,7 @@ return(ret );
       case op_atan2:
       case op_abs:
       case op_rint: case op_floor: case op_ceil:
-	ret = gcalloc(1,sizeof(struct expr));
+	ret = calloc(1,sizeof(struct expr));
 	ret->operator = op;
 	op = gettoken(c,&val);
 	if ( op!='(' ) {
@@ -229,14 +229,14 @@ return( ret );
 	/* Just ignore a unary plus */;
 return( gete0(c));
       case op_sub: case op_not:
-	ret = gcalloc(1,sizeof(struct expr));
+	ret = calloc(1,sizeof(struct expr));
 	ret->operator = op;
 	ret->op1 = gete0(c);
 return( ret );
       default:
 	ff_post_error(_("Bad Token"), _("Unexpected token.\nbefore ...%40s") , c->cur );
 	c->had_error = true;
-	ret = gcalloc(1,sizeof(struct expr));
+	ret = calloc(1,sizeof(struct expr));
 	ret->operator = op_value;
 	ret->value = val;
 return( ret );
@@ -251,7 +251,7 @@ static struct expr *gete1(struct context *c) {
     op1 = gete0(c);
     op = gettoken(c,&val);
     while ( op==op_pow ) {
-	ret = gcalloc(1,sizeof(struct expr));
+	ret = calloc(1,sizeof(struct expr));
 	ret->op1 = op1;
 	ret->operator = op;
 	ret->op2 = gete0(c);
@@ -270,7 +270,7 @@ static struct expr *gete2(struct context *c) {
     op1 = gete1(c);
     op = gettoken(c,&val);
     while ( op==op_times || op==op_div || op==op_mod ) {
-	ret = gcalloc(1,sizeof(struct expr));
+	ret = calloc(1,sizeof(struct expr));
 	ret->op1 = op1;
 	ret->operator = op;
 	ret->op2 = gete1(c);
@@ -289,7 +289,7 @@ static struct expr *gete3(struct context *c) {
     op1 = gete2(c);
     op = gettoken(c,&val);
     while ( op==op_add || op==op_sub ) {
-	ret = gcalloc(1,sizeof(struct expr));
+	ret = calloc(1,sizeof(struct expr));
 	ret->op1 = op1;
 	ret->operator = op;
 	ret->op2 = gete2(c);
@@ -308,7 +308,7 @@ static struct expr *gete4(struct context *c) {
     op1 = gete3(c);
     op = gettoken(c,&val);
     while ( op==op_eq || op==op_ne || op==op_lt || op==op_le || op==op_gt || op==op_ge ) {
-	ret = gcalloc(1,sizeof(struct expr));
+	ret = calloc(1,sizeof(struct expr));
 	ret->op1 = op1;
 	ret->operator = op;
 	ret->op2 = gete3(c);
@@ -327,7 +327,7 @@ static struct expr *gete5(struct context *c) {
     op1 = gete4(c);
     op = gettoken(c,&val);
     while ( op==op_and || op==op_or ) {
-	ret = gcalloc(1,sizeof(struct expr));
+	ret = calloc(1,sizeof(struct expr));
 	ret->op1 = op1;
 	ret->operator = op;
 	ret->op2 = gete4(c);
@@ -346,7 +346,7 @@ static struct expr *getexpr(struct context *c) {
     op1 = gete5(c);
     op = gettoken(c,&val);
     if ( op==op_if ) {
-	ret = gcalloc(1,sizeof(struct expr));
+	ret = calloc(1,sizeof(struct expr));
 	ret->op1 = op1;
 	ret->operator = op;
 	ret->op2 = getexpr(c);

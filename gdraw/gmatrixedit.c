@@ -1367,7 +1367,7 @@ static void GMatrixEdit_StartSubGadgets(GMatrixEdit *gme,int r, int c,GEvent *ev
     if ( c==0 && r==gme->rows && event->type == et_mousedown &&
 	    event->u.mouse.button==1 && !gme->no_edit ) {
 	if ( gme->rows>=gme->row_max )
-	    gme->data = grealloc(gme->data,(gme->row_max+=10)*gme->cols*sizeof(struct matrix_data));
+	    gme->data = realloc(gme->data,(gme->row_max+=10)*gme->cols*sizeof(struct matrix_data));
 	++gme->rows;
 	for ( i=0; i<gme->cols; ++i ) {
 	    d = &gme->data[r*gme->cols+i];
@@ -1941,7 +1941,7 @@ static GMenuItem *GMenuItemFromTI(GTextInfo *ti,int is_enum) {
     GMenuItem *mi;
 
     for ( cnt=0; ti[cnt].text!=NULL || ti[cnt].line; ++cnt );
-    mi = gcalloc((cnt+1),sizeof(GMenuItem));
+    mi = calloc((cnt+1),sizeof(GMenuItem));
     for ( cnt=0; ti[cnt].text!=NULL || ti[cnt].line; ++cnt ) {
 	mi[cnt].ti = ti[cnt];
 	if ( ti[cnt].bg == ti[cnt].fg )
@@ -1961,7 +1961,7 @@ return( mi );
 /* GMatrixElement: External interface *************************************** */
 GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     struct matrixinit *matrix = gd->u.matrix;
-    GMatrixEdit *gme = gcalloc(1,sizeof(GMatrixEdit));
+    GMatrixEdit *gme = calloc(1,sizeof(GMatrixEdit));
     int r, c, bp;
     int x;
     GRect outer;
@@ -1989,7 +1989,7 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     gme->row_max = gme->rows;
     gme->hpad = gme->vpad = GDrawPointsToPixels(base,2);
 
-    gme->col_data = gcalloc(gme->cols,sizeof(struct col_data));
+    gme->col_data = calloc(gme->cols,sizeof(struct col_data));
     for ( c=0; c<gme->cols; ++c ) {
 	gme->col_data[c].me_type = matrix->col_init[c].me_type;
 	gme->col_data[c].func = matrix->col_init[c].func;
@@ -2004,7 +2004,7 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	gme->col_data[c].fixed = false;
     }
 
-    gme->data = gcalloc(gme->rows*gme->cols,sizeof(struct matrix_data));
+    gme->data = calloc(gme->rows*gme->cols,sizeof(struct matrix_data));
     memcpy(gme->data,matrix->matrix_data,gme->rows*gme->cols*sizeof(struct matrix_data));
     for ( c=0; c<gme->cols; ++c ) {
 	enum me_type me_type = gme->col_data[c].me_type;
@@ -2148,7 +2148,7 @@ void GMatrixEditSet(GGadget *g,struct matrix_data *data, int rows, int copy_it) 
 	if ( !copy_it ) {
 	    gme->data = data;
 	} else {
-	    gme->data = gcalloc(rows*gme->cols,sizeof(struct matrix_data));
+	    gme->data = calloc(rows*gme->cols,sizeof(struct matrix_data));
 	    memcpy(gme->data,data,rows*gme->cols*sizeof(struct matrix_data));
 	    for ( c=0; c<gme->cols; ++c ) {
 		enum me_type me_type = gme->col_data[c].me_type;
@@ -2321,7 +2321,7 @@ void GMatrixEditAddButtons(GGadget *g, GGadgetCreateData *gcd) {
 	for ( base=0; gme->buttonlist[base]!=NULL; ++base );
     }
     for ( i=0; gcd[i].creator!=NULL; ++i );
-    gme->buttonlist = grealloc(gme->buttonlist,(i+base+1)*sizeof(GGadget *));
+    gme->buttonlist = realloc(gme->buttonlist,(i+base+1)*sizeof(GGadget *));
     GGadgetsCreate(g->base,gcd);
     for ( i=0; gcd[i].creator!=NULL; ++i ) {
 	gme->buttonlist[base+i] = gcd[i].ret;

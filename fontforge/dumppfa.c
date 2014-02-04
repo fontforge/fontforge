@@ -283,10 +283,10 @@ struct psdict *PSDictCopy(struct psdict *dict) {
     if ( dict==NULL )
 return( NULL );
 
-    ret = gcalloc(1,sizeof(struct psdict));
+    ret = calloc(1,sizeof(struct psdict));
     ret->cnt = dict->cnt; ret->next = dict->next;
-    ret->keys = gcalloc(ret->cnt,sizeof(char *));
-    ret->values = gcalloc(ret->cnt,sizeof(char *));
+    ret->keys = calloc(ret->cnt,sizeof(char *));
+    ret->values = calloc(ret->cnt,sizeof(char *));
     for ( i=0; i<dict->next; ++i ) {
 	ret->keys[i] = copy(dict->keys[i]);
 	ret->values[i] = copy(dict->values[i]);
@@ -372,8 +372,8 @@ return( -1 );
     if ( i==dict->next ) {
 	if ( dict->next>=dict->cnt ) {
 	    dict->cnt += 10;
-	    dict->keys = grealloc(dict->keys,dict->cnt*sizeof(char *));
-	    dict->values = grealloc(dict->values,dict->cnt*sizeof(char *));
+	    dict->keys = realloc(dict->keys,dict->cnt*sizeof(char *));
+	    dict->values = realloc(dict->values,dict->cnt*sizeof(char *));
 	}
 	dict->keys[dict->next] = copy(key);
 	dict->values[dict->next] = NULL;
@@ -1201,10 +1201,10 @@ static struct pschars *initsubrs(int needsflex,MMSet *mm) {
     int i;
     struct pschars *sub;
 
-    sub = gcalloc(1,sizeof(struct pschars));
+    sub = calloc(1,sizeof(struct pschars));
     sub->cnt = 10;
-    sub->lens = galloc(10*sizeof(int));
-    sub->values = galloc(10*sizeof(uint8 *));
+    sub->lens = malloc(10*sizeof(int));
+    sub->values = malloc(10*sizeof(uint8 *));
     for ( i=0; i<5; ++i ) {
 	++sub->next;
 	sub->values[i] = (uint8 *) copyn((const char *) subrs[i],subrslens[i]);
@@ -2393,7 +2393,7 @@ static FILE *gencidbinarydata(SplineFont *cidmaster,struct cidbytes *cidbytes,
 
     memset(cidbytes,'\0',sizeof(struct cidbytes));
     cidbytes->fdcnt = cidmaster->subfontcnt;
-    cidbytes->fds = gcalloc(cidbytes->fdcnt,sizeof(struct fddata));
+    cidbytes->fds = calloc(cidbytes->fdcnt,sizeof(struct fddata));
     for ( i=0; i<cidbytes->fdcnt; ++i ) {
 	sf = cidmaster->subfonts[i];
 	fd = &cidbytes->fds[i];
@@ -2489,7 +2489,7 @@ return( NULL );
 	    (subrtot+1) * cidbytes->gdbytes )
 	IError("SubrMap section the wrong length" );
 
-    buffer = galloc(8192);
+    buffer = malloc(8192);
 
     rewind(subrs);
     while ( (len=fread(buffer,1,8192,subrs))>0 )

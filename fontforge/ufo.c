@@ -63,7 +63,7 @@
 /*  different/more tags in fontinfo.plist */
 
 static char *buildname(char *basedir,char *sub) {
-    char *fname = galloc(strlen(basedir)+strlen(sub)+2);
+    char *fname = malloc(strlen(basedir)+strlen(sub)+2);
 
     strcpy(fname, basedir);
     if ( fname[strlen(fname)-1]!='/' )
@@ -264,7 +264,7 @@ return( false );
 	    int i, cnt;
 	    for ( cnt=0, ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( SCWorthOutputting(ref->sc))
 		++cnt;
-	    refs = galloc(cnt*sizeof(RefChar *));
+	    refs = malloc(cnt*sizeof(RefChar *));
 	    for ( cnt=0, ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( SCWorthOutputting(ref->sc))
 		refs[cnt++] = ref;
 	    if ( cnt>1 )
@@ -781,7 +781,7 @@ return( !err );
 
 int WriteUFOFont(char *basedir,SplineFont *sf,enum fontformat ff,int flags,
 	EncMap *map,int layer) {
-    char *foo = galloc( strlen(basedir) +20 ), *glyphdir, *gfname;
+    char *foo = malloc( strlen(basedir) +20 ), *glyphdir, *gfname;
     int err;
     FILE *plist;
     int i;
@@ -819,7 +819,7 @@ return( false );
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) ) {
 	char *start, *gstart;
-	gstart = gfname = galloc(2*strlen(sc->name)+20);
+	gstart = gfname = malloc(2*strlen(sc->name)+20);
 	start = sc->name;
 	if ( *start=='.' ) {
 	    *gstart++ = '_';
@@ -893,7 +893,7 @@ return( NULL );
     while ( get_thingy(info,buffer,"key")!=NULL ) {
 	if ( strcmp(buffer,"fontName")!=0 ) {
 	    if ( get_thingy(info,buffer,"string")!=NULL ) {
-		ret = gcalloc(2,sizeof(char *));
+		ret = calloc(2,sizeof(char *));
 		ret[0] = copy(buffer);
 		fclose(info);
 return( ret );
@@ -1188,7 +1188,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
     last = NULL;
 	// Check layer availability here.
 	if ( layerdest>=sc->layer_cnt ) {
-		sc->layers = grealloc(sc->layers,(layerdest+1)*sizeof(Layer));
+		sc->layers = realloc(sc->layers,(layerdest+1)*sizeof(Layer));
 		memset(sc->layers+sc->layer_cnt,0,(layerdest+1-sc->layer_cnt)*sizeof(Layer));
 		sc->layer_cnt = layerdest + 1;
 	}
@@ -1645,7 +1645,7 @@ return;
 				if ( ( sc!=NULL ) && newsc ) {
 					sc->parent = sf;
 					if ( sf->glyphcnt>=sf->glyphmax )
-						sf->glyphs = grealloc(sf->glyphs,(sf->glyphmax+=100)*sizeof(SplineChar *));
+						sf->glyphs = realloc(sf->glyphs,(sf->glyphmax+=100)*sizeof(SplineChar *));
 					sc->orig_pos = sf->glyphcnt;
 					sf->glyphs[sf->glyphcnt++] = sc;
 				}
@@ -2227,7 +2227,7 @@ return( NULL );
 
 										// We ensure that the splinefont layer list has sufficient space.
 										if ( layerdest+1>sf->layer_cnt ) {
- 										    sf->layers = grealloc(sf->layers,(layerdest+1)*sizeof(LayerInfo));
+ 										    sf->layers = realloc(sf->layers,(layerdest+1)*sizeof(LayerInfo));
 										    memset(sf->layers+sf->layer_cnt,0,((layerdest+1)-sf->layer_cnt)*sizeof(LayerInfo));
 										}
 										sf->layer_cnt = layerdest+1;

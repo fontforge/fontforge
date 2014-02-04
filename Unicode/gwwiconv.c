@@ -148,7 +148,7 @@ return( (iconv_t)(-1) );
 return( (iconv_t)(-1) );
     }
 
-    ret = galloc(sizeof(struct gww_iconv_t));
+    ret = malloc(sizeof(struct gww_iconv_t));
     *ret = stuff;
 return( ret );
 }

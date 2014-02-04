@@ -129,12 +129,12 @@ return;
     if ( pt==NULL ) pt = start+strlen(start);
     ch = *pt; *pt='\0';
 
-    temp = galloc(strlen(start)+300+ (ch==0?0:strlen(pt+1)));
+    temp = malloc(strlen(start)+300+ (ch==0?0:strlen(pt+1)));
     cygwin_conv_to_full_posix_path(start,temp+1);
     temp[0]='"'; strcat(temp,"\" ");
     if ( ch!='\0' )
 	strcat(temp,pt+1);
-    cmd = galloc(strlen(temp)+strlen(fullspec)+8);
+    cmd = malloc(strlen(temp)+strlen(fullspec)+8);
     if ( strstr("%s",temp)!=NULL )
 	sprintf( cmd, temp, fullspec );
     else {
@@ -296,7 +296,7 @@ return;
 	/* It looks as though the browser is a windows application, so we */
 	/*  should give it a windows file name */
 	char *pt, *tpt;
-	temp = galloc(1024);
+	temp = malloc(1024);
 	cygwin_conv_to_full_win32_path(fullspec,temp);
 	for ( pt = fullspec, tpt = temp; *tpt && pt<fullspec+sizeof(fullspec)-3; *pt++ = *tpt++ )
 	    if ( *tpt=='\\' )
@@ -311,7 +311,7 @@ return;
     else
 #endif
     if ( strstr(fullspec,":/")==NULL ) {
-	char *t1 = galloc(strlen(fullspec)+strlen("file:")+20);
+	char *t1 = malloc(strlen(fullspec)+strlen("file:")+20);
 #if __CygWin
 	sprintf( t1, "file:\\\\\\%s", fullspec );
 #else
@@ -323,7 +323,7 @@ return;
 #if __Mac
     /* This seems a bit easier... Thanks to riggle */
     if ( strcmp(browser,"open")==0 ) {
-	temp = galloc(strlen(browser) + strlen(fullspec) + 20);
+	temp = malloc(strlen(browser) + strlen(fullspec) + 20);
 	sprintf( temp, "open \"%s\" &", fullspec );
 	system(temp);
 	ff_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
@@ -336,7 +336,7 @@ return;
 #else
     {
 #endif
-	temp = galloc(strlen(browser) + strlen(fullspec) + 20);
+	temp = malloc(strlen(browser) + strlen(fullspec) + 20);
 	sprintf( temp, strcmp(browser,"kfmclient openURL")==0 ? "%s \"%s\" &" : "\"%s\" \"%s\" &", browser, fullspec );
 	system(temp);
     }

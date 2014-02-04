@@ -2014,13 +2014,8 @@ struct findsel;
 struct charprocs;
 struct enc;
 
-#ifdef USE_OUR_MEMORY
-extern void *chunkalloc(int size);
-extern void chunkfree(void *, int size);
-#else
-#define chunkalloc(size)	gcalloc(1,size)
+#define chunkalloc(size)	calloc(1,size)
 #define chunkfree(item,size)	free(item)
-#endif /* USE_OUR_MEMORY */
 
 extern char *strconcat(const char *str, const char *str2);
 extern char *strconcat3(const char *str, const char *str2, const char *str3);

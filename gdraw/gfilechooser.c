@@ -302,8 +302,8 @@ static void GFileChooserFillList(GFileChooser *gfc,GDirEntry *first,
     }
 
     if ( dir_placement == dirs_separate ) {
-	ti = galloc((len+1)*sizeof(GTextInfo *));
-	dti = galloc((dlen+1)*sizeof(GTextInfo *));
+	ti = malloc((len+1)*sizeof(GTextInfo *));
+	dti = malloc((dlen+1)*sizeof(GTextInfo *));
 	len = dlen = 0;
 	for ( e=first; e!=NULL; e=e->next ) {
 	    if ( e->fcdata!=fc_hide ) {
@@ -313,7 +313,7 @@ static void GFileChooserFillList(GFileChooser *gfc,GDirEntry *first,
 		else
 		    me = &ti[len++];
 
-		*me = gcalloc(1,sizeof(GTextInfo));
+		*me = calloc(1,sizeof(GTextInfo));
 		(*me)->text = u_copy(e->name);
 		(*me)->image = GFileChooserPickIcon(e);
 		(*me)->fg = COLOR_DEFAULT;
@@ -324,16 +324,16 @@ static void GFileChooserFillList(GFileChooser *gfc,GDirEntry *first,
 		(*me)->checked = e->isdir;
 	    }
 	}
-	ti[len] = gcalloc(1,sizeof(GTextInfo));
-	dti[dlen] = gcalloc(1,sizeof(GTextInfo));
+	ti[len] = calloc(1,sizeof(GTextInfo));
+	dti[dlen] = calloc(1,sizeof(GTextInfo));
 	GGadgetSetList(&gfc->files->g,ti,false);
 	GGadgetSetList(&gfc->subdirs->g,dti,false);
     } else {
-	ti = galloc((len+dlen+1)*sizeof(GTextInfo *));
+	ti = malloc((len+dlen+1)*sizeof(GTextInfo *));
 	len = 0;
 	for ( e=first; e!=NULL; e=e->next ) {
 	    if ( e->fcdata!=fc_hide ) {
-		ti[len] = gcalloc(1,sizeof(GTextInfo));
+		ti[len] = calloc(1,sizeof(GTextInfo));
 		ti[len]->text = u_copy(e->name);
 		ti[len]->image = GFileChooserPickIcon(e);
 		ti[len]->fg = COLOR_DEFAULT;
@@ -347,7 +347,7 @@ static void GFileChooserFillList(GFileChooser *gfc,GDirEntry *first,
 		++len;
 	    }
 	}
-	ti[len] = gcalloc(1,sizeof(GTextInfo));
+	ti[len] = calloc(1,sizeof(GTextInfo));
 	GGadgetSetList(&gfc->files->g,ti,false);
     }
 
@@ -423,7 +423,7 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 	    ept = dir+1;
 	if ( ept!=dir ) {
 	    if ( ti!=NULL ) {
-		ti[tot-cnt] = gcalloc(1,sizeof(GTextInfo));
+		ti[tot-cnt] = calloc(1,sizeof(GTextInfo));
 		ti[tot-cnt]->text = u_copyn(dir,ept-dir);
 		ti[tot-cnt]->fg = ti[tot-cnt]->bg = COLOR_DEFAULT;
 	    }
@@ -432,7 +432,7 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 	for ( pt = ept; *pt!='\0'; pt = ept ) {
 	    for ( ept = pt; *ept!='/' && *ept!='\0'; ++ept );
 	    if ( ti!=NULL ) {
-		ti[tot-cnt] = gcalloc(1,sizeof(GTextInfo));
+		ti[tot-cnt] = calloc(1,sizeof(GTextInfo));
 		ti[tot-cnt]->text = u_copyn(pt,ept-pt);
 		ti[tot-cnt]->fg = ti[tot-cnt]->bg = COLOR_DEFAULT;
 	    }
@@ -441,10 +441,10 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 	}
 	if ( ti!=NULL )
     break;
-	ti = galloc((cnt+1)*sizeof(GTextInfo *));
+	ti = malloc((cnt+1)*sizeof(GTextInfo *));
 	tot = cnt-1;
     }
-    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+    ti[cnt] = calloc(1,sizeof(GTextInfo));
 
     GGadgetSetList(&gfc->directories->g,ti,false);
     GGadgetSelectOneListItem(&gfc->directories->g,0);
@@ -478,13 +478,13 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 
     freeme = NULL;
     if ( dir[u_strlen(dir)-1]!='/' ) {
-	freeme = galloc((u_strlen(dir)+3)*sizeof(unichar_t));
+	freeme = malloc((u_strlen(dir)+3)*sizeof(unichar_t));
 	u_strcpy(freeme,dir);
 	uc_strcat(freeme,"/");
 	dir = freeme;
     }
     if ( gfc->hpos>=gfc->hmax )
-	gfc->history = grealloc(gfc->history,(gfc->hmax+20)*sizeof(unichar_t *));
+	gfc->history = realloc(gfc->history,(gfc->hmax+20)*sizeof(unichar_t *));
     if ( gfc->hcnt==0 ) {
 	gfc->history[gfc->hcnt++] = u_copy(dir);
     } else if ( u_strcmp(gfc->history[gfc->hpos],dir)==0 )
@@ -580,7 +580,7 @@ return( NULL );		/* Can't complete if not in cur directory or has wildcards */
 		if ( doit ) {
 		    if ( ti[i]->checked /* isdirectory */ ) {
 			int len = u_strlen(ti[i]->text);
-			ret[cnt] = galloc((len+2)*sizeof(unichar_t));
+			ret[cnt] = malloc((len+2)*sizeof(unichar_t));
 			u_strcpy(ret[cnt],ti[i]->text);
 			ret[cnt][len] = '/';
 			ret[cnt][len+1] = '\0';
@@ -595,7 +595,7 @@ return( NULL );		/* Can't complete if not in cur directory or has wildcards */
 	else if ( cnt==0 )
 return( NULL );
 	else
-	    ret = galloc((cnt+1)*sizeof(unichar_t *));
+	    ret = malloc((cnt+1)*sizeof(unichar_t *));
     }
 return( ret );
 }
@@ -612,7 +612,7 @@ static unichar_t *GFileChooserGetCurDir(GFileChooser *gfc,int dirindex) {
 
     for ( j=len-1, cnt=0; j>=dirindex; --j )
 	cnt += u_strlen(ti[j]->text)+1;
-    pt = dir = galloc((cnt+1)*sizeof(unichar_t));
+    pt = dir = malloc((cnt+1)*sizeof(unichar_t));
     for ( j=len-1; j>=dirindex; --j ) {
 	u_strcpy(pt,ti[j]->text);
 	pt += u_strlen(pt);
@@ -697,7 +697,7 @@ return(true);
 		gfc->lastname==NULL )
 	    gfc->lastname = GGadgetGetTitle(&gfc->name->g);
 	if ( ti->checked ) {
-	    unichar_t *val = galloc((u_strlen(ti->text)+2)*sizeof(unichar_t));
+	    unichar_t *val = malloc((u_strlen(ti->text)+2)*sizeof(unichar_t));
 	    u_strcpy(val,ti->text);
 	    uc_strcat(val,"/");
 	    GGadgetSetTitle(&gfc->name->g,val);
@@ -712,7 +712,7 @@ return(true);
 	    gfc->lastname = NULL;
 	}
     } else if ( e->u.control.subtype==et_listselected ) {
-	unichar_t *val, *upt = galloc((len+1)*sizeof(unichar_t));
+	unichar_t *val, *upt = malloc((len+1)*sizeof(unichar_t));
 	val = upt;
 	for ( i=0; i<listlen; ++i ) {
 	    if ( all[i]->selected ) {
@@ -842,7 +842,7 @@ static int GFileChooserHome(GGadget *g, GEvent *e) {
 	else {
 	    GFileChooser *gfc = (GFileChooser *) GGadgetGetUserData(g);
 	    GFileChooserScanDir(gfc,homedir);
-	    gfree(homedir);
+	    free(homedir);
 	}
     }
 return( true );
@@ -931,7 +931,7 @@ static void GFCAddCur(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     bcnt = 0;
     if ( bookmarks!=NULL )
 	for ( ; bookmarks[bcnt]!=NULL; ++bcnt );
-    bookmarks = grealloc(bookmarks,(bcnt+2)*sizeof(unichar_t *));
+    bookmarks = realloc(bookmarks,(bcnt+2)*sizeof(unichar_t *));
     bookmarks[bcnt] = dir;
     bookmarks[bcnt+1] = NULL;
 
@@ -948,8 +948,8 @@ static void GFCRemoveBook(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( bookmarks==NULL || bookmarks[0]==NULL )
 return;		/* All gone */
     for ( bcnt=0; bookmarks[bcnt]!=NULL; ++bcnt );
-    sel = gcalloc(bcnt,1);
-    books = gcalloc(bcnt+1,sizeof(char *));
+    sel = calloc(bcnt,1);
+    books = calloc(bcnt+1,sizeof(char *));
     for ( bcnt=0; bookmarks[bcnt]!=NULL; ++bcnt )
 	books[bcnt] = u2utf8_copy(bookmarks[bcnt]);
     books[bcnt] = NULL;
@@ -982,7 +982,7 @@ static void GFCBookmark(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( *bookmarks[mi->mid]=='~' && bookmarks[mi->mid][1]=='/' &&
 	    (home = getenv("HOME"))!=NULL ) {
 	unichar_t *space;
-	space = galloc((strlen(home)+u_strlen(bookmarks[mi->mid])+2)*sizeof(unichar_t));
+	space = malloc((strlen(home)+u_strlen(bookmarks[mi->mid])+2)*sizeof(unichar_t));
 	uc_strcpy(space,home);
 	u_strcat(space,bookmarks[mi->mid]+1);
 	GFileChooserScanDir(gfc,space);
@@ -998,7 +998,7 @@ static void GFCPath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( *gfc->paths[mi->mid]=='~' && gfc->paths[mi->mid][1]=='/' &&
 	    (home = getenv("HOME"))!=NULL ) {
 	unichar_t *space;
-	space = galloc((strlen(home)+u_strlen(bookmarks[mi->mid])+2)*sizeof(unichar_t));
+	space = malloc((strlen(home)+u_strlen(bookmarks[mi->mid])+2)*sizeof(unichar_t));
 	uc_strcpy(space,home);
 	u_strcat(space,gfc->paths[mi->mid]+1);
 	GFileChooserScanDir(gfc,space);
@@ -1041,7 +1041,7 @@ static int GFileChooserBookmarks(GGadget *g, GEvent *e) {
 	    if ( pcnt!=0 && bcnt!=0 ) ++pcnt;
 	    bcnt += pcnt;
 	}
-	mi = gcalloc((mcnt+bcnt+1),sizeof(GMenuItem));
+	mi = calloc((mcnt+bcnt+1),sizeof(GMenuItem));
 	for ( mcnt=0; gfcbookmarkmenu[mcnt].ti.text!=NULL || gfcbookmarkmenu[mcnt].ti.line; ++mcnt ) {
 	    mi[mcnt] = gfcbookmarkmenu[mcnt];
 	    mi[mcnt].ti.text = (unichar_t *) copy( (char *) mi[mcnt].ti.text);
@@ -1286,7 +1286,7 @@ void GFileChooserSetMimetypes(GGadget *g,unichar_t **mimetypes) {
     }
     if ( mimetypes ) {
 	for ( i=0; mimetypes[i]!=NULL; ++i );
-	gfc->mimetypes = galloc((i+1)*sizeof(unichar_t *));
+	gfc->mimetypes = malloc((i+1)*sizeof(unichar_t *));
 	for ( i=0; mimetypes[i]!=NULL; ++i )
 	    gfc->mimetypes[i] = u_copy(mimetypes[i]);
 	gfc->mimetypes[i] = NULL;
@@ -1666,7 +1666,7 @@ static void GFileChooserCreateChildren(GFileChooser *gfc, int flags) {
 }
 
 GGadget *GFileChooserCreate(struct gwindow *base, GGadgetData *gd,void *data) {
-    GFileChooser *gfc = (GFileChooser *) gcalloc(1,sizeof(GFileChooser));
+    GFileChooser *gfc = (GFileChooser *) calloc(1,sizeof(GFileChooser));
 
     gfc->g.funcs = &GFileChooser_funcs;
     _GGadget_Create(&gfc->g,base,gd,data,&gfilechooser_box);
@@ -1816,7 +1816,7 @@ void GFileChooserSetPaths(GGadget *g,char **path) {
 return;
 
     for ( dcnt=0; path[dcnt]!=NULL; ++dcnt );
-    gfc->paths = dirs = galloc((dcnt+1)*sizeof(unichar_t *));
+    gfc->paths = dirs = malloc((dcnt+1)*sizeof(unichar_t *));
     for ( dcnt=0; path[dcnt]!=NULL; ++dcnt )
 	dirs[dcnt] = utf82u_copy(path[dcnt]);
     dirs[dcnt] = NULL;

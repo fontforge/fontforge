@@ -203,7 +203,7 @@ static double GetCounterBlackSpace( GlyphData *gd, StemData **dstems, int dcnt,
     int i, j, icnt=0;
 
     bundle = x_dir ? gd->vbundle : gd->hbundle;
-    inters = gcalloc( dcnt + bundle->cnt,sizeof( struct segment ));
+    inters = calloc( dcnt + bundle->cnt,sizeof( struct segment ));
 
     for ( i=0; i<dcnt; i++ ) {
 	stem = dstems[i];
@@ -1664,7 +1664,7 @@ return;
     /* Have to prepare a DStem list before further operations, since they are needed */
     /* to properly calculate counters between vertical stems */
     if ( genchange->dstem_control ) {
-	dstems = gcalloc( gd->stemcnt,sizeof( StemData *));
+	dstems = calloc( gd->stemcnt,sizeof( StemData *));
 	dcnt = PrepareDStemList( gd,dstems );
     }
 
@@ -2130,7 +2130,7 @@ static struct overlaps *SCFindHintOverlaps(StemInfo *hints,double min_coord,
     for ( h=hints, cnt=0; h!=NULL; h=h->next ) if ( !h->ghost )
 	++cnt;
 
-    overlaps = galloc((cnt+3)*sizeof(struct overlaps));
+    overlaps = malloc((cnt+3)*sizeof(struct overlaps));
     overlaps[0].start = min_coord; overlaps[0].stop = min_coord;
     overlaps[1].start = max_coord; overlaps[1].stop = max_coord;
     tot = 2;
@@ -2191,7 +2191,7 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
     AnchorPoint *ap;
 
     cnt = NumberLayerPoints(ss);
-    ptpos = gcalloc(cnt,sizeof(struct ptpos));
+    ptpos = calloc(cnt,sizeof(struct ptpos));
 
     /* Position any points which lie within a hint zone */
     order2 = false;
@@ -2670,7 +2670,7 @@ return;		/* Can't randomly add things to a CID keyed font */
 return;
 
     genchange->g.cnt = genchange->m.cnt+2;
-    genchange->g.maps = galloc(genchange->g.cnt*sizeof(struct position_maps));
+    genchange->g.maps = malloc(genchange->g.cnt*sizeof(struct position_maps));
     genchange->sf     = fv->sf;
     genchange->layer  = fv->active_layer;
 
@@ -2899,10 +2899,10 @@ return;		/* Can't randomly add things to a CID keyed font */
 return;
 
     genchange->g.cnt = genchange->m.cnt+2;
-    genchange->g.maps = galloc(genchange->g.cnt*sizeof(struct position_maps));
+    genchange->g.maps = malloc(genchange->g.cnt*sizeof(struct position_maps));
 
     if ( genchange->feature_tag!=0 ) {
-	uint32 *scripts = galloc(cnt*sizeof(uint32));
+	uint32 *scripts = malloc(cnt*sizeof(uint32));
 	int scnt = 0;
 	for ( enc=0; enc<fv->map->enccount; ++enc ) {
 	    if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
@@ -3041,7 +3041,7 @@ return;
     }
 
     genchange->g.cnt = genchange->m.cnt+2;
-    genchange->g.maps = galloc(genchange->g.cnt*sizeof(struct position_maps));
+    genchange->g.maps = malloc(genchange->g.cnt*sizeof(struct position_maps));
 
     if ( sc->layers[layer].splines!=NULL ) {
 	SCPreserveLayer(sc,layer,true);
@@ -3159,7 +3159,7 @@ return;		/* It intersects something that's already there */
 
     /* Need to add */
     if ( ci->cnts[z]>=ci->maxes[z] )
-	ci->zones[z] = grealloc(ci->zones[z],(ci->maxes[z]+=10)*sizeof(struct ci_zones));
+	ci->zones[z] = realloc(ci->zones[z],(ci->maxes[z]+=10)*sizeof(struct ci_zones));
     for ( j=ci->cnts[z]; j>i; --j )
 	ci->zones[z][j] = ci->zones[z][j-1];
     ci->zones[z][i].start = ci->zones[z][i].moveto   = start;
@@ -3779,7 +3779,7 @@ static SplineSet *LCG_EmboldenHook(SplineSet *ss_expanded,struct lcg_zones *zone
     ccnt = MaxContourCount(ss_expanded);
     if ( ccnt==0 )
 return(ss_expanded);			/* No points? Nothing to do */
-    ptmoves = galloc((ccnt+1)*sizeof(struct ptmoves));
+    ptmoves = malloc((ccnt+1)*sizeof(struct ptmoves));
     for ( ss = ss_expanded; ss!=NULL ; ss=ss->next ) {
 	if ( ss->first->prev==NULL )
     continue;
@@ -3855,7 +3855,7 @@ return( LCG_EmboldenHook(ss_expanded,zones,sc,layer));
     ccnt = MaxContourCount(ss_expanded);
     if ( ccnt==0 )
 return(ss_expanded);			/* No points? Nothing to do */
-    ptmoves = galloc((ccnt+1)*sizeof(struct ptmoves));
+    ptmoves = malloc((ccnt+1)*sizeof(struct ptmoves));
     for ( ss = ss_expanded; ss!=NULL ; ss=ss->next ) {
 	if ( ss->first->prev==NULL )
     continue;

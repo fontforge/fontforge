@@ -301,7 +301,7 @@ struct font_name *_GDraw_HashFontFamily(FState *fonts,unichar_t *name, int prop)
 	fn = fn->next;
     }
     if ( fn==NULL ) {
-	fn = gcalloc(1,sizeof(struct font_name));
+	fn = calloc(1,sizeof(struct font_name));
 	fn->family_name = u_copy(name);
 	fn->ft = _GDraw_ClassifyFontName(fn->family_name,&b,&i);
 	if ( !prop && fn->ft==ft_unknown )
@@ -313,10 +313,10 @@ return( fn );
 }
 
 void _GDraw_FreeFD(struct font_data *fd) {
-    gfree(fd->charmap_name);
-    gfree(fd->localname);
-    gfree(fd->fontfile);
-    gfree(fd->metricsfile);
-    gfree(fd);
+    free(fd->charmap_name);
+    free(fd->localname);
+    free(fd->fontfile);
+    free(fd->metricsfile);
+    free(fd);
 }
 

@@ -510,7 +510,7 @@ static void StrokeInit(StrokeDlg *sd) {
 	msc->name = "Nib";
 	msc->parent = &sd->dummy_sf;
 	msc->layer_cnt = 2;
-	msc->layers = gcalloc(2,sizeof(Layer));
+	msc->layers = calloc(2,sizeof(Layer));
 	msc->width = 200;
 	LayerDefault(&msc->layers[0]);
 	LayerDefault(&msc->layers[1]);
@@ -1290,7 +1290,7 @@ return( true );
 
 	/* Stops must be stored in ascending order */
 	qsort(md,rows,cols*sizeof(struct matrix_data),orderstops);
-	gradient->grad_stops = grealloc(gradient->grad_stops,rows*sizeof(struct grad_stops));
+	gradient->grad_stops = realloc(gradient->grad_stops,rows*sizeof(struct grad_stops));
 	gradient->stop_cnt = rows;
 	for ( i=0; i<rows; ++i ) {
 	    gradient->grad_stops[i].offset  = md[cols*i+0].u.md_real/100.0;
@@ -1341,7 +1341,7 @@ static void GDDInit(GradientDlg *gdd,SplineFont *sf,Layer *ly,struct gradient *g
 	msc->name = "Gradient";
 	msc->parent = &gdd->dummy_sf;
 	msc->layer_cnt = 2;
-	msc->layers = gcalloc(2,sizeof(Layer));
+	msc->layers = calloc(2,sizeof(Layer));
 	LayerDefault(&msc->layers[0]);
 	LayerDefault(&msc->layers[1]);
 	gdd->chars[0] = msc;
@@ -1445,7 +1445,7 @@ static void StopMatrixInit(struct matrixinit *mi,struct gradient *grad) {
     mi->col_init = stopci;
 
     if ( grad==NULL ) {
-	md = gcalloc(2*mi->col_cnt,sizeof(struct matrix_data));
+	md = calloc(2*mi->col_cnt,sizeof(struct matrix_data));
 	md[3*0+0].u.md_real = 0;
 	md[3*0+1].u.md_ival = 0x000000;
 	md[3*0+2].u.md_real = 1;
@@ -1454,7 +1454,7 @@ static void StopMatrixInit(struct matrixinit *mi,struct gradient *grad) {
 	md[3*1+2].u.md_real = 1;
 	mi->initial_row_cnt = 2;
     } else {
-	md = gcalloc(3*grad->stop_cnt,sizeof(struct matrix_data));
+	md = calloc(3*grad->stop_cnt,sizeof(struct matrix_data));
 	for ( i=0; i<grad->stop_cnt; ++i ) {
 	    md[3*i+0].u.md_real = grad->grad_stops[i].offset*100.0;
 	    md[3*i+1].u.md_ival = grad->grad_stops[i].col;

@@ -29,7 +29,7 @@ struct string_list *new_string_list(const char *str) {
     str2 = copy(str);
     if ( str2==NULL )
 	return NULL;
-    list = galloc(sizeof(struct string_list));
+    list = malloc(sizeof(struct string_list));
     if ( list!=NULL ) {
 	list->next = NULL;
 	list->str = str2;
@@ -76,7 +76,7 @@ struct string_list *sort_string_list(struct string_list* list) {
 
     cnt = string_list_count(list);
 
-    sortarray = gcalloc(cnt,sizeof(struct string_list*));
+    sortarray = calloc(cnt,sizeof(struct string_list*));
     for ( i=0, item=list; item!=NULL; item=item->next, i++ ) {
 	sortarray[i] = item;
     }

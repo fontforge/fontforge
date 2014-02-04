@@ -346,9 +346,9 @@ enum Compare_Ret SSsCompare(const SplineSet *ss1, const SplineSet *ss2,
     if ( cnt1!=cnt2 )
 return( SS_DiffContourCount|SS_NoMatch );
 
-    b1 = galloc(cnt1*sizeof(DBounds));
-    b2 = galloc(cnt1*sizeof(DBounds));
-    match = galloc(cnt1*sizeof(SplineSet *));
+    b1 = malloc(cnt1*sizeof(DBounds));
+    b2 = malloc(cnt1*sizeof(DBounds));
+    match = malloc(cnt1*sizeof(SplineSet *));
     for ( ss=ss1, cnt1=0; ss!=NULL; ss=ss->next, ++cnt1 ) {
 	SplineSet *next = ss->next; ((SplineSet *) ss)->next = NULL;
 	SplineSetFindBounds(ss,&b1[cnt1]);
@@ -1880,9 +1880,9 @@ static void MatchLookups(struct font_diff *fd) {
 	    sub->subtable_offset = scnt;
     }
     fd->lcnt1 = lcnt;
-    fd->l2match1 = gcalloc(lcnt,sizeof(OTLookup *));
+    fd->l2match1 = calloc(lcnt,sizeof(OTLookup *));
     fd->scnt1 = scnt;
-    fd->s2match1 = gcalloc(scnt,sizeof(OTLookup *));
+    fd->s2match1 = calloc(scnt,sizeof(OTLookup *));
 
     for ( scnt = lcnt=0, otl=fd->is_gpos ? sf2->gpos_lookups : sf2->gsub_lookups; otl!=NULL; otl=otl->next, ++lcnt ) {
 	otl->lookup_index = lcnt;
@@ -1891,9 +1891,9 @@ static void MatchLookups(struct font_diff *fd) {
 	    sub->subtable_offset = scnt;
     }
     fd->lcnt2 = lcnt;
-    fd->l1match2 = gcalloc(lcnt,sizeof(OTLookup *));
+    fd->l1match2 = calloc(lcnt,sizeof(OTLookup *));
     fd->scnt1 = scnt;
-    fd->s1match2 = gcalloc(scnt,sizeof(OTLookup *));
+    fd->s1match2 = calloc(scnt,sizeof(OTLookup *));
 
     for ( otl=fd->is_gpos ? sf1->gpos_lookups : sf1->gsub_lookups; otl!=NULL; otl=otl->next ) {
 	for ( otl2=fd->is_gpos ? sf2->gpos_lookups : sf2->gsub_lookups; otl2!=NULL; otl2=otl2->next ) {
@@ -2307,7 +2307,7 @@ int CompareFonts(SplineFont *sf1, EncMap *map1, SplineFont *sf2, FILE *diffs,
 	sc->ticked = false;
     for ( gid1=0; gid1<sf1->glyphcnt; ++gid1 ) if ( (sc=sf1->glyphs[gid1])!=NULL )
 	sc->ticked = false;
-    fd.matches = gcalloc(sf1->glyphcnt,sizeof(SplineChar *));
+    fd.matches = calloc(sf1->glyphcnt,sizeof(SplineChar *));
 
     for ( gid1=0; gid1<sf1->glyphcnt; ++gid1 ) if ( (sc=sf1->glyphs[gid1])!=NULL ) {
 	sc2 = SFGetChar(sf2,sc->unicodeenc,sc->name);

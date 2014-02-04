@@ -120,7 +120,7 @@ static void SplineFindQuestionablePoints(struct qg_data *data,Spline *s) {
 		int pt = NearestPt(s,&bp);
 		if ( !Duplicate(data,pt,floor(bp.x),floor(bp.y),dist)) {
 		    if ( data->cur>=data->max )
-			data->qg = grealloc(data->qg,(data->max += 100) * sizeof(QuestionableGrid));
+			data->qg = realloc(data->qg,(data->max += 100) * sizeof(QuestionableGrid));
 		    qg = &data->qg[data->cur];
 		    qg->sc = data->sc;
 		    qg->size = data->cur_size;

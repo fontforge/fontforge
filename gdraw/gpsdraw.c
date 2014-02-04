@@ -1122,13 +1122,13 @@ return( true );
 }
 
 static void PSDestroyContext(GPSDisplay *gd) {
-    gfree(gd->groot->ggc);
-    gfree(gd->groot);
+    free(gd->groot->ggc);
+    free(gd->groot);
     gd->groot = NULL;
 }
 
 static GGC *_GPSDraw_NewGGC(GPSDisplay *ps) {
-    GGC *ggc = gcalloc(1,sizeof(GGC));
+    GGC *ggc = calloc(1,sizeof(GGC));
     ggc->clip.width = ggc->clip.height = 0x7fff;
     ggc->fg = 0;
     ggc->bg = 0xffffff;
@@ -1215,7 +1215,7 @@ return( NULL );
 	    gdisp->lpr_args = copy(attrs->extra_lpr_args);
 	else
 	    oldea = NULL;
-	gfree(oldfn); gfree(oldpn); gfree(oldea);
+	free(oldfn); free(oldpn); free(oldea);
     }
     if ( gdisp->filename==NULL ) {
 	init = tmpfile();
@@ -1234,7 +1234,7 @@ return( NULL );
 
     gdisp->fontstate->res = gdisp->res;
 
-    gdisp->groot = gcalloc(1,sizeof(struct gpswindow));
+    gdisp->groot = calloc(1,sizeof(struct gpswindow));
     groot = (GPSWindow)(gdisp->groot);
     groot->ggc = _GPSDraw_NewGGC(gdisp);
     groot->display = gdisp;
@@ -1283,7 +1283,7 @@ static int GPSPrinterEndJob(GWindow w,int cancel) {
     ret = PSFinishJob(ps,cancel);
     _GPSDraw_ResetFonts(gdisp->fontstate);
     PSDestroyContext(gdisp);
-    gfree(gdisp->filename); gdisp->filename=NULL;
+    free(gdisp->filename); gdisp->filename=NULL;
 return( ret );
 }
 
@@ -1427,7 +1427,7 @@ static struct displayfuncs psfuncs = {
 GDisplay *_GPSDraw_CreateDisplay() {
     GPSDisplay *gdisp;
 
-    gdisp = gcalloc(1,sizeof(GPSDisplay));
+    gdisp = calloc(1,sizeof(GPSDisplay));
     if ( gdisp==NULL ) {
 return( NULL );
     }
@@ -1446,7 +1446,7 @@ return( NULL );
     gdisp->do_transparent = true;
     gdisp->num_copies = 1;
     gdisp->linear_thumb_cnt = 1;
-    gdisp->fontstate = gcalloc(1,sizeof(FState));
+    gdisp->fontstate = calloc(1,sizeof(FState));
     gdisp->fontstate->res = gdisp->res;
 
     gdisp->def_background = COLOR_CREATE(0xff,0xff,0xff);

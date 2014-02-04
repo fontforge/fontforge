@@ -62,7 +62,7 @@ static int SD_Call(GGadget *g, GEvent *e) {
 	fn = gwwv_open_filename(_("Call Script"), NULL, "*",NULL);
 	if ( fn==NULL )
 return(true);
-	insert = galloc((strlen(fn)+10)*sizeof(unichar_t));
+	insert = malloc((strlen(fn)+10)*sizeof(unichar_t));
 	*insert = '"';
 	utf82u_strcpy(insert+1,fn);
 	uc_strcat(insert,"\"()");

@@ -768,7 +768,7 @@ static void NOUI_LoadPrefs(void) {
 		else if ( strncmp(line,"MacMapCnt:",strlen("MacSetCnt:"))==0 ) {
 		    sscanf( pt, "%d", &msc );
 		    msp = 0;
-		    user_macfeat_otftag = gcalloc(msc+1,sizeof(struct macsettingname));
+		    user_macfeat_otftag = calloc(msc+1,sizeof(struct macsettingname));
 		} else if ( strncmp(line,"MacMapping:",strlen("MacMapping:"))==0 && msp<msc ) {
 		    ParseMacMapping(pt,&user_macfeat_otftag[msp++]);
 		} else if ( strncmp(line,"MacFeat:",strlen("MacFeat:"))==0 ) {

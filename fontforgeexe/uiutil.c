@@ -134,12 +134,12 @@ return;
     if ( pt==NULL ) pt = start+strlen(start);
     ch = *pt; *pt='\0';
 
-    temp = galloc(strlen(start)+300+ (ch==0?0:strlen(pt+1)));
+    temp = malloc(strlen(start)+300+ (ch==0?0:strlen(pt+1)));
     cygwin_conv_to_full_posix_path(start,temp+1);
     temp[0]='"'; strcat(temp,"\" ");
     if ( ch!='\0' )
 	strcat(temp,pt+1);
-    cmd = galloc(strlen(temp)+strlen(fullspec)+8);
+    cmd = malloc(strlen(temp)+strlen(fullspec)+8);
     if ( strstr("%s",temp)!=NULL )
 	sprintf( cmd, temp, fullspec );
     else {
@@ -282,7 +282,7 @@ void help(char *file) {
 	    *p_param = '\0';
 	}
 	if(! GFileIsAbsolute(p_file)){
-	    p_uri = (char*) galloc( 256 + strlen(GResourceProgramDir) + strlen(p_file) );
+	    p_uri = (char*) malloc( 256 + strlen(GResourceProgramDir) + strlen(p_file) );
 
 	    strcpy(p_uri, GResourceProgramDir); /*  doc/fontforge/ja/file  */
 	    strcat(p_uri, "/doc/fontforge/");
@@ -590,7 +590,7 @@ return( copyn( errdata.errlines[l]+s_c, e_c-s_c ));
 	cnt += strlen(errdata.errlines[l])+1;
     cnt += e_c;
 
-    ret = galloc(cnt+1);
+    ret = malloc(cnt+1);
     strcpy( ret, errdata.errlines[s_l]+s_c );
     pt = ret+strlen( ret );
     *pt++ = '\n';

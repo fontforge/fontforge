@@ -258,7 +258,7 @@ return( NULL );
     if ( sf->multilayer || sf->strokedfont )
 return( NULL );
 
-    ftc = gcalloc(1,sizeof(FTC));
+    ftc = calloc(1,sizeof(FTC));
     if ( shared_ftc!=NULL ) {
 	*ftc = *(FTC *) shared_ftc;
 	ftc->face = NULL;
@@ -281,7 +281,7 @@ return( NULL );
 	notdefpos = SFFindNotdef(sf,-2);	/* Do this early */
 	if ( sc!=NULL || selected!=NULL ) {
 	    /* Build up a font consisting of those characters we actually use */
-	    new = gcalloc(sf->glyphcnt,sizeof(SplineChar *));
+	    new = calloc(sf->glyphcnt,sizeof(SplineChar *));
 	    if ( sc!=NULL )
 		TransitiveClosureAdd(new,old,sc,layer);
 	    else for ( i=0; i<map->enccount; ++i )
@@ -350,7 +350,7 @@ return( NULL );
 	    for ( k=0; k<sf->subfontcnt; ++k )
 		if ( sf->subfonts[k]->glyphcnt>max )
 		    max = sf->subfonts[k]->glyphcnt;
-	    ftc->glyph_indeces = galloc(max*sizeof(int));
+	    ftc->glyph_indeces = malloc(max*sizeof(int));
 	    memset(ftc->glyph_indeces,-1,max*sizeof(int));
 	    for ( i=0; i<max; ++i ) {
 		for ( k=0; k<sf->subfontcnt; ++k ) {
@@ -362,7 +362,7 @@ return( NULL );
 		}
 	    }
 	} else {
-	    ftc->glyph_indeces = galloc(sf->glyphcnt*sizeof(int));
+	    ftc->glyph_indeces = malloc(sf->glyphcnt*sizeof(int));
 	    memset(ftc->glyph_indeces,-1,sf->glyphcnt*sizeof(int));
 	    cnt = 1;
 	    if ( notdefpos!=-1 )
@@ -477,7 +477,7 @@ static BDFChar *BdfCFromBitmap(FT_Bitmap *bitmap, int bitmap_left,
     bdfc->bytes_per_line = bitmap->pitch;
     bdfc->refs = NULL; bdfc->dependents = NULL;
     if ( bdfc->bytes_per_line==0 ) bdfc->bytes_per_line = 1;
-    bdfc->bitmap = galloc((bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line);
+    bdfc->bitmap = malloc((bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line);
     if ( bitmap->rows==0 || bitmap->width==0 )
 	memset(bdfc->bitmap,0,(bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line);
     else
@@ -805,7 +805,7 @@ return( NULL );
     if ( slot->bitmap.pixel_mode!=ft_pixel_mode_mono &&
 	    slot->bitmap.pixel_mode!=ft_pixel_mode_grays )
 return( NULL );
-    ret = galloc(sizeof(struct freetype_raster));
+    ret = malloc(sizeof(struct freetype_raster));
 
     ret->rows = slot->bitmap.rows;
     ret->cols = slot->bitmap.width;
@@ -815,7 +815,7 @@ return( NULL );
     ret->num_greys = slot->bitmap.num_grays;
 	/* Can't find any description of freetype's bitendianness */
 	/* But the obvious seems to work */
-    ret->bitmap = galloc(ret->rows*ret->bytes_per_row);
+    ret->bitmap = malloc(ret->rows*ret->bytes_per_row);
     memcpy(ret->bitmap,slot->bitmap.buffer,ret->rows*ret->bytes_per_row);
 return( ret );
 }
@@ -862,13 +862,13 @@ static void FillOutline(SplineSet *spl,FT_Outline *outline,int *pmax,int *cmax,
 		outline->n_points = pcnt;
 		if ( pcnt > *pmax || *pmax==0 ) {
 		    *pmax = pcnt==0 ? 1 : pcnt;
-		    outline->points = grealloc(outline->points,*pmax*sizeof(FT_Vector));
-		    outline->tags = grealloc(outline->tags,*pmax*sizeof(char));
+		    outline->points = realloc(outline->points,*pmax*sizeof(FT_Vector));
+		    outline->tags = realloc(outline->tags,*pmax*sizeof(char));
 		}
 		memset(outline->tags,0,pcnt);
 		if ( ccnt > *cmax || *cmax==0 ) {
 		    *cmax = ccnt==0 ? 1 : ccnt;
-		    outline->contours = grealloc(outline->contours,*cmax*sizeof(short));
+		    outline->contours = realloc(outline->contours,*cmax*sizeof(short));
 		}
 		outline->flags = ft_outline_none;
 	    }
@@ -910,13 +910,13 @@ static void FillOutline(SplineSet *spl,FT_Outline *outline,int *pmax,int *cmax,
 		outline->n_points = pcnt;
 		if ( pcnt > *pmax || *pmax==0 ) {
 		    *pmax = pcnt==0 ? 1 : pcnt;
-		    outline->points = grealloc(outline->points,*pmax*sizeof(FT_Vector));
-		    outline->tags = grealloc(outline->tags,*pmax*sizeof(char));
+		    outline->points = realloc(outline->points,*pmax*sizeof(FT_Vector));
+		    outline->tags = realloc(outline->tags,*pmax*sizeof(char));
 		}
 		memset(outline->tags,0,pcnt);
 		if ( ccnt > *cmax || *cmax==0 ) {
 		    *cmax = ccnt==0 ? 1 : ccnt;
-		    outline->contours = grealloc(outline->contours,*cmax*sizeof(short));
+		    outline->contours = realloc(outline->contours,*cmax*sizeof(short));
 		}
 		/* You might think we should set ft_outline_reverse_fill here */
 		/*  because this is a postscript font. But ff stores fonts */
@@ -1102,7 +1102,7 @@ return( NULL );
 	bitmap.num_grays = 256;
 	bitmap.pixel_mode = ft_pixel_mode_grays;
     }
-    bitmap.buffer = gcalloc(bitmap.pitch*bitmap.rows,sizeof(uint8));
+    bitmap.buffer = calloc(bitmap.pitch*bitmap.rows,sizeof(uint8));
     memset(&temp,0,sizeof(temp));
     if ( sc->parent->multilayer && !(sc->layer_cnt==2 &&
 	    !sc->layers[ly_fore].dostroke &&
@@ -1111,7 +1111,7 @@ return( NULL );
 	    (sc->layers[ly_fore].fill_brush.col==COLOR_INHERITED ||
 	     sc->layers[ly_fore].fill_brush.col==0x000000)) ) {
 	temp = bitmap;
-	temp.buffer = galloc(bitmap.pitch*bitmap.rows);
+	temp.buffer = malloc(bitmap.pitch*bitmap.rows);
     }
 
     memset(&outline,0,sizeof(outline));
@@ -1141,7 +1141,7 @@ return( NULL );
 		FillOutline(sc->layers[i].splines,&outline,&pmax,&cmax,
 			scale,&b,sc->layers[i].order2,2);
 		err |= (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
-		clipmask = galloc(bitmap.pitch*bitmap.rows);
+		clipmask = malloc(bitmap.pitch*bitmap.rows);
 		memcpy(clipmask,temp.buffer,bitmap.pitch*bitmap.rows);
 	    }
 	    if ( sc->layers[i].dofill ) {

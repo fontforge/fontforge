@@ -1387,7 +1387,7 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
 			     GFont *font, int disable,
 			     char* subMenuName )
 {
-    GMenu *m = gcalloc(1,sizeof(GMenu));
+    GMenu *m = calloc(1,sizeof(GMenu));
     GRect pos;
     GDisplay *disp = GDrawGetDisplayOfWindow(owner);
     GWindowAttrs pattrs;
@@ -2239,7 +2239,7 @@ static void MenuMaskInit(GMenuItem *mi) {
 }
 
 GGadget *GMenuBarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
-    GMenuBar *mb = gcalloc(1,sizeof(GMenuBar));
+    GMenuBar *mb = calloc(1,sizeof(GMenuBar));
 
     if ( !gmenubar_inited )
 	GMenuInit();
@@ -2247,7 +2247,7 @@ GGadget *GMenuBarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     _GGadget_Create(&mb->g,base,gd,data,&menubar_box);
 
     mb->mi = GMenuItemArrayCopy(gd->u.menu,&mb->mtot);
-    mb->xs = galloc((mb->mtot+1)*sizeof(uint16));
+    mb->xs = malloc((mb->mtot+1)*sizeof(uint16));
     mb->entry_with_mouse = -1;
     mb->font = menubar_font;
 
@@ -2266,7 +2266,7 @@ return( &mb->g );
 }
 
 GGadget *GMenu2BarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
-    GMenuBar *mb = gcalloc(1,sizeof(GMenuBar));
+    GMenuBar *mb = calloc(1,sizeof(GMenuBar));
 
     if ( !gmenubar_inited )
 	GMenuInit();
@@ -2274,7 +2274,7 @@ GGadget *GMenu2BarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     _GGadget_Create(&mb->g,base,gd,data,&menubar_box);
 
     mb->mi = GMenuItem2ArrayCopy(gd->u.menu2,&mb->mtot);
-    mb->xs = galloc((mb->mtot+1)*sizeof(uint16));
+    mb->xs = malloc((mb->mtot+1)*sizeof(uint16));
     mb->entry_with_mouse = -1;
     mb->font = menubar_font;
 

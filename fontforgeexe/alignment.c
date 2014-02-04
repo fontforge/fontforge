@@ -86,7 +86,7 @@ static void SpaceMany(CharView *cv,DBounds *b, int dir, int region_size, int cnt
 	    dir = 1;		/* Space out along y axis */
     }
 
-    regions = galloc(cnt*sizeof(struct region));
+    regions = malloc(cnt*sizeof(struct region));
     rcnt = 0;
     for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	sp=spl->first;

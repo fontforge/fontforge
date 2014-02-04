@@ -124,14 +124,14 @@ return(false);
     } else if ( base->image_type==it_mono /* && byte_data */) {
 	int set = (1<<BDFDepth(bv->bdf))-1;
 	bc->bytes_per_line = base->width;
-	bc->bitmap = gcalloc(base->height,base->width);
+	bc->bitmap = calloc(base->height,base->width);
 	for ( i=0; i<base->height; ++i ) for ( j=0; j<base->width; ++j ) {
 	    if ( !(base->data[i*base->bytes_per_line+(j>>3)]&(0x80>>(j&7))) )
 		bc->bitmap[i*bc->bytes_per_line+j] = set;
 	}
     } else if ( !bc->byte_data && base->image_type==it_true ) {
 	bc->bytes_per_line = (base->width>>3)+1;
-	bc->bitmap = gcalloc(base->height,bc->bytes_per_line);
+	bc->bitmap = calloc(base->height,bc->bytes_per_line);
 	for ( i=0; i<base->height; ++i ) for ( j=0; j<base->width; ++j ) {
 	    int col = ((Color *) (base->data+i*base->bytes_per_line))[j];
 	    col = (3*COLOR_RED(col)+6*COLOR_GREEN(col)+COLOR_BLUE(col));
@@ -141,7 +141,7 @@ return(false);
     } else if ( /* byte_data && */ base->image_type==it_true ) {
 	int div = 255/((1<<BDFDepth(bv->bdf))-1);
 	bc->bytes_per_line = base->width;
-	bc->bitmap = gcalloc(base->height,base->width);
+	bc->bitmap = calloc(base->height,base->width);
 	for ( i=0; i<base->height; ++i ) for ( j=0; j<base->width; ++j ) {
 	    int col = ((Color *) (base->data+i*base->bytes_per_line))[j];
 	    col = 255-(3*COLOR_RED(col)+6*COLOR_GREEN(col)+COLOR_BLUE(col)+5)/10;
@@ -159,7 +159,7 @@ return(false);
 	base->data = NULL;
     } else /* if ( mono && indexed ) */ {
 	bc->bytes_per_line = (base->width>>3)+1;
-	bc->bitmap = gcalloc(base->height,bc->bytes_per_line);
+	bc->bitmap = calloc(base->height,bc->bytes_per_line);
 	for ( i=0; i<base->height; ++i ) for ( j=0; j<base->width; ++j ) {
 	    int col = base->clut->clut[base->data[i*base->bytes_per_line+j]];
 	    col = (3*COLOR_RED(col)+6*COLOR_GREEN(col)+COLOR_BLUE(col));
@@ -535,7 +535,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	    char *text;
 	    char *ae = py_ie[format-fv_pythonbase].all_extensions;
 	    unichar_t *utext;
-	    text = galloc(strlen(ae)+10);
+	    text = malloc(strlen(ae)+10);
 	    if ( strchr(ae,','))
 		sprintf( text, "*.{%s}", ae );
 	    else
@@ -619,7 +619,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	    if ( py_ie[i].import!=NULL )
 		++extras;
 	if ( extras!=0 ) {
-	    cur_formats = gcalloc(extras+cnt+1,sizeof(GTextInfo));
+	    cur_formats = calloc(extras+cnt+1,sizeof(GTextInfo));
 	    for ( cnt=0; base[cnt].text!=NULL; ++cnt ) {
 		cur_formats[cnt] = base[cnt];
 		cur_formats[cnt].text = (unichar_t *) copy( (char *) base[cnt].text );

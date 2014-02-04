@@ -182,7 +182,7 @@ return;
     }
     fcntl(gdisp->wacom_fd,F_SETFL,O_NONBLOCK);
 
-    ws = gdisp->wacom_state = gcalloc(1,sizeof(WState));
+    ws = gdisp->wacom_state = calloc(1,sizeof(WState));
 
     ws->screenx = -1;
     ws->screeny = -1;

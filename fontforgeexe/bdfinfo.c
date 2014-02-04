@@ -550,7 +550,7 @@ static void BdfP_Invoked(GWindow v, GMenuItem *mi, GEvent *e) {
     if ( sel>=bdf->prop_cnt ) {
 	/* Create a new one */
 	if ( bdf->prop_cnt>=bdf->prop_max )
-	    bdf->props = grealloc(bdf->props,(bdf->prop_max+=10)*sizeof(BDFProperties));
+	    bdf->props = realloc(bdf->props,(bdf->prop_max+=10)*sizeof(BDFProperties));
 	sel = bd->cur->sel_prop = bdf->prop_cnt++;
 	bdf->props[sel].name = prop_name;
 	for ( i=0; StandardProps[i].name!=NULL; ++i )
@@ -584,7 +584,7 @@ static void BdfP_PopupMenuProps(struct bdf_dlg *bd, GEvent *e) {
     int i;
 
     for ( i=0 ; StandardProps[i].name!=NULL; ++i );
-    mi = gcalloc(i+3,sizeof(GMenuItem));
+    mi = calloc(i+3,sizeof(GMenuItem));
     mi[0].ti.text = (unichar_t *) _("No Change");
     mi[0].ti.text_is_1byte = true;
     mi[0].ti.fg = COLOR_DEFAULT;
@@ -728,7 +728,7 @@ void SFBdfProperties(SplineFont *sf, EncMap *map, BDFFont *thisone) {
     if ( i==0 )
 return;
     bd.fcnt = i;
-    bd.fonts = gcalloc(i,sizeof(struct bdf_dlg_font));
+    bd.fonts = calloc(i,sizeof(struct bdf_dlg_font));
     bd.cur = &bd.fonts[0];
     for ( bdf = sf->bitmaps, i=0; bdf!=NULL; bdf=bdf->next, ++i ) {
 	bd.fonts[i].bdf = bdf;
@@ -740,7 +740,7 @@ return;
 	    bd.cur = &bd.fonts[i];
     }
 
-    ti = gcalloc((i+1),sizeof(GTextInfo));
+    ti = calloc((i+1),sizeof(GTextInfo));
     for ( bdf = sf->bitmaps, i=0; bdf!=NULL; bdf=bdf->next, ++i ) {
 	if ( bdf->clut==NULL )
 	    sprintf( buffer, "%d", bdf->pixelsize );

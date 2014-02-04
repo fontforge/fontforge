@@ -171,7 +171,7 @@ static void CheckOutOfBounds(WidthInfo *wi) {
 
 static void ApplyChanges(WidthInfo *wi) {
     EncMap *map = wi->fv->map;
-    uint8 *rsel = gcalloc(map->enccount,sizeof(char));
+    uint8 *rsel = calloc(map->enccount,sizeof(char));
     int i, width;
     real transform[6];
     struct charone *ch;
@@ -424,8 +424,8 @@ static void SCFindEdges(struct charone *ch,WidthInfo *wi) {
     SplineCharQuickConservativeBounds(ch->sc,&bb);
     ch->base = rint(bb.miny/wi->decimation);
     ch->top = rint(bb.maxy/wi->decimation);
-    ch->ledge = galloc((ch->top-ch->base+1)*sizeof(short));
-    ch->redge = galloc((ch->top-ch->base+1)*sizeof(short));
+    ch->ledge = malloc((ch->top-ch->base+1)*sizeof(short));
+    ch->redge = malloc((ch->top-ch->base+1)*sizeof(short));
     for ( i=0; i<=ch->top-ch->base; ++i )
 	ch->ledge[i] = ch->redge[i] = NOTREACHED;
     SSFindEdges(ch->sc->layers[wi->layer].splines,ch,wi);
@@ -484,9 +484,9 @@ static void PairFindDistance(struct charpair *cp,WidthInfo *wi) {
     cp->base = (left->base>right->base?left->base : right->base) - fudgerange;
     cp->top = (left->top<right->top ? left->top : right->top) + fudgerange;
     if ( cp->top<cp->base )
-	cp->distances = galloc(sizeof(short));
+	cp->distances = malloc(sizeof(short));
     else
-	cp->distances = galloc((cp->top-cp->base+1)*sizeof(short));
+	cp->distances = malloc((cp->top-cp->base+1)*sizeof(short));
 
     min = NOTREACHED; wasserif = false;
     for ( i=cp->base; i<=cp->top; ++i ) {
@@ -749,9 +749,9 @@ void AW_InitCharPairs(WidthInfo *wi) {
     struct charpair *cp;
 
     wi->pcnt = wi->lcnt*wi->rcnt;
-    wi->pairs = galloc(wi->pcnt*sizeof(struct charpair *));
+    wi->pairs = malloc(wi->pcnt*sizeof(struct charpair *));
     for ( i=0; i<wi->lcnt; ++i ) for ( j=0; j<wi->rcnt; ++j ) {
-	wi->pairs[i*wi->rcnt+j] = cp = gcalloc(1,sizeof(struct charpair));
+	wi->pairs[i*wi->rcnt+j] = cp = calloc(1,sizeof(struct charpair));
 	cp->left = wi->left[i];
 	cp->right = wi->right[j];
 	cp->nextasleft = cp->left->asleft;
@@ -810,7 +810,7 @@ int KernThreshold(SplineFont *sf, int cnt) {
 return(0);
 
     high = sf->ascent + sf->descent;
-    totals = gcalloc(high+1,sizeof(int));
+    totals = calloc(high+1,sizeof(int));
     tot=0;
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	for ( kp = sf->glyphs[i]->kerns; kp!=NULL; kp = kp->next ) {
@@ -860,7 +860,7 @@ return;
 }
 
 struct charone *AW_MakeCharOne(SplineChar *sc) {
-    struct charone *ch = gcalloc(1,sizeof(struct charone));
+    struct charone *ch = calloc(1,sizeof(struct charone));
 
     ch->sc = sc;
     ch->newr = ch->newl = NOTREACHED;
@@ -947,11 +947,11 @@ return;
 	if ( ks->cur+1>=ks->max ) {
 	    ks->max += 100;
 	    if ( ks->cur==0 ) {
-		ks->ch1 = galloc(ks->max*sizeof(unichar_t));
-		ks->ch2s = galloc(ks->max*sizeof(unichar_t *));
+		ks->ch1 = malloc(ks->max*sizeof(unichar_t));
+		ks->ch2s = malloc(ks->max*sizeof(unichar_t *));
 	    } else {
-		ks->ch1 = grealloc(ks->ch1,ks->max*sizeof(unichar_t));
-		ks->ch2s = grealloc(ks->ch2s,ks->max*sizeof(unichar_t *));
+		ks->ch1 = realloc(ks->ch1,ks->max*sizeof(unichar_t));
+		ks->ch2s = realloc(ks->ch2s,ks->max*sizeof(unichar_t *));
 	    }
 	}
 	for ( j=ks->cur; j>i; --j ) {
@@ -959,12 +959,12 @@ return;
 	    ks->ch2s[j] = ks->ch2s[j-1];
 	}
 	ks->ch1[i] = buffer[0];
-	ks->ch2s[i] = galloc(50*sizeof(unichar_t));
+	ks->ch2s[i] = malloc(50*sizeof(unichar_t));
 	ks->ch2s[i][0] = '\0';
 	++ks->cur;
     }
     if ( (u_strlen(ks->ch2s[i])+1)%50 == 0 )
-	ks->ch2s[i] = grealloc(ks->ch2s[i],(u_strlen(ks->ch2s[i])+50)*sizeof(unichar_t));
+	ks->ch2s[i] = realloc(ks->ch2s[i],(u_strlen(ks->ch2s[i])+50)*sizeof(unichar_t));
     for ( j=0 ; ks->ch2s[i][j]!=0 && buffer[1]>ks->ch2s[i][j]; ++j );
     if ( ks->ch2s[i][j]!=buffer[1] ) {
 	for ( k=u_strlen(ks->ch2s[i])+1; k>j; --k )
@@ -998,7 +998,7 @@ static int figurekernsets(WidthInfo *wi,struct kernsets *ks) {
     if ( ks->cur==0 )
 return( false );
 
-    wi->left = galloc((ks->cur+1)*sizeof(struct charone *));
+    wi->left = malloc((ks->cur+1)*sizeof(struct charone *));
     for ( i=cnt=0; i<ks->cur; ++i ) {
 	j = SFFindExistingSlot(sf,ks->ch1[i],NULL);
 	if ( j!=-1 && sf->glyphs[j]!=NULL &&
@@ -1017,7 +1017,7 @@ return( false );
     for ( i=max=0; i<ks->cur; ++i )
 	if ( ks->ch1[i]!='\0' )
 	    max += u_strlen(ks->ch2s[i]);
-    ch2s = galloc((max+1)*sizeof(unichar_t));
+    ch2s = malloc((max+1)*sizeof(unichar_t));
     for ( i=0; i<ks->cur && ks->ch1[i]=='\0'; ++i );
     u_strcpy(ch2s,ks->ch2s[i]);
     for ( ++i; i<ks->cur; ++i ) if ( ks->ch1[i]!='\0' ) {
@@ -1031,7 +1031,7 @@ return( false );
 	}
     }
 
-    wi->right = galloc((u_strlen(ch2s)+1)*sizeof(struct charone *));
+    wi->right = malloc((u_strlen(ch2s)+1)*sizeof(struct charone *));
     for ( cnt=0,cpt=ch2s; *cpt ; ++cpt ) {
 	j = SFFindExistingSlot(sf,*cpt,NULL);
 	if ( j!=-1 && sf->glyphs[j]!=NULL &&
@@ -1048,12 +1048,12 @@ return( false );
     }
     AW_ScriptSerifChecker(wi);
 
-    wi->pairs = galloc(max*sizeof(struct charpair *));
+    wi->pairs = malloc(max*sizeof(struct charpair *));
     for ( i=lcnt=cnt=0; i<ks->cur; ++i ) if ( ks->ch1[i]!='\0' ) {
 	for ( cpt=ks->ch2s[i]; *cpt; ++cpt ) {
 	    for ( j=0; j<wi->rcnt && wi->right[j]->sc->unicodeenc!=*cpt; ++j );
 	    if ( j<wi->rcnt ) {
-		wi->pairs[cnt++] = cp = gcalloc(1,sizeof(struct charpair));
+		wi->pairs[cnt++] = cp = calloc(1,sizeof(struct charpair));
 		cp->left = wi->left[lcnt];
 		cp->right = wi->right[j];
 		cp->nextasleft = cp->left->asleft;
@@ -1189,7 +1189,7 @@ return( NULL );
     cnt=1;
     for ( pt=names; (pt=strchr(pt,' '))!=NULL; ++pt )
 	++cnt;
-    list = gcalloc(cnt+1,sizeof(SplineChar *));
+    list = calloc(cnt+1,sizeof(SplineChar *));
 
     cnt = 0;
     for ( pt=names ; *pt ; pt = end ) {
@@ -1217,7 +1217,7 @@ static char *SCListToName(SplineChar **sclist) {
 
     for ( i=len=0; sclist[i]!=NULL; ++i )
 	len += strlen(sclist[i]->name)+1;
-    names = pt = galloc(len+1);
+    names = pt = malloc(len+1);
     *pt = '\0';
     for ( i=0; sclist[i]!=NULL; ++i ) {
 	strcat(pt,sclist[i]->name);
@@ -1256,8 +1256,8 @@ return( lookupmap->smap[i].to );
 		    ++sc;
 	    }
 	}
-	lookupmap->lmap = galloc(lc*sizeof(struct otlmap));
-	lookupmap->smap = galloc(sc*sizeof(struct submap));
+	lookupmap->lmap = malloc(lc*sizeof(struct otlmap));
+	lookupmap->smap = malloc(sc*sizeof(struct submap));
     }
 
     for ( i=0 ; i<lookupmap->lc; ++i )
@@ -1343,10 +1343,10 @@ return;
     }
 
     for ( kc = sf->kerns; kc!=NULL; kc=kc->next ) {
-	firsts = galloc(kc->first_cnt*sizeof(SplineChar *));
-	map1 = gcalloc(kc->first_cnt,sizeof(int));
-	seconds = galloc(kc->second_cnt*sizeof(SplineChar *));
-	map2 = gcalloc(kc->second_cnt,sizeof(int));
+	firsts = malloc(kc->first_cnt*sizeof(SplineChar *));
+	map1 = calloc(kc->first_cnt,sizeof(int));
+	seconds = malloc(kc->second_cnt*sizeof(SplineChar *));
+	map2 = calloc(kc->second_cnt,sizeof(int));
 	any1=0;
 	for ( i=1; i<kc->first_cnt; ++i ) {
 	    if ( (firsts[i] = CharNamesToVertSC(sf,kc->firsts[i]))!=NULL )
@@ -1366,14 +1366,14 @@ return;
 	    sf->vkerns = vkc;
 	    vkc->first_cnt = any1+1;
 	    vkc->second_cnt = any2+1;
-	    vkc->firsts = gcalloc(any1+1,sizeof(char *));
+	    vkc->firsts = calloc(any1+1,sizeof(char *));
 	    for ( i=0; i<kc->first_cnt; ++i ) if ( map1[i]!=0 )
 		vkc->firsts[map1[i]] = SCListToName(firsts[i]);
-	    vkc->seconds = gcalloc(any2+1,sizeof(char *));
+	    vkc->seconds = calloc(any2+1,sizeof(char *));
 	    for ( i=0; i<kc->second_cnt; ++i ) if ( map2[i]!=0 )
 		vkc->seconds[map2[i]] = SCListToName(seconds[i]);
-	    vkc->offsets = gcalloc((any1+1)*(any2+1),sizeof(int16));
-	    vkc->adjusts = gcalloc((any1+1)*(any2+1),sizeof(DeviceTable));
+	    vkc->offsets = calloc((any1+1)*(any2+1),sizeof(int16));
+	    vkc->adjusts = calloc((any1+1)*(any2+1),sizeof(DeviceTable));
 	    for ( i=0; i<kc->first_cnt; ++i ) if ( map1[i]!=0 ) {
 		for ( j=0; j<kc->second_cnt; ++j ) if ( map2[j]!=0 ) {
 		    int n=map1[i]*vkc->second_cnt+map2[j], o = i*kc->second_cnt+j;
@@ -1381,7 +1381,7 @@ return;
 		    if ( kc->adjusts[o].corrections!=NULL ) {
 			int len = kc->adjusts[o].last_pixel_size - kc->adjusts[o].first_pixel_size + 1;
 			vkc->adjusts[n] = kc->adjusts[o];
-			vkc->adjusts[n].corrections = galloc(len);
+			vkc->adjusts[n].corrections = malloc(len);
 			memcpy(vkc->adjusts[n].corrections,kc->adjusts[o].corrections,len);
 		    }
 		}
@@ -1420,7 +1420,7 @@ static struct charone **autowidthBuildCharList(FontViewBase *fv, SplineFont *sf,
       }
       
       if ( !doit )
-	ret = galloc((cnt+2)*sizeof(struct charone *));
+	ret = malloc((cnt+2)*sizeof(struct charone *));
       else {
 	*rtot = cnt;
 	if ( iswidth &&		/* I always want 'I' in the character list when doing widths */

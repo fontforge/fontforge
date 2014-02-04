@@ -694,7 +694,7 @@ return( false );
     }
 
     datalen = 8*8*1024;
-    databuf = galloc(datalen+1);
+    databuf = malloc(datalen+1);
     memset(&siteinfo,0,sizeof(siteinfo));
     siteinfo.user_id = -1;
 
@@ -1032,7 +1032,7 @@ return( false );
     if ( lock!=NULL )
 	pthread_mutex_lock(lock);
     datalen = 8*8*1024;
-    databuf = galloc(datalen+1);
+    databuf = malloc(datalen+1);
     if ( lock!=NULL )
 	pthread_mutex_unlock(lock);
     else
@@ -1247,7 +1247,7 @@ return( sofar );
 		if ( tot+1>*datalen ) {
 		    if ( lock!=NULL )
 			pthread_mutex_lock(lock);
-		    databuf = grealloc(databuf,*datalen = tot+10);
+		    databuf = realloc(databuf,*datalen = tot+10);
 		    if ( lock!=NULL )
 			pthread_mutex_unlock(lock);
 		}
@@ -1332,7 +1332,7 @@ return( false );
     }
 
     datalen = 8*8*1024;
-    databuf = galloc(datalen+1);
+    databuf = malloc(datalen+1);
     cmd = databuf;
 
     ChangeLine2_8(_("Logging in..."));

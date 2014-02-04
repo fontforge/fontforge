@@ -59,7 +59,7 @@ int maxundoes = 120;		/* -1 is infinite */
 int preserve_hint_undoes = true;
 
 static uint8 *bmpcopy(uint8 *bitmap,int bytes_per_line, int lines) {
-    uint8 *ret = galloc(bytes_per_line*lines);
+    uint8 *ret = malloc(bytes_per_line*lines);
     memcpy(ret,bitmap,bytes_per_line*lines);
 return( ret );
 }
@@ -73,7 +73,7 @@ return( NULL );
 	new = RefCharCreate();
 	free(new->layers);
 	*new = *crefs;
-	new->layers = gcalloc(new->layer_cnt,sizeof(struct reflayer));
+	new->layers = calloc(new->layer_cnt,sizeof(struct reflayer));
 	new->next = NULL;
 	if ( last==NULL )
 	    head = last = new;
@@ -885,7 +885,7 @@ return(NULL);
 	    bc->ymax-bc->ymin+1);
     undo->u.bmpstate.selection = BDFFloatCopy(bc->selection);
     for ( head=bc->refs; head!=NULL; head=head->next ) {
-	ref = gcalloc( 1,sizeof( BDFRefChar ));
+	ref = calloc( 1,sizeof( BDFRefChar ));
 	memcpy( ref,head,sizeof( BDFRefChar ));
 	if ( prev == NULL )
 	    undo->u.bmpstate.refs = ref;
@@ -1129,7 +1129,7 @@ static void BCUndoAct(BDFChar *bc,Undoes *undo) {
 
 	if ( !BDFRefCharsMatch( undo->u.bmpstate.refs,bc->refs )) {
 	    for ( head=bc->refs; head!=NULL; head=head->next ) {
-		ref = gcalloc( 1,sizeof( BDFRefChar ));
+		ref = calloc( 1,sizeof( BDFRefChar ));
 		memcpy( ref,head,sizeof( BDFRefChar ));
 		if ( prev != NULL )
 		    prev->next = ref;
@@ -1334,7 +1334,7 @@ return( false );
 	for ( ulayer = cur->u.multiple.mult, lcnt=0; ulayer!=NULL; ulayer=ulayer->next, ++lcnt);
 	dummy->layer_cnt = lcnt+1;
 	if ( lcnt!=1 )
-	    dummy->layers = gcalloc((lcnt+1),sizeof(Layer));
+	    dummy->layers = calloc((lcnt+1),sizeof(Layer));
 	for ( ulayer = cur->u.multiple.mult, lcnt=1; ulayer!=NULL; ulayer=ulayer->next, ++lcnt) {
 	    if ( ulayer->undotype==ut_state || ulayer->undotype==ut_statehint ) {
 		dummy->layers[lcnt].fill_brush = ulayer->u.state.fill_brush;
@@ -1416,7 +1416,7 @@ return( copy(""));
 
     fseek(svg,0,SEEK_END);
     *len = ftell(svg);
-    ret = galloc(*len);
+    ret = malloc(*len);
     rewind(svg);
     fread(ret,1,*len,svg);
     fclose(svg);
@@ -1483,7 +1483,7 @@ return( copy(""));
 
     fseek(svg,0,SEEK_END);
     *len = ftell(svg);
-    ret = galloc(*len);
+    ret = malloc(*len);
     rewind(svg);
     fread(ret,1,*len,svg);
     fclose(svg);
@@ -1536,7 +1536,7 @@ return( copy(""));
 	for ( ulayer = cur->u.multiple.mult, lcnt=0; ulayer!=NULL; ulayer=ulayer->next, ++lcnt);
 	dummy.layer_cnt = lcnt+1;
 	if ( lcnt!=1 )
-	    dummy.layers = gcalloc((lcnt+1),sizeof(Layer));
+	    dummy.layers = calloc((lcnt+1),sizeof(Layer));
 	for ( ulayer = cur->u.multiple.mult, lcnt=1; ulayer!=NULL; ulayer=ulayer->next, ++lcnt) {
 	    if ( ulayer->undotype==ut_state || ulayer->undotype==ut_statehint ) {
 		dummy.layers[lcnt].fill_brush = ulayer->u.state.fill_brush;
@@ -1577,7 +1577,7 @@ return( copy(""));
 
     fseek(eps,0,SEEK_END);
     *len = ftell(eps);
-    ret = galloc(*len);
+    ret = malloc(*len);
     rewind(eps);
     fread(ret,1,*len,eps);
     fclose(eps);
@@ -2433,7 +2433,7 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	if ( paster->u.state.images!=NULL && sc->parent->multilayer ) {
 	    ImageList *new, *cimg;
 	    for ( cimg = paster->u.state.images; cimg!=NULL; cimg=cimg->next ) {
-		new = galloc(sizeof(ImageList));
+		new = malloc(sizeof(ImageList));
 		*new = *cimg;
 		new->selected = true;
 		new->next = sc->layers[layer].images;
@@ -2569,7 +2569,7 @@ static void PasteToSC(SplineChar *sc,int layer,Undoes *paster,FontViewBase *fv,
 	} else
 	    start = sc->layer_cnt;
 	if ( start+lc > sc->layer_cnt ) {
-	    sc->layers = grealloc(sc->layers,(start+lc)*sizeof(Layer));
+	    sc->layers = realloc(sc->layers,(start+lc)*sizeof(Layer));
 	    for ( layer = sc->layer_cnt; layer<start+lc; ++layer )
 		LayerDefault(&sc->layers[layer]);
 	    sc->layer_cnt = start+lc;
@@ -2595,19 +2595,19 @@ return;		/* Nothing to do */
     adjust = chunkalloc(sizeof(ValDevTab));
     *adjust = *vr->adjust;
     if ( adjust->xadjust.corrections!=NULL ) {
-	adjust->xadjust.corrections = galloc(adjust->xadjust.last_pixel_size-adjust->xadjust.first_pixel_size+1);
+	adjust->xadjust.corrections = malloc(adjust->xadjust.last_pixel_size-adjust->xadjust.first_pixel_size+1);
 	memcpy(adjust->xadjust.corrections,vr->adjust->xadjust.corrections,adjust->xadjust.last_pixel_size-adjust->xadjust.first_pixel_size+1);
     }
     if ( adjust->yadjust.corrections!=NULL ) {
-	adjust->yadjust.corrections = galloc(adjust->yadjust.last_pixel_size-adjust->yadjust.first_pixel_size+1);
+	adjust->yadjust.corrections = malloc(adjust->yadjust.last_pixel_size-adjust->yadjust.first_pixel_size+1);
 	memcpy(adjust->yadjust.corrections,vr->adjust->yadjust.corrections,adjust->yadjust.last_pixel_size-adjust->yadjust.first_pixel_size+1);
     }
     if ( adjust->xadv.corrections!=NULL ) {
-	adjust->xadv.corrections = galloc(adjust->xadv.last_pixel_size-adjust->xadv.first_pixel_size+1);
+	adjust->xadv.corrections = malloc(adjust->xadv.last_pixel_size-adjust->xadv.first_pixel_size+1);
 	memcpy(adjust->xadv.corrections,vr->adjust->xadv.corrections,adjust->xadv.last_pixel_size-adjust->xadv.first_pixel_size+1);
     }
     if ( adjust->yadv.corrections!=NULL ) {
-	adjust->yadv.corrections = galloc(adjust->yadv.last_pixel_size-adjust->yadv.first_pixel_size+1);
+	adjust->yadv.corrections = malloc(adjust->yadv.last_pixel_size-adjust->yadv.first_pixel_size+1);
 	memcpy(adjust->yadv.corrections,vr->adjust->yadv.corrections,adjust->yadv.last_pixel_size-adjust->yadv.first_pixel_size+1);
     }
 }
@@ -2660,11 +2660,11 @@ static void APInto(SplineChar *sc,AnchorPoint *ap,AnchorPoint *fromap,
 	ap->me = fromap->me;
     }
     if ( fromap->xadjust.corrections!=NULL ) {
-	ap->xadjust.corrections = galloc(ap->xadjust.last_pixel_size-ap->xadjust.first_pixel_size+1);
+	ap->xadjust.corrections = malloc(ap->xadjust.last_pixel_size-ap->xadjust.first_pixel_size+1);
 	memcpy(ap->xadjust.corrections,fromap->xadjust.corrections,ap->xadjust.last_pixel_size-ap->xadjust.first_pixel_size+1);
     }
     if ( fromap->yadjust.corrections!=NULL ) {
-	ap->yadjust.corrections = galloc(ap->yadjust.last_pixel_size-ap->yadjust.first_pixel_size+1);
+	ap->yadjust.corrections = malloc(ap->yadjust.last_pixel_size-ap->yadjust.first_pixel_size+1);
 	memcpy(ap->yadjust.corrections,fromap->yadjust.corrections,ap->yadjust.last_pixel_size-ap->xadjust.first_pixel_size+1);
     }
 }
@@ -2857,7 +2857,7 @@ static OTLookup **GetLookupsToCopy(SplineFont *sf,OTLookup ***backpairlist, int 
 /* GT:  is the second glyph in the kerning pair, and that's what this line */
 /* GT:  refers to. The "%s" will be filled in with the lookup name */
 			    char *format = _("Second glyph of %s");
-			    char *space = galloc(strlen(format)+strlen(otl->lookup_name)+1);
+			    char *space = malloc(strlen(format)+strlen(otl->lookup_name)+1);
 			    sprintf(space, format, otl->lookup_name );
 			    list2[bcnt] = otl;
 			    choices[ftot+1+bcnt++] = space;
@@ -2876,16 +2876,16 @@ return( NULL );
 	}
 	if ( !doit ) {
 	    ftot = cnt;
-	    choices = galloc((cnt+bcnt+2)*sizeof(char *));
-	    sel = gcalloc(cnt+bcnt+1,1);
-	    list1 = galloc(cnt*sizeof(OTLookup *));
+	    choices = malloc((cnt+bcnt+2)*sizeof(char *));
+	    sel = calloc(cnt+bcnt+1,1);
+	    list1 = malloc(cnt*sizeof(OTLookup *));
 	    if ( bcnt==0 ) {
 		choices[cnt] = NULL;
 		list2 = NULL;
 	    } else {
 		choices[cnt] = copy("-");
 		choices[bcnt+cnt+1] = NULL;
-		list2 = galloc(bcnt*sizeof(OTLookup *));
+		list2 = malloc(bcnt*sizeof(OTLookup *));
 	    }
 	}
     }
@@ -2897,7 +2897,7 @@ return( NULL );
 	    if ( sel[i] )
 		++cnt;
 	}
-	list = galloc((cnt+1)*sizeof(OTLookup *));
+	list = malloc((cnt+1)*sizeof(OTLookup *));
 	for ( i=cnt=0; i<ftot; ++i ) {
 	    if ( sel[i] )
 		list[cnt++] = list1[i];
@@ -2910,7 +2910,7 @@ return( NULL );
 		    ++cnt;
 	    }
 	    if ( cnt!=0 ) {
-		blist = galloc((cnt+1)*sizeof(OTLookup *));
+		blist = malloc((cnt+1)*sizeof(OTLookup *));
 		for ( i=cnt=0; i<bcnt; ++i ) {
 		    if ( sel[i+ftot+1] )
 			blist[cnt++] = list2[i];
@@ -3024,7 +3024,7 @@ return;
 		    CVLayer(cv) : ly_back;
 	    if ( ly==ly_grid ) ly = ly_back;
 	    for ( cimg = paster->u.state.images; cimg!=NULL; cimg=cimg->next ) {
-		new = galloc(sizeof(ImageList));
+		new = malloc(sizeof(ImageList));
 		*new = *cimg;
 		new->selected = true;
 		new->next = cvsc->layers[ly].images;
@@ -3213,16 +3213,16 @@ static Undoes *BCCopyAll(BDFChar *bc,int pixelsize, int depth, enum fvcopy_type 
 	    cur->u.bmpstate.selection = BDFFloatCopy(bc->selection);
 
 	    for ( head = bc->refs; head != NULL; head = head->next ) {
-		ref = gcalloc( 1,sizeof( BDFRefChar ));
+		ref = calloc( 1,sizeof( BDFRefChar ));
 		memcpy( ref,head,sizeof( BDFRefChar ));
 		ref->next = cur->u.bmpstate.refs;
 		cur->u.bmpstate.refs = ref;
 	    }
 	} else {		/* Or just make a reference */
 	    cur->u.bmpstate.bytes_per_line = 1;
-	    cur->u.bmpstate.bitmap = gcalloc(1,sizeof(uint8));
+	    cur->u.bmpstate.bitmap = calloc(1,sizeof(uint8));
 
-	    ref = gcalloc(1,sizeof(BDFRefChar));
+	    ref = calloc(1,sizeof(BDFRefChar));
 	    ref->bdfc = bc;
 	    ref->xoff = 0; ref->yoff = 0;
 	    cur->u.bmpstate.refs = ref;
@@ -3246,7 +3246,7 @@ void BCCopySelected(BDFChar *bc,int pixelsize,int depth) {
     } else {
 	for ( head=bc->refs; head!=NULL; head=head->next ) if ( head->selected ) {
 	    has_selected_refs = true;
-	    ref = gcalloc( 1,sizeof( BDFRefChar ));
+	    ref = calloc( 1,sizeof( BDFRefChar ));
 	    memcpy( ref,head,sizeof( BDFRefChar ));
 	    ref->next = copybuffer.u.bmpstate.refs;
 	    copybuffer.u.bmpstate.refs = ref;
@@ -3255,7 +3255,7 @@ void BCCopySelected(BDFChar *bc,int pixelsize,int depth) {
 	    copybuffer.undotype = ut_bitmap;
 	    copybuffer.u.bmpstate.width = bc->width;
 	    copybuffer.u.bmpstate.bytes_per_line = 1;
-	    copybuffer.u.bmpstate.bitmap = gcalloc(1,sizeof(uint8));
+	    copybuffer.u.bmpstate.bitmap = calloc(1,sizeof(uint8));
 	    copybuffer.u.bmpstate.selection = NULL;
 	} else {
 	    copybuffer.undotype = ut_bitmapsel;
@@ -3308,7 +3308,7 @@ static void _PasteToBC(BDFChar *bc,int pixelsize, int depth, Undoes *paster, int
 	    if ( BCRefersToBC( bc,head->bdfc )) {
 		ff_post_error(_("Self-referential glyph"),_("Attempt to make a glyph that refers to itself"));
 	    } else {
-		cur = gcalloc( 1,sizeof( BDFRefChar ));
+		cur = calloc( 1,sizeof( BDFRefChar ));
 		memcpy( cur,head,sizeof( BDFRefChar ));
 		cur->next = bc->refs; bc->refs = cur;
 		BCMakeDependent( bc,head->bdfc );
@@ -3623,7 +3623,7 @@ return;
     if ( cnt==1 && cur->undotype==ut_multiple && cur->u.multiple.mult->next!=NULL ) {
 	Undoes *tot; int j;
 	for ( cnt=0, tot=cur->u.multiple.mult; tot!=NULL; ++cnt, tot=tot->next );
-	fv->selected = galloc(fv->map->enccount);
+	fv->selected = malloc(fv->map->enccount);
 	memcpy(fv->selected,oldsel,fv->map->enccount);
 	for ( i=0; i<fv->map->enccount && !fv->selected[i]; ++i );
 	for ( j=0; j<cnt && i+j<fv->map->enccount; ++j )

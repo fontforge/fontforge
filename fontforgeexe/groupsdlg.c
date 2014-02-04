@@ -926,7 +926,7 @@ static int Group_FromSelection(GGadget *g, GEvent *e) {
 		len += strlen(sc->name)+1;
 		if ( fv->b.selected[i]>max ) max = fv->b.selected[i];
 	    }
-	    pt = vals = galloc((len+1)*sizeof(unichar_t));
+	    pt = vals = malloc((len+1)*sizeof(unichar_t));
 	    *pt = '\0';
 	    for ( i=len=max=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i]) {
 		gid = fv->b.map->map[i];
@@ -977,7 +977,7 @@ static int Group_FromSelection(GGadget *g, GEvent *e) {
 		    len += strlen(buffer);
 		}
 		if ( !k )
-		    vals = galloc((len+1)*sizeof(unichar_t));
+		    vals = malloc((len+1)*sizeof(unichar_t));
 		else if ( len!=0 )
 		    vals[len-1] = '\0';
 		else
@@ -1041,7 +1041,7 @@ return( true );
 	    GGadgetSetEnabled(grp->newsub,false);
 return( true );
 	}
-	grp->oldsel->kids = grealloc(grp->oldsel->kids,(++grp->oldsel->kid_cnt)*sizeof(Group *));
+	grp->oldsel->kids = realloc(grp->oldsel->kids,(++grp->oldsel->kid_cnt)*sizeof(Group *));
 	grp->oldsel->kids[grp->oldsel->kid_cnt-1] = new_grp = chunkalloc(sizeof(Group));
 	new_grp->parent = grp->oldsel;
 	new_grp->unique = grp->oldsel->unique;
@@ -1153,7 +1153,7 @@ void DefineGroups(FontView *fv) {
     GTextInfo label[19];
     int h, k,kk;
 
-    grp = gcalloc(1,sizeof(*grp));
+    grp = calloc(1,sizeof(*grp));
     grp->fv = fv;
     grp->select_many = grp->select_kids_too = false;
     grp->select_callback = GroupSelected;
@@ -1361,13 +1361,13 @@ return;
     if ( gid!=-1 && map->backmap[gid]==-1 )
 	map->backmap[gid] = map->enccount;
     if ( map->enccount>=map->encmax )
-	map->map = grealloc(map->map,(map->encmax+=100)*sizeof(int));
+	map->map = realloc(map->map,(map->encmax+=100)*sizeof(int));
     map->map[map->enccount++] = gid;
     if ( !compacted ) {
 	Encoding *enc = map->enc;
 	if ( enc->char_cnt>=enc->char_max ) {
-	    enc->unicode = grealloc(enc->unicode,(enc->char_max+=256)*sizeof(int));
-	    enc->psnames = grealloc(enc->psnames,enc->char_max*sizeof(char *));
+	    enc->unicode = realloc(enc->unicode,(enc->char_max+=256)*sizeof(int));
+	    enc->psnames = realloc(enc->psnames,enc->char_max*sizeof(char *));
 	}
 	if ( uni==-1 && name!=NULL ) {
 	    if ( gid!=-1 && sf->glyphs[gid]!=NULL )
@@ -1458,15 +1458,15 @@ static char *EncNameFromGroups(Group *group) {
       case 0:
 return( copy( _("No Groups")) );
       case 1:
-	ret = galloc(strlen(prefix) + strlen(first->name) + 3 );
+	ret = malloc(strlen(prefix) + strlen(first->name) + 3 );
 	sprintf( ret, "%s: %s", prefix, first->name);
       break;
       case 2:
-	ret = galloc(strlen(prefix) + strlen(first->name) + strlen(second->name) + 5 );
+	ret = malloc(strlen(prefix) + strlen(first->name) + strlen(second->name) + 5 );
 	sprintf( ret, "%s: %s, %s", prefix, first->name, second->name );
       break;
       default:
-	ret = galloc(strlen(prefix) + strlen(first->name) + strlen(second->name) + 9 );
+	ret = malloc(strlen(prefix) + strlen(first->name) + strlen(second->name) + 9 );
 	sprintf( ret, "%s: %s, %s ...", prefix, first->name, second->name );
       break;
     }
@@ -1479,12 +1479,12 @@ static void EncodeToGroups(FontView *fv,Group *group, int compacted) {
     if ( compacted )
 	map = EncMapNew(0,sf->glyphcnt,&custom);
     else {
-	Encoding *enc = gcalloc(1,sizeof(Encoding));
+	Encoding *enc = calloc(1,sizeof(Encoding));
 	enc->enc_name = EncNameFromGroups(group);
 	enc->is_temporary = true;
 	enc->char_max = 256;
-	enc->unicode = galloc(256*sizeof(int32));
-	enc->psnames = galloc(256*sizeof(char *));
+	enc->unicode = malloc(256*sizeof(int32));
+	enc->psnames = malloc(256*sizeof(char *));
 	map = EncMapNew(0,sf->glyphcnt,enc);
     }
 
@@ -1495,7 +1495,7 @@ static void EncodeToGroups(FontView *fv,Group *group, int compacted) {
 	ff_post_error(_("Nothing Selected"),_("None of the glyphs in the current font match any names or code points in the selected groups"));
 	EncMapFree(map);
     } else {
-	fv->b.selected = grealloc(fv->b.selected,map->enccount);
+	fv->b.selected = realloc(fv->b.selected,map->enccount);
 	memset(fv->b.selected,0,map->enccount);
 	EncMapFree(fv->b.map);
 	fv->b.map = map;

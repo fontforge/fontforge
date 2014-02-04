@@ -242,7 +242,7 @@ static GTextInfo *Pref_MacNamesList(struct macname *all) {
     initmaclangs();
 
     for ( i=0, mn=all; mn!=NULL; mn=mn->next, ++i );
-    ti = gcalloc(i+1,sizeof( GTextInfo ));
+    ti = calloc(i+1,sizeof( GTextInfo ));
 
     for ( i=0, mn=all; mn!=NULL; mn=mn->next, ++i ) {
 	temp = MacStrToUtf8(mn->name,mn->enc,mn->lang);
@@ -253,11 +253,11 @@ static GTextInfo *Pref_MacNamesList(struct macname *all) {
 	break;
 	if ( maclanguages[j].text!=0 ) {
 	    char *lang = (char *) maclanguages[j].text;
-	    full = galloc((strlen(lang)+strlen(temp)+strlen(spacer)+1));
+	    full = malloc((strlen(lang)+strlen(temp)+strlen(spacer)+1));
 	    strcpy(full,lang);
 	} else {
 	    char *hunh = "???";
-	    full = galloc((strlen(hunh)+strlen(temp)+strlen(spacer)+1));
+	    full = malloc((strlen(hunh)+strlen(temp)+strlen(spacer)+1));
 	    strcpy(full,hunh);
 	}
 	strcat(full,spacer);
@@ -278,7 +278,7 @@ static GTextInfo *Pref_SettingsList(struct macsetting *all) {
     char buf[20];
 
     for ( i=0, ms=all; ms!=NULL; ms=ms->next, ++i );
-    ti = gcalloc(i+1,sizeof( GTextInfo ));
+    ti = calloc(i+1,sizeof( GTextInfo ));
 
     for ( i=0, ms=all; ms!=NULL; ms=ms->next, ++i ) {
 	temp = PickNameFromMacName(ms->setname);
@@ -286,7 +286,7 @@ static GTextInfo *Pref_SettingsList(struct macsetting *all) {
 	if ( temp==NULL )
 	    full = uc_copy(buf);
 	else {
-	    full = galloc((strlen(buf)+strlen(temp)+1)*sizeof(unichar_t));
+	    full = malloc((strlen(buf)+strlen(temp)+1)*sizeof(unichar_t));
 	    uc_strcpy(full,buf);
 	    utf82u_strcpy(full+u_strlen(full),temp);
 	    free(temp);
@@ -306,7 +306,7 @@ static GTextInfo *Pref_FeaturesList(MacFeat *all) {
     char buf[20];
 
     for ( i=0, mf=all; mf!=NULL; mf=mf->next, ++i );
-    ti = gcalloc(i+1,sizeof( GTextInfo ));
+    ti = calloc(i+1,sizeof( GTextInfo ));
 
     for ( i=0, mf=all; mf!=NULL; mf=mf->next, ++i ) {
 	temp = PickNameFromMacName(mf->featname);
@@ -314,7 +314,7 @@ static GTextInfo *Pref_FeaturesList(MacFeat *all) {
 	if ( temp==NULL )
 	    full = uc_copy(buf);
 	else {
-	    full = galloc((strlen(buf)+strlen(temp)+1)*sizeof(unichar_t));
+	    full = malloc((strlen(buf)+strlen(temp)+1)*sizeof(unichar_t));
 	    uc_strcpy(full,buf);
 	    utf82u_strcpy(full+u_strlen(full),temp);
 	    free(temp);
@@ -389,11 +389,11 @@ return( true );
 	    temp = MacStrToUtf8(nd->changing->name,nd->changing->enc,nd->changing->lang);
 	    if ( sel!=NULL ) {
 		const unichar_t *lang = sel->text;
-		full = galloc((u_strlen(lang)+strlen(temp)+6)*sizeof(unichar_t));
+		full = malloc((u_strlen(lang)+strlen(temp)+6)*sizeof(unichar_t));
 		u_strcpy(full,lang);
 	    } else {
 		char *hunh = "???";
-		full = galloc((strlen(hunh)+strlen(temp)+6)*sizeof(unichar_t));
+		full = malloc((strlen(hunh)+strlen(temp)+6)*sizeof(unichar_t));
 		uc_strcpy(full,hunh);
 	    }
 	    uc_strcat(full,spacer);
@@ -751,7 +751,7 @@ return( true );
 	    sprintf(buf,"%3d ", val1);
 	    temp = PickNameFromMacName(sd->changing->setname);
 	    len = strlen(temp);
-	    res = galloc( (strlen(buf)+len+3)*sizeof(unichar_t) );
+	    res = malloc( (strlen(buf)+len+3)*sizeof(unichar_t) );
 	    uc_strcpy(res,buf);
 	    utf82u_strcpy(res+u_strlen(res),temp);
 	    free(temp);
@@ -1053,7 +1053,7 @@ return( true );
 	    sprintf(buf,"%3d ", val1);
 	    temp = PickNameFromMacName(fd->changing->featname);
 	    len = strlen(temp);
-	    res = galloc( (strlen(buf)+len+3)*sizeof(unichar_t) );
+	    res = malloc( (strlen(buf)+len+3)*sizeof(unichar_t) );
 	    uc_strcpy(res,buf);
 	    utf82u_strcpy(res+u_strlen(res),temp);
 	    free(temp);

@@ -37,7 +37,7 @@ RefChar *RefCharsCopy(RefChar *ref) {
     while ( ref!=NULL ) {
 	cur = RefCharCreate();
 	{ struct reflayer *layers = cur->layers; int layer;
-	layers = grealloc(layers,ref->layer_cnt*sizeof(struct reflayer));
+	layers = realloc(layers,ref->layer_cnt*sizeof(struct reflayer));
 	memcpy(layers,ref->layers,ref->layer_cnt*sizeof(struct reflayer));
 	*cur = *ref;
 	cur->layers = layers;
@@ -131,8 +131,8 @@ return( sub );
 	    }
 	    if ( !doit ) {
 		mc->lcnt = lcnt; mc->scnt = scnt;
-		mc->lks = gcalloc(lcnt,sizeof(struct lookup_cvt));
-		mc->subs = gcalloc(scnt,sizeof(struct sub_cvt));
+		mc->lks = calloc(lcnt,sizeof(struct lookup_cvt));
+		mc->subs = calloc(scnt,sizeof(struct sub_cvt));
 	    }
 	}
     }
@@ -186,7 +186,7 @@ return( ac );		/* No translation needed */
 	    }
 	    if ( !doit ) {
 		mc->acnt = acnt;
-		mc->acs = gcalloc(acnt,sizeof(struct ac_cvt));
+		mc->acs = calloc(acnt,sizeof(struct ac_cvt));
 	    }
 	}
     }
@@ -281,7 +281,7 @@ PST *PSTCopy(PST *base,SplineChar *sc,struct sfmergecontext *mc) {
 	    cur->u.pair.vr[0].adjust = ValDevTabCopy(base->u.pair.vr[0].adjust);
 	    cur->u.pair.vr[1].adjust = ValDevTabCopy(base->u.pair.vr[1].adjust);
 	} else if ( cur->type==pst_lcaret ) {
-	    cur->u.lcaret.carets = galloc(cur->u.lcaret.cnt*sizeof(uint16));
+	    cur->u.lcaret.carets = malloc(cur->u.lcaret.cnt*sizeof(uint16));
 	    memcpy(cur->u.lcaret.carets,base->u.lcaret.carets,cur->u.lcaret.cnt*sizeof(uint16));
 	} else if ( cur->type==pst_substitution || cur->type==pst_multiple || cur->type==pst_alternate )
 	    cur->u.subs.variant = copy(cur->u.subs.variant);
@@ -389,14 +389,14 @@ static void ASMsAdd(SplineFont *into, SplineFont *from,struct sfmergecontext *mc
 	*nsm = *sm;
 	nsm->subtable = MCConvertSubtable(mc,sm->subtable);
 	nsm->subtable->sm = nsm;
-	nsm->classes = galloc(nsm->class_cnt*sizeof(char *));
+	nsm->classes = malloc(nsm->class_cnt*sizeof(char *));
 	for ( i=0; i<nsm->class_cnt; ++i )
 	    nsm->classes[i] = copy(sm->classes[i]);
-	nsm->state = galloc(nsm->class_cnt*nsm->state_cnt*sizeof(struct asm_state));
+	nsm->state = malloc(nsm->class_cnt*nsm->state_cnt*sizeof(struct asm_state));
 	memcpy(nsm->state,sm->state,nsm->class_cnt*nsm->state_cnt*sizeof(struct asm_state));
 	if ( nsm->type == asm_kern ) {
 	    for ( i=nsm->class_cnt*nsm->state_cnt-1; i>=0; --i ) {
-		nsm->state[i].u.kern.kerns = galloc(nsm->state[i].u.kern.kcnt*sizeof(int16));
+		nsm->state[i].u.kern.kerns = malloc(nsm->state[i].u.kern.kcnt*sizeof(int16));
 		memcpy(nsm->state[i].u.kern.kerns,sm->state[i].u.kern.kerns,nsm->state[i].u.kern.kcnt*sizeof(int16));
 	    }
 	} else if ( nsm->type == asm_context ) {
@@ -484,7 +484,7 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
 
 	/* Copy the instrs from the given sc to the new splinechar */
 	if ( sc->ttf_instrs_len!=0 ) {
-		nsc->ttf_instrs = galloc(sc->ttf_instrs_len);
+		nsc->ttf_instrs = malloc(sc->ttf_instrs_len);
 		memcpy(nsc->ttf_instrs,sc->ttf_instrs,sc->ttf_instrs_len);
 	}
 
@@ -523,7 +523,7 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
     nsc->dstem = DStemInfoCopy(nsc->dstem);
     nsc->md = NULL;
     if ( sc->countermask_cnt!=0 ) {
-	nsc->countermasks = galloc(sc->countermask_cnt*sizeof(HintMask));
+	nsc->countermasks = malloc(sc->countermask_cnt*sizeof(HintMask));
 	memcpy(nsc->countermasks,sc->countermasks,sc->countermask_cnt*sizeof(HintMask));
     }
     nsc->anchor = AnchorPointsDuplicate(nsc->anchor,nsc);
@@ -568,14 +568,14 @@ return( head );
 }
 
 BDFChar *BDFCharCopy(BDFChar *bc) {
-    BDFChar *nbc = galloc(sizeof( BDFChar ));
+    BDFChar *nbc = malloc(sizeof( BDFChar ));
 
     *nbc = *bc;
     nbc->views = NULL;
     nbc->selection = NULL;
     nbc->undoes = NULL;
     nbc->redoes = NULL;
-    nbc->bitmap = galloc((nbc->ymax-nbc->ymin+1)*nbc->bytes_per_line);
+    nbc->bitmap = malloc((nbc->ymax-nbc->ymin+1)*nbc->bytes_per_line);
     memcpy(nbc->bitmap,bc->bitmap,(nbc->ymax-nbc->ymin+1)*nbc->bytes_per_line);
 return( nbc );
 }
@@ -640,7 +640,7 @@ static void GlyphHashCreate(SplineFont *sf) {
 
     if ( sf->glyphnames!=NULL )
 return;
-    sf->glyphnames = gnh = gcalloc(1,sizeof(*gnh));
+    sf->glyphnames = gnh = calloc(1,sizeof(*gnh));
     k = 0;
     do {
 	_sf = k<sf->subfontcnt ? sf->subfonts[k] : sf;
@@ -1047,12 +1047,12 @@ static void FVMergeRefigureMapSel(FontViewBase *fv,SplineFont *into,SplineFont *
 	}
 	if ( !doit ) {
 	    if ( into->glyphcnt+cnt>map->backmax ) {
-		map->backmap = grealloc(map->backmap,(into->glyphcnt+cnt)*sizeof(int));
+		map->backmap = realloc(map->backmap,(into->glyphcnt+cnt)*sizeof(int));
 		map->backmax = into->glyphcnt+cnt;
 	    }
 	    memset(map->backmap+into->glyphcnt,-1,cnt*sizeof(int));
 	    if ( map->enccount+extras>map->encmax ) {
-		map->map = grealloc(map->map,(map->enccount+extras)*sizeof(int));
+		map->map = realloc(map->map,(map->enccount+extras)*sizeof(int));
 		map->encmax = map->enccount+extras;
 	    }
 	    memset(map->map+map->enccount,-1,extras*sizeof(int));
@@ -1060,7 +1060,7 @@ static void FVMergeRefigureMapSel(FontViewBase *fv,SplineFont *into,SplineFont *
 	}
     }
     if ( extras!=0 ) {
-	fv->selected = grealloc(fv->selected,map->enccount);
+	fv->selected = realloc(fv->selected,map->enccount);
 	memset(fv->selected+map->enccount-extras,0,extras);
     }
 }
@@ -1073,7 +1073,7 @@ static void _MergeFont(SplineFont *into,SplineFont *other,struct sfmergecontext 
     int *mapping;
 
     emptypos = into->glyphcnt;
-    mapping = galloc(other->glyphcnt*sizeof(int));
+    mapping = malloc(other->glyphcnt*sizeof(int));
     memset(mapping,-1,other->glyphcnt*sizeof(int));
 
     bitmap_into = into->cidmaster!=NULL? into->cidmaster : into;
@@ -1105,11 +1105,11 @@ static void _MergeFont(SplineFont *into,SplineFont *other,struct sfmergecontext 
 	    }
 	    if ( !doit ) {
 		if ( emptypos+cnt >= into->glyphcnt && emptypos+cnt>0 ) {
-		    into->glyphs = grealloc(into->glyphs,(emptypos+cnt)*sizeof(SplineChar *));
+		    into->glyphs = realloc(into->glyphs,(emptypos+cnt)*sizeof(SplineChar *));
 		    memset(into->glyphs+emptypos,0,cnt*sizeof(SplineChar *));
 		    for ( bdf = bitmap_into->bitmaps; bdf!=NULL; bdf=bdf->next )
 			if ( emptypos+cnt > bdf->glyphcnt ) {
-			    bdf->glyphs = grealloc(bdf->glyphs,(emptypos+cnt)*sizeof(BDFChar *));
+			    bdf->glyphs = realloc(bdf->glyphs,(emptypos+cnt)*sizeof(BDFChar *));
 			    memset(bdf->glyphs+emptypos,0,cnt*sizeof(BDFChar *));
 			    bdf->glyphmax = bdf->glyphcnt = emptypos+cnt;
 			}
@@ -1191,12 +1191,12 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other, int preserveCrossFo
 	i_sf = into->subfonts[k];
 	for ( i=o_sf->glyphcnt-1; i>=0 && o_sf->glyphs[i]==NULL; --i );
 	if ( i>=i_sf->glyphcnt ) {
-	    i_sf->glyphs = grealloc(i_sf->glyphs,(i+1)*sizeof(SplineChar *));
+	    i_sf->glyphs = realloc(i_sf->glyphs,(i+1)*sizeof(SplineChar *));
 	    for ( j=i_sf->glyphcnt; j<=i; ++j )
 		i_sf->glyphs[j] = NULL;
 	    for ( fvs = i_sf->fv; fvs!=NULL; fvs=fvs->nextsame )
 		if ( fvs->sf==i_sf ) {
-		    fvs->selected = grealloc(fvs->selected,i+1);
+		    fvs->selected = realloc(fvs->selected,i+1);
 		    for ( j=i_sf->glyphcnt; j<=i; ++j )
 			fvs->selected[j] = false;
 		}
@@ -1539,7 +1539,7 @@ return( NULL );
 	    if ( other->layer_cnt<lc ) lc = other->layer_cnt;
 	}
 	if ( lc>2 ) {
-	    sc->layers = grealloc(sc->layers,lc*sizeof(Layer));
+	    sc->layers = realloc(sc->layers,lc*sizeof(Layer));
 	    for ( i=ly_fore+1; i<lc; ++i )
 		LayerDefault(&sc->layers[i]);
 	}
@@ -1617,7 +1617,7 @@ return( NULL );
 	lc = other->layer_cnt;
     if ( lc!=new->layer_cnt ) {
 	new->layer_cnt = lc;
-	new->layers = grealloc(new->layers,lc*sizeof(LayerInfo));
+	new->layers = realloc(new->layers,lc*sizeof(LayerInfo));
 	if ( lc>2 )
 	    memset(new->layers+2,0,(lc-2)*sizeof(LayerInfo));
 	for ( i=2; i<lc; ++i ) {

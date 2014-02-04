@@ -53,7 +53,7 @@ static BDFFont *BDFNew(SplineFont *sf,int pixel_size, int depth) {
 
     new->sf = sf;
     new->glyphcnt = new->glyphmax = sf->glyphcnt;
-    new->glyphs = gcalloc(new->glyphcnt,sizeof(BDFChar *));
+    new->glyphs = calloc(new->glyphcnt,sizeof(BDFChar *));
     new->pixelsize = pixel_size;
     new->ascent = (sf->ascent*pixel_size+.5)/(sf->ascent+sf->descent);
     new->descent = pixel_size-new->ascent;

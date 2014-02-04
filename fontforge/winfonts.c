@@ -262,12 +262,12 @@ return( false );
     fseek(fnt,base+fntheader.faceoffset,SEEK_SET);
     for ( i=0; (ch=getc(fnt))!=EOF && ch!=0; ++i );
     free(sf->familyname);
-    sf->familyname = galloc(i+2);
+    sf->familyname = malloc(i+2);
     fseek(fnt,base+fntheader.faceoffset,SEEK_SET);
     for ( i=0; (ch=getc(fnt))!=EOF && ch!=0; ++i )
 	sf->familyname[i] = ch;
     sf->familyname[i] = '\0';
-    temp = galloc(i+50);
+    temp = malloc(i+50);
     strcpy(temp,sf->familyname);
     if ( fntheader.weight<=300 && fntheader.weight>500 ) {
 	strcat(temp," ");
@@ -295,13 +295,13 @@ return( false );
     if ( fntheader.italic )
 	sf->italicangle = 11.25;
 
-    bdf = gcalloc(1,sizeof(BDFFont));
+    bdf = calloc(1,sizeof(BDFFont));
     bdf->sf = sf;
     bdf->glyphcnt = sf->glyphcnt;
     bdf->glyphmax = sf->glyphmax;
     bdf->res = fntheader.vertres;
     bdf->pixelsize = rint(fntheader.pointsize*fntheader.vertres/72.27);
-    bdf->glyphs = gcalloc(sf->glyphmax,sizeof(BDFChar *));
+    bdf->glyphs = calloc(sf->glyphmax,sizeof(BDFChar *));
     bdf->ascent = rint(.8*bdf->pixelsize);		/* shouldn't use typographical ascent */
     bdf->descent = bdf->pixelsize-bdf->ascent;
     for ( i=fntheader.firstchar; i<=fntheader.lastchar; ++i ) if ( charinfo[i].width!=0 ) {
@@ -309,7 +309,7 @@ return( false );
 
 	if ( gid>=bdf->glyphcnt ) {
 	    if ( gid>=bdf->glyphmax )
-		bdf->glyphs = grealloc(bdf->glyphs,(bdf->glyphmax=sf->glyphmax)*sizeof(BDFChar *));
+		bdf->glyphs = realloc(bdf->glyphs,(bdf->glyphmax=sf->glyphmax)*sizeof(BDFChar *));
 	    memset(bdf->glyphs+bdf->glyphcnt,0,(sf->glyphcnt-bdf->glyphcnt)*sizeof(BDFChar *));
 	    bdf->glyphcnt = sf->glyphcnt;
 	}
@@ -323,7 +323,7 @@ return( false );
 	bdfc->width = charinfo[i].width;
 	bdfc->vwidth = bdf->pixelsize;
 	bdfc->bytes_per_line = (bdfc->xmax>>3)+1;
-	bdfc->bitmap = gcalloc(bdfc->bytes_per_line*fntheader.height,sizeof(uint8));
+	bdfc->bitmap = calloc(bdfc->bytes_per_line*fntheader.height,sizeof(uint8));
 	bdfc->orig_pos = gid;
 	bdfc->sc = sf->glyphs[gid];
 	bdfc->sc->widthset = true;
@@ -818,8 +818,8 @@ int FONFontDump(char *filename,SplineFont *sf, int32 *sizes,int resol,
     ff_progress_change_line1(_("Saving Bitmap Font(s)"));
     ff_progress_change_stages(i);
     num_files = i;
-    fntarray = (FILE **)galloc(num_files*sizeof(FILE *));
-    file_lens = (int *)galloc(num_files*sizeof(int));
+    fntarray = (FILE **)malloc(num_files*sizeof(FILE *));
+    file_lens = (int *)malloc(num_files*sizeof(int));
 
     for ( i=0; sizes[i]!=0; ++i ) {
 	for ( bdf=sf->bitmaps; bdf!=NULL &&

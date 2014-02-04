@@ -307,7 +307,7 @@ return;
 }
 
 static void pushio(IO *wrapper, FILE *ps, char *macro, int cnt) {
-    _IO *io = gcalloc(1,sizeof(_IO));
+    _IO *io = calloc(1,sizeof(_IO));
 
     io->prev = wrapper->top;
     io->ps = ps;
@@ -327,7 +327,7 @@ static void pushio(IO *wrapper, FILE *ps, char *macro, int cnt) {
 }
 
 static void pushfogio(IO *wrapper, FILE *fog) {
-    _IO *io = gcalloc(1,sizeof(_IO));
+    _IO *io = calloc(1,sizeof(_IO));
 
     io->prev = wrapper->top;
     io->fog = fog;
@@ -612,10 +612,10 @@ static int AddEntry(struct pskeydict *dict,struct psstack *stack, int sp) {
     if ( dict->cnt>=dict->max ) {
 	if ( dict->cnt==0 ) {
 	    dict->max = 30;
-	    dict->entries = galloc(dict->max*sizeof(struct pskeyval));
+	    dict->entries = malloc(dict->max*sizeof(struct pskeyval));
 	} else {
 	    dict->max += 30;
-	    dict->entries = grealloc(dict->entries,dict->max*sizeof(struct pskeyval));
+	    dict->entries = realloc(dict->entries,dict->max*sizeof(struct pskeyval));
 	}
     }
     if ( sp<2 )
@@ -672,7 +672,7 @@ static int rollstack(struct psstack *stack, int sp) {
 	if ( sp>=n && n>0 ) {
 	    j %= n;
 	    if ( j<0 ) j += n;
-	    temp = galloc(n*sizeof(struct psstack));
+	    temp = malloc(n*sizeof(struct psstack));
 	    for ( i=0; i<n; ++i )
 		temp[i] = stack[sp-n+i];
 	    for ( i=0; i<n; ++i )
@@ -790,7 +790,7 @@ static void copyarray(struct pskeydict *to,struct pskeydict *from, struct garbag
     struct pskeyval *oldent = from->entries;
 
     *to = *from;
-    to->entries = gcalloc(to->cnt,sizeof(struct pskeyval));
+    to->entries = calloc(to->cnt,sizeof(struct pskeyval));
     for ( i=0; i<to->cnt; ++i ) {
 	to->entries[i] = oldent[i];
 	if ( to->entries[i].type==ps_string || to->entries[i].type==ps_instr ||
@@ -966,7 +966,7 @@ return(nsp);
 
 static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
 	real linewidth, real *transform, SplineSet *clippath) {
-    Entity *ent = gcalloc(1,sizeof(Entity));
+    Entity *ent = calloc(1,sizeof(Entity));
     ent->type = et_splines;
     ent->u.splines.splines = head;
     ent->u.splines.cap = linecap;
@@ -997,7 +997,7 @@ static uint8 *StringToBytes(struct psstack *stackel,int *len) {
     } else if ( stackel->type!=pt_string )
 return( NULL );
 
-    upt = base = galloc(65536+1);	/* Maximum size of ps string */
+    upt = base = malloc(65536+1);	/* Maximum size of ps string */
 
     if ( *pt=='(' ) {
 	/* A conventional string */
@@ -1121,7 +1121,7 @@ return( NULL );
 	}
     }
     *len = upt-base;
-    ret = galloc(upt-base);
+    ret = malloc(upt-base);
     memcpy(ret,base,upt-base);
     free(base);
 return(ret);
@@ -1202,7 +1202,7 @@ return( sp-5 );
     }
     free(data);
 
-    ent = gcalloc(1,sizeof(Entity));
+    ent = calloc(1,sizeof(Entity));
     ent->type = et_image;
     ent->u.image.image = gi;
     memcpy(ent->u.image.transform,transform,sizeof(real[6]));
@@ -1285,7 +1285,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     char *tokbuf;
     const int tokbufsize = 2*65536+10;
 
-    tokbuf = galloc(tokbufsize);
+    tokbuf = malloc(tokbufsize);
 
     strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
@@ -2244,7 +2244,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		struct pskeydict dict;
 		for ( i=0; i<DASH_MAX && dashes[i]!=0; ++i );
 		dict.cnt = dict.max = i;
-		dict.entries = gcalloc(i,sizeof(struct pskeyval));
+		dict.entries = calloc(i,sizeof(struct pskeyval));
 		for ( j=0; j<i; ++j ) {
 		    dict.entries[j].type = ps_num;
 		    dict.entries[j].u.val = dashes[j];
@@ -2618,7 +2618,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	    else {
 		struct pskeydict dict;
 		dict.cnt = dict.max = i;
-		dict.entries = gcalloc(i,sizeof(struct pskeyval));
+		dict.entries = calloc(i,sizeof(struct pskeyval));
 		for ( j=0; j<i; ++j ) {
 		    dict.entries[j].type = stack[sp-i+j].type;
 		    dict.entries[j].u = stack[sp-i+j].u;
@@ -2635,7 +2635,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	    if ( sp>=1 && stack[sp-1].type==ps_num ) {
 		struct pskeydict dict;
 		dict.cnt = dict.max = stack[sp-1].u.val;
-		dict.entries = gcalloc(dict.cnt,sizeof(struct pskeyval));
+		dict.entries = calloc(dict.cnt,sizeof(struct pskeyval));
 		/* all entries are inited to void */
 		stack[sp-1].type = ps_array;
 		stack[sp-1].u.dict = dict;
@@ -2770,7 +2770,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	  case pt_stringop:	/* the string keyword, not the () thingy */
 	    if ( sp>=1 && stack[sp-1].type==ps_num ) {
 		stack[sp-1].type = ps_string;
-		stack[sp-1].u.str = gcalloc(stack[sp-1].u.val+1,1);
+		stack[sp-1].u.str = calloc(stack[sp-1].u.val+1,1);
 	    }
 	  break;
 
@@ -2987,7 +2987,7 @@ void SFSplinesFromLayers(SplineFont *sf,int tostroke) {
 		while ( last->next!=NULL ) last = last->next;
 	    sc->layers[layer].refs = NULL;
 	}
-	new = gcalloc(2,sizeof(Layer));
+	new = calloc(2,sizeof(Layer));
 	new[ly_back] = sc->layers[ly_back];
 	memset(&sc->layers[ly_back],0,sizeof(Layer));
 	LayerDefault(&new[ly_fore]);
@@ -3279,8 +3279,8 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp,char **encoding) {
 	if ( tok==pt_namelit ) {
 	    if ( cp->next>=cp->cnt ) {
 		++cp->cnt;
-		cp->keys = grealloc(cp->keys,cp->cnt*sizeof(char *));
-		cp->values = grealloc(cp->values,cp->cnt*sizeof(char *));
+		cp->keys = realloc(cp->keys,cp->cnt*sizeof(char *));
+		cp->values = realloc(cp->values,cp->cnt*sizeof(char *));
 	    }
 	    if ( cp->next<cp->cnt ) {
 		sc = SplineCharCreate(2);
@@ -3400,13 +3400,13 @@ return( head );
 	}
 	if ( max!=-1 ) {
 	    if ( ++max<256 ) max = 256;
-	    item = gcalloc(1,sizeof(Encoding));
+	    item = calloc(1,sizeof(Encoding));
 	    item->enc_name = encname;
 	    item->char_cnt = max;
-	    item->unicode = galloc(max*sizeof(int32));
+	    item->unicode = malloc(max*sizeof(int32));
 	    memcpy(item->unicode,encs,max*sizeof(int32));
 	    if ( any && !codepointsonly ) {
-		item->psnames = gcalloc(max,sizeof(char *));
+		item->psnames = calloc(max,sizeof(char *));
 		memcpy(item->psnames,names,max*sizeof(char *));
 	    } else {
 		for ( i=0; i<max; ++i )
@@ -4092,7 +4092,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    else if ( j==0 || N==0 )
 			/* No op */;
 		    else {
-			real *temp = galloc(N*sizeof(real));
+			real *temp = malloc(N*sizeof(real));
 			int i;
 			for ( i=0; i<N; ++i )
 			    temp[i] = stack[sp-N+i];
@@ -4620,7 +4620,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
     ret->vstem = HintsAppend(ret->vstem,activev); activev=NULL;
 
     if ( cp!=0 ) { int i;
-	ret->countermasks = galloc(cp*sizeof(HintMask));
+	ret->countermasks = malloc(cp*sizeof(HintMask));
 	ret->countermask_cnt = cp;
 	for ( i=0; i<cp; ++i ) {
 	    memcpy(&ret->countermasks[i],counters[i],sizeof(HintMask));

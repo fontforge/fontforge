@@ -136,7 +136,7 @@ static void StatesFree(struct asm_state *old,int old_class_cnt,int old_state_cnt
 
 static struct asm_state *StateCopy(struct asm_state *old,int old_class_cnt,int old_state_cnt,
 	int new_class_cnt,int new_state_cnt, enum asm_type type,int freeold) {
-    struct asm_state *new = gcalloc(new_class_cnt*new_state_cnt,sizeof(struct asm_state));
+    struct asm_state *new = calloc(new_class_cnt*new_state_cnt,sizeof(struct asm_state));
     int i,j;
     int minclass = new_class_cnt<old_class_cnt ? new_class_cnt : old_class_cnt;
 
@@ -152,7 +152,7 @@ static struct asm_state *StateCopy(struct asm_state *old,int old_class_cnt,int o
 	    for ( j=0; j<minclass; ++j ) {
 		struct asm_state *this = &new[i*new_class_cnt+j];
 		int16 *temp;
-		temp = galloc(this->u.kern.kcnt*sizeof(int16));
+		temp = malloc(this->u.kern.kcnt*sizeof(int16));
 		memcpy(temp,this->u.kern.kerns,this->u.kern.kcnt*sizeof(int16));
 		this->u.kern.kerns = temp;
 	    }
@@ -174,7 +174,7 @@ static void StateRemoveClasses(SMD *smd, int removeme ) {
     if ( removeme<4 )
 return;
 
-    new = gcalloc((smd->class_cnt-1)*smd->state_cnt,sizeof(struct asm_state));
+    new = calloc((smd->class_cnt-1)*smd->state_cnt,sizeof(struct asm_state));
     for ( i=0; i<smd->state_cnt ; ++i ) {
 	for ( j=k=0; j<smd->class_cnt; ++j ) {
 	    if ( j!=removeme )
@@ -241,7 +241,7 @@ static char *copy_count(GWindow gw,int cid,int *cnt) {
 return( NULL );
     }
 
-    ret = pt = galloc(u_strlen(u)+1);
+    ret = pt = malloc(u_strlen(u)+1);
     c = 0;
     for ( upt=u; *upt; ) {
 	if ( *upt==' ' ) {
@@ -371,7 +371,7 @@ return( false );
 	if ( kerns==0 )
 	    this->u.kern.kerns = NULL;
 	else {
-	    this->u.kern.kerns = galloc(kerns*sizeof(int16));
+	    this->u.kern.kerns = malloc(kerns*sizeof(int16));
 	    memcpy(this->u.kern.kerns,kbuf,kerns*sizeof(int16));
 	}
     } else if ( smd->sm->type==asm_context ) {
@@ -833,7 +833,7 @@ static int SMD_Ok(GGadget *g, GEvent *e) {
 	for ( i=4; i<sm->class_cnt; ++i )
 	    free(sm->classes[i]);
 	free(sm->classes);
-	sm->classes = galloc(smd->class_cnt*sizeof(char *));
+	sm->classes = malloc(smd->class_cnt*sizeof(char *));
 	sm->classes[0] = sm->classes[1] = sm->classes[2] = sm->classes[3] = NULL;
 	sm->class_cnt = smd->class_cnt;
     for ( i=4; i<sm->class_cnt; ++i ) {
@@ -1326,7 +1326,7 @@ void StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     if ( smd.isnew ) {
 	smd.class_cnt = 4;			/* 4 built in classes */
 	smd.state_cnt = 2;			/* 2 built in states */
-	smd.states = gcalloc(smd.class_cnt*smd.state_cnt,sizeof(struct asm_state));
+	smd.states = calloc(smd.class_cnt*smd.state_cnt,sizeof(struct asm_state));
 	smd.states[1*4+2].next_state = 1;	/* deleted glyph is a noop */
     } else {
 	smd.class_cnt = sm->class_cnt;
@@ -1383,7 +1383,7 @@ void StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     mi.col_init = class_ci;
 
     if ( sm->class_cnt<4 ) sm->class_cnt=4;
-    md = gcalloc(sm->class_cnt+1,sizeof(struct matrix_data));
+    md = calloc(sm->class_cnt+1,sizeof(struct matrix_data));
     for ( i=0; i<sm->class_cnt; ++i ) {
 	if ( i<4 ) {
 	    md[i+0].u.md_str = copy( _(specialclasses[i]) );

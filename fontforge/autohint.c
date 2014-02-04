@@ -605,7 +605,7 @@ void ElFreeEI(EIList *el) {
 }
 
 static int EIAddEdge(Spline *spline, real tmin, real tmax, EIList *el) {
-    EI *new = gcalloc(1,sizeof(EI));
+    EI *new = calloc(1,sizeof(EI));
     real min, max, temp;
     Spline1D *s;
     real dxdtmin, dxdtmax, dydtmin, dydtmax;
@@ -781,8 +781,8 @@ void ELOrder(EIList *el, int major ) {
 
     el->low = floor(el->coordmin[major]); el->high = ceil(el->coordmax[major]);
     el->cnt = el->high-el->low+1;
-    el->ordered = gcalloc(el->cnt,sizeof(EI *));
-    el->ends = gcalloc(el->cnt,1);
+    el->ordered = calloc(el->cnt,sizeof(EI *));
+    el->ends = calloc(el->cnt,1);
 
     for ( ei = el->edges; ei!=NULL ; ei=ei->next ) {
 	pos = ceil(ei->coordmax[major])-el->low;
@@ -2056,7 +2056,7 @@ return;
 	    }
 	}
 	sc->countermask_cnt = 1;
-	sc->countermasks = galloc(sizeof(HintMask));
+	sc->countermasks = malloc(sizeof(HintMask));
 	memcpy(sc->countermasks[0],mask,sizeof(HintMask));
 return;
     }
@@ -2138,7 +2138,7 @@ return;
     }
     if ( mc!=0 ) {
 	sc->countermask_cnt = mc;
-	sc->countermasks = galloc(mc*sizeof(HintMask));
+	sc->countermasks = malloc(mc*sizeof(HintMask));
 	for ( i=0; i<mc ; ++i )
 	    memcpy(sc->countermasks[i],masks[i],sizeof(HintMask));
     }
@@ -2187,7 +2187,7 @@ return;
     }
     if ( mc!=0 ) {
 	sc->countermask_cnt = mc;
-	sc->countermasks = galloc(mc*sizeof(HintMask));
+	sc->countermasks = malloc(mc*sizeof(HintMask));
 	for ( i=0; i<mc ; ++i )
 	    memcpy(sc->countermasks[i],masks[i],sizeof(HintMask));
     }

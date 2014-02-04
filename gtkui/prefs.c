@@ -840,7 +840,7 @@ static void PrefsUI_LoadPrefs(void) {
 		    script_menu_names[mn++] = copy(pt);
 		else if ( strncmp(line,"FontFilterName:",strlen("FontFilterName:"))==0 ) {
 		    if ( fn>=filt_max )
-			user_font_filters = grealloc(user_font_filters,((filt_max+=10)+1)*sizeof( struct gwwv_filter));
+			user_font_filters = realloc(user_font_filters,((filt_max+=10)+1)*sizeof( struct gwwv_filter));
 		    user_font_filters[fn].filtfunc = NULL;
 		    user_font_filters[fn].wild = NULL;
 		    user_font_filters[fn++].name = copy(pt);
@@ -851,7 +851,7 @@ static void PrefsUI_LoadPrefs(void) {
 		} else if ( strncmp(line,"MacMapCnt:",strlen("MacSetCnt:"))==0 ) {
 		    sscanf( pt, "%d", &msc );
 		    msp = 0;
-		    user_macfeat_otftag = gcalloc(msc+1,sizeof(struct macsettingname));
+		    user_macfeat_otftag = calloc(msc+1,sizeof(struct macsettingname));
 		} else if ( strncmp(line,"MacMapping:",strlen("MacMapping:"))==0 && msp<msc ) {
 		    ParseMacMapping(pt,&user_macfeat_otftag[msp++]);
 		} else if ( strncmp(line,"MacFeat:",strlen("MacFeat:"))==0 ) {

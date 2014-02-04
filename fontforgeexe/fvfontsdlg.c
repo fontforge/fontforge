@@ -43,7 +43,7 @@ return;
     do {
 	fpt = strstr(file,"; ");
 	if ( fpt!=NULL ) *fpt = '\0';
-	full = galloc(strlen(filename)+1+strlen(file)+1);
+	full = malloc(strlen(filename)+1+strlen(file)+1);
 	strcpy(full,filename); strcat(full,"/"); strcat(full,file);
 	sf = LoadSplineFont(full,0);
 	if ( sf!=NULL && sf->fv==NULL )
@@ -80,7 +80,7 @@ GTextInfo *BuildFontList(FontView *except) {
 
     for ( fv=fv_list; fv!=NULL; fv = (FontView *) (fv->b.next) )
 	++cnt;
-    tf = gcalloc(cnt+3,sizeof(GTextInfo));
+    tf = calloc(cnt+3,sizeof(GTextInfo));
     for ( fv=fv_list, cnt=0; fv!=NULL; fv = (FontView *) (fv->b.next) ) if ( fv!=except ) {
 	tf[cnt].fg = tf[cnt].bg = COLOR_DEFAULT;
 	tf[cnt].text = (unichar_t *) fv->b.sf->fontname;

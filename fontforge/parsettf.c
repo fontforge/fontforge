@@ -442,7 +442,7 @@ static char *_readencstring(FILE *ttf,int offset,int len,
 	/*  depending on the language, they didn't get it right when they  */
 	/*  invented their script system */
 	char *cstr, *cpt;
-	cstr = cpt = galloc(len+1);
+	cstr = cpt = malloc(len+1);
 	for ( i=0; i<len; ++i )
 	    *cpt++ = getc(ttf);
 	*cpt = '\0';
@@ -453,25 +453,25 @@ static char *_readencstring(FILE *ttf,int offset,int len,
 	if ( enc==NULL )
 return( NULL );
 	if ( enc->is_unicodebmp ) {
-	    str = pt = galloc((sizeof(unichar_t)/2)*len+sizeof(unichar_t));
+	    str = pt = malloc((sizeof(unichar_t)/2)*len+sizeof(unichar_t));
 	    for ( i=0; i<len/2; ++i ) {
 		ch = getc(ttf)<<8;
 		*pt++ = ch | getc(ttf);
 	    }
 	    *pt = 0;
 	} else if ( enc->unicode!=NULL ) {
-	    str = pt = galloc(sizeof(unichar_t)*len+sizeof(unichar_t));
+	    str = pt = malloc(sizeof(unichar_t)*len+sizeof(unichar_t));
 	    for ( i=0; i<len; ++i )
 		*pt++ = enc->unicode[getc(ttf)];
 	    *pt = 0;
 	} else if ( enc->tounicode!=NULL ) {
 	    size_t inlen = len+1, outlen = sizeof(unichar_t)*(len+1);
-	    char *cstr = galloc(inlen), *cpt;
+	    char *cstr = malloc(inlen), *cpt;
 	    ICONV_CONST char *in = cstr;
 	    char *out;
 	    for ( cpt=cstr, i=0; i<len; ++i )
 		*cpt++ = getc(ttf);
-	    str = galloc(outlen+sizeof(unichar_t));
+	    str = malloc(outlen+sizeof(unichar_t));
 	    out = (char *) str;
 	    iconv(enc->tounicode,&in,&inlen,&out,&outlen);
 	    out[0] = '\0'; out[1] = '\0';
@@ -589,10 +589,10 @@ static int PickTTFFont(FILE *ttf,char *filename,char **chosenname) {
 	fseek(ttf,offset,SEEK_SET);
 return( true );
     }
-    offsets = galloc(cnt*sizeof(int32));
+    offsets = malloc(cnt*sizeof(int32));
     for ( i=0; i<cnt; ++i )
 	offsets[i] = getlong(ttf);
-    names = galloc(cnt*sizeof(char *));
+    names = malloc(cnt*sizeof(char *));
     for ( i=j=0; i<cnt; ++i ) {
 	names[j] = TTFGetFontName(ttf,offsets[i],0);
 	if ( names[j]!=NULL ) ++j;
@@ -648,7 +648,7 @@ static int PickCFFFont(char **fontnames) {
     int cnt, i, choice;
 
     for ( cnt=0; fontnames[cnt]!=NULL; ++cnt);
-    names = gcalloc(cnt+1,sizeof(unichar_t *));
+    names = calloc(cnt+1,sizeof(unichar_t *));
     for ( i=0; i<cnt; ++i )
 	names[i] = uc_copy(fontnames[i]);
     if ( no_windowing_ui )
@@ -675,7 +675,7 @@ return;
 	if ( *pt==',' )
 	    ++cnt;
     info->savecnt = cnt+1;
-    info->savetab = gcalloc(cnt+1,sizeof(struct savetab));
+    info->savetab = calloc(cnt+1,sizeof(struct savetab));
     for ( pt=spt=SaveTablesPref, cnt=0; ; ++pt ) {
 	if ( *pt==',' || *pt=='\0' ) {
 	    uint32 tag;
@@ -749,7 +749,7 @@ return;
 return;
     }
 
-    tabs = galloc(info->numtables*sizeof(struct tt_tables));
+    tabs = malloc(info->numtables*sizeof(struct tt_tables));
 
     for ( i=0; i<info->numtables; ++i ) {
 	tabs[i].tag = getlong(ttf);
@@ -1346,7 +1346,7 @@ static struct macname *AddMacName(FILE *ttf,
     new->next = last;
     new->enc = spec;
     new->lang = language;
-    new->name = pt = galloc(strlen+1);
+    new->name = pt = malloc(strlen+1);
 
     fseek(ttf,stroff,SEEK_SET);
 
@@ -1450,7 +1450,7 @@ return( old );
     if ( (*end=='\0' || (isdigit(str[0]) && strchr(str,'#')!=NULL)) &&
 	    *str!='\0' ) {
 	free(str);
-	str=galloc(strlen(old)+2);
+	str=malloc(strlen(old)+2);
 	*str = 'a';
 	strcpy(str+1,old);
     }
@@ -1906,7 +1906,7 @@ return( head );
 }
 
 static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, int path_cnt, int gbb[4]) {
-    uint16 *endpt = galloc((path_cnt+1)*sizeof(uint16));
+    uint16 *endpt = malloc((path_cnt+1)*sizeof(uint16));
     uint8 *instructions;
     char *flags;
     BasePoint *pts;
@@ -1924,18 +1924,18 @@ return;
     }
     if ( path_cnt==0 ) {
 	tot = 0;
-	pts = galloc(sizeof(BasePoint));
+	pts = malloc(sizeof(BasePoint));
     } else {
 	tot = endpt[path_cnt-1]+1;
-	pts = galloc(tot*sizeof(BasePoint));
+	pts = malloc(tot*sizeof(BasePoint));
     }
 
     len = getushort(ttf);
-    instructions = galloc(len);
+    instructions = malloc(len);
     for ( i=0; i<len; ++i )
 	instructions[i] = getc(ttf);
 
-    flags = galloc(tot);
+    flags = malloc(tot);
     for ( i=0; i<tot; ++i ) {
 	flags[i] = getc(ttf);
 	if ( flags[i]&_Repeat ) {
@@ -2145,7 +2145,7 @@ return;
     if ( (flags & _INSTR ) && info->to_order2 && ftell(ttf)<end ) {
 	sc->ttf_instrs_len = getushort(ttf);
 	if ( sc->ttf_instrs_len > 0 && ftell(ttf)+sc->ttf_instrs_len<=end ) {
-	    uint8 *instructions = galloc(sc->ttf_instrs_len);
+	    uint8 *instructions = malloc(sc->ttf_instrs_len);
 	    int i;
 	    for ( i=0; i<sc->ttf_instrs_len; ++i )
 		instructions[i] = getc(ttf);
@@ -2220,7 +2220,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse);
 
 static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
     int i, anyread;
-    uint32 *goffsets = galloc((info->glyph_cnt+1)*sizeof(uint32));
+    uint32 *goffsets = malloc((info->glyph_cnt+1)*sizeof(uint32));
 
     /* First we read all the locations. This might not be needed, they may */
     /*  just follow one another, but nothing I've noticed says that so let's */
@@ -2234,7 +2234,7 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 	    goffsets[i] = 2*getushort(ttf);
     }
 
-    info->chars = gcalloc(info->glyph_cnt,sizeof(SplineChar *));
+    info->chars = calloc(info->glyph_cnt,sizeof(SplineChar *));
     if ( !info->is_ttc || (info->openflags&of_all_glyphs_in_ttc)) {
 	/* read all the glyphs */
 	for ( i=0; i<info->glyph_cnt ; ++i ) {
@@ -2245,7 +2245,7 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 	/* only read the glyphs we actually use in this font */
 	/* this is complicated by references (and substitutions), */
 	/* we can't just rely on the encoding to tell us what is used */
-	info->inuse = gcalloc(info->glyph_cnt,sizeof(char));
+	info->inuse = calloc(info->glyph_cnt,sizeof(char));
 	readttfencodings(ttf,info,git_justinuse);
 	if ( info->gsub_start!=0 )		/* Some glyphs may appear in substitutions and not in the encoding... */
 	    readttfgsubUsed(ttf,info);
@@ -2681,11 +2681,11 @@ static char **readcfffontnames(FILE *ttf,int *cnt,struct ttfinfo *info) {
 
     if ( count==0 )
 return( NULL );
-    offsets = galloc((count+1)*sizeof(uint32));
+    offsets = malloc((count+1)*sizeof(uint32));
     offsize = getc(ttf);
     for ( i=0; i<=count; ++i )
 	offsets[i] = getoffset(ttf,offsize);
-    names = galloc((count+1)*sizeof(char *));
+    names = malloc((count+1)*sizeof(char *));
     for ( i=0; i<count; ++i ) {
 	if ( offsets[i+1]<offsets[i] ) {
 /* GT: The CFF font type contains a thing called a name INDEX, and that INDEX */
@@ -2699,7 +2699,7 @@ return( NULL );
 	    }
 	    --i;
 	} else {
-	    names[i] = galloc(offsets[i+1]-offsets[i]+1);
+	    names[i] = malloc(offsets[i+1]-offsets[i]+1);
 	    for ( j=0; j<offsets[i+1]-offsets[i]; ++j )
 		names[i][j] = getc(ttf);
 	    names[i][j] = '\0';
@@ -2913,9 +2913,9 @@ static void readcffsubrs(FILE *ttf, struct pschars *subs, struct ttfinfo *info) 
     if ( count==0 )
 return;
     subs->cnt = count;
-    subs->lens = galloc(count*sizeof(int));
-    subs->values = galloc(count*sizeof(uint8 *));
-    offsets = galloc((count+1)*sizeof(uint32));
+    subs->lens = malloc(count*sizeof(int));
+    subs->values = malloc(count*sizeof(uint8 *));
+    offsets = malloc((count+1)*sizeof(uint32));
     offsize = getc(ttf);
     for ( i=0; i<=count; ++i )
 	offsets[i] = getoffset(ttf,offsize);
@@ -2923,7 +2923,7 @@ return;
     for ( i=0; i<count; ++i ) {
 	if ( offsets[i+1]>offsets[i] && offsets[i+1]-offsets[i]<0x10000 ) {
 	    subs->lens[i] = offsets[i+1]-offsets[i];
-	    subs->values[i] = galloc(offsets[i+1]-offsets[i]+1);
+	    subs->values[i] = malloc(offsets[i+1]-offsets[i]+1);
 	    for ( j=0; j<offsets[i+1]-offsets[i]; ++j )
 		subs->values[i][j] = getc(ttf);
 	    subs->values[i][j] = '\0';
@@ -2933,7 +2933,7 @@ return;
 	    info->bad_cff = true;
 	    err = true;
 	    subs->lens[i] = 1;
-	    subs->values[i] = galloc(2);
+	    subs->values[i] = malloc(2);
 	    subs->values[i][0] = 11;		/* return */
 	    subs->values[i][1] = '\0';
 	    fseek(ttf,base+offsets[i+1],SEEK_SET);
@@ -2944,7 +2944,7 @@ return;
 
 static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len,
 	struct ttfinfo *info) {
-    struct topdicts *td = gcalloc(1,sizeof(struct topdicts));
+    struct topdicts *td = calloc(1,sizeof(struct topdicts));
     long base = ftell(ttf);
     int ival, oval, sp, ret, i;
     real stack[50];
@@ -3261,11 +3261,11 @@ static struct topdicts **readcfftopdicts(FILE *ttf, char **fontnames, int32 cff_
 
     if ( count==0 )
 return( NULL );
-    offsets = galloc((count+1)*sizeof(uint32));
+    offsets = malloc((count+1)*sizeof(uint32));
     offsize = getc(ttf);
     for ( i=0; i<=count; ++i )
 	offsets[i] = getoffset(ttf,offsize);
-    dicts = galloc((count+1)*sizeof(struct topdicts *));
+    dicts = malloc((count+1)*sizeof(struct topdicts *));
     for ( i=0; i<count; ++i ) {
 	dicts[i] = readcfftopdict(ttf,fontnames!=NULL?fontnames[i]:NULL,
 		offsets[i+1]-offsets[i], info);
@@ -3377,12 +3377,12 @@ static void readcffset(FILE *ttf,struct topdicts *dict,struct ttfinfo *info) {
     i = 0;
     if ( dict->charsetoff==0 ) {
 	/* ISO Adobe charset */
-	dict->charset = galloc(len*sizeof(uint16));
+	dict->charset = malloc(len*sizeof(uint16));
 	for ( i=0; i<len && i<=228; ++i )
 	    dict->charset[i] = i;
     } else if ( dict->charsetoff==1 ) {
 	/* Expert charset */
-	dict->charset = galloc((len<162?162:len)*sizeof(uint16));
+	dict->charset = malloc((len<162?162:len)*sizeof(uint16));
 	dict->charset[0] = 0;		/* .notdef */
 	dict->charset[1] = 1;
 	for ( i=2; i<len && i<=238-227; ++i )
@@ -3413,7 +3413,7 @@ static void readcffset(FILE *ttf,struct topdicts *dict,struct ttfinfo *info) {
 	    dict->charset[i] = i+217;
     } else if ( dict->charsetoff==2 ) {
 	/* Expert subset charset */
-	dict->charset = galloc((len<130?130:len)*sizeof(uint16));
+	dict->charset = malloc((len<130?130:len)*sizeof(uint16));
 	dict->charset[0] = 0;		/* .notdef */
 	dict->charset[1] = 1;
 	for ( i=2; i<len && i<=238-227; ++i )
@@ -3449,7 +3449,7 @@ static void readcffset(FILE *ttf,struct topdicts *dict,struct ttfinfo *info) {
 	for ( i=110; i<len && i<=346-217; ++i )
 	    dict->charset[i] = i+217;
     } else {
-	dict->charset = galloc(len*sizeof(uint16));
+	dict->charset = malloc(len*sizeof(uint16));
 	dict->charset[0] = 0;		/* .notdef */
 	fseek(ttf,dict->cff_start+dict->charsetoff,SEEK_SET);
 	format = getc(ttf);
@@ -3479,7 +3479,7 @@ static void readcffset(FILE *ttf,struct topdicts *dict,struct ttfinfo *info) {
 }
 
 static uint8 *readfdselect(FILE *ttf,int numglyphs,struct ttfinfo *info) {
-    uint8 *fdselect = gcalloc(numglyphs,sizeof(uint8));
+    uint8 *fdselect = calloc(numglyphs,sizeof(uint8));
     int i, j, format, nr, first, end, fd;
 
     format = getc(ttf);
@@ -3516,7 +3516,7 @@ static char *intarray2str(int *array, int size) {
     for ( i=size-1; i>=0 && array[i]==0; --i );
     if ( i==-1 )
 return( NULL );
-    ret = pt = galloc((i+1)*12+12);
+    ret = pt = malloc((i+1)*12+12);
     *pt++ = '[';
     for ( j=0; j<=i; ++j ) {
 	sprintf( pt, "%d ", array[j]);
@@ -3537,7 +3537,7 @@ return( NULL );
 return( copy( "[]" ));
     if ( must_be_even && !(i&1) && array[i]<0 )
 	++i;			/* Someone gave us a bluevalues of [-20 0] and we reported [-20] */
-    ret = pt = galloc((i+1)*20+12);
+    ret = pt = malloc((i+1)*20+12);
     *pt++ = '[';
     for ( j=0; j<=i; ++j ) {
 	sprintf( pt, "%g ", (double) array[j]);
@@ -3580,8 +3580,8 @@ return;
 
 static void cffprivatefillup(struct psdict *private, struct topdicts *dict) {
     private->cnt = 14;
-    private->keys = galloc(14*sizeof(char *));
-    private->values = galloc(14*sizeof(char *));
+    private->keys = malloc(14*sizeof(char *));
+    private->values = malloc(14*sizeof(char *));
     privateadd(private,"BlueValues",
 	    realarray2str(dict->bluevalues,sizeof(dict->bluevalues)/sizeof(dict->bluevalues[0]),true));
     privateadd(private,"OtherBlues",
@@ -3643,7 +3643,7 @@ static SplineFont *cffsffillup(struct topdicts *subdict, char **strings,
     sf->strokedfont = subdict->painttype==2;
 
     if ( subdict->private_size>0 ) {
-	sf->private = gcalloc(1,sizeof(struct psdict));
+	sf->private = calloc(1,sizeof(struct psdict));
 	cffprivatefillup(sf->private,subdict);
     }
 return( sf );
@@ -3696,7 +3696,7 @@ static void cffinfofillup(struct ttfinfo *info, struct topdicts *dict,
     info->strokedfont = dict->painttype==2;
 
     if ( dict->private_size>0 ) {
-	info->private = gcalloc(1,sizeof(struct psdict));
+	info->private = calloc(1,sizeof(struct psdict));
 	cffprivatefillup(info->private,dict);
     }
     if ( dict->ros_registry!=-1 ) {
@@ -3732,7 +3732,7 @@ static void cfffigure(struct ttfinfo *info, struct topdicts *dict,
 	    subrs->cnt < 1240 ? 107 :
 	    subrs->cnt <33900 ? 1131 : 32768;
 
-    info->chars = gcalloc(info->glyph_cnt,sizeof(SplineChar *));
+    info->chars = calloc(info->glyph_cnt,sizeof(SplineChar *));
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	info->chars[i] = PSCharStringToSplines(
 		dict->glyphs.values[i], dict->glyphs.lens[i],&pscontext,
@@ -3770,7 +3770,7 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 
     for ( j=0; subdicts[j]!=NULL; ++j );
     info->subfontcnt = j;
-    info->subfonts = gcalloc(j+1,sizeof(SplineFont *));
+    info->subfonts = calloc(j+1,sizeof(SplineFont *));
     for ( j=0; subdicts[j]!=NULL; ++j )  {
 	info->subfonts[j] = cffsffillup(subdicts[j],strings,scnt,info);
 	info->subfonts[j]->map = encmap;
@@ -3782,12 +3782,12 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 	/*if ( cid>=encmap->enccount ) encmap->enccount = cid+1;*/
     }
     for ( j=0; subdicts[j]!=NULL; ++j )
-	info->subfonts[j]->glyphs = gcalloc(info->subfonts[j]->glyphcnt,sizeof(SplineChar *));
+	info->subfonts[j]->glyphs = calloc(info->subfonts[j]->glyphcnt,sizeof(SplineChar *));
     /*encmap->encmax = encmap->enccount;*/
-    /*encmap->map = galloc(encmap->enccount*sizeof(int));*/
+    /*encmap->map = malloc(encmap->enccount*sizeof(int));*/
     /*memset(encmap->map,-1,encmap->enccount*sizeof(int));*/
 
-    info->chars = gcalloc(info->glyph_cnt,sizeof(SplineChar *));
+    info->chars = calloc(info->glyph_cnt,sizeof(SplineChar *));
 
     /* info->chars provides access to the chars ordered by glyph, which the */
     /*  ttf routines care about */
@@ -4265,7 +4265,7 @@ static void ApplyVariationSequenceSubtable(FILE *ttf,uint32 vs_map,
     /* We/ve already checked the format is 14 */ getushort(ttf);
     sub_table_len = getlong(ttf);
     vs_cnt = getlong(ttf);
-    vs_data = galloc(vs_cnt*sizeof(struct vs_data));
+    vs_data = malloc(vs_cnt*sizeof(struct vs_data));
     for ( i=0; i<vs_cnt; ++i ) {
 	vs_data[i].vs = get3byte(ttf);
 	vs_data[i].def = getlong(ttf);
@@ -4386,7 +4386,7 @@ static int PickCMap(struct cmap_encs *cmap_encs,int enccnt,int def) {
 	NULL, NULL, NULL, N_("Script|Central European"),
 /* 30*/ NULL, NULL, NULL };
 
-    choices = galloc(enccnt*sizeof(char *));
+    choices = malloc(enccnt*sizeof(char *));
     for ( i=0; i<enccnt; ++i ) {
 	encname = NULL;
 	if ( cmap_encs[i].platform==1 && cmap_encs[i].specific<32 ) {
@@ -4476,7 +4476,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     nencs = getushort(ttf);
     if ( version!=0 && nencs==0 )
 	nencs = version;		/* Sometimes they are backwards */ /* Or was I just confused early on? */
-    cmap_encs = galloc(nencs*sizeof(struct cmap_encs));
+    cmap_encs = malloc(nencs*sizeof(struct cmap_encs));
     for ( i=usable_encs=0; i<nencs; ++i ) {
 	cmap_encs[usable_encs].platform =  getushort(ttf);
 	cmap_encs[usable_encs].specific = getushort(ttf);
@@ -4630,7 +4630,7 @@ return;
 
 	if ( format==0 ) {
 	    if ( justinuse==git_normal && map!=NULL && map->enccount<256 ) {
-		map->map = grealloc(map->map,256*sizeof(int));
+		map->map = realloc(map->map,256*sizeof(int));
 		memset(map->map,-1,(256-map->enccount)*sizeof(int));
 		map->enccount = map->encmax = 256;
 	    }
@@ -4654,19 +4654,19 @@ return;
 	    /* searchRange = */ getushort(ttf);
 	    /* entrySelector = */ getushort(ttf);
 	    /* rangeShift = */ getushort(ttf);
-	    endchars = galloc(segCount*sizeof(uint16));
-	    used = gcalloc(65536,sizeof(uint8));
+	    endchars = malloc(segCount*sizeof(uint16));
+	    used = calloc(65536,sizeof(uint8));
 	    for ( i=0; i<segCount; ++i )
 		endchars[i] = getushort(ttf);
 	    if ( getushort(ttf)!=0 )
 		IError("Expected 0 in 'cmap' format 4 subtable");
-	    startchars = galloc(segCount*sizeof(uint16));
+	    startchars = malloc(segCount*sizeof(uint16));
 	    for ( i=0; i<segCount; ++i )
 		startchars[i] = getushort(ttf);
-	    delta = galloc(segCount*sizeof(uint16));
+	    delta = malloc(segCount*sizeof(uint16));
 	    for ( i=0; i<segCount; ++i )
 		delta[i] = getushort(ttf);
-	    rangeOffset = galloc(segCount*sizeof(uint16));
+	    rangeOffset = malloc(segCount*sizeof(uint16));
 	    for ( i=0; i<segCount; ++i )
 		rangeOffset[i] = getushort(ttf);
 	    len -= 8*sizeof(uint16) +
@@ -4677,7 +4677,7 @@ return;
 		IError("This font has an illegal format 4 subtable with too little space for all the segments.\nThis error is not recoverable.\nBye" );
 		exit(1);
 	    }
-	    glyphs = galloc(len);
+	    glyphs = malloc(len);
 	    glyph_tot = len/2;
 	    for ( i=0; i<glyph_tot; ++i )
 		glyphs[i] = getushort(ttf);
@@ -4806,7 +4806,7 @@ return;
 		    max_pos = i;
 		}
 	    }
-	    subheads = galloc((max_sub_head_key+1)*sizeof(struct subhead));
+	    subheads = malloc((max_sub_head_key+1)*sizeof(struct subhead));
 	    for ( i=0; i<=max_sub_head_key; ++i ) {
 		subheads[i].first = getushort(ttf);
 		subheads[i].cnt = getushort(ttf);
@@ -4818,7 +4818,7 @@ return;
 	    cnt = (len-(ftell(ttf)-(info->encoding_start+encoff)))/sizeof(short);
 	    /* The count is the number of glyph indexes to read. it is the */
 	    /*  length of the entire subtable minus that bit we've read so far */
-	    glyphs = galloc(cnt*sizeof(short));
+	    glyphs = malloc(cnt*sizeof(short));
 	    for ( i=0; i<cnt; ++i )
 		glyphs[i] = getushort(ttf);
 	    last = -1;
@@ -5062,7 +5062,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     /* Give ourselves an xuid, just in case they want to convert to PostScript*/
     /*  (even type42)							      */
     if ( xuid!=NULL && info->fd==NULL && info->xuid==NULL ) {
-	info->xuid = galloc(strlen(xuid)+20);
+	info->xuid = malloc(strlen(xuid)+20);
 	sprintf(info->xuid,"[%s %d]", xuid, (rand()&0xffffff));
     }
 
@@ -5080,7 +5080,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	/* mem4 = */ getlong(ttf);
 	if ( format==0x00020000 ) {
 	    gc = getushort(ttf);
-	    indexes = gcalloc(65536,sizeof(uint16));
+	    indexes = calloc(65536,sizeof(uint16));
 	    /* the index table is backwards from the way I want to use it */
 	    gcbig = 0;
 	    for ( i=0; i<gc; ++i ) {
@@ -5097,7 +5097,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 		len = getc(ttf);
 		if ( len<0 )		/* Don't crash on EOF */
 	    break;
-		nm = galloc(len+1);
+		nm = malloc(len+1);
 		for ( j=0; j<len; ++j )
 		    nm[j] = getc(ttf);
 		nm[j] = '\0';
@@ -5224,7 +5224,7 @@ return;			/* We only support 'gasp' versions 0&1 (no other versions currently) *
     info->gasp_cnt = cnt = getushort(ttf);
     if ( cnt==0 )
 return;
-    info->gasp = galloc(cnt*sizeof(struct gasp));
+    info->gasp = malloc(cnt*sizeof(struct gasp));
     for ( i=0; i<cnt; ++i ) {
 	info->gasp[i].ppem = getushort(ttf);
 	info->gasp[i].flags = getushort(ttf);
@@ -5363,7 +5363,7 @@ return;
     tab = chunkalloc(sizeof(struct ttf_table));
     tab->tag = tag;
     tab->len = len;
-    tab->data = galloc(len);
+    tab->data = malloc(len);
     fseek(ttf,start,SEEK_SET);
     fread(tab->data,1,len,ttf);
     tab->next = info->tabs;
@@ -5422,7 +5422,7 @@ return( 0 );
     }
 
     if ( info->onlystrikes ) {
-	info->chars = gcalloc(info->glyph_cnt+1,sizeof(SplineChar *));
+	info->chars = calloc(info->glyph_cnt+1,sizeof(SplineChar *));
 	info->to_order2 = new_fonts_are_order2;
     } else if ( info->glyphlocations_start!=0 && info->glyph_start!=0 ) {
 	info->to_order2 = (!loaded_fonts_same_as_new ||
@@ -5737,12 +5737,12 @@ static void MMFillFromVAR(SplineFont *sf, struct ttfinfo *info) {
     mm->apple = true;
     mm->axis_count = v->axis_count;
     mm->instance_count = v->tuple_count;
-    mm->instances = galloc(v->tuple_count*sizeof(SplineFont *));
-    mm->positions = galloc(v->tuple_count*v->axis_count*sizeof(real));
+    mm->instances = malloc(v->tuple_count*sizeof(SplineFont *));
+    mm->positions = malloc(v->tuple_count*v->axis_count*sizeof(real));
     for ( i=0; i<v->tuple_count; ++i ) for ( j=0; j<v->axis_count; ++j )
 	mm->positions[i*v->axis_count+j] = v->tuples[i].coords[j];
-    mm->defweights = gcalloc(v->tuple_count,sizeof(real));	/* Doesn't apply */
-    mm->axismaps = gcalloc(v->axis_count,sizeof(struct axismap));
+    mm->defweights = calloc(v->tuple_count,sizeof(real));	/* Doesn't apply */
+    mm->axismaps = calloc(v->axis_count,sizeof(struct axismap));
     for ( i=0; i<v->axis_count; ++i ) {
 	mm->axes[i] = AxisNameConvert(v->axes[i].tag);
 	mm->axismaps[i].min = v->axes[i].min;
@@ -5750,15 +5750,15 @@ static void MMFillFromVAR(SplineFont *sf, struct ttfinfo *info) {
 	mm->axismaps[i].max = v->axes[i].max;
 	if ( v->axes[i].paircount==0 ) {
 	    mm->axismaps[i].points = 3;
-	    mm->axismaps[i].blends = galloc(3*sizeof(real));
-	    mm->axismaps[i].designs = galloc(3*sizeof(real));
+	    mm->axismaps[i].blends = malloc(3*sizeof(real));
+	    mm->axismaps[i].designs = malloc(3*sizeof(real));
 	    mm->axismaps[i].blends[0] = -1; mm->axismaps[i].designs[0] = mm->axismaps[i].min;
 	    mm->axismaps[i].blends[1] =  0; mm->axismaps[i].designs[1] = mm->axismaps[i].def;
 	    mm->axismaps[i].blends[2] =  1; mm->axismaps[i].designs[2] = mm->axismaps[i].max;
 	} else {
 	    mm->axismaps[i].points = v->axes[i].paircount;
-	    mm->axismaps[i].blends = galloc(v->axes[i].paircount*sizeof(real));
-	    mm->axismaps[i].designs = galloc(v->axes[i].paircount*sizeof(real));
+	    mm->axismaps[i].blends = malloc(v->axes[i].paircount*sizeof(real));
+	    mm->axismaps[i].designs = malloc(v->axes[i].paircount*sizeof(real));
 	    for ( j=0; j<v->axes[i].paircount; ++j ) {
 		if ( v->axes[i].mapfrom[j]<=0 ) {
 		    mm->axismaps[i].designs[j] = mm->axismaps[i].def +
@@ -5773,7 +5773,7 @@ static void MMFillFromVAR(SplineFont *sf, struct ttfinfo *info) {
 	mm->axismaps[i].axisnames = MacNameCopy(FindMacName(info, v->axes[i].nameid));
     }
     mm->named_instance_count = v->instance_count;
-    mm->named_instances = galloc(v->instance_count*sizeof(struct named_instance));
+    mm->named_instances = malloc(v->instance_count*sizeof(struct named_instance));
     for ( i=0; i<v->instance_count; ++i ) {
 	mm->named_instances[i].coords = v->instances[i].coords;
 	v->instances[i].coords = NULL;
@@ -5808,7 +5808,7 @@ static void PsuedoEncodeUnencoded(EncMap *map,struct ttfinfo *info) {
 	else
 	    base = map->enccount;
 	if ( base+extras>map->encmax ) {
-	    map->map = grealloc(map->map,(base+extras)*sizeof(int));
+	    map->map = realloc(map->map,(base+extras)*sizeof(int));
 	    memset(map->map+map->enccount,-1,(base+extras-map->enccount)*sizeof(int));
 	    map->encmax = base+extras;
 	}
@@ -5827,7 +5827,7 @@ static void MapDoBack(EncMap *map,struct ttfinfo *info) {
 return;
     free(map->backmap);		/* CFF files have this */
     map->backmax = info->glyph_cnt;
-    map->backmap = galloc(info->glyph_cnt*sizeof(int));
+    map->backmap = malloc(info->glyph_cnt*sizeof(int));
     memset(map->backmap,-1,info->glyph_cnt*sizeof(int));
     for ( i = map->enccount-1; i>=0; --i )
 	if ( map->map[i]>=0 && map->map[i]<info->glyph_cnt )
@@ -6264,10 +6264,10 @@ return( NULL );
     if ( version==CHR('t','t','c','f')) {
 	/* TTCF version = */ getlong(ttf);
 	cnt = getlong(ttf);
-	offsets = galloc(cnt*sizeof(int32));
+	offsets = malloc(cnt*sizeof(int32));
 	for ( i=0; i<cnt; ++i )
 	    offsets[i] = getlong(ttf);
-	ret = galloc((cnt+1)*sizeof(char *));
+	ret = malloc((cnt+1)*sizeof(char *));
 	for ( i=j=0; i<cnt; ++i ) {
 	    temp = TTFGetFontName(ttf,offsets[i],0);
 	    if ( temp!=NULL )
@@ -6278,7 +6278,7 @@ return( NULL );
     } else {
 	temp = TTFGetFontName(ttf,0,0);
 	if ( temp!=NULL ) {
-	    ret = galloc(2*sizeof(char *));
+	    ret = malloc(2*sizeof(char *));
 	    ret[0] = temp;
 	    ret[1] = NULL;
 	}

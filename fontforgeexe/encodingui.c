@@ -46,7 +46,7 @@ static GTextInfo *EncodingList(void) {
     for ( item=enclist; item!=NULL ; item=item->next )
 	if ( !item->builtin )
 	    ++i;
-    ti = gcalloc(i+1,sizeof(GTextInfo));
+    ti = calloc(i+1,sizeof(GTextInfo));
     i = 0;
     for ( item=enclist; item!=NULL ; item=item->next )
 	if ( !item->builtin )
@@ -195,17 +195,17 @@ return(NULL);
     name = gwwv_ask_string(_("Please name this encoding"),NULL,_("Please name this encoding"));
     if ( name==NULL )
 return(NULL);
-    item = gcalloc(1,sizeof(Encoding));
+    item = calloc(1,sizeof(Encoding));
     item->enc_name = name;
     item->only_1byte = item->has_1byte = true;
     item->char_cnt = map->enccount;
-    item->unicode = gcalloc(map->enccount,sizeof(int32));
+    item->unicode = calloc(map->enccount,sizeof(int32));
     for ( i=0; i<map->enccount; ++i ) if ( (gid = map->map[i])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
 	if ( sc->unicodeenc!=-1 )
 	    item->unicode[i] = sc->unicodeenc;
 	else if ( strcmp(sc->name,".notdef")!=0 ) {
 	    if ( item->psnames==NULL )
-		item->psnames = gcalloc(map->enccount,sizeof(unichar_t *));
+		item->psnames = calloc(map->enccount,sizeof(unichar_t *));
 	    item->psnames[i] = copy(sc->name);
 	}
     }
@@ -301,12 +301,12 @@ return;		/* Duplicate */
     }
     if ( block->tot==0 ) {
 	block->tot = 10;
-	block->maps = galloc(10*sizeof(char *));
-	block->dirs = galloc(10*sizeof(char *));
+	block->maps = malloc(10*sizeof(char *));
+	block->dirs = malloc(10*sizeof(char *));
     } else if ( block->cur>=block->tot ) {
 	block->tot += 10;
-	block->maps = grealloc(block->maps,block->tot*sizeof(char *));
-	block->dirs = grealloc(block->dirs,block->tot*sizeof(char *));
+	block->maps = realloc(block->maps,block->tot*sizeof(char *));
+	block->dirs = realloc(block->dirs,block->tot*sizeof(char *));
     }
     for ( j=block->cur; j>=i; --j ) {
 	block->maps[j+1] = block->maps[j];
@@ -378,7 +378,7 @@ struct cidmap *AskUserForCIDMap(void) {
     FindMapsInDir(&block,getFontForgeShareDir());
     FindMapsInDir(&block,"/usr/share/fontforge");
 
-    choices = gcalloc(block.cur+2,sizeof(unichar_t *));
+    choices = calloc(block.cur+2,sizeof(unichar_t *));
     choices[0] = copy(_("Browse..."));
     for ( i=0; i<block.cur; ++i )
 	choices[i+1] = copy(block.maps[i]);
@@ -396,7 +396,7 @@ struct cidmap *AskUserForCIDMap(void) {
 	if ( filename!=NULL )
 	    /* Do nothing for now */;
 	else if ( block.dirs[ret-1]!=NULL ) {
-	    filename = galloc(strlen(block.dirs[ret-1])+strlen(block.maps[ret-1])+3+8);
+	    filename = malloc(strlen(block.dirs[ret-1])+strlen(block.maps[ret-1])+3+8);
 	    strcpy(filename,block.dirs[ret-1]);
 	    strcat(filename,"/");
 	    strcat(filename,block.maps[ret-1]);
@@ -514,7 +514,7 @@ GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
 	    ++cnt;
     i = cnt+1;
     i += sizeof(encodingtypes)/sizeof(encodingtypes[0]);
-    mi = gcalloc(i+1,sizeof(GMenuItem));
+    mi = calloc(i+1,sizeof(GMenuItem));
     for ( i=0; i<sizeof(encodingtypes)/sizeof(encodingtypes[0])-1; ++i ) {
 	mi[i].ti = encodingtypes[i];
 	if ( !mi[i].ti.line ) {
@@ -557,7 +557,7 @@ GTextInfo *GetEncodingTypes(void) {
 	if ( !item->hidden )
 	    ++cnt;
     i = cnt + sizeof(encodingtypes)/sizeof(encodingtypes[0]);
-    ti = gcalloc(i+1,sizeof(GTextInfo));
+    ti = calloc(i+1,sizeof(GTextInfo));
     memcpy(ti,encodingtypes,sizeof(encodingtypes)-sizeof(encodingtypes[0]));
     for ( i=0; i<sizeof(encodingtypes)/sizeof(encodingtypes[0])-1; ++i ) {
 	ti[i].text = (unichar_t *) copy((char *) ti[i].text);

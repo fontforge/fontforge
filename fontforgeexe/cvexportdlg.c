@@ -353,7 +353,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	unichar_t *pt, *file, *f2;
 	int format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
 	file = GGadgetGetTitle(d->gfc);
-	f2 = galloc(sizeof(unichar_t) * (u_strlen(file)+6));
+	f2 = malloc(sizeof(unichar_t) * (u_strlen(file)+6));
 	u_strcpy(f2,file);
 	free(file);
 	pt = u_strrchr(f2,'.');
@@ -508,7 +508,7 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
 	    if ( py_ie[i].export!=NULL )
 		++extras;
 	if ( extras!=0 ) {
-	    cur_formats = gcalloc(extras+cnt+1,sizeof(GTextInfo));
+	    cur_formats = calloc(extras+cnt+1,sizeof(GTextInfo));
 	    for ( cnt=0; formats[cnt].text!=NULL; ++cnt ) {
 		cur_formats[cnt] = formats[cnt];
 		cur_formats[cnt].text = (unichar_t *) copy( (char *) formats[cnt].text );

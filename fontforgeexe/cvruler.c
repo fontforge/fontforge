@@ -481,13 +481,13 @@ static void RulerPlace(CharView *cv, GEvent *event) {
 
 	if ( !cv->ruler_intersections ) {
 	    cv->allocated_ruler_intersections = 32;
-	    cv->ruler_intersections = galloc(cv->allocated_ruler_intersections * sizeof(cv->ruler_intersections[0]));
+	    cv->ruler_intersections = malloc(cv->allocated_ruler_intersections * sizeof(cv->ruler_intersections[0]));
 	}
 	for(;;) {
 	    cv->num_ruler_intersections = GetIntersections(cv,from,cv->info,cv->ruler_intersections,cv->allocated_ruler_intersections);
 	    if ( cv->num_ruler_intersections>cv->allocated_ruler_intersections ) {
 		cv->allocated_ruler_intersections = cv->num_ruler_intersections * 2;
-		cv->ruler_intersections = grealloc(cv->ruler_intersections,cv->allocated_ruler_intersections * sizeof(cv->ruler_intersections[0]));
+		cv->ruler_intersections = realloc(cv->ruler_intersections,cv->allocated_ruler_intersections * sizeof(cv->ruler_intersections[0]));
 	    } else
 		break;
 	}

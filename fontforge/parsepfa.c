@@ -863,12 +863,12 @@ char *AdobeExpertEncoding[] = {
 static struct fontdict *MakeEmptyFont(void) {
     struct fontdict *ret;
 
-    ret = gcalloc(1,sizeof(struct fontdict));
-    ret->fontinfo = gcalloc(1,sizeof(struct fontinfo));
-    ret->chars = gcalloc(1,sizeof(struct pschars));
-    ret->private = gcalloc(1,sizeof(struct private));
-    ret->private->subrs = gcalloc(1,sizeof(struct pschars));
-    ret->private->private = gcalloc(1,sizeof(struct psdict));
+    ret = calloc(1,sizeof(struct fontdict));
+    ret->fontinfo = calloc(1,sizeof(struct fontinfo));
+    ret->chars = calloc(1,sizeof(struct pschars));
+    ret->private = calloc(1,sizeof(struct private));
+    ret->private->subrs = calloc(1,sizeof(struct pschars));
+    ret->private->private = calloc(1,sizeof(struct psdict));
     ret->private->leniv = 4;
     ret->encoding_name = &custom;
     ret->fontinfo->fstype = -1;
@@ -877,7 +877,7 @@ return( ret );
 
 static struct fontdict *PSMakeEmptyFont(void) {
     struct fontdict *ret = MakeEmptyFont();
-    ret->charprocs = gcalloc(1,sizeof(struct charprocs));
+    ret->charprocs = calloc(1,sizeof(struct charprocs));
 return( ret );
 }
 
@@ -950,9 +950,9 @@ return( copy(""));
 	}
 	if ( end>start ) {
 	    if ( ret==NULL )
-		ret = galloc(end-start+1);
+		ret = malloc(end-start+1);
 	    else
-		ret = grealloc(ret,len+end-start);
+		ret = realloc(ret,len+end-start);
 	    strncpy(ret+len-1,start,end-start);
 	    len += end-start;
 	    ret[len-1] = '\0';
@@ -972,7 +972,7 @@ static char *gettoken(char *start) {
     while ( *start!='\0' && *start!='/' && *start!='(' ) ++start;
     if ( *start=='/' || *start=='(' ) ++start;
     for ( end = start; *end!='\0' && !isspace(*end) && *end!='[' && *end!='/' && *end!='{' && *end!='(' && *end!=')'; ++end );
-    ret = galloc(end-start+1);
+    ret = malloc(end-start+1);
     if ( end>start )
 	strncpy(ret,start,end-start);
     ret[end-start] = '\0';
@@ -1032,14 +1032,14 @@ static void InitDict(struct psdict *dict,char *line) {
     while ( !isspace(*line) && *line!='\0' ) ++line;
     dict->cnt += strtol(line,NULL,10);
     if ( dict->next>0 ) { int i;		/* Shouldn't happen, but did in a bad file */
-	dict->keys = grealloc(dict->keys,dict->cnt*sizeof(char *));
-	dict->values = grealloc(dict->values,dict->cnt*sizeof(char *));
+	dict->keys = realloc(dict->keys,dict->cnt*sizeof(char *));
+	dict->values = realloc(dict->values,dict->cnt*sizeof(char *));
 	for ( i=dict->next; i<dict->cnt; ++i ) {
 	    dict->keys[i] = NULL; dict->values[i] = NULL;
 	}
     } else {
-	dict->keys = gcalloc(dict->cnt,sizeof(char *));
-	dict->values = gcalloc(dict->cnt,sizeof(char *));
+	dict->keys = calloc(dict->cnt,sizeof(char *));
+	dict->values = calloc(dict->cnt,sizeof(char *));
     }
 }
 
@@ -1048,9 +1048,9 @@ static void InitChars(struct pschars *chars,char *line) {
     while ( !isspace(*line) && *line!='\0' ) ++line;
     chars->cnt = strtol(line,NULL,10);
     if ( chars->cnt>0 ) {
-	chars->keys = gcalloc(chars->cnt,sizeof(char *));
-	chars->values = gcalloc(chars->cnt,sizeof(char *));
-	chars->lens = gcalloc(chars->cnt,sizeof(int));
+	chars->keys = calloc(chars->cnt,sizeof(char *));
+	chars->values = calloc(chars->cnt,sizeof(char *));
+	chars->lens = calloc(chars->cnt,sizeof(int));
 	ff_progress_change_total(chars->cnt);
     }
 }
@@ -1060,8 +1060,8 @@ static void InitCharProcs(struct charprocs *cp, char *line) {
     while ( !isspace(*line) && *line!='\0' ) ++line;
     cp->cnt = strtol(line,NULL,10);
     if ( cp->cnt>0 ) {
-	cp->keys = gcalloc(cp->cnt,sizeof(char *));
-	cp->values = gcalloc(cp->cnt,sizeof(SplineChar *));
+	cp->keys = calloc(cp->cnt,sizeof(char *));
+	cp->values = calloc(cp->cnt,sizeof(SplineChar *));
 	ff_progress_change_total(cp->cnt);
     }
 }
@@ -1111,7 +1111,7 @@ return;
 	}
 	if ( fp->vpt>=fp->vmax ) {
 	    int len = fp->vmax-fp->vbuf+1000, off=fp->vpt-fp->vbuf;
-	    fp->vbuf = grealloc(fp->vbuf,len);
+	    fp->vbuf = realloc(fp->vbuf,len);
 	    fp->vpt = fp->vbuf+off;
 	    fp->vmax = fp->vbuf+len;
 	}
@@ -1137,8 +1137,8 @@ static void AddValue(struct fontparse *fp, struct psdict *dict, char *line, char
     if ( dict!=NULL ) {
 	if ( dict->next>=dict->cnt ) {
 	    dict->cnt += 10;
-	    dict->keys = grealloc(dict->keys,dict->cnt*sizeof(char *));
-	    dict->values = grealloc(dict->values,dict->cnt*sizeof(char *));
+	    dict->keys = realloc(dict->keys,dict->cnt*sizeof(char *));
+	    dict->values = realloc(dict->values,dict->cnt*sizeof(char *));
 	}
 	dict->keys[dict->next] = copyn(line+1,endtok-(line+1));
     }
@@ -1253,7 +1253,7 @@ static void findstring(struct fontparse *fp,struct pschars *subrs,int index,char
 	if ( bpt<bs ) bs=bpt;		/* garbage */ 
 	subrs->lens[index] = bpt-bs;
 	subrs->keys[index] = copy(nametok);
-	subrs->values[index] = galloc(bpt-bs);
+	subrs->values[index] = malloc(bpt-bs);
 	memcpy(subrs->values[index],bs,bpt-bs);
 	if ( index>=subrs->next ) subrs->next = index+1;
     }
@@ -1635,22 +1635,22 @@ return;
     } else if ( mycmp("Metrics",line+1,endtok)==0 ) {
 	fp->infi = fp->inprivate = fp->inbb = fp->inencoding = fp->inmetrics2 = false;
 	fp->inmetrics = true;
-	fp->fd->metrics = gcalloc(1,sizeof(struct psdict));
+	fp->fd->metrics = calloc(1,sizeof(struct psdict));
 	fp->fd->metrics->cnt = strtol(endtok,NULL,10);
-	fp->fd->metrics->keys = galloc(fp->fd->metrics->cnt*sizeof(char *));
-	fp->fd->metrics->values = galloc(fp->fd->metrics->cnt*sizeof(char *));
+	fp->fd->metrics->keys = malloc(fp->fd->metrics->cnt*sizeof(char *));
+	fp->fd->metrics->values = malloc(fp->fd->metrics->cnt*sizeof(char *));
     } else if ( strstr(line,"/Private")!=NULL && strstr(line,"/Blend")!=NULL ) {
 	fp->infi = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
 	fp->inprivate = fp->inblendprivate = fp->inblendfi = false;
 	fp->inblendprivate = 1;
-	fp->fd->blendprivate = gcalloc(1,sizeof(struct psdict));
+	fp->fd->blendprivate = calloc(1,sizeof(struct psdict));
 	InitDict(fp->fd->blendprivate,line);
 return;
     } else if ( strstr(line,"/FontInfo")!=NULL && strstr(line,"/Blend")!=NULL ) {
 	fp->infi = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
 	fp->inprivate = fp->inblendprivate = fp->inblendfi = false;
 	fp->inblendfi = 1;
-	fp->fd->blendfontinfo = gcalloc(1,sizeof(struct psdict));
+	fp->fd->blendfontinfo = calloc(1,sizeof(struct psdict));
 	InitDict(fp->fd->blendfontinfo,line);
 return;
     } else if ( fp->infi ) {
@@ -1802,7 +1802,7 @@ return;
 	    fp->inprivate = fp->inblendprivate = fp->inblendfi = false;
 	    if ( strstr(line,"/Blend")!=NULL ) {
 		fp->inblendprivate = 1;
-		fp->fd->blendprivate = gcalloc(1,sizeof(struct psdict));
+		fp->fd->blendprivate = calloc(1,sizeof(struct psdict));
 		InitDict(fp->fd->blendprivate,line);
 	    } else {
 		fp->inprivate = 1;
@@ -1814,7 +1814,7 @@ return;
 	    fp->infi = fp->inblendprivate = fp->inblendfi = false;
 	    if ( strstr(line,"/Blend")!=NULL ) {
 		fp->inblendfi = 1;
-		fp->fd->blendfontinfo = gcalloc(1,sizeof(struct psdict));
+		fp->fd->blendfontinfo = calloc(1,sizeof(struct psdict));
 		InitDict(fp->fd->blendfontinfo,line);
 	    } else {
 		if ( !strstr(line, "end") )
@@ -1948,7 +1948,7 @@ return;
 	else if ( mycmp("FDArray",line+1,endtok)==0 ) { int i;
 	    fp->mainfd = fp->fd;
 	    fp->fd->fdcnt = strtol(endtok,NULL,10);
-	    fp->fd->fds = gcalloc(fp->fd->fdcnt,sizeof(struct fontdict *));
+	    fp->fd->fds = calloc(fp->fd->fdcnt,sizeof(struct fontdict *));
 	    for ( i=0; i<fp->fd->fdcnt; ++i )
 		fp->fd->fds[i] = MakeEmptyFont();
 	    fp->fdindex = 0;
@@ -1991,7 +1991,7 @@ return;
 		if ( chars->values[i]!=NULL )
 		    LogError( _("Duplicate definition of subroutine %d\n"), i );
 		chars->lens[i] = binlen;
-		chars->values[i] = galloc(binlen);
+		chars->values[i] = malloc(binlen);
 		memcpy(chars->values[i],binstart,binlen);
 		if ( i>=chars->next ) chars->next = i+1;
 	    } else if ( !fp->alreadycomplained ) {
@@ -2015,7 +2015,7 @@ return;
 	    int i = chars->next;
 	    chars->lens[i] = binlen;
 	    chars->keys[i] = copy(tok);
-	    chars->values[i] = galloc(binlen);
+	    chars->values[i] = malloc(binlen);
 	    memcpy(chars->values[i],binstart,binlen);
 	    ++chars->next;
 	    ff_progress_next();
@@ -2093,7 +2093,7 @@ return( 0 );
     ungetc(ch,temp);
 
     if ( buffer==NULL ) {
-	buffer = galloc(3000);
+	buffer = malloc(3000);
 	end = buffer+3000;
     }
     innum = inr = 0; wasspace = 0; inbinary = 0; rpt = NULL; rdpt = NULL;
@@ -2104,7 +2104,7 @@ return( 0 );
 	if ( pt>=end ) {
 	    char *old = buffer;
 	    int len = (end-buffer)+2000;
-	    buffer = grealloc(buffer,len);
+	    buffer = realloc(buffer,len);
 	    end = buffer+len;
 	    pt = buffer+(pt-old);
 	    if ( binstart!=NULL )
@@ -2369,7 +2369,7 @@ static unsigned char *readt1str(FILE *temp,int offset,int len,int leniv) {
 
     fseek(temp,offset,SEEK_SET);
     if ( leniv<0 ) {
-	str = pt = galloc(len+1);
+	str = pt = malloc(len+1);
 	for ( i=0 ; i<len; ++i )
 	    *pt++ = getc(temp);
     } else {
@@ -2378,7 +2378,7 @@ static unsigned char *readt1str(FILE *temp,int offset,int len,int leniv) {
 	    plain = ( cypher ^ (r>>8));
 	    r = (cypher + r) * c1 + c2;
 	}
-	str = pt = galloc(len-leniv+1);
+	str = pt = malloc(len-leniv+1);
 	for (; i<len; ++i ) {
 	    cypher = getc(temp);
 	    plain = ( cypher ^ (r>>8));
@@ -2398,10 +2398,10 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
     int leniv;
     /* Some cid formats don't have any of these */
 
-    fd->cidstrs = galloc(cidcnt*sizeof(uint8 *));
-    fd->cidlens = galloc(cidcnt*sizeof(int16));
-    fd->cidfds = galloc((cidcnt+1)*sizeof(int16));
-    offsets = galloc((cidcnt+1)*sizeof(int));
+    fd->cidstrs = malloc(cidcnt*sizeof(uint8 *));
+    fd->cidlens = malloc(cidcnt*sizeof(int16));
+    fd->cidfds = malloc((cidcnt+1)*sizeof(int16));
+    offsets = malloc((cidcnt+1)*sizeof(int));
     ff_progress_change_total(cidcnt);
 
     fseek(temp,fd->mapoffset,SEEK_SET);
@@ -2449,10 +2449,10 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
 		(sdbytes=strtol(ssdbytes,NULL,10))>0 &&
 		(subrcnt=strtol(ssubrcnt,NULL,10))>0 ) {
 	    private->subrs->cnt = subrcnt;
-	    private->subrs->values = gcalloc(subrcnt,sizeof(char *));
-	    private->subrs->lens = gcalloc(subrcnt,sizeof(int));
+	    private->subrs->values = calloc(subrcnt,sizeof(char *));
+	    private->subrs->lens = calloc(subrcnt,sizeof(int));
 	    leniv = private->leniv;
-	    offsets = galloc((subrcnt+1)*sizeof(int));
+	    offsets = malloc((subrcnt+1)*sizeof(int));
 	    fseek(temp,subroff,SEEK_SET);
 	    for ( i=0; i<=subrcnt; ++i ) {
 		for ( j=val=0; j<sdbytes; ++j )
@@ -2765,7 +2765,7 @@ char **_NamesReadPostScript(FILE *ps) {
 		while ( isspace(*pt)) ++pt;
 		if ( *pt=='/' ) ++pt;
 		for ( end = pt; *end!='\0' && !isspace(*end); ++end );
-		ret = galloc(2*sizeof(char *));
+		ret = malloc(2*sizeof(char *));
 		ret[0] = copyn(pt,end-pt);
 		ret[1] = NULL;
 	break;

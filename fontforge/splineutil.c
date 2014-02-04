@@ -45,11 +45,10 @@ typedef struct quartic {
 /*  lists of certain common sizes. It doesn't seem to make much difference */
 /*  when allocating stuff, but does when freeing. If the extra complexity */
 /*  is bad then put:							  */
-/*	#define chunkalloc(size)	gcalloc(1,size)			  */
+/*	#define chunkalloc(size)	calloc(1,size)			  */
 /*	#define chunkfree(item,size)	free(item)			  */
 /*  into splinefont.h after (or instead of) the definition of chunkalloc()*/
 
-#ifndef chunkalloc
 #define ALLOC_CHUNK	100		/* Number of small chunks to malloc at a time */
 #ifndef FONTFORGE_CONFIG_USE_DOUBLE
 # define CHUNK_MAX	100		/* Maximum size (in chunk units) that we are prepared to allocate */
@@ -73,7 +72,6 @@ static int chunkdebug = 0;	/* When this is set we never free anything, insuring 
 #if ALLOC_CHUNK>1
 struct chunk { struct chunk *next; };
 struct chunk2 { struct chunk2 *next; int flag; };
-static struct chunk *chunklists[CHUNK_MAX] = { 0 };
 #endif
 
 #if defined(FLAG) && ALLOC_CHUNK>1
@@ -89,91 +87,6 @@ void chunktest(void) {
 	    }
 }
 #endif
-
-#ifdef USE_OUR_MEMORY
-void *chunkalloc(int size) {
-# if ALLOC_CHUNK<=1
-return( gcalloc(1,size));
-# else
-    struct chunk *item;
-    int index;
-
-    if ( size&(CHUNK_UNIT-1) )
-	size = (size+CHUNK_UNIT-1)&~(CHUNK_UNIT-1);
-
-    if ( (size&(CHUNK_UNIT-1)) || size>=CHUNK_MAX*CHUNK_UNIT || size<=sizeof(struct chunk)) {
-	fprintf( stderr, "Attempt to allocate something of size %d\n", size );
-return( gcalloc(1,size));
-    }
-#ifdef FLAG
-    chunktest();
-#endif
-    index = (size+CHUNK_UNIT-1)/CHUNK_UNIT;
-    if ( chunklists[index]==NULL ) {
-	char *pt, *end;
-	pt = galloc(ALLOC_CHUNK*size);
-	chunklists[index] = (struct chunk *) pt;
-	end = pt+(ALLOC_CHUNK-1)*size;
-	while ( pt<end ) {
-	    ((struct chunk *) pt)->next = (struct chunk *) (pt + size);
-#ifdef FLAG
-	    ((struct chunk2 *) pt)->flag = FLAG;
-#endif
-	    pt += size;
-	}
-	((struct chunk *) pt)->next = NULL;
-#ifdef FLAG
-	((struct chunk2 *) pt)->flag = FLAG;
-#endif
-    }
-    item = chunklists[index];
-    chunklists[index] = item->next;
-    memset(item,'\0',size);
-return( item );
-# endif
-}
-
-void chunkfree(void *item,int size) {
-    int index = (size+CHUNK_UNIT-1)/CHUNK_UNIT;
-#ifdef CHUNKDEBUG
-    if ( chunkdebug )
-return;
-#endif
-# if ALLOC_CHUNK<=1
-    free(item);
-# else
-    if ( item==NULL )
-return;
-
-    if ( size&(CHUNK_UNIT-1) )
-	size = (size+CHUNK_UNIT-1)&~(CHUNK_UNIT-1);
-
-    if ( (size&(CHUNK_UNIT-1)) || size>=CHUNK_MAX*CHUNK_UNIT || size<=sizeof(struct chunk)) {
-	fprintf( stderr, "Attempt to free something of size %d\n", size );
-	free(item);
-    } else {
-#ifdef LOCAL_DEBUG
-	if ( (char *) (chunklists[index]) == (char *) item ||
-		( ((char *) (chunklists[index]))<(char *) item &&
-		  ((char *) (chunklists[index]))+size>(char *) item) ||
-		( ((char *) (chunklists[index]))>(char *) item &&
-		  ((char *) (chunklists[index]))<((char *) item)+size))
-	      IError( "Memory mixup. Chunk list is wrong!!!" );
-#endif
-	((struct chunk *) item)->next = chunklists[index];
-#  ifdef FLAG
-	if ( size>=sizeof(struct chunk2))
-	    ((struct chunk2 *) item)->flag = FLAG;
-#  endif
-	chunklists[index] = (struct chunk *) item;
-    }
-#  ifdef FLAG
-    chunktest();
-#  endif
-# endif
-}
-#endif
-#endif /* USE_OUR_MEMORY */
 
 char *strconcat(const char *str1,const char *str2) {
     char *ret;
@@ -388,7 +301,7 @@ return;
 RefChar *RefCharCreate(void) {
     RefChar *ref = chunkalloc(sizeof(RefChar));
     ref->layer_cnt = 1;
-    ref->layers = gcalloc(1,sizeof(struct reflayer));
+    ref->layers = calloc(1,sizeof(struct reflayer));
     ref->layers[0].fill_brush.opacity = ref->layers[0].stroke_pen.brush.opacity = 1.0;
     ref->layers[0].fill_brush.col = ref->layers[0].stroke_pen.brush.col = COLOR_INHERITED;
     ref->layers[0].stroke_pen.width = WIDTH_INHERITED;
@@ -1302,7 +1215,7 @@ SplinePointList *SplinePointListCopy1(const SplinePointList *spl) {
     }
     if ( spl->spiro_cnt!=0 ) {
 	cur->spiro_cnt = cur->spiro_max = spl->spiro_cnt;
-	cur->spiros = galloc(cur->spiro_cnt*sizeof(spiro_cp));
+	cur->spiros = malloc(cur->spiro_cnt*sizeof(spiro_cp));
 	memcpy(cur->spiros,spl->spiros,cur->spiro_cnt*sizeof(spiro_cp));
     }
 return( cur );
@@ -1392,7 +1305,7 @@ static SplinePointList *SplinePointListCopySpiroSelected1(SplinePointList *spl) 
 	    if ( !(SPIRO_SELECTED(&list[i])) )
 	break;
 	if ( i!=0 ) {
-	    freeme = galloc(spl->spiro_cnt*sizeof(spiro_cp));
+	    freeme = malloc(spl->spiro_cnt*sizeof(spiro_cp));
 	    memcpy(freeme,list+i,(spl->spiro_cnt-1-i)*sizeof(spiro_cp));
 	    memcpy(freeme+(spl->spiro_cnt-1-i),list,i*sizeof(spiro_cp));
 	    /* And copy the list terminator */
@@ -1406,7 +1319,7 @@ static SplinePointList *SplinePointListCopySpiroSelected1(SplinePointList *spl) 
 	if ( i==spl->spiro_cnt-1 )
     break;
 	for ( j=i; j<spl->spiro_cnt-1 && SPIRO_SELECTED(&list[j]); ++j );
-	temp = galloc((j-i+2)*sizeof(spiro_cp));
+	temp = malloc((j-i+2)*sizeof(spiro_cp));
 	memcpy(temp,list+i,(j-i)*sizeof(spiro_cp));
 	temp[0].ty = SPIRO_OPEN_CONTOUR;
 	memset(temp+(j-i),0,sizeof(spiro_cp));
@@ -1508,7 +1421,7 @@ static SplinePointList *SplinePointListSplitSpiros(SplineChar *sc,SplinePointLis
 	    if ( !(SPIRO_SELECTED(&list[i])) )
 	break;
 	if ( i!=0 ) {
-	    freeme = galloc(spl->spiro_cnt*sizeof(spiro_cp));
+	    freeme = malloc(spl->spiro_cnt*sizeof(spiro_cp));
 	    memcpy(freeme,list+i,(spl->spiro_cnt-1-i)*sizeof(spiro_cp));
 	    memcpy(freeme+(spl->spiro_cnt-1-i),list,i*sizeof(spiro_cp));
 	    /* And copy the list terminator */
@@ -1521,7 +1434,7 @@ static SplinePointList *SplinePointListSplitSpiros(SplineChar *sc,SplinePointLis
 	/* Retain unselected things */
 	for ( ; i<spl->spiro_cnt-1 && !SPIRO_SELECTED(&list[i]); ++i );
 	if ( i!=start ) {
-	    temp = galloc((i-start+2)*sizeof(spiro_cp));
+	    temp = malloc((i-start+2)*sizeof(spiro_cp));
 	    memcpy(temp,list+start,(i-start)*sizeof(spiro_cp));
 	    temp[0].ty = SPIRO_OPEN_CONTOUR;
 	    memset(temp+(i-start),0,sizeof(spiro_cp));
@@ -2252,11 +2165,11 @@ return;
     if ( sf->multilayer ) {
 	int lbase = topref->layer_cnt;
 	if ( topref->layer_cnt==0 ) {
-	    topref->layers = gcalloc(rsc->layer_cnt-1,sizeof(struct reflayer));
+	    topref->layers = calloc(rsc->layer_cnt-1,sizeof(struct reflayer));
 	    topref->layer_cnt = rsc->layer_cnt-1;
 	} else {
 	    topref->layer_cnt += rsc->layer_cnt-1;
-	    topref->layers = grealloc(topref->layers,topref->layer_cnt*sizeof(struct reflayer));
+	    topref->layers = realloc(topref->layers,topref->layer_cnt*sizeof(struct reflayer));
 	    memset(topref->layers+lbase,0,(rsc->layer_cnt-1)*sizeof(struct reflayer));
 	}
 	for ( i=ly_fore; i<rsc->layer_cnt; ++i ) {
@@ -2270,7 +2183,7 @@ return;
 	}
     } else {
 	if ( topref->layer_cnt==0 ) {
-	    topref->layers = gcalloc(1,sizeof(struct reflayer));
+	    topref->layers = calloc(1,sizeof(struct reflayer));
 	    topref->layer_cnt = 1;
 	}
 	new = SplinePointListTransform(SplinePointListCopy(rsc->layers[layer].splines),transform,tpt_AllPoints);
@@ -2289,7 +2202,7 @@ static char *copyparse(char *str) {
     if ( str==NULL )
 return( str );
 
-    rpt=ret=galloc(strlen(str)+1);
+    rpt=ret=malloc(strlen(str)+1);
     while ( *str ) {
 	if ( *str=='\\' ) {
 	    ++str;
@@ -2334,7 +2247,7 @@ char *XUIDFromFD(int xuid[20]) {
     for ( i=19; i>=0 && xuid[i]==0; --i );
     if ( i>=0 ) {
 	int j; char *pt;
-	ret = galloc(2+20*(i+1));
+	ret = malloc(2+20*(i+1));
 	pt = ret;
 	*pt++ = '[';
 	for ( j=0; j<=i; ++j ) {
@@ -2507,7 +2420,7 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
 	sf->map = map = EncMapNew(256+CharsNotInEncoding(fd),sf->glyphcnt,fd->encoding_name);
     } else
 	map = sf->map;
-    sf->glyphs = gcalloc(map->backmax,sizeof(SplineChar *));
+    sf->glyphs = calloc(map->backmax,sizeof(SplineChar *));
     if ( istype3 )	/* We read a type3 */
 	sf->multilayer = true;
     if ( istype3 )
@@ -2661,8 +2574,8 @@ return( NULL );
     }
 
     mm->instance_count = pscontext->instance_count;
-    mm->instances = galloc(pscontext->instance_count*sizeof(SplineFont *));
-    mm->defweights = galloc(mm->instance_count*sizeof(real));
+    mm->instances = malloc(pscontext->instance_count*sizeof(SplineFont *));
+    mm->defweights = malloc(mm->instance_count*sizeof(real));
     memcpy(mm->defweights,pscontext->blend_values,mm->instance_count*sizeof(real));
     mm->normal = sf;
     _SplineFontFromType1(mm->normal,fd,pscontext);
@@ -2690,7 +2603,7 @@ return( NULL );
 	ff_post_error(_("Bad Multiple Master Font"),_("This multiple master font has %1$d instance fonts, but it needs at least %2$d master fonts for %3$d axes. FontForge will not be able to edit this correctly"),mm->instance_count,1<<mm->axis_count,mm->axis_count);
     else if ( mm->instance_count > (1<<mm->axis_count) )
 	ff_post_error(_("Bad Multiple Master Font"),_("This multiple master font has %1$d instance fonts, but FontForge can only handle %2$d master fonts for %3$d axes. FontForge will not be able to edit this correctly"),mm->instance_count,1<<mm->axis_count,mm->axis_count);
-    mm->positions = gcalloc(mm->axis_count*mm->instance_count,sizeof(real));
+    mm->positions = calloc(mm->axis_count*mm->instance_count,sizeof(real));
     pt = fd->fontinfo->blenddesignpositions;
     while ( *pt==' ' ) ++pt;
     if ( *pt=='[' ) ++pt;
@@ -2722,7 +2635,7 @@ return( NULL );
 	    ++pt;
     }
 
-    mm->axismaps = gcalloc(mm->axis_count,sizeof(struct axismap));
+    mm->axismaps = calloc(mm->axis_count,sizeof(struct axismap));
     pt = fd->fontinfo->blenddesignmap;
     while ( *pt==' ' ) ++pt;
     if ( *pt=='[' ) ++pt;
@@ -2762,8 +2675,8 @@ return( NULL );
 	    if ( ppos<2 )
 		LogError( _("Bad few values in /BlendDesignMap for axis %s.\n"), mm->axes[apos] );
 	    mm->axismaps[apos].points = ppos;
-	    mm->axismaps[apos].blends = galloc(ppos*sizeof(real));
-	    mm->axismaps[apos].designs = galloc(ppos*sizeof(real));
+	    mm->axismaps[apos].blends = malloc(ppos*sizeof(real));
+	    mm->axismaps[apos].designs = malloc(ppos*sizeof(real));
 	    memcpy(mm->axismaps[apos].blends,blends,ppos*sizeof(real));
 	    memcpy(mm->axismaps[apos].designs,designs,ppos*sizeof(real));
 	    ++apos;
@@ -2890,7 +2803,7 @@ return( NULL );
     encmap = EncMap1to1(fd->cidcnt);
 
     sf->subfontcnt = fd->fdcnt;
-    sf->subfonts = galloc((sf->subfontcnt+1)*sizeof(SplineFont *));
+    sf->subfonts = malloc((sf->subfontcnt+1)*sizeof(SplineFont *));
     for ( i=0; i<fd->fdcnt; ++i ) {
 	if ( fd->fontmatrix[0]!=0 ) {
 	    MatMultiply(fd->fontmatrix,fd->fds[i]->fontmatrix,fd->fds[i]->fontmatrix);
@@ -2908,7 +2821,7 @@ return( NULL );
 
     map = FindCidMap(sf->cidregistry,sf->ordering,sf->supplement,sf);
 
-    chars = gcalloc(fd->cidcnt,sizeof(SplineChar *));
+    chars = calloc(fd->cidcnt,sizeof(SplineChar *));
     for ( i=0; i<fd->cidcnt; ++i ) if ( fd->cidlens[i]>0 ) {
 	j = fd->cidfds[i];		/* We get font indexes of 255 for non-existant chars */
 	uni = CID2NameUni(map,i,buffer,sizeof(buffer));
@@ -2928,7 +2841,7 @@ return( NULL );
 	ff_progress_next();
     }
     for ( i=0; i<fd->fdcnt; ++i )
-	sf->subfonts[i]->glyphs = gcalloc(sf->subfonts[i]->glyphcnt,sizeof(SplineChar *));
+	sf->subfonts[i]->glyphs = calloc(sf->subfonts[i]->glyphcnt,sizeof(SplineChar *));
     for ( i=0; i<fd->cidcnt; ++i ) if ( chars[i]!=NULL ) {
 	j = fd->cidfds[i];
 	if ( j<sf->subfontcnt ) {
@@ -3049,7 +2962,7 @@ return;
 	}
 
 	rf->layer_cnt = cnt;
-	rf->layers = gcalloc(cnt,sizeof(struct reflayer));
+	rf->layers = calloc(cnt,sizeof(struct reflayer));
 	cnt = 0;
 	for ( i=ly_fore; i<rsc->layer_cnt; ++i ) {
 	    if ( rsc->layers[i].splines!=NULL || rsc->layers[i].images!=NULL ) {
@@ -3097,7 +3010,7 @@ return;
 	    SplinePointListsFree(rf->layers[0].splines);
 	    rf->layers[0].splines = NULL;
 	}
-	rf->layers = gcalloc(1,sizeof(struct reflayer));
+	rf->layers = calloc(1,sizeof(struct reflayer));
 	rf->layer_cnt = 1;
 	rf->layers[0].dofill = true;
 	new = SplinePointListTransform(SplinePointListCopy(rf->sc->layers[layer].splines),rf->transform,tpt_AllPoints);
@@ -3226,7 +3139,7 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf,int layer) {
 
     if ( sc->parent->multilayer ) {
 	Layer *old = sc->layers;
-	sc->layers = grealloc(sc->layers,(sc->layer_cnt+rf->layer_cnt)*sizeof(Layer));
+	sc->layers = realloc(sc->layers,(sc->layer_cnt+rf->layer_cnt)*sizeof(Layer));
 	for ( rlayer = 0; rlayer<rf->layer_cnt; ++rlayer ) {
 	    LayerDefault(&sc->layers[sc->layer_cnt+rlayer]);
 	    sc->layers[sc->layer_cnt+rlayer].splines = rf->layers[rlayer].splines;
@@ -5294,12 +5207,12 @@ AnchorPoint *AnchorPointsCopy(AnchorPoint *alist) {
 	*ap = *alist;
 	if ( ap->xadjust.corrections!=NULL ) {
 	    int len = ap->xadjust.last_pixel_size-ap->xadjust.first_pixel_size+1;
-	    ap->xadjust.corrections = galloc(len);
+	    ap->xadjust.corrections = malloc(len);
 	    memcpy(ap->xadjust.corrections,alist->xadjust.corrections,len);
 	}
 	if ( ap->yadjust.corrections!=NULL ) {
 	    int len = ap->yadjust.last_pixel_size-ap->yadjust.first_pixel_size+1;
-	    ap->yadjust.corrections = galloc(len);
+	    ap->yadjust.corrections = malloc(len);
 	    memcpy(ap->yadjust.corrections,alist->yadjust.corrections,len);
 	}
 	if ( head==NULL )
@@ -5343,7 +5256,7 @@ return( NULL );
 	if ( (&orig->xadjust)[i].corrections!=NULL ) {
 	    int len = (&orig->xadjust)[i].last_pixel_size - (&orig->xadjust)[i].first_pixel_size + 1;
 	    (&new->xadjust)[i] = (&orig->xadjust)[i];
-	    (&new->xadjust)[i].corrections = galloc(len);
+	    (&new->xadjust)[i].corrections = malloc(len);
 	    memcpy((&new->xadjust)[i].corrections,(&orig->xadjust)[i].corrections,len);
 	}
     }
@@ -5368,7 +5281,7 @@ return( NULL );
     new = chunkalloc(sizeof(DeviceTable));
     *new = *orig;
     len = orig->last_pixel_size - orig->first_pixel_size + 1;
-    new->corrections = galloc(len);
+    new->corrections = malloc(len);
     memcpy(new->corrections,orig->corrections,len);
 return( new );
 }
@@ -5404,17 +5317,17 @@ return;
     } else {
 	if ( adjust->corrections==NULL ) {
 	    adjust->first_pixel_size = adjust->last_pixel_size = size;
-	    adjust->corrections = galloc(1);
+	    adjust->corrections = malloc(1);
 	} else if ( size>=adjust->first_pixel_size &&
 		size<=adjust->last_pixel_size ) {
 	} else if ( size>adjust->last_pixel_size ) {
-	    adjust->corrections = grealloc(adjust->corrections,
+	    adjust->corrections = realloc(adjust->corrections,
 		    size-adjust->first_pixel_size);
 	    for ( i=len; i<size-adjust->first_pixel_size; ++i )
 		adjust->corrections[i] = 0;
 	    adjust->last_pixel_size = size;
 	} else {
-	    int8 *new = galloc(adjust->last_pixel_size-size+1);
+	    int8 *new = malloc(adjust->last_pixel_size-size+1);
 	    memset(new,0,adjust->first_pixel_size-size);
 	    memcpy(new+adjust->first_pixel_size-size,
 		    adjust->corrections, len);
@@ -5492,7 +5405,7 @@ static struct fpst_rule *RulesCopy(struct fpst_rule *from, int cnt,
     if ( cnt==0 )
 return( NULL );
 
-    to = gcalloc(cnt,sizeof(struct fpst_rule));
+    to = calloc(cnt,sizeof(struct fpst_rule));
     for ( i=0; i<cnt; ++i ) {
 	f = from+i; t = to+i;
 	switch ( format ) {
@@ -5505,16 +5418,16 @@ return( NULL );
 	    t->u.class.ncnt = f->u.class.ncnt;
 	    t->u.class.bcnt = f->u.class.bcnt;
 	    t->u.class.fcnt = f->u.class.fcnt;
-	    t->u.class.nclasses = galloc( f->u.class.ncnt*sizeof(uint16));
+	    t->u.class.nclasses = malloc( f->u.class.ncnt*sizeof(uint16));
 	    memcpy(t->u.class.nclasses,f->u.class.nclasses,
 		    f->u.class.ncnt*sizeof(uint16));
 	    if ( t->u.class.bcnt!=0 ) {
-		t->u.class.bclasses = galloc( f->u.class.bcnt*sizeof(uint16));
+		t->u.class.bclasses = malloc( f->u.class.bcnt*sizeof(uint16));
 		memcpy(t->u.class.bclasses,f->u.class.bclasses,
 			f->u.class.bcnt*sizeof(uint16));
 	    }
 	    if ( t->u.class.fcnt!=0 ) {
-		t->u.class.fclasses = galloc( f->u.class.fcnt*sizeof(uint16));
+		t->u.class.fclasses = malloc( f->u.class.fcnt*sizeof(uint16));
 		memcpy(t->u.class.fclasses,f->u.class.fclasses,
 			f->u.class.fcnt*sizeof(uint16));
 	    }
@@ -5525,16 +5438,16 @@ return( NULL );
 	    t->u.coverage.ncnt = f->u.coverage.ncnt;
 	    t->u.coverage.bcnt = f->u.coverage.bcnt;
 	    t->u.coverage.fcnt = f->u.coverage.fcnt;
-	    t->u.coverage.ncovers = galloc( f->u.coverage.ncnt*sizeof(char *));
+	    t->u.coverage.ncovers = malloc( f->u.coverage.ncnt*sizeof(char *));
 	    for ( j=0; j<t->u.coverage.ncnt; ++j )
 		t->u.coverage.ncovers[j] = copy(f->u.coverage.ncovers[j]);
 	    if ( t->u.coverage.bcnt!=0 ) {
-		t->u.coverage.bcovers = galloc( f->u.coverage.bcnt*sizeof(char *));
+		t->u.coverage.bcovers = malloc( f->u.coverage.bcnt*sizeof(char *));
 		for ( j=0; j<t->u.coverage.bcnt; ++j )
 		    t->u.coverage.bcovers[j] = copy(f->u.coverage.bcovers[j]);
 	    }
 	    if ( t->u.coverage.fcnt!=0 ) {
-		t->u.coverage.fcovers = galloc( f->u.coverage.fcnt*sizeof(char *));
+		t->u.coverage.fcovers = malloc( f->u.coverage.fcnt*sizeof(char *));
 		for ( j=0; j<t->u.coverage.fcnt; ++j )
 		    t->u.coverage.fcovers[j] = copy(f->u.coverage.fcovers[j]);
 	    }
@@ -5542,7 +5455,7 @@ return( NULL );
 	}
 	if ( f->lookup_cnt!=0 ) {
 	    t->lookup_cnt = f->lookup_cnt;
-	    t->lookups = galloc(t->lookup_cnt*sizeof(struct seqlookup));
+	    t->lookups = malloc(t->lookup_cnt*sizeof(struct seqlookup));
 	    memcpy(t->lookups,f->lookups,t->lookup_cnt*sizeof(struct seqlookup));
 	}
     }
@@ -5557,24 +5470,24 @@ FPST *FPSTCopy(FPST *fpst) {
     *nfpst = *fpst;
     nfpst->next = NULL;
     if ( nfpst->nccnt!=0 ) {
-	nfpst->nclass = galloc(nfpst->nccnt*sizeof(char *));
-	nfpst->nclassnames = galloc(nfpst->nccnt*sizeof(char *));
+	nfpst->nclass = malloc(nfpst->nccnt*sizeof(char *));
+	nfpst->nclassnames = malloc(nfpst->nccnt*sizeof(char *));
 	for ( i=0; i<nfpst->nccnt; ++i ) {
 	    nfpst->nclass[i] = copy(fpst->nclass[i]);
 	    nfpst->nclassnames[i] = copy(fpst->nclassnames[i]);
 	}
     }
     if ( nfpst->bccnt!=0 ) {
-	nfpst->bclass = galloc(nfpst->bccnt*sizeof(char *));
-	nfpst->bclassnames = galloc(nfpst->bccnt*sizeof(char *));
+	nfpst->bclass = malloc(nfpst->bccnt*sizeof(char *));
+	nfpst->bclassnames = malloc(nfpst->bccnt*sizeof(char *));
 	for ( i=0; i<nfpst->bccnt; ++i ) {
 	    nfpst->bclass[i] = copy(fpst->bclass[i]);
 	    nfpst->bclassnames[i] = copy(fpst->bclassnames[i]);
 	}
     }
     if ( nfpst->fccnt!=0 ) {
-	nfpst->fclass = galloc(nfpst->fccnt*sizeof(char *));
-	nfpst->fclassnames = galloc(nfpst->fccnt*sizeof(char *));
+	nfpst->fclass = malloc(nfpst->fccnt*sizeof(char *));
+	nfpst->fclassnames = malloc(nfpst->fccnt*sizeof(char *));
 	for ( i=0; i<nfpst->fccnt; ++i ) {
 	    nfpst->fclass[i] = copy(fpst->fclass[i]);
 	    nfpst->fclassnames[i] = copy(fpst->fclassnames[i]);
@@ -5678,7 +5591,7 @@ SplineChar *SplineCharCreate(int layer_cnt) {
     sc->orig_pos = 0xffff;
     sc->unicodeenc = -1;
     sc->layer_cnt = layer_cnt;
-    sc->layers = gcalloc(layer_cnt,sizeof(Layer));
+    sc->layers = calloc(layer_cnt,sizeof(Layer));
     for ( i=0; i<layer_cnt; ++i )
 	LayerDefault(&sc->layers[i]);
     sc->tex_height = sc->tex_depth = sc->italic_correction = sc->top_accent_horiz =
@@ -5727,7 +5640,7 @@ return( NULL );
     newgv->italic_adjusts = DeviceTableCopy(gv->italic_adjusts);
     newgv->part_cnt = gv->part_cnt;
     if ( gv->part_cnt!=0 ) {
-	newgv->parts = gcalloc(gv->part_cnt,sizeof(struct gv_part));
+	newgv->parts = calloc(gv->part_cnt,sizeof(struct gv_part));
 	memcpy(newgv->parts,gv->parts,gv->part_cnt*sizeof(struct gv_part));
 	for ( i=0; i<gv->part_cnt; ++i )
 	    newgv->parts[i].component = copy(gv->parts[i].component);
@@ -5747,7 +5660,7 @@ return( NULL );
 	struct mathkernvertex *mknewv = &(&mknew->top_right)[i];
 	mknewv->cnt = mkv->cnt;
 	if ( mknewv->cnt!=0 ) {
-	    mknewv->mkd = gcalloc(mkv->cnt,sizeof(struct mathkerndata));
+	    mknewv->mkd = calloc(mkv->cnt,sizeof(struct mathkerndata));
 	    for ( j=0; j<mkv->cnt; ++j ) {
 		mknewv->mkd[j].height = mkv->mkd[j].height;
 		mknewv->mkd[j].kern   = mkv->mkd[j].kern;
@@ -5817,7 +5730,7 @@ return( NULL );
     grad = chunkalloc(sizeof(struct gradient));
 
     *grad = *old;
-    grad->grad_stops = galloc(old->stop_cnt*sizeof(struct grad_stops));
+    grad->grad_stops = malloc(old->stop_cnt*sizeof(struct grad_stops));
     memcpy(grad->grad_stops,old->grad_stops,old->stop_cnt*sizeof(struct grad_stops));
     if ( transform!=NULL ) {
 	BpTransform(&grad->start,&grad->start,transform);
@@ -5998,21 +5911,21 @@ KernClass *KernClassCopy(KernClass *kc) {
 return( NULL );
     new = chunkalloc(sizeof(KernClass));
     *new = *kc;
-    new->firsts = galloc(new->first_cnt*sizeof(char *));
-    new->seconds = galloc(new->second_cnt*sizeof(char *));
-    new->offsets = galloc(new->first_cnt*new->second_cnt*sizeof(int16));
+    new->firsts = malloc(new->first_cnt*sizeof(char *));
+    new->seconds = malloc(new->second_cnt*sizeof(char *));
+    new->offsets = malloc(new->first_cnt*new->second_cnt*sizeof(int16));
     memcpy(new->offsets,kc->offsets, new->first_cnt*new->second_cnt*sizeof(int16));
     for ( i=0; i<new->first_cnt; ++i )
 	new->firsts[i] = copy(kc->firsts[i]);
     for ( i=0; i<new->second_cnt; ++i )
 	new->seconds[i] = copy(kc->seconds[i]);
-    new->adjusts = gcalloc(new->first_cnt*new->second_cnt,sizeof(DeviceTable));
+    new->adjusts = calloc(new->first_cnt*new->second_cnt,sizeof(DeviceTable));
     memcpy(new->adjusts,kc->adjusts, new->first_cnt*new->second_cnt*sizeof(DeviceTable));
     for ( i=new->first_cnt*new->second_cnt-1; i>=0 ; --i ) {
 	if ( new->adjusts[i].corrections!=NULL ) {
 	    int8 *old = new->adjusts[i].corrections;
 	    int len = new->adjusts[i].last_pixel_size - new->adjusts[i].first_pixel_size + 1;
-	    new->adjusts[i].corrections = galloc(len);
+	    new->adjusts[i].corrections = malloc(len);
 	    memcpy(new->adjusts[i].corrections,old,len);
 	}
     }
@@ -6130,9 +6043,9 @@ EncMap *EncMapNew(int enccount,int backmax,Encoding *enc) {
 
     map->enccount = map->encmax = enccount;
     map->backmax = backmax;
-    map->map = galloc(enccount*sizeof(int));
+    map->map = malloc(enccount*sizeof(int));
     memset(map->map,-1,enccount*sizeof(int));
-    map->backmap = galloc(backmax*sizeof(int));
+    map->backmap = malloc(backmax*sizeof(int));
     memset(map->backmap,-1,backmax*sizeof(int));
     map->enc = enc;
 return(map);
@@ -6144,8 +6057,8 @@ EncMap *EncMap1to1(int enccount) {
     int i;
 
     map->enccount = map->encmax = map->backmax = enccount;
-    map->map = galloc(enccount*sizeof(int));
-    map->backmap = galloc(enccount*sizeof(int));
+    map->map = malloc(enccount*sizeof(int));
+    map->backmap = malloc(enccount*sizeof(int));
     for ( i=0; i<enccount; ++i )
 	map->map[i] = map->backmap[i] = i;
     map->enc = &custom;
@@ -6184,14 +6097,14 @@ EncMap *EncMapCopy(EncMap *map) {
 
     new = chunkalloc(sizeof(EncMap));
     *new = *map;
-    new->map = galloc(new->encmax*sizeof(int));
-    new->backmap = galloc(new->backmax*sizeof(int));
+    new->map = malloc(new->encmax*sizeof(int));
+    new->backmap = malloc(new->backmax*sizeof(int));
     memcpy(new->map,map->map,new->enccount*sizeof(int));
     memcpy(new->backmap,map->backmap,new->backmax*sizeof(int));
     if ( map->remap ) {
 	int n;
 	for ( n=0; map->remap[n].infont!=-1; ++n );
-	new->remap = galloc(n*sizeof(struct remap));
+	new->remap = malloc(n*sizeof(struct remap));
 	memcpy(new->remap,map->remap,n*sizeof(struct remap));
     }
 return( new );
@@ -6276,7 +6189,7 @@ static OTLookup **OTLListCopy(OTLookup **str) {
     if ( str == NULL )
 return( NULL );
     for ( i=0 ; str[i]!=NULL; ++i );
-    ret = galloc((i+1)*sizeof( OTLookup *));
+    ret = malloc((i+1)*sizeof( OTLookup *));
     for ( i=0 ; str[i]!=NULL; ++i )
 	ret[i] = str[i];
     ret[i] = NULL;
@@ -6291,7 +6204,7 @@ struct jstf_lang *JstfLangsCopy(struct jstf_lang *jl) {
 	cur = chunkalloc(sizeof(*cur));
 	cur->lang = jl->lang;
 	cur->cnt = jl->cnt;
-	cur->prios = gcalloc(cur->cnt,sizeof(struct jstf_prio));
+	cur->prios = calloc(cur->cnt,sizeof(struct jstf_prio));
 	for ( i=0; i<cur->cnt; ++i ) {
 	    cur->prios[i].enableShrink = OTLListCopy( jl->prios[i].enableShrink );
 	    cur->prios[i].disableShrink = OTLListCopy( jl->prios[i].disableShrink );
@@ -6666,12 +6579,12 @@ int SCRoundToCluster(SplineChar *sc,int layer,int sel,bigreal within,bigreal max
 return(false);				/* Can't be any clusters */
 	}
 	if ( k==0 )
-	    ptspace = galloc((ptcnt+1)*sizeof(SplinePoint *));
+	    ptspace = malloc((ptcnt+1)*sizeof(SplinePoint *));
 	else
 	    ptspace[ptcnt] = NULL;
     }
 
-    cspace = galloc(ptcnt*sizeof(struct cluster));
+    cspace = malloc(ptcnt*sizeof(struct cluster));
 
     qsort(ptspace,ptcnt,sizeof(SplinePoint *),xcmp);
     changed = _SplineCharRoundToCluster(sc,ptspace,cspace,ptcnt,false,
@@ -7314,12 +7227,12 @@ return( -1 );
 
 void GrowBuffer(GrowBuf *gb) {
     if ( gb->base==NULL ) {
-	gb->base = gb->pt = galloc(200);
+	gb->base = gb->pt = malloc(200);
 	gb->end = gb->base + 200;
     } else {
 	int len = (gb->end-gb->base) + 400;
 	int off = gb->pt-gb->base;
-	gb->base = grealloc(gb->base,len);
+	gb->base = realloc(gb->base,len);
 	gb->end = gb->base + len;
 	gb->pt = gb->base+off;
     }
@@ -7327,12 +7240,12 @@ void GrowBuffer(GrowBuf *gb) {
 
 void GrowBufferAdd(GrowBuf *gb,int ch) {
     if ( gb->base==NULL ) {
-	gb->base = gb->pt = galloc(200);
+	gb->base = gb->pt = malloc(200);
 	gb->end = gb->base + 200;
     } else if ( gb->pt>=gb->end ) {
 	int len = (gb->end-gb->base) + 400;
 	int off = gb->pt-gb->base;
-	gb->base = grealloc(gb->base,len);
+	gb->base = realloc(gb->base,len);
 	gb->end = gb->base + len;
 	gb->pt = gb->base+off;
     }
@@ -7347,12 +7260,12 @@ return;
     n = strlen(str);
 
     if ( gb->base==NULL ) {
-	gb->base = gb->pt = galloc(200+n);
+	gb->base = gb->pt = malloc(200+n);
 	gb->end = gb->base + 200+n;
     } else if ( gb->pt+n+1>=gb->end ) {
 	int len = (gb->end-gb->base) + n+200;
 	int off = gb->pt-gb->base;
-	gb->base = grealloc(gb->base,len);
+	gb->base = realloc(gb->base,len);
 	gb->end = gb->base + len;
 	gb->pt = gb->base+off;
     }

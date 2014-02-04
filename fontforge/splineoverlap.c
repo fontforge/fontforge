@@ -1558,7 +1558,7 @@ static extended *FindOrderedEndpoints(Monotonic *ms,int which) {
     int i,j,k;
 
     for ( m=ms, cnt=0; m!=NULL; m=m->linked, ++cnt );
-    ends = galloc((2*cnt+1)*sizeof(extended));
+    ends = malloc((2*cnt+1)*sizeof(extended));
     for ( m=ms, cnt=0; m!=NULL; m=m->linked, cnt+=2 ) {
 	if ( m->start!=NULL )
 	    ends[cnt] = (&m->start->inter.x)[which];
@@ -1980,7 +1980,7 @@ static Intersection *FindNeeded(Monotonic *ms,enum overlap_type ot,Intersection 
 return(ilist);
 
     for ( m=ms, cnt=0; m!=NULL; m=m->linked, ++cnt );
-    space = galloc(4*(cnt+2)*sizeof(Monotonic*));	/* We need at most cnt, but we will be adding more monotonics... */
+    space = malloc(4*(cnt+2)*sizeof(Monotonic*));	/* We need at most cnt, but we will be adding more monotonics... */
 
     /* Check (again) for coincident spline segments */
     for ( m=ms; m!=NULL; m=m->linked ) {
@@ -2001,7 +2001,7 @@ return(ilist);
     ends[1] = FindOrderedEndpoints(ms,1);
 
     for ( m=ms, cnt=0; m!=NULL; m=m->linked, ++cnt );
-    gaps = galloc(2*cnt*sizeof(struct gaps));
+    gaps = malloc(2*cnt*sizeof(struct gaps));
 
     /* Look for the longest splines without interruptions first. These are */
     /* least likely to cause problems and will give us a good basis from which*/

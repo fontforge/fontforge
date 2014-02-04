@@ -96,7 +96,7 @@ return( copy(""));
     len += 6 /* point size */ + 1 +
 	    5 /* weight */ + 1 +
 	    10 /* style */;
-    fontname = galloc(len);
+    fontname = malloc(len);
     if ( rq.family_name!=NULL ) {
 	char *utf8_name = u2utf8_copy(rq.family_name);
 	sprintf( fontname, "%d %s%dpt %s", rq.weight,
@@ -553,7 +553,7 @@ return( true );
 	    gwwv_post_error(_("Could not open image"),_("Could not open %s"), new );
 	    free( new );
 	} else if ( *ri==NULL ) {
-	    *ri = gcalloc(1,sizeof(GResImage));
+	    *ri = calloc(1,sizeof(GResImage));
 	    (*ri)->filename = new;
 	    (*ri)->image = newi;
 	    GGadgetSetTitle8(g,"...");
@@ -1007,8 +1007,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 
     for ( res=all, cnt=0; res!=NULL; res=res->next, ++cnt );
 
-    panes = gcalloc(cnt+1,sizeof(GTabInfo));
-    gre.tofree = tofree = gcalloc(cnt+1,sizeof(struct tofree));
+    panes = calloc(cnt+1,sizeof(GTabInfo));
+    gre.tofree = tofree = calloc(cnt+1,sizeof(struct tofree));
     cid = 0;
     for ( res=all, i=0; res!=NULL; res=res->next, ++i ) {
 	tofree[i].res = res;
@@ -1017,8 +1017,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	cnt = 0;
 	if ( res->extras!=NULL )
 	    for ( extras=res->extras, cnt = 0; extras->name!=NULL; ++cnt, ++extras );
-	tofree[i].earray = gcalloc(cnt+1,sizeof(GGadgetCreateData[8]));
-	tofree[i].extradefs = gcalloc(cnt+1,sizeof(char *));
+	tofree[i].earray = calloc(cnt+1,sizeof(GGadgetCreateData[8]));
+	tofree[i].extradefs = calloc(cnt+1,sizeof(char *));
 	cnt *= 2;
 	if ( res->initialcomment!=NULL )
 	    ++cnt;
@@ -1034,8 +1034,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		++cnt;
 	}
 
-	tofree[i].gcd = gcd = gcalloc(cnt,sizeof(GGadgetCreateData));
-	tofree[i].lab = lab = gcalloc(cnt,sizeof(GTextInfo));
+	tofree[i].gcd = gcd = calloc(cnt,sizeof(GGadgetCreateData));
+	tofree[i].lab = lab = calloc(cnt,sizeof(GTextInfo));
 
 	j=k=l=0;
 	if ( res->initialcomment!=NULL ) {
@@ -2107,7 +2107,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    gcd[k++].creator = GLabelCreate;
 		    tofree[i].earray[hl][base] = &gcd[k-1];
 
-		    tofree[i].extradefs[l] = galloc(20);
+		    tofree[i].extradefs[l] = malloc(20);
 		    sprintf( tofree[i].extradefs[l], "%d", extras->orig.ival );
 		    lab[k].text = (unichar_t *) tofree[i].extradefs[l];
 		    lab[k].text_is_1byte = true;
@@ -2134,7 +2134,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    gcd[k++].creator = GLabelCreate;
 		    tofree[i].earray[hl][base] = &gcd[k-1];
 
-		    tofree[i].extradefs[l] = galloc(40);
+		    tofree[i].extradefs[l] = malloc(40);
 		    sprintf( tofree[i].extradefs[l], "%g", extras->orig.dval );
 		    lab[k].text = (unichar_t *) tofree[i].extradefs[l];
 		    lab[k].text_is_1byte = true;
@@ -2559,7 +2559,7 @@ void GResEditFind( struct resed *resed, char *prefix) {
 
     for ( i=0; resed[i].name!=NULL; ++i );
 
-    info = gcalloc(i+1,sizeof(GResStruct));
+    info = calloc(i+1,sizeof(GResStruct));
     for ( i=0; resed[i].name!=NULL; ++i ) {
 	info[i].resname = resed[i].resname;
 	info[i].type = resed[i].type;

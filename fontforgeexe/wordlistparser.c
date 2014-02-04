@@ -370,7 +370,7 @@ GTextInfo** WordlistLoadFileToGTextInfo( int type, int words_max )
     }
     free(filename);
 
-    words = galloc( words_max * sizeof(GTextInfo *));
+    words = malloc( words_max * sizeof(GTextInfo *));
 
     cnt = 0;
     if ( type==-1 )
@@ -395,7 +395,7 @@ GTextInfo** WordlistLoadFileToGTextInfo( int type, int words_max )
 		continue;
 	    }
 
-	    words[cnt] = gcalloc(1,sizeof(GTextInfo));
+	    words[cnt] = calloc(1,sizeof(GTextInfo));
 	    words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
 	    words[cnt]->text = (unichar_t *) utf82def_copy( buffer );
 	    words[cnt++]->text_is_1byte = true;
@@ -421,7 +421,7 @@ GTextInfo** WordlistLoadFileToGTextInfo( int type, int words_max )
 		break;
 	    if ( buffer[strlen(buffer)-1]=='\n' )
 		buffer[strlen(buffer)-1] = '\0';
-	    words[cnt] = gcalloc(1,sizeof(GTextInfo));
+	    words[cnt] = calloc(1,sizeof(GTextInfo));
 	    words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
 	    words[cnt]->text = (unichar_t *) copy( buffer );
 	    words[cnt++]->text_is_1byte = true;
@@ -432,20 +432,20 @@ GTextInfo** WordlistLoadFileToGTextInfo( int type, int words_max )
     g_io_channel_unref( file );
     if ( cnt!=0 )
     {
-	words[cnt] = gcalloc(1,sizeof(GTextInfo));
+	words[cnt] = calloc(1,sizeof(GTextInfo));
 	words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
 	words[cnt++]->line = true;
-	words[cnt] = gcalloc(1,sizeof(GTextInfo));
+	words[cnt] = calloc(1,sizeof(GTextInfo));
 	words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
 	words[cnt]->text = (unichar_t *) copy( _("Load Word List...") );
 	words[cnt]->text_is_1byte = true;
 	words[cnt++]->userdata = (void *) -1;
-	words[cnt] = gcalloc(1,sizeof(GTextInfo));
+	words[cnt] = calloc(1,sizeof(GTextInfo));
 	words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
 	words[cnt]->text = (unichar_t *) copy( _("Load Glyph Name List...") );
 	words[cnt]->text_is_1byte = true;
 	words[cnt++]->userdata = (void *) -2;
-	words[cnt] = gcalloc(1,sizeof(GTextInfo));
+	words[cnt] = calloc(1,sizeof(GTextInfo));
     }
     else
     {

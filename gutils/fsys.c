@@ -169,7 +169,7 @@ unichar_t *u_GFileGetHomeDir(void) {
     char* tmp = GFileGetHomeDir();
     if( tmp ) {
 	dir = uc_copy(tmp);
-	gfree(tmp);
+	free(tmp);
     }
 return dir;
 }
@@ -315,7 +315,7 @@ return( (char *)oldname );
 char *GFileAppendFile(char *dir,char *name,int isdir) {
     char *ret, *pt;
 
-    ret = (char *) galloc((strlen(dir)+strlen(name)+3));
+    ret = (char *) malloc((strlen(dir)+strlen(name)+3));
     strcpy(ret,dir);
     pt = ret+strlen(ret);
     if ( pt>ret && pt[-1]!='/' )
@@ -414,7 +414,7 @@ char *_GFile_find_program_dir(char *prog) {
 	    if(!pt1) break;
 	    path = pt1+1;
 	}
-	gfree(tmppath);
+	free(tmppath);
     }
 #else
     if ( (pt = strrchr(prog,'/'))!=NULL )
@@ -441,7 +441,7 @@ char *_GFile_find_program_dir(char *prog) {
     if ( program_dir==NULL )
 return( NULL );
     GFileGetAbsoluteName(program_dir,filename,sizeof(filename));
-    gfree(program_dir);
+    free(program_dir);
     program_dir = copy(filename);
 return( program_dir );
 }
@@ -584,7 +584,7 @@ return( name );
 unichar_t *u_GFileAppendFile(unichar_t *dir,unichar_t *name,int isdir) {
     unichar_t *ret, *pt;
 
-    ret = (unichar_t *) galloc((u_strlen(dir)+u_strlen(name)+3)*sizeof(unichar_t));
+    ret = (unichar_t *) malloc((u_strlen(dir)+u_strlen(name)+3)*sizeof(unichar_t));
     u_strcpy(ret,dir);
     pt = ret+u_strlen(ret);
     if ( pt>ret && pt[-1]!='/' )
@@ -723,7 +723,7 @@ char *getShareDir(void) {
 #endif
     }
     len = (pt-GResourceProgramDir)+strlen("/share/fontforge")+1;
-    sharedir = galloc(len);
+    sharedir = malloc(len);
     strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
     strcpy(sharedir+(pt-GResourceProgramDir),"/share/fontforge");
     return( sharedir );
@@ -739,7 +739,7 @@ char *getLocaleDir(void) {
 
     char* prefix = getShareDir();
     int len = strlen(prefix) + strlen("/../locale") + 2;
-    sharedir = galloc(len);
+    sharedir = malloc(len);
     strcpy(sharedir,prefix);
     strcat(sharedir,"/../locale");
     set = true;
@@ -755,7 +755,7 @@ char *getPixmapDir(void) {
 
     char* prefix = getShareDir();
     int len = strlen(prefix) + strlen("/pixmaps") + 2;
-    sharedir = galloc(len);
+    sharedir = malloc(len);
     strcpy(sharedir,prefix);
     strcat(sharedir,"/pixmaps");
     set = true;
@@ -775,7 +775,7 @@ char *getHelpDir(void) {
 #endif
     char* postfix = "/../doc/fontforge/";
     int len = strlen(prefix) + strlen(postfix) + 2;
-    sharedir = galloc(len);
+    sharedir = malloc(len);
     strcpy(sharedir,prefix);
     strcat(sharedir,postfix);
     set = true;

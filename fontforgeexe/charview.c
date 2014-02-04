@@ -597,7 +597,7 @@ static GPointList *MakePoly(CharView *cv, SplinePointList *spl) {
 			}
 			if ( closed || (prev->flags&cvli_clipped) ) {
 			    if ( i==0 ) {
-				cur = gcalloc(1,sizeof(GPointList));
+				cur = calloc(1,sizeof(GPointList));
 				if ( head==NULL )
 				    head = cur;
 				else {
@@ -610,7 +610,7 @@ static GPointList *MakePoly(CharView *cv, SplinePointList *spl) {
 				    cur = head;
 				else
 				    cur = cur->next;
-				cur->gp = galloc(cur->cnt*sizeof(GPoint));
+				cur->gp = malloc(cur->cnt*sizeof(GPoint));
 				cur->gp[0].x = prev->asstart.x;
 				cur->gp[0].y = prev->asstart.y;
 			    }
@@ -6551,7 +6551,7 @@ return;
 	temp = *cv->b.sc;
 	cv->b.sc->dependents = NULL;
 	lc = cv->b.sc->layer_cnt;
-	undoes = galloc(lc*sizeof(Undoes *));
+	undoes = malloc(lc*sizeof(Undoes *));
 	for ( layer=0; layer<lc; ++layer ) {
 	    undoes[layer] = cv->b.sc->layers[layer].undoes;
 	    cv->b.sc->layers[layer].undoes = NULL;
@@ -7224,7 +7224,7 @@ static SplineChar **GlyphsMatchingAP(SplineFont *sf, AnchorPoint *ap) {
 	 if ( !k ) {
 	     if ( gcnt==0 )
 return( NULL );
-	     glyphs = galloc((gcnt+1)*sizeof(SplineChar *));
+	     glyphs = malloc((gcnt+1)*sizeof(SplineChar *));
 	 } else
 	     glyphs[gcnt] = NULL;
      }
@@ -9903,7 +9903,7 @@ return;
 return;
 
     CVPreserveState(&cv->b);
-    newspiros = galloc((sel->spiro_max+1)*sizeof(spiro_cp));
+    newspiros = malloc((sel->spiro_max+1)*sizeof(spiro_cp));
     memcpy(newspiros,sel->spiros+which,(sel->spiro_cnt-1-which)*sizeof(spiro_cp));
     memcpy(newspiros+(sel->spiro_cnt-1-which),sel->spiros,which*sizeof(spiro_cp));
     memcpy(newspiros+sel->spiro_cnt-1,sel->spiros+sel->spiro_cnt-1,sizeof(spiro_cp));
@@ -11813,7 +11813,7 @@ static void ap2listbuild(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    ++cnt;
 	}
 	if ( !k )
-	    sub = gcalloc(cnt+1,sizeof(GMenuItem));
+	    sub = calloc(cnt+1,sizeof(GMenuItem));
     }
     mi->sub = sub;
 }
@@ -11906,7 +11906,7 @@ return;
     }
 
     for ( cnt = 0; glyphs[cnt]!=NULL; ++cnt );
-    mit = gcalloc(cnt+2,sizeof(GMenuItem2));
+    mit = calloc(cnt+2,sizeof(GMenuItem2));
     mit[0] = aplist[0];
     mit[0].ti.text = (unichar_t *) copy( (char *) mit[0].ti.text );
     mit[0].ti.disabled = (cv->apmine==NULL);
@@ -12066,7 +12066,7 @@ static void mvlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     if ( mm==NULL )
 	mml = mvlist;
     else {
-	mml = gcalloc(base+mm->instance_count+2,sizeof(GMenuItem2));
+	mml = calloc(base+mm->instance_count+2,sizeof(GMenuItem2));
 	memcpy(mml,mvlist,sizeof(mvlist));
 	mml[base-1].ti.fg = mml[base-1].ti.bg = COLOR_DEFAULT;
 	mml[base-1].ti.line = true;
@@ -12142,7 +12142,7 @@ static void mmlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     if ( mm==NULL )
 	mml = mmlist;
     else {
-	mml = gcalloc(base+mm->instance_count+2,sizeof(GMenuItem2));
+	mml = calloc(base+mm->instance_count+2,sizeof(GMenuItem2));
 	memcpy(mml,mmlist,sizeof(mmlist));
 	mml[base-1].ti.fg = mml[base-1].ti.bg = COLOR_DEFAULT;
 	mml[base-1].ti.line = true;
@@ -12347,9 +12347,9 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     cv->nfh = as+ds; cv->nas = as;
 
     cv->height = pos.height; cv->width = pos.width;
-    cv->gi.u.image = gcalloc(1,sizeof(struct _GImage));
+    cv->gi.u.image = calloc(1,sizeof(struct _GImage));
     cv->gi.u.image->image_type = it_mono;
-    cv->gi.u.image->clut = gcalloc(1,sizeof(GClut));
+    cv->gi.u.image->clut = calloc(1,sizeof(GClut));
     cv->gi.u.image->clut->trans_index = cv->gi.u.image->trans = 0;
     cv->gi.u.image->clut->clut_len = 2;
     cv->gi.u.image->clut->clut[0] = view_bgcol;
@@ -12590,7 +12590,7 @@ GTextInfo cv_charselector_init[] = {
 
 CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show )
 {
-    CharView *cv = gcalloc(1,sizeof(CharView));
+    CharView *cv = calloc(1,sizeof(CharView));
     GWindowAttrs wattrs;
     GRect pos, zoom;
     GWindow gw;
@@ -12766,9 +12766,7 @@ void CharViewFree(CharView *cv) {
     for ( i=0; i<cv->former_cnt; ++i )
 	free(cv->former_names[i]);
 
-    if ( cv->ruler_intersections )
-	gfree(cv->ruler_intersections);
-
+    free(cv->ruler_intersections);
     free(cv);
 }
 

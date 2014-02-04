@@ -552,7 +552,7 @@ static int SaveAs_FormatChange(GGadget *g, GEvent *e) {
 	char *oldname = GGadgetGetTitle8(fc);
 	int *_s2d = GGadgetGetUserData(g);
 	int s2d = GGadgetIsChecked(g);
-	char *pt, *newname = galloc(strlen(oldname)+8);
+	char *pt, *newname = malloc(strlen(oldname)+8);
 	strcpy(newname,oldname);
 	pt = strrchr(newname,'.');
 	if ( pt==NULL )
@@ -599,7 +599,7 @@ int _FVMenuSaveAs(FontView *fv) {
 	SplineFont *sf = fv->b.cidmaster?fv->b.cidmaster:
 		fv->b.sf->mm!=NULL?fv->b.sf->mm->normal:fv->b.sf;
 	char *fn = sf->defbasefilename ? sf->defbasefilename : sf->fontname;
-	temp = galloc((strlen(fn)+10));
+	temp = malloc((strlen(fn)+10));
 	strcpy(temp,fn);
 	if ( sf->defbasefilename!=NULL )
 	    /* Don't add a default suffix, they've already told us what name to use */;
@@ -641,7 +641,7 @@ int _FVMenuSaveAs(FontView *fv) {
     	char* defaultSaveDir = GFileGetHomeDocumentsDir();
 	printf("save-as:%s\n", temp );
     	char* temp2 = GFileAppendFile( defaultSaveDir, temp, 0 );
-    	gfree(temp);
+    	free(temp);
     	temp = temp2;
     }
 #endif
@@ -1031,7 +1031,7 @@ return;
 	do {
 	    fpt = strstr(file,"; ");
 	    if ( fpt!=NULL ) *fpt = '\0';
-	    full = galloc(strlen(temp)+1+strlen(file)+1);
+	    full = malloc(strlen(temp)+1+strlen(file)+1);
 	    strcpy(full,temp); strcat(full,"/"); strcat(full,file);
 	    ViewPostScriptFont(full,0);
 	    file = fpt+2;
@@ -2846,7 +2846,7 @@ static void FVShowSubFont(FontView *fv,SplineFont *new) {
 	EncMapFree(fv->b.map);
 	fv->b.map = fv->b.normal;
 	fv->b.normal = NULL;
-	fv->b.selected = grealloc(fv->b.selected,fv->b.map->enccount);
+	fv->b.selected = realloc(fv->b.selected,fv->b.map->enccount);
 	memset(fv->b.selected,0,fv->b.map->enccount);
     }
     CIDSetEncMap((FontViewBase *) fv,new);
@@ -2949,7 +2949,7 @@ static void FVMenuDisplaySubs(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 	    if ( cnt==0 )
 	break;
 	    if ( names==NULL )
-		names = galloc((cnt+3) * sizeof(char *));
+		names = malloc((cnt+3) * sizeof(char *));
 	    else {
 		names[cnt++] = "-";
 		names[cnt++] = _("New Lookup Subtable...");
@@ -3521,7 +3521,7 @@ return;
     len += strlen(collabStateString);
     if ( file!=NULL )
 	len += 2+strlen(file);
-    title = galloc((len+1)*sizeof(unichar_t));
+    title = malloc((len+1)*sizeof(unichar_t));
     uc_strcpy(title,"");
 
     if(*collabStateString) {
@@ -3591,7 +3591,7 @@ static enum fchooserret CMapFilter(GGadget *g,GDirEntry *ent,
 
     if ( ret==fc_show && !ent->isdir ) {
 	int len = 3*(u_strlen(dir)+u_strlen(ent->name)+5);
-	char *filename = galloc(len);
+	char *filename = malloc(len);
 	u2def_strncpy(filename,dir,len);
 	strcat(filename,"/");
 	u2def_strncpy(buf2,ent->name,sizeof(buf2));
@@ -3704,7 +3704,7 @@ return;
     sf->display_antialias = fv->b.sf->display_antialias;
     sf->display_bbsized = fv->b.sf->display_bbsized;
     sf->display_size = fv->b.sf->display_size;
-    sf->private = gcalloc(1,sizeof(struct psdict));
+    sf->private = calloc(1,sizeof(struct psdict));
     PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
     FVInsertInCID((FontViewBase *) fv,sf);
 }
@@ -3845,7 +3845,7 @@ return;
     }
     SFForceEncoding(fv->b.sf,fv->b.map,enc);
     if ( oldcnt < fv->b.map->enccount ) {
-	fv->b.selected = grealloc(fv->b.selected,fv->b.map->enccount);
+	fv->b.selected = realloc(fv->b.selected,fv->b.map->enccount);
 	memset(fv->b.selected+oldcnt,0,fv->b.map->enccount-oldcnt);
     }
     if ( fv->b.normal!=NULL ) {
@@ -3992,7 +3992,7 @@ static void fllistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    mi->ti.disabled = true;
 	    if ( fv->b.sf->filename!=NULL ) {
 		if ( fv->b.sf->backedup == bs_dontknow ) {
-		    char *buf = galloc(strlen(fv->b.sf->filename)+20);
+		    char *buf = malloc(strlen(fv->b.sf->filename)+20);
 		    strcpy(buf,fv->b.sf->filename);
 		    if ( fv->b.sf->compression!=0 )
 			strcat(buf,compressors[fv->b.sf->compression-1].ext);
@@ -4953,9 +4953,9 @@ return;
 		for ( fvs=(FontView *) (fv->b.sf->fv); fvs!=NULL; fvs=(FontView *) (fvs->b.nextsame) ) {
 		    EncMap *map = fvs->b.map;
 		    if ( map->enccount+1>=map->encmax )
-			map->map = grealloc(map->map,(map->encmax += 20)*sizeof(int));
+			map->map = realloc(map->map,(map->encmax += 20)*sizeof(int));
 		    map->map[map->enccount] = -1;
-		    fvs->b.selected = grealloc(fvs->b.selected,(map->enccount+1));
+		    fvs->b.selected = realloc(fvs->b.selected,(map->enccount+1));
 		    memset(fvs->b.selected+map->enccount,0,1);
 		    ++map->enccount;
 		    if ( sc==NULL ) {
@@ -5060,7 +5060,7 @@ static void lylistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     int ly;
     GMenuItem *sub;
 
-    sub = gcalloc(sf->layer_cnt+1,sizeof(GMenuItem));
+    sub = calloc(sf->layer_cnt+1,sizeof(GMenuItem));
     for ( ly=ly_fore; ly<sf->layer_cnt; ++ly ) {
 	sub[ly-1].ti.text = utf82u_copy(sf->layers[ly].name);
 	sub[ly-1].ti.checkable = true;
@@ -5412,7 +5412,7 @@ static void mmlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     if ( mm==NULL )
 	mml = mmlist;
     else {
-	mml = gcalloc(base+mm->instance_count+2,sizeof(GMenuItem2));
+	mml = calloc(base+mm->instance_count+2,sizeof(GMenuItem2));
 	memcpy(mml,mmlist,sizeof(mmlist));
 	mml[base-1].ti.fg = mml[base-1].ti.bg = COLOR_DEFAULT;
 	mml[base-1].ti.line = true;
@@ -5989,23 +5989,23 @@ return( feat_sc );
 	feat_sc = SFSplineCharCreate(sf);
 	feat_sc->unicodeenc = uni;
 	if ( uni!=-1 ) {
-	    feat_sc->name = galloc(8);
+	    feat_sc->name = malloc(8);
 	    feat_sc->unicodeenc = uni;
 	    sprintf( feat_sc->name,"uni%04X", uni );
 	} else if ( fv->cur_subtable->suffix!=NULL ) {
-	    feat_sc->name = galloc(strlen(base_sc->name)+strlen(fv->cur_subtable->suffix)+2);
+	    feat_sc->name = malloc(strlen(base_sc->name)+strlen(fv->cur_subtable->suffix)+2);
 	    sprintf( feat_sc->name, "%s.%s", base_sc->name, fv->cur_subtable->suffix );
 	} else if ( fl==NULL ) {
 	    feat_sc->name = strconcat(base_sc->name,".unknown");
 	} else if ( fl->ismac ) {
 	    /* mac feature/setting */
-	    feat_sc->name = galloc(strlen(base_sc->name)+14);
+	    feat_sc->name = malloc(strlen(base_sc->name)+14);
 	    sprintf( feat_sc->name,"%s.m%d_%d", base_sc->name,
 		    (int) (fl->featuretag>>16),
 		    (int) ((fl->featuretag)&0xffff) );
 	} else {
 	    /* OpenType feature tag */
-	    feat_sc->name = galloc(strlen(base_sc->name)+6);
+	    feat_sc->name = malloc(strlen(base_sc->name)+6);
 	    sprintf( feat_sc->name,"%s.%c%c%c%c", base_sc->name,
 		    (int) (fl->featuretag>>24),
 		    (int) ((fl->featuretag>>16)&0xff),
@@ -6726,7 +6726,7 @@ static void *ddgencharlist(void *_fv,int32 *len) {
 
     for ( i=cnt=0; i<map->enccount; ++i ) if ( fv->b.selected[i] && (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL )
 	cnt += strlen(sf->glyphs[gid]->name)+1;
-    data = galloc(cnt+1); data[0] = '\0';
+    data = malloc(cnt+1); data[0] = '\0';
     for ( cnt=0, j=1 ; j<=fv->sel_index; ++j ) {
 	for ( i=cnt=0; i<map->enccount; ++i )
 	    if ( fv->b.selected[i] && (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
@@ -7262,7 +7262,7 @@ static void FontViewOpenKids(FontView *fv) {
 }
 
 static FontView *__FontViewCreate(SplineFont *sf) {
-    FontView *fv = gcalloc(1,sizeof(FontView));
+    FontView *fv = calloc(1,sizeof(FontView));
     int i;
     int ps = sf->display_size<0 ? -sf->display_size :
 	     sf->display_size==0 ? default_fv_font_size : sf->display_size;
@@ -7316,7 +7316,7 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 	    fv->b.map = CompactEncMap(EncMapCopy(fv->b.map),sf);
 	}
     }
-    fv->b.selected = gcalloc(fv->b.map->enccount,sizeof(char));
+    fv->b.selected = calloc(fv->b.map->enccount,sizeof(char));
     fv->user_requested_magnify = -1;
     fv->magnify = (ps<=9)? 3 : (ps<20) ? 2 : 1;
     fv->cbw = (ps*fv->magnify)+1;
@@ -7395,7 +7395,7 @@ static void FVCreateInnards(FontView *fv,GRect *pos) {
     GDrawSetGIC(fv->v,fv->gic,0,20);
     GDrawSetGIC(fv->gw,fv->gic,0,20);
 
-    fv->fontset = gcalloc(_uni_fontmax,sizeof(GFont *));
+    fv->fontset = calloc(_uni_fontmax,sizeof(GFont *));
     memset(&rq,0,sizeof(rq));
     rq.utf8_family_name = fv_fontnames;
     rq.point_size = fv_fontsize;
@@ -8093,7 +8093,7 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
 		}
 	    }
 	    if ( k==0 )
-		ret = rpt = galloc(len+1);
+		ret = rpt = malloc(len+1);
 	    else if ( rpt!=ret && rpt[-1]==' ' )
 		rpt[-1]='\0';
 	    else

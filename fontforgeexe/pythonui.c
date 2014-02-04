@@ -212,14 +212,14 @@ static int MenuDataAdd(PyObject *func,PyObject *check,PyObject *data,int is_cv) 
 
     if ( is_cv ) {
 	if ( cvpy_menu_cnt >= cvpy_menu_max )
-	    cvpy_menu_data = grealloc(cvpy_menu_data,(cvpy_menu_max+=10)*sizeof(struct python_menu_info));
+	    cvpy_menu_data = realloc(cvpy_menu_data,(cvpy_menu_max+=10)*sizeof(struct python_menu_info));
 	cvpy_menu_data[cvpy_menu_cnt].func = func;
 	cvpy_menu_data[cvpy_menu_cnt].check_enabled = check;
 	cvpy_menu_data[cvpy_menu_cnt].data = data;
 return( cvpy_menu_cnt++ );
     } else {
 	if ( fvpy_menu_cnt >= fvpy_menu_max )
-	    fvpy_menu_data = grealloc(fvpy_menu_data,(fvpy_menu_max+=10)*sizeof(struct python_menu_info));
+	    fvpy_menu_data = realloc(fvpy_menu_data,(fvpy_menu_max+=10)*sizeof(struct python_menu_info));
 	fvpy_menu_data[fvpy_menu_cnt].func = func;
 	fvpy_menu_data[fvpy_menu_cnt].check_enabled = check;
 	fvpy_menu_data[fvpy_menu_cnt].data = data;
@@ -265,7 +265,7 @@ static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv) {
 	    }
 	}
 	if ( *mn==NULL || (*mn)[j].ti.text==NULL ) {
-	    *mn = grealloc(*mn,(j+2)*sizeof(GMenuItem2));
+	    *mn = realloc(*mn,(j+2)*sizeof(GMenuItem2));
 	    memset(*mn+j,0,2*sizeof(GMenuItem2));
 	}
 	mmn = *mn;

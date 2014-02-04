@@ -52,8 +52,8 @@ static int AssignPtNumbers(MMSet *mm,int gid) {
     int i;
     int allavg, alllines, stillmore, ret=true;
 
-    ss = galloc((mm->instance_count+1)*sizeof(SplineSet *));
-    sp = galloc((mm->instance_count+1)*sizeof(SplinePoint *));
+    ss = malloc((mm->instance_count+1)*sizeof(SplineSet *));
+    sp = malloc((mm->instance_count+1)*sizeof(SplinePoint *));
     for ( i=0; i<mm->instance_count; ++i )
 	ss[i] = mm->instances[i]->glyphs[gid]->layers[ly_fore].splines;
     ss[i] = mm->normal->glyphs[gid]->layers[ly_fore].splines;
@@ -330,9 +330,9 @@ return( NULL );
 return( NULL );
 
     *_ptcnt = ptcnt = SCPointCount(mm->normal->glyphs[gid])+4;
-    deltas = galloc(2*mm->instance_count*sizeof(int16 *));
+    deltas = malloc(2*mm->instance_count*sizeof(int16 *));
     for ( i=0; i<2*mm->instance_count; ++i )
-	deltas[i] = gcalloc(ptcnt,sizeof(int16));
+	deltas[i] = calloc(ptcnt,sizeof(int16));
     for ( i=0; i<mm->instance_count; ++i ) {
 	for ( ss1=mm->normal->glyphs[gid]->layers[ly_fore].splines,
 		  ss2=mm->instances[i]->glyphs[gid]->layers[ly_fore].splines;
@@ -434,9 +434,9 @@ return( NULL );
 return( NULL );
 
     *_ptcnt = ptcnt = cvt->len/2;
-    deltas = gcalloc(mm->instance_count,sizeof(int16 *));
+    deltas = calloc(mm->instance_count,sizeof(int16 *));
     for ( i=0; i<mm->instance_count; ++i ) if ( (icvt=mm->instances[i]->ttf_tables)!=NULL ) {
-	deltas[i] = gcalloc(ptcnt,sizeof(int16));
+	deltas[i] = calloc(ptcnt,sizeof(int16));
 	for ( j=0; j<ptcnt; ++j )
 	    deltas[i][j] = memushort(icvt->data,icvt->len, sizeof(uint16)*j)-
 		    memushort(cvt->data,cvt->len, sizeof(uint16)*j);
@@ -526,7 +526,7 @@ return;
 	for ( j=pcnt=0; j<ptcnt; ++j )
 	    if ( deltas[i][j]!=0 )
 		++pcnt;
-	pts = galloc(pcnt*sizeof(uint16));
+	pts = malloc(pcnt*sizeof(uint16));
 	for ( j=pcnt=0; j<ptcnt; ++j )
 	    if ( deltas[i][j]!=0 )
 		pts[pcnt++]=j;

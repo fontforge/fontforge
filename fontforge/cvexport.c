@@ -240,7 +240,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
 	memset(&pi,0,sizeof(pi));
 	pi.out = pdf;
 	pi.max_object = 100;
-	pi.object_offsets = galloc(pi.max_object*sizeof(int));
+	pi.object_offsets = malloc(pi.max_object*sizeof(int));
 	memcpy(pi.object_offsets,objlocs,nextobj*sizeof(int));
 	pi.next_object = nextobj;
 	resobj = PdfDumpGlyphResources(&pi,sc);

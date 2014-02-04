@@ -235,7 +235,7 @@ int32 *ParseBitmapSizes(GGadget *g,char *msg,int *err) {
 	pt = end+1;
 	end2 = NULL;
     }
-    sizes = galloc((i+1)*sizeof(int32));
+    sizes = malloc((i+1)*sizeof(int32));
 
     for ( i=0, pt = val; *pt!='\0' ; ) {
 	sizes[i]=rint(u_strtod(pt,&end));
@@ -1166,7 +1166,7 @@ static enum fchooserret GFileChooserFilterWernerSFDs(GGadget *g,GDirEntry *ent,
     FILE *file;
 
     if ( ret==fc_show && !ent->isdir ) {
-	char *filename = galloc(u_strlen(dir)+u_strlen(ent->name)+5);
+	char *filename = malloc(u_strlen(dir)+u_strlen(ent->name)+5);
 	cu_strcpy(filename,dir);
 	strcat(filename,"/");
 	cu_strcat(filename,ent->name);
@@ -1279,7 +1279,7 @@ static int OFLibUploadGather(struct gfc_data *d,unichar_t *path) {
     ret = OFLibUploadFont( &oflib );
     if ( oflib.upload_id!=NULL ) {
 	char *baseurl = "http://openfontlibrary.org/media/files/";
-	char *uploadcontrol = galloc(strlen(baseurl) + strlen(oflib.upload_id) + 1 );
+	char *uploadcontrol = malloc(strlen(baseurl) + strlen(oflib.upload_id) + 1 );
 	strcpy(uploadcontrol,baseurl);
 	strcat(uploadcontrol,oflib.upload_id);
 	help(uploadcontrol);
@@ -1814,7 +1814,7 @@ return;
     unichar_t *ret = GGadgetGetTitle(d->gfc);
     unichar_t *dup, *pt, *tpt;
 
-    dup = galloc((u_strlen(ret)+30)*sizeof(unichar_t));
+    dup = malloc((u_strlen(ret)+30)*sizeof(unichar_t));
     u_strcpy(dup,ret);
     free(ret);
     pt = u_strrchr(dup,'.');
@@ -1856,7 +1856,7 @@ return( true );
 	}
 
 	ret = GGadgetGetTitle(d->gfc);
-	dup = galloc((u_strlen(ret)+30)*sizeof(unichar_t));
+	dup = malloc((u_strlen(ret)+30)*sizeof(unichar_t));
 	u_strcpy(dup,ret);
 	free(ret);
 	pt = u_strrchr(dup,'.');
@@ -2070,7 +2070,7 @@ static unichar_t *BitmapList(SplineFont *sf) {
     unichar_t *uret;
 
     for ( bdf=sf->bitmaps, i=0; bdf!=NULL; bdf=bdf->next, ++i );
-    pt = cret = galloc((i+1)*20);
+    pt = cret = malloc((i+1)*20);
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	if ( pt!=cret ) *pt++ = ',';
 	if ( bdf->clut==NULL )
@@ -2138,7 +2138,7 @@ static GTextInfo *SFUsableLayerNames(SplineFont *sf,int def_layer) {
 	    def_layer = ly_fore;
     }
 
-    ti = gcalloc(cnt+1,sizeof(GTextInfo));
+    ti = calloc(cnt+1,sizeof(GTextInfo));
     cnt=0;
     for ( layer=0; layer<sf->layer_cnt; ++layer ) if ( sf->layers[layer].ticked ) {
 	ti[cnt].text = (unichar_t *) sf->layers[layer].name;
@@ -2202,7 +2202,7 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
 	/*  and I want people to know why they can't generate a family */
 	FontView *fv;
 	SplineFont *dup=NULL/*, *badenc=NULL*/;
-	familysfs = galloc((fondmax=10)*sizeof(SFArray));
+	familysfs = malloc((fondmax=10)*sizeof(SFArray));
 	memset(familysfs[0],0,sizeof(familysfs[0]));
 	familysfs[0][0] = sf;
 	fondcnt = 1;
@@ -2252,7 +2252,7 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
 	    if ( fc==fondcnt ) {
 		/* Create a new fond containing just this font */
 		if ( fondcnt>=fondmax )
-		    familysfs = grealloc(familysfs,(fondmax+=10)*sizeof(SFArray));
+		    familysfs = realloc(familysfs,(fondmax+=10)*sizeof(SFArray));
 		memset(familysfs[fondcnt],0,sizeof(SFArray));
 		familysfs[fondcnt++][psstyle] = fv->b.sf;
 	    }
@@ -2574,7 +2574,7 @@ return( 0 );
     gcd[k].creator = GListButtonCreate;
     nlnames = AllNamelistNames();
     for ( cnt=0; nlnames[cnt]!=NULL; ++cnt);
-    namelistnames = gcalloc(cnt+3,sizeof(GTextInfo));
+    namelistnames = calloc(cnt+3,sizeof(GTextInfo));
     namelistnames[0].text = (unichar_t *) _("No Rename");
     namelistnames[0].text_is_1byte = true;
     if ( force_names_when_saving==NULL ) {
@@ -3143,7 +3143,7 @@ return( 0 );
 	SplineFont *master = sf->cidmaster ? sf->cidmaster : sf;
 	char *fn = master->defbasefilename!=NULL ? master->defbasefilename :
 		master->fontname;
-	unichar_t *temp = galloc(sizeof(unichar_t)*(strlen(fn)+30));
+	unichar_t *temp = malloc(sizeof(unichar_t)*(strlen(fn)+30));
 	uc_strcpy(temp,fn);
 	uc_strcat(temp,savefont_extensions[ofs]!=NULL?savefont_extensions[ofs]:bitmapextensions[old]);
 	GGadgetSetTitle(gcd[0].ret,temp);

@@ -125,12 +125,12 @@ static void aw2_figure_all_sidebearing(AW_Data *all) {
     AW_Glyph *me, *other;
     real transform[6], half;
     int width, changed;
-    uint8 *rsel = gcalloc(all->fv->map->enccount,sizeof(char));
+    uint8 *rsel = calloc(all->fv->map->enccount,sizeof(char));
     real denom = (all->sf->ascent + all->sf->descent)/DENOM_FACTOR_OF_EMSIZE;
     int ldiff, rdiff;
 
     all->denom = denom;
-    all->visual_separation = galloc(all->gcnt*all->gcnt*sizeof(int));
+    all->visual_separation = malloc(all->gcnt*all->gcnt*sizeof(int));
     for ( i=0; i<all->gcnt; ++i ) {
 	int *vpt = all->visual_separation + i*all->gcnt;
 	me = &all->glyphs[i];
@@ -312,8 +312,8 @@ static void aw2_findedges(AW_Glyph *me, AW_Data *all) {
 
     me->imin_y = floor(me->bb.miny/all->sub_height);
     me->imax_y = ceil (me->bb.maxy/all->sub_height);
-    me->left = galloc((me->imax_y-me->imin_y+1)*sizeof(short));
-    me->right = galloc((me->imax_y-me->imin_y+1)*sizeof(short));
+    me->left = malloc((me->imax_y-me->imin_y+1)*sizeof(short));
+    me->right = malloc((me->imax_y-me->imin_y+1)*sizeof(short));
 
     base = LayerAllSplines(&me->sc->layers[all->layer]);
     ms = SSsToMContours(base,over_remove);	/* over_remove is an arcane way of saying: Look at all contours, not just selected ones */
@@ -379,8 +379,8 @@ static void aw2_dummyedges(AW_Glyph *flat,AW_Data *all) {
 	}
 	flat->imin_y = imin_y; flat->imax_y = imax_y;
     }
-    flat->left = gcalloc((flat->imax_y-flat->imin_y+1),sizeof(short));
-    flat->right = gcalloc((flat->imax_y-flat->imin_y+1),sizeof(short));
+    flat->left = calloc((flat->imax_y-flat->imin_y+1),sizeof(short));
+    flat->right = calloc((flat->imax_y-flat->imin_y+1),sizeof(short));
 }
 
 static void AWGlyphFree( AW_Glyph *me) {
@@ -405,7 +405,7 @@ static void aw2_handlescript(AW_Data *all) {
 
 SplineChar ***GlyphClassesFromNames(SplineFont *sf,char **classnames,
 	int class_cnt ) {
-    SplineChar ***classes = gcalloc(class_cnt,sizeof(SplineChar **));
+    SplineChar ***classes = calloc(class_cnt,sizeof(SplineChar **));
     int i, pass, clen;
     char *pt, *end, ch, *cn;
     SplineChar *sc;
@@ -437,7 +437,7 @@ SplineChar ***GlyphClassesFromNames(SplineFont *sf,char **classnames,
 	    if ( pass )
 		classes[i][clen] = NULL;
 	    else
-		classes[i] = galloc((clen+1)*sizeof(SplineChar *));
+		classes[i] = malloc((clen+1)*sizeof(SplineChar *));
 	}
     }
 return( classes );
@@ -462,7 +462,7 @@ void AutoWidth2(FontViewBase *fv,int separation,int min_side,int max_side,
 	loop_cnt = 4;
 
     scnt = 0; smax = 10;
-    scripts = galloc(smax*sizeof(struct scriptlist));
+    scripts = malloc(smax*sizeof(struct scriptlist));
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) {
 	if ( (sc = sf->glyphs[gid])!=NULL )
@@ -481,10 +481,10 @@ void AutoWidth2(FontViewBase *fv,int separation,int min_side,int max_side,
 	    }
 	    if ( s==scnt ) {
 		if ( scnt>=smax )
-		    scripts = grealloc(scripts,(smax+=10)*sizeof(struct scriptlist));
+		    scripts = realloc(scripts,(smax+=10)*sizeof(struct scriptlist));
 		memset(&scripts[scnt],0,sizeof(struct scriptlist));
 		scripts[scnt].script = script;
-		scripts[scnt].glyphs = gcalloc(sf->glyphcnt+1,sizeof(AW_Glyph));
+		scripts[scnt].glyphs = calloc(sf->glyphcnt+1,sizeof(AW_Glyph));
 		++scnt;
 	    }
 	    i = scripts[s].gcnt;
@@ -624,7 +624,7 @@ void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
 	if ( sc->ticked || sc->ticked2 )
 	    ++cnt;
 
-    glyphs = gcalloc(cnt+1,sizeof(AW_Glyph));
+    glyphs = calloc(cnt+1,sizeof(AW_Glyph));
     for ( cnt=i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
 	if ( sc->ticked || sc->ticked2 ) {
 	    SplineCharLayerFindBounds(sc,layer,&glyphs[cnt].bb);
@@ -712,8 +712,8 @@ void AutoKern2NewClass(SplineFont *sf,int layer,char **leftnames, char **rightna
     int i,cnt,k, kern;
     SplineChar ***left = GlyphClassesFromNames(sf,leftnames,lcnt);
     SplineChar ***right = GlyphClassesFromNames(sf,rightnames,rcnt);
-    int **ileft = galloc(lcnt*sizeof(int*));
-    int **iright = galloc(rcnt*sizeof(int*));
+    int **ileft = malloc(lcnt*sizeof(int*));
+    int **iright = malloc(rcnt*sizeof(int*));
     SplineChar **class, *sc;
 
     if ( chunk_height <= 0 )
@@ -741,7 +741,7 @@ void AutoKern2NewClass(SplineFont *sf,int layer,char **leftnames, char **rightna
 	if ( sc->ticked || sc->ticked2 )
 	    ++cnt;
 
-    glyphs = gcalloc(cnt+1,sizeof(AW_Glyph));
+    glyphs = calloc(cnt+1,sizeof(AW_Glyph));
     for ( cnt=i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
 	if ( sc->ticked || sc->ticked2 ) {
 	    SplineCharLayerFindBounds(sc,layer,&glyphs[cnt].bb);
@@ -759,14 +759,14 @@ void AutoKern2NewClass(SplineFont *sf,int layer,char **leftnames, char **rightna
 
     for ( i=0; i<lcnt; ++i ) {
 	for ( class = left[i], k=0; (sc = class[k])!=NULL; ++k );
-	ileft[i] = galloc((k+1)*sizeof(int));
+	ileft[i] = malloc((k+1)*sizeof(int));
 	for ( class = left[i], k=0; (sc = class[k])!=NULL; ++k )
 	    ileft[i][k] = sc->ttf_glyph;
 	ileft[i][k] = -1;
     }
     for ( i=0; i<rcnt; ++i ) {
 	for ( class = right[i], k=0; (sc = class[k])!=NULL; ++k );
-	iright[i] = galloc((k+1)*sizeof(int));
+	iright[i] = malloc((k+1)*sizeof(int));
 	for ( class = right[i], k=0; (sc = class[k])!=NULL; ++k )
 	    iright[i][k] = sc->ttf_glyph;
 	iright[i][k] = -1;
@@ -879,7 +879,7 @@ return;
 	if ( sc->ticked || sc->ticked2 )
 	    ++cnt;
 
-    glyphs = gcalloc(cnt+1,sizeof(AW_Glyph));
+    glyphs = calloc(cnt+1,sizeof(AW_Glyph));
     for ( cnt=i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
 	if ( sc->ticked || sc->ticked2 ) {
 	    SplineCharLayerFindBounds(sc,layer,&glyphs[cnt].bb);
@@ -897,7 +897,7 @@ return;
 
     all.glyphs = glyphs;
     all.gcnt = cnt;
-    visual_separation = galloc(lcnt*rcnt*sizeof(int));
+    visual_separation = malloc(lcnt*rcnt*sizeof(int));
     for ( i=0; i<lcnt; ++i ) {
 	int *vpt = visual_separation + i*rcnt;
 	SplineChar *lsc = leftglyphs[i];
@@ -925,10 +925,10 @@ return;
 
     good_enough *= good_enough;
 
-    lclassnames = galloc((lcnt+2) * sizeof(char *));
+    lclassnames = malloc((lcnt+2) * sizeof(char *));
     lclasscnt = 1;
     lclassnames[0] = NULL;
-    lused = gcalloc(lcnt,sizeof(int));
+    lused = calloc(lcnt,sizeof(int));
     for ( i=0; i<lcnt; ++i ) if ( leftglyphs[i]->ticked && !lused[i]) {
 	lused[i] = lclasscnt;
 	len = strlen(leftglyphs[i]->name)+1;
@@ -945,7 +945,7 @@ return;
 		len += strlen(leftglyphs[j]->name)+1;
 	    }
 	}
-	lclassnames[lclasscnt] = str = galloc(len+1);
+	lclassnames[lclasscnt] = str = malloc(len+1);
 	for ( j=i; j<lcnt; ++j ) if ( lused[j]==lclasscnt ) {
 	    strcpy(str,leftglyphs[j]->name);
 	    str += strlen(str);
@@ -960,10 +960,10 @@ return;
     kc->first_cnt = lclasscnt;
     free(lused); lused = NULL;
 
-    rclassnames = galloc((rcnt+2) * sizeof(char *));
+    rclassnames = malloc((rcnt+2) * sizeof(char *));
     rclasscnt = 1;
     rclassnames[0] = NULL;
-    rused = gcalloc(rcnt,sizeof(int));
+    rused = calloc(rcnt,sizeof(int));
     for ( i=0; i<rcnt; ++i ) if ( rightglyphs[i]->ticked2 && !rused[i]) {
 	rused[i] = rclasscnt;
 	len = strlen(rightglyphs[i]->name)+1;
@@ -980,7 +980,7 @@ return;
 		len += strlen(rightglyphs[j]->name)+1;
 	    }
 	}
-	rclassnames[rclasscnt] = str = galloc(len+1);
+	rclassnames[rclasscnt] = str = malloc(len+1);
 	for ( j=i; j<rcnt; ++j ) if ( rused[j]==rclasscnt ) {
 	    strcpy(str,rightglyphs[j]->name);
 	    str += strlen(str);
@@ -995,8 +995,8 @@ return;
     free(rused);
     free(visual_separation);
 	
-    kc->offsets = gcalloc(lclasscnt*rclasscnt,sizeof(int16));;
-    kc->adjusts = gcalloc(lclasscnt*rclasscnt,sizeof(DeviceTable));
+    kc->offsets = calloc(lclasscnt*rclasscnt,sizeof(int16));;
+    kc->adjusts = calloc(lclasscnt*rclasscnt,sizeof(DeviceTable));
 
     if ( autokern )
 	AutoKern2NewClass(sf,layer,kc->firsts, kc->seconds,

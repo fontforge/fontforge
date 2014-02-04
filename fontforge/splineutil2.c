@@ -1644,8 +1644,8 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
     break;
     }
     if ( cnt>10 ) {
-	lens = galloc(cnt*sizeof(bigreal));
-	cnts = galloc(cnt*sizeof(int));
+	lens = malloc(cnt*sizeof(bigreal));
+	cnts = malloc(cnt*sizeof(int));
     }
     cnt = 0; len = 0;
     for ( np = from->next->to; ; np = np->next->to ) {
@@ -1666,7 +1666,7 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
     } else
 	pcnt = 2*cnt;
 
-    tp = galloc((pcnt+1)*sizeof(TPoint)); i = 0;
+    tp = malloc((pcnt+1)*sizeof(TPoint)); i = 0;
     if ( len==0 ) {
 	for ( i=0; i<=pcnt; ++i ) {
 	    tp[i].t = i/(pcnt);
@@ -2241,7 +2241,7 @@ static int SplinesRemoveBetweenMaybe(SplineChar *sc,
 return( false );
 
     tp = SplinesFigureTPsBetween(from,to,&tot);
-    tp2 = galloc((tot+1)*sizeof(TPoint));
+    tp2 = malloc((tot+1)*sizeof(TPoint));
     memcpy(tp2,tp,tot*sizeof(TPoint));
 
     if ( !(flags&sf_ignoreslopes) )
@@ -3114,7 +3114,7 @@ return;
 return;
 
     changed = 0;
-    ci = gcalloc(contour_max,sizeof(struct contourinfo));
+    ci = calloc(contour_max,sizeof(struct contourinfo));
     for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
 	contour_cnt = 0;
 	for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
@@ -3282,7 +3282,7 @@ SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed) {
 			    start = spl2->next;
 			if ( spl->spiros && spl2->spiros ) {
 			    if ( spl->spiro_cnt+spl2->spiro_cnt > spl->spiro_max )
-				spl->spiros = grealloc(spl->spiros,
+				spl->spiros = realloc(spl->spiros,
 					(spl->spiro_max = spl->spiro_cnt+spl2->spiro_cnt)*sizeof(spiro_cp));
 			    memcpy(spl->spiros+spl->spiro_cnt-1,
 				    spl2->spiros+1, (spl2->spiro_cnt-1)*sizeof(spiro_cp));
@@ -3787,7 +3787,7 @@ SplineFont *SplineFontEmpty(void) {
     time_t now;
     SplineFont *sf;
 
-    sf = gcalloc(1,sizeof(SplineFont));
+    sf = calloc(1,sizeof(SplineFont));
     sf->pfminfo.fstype = -1;
     sf->top_enc = -1;
     sf->macstyle = -1;
@@ -3811,7 +3811,7 @@ SplineFont *SplineFontEmpty(void) {
     sf->creationtime = sf->modificationtime = now;
 
     sf->layer_cnt = 2;
-    sf->layers = gcalloc(2,sizeof(LayerInfo));
+    sf->layers = calloc(2,sizeof(LayerInfo));
     sf->layers[0].name = copy(_("Back"));
     sf->layers[0].background = true;
     sf->layers[1].name = copy(_("Fore"));
@@ -3843,7 +3843,7 @@ SplineFont *SplineFontBlank(int charcnt) {
 	sprintf( buffer, "Copyright (c) %d, Anonymous", tm->tm_year+1900 );
     sf->copyright = copy(buffer);
     if ( xuid!=NULL ) {
-	sf->xuid = galloc(strlen(xuid)+20);
+	sf->xuid = malloc(strlen(xuid)+20);
 	sprintf(sf->xuid,"[%s %d]", xuid, (rand()&0xffffff));
     }
     sprintf( buffer, "%d-%d-%d: Created with FontForge (http://fontforge.org)", tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday );
@@ -3853,7 +3853,7 @@ SplineFont *SplineFontBlank(int charcnt) {
     sf->upos = -rint(new_em_size*.1); sf->uwidth = rint(new_em_size*.05);		/* defaults for cff */
     sf->glyphcnt = 0;
     sf->glyphmax = charcnt;
-    sf->glyphs = gcalloc(charcnt,sizeof(SplineChar *));
+    sf->glyphs = calloc(charcnt,sizeof(SplineChar *));
     sf->pfminfo.fstype = -1;
     sf->use_typo_metrics = true;
 return( sf );
@@ -3894,7 +3894,7 @@ return;
 	val = (val+1)&0xffffff;
     }
 
-    new = galloc(pt-sf->xuid+12);
+    new = malloc(pt-sf->xuid+12);
     strncpy(new,sf->xuid,pt-sf->xuid);
     npt = new + (pt-sf->xuid);
     if ( npt==new ) *npt++ = '[';
@@ -4799,8 +4799,8 @@ SplineSet *SplineSetsCorrect(SplineSet *base,int *changed) {
 /* Give up if we are given unreasonable values (ie. if rounding errors might screw us up) */
     if ( es.mmin<1e5 && es.mmax>-1e5 && es.omin<1e5 && es.omax>-1e5 ) {
 	es.cnt = (int) (es.mmax-es.mmin) + 1;
-	es.edges = gcalloc(es.cnt,sizeof(Edge *));
-	es.interesting = gcalloc(es.cnt,sizeof(char));
+	es.edges = calloc(es.cnt,sizeof(Edge *));
+	es.interesting = calloc(es.cnt,sizeof(char));
 	es.sc = NULL;
 	es.major = 1; es.other = 0;
 	FindEdgesSplineSet(base,&es,false);

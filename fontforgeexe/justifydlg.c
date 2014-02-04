@@ -141,7 +141,7 @@ static void GlyphMatrixInit(struct matrixinit *mi,char *glyphstr,SplineFont *sf)
 	    start = end;
 	}
 	if ( md==NULL )
-	    md = gcalloc(1*(cnt+10),sizeof(struct matrix_data));
+	    md = calloc(1*(cnt+10),sizeof(struct matrix_data));
     }
     mi->matrix_data = md;
     mi->initial_row_cnt = cnt;
@@ -161,7 +161,7 @@ static int JSTF_Glyph_OK(GGadget *g, GEvent *e) {
 	    len = 0;
 	    for ( i=0; i<rows; ++i )
 		len += strlen(strings[1*i+0].u.md_str) +1;
-	    ret = galloc(len+1);
+	    ret = malloc(len+1);
 	    for ( i=0; i<rows; ++i ) {
 		strcpy(ret,strings[1*i+0].u.md_str);
 		strcat(ret," ");
@@ -345,7 +345,7 @@ static void LookupMatrixInit(struct matrixinit *mi,char *lookupstr,
 	    start = end;
 	}
 	if ( md==NULL )
-	    md = gcalloc(1*(cnt+10),sizeof(struct matrix_data));
+	    md = calloc(1*(cnt+10),sizeof(struct matrix_data));
     }
     mi->matrix_data = md;
     mi->initial_row_cnt = cnt;
@@ -367,7 +367,7 @@ static int JSTF_Lookup_OK(GGadget *g, GEvent *e) {
 		OTLookup *otl = (OTLookup *) strings[1*i+0].u.md_ival;
 		len += strlen(otl->lookup_name) +2;
 	    }
-	    gld->ret = ret = galloc(len+1);
+	    gld->ret = ret = malloc(len+1);
 	    for ( i=0; i<rows; ++i ) {
 		OTLookup *otl = (OTLookup *) strings[1*i+0].u.md_ival;
 		strcpy(ret,otl->lookup_name);
@@ -549,7 +549,7 @@ return( NULL );
     if ( len==0 )
 return( copy( "" ));
 
-    ret = pt = galloc(len+1);
+    ret = pt = malloc(len+1);
     for ( i=0; otll[i]!=NULL; ++i ) {
 	strcpy(pt,otll[i]->lookup_name);
 	strcat(pt,", ");
@@ -576,7 +576,7 @@ return( NULL );
     while ( (pt = strchr(pt+1,','))!=NULL )
 	++cnt;
 
-    ret = galloc( (cnt+2)*sizeof(OTLookup *));
+    ret = malloc( (cnt+2)*sizeof(OTLookup *));
     pt = str;
     cnt = 0;
     while ( (ept = strchr(pt,','))!=NULL ) {
@@ -623,7 +623,7 @@ static void JLanguageMatrixInit(struct matrixinit *mi, struct jstf_lang *jl) {
     cnt = 0;
     for ( jlang = jl; jlang!=NULL; jlang=jlang->next )
 	cnt += jlang->cnt;
-    md = gcalloc(mi->col_cnt*(cnt+10),sizeof(struct matrix_data));
+    md = calloc(mi->col_cnt*(cnt+10),sizeof(struct matrix_data));
     cnt = 0;
     for ( jlang = jl; jlang!=NULL; jlang=jlang->next ) {
 	for ( i=0; i<jlang->cnt; ++i ) {
@@ -662,7 +662,7 @@ static int JSTF_Language_OK(GGadget *g, GEvent *e) {
 	    last = cur;
 	    cur->lang = Str2Tag(strings[i*cols+0].u.md_str);
 	    cur->cnt  = cnt;
-	    cur->prios=gcalloc(cnt,sizeof(struct jstf_prio));
+	    cur->prios=calloc(cnt,sizeof(struct jstf_prio));
 	    for ( j=i, cnt=0; j<rows; ++j ) {
 		if ( strcmp(strings[j*cols+0].u.md_str, strings[i*cols+0].u.md_str)==0 ) {
 		    cur->prios[cnt].enableExtend = Str2OTLList(jd->sf,strings[j*cols+1].u.md_str );
@@ -850,7 +850,7 @@ static void JScriptMatrixInit(struct matrixinit *mi,Justify *js) {
 	    ++cnt;
 	}
 	if ( md==NULL )
-	    md = gcalloc(4*(cnt+10),sizeof(struct matrix_data));
+	    md = calloc(4*(cnt+10),sizeof(struct matrix_data));
     }
     mi->matrix_data = md;
     mi->initial_row_cnt = cnt;

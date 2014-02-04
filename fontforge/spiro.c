@@ -140,7 +140,7 @@ spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt) {
     break;
     }
 
-    ret = galloc((3*cnt+1)*sizeof(spiro_cp));
+    ret = malloc((3*cnt+1)*sizeof(spiro_cp));
 
     for ( cnt=0, sp=ss->first; ; ) {
 	ret[cnt].x = sp->me.x;

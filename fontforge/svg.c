@@ -1171,7 +1171,7 @@ static xmlNodePtr *FindSVGFontNodes(xmlDocPtr doc) {
     xmlNodePtr *fonts=NULL;
     int cnt;
 
-    fonts = gcalloc(100,sizeof(xmlNodePtr));	/* If the file has more than 100 fonts in it then it's foolish to expect the user to pick out one, so let's limit ourselves to 100 */
+    fonts = calloc(100,sizeof(xmlNodePtr));	/* If the file has more than 100 fonts in it then it's foolish to expect the user to pick out one, so let's limit ourselves to 100 */
     cnt = _FindSVGFontNodes(xmlDocGetRootElement(doc),fonts,0,100,"svg");
     if ( cnt==0 ) {
 	free(fonts);
@@ -1188,7 +1188,7 @@ static xmlNodePtr SVGPickFont(xmlNodePtr *fonts,char *filename) {
     int choice;
 
     for ( cnt=0; fonts[cnt]!=NULL; ++cnt);
-    names = galloc((cnt+1)*sizeof(char *));
+    names = malloc((cnt+1)*sizeof(char *));
     for ( cnt=0; fonts[cnt]!=NULL; ++cnt) {
 	name = xmlGetProp(fonts[cnt],(xmlChar *) "id");
 	if ( name==NULL ) {
@@ -2173,14 +2173,14 @@ static void xmlParseColorSource(xmlNodePtr top,char *name,DBounds *bbox,
 	    /* I'm not sure how to use the style stop-color, but I'm guessing */
 	    /*  this might be it */
 	    grad->stop_cnt = 1;
-	    grad->grad_stops = gcalloc(1,sizeof(struct grad_stops));
+	    grad->grad_stops = calloc(1,sizeof(struct grad_stops));
 	    grad->grad_stops[scnt].offset = 1;
 	    grad->grad_stops[scnt].col = st->stopColor;
 	    grad->grad_stops[scnt].opacity = st->stopOpacity;
 	    ++scnt;
 	} else {
 	    grad->stop_cnt = scnt;
-	    grad->grad_stops = gcalloc(scnt,sizeof(struct grad_stops));
+	    grad->grad_stops = calloc(scnt,sizeof(struct grad_stops));
 	    scnt = 0;
 	    for ( kid = colour_source->children; kid!=NULL; kid=kid->next ) if ( xmlStrcmp(kid->name,(xmlChar *) "stop")==0 ) {
 		grad->grad_stops[scnt].col = st->stopColor;
@@ -2512,7 +2512,7 @@ return( ent );
 }
 
 static Entity *EntityCreate(SplinePointList *head,struct svg_state *state) {
-    Entity *ent = gcalloc(1,sizeof(Entity));
+    Entity *ent = calloc(1,sizeof(Entity));
     ent->type = et_splines;
     ent->u.splines.splines = head;
     ent->u.splines.cap = state->lc;
@@ -3011,7 +3011,7 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
 	} else if ( u[1]!='\0' ) {
 	    /* Normal ligature */
 	    for ( len=0; u[len]!=0; ++len );
-	    chars = galloc(len*sizeof(SplineChar *));
+	    chars = malloc(len*sizeof(SplineChar *));
 	    for ( len=len2=0; u[len]!=0; ++len ) {
 		chars[len] = SFGetChar(sc->parent,u[len],NULL);
 		if ( chars[len]==NULL )
@@ -3022,7 +3022,7 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
 		}
 	    }
 	    if ( any==NULL ) any=sc;
-	    comp = pt = galloc(len2+1);
+	    comp = pt = malloc(len2+1);
 	    *pt = '\0';
 	    for ( len=0; u[len]!=0; ++len ) {
 		if ( chars[len]!=NULL )
@@ -3084,7 +3084,7 @@ static char *SVGGetNames(SplineFont *sf,xmlChar *g,xmlChar *utf8,SplineChar **sc
 	    }
 	}
     }
-    names = pt = galloc(len+(g!=NULL?strlen((char *)g):0)+1);
+    names = pt = malloc(len+(g!=NULL?strlen((char *)g):0)+1);
     if ( utf8!=NULL ) {
 	for ( i=0; u[i]!=0; ++i ) {
 	    temp = SFGetChar(sf,u[i],NULL);
@@ -3399,13 +3399,13 @@ return( NULL );
 
     /* Give ourselves an xuid, just in case they want to convert to PostScript*/
     if ( xuid!=NULL ) {
-	sf->xuid = galloc(strlen(xuid)+20);
+	sf->xuid = malloc(strlen(xuid)+20);
 	sprintf(sf->xuid,"[%s %d]", xuid, (rand()&0xffffff));
     }
 
     ff_progress_change_total(cnt);
     sf->glyphcnt = sf->glyphmax = cnt;
-    sf->glyphs = galloc(cnt*sizeof(SplineChar *));
+    sf->glyphs = malloc(cnt*sizeof(SplineChar *));
 
     cnt = 0;
     for ( kids = font->children; kids!=NULL; kids=kids->next ) {
@@ -3441,8 +3441,8 @@ return( NULL );
     map = chunkalloc(sizeof(EncMap));
     map->enccount = map->encmax = map->backmax = sf->glyphcnt;
     map->enc = FindOrMakeEncoding("Original");
-    map->map = galloc(sf->glyphcnt*sizeof(int));
-    map->backmap = galloc(sf->glyphcnt*sizeof(int));
+    map->map = malloc(sf->glyphcnt*sizeof(int));
+    map->backmap = malloc(sf->glyphcnt*sizeof(int));
     for ( i=0; i<sf->glyphcnt; ++i )
 	map->map[i] = map->backmap[i] = i;
     sf->map = map;
@@ -3687,7 +3687,7 @@ return( NULL );
     }
 
     for ( cnt=0; fonts[cnt]!=NULL; ++cnt);
-    ret = galloc((cnt+1)*sizeof(char *));
+    ret = malloc((cnt+1)*sizeof(char *));
     for ( cnt=0; fonts[cnt]!=NULL; ++cnt) {
 	name = xmlGetProp(fonts[cnt],(xmlChar *) "id");
 	if ( name==NULL ) {
