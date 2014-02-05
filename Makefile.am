@@ -27,6 +27,17 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
+# Ignore files installed by gnulib-tool
+GITIGNOREFILES = \
+	.gitmodules \
+	INSTALL \
+	aclocal.m4 \
+	config/ \
+	gnulib/ \
+	lib/ \
+	libltdl/
+
+
 #--------------------------------------------------------------------------
 
 AM_CPPFLAGS =
