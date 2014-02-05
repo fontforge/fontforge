@@ -2900,6 +2900,7 @@ return;
 	    timeout = &offset;
 	}
 	fd = XConnectionNumber(display);
+//    printf("gxdraw.... x connection number:%d\n", fd );
 	FD_ZERO(&read); FD_ZERO(&write); FD_ZERO(&except);
 	FD_SET(fd,&read);
 	FD_SET(fd,&except);
