@@ -49,10 +49,12 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 
 LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la	\
-	$(top_builddir)/gutils/libgioftp.la
+	$(top_builddir)/gutils/libgioftp.la	\
+	$(top_builddir)/lib/libgnu.la
 
 
 AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
+	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
 	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
 	"-DPLUGINDIR=\"${MY_PLUGINDIR}\"" $(MY_CFLAGS)
 
@@ -99,10 +101,6 @@ libfontforge_la_LIBADD += $(MY_LIBS) $(LIBZMQ_LIBS)
 
 #--------------------------------------------------------------------------
 
-LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
-	$(top_builddir)/gutils/libgutils.la	\
-	$(top_builddir)/gutils/libgioftp.la
-
 GUILIBADD =
 if GRAPHICAL_USER_INTERFACE
 GUILIBADD += $(top_builddir)/gdraw/libgdraw.la $(XINPUT_LIBS) $(XKB_LIBS)
@@ -110,23 +108,24 @@ endif GRAPHICAL_USER_INTERFACE
 
 LDADD = $(LIBADD) $(GUILIBADD)
 
-AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
-	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
-	"-DPLUGINDIR=\"${MY_PLUGINDIR}\"" $(MY_CFLAGS)
-
 #--------------------------------------------------------------------------
 
 # In splinerefigure.c, the slight error introduced occasionally by
 # optimization turns out to have disastrous effects. Compile it
 # without optimization.
 splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
-	$(LIBTOOL) --mode=compile $(CC) -g -c -o		\
+	$(LIBTOOL) --mode=compile $(CC) $(RAW_COMPILE_PLATFORM_CFLAGS) -g -c -o \
 		splinerefigure.lo $(AM_CPPFLAGS) $(srcdir)/splinerefigure.c
 
 #--------------------------------------------------------------------------
+EXTRA_DIST = descrip.mms
+# TODO: need to investige these files to see if they should be distributed or
+# if there is better methods or solutions
+# EXTRA_DIST += acorn2sfd.c generate_codepoint_selector.py lff.opt stamper.c
+# EXTRA_DIST += threaddummy.c xlib.opt
 
 if MACINTOSH
-EXTRA_DIST = MacFontForgeApp.zip
+EXTRA_DIST += MacFontForgeApp.zip
 MOSTLYCLEANFILES = MacFontForgeApp.zip
 endif MACINTOSH
 

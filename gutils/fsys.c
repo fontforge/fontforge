@@ -169,13 +169,13 @@ unichar_t *u_GFileGetHomeDir(void) {
     char* tmp = GFileGetHomeDir();
     if( tmp ) {
 	dir = uc_copy(tmp);
-	gfree(tmp);
+	free(tmp);
     }
 return dir;
 }
 
 static void savestrcpy(char *dest,const char *src) {
-    forever {
+    for (;;) {
 	*dest = *src;
 	if ( *dest=='\0' )
     break;
@@ -315,7 +315,7 @@ return( (char *)oldname );
 char *GFileAppendFile(char *dir,char *name,int isdir) {
     char *ret, *pt;
 
-    ret = (char *) galloc((strlen(dir)+strlen(name)+3));
+    ret = (char *) malloc((strlen(dir)+strlen(name)+3));
     strcpy(ret,dir);
     pt = ret+strlen(ret);
     if ( pt>ret && pt[-1]!='/' )
@@ -414,7 +414,7 @@ char *_GFile_find_program_dir(char *prog) {
 	    if(!pt1) break;
 	    path = pt1+1;
 	}
-	gfree(tmppath);
+	free(tmppath);
     }
 #else
     if ( (pt = strrchr(prog,'/'))!=NULL )
@@ -441,7 +441,7 @@ char *_GFile_find_program_dir(char *prog) {
     if ( program_dir==NULL )
 return( NULL );
     GFileGetAbsoluteName(program_dir,filename,sizeof(filename));
-    gfree(program_dir);
+    free(program_dir);
     program_dir = copy(filename);
 return( program_dir );
 }
@@ -460,9 +460,7 @@ unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz) 
 	if ( buffer[u_strlen(buffer)-1]!='/' )
 	    uc_strcat(buffer,"/");
 	u_strcat(buffer,name);
-	#if defined(__MINGW32__)
 	_u_backslash_to_slash(buffer);
-	#endif
 
 	/* Normalize out any .. */
 	spt = rpt = buffer;
@@ -490,9 +488,7 @@ unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz) 
     if (result!=name) {
 	u_strncpy(result,name,rsiz);
 	result[rsiz-1]='\0';
-	#if defined(__MINGW32__)
 	_u_backslash_to_slash(result);
-	#endif
     }
 return(result);
 }
@@ -588,7 +584,7 @@ return( name );
 unichar_t *u_GFileAppendFile(unichar_t *dir,unichar_t *name,int isdir) {
     unichar_t *ret, *pt;
 
-    ret = (unichar_t *) galloc((u_strlen(dir)+u_strlen(name)+3)*sizeof(unichar_t));
+    ret = (unichar_t *) malloc((u_strlen(dir)+u_strlen(name)+3)*sizeof(unichar_t));
     u_strcpy(ret,dir);
     pt = ret+u_strlen(ret);
     if ( pt>ret && pt[-1]!='/' )
@@ -727,7 +723,7 @@ char *getShareDir(void) {
 #endif
     }
     len = (pt-GResourceProgramDir)+strlen("/share/fontforge")+1;
-    sharedir = galloc(len);
+    sharedir = malloc(len);
     strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
     strcpy(sharedir+(pt-GResourceProgramDir),"/share/fontforge");
     return( sharedir );
@@ -743,7 +739,7 @@ char *getLocaleDir(void) {
 
     char* prefix = getShareDir();
     int len = strlen(prefix) + strlen("/../locale") + 2;
-    sharedir = galloc(len);
+    sharedir = malloc(len);
     strcpy(sharedir,prefix);
     strcat(sharedir,"/../locale");
     set = true;
@@ -759,7 +755,7 @@ char *getPixmapDir(void) {
 
     char* prefix = getShareDir();
     int len = strlen(prefix) + strlen("/pixmaps") + 2;
-    sharedir = galloc(len);
+    sharedir = malloc(len);
     strcpy(sharedir,prefix);
     strcat(sharedir,"/pixmaps");
     set = true;
@@ -779,7 +775,7 @@ char *getHelpDir(void) {
 #endif
     char* postfix = "/../doc/fontforge/";
     int len = strlen(prefix) + strlen(postfix) + 2;
-    sharedir = galloc(len);
+    sharedir = malloc(len);
     strcpy(sharedir,prefix);
     strcat(sharedir,postfix);
     set = true;
@@ -928,7 +924,7 @@ int GFileWriteAll(char *filepath, char *data) {
     return -1;
 }
 
-char *getTempDir(void)
+const char *getTempDir(void)
 {
     return g_get_tmp_dir();
 }
@@ -945,7 +941,7 @@ char *GFileGetHomeDocumentsDir(void)
     HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents );
     if (result != S_OK)
     {
-    	fprintf(stderr,"Error: Cant get My Documents path!'\n");
+    	fprintf(stderr,"Error: Can't get My Documents path!'\n");
         return ret;
     }
     int pos = strlen(my_documents);
@@ -955,9 +951,8 @@ char *GFileGetHomeDocumentsDir(void)
     return ret;
 #endif
 
-    // For Linux and OSX it was decided that this should be just the
+    // On GNU/Linux and OSX it was decided that this should be just the
     // home directory itself.
-//    ret = GFileAppendFile( GFileGetHomeDir(), "/Documents", 1 );
     ret = GFileGetHomeDir();
     return ret;
 }
@@ -972,19 +967,4 @@ char *GFileDirName(const char *path)
     if ( pt )
 	*pt = '\0';
     return strdup(ret);
-}
-
-/**
- * Filesystem split char, on osx and linux this is /
- * on windows it is \
- *
- * NOTE: it is probably better to normalize paths on windows to use / internally.
- */
-static char getFilesystemSplitChar( void )
-{
-    char splitchar = '/';
-#if defined(__MINGW32__)
-    splitchar = '\\';
-#endif
-    return splitchar;
 }

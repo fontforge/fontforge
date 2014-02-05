@@ -22,6 +22,7 @@ Comment[es]=Un editor de fuentes
 Comment[it]=Un profilo editor di font
 Comment[pt]=Um editor de fontes
 Exec=fontforge %U
+TryExec=fontforge
 Icon=fontforge
 StartupWMClass=fontforge
 Terminal=false

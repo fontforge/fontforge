@@ -426,7 +426,7 @@ static int ParseArgs( gpointer data ) {
 	    GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
 	    if ( GFileIsDir(buffer)) {
 		char *fname;
-		fname = galloc(strlen(buffer)+strlen("glyphs/contents.plist")+1);
+		fname = malloc(strlen(buffer)+strlen("glyphs/contents.plist")+1);
 		strcpy(fname,buffer); strcat(fname,"glyphs/contents.plist");
 		if ( GFileExists(fname)) {
 		    /* It's probably a Unified Font Object directory */

@@ -152,7 +152,7 @@ static GTextInfo **AnchorD_GlyphsInClass(AnchorDlg *a) {
 		    if ( ap->anchor == ac ) {
 			if ( ap->type==at_mark || ap->type == at_centry ) {
 			    if ( j ) {
-				ti[btot+1+mcnt] = gcalloc(1,sizeof(GTextInfo));
+				ti[btot+1+mcnt] = calloc(1,sizeof(GTextInfo));
 				ti[btot+1+mcnt]->text = utf82u_copy(sf->glyphs[gid]->name);
 				ti[btot+1+mcnt]->fg = ti[btot+1+mcnt]->bg = COLOR_DEFAULT;
 			        ti[btot+1+mcnt]->userdata = ap;
@@ -161,7 +161,7 @@ static GTextInfo **AnchorD_GlyphsInClass(AnchorDlg *a) {
 			    ++mcnt;
 			} else {
 			    if ( j ) {
-				ti[bcnt] = gcalloc(1,sizeof(GTextInfo));
+				ti[bcnt] = calloc(1,sizeof(GTextInfo));
 				ti[bcnt]->text = utf82u_copy(sf->glyphs[gid]->name);
 				ti[bcnt]->fg = ti[bcnt]->bg = COLOR_DEFAULT;
 			        ti[bcnt]->userdata = ap;
@@ -176,30 +176,30 @@ static GTextInfo **AnchorD_GlyphsInClass(AnchorDlg *a) {
 	} while ( k<_sf->subfontcnt );
 	if ( !j ) {
 	    btot = bcnt;
-	    ti = gcalloc(bcnt+mcnt+5,sizeof(GTextInfo));
-	    ti[0] = gcalloc(1,sizeof(GTextInfo));
+	    ti = calloc(bcnt+mcnt+5,sizeof(GTextInfo));
+	    ti[0] = calloc(1,sizeof(GTextInfo));
 	    ti[0]->text = utf82u_copy(ac->type==act_curs ? _("Exits") : _("Bases"));
 	    ti[0]->fg = ti[0]->bg = COLOR_DEFAULT;
 	    ti[0]->disabled = true;
-	    ti[btot] = gcalloc(1,sizeof(GTextInfo));
+	    ti[btot] = calloc(1,sizeof(GTextInfo));
 	    ti[btot]->line = true;
 	    ti[btot]->fg = ti[btot]->bg = COLOR_DEFAULT;
-	    ti[btot+1] = gcalloc(1,sizeof(GTextInfo));
+	    ti[btot+1] = calloc(1,sizeof(GTextInfo));
 	    ti[btot+1]->text = utf82u_copy(ac->type==act_curs ? _("Entries") : _("Marks"));
 	    ti[btot+1]->fg = ti[btot+1]->bg = COLOR_DEFAULT;
 	    ti[btot+1]->disabled = true;
-	    ti[btot+mcnt+1] = gcalloc(1,sizeof(GTextInfo));
+	    ti[btot+mcnt+1] = calloc(1,sizeof(GTextInfo));
 	    ti[btot+mcnt+1]->line = true;
 	    ti[btot+mcnt+1]->fg = ti[btot+mcnt+1]->bg = COLOR_DEFAULT;
-	    ti[btot+mcnt+2] = gcalloc(1,sizeof(GTextInfo));
+	    ti[btot+mcnt+2] = calloc(1,sizeof(GTextInfo));
 	    ti[btot+mcnt+2]->text = utf82u_copy(ac->type==act_curs ? _("Add Exit Anchor...") : _("Add Base Anchor..."));
 	    ti[btot+mcnt+2]->fg = ti[btot+mcnt+2]->bg = COLOR_DEFAULT;
 	    ti[btot+mcnt+2]->userdata = Add_Base;
-	    ti[btot+mcnt+3] = gcalloc(1,sizeof(GTextInfo));
+	    ti[btot+mcnt+3] = calloc(1,sizeof(GTextInfo));
 	    ti[btot+mcnt+3]->text = utf82u_copy(ac->type==act_curs ? _("Add Entry Anchor...") : _("Add Mark Anchor..."));
 	    ti[btot+mcnt+3]->fg = ti[btot+mcnt+3]->bg = COLOR_DEFAULT;
 	    ti[btot+mcnt+3]->userdata = Add_Mark;
-	    ti[btot+mcnt+4] = gcalloc(1,sizeof(GTextInfo));
+	    ti[btot+mcnt+4] = calloc(1,sizeof(GTextInfo));
 	}
     }
 return( ti );
@@ -281,13 +281,13 @@ static void AnchorD_FindComplements(AnchorDlg *a) {
 	if ( cnt==0 )
     break;
 	if ( j==0 )
-	    a->apmatch = gcalloc(cnt,sizeof(struct apmatch));
+	    a->apmatch = calloc(cnt,sizeof(struct apmatch));
     }
 
     if ( hasFreeType() && _sf->subfontcnt==0 ) {
 	int enc = map->backmap[a->sc->orig_pos];
 	if ( enc!=-1 ) {
-	    sel = gcalloc(map->enccount,1);
+	    sel = calloc(map->enccount,1);
 	    sel[enc] = true;
 	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 		enc = map->backmap[i];
@@ -895,14 +895,14 @@ static void AnchorD_SetDevTabs(AnchorDlg *a) {
 	int i;
 	int len = max-min+1;
 	char buffer[20];
-	GTextInfo **ti = galloc((len+1)*sizeof(GTextInfo *));
+	GTextInfo **ti = malloc((len+1)*sizeof(GTextInfo *));
 	for ( i=0; i<len; ++i ) {
-	    ti[i] = gcalloc(1,sizeof(GTextInfo));
+	    ti[i] = calloc(1,sizeof(GTextInfo));
 	    sprintf( buffer, "%d", i+min );
 	    ti[i]->text = uc_copy(buffer);
 	    ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
 	}
-	ti[i] = gcalloc(1,sizeof(GTextInfo));
+	ti[i] = calloc(1,sizeof(GTextInfo));
 	GGadgetSetList(GWidgetGetControl(a->gw,CID_DisplaySize),ti,false);
     }
     ubuf[0] = '0'; ubuf[1] = '\0';
@@ -976,7 +976,7 @@ static SplineChar *AddAnchor(AnchorDlg *a, SplineFont *sf, AnchorClass *ac,
     int i;
 
     def = copy(".notdef");
-    forever {
+    for (;;) {
 	ret = gwwv_ask_string(_("Provide a glyph name"),def,_("Please identify a glyph by name, and FontForge will add an anchor to that glyph."));
 	free(def);
 	if ( ret==NULL )
@@ -1178,13 +1178,13 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap,int layer) {
     if ( ap->xadjust.corrections!=NULL ) {
 	int len = ap->xadjust.last_pixel_size-ap->xadjust.first_pixel_size+1;
 	a.xadjust = ap->xadjust;
-	a.xadjust.corrections = galloc(len);
+	a.xadjust.corrections = malloc(len);
 	memcpy(a.xadjust.corrections,ap->xadjust.corrections,len);
     }
     if ( ap->yadjust.corrections!=NULL ) {
 	int len = ap->yadjust.last_pixel_size-ap->yadjust.first_pixel_size+1;
 	a.yadjust = ap->yadjust;
-	a.yadjust.corrections = galloc(len);
+	a.yadjust.corrections = malloc(len);
 	memcpy(a.yadjust.corrections,ap->yadjust.corrections,len);
     }
 

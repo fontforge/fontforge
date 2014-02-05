@@ -579,12 +579,10 @@ static int encmatch(const char *enc,int subok) {
 	{ "UCS-2-INTERNAL", e_unicode },
 	{ "ISO-10646", e_unicode },
 	{ "ISO_10646", e_unicode },
-#if 0
-	{ "eucJP", e_euc },
-	{ "EUC-JP", e_euc },
-	{ "ujis", ??? },
-	{ "EUC-KR", e_euckorean },
-#endif
+	/* { "eucJP", e_euc }, */
+	/* { "EUC-JP", e_euc }, */
+	/* { "ujis", ??? }, */
+	/* { "EUC-KR", e_euckorean }, */
 	{ NULL, 0 }
     };
     int i;
@@ -767,22 +765,10 @@ static void NOUI_LoadPrefs(void) {
 		    script_filenames[ms++] = copy(pt);
 		else if ( strncmp(line,"MenuName:",strlen("MenuName:"))==0 && mn<SCRIPT_MENU_MAX )
 		    script_menu_names[mn++] = utf82u_copy(pt);
-#if 0
-		else if ( strncmp(line,"FontFilterName:",strlen("FontFilterName:"))==0 ) {
-		    if ( fn>=filt_max )
-			user_font_filters = grealloc(user_font_filters,((filt_max+=10)+1)*sizeof( struct openfilefilters));
-		    user_font_filters[fn].filter = NULL;
-		    user_font_filters[fn++].name = copy(pt);
-		    user_font_filters[fn].name = NULL;
-		} else if ( strncmp(line,"FontFilter:",strlen("FontFilter:"))==0 ) {
-		    if ( ff<filt_max )
-			user_font_filters[ff++].filter = copy(pt);
-		}
-#endif
 		else if ( strncmp(line,"MacMapCnt:",strlen("MacSetCnt:"))==0 ) {
 		    sscanf( pt, "%d", &msc );
 		    msp = 0;
-		    user_macfeat_otftag = gcalloc(msc+1,sizeof(struct macsettingname));
+		    user_macfeat_otftag = calloc(msc+1,sizeof(struct macsettingname));
 		} else if ( strncmp(line,"MacMapping:",strlen("MacMapping:"))==0 && msp<msc ) {
 		    ParseMacMapping(pt,&user_macfeat_otftag[msp++]);
 		} else if ( strncmp(line,"MacFeat:",strlen("MacFeat:"))==0 ) {
@@ -900,14 +886,6 @@ return;
 	fprintf( p, "MenuName:\t%s\n", temp = u2utf8_copy(script_menu_names[i]));
 	free(temp);
     }
-#if 0
-    if ( user_font_filters!=NULL ) {
-	for ( i=0; user_font_filters[i].name!=NULL; ++i ) {
-	    fprintf( p, "FontFilterName:\t%s\n", user_font_filters[i].name);
-	    fprintf( p, "FontFilter:\t%s\n", user_font_filters[i].filter);
-	}
-    }
-#endif
     if ( user_macfeat_otftag!=NULL && UserSettingsDiffer()) {
 	for ( i=0; user_macfeat_otftag[i].otf_tag!=0; ++i );
 	fprintf( p, "MacMapCnt: %d\n", i );

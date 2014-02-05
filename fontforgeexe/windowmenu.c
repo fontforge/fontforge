@@ -76,7 +76,7 @@ void WindowMenuBuild(GWindow basew,struct gmenuitem *mi,GEvent *e) {
 	/* This can't happen */
 return;
     }
-    sub = gcalloc(cnt+1,sizeof(GMenuItem));
+    sub = calloc(cnt+1,sizeof(GMenuItem));
     memcpy(sub,mi->sub,precnt*sizeof(struct gmenuitem));
     for ( i=0; i<precnt; ++i )
 	mi->sub[i].ti.text = NULL;
@@ -141,7 +141,7 @@ void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *e) {
 	/* This can't happen */
 return;
     }
-    sub = gcalloc(cnt+1,sizeof(GMenuItem));
+    sub = calloc(cnt+1,sizeof(GMenuItem));
     cnt1 = 0;
     for ( i=0; i<RECENT_MAX && RecentFiles[i]!=NULL; ++i ) {
 	for ( fv=(FontViewBase *) fv_list; fv!=NULL; fv=fv->next )
@@ -202,7 +202,7 @@ void MenuScriptsBuild(GWindow base,struct gmenuitem *mi,GEvent *e) {
 	/* This can't happen */
 return;
     }
-    sub = gcalloc(i+1,sizeof(GMenuItem));
+    sub = calloc(i+1,sizeof(GMenuItem));
     for ( i=0; i<SCRIPT_MENU_MAX && script_menu_names[i]!=NULL; ++i ) {
 	GMenuItem *mi = &sub[i];
 	mi->ti.userdata = (void *) (intpt) i;
@@ -234,7 +234,7 @@ void _aplistbuild(struct gmenuitem *top,SplineFont *sf,
 	cnt = 1;
     else
 	cnt += 2;
-    sub = gcalloc(cnt+1,sizeof(GMenuItem));
+    sub = calloc(cnt+1,sizeof(GMenuItem));
     mi = &sub[0];
     mi->ti.userdata = (void *) (-1);
     mi->ti.bg = mi->ti.fg = COLOR_DEFAULT;

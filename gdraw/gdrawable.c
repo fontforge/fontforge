@@ -71,10 +71,6 @@ static int gdrawable_expose(GWindow pixmap, GGadget *g, GEvent *event) {
 return( false );
 
     GDrawPushClip(pixmap,&g->r,&old);
-#if 0
-    GBoxDrawBackground(pixmap,&g->r,g->box,
-	    g->state==gs_enabled? gs_pressedactive: g->state,false);
-#endif
     GBoxDrawBorder(pixmap,&g->r,g->box,g->state,false);
 
     GDrawPopClip(pixmap,&old);
@@ -222,7 +218,7 @@ return( false );
 }
 
 GGadget *GDrawableCreate(struct gwindow *base, GGadgetData *gd,void *data) {
-    GDrawable *gdr = gcalloc(1,sizeof(GTabSet));
+    GDrawable *gdr = calloc(1,sizeof(GTabSet));
     int bp;
     GRect r;
     GWindowAttrs childattrs;

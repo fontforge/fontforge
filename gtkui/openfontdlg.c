@@ -155,7 +155,7 @@ static void find_fonts_callback(GtkFileChooser *dialog) {
     if ( files==NULL || (cnt = g_slist_length(files))==0 )
 	gtk_widget_set_tooltip_text(GTK_WIDGET(dialog),"");
     else {
-	fonts = gcalloc(cnt,sizeof(char **));
+	fonts = calloc(cnt,sizeof(char **));
 	cnt = len = 0;
 	for ( test=files; test!=NULL; test=test->next, ++cnt) {
 	    fonts[cnt] = GetFontNames((char *) (test->data));
@@ -165,7 +165,7 @@ static void find_fonts_callback(GtkFileChooser *dialog) {
 		    len += strlen( fonts[cnt][i])+2;
 	    }
 	}
-	pt = text = galloc(len+10);
+	pt = text = malloc(len+10);
 	cnt = 0;
 	for ( test=files; test!=NULL; test=test->next, ++cnt) {
 	    if ( fonts[cnt]!=NULL ) {

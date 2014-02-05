@@ -244,23 +244,6 @@ return( 0 );
 return( 1 );
 }
 
-#if 0
-static void dumpsubarray(void (*dumpchar)(int ch,void *data), void *data, char *name,
-	struct pschars *subarr,int leniv) {
-    int i;
-
-    dumpf(dumpchar,data,"/%s %d array\n", name, subarr->cnt );
-    for ( i=0; i<subarr->cnt; ++i ) {
-	if ( subarr->values[i]==NULL )
-    break;
-	dumpf(dumpchar,data, "dup %d %d RD ", i, subarr->lens[i]+leniv );
-	encodestrout(dumpchar,data,subarr->values[i],subarr->lens[i],leniv);
-	dumpstr(dumpchar,data," NP\n");
-    }
-    dumpstr(dumpchar,data,"ND\n");
-}
-#endif
-
 static void dumpblues(void (*dumpchar)(int ch,void *data), void *data,
 	char *name, real *arr, int len, char *ND) {
     int i;
@@ -293,19 +276,6 @@ static void dumpdblarray(void (*dumpchar)(int ch,void *data), void *data,
     dumpf( dumpchar,data,"%c%sdef\n", exec ? '}' : ']', modifiers );
 }
 
-#if 0
-static void dumpintmaxarray(void (*dumpchar)(int ch,void *data), void *data,
-	char *name, int *arr, int len, char *modifiers) {
-    int i;
-    for ( --len; len>=0 && arr[len]==0.0; --len );
-    ++len;
-    dumpf( dumpchar,data,"/%s [",name);
-    for ( i=0; i<len; ++i )
-	dumpf( dumpchar,data,"%d ", arr[i]);
-    dumpf( dumpchar,data,"]%sdef\n", modifiers );
-}
-#endif
-
 struct psdict *PSDictCopy(struct psdict *dict) {
     struct psdict *ret;
     int i;
@@ -313,10 +283,10 @@ struct psdict *PSDictCopy(struct psdict *dict) {
     if ( dict==NULL )
 return( NULL );
 
-    ret = gcalloc(1,sizeof(struct psdict));
+    ret = calloc(1,sizeof(struct psdict));
     ret->cnt = dict->cnt; ret->next = dict->next;
-    ret->keys = gcalloc(ret->cnt,sizeof(char *));
-    ret->values = gcalloc(ret->cnt,sizeof(char *));
+    ret->keys = calloc(ret->cnt,sizeof(char *));
+    ret->values = calloc(ret->cnt,sizeof(char *));
     for ( i=0; i<dict->next; ++i ) {
 	ret->keys[i] = copy(dict->keys[i]);
 	ret->values[i] = copy(dict->values[i]);
@@ -402,8 +372,8 @@ return( -1 );
     if ( i==dict->next ) {
 	if ( dict->next>=dict->cnt ) {
 	    dict->cnt += 10;
-	    dict->keys = grealloc(dict->keys,dict->cnt*sizeof(char *));
-	    dict->values = grealloc(dict->values,dict->cnt*sizeof(char *));
+	    dict->keys = realloc(dict->keys,dict->cnt*sizeof(char *));
+	    dict->values = realloc(dict->values,dict->cnt*sizeof(char *));
 	}
 	dict->keys[dict->next] = copy(key);
 	dict->values[dict->next] = NULL;
@@ -1231,10 +1201,10 @@ static struct pschars *initsubrs(int needsflex,MMSet *mm) {
     int i;
     struct pschars *sub;
 
-    sub = gcalloc(1,sizeof(struct pschars));
+    sub = calloc(1,sizeof(struct pschars));
     sub->cnt = 10;
-    sub->lens = galloc(10*sizeof(int));
-    sub->values = galloc(10*sizeof(uint8 *));
+    sub->lens = malloc(10*sizeof(int));
+    sub->values = malloc(10*sizeof(uint8 *));
     for ( i=0; i<5; ++i ) {
 	++sub->next;
 	sub->values[i] = (uint8 *) copyn((const char *) subrs[i],subrslens[i]);
@@ -1410,7 +1380,7 @@ static double FindMaxDiffOfBlues(char *pt, double max_diff) {
     double p1, p2;
 
     while ( *pt==' ' || *pt=='[' ) ++pt;
-    forever {
+    for (;;) {
 	p1 = strtod(pt,&end);
 	if ( end==pt )
     break;
@@ -1691,10 +1661,6 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	/*  On the off chance that fontlab objects to them let's not generate them */
 	if ( sf->ascent != 8*(sf->ascent+sf->descent)/10 )
 	    ++cnt;		/* ascent */
-#if 0
-	++cnt;		/* em */
-	++cnt;		/* descent */
-#endif
     }
     if ( format==ff_mma || format==ff_mmb )
 	cnt += 3;
@@ -1739,10 +1705,6 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	}
 	if ( sf->ascent != 8*(sf->ascent+sf->descent)/10 )
 	    dumpf(dumpchar,data," /ascent %d def\n", sf->ascent );
-#if 0
-	dumpf(dumpchar,data," /em %d def\n", sf->ascent+sf->descent );
-	dumpf(dumpchar,data," /descent %d def\n", sf->descent );
-#endif
     }
     if ( format==ff_mma || format==ff_mmb ) {
 	MMSet *mm = sf->mm;
@@ -1774,50 +1736,6 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
     }
     dumpstr(dumpchar,data,"end readonly def\n");
 }
-
-// moved to gutils/gutils.c
-/* const char *GetAuthor(void) { */
-/* #if defined(__MINGW32__) */
-/*     static char author[200] = { '\0' }; */
-/*     if ( author[0] == '\0' ){ */
-/* 	char* name = getenv("USER"); */
-/* 	if(!name) return NULL; */
-/* 	strncpy(author, name, sizeof(author)); */
-/* 	author[sizeof(author)-1] = '\0'; */
-/*     } */
-/*     return author; */
-/* #else */
-/*     struct passwd *pwd; */
-/*     static char author[200] = { '\0' }; */
-/*     const char *ret = NULL, *pt; */
-
-/*     if ( author[0]!='\0' ) */
-/* return( author ); */
-
-/* /\* Can all be commented out if no pwd routines *\/ */
-/*     pwd = getpwuid(getuid()); */
-/* #ifndef __VMS */
-/*     if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' ) { */
-/* 	strncpy(author,pwd->pw_gecos,sizeof(author)); */
-/* 	author[sizeof(author)-1] = '\0'; */
-/* 	ret = author; */
-/*     } else if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' ) { */
-/* #else */
-/*     if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' ) { */
-/* #endif */
-/* 	strncpy(author,pwd->pw_name,sizeof(author)); */
-/* 	author[sizeof(author)-1] = '\0'; */
-/* 	ret = author; */
-/*     } else if ( (pt=getenv("USER"))!=NULL ) { */
-/* 	strncpy(author,pt,sizeof(author)); */
-/* 	author[sizeof(author)-1] = '\0'; */
-/* 	ret = author; */
-/*     } */
-/*     endpwent(); */
-/* /\* End comment *\/ */
-/* return( ret ); */
-/* #endif */
-/* } */
 
 static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
 	SplineFont *sf, int format ) {
@@ -2347,14 +2265,10 @@ static char *dumpnotdefenc(FILE *out,SplineFont *sf) {
     char *notdefname;
     int i;
 
-#if 0		/* At one point I thought the unicode replacement char 0xfffd */
-		/*  was a good replacement for notdef if the font contained */
-		/*  no notdef. Probably not a good idea for a PS font */
-    if ( 0xfffd<sf->glyphcnt && sf->glyphs[0xfffd]!=NULL )
-	notdefname = sf->glyphs[0xfffd]->name;
-    else
-#endif
-	notdefname = ".notdef";
+    /* At one point I thought the unicode replacement char 0xfffd */
+    /*  was a good replacement for notdef if the font contained */
+    /*  no notdef. Probably not a good idea for a PS font */
+    notdefname = ".notdef";
     fprintf( out, "/%sBase /%sNotDef [\n", sf->fontname, sf->fontname );
     for ( i=0; i<256; ++i )
 	fprintf( out, " /%s\n", notdefname );
@@ -2479,7 +2393,7 @@ static FILE *gencidbinarydata(SplineFont *cidmaster,struct cidbytes *cidbytes,
 
     memset(cidbytes,'\0',sizeof(struct cidbytes));
     cidbytes->fdcnt = cidmaster->subfontcnt;
-    cidbytes->fds = gcalloc(cidbytes->fdcnt,sizeof(struct fddata));
+    cidbytes->fds = calloc(cidbytes->fdcnt,sizeof(struct fddata));
     for ( i=0; i<cidbytes->fdcnt; ++i ) {
 	sf = cidmaster->subfonts[i];
 	fd = &cidbytes->fds[i];
@@ -2575,7 +2489,7 @@ return( NULL );
 	    (subrtot+1) * cidbytes->gdbytes )
 	IError("SubrMap section the wrong length" );
 
-    buffer = galloc(8192);
+    buffer = malloc(8192);
 
     rewind(subrs);
     while ( (len=fread(buffer,1,8192,subrs))>0 )

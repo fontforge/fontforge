@@ -686,9 +686,6 @@ typedef struct generic_asm {		/* Apple State Machine */
     uint16 class_cnt, state_cnt;
     char **classes;
     struct asm_state *state;
-#if 0
-    uint32 opentype_tag;		/* If converted from opentype */
-#endif
 } ASM;
 /* State Flags:
  Indic:
@@ -1866,13 +1863,8 @@ typedef struct splinefont {
     int mark_set_cnt;
     char **mark_sets;			/* glyph name list */
     char **mark_set_names;		/* used within ff, utf8 (the name we've given to this class of marks) */
-#ifdef _HAS_LONGLONG
     long long creationtime;		/* seconds since 1970 */
     long long modificationtime;
-#else
-    long creationtime;
-    long modificationtime;
-#endif
     short os2_version;			/* 0 means default rather than the real version 0 */
     short compression;			/* If we opened a compressed sfd file, then save it out compressed too */
     short gasp_version;			/* 0/1 currently */
@@ -2022,13 +2014,8 @@ struct findsel;
 struct charprocs;
 struct enc;
 
-#ifdef USE_OUR_MEMORY
-extern void *chunkalloc(int size);
-extern void chunkfree(void *, int size);
-#else
-#define chunkalloc(size)	gcalloc(1,size)
+#define chunkalloc(size)	calloc(1,size)
 #define chunkfree(item,size)	free(item)
-#endif /* USE_OUR_MEMORY */
 
 extern char *strconcat(const char *str, const char *str2);
 extern char *strconcat3(const char *str, const char *str2, const char *str3);
@@ -2628,9 +2615,6 @@ extern int IntersectLinesClip(BasePoint *inter,
 	BasePoint *line1_1, BasePoint *line1_2,
 	BasePoint *line2_1, BasePoint *line2_2);
 
-#if 0
-extern void SSBisectTurners(SplineSet *spl);
-#endif
 extern void SSRemoveBacktracks(SplineSet *ss);
 extern enum PolyType PolygonIsConvex(BasePoint *poly,int n, int *badpointindex);
 extern SplineSet *UnitShape(int isrect);
@@ -2763,10 +2747,10 @@ typedef struct sfd_getfontmetadatadata
 
 } SFD_GetFontMetaDataData;
 extern void SFD_GetFontMetaDataData_Init( SFD_GetFontMetaDataData* d );
-extern void SFD_GetFontMetaData( FILE *sfd,
-				 char *tok,
-				 SplineFont *sf,
-				 SFD_GetFontMetaDataData* d );
+extern bool SFD_GetFontMetaData( FILE *sfd,
+                                 char *tok,
+                                 SplineFont *sf,
+                                 SFD_GetFontMetaDataData* d );
 typedef void (*visitSFDFragmentFunc)( FILE *sfd, char *tokbuf, SplineFont *sf, void* udata );
 extern void visitSFDFragment( FILE *sfd, SplineFont *sf, visitSFDFragmentFunc ufunc, void* udata );
 extern char* DumpSplineFontMetadata( SplineFont *sf );
@@ -2943,9 +2927,6 @@ extern void SCRound2Int(SplineChar *sc,int layer, real factor);
 extern int SCRoundToCluster(SplineChar *sc,int layer,int sel,bigreal within,bigreal max);
 extern int SplineSetsRemoveAnnoyingExtrema(SplineSet *ss,bigreal err);
 extern int hascomposing(SplineFont *sf,int u,SplineChar *sc);
-#if 0
-extern void SFFigureGrid(SplineFont *sf);
-#endif
 
 struct cidmap;			/* private structure to encoding.c */
 extern int CIDFromName(char *name,SplineFont *cidmaster);

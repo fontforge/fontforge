@@ -25,10 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifdef __VMS
-#include <vms_x_fix.h>
-#endif
-
 #include "gxdrawP.h"
 #include "gxcdrawP.h"
 
@@ -149,16 +145,6 @@ static int GXCDrawSetcolfunc(GXWindow gw, GGC *mine) {
 	cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,
 		(fg>>24)/255.);
     }
-#if 0
-/* As far as I can tell, XOR doesn't work */
-/* Or perhaps it is more accurate to say that I don't understand what xor does in cairo*/
-    if ( mine->func!=gcs->func || mine->func!=df_copy ) {
-	cairo_set_operator( gw->cc,mine->func==df_copy?CAIRO_OPERATOR_OVER:CAIRO_OPERATOR_XOR );
-	gcs->func = mine->func;
-    }
-    if ( mine->func==df_xor )
-	fg ^= mine->xor_base;
-#endif
 return( true );
 }
 
@@ -169,16 +155,6 @@ static int GXCDrawSetline(GXWindow gw, GGC *mine) {
     if ( ( fg>>24 ) == 0 )
 	fg |= 0xff000000;
 
-#if 0
-/* As far as I can tell, XOR doesn't work */
-/* Or perhaps it is more accurate to say that I don't understand what xor does*/
-    if ( mine->func!=gcs->func || mine->func!=df_copy ) {
-	cairo_set_operator( gw->cc, mine->func==df_copy?CAIRO_OPERATOR_OVER:CAIRO_OPERATOR_XOR);
-	gcs->func = mine->func;
-    }
-    if ( mine->func==df_xor )
-	fg ^= mine->xor_base;
-#endif
     if ( mine->line_width<=0 ) mine->line_width = 1;
     if ( mine->line_width!=gcs->line_width || mine->line_width!=2 ) {
 	cairo_set_line_width(gw->cc,mine->line_width);
@@ -478,7 +454,7 @@ return( cairo_image_surface_create_for_data((uint8 *) idata,type,
     }
 
     stride = cairo_format_stride_for_width(type,src->width);
-    *_data = data = galloc(stride * src->height);
+    *_data = data = malloc(stride * src->height);
     cs = cairo_image_surface_create_for_data(data,type,
 		src->width, src->height,   stride);
     idata = (uint32 *) data;
@@ -708,7 +684,7 @@ void _GXCDraw_Glyph( GXWindow gw, GImage *image, GRect *src, int32 x, int32 y) {
 	_GXCDraw_Image(gw,image,src,x,y);
     else {
 	int stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8,src->width);
-	uint8 *basedata = galloc(stride*src->height),
+	uint8 *basedata = malloc(stride*src->height),
 	       *data = basedata,
 		*srcd = base->data + src->y*base->bytes_per_line + src->x;
 	int factor = base->clut->clut_len==256 ? 1 :
@@ -778,41 +754,12 @@ return;
     if ( full.x+full.width>base->width ) full.width = base->width-full.x;	/* Rounding errors */
     if ( full.y+full.height>base->height ) full.height = base->height-full.y;	/* Rounding errors */
 		/* Rounding errors */
-#if 1
   {
     GImage *temp = _GImageExtract(base,&full,&viewable,xscale,yscale);
     GRect src;
     src.x = src.y = 0; src.width = viewable.width; src.height = viewable.height;
     _GXCDraw_Image( gw, temp, &src, x+viewable.x, y+viewable.y);
   }
-#else
-  {
-    cairo_surface_t *is;
-    uint8 *data;
-    /* I don't see why this doesn't work, but every now and then it will crash*/
-    /*  deep inside of cairo. Perhaps cairo can't handle scaling images? */
-    /*  Perhaps there's a bug in my code? */
-    is = GImage2Surface(image,&full,&data);
-
-    cairo_save(gw->cc);
-    cairo_scale(gw->cc,viewable.width/((double) full.width),viewable.height/((double) full.height));
-
-    if ( cairo_image_surface_get_format(is)==CAIRO_FORMAT_A1 ) {
-	/* No color info, just alpha channel */
-	Color fg = base->clut->trans_index==0 ? base->clut->clut[1] : base->clut->clut[0];
-	cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,1.0);
-	cairo_mask_surface(gw->cc,is,viewable.x*xscale,viewable.y*yscale);
-    } else {
-	cairo_set_source_surface(gw->cc,is,viewable.x/xscale,viewable.y/yscale);
-	cairo_paint(gw->cc);
-    }
-    cairo_restore(gw->cc);
-
-    cairo_surface_destroy(is);
-    free(data);
-    gw->cairo_state.fore_col = COLOR_UNKNOWN;
-  }
-#endif
 }
 
 /* ************************************************************************** */
@@ -1061,13 +1008,6 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
 # if !defined(_NO_LIBCAIRO)
 	if ( gw->usecairo ) {
 	    my_cairo_render_layout(gw->cc,col,gw->pango_layout,x,y);
-#if 0
-	    cairo_move_to(gw->cc,x,y - fi->ascent);
-	    gw->ggc->fg = col;
-	    GXCDrawSetcolfunc(gw,gw->ggc);
-	    pango_cairo_layout_path(gw->cc,gw->pango_layout);
-	    cairo_fill(gw->cc);
-#endif
 	} else
 #endif
 	{

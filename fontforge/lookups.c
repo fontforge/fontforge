@@ -37,13 +37,6 @@
 #include "lookups.h"
 
 struct opentype_feature_friendlynames friendlies[] = {
-#if 0		/* They get stuffed into the 'MATH' table now */
-/* I added these first three features to allow round-trip conversion of tfm files */
-    { CHR('I','T','L','C'),	"ITLC", N_("Italic Correction"),	gpos_single_mask },
-    { CHR('T','C','H','L'),	"TCHL", N_("TeX Glyphlist"),		gsub_alternate_mask },
-    { CHR('T','E','X','L'),	"TEXL", N_("TeX Extension List"),	gsub_multiple_mask },
-#endif
-/* Normal OpenType features follow */
     { CHR('a','a','l','t'),	"aalt", N_("Access All Alternates"),	gsub_single_mask|gsub_alternate_mask },
     { CHR('a','b','v','f'),	"abvf", N_("Above Base Forms"),		gsub_single_mask },
     { CHR('a','b','v','m'),	"abvm", N_("Above Base Mark"),		gpos_mark2base_mask|gpos_mark2ligature_mask },
@@ -354,7 +347,7 @@ a GPOS, but he says the GPOS won't work without a GSUB.)
 		    }
 		    if ( i==cnt ) {
 			if ( cnt>=tot )
-			    scripts = grealloc(scripts,(tot+=10)*sizeof(uint32));
+			    scripts = realloc(scripts,(tot+=10)*sizeof(uint32));
 			scripts[cnt++] = sl->script;
 		    }
 		}
@@ -369,7 +362,7 @@ return( NULL );
     qsort(scripts,cnt,sizeof(uint32),uint32_cmp);
     /* add a 0 entry to mark the end of the list */
     if ( cnt>=tot )
-	scripts = grealloc(scripts,(tot+1)*sizeof(uint32));
+	scripts = realloc(scripts,(tot+1)*sizeof(uint32));
     scripts[cnt] = 0;
 return( scripts );
 }
@@ -405,7 +398,7 @@ uint32 *SFLangsInScript(SplineFont *sf,int gpos,uint32 script) {
 			    }
 			    if ( i==cnt ) {
 				if ( cnt>=tot )
-				    langs = grealloc(langs,(tot+=10)*sizeof(uint32));
+				    langs = realloc(langs,(tot+=10)*sizeof(uint32));
 				langs[cnt++] = lang;
 			    }
 			}
@@ -423,7 +416,7 @@ uint32 *SFLangsInScript(SplineFont *sf,int gpos,uint32 script) {
 	/*  and hence no languages. It seems that Uniscribe doesn't like */
 	/*  that either. So give each such script a dummy default language */
 	/*  entry. This is what VOLT does */
-	langs = gcalloc(2,sizeof(uint32));
+	langs = calloc(2,sizeof(uint32));
 	langs[0] = DEFAULT_LANG;
 return( langs );
     }
@@ -432,7 +425,7 @@ return( langs );
     qsort(langs,cnt,sizeof(uint32),lang_cmp);
     /* add a 0 entry to mark the end of the list */
     if ( cnt>=tot )
-	langs = grealloc(langs,(tot+1)*sizeof(uint32));
+	langs = realloc(langs,(tot+1)*sizeof(uint32));
     langs[cnt] = 0;
 return( langs );
 }
@@ -462,7 +455,7 @@ uint32 *SFFeaturesInScriptLang(SplineFont *sf,int gpos,uint32 script,uint32 lang
 		    }
 		    if ( i==cnt ) {
 			if ( cnt>=tot )
-			    features = grealloc(features,(tot+=10)*sizeof(uint32));
+			    features = realloc(features,(tot+=10)*sizeof(uint32));
 			features[cnt++] = fl->featuretag;
 		    }
 		} else for ( sl=fl->scripts ; sl!=NULL; sl=sl->next ) {
@@ -488,7 +481,7 @@ uint32 *SFFeaturesInScriptLang(SplineFont *sf,int gpos,uint32 script,uint32 lang
 			    }
 			    if ( i==cnt ) {
 				if ( cnt>=tot )
-				    features = grealloc(features,(tot+=10)*sizeof(uint32));
+				    features = realloc(features,(tot+=10)*sizeof(uint32));
 				features[cnt++] = fl->featuretag;
 			    }
 			}
@@ -505,12 +498,12 @@ uint32 *SFFeaturesInScriptLang(SplineFont *sf,int gpos,uint32 script,uint32 lang
 	/*  gets a 'size' feature which contains no lookups but feature */
 	/*  params */
 	if ( cnt>=tot )
-	    features = grealloc(features,(tot+=2)*sizeof(uint32));
+	    features = realloc(features,(tot+=2)*sizeof(uint32));
 	features[cnt++] = CHR('s','i','z','e');
     }
 
     if ( cnt==0 )
-return( gcalloc(1,sizeof(uint32)) );
+return( calloc(1,sizeof(uint32)) );
 
     /* We don't care if our features are in alphabetical order here */
     /*  all that matters is whether the complete list of features is */
@@ -519,7 +512,7 @@ return( gcalloc(1,sizeof(uint32)) );
 
     /* add a 0 entry to mark the end of the list */
     if ( cnt>=tot )
-	features = grealloc(features,(tot+1)*sizeof(uint32));
+	features = realloc(features,(tot+1)*sizeof(uint32));
     features[cnt] = 0;
 return( features );
 }
@@ -546,7 +539,7 @@ OTLookup **SFLookupsInScriptLangFeature(SplineFont *sf,int gpos,uint32 script,ui
 				testlang = sl->morelangs[l-MAX_LANG];
 			    if ( testlang==lang ) {
 				if ( cnt>=tot )
-				    lookups = grealloc(lookups,(tot+=10)*sizeof(OTLookup *));
+				    lookups = realloc(lookups,(tot+=10)*sizeof(OTLookup *));
 				lookups[cnt++] = test;
 	goto found;
 			    }
@@ -564,7 +557,7 @@ return( NULL );
     /* lookup order is irrelevant here. might as well leave it in invocation order */
     /* add a 0 entry to mark the end of the list */
     if ( cnt>=tot )
-	lookups = grealloc(lookups,(tot+1)*sizeof(OTLookup *));
+	lookups = realloc(lookups,(tot+1)*sizeof(OTLookup *));
     lookups[cnt] = 0;
 return( lookups );
 }
@@ -611,7 +604,7 @@ return( true );
 }
 
 SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *subtable) {
-    uint8 *used = gcalloc(sf->glyphcnt,sizeof(uint8));
+    uint8 *used = calloc(sf->glyphcnt,sizeof(uint8));
     SplineChar **glyphs, *sc;
     int i, k, gid, cnt;
     KernPair *kp;
@@ -658,7 +651,7 @@ SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *su
 	free(used);
 return( NULL );
     }
-    glyphs = galloc((cnt+1)*sizeof(SplineChar *));
+    glyphs = malloc((cnt+1)*sizeof(SplineChar *));
     for ( i=cnt=0 ; i<sf->glyphcnt; ++i ) {
 	if ( used[i] )
 	    glyphs[cnt++] = sf->glyphs[i];
@@ -669,7 +662,7 @@ return( glyphs );
 }
 
 SplineChar **SFGlyphsWithLigatureinLookup(SplineFont *sf,struct lookup_subtable *subtable) {
-    uint8 *used = gcalloc(sf->glyphcnt,sizeof(uint8));
+    uint8 *used = calloc(sf->glyphcnt,sizeof(uint8));
     SplineChar **glyphs, *sc;
     int i, cnt;
     PST *pst;
@@ -693,7 +686,7 @@ SplineChar **SFGlyphsWithLigatureinLookup(SplineFont *sf,struct lookup_subtable 
 return( NULL );
     }
 
-    glyphs = galloc((cnt+1)*sizeof(SplineChar *));
+    glyphs = malloc((cnt+1)*sizeof(SplineChar *));
     for ( i=cnt=0 ; i<sf->glyphcnt; ++i ) {
 	if ( used[i] )
 	    glyphs[cnt++] = sf->glyphs[i];
@@ -1253,7 +1246,7 @@ void FListAppendScriptLang(FeatureScriptLangList *fl,uint32 script_tag,uint32 la
 	    sl->langs[l] = lang_tag;
 	else {
 	    if ( l%MAX_LANG == 0 )
-		sl->morelangs = grealloc(sl->morelangs,l*sizeof(uint32));
+		sl->morelangs = realloc(sl->morelangs,l*sizeof(uint32));
 		/* We've just allocated MAX_LANG-1 more than we need */
 		/*  so we don't do quite some many allocations */
 	    sl->morelangs[l-MAX_LANG] = lang_tag;
@@ -1535,7 +1528,7 @@ void NameOTLookup(OTLookup *otl,SplineFont *sf) {
 	    if ( fl==NULL )
 		userfriendly = copy(lookuptype);
 	    else {
-		userfriendly = galloc( strlen(lookuptype) + 10);
+		userfriendly = malloc( strlen(lookuptype) + 10);
 		sprintf( userfriendly, "%s '%c%c%c%c'", lookuptype,
 		    fl->featuretag>>24,
 		    fl->featuretag>>16,
@@ -1592,11 +1585,11 @@ void NameOTLookup(OTLookup *otl,SplineFont *sf) {
 /* GT: While the %d is the index into the lookup list and is used to disambiguate it */
 /* GT: In case that is needed */
 	    format = _("%s in %s lookup %d");
-	    otl->lookup_name = galloc( strlen(userfriendly)+strlen(format)+strlen(script)+10 );
+	    otl->lookup_name = malloc( strlen(userfriendly)+strlen(format)+strlen(script)+10 );
 	    sprintf( otl->lookup_name, format, userfriendly, script, otl->lookup_index );
 	} else {
 	    format = _("%s lookup %d");
-	    otl->lookup_name = galloc( strlen(userfriendly)+strlen(format)+10 );
+	    otl->lookup_name = malloc( strlen(userfriendly)+strlen(format)+10 );
 	    sprintf( otl->lookup_name, format, userfriendly, otl->lookup_index );
 	}
 	free(script);
@@ -1627,7 +1620,7 @@ void NameOTLookup(OTLookup *otl,SplineFont *sf) {
 		IError("Subtable status not filled in for %dth subtable of %s", cnt, otl->lookup_name );
 		format = "%s !!!!!!!! %d";
 	    }
-	    subtable->subtable_name = galloc( strlen(otl->lookup_name)+strlen(format)+10 );
+	    subtable->subtable_name = malloc( strlen(otl->lookup_name)+strlen(format)+10 );
 	    sprintf( subtable->subtable_name, format, otl->lookup_name, cnt );
 	}
     }
@@ -1674,7 +1667,7 @@ static struct scriptlanglist *SLOrder(struct scriptlanglist *sl) {
     if ( cnt<=1 )
 return( sl );
     if ( cnt>30 )
-	test = allocked = galloc(cnt*sizeof(struct scriptlanglist *));
+	test = allocked = malloc(cnt*sizeof(struct scriptlanglist *));
     for ( sl2=sl, cnt=0; sl2!=NULL; sl2=sl2->next, ++cnt )
 	test[cnt] = sl2;
     for ( i=0; i<cnt; ++i ) for ( j=i+1; j<cnt; ++j ) {
@@ -1702,7 +1695,7 @@ FeatureScriptLangList *FLOrder(FeatureScriptLangList *fl) {
     if ( cnt<=1 )
 return( fl );
     if ( cnt>30 )
-	test = allocked = galloc(cnt*sizeof(FeatureScriptLangList *));
+	test = allocked = malloc(cnt*sizeof(FeatureScriptLangList *));
     for ( fl2=fl, cnt=0; fl2!=NULL; fl2=fl2->next, ++cnt )
 	test[cnt] = fl2;
     for ( i=0; i<cnt; ++i ) for ( j=i+1; j<cnt; ++j ) {
@@ -1729,7 +1722,7 @@ struct scriptlanglist *SLCopy(struct scriptlanglist *sl) {
     newsl->next = NULL;
 
     if ( sl->lang_cnt>MAX_LANG ) {
-	newsl->morelangs = galloc((newsl->lang_cnt-MAX_LANG)*sizeof(uint32));
+	newsl->morelangs = malloc((newsl->lang_cnt-MAX_LANG)*sizeof(uint32));
 	memcpy(newsl->morelangs,sl->morelangs,(newsl->lang_cnt-MAX_LANG)*sizeof(uint32));
     }
 return( newsl );
@@ -1778,7 +1771,7 @@ static void LangMerge(struct scriptlanglist *into, struct scriptlanglist *from) 
 	    if ( into->lang_cnt<MAX_LANG )
 		into->langs[into->lang_cnt++] = flang;
 	    else {
-		into->morelangs = grealloc(into->morelangs,(into->lang_cnt+1-MAX_LANG)*sizeof(uint32));
+		into->morelangs = realloc(into->morelangs,(into->lang_cnt+1-MAX_LANG)*sizeof(uint32));
 		into->morelangs[into->lang_cnt++-MAX_LANG] = flang;
 	    }
 	}
@@ -1972,7 +1965,7 @@ static char **ClassCopy(int class_cnt,char **classes) {
 
     if ( classes==NULL || class_cnt==0 )
 return( NULL );
-    newclasses = galloc(class_cnt*sizeof(char *));
+    newclasses = malloc(class_cnt*sizeof(char *));
     for ( i=0; i<class_cnt; ++i )
 	newclasses[i] = copy(classes[i]);
 return( newclasses );
@@ -2019,7 +2012,7 @@ static KernClass *SF_AddKernClass(struct sfmergecontext *mc,KernClass *kc,
 
     newkc->firsts = ClassCopy(newkc->first_cnt,newkc->firsts);
     newkc->seconds = ClassCopy(newkc->second_cnt,newkc->seconds);
-    newkc->offsets = galloc(newkc->first_cnt*newkc->second_cnt*sizeof(int16));
+    newkc->offsets = malloc(newkc->first_cnt*newkc->second_cnt*sizeof(int16));
     memcpy(newkc->offsets,kc->offsets,newkc->first_cnt*newkc->second_cnt*sizeof(int16));
 return( newkc );
 }
@@ -2043,14 +2036,14 @@ static FPST *SF_AddFPST(struct sfmergecontext *mc,FPST *fpst,
     newfpst->bclassnames = ClassCopy(newfpst->bccnt,newfpst->bclassnames);
     newfpst->fclassnames = ClassCopy(newfpst->fccnt,newfpst->fclassnames);
 
-    newfpst->rules = galloc(newfpst->rule_cnt*sizeof(struct fpst_rule));
+    newfpst->rules = malloc(newfpst->rule_cnt*sizeof(struct fpst_rule));
     memcpy(newfpst->rules,fpst->rules,newfpst->rule_cnt*sizeof(struct fpst_rule));
 
     cur = 0;
     for ( i=0; i<newfpst->rule_cnt; ++i ) {
 	struct fpst_rule *r = &newfpst->rules[i], *oldr = &fpst->rules[i];
 
-	r->lookups = galloc(r->lookup_cnt*sizeof(struct seqlookup));
+	r->lookups = malloc(r->lookup_cnt*sizeof(struct seqlookup));
 	memcpy(r->lookups,oldr->lookups,r->lookup_cnt*sizeof(struct seqlookup));
 	for ( k=0; k<r->lookup_cnt; ++k ) {
 	    r->lookups[k].lookup = OTLookupCopyNested(mc,
@@ -2064,11 +2057,11 @@ static FPST *SF_AddFPST(struct sfmergecontext *mc,FPST *fpst,
 	    r->u.glyph.fore = copy( r->u.glyph.fore );
 	  break;
 	  case pst_class:
-	    r->u.class.nclasses = galloc( r->u.class.ncnt*sizeof(uint16));
+	    r->u.class.nclasses = malloc( r->u.class.ncnt*sizeof(uint16));
 	    memcpy(r->u.class.nclasses,oldr->u.class.nclasses, r->u.class.ncnt*sizeof(uint16));
-	    r->u.class.bclasses = galloc( r->u.class.bcnt*sizeof(uint16));
+	    r->u.class.bclasses = malloc( r->u.class.bcnt*sizeof(uint16));
 	    memcpy(r->u.class.bclasses,oldr->u.class.bclasses, r->u.class.bcnt*sizeof(uint16));
-	    r->u.class.fclasses = galloc( r->u.class.fcnt*sizeof(uint16));
+	    r->u.class.fclasses = malloc( r->u.class.fcnt*sizeof(uint16));
 	    memcpy(r->u.class.fclasses,oldr->u.class.fclasses, r->u.class.fcnt*sizeof(uint16));
 	  break;
 	  case pst_coverage:
@@ -2098,12 +2091,12 @@ static ASM *SF_AddASM(struct sfmergecontext *mc,ASM *sm, struct lookup_subtable 
     mc->sf_to->sm = newsm;
     mc->sf_to->changed = true;
     newsm->classes = ClassCopy(newsm->class_cnt, newsm->classes);
-    newsm->state = galloc(newsm->class_cnt*newsm->state_cnt*sizeof(struct asm_state));
+    newsm->state = malloc(newsm->class_cnt*newsm->state_cnt*sizeof(struct asm_state));
     memcpy(newsm->state,sm->state,
 	    newsm->class_cnt*newsm->state_cnt*sizeof(struct asm_state));
     if ( newsm->type == asm_kern ) {
 	for ( i=newsm->class_cnt*newsm->state_cnt-1; i>=0; --i ) {
-	    newsm->state[i].u.kern.kerns = galloc(newsm->state[i].u.kern.kcnt*sizeof(int16));
+	    newsm->state[i].u.kern.kerns = malloc(newsm->state[i].u.kern.kcnt*sizeof(int16));
 	    memcpy(newsm->state[i].u.kern.kerns,sm->state[i].u.kern.kerns,newsm->state[i].u.kern.kcnt*sizeof(int16));
 	}
     } else if ( newsm->type == asm_insert ) {
@@ -2458,7 +2451,7 @@ return( mc->lks[l].to );
     }
 
     if ( l>=mc->lmax )
-	mc->lks = grealloc(mc->lks,(mc->lmax += 20)*sizeof(struct lookup_cvt));
+	mc->lks = realloc(mc->lks,(mc->lmax += 20)*sizeof(struct lookup_cvt));
     mc->sf_to->changed = true;
 
     if ( l>=mc->lcnt ) {
@@ -2571,7 +2564,7 @@ void OTLookupsCopyInto(SplineFont *into_sf,SplineFont *from_sf,
     mc.prefix = NeedsPrefix(into_sf,from_sf,list)
 	    ? strconcat(from_sf->fontname,"-") : copy("");
     for ( i=0; list[i]!=NULL; ++i );
-    mc.lks = galloc((mc.lmax=i+5)*sizeof(struct lookup_cvt));
+    mc.lks = malloc((mc.lmax=i+5)*sizeof(struct lookup_cvt));
     /* First create all the lookups and position them in the right order */
     /*  then create subtables (which may in turn create some new lookups */
     /*  for contextual lookups which invoke other lookups, don't care how */
@@ -2857,7 +2850,7 @@ static void ApplyAppleStateMachine(uint32 tag, OTLookup *otl,struct lookup_data 
 		cnt_cur = (entry->flags>>5)&0x1f;
 		cnt_mark = (entry->flags&0x1f);
 		if ( data->cnt + cnt_cur + cnt_mark >= data->max )
-		    data->str = grealloc(data->str,(data->max = data->cnt + cnt_cur + cnt_mark +20)*sizeof(struct opentype_str));
+		    data->str = realloc(data->str,(data->max = data->cnt + cnt_cur + cnt_mark +20)*sizeof(struct opentype_str));
 		if ( cnt_cur!=0 )
 		    cnt_cur = ApplyMacInsert(data,(entry->flags& 0x0800)? pos : pos+1,
 			    cnt_cur,entry->u.insert.cur_ins,data->str[pos].orig_index);
@@ -2922,8 +2915,8 @@ static void LigatureSearch(struct lookup_subtable *sub, struct lookup_data *data
 		if ( *pt==' ' )
 		    ++ccnt;
 	    if ( cnt>=data->lmax )
-		data->ligs = grealloc(data->ligs,(data->lmax+=100)*sizeof(SplineChar **));
-	    data->ligs[cnt] = galloc((ccnt+3)*sizeof(SplineChar *));
+		data->ligs = realloc(data->ligs,(data->lmax+=100)*sizeof(SplineChar **));
+	    data->ligs[cnt] = malloc((ccnt+3)*sizeof(SplineChar *));
 	    data->ligs[cnt][0] = sc;
 	    ccnt = 1;
 	    err = 0;
@@ -2943,7 +2936,7 @@ static void LigatureSearch(struct lookup_subtable *sub, struct lookup_data *data
 	}
     }
     if ( cnt>=data->lmax )
-	data->ligs = grealloc(data->ligs,(data->lmax+=1)*sizeof(SplineChar **));
+	data->ligs = realloc(data->ligs,(data->lmax+=1)*sizeof(SplineChar **));
     data->ligs[cnt] = NULL;
     data->lcnt = cnt;
 }
@@ -3230,7 +3223,7 @@ return( pos );
 return( pos+1 );
     } else {
 	if ( data->cnt+mcnt-1 >= data->max )
-	    data->str = grealloc(data->str,(data->max+=mcnt) * sizeof( struct opentype_str ));
+	    data->str = realloc(data->str,(data->max+=mcnt) * sizeof( struct opentype_str ));
 	for ( i=data->cnt-1; i>pos; --i )
 	    data->str[i+mcnt-1] = data->str[i];
 	memset(data->str+pos,0,mcnt*sizeof(struct opentype_str));
@@ -3677,7 +3670,7 @@ struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 sc
 
     memset(&data,0,sizeof(data));
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt );
-    data.str = gcalloc(cnt+1,sizeof(struct opentype_str));
+    data.str = calloc(cnt+1,sizeof(struct opentype_str));
     data.cnt = data.max = cnt;
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt ) {
 	data.str[cnt].sc = glyphs[cnt];
@@ -3710,7 +3703,7 @@ struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 sc
     LigatureFree(&data);
     free(data.ligs);
 
-    data.str = grealloc(data.str,(data.cnt+1)*sizeof(struct opentype_str));
+    data.str = realloc(data.str,(data.cnt+1)*sizeof(struct opentype_str));
     memset(&data.str[data.cnt],0,sizeof(struct opentype_str));
 return( data.str );
 }
@@ -3730,7 +3723,7 @@ static void doreplace(char **haystack,char *start,char *search,char *rpl,int sle
 	}
     } else {
 	char *base = *haystack;
-	char *new = galloc(pt-base+strlen(pt)+rlen-slen+1);
+	char *new = malloc(pt-base+strlen(pt)+rlen-slen+1);
 	memcpy(new,base,start-base);
 	memcpy(new+(start-base),rpl,rlen);
 	strcpy(new+(start-base)+rlen,pt);
@@ -4120,7 +4113,7 @@ static void AddOTLToSllk(struct sllk *sllk, OTLookup *otl, struct scriptlanglist
 	break;
 	if ( i==sllk->cnt ) {
 	    if ( sllk->cnt>=sllk->max )
-		sllk->lookups = grealloc(sllk->lookups,(sllk->max+=5)*sizeof(OTLookup *));
+		sllk->lookups = realloc(sllk->lookups,(sllk->max+=5)*sizeof(OTLookup *));
 	    sllk->lookups[sllk->cnt++] = otl;
 	    for ( l=0; l<sl->lang_cnt; ++l ) {
 		uint32 lang = l<MAX_LANG ? sl->langs[l] : sl->morelangs[l-MAX_LANG];
@@ -4129,7 +4122,7 @@ static void AddOTLToSllk(struct sllk *sllk, OTLookup *otl, struct scriptlanglist
 		break;
 		if ( j==sllk->lcnt ) {
 		    if ( sllk->lcnt>=sllk->lmax )
-			sllk->langs = grealloc(sllk->langs,(sllk->lmax+=sl->lang_cnt+MAX_LANG)*sizeof(uint32));
+			sllk->langs = realloc(sllk->langs,(sllk->lmax+=sl->lang_cnt+MAX_LANG)*sizeof(uint32));
 		    sllk->langs[sllk->lcnt++] = lang;
 		}
 	    }
@@ -4171,7 +4164,7 @@ static char *ComponentsFromPSTs(PST **psts,int pcnt) {
 	    break;
 	    if ( j==ncnt ) {
 		if ( ncnt>=nmax )
-		    names = grealloc(names,(nmax+=10)*sizeof(char *));
+		    names = realloc(names,(nmax+=10)*sizeof(char *));
 		names[ncnt++] = copy(start);
 	    }
 	    *pt = ch;
@@ -4183,7 +4176,7 @@ static char *ComponentsFromPSTs(PST **psts,int pcnt) {
     for ( i=0; i<ncnt; ++i )
 	len += strlen(names[i])+1;
     if ( len==0 ) len=1;
-    ret = galloc(len);
+    ret = malloc(len);
     len = 0;
     for ( i=0; i<ncnt; ++i ) {
 	strcpy(ret+len,names[i]);
@@ -4228,7 +4221,7 @@ struct sllk *AddOTLToSllks( OTLookup *otl, struct sllk *sllk,
 	    break;
 	    if ( s==*_sllk_cnt ) {
 		if ( *_sllk_cnt>=*_sllk_max )
-		    sllk = grealloc(sllk,((*_sllk_max)+=10)*sizeof(struct sllk));
+		    sllk = realloc(sllk,((*_sllk_max)+=10)*sizeof(struct sllk));
 		memset(&sllk[*_sllk_cnt],0,sizeof(struct sllk));
 		sllk[(*_sllk_cnt)++].script = sl->script;
 	    }
@@ -4264,7 +4257,7 @@ OTLookup *NewAALTLookup(SplineFont *sf,struct sllk *sllk, int sllk_cnt, int i) {
 	    sl->script = sllk[j].script;
 	    sl->lang_cnt = sllk[j].lcnt;
 	    if ( sl->lang_cnt>MAX_LANG )
-		sl->morelangs = galloc((sl->lang_cnt-MAX_LANG)*sizeof(uint32));
+		sl->morelangs = malloc((sl->lang_cnt-MAX_LANG)*sizeof(uint32));
 	    for ( l=0; l<sl->lang_cnt; ++l )
 		if ( l<MAX_LANG )
 		    sl->langs[l] = sllk[j].langs[l];
@@ -4285,7 +4278,7 @@ OTLookup *NewAALTLookup(SplineFont *sf,struct sllk *sllk, int sllk_cnt, int i) {
     /*  lookups we are interested in, and if it does, build a new pst */
     /*  containing all posibilities listed on any of them */
     if ( sf->cidmaster ) sf = sf->cidmaster;
-    psts = galloc(sllk[i].cnt*sizeof(PST *));
+    psts = malloc(sllk[i].cnt*sizeof(PST *));
     k=0;
     do {
 	_sf = k<sf->subfontcnt ? sf->subfonts[k] : sf;
@@ -4560,7 +4553,7 @@ char *reverseGlyphNames(char *str) {
     if ( str==NULL )
 return( NULL );
 
-    rpt = ret = galloc(strlen(str)+1);
+    rpt = ret = malloc(strlen(str)+1);
     *ret = '\0';
     for ( pt=str+strlen(str); pt>str; pt=start ) {
 	for ( start = pt-1; start>=str && *start!=' '; --start );
@@ -4598,7 +4591,7 @@ char *FPSTRule_To_Str(SplineFont *sf,FPST *fpst,struct fpst_rule *rule) {
 		( rule->u.glyph.back ? strlen(rule->u.glyph.back) : 0 ) +
 		( rule->u.glyph.fore ? strlen(rule->u.glyph.fore) : 0 ) +
 		200;
-	gb.base = gb.pt = galloc(max+1);
+	gb.base = gb.pt = malloc(max+1);
 	gb.end = gb.base+max;
         if ( rule->u.glyph.back!=NULL ) {
 	    char *temp;
@@ -4769,7 +4762,7 @@ return( my_asprintf( _("Replacements must follow the coverage table to which the
 		    /* Good */;
 		else if ( rcnt==1 && ecnt>1 ) {
 		    char *newr;
-		    newr = galloc(ecnt*(strlen(parsed[cnt].replacements)+1)+1);
+		    newr = malloc(ecnt*(strlen(parsed[cnt].replacements)+1)+1);
 		    *newr = '\0';
 		    for ( i=0; i<ecnt; ++i ) {
 			strcat(newr,parsed[cnt].replacements);
@@ -4845,7 +4838,7 @@ return( ret );
 	/*  not on lookup invocations */
 	ch = *end; *end='\0';
 	if ( cnt>=max )
-	    parsed = grealloc(parsed,(max+=200)*sizeof(MatchStr));
+	    parsed = realloc(parsed,(max+=200)*sizeof(MatchStr));
 	memset(&parsed[cnt],'\0',sizeof(MatchStr));
 	parsed[cnt++].entity = copy(start);
 	*end = ch;
@@ -4901,11 +4894,11 @@ return( copy( _("A reverse contextual chaining lookup can only match one coverag
 	    else
 		flen += strlen(parsed[i].entity)+1;
 	}
-	rule->u.glyph.names = gcalloc(mlen+1,1);
+	rule->u.glyph.names = calloc(mlen+1,1);
 	if ( blen!=0 )
-	    rule->u.glyph.back = gcalloc(blen+1,1);
+	    rule->u.glyph.back = calloc(blen+1,1);
 	if ( flen!=0 )
-	    rule->u.glyph.fore = gcalloc(flen+1,1);
+	    rule->u.glyph.fore = calloc(flen+1,1);
 	for ( i=0; i<cnt; ++i ) {
 	    if ( i<first ) {
 		strcat(rule->u.glyph.back,parsed[i].entity);
@@ -4929,13 +4922,13 @@ return( copy( _("A reverse contextual chaining lookup can only match one coverag
       } break;
       case pst_class:
         rule->u.class.ncnt = last+1-first;
-	rule->u.class.nclasses = galloc(rule->u.class.ncnt*sizeof(uint16));
+	rule->u.class.nclasses = malloc(rule->u.class.ncnt*sizeof(uint16));
 	rule->u.class.bcnt = first;
 	if ( first!=0 )
-	    rule->u.class.bclasses = galloc(first*sizeof(uint16));
+	    rule->u.class.bclasses = malloc(first*sizeof(uint16));
 	rule->u.class.fcnt = cnt==last?0:cnt-last-1;
 	if ( rule->u.class.fcnt!=0 )
-	    rule->u.class.fclasses = galloc(rule->u.class.fcnt*sizeof(uint16));
+	    rule->u.class.fclasses = malloc(rule->u.class.fcnt*sizeof(uint16));
 	for ( i=0; i<cnt; ++i ) {
 	    char **classnames, *pend;
 	    int class_cnt, val;
@@ -5002,13 +4995,13 @@ return( my_asprintf( _("%s is not a class name for the forward classes." ), pars
 	    }
 	}
         rule->u.coverage.ncnt = last+1-first;
-	rule->u.coverage.ncovers = galloc(rule->u.coverage.ncnt*sizeof(char *));
+	rule->u.coverage.ncovers = malloc(rule->u.coverage.ncnt*sizeof(char *));
 	rule->u.coverage.bcnt = first;
 	if ( first!=0 )
-	    rule->u.coverage.bcovers = galloc(first*sizeof(char *));
+	    rule->u.coverage.bcovers = malloc(first*sizeof(char *));
 	rule->u.coverage.fcnt = cnt-last-1;
 	if ( rule->u.coverage.fcnt!=0 )
-	    rule->u.coverage.fcovers = galloc(rule->u.coverage.fcnt*sizeof(char *));
+	    rule->u.coverage.fcovers = malloc(rule->u.coverage.fcnt*sizeof(char *));
 	for ( i=0; i<cnt; ++i ) {
 	    if ( i<first )
 		rule->u.coverage.bcovers[first-1-i] = parsed[i].entity;	/* Reverse the order of backtrack coverage tables */
@@ -5032,7 +5025,7 @@ return( copy( _("Bad FPST format")) );
 	    for ( ll=parsed[i].lookups; ll!=NULL; ll=ll->next )
 		++tot;
 	}
-	rule->lookups = gcalloc(tot,sizeof(struct seqlookup));
+	rule->lookups = calloc(tot,sizeof(struct seqlookup));
 	rule->lookup_cnt = tot;
 	tot = 0;
 	for ( i=first; i<=last; ++i ) {

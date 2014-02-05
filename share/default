@@ -4,7 +4,7 @@ FontView.Popup.Menu.New Outline Window:Ctl+H
 FontView.Popup.Menu.Cut:Ctl+X
 FontView.Popup.Menu.Copy:Ctl+C
 FontView.Popup.Menu.Copy Reference:Ctl+G
-FontView.Popup.Menu.Copy Width:Ctl+W
+FontView.Popup.Menu.Copy Width:No Shortcut
 FontView.Popup.Menu.Paste:Ctl+V
 FontView.Popup.Menu.Clear:No Shortcut
 FontView.Popup.Menu.Copy Fg To Bg:Ctl+Shft+C
@@ -24,7 +24,7 @@ FontView.Popup.Menu.Set Vertical Advance...:No Shortcut
 
 CharView.Menu.File.New:Ctl+N
 CharView.Menu.File.Open:Ctl+O
-CharView.Menu.File.Close:Ctl+Shft+Q
+CharView.Menu.File.Close:Ctl+W
 CharView.Menu.File.Save:Ctl+S
 CharView.Menu.File.Save as...:Ctl+Shft+S
 CharView.Menu.File.Save all:Alt+Ctl+S
@@ -43,7 +43,7 @@ CharView.Menu.Edit.Cut:Ctl+X
 CharView.Menu.Edit.Copy:Ctl+C
 CharView.Menu.Edit.Copy Reference:Ctl+G
 CharView.Menu.Edit.Copy Lookup Data:Alt+Ctl+C
-CharView.Menu.Edit.Copy Width:Ctl+W
+CharView.Menu.Edit.Copy Width:No Shortcut
 CharView.Menu.Edit.Copy LBearing:No Shortcut
 CharView.Menu.Edit.Copy RBearing:No Shortcut
 CharView.Menu.Edit.Paste:Ctl+V
@@ -292,7 +292,7 @@ FontView.Menu.File.Hangul.New Composition...:Ctl+Shft+N
 FontView.Menu.File.Hangul.Modify Composition...:No Shortcut
 FontView.Menu.File.Hangul.Build Syllables:No Shortcut
 FontView.Menu.File.Open:Ctl+O
-FontView.Menu.File.Close:Ctl+Shft+Q
+FontView.Menu.File.Close:Ctl+W
 FontView.Menu.File.Save:Ctl+S
 FontView.Menu.File.Save as...:Ctl+Shft+S
 FontView.Menu.File.Save All:Alt+Ctl+S
@@ -337,7 +337,7 @@ FontView.Menu.Edit.Cut:Ctl+X
 FontView.Menu.Edit.Copy:Ctl+C
 FontView.Menu.Edit.Copy Reference:Ctl+G
 FontView.Menu.Edit.Copy Lookup Data:Alt+Ctl+C
-FontView.Menu.Edit.Copy Width:Ctl+W
+FontView.Menu.Edit.Copy Width:No Shortcut
 FontView.Menu.Edit.Copy VWidth:No Shortcut
 FontView.Menu.Edit.Copy LBearing:No Shortcut
 FontView.Menu.Edit.Copy RBearing:No Shortcut
@@ -586,7 +586,7 @@ MetricsView.Menu.Window.New Metrics Window:Ctl+K
 MetricsView.Menu.Window.Warnings:No Shortcut
 MetricsView.Menu.File.New:Ctl+N
 MetricsView.Menu.File.Open:Ctl+O
-MetricsView.Menu.File.Close:Ctl+Shft+Q
+MetricsView.Menu.File.Close:Ctl+W
 MetricsView.Menu.File.Save:Ctl+S
 MetricsView.Menu.File.Save as...:Ctl+Shft+S
 MetricsView.Menu.File.Generate Fonts...:Ctl+Shft+G
@@ -602,7 +602,7 @@ MetricsView.Menu.Edit.Redo:Ctl+Y
 MetricsView.Menu.Edit.Cut:Ctl+X
 MetricsView.Menu.Edit.Copy:Ctl+C
 MetricsView.Menu.Edit.Copy Reference:Ctl+G
-MetricsView.Menu.Edit.Copy Width:Ctl+W
+MetricsView.Menu.Edit.Copy Width:No Shortcut
 MetricsView.Menu.Edit.Copy VWidth:No Shortcut
 MetricsView.Menu.Edit.Copy LBearing:No Shortcut
 MetricsView.Menu.Edit.Copy RBearing:No Shortcut

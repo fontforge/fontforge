@@ -70,15 +70,11 @@ return( author );
 
 /* Can all be commented out if no pwd routines */
     pwd = getpwuid(getuid());
-#ifndef __VMS
     if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' ) {
 	strncpy(author,pwd->pw_gecos,sizeof(author));
 	author[sizeof(author)-1] = '\0';
 	ret = author;
     } else if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' ) {
-#else
-    if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' ) {
-#endif
 	strncpy(author,pwd->pw_name,sizeof(author));
 	author[sizeof(author)-1] = '\0';
 	ret = author;

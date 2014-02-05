@@ -252,8 +252,7 @@ void *GResource_font_cvt(char *val, void *def) {
 		
     fi = GDrawInstanciateFont(NULL,&rq);
 
-    if ( freeme!=NULL )
-	free(freeme);
+    free(freeme);
 
     if ( fi==NULL )
 return( def );
@@ -898,7 +897,7 @@ GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void 
 	g->box = gd->box;
     else {
 	g->free_box = true;
-	g->box = galloc(sizeof(GBox));
+	g->box = malloc(sizeof(GBox));
 	*g->box = *gd->box;
     }
     g->state = !(gd->flags&gg_visible) ? gs_invisible :

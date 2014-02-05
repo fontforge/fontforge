@@ -43,11 +43,13 @@ libgdraw_la_SOURCES = choosericons.c ctlvalues.c drawboxborder.c	\
 	gpsdrawP.h gwidgetP.h gxdrawP.h hotkeys.c hotkeys.h
 
 libgdraw_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
-	"-DSHAREDIR=\"${MY_SHAREDIR}\"" $(MY_CFLAGS)
+	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
+	"-I$(top_srcdir)/fontforge" "-DSHAREDIR=\"${MY_SHAREDIR}\"" $(MY_CFLAGS)
 
 libgdraw_la_LIBADD = $(MY_LIBS) $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la \
-	$(top_builddir)/fontforge/libfontforge.la
+	$(top_builddir)/fontforge/libfontforge.la \
+	$(top_builddir)/lib/libgnu.la
 
 if GRAPHICAL_USER_INTERFACE
 libgdraw_la_LIBADD += $(XINPUT_LIBS)

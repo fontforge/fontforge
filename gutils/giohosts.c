@@ -126,7 +126,7 @@ return( password );
  goto leave;
 
     if ( pc_cnt>=pc_max )
-	pc = grealloc(pc,(pc_max+=10)*sizeof(struct passwd_cache));
+	pc = realloc(pc,(pc_max+=10)*sizeof(struct passwd_cache));
     pc[pc_cnt].proto = copy( proto );
     pc[pc_cnt].host  = copy( host  );
     pc[pc_cnt].username = copy( username );
@@ -174,7 +174,7 @@ return NULL;
 return( cur );
     }
 
-    cur = gcalloc(1,sizeof(struct hostdata));
+    cur = calloc(1,sizeof(struct hostdata));
     cur->addr.sin_family = AF_INET;
     cur->addr.sin_port = 0;
     if ( isdigit(host[0])) {

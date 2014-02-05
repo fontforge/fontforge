@@ -117,8 +117,8 @@ return( false );
     td->pcnt = pcnt;
 
     td->nsamples = ceil(len)+10;
-    td->samples = galloc((td->nsamples+1)*sizeof(struct tdsample));
-    td->joins = galloc(td->pcnt*sizeof(struct jsample));
+    td->samples = malloc((td->nsamples+1)*sizeof(struct tdsample));
+    td->joins = malloc(td->pcnt*sizeof(struct jsample));
 
     i = 0; pcnt = 0;
     first = NULL; sofar = 0;
@@ -993,7 +993,7 @@ static void TPDInit(TilePathDlg *tpd,SplineFont *sf) {
 			    "Isolated";
 	msc->parent = &tpd->dummy_sf;
 	msc->layer_cnt = 2;
-	msc->layers = gcalloc(2,sizeof(Layer));
+	msc->layers = calloc(2,sizeof(Layer));
 	LayerDefault(&msc->layers[0]);
 	LayerDefault(&msc->layers[1]);
 	tpd->chars[i] = msc;
@@ -1551,13 +1551,6 @@ return( true );
 		}
 	    }
 	}
-#if 0
-	if ( GetCalmInt8(ptd->gw,CID_PatternWidth,_("Width"),&err)!=ptd->sc_first.width &&
-		!err ) {
-	    sprintf( buffer,"%d",ptd->sc_first.width);
-	    GGadgetSetTitle8(GWidgetGetControl(ptd->gw,CID_PatternWidth),buffer);
-	}
-#endif
       } break;
       case et_map:
 	{
@@ -1637,7 +1630,7 @@ return( true );
 return( true );
 	}
 
-	td->pattern = gcalloc(1,sizeof(Layer));
+	td->pattern = calloc(1,sizeof(Layer));
 	td->pattern->splines = SplinePointListCopy(ptd->sc_first.layers[ly_fore].splines);
 	td->pattern->refs = RefCharsCopy(ptd->sc_first.layers[ly_fore].refs);
 	
@@ -1691,7 +1684,7 @@ static void PTDInit(TilePathDlg *ptd,SplineFont *sf) {
 	msc->name = "Pattern";
 	msc->parent = &ptd->dummy_sf;
 	msc->layer_cnt = 2;
-	msc->layers = gcalloc(2,sizeof(Layer));
+	msc->layers = calloc(2,sizeof(Layer));
 	LayerDefault(&msc->layers[0]);
 	LayerDefault(&msc->layers[1]);
 	ptd->chars[0] = msc;
@@ -1958,18 +1951,6 @@ return;
     TPFree(&td);
     cv->lastselpt = NULL;
 }
-
-#if 0
-void SCPatternTile(SplineChar *sc,int layer) {
-    struct tiledata td;
-
-    if ( !TilePatternAsk(&td,sc->parent))
-return;
-
-    SCTilePattern(sc,layer,td.pattern, &td.patternSize, &td.repeatCnt);
-    TPFree(&td);
-}
-#endif
 
 void FVPatternTile(FontView *fv) {
     struct tiledata td;

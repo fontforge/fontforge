@@ -134,10 +134,6 @@ extern char *u2def_strncpy(char *to, const unichar_t *ufrom, int n);
 extern unichar_t *def2u_copy(const char *from);
 extern char *u2def_copy(const unichar_t *ufrom);
 
-extern int u_sprintf(unichar_t *str, const unichar_t *format, ... );
-extern int u_snprintf(unichar_t *str, int len, const unichar_t *format, ... );
-extern int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list ap );
-
 extern int uAllAscii(const unichar_t *str);
 extern int AllAscii(const char *);
 extern char *StripToASCII(const char *utf8_str);
@@ -181,12 +177,6 @@ int endswith(const char *haystack,const char *needle);
  * No new strings are allocated, freed, or returned.
  */
 extern int u_endswith(const unichar_t *haystack,const unichar_t *needle);
-
-/**
- * Return a pointer to the last occurance of ch in 's' or null if it
- * doesn't appear. Very much like the strrchr() call.
- */
-extern char* str_rfind( char* s, char ch );
 
 /**
  * In the string 's' replace all occurances of 'orig' with 'replacement'.

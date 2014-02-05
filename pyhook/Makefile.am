@@ -34,7 +34,8 @@ fontforge_la_SOURCES = fontforgepyhook.c
 fontforge_la_LIBADD = $(LIBADD)
 
 AM_CPPFLAGS = -DLIBDIR='"$(libdir)"' $(PYTHON_CFLAGS)			\
-	"-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"				\
+	"-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"			\
+	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
 	"-I$(top_builddir)/fontforge" "-I$(top_srcdir)/fontforge"	\
 	$(MY_CFLAGS)
 AM_LDFLAGS = -module -shared -avoid-version

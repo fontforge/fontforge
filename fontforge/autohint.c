@@ -605,7 +605,7 @@ void ElFreeEI(EIList *el) {
 }
 
 static int EIAddEdge(Spline *spline, real tmin, real tmax, EIList *el) {
-    EI *new = gcalloc(1,sizeof(EI));
+    EI *new = calloc(1,sizeof(EI));
     real min, max, temp;
     Spline1D *s;
     real dxdtmin, dxdtmax, dydtmin, dydtmax;
@@ -781,8 +781,8 @@ void ELOrder(EIList *el, int major ) {
 
     el->low = floor(el->coordmin[major]); el->high = ceil(el->coordmax[major]);
     el->cnt = el->high-el->low+1;
-    el->ordered = gcalloc(el->cnt,sizeof(EI *));
-    el->ends = gcalloc(el->cnt,1);
+    el->ordered = calloc(el->cnt,sizeof(EI *));
+    el->ends = calloc(el->cnt,1);
 
     for ( ei = el->edges; ei!=NULL ; ei=ei->next ) {
 	pos = ceil(ei->coordmax[major])-el->low;
@@ -1086,7 +1086,6 @@ return( n->up==e->up );
 return( false );
 }
 
-#if 1
 int EISkipExtremum(EI *e, real i, int major) {
     EI *n = e->aenext, *t;
 
@@ -1122,23 +1121,6 @@ return( n->up!=e->up );
     }
 return( false );
 }
-#else
-int EISkipExtremum(EI *e, real pos, int major) {
-    Spline1D *s;
-    real slopem, slopeo;
-
-    s = &e->spline->splines[major];
-    slopem = (3*s->a*e->tcur+2*s->b)*e->tcur+s->c;
-    s = &e->spline->splines[!major];
-    slopeo = (3*s->a*e->tcur+2*s->b)*e->tcur+s->c;
-    if ( !RealNear(slopeo,0)) {
-	slopem/=slopeo;
-	if ( slopem>-.15 && slopem<.15 )
-return( true );
-    }
-return( false );
-}
-#endif
 
 EI *EIActiveEdgesFindStem(EI *apt, real i, int major) {
     int cnt=apt->up?1:-1;
@@ -2074,7 +2056,7 @@ return;
 	    }
 	}
 	sc->countermask_cnt = 1;
-	sc->countermasks = galloc(sizeof(HintMask));
+	sc->countermasks = malloc(sizeof(HintMask));
 	memcpy(sc->countermasks[0],mask,sizeof(HintMask));
 return;
     }
@@ -2156,7 +2138,7 @@ return;
     }
     if ( mc!=0 ) {
 	sc->countermask_cnt = mc;
-	sc->countermasks = galloc(mc*sizeof(HintMask));
+	sc->countermasks = malloc(mc*sizeof(HintMask));
 	for ( i=0; i<mc ; ++i )
 	    memcpy(sc->countermasks[i],masks[i],sizeof(HintMask));
     }
@@ -2205,7 +2187,7 @@ return;
     }
     if ( mc!=0 ) {
 	sc->countermask_cnt = mc;
-	sc->countermasks = galloc(mc*sizeof(HintMask));
+	sc->countermasks = malloc(mc*sizeof(HintMask));
 	for ( i=0; i<mc ; ++i )
 	    memcpy(sc->countermasks[i],masks[i],sizeof(HintMask));
     }
@@ -2627,14 +2609,14 @@ static void SplResolveSplitHints(SplineChar *scs[MmMax], SplineSet *spl[MmMax],
     StemInfo *h[MmMax], *v[MmMax];
     int i, anymore;
 
-    forever {
+    for (;;) {
 	for ( i=0; i<instance_count; ++i ) {
 	    if ( spl[i]!=NULL )
 		to[i] = spl[i]->first;
 	    else
 		to[i] = NULL;
 	}
-	forever {
+	for (;;) {
 	    for ( i=0; i<instance_count; ++i ) {
 		h[i] = OnHHint(to[i],scs[i]->hstem);
 		v[i] = OnVHint(to[i],scs[i]->vstem);
@@ -2737,14 +2719,14 @@ static int SplFigureHintMasks(SplineChar *scs[MmMax], SplineSet *spl[MmMax],
 	inited = true;
     }
 
-    forever {
+    for (;;) {
 	for ( i=0; i<instance_count; ++i ) {
 	    if ( spl[i]!=NULL )
 		to[i] = spl[i]->first;
 	    else
 		to[i] = NULL;
 	}
-	forever {
+	for (;;) {
 	    TestHintMask(scs,to,instance_count,mask);
 	    anymore = false;
 	    for ( i=0; i<instance_count; ++i ) if ( to[i]!=NULL ) {
@@ -2814,7 +2796,7 @@ return;						/* In an MM font we may still need to resolve things like different
 	ref[i] = scs[i]->layers[layer].refs;
     }
     inited = SplFigureHintMasks(scs,spl,instance_count,mask,false);
-    forever {
+    for (;;) {
 	for ( i=0; i<instance_count; ++i ) {
 	    if ( ref[i]!=NULL )
 		spl[i] = ref[i]->layers[0].splines;

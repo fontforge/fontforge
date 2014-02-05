@@ -45,7 +45,7 @@ typedef struct l2ld {
 #define CID_ErrorBound	1003
 
 static GTextInfo *SFLayerList(SplineFont *sf,int def_layer) {
-    GTextInfo *ret = gcalloc(sf->layer_cnt+1,sizeof(GTextInfo));
+    GTextInfo *ret = calloc(sf->layer_cnt+1,sizeof(GTextInfo));
     int l;
 
     for ( l=0; l<sf->layer_cnt; ++l ) {

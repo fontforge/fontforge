@@ -28,6 +28,8 @@
 
 #include "unicodelibinfo.h"
 #include <ustring.h>
+#include "../fontforge/ffglib.h"
+#include <glib/gprintf.h>
 
 
 #ifndef _NO_LIBUNINAMESLIST
@@ -45,6 +47,10 @@ const struct unicode_block *_UnicodeBlock = NULL;
 uninm_names_db names_db; /* Unicode character names and annotations database */
 uninm_blocks_db blocks_db;
 #endif
+
+static char *chosung[] = { "G", "GG", "N", "D", "DD", "L", "M", "B", "BB", "S", "SS", "", "J", "JJ", "C", "K", "T", "P", "H", NULL };
+static char *jungsung[] = { "A", "AE", "YA", "YAE", "EO", "E", "YEO", "YE", "O", "WA", "WAE", "OE", "YO", "U", "WEO", "WE", "WI", "YU", "EU", "YI", "I", NULL };
+static char *jongsung[] = { "", "G", "GG", "GS", "N", "NJ", "NH", "D", "L", "LG", "LM", "LB", "LS", "LT", "LP", "LH", "M", "B", "BS", "S", "SS", "NG", "J", "C", "K", "T", "P", "H", NULL };
 
 void inituninameannot(void) {
 /* Initialize unicode name-annotation library access for FontForge */
@@ -112,6 +118,26 @@ char *unicode_name(int32 unienc) {
     name_data=copy(uninm_name(names_db,(unsigned int)(unienc)));
     //fprintf(stderr,"libunicodes library ->%s<-\n",name_data\n");
 #endif
+
+    /* George Williams' improvisation on Hangul Syllable range
+     * As of Unicode 6.3.0 0xAC00 - 0xD7A3 is defined as a block
+     * without individual code point names.
+     * Code moved here from fontforgeexe/fontview.c
+     * FIXME: maybe this belongs to lower library stack instead,
+     * revisit later.
+     */
+    if( ( unienc >= 0xAC00 && unienc <= 0xD7A3 ) && ( name_data == NULL ) ) {
+	if( ( ( unienc - 0xAC00 ) % 28 ) == 0 ) {
+	    name_data = (char *) g_strdup_printf( "Hangul Syllable %s-%s",
+		    chosung [ (unienc - 0xAC00) / (21*28) ],
+		    jungsung[ ((unienc - 0xAC00) / 28 ) % 21 ] );
+	} else {
+	    name_data = (char *) g_strdup_printf( "Hangul Syllable %s-%s-%s",
+		    chosung [ (unienc - 0xAC00) / (21*28) ],
+		    jungsung[ ((unienc - 0xAC00) / 28 ) % 21 ],
+		    jongsung[ (unienc - 0xAC00) % 28 ] );
+	}
+    }
 
     return( name_data );
 #endif

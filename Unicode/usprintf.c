@@ -255,7 +255,7 @@ int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list ap ) {
     }
     state.argmax = argmax;
     if ( argmax>sizeof(args)/sizeof(args[0]) )
-	state.args = (struct args *) gcalloc(argmax,sizeof(struct args));
+	state.args = (struct args *) calloc(argmax,sizeof(struct args));
     else
 	state.args = args;
     state.opt = str; state.end = str+len;

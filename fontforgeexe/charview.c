@@ -597,7 +597,7 @@ static GPointList *MakePoly(CharView *cv, SplinePointList *spl) {
 			}
 			if ( closed || (prev->flags&cvli_clipped) ) {
 			    if ( i==0 ) {
-				cur = gcalloc(1,sizeof(GPointList));
+				cur = calloc(1,sizeof(GPointList));
 				if ( head==NULL )
 				    head = cur;
 				else {
@@ -610,7 +610,7 @@ static GPointList *MakePoly(CharView *cv, SplinePointList *spl) {
 				    cur = head;
 				else
 				    cur = cur->next;
-				cur->gp = galloc(cur->cnt*sizeof(GPoint));
+				cur->gp = malloc(cur->cnt*sizeof(GPoint));
 				cur->gp[0].x = prev->asstart.x;
 				cur->gp[0].y = prev->asstart.y;
 			    }
@@ -833,7 +833,6 @@ return;
 	 || cv->show_ft_results
 	 || cv->dv )
     {
-	int iscurrent = sp==(cv->p.sp!=NULL?cv->p.sp:cv->lastselpt);
 	if ( !sp->nonextcp ) {
 	    cx =  cv->xoff + rint(sp->nextcp.x*cv->scale);
 	    cy = -cv->yoff + cv->height - rint(sp->nextcp.y*cv->scale);
@@ -1617,10 +1616,6 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
 	if ( layer->stroke_pen.brush.col!=COLOR_INHERITED &&
 		layer->stroke_pen.brush.col!=view_bgcol )
 	    fg = layer->stroke_pen.brush.col;
-#if 0
-	if ( layer->stroke_pen.width!=WIDTH_INHERITED )
-	    GDrawSetLineWidth(pixmap,rint(layer->stroke_pen.width*layer->stroke_pen.trans[0]*cv->scale));
-#endif
     }
     if ( ml && layer->dofill ) {
 	if ( layer->fill_brush.col!=COLOR_INHERITED &&
@@ -1632,10 +1627,6 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
     CVDrawSplineSetSpecialized(cv,pixmap,layer->splines,fg,dopoints && active,clip,strokeFillMode,0);
     if ( ml && !active && layer!=&cv->b.sc->layers[ly_back] )
 	GDrawSetDashedLine(pixmap,0,0,0);
-#if 0
-    if ( layer->dostroke && layer->stroke_pen.width!=WIDTH_INHERITED )
-	GDrawSetLineWidth(pixmap,0);
-#endif
 }
 
 static void CVDrawTemplates(CharView *cv,GWindow pixmap,SplineChar *template,DRect *clip) {
@@ -2469,7 +2460,7 @@ static void FindQuickBounds(SplineSet *ss,BasePoint **bounds) {
 	sp = ss->first;
 	if ( sp->next==NULL || sp->next->to==sp )	/* Ignore contours with one point. Often tt points for moving references or anchors */
     continue;
-	forever {
+	for (;;) {
 	    if ( bounds[0]==NULL )
 		bounds[0] = bounds[1] = bounds[2] = bounds[3] = &sp->me;
 	    else {
@@ -2497,7 +2488,7 @@ return;
 	sp = ss->first;
 	if ( sp->next==NULL || sp->next->to==sp )	/* Ignore contours with one point. Often tt points for moving references or anchors */
     continue;
-	forever {
+	for (;;) {
 	    if ( *left==NULL )
 		*left = *right = sp;
 	    else {
@@ -3777,7 +3768,7 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 //    TRACE("CVCharUp() ag:%d key:%d\n", cv_auto_goto, event->u.chr.keysym );
     if( !cv_auto_goto )
     {
-	bool isImmediateKeyTogglePreview = isImmediateKey( cv->gw, "TogglePreview", event );
+	bool isImmediateKeyTogglePreview = isImmediateKey( cv->gw, "TogglePreview", event ) != NULL;
 	if( isImmediateKeyTogglePreview ) {
 	    PressingTilde = 1;
 	}
@@ -4217,11 +4208,6 @@ static int16 MouseToCX( CharView *cv, int16 mx )
 {
     return( mx - cv->xoff ) / cv->scale;
 }
-static int16 MouseToCY( CharView *cv, int16 my )
-{
-    return( my - cv->yoff ) / cv->scale;
-}
-
 
     
 static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
@@ -4347,7 +4333,6 @@ static void CVSetConstrainPoint(CharView *cv, GEvent *event) {
 static void CVDoSnaps(CharView *cv, FindSel *fs) {
     PressedOn *p = fs->p;
 
-#if 1
     if ( cv->b.drawmode!=dm_grid && cv->b.layerheads[dm_grid]->splines!=NULL ) {
 	PressedOn temp;
 	int oldseek = fs->seek_controls;
@@ -4372,7 +4357,6 @@ static void CVDoSnaps(CharView *cv, FindSel *fs) {
 	fs->p = p;
 	fs->seek_controls = oldseek;
     }
-#endif
     if ( p->cx>-fs->fudge && p->cx<fs->fudge )
 	p->cx = 0;
     else if ( p->cx>cv->b.sc->width-fs->fudge && p->cx<cv->b.sc->width+fs->fudge &&
@@ -4381,30 +4365,8 @@ static void CVDoSnaps(CharView *cv, FindSel *fs) {
     else if ( cv->widthsel && p!=&cv->p &&
 	    p->cx>cv->oldwidth-fs->fudge && p->cx<cv->oldwidth+fs->fudge )
 	p->cx = cv->oldwidth;
-#if 0
-    else if ( cv->b.sc->parent->hsnaps!=NULL && cv->b.drawmode!=dm_grid ) {
-	int i, *hsnaps = cv->b.sc->parent->hsnaps;
-	for ( i=0; hsnaps[i]!=0x80000000; ++i ) {
-	    if ( p->cx>hsnaps[i]-fs->fudge && p->cx<hsnaps[i]+fs->fudge ) {
-		p->cx = hsnaps[i];
-	break;
-	    }
-	}
-    }
-#endif
     if ( p->cy>-fs->fudge && p->cy<fs->fudge )
 	p->cy = 0;
-#if 0
-    else if ( cv->b.sc->parent->vsnaps!=NULL && cv->b.drawmode!=dm_grid ) {
-	int i, *vsnaps = cv->b.sc->parent->vsnaps;
-	for ( i=0; vsnaps[i]!=0x80000000; ++i ) {
-	    if ( p->cy>vsnaps[i]-fs->fudge && p->cy<vsnaps[i]+fs->fudge ) {
-		p->cy = vsnaps[i];
-	break;
-	    }
-	}
-    }
-#endif
 }
 
 static int _CVTestSelectFromEvent(CharView *cv,FindSel *fs) {
@@ -4493,7 +4455,6 @@ static void CVMaybeCreateDraggingComparisonOutline( CharView* cv )
     if( !l || !l->splines )
 	return;
 
-    GHashTable* ret = g_hash_table_new( g_direct_hash, g_direct_equal );
     SplinePointList* spl = l->splines;
     for( ; spl; spl = spl->next )
     {
@@ -4512,7 +4473,6 @@ static void CVMaybeCreateDraggingComparisonOutline( CharView* cv )
 static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
 {
     int i=0;
-    SplineChar* oldsc = cv->b.sc;
     FontViewBase *fv = cv->b.fv;
     char buf[300];
 
@@ -5143,10 +5103,9 @@ static void CVMouseMove(CharView *cv, GEvent *event ) {
     int has_spiro = hasspiro();
     int spacebar_changed;
 
-#if 0		/* Debug wacom !!!! */
- TRACE( "dev=%s (%d,%d) 0x%x\n", event->u.mouse.device!=NULL?event->u.mouse.device:"<None>",
-     event->u.mouse.x, event->u.mouse.y, event->u.mouse.state);
-#endif
+		/* Debug wacom !!!! */
+ /* TRACE( "dev=%s (%d,%d) 0x%x\n", event->u.mouse.device!=NULL?event->u.mouse.device:"<None>", */
+ /*     event->u.mouse.x, event->u.mouse.y, event->u.mouse.state); */
 
     spacebar_changed = update_spacebar_hand_tool(cv);
 
@@ -5233,11 +5192,6 @@ return;
     /*  current point as it moves across the screen (jerkily) */
     if ( cv->active_tool == cvt_hand || cv->active_tool == cvt_freehand )
 	/* Don't snap to points */;
-#if 0
-    else if ( cv->active_tool == cvt_pointer &&
-	    ( cv->p.nextcp || cv->p.prevcp))
-	/* Don't snap to points when moving control points */;
-#endif
     else if ( !cv->joinvalid ||
 	    ((!cv->b.sc->inspiro || has_spiro) && !CheckPoint(&fs,&cv->joinpos,NULL)) ||
 	    (  cv->b.sc->inspiro && has_spiro  && !CheckSpiroPoint(&fs,&cv->joincp,NULL,0))) {
@@ -5662,9 +5616,6 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 	if ( event->u.focus.gained_focus ) {
 	    if ( cv->gic!=NULL )
 		GDrawSetGIC(gw,cv->gic,0,20);
-#if 0
-	    CVPaletteActivate(cv);
-#endif
 	}
       break;
     }
@@ -5797,10 +5748,6 @@ return;
     GDrawPushClip(pixmap,&expose->u.expose.rect,&old1);
     GDrawSetLineWidth(pixmap,0);
     if ( expose->u.expose.rect.y< cv->mbh+cv->charselectorh+cv->infoh ) {
-#if 0
-	r.x = 0; r.width = 8096;
-	r.y = cv->mbh; r.height = cv->infoh;
-#endif
 	GDrawPushClip(pixmap,&expose->u.expose.rect,&old2);
 
 	GDrawDrawLine(pixmap,0,cv->mbh+cv->charselectorh+cv->infoh-1,8096,cv->mbh+cv->charselectorh+cv->infoh-1,def_fg);
@@ -6225,7 +6172,6 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 	}
     else if ( event->u.mouse.y > cv->mbh )
     {
-	    GGadget *active = GWindowGetFocusGadgetOfWindow(cv->gw);
         if( GGadgetContainsEventLocation( cv->charselectorPrev, event ))
         {
             GGadgetPreparePopup(cv->gw,c_to_u("Show the previous word in the current word list\n"
@@ -6256,9 +6202,6 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 	if ( event->u.focus.gained_focus ) {
 	    if ( cv->gic!=NULL )
 		GDrawSetGIC(gw,cv->gic,0,20);
-#if 0
-	    CVPaletteActivate(cv);
-#endif
 	}
       break;
     }
@@ -6608,7 +6551,7 @@ return;
 	temp = *cv->b.sc;
 	cv->b.sc->dependents = NULL;
 	lc = cv->b.sc->layer_cnt;
-	undoes = galloc(lc*sizeof(Undoes *));
+	undoes = malloc(lc*sizeof(Undoes *));
 	for ( layer=0; layer<lc; ++layer ) {
 	    undoes[layer] = cv->b.sc->layers[layer].undoes;
 	    cv->b.sc->layers[layer].undoes = NULL;
@@ -7281,7 +7224,7 @@ static SplineChar **GlyphsMatchingAP(SplineFont *sf, AnchorPoint *ap) {
 	 if ( !k ) {
 	     if ( gcnt==0 )
 return( NULL );
-	     glyphs = galloc((gcnt+1)*sizeof(SplineChar *));
+	     glyphs = malloc((gcnt+1)*sizeof(SplineChar *));
 	 } else
 	     glyphs[gcnt] = NULL;
      }
@@ -7312,17 +7255,14 @@ return;
         char* txt = GGadgetGetTitle8( cv->charselector );
         if( txt && strlen(txt) > 1 )
         {
-            printf("txt.len: %d\n", strlen( txt ));
             int offset = 1;
             if ( mid == MID_Prev )
                 offset = -1;
 
-	    const unichar_t *txtu = GGadgetGetTitle( cv->charselector );
-            printf("INPUT STRING : %s\n", u_to_c( txtu ));
+	    unichar_t *txtu = GGadgetGetTitle( cv->charselector );
             unichar_t* r = Wordlist_advanceSelectedCharsBy( cv->b.sc->parent,
                                                             ((FontView *) (cv->b.fv))->b.map,
                                                             txtu, offset );
-            printf("UPDATED STRING : %s\n", u_to_c( r ));
             free( txtu );
 
 	    GGadgetSetTitle( cv->charselector, r );
@@ -7702,7 +7642,6 @@ void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
     if(!col)
 	return;
     
-    SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
     if( g_hash_table_size( col ) )
     {
 	if( preserveState )
@@ -7720,7 +7659,6 @@ void CVVisitAllControlPoints( CharView *cv, bool preserveState,
 	return;
 
     GHashTable* col = getAllControlPoints( cv, &cv->p );
-    SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
     if( g_hash_table_size( col ) )
     {
 	if( preserveState )
@@ -7741,7 +7679,6 @@ void CVVisitAdjacentToSelectedControlPoints( CharView *cv, bool preserveState,
     if( !col )
 	return;
 
-    SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
     if( g_hash_table_size( col ) )
     {
 	if( preserveState )
@@ -7764,7 +7701,7 @@ void CVChar(CharView *cv, GEvent *event ) {
 	{
 	    HaveModifiers = 1;
 	}
-	bool isImmediateKeyTogglePreview = isImmediateKey( cv->gw, "TogglePreview", event );
+	bool isImmediateKeyTogglePreview = isImmediateKey( cv->gw, "TogglePreview", event ) != NULL;
 
 	if( !HaveModifiers && isImmediateKeyTogglePreview ) {
 	    PressingTilde = 1;
@@ -7807,11 +7744,6 @@ return;
     } else if ( event->u.chr.keysym == GK_F3 ) {
 	fprintf( stderr, "Malloc debug off\n" );
 	__malloc_debug(0);
-    }
-#endif
-#if 0
-    if ( event->u.chr.keysym == GK_F4 ) {
-	RepeatFromFile(cv);
     }
 #endif
 
@@ -8517,13 +8449,6 @@ void CVMergeToLine(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
 
 }
 
-#if 0
-static void CVElide(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-    _CVMerge(cv,true);
-}
-#endif
-
 static void _CVJoin(CharView *cv) {
     int anyp = 0, changed;
     extern float joinsnap;
@@ -8951,11 +8876,6 @@ static void cv_edlistcheck(CharView *cv, struct gmenuitem *mi) {
 	  case MID_MergeToLine:
 	    mi->ti.disabled = !anypoints;
 	  break;
-#if 0
-	  case MID_Elide:
-	    mi->ti.disabled = !anypoints;
-	  break;
-#endif
 	  case MID_Clear: case MID_Cut: /*case MID_Copy:*/
 	    /* If nothing is selected, copy copies everything */
 	    /* In spiro mode copy will copy all contours with at least (spiro) one point selected */
@@ -9256,9 +9176,6 @@ static void cv_ptlistcheck(CharView *cv, struct gmenuitem *mi) {
 	  break;
 	  case MID_AddAnchor:
 	    mi->ti.disabled = cv->b.container!=NULL;
-#if 0
-	    mi->ti.disabled = AnchorClassUnused(cv->b.sc,&waslig)==NULL;
-#endif
 	  break;
 	}
     }
@@ -9986,7 +9903,7 @@ return;
 return;
 
     CVPreserveState(&cv->b);
-    newspiros = galloc((sel->spiro_max+1)*sizeof(spiro_cp));
+    newspiros = malloc((sel->spiro_max+1)*sizeof(spiro_cp));
     memcpy(newspiros,sel->spiros+which,(sel->spiro_cnt-1-which)*sizeof(spiro_cp));
     memcpy(newspiros+(sel->spiro_cnt-1-which),sel->spiros,which*sizeof(spiro_cp));
     memcpy(newspiros+sel->spiro_cnt-1,sel->spiros+sel->spiro_cnt-1,sizeof(spiro_cp));
@@ -10097,7 +10014,7 @@ return( true );
 	}
 	iosa->done = true;
 	CVPreserveState(&iosa->cv->b);
-	forever {
+	for (;;) {
 	    sp = SplineBisect(iosa->s,ts[0]);
 	    SplinePointCatagorize(sp);
 	    if ( which==0 ) {
@@ -11896,7 +11813,7 @@ static void ap2listbuild(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    ++cnt;
 	}
 	if ( !k )
-	    sub = gcalloc(cnt+1,sizeof(GMenuItem));
+	    sub = calloc(cnt+1,sizeof(GMenuItem));
     }
     mi->sub = sub;
 }
@@ -11989,7 +11906,7 @@ return;
     }
 
     for ( cnt = 0; glyphs[cnt]!=NULL; ++cnt );
-    mit = gcalloc(cnt+2,sizeof(GMenuItem2));
+    mit = calloc(cnt+2,sizeof(GMenuItem2));
     mit[0] = aplist[0];
     mit[0].ti.text = (unichar_t *) copy( (char *) mit[0].ti.text );
     mit[0].ti.disabled = (cv->apmine==NULL);
@@ -12149,7 +12066,7 @@ static void mvlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     if ( mm==NULL )
 	mml = mvlist;
     else {
-	mml = gcalloc(base+mm->instance_count+2,sizeof(GMenuItem2));
+	mml = calloc(base+mm->instance_count+2,sizeof(GMenuItem2));
 	memcpy(mml,mvlist,sizeof(mvlist));
 	mml[base-1].ti.fg = mml[base-1].ti.bg = COLOR_DEFAULT;
 	mml[base-1].ti.line = true;
@@ -12225,7 +12142,7 @@ static void mmlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     if ( mm==NULL )
 	mml = mmlist;
     else {
-	mml = gcalloc(base+mm->instance_count+2,sizeof(GMenuItem2));
+	mml = calloc(base+mm->instance_count+2,sizeof(GMenuItem2));
 	memcpy(mml,mmlist,sizeof(mmlist));
 	mml[base-1].ti.fg = mml[base-1].ti.bg = COLOR_DEFAULT;
 	mml[base-1].ti.line = true;
@@ -12430,9 +12347,9 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     cv->nfh = as+ds; cv->nas = as;
 
     cv->height = pos.height; cv->width = pos.width;
-    cv->gi.u.image = gcalloc(1,sizeof(struct _GImage));
+    cv->gi.u.image = calloc(1,sizeof(struct _GImage));
     cv->gi.u.image->image_type = it_mono;
-    cv->gi.u.image->clut = gcalloc(1,sizeof(GClut));
+    cv->gi.u.image->clut = calloc(1,sizeof(GClut));
     cv->gi.u.image->clut->trans_index = cv->gi.u.image->trans = 0;
     cv->gi.u.image->clut->clut_len = 2;
     cv->gi.u.image->clut->clut[0] = view_bgcol;
@@ -12531,48 +12448,6 @@ void DefaultY(GRect *pos) {
 
 static void CharViewInit(void);
 
-static SplineChar *SCFromUnicode(CharView* cv, SplineFont *sf, EncMap *map, int ch,BDFFont *bdf) {
-    int i;
-    SplineChar *sc;
-
-    i = SFFindSlot(sf,map,ch,NULL);
-    if ( i==-1 )
-	return( NULL );
-    else
-    {
-	sc = SFMakeChar(sf,map,i);
-	if ( bdf!=NULL )
-	    BDFMakeChar(bdf,map,i);
-    }
-    return( sc );
-}
-
-/* static void CVLoadWordList( CharView* cv ) */
-/* { */
-/*     SplineChar *sc = cv->b.sc; */
-/*     SplineFont* sf = sc->parent; */
-
-/*     int words_max = 1024*128; */
-/*     GTextInfo** words = WordlistLoadFileToGTextInfoBasic( words_max ); */
-/*     if( !words ) */
-/*     { */
-/* 	GGadgetSetTitle8(cv->charselector,""); */
-/* 	return 0; */
-/*     } */
-
-/*     if( words[0] ) */
-/*     { */
-/* 	GGadgetSetList(cv->charselector,words,true); */
-/* 	GGadgetSetTitle8(cv->charselector,(char *) (words[0]->text)); */
-/* 	GTextInfoArrayFree(words); */
-/* 	cv->charselectoridx = 0; */
-/* 	GGadgetSelectOneListItem( cv->charselector, cv->charselectoridx ); */
-/* 	Wordlist_touch( cv->charselector ); */
-/* 	return 0; */
-/*     } */
-/*     return 1; */
-/* } */
-
 static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 {
     CharView* cv = GGadgetGetUserData(g);
@@ -12580,11 +12455,6 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
     SplineFont* sf = sc->parent;
 
     TRACE("CV_OnCharSelectorTextChanged(top)\n");
-    /* if( e->type == et_char ) */
-    /* { */
-    /* 	TRACE("CV_OnCharSelectorTextChanged() char is-left:%d\n", e->u.chr.keysym == GK_Left ); */
-    /* } */
-    /* TRACE("subtype: %d\n", e->u.control.subtype ); */
     
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged )
     {
@@ -12610,7 +12480,6 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	char* txt = GGadgetGetTitle8( cv->charselector );
 	TRACE("text changed: %s\n", txt );
 
-	if( 1 )
 	{
 	    int tabnum = GTabSetGetSel(cv->tabs);
 	    TRACE("tab num:%d\n", tabnum );
@@ -12620,7 +12489,6 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	    GTabSetChangeTabName(cv->tabs,t->tablabeltxt,tabnum);
 	    GTabSetRemetric(cv->tabs);
 	    GTabSetSetSel(cv->tabs,tabnum);	/* This does a redraw */
-	    
 	}
 	
 	memset( cv->additionalCharsToShow, 0, sizeof(SplineChar*) * additionalCharsToShowLimit );
@@ -12635,10 +12503,10 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	else if( strlen(txt) > 1 )
 	{
 	    int i=0;
-	    const unichar_t *ret = GGadgetGetTitle( cv->charselector );
+	    unichar_t *ret = GGadgetGetTitle( cv->charselector );
 	    GArray* selected = 0;
 	    WordlistTrimTrailingSingleSlash( ret );
-	    ret = WordlistEscpaedInputStringToRealStringBasic( sf, ret, &selected );
+	    ret = WordlistEscapedInputStringToRealStringBasic( sf, ret, &selected );
 
 	    const unichar_t *pt, *ept, *tpt;
 	    pt = ret;
@@ -12722,7 +12590,7 @@ GTextInfo cv_charselector_init[] = {
 
 CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show )
 {
-    CharView *cv = gcalloc(1,sizeof(CharView));
+    CharView *cv = calloc(1,sizeof(CharView));
     GWindowAttrs wattrs;
     GRect pos, zoom;
     GWindow gw;
@@ -12898,9 +12766,7 @@ void CharViewFree(CharView *cv) {
     for ( i=0; i<cv->former_cnt; ++i )
 	free(cv->former_names[i]);
 
-    if ( cv->ruler_intersections )
-	gfree(cv->ruler_intersections);
-
+    free(cv->ruler_intersections);
     free(cv);
 }
 

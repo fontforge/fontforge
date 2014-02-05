@@ -1,8 +1,8 @@
-To install from git, you must first run the `autogen.sh` script, then configure and compile as normal:
+To install from a git checkout:
 
 ```
-./autogen.sh;
-./configure;
-make;
-sudo make install;
+./bootstrap
+./configure
+make
+[sudo] make install
 ```

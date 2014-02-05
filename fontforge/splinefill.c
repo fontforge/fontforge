@@ -172,7 +172,7 @@ static void AddEdge(EdgeList *es, Spline *sp, real tmin, real tmax ) {
     Hints *hint;
     Spline1D *msp = &sp->splines[es->major], *osp = &sp->splines[es->other];
 
-    e = gcalloc(1,sizeof(Edge));
+    e = calloc(1,sizeof(Edge));
     e->spline = sp;
 
     m1 = ( ((msp->a*tmin+msp->b)*tmin+msp->c)*tmin + msp->d ) * es->scale;
@@ -276,7 +276,7 @@ static void AddMajorEdge(EdgeList *es, Spline *sp) {
     real m1;
     Spline1D *msp = &sp->splines[es->major], *osp = &sp->splines[es->other];
 
-    e = gcalloc(1,sizeof(Edge));
+    e = calloc(1,sizeof(Edge));
     e->spline = sp;
 
     e->mmin = e->mmax = m1 = msp->d * es->scale - es->mmin;
@@ -626,7 +626,7 @@ static void InitializeHints(SplineChar *sc, EdgeList *es) {
 
     last = NULL; es->hhints = NULL;
     for ( s=sc->hstem; s!=NULL; s=s->next ) {
-	hint = gcalloc(1,sizeof(Hints));
+	hint = calloc(1,sizeof(Hints));
 	hint->base = s->start; hint->width = s->width;
 	if ( last==NULL ) es->hhints = hint;
 	else last->next = hint;
@@ -660,7 +660,7 @@ static void InitializeHints(SplineChar *sc, EdgeList *es) {
     /* Nope. We care about vstems too now, but in a different case */
     last = NULL; es->vhints = NULL;
     for ( s=sc->vstem; s!=NULL; s=s->next ) {
-	hint = gcalloc(1,sizeof(Hints));
+	hint = calloc(1,sizeof(Hints));
 	hint->base = s->start; hint->width = s->width;
 	if ( last==NULL ) es->vhints = hint;
 	else last->next = hint;
@@ -695,7 +695,7 @@ void BCRegularizeBitmap(BDFChar *bdfc) {
     int i;
 
     if ( bdfc->bytes_per_line!=bpl ) {
-	uint8 *bitmap = galloc(bpl*(bdfc->ymax-bdfc->ymin+1));
+	uint8 *bitmap = malloc(bpl*(bdfc->ymax-bdfc->ymin+1));
 	for ( i=0; i<=(bdfc->ymax-bdfc->ymin); ++i )
 	    memcpy(bitmap+i*bpl,bdfc->bitmap+i*bdfc->bytes_per_line,bpl);
 	free(bdfc->bitmap);
@@ -709,7 +709,7 @@ void BCRegularizeGreymap(BDFChar *bdfc) {
     int i;
 
     if ( bdfc->bytes_per_line!=bpl ) {
-	uint8 *bitmap = galloc(bpl*(bdfc->ymax-bdfc->ymin+1));
+	uint8 *bitmap = malloc(bpl*(bdfc->ymax-bdfc->ymin+1));
 	for ( i=0; i<=(bdfc->ymax-bdfc->ymin); ++i )
 	    memcpy(bitmap+i*bpl,bdfc->bitmap+i*bdfc->bytes_per_line,bpl);
 	free(bdfc->bitmap);
@@ -906,89 +906,6 @@ static void BresenhamT(uint8 *bytemap,EdgeList *es,int x1,int x2,int y1,int y2,
     Bresenham(bytemap,es,x1,x2,y1,y2,grey,clipmask);
 }
 
-#if 0
-struct last_vector {
-    int x1,y1;
-    int x2,y2;
-};
-
-static void FillFromLast(uint8 *bytemap,struct last_vector *last,
-	int x1,int ox1,int y1,int oy1,EdgeList *es,int grey) {
-    int x2 = last->x1, y2 = last->y1;
-    int ox2 = last->x2, oy2 = last->y2;
-    int dx, dy, incr1, incr2, d, x, y;
-    int incr3;
-    int bytes_per_line = es->bytes_per_line<<3;
-    int ymax = es->cnt;
-
-    if ( last->x1==-8000 )
-return;
-
- printf( "last (%d,%d - %d,%d)\n", last->x1,last->y1,  last->x2, last->y2 );
-    BresenhamT(bytemap,es,x1,last->x1,y1,last->y1,grey);
-    BresenhamT(bytemap,es,x2,last->x2,y2,last->y2,grey);
-return;
-
-    if ( x1>x2 ) {
-	dx = x1; x1 = x2; x2 = dx;
-	dy = y1; y1 = y2; y2 = dy;
-	ox2 = ox1; oy2 = oy1;
-	ox1 = last->x2; oy1 = last->y2;
-    }
-
-    /* We are guarenteed x1<=x2 */
-    dx = x2-x1;
-    if ( (dy = y1-y2)<0 ) dy=-dy;
-    if ( dx>=dy ) {
-	d = 2 * dy - dx;
-	incr1 = 2*dy;
-	incr2 = 2*(dy-dx);
-	incr3 = y2>y1 ? 1 : -1;
-	x = x1;
-	y = y1;
-	if ( x>=0 && y>=0 && x<bytes_per_line && y<ymax )
-	    BresenhamT(bytemap,es,x,ox1-(x-x1),y,oy1-(y-y1),grey);
-	while ( x<x2 ) {
-	    ++x;
-	    if ( d<0 )
-		d += incr1;
-	    else {
-		y += incr3;
-		d += incr2;
-	    }
-	    if ( x>=0 && y>=0 && x<bytes_per_line && y<ymax )
-		BresenhamT(bytemap,es,x,ox1-(x-x1),y,oy1-(y-y1),grey);
-	}
-    } else {
-	if ( y1>y2 ) {
-	    incr1 = y1; y1 = y2; y2 = incr1;
-	    incr1 = x1; x1 = x2; x2 = incr1;
-	    incr1 = oy1; oy1 = oy2; oy2 = incr1;
-	    incr1 = ox1; ox1 = ox2; ox2 = incr1;
-	}
-	d = 2 * dx - dy;
-	incr1 = 2*dx;
-	incr2 = 2*(dx-dy);
-	incr3 = x2>x1 ? 1 : -1;
-	x = x1;
-	y = y1;
-	if ( x>=0 && y>=0 && x<bytes_per_line && y<ymax )
-	    BresenhamT(bytemap,es,x,ox1-(x-x1),y,oy1-(y-y1),grey);
-	while ( y<y2 ) {
-	    ++y;
-	    if ( d<0 )
-		d += incr1;
-	    else {
-		x += incr3;
-		d += incr2;
-	    }
-	    if ( x>=0 && y>=0 && x<bytes_per_line && y<ymax )
-		BresenhamT(bytemap,es,x,ox1-(x-x1),y,oy1-(y-y1),grey);
-	}
-    }
-}
-#endif
-
 static void StrokeLine(uint8 *bytemap,IPoint *from, IPoint *to,EdgeList *es,int grey,int width, uint8 *clipmask) {
     int x1, x2, y1, y2;
     int dx, dy;
@@ -1017,13 +934,6 @@ return;
 	if ( xoff<0 ) {
 	    xoff = -xoff; yoff = -yoff;
 	}
-#if 0
- printf( "normal (%d,%d)\n", xoff, yoff );
-
-	FillFromLast(bytemap,last,x1-xoff,x1+xoff,y1-yoff,y2+yoff,es,grey);
-	last->x1 = x2-xoff; last->y1 = y2-yoff;
-	last->x2 = x2+xoff; last->y2 = y2+yoff;
-#endif
 
 	if ( x1>x2 ) {
 	    dx = x1; x1 = x2; x2 = dx;
@@ -1389,7 +1299,7 @@ static uint8 *ProcessClipMask(EdgeList *es,Layer *layer) {
 
     if ( !SSHasClip(layer->splines) )
 return( NULL );
-    clipmask = gcalloc(es->cnt*es->bytes_per_line,1);
+    clipmask = calloc(es->cnt*es->bytes_per_line,1);
     memset(es->bitmap,0,es->cnt*es->bytes_per_line);
     FindEdgesSplineSet(layer->splines,es,2);
     FillChar(es);
@@ -1438,7 +1348,7 @@ return( NULL );
     memset(&es,'\0',sizeof(es));
     if ( sc==NULL ) {
 	es.mmin = es.mmax = es.omin = es.omax = 0;
-	es.bitmap = gcalloc(1,1);
+	es.bitmap = calloc(1,1);
 	es.bytes_per_line = 1;
 	is_aa = false;
     } else {
@@ -1455,15 +1365,15 @@ return( NULL );
 	es.cnt = (int) (es.mmax-es.mmin) + 1;
 	es.layer = layer;
 	if ( es.cnt<8000 && es.omax-es.omin<8000 && es.cnt>1 ) {
-	    es.edges = gcalloc(es.cnt,sizeof(Edge *));
+	    es.edges = calloc(es.cnt,sizeof(Edge *));
 	    es.sc = sc;
 	    es.major = 1; es.other = 0;
 	    es.bytes_per_line = ((int) ceil(es.omax-es.omin) + 8)/8;
-	    es.bitmap = gcalloc(es.cnt*es.bytes_per_line,1);
+	    es.bitmap = calloc(es.cnt*es.bytes_per_line,1);
 
 	    InitializeHints(sc,&es);
 	    if ( sc->parent->multilayer ) {
-		uint8 *bytemap = gcalloc(es.cnt*es.bytes_per_line*8,1);
+		uint8 *bytemap = calloc(es.cnt*es.bytes_per_line*8,1);
 		int layer, i;
 		RefChar *rf;
 		for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
@@ -1480,7 +1390,7 @@ return( NULL );
 		}
 		depth = FigureBitmap(&es,bytemap,is_aa);
 	    } else if ( sc->parent->strokedfont ) {
-		uint8 *bytemap = gcalloc(es.cnt*es.bytes_per_line*8,1);
+		uint8 *bytemap = calloc(es.cnt*es.bytes_per_line*8,1);
 		StrokeGlyph(bytemap,&es,sc->parent->strokewidth,sc);
 		depth = FigureBitmap(&es,bytemap,is_aa);
 	    } else {
@@ -1492,7 +1402,7 @@ return( NULL );
 	    /* If they want a bitmap so enormous it threatens our memory */
 	    /*  then just give 'em a blank. It's probably by mistake anyway */
 	    es.mmin = es.mmax = es.omin = es.omax = 0;
-	    es.bitmap = gcalloc(1,1);
+	    es.bitmap = calloc(1,1);
 	    es.bytes_per_line = 1;
 	}
     }
@@ -1526,7 +1436,7 @@ return( _SplineCharRasterize(sc,layer,pixelsize,false));
 }
 
 BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate) {
-    BDFFont *bdf = gcalloc(1,sizeof(BDFFont));
+    BDFFont *bdf = calloc(1,sizeof(BDFFont));
     int i;
     real scale;
     char size[40];
@@ -1557,7 +1467,7 @@ BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate) {
     bdf->sf = _sf;
     bdf->glyphcnt = bdf->glyphmax = max;
     bdf->pixelsize = pixelsize;
-    bdf->glyphs = galloc(max*sizeof(BDFChar *));
+    bdf->glyphs = malloc(max*sizeof(BDFChar *));
     bdf->ascent = rint(sf->ascent*scale);
     bdf->descent = pixelsize-bdf->ascent;
     bdf->res = -1;
@@ -1604,9 +1514,9 @@ return;
     new.sc = bc->sc;
     new.byte_data = true;
     new.depth = max==3 ? 2 : max==15 ? 4 : 8;
-    new.bitmap = gcalloc( (new.ymax-new.ymin+1) * new.bytes_per_line, sizeof(uint8));
+    new.bitmap = calloc( (new.ymax-new.ymin+1) * new.bytes_per_line, sizeof(uint8));
     if ( bc->depth>1 ) {
-	uint32 *sum = gcalloc(new.bytes_per_line,sizeof(uint32));
+	uint32 *sum = calloc(new.bytes_per_line,sizeof(uint32));
 	for ( i=0; i<=bc->ymax-bc->ymin; ++i ) {
 	    bpt = bc->bitmap + i*bc->bytes_per_line;
 	    for ( j=0; j<=bc->xmax-bc->xmin; ++j ) {
@@ -1644,7 +1554,7 @@ GClut *_BDFClut(int linear_scale) {
     int bgr=((bg>>16)&0xff), bgg=((bg>>8)&0xff), bgb= (bg&0xff);
     GClut *clut;
 
-    clut = gcalloc(1,sizeof(GClut));
+    clut = calloc(1,sizeof(GClut));
     clut->clut_len = scale;
     clut->is_grey = (bgr==bgg && bgb==bgr);
     clut->trans_index = -1;
@@ -1692,7 +1602,7 @@ BDFFont *SplineFontAntiAlias(SplineFont *_sf, int layer, int pixelsize, int line
     if ( linear_scale==1 )
 return( SplineFontRasterize(_sf,layer,pixelsize,true));
 
-    bdf = gcalloc(1,sizeof(BDFFont));
+    bdf = calloc(1,sizeof(BDFFont));
     sf = _sf;
     max = sf->glyphcnt;
     for ( i=0; i<_sf->subfontcnt; ++i ) {
@@ -1717,7 +1627,7 @@ return( SplineFontRasterize(_sf,layer,pixelsize,true));
     bdf->sf = _sf;
     bdf->glyphcnt = bdf->glyphmax = max;
     bdf->pixelsize = pixelsize;
-    bdf->glyphs = galloc(max*sizeof(BDFChar *));
+    bdf->glyphs = malloc(max*sizeof(BDFChar *));
     bdf->ascent = rint(sf->ascent*scale);
     bdf->descent = pixelsize-bdf->ascent;
     bdf->res = -1;
@@ -1756,7 +1666,7 @@ BDFChar *BDFPieceMeal(BDFFont *bdf, int index) {
 return( NULL );
     if ( bdf->glyphcnt<bdf->sf->glyphcnt ) {
 	if ( bdf->glyphmax<bdf->sf->glyphcnt )
-	    bdf->glyphs = grealloc(bdf->glyphs,(bdf->glyphmax = bdf->sf->glyphmax)*sizeof(BDFChar *));
+	    bdf->glyphs = realloc(bdf->glyphs,(bdf->glyphmax = bdf->sf->glyphmax)*sizeof(BDFChar *));
 	memset(bdf->glyphs+bdf->glyphcnt,0,(bdf->glyphmax-bdf->glyphcnt)*sizeof(SplineChar *));
 	bdf->glyphcnt = bdf->sf->glyphcnt;
     }
@@ -1808,7 +1718,7 @@ return(BDFPieceMeal(bdf,index));
 /*  as such they are simple fonts (ie. we only display the current cid subfont) */
 BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int ptsize,int dpi,
 	int flags,void *ftc) {
-    BDFFont *bdf = gcalloc(1,sizeof(BDFFont));
+    BDFFont *bdf = calloc(1,sizeof(BDFFont));
     real scale;
     int pixelsize = (int) rint( (ptsize*dpi)/72.0 );
     int truesize = pixelsize;
@@ -1852,7 +1762,7 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int ptsize,int dpi,
     bdf->truesize = truesize;
     bdf->ptsize = ptsize;
     bdf->dpi = dpi;
-    bdf->glyphs = gcalloc(sf->glyphcnt,sizeof(BDFChar *));
+    bdf->glyphs = calloc(sf->glyphcnt,sizeof(BDFChar *));
     bdf->descent = pixelsize-bdf->ascent;
     bdf->piecemeal = true;
     bdf->bbsized = (flags&pf_bbsized)?1:0;
@@ -1905,8 +1815,7 @@ return;
     for ( i=0; i<bdf->glyphcnt; ++i )
 	BDFCharFree(bdf->glyphs[i]);
     free(bdf->glyphs);
-    if ( bdf->clut!=NULL )
-	free(bdf->clut);
+    free(bdf->clut);
     if ( bdf->freetype_context!=NULL )
 	FreeTypeFreeContext(bdf->freetype_context);
     BDFPropsFree(bdf);

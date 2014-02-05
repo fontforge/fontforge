@@ -296,7 +296,7 @@ static void CVMergeSPLS(CharView *cv,SplineSet *ss, SplinePoint *base,SplinePoin
     ss->last = cv->p.spl->last;
     if ( ss->spiros && cv->p.spl->spiros ) {
 	if ( ss->spiro_cnt+cv->p.spl->spiro_cnt > ss->spiro_max )
-	    ss->spiros = grealloc(ss->spiros,
+	    ss->spiros = realloc(ss->spiros,
 		    (ss->spiro_max = ss->spiro_cnt+cv->p.spl->spiro_cnt)*sizeof(spiro_cp));
 	memcpy(ss->spiros+ss->spiro_cnt-1,
 		cv->p.spl->spiros+1, (cv->p.spl->spiro_cnt-1)*sizeof(spiro_cp));
@@ -350,7 +350,7 @@ return;			/* We clicked on the active point, that's a no-op */
 		cp==base || !SPIRO_SPL_OPEN(cv->p.spl)) {
 	    /* Add a new point */
 	    if ( sel->spiro_cnt>=sel->spiro_max )
-		sel->spiros = grealloc(sel->spiros,(sel->spiro_max += 10)*sizeof(spiro_cp));
+		sel->spiros = realloc(sel->spiros,(sel->spiro_max += 10)*sizeof(spiro_cp));
 	    cp = &sel->spiros[sel->spiro_cnt-1];
 	    cp[1] = cp[0];		/* Move the final 'z' */
 	    cp->x = cv->p.cx;
@@ -374,7 +374,7 @@ return;			/* We clicked on the active point, that's a no-op */
 	/* Add an intermediate point on an already existing spline */
 	ss = cv->p.spl;
 	if ( ss->spiro_cnt>=ss->spiro_max )
-	    ss->spiros = grealloc(ss->spiros,(ss->spiro_max += 10)*sizeof(spiro_cp));
+	    ss->spiros = realloc(ss->spiros,(ss->spiro_max += 10)*sizeof(spiro_cp));
 	for ( i=ss->spiro_cnt-1; i>cv->p.spiro_index; --i )
 	    ss->spiros[i+1] = ss->spiros[i];
 	++ss->spiro_cnt;
@@ -390,7 +390,7 @@ return;			/* We clicked on the active point, that's a no-op */
 	ss = chunkalloc(sizeof(SplineSet));
 	ss->next = cv->b.layerheads[cv->b.drawmode]->splines;
 	cv->b.layerheads[cv->b.drawmode]->splines = ss;
-	ss->spiros = galloc((ss->spiro_max=10)*sizeof(spiro_cp));
+	ss->spiros = malloc((ss->spiro_max=10)*sizeof(spiro_cp));
 	cp = &ss->spiros[0];
 	cp->x = cv->p.cx;
 	cp->y = cv->p.cy;
@@ -650,7 +650,7 @@ void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	}
 	if ( activess->spiros && mergess->spiros ) {
 	    if ( activess->spiro_cnt+mergess->spiro_cnt > activess->spiro_max )
-		activess->spiros = grealloc(activess->spiros,
+		activess->spiros = realloc(activess->spiros,
 			(activess->spiro_max = activess->spiro_cnt+mergess->spiro_cnt)*sizeof(spiro_cp));
 	    memcpy(activess->spiros+activess->spiro_cnt-1,
 		    mergess->spiros+1, (mergess->spiro_cnt-1)*sizeof(spiro_cp));

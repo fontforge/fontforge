@@ -259,82 +259,80 @@ struct namemap encodingnames[] = {
     {"Thaana", em_max+22 },
     {"Thai", em_max+33 },
     {"Tibetan", em_max+35 },
-#if 0
-    {"Latin Extended A", em_max+1 },
-    {"Latin Extended B", em_max+2 },
-    {"IPA Extensions", em_max+3 },
-    {"Latin Additional Extensions", em_max+4 },
-    {"Latin Ligatures", em_max+5 },
-    {"Latin Fullwidth", em_max+6 },
-    {"Spacing Modifier Letters", em_max+7 },
-    {"Combining Diacritics", em_max+8 },
-    {"Greek & Coptic", em_max+9 },
-    {"Greek Additional Extensions", em_max+10 },
-    {"Cyrillic", em_max+11 },
-    {"Armenian", em_max+12 },
-    {"Armenian Ligatures", em_max+13 },
-    {"Hebrew", em_max+14 },
-    {"Hebrew Ligatures", em_max+15 },
-    {"Arabic", em_max+16 },
-    {"Arabic Ligatures A1", em_max+17 },
-    {"Arabic Ligatures A2", em_max+18 },
-    {"Arabic Ligatures A3", em_max+19 },
-    {"Arabic Ligatures B", em_max+20 },
-    {"Syriac", em_max+21 },
-    {"Thaana", em_max+22 },
-    {"Devanagari", em_max+23 },
-    {"Bengali", em_max+24 },
-    {"Gurmukhi", em_max+25 },
-    {"Gujarati", em_max+26 },
-    {"Oriya", em_max+27 },
-    {"Tamil", em_max+28 },
-    {"Telugu", em_max+29 },
-    {"Kannada", em_max+30 },
-    {"Malayalam", em_max+31 },
-    {"Sinhala", em_max+32 },
-    {"Thai", em_max+33 },
-    {"Lao", em_max+34 },
-    {"Tibetan", em_max+35 },
-    {"Myanmar", em_max+36 },
-    {"Georgian", em_max+37 },
-    {"Hangul Jamo", em_max+38 },
-    {"Hangul Jamo Halfwidth", em_max+39 },
-    {"Ethiopic A", em_max+40 },
-    {"Ethiopic B", em_max+41 },
-    {"Cherokee", em_max+42 },
-    {"Canadian Syllabics A", em_max+43 },
-    {"Canadian Syllabics B", em_max+44 },
-    {"Canadian Syllabics C", em_max+45 },
-    {"Ogham", em_max+46 },
-    {"Runic", em_max+47 },
-    {"Khmer", em_max+48 },
-    {"Mongolian", em_max+49 },
-    {"General Punctuation", em_max+50 },
-    {"Super & Sub scripts", em_max+51 },
-    {"Currency Symbols", em_max+52 },
-    {"Combining Symbol Diacritics", em_max+53 },
-    {"Letterlike Symbols", em_max+54 },
-    {"Number Forms", em_max+55 },
-    {"Arrows", em_max+56 },
-    {"Mathematical Operators", em_max+57 },
-    {"Miscellaneous Technical", em_max+58 },
-    {"Control Pictures", em_max+59 },
-    {"OCR", em_max+60 },
-    {"Enclosed Alphanumerics", em_max+61 },
-    {"Box Drawing", em_max+62 },
-    {"Block Elements", em_max+63 },
-    {"Geometric Shapes", em_max+64 },
-    {"Miscellaneous Symbols", em_max+65 },
-    {"Dingbats", em_max+66 },
-    {"CJK Symbols and Punctuation", em_max+67 },
-    {"Hiragana", em_max+68 },
-    {"Katakana", em_max+69 },
-    {"Halfwidth Katakana", em_max+70 },
-    {"CJK Compatibility Forms", em_max+71 },
-    {"Small Form Variants", em_max+72 },
-    {"Fullwidth Symbol Variants", em_max+73 },
-    {"Specials", em_max+74 },
-#endif
+    /* {"Latin Extended A", em_max+1 }, */
+    /* {"Latin Extended B", em_max+2 }, */
+    /* {"IPA Extensions", em_max+3 }, */
+    /* {"Latin Additional Extensions", em_max+4 }, */
+    /* {"Latin Ligatures", em_max+5 }, */
+    /* {"Latin Fullwidth", em_max+6 }, */
+    /* {"Spacing Modifier Letters", em_max+7 }, */
+    /* {"Combining Diacritics", em_max+8 }, */
+    /* {"Greek & Coptic", em_max+9 }, */
+    /* {"Greek Additional Extensions", em_max+10 }, */
+    /* {"Cyrillic", em_max+11 }, */
+    /* {"Armenian", em_max+12 }, */
+    /* {"Armenian Ligatures", em_max+13 }, */
+    /* {"Hebrew", em_max+14 }, */
+    /* {"Hebrew Ligatures", em_max+15 }, */
+    /* {"Arabic", em_max+16 }, */
+    /* {"Arabic Ligatures A1", em_max+17 }, */
+    /* {"Arabic Ligatures A2", em_max+18 }, */
+    /* {"Arabic Ligatures A3", em_max+19 }, */
+    /* {"Arabic Ligatures B", em_max+20 }, */
+    /* {"Syriac", em_max+21 }, */
+    /* {"Thaana", em_max+22 }, */
+    /* {"Devanagari", em_max+23 }, */
+    /* {"Bengali", em_max+24 }, */
+    /* {"Gurmukhi", em_max+25 }, */
+    /* {"Gujarati", em_max+26 }, */
+    /* {"Oriya", em_max+27 }, */
+    /* {"Tamil", em_max+28 }, */
+    /* {"Telugu", em_max+29 }, */
+    /* {"Kannada", em_max+30 }, */
+    /* {"Malayalam", em_max+31 }, */
+    /* {"Sinhala", em_max+32 }, */
+    /* {"Thai", em_max+33 }, */
+    /* {"Lao", em_max+34 }, */
+    /* {"Tibetan", em_max+35 }, */
+    /* {"Myanmar", em_max+36 }, */
+    /* {"Georgian", em_max+37 }, */
+    /* {"Hangul Jamo", em_max+38 }, */
+    /* {"Hangul Jamo Halfwidth", em_max+39 }, */
+    /* {"Ethiopic A", em_max+40 }, */
+    /* {"Ethiopic B", em_max+41 }, */
+    /* {"Cherokee", em_max+42 }, */
+    /* {"Canadian Syllabics A", em_max+43 }, */
+    /* {"Canadian Syllabics B", em_max+44 }, */
+    /* {"Canadian Syllabics C", em_max+45 }, */
+    /* {"Ogham", em_max+46 }, */
+    /* {"Runic", em_max+47 }, */
+    /* {"Khmer", em_max+48 }, */
+    /* {"Mongolian", em_max+49 }, */
+    /* {"General Punctuation", em_max+50 }, */
+    /* {"Super & Sub scripts", em_max+51 }, */
+    /* {"Currency Symbols", em_max+52 }, */
+    /* {"Combining Symbol Diacritics", em_max+53 }, */
+    /* {"Letterlike Symbols", em_max+54 }, */
+    /* {"Number Forms", em_max+55 }, */
+    /* {"Arrows", em_max+56 }, */
+    /* {"Mathematical Operators", em_max+57 }, */
+    /* {"Miscellaneous Technical", em_max+58 }, */
+    /* {"Control Pictures", em_max+59 }, */
+    /* {"OCR", em_max+60 }, */
+    /* {"Enclosed Alphanumerics", em_max+61 }, */
+    /* {"Box Drawing", em_max+62 }, */
+    /* {"Block Elements", em_max+63 }, */
+    /* {"Geometric Shapes", em_max+64 }, */
+    /* {"Miscellaneous Symbols", em_max+65 }, */
+    /* {"Dingbats", em_max+66 }, */
+    /* {"CJK Symbols and Punctuation", em_max+67 }, */
+    /* {"Hiragana", em_max+68 }, */
+    /* {"Katakana", em_max+69 }, */
+    /* {"Halfwidth Katakana", em_max+70 }, */
+    /* {"CJK Compatibility Forms", em_max+71 }, */
+    /* {"Small Form Variants", em_max+72 }, */
+    /* {"Fullwidth Symbol Variants", em_max+73 }, */
+    /* {"Specials", em_max+74 }, */
     { NULL, 0 }};
 
 static int mapFromIndex(int i) {

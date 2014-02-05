@@ -99,7 +99,7 @@ return( NULL );
       png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
       if ( ret!=NULL ) {
 	  GImageDestroy(ret);
-	  gfree(row_pointers);
+	  free(row_pointers);
       }
       /* If we get here, we had a problem reading the file */
 return( NULL );
@@ -140,7 +140,7 @@ return( NULL );
 		png_get_image_width(png_ptr,info_ptr),png_get_image_height(png_ptr,info_ptr));
 	clut = ret->u.image->clut;
 	if ( clut==NULL )
-	    clut = ret->u.image->clut = (GClut *) gcalloc(1,sizeof(GClut));
+	    clut = ret->u.image->clut = (GClut *) calloc(1,sizeof(GClut));
 	clut->is_grey = true;
 	png_get_PLTE(png_ptr,info_ptr,&palette,&num_palette);
 	clut->clut_len = num_palette;
@@ -163,7 +163,7 @@ return( NULL );
 	    base->clut->trans_index = base->trans = trans_alpha ? trans_alpha[0] : 0;
     }
 
-    row_pointers = (png_byte **) galloc(png_get_image_height(png_ptr,info_ptr)*sizeof(png_bytep));
+    row_pointers = (png_byte **) malloc(png_get_image_height(png_ptr,info_ptr)*sizeof(png_bytep));
     for ( i=0; i<png_get_image_height(png_ptr,info_ptr); ++i )
 	row_pointers[i] = (png_bytep) (base->data + i*base->bytes_per_line);
 
@@ -177,31 +177,16 @@ return( NULL );
 	/* PNG orders its bytes as AABBGGRR instead of 00RRGGBB */
 	uint32 *ipt, *iend;
 	for ( ipt = (uint32 *) (base->data), iend=ipt+base->width*base->height; ipt<iend; ++ipt ) {
-#if 0
-	    /* Minimal support for alpha channel. Assume default background of white */
-	    if ( __gimage_can_support_alpha )
-		/* Leave alpha channel unchanged */;
-	    else if ( (*ipt&0xff000000)==0xff000000 )
-		*ipt = COLOR_CREATE( ((*ipt)&0xff) , ((*ipt>>8)&0xff) , (*ipt>>16)&0xff );
-	    else {
-		int r, g, b, a = (*ipt>>24)&0xff;
-		r = ( ((*ipt    )&0xff) * a + (255-a)*0xff ) / 255;
-		g = ( ((*ipt>>8 )&0xff) * a + (255-a)*0xff ) / 255;
-		b = ( ((*ipt>>16)&0xff) * a + (255-a)*0xff ) / 255;
-		*ipt = COLOR_CREATE( r,g,b );
-	    }
-#else
 	    uint32 r, g, b, a = *ipt&0xff000000;
 	    r = (*ipt    )&0xff;
 	    g = (*ipt>>8 )&0xff;
 	    b = (*ipt>>16)&0xff;
 	    *ipt = COLOR_CREATE( r,g,b ) | a;
-#endif
 	}
     }
 
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-    gfree(row_pointers);
+    free(row_pointers);
     /* Note png b&w images come out as indexed */
 return( ret );
 }

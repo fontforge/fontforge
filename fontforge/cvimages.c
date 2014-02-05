@@ -44,7 +44,7 @@ void SCAppendEntityLayers(SplineChar *sc, Entity *ent) {
 return;
     EntityDefaultStrokeFill(ent);
 
-    sc->layers = grealloc(sc->layers,(sc->layer_cnt+cnt)*sizeof(Layer));
+    sc->layers = realloc(sc->layers,(sc->layer_cnt+cnt)*sizeof(Layer));
     for ( pos = sc->layer_cnt, e=ent; e!=NULL ; e=enext, ++pos ) {
 	enext = e->next;
 	LayerDefault(&sc->layers[pos]);
@@ -219,7 +219,7 @@ return;
 return;
 	}
 	if ( cnt>=max )
-	    spiros = grealloc(spiros,(max+=30)*sizeof(spiro_cp));
+	    spiros = realloc(spiros,(max+=30)*sizeof(spiro_cp));
 	spiros[cnt].x = spiros[cnt].y = 0;
 	spiros[cnt].ty = ch;
 	if ( ch=='z' ) {
@@ -247,7 +247,7 @@ return;
     if ( cnt!=0 ) {
 	/* This happens when we've got an open contour */
 	if ( cnt>=max )
-	    spiros = grealloc(spiros,(max+=30)*sizeof(spiro_cp));
+	    spiros = realloc(spiros,(max+=30)*sizeof(spiro_cp));
 	spiros[cnt].x = spiros[cnt].y = 0;
 	spiros[cnt].ty = 'z';
 	spiros[0].ty = '{';		/* Open contour mark */
@@ -362,7 +362,7 @@ return;
 /**************************** Fig File Import *********************************/
 
 static BasePoint *slurppoints(FILE *fig,SplineFont *sf,int cnt ) {
-    BasePoint *bps = galloc((cnt+1)*sizeof(BasePoint));	/* spline code may want to add another point */
+    BasePoint *bps = malloc((cnt+1)*sizeof(BasePoint));	/* spline code may want to add another point */
     int x, y, i, ch;
     real scale = sf->ascent/(8.5*1200.0);
     real ascent = 11*1200*sf->ascent/(sf->ascent+sf->descent);
@@ -626,62 +626,55 @@ return( q*u * (1 + u * (2 - u * u * (u+2))) );
 static void xsplineeval(BasePoint *ret,real t, struct xspline *xs) {
     /* By choosing t to range between [0,n-1] we set delta in the article to 1*/
     /*  and may therefore ignore it */
-#if 0
-    if ( t>=0 && t<=xs->n-1 ) {
-#endif
 
-	/* For any value of t there are four possible points that might be */
-	/*  influencing things. These are cp[k], cp[k+1], cp[k+2], cp[k+3] */
-	/*  where k+1<=t<k+2 */
-	int k = floor(t-1);
-	int k0, k1, k2, k3;
-	/* now we need to find the points near us (on the + side of cp[k] & */
-	/*  cp[k-1] and the - side of cp[k+2] & cp[k+3]) where the blending */
-	/*  function becomes 0. This depends on the tension values */
-	/* For negative tension values it doesn't happen, the curve itself */
-	/*  is changed */
-	real Tk0 = k+1 + (xs->s[k+1]>0?xs->s[k+1]:0);
-	real Tk1 = k+2 + (xs->s[k+2]>0?xs->s[k+2]:0);
-	real Tk2 = k+1 - (xs->s[k+1]>0?xs->s[k+1]:0);
-	real Tk3 = k+2 - (xs->s[k+2]>0?xs->s[k+2]:0);
-	/* Now each blending function has a "p" value that describes its shape*/
-	real p0 = 2*(k-Tk0)*(k-Tk0);
-	real p1 = 2*(k+1-Tk1)*(k+1-Tk1);
-	real p2 = 2*(k+2-Tk2)*(k+2-Tk2);
-	real p3 = 2*(k+3-Tk3)*(k+3-Tk3);
-	/* and each negative tension blending function has a "q" value */
-	real q0 = xs->s[k+1]<0?-xs->s[k+1]/2:0;
-	real q1 = xs->s[k+2]<0?-xs->s[k+2]/2:0;
-	real q2 = q0;
-	real q3 = q1;
-	/* the function f for positive s is the same as g if q==0 */
-	real A0, A1, A2, A3;
-	if ( t<=Tk0 )
-	    A0 = g( (t-Tk0)/(k-Tk0), q0, p0);
-	else if ( q0>0 )
-	    A0 = h( (t-Tk0)/(k-Tk0), q0 );
-	else
-	    A0 = 0;
-	A1 = g( (t-Tk1)/(k+1-Tk1), q1, p1);
-	A2 = g( (t-Tk2)/(k+2-Tk2), q2, p2);
-	if ( t>=Tk3 )
-	    A3 = g( (t-Tk3)/(k+3-Tk3), q3, p3);
-	else if ( q3>0 )
-	    A3 = h( (t-Tk3)/(k+3-Tk3), q3 );
-	else
-	    A3 = 0;
-	k0 = k; k1=k+1; k2=k+2; k3=k+3;
-	if ( k<0 ) { k0=xs->n-2; if ( !xs->closed ) A0 = 0; }
-	if ( k3>=xs->n ) { k3 -= xs->n; if ( !xs->closed ) A3 = 0; }
-	if ( k2>=xs->n ) { k2 -= xs->n; if ( !xs->closed ) A2 = 0; }
-	ret->x = A0*xs->cp[k0].x + A1*xs->cp[k1].x + A2*xs->cp[k2].x + A3*xs->cp[k3].x;
-	ret->y = A0*xs->cp[k0].y + A1*xs->cp[k1].y + A2*xs->cp[k2].y + A3*xs->cp[k3].y;
-	ret->x /= (A0+A1+A2+A3);
-	ret->y /= (A0+A1+A2+A3);
-#if 0
-    } else
-	ret->x = ret->y = 0;
-#endif
+    /* For any value of t there are four possible points that might be */
+    /*  influencing things. These are cp[k], cp[k+1], cp[k+2], cp[k+3] */
+    /*  where k+1<=t<k+2 */
+    int k = floor(t-1);
+    int k0, k1, k2, k3;
+    /* now we need to find the points near us (on the + side of cp[k] & */
+    /*  cp[k-1] and the - side of cp[k+2] & cp[k+3]) where the blending */
+    /*  function becomes 0. This depends on the tension values */
+    /* For negative tension values it doesn't happen, the curve itself */
+    /*  is changed */
+    real Tk0 = k+1 + (xs->s[k+1]>0?xs->s[k+1]:0);
+    real Tk1 = k+2 + (xs->s[k+2]>0?xs->s[k+2]:0);
+    real Tk2 = k+1 - (xs->s[k+1]>0?xs->s[k+1]:0);
+    real Tk3 = k+2 - (xs->s[k+2]>0?xs->s[k+2]:0);
+    /* Now each blending function has a "p" value that describes its shape*/
+    real p0 = 2*(k-Tk0)*(k-Tk0);
+    real p1 = 2*(k+1-Tk1)*(k+1-Tk1);
+    real p2 = 2*(k+2-Tk2)*(k+2-Tk2);
+    real p3 = 2*(k+3-Tk3)*(k+3-Tk3);
+    /* and each negative tension blending function has a "q" value */
+    real q0 = xs->s[k+1]<0?-xs->s[k+1]/2:0;
+    real q1 = xs->s[k+2]<0?-xs->s[k+2]/2:0;
+    real q2 = q0;
+    real q3 = q1;
+    /* the function f for positive s is the same as g if q==0 */
+    real A0, A1, A2, A3;
+    if ( t<=Tk0 )
+        A0 = g( (t-Tk0)/(k-Tk0), q0, p0);
+    else if ( q0>0 )
+        A0 = h( (t-Tk0)/(k-Tk0), q0 );
+    else
+        A0 = 0;
+    A1 = g( (t-Tk1)/(k+1-Tk1), q1, p1);
+    A2 = g( (t-Tk2)/(k+2-Tk2), q2, p2);
+    if ( t>=Tk3 )
+        A3 = g( (t-Tk3)/(k+3-Tk3), q3, p3);
+    else if ( q3>0 )
+        A3 = h( (t-Tk3)/(k+3-Tk3), q3 );
+    else
+        A3 = 0;
+    k0 = k; k1=k+1; k2=k+2; k3=k+3;
+    if ( k<0 ) { k0=xs->n-2; if ( !xs->closed ) A0 = 0; }
+    if ( k3>=xs->n ) { k3 -= xs->n; if ( !xs->closed ) A3 = 0; }
+    if ( k2>=xs->n ) { k2 -= xs->n; if ( !xs->closed ) A2 = 0; }
+    ret->x = A0*xs->cp[k0].x + A1*xs->cp[k1].x + A2*xs->cp[k2].x + A3*xs->cp[k3].x;
+    ret->y = A0*xs->cp[k0].y + A1*xs->cp[k1].y + A2*xs->cp[k2].y + A3*xs->cp[k3].y;
+    ret->x /= (A0+A1+A2+A3);
+    ret->y /= (A0+A1+A2+A3);
 }
 
 static void AdjustTs(TPoint *mids,SplinePoint *from, SplinePoint *to) {
@@ -757,7 +750,7 @@ static SplineSet * slurpspline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
 	while ((ch=getc(fig))!='\n' && ch!=EOF);
     xs.n = cnt;
     xs.cp = slurppoints(fig,sc->parent,cnt);
-    xs.s = galloc((cnt+1)*sizeof(real));
+    xs.s = malloc((cnt+1)*sizeof(real));
     xs.closed = (sub&1);
     for ( i=0; i<cnt; ++i )
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
@@ -888,7 +881,7 @@ return( image );
 
     clut = base->clut;
     if ( clut==NULL ) {
-	clut=base->clut = gcalloc(1,sizeof(GClut));
+	clut=base->clut = calloc(1,sizeof(GClut));
 	clut->clut_len = 2;
 	clut->clut[0] = 0x808080;
 	if ( !no_windowing_ui )
@@ -916,7 +909,7 @@ void SCInsertImage(SplineChar *sc,GImage *image,real scale,real yoff,real xoff,
     ImageList *im;
 
     SCPreserveLayer(sc,layer,false);
-    im = galloc(sizeof(ImageList));
+    im = malloc(sizeof(ImageList));
     im->image = image;
     im->xoff = xoff;
     im->yoff = yoff;

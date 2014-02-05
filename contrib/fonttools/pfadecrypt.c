@@ -422,28 +422,6 @@ exit(1);
 	putc(decode(ch),temp);
 }
 
-#if 0
-static void encrypteexec(FILE *temp,FILE *out) {
-    int glorped, i;
-
-    initcode();
-    tohex(out,encode(nrandombytes[0]));
-    tohex(out,encode(nrandombytes[1]));
-    tohex(out,encode(nrandombytes[2]));
-    tohex(out,encode(nrandombytes[3]));
-
-    /* read till we get /CharStrings */
-    while (( glorped=glorpline(temp,out,0))==0 );
-    /* read till end of temp file */
-    while (( glorped=glorpline(temp,out,1))!=-1 );
-
-    /* output 512 zeros */
-    putc('\n',out);
-    for ( i = 0; i<8; ++i )
-	fputs("0000000000000000000000000000000000000000000000000000000000000000\n", out);
-}
-#endif
-
 static void decryptagain(FILE *temp,FILE *out) {
     char rdtok[255];
     strcpy(rdtok,"RD");
@@ -478,23 +456,12 @@ return;
 return;
     }
 
-#if 0
-    tempname = tempnam(NULL,"dcrpt");
-    sprintf( buffer,"%s.decrypt", pt);
-    temp = fopen(tempname,"w+");
-    if ( temp==NULL ) {
-	fprintf( stderr, "Cannot open %s for temp\n", tempname );
-	fclose(in); fclose(out);
-return;
-    }
-#else
     temp = tmpfile();
     if ( temp==NULL ) {
 	fprintf( stderr, "Cannot open temporary file\n" );
 	fclose(in); fclose(out);
 return;
     }
-#endif
 
     first = 1; hassectionheads = 0;
     oldpos = ftell(in);
@@ -538,9 +505,6 @@ return;
 	    fputs(buffer,out);
     }
     fclose(in); fclose(out); fclose(temp);
-#if 0
-    unlink(tempname); free(tempname);
-#endif
 }
 
 int main( int argc, char **argv) {

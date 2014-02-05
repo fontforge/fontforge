@@ -27,12 +27,50 @@
 
 lib_LTLIBRARIES = libgunicode.la
 
-libgunicode_la_SOURCES = ArabicForms.c alphabet.c backtrns.c char.c	\
-	cjk.c memory.c ucharmap.c unialt.c ustring.c utype.c		\
-	usprintf.c gwwiconv.c combiners.h
+libgunicode_la_SOURCES =	\
+	charset/alphabet.c	\
+	charset/big5.c		\
+	charset/big5hkscs.c	\
+	charset/gb2312.c	\
+	charset/iso_8859_10.c	\
+	charset/iso_8859_11.c	\
+	charset/iso_8859_13.c	\
+	charset/iso_8859_14.c	\
+	charset/iso_8859_15.c	\
+	charset/iso_8859_1.c	\
+	charset/iso_8859_2.c	\
+	charset/iso_8859_3.c	\
+	charset/iso_8859_4.c	\
+	charset/iso_8859_5.c	\
+	charset/iso_8859_6.c	\
+	charset/iso_8859_7.c	\
+	charset/iso_8859_8.c	\
+	charset/iso_8859_9.c	\
+	charset/jis201.c	\
+	charset/jis.c		\
+	charset/johab.c		\
+	charset/koi8_r.c	\
+	charset/ksc5601.c	\
+	charset/mac.c		\
+	charset/MacSymbol.c	\
+	charset/win.c		\
+	charset/ZapfDingbats.c	\
+	ArabicForms.c		\
+	char.c			\
+	memory.c		\
+	ucharmap.c		\
+	unialt.c		\
+	ustring.c		\
+	utype.c			\
+	gwwiconv.c		\
+	combiners.h		\
+	$(NULL)
 
-libgunicode_la_CPPFLAGS = "-I$(top_builddir)/inc"	\
-	"-I$(top_srcdir)/inc" $(MY_CFLAGS)
+#	usprintf.c
+
+libgunicode_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
+	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
+	$(MY_CFLAGS)
 
 libgunicode_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGUNICODE_VERSION) \
 	${MY_LIB_LDFLAGS}
@@ -42,12 +80,12 @@ libgunicode_la_LIBADD = $(MY_LIBS)
 #--------------------------------------------------------------------------
 
 #dump_SOURCES = dump.c
-#makebuildtables_SOURCES = makebuildtables.c
+#makebuildtables_SOURCES = makebuildtables.c utype.c
 #makeutype_SOURCES = makeutype.c
 
 #noinst_PROGRAMS = dump makebuildtables makeutype
 
-EXTRA_DIST = descrip.mms dump.c makebuildtables.c makeutype.c README.TXT
+EXTRA_DIST = descrip.mms README.TXT #dump.c makebuildtables.c makeutype.c
 
 #--------------------------------------------------------------------------
 

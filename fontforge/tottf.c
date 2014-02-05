@@ -1136,13 +1136,6 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 		sc->parent->mm->normal->glyphs[sc->orig_pos] : sc;
     int arg1, arg2;
 
-#if 0
-    if ( autohint_before_generate && sc->changedsincelasthinted &&
-	    !sc->manualhints )
-	if ( !(gi->flags&ttf_flag_nohints) )
-	    SplineCharAutoHint(sc,NULL);
-#endif
-
     if ( gi->next_glyph!=sc->ttf_glyph )
 	IError("Glyph count wrong in ttf output");
     if ( gi->next_glyph>=gi->maxp->numGlyphs )
@@ -1286,8 +1279,8 @@ return;
     if ( contourcnt>gi->maxp->maxContours ) gi->maxp->maxContours = contourcnt;
     if ( ptcnt>gi->maxp->maxPoints ) gi->maxp->maxPoints = ptcnt;
 
-    bp = galloc(ptcnt*sizeof(BasePoint));
-    fs = galloc(ptcnt);
+    bp = malloc(ptcnt*sizeof(BasePoint));
+    fs = malloc(ptcnt);
     ptcnt = contourcnt = 0;
     for ( ss=ttfss; ss!=NULL; ss=ss->next ) {
 	ptcnt = SSAddPoints(ss,ptcnt,bp,fs);
@@ -1317,7 +1310,7 @@ void SFDummyUpCIDs(struct glyphinfo *gi,SplineFont *sf) {
     if ( max == 0 )
 return;
 
-    sf->glyphs = gcalloc(max,sizeof(SplineChar *));
+    sf->glyphs = calloc(max,sizeof(SplineChar *));
     sf->glyphcnt = sf->glyphmax = max;
     for ( k=0; k<sf->subfontcnt; ++k )
 	for ( i=0; i<sf->subfonts[k]->glyphcnt; ++i ) if ( sf->subfonts[k]->glyphs[i]!=NULL )
@@ -1326,7 +1319,7 @@ return;
     if ( gi==NULL )
 return;
 
-    bygid = galloc((sf->glyphcnt+3)*sizeof(int));
+    bygid = malloc((sf->glyphcnt+3)*sizeof(int));
     memset(bygid,0xff, (sf->glyphcnt+3)*sizeof(int));
 
     j=1;
@@ -1370,7 +1363,7 @@ static void AssignNotdefNull(SplineFont *sf,int *bygid, int iscff) {
 }
 
 static int AssignTTFGlyph(struct glyphinfo *gi,SplineFont *sf,EncMap *map,int iscff) {
-    int *bygid = galloc((sf->glyphcnt+3)*sizeof(int));
+    int *bygid = malloc((sf->glyphcnt+3)*sizeof(int));
     int i,j;
 
     memset(bygid,0xff, (sf->glyphcnt+3)*sizeof(int));
@@ -1409,7 +1402,7 @@ return j;
 static int AssignTTFBitGlyph(struct glyphinfo *gi,SplineFont *sf,EncMap *map,int32 *bsizes) {
     int i, j;
     BDFFont *bdf;
-    int *bygid = galloc((sf->glyphcnt+3)*sizeof(int));
+    int *bygid = malloc((sf->glyphcnt+3)*sizeof(int));
 
     memset(bygid,0xff, (sf->glyphcnt+3)*sizeof(int));
 
@@ -1485,8 +1478,8 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     }
 
     gi->maxp->numGlyphs = gi->gcnt;
-    gi->loca = galloc((gi->maxp->numGlyphs+1)*sizeof(uint32));
-    gi->pointcounts = galloc((gi->maxp->numGlyphs+1)*sizeof(int32));
+    gi->loca = malloc((gi->maxp->numGlyphs+1)*sizeof(uint32));
+    gi->pointcounts = malloc((gi->maxp->numGlyphs+1)*sizeof(int32));
     memset(gi->pointcounts,-1,(gi->maxp->numGlyphs+1)*sizeof(int32));
     gi->next_glyph = 0;
     gi->glyphs = tmpfile();
@@ -1564,36 +1557,6 @@ static int dumpnoglyphs(SplineFont *sf,struct glyphinfo *gi) {
     gi->glyph_len = 0;
     /* loca gets built in dummyloca */
 return( true );
-}
-
-static void ttfdumphdmx(SplineFont *sf,struct alltabs *at,int *bsizes) {
-    /* Create an 'hdmx' table. For now, only do this for the pixel sizes of */
-    /*  the bitmap strikes in the font (a user reports that windows doesn't */
-    /*  use the bitmap metrics data, only the vector data when calculating  */
-    /*  advance widths) */
-    /* Probably not a great idea, let's hold off */
-#if 0
-    int i,j;
-    BDFFont **strikes = NULL, *bdf;
-
-    if ( bsizes!=NULL ) {
-	for ( i=0; bsizes[i]!=0; ++i );
-	strikes = galloc(i*sizeof(BDFFont *));
-	for ( i=j=0; bsizes[i]!=0; ++i ) {
-	    if ( i!=0 && (bsizes[i-1]&0xffff) == (bsizes[i]&0xffff))
-	continue;		/* Same pixel size, different depths */
-	    for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(bsizes[i]&0xffff) || BDFDepth(bdf)!=(bsizes[i]>>16)); bdf=bdf->next );
-	    if ( bdf==NULL )
-	continue;
-	    strikes[j++] = bdf;
-	}
-    }
-    if ( true || j==0 )
-return;
-
-    /* what happens if a strike is missing a glyph????? */
-    at->hdmxf = tmpfile();
-#endif
 }
 
 static int storesid(struct alltabs *at,char *str) {
@@ -1800,7 +1763,7 @@ static void dumpcffnames(SplineFont *sf,FILE *cfff) {
 static void dumpcffcharset(SplineFont *sf,struct alltabs *at) {
     int i;
 
-    at->gn_sid = gcalloc(at->gi.gcnt,sizeof(uint32));
+    at->gn_sid = calloc(at->gi.gcnt,sizeof(uint32));
     putc(0,at->charset);
     /* I always use a format 0 charset. ie. an array of SIDs in random order */
 
@@ -1983,8 +1946,8 @@ int SFFigureDefWidth(SplineFont *sf, int *_nomwid) {
     } else {
 	++maxw;
 	if ( maxw>65535 ) maxw = 3*(sf->ascent+sf->descent);
-	widths = gcalloc(maxw,sizeof(uint16));
-	cumwid = gcalloc(maxw,sizeof(uint32));
+	widths = calloc(maxw,sizeof(uint16));
+	cumwid = calloc(maxw,sizeof(uint32));
 	defwid = 0; cnt=0;
 	for ( i=0; i<sf->glyphcnt; ++i )
 	    if ( SCWorthOutputting(sf->glyphs[i]) &&
@@ -2300,15 +2263,7 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
     /*  which means it should default to [.001...] but it doesn't so the */
     /*  docs aren't completely accurate */
     /* I now see I've no idea what the FontMatrix means in a CID keyed font */
-    /*  it seems to be ignored everywhere */
-#if 0
-    dumpdbl(cfff,1.0);
-    dumpint(cfff,0);
-    dumpint(cfff,0);
-    dumpdbl(cfff,1.0);
-    dumpint(cfff,0);
-    dumpintoper(cfff,0,(12<<8)|7);
-#endif
+    /*  it seems to be ignored everywhere, so we omit it */
 
     CIDLayerFindBounds(sf,at->gi.layer,&b);
     at->gi.xmin = b.minx;
@@ -2330,16 +2285,14 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
 	if ( sf->changed_since_xuidchanged )
 	    SFIncrementXUID(sf);
     }
-#if 0
     /* Acrobat doesn't seem to care about a private dict here. Ghostscript */
     /*  dies.  Tech Note: 5176.CFF.PDF, top of page 23 says:		   */
     /*		A Private DICT is required, but may be specified as having */
     /*		a length of 0 if there are no non-default values to be stored*/
     /* No indication >where< it is required. I assumed everywhere. Perhaps */
-    /*  just in basefonts? 						   */
-    dumpint(cfff,0);			/* Docs say a private dict is required and they don't specifically omit CID top dicts */
-    dumpintoper(cfff,0,18);		/* But they do say it can be zero */
-#endif
+    /*  just in basefonts?                                                 */
+    /* Omit it.		                                                   */
+
     /* Offset to charset (oper=15) needed here */
     /* Offset to charstrings (oper=17) needed here */
     /* Offset to FDArray (oper=12,36) needed here */
@@ -2684,7 +2637,7 @@ static int dumpcidglyphs(SplineFont *sf,struct alltabs *at) {
     at->fdarray = tmpfile();
     at->globalsubrs = tmpfile();
 
-    at->fds = gcalloc(sf->subfontcnt,sizeof(struct fd2data));
+    at->fds = calloc(sf->subfontcnt,sizeof(struct fd2data));
     for ( i=0; i<sf->subfontcnt; ++i ) {
 	at->fds[i].private = tmpfile();
 	ATFigureDefWidth(sf->subfonts[i],at,i);
@@ -2762,7 +2715,6 @@ return( true );
 return( false );
 }
 
-#ifdef _HAS_LONGLONG
 void cvt_unix_to_1904( long long time, int32 result[2]) {
     uint32 date1970[4], tm[4];
     uint32 year[2];
@@ -2772,17 +2724,6 @@ void cvt_unix_to_1904( long long time, int32 result[2]) {
     tm[1] = (time>>16)&0xffff;
     tm[2] = (time>>32)&0xffff;
     tm[3] = (time>>48)&0xffff;
-#else
-void cvt_unix_to_1904( long time, int32 result[2]) {
-    int32 date1970[4], tm[4];
-    uint32 year[2];
-    int i;
-
-    tm[0] =  time     &0xffff;
-    tm[1] = (time>>16)&0xffff;
-    tm[2] = 0;
-    tm[3] = 0;
-#endif
     memset(date1970,0,sizeof(date1970));
     year[0] = (60*60*24*365L)&0xffff;
     year[1] = (60*60*24*365L)>>16;
@@ -3259,20 +3200,17 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 		++mac;
 	    else if ( uni==0x2665 && has_ascii )
 		CodePage[0] |= 1U<<30;		/* OEM */
-#if 0	/* the symbol bit doesn't mean it contains the glyphs in symbol */
+	/* the symbol bit doesn't mean it contains the glyphs in symbol */
 	    /* rather that one is using a symbol encoding. Or that there are */
 	    /* glyphs with unicode encoding between 0xf000 and 0xf0ff, in which */
 	    /* case those guys should be given a symbol encoding */
 	    /* There's a bug in the way otf fonts handle this (but not ttf) and */
-	    /*  they only seem to list the symbol glyphs */
-	    else if ( uni==0x21d4 )
-		CodePage[0] |= 1U<<31;		/* symbol */
-#else
+	    /*  they only seem to list the symbol glyphs. */
+            /* Hence we don't test uni==0x21d4 */
 	    /* This doesn't work well either. In ttf fonts the bit is ignored */
 	    /*  in otf fonts the bit means "ignore all other bits" */
 	    else if ( uni>=0xf000 && uni<=0xf0ff )
 		CodePage[0] |= 1U<<31;		/* symbol */
-#endif
 	    else if ( uni==0xc5 && has_ascii )
 		++cp865;
 	    else if ( uni==0xe9 && has_ascii )
@@ -3775,12 +3713,6 @@ static void redoos2(struct alltabs *at) {
 	putshort(at->os2f,0);
 }
 
-#if 0
-static int icomp(const void *a, const void *b) {
-    return *(int *)a - *(int *)b;
-}
-#endif
-
 static void dumpgasp(struct alltabs *at, SplineFont *sf) {
     int i;
 
@@ -3805,39 +3737,11 @@ static void dumpgasp(struct alltabs *at, SplineFont *sf) {
 	/* This table is always 32 bit aligned */
 }
 
-#if 0
-static void dumpmacstr(FILE *file,unichar_t *str) {
-    int ch;
-    unsigned char *table;
-
-    do {
-	ch = *str++;
-	if ( ch==0 )
-	    putc('\0',file);
-	else if ( (ch>>8)>=mac_from_unicode.first && (ch>>8)<=mac_from_unicode.last &&
-		(table = mac_from_unicode.table[(ch>>8)-mac_from_unicode.first])!=NULL &&
-		table[ch&0xff]!=0 )
-	    putc(table[ch&0xff],file);
-	else
-	    putc('?',file);	/* if we were to omit an unencoded char all our position calculations would be off */
-    } while ( ch!='\0' );
-}
-#endif
-
 static void dumpstr(FILE *file,char *str) {
     do {
 	putc(*str,file);
     } while ( *str++!='\0' );
 }
-
-#if 0
-static void dumpc2ustr(FILE *file,char *str) {
-    do {
-	putc('\0',file);
-	putc(*str,file);
-    } while ( *str++!='\0' );
-}
-#endif
 
 static void dumpustr(FILE *file,char *utf8_str) {
     unichar_t *ustr = utf82u_copy(utf8_str), *pt=ustr;
@@ -3948,9 +3852,9 @@ return;		/* Should not happen, but it did */
 
     if ( nt->cur+6>=nt->max ) {
 	if ( nt->cur==0 )
-	    nt->entries = galloc((nt->max=100)*sizeof(NameEntry));
+	    nt->entries = malloc((nt->max=100)*sizeof(NameEntry));
 	else
-	    nt->entries = grealloc(nt->entries,(nt->max+=100)*sizeof(NameEntry));
+	    nt->entries = realloc(nt->entries,(nt->max+=100)*sizeof(NameEntry));
     }
 
     ne = nt->entries + nt->cur;
@@ -4034,7 +3938,7 @@ return;		/* Should not happen, but it did */
 	    else {
 		unichar_t *uin = utf82u_copy(utf8name);
 		outlen = 3*strlen(utf8name)+10;
-		out = space = galloc(outlen+2);
+		out = space = malloc(outlen+2);
 		in = (char *) uin; inlen = 2*u_strlen(uin);
 		iconv(enc->fromunicode,NULL,NULL,NULL,NULL);	/* should not be needed, but just in case */
 		iconv(enc->fromunicode,&in,&inlen,&out,&outlen);
@@ -4055,9 +3959,9 @@ static void AddMacName(NamTab *nt,struct macname *mn, int strid) {
 
     if ( nt->cur+1>=nt->max ) {
 	if ( nt->cur==0 )
-	    nt->entries = galloc((nt->max=100)*sizeof(NameEntry));
+	    nt->entries = malloc((nt->max=100)*sizeof(NameEntry));
 	else
-	    nt->entries = grealloc(nt->entries,(nt->max+=100)*sizeof(NameEntry));
+	    nt->entries = realloc(nt->entries,(nt->max+=100)*sizeof(NameEntry));
     }
 
     ne = nt->entries + nt->cur;
@@ -4123,14 +4027,11 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	for ( i=0; at->feat_name[i].strid!=0; ++i ) {
 	    for ( mn=at->feat_name[i].mn; mn!=NULL; mn=mn->next )
 		AddMacName(&nt,mn,at->feat_name[i].strid);
-#if 0	/* I'm not sure why I keep track of these alternates */
-	/*  Dumping them out like this is a bad idea. It might be worth */
+	/* I'm not sure why I keep track of these alternates (feat_name[i].smn) */
+	/*  Dumping them out is a bad idea. It might be worth */
 	/*  something if we searched through the alternate sets for languages */
 	/*  not found in the main set, but at the moment I don't think so */
-	/*  What happens now is that I get duplicate names output */
-	    for ( mn=at->feat_name[i].smn; mn!=NULL; mn=mn->next )
-		AddMacName(&nt,mn,at->feat_name[i].strid);
-#endif
+	/*  What happens now if I do it is that I get duplicate names output. */
 	}
     }
     /* And the names used by the fvar table aren't mac unicode either */
@@ -4180,15 +4081,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     free( nt.entries );
     free( at->feat_name );
 
-#if 0
-    /* Windows changed it's mind. This is ok again */
-    if ( at->namelen>5*1024 && !sf->internal_temp )
-	LogError( _("Windows has decided that fonts with 'name' tables bigger than 5K are\n"
-		    "insecure and will refuse to load them. Don't ask me why they believe this.\n"
-		    "This font has a name table which is %d bytes and is bigger than this limit.\n"),
-		    at->namelen);
-#endif
-
+    /* Windows at one point refused to load fonts with 'name' tables bigger than 5K (decided they were insecure). */
 }
 
 static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format) {
@@ -4347,13 +4240,6 @@ return( NULL );
 	    else if ( SCWorthOutputting(sf->glyphs[map->map[i]]))
 	break;
     }
-#if 0
-    if ( i==base || i==sf->glyphcnt )
-return( NULL );		/* Doesn't have the single byte entries */
-	/* Can use the normal 16 bit encoding scheme */
-	/* Always do an 8/16, and we'll do a unicode table too now... */
-#endif
-
     if ( base2!=-1 ) {
 	for ( i=base; i<=basebound && i<map->enccount; ++i )
 	    if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
@@ -4396,7 +4282,7 @@ return( NULL );		/* Doesn't have the single byte entries */
 	subheads[i].first = lbase;
 	subheads[i].cnt = planesize;
     }
-    glyphs = gcalloc(subheadcnt*planesize+plane0size,sizeof(uint16));
+    glyphs = calloc(subheadcnt*planesize+plane0size,sizeof(uint16));
     subheads[0].rangeoff = 0;
     for ( i=0; i<plane0size && i<map->enccount; ++i )
 	if ( map->map[i]!=-1 && sf->glyphs[map->map[i]]!=NULL &&
@@ -4622,7 +4508,7 @@ return( format12 );
 static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol) {
     /* We always want a format 4 2byte unicode encoding map */
     /* But if it's symbol, only include encodings 0xff20 - 0xffff */
-    uint32 *avail = galloc(65536*sizeof(uint32));
+    uint32 *avail = malloc(65536*sizeof(uint32));
     int i,j,l;
     int segcnt, cnt=0, delta, rpos;
     struct cmapseg { uint16 start, end; uint16 delta; uint16 rangeoff; } *cmapseg;
@@ -4668,8 +4554,8 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
 	} else if ( j!=-1 && avail[i]==0xffffffff )
 	    j = -1;
     }
-    cmapseg = gcalloc(segcnt+1,sizeof(struct cmapseg));
-    ranges = galloc(cnt*sizeof(int16));
+    cmapseg = calloc(segcnt+1,sizeof(struct cmapseg));
+    ranges = malloc(cnt*sizeof(int16));
     j = -1;
     for ( i=segcnt=0; i<65536; ++i ) {
 	if ( avail[i]!=0xffffffff && j==-1 ) {
@@ -4759,10 +4645,10 @@ static FILE *NeedsVariationSequenceTable(SplineFont *sf,int *vslen,EncMap *map) 
 		if ( i>=vs_cnt ) {
 		    if ( i>=vs_max ) {
 			if ( vses==vsbuf ) {
-			    vses = galloc((vs_max*=2)*sizeof(uint32));
+			    vses = malloc((vs_max*=2)*sizeof(uint32));
 			    memcpy(vses,vsbuf,sizeof(vsbuf));
 			} else
-			    vses = grealloc(vses,(vs_max+=512)*sizeof(uint32));
+			    vses = realloc(vses,(vs_max+=512)*sizeof(uint32));
 		    }
 		    vses[vs_cnt++] = altuni->vs;
 		}
@@ -4787,7 +4673,7 @@ return( NULL );			/* No variation selectors */
 	}
     }
 
-    avail = galloc(unicode4_size*sizeof(uint32));
+    avail = malloc(unicode4_size*sizeof(uint32));
 
     format14 = tmpfile();
     putshort(format14,14);
@@ -5250,8 +5136,7 @@ static void AbortTTF(struct alltabs *at, SplineFont *sf) {
 	sf->glyphs = NULL;
 	sf->glyphcnt = sf->glyphmax = 0;
     }
-    if ( at->fds!=NULL )
-	free( at->fds );
+    free( at->fds );
     free( at->gi.bygid );
 }
 
@@ -5819,26 +5704,6 @@ return( false );
     } else if ( format==ff_none && at->msbitmaps ) {
 	aborted = !dumpglyphs(sf,&at->gi);
     } else {
-#if 0
-	/* I think the footnote I thought relevant actually refered to */
-	/*  something else */
-	struct ttf_table *tab;
-	/* There's a typo in Adobe's docs, and the instructions in these tables*/
-	/*  need to be included in the max glyph instruction length */
-	if ( (tab = SFFindTable(sf,CHR('f','p','g','m'))) != NULL ) {
-	    at->maxp.maxglyphInstr = tab->len;
-	    at->gi.has_instrs = true;
-	}
-	if ( (tab = SFFindTable(sf,CHR('p','r','e','p'))) != NULL ) {
-	    if ( at->maxp.maxglyphInstr < tab->len )
-		at->maxp.maxglyphInstr = tab->len;
-	    at->gi.has_instrs = true;
-	}
-#endif
-#if 0		/* Never use this info */
-	at->gi.has_instrs = (SFFindTable(sf,CHR('f','p','g','m')) != NULL ||
-		SFFindTable(sf,CHR('p','r','e','p')) != NULL);
-#endif
 	/* if format==ff_none the following will put out lots of space glyphs */
 	aborted = !dumpglyphs(sf,&at->gi);
     }
@@ -5848,8 +5713,6 @@ return( false );
 	if ( bsizes!=NULL && format==ff_none && at->msbitmaps )
 	    ttfdumpbitmapscaling(sf,at,bsizes);
     }
-    if ( !aborted && format>=ff_ttf && format<=ff_ttfdfont )	/* No hdmx table for cff or bitmap only fonts. Apple doesn't even want a hmtx, and otbitmap doesn't expect one */
-	ttfdumphdmx(sf,at,bsizes);
     if ( aborted ) {
 	AbortTTF(at,sf);
 return( false );
@@ -6045,7 +5908,7 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
 
 static void DumpGlyphToNameMap(char *fontname,SplineFont *sf) {
     char *d, *e;
-    char *newname = galloc(strlen(fontname)+10);
+    char *newname = malloc(strlen(fontname)+10);
     FILE *file;
     int i,k,max;
     SplineChar *sc;
@@ -6553,16 +6416,16 @@ return( NULL );
 return( NULL );
     fcnt = cnt;
 
-    uhash = gcalloc(1,sizeof(UHash));
-    nhash = gcalloc(1,sizeof(NHash));
+    uhash = calloc(1,sizeof(UHash));
+    nhash = calloc(1,sizeof(NHash));
 
     *dummysf = *sfs->sf;
     dummysf->glyphmax = gcnt;
-    dummysf->glyphs = gcalloc(gcnt,sizeof(SplineChar *));
+    dummysf->glyphs = calloc(gcnt,sizeof(SplineChar *));
     dummysf->glyphcnt = 0;
     dummysf->hasvmetrics = anyvmetrics;
 
-    bygid = galloc((gcnt+3)*sizeof(int));
+    bygid = malloc((gcnt+3)*sizeof(int));
     memset(bygid,0xff, (gcnt+3)*sizeof(int));
     for ( sfitem= sfs; sfitem!=NULL; sfitem=sfitem->next ) {
 	AssignNotdefNull(sfitem->sf,bygid,false);
@@ -6588,7 +6451,7 @@ return( NULL );
     }
     dummysf->glyphcnt = format==ff_ttf ? 3 : 1;
 
-    ret = gcalloc(fcnt+2,sizeof(struct alltabs));
+    ret = calloc(fcnt+2,sizeof(struct alltabs));
     ATinit(&ret[fcnt],dummysf,sfs->map,flags&~ttf_flag_dummyDSIG,
 	    layer,format,bf,NULL);
     ret[fcnt].gi.ttc_composite_font = true;
@@ -6598,7 +6461,7 @@ return( NULL );
 	sf = sfitem->sf;
 	ATinit(&ret[cnt],sf,sfitem->map,flags&~ttf_flag_dummyDSIG,
 		layer,format,bf,sfitem->sizes);
-	ret[cnt].gi.bygid = galloc((gcnt+3)*sizeof(int));
+	ret[cnt].gi.bygid = malloc((gcnt+3)*sizeof(int));
 	memset(ret[cnt].gi.bygid,-1,(gcnt+3)*sizeof(int));
 	for ( i=0; i<sf->glyphcnt; ++i ) {
 	    if ( SCWorthOutputting(sc = sf->glyphs[i])) {

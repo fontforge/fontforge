@@ -31,6 +31,8 @@
 #include <utype.h>
 #include <math.h>
 #include "psfont.h"
+#include <ffglib.h>
+#include <glib/gprintf.h>
 
 /* This operations are designed to work on a single font. NOT a CID collection*/
 /*  A CID collection must be treated one sub-font at a time */
@@ -63,8 +65,8 @@ static HistData *HistFindBlues(SplineFont *sf,int layer, uint8 *selected, EncMap
     HistData *hist;
     struct hentry *h;
 
-    hist = gcalloc(1,sizeof(HistData));
-    hist->hist = gcalloc(sf->ascent+sf->descent+1,sizeof(struct hentry));
+    hist = calloc(1,sizeof(HistData));
+    hist->hist = calloc(sf->ascent+sf->descent+1,sizeof(struct hentry));
     hist->low = sf->ascent; hist->high = -sf->descent;
     low = -sf->descent; high = sf->ascent;
 
@@ -82,7 +84,7 @@ static HistData *HistFindBlues(SplineFont *sf,int layer, uint8 *selected, EncMap
 	    if ( top>hist->high ) {
 		hist->high = top;
 		if ( top>high ) {
-		    hist->hist = grealloc(hist->hist,(top+10-low)*sizeof(struct hentry));
+		    hist->hist = realloc(hist->hist,(top+10-low)*sizeof(struct hentry));
 		    memset(hist->hist + high-low+1,0,(top+10-high-1)*sizeof(struct hentry));
 		    high = top+10 -1;
 		}
@@ -90,9 +92,9 @@ static HistData *HistFindBlues(SplineFont *sf,int layer, uint8 *selected, EncMap
 	    ++ hist->hist[top-low].cnt;
 	    if ( hist->hist[top-low].char_cnt >= hist->hist[top-low].max ) {
 		if ( hist->hist[top-low].max==0 )
-		    hist->hist[top-low].chars = galloc(10*sizeof(SplineChar *));
+		    hist->hist[top-low].chars = malloc(10*sizeof(SplineChar *));
 		else
-		    hist->hist[top-low].chars = grealloc(hist->hist[top-low].chars,(hist->hist[top-low].max+10)*sizeof(SplineChar *));
+		    hist->hist[top-low].chars = realloc(hist->hist[top-low].chars,(hist->hist[top-low].max+10)*sizeof(SplineChar *));
 		hist->hist[top-low].max += 10;
 	    }
 	    hist->hist[top-low].chars[hist->hist[top-low].char_cnt++] = sc;
@@ -100,7 +102,7 @@ static HistData *HistFindBlues(SplineFont *sf,int layer, uint8 *selected, EncMap
 	    if ( bottom<hist->low ) {
 		hist->low = bottom;
 		if ( bottom<low ) {
-		    h = gcalloc((high-bottom+10),sizeof( struct hentry ));
+		    h = calloc((high-bottom+10),sizeof( struct hentry ));
 		    memcpy(h+low-(bottom-10+1),hist->hist,(high+1-low)*sizeof(struct hentry));
 		    low = bottom-10+1;
 		    free( hist->hist );
@@ -110,9 +112,9 @@ static HistData *HistFindBlues(SplineFont *sf,int layer, uint8 *selected, EncMap
 	    ++ hist->hist[bottom-low].cnt;
 	    if ( hist->hist[bottom-low].char_cnt >= hist->hist[bottom-low].max ) {
 		if ( hist->hist[bottom-low].max==0 )
-		    hist->hist[bottom-low].chars = galloc(10*sizeof(SplineChar *));
+		    hist->hist[bottom-low].chars = malloc(10*sizeof(SplineChar *));
 		else
-		    hist->hist[bottom-low].chars = grealloc(hist->hist[bottom-low].chars,(hist->hist[bottom-low].max+10)*sizeof(SplineChar *));
+		    hist->hist[bottom-low].chars = realloc(hist->hist[bottom-low].chars,(hist->hist[bottom-low].max+10)*sizeof(SplineChar *));
 		hist->hist[bottom-low].max += 10;
 	    }
 	    hist->hist[bottom-low].chars[hist->hist[bottom-low].char_cnt++] = sc;
@@ -123,7 +125,7 @@ static HistData *HistFindBlues(SplineFont *sf,int layer, uint8 *selected, EncMap
 	hist->low = hist->high = 0;
     }
     if ( low!=hist->low || high!=hist->high ) {
-	h = galloc((hist->high-hist->low+1)*sizeof(struct hentry));
+	h = malloc((hist->high-hist->low+1)*sizeof(struct hentry));
 	memcpy(h,hist->hist + hist->low-low,(hist->high-hist->low+1)*sizeof(struct hentry));
 	free(hist->hist);
 	hist->hist = h;
@@ -138,8 +140,8 @@ static HistData *HistFindStemWidths(SplineFont *sf,int layer, uint8 *selected,En
     struct hentry *h;
     StemInfo *stem;
 
-    hist = gcalloc(1,sizeof(HistData));
-    hist->hist = gcalloc(sf->ascent+sf->descent+1,sizeof(struct hentry));
+    hist = calloc(1,sizeof(HistData));
+    hist->hist = calloc(sf->ascent+sf->descent+1,sizeof(struct hentry));
     hist->low = sf->ascent+sf->descent;
     low = 0; high = sf->ascent+sf->descent;
 
@@ -160,7 +162,7 @@ static HistData *HistFindStemWidths(SplineFont *sf,int layer, uint8 *selected,En
 		if ( val>hist->high ) {
 		    hist->high = val;
 		    if ( val>high ) {
-			hist->hist = grealloc(hist->hist,(val+10-low)*sizeof(struct hentry));
+			hist->hist = realloc(hist->hist,(val+10-low)*sizeof(struct hentry));
 			memset(hist->hist + high-low+1,0,(val+10-high-1)*sizeof(struct hentry));
 			high = val+10 -1;
 		    }
@@ -172,9 +174,9 @@ static HistData *HistFindStemWidths(SplineFont *sf,int layer, uint8 *selected,En
 			hist->hist[val-low].chars[hist->hist[val-low].char_cnt-1]!=sc ) {
 		    if ( hist->hist[val-low].char_cnt >= hist->hist[val-low].max ) {
 			if ( hist->hist[val-low].max==0 )
-			    hist->hist[val-low].chars = galloc(10*sizeof(SplineChar *));
+			    hist->hist[val-low].chars = malloc(10*sizeof(SplineChar *));
 			else
-			    hist->hist[val-low].chars = grealloc(hist->hist[val-low].chars,(hist->hist[val-low].max+10)*sizeof(SplineChar *));
+			    hist->hist[val-low].chars = realloc(hist->hist[val-low].chars,(hist->hist[val-low].max+10)*sizeof(SplineChar *));
 			hist->hist[val-low].max += 10;
 		    }
 		    hist->hist[val-low].chars[hist->hist[val-low].char_cnt++] = sc;
@@ -187,7 +189,7 @@ static HistData *HistFindStemWidths(SplineFont *sf,int layer, uint8 *selected,En
 	hist->low = hist->high = 0;
     }
     if ( low!=hist->low || high!=hist->high ) {
-	h = galloc((hist->high-hist->low+1)*sizeof(struct hentry));
+	h = malloc((hist->high-hist->low+1)*sizeof(struct hentry));
 	memcpy(h,hist->hist + hist->low-low,(hist->high-hist->low+1)*sizeof(struct hentry));
 	free(hist->hist);
 	hist->hist = h;
@@ -319,18 +321,16 @@ return;
     GGadgetPreparePopup8(hist->gw,buffer);
 }
 
-static unichar_t *ArrayOrder(const unichar_t *old,int args,int val1,int val2) {
-    unichar_t *end;
+static char *ArrayOrder(char *old,int args,int val1,int val2) {
+    char *end;
     double array[40];
     int i,j,k;
-    static unichar_t format[] = { '%', 'g', '\0' };
-    unichar_t *new, *pt;
-    unichar_t ubuf[40];
+    GString *new;
 
     if ( *old=='[' ) ++old;
 
     for ( i=0; i<40 && *old!=']' && *old!='\0'; ++i ) {
-	array[i] = u_strtod(old,&end);
+	array[i] = strtod(old,&end);
 	if ( old==end )
     break;
 	old = end;
@@ -345,27 +345,22 @@ static unichar_t *ArrayOrder(const unichar_t *old,int args,int val1,int val2) {
 	array[k] = temp;
     }
 
-    u_sprintf(ubuf,format,val1);
-    new = galloc(2*(u_strlen(ubuf)+u_strlen(old)+10)*sizeof(unichar_t));
-
-    pt = new;
-    *pt++ = '[';
+    new = g_string_new( "[" );
     for ( k=0; k<i; ++k ) {
-	u_sprintf(pt,format,array[k]);
-	pt += u_strlen(pt);
-	if ( k==i-1 )
-	    *pt++ = ']';
+	if (k == i-1)
+	    g_string_append_printf( new, "%g]", array[k] );
 	else
-	    *pt++ = ' ';
+	    g_string_append_printf( new, "%g ", array[k] );
     }
-    *pt = '\0';
-return( new );
+
+return( (char *) g_string_free( new, FALSE ) );
 }
 
+/* Handle clicks on histogram chart and update text fields below accordingly */
 static void HistPress(struct hist_dlg *hist,GEvent *e) {
+    char *old = NULL;
+    char *new = NULL;
     int x = e->u.mouse.x;
-    static unichar_t fullformat[] = { '[', '%', 'd', ']', '\0' };
-    unichar_t ubuf[20];
 
     x /= hist->barwidth;
     x += hist->hoff;
@@ -377,15 +372,13 @@ return;
 	    if ( x<hist->pending_blue )
 		ff_post_error(_("Bad Value"),_("The smaller number must be selected first in a pair of bluevalues"));
 	    else if ( x<0 ) {	/* OtherBlues */
-		const unichar_t *old = _GGadgetGetTitle(GWidgetGetControl(hist->gw,CID_SecondaryVal));
-		unichar_t *new = ArrayOrder(old,2,hist->pending_blue,x);
-		GGadgetSetTitle(GWidgetGetControl(hist->gw,CID_SecondaryVal),new);
-		free(new);
+		old = GGadgetGetTitle8( GWidgetGetControl( hist->gw, CID_SecondaryVal ));
+		new = ArrayOrder( old, 2, hist->pending_blue, x );
+		GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_SecondaryVal ), new );
 	    } else {
-		const unichar_t *old = _GGadgetGetTitle(GWidgetGetControl(hist->gw,CID_MainVal));
-		unichar_t *new = ArrayOrder(old,2,hist->pending_blue,x);
-		GGadgetSetTitle(GWidgetGetControl(hist->gw,CID_MainVal),new);
-		free(new);
+		old = GGadgetGetTitle8( GWidgetGetControl( hist->gw, CID_MainVal ));
+		new = ArrayOrder( old, 2, hist->pending_blue, x );
+		GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_MainVal ), new );
 	    }
 	    GDrawSetCursor(hist->gw,ct_pointer);
 	    hist->is_pending = false;
@@ -397,18 +390,19 @@ return;
 	GGadgetSetVisible(GWidgetGetControl(hist->gw,CID_MainVal),!hist->is_pending);
 	GGadgetSetVisible(GWidgetGetControl(hist->gw,CID_MainValL),!hist->is_pending);
 	GGadgetSetVisible(GWidgetGetControl(hist->gw,CID_BlueMsg),hist->is_pending);
-    } else {
+    } else { /* HStem and VStem */
 	if ( !( e->u.mouse.state&ksm_shift )) {
-	    u_sprintf(ubuf,fullformat,x);
-	    GGadgetSetTitle(GWidgetGetControl(hist->gw,CID_MainVal),ubuf);
-	    GGadgetSetTitle(GWidgetGetControl(hist->gw,CID_SecondaryVal),ubuf);
+	    new = (char *) g_strdup_printf( "[%d]", x );
+	    GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_MainVal ), new );
+	    GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_SecondaryVal ), new );
 	} else {
-	    const unichar_t *old = _GGadgetGetTitle(GWidgetGetControl(hist->gw,CID_SecondaryVal));
-	    unichar_t *new = ArrayOrder(old,1,x,0);
-	    GGadgetSetTitle(GWidgetGetControl(hist->gw,CID_SecondaryVal),new);
-	    free(new);
+	    old = GGadgetGetTitle8( GWidgetGetControl( hist->gw, CID_SecondaryVal ));
+	    new = ArrayOrder( old, 1, x, 0 );
+	    GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_SecondaryVal ), new );
 	}
     }
+    free( old );
+    free( new );
 }
 
 static void HistExpose(GWindow pixmap, struct hist_dlg *hist) {
@@ -522,14 +516,6 @@ static void HistScroll(struct hist_dlg *hist,struct sbevent *sb) {
 	hist->hoff = newpos;
 	GScrollBarSetPos(g,hist->hoff);
 	GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(hist->gw,CID_Histogram)),NULL,false);
-#if 0
-	r.x = 1; r.y = 1;
-	r.width = hist->hwidth-1; r.height = hist->hheight-1;
-	GDrawScroll(hist->gw,&r,-diff*hist->barwidth,0);
-	r.x = 10; r.y = hist->y+hist->hheight-hist->fh+1;
-	r.width = hist->hwidth+2*(hist->x-10); r.height = hist->fh;
-	GDrawRequestExpose(hist->gw,&r,false);
-#endif
     }
 }
 
@@ -583,10 +569,10 @@ static void HistSet(struct hist_dlg *hist) {
 	    (*ret2=='\0' || uc_strcmp(ret2,"[]")==0 ) && p==NULL )
 return;
     if ( p==NULL ) {
-	hist->sf->private = p = gcalloc(1,sizeof(struct psdict));
+	hist->sf->private = p = calloc(1,sizeof(struct psdict));
 	p->cnt = 10;
-	p->keys = gcalloc(10,sizeof(char *));
-	p->values = gcalloc(10,sizeof(char *));
+	p->keys = calloc(10,sizeof(char *));
+	p->values = calloc(10,sizeof(char *));
     }
     PSDictChangeEntry(p,primary,temp=cu_copy(ret1)); free(temp);
     PSDictChangeEntry(p,secondary,temp=cu_copy(ret2)); free(temp);

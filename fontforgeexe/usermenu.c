@@ -152,7 +152,7 @@ MenuDataAdd(menu_info_func func, menu_info_check check, menu_info_data data, int
 
     if (is_cv) {
         if (cv_menu_cnt >= cv_menu_max)
-            cv_menu_data = grealloc(cv_menu_data,(cv_menu_max+=10)*sizeof(struct menu_info));
+            cv_menu_data = realloc(cv_menu_data,(cv_menu_max+=10)*sizeof(struct menu_info));
         cv_menu_data[cv_menu_cnt].func = func;
         cv_menu_data[cv_menu_cnt].check_enabled = check;
         cv_menu_data[cv_menu_cnt].data = data;
@@ -160,7 +160,7 @@ MenuDataAdd(menu_info_func func, menu_info_check check, menu_info_data data, int
         cv_menu_cnt++;
     } else {
         if (fv_menu_cnt >= fv_menu_max)
-            fv_menu_data = grealloc(fv_menu_data,(fv_menu_max+=10)*sizeof(struct menu_info));
+            fv_menu_data = realloc(fv_menu_data,(fv_menu_max+=10)*sizeof(struct menu_info));
         fv_menu_data[fv_menu_cnt].func = func;
         fv_menu_data[fv_menu_cnt].check_enabled = check;
         fv_menu_data[fv_menu_cnt].data = data;
@@ -197,7 +197,7 @@ InsertSubMenus(menu_info_func func,
         }
         
         if (*mn == NULL || (*mn)[j].ti.text == NULL) {
-            *mn = grealloc(*mn,(j+2)*sizeof(GMenuItem2));
+            *mn = realloc(*mn,(j+2)*sizeof(GMenuItem2));
             memset(*mn+j,0,2*sizeof(GMenuItem2));
         }
         mmn = *mn;

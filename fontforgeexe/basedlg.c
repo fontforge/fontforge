@@ -156,7 +156,7 @@ static void BaseLangMatrixInit(struct matrixinit *mi,struct baselangextent *old,
 
     for ( cnt = 0, bl=old; bl!=NULL; bl=bl->next, ++cnt);
     mi->initial_row_cnt = cnt;
-    mi->matrix_data     = md = gcalloc(mi->col_cnt*cnt,sizeof(struct matrix_data));
+    mi->matrix_data     = md = calloc(mi->col_cnt*cnt,sizeof(struct matrix_data));
 
     for ( cnt = 0, bl=old; bl!=NULL; bl=bl->next, ++cnt) {
 	lang[0] = bl->lang>>24;
@@ -480,13 +480,13 @@ static void BaselineMatrixInit(struct matrixinit *mi,struct Base *old) {
     if ( old!=NULL )
 	for ( cnt=0, bs=old->scripts; bs!=NULL; bs=bs->next, ++cnt );
     mi->initial_row_cnt = cnt;
-    mi->matrix_data     = md = gcalloc(mi->col_cnt*cnt,sizeof(struct matrix_data));
+    mi->matrix_data     = md = calloc(mi->col_cnt*cnt,sizeof(struct matrix_data));
 
     if ( old!=NULL ) {
 	if ( old->baseline_cnt<sizeof(_maps)/sizeof(_maps[0]) )
 	    mapping = _maps;
 	else
-	    mapping = galloc(old->baseline_cnt*sizeof(int));
+	    mapping = malloc(old->baseline_cnt*sizeof(int));
 	for ( k=0; k<old->baseline_cnt; ++k ) {
 	    mapping[k] = -1;
 	    for ( i=0; stdtags[i]!=0; ++i )
@@ -627,7 +627,7 @@ return( true );
 
 	b->old->baseline_cnt = cnt;
 	if ( i!=0 ) {
-	    b->old->baseline_tags = galloc(cnt*sizeof(uint32));
+	    b->old->baseline_tags = malloc(cnt*sizeof(uint32));
 	    for ( i=0; stdtags[i]!=0 ; ++i ) if ( mapping[i]!=-1 )
 		b->old->baseline_tags[mapping[i]] = stdtags[i];
 	}
@@ -641,7 +641,7 @@ return( true );
 		int tag = md[cols*r+1].u.md_ival;
 		for ( j=0; stdtags[j]!=0 && stdtags[j]!=tag; ++j );
 		bs->def_baseline = mapping[j];
-		bs->baseline_pos = galloc(cnt*sizeof(uint16));
+		bs->baseline_pos = malloc(cnt*sizeof(uint16));
 		for ( i=0; stdtags[i]!=0 ; ++i ) if ( mapping[i]!=-1 )
 		    bs->baseline_pos[mapping[i]] = md[r*cols+i+2].u.md_ival;
 	    }

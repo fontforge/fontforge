@@ -357,29 +357,6 @@ return( NULL );
 return( SplineMake(from,to,order2) );
 }
 
-#if 0
-static void CleanupDir(BasePoint *newcp,BasePoint *oldcp,BasePoint *base) {
-    bigreal orig, new;
-    orig = atan2(oldcp->y-base->y,oldcp->x-base->x);
-    new  = atan2(newcp->y-base->y,newcp->x-base->x);
-    if ( !RealNearish(orig,new)) {
-	bigreal c = cos(orig), s = sin(orig);
-	/*bigreal len = sqrt((newcp->x-base->x)*(newcp->x-base->x) + (newcp->y-base->y)*(newcp->y-base->y));*/
-	/* use dot product rather than length */
-	bigreal len;
-	if ( c<1e-6 && c>-1e-6 ) { c=0; if ( s<0 ) s=-1; else s=1; }
-	if ( s<1e-6 && s>-1e-6 ) { s=0; if ( c<0 ) c=-1; else c=1; }
-	len = (newcp->x-base->x)*c + (newcp->y-base->y)*s;
-	newcp->x = len*c; newcp->y = len*s;
-	if ( newcp->x*(oldcp->x-base->x) + newcp->y*(oldcp->y-base->y)<0 ) {
-	    IError( "Control points in wrong direction" );
-	    newcp->x = -newcp->x; newcp->y = -newcp->y;
-	}
-	newcp->x += base->x; newcp->y += base->y;
-    }
-}
-#endif
-
 /* This routine should almost never be called now. It uses a flawed algorithm */
 /*  which won't produce the best results. It gets called only when the better */
 /*  approach doesn't work (singular matrices, etc.) */
@@ -699,56 +676,6 @@ return( SplineMake3(from,to));
 	}
     }
 
-#if 0
-    /* if we look at (p(t)-pi) = (a*t^3+b*t^2+c*t+d)-pi */
-    /* d = p0, a = (p1-p0-b-c) */
-    /* We find another set of equations we can minimize. */
-    /* As might be expected it has exactly the same singularities */
-    /*  Just a linear transform, after all. But I worked through it hoping... */
-    if ( order2 ) {
-    } else {
-	/* Try a different approach */
-	bigreal xconst[2], yconst[2], b_term[2], c_term[2] /* Same for x and y */;
-	bigreal determinant;
-	BasePoint off;
-	xconst[0] = xconst[1] = yconst[0] = yconst[1] =
-	    b_term[0] = b_term[1] = c_term[0] = c_term[1] =  0;
-	off.x = to->me.x - from->me.x; off.y = to->me.y-from->me.y;
-	for ( i=0; i<cnt; ++i ) {
-	    bigreal t = mid[i].t, t2 = t*t, t3=t*t2;
-	    bigreal bfactor = t2-t3, cfactor=t-t3, bc = bfactor*cfactor;
-
-	    b_term[0] += bfactor*bfactor;
-	    b_term[1] += bc;
-	    /*c_term[0] += bc;*/ /* Same as b_term[1]; */
-	    c_term[1] += cfactor*cfactor;
-	    xconst[0] += (off.x*t3+from->me.x-mid[i].x)*bfactor;
-	    xconst[1] += (off.x*t3+from->me.x-mid[i].x)*cfactor;
-	    yconst[0] += (off.y*t3+from->me.y-mid[i].y)*bfactor;
-	    yconst[1] += (off.y*t3+from->me.y-mid[i].y)*cfactor;
-	}
-	c_term[0] = b_term[1];
-	determinant = b_term[1]*c_term[0] - b_term[0]*c_term[1];
-	if ( determinant!=0 ) {
-	    bigreal bx, by, cx, cy;
-	    cx = -(xconst[0]*b_term[1] - xconst[1]*b_term[0])/determinant;
-	    cy = -(yconst[0]*b_term[1] - yconst[1]*b_term[0])/determinant;
-	    if ( b_term[0]!=0 ) {
-		bx = -(xconst[0]+c_term[0]*cx)/b_term[0];
-		by = -(yconst[0]+c_term[0]*cy)/b_term[0];
-	    } else {
-		bx = -(xconst[1]+c_term[1]*cx)/b_term[1];
-		by = -(yconst[1]+c_term[1]*cy)/b_term[1];
-	    }
-	    from->nextcp.x = from->me.x + cx/3;
-	    from->nextcp.y = from->me.y + cy/3;
-	    to->prevcp.x = from->nextcp.x + (bx+cx)/3;
-	    to->prevcp.y = from->nextcp.y + (by+cy)/3;
-return( SplineMake3(from,to));
-	}
-    }
-#endif
-
     if ( (spline = IsLinearApprox(from,to,mid,cnt,order2))!=NULL )
 return( spline );
 
@@ -932,10 +859,6 @@ return( false );
 
 return( true );
 }
-
-#if 0
-static int totcnt_cnt, nocnt_cnt, incr_cnt, curdiff_cnt;
-#endif
 
 /* pf == point from (start point) */
 /* Δf == slope from (cp(from) - from) */
@@ -1300,7 +1223,7 @@ return( SplineMake3(from,to));
 	nocnt = 0;
 	curdiff = SigmaDeltas(spline,mid,cnt,&b,&db);
 	totcnt = 0;
-	forever {
+	for (;;) {
 	    bigreal fadiff, fsdiff;
 	    bigreal tadiff, tsdiff;
 
@@ -1374,16 +1297,6 @@ return( SplineMake3(from,to));
 	break;
 	    }
 	}
-#if 0
- if ( nocnt>6 )
-  nocnt_cnt++;
- else if ( curdiff<1 )
-  curdiff_cnt++;
- else if ( totcnt>200 )
-  totcnt_cnt++;
- else
-  incr_cnt++;
-#endif
 	if ( curdiff<finaldiff ) {
 	    finaldiff = curdiff;
 	    offn_ = offn;
@@ -1731,8 +1644,8 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
     break;
     }
     if ( cnt>10 ) {
-	lens = galloc(cnt*sizeof(bigreal));
-	cnts = galloc(cnt*sizeof(int));
+	lens = malloc(cnt*sizeof(bigreal));
+	cnts = malloc(cnt*sizeof(int));
     }
     cnt = 0; len = 0;
     for ( np = from->next->to; ; np = np->next->to ) {
@@ -1753,7 +1666,7 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
     } else
 	pcnt = 2*cnt;
 
-    tp = galloc((pcnt+1)*sizeof(TPoint)); i = 0;
+    tp = malloc((pcnt+1)*sizeof(TPoint)); i = 0;
     if ( len==0 ) {
 	for ( i=0; i<=pcnt; ++i ) {
 	    tp[i].t = i/(pcnt);
@@ -2248,11 +2161,8 @@ return( false );	/* A point in the middle of a horizontal/vertical line */
     if ( prev->x==sp->me.x && next->x==sp->me.x ) {
 	if ( prev->y==sp->me.y && next->y==sp->me.y )
 return( false );		/* this should be caught above */
-#if 0	/* no matter what the control points look like this guy is either an */
+	/* no matter what the control points look like this guy is either an */
 	/*  an extremum or a point of inflection, so we don't need to check */
-	if (( prev->y<=sp->me.y && sp->me.y <= next->y ) ||
-		(prev->y>=sp->me.y && sp->me.y >= next->y ))
-#endif
 return( true );
     } else if ( prev->y==sp->me.y && next->y==sp->me.y ) {
 return( true );
@@ -2331,7 +2241,7 @@ static int SplinesRemoveBetweenMaybe(SplineChar *sc,
 return( false );
 
     tp = SplinesFigureTPsBetween(from,to,&tot);
-    tp2 = galloc((tot+1)*sizeof(TPoint));
+    tp2 = malloc((tot+1)*sizeof(TPoint));
     memcpy(tp2,tp,tot*sizeof(TPoint));
 
     if ( !(flags&sf_ignoreslopes) )
@@ -2427,10 +2337,6 @@ return( !sp->dontinterpolate && !sp->nonextcp && !sp->noprevcp &&
 static int _SplinesRemoveMidMaybe(SplineChar *sc,SplinePoint *mid, int flags,
 	bigreal err, bigreal lenmax2) {
     SplinePoint *from, *to;
-#if 0		/* See comment below */
-    BasePoint fncp, tpcp, fncp2, tpcp2;
-    int fpt, tpt;
-#endif
 
     if ( mid->prev==NULL || mid->next==NULL )
 return( false );
@@ -2515,24 +2421,6 @@ return( false );
 return( false );
 	}
     }
-
-#if 0		/* Used to try to enforce tangentness of a point */
-		/*  I now think it's better to change the point to a curve */
-    fncp2 = fncp = from->nextcp; tpcp2 = tpcp = to->prevcp;
-    fpt = from->pointtype; tpt = to->pointtype;
-
-    /* if from or to is a tangent then we can only remove mid if it's on the */
-    /*  line between them */
-    if (( from->pointtype==pt_tangent && !from->noprevcp) ||
-	    ( to->pointtype==pt_tangent && !to->nonextcp)) {
-	if ( from->me.x==to->me.x ) {
-	    if ( mid->me.x!=to->me.x )
-return( false );
-	} else if ( !RealNear((from->me.y-to->me.y)/(from->me.x-to->me.x),
-			    (mid->me.y-to->me.y)/(mid->me.x-to->me.x)) )
-return( false );
-    }
-#endif
 
     if ( mid->next->order2 ) {
 	if ( SPInterpolate(from) && SPInterpolate(to) && SPInterpolate(mid))
@@ -3128,9 +3016,7 @@ SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
     }
     SplineSetsRemoveAnnoyingExtrema(head,.3);
     SPLCatagorizePoints(head);
-#if 0
- printf( "nocnt=%d totcnt=%d curdif=%d incr=%d\n", nocnt_cnt, totcnt_cnt, curdiff_cnt, incr_cnt );
-#endif
+    /* printf( "nocnt=%d totcnt=%d curdif=%d incr=%d\n", nocnt_cnt, totcnt_cnt, curdiff_cnt, incr_cnt ); */ /* Debug!!! */
 return( head );
 }
 
@@ -3228,7 +3114,7 @@ return;
 return;
 
     changed = 0;
-    ci = gcalloc(contour_max,sizeof(struct contourinfo));
+    ci = calloc(contour_max,sizeof(struct contourinfo));
     for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
 	contour_cnt = 0;
 	for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
@@ -3396,7 +3282,7 @@ SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed) {
 			    start = spl2->next;
 			if ( spl->spiros && spl2->spiros ) {
 			    if ( spl->spiro_cnt+spl2->spiro_cnt > spl->spiro_max )
-				spl->spiros = grealloc(spl->spiros,
+				spl->spiros = realloc(spl->spiros,
 					(spl->spiro_max = spl->spiro_cnt+spl2->spiro_cnt)*sizeof(spiro_cp));
 			    memcpy(spl->spiros+spl->spiro_cnt-1,
 				    spl2->spiros+1, (spl2->spiro_cnt-1)*sizeof(spiro_cp));
@@ -3464,49 +3350,6 @@ SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head) {
 return( head );
 }
 
-#if 0
-Spline *SplineAddPointsOfInflection(Spline *s) {
-    bigreal ts[2];
-    int cnt;
-    SplinePoint *sp;
-
-    forever {
-	if ( s->knownlinear )
-return( s );
-	cnt = Spline2DFindPointsOfInflection(s,ts);
-	if ( cnt==0 )
-return( s );
-	if ( cnt==2 && ts[0]>ts[1] )
-	    ts[0] = ts[1];
-	sp = SplineBisect(s,ts[0]);
-	s = sp->next;
-	if ( cnt==1 )
-return( s );
-	/* As with add extrema, if we had more than one, loop back to look */
-	/*  at any others. The spline is different now, easier to compute the */
-	/*  new value than to fix up the old */
-    }
-}
-
-void SplineSetAddPointsOfInflection(SplineChar *sc, SplineSet *ss) {
-    Spline *s, *first;
-
-    first = NULL;
-    for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
-	s = SplineAddPointsOfInflection(s);
-	if ( first==NULL ) first = s;
-    }
-}
-
-void SplineCharAddPointsOfInflection(SplineChar *sc, SplineSet *head) {
-    SplineSet *ss;
-
-    for ( ss=head; ss!=NULL; ss=ss->next ) {
-	SplineSetAddPointsOfInflection(sc,ss,between_selected,sf);
-    }
-}
-#endif
-
 int SpIsExtremum(SplinePoint *sp) {
     BasePoint *ncp, *pcp;
     BasePoint *nncp, *ppcp;
@@ -3549,23 +3392,6 @@ return( true );
 
 return( false );
 }
-
-#if 0
-static void MoveCPIn(SplinePoint *sp,BasePoint *cp) {
-    bigreal xdiff, ydiff, off;
-
-    for ( off=1.0/128.; off<=1; off*=2.0 ) {
-	xdiff = off * (cp->x - sp->me.x);
-	ydiff = off * (cp->y - sp->me.y);
-	if ( (cp->x != sp->me.x + xdiff || xdiff==0 ) &&
-	     (cp->y != sp->me.y + ydiff || ydiff==0 )) {
-	    cp->x = sp->me.x + xdiff;
-	    cp->y = sp->me.y + ydiff;
-return;
-	}
-    }
-}
-#endif
 
 /* An extremum is very close to the end-point. So close that we don't want */
 /*  to add a new point. Instead try moving the control points around */
@@ -3714,7 +3540,7 @@ Spline *SplineAddExtrema(Spline *s,int always,real lenbound, real offsetbound,
     memset(rmfrom,0,sizeof(rmfrom));
     memset(rmto,0,sizeof(rmto));
 
-    forever {
+    for (;;) {
 	if ( s->knownlinear )
 return(s);
 	p = 0;
@@ -3941,88 +3767,11 @@ void SplineSetAddExtrema(SplineChar *sc, SplineSet *ss,enum ae_type between_sele
     }
 }
 
-#if 0
-void SplineSetAddSpiroExtrema(SplineChar *sc, SplineSet *ss,
-	enum ae_type between_selected, int emsize) {
-    int i, j, cnt, found, k;
-    Spline *s;
-    extended extrema[4];
-    BasePoint bp;
-    bigreal test;
-
-    if ( ss->spiro_cnt==0 ) {
-	SplineSetAddExtrema(sc,ss,between_selected,emsize);
-return;
-    }
-    s = ss->first->next;
-    for ( i=1; i<ss->spiro_cnt; ) {	/* For once I do mean spiro count, that loops back to the start for close contours */
-	if ( i<ss->spiro_cnt-1 ) {
-	    bp.x = ss->spiros[i].x;
-	    bp.y = ss->spiros[i].y;
-	} else if ( SPIRO_SPL_OPEN(ss))
-return;
-	else {
-	    bp.x = ss->spiros[0].x;
-	    bp.y = ss->spiros[0].y;
-	}
-	for ( ; s!=NULL ; ) {
-	    test = SplineNearPoint(s,&bp,.001);
-	    found = test!=-1;
-	    cnt = Spline2DFindExtrema(s,extrema);
-	    for ( j=0; j<cnt; ++j ) {
-		if ( extrema[j]==0 ) {
-		    if ( RealNear(s->from->me.x,ss->spiros[i-1].x) &&
-			    RealNear(s->from->me.y,ss->spiros[i-1].y) )
-	    continue;	/* There's already a spiro point for this extremum */
-		} else if ( extrema[j]==1.0 ) {
-		    if ( RealNear(s->to->me.x,bp.x) &&
-			    RealNear(s->to->me.y,bp.y) ) {
-			++i;
-			test=-1;
-	    break;
-		    }
-		}
-		if ( test!=-1 && extrema[j]>test ) {
-		    ++i;
-		    test = -1;
-		}
-		if ( ss->spiro_cnt>=ss->spiro_max )
-		    ss->spiros = grealloc(ss->spiros,(ss->spiro_max+=10)*sizeof(spiro_cp));
-		for ( k=ss->spiro_cnt; k>i; --k )
-		    ss->spiros[k] = ss->spiros[k-1];
-		ss->spiros[i].x = ((s->splines[0].a*extrema[j]+s->splines[0].b)*extrema[j]+s->splines[0].c)*extrema[j] + s->splines[0].d;
-		ss->spiros[i].y = ((s->splines[1].a*extrema[j]+s->splines[1].b)*extrema[j]+s->splines[1].c)*extrema[j] + s->splines[1].d;
-		ss->spiros[i].ty = SPIRO_G4;
-		++ss->spiro_cnt;
-		++i;
-	    }
-	    if ( !found && RealNear(s->to->me.x,bp.x) &&
-		    RealNear(s->to->me.y,bp.y) ) {
-		test = 1.0; found = true;
-	    }
-	    if ( test!=-1 )
-		++i;
-	    s = s->to->next;
-	    if ( s==ss->first->next )
-return;
-	    if ( found )
-	break;
-	}
-    }
-}
-#endif
-
 void SplineCharAddExtrema(SplineChar *sc, SplineSet *head,enum ae_type between_selected,int emsize) {
     SplineSet *ss;
 
-    for ( ss=head; ss!=NULL; ss=ss->next ) {
-#if 0
-	if ( sc->inspiro && hasspiro() )
-	    SplineSetAddSpiroExtrema(sc,ss,between_selected,emsize);
-	else
-#endif
+    for ( ss=head; ss!=NULL; ss=ss->next )
 	    SplineSetAddExtrema(sc,ss,between_selected,emsize);
-    }
 }
 
 char *GetNextUntitledName(void) {
@@ -4038,7 +3787,7 @@ SplineFont *SplineFontEmpty(void) {
     time_t now;
     SplineFont *sf;
 
-    sf = gcalloc(1,sizeof(SplineFont));
+    sf = calloc(1,sizeof(SplineFont));
     sf->pfminfo.fstype = -1;
     sf->top_enc = -1;
     sf->macstyle = -1;
@@ -4062,7 +3811,7 @@ SplineFont *SplineFontEmpty(void) {
     sf->creationtime = sf->modificationtime = now;
 
     sf->layer_cnt = 2;
-    sf->layers = gcalloc(2,sizeof(LayerInfo));
+    sf->layers = calloc(2,sizeof(LayerInfo));
     sf->layers[0].name = copy(_("Back"));
     sf->layers[0].background = true;
     sf->layers[1].name = copy(_("Fore"));
@@ -4094,7 +3843,7 @@ SplineFont *SplineFontBlank(int charcnt) {
 	sprintf( buffer, "Copyright (c) %d, Anonymous", tm->tm_year+1900 );
     sf->copyright = copy(buffer);
     if ( xuid!=NULL ) {
-	sf->xuid = galloc(strlen(xuid)+20);
+	sf->xuid = malloc(strlen(xuid)+20);
 	sprintf(sf->xuid,"[%s %d]", xuid, (rand()&0xffffff));
     }
     sprintf( buffer, "%d-%d-%d: Created with FontForge (http://fontforge.org)", tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday );
@@ -4104,7 +3853,7 @@ SplineFont *SplineFontBlank(int charcnt) {
     sf->upos = -rint(new_em_size*.1); sf->uwidth = rint(new_em_size*.05);		/* defaults for cff */
     sf->glyphcnt = 0;
     sf->glyphmax = charcnt;
-    sf->glyphs = gcalloc(charcnt,sizeof(SplineChar *));
+    sf->glyphs = calloc(charcnt,sizeof(SplineChar *));
     sf->pfminfo.fstype = -1;
     sf->use_typo_metrics = true;
 return( sf );
@@ -4145,7 +3894,7 @@ return;
 	val = (val+1)&0xffffff;
     }
 
-    new = galloc(pt-sf->xuid+12);
+    new = malloc(pt-sf->xuid+12);
     strncpy(new,sf->xuid,pt-sf->xuid);
     npt = new + (pt-sf->xuid);
     if ( npt==new ) *npt++ = '[';
@@ -5050,8 +4799,8 @@ SplineSet *SplineSetsCorrect(SplineSet *base,int *changed) {
 /* Give up if we are given unreasonable values (ie. if rounding errors might screw us up) */
     if ( es.mmin<1e5 && es.mmax>-1e5 && es.omin<1e5 && es.omax>-1e5 ) {
 	es.cnt = (int) (es.mmax-es.mmin) + 1;
-	es.edges = gcalloc(es.cnt,sizeof(Edge *));
-	es.interesting = gcalloc(es.cnt,sizeof(char));
+	es.edges = calloc(es.cnt,sizeof(Edge *));
+	es.interesting = calloc(es.cnt,sizeof(char));
 	es.sc = NULL;
 	es.major = 1; es.other = 0;
 	FindEdgesSplineSet(base,&es,false);
@@ -5280,54 +5029,6 @@ return( false );
 
 return( -1 );
 }
-
-#if 0
-void SFFigureGrid(SplineFont *sf) {
-    /* Look for any horizontal/vertical lines in the grid splineset */
-    int hsnaps[40], hcnt=0, vsnaps[40], vcnt=0, i;
-    SplineSet *ss;
-    Spline *s, *first;
-
-    for ( ss = sf->gridsplines; ss!=NULL; ss=ss->next ) {
-	first = NULL;
-	for ( s=ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
-	    if ( s->knownlinear ) {
-		if ( s->from->me.x==s->to->me.x && hcnt<40 )
-		    hsnaps[hcnt++] = s->from->me.x;
-		if ( s->from->me.y==s->to->me.y && vcnt<40 )
-		    vsnaps[vcnt++] = s->from->me.y;
-	    }
-	    if ( first==NULL ) first = s;
-	}
-    }
-
-    if ( sf->hsnaps!=NULL ) {
-	for ( i=0; i<hcnt && sf->hsnaps[i]==hsnaps[i]; ++i );
-	if ( i!=hcnt || sf->hsnaps[i]!=0x80000000 ) {
-	    free( sf->hsnaps );
-	    sf->hsnaps = NULL;
-	}
-    }
-    if ( sf->vsnaps!=NULL ) {
-	for ( i=0; i<vcnt && sf->vsnaps[i]==vsnaps[i]; ++i );
-	if ( i!=vcnt || sf->vsnaps[i]!=0x80000000 ) {
-	    free( sf->vsnaps );
-	    sf->vsnaps = NULL;
-	}
-    }
-
-    if ( hcnt!=0 && sf->hsnaps==NULL ) {
-	sf->hsnaps = galloc((hcnt+1)*sizeof(int));
-	memcpy(sf->hsnaps,hsnaps,hcnt*sizeof(int));
-	sf->hsnaps[hcnt] = 0x80000000;
-    }
-    if ( vcnt!=0 && sf->vsnaps==NULL ) {
-	sf->vsnaps = galloc((vcnt+1)*sizeof(int));
-	memcpy(sf->vsnaps,vsnaps,vcnt*sizeof(int));
-	sf->vsnaps[vcnt] = 0x80000000;
-    }
-}
-#endif
 
 /* Since this function now deals with 4 arbitrarily selected points, */
 /* it has to try to combine them by different ways in order to see */

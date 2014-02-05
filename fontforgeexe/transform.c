@@ -219,11 +219,6 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 	    }
 	    if ( err )
 return(true);
-#if 0
- printf( "(%g,%g,%g,%g,%g,%g)*(%g,%g,%g,%g,%g,%g) = ",
-     trans[0], trans[1], trans[2], trans[3], trans[4], trans[5],
-     transform[0], transform[1], transform[2], transform[3], transform[4], transform[5]);
-#endif
 	    t[0] = transform[0]*trans[0] +
 			transform[1]*trans[2];
 	    t[1] = transform[0]*trans[1] +
@@ -239,10 +234,6 @@ return(true);
 			transform[5]*trans[3] +
 			trans[5];
 	    memcpy(transform,t,sizeof(t));
-#if 0
- printf( "(%g,%g,%g,%g,%g,%g)\n",
-     transform[0], transform[1], transform[2], transform[3], transform[4], transform[5]);
-#endif
 	}
 	bvts[bvpos++].func = bvt_none;		/* Done */
 	for ( i=0; i<6; ++i )

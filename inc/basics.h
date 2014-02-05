@@ -40,8 +40,6 @@
 #define true 1
 #define false 0
 
-#define forever for (;;)
-
 typedef int bool;
 typedef int32_t		int32;
 typedef uint32_t	uint32;
@@ -75,20 +73,7 @@ typedef uint32 unichar_t;
 #define TRACE(...)
 #endif
 
-#ifdef USE_OUR_MEMORY
-extern void *galloc(long size);
-extern void *gcalloc(int cnt, long size);
-extern void *grealloc(void *,long size);
-extern void gfree(void *);
-#else
-#define galloc malloc
-#define gcalloc calloc
-#define grealloc realloc
-#define gfree free
-#endif /* USE_OUR_MEMORY */
 extern void NoMoreMemMessage(void);
-
-extern void galloc_set_trap(void (*)(void));
 
 static inline int imin(int a, int b)
 {
@@ -103,4 +88,3 @@ static inline int imax(int a, int b)
 #define IS_IN_ORDER3( a, b, c )   ( ((a)<=(b)) && ((b)<=(c)) )
 
 #endif
-

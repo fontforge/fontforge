@@ -196,13 +196,6 @@ static int mytempnam(char *buffer) {
 	strcpy(buffer,P_tmpdir);
     strcat(buffer,"/PfaEdXXXXXX");
     fd = g_mkstemp(buffer);
-#if 0
-    old = copy(buffer);
-    strcat(buffer,".bmp");
-    if ( rename(old,buffer)==-1 )
-	strcpy(buffer,old);
-    free(old);
-#endif
 return( fd );
 }
 
@@ -279,7 +272,7 @@ void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
 	else
 	    bgcol = 0xffffff;
 
-	command = galloc(32768);
+	command = malloc(32768);
 	cmd = add_arg(command, prog);
 	cmd = add_arg(cmd, " ");
 	if(args){
@@ -299,7 +292,7 @@ void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
 	cmd = add_arg(cmd, "\"");
 	/*fprintf(stdout, "---EXEC---\n%s\n----------\n", command);fflush(stdout);*/
 	system(command);
-	gfree(command);
+	free(command);
 
 	ps = fopen(tempname_out, "r");
 	if(ps){
@@ -475,7 +468,7 @@ return( NULL );
 	    vector[cnt] = NULL;
 return( vector );
 	}
-	vector = galloc((cnt+1)*sizeof(char *));
+	vector = malloc((cnt+1)*sizeof(char *));
     }
 return( NULL );
 }
@@ -502,7 +495,7 @@ return( NULL );
 return( ret );
 	} else if ( len<=1 )
 return( NULL );
-	ret = rpt = galloc(len);
+	ret = rpt = malloc(len);
     }
 return( NULL );
 }
@@ -777,7 +770,7 @@ return( NULL );
 
     ac = 0;
     arglist[ac++] = FindMFName();
-    arglist[ac++] = galloc(strlen(mf_args)+strlen(filename)+20);
+    arglist[ac++] = malloc(strlen(mf_args)+strlen(filename)+20);
     arglist[ac] = NULL;
     strcpy(arglist[1],mf_args);
     strcat(arglist[1]," ");

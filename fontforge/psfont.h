@@ -69,38 +69,36 @@ struct private {
     struct pschars *subrs;	/* (optional, required if othersubrs is present) */
 			/* 0-2 part of Flex, 3 hint replacement, 4 and up for charstrings */
     int leniv;			/* (optional) must be 4 for old interpreters (number of rand chars at start of charstrings entries) */
-#if 0
-    int bluefuzz;		/* (optional) (expand bluezones by this much, def=1) */
-    real bluescale;		/* (optional) if the current pointsize in pixels is less than this value then do overshoot hinting */
-    int blueshift;		/* (optional) */
-    real bluevalues[14];	/* <=7 pairs of integers, first less than second, (may be empty) */
-			/* first pair is baseline overshoots, other pairs above baseline */
-    real expansionfactor;	/* (optional) only for languagegroup==1 (CJK) */
-    real familyblues[14];	/* (optional) bluevalues for family, can override local entry at small pointsizes */
-    real familyotherblues[10];/* (optional) otherblues for family */
-    unsigned int forcebold:1;	/* (optional) */
-    int languagegroup;		/* (optional) (0=>latin, greek, cyril, etc.), (1=>CJK)*/
-    int leniv;			/* (optional) must be 4 for old interpreters (number of rand chars at start of charstrings entries) */
-    char *minfeature;		/* obsolete, required must be {16 16} */
-    char *nd;			/* "noaccess def" (may also be named "|-") */
-    char *np;			/* "noaccess put" (may also be named "|") */
-    real otherblues[10];	/* (optional) descender blue zones */
-    struct pschars *othersubrs;	/* (optional) shouldn't contain user defined subs */
-    int password;		/* obsolete, required must be 5839 */
-    char *rd;			/* "{string currentfile exch readstring pop}" (may also be named "-|") */
-    unsigned int rndstemup:1;	/* (optional) obsolete, false if languagegroud==1 */
-    real stdhw[1];		/* (optional) dominant horizontal stem width */
-    real stdvw[1];		/* (optional) dominant vert */
-    real stemsnaph[12];	/* (optional) common h stem widths (at most 12, includes stdhw, sorted by increasing size) */
-    real stemsnapv[12];	/* (optional) common v stem widths*/
-    struct pschars *subrs;	/* (optional, required if othersubrs is present) */
-			/* 0-2 part of Flex, 3 hint replacement, 4 and up for charstrings */
-    int uniqueid;		/* (optional) seems same as fontdict entry. why's it here too? what of XUID? */
-/* CID entries */
-    int subrmapoffset;		/* Offset to the start of this font's subr strings map */
-    int sdbytes;		/* bytes in each pointer in the map */
-    int subrcnt;		/* number of subroutines, number of pointers-1 in the map */
-#endif
+/*     int bluefuzz;		/\* (optional) (expand bluezones by this much, def=1) *\/ */
+/*     real bluescale;		/\* (optional) if the current pointsize in pixels is less than this value then do overshoot hinting *\/ */
+/*     int blueshift;		/\* (optional) *\/ */
+/*     real bluevalues[14];	/\* <=7 pairs of integers, first less than second, (may be empty) *\/ */
+/* 			/\* first pair is baseline overshoots, other pairs above baseline *\/ */
+/*     real expansionfactor;	/\* (optional) only for languagegroup==1 (CJK) *\/ */
+/*     real familyblues[14];	/\* (optional) bluevalues for family, can override local entry at small pointsizes *\/ */
+/*     real familyotherblues[10];/\* (optional) otherblues for family *\/ */
+/*     unsigned int forcebold:1;	/\* (optional) *\/ */
+/*     int languagegroup;		/\* (optional) (0=>latin, greek, cyril, etc.), (1=>CJK)*\/ */
+/*     int leniv;			/\* (optional) must be 4 for old interpreters (number of rand chars at start of charstrings entries) *\/ */
+/*     char *minfeature;		/\* obsolete, required must be {16 16} *\/ */
+/*     char *nd;			/\* "noaccess def" (may also be named "|-") *\/ */
+/*     char *np;			/\* "noaccess put" (may also be named "|") *\/ */
+/*     real otherblues[10];	/\* (optional) descender blue zones *\/ */
+/*     struct pschars *othersubrs;	/\* (optional) shouldn't contain user defined subs *\/ */
+/*     int password;		/\* obsolete, required must be 5839 *\/ */
+/*     char *rd;			/\* "{string currentfile exch readstring pop}" (may also be named "-|") *\/ */
+/*     unsigned int rndstemup:1;	/\* (optional) obsolete, false if languagegroud==1 *\/ */
+/*     real stdhw[1];		/\* (optional) dominant horizontal stem width *\/ */
+/*     real stdvw[1];		/\* (optional) dominant vert *\/ */
+/*     real stemsnaph[12];	/\* (optional) common h stem widths (at most 12, includes stdhw, sorted by increasing size) *\/ */
+/*     real stemsnapv[12];	/\* (optional) common v stem widths*\/ */
+/*     struct pschars *subrs;	/\* (optional, required if othersubrs is present) *\/ */
+/* 			/\* 0-2 part of Flex, 3 hint replacement, 4 and up for charstrings *\/ */
+/*     int uniqueid;		/\* (optional) seems same as fontdict entry. why's it here too? what of XUID? *\/ */
+/* /\* CID entries *\/ */
+/*     int subrmapoffset;		/\* Offset to the start of this font's subr strings map *\/ */
+/*     int sdbytes;		/\* bytes in each pointer in the map *\/ */
+/*     int subrcnt;		/\* number of subroutines, number of pointers-1 in the map *\/ */
 };
 
 typedef struct fontdict {
@@ -151,13 +149,8 @@ typedef struct fontdict {
     char *ndv;
     struct psdict *blendprivate;
     struct psdict *blendfontinfo;
-#ifdef _HAS_LONGLONG
     long long creationtime;		/* seconds since 1970 */
     long long modificationtime;
-#else
-    long creationtime;
-    long modificationtime;
-#endif
 } FontDict;
 
 struct fddata {

@@ -270,7 +270,7 @@ static void SplashLayout() {
 }
 
 void DelayEvent(void (*func)(void *), void *data) {
-    struct delayed_event *info = gcalloc(1,sizeof(struct delayed_event));
+    struct delayed_event *info = calloc(1,sizeof(struct delayed_event));
 
     info->data = data;
     info->func = func;
@@ -509,12 +509,8 @@ static  OSErr install_apple_event_handlers(void) {
  /* some debugging code, for now */
  if ( getenv("HOME")!=NULL ) {
   char buffer[1024];
-#ifdef __VMS
-    sprintf( buffer, "%s/_FontForge-LogFile.txt", getenv("HOME"));
-#else
-    sprintf( buffer, "%s/.FontForge-LogFile.txt", getenv("HOME"));
-#endif
-    logfile = fopen("/tmp/LogFile.txt","w");
+  sprintf( buffer, "%s/.FontForge-LogFile.txt", getenv("HOME"));
+  logfile = fopen("/tmp/LogFile.txt","w");
  }
  if ( logfile==NULL )
   logfile = stderr;
@@ -860,14 +856,10 @@ int fontforge_main( int argc, char **argv ) {
 	/* Don't start X if we're just going to quit. */
 	/* if X exists, it isn't needed. If X doesn't exist it's wrong */
 	if ( !hasquit(argc,argv)) {
-#if 1
 	    /* This sequence is supposed to bring up an app without a window */
 	    /*  but X still opens an xterm */
 	    system( "osascript -e 'tell application \"X11\" to launch'" );
 	    system( "osascript -e 'tell application \"X11\" to activate'" );
-#else
-	    system( "open /Applications/Utilities/X11.app/" );
-#endif
 	}
 	setenv("DISPLAY",":0.0",0);
     } else if ( local_x==1 && *getenv("DISPLAY")!='/' && strcmp(getenv("DISPLAY"),":0.0")!=0 && strcmp(getenv("DISPLAY"),":0")!=0 )
@@ -1214,7 +1206,7 @@ exit( 0 );
 		GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
 	    if ( GFileIsDir(buffer) || (strstr(buffer,"://")!=NULL && buffer[strlen(buffer)-1]=='/')) {
 		char *fname;
-		fname = galloc(strlen(buffer)+strlen("/glyphs/contents.plist")+1);
+		fname = malloc(strlen(buffer)+strlen("/glyphs/contents.plist")+1);
 		strcpy(fname,buffer); strcat(fname,"/glyphs/contents.plist");
 		if ( GFileExists(fname)) {
 		    /* It's probably a Unified Font Object directory */

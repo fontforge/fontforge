@@ -4,6 +4,7 @@
 # Copyright (C) 2000-2012 by George Williams
 # Copyright (C) 2012 by Barry Schwartz
 # Copyright (C) 2013 by Ben Martin
+# Copyright (C) 2014 by Reuben Thomas <rrt@sc3d.org>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -93,7 +94,7 @@ AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
 #--------------------------------------------------------------------------
-# automake 1.12 requires AM_PROG_AR but automake 1.11 doesn't recognize it.
+# automake 1.12 requires AM_PROG_AR but automake < 1.11.2 doesn't recognize it.
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
 #--------------------------------------------------------------------------
@@ -177,6 +178,7 @@ AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CC_C99
 AM_PROG_CC_C_O
+gl_EARLY
 AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_GREP
@@ -375,50 +377,83 @@ FONTFORGE_CONFIG_FREETYPE_DEBUGGER
 #
 # Checks for header files.
 
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h ieeefp.h inttypes.h])
-AC_CHECK_HEADERS([langinfo.h libintl.h limits.h locale.h])
-AC_CHECK_HEADERS([memory.h netdb.h netinet/in.h pthread.h stddef.h stdint.h stdlib.h])
-AC_CHECK_HEADERS([string.h strings.h sys/ioctl.h sys/socket.h sys/time.h unistd.h wchar.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h ieeefp.h])
+AC_CHECK_HEADERS([langinfo.h libintl.h])
+AC_CHECK_HEADERS([memory.h netdb.h netinet/in.h pthread.h])
+AC_CHECK_HEADERS([strings.h sys/ioctl.h sys/socket.h sys/time.h unistd.h])
 if test x"${i_do_want_iconv}" = xyes; then
    AC_CHECK_HEADERS([iconv.h])
 fi
+gl_INIT
 
 #--------------------------------------------------------------------------
 #
 # Checks for typedefs, structures, and compiler characteristics.
 
 AC_C_BIGENDIAN
-AC_TYPE_INT16_T
-AC_TYPE_INT32_T
-AC_TYPE_INT8_T
 AC_TYPE_PID_T
-AC_TYPE_SIZE_T
-AC_TYPE_UINT16_T
-AC_TYPE_UINT32_T
-AC_TYPE_UINT8_T
-
-AC_TYPE_LONG_LONG_INT
-if test x"${ac_cv_type_long_long_int}" = xyes; then
-   AC_DEFINE([_HAS_LONGLONG],1,[Define if using 'long long int'.])
-fi
-
 AX_PTHREAD
 
 #--------------------------------------------------------------------------
 # Check to see if "this" compiler can use these flags, errors, or warnings.
 # Enable the flags that can be used and skip flags that are unknown.
+AC_ARG_ENABLE([gcc-warnings],
+  [AS_HELP_STRING([--enable-gcc-warnings],
+                  [turn on lots of GCC warnings (for developers)])],
+  [case $enableval in
+     yes|no) ;;
+     *)      AC_MSG_ERROR([bad value $enableval for gcc-warnings option]) ;;
+   esac
+   gl_gcc_warnings=$enableval],
+  [gl_gcc_warnings=no]
+)
+
+if test "$gl_gcc_warnings" = yes; then
+  gl_WARN_ADD([-Werror], [WERROR_CFLAGS])
+
+  # Set up the list of undesired warnings.
+  nw=
+  nw="$nw -Wundef"            # All compiler preprocessors support #if UNDEF
+  nw="$nw -Wtraditional"      # All compilers nowadays support ANSI C
+  nw="$nw -Wstrict-overflow"  # Use a lower level (see below).
+  nw="$nw -Wconversion"       # These warnings usually don’t point to mistakes.
+  nw="$nw -Wsign-conversion"  # Likewise.
+  nw="$nw -Wtraditional-conversion" # Don't care.
+  nw="$nw -Wpadded"           # Don't care.
+  nw="$nw -Wc++-compat"       # Don't care.
+  nw="$nw -Woverlength-strings" # Don't care.
+  nw="$nw -Wmissing-format-attribute" # Don't care.
+  nw="$nw -Wshadow"           # Don't care.
+  nw="$nw -Wunreachable-code" # Seems buggy.
+  nw="$nw -Wsystem-headers"   # glibc headers fail as of glibc 2.17, gcc 4.8
+  nw="$nw -Wsuggest-attribute=format" # glibc headers fail as of glibc 2.17, gcc 4.8
+  nw="$nw -Wstrict-aliasing"  # -Sep2012, There's a bug in <py3 with Py_True/False that will propagate with GCC's "strict-aliasing" rules.
+  nw="$nw -Wall"
+  nw="$nw -Wunused-macros"    # those macros might come in handy later
+
+  gl_MANYWARN_ALL_GCC([warnings])
+
+  # Enable all GCC warnings not in this list.
+  gl_MANYWARN_COMPLEMENT([warnings], [$warnings], [$nw])
+  for w in $warnings; do
+    gl_WARN_ADD([$w])
+  done
+
+  # Add an extra warning
+  gl_WARN_ADD([-Wstrict-overflow=1])
+  # Add some more safety measures
+  gl_WARN_ADD([-D_FORTIFY_SOURCE=2])
+  gl_WARN_ADD([-fmudflap])
+
+  # When compiling with GCC, prefer -isystem to -I when including system
+  # include files, to avoid generating useless diagnostics for the files.
+  ISYSTEM='-isystem '
+else
+  ISYSTEM='-I'
+fi
+AC_SUBST([ISYSTEM])
+
 AC_LANG_PUSH([C]) dnl NOTE: configure.ac - try not to push/pop too often
-AC_SUBST([WARNING_CFLAGS],[])
-FFW_FLAGS="-Wunused -Wreturn-type -Wparentheses -Wformat -Wchar-subscripts \
- -Wno-unused-but-set-variable -Wno-unused-result -Wcast-align -Wclobbered  \
- -Werror=missing-prototypes -Werror=pointer-arith -Werror=implicit"
-dnl Sep2012, There's a bug in <py3 with Py_True/False that will propagate
-dnl with GCC's "strict-aliasing" rules. -Wstrict-aliasing
-
-for arg in ${FFW_FLAGS}; do
-   AX_CHECK_COMPILE_FLAG([$arg],[WARNING_CFLAGS+=" $arg"])
-done
-
 # Create LDFLAGS for libraries. Currently used to pass '-no-undefined' to libtool.
 my_lib_ldflags=""
 dnl add --no-undefined if supported. Based on information seen here:
@@ -430,6 +465,8 @@ case $host in
    dnl avoid problems, use -Wl,-z,defs only for those platform not behaving
    dnl this way.
    *-freebsd* | *-openbsd*)
+      ;;
+   *-apple-darwin*)
       ;;
    *) saved_LDFLAGS=$LDFLAGS
       AC_MSG_CHECKING([whether the linker supports --no-undefined])
@@ -459,24 +496,18 @@ m4_define([AN_FUNCTION], [m4_if([$1], [realloc], [],
 #--------------------------------------------------------------------------
 # Checks for library functions.
 
-AC_FUNC_ERROR_AT_LINE
 AC_FUNC_FORK
 AC_FUNC_MKTIME
 AC_FUNC_MMAP
 if test x"${ac_cv_func_mmap_fixed_mapped}" != xyes; then
    AC_DEFINE([_NO_MMAP],1,[Define if not using mmap.])
 fi
-AC_FUNC_STRCOLL
-AC_FUNC_STRTOD
-AC_CHECK_FUNCS([alarm atexit dup2 endpwent floor])
+AC_CHECK_FUNCS([alarm dup2 endpwent])
 AC_CHECK_FUNCS([getcwd gethostbyname gettimeofday])
-AC_CHECK_FUNCS([localeconv memmove memset mkdir munmap])
-AC_CHECK_FUNCS([nl_langinfo pow putenv rint rmdir])
-AC_CHECK_FUNCS([select setenv setlocale snprintf socket sqrt])
-AC_CHECK_FUNCS([strcasecmp strchr strdup strerror])
-AC_CHECK_FUNCS([strncasecmp strpbrk strrchr strstr])
-AC_CHECK_FUNCS([strtol strtoul tzset uname])
-AC_CHECK_FUNC([snprintf],[:],[AC_DEFINE([_NO_SNPRINTF],1,[Define if not using snprintf.])])
+AC_CHECK_FUNCS([mkdir munmap])
+AC_CHECK_FUNCS([nl_langinfo putenv rmdir])
+AC_CHECK_FUNCS([select setenv socket])
+AC_CHECK_FUNCS([tzset uname])
 AC_CHECK_FUNC([tzset],[:],[AC_DEFINE([_NO_TZSET],1,[Define if not using tzset.])])
 
 #--------------------------------------------------------------------------
@@ -562,13 +593,48 @@ if $( $pythonbinary -c 'import IPython' ); then
 fi
 AM_CONDITIONAL([HAVE_IPYTHON],[test x"${have_ipython}" = xyes])
 
+#--------------------------------------------------------------------------
+#--------------------------------------------------------------------------
+#--------------------------------------------------------------------------
 
+AC_ARG_ENABLE([python-even],
+        [AS_HELP_STRING([--enable-python-even],
+                [enable a menu entry for Even])],
+        [have_python_even=yes])
+AM_CONDITIONAL([HAVE_PYTHON_EVEN],[test x"${have_python_even}" = xyes])
+
+#--------------------------------------------------------------------------
+#--------------------------------------------------------------------------
+#--------------------------------------------------------------------------
+# We do not use GTK2 unless explicitly told it is OK to try to do that
+#
+AC_ARG_ENABLE([gtk2-use],
+        [AS_HELP_STRING([--enable-gtk2-use],
+                [Try to detect and use gtk2])],
+        [have_gtk2_use=yes])
+if test x$have_gtk2_use = xyes ; then
+    PKG_CHECK_MODULES([GTK2],[gtk+-2.0],
+	[
+		fontforge_can_use_gtk=yes
+		AC_DEFINE(FONTFORGE_CAN_USE_GTK,[],[FontForge is able to use some GTK2 functions if it wants])
+		echo "building functionality that relies on gtk2..."
+	],
+	[
+		fontforge_can_use_gtk=no
+		echo "NOT building functionality that relies on gtk2..."
+	])
+fi
+AM_CONDITIONAL([FONTFORGE_CAN_USE_GTK],[test x"${fontforge_can_use_gtk}" = xyes])
+
+#--------------------------------------------------------------------------
+#--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
 # Output commands - Create FontForge Portable Makefiles
 
 AC_CONFIG_FILES([
 Makefile
 inc/Makefile
+lib/Makefile
 libltdl/Makefile
 Unicode/Makefile
 gutils/Makefile

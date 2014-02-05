@@ -24,9 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifdef __VMS
-#include <vms_x_fix.h>
-#endif
 
 #if defined(__MINGW32__)
 #include <winsock2.h>
@@ -79,7 +76,7 @@ static void GXDrawClearSelData(GXDisplay *gd,enum selnames sel);
 /* ************************************************************************** */
 
 static void _GXDraw_InitFonts(GXDisplay *gxdisplay) {
-    FState *fs = gcalloc(1,sizeof(FState));
+    FState *fs = calloc(1,sizeof(FState));
 
     /* In inches, because that's how fonts are measured */
     gxdisplay->fontstate = fs;
@@ -96,25 +93,6 @@ static void _GXDraw_InitFonts(GXDisplay *gxdisplay) {
 #define RND_BY_0x11(x) (((x+8)*241)>>12)
 
 static void _GXDraw_FindVisual(GXDisplay *gdisp) {
-#if 0
-    Display *display = gdisp->display;
-    ScreenFormat *sf;
-    int i;
-
-    /* I can't get the code to work on Irix */
-    gdisp->visual = DefaultVisual(display,gdisp->screen);
-    gdisp->depth = DefaultDepth(display,gdisp->screen);
-    gdisp->bitmap_pad = gdisp->pixel_size = gdisp->depth;
-    for ( i=0; i<((_XPrivDisplay) display)->nformats; ++i ) {
-	sf = &((_XPrivDisplay) display)->pixmap_format[i];
-	if ( sf->depth == gdisp->depth ) {
-	    gdisp->pixel_size = sf->bits_per_pixel;
-	    gdisp->bitmap_pad = sf->scanline_pad;
-    break;
-	}
-    }
-    gdisp->cmap = DefaultColormap(display,gdisp->screen);
-#else
     /* In the old days before 24bit color was common, a 32 bit visual was */
     /* the standard way to go (extra 8 bits were ignored). Then came the */
     /* composite extension which supported alpha channels in images, and */
@@ -210,17 +188,6 @@ static void _GXDraw_FindVisual(GXDisplay *gdisp) {
 	/* I want not only the number of meaningful bits in a pixel (which is the */
 	/*  depth) but also the number of bits in pixel when writing an image */
 	/* I wish I knew how to do this without diving into hidden X structures */
-#ifndef __VMS
-#ifndef XlibSpecificationRelease
-	/* X11R4 (which doesn't define XlibSpecificationRelease) doesn't */
-	/*  define _XPrivDisplay, either. The information just lives in the */
-	/*  display structure */
-# define _XPrivDisplay struct _XDisplay *
-#elif XlibSpecificationRelease==5
-	/* X11R5 doesn't define it either */ /* Not sure. Should it be struct Display * ? */
-# define _XPrivDisplay struct _XDisplay *
-#endif
-#endif
 	gdisp->bitmap_pad = gdisp->pixel_size = gdisp->depth;
 	for ( i=0; i<((_XPrivDisplay) display)->nformats; ++i ) {
 	    sf = &((_XPrivDisplay) display)->pixmap_format[i];
@@ -271,7 +238,6 @@ static void _GXDraw_FindVisual(GXDisplay *gdisp) {
 		AllocNone);
 	XInstallColormap(display,gdisp->cmap);
     }
-#endif
 }
 
 static int _GXDraw_AllocColors(GXDisplay *gdisp,XColor *x_colors) {
@@ -451,7 +417,7 @@ return( _GImage_GetIndexedPixel/*Precise*/(col, gdisp->cs.rev)->pixel );
 
 /* ****************************** Error Handler ***************************** */
 
-static char *XProtocalCodes[] = {
+static char *XProtocolCodes[] = {
     "X_Undefined_0",
     "X_CreateWindow",
     "X_ChangeWindowAttributes",
@@ -589,19 +555,11 @@ static int myerrorhandler(Display *disp, XErrorEvent *err) {
     char buffer[200], *majorcode;
 
     if (err->request_code>0 && err->request_code<128)
-	majorcode = XProtocalCodes[err->request_code];
-#if 0		/* This varies. it is 146 on my machine, but not on everyone's */
-    else if ( err->request_code==146 )
-	majorcode = "XInputExtension";
-#endif
+	majorcode = XProtocolCodes[err->request_code];
     else
 	majorcode = "";
     if ( err->request_code==45 && lastfontrequest!=NULL )
 	fprintf( stderr, "Error attempting to load font:\n  %s\nThe X Server clained the font existed, but when I asked for it,\nI got this error instead:\n\n", lastfontrequest );
-#if 0		/* This varies. it is 146 on my machine, but not on everyone's */
-    else if ( err->request_code==146 && err->minor_code==3 )
-	fprintf( stderr, "Error connecting to wacom tablet. Sometimes linux fails to configure\n it properly. Try typing\n$ su\n# insmod wacom\n" );
-#endif
     XGetErrorText(disp,err->error_code,buffer,sizeof(buffer));
     fprintf( stderr, "X Error of failed request: %s\n", buffer );
     fprintf( stderr, "  Major opcode of failed request:  %d.%d (%s)\n",
@@ -755,7 +713,7 @@ return( ((GXDisplay *) gdisp)->display );
 }
 
 static GGC *_GXDraw_NewGGC() {
-    GGC *ggc = gcalloc(1,sizeof(GGC));
+    GGC *ggc = calloc(1,sizeof(GGC));
     ggc->clip.width = ggc->clip.height = 0x7fff;
     ggc->fg = 0;
     ggc->bg = 0xffffff;
@@ -793,8 +751,8 @@ static char*  u2acp_copy(const unichar_t* ustr){
     if(ustr){
 	int wlen = u_strlen(ustr);
 	if(wlen > 0){
-	    WCHAR* wcs = galloc(sizeof(WCHAR) * (wlen));
-	    char*  mbs = galloc(sizeof(char) * (wlen*3));
+	    WCHAR* wcs = malloc(sizeof(WCHAR) * (wlen));
+	    char*  mbs = malloc(sizeof(char) * (wlen*3));
 	    if(wcs && mbs){
 		WCHAR* w = wcs;
 		const unichar_t* u = ustr;
@@ -804,11 +762,11 @@ static char*  u2acp_copy(const unichar_t* ustr){
 		if(alen<0) alen=0;
 		mbs[alen]='\0';
 
-		gfree(wcs);
+		free(wcs);
 		return mbs;
 	    }
-	    if(wcs) gfree(wcs);
-	    if(mbs) gfree(mbs);
+	    free(wcs);
+	    free(mbs);
 	}
     }
     return NULL;
@@ -842,7 +800,7 @@ static void  mingw_set_wm_name_utf8(Display* display, Window window, const char*
 	unichar_t* uni = utf82u_copy(utf8);
 	if(uni){
 	    mingw_set_wm_name(display, window, uni);
-	    gfree(uni);
+	    free(uni);
 	}
     }
 }
@@ -852,7 +810,7 @@ static void  mingw_set_wm_icon_name_utf8(Display* display, Window window, const 
 	unichar_t* uni = utf82u_copy(utf8);
 	if(uni){
 	    mingw_set_wm_icon_name(display, window, uni);
-	    gfree(uni);
+	    free(uni);
 	}
     }
 }
@@ -873,9 +831,9 @@ static unichar_t*  mingw_get_wm_name(Display* display, Window window){
 		alen += strlen(list[i]);
 	    }
 
-	    mbs  = galloc(sizeof(char)      * (alen+4));
-	    wcs  = galloc(sizeof(WCHAR)     * (alen+4));
-	    ustr = galloc(sizeof(unichar_t) * (alen+4));
+	    mbs  = malloc(sizeof(char)      * (alen+4));
+	    wcs  = malloc(sizeof(WCHAR)     * (alen+4));
+	    ustr = malloc(sizeof(unichar_t) * (alen+4));
 
 	    if(mbs && wcs && ustr){
 		m = mbs;
@@ -896,9 +854,9 @@ static unichar_t*  mingw_get_wm_name(Display* display, Window window){
 		result = ustr;
 		ustr = 0;
 	    }
-	    if(ustr) gfree(ustr);
-	    if(wcs)  gfree(wcs);
-	    if(mbs)  gfree(mbs);
+	    free(ustr);
+	    free(wcs);
+	    free(mbs);
 	    XFreeStringList(list);
 	}
 	XFree(prop.value);
@@ -910,7 +868,7 @@ static char*  mingw_get_wm_name_utf8(Display* display, Window window){
     unichar_t* uni = mingw_get_wm_name(display, window);
     if(uni){
 	char* utf8 = u2utf8_copy(uni);
-	gfree(uni);
+	free(uni);
 	return utf8;
     }
     return NULL;
@@ -944,7 +902,7 @@ static GWindow _GXDraw_CreateWindow(GXDisplay *gdisp, GXWindow gw, GRect *pos,
 	int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
     Window parent;
     Display *display = gdisp->display;
-    GXWindow nw = gcalloc(1,sizeof(struct gxwindow));
+    GXWindow nw = calloc(1,sizeof(struct gxwindow));
     XSetWindowAttributes attrs;
     static GWindowAttrs temp = GWINDOWATTRS_EMPTY;
     unsigned long wmask = 0;
@@ -959,7 +917,7 @@ static GWindow _GXDraw_CreateWindow(GXDisplay *gdisp, GXWindow gw, GRect *pos,
 return( NULL );
     nw->ggc = _GXDraw_NewGGC();
     if ( nw->ggc==NULL ) {
-	gfree(nw);
+	free(nw);
 return( NULL );
     }
     nw->display = gdisp;
@@ -1081,7 +1039,7 @@ return( NULL );
 	    mingw_set_wm_name(display, nw->w, wattrs->window_title);
 	    #else
 	    XmbSetWMProperties(display,nw->w,(pt = u2def_copy(wattrs->window_title)),NULL,NULL,0,NULL,NULL,NULL);
-	    gfree(pt);
+	    free(pt);
 	    #endif
 	}
 	if ( (wattrs->mask&wam_ititle) && wattrs->icon_title!=NULL ) {
@@ -1089,7 +1047,7 @@ return( NULL );
 	    mingw_set_wm_icon_name(display, nw->w, wattrs->icon_title);
 	    #else
 	    XmbSetWMProperties(display,nw->w,NULL,(pt = u2def_copy(wattrs->icon_title)),NULL,0,NULL,NULL,NULL);
-	    gfree(pt);
+	    free(pt);
 	    #endif
 	}
 	if ( (wattrs->mask&wam_utf8_wtitle) && wattrs->utf8_window_title!=NULL ) {
@@ -1098,7 +1056,7 @@ return( NULL );
 	    #else
 	    unichar_t *tit = utf82u_copy(wattrs->utf8_window_title);
 	    XmbSetWMProperties(display,nw->w,(pt = u2def_copy(tit)),NULL,NULL,0,NULL,NULL,NULL);
-	    gfree(pt); gfree(tit);
+	    free(pt); free(tit);
 	    #endif
 	}
 	if ( (wattrs->mask&wam_utf8_ititle) && wattrs->utf8_icon_title!=NULL ) {
@@ -1107,7 +1065,7 @@ return( NULL );
 	    #else
 	    unichar_t *tit = utf82u_copy(wattrs->utf8_icon_title);
 	    XmbSetWMProperties(display,nw->w,NULL,(pt = u2def_copy(tit)),NULL,0,NULL,NULL,NULL);
-	    gfree(pt); gfree(tit);
+	    free(pt); free(tit);
 	    #endif
 	}
 	s_h.x = pos->x; s_h.y = pos->y;
@@ -1206,7 +1164,7 @@ static void GXDrawSetZoom(GWindow w, GRect *pos, enum gzoom_flags flags) {
 }
 
 static GWindow GXDrawCreatePixmap(GDisplay *gdisp, uint16 width, uint16 height) {
-    GXWindow gw = gcalloc(1,sizeof(struct gxwindow));
+    GXWindow gw = calloc(1,sizeof(struct gxwindow));
     int wamcairo = false;
 
     if ( gw==NULL )
@@ -1214,7 +1172,7 @@ return( NULL );
     gw->ggc = _GXDraw_NewGGC();
     gw->ggc->bg = ((GXDisplay *) gdisp)->def_background;
     if ( gw->ggc==NULL ) {
-	gfree(gw);
+	free(gw);
 return( NULL );
     }
     if ( width&0x8000 ) {
@@ -1246,13 +1204,13 @@ return( (GWindow) gw );
 
 static GWindow GXDrawCreateBitmap(GDisplay *disp, uint16 width, uint16 height, uint8 *data) {
     GXDisplay *gdisp = (GXDisplay *) disp;
-    GXWindow gw = gcalloc(1,sizeof(struct gxwindow));
+    GXWindow gw = calloc(1,sizeof(struct gxwindow));
 
     if ( gw==NULL )
 return( NULL );
     gw->ggc = _GXDraw_NewGGC();
     if ( gw->ggc==NULL ) {
-	gfree(gw);
+	free(gw);
 return( NULL );
     }
     gw->ggc->bitmap_col = true;
@@ -1303,8 +1261,8 @@ static void GXDrawDestroyWindow(GWindow w) {
 
     if ( gw->is_pixmap ) {
 	XFreePixmap(gw->display->display,gw->w);
-	gfree(gw->ggc);
-	gfree(gw);
+	free(gw->ggc);
+	free(gw);
     } else {
 	/*GTimerRemoveWindowTimers(gw);*/ /* Moved to _GXDraw_CleanUpWindow, not all windows are actively destroyed */
 	gw->is_dying = true;
@@ -1357,11 +1315,11 @@ static void _GXDraw_RemoveRedirects(GXDisplay *gdisp,GXWindow gw) {
 	struct inputRedirect *next=gdisp->input, *test;
 	if ( next->cur_dlg == (GWindow) gw ) {
 	    gdisp->input = next->prev;
-	    gfree(next);
+	    free(next);
 	} else for ( test=next->prev; test!=NULL; test=test->prev ) {
 	    if ( test->cur_dlg == (GWindow) gw ) {
 		next->prev = test->prev;
-		gfree( test );
+		free( test );
 	break;
 	    }
 	}
@@ -1402,9 +1360,9 @@ static void _GXDraw_CleanUpWindow( GWindow w ) {
 	free(gic);
     }
 
-    gfree(gw->ggc);
+    free(gw->ggc);
     memset(gw,'\0',sizeof(*gw));
-    gfree(gw);
+    free(gw);
 }
 
 static void GXDrawReparentWindow(GWindow child,GWindow newparent, int x,int y) {
@@ -1412,25 +1370,7 @@ static void GXDrawReparentWindow(GWindow child,GWindow newparent, int x,int y) {
     GXDisplay *gdisp = gchild->display;
     /* Gnome won't let me reparent a top level window */
     /* It only pays attention to override-redirect if the window hasn't been mapped */
-#if 0
-    int reset = false;
-    XSetWindowAttributes sattr;
-    XWindowAttributes attr;
-
-    if ( gchild->is_toplevel && (GXWindow) newparent!=gdisp->groot ) {
-	XGetWindowAttributes(gdisp->display,gchild->w,&attr);
-	reset = !attr.override_redirect;
-	sattr.override_redirect = true;
-	XChangeWindowAttributes(gdisp->display,gchild->w,CWOverrideRedirect,&sattr);
-    }
-#endif
     XReparentWindow(gdisp->display,gchild->w,gpar->w,x,y);
-#if 0
-    if ( reset ) {
-	sattr.override_redirect = true;
-	XChangeWindowAttributes(gdisp->display,gchild->w,CWOverrideRedirect,&sattr);
-    }
-#endif
 }
 
 static void GXDrawSetVisible(GWindow w, int visible) {
@@ -1442,7 +1382,7 @@ static void GXDrawSetVisible(GWindow w, int visible) {
 	XMapWindow(gdisp->display,gw->w);
 	if ( gw->restrict_input_to_me || gw->redirect_chars_to_me ||
 		gw->redirect_from!=NULL ) {
-	    struct inputRedirect *ir = gcalloc(1,sizeof(struct inputRedirect));
+	    struct inputRedirect *ir = calloc(1,sizeof(struct inputRedirect));
 	    if ( ir!=NULL ) {
 		ir->prev = gdisp->input;
 		gdisp->input = ir;
@@ -1637,7 +1577,7 @@ static void GXDrawSetWindowTitles(GWindow w, const unichar_t *title, const unich
     XmbSetWMProperties(display,gw->w,(tpt = u2def_copy(title)),
 			(ipt = u2def_copy(icontit)),
 			NULL,0,NULL,NULL,NULL);
-    gfree(ipt); gfree(tpt);
+    free(ipt); free(tpt);
 #endif
 }
 
@@ -1655,8 +1595,8 @@ static void GXDrawSetWindowTitles8(GWindow w, const char *title, const char *ico
     XmbSetWMProperties(display,gw->w,(tpt = u2def_copy(tit)),
 			(ipt = u2def_copy(itit)),
 			NULL,0,NULL,NULL,NULL);
-    gfree(tit); gfree(tpt);
-    gfree(itit); gfree(ipt);
+    free(tit); free(tpt);
+    free(itit); free(ipt);
 #endif
 }
 
@@ -1722,7 +1662,7 @@ static Window _GXDrawGetPointerWindow(GWindow w) {
     int x, y; unsigned int state;
 
     parent = gw->display->groot->w;
-    forever {
+    for (;;) {
 	child = None;
 	if ( !XQueryPointer(display,parent,&wjunk,&child,&junk,&junk,&x,&y,&state))
     break;
@@ -1796,7 +1736,7 @@ return( NULL );
     XFree(prop.value);
     for ( i=len=0; i<cnt; ++i )
 	len += strlen( propret[i]);
-    ret = galloc(len+1);
+    ret = malloc(len+1);
     for ( i=len=0; i<cnt; ++i ) {
 	strcpy(ret+len,propret[i]);
 	len += strlen( propret[i]);
@@ -2230,28 +2170,11 @@ static void GXDrawDrawElipse(GWindow gw, GRect *rect, Color col) {
 static void GXDrawDrawArc(GWindow gw, GRect *rect, int32 sangle, int32 tangle, Color col) {
     GXWindow gxw = (GXWindow) gw;
     GXDisplay *display = gxw->display;
-#if 0
-    int cx, cy;
-    double sa, ea;
-
-    cx = rect->x + (rect->width)/2;
-    cy = rect->y + (rect->height)/2;
-    sa = atan2((double) (sx-cx),(double) (sy-cy));
-    ea = atan2((double) (ex-cx),(double) (ey-cy));
-
-    gxw->ggc->fg = col;
-    GXDrawSetline(display,gxw->ggc);
-    XDrawArc(display->display,gxw->w,display->gcstate[w->ggc->bitmap_col].gc,rect->x,rect->y,
-	    rect->width,rect->height,
-	    (int) (sa*(360.*64./(2*3.1415926535897932))),
-	    (int) (ea*(360.*64./(2*3.1415926535897932))) );
-#else
     gxw->ggc->fg = col;
     GXDrawSetline(display,gxw->ggc);
     XDrawArc(display->display,gxw->w,display->gcstate[gxw->ggc->bitmap_col].gc,rect->x,rect->y,
 	    rect->width,rect->height,
 	    sangle,tangle );
-#endif
 }
 
 static void GXDrawFillElipse(GWindow gw, GRect *rect, Color col) {
@@ -2591,7 +2514,7 @@ static GIC *GXDrawCreateInputContext(GWindow w,enum gic_style def_style) {
     if ( gdisp->im==NULL )
 return( NULL );
 
-    gic = gcalloc(1,sizeof(struct gxinput_context));
+    gic = calloc(1,sizeof(struct gxinput_context));
     gic->w = w;
     gic->ploc.y = 20; gic->sloc.y = 40;
     listp = XVaCreateNestedList(0, XNFontSet, gdisp->def_im_fontset,
@@ -2701,9 +2624,7 @@ return;
 return;
 	rect = &temp;
     }
-#if 0		/* don't do it this way, flicker is noticeable */
-    XClearArea(display->display,gxw->w,rect->x,rect->y,rect->width,rect->height, true );
-#else
+    /* Don't simply XClearArea with exposures == True, flicker is noticeable */
     if ( doclear )
 	XClearArea(display->display,gxw->w,rect->x,rect->y,rect->width,rect->height, false );
     if ( gw->eh!=NULL ) {
@@ -2715,7 +2636,6 @@ return;
 	event.native_window = gw->native_window;
 	(gw->eh)(gw,&event);
     }
-#endif
 }
 
 static void GTimerSetNext(GTimer *timer,int32 time_from_now) {
@@ -2810,7 +2730,7 @@ static void GTimerReinstall(GXDisplay *gdisp,GTimer *timer) {
 
 static GTimer *GXDrawRequestTimer(GWindow w,int32 time_from_now,int32 frequency,
 	void *userdata) {
-    GTimer *timer = gcalloc(1,sizeof(GTimer));
+    GTimer *timer = calloc(1,sizeof(GTimer));
 
     GTimerSetNext(timer,time_from_now);
 
@@ -2855,7 +2775,7 @@ static void GXDrawSyncThread(GDisplay *gd, void (*func)(void *), void *data) {
 	for ( ttd=gdisp->xthread.things_to_do; ttd!=NULL &&
 		(ttd->func!=func || ttd->data!=data); ttd = ttd->next );
 	if ( ttd==NULL ) {
-	    ttd = galloc(sizeof(struct things_to_do));
+	    ttd = malloc(sizeof(struct things_to_do));
 	    if ( gdisp->xthread.things_to_do==NULL )
 		send(gdisp->xthread.send_sock," ",1,0);
 	    ttd->func = func;
@@ -2949,7 +2869,7 @@ static void GXDrawWaitForEvent(GXDisplay *gdisp) {
     int fd,ret;
     int idx = 0;
 
-    forever {
+    for (;;) {
 	gettimeofday(&tv,NULL);
 	GXDrawCheckPendingTimers(gdisp);
 
@@ -2980,6 +2900,7 @@ return;
 	    timeout = &offset;
 	}
 	fd = XConnectionNumber(display);
+//    printf("gxdraw.... x connection number:%d\n", fd );
 	FD_ZERO(&read); FD_ZERO(&write); FD_ZERO(&except);
 	FD_SET(fd,&read);
 	FD_SET(fd,&except);
@@ -3003,9 +2924,7 @@ return;
 	    fd = MAX( fd, cb->fd );
 	}
 	
-#ifndef __VMS
 	ret = select(fd+1,&read,&write,&except,timeout);
-#endif
 
 	for( idx = 0; idx < gdisp->fd_callbacks_last; ++idx )
 	{
@@ -3154,7 +3073,7 @@ return;
 				charbuf, sizeof(charbuf), &keysym, &status);
 		pt = charbuf;
 		if ( status==XBufferOverflow ) {
-		    pt = galloc(len+1);
+		    pt = malloc(len+1);
 		    len = Xutf8LookupString(((GXWindow) gw)->gic->ic,(XKeyPressedEvent*)&event,
 				    pt, len, &keysym, &status);
 		}
@@ -3797,7 +3716,7 @@ return( 0 );
 	gdisp->devicesinit = true;
 	if ( ndevs==0 )
 return( 0 );
-	gdisp->inputdevices = gcalloc(ndevs+1,sizeof(struct inputdevices));
+	gdisp->inputdevices = calloc(ndevs+1,sizeof(struct inputdevices));
 	for ( i=0; i<ndevs; ++i ) {
 	    gdisp->inputdevices[i].name = copy(devs[i].name);
 	    gdisp->inputdevices[i].devid = devs[i].id;
@@ -3864,7 +3783,7 @@ return( 0 );
 	if ( cnt==0 )
 return(0);
 	if ( k==0 )
-	    classes = galloc(cnt*sizeof(XEventClass));
+	    classes = malloc(cnt*sizeof(XEventClass));
     }
     XSelectExtensionEvent(gdisp->display,((GXWindow) w)->w,classes,cnt);
     free(classes);
@@ -3896,7 +3815,7 @@ static int GXDrawWaitForNotifyEvent(GXDisplay *gdisp,XEvent *event, Window w) {
     gettimeofday(&giveup,NULL);
     giveup.tv_sec += gdisp->SelNotifyTimeout;
     
-    forever {
+    for (;;) {
 	gettimeofday(&tv,NULL);
 	GXDrawCheckPendingTimers(gdisp);
 #ifdef _WACOM_DRV_BROKEN
@@ -3962,9 +3881,7 @@ return( false );
 	    fd = MAX( fd, cb->fd );
 	}
 	
-#ifndef __VMS
 	ret = select(fd+1,&read,&write,&except,&offset);
-#endif
 
 	for( idx = 0; idx < gdisp->fd_callbacks_last; ++idx )
 	{
@@ -4042,7 +3959,7 @@ static void GXDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
     for ( sd=gd->selinfo[sel].datalist; sd!=NULL && sd->typeatom!=typeatom;
 	    sd = sd->next );
     if ( sd==NULL ) {
-	sd = galloc(sizeof(struct seldata));
+	sd = malloc(sizeof(struct seldata));
 	sd->next = gd->selinfo[sel].datalist;
 	gd->selinfo[sel].datalist = sd;
 	sd->typeatom = typeatom;
@@ -4218,7 +4135,7 @@ static void *GXDrawRequestSelection(GWindow w,enum selnames sn, char *typename, 
 		    *len *= sd->unitsize;
 		} else {
 		    bytelen = sd->unitsize*sd->cnt;
-		    temp = galloc(bytelen+4);
+		    temp = malloc(bytelen+4);
 		    memcpy(temp,sd->data,bytelen);
 		    temp[bytelen] = '\0';
 		    temp[bytelen+1] = '\0';
@@ -4249,7 +4166,7 @@ return( NULL );
     }
 
     bytelen = nitems * (actual_format/8);
-    temp = galloc(bytelen+4);
+    temp = malloc(bytelen+4);
     memcpy(temp,prop,bytelen);
     temp[bytelen]='\0';
     temp[bytelen+1]='\0';		/* Nul terminate unicode strings too */
@@ -4608,7 +4525,7 @@ return( NULL );
     XSupportsLocale();
     XSetLocaleModifiers("");
 
-    gdisp = gcalloc(1,sizeof(GXDisplay));
+    gdisp = calloc(1,sizeof(GXDisplay));
     if ( gdisp==NULL ) {
 	XCloseDisplay(display);
 return( NULL );
@@ -4654,7 +4571,7 @@ return( NULL );
     if ( focus==PointerRoot )
 	gdisp->focusfollowsmouse = true;
 
-    gdisp->groot = gcalloc(1,sizeof(struct gxwindow));
+    gdisp->groot = calloc(1,sizeof(struct gxwindow));
     groot = (GXWindow)(gdisp->groot);
     groot->ggc = _GXDraw_NewGGC();
     groot->display = gdisp;

@@ -189,7 +189,7 @@ static unichar_t *CounterMaskLine(SplineChar *sc, HintMask *hm) {
 	    }
 	}
 	if ( textmask==NULL ) {
-	    textmask = galloc((len+1)*sizeof(unichar_t));
+	    textmask = malloc((len+1)*sizeof(unichar_t));
 	    *textmask = '\0';
 	}
     }
@@ -422,15 +422,15 @@ static int CI_DeleteCounter(GGadget *g, GEvent *e) {
 	offset = GGadgetGetCid(g)-CID_Delete;
 	list = GWidgetGetControl(GGadgetGetWindow(g),CID_List+offset);
 	old = GGadgetGetList(list,&len);
-	new_ = gcalloc(len+1,sizeof(GTextInfo *));
+	new_ = calloc(len+1,sizeof(GTextInfo *));
 	for ( i=j=0; i<len; ++i )
 	    if ( !old[i]->selected ) {
-		new_[j] = (GTextInfo *) galloc(sizeof(GTextInfo));
+		new_[j] = (GTextInfo *) malloc(sizeof(GTextInfo));
 		*new_[j] = *old[i];
 		new_[j]->text = u_copy(new_[j]->text);
 		++j;
 	    }
-	new_[j] = (GTextInfo *) gcalloc(1,sizeof(GTextInfo));
+	new_[j] = (GTextInfo *) calloc(1,sizeof(GTextInfo));
 	if ( offset==600 ) {
 	    for ( i=0; i<len; ++i ) if ( old[i]->selected )
 		chunkfree(old[i]->userdata,sizeof(HintMask));
@@ -544,7 +544,7 @@ static void CI_ParseCounters(CharInfo *ci) {
     if ( len==0 )
 	sc->countermasks = NULL;
     else {
-	sc->countermasks = galloc(len*sizeof(HintMask));
+	sc->countermasks = malloc(len*sizeof(HintMask));
 	for ( i=0; i<len; ++i ) {
 	    memcpy(sc->countermasks[i],ti[i]->userdata,sizeof(HintMask));
 	    chunkfree(ti[i]->userdata,sizeof(HintMask));
@@ -602,7 +602,7 @@ return( dv );
 	free(dv->corrections);
     dv->first_pixel_size = low;
     dv->last_pixel_size = high;
-    dv->corrections = gcalloc(high-low+1,1);
+    dv->corrections = calloc(high-low+1,1);
 
     for ( pt=dvstr; *pt; ) {
 	pixel = strtol(pt,&end,10);
@@ -651,7 +651,7 @@ void DevTabToString(char **str,DeviceTable *adjust) {
 	*str = NULL;
 return;
     }
-    *str = pt = galloc(11*(adjust->last_pixel_size-adjust->first_pixel_size+1)+1);
+    *str = pt = malloc(11*(adjust->last_pixel_size-adjust->first_pixel_size+1)+1);
     for ( i=adjust->first_pixel_size; i<=adjust->last_pixel_size; ++i ) {
 	if ( adjust->corrections[i-adjust->first_pixel_size]!=0 )
 	    sprintf( pt, "%d:%d, ", i, adjust->corrections[i-adjust->first_pixel_size]);
@@ -1028,7 +1028,7 @@ struct glyphvariants *GV_ParseConstruction(struct glyphvariants *gv,
 	gv = chunkalloc(sizeof(struct glyphvariants));
 
     gv->part_cnt = rows;
-    gv->parts = gcalloc(rows,sizeof(struct gv_part));
+    gv->parts = calloc(rows,sizeof(struct gv_part));
     for ( i=0; i<rows; ++i ) {
 	gv->parts[i].component = copy(stuff[i*cols+0].u.md_str);
 	gv->parts[i].is_extender = stuff[i*cols+1].u.md_ival;
@@ -1193,7 +1193,7 @@ static PST *CI_PSTCopy(PST *pst) {
 	    newpst->u.pair.vr[0].adjust = ValDevTabCopy(pst->u.pair.vr[0].adjust);
 	    newpst->u.pair.vr[1].adjust = ValDevTabCopy(pst->u.pair.vr[1].adjust);
 	} else if ( newpst->type==pst_lcaret ) {
-	    newpst->u.lcaret.carets = galloc(pst->u.lcaret.cnt*sizeof(uint16));
+	    newpst->u.lcaret.carets = malloc(pst->u.lcaret.cnt*sizeof(uint16));
 	    memcpy(newpst->u.lcaret.carets,pst->u.lcaret.carets,pst->u.lcaret.cnt*sizeof(uint16));
 	} else if ( newpst->type==pst_substitution || newpst->type==pst_multiple || newpst->type==pst_alternate )
 	    newpst->u.subs.variant = copy(pst->u.subs.variant);
@@ -1222,7 +1222,7 @@ static SplineChar *CI_SCDuplicate(SplineChar *sc) {
     newsc->color = sc->color;
     if ( sc->countermask_cnt!=0 ) {
 	newsc->countermask_cnt = sc->countermask_cnt;
-	newsc->countermasks = galloc(sc->countermask_cnt*sizeof(HintMask));
+	newsc->countermasks = malloc(sc->countermask_cnt*sizeof(HintMask));
 	memcpy(newsc->countermasks,sc->countermasks,sc->countermask_cnt*sizeof(HintMask));
     }
     newsc->tex_height = sc->tex_height;
@@ -1499,7 +1499,7 @@ return( false );
 		ci->cachedsc->possub = pst;
 	    }
 	    if ( lc_cnt>pst->u.lcaret.cnt )
-		pst->u.lcaret.carets = grealloc(pst->u.lcaret.carets,lc_cnt*sizeof(int16));
+		pst->u.lcaret.carets = realloc(pst->u.lcaret.carets,lc_cnt*sizeof(int16));
 	    for ( i=pst->u.lcaret.cnt; i<lc_cnt; ++i )
 		pst->u.lcaret.carets[i] = 0;
 	    pst->u.lcaret.cnt = lc_cnt;
@@ -1770,7 +1770,7 @@ return( NULL );
 	    }
 	    if ( components!=NULL )
 	break;
-	    components = galloc(len+1);
+	    components = malloc(len+1);
 	}
 	components[len-1] = '\0';
     }
@@ -1787,14 +1787,14 @@ char *AdobeLigatureFormat(char *name) {
 
     if ( strncmp(name,"uni",3)==0 && (len-3)%4==0 && len>7 ) {
 	pt = name+3;
-	components = galloc(1); *components = '\0';
+	components = malloc(1); *components = '\0';
 	while ( *pt ) {
 	    if ( sscanf(pt,"%4x", (unsigned *) &uni )==0 ) {
 		free(components); components = NULL;
 	break;
 	    }
 	    next = StdGlyphName(buffer,uni,ui_none,(NameList *)-1);
-	    components = grealloc(components,strlen(components) + strlen(next) + 2);
+	    components = realloc(components,strlen(components) + strlen(next) + 2);
 	    if ( *components!='\0' )
 		strcat(components," ");
 	    strcat(components,next);
@@ -1843,17 +1843,6 @@ uint32 LigTagFromUnicode(int uni) {
 	tag = CHR('r','l','i','g');
       break;
     }
-#if 0
-    if ( tag==CHR('l','i','g','a') && uni!=-1 && uni<0x10000 ) {
-	const unichar_t *alt=NULL;
-	if ( isdecompositionnormative(uni) &&
-		    unicode_alternates[uni>>8]!=NULL &&
-		(alt = unicode_alternates[uni>>8][uni&0xff])!=NULL ) {
-	    if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2])))
-		tag = ((27<<16)|1);
-	}
-    }
-#endif
 return( tag );
 }
 
@@ -1976,9 +1965,9 @@ return;
 return;
     }
     if ( carets->u.lcaret.carets==NULL )
-	carets->u.lcaret.carets = (int16 *) gcalloc(lig_comp_max,sizeof(int16));
+	carets->u.lcaret.carets = (int16 *) calloc(lig_comp_max,sizeof(int16));
     else {
-	carets->u.lcaret.carets = (int16 *) grealloc(carets->u.lcaret.carets,lig_comp_max*sizeof(int16));
+	carets->u.lcaret.carets = (int16 *) realloc(carets->u.lcaret.carets,lig_comp_max*sizeof(int16));
 	for ( i=carets->u.lcaret.cnt; i<lig_comp_max; ++i )
 	    carets->u.lcaret.carets[i] = 0;
     }
@@ -2044,7 +2033,7 @@ return( true );
 }
 
 GTextInfo *TIFromName(const char *name) {
-    GTextInfo *ti = gcalloc(1,sizeof(GTextInfo));
+    GTextInfo *ti = calloc(1,sizeof(GTextInfo));
     ti->text = utf82u_copy(name);
     ti->fg = COLOR_DEFAULT;
     ti->bg = COLOR_DEFAULT;
@@ -2062,7 +2051,7 @@ return;		/* Didn't change */
 	char **names = AllGlyphNames(val,ci->sc->parent->for_new_glyphs,ci->sc);
 
 	for ( cnt=0; names[cnt]!=NULL; ++cnt );
-	list = galloc((cnt+1)*sizeof(GTextInfo*)); 
+	list = malloc((cnt+1)*sizeof(GTextInfo*)); 
 	for ( cnt=0; names[cnt]!=NULL; ++cnt ) {
 	    list[cnt] = TIFromName(names[cnt]);
 	    free(names[cnt]);
@@ -2176,7 +2165,7 @@ static void DevTabMatrixInit(struct matrixinit *mi,char *dvstr) {
 	    }
 	}
 	if ( md==NULL )
-	    md = gcalloc(2*(cnt+10),sizeof(struct matrix_data));
+	    md = calloc(2*(cnt+10),sizeof(struct matrix_data));
     }
     mi->matrix_data = md;
     mi->initial_row_cnt = cnt;
@@ -2222,7 +2211,7 @@ return(true);
 	if ( low!=-1 ) {
 	    dvd->devtab.first_pixel_size = low;
 	    dvd->devtab.last_pixel_size = high;
-	    dvd->devtab.corrections = gcalloc(high-low+1,1);
+	    dvd->devtab.corrections = calloc(high-low+1,1);
 	    for ( i=0; i<rows; ++i ) {
 		if ( corrections[2*i+1].u.md_ival!=0 ) {
 		    dvd->devtab.corrections[ corrections[2*i+0].u.md_ival-low ] =
@@ -3004,7 +2993,7 @@ GImage *GV_GetConstructedImage(SplineChar *sc,int def_layer,struct glyphvariants
     if ( gv==NULL || gv->part_cnt==0 )
 return( NULL );
     me = Rasterize(sc,def_layer);
-    others = galloc(gv->part_cnt*sizeof(BDFChar *));
+    others = malloc(gv->part_cnt*sizeof(BDFChar *));
     for ( i=0; i<gv->part_cnt; ++i ) {
 	SplineChar *othersc = SFGetChar(sf,-1,gv->parts[i].component);
 	if ( othersc==NULL ) {
@@ -3235,7 +3224,7 @@ return( NULL );
 	if ( *pt==' ' )
 	    while ( *pt==' ' ) ++pt;
     }
-    extras = galloc(extracnt*sizeof(BDFChar *));
+    extras = malloc(extracnt*sizeof(BDFChar *));
     extracnt = 0;
     for ( pt=subs; *pt ; ) {
 	start = pt;
@@ -3650,7 +3639,7 @@ void GV_ToMD(GGadget *g, struct glyphvariants *gv) {
 	GMatrixEditSet(g, NULL,0,false);
 return;
     }
-    mds = gcalloc(gv->part_cnt*cols,sizeof(struct matrix_data));
+    mds = calloc(gv->part_cnt*cols,sizeof(struct matrix_data));
     for ( j=0; j<gv->part_cnt; ++j ) {
 	mds[j*cols+0].u.md_str = copy(gv->parts[j].component);
 	mds[j*cols+1].u.md_ival = gv->parts[j].is_extender;
@@ -3670,7 +3659,7 @@ static void GA_ToMD(GGadget *g, SplineChar *sc) {
 return;
     }
     for ( cnt=0, alt=sc->altuni; alt!=NULL; ++cnt, alt=alt->next );
-    mds = gcalloc(cnt*cols,sizeof(struct matrix_data));
+    mds = calloc(cnt*cols,sizeof(struct matrix_data));
     for ( cnt=0, alt=sc->altuni; alt!=NULL; ++cnt, alt=alt->next ) {
 	mds[cnt*cols+0].u.md_ival = alt->unienc;
 	mds[cnt*cols+1].u.md_ival = alt->vs==-1? 0 : alt->vs;
@@ -3719,7 +3708,7 @@ struct hslrgb *SFFontCols(SplineFont *sf,struct hslrgb fontcols[6]) {
     stds[4].color = 0xffff00;
     stds[5].color = 0x00ffff;
     stds[6].color = 0xff00ff;
-    colcount = gcalloc(sf->glyphcnt,sizeof(struct colcount));
+    colcount = calloc(sf->glyphcnt,sizeof(struct colcount));
 
     cnt = 0;
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc= sf->glyphs[gid])!=NULL ) {
@@ -3847,7 +3836,7 @@ static void CIFillup(CharInfo *ci) {
 	    ++cnts[pst_pair];
     }
     for ( i=pst_null+1; i<pst_max && i<pst_lcaret ; ++i )
-	mds[i] = gcalloc((cnts[i]+1)*mi[i-1].col_cnt,sizeof(struct matrix_data));
+	mds[i] = calloc((cnts[i]+1)*mi[i-1].col_cnt,sizeof(struct matrix_data));
     memset(cnts,0,sizeof(cnts));
     for ( pst = sc->possub; pst!=NULL; pst=pst->next ) if ( pst->type!=pst_lcaret ) {
 	j = (cnts[pst->type]++ * mi[pst->type-1].col_cnt);
@@ -3908,7 +3897,7 @@ static void CIFillup(CharInfo *ci) {
 	ubuf[0] = '\0';
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Components),ubuf);
     } else {
-	unichar_t *temp = galloc(11*u_strlen(bits)*sizeof(unichar_t));
+	unichar_t *temp = malloc(11*u_strlen(bits)*sizeof(unichar_t));
 	unichar_t *upt=temp;
 	while ( *bits!='\0' ) {
 	    sprintf(buffer, "U+%04x ", *bits );
@@ -3931,10 +3920,10 @@ static void CIFillup(CharInfo *ci) {
     CI_SetColorList(ci,sc->color);
     ci->first = sc->comment==NULL;
 
-    ti = galloc((sc->countermask_cnt+1)*sizeof(GTextInfo *));
-    ti[sc->countermask_cnt] = gcalloc(1,sizeof(GTextInfo));
+    ti = malloc((sc->countermask_cnt+1)*sizeof(GTextInfo *));
+    ti[sc->countermask_cnt] = calloc(1,sizeof(GTextInfo));
     for ( i=0; i<sc->countermask_cnt; ++i ) {
-	ti[i] = gcalloc(1,sizeof(GTextInfo));
+	ti[i] = calloc(1,sizeof(GTextInfo));
 	ti[i]->text = CounterMaskLine(sc,&sc->countermasks[i]);
 	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
 	ti[i]->userdata = chunkalloc(sizeof(HintMask));
@@ -4142,7 +4131,7 @@ void SCCharInfo(SplineChar *sc,int deflayer, EncMap *map,int enc) {
 return;
     }
 
-    ci = gcalloc(1,sizeof(CharInfo));
+    ci = calloc(1,sizeof(CharInfo));
     ci->sc = sc;
     ci->def_layer = deflayer;
     ci->done = false;
@@ -5172,7 +5161,7 @@ void FVSelectByPST(FontView *fv) {
 return;
 	}
 	if ( ti==NULL )
-	    ti = gcalloc(cnt+1,sizeof(GTextInfo));
+	    ti = calloc(cnt+1,sizeof(GTextInfo));
     }
 
     CharInfoInit();

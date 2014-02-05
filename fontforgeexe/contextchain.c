@@ -141,7 +141,7 @@ Complex version:
 #define CID_Covers		4600
 
 char *cu_copybetween(const unichar_t *start, const unichar_t *end) {
-    char *ret = galloc(end-start+1);
+    char *ret = malloc(end-start+1);
     cu_strncpy(ret,start,end-start);
     ret[end-start] = '\0';
 return( ret );
@@ -154,7 +154,7 @@ static char *reversenames(char *str) {
     if ( str==NULL )
 return( NULL );
 
-    rpt = ret = galloc(strlen(str)+1);
+    rpt = ret = malloc(strlen(str)+1);
     *ret = '\0';
     for ( pt=str+strlen(str); pt>str; pt=start ) {
 	for ( start = pt-1; start>=str && *start!=' '; --start );
@@ -184,7 +184,7 @@ static char *rpl(const char *src, const char *find, const char *rpl) {
     if ( found_cnt==0 )
 return( copy(src));
 
-    rpt = ret = galloc(strlen(src)+found_cnt*(strlen(rpl)-flen)+1);
+    rpt = ret = malloc(strlen(src)+found_cnt*(strlen(rpl)-flen)+1);
     for ( pt=src; *pt; ) {
 	while ( isspace(*pt))
 	    *rpt++ = *pt++;
@@ -217,7 +217,7 @@ static char *classnumbers(int cnt,uint16 *classes, struct matrix_data *classname
 	    len += strlen(classnames[cols*classes[i]+0].u.md_str)+1;
 	}
     }
-    ret = pt = galloc(len+3);
+    ret = pt = malloc(len+3);
     *pt = '\0';		/* In case it is empty */
 
     for ( i=0; i<cnt; ++i ) {
@@ -249,7 +249,7 @@ static char *rclassnumbers(int cnt,uint16 *classes, struct matrix_data *classnam
 	    len += strlen(classnames[cols*classes[i]+0].u.md_str)+1;
 	}
     }
-    ret = pt = galloc(len+3);
+    ret = pt = malloc(len+3);
     *pt = '\0';
     for ( i=cnt-1; i>=0; --i ) {
 	if ( classnames[cols*classes[i]+0].u.md_str==NULL ) {
@@ -319,10 +319,10 @@ static void parseseqlookups(SplineFont *sf, const char *solooks, struct fpst_rul
 	if ( *pt==',' ) ++pt;
     }
     r->lookup_cnt = cnt;
-    r->lookups = gcalloc(cnt,sizeof(struct seqlookup));
+    r->lookups = calloc(cnt,sizeof(struct seqlookup));
     cnt = 0;
     pt = solooks;
-    forever {
+    for (;;) {
 	char *end;
 	r->lookups[cnt].seq = strtol(pt,&end,10);
 	for ( pt = end+1; isspace( *pt ); ++pt );
@@ -355,7 +355,7 @@ static char *gruleitem(struct fpst_rule *r) {
 	    (r->u.glyph.fore==0 ? 0 : strlen(r->u.glyph.fore)) +
 	    seqlookuplen(r);
 
-    ret = pt = galloc(len+8);
+    ret = pt = malloc(len+8);
     if ( r->u.glyph.back!=NULL && *r->u.glyph.back!='\0' ) {
 	char *temp = reversenames(r->u.glyph.back);
 	strcpy(pt,temp);
@@ -429,7 +429,7 @@ static char *classruleitem(struct fpst_rule *r,struct matrix_data **classes, int
 	}
     }
 
-    ret = pt = galloc((len+8+seqlookuplen(r)) * sizeof(unichar_t));
+    ret = pt = malloc((len+8+seqlookuplen(r)) * sizeof(unichar_t));
     for ( k=r->u.class.bcnt-1; k>=0; --k ) {
 	int c = r->u.class.bclasses[k];
 	if ( classes[1][cols*c+0].u.md_str!=NULL && *classes[1][cols*c+0].u.md_str!='\0' ) {
@@ -492,7 +492,7 @@ static void classruleitem2rule(SplineFont *sf,const char *ruletext,struct fpst_r
 		ch = utf8_ildb((const char **) &pt);
 	}
 	(&r->u.class.ncnt)[i] = len;
-	(&r->u.class.nclasses)[i] = galloc(len*sizeof(uint16));
+	(&r->u.class.nclasses)[i] = malloc(len*sizeof(uint16));
 	len = 0;
 	if ( ch=='\0' || ch==0x21d2 )
     break;
@@ -557,7 +557,7 @@ static void CCD_ParseLookupList(SplineFont *sf, struct fpst_rule *r,GGadget *lis
     struct matrix_data *classes = GMatrixEditGet(list,&len);
 
     r->lookup_cnt = len;
-    r->lookups = galloc(len*sizeof(struct seqlookup));
+    r->lookups = malloc(len*sizeof(struct seqlookup));
     for ( i=0; i<len; ++i ) {
 	r->lookups[i].seq = classes[2*i+1].u.md_ival;
 	r->lookups[i].lookup = (OTLookup *) classes[2*i+0].u.md_ival;
@@ -635,7 +635,7 @@ return( false );
 	}
 	if ( !doit ) {
 	    (&r->u.class.ncnt)[which] = any;
-	    (&r->u.class.nclasses)[which] = galloc(any*sizeof(uint16));
+	    (&r->u.class.nclasses)[which] = malloc(any*sizeof(uint16));
 	}
     }
 return( true );
@@ -796,7 +796,7 @@ return( true );
 }
 
 static struct matrix_data *MD2MD(struct matrix_data *md,int len) {
-    struct matrix_data *newmd = gcalloc(2*len,sizeof(struct matrix_data));
+    struct matrix_data *newmd = calloc(2*len,sizeof(struct matrix_data));
     int i;
 
     for ( i=0; i<len; ++i ) {
@@ -823,7 +823,7 @@ static void CCD_NewGlyphRule(GGadget *glyphrules,int r,int c) {
     free(temp2);
     GGadgetSetTitle8(GWidgetGetControl(ccd->gw,CID_GlyphList+40),dummy.u.glyph.fore!=NULL?dummy.u.glyph.fore:"");
 
-    md = gcalloc(2*dummy.lookup_cnt,sizeof(struct matrix_data));
+    md = calloc(2*dummy.lookup_cnt,sizeof(struct matrix_data));
     for ( j=0; j<dummy.lookup_cnt; ++j ) {
 	md[2*j+0].u.md_ival = (intpt) (void *) dummy.lookups[j].lookup;
 	md[2*j+1].u.md_ival = (intpt) dummy.lookups[j].seq;
@@ -867,7 +867,7 @@ static void CCD_NewClassRule(GGadget *classrules,int r,int c) {
 	    (temp=classnumbers(dummy.u.class.fcnt,dummy.u.class.fclasses,classes[2],clen[2],ccols)));
     free(temp);
 
-    md = gcalloc(2*dummy.lookup_cnt,sizeof(struct matrix_data));
+    md = calloc(2*dummy.lookup_cnt,sizeof(struct matrix_data));
     for ( j=0; j<dummy.lookup_cnt; ++j ) {
 	md[2*j+0].u.md_ival = (intpt) (void *) dummy.lookups[j].lookup;
 	md[2*j+1].u.md_ival = (intpt) dummy.lookups[j].seq;
@@ -951,7 +951,7 @@ static char **CCD_ParseCoverageList(struct contextchaindlg *ccd,int cid,int *cnt
     *cnt = _cnt;
     if ( _cnt==0 )
 return( NULL );
-    ret = galloc(*cnt*sizeof(char *));
+    ret = malloc(*cnt*sizeof(char *));
     for ( i=0; i<_cnt; ++i )
 	ret[i] = GlyphNameListDeUnicode(covers[i].u.md_str);
 return( ret );
@@ -992,7 +992,7 @@ return;
 	FPSTRulesFree(fpst->rules,fpst->format,fpst->rule_cnt);
 	fpst->format = pst_glyphs;
 	fpst->rule_cnt = len;
-	fpst->rules = gcalloc(len,sizeof(struct fpst_rule));
+	fpst->rules = calloc(len,sizeof(struct fpst_rule));
 	for ( i=0; i<len; ++i )
 	    gruleitem2rule(ccd->sf,old[i].u.md_str,&fpst->rules[i]);
       } break;
@@ -1005,7 +1005,7 @@ return;
 	FPSTRulesFree(fpst->rules,fpst->format,fpst->rule_cnt);
 	fpst->format = pst_class;
 	fpst->rule_cnt = len;
-	fpst->rules = gcalloc(len,sizeof(struct fpst_rule));
+	fpst->rules = calloc(len,sizeof(struct fpst_rule));
 	fpst->nccnt = fpst->bccnt = fpst->fccnt = 0;
 	fpst->nclass = fpst->bclass = fpst->fclass = NULL;
 	has[1] = has[2] = false; has[0] = true;
@@ -1019,7 +1019,7 @@ return;
 	    if ( i!=0 && !has[i] )
 	continue;
 	    (&fpst->nccnt)[i] = clen[i];
-	    (&fpst->nclass)[i] = galloc(clen[i]*sizeof(char*));
+	    (&fpst->nclass)[i] = malloc(clen[i]*sizeof(char*));
 	    (&fpst->nclass)[i][0] = NULL;
 	    had_class0 = i==0 && !isEverythingElse(classes[i][0].u.md_str);
 	    for ( k=had_class0 ? 0 : 1 ; k<clen[i]; ++k )
@@ -1060,7 +1060,7 @@ return;
 	FPSTRulesFree(fpst->rules,fpst->format,fpst->rule_cnt);
 	fpst->format = fpst->type==pst_reversesub ? pst_reversecoverage : pst_coverage;
 	fpst->rule_cnt = 1;
-	fpst->rules = gcalloc(1,sizeof(struct fpst_rule));
+	fpst->rules = calloc(1,sizeof(struct fpst_rule));
 	fpst->rules[0].u.coverage.ncovers = CCD_ParseCoverageList(ccd,CID_GList+100,&fpst->rules[0].u.coverage.ncnt);
 	fpst->rules[0].u.coverage.bcovers = CCD_ParseCoverageList(ccd,CID_GList+100+20,&fpst->rules[0].u.coverage.bcnt);
 	CoverageReverse(fpst->rules[0].u.coverage.bcovers,fpst->rules[0].u.coverage.bcnt);
@@ -1099,8 +1099,8 @@ return;
 		    classes_simple = GMatrixEditGet(GWidgetGetControl(ccd->gw,CID_MatchClasses),&clen);
 		(&dummyfpst->nccnt)[i] = clen;
 		if ( clen!=0 ) {
-		    (&dummyfpst->nclass)[i] = galloc(clen*sizeof(char*));
-		    (&dummyfpst->nclassnames)[i] = galloc(clen*sizeof(char*));
+		    (&dummyfpst->nclass)[i] = malloc(clen*sizeof(char*));
+		    (&dummyfpst->nclassnames)[i] = malloc(clen*sizeof(char*));
 		    (&dummyfpst->nclass)[i][0] = NULL;
 		    (&dummyfpst->nclassnames)[i][0] = NULL;
 		    had_class0 = i==0 && !isEverythingElse(classes_simple[3*0+1].u.md_str);
@@ -1118,7 +1118,7 @@ return;
 	    dummyfpst->nclassnames = dummyfpst->bclassnames = dummyfpst->fclassnames = NULL;
 	}
 	dummyfpst->rule_cnt = len;
-	dummyfpst->rules = gcalloc(len,sizeof(struct fpst_rule));
+	dummyfpst->rules = calloc(len,sizeof(struct fpst_rule));
 	for ( i=0; i<len; ++i ) {
 	    char *temp = old[i].u.md_str;
 	    if ( ccd->aw==aw_glyphs_simple )
@@ -1237,7 +1237,7 @@ return;
 		    ++cnt;
 	    dummy.lookup_cnt = cnt;
 	    if ( cnt!=0 ) {
-		dummy.lookups = gcalloc(cnt,sizeof(struct seqlookup));
+		dummy.lookups = calloc(cnt,sizeof(struct seqlookup));
 		for ( i=first, cnt=0; i<forward_start; ++i ) {
 		    if ( old[cols*i+1].u.md_addr!=NULL ) {
 			dummy.lookups[cnt].lookup = old[cols*i+1].u.md_addr;
@@ -1250,11 +1250,11 @@ return;
 	dummy.u.coverage.bcnt = first;
 	dummy.u.coverage.ncnt = forward_start-first;
 	dummy.u.coverage.fcnt = len-forward_start;
-	dummy.u.coverage.ncovers = galloc(dummy.u.coverage.ncnt*sizeof(char *));
+	dummy.u.coverage.ncovers = malloc(dummy.u.coverage.ncnt*sizeof(char *));
 	if ( dummy.u.coverage.bcnt!=0 )
-	    dummy.u.coverage.bcovers = galloc(dummy.u.coverage.bcnt*sizeof(char *));
+	    dummy.u.coverage.bcovers = malloc(dummy.u.coverage.bcnt*sizeof(char *));
 	if ( dummy.u.coverage.fcnt!=0 )
-	    dummy.u.coverage.fcovers = galloc(dummy.u.coverage.fcnt*sizeof(char *));
+	    dummy.u.coverage.fcovers = malloc(dummy.u.coverage.fcnt*sizeof(char *));
 	for ( i=0; i<first; ++i )
 	    dummy.u.coverage.bcovers[first-1-i] = GlyphNameListDeUnicode( old[cols*i+0].u.md_str );
 	for ( i=0; i<dummy.u.coverage.ncnt; ++i )
@@ -1265,7 +1265,7 @@ return;
 	FPSTRulesFree(fpst->rules,fpst->format,fpst->rule_cnt);
 	fpst->format = fpst->type==pst_reversesub ? pst_reversecoverage : pst_coverage;
 	fpst->rule_cnt = 1;
-	fpst->rules = gcalloc(1,sizeof(struct fpst_rule));
+	fpst->rules = calloc(1,sizeof(struct fpst_rule));
 	fpst->rules[0] = dummy;
       break;
       default:
@@ -1425,7 +1425,7 @@ static int CCD_AddLookup(GGadget *g, GEvent *e) {
 	    char *space;
 	    unichar_t *temp;
 	    otl = lookup_ti->userdata;
-	    space = galloc(strlen(otl->lookup_name)+8);
+	    space = malloc(strlen(otl->lookup_name)+8);
 	    sprintf( space, " @<%s> ", otl->lookup_name );
 	    temp = utf82u_copy(space);
 	    GTextFieldReplace(tf,temp);
@@ -1572,7 +1572,7 @@ return( NULL );
     wild = NULL;
     if ( do_wildcards ) {
 	pt = spt;
-	wild = galloc((u_strlen(spt)+2)*sizeof(unichar_t));
+	wild = malloc((u_strlen(spt)+2)*sizeof(unichar_t));
 	u_strcpy(wild,pt);
 	uc_strcat(wild,"*");
     }
@@ -1595,7 +1595,7 @@ return( NULL );
 		    if ( spt==basept ) {
 			ret[cnt] = utf82u_copy(str);
 		    } else {
-			unichar_t *temp = galloc((spt-basept+strlen(str)+4)*sizeof(unichar_t));
+			unichar_t *temp = malloc((spt-basept+strlen(str)+4)*sizeof(unichar_t));
 			int len;
 			u_strncpy(temp,basept,spt-basept);
 			utf82u_strcpy(temp+(spt-basept),str);
@@ -1611,7 +1611,7 @@ return( NULL );
 	else if ( cnt==0 )
     break;
 	else
-	    ret = galloc((cnt+1)*sizeof(unichar_t *));
+	    ret = malloc((cnt+1)*sizeof(unichar_t *));
     }
     free(wild);
 return( ret );
@@ -2038,9 +2038,9 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 	    lookup_list[i].disabled = true;
 	lookup_list[i].selected = false;
     }
-    addlookup_list = gcalloc(i+3,sizeof(GTextInfo));
+    addlookup_list = calloc(i+3,sizeof(GTextInfo));
     memcpy(addlookup_list+1,lookup_list,(i+1)*sizeof(GTextInfo));
-    addrmlookup_list = gcalloc(i+3,sizeof(GTextInfo));
+    addrmlookup_list = calloc(i+3,sizeof(GTextInfo));
     memcpy(addrmlookup_list+2,lookup_list,(i+1)*sizeof(GTextInfo));
     addlookup_list[0].text = (unichar_t *) S_("Add Lookup");
     addlookup_list[0].text_is_1byte = true;
@@ -2311,7 +2311,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
     glyphrules_mi.col_init = glyphrules_ci;
     if ( fpst->format==pst_glyphs && fpst->rule_cnt>0 ) {
 	glyphrules_mi.initial_row_cnt = fpst->rule_cnt;
-	md = gcalloc(fpst->rule_cnt,sizeof(struct matrix_data));
+	md = calloc(fpst->rule_cnt,sizeof(struct matrix_data));
 	for ( j=0; j<fpst->rule_cnt; ++j ) {
 	    md[j+0].u.md_str = gruleitem(&fpst->rules[j]);
 	}
@@ -2341,7 +2341,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
     glyphs_mi.col_init = glyph_ci;
     if ( fpst->format==pst_glyphs && fpst->rule_cnt>0 ) {
 	glyphs_mi.initial_row_cnt = fpst->rule_cnt;
-	md = gcalloc(fpst->rule_cnt,sizeof(struct matrix_data));
+	md = calloc(fpst->rule_cnt,sizeof(struct matrix_data));
 	for ( j=0; j<fpst->rule_cnt; ++j ) {
 	    md[j+0].u.md_str = FPSTRule_To_Str(sf,fpst,&fpst->rules[j]);;
 	}
@@ -2505,7 +2505,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 	    int cnt = (&fpst->rules[0].u.coverage.ncnt)[i];
 	    char **names = (&fpst->rules[0].u.coverage.ncovers)[i];
 	    coverage_mi[i].initial_row_cnt = cnt;
-	    md = gcalloc(cnt,sizeof(struct matrix_data));
+	    md = calloc(cnt,sizeof(struct matrix_data));
 	    for ( j=0; j<cnt; ++j ) {
 		md[j].u.md_str = SFNameList2NameUni(sf,names[j]);
 	    }
@@ -2537,7 +2537,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 		if ( fpst->format==pst_coverage ) {
 		    r = &fpst->rules[0];
 		    co_seqlookup_mi.initial_row_cnt = r->lookup_cnt;
-		    md = gcalloc(2*r->lookup_cnt,sizeof(struct matrix_data));
+		    md = calloc(2*r->lookup_cnt,sizeof(struct matrix_data));
 		    for ( j=0; j<r->lookup_cnt; ++j ) {
 			md[2*j+0].u.md_ival = (intpt) (void *) r->lookups[j].lookup;
 			md[2*j+1].u.md_ival = (intpt) r->lookups[j].seq;
@@ -2676,7 +2676,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 	    && fpst->rules!=NULL ) {
 	int cnt = fpst->rules[0].u.coverage.ncnt+fpst->rules[0].u.coverage.bcnt+fpst->rules[0].u.coverage.fcnt;
 	coveragesimple_mi.initial_row_cnt = cnt;
-	md = gcalloc(cnt*coveragesimple_mi.col_cnt,sizeof(struct matrix_data));
+	md = calloc(cnt*coveragesimple_mi.col_cnt,sizeof(struct matrix_data));
 	for ( i=0,j=fpst->rules[0].u.coverage.bcnt-1; j>=0; --j, ++i )
 	    md[i*coveragesimple_mi.col_cnt].u.md_str = SFNameList2NameUni(sf,fpst->rules[0].u.coverage.bcovers[j]);
 	for ( j=0; j<fpst->rules[0].u.coverage.ncnt; ++j, ++i ) {
@@ -2815,7 +2815,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 	    else
 		cc = (&tempfpst->nccnt)[i];
 	    class_mi[i].initial_row_cnt = cc;
-	    md = gcalloc(3*cc+3,sizeof(struct matrix_data));
+	    md = calloc(3*cc+3,sizeof(struct matrix_data));
 	    md[0+0].u.md_str = copy(classnames==NULL || cc==0 || classnames[0]==NULL?S_("Glyphs|All_Others"):classnames[0]);
 	    md[3*0+1].u.md_str = copy(_("{Everything Else}"));
 	    md[3*0+1].frozen = true;
@@ -2863,7 +2863,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
     /* Finish initializing the list of class rules */
     if ( tempfpst->format==pst_class && tempfpst->rule_cnt>0 ) {
 	classrules_mi.initial_row_cnt = tempfpst->rule_cnt;
-	md = gcalloc(tempfpst->rule_cnt,sizeof(struct matrix_data));
+	md = calloc(tempfpst->rule_cnt,sizeof(struct matrix_data));
 	for ( j=0; j<tempfpst->rule_cnt; ++j ) {
 	    md[j+0].u.md_str = classruleitem(&tempfpst->rules[j],_classes,clen,3);
 	}
@@ -2922,7 +2922,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
     classsimple_mi.col_init = classsimple_ci;
     if ( tempfpst->format==pst_class && tempfpst->rule_cnt>0 ) {
 	classsimple_mi.initial_row_cnt = tempfpst->rule_cnt;
-	md = gcalloc(tempfpst->rule_cnt,sizeof(struct matrix_data));
+	md = calloc(tempfpst->rule_cnt,sizeof(struct matrix_data));
 	for ( j=0; j<tempfpst->rule_cnt; ++j ) {
 	    md[j+0].u.md_str = FPSTRule_To_Str(sf,tempfpst,&tempfpst->rules[j]);;
 	}
@@ -2989,7 +2989,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 	    else
 		cc = (&tempfpst->nccnt)[i];
 	    class_mi[i].initial_row_cnt = cc;
-	    md = gcalloc(3*cc+3,sizeof(struct matrix_data));
+	    md = calloc(3*cc+3,sizeof(struct matrix_data));
 /* GT: This is the default class name for the class containing any glyphs_simple */
 /* GT: which aren't specified in other classes_simple. The class name may NOT */
 /* GT: contain spaces. Use an underscore or something similar instead */

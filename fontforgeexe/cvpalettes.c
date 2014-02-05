@@ -179,11 +179,6 @@ static void SaveOffsets(GWindow main, GWindow palette, GPoint *off) {
 	off->y = pr.y-mr.y;
 	if ( off->x<0 ) off->x = 0;
 	if ( off->y<0 ) off->y = 0;
-#if 0
- printf( "%s is offset (%d,%d)\n", palette==cvtools?"CVTools":
-     palette==cvlayers?"CVLayers":palette==bvtools?"BVTools":
-     palette==bvlayers?"BVLayers":"BVShades", off->x, off->y );
-#endif
     }
 }
 
@@ -1088,10 +1083,6 @@ return;			/* If the wm gave me a window the wrong size */
     /* we have two fewer buttons than commands as two bottons each control two commands */
     if ( pos<0 || pos>=cvt_max )
 	pos = cvt_none;
-#if 0
-    if ( pos==cvt_freehand && cv->b.sc->parent->order2 )
-return;			/* Not available in order2 spline mode */
-#endif
     if ( event->type == et_mousedown ) {
 	if ( isstylus && event->u.mouse.button==2 )
 	    /* Not a real button press, only touch counts. This is a modifier */;
@@ -1323,9 +1314,9 @@ static void CVLayers2Set(CharView *cv) {
     if ( cv->b.sc->layer_cnt+1>=layer2.max_layers ) {
 	top = cv->b.sc->layer_cnt+10;
 	if ( layer2.layers==NULL )
-	    layer2.layers = gcalloc(top,sizeof(BDFChar *));
+	    layer2.layers = calloc(top,sizeof(BDFChar *));
 	else {
-	    layer2.layers = grealloc(layer2.layers,top*sizeof(BDFChar *));
+	    layer2.layers = realloc(layer2.layers,top*sizeof(BDFChar *));
 	    for ( i=layer2.current_layers; i<top; ++i )
 		layer2.layers[i] = NULL;
 	}
@@ -1434,7 +1425,7 @@ return;
 	LayerDefault(&temp);
 	if ( !LayerDialog(&temp,cv->b.sc->parent))
 return;
-	sc->layers = grealloc(sc->layers,(sc->layer_cnt+1)*sizeof(Layer));
+	sc->layers = realloc(sc->layers,(sc->layer_cnt+1)*sizeof(Layer));
 	sc->layers[sc->layer_cnt] = temp;
 	cv->b.layerheads[dm_fore] = &sc->layers[sc->layer_cnt];
 	cv->b.layerheads[dm_back] = &sc->layers[ly_back];
@@ -1808,9 +1799,9 @@ static void CVLayers1Set(CharView *cv) {
     if ( cv->b.sc->layer_cnt+1>=layerinfo.max_layers ) {
 	top = cv->b.sc->layer_cnt+10;
 	if ( layerinfo.layers==NULL )
-	    layerinfo.layers = gcalloc(top,sizeof(BDFChar *));
+	    layerinfo.layers = calloc(top,sizeof(BDFChar *));
 	else {
-	    layerinfo.layers = grealloc(layerinfo.layers,top*sizeof(BDFChar *));
+	    layerinfo.layers = realloc(layerinfo.layers,top*sizeof(BDFChar *));
 	    for ( i=layerinfo.current_layers; i<top; ++i )
 		layerinfo.layers[i] = NULL;
 	}
@@ -3038,10 +3029,6 @@ static void CVPopupInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
     int pos;
 
     pos = mi->mid;
-#if 0	/* No longer show rect/poly tool */
-    if ( (pos==14 && rectelipse) || (pos==15 && polystar ))
-	pos += 2;
-#endif
     if ( pos==cvt_spiro ) {
 	CVChangeSpiroMode(cv);
     } else if ( cv->had_control ) {

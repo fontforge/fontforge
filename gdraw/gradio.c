@@ -789,13 +789,13 @@ return( gl );
 }
 
 GGadget *GCheckBoxCreate(struct gwindow *base, GGadgetData *gd,void *data) {
-    GCheckBox *gl = _GCheckBoxCreate(gcalloc(1,sizeof(GCheckBox)),base,gd,data,&checkbox_box);
+    GCheckBox *gl = _GCheckBoxCreate(calloc(1,sizeof(GCheckBox)),base,gd,data,&checkbox_box);
 
 return( &gl->g );
 }
 
 GGadget *GVisibilityBoxCreate(struct gwindow *base, GGadgetData *gd,void *data) {
-    GCheckBox *gl = _GCheckBoxCreate(gcalloc(1,sizeof(GCheckBox)),base,gd,data,&checkbox_box);
+    GCheckBox *gl = _GCheckBoxCreate(calloc(1,sizeof(GCheckBox)),base,gd,data,&checkbox_box);
     gl->onbox = &visibility_on_box;
     gl->offbox = &visibility_off_box;
     gl->on = visibilityon;
@@ -807,7 +807,7 @@ return( &gl->g );
 }
 
 GGadget *GRadioCreate(struct gwindow *base, GGadgetData *gd,void *data) {
-    GRadio *gl = (GRadio *) gcalloc(1,sizeof(GRadio));
+    GRadio *gl = (GRadio *) calloc(1,sizeof(GRadio));
     GGadget *gr;
 
     gl->isradio = true;
