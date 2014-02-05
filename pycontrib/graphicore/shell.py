@@ -33,6 +33,7 @@ if len(sys.argv) == 0:
     sys.argv.append('')
 
 from ipython_view import *
+import gdraw
 
 def runShell(data = None, glyphOrFont = None):
     """Run an ipython shell in a gtk-widget with the current fontforge module in the namespace"""
@@ -52,7 +53,10 @@ def runShell(data = None, glyphOrFont = None):
     W.show_all()
     W.connect('delete_event',lambda x,y:False)
     W.connect('destroy',lambda x:gtk.main_quit())
-    gtk.main()
+
+    # Start gtk loop here!
+    gdraw.gtkrunner.sniffwindow(W)
+    gdraw.gtkrunner.start()
 if fontforge.hasUserInterface():
     fontforge.registerMenuItem(runShell, None, None, ("Font","Glyph"),
                                 None, "Interactive Python Shell");
