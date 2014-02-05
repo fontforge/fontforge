@@ -397,18 +397,63 @@ AX_PTHREAD
 #--------------------------------------------------------------------------
 # Check to see if "this" compiler can use these flags, errors, or warnings.
 # Enable the flags that can be used and skip flags that are unknown.
+AC_ARG_ENABLE([gcc-warnings],
+  [AS_HELP_STRING([--enable-gcc-warnings],
+                  [turn on lots of GCC warnings (for developers)])],
+  [case $enableval in
+     yes|no) ;;
+     *)      AC_MSG_ERROR([bad value $enableval for gcc-warnings option]) ;;
+   esac
+   gl_gcc_warnings=$enableval],
+  [gl_gcc_warnings=no]
+)
+
+if test "$gl_gcc_warnings" = yes; then
+  gl_WARN_ADD([-Werror], [WERROR_CFLAGS])
+
+  # Set up the list of undesired warnings.
+  nw=
+  nw="$nw -Wundef"            # All compiler preprocessors support #if UNDEF
+  nw="$nw -Wtraditional"      # All compilers nowadays support ANSI C
+  nw="$nw -Wstrict-overflow"  # Use a lower level (see below).
+  nw="$nw -Wconversion"       # These warnings usually don’t point to mistakes.
+  nw="$nw -Wsign-conversion"  # Likewise.
+  nw="$nw -Wtraditional-conversion" # Don't care.
+  nw="$nw -Wpadded"           # Don't care.
+  nw="$nw -Wc++-compat"       # Don't care.
+  nw="$nw -Woverlength-strings" # Don't care.
+  nw="$nw -Wmissing-format-attribute" # Don't care.
+  nw="$nw -Wshadow"           # Don't care.
+  nw="$nw -Wunreachable-code" # Seems buggy.
+  nw="$nw -Wsystem-headers"   # glibc headers fail as of glibc 2.17, gcc 4.8
+  nw="$nw -Wsuggest-attribute=format" # glibc headers fail as of glibc 2.17, gcc 4.8
+  nw="$nw -Wstrict-aliasing"  # -Sep2012, There's a bug in <py3 with Py_True/False that will propagate with GCC's "strict-aliasing" rules.
+  nw="$nw -Wall"
+  nw="$nw -Wunused-macros"    # those macros might come in handy later
+
+  gl_MANYWARN_ALL_GCC([warnings])
+
+  # Enable all GCC warnings not in this list.
+  gl_MANYWARN_COMPLEMENT([warnings], [$warnings], [$nw])
+  for w in $warnings; do
+    gl_WARN_ADD([$w])
+  done
+
+  # Add an extra warning
+  gl_WARN_ADD([-Wstrict-overflow=1])
+  # Add some more safety measures
+  gl_WARN_ADD([-D_FORTIFY_SOURCE=2])
+  gl_WARN_ADD([-fmudflap])
+
+  # When compiling with GCC, prefer -isystem to -I when including system
+  # include files, to avoid generating useless diagnostics for the files.
+  ISYSTEM='-isystem '
+else
+  ISYSTEM='-I'
+fi
+AC_SUBST([ISYSTEM])
+
 AC_LANG_PUSH([C]) dnl NOTE: configure.ac - try not to push/pop too often
-AC_SUBST([WARNING_CFLAGS],[])
-FFW_FLAGS="-Wunused -Wreturn-type -Wparentheses -Wformat -Wchar-subscripts \
- -Wno-unused-but-set-variable -Wno-unused-result -Wcast-align -Wclobbered  \
- -Werror=missing-prototypes -Werror=pointer-arith -Werror=implicit"
-dnl Sep2012, There's a bug in <py3 with Py_True/False that will propagate
-dnl with GCC's "strict-aliasing" rules. -Wstrict-aliasing
-
-for arg in ${FFW_FLAGS}; do
-   AX_CHECK_COMPILE_FLAG([$arg],[WARNING_CFLAGS+=" $arg"])
-done
-
 # Create LDFLAGS for libraries. Currently used to pass '-no-undefined' to libtool.
 my_lib_ldflags=""
 dnl add --no-undefined if supported. Based on information seen here:
