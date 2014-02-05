@@ -1497,17 +1497,17 @@ return( ch1=='\0' );
 }
 
 static void TTFAddLangStr(FILE *ttf, struct ttfinfo *info, int id,
-	int strlen, int stroff,int plat,int spec,int language) {
+	int strlength, int stroff,int plat,int spec,int language) {
     struct ttflangname *cur, *prev;
     char *str;
 
     if ( plat==1 && id>=256 && (info->features!=NULL || info->fvar_start!=0)) {
-	MacFeatureAdd(ttf,info,id,strlen,stroff,spec,language);
+	MacFeatureAdd(ttf,info,id,strlength,stroff,spec,language);
 return;
     } else if ( id<0 || id>=ttf_namemax )
 return;
 
-    str = _readencstring(ttf,stroff,strlen,plat,spec,language);
+    str = _readencstring(ttf,stroff,strlength,plat,spec,language);
     if ( str==NULL )		/* we didn't understand the encoding */
 return;
     if ( id==ttf_postscriptname )
