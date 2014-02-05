@@ -6623,10 +6623,8 @@ static void utf82u_annot_strncat(unichar_t *to, const char *from, int len) {
 void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	int actualuni) {
 /* This is for the popup which appears when you hover mouse over a character on main window */
-    static unichar_t space[810];
-    char cspace[162];
     int upos=-1;
-    int done = false;
+    GString *msg = g_string_new( "" );
 
     /* If a glyph is multiply mapped then the inbuild unicode enc may not be */
     /*  the actual one used to access the glyph */
@@ -6654,44 +6652,37 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	    upos = 0x11a8 + sc->jamo-(19+21+1);
     }
 #endif
-    else {
-	snprintf( cspace, sizeof(cspace), "%u 0x%x U+???? \"%.25s\" ", localenc, localenc, sc->name==NULL?"":sc->name );
-	uc_strcpy(space,cspace);
-	done = true;
+
+    if ( upos == -1 ) {
+	g_string_printf( msg, "%u 0x%x U+???? \"%.25s\" ",
+		localenc, localenc,
+		(sc->name == NULL) ? "" : (gchar *) sc->name );
+    } else {
+	/* unicode name or range name */
+	gchar *uniname = (gchar *) unicode_name( upos );
+	if( uniname == NULL ) uniname = g_strdup( UnicodeRange( upos ) );
+	g_string_printf( msg, "%u 0x%x U+%04X \"%.25s\" %.100s",
+		localenc, localenc, upos,
+		(sc->name == NULL) ? "" : (gchar *) sc->name,
+		(uniname == NULL) ? "" : uniname );
+	if ( uniname != NULL ) g_free( uniname );
+
+	/* annotation */
+	gchar *uniannot;
+	if( ( uniannot = (gchar *) unicode_annot( upos )) != NULL ) {
+	    msg = g_string_append( msg, "\n" );
+	    msg = g_string_append( msg, uniannot );
+	    g_free( uniannot );
+	}
     }
 
-    if ( !done ) {
-	char *uniname;
-	if ( (uniname=unicode_name(upos))!=NULL ) {
-	    /* uniname=unicode "Name" as defined in NameList.txt */
-            snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
-                      uniname);
-            utf82u_strcpy(space,cspace);
-	    free(uniname);
-        } else {
-            snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
-                      UnicodeRange(upos));
-            utf82u_strcpy(space,cspace);
-        }
-    }
-    char *uniannot;
-    if ( (uniannot=unicode_annot(upos))!=NULL ) {
-	/* uniannot=unicode "Annotations" as defined in NameList.txt */
-	int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
-	if ( left>4 ) {
-	    uc_strcat(space,"\n");
-            utf82u_annot_strncat(space, uniannot, left-2);
-	}
-	free(uniannot);
-    }
+    /* user comments */
     if ( sc->comment!=NULL ) {
-	int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
-	if ( left>4 ) {
-	    uc_strcat(space,"\n\n");
-	    utf82u_strncpy(space+u_strlen(space),sc->comment,left-2);
-	}
+	msg = g_string_append( msg, "\n" );
+	msg = g_string_append( msg, sc->comment );
     }
-    GGadgetPreparePopup(gw,space);
+
+    GGadgetPreparePopup8( gw, g_string_free( msg, FALSE ) );
 }
 
 static void noop(void *UNUSED(_fv)) {

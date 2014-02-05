@@ -35,6 +35,8 @@
 #include <gfile.h>
 #include "plugins.h"
 #include "encoding.h"
+#include "ffglib.h"
+#include <glib/gprintf.h>
 
 Encoding *default_encoding = NULL;
 
@@ -576,8 +578,7 @@ char *ParseEncodingFile(char *filename, char *encodingname) {
     FILE *file;
     char *orig = filename;
     Encoding *head, *item, *prev, *next;
-    char buf[300];
-    char *name;
+    char *buf, *name;
     int i,ch;
 
     if ( filename==NULL ) filename = getPfaEditEncodings();
@@ -604,7 +605,7 @@ return( NULL );
     fclose(file);
     if ( head==NULL ) {
 	ff_post_error(_("Bad encoding file format"),_("Bad encoding file format") );
-return( NULL );
+	return( NULL );
     }
 
     for ( i=0, prev=NULL, item=head; item!=NULL; prev = item, item=next, ++i ) {
@@ -612,21 +613,16 @@ return( NULL );
 	if ( item->enc_name==NULL ) {
 	    if ( no_windowing_ui ) {
 		ff_post_error(_("Bad encoding file format"),_("This file contains an unnamed encoding, which cannot be named in a script"));
-return( NULL );
+		return( NULL );
 	    }
 	    if ( item==head && item->next==NULL )
-		strcpy(buf,_("Please name this encoding"));
-	    else {
-		if ( i<=3 )
-		    snprintf(buf,sizeof(buf),
-			    _("Please name the %s encoding in this file"),
-			    i==1 ? _("_First") : i==2 ? _("Second") : _("Third") );
-		else
-		    snprintf(buf,sizeof(buf),
-			    _("Please name the %dth encoding in this file"),
-			    i );
-	    }
-	    name = ff_ask_string(buf,NULL,buf);
+		buf = (char *) g_strdup(_( "Please name this encoding" ));
+	    else
+		buf = (char *) g_strdup_printf(_( "Please name encoding %d in this file" ), i );
+
+	    name = ff_ask_string( buf, NULL, buf );
+	    g_free( buf );
+
 	    if ( name!=NULL ) {
 		item->enc_name = copy(name);
 		free(name);
@@ -954,7 +950,7 @@ struct cidmap *FindCidMap(char *registry,char *ordering,int supplement,SplineFon
     char *file, *maybefile=NULL;
     int maybe_sup = -1;
     char *buts[3], *buts2[3], *buts3[3];
-    char buf[100];
+    gchar *buf = NULL;
     int ret;
 
     if ( sf!=NULL && sf->cidmaster ) sf = sf->cidmaster;
@@ -1008,19 +1004,21 @@ return( maybe );
 
     if ( file==NULL ) {
 	char *uret;
-	snprintf(buf,sizeof(buf),"%s-%s-*.cidmap", registry, ordering );
+	buf = g_strdup_printf( "%s-%s-*.cidmap", registry, ordering );
 	if ( maybe==NULL && maybefile==NULL ) {
 	    buts3[0] = _("_Browse"); buts3[1] = _("_Give Up"); buts3[2] = NULL;
 	    ret = ff_ask(_("No cidmap file..."),(const char **)buts3,0,1,_("FontForge was unable to find a cidmap file for this font. It is not essential to have one, but some things will work better if you do. If you have not done so you might want to download the cidmaps from:\n   http://FontForge.sourceforge.net/cidmaps.tgz\nand then gunzip and untar them and move them to:\n  %.80s\n\nWould you like to search your local disk for an appropriate file?"),
 		    getFontForgeShareDir()==NULL?"/usr/share/fontforge":getFontForgeShareDir()
 		    );
-	    if ( ret==1 || no_windowing_ui )
-		buf[0] = '\0';
+	    if ( ret==1 || no_windowing_ui ) {
+		g_free( buf );
+		buf = NULL;
+	    }
 	}
 	uret = NULL;
-	if ( buf[0]!='\0' && !no_windowing_ui ) {
+	if ( ( buf != NULL ) && !no_windowing_ui ) {
 	    if ( sf!=NULL ) sf->loading_cid_map = true;
-	    uret = ff_open_filename(_("Find a cidmap file..."),NULL,buf);
+	    uret = ff_open_filename(_("Find a cidmap file..."), NULL, (char *) buf );
 	    if ( sf!=NULL ) sf->loading_cid_map = false;
 	}
 	if ( uret==NULL ) {
