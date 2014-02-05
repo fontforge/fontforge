@@ -3731,7 +3731,6 @@ static void StoreTTFNames(struct gfi_data *d) {
     GGadget *edit = GWidgetGetControl(d->gw,CID_TNames);
     int rows;
     struct matrix_data *strings = GMatrixEditGet(edit, &rows);
-    int len=0;
 
     TTFLangNamesFree(sf->names); sf->names = NULL;
 
@@ -3744,8 +3743,6 @@ static void StoreTTFNames(struct gfi_data *d) {
 	    sf->names = tln;
 	}
 	tln->names[strings[3*i+1].u.md_ival] = copy(strings[3*i+2].u.md_str );
-	if ( strings[3*i+2].u.md_str!=NULL )
-	    len += 2*utf8_strlen(strings[3*i+2].u.md_str);
     }
 
     TTF_PSDupsDefault(sf);

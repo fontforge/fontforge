@@ -30,6 +30,7 @@
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>
+#include <ffglib.h>
 #include <chardata.h>
 #include <unistd.h>
 #include <math.h>
@@ -1247,7 +1248,7 @@ static void bUCS4(Context *c) {
 	ScriptError( c, "Wrong number of arguments" );
     else if ( c->a.vals[1].type==v_str ) {
 	const char *pt = c->a.vals[1].u.sval;
-	int i, len = utf8_strlen(pt);
+	int i, len = g_utf8_strlen( pt, -1 );
 	c->return_val.type = v_arrfree;
 	c->return_val.u.aval = malloc(sizeof(Array));
 	c->return_val.u.aval->argc = len;
