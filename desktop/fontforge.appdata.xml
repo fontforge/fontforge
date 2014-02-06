@@ -7,33 +7,28 @@
   <p xml:lang="C">
   FontForge is a font editor for outline and bitmap fonts that lets you create,
   edit, or convert, a range of fonts, including PostScript, TrueType, OpenType,
-  cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) fonts.
-  </p>
+  cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) fonts.</p>
   <p xml:lang="C">
   FontForge is free Open Source Software written to run on various computer operating
-  systems. You can use FontForge Graphically or as a command-line tool.
-  </p>
+  systems. You can use FontForge Graphically or as a command-line tool.</p>
   <p xml:lang="C">
   Learning to use FontForge is easy, and there are various tutorials available beginning
-  with the basics up to more advanced features such as making and using scripts.
-  </p>
+  with the basics up to more advanced features such as making and using scripts.</p>
   <p xml:lang="uk">
   FontForge — редактор контурних та растрових шрифтів, за допомогою якого ви можете
   створювати, редагувати та перетворювати шрифти у форматах PostScript, TrueType, OpenType,
-  cid-keyed, multi-master, cff, SVG та растрових (bdf, FON, NFNT).
-  </p>
+  cid-keyed, multi-master, cff, SVG та растрових (bdf, FON, NFNT).</p>
   <p xml:lang="pt">
   FontForge — um editor de fontes para fontes outline e de bitmap que lhe permite criar,
   editar ou converter, uma série de fontes, incluindo PostScript, TrueType, OpenType,
-  cid-keyed, multi-master, cff, SVG e de bitmap (bdf, FON, NFNT) fontes.
-  </p>
+  cid-keyed, multi-master, cff, SVG e de bitmap (bdf, FON, NFNT) fontes.</p>
   <p xml:lang="pt">
   Aprender a usar FontForge é fácil, e existem vários tutoriais disponíveis que começam
-  com o básico até mais recursos avançados, como fazer e usar scripts.  </p>
-  </p>
+  com o básico até mais recursos avançados, como fazer e usar scripts.</p>
  </description>
  <screenshots>
-  <screenshot type="default" width="1200" height="675">https://dl.dropboxusercontent.com/u/55247264/ff-screenshot.png</screenshot>
+  <screenshot type="default" width="1200" height="675">https://github.com/fontforge/fontforge/raw/master/doc/html/ff-screenshot.png</screenshot>
+ </screenshots>
   <url type="homepage">https://github.com/fontforge/fontforge</url>
  <updatecontact>fontforge-devel@lists.sourceforge.net</updatecontact>
 </application>
