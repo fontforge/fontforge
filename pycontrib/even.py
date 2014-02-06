@@ -17,7 +17,8 @@ evenpath = os.path.dirname(sys.modules[__name__].__file__) + "/Even"
 
 def runEvenShell(data = None, glyphOrFont = None):
     """Run even"""
-    subprocess.call([evenpath, ''])
+    subprocess.Popen([evenpath, ''])
+    #subprocess.call([evenpath, ''])
 
 if fontforge.hasUserInterface():
     fontforge.registerMenuItem(runEvenShell, None, None, ("Font","Glyph"),
