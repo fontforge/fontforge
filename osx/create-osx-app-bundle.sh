@@ -153,6 +153,13 @@ cd $bundle_bin
 install_name_tool -change /opt/local/Library/Frameworks/Python.framework/Versions/2.7/Python @executable_path/Python fontforge 
 cd $bundle_bin
 
+#
+# use links in filesystem instead of explicit code to handle the name change.
+#
+cd $bundle_lib
+ln -s libgdraw.5.dylib libgdraw.so.5
+cd $bundle_bin
+
 
 ####
 #

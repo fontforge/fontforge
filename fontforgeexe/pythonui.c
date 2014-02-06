@@ -578,7 +578,7 @@ static PyObject *PyFFFont_CollabSessionSetUpdatedCallback(PyFF_Font *self, PyObj
 
 static void GtkWindowToMainEventLoop_fd_callback( int fd, void* datas )
 {
-    printf("GtkWindowToMainEventLoop_fd_callback()\n");
+//    printf("GtkWindowToMainEventLoop_fd_callback()\n");
     gboolean may_block = false;
     g_main_context_iteration( g_main_context_default(), may_block );
 }
@@ -594,15 +594,12 @@ static PyObject *PyFFFont_addGtkWindowToMainEventLoop(PyFF_Font *self, PyObject 
     if ( !PyArg_ParseTuple( args, "i", &v ))
         return( NULL );
 
-    printf("***************** xid: %d\n", v );
     gpointer gdkwindow = gdk_xid_table_lookup( v );
-    printf("***************** obj: %p\n", gdkwindow );
 
     if( gdkwindow )
     {
         Display* d = GDK_WINDOW_XDISPLAY(gdkwindow);
         int fd = XConnectionNumber(d);
-        printf("***************** fd: %d\n", fd );
         if( fd )
         {
             gpointer udata = 0;
@@ -625,15 +622,12 @@ static PyObject *PyFFFont_getGtkWindowMainEventLoopFD(PyFF_Font *self, PyObject 
     if ( !PyArg_ParseTuple( args, "i", &v ))
         return( NULL );
 
-    printf("***************** xid: %d\n", v );
     gpointer gdkwindow = gdk_xid_table_lookup( v );
-    printf("***************** obj: %p\n", gdkwindow );
 
     if( gdkwindow )
     {
         Display* d = GDK_WINDOW_XDISPLAY(gdkwindow);
         int fd = XConnectionNumber(d);
-        printf("***************** fd: %d\n", fd );
         if( fd )
         {
 	    return( Py_BuildValue("i", fd ));
@@ -655,15 +649,12 @@ static PyObject *PyFFFont_removeGtkWindowToMainEventLoop(PyFF_Font *self, PyObje
     if ( !PyArg_ParseTuple( args, "i", &v ))
         return( NULL );
 
-    printf("rem ***************** xid: %d\n", v );
     gpointer gdkwindow = gdk_xid_table_lookup( v );
-    printf("rem ***************** obj: %p\n", gdkwindow );
 
     if( gdkwindow )
     {
         Display* d = GDK_WINDOW_XDISPLAY(gdkwindow);
         int fd = XConnectionNumber(d);
-        printf("REMOVE ***************** fd: %d\n", fd );
         if( fd )
         {
             gpointer udata = 0;
