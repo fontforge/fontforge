@@ -313,7 +313,7 @@ cp -av /opt/local/share/X11/locale $bundle_share/X11
 cd $TEMPDIR
 find FontForge.app -exec touch {} \;
 rm -f  ~/FontForge.app.zip
-zip -9 -r ~/FontForge.app.zip FontForge.app
+zip -9 --symlinks -r ~/FontForge.app.zip FontForge.app
 cp -f  ~/FontForge.app.zip /tmp/
 chmod o+r /tmp/FontForge.app.zip
 
