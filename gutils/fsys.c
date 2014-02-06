@@ -910,8 +910,14 @@ char *GFileReadAll(char *name) {
     return( 0 );
 }
 
+/*
+ * Write char string 'data' into file 'name'. Return -1 if error.
+ **/
 int GFileWriteAll(char *filepath, char *data) {
-/* Write char string 'data' into file 'name'. Return -1 if error. */
+    
+    if( !data )
+	return -1;
+    
     size_t bwrite = strlen(data);
     FILE* fp;
 
