@@ -153,6 +153,7 @@ cd $bundle_bin
 install_name_tool -change /opt/local/Library/Frameworks/Python.framework/Versions/2.7/Python @executable_path/Python fontforge 
 cd $bundle_bin
 
+
 ####
 #
 # pygtk

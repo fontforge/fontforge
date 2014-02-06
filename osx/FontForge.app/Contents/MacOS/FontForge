@@ -37,6 +37,9 @@ export LANG=en_US.UTF-8
 export XLOCALEDIR="$bundle_share/X11/locale"
 
 export PYTHONHOME="$bundle_bin/Python.framework.2.7"
+# This line allows python to find the compiled libraries so for example the gdraw
+# module can use _libraries['libgdraw.so.5'] = CDLL('libgdraw.so.5')
+export LD_LIBRARY_PATH="$bundle_lib"
 
 WRAPPER=
 
