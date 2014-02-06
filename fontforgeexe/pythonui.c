@@ -575,12 +575,14 @@ static PyObject *PyFFFont_CollabSessionSetUpdatedCallback(PyFF_Font *self, PyObj
 #undef GList
 #undef GMenuItem
 
+
 static void GtkWindowToMainEventLoop_fd_callback( int fd, void* datas )
 {
     printf("GtkWindowToMainEventLoop_fd_callback()\n");
     gboolean may_block = false;
     g_main_context_iteration( g_main_context_default(), may_block );
 }
+
 
 
 static PyObject *PyFFFont_addGtkWindowToMainEventLoop(PyFF_Font *self, PyObject *args)
@@ -605,6 +607,36 @@ static PyObject *PyFFFont_addGtkWindowToMainEventLoop(PyFF_Font *self, PyObject 
         {
             gpointer udata = 0;
             GDrawAddReadFD( 0, fd, udata, GtkWindowToMainEventLoop_fd_callback );
+        }
+    }
+    
+    /* Boilerplate to return "None" */
+    Py_INCREF(Py_None);
+    result = Py_None;
+    return result;
+}
+
+static PyObject *PyFFFont_getGtkWindowMainEventLoopFD(PyFF_Font *self, PyObject *args)
+{
+    PyObject *result = NULL;
+    PyObject *temp;
+    int v = 0;
+
+    if ( !PyArg_ParseTuple( args, "i", &v ))
+        return( NULL );
+
+    printf("***************** xid: %d\n", v );
+    gpointer gdkwindow = gdk_xid_table_lookup( v );
+    printf("***************** obj: %p\n", gdkwindow );
+
+    if( gdkwindow )
+    {
+        Display* d = GDK_WINDOW_XDISPLAY(gdkwindow);
+        int fd = XConnectionNumber(d);
+        printf("***************** fd: %d\n", fd );
+        if( fd )
+        {
+	    return( Py_BuildValue("i", fd ));
         }
     }
     
@@ -645,6 +677,25 @@ static PyObject *PyFFFont_removeGtkWindowToMainEventLoop(PyFF_Font *self, PyObje
     return result;
 }
 
+static PyObject *PyFFFont_removeGtkWindowToMainEventLoopByFD(PyFF_Font *self, PyObject *args)
+{
+    PyObject *result = NULL;
+    PyObject *temp;
+    int v = 0;
+
+    if ( !PyArg_ParseTuple( args, "i", &v ))
+        return( NULL );
+
+    int fd = v;
+    gpointer udata = 0;
+    GDrawRemoveReadFD( 0, fd, udata );
+    
+    /* Boilerplate to return "None" */
+    Py_INCREF(Py_None);
+    result = Py_None;
+    return result;
+}
+
 #else
 
 #define EMPTY_METHOD				\
@@ -658,7 +709,11 @@ static PyObject *PyFFFont_removeGtkWindowToMainEventLoop(PyFF_Font *self, PyObje
     									\
 static PyObject *PyFFFont_addGtkWindowToMainEventLoop(PyFF_Font *self, PyObject *args)
 { EMPTY_METHOD; }
+static PyObject *PyFFFont_getGtkWindowMainEventLoopFD(PyFF_Font *self, PyObject *args)
+{ EMPTY_METHOD; }
 static PyObject *PyFFFont_removeGtkWindowToMainEventLoop(PyFF_Font *self, PyObject *args)
+{ EMPTY_METHOD; }
+static PyObject *PyFFFont_removeGtkWindowToMainEventLoopByFD(PyFF_Font *self, PyObject *args)
 { EMPTY_METHOD; }
 
 #endif
@@ -710,14 +765,23 @@ PyMethodDef PyFF_FontUI_methods[] = {
    { "CollabLastChangedCodePoint", (PyCFunction) PyFF_getLastChangedCodePoint, METH_VARARGS, "" },
    { "CollabLastSeq", (PyCFunction) PyFF_getLastSeq, METH_VARARGS, "" },
 
+   
+   PYMETHODDEF_EMPTY /* Sentinel */
+};
+
+PyMethodDef module_fontforge_ui_methods[] = {
+
    // allow python code to expose it's gtk mainloop to fontforge
    { "addGtkWindowToMainEventLoop", (PyCFunction) PyFFFont_addGtkWindowToMainEventLoop, METH_VARARGS, "fixme." },
+   { "getGtkWindowMainEventLoopFD", (PyCFunction) PyFFFont_getGtkWindowMainEventLoopFD, METH_VARARGS, "fixme." },
    { "removeGtkWindowToMainEventLoop", (PyCFunction) PyFFFont_removeGtkWindowToMainEventLoop, METH_VARARGS, "fixme." },
+   { "removeGtkWindowToMainEventLoopByFD", (PyCFunction) PyFFFont_removeGtkWindowToMainEventLoopByFD, METH_VARARGS, "fixme." },
 
    
    PYMETHODDEF_EMPTY /* Sentinel */
 };
 
+    
 static PyMethodDef*
 copyUIMethodsToBaseTable( PyMethodDef* ui, PyMethodDef* md )
 {
@@ -740,7 +804,8 @@ void PythonUI_Init(void) {
     set_pyFF_maybeCallCVPreserveState_Func( pyFF_maybeCallCVPreserveState );
     set_pyFF_sendRedoIfInSession_Func( pyFF_sendRedoIfInSession_Func_Real );
 
-    copyUIMethodsToBaseTable( PyFF_FontUI_methods, PyFF_Font_methods );
+    copyUIMethodsToBaseTable( PyFF_FontUI_methods,         PyFF_Font_methods );
+    copyUIMethodsToBaseTable( module_fontforge_ui_methods, module_fontforge_methods );
 }
 #endif
 

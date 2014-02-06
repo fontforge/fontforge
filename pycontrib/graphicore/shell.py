@@ -52,7 +52,7 @@ def runShell(data = None, glyphOrFont = None):
     W.add(S)
     W.show_all()
     W.connect('delete_event',lambda x,y:False)
-    W.connect('destroy',lambda x:gtk.main_quit())
+#    W.connect('destroy',lambda x:gtk.main_quit())
 
     # Start gtk loop here!
     gdraw.gtkrunner.sniffwindow(W)

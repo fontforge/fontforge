@@ -45,6 +45,7 @@ endif
 EXTRA_DIST = excepthook.py test.sfd README graphicore.py even.py
 
 SUBDIRS =
+SUBDIRS += gdraw
 SUBDIRS += simple
 SUBDIRS += collab
 SUBDIRS += graphicore

@@ -655,6 +655,7 @@ pycontrib/Makefile
 pycontrib/simple/Makefile
 pycontrib/collab/Makefile
 pycontrib/graphicore/Makefile
+pycontrib/gdraw/Makefile
 nodejs/Makefile
 nodejs/collabwebview/Makefile
 nodejs/collabwebview/css/Makefile
