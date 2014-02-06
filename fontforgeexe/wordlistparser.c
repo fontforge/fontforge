@@ -38,9 +38,9 @@
 
 char* Wordlist_getSCName( SplineChar* sc )
 {
-    printf("Wordlist_getSCName() sc->name:%s\n", sc->name );
-    printf("Wordlist_getSCName() sc->len :%zd\n", strlen(sc->name) );
-    printf("Wordlist_getSCName() is three:%d\n", strcmp( sc->name, "three" ) );
+    /* printf("Wordlist_getSCName() sc->name:%s\n", sc->name ); */
+    /* printf("Wordlist_getSCName() sc->len :%zd\n", strlen(sc->name) ); */
+    /* printf("Wordlist_getSCName() is three:%d\n", strcmp( sc->name, "three" ) ); */
         
     static char ret[ 1024 ];
     int simple = false;
@@ -84,7 +84,7 @@ char* Wordlist_getSCName( SplineChar* sc )
     if( !strcmp( sc->name, "nine" ))
         return "9";
         
-    snprintf( ret, 1024, "/%s/", sc->name );
+    snprintf( ret, 1024, "/%s", sc->name );
     return ret;
 }
 
@@ -523,6 +523,103 @@ static GArray* Wordlist_selectedToBitmapArray( GArray* a )
         int one = 1;
         g_array_insert_val( ret, v, one );
     }
+    return ret;
+}
+
+
+unichar_t* Wordlist_selectionClear( SplineFont* sf, EncMap *map, unichar_t* txtu )
+{
+    static unichar_t ret[ PATH_MAX ];
+    int limit = PATH_MAX;
+    memset( ret, 0, sizeof(unichar_t) * PATH_MAX );
+
+    unichar_t *dst = ret;
+    const unichar_t *src_end = 0;
+    const unichar_t *src = 0;
+    src_end=txtu+u_strlen(txtu);
+    for ( src=txtu; src < src_end; ++src )
+    {
+	if( *src != '[' && *src != ']' )
+	{
+	    *dst = *src;
+	    dst++;
+	}
+    }
+    
+    return ret;
+}
+
+unichar_t* Wordlist_selectionAdd( SplineFont* sf, EncMap *map, unichar_t* txtu, int offset )
+{
+    int i = 0;
+    static unichar_t ret[ PATH_MAX ];
+    int limit = PATH_MAX;
+    SplineChar* scarray[ PATH_MAX + 1 ];
+    GArray* selected = 0;
+    memset( ret, 0, sizeof(unichar_t) * PATH_MAX );
+    memset( scarray, 0, sizeof(SplineChar*) * limit+1 );
+ 
+    WordlistTrimTrailingSingleSlash( txtu );
+    txtu = WordlistEscapedInputStringToRealStringBasic( sf, txtu, &selected );
+    GArray* bv = Wordlist_selectedToBitmapArray( selected );
+    g_array_unref( selected );
+    selected = 0;
+
+
+    const unichar_t *pt, *ept, *tpt;
+    pt = txtu;
+    ept=txtu+u_strlen(txtu);
+    for ( tpt=pt; tpt<ept; ++tpt )
+    {
+        int ch = *tpt;
+        if( tpt == pt )
+        {
+            // your own char at the leading of the text
+            SplineChar* sc = SFGetOrMakeCharFromUnicodeBasic( sf, ch );
+            scarray[i] = sc;
+            i++;
+            continue;
+        }
+        scarray[i] = SFGetOrMakeCharFromUnicodeBasic( sf, ch );
+
+        i++;
+        if( i >= limit )
+            break;
+    }
+    
+    memset( ret, 0, sizeof(unichar_t) * PATH_MAX );
+    for( i = 0; scarray[i]; i++ )
+    {
+        int element_selected = g_array_index (bv, gint, i);
+	if( i == offset )
+	    element_selected = 1;
+	
+        if( element_selected )
+        {
+            int pos = map->backmap[ scarray[i]->orig_pos ];
+            printf("pos1:%d\n", pos );
+            printf("map:%d\n", map->map[ pos ] );
+            int gid = pos < 0 || pos >= map->enccount ? -2 : map->map[pos];
+            if( gid == -2 )
+                continue;
+            if( gid==-1 || !sf->glyphs[gid] ) 
+                scarray[i] = SFMakeChar( sf, map, pos );
+            else
+                scarray[i] = sf->glyphs[gid];
+        }
+        
+        
+        if( element_selected )
+            uc_strcat( ret, "[" );
+
+        /* uc_strcat( ret, "/" ); */
+        /* uc_strcat( ret, scarray[i]->name ); */
+        uc_strcat( ret, Wordlist_getSCName( scarray[i] ));
+
+        if( element_selected )
+            uc_strcat( ret, "]" );
+    }
+    
     return ret;
 }
 
