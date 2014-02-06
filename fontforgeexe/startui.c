@@ -98,6 +98,7 @@ int splash = 1;
 static int localsplash;
 static int unique = 0;
 static int listen_to_apple_events = false;
+static bool ProcessPythonInitFiles = 1;
 
 static void _dousage(void) {
     printf( "fontforge [options] [fontfiles]\n" );
@@ -1080,8 +1081,23 @@ int fontforge_main( int argc, char **argv ) {
     InitToolIconClut(default_background);
     InitToolIcons();
     InitCursors();
+
+    /**
+     * we have to do a quick sniff of argv[] here to see if the user
+     * wanted to skip loading these python init files.
+     */
+    for ( i=1; i<argc; ++i ) {
+	char buffer[1025];
+	char *pt = argv[i];
+
+	if ( !strcmp(pt,"-SkipPythonInitFiles")) {
+	    ProcessPythonInitFiles = 0;
+	}
+    }
+    
 #ifndef _NO_PYTHON
-    PyFF_ProcessInitFiles();
+    if( ProcessPythonInitFiles )
+	PyFF_ProcessInitFiles();
 #endif
 
     /* Wait until the UI has started, otherwise people who don't have consoles*/
@@ -1175,6 +1191,8 @@ exit( 0 );
 	    MenuNewComposition(NULL,NULL,NULL);
 	    any = 1;
 #  endif
+	} else if ( !strcmp(pt,"-SkipPythonInitFiles")) {
+	    // already handled above.
 	} else if ( strcmp(pt,"-last")==0 ) {
 	    if ( next_recent<RECENT_MAX && RecentFiles[next_recent]!=NULL )
 		if ( ViewPostScriptFont(RecentFiles[next_recent++],openflags))
