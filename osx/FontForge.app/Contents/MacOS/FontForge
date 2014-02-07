@@ -44,6 +44,9 @@ export LD_LIBRARY_PATH="$bundle_lib"
 WRAPPER=
 
 if [ x"$1" == "x--debug" ]; then
+    unset PYTHONHOME
+    unset LD_LIBRARY_PATH
+
     if command -v lldb 2>/dev/null; then
         WRAPPER="gdb --args"
         WRAPPER="script $HOME/FontForge-Debug-Output.txt lldb --debug --source /Applications/FontForge.app/Contents/MacOS/debug-script -- "

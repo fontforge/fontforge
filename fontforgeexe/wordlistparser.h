@@ -59,6 +59,10 @@ extern void WordlistLoadToGTextInfo( GGadget* g, int* idx  );
 
 extern void WordlistTrimTrailingSingleSlash( unichar_t* txt );
 
+extern unichar_t* Wordlist_selectionClear( SplineFont* sf, EncMap *map, unichar_t* txtu );
+extern unichar_t* Wordlist_selectionAdd( SplineFont* sf, EncMap *map, unichar_t* txtu, int offset );
+
+
 extern unichar_t* Wordlist_advanceSelectedCharsBy( SplineFont* sf, EncMap *map, unichar_t* txtu, int offset );
 
 #endif

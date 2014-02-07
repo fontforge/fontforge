@@ -272,7 +272,7 @@ NEWPREFIX=/Applications/FontForge.app/Contents/Resources/opt/local
 
 mkdir -p $bundle_etc
 #cp -av /opt/local/etc/fonts   $bundle_etc
-cp -av /opt/local/etc/fonts/conf.d   $bundle_etc/fonts/
+cp -avL /opt/local/etc/fonts/conf.d   $bundle_etc/fonts/
 cp -av /opt/local/etc/pango   $bundle_etc
 cd $bundle_etc/pango
 sed -i -e "s|$OLDPREFIX|$NEWPREFIX|g" pangorc
