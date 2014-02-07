@@ -599,7 +599,7 @@ static SplineFont *_SFReadPostScript(FILE *file,char *filename) {
 	sf = SplineFontFromPSFont(fd);
 	PSFontFree(fd);
 	if ( sf!=NULL )
-	    CheckAfmOfPostScript(sf,filename,sf->map);
+	    CheckAfmOfPostScript(sf,filename);
     }
 return( sf );
 }
@@ -616,7 +616,7 @@ static SplineFont *SFReadPostScript(char *filename) {
 	sf = SplineFontFromPSFont(fd);
 	PSFontFree(fd);
 	if ( sf!=NULL )
-	    CheckAfmOfPostScript(sf,filename,sf->map);
+	    CheckAfmOfPostScript(sf,filename);
     }
 return( sf );
 }
@@ -1161,7 +1161,7 @@ return( NULL );
 		strmatch(fullname+strlen(strippedname)-4, ".fnt")==0 ) {
 	sf = SFReadWinFON(fullname,0);
     } else if ( strmatch(fullname+strlen(strippedname)-4, ".pdb")==0 ) {
-	sf = SFReadPalmPdb(fullname,0);
+	sf = SFReadPalmPdb(fullname);
     } else if ( (strmatch(fullname+strlen(fullname)-4, ".pfa")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".pfb")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".pf3")==0 ||

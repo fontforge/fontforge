@@ -134,8 +134,7 @@ return( NULL );
 return( new );
 }
 
-static int ValidSubs(SplineFont *sf,OTLookup *otl ) {
-
+static int ValidSubs(OTLookup *otl ) {
 return( otl->lookup_type == gsub_single );
 }
 
@@ -220,13 +219,13 @@ static int TreeFollowBranches(SplineFont *sf,struct contexttree *me,int pending_
 	    me->applymarkedsubs = RulesAllSameSubsAt(me,pending_pos);
 	    if ( me->applymarkedsubs==(OTLookup *) 0xffffffff )
 return( false );
-	    if ( !ValidSubs(sf,me->applymarkedsubs))
+	    if ( !ValidSubs(me->applymarkedsubs))
 return( false );
 	}
 	me->applycursubs = RulesAllSameSubsAt(me,me->depth);
 	if ( me->applycursubs==(OTLookup *) 0xffffffff )
 return( false );
-	if ( me->applycursubs!=NULL && !ValidSubs(sf,me->applycursubs))
+	if ( me->applycursubs!=NULL && !ValidSubs(me->applycursubs))
 return( false );
 	for ( i=0; i<me->branch_cnt; ++i ) {
 	    if ( !TreeFollowBranches(sf,me->branches[i].branch,-1))
@@ -435,12 +434,12 @@ return( false );
 	      default:
 return( false );
 	    }
-	    if ( !ValidSubs(sf,fpst->rules[i].lookups[1].lookup) )
+	    if ( !ValidSubs(fpst->rules[i].lookups[1].lookup) )
 return( false );
 		
 	} else if ( fpst->rules[i].lookup_cnt!=1 )
 return( false );
-	if ( !ValidSubs(sf,fpst->rules[i].lookups[0].lookup) )
+	if ( !ValidSubs(fpst->rules[i].lookups[0].lookup) )
 return( false );
     }
 

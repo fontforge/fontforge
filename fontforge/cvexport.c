@@ -151,7 +151,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     struct tm *tm;
     int ret;
     char oldloc[24];
-    int _objlocs[8], xrefloc, streamstart, streamlength, resid, nextobj;
+    int _objlocs[8], xrefloc, streamstart, streamlength, resid = 0, nextobj;
     int *objlocs = _objlocs;
     const char *author = GetAuthor();
     int i;
@@ -673,7 +673,7 @@ static void MakeExportName(char *buffer, int blen,char *format_spec,
 		    *buffer++ = *pt++;
 		}
 #else
-		for ( pt=sc->name; *pt!='\0' && buffer<bend; )
+		for ( pt=copy(sc->name); *pt!='\0' && buffer<bend; )
 		    *buffer++ = *pt++;
 #endif
 	    } else if ( ch=='f' ) {

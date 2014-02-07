@@ -36,7 +36,7 @@
 #include "wordlistparser.h"
 
 
-char* Wordlist_getSCName( SplineChar* sc )
+const char* Wordlist_getSCName( SplineChar* sc )
 {
     /* printf("Wordlist_getSCName() sc->name:%s\n", sc->name ); */
     /* printf("Wordlist_getSCName() sc->len :%zd\n", strlen(sc->name) ); */

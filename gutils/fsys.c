@@ -26,6 +26,7 @@
  */
 
 #include <stdio.h>
+#include "inc/basics.h"
 #include "ustring.h"
 #include "fileutil.h"
 #include "gfile.h"
@@ -34,7 +35,6 @@
 #include <unistd.h>
 #include <glib.h>
 #include <errno.h>			/* for mkdir_p */
-
 
 #ifdef _WIN32
 #define MKDIR(A,B) mkdir(A)
@@ -62,9 +62,9 @@ static void _u_backslash_to_slash(unichar_t* c){
 	    *c = '/';
 }
 #else
-static void _backslash_to_slash(char* c){
+static void _backslash_to_slash(char* UNUSED(c)){
 }
-static void _u_backslash_to_slash(unichar_t* c){
+static void _u_backslash_to_slash(unichar_t* UNUSED(c)){
 }
 #endif
 
@@ -111,7 +111,7 @@ return EXIT_SUCCESS;
 }
 
 /* Wrapper for formatted variable list printing. */
-char *smprintf(char *fmt, ...) {
+char *smprintf(const char *fmt, ...) {
 	va_list fmtargs;
 	char *ret;
 	int len;
@@ -144,7 +144,7 @@ return buffer;
 return NULL;
 #else
     static char *dir;
-    int uid;
+    uid_t uid;
     struct passwd *pw;
 
     dir = getenv("HOME");
@@ -183,7 +183,7 @@ static void savestrcpy(char *dest,const char *src) {
     }
 }
 
-char *GFileGetAbsoluteName(char *name, char *result, int rsiz) {
+char *GFileGetAbsoluteName(const char *name, char *result, size_t rsiz) {
     /* result may be the same as name */
     char buffer[1000];
 
@@ -245,7 +245,7 @@ char *GFileMakeAbsoluteName(char *name) {
 return( copy(buffer));
 }
 
-char *GFileBuildName(char *dir,char *fname,char *buffer,int size) {
+char *GFileBuildName(char *dir,char *fname,char *buffer,size_t size) {
     int len;
 
     if ( dir==NULL || *dir=='\0' ) {
@@ -279,7 +279,7 @@ return( buffer );
 
 /* Given a filename in a directory, pick the directory out of it, and */
 /*  create a new filename using that directory and the given nametail */
-char *GFileReplaceName(char *oldname,char *fname,char *buffer,int size) {
+char *GFileReplaceName(char *oldname,char *fname,char *buffer,size_t size) {
     int len;
     char *dirend;
 
@@ -671,7 +671,7 @@ return(unlink(buffer));
 
 static char *GResourceProgramDir = 0;
 
-char* getGResourceProgramDir() {
+char* getGResourceProgramDir(void) {
     return GResourceProgramDir;
 }
 
@@ -773,7 +773,7 @@ char *getHelpDir(void) {
 #if defined(DOCDIR)
     prefix = DOCDIR;
 #endif
-    char* postfix = "/../doc/fontforge/";
+    const char* postfix = "/../doc/fontforge/";
     int len = strlen(prefix) + strlen(postfix) + 2;
     sharedir = malloc(len);
     strcpy(sharedir,prefix);
@@ -795,7 +795,7 @@ return dir;
 	}
 return NULL;
 #else
-	int uid;
+	uid_t uid;
 	struct passwd *pw;
 	char *home = getenv("HOME");
 
@@ -825,7 +825,8 @@ return NULL;
  * http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
  */
 char *getFontForgeUserDir(int dir) {
-	char *def, *home, *xdg;
+	const char *def;
+	const char *home, *xdg;
 	char *buf = NULL;
 
 	/* find home directory first, it is needed if any of the xdg env vars are
@@ -880,7 +881,7 @@ return NULL;
 #endif
 }
 
-long GFileGetSize(char *name) {
+off_t GFileGetSize(char *name) {
 /* Get the binary file size for file 'name'. Return -1 if error. */
     struct stat buf;
     long rc;
@@ -902,7 +903,7 @@ char *GFileReadAll(char *name) {
 	    size_t bread=fread(ret,1,sz,fp);
 	    fclose(fp);
 
-	    if( bread==sz )
+	    if( bread==(size_t)sz )
 		return( ret );
 	}
 	free(ret);

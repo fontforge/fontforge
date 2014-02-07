@@ -1315,9 +1315,8 @@ extern void _CVMenuNameContour(CharView *cv);
 extern void SFD_DumpPST( FILE *sfd, SplineChar *sc );
 extern void SFD_DumpKerns( FILE *sfd, SplineChar *sc, int *newgids );
 extern void SFDDumpCharStartingMarker(FILE *sfd,SplineChar *sc);
-extern Undoes *SFDGetUndo( SplineFont *sf, FILE *sfd, SplineChar *sc,
-			   const char* startTag, const char* endTag,
-			   int current_layer );
+extern Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
+			   const char* startTag, int current_layer );
 
 /**
  * Create, open and unlink a new temporary file. This allows the
@@ -1390,7 +1389,7 @@ extern void SFDFixupRefs(SplineFont *sf);
  * so that a stream of single undo/redo elements can be saved and reloaded
  * in the correct order.
  */
-extern void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, char* keyPrefix, int idx );
+extern void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, const char* keyPrefix, int idx );
 
 extern void Prefs_LoadDefaultPreferences( void );
 

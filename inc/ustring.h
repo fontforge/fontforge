@@ -128,9 +128,9 @@ extern char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf);
 extern char *u2utf8_copy(const unichar_t *ubuf);
 extern char *u2utf8_copyn(const unichar_t *ubuf,int len);
 extern unichar_t *encoding2u_strncpy(unichar_t *uto, const char *from, int n, enum encoding cs);
-extern char *u2encoding_strncpy(char *to, const unichar_t *ufrom, int n, enum encoding cs);
-extern unichar_t *def2u_strncpy(unichar_t *uto, const char *from, int n);
-extern char *u2def_strncpy(char *to, const unichar_t *ufrom, int n);
+extern char *u2encoding_strncpy(char *to, const unichar_t *ufrom, size_t n, enum encoding cs);
+extern unichar_t *def2u_strncpy(unichar_t *uto, const char *from, size_t n);
+extern char *u2def_strncpy(char *to, const unichar_t *ufrom, size_t n);
 extern unichar_t *def2u_copy(const char *from);
 extern char *u2def_copy(const unichar_t *ufrom);
 

@@ -387,10 +387,10 @@ void FindBlues( SplineFont *sf, int layer, real blues[14], real otherblues[10]) 
     }
 }
 
-static int PVAddBlues(BlueData *bd,int bcnt,char *pt) {
+static int PVAddBlues(BlueData *bd,unsigned bcnt,char *pt) {
     char *end;
     real val1, val2;
-    int i,j;
+    unsigned i,j;
 
     if ( pt==NULL )
 return( bcnt );
@@ -823,7 +823,7 @@ void ELOrder(EIList *el, int major ) {
 }
 
 static HintInstance *HIMerge(HintInstance *into, HintInstance *hi) {
-    HintInstance *n, *first = NULL, *last;
+    HintInstance *n, *first = NULL, *last = NULL;
 
     while ( into!=NULL && hi!=NULL ) {
 	if ( into->begin<hi->begin ) {
@@ -1272,7 +1272,8 @@ static HintInstance *SCGuessHintPoints(SplineChar *sc, int layer, StemInfo *stem
     int spt=0, ept=0;
     SplinePointList *spl;
     SplinePoint *sp, *np;
-    int sm, wm, i, j, val;
+    int sm, wm, i, j;
+    unsigned val;
     real coord;
     HintInstance *head, *test, *cur, *prev;
 
@@ -1385,7 +1386,7 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
     SplinePointList *spl;
     SplinePoint *sp, *np;
     int sm, wm, off;
-    real ob, oe;
+    real ob = 0.0, oe = 0.0;
     HintInstance *s=NULL, *w=NULL, *cur, *p, *t, *n, *w2;
     /* We've got a hint (from somewhere, old data, reading in a font, user specified etc.) */
     /*  but we don't have HintInstance info. So see if we can find those data */
@@ -2114,7 +2115,7 @@ return( false );
 void SCFigureVerticalCounterMasks(SplineChar *sc) {
     HintMask masks[30];
     StemInfo *h;
-    int mc=0, i;
+    unsigned mc=0, i;
 
     /* I'm not supporting counter hints for mm fonts */
 
@@ -2148,7 +2149,7 @@ void SCFigureCounterMasks(SplineChar *sc) {
     HintMask masks[30];
     uint32 script;
     StemInfo *h;
-    int mc=0, i;
+    unsigned mc=0, i;
 
     /* I'm not supporting counter hints for mm fonts */
 
@@ -2954,7 +2955,7 @@ return;
     SplineCharAutoHint(sc,layer,bd);
 }
 
-int SFNeedsAutoHint( SplineFont *_sf,int layer) {
+int SFNeedsAutoHint( SplineFont *_sf) {
     int i,k;
     SplineFont *sf;
 

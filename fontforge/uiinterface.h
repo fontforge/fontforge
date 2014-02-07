@@ -259,7 +259,7 @@ struct cv_interface {
 
    /* A glyph's name has changed find all charviews with tabs with that name */
    /*  and update those tabs */
-    void (*glyph_name_change)(struct splinefont *sf, char *oldname, char *newname);
+    void (*glyph_name_change)(struct splinefont *sf, const char *oldname, char *newname);
 
    /* We've added a layer to a font */
     void (*layer_palette_check)(struct splinefont *sf);

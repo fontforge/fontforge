@@ -35,6 +35,7 @@
 #include <gfile.h>
 #include "plugins.h"
 #include "encoding.h"
+#include "psfont.h"
 #include "ffglib.h"
 #include <glib/gprintf.h>
 
@@ -130,11 +131,11 @@ const char *FindUnicharName(void) {
     /* Even worse, both accept UCS-2, but under iconv it means native byte */
     /*  ordering and under libiconv it means big-endian */
     iconv_t test;
-    static char *goodname = NULL;
-    static char *names[] = { "UCS-4-INTERNAL", "UCS-4", "UCS4", "ISO-10646-UCS-4", "UTF-32", NULL };
-    static char *namesle[] = { "UCS-4LE", "UTF-32LE", NULL };
-    static char *namesbe[] = { "UCS-4BE", "UTF-32BE", NULL };
-    char **testnames;
+    static const char *goodname = NULL;
+    static const char *names[] = { "UCS-4-INTERNAL", "UCS-4", "UCS4", "ISO-10646-UCS-4", "UTF-32", NULL };
+    static const char *namesle[] = { "UCS-4LE", "UTF-32LE", NULL };
+    static const char *namesbe[] = { "UCS-4BE", "UTF-32BE", NULL };
+    const char **testnames;
     int i;
     union {
 	short s;
@@ -186,7 +187,7 @@ return( goodname );
 return( goodname );
 }
 
-static int TryEscape( Encoding *enc,char *escape_sequence ) {
+static int TryEscape( Encoding *enc, const char *escape_sequence ) {
     char from[20], ucs[20];
     size_t fromlen, tolen;
     ICONV_CONST char *fpt;
@@ -771,7 +772,7 @@ int NameUni2CID(struct cidmap *map, int uni, const char *name) {
     if ( uni!=-1 ) {
 		// Search for a matching code.
 		for ( i=0; i<map->namemax; ++i )
-		    if ( map->unicode[i]==uni )
+		    if ( map->unicode[i]==(uint32)uni )
 				return( i );
 		for ( alts=map->alts; alts!=NULL; alts=alts->next )
 		    if ( alts->uni==uni )
@@ -806,7 +807,7 @@ int MaxCID(struct cidmap *map) {
 return( map->cidmax );
 }
 
-static char *SearchDirForCidMap(char *dir,char *registry,char *ordering,
+static char *SearchDirForCidMap(const char *dir,char *registry,char *ordering,
 	int supplement,char **maybefile) {
     char maybe[FILENAME_MAX+1];
     struct dirent *ent;
@@ -947,9 +948,10 @@ return( ret );
 
 struct cidmap *FindCidMap(char *registry,char *ordering,int supplement,SplineFont *sf) {
     struct cidmap *map, *maybe=NULL;
-    char *file, *maybefile=NULL;
+    const char *file;
+    char *maybefile=NULL;
     int maybe_sup = -1;
-    char *buts[3], *buts2[3], *buts3[3];
+    const char *buts[3], *buts2[3], *buts3[3];
     gchar *buf = NULL;
     int ret;
 
@@ -1309,7 +1311,7 @@ return(NULL);
     new->familyname = copy(cidmaster->familyname);
     new->weight = copy(cidmaster->weight);
     new->copyright = copy(cidmaster->copyright);
-    sprintf(buffer,"%g", cidmaster->cidversion);
+    sprintf(buffer,"%g", (double)cidmaster->cidversion);
     new->version = copy(buffer);
     new->italicangle = cidmaster->italicangle;
     new->upos = cidmaster->upos;
@@ -1876,7 +1878,7 @@ return( NULL );
 	}
 	if ( !found ) {
 	    if ( sc->unicodeenc!=-1 &&
-		     sc->unicodeenc<unicode4_size &&
+                 (unsigned)sc->unicodeenc<unicode4_size &&
 		     (j = EncFromUni(sc->unicodeenc,enc))!= -1 )
 		encoded[j] = i;
 	    else {
@@ -1887,7 +1889,7 @@ return( NULL );
 	    }
 	    for ( altuni=sc->altuni; altuni!=NULL; altuni=altuni->next ) {
 		if ( altuni->unienc!=-1 &&
-			 altuni->unienc<unicode4_size &&
+                     (uint32)altuni->unienc<unicode4_size &&
 			 altuni->vs==-1 &&
 			 altuni->fid==0 &&
 			 (j = EncFromUni(altuni->unienc,enc))!= -1 )

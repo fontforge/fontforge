@@ -53,7 +53,7 @@ static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
 #endif
 }
 
-static void user_warning_fn(png_structp png_ptr, png_const_charp warning_msg) {
+static void user_warning_fn(png_structp UNUSED(png_ptr), png_const_charp warning_msg) {
     fprintf(stderr,"%s\n", warning_msg);
 }
 
@@ -131,19 +131,19 @@ return(false);
        if ( num_palette<=16 )
 	   png_set_packing(png_ptr);
 
-       if ( base->trans!=-1 ) {
+       if ( base->trans!=(Color)-1 ) {
 	   trans_alpha = (png_bytep) malloc(1);
 	   trans_alpha[0] = base->trans;
        }
    } else {
-       if ( base->trans!=-1 ) {
+       if ( base->trans!=(Color)-1 ) {
 	   trans_color = (png_color_16p) malloc(sizeof(png_color_16));
 	   trans_color->red = COLOR_RED(base->trans);
 	   trans_color->green = COLOR_GREEN(base->trans);
 	   trans_color->blue = COLOR_BLUE(base->trans);
        }
    }
-   if ( base->trans!=-1 ) {
+   if ( base->trans!=(Color)-1 ) {
        png_set_tRNS(png_ptr, info_ptr, trans_alpha, 1, trans_color);
    }
    png_write_info(png_ptr, info_ptr);

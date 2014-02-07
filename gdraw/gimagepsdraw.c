@@ -452,7 +452,7 @@ return( false );
 	    base->width*factor*72.0/ps->res,
 	    base->height*factor*72.0/ps->res );
 
-    if ( base->image_type!=it_mono && base->trans!=-1 ) {
+    if ( base->image_type!=it_mono && base->trans!=(Color)-1 ) {
 	/* Must build a secondary pattern through which the primary pattern */
 	/*  will mask */
 	fprintf( ps->output_file, "<< /PatternType 1\n" );

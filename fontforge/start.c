@@ -39,10 +39,11 @@
 #include <glib.h>
 
 #include "gutils/unicodelibinfo.h"
+#include "psfont.h"
 
 int32 unicode_from_adobestd[256];
 struct lconv localeinfo;
-char *coord_sep = ",";
+const char *coord_sep = ",";
 int quiet = 0;
 
 static void initadobeenc(void) {

@@ -99,7 +99,7 @@ typedef struct preintersection {
 
 static char *glyphname=NULL;
 
-static void SOError(char *format,...) {
+static void SOError(const char *format,...) {
     va_list ap;
     va_start(ap,format);
     if ( glyphname==NULL )

@@ -405,9 +405,8 @@ double u_strtod(const unichar_t *str, unichar_t **ptr) {
     char buf[60], *pt, *ret;
     const unichar_t *upt;
     double val;
-    extern double strtod();		/* Please don't delete this, not all of us have good ansi headers */
 
-    for ( upt=str, pt=buf; *upt<128 && *upt!='\0' && pt-buf<sizeof(buf)-1; )
+    for ( upt=str, pt=buf; *upt<128 && *upt!='\0' && pt-buf<(ptrdiff_t)(sizeof(buf)-1); )
 	*pt++ = *upt++;
     *pt = '\0';
     val = strtod(buf,&ret);
@@ -424,7 +423,6 @@ long u_strtol(const unichar_t *str, unichar_t **ptr, int base) {
     char buf[60], *pt, *ret;
     const unichar_t *upt;
     long val;
-    extern long strtol();		/* Please don't delete this, not all of us have good ansi headers */
 
     for ( upt=str, pt=buf; *upt<128 && *upt!='\0' && pt<buf+sizeof(buf)-1; )
 	*pt++ = *upt++;
@@ -870,7 +868,7 @@ char *StripToASCII(const char *utf8_str) {
 	else if ( ch=='\r' && *utf8_str!='\n' )
 	    *pt++ = '\n';
 	else if ( ch==0xa9 /* Copyright sign */ ) {
-	    char *str = "(c)";
+	    const char *str = "(c)";
 	    if ( pt+strlen(str)>=end ) {
 		int off = pt-newcr;
 		newcr = (char *) realloc(newcr,(off+10+strlen(str))+1);

@@ -1247,7 +1247,7 @@ static void FillImages(uint8 *bytemap,EdgeList *es,ImageList *img,Layer *layer,
 		else if ( base->image_type==it_index ) {
 		    col = (base->data + ii*base->bytes_per_line)[jj];
 		    col = base->clut->clut[col];
-		} else if ( layer->dofill && base->trans!=-1) {		/* Equivalent to imagemask */
+		} else if ( layer->dofill && base->trans!=(Color)-1) {		/* Equivalent to imagemask */
 		    if ( (base->trans==0 && !( (base->data + ii*base->bytes_per_line)[jj>>3]&(0x80>>(jj&7)) ) ) ||
 			    (base->trans!=0 && ( (base->data + ii*base->bytes_per_line)[jj>>3]&(0x80>>(jj&7)) ) ))
 	    continue;	/* transparent */

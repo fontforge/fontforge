@@ -364,11 +364,11 @@ extern void FVAutoInstr(FontViewBase *fv);
 extern void FVClearInstrs(FontViewBase *fv);
 extern void FVClearHints(FontViewBase *fv);
 extern void SCAutoTrace(SplineChar *sc,int layer, int ask);
-extern char *FindAutoTraceName(void);
+extern const char *FindAutoTraceName(void);
 extern void *GetAutoTraceArgs(void);
 extern void SetAutoTraceArgs(void *a);
-extern char *FindMFName(void);
-extern char *ProgramExists(char *prog,char *buffer);
+extern const char *FindMFName(void);
+extern char *ProgramExists(const char *prog,char *buffer);
 extern void MfArgsInit(void);
 extern void FVAutoTrace(FontViewBase *fv,int ask);
 extern void FVAddEncodingSlot(FontViewBase *fv,int gid);
@@ -667,5 +667,6 @@ extern void AutoKern2BuildClasses(SplineFont *sf,int layer,
 
 extern void MVSelectFirstKerningTable(struct metricsview *mv);
 
+extern float joinsnap;
 
 #endif

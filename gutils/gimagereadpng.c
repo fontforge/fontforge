@@ -43,11 +43,12 @@ static void *a_file_must_define_something=(void *) &a_file_must_define_something
 # define int8 _int8
 # define uint8 _uint8
 
+#include "inc/basics.h"
 # include "gimage.h"
 
 static void *libpng=(void *) 1;
 
-static int loadpng() { return true; }
+static int loadpng(void) { return true; }
  
 static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
     fprintf(stderr,"%s\n", error_msg);
@@ -58,7 +59,7 @@ static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
 #endif
 }
 
-static void user_warning_fn(png_structp png_ptr, png_const_charp warning_msg) {
+static void user_warning_fn(png_structp UNUSED(png_ptr), png_const_charp warning_msg) {
     fprintf(stderr,"%s\n", warning_msg);
 }
 
@@ -71,7 +72,7 @@ GImage *GImageRead_Png(FILE *fp) {
     png_bytep trans_alpha;
     int num_trans;
     png_color_16p trans_color;
-    int i;
+    unsigned i;
 
     if ( libpng==NULL )
 	if ( !loadpng())
@@ -144,7 +145,7 @@ return( NULL );
 	clut->is_grey = true;
 	png_get_PLTE(png_ptr,info_ptr,&palette,&num_palette);
 	clut->clut_len = num_palette;
-	for ( i=0; i<num_palette; ++i )
+	for ( i=0; i<(unsigned)num_palette; ++i )
 	    clut->clut[i] = COLOR_CREATE(palette[i].red,
 			palette[i].green,
 			palette[i].blue);

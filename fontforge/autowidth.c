@@ -540,7 +540,8 @@ static void PairFindDistance(struct charpair *cp,WidthInfo *wi) {
 void AW_FindFontParameters(WidthInfo *wi) {
     DBounds bb;
     SplineFont *sf=wi->sf;
-    int i, j, si=-1;
+    unsigned i, j;
+    int si=-1;
     real caph, ds, xh, serifsize, angle, ca, seriflength = 0;
     int cnt;
     static unichar_t caps[] = { 'A', 'Z', 0x391, 0x3a9, 0x40f, 0x418, 0x41a, 0x42f, 0 };
@@ -719,7 +720,7 @@ void AW_FindFontParameters(WidthInfo *wi) {
 }
 
 real SFGuessItalicAngle(SplineFont *sf) {
-    static char *easyserif = "IBDEFHKLNPR";
+    static const char *easyserif = "IBDEFHKLNPR";
     int i,si;
     real as, topx, bottomx;
     DBounds bb;
@@ -989,7 +990,8 @@ void AW_ScriptSerifChecker(WidthInfo *wi) {
 }
 
 static int figurekernsets(WidthInfo *wi,struct kernsets *ks) {
-    int i,j,k,cnt,lcnt,max;
+    int i,j,k;
+    unsigned cnt,lcnt,max;
     unichar_t *ch2s;
     unichar_t *cpt, *upt;
     struct charpair *cp;
@@ -1051,7 +1053,7 @@ return( false );
     wi->pairs = malloc(max*sizeof(struct charpair *));
     for ( i=lcnt=cnt=0; i<ks->cur; ++i ) if ( ks->ch1[i]!='\0' ) {
 	for ( cpt=ks->ch2s[i]; *cpt; ++cpt ) {
-	    for ( j=0; j<wi->rcnt && wi->right[j]->sc->unicodeenc!=*cpt; ++j );
+	    for ( j=0; j<wi->rcnt && (unichar_t)wi->right[j]->sc->unicodeenc!=*cpt; ++j );
 	    if ( j<wi->rcnt ) {
 		wi->pairs[cnt++] = cp = calloc(1,sizeof(struct charpair));
 		cp->left = wi->left[lcnt];

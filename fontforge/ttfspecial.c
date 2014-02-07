@@ -354,7 +354,7 @@ return( V_B );
 
 static void pfed_write_data(FILE *ttf, float val, int mod) {
     if ( mod==V_F )
-	putlong(ttf,(int) rint(val*256.0));
+	putlong(ttf,(int) rint(val*256.0f));
     else if ( mod==V_S )
 	putshort(ttf,(int) rint(val));
     else

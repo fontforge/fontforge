@@ -33,7 +33,7 @@
 #endif
 #include "nonlineartrans.h"
 
-static struct builtins { char *name; enum operator op; } builtins[] = {
+static struct builtins { const char *name; enum operator op; } builtins[] = {
     { "x", op_x },
     { "y", op_y },
     { "log", op_log },
@@ -185,7 +185,7 @@ static struct expr *gete0(struct context *c) {
     enum operator op = gettoken(c,&val);
     struct expr *ret;
 
-    switch ( op ) {
+    switch ( (int)op ) { /* Cast avoids a warning that '(' in not in enum operator */
       case op_value: case op_x: case op_y:
 	ret = calloc(1,sizeof(struct expr));
 	ret->operator = op;
@@ -430,6 +430,8 @@ return( rint(val1));
 return( floor(val1));
 	  case op_ceil:
 return( ceil(val1));
+	  default:
+	  break;
 	}
       case op_atan2:
 return( atan2(evaluate_expr(c,e->op1),evaluate_expr(c,e->op2)) );

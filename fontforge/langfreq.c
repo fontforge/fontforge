@@ -16,7 +16,7 @@
 #define FINA	3
 
 struct letter_frequencies {
-    char *utf8_letter;
+    const char *utf8_letter;
     float frequency[4];
     float *afters;
 };

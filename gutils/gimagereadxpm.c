@@ -223,7 +223,7 @@ static char *findnextkey(char *str) {
 
 static long findcol(char *str) {
     char *pt, *end;
-    char *try_order = "cgm"; /* Try in this order to find something */
+    const char *try_order = "cgm"; /* Try in this order to find something */
 
     while ( *try_order ) {
 	pt = findnextkey(str);
@@ -296,7 +296,7 @@ GImage *GImageReadXpm(char * filename) {
     line=NULL; tab=NULL; nchar=0;
     /* If file begins with XPM then read lines using getstring;() */
     /* otherwise for XPM2 read lines using function gww_getline() */
-    if ( (fgets((char *)buf,sizeof(buf),fp))<0 )
+    if ( (fgets((char *)buf,sizeof(buf),fp))==NULL )
 	goto errorGImageReadXpm;
     if ( strstr((char *) buf,"XPM2")!=NULL )
 	getdata = gww_getline;

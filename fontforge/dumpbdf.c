@@ -208,13 +208,15 @@ static int BdfPropHasKey(BDFFont *font,const char *key,char *buffer, int len ) {
 	  case prt_int: case prt_uint:
 	    snprintf( buffer, len, "%d", font->props[i].u.val );
 	  break;
+	  default:
+	  break;
 	}
 return( true );
     }
 return( false );
 }
 
-static void BPSet(BDFFont *font,char *key,int *val,double scale,
+static void BPSet(BDFFont *font,const char *key,int *val,double scale,
 	int *metricssets,int flag) {
     int i,value;
 
@@ -361,6 +363,8 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map,
 		    else
 			fprintf( file, "%d\n", font->props[i].u.val );
 		  break;
+		  default:
+		  break;
 		}
 	    }
 	}
@@ -411,7 +415,7 @@ int BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
     FILE *file;
     int i, enc, gid;
     int ret = 0;
-    char *encodingname = EncodingName(map->enc);
+    const char *encodingname = EncodingName(map->enc);
     int dups=0;
     struct metric_defaults defs;
     BDFChar *bdfc;

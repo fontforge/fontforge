@@ -30,7 +30,7 @@ int pref_collab_sessionJoinTimeoutMS = 1000;
 int pref_collab_roundTripTimerMS = 2000;
 
 #include "collabclientpriv.h"
-
+#include "inc/basics.h"
 
 void collabclient_CVPreserveStateCalled( CharViewBase *cv )
 {
@@ -110,7 +110,7 @@ collabclient_getState( FontViewBase* fv )
 #endif
 }
 
-char*
+const char*
 collabclient_stateToString( enum collabState_t s )
 {
     switch( s )
@@ -123,8 +123,9 @@ collabclient_stateToString( enum collabState_t s )
 	return _("Collab Server");
     case cs_client:
 	return _("Collab Client");
+    default:
+        return _("Unknown Collab State!");
     }
-    return _("Unknown Collab State!");
 }
 
 

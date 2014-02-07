@@ -29,7 +29,9 @@
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>
+#include "inc/basics.h"
 #include "inc/gfile.h"
+#include "psfont.h"
 
 #if defined(__MINGW32__)||defined(__CYGWIN__)
 // no backtrace on windows yet
@@ -972,11 +974,11 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	    SCSynchronizeLBearing(sc,undo->u.state.lbearingchange,layer);
 	}
 	if ( layer==ly_fore && undo->undotype==ut_statename ) {
-	    char *temp = sc->name;
+	    const char *temp = sc->name;
 	    int uni = sc->unicodeenc;
 	    PST *possub = sc->possub;
 	    char *comment = sc->comment;
-	    sc->name = undo->u.state.charname;
+	    sc->name = copy(undo->u.state.charname);
 	    undo->u.state.charname = temp;
 	    sc->unicodeenc = undo->u.state.unicodeenc;
 	    undo->u.state.unicodeenc = uni;
@@ -1216,6 +1218,8 @@ void CopyBufferFree(void) {
 	UndoesFree( copybuffer.u.composit.state );
 	UndoesFree( copybuffer.u.composit.bitmaps );
       break;
+      default:
+      break;
     }
     memset(&copybuffer,'\0',sizeof(copybuffer));
     copybuffer.undotype = ut_none;
@@ -1227,10 +1231,10 @@ static void CopyBufferFreeGrab(void) {
 	ClipboardGrab();
 }
 
-static void noop(void *_copybuffer) {
+static void noop(void *UNUSED(_copybuffer)) {
 }
 
-static void *copybufferPt2str(void *_copybuffer,int32 *len) {
+static void *copybufferPt2str(void *UNUSED(_copybuffer),int32 *len) {
     Undoes *cur = &copybuffer;
     SplinePoint *sp;
     char buffer[100];
@@ -1265,7 +1269,7 @@ return( copy(""));
 return( copy(buffer));
 }
 
-static void *copybufferName2str(void *_copybuffer,int32 *len) {
+static void *copybufferName2str(void *UNUSED(_copybuffer),int32 *len) {
     Undoes *cur = &copybuffer;
 
     while ( cur ) {
@@ -1357,7 +1361,7 @@ return( false );
 return( true );
 }
 
-static void *copybuffer2svg(void *_copybuffer,int32 *len) {
+static void *copybuffer2svg(void *UNUSED(_copybuffer),int32 *len) {
     Undoes *cur = &copybuffer;
     SplineChar dummy;
     static Layer layers[2];
@@ -1424,7 +1428,7 @@ return( ret );
 }
 
 /* When a selection contains multiple glyphs, save them into an svg font */
-static void *copybuffer2svgmult(void *_copybuffer,int32 *len) {
+static void *copybuffer2svgmult(void *UNUSED(_copybuffer),int32 *len) {
     Undoes *cur = &copybuffer, *c, *c2;
     SplineFont *sf;
     int cnt,i;
@@ -1469,7 +1473,7 @@ return( copy(""));
 	sf->ascent = sc->parent->ascent;
 	sf->descent = sc->parent->descent;
     }
-    _WriteSVGFont(svg,sf,ff_svg,0,NULL,ly_fore);
+    _WriteSVGFont(svg,sf,0,NULL,ly_fore);
     if ( sc!=NULL )
 	sc->parent->layers[ly_fore].order2 = old_order2;
 
@@ -1491,7 +1495,7 @@ return( ret );
 }
 #endif
 
-static void *copybuffer2eps(void *_copybuffer,int32 *len) {
+static void *copybuffer2eps(void *UNUSED(_copybuffer),int32 *len) {
     Undoes *cur = &copybuffer;
     SplineChar dummy;
     static Layer layers[2];
@@ -1741,6 +1745,8 @@ static void _CopyBufferClearCopiedFrom(Undoes *cb, SplineFont *dying) {
 	for ( cb=cb->u.multiple.mult; cb!=NULL; cb=cb->next )
 	    _CopyBufferClearCopiedFrom(cb,dying);
       break;
+      default:
+      break;
     }
 }
 
@@ -1748,8 +1754,7 @@ void CopyBufferClearCopiedFrom(SplineFont *dying) {
     _CopyBufferClearCopiedFrom(&copybuffer,dying);
 }
 
-int getAdobeEnc(char *name) {
-    extern char *AdobeStandardEncoding[256];
+int getAdobeEnc(const char *name) {
     int i;
 
     for ( i=0; i<256; ++i )
@@ -1867,7 +1872,6 @@ return;
 static Undoes *SCCopyAllLayer(SplineChar *sc,enum fvcopy_type full,int layer) {
     Undoes *cur;
     RefChar *ref;
-    extern int copymetadata, copyttfinstr;
     /* If full==ct_fullcopy copy the glyph as is. */
     /* If full==ct_reference put a reference to the glyph in the clipboard */
     /* If full==ct_unlinkrefs copy the glyph, but unlink any references it contains */
@@ -1973,6 +1977,8 @@ void SCCopyWidth(SplineChar *sc,enum undotype ut) {
 	SplineCharFindBounds(sc,&bb);
 	copybuffer.u.rbearing = sc->width-bb.maxx;
       break;
+      default:
+      break;
     }
 }
 
@@ -1982,7 +1988,7 @@ void CopyWidth(CharViewBase *cv,enum undotype ut) {
 
 static SplineChar *FindCharacter(SplineFont *into, SplineFont *from,RefChar *rf,
 	SplineChar **fromsc) {
-    char *fromname = NULL;
+    const char *fromname = NULL;
 
     if ( !SFIsActive(from))
 	from = NULL;
@@ -2542,6 +2548,8 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	    FVTrans(fv,sc,transform,NULL,false);
 	/* FVTrans will preserve the state and update the chars */
       break;
+      default:
+      break;
     }
 }
 
@@ -2693,7 +2701,7 @@ static void KPInto(SplineChar *owner,KernPair *kp,KernPair *fromkp,int isv,
 	kp->adjust = NULL;
 }
 
-static void SCPasteLookups(SplineChar *sc,SplineChar *fromsc,int pasteinto,
+static void SCPasteLookups(SplineChar *sc,SplineChar *fromsc,
 	OTLookup **list, OTLookup **backpairlist, struct sfmergecontext *mc) {
     PST *frompst, *pst;
     int isv, gid;
@@ -2797,7 +2805,7 @@ static void SCPasteLookups(SplineChar *sc,SplineChar *fromsc,int pasteinto,
 	_SCCharChangedUpdate(sc,ly_none,2);
 }
 
-static void SCPasteLookupsMid(SplineChar *sc,Undoes *paster,int pasteinto,
+static void SCPasteLookupsMid(SplineChar *sc,Undoes *paster,
 	OTLookup **list, OTLookup **backpairlist, struct sfmergecontext *mc) {
     SplineChar *fromsc;
 
@@ -2807,7 +2815,7 @@ static void SCPasteLookupsMid(SplineChar *sc,Undoes *paster,int pasteinto,
 	ff_post_error(_("Missing glyph"),_("Could not find original glyph"));
 return;
     }
-    SCPasteLookups(sc,fromsc,pasteinto,list,backpairlist,mc);
+    SCPasteLookups(sc,fromsc,list,backpairlist,mc);
 }
 
 static int HasNonClass(OTLookup *otl) {
@@ -2819,9 +2827,9 @@ return( true );
 return( false );
 }
 
-static OTLookup **GetLookupsToCopy(SplineFont *sf,OTLookup ***backpairlist, int is_same) {
+static OTLookup **GetLookupsToCopy(SplineFont *sf,OTLookup ***backpairlist) {
     int cnt, bcnt, ftot=0, doit, isgpos, i, ret;
-    char **choices = NULL, *sel;
+    char **choices = NULL, *sel = NULL;
     OTLookup *otl, **list1=NULL, **list2=NULL, **list, **blist;
     char *buttons[3];
     buttons[0] = _("_OK");
@@ -2853,7 +2861,7 @@ static OTLookup **GetLookupsToCopy(SplineFont *sf,OTLookup ***backpairlist, int 
 /* GT:  be copied from one glyph to another. For a kerning (pairwise) lookup */
 /* GT:  the first entry in the list (marked by the lookup name by itself) will */
 /* GT:  mean all data where the current glyph is the first glyph in a kerning */
-/* GT:  pair. But we can also (separatedly) copy data where the current glyph */
+/* GT:  pair. But we can also (separately) copy data where the current glyph */
 /* GT:  is the second glyph in the kerning pair, and that's what this line */
 /* GT:  refers to. The "%s" will be filled in with the lookup name */
 			    char *format = _("Second glyph of %s");
@@ -2946,12 +2954,12 @@ return;
 	ff_post_error(_("Missing glyph"),_("Could not find original glyph"));
 return;
     }
-    list = GetLookupsToCopy(fromsc->parent,&backpairlist,fromsc->parent==sc->parent);
+    list = GetLookupsToCopy(fromsc->parent,&backpairlist);
     if ( list==NULL )
 return;
     memset(&mc,0,sizeof(mc));
     mc.sf_from = paster->copied_from; mc.sf_to = sc->parent;
-    SCPasteLookups(sc,fromsc,true,list,backpairlist,&mc);
+    SCPasteLookups(sc,fromsc,list,backpairlist,&mc);
     free(list);
     free(backpairlist);
     SFFinishMergeContext(&mc);
@@ -3141,6 +3149,8 @@ return;
       break;
       case ut_multiple: case ut_layers:
 	_PasteToCV(cv,cvsc,paster->u.multiple.mult);
+      break;
+      default:
       break;
     }
 }
@@ -3340,6 +3350,8 @@ static void _PasteToBC(BDFChar *bc,int pixelsize, int depth, Undoes *paster, int
       case ut_multiple:
 	_PasteToBC(bc,pixelsize,depth,paster->u.multiple.mult,clearfirst);
       break;
+      default:
+      break;
     }
 }
 
@@ -3374,6 +3386,8 @@ void FVCopyWidth(FontViewBase *fv,enum undotype ut) {
 	      case ut_rbearing:
 		SplineCharFindBounds(sc,&bb);
 		cur->u.rbearing = sc->width-bb.maxx;
+	      break;
+	      default:	      
 	      break;
 	    }
 	} else
@@ -3425,7 +3439,6 @@ void FVCopy(FontViewBase *fv, enum fvcopy_type fullcopy) {
     Undoes *head=NULL, *last=NULL, *cur;
     Undoes *bhead=NULL, *blast=NULL, *bcur;
     Undoes *state;
-    extern int onlycopydisplayed;
     int gid;
     SplineChar *sc;
     /* If fullcopy==ct_fullcopy copy the glyph as is. */
@@ -3488,7 +3501,6 @@ void MVCopyChar(FontViewBase *fv, BDFFont *mvbdf, SplineChar *sc, enum fvcopy_ty
     Undoes *cur=NULL;
     Undoes *bhead=NULL, *blast=NULL, *bcur;
     Undoes *state;
-    extern int onlycopydisplayed;
 
     if (( onlycopydisplayed && mvbdf==NULL ) || fullcopy == ct_lookups ) {
 	cur = SCCopyAll(sc,fv->active_layer,fullcopy);
@@ -3573,7 +3585,6 @@ void PasteIntoFV(FontViewBase *fv,int pasteinto,real trans[6]) {
     int i, j, cnt=0, gid;
     int yestoall=0, first=true;
     uint8 *oldsel = fv->selected;
-    extern int onlycopydisplayed;
     SplineFont *sf = fv->sf, *origsf = sf;
     MMSet *mm = sf->mm;
     struct sfmergecontext mc;
@@ -3592,8 +3603,7 @@ return;
     }
 
     if ( copybufferHasLookups(&copybuffer)) {
-	list = GetLookupsToCopy(copybuffer.copied_from,&backpairlist,
-		copybuffer.copied_from==fv->sf);
+	list = GetLookupsToCopy(copybuffer.copied_from,&backpairlist);
 	if ( list==NULL )
 return;
     }
@@ -3660,7 +3670,7 @@ return;
 	      case ut_noop:
 	      break;
 	      case ut_statelookup:
-		SCPasteLookupsMid(SFMakeChar(sf,fv->map,i),cur,pasteinto,list,backpairlist,&mc);
+		SCPasteLookupsMid(SFMakeChar(sf,fv->map,i),cur,list,backpairlist,&mc);
 	      break;
 	      case ut_state: case ut_width: case ut_vwidth:
 	      case ut_lbearing: case ut_rbearing:
@@ -3698,6 +3708,8 @@ return;
 			_PasteToBC(BDFMakeChar(bdf,fv->map,i),bdf->pixelsize,BDFDepth(bdf),bmp,!pasteinto);
 		}
 		first = false;
+	      break;
+	      default:
 	      break;
 	    }
 	    ++j;
@@ -3739,7 +3751,6 @@ void PasteIntoMV(FontViewBase *fv, BDFFont *mvbdf,SplineChar *sc, int doclear) {
     Undoes *cur=NULL, *bmp;
     BDFFont *bdf;
     int yestoall=0, first=true;
-    extern int onlycopydisplayed;
     struct sfmergecontext mc;
     int refstate = 0, already_complained = 0;
 
@@ -3796,6 +3807,8 @@ return;
 	}
 	first = false;
       break;
+      default:
+      break;
     }
     SFFinishMergeContext(&mc);
 }
@@ -3826,6 +3839,8 @@ return;
 		temp->u.state.anchor = NULL;
 	    } else
 		temp->u.state.anchor = APAnchorClassMerge(temp->u.state.anchor,into,from);
+	  break;
+	  default:
 	  break;
 	}
 	cur=cur->next;

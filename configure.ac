@@ -428,9 +428,8 @@ if test "$gl_gcc_warnings" = yes; then
   nw="$nw -Wsystem-headers"   # glibc headers fail as of glibc 2.17, gcc 4.8
   nw="$nw -Wsuggest-attribute=format" # glibc headers fail as of glibc 2.17, gcc 4.8
   nw="$nw -Wstrict-aliasing"  # -Sep2012, There's a bug in <py3 with Py_True/False that will propagate with GCC's "strict-aliasing" rules.
-  nw="$nw -Wunused"           # FIXME: we need to turn this off in order to deactivate -Wunused-result below
-  nw="$nw -Wunused-result"    # FIXME: We should have this, but currently it makes too much noise
   nw="$nw -Wsuggest-attribute=pure" # FIXME: Maybe later?
+  nw="$nw -Wbad-function-cast" # We do this on purpose (e.g. double to int)
   nw="$nw -Wall"
   nw="$nw -Wunused-macros"    # those macros might come in handy later
 
@@ -444,6 +443,11 @@ if test "$gl_gcc_warnings" = yes; then
 
   # Add an extra warning
   gl_WARN_ADD([-Wstrict-overflow=1])
+
+  # Add these explicitly: adding -Wfoo to $nw doesn't work in this case
+  gl_WARN_ADD([-Wno-unused-result]) # FIXME: We should in fact use this, but currently it makes too much noise
+  gl_WARN_ADD([-Wno-comment]) # We use /* in comments with good reason
+
   # Add some more safety measures
   gl_WARN_ADD([-D_FORTIFY_SOURCE=2])
   gl_WARN_ADD([-fmudflap])

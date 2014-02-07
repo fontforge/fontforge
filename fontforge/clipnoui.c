@@ -31,19 +31,20 @@
 static void NClipboard_Grab(void) {
 }
 
-static void NClipboard_AddDataType(const char *type, void *data, int cnt, int size,
-	void *(*gendata)(void *,int32 *len), void (*freedata)(void *)) {
+static void NClipboard_AddDataType(const char *UNUSED(type), void *data, int UNUSED(cnt), int UNUSED(size),
+                                   void *(*gendata)(void *,int32 *len), void (*freedata)(void *)) {
+    (void)gendata; /* FIXME: UNUSED doesn't work inside a type expression */
     if ( freedata!=NULL && data !=NULL )
 	(freedata)(data);
 }
 
 /* Asks for the clip and waits for the response. */
-static void *NClipboard_Request(const char *mimetype,int *len) {
+static void *NClipboard_Request(const char *UNUSED(mimetype),int *len) {
     *len = 0;
 return( NULL );
 }
 
-static int NClipboard_HasType(const char *mimetype) {
+static int NClipboard_HasType(const char *UNUSED(mimetype)) {
 return( 0 );
 }
 

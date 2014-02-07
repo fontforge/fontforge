@@ -242,7 +242,8 @@ static void dump_fpst_everythingelse(FILE *out, SplineFont *sf,char **classes,
     /*  asked to apply a transformation to those elements, so we must dump   */
     /*  out the transformed things in the same order */
     int gid, i, k, ch;
-    char *pt, *start, *text;
+    char *pt, *start;
+    const char *text;
     SplineFont *sub;
     SplineChar *sc;
     PST *pst;
@@ -569,7 +570,7 @@ return( entry );
 }
 
 static void dump_contextpstglyphs(FILE *out,SplineFont *sf,
-	struct lookup_subtable *sub, struct fpst_rule *r, int in_ignore) {
+	struct lookup_subtable *sub, struct fpst_rule *r) {
     int i, j, pos, index;
     OTLookup *otl;
     struct vr pairvr[2];
@@ -983,7 +984,7 @@ return;
 	if ( fpst->format==pst_class ) {
 	    dump_contextpstclass(out,sf,sub,r,r->lookup_cnt==0);
 	} else if ( fpst->format==pst_glyphs ) {
-	    dump_contextpstglyphs(out,sf,sub,r,r->lookup_cnt==0);
+	    dump_contextpstglyphs(out,sf,sub,r);
 	} else { /* And reverse coverage */
 	    dump_contextpstcoverage(out,sf,sub,r,r->lookup_cnt==0);
 	}

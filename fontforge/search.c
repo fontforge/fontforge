@@ -311,9 +311,6 @@ return( false );
 return( false );
 	    if ( s->tryrotate && s->endpoints && np_sp->next == NULL ) {
 		int xsign = (flip&1)?-1:1, ysign=(flip&2)?-1:1;
-		SplinePoint *sc_prevsp;
-		/* if ( sc_sp->prev==NULL )*/	/* Already checked this above */
-		sc_prevsp = sc_sp->prev->from;
 		if ( !p_sp->noprevcp ) {
 		    rot = atan2(xsign*(sc_sp->me.y-sc_sp->prevcp.y),ysign*(sc_sp->me.x-sc_sp->prevcp.x)) -
 			  atan2(        p_sp->me.y- p_sp->prevcp.y,         p_sp->me.x- p_sp->prevcp.x);
@@ -763,7 +760,7 @@ static SplinePoint *RplInsertSP(SplinePoint *after,SplinePoint *nrpl,SplinePoint
 return( new );
 }
 
-static void FudgeFigure(SplineChar *sc,SearchData *s,SplineSet *path,BasePoint *fudge) {
+static void FudgeFigure(SearchData *s,SplineSet *path,BasePoint *fudge) {
     SplinePoint *search, *searchrel, *found, *foundrel;
     real xoff, yoff;
 
@@ -809,7 +806,7 @@ static void DoReplaceIncomplete(SplineChar *sc,SearchData *s) {
     }
 
     /* Total "fudge" amount should be spread evenly over each point */
-    FudgeFigure(sc,s,path,&fudge);
+    FudgeFigure(s,path,&fudge);
     if ( s->pointcnt!=s->rpointcnt )
 	MinimumDistancesFree(sc->md); sc->md = NULL;
 

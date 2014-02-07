@@ -34,15 +34,15 @@
 enum { Cache, Config, Data };
 
 int mkdir_p(const char *path, mode_t mode);
-char *smprintf(char *fmt, ...);
+char *smprintf(const char *fmt, ...);
 
 extern char* GFileGetHomeDir(void);
 extern unichar_t* u_GFileGetHomeDir(void);
 
-extern char *GFileGetAbsoluteName(char *name, char *result, int rsiz);
+extern char *GFileGetAbsoluteName(const char *name, char *result, size_t rsiz);
 extern char *GFileMakeAbsoluteName(char *name);
-extern char *GFileBuildName(char *dir,char *fname,char *buffer,int size);
-extern char *GFileReplaceName(char *oldname,char *fname,char *buffer,int size);
+extern char *GFileBuildName(char *dir,char *fname,char *buffer,size_t size);
+extern char *GFileReplaceName(char *oldname,char *fname,char *buffer,size_t size);
 extern char *GFileNameTail(const char *oldname);
 extern char *GFileAppendFile(char *dir,char *name,int isdir);
 extern int GFileIsAbsolute(const char *file);

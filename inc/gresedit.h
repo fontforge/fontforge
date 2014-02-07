@@ -34,7 +34,7 @@
 enum res_type2 { rt_stringlong = rt_string+1, rt_coloralpha, rt_image, rt_font };
 
 struct resed {
-    char *name, *resname;
+    const char *name, *resname;
     enum res_type type;
     void *val;
     char *popup;

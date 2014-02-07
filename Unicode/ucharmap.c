@@ -201,7 +201,7 @@ return( encoding2u_strncpy(uto,_from,n,e_iso8859_1));
 return( uto );
 }
 
-char *u2encoding_strncpy(char *to, const unichar_t *ufrom, int n, enum encoding cs) {
+char *u2encoding_strncpy(char *to, const unichar_t *ufrom, size_t n, enum encoding cs) {
     char *pt = to;
 
     /* we just ignore anything that doesn't fit in the encoding we look at */
@@ -390,10 +390,10 @@ return( to );
 static char *old_local_name=NULL;
 static iconv_t to_unicode=(iconv_t) (-1), from_unicode=(iconv_t) (-1);
 static iconv_t to_utf8=(iconv_t) (-1), from_utf8=(iconv_t) (-1);
-static char *names[] = { "UCS-4-INTERNAL", "UCS-4", "UCS4", "ISO-10646-UCS-4", "UTF-32", NULL };
-static char *namesle[] = { "UCS-4LE", "UTF-32LE", NULL };
-static char *namesbe[] = { "UCS-4BE", "UTF-32BE", NULL };
-static char *unicode_name = NULL;
+static const char (*names[]) = { "UCS-4-INTERNAL", "UCS-4", "UCS4", "ISO-10646-UCS-4", "UTF-32", NULL };
+static const char (*namesle[]) = { "UCS-4LE", "UTF-32LE", NULL };
+static const char (*namesbe[]) = { "UCS-4BE", "UTF-32BE", NULL };
+static const char *unicode_name = NULL;
 static int byteswapped = false;
 
 static int BytesNormal(iconv_t latin1_2_unicode) {
@@ -401,7 +401,8 @@ static int BytesNormal(iconv_t latin1_2_unicode) {
 	int32 s;
 	char c[4];
     } u[8];
-    char *from = "A", *to = &u[0].c[0];
+    const char *from = "A";
+    char *to = &u[0].c[0];
     size_t in_left = 1, out_left = sizeof(u);
     memset(u,0,sizeof(u));
     iconv( latin1_2_unicode, (iconv_arg2_t) &from, &in_left, &to, &out_left);
@@ -412,7 +413,7 @@ return( false );
 }
 
 static int my_iconv_setup(void) {
-    char **testnames;
+    const char **testnames;
     int i;
     union {
 	short s;
@@ -482,7 +483,7 @@ return( true );
 }
 #endif
 
-unichar_t *def2u_strncpy(unichar_t *uto, const char *from, int n) {
+unichar_t *def2u_strncpy(unichar_t *uto, const char *from, size_t n) {
 #if HAVE_ICONV_H
     if ( my_iconv_setup() ) {
 	size_t in_left = n, out_left = sizeof(unichar_t)*n;
@@ -498,7 +499,7 @@ return( uto );
 return( encoding2u_strncpy(uto,from,n,local_encoding));
 }
 
-char *u2def_strncpy(char *to, const unichar_t *ufrom, int n) {
+char *u2def_strncpy(char *to, const unichar_t *ufrom, size_t n) {
 #if HAVE_ICONV_H
     if ( my_iconv_setup() ) {
 	size_t in_left = sizeof(unichar_t)*n, out_left = n;

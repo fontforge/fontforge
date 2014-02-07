@@ -32,7 +32,7 @@
 #include "splinefont.h"
 #include "ffglib.h"
 
-char* Wordlist_getSCName( SplineChar* sc );
+const char* Wordlist_getSCName( SplineChar* sc );
 
 typedef int (*WordlistEscapedInputStringToRealString_getFakeUnicodeOfScFunc)( SplineChar *sc, void* udata );
 extern int WordlistEscapedInputStringToRealString_getFakeUnicodeAsScUnicodeEnc( SplineChar *sc, void* udata );

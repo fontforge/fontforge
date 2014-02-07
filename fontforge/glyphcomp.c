@@ -1043,7 +1043,7 @@ static int fdRefCheck(struct font_diff *fd, SplineChar *sc1,
 return( ret );
 }
 
-static void SCAddBackgrounds(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
+static void SCAddBackgrounds(SplineChar *sc1,SplineChar *sc2) {
     SplineSet *last;
     RefChar *ref;
 
@@ -1131,7 +1131,7 @@ static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
 	}
     }
     if ( fd->last_sc==sc1 && (fd->flags&fcf_adddiff2sf1))
-	SCAddBackgrounds(sc1,sc2,fd);
+	SCAddBackgrounds(sc1,sc2);
 
     if ( sc1->width!=sc2->width )
 	GlyphDiffSCError(fd,sc1,U_("Glyph “%s” has advance width %d in %s but %d in %s\n"),
@@ -1176,7 +1176,7 @@ static void FDAddMissingGlyph(struct font_diff *fd,SplineChar *sc2) {
     free(sc->name);
     sc->name = copy(sc2->name);
     sc->unicodeenc = sc2->unicodeenc;
-    SCAddBackgrounds(sc,sc2,fd);
+    SCAddBackgrounds(sc,sc2);
 }
 
 static void comparefontglyphs(struct font_diff *fd) {
@@ -1307,7 +1307,7 @@ static void comparebitmapglyphs(struct font_diff *fd, BDFFont *bdf1, BDFFont *bd
 	    }
 	    if ( bdfc2!=NULL ) {
 		int val = BitmapCompare(bdfc,bdfc2,0,0);
-		char *leader = "   ";
+		const char *leader = "   ";
 		if ( !fd->top_diff )
 		    fprintf( fd->diffs, "%s", _("Bitmap Strikes\n") );
 		if ( !fd->middle_diff ) {
@@ -1402,7 +1402,7 @@ static void comparebitmapstrikes(struct font_diff *fd) {
     }
 }
 
-static void NameCompare(struct font_diff *fd,char *name1, char *name2, char *id) {
+static void NameCompare(struct font_diff *fd,const char *name1, const char *name2, char *id) {
 
     if (!name1) name1=""; if (!name2) name2="";
     if ( strcmp(name1,name2)!=0 ) {

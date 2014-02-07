@@ -65,7 +65,7 @@ extern int prefRevisionsToRetain; /* sfd.c */
 static int verbose = -1;
 static struct dictionary globals;
 
-struct keywords { enum token_type tok; char *name; } keywords[] = {
+struct keywords { enum token_type tok; const char *name; } keywords[] = {
     { tt_if, "if" },
     { tt_else, "else" },
     { tt_elseif, "elseif" },
@@ -472,7 +472,8 @@ static void bPostNotice(Context *c) {
 }
 
 static void bAskUser(Context *c) {
-    char *quest, *def="";
+    char *quest;
+    const char *def="";
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	ScriptError( c, "Wrong number of arguments" );
@@ -545,7 +546,7 @@ static void bSizeOf(Context *c) {
 }
 
 static void bTypeOf(Context *c) {
-    static char *typenames[] = { "Integer", "Real", "String", "Unicode", "LValue",
+    static const char *typenames[] = { "Integer", "Real", "String", "Unicode", "LValue",
 	    "Array", "Array", "LValue", "LValue", "LValue", "Void" };
 
     if ( c->a.argc!=2 )
@@ -704,8 +705,8 @@ static void bStrsub(Context *c) {
 
     str = c->a.vals[1].u.sval;
     start = c->a.vals[2].u.ival;
-    end = c->a.argc==4? c->a.vals[3].u.ival : strlen(str);
-    if ( start<0 || start>strlen(str) || end<start || end>strlen(str) )
+    end = c->a.argc==4? c->a.vals[3].u.ival : (int)strlen(str);
+    if ( start<0 || start>(int)strlen(str) || end<start || end>(int)strlen(str) )
 	ScriptError( c, "Arguments out of bounds" );
     c->return_val.type = v_str;
     c->return_val.u.sval = copyn(str+start,end-start);
@@ -1267,7 +1268,7 @@ static void bOrd(Context *c) {
     else if ( c->a.vals[1].type!=v_str || ( c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	ScriptError( c, "Bad type for argument" );
     if ( c->a.argc==3 ) {
-	if ( c->a.vals[2].u.ival<0 || c->a.vals[2].u.ival>strlen( c->a.vals[1].u.sval ))
+	if ( c->a.vals[2].u.ival<0 || c->a.vals[2].u.ival>(int)strlen( c->a.vals[1].u.sval ))
 	    ScriptError( c, "Bad value for argument" );
 	c->return_val.type = v_int;
 	c->return_val.u.ival = (uint8) c->a.vals[1].u.sval[c->a.vals[2].u.ival];
@@ -1721,10 +1722,9 @@ char **GetFontNames(char *filename) {
 	    int ch2 = getc(foo);
 	    int ch3 = getc(foo);
 	    int ch4 = getc(foo);
-	    int ch5, ch6;
 	    fseek(foo, 98, SEEK_SET);
-	    ch5 = getc(foo);
-	    ch6 = getc(foo);
+	    /* ch5 */ (void)getc(foo);
+	    /* ch6 */ (void)getc(foo);
 	    fclose(foo);
 	    if (( ch1==0 && ch2==1 && ch3==0 && ch4==0 ) ||
 		    (ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
@@ -1922,7 +1922,7 @@ static void bSave(Context *c) {
 
 static void bGenerate(Context *c) {
     SplineFont *sf = c->curfv->sf;
-    char *bitmaptype = "";
+    const char *bitmaptype = "";
     int fmflags = -1;
     int res = -1;
     char *subfontdirectory = NULL;
@@ -1977,7 +1977,7 @@ typedef SplineFont *SFArray[48];
 
 static void bGenerateFamily(Context *c) {
     SplineFont *sf = NULL;
-    char *bitmaptype = "";
+    const char *bitmaptype = "";
     int fmflags = -1;
     struct sflist *sfs, *cur, *lastsfs;
     Array *fonts;
@@ -2670,7 +2670,7 @@ static void bMultipleEncodingsToReferences(Context *c) {
 		(orig = sf->glyphs[gid])!=NULL && orig->altuni!=NULL ) {
 	    prev = NULL;
 	    for ( alt = orig->altuni; alt!=NULL; alt=next ) {
-		if ( alt->vs==-1 ) {
+		if ( alt->vs==(unsigned)-1 ) {
 		    next = alt->next;
 		    uni = alt->unienc;
 		    orig->altuni = next;
@@ -2871,7 +2871,7 @@ static void bSelectAllInstancesOf(Context *c) {
 	if ( c->a.vals[i].type==v_unicode ) {
 	    int uni = c->a.vals[i].u.ival;
 	    for ( j=0; j<map->enccount; ++j ) if ( (gid=map->map[j])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
-		for ( alt=sc->altuni; alt!=NULL && alt->unienc!=uni; alt=alt->next );
+                    for ( alt=sc->altuni; alt!=NULL && alt->unienc!=(unichar_t)uni; alt=alt->next );
 		if ( sc->unicodeenc == uni || alt!=NULL )
 		    fv->selected[j] = true;
 	    }
@@ -3081,7 +3081,7 @@ static void bSelectByPosSub(Context *c) {
 
 static void bSelectByColor(Context *c) {
     int col, sccol;
-    int i, any=0;
+    int i;
     EncMap *map = c->curfv->map;
     SplineFont *sf = c->curfv->sf;
 
@@ -3117,13 +3117,10 @@ static void bSelectByColor(Context *c) {
 	int gid = map->map[i];
 	if ( gid!=-1 ) {
 	    sccol =  ( sf->glyphs[gid]==NULL ) ? COLOR_DEFAULT : sf->glyphs[gid]->color;
-	    if ( c->curfv->selected[i]!=(sccol==col) ) {
+	    if ( c->curfv->selected[i]!=(sccol==col) )
 		c->curfv->selected[i] = !c->curfv->selected[i];
-		if ( c->curfv->selected[i] ) any = true;
-	    }
 	}
     }
-    /*c->curfv->sel_index = any;*/
 }
 
 /* **** Element Menu **** */
@@ -3193,7 +3190,7 @@ static void bSetCharCnt(Context *c) {
 	ScriptError( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_int )
 	ScriptError(c,"Bad argument type");
-    else if ( c->a.vals[1].u.ival<=0 && c->a.vals[1].u.ival>10*65536 )
+    else if ( c->a.vals[1].u.ival<=0 || c->a.vals[1].u.ival>10*65536 )
 	ScriptError(c,"Argument out of bounds");
 
     newcnt = c->a.vals[1].u.ival;
@@ -4179,7 +4176,6 @@ static void bSetGlyphChanged(Context *c) {
 
 static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
     int opos=dest->orig_pos, uenc=dest->unicodeenc;
-    Undoes *u[2], *r1;
     struct splinecharlist *scl = dest->dependents;
     RefChar *refs;
     int layer, last;
@@ -4190,7 +4186,6 @@ static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
 return;
 
     SCPreserveLayer(dest,ly_fore,2);
-    u[0] = dest->layers[ly_fore].undoes; u[1] = dest->layers[ly_back].undoes; r1 = dest->layers[ly_back].redoes;
 
     free(dest->name);
     last = ly_fore;
@@ -4721,6 +4716,7 @@ static void bItalic(Context *c) {
 		case 1: default_ii.secondary_serif = srf_flat; break;
 		case 2: default_ii.secondary_serif = srf_simpleslant; break;
 		case 3: default_ii.secondary_serif = srf_complexslant; break;
+                default: break;
 		}
 		continue;
 	    }
@@ -4789,6 +4785,8 @@ static void bItalic(Context *c) {
 		break;
 	    default_ii.lc.counter_percent = pct;
 	    continue;
+        default:
+            break;
 	}
 	{
 	    char errmsg[40];
@@ -4822,7 +4820,7 @@ static void bChangeWeight(Context *c) {
 }
 
 static void bSmallCaps(Context *c) {
-    struct smallcaps small = {};
+    struct smallcaps small;
     struct position_maps maps[2] = {{ .cur_width = -1 }, { .cur_width = 1 }};
     struct genericchange genchange = {
 	.hcounter_scale = 0.66, .lsb_scale = 0.66, .rsb_scale = 0.66,

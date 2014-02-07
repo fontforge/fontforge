@@ -29,4 +29,5 @@
 
 int _GResource_FindResName(char *name);
 extern struct _GResource_Res { char *res, *val; unsigned int generic: 1; unsigned int new: 1; } *_GResource_Res;
+extern char *_GGadget_ImagePath;
 #endif

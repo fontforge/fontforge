@@ -32,22 +32,21 @@
 #include <chardata.h>
 #include <unistd.h>
 
-static char *cleancopy(char *name) {
-    char *fpt, *tpt;
-    char *temp = NULL;
+static char *cleancopy(const char *name) {
+    const char *fpt;
+    char *temp, *tpt;
     char buf[200];
 
-    fpt=tpt=name;
+    fpt=name;
     /* Look for some common cases */
     /* Often bdf fonts name their glyphs things like "%" or "90". Neither is */
     /*  a good postscript name, so do something reasonable here */
     if ( !isalpha(*(unsigned char *) fpt) && fpt[0]>=' ' && /* fpt[0]<=0x7f &&*/
 	    fpt[1]=='\0' )
 return( copy( StdGlyphName(buf,*(unsigned char *) fpt,ui_none,(NameList *) -1)) );
-    if ( isdigit(*fpt)) {
-	tpt = temp = malloc(strlen(name)+2);
+    tpt = temp = malloc(strlen(name)+2);
+    if ( isdigit(*fpt))
 	*tpt++ = '$';
-    }
     for ( ; *fpt; ++fpt ) {
 	if ( *fpt>' ' && *fpt<127 &&
 		*fpt!='(' &&
@@ -142,7 +141,7 @@ static int gettoken(FILE *bdf, char *tokbuf, int size) {
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
 
-static void ExtendSF(SplineFont *sf, EncMap *map, int enc, int set) {
+static void ExtendSF(SplineFont *sf, EncMap *map, int enc) {
     FontViewBase *fvs;
 
     if ( enc>=map->enccount ) {
@@ -161,11 +160,11 @@ static void ExtendSF(SplineFont *sf, EncMap *map, int enc, int set) {
     }
 }
 
-static SplineChar *MakeEncChar(SplineFont *sf,EncMap *map, int enc,char *name) {
+static SplineChar *MakeEncChar(SplineFont *sf,EncMap *map, int enc,const char *name) {
     int uni;
     SplineChar *sc;
 
-    ExtendSF(sf,map,enc,false);
+    ExtendSF(sf,map,enc);
 
     sc = SFMakeChar(sf,map,enc);
     free(sc->name);
@@ -178,7 +177,7 @@ return( sc );
 }
 
 static int figureProperEncoding(SplineFont *sf,EncMap *map, BDFFont *b, int enc,
-	char *name, int swidth, int swidth1, Encoding *encname) {
+	const char *name, int swidth, int swidth1, Encoding *encname) {
     int i = -1, gid;
 
     if ( strcmp(name,".notdef")==0 ) {
@@ -852,7 +851,7 @@ return( pixelsize );
 
 static int gf_char(FILE *gf, SplineFont *sf, BDFFont *b,EncMap *map) {
     int32 pos, to;
-    int ch, enc, dx, dy, aw;
+    int ch, enc, dx, aw;
     int min_c, max_c, min_r, max_r, w;
     int r,c, col,cnt,i;
     int gid;
@@ -865,7 +864,7 @@ static int gf_char(FILE *gf, SplineFont *sf, BDFFont *b,EncMap *map) {
     if ( ch== gf_char_loc ) {
 	enc = getc(gf);
 	dx = getlong(gf)>>16;
-	dy = getlong(gf)>>16;
+	/* dy */ (void)(getlong(gf)>>16);
 	aw = (getlong(gf)*(sf->ascent+sf->descent))>>20;
 	to = getlong(gf);
     } else if ( ch==gf_char_loc0 ) {
@@ -1091,8 +1090,8 @@ return( (i-st->dyn_f-1)*16 + getnibble(pk,st) + st->dyn_f + 1 );
 
 static int pk_char(FILE *pk, SplineFont *sf, BDFFont *b, EncMap *map) {
     int flag = getc(pk);
-    int black, size_is_2;
-    int pl, cc, tfm, w, h, hoff, voff, dm, dx, dy;
+    int black;
+    int pl, cc, tfm, w, h, hoff, voff, dm, dx;
     int i, ch, j,r,c,cnt;
     int gid;
     BDFChar *bc;
@@ -1108,7 +1107,6 @@ static int pk_char(FILE *pk, SplineFont *sf, BDFFont *b, EncMap *map) {
 return( 0 );
     }
     black = flag&8 ? 1 : 0;
-    size_is_2 = flag&4 ? 1 : 0;
 
     if ( (flag&7)==7 ) {		/* long preamble, 4 byte sizes */
 	pl = getlong(pk);
@@ -1116,7 +1114,7 @@ return( 0 );
 	char_end = ftell(pk) + pl;
 	tfm = getlong(pk);
 	dx = getlong(pk)>>16;
-	dy = getlong(pk)>>16;
+        /* dy */ (void)(getlong(pk)>>16);
 	w = getlong(pk);
 	h = getlong(pk);
 	hoff = getlong(pk);
@@ -1127,7 +1125,7 @@ return( 0 );
 	char_end = ftell(pk) + pl;
 	tfm = get3byte(pk);
 	dm = getushort(pk);
-	dx = dm; dy = 0;
+	dx = dm;
 	w = getushort(pk);
 	h = getushort(pk);
 	hoff = (short) getushort(pk);
@@ -1138,7 +1136,7 @@ return( 0 );
 	char_end = ftell(pk) + pl;
 	tfm = get3byte(pk);
 	dm = getc(pk);
-	dx = dm; dy = 0;
+	dx = dm;
 	w = getc(pk);
 	h = getc(pk);
 	hoff = (signed char) getc(pk);
@@ -1721,12 +1719,12 @@ static void PcfReadEncodingsNames(FILE *file,struct toc *toc,SplineFont *sf,
     }
     if ( pcfSeekToType(file,toc,PCF_BDF_ENCODINGS) &&
 	    ((format = getint32(file))&PCF_FORMAT_MASK)==PCF_DEFAULT_FORMAT ) {
-	int min2, max2, min1, max1, tot, def, glyph;
+	int min2, max2, min1, max1, tot, glyph;
 	min2 = getformint16(file,format);
 	max2 = getformint16(file,format);
 	min1 = getformint16(file,format);
 	max1 = getformint16(file,format);
-	def = getformint16(file,format);
+	/* def */(void)getformint16(file,format);
 	tot = (max2-min2+1)*(max1-min1+1);
 	for ( i=0; i<tot; ++i ) {
 	    glyph = getformint16(file,format);
@@ -1738,7 +1736,7 @@ static void PcfReadEncodingsNames(FILE *file,struct toc *toc,SplineFont *sf,
     }
     cnt = b->glyphcnt;
     for ( i=0; i<cnt; ++i ) {
-	char *name;
+	const char *name;
 	if ( string!=NULL ) name = string+offsets[i];
 	else name = ".notdef";
 	encs[i] = figureProperEncoding(sf,map,b,encs[i],name,-1,-1,encname);
@@ -1888,7 +1886,7 @@ static void BDFForceEnc(SplineFont *sf, EncMap *map) {
 /* jisx0208, jisx0212, ISO10646, ISO8859 */
     int i;
     BDFFont *bdf = sf->bitmaps;
-    static struct bdf_2_ff_enc { char *bdf, *ff; } bdf_2_ff_enc[] = {
+    static struct bdf_2_ff_enc { const char *bdf, *ff; } bdf_2_ff_enc[] = {
 	/* A map between bdf encoding names and my internal ones */
 	{ "iso10646", "unicode" },
 	{ "unicode", "unicode" },
@@ -2014,7 +2012,7 @@ static BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback,
     struct toc *toc=NULL;
     int depth=1;
     struct metrics defs;
-    int upos= (int) 0x80000000, uwidth = (int) 0x80000000;
+    unsigned upos= (int) 0x80000000, uwidth = (int) 0x80000000;
     BDFFont dummy;
     int ch;
 
@@ -2223,7 +2221,7 @@ static void SFSetupBitmap(SplineFont *sf,BDFFont *strike,EncMap *map) {
 
     strike->sf = sf;
     if ( strike->glyphcnt>sf->glyphcnt )
-	ExtendSF(sf,map,strike->glyphcnt,true);
+	ExtendSF(sf,map,strike->glyphcnt);
     for ( i=0; i<strike->glyphcnt; ++i ) if ( strike->glyphs[i]!=NULL ) {
 	if ( i>=sf->glyphcnt || sf->glyphs[i]==NULL ) {
 	    int enc=-1;
@@ -2388,7 +2386,7 @@ int FVImportMult(FontViewBase *fv, char *filename, int toback, int bf) {
     else if ( bf == bf_fon )
 	strikeholder = SFReadWinFON(filename,toback);
     else if ( bf == bf_fon )
-	strikeholder = SFReadPalmPdb(filename,toback);
+	strikeholder = SFReadPalmPdb(filename);
     else
 	strikeholder = SFReadMacBinary(filename,toback?ttf_onlyonestrike|ttf_onlystrikes:ttf_onlystrikes,0);
 
