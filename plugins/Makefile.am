@@ -27,6 +27,8 @@
 
 plugindir = ${pkglibdir}/plugins
 
+AM_CFLAGS = $(WARN_CFLAGS)
+
 AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
 	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
 	"-I$(top_builddir)/fontforge" "-I$(top_srcdir)/fontforge"	\
