@@ -132,7 +132,6 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 	char* pos  = kvmsg_get_prop (kvmsg, "pos" );
 	char* name = kvmsg_get_prop (kvmsg, "name" );
 	printf("pos:%s\n", pos );
-//	SplineChar *sc = sf->glyphs[ atoi(pos) ];
 	SplineChar* sc = SFGetOrMakeChar( sf, -1, name );
 	
 	printf("sc:%p\n", sc );
@@ -167,7 +166,6 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 	    FILE* file = fopen( filename, "rb" );
 	    Undoes* undo = SFDGetUndo( file, sc,
 				       "UndoOperation",
-				       "EndUndoOperation",
 				       current_layer );
 	    fclose(file);
 	    if( !undo )
