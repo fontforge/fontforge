@@ -52,6 +52,7 @@ LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgioftp.la	\
 	$(top_builddir)/lib/libgnu.la
 
+AM_CFLAGS = $(WARN_CFLAGS)
 
 AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
 	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\

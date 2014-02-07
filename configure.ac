@@ -428,6 +428,9 @@ if test "$gl_gcc_warnings" = yes; then
   nw="$nw -Wsystem-headers"   # glibc headers fail as of glibc 2.17, gcc 4.8
   nw="$nw -Wsuggest-attribute=format" # glibc headers fail as of glibc 2.17, gcc 4.8
   nw="$nw -Wstrict-aliasing"  # -Sep2012, There's a bug in <py3 with Py_True/False that will propagate with GCC's "strict-aliasing" rules.
+  nw="$nw -Wunused"           # FIXME: we need to turn this off in order to deactivate -Wunused-result below
+  nw="$nw -Wunused-result"    # FIXME: We should have this, but currently it makes too much noise
+  nw="$nw -Wsuggest-attribute=pure" # FIXME: Maybe later?
   nw="$nw -Wall"
   nw="$nw -Wunused-macros"    # those macros might come in handy later
 

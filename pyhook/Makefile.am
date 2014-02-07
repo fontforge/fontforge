@@ -33,6 +33,8 @@ psMat_la_LIBADD = $(LIBADD)
 fontforge_la_SOURCES = fontforgepyhook.c
 fontforge_la_LIBADD = $(LIBADD)
 
+AM_CFLAGS = $(WARN_CFLAGS)
+
 AM_CPPFLAGS = -DLIBDIR='"$(libdir)"' $(PYTHON_CFLAGS)			\
 	"-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"			\
 	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\

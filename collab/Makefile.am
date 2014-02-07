@@ -30,6 +30,8 @@ lib_LTLIBRARIES = libzmqcollab.la
 
 libzmqcollab_la_SOURCES = zmq_kvmsg.c zmq_kvmsg.h
 
+libzmqcollab_la_CFLAGS = $(WARN_CFLAGS)
+
 libzmqcollab_la_CPPFLAGS = \
  "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc" \
  "-I$(top_builddir)/lib" "-I$(top_srcdir)/lib" \

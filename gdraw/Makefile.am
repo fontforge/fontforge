@@ -42,6 +42,8 @@ libgdraw_la_SOURCES = choosericons.c ctlvalues.c drawboxborder.c	\
 	gimagebmpP.h gresourceP.h gxcdrawP.h fontP.h ggadgetP.h		\
 	gpsdrawP.h gwidgetP.h gxdrawP.h hotkeys.c hotkeys.h
 
+libgdraw_la_CFLAGS = $(WARN_CFLAGS)
+
 libgdraw_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
 	"-I$(top_srcdir)/fontforge" "-DSHAREDIR=\"${MY_SHAREDIR}\"" $(MY_CFLAGS)
