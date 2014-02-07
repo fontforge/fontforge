@@ -71,13 +71,13 @@ struct fontparse {
     int depth;
 };
 
-static void copyenc(char *encoding[256],char *std[256]) {
+static void copyenc(char *encoding[256], const char *std[256]) {
     int i;
     for ( i=0; i<256; ++i )
 	encoding[i] = copy(std[i]);
 }
 
-char *AdobeStandardEncoding[] = {
+const char *AdobeStandardEncoding[] = {
 /* 0000 */	".notdef",
 /* 0001 */	".notdef",
 /* 0002 */	".notdef",
@@ -340,7 +340,7 @@ static void setStdEnc(char *encoding[256]) {
 }
 
 static void setLatin1Enc(char *encoding[256]) {
-    static char *latin1enc[] = {
+    static const char *latin1enc[] = {
 /* 0000 */	".notdef",
 /* 0001 */	".notdef",
 /* 0002 */	".notdef",
@@ -601,7 +601,7 @@ static void setLatin1Enc(char *encoding[256]) {
     copyenc(encoding,latin1enc);
 }
 
-char *AdobeExpertEncoding[] = {
+const char *AdobeExpertEncoding[] = {
 /* 0000 */	".notdef",
 /* 0001 */	".notdef",
 /* 0002 */	".notdef",
@@ -1260,7 +1260,7 @@ static void findstring(struct fontparse *fp,struct pschars *subrs,int index,char
 }
 
 /* Type42 charstrings are actually numbers */
-static void findnumbers(struct fontparse *fp,struct pschars *chars,char *str) {
+static void findnumbers(struct pschars *chars,char *str) {
     int val;
     char *end;
 
@@ -1582,7 +1582,7 @@ return;
 	} else if ( chars->next>=chars->cnt )
 	    LogError( _("Too many entries in CharStrings dictionary \"%s"), rmbinary(line) );
 	else if ( fp->fd->fonttype==42 || fp->fd->fonttype==11 || fp->fd->cidfonttype==2 )
-	    findnumbers(fp,chars,line);
+	    findnumbers(chars,line);
 	else {
 	    int i = chars->next;
 	    char *namestrt = ++line;

@@ -59,7 +59,7 @@ struct font {
     } chars[258];
 };
 
-static SplineFont *MakeContainer(struct font *fn, char *family, char *style) {
+static SplineFont *MakeContainer(struct font *fn, char *family, const char *style) {
     SplineFont *sf;
     int em;
     int i;
@@ -168,9 +168,8 @@ return;
     }
 }
 
-static SplineFont *PalmTestFont(FILE *file,int end, char *family,char *style) {
+static SplineFont *PalmTestFont(FILE *file,int end, char *family,const char *style) {
     int type;
-    int frectwidth, descent;
     int owtloc;
     int pos = ftell(file);
     struct density {
@@ -196,12 +195,12 @@ return( NULL );
     /* maxWidth = */ (void) getushort(file);
     /* kernmax = */ (void) getushort(file);
     /* ndescent = */ (void) getushort(file);
-    frectwidth = getushort(file);
+    /* frectwidth = */ (void) getushort(file);
     fn.frectheight = getushort(file);
     owtloc = ftell(file);
     owtloc += 2*getushort(file);
     fn.ascent = getushort(file);
-    descent = getushort(file);
+    /* descent = */ (void) getushort(file);
     fn.leading = getushort(file);
     fn.rowwords = getushort(file);
     if ( feof(file) || ftell(file)>=end || fn.first>fn.last || fn.last>255 ||
@@ -328,7 +327,7 @@ return( NULL );
 return( sf );
 }
 
-SplineFont *SFReadPalmPdb(char *filename,int toback) {
+SplineFont *SFReadPalmPdb(char *filename) {
     char name[33];
     FILE *file;
     int num_records, i, file_end;
@@ -343,7 +342,8 @@ return( NULL );
     file_end = ftell(file);
     fseek(file,0,SEEK_SET);
 
-    if ( fread(name,1,32,file)==-1 )
+    fread(name,1,32,file);
+    if ( ferror(file) )
   goto fail;
     name[32]=0;
     fseek(file,0x2c,SEEK_CUR);		/* Find start of record list */
@@ -589,7 +589,7 @@ return( NULL );
 return( image );
 }
 
-int WritePalmBitmaps(char *filename,SplineFont *sf, int32 *sizes,EncMap *map) {
+int WritePalmBitmaps(const char *filename,SplineFont *sf, int32 *sizes,EncMap *map) {
     BDFFont *base=NULL, *temp;
     BDFFont *densities[4];	/* Be prepared for up to quad density */
     				/* Ignore 1.5 density. No docs on how odd metrics get rounded */

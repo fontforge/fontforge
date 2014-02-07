@@ -81,9 +81,6 @@ struct std_bdf_props StandardProps[] = {
 	{ "FIGURE_WIDTH", prt_int|prt_property, true },
 	{ "AVG_LOWERCASE_WIDTH", prt_int|prt_property, true },
 	{ "AVG_UPPERCASE_WIDTH", prt_int|prt_property, true },
-#ifdef FONTFORGE_CONFIG_BDF_GLYPH_RANGES
-	{ "_XFREE86_GLYPH_RANGES", prt_string|prt_property, true },
-#endif
 	{ "WEIGHT", prt_uint|prt_property, false },
 	{ "DESTINATION", prt_uint|prt_property, false },
 	{ "MIN_SPACE", prt_int|prt_property, false },
@@ -102,7 +99,7 @@ struct std_bdf_props StandardProps[] = {
 	STD_BDF_PROPS_EMPTY
 };
 
-int IsUnsignedBDFKey(char *key) {
+int IsUnsignedBDFKey(const char *key) {
     /* X says that some properties are signed and some are unsigned */
     /* neither bdf nor pcf supports this, but David (of freetype) */
     /* thought the sfnt BDF table should include it */
@@ -116,7 +113,7 @@ return(( StandardProps[i].type&~prt_property)==prt_uint );
 return( false );
 }
 
-char *BdfPropHasString(BDFFont *font,const char *key, char *def ) {
+const char *BdfPropHasString(BDFFont *font,const char *key, const char *def ) {
     int i;
 
     for ( i=0; i<font->prop_cnt; ++i ) if ( strcmp(font->props[i].name,key)==0 ) {
@@ -128,6 +125,8 @@ return( font->props[i].u.str );
 	  case prt_atom:
 	    if ( font->props[i].u.atom!=NULL )		/* Can be NULL when creating & defaulting a prop */
 return( font->props[i].u.atom );
+	  break;
+	  default:
 	  break;
 	}
     }
@@ -142,12 +141,14 @@ int BdfPropHasInt(BDFFont *font,const char *key, int def ) {
 	  case prt_int: case prt_uint:
 return( font->props[i].u.val );
 	  break;
+	  default:
+	  break;
 	}
     }
 return( def );
 }
 
-static void BDFPropAddString(BDFFont *bdf,char *keyword,char *value,char *match_key) {
+static void BDFPropAddString(BDFFont *bdf,const char *keyword,const char *value,char *match_key) {
     int i;
 
     if ( match_key!=NULL && strcmp(keyword,match_key)!=0 )
@@ -175,7 +176,7 @@ return;
     bdf->props[i].u.str = copy(value);
 }
 
-static void BDFPropAddInt(BDFFont *bdf,char *keyword,int value,char *match_key) {
+static void BDFPropAddInt(BDFFont *bdf,const char *keyword,int value,char *match_key) {
     int i;
 
     if ( match_key!=NULL && strcmp(keyword,match_key)!=0 )
@@ -201,7 +202,7 @@ return;
     bdf->props[i].u.val = value;
 }
 
-static char *AllSame(BDFFont *font,int *avg,int *cnt) {
+static const char *AllSame(BDFFont *font,int *avg,int *cnt) {
     int c=0, a=0, common= -1;
     int i;
     BDFChar *bdfc;
@@ -229,7 +230,7 @@ static char *AllSame(BDFFont *font,int *avg,int *cnt) {
 return(common==-2 ? "P" : cell ? "C" : "M" );
 }
 
-static void BDFPropAppendString(BDFFont *bdf,char *keyword,char *value) {
+static void BDFPropAppendString(BDFFont *bdf,const char *keyword,char *value) {
     int i = bdf->prop_cnt;
 
     if ( i>=bdf->prop_max )
@@ -245,24 +246,6 @@ static void BDFPropAppendString(BDFFont *bdf,char *keyword,char *value) {
     bdf->props[i].u.str = copy(value);
 }
 
-#ifdef FONTFORGE_CONFIG_BDF_GLYPH_RANGES
-static void BDFPropClearKey(BDFFont *bdf,char *keyword) {
-    int i, j;
-
-    for ( i=j=0; i<bdf->prop_cnt; ++i ) {
-	if ( strcmp(bdf->props[i].name,keyword)==0 ) {
-	    free(bdf->props[i].name);
-	    if ( (bdf->props[i].type&~prt_property)==prt_string ||
-		    (bdf->props[i].type&~prt_property)==prt_atom )
-		free(bdf->props[i].u.str );
-	} else if ( i!=j ) {
-	    bdf->props[j++] = bdf->props[i];
-	} else
-	    ++j;
-    }
-}
-#endif		/* FONTFORGE_CONFIG_BDF_GLYPH_RANGES */
-
 static int BDFPropReplace(BDFFont *bdf,const char *key, const char *value) {
     int i;
     char *pt;
@@ -272,6 +255,8 @@ static int BDFPropReplace(BDFFont *bdf,const char *key, const char *value) {
 	  case prt_string:
 	  case prt_atom:
 	    free( bdf->props[i].u.atom );
+	  break;
+	  default:
 	  break;
 	}
 	if ( (bdf->props[i].type&~prt_property)!=prt_atom )
@@ -329,7 +314,8 @@ static void def_Charset_Col(SplineFont *sf,EncMap *map, char *buffer) {
 void SFReplaceEncodingBDFProps(SplineFont *sf,EncMap *map) {
     BDFFont *bdf;
     char buffer[250];
-    char reg[100], enc[40], *pt, *bpt;
+    char reg[100], enc[40], *pt;
+    const char *bpt;
 
     def_Charset_Col(sf,map, buffer);
     def_Charset_Enc(map,reg,enc);
@@ -360,7 +346,7 @@ void SFReplaceFontnameBDFProps(SplineFont *sf) {
 	BDFPropReplace(bdf,"FAMILY_NAME", sf->familyname);
 	BDFPropReplace(bdf,"FULL_NAME", sf->fullname);
 	BDFPropReplace(bdf,"COPYRIGHT", sf->copyright);
-	if ( (bpt = BdfPropHasString(bdf,"FONT", NULL))!=NULL ) {
+	if ( (bpt = copy(BdfPropHasString(bdf,"FONT", NULL)))!=NULL ) {
 	    if ( bpt[0]=='-' ) {
 		for ( pt = bpt+1; *pt && *pt!='-'; ++pt );
 		if ( *pt=='-' ) {
@@ -428,7 +414,7 @@ void def_Charset_Enc(EncMap *map,char *reg,char *enc) {
     }
 }
 
-static void decomposename(BDFFont *font, char *fontname, char *family_name, char *weight_name,
+static void decomposename(const char *fontname, char *family_name, char *weight_name,
 	char *slant, char *stylename, char *squeeze, char *sffamily, char *sfweight ) {
     char *ital, *bold, *style, *compress;
     char ich='\0', bch='\0', sch='\0', cch='\0';
@@ -510,7 +496,7 @@ static void decomposename(BDFFont *font, char *fontname, char *family_name, char
 	strcpy(pt,pt+1);
 }
 
-static char *getcomponent(char *xlfd,char *pt,int maxlen) {
+static const char *getcomponent(const char *xlfd,char *pt,int maxlen) {
     char *end = pt+maxlen-1;
 
     while ( *xlfd!='-' && *xlfd!='\0' && pt<end )
@@ -521,7 +507,7 @@ static char *getcomponent(char *xlfd,char *pt,int maxlen) {
 return( xlfd );
 }
 
-void XLFD_GetComponents(char *xlfd, struct xlfd_components *components) {
+void XLFD_GetComponents(const char *xlfd, struct xlfd_components *components) {
     /* can't use sscanf because it fails if %[^-] matches an empty string */
 
     memset(components,0,sizeof(*components));
@@ -539,17 +525,17 @@ void XLFD_GetComponents(char *xlfd, struct xlfd_components *components) {
     if ( *xlfd=='-' )
 	xlfd = getcomponent(xlfd+1,components->add_style,sizeof(components->add_style));	
     if ( *xlfd=='-' )
-	components->pixel_size = strtol(xlfd+1,&xlfd,10);
+	components->pixel_size = strtol(xlfd+1,(char **)&xlfd,10);
     if ( *xlfd=='-' )
-	components->point_size = strtol(xlfd+1,&xlfd,10);
+	components->point_size = strtol(xlfd+1,(char **)&xlfd,10);
     if ( *xlfd=='-' )
-	components->res_x = strtol(xlfd+1,&xlfd,10);
+	components->res_x = strtol(xlfd+1,(char **)&xlfd,10);
     if ( *xlfd=='-' )
-	components->res_y = strtol(xlfd+1,&xlfd,10);
+	components->res_y = strtol(xlfd+1,(char **)&xlfd,10);
     if ( *xlfd=='-' )
 	xlfd = getcomponent(xlfd+1,components->spacing,sizeof(components->spacing));	
     if ( *xlfd=='-' )
-	components->avg_width = strtol(xlfd+1,&xlfd,10);
+	components->avg_width = strtol(xlfd+1,(char **)&xlfd,10);
     if ( *xlfd=='-' )
 	xlfd = getcomponent(xlfd+1,components->cs_reg,sizeof(components->cs_reg));	
     if ( *xlfd=='-' )
@@ -558,9 +544,9 @@ void XLFD_GetComponents(char *xlfd, struct xlfd_components *components) {
 
 void XLFD_CreateComponents(BDFFont *font,EncMap *map, int res, struct xlfd_components *components) {
     int avg, cnt, pnt;
-    char *mono;
+    const char *mono;
     char family_name[80], weight_name[60], slant[10], stylename[40], squeeze[40];
-    char *sffn = *font->sf->fontname ? font->sf->fontname : "Untitled";
+    const char *sffn = *font->sf->fontname ? font->sf->fontname : "Untitled";
     char reg[100], enc[40];
     int old_res;
 
@@ -581,11 +567,11 @@ void XLFD_CreateComponents(BDFFont *font,EncMap *map, int res, struct xlfd_compo
     if ( pnt==230 && res==75 )
 	pnt = 240;
 
-    decomposename(font, sffn, family_name, weight_name, slant,
+    decomposename(sffn, family_name, weight_name, slant,
 	    stylename, squeeze, font->sf->familyname, font->sf->weight);
     def_Charset_Enc(map,reg,enc);
     strncpy(components->foundry,
-	    BdfPropHasString(font,"FOUNDRY", font->foundry!=NULL?font->foundry:BDFFoundry==NULL?"FontForge":BDFFoundry),sizeof(components->foundry));
+	    BdfPropHasString(font,"FOUNDRY", font->foundry!=NULL?font->foundry:BDFFoundry==NULL?copy("FontForge"):BDFFoundry),sizeof(components->foundry));
     strncpy(components->family,
 	    BdfPropHasString(font,"FAMILY_NAME", family_name),sizeof(components->family));
     strncpy(components->weight,
@@ -644,56 +630,8 @@ void Default_XLFD(BDFFont *bdf,EncMap *map, int res) {
     BDFPropAddString(bdf,"FONT",buffer,NULL);
 }
 
-static int GenerateGlyphRanges(BDFFont *font) {
-#ifdef FONTFORGE_CONFIG_BDF_GLYPH_RANGES
-    char buffer[300], *pt, *end, add[30];
-    int i, j, max, cnt=0;
-
-    /* I gather that the _XFREE86_GLYPH_RANGES property has been dropped */
-    /*  because it was felt that the metrics data would allow users to */
-    /*  determine whether a character was in the font or not. I'm not in */
-    /*  complete agreement with that argument because there are several */
-    /*  zero-width spaces whose presence is not specified by the metrics */
-    /*  but it is almost irrelevant whether they are present or not (though */
-    /*  guessing wrong would present you with a "DEFAULT_CHAR" rather than */
-    /*  nothing) */
-
-    if ( map->enc->is_unicodebmp || map->enc->is_unicodefull )
-	max = map->enc->char_cnt;
-    else
-return( 0 );
-    BDFPropClearKey(font,"_XFREE86_GLYPH_RANGES");
-    pt = buffer; end = pt+sizeof(buffer);
-    for ( i=0; i<font->glyphcnt && i<max; ++i ) if ( !IsntBDFChar(font->glyphs[i]) ) {
-	for ( j=i+1; j<font->glyphcnt && j<max && !IsntBDFChar(font->glyphs[j]); ++j );
-	--j;
-	if ( j==i )
-	    sprintf( add, "%d ", i );
-	else
-	    sprintf( add, "%d_%d ", i, j );
-	i = j;
-	if ( pt+strlen(add) >= end ) {
-	    pt[-1] = '\0';		/* was a space */
-	    BDFPropAppendString(font,"_XFREE86_GLYPH_RANGES", buffer);
-	    pt = buffer;
-	    ++cnt;
-	}
-	strcpy(pt,add);
-	pt += strlen(pt);
-    }
-    if ( pt!=buffer ) {
-	pt[-1] = '\0';		/* was a space */
-	BDFPropAppendString(font,"_XFREE86_GLYPH_RANGES", buffer);
-	++cnt;
-    }
-return( cnt );
-#else
-return( 0 );
-#endif		/* FONTFORGE_CONFIG_BDF_GLYPH_RANGES */
-}
-
 void Default_Properties(BDFFont *bdf,EncMap *map,char *onlyme) {
-    char *xlfd = BdfPropHasString(bdf,"FONT",NULL);
+    const char *xlfd = BdfPropHasString(bdf,"FONT",NULL);
     struct xlfd_components components;
     int x_h= -1, cap_h= -1, def_ch=-1, gid;
 
@@ -810,7 +748,7 @@ void Default_Properties(BDFFont *bdf,EncMap *map,char *onlyme) {
     }
 
     {
-	char *selection = "0123456789$";
+	const char *selection = "0123456789$";
 	int width=-1;
 	while ( *selection!='\0' ) {
 	    if ( (gid=SFFindExistingSlot(bdf->sf,*selection,NULL))!=-1 &&
@@ -849,11 +787,6 @@ void Default_Properties(BDFFont *bdf,EncMap *map,char *onlyme) {
 	    BDFPropAddInt(bdf,"AVG_UPPERCASE_WIDTH",uc_sum*10/uc_cnt,onlyme);
     }
 
-    /* Normally this does nothing, but fontforge may be configured to generate */
-    /*  the obsolete _XFREE86_GLYPH_RANGES property, and if so this will */
-    /*  generate them */
-    GenerateGlyphRanges(bdf);
-
     /* MIN_SPACE, MAX_SPACE & END_SPACE are judgement calls and I shan't default them */
     /* also SMALL_CAP_SIZE, STRIKEOUT_ASCENT, STRIKEOUT_DESCENT, DESTINATION */
     /* WEIGHT requires a knowlege of stem sizes and I'm not going to do that */
@@ -890,7 +823,6 @@ BDFChar *BDFMakeGID(BDFFont *bdf,int gid) {
     SplineChar *sc;
     BDFChar *bc;
     int i;
-    extern int use_freetype_to_rasterize_fv;
 
     if ( gid==-1 )
 return( NULL );
@@ -985,10 +917,10 @@ static void BCChngNoUpdate(BDFChar *bc) {
     bc->sc->parent->changed = true;
 }
 
-static void BCNoUpdate(BDFChar *bc) {
+static void BCNoUpdate(BDFChar *UNUSED(bc)) {
 }
 
-static void BCNothingDestroyed(BDFChar *bc) {
+static void BCNothingDestroyed(BDFChar *UNUSED(bc)) {
 }
 
 static struct bc_interface noui_bc = {

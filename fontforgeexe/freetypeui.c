@@ -720,7 +720,7 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
 return( ret );
 }
     
-#else
+#else /* FIXME: Don't build this stuff if it's not being used, it just makes the compiler emit lots of warnings */
 struct debugger_context;
 
 void DebuggerTerminate(struct debugger_context *dc) {

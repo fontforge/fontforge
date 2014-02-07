@@ -922,7 +922,7 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
     bigreal offn_, offp_, finaldiff;
     bigreal pt_pf_x, pt_pf_y, determinant;
     bigreal consts[2], rt_terms[2], rf_terms[2];
- bigreal rfbad=0, rtbad=0;
+    bigreal rtbad=0;
 
     /* If all the selected points are at the same spot, and one of the */
     /*  end-points is also at that spot, then just copy the control point */
@@ -1032,10 +1032,6 @@ return( SplineMake3(from,to));
 	if ( (to->pointtype==pt_curve || to->pointtype==pt_hvcurve) &&
 		to->next && !to->nonextcp ) {
 	    tounit.x = to->me.x-to->nextcp.x; tounit.y = to->me.y-to->nextcp.y;
-/* Doesn't work
-	} else if ( to->pointtype==pt_tangent && to->next ) {
-	    tounit.x = to->me.x-to->next->to->me.x; tounit.y = to->me.y-to->next->to->me.y;
-*/
 	} else {
 	    tounit.x = -( (3*temp.splines[0].a*.9999+2*temp.splines[0].b)*.9999+temp.splines[0].c );
 	    tounit.y = -( (3*temp.splines[1].a*.9999+2*temp.splines[1].b)*.9999+temp.splines[1].c );
@@ -1048,10 +1044,6 @@ return( SplineMake3(from,to));
 	if ( (from->pointtype==pt_curve || from->pointtype==pt_hvcurve) &&
 		from->prev && !from->noprevcp ) {
 	    fromunit.x = from->me.x-from->prevcp.x; fromunit.y = from->me.y-from->prevcp.y;
-/*
-	} else if ( from->pointtype==pt_tangent && from->prev ) {
-	    fromunit.x = from->me.x-from->prev->from->me.x; fromunit.y = from->me.y-from->prev->from->me.y;
-*/
 	} else {
 	    fromunit.x = ( (3*temp.splines[0].a*.0001+2*temp.splines[0].b)*.0001+temp.splines[0].c );
 	    fromunit.y = ( (3*temp.splines[1].a*.0001+2*temp.splines[1].b)*.0001+temp.splines[1].c );
@@ -1128,11 +1120,9 @@ return( SplineMake3(from,to));
 return( SplineMake3(from,to));
 	}
 	
-  rfbad = rf; rtbad = -rt;
+  rtbad = -rt;
     } else
-  rfbad = rtbad = -2;
-
-
+  rtbad = -2;
 
     trylen = (to->me.x-from->me.x)*fromunit.x + (to->me.y-from->me.y)*fromunit.y;
     if ( trylen>flen ) flen = trylen;

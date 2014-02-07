@@ -1023,7 +1023,7 @@ return( true );
 return( false );
 }
 
-int SCSetMetaData(SplineChar *sc,char *name,int unienc,const char *comment) {
+int SCSetMetaData(SplineChar *sc,const char *name,int unienc,const char *comment) {
     SplineFont *sf = sc->parent;
     int i, mv=0;
     int isnotdef, samename=false, sameuni=false;

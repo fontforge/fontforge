@@ -215,8 +215,8 @@ static GImage *ReadRle8Bit(GImage *ret,int width, int height, FILE *fp ) {
 /* TODO: Make this an input filter that goes in front of other routines	*/
 /* above so that in can be re-used by the different converters above.	*/
     struct _GImage *base = ret->u.image;
-    int x,y,cnt,val;
-    unsigned char *pt;
+    int x,y,cnt,val = 0;
+    unsigned char *pt = NULL;
 
     x=0; y=0; cnt=0;
     while ( 1 ) {

@@ -430,7 +430,7 @@ return NULL;
 return results;
 }
 
-static real *GetNParsePSArray(SplineFont *sf, char *name, int *rescnt) {
+static real *GetNParsePSArray(SplineFont *sf, const char *name, int *rescnt) {
 return ParsePSArray(PSDictHasEntry(sf->private, name), rescnt);
 }
 
@@ -480,8 +480,8 @@ static void GICImportBlues(GlobalInstrCt *gic) {
              (PSDictHasEntry(gic->sf->private, "FamilyBlues") != NULL) ||
              (PSDictHasEntry(gic->sf->private, "FamilyOtherBlues") != NULL);
 
-    char *PrimaryBlues = HasPSBlues ? "BlueValues" : "FamilyBlues";
-    char *OtherBlues = HasPSBlues ? "OtherBlues" : "FamilyOtherBlues";
+    const char *PrimaryBlues = HasPSBlues ? "BlueValues" : "FamilyBlues";
+    const char *OtherBlues = HasPSBlues ? "OtherBlues" : "FamilyOtherBlues";
 
     if (HasPSBlues || HasPSFamilyBlues){
         values = GetNParsePSArray(gic->sf, PrimaryBlues, &cnt);
@@ -621,8 +621,8 @@ static int SortStems(const void *a, const void *b) {
 static void GICImportStems(int xdir, GlobalInstrCt *gic) {
     int i, cnt, next;
     real *values;
-    char *s_StdW = xdir?"StdVW":"StdHW";
-    char *s_StemSnap = xdir?"StemSnapV":"StemSnapH";
+    const char *s_StdW = xdir?"StdVW":"StdHW";
+    const char *s_StemSnap = xdir?"StemSnapV":"StemSnapH";
     StdStem *stdw = xdir?&(gic->stdvw):&(gic->stdhw);
     StdStem **stemsnap = xdir?&(gic->stemsnapv):&(gic->stemsnaph);
     int *stemsnapcnt = xdir?&(gic->stemsnapvcnt):&(gic->stemsnaphcnt);

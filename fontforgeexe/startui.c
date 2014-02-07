@@ -1169,12 +1169,8 @@ exit( 0 );
     if ( recover==-1 )
 	CleanAutoRecovery();
     else if ( recover )
-    {
-	any = DoAutoRecoveryExtended( recover-1,
-				      DoAutoRecoveryPostRecover_PromptUserGraphically );
-    }
-
-
+	any = DoAutoRecoveryExtended( recover-1 );
+			
     openflags = 0;
     for ( i=1; i<argc; ++i ) {
 	char buffer[1025];

@@ -77,7 +77,7 @@ static struct inschr {
      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL
 };
 
-static struct unicode_subranges { unichar_t first; int len; char *name; } unicode_ranges[] = {
+static struct unicode_subranges { unichar_t first; int len; const char *name; } unicode_ranges[] = {
 	{ 0x100, 0x80, "Latin Extended A" },
 	{ 0x180, 0x98, "Latin Extended B" },
 	{ 0x250, 0x60, "IPA Extensions" },

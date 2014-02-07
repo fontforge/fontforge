@@ -56,7 +56,7 @@ static void ImportPlate(CharView *cv,char *path) {
 
     if ( plate==NULL )
 return;
-    SCImportPlateFile(cv->b.sc,CVLayer((CharViewBase *) cv),plate,false,-1);
+    SCImportPlateFile(cv->b.sc,CVLayer((CharViewBase *) cv),plate,false);
     fclose(plate);
 }
 

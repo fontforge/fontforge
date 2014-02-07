@@ -132,7 +132,6 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 	char* pos  = kvmsg_get_prop (kvmsg, "pos" );
 	char* name = kvmsg_get_prop (kvmsg, "name" );
 	printf("pos:%s\n", pos );
-//	SplineChar *sc = sf->glyphs[ atoi(pos) ];
 	SplineChar* sc = SFGetOrMakeChar( sf, -1, name );
 	
 	printf("sc:%p\n", sc );
@@ -165,9 +164,8 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 	    snprintf(filename, PATH_MAX, "%s/fontforge-collab-inx-%d.sfd", getTempDir(), getpid() );
 	    GFileWriteAll( filename, (char*)data);
 	    FILE* file = fopen( filename, "rb" );
-	    Undoes* undo = SFDGetUndo( sf, file, sc,
+	    Undoes* undo = SFDGetUndo( file, sc,
 				       "UndoOperation",
-				       "EndUndoOperation",
 				       current_layer );
 	    fclose(file);
 	    if( !undo )

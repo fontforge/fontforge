@@ -45,15 +45,6 @@
 /*									      */
 
 
-/* There used to be a property _XFREE86_GLYPH_RANGES (in bdf/pcf) fonts which */
-/*  gave a quick view about what glyphs were in a bdf font. From what I gather*/
-/*  this property has been dropped because it was redundant.  If you would    */
-/*  like FontForge to generate it					      */
-/*									      */
-/* #define FONTFORGE_CONFIG_BDF_GLYPH_RANGES				      */
-/*									      */
-
-
 /* I used to use an approximation method when converting cubic to quadratic   */
 /*  splines which was non-symmetric. In some cases it produced better results */
 /*  than the current approach. This flag restores the old algorithm.	      */

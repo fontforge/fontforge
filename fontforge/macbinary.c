@@ -1001,7 +1001,7 @@ static void SFListListFree(struct sflistlist *sfsl) {
     }
 }
 
-static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf) {
+static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format) {
     uint32 rlenpos = ftell(res), widoffpos, widoffloc, kernloc, styleloc, end;
     int i,j,k,cnt, scnt, kcnt, pscnt, strcnt, fontclass, glyphenc, geoffset;
     int gid;
@@ -1882,7 +1882,7 @@ return( 0 );
     resources[r].tag = CHR('F','O','N','D');
     resources[r++].res = rlist;
     for ( i=0, sfli=sfsl; i<fondcnt && sfli!=NULL; ++i, sfli = sfli->next ) {
-	rlist[i].pos = SFsToFOND(res,sfli->sfs,id,format,bf);
+	rlist[i].pos = SFsToFOND(res,sfli->sfs,id,format);
 	rlist[i].flags = 0x00;	/* I've seen FONDs with resource flags 0, 0x20, 0x60 */
 	rlist[i].id = id+i;
 	rlist[i].name = sfli->fondname;
@@ -1929,7 +1929,7 @@ void SfListFree(struct sflist *sfs) {
 /* ******************************** Reading ********************************* */
 
 static SplineFont *SearchPostScriptResources(FILE *f,long rlistpos,int subcnt,long rdata_pos,
-	long name_list, int flags) {
+	int flags) {
     long here = ftell(f);
     long *offsets, lenpos;
     int rname = -1, tmp;
@@ -2054,7 +2054,6 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
 	long name_list,char *filename,int flags,enum openflags openflags) {
     long here, start = ftell(f);
     long roff;
-    int rname = -1;
     int ch1, ch2;
     int len, i, rlen, ilen;
     /* The sfnt resource is just a copy of the ttf file */
@@ -2129,7 +2128,7 @@ return( (SplineFont *) names );
 
     for ( i=0; i<subcnt; ++i ) {
 	/* resource id = */ getushort(f);
-	rname = (short) getushort(f);
+	/* rname = */ (short) getushort(f);
 	/* flags = */ getc(f);
 	ch1 = getc(f); ch2 = getc(f);
 	roff = rdata_pos+((ch1<<16)|(ch2<<8)|getc(f));
@@ -2274,7 +2273,7 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
     int rname = -1;
     char name[300];
     int ch1, ch2;
-    int i, j, k, cnt, isfixed;
+    int i, j, k, cnt;
     FOND *head=NULL, *cur;
     long widoff, kernoff, styleoff;
 
@@ -2302,7 +2301,7 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 
 	offset += 4;
 	fseek(f,offset,SEEK_SET);
-	isfixed = getushort(f)&0x8000?1:0;
+	/* isfixed = */ getushort(f)&0x8000?1:0;
 	/* family id = */ getushort(f);
 	cur->first = getushort(f);
 	cur->last = getushort(f);
@@ -2436,7 +2435,7 @@ static BDFChar *NFNTCvtBitmap(struct MacFontRec *font,int index,SplineFont *sf,i
 return( bdfc );
 }
 
-static void LoadNFNT(FILE *f,long offset, SplineFont *sf, int size) {
+static void LoadNFNT(FILE *f,long offset, SplineFont *sf) {
     long here = ftell(f);
     long baseow;
     long ow;
@@ -2710,7 +2709,7 @@ return( NULL );
 	    if ( (find_id!=-1 && res_id==find_id) ||
 		    ( fond->assoc[j].style==style && fond->assoc[j].id==res_id &&
 			fond->assoc[j].size!=0 ) )
-		LoadNFNT(f,roff,sf,fond->assoc[j].size);
+		LoadNFNT(f,roff,sf);
     }
     fseek(f,start,SEEK_SET);
 
@@ -2856,7 +2855,7 @@ return( NULL );
 	rpos = type_list+getushort(f);
 	sf = NULL;
 	if ( tag==CHR('P','O','S','T') && !(flags&(ttf_onlystrikes|ttf_onlykerns)))		/* No FOND */
-	    sf = SearchPostScriptResources(f,rpos,subcnt,rdata_pos,name_list,flags);
+	    sf = SearchPostScriptResources(f,rpos,subcnt,rdata_pos,flags);
 	else if ( tag==CHR('s','f','n','t') && !(flags&ttf_onlykerns))
 	    sf = SearchTtfResources(f,rpos,subcnt,rdata_pos,name_list,filename,flags,openflags);
 	else if ( tag==CHR('N','F','N','T') ) {

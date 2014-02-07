@@ -241,6 +241,8 @@ void _GIO_localDispatch(GIOControl *gc) {
 	_gio_file_renamefile(gc,path,topath);
 	free(topath);
       break;
+      default:
+      break;
     }
     free(path);
 }
@@ -274,6 +276,8 @@ void *_GIO_fileDispatch(GIOControl *gc) {
 	free(host); free(username); free(password); 
 	_gio_file_renamefile(gc,path,topath);
 	free(topath);
+      break;
+      default:
       break;
     }
     free(path);

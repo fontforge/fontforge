@@ -30,6 +30,7 @@
 #include "utype.h"
 #include "ustring.h"
 #include "gresource.h"
+#include "gresourceP.h"
 #include "hotkeys.h"
 #include "gkeysym.h"
 
@@ -285,9 +286,9 @@ GTextInfo *GTextInfoCopy(GTextInfo *ti) {
 return( copy);
 }
 
-static char *imagedir = "fontforge-pixmaps";	/* This is the system pixmap directory */
-static char **imagepath;			/* May contain user directories too */
-static int imagepathlenmax = 0;
+static const char *imagedir = "fontforge-pixmaps";	/* This is the system pixmap directory */
+static const char **imagepath;			/* May contain user directories too */
+static size_t imagepathlenmax = 0;
 
 struct image_bucket {
     struct image_bucket *next;
@@ -314,8 +315,6 @@ return( val%IC_SIZE );
 }
 
 static void ImagePathDefault(void) {
-    extern char *_GGadget_ImagePath;
-
     if ( imagepath==NULL ) {
 	imagepath = malloc(2*sizeof(void *));
 	imagepath[0] = copy(imagedir);
@@ -326,7 +325,7 @@ static void ImagePathDefault(void) {
     }
 }
 
-char **_GGadget_GetImagePath(void) {
+const char **_GGadget_GetImagePath(void) {
     ImagePathDefault();
 return( imagepath );
 }
@@ -347,7 +346,7 @@ static void ImageCacheReload(void) {
     int i,k;
     struct image_bucket *bucket;
     char *path=NULL;
-    int pathlen;
+    size_t pathlen;
     GImage *temp, hold;
 
     ImagePathDefault();
@@ -389,10 +388,9 @@ static void ImageCacheReload(void) {
 
 void GGadgetSetImageDir(char *dir) {
     int k;
-    extern char *_GGadget_ImagePath;
 
     if ( dir!=NULL && strcmp(imagedir,dir)!=0 ) {
-	char *old = imagedir;
+	const char *old = imagedir;
 	imagedir = copy( dir );
 	if ( imagepath!=NULL ) {
 	    for ( k=0; imagepath[k]!=NULL; ++k )
@@ -510,7 +508,7 @@ return( _GGadgetImageCache(filename,NULL));
 
 /* Substitutes an image contents with what's found in cache. */
 /* That is, unless there is nothing found in the cache.      */
-int TryGGadgetImageCache(GImage *image, char *name) {
+int TryGGadgetImageCache(GImage *image, const char *name) {
     GImage *loaded = GGadgetImageCache(name);
     if (loaded != NULL) *image = *loaded;
 return (loaded != NULL);

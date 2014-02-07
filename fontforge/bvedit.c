@@ -441,12 +441,13 @@ return( NULL );
     if ( bc->byte_data ) {
 	new->bytes_per_line = xmax-xmin+1;
 	new->bitmap = calloc(new->bytes_per_line*(ymax-ymin+1),sizeof(uint8));
-	for ( y=ymin; y<=ymax; ++y ) {
+	for ( y=ymin; /* y<=ymax; this test might overflow, so test == at end of loop */; ++y ) {
 	    bpt = bc->bitmap + (bc->ymax-y)*bc->bytes_per_line;
 	    npt = new->bitmap + (ymax-y)*new->bytes_per_line;
 	    memcpy(npt,bpt+xmin-bc->xmin,xmax-xmin+1);
 	    if ( clear )
 		memset(bpt+xmin-bc->xmin,0,xmax-xmin+1);
+            if (y == ymax) break;
 	}
     } else {
 	new->bytes_per_line = ((xmax-xmin)>>3)+1;

@@ -199,6 +199,8 @@ void SFUndoPerform( SFUndoes* undo, SplineFont* sf )
 	    SFDFixupRefs( sf );
 	}
 	break;
+    default:
+        break;
     }
 }
 

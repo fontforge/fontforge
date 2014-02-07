@@ -30,6 +30,7 @@
 #include "ustring.h"
 #include <utype.h>
 #include "namehash.h"
+#include "tables.h"
 
 int recognizePUA = false;
 NameList *force_names_when_opening=NULL;
@@ -142,7 +143,6 @@ int UniFromName(const char *name,enum uni_interp interp,Encoding *encname) {
 	else if ( encname!=NULL && !encname->is_unicodefull &&
 		(interp==ui_ams || interp==ui_trad_chinese)) {
 	    int j;
-	    extern const int cns14pua[], amspua[];
 	    const int *pua = interp==ui_ams ? amspua : cns14pua;
 	    for ( j=0xf8ff-0xe000; j>=0; --j )
 		if ( pua[j]==i ) {
@@ -183,7 +183,6 @@ const char *StdGlyphName(char *buffer, int uni,enum uni_interp interp,NameList *
     else if ( uni!=-1  ) {
 	if ( uni>=0xe000 && uni<=0xf8ff &&
 		(interp==ui_trad_chinese || for_this_font==&ams)) {
-	    extern const int cns14pua[], amspua[];
 	    const int *pua = interp==ui_trad_chinese ? cns14pua : amspua;
 	    if ( pua[uni-0xe000]!=0 )
 		uni = pua[uni-0xe000];
@@ -468,7 +467,7 @@ NameList *DefaultNameListForNewFonts(void) {
 return( namelist_for_new_fonts );
 }
 
-NameList *NameListByName(char *name) {
+NameList *NameListByName(const char *name) {
     const char *nameTex = "ΤεΧ Names";
     NameList *nl;
 
@@ -519,7 +518,7 @@ NameList *LoadNamelist(char *filename) {
     NameList *nl, *nl2;
     char buffer[400];
     char *pt, *end, *test;
-    int uni;
+    long uni;
     int len;
     int up, ub, uc;
     int rn_cnt=0, rn_max = 0;
@@ -588,7 +587,7 @@ return( NULL );
 	    else if (( *pt=='u' || *pt=='U') && pt[1]=='+' )
 		pt += 2;
 	    uni = strtol(pt,&end,16);
-	    if ( end==pt || uni<0 || uni>=unicode4_size ) {
+	    if ( end==pt || uni<0 || (unsigned long)uni>=unicode4_size ) {
 		ff_post_error(_("NameList parsing error"),_("Bad unicode value when parsing %s\n%s"), nl->title, buffer );
 		NameListFree(nl);
 return( NULL );
@@ -771,7 +770,7 @@ return( buffer );
     }
 }
 
-static void BuildHash(struct glyphnamehash *hash,SplineFont *sf,char **oldnames) {
+static void BuildHash(struct glyphnamehash *hash,SplineFont *sf,const char **oldnames) {
     int gid, hv;
     SplineChar *sc;
     struct glyphnamebucket *new;
@@ -954,6 +953,8 @@ static void SFRenameLookupsByHash(SplineFont *sf,struct glyphnamehash *hash) {
 		    ReplaceByHash(&r->u.rcoverage.replacements,hash);
 	    }
 	  break;
+          default:
+          break;
 	}
     }
 
@@ -998,15 +999,15 @@ return( NULL );
 return( ret );
 }
 
-void SFTemporaryRestoreGlyphNames(SplineFont *sf,char **former) {
+void SFTemporaryRestoreGlyphNames(SplineFont *sf,const char **former) {
     int gid;
     SplineChar *sc;
     struct glyphnamehash hash;
 
     for ( gid = 0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
 	if ( former[gid]!=NULL ) {
-	    char *old = sc->name;
-	    sc->name = former[gid];
+	    const char *old = sc->name;
+	    sc->name = copy(former[gid]);
 	    former[gid] = old;
 	}
     }

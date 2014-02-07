@@ -651,7 +651,9 @@ return( NULL );
 	  case 2:	/* Intersects at end-point & next entry is other side */
 	    ++i;	/*  And the two sides go in opposite directions */
 	  break;
-	}
+	  default:
+	  break;
+}
     }
     fprintf( stderr, "MonotonicFindAlong: Never found our spline.\n" );
 return( NULL );
@@ -704,6 +706,8 @@ return( true );
 	  break;
 	  case 2:	/* Intersects at end-point & next entry is other side */
 	    ++i;	/*  And the two sides go in opposite directions */
+	  break;
+	  default:
 	  break;
 	}
     }
@@ -1205,7 +1209,7 @@ static uint8 IsStubOrIntersection( struct glyphdata *gd, BasePoint *dir1,
     odir2 = ( is_next2 ) ? &pd2->prevunit : &pd2->nextunit;
     
     angle = fabs( GetUnitAngle( dir1,dir2 ));
-    if ( angle > stub_slope_error*1.5 && angle < PI - stub_slope_error*1.5 )
+    if ( angle > (double)stub_slope_error*1.5 && angle < PI - (double)stub_slope_error*1.5 )
 return( 0 );
 
     /* First check if it is a slightly slanted line or a curve which joins */

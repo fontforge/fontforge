@@ -219,9 +219,9 @@ return( lineout );
 }
 
 static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback,
-	char *scname, SplineChar *nested, int layer, int istop) {
-    static char *joins[] = { "miter", "round", "bevel", "inherit", NULL };
-    static char *caps[] = { "butt", "round", "square", "inherit", NULL };
+	const char *scname, SplineChar *nested, int layer, int istop) {
+    static const char *joins[] = { "miter", "round", "bevel", "inherit", NULL };
+    static const char *caps[] = { "butt", "round", "square", "inherit", NULL };
     struct pen pen;
 
     pen = *cpen;
@@ -252,10 +252,10 @@ static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback,
 	else
 	    fprintf( file, "stroke=\"currentColor\" " );
 	if ( pen.brush.opacity>=0 )
-	    fprintf( file, "stroke-opacity=\"%g\" ", pen.brush.opacity);
+	    fprintf( file, "stroke-opacity=\"%g\" ", (double)pen.brush.opacity);
     }
     if ( pen.width!=WIDTH_INHERITED )
-	fprintf( file, "stroke-width=\"%g\" ", pen.width );
+	fprintf( file, "stroke-width=\"%g\" ", (double)pen.width );
     if ( pen.linecap!=lc_inherited )
 	fprintf( file, "stroke-linecap=\"%s\" ", caps[pen.linecap] );
     if ( pen.linejoin!=lc_inherited )
@@ -284,7 +284,7 @@ static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback,
 }
 
 static void svg_dumpfill(FILE *file, struct brush *cbrush, struct brush *fallback,
-	int dofill, char *scname, SplineChar *nested, int layer, int istop ) {
+	int dofill, const char *scname, SplineChar *nested, int layer, int istop ) {
     struct brush brush;
 
     if ( !dofill ) {
@@ -315,7 +315,7 @@ return;
 	else
 	    fprintf( file, "fill=\"currentColor\" " );
 	if ( brush.opacity>=0 )
-	    fprintf( file, "fill-opacity=\"%g\" ", brush.opacity);
+	    fprintf( file, "fill-opacity=\"%g\" ", (double)brush.opacity);
     }
 }
 
@@ -357,7 +357,7 @@ static int base64tab[] = {
 };
 
 static void DataURI_ImageDump(FILE *file,struct gimage *img) {
-    char *mimetype=NULL;
+    const char *mimetype=NULL;
     FILE *imgf;
     int done = false;
     int threechars[3], fourchars[4], i, ch, ch_on_line;
@@ -423,7 +423,7 @@ static void DataURI_ImageDump(FILE *file,struct gimage *img) {
 }
 
 static void svg_dumpgradient(FILE *file,struct gradient *gradient,
-	char *scname,SplineChar *nested,int layer,int is_fill) {
+	const char *scname,SplineChar *nested,int layer,int is_fill) {
     int i;
     Color csame; float osame;
 
@@ -453,20 +453,20 @@ static void svg_dumpgradient(FILE *file,struct gradient *gradient,
 		gradient->sm == sm_reflect ? "reflect" :
 		"repeat" );
 
-    csame = -1; osame = -1;
+    csame = (Color)-1; osame = -1;
     for ( i=0; i<gradient->stop_cnt; ++i ) {
-	if ( csame==-1 )
+	if ( csame==(Color)-1 )
 	    csame = gradient->grad_stops[i].col;
 	else if ( csame!=gradient->grad_stops[i].col )
-	    csame = -2;
-	if ( osame==-1 )
+	    csame = (Color)-2;
+	if ( osame== -1 )
 	    osame = gradient->grad_stops[i].opacity;
-	else if ( osame!=gradient->grad_stops[i].opacity )
+	else if ( (double)osame!=gradient->grad_stops[i].opacity )
 	    osame = -2;
     }
     for ( i=0; i<gradient->stop_cnt; ++i ) {
 	fprintf( file, "      <stop offset=\"%g\"", (double) gradient->grad_stops[i].offset );
-	if ( csame==-2 ) {
+	if ( csame==(Color)-2 ) {
 	    if ( gradient->grad_stops[i].col==COLOR_INHERITED )
 		fprintf( file, " stop-color=\"inherit\"" );
 	    else
@@ -483,11 +483,11 @@ static void svg_dumpgradient(FILE *file,struct gradient *gradient,
     fprintf( file, "    </%s>\n", gradient->radius==0 ? "linearGradient" : "radialGradient" );
 }
 
-static void svg_dumpscdefs(FILE *file,SplineChar *sc,char *name,int istop);
-static void svg_dumptype3(FILE *file,SplineChar *sc,char *name,int istop);
+static void svg_dumpscdefs(FILE *file,SplineChar *sc,const char *name,int istop);
+static void svg_dumptype3(FILE *file,SplineChar *sc,const char *name,int istop);
 
 static void svg_dumppattern(FILE *file,struct pattern *pattern,
-	char *scname, SplineChar *base,SplineChar *nested,int layer,int is_fill) {
+	const char *scname, SplineChar *base,SplineChar *nested,int layer,int is_fill) {
     SplineChar *pattern_sc = SFGetChar(base->parent,-1,pattern->pattern);
     char *patsubname = NULL;
 
@@ -527,7 +527,7 @@ static void svg_dumppattern(FILE *file,struct pattern *pattern,
 }
 
 static void svg_layer_defs(FILE *file, SplineSet *splines,struct brush *fill_brush,struct pen *stroke_pen,
-	SplineChar *sc, char *scname, SplineChar *nested, int layer, int istop ) {
+	SplineChar *sc, const char *scname, SplineChar *nested, int layer, int istop ) {
     if ( SSHasClip(splines)) {
 	if ( nested==NULL )
 	    fprintf( file, "    <clipPath id=\"%s-ly%d-clip\">\n", scname, layer );
@@ -548,7 +548,7 @@ static void svg_layer_defs(FILE *file, SplineSet *splines,struct brush *fill_bru
 	svg_dumppattern(file,stroke_pen->brush.pattern,scname,sc,nested,layer,false);
 }
 
-static void svg_dumpscdefs(FILE *file,SplineChar *sc,char *name,int istop) {
+static void svg_dumpscdefs(FILE *file,SplineChar *sc,const char *name,int istop) {
     int i, j;
     RefChar *ref;
 
@@ -564,7 +564,7 @@ static void svg_dumpscdefs(FILE *file,SplineChar *sc,char *name,int istop) {
     }
 }
 
-static void svg_dumptype3(FILE *file,SplineChar *sc,char *name,int istop) {
+static void svg_dumptype3(FILE *file,SplineChar *sc,const char *name,int istop) {
     int i, j;
     RefChar *ref;
     ImageList *images;
@@ -624,7 +624,7 @@ static void svg_dumptype3(FILE *file,SplineChar *sc,char *name,int istop) {
     }
 }
 
-static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath,int layer) {
+static void svg_scpathdump(FILE *file, SplineChar *sc,const char *endpath,int layer) {
     RefChar *ref;
     int lineout;
     int i,j;
@@ -886,7 +886,7 @@ static void svg_dumpkerns(FILE *file,SplineFont *sf,int isv) {
     }
 }
 
-static void svg_outfonttrailer(FILE *file,SplineFont *sf) {
+static void svg_outfonttrailer(FILE *file) {
     fprintf(file,"  </font>\n");
     fprintf(file,"</defs></svg>\n" );
 }
@@ -988,11 +988,11 @@ static void svg_sfdump(FILE *file,SplineFont *sf,int layer) {
     }
     svg_dumpkerns(file,sf,false);
     svg_dumpkerns(file,sf,true);
-    svg_outfonttrailer(file,sf);
+    svg_outfonttrailer(file);
     setlocale(LC_NUMERIC,oldloc);
 }
 
-int _WriteSVGFont(FILE *file,SplineFont *sf,enum fontformat format,int flags,
+int _WriteSVGFont(FILE *file,SplineFont *sf,int flags,
 	EncMap *map,int layer) {
     int ret;
 
@@ -1003,7 +1003,7 @@ int _WriteSVGFont(FILE *file,SplineFont *sf,enum fontformat format,int flags,
 return( ret );
 }
 
-int WriteSVGFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,
+int WriteSVGFont(const char *fontname,SplineFont *sf,enum fontformat format,int flags,
 	EncMap *map,int layer) {
     FILE *file;
     int ret;

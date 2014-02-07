@@ -109,7 +109,7 @@ typedef struct fontdict {
     int languagelevel;		/* (optional) */
     int wmode;			/* (optional) chooses between alternate metric sets */
 /* non-type0 entries */
-    char *encoding[256];
+    const char (*encoding[256]);
     real fontbb[4];
     int uniqueid;		/* (optional) open range between 4,000,000 and 4,999,999 */
     int xuid[20];		/* (optional) */
@@ -178,7 +178,9 @@ struct fd2data {
     int privatelen;
 };
 
-extern char *AdobeStandardEncoding[256];
+extern const char (*AdobeStandardEncoding[256]);
+extern const char (*AdobeExpertEncoding[256]);
+extern int copymetadata, copyttfinstr;
 
 extern FontDict *_ReadPSFont(FILE *ps);
 extern FontDict *ReadPSFont(char *fontname);

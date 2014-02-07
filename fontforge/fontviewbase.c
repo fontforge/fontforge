@@ -292,7 +292,6 @@ void FVRedo(FontViewBase *fv) {
 void FVJoin(FontViewBase *fv) {
     SplineFont *sf = fv->sf;
     int i,changed,gid;
-    extern float joinsnap;
 
     if ( onlycopydisplayed && fv->active_bitmap!=NULL )
 return;

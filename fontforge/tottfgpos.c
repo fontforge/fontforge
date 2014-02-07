@@ -168,10 +168,10 @@ return( true );
 return( false );
 }
 
-uint32 ScriptFromUnicode(int u,SplineFont *sf) {
+uint32 ScriptFromUnicode(uint32 u,SplineFont *sf) {
     int s, k;
 
-    if ( u!=-1 ) {
+    if ( (int32)u!=-1 ) {
 	for ( s=0; scripts[s][0]!=0; ++s ) {
 	    for ( k=1; scripts[s][k+1]!=0; k += 2 )
 		if ( u>=scripts[s][k] && u<=scripts[s][k+1] )
@@ -212,7 +212,7 @@ return( DEFAULT_SCRIPT );
 }
 
 uint32 SCScriptFromUnicode(SplineChar *sc) {
-    char *pt;
+    const char *pt;
     PST *pst;
     SplineFont *sf;
     int i; unsigned uni;

@@ -32,6 +32,7 @@
 #include <locale.h>
 #include <gwidget.h>
 #include "ttf.h"
+#include "scripting.h"
 
 char *SaveTablesPref;
 int ask_user_for_cmap = false;
@@ -53,7 +54,7 @@ int ask_user_for_cmap = false;
 int prefer_cjk_encodings=false;
 
 /* ************************************************************************** */
-static struct ms_2_locales { char *loc_name; int local_id; } ms_2_locals[] = {
+static struct ms_2_locales { const char *loc_name; int local_id; } ms_2_locals[] = {
     { "af", 0x436 },
     { "sq_AL", 0x41c },
     { "am", 0x45e },
@@ -270,7 +271,7 @@ static struct ms_2_locales { char *loc_name; int local_id; } ms_2_locals[] = {
 int MSLanguageFromLocale(void) {
     const char *lang=NULL;
     int i, langlen;
-    static char *envs[] = { "LC_ALL", "LC_MESSAGES", "LANG", NULL };
+    static const char *envs[] = { "LC_ALL", "LC_MESSAGES", "LANG", NULL };
     char langcountry[8], language[4];
     int langcode, langlocalecode;
 
@@ -363,7 +364,7 @@ return( (real) ((val<<16)>>(16+14)) + (mant/16384.0) );
 }
 
 static Encoding *enc_from_platspec(int platform,int specific) {
-    char *enc;
+    const char *enc;
     Encoding *e;
 
     enc = "Custom";
@@ -489,7 +490,7 @@ return( ret );
 
 char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
     int i,num;
-    int32 tag, nameoffset, length, stringoffset;
+    int32 tag, nameoffset, stringoffset;
     int plat, spec, lang, name, len, off, val;
     int fullval, fullstr, fulllen, famval, famstr, famlen;
     Encoding *enc;
@@ -507,7 +508,6 @@ char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
 	tag = getlong(ttf);
 	/* checksum = */ getlong(ttf);
 	nameoffset = off2+getlong(ttf);
-	length = getlong(ttf);
 	if ( tag==CHR('n','a','m','e'))
     break;
     }
@@ -663,7 +663,6 @@ return( choice );
 }
 
 static void ParseSaveTablesPref(struct ttfinfo *info) {
-    extern char *SaveTablesPref;
     char *pt, *spt;
     int cnt;
 
@@ -692,7 +691,7 @@ return;
     }
 }
 
-static int32 regionchecksom(FILE *file, int start, int len) {
+static uint32 regionchecksum(FILE *file, int start, int len) {
     uint32 sum = 0, chunk;
 
     fseek(file,start,SEEK_SET);
@@ -794,12 +793,12 @@ return;
     }
 
     /* Checksums. First file as a whole, then each table */
-    if ( regionchecksom(ttf,0,-1)!=0xb1b0afba ) {
+    if ( regionchecksum(ttf,0,-1)!=0xb1b0afba ) {
 	LogError(_("File checksum is incorrect."));
 	info->bad_sfnt_header = true;
     }
     for ( i=0; i<info->numtables-1; ++i ) if ( tabs[i].tag!=CHR('h','e','a','d')) {
-	if ( regionchecksom(ttf,tabs[i].offset,tabs[i].length)!=tabs[i].checksum ) {
+	if ( regionchecksum(ttf,tabs[i].offset,tabs[i].length)!=tabs[i].checksum ) {
 	    LogError(_("Table '%c%c%c%c' has a bad checksum."),
 		    tabs[i].tag>>24, tabs[i].tag>>16, tabs[i].tag>>8, tabs[i].tag );
 	    info->bad_sfnt_header = true;
@@ -860,6 +859,8 @@ return;
 	  case CHR('C','F','F',' '):
 	    hascff = true;
 	  break;
+          default:
+          break;
 	}
     }
     if ( !hashead )
@@ -885,7 +886,7 @@ return;
     fseek(ttf,restore_this_pos,SEEK_SET);
 }
 	    
-static struct tablenames { uint32 tag; char *name; } stdtables[] = {
+static struct tablenames { uint32 tag; const char *name; } stdtables[] = {
     { CHR('a','c','n','t'), N_("accent attachment table") },
     { CHR('a','v','a','r'), N_("axis variation table") },
     { CHR('B','A','S','E'), N_("Baseline table (OT version)") },
@@ -960,8 +961,8 @@ static struct tablenames { uint32 tag; char *name; } stdtables[] = {
 
 static int readttfheader(FILE *ttf, struct ttfinfo *info,char *filename,
 	char **choosenname) {
-    int i, j, k;
-    int tag, checksum, offset, length, version;
+    int i, j, k, offset, length, version;
+    uint32 tag;
     int first = true;
 
     version=getlong(ttf);
@@ -1000,7 +1001,7 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 
     for ( i=0; i<info->numtables; ++i ) {
 	tag = getlong(ttf);
-	checksum = getlong(ttf);
+	/* checksum */ getlong(ttf);
 	offset = getlong(ttf);
 	length = getlong(ttf);
 #ifdef DEBUG
@@ -1561,7 +1562,6 @@ return;
 	cur->frommac[id/32] &= ~(1<<(id&0x1f));
     } else {
 	int ret;
-	extern int running_script;
 	if ( info->dupnamestate!=0 )
 	    ret = info->dupnamestate;
 	else if ( running_script )
@@ -2156,7 +2156,7 @@ return;
     sc->layers[ly_fore].refs = head;
 }
 
-static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,int start, int end,int gid) {
+static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,uint32 start, uint32 end,int gid) {
     int path_cnt;
     SplineChar *sc = SplineCharCreate(2);
     int gbb[4];
@@ -2675,7 +2675,7 @@ static char **readcfffontnames(FILE *ttf,int *cnt,struct ttfinfo *info) {
     int offsize;
     uint32 *offsets;
     char **names;
-    int i,j;
+    uint32 i,j;
 
     if ( cnt!=NULL ) *cnt = count;
 
@@ -2924,7 +2924,7 @@ return;
 	if ( offsets[i+1]>offsets[i] && offsets[i+1]-offsets[i]<0x10000 ) {
 	    subs->lens[i] = offsets[i+1]-offsets[i];
 	    subs->values[i] = malloc(offsets[i+1]-offsets[i]+1);
-	    for ( j=0; j<offsets[i+1]-offsets[i]; ++j )
+	    for ( j=0; j+offsets[i]<offsets[i+1]; ++j )
 		subs->values[i][j] = getc(ttf);
 	    subs->values[i][j] = '\0';
 	} else {
@@ -3297,7 +3297,6 @@ return( strings[sid-nStdStrings]);
 static void readcffenc(FILE *ttf,struct topdicts *dict,struct ttfinfo *info,
 	char **strings, int scnt) {
     int format, cnt, i, j, pos, first, last, dupenc, sid;
-    extern char *AdobeStandardEncoding[], *AdobeExpertEncoding[];
     const char *name;
     EncMap *map;
 

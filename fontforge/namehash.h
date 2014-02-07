@@ -32,7 +32,7 @@
 struct glyphnamebucket {
     SplineChar *sc;
     struct glyphnamebucket *next;
-    char *name;
+    const char *name;
 };
 
 struct glyphnamehash {

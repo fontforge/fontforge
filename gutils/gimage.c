@@ -24,6 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "inc/basics.h"
 #include "gimage.h"
 
 GImage *GImageCreate(enum image_type type, int32 width, int32 height) {
@@ -229,7 +230,7 @@ return;
     }
 }
 
-void GImageDrawImage(GImage *dest,GImage *src,GRect *junk,int x, int y) {
+void GImageDrawImage(GImage *dest,GImage *src,GRect *UNUSED(junk),int x, int y) {
     struct _GImage *sbase, *dbase;
     int i,j, di, sbi, dbi, val, factor, maxpix, sbit;
 
@@ -356,11 +357,11 @@ return( val==base->trans?(val&0xffffff):val );
 	val = ((uint32*) (base->data + y*base->bytes_per_line))[x] ;
 return( val==base->trans?(val&0xffffff):(val|0xff000000) );
     } else if ( base->image_type==it_index ) {
-	int pixel = ((uint8*) (base->data + y*base->bytes_per_line))[x];
+	uint8 pixel = ((uint8*) (base->data + y*base->bytes_per_line))[x];
 	val = base->clut->clut[pixel];
 return( pixel==base->trans?(val&0xffffff):(val|0xff000000) );
     } else {
-	int pixel = (((uint8*) (base->data + y*base->bytes_per_line))[x>>3]&(1<<(7-(x&7))) )?1:0;
+	uint8 pixel = (((uint8*) (base->data + y*base->bytes_per_line))[x>>3]&(1<<(7-(x&7))) )?1:0;
 	if ( base->clut==NULL ) {
 	    if ( pixel )
 		val = COLOR_CREATE(0xff,0xff,0xff);
@@ -388,11 +389,11 @@ return( val==base->trans?~val:val );
 	val = ((uint32*) (base->data + y*base->bytes_per_line))[x] ;
 return( val==base->trans?~val:val );
     } else if ( base->image_type==it_index ) {
-	int pixel = ((uint8*) (base->data + y*base->bytes_per_line))[x];
+	uint8 pixel = ((uint8*) (base->data + y*base->bytes_per_line))[x];
 	val = base->clut->clut[pixel];
 return( pixel==base->trans?~val:val );
     } else {
-	int pixel = (((uint8*) (base->data + y*base->bytes_per_line))[x>>3]&(1<<(7-(x&7))) )?1:0;
+	uint8 pixel = (((uint8*) (base->data + y*base->bytes_per_line))[x>>3]&(1<<(7-(x&7))) )?1:0;
 	if ( base->clut==NULL ) {
 	    if ( pixel )
 		val = COLOR_CREATE(0xff,0xff,0xff);

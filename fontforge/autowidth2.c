@@ -407,11 +407,11 @@ SplineChar ***GlyphClassesFromNames(SplineFont *sf,char **classnames,
 	int class_cnt ) {
     SplineChar ***classes = calloc(class_cnt,sizeof(SplineChar **));
     int i, pass, clen;
-    char *pt, *end, ch, *cn;
+    char *end, ch, *pt, *cn;
     SplineChar *sc;
 
     for ( i=0; i<class_cnt; ++i ) {
-	cn = classnames[i]==NULL ? "" : classnames[i];
+	cn = copy(classnames[i]==NULL ? "" : classnames[i]);
 	for ( pass=0; pass<2; ++pass ) {
 	    clen = 0;
 	    for ( pt = cn; *pt; pt = end+1 ) {
