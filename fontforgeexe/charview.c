@@ -4562,13 +4562,13 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
 	SplineFont* sf = cv->b.sc->parent;
 	EncMap *map = ((FontView *) (cv->b.fv))->b.map;
 	unichar_t *srctxt = GGadgetGetTitle( cv->charselector );
-	DEBUG("Switching the active splinechar, so updating the [] in the input box\n");
-	DEBUG("INPUT        : %s\n", u_to_c(srctxt));
+	TRACE("Switching the active splinechar, so updating the [] in the input box\n");
+	TRACE("INPUT        : %s\n", u_to_c(srctxt));
 	unichar_t* p = 0;
 	p = Wordlist_selectionClear( sf, map, srctxt );
-	DEBUG("UNSELECTed   : %s\n", u_to_c(p));
+	TRACE("UNSELECTed   : %s\n", u_to_c(p));
 	p = Wordlist_selectionAdd(   sf, map, p, idx );
-	DEBUG("NEW SELECTION: %s\n", u_to_c(p));
+	TRACE("NEW SELECTION: %s\n", u_to_c(p));
 	GGadgetSetTitle( cv->charselector, p );
     }
     
