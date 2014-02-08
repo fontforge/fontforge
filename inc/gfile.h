@@ -73,7 +73,7 @@ extern int u_GFileReadable(unichar_t *file);
 extern int u_GFileMkDir(unichar_t *name);
 extern int u_GFileRmDir(unichar_t *name);
 extern int u_GFileUnlink(unichar_t *name);
-extern long GFileGetSize(char *name);
+extern off_t GFileGetSize(char *name);
 extern char *GFileReadAll(char *name);
 extern int   GFileWriteAll(char *filepath, char *data);
 extern char* getGResourceProgramDir(void);
