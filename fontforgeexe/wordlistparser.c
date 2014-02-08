@@ -271,13 +271,24 @@ unichar_t* WordlistEscapedInputStringToRealString(
 	    SplineChar* sc = WordlistEscapedInputStringToRealString_readGlyphName( sf, in, in_end, &updated_in, glyphname );
 	    if( sc )
 	    {
-//		printf("ToRealString have an sc!... in:%p updated_in:%p\n", in, updated_in );
+		TRACE("ToRealString have an sc!... in:%p updated_in:%p\n", in, updated_in );
 		in = updated_in;
 		int n = getUnicodeFunc( sc, udata );
+		TRACE("ToRealString orig_pos:%d\n", sc->orig_pos );
+		if( n == -1 )
+		{
+		    printf("ToRealString NO UNICODE, orig_pos:%d\n", sc->orig_pos );
+		    printf("ToRealString NO UNICODE, name:%s\n", sc->name );
+		}
+		
 //		printf("ToRealString have an sc!... n:%d\n", n );
 //		printf("sc->unic:%d\n",sc->unicodeenc);
 
+		TRACE("calling utf8_idpb buffer:%s out:%s ch:%d\n", buffer, out, n );
+		
 		out = utf8_idpb( out, n, 0);
+		if( !out )
+		    printf("ToRealString error on out\n");
 		continue;
 	    }
 	}
@@ -597,8 +608,8 @@ unichar_t* Wordlist_selectionAdd( SplineFont* sf, EncMap *map, unichar_t* txtu, 
         if( element_selected )
         {
             int pos = map->backmap[ scarray[i]->orig_pos ];
-            printf("pos1:%d\n", pos );
-            printf("map:%d\n", map->map[ pos ] );
+            TRACE("pos1:%d\n", pos );
+            TRACE("map:%d\n", map->map[ pos ] );
             int gid = pos < 0 || pos >= map->enccount ? -2 : map->map[pos];
             if( gid == -2 )
                 continue;
@@ -626,16 +637,21 @@ unichar_t* Wordlist_selectionAdd( SplineFont* sf, EncMap *map, unichar_t* txtu, 
 
 unichar_t* Wordlist_advanceSelectedCharsBy( SplineFont* sf, EncMap *map, unichar_t* txtu, int offset )
 {
+    unichar_t original_data[ PATH_MAX ];
     static unichar_t ret[ PATH_MAX ];
     int limit = PATH_MAX;
     SplineChar* scarray[ PATH_MAX + 1 ];
     GArray* selected = 0;
     int i = 0;
+
+    u_strcpy( original_data, txtu );
+    TRACE("Wordlist_advanceSelectedCharsBy(1) %s\n", u_to_c( txtu ));
     WordlistTrimTrailingSingleSlash( txtu );
     txtu = WordlistEscapedInputStringToRealStringBasic( sf, txtu, &selected );
+    TRACE("Wordlist_advanceSelectedCharsBy(2) %s\n", u_to_c( txtu ));
 
     GArray* bv = Wordlist_selectedToBitmapArray( selected );
-    printf("selected->len:%d\n", selected->len );
+    TRACE("selected->len:%d\n", selected->len );
     if( !selected->len )
     {
         int one = 1;
@@ -678,14 +694,27 @@ unichar_t* Wordlist_advanceSelectedCharsBy( SplineFont* sf, EncMap *map, unichar
         if( element_selected )
         {
             int pos = map->backmap[ scarray[i]->orig_pos ];
-            printf("pos1:%d\n", pos );
+            TRACE("pos1:%d\n", pos );
             pos += offset;
-            printf("pos2:%d\n", pos );
-            printf("map:%d\n", map->map[ pos ] );
+            TRACE("pos2:%d\n", pos );
+            TRACE("map:%d\n", map->map[ pos ] );
             int gid = pos < 0 || pos >= map->enccount ? -2 : map->map[pos];
             if( gid == -2 )
-                continue;
-            if( gid==-1 || !sf->glyphs[gid] ) 
+	    {
+		// we can't find a glyph at the desired position.
+		// so instead of dropping it we just do not perform the operation
+		// on this char.
+		pos -= offset;
+		gid = pos < 0 || pos >= map->enccount ? -2 : map->map[pos];
+		if( gid == -2 )
+		{
+		    // we can't go back manually!
+		    printf("no glyph!\n");
+		    u_strcpy( ret, original_data );
+		    return ret;
+		}
+	    }
+	    if( gid==-1 || !sf->glyphs[gid] ) 
                 scarray[i] = SFMakeChar( sf, map, pos );
             else
                 scarray[i] = sf->glyphs[gid];
@@ -702,7 +731,8 @@ unichar_t* Wordlist_advanceSelectedCharsBy( SplineFont* sf, EncMap *map, unichar
         if( element_selected )
             uc_strcat( ret, "]" );
     }
-    
+
+    TRACE("Wordlist_advanceSelectedCharsBy(e) %s\n", u_to_c( ret ));
     return ret;
 }
 
