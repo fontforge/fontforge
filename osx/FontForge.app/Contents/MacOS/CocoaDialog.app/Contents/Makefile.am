@@ -28,9 +28,11 @@ include $(top_srcdir)/mk/layout.am
 
 SUBDIRS = MacOS Resources
 FFAPP_FILES = Info.plist PkgInfo
-ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents
-
-ffapp_DATA = $(FFAPP_FILES)
 EXTRA_DIST = $(FFAPP_FILES)
+
+if PLATFORM_OSX
+   ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents
+   ffapp_DATA = $(FFAPP_FILES)
+endif
 
 -include $(top_srcdir)/git.mk

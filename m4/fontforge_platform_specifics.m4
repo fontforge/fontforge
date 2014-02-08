@@ -93,4 +93,7 @@ AS_CASE([$host],
    [:]  dnl DEFAULT AS_CASE
 
 ) dnl END AS_CASE
+
+AM_CONDITIONAL([PLATFORM_OSX],[test x"${gww_ismac}" = xyes])
+
 ])
