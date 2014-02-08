@@ -2674,6 +2674,27 @@ static void CVExpose_PreTransformSPL_fe( SplinePointList *spl, struct CVExpose_P
 				DraggingComparisonAlphaChannelOverride );
 }
 
+static void CVExposeReferences( CharView *cv, GWindow pixmap, SplineChar* sc, int layer, DRect* clip )
+{
+    RefChar *rf = 0;
+    int rlayer = 0;
+    
+    for ( rf = sc->layers[layer].refs; rf!=NULL; rf = rf->next )
+    {
+	if ( cv->showrefnames )
+	    CVDrawRefName(cv,pixmap,rf,0);
+	enum outlinesfm_flags refsfm = sfm_stroke;
+	if( shouldShowFilledUsingCairo(cv) ) {
+	    refsfm = sfm_fill;
+	}
+
+	for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
+	    CVDrawSplineSetSpecialized(cv,pixmap,rf->layers[rlayer].splines,foreoutlinecol,-1,clip, refsfm, 0);
+	if ( rf->selected && cv->b.layerheads[cv->b.drawmode]==&sc->layers[layer])
+	    CVDrawBB(cv,pixmap,&rf->bb);
+    }
+}
+
 
 static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     SplineFont *sf = cv->b.sc->parent;
@@ -2856,19 +2877,9 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	CVDrawLayerSplineSet( cv,pixmap,cv->b.layerheads[cv->b.drawmode],foreoutlinecol,
 			      cv->showpoints ,&clip, strokeFillMode );
     else if ( (cv->showback[layer>>5]&(1<<(layer&31))) ||
-	    (!cv->show_ft_results && cv->dv==NULL )) {
-	for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
-	    if ( cv->showrefnames )
-		CVDrawRefName(cv,pixmap,rf,0);
-	    enum outlinesfm_flags refsfm = sfm_stroke;
-	    if( shouldShowFilledUsingCairo(cv) ) {
-		refsfm = sfm_fill;
-	    }
-	    for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
-		CVDrawSplineSetSpecialized(cv,pixmap,rf->layers[rlayer].splines,foreoutlinecol,-1,&clip, refsfm, 0);
-	    if ( rf->selected && cv->b.layerheads[cv->b.drawmode]==&cv->b.sc->layers[layer])
-		CVDrawBB(cv,pixmap,&rf->bb);
-	}
+	    (!cv->show_ft_results && cv->dv==NULL ))
+    {
+	CVExposeReferences( cv, pixmap, cv->b.sc, layer, &clip );
     }
     if ( layer>=0 )
     {
@@ -2905,6 +2916,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 			break;
 
 		    cv->xoff += offset;
+		    CVExposeReferences(   cv, pixmap, xc, layer, &clip );
 		    CVDrawLayerSplineSet( cv, pixmap, &xc->layers[layer], foreoutlinecol,
 					  showpoints ,&clip, sm );
 		    offset = cv->scale * xc->width;
@@ -2929,6 +2941,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 
 		    offset = cv->scale * xc->width;
 		    cv->xoff -= offset;
+		    CVExposeReferences(   cv, pixmap, xc, layer, &clip );
 		    CVDrawLayerSplineSet( cv, pixmap, &xc->layers[layer], foreoutlinecol,
 					  showpoints ,&clip, sm );
 		}
