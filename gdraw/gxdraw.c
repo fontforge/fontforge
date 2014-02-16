@@ -559,7 +559,7 @@ static int myerrorhandler(Display *disp, XErrorEvent *err) {
     else
 	majorcode = "";
     if ( err->request_code==45 && lastfontrequest!=NULL )
-	fprintf( stderr, "Error attempting to load font:\n  %s\nThe X Server clained the font existed, but when I asked for it,\nI got this error instead:\n\n", lastfontrequest );
+	fprintf( stderr, "Error attempting to load font:\n  %s\nThe X Server claimed the font existed, but when I asked for it,\nI got this error instead:\n\n", lastfontrequest );
     XGetErrorText(disp,err->error_code,buffer,sizeof(buffer));
     fprintf( stderr, "X Error of failed request: %s\n", buffer );
     fprintf( stderr, "  Major opcode of failed request:  %d.%d (%s)\n",
