@@ -221,15 +221,65 @@ done
 #
 # python - even - http://xxyxyz.org/even/
 #
+echo "###################"
+echo "Bundling up Even..."
+echo "###################"
 cp -av /usr/local/src/even/build-even-Desktop-Debug/Even.app $scriptdir/
 rm -rf $scriptdir/Even.app/Contents/Resources/pypy
 ln -s  $scriptdir/Even.app/Contents/MacOS/Even $bundle_share/fontforge/python/Even
+cd $scriptdir/Even.app/Contents/MacOS/
+mkdir -p ./lib 
+for if in $(ldd Even |grep Qt5|sed -E 's/	//g' | sed 's/ (.*//g' )
+do
+  echo "grabbing: $if"
+  cp "$if" ./lib
+done
+for if in $(ldd Even |grep Qt5|sed -E 's/	//g' | sed 's/ (.*//g' )
+do
+  echo "fixing Even link to: $if"
+  fn=$(basename "$if");
+  install_name_tool -change "$if" "/Applications/FontForge.app/Contents/MacOS/Even.app/Contents/MacOS/lib/$fn" Even
+done
 
+
+mkdir -p ./platforms
+cd ./platforms
+for if in $(find /opt/local/home/ben/Qt5* -name "libqcocoa.dylib" | grep -v Creator)
+do
+  echo "grabbing: $if"
+  cp "$if" .
+done
+
+for if in $(ldd libqcocoa.dylib | grep QtPrintSup |sed -E 's/	//g' | sed 's/ (.*//g' )
+do
+    cp "$if" ../lib/
+done
+for if in $(ldd libqcocoa.dylib | grep Qt5|sed -E 's/	//g' | sed 's/ (.*//g' )
+do
+  echo "fixing libqcocoa.dylib"
+  fn=$(basename "$if");
+  install_name_tool -change "$if" "/Applications/FontForge.app/Contents/MacOS/Even.app/Contents/MacOS/lib/$fn" libqcocoa.dylib
+done
+cd ../lib/
+for if in Qt*
+do
+    echo "fixing $if"
+    for dylibif in $(ldd $if | grep Qt|sed -E 's/	//g' | sed 's/ (.*//g' )
+    do
+       fn=$(basename "$dylibif");
+       install_name_tool -change "$dylibif" "/Applications/FontForge.app/Contents/MacOS/Even.app/Contents/MacOS/lib/$fn" $if
+    done
+done
+
+cd $bundle_bin
 
 ########################
 #
 # we want nodejs in the bundle for collab
 #
+echo "###################"
+echo "bundling up nodejs "
+echo "###################"
 mkdir -p $bundle_lib  $bundle_bin
 cd $bundle_bin
 cp -av /opt/local/bin/node .
