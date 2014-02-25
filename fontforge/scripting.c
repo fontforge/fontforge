@@ -2334,10 +2334,10 @@ static void bExport(Context *c) {
     else
 	ScriptError( c, "Bad format (first arg must be eps/fig/xbm/bmp)");
 #endif
-    if (( format>=4 && c->a.argc!=3 ) || (format<4 && c->a.argc==3 ))
+    if (( format>4 && c->a.argc!=3 ) || (format<=4 && c->a.argc==3 ))
 	ScriptError( c, "Wrong number of arguments");
     bdf=NULL;
-    if ( format>=4 ) {
+    if ( format>4 ) {
 	for ( bdf = c->curfv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if (( BDFDepth(bdf)==1 && bdf->pixelsize==c->a.vals[2].u.ival) ||
 		    (bdf->pixelsize!=(c->a.vals[2].u.ival&0xffff) &&
