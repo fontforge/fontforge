@@ -273,6 +273,15 @@ done
 
 cd $bundle_bin
 
+#
+# Fix the dangling absolute link
+#
+cd "$bundle_share/fontforge/python"
+rm -f Even
+ln -s /Applications/FontForge.app/Contents/MacOS/Even.app/Contents/MacOS/Even .
+cd $bundle_bin
+
+
 ########################
 #
 # we want nodejs in the bundle for collab
