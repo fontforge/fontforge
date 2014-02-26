@@ -487,7 +487,7 @@ extern struct fv_interface *fv_interface;
 void FF_SetFVInterface(struct fv_interface *fvi);
 
 /* ************************************************************************** */
-/*                       Clibboard access (copy/paste)                        */
+/*                       Clipboard access (copy/paste)                        */
 /* ************************************************************************** */
 
 struct clip_interface {
