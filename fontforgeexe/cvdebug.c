@@ -628,7 +628,6 @@ return( temp );
 	if ( ref->sc->ttf_instrs_len!=0 )
 return( ret );
     }
-    chunkfree(ret,sizeof(struct reflist));
 return( parent );
 }
 
@@ -654,7 +653,6 @@ static void ChangeCode(DebugView *dv,TT_ExecContext exc) {
 	    if ( dv->active_refs->ref==NULL ) {
 		temp = dv->active_refs;
 		dv->active_refs = temp->parent;
-		chunkfree(temp,sizeof(struct reflist));
 		if ( dv->active_refs==NULL ) {
 		    if ( dv->cv->b.sc->ttf_instrs_len!=0 )
 	break;
@@ -687,8 +685,6 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	dv->id.instrs = NULL;
 	dv->id.instr_cnt = 0;
 	IIReinit(&dv->ii,-1);
-	if ( cv->oldraster!=NULL )
-	    FreeType_FreeRaster(cv->oldraster);
 	cv->oldraster = NULL;
     } else if ( !SameInstructionSet(dv,exc) || dv->last_npoints!=exc->pts.n_points ) {
 	ChangeCode(dv,exc);
@@ -710,10 +706,7 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
     }
 
     if ( exc!=NULL ) {
-	if ( cv->oldraster!=NULL )
-	    FreeType_FreeRaster(cv->oldraster);
 	cv->oldraster = cv->raster;
-	SplinePointListsFree(cv->b.gridfit);
 	cv->b.gridfit = SplineSetsFromPoints(&exc->pts,dv->scalex,dv->scaley,dv->active_refs);
 	DVMarkPts(dv,cv->b.gridfit);
 	cv->raster = DebuggerCurrentRaster(exc,cv->ft_depth);
@@ -764,10 +757,7 @@ static void DVDefaultRaster(DebugView *dv) {
     SplineFont *sf = cv->b.sc->parent;
     int layer = CVLayer((CharViewBase *) cv);
 
-    if ( cv->oldraster!=NULL )
-	FreeType_FreeRaster(cv->oldraster);
     cv->oldraster = cv->raster;
-    SplinePointListsFree(cv->b.gridfit);
     cv->b.gridfit = NULL;
     single_glyph_context = _FreeTypeFontContext(sf,cv->b.sc,NULL,layer,
 	    cv->b.sc->layers[layer].order2?ff_ttf:ff_otf,0,NULL);
@@ -838,10 +828,8 @@ return( true );
 	    break;
 	    }
 	}
-	if ( !any ) {
-	    free(watches);
+	if ( !any )
 	    watches = NULL;
-	}
 	DebuggerSetWatches(dv->dc,n,watches);
 	GDrawRequestExpose(dv->cv->v,NULL,false);
 	if ( dv->points!=NULL )
@@ -1972,8 +1960,6 @@ return( DVChar(dv,event));
 	dv->dv = NULL;
 	if ( dv->cv!=NULL )
 	    CVDebugFree(dv);
-	free(dv->id.bts);
-	free(dv);
       break;
       case et_mouseup: case et_mousedown:
 	GGadgetEndPopup();
@@ -2040,9 +2026,9 @@ void CVDebugFree(DebugView *dv) {
 	    }
 	}
 
-	SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
-	FreeType_FreeRaster(cv->oldraster); cv->oldraster = NULL;
-	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
+	cv->b.gridfit = NULL;
+	cv->oldraster = NULL;
+	cv->raster = NULL;
 
 	if ( !dying ) {
 	    GDrawRequestExpose(cv->v,NULL,false);
@@ -2091,9 +2077,8 @@ void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
 	dv->cv = cv;
 	dv->layer = CVLayer((CharViewBase *) cv);
 	dv->dc = DebuggerCreate(cv->b.sc,dv->layer,cv->ft_pointsizey,cv->ft_pointsizex,cv->ft_dpi,dbg_fpgm,cv->ft_depth==1);
-	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
+	cv->raster = NULL;
 	if ( dv->dc==NULL ) {
-	    free(dv);
 	    cv->dv = NULL;
 return;
 	}
@@ -2236,7 +2221,7 @@ return;
 	dv->scalex = scalex;
 	dv->scaley = scaley;
 	DebuggerReset(dv->dc,cv->ft_pointsizey,cv->ft_pointsizex,cv->ft_dpi,dbg_fpgm,cv->ft_depth==1);
-	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
+	cv->raster = NULL;
 	if (( exc = DebuggerGetEContext(dv->dc))!=NULL )
 	    DVFigureNewState(dv,exc);
 	else

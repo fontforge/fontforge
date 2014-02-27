@@ -91,7 +91,6 @@ static void Base_DelClean(GGadget *g, int r) {
     int rows, cols = GMatrixEditGetColCnt(g);
     struct matrix_data *md = _GMatrixEditGet(g,&rows);
 
-    BaseLangFree((struct baselangextent *) md[r*cols+cols-1].u.md_str);
     md[r*cols+cols-1].u.md_str = NULL;
 }
 
@@ -202,10 +201,8 @@ static void BaseLang_DoCancel(BaseLangDlg *b) {
     int r, rows, cols = GMatrixEditGetColCnt(g);
     struct matrix_data *md = _GMatrixEditGet(g,&rows);
 
-    for ( r=0; r<rows; ++r ) {
-	BaseLangFree( (struct baselangextent *) md[r*cols+cols-1].u.md_str);
+    for ( r=0; r<rows; ++r )
 	md[r*cols+cols-1].u.md_str = NULL;
-    }
     b->done = true;
 }
 
@@ -231,7 +228,6 @@ static int BaseLang_OK(GGadget *g, GEvent *e) {
 	if ( md==NULL )
 return( true );
 
-	BaseLangFree(b->old);
 	b->old = last = NULL;
 	for ( r=0; r<rows; ++r ) {
 	    cur = chunkalloc(sizeof(struct baselangextent));
@@ -564,10 +560,8 @@ static void Base_DoCancel(BaseDlg *b) {
     int r, rows, cols = GMatrixEditGetColCnt(g);
     struct matrix_data *md = _GMatrixEditGet(g,&rows);
 
-    for ( r=0; r<rows; ++r ) {
-	BaseLangFree( (struct baselangextent *) md[r*cols+cols-1].u.md_str);
+    for ( r=0; r<rows; ++r )
 	md[r*cols+cols-1].u.md_str = NULL;
-    }
     b->done = true;
 }
 
@@ -622,7 +616,6 @@ return( true );
 	    }
 	}
 
-	BaseFree(b->old);
 	b->old = chunkalloc(sizeof(struct Base));
 
 	b->old->baseline_cnt = cnt;

@@ -220,11 +220,9 @@ return( true );
 	    s->from->nextcp = next->from->nextcp;
 	    s->from->nonextcp = next->from->nonextcp;
 	    s->from->nextcpdef = next->from->nextcpdef;
-	    SplinePointFree(next->from);
 	    if ( spl->first==next->from )
 		spl->last = spl->first = s->from;
 	    next->from = s->from;
-	    SplineFree(s);
 	} else {
 	    if ( first==NULL )
 		first = s;
@@ -1389,7 +1387,6 @@ static Intersection *TurnPreInter2Inter(Monotonic *ms) {
 		ilist = AddCloseIntersection(ilist,m1,m2,p->t1,p->t2,&p->inter);
 	    else
 		ilist = AddIntersection(ilist,m1,m2,p->t1,p->t2,&p->inter);
-	    chunkfree(p,sizeof(PreIntersection));
 	}
 	ms->pending = NULL;
     }
@@ -1438,13 +1435,11 @@ static void FigureProperMonotonicsAtIntersections(Intersection *ilist) {
 		if ( ml2!=NULL ) {
 		    if ( ml2==mlnext ) mlnext = ml2->next;
 		    p2->next = ml2->next;
-		    chunkfree(ml2,sizeof(*ml2));
 		}
 		if ( prev==NULL )
 		    ilist->monos = mlnext;
 		else
 		    prev->next = mlnext;
-		chunkfree(ml,sizeof(*ml));
 	    }
 	}
 	ilist = ilist->next;
@@ -2069,10 +2064,6 @@ return(ilist);
 		    (double) (((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d),
 		    (double) (((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d));
     }
-    free(ends[0]);
-    free(ends[1]);
-    free(space);
-    free(gaps);
 return( ilist );
 }
 
@@ -2367,7 +2358,6 @@ static SplineSet *JoinAContour(Intersection *startil,MList *ml) {
 	    ss->first->prevcp = last->prevcp;
 	    ss->first->noprevcp = last->noprevcp;
 	    last->prev->to = ss->first;
-	    SplinePointFree(last);
 	    ss->last = ss->first;
     break;
 	}
@@ -2497,11 +2487,9 @@ static SplineSet *JoinAllNeeded(Intersection *ilist) {
 			if ( test->first->me.x==cur->last->me.x && test->first->me.y==cur->last->me.y ) {
 			    test->first->prev = cur->last->prev;
 			    cur->last->prev->to = test->first;
-			    SplinePointFree(cur->last);
 			    if ( test->last->me.x==cur->first->me.x && test->last->me.y==cur->first->me.y ) {
 				test->last->next = cur->first->next;
 			        cur->first->next->from = test->last;
-			        SplinePointFree(cur->first);
 			        test->last = test->first;
 			    } else
 				test->first = cur->first;
@@ -2511,12 +2499,10 @@ static SplineSet *JoinAllNeeded(Intersection *ilist) {
 			    else {
 				test->last->next = cur->first->next;
 			        cur->first->next->from = test->last;
-			        SplinePointFree(cur->first);
 			        test->last = test->first;
 			    }
 			}
 			cur->first = cur->last = NULL;
-			SplinePointListFree(cur);
 			cur=NULL;
 		    }
 		}
@@ -2541,44 +2527,11 @@ static SplineSet *MergeOpenAndFreeClosed(SplineSet *new,SplineSet *old,
 		  !SSIsSelected(old)) ) {
 	    old->next = new;
 	    new = old;
-	} else {
+	} else
 	    old->next = NULL;
-	    SplinePointListFree(old);
-	}
 	old = next;
     }
 return(new);
-}
-
-void FreeMonotonics(Monotonic *m) {
-    Monotonic *next;
-
-    while ( m!=NULL ) {
-	next = m->linked;
-	chunkfree(m,sizeof(*m));
-	m = next;
-    }
-}
-
-static void FreeMList(MList *ml) {
-    MList *next;
-
-    while ( ml!=NULL ) {
-	next = ml->next;
-	chunkfree(ml,sizeof(*ml));
-	ml = next;
-    }
-}
-
-static void FreeIntersections(Intersection *ilist) {
-    Intersection *next;
-
-    while ( ilist!=NULL ) {
-	next = ilist->next;
-	FreeMList(ilist->monos);
-	chunkfree(ilist,sizeof(*ilist));
-	ilist = next;
-    }
 }
 
 static void MonoSplit(Monotonic *m) {
@@ -2600,7 +2553,6 @@ static void MonoSplit(Monotonic *m) {
 	m = m->linked;
     }
     MonoFigure(s,lastt,1.0,last,final);
-    SplineFree(s);
 }
 
 static void FixupIntersectedSplines(Monotonic *ms) {
@@ -2663,7 +2615,6 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 		    if ( nsp==sp ) {
 			/* Only this spline in the contour, so remove the contour */
 			base->next = NULL;
-			SplinePointListFree(base);
 			if ( prev==NULL )
 			    head = ssnext;
 			else
@@ -2671,7 +2622,6 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 			base = NULL;
 	break;
 		    }
-		    SplineFree(sp->next);
 		    if ( nsp->nonextcp ) {
 			sp->nextcp = sp->me;
 			sp->nonextcp = true;
@@ -2689,7 +2639,6 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 			base->last = sp;
 		    if ( nsp==base->first )
 			base->first = sp;
-		    SplinePointFree(nsp);
 		    if ( sp->next==NULL )
 	break;
 		    nsp = sp->next->to;
@@ -2756,10 +2705,8 @@ return( head );
 static void RemoveNextSP(SplinePoint *psp,SplinePoint *sp,SplinePoint *nsp,
 	SplineSet *base) {
     if ( psp==nsp ) {
-	SplineFree(psp->next);
 	psp->next = psp->prev;
 	psp->next->from = psp;
-	SplinePointFree(sp);
 	SplineRefigure(psp->prev);
     } else {
 	psp->next = nsp->next;
@@ -2767,10 +2714,6 @@ static void RemoveNextSP(SplinePoint *psp,SplinePoint *sp,SplinePoint *nsp,
 	psp->nextcp = nsp->nextcp;
 	psp->nonextcp = nsp->nonextcp;
 	psp->nextcpdef = nsp->nextcpdef;
-	SplineFree(sp->prev);
-	SplineFree(sp->next);
-	SplinePointFree(sp);
-	SplinePointFree(nsp);
 	SplineRefigure(psp->next);
     }
     if ( base->first==sp || base->first==nsp )
@@ -2782,10 +2725,8 @@ static void RemoveNextSP(SplinePoint *psp,SplinePoint *sp,SplinePoint *nsp,
 static void RemovePrevSP(SplinePoint *psp,SplinePoint *sp,SplinePoint *nsp,
 	SplineSet *base) {
     if ( psp==nsp ) {
-	SplineFree(nsp->prev);
 	nsp->prev = nsp->next;
 	nsp->prev->to = nsp;
-	SplinePointFree(sp);
 	SplineRefigure(nsp->next);
     } else {
 	nsp->prev = psp->prev;
@@ -2793,10 +2734,6 @@ static void RemovePrevSP(SplinePoint *psp,SplinePoint *sp,SplinePoint *nsp,
 	nsp->prevcp = nsp->me;
 	nsp->noprevcp = true;
 	nsp->prevcpdef = psp->prevcpdef;
-	SplineFree(sp->prev);
-	SplineFree(sp->next);
-	SplinePointFree(sp);
-	SplinePointFree(psp);
 	SplineRefigure(nsp->prev);
     }
     if ( base->first==sp || base->first==psp )
@@ -2903,10 +2840,6 @@ return;
 		    psp->nonextcp = isp->nonextcp;
 		    psp->next = isp->next;
 		    isp->next->from = psp;
-		    SplineFree(isp->prev);
-		    SplineFree(sp->prev);
-		    SplinePointFree(isp);
-		    SplinePointFree(sp);
 		    if ( psp->next->order2 ) {
 			psp->nextcp.x = nsp->prevcp.x = (psp->nextcp.x+nsp->prevcp.x)/2;
 			psp->nextcp.y = nsp->prevcp.y = (psp->nextcp.y+nsp->prevcp.y)/2;
@@ -2926,10 +2859,6 @@ return;
 		    nsp->noprevcp = isp->noprevcp;
 		    nsp->prev = isp->prev;
 		    isp->prev->to = nsp;
-		    SplineFree(isp->next);
-		    SplineFree(sp->next);
-		    SplinePointFree(isp);
-		    SplinePointFree(sp);
 		    if ( psp->next->order2 ) {
 			psp->nextcp.x = nsp->prevcp.x = (psp->nextcp.x+nsp->prevcp.x)/2;
 			psp->nextcp.y = nsp->prevcp.y = (psp->nextcp.y+nsp->prevcp.y)/2;
@@ -2990,7 +2919,6 @@ static SplineSet *SSRemoveReversals(SplineSet *base) {
 		else
 		    prev->next = next;
 		base->next = NULL;
-		SplinePointListFree(base);
 		base = prev;
 	break;
 	    }
@@ -3088,8 +3016,6 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
 	ret = JoinAllNeeded(ilist);
 	ret = MergeOpenAndFreeClosed(ret,base,ot);
     }
-    FreeMonotonics(ms);
-    FreeIntersections(ilist);
     glyphname = NULL;
 return( ret );
 }

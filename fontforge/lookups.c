@@ -649,17 +649,14 @@ SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *su
 	if ( used[i] )
 	    ++cnt;
 
-    if ( cnt==0 ) {
-	free(used);
+    if ( cnt==0 )
 return( NULL );
-    }
     glyphs = malloc((cnt+1)*sizeof(SplineChar *));
     for ( i=cnt=0 ; i<sf->glyphcnt; ++i ) {
 	if ( used[i] )
 	    glyphs[cnt++] = sf->glyphs[i];
     }
     glyphs[cnt] = NULL;
-    free(used);
 return( glyphs );
 }
 
@@ -683,10 +680,8 @@ SplineChar **SFGlyphsWithLigatureinLookup(SplineFont *sf,struct lookup_subtable 
 	if ( used[i] )
 	    ++cnt;
 
-    if ( cnt==0 ) {
-	free(used);
+    if ( cnt==0 )
 return( NULL );
-    }
 
     glyphs = malloc((cnt+1)*sizeof(SplineChar *));
     for ( i=cnt=0 ; i<sf->glyphcnt; ++i ) {
@@ -694,7 +689,6 @@ return( NULL );
 	    glyphs[cnt++] = sf->glyphs[i];
     }
     glyphs[cnt] = NULL;
-    free(used);
 return( glyphs );
 }
 
@@ -893,7 +887,6 @@ static void SFRemoveAnchorPointsOfAC(SplineFont *sf,AnchorClass *ac) {
 		else
 		    prev->next = next;
 		ap->next = NULL;
-		AnchorPointsFree(ap);
 	    }
 	}
     }
@@ -913,11 +906,7 @@ return( NULL );
 	    }
 	}
     }
-    if ( list[0]==NULL ) {
-	free(list);
-return( NULL );
-    }
-return( list );
+return( list[0]==NULL ? NULL : list );
 }
 
 static void RemoveJSTFReferences(SplineFont *sf,OTLookup *dying) {
@@ -1000,7 +989,6 @@ void SFRemoveUnusedLookupSubTables(SplineFont *sf,
 	    else {
 		SFRemoveAnchorPointsOfAC(sf,ac);
 		ac->next = NULL;
-		AnchorClassesFree(ac);
 		if ( acprev==NULL )
 		    sf->anchor = acnext;
 		else
@@ -1021,7 +1009,6 @@ void SFRemoveUnusedLookupSubTables(SplineFont *sf,
 		else
 		    sf->gsub_lookups = otlnext;
 		RemoveNestedReferences(sf,gpos);
-		OTLookupFree(otl);
 	    } else {
 		for ( prev=NULL, sub=otl->subtables; sub!=NULL; sub=subnext ) {
 		    subnext = sub->next;
@@ -1032,8 +1019,6 @@ void SFRemoveUnusedLookupSubTables(SplineFont *sf,
 			    otl->subtables = subnext;
 			else
 			    prev->next = subnext;
-			free(sub->subtable_name);
-			chunkfree(sub,sizeof(*sub));
 		    } else
 			prev = sub;
 		}
@@ -1056,7 +1041,6 @@ void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub, int remo
 	else
 	    prev->next = sub->sm->next;
 	sub->sm->next = NULL;
-	ASMFree(sub->sm);
 	sub->sm = NULL;
     } else if ( sub->fpst!=NULL ) {
 	FPST *prev = NULL, *test;
@@ -1084,7 +1068,6 @@ void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub, int remo
 		prev->next = sub->kc->next;
 	}
 	sub->kc->next = NULL;
-	KernClassListFree(sub->kc);
 	sub->kc = NULL;
     } else if ( otl->lookup_type==gpos_cursive || otl->lookup_type==gpos_mark2base ||
 	    otl->lookup_type==gpos_mark2ligature || otl->lookup_type==gpos_mark2mark ) {
@@ -1116,7 +1099,6 @@ void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub, int remo
 			else
 			    prev->next = next;
 			pst->next = NULL;
-			PSTFree(pst);
 		    } else
 			prev = pst;
 		}
@@ -1131,7 +1113,6 @@ void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub, int remo
 			    else
 				sc->kerns = kpnext;
 			    kp->next = NULL;
-			    KernPairsFree(kp);
 			} else
 			    kpprev = kp;
 		    }
@@ -1147,9 +1128,6 @@ void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub, int remo
 	otl->subtables = sub->next;
     else
 	subprev->next = sub->next;
-    free(sub->subtable_name);
-    free(sub->suffix);
-    chunkfree(sub,sizeof(struct lookup_subtable));
 }
 
 void SFRemoveLookup(SplineFont *sf,OTLookup *otl,int remove_acs) {
@@ -1181,7 +1159,6 @@ void SFRemoveLookup(SplineFont *sf,OTLookup *otl,int remove_acs) {
     RemoveJSTFReferences(sf,otl);
 
     otl->next = NULL;
-    OTLookupFree(otl);
 }
 
 struct lookup_subtable *SFFindLookupSubtable(SplineFont *sf,char *name) {
@@ -1203,12 +1180,6 @@ return( sub );
 	}
     }
 return( NULL );
-}
-
-struct lookup_subtable *SFFindLookupSubtableAndFreeName(SplineFont *sf,char *name) {
-    struct lookup_subtable *sub = SFFindLookupSubtable(sf,name);
-    free(name);
-return( sub );
 }
 
 OTLookup *SFFindLookup(SplineFont *sf,char *name) {
@@ -1463,10 +1434,8 @@ char *TagFullName(SplineFont *sf,uint32 tag, int ismac, int onlyifknown) {
 
     if ( ismac ) {
 	sprintf( ubuf, "<%d,%d> ", (int) (tag>>16),(int) (tag&0xffff) );
-	if ( (setname = PickNameFromMacName(FindMacSettingName(sf,tag>>16,tag&0xffff)))!=NULL ) {
+	if ( (setname = PickNameFromMacName(FindMacSettingName(sf,tag>>16,tag&0xffff)))!=NULL )
 	    strcat( ubuf, setname );
-	    free( setname );
-	}
     } else {
 	uint32 stag = tag;
 	if ( tag==CHR('n','u','t','f') )	/* early name that was standardize later as... */
@@ -1596,8 +1565,6 @@ void NameOTLookup(OTLookup *otl,SplineFont *sf) {
 	    otl->lookup_name = malloc( strlen(userfriendly)+strlen(format)+10 );
 	    sprintf( otl->lookup_name, format, userfriendly, otl->lookup_index );
 	}
-	free(script);
-	free(userfriendly);
     }
 
     if ( otl->subtables==NULL )
@@ -1686,7 +1653,6 @@ return( sl );
     for ( i=1; i<cnt; ++i )
 	test[i-1]->next = test[i];
     test[i-1]->next = NULL;
-    free( allocked );
 return( sl );
 }
 
@@ -1714,7 +1680,6 @@ return( fl );
     for ( i=1; i<cnt; ++i )
 	test[i-1]->next = test[i];
     test[i-1]->next = NULL;
-    free( allocked );
 return( fl );
 }
 
@@ -1891,7 +1856,6 @@ return;
 			else
 			    pstprev = spst->next;
 			spst->next = NULL;
-			PSTFree(spst);
 		    }
 		} else if ( lookup_type==gsub_ligature || lookup_type==gpos_pair ) {
 		    pstprev = NULL;
@@ -1916,7 +1880,6 @@ return;
 				else
 				    pstprev->next = pstnext;
 				spst->next = NULL;
-			        PSTFree(spst);
 			        spst = pstprev;
 			    }
 			}
@@ -1945,7 +1908,6 @@ return;
 				    else
 					sc->kerns = kpnext;
 				    skp->next = NULL;
-				    KernPairsFree(skp);
 				    skp = kpprev;
 				}
 			    }
@@ -1993,7 +1955,6 @@ return( mc->lks[l].to );
 
     newname = strconcat(mc->prefix,from_otl->lookup_name);
     to_nested_otl = SFFindLookup(mc->sf_to,newname);
-    free(newname);
     if ( to_nested_otl==NULL )
 	to_nested_otl = _OTLookupCopyInto(mc, from_otl, (OTLookup *) -1, true );
 return( to_nested_otl );
@@ -2555,8 +2516,6 @@ OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *fr
     mc.prefix = NeedsPrefix(into_sf,from_sf,list)
 	    ? strconcat(from_sf->fontname,"-") : copy("");
     newotl = _OTLookupCopyInto(&mc,from_otl,(OTLookup *) -2,true);
-    free(mc.lks);
-    free(mc.prefix);
 return( newotl );
 }
 
@@ -2579,8 +2538,6 @@ void OTLookupsCopyInto(SplineFont *into_sf,SplineFont *from_sf,
     for ( do_contents=0; do_contents<2; ++do_contents )
 	for ( i=0; list[i]!=NULL; ++i )
 	    (void) _OTLookupCopyInto(&mc,list[i],before,do_contents);
-    free(mc.lks);
-    free(mc.prefix);
 }
 
 /* ************************************************************************** */
@@ -2902,15 +2859,6 @@ static void ApplyAppleStateMachine(OTLookup *otl,struct lookup_data *data) {
 /* ************************* Apply OpenType Lookups ************************* */
 /* ************************************************************************** */
 
-static void LigatureFree(struct lookup_data *data) {
-    int i;
-
-    if ( data->ligs==NULL )
-return;
-    for ( i=0; data->ligs[i]!=NULL; ++i )
-	free(data->ligs[i]);
-}
-
 static void LigatureSearch(struct lookup_subtable *sub, struct lookup_data *data) {
     SplineFont *sf = data->sf;
     int gid, ccnt, cnt, ch, err;
@@ -2918,7 +2866,6 @@ static void LigatureSearch(struct lookup_subtable *sub, struct lookup_data *data
     PST *pst;
     char *pt, *start;
 
-    LigatureFree(data);
     cnt = 0;
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
 	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->subtable==sub ) {
@@ -3703,7 +3650,6 @@ struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 sc
 	for ( i=0; langs[i]!=0 && langs[i]!=lang; ++i );
 	if ( langs[i]==0 )
 	    templang = DEFAULT_LANG;
-	free(langs);
 
 	for ( otl = isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL ; otl = otl->next ) {
 	    uint32 tag;
@@ -3711,8 +3657,6 @@ struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 sc
 		ApplyLookup(tag,otl,&data);
 	}
     }
-    LigatureFree(&data);
-    free(data.ligs);
 
     data.str = realloc(data.str,(data.cnt+1)*sizeof(struct opentype_str));
     memset(&data.str[data.cnt],0,sizeof(struct opentype_str));
@@ -3738,7 +3682,6 @@ static void doreplace(char **haystack,char *start,char *rpl,int slen) {
 	memcpy(new,base,start-base);
 	memcpy(new+(start-base),rpl,rlen);
 	strcpy(new+(start-base)+rlen,pt);
-	free( base );
 	*haystack = new;
     }
 }
@@ -3846,7 +3789,6 @@ return( false );
     ret = rplstr(&gv->variants,old,new,false);
     for ( i=0; i<gv->part_cnt; ++i ) {
 	if ( strcmp(gv->parts[i].component,old)==0 ) {
-	    free( gv->parts[i].component);
 	    gv->parts[i].component = copy(new);
 	    ret = true;
 	}
@@ -3883,7 +3825,6 @@ void SFGlyphRenameFixup(SplineFont *sf, const char *old, char *new, int rename_r
 		char *newer = copy(sc->name);
 		rplglyphname(&newer,old,new);
 		SFGlyphRenameFixup(master,sc->name,newer,true);
-		free(sc->name);
 		sc->name = newer;
 		sc->namechanged = sc->changed = true;
 	    }
@@ -4098,22 +4039,11 @@ static void AALTRemoveOld(SplineFont *sf) {
 		    else
 			prev->next = fl->next;
 		    fl->next = NULL;
-		    FeatureScriptLangListFree(fl);
 		}
 	break;
 	    }
 	}
     }
-}
-
-void SllkFree(struct sllk *sllk,int sllk_cnt) {
-    int i;
-
-    for ( i=0; i<sllk_cnt; ++i ) {
-	free( sllk[i].langs );
-	free( sllk[i].lookups );
-    }
-    free(sllk);
 }
 
 static void AddOTLToSllk(struct sllk *sllk, OTLookup *otl, struct scriptlanglist *sl) {
@@ -4200,9 +4130,6 @@ static char *ComponentsFromPSTs(PST **psts,int pcnt) {
     else
 	ret[len-1] = '\0';
 
-    for ( i=0; i<ncnt; ++i )
-	free(names[i]);
-    free(names);
 return( ret );
 }
 
@@ -4316,7 +4243,6 @@ OTLookup *NewAALTLookup(SplineFont *sf,struct sllk *sllk, int sllk_cnt, int i) {
 	}
 	++k;
     } while ( k<sf->subfontcnt );
-    free(psts);
     NameOTLookup(otl,sf);
 return( otl );
 }
@@ -4345,8 +4271,6 @@ void AddNewAALTFeatures(SplineFont *sf) {
     continue;
 	NewAALTLookup(sf,sllk,sllk_cnt,i);
     }
-
-    SllkFree(sllk,sllk_cnt);
 }
 
 
@@ -4584,7 +4508,7 @@ return( ret );
 /*  rarely two or more lookups applied by one rule. But it could, so be aware!*/
 char *FPSTRule_To_Str(SplineFont *sf,FPST *fpst,struct fpst_rule *rule) {
     int i, max=0;
-    char *ret, *npt;
+    char *npt;
     int seq=0;
     GrowBuf gb;
 
@@ -4608,7 +4532,6 @@ char *FPSTRule_To_Str(SplineFont *sf,FPST *fpst,struct fpst_rule *rule) {
         if ( rule->u.glyph.back!=NULL ) {
 	    char *temp;
 	    GrowBufferAddStr(&gb,(temp = reverseGlyphNames(rule->u.glyph.back)));
-	    free(temp);
 	    GrowBufferAdd(&gb,' ');
 	}
 	if ( fpst->type!=pst_contextpos && fpst->type!=pst_contextsub )
@@ -4681,9 +4604,7 @@ return( NULL );
     }
     if ( gb.pt>gb.base && gb.pt[-1]==' ' )
 	gb.pt[-1] = '\0';
-    ret = copy(gb.base);
-    free(gb.base);
-return( ret );
+return copy(gb.base);
 }
 
 static char *my_asprintf( const char *format,...) {
@@ -4781,7 +4702,6 @@ return( my_asprintf( _("Replacements must follow the coverage table to which the
 			if ( i!=ecnt-1 )
 			    strcat(newr," ");
 		    }
-		    free(parsed[cnt].replacements);
 		    parsed[cnt].replacements = newr;
 		} else
 return( my_asprintf( _("There must be as many replacement glyphs as there are match glyphs: %s => %s"),
@@ -4928,7 +4848,6 @@ return( copy( _("A reverse contextual chaining lookup can only match one coverag
 	}
 	if ( blen!=0 ) {
 	    char *temp = reverseGlyphNames(rule->u.glyph.back);
-	    free(rule->u.glyph.back);
 	    rule->u.glyph.back = temp;
 	}
       } break;
@@ -4967,9 +4886,9 @@ return( copy( _("A reverse contextual chaining lookup can only match one coverag
 		}
 	    }
 	    if ( j==class_cnt ) {
-		free( rule->u.class.nclasses ); rule->u.class.nclasses = NULL;
-		free( rule->u.class.bclasses ); rule->u.class.bclasses = NULL;
-		free( rule->u.class.fclasses ); rule->u.class.fclasses = NULL;
+		rule->u.class.nclasses = NULL;
+		rule->u.class.bclasses = NULL;
+		rule->u.class.fclasses = NULL;
 		rule->u.class.bcnt = rule->u.class.fcnt = rule->u.class.ncnt = 0;
 		if ( i<first )
 return( my_asprintf( _("%s is not a class name for the backtracking classes." ), parsed[i].entity ) );
@@ -5046,13 +4965,9 @@ return( copy( _("Bad FPST format")) );
 		rule->lookups[tot].seq = i-first;
 		rule->lookups[tot].lookup = ll->lookup;
 		++tot;
-		chunkfree(ll,sizeof(*ll));
 	    }
 	}
     }
-    for ( i=0; i<cnt; ++i )
-	free( parsed[i].entity );
-    free(parsed);
 return( ret );
 }
 

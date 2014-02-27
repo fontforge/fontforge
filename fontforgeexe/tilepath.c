@@ -249,18 +249,6 @@ return;
     }
 }
 
-static void _SplinesRemoveBetween( Spline *spline, Spline *beyond, SplineSet *spl ) {
-    Spline *next;
-
-    while ( spline!=NULL && spline!=beyond ) {
-	next = spline->to->next;
-	if ( spline->from!=spl->last && spline->from!=spl->first )
-	    SplinePointFree(spline->from);
-	SplineFree(spline);
-	spline = next;
-    }
-}
-
 static SplineSet *SplinePointListTruncateAtY(SplineSet *spl,real y) {
     SplineSet *prev=NULL, *ss=spl, *nprev, *snext, *ns;
     Spline *spline, *next;
@@ -301,14 +289,12 @@ static SplineSet *SplinePointListTruncateAtY(SplineSet *spl,real y) {
 			ss = snext;
 		    else
 			prev->next = snext;
-		    SplinePointListFree(spl);
 		    nprev = prev;
 	break;
 		}
 		spl->last = spline->from;
 		spline->from->next = NULL;
 		spl->first->prev = NULL;
-		_SplinesRemoveBetween(spline,next,spl);
 	break;
 	    } else {
 		if ( spline==spl->first->next ) {
@@ -336,7 +322,6 @@ static SplineSet *SplinePointListTruncateAtY(SplineSet *spl,real y) {
 		    spl->next = ns->next;
 		    nprev = ns;
 		}
-		_SplinesRemoveBetween(spline,next,spl);
 		spl = nprev;
 	    }
 	}
@@ -373,16 +358,13 @@ static SplineSet *SplinePointListMerge(SplineSet *old,SplineSet *new) {
 		    test1->last->next = new->first->next;
 		    new->first->next->from = test1->last;
 		    test1->last = new->last;
-		    SplinePointFree(new->first);
 		    new->first = new->last = NULL;
-		    SplinePointListFree(new);
 		    if ( test1->last->me.x == test1->first->me.x &&
 			    test1->last->me.y == test1->first->me.y ) {
 			test1->first->prevcp = test1->last->prevcp;
 			test1->first->noprevcp = test1->last->noprevcp;
 			test1->first->prevcpdef = test1->last->prevcpdef;
 			test1->last->prev->to = test1->first;
-			SplinePointFree(test1->last);
 			test1->last = test1->first;
 		    }
 		} else {
@@ -392,9 +374,7 @@ static SplineSet *SplinePointListMerge(SplineSet *old,SplineSet *new) {
 		    test1->first->prev = new->last->prev;
 		    new->last->prev->to = test1->first;
 		    test1->first = new->first;
-		    SplinePointFree(new->last);
 		    new->first = new->last = NULL;
-		    SplinePointListFree(new);
 		}
 		new = next;
     continue;
@@ -657,7 +637,6 @@ static void AdjustSplineSet(TD *td,int order2) {
 	    new->first->prevcpdef = lastsp->prevcpdef;
 	    lastsp->prev->to = new->first;
 	    new->last = new->first;
-	    SplinePointFree(lastsp);
 	} else
 	    new->last = lastsp;
 
@@ -686,11 +665,7 @@ static void TileSplineSets(TD *td,SplineSet **head,int order2) {
 	    if ( TDMakeSamples(td)) {
 		TileLine(td);
 		AdjustSplineSet(td,order2);
-		free( td->samples );
-		free( td->joins );
-		SplinePointListsFree(td->tileset);
 	    }
-	    SplinePointListFree(td->path);
 	    td->path = td->tileset = NULL;
 	} else
 	    prev = spl;
@@ -815,16 +790,6 @@ static void TPDChar(TilePathDlg *tpd, GEvent *event) {
 }
 
 static void TPD_DoClose(struct cvcontainer *cvc) {
-    TilePathDlg *tpd = (TilePathDlg *) cvc;
-    int i;
-
-    for ( i=0; i<4; ++i ) {
-	SplineChar *msc = &(&tpd->sc_first)[i];
-	SplinePointListsFree(msc->layers[0].splines);
-	SplinePointListsFree(msc->layers[1].splines);
-	free( msc->layers );
-    }
-
     tpd->done = true;
 }
 
@@ -1282,11 +1247,6 @@ return( tpd.oked );
 }
 
 static void TDFree(struct tiledata *td) {
-    int i;
-
-    for ( i=0 ; i<4; ++i )
-	SplinePointListFree( last_tiles[i]);
-
     last_tiles[0] = td->firsttile;
     last_tiles[1] = td->basetile;
     last_tiles[2] = td->lasttile;
@@ -1476,15 +1436,6 @@ static void PTDChar(TilePathDlg *ptd, GEvent *event) {
 }
 
 static void PTD_DoClose(struct cvcontainer *cvc) {
-    TilePathDlg *ptd = (TilePathDlg *) cvc;
-    SplineChar *msc = &ptd->sc_first;
-
-    SplinePointListsFree(msc->layers[0].splines);
-    RefCharsFree(msc->layers[0].refs);
-    SplinePointListsFree(msc->layers[1].splines);
-    RefCharsFree(msc->layers[1].refs);
-    free( msc->layers );
-
     ptd->done = true;
 }
 
@@ -1582,7 +1533,6 @@ static int PTD_RefigureBackground(GGadget *g, GEvent *e) {
 	if ( err )
 return( true );
 	ptd->sc_first.width = hsize;
-	SplinePointListFree(ptd->sc_first.layers[ly_back].splines);
 	sp1 = SplinePointCreate(-1000,vsize);
 	sp2 = SplinePointCreate(2000,vsize);
 	SplineMake(sp1,sp2,ptd->sc_first.layers[ly_back].order2);
@@ -1932,11 +1882,7 @@ return( ptd.oked );
 }
 
 static void TPFree(struct tiledata *td) {
-
-    SplinePointListFree(last_pattern);
     last_pattern = td->pattern->splines;
-    RefCharsFree(td->pattern->refs);
-    free(td->pattern);
     patternSize = td->patternSize;
     patternRepeat = td->repeatCnt;
 }

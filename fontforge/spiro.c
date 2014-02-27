@@ -67,7 +67,6 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
 	/* Spiro only haS 1 code point sofar (no conversion needed yet) */
 	if ( (ss=chunkalloc(sizeof(SplineSet)))==NULL || \
 	     (ss->first=ss->last=SplinePointCreate(spiros[0].x,spiros[0].y))==NULL ) {
-	    chunkfree(ss,sizeof(SplineSet));
 	    return( NULL );
 	}
     } else {
@@ -84,7 +83,6 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
 #if _LIBSPIRO_FUN
 	    if ( TaggedSpiroCPsToBezier0(spiros,bc)==0 ) {
 		if ( lastty ) spiros[n-1].ty = lastty;
-		free(bc);
 		return( NULL );
 	    }
 #else
@@ -95,7 +93,6 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
 	    spiro_cp *nspiros;
 	    if ( (nspiros=malloc((n+1)*sizeof(spiro_cp)))==NULL ) {
 		if ( lastty ) spiros[n-1].ty = lastty;
-		free(bc);
 		return( NULL );
 	    }
 	    memcpy(nspiros,spiros,(n+1)*sizeof(spiro_cp));
@@ -104,14 +101,11 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
 #if _LIBSPIRO_FUN
 	    if ( TaggedSpiroCPsToBezier0(nspiros,bc)==0 ) {
 		if ( lastty ) spiros[n-1].ty = lastty;
-		free(nspiros);
-		free(bc);
 		return( NULL );
 	    }
 #else
 	    TaggedSpiroCPsToBezier(nspiros,bc);
 #endif
-	    free(nspiros);
 	}
 	if ( lastty ) spiros[n-1].ty = lastty;
 
@@ -222,7 +216,6 @@ void SSRegenerateFromSpiros(SplineSet *spl) {
 	SplineSetBeziersClear(spl);
 	spl->first = temp->first;
 	spl->last = temp->last;
-	chunkfree(temp,sizeof(SplineSet));
     } else {
 	/* Didn't converge... or something ...therefore let's fake-it. */
 	int i;

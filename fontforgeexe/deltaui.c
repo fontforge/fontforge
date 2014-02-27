@@ -110,12 +110,10 @@ return( true );
 		IError(_("Unexpected error"));
 	      break;
 	    }
-	    free(sizes);
 	    qg->cur = 0;
 return( true );
 	}
 
-	free(delta_sizes);
 	delta_within = within;
 	delta_dpi    = dpi;
 	delta_depth  = depth;
@@ -154,10 +152,6 @@ return( false );
     } else if ( event->type == et_map ) {
 	/* Above palettes */
 	GDrawRaise(gw);
-    } else if ( event->type == et_destroy ) {
-	QGData *qg = GDrawGetUserData(gw);
-	free(qg->qg);
-	free(qg);
     }
 return( true );
 }
@@ -208,7 +202,6 @@ return;
     }
     if ( failed ) {
 	ff_post_error(_("Not quadratic"),_("This must be a truetype layer."));
-	free(data);
 	if ( cv!=NULL )
 	    cv->qg = NULL;
 return;
@@ -558,15 +551,6 @@ return;
     }
 }
 
-static void qgnodeFree(struct qgnode *parent) {
-    int i;
-
-    for ( i=0; i<parent->kid_cnt; ++i )
-	qgnodeFree(&parent->kids[i]);
-    free(parent->kids);
-    free(parent->name);
-}
-
 static const QGData *kludge;
 
 static int qg_sorter(const void *pt1, const void *pt2) {
@@ -734,7 +718,6 @@ static void QGDoSort(QGData *qg) {
     kludge = qg;
     qsort(qg->qg,qg->cur,sizeof(QuestionableGrid),qg_sorter);
 
-    qgnodeFree(&qg->list);
     memset(&qg->list,0,sizeof(struct qgnode));
     qg->list.open = true;
     qg->list.first = qg->qg;
@@ -1083,6 +1066,5 @@ static void StartDeltaDisplay(QGData *qg) {
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
 
-    qgnodeFree(&qg->list);
     qg->gw = oldgw;
 }

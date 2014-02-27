@@ -1,3 +1,5 @@
+#include <fontforge-config.h>
+
 #include <basics.h>
 #include <string.h>
 #include "flaglist.h"

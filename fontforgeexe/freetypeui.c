@@ -334,9 +334,6 @@ void DebuggerTerminate(struct debugger_context *dc) {
 	FreeTypeFreeContext(dc->ftc);
     if ( dc->context!=NULL )
 	FT_Done_FreeType( dc->context );
-    free(dc->watch);
-    free(dc->oldpts);
-    free(dc);
 }
 
 void DebuggerReset(struct debugger_context *dc,real ptsizey, real ptsizex,int dpi,int dbg_fpgm, int is_bitmap) {
@@ -391,10 +388,8 @@ return( NULL );
     dc->ptsizex = ptsizex;
     dc->dpi = dpi;
     dc->is_bitmap = is_bitmap;
-    if ( FT_Init_FreeType( &dc->context )) {
-	free(dc);
+    if ( FT_Init_FreeType( &dc->context ))
 return( NULL );
-    }
 
 #if FREETYPE_MINOR >= 5
     {
@@ -403,10 +398,8 @@ return( NULL );
 	if ( FT_Property_Set( dc->context,
 			      "truetype",
 			      "interpreter-version",
-			      &tt_version )) {
-	    free(dc);
+			      &tt_version ))
 return( NULL );
-	}
     }
 #endif
 
@@ -433,7 +426,7 @@ void DebuggerGo(struct debugger_context *dc,enum debug_gotype dgt,DebugView *dv)
     int opcode;
 
     if ( !dc->has_thread || dc->has_finished || dc->exc==NULL ) {
-	FreeType_FreeRaster(dv->cv->raster); dv->cv->raster = NULL;
+	dv->cv->raster = NULL;
 	DebuggerReset(dc,dc->ptsizey,dc->ptsizex,dc->dpi,dc->debug_fpgm,dc->is_bitmap);
     } else {
 	switch ( dgt ) {
@@ -510,7 +503,7 @@ return;
 }
 
 void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w) {
-    free(dc->watch); dc->watch=NULL;
+    dc->watch=NULL;
     if ( n!=dc->n_points ) IError("Bad watchpoint count");
     else {
 	dc->watch = w;
@@ -530,7 +523,7 @@ return( dc->watch );
 }
 
 void DebuggerSetWatchStores(struct debugger_context *dc,int n, uint8 *w) {
-    free(dc->watchstorage); dc->watchstorage=NULL;
+    dc->watchstorage=NULL;
     if ( n!=dc->exc->storeSize ) IError("Bad watchpoint count");
     else {
 	dc->watchstorage = w;
@@ -556,7 +549,7 @@ return( dc->storetouched[index]&1 );
 }
 
 void DebuggerSetWatchCvts(struct debugger_context *dc,int n, uint8 *w) {
-    free(dc->watchcvt); dc->watchcvt=NULL;
+    dc->watchcvt=NULL;
     if ( n!=dc->exc->cvtSize ) IError("Bad watchpoint count");
     else {
 	dc->watchcvt = w;

@@ -234,8 +234,6 @@ return;
 #endif
     if ( ftc->file!=NULL )
 	fclose(ftc->file);
-    free(ftc->glyph_indeces);
-    free(ftc);
 }
     
 void *__FreeTypeFontContext(FT_Library context,
@@ -272,10 +270,8 @@ return( NULL );
 	ftc->layer = layer;
 
 	ftc->file = tmpfile();
-	if ( ftc->file==NULL ) {
-	    free(ftc);
+	if ( ftc->file==NULL )
 return( NULL );
-	}
 
 	old = sf->glyphs;
 	notdefpos = SFFindNotdef(sf,-2);	/* Do this early */
@@ -404,10 +400,8 @@ return( NULL );
 	if ( ftc->mappedfile==MAP_FAILED )
  goto fail;
 #endif
-	if ( sf->glyphs!=old ) {
-	    free(sf->glyphs);
+	if ( sf->glyphs!=old )
 	    sf->glyphs = old;
-	}
     }
 
     if ( FT_New_Memory_Face(context,ftc->mappedfile,ftc->len,0,&ftc->face))
@@ -420,10 +414,8 @@ return( ftc );
     sf->internal_temp = false;
     GlyphHashFree(sf);
     FreeTypeFreeContext(ftc);
-    if ( sf->glyphs!=old ) {
-	free(sf->glyphs);
+    if ( sf->glyphs!=old )
 	sf->glyphs = old;
-    }
 return( NULL );
 }
 
@@ -590,7 +582,6 @@ static void FT_ClosePath(struct ft_context *context) {
 	    context->cpl->first->prevcp = context->last->prevcp;
 	    context->last->prev->to = context->cpl->first;
 	    context->cpl->first->prev = context->last->prev;
-	    SplinePointFree(context->last);
 	}
 	context->cpl->last = context->cpl->first;
 	context->last = NULL;
@@ -1021,10 +1012,8 @@ static void MergeBitmaps(FT_Bitmap *bitmap,FT_Bitmap *newstuff,struct brush *bru
 		     (255-newstuff->buffer[i*bitmap->pitch+j])*bitmap->buffer[i*bitmap->pitch+j] +
 		     127)/255;
 	}
-	if ( brush->pattern!=NULL ) {
-	    BDFCharFree(brush->pattern->pat);
+	if ( brush->pattern!=NULL )
 	    brush->pattern->pat = NULL;
-	}
     } else {
 	if ( clipmask!=NULL ) {
 	    for ( i=0; i<bitmap->rows; ++i ) for ( j=0; j<bitmap->pitch; ++j )
@@ -1122,14 +1111,11 @@ return( NULL );
 	FillOutline(stroked,&outline,&pmax,&cmax,
 		scale,&b,sc->layers[layer].order2,false);
 	err |= (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
-	SplinePointListsFree(stroked);
     } else if ( temp.buffer==NULL ) {
 	all = LayerAllOutlines(&sc->layers[layer]);
 	FillOutline(all,&outline,&pmax,&cmax,
 		scale,&b,sc->layers[layer].order2,false);
 	err = (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
-	if ( sc->layers[layer].splines!=all )
-	    SplinePointListsFree(all);
     } else {
 	int j; RefChar *r;
 	/* Can only get here if multilayer */
@@ -1158,7 +1144,6 @@ return( NULL );
 			scale,&b,sc->layers[i].order2,true);
 		err |= (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 		MergeBitmaps(&bitmap,&temp,&sc->layers[i].stroke_pen.brush,clipmask,rscale,&b,sc);
-		SplinePointListsFree(stroked);
 	    }
 	    for ( r = sc->layers[i].refs; r!=NULL; r=r->next ) {
 		for ( j=0; j<r->layer_cnt; ++j ) {
@@ -1176,25 +1161,17 @@ return( NULL );
 				scale,&b,sc->layers[i].order2,true);
 			err |= (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 			MergeBitmaps(&bitmap,&temp,&r->layers[j].stroke_pen.brush,clipmask,rscale,&b,sc);
-			SplinePointListsFree(stroked);
 		    }
 		}
 	    }
-            free(clipmask);
 	}
     }
 
-    free(temp.buffer);
-
-    free(outline.points);
-    free(outline.tags);
-    free(outline.contours);
     bdfc = NULL;
     if ( !err ) {
 	bdfc = BdfCFromBitmap(&bitmap, (((int) b.minx)+0x20)>>6, (((int) b.maxy)+0x20)>>6,
 		(int) rint( (ptsize*dpi)/72.0 ), depth, sc, NULL);
     }
-    free( bitmap.buffer );
 return( bdfc );
 }
 
@@ -1235,11 +1212,4 @@ return( bdf );
 void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontViewBase *fv,int layer) {
 return( _FreeTypeFontContext(sf,sc,fv,layer,sf->subfontcnt!=0?ff_otfcid:
 	sf->layers[layer].order2?ff_ttf:ff_pfb,0,NULL) );
-}
-
-void FreeType_FreeRaster(struct freetype_raster *raster) {
-    if ( raster==NULL || raster==(void *) -1 )
-return;
-    free(raster->bitmap);
-    free(raster);
 }

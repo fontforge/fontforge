@@ -391,7 +391,6 @@ return;
 	    vs = (int) strtoul(end,&end,16);
 	}
 	if ( *end!='\0' || uni<0 || uni>=0x110000 ) {
-	    free(ret);
 	    gwwv_post_error( _("Bad Number"),_("Bad Number") );
 return;
 	}
@@ -412,7 +411,6 @@ return;
 	    }
 	}
     }
-    free(ret);
     fv->sel_index = 1;
     gtk_widget_queue_draw(fv->v);
 }
@@ -598,36 +596,29 @@ int _FVMenuSaveAs(FontView *fv) {
                     G_CALLBACK (SaveAs_FormatChange),
                     &s2d);
     ret = gwwv_save_filename_with_gadget(_("Save as"),temp,NULL,as_dir);
-    free(temp);
     if ( ret==NULL )
 return( 0 );
     filename = g_filename_from_utf8(ret,-1,&read,&written,NULL);
-    free(ret);
     FVFlattenAllBitmapSelections(fv);
     fv->b.sf->compression = 0;
     ok = SFDWrite(filename,fv->b.sf,fv->b.map,fv->b.normal,s2d);
     if ( ok ) {
 	SplineFont *sf = fv->b.cidmaster?fv->b.cidmaster:fv->b.sf->mm!=NULL?fv->b.sf->mm->normal:fv->b.sf;
-	free(sf->filename);
 	sf->filename = filename;
 	sf->save_to_dir = s2d;
-	free(sf->origname);
 	sf->origname = copy(filename);
 	sf->new = false;
 	if ( sf->mm!=NULL ) {
 	    int i;
 	    for ( i=0; i<sf->mm->instance_count; ++i ) {
-		free(sf->mm->instances[i]->filename);
 		sf->mm->instances[i]->filename = filename;
-		free(sf->mm->instances[i]->origname);
 		sf->mm->instances[i]->origname = copy(filename);
 		sf->mm->instances[i]->new = false;
 	    }
 	}
 	SplineFontSetUnChanged(sf);
 	FVSetTitle( (FontViewBase *) fv);
-    } else
-	free(filename);
+    }
 return( ok );
 }
 
@@ -914,7 +905,6 @@ char *GetPostscriptFontName(char *dir, int mult) {
     ret = FVOpenFont(_("Open Font"), u_dir,mult);
     if ( ret!=NULL )
 	temp = g_filename_from_utf8(ret,-1,&read,&written,NULL);
-    free(u_dir); free(ret);
 
 return( temp );
 }
@@ -938,8 +928,6 @@ return;
 
     if ( !LoadKerningDataFromMetricsFile(sf,temp,map))
 	gwwv_post_error( _("Failed to load kern data from %s"), ret);
-    free(ret);
-    free(temp);
 }
 
 void FontViewMenu_MergeKern(GtkMenuItem *menuitem, gpointer user_data) {
@@ -967,9 +955,7 @@ return;
 	    strcpy(full,temp); strcat(full,"/"); strcat(full,file);
 	    ViewPostScriptFont(full,0);
 	    file = fpt+2;
-	    free(full);
 	} while ( fpt!=NULL );
-	free(temp);
 	for ( fvtest=0, test=(FontViewBase *) fv_list; test!=NULL; ++fvtest, test=test->next );
     } while ( fvtest==fvcnt );	/* did the load fail for some reason? try again */
 }
@@ -1858,7 +1844,6 @@ static void FVShowSubFont(FontView *fv,SplineFont *new) {
 	gtk_widget_destroy(mv->gw);
     }
     if ( wascompact ) {
-	EncMapFree(fv->b.map);
 	fv->b.map = fv->b.normal;
 	fv->b.normal = NULL;
 	fv->b.selected = realloc(fv->b.selected,fv->b.map->enccount);
@@ -1875,7 +1860,6 @@ static void FVShowSubFont(FontView *fv,SplineFont *new) {
 	    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 		(use_freetype_to_rasterize_fv && !fv->b.sf->strokedfont && !fv->b.sf->multilayer?pf_ft_nohints:0),
 	    NULL);
-    BDFFontFree(fv->filled);
     if ( fv->filled == fv->show )
 	fv->show = newbdf;
     fv->filled = newbdf;
@@ -1966,7 +1950,6 @@ void FontViewMenu_DisplaySubstitutions(GtkMenuItem *menuitem, gpointer user_data
 		    _("Pick a substitution to display in the window."));
 	    if ( ret!=-1 )
 		sub = SFFindLookupSubtable(sf,names[ret]);
-	    free(names);
 	    if ( ret==-1 )
 return;
 	}
@@ -2141,7 +2124,6 @@ void FontViewMenu_PixelSize(GtkMenuItem *menuitem, gpointer user_data) {
 		    fvss->touched = true;
 		}
 	    }
-	    BDFFontFree(old);
 	}
 	fv->b.sf->display_size = -dspsize;
 	if ( fv->b.cidmaster!=NULL ) {
@@ -2167,7 +2149,6 @@ static void FV_LayerChanged( FontView *fv ) {
     fv->filled = new;
     FVChangeDisplayFont(fv,new);
     fv->b.sf->display_size = -fv->filled->pixelsize;
-    BDFFontFree(old);
 }
 
 void FontViewMenu_BitmapMagnification(GtkMenuItem *menuitem, gpointer user_data) {
@@ -2190,7 +2171,6 @@ return;
 	fv->b.active_bitmap = NULL;
 	FVChangeDisplayFont(fv,show);
     }
-    free(ret);
 }
 
 void FontViewMenu_WindowSize(GtkMenuItem *menuitem, gpointer user_data) {
@@ -2409,17 +2389,14 @@ return;
 	strcat(title,"  ");
 	temp = g_filename_to_utf8(GFileNameTail(file),-1,&read,&written,NULL);
 	strcat(title,temp);
-	free(temp);
     }
     strcat(title, " (" );
     strcat(title,enc);
     strcat(title, ")" );
-    free(enc);
 
     if ( GTK_WIDGET(fv->gw)->window!=NULL )
 	gdk_window_set_icon_name( GTK_WIDGET(fv->gw)->window, fv->b.sf->fontname );
     gtk_window_set_title( GTK_WINDOW(fv->gw), title );
-    free(title);
 }
 
 static void FontViewSetTitles(SplineFont *sf) {
@@ -2492,7 +2469,6 @@ return;
     if ( cmapfilename==NULL )
 return;
     MakeCIDMaster(fv->b.sf,fv->b.map,true,cmapfilename,NULL);
-    free(cmapfilename);
 }
 
 void FontViewMenu_Flatten(GtkMenuItem *menuitem, gpointer user_data) {
@@ -2517,7 +2493,6 @@ return;
     SFFindNearTop(fv->b.sf);
     SFFlattenByCMap(cidmaster,cmapname);
     SFRestoreNearTop(fv->b.sf);
-    free(cmapname);
 }
 
 void FontViewMenu_CIDInsertFont(GtkMenuItem *menuitem, gpointer user_data) {
@@ -2535,7 +2510,6 @@ return;
     if ( filename==NULL )
 return;
     new = LoadSplineFont(filename,0);
-    free(filename);
     if ( new==NULL )
 return;
     if ( new->fv == (FontViewBase *) fv )		/* Already part of us */
@@ -2546,7 +2520,6 @@ return;
 	gwwv_post_error(_("Please close font"),_("Please close %s before inserting it into a CID font"),new->origname);
 return;
     }
-    EncMapFree(new->map);
     if ( force_names_when_opening!=NULL )
 	SFRenameGlyphsToNamelist(new,force_names_when_opening );
 
@@ -2651,11 +2624,9 @@ return;
 return;
     supple = strtol(ret,&end,10);
     if ( *end!='\0' || supple<=0 ) {
-	free(ret);
 	gwwv_post_error( _("Bad Number"),_("Bad Number") );
 return;
     }
-    free(ret);
     if ( supple!=cidmaster->supplement ) {
 	    /* this will make noises if it can't find an appropriate cidmap */
 	cidmap = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,supple,cidmaster);
@@ -2696,13 +2667,9 @@ static void FontViewMenu_Reencode(GtkMenuItem *menuitem, gpointer user_data) {
 	map = EncMapFromEncoding(fv->b.sf,enc);
 	fv->b.selected = realloc(fv->b.selected,map->enccount);
 	memset(fv->b.selected,0,map->enccount);
-	EncMapFree(fv->b.map);
 	fv->b.map = map;
     }
-    if ( fv->b.normal!=NULL ) {
-	EncMapFree(fv->b.normal);
-	fv->b.normal = NULL;
-    }
+    fv->b.normal = NULL;
     SFReplaceEncodingBDFProps(fv->b.sf,fv->b.map);
     FontViewSetTitle(fv);
     FontViewReformatOne(&fv->b);
@@ -2733,10 +2700,7 @@ return;
 	fv->b.selected = realloc(fv->b.selected,fv->b.map->enccount);
 	memset(fv->b.selected+oldcnt,0,fv->b.map->enccount-oldcnt);
     }
-    if ( fv->b.normal!=NULL ) {
-	EncMapFree(fv->b.normal);
-	fv->b.normal = NULL;
-    }
+    fv->b.normal = NULL;
     SFReplaceEncodingBDFProps(fv->b.sf,fv->b.map);
     FontViewSetTitle(fv);
     FontViewReformatOne(&fv->b);
@@ -2809,11 +2773,9 @@ void FontViewMenu_AddEncodingSlots(GtkMenuItem *menuitem, gpointer user_data) {
 return;
     cnt = strtol(ret,&end,10);
     if ( *end!='\0' || cnt<=0 ) {
-	free(ret);
 	ff_post_error( _("Bad Number"),_("Bad Number") );
 return;
     }
-    free(ret);
     FVAddUnencoded((FontViewBase *) fv, cnt);
 }
 
@@ -2861,7 +2823,6 @@ return;
     enc = FindOrMakeEncoding(ret);
     if ( enc==NULL )
 	gwwv_post_error(_("Invalid Encoding"),_("Invalid Encoding"));
-    free(ret);
 }
 
 void FontViewMenu_LoadEncoding(GtkMenuItem *menuitem, gpointer user_data) {
@@ -2915,15 +2876,12 @@ void FontViewMenu_SaveNamelist(GtkMenuItem *menuitem, gpointer user_data) {
     snprintf(buffer, sizeof(buffer),"%s/%s.nam", getFontForgeUserDir(Config), fv->b.sf->fontname );
     temp = g_filename_to_utf8(buffer,-1,&read,&written,NULL);
     filename = gwwv_saveas_filename(_("Save Namelist of font"), temp,"*.nam");
-    free(temp);
     if ( filename==NULL )
 return;
     temp = g_filename_from_utf8(filename,-1,&read,&written,NULL);
     file = fopen(temp,"w");
-    free(temp);
     if ( file==NULL ) {
 	gwwv_post_error(_("Namelist creation failed"),_("Could not write %s"), filename);
-	free(filename);
 return;
     }
     for ( i=0; i<fv->b.sf->glyphcnt; ++i ) {
@@ -2962,25 +2920,20 @@ return;				/* Cancelled */
 	buts[1] = GTK_STOCK_CANCEL;
 	buts[2] = NULL;
 	ans = gwwv_ask( _("Replace"),(const char **) buts,0,1,_("A name list with this name already exists. Replace it?"));
-	if ( ans==1 ) {
-	    free(temp);
-	    free(ret);
+	if ( ans==1 )
 return;
-	}
     }
 
     old = fopen( temp,"r");
     if ( old==NULL ) {
 	gwwv_post_error(_("No such file"),_("Could not read %s"), ret );
-	free(ret); free(temp);
 return;
     }
     if ( (nl = LoadNamelist(temp))==NULL ) {
 	gwwv_post_error(_("Bad namelist file"),_("Could not parse %s"), ret );
-	free(ret); free(temp); fclose(old);
+	fclose(old);
 return;
     }
-    free(ret); free(temp);
     if ( nl->uses_unicode ) {
 	if ( nl->a_utf8_name!=NULL )
 	    ff_post_notice(_("Non-ASCII glyphnames"),_("This namelist contains at least one non-ASCII glyph name, namely: %s"), nl->a_utf8_name );
@@ -3045,7 +2998,6 @@ return;				/* Cancelled */
     file = fopen( temp,"r");
     if ( file==NULL ) {
 	gwwv_post_error(_("No such file"),_("Could not read %s"), ret );
-	free(ret); free(temp);
 return;
     }
     pt = buffer;
@@ -3068,10 +3020,8 @@ return;
 		    ++map->enccount;
 		    if ( sc==NULL ) {
 			sc = SFMakeChar(fv->b.sf,map,map->enccount-1);
-			free(sc->name);
 			sc->name = copy(buffer);
 			sc->comment = copy(".");	/* Mark as something for sfd file */
-			/*SCLigDefault(sc);*/
 		    }
 		    map->map[map->enccount-1] = sc->orig_pos;
 		    map->backmap[sc->orig_pos] = map->enccount-1;
@@ -3083,7 +3033,6 @@ return;
 	}
     }
     fclose(file);
-    free(ret); free(temp);
     FontViewReformatAll(fv->b.sf);
 }
 
@@ -3715,8 +3664,6 @@ return;
     /* sc->changedsincelasthinted = true;*/	/* Why was this here? */
     if ( sc->orig_pos>=fv->filled->glyphcnt )
 	IError("Character out of bounds in bitmap font %d>=%d", sc->orig_pos, fv->filled->glyphcnt );
-    else
-	BDFCharFree(fv->filled->glyphs[sc->orig_pos]);
     fv->filled->glyphs[sc->orig_pos] = NULL;
 		/* FVRefreshChar does NOT do this for us */
     for ( mv=fv->b.sf->metrics; mv!=NULL; mv=mv->next )
@@ -5074,7 +5021,6 @@ return;
 		    fvs->show = new;
 		fvs->touched = true;
 	    }
-	BDFFontFree(old);
     }
     for ( fv=(FontView *) sf->fv; fv!=NULL; fv=(FontView *) fv->b.nextsame ) {
 	GtkAdjustment *sb;
@@ -5093,7 +5039,6 @@ return;
 	gdk_window_set_cursor(fv->v->window,ct_pointer);
     }
     for ( mvs=sf->metrics; mvs!=NULL; mvs=mvs->next ) if ( mvs->bdf==NULL ) {
-	BDFFontFree(mvs->show);
 	mvs->show = SplineFontPieceMeal(sf,mvs->layer,mvs->ptsize,mvs->dpi,
                 mvs->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
 	gtk_widget_queue_draw(mvs->gw);
@@ -5161,7 +5106,6 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 	if ( fv->b.sf==NULL )
 	    fv->b.sf = sf->subfonts[0];
 	sf = fv->b.sf;
-	if ( fv->b.nextsame==NULL ) EncMapFree(sf->map);
 	fv->b.map = EncMap1to1(sf->glyphcnt);
     }
     fv->b.selected = calloc(fv->b.map->enccount,sizeof(char));
@@ -5308,17 +5252,12 @@ static void FontView_Free(FontView *fv) {
     FontView *fvs;
 
     if ( fv->b.sf == NULL )	/* Happens when usurping a font to put it into an MM */
-	BDFFontFree(fv->filled);
-    else if ( fv->b.nextsame==NULL && fv->b.sf->fv==(FontViewBase *) fv ) {
-	EncMapFree(fv->b.map);
+        ;
+    else if ( fv->b.nextsame==NULL && fv->b.sf->fv==(FontViewBase *) fv )
 	SplineFontFree(fv->b.cidmaster?fv->b.cidmaster:fv->b.sf);
-	BDFFontFree(fv->filled);
-    } else {
-	EncMapFree(fv->b.map);
+    else {
 	for ( fvs=(FontView *) fv->b.sf->fv, i=0 ; fvs!=NULL; fvs = (FontView *) fvs->b.nextsame )
 	    if ( fvs->filled==fv->filled ) ++i;
-	if ( i==1 )
-	    BDFFontFree(fv->filled);
 	if ( fv->b.sf->fv==(FontViewBase *) fv ) {
 	    if ( fv->b.cidmaster==NULL )
 		fv->b.sf->fv = fv->b.nextsame;
@@ -5333,11 +5272,9 @@ static void FontView_Free(FontView *fv) {
 	    prev->b.nextsame = fv->b.nextsame;
 	}
     }
-    free(fv->b.selected);
     for ( i=0; i<_uni_fontmax; ++i )
 	if ( fv->fontset[i]!=NULL )
 	    g_object_unref(G_OBJECT(fv->fontset[i]));
-    free(fv->fontset);
     if ( fv->imc!=NULL ) {
 	g_object_unref((GObject *) fv->vlayout );
 	g_object_unref((GObject *) fv->statuslayout );
@@ -5345,10 +5282,6 @@ static void FontView_Free(FontView *fv) {
 	g_object_unref((GObject *) fv->imc);
 	g_object_unref((GObject *) fv->popupinfo);
     }
-#ifndef _NO_FFSCRIPT
-    DictionaryFree(fv->b.fontvars);
-    free(fv->b.fontvars);
-#endif
 #ifndef _NO_PYTHON
     PyFF_FreeFV((FontViewBase *) fv);
 #else
@@ -5358,7 +5291,6 @@ static void FontView_Free(FontView *fv) {
 	gtk_widget_set_sensitive(w,false);
     }
 #endif
-    free(fv);
 }
 
 static int FontViewWinInfo(FontView *fv, int *cc, int *rc) {

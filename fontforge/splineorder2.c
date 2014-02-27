@@ -397,12 +397,7 @@ return( end );
     for ( s=start->next; s!=NULL && !s->islinear; s=s->to->next );
     if ( s==NULL )
 return( end );
-    for ( s=start->next; s!=NULL ; s=next ) {
-	next = s->to->next;
-	SplinePointFree(s->to);
-	SplineFree(s);
-    }
-/* Hmm. With my algorithem, checking for points of inflection actually makes */
+/* Hmm. With my algorithm, checking for points of inflection actually makes */
 /*  things worse. It uses more points and the splines don't join as nicely */
 /* However if we get a bad match (a line) in the normal approx, then check */
 /*  Err... I was computing POI incorrectly. Above statement might not be correct*/
@@ -836,15 +831,11 @@ static void ttfCleanup(SplinePoint *from) {
 		next->noprevcp = test->noprevcp;
 		next->prev = test->prev;
 		next->prev->to = next;
-		SplineFree(test->next);
-		SplinePointFree(test);
 	    } else {
 		test->nextcp = next->nextcp;
 		test->nonextcp = next->nonextcp;
 		test->next = next->next;
 		test->next->from = test;
-		SplineFree(next->prev);
-		SplinePointFree(next);
 		next = test->next->to;
 	    }
 	}
@@ -892,7 +883,6 @@ SplineSet *SSttfApprox(SplineSet *ss) {
 	    ret->first->noprevcp = ret->last->noprevcp;
 	    ret->first->prev = ret->last->prev;
 	    ret->last->prev->to = ret->first;
-	    SplinePointFree(ret->last);
 	    ret->last = ret->first;
 	}
     }
@@ -1003,7 +993,6 @@ SplineSet *SSPSApprox(SplineSet *ss) {
 	    ret->first->noprevcp = ret->last->noprevcp;
 	    ret->first->prev = ret->last->prev;
 	    ret->last->prev->to = ret->first;
-	    SplinePointFree(ret->last);
 	    ret->last = ret->first;
 	}
     }
@@ -1033,7 +1022,6 @@ SplineSet *SplineSetsConvertOrder(SplineSet *ss, int to_order2) {
 	new = SplineSetsTTFApprox(ss);
     else
 	new = SplineSetsPSApprox(ss);
-    SplinePointListsFree(ss);
 return( new );
 }
 
@@ -1044,7 +1032,6 @@ void SCConvertLayerToOrder2(SplineChar *sc,int layer) {
 return;
 
     new = SplineSetsTTFApprox(sc->layers[layer].splines);
-    SplinePointListsFree(sc->layers[layer].splines);
     sc->layers[layer].splines = new;
 
     UndoesFree(sc->layers[layer].undoes);
@@ -1053,7 +1040,7 @@ return;
     sc->layers[layer].redoes = NULL;
     sc->layers[layer].order2 = true;
 
-    MinimumDistancesFree(sc->md); sc->md = NULL;
+    sc->md = NULL;
 }
 
 void SCConvertToOrder2(SplineChar *sc) {
@@ -1113,7 +1100,6 @@ void SFConvertGridToOrder2(SplineFont *_sf) {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
 
 	new = SplineSetsTTFApprox(sf->grid.splines);
-	SplinePointListsFree(sf->grid.splines);
 	sf->grid.splines = new;
 
 	UndoesFree(sf->grid.undoes); UndoesFree(sf->grid.redoes);
@@ -1139,7 +1125,6 @@ void SCConvertLayerToOrder3(SplineChar *sc,int layer) {
     int has_order2_layer_still, i;
 
     new = SplineSetsPSApprox(sc->layers[layer].splines);
-    SplinePointListsFree(sc->layers[layer].splines);
     sc->layers[layer].splines = new;
 
     UndoesFree(sc->layers[layer].undoes);
@@ -1148,7 +1133,7 @@ void SCConvertLayerToOrder3(SplineChar *sc,int layer) {
     sc->layers[layer].redoes = NULL;
     sc->layers[layer].order2 = false;
 
-    MinimumDistancesFree(sc->md); sc->md = NULL;
+    sc->md = NULL;
 
     /* OpenType/PostScript fonts don't support point matching to position */
     /*  references or anchors */
@@ -1164,7 +1149,6 @@ void SCConvertLayerToOrder3(SplineChar *sc,int layer) {
 	for ( ap = sc->anchor; ap!=NULL; ap=ap->next )
 	    ap->has_ttf_pt = false;
 
-	free(sc->ttf_instrs);
 	sc->ttf_instrs = NULL; sc->ttf_instrs_len = 0;
 	/* If this character has any cv's showing instructions then remove the instruction pane!!!!! */
     }
@@ -1217,7 +1201,6 @@ void SFConvertGridToOrder3(SplineFont *_sf) {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
 
 	new = SplineSetsPSApprox(sf->grid.splines);
-	SplinePointListsFree(sf->grid.splines);
 	sf->grid.splines = new;
 
 	UndoesFree(sf->grid.undoes); UndoesFree(sf->grid.redoes);
@@ -1302,7 +1285,6 @@ void SplineRefigure2(Spline *spline) {
     }
     if ( isnan(ysp->b) || isnan(xsp->b) )
 	IError("NaN value in spline creation");
-    LinearApproxFree(spline->approx);
     spline->approx = NULL;
     spline->knowncurved = false;
     spline->knownlinear = spline->islinear;

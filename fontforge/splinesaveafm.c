@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "fontforgevw.h"		/* For Error */
+#include "fontforgevw.h"
 #include "ttf.h"		/* For AnchorClassDecompose */
 #include <stdio.h>
 #include "splinefont.h"
@@ -166,7 +166,6 @@ static void CheckMMAfmFile(SplineFont *sf,char *amfm_filename,char *fontname) {
     /*  with the fontname as the filename */
     char *temp, *pt;
 
-    free(sf->fontname);
     sf->fontname = copy(fontname);
 
     temp = malloc(strlen(amfm_filename)+strlen(fontname)+strlen(".afm")+1);
@@ -181,7 +180,6 @@ static void CheckMMAfmFile(SplineFont *sf,char *amfm_filename,char *fontname) {
 	strcpy(pt,".AFM");
 	LoadKerningDataFromAfm(sf,temp);
     }
-    free(temp);
 }
 
 int LoadKerningDataFromAmfm(SplineFont *sf, char *filename) {
@@ -197,7 +195,6 @@ int LoadKerningDataFromAmfm(SplineFont *sf, char *filename) {
 	char *afmname = copy(filename);
 	strcpy(afmname+(pt-filename),isupper(pt[1])?".AFM":".afm");
 	LoadKerningDataFromAfm(mm->normal,afmname);
-	free(afmname);
     }
     if ( file==NULL )
 return( 0 );
@@ -261,7 +258,6 @@ int CheckAfmOfPostScript(SplineFont *sf,char *psname) {
 	} else
 	    ret = true;
     }
-    free(new);
 return( ret );
 }
 
@@ -580,8 +576,6 @@ return( 0 );
 	    tfmDoCharList(sf,i,&tfmd,map);
     }
 
-    free( tfmd.ligkerntab); free(tfmd.kerntab); free(tfmd.ext); free(tfmd.ictab);
-    free( tfmd.dptab ); free( tfmd.httab ); free( tfmd.widtab );
     fclose(file);
 return( 1 );
 }
@@ -831,9 +825,6 @@ return( 0 );
 	    tfmDoCharList(sf,i,&tfmd,map);
     }
 
-    free( tfmd.ligkerntab); free(tfmd.kerntab); free(tfmd.ext); free(tfmd.ictab);
-    free( tfmd.dptab ); free( tfmd.httab ); free( tfmd.widtab );
-    free( tfmd.charlist );
     fclose(file);
 return( 1 );
 }
@@ -1345,10 +1336,8 @@ static int AfmBuildCCName(struct cc_data *this,struct cc_container *cc) {
 	if ( SFGetChar(cc->sf,uni,NULL)!=NULL )
 return( false );		/* Character already exists in font */
     this->name = NameFrom(this,unicode,u,uni);
-    if ( SFGetChar(cc->sf,-1,this->name)!=NULL ) {
-	free(this->name);
+    if ( SFGetChar(cc->sf,-1,this->name)!=NULL )
 return( false );		/* Character already exists in font */
-    }
 return( true );
 }
 
@@ -1377,10 +1366,6 @@ static void AfmBuildMarkCombos(SplineChar *sc,AnchorPoint *ap, struct cc_contain
 	if ( !AfmBuildCCName(this,cc)) {
 	    struct cc_accents *cca, *next;
 	    --cc->cnt;
-	    for ( cca = this->accents; cca!=NULL; cca = next ) {
-		next = cca->next;
-		chunkfree(cca,sizeof(struct cc_accents));
-	    }
 	} else
 	    this->acnt = acnt;
     } else if ( ap->ticked ) {
@@ -1456,30 +1441,8 @@ static struct cc_data *AfmFigureCCdata(SplineFont *sf,int *total) {
     if ( cc.cnt+1 >= cc.max )
 	cc.ccs = realloc(cc.ccs,(cc.max += 1)*sizeof(struct cc_data));
     cc.ccs[cc.cnt].base = NULL;		/* End of list mark */
-    for ( i=0; i<ac_cnt; ++i )
-	free(cc.marks[i]);
-    free(cc.marks);
-    free(cc.mcnt);
-    free(cc.mpos);
-    free(mmax);
     *total = cc.cnt;
 return( cc.ccs );
-}
-
-static void CCFree(struct cc_data *cc) {
-    int i;
-    struct cc_accents *cca, *next;
-
-    if ( cc==NULL )
-return;
-    for ( i=0; cc[i].base!=NULL; ++i ) {
-	free(cc[i].name);
-	for ( cca = cc[i].accents; cca!=NULL; cca = next ) {
-	    next = cca->next;
-	    chunkfree(cca,sizeof(struct cc_accents));
-	}
-    }
-    free( cc );
 }
 
 static void AfmComposites(FILE *afm, SplineFont *sf, struct cc_data *cc, int cc_cnt) {
@@ -1672,7 +1635,6 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map,
     SFLigatureCleanup(sf);
     SFKernCleanup(sf,false);
     SFKernCleanup(sf,true);
-    CCFree(cc);
 
 return( !ferror(afm));
 }
@@ -1739,28 +1701,13 @@ return( !ferror(amfm));
 }
 
 void SFLigatureCleanup(SplineFont *sf) {
-    LigList *l, *next;
-    struct splinecharlist *scl, *sclnext;
     int j;
 
     if (sf->internal_temp)
 return;
 
-    for ( j=0; j<sf->glyphcnt; ++j ) if ( sf->glyphs[j]!=NULL ) {
-	for ( l = sf->glyphs[j]->ligofme; l!=NULL; l = next ) {
-	    next = l->next;
-	    for ( scl = l->components; scl!=NULL; scl = sclnext ) {
-		sclnext = scl->next;
-		chunkfree(scl,sizeof(struct splinecharlist));
-	    }
-	    if ( l->lig->temporary ) {
-		free(l->lig->u.lig.components);
-		chunkfree(l->lig,sizeof(PST));
-	    }
-	    free( l );
-	}
+    for ( j=0; j<sf->glyphcnt; ++j ) if ( sf->glyphs[j]!=NULL )
 	sf->glyphs[j]->ligofme = NULL;
-    }
 }
 
 void SFLigaturePrepare(SplineFont *sf) {
@@ -1823,12 +1770,6 @@ void SFLigaturePrepare(SplineFont *sf) {
 		ll->components = head;
 		ll->ccnt = ccnt;
 		sc->ligofme = ll;
-	    } else {
-		while ( head!=NULL ) {
-		    last = head->next;
-		    chunkfree(head,sizeof(*head));
-		    head = last;
-		}
 	    }
 	}
     }
@@ -1852,7 +1793,6 @@ void SFLigaturePrepare(SplineFont *sf) {
 	    all[k]->next = NULL;
 	}
     }
-    free( all );
 }
 
 static void LigatureClosure(SplineFont *sf) {
@@ -1928,7 +1868,6 @@ return;
 		    sf->glyphs[i]->vkerns = n;
 		else
 		    sf->glyphs[i]->kerns = n;
-		chunkfree(kp,sizeof(*kp));
 	    } else
 		p = kp;
 	}
@@ -1940,17 +1879,9 @@ return;
 		otlp->next = otln;
 	    else
 		sf->gpos_lookups = otln;
-	    OTLookupFree(otl);
 	} else
 	    otlp = otl;
     }
-}
-
-static void KCSfree(SplineChar ***scs,int cnt) {
-    int i;
-    for ( i=1; i<cnt; ++i )
-	free( scs[i]);
-    free(scs);
 }
 
 static SplineChar ***KernClassToSC(SplineFont *sf, char **classnames, int cnt) {
@@ -2045,8 +1976,6 @@ void SFKernClassTempDecompose(SplineFont *sf,int isv) {
 			        otl->subtables,kc->kcid,isv);
 	    }
 	}
-	KCSfree(first,kc->first_cnt);
-	KCSfree(last,kc->second_cnt);
     }
 }
 
@@ -2759,12 +2688,6 @@ static int CoalesceValues(double *values,int max,int *index,int maxc) {
 		}
 	    }
 	}
-	if ( maxc>256 ) {
-	    free(backindex);
-	    free(topvalues);
-	    free(totvalues);
-	    free(cnt);
-	}
 return( top );
     }
 
@@ -2802,12 +2725,6 @@ return( top );
     values[0] = 0;
     for ( i=1; i<top; ++i )
 	values[i] = totvalues[i]/cnt[i];
-    if ( maxc>256 ) {
-	free(backindex);
-	free(topvalues);
-	free(totvalues);
-	free(cnt);
-    }
 return( top );
 }
 
@@ -2947,7 +2864,6 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf,EncMap *map,int maxc,int la
 	memcpy(header.encoding+1,encname,39);
     } else
 	strcpy(header.encoding+1,encname);
-    if ( full ) free(full);
 
     familyname = sf->cidmaster ? sf->cidmaster->familyname : sf->familyname;
     header.family[0] = strlen(familyname);
@@ -3112,7 +3028,6 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf,EncMap *map,int maxc,int la
 					(lk->other_char<<16) |
 					(lk->op<<8) |
 					lk->remainder;
-		    free( lk );
 		    any = true;
 		}
 	    } while ( any );
@@ -3133,7 +3048,6 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf,EncMap *map,int maxc,int la
 					(lk->other_char<<16) |
 					(lk->op<<8) |
 					lk->remainder;
-		    free( lk );
 		}
 	    }
 	    if ( lkcnt>sccnt )
@@ -3161,7 +3075,6 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf,EncMap *map,int maxc,int la
 		    o_lkarray[lkcnt].other_char = lk->other_char;
 		    o_lkarray[lkcnt].op = lk->op;
 		    o_lkarray[lkcnt++].remainder = lk->remainder;
-		    free( lk );
 		    any = true;
 		}
 	    } while ( any );
@@ -3184,7 +3097,6 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf,EncMap *map,int maxc,int la
 		    o_lkarray[lkcnt2].other_char = lk->other_char;
 		    o_lkarray[lkcnt2].op = lk->op;
 		    o_lkarray[lkcnt2++].remainder = lk->remainder;
-		    free( lk );
 		}
 	    }
 	    if ( lkcnt>sccnt )
@@ -3347,25 +3259,6 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf,EncMap *map,int maxc,int la
     SFLigatureCleanup(sf);
     SFKernCleanup(sf,false);
 
-    if ( maxc>256 ) {
-	free( o_lkarray );
-	free( ligkerns );
-	free( widths );
-	free( heights );
-	free( depths );
-	free( italics );
-	free( tags );
-	free( lkindex );
-	free( former );
-	free( charlistindex );
-	free( extensions );
-	free( extenindex );
-	free( widthindex );
-	free( heightindex );
-	free( depthindex );
-	free( italicindex );
-    } else
-	free( lkarray );
 return( !ferror(tfm));
 }
 

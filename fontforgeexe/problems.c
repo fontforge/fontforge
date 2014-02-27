@@ -253,10 +253,9 @@ return;
 	SplineChar *foundsc;
 	newname = StdGlyphName(buf,p->sc->unicodeenc,p->sc->parent->uni_interp,p->sc->parent->for_new_glyphs);
 	foundsc = SFHashName(p->sc->parent,newname);
-	if ( foundsc==NULL ) {
-	    free(p->sc->name);
+	if ( foundsc==NULL )
 	    p->sc->name = copy(newname);
-	} else {
+	else {
 	    ff_post_error(_("Can't fix"), _("The name FontForge would like to assign to this glyph, %.30s, is already used by a different glyph."),
 		    newname );
 	}
@@ -1986,7 +1985,6 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			*end = ch;
 			p->badsubs_lsubtable = pst->subtable;
 			ExplainIt(p,sc,_("This glyph contains a substitution or ligature entry which refers to an empty char"),0,0);
-			free(p->badsubsname);
 			if ( p->ignorethis )
 			    p->badsubs = false;
 		    } else
@@ -2117,7 +2115,6 @@ static void mgreplace(char **base, char *str,char *end, char *new, SplineChar *s
 		    p->next = pst->next;
 	    }
 	    pst->next = NULL;
-	    PSTFree(pst);
 	} else if ( *end=='\0' )
 	    *str = '\0';
 	else
@@ -2127,22 +2124,11 @@ static void mgreplace(char **base, char *str,char *end, char *new, SplineChar *s
 	strncpy(res,*base,str-*base);
 	strcpy(res+(str-*base),new);
 	strcat(res,end);
-	free(*base);
 	*base = res;
     }
 }
 
 static void ClearMissingState(struct problems *p) {
-    int i;
-
-    if ( p->mg!=NULL ) {
-	for ( i=0; i<p->rpl_cnt; ++i ) {
-	    free(p->mg[i].search);
-	    free(p->mg[i].rpl);
-	}
-	free(p->mg);
-    } else
-	free(p->mlt);
     p->mlt = NULL;
     p->mg = NULL;
     p->rpl_cnt = p->rpl_max = 0;
@@ -2162,12 +2148,8 @@ struct mgask_data {
 static void mark_to_replace(struct problems *p,struct mgask_data *d, char *rpl) {
     int ch;
 
-    if ( p->rpl_cnt >= p->rpl_max ) {
-	if ( p->rpl_max == 0 )
-	    p->mg = malloc((p->rpl_max = 30)*sizeof(struct mgrpl));
-	else
-	    p->mg = realloc(p->mg,(p->rpl_max += 30)*sizeof(struct mgrpl));
-    }
+    if ( p->rpl_cnt >= p->rpl_max )
+	p->mg = realloc(p->mg,(p->rpl_max += 30)*sizeof(struct mgrpl));
     ch = *d->end; *d->end = '\0';
     p->mg[p->rpl_cnt].search = copy( d->start );
     p->mg[p->rpl_cnt++].rpl = copy( rpl );
@@ -2198,7 +2180,6 @@ static int MGA_Rpl(GGadget *g, GEvent *e) {
 	if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_Always)))
 	    mark_to_replace(d->p,d,rpl);
 	mgreplace(d->_str,d->start,d->end,rpl,d->sc,d->pst);
-	free(rpl);
 	d->done = true;
     }
 return( true );
@@ -5287,7 +5268,6 @@ return( false );
     } else if ( event->type == et_destroy ) {
 	if ( vw->sf!=NULL )
 	    vw->sf->valwin = NULL;
-	chunkfree(vw,sizeof(*vw));
     }
 return( true );
 }

@@ -86,7 +86,6 @@ static void SFRemoveUnwantedBitmaps(SplineFont *sf,int32 *sizes) {
 		}
 	    }
 	    RemoveBDFWindows(bdf);
-	    BDFFontFree(bdf);
 	    sf->changed = true;
 	} else {
 	    sizes[i] = -sizes[i];		/* don't need to create it */
@@ -200,7 +199,6 @@ return;
 		*bdfc = temp;
 		bdf->glyphs[gid]->views = bdfc->views;
 		bdfc->views = NULL;
-		BDFCharFree(bdfc);
 		BCRefreshAll(bdf->glyphs[gid]);
 	    }
 	}
@@ -270,10 +268,8 @@ return;
     if ( pass==0 ) {
 	BCDestroyAll(bdf->glyphs[gid]);
 	ff_progress_allow_events();
-    } else {
-	BDFCharFree(bdf->glyphs[gid]);
+    } else
 	bdf->glyphs[gid] = NULL;
-    }
 }
 
 

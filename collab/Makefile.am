@@ -35,11 +35,11 @@ libzmqcollab_la_CFLAGS = $(WARN_CFLAGS)
 libzmqcollab_la_CPPFLAGS = \
  "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc" \
  "-I$(top_builddir)/lib" "-I$(top_srcdir)/lib" \
- $(MY_CFLAGS) $(LIBZMQ_CFLAGS) $(GLIB_CFLAGS)
+ $(MY_CFLAGS) $(LIBZMQ_CFLAGS) $(GLIB_CFLAGS) $(LIBGC_CFLAGS)
 
 libzmqcollab_la_LIBADD = $(MY_LIBS) $(GLIB_LIBS) $(LIBZMQ_LIBS)
 libzmqcollab_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBZMQCOLLAB_VERSION) \
-	${MY_LIB_LDFLAGS}
+	${MY_LIB_LDFLAGS} $(LIBGC_LIBS) $(top_builddir)/gutils/libgutils.la
 
 #--------------------------------------------------------------------------
 

@@ -67,7 +67,6 @@ static SplineFont *MakeContainer(struct font *fn, char *family, const char *styl
     SplineChar *sc;
 
     sf = SplineFontBlank(256);
-    free(sf->familyname); free(sf->fontname); free(sf->fullname);
     sf->familyname = copy(family);
     sf->fontname = malloc(strlen(family)+strlen(style)+2);
     strcpy(sf->fontname,family);
@@ -77,7 +76,7 @@ static SplineFont *MakeContainer(struct font *fn, char *family, const char *styl
     }
     sf->fullname = copy(sf->fontname);
 
-    free(sf->copyright); sf->copyright = NULL;
+    sf->copyright = NULL;
 
     sf->map = map = EncMapNew(257,257,FindOrMakeEncoding("win"));
 
@@ -92,7 +91,7 @@ static SplineFont *MakeContainer(struct font *fn, char *family, const char *styl
 	sc->widthset = true;
     }
     sc = SFMakeChar(sf,map,256);
-    free(sc->name); sc->name = copy(".notdef");
+    sc->name = copy(".notdef");
     sc->width = fn->chars[i].width*em/fn->frectheight;
     sc->widthset = true;
 return( sf );
@@ -117,10 +116,8 @@ return;
     fseek(file,imagepos,SEEK_SET);
     for ( i=0; i<imagesize; ++i )
 	fontImage[i] = getushort(file);
-    if ( feof(file) ) {
-	free(fontImage);
+    if ( feof(file) )
 return;
-    }
 
     bdf = calloc(1,sizeof(BDFFont));
     bdf->sf = sf;
@@ -322,7 +319,6 @@ return( NULL );
     sf = PalmTestFont(file,pos+size,family,style);
 
   ret:
-    free(family); free(style);
     fseek(file,here,SEEK_SET);
 return( sf );
 }
@@ -393,7 +389,6 @@ static FILE *MakeFewRecordPdb(char *filename,int cnt) {
     file = fopen(fn,"wb");
     if ( file==NULL ) {
 	ff_post_error(_("Couldn't open file"),_("Couldn't open file %.200s"),fn);
-	free(fn);
 return( NULL );
     }
 
@@ -749,9 +744,5 @@ return( false );
 	}
     }
     fclose(file);
-    free(offsets);
-    free(widths);
-    for ( i=0; i<4; ++i )
-	free(images[i]);
 return( true );
 }

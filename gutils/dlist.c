@@ -122,26 +122,8 @@ void dlist_pushfront_external( struct dlistnode** list, void* ptr )
     dlist_pushfront( list, (struct dlistnode*)n );
 }
 
-static void freenode(struct dlistnode* node )
+void dlist_trim_to_limit( struct dlistnode** list, int limit )
 {
-    free(node);
+    for(int sz = dlist_size( list ); sz >= limit; sz = dlist_size( list ) )
+	dlist_popback( list );
 }
-
-void dlist_free_external( struct dlistnode** list )
-{
-    if( !list || !(*list) )
-	return;
-    dlist_foreach( list, freenode );
-}
-
-void dlist_trim_to_limit( struct dlistnode** list, int limit, dlist_visitor_func_type f )
-{
-    int sz = dlist_size( list );
-    while( sz >= limit ) {
-	struct dlistnode* node = dlist_popback( list );
-	f(node);
-	freenode(node);
-	sz = dlist_size( list );
-    }
-}
-

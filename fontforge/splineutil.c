@@ -41,51 +41,9 @@ typedef struct quartic {
     bigreal a,b,c,d,e;
 } Quartic;
 
-/* In an attempt to make allocation more efficient I just keep preallocated */
-/*  lists of certain common sizes. It doesn't seem to make much difference */
-/*  when allocating stuff, but does when freeing. If the extra complexity */
-/*  is bad then put:							  */
-/*	#define chunkalloc(size)	calloc(1,size)			  */
-/*	#define chunkfree(item,size)	free(item)			  */
-/*  into splinefont.h after (or instead of) the definition of chunkalloc()*/
-
-#define ALLOC_CHUNK	100		/* Number of small chunks to malloc at a time */
-#ifndef FONTFORGE_CONFIG_USE_DOUBLE
-# define CHUNK_MAX	100		/* Maximum size (in chunk units) that we are prepared to allocate */
-					/* The size of our data structures */
-#else
-# define CHUNK_MAX	129
-#endif
-# define CHUNK_UNIT	sizeof(void *)	/*  will vary with the word size of */
-					/*  the machine. if pointers are 64 bits*/
-					/*  we may need twice as much space as for 32 bits */
-
 #ifdef FLAG
 #undef FLAG
 #define FLAG 0xbadcafe
-#endif
-
-#ifdef CHUNKDEBUG
-static int chunkdebug = 0;	/* When this is set we never free anything, insuring that each chunk is unique */
-#endif
-
-#if ALLOC_CHUNK>1
-struct chunk { struct chunk *next; };
-struct chunk2 { struct chunk2 *next; int flag; };
-#endif
-
-#if defined(FLAG) && ALLOC_CHUNK>1
-void chunktest(void) {
-    int i;
-    struct chunk2 *c;
-
-    for ( i=2; i<CHUNK_MAX; ++i )
-	for ( c=(struct chunk2 *) chunklists[i]; c!=NULL; c=c->next )
-	    if ( c->flag!=FLAG ) {
-		fprintf( stderr, "Chunk memory list has been corrupted\n" );
-		abort();
-	    }
-}
 #endif
 
 char *strconcat(const char *str1,const char *str2) {
@@ -107,32 +65,6 @@ char *strconcat3(const char *str1,const char *str2, const char *str3) {
 	strcpy(ret+len1+len2,str3);
     }
     return( ret );
-}
-
-void LineListFree(LineList *ll) {
-    LineList *next;
-
-    while ( ll!=NULL ) {
-	next = ll->next;
-	chunkfree(ll,sizeof(LineList));
-	ll = next;
-    }
-}
-
-void LinearApproxFree(LinearApprox *la) {
-    LinearApprox *next;
-
-    while ( la!=NULL ) {
-	next = la->next;
-	LineListFree(la->lines);
-	chunkfree(la,sizeof(LinearApprox));
-	la = next;
-    }
-}
-
-void SplineFree(Spline *spline) {
-    LinearApproxFree(spline->approx);
-    chunkfree(spline,sizeof(Spline));
 }
 
 SplinePoint *SplinePointCreate(real x, real y) {
@@ -157,12 +89,6 @@ Spline *SplineMake3(SplinePoint *from, SplinePoint *to) {
 return( spline );
 }
 
-void SplinePointFree(SplinePoint *sp) {
-    chunkfree(sp->hintmask,sizeof(HintMask));
-	free(sp->name);
-    chunkfree(sp,sizeof(SplinePoint));
-}
-
 void SplinePointMDFree(SplineChar *sc, SplinePoint *sp) {
     MinimumDistance *md, *prev, *next;
 
@@ -175,51 +101,16 @@ void SplinePointMDFree(SplineChar *sc, SplinePoint *sp) {
 		    sc->md = next;
 		else
 		    prev->next = next;
-		chunkfree(md,sizeof(MinimumDistance));
 	    } else
 		prev = md;
 	}
-    }
-
-    chunkfree(sp->hintmask,sizeof(HintMask));
-	free(sp->name);
-    chunkfree(sp,sizeof(SplinePoint));
-}
-
-void SplinePointsFree(SplinePointList *spl) {
-    Spline *first, *spline, *next;
-    int nonext;
-
-    if ( spl==NULL )
-return;
-    if ( spl->first!=NULL ) {
-	nonext = spl->first->next==NULL;
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
-	    next = spline->to->next;
-	    SplinePointFree(spline->to);
-	    SplineFree(spline);
-	    if ( first==NULL ) first = spline;
-	}
-	if ( spl->last!=spl->first || nonext )
-	    SplinePointFree(spl->first);
     }
 }
 
 void SplineSetBeziersClear(SplinePointList *spl) {
 
     if ( spl==NULL ) return;
-    SplinePointsFree(spl);
     spl->first = spl->last = NULL;
-}
-
-void SplinePointListFree(SplinePointList *spl) {
-
-    if ( spl==NULL ) return;
-    SplinePointsFree(spl);
-    free(spl->spiros);
-    free(spl->contour_name);
-    chunkfree(spl,sizeof(SplinePointList));
 }
 
 void SplinePointListMDFree(SplineChar *sc,SplinePointList *spl) {
@@ -234,15 +125,11 @@ return;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
 	    next = spline->to->next;
 	    SplinePointMDFree(sc,spline->to);
-	    SplineFree(spline);
 	    if ( first==NULL ) first = spline;
 	}
 	if ( freefirst )
 	    SplinePointMDFree(sc,spl->first);
     }
-    free(spl->spiros);
-    free(spl->contour_name);
-    chunkfree(spl,sizeof(SplinePointList));
 }
 
 void SplinePointListsMDFree(SplineChar *sc,SplinePointList *spl) {
@@ -255,47 +142,9 @@ void SplinePointListsMDFree(SplineChar *sc,SplinePointList *spl) {
     }
 }
 
-void SplinePointListsFree(SplinePointList *spl) {
-    SplinePointList *next;
-
-    while ( spl!=NULL ) {
-	next = spl->next;
-	SplinePointListFree(spl);
-	spl = next;
-    }
-}
-
 void SplineSetSpirosClear(SplineSet *spl) {
-    free(spl->spiros);
     spl->spiros = NULL;
     spl->spiro_cnt = spl->spiro_max = 0;
-}
-
-void ImageListsFree(ImageList *imgs) {
-    ImageList *inext;
-
-    while ( imgs!=NULL ) {
-	inext = imgs->next;
-	chunkfree(imgs,sizeof(ImageList));
-	imgs = inext;
-    }
-}
-
-void RefCharFree(RefChar *ref) {
-    int i;
-
-    if ( ref==NULL )
-return;
-    for ( i=0; i<ref->layer_cnt; ++i ) {
-	SplinePointListsFree(ref->layers[i].splines);
-	ImageListsFree(ref->layers[i].images);
-	GradientFree(ref->layers[i].fill_brush.gradient);
-	GradientFree(ref->layers[i].stroke_pen.brush.gradient);
-	PatternFree(ref->layers[i].fill_brush.pattern);
-	PatternFree(ref->layers[i].stroke_pen.brush.pattern);
-    }
-    free(ref->layers);
-    chunkfree(ref,sizeof(RefChar));
 }
 
 RefChar *RefCharCreate(void) {
@@ -310,16 +159,6 @@ RefChar *RefCharCreate(void) {
     ref->layers[0].dofill = true;
     ref->round_translation_to_grid = true;
 return( ref );
-}
-
-void RefCharsFree(RefChar *ref) {
-    RefChar *rnext;
-
-    while ( ref!=NULL ) {
-	rnext = ref->next;
-	RefCharFree(ref);
-	ref = rnext;
-    }
 }
 
 /* Remove line segments which are just one point long */
@@ -339,18 +178,14 @@ return;
 		 ( prev->here.y==next->here.y+1 || prev->here.y==next->here.y-1 )) ) {
 	    lines->here = next->here;
 	    lines->next = next->next;
-	    chunkfree(next,sizeof(*next));
 	} else {
 	    prev = lines;
 	    lines = next;
 	}
     }
     if ( prev!=NULL &&
-	    prev->here.x==lines->here.x && prev->here.y == lines->here.y ) {
-	prev->next = lines->next;
-	chunkfree(lines,sizeof(*lines));
-	lines = prev->next;
-    }
+	    prev->here.x==lines->here.x && prev->here.y == lines->here.y )
+	lines = prev->next = lines->next;
 
     if ( lines!=NULL ) while ( (next = lines->next)!=NULL ) {
 	if ( prev->here.x!=next->here.x ) {
@@ -360,7 +195,6 @@ return;
 	    if ( y == lines->here.y ) {
 		lines->here = next->here;
 		lines->next = next->next;
-		chunkfree(next,sizeof(*next));
 	    } else
 		lines = next;
 	} else
@@ -1448,7 +1282,6 @@ static SplinePointList *SplinePointListSplitSpiros(SplineChar *sc,SplinePointLis
 	}
 	for ( ; i<spl->spiro_cnt-1 && SPIRO_SELECTED(&list[i]); ++i );
     }
-    SplinePointListFree(spl);
 return( head );
 }
 
@@ -1469,14 +1302,11 @@ static SplinePointList *SplinePointListSplit(SplineChar *sc,SplinePointList *spl
     while ( start != NULL && start!=first ) {
 	while ( start!=NULL && start!=first && start->selected ) {
 	    if ( first==NULL ) first = start;
-	    if ( start->prev!=NULL ) {
+	    if ( start->prev!=NULL )
 		start->prev->from->next = NULL;
-		SplineFree(start->prev);
-	    }
 	    if ( start->next!=NULL ) {
 		next = start->next->to;
 		next->prev = NULL;
-		SplineFree(start->next);
 	    } else
 		next = NULL;
 	    SplinePointMDFree(sc,start);
@@ -1500,7 +1330,6 @@ static SplinePointList *SplinePointListSplit(SplineChar *sc,SplinePointList *spl
 	    if ( start->next!=NULL ) {
 		next = start->next->to;
 		if ( next->selected ) {
-		    SplineFree(start->next);
 		    start->next = NULL;
 		    next->prev = NULL;
 		}
@@ -2000,10 +1829,8 @@ SplinePointList *SPLCopyTranslatedHintMasks(SplinePointList *base,
 	for ( spt = spl->first, spt2 = spl2->first ; spt!=pfirst; spt = spt->next->to, spt2 = spt2->next->to ) {
 	    if ( pfirst==NULL ) pfirst = spt;
 	    TransformPoint(spt,transform);
-	    if ( spt2->hintmask ) {
-		chunkfree(spt->hintmask,sizeof(HintMask));
+	    if ( spt2->hintmask )
 		spt->hintmask = HintMaskTransform(spt2->hintmask,transform,basesc,subsc);
-	    }
 	    if ( spt->next==NULL )
 	break;
 	}
@@ -2034,10 +1861,8 @@ static SplinePointList *_SPLCopyTransformedHintMasks(SplineChar *subsc,int layer
 	for ( spt = spl->first, spt2 = spl2->first ; spt!=pfirst; spt = spt->next->to, spt2 = spt2->next->to ) {
 	    if ( pfirst==NULL ) pfirst = spt;
 	    TransformPoint(spt,transform);
-	    if ( spt2->hintmask ) {
-		chunkfree(spt->hintmask,sizeof(HintMask));
+	    if ( spt2->hintmask )
 		spt->hintmask = HintMaskTransform(spt2->hintmask,transform,basesc,subsc);
-	    }
 	    if ( spt->next==NULL )
 	break;
 	}
@@ -2226,17 +2051,11 @@ return( str );
 	    *rpt++ = *str++;
     }
     *rpt = '\0';
-    if ( !utf8_valid(ret)) {
+    if ( !utf8_valid(ret))
 	/* Assume latin1, convert to utf8 */
-	rpt = latin1_2_utf8_copy(ret);
-	free(ret);
-	ret = rpt;
-    }
-    if ( !AllAscii(ret)) {
-	rpt = StripToASCII(ret);
-	free(ret);
-	ret = rpt;
-    }
+	ret = latin1_2_utf8_copy(ret);
+    if ( !AllAscii(ret))
+	ret = StripToASCII(ret);
 return(ret);
 }
 
@@ -2397,7 +2216,6 @@ void SFInstanciateRefs(SplineFont *sf) {
 		    else
 			pr->next = next;
 		    refs->next = NULL;
-		    RefCharsFree(refs);
 		}
 	    }
 	}
@@ -2528,13 +2346,10 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *
 
     /* Clean up the hint masks, We create an initial hintmask whether we need */
     /*  it or not */
-    for ( i=0; i<sf->glyphcnt; ++i ) {
+    for ( i=0; i<sf->glyphcnt; ++i )
 	if ( (sc = sf->glyphs[i])!=NULL && !sc->hconflicts && !sc->vconflicts &&
-		sc->layers[ly_fore].splines!=NULL ) {
-	    chunkfree( sc->layers[ly_fore].splines->first->hintmask,sizeof(HintMask) );
+		sc->layers[ly_fore].splines!=NULL )
 	    sc->layers[ly_fore].splines->first->hintmask = NULL;
-	}
-    }
 }
 
 static SplineFont *SplineFontFromMMType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
@@ -2693,8 +2508,6 @@ return( NULL );
     /* BlueValues, ForceBold, UnderlinePosition etc. We need to copy private */
     /* generate a font name */
     for ( ipos = 0; ipos<mm->instance_count; ++ipos ) {
-	free(fd->fontname);
-	free(fd->fontinfo->fullname);
 	fd->fontname = MMMakeMasterFontname(mm,ipos,&fd->fontinfo->fullname);
 	fd->fontinfo->weight = MMGuessWeight(mm,ipos,copy(origweight));
 	if ( fd->blendfontinfo!=NULL ) {
@@ -2705,7 +2518,6 @@ return( NULL );
 		    pt = MMExtractNth(pt,ipos);
 		    if ( pt!=NULL ) {
 			bigreal val = strtod(pt,NULL);
-			free(pt);
 			switch ( item ) {
 			  case 0: fd->fontinfo->italicangle = val; break;
 			  case 1: fd->fontinfo->underlineposition = val; break;
@@ -2725,7 +2537,6 @@ return( NULL );
 		if ( pt!=NULL ) {
 		    pt = MMExtractNth(pt,ipos);
 		    PSDictChangeEntry(fd->private->private,scalarnames[item],pt);
-		    free(pt);
 		}
 	    }
 	    for ( item=0; arrnames[item]!=NULL; ++item ) {
@@ -2733,7 +2544,6 @@ return( NULL );
 		if ( pt!=NULL ) {
 		    pt = MMExtractArrayNth(pt,ipos);
 		    PSDictChangeEntry(fd->private->private,arrnames[item],pt);
-		    free(pt);
 		}
 	    }
 	}
@@ -2743,7 +2553,6 @@ return( NULL );
 
 	mm->instances[ipos] = SplineFontEmpty();
 	SplineFontMetaData(mm->instances[ipos],fd);
-	free(fd->fontinfo->weight);
 	mm->instances[ipos]->map = map;
 	_SplineFontFromType1(mm->instances[ipos],fd,pscontext);
 	mm->instances[ipos]->mm = mm;
@@ -2760,11 +2569,8 @@ return( NULL );
 		    mm->instances[item]->glyphs[i]->hconflicts )
 	break;
 	if ( item==mm->instance_count ) {	/* No conflicts */
-	    for ( item=0; item<mm->instance_count; ++item ) {
-		chunkfree( mm->instances[item]->glyphs[i]->layers[ly_fore].splines->first->hintmask, sizeof(HintMask) );
+	    for ( item=0; item<mm->instance_count; ++item )
 		mm->instances[item]->glyphs[i]->layers[ly_fore].splines->first->hintmask = NULL;
-	    }
-	    chunkfree( mm->normal->glyphs[i]->layers[ly_fore].splines->first->hintmask, sizeof(HintMask) );
 	    mm->normal->glyphs[i]->layers[ly_fore].splines->first->hintmask = NULL;
 	}
     }
@@ -2849,20 +2655,16 @@ return( NULL );
 	    chars[i]->parent = sf->subfonts[j];
 	}
     }
-    free(chars);
 
     /* Clean up the hint masks, We create an initial hintmask whether we */
     /*  need it or not */
     k=0;
     do {
 	_sf = k<sf->subfontcnt?sf->subfonts[k]:sf;
-	for ( i=0; i<_sf->glyphcnt; ++i ) {
+	for ( i=0; i<_sf->glyphcnt; ++i )
 	    if ( (sc = _sf->glyphs[i])!=NULL && !sc->hconflicts && !sc->vconflicts &&
-		    sc->layers[ly_fore].splines!=NULL ) {
-		chunkfree( sc->layers[ly_fore].splines->first->hintmask,sizeof(HintMask) );
+		    sc->layers[ly_fore].splines!=NULL )
 		sc->layers[ly_fore].splines->first->hintmask = NULL;
-	    }
-	}
 	++k;
     } while ( k<sf->subfontcnt );
 return( sf );
@@ -2937,14 +2739,6 @@ void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf,int layer) {
     SplineChar *rsc = rf->sc;
     real extra=0,e;
 
-    for ( i=0; i<rf->layer_cnt; ++i ) {
-	SplinePointListsFree(rf->layers[i].splines);
-	GradientFree(rf->layers[i].fill_brush.gradient);
-	PatternFree(rf->layers[i].fill_brush.pattern);
-	GradientFree(rf->layers[i].stroke_pen.brush.gradient);
-	PatternFree(rf->layers[i].stroke_pen.brush.pattern);
-    }
-    free( rf->layers );
     rf->layers = NULL;
     rf->layer_cnt = 0;
     if ( rsc==NULL )
@@ -3006,10 +2800,8 @@ return;
 	rf->bb.minx -= extra; rf->bb.miny -= extra;
 	rf->bb.maxx += extra; rf->bb.maxy += extra;
     } else {
-	if ( rf->layer_cnt>0 ) {
-	    SplinePointListsFree(rf->layers[0].splines);
+	if ( rf->layer_cnt>0 )
 	    rf->layers[0].splines = NULL;
-	}
 	rf->layers = calloc(1,sizeof(struct reflayer));
 	rf->layer_cnt = 1;
 	rf->layers[0].dofill = true;
@@ -3111,9 +2903,7 @@ void SCRemoveDependent(SplineChar *dependent,RefChar *rf,int layer) {
 	    if ( dlist!=NULL )
 		pd->next = dlist->next;
 	}
-	chunkfree(dlist,sizeof(struct splinecharlist));
     }
-    RefCharFree(rf);
 }
 
 void SCRemoveLayerDependents(SplineChar *dependent,int layer) {
@@ -4927,54 +4717,6 @@ int SSPointWithin(SplineSet *spl,BasePoint *pt) {
 return( cnt!=0 );
 }
 
-void StemInfoFree(StemInfo *h) {
-    HintInstance *hi, *n;
-
-    for ( hi=h->where; hi!=NULL; hi=n ) {
-	n = hi->next;
-	chunkfree(hi,sizeof(HintInstance));
-    }
-    chunkfree(h,sizeof(StemInfo));
-}
-
-void StemInfosFree(StemInfo *h) {
-    StemInfo *hnext;
-    HintInstance *hi, *n;
-
-    for ( ; h!=NULL; h = hnext ) {
-	for ( hi=h->where; hi!=NULL; hi=n ) {
-	    n = hi->next;
-	    chunkfree(hi,sizeof(HintInstance));
-	}
-	hnext = h->next;
-	chunkfree(h,sizeof(StemInfo));
-    }
-}
-
-void DStemInfoFree(DStemInfo *h) {
-    HintInstance *hi, *n;
-
-    for ( hi=h->where; hi!=NULL; hi=n ) {
-	n = hi->next;
-	chunkfree(hi,sizeof(HintInstance));
-    }
-    chunkfree(h,sizeof(DStemInfo));
-}
-
-void DStemInfosFree(DStemInfo *h) {
-    DStemInfo *hnext;
-    HintInstance *hi, *n;
-
-    for ( ; h!=NULL; h = hnext ) {
-	for ( hi=h->where; hi!=NULL; hi=n ) {
-	    n = hi->next;
-	    chunkfree(hi,sizeof(HintInstance));
-	}
-	hnext = h->next;
-	chunkfree(h,sizeof(DStemInfo));
-    }
-}
-
 StemInfo *StemInfoCopy(StemInfo *h) {
     StemInfo *head=NULL, *last=NULL, *cur;
     HintInstance *hilast, *hicur, *hi;
@@ -5052,18 +4794,6 @@ MinimumDistance *MinimumDistanceCopy(MinimumDistance *md) {
 return( head );
 }
 
-void KernPairsFree(KernPair *kp) {
-    KernPair *knext;
-    for ( ; kp!=NULL; kp = knext ) {
-	knext = kp->next;
-	if ( kp->adjust!=NULL ) {
-	    free(kp->adjust->corrections);
-	    chunkfree(kp->adjust,sizeof(DeviceTable));
-	}
-	chunkfree(kp,sizeof(KernPair));
-    }
-}
-
 static AnchorPoint *AnchorPointsRemoveName(AnchorPoint *alist,AnchorClass *an) {
     AnchorPoint *prev=NULL, *ap, *next;
 
@@ -5075,7 +4805,6 @@ static AnchorPoint *AnchorPointsRemoveName(AnchorPoint *alist,AnchorClass *an) {
 	    else
 		prev->next = next;
 	    ap->next = NULL;
-	    AnchorPointsFree(ap);
 	    if ( an->type == act_mark || (an->type==act_mklg && ap->type==at_mark))
 		next = NULL;	/* Only one instance of an anchor class in a glyph for mark to base anchors */
 				/*  Or for the mark glyphs of ligature classes */
@@ -5150,7 +4879,6 @@ void SFRemoveAnchorClass(SplineFont *sf,AnchorClass *an) {
 		sf->anchor = test->next;
 	    else
 		prev->next = test->next;
-	    chunkfree(test,sizeof(AnchorClass));
     break;
 	} else
 	    prev = test;
@@ -5178,7 +4906,6 @@ AnchorPoint *APAnchorClassMerge(AnchorPoint *anchors,AnchorClass *into,AnchorCla
 		else
 		    prev->next = next;
 		ap->next = NULL;
-		AnchorPointsFree(ap);
 	    }
 	} else
 	    prev = ap;
@@ -5225,26 +4952,6 @@ AnchorPoint *AnchorPointsCopy(AnchorPoint *alist) {
 return( head );
 }
 
-void AnchorPointsFree(AnchorPoint *ap) {
-    AnchorPoint *anext;
-    for ( ; ap!=NULL; ap = anext ) {
-	anext = ap->next;
-	free(ap->xadjust.corrections);
-	free(ap->yadjust.corrections);
-	chunkfree(ap,sizeof(AnchorPoint));
-    }
-}
-
-void ValDevFree(ValDevTab *adjust) {
-    if ( adjust==NULL )
-return;
-    free( adjust->xadjust.corrections );
-    free( adjust->yadjust.corrections );
-    free( adjust->xadv.corrections );
-    free( adjust->yadv.corrections );
-    chunkfree(adjust,sizeof(ValDevTab));
-}
-
 ValDevTab *ValDevTabCopy(ValDevTab *orig) {
     ValDevTab *new;
     int i;
@@ -5261,15 +4968,6 @@ return( NULL );
 	}
     }
 return( new );
-}
-
-void DeviceTableFree(DeviceTable *dt) {
-
-    if ( dt==NULL )
-return;
-
-    free(dt->corrections);
-    chunkfree(dt,sizeof(DeviceTable));
 }
 
 DeviceTable *DeviceTableCopy(DeviceTable *orig) {
@@ -5299,10 +4997,9 @@ return;
 	for ( i=0; i<len; ++i )
 	    if ( adjust->corrections[i]!=0 )
 	break;
-	if ( i==len ) {
-	    free(adjust->corrections);
+	if ( i==len )
 	    memset(adjust,0,sizeof(DeviceTable));
-	} else {
+	else {
 	    if ( i!=0 ) {
 		for ( j=0; j<len-i; ++j )
 		    adjust->corrections[j] = adjust->corrections[j+i];
@@ -5332,69 +5029,10 @@ return;
 	    memcpy(new+adjust->first_pixel_size-size,
 		    adjust->corrections, len);
 	    adjust->first_pixel_size = size;
-	    free(adjust->corrections);
 	    adjust->corrections = new;
 	}
 	adjust->corrections[size-adjust->first_pixel_size] = correction;
     }
-}
-
-void PSTFree(PST *pst) {
-    PST *pnext;
-    for ( ; pst!=NULL; pst = pnext ) {
-	pnext = pst->next;
-	if ( pst->type==pst_lcaret )
-	    free(pst->u.lcaret.carets);
-	else if ( pst->type==pst_pair ) {
-	    free(pst->u.pair.paired);
-	    ValDevFree(pst->u.pair.vr[0].adjust);
-	    ValDevFree(pst->u.pair.vr[1].adjust);
-	    chunkfree(pst->u.pair.vr,sizeof(struct vr [2]));
-	} else if ( pst->type!=pst_position ) {
-	    free(pst->u.subs.variant);
-	} else if ( pst->type==pst_position ) {
-	    ValDevFree(pst->u.pos.adjust);
-	}
-	chunkfree(pst,sizeof(PST));
-    }
-}
-
-void FPSTRuleContentsFree(struct fpst_rule *r, enum fpossub_format format) {
-    int j;
-
-    switch ( format ) {
-      case pst_glyphs:
-	free(r->u.glyph.names);
-	free(r->u.glyph.back);
-	free(r->u.glyph.fore);
-      break;
-      case pst_class:
-	free(r->u.class.nclasses);
-	free(r->u.class.bclasses);
-	free(r->u.class.fclasses);
-      break;
-      case pst_reversecoverage:
-	free(r->u.rcoverage.replacements);
-      case pst_coverage:
-	for ( j=0 ; j<r->u.coverage.ncnt ; ++j )
-	    free(r->u.coverage.ncovers[j]);
-	free(r->u.coverage.ncovers);
-	for ( j=0 ; j<r->u.coverage.bcnt ; ++j )
-	    free(r->u.coverage.bcovers[j]);
-	free(r->u.coverage.bcovers);
-	for ( j=0 ; j<r->u.coverage.fcnt ; ++j )
-	    free(r->u.coverage.fcovers[j]);
-	free(r->u.coverage.fcovers);
-      break;
-    }
-    free(r->lookups);
-}
-
-void FPSTRulesFree(struct fpst_rule *r, enum fpossub_format format, int rcnt) {
-    int i;
-    for ( i=0; i<rcnt; ++i )
-	FPSTRuleContentsFree(&r[i],format);
-    free(r);
 }
 
 static struct fpst_rule *RulesCopy(struct fpst_rule *from, int cnt,
@@ -5498,23 +5136,6 @@ return( nfpst );
 }
 
 void FPSTClassesFree(FPST *fpst) {
-    int i;
-
-    for ( i=0; i<fpst->nccnt; ++i ) {
-	free(fpst->nclass[i]);
-	free(fpst->nclassnames[i]);
-    }
-    for ( i=0; i<fpst->bccnt; ++i ) {
-	free(fpst->bclass[i]);
-	free(fpst->bclassnames[i]);
-    }
-    for ( i=0; i<fpst->fccnt; ++i ) {
-	free(fpst->fclass[i]);
-	free(fpst->fclassnames[i]);
-    }
-    free(fpst->nclass); free(fpst->bclass); free(fpst->fclass);
-    free(fpst->nclassnames); free(fpst->bclassnames); free(fpst->fclassnames);
-
     fpst->nccnt = fpst->bccnt = fpst->fccnt = 0;
     fpst->nclass = fpst->bclass = fpst->fclass = NULL;
     fpst->nclassnames = fpst->bclassnames = fpst->fclassnames = NULL;
@@ -5522,50 +5143,11 @@ void FPSTClassesFree(FPST *fpst) {
 
 void FPSTFree(FPST *fpst) {
     FPST *next;
-    int i;
 
     while ( fpst!=NULL ) {
 	next = fpst->next;
 	FPSTClassesFree(fpst);
-	for ( i=0; i<fpst->rule_cnt; ++i ) {
-	    FPSTRuleContentsFree( &fpst->rules[i],fpst->format );
-	}
-	free(fpst->rules);
-	chunkfree(fpst,sizeof(FPST));
 	fpst = next;
-    }
-}
-
-void MinimumDistancesFree(MinimumDistance *md) {
-    MinimumDistance *next;
-
-    while ( md!=NULL ) {
-	next = md->next;
-	chunkfree(md,sizeof(MinimumDistance));
-	md = next;
-    }
-}
-
-void TTFLangNamesFree(struct ttflangname *l) {
-    struct ttflangname *next;
-    int i;
-
-    while ( l!=NULL ) {
-	next = l->next;
-	for ( i=0; i<ttf_namemax; ++i )
-	    free(l->names[i]);
-	chunkfree(l,sizeof(*l));
-	l = next;
-    }
-}
-
-void AltUniFree(struct altuni *altuni) {
-    struct altuni *next;
-
-    while ( altuni ) {
-	next = altuni->next;
-	chunkfree(altuni,sizeof(struct altuni));
-	altuni = next;
     }
 }
 
@@ -5616,19 +5198,6 @@ SplineChar *SFSplineCharCreate(SplineFont *sf) {
 return( sc );
 }
 
-void GlyphVariantsFree(struct glyphvariants *gv) {
-    int i;
-
-    if ( gv==NULL )
-return;
-    free(gv->variants);
-    DeviceTableFree(gv->italic_adjusts);
-    for ( i=0; i<gv->part_cnt; ++i )
-	free( gv->parts[i].component );
-    free(gv->parts);
-    chunkfree(gv,sizeof(*gv));
-}
-
 struct glyphvariants *GlyphVariantsCopy(struct glyphvariants *gv) {
     struct glyphvariants *newgv;
     int i;
@@ -5672,33 +5241,6 @@ return( NULL );
 return( mknew );
 }
 
-void MathKernVContentsFree(struct mathkernvertex *mk) {
-    int i;
-    for ( i=0; i<mk->cnt; ++i ) {
-	DeviceTableFree(mk->mkd[i].height_adjusts);
-	DeviceTableFree(mk->mkd[i].kern_adjusts);
-    }
-    free(mk->mkd);
-}
-
-void MathKernFree(struct mathkern *mk) {
-    int i;
-
-    if ( mk==NULL )
-return;
-    for ( i=0; i<4; ++i )
-	MathKernVContentsFree( &(&mk->top_right)[i] );
-    chunkfree(mk,sizeof(*mk));
-}
-
-void SplineCharListsFree(struct splinecharlist *dlist) {
-    struct splinecharlist *dnext;
-    for ( ; dlist!=NULL; dlist = dnext ) {
-	dnext = dlist->next;
-	chunkfree(dlist,sizeof(struct splinecharlist));
-    }
-}
-
 struct pattern *PatternCopy(struct pattern *old, real transform[6]) {
     struct pattern *pat = chunkalloc(sizeof(struct pattern));
 
@@ -5712,13 +5254,6 @@ return( NULL );
     if ( transform!=NULL )
 	MatMultiply(pat->transform,transform,pat->transform);
 return( pat );
-}
-
-void PatternFree(struct pattern *pat) {
-    if ( pat==NULL )
-return;
-    free(pat->pattern);
-    chunkfree(pat,sizeof(struct pattern));
 }
 
 struct gradient *GradientCopy(struct gradient *old,real transform[6]) {
@@ -5739,13 +5274,6 @@ return( NULL );
 return( grad );
 }
 
-void GradientFree(struct gradient *grad) {
-    if ( grad==NULL )
-return;
-    free(grad->grad_stops);
-    chunkfree(grad,sizeof(struct gradient));
-}
-
 void BrushCopy(struct brush *into, struct brush *from, real transform[6]) {
     *into = *from;
     into->gradient = GradientCopy(from->gradient,transform);
@@ -5759,14 +5287,6 @@ void PenCopy(struct pen *into, struct pen *from,real transform[6]) {
 }
 
 void LayerFreeContents(SplineChar *sc,int layer) {
-    SplinePointListsFree(sc->layers[layer].splines);
-    GradientFree(sc->layers[layer].fill_brush.gradient);
-    PatternFree(sc->layers[layer].fill_brush.pattern);
-    GradientFree(sc->layers[layer].stroke_pen.brush.gradient);
-    PatternFree(sc->layers[layer].stroke_pen.brush.pattern);
-    RefCharsFree(sc->layers[layer].refs);
-    ImageListsFree(sc->layers[layer].images);
-    /* image garbage collection????!!!! */
     UndoesFree(sc->layers[layer].undoes);
     UndoesFree(sc->layers[layer].redoes);
 }
@@ -5776,31 +5296,9 @@ void SplineCharFreeContents(SplineChar *sc) {
 
     if ( sc==NULL )
 return;
-    if (sc->name != NULL) free(sc->name);
-    if (sc->comment != NULL) free(sc->comment);
     for ( i=0; i<sc->layer_cnt; ++i )
 	LayerFreeContents(sc,i);
-    StemInfosFree(sc->hstem);
-    StemInfosFree(sc->vstem);
-    DStemInfosFree(sc->dstem);
-    MinimumDistancesFree(sc->md);
-    KernPairsFree(sc->kerns);
-    KernPairsFree(sc->vkerns);
-    AnchorPointsFree(sc->anchor);
-    SplineCharListsFree(sc->dependents);
-    PSTFree(sc->possub);
-    if (sc->ttf_instrs != NULL) free(sc->ttf_instrs);
-    if (sc->countermasks != NULL) free(sc->countermasks);
-    if (sc->layers != NULL) free(sc->layers);
-    AltUniFree(sc->altuni);
-    GlyphVariantsFree(sc->horiz_variants);
-    GlyphVariantsFree(sc->vert_variants);
-    DeviceTableFree(sc->italic_adjusts);
-    DeviceTableFree(sc->top_accent_adjusts);
-    MathKernFree(sc->mathkern);
-#if defined(_NO_PYTHON)
-    if (sc->python_persistent != NULL) free( sc->python_persistent );	/* It's a string of pickled data which we leave as a string */
-#else
+#if !defined(_NO_PYTHON)
     PyFF_FreeSC(sc);
 #endif
 }
@@ -5810,26 +5308,6 @@ void SplineCharFree(SplineChar *sc) {
     if ( sc==NULL )
 return;
     SplineCharFreeContents(sc);
-    chunkfree(sc,sizeof(SplineChar));
-}
-
-void AnchorClassesFree(AnchorClass *an) {
-    AnchorClass *anext;
-    for ( ; an!=NULL; an = anext ) {
-	anext = an->next;
-	free(an->name);
-	chunkfree(an,sizeof(AnchorClass));
-    }
-}
-
-void TtfTablesFree(struct ttf_table *tab) {
-    struct ttf_table *next;
-
-    for ( ; tab!=NULL; tab = next ) {
-	next = tab->next;
-	free(tab->data);
-	chunkfree(tab,sizeof(struct ttf_table));
-    }
 }
 
 void SFRemoveSavedTable(SplineFont *sf, uint32 tag) {
@@ -5851,55 +5329,9 @@ return;
 	    prev->next = tab->next;
     }
     tab->next = NULL;
-    TtfTablesFree(tab);
     if ( !sf->changed ) {
 	sf->changed = true;
 	FVSetTitles(sf);
-    }
-}
-
-void ScriptLangListFree(struct scriptlanglist *sl) {
-    struct scriptlanglist *next;
-
-    while ( sl!=NULL ) {
-	next = sl->next;
-	free(sl->morelangs);
-	chunkfree(sl,sizeof(*sl));
-	sl = next;
-    }
-}
-
-void FeatureScriptLangListFree(FeatureScriptLangList *fl) {
-    FeatureScriptLangList *next;
-
-    while ( fl!=NULL ) {
-	next = fl->next;
-	ScriptLangListFree(fl->scripts);
-	chunkfree(fl,sizeof(*fl));
-	fl = next;
-    }
-}
-
-void OTLookupFree(OTLookup *lookup) {
-    struct lookup_subtable *st, *stnext;
-
-    free(lookup->lookup_name);
-    FeatureScriptLangListFree(lookup->features);
-    for ( st=lookup->subtables; st!=NULL; st=stnext ) {
-	stnext = st->next;
-	free(st->subtable_name);
-	free(st->suffix);
-	chunkfree(st,sizeof(struct lookup_subtable));
-    }
-    chunkfree( lookup,sizeof(OTLookup) );
-}
-
-void OTLookupListFree(OTLookup *lookup ) {
-    OTLookup *next;
-
-    for ( ; lookup!=NULL; lookup = next ) {
-	next = lookup->next;
-	OTLookupFree(lookup);
     }
 }
 
@@ -5933,111 +5365,6 @@ return( NULL );
 return( new );
 }
 
-void KernClassFreeContents(KernClass *kc) {
-    int i;
-
-    for ( i=1; i<kc->first_cnt; ++i )
-	free(kc->firsts[i]);
-    for ( i=1; i<kc->second_cnt; ++i )
-	free(kc->seconds[i]);
-    free(kc->firsts);
-    free(kc->seconds);
-    free(kc->offsets);
-    for ( i=kc->first_cnt*kc->second_cnt-1; i>=0 ; --i )
-	free(kc->adjusts[i].corrections);
-    free(kc->adjusts);
-}
-
-void KernClassListFree(KernClass *kc) {
-    KernClass *n;
-
-    while ( kc ) {
-	KernClassFreeContents(kc);
-	n = kc->next;
-	chunkfree(kc,sizeof(KernClass));
-	kc = n;
-    }
-}
-
-void MacNameListFree(struct macname *mn) {
-    struct macname *next;
-
-    while ( mn!=NULL ) {
-	next = mn->next;
-	free(mn->name);
-	chunkfree(mn,sizeof(struct macname));
-	mn = next;
-    }
-}
-
-void MacSettingListFree(struct macsetting *ms) {
-    struct macsetting *next;
-
-    while ( ms!=NULL ) {
-	next = ms->next;
-	MacNameListFree(ms->setname);
-	chunkfree(ms,sizeof(struct macsetting));
-	ms = next;
-    }
-}
-
-void MacFeatListFree(MacFeat *mf) {
-    MacFeat *next;
-
-    while ( mf!=NULL ) {
-	next = mf->next;
-	MacNameListFree(mf->featname);
-	MacSettingListFree(mf->settings);
-	chunkfree(mf,sizeof(MacFeat));
-	mf = next;
-    }
-}
-
-void ASMFree(ASM *sm) {
-    ASM *next;
-    int i;
-
-    while ( sm!=NULL ) {
-	next = sm->next;
-	if ( sm->type==asm_insert ) {
-	    for ( i=0; i<sm->class_cnt*sm->state_cnt; ++i ) {
-		free( sm->state[i].u.insert.mark_ins );
-		free( sm->state[i].u.insert.cur_ins );
-	    }
-	} else if ( sm->type==asm_kern ) {
-	    for ( i=0; i<sm->class_cnt*sm->state_cnt; ++i ) {
-		free( sm->state[i].u.kern.kerns );
-	    }
-	}
-	for ( i=4; i<sm->class_cnt; ++i )
-	    free(sm->classes[i]);
-	free(sm->state);
-	free(sm->classes);
-	chunkfree(sm,sizeof(ASM));
-	sm = next;
-    }
-}
-
-void OtfNameListFree(struct otfname *on) {
-    struct otfname *on_next;
-
-    for ( ; on!=NULL; on = on_next ) {
-	on_next = on->next;
-	free(on->name);
-	chunkfree(on,sizeof(*on));
-    }
-}
-
-void OtfFeatNameListFree(struct otffeatname *fn) {
-    struct otffeatname *fn_next;
-
-    for ( ; fn!=NULL; fn = fn_next ) {
-	fn_next = fn->next;
-	OtfNameListFree(fn->names);
-	chunkfree(fn,sizeof(*fn));
-    }
-}
-
 EncMap *EncMapNew(int enccount,int backmax,Encoding *enc) {
     EncMap *map = chunkalloc(sizeof(EncMap));
 
@@ -6065,33 +5392,6 @@ EncMap *EncMap1to1(int enccount) {
 return(map);
 }
 
-static void EncodingFree(Encoding *enc) {
-    int i;
-
-    if ( enc==NULL )
-return;
-    free(enc->enc_name);
-    free(enc->unicode);
-    if ( enc->psnames!=NULL ) {
-	for ( i=0; i<enc->char_cnt; ++i )
-	    free(enc->psnames[i]);
-	free(enc->psnames);
-    }
-    free(enc);
-}
-
-void EncMapFree(EncMap *map) {
-    if ( map==NULL )
-return;
-
-    if ( map->enc->is_temporary )
-	EncodingFree(map->enc);
-    free(map->map);
-    free(map->backmap);
-    free(map->remap);
-    chunkfree(map,sizeof(EncMap));
-}
-
 EncMap *EncMapCopy(EncMap *map) {
     EncMap *new;
 
@@ -6110,28 +5410,6 @@ EncMap *EncMapCopy(EncMap *map) {
 return( new );
 }
 
-void MarkClassFree(int cnt,char **classes,char **names) {
-    int i;
-
-    for ( i=1; i<cnt; ++i ) {
-	free( classes[i] );
-	free( names[i] );
-    }
-    free( classes );
-    free( names );
-}
-
-void MarkSetFree(int cnt,char **classes,char **names) {
-    int i;
-
-    for ( i=0; i<cnt; ++i ) {
-	free( classes[i] );
-	free( names[i] );
-    }
-    free( classes );
-    free( names );
-}
-
 struct baselangextent *BaseLangCopy(struct baselangextent *extent) {
     struct baselangextent *head, *last, *cur;
 
@@ -6147,39 +5425,6 @@ struct baselangextent *BaseLangCopy(struct baselangextent *extent) {
 	last = cur;
     }
 return( head );
-}
-
-void BaseLangFree(struct baselangextent *extent) {
-    struct baselangextent *next;
-
-    while ( extent!=NULL ) {
-	next = extent->next;
-	BaseLangFree(extent->features);
-	chunkfree(extent,sizeof(struct baselangextent));
-	extent = next;
-    }
-}
-
-void BaseScriptFree(struct basescript *bs) {
-    struct basescript *next;
-
-    while ( bs!=NULL ) {
-	next = bs->next;
-	if ( bs->baseline_pos )
-	    free(bs->baseline_pos);
-	BaseLangFree(bs->langs);
-	chunkfree(bs,sizeof(struct basescript));
-	bs = next;
-    }
-}
-
-void BaseFree(struct Base *base) {
-    if ( base==NULL )
-return;
-
-    free(base->baseline_tags);
-    BaseScriptFree(base->scripts);
-    chunkfree(base,sizeof(struct Base));
 }
 
 static OTLookup **OTLListCopy(OTLookup **str) {
@@ -6223,39 +5468,6 @@ struct jstf_lang *JstfLangsCopy(struct jstf_lang *jl) {
 return( head );
 }
 
-void JstfLangFree(struct jstf_lang *jl) {
-    struct jstf_lang *next;
-    int i;
-
-    while ( jl!=NULL ) {
-	next = jl->next;
-	for ( i=0; i<jl->cnt; ++i ) {
-	    struct jstf_prio *jp = &jl->prios[i];
-	    free(jp->enableShrink);
-	    free(jp->disableShrink);
-	    free(jp->maxShrink);
-	    free(jp->enableExtend);
-	    free(jp->disableExtend);
-	    free(jp->maxExtend);
-	}
-	free(jl->prios);
-	chunkfree(jl,sizeof(*jl));
-	jl = next;
-    }
-}
-
-void JustifyFree(Justify *just) {
-    Justify *next;
-
-    while ( just!=NULL ) {
-	next = just->next;
-	free(just->extenders);
-	JstfLangFree(just->langs);
-	chunkfree(just,sizeof(*just));
-	just = next;
-    }
-}
-
 void SplineFontFree(SplineFont *sf) {
     int i;
     BDFFont *bdf, *bnext;
@@ -6268,84 +5480,17 @@ return;
     }
     CopyBufferClearCopiedFrom(sf);
     PasteRemoveSFAnchors(sf);
-    for ( bdf = sf->bitmaps; bdf!=NULL; bdf = bnext ) {
-	bnext = bdf->next;
-	BDFFontFree(bdf);
-    }
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
 	SplineCharFree(sf->glyphs[i]);
-    free(sf->glyphs);
-    free(sf->fontname);
-    free(sf->fullname);
-    free(sf->familyname);
-    free(sf->weight);
-    free(sf->copyright);
-    free(sf->comments);
-    free(sf->filename);
-    free(sf->origname);
-    free(sf->autosavename);
-    free(sf->version);
-    free(sf->xuid);
-    free(sf->cidregistry);
-    free(sf->ordering);
-    MacFeatListFree(sf->features);
-    /* We don't free the EncMap. That field is only a temporary pointer. Let the FontViewBase free it, that's where it really lives */
-    SplinePointListsFree(sf->grid.splines);
-    AnchorClassesFree(sf->anchor);
-    TtfTablesFree(sf->ttf_tables);
-    TtfTablesFree(sf->ttf_tab_saved);
     UndoesFree(sf->grid.undoes);
     UndoesFree(sf->grid.redoes);
-    PSDictFree(sf->private);
-    TTFLangNamesFree(sf->names);
     for ( i=0; i<sf->subfontcnt; ++i )
 	SplineFontFree(sf->subfonts[i]);
-    free(sf->subfonts);
     GlyphHashFree(sf);
-    OTLookupListFree(sf->gpos_lookups);
-    OTLookupListFree(sf->gsub_lookups);
-    KernClassListFree(sf->kerns);
-    KernClassListFree(sf->vkerns);
     FPSTFree(sf->possub);
-    ASMFree(sf->sm);
-    OtfNameListFree(sf->fontstyle_name);
-    OtfFeatNameListFree(sf->feat_names);
-    MarkClassFree(sf->mark_class_cnt,sf->mark_classes,sf->mark_class_names);
-    MarkSetFree(sf->mark_set_cnt,sf->mark_sets,sf->mark_set_names);
-    free( sf->gasp );
-#if defined(_NO_PYTHON)
-    free( sf->python_persistent );	/* It's a string of pickled data which we leave as a string */
-#else
+#if !defined(_NO_PYTHON)
     PyFF_FreeSF(sf);
 #endif
-    BaseFree(sf->horiz_base);
-    BaseFree(sf->vert_base);
-    JustifyFree(sf->justify);
-    free(sf);
-}
-
-void MMSetFreeContents(MMSet *mm) {
-    int i;
-
-    free(mm->instances);
-
-    free(mm->positions);
-    free(mm->defweights);
-
-    for ( i=0; i<mm->axis_count; ++i ) {
-	free(mm->axes[i]);
-	free(mm->axismaps[i].blends);
-	free(mm->axismaps[i].designs);
-	MacNameListFree(mm->axismaps[i].axisnames);
-    }
-    free(mm->axismaps);
-    free(mm->cdv);
-    free(mm->ndv);
-    for ( i=0; i<mm->named_instance_count; ++i ) {
-	free(mm->named_instances[i].coords);
-	MacNameListFree(mm->named_instances[i].names);
-    }
-    free(mm->named_instances);
 }
 
 void MMSetFree(MMSet *mm) {
@@ -6358,9 +5503,6 @@ void MMSetFree(MMSet *mm) {
     }
     mm->normal->mm = NULL;
     SplineFontFree(mm->normal);		/* EncMap gets freed here */
-    MMSetFreeContents(mm);
-
-    chunkfree(mm,sizeof(*mm));
 }
 
 static int xcmp(const void *_p1, const void *_p2) {
@@ -6574,10 +5716,8 @@ int SCRoundToCluster(SplineChar *sc,int layer,int sel,bigreal within,bigreal max
 	if ( sel && selcnt==0 )
 	    sel = false;
 	if ( sel ) ptcnt = selcnt;
-	if ( ptcnt<=1 ) {
-	    free(ptspace);
+	if ( ptcnt<=1 )
 return(false);				/* Can't be any clusters */
-	}
 	if ( k==0 )
 	    ptspace = malloc((ptcnt+1)*sizeof(SplinePoint *));
 	else
@@ -6593,9 +5733,6 @@ return(false);				/* Can't be any clusters */
     qsort(ptspace,ptcnt,sizeof(SplinePoint *),ycmp);
     changed = _SplineCharRoundToCluster(sc,ptspace,cspace,ptcnt,true,
 	    (layer==-2 || layer==ly_fore) && !sel,layer,changed,within,max);
-
-    free(ptspace);
-    free(cspace);
 
     if ( changed ) {
 	if ( layer==-2 ) {
@@ -6803,7 +5940,6 @@ SplinePoint *SplineBisect(Spline *spline, extended t) {
     old1->noprevcp = (old1->prevcp.x==old1->me.x && old1->prevcp.y==old1->me.y);
     old0->nextcpdef = false;
     old1->prevcpdef = false;
-    SplineFree(spline);
 
     spline1 = chunkalloc(sizeof(Spline));
     spline1->splines[0] = xstart.sp;	spline1->splines[1] = ystart.sp;
@@ -6889,7 +6025,6 @@ return( spline );
     }
 
     new = spline->from->next;
-    SplineFree(spline);
 return( new );
 }
 

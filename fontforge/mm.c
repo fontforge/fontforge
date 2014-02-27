@@ -92,7 +92,6 @@ static char *_MMMakeFontname(MMSet *mm,real *normalized,char **fullname) {
 		hyphen = ret+strlen(ret);
 		strcpy(hyphen," ");
 		strcpy(hyphen+1,styles);
-		free(styles);
 	    }
 	}
     }
@@ -161,7 +160,6 @@ return( def );
 	ret = "Heavy";
     else
 	ret = "Black";
-    free( def );
 return( copy(ret) );
 }
 
@@ -211,11 +209,8 @@ char *MMExtractArrayNth(char *pt,int ipos) {
     if ( i==0 )
 return( NULL );
     for ( j=len=0; j<i; ++j ) {
-	if ( hold[j]==NULL ) {
-	    for ( j=0; j<i; ++j )
-		free(hold[j]);
+	if ( hold[j]==NULL )
 return( NULL );
-	}
 	len += strlen( hold[j] )+1;
     }
 
@@ -223,7 +218,6 @@ return( NULL );
     *pt++ = '[';
     for ( j=0; j<i; ++j ) {
 	strcpy(pt,hold[j]);
-	free(hold[j]);
 	pt += strlen(pt);
 	if ( j!=i-1 )
 	    *pt++ = ' ';
@@ -283,7 +277,7 @@ static SplineChar *SFMakeGlyphLike(SplineFont *sf, int gid, SplineFont *base) {
     sf->glyphs[gid] = sc;
 
     sc->width = bsc->width; sc->widthset = true; sc->vwidth = bsc->vwidth;
-    free(sc->name); sc->name = copy(bsc->name);
+    sc->name = copy(bsc->name);
     sc->unicodeenc = bsc->unicodeenc;
 return( sc );
 }
@@ -318,9 +312,7 @@ return( _("This glyph is defined in one instance font but not in another") );
     sc = mm->normal->glyphs[gid];
     if ( sc!=NULL ) {
 	SCClearContents(sc,ly_fore);
-	KernPairsFree(sc->kerns);
 	sc->kerns = NULL;
-	KernPairsFree(sc->vkerns);
 	sc->vkerns = NULL;
     }
 
@@ -615,7 +607,6 @@ return( private );
 	    *pt++ = ']';
 	    *pt = '\0';
 	    PSDictChangeEntry(private,other->keys[i],space);
-	    free(space);
 	}
     }
 
@@ -707,7 +698,6 @@ SplineFont *_MMNewFont(MMSet *mm,int index,char *familyname,real *normalized) {
     sf = SplineFontNew();
     sf->layers[ly_fore].order2 = sf->layers[ly_back].order2 = sf->grid.order2 =
 	    mm->apple;
-    free(sf->fontname); free(sf->familyname); free(sf->fullname); free(sf->weight);
     sf->familyname = copy(familyname);
     if ( index==-1 ) {
 	sf->fontname = copy(familyname);
@@ -732,20 +722,15 @@ SplineFont *_MMNewFont(MMSet *mm,int index,char *familyname,real *normalized) {
     }
 
     if ( base!=NULL ) {
-	free(sf->xuid);
 	sf->xuid = copy(base->xuid);
-	free(sf->glyphs);
 	sf->glyphs = calloc(base->glyphcnt,sizeof(SplineChar *));
 	sf->glyphcnt = sf->glyphmax = base->glyphcnt;
 	sf->new = base->new;
 	sf->ascent = base->ascent;
 	sf->descent = base->descent;
-	free(sf->origname);
 	sf->origname = copy(base->origname);
-	if ( index<0 ) {
-	    free(sf->copyright);
+	if ( index<0 )
 	    sf->copyright = copy(base->copyright);
-	}
 	/* Make sure we get the encoding exactly right */
 	for ( i=0; i<base->glyphcnt; ++i ) if ( base->glyphs[i]!=NULL )
 	    SFMakeGlyphLike(sf,i,base);
@@ -776,7 +761,6 @@ FontViewBase *MMCreateBlendedFont(MMSet *mm,FontViewBase *fv,real blends[MmMax],
 	mm->normal = new = MMNewFont(mm,-1,hold->familyname);
 	MMWeightsUnMap(blends,axispos,mm->axis_count);
 	fn = _MMMakeFontname(mm,axispos,&full);
-	free(new->fontname); free(new->fullname);
 	new->fontname = fn; new->fullname = full;
 	new->weight = _MMGuessWeight(mm,axispos,new->weight);
 	new->private = BlendPrivate(PSDictCopy(hold->private),mm);

@@ -56,6 +56,4 @@ static __inline__ int hashname(const char *pt) {
     val %= GN_HSIZE;
 return( val );
 }
-
-extern void __GlyphHashFree(struct glyphnamehash *hash);
 #endif

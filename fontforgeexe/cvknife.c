@@ -117,7 +117,6 @@ static void ReorderSpirosAndAddAndCut(SplineSet *spl,int spiro_index) {
 	memcpy(newspiros+spl->spiro_cnt-1,newspiros,sizeof(spiro_cp));
 	memcpy(newspiros+spl->spiro_cnt,spl->spiros+spl->spiro_cnt-1,sizeof(spiro_cp));
 	newspiros[0].ty = SPIRO_OPEN_CONTOUR;
-	free(spl->spiros);
 	spl->spiros = newspiros;
 	++(spl->spiro_cnt);
 	spl->spiro_max = spl->spiro_cnt;
@@ -131,7 +130,6 @@ static void ReorderSpirosAndAddAndCut(SplineSet *spl,int spiro_index) {
 	memcpy(newspiros+spl->spiro_cnt,newspiros,sizeof(spiro_cp));
 	memcpy(newspiros+spl->spiro_cnt+1,spl->spiros+spl->spiro_cnt-1,sizeof(spiro_cp));
 	newspiros[spl->spiro_cnt].ty = SPIRO_G4;
-	free(spl->spiros);
 	spl->spiros = newspiros;
 	spl->spiro_cnt += 2;
 	spl->spiro_max = spl->spiro_cnt;
@@ -233,7 +231,6 @@ void CVMouseUpKnife(CharView *cv, GEvent *event)
 				spl->last = s->from;
 			    }
 			    s->to->prev = s->from->next = NULL;
-			    SplineFree(s);
 			    SplineSetSpirosClear(spl);
 			}
 		    } else {

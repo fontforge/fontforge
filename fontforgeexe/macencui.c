@@ -262,7 +262,6 @@ static GTextInfo *Pref_MacNamesList(struct macname *all) {
 	}
 	strcat(full,spacer);
 	strcat(full,temp);
-	free(temp);
 	ti[i].text = (unichar_t *) full;
 	ti[i].text_is_1byte = true;
 	ti[i].userdata = (void *) mn;
@@ -289,7 +288,6 @@ static GTextInfo *Pref_SettingsList(struct macsetting *all) {
 	    full = malloc((strlen(buf)+strlen(temp)+1)*sizeof(unichar_t));
 	    uc_strcpy(full,buf);
 	    utf82u_strcpy(full+u_strlen(full),temp);
-	    free(temp);
 	}
 	ti[i].text = full;
 	ti[i].userdata = ms;
@@ -317,7 +315,6 @@ static GTextInfo *Pref_FeaturesList(MacFeat *all) {
 	    full = malloc((strlen(buf)+strlen(temp)+1)*sizeof(unichar_t));
 	    uc_strcpy(full,buf);
 	    utf82u_strcpy(full+u_strlen(full),temp);
-	    free(temp);
 	}
 	ti[i].text = full;
 	ti[i].userdata = mf;
@@ -343,11 +340,9 @@ static int name_e_h(GWindow gw, GEvent *event) {
     struct macname *mn;
     int language;
 
-    if ( event->type==et_close ) {
+    if ( event->type==et_close )
 	nd->done = true;
-	if ( nd->index==-1 )
-	    MacNameListFree(nd->changing);
-    } else if ( event->type==et_char ) {
+    else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("prefs.html#Features");
 return( true );
@@ -356,8 +351,6 @@ return( false );
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
 	if ( GGadgetGetCid(event->u.control.g) == CID_Cancel ) {
 	    nd->done = true;
-	    if ( nd->index==-1 )
-		MacNameListFree(nd->changing);
 	} else if ( GGadgetGetCid(event->u.control.g) == CID_OK ) {
 	    sel = GGadgetGetListItemSelected(GWidgetGetControl(nd->gw,CID_Language));
 	    language = nd->changing->lang;
@@ -372,9 +365,7 @@ return( true );
 	    nd->changing->lang = language;
 	    val1 = (nd->changing->enc<<16) | nd->changing->lang;
 	    ret1 = GGadgetGetTitle8(GWidgetGetControl(nd->gw,CID_Name));
-	    free(nd->changing->name);
 	    nd->changing->name = Utf8ToMacStr(ret1,nd->changing->enc,nd->changing->lang);
-	    free(ret1);
 
 	    ti = GGadgetGetList(nd->namelist,&len);
 	    for ( i=0; i<len; ++i ) if ( i!=nd->index ) {
@@ -576,7 +567,6 @@ static int Pref_DelName(GGadget *g, GEvent *e) {
 		else
 		    p->next = next;
 		mn->next = NULL;
-		MacNameListFree(mn);
 	    } else
 		p = mn;
 	}
@@ -702,12 +692,9 @@ static int set_e_h(GWindow gw, GEvent *event) {
     char buf[20];
     struct macsetting *ms;
 
-    if ( event->type==et_close ) {
+    if ( event->type==et_close )
 	sd->done = true;
-	MacNameListFree(GGadgetGetUserData(GWidgetGetControl(sd->gw,CID_NameList)));
-	if ( sd->index==-1 )
-	    MacSettingListFree(sd->changing);
-    } else if ( event->type==et_char ) {
+    else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("prefs.html#Settings");
 return( true );
@@ -716,9 +703,6 @@ return( false );
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
 	if ( GGadgetGetCid(event->u.control.g) == CID_Cancel ) {
 	    sd->done = true;
-	    MacNameListFree(GGadgetGetUserData(GWidgetGetControl(sd->gw,CID_NameList)));
-	    if ( sd->index==-1 )
-		MacSettingListFree(sd->changing);
 	} else if ( GGadgetGetCid(event->u.control.g) == CID_OK ) {
 	    ret1 = _GGadgetGetTitle(GWidgetGetControl(sd->gw,CID_Id));
 	    val1 = u_strtol(ret1,&end,10);
@@ -734,7 +718,6 @@ return( true );
 return( true );
 		}
 	    }
-	    MacNameListFree(sd->changing->setname);
 	    sd->changing->setname = GGadgetGetUserData(GWidgetGetControl(sd->gw,CID_NameList));
 	    sd->changing->setting = val1;
 	    sd->changing->initially_enabled = GGadgetIsChecked(GWidgetGetControl(sd->gw,CID_On));
@@ -754,7 +737,6 @@ return( true );
 	    res = malloc( (strlen(buf)+len+3)*sizeof(unichar_t) );
 	    uc_strcpy(res,buf);
 	    utf82u_strcpy(res+u_strlen(res),temp);
-	    free(temp);
 
 	    if ( sd->index==-1 )
 		GListAddStr(sd->settinglist,res,sd->changing);
@@ -875,7 +857,6 @@ static char *AskSetting(struct macsetting *changing,struct macsetting *all,
     gcd[i].creator = GButtonCreate;
 
     GGadgetsCreate(gw,gcd);
-    GTextInfoListFree(gcd[4].gd.u.list);
 
     GDrawSetVisible(gw,true);
     GWidgetIndicateFocusGadget(gcd[1].ret);
@@ -945,7 +926,6 @@ static int Pref_DelSetting(GGadget *g, GEvent *e) {
 		else
 		    p->next = next;
 		ms->next = NULL;
-		MacSettingListFree(ms);
 	    } else
 		p = ms;
 	}
@@ -1000,13 +980,9 @@ static int feat_e_h(GWindow gw, GEvent *event) {
     char buf[20];
     MacFeat *mf;
 
-    if ( event->type==et_close ) {
+    if ( event->type==et_close )
 	fd->done = true;
-	if ( fd->index==-1 )
-	    MacFeatListFree(fd->changing);
-	MacSettingListFree(GGadgetGetUserData(GWidgetGetControl(fd->gw,CID_Settings)));
-	MacNameListFree(GGadgetGetUserData(GWidgetGetControl(fd->gw,CID_NameList)));
-    } else if ( event->type==et_char ) {
+    else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("prefs.html#Features");
 return( true );
@@ -1015,10 +991,6 @@ return( false );
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
 	if ( GGadgetGetCid(event->u.control.g) == CID_Cancel ) {
 	    fd->done = true;
-	    if ( fd->index==-1 )
-		MacFeatListFree(fd->changing);
-	    MacSettingListFree(GGadgetGetUserData(GWidgetGetControl(fd->gw,CID_Settings)));
-	    MacNameListFree(GGadgetGetUserData(GWidgetGetControl(fd->gw,CID_NameList)));
 	} else if ( GGadgetGetCid(event->u.control.g) == CID_OK ) {
 	    ret1 = _GGadgetGetTitle(GWidgetGetControl(fd->gw,CID_Id));
 	    val1 = u_strtol(ret1,&end,10);
@@ -1034,8 +1006,6 @@ return( true );
 return( true );
 		}
 	    }
-	    MacSettingListFree(fd->changing->settings);
-	    MacNameListFree(fd->changing->featname);
 	    fd->changing->featname = GGadgetGetUserData(GWidgetGetControl(fd->gw,CID_NameList));
 	    fd->changing->settings = GGadgetGetUserData(GWidgetGetControl(fd->gw,CID_Settings));
 	    fd->changing->ismutex = GGadgetIsChecked(GWidgetGetControl(fd->gw,CID_Mutex));
@@ -1056,7 +1026,6 @@ return( true );
 	    res = malloc( (strlen(buf)+len+3)*sizeof(unichar_t) );
 	    uc_strcpy(res,buf);
 	    utf82u_strcpy(res+u_strlen(res),temp);
-	    free(temp);
 
 	    if ( fd->index==-1 )
 		GListAddStr(fd->featurelist,res,fd->changing);
@@ -1221,8 +1190,6 @@ static char *AskFeature(MacFeat *changing,MacFeat *all,GGadget *list, int index)
     gcd[i].creator = GButtonCreate;
 
     GGadgetsCreate(gw,gcd);
-    GTextInfoListFree(gcd[4].gd.u.list);
-    GTextInfoListFree(freeme);
 
     GDrawSetVisible(gw,true);
     GWidgetIndicateFocusGadget(gcd[1].ret);
@@ -1282,7 +1249,6 @@ static int Pref_DelFeat(GGadget *g, GEvent *e) {
 		else
 		    p->next = next;
 		mf->next = NULL;
-		MacFeatListFree(mf);
 	    } else
 		p = mf;
 	}
@@ -1330,12 +1296,10 @@ static int Pref_DefaultFeat(GGadget *g, GEvent *e) {
 	MacFeat *def = inprefs ? builtin_mac_feature_map : default_mac_feature_map;
 
 	def = MacFeatCopy(def);
-	MacFeatListFree(GGadgetGetUserData(list));
 	GGadgetSetUserData(list,def);
 	ti = Pref_FeaturesList(def);
 	arr = GTextInfoArrayFromList(ti,&cnt);
 	GGadgetSetList(list,arr,false);
-	GTextInfoListFree(ti);
     }
 return( true );
 }
@@ -1420,7 +1384,6 @@ void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
 }
 
 void Prefs_ReplaceMacFeatures(GGadget *list) {
-    MacFeatListFree(user_mac_feature_map);
     user_mac_feature_map = GGadgetGetUserData(list);
     default_mac_feature_map = user_mac_feature_map;
 }

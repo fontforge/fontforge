@@ -32,10 +32,8 @@ static void NClipboard_Grab(void) {
 }
 
 static void NClipboard_AddDataType(const char *UNUSED(type), void *data, int UNUSED(cnt), int UNUSED(size),
-                                   void *(*gendata)(void *,int32 *len), void (*freedata)(void *)) {
+                                   void *(*gendata)(void *,int32 *len)) {
     (void)gendata; /* FIXME: UNUSED doesn't work inside a type expression */
-    if ( freedata!=NULL && data !=NULL )
-	(freedata)(data);
 }
 
 /* Asks for the clip and waits for the response. */

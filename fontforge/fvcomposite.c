@@ -1112,7 +1112,6 @@ const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int noch
 	/* agrave.sc should be built from a.sc and grave or grave.sc */
 	char *temp = copyn(sc->name,dot-sc->name);
 	base = UniFromName(temp,sf->uni_interp,NULL);
-	free(temp);
     }
 
     if ( base>=0xac00 && base<=0xd7a3 ) { /* Hangul syllables */
@@ -1233,7 +1232,6 @@ return( SCMakeDotless(sf,SFGetOrMakeChar(sf,unicodeenc,NULL),layer,NULL,false,fa
 	/* agrave.sc should be built from a.sc and grave or grave.sc */
 	char *temp = copyn(sc->name,dot-sc->name);
 	unicodeenc = UniFromName(temp,sf->uni_interp,NULL);
-	free(temp);
     }
 
     if (( all = pt = SFGetAlternate(sf,unicodeenc,sc,false))==NULL )
@@ -1286,13 +1284,10 @@ return( true );
 	if ( *end=='.' && SFCIDFindExistingChar(sf,uni,NULL)!=-1 )
 return( true );
     } else if ( strstr(sc->name,".vert")!=NULL || strstr(sc->name,".vrt2")!=NULL) {
-	int ret;
 	char *temp;
 	end = strchr(sc->name,'.');
 	temp = copyn(sc->name,end-sc->name);
-	ret = SFFindExistingSlot(sf,-1,temp)!=-1;
-	free(temp);
-return( ret );
+return SFFindExistingSlot(sf,-1,temp)!=-1;
     }
 return( false );
 }
@@ -1630,7 +1625,6 @@ static void BCClearAndCopyBelow(BDFFont *bdf,int togid,int fromgid, int ymax) {
     BCCompressBitmap(bc);
     if ( bdf->glyphs[fromgid]!=NULL ) {
 	rbc = bdf->glyphs[fromgid];
-	free(bc->bitmap);
 	bc->xmin = rbc->xmin;
 	bc->xmax = rbc->xmax;
 	bc->ymin = rbc->ymin;
@@ -1859,7 +1853,6 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 	    if ( (test=SFGetChar(sf,-1,uc_accent))!=NULL )
 		rsc = test;
 	}
-	free(uc_accent);
     }
     if ( rsc!=NULL && SCDependsOnSC(rsc,destination))
 	rsc = NULL;
@@ -2328,7 +2321,6 @@ static void BCMakeSpace(BDFFont *bdf, int gid, int width, int em) {
 	BCPreserveState(bc);
 	BCFlattenFloat(bc);
 	BCCompressBitmap(bc);
-	free(bc->bitmap);
 	bc->xmin = 0;
 	bc->xmax = 1;
 	bc->ymin = 0;
@@ -2427,7 +2419,6 @@ static void BCMakeRule(BDFFont *bdf, int gid, int layer) {
 	BCPreserveState(bc);
 	BCFlattenFloat(bc);
 	BCCompressBitmap(bc);
-	free(bc->bitmap);
 	tempbc = SplineCharRasterize(bc->sc,layer,bdf->pixelsize);
 	bc->xmin = tempbc->xmin;
 	bc->xmax = tempbc->xmax;
@@ -2436,7 +2427,6 @@ static void BCMakeRule(BDFFont *bdf, int gid, int layer) {
 	bc->bytes_per_line = tempbc->bytes_per_line;
 	bc->width = tempbc->width;
 	bc->bitmap = tempbc->bitmap;
-	free(tempbc);
     }
 }
 
@@ -2568,7 +2558,6 @@ return;
 	    end = strchr(sc->name,'.');
 	    temp = copyn(sc->name,end-sc->name);
 	    cid = SFFindExistingSlot(sf,-1,temp);
-	    free(temp);
 	    if ( cid==-1 )
 return;
 	}
@@ -2705,7 +2694,6 @@ return( true );
 return( false );
 
     SCPreserveLayer(dotless,layer,true);
-    SplinePointListsFree(dotless->layers[layer].splines);
     dotless->layers[layer].splines = NULL;
     SCRemoveLayerDependents(dotless,layer);
     dotless->width = sc->width;
@@ -2790,7 +2778,6 @@ void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *bdf, in
 return;
     if ( !disp_only || bdf == NULL ) {
 	SCPreserveLayer(sc,layer,true);
-	SplinePointListsFree(sc->layers[layer].splines);
 	sc->layers[layer].splines = NULL;
 	SCRemoveLayerDependents(sc,layer);
 	sc->width = 0;

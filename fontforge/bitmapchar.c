@@ -155,12 +155,8 @@ static void BDFPropAddString(BDFFont *bdf,const char *keyword,const char *value,
 return;
 
     for ( i=0; i<bdf->prop_cnt; ++i )
-	if ( strcmp(keyword,bdf->props[i].name)==0 ) {
-	    if ( (bdf->props[i].type&~prt_property)==prt_string ||
-		    (bdf->props[i].type&~prt_property)==prt_atom )
-		free( bdf->props[i].u.str );
-    break;
-	}
+	if ( strcmp(keyword,bdf->props[i].name)==0 )
+            break;
     if ( i==bdf->prop_cnt ) {
 	if ( i>=bdf->prop_max )
 	    bdf->props = realloc(bdf->props,(bdf->prop_max+=10)*sizeof(BDFProperties));
@@ -183,12 +179,8 @@ static void BDFPropAddInt(BDFFont *bdf,const char *keyword,int value,char *match
 return;
 
     for ( i=0; i<bdf->prop_cnt; ++i )
-	if ( strcmp(keyword,bdf->props[i].name)==0 ) {
-	    if ( (bdf->props[i].type&~prt_property)==prt_string ||
-		    (bdf->props[i].type&~prt_property)==prt_atom )
-		free( bdf->props[i].u.str );
-    break;
-	}
+	if ( strcmp(keyword,bdf->props[i].name)==0 )
+            break;
     if ( i==bdf->prop_cnt ) {
 	if ( i>=bdf->prop_max )
 	    bdf->props = realloc(bdf->props,(bdf->prop_max+=10)*sizeof(BDFProperties));
@@ -254,7 +246,6 @@ static int BDFPropReplace(BDFFont *bdf,const char *key, const char *value) {
 	switch ( bdf->props[i].type&~prt_property ) {
 	  case prt_string:
 	  case prt_atom:
-	    free( bdf->props[i].u.atom );
 	  break;
 	  default:
 	  break;
@@ -685,7 +676,6 @@ void Default_Properties(BDFFont *bdf,EncMap *map,char *onlyme) {
 	else {
 	    new = copyn(bdf->sf->copyright,pt-bdf->sf->copyright);
 	    BDFPropAddString(bdf,"COPYRIGHT",new,onlyme);
-	    free(new);
 	}
     }
     if ( bdf->sf->version!=NULL )
@@ -809,7 +799,6 @@ void BDFDefaultProps(BDFFont *bdf, EncMap *map, int res) {
 	while ( (end=strchr(start,'\n'))!=NULL ) {
 	    temp = copyn(start,end-start );
 	    BDFPropAppendString(bdf,"COMMENT", temp);
-	    free( temp );
 	    start = end+1;
 	}
 	if ( *start!='\0' )
@@ -894,13 +883,8 @@ return( BDFMakeGID(bdf,map->map[enc]));
 }
 
 void BCClearAll(BDFChar *bc) {
-    BDFRefChar *head,*cur;
-    
     if ( bc==NULL )
 return;
-    for ( head = bc->refs; head != NULL; ) {
-	cur = head; head = head->next; free( cur );
-    }
     bc->refs = NULL;
     
     BCPreserveState(bc);

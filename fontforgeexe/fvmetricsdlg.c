@@ -278,7 +278,6 @@ static void FVCreateWidth( void *_fv,SplineChar* _sc,void (*doit)(CreateWidthDat
     } else {
 	unichar_t *temp = uc_copy(def);
 	GGadgetSetTitle(GWidgetGetControl(cwd.gw,CID_SetVal),temp);
-	free( temp );
     }
 
     GWidgetHidePalettes();

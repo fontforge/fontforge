@@ -794,10 +794,8 @@ void SFD_AssignLookups(SplineFont1 *sf) {
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	for ( otl = isgpos ? sf->sf.gpos_lookups : sf->sf.gsub_lookups ;
 		otl != NULL; otl=otl->next ) {
-	    if ( otl->features!=NULL && otl->features->scripts==NULL ) {
-		chunkfree(otl->features,sizeof(FeatureScriptLangList));
+	    if ( otl->features!=NULL && otl->features->scripts==NULL )
 		otl->features = NULL;
-	    }
 	}
     }
 
@@ -841,7 +839,6 @@ void SFD_AssignLookups(SplineFont1 *sf) {
 	for ( i=1; i<cnt; ++i )
 	    all[i-1]->next = all[i];
 	all[cnt-1]->next = NULL;
-	free( all );
     }
 
     for ( isgpos=0; isgpos<2; ++isgpos ) {

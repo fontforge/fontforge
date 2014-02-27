@@ -555,6 +555,5 @@ char *_IVUnParseInstrs(uint8 *instrs,int instr_cnt) {
     id.instrs = instrs;
     instr_typify(&id);
     ret = __IVUnParseInstrs(&iv);
-    free(id.bts);
 return( ret );
 }

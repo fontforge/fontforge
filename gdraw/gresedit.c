@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <fontforge-config.h>
+
 #include <ggadget.h>
 #include "ggadgetP.h"
 #include "../gdraw/gdrawP.h"		/* Need resolution of screen */
@@ -103,7 +105,6 @@ return( copy(""));
 	    rq.style&1 ? "italic " : "",
 	    rq.point_size,
 	    utf8_name );
-	free(utf8_name );
     } else
 	sprintf( fontname, "%d %s%dpt %s", rq.weight,
 	    rq.style&1 ? "italic " : "",
@@ -333,7 +334,6 @@ static int GRE_InheritFontChange(GGadget *g, GEvent *e) {
 		GGadgetSetTitle8(g,ifd.spec);
 		GRE_FigureInheritance(gre,res,cid_off,cid_off+2,false,
 			(void *) &ifd, inherit_font_change);
-		free( ifd.spec );
 	    }
 	}
     }
@@ -399,7 +399,6 @@ static int GRE_ByteChanged(GGadget *g, GEvent *e) {
 		    (void *) (intpt) val, inherit_byte_change);
 	    GRE_Reflow(gre,res);
 	}
-	free(txt);
     }
 return( true );
 }
@@ -416,7 +415,6 @@ static int GRE_IntChanged(GGadget *g, GEvent *e) {
 	    *((int *) GGadgetGetUserData(g)) = val;
 	    GRE_Reflow(gre,res);
 	}
-	free(txt);
     }
 return( true );
 }
@@ -428,7 +426,6 @@ static int GRE_DoubleChanged(GGadget *g, GEvent *e) {
 	double val = strtod(txt,&end);
 	if ( *end=='\0' )
 	    *((double *) GGadgetGetUserData(g)) = val;
-	free(txt);
     }
 return( true );
 }
@@ -474,7 +471,6 @@ static int GRE_FontChanged(GGadget *g, GEvent *e) {
 
 	GRE_FigureInheritance(gre,res,cid_off-2,cid_off,true,
 		(void *) &ifd, inherit_font_change);
-	free(fontdesc);
     } else if ( e->type==et_controlevent && e->u.control.subtype == et_textfocuschanged &&
 	    !e->u.control.u.tf_focus.gained_focus ) {
 	GRE *gre = GDrawGetUserData(GGadgetGetWindow(g));
@@ -496,7 +492,6 @@ static int GRE_FontChanged(GGadget *g, GEvent *e) {
 			(void *) &ifd, inherit_font_change);
 		GRE_Reflow(gre,res);
 	    }
-	    free(fontdesc);
 	}
     }
 return( true );
@@ -511,7 +506,6 @@ static void GRE_ParseFont(GGadget *g) {
     else {
 	*((GFont **) GGadgetGetUserData(g)) = new;
     }
-    free(fontdesc);
 }
 
 static int GRE_ExtraFontChanged(GGadget *g, GEvent *e) {
@@ -549,19 +543,15 @@ static int GRE_ImageChanged(GGadget *g, GEvent *e) {
 	if ( new==NULL )
 return( true );
 	newi = GImageRead(new);
-	if ( newi==NULL ) {
+	if ( newi==NULL )
 	    gwwv_post_error(_("Could not open image"),_("Could not open %s"), new );
-	    free( new );
-	} else if ( *ri==NULL ) {
+	else if ( *ri==NULL ) {
 	    *ri = calloc(1,sizeof(GResImage));
 	    (*ri)->filename = new;
 	    (*ri)->image = newi;
 	    GGadgetSetTitle8(g,"...");
 	} else {
-	    free( (*ri)->filename );
 	    (*ri)->filename = new;
-	    if ( !_GGadget_ImageInCache((*ri)->image ) )
-		GImageDestroy((*ri)->image);
 	    (*ri)->image = newi;
 	}
 	((GButton *) g)->image = newi;
@@ -600,22 +590,13 @@ static void GRE_DoCancel(GRE *gre) {
 		    _ri = extras->val;
 		    ri = *_ri;
 		    if ( extras->orig.sval==NULL ) {
-			if ( ri!=NULL ) {
-			    free(ri->filename);
-			    if ( ri->image!=NULL )
-				GImageDestroy(ri->image);
-			    free(ri);
-			    *_ri = NULL;
-			}
+                        *_ri = NULL;
 		    } else {
 			if ( strcmp(extras->orig.sval,ri->filename)!=0 ) {
 			    GImage *temp;
 			    temp = GImageRead(extras->orig.sval);
 			    if ( temp!=NULL ) {
-				if ( !_GGadget_ImageInCache(ri->image ) )
-				    GImageDestroy(ri->image);
 				ri->image = temp;
-			        free(ri->filename);
 			        ri->filename = copy(extras->orig.sval);
 			    }
 			}
@@ -756,7 +737,6 @@ return( true );
 				    res->resname, intnames[j]);
 			fprintf( output, "%s.%s.Box.%s: %s\n",
 				res->progname, res->resname, intnames[j], ival );
-			free(ival);
 		    }
 		    cid += 3;
 		}
@@ -767,7 +747,6 @@ return( true );
 		    char *ival = GGadgetGetTitle8( GWidgetGetControl(gre->gw,gre->tofree[i].fontcid));
 		    fprintf( output, "%s.%s.Font: %s\n",
 			    res->progname, res->resname, ival );
-		    free(ival);
 		}
 	    }
 	    if ( res->extras!=NULL ) for ( extras=res->extras; extras->name!=NULL; ++extras ) {
@@ -788,7 +767,6 @@ return( true );
 		    fprintf( output, "%s.%s%s%s: %s\n",
 			    res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
 			    ival );
-		    free(ival);
 		  } break;
 		  case rt_double: {
 		    char *dval = GGadgetGetTitle8( g );
@@ -800,7 +778,6 @@ return( true );
 		    fprintf( output, "%s.%s%s%s: %s\n",
 			    res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
 			    dval );
-		    free(dval);
 		  } break;
 		  case rt_color:
 		  case rt_coloralpha:
@@ -814,7 +791,6 @@ return( true );
 			fprintf( output, "%s.%s%s%s: %s\n",
 				res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
 				fontdesc );
-		    free(fontdesc);
 		  } break;
 		  case rt_image: {
 		    GResImage *ri = *((GResImage **) (extras->val));
@@ -842,7 +818,6 @@ return( true );
 		    fprintf( output, "%s.%s%s%s: %s\n",
 			    res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
 			    sval );
-		    free(sval);
 		  } break;
 		}
 	    }
@@ -853,7 +828,6 @@ return( true );
 	fclose(output);
 	if ( gre->change_res_filename != NULL && update_prefs )
 	    (gre->change_res_filename)(filename);
-	free(filename);
     }
 return( true );
 }
@@ -877,10 +851,8 @@ static int GRE_OK(GGadget *g, GEvent *e) {
 		    if ( *end!='\0' || val<0 || val>255 ) {
 			gwwv_post_error(_("Bad Number"), _("Bad numeric value for %s.%s must be between 0 and 255"),
 				res->resname, _(names[j]) );
-			free(sval);
 return( true );
 		    }
-		    free(sval);
 		}
 	    }
 	    if ( res->font!=NULL ) {
@@ -903,10 +875,8 @@ return( true );
 			if ( *end!='\0' ) {
 			    gwwv_post_error(_("Bad Number"), _("Bad numeric value for %s.%s"),
 				    res->resname, extras->name );
-			    free(ival);
 return( true );
 			}
-			free(ival);
 		      } break;
 		      case rt_double: {
 			/* Has already been parsed and set -- unless there were */
@@ -917,10 +887,8 @@ return( true );
 			if ( *end!='\0' ) {
 			    gwwv_post_error(_("Bad Number"), _("Bad numeric value for %s.%s"),
 				    res->resname, extras->name );
-			    free(ival);
 return( true );
 			}
-			free(ival);
 		      } break;
 		      case rt_bool:
 		      case rt_color:
@@ -934,9 +902,7 @@ return( true );
 		      case rt_string: case rt_stringlong:
 		      {
 			char *spec = GGadgetGetTitle8(GWidgetGetControl(gre->gw,extras->cid));
-			/* We can't free the old value, because sometimes it is a */
-			/*  static string, not something allocated */
-			if ( *spec=='\0' ) { free( spec ); spec=NULL; }
+			if ( *spec=='\0' ) spec=NULL;
 			*(char **) (extras->val) = spec;
 		      } break;
 		    }
@@ -2405,21 +2371,6 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
     while ( !gre.done )
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
-
-    for ( res=all, i=0; res!=NULL; res=res->next, ++i ) {
-	free(tofree[i].gcd);
-	free(tofree[i].lab);
-	free(tofree[i].earray);
-	free(tofree[i].fontname);
-	if ( res->extras!=NULL ) {
-	    for ( l=0, extras = res->extras ; extras->name!=NULL; ++extras, ++l ) {
-		free( tofree[i].extradefs[l]);
-	    }
-	}
-	free(tofree[i].extradefs);
-    }
-    free( tofree );
-    free( panes );
 }
 
 static double _GDraw_Width_cm, _GDraw_Width_Inches;
@@ -2523,8 +2474,7 @@ void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_fi
 	char *new = _GGadget_ImagePath;
 	_GGadget_ImagePath = oldimagepath;
 	GGadgetSetImagePath(new);
-    } else
-	free( oldimagepath );
+    }
     for ( re=additional; re!=NULL; re=re->next ) {
 	if ( (re->override_mask&omf_refresh) && re->refresh!=NULL )
 	    (re->refresh)();
@@ -2577,5 +2527,4 @@ void GResEditFind( struct resed *resed, char *prefix) {
     GResourceFind(info,prefix);
     for ( i=0; resed[i].name!=NULL; ++i )
 	resed[i].found = info[i].found;
-    free(info);
 }

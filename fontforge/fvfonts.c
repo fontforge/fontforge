@@ -113,7 +113,6 @@ return( sub );
 			mc->lks[lcnt].from = otl;
 			temp = strconcat(mc->prefix,otl->lookup_name);
 			mc->lks[lcnt].to = SFFindLookup(mc->sf_to,temp);
-			free(temp);
 			mc->lks[lcnt].old = mc->lks[lcnt].to!=NULL;
 		    }
 		    ++lcnt;
@@ -122,7 +121,6 @@ return( sub );
 			    mc->subs[scnt].from = subs;
 			    temp = strconcat(mc->prefix,subs->subtable_name);
 			    mc->subs[scnt].to = SFFindLookupSubtable(mc->sf_to,temp);
-			    free(temp);
 			    mc->subs[scnt].old = mc->subs[scnt].to!=NULL;
 			}
 			++scnt;
@@ -179,7 +177,6 @@ return( ac );		/* No translation needed */
 			if ( strcmp(testac2->name,temp)==0 )
 		    break;
 		    mc->acs[acnt].to = testac2;
-		    free(temp);
 		    mc->acs[acnt].old = mc->acs[acnt].to!=NULL;
 		}
 		++acnt;
@@ -257,11 +254,6 @@ return;
 	    mc->sf_to->gsub_lookups = otl;
 	last = otl;
     }
-
-    free(mc->prefix);
-    free(mc->lks);
-    free(mc->subs);
-    free(mc->acs);
 }
 
 PST *PSTCopy(PST *base,SplineChar *sc,struct sfmergecontext *mc) {
@@ -306,10 +298,9 @@ static AnchorPoint *AnchorPointsDuplicate(AnchorPoint *base,SplineChar *sc) {
 	    if ( strcmp(ac->name,base->anchor->name)==0 )
 	break;
 	cur->anchor = ac;
-	if ( ac==NULL ) {
+	if ( ac==NULL )
 	    LogError(_("No matching AnchorClass for %s"), base->anchor->name);
-	    chunkfree(cur,sizeof(AnchorPoint));
-	} else {
+	else {
 	    if ( head==NULL )
 		head = cur;
 	    else
@@ -587,7 +578,6 @@ void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index 
     for ( t_bdf=to->bitmaps, f_bdf=from->bitmaps; t_bdf!=NULL && f_bdf!=NULL; ) {
 	if ( t_bdf->pixelsize == f_bdf->pixelsize ) {
 	    if ( f_bdf->glyphs[from_index]!=NULL ) {
-		BDFCharFree(t_bdf->glyphs[to_index]);
 		t_bdf->glyphs[to_index] = BDFCharCopy(f_bdf->glyphs[from_index]);
 		t_bdf->glyphs[to_index]->sc = to->glyphs[to_index];
 		t_bdf->glyphs[to_index]->orig_pos = to_index;
@@ -603,26 +593,7 @@ void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index 
     }
 }
 
-void __GlyphHashFree(struct glyphnamehash *hash) {
-    struct glyphnamebucket *test, *next;
-    int i;
-
-    if ( hash==NULL )
-return;
-    for ( i=0; i<GN_HSIZE; ++i ) {
-	for ( test = hash->table[i]; test!=NULL; test = next ) {
-	    next = test->next;
-	    chunkfree(test,sizeof(struct glyphnamebucket));
-	}
-    }
-}
-
 static void _GlyphHashFree(SplineFont *sf) {
-
-    if ( sf->glyphnames==NULL )
-return;
-    __GlyphHashFree(sf->glyphnames);
-    free(sf->glyphnames);
     sf->glyphnames = NULL;
 }
 
@@ -860,7 +831,6 @@ SplineChar *SFGetChar(SplineFont *sf, int unienc, const char *name ) {
 				tmp[pt-name] = '\0';
 				ind = SFCIDFindCID(sf,unienc,tmp+(start-name));
 				tmp[pt-name] = ch;
-				free(tmp);
 			}
 		}
     }
@@ -990,7 +960,6 @@ static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
 		} else {
 		    for ( prev=sc->layers[l].refs; prev->next!=ref; prev=prev->next );
 		    prev->next = ref->next;
-		    chunkfree(ref,sizeof(*ref));
 		    ref = prev;
 		}
 	    } else {
@@ -1143,7 +1112,6 @@ static void _MergeFont(SplineFont *into,SplineFont *other,struct sfmergecontext 
 	}
     }
 
-    free(mapping);
     GlyphHashFree(into);
     MergeFixupRefChars(into);
     if ( other->fv==NULL )
@@ -1271,7 +1239,6 @@ static RefChar *InterpRefs(RefChar *base, RefChar *other, real amount, SplineCha
 	if ( test!=NULL ) {
 	    test->checked = true;
 	    cur = RefCharCreate();
-	    free(cur->layers);
 	    *cur = *base;
 	    cur->orig_pos = cur->sc->orig_pos;
 	    for ( i=0; i<6; ++i )

@@ -1,5 +1,7 @@
 /* This file written by George Williams to provide a gateway to fontforge */
 /* it it a modification of Raph's bezctx_ps.c */
+#include <fontforge-config.h>
+
 #include <basics.h>
 #include <stdio.h>
 
@@ -148,14 +150,12 @@ struct splinepointlist *bezctx_ff_close(bezctx *z) {
 	    ss->first->noprevcp = ss->last->noprevcp;
 	    ss->first->prev = ss->last->prev;
 	    ss->first->prev->to = ss->first;
-	    SplinePointFree(ss->last);
 	    ss->last = ss->first;
 	} else {
 	    if ( SplineMake3(ss->last,ss->first)!=NULL )
 		ss->last = ss->first;
 	}
     }
-    free(bc);
     return( ss );
 }
 #endif

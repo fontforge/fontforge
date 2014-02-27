@@ -243,11 +243,8 @@ return( false );
 
     /* Set the font names and the pfminfo structure */
     sf->pfminfo.pfmset = true;
-    if ( fntheader.copyright[0]!='\0' ) {
-	free(sf->copyright);
+    if ( fntheader.copyright[0]!='\0' )
 	sf->copyright = copy(fntheader.copyright);
-    }
-    free(sf->weight);
     sf->weight = copy( fntheader.weight<=100 ? "Thin" :
 			fntheader.weight<=200 ? "Extralight" :
 			fntheader.weight<=300 ? "Light" :
@@ -261,7 +258,6 @@ return( false );
     sf->pfminfo.panose[2] = fntheader.weight/100 + 1;
     fseek(fnt,base+fntheader.faceoffset,SEEK_SET);
     for ( i=0; (ch=getc(fnt))!=EOF && ch!=0; ++i );
-    free(sf->familyname);
     sf->familyname = malloc(i+2);
     fseek(fnt,base+fntheader.faceoffset,SEEK_SET);
     for ( i=0; (ch=getc(fnt))!=EOF && ch!=0; ++i )
@@ -275,9 +271,7 @@ return( false );
     }
     if ( fntheader.italic )
 	strcat(temp," Italic");
-    free(sf->fullname);
     sf->fullname = temp;
-    free(sf->fontname);
     sf->fontname = copy(sf->fullname);
     for ( pt=spt=sf->fontname; *spt; ++spt )
 	if ( *spt!=' ' )
@@ -335,10 +329,8 @@ return( false );
 	}
 	BCCompressBitmap(bdfc);
 
-	if ( feof(fnt) ) {
-	    BDFFontFree(bdf);
+	if ( feof(fnt) )
 return( false );
-	}
     }
 
     bdf->next = sf->bitmaps;
@@ -376,7 +368,6 @@ return( NULL );
 	neoffset = lgetlong(fon);
 	fseek(fon,neoffset,SEEK_SET);
 	if ( lgetushort(fon)!=FON_NE_MAGIC ) {
-	    EncMapFree(sf->map);
 	    SplineFontFree(sf);
 	    fclose(fon);
 return( NULL );
@@ -413,19 +404,13 @@ return( NULL );
     }
     fclose(fon);
     if ( sf->bitmaps==NULL ) {
-	EncMapFree(sf->map);
 	SplineFontFree(sf);
 return( NULL );
     }
 
     SFOrderBitmapList(sf);
-    if ( sf->bitmaps->next!=NULL && toback ) {
-	for ( bdf = sf->bitmaps; bdf->next!=NULL; bdf = next ) {
-	    next = bdf->next;
-	    BDFFontFree(bdf);
-	}
+    if ( sf->bitmaps->next!=NULL && toback )
 	sf->bitmaps = bdf;
-    }
     /* Find the biggest font, and adjust the metrics to match */
     for ( bdf = sf->bitmaps; bdf->next!=NULL; bdf = bdf->next );
     for ( i=0; i<sf->glyphcnt ; ++i ) if ( sf->glyphs[i]!=NULL && bdf->glyphs[i]!=NULL ) {
@@ -830,14 +815,12 @@ int FONFontDump(char *filename,SplineFont *sf, int32 *sizes,int resol,
 		    sizes[i]&0xffff, sizes[i]>>16);
 	    for ( j=0; j<i; ++j )
 		fclose(fntarray[j]);
-	    free(fntarray);
 return( false );
 	}
 	fntarray[i] = tmpfile();
 	if ( !_FntFontDump(fntarray[i],bdf,map,resol) ) {
 	    for ( j=0; j<=i; ++j )
 		fclose(fntarray[j]);
-	    free(fntarray);
 return( false );
 	}
 	ff_progress_next_stage();
@@ -910,7 +893,6 @@ return( false );
 		filename );
 	for ( j=0; j<num_files; ++j )
 	    fclose(fntarray[j]);
-	free(fntarray);
 return( false );
     }
 
@@ -1071,8 +1053,6 @@ return( false );
             fputc(0x00, fon);
     }
     fclose(fon);
-    free(fntarray);
-    free(file_lens);
 
 return true;
 }

@@ -31,23 +31,9 @@
 #include <string.h>
 #include "uiinterface.h"
 
-void SFUndoFreeAssociated( struct sfundoes *undo )
+void SFUndoRemove( SplineFont *sf, struct sfundoes *undo )
 {
-    if( undo->sfdchunk )
-	free( undo->sfdchunk );
-}
-
-void SFUndoFree( struct sfundoes *undo )
-{
-    SFUndoFreeAssociated( undo );
-    free( undo );
-}
-
-void SFUndoRemoveAndFree( SplineFont *sf, struct sfundoes *undo )
-{
-    SFUndoFreeAssociated( undo );
     dlist_erase( (struct dlistnode **)&sf->undoes, (struct dlistnode *)undo );
-    free(undo);
 }
 
 
@@ -160,7 +146,7 @@ void SFUndoPerform( SFUndoes* undo, SplineFont* sf )
 	sfdchunk = undo->sfdchunk;
 	if( !sfdchunk ) {
 	    ff_post_error(_("Undo information incomplete"),_("There is a splinefont level undo, but it does not contain any information to perform the undo. This is an application error, please report what you last did to the lookup tables so the developers can try to reproduce the issue and fix it."));
-	    SFUndoRemoveAndFree( sf, undo );
+	    SFUndoRemove( sf, undo );
 	    return;
 	}
 
@@ -183,16 +169,13 @@ void SFUndoPerform( SFUndoes* undo, SplineFont* sf )
 	    }
 	    if( sc ) {
 		// Free the stuff in sc->psts so we don't leak it.
-		if( undo->type == sfut_lookups ) {
-		    PSTFree(sc->possub);
+		if( undo->type == sfut_lookups )
 		    sc->possub = 0;
-		}
 		char tok[2000];
 		getname( sfd, tok );
 		SFDGetPSTs( sfd, sc, tok );
 		SFDGetKerns( sfd, sc, tok );
 	    }
-	    free(name);
 	}
 
 	if( undo->type == sfut_lookups_kerns ) {

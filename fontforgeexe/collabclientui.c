@@ -341,7 +341,6 @@ static void zeromq_beacon_fd_callback(int zeromq_fd, void* datas )
 		    g_hash_table_replace( peers, copy->uuid, copy );
 		    zframe_destroy (&content);
 		}
-		free (ipaddress);
 	    }
 	    else
 		break;
@@ -569,8 +568,6 @@ void collabclient_free( void** ccvp )
     }
 
     zhash_destroy (&cc->kvmap);
-    free(cc->address);
-    free(cc);
     *ccvp = 0;
 
 #endif
@@ -591,11 +588,9 @@ static void collabclient_sendSFD( void* ccvp, char* sfd, char* fontname )
     kvmsg_set_body (kvmsg, sfd, strlen(sfd));
     kvmsg_set_prop (kvmsg, "type", MSG_TYPE_SFD );
     kvmsg_set_prop (kvmsg, "fontname", fontname );
-//    kvmsg_set_prop (kvmsg, "ttl", "%d", randof (30));
     kvmsg_send     (kvmsg, cc->publisher);
     kvmsg_destroy (&kvmsg);
     DEBUG("Sent a SFD of %d bytes to the server\n",strlen(sfd));
-    free(sfd);
 }
 
 static int collabclient_sessionJoin_processmsg_foreach_fn( kvmsg_t* msg, void *argument )
@@ -662,7 +657,6 @@ collabclient_sendRedo_sfdfragment( cloneclient_t* cc,
     kvmsg_send     (kvmsg, cc->publisher);
     kvmsg_destroy  (&kvmsg);
     DEBUG("Sent a undo chunk of %d bytes to the server\n",strlen(sfd));
-    free(sfd);
 }
 
 
@@ -717,7 +711,6 @@ collabclient_sendRedo_Internal( FontViewBase *fv, SplineChar *sc, Undoes *undo, 
     kvmsg_send     (kvmsg, cc->publisher);
     kvmsg_destroy (&kvmsg);
     DEBUG("Sent a undo chunk of %d bytes to the server\n",strlen(sfd));
-    free(sfd);
 }
 
 static void

@@ -79,7 +79,6 @@ static char **ClassToNames(struct ttfinfo *info,int class_cnt,uint16 *class,int 
 	    ret[i][0] = '\0';
 	else
 	    ret[i][lens[i]-1] = '\0';
-    free(lens);
 return( ret );
 }
 
@@ -98,10 +97,8 @@ static char *CoverageMinusClasses(uint16 *coverageglyphs,uint16 *classed,
 	if ( glyphs[i]!=0 )
     break;
     /* coverage table matches glyphs in classes. No need for special treatment*/
-    if ( i==info->glyph_cnt ) {
-	free(glyphs);
+    if ( i==info->glyph_cnt )
 return( NULL );
-    }
     /* Otherwise we need to generate a class string of glyph names in the coverage */
     /*  table but not in any class. These become the glyphs in class 0 */
     ret = NULL;
@@ -121,7 +118,6 @@ return( NULL );
 	else
 	    ret[len-1] = '\0';
     }
-    free(glyphs);
 return( ret );
 }
 
@@ -240,7 +236,6 @@ return( NULL );
 	    if ( feof(ttf) ) {
 		LogError( _("End of file found in coverage table.\n") );
 		info->bad_ot = true;
-		free(glyphs);
 return( NULL );
 	    }
 	    if ( glyphs[i]>=info->glyph_cnt ) {
@@ -265,7 +260,6 @@ return( NULL );
 	    if ( feof(ttf) ) {
 		LogError( _("End of file found in coverage table.\n") );
 		info->bad_ot = true;
-		free(glyphs);
 return( NULL );
 	    }
 	    if ( start>end || end>=info->glyph_cnt ) {
@@ -587,7 +581,6 @@ return;
 		}
 	    }
 	}
-	free(ps_offsets); free(glyphs);
     } else if ( format==2 ) {	/* Class-based kerning */
 	cd1 = getushort(ttf);
 	cd2 = getushort(ttf);
@@ -668,8 +661,6 @@ return;
 		}
 	    }
 	}
-	free(class1); free(class2);
-	free(glyphs);
     }
 }
 
@@ -730,7 +721,6 @@ return;
     if ( glyphs==NULL ) {
 /* GT: This continues a multi-line error message, hence the leading space */
 	LogError( _(" Bad cursive alignment table, ignored\n") );
-	free(offsets);
 return;
     }
 
@@ -758,8 +748,6 @@ return;
 		    at_cexit,sc->anchor,info);
 	}
     }
-    free(offsets);
-    free(glyphs);
 }
 
 static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
@@ -817,7 +805,6 @@ return( NULL );
 	sc->anchor = readAnchorPoint(ttf,markoffset+at_offsets[i].offset,
 		classes[at_offsets[i].class],at_mark,sc->anchor,info);
     }
-    free(at_offsets);
 return( classes );
 }
 
@@ -849,7 +836,6 @@ return;
 		    classes[j], at,sc->anchor,info);
 	}
     }
-    free(offsets);
 }
 
 static void MarkGlyphsProcessLigs(FILE *ttf,int baseoffset,
@@ -890,9 +876,7 @@ return;
 		sc->anchor->lig_index = k;
 	    }
 	}
-	free(aoffsets);
     }
-    free(loffsets);
 }
 
 static void gposMarkSubTable(FILE *ttf, uint32 stoffset,
@@ -911,7 +895,6 @@ static void gposMarkSubTable(FILE *ttf, uint32 stoffset,
     markglyphs = getCoverageTable(ttf,stoffset+markcoverage,info);
     baseglyphs = getCoverageTable(ttf,stoffset+basecoverage,info);
     if ( baseglyphs==NULL || markglyphs==NULL ) {
-	free(baseglyphs); free(markglyphs);
 	LogError( _(" Bad mark attachment table, ignored\n") );
 return;
     }
@@ -934,8 +917,6 @@ return;
     }
     info->anchor_class_cnt += classcnt;
     ++ info->anchor_merge_cnt;
-    free(markglyphs); free(baseglyphs);
-    free(classes);
 }
 
 static void gposSimplePos(FILE *ttf, int stoffset, struct ttfinfo *info,
@@ -963,7 +944,6 @@ return;
     }
     glyphs = getCoverageTable(ttf,stoffset+coverage,info);
     if ( glyphs==NULL ) {
-	free(vr);
 	LogError( _(" Bad simple positioning table, ignored\n") );
 return;
     }
@@ -981,8 +961,6 @@ return;
 	pos->u.pos.adjust = readValDevTab(ttf,which,stoffset,info);
     }
     subtable->per_glyph_pst_or_kern = true;
-    free(vr);
-    free(glyphs);
 }
 
 static void ProcessSubLookups(FILE *ttf,struct ttfinfo *info,int gpos,
@@ -1100,16 +1078,6 @@ return;
 	    ++cnt;
 	}
     }
-
-    for ( i=0; i<rcnt; ++i ) {
-	for ( j=0; j<rules[i].scnt; ++j ) {
-	    free(rules[i].subrules[j].glyphs);
-	    free(rules[i].subrules[j].sl);
-	}
-	free(rules[i].subrules);
-    }
-    free(rules);
-    free(glyphs);
 }
 
 static void g___ChainingSubTable1(FILE *ttf, int stoffset,
@@ -1141,7 +1109,6 @@ static void g___ChainingSubTable1(FILE *ttf, int stoffset,
 	rules[i].offsets = getushort(ttf)+stoffset;
     glyphs = getCoverageTable(ttf,stoffset+coverage,info);
     if ( glyphs==NULL ) {
-	free(rules);
 	LogError( _(" Bad contextual chaining table, ignored\n") );
 return;
     }
@@ -1251,18 +1218,6 @@ return;
 	    ++cnt;
 	}
     }
-
-    for ( i=0; i<rcnt; ++i ) {
-	for ( j=0; j<rules[i].scnt; ++j ) {
-	    free(rules[i].subrules[j].bglyphs);
-	    free(rules[i].subrules[j].glyphs);
-	    free(rules[i].subrules[j].fglyphs);
-	    free(rules[i].subrules[j].sl);
-	}
-	free(rules[i].subrules);
-    }
-    free(rules);
-    free(glyphs);
 }
 
 static void g___ContextSubTable2(FILE *ttf, int stoffset,
@@ -1314,7 +1269,6 @@ return;
 	    if ( rules[i].subrules[j].ccnt<0 ) {
 		LogError( _("Bad class count in contextual chaining sub-table.\n") );
 		info->bad_ot = true;
-		free(rules);
 return;
 	    }
 	    rules[i].subrules[j].classindeces = malloc(rules[i].subrules[j].ccnt*sizeof(uint16));
@@ -1324,7 +1278,6 @@ return;
 	    if ( rules[i].subrules[j].scnt<0 ) {
 		LogError( _("Bad count in contextual chaining sub-table.\n") );
 		info->bad_ot = true;
-		free(rules);
 return;
 	    }
 	    rules[i].subrules[j].sl = malloc(rules[i].subrules[j].scnt*sizeof(struct seqlookup));
@@ -1369,7 +1322,7 @@ return;
 return;
 	}
 	fpst->nclass[0] = CoverageMinusClasses(glyphs,class,info);
-	free(glyphs); free(class); class = NULL;
+	class = NULL;
 
 	cnt = 0;
 	for ( i=0; i<rcnt; ++i ) for ( j=0; j<rules[i].scnt; ++j ) {
@@ -1384,15 +1337,6 @@ return;
 	    ++cnt;
 	}
     }
-
-    for ( i=0; i<rcnt; ++i ) {
-	for ( j=0; j<rules[i].scnt; ++j ) {
-	    free(rules[i].subrules[j].classindeces);
-	    free(rules[i].subrules[j].sl);
-	}
-	free(rules[i].subrules);
-    }
-    free(rules);
 }
 
 static void g___ChainingSubTable2(FILE *ttf, int stoffset,
@@ -1447,7 +1391,6 @@ return;
 	    if ( rules[i].subrules[j].bccnt<0 ) {
 		LogError( _("Bad class count in contextual chaining sub-table.\n") );
 		info->bad_ot = true;
-		free(rules);
 return;
 	    }
 	    rules[i].subrules[j].bci = malloc(rules[i].subrules[j].bccnt*sizeof(uint16));
@@ -1457,7 +1400,6 @@ return;
 	    if ( rules[i].subrules[j].ccnt<0 ) {
 		LogError( _("Bad class count in contextual chaining sub-table.\n") );
 		info->bad_ot = true;
-		free(rules);
 return;
 	    }
 	    rules[i].subrules[j].classindeces = malloc(rules[i].subrules[j].ccnt*sizeof(uint16));
@@ -1468,7 +1410,6 @@ return;
 	    if ( rules[i].subrules[j].fccnt<0 ) {
 		LogError( _("Bad class count in contextual chaining sub-table.\n") );
 		info->bad_ot = true;
-		free(rules);
 return;
 	    }
 	    rules[i].subrules[j].fci = malloc(rules[i].subrules[j].fccnt*sizeof(uint16));
@@ -1478,7 +1419,6 @@ return;
 	    if ( rules[i].subrules[j].scnt<0 ) {
 		LogError( _("Bad count in contextual chaining sub-table.\n") );
 		info->bad_ot = true;
-		free(rules);
 return;
 	    }
 	    rules[i].subrules[j].sl = malloc(rules[i].subrules[j].scnt*sizeof(struct seqlookup));
@@ -1524,7 +1464,7 @@ return;
 return;
 	}
 	fpst->nclass[0] = CoverageMinusClasses(glyphs,class,info);
-	free(glyphs); free(class); class = NULL;
+	class = NULL;
 
 	/* The docs don't mention this, but in mangal.ttf fclassoff==0 NULL */
 	if ( bclassoff!=0 )
@@ -1534,7 +1474,6 @@ return;
 	fpst->bccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->bclass = ClassToNames(info,fpst->bccnt,class,info->glyph_cnt);
 	fpst->bclassnames = calloc(fpst->bccnt,sizeof(char *));
-	free(class);
 	if ( fclassoff!=0 )
 	    class = getClassDefTable(ttf, stoffset+fclassoff, info);
 	else
@@ -1542,7 +1481,6 @@ return;
 	fpst->fccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->fclass = ClassToNames(info,fpst->fccnt,class,info->glyph_cnt);
 	fpst->fclassnames = calloc(fpst->fccnt,sizeof(char *));
-	free(class);
 
 	cnt = 0;
 	for ( i=0; i<rcnt; ++i ) for ( j=0; j<rules[i].scnt; ++j ) {
@@ -1563,15 +1501,6 @@ return;
 	    ++cnt;
 	}
     }
-
-    for ( i=0; i<rcnt; ++i ) {
-	for ( j=0; j<rules[i].scnt; ++j ) {
-	    free(rules[i].subrules[j].classindeces);
-	    free(rules[i].subrules[j].sl);
-	}
-	free(rules[i].subrules);
-    }
-    free(rules);
 }
 
 static void g___ContextSubTable3(FILE *ttf, int stoffset,
@@ -1626,15 +1555,12 @@ return;
 	for ( i=0; i<gcnt; ++i ) {
 	    glyphs =  getCoverageTable(ttf,stoffset+coverage[i],info);
 	    rule->u.coverage.ncovers[i] = GlyphsToNames(info,glyphs,true);
-	    free(glyphs);
 	}
 	rule->lookup_cnt = scnt;
 	rule->lookups = sl;
 	for ( k=0; k<scnt; ++k )
 	    ProcessSubLookups(ttf,info,gpos,alllooks,&sl[k]);
     }
-
-    free(coverage);
 }
 
 static void g___ChainingSubTable3(FILE *ttf, int stoffset,
@@ -1713,7 +1639,6 @@ return;
 	for ( i=0; i<bcnt; ++i ) {
 	    glyphs =  getCoverageTable(ttf,stoffset+bcoverage[i],info);
 	    rule->u.coverage.bcovers[i] = GlyphsToNames(info,glyphs,true);
-	    free(glyphs);
 	}
 
 	rule->u.coverage.ncnt = gcnt;
@@ -1721,7 +1646,6 @@ return;
 	for ( i=0; i<gcnt; ++i ) {
 	    glyphs =  getCoverageTable(ttf,stoffset+coverage[i],info);
 	    rule->u.coverage.ncovers[i] = GlyphsToNames(info,glyphs,true);
-	    free(glyphs);
 	}
 
 	rule->u.coverage.fcnt = fcnt;
@@ -1729,7 +1653,6 @@ return;
 	for ( i=0; i<fcnt; ++i ) {
 	    glyphs =  getCoverageTable(ttf,stoffset+fcoverage[i],info);
 	    rule->u.coverage.fcovers[i] = GlyphsToNames(info,glyphs,true);
-	    free(glyphs);
 	}
 
 	rule->lookup_cnt = scnt;
@@ -1737,10 +1660,6 @@ return;
 	for ( k=0; k<scnt; ++k )
 	    ProcessSubLookups(ttf,info,gpos,alllooks,&sl[k]);
     }
-
-    free(bcoverage);
-    free(coverage);
-    free(fcoverage);
 }
 
 static void gposContextSubTable(FILE *ttf, int stoffset,
@@ -1808,7 +1727,6 @@ return;
     }
     glyphs = getCoverageTable(ttf,stoffset+coverage,info);
     if ( glyphs==NULL ) {
-	free(glyph2s);
 	LogError( _(" Bad simple substitution table, ignored\n") );
 return;
     }
@@ -1870,8 +1788,6 @@ return;
 	}
     }
     subtable->per_glyph_pst_or_kern = true;
-    free(glyph2s);
-    free(glyphs);
 }
 
 /* Multiple and alternate substitution lookups have the same format */
@@ -1903,7 +1819,6 @@ return;
 	offsets[i] = getushort(ttf);
     glyphs = getCoverageTable(ttf,stoffset+coverage,info);
     if ( glyphs==NULL ) {
-	free(offsets);
 	LogError( _(" Bad multiple substitution table, ignored\n") );
 return;
     }
@@ -1925,9 +1840,6 @@ return;
 		if ( feof(ttf)) {
 			LogError( _("Unexpected end of file in GSUB sub-table.\n"));
 			info->bad_ot = true;
-			free(offsets);
-			free(glyphs);
-			free(glyph2s);
 			return;
 		}
 		if ( cnt>max ) {
@@ -1940,9 +1852,6 @@ return;
 			if ( feof(ttf)) {
 				LogError( _("Unexpected end of file in GSUB sub-table.\n" ));
 				info->bad_ot = true;
-				free(offsets);
-				free(glyphs);
-				free(glyph2s);
 				return;
 			}
 			if ( glyph2s[j]>=info->glyph_cnt ) {
@@ -1950,12 +1859,8 @@ return;
 				LogError( _("Bad Multiple/Alternate substitution glyph. GID %d not less than %d\n"),
 					glyph2s[j], info->glyph_cnt );
 			info->bad_ot = true;
-			if ( ++badcnt>20 ) {
-				free(offsets);
-				free(glyphs);
-				free(glyph2s);
+			if ( ++badcnt>20 )
 				return;
-			}
 			glyph2s[j] = 0;
 			}
 			if ( justinuse==git_justinuse )
@@ -1989,9 +1894,6 @@ return;
 		}
     }
     subtable->per_glyph_pst_or_kern = true;
-    free(glyphs);
-    free(glyph2s);
-    free(offsets);
 }
 
 static void gsubLigatureSubTable(FILE *ttf, int stoffset,
@@ -2047,7 +1949,6 @@ return;
 	    if ( cc<0 || cc>100 ) {
 		LogError( _("Unlikely count of ligature components (%d), I suspect this ligature sub-\n table is garbage, I'm giving up on it.\n"), cc );
 		info->bad_ot = true;
-		free(glyphs); free(lig_offsets);
 return;
 	    }
 	    lig_glyphs = malloc(cc*sizeof(uint16));
@@ -2124,12 +2025,9 @@ return;
 		    pt[-1] = '\0';
 		}
 	    }
-	    free(lig_glyphs);
 	}
-	free(lig_offsets);
     }
     subtable->per_glyph_pst_or_kern = true;
-    free(ls_offsets); free(glyphs);
 }
 
 static void gsubContextSubTable(FILE *ttf, int stoffset,
@@ -2228,22 +2126,16 @@ return;		/* Don't understand this format type */
 	rule->u.rcoverage.replacements = GlyphsToNames(info,sglyphs,false);
 	glyphs = getCoverageTable(ttf,stoffset+coverage,info);
 	rule->u.rcoverage.ncovers[0] = GlyphsToNames(info,glyphs,false);
-	free(glyphs);
 	for ( i=0; i<bcnt; ++i ) {
 	    glyphs = getCoverageTable(ttf,stoffset+bcoverage[i],info);
 	    rule->u.rcoverage.bcovers[i] = GlyphsToNames(info,glyphs,true);
-	    free(glyphs);
 	}
 	for ( i=0; i<fcnt; ++i ) {
 	    glyphs = getCoverageTable(ttf,stoffset+fcoverage[i],info);
 	    rule->u.rcoverage.fcovers[i] = GlyphsToNames(info,glyphs,true);
-	    free(glyphs);
 	}
 	rule->lookup_cnt = 0;		/* substitution lookups needed for reverse chaining */
     }
-    free(sglyphs);
-    free(fcoverage);
-    free(bcoverage);
 }
 
 static void readttfsizeparameters(FILE *ttf,int32 broken_pos,int32 correct_pos,
@@ -2827,38 +2719,6 @@ static void gsubLookupSwitch(FILE *ttf, int st,
     }
 }
 
-static void ScriptsFree(struct scripts *scripts) {
-    int i,j;
-
-    if ( scripts==NULL )
-return;
-    for ( i=0; scripts[i].offset!=0 ; ++i ) {
-	for ( j=0; j<scripts[i].langcnt; ++j )
-	    free( scripts[i].languages[j].features);
-	free(scripts[i].languages);
-    }
-    free(scripts);
-}
-
-static void FeaturesFree(struct feature *features) {
-    int i;
-
-    if ( features==NULL )
-return;
-    for ( i=0; features[i].offset!=0 ; ++i )
-	free(features[i].lookups);
-    free(features);
-}
-
-static void LookupsFree(struct lookup *lookups) {
-    int i;
-
-    for ( i=0; lookups[i].offset!=0 ; ++i ) {
-	free( lookups[i].subtab_offsets );
-    }
-    free(lookups);
-}
-
 static void ProcessGPOSGSUB(FILE *ttf,struct ttfinfo *info,int gpos,int inusetype) {
     int k;
     int32 base, lookup_start, st;
@@ -2886,14 +2746,11 @@ static void ProcessGPOSGSUB(FILE *ttf,struct ttfinfo *info,int gpos,int inusetyp
     /* It is legal to have lookups with no features or scripts */
     /* For example if all the lookups were controlled by the JSTF table */
     lookups = readttflookups(ttf,lookup_start,info,gpos);
-    if ( lookups==NULL ) {
-	ScriptsFree(scripts);
-	FeaturesFree(features);
+    if ( lookups==NULL )
 return;
-    }
     tagLookupsWithScript(scripts,features,lookups,info);
-    ScriptsFree(scripts); scripts = NULL;
-    FeaturesFree(features); features = NULL;
+    scripts = NULL;
+    features = NULL;
 
     for ( l = lookups; l->offset!=0; ++l ) {
 	for ( k=0, subtable=l->otlookup->subtables; k<l->subtabcnt; ++k, subtable=subtable->next ) {
@@ -2912,11 +2769,8 @@ return;
 	for ( l=lookups; l->offset!=0; ++l )
 	    NameOTLookup(l->otlookup,NULL);
 
-    LookupsFree(lookups);
-    if ( inusetype!=git_normal && !gpos ) {
-	OTLookupListFree(info->gsub_lookups);
+    if ( inusetype!=git_normal && !gpos )
 	info->gsub_lookups = info->cur_lookups = NULL;
-    }
 }
 
 void readttfgsubUsed(FILE *ttf,struct ttfinfo *info) {
@@ -2960,7 +2814,6 @@ return;
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    if ( info->chars[i]!=NULL && gclasses[i]!=0 )
 		info->chars[i]->glyph_class = gclasses[i]+1;
-	free(gclasses);
     }
 
     if ( mac!=0 ) {
@@ -2974,7 +2827,6 @@ return;
 	    info->mark_class_names[i] = malloc((strlen(format_spec)+10));
 	    sprintf( info->mark_class_names[i], format_spec, i );
 	}
-	free(mclasses);
     }
     if ( mas!=0 ) {
 	const char *format_spec = _("MarkSet-%d");
@@ -2995,11 +2847,9 @@ return;
 		if ( offsets[i]!=0 ) {
 		    glyphs = getCoverageTable(ttf,info->gdef_start+mas+offsets[i],info);
 		    info->mark_sets[i] = GlyphsToNames(info,glyphs,true);
-		    free(glyphs);
 		} else
 		    info->mark_sets[i] = NULL;		/* Should not happen */
 	    }
-	    free(offsets);
 	}
     }
 
@@ -3029,7 +2879,6 @@ return;
 	    }
 	    caret_base = ftell(ttf);
 	    pst->u.lcaret.cnt = getushort(ttf);
-	    free(pst->u.lcaret.carets);
 	    offsets = malloc(pst->u.lcaret.cnt*sizeof(uint16));
 	    for ( j=0; j<pst->u.lcaret.cnt; ++j )
 		offsets[j] = getushort(ttf);
@@ -3050,10 +2899,7 @@ return;
 		    info->bad_ot = true;
 		}
 	    }
-	    free(offsets);
 	}
-	free(lc_offsets);
-	free(glyphs);
     }
     info->g_bounds = 0;
 }
@@ -3196,7 +3042,6 @@ static void OTLRemove(struct ttfinfo *info,OTLookup *otl,int gpos) {
 	for ( prev = *base; prev->next!=NULL && prev->next!=otl; prev = prev->next );
 	prev->next = NULL;
     }
-    OTLookupFree(otl);
 }
 
 static OTLookup *NewMacLookup(struct ttfinfo *info,int gpos) {
@@ -3706,8 +3551,7 @@ return;
 			pst->u.lig.lig = sm->info->chars[lig_glyph];
 			pst->next = sm->info->chars[lig_glyph]->possub;
 			sm->info->chars[lig_glyph]->possub = pst;
-		    } else
-			free(comp);
+		    }
 		}
 	    }
 	} else
@@ -3831,8 +3675,7 @@ return;
 			pst->u.lig.lig = sm->info->chars[lig_glyph];
 			pst->next = sm->info->chars[lig_glyph]->possub;
 			sm->info->chars[lig_glyph]->possub = pst;
-		    } else
-			free(comp);
+		    }
 		}
 	    }
 	} else
@@ -3893,7 +3736,6 @@ static void readttf_mortx_lig(FILE *ttf,struct ttfinfo *info,int ismorx,uint32 b
     sm.data = malloc(length);
     sm.length = length;
     if ( fread(sm.data,1,length,ttf)!=length ) {
-	free(sm.data);
 	LogError( _("Bad mort ligature table. Not long enough\n"));
 	info->bad_gx = true;
 return;
@@ -3938,9 +3780,6 @@ return;
 	sm.states_in_use = calloc(sm.smax,sizeof(uint8));
 	follow_mort_state(&sm,sm.stateOffset,-1,info);
     }
-    free(sm.data);
-    free(sm.states_in_use);
-    free(sm.classes);
 }
 
 struct statetable {
@@ -4065,7 +3904,6 @@ static struct statetable *read_statetable(FILE *ttf, int ent_extras, int ismorx,
 	if ( ent_max>1000 ) {
 	    LogError( _("It looks to me as though there's a morx sub-table with more than 1000\n transitions. Which makes me think there's probably an error\n" ));
 	    info->bad_gx = true;
-	    free(st);
 return( NULL );
 	}
 	fseek(ttf,here+entry_off+old_ent_max*ent_size,SEEK_SET);
@@ -4084,7 +3922,6 @@ return( NULL );
 	if ( state_max>1000 ) {
 	    LogError( _("It looks to me as though there's a morx sub-table with more than 1000\n states. Which makes me think there's probably an error\n" ));
 	    info->bad_gx = true;
-	    free(st);
 return( NULL );
 	}
     }
@@ -4112,15 +3949,6 @@ return( NULL );
     st->transitions = malloc(st->nentries*st->entry_size);
     fread(st->transitions,1,st->nentries*st->entry_size,ttf);
 return( st );
-}
-
-static void statetablefree(struct statetable *st) {
-    free( st->classes );
-    free( st->state_table );
-    free( st->classes2 );
-    free( st->state_table2 );
-    free( st->transitions );
-    free( st );
 }
 
 static void tagSMWithScriptLang(FeatureScriptLangList *fl,
@@ -4185,7 +4013,6 @@ static char **ClassesFromStateTable(struct statetable *st,int ismorx,struct ttfi
 	if ( len!=0 )
 	    classes[i][len-1] = '\0';	/* Remove trailing space */
     }
-    free(lens);
 return( classes );
 }
 
@@ -4456,11 +4283,6 @@ return(NULL);
 		    st,classes_subbed,evermarked[i],used);
 	}
 	info->mort_is_nested = false;
-	free(classes_subbed);
-	free(lookups);
-	free(used);
-	free(evermarked);
-	free(subs);
     } else if ( ismorx && type == asm_context ) {
 	int lookup_max= -1;
 	uint32 *lookups;
@@ -4500,8 +4322,6 @@ return(NULL);
 		    mort_apply_values,mort_apply_value,NULL,NULL,true);
 	}
 	info->mort_is_nested = false;
-	free(subs);
-	free(lookups);
     } else if ( type == asm_kern ) {
 	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
 	    if ( (as->state[i].flags&0x3fff)!=0 ) {
@@ -4516,7 +4336,6 @@ return(NULL);
     }
     as->next = info->sm;
     info->sm = as;
-    statetablefree(st);
 return( as );
 }
 
@@ -4732,7 +4551,6 @@ return;
 	    info->badgids[i]->orig_pos = info->glyph_cnt+i;
 	}
 	info->glyph_cnt += info->badgid_cnt;
-	free(info->badgids);
     }
 }
 
@@ -4944,7 +4762,6 @@ return;
 		    class2[i] = getc(ttf);
 		for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i )
 		    kc->offsets[i] = kvs[getc(ttf)];
-		free(kvs);
 	    }
 	    kc->firsts = ClassToNames(info,kc->first_cnt,class1,info->glyph_cnt);
 	    kc->seconds = ClassToNames(info,kc->second_cnt,class2,info->glyph_cnt);
@@ -4954,7 +4771,6 @@ return;
 			    SCScriptFromUnicode(info->chars[i]),
 			    DEFAULT_LANG);
 	    }
-	    free(class1); free(class2);
 	    fseek(ttf,begin_table+len,SEEK_SET);
 	    otl->subtables[0].kc = kc;
 	    kc->subtable = otl->subtables;
@@ -5005,7 +4821,6 @@ return;
 	if ( flags&0x4000 )
 	    cur->default_setting = flags&0xff;
 	if ( feof(ttf)) {
-	    free(fs);
 	    LogError( _("End of file in feat table.\n" ));
 	    info->bad_gx = true;
 return;
@@ -5026,14 +4841,12 @@ return;
 	    scur->setting = getushort(ttf);
 	    scur->strid = getushort(ttf);
 	    if ( feof(ttf)) {
-		free(fs);
 		LogError( _("End of file in feat table.\n") );
 		info->bad_gx = true;
 return;
 	    }
 	}
     }
-    free(fs);
 }
 
 static void FeatMarkAsEnabled(struct ttfinfo *info,int featureType,
@@ -5117,7 +4930,6 @@ return;
 	}
       }
     }
-    free(glyphs);
 }
 
 static void ttf_math_read_extended(FILE *ttf,struct ttfinfo *info, uint32 start) {
@@ -5129,7 +4941,6 @@ static void ttf_math_read_extended(FILE *ttf,struct ttfinfo *info, uint32 start)
 return;
     for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt && info->chars[ glyphs[i]]!=NULL )
 	info->chars[ glyphs[i] ]->is_extended_shape = true;
-    free(glyphs);
 }
 
 static void ttf_math_read_mathkernv(FILE *ttf, uint32 start,struct mathkernvertex *mkv,
@@ -5197,10 +5008,8 @@ static void ttf_math_read_mathkern(FILE *ttf,struct ttfinfo *info, uint32 start)
 	koff[i].bl = getushort(ttf);
     }
     glyphs = getCoverageTable(ttf,start+coverage,info);
-    if ( glyphs==NULL ) {
-	free(koff);
+    if ( glyphs==NULL )
 return;
-    }
     for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt && info->chars[ glyphs[i]]!=NULL ) {
 	SplineChar *sc = info->chars[ glyphs[i]];
 	sc->mathkern = chunkalloc(sizeof(struct mathkern));
@@ -5213,8 +5022,6 @@ return;
 	if ( koff[i].bl!=0 )
 	    ttf_math_read_mathkernv(ttf,start+koff[i].bl,&sc->mathkern->bottom_left,sc,false,info);
     }
-    free(koff);
-    free(glyphs);
 }
 
 static void ttf_math_read_glyphinfo(FILE *ttf,struct ttfinfo *info, uint32 start) {
@@ -5291,7 +5098,6 @@ static struct glyphvariants *ttf_math_read_gvtable(FILE *ttf,struct ttfinfo *inf
 		}
 		pt[len-1] = '\0';
 	    }
-	    free(glyphs);
 	}
     }
     if ( ga_offset!=0 ) {
@@ -5312,7 +5118,6 @@ static struct glyphvariants *ttf_math_read_gvtable(FILE *ttf,struct ttfinfo *inf
 	    if ( feof(ttf)) {
 		LogError( _("Bad glyph variant subtable of MATH table.\n") );
 		info->bad_ot = true;
-		chunkfree(gv,sizeof(*gv));
 return( NULL );
 	    }
 	    if ( justinuse==git_justinuse ) {
@@ -5354,11 +5159,7 @@ return( NULL );
 	    ReadDeviceTable(ttf,gv->italic_adjusts,start+ic_offset,info);
 	}
     }
-    if ( justinuse==git_justinuse ) {
-	chunkfree(gv,sizeof(*gv));
-return( NULL );
-    }
-return( gv );
+    return justinuse==git_justinuse ? NULL : gv;
 }
 
 static void ttf_math_read_variants(FILE *ttf,struct ttfinfo *info, uint32 start,
@@ -5409,9 +5210,6 @@ static void ttf_math_read_variants(FILE *ttf,struct ttfinfo *info, uint32 start,
 		    ttf_math_read_gvtable(ttf,info,start+hoffs[i],justinuse,NULL,false);
 	}
     }
-
-    free(vglyphs); free(voffs);
-    free(hglyphs); free(hoffs);
 }
 
 static void _otf_read_math(FILE *ttf,struct ttfinfo *info,
@@ -5586,7 +5384,6 @@ return;
 					bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag );
 			}
 		    }
-		    free(coords);
 		} else {
 		    curScript->baseline_pos = calloc(curBase->baseline_cnt,sizeof(int16));
 		}
@@ -5603,10 +5400,8 @@ return;
 			lastLang = cur;
 		    }
 		}
-		free(ls);
 	    }
 	}
-	free(bs);
     }
 }
 
@@ -5764,7 +5559,6 @@ return( NULL );
     }
     glyphs[i] = 0xffff;
     ret = GlyphsToNames(info,glyphs,false);
-    free(glyphs);
 return( ret );
 }
 
@@ -5919,7 +5713,6 @@ return( NULL );
 	ret[cnt] = l->otlookup;
     }
     ret[cnt] = NULL;
-    LookupsFree(lookups);
 return( ret );
 }
 
@@ -6066,7 +5859,4 @@ return;
 	    }
 	}
     }
-
-    free(loff);
-    free(soff);
 }

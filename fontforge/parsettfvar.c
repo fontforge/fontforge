@@ -57,32 +57,13 @@ void VariationFree(struct ttfinfo *info) {
 
     if ( variation==NULL )
 return;
-    if ( variation->axes!=NULL ) {
-	for ( i=0; i<variation->axis_count; ++i ) {
-	    free(variation->axes[i].mapfrom);
-	    free(variation->axes[i].mapto);
-	}
-	free(variation->axes);
-    }
-    if ( variation->instances!=NULL ) {
-	for ( i=0; i<variation->instance_count; ++i ) {
-	    free(variation->instances[i].coords);
-	}
-	free(variation->instances);
-    }
     if ( variation->tuples!=NULL ) {
 	for ( i=0; i<variation->tuple_count; ++i ) {
-	    free(variation->tuples[i].coords);
 	    if ( variation->tuples[i].chars!=NULL )
 		for ( j=0; j<info->glyph_cnt; ++j )
 		    SplineCharFree(variation->tuples[i].chars[j]);
-	    free(variation->tuples[i].chars);
-	    KernClassListFree(variation->tuples[i].khead);
-	    KernClassListFree(variation->tuples[i].vkhead);
 	}
-	free(variation->tuples);
     }
-    free(variation);
     info->variations = NULL;
 }
 
@@ -196,9 +177,9 @@ static SplineChar **InfoCopyGlyphs(struct ttfinfo *info) {
 	    chars[i] = NULL;
 	else {
 	    chars[i] = SplineCharCopy(info->chars[i],NULL,NULL);
-	    free(chars[i]->ttf_instrs); chars[i]->ttf_instrs = NULL;
+	    chars[i]->ttf_instrs = NULL;
 	    chars[i]->ttf_instrs_len = 0;
-	    PSTFree(chars[i]->possub); chars[i]->possub = NULL;
+	    chars[i]->possub = NULL;
 	    for ( r=chars[i]->layers[ly_fore].refs; r!=NULL; r=r->next )
 		r->sc = NULL;
 	    chars[i]->changed = false;
@@ -516,8 +497,6 @@ return;
 		    info->chars[gnum]->name!=NULL?info->chars[gnum]->name:"<Nameless>" );
 	warned = true;
     }
-    free(xdeltas);
-    free(ydeltas);
 }
 
 static void parsegvar(struct ttfinfo *info, FILE *ttf) {
@@ -611,14 +590,11 @@ return;
 		    localpoints = readpackedpoints(ttf);
 		VaryGlyphs(info,tupleIndex&0xfff,g,
 			(tupleIndex&0x2000)?localpoints:sharedpoints,ttf);
-		free(localpoints);
 		fseek(ttf,here,SEEK_SET);
 	    }
 	    datoff += tupleDataSize;
 	}
-	free(sharedpoints);
     }
-    free(gvars);
 }
 
 static void AlterEntry(struct ttf_table *cvt, int i, int delta ) {
@@ -673,7 +649,6 @@ static void VaryCvts(struct ttfinfo *info,int tupleIndex, int *points, FILE *ttf
 	    LogError( _("Incorrect number of deltas in cvt\n") );
 	warned = true;
     }
-    free(deltas);
 }
 
 static void parsecvar(struct ttfinfo *info, FILE *ttf) {
@@ -747,13 +722,11 @@ return;
 		if ( tupleIndex&0x2000 )
 		    localpoints = readpackedpoints(ttf);
 		VaryCvts(info,ti,(tupleIndex&0x2000)?localpoints:sharedpoints,ttf,cvt);
-		free(localpoints);
 		fseek(ttf,here,SEEK_SET);
 	    }
 	}
 	offset += tupleDataSize;
     }
-    free(sharedpoints);
 }
 
 void readttfvariations(struct ttfinfo *info, FILE *ttf) {

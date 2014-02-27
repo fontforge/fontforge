@@ -97,7 +97,6 @@ static int32 *ParseList(GWindow gw, int cid,int *err, int final) {
 	    ret[i] = 0x10000;
 	if ( sizes[i]>0 ) ++i;
 	if ( *end!=' ' && *end!=',' && *end!='\0' ) {
-	    free(sizes); free(ret);
 	    if ( final )
 		GGadgetProtest8(_("Pixel Sizes:"));
 	    *err = true;
@@ -119,7 +118,6 @@ return( NULL );
     } else
 	for ( i=0; sizes[i]!=0; ++i )
 	    ret[i] |= (int) rint(sizes[i]);
-    free(sizes);
 return( ret );
 }
 
@@ -139,7 +137,6 @@ return( true );
 	if ( bd->isavail==1 )
 	    bd->rasterize = GGadgetIsChecked(GWidgetGetControl(gw,CID_RasterizedStrikes));
 	BitmapsDoIt(bd,sizes,oldusefreetype);
-	free(sizes);
 	SavePrefs(true);
     }
 return( true );
@@ -175,7 +172,6 @@ static unichar_t *GenText(int32 *sizes,real scale) {
     }
     *pt = '\0';
     uret = uc_copy(cret);
-    free(cret);
 return( uret );
 }
 
@@ -199,9 +195,7 @@ return;
 	    scale = system==CID_X?100: system==CID_Win?120 : 100;
 	val = GenText(sizes,72./scale);
 	GGadgetSetTitle(GWidgetGetControl(((CreateBitmapDlg *) bd)->gw,ncid),val);
-	free(val);
     }
-    free(sizes);
 return;
 }
 

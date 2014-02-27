@@ -249,11 +249,8 @@ return;
 		    tot += m;
 		}
 	    }
-	    free(offsets);
-	    free(glnum);
 	}
     }
-    free(kcnt.hbreaks); free(kcnt.vbreaks);
 
     if( winfail > 0 )
 	ff_post_error(_("Kerning is likely to fail on Windows"),_(
@@ -299,7 +296,6 @@ return;
 	    fseek(at->kern,pos,SEEK_SET);
 	    class1 = ClassesFromNames(sf,kc->firsts,kc->first_cnt,at->maxp.numGlyphs,NULL,true);
 	    DumpKernClass(at->kern,class1,at->maxp.numGlyphs,16,sizeof(uint16)*kc->second_cnt);
-	    free(class1);
 
 	    pos = ftell(at->kern);
 	    fseek(at->kern,len_pos+12,SEEK_SET);
@@ -307,7 +303,6 @@ return;
 	    fseek(at->kern,pos,SEEK_SET);
 	    class2 = ClassesFromNames(sf,kc->seconds,kc->second_cnt,at->maxp.numGlyphs,NULL,true);
 	    DumpKernClass(at->kern,class2,at->maxp.numGlyphs,0,sizeof(uint16));
-	    free(class2);
 
 	    pos = ftell(at->kern);
 	    fseek(at->kern,len_pos,SEEK_SET);
@@ -347,16 +342,13 @@ void ttf_dumpkerns(struct alltabs *at, SplineFont *sf) {
 	mm = NULL;
     } else {
 	if ( mm!=NULL ) {
-	    for ( i=0; i<mm->instance_count; ++i ) {
+	    for ( i=0; i<mm->instance_count; ++i )
 		mmcnt += CountKerns(at,mm->instances[i],&kcnt);
-		free(kcnt.hbreaks); free(kcnt.vbreaks);
-	    }
 	    sf = mm->normal;
 	}
     }
 
     sum = CountKerns(at,sf,&kcnt);
-    free(kcnt.hbreaks); free(kcnt.vbreaks);
     if ( sum==0 && mmcnt==0 ) {
 	if ( must_use_old_style )
 	    SFKernCleanup(sf,false);
@@ -533,15 +525,6 @@ struct feature {
 static struct feature *featureFromSubtable(SplineFont *sf, struct lookup_subtable *sub );
 static int PSTHasTag(PST *pst, uint32 tag);
 
-static void morxfeaturesfree(struct feature *features) {
-    struct feature *n;
-
-    for ( ; features!=NULL; features=n ) {
-	n = features->next;
-	chunkfree( features,sizeof(*features) );
-    }
-}
-
 static void mort_classes(FILE *temp,SplineFont *sf,struct glyphinfo *gi) {
     int first, last, i, cnt;
     /* Mort tables just have a trimmed byte array for the classes */
@@ -671,7 +654,6 @@ return( features );
     if ( (ftell(temp)-cur->feature_start)&2 )
 	putshort(temp,0);
     cur->feature_len = ftell(temp)-cur->feature_start;
-    free(glyphs); free(maps);
 return( features);
 }
 
@@ -765,7 +747,6 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
     putlong(temp,0);
     putlong(temp,0);
     morx_lookupmap(temp,cglyphs,map,k);	/* dump the class lookup table */
-    free( cglyphs ); free( map );
     here = ftell(temp);
     fseek(temp,start+2*sizeof(uint32),SEEK_SET);
     putlong(temp,here-start);			/* Point to start of state arrays */
@@ -917,14 +898,6 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
     /* And finally the ligature glyph indeces */
     for ( i=0; i<lcnt; ++i )
 	putshort(temp,lig_glyphs[i]);
-
-    /* clean up */
-    free(actions); free(components); free(lig_glyphs);
-    free(trans);
-    for ( i=0; i<state_cnt; ++i )
-	free(states[i]);
-    free(states);
-    free(used);
 }
 
 static struct feature *aat_dumpmorx_ligatures(struct alltabs *at, SplineFont *sf,
@@ -964,7 +937,6 @@ static struct feature *aat_dumpmorx_ligatures(struct alltabs *at, SplineFont *sf
 	cur->r2l = sub->lookup->lookup_flags&pst_r2l ? true : false;
     }
 
-    free(glyphs);
 return( features);
 }
 
@@ -997,8 +969,6 @@ static void morx_dumpnestedsubs(FILE *temp,SplineFont *sf,OTLookup *otl,struct g
 	}
     }
     morx_lookupmap(temp,glyphs,map,gcnt);
-    free(glyphs);
-    free(map);
 }
 
 static uint16 *NamesToGlyphs(SplineFont *sf,char *names,uint16 *cnt) {
@@ -1196,8 +1166,6 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
 	}
 	morx_lookupmap(temp,glyphs,map,gcnt);/* dump the class lookup table */
     }
-    free(glyphs); free(map);
-
 
     state_offset = ftell(temp)-start;
     if ( ismort ) {
@@ -1218,7 +1186,6 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
 	for ( j=0; j<sm->state_cnt*sm->class_cnt; ++j )
 	    putshort(temp,transdata[j].transition);
     }
-    free(transdata);
 
     here = ftell(temp);
     if ( ismort ) {
@@ -1250,7 +1217,6 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
 	    }
 	}
     }
-    free(trans);
 
     if ( sm->type==asm_context ) {
 	substable_pos = ftell(temp);
@@ -1268,7 +1234,6 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
 	    fseek(temp,0,SEEK_END);
 	    morx_dumpnestedsubs(temp,sf,subslookups[i],&at->gi);
 	}
-	free(subslookups);
     } else if ( sm->type==asm_insert ) {
 	substable_pos = ftell(temp);
 	fseek(temp,start+4*sizeof(uint32),SEEK_SET);
@@ -1278,9 +1243,7 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
 	for ( i=0; i<stcnt; ++i ) {
 	    for ( j=0; j<subsins[i].len; ++j )
 		putshort(temp,subsins[i].glyphs[j]);
-	    free(subsins[i].glyphs);
 	}
-	free(subsins);
     } else if ( sm->type==asm_kern ) {
 	if ( substable_pos!=ftell(temp) )
 	    IError( "Kern Values table in wrong place.\n" );
@@ -1309,8 +1272,7 @@ static struct feature *aat_dumpmorx_asm(struct alltabs *at, SplineFont *sf,
 	if ( (ftell(temp)-cur->feature_start)&2 )
 	    putshort(temp,0);
 	cur->feature_len = ftell(temp)-cur->feature_start;
-    } else
-	chunkfree(cur,sizeof(struct feature));
+    }
 return( features);
 }
 
@@ -1320,10 +1282,8 @@ static struct feature *aat_dumpmorx_cvtopentype(struct alltabs *at, SplineFont *
 
     if ( FPSTisMacable(sf,sub->fpst)) {
 	sm = ASMFromFPST(sf,sub->fpst,true);
-	if ( sm!=NULL ) {
+	if ( sm!=NULL )
 	    features = aat_dumpmorx_asm(at,sf,temp,features,sm);
-	    ASMFree(sm);
-	}
     }
 return( features );
 }
@@ -1448,12 +1408,9 @@ static struct feature *aat_dumpmorx_cvtopentypeforms(struct alltabs *at, SplineF
 	scripts = FormedScripts(sf);
 	for ( i=0; scripts[i]!=0; ++i ) {
 	    sm = ASMFromOpenTypeForms(sf,scripts[i]);
-	    if ( sm!=NULL ) {
+	    if ( sm!=NULL )
 		features = aat_dumpmorx_asm(at,sf,temp,features,sm);
-		ASMFree(sf->sm);
-	    }
 	}
-	free(scripts);
     }
 return( features );
 }
@@ -1494,7 +1451,6 @@ return( features );
 	all[i]->nexttype = all[i+1];
     all[cnt-1]->nexttype = NULL;
     features = all[0];
-    free( all );
 return( features );
 }
 
@@ -1858,7 +1814,6 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,
 	    tot -= len;
 	}
     }
-    free(buf);
 
     /* Pad chain to a multiple of four */
     if ( (ftell(at->morx)-chain_start)&1 )
@@ -1941,7 +1896,6 @@ return;
     for ( i=0; i<nchains; ++i )
 	morxDumpChain(at,features,features_by_type,i,temp);
     fclose(temp);
-    morxfeaturesfree(features_by_type);
     
     at->morxlen = ftell(at->morx);
     if ( at->morxlen&1 )
@@ -2152,10 +2106,8 @@ uint16 *props_array(SplineFont *sf,struct glyphinfo *gi) {
 	}
     }
 
-    if ( !doit ) {
-	free(props);
+    if ( !doit )
 return( NULL );
-    }
 
 return( props );
 }
@@ -2210,7 +2162,6 @@ return;
     at->proplen = ftell(at->prop);
     if ( at->proplen&2 )
 	putshort(at->prop,0);
-    free(props);
 }
 
 /* ************************************************************************** */
@@ -2403,7 +2354,6 @@ return;
     /* Only contains 2 & 4 byte quantities, can't have an odd number of bytes */
     if ( at->bslnlen&2 )
 	putshort(at->bsln,0);
-    free(baselines);
 }
 	
 /* ************************************************************************** */

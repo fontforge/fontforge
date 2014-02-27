@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <fontforge-config.h>
+
 #include "gdrawP.h"
 #include <string.h>
 
@@ -252,7 +254,6 @@ static GImage *GImage8to8(struct _GImage *base,GRect *src, GClut *nclut, RevCMap
 		}
 	    }
 	}
-	free(red_dith); free(green_dith); free(blue_dith);
     }
 return( ret );
 }
@@ -303,7 +304,6 @@ static GImage *GImage32to8(struct _GImage *base,GRect *src, GClut *nclut, RevCMa
 	    }
 	}
     }
-    free(red_dith); free(green_dith); free(blue_dith);
 return( ret );
 }
 
@@ -443,7 +443,6 @@ static GImage *GImage8to1(struct _GImage *base,GRect *src, GClut *nclut) {
 	    if (( bit>>=1 )==0 ) {bit=0x80; ++ipt;};
 	}
     }
-    free(grey_dith);
 return( ret );
 }
 
@@ -502,7 +501,6 @@ static GImage *GImage32to1(struct _GImage *base,GRect *src, GClut *nclut) {
 	    if (( bit>>=1 )==0 ) {bit=0x80; ++ipt;}
 	}
     }
-    free(grey_dith);
 return( ret );
 }
 
@@ -688,7 +686,6 @@ static void GImageInsert8to8(GImage *from,struct _GImage *tobase, GRect *src, Re
 	    }
 	}
     }
-    free(red_dith); free(green_dith); free(blue_dith);
 }
 
 static void GImageInsert32to32(GImage *from,struct _GImage *tobase, GRect *src,

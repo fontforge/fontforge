@@ -106,7 +106,6 @@ static int Goto_OK(GGadget *g, GEvent *e) {
 		d->done = true;
 	} else
 	    d->done = true;
-	free(ret);
     }
 return( true );
 }
@@ -153,7 +152,6 @@ return( NULL );
 	    if ( do_wildcards ) {
 		unichar_t *temp = utf82u_copy(sc->name);
 		matched = GGadgetWildMatch((unichar_t *) spt,temp,false);
-		free(temp);
 	    } else
 		matched = uc_strncmp(spt,sc->name,match_len)==0;
 	    if ( matched ) {
@@ -169,8 +167,6 @@ return( NULL );
 	else
 	    ret = malloc((cnt+1)*sizeof(unichar_t *));
     }
-    if ( do_wildcards )
-	free(spt);
 return( ret );
 }
 
@@ -281,6 +277,5 @@ int GotoChar(SplineFont *sf,EncMap *map,int *merge_with_selection) {
     if ( merge_with_selection!=NULL )
 	*merge_with_selection = GGadgetIsChecked(GWidgetGetControl(gw,CID_MergeWithSelection));
     GDrawDestroyWindow(gw);
-    free(ranges);
 return( gd.ret );
 }

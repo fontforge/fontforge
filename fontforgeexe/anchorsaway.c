@@ -113,23 +113,13 @@ typedef struct anchord {
 static void AnchorD_FreeChar(AnchorDlg *a) {
     int i;
 
-    BDFCharFree(a->bdfc); a->bdfc = NULL;
-    for ( i=0; i<a->cnt; ++i )
-	BDFCharFree(a->apmatch[i].bdfc);
-    free(a->apmatch); a->apmatch = NULL;
+    a->bdfc = NULL;
+    a->apmatch = NULL;
     if ( a->freetypecontext!=NULL )
 	FreeTypeFreeContext(a->freetypecontext);
 }
 
 static void AnchorD_FreeAll(AnchorDlg *a) {
-    struct state *old, *oldnext;
-
-    free(a->xadjust.corrections);
-    free(a->yadjust.corrections);
-    for ( old = a->orig_vals; old!=NULL; old=oldnext ) {
-	oldnext = old->next;
-	chunkfree(old,sizeof(struct state));
-    }
     AnchorD_FreeChar(a);
 }
 
@@ -304,7 +294,6 @@ static void AnchorD_FindComplements(AnchorDlg *a) {
 	    fv->b.selected = sel;
 	    a->freetypecontext = FreeTypeFontContext(_sf,NULL,(FontViewBase *) fv,a->layer);
 	    fv->b.selected = oldsel;
-	    free(sel);
 	}
     }
 }
@@ -394,11 +383,9 @@ static void AnchorD_ChangeSize(AnchorDlg *a) {
 
     a->scale = a->pixelsize / (double) (a->sc->parent->ascent + a->sc->parent->descent);
 
-    BDFCharFree(a->bdfc);
     a->bdfc = APRasterize(a->freetypecontext,a->sc,a->layer,&a->char_off,&a->char_size,a->pixelsize);
     a->ymin = a->bdfc->ymin; a->ymax = a->bdfc->ymax;
     for ( i=0; i<a->cnt; ++i ) {
-	BDFCharFree(a->apmatch[i].bdfc);
 	a->apmatch[i].bdfc = APRasterize(a->freetypecontext,a->apmatch[i].sc,a->layer,&a->apmatch[i].off,&a->apmatch[i].size,a->pixelsize);
 	if ( a->ap->type==at_centry || a->ap->type==at_cexit )
 	    a->apmatch[i].size += a->char_size;
@@ -535,8 +522,8 @@ static void AnchorD_ClearCorrections(AnchorDlg *a) {
     unichar_t ubuf[2];
 
     ubuf[0] = '0'; ubuf[1] = '\0';
-    free(a->xadjust.corrections); memset(&a->xadjust,0,sizeof(DeviceTable));
-    free(a->yadjust.corrections); memset(&a->yadjust,0,sizeof(DeviceTable));
+    memset(&a->xadjust,0,sizeof(DeviceTable));
+    memset(&a->yadjust,0,sizeof(DeviceTable));
     GGadgetSetTitle(GWidgetGetControl(a->gw,CID_XCor),ubuf);
     GGadgetSetTitle(GWidgetGetControl(a->gw,CID_YCor),ubuf);
 }
@@ -701,14 +688,12 @@ return( NULL );
 static void SetAnchor(SplineChar *sc,int layer, AnchorPoint *ap,DeviceTable *xadjust, DeviceTable *yadjust, BasePoint *pos) {
     int ly;
 
-    free(ap->xadjust.corrections);
     if ( xadjust->corrections==NULL ) {
 	memset(&ap->xadjust,0,sizeof(DeviceTable));
     } else {
 	ap->xadjust = *xadjust;
 	xadjust->corrections = NULL;
     }
-    free(ap->yadjust.corrections);
     if ( yadjust->corrections==NULL ) {
 	memset(&ap->yadjust,0,sizeof(DeviceTable));
     } else {
@@ -978,7 +963,6 @@ static SplineChar *AddAnchor(AnchorDlg *a, SplineFont *sf, AnchorClass *ac,
     def = copy(".notdef");
     for (;;) {
 	ret = gwwv_ask_string(_("Provide a glyph name"),def,_("Please identify a glyph by name, and FontForge will add an anchor to that glyph."));
-	free(def);
 	if ( ret==NULL )
 return( NULL );
 	sc = SFGetChar(sf,-1,ret);
@@ -1073,7 +1057,6 @@ static int AnchorD_GlyphChanged(GGadget *g, GEvent *e) {
 		char *name = u2utf8_copy(sel->text);
 		SplineChar *sc = SFGetChar(a->sc->parent,-1,name);
 
-		free(name);
 		AnchorD_ChangeGlyph(a,sc,ap);
 	    }
 	}
@@ -1100,7 +1083,6 @@ static void AnchorD_NextPrev(AnchorDlg *a,int incr) {
 	char *name = u2utf8_copy(ti[sel]->text);
 	SplineChar *sc = SFGetChar(a->sc->parent,-1,name);
 
-	free(name);
 	GGadgetSelectOneListItem(g,sel);
 	AnchorD_ChangeGlyph(a,sc,ti[sel]->userdata);
     }
@@ -1414,7 +1396,6 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap,int layer) {
 
     GGadgetsCreate(a.gw,maingcd);
     GGadgetSetList(gcd[0].ret,AnchorD_GlyphsInClass(&a),false);
-    GTextInfoListFree(gcd[0].gd.u.list);
 
     GHVBoxSetExpandableRow(maingcd[0].ret,gb_expandglue);
     GHVBoxSetExpandableCol(maingcd[0].ret,4);

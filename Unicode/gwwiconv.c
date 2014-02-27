@@ -154,7 +154,6 @@ return( ret );
 }
 
 void gww_iconv_close( gww_iconv_t cd) {
-    free(cd);
 }
 
 size_t gww_iconv( gww_iconv_t _cd,
