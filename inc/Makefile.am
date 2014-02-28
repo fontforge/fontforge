@@ -27,7 +27,7 @@
 
 
 MAINTAINERCLEANFILES=fontforge-config.h.in
-DISTCLEANFILES=fontforge-config.h stamp-h1
+DISTCLEANFILES=fontforge-config.h stamp-h1 stamp-h2
 
 # FIXME: The installed headers need to be reworked for better system
 # installation. In particular, they ought to have <> instead of "" and

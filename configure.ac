@@ -88,7 +88,7 @@ AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_TESTDIR([tests],[fontforge])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
-AC_CONFIG_HEADER([inc/fontforge-config.h])
+AC_CONFIG_HEADERS([config.h inc/fontforge-config.h:config.h])
 AM_INIT_AUTOMAKE([foreign -Wall subdir-objects tar-pax])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
