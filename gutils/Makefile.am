@@ -68,6 +68,4 @@ libgioftp_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGIOFTP_VERSION) \
 
 #--------------------------------------------------------------------------
 
-EXTRA_DIST = descrip.mms
-
 -include $(top_srcdir)/git.mk

@@ -86,7 +86,7 @@ libgunicode_la_LIBADD = $(MY_LIBS) $(LIBGC_LIBS)
 
 #noinst_PROGRAMS = dump makebuildtables makeutype
 
-EXTRA_DIST = descrip.mms README.TXT #dump.c makebuildtables.c makeutype.c
+EXTRA_DIST = README.TXT #dump.c makebuildtables.c makeutype.c
 
 #--------------------------------------------------------------------------
 
