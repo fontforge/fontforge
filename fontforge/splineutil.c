@@ -857,7 +857,7 @@ void SplineFontQuickConservativeBounds(SplineFont *sf,DBounds *b) {
     if ( b->maxy<-65536 ) b->maxy = 0;
 }
 
-void SplinePointCatagorize(SplinePoint *sp) {
+void SplinePointCategorize(SplinePoint *sp) {
     int oldpointtype = sp->pointtype;
 
     sp->pointtype = pt_corner;
@@ -930,31 +930,31 @@ void SplinePointCatagorize(SplinePoint *sp) {
 int SplinePointIsACorner(SplinePoint *sp) {
     enum pointtype old = sp->pointtype, new;
 
-    SplinePointCatagorize(sp);
+    SplinePointCategorize(sp);
     new = sp->pointtype;
     sp->pointtype = old;
 return( new==pt_corner );
 }
 
-void SPLCatagorizePoints(SplinePointList *spl) {
+void SPLCategorizePoints(SplinePointList *spl) {
     Spline *spline, *first, *last=NULL;
 
     for ( ; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    SplinePointCatagorize(spline->from);
+	    SplinePointCategorize(spline->from);
 	    last = spline;
 	    if ( first==NULL ) first = spline;
 	}
 	if ( spline==NULL && last!=NULL )
-	    SplinePointCatagorize(last->to);
+	    SplinePointCategorize(last->to);
     }
 }
 
-void SCCatagorizePoints(SplineChar *sc) {
+void SCCategorizePoints(SplineChar *sc) {
     int i;
     for ( i=ly_fore; i<sc->layer_cnt; ++i )
-	SPLCatagorizePoints(sc->layers[i].splines);
+	SPLCategorizePoints(sc->layers[i].splines);
 }
 
 static int CharsNotInEncoding(FontDict *fd) {

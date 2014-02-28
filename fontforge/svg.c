@@ -2754,7 +2754,7 @@ return( NULL );
     if ( head==NULL )
 return( NULL );
 
-    SPLCatagorizePoints(head);
+    SPLCategorizePoints(head);
 
     eret = EntityCreate(SplinePointListTransform(head,st.transform,tpt_AllPoints), &st);
     if ( fill_colour_source!=NULL || stroke_colour_source!=NULL )
@@ -2832,7 +2832,7 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,int *flags) {
 	else sc->parent->multilayer = true;
     }
 
-    SCCatagorizePoints(sc);
+    SCCategorizePoints(sc);
 }
 
 static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv,

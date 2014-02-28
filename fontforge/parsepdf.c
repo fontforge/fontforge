@@ -1196,11 +1196,11 @@ static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
 return( ent );
 }
 
-static void ECCatagorizePoints( EntityChar *ec ) {
+static void ECCategorizePoints( EntityChar *ec ) {
     Entity *ent;
 
     for ( ent=ec->splines; ent!=NULL; ent=ent->next ) if ( ent->type == et_splines ) {
-	SPLCatagorizePoints( ent->u.splines.splines );
+	SPLCategorizePoints( ent->u.splines.splines );
     }
 }
 
@@ -1534,7 +1534,7 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 	ent->next = ec->splines;
 	ec->splines = ent;
     }
-    ECCatagorizePoints(ec);
+    ECCategorizePoints(ec);
     setlocale(LC_NUMERIC,oldloc);
 }
 

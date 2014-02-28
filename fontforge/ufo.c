@@ -1511,7 +1511,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 	}
     }
     xmlFreeDoc(doc);
-    SPLCatagorizePoints(sc->layers[layerdest].splines);
+    SPLCategorizePoints(sc->layers[layerdest].splines);
 return( sc );
 }
 

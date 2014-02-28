@@ -113,7 +113,7 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
     }
     ss->spiros = spiros;
     ss->spiro_cnt = ss->spiro_max = n+1;
-    SPLCatagorizePoints(ss);
+    SPLCategorizePoints(ss);
     return( ss );
 }
 

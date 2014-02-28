@@ -1975,7 +1975,7 @@ return;
 	sc->ttf_instrs_len = len;
 	sc->ttf_instrs = instructions;
     }
-    SCCatagorizePoints(sc);
+    SCCategorizePoints(sc);
     if ( feof(ttf)) {
 	LogError( _("Reached end of file when reading simple glyph\n") );
 	info->bad_glyph_data = true;

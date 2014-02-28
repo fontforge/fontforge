@@ -1683,8 +1683,8 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 return( tp );
 }
 
-static void SplinePointReCatagorize(SplinePoint *sp,int oldpt) {
-    SplinePointCatagorize(sp);
+static void SplinePointReCategorize(SplinePoint *sp,int oldpt) {
+    SplinePointCategorize(sp);
     if ( sp->pointtype!=oldpt ) {
 	if ( sp->pointtype==pt_curve && oldpt==pt_hvcurve &&
 		((sp->nextcp.x == sp->me.x && sp->nextcp.y != sp->me.y ) ||
@@ -1719,8 +1719,8 @@ void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to,int
 	SplinePointMDFree(sc,np);
     }
     
-    SplinePointReCatagorize(from,oldfpt);
-    SplinePointReCatagorize(to,oldtpt);
+    SplinePointReCategorize(from,oldfpt);
+    SplinePointReCategorize(to,oldtpt);
 }
 
 static void RemoveZeroLengthSplines(SplineSet *spl, int onlyselected, bigreal bound) {
@@ -2243,8 +2243,8 @@ return( false );
 	    next = sp->next->to;
 	    SplinePointMDFree(sc,sp);
 	}
-	SplinePointCatagorize(from);
-	SplinePointCatagorize(to);
+	SplinePointCategorize(from);
+	SplinePointCategorize(to);
     } else {
 	from->next = afterfrom->prev;
 	from->nextcp = fncp;
@@ -2983,7 +2983,7 @@ SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
 	}
     }
     SplineSetsRemoveAnnoyingExtrema(head,.3);
-    SPLCatagorizePoints(head);
+    SPLCategorizePoints(head);
     /* printf( "nocnt=%d totcnt=%d curdif=%d incr=%d\n", nocnt_cnt, totcnt_cnt, curdiff_cnt, incr_cnt ); */ /* Debug!!! */
 return( head );
 }

@@ -9998,7 +9998,7 @@ return( true );
 	CVPreserveState(&iosa->cv->b);
 	for (;;) {
 	    sp = SplineBisect(iosa->s,ts[0]);
-	    SplinePointCatagorize(sp);
+	    SplinePointCategorize(sp);
 	    if ( which==0 ) {
 		double off = val-sp->me.x;
 		sp->me.x = val; sp->nextcp.x += off; sp->prevcp.x += off;
