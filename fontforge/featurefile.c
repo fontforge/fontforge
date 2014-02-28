@@ -2769,7 +2769,7 @@ static void fea_AddClassDef(struct parseState *tok,char *classname,char *content
 
     test = fea_lookup_class(tok,classname);
     if ( test==NULL ) {
-	test=chunkalloc(sizeof(struct glyphclasses));
+	test=XZALLOC(struct glyphclasses);
 	test->classname = classname;
 	test->next = tok->classes;
 	tok->classes = test;
@@ -3113,7 +3113,7 @@ static void fea_ParseLookupFlags(struct parseState *tok) {
 	}
     }
 
-    item = chunkalloc(sizeof(struct feat_item));
+    item = XZALLOC(struct feat_item);
     item->type = ft_lookupflags;
     item->u2.lookupflags = val;
     item->next = tok->sofar;
@@ -3166,7 +3166,7 @@ return;
 
     for ( sl=tok->def_langsyses; sl!=NULL && sl->script!=script; sl=sl->next );
     if ( sl==NULL ) {
-	sl = chunkalloc(sizeof(struct scriptlanglist));
+	sl = XZALLOC(struct scriptlanglist);
 	sl->script = script;
 	sl->next = tok->def_langsyses;
 	tok->def_langsyses = sl;
@@ -3187,7 +3187,7 @@ return;
     fea_end_statement(tok);
 
     if ( inside_feat ) {
-	struct feat_item *item = chunkalloc(sizeof(struct feat_item));
+	struct feat_item *item = XZALLOC(struct feat_item);
 	item->type = ft_langsys;
 	item->u2.sl = SListCopy(tok->def_langsyses);
 	item->next = tok->sofar;
@@ -3328,7 +3328,7 @@ static AnchorPoint *fea_ParseAnchor(struct parseState *tok) {
 	    }
 	    fea_ParseTok(tok);
 	} else if ( tok->type==tk_int ) {
-	    ap = chunkalloc(sizeof(AnchorPoint));
+	    ap = XZALLOC(AnchorPoint);
 	    ap->me.x = tok->value;
 	    fea_TokenMustBe(tok,tk_int,'\0');
 	    ap->me.y = tok->value;
@@ -3394,7 +3394,7 @@ return;
 	LogError(_("Attempt to redefine anchor definition of \"%s\" on line %d of %s"),
 		tok->tokbuf, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
     } else {
-	nap = chunkalloc(sizeof(struct namedanchor));
+	nap = XZALLOC(struct namedanchor);
 	nap->next = tok->namedAnchors;
 	tok->namedAnchors = nap;
 	nap->name = copy(tok->tokbuf);
@@ -3426,7 +3426,7 @@ return( false );
 static struct vr *ValueRecordCopy(struct vr *ovr) {
     struct vr *nvr;
 
-    nvr = chunkalloc(sizeof(*nvr));
+    nvr = XZALLOC(struct vr);
     memcpy(nvr,ovr,sizeof(struct vr));
     nvr->adjust = ValDevTabCopy(ovr->adjust);
 return( nvr );
@@ -3450,7 +3450,7 @@ static struct vr *fea_ParseValueRecord(struct parseState *tok) {
 	}
 	fea_ParseTok(tok);
     } else if ( tok->type==tk_int ) {
-	vr = chunkalloc(sizeof( struct vr ));
+	vr = XZALLOC( struct vr );
 	vr->xoff = tok->value;
 	fea_ParseTok(tok);
 	if ( tok->type==tk_int ) {
@@ -3461,7 +3461,7 @@ static struct vr *fea_ParseValueRecord(struct parseState *tok) {
 	    vr->v_adv_off = tok->value;
 	    fea_ParseTok(tok);
 	    if ( tok->type==tk_char && tok->tokbuf[0]=='<' ) {
-		vr->adjust = chunkalloc(sizeof(struct valdev));
+		vr->adjust = XZALLOC(struct valdev);
 		fea_ParseDeviceTable(tok,&vr->adjust->xadjust);
 		fea_TokenMustBe(tok,tk_char,'<');
 		fea_ParseDeviceTable(tok,&vr->adjust->yadjust);
@@ -3504,7 +3504,7 @@ return;
 	LogError(_("Attempt to redefine value record definition of \"%s\" on line %d of %s"),
 		tok->tokbuf, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
     } else {
-	nvr = chunkalloc(sizeof(struct namedanchor));
+	nvr = XZALLOC(struct namedanchor);
 	nvr->next = tok->namedValueRs;
 	tok->namedValueRs = nvr;
 	nvr->name = copy(tok->tokbuf);
@@ -3551,7 +3551,7 @@ return;
 	fea_skip_to_semi(tok);
 return;
     }
-    gm = chunkalloc(sizeof(*gm));
+    gm = XZALLOC(struct gpos_mark);
     gm->glyphs = class_string;
     gm->ap = ap;
     for ( ngm=tok->gpos_mark; ngm!=NULL; ngm=ngm->next )
@@ -3625,13 +3625,13 @@ static struct markedglyphs *fea_parseCursiveSequence(struct parseState *tok,
 	else
 	    contents = fea_cid_validate(tok,tok->value);
 	if ( contents!=NULL ) {
-	    cur = chunkalloc(sizeof(struct markedglyphs));
+	    cur = XZALLOC(struct markedglyphs);
 	    cur->is_cursive = true;
 	    cur->is_name = true;
 	    cur->name_or_class = contents;
 	}
     } else if ( tok->type == tk_class || (tok->type==tk_char && tok->tokbuf[0]=='[')) {
-	cur = chunkalloc(sizeof(struct markedglyphs));
+	cur = XZALLOC(struct markedglyphs);
 	cur->is_cursive = true;
 	cur->is_name = false;
 	cur->name_or_class = fea_ParseGlyphClassGuarded(tok);
@@ -3678,12 +3678,12 @@ static struct markedglyphs *fea_parseBaseMarkSequence(struct parseState *tok,
 	else
 	    contents = fea_cid_validate(tok,tok->value);
 	if ( contents!=NULL ) {
-	    cur = chunkalloc(sizeof(struct markedglyphs));
+	    cur = XZALLOC(struct markedglyphs);
 	    cur->is_name = true;
 	    cur->name_or_class = contents;
 	}
     } else if ( tok->type == tk_class || (tok->type==tk_char && tok->tokbuf[0]=='[')) {
-	cur = chunkalloc(sizeof(struct markedglyphs));
+	cur = XZALLOC(struct markedglyphs);
 	cur->is_name = false;
 	cur->name_or_class = fea_ParseGlyphClassGuarded(tok);
     } else {
@@ -3742,12 +3742,12 @@ static struct markedglyphs *fea_parseLigatureSequence(struct parseState *tok,
 	else
 	    contents = fea_cid_validate(tok,tok->value);
 	if ( contents!=NULL ) {
-	    cur = chunkalloc(sizeof(struct markedglyphs));
+	    cur = XZALLOC(struct markedglyphs);
 	    cur->is_name = true;
 	    cur->name_or_class = contents;
 	}
     } else if ( tok->type == tk_class || (tok->type==tk_char && tok->tokbuf[0]=='[')) {
-	cur = chunkalloc(sizeof(struct markedglyphs));
+	cur = XZALLOC(struct markedglyphs);
 	cur->is_name = false;
 	cur->name_or_class = fea_ParseGlyphClassGuarded(tok);
     } else {
@@ -3841,12 +3841,12 @@ static struct markedglyphs *fea_ParseMarkedGlyphs(struct parseState *tok,
 	    else
 		contents = fea_cid_validate(tok,tok->value);
 	    if ( contents!=NULL ) {
-		cur = chunkalloc(sizeof(struct markedglyphs));
+		cur = XZALLOC(struct markedglyphs);
 		cur->is_name = true;
 		cur->name_or_class = contents;
 	    }
 	} else if ( tok->type == tk_class || (tok->type==tk_char && tok->tokbuf[0]=='[')) {
-	    cur = chunkalloc(sizeof(struct markedglyphs));
+	    cur = XZALLOC(struct markedglyphs);
 	    cur->is_name = false;
 	    cur->name_or_class = fea_ParseGlyphClassGuarded(tok);
 	} else if ( allow_marks && tok->type==tk_char &&
@@ -3858,7 +3858,7 @@ static struct markedglyphs *fea_ParseMarkedGlyphs(struct parseState *tok,
 	    last->mark_count = mark_state.mark_cnt;
 	} else if ( is_pos && last!=NULL && last->vr==NULL &&
 		tok->type == tk_int ) {
-	    last->vr = chunkalloc(sizeof(struct vr));
+	    last->vr = XZALLOC(struct vr);
 	    if ( tok->in_vkrn )
 		last->vr->v_adv_off = tok->value;
 	    else
@@ -3885,7 +3885,7 @@ static struct markedglyphs *fea_ParseMarkedGlyphs(struct parseState *tok,
 	    /*  so this is the substitute case */
 	    fea_TokenMustBe(tok,tk_lookup,'\0');
 	    fea_TokenMustBe(tok,tk_name,'\0');
-	    cur = chunkalloc(sizeof(struct markedglyphs));
+	    cur = XZALLOC(struct markedglyphs);
 	    cur->is_name = false;
 	    cur->is_lookup = true;
 	    cur->lookupname = copy(tok->tokbuf);
@@ -3946,12 +3946,12 @@ static struct feat_item *fea_AddAllLigPosibilities(struct parseState *tok,struct
 	    sofar = fea_AddAllLigPosibilities(tok,glyphs->next,sc,sequence_start,after,sofar);
 	} else {
 	    *after = '\0';
-	    item = chunkalloc(sizeof(struct feat_item));
+	    item = XZALLOC(struct feat_item);
 	    item->type = ft_pst;
 	    item->next = sofar;
 	    sofar = item;
 	    item->u1.sc = sc;
-	    item->u2.pst = chunkalloc(sizeof(PST));
+	    item->u2.pst = XZALLOC(PST);
 	    item->u2.pst->type = pst_ligature;
 	    item->u2.pst->u.lig.components = copy(sequence_start);
 	    item->u2.pst->u.lig.lig = sc;
@@ -3999,12 +3999,12 @@ static struct feat_item *fea_process_pos_single(struct parseState *tok,
 	sc = fea_glyphname_get(tok,start);
 	*pt = ch; start = pt;
 	if ( sc!=NULL ) {
-	    item = chunkalloc(sizeof(struct feat_item));
+	    item = XZALLOC(struct feat_item);
 	    item->type = ft_pst;
 	    item->next = sofar;
 	    sofar = item;
 	    item->u1.sc = sc;
-	    item->u2.pst = chunkalloc(sizeof(PST));
+	    item->u2.pst = XZALLOC(PST);
 	    item->u2.pst->type = pst_position;
 	    item->u2.pst->u.pos = glyphs->vr[0];
 	}
@@ -4057,30 +4057,30 @@ static struct feat_item *fea_process_pos_pair(struct parseState *tok,
 		    sc2 = fea_glyphname_get(tok,start2);
 		    *pt2 = ch2; start2 = pt2;
 		    if ( sc2!=NULL ) {
-			item = chunkalloc(sizeof(struct feat_item));
+			item = XZALLOC(struct feat_item);
 			item->type = ft_pst;
 			item->next = sofar;
 			sofar = item;
 			item->u1.sc = sc;
-			item->u2.pst = chunkalloc(sizeof(PST));
+			item->u2.pst = XZALLOC(PST);
 			item->u2.pst->type = pst_pair;
 			item->u2.pst->u.pair.paired = copy(sc2->name);
-			item->u2.pst->u.pair.vr = chunkalloc(sizeof( struct vr[2]));
+			item->u2.pst->u.pair.vr = XCALLOC(2, struct vr);
 			memcpy(item->u2.pst->u.pair.vr,vr,sizeof(vr));
 		    }
 		}
 	    }
 	}
     } else {
-	item = chunkalloc(sizeof(struct feat_item));
+	item = XZALLOC(struct feat_item);
 	item->type = ft_pstclass;
 	item->next = sofar;
 	sofar = item;
 	item->u1.class = copy(glyphs->name_or_class);
-	item->u2.pst = chunkalloc(sizeof(PST));
+	item->u2.pst = XZALLOC(PST);
 	item->u2.pst->type = pst_pair;
 	item->u2.pst->u.pair.paired = copy(glyphs->next->name_or_class);
-	item->u2.pst->u.pair.vr = chunkalloc(sizeof( struct vr[2]));
+	item->u2.pst->u.pair.vr = XCALLOC(2, struct vr);
 	memcpy(item->u2.pst->u.pair.vr,vr,sizeof(vr));
     }
 return( sofar );
@@ -4104,7 +4104,7 @@ static struct feat_item *fea_process_pos_cursive(struct parseState *tok,
 	sc = fea_glyphname_get(tok,start);
 	*pt = ch; start = pt;
 	if ( sc!=NULL ) {
-	    item = chunkalloc(sizeof(struct feat_item));
+	    item = XZALLOC(struct feat_item);
 	    item->type = ft_ap;
 	    item->next = sofar;
 	    sofar = item;
@@ -4138,7 +4138,7 @@ static struct feat_item *fea_process_pos_markbase(struct parseState *tok,
 	*pt = ch; start = pt;
 	if ( sc!=NULL ) {
 	    for ( i=0; i<glyphs->apm_cnt; ++i ) if ( glyphs->apmark[i].ap!=NULL ) {
-		item = chunkalloc(sizeof(struct feat_item));
+		item = XZALLOC(struct feat_item);
 		item->type = ft_ap;
 		item->next = sofar;
 		sofar = item;
@@ -4175,7 +4175,7 @@ static struct feat_item *fea_process_pos_ligature(struct parseState *tok,
 	    for ( lc=0; lc<glyphs->lc_cnt; ++lc ) {
 		struct ligcomponent *ligc = &glyphs->ligcomp[lc];
 		for ( i=0; i<ligc->apm_cnt; ++i ) if ( ligc->apmark[i].ap!=NULL ) {
-		    item = chunkalloc(sizeof(struct feat_item));
+		    item = XZALLOC(struct feat_item);
 		    item->type = ft_ap;
 		    item->next = sofar;
 		    sofar = item;
@@ -4216,12 +4216,12 @@ return( sofar );
 		sc = fea_glyphname_get(tok,start);
 		*pt = ch; start = pt;
 		if ( sc!=NULL ) {
-		    item = chunkalloc(sizeof(struct feat_item));
+		    item = XZALLOC(struct feat_item);
 		    item->type = ft_pst;
 		    item->next = sofar;
 		    sofar = item;
 		    item->u1.sc = sc;
-		    item->u2.pst = chunkalloc(sizeof(PST));
+		    item->u2.pst = XZALLOC(PST);
 		    item->u2.pst->type = pst_substitution;
 		    item->u2.pst->u.subs.variant = copy(temp->name);
 		}
@@ -4250,12 +4250,12 @@ return( sofar );
 	    *pt2 = ch2; start2 = pt2;
 	    if ( sc==NULL || temp==NULL )
 	continue;
-	    item = chunkalloc(sizeof(struct feat_item));
+	    item = XZALLOC(struct feat_item);
 	    item->type = ft_pst;
 	    item->next = sofar;
 	    sofar = item;
 	    item->u1.sc = sc;
-	    item->u2.pst = chunkalloc(sizeof(PST));
+	    item->u2.pst = XZALLOC(PST);
 	    item->u2.pst->type = pst_substitution;
 	    item->u2.pst->u.subs.variant = copy(temp->name);
 	}
@@ -4389,7 +4389,7 @@ static FPST *fea_markedglyphs_to_fpst(struct parseState *tok,struct markedglyphs
 	}
     }
 
-    fpst = chunkalloc(sizeof(FPST));
+    fpst = XZALLOC(FPST);
     fpst->type = is_reverse? pst_reversesub : is_pos ? pst_chainpos : pst_chainsub;
     fpst->format = is_reverse ? pst_reversecoverage : all_single ? pst_glyphs : pst_coverage;
     fpst->rule_cnt = 1;
@@ -4432,7 +4432,7 @@ static FPST *fea_markedglyphs_to_fpst(struct parseState *tok,struct markedglyphs
 	    i = fea_AddAGlyphSet(r->u.coverage.fcovers,NULL,i,g);
     }
 
-    item = chunkalloc(sizeof(struct feat_item));
+    item = XZALLOC(struct feat_item);
     item->type = ft_fpst;
     item->next = tok->sofar;
     tok->sofar = item;
@@ -4451,7 +4451,7 @@ static FPST *fea_markedglyphs_to_fpst(struct parseState *tok,struct markedglyphs
 		    ++tok->err_count;
 		}
 	    } else if ( g->lookupname!=NULL ) {
-		head = chunkalloc(sizeof(struct feat_item));
+		head = XZALLOC(struct feat_item);
 		head->type = ft_lookup_ref;
 		head->u1.lookup_name = copy(g->lookupname);
 	    /* The difference between single positioning and pair positioning */
@@ -4569,12 +4569,12 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 	    alts = fea_ParseGlyphClassGuarded(tok);
 	    sc = fea_glyphname_get(tok,glyphs->name_or_class);
 	    if ( sc!=NULL ) {
-		item = chunkalloc(sizeof(struct feat_item));
+		item = XZALLOC(struct feat_item);
 		item->type = ft_pst;
 		item->next = tok->sofar;
 		tok->sofar = item;
 		item->u1.sc = sc;
-		item->u2.pst = chunkalloc(sizeof(PST));
+		item->u2.pst = XZALLOC(PST);
 		item->u2.pst->type = pst_alternate;
 		item->u2.pst->u.alt.components = alts;
 	    }
@@ -4605,12 +4605,12 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 		    mult[len-1] = '\0';
 		    sc = fea_glyphname_get(tok,glyphs->name_or_class);
 		    if ( sc!=NULL ) {
-			item = chunkalloc(sizeof(struct feat_item));
+			item = XZALLOC(struct feat_item);
 			item->type = ft_pst;
 			item->next = tok->sofar;
 			tok->sofar = item;
 			item->u1.sc = sc;
-			item->u2.pst = chunkalloc(sizeof(PST));
+			item->u2.pst = XZALLOC(PST);
 			item->u2.pst->type = pst_multiple;
 			item->u2.pst->u.mult.components = mult;
 		    }
@@ -4658,7 +4658,7 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 		} else {
 		    for ( i=0, rp=rpl; g!=NULL && rp!=NULL; ++i, rp=rp->next ) {
 		        if ( rp->lookupname!=NULL ) {
-			    head = chunkalloc(sizeof(struct feat_item));
+			    head = XZALLOC(struct feat_item);
 			    head->type = ft_lookup_ref;
 			    head->u1.lookup_name = copy(rp->lookupname);
 		        } else if ( g->next==NULL || g->next->mark_count!=g->mark_count ) {
@@ -4800,7 +4800,7 @@ return( ot_undef );		/* Can happen */
 static struct feat_item *fea_AddFeatItem(struct parseState *tok,enum feat_type type,uint32 tag) {
     struct feat_item *item;
 
-    item = chunkalloc(sizeof(struct feat_item));
+    item = XZALLOC(struct feat_item);
     item->type = type;
     item->u1.tag = tag;
     item->next = tok->sofar;
@@ -4873,7 +4873,7 @@ return;
     lookup_name = copy(tok->tokbuf);
     fea_ParseTok(tok);
     if ( could_be_stat && tok->type==tk_char && tok->tokbuf[0]==';' ) {
-	item = chunkalloc(sizeof(struct feat_item));
+	item = XZALLOC(struct feat_item);
 	item->type = ft_lookup_ref;
 	item->u1.lookup_name = lookup_name;
 	item->next = tok->sofar;
@@ -4888,7 +4888,7 @@ return;
 return;
     }
 
-    item = chunkalloc(sizeof(struct feat_item));
+    item = XZALLOC(struct feat_item);
     item->type = ft_lookup_start;
     item->u1.lookup_name = lookup_name;
     item->next = tok->sofar;
@@ -4987,7 +4987,7 @@ return;
 	++tok->err_count;
     }
 
-    item = chunkalloc(sizeof(struct feat_item));
+    item = XZALLOC(struct feat_item);
     item->type = ft_lookup_end;
     /* item->u1.lookup_name = lookup_name; */
     item->next = tok->sofar;
@@ -5036,7 +5036,7 @@ static struct nameid *fea_ParseNameId(struct parseState *tok,int strid) {
 	nm = NULL;
     } else {
 	if ( platform==3 && specific==1 ) {
-	    nm = chunkalloc(sizeof(struct nameid));
+	    nm = XZALLOC(struct nameid);
 	    nm->strid = strid;
 	    nm->platform = platform;
 	    nm->specific = specific;
@@ -5112,7 +5112,7 @@ static struct feat_item *fea_ParseParameters(struct parseState *tok, struct feat
     fea_end_statement(tok);
 
     if ( feat==NULL ) {
-	feat = chunkalloc(sizeof(struct feat_item));
+	feat = XZALLOC(struct feat_item);
 	feat->type = ft_sizeparams;
 	feat->next = tok->sofar;
 	tok->sofar = feat;
@@ -5134,7 +5134,7 @@ static struct feat_item *fea_ParseSizeMenuName(struct parseState *tok, struct fe
 
     if ( string!=NULL ) {
 	if ( feat==NULL ) {
-	    feat = chunkalloc(sizeof(struct feat_item));
+	    feat = XZALLOC(struct feat_item);
 	    feat->type = ft_sizeparams;
 	    feat->next = tok->sofar;
 	    tok->sofar = feat;
@@ -5161,7 +5161,7 @@ static void fea_ParseFeatureNames(struct parseState *tok,uint32 tag) {
 	temp = fea_ParseNameId(tok,-1);
 	if ( temp!=NULL ) {
 	    if ( temp->platform==3 && temp->specific==1 ) {
-		string = chunkalloc(sizeof(*string));
+		string = XZALLOC(struct otfname);
 		string->lang = temp->language;
 		string->name = temp->utf8_str;
 		string->next = head;
@@ -5171,11 +5171,11 @@ static void fea_ParseFeatureNames(struct parseState *tok,uint32 tag) {
     }
 
     if ( head!=NULL ) {
-	item = chunkalloc(sizeof(struct feat_item));
+	item = XZALLOC(struct feat_item);
 	item->type = ft_featname;
 	item->next = tok->sofar;
 	tok->sofar = item;
-	item->u2.featnames = cur = chunkalloc(sizeof(*cur));
+	item->u2.featnames = cur = XZALLOC(struct otffeatname);
 	cur->tag = tag;
 	cur->names = head;
     }
@@ -5201,13 +5201,13 @@ return;
     feat_tag = tok->tag;
     tok->in_vkrn = feat_tag == CHR('v','k','r','n');
 
-    item = chunkalloc(sizeof(struct feat_item));
+    item = XZALLOC(struct feat_item);
     item->type = ft_feat_start;
     item->u1.tag = feat_tag;
     if ( tok->def_langsyses!=NULL )
 	item->u2.sl = SListCopy(tok->def_langsyses);
     else {
-	item->u2.sl = chunkalloc(sizeof(struct scriptlanglist));
+	item->u2.sl = XZALLOC(struct scriptlanglist);
 	item->u2.sl->script = DEFAULT_SCRIPT;
 	item->u2.sl->lang_cnt = 1;
 	item->u2.sl->langs[0] = DEFAULT_LANG;
@@ -5341,7 +5341,7 @@ return;
 	}
     }
 
-    item = chunkalloc(sizeof(struct feat_item));
+    item = XZALLOC(struct feat_item);
     item->type = ft_feat_end;
     item->u1.tag = feat_tag;
     item->next = tok->sofar;
@@ -5368,7 +5368,7 @@ static void fea_ParseNameTable(struct parseState *tok) {
     }
 
     if ( head!=NULL ) {
-	item = chunkalloc(sizeof(struct feat_item));
+	item = XZALLOC(struct feat_item);
 	item->type = ft_names;
 	item->next = tok->sofar;
 	tok->sofar = item;
@@ -5400,7 +5400,7 @@ static void fea_ParseTableKeywords(struct parseState *tok, struct tablekeywords 
 	    index = -1;
 	}
 	if ( index!=-1 && keys[index].offset!=-1 ) {
-	    tv = chunkalloc(sizeof(struct tablevalues));
+	    tv = XZALLOC(struct tablevalues);
 	    tv->index = index;
 	} else
 	    tv = NULL;
@@ -5486,7 +5486,7 @@ static void fea_ParseTableKeywords(struct parseState *tok, struct tablekeywords 
 	fea_skip_to_close_curly(tok);
     }
     if ( head!=NULL ) {
-	item = chunkalloc(sizeof(struct feat_item));
+	item = XZALLOC(struct feat_item);
 	item->type = ft_tablekeys;
 	item->u1.offsets = keys;
 	item->u2.tvals = head;
@@ -5530,7 +5530,7 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 	    /* http://www.adobe.com/devnet/opentype/afdko/topic_feature_file_syntax.html */
 	    carets=NULL;
 	    len=0;
-	    item = chunkalloc(sizeof(struct feat_item));
+	    item = XZALLOC(struct feat_item);
 	    item->type = ft_lcaret;
 	    item->next = tok->sofar;
 	    tok->sofar = item;
@@ -5568,9 +5568,9 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 	    memcpy(item->u2.lcaret,carets,len*sizeof(int16));
 	    item->u2.lcaret[len] = 0;
 	} else if ( strcmp(tok->tokbuf,"GlyphClassDef")==0 ) {
-	    item = chunkalloc(sizeof(struct feat_item));
+	    item = XZALLOC(struct feat_item);
 	    item->type = ft_gdefclasses;
-	    item->u1.gdef_classes = chunkalloc(sizeof(char *[4]));
+	    item->u1.gdef_classes = XCALLOC(4, char *);
 	    item->next = tok->sofar;
 	    tok->sofar = item;
 	    for ( i=0; i<4; ++i ) {
@@ -5671,7 +5671,7 @@ static void fea_ParseBaseTable(struct parseState *tok) {
 			poses[i] = tok->value;
 		}
 		if ( !err ) {
-		    cur = chunkalloc(sizeof(struct basescript));
+		    cur = XZALLOC(struct basescript);
 		    if ( last!=NULL )
 			last->next = cur;
 		    else
@@ -5713,11 +5713,11 @@ static void fea_ParseBaseTable(struct parseState *tok) {
     }
     if ( tok->err_count==0 ) {
 	if ( h.baseline_cnt!=0 ) {
-	    tok->sf->horiz_base = chunkalloc(sizeof(struct Base));
+	    tok->sf->horiz_base = XZALLOC(struct Base);
 	    *(tok->sf->horiz_base) = h;
 	}
 	if ( v.baseline_cnt!=0 ) {
-	    tok->sf->vert_base = chunkalloc(sizeof(struct Base));
+	    tok->sf->vert_base = XZALLOC(struct Base);
 	    *(tok->sf->vert_base) = v;
 	}
     }
@@ -5736,7 +5736,7 @@ return;
     }
     table_tag = tok->tag;
 
-    item = chunkalloc(sizeof(struct feat_item));
+    item = XZALLOC(struct feat_item);
     item->type = ft_table;
     item->u1.tag = table_tag;
     item->next = tok->sofar;
@@ -5928,7 +5928,7 @@ static void fea_ApplyLookupListPST(struct parseState *tok,
 	  break;
 	  case ft_pst:
 	    if ( sub==NULL ) {
-		sub = chunkalloc(sizeof(struct lookup_subtable));
+		sub = XZALLOC(struct lookup_subtable);
 		sub->lookup = otl;
 		sub->per_glyph_pst_or_kern = true;
 		if ( last==NULL )
@@ -5970,7 +5970,7 @@ static void fea_ApplyLookupListContextual(struct parseState *tok,
 	    /* Ignore these, already handled them */;
 	  break;
 	  case ft_fpst:
-	    sub = chunkalloc(sizeof(struct lookup_subtable));
+	    sub = XZALLOC(struct lookup_subtable);
 	    sub->lookup = otl;
 	    if ( last==NULL )
 		otl->subtables = sub;
@@ -6023,7 +6023,7 @@ static void fea_ApplyLookupListCursive(struct parseState *tok,
 	  break;
 	  case ft_ap:
 	    if ( sub==NULL ) {
-		sub = chunkalloc(sizeof(struct lookup_subtable));
+		sub = XZALLOC(struct lookup_subtable);
 		sub->lookup = otl;
 		sub->anchor_classes = true;
 		if ( last==NULL )
@@ -6031,7 +6031,7 @@ static void fea_ApplyLookupListCursive(struct parseState *tok,
 		else
 		    last->next = sub;
 		last = sub;
-		ac = chunkalloc(sizeof(AnchorClass));
+		ac = XZALLOC(AnchorClass);
 		ac->subtable = sub;
 		ac->type = act_curs;
 		ac->next = tok->accreated;
@@ -6099,9 +6099,9 @@ static void fea_ApplyLookupListMark2(struct parseState *tok,
 			acs = realloc(acs,ac_max*sizeof(AnchorClass *));
 		    }
 		    classes[i] = lookup_data->mclass;
-		    acs[i] = chunkalloc(sizeof(AnchorClass));
+		    acs[i] = XZALLOC(AnchorClass);
 		    if ( sub==NULL ) {
-			sub = chunkalloc(sizeof(struct lookup_subtable));
+			sub = XZALLOC(struct lookup_subtable);
 			sub->lookup = otl;
 			sub->anchor_classes = true;
 			if ( last==NULL )
@@ -6239,7 +6239,7 @@ return;
 static void KPFillDevTab(KernPair *kp,DeviceTable *dt) {
     if ( dt==NULL || dt->corrections == NULL )
 return;
-    kp->adjust = chunkalloc(sizeof(DeviceTable));
+    kp->adjust = XZALLOC(DeviceTable);
     *kp->adjust = *dt;
     kp->adjust->corrections = malloc(dt->last_pixel_size-dt->first_pixel_size+1);
     memcpy(kp->adjust->corrections,dt->corrections,dt->last_pixel_size-dt->first_pixel_size+1);
@@ -6328,7 +6328,7 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 	while ( l!=NULL && l->type!=ft_subtable ) {
 	    if ( l->type == ft_pst ) {
 		if ( sub==NULL ) {
-		    sub = chunkalloc(sizeof(struct lookup_subtable));
+		    sub = XZALLOC(struct lookup_subtable);
 		    sub->lookup = otl;
 		    sub->per_glyph_pst_or_kern = true;
 		    if ( lastsub==NULL )
@@ -6348,19 +6348,19 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 			other!=NULL ) {
 		    if ( (otl->lookup_flags&pst_r2l) &&
 			    (pst->u.pair.vr[0].h_adv_off==0 && pst->u.pair.vr[0].v_adv_off==0 )) {
-			kp = chunkalloc(sizeof(KernPair));
+			kp = XZALLOC(KernPair);
 			kp->off = pst->u.pair.vr[1].h_adv_off;
 			if ( pst->u.pair.vr[1].adjust!=NULL )
 			    KPFillDevTab(kp,&pst->u.pair.vr[1].adjust->xadv);
 		    } else if ( !(otl->lookup_flags&pst_r2l) &&
 			    (pst->u.pair.vr[1].h_adv_off==0 && pst->u.pair.vr[0].v_adv_off==0 )) {
-			kp = chunkalloc(sizeof(KernPair));
+			kp = XZALLOC(KernPair);
 			kp->off = pst->u.pair.vr[0].h_adv_off;
 			if ( pst->u.pair.vr[0].adjust!=NULL )
 			    KPFillDevTab(kp,&pst->u.pair.vr[0].adjust->xadv);
 		    } else if ( (pst->u.pair.vr[0].h_adv_off==0 && pst->u.pair.vr[1].h_adv_off==0 )) {
 			vkern = sub->vertical_kerning = true;
-			kp = chunkalloc(sizeof(KernPair));
+			kp = XZALLOC(KernPair);
 			kp->off = pst->u.pair.vr[0].v_adv_off;
 			if ( pst->u.pair.vr[0].adjust!=NULL )
 			    KPFillDevTab(kp,&pst->u.pair.vr[0].adjust->yadv);
@@ -6392,7 +6392,7 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 	    fea_canonicalClassSet(&lefts);
 	    fea_canonicalClassSet(&rights);
 
-	    sub = chunkalloc(sizeof(struct lookup_subtable));
+	    sub = XZALLOC(struct lookup_subtable);
 	    sub->lookup = otl;
 	    if ( lastsub==NULL )
 		otl->subtables = sub;
@@ -6402,7 +6402,7 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 
 	    if ( sub->kc!=NULL )
 		SFKernClassRemoveFree(tok->sf,sub->kc);
-	    sub->kc = kc = chunkalloc(sizeof(KernClass));
+	    sub->kc = kc = XZALLOC(KernClass);
 	    kc->first_cnt = lefts.cnt+1; kc->second_cnt = rights.cnt+1;
 	    kc->firsts = malloc(kc->first_cnt*sizeof(char *));
 	    kc->seconds = malloc(kc->second_cnt*sizeof(char *));
@@ -6458,7 +6458,7 @@ return( otl );
 return( otl );
     }
 
-    otl = chunkalloc(sizeof(OTLookup));
+    otl = XZALLOC(OTLookup);
     otl->lookup_flags = lookup_flag;
     otl->lookup_type = ot_undef;
     if ( tok->last==NULL )
@@ -6511,7 +6511,7 @@ static struct otfname *fea_NameID2OTFName(struct nameid *names) {
     struct otfname *head=NULL, *cur;
 
     while ( names!=NULL ) {
-	cur = chunkalloc(sizeof(struct otfname));
+	cur = XZALLOC(struct otfname);
 	cur->lang = names->language;
 	cur->name = names->utf8_str;
 	names->utf8_str = NULL;
@@ -6531,7 +6531,7 @@ return;
 
     for ( fl = otl->features; fl!=NULL && fl->featuretag!=feat_tag; fl=fl->next );
     if ( fl==NULL ) {
-	fl = chunkalloc(sizeof(FeatureScriptLangList));
+	fl = XZALLOC(FeatureScriptLangList);
 	fl->next = otl->features;
 	otl->features = fl;
 	fl->featuretag = feat_tag;
@@ -6546,7 +6546,7 @@ static void fea_NameID2NameTable(SplineFont *sf, struct nameid *names) {
     while ( names!=NULL ) {
 	for ( cur = sf->names; cur!=NULL && cur->lang!=names->language; cur=cur->next );
 	if ( cur==NULL ) {
-	    cur = chunkalloc(sizeof(struct ttflangname));
+	    cur = XZALLOC(struct ttflangname);
 	    cur->lang = names->language;
 	    cur->next = sf->names;
 	    sf->names = cur;
@@ -6645,7 +6645,7 @@ static void fea_GDefLigCarets(SplineFont *sf, struct feat_item *f) {
 		}
 	    }
 	    for ( i=0; f->u2.lcaret[i]!=0; ++i );
-	    pst = chunkalloc(sizeof(PST));
+	    pst = XZALLOC(PST);
 	    pst->next = sc->possub;
 	    sc->possub = pst;
 	    pst->type = pst_lcaret;
@@ -6694,7 +6694,7 @@ static struct feat_item *fea_ApplyFeatureList(struct parseState *tok,
 	    fea_AttachFeatureToLookup(otl,feature_tag,sl);
     continue;
 	  case ft_script:
-	    sl = chunkalloc(sizeof(struct scriptlanglist));
+	    sl = XZALLOC(struct scriptlanglist);
 	    sl->script = f->u1.tag;
 	    sl->lang_cnt = 1;
 	    sl->langs[0] = DEFAULT_LANG;
@@ -6703,7 +6703,7 @@ static struct feat_item *fea_ApplyFeatureList(struct parseState *tok,
     continue;
 	  case ft_lang:
 	    if ( !saw_script ) {
-		sl = chunkalloc(sizeof(struct scriptlanglist));
+		sl = XZALLOC(struct scriptlanglist);
 		sl->script = CHR('l','a','t','n');
 	    }
 	    sl->langs[0] = f->u1.tag;

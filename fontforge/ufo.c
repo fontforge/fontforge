@@ -1083,7 +1083,7 @@ static StemInfo *GlifParseHints(xmlDocPtr doc,xmlNodePtr dict,char *hinttype) {
 				}
 			    }
 			    if ( pos!=-88888888 && width!=0 ) {
-				h = chunkalloc(sizeof(StemInfo));
+				h = XZALLOC(StemInfo);
 			        h->start = pos;
 			        h->width = width;
 			        if ( width==-20 || width==-21 )
@@ -1256,7 +1256,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
                 sname = (char *) xmlGetProp(points, (xmlChar *) "name");
                 if ( sname!=NULL) {
                     /* make an AP and if necessary an AC */
-                    AnchorPoint *ap = chunkalloc(sizeof(AnchorPoint));
+                    AnchorPoint *ap = XZALLOC(AnchorPoint);
                     AnchorClass *ac;
                     char *namep = *sname=='_' ? sname + 1 : sname;
                     char *xs = (char *) xmlGetProp(points, (xmlChar *) "x");
@@ -1283,7 +1283,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			int wasquad = -1; // This tracks whether we identified the previous curve as quadratic. (-1 means undefined.)
 			int firstpointsaidquad = -1; // This tracks the declared order of the curve leading into the first on-curve point.
 
-		    ss = chunkalloc(sizeof(SplineSet));
+		    ss = XZALLOC(SplineSet);
 			ss->first = NULL;
 
 			for ( points = contour->children; points!=NULL; points=points->next ) {
@@ -1677,7 +1677,7 @@ return;
 		    valname = (char *) xmlNodeListGetString(doc,value->children,true);
 		    offset = strtol(valname,&end,10);
 		    if ( *end=='\0' ) {
-			kp = chunkalloc(sizeof(KernPair));
+			kp = XZALLOC(KernPair);
 			kp->off = offset;
 			kp->sc = ssc;
 			if ( isv ) {
@@ -1708,7 +1708,7 @@ static void UFOAddName(SplineFont *sf,char *value,int strid) {
 
     for ( names=sf->names; names!=NULL && names->lang!=0x409; names=names->next );
     if ( names==NULL ) {
-	names = chunkalloc(sizeof(struct ttflangname));
+	names = XZALLOC(struct ttflangname);
 	names->next = sf->names;
 	names->lang = 0x409;
 	sf->names = names;
@@ -1720,7 +1720,7 @@ static void UFOAddPrivate(SplineFont *sf,char *key,char *value) {
     char *pt;
 
     if ( sf->private==NULL )
-	sf->private = chunkalloc(sizeof(struct psdict));
+	sf->private = XZALLOC(struct psdict);
     for ( pt=value; *pt!='\0'; ++pt ) {	/* Value might contain white space. turn into spaces */
 	if ( *pt=='\n' || *pt=='\r' || *pt=='\t' )
 	    *pt = ' ';

@@ -670,7 +670,7 @@ void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
 		kern=0;
 	    if ( kern!=0 ) {
 		if ( addkp==NULL ) {
-		    kp = chunkalloc(sizeof(KernPair));
+		    kp = XZALLOC(KernPair);
 		    kp->subtable = into;
 		    kp->off = kern;
 		    if ( is_l2r ) {

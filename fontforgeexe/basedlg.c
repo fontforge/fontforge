@@ -230,7 +230,7 @@ return( true );
 
 	b->old = last = NULL;
 	for ( r=0; r<rows; ++r ) {
-	    cur = chunkalloc(sizeof(struct baselangextent));
+	    cur = XZALLOC(struct baselangextent);
 	    cur->lang = TagFromString(md[r*cols+0].u.md_str);
 	    cur->descent = md[r*cols+1].u.md_ival;
 	    cur->ascent = md[r*cols+2].u.md_ival;
@@ -616,7 +616,7 @@ return( true );
 	    }
 	}
 
-	b->old = chunkalloc(sizeof(struct Base));
+	b->old = XZALLOC(struct Base);
 
 	b->old->baseline_cnt = cnt;
 	if ( i!=0 ) {
@@ -628,7 +628,7 @@ return( true );
 	for ( r=0; r<rows; ++r ) {
 	    if ( cnt==0 && md[r*cols+cols-1].u.md_str==NULL )
 	continue;
-	    bs = chunkalloc(sizeof(struct basescript));
+	    bs = XZALLOC(struct basescript);
 	    bs->script = TagFromString(md[r*cols+0].u.md_str);
 	    if ( cnt!=0 ) {
 		int tag = md[cols*r+1].u.md_ival;

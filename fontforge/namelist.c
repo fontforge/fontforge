@@ -499,7 +499,7 @@ return( NULL );
     if ( !psnamesinited )
 	psinitnames();
 
-    nl = chunkalloc(sizeof(NameList));
+    nl = XZALLOC(NameList);
     pt = strrchr(filename,'/');
     if ( pt==NULL ) pt = filename; else ++pt;
     nl->title = def2utf8_copy(pt);
@@ -737,7 +737,7 @@ static void BuildHash(struct glyphnamehash *hash,SplineFont *sf,const char **old
     memset(hash,0,sizeof(*hash));
     for ( gid = 0; gid<sf->glyphcnt; ++gid ) {
 	if ( (sc=sf->glyphs[gid])!=NULL && oldnames[gid]!=NULL ) {
-	    new = chunkalloc(sizeof(struct glyphnamebucket));
+	    new = XZALLOC(struct glyphnamebucket);
 	    new->sc = sf->glyphs[gid];
 	    hv = hashname(oldnames[gid]);
 	    new->next = hash->table[hv];

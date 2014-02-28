@@ -823,7 +823,7 @@ return(true);
 return(false);
 	}
 	if ( kp==NULL ) {
-	    kp = chunkalloc(sizeof(KernPair));
+	    kp = XZALLOC(KernPair);
 	    kp->next = kcd->isv?kcd->scf->vkerns:kcd->scf->kerns;
 	    kp->sc = kcd->scs;
 	    if ( kcd->isv )
@@ -836,7 +836,7 @@ return(false);
 	if ( kp->adjust!=NULL && kcd->active_adjust.corrections!=NULL )
 	    *kp->adjust = kcd->active_adjust;
 	else if ( kcd->active_adjust.corrections!=NULL ) {
-	    kp->adjust = chunkalloc(sizeof(DeviceTable));
+	    kp->adjust = XZALLOC(DeviceTable);
 	    *kp->adjust = kcd->active_adjust;
 	} else if ( kp->adjust!=NULL )
 	    kp->adjust = NULL;

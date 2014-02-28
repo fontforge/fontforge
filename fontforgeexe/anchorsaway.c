@@ -923,7 +923,7 @@ return( true );
     /* If so we've already noted its original state and need do nothing more */
     /*  but otherwise we must store the current state */
     if ( old==NULL ) {
-	old = chunkalloc(sizeof(struct state));
+	old = XZALLOC(struct state);
 	old->sc = a->sc;
 	old->changed = a->sc->changed;
 	old->ap_pt = a->ap;
@@ -996,7 +996,7 @@ return( NULL );
 	}
     }
 
-    ap = chunkalloc(sizeof(AnchorPoint));
+    ap = XZALLOC(AnchorPoint);
     ap->anchor = ac;
     ap->me.x = ap->me.y = 0;
     ap->next = sc->anchor;

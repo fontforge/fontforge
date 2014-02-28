@@ -26,6 +26,7 @@
 *******************************************************************************
 ******************************************************************************/
 
+#include "fontforge.h"
 #include "sfundo.h"
 #include "views.h"
 #include <string.h>
@@ -39,7 +40,7 @@ void SFUndoRemove( SplineFont *sf, struct sfundoes *undo )
 
 SFUndoes* SFUndoCreateSFD( enum sfundotype t, char* staticmsg, char* sfdfrag )
 {
-    SFUndoes* undo = chunkalloc(sizeof(SFUndoes));
+    SFUndoes* undo = XZALLOC(SFUndoes);
     undo->ln.next = 0;
     undo->ln.prev = 0;
     undo->msg  = staticmsg;

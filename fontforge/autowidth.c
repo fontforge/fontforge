@@ -236,7 +236,7 @@ void AW_AutoKern(WidthInfo *wi) {
 		wi->sf->changed = true;
 	    }
 	} else if ( diff!=0 ) {
-	    kp = chunkalloc(sizeof(KernPair));
+	    kp = XZALLOC(KernPair);
 	    kp->sc = rsc;
 	    kp->off = diff;
 	    kp->subtable = wi->subtable;
@@ -1224,7 +1224,7 @@ return( lookupmap->smap[i].to );
     if ( i==lookupmap->lc ) {
 	++lookupmap->lc;
 	lookupmap->lmap[i].from = sub->lookup;
-	lookupmap->lmap[i].to = otl = chunkalloc(sizeof(OTLookup));
+	lookupmap->lmap[i].to = otl = XZALLOC(OTLookup);
 	otl->lookup_type = gpos_pair;
 	otl->features = FeatureListCopy(sub->lookup->features);
 	for ( fl=otl->features; fl!=NULL; fl=fl->next )
@@ -1238,7 +1238,7 @@ return( lookupmap->smap[i].to );
 
     sc = lookupmap->sc++;
     lookupmap->smap[sc].from = sub;
-    lookupmap->smap[sc].to = nsub = chunkalloc(sizeof(struct lookup_subtable));
+    lookupmap->smap[sc].to = nsub = XZALLOC(struct lookup_subtable);
     nsub->subtable_name = strconcat("V",sub->subtable_name);
     nsub->per_glyph_pst_or_kern = sub->per_glyph_pst_or_kern;
     nsub->vertical_kerning = true;
@@ -1287,7 +1287,7 @@ return;
 	if ( (sc1 = SCHasVertVariant(sf->glyphs[i]))!=NULL ) {
 	    for ( kp = sf->glyphs[i]->kerns; kp!=NULL; kp=kp->next ) {
 		if ( (sc2 = SCHasVertVariant(kp->sc))!=NULL ) {
-		    vkp = chunkalloc(sizeof(KernPair));
+		    vkp = XZALLOC(KernPair);
 		    *vkp = *kp;
 		    vkp->subtable = VSubtableFromH(&lookupmap,kp->subtable);
 		    vkp->adjust = DeviceTableCopy(vkp->adjust);
@@ -1315,7 +1315,7 @@ return;
 		map2[i] = ++any2;
 	}
 	if ( any1 && any2 ) {
-	    vkc = chunkalloc(sizeof(KernClass));
+	    vkc = XZALLOC(KernClass);
 	    *vkc = *kc;
 	    vkc->subtable = VSubtableFromH(&lookupmap,kc->subtable);
 	    vkc->subtable->kc = vkc;

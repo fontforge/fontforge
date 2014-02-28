@@ -137,7 +137,7 @@ return;
 	    BDFChar *bdfc;
 	    int i,j, bits, bite, bit;
 
-	    bdfc = chunkalloc(sizeof(BDFChar));
+	    bdfc = XZALLOC(BDFChar);
 	    memset( bdfc,'\0',sizeof( BDFChar ));
 	    bdfc->xmin = 0;
 	    bdfc->xmax = density*(fn->chars[index+1].start-fn->chars[index].start)/72-1;

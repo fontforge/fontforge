@@ -1326,7 +1326,7 @@ return( base );
 
 static struct macname *AddMacName(FILE *ttf,
 	int strlen, int stroff,int spec,int language, struct macname *last) {
-    struct macname *new = chunkalloc(sizeof(struct macname));
+    struct macname *new = XZALLOC(struct macname);
     long pos = ftell(ttf);
     char *pt;
     int i;
@@ -1370,7 +1370,7 @@ return;
 	struct macidname *mi, *p;
 	for ( p=NULL, mi=info->macstrids; mi!=NULL && mi->id!=id; p = mi, mi=mi->next );
 	if ( mi==NULL ) {
-	    mi = chunkalloc(sizeof(struct macidname));
+	    mi = XZALLOC(struct macidname);
 	    mi->id = id;
 	    mi->last = mi->head = AddMacName(ttf,strlen,stroff,spec,language,NULL);
 	    if ( p==NULL )
@@ -1508,7 +1508,7 @@ return;
 
     for ( prev=NULL, cur=info->names; cur!=NULL && cur->lang!=language; prev = cur, cur=cur->next );
     if ( cur==NULL ) {
-	cur = chunkalloc(sizeof(struct ttflangname));
+	cur = XZALLOC(struct ttflangname);
 	cur->lang = language;
 	if ( prev==NULL )
 	    info->names = cur;
@@ -1618,7 +1618,7 @@ struct otfname *FindAllLangEntries(FILE *ttf, struct ttfinfo *info, int id ) {
 	    if ( platform==3 && name==id ) {
 		char *temp = _readencstring(ttf,tableoff+stroff,str_len,platform,specific,language);
 		if ( temp!=NULL ) {
-		    cur = chunkalloc(sizeof(struct otfname));
+		    cur = XZALLOC(struct otfname);
 		    cur->next = head;
 		    head = cur;
 		    cur->lang = language;
@@ -1778,7 +1778,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
     for ( path=i=0; path<path_cnt; ++path ) {
 	if ( endpt[path]<i )	/* Sigh. Yes there are fonts with bad endpt info */
     continue;
-	cur = chunkalloc(sizeof(SplineSet));
+	cur = XZALLOC(SplineSet);
 	if ( head==NULL )
 	    head = cur;
 	else
@@ -1789,7 +1789,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	sp = NULL;
 	while ( i<=endpt[path] ) {
 	    if ( flags[i]&_On_Curve ) {
-		sp = chunkalloc(sizeof(SplinePoint));
+		sp = XZALLOC(SplinePoint);
 		sp->me = sp->nextcp = sp->prevcp = pts[i];
 		sp->nonextcp = sp->noprevcp = true;
 		sp->ttfindex = i;
@@ -1800,7 +1800,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    } else if ( last_off ) {
 		/* two off curve points get a third on curve point created */
 		/* half-way between them. Now isn't that special */
-		sp = chunkalloc(sizeof(SplinePoint));
+		sp = XZALLOC(SplinePoint);
 		sp->me.x = (pts[i].x+pts[i-1].x)/2;
 		sp->me.y = (pts[i].y+pts[i-1].y)/2;
 		sp->nextcp = sp->prevcp = sp->me;
@@ -1830,7 +1830,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    /*  point. What on earth do they think that means? */
 	    /* Oh. I see. It's used to possition marks and such */
 	    if ( cur->first==NULL ) {
-		sp = chunkalloc(sizeof(SplinePoint));
+		sp = XZALLOC(SplinePoint);
 		sp->me.x = pts[start].x;
 		sp->me.y = pts[start].y;
 		sp->nextcp = sp->prevcp = sp->me;
@@ -1840,7 +1840,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 		cur->first = cur->last = sp;
 	    }
 	} else if ( !(flags[start]&_On_Curve) && !(flags[i-1]&_On_Curve) ) {
-	    sp = chunkalloc(sizeof(SplinePoint));
+	    sp = XZALLOC(SplinePoint);
 	    sp->me.x = (pts[start].x+pts[i-1].x)/2;
 	    sp->me.y = (pts[start].y+pts[i-1].y)/2;
 	    sp->nextcp = sp->prevcp = sp->me;
@@ -4210,7 +4210,7 @@ static void ApplyVariationSequenceSubtable(FILE *ttf,uint32 vs_map,
 				uni );
 			info->bad_cmap = true;
 		    } else {
-			altuni = chunkalloc(sizeof(struct altuni));
+			altuni = XZALLOC(struct altuni);
 			altuni->unienc = uni;
 			altuni->vs = vs_data[i].vs;
 			altuni->fid = 0;
@@ -4244,7 +4244,7 @@ static void ApplyVariationSequenceSubtable(FILE *ttf,uint32 vs_map,
 			info->bad_cmap = true;
 		    } else {
 			SplineChar *sc = info->chars[curgid];
-			struct altuni *altuni = chunkalloc(sizeof(struct altuni));
+			struct altuni *altuni = XZALLOC(struct altuni);
 			altuni->unienc = uni;
 			altuni->vs = vs_data[i].vs;
 			altuni->fid = 0;
@@ -5251,7 +5251,7 @@ return;
 return;
     }
 
-    tab = chunkalloc(sizeof(struct ttf_table));
+    tab = XZALLOC(struct ttf_table);
     tab->tag = tag;
     tab->len = len;
     tab->data = malloc(len);
@@ -5617,7 +5617,7 @@ return( sf );
 }
 
 static void MMFillFromVAR(SplineFont *sf, struct ttfinfo *info) {
-    MMSet *mm = chunkalloc(sizeof(MMSet));
+    MMSet *mm = XZALLOC(MMSet);
     struct variations *v = info->variations;
     int i,j;
 

@@ -1467,7 +1467,7 @@ static struct feature *AddExclusiveNoops(SplineFont *sf, struct feature *feature
 		    def = n;
 	    }
 	    if ( def==NULL ) {
-		t = chunkalloc(sizeof(struct feature));
+		t = XZALLOC(struct feature);
 		*t = *f;
 		t->feature_start = 0; t->feature_len=0; t->next = NULL;
 		t->featureSetting = f->mf->default_setting;
@@ -2398,7 +2398,7 @@ static struct feature *featureFromTag(SplineFont *sf, uint32 tag ) {
     int ft, fs;
     struct feature *feat;
 
-    feat = chunkalloc(sizeof(struct feature));
+    feat = XZALLOC(struct feature);
     if (OTTagToMacFeature(tag, &ft, &fs)) {
         feat->featureType = ft;
         feat->featureSetting = fs;

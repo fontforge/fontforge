@@ -1229,7 +1229,7 @@ HintInstance *HICopyTrans(HintInstance *hi, real mul, real offset) {
     HintInstance *first=NULL, *last, *cur, *p;
 
     while ( hi!=NULL ) {
-	cur = chunkalloc(sizeof(HintInstance));
+	cur = XZALLOC(HintInstance);
 	if ( mul>0 ) {
 	    cur->begin = hi->begin*mul+offset;
 	    cur->end = hi->end*mul+offset;
@@ -1297,7 +1297,7 @@ static HintInstance *SCGuessHintPoints(SplineChar *sc, int layer, StemInfo *stem
 	if ( val!=0x80000000 ) {
 	    for ( prev=NULL, test=head; test!=NULL && val>test->begin; prev=test, test=test->next );
 	    if ( test==NULL || val!=test->begin ) {
-		cur = chunkalloc(sizeof(HintInstance));
+		cur = XZALLOC(HintInstance);
 		cur->begin = cur->end = val;
 		cur->next = test;
 		if ( prev==NULL ) head = cur;
@@ -1317,7 +1317,7 @@ static HintInstance *StemAddHIFromActive(struct stemdata *stem,int major) {
     for ( i=0; i<stem->activecnt; ++i ) {
 	mino = dir*stem->active[i].start + ((real *) &stem->left.x)[major];
 	maxo = dir*stem->active[i].end + ((real *) &stem->left.x)[major];
-	cur = chunkalloc(sizeof(HintInstance));
+	cur = XZALLOC(HintInstance);
 	if ( dir>0 ) {
 	    cur->begin = mino;
 	    cur->end = maxo;
@@ -1341,7 +1341,7 @@ static HintInstance *DStemAddHIFromActive( struct stemdata *stem ) {
     HintInstance *head = NULL, *cur, *t;
 
     for ( i=0; i<stem->activecnt; ++i ) {
-        cur = chunkalloc( sizeof( HintInstance ));
+        cur = xzalloc( sizeof( HintInstance ));
 	cur->begin = stem->active[i].start;
 	cur->end = stem->active[i].end;
 	if ( head == NULL )
@@ -1415,7 +1415,7 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
 		}
 	    }
 	    if ( sm || wm ) {
-		cur = chunkalloc(sizeof(HintInstance));
+		cur = XZALLOC(HintInstance);
 		if ( ob>oe ) { real temp=ob; ob=oe; oe=temp;}
 		cur->begin = ob;
 		cur->end = oe;
@@ -1465,7 +1465,7 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
 	    if ( w2->begin>=t->begin )
 		t->begin = w2->begin;
 	    if ( w2->end<=t->end ) {
-		cur = chunkalloc(sizeof(HintInstance));
+		cur = XZALLOC(HintInstance);
 		cur->begin = w2->end;
 		cur->end = t->end;
 		cur->next = n;
@@ -1644,7 +1644,7 @@ void SCGuessHHintInstancesAndAdd(SplineChar *sc, int layer, StemInfo *stem, real
     sc->hstem = StemInfoAdd(sc->hstem,stem);
     if ( stem->where==NULL && guess1!=0x80000000 ) {
 	if ( guess1>guess2 ) { real temp = guess1; guess1 = guess2; guess2 = temp; }
-	stem->where = chunkalloc(sizeof(HintInstance));
+	stem->where = XZALLOC(HintInstance);
 	stem->where->begin = guess1;
 	stem->where->end = guess2;
     }
@@ -1661,7 +1661,7 @@ void SCGuessVHintInstancesAndAdd(SplineChar *sc, int layer,StemInfo *stem, real 
     sc->vstem = StemInfoAdd(sc->vstem,stem);
     if ( stem->where==NULL && guess1!=0x80000000 ) {
 	if ( guess1>guess2 ) { real temp = guess1; guess1 = guess2; guess2 = temp; }
-	stem->where = chunkalloc(sizeof(HintInstance));
+	stem->where = XZALLOC(HintInstance);
 	stem->where->begin = guess1;
 	stem->where->end = guess2;
     }
@@ -1753,7 +1753,7 @@ return( false );
         /* it as one more instance for the already added stem */
         if ( !overlap ) {
             for ( hi=dn->where; hi->next != NULL; hi = hi->next ) ;
-            hi->next = chunkalloc( sizeof( HintInstance ));
+            hi->next = xzalloc( sizeof( HintInstance ));
             hi->next->begin = ibegin; hi->next->end = iend;
 return( false );
         /* The found stem is close but not identical to the stem we  */
@@ -1814,7 +1814,7 @@ static StemInfo *RefHintsMerge(StemInfo *into, StemInfo *rh, real mul, real offs
 	}
 	for ( h=into, prev=NULL; h!=NULL && (start>h->start || (start==h->start && width>h->width)); prev=h, h=h->next );
 	if ( h==NULL || start!=h->start || width!=h->width ) {
-	    n = chunkalloc(sizeof(StemInfo));
+	    n = XZALLOC(StemInfo);
 	    n->start = start; n->width = width;
 	    n->next = h;
 	    if ( prev==NULL )
@@ -1834,7 +1834,7 @@ static DStemInfo *RefDHintsMerge( SplineFont *sf,DStemInfo *into,DStemInfo *rh,
     double dmul;
 
     for ( ; rh!=NULL; rh=rh->next ) {
-	new = chunkalloc( sizeof( DStemInfo ));
+	new = xzalloc( sizeof( DStemInfo ));
 	*new = *rh;
 	new->left.x = xmul*new->left.x + xoffset;
 	new->right.x = xmul*new->right.x + xoffset;
@@ -2297,7 +2297,7 @@ return;
 	}
     }
     for ( i=0; i<instance_count; ++i ) if ( to[i]!=NULL ) {
-	to[i]->hintmask = chunkalloc(sizeof(HintMask));
+	to[i]->hintmask = XZALLOC(HintMask);
 	memcpy(to[i]->hintmask,mask,sizeof(HintMask));
     }
 }
@@ -2375,7 +2375,7 @@ static void AddCoord(MMH *mmh,SplinePoint *sps[MmMax],int instance_count, int is
     struct coords *coords;
     int i;
 
-    coords = chunkalloc(sizeof(struct coords));
+    coords = XZALLOC(struct coords);
     coords->next = mmh->where;
     mmh->where = coords;
     if ( ish )
@@ -2410,7 +2410,7 @@ return( hints );
 	    best = test;
 	}
     }
-    test = chunkalloc(sizeof(MMH));
+    test = XZALLOC(MMH);
     test->next = hints;
     AddCoord(test,sps,instance_count,ish);
     for ( i=0; i<instance_count; ++i )
@@ -2419,7 +2419,7 @@ return( hints );
 	for ( i=0; i<instance_count; ++i ) {
 	    if ( best->hints[i]==h[i] ) {
 		h[i]->hasconflicts = true;
-		test->map[i] = chunkalloc(sizeof(StemInfo));
+		test->map[i] = XZALLOC(StemInfo);
 		*test->map[i] = *h[i];
 		test->map[i]->where = NULL;
 		test->map[i]->used = true;
@@ -2513,7 +2513,7 @@ static int NumberMMH(MMH *mmh,int hstart,int instance_count) {
 		n = hi->next;
 	    h->where = NULL;
 	    for ( coords=mmh->where; coords!=NULL; coords = coords->next ) {
-		hi = chunkalloc(sizeof(HintInstance));
+		hi = XZALLOC(HintInstance);
 		hi->next = h->where;
 		h->where = hi;
 		hi->begin = coords->coords[i]-1;
@@ -2775,7 +2775,7 @@ static StemInfo *GDFindStems(struct glyphdata *gd, int major) {
 	stem = bundle->stemlist[i];
 	l = (&stem->left.x)[other];
         r = (&stem->right.x)[other];
-	cur = chunkalloc( sizeof( StemInfo ));
+	cur = xzalloc( sizeof( StemInfo ));
 	if ( l<r ) {
 	    cur->start = l;
 	    cur->width = r - l;
@@ -2826,7 +2826,7 @@ static DStemInfo *GDFindDStems(struct glyphdata *gd) {
         
 	if ( stem->lpcnt < 2 || stem->rpcnt < 2 )
     continue;
-        cur = chunkalloc( sizeof(DStemInfo) );
+        cur = xzalloc( sizeof(DStemInfo) );
         cur->left = stem->left;
         cur->right = stem->right;
         cur->unit = stem->unit;

@@ -2079,7 +2079,7 @@ SplineSet *UnitShape(int n) {
     int i;
     BasePoint origin;
 
-    ret = chunkalloc(sizeof(SplineSet));
+    ret = XZALLOC(SplineSet);
     if ( n>=3 || n<=-3 ) {
 	/* Regular n-gon with n sides */
 	/* Inscribed in a unit circle, if n<0 then circumscribed around */
@@ -2136,7 +2136,7 @@ static SplinePointList *SinglePointStroke(SplinePoint *sp,struct strokecontext *
     SplinePoint *sp1, *sp2;
     int i;
 
-    ret = chunkalloc(sizeof(SplineSet));
+    ret = XZALLOC(SplineSet);
 
     if ( c->pentype==pt_circle && c->cap==lc_butt ) {
 	/* Leave as a single point */
@@ -2952,12 +2952,12 @@ static SplineSet *EdgeEffects(SplineSet *fragments,StrokeContext *c) {
 		t = SplineNearPoint(s,&cur->first->me,c->resolution);
 		if ( t!=-1 ) {
 		    SplinePoint *sp = SplineBisect(s,t), *sp2;
-		    sp2 = chunkalloc(sizeof(SplinePoint));
+		    sp2 = XZALLOC(SplinePoint);
 		    *sp2 = *sp;
 		    sp->next = NULL;
 		    sp2->prev = NULL;
 		    sp2->next->from = sp2;
-		    next = chunkalloc(sizeof(SplineSet));
+		    next = XZALLOC(SplineSet);
 		    *next = *cur;
 		    cur->last = sp;
 		    next->first = sp2;
@@ -2970,12 +2970,12 @@ static SplineSet *EdgeEffects(SplineSet *fragments,StrokeContext *c) {
 		    t = SplineNearPoint(s,&cur->last->me,c->resolution);
 		    if ( t!=-1 ) {
 			SplinePoint *sp = SplineBisect(s,t), *sp2;
-			sp2 = chunkalloc(sizeof(SplinePoint));
+			sp2 = XZALLOC(SplinePoint);
 			*sp2 = *sp;
 			sp->prev = NULL;
 			sp2->next = NULL;
 			sp2->prev->to = sp2;
-			next = chunkalloc(sizeof(SplineSet));
+			next = XZALLOC(SplineSet);
 			*next = *cur;
 			cur->first = sp;
 			next->last = sp2;
@@ -3135,7 +3135,7 @@ return(ss);
 		    first1->next->from = first1;
 	break;
 		}
-		other = chunkalloc(sizeof(SplineSet));
+		other = XZALLOC(SplineSet);
 		other->first = other->last = second1;
 		second1->prev = first2->prev;
 		second1->prevcp = first2->prevcp;
@@ -3419,7 +3419,7 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 		}
 	    }
 	    if ( first!=NULL ) {
-		ret = chunkalloc(sizeof(SplineSet));
+		ret = XZALLOC(SplineSet);
 		ret->first = first; ret->last = last;
 		ret->next = lfragments;
 		lfragments = ret;
@@ -3496,7 +3496,7 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 		}
 	    }
 	    if ( first!=NULL ) {
-		ret = chunkalloc(sizeof(SplineSet));
+		ret = XZALLOC(SplineSet);
 		ret->first = first; ret->last = last;
 		ret->next = rfragments;
 		rfragments = ret;

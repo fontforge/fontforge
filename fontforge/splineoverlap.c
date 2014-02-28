@@ -140,7 +140,7 @@ static Monotonic *SplineToMonotonic(Spline *s,extended startt,extended endt,
 return( last );
     }
 
-    m = chunkalloc(sizeof(Monotonic));
+    m = XZALLOC(Monotonic);
     m->s = s;
     m->tstart = startt;
     m->tend = endt;
@@ -302,7 +302,7 @@ static void _AddSpline(Intersection *il,Monotonic *m,extended t,int isend) {
 return;
     }
 
-    ml = chunkalloc(sizeof(MList));
+    ml = XZALLOC(MList);
     ml->next = il->monos;
     il->monos = ml;
     ml->s = m->s;
@@ -334,7 +334,7 @@ return;
 return;
     }
 
-    ml = chunkalloc(sizeof(MList));
+    ml = XZALLOC(MList);
     ml->next = il->monos;
     il->monos = ml;
     ml->s = m->s;
@@ -364,7 +364,7 @@ return;
 		    (double) t, (double) m->tstart, (double) m->tend );
 	else {
 	    /* It is monotonic, so a subset of it must also be */
-	    Monotonic *m2 = chunkalloc(sizeof(Monotonic));
+	    Monotonic *m2 = XZALLOC(Monotonic);
 	    BasePoint pt, inter;
 	    *m2 = *m;
 	    m2->pending = NULL;
@@ -521,7 +521,7 @@ static void SplitMonotonicAtT(Monotonic *m,int which,bigreal t,bigreal coord,
 	id->new = false;
     } else {
 	othert = t;
-	otherm = chunkalloc(sizeof(Monotonic));
+	otherm = XZALLOC(Monotonic);
 	*otherm = *m;
 	otherm->pending = NULL;
 	m->next = otherm;
@@ -726,7 +726,7 @@ static Intersection *_AddIntersection(Intersection *ilist,Monotonic *m1,
 
 
     if ( closest==NULL ) {
-	closest = chunkalloc(sizeof(Intersection));
+	closest = XZALLOC(Intersection);
 	closest->inter = *inter;
 	closest->next = ilist;
 	ilist = closest;
@@ -899,7 +899,7 @@ static void AddPreIntersection(Monotonic *m1, Monotonic *m2,
 	( m2->next==m1 && (t2==t1 || (t2==1.0 && t1==0.0))) )
 return;
 
-    p = chunkalloc(sizeof(PreIntersection));
+    p = XZALLOC(PreIntersection);
     p->next = m1->pending;
     m1->pending = p;
     p->m1 = m1;
@@ -1521,7 +1521,7 @@ static Intersection *FindIntersections(Monotonic *ms, enum overlap_type ot) {
 	for ( m1=ms; m1!=NULL; m1=m2->linked ) {
 	    if ( m1->start==NULL && m1->end==NULL ) {
 		Intersection *il;
-		il = chunkalloc(sizeof(Intersection));
+		il = XZALLOC(Intersection);
 		il->inter = m1->s->from->me;
 		il->next = ilist;
 		AddSpline(il,m1,0);
@@ -2330,7 +2330,7 @@ return( last );
 }
 
 static SplineSet *JoinAContour(Intersection *startil,MList *ml) {
-    SplineSet *ss = chunkalloc(sizeof(SplineSet));
+    SplineSet *ss = XZALLOC(SplineSet);
     SplinePoint *last;
     Intersection *curil;
     int allexclude = ml->m->exclude;

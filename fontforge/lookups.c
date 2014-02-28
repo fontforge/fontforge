@@ -1206,7 +1206,7 @@ void FListAppendScriptLang(FeatureScriptLangList *fl,uint32 script_tag,uint32 la
 
     for ( sl = fl->scripts; sl!=NULL && sl->script!=script_tag; sl=sl->next );
     if ( sl==NULL ) {
-	sl = chunkalloc(sizeof(struct scriptlanglist));
+	sl = XZALLOC(struct scriptlanglist);
 	sl->script = script_tag;
 	sl->next = fl->scripts;
 	fl->scripts = sl;
@@ -1686,7 +1686,7 @@ return( fl );
 struct scriptlanglist *SLCopy(struct scriptlanglist *sl) {
     struct scriptlanglist *newsl;
 
-    newsl = chunkalloc(sizeof(struct scriptlanglist));
+    newsl = XZALLOC(struct scriptlanglist);
     *newsl = *sl;
     newsl->next = NULL;
 
@@ -1717,7 +1717,7 @@ FeatureScriptLangList *FeatureListCopy(FeatureScriptLangList *fl) {
     if ( fl==NULL )
 return( NULL );
 
-    newfl = chunkalloc(sizeof(FeatureScriptLangList));
+    newfl = XZALLOC(FeatureScriptLangList);
     *newfl = *fl;
     newfl->next = NULL;
 
@@ -1964,7 +1964,7 @@ static KernClass *SF_AddKernClass(struct sfmergecontext *mc,KernClass *kc,
 	struct lookup_subtable *sub ) {
     KernClass *newkc;
 
-    newkc = chunkalloc(sizeof(KernClass));
+    newkc = XZALLOC(KernClass);
     *newkc = *kc;
     newkc->subtable = sub;
     if ( sub->vertical_kerning ) {
@@ -1987,7 +1987,7 @@ static FPST *SF_AddFPST(struct sfmergecontext *mc,FPST *fpst,
     FPST *newfpst;
     int i, k;
 
-    newfpst = chunkalloc(sizeof(FPST));
+    newfpst = XZALLOC(FPST);
     *newfpst = *fpst;
     newfpst->subtable = sub;
     newfpst->next = mc->sf_to->possub;
@@ -2050,7 +2050,7 @@ static ASM *SF_AddASM(struct sfmergecontext *mc,ASM *sm, struct lookup_subtable 
     ASM *newsm;
     int i;
 
-    newsm = chunkalloc(sizeof(ASM));
+    newsm = XZALLOC(ASM);
     *newsm = *sm;
     newsm->subtable = sub;
     newsm->next = mc->sf_to->sm;
@@ -2097,7 +2097,7 @@ return( SFGetChar(into,fromsc->unicodeenc,fromsc->name));
 static void SF_SCAddAP(SplineChar *tosc,AnchorPoint *ap, AnchorClass *newac) {
     AnchorPoint *newap;
 
-    newap = chunkalloc(sizeof(AnchorPoint));
+    newap = XZALLOC(AnchorPoint);
     *newap = *ap;
     newap->anchor = newac;
     newap->next = tosc->anchor;
@@ -2113,7 +2113,7 @@ static void SF_AddAnchorClasses(struct sfmergecontext *mc,
     SplineChar *fsc, *tsc;
 
     for ( ac=mc->sf_from->anchor; ac!=NULL; ac=ac->next ) if ( ac->subtable==from_sub ) {
-	nac = chunkalloc(sizeof(AnchorClass));
+	nac = XZALLOC(AnchorClass);
 	*nac = *ac;
 	nac->subtable = sub;
 	nac->name = strconcat(mc->prefix,nac->name);
@@ -2141,7 +2141,7 @@ static void SF_AddAnchorClasses(struct sfmergecontext *mc,
 static int SF_SCAddPST(SplineChar *tosc,PST *pst,struct lookup_subtable *sub) {
     PST *newpst;
 
-    newpst = chunkalloc(sizeof(PST));
+    newpst = XZALLOC(PST);
     *newpst = *pst;
     newpst->subtable = sub;
     newpst->next = tosc->possub;
@@ -2150,7 +2150,7 @@ static int SF_SCAddPST(SplineChar *tosc,PST *pst,struct lookup_subtable *sub) {
     switch( newpst->type ) {
       case pst_pair:
 	newpst->u.pair.paired = copy(pst->u.pair.paired);
-	newpst->u.pair.vr = chunkalloc(sizeof(struct vr [2]));
+	newpst->u.pair.vr = XCALLOC(2, struct vr);
 	memcpy(newpst->u.pair.vr,pst->u.pair.vr,sizeof(struct vr [2]));
       break;
       case pst_ligature:
@@ -2176,7 +2176,7 @@ static int SF_SCAddKP(SplineChar *tosc,KernPair *kp,struct lookup_subtable *sub,
     if ( tosecond==NULL )
 return( false );
 
-    newkp = chunkalloc(sizeof(KernPair));
+    newkp = XZALLOC(KernPair);
     *newkp = *kp;
     newkp->subtable = sub;
     newkp->sc = tosecond;
@@ -2423,7 +2423,7 @@ return( mc->lks[l].to );
     mc->sf_to->changed = true;
 
     if ( l>=mc->lcnt ) {
-	otl = chunkalloc(sizeof(OTLookup));
+	otl = XZALLOC(OTLookup);
 	*otl = *from_otl;
 	memset(&mc->lks[l],0,sizeof(mc->lks[l]));
 	mc->lks[l].from = from_otl; mc->lks[l].to = otl; ++mc->lcnt;
@@ -2441,7 +2441,7 @@ return( otl );
     last = NULL;
     scnt = 0;
     for ( from_sub = from_otl->subtables; from_sub!=NULL; from_sub=from_sub->next ) {
-	sub = chunkalloc(sizeof(struct lookup_subtable));
+	sub = XZALLOC(struct lookup_subtable);
 	*sub = *from_sub;
 	sub->lookup = otl;
 	sub->subtable_name = strconcat(mc->prefix,from_sub->subtable_name);
@@ -3925,11 +3925,11 @@ return( sub );
     }
 
     if ( found==NULL ) {
-	found = chunkalloc(sizeof(OTLookup));
+	found = XZALLOC(OTLookup);
 	found->lookup_type = lookup_type;
-	found->features = chunkalloc(sizeof(FeatureScriptLangList));
+	found->features = XZALLOC(FeatureScriptLangList);
 	found->features->featuretag = tag;
-	found->features->scripts = chunkalloc(sizeof(struct scriptlanglist));
+	found->features->scripts = XZALLOC(struct scriptlanglist);
 	found->features->scripts->script = script;
 	found->features->scripts->langs[0] = DEFAULT_LANG;
 	found->features->scripts->lang_cnt = 1;
@@ -3938,7 +3938,7 @@ return( sub );
 	isnew = true;
     }
 
-    sub = chunkalloc(sizeof(struct lookup_subtable));
+    sub = XZALLOC(struct lookup_subtable);
     sub->next = found->subtables;
     found->subtables = sub;
     sub->lookup = found;
@@ -3966,11 +3966,11 @@ struct lookup_subtable *SFSubTableMake(SplineFont *sf,uint32 tag,uint32 script,
     }
 
     if ( found==NULL ) {
-	found = chunkalloc(sizeof(OTLookup));
+	found = XZALLOC(OTLookup);
 	found->lookup_type = lookup_type;
-	found->features = chunkalloc(sizeof(FeatureScriptLangList));
+	found->features = XZALLOC(FeatureScriptLangList);
 	found->features->featuretag = tag;
-	found->features->scripts = chunkalloc(sizeof(struct scriptlanglist));
+	found->features->scripts = XZALLOC(struct scriptlanglist);
 	found->features->scripts->script = script;
 	found->features->scripts->langs[0] = DEFAULT_LANG;
 	found->features->scripts->lang_cnt = 1;
@@ -3979,7 +3979,7 @@ struct lookup_subtable *SFSubTableMake(SplineFont *sf,uint32 tag,uint32 script,
 	isnew = true;
     }
 
-    sub = chunkalloc(sizeof(struct lookup_subtable));
+    sub = XZALLOC(struct lookup_subtable);
     sub->next = found->subtables;
     found->subtables = sub;
     sub->lookup = found;
@@ -4182,15 +4182,15 @@ OTLookup *NewAALTLookup(SplineFont *sf,struct sllk *sllk, int sllk_cnt, int i) {
     SplineChar *sc;
 
     /* Make the new lookup (and all its supporting data structures) */
-    otl = chunkalloc(sizeof(OTLookup));
+    otl = XZALLOC(OTLookup);
     otl->lookup_type = gsub_alternate;
     otl->lookup_flags = sllk[i].lookups[0]->lookup_flags & pst_r2l;
-    otl->features = fl = chunkalloc(sizeof(FeatureScriptLangList));
+    otl->features = fl = XZALLOC(FeatureScriptLangList);
     fl->featuretag = CHR('a','a','l','t');
     /* Any other scripts with the same lookup set? */
     for ( j=i; j<sllk_cnt; ++j ) {
 	if ( i==j || SllkMatch(sllk,i,j)) {
-	    sl = chunkalloc(sizeof(struct scriptlanglist));
+	    sl = XZALLOC(struct scriptlanglist);
 	    sl->next = fl->scripts;
 	    fl->scripts = sl;
 	    sl->script = sllk[j].script;
@@ -4205,7 +4205,7 @@ OTLookup *NewAALTLookup(SplineFont *sf,struct sllk *sllk, int sllk_cnt, int i) {
 	    if ( i!=j ) sllk[j].cnt = 0;	/* Mark as processed */
 	}
     }
-    otl->subtables = sub = chunkalloc(sizeof(struct lookup_subtable));
+    otl->subtables = sub = XZALLOC(struct lookup_subtable);
     sub->lookup = otl;
     sub->per_glyph_pst_or_kern = true;
 
@@ -4234,7 +4234,7 @@ OTLookup *NewAALTLookup(SplineFont *sf,struct sllk *sllk, int sllk_cnt, int i) {
 	    }
 	    if ( pcnt==0 )
 	continue;
-	    pst = chunkalloc(sizeof(PST));
+	    pst = XZALLOC(PST);
 	    pst->subtable = sub;
 	    pst->type = pst_alternate;
 	    pst->next = sc->possub;
@@ -4753,7 +4753,7 @@ return( ret );
 return( ret );
 	    }
 	    *lpt++ = '>';
-	    ll = chunkalloc(sizeof(LookupList));
+	    ll = XZALLOC(LookupList);
 	    ll->lookup = lookup;
 	    /* Lookup order is important */
 	    if ( parsed[cnt-1].lookups==NULL )

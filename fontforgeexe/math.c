@@ -238,7 +238,7 @@ static struct glyphvariants *GV_FromString(struct glyphvariants *gv,char *str) {
     if ( pcnt<=0 )
 return( gv );
     if ( gv==NULL )
-	gv = chunkalloc(sizeof(struct glyphvariants));
+	gv = XZALLOC(struct glyphvariants);
     gv->part_cnt = pcnt;
     gv->parts = calloc(pcnt,sizeof(struct gv_part));
     pcnt = 0;
@@ -933,7 +933,7 @@ return( true );
 		    char *str = old[i*cols+1].u.md_str;
 		    if ( str!=NULL ) while ( *str==' ' ) ++str;
 		    if ( str!=NULL && *str!='\0' ) {
-			*gvp = chunkalloc(sizeof(struct glyphvariants));
+			*gvp = XZALLOC(struct glyphvariants);
 			(*gvp)->variants = GlyphNameListDeUnicode( str );
 		    }
 		} else if ( cid==CID_VGlyphConst || cid==CID_HGlyphConst ) {
@@ -1397,7 +1397,7 @@ static void MKDFillup(MathKernDlg *mkd, SplineChar *sc) {
 	    last = NULL;
 	    if ( mkv!=NULL ) {
 		for ( j=0; j<mkv->cnt; ++j ) {
-		    cur = chunkalloc(sizeof(SplineSet));
+		    cur = XZALLOC(SplineSet);
 		    cur->first = cur->last = SplinePointCreate(mkv->mkd[j].kern +
 			    ((i&1)?0:sc->width) +
 			    ((i&2)?0:sc->italic_correction==TEX_UNDEF?0:sc->italic_correction),
@@ -1484,7 +1484,7 @@ static int MKD_Parse(MathKernDlg *mkd) {
     int allzeroes = true;
 
     if ( mkd->cursc->mathkern==NULL )
-	mkd->cursc->mathkern = chunkalloc(sizeof(struct mathkern));
+	mkd->cursc->mathkern = XZALLOC(struct mathkern);
 
     if ( mkd->last_aspect==0 ) {		/* Graphical view is current */
 	for ( i=0; i<4; ++i ) {

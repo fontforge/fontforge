@@ -2014,8 +2014,6 @@ struct findsel;
 struct charprocs;
 struct enc;
 
-#define chunkalloc(size)	calloc(1,size)
-
 extern char *strconcat(const char *str, const char *str2);
 extern char *strconcat3(const char *str, const char *str2, const char *str3);
 

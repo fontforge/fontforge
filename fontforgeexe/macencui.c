@@ -38,7 +38,7 @@ static struct macsetting *MacSettingCopy(struct macsetting *ms) {
     struct macsetting *head=NULL, *last, *cur;
 
     while ( ms!=NULL ) {
-	cur = chunkalloc(sizeof(struct macsetting));
+	cur = XZALLOC(struct macsetting);
 	cur->setting = ms->setting;
 	cur->setname = MacNameCopy(ms->setname);
 	cur->initially_enabled = ms->initially_enabled;
@@ -56,7 +56,7 @@ static MacFeat *MacFeatCopy(MacFeat *mf) {
     MacFeat *head=NULL, *last, *cur;
 
     while ( mf!=NULL ) {
-	cur = chunkalloc(sizeof(MacFeat));
+	cur = XZALLOC(MacFeat);
 	cur->feature = mf->feature;
 	cur->featname = MacNameCopy(mf->featname);
 	cur->settings = MacSettingCopy(mf->settings);
@@ -538,7 +538,7 @@ static int Pref_NewName(GGadget *g, GEvent *e) {
 	struct macname *new, *all;
 
 	all = GGadgetGetUserData(list);
-	new = chunkalloc(sizeof(struct macname));
+	new = XZALLOC(struct macname);
 	new->lang = -1;
 	AskName(new,all,list,-1);
     }
@@ -897,7 +897,7 @@ static int Pref_NewSetting(GGadget *g, GEvent *e) {
 		expected += 2;
 	    }
 	}
-	new = chunkalloc(sizeof(struct macsetting));
+	new = XZALLOC(struct macsetting);
 	new->setting = expected;
 	AskSetting(new,all,list,-1);
     }
@@ -1220,7 +1220,7 @@ static int Pref_NewFeat(GGadget *g, GEvent *e) {
 	break;
 	    ++expected;
 	}
-	new = chunkalloc(sizeof(MacFeat));
+	new = XZALLOC(MacFeat);
 	new->feature = expected;
 	AskFeature(new,all,list,-1);
     }

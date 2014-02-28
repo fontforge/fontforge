@@ -679,7 +679,7 @@ return(true);
 	    SCPreserveHints(hd->cv->b.sc,layer);
 	    SCHintsChanged(hd->cv->b.sc);
 	}
-	h = chunkalloc(sizeof(StemInfo));
+	h = XZALLOC(StemInfo);
 	if ( width==-21 || width==-20 ) {
 	    base += width;
 	    width = -width;

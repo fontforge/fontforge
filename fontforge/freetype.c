@@ -445,7 +445,7 @@ static BDFChar *BdfCFromBitmap(FT_Bitmap *bitmap, int bitmap_left,
 	FT_Glyph_Metrics *metrics) {
     BDFChar *bdfc;
 
-    bdfc = chunkalloc(sizeof(BDFChar));
+    bdfc = XZALLOC(BDFChar);
     bdfc->sc = sc;
     bdfc->ymax = bitmap_top-1;
     bdfc->ymin = bitmap_top-bitmap->rows;
@@ -610,7 +610,7 @@ static int FT_MoveTo(FT_Vector *to,void *user) {
 
     FT_ClosePath(context);
 
-    context->cpl = chunkalloc(sizeof(SplinePointList));
+    context->cpl = XZALLOC(SplinePointList);
     if ( context->lcpl==NULL )
 	context->hcpl = context->cpl;
     else
@@ -620,7 +620,7 @@ static int FT_MoveTo(FT_Vector *to,void *user) {
     if ( context->orig_cpl!=NULL )
 	context->orig_sp = context->orig_cpl->first;
 
-    context->last = context->cpl->first = chunkalloc(sizeof(SplinePoint));
+    context->last = context->cpl->first = XZALLOC(SplinePoint);
     context->last->me.x = to->x*context->scalex;
     context->last->me.y = to->y*context->scaley;
     if ( context->orig_sp==NULL )

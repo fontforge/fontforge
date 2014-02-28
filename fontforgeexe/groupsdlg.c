@@ -1034,7 +1034,7 @@ return( true );
 return( true );
 	}
 	grp->oldsel->kids = realloc(grp->oldsel->kids,(++grp->oldsel->kid_cnt)*sizeof(Group *));
-	grp->oldsel->kids[grp->oldsel->kid_cnt-1] = new_grp = chunkalloc(sizeof(Group));
+	grp->oldsel->kids[grp->oldsel->kid_cnt-1] = new_grp = XZALLOC(Group);
 	new_grp->parent = grp->oldsel;
 	new_grp->unique = grp->oldsel->unique;
 	new_grp->name = copy(_("UntitledGroup"));
@@ -1146,7 +1146,7 @@ void DefineGroups(FontView *fv) {
     grp->select_callback = GroupSelected;
 
     if ( group_root==NULL ) {
-	grp->root = chunkalloc(sizeof(Group));
+	grp->root = XZALLOC(Group);
 	grp->root->name = copy(_("Groups"));
     } else
 	grp->root = GroupCopy(group_root);
@@ -1502,7 +1502,7 @@ void DisplayGroups(FontView *fv) {
     grp.root = group_root;
 
     if ( grp.root==NULL ) {
-	grp.root = chunkalloc(sizeof(Group));
+	grp.root = XZALLOC(Group);
 	grp.root->name = copy(_("Groups"));
     }
 

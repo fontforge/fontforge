@@ -911,7 +911,7 @@ void AltUniAdd(SplineChar *sc,int uni) {
 						    altuni->vs!=-1 ||
 			                            altuni->fid); altuni=altuni->next );
 	if ( altuni==NULL ) {
-	    altuni = chunkalloc(sizeof(struct altuni));
+	    altuni = XZALLOC(struct altuni);
 	    altuni->next = sc->altuni;
 	    sc->altuni = altuni;
 	    altuni->unienc = uni;
@@ -925,7 +925,7 @@ void AltUniAdd_DontCheckDups(SplineChar *sc,int uni) {
     struct altuni *altuni;
 
     if ( sc!=NULL && uni!=-1 && uni!=sc->unicodeenc ) {
-	altuni = chunkalloc(sizeof(struct altuni));
+	altuni = XZALLOC(struct altuni);
 	altuni->next = sc->altuni;
 	sc->altuni = altuni;
 	altuni->unienc = uni;
@@ -1896,7 +1896,7 @@ static SplineSet *UnitCircle(int clockwise) {
     SplinePoint *sps[5];
     int i;
 
-    spl = chunkalloc(sizeof(SplineSet));
+    spl = XZALLOC(SplineSet);
     for ( i=0; i<4; ++i )
 	sps[i] = CirclePoint(i&3);
     sps[4] = sps[0];
@@ -2029,7 +2029,7 @@ static int EllipseClockwise(SplinePoint *sp1,SplinePoint *sp2,BasePoint *slope1,
     e2->prevcp.x = e2->me.x - len*slope2->x;
     e2->prevcp.y = e2->me.y - len*slope2->y;
     SplineMake3(e1,e2);
-    ss = chunkalloc(sizeof(SplineSet));
+    ss = XZALLOC(SplineSet);
     ss->first = ss->last = e1;
     ret = SplinePointListIsClockwise(ss);
 return( ret );

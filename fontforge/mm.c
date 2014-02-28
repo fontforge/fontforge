@@ -252,7 +252,7 @@ return;
 	    for ( kp = psc->kerns; kp!=NULL && kp->sc!=ssc; kp = kp->next );
 	    /* No mm support for vertical kerns */
 	    if ( kp==NULL ) {
-		kp = chunkalloc(sizeof(KernPair));
+		kp = XZALLOC(KernPair);
 		if ( oldkp!=NULL )
 		    *kp = *oldkp;
 		else {
@@ -380,7 +380,7 @@ return( _("A reference in this glyph refers to a different encoding in different
     }
     spllast = NULL;
     while ( all ) {
-	spl = chunkalloc(sizeof(SplinePointList));
+	spl = XZALLOC(SplinePointList);
 	if ( spllast==NULL )
 	    sc->layers[ly_fore].splines = spl;
 	else
@@ -391,14 +391,14 @@ return( _("A reference in this glyph refers to a different encoding in different
 	all2 = true;
 	spl->last = NULL;
 	while ( all2 ) {
-	    to = chunkalloc(sizeof(SplinePoint));
+	    to = XZALLOC(SplinePoint);
 	    to->nonextcp = tos[0]->nonextcp;
 	    to->noprevcp = tos[0]->noprevcp;
 	    to->nextcpdef = tos[0]->nextcpdef;
 	    to->prevcpdef = tos[0]->prevcpdef;
 	    to->pointtype = tos[0]->pointtype;
 	    if ( tos[0]->hintmask!=NULL ) {
-		to->hintmask = chunkalloc(sizeof(HintMask));
+		to->hintmask = XZALLOC(HintMask);
 		memcpy(to->hintmask,tos[0]->hintmask,sizeof(HintMask));
 	    }
 	    for ( i=0; i<mm->instance_count; ++i ) {
@@ -456,7 +456,7 @@ return( _("This glyph contains a different number of contours in different insta
 	}
 	hlast = NULL;
 	while ( all ) {
-	    h = chunkalloc(sizeof(StemInfo));
+	    h = XZALLOC(StemInfo);
 	    *h = *hs[0];
 	    h->where = NULL;
 	    h->next = NULL;
@@ -498,7 +498,7 @@ return( _("This glyph contains a different number of hints in different instance
 return( _("This glyph contains different kerning pairs in different instances") );
 	    off += kptest->off*mm->defweights[i];
 	}
-	kp = chunkalloc(sizeof(KernPair));
+	kp = XZALLOC(KernPair);
 	kp->sc = mm->normal->glyphs[kp0->sc->orig_pos];
 	kp->off = off;
 	kp->subtable = kp0->subtable;

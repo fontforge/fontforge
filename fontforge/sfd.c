@@ -3530,7 +3530,7 @@ static struct ttf_table *SFDGetTtfTable(FILE *sfd, SplineFont *sf,struct ttf_tab
     int i,len;
     int which;
     struct enc85 dec;
-    struct ttf_table *tab = chunkalloc(sizeof(struct ttf_table));
+    struct ttf_table *tab = XZALLOC(struct ttf_table);
 
     memset(&dec,'\0', sizeof(dec)); dec.pos = -1;
     dec.sfd = sfd;
@@ -3565,7 +3565,7 @@ static struct ttf_table *SFDGetShortTable(FILE *sfd, SplineFont *sf,struct ttf_t
     int i,len, ch;
     uint8 *pt;
     int which, iscvt, started;
-    struct ttf_table *tab = chunkalloc(sizeof(struct ttf_table));
+    struct ttf_table *tab = XZALLOC(struct ttf_table);
 
     tab->tag = gettag(sfd);
 
@@ -3614,7 +3614,7 @@ static struct ttf_table *SFDGetTtTable(FILE *sfd, SplineFont *sf,struct ttf_tabl
     /* and then the instructions in text format */
     int ch;
     int which;
-    struct ttf_table *tab = chunkalloc(sizeof(struct ttf_table));
+    struct ttf_table *tab = XZALLOC(struct ttf_table);
     char *buf=NULL, *pt=buf, *end=buf;
     int backlen = strlen(end_tt_instrs);
 
@@ -3783,11 +3783,11 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 		current.x = stack[sp-2];
 		current.y = stack[sp-1];
 		sp -= 2;
-		pt = chunkalloc(sizeof(SplinePoint));
+		pt = XZALLOC(SplinePoint);
 		pt->me = current;
 		pt->noprevcp = true; pt->nonextcp = true;
 		if ( ch=='m' ) {
-		    SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
+		    SplinePointList *spl = XZALLOC(SplinePointList);
 		    spl->first = spl->last = pt;
 		    if ( cur!=NULL ) {
 			if ( SFDCloseCheck(cur,order2))
@@ -3836,7 +3836,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 		    cur->last->nextcp.x = stack[sp-6];
 		    cur->last->nextcp.y = stack[sp-5];
 		    cur->last->nonextcp = false;
-		    pt = chunkalloc(sizeof(SplinePoint));
+		    pt = XZALLOC(SplinePoint);
 		    pt->prevcp.x = stack[sp-4];
 		    pt->prevcp.y = stack[sp-3];
 		    pt->me = current;
@@ -3881,7 +3881,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 	    pt->nextcpindex = 0xfffe;
 	    ch = nlgetc(sfd);
 	    if ( ch=='x' ) {
-		pt->hintmask = chunkalloc(sizeof(HintMask));
+		pt->hintmask = XZALLOC(HintMask);
 		SFDGetHintMask(sfd,pt->hintmask);
 	    } else if ( ch!=',' )
 		ungetc(ch,sfd);
@@ -3935,7 +3935,7 @@ Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
     if ( strcmp(tok, startTag) )
         return( NULL );
 
-    u = chunkalloc(sizeof(Undoes));
+    u = XZALLOC(Undoes);
     u->undotype = ut_state;
     u->layer = UNDO_LAYER_UNKNOWN;
 
@@ -4097,7 +4097,7 @@ static void SFDGetMinimumDistances(FILE *sfd, SplineChar *sc) {
 	while ( isspace(ch) && ch!='\n' ) ch=nlgetc(sfd);
 	if ( ch=='\n' )
     break;
-	md = chunkalloc(sizeof(MinimumDistance));
+	md = XZALLOC(MinimumDistance);
 	if ( ch=='x' ) md->x = true;
 	getint(sfd,&val);
 	if ( val<-1 || val>=pt ) {
@@ -4145,7 +4145,7 @@ static HintInstance *SFDReadHintInstances(FILE *sfd, StemInfo *stem) {
 return(NULL);
     }
     while ( getreal(sfd,&begin)==1 && getreal(sfd,&end)) {
-	cur = chunkalloc(sizeof(HintInstance));
+	cur = XZALLOC(HintInstance);
 	cur->begin = begin;
 	cur->end = end;
 	if ( head == NULL )
@@ -4165,7 +4165,7 @@ static StemInfo *SFDReadHints(FILE *sfd) {
     real start, width;
 
     while ( getreal(sfd,&start)==1 && getreal(sfd,&width)) {
-	cur = chunkalloc(sizeof(StemInfo));
+	cur = XZALLOC(StemInfo);
 	cur->start = start;
 	cur->width = width;
 	cur->where = SFDReadHintInstances(sfd,cur);
@@ -4195,14 +4195,14 @@ static DStemInfo *SFDReadDHints( SplineFont *sf,FILE *sfd,int old ) {
             /* Ensure point coordinates specified in the sfd file do */
             /* form a diagonal line */
             if ( PointsDiagonalable( sf,bpref,&unit )) {
-	        cur = chunkalloc( sizeof( DStemInfo ));
+	        cur = xzalloc( sizeof( DStemInfo ));
 	        cur->left = *bpref[0];
 	        cur->right = *bpref[1];
                 cur->unit = unit;
                 /* Generate a temporary hint instance, so that the hint can */
                 /* be visible in charview even if subsequent rebuilding instances */
                 /* fails (e. g. for composite characters) */
-                cur->where = chunkalloc( sizeof( HintInstance ));
+                cur->where = xzalloc( sizeof( HintInstance ));
                 rstartoff = ( cur->right.x - cur->left.x ) * cur->unit.x +
                             ( cur->right.y - cur->left.y ) * cur->unit.y;
                 rendoff =   ( bpref[2]->x - cur->left.x ) * cur->unit.x +
@@ -4218,7 +4218,7 @@ static DStemInfo *SFDReadDHints( SplineFont *sf,FILE *sfd,int old ) {
         while ( getreal( sfd,&left.x ) && getreal( sfd,&left.y ) &&
                 getreal( sfd,&right.x ) && getreal( sfd,&right.y ) &&
                 getreal( sfd,&unit.x ) && getreal( sfd,&unit.y )) {
-	    cur = chunkalloc( sizeof( DStemInfo ));
+	    cur = xzalloc( sizeof( DStemInfo ));
 	    cur->left = left;
 	    cur->right = right;
             cur->unit = unit;
@@ -4244,7 +4244,7 @@ return(NULL);
 	else
 	    ungetc(ch,sfd);
 	if ( adjust==NULL )
-	    adjust = chunkalloc(sizeof(DeviceTable));
+	    adjust = XZALLOC(DeviceTable);
 	getint(sfd,&first);
 	ch = nlgetc(sfd);		/* Should be '-' */
 	getint(sfd,&last);
@@ -4299,7 +4299,7 @@ static ValDevTab *SFDReadValDevTab(FILE *sfd) {
 	}
 	if ( vdt.xadjust.corrections!=NULL || vdt.yadjust.corrections!=NULL ||
 		vdt.xadv.corrections!=NULL || vdt.yadv.corrections!=NULL ) {
-	    ValDevTab *v = chunkalloc(sizeof(ValDevTab));
+	    ValDevTab *v = XZALLOC(ValDevTab);
 	    *v = vdt;
 return( v );
 	}
@@ -4310,7 +4310,7 @@ return( NULL );
 
 static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint** alist, AnchorPoint *lastap)
 {
-    AnchorPoint *ap = chunkalloc(sizeof(AnchorPoint));
+    AnchorPoint *ap = XZALLOC(AnchorPoint);
     AnchorClass *an;
     char *name;
     char tok[200];
@@ -4409,7 +4409,7 @@ static PST1 *LigaCreateFromOldStyleMultiple(PST1 *liga) {
     char *pt;
     PST1 *new, *last=liga;
     while ( (pt = strrchr(liga->pst.u.lig.components,';'))!=NULL ) {
-	new = chunkalloc(sizeof( PST1 ));
+	new = XZALLOC( PST1 );
 	*new = *liga;
 	new->pst.u.lig.components = copy(pt+1);
 	last->pst.next = (PST *) new;
@@ -4509,7 +4509,7 @@ static struct glyphvariants *SFDParseGlyphComposition(FILE *sfd,
     int i;
 
     if ( gv==NULL )
-	gv = chunkalloc(sizeof(struct glyphvariants));
+	gv = XZALLOC(struct glyphvariants);
     getint(sfd,&gv->part_cnt);
     gv->parts = calloc(gv->part_cnt,sizeof(struct gv_part));
     for ( i=0; i<gv->part_cnt; ++i ) {
@@ -4551,7 +4551,7 @@ static void SFDParseVertexKern(FILE *sfd, struct mathkernvertex *vertex) {
 }
 
 static struct gradient *SFDParseGradient(FILE *sfd,char *tok) {
-    struct gradient *grad = chunkalloc(sizeof(struct gradient));
+    struct gradient *grad = XZALLOC(struct gradient);
     int ch, i;
 
     getreal(sfd,&grad->start.x);
@@ -4588,7 +4588,7 @@ return( grad );
 }
 
 static struct pattern *SFDParsePattern(FILE *sfd,char *tok) {
-    struct pattern *pat = chunkalloc(sizeof(struct pattern));
+    struct pattern *pat = XZALLOC(struct pattern);
     int ch;
 
     getname(sfd,tok);
@@ -4653,7 +4653,7 @@ void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok ) {
 	    	    break;
 		}
 		kernCount++;
-		kp = chunkalloc(sizeof(KernPair1));
+		kp = XZALLOC(KernPair1);
 		kp->sc = (SplineChar *) (intpt) index;
 		kp->kcid = true;
 		kp->off = off;
@@ -4662,7 +4662,7 @@ void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok ) {
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
-		    kp->adjust=chunkalloc(sizeof(DeviceTable));
+		    kp->adjust=XZALLOC(DeviceTable);
 		    SFDReadDeviceTable(sfd,kp->adjust);
 		}
 		if ( last != NULL )
@@ -4715,7 +4715,7 @@ exit(1);
 			    SCScriptFromUnicode(sc),DEFAULT_LANG);
 		    complained = true;
 		}
-		kp = chunkalloc(sizeof(KernPair1));
+		kp = XZALLOC(KernPair1);
 		kp->kp.sc = (SplineChar *) (intpt) index;
 		kp->kp.kcid = has_orig;
 		kp->kp.off = off;
@@ -4725,7 +4725,7 @@ exit(1);
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
-		    kp->kp.adjust=chunkalloc(sizeof(DeviceTable));
+		    kp->kp.adjust=XZALLOC(DeviceTable);
 		    SFDReadDeviceTable(sfd,kp->kp.adjust);
 		}
 		if ( last != NULL )
@@ -4789,12 +4789,12 @@ void SFDGetPSTs( FILE *sfd, SplineChar *sc, char* ttok ) {
 			 pst_alternate;
 	    if ( strchr(tok,'2')!=NULL ) {
 		old = false;
-		pst = chunkalloc(sizeof(PST));
+		pst = XZALLOC(PST);
 		if ( type!=pst_lcaret )
 		    pst->subtable = SFFindLookupSubtable(sf,SFDReadUTF7Str(sfd));
 	    } else {
 		old = true;
-		pst = chunkalloc(sizeof(PST1));
+		pst = XZALLOC(PST1);
 		((PST1 *) pst)->tag = CHR('l','i','g','a');
 		((PST1 *) pst)->script_lang_index = 0xffff;
 		while ( (ch=nlgetc(sfd))==' ' || ch=='\t' );
@@ -4864,7 +4864,7 @@ exit(1);
 	    } else if ( pst->type==pst_pair ) {
 		getname(sfd,tok);
 		pst->u.pair.paired = copy(tok);
-		pst->u.pair.vr = chunkalloc(sizeof(struct vr [2]));
+		pst->u.pair.vr = XCALLOC(2, struct vr);
 		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd",
 			&pst->u.pair.vr[0].xoff, &pst->u.pair.vr[0].yoff,
 			&pst->u.pair.vr[0].h_adv_off, &pst->u.pair.vr[0].v_adv_off);
@@ -4999,7 +4999,7 @@ return( NULL );
 	} else if ( strmatch(tok,"AltUni:")==0 ) {
 	    int uni;
 	    while ( getint(sfd,&uni)==1 ) {
-		altuni = chunkalloc(sizeof(struct altuni));
+		altuni = XZALLOC(struct altuni);
 		altuni->unienc = uni;
 		altuni->vs = -1;
 		altuni->fid = 0;
@@ -5009,7 +5009,7 @@ return( NULL );
 	} else if ( strmatch(tok,"AltUni2:")==0 ) {
 	    uint32 uni[3];
 	    while ( gethexints(sfd,uni,3) ) {
-		altuni = chunkalloc(sizeof(struct altuni));
+		altuni = XZALLOC(struct altuni);
 		altuni->unienc = uni[0];
 		altuni->vs = uni[1];
 		altuni->fid = uni[2];
@@ -5075,11 +5075,11 @@ return( NULL );
 	    SFDParseMathValueRecord(sfd,&sc->top_accent_horiz,&sc->top_accent_adjusts);
 	} else if ( strmatch(tok,"GlyphCompositionVerticalIC:")==0 ) {
 	    if ( sc->vert_variants==NULL )
-		sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
+		sc->vert_variants = XZALLOC(struct glyphvariants);
 	    SFDParseMathValueRecord(sfd,&sc->vert_variants->italic_correction,&sc->vert_variants->italic_adjusts);
 	} else if ( strmatch(tok,"GlyphCompositionHorizontalIC:")==0 ) {
 	    if ( sc->horiz_variants==NULL )
-		sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
+		sc->horiz_variants = XZALLOC(struct glyphvariants);
 	    SFDParseMathValueRecord(sfd,&sc->horiz_variants->italic_correction,&sc->horiz_variants->italic_adjusts);
 	} else if ( strmatch(tok,"IsExtendedShape:")==0 ) {
 	    int temp;
@@ -5087,12 +5087,12 @@ return( NULL );
 	    sc->is_extended_shape = temp;
 	} else if ( strmatch(tok,"GlyphVariantsVertical:")==0 ) {
 	    if ( sc->vert_variants==NULL )
-		sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
+		sc->vert_variants = XZALLOC(struct glyphvariants);
 	    geteol(sfd,tok);
 	    sc->vert_variants->variants = copy(tok);
 	} else if ( strmatch(tok,"GlyphVariantsHorizontal:")==0 ) {
 	    if ( sc->horiz_variants==NULL )
-		sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
+		sc->horiz_variants = XZALLOC(struct glyphvariants);
 	    geteol(sfd,tok);
 	    sc->horiz_variants->variants = copy(tok);
 	} else if ( strmatch(tok,"GlyphCompositionVertical:")==0 ) {
@@ -5101,19 +5101,19 @@ return( NULL );
 	    sc->horiz_variants = SFDParseGlyphComposition(sfd, sc->horiz_variants,tok);
 	} else if ( strmatch(tok,"TopRightVertex:")==0 ) {
 	    if ( sc->mathkern==NULL )
-		sc->mathkern = chunkalloc(sizeof(struct mathkern));
+		sc->mathkern = XZALLOC(struct mathkern);
 	    SFDParseVertexKern(sfd, &sc->mathkern->top_right);
 	} else if ( strmatch(tok,"TopLeftVertex:")==0 ) {
 	    if ( sc->mathkern==NULL )
-		sc->mathkern = chunkalloc(sizeof(struct mathkern));
+		sc->mathkern = XZALLOC(struct mathkern);
 	    SFDParseVertexKern(sfd, &sc->mathkern->top_left);
 	} else if ( strmatch(tok,"BottomRightVertex:")==0 ) {
 	    if ( sc->mathkern==NULL )
-		sc->mathkern = chunkalloc(sizeof(struct mathkern));
+		sc->mathkern = XZALLOC(struct mathkern);
 	    SFDParseVertexKern(sfd, &sc->mathkern->bottom_right);
 	} else if ( strmatch(tok,"BottomLeftVertex:")==0 ) {
 	    if ( sc->mathkern==NULL )
-		sc->mathkern = chunkalloc(sizeof(struct mathkern));
+		sc->mathkern = XZALLOC(struct mathkern);
 	    SFDParseVertexKern(sfd, &sc->mathkern->bottom_left);
 #if HANYANG
 	} else if ( strmatch(tok,"CompositionUnit:")==0 ) {
@@ -5357,7 +5357,7 @@ return( NULL );
 		    LogError(_("KernPair with no subtable name.\n"));
 	    break;
 		}
-		kp = chunkalloc(sizeof(KernPair1));
+		kp = XZALLOC(KernPair1);
 		kp->sc = (SplineChar *) (intpt) index;
 		kp->kcid = true;
 		kp->off = off;
@@ -5366,7 +5366,7 @@ return( NULL );
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
-		    kp->adjust=chunkalloc(sizeof(DeviceTable));
+		    kp->adjust=XZALLOC(DeviceTable);
 		    SFDReadDeviceTable(sfd,kp->adjust);
 		}
 		if ( last != NULL )
@@ -5415,7 +5415,7 @@ exit(1);
 			    SCScriptFromUnicode(sc),DEFAULT_LANG);
 		    complained = true;
 		}
-		kp = chunkalloc(sizeof(KernPair1));
+		kp = XZALLOC(KernPair1);
 		kp->kp.sc = (SplineChar *) (intpt) index;
 		kp->kp.kcid = has_orig;
 		kp->kp.off = off;
@@ -5425,7 +5425,7 @@ exit(1);
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
-		    kp->kp.adjust=chunkalloc(sizeof(DeviceTable));
+		    kp->kp.adjust=XZALLOC(DeviceTable);
 		    SFDReadDeviceTable(sfd,kp->kp.adjust);
 		}
 		if ( last != NULL )
@@ -5461,12 +5461,12 @@ exit(1);
 			 pst_alternate;
 	    if ( strchr(tok,'2')!=NULL ) {
 		old = false;
-		pst = chunkalloc(sizeof(PST));
+		pst = XZALLOC(PST);
 		if ( type!=pst_lcaret )
 		    pst->subtable = SFFindLookupSubtable(sf,SFDReadUTF7Str(sfd));
 	    } else {
 		old = true;
-		pst = chunkalloc(sizeof(PST1));
+		pst = XZALLOC(PST1);
 		((PST1 *) pst)->tag = CHR('l','i','g','a');
 		((PST1 *) pst)->script_lang_index = 0xffff;
 		while ( (ch=nlgetc(sfd))==' ' || ch=='\t' );
@@ -5536,7 +5536,7 @@ exit(1);
 	    } else if ( pst->type==pst_pair ) {
 		getname(sfd,tok);
 		pst->u.pair.paired = copy(tok);
-		pst->u.pair.vr = chunkalloc(sizeof(struct vr [2]));
+		pst->u.pair.vr = XCALLOC(2, struct vr);
 		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd",
 			&pst->u.pair.vr[0].xoff, &pst->u.pair.vr[0].yoff,
 			&pst->u.pair.vr[0].h_adv_off, &pst->u.pair.vr[0].v_adv_off);
@@ -5638,7 +5638,7 @@ static int SFDGetBitmapChar(FILE *sfd,BDFFont *bdf) {
     EncMap *map;
     int ch;
 
-    bfc = chunkalloc(sizeof(BDFChar));
+    bfc = XZALLOC(BDFChar);
     memset( bfc,'\0',sizeof( BDFChar ));
     map = bdf->sf->map;
 
@@ -6147,7 +6147,7 @@ static void SFDGetSubrs(FILE *sfd) {
 }
 
 static struct ttflangname *SFDGetLangName(FILE *sfd,struct ttflangname *old) {
-    struct ttflangname *cur = chunkalloc(sizeof(struct ttflangname)), *prev;
+    struct ttflangname *cur = XZALLOC(struct ttflangname), *prev;
     int i;
 
     getint(sfd,&cur->lang);
@@ -6191,7 +6191,7 @@ static void SFDGetDesignSize(FILE *sfd,SplineFont *sf) {
 	    ungetc(ch,sfd);
 	    if ( !isdigit(ch))
 	break;
-	    cur = chunkalloc(sizeof(struct otfname));
+	    cur = XZALLOC(struct otfname);
 	    cur->next = sf->fontstyle_name;
 	    sf->fontstyle_name = cur;
 	    getsint(sfd,(int16 *) &cur->lang);
@@ -6205,14 +6205,14 @@ static void SFDGetOtfFeatName(FILE *sfd,SplineFont *sf) {
     struct otfname *cur;
     struct otffeatname *fn;
 
-    fn = chunkalloc(sizeof(struct otffeatname));
+    fn = XZALLOC(struct otffeatname);
     fn->tag = gettag(sfd);
     for (;;) {
 	while ( (ch=nlgetc(sfd))==' ' );
 	ungetc(ch,sfd);
 	if ( !isdigit(ch))
     break;
-	cur = chunkalloc(sizeof(struct otfname));
+	cur = XZALLOC(struct otfname);
 	cur->next = fn->names;
 	fn->names = cur;
 	getsint(sfd,(int16 *) &cur->lang);
@@ -6538,7 +6538,7 @@ static struct macname *SFDParseMacNames(FILE *sfd, char *tok) {
     int ch;
 
     while ( strcmp(tok,"MacName:")==0 ) {
-	cur = chunkalloc(sizeof(struct macname));
+	cur = XZALLOC(struct macname);
 	if ( last==NULL )
 	    head = cur;
 	else
@@ -6576,7 +6576,7 @@ MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok) {
     int feat, ism, def, set;
 
     while ( strcmp(tok,"MacFeat:")==0 ) {
-	cur = chunkalloc(sizeof(MacFeat));
+	cur = XZALLOC(MacFeat);
 	if ( last==NULL )
 	    head = cur;
 	else
@@ -6589,7 +6589,7 @@ MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok) {
 	cur->featname = SFDParseMacNames(sfd,tok);
 	slast = NULL;
 	while ( strcmp(tok,"MacSetting:")==0 ) {
-	    scur = chunkalloc(sizeof(struct macsetting));
+	    scur = XZALLOC(struct macsetting);
 	    if ( slast==NULL )
 		cur->settings = scur;
 	    else
@@ -6847,7 +6847,7 @@ static void SFDParseLookup(FILE *sfd,OTLookup *otl) {
 	while ( (subname = SFDReadUTF7Str(sfd))!=NULL ) {
 	    while ( (ch=nlgetc(sfd))==' ' );
 	    ungetc(ch,sfd);
-	    sub = chunkalloc(sizeof(struct lookup_subtable));
+	    sub = XZALLOC(struct lookup_subtable);
 	    sub->subtable_name = subname;
 	    sub->lookup = otl;
 	    switch ( otl->lookup_type ) {
@@ -6911,7 +6911,7 @@ static void SFDParseLookup(FILE *sfd,OTLookup *otl) {
 	    while ( (ch=nlgetc(sfd))==' ' );
 	    if ( ch==']' )
 	break;
-	    fl = chunkalloc(sizeof(FeatureScriptLangList));
+	    fl = XZALLOC(FeatureScriptLangList);
 	    if ( lastfl==NULL )
 		otl->features = fl;
 	    else
@@ -6933,7 +6933,7 @@ static void SFDParseLookup(FILE *sfd,OTLookup *otl) {
 		    while ( (ch=nlgetc(sfd))==' ' );
 		    if ( ch==')' )
 		break;
-		    sl = chunkalloc(sizeof(struct scriptlanglist));
+		    sl = XZALLOC(struct scriptlanglist);
 		    if ( lastsl==NULL )
 			fl->scripts = sl;
 		    else
@@ -7003,7 +7003,7 @@ static struct baselangextent *ParseBaseLang(FILE *sfd) {
 
     while ( (ch=nlgetc(sfd))==' ' );
     if ( ch=='{' ) {
-	bl = chunkalloc(sizeof(struct baselangextent));
+	bl = XZALLOC(struct baselangextent);
 	while ( (ch=nlgetc(sfd))==' ' );
 	ungetc(ch,sfd);
 	if ( ch=='\'' )
@@ -7036,7 +7036,7 @@ static struct basescript *SFDParseBaseScript(FILE *sfd,struct Base *base) {
     if ( base==NULL )
 return(NULL);
 
-    bs = chunkalloc(sizeof(struct basescript));
+    bs = XZALLOC(struct basescript);
 
     bs->script = gettag(sfd);
     getint(sfd,&bs->def_baseline);
@@ -7061,7 +7061,7 @@ return( bs );
 }
 
 static struct Base *SFDParseBase(FILE *sfd) {
-    struct Base *base = chunkalloc(sizeof(struct Base));
+    struct Base *base = XZALLOC(struct Base);
     int i;
 
     getint(sfd,&base->baseline_cnt);
@@ -7112,7 +7112,7 @@ static void SFDParseJustify(FILE *sfd, SplineFont *sf, char *tok) {
     int p = 0,ch;
 
     while ( strcmp(tok,"Justify:")==0 ) {
-	cur = chunkalloc(sizeof(Justify));
+	cur = XZALLOC(Justify);
 	if ( last==NULL )
 	    sf->justify = cur;
 	else
@@ -7129,7 +7129,7 @@ static void SFDParseJustify(FILE *sfd, SplineFont *sf, char *tok) {
 		geteol(sfd,tok);
 		cur->extenders = copy(tok);
 	    } else if ( strcmp(tok,"JstfLang:")==0 ) {
-		jlang = chunkalloc(sizeof(struct jstf_lang));
+		jlang = XZALLOC(struct jstf_lang);
 		if ( llast==NULL )
 		    cur->langs = jlang;
 		else
@@ -7651,7 +7651,7 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	    IError( "Lookups should not happen in version 1 sfd files." );
 	    exit(1);
 	}
-	otl = chunkalloc(sizeof(OTLookup));
+	otl = XZALLOC(OTLookup);
 	getint(sfd,&temp); otl->lookup_type = temp;
 	getint(sfd,&temp); otl->lookup_flags = temp;
 	getint(sfd,&temp); otl->store_in_afm = temp;
@@ -7717,7 +7717,7 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	    IError( "Version mixup in Kerning Classes of sfd file." );
 	    exit(1);
 	}
-	kc = chunkalloc(old ? sizeof(KernClass1) : sizeof(KernClass));
+	kc = xzalloc(old ? sizeof(KernClass1) : sizeof(KernClass));
 	getint(sfd,&kc->first_cnt);
 	ch=nlgetc(sfd);
 	if ( ch=='+' )
@@ -7790,10 +7790,10 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	int old;
 	if ( strchr(tok,'2')!=NULL ) {
 	    old = false;
-	    fpst = chunkalloc(sizeof(FPST));
+	    fpst = XZALLOC(FPST);
 	} else {
 	    old = true;
-	    fpst = chunkalloc(sizeof(FPST1));
+	    fpst = XZALLOC(FPST1);
 	}
 	if ( (sf->sfd_version<2)!=old ) {
 	    IError( "Version mixup in FPST of sfd file." );
@@ -7816,10 +7816,10 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	ASM *sm;
 	if ( strchr(tok,'2')!=NULL ) {
 	    old = false;
-	    sm = chunkalloc(sizeof(ASM));
+	    sm = XZALLOC(ASM);
 	} else {
 	    old = true;
-	    sm = chunkalloc(sizeof(ASM1));
+	    sm = XZALLOC(ASM1);
 	}
 	if ( (sf->sfd_version<2)!=old ) {
 	    IError( "Version mixup in state machine of sfd file." );
@@ -8082,7 +8082,7 @@ exit(1);
 	    AnchorClass *lastan = NULL, *an;
 	    int old = strchr(tok,'2')==NULL;
 	    while ( (name=SFDReadUTF7Str(sfd))!=NULL ) {
-		an = chunkalloc(old ? sizeof(AnchorClass1) : sizeof(AnchorClass));
+		an = xzalloc(old ? sizeof(AnchorClass1) : sizeof(AnchorClass));
 		an->name = name;
 		if ( old ) {
 		    getname(sfd,tok);
@@ -8175,7 +8175,7 @@ exit(1);
 		IError("Table ordering specified in version 2 sfd file.\n" );
 exit( 1 );
 	    }
-	    ord = chunkalloc(sizeof(struct table_ordering));
+	    ord = XZALLOC(struct table_ordering);
 	    ord->table_tag = gettag(sfd);
 	    getint(sfd,&temp);
 	    ord->ordered_features = malloc((temp+1)*sizeof(uint32));
@@ -8203,7 +8203,7 @@ exit( 1 );
 	} else if ( strmatch(tok,"PickledData:")==0 ) {
 	    sf->python_persistent = SFDUnPickle(sfd);
 	} else if ( strmatch(tok,"MMCounts:")==0 ) {
-	    MMSet *mm = sf->mm = chunkalloc(sizeof(MMSet));
+	    MMSet *mm = sf->mm = XZALLOC(MMSet);
 	    getint(sfd,&mm->instance_count);
 	    getint(sfd,&mm->axis_count);
 	    ch = nlgetc(sfd);

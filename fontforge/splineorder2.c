@@ -156,8 +156,8 @@ return( true );
 
 static SplinePoint *MakeQuadSpline(SplinePoint *start,Spline *ttf,real x,
 	real y, real tmax,SplinePoint *oldend) {
-    Spline *new = chunkalloc(sizeof(Spline));
-    SplinePoint *end = chunkalloc(sizeof(SplinePoint));
+    Spline *new = XZALLOC(Spline);
+    SplinePoint *end = XZALLOC(SplinePoint);
 
     if ( tmax==1 ) {
 	end->roundx = oldend->roundx; end->roundy = oldend->roundy; end->dontinterpolate = oldend->dontinterpolate;
@@ -226,8 +226,8 @@ return( false );
 
 static SplinePoint *LinearSpline(Spline *ps,SplinePoint *start, real tmax) {
     real x,y;
-    Spline *new = chunkalloc(sizeof(Spline));
-    SplinePoint *end = chunkalloc(sizeof(SplinePoint));
+    Spline *new = XZALLOC(Spline);
+    SplinePoint *end = XZALLOC(SplinePoint);
 
     x = ((ps->splines[0].a*tmax+ps->splines[0].b)*tmax+ps->splines[0].c)*tmax+ps->splines[0].d;
     y = ((ps->splines[1].a*tmax+ps->splines[1].b)*tmax+ps->splines[1].c)*tmax+ps->splines[1].d;
@@ -693,13 +693,13 @@ static SplinePoint *AlreadyQuadraticCheck(Spline *ps, SplinePoint *start) {
 	/* Already Quadratic, just need to find the control point */
 	/* Or linear, in which case we don't need to do much of anything */
 	Spline *spline;
-	sp = chunkalloc(sizeof(SplinePoint));
+	sp = XZALLOC(SplinePoint);
 	sp->me.x = ps->to->me.x; sp->me.y = ps->to->me.y;
 	sp->roundx = ps->to->roundx; sp->roundy = ps->to->roundy; sp->dontinterpolate = ps->to->dontinterpolate;
 	sp->ttfindex = 0xfffe;
 	sp->nextcpindex = 0xfffe;
 	sp->nonextcp = true;
-	spline = chunkalloc(sizeof(Spline));
+	spline = XZALLOC(Spline);
 	spline->order2 = true;
 	spline->from = start;
 	spline->to = sp;
@@ -846,7 +846,7 @@ static void ttfCleanup(SplinePoint *from) {
 
 SplinePoint *SplineTtfApprox(Spline *ps) {
     SplinePoint *from;
-    from = chunkalloc(sizeof(SplinePoint));
+    from = XZALLOC(SplinePoint);
     *from = *ps->from;
     from->hintmask = NULL;
     ttfApprox(ps,from);
@@ -854,13 +854,13 @@ return( from );
 }
 
 SplineSet *SSttfApprox(SplineSet *ss) {
-    SplineSet *ret = chunkalloc(sizeof(SplineSet));
+    SplineSet *ret = XZALLOC(SplineSet);
     Spline *spline, *first;
 
-    ret->first = chunkalloc(sizeof(SplinePoint));
+    ret->first = XZALLOC(SplinePoint);
     *ret->first = *ss->first;
     if ( ret->first->hintmask != NULL ) {
-	ret->first->hintmask = chunkalloc(sizeof(HintMask));
+	ret->first->hintmask = XZALLOC(HintMask);
 	memcpy(ret->first->hintmask,ss->first->hintmask,sizeof(HintMask));
     }
     ret->last = ret->first;
@@ -872,7 +872,7 @@ SplineSet *SSttfApprox(SplineSet *ss) {
 	ret->last->ttfindex = spline->to->ttfindex;
 	ret->last->nextcpindex = spline->to->nextcpindex;
 	if ( spline->to->hintmask != NULL ) {
-	    ret->last->hintmask = chunkalloc(sizeof(HintMask));
+	    ret->last->hintmask = XZALLOC(HintMask);
 	    memcpy(ret->last->hintmask,spline->to->hintmask,sizeof(HintMask));
 	}
 	if ( first==NULL ) first = spline;
@@ -955,24 +955,24 @@ return;
 }
     
 SplineSet *SSPSApprox(SplineSet *ss) {
-    SplineSet *ret = chunkalloc(sizeof(SplineSet));
+    SplineSet *ret = XZALLOC(SplineSet);
     Spline *spline, *first;
     SplinePoint *to;
 
-    ret->first = chunkalloc(sizeof(SplinePoint));
+    ret->first = XZALLOC(SplinePoint);
     *ret->first = *ss->first;
     if ( ret->first->hintmask != NULL ) {
-	ret->first->hintmask = chunkalloc(sizeof(HintMask));
+	ret->first->hintmask = XZALLOC(HintMask);
 	memcpy(ret->first->hintmask,ss->first->hintmask,sizeof(HintMask));
     }
     ret->last = ret->first;
 
     first = NULL;
     for ( spline=ss->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	to = chunkalloc(sizeof(SplinePoint));
+	to = XZALLOC(SplinePoint);
 	*to = *spline->to;
 	if ( to->hintmask != NULL ) {
-	    to->hintmask = chunkalloc(sizeof(HintMask));
+	    to->hintmask = XZALLOC(HintMask);
 	    memcpy(to->hintmask,spline->to->hintmask,sizeof(HintMask));
 	}
 	if ( !spline->knownlinear ) {
@@ -1624,7 +1624,7 @@ return;
 }
 
 Spline *SplineMake2(SplinePoint *from, SplinePoint *to) {
-    Spline *spline = chunkalloc(sizeof(Spline));
+    Spline *spline = XZALLOC(Spline);
 
     spline->from = from; spline->to = to;
     from->next = to->prev = spline;

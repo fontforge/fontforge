@@ -2003,7 +2003,7 @@ static void bGenerateFamily(Context *c) {
     sfs = lastsfs = NULL;
     for ( fc=0; fc<fondcnt; ++fc ) {
 	for ( j=0; j<48; ++j ) if ( familysfs[fc][j]!=NULL ) {
-	    cur = chunkalloc(sizeof(struct sflist));
+	    cur = XZALLOC(struct sflist);
 	    if ( sfs==NULL ) sfs = cur;
 	    else lastsfs->next = cur;
 	    lastsfs = cur;
@@ -3182,7 +3182,7 @@ static void bLoadTableFromFile(Context *c) {
 
     for ( tab=sf->ttf_tab_saved; tab!=NULL && tab->tag!=tag; tab=tab->next );
     if ( tab==NULL ) {
-	tab = chunkalloc(sizeof(struct ttf_table));
+	tab = XZALLOC(struct ttf_table);
 	tab->tag = tag;
 	tab->next = sf->ttf_tab_saved;
 	sf->ttf_tab_saved = tab;
@@ -3440,7 +3440,7 @@ static void bSetTTFName(Context *c) {
 	if ( u==NULL )
 return;
 	for ( prev = NULL, ln = sf->names; ln!=NULL && ln->lang<lang; prev = ln, ln = ln->next );
-	ln = chunkalloc(sizeof(struct ttflangname));
+	ln = XZALLOC(struct ttflangname);
 	ln->lang = lang;
 	if ( prev==NULL ) { ln->next = sf->names; sf->names = ln; }
 	else { ln->next = prev->next; prev->next = ln; }
@@ -3763,7 +3763,7 @@ static void bSetMaxpValue(Context *c) {
 
     tab = SFFindTable(sf,CHR('m','a','x','p'));
     if ( tab==NULL ) {
-	tab = chunkalloc(sizeof(struct ttf_table));
+	tab = XZALLOC(struct ttf_table);
 	tab->next = sf->ttf_tables;
 	sf->ttf_tables = tab;
 	tab->tag = CHR('m','a','x','p');
@@ -5564,7 +5564,7 @@ static void TableAddInstrs(SplineFont *sf, uint32 tag,int replace,
     if ( icnt==0 )
 return;
     if ( tab==NULL ) {
-	tab = chunkalloc(sizeof( struct ttf_table ));
+	tab = XZALLOC( struct ttf_table );
 	tab->tag = tag;
 	tab->next = sf->ttf_tables;
 	sf->ttf_tables = tab;
@@ -5843,7 +5843,7 @@ static void bAddDHint( Context *c ) {
 
     any = false;
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && (sc=sf->glyphs[gid])!=NULL && fv->selected[i] ) {
-        d = chunkalloc(sizeof(DStemInfo));
+        d = XZALLOC(DStemInfo);
         d->where = NULL;
         d->left = left;
         d->right = right;
@@ -5891,7 +5891,7 @@ static void _AddHint(Context *c,int ish) {
 	ScriptError( c, "Bad hint width" );
     any = false;
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && (sc=sf->glyphs[gid])!=NULL && fv->selected[i] ) {
-	h = chunkalloc(sizeof(StemInfo));
+	h = XZALLOC(StemInfo);
 	h->start = start;
 	h->width = width;
 	if ( ish ) {
@@ -6212,7 +6212,7 @@ return;		/* It already has a kern==0 with everything */
 	    kp->off = kern;
 	    kp->subtable = local_sub;
 	} else {
-	    kp = chunkalloc(sizeof(KernPair));
+	    kp = XZALLOC(KernPair);
 	    if ( isv ) {
 		kp->next = sc1->vkerns;
 		sc1->vkerns = kp;
@@ -6630,7 +6630,7 @@ static void bAddAnchorClass(Context *c) {
 	    c->a.vals[3].type!=v_str )
 	ScriptError( c, "Bad type for argument");
 
-    ac = chunkalloc(sizeof(AnchorClass));
+    ac = XZALLOC(AnchorClass);
 
     ac->name = copy( c->a.vals[1].u.sval );
     for ( t=sf->anchor; t!=NULL; t=t->next )
@@ -6763,7 +6763,7 @@ static void bAddAnchorPoint(Context *c) {
     if ( ap!=NULL )
 	ScriptError(c,"This character already has an Anchor Point in the given anchor class" );
 
-    ap = chunkalloc(sizeof(AnchorPoint));
+    ap = XZALLOC(AnchorPoint);
     ap->anchor = t;
     ap->me.x = (c->a.vals[3].type==v_int)? c->a.vals[3].u.ival : rint(c->a.vals[3].u.fval);
     ap->me.y = (c->a.vals[4].type==v_int)? c->a.vals[4].u.ival : rint(c->a.vals[4].u.fval);
@@ -6840,7 +6840,7 @@ static void bAddPosSub(Context *c) {
 	temp.u.pos.v_adv_off = c->a.vals[5].u.ival;
     } else if ( temp.type==pst_pair ) {
 	temp.u.pair.paired = copy(c->a.vals[2].u.sval);
-	temp.u.pair.vr = chunkalloc(sizeof(struct vr [2]));
+	temp.u.pair.vr = XCALLOC(2, struct vr);
 	temp.u.pair.vr[0].xoff = c->a.vals[3].u.ival;
 	temp.u.pair.vr[0].yoff = c->a.vals[4].u.ival;
 	temp.u.pair.vr[0].h_adv_off = c->a.vals[5].u.ival;
@@ -6854,7 +6854,7 @@ static void bAddPosSub(Context *c) {
 	if ( temp.type==pst_ligature )
 	    temp.u.lig.lig = sc;
     }
-    pst = chunkalloc(sizeof(PST));
+    pst = XZALLOC(PST);
     *pst = temp;
     pst->next = sc->possub;
     sc->possub = pst;
@@ -6987,7 +6987,7 @@ static FeatureScriptLangList *ParseFeatureList(Context *c,Array *a) {
 	    ScriptError(c,"A feature list is composed of an array of arrays each containing two elements");
 	else if (a->vals[f].u.aval->vals[0].type!=v_str || a->vals[f].u.aval->vals[1].type!=v_arr)
 	    ScriptError( c, "Bad type for argument");
-	fl = chunkalloc(sizeof(FeatureScriptLangList));
+	fl = XZALLOC(FeatureScriptLangList);
 	fl->featuretag = ParseTag(c,&a->vals[f].u.aval->vals[0],true,&wasmac);
 	fl->ismac = wasmac;
 	if ( flhead==NULL )
@@ -7006,7 +7006,7 @@ static FeatureScriptLangList *ParseFeatureList(Context *c,Array *a) {
 		ScriptError(c,"A script list is composed of an array of arrays each containing two elements");
 	    else if (scripts->vals[s].u.aval->vals[0].type!=v_str || scripts->vals[s].u.aval->vals[1].type!=v_arr)
 		ScriptError( c, "Bad type for argument");
-	    sl = chunkalloc(sizeof(struct scriptlanglist));
+	    sl = XZALLOC(struct scriptlanglist);
 	    sl->script = ParseTag(c,&scripts->vals[s].u.aval->vals[0],false,&wasmac);
 	    if ( sltail==NULL )
 		fl->scripts = sl;
@@ -7100,7 +7100,7 @@ static void bAddLookup(Context *c) {
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
 
-    otl = chunkalloc(sizeof(OTLookup));
+    otl = XZALLOC(OTLookup);
     if ( after!=NULL ) {
 	otl->next = after->next;
 	after->next = otl;
@@ -7328,7 +7328,7 @@ static void bAddLookupSubtable(Context *c) {
 		    ScriptErrorString(c,"A lookup subtable with this name already exists", c->a.vals[2].u.sval);
 	}
     }
-    sub = chunkalloc(sizeof(struct lookup_subtable));
+    sub = XZALLOC(struct lookup_subtable);
     sub->lookup = otl;
     sub->subtable_name = copy(c->a.vals[2].u.sval);
     if ( after!=NULL ) {
@@ -7427,7 +7427,7 @@ static void bAddSizeFeature(Context *c) {
 		ScriptError( c,"Array must consist of lanuage-id, string pairs" );
 	    if ( subarr->vals[0].u.ival==0x409 )
 		found_english = true;
-	    cur = chunkalloc(sizeof(*cur));
+	    cur = XZALLOC(struct otfname);
 	    cur->lang = subarr->vals[0].u.ival;
 	    cur->name = copy(subarr->vals[1].u.sval);
 	    if ( last==NULL )

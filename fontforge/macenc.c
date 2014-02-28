@@ -2207,7 +2207,7 @@ struct macname *MacNameCopy(struct macname *mn) {
     struct macname *head=NULL, *last, *cur;
 
     while ( mn!=NULL ) {
-	cur = chunkalloc(sizeof(struct macname));
+	cur = XZALLOC(struct macname);
 	cur->enc = mn->enc;
 	cur->lang = mn->lang;
 	cur->name = copy(mn->name);

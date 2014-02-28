@@ -1471,7 +1471,7 @@ return;
     }
 
     if ( d->family ) {
-	cur = chunkalloc(sizeof(struct sflist));
+	cur = XZALLOC(struct sflist);
 	cur->next = NULL;
 	sfs = last = cur;
 	cur->sf = d->sf;
@@ -1479,7 +1479,7 @@ return;
 	cur->sizes = sizes;
 	for ( i=0; i<d->familycnt; ++i ) {
 	    if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_Family+10*i)) ) {
-		cur = chunkalloc(sizeof(struct sflist));
+		cur = XZALLOC(struct sflist);
 		last->next = cur;
 		last = cur;
 		cur->sf = GGadgetGetUserData(GWidgetGetControl(d->gw,CID_Family+10*i));

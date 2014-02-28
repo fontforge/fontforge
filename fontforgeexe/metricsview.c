@@ -1303,7 +1303,7 @@ return( false );
 	    kp = mv->glyphs[which-1].kp = NULL;
 	} else if ( offset != 0 ) {
 	    if ( kp==NULL ) {
-		kp = chunkalloc(sizeof(KernPair));
+		kp = XZALLOC(KernPair);
 		kp->sc = sc;
 		if ( !mv->vertical ) {
 		    kp->next = psc->kerns;

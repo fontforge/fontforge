@@ -1973,7 +1973,7 @@ static void MakeLookups(SplineFont *sf,OTLookup **lookups,int ltn,int crl,int gr
     }
     for ( i=0; i<4; ++i ) {
 	if ( lookups[i]!=NULL && lookups[i]->subtables==NULL ) {
-	    lookups[i]->subtables = chunkalloc(sizeof(struct lookup_subtable));
+	    lookups[i]->subtables = XZALLOC(struct lookup_subtable);
 	    lookups[i]->subtables->lookup = lookups[i];
 	    lookups[i]->subtables->per_glyph_pst_or_kern = true;
 	    NameOTLookup(lookups[i],sf);
@@ -2090,7 +2090,7 @@ return( sc_sc );
     sc_sc->name = copy(buffer);
     SFHashGlyph(sf,sc_sc);
 
-    pst = chunkalloc(sizeof(PST));
+    pst = XZALLOC(PST);
     pst->next = cap_sc->possub;
     cap_sc->possub = pst;
     script_index = script==CHR('l','a','t','n')?0:
@@ -2103,7 +2103,7 @@ return( sc_sc );
     /* Adobe's convention seems to be that symbols get both the lc and the uc */
     /*  feature attached to them. */
     if ( lc_sc!=NULL ) {
-	pst = chunkalloc(sizeof(PST));
+	pst = XZALLOC(PST);
 	pst->next = lc_sc->possub;
 	lc_sc->possub = pst;
 	pst->subtable = smcp[script_index];
@@ -2808,7 +2808,7 @@ static struct lookup_subtable *MakeSupSupLookup(SplineFont *sf,uint32 feature_ta
     for ( i=0; i<scnt; ++i ) {
 	for ( sl=fl->scripts; sl!=NULL && sl->script!=scripts[i]; sl=sl->next );
 	if ( sl==NULL ) {
-	    sl = chunkalloc(sizeof(struct scriptlanglist));
+	    sl = XZALLOC(struct scriptlanglist);
 	    sl->script = scripts[i];
 	    sl->lang_cnt = 1;
 	    sl->langs[0] = DEFAULT_LANG;
@@ -2842,7 +2842,7 @@ return( sc_sc );
     sc_sc->name = copy(buffer);
     SFHashGlyph(sf,sc_sc);
 
-    pst = chunkalloc(sizeof(PST));
+    pst = XZALLOC(PST);
     pst->next = sc->possub;
     sc->possub = pst;
     pst->subtable = feature;
@@ -4581,7 +4581,7 @@ static SplineSet *MakeBottomItalicSerif(double stemwidth,double endx,
 	    (bold->stemwidth-normal->stemwidth);
     yscale = ii->x_height/normal->xheight;
 
-    ss = chunkalloc(sizeof(SplineSet));
+    ss = XZALLOC(SplineSet);
     i=0;
     InterpBp(&bp,i,xscale,yscale,interp,endx,normal,bold);
     ss->first = last = SplinePointCreate(bp.x,bp.y);
@@ -5850,7 +5850,7 @@ static int FFCopyTrans(ItalicInfo *ii,real *transform,
 
     last = NULL;
     for ( sp = ii->ff_start1; ; sp=sp->next->to ) {
-	cur = chunkalloc(sizeof(SplinePoint));
+	cur = XZALLOC(SplinePoint);
 	*cur = *sp;
 	cur->hintmask = NULL;
 	cur->me.x = transform[0]*sp->me.x + transform[2]*sp->me.y + transform[4];
@@ -5877,7 +5877,7 @@ static int FFCopyTrans(ItalicInfo *ii,real *transform,
 
     last = NULL;
     for ( sp = ii->ff_start2; ; sp=sp->next->to ) {
-	cur = chunkalloc(sizeof(SplinePoint));
+	cur = XZALLOC(SplinePoint);
 	*cur = *sp;
 	cur->hintmask = NULL;
 	cur->me.x = transform[0]*sp->me.x + transform[2]*sp->me.y + transform[4];
@@ -6029,7 +6029,7 @@ return;
     if ( touches ) {
 	if ( ss[0]==ss[1] ) {
 	    ss[0]->first = ss[0]->last = start[0];
-	    ss[1] = chunkalloc(sizeof(SplineSet));
+	    ss[1] = XZALLOC(SplineSet);
 	    ss[1]->next = ss[0]->next;
 	    ss[0]->next = ss[1];
 	    ss[1]->first = ss[1]->last = start[1];
@@ -6052,7 +6052,7 @@ static void FCopyTrans(ItalicInfo *ii,real *transform,SplinePoint **f_start,Spli
 
     last = NULL;
     for ( sp = ii->f_start; ; sp=sp->next->to ) {
-	cur = chunkalloc(sizeof(SplinePoint));
+	cur = XZALLOC(SplinePoint);
 	*cur = *sp;
 	cur->hintmask = NULL;
 	cur->me.x = transform[0]*sp->me.x + transform[2]*sp->me.y + transform[4];

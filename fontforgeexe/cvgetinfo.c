@@ -788,7 +788,7 @@ static AnchorPoint *AnchorPointNew(CharView *cv) {
 
     if ( an==NULL )
 return(NULL);
-    ap = chunkalloc(sizeof(AnchorPoint));
+    ap = XZALLOC(AnchorPoint);
     ap->anchor = an;
     ap->me.x = cv->p.cx; /* cv->p.cx = 0; */
     ap->me.y = cv->p.cy; /* cv->p.cy = 0; */
@@ -1824,7 +1824,7 @@ static void PI_FigureHintMask(GIData *ci) {
 	ci->cursp->hintmask = NULL;
     else {
 	if ( ci->cursp->hintmask==NULL )
-	    ci->cursp->hintmask = chunkalloc(sizeof(HintMask));
+	    ci->cursp->hintmask = XZALLOC(HintMask);
 	else
 	    memset(ci->cursp->hintmask,0,sizeof(HintMask));
 	for ( i=0; i<len; ++i )

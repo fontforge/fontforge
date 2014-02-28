@@ -553,7 +553,7 @@ static void SplineSetNLTrans(SplineSet *ss,struct context *c,
     /*  curves, curves may become higher order curves (which we still approx */
     /*  imate with cubics) */
 
-    first = last = chunkalloc(sizeof(SplinePoint));
+    first = last = XZALLOC(SplinePoint);
     *first = *ss->first;
     first->hintmask = NULL;
     first->next = first->prev = NULL;
@@ -562,7 +562,7 @@ static void SplineSetNLTrans(SplineSet *ss,struct context *c,
 
     if ( ss->first->next!=NULL ) {
 	for ( sp=ss->first->next->to; sp!=NULL; ) {
-	    next = chunkalloc(sizeof(SplinePoint));
+	    next = XZALLOC(SplinePoint);
 	    *next = *sp;
 	    next->hintmask = NULL;
 	    if ( everything || next->selected )

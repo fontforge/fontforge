@@ -1311,7 +1311,7 @@ static void pfed_read_glyph_layer(FILE *ttf,struct ttfinfo *info,Layer *ly,
     ss = ly->splines;			/* Only relevant for spiros where they live in someone else's layer */
     for ( i=0; i<cc; ++i ) {
 	if ( type!=1 ) {		/* Not spiros */
-	    contours[i].ss = chunkalloc(sizeof(SplineSet));
+	    contours[i].ss = XZALLOC(SplineSet);
 	    if ( i==0 )
 		ly->splines = contours[i].ss;
 	    else
@@ -1363,7 +1363,7 @@ return;			/* Bad version number */
 	    sp = SplinePointCreate(vs[i].pos,-info->emsize);
 	    nsp = SplinePointCreate(vs[i].pos,2*info->emsize);
 	    SplineMake(sp,nsp,info->to_order2);
-	    ss = chunkalloc(sizeof(SplineSet));
+	    ss = XZALLOC(SplineSet);
 	    ss->first = sp; ss->last = nsp;
 	    if ( vs[i].offset!=0 )
 		ss->contour_name = pfed_read_utf8(ttf,base+vs[i].offset);
@@ -1374,7 +1374,7 @@ return;			/* Bad version number */
 	    sp = SplinePointCreate(-info->emsize,hs[i].pos);
 	    nsp = SplinePointCreate(2*info->emsize,hs[i].pos);
 	    SplineMake(sp,nsp,info->to_order2);
-	    ss = chunkalloc(sizeof(SplineSet));
+	    ss = XZALLOC(SplineSet);
 	    ss->first = sp; ss->last = nsp;
 	    if ( hs[i].offset!=0 )
 		ss->contour_name = pfed_read_utf8(ttf,base+hs[i].offset);

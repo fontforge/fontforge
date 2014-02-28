@@ -65,7 +65,7 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
 	return( NULL );
     if ( n==1 ) {
 	/* Spiro only haS 1 code point sofar (no conversion needed yet) */
-	if ( (ss=chunkalloc(sizeof(SplineSet)))==NULL || \
+	if ( (ss=XZALLOC(SplineSet))==NULL || \
 	     (ss->first=ss->last=SplinePointCreate(spiros[0].x,spiros[0].y))==NULL ) {
 	    return( NULL );
 	}

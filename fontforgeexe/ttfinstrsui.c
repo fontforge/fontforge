@@ -300,7 +300,7 @@ static void IVOk(InstrDlg *iv) {
 	    } else {
 		tab = SFFindTable(id->sf,id->tag);
 		if ( tab==NULL ) {
-		    tab = chunkalloc(sizeof(struct ttf_table));
+		    tab = XZALLOC(struct ttf_table);
 		    tab->next = id->sf->ttf_tables;
 		    id->sf->ttf_tables = tab;
 		    tab->tag = id->tag;
@@ -1089,7 +1089,7 @@ return( true );
 	    }
 	} else {
 	    if ( sv->table==NULL ) {
-		tab = chunkalloc(sizeof(struct ttf_table));
+		tab = XZALLOC(struct ttf_table);
 		tab->next = sf->ttf_tables;
 		sf->ttf_tables = tab;
 		tab->tag = sv->tag;
@@ -1626,7 +1626,7 @@ static int Maxp_OK(GGadget *g, GEvent *e) {
 return( true );
 	mp->done = true;
 	if ( mp->tab==NULL ) {
-	    mp->tab = chunkalloc(sizeof(struct ttf_table));
+	    mp->tab = XZALLOC(struct ttf_table);
 	    mp->tab->tag = CHR('m','a','x','p');
 	    mp->tab->len = 32;
 	    mp->tab->data = calloc(32,1);

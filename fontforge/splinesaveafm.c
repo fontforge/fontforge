@@ -78,7 +78,7 @@ static void KPInsert( SplineChar *sc1, SplineChar *sc2, int off, int isv ) {
 	if ( kp!=NULL )
 	    kp->off = off;
 	else if ( off!=0 ) {
-	    kp = chunkalloc(sizeof(KernPair));
+	    kp = XZALLOC(KernPair);
 	    kp->sc = sc2;
 	    kp->off = off;
 	    script = SCScriptFromUnicode(sc1);
@@ -141,7 +141,7 @@ return( 0 );
 			break;
 			}
 			if ( liga==NULL ) {
-			    liga = chunkalloc(sizeof(PST));
+			    liga = XZALLOC(PST);
 			    liga->subtable = SFSubTableFindOrMake(sf,
 				    CHR('l','i','g','a'),SCScriptFromUnicode(sc2),
 				    gsub_ligature);
@@ -265,7 +265,7 @@ void SubsNew(SplineChar *to,enum possub_type type,int tag,char *components,
 	    SplineChar *default_script) {
     PST *pst;
 
-    pst = chunkalloc(sizeof(PST));
+    pst = XZALLOC(PST);
     pst->type = type;
     pst->subtable = SFSubTableFindOrMake(to->parent,tag,SCScriptFromUnicode(default_script),
 	    type==pst_substitution ? gsub_single :
@@ -283,7 +283,7 @@ void SubsNew(SplineChar *to,enum possub_type type,int tag,char *components,
 void PosNew(SplineChar *to,int tag,int dx, int dy, int dh, int dv) {
     PST *pst;
 
-    pst = chunkalloc(sizeof(PST));
+    pst = XZALLOC(PST);
     pst->type = pst_position;
     pst->subtable = SFSubTableFindOrMake(to->parent,tag,SCScriptFromUnicode(to),
 	    gpos_single );
@@ -418,7 +418,7 @@ return;
     }
     gvbase = doesGlyphExpandHorizontally(sc)?&sc->horiz_variants: &sc->vert_variants;
     if ( *gvbase==NULL )
-	*gvbase = chunkalloc(sizeof(struct glyphvariants));
+	*gvbase = XZALLOC(struct glyphvariants);
     (*gvbase)->variants = components;
 }
 
@@ -443,7 +443,7 @@ return;
     is_horiz = doesGlyphExpandHorizontally(sc);
     gvbase = is_horiz?&sc->horiz_variants: &sc->vert_variants;
     if ( *gvbase==NULL )
-	*gvbase = chunkalloc(sizeof(struct glyphvariants));
+	*gvbase = XZALLOC(struct glyphvariants);
 
     memset(bits,0,sizeof(bits));
     for ( j=0; j<4; ++j ) {
@@ -660,7 +660,7 @@ return;
     is_horiz = doesGlyphExpandHorizontally(sc);
     gvbase = is_horiz?&sc->horiz_variants: &sc->vert_variants;
     if ( *gvbase==NULL )
-	*gvbase = chunkalloc(sizeof(struct glyphvariants));
+	*gvbase = XZALLOC(struct glyphvariants);
 
     memset(bits,0,sizeof(bits));
     for ( j=0; j<4; ++j ) {
@@ -1351,7 +1351,7 @@ static void AfmBuildMarkCombos(SplineChar *sc,AnchorPoint *ap, struct cc_contain
 	this->base = sc;
 	this->accents = NULL;
 	for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->ticked ) {
-	    struct cc_accents *cca = chunkalloc(sizeof(struct cc_accents));
+	    struct cc_accents *cca = XZALLOC(struct cc_accents);
 	    cca->accent = cc->marks[ap->anchor->ac_num][cc->mpos[ap->anchor->ac_num]];
 	    for ( map = cca->accent->anchor; map->anchor!=ap->anchor || map->type!=at_mark;
 		    map = map->next );
@@ -1746,7 +1746,7 @@ void SFLigaturePrepare(SplineFont *sf) {
 			sc = tsc;
 			ccnt = 1;
 		    } else {
-			struct splinecharlist *cur = chunkalloc(sizeof(struct splinecharlist));
+			struct splinecharlist *cur = XZALLOC(struct splinecharlist);
 			if ( head==NULL )
 			    head = cur;
 			else
@@ -1823,7 +1823,7 @@ static void LigatureClosure(SplineFont *sf) {
 			}
 			if ( l3!=NULL )	/* The ligature we want to add already exists */
 		break;
-			lig = chunkalloc(sizeof(PST));
+			lig = XZALLOC(PST);
 			*lig = *l->lig;
 			lig->temporary = true;
 			lig->next = NULL;
@@ -1838,7 +1838,7 @@ static void LigatureClosure(SplineFont *sf) {
 			l3->first = sublig;
 			l3->ccnt = 2;
 			sublig->ligofme = l3;
-			l3->components = chunkalloc(sizeof(struct splinecharlist));
+			l3->components = XZALLOC(struct splinecharlist);
 			l3->components->sc = l->components->next->sc;
 		break;
 		    }
@@ -1920,7 +1920,7 @@ static void AddTempKP(SplineChar *first,SplineChar *second,
 	if ( kp->sc == second )
     break;
     if ( kp==NULL ) {
-	kp = chunkalloc(sizeof(KernPair));
+	kp = XZALLOC(KernPair);
 	kp->sc = second;
 	kp->off = offset;
 	kp->subtable = sub;
@@ -1952,7 +1952,7 @@ void SFKernClassTempDecompose(SplineFont *sf,int isv) {
 	kc->kcid = ++i;
     for ( kc = head; kc!=NULL; kc = kc->next ) {
 
-	otl = chunkalloc(sizeof(OTLookup));
+	otl = XZALLOC(OTLookup);
 	otl->next = sf->gpos_lookups;
 	sf->gpos_lookups = otl;
 	otl->lookup_type = gpos_pair;
@@ -1960,7 +1960,7 @@ void SFKernClassTempDecompose(SplineFont *sf,int isv) {
 	otl->features = FeatureListCopy(kc->subtable->lookup->features);
 	otl->lookup_name = copy(_("<Temporary kerning>"));
 	otl->temporary_kern = otl->store_in_afm = true;
-	otl->subtables = chunkalloc(sizeof(struct lookup_subtable));
+	otl->subtables = XZALLOC(struct lookup_subtable);
 	otl->subtables->lookup = otl;
 	otl->subtables->per_glyph_pst_or_kern = true;
 	otl->subtables->subtable_name = copy(_("<Temporary kerning>"));

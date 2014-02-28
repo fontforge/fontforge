@@ -2952,7 +2952,7 @@ static void Type2NotDefSplines(SplineFont *sf,SplineChar *sc,int layer) {
     stem = (sf->ascent+sf->descent)/20;
     ymax = 2*sf->ascent/3;
 
-    ss = chunkalloc(sizeof(SplineSet));
+    ss = XZALLOC(SplineSet);
     ss->first = ss->last = SplinePointCreate(stem,0);
     ss->last = LineTo(ss->last,stem,ymax);
     ss->last = LineTo(ss->last,sc->width-stem,ymax);
@@ -2960,7 +2960,7 @@ static void Type2NotDefSplines(SplineFont *sf,SplineChar *sc,int layer) {
     SplineMake3(ss->last,ss->first);
     ss->last = ss->first;
 
-    ss->next = inner = chunkalloc(sizeof(SplineSet));
+    ss->next = inner = XZALLOC(SplineSet);
     inner->first = inner->last = SplinePointCreate(2*stem,stem);
     inner->last = LineTo(inner->last,sc->width-2*stem,stem);
     inner->last = LineTo(inner->last,sc->width-2*stem,ymax-stem);
@@ -2970,18 +2970,18 @@ static void Type2NotDefSplines(SplineFont *sf,SplineChar *sc,int layer) {
 
     sc->layers[layer].splines = ss;
 
-    hints = chunkalloc(sizeof(StemInfo));
+    hints = XZALLOC(StemInfo);
     hints->start = stem;
     hints->width = stem;
-    hints->next = h = chunkalloc(sizeof(StemInfo));
+    hints->next = h = XZALLOC(StemInfo);
     h->start = sc->width-2*stem;
     h->width = stem;
     sc->vstem = hints;
 
-    hints = chunkalloc(sizeof(StemInfo));
+    hints = XZALLOC(StemInfo);
     hints->start = 0;
     hints->width = stem;
-    hints->next = h = chunkalloc(sizeof(StemInfo));
+    hints->next = h = XZALLOC(StemInfo);
     h->start = ymax-stem;
     h->width = stem;
     sc->hstem = hints;

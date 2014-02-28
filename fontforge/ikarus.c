@@ -408,7 +408,7 @@ static void IkarusAddContour(SplineChar *sc,int npts,BasePoint *bps,
     SplinePoint *last, *next;
     int i, cw;
 
-    spl = chunkalloc(sizeof(SplinePointList));
+    spl = XZALLOC(SplinePointList);
     spl->next = sc->layers[ly_fore].splines;
     sc->layers[ly_fore].splines = spl;
     spl->first = spl->last = last = SplinePointCreate(bps[0].x,bps[0].y);

@@ -716,7 +716,7 @@ static BDFChar *SFGrowTo(SplineFont *sf,BDFFont *b, int cc, EncMap *map) {
 	b->glyphcnt = sf->glyphcnt;
     }
     if ( (bc=b->glyphs[gid])==NULL ) {
-	b->glyphs[gid] = bc = chunkalloc(sizeof(BDFChar));
+	b->glyphs[gid] = bc = XZALLOC(BDFChar);
 	memset( bc,'\0',sizeof( BDFChar ));
 	bc->sc = sf->glyphs[gid];
 	bc->orig_pos = gid;
@@ -1766,7 +1766,7 @@ return( false );
     b->glyphcnt = b->glyphmax = mcnt;
     b->glyphs = calloc(mcnt,sizeof(BDFChar *));
     for ( i=0; i<mcnt; ++i ) {
-	BDFChar *bc = b->glyphs[i] = chunkalloc(sizeof(BDFChar));
+	BDFChar *bc = b->glyphs[i] = XZALLOC(BDFChar);
 	memset( bc,'\0',sizeof( BDFChar ));
 	bc->xmin = metrics[i].lsb;
 	bc->xmax = metrics[i].rsb-1;
@@ -2424,7 +2424,7 @@ return;			/* No images */
       and all images have the same scale
     */
 
-    bdf = chunkalloc(sizeof(BDFFont));
+    bdf = XZALLOC(BDFFont);
     bdf->sf = sf;
     sf->bitmaps = bdf;
     bdf->pixelsize = (sf->ascent+sf->descent)/scale;
@@ -2435,7 +2435,7 @@ return;			/* No images */
     bdf->glyphs = calloc(sf->glyphcnt,sizeof(BDFChar *));
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
-	bdf->glyphs[i] = bdfc = chunkalloc(sizeof(BDFChar));
+	bdf->glyphs[i] = bdfc = XZALLOC(BDFChar);
 	memset( bdfc,'\0',sizeof( BDFChar ));
 	bdfc->sc = sc;
 	bdfc->orig_pos = i;
