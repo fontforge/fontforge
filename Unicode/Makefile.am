@@ -66,8 +66,6 @@ libgunicode_la_SOURCES =	\
 	combiners.h		\
 	$(NULL)
 
-#	usprintf.c
-
 libgunicode_la_CFLAGS = $(WARN_CFLAGS)
 libgunicode_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
