@@ -32,6 +32,7 @@
 #include <ustring.h>
 #include <ffglib.h>
 #include <chardata.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <math.h>
 #include <setjmp.h>
@@ -8598,21 +8599,6 @@ static int AddScriptLine(FILE *script, const char *line)
     fsetpos(script, &pos);
     return getc(script);
 }
-
-#if defined(__MINGW32__)
-
-ssize_t getline(char **lineptr, size_t *n, FILE *stream);
-ssize_t getline(char **lineptr, size_t *n, FILE *stream)
-{
-    int size = 1024;
-    char* s = calloc( size+1, sizeof(char) );
-    char* ret = fgets( s, size, stream );
-    if( !ret )
-	return -1;
-    return s;
-}
-
-#endif
 
 static int _buffered_cgetc(Context *c) {
     if (c->interactive) {
