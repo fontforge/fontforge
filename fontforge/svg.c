@@ -1080,13 +1080,6 @@ return( NULL );
 }
 #else
 
-#ifndef HAVE_ICONV_H
-# undef iconv
-# undef iconv_t
-# undef iconv_open
-# undef iconv_close
-#endif
-
 #undef extended			/* used in xlink.h */
 #include <libxml/parser.h>
 

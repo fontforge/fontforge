@@ -272,17 +272,6 @@ fi
 ])
 
 
-dnl FONTFORGE_ARG_WITH_ICONV
-dnl ------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_ICONV],
-[
-AC_ARG_WITH([iconv],
-   [AS_HELP_STRING([--without-iconv],[build without the system's iconv(3); use fontforge's instead])],
-   [i_do_want_iconv="${withval}"],
-   [i_do_want_iconv=yes]
-)])
-
-
 dnl FONTFORGE_WARN_PKG_NOT_FOUND
 dnl ----------------------------
 AC_DEFUN([FONTFORGE_WARN_PKG_NOT_FOUND],
