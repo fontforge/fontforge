@@ -6867,7 +6867,7 @@ static void bRemoveATT(Context *c) {
 static void bRemoveLookup(Context *c) {
     OTLookup *otl;
 
-    if ( c->a.argc!=2 || c->a.argc!=3 )
+    if ( c->a.argc<2 || c->a.argc>3 )
 	ScriptError( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type for argument 1");
@@ -6912,7 +6912,7 @@ static void bMergeLookups(Context *c) {
 static void bRemoveLookupSubtable(Context *c) {
     struct lookup_subtable *sub;
 
-    if ( c->a.argc!=2 || c->a.argc!=3 )
+    if ( c->a.argc<2 || c->a.argc>3 )
 	ScriptError( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type for argument");
