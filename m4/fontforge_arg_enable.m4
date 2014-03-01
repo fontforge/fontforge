@@ -11,15 +11,3 @@ if test x"${AS_TR_SH(i_do_have_$1)}" = xyes; then
    AC_DEFINE([$3],1,[Define if enabling feature '$1'.])
 fi
 ])
-
-dnl FONTFORGE_ARG_DISABLE(option, help-message, config-entry)
-dnl ---------------------------------------------------------
-AC_DEFUN([FONTFORGE_ARG_DISABLE],
-[
-AC_ARG_ENABLE([$1],[$2],
-        [eval AS_TR_SH(i_do_have_$1)="${enableval}"],
-        [eval AS_TR_SH(i_do_have_$1)=yes])
-if test x"${AS_TR_SH(i_do_have_$1)}" != xyes; then
-   AC_DEFINE([$3],1,[Define if disabling feature '$1'.])
-fi
-])

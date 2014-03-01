@@ -5199,9 +5199,6 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
 
     fv->vlayout = gtk_widget_create_pango_layout( fv->v, NULL );
     fv->statuslayout = gtk_widget_create_pango_layout( fv->status, NULL );
-#if defined(_NO_FFSCRIPT)
-    gtk_widget_hide(lookup_widget( GTK_WIDGET(fv->gw), "script_menu1" ));
-#endif
 #ifndef FONTFORGE_CONFIG_TILEPATH
     gtk_widget_hide(lookup_widget( GTK_WIDGET(fv->gw), "tilepath1" ));
 #endif

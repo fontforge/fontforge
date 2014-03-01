@@ -130,9 +130,7 @@ static void _dousage(void) {
     printf( "\t-version\t\t (prints the version of fontforge and exits)\n" );
     printf( "\t-library-status\t (prints information about optional libraries\n\t\t\t\t and exits)\n" );
     printf( "\t-lang=py\t\t use python for scripts (may precede -script)\n" );
-#ifndef _NO_FFSCRIPT
     printf( "\t-lang=ff\t\t use fontforge's legacy scripting language\n" );
-#endif
     printf( "\t-script scriptfile\t (executes scriptfile)\n" );
     printf( "\t\tmust be the first option (or follow -lang).\n" );
     printf( "\t\tAll others passed to scriptfile.\n" );

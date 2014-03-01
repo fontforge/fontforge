@@ -62,7 +62,6 @@ int use_utf8_in_script = true;
 
 extern int prefRevisionsToRetain; /* sfd.c */
 
-#ifndef _NO_FFSCRIPT
 static int verbose = -1;
 static struct dictionary globals;
 
@@ -105,9 +104,7 @@ return( use_utf8_in_script ? copy(str) : latin1_2_utf8_copy(str));
 static char *script2latin1_copy(const char *str) {
 return( !use_utf8_in_script ? copy(str) : cu_copy(utf82u_copy(str)));
 }
-#endif /* _NO_FFSCRIPT */
 
-#ifndef _NO_FFSCRIPT
 static Array *arraycopy(Array *a) {
     int i;
     Array *c;
@@ -1625,7 +1622,6 @@ exit(0);
 exit(c->a.vals[1].u.ival );
 exit(1);
 }
-#endif /* _NO_FFSCRIPT */
 
 char **GetFontNames(char *filename) {
     FILE *foo;
@@ -1680,7 +1676,6 @@ char **GetFontNames(char *filename) {
 return( ret );
 }
 
-#ifndef _NO_FFSCRIPT
 static void bFontsInFile(Context *c) {
     char **ret;
     int cnt;
@@ -10164,9 +10159,7 @@ void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     }
     exit(0);
 }
-#endif		/* _NO_FFSCRIPT */
 
-#if !defined(_NO_FFSCRIPT)
 static int PythonLangFromExt(char *prog) {
     char *ext, *base;
 
@@ -10184,7 +10177,6 @@ return( 1 );
 
 return( 0 );
 }
-#endif
 
 static int DefaultLangPython(void) {
     static int def_py = -2;
@@ -10223,26 +10215,18 @@ return;
 	    ++i;
 	    is_python = strcmp(argv[i],"py")==0;
 	} else if ( strcmp(argv[i],"-")==0 ) {	/* Someone thought that, of course, "-" meant read from a script. I guess it makes no sense with anything else... */
-#if !defined(_NO_FFSCRIPT)
 	    if ( is_python )
 		PyFF_Stdin();
 	    else
 		ProcessNativeScript(argc, argv,stdin);
-#else
-	    PyFF_Stdin();
-#endif
 	} else if ( strcmp(pt,"-script")==0 ||
 		strcmp(pt,"-dry")==0 || strcmp(argv[i],"-c")==0 ) {
-#if !defined(_NO_FFSCRIPT)
 	    if ( is_python==-1 && strcmp(pt,"-script")==0 )
 		is_python = PythonLangFromExt(argv[i+1]);
 	    if ( is_python )
 		PyFF_Main(argc,argv,i);
 	    else
 		ProcessNativeScript(argc, argv,NULL);
-#else
-	    PyFF_Main(argc,argv,i);
-#endif
 	} else /*if ( access(argv[i],X_OK|R_OK)==0 )*/ {
 	    FILE *temp = fopen(argv[i],"r");
 	    char buffer[200];
@@ -10253,22 +10237,17 @@ return;
 	    fclose(temp);
 	    if ( buffer[0]=='#' && buffer[1]=='!' &&
 		    (strstr(buffer,"pfaedit")!=NULL || strstr(buffer,"fontforge")!=NULL )) {
-#if !defined(_NO_FFSCRIPT)
 		if ( is_python==-1 )
 		    is_python = PythonLangFromExt(argv[i]);
 		if ( is_python )
 		    PyFF_Main(argc,argv,i);
 		else
 		    ProcessNativeScript(argc, argv,NULL);
-#else
-		PyFF_Main(argc,argv,i);
-#endif
 	    }
 	}
     }
 }
 
-#if !defined(_NO_FFSCRIPT)
 static void ExecuteNativeScriptFile(FontViewBase *fv, char *filename) {
     Context c;
     Val argv[1];
@@ -10300,15 +10279,10 @@ return;				/* Error return */
 	fclose(c.script);
     }
 }
-#endif
 
 void ExecuteScriptFile(FontViewBase *fv, SplineChar *sc, char *filename) {
-#if !defined(_NO_FFSCRIPT)
     if ( sc!=NULL || PythonLangFromExt(filename))
 	PyFF_ScriptFile(fv,sc,filename);
     else
 	ExecuteNativeScriptFile(fv,filename);
-#else
-    PyFF_ScriptFile(fv,sc,filename);
-#endif
 }

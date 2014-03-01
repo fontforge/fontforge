@@ -216,11 +216,6 @@ if test x$enable_debug = xyes ; then
     CPPFLAGS="$CPPFLAGS -g -O0"
 fi
 
-FONTFORGE_ARG_DISABLE([native-scripting],
-        [AS_HELP_STRING([--disable-native-scripting],[disable the legacy fontforge scripting language])],
-        [_NO_FFSCRIPT])
-AM_CONDITIONAL([NATIVE_SCRIPTING],[test x"${i_do_have_native_scripting}" = xyes])
-
 AC_ARG_ENABLE([freetype-debugger],
         [AS_HELP_STRING([--enable-freetype-debugger[[=DIR]]],
                 [use freetype's internal debugger within fontforge; requires source code of the
@@ -691,17 +686,15 @@ AC_CONFIG_FILES([tests/atlocal])
 
 rm -f tests/*.pe tests/*.py
 
-if test x$i_do_have_native_scripting = xyes; then
-  ff_script_files="helper107 helper118A helper118B svg2ttf test001	\
-	test002 test003 test004 test005 test006 test007 test008 test009	\
-	test010 test101 test102 test103 test104 test105 test106 test107	\
-	test108 test109 test110 test111 test112 test113 test114 test115	\
-	test116 test117 test118 test119 test120 test121 test122 test123	\
-	test124 test125 test126 test127"
-  for arg in ${ff_script_files}; do
-    AC_CONFIG_FILES([tests/$arg.pe])
-  done
-fi
+ff_script_files="helper107 helper118A helper118B svg2ttf test001	\
+      test002 test003 test004 test005 test006 test007 test008 test009	\
+      test010 test101 test102 test103 test104 test105 test106 test107	\
+      test108 test109 test110 test111 test112 test113 test114 test115	\
+      test116 test117 test118 test119 test120 test121 test122 test123	\
+      test124 test125 test126 test127"
+for arg in ${ff_script_files}; do
+  AC_CONFIG_FILES([tests/$arg.pe])
+done
 
 py_script_files="findoverlapbugs test0001 test0101 test1001a test1001b \
 	test1001c test1001 test1002 test1003 test1004 test1005 test1006	\
@@ -748,7 +741,6 @@ Configuration:
 Summary of optional features:
 
   programs		${i_do_have_programs}
-  native scripting	${i_do_have_native_scripting}
   freetype debugger	${i_do_have_freetype_debugger}
   raw points mode	${i_do_have_debug_raw_points}
   tile path		${i_do_have_tile_path}

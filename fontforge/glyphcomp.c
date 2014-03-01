@@ -35,36 +35,24 @@
 /* *********************       Error dispatchers        ********************* */
 /* ************************************************************************** */
 static void GCError(Context *c, const char *msg) {
-#if defined(_NO_FFSCRIPT)
-    PyFF_ErrorString(msg,NULL);
-#else
     if ( c==NULL )
 	PyFF_ErrorString(msg,NULL);
     else
 	ScriptError(c,msg);
-#endif
 }
 
 static void GCErrorString(Context *c, const char *frmt, const char *str) {
-#if defined(_NO_FFSCRIPT)
-    PyFF_ErrorString(frmt,str);
-#else
     if ( c==NULL )
 	PyFF_ErrorString(frmt,str);
     else
 	ScriptErrorString(c,frmt,str);
-#endif
 }
 
 static void GCError3(Context *c, const char *frmt, const char *str, int size, int depth) {
-#if defined(_NO_FFSCRIPT)
-    PyFF_ErrorF3(frmt,str, size,depth);
-#else
     if ( c==NULL )
 	PyFF_ErrorF3(frmt,str, size,depth);
     else
 	ScriptErrorF(c,frmt,str, size,depth);
-#endif
 }
 
 /* ************************************************************************** */
@@ -788,11 +776,9 @@ return( -1 );
     if ( (ret&SS_HintMaskMismatch) && diffs_are_errors ) {
 	if ( hmfail==NULL || c==NULL )
 	    GCErrorString(c,"Hint mask mismatch in glyph", sc->name);
-#if !defined(_NO_FFSCRIPT)
 	else
 	    ScriptErrorF(c,"Hint mask mismatch at (%g,%g) in glyph: %s",
 		    hmfail->me.x, hmfail->me.y, sc->name);
-#endif
 return( -1 );
     }
     if ( (ret&SS_LayerCntMismatch) && diffs_are_errors ) {
