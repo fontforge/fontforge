@@ -683,10 +683,6 @@ osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Textbox.nib/
 fontforge.pc
 ])
 
-# GNUmakefiles that act as wrappers around portable makefiles and
-# provide additional targets.
-AC_CONFIG_FILES([fontforge/GNUmakefile])
-
 #--------------------------------------------------------------------------
 
 FONTFORGE_CREATE_PKGCONFIG_FILES

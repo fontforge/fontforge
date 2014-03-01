@@ -30,6 +30,7 @@
 #include <fontforge-config.h>
 #include "configure-fontforge.h"
 #include <basics.h>
+#include "libffstamp.h"
 #include <stdio.h>
 #include <string.h>
 #include <intl.h>
@@ -87,26 +88,6 @@ extern int quiet;
 
 
 extern MacFeat *default_mac_feature_map;
-
-typedef struct library_version_configuration {
-    uint16 major, minor;
-    long library_source_modtime;
-    const char *library_source_modtime_string;
-    int  library_source_versiondate;
-    uint16 sizeof_me;
-    uint16 sizeof_splinefont;
-    uint16 sizeof_splinechar;
-    uint16 sizeof_fvbase;
-    uint16 sizeof_cvbase;
-    uint16 sizeof_cvcontainer;
-    uint8  config_had_devicetables;
-    uint8  config_had_multilayer;
-    uint8  config_had_python;
-    uint8  mba1;		/* Must be all ones (0xff), config values are 0,1 need to distinquish from both */
-} Library_Version_Configuration;
-extern Library_Version_Configuration library_version_configuration;
-
-extern int check_library_version(Library_Version_Configuration *exe_lib_version, int fatal, int quiet);
 
 extern int fontforge_main(int, char **);
 #endif

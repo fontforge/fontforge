@@ -241,12 +241,12 @@ static void SplashLayout() {
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcpy(pt,"  Version: ");;
-    uc_strcat(pt,source_modtime_str);
+    uc_strcat(pt,FONTFORGE_MODTIME_STR);
 
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcat(pt,"           (");
-    uc_strcat(pt,source_version_str);
+    uc_strcat(pt,FONTFORGE_MODTIME_STR);
     uc_strcat(pt,"-ML");
 #ifdef FREETYPE_HAS_DEBUGGER
     uc_strcat(pt,"-TtfDb");
@@ -258,7 +258,7 @@ static void SplashLayout() {
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcpy(pt,"  Lib Version: ");
-    uc_strcat(pt,library_version_configuration.library_source_modtime_string);
+    uc_strcat(pt,FONTFORGE_MODTIME_STR);
     lines[linecnt++] = pt+u_strlen(pt);
     lines[linecnt] = NULL;
     is = u_strchr(msg,'(');
@@ -812,7 +812,7 @@ int fontforge_main( int argc, char **argv ) {
         fprintf( stderr, "Copyright (c) 2000-2014 by George Williams. See AUTHORS for Contributors.\n" );
         fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
         fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
-        fprintf( stderr, " Executable based on sources from %s"
+        fprintf( stderr, " Based on sources from %s"
 	        "-ML"
 #ifdef FREETYPE_HAS_DEBUGGER
 	        "-TtfDb"
@@ -821,8 +821,7 @@ int fontforge_main( int argc, char **argv ) {
 	        "-D"
 #endif
 	        ".\n",
-	        source_modtime_str );
-        fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
+	        FONTFORGE_MODTIME_STR );
         fprintf( stderr, " Based on source from git with hash:%s\n", FONTFORGE_GIT_VERSION );
     }
 
@@ -1033,7 +1032,7 @@ int fontforge_main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-help")==0 )
 	    dousage();
 	else if ( strcmp(pt,"-version")==0 || strcmp(pt,"-v")==0 || strcmp(pt,"-V")==0 )
-	    doversion(source_version_str);
+	    doversion(FONTFORGE_MODTIME_STR);
 	else if ( strcmp(pt,"-quit")==0 )
 	    quit_request = true;
 	else if ( strcmp(pt,"-home")==0 )
@@ -1072,12 +1071,6 @@ int fontforge_main( int argc, char **argv ) {
     
     if( ProcessPythonInitFiles )
 	PyFF_ProcessInitFiles();
-
-    /* Wait until the UI has started, otherwise people who don't have consoles*/
-    /*  open won't get our error messages, and it's an important one */
-    /* Scripting doesn't care about a mismatch, because scripting interpretation */
-    /*  all lives in the library */
-    check_library_version(&exe_library_version_configuration,true,false);
 
     /* the splash screen used not to have a title bar (wam_nodecor) */
     /*  but I found I needed to know how much the window manager moved */

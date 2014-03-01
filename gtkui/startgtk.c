@@ -638,21 +638,3 @@ int main( int argc, char **argv ) {
     gtk_main ();
 return( 0 );
 }
-
-struct library_version_configuration exe_library_version_configuration = {
-    1 /* REPLACE_ME_WITH_MAJOR_VERSION*/,
-    0 /* REPLACE_ME_WITH_MINOR_VERSION*/,
-    LibFF_ModTime,
-    LibFF_ModTime_Str,
-    LibFF_VersionDate,
-    sizeof(struct library_version_configuration),
-    sizeof(struct splinefont),
-    sizeof(struct splinechar),
-    sizeof(struct fontviewbase),
-    sizeof(struct charviewbase),
-    sizeof(struct cvcontainer),
-    1,
-    1,
-    1,
-    0xff		/* Not currently defined */
-};

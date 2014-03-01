@@ -795,7 +795,7 @@ static PyObject *PyFF_UnicodeNamesListVersion(PyObject *UNUSED(self), PyObject *
 static PyObject *PyFF_Version(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     char buffer[20];
 
-    sprintf( buffer, "%d", library_version_configuration.library_source_versiondate);
+    sprintf( buffer, "%d", FONTFORGE_VERSIONDATE_RAW);
 return( Py_BuildValue("s", buffer ));
 }
 
@@ -18088,18 +18088,10 @@ static void SetPythonModuleMetadata( PyObject *module ) {
     char isodate[32];
     PyObject* pyver;
     PyObject* pydate;
-    int dt = library_version_configuration.library_source_versiondate;
+    int dt = FONTFORGE_VERSIONDATE_RAW;
 
     /* Make __version__ string */
-    if ( library_version_configuration.major <= 1 )
-	snprintf(ver, sizeof(ver), "%u.%u.%d",
-		 library_version_configuration.major,
-		 library_version_configuration.minor,
-		 library_version_configuration.library_source_versiondate );
-    else
-	snprintf(ver, sizeof(ver), "%u.%u",
-		 library_version_configuration.major,
-		 library_version_configuration.minor );
+    snprintf(ver, sizeof(ver), "%u.%u", FONTFORGE_LIBFF_VERSION_MAJOR, FONTFORGE_LIBFF_VERSION_MINOR );
     pyver = STRING_TO_PY(ver);
     Py_INCREF(pyver);
     PyModule_AddObject(module, "__version__", pyver);

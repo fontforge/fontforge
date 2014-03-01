@@ -78,10 +78,10 @@ libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
 	scripting.c scstyles.c search.c sfd1.c sfd.c sflayout.c		\
 	sfundo.h spiro.c splinechar.c splinefill.c splinefont.c		\
 	splineorder2.c splineoverlap.c splinesaveafm.c splinesave.c	\
-	splinestroke.c splineutil2.c splineutil.c stamp.c start.c	\
+	splinestroke.c splineutil2.c splineutil.c start.c		\
 	stemdb.c strlist.c svg.c tottfaat.c tottfgpos.c tottf.c		\
 	tottfvar.c ttfinstrs.c ttfspecial.c ufo.c unicoderange.c	\
-	winfonts.c woff.c zapfnomen.c libstamp.c
+	winfonts.c woff.c zapfnomen.c
 
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
@@ -122,7 +122,7 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 #--------------------------------------------------------------------------
 EXTRA_DIST =
 # TODO: need to investigate these files to see if they should be distributed or
-# EXTRA_DIST += acorn2sfd.c generate_codepoint_selector.py stamper.c
+# EXTRA_DIST += acorn2sfd.c generate_codepoint_selector.py
 # EXTRA_DIST += threaddummy.c
 
 if MACINTOSH
