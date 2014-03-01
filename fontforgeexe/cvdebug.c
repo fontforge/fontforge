@@ -28,7 +28,6 @@
 #include <math.h>
 #include <gkeysym.h>
 #include <ustring.h>
-#include <ctype.h>		/* must use ctype here because freetype headers include it (prior to 2.3.5) */
 #include <gresource.h>
 
 extern GBox _ggadget_Default_Box;
@@ -52,19 +51,11 @@ void CVDebugPointPopup(CharView *cv) {
 #else
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#if FREETYPE_MINOR>=2
-#  include <internal/internal.h>
-#endif
+#include <internal/internal.h>
 #include "ttinterp.h"
 
-
-#if FREETYPE_MAJOR==2 && (FREETYPE_MINOR<3 || (FREETYPE_MINOR==3 && FREETYPE_PATCH<5))
-# define PPEMX(exc)	((exc)->size->metrics.x_ppem)
-# define PPEMY(exc)	((exc)->size->metrics.y_ppem)
-#else
 # define PPEMX(exc)	((exc)->size->root.metrics.x_ppem)
 # define PPEMY(exc)	((exc)->size->root.metrics.y_ppem)
-#endif
 
 static Color rasterbackcol = 0xffffff;
 

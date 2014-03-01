@@ -34,7 +34,7 @@
 #if FREETYPE_MINOR >= 5
 # include FT_TRUETYPE_DRIVER_H
 #endif
-#if defined(FREETYPE_HAS_DEBUGGER) && FREETYPE_MINOR>=2
+#if defined(FREETYPE_HAS_DEBUGGER)
 # include <internal/internal.h>
 #endif
 

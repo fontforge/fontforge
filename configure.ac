@@ -325,7 +325,7 @@ if test x"${i_do_have_gui}" = xyes; then
    PKG_CHECK_MODULES([PANGO],[pango >= 1.10 pangoxft])
 fi
 
-PKG_CHECK_MODULES([FREETYPE],[freetype2])
+PKG_CHECK_MODULES([FREETYPE],[freetype2 >= 2.3.7])
 PKG_CHECK_MODULES([LIBXML],[libxml-2.0])
 
 FONTFORGE_ARG_WITH_CAIRO

@@ -57,28 +57,13 @@ int hasFreeTypeByteCode(void) {
     if ( !hasFreeType())
 return( false );
 
-#if FREETYPE_MAJOR==2 && (FREETYPE_MINOR<3 || (FREETYPE_MINOR==3 && FREETYPE_PATCH<5))
-/* The internal data structures of the bytecode interpreter changed in 2.3.5 */
-/*  so we we were compliled before 2.3.5 and face a 2.3.5+ library then */
-/*  we can't use the interpretter. Similarly if we were compiled after 2.3.5 */
-/*  and face a less recent library we can't either */
-/* Here we are compiled with an old library, so if the dynamic one is new we fail */
-    if ( FreeTypeAtLeast(2,3,5)) {
+    if ( !FreeTypeAtLeast(2,3,7)) {
 	if ( !complained ) {
-	    LogError(_("This version of FontForge expects freetype 2.3.4 or less."));
+	    LogError(_("This version of FontForge expects freetype 2.3.7 or more."));
 	    complained = true;
 	}
 return( false );
     }
-#else
-    if ( !FreeTypeAtLeast(2,3,5)) {
-	if ( !complained ) {
-	    LogError(_("This version of FontForge expects freetype 2.3.5 or more."));
-	    complained = true;
-	}
-return( false );
-    }
-#endif
 
 # ifdef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
 return( true );
@@ -98,7 +83,6 @@ return( true );
 return( false );
 }
 
-# if FREETYPE_MAJOR>2 || (FREETYPE_MAJOR==2 && (FREETYPE_MINOR>1 || (FREETYPE_MINOR==1 && FREETYPE_PATCH>=4)))
 int FreeTypeAtLeast(int major, int minor, int patch) {
     int ma, mi, pa;
 
@@ -121,19 +105,6 @@ return( "" );
     sprintf( buffer, "FreeType %d.%d.%d", ma, mi, pa );
 return( buffer );
 }
-# else 
-int FreeTypeAtLeast(int major, int minor, int patch) {
-return( 0 );		/* older than 2.1.4, but don't know how old */
-}
-
-char *FreeTypeStringVersion(void) {
-
-    if ( !hasFreeType())
-return( "" );
-
-return( "FreeType 2.1.3 (or older)" );	/* older than 2.1.4, but don't know how old */
-}
-# endif
 
 static void TransitiveClosureAdd(SplineChar **new,SplineChar **old,SplineChar *sc,int layer) {
     RefChar *ref;
@@ -538,11 +509,7 @@ static void FT_ClosePath(struct ft_context *context) {
     }
 }
 
-#if FREETYPE_MINOR>=2
 static int FT_MoveTo(const FT_Vector *to,void *user) {
-#else
-static int FT_MoveTo(FT_Vector *to,void *user) {
-#endif
     struct ft_context *context = user;
 
     FT_ClosePath(context);
@@ -569,11 +536,7 @@ static int FT_MoveTo(FT_Vector *to,void *user) {
 return( 0 );
 }
 
-#if FREETYPE_MINOR>=2
 static int FT_LineTo(const FT_Vector *to,void *user) {
-#else
-static int FT_LineTo(FT_Vector *to,void *user) {
-#endif
     struct ft_context *context = user;
     SplinePoint *sp;
 
@@ -592,11 +555,7 @@ static int FT_LineTo(FT_Vector *to,void *user) {
 return( 0 );
 }
 
-#if FREETYPE_MINOR>=2
 static int FT_ConicTo(const FT_Vector *_cp, const FT_Vector *to,void *user) {
-#else
-static int FT_ConicTo(FT_Vector *_cp, FT_Vector *to,void *user) {
-#endif
     struct ft_context *context = user;
     SplinePoint *sp;
 
@@ -620,12 +579,8 @@ static int FT_ConicTo(FT_Vector *_cp, FT_Vector *to,void *user) {
 return( 0 );
 }
 
-#if FREETYPE_MINOR>=2
 static int FT_CubicTo(const FT_Vector *cp1, const FT_Vector *cp2,
 	const FT_Vector *to,void *user) {
-#else
-static int FT_CubicTo(FT_Vector *cp1, FT_Vector *cp2,FT_Vector *to,void *user) {
-#endif
     struct ft_context *context = user;
     SplinePoint *sp;
 

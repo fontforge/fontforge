@@ -186,9 +186,7 @@ static FT_Error PauseIns( TT_ExecContext exc ) {
     if ( dc->terminate )
 return( TT_Err_Execution_Too_Long );		/* Some random error code, says we're probably in a infinite loop */
     dc->exc = exc;
-#if FREETYPE_MAJOR>2 || (FREETYPE_MAJOR==2 && (FREETYPE_MINOR>1 || (FREETYPE_MINOR==1 && FREETYPE_PATCH>11 )))
     exc->grayscale = !dc->is_bitmap;		/* if we are in 'prep' or 'fpgm' freetype doesn't know this yet */
-#endif
 
     /* Set up for watch points */
     if ( dc->oldpts==NULL && exc->pts.n_points!=0 ) {
@@ -588,10 +586,6 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     else
 	outline.n_points = /*exc->pts.n_points*/  outline.contours[outline.n_contours - 1] + 1;
     outline.points = exc->pts.cur;
-#ifndef FT_OUTLINE_SMART_DROPOUTS	/* Appeared in 2.3.7 (June, 2008) */
-/* FREETYPE_MAJOR==2 && (FREETYPE_MINOR<3 || (FREETYPE_MINOR==3 && FREETYPE_PATCH<7)) */
-    outline.flags = FT_OUTLINE_NONE;
-#else
     outline.flags = 0;
     switch ( exc->GS.scan_type ) {
       /* Taken, at Werner's suggestion, from the freetype sources: ttgload.c:1970 */
@@ -613,7 +607,6 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
 	outline.flags |= FT_OUTLINE_IGNORE_DROPOUTS;
       break;
     }
-#endif
 
     if ( exc->metrics.y_ppem < 24 )
        outline.flags |= FT_OUTLINE_HIGH_PRECISION;
