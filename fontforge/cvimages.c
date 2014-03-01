@@ -946,11 +946,9 @@ return(false);
 	} else if ( format==fv_pdf ) {
 	    SCImportPDF(sc,toback?ly_back:fv->active_layer,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
 	    ++tot;
-#ifndef _NO_PYTHON
 	} else if ( format>=fv_pythonbase ) {
 	    PyFF_SCImport(sc,format-fv_pythonbase,start, toback?ly_back:fv->active_layer,flags&sf_clearbeforeinput);
 	    ++tot;
-#endif
 	}
 	if ( endpath==NULL )
     break;

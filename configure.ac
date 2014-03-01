@@ -195,6 +195,8 @@ AC_PATH_PROG([UNZIP],[unzip],[unzip])
 AC_PATH_PROG([UPDATE_MIME_DATABASE],[update-mime-database],[:])
 AC_PATH_PROG([UPDATE_DESKTOP_DATABASE],[update-desktop-database],[:])
 AC_PATH_PROG([PLUTIL],[plutil],[:])
+AM_PATH_PYTHON([2.3])
+PKG_CHECK_MODULES([PYTHON],[python-"${PYTHON_VERSION}"])
 
 AM_CONDITIONAL([XDG_DESKTOP],[test x"$UPDATE_MIME_DATABASE" != "x:" -a x"$UPDATE_DESKTOP_DATABASE" != "x:"])
 
@@ -220,9 +222,6 @@ FONTFORGE_ARG_DISABLE([native-scripting],
         [AS_HELP_STRING([--disable-native-scripting],[disable the legacy fontforge scripting language])],
         [_NO_FFSCRIPT])
 AM_CONDITIONAL([NATIVE_SCRIPTING],[test x"${i_do_have_native_scripting}" = xyes])
-
-FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING
-FONTFORGE_ARG_DISABLE_PYTHON_EXTENSION
 
 AC_ARG_ENABLE([freetype-debugger],
         [AS_HELP_STRING([--enable-freetype-debugger[[=DIR]]],
@@ -560,7 +559,6 @@ AC_SUBST([MY_CFLAGS],[${my_cflags}])
 #--------------------------------------------------------------------------
 # Create and Set FontForge Library Flags
 
-test x"${i_do_have_python_scripting}" = xyes && my_libs="${my_libs} ${PYTHON_LIBS}"
 test x"${i_do_have_giflib}" = xyes && my_libs="${my_libs} ${GIFLIB_LIBS}"
 test x"${i_do_have_libjpeg}" = xyes && my_libs="${my_libs} ${LIBJPEG_LIBS}"
 test x"${i_do_have_libpng}" = xyes && my_libs="${my_libs} ${LIBPNG_LIBS}"
@@ -572,6 +570,7 @@ test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
 test x"${i_do_have_gui}" = xyes && my_libs="${my_libs} ${PANGO_LIBS}"
 test x"${i_do_have_x}" = xyes && my_libs="${my_libs} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS}"
 test x"${i_do_have_libreadline}" = xyes && my_libs="${my_libs} ${LIBREADLINE_LIBS}"
+my_libs="${my_libs} ${PYTHON_LIBS}"
 my_libs="${my_libs} ${LIBSPIRO_LIBS}"
 my_libs="${my_libs} ${FREETYPE_LIBS}"
 my_libs="${my_libs} ${PTHREAD_LIBS}"
@@ -725,14 +724,12 @@ if test x$i_do_have_native_scripting = xyes; then
   done
 fi
 
-if test x$i_do_have_python_scripting = xyes; then
-  py_script_files="findoverlapbugs test0001 test0101 test1001a test1001b \
+py_script_files="findoverlapbugs test0001 test0101 test1001a test1001b \
 	test1001c test1001 test1002 test1003 test1004 test1005 test1006	\
 	test1007"
-  for arg in ${py_script_files}; do
-    AC_CONFIG_FILES([tests/$arg.py])
-  done
-fi
+for arg in ${py_script_files}; do
+  AC_CONFIG_FILES([tests/$arg.py])
+done
 
 #--------------------------------------------------------------------------
 # Collect "GIT" compile-time information to help when debugging FontForge.
@@ -774,8 +771,6 @@ Summary of optional features:
   real (floating pt)	${my_real_type}
   programs		${i_do_have_programs}
   native scripting	${i_do_have_native_scripting}
-  python scripting	${i_do_have_python_scripting}
-  python extension	${i_do_have_python_extension}
   freetype debugger	${i_do_have_freetype_debugger}
   raw points mode	${i_do_have_debug_raw_points}
   tile path		${i_do_have_tile_path}

@@ -129,9 +129,7 @@ static void _dousage(void) {
     printf( "\t-docs\t\t\t (displays this message, invokes a browser)\n\t\t\t\t (Using the BROWSER environment variable)\n" );
     printf( "\t-version\t\t (prints the version of fontforge and exits)\n" );
     printf( "\t-library-status\t (prints information about optional libraries\n\t\t\t\t and exits)\n" );
-#ifndef _NO_PYTHON
     printf( "\t-lang=py\t\t use python for scripts (may precede -script)\n" );
-#endif
 #ifndef _NO_FFSCRIPT
     printf( "\t-lang=ff\t\t use fontforge's legacy scripting language\n" );
 #endif
@@ -252,9 +250,6 @@ static void SplashLayout() {
     uc_strcat(pt,"-ML");
 #ifdef FREETYPE_HAS_DEBUGGER
     uc_strcat(pt,"-TtfDb");
-#endif
-#ifdef _NO_PYTHON
-    uc_strcat(pt,"-NoPython");
 #endif
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
     uc_strcat(pt,"-D");
@@ -822,9 +817,6 @@ int fontforge_main( int argc, char **argv ) {
 #ifdef FREETYPE_HAS_DEBUGGER
 	        "-TtfDb"
 #endif
-#ifdef _NO_PYTHON
-	        "-NoPython"
-#endif
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	        "-D"
 #endif
@@ -878,9 +870,7 @@ int fontforge_main( int argc, char **argv ) {
     FF_SetFIInterface(&gdraw_fi_interface);
     FF_SetMVInterface(&gdraw_mv_interface);
     FF_SetClipInterface(&gdraw_clip_interface);
-#ifndef _NO_PYTHON
     PythonUI_Init();
-#endif
 
     FindProgDir(argv[0]);
     InitSimpleStuff();
@@ -1080,10 +1070,8 @@ int fontforge_main( int argc, char **argv ) {
 	}
     }
     
-#ifndef _NO_PYTHON
     if( ProcessPythonInitFiles )
 	PyFF_ProcessInitFiles();
-#endif
 
     /* Wait until the UI has started, otherwise people who don't have consoles*/
     /*  open won't get our error messages, and it's an important one */

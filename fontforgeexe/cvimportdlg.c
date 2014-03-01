@@ -486,11 +486,9 @@ return( true );
 		ImportGlif(d->cv,temp);
 	    else if ( format==fv_fig )
 		ImportFig(d->cv,temp);
-#ifndef _NO_PYTHON
 	    else if ( format>=fv_pythonbase )
 		PyFF_SCImport(d->cv->b.sc,format-fv_pythonbase,temp,
 			CVLayer((CharViewBase *) d->cv), false);
-#endif
 	}
 	GDrawSetCursor(GGadgetGetWindow(g),ct_pointer);
     }
@@ -512,7 +510,6 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	int format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
 	if ( format<fv_pythonbase )
 	    GFileChooserSetFilterText(d->gfc,wildfnt[format]);
-#ifndef _NO_PYTHON
 	else {
 	    char *text;
 	    char *ae = py_ie[format-fv_pythonbase].all_extensions;
@@ -525,7 +522,6 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	    utext = utf82u_copy(text);
 	    GFileChooserSetFilterText(d->gfc,utext);
 	}
-#endif
 	GFileChooserRefreshList(d->gfc);
 	if ( d->fv!=NULL ) {
 	    if ( format==fv_bdf || format==fv_ttf || format==fv_pcf ||
@@ -592,7 +588,6 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	done = true;
     }
     base = cur_formats = fv==NULL?formats:fvformats;
-#ifndef _NO_PYTHON
     if ( py_ie!=NULL ) {
 	int cnt, extras;
 	for ( cnt=0; base[cnt].text!=NULL; ++cnt );
@@ -615,7 +610,6 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	    }
 	}
     }
-#endif
     if ( !hasspiro()) {
 	for ( i=0; cur_formats[i].text!=NULL; ++i )
 	    if ( ((intpt) cur_formats[i].userdata)==fv_plate ||

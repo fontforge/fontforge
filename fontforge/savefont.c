@@ -897,9 +897,7 @@ void PrepareUnlinkRmOvrlp(SplineFont *sf,const char *filename,int layer) {
     RefChar *ref, *refnext;
     int old_nwui = no_windowing_ui, old_maxundoes = maxundoes;
 
-#if !defined(_NO_PYTHON)
     PyFF_CallDictFunc(sf->python_temporary,"generateFontPostHook","fs",sf->fv,filename);
-#endif
 
     if ( maxundoes==0 ) maxundoes = 1;		/* Force undoes */
 
@@ -935,9 +933,7 @@ void RestoreUnlinkRmOvrlp(SplineFont *sf,const char *filename,int layer) {
 	if ( !sc->manualhints )
 	    sc->changedsincelasthinted = false;
     }
-#if !defined(_NO_PYTHON)
     PyFF_CallDictFunc(sf->python_temporary,"generateFontPostHook","fs",sf->fv,filename);
-#endif
 }
 
 static int32 *AllBitmapSizes(SplineFont *sf) {

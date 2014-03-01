@@ -285,10 +285,8 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
 	good = ExportPlate(temp,d->sc,d->layer);
     else if ( format<fv_pythonbase )
 	good = ExportXBM(temp,d->sc,d->layer,format-BITMAP_FORMAT_START);
-#ifndef _NO_PYTHON
     else if ( format>=fv_pythonbase )
 	PyFF_SCExport(d->sc,format-fv_pythonbase,temp,d->layer);
-#endif
     if ( !good )
 	ff_post_error(_("Save Failed"),_("Save Failed"));
     d->done = good;
@@ -360,10 +358,8 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 			 format==3?".xpm":
 			 format==4?".c":
 				   ".png");
-#ifndef _NO_PYTHON
 	else if ( format>=fv_pythonbase )
 	    uc_strcpy(pt+1,py_ie[format-fv_pythonbase].extension);
-#endif
 	else
 	    uc_strcpy(pt,format==0?".eps":
 			 format==1?".fig":
@@ -489,7 +485,6 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     if ( bc==NULL )
 	formats[5].disabled = !CanBeAPlateFile(sc);
     cur_formats = bc==NULL ? formats : bcformats;
-#ifndef _NO_PYTHON
     if ( bc==NULL && py_ie!=NULL ) {
 	int cnt, extras;
 	for ( cnt=0; formats[cnt].text!=NULL; ++cnt );
@@ -512,7 +507,6 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
 	    }
 	}
     }
-#endif
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict|wam_isdlg;
@@ -634,10 +628,8 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
     if ( bc!=NULL )
 	ext = _format==0 ? "xbm" : _format==1 ? "bmp" : "png";
-#ifndef _NO_PYTHON
     else if ( _format>=fv_pythonbase )
 	ext = py_ie[_format-fv_pythonbase].extension;
-#endif
     else
 	ext = _format==0?"eps":_format==1?"fig":_format==2?"svg":
 		_format==3?"glif":

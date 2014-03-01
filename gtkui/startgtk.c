@@ -108,11 +108,7 @@ static struct library_descriptor {
 	dlsymmod("Py_Main"),
 	"This allows users to write python scripts in fontforge",
 	"http://www.python.org/",
-#ifdef _NO_PYTHON
-	0
-#else
 	1
-#endif
     },
     { "libspiro", dlsymmod("TaggedSpiroCPsToBezier"), "This allows you to edit with Raph Levien's spiros.", "http://libspiro.sf.net/",
 #ifdef _NO_LIBSPIRO
@@ -516,9 +512,6 @@ int main( int argc, char **argv ) {
 #ifdef FREETYPE_HAS_DEBUGGER
 	    "-TtfDb"
 #endif
-#ifdef _NO_PYTHON
-	    "-NoPython"
-#endif
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	    "-D"
 #endif
@@ -565,9 +558,7 @@ int main( int argc, char **argv ) {
     /*FF_SetFIInterface(&gtk_fi_interface);*/
     /*FF_SetMVInterface(&gtk_mv_interface);*/
     /*FF_SetClipInterface(&gtk_clip_interface);*/
-#ifndef _NO_PYTHON
     PythonUI_Init();
-#endif
 
     InitSimpleStuff();
     if ( load_prefs!=NULL && strcasecmp(load_prefs,"Always")==0 )
@@ -623,9 +614,7 @@ int main( int argc, char **argv ) {
     }
 
     InitCursors();
-#ifndef _NO_PYTHON
     PyFF_ProcessInitFiles();
-#endif
 
     if ( splash ) {
 	splashw = create_FontForgeSplash ();
@@ -669,11 +658,6 @@ struct library_version_configuration exe_library_version_configuration = {
     sizeof(struct cvcontainer),
     1,
     1,
-
-#ifdef _NO_PYTHON
-    0,
-#else
     1,
-#endif
     0xff		/* Not currently defined */
 };

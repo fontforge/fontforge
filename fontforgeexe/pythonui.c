@@ -35,7 +35,6 @@
 
 #include <fontforge-config.h>
 
-#ifndef _NO_PYTHON
 #include "Python.h"
 #include "structmember.h"
 
@@ -796,5 +795,4 @@ void PythonUI_Init(void) {
     copyUIMethodsToBaseTable( PyFF_FontUI_methods,         PyFF_Font_methods );
     copyUIMethodsToBaseTable( module_fontforge_ui_methods, module_fontforge_methods );
 }
-#endif
 

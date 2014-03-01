@@ -28,7 +28,6 @@
 
 #include <fontforge-config.h>
 
-#ifndef _NO_PYTHON
 #include "Python.h"
 #include "structmember.h"
 
@@ -392,4 +391,3 @@ void PyFF_BuildCVToolsMenu(CharView *cv,GtkMenuItem *tools) {
 void PythonUI_Init(void) {
     FfPy_Replace_MenuItemStub(PyFF_registerMenuItem);
 }
-#endif

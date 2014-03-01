@@ -42,11 +42,6 @@ struct library_version_configuration exe_library_version_configuration = {
     sizeof(struct cvcontainer),
     1,
     1,
-
-#ifdef _NO_PYTHON
-    0,
-#else
     1,
-#endif
     0xff		/* Not currently defined */
 };

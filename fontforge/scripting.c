@@ -9350,11 +9350,7 @@ static void handlename(Context *c,Val *val) {
 		val->u.sval = copy(name);
 	    } else if ( strcmp(name,"$haspython")==0 ) {
 		val->type = v_int;
-#ifdef _NO_PYTHON
-		val->u.ival = 0;
-#else
 		val->u.ival = 1;
-#endif
 	    } else if ( GetPrefs(name+1,val)) {
 		/* Done */
 	    }
@@ -10174,7 +10170,7 @@ void ProcessNativeScript(int argc, char *argv[], FILE *script) {
 }
 #endif		/* _NO_FFSCRIPT */
 
-#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
+#if !defined(_NO_FFSCRIPT)
 static int PythonLangFromExt(char *prog) {
     char *ext, *base;
 
@@ -10194,7 +10190,6 @@ return( 0 );
 }
 #endif
 
-#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
 static int DefaultLangPython(void) {
     static int def_py = -2;
     char *pt;
@@ -10211,15 +10206,11 @@ return( def_py );
 return( def_py );
 }
 
-static void _CheckIsScript(int argc, char *argv[]) {
+void CheckIsScript(int argc, char *argv[]) {
     int i, is_python = DefaultLangPython();
     char *pt;
 
-#ifndef _NO_PYTHON
-/*# ifndef GWW_TEST*/
-    FontForge_InitializeEmbeddedPython(); /* !!!!!! debug (valgrind doesn't like python) */
-/*# endif*/
-#endif
+    FontForge_InitializeEmbeddedPython();
     if ( argc==1 )
 return;
     for ( i=1; i<argc; ++i ) {
@@ -10236,29 +10227,25 @@ return;
 	    ++i;
 	    is_python = strcmp(argv[i],"py")==0;
 	} else if ( strcmp(argv[i],"-")==0 ) {	/* Someone thought that, of course, "-" meant read from a script. I guess it makes no sense with anything else... */
-#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
+#if !defined(_NO_FFSCRIPT)
 	    if ( is_python )
 		PyFF_Stdin();
 	    else
 		ProcessNativeScript(argc, argv,stdin);
-#elif !defined(_NO_PYTHON)
+#else
 	    PyFF_Stdin();
-#elif !defined(_NO_FFSCRIPT)
-	    ProcessNativeScript(argc, argv,stdin);
 #endif
 	} else if ( strcmp(pt,"-script")==0 ||
 		strcmp(pt,"-dry")==0 || strcmp(argv[i],"-c")==0 ) {
-#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
+#if !defined(_NO_FFSCRIPT)
 	    if ( is_python==-1 && strcmp(pt,"-script")==0 )
 		is_python = PythonLangFromExt(argv[i+1]);
 	    if ( is_python )
 		PyFF_Main(argc,argv,i);
 	    else
 		ProcessNativeScript(argc, argv,NULL);
-#elif !defined(_NO_PYTHON)
+#else
 	    PyFF_Main(argc,argv,i);
-#elif !defined(_NO_FFSCRIPT)
-	    ProcessNativeScript(argc, argv,NULL);
 #endif
 	} else /*if ( access(argv[i],X_OK|R_OK)==0 )*/ {
 	    FILE *temp = fopen(argv[i],"r");
@@ -10270,30 +10257,19 @@ return;
 	    fclose(temp);
 	    if ( buffer[0]=='#' && buffer[1]=='!' &&
 		    (strstr(buffer,"pfaedit")!=NULL || strstr(buffer,"fontforge")!=NULL )) {
-#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
+#if !defined(_NO_FFSCRIPT)
 		if ( is_python==-1 )
 		    is_python = PythonLangFromExt(argv[i]);
 		if ( is_python )
 		    PyFF_Main(argc,argv,i);
 		else
 		    ProcessNativeScript(argc, argv,NULL);
-#elif !defined(_NO_PYTHON)
+#else
 		PyFF_Main(argc,argv,i);
-#elif !defined(_NO_FFSCRIPT)
-		ProcessNativeScript(argc, argv,NULL);
 #endif
 	    }
 	}
     }
-}
-#endif
-
-void CheckIsScript(int argc, char *argv[]) {
-#if defined(_NO_FFSCRIPT) && defined(_NO_PYTHON)
-return;		/* No scripts of any sort */
-#else
-    _CheckIsScript(argc, argv);
-#endif
 }
 
 #if !defined(_NO_FFSCRIPT)
@@ -10330,18 +10306,13 @@ return;				/* Error return */
 }
 #endif
 
-#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
-
 void ExecuteScriptFile(FontViewBase *fv, SplineChar *sc, char *filename) {
-#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
+#if !defined(_NO_FFSCRIPT)
     if ( sc!=NULL || PythonLangFromExt(filename))
 	PyFF_ScriptFile(fv,sc,filename);
     else
 	ExecuteNativeScriptFile(fv,filename);
-#elif !defined(_NO_PYTHON)
+#else
     PyFF_ScriptFile(fv,sc,filename);
-#elif !defined(_NO_FFSCRIPT)
-    ExecuteNativeScriptFile(fv,filename);
 #endif
 }
-#endif	/* No scripting */

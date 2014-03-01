@@ -87,9 +87,6 @@ int fontforge_main( int argc, char **argv ) {
 #ifdef FREETYPE_HAS_DEBUGGER
 	    "-TtfDb"
 #endif
-#ifdef _NO_PYTHON
-	    "-NoPython"
-#endif
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	    "-D"
 #endif
@@ -124,11 +121,7 @@ int fontforge_main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-version")==0 )
 	    doversion(source_version_str);
     }
-#  if defined(_NO_PYTHON)
-    ProcessNativeScript(argc, argv,stdin);
-#  else
     PyFF_Stdin();
-#  endif
 
 #ifndef _NO_LIBUNICODENAMES
     uninm_names_db_close(names_db);	/* close this database before exiting */
