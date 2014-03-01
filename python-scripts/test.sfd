@@ -1,11 +1,11 @@
 SplineFontDB: 3.0
-FontName: Untitled1
-FullName: Untitled1
-FamilyName: Untitled1
+FontName: FontForgeTestFont-Regular
+FullName: FontForge Test Font Regular
+FamilyName: FontForge Test Font
 Weight: Medium
-Copyright: Created by Ben Martin with FontForge 2.0 (http://fontforge.sf.net)
+Copyright: Copyright (c) Ben Martin (monkeyiq@users.sourceforge.net)
 UComments: "2013-3-11: Created." 
-Version: 001.000
+Version: 001.001
 ItalicAngle: 0
 UnderlinePosition: -100
 UnderlineWidth: 50

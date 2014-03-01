@@ -49,5 +49,6 @@ SUBDIRS += gdraw
 SUBDIRS += simple
 SUBDIRS += collab
 SUBDIRS += graphicore
+SUBDIRS += tools
 
 -include $(top_srcdir)/git.mk
