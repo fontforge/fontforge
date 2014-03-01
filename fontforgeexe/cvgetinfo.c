@@ -235,7 +235,6 @@ return( true );		/* Didn't really change */
 
     for ( i=0; i<6; ++i )
 	ref->transform[i] = trans[i];
-    SplinePointListsFree(ref->layers[0].splines);
     ref->layers[0].splines = SplinePointListTransform(SplinePointListCopy(ref->sc->layers[ly_fore].splines),trans,tpt_AllPoints);
     spl = NULL;
     if ( ref->layers[0].splines!=NULL )
@@ -789,7 +788,7 @@ static AnchorPoint *AnchorPointNew(CharView *cv) {
 
     if ( an==NULL )
 return(NULL);
-    ap = chunkalloc(sizeof(AnchorPoint));
+    ap = XZALLOC(AnchorPoint);
     ap->anchor = an;
     ap->me.x = cv->p.cx; /* cv->p.cx = 0; */
     ap->me.y = cv->p.cy; /* cv->p.cy = 0; */
@@ -991,25 +990,21 @@ return( true );
 
 	if ((prev == NULL) && (ci->ap->next == NULL)) {
 	    ci->sc->anchor = NULL;
-	    AnchorPointsFree(delete_it);
 	    AI_Ok(g,e);
 	    SCUpdateAll(ci->sc);
 	}
 	else if (ci->ap->next == NULL) {
 	    prev->next = NULL;
-	    AnchorPointsFree(delete_it);
 	    AI_Display(ci,prev);
 	}
 	else if (prev == NULL) {
 	    ci->sc->anchor = delete_it->next;
 	    delete_it->next = NULL;
-	    AnchorPointsFree(delete_it);
 	    AI_Display(ci,ci->sc->anchor);
 	}
 	else {
 	    prev->next = delete_it->next;
 	    delete_it->next = NULL;
-	    AnchorPointsFree(delete_it);
 	    AI_Display(ci,prev->next);
 	}
 
@@ -1302,7 +1297,6 @@ return( true );
 static void AI_DoCancel(GIData *ci) {
     CharView *cv = ci->cv;
     ci->done = true;
-    AnchorPointsFree(cv->b.sc->anchor);
     cv->b.sc->anchor = ci->oldaps;
     ci->oldaps = NULL;
     CVRemoveTopUndo(&cv->b);
@@ -1711,7 +1705,6 @@ return;
     while ( !gi.done )
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gi.gw);
-    AnchorPointsFree(gi.oldaps);
 }
 
 void PI_ShowHints(SplineChar *sc, GGadget *list, int set) {
@@ -1743,7 +1736,6 @@ static void PI_DoCancel(GIData *ci) {
     ci->done = true;
     if ( cv->b.drawmode==dm_fore )
 	MDReplace(cv->b.sc->md,cv->b.sc->layers[ly_fore].splines,ci->oldstate);
-    SplinePointListsFree(cv->b.layerheads[cv->b.drawmode]->splines);
     cv->b.layerheads[cv->b.drawmode]->splines = ci->oldstate;
     CVRemoveTopUndo(&cv->b);
     SCClearSelPt(cv->b.sc);
@@ -1828,12 +1820,11 @@ static void PI_FigureHintMask(GIData *ci) {
 	if ( ti[i]->selected )
     break;
 
-    if ( i==len ) {
-	chunkfree(ci->cursp->hintmask,sizeof(HintMask));
+    if ( i==len )
 	ci->cursp->hintmask = NULL;
-    } else {
+    else {
 	if ( ci->cursp->hintmask==NULL )
-	    ci->cursp->hintmask = chunkalloc(sizeof(HintMask));
+	    ci->cursp->hintmask = XZALLOC(HintMask);
 	else
 	    memset(ci->cursp->hintmask,0,sizeof(HintMask));
 	for ( i=0; i<len; ++i )
@@ -1857,14 +1848,13 @@ static void PI_FixStuff(GIData *ci) {
 	else
 	    sp->pointtype = pt_curve;
     } else if ( sp->pointtype == pt_tangent )
-	SplinePointCatagorize(sp);	/* Users can change cps so it isn't a tangent, so check */
+	SplinePointCategorize(sp);	/* Users can change cps so it isn't a tangent, so check */
 }
 
 void PI_Destroy(struct dlistnode *node) {
     GIData *d = (GIData *)node;
     GDrawDestroyWindow(d->gw);
     dlist_erase(&d->cv->pointInfoDialogs,(struct dlistnode *)d);
-    free(d);
 }
 
 static void PI_Close(GGadget *g) {
@@ -3316,8 +3306,6 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 
 	GGadgetsCreate(gi->gw,mb);
 	gi->group1ret = pb[4].ret; gi->group2ret = pb[5].ret;
-	GTextInfoListFree(hgcd[0].gd.u.list);
-	GTextInfoListFree(h2gcd[0].gd.u.list);
 
 	GHVBoxSetExpandableRow(mb[0].ret,0);
 	GHVBoxSetExpandableCol(mb[2].ret,gb_expandgluesame);
@@ -3816,9 +3804,6 @@ return;
 	for ( d = sc->dependents, cnt=0; d!=NULL && cnt<i; d=d->next, ++cnt );
 	CharViewCreate(d->sc,(FontView *) (sc->parent->fv),-1);
     }
-    for ( i=0; i<=tot; ++i )
-	free( deps[i] );
-    free(deps);
 }
 
 static int UsedIn(char *name, char *subs) {
@@ -3912,8 +3897,4 @@ return;
     if ( i>-1 ) {
 	CharViewCreate(depsc[i],(FontView *) (sc->parent->fv),-1);
     }
-    for ( i=0; i<=tot; ++i )
-	free( deps[i] );
-    free(deps);
-    free(depsc);
 }

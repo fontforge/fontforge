@@ -194,8 +194,6 @@ static long *FindObjects(struct pdfcontext *pc) {
 	    ret = realloc(ret,(start+num+1)*sizeof(long));
 	    gen = realloc(gen,(start+num)*sizeof(int));
 	    if ( ret==NULL || gen==NULL || pc->ocnt!=start+num ) {
-		free(ret); free(ret_old);
-		free(gen); free(gen_old);
 		NoMoreMemMessage(); pc->ocnt = 0;
 		return( NULL );
 	    }
@@ -205,10 +203,8 @@ static long *FindObjects(struct pdfcontext *pc) {
 	    ret[cnt] = -2;
 	}
 	for ( i=start; i<start+num; ++i ) {
-	    if ( fscanf(pdf,"%ld %d %c",&offset,&gennum,&f)!=3 ) {
-		free(gen);
+	    if ( fscanf(pdf,"%ld %d %c",&offset,&gennum,&f)!=3 )
 		return( ret );
-	    }
 	    if ( f=='f' ) {
 	      if ( gennum > gen[i] ) {
 		    ret[i] = -1;
@@ -219,18 +215,14 @@ static long *FindObjects(struct pdfcontext *pc) {
 		    ret[i] = offset;
 		    gen[i] = gennum;
 		}
-	    } else {
-		free(gen);
+	    } else
 		return( ret );
-	    }
 	}
 	/* load the next 'start' and 'num' values and continue. */
 	/* if can't get more 'start' and 'num' then we're done. */
 	if ( fscanf(pdf,"%ld %ld",&start,&num)!=2 && \
-	     !seektrailer(pdf,&start,&num,pc) ) {
-	    free(gen);
+	     !seektrailer(pdf,&start,&num,pc) )
 	    return( ret );
-	}
     }
 }
 
@@ -281,7 +273,6 @@ static char *pdf_getname(struct pdfcontext *pc) {
 	if ( pt>=end ) {
 	    char *temp;
 	    if ( (temp=realloc(pc->tokbuf,(pc->tblen+=300)))==NULL ) {
-		/* error, but don't need to free realloc memory */
 		NoMoreMemMessage();
 		return( NULL );
 	    }
@@ -363,13 +354,6 @@ return( pc->tokbuf );
 }
 
 static void PSDictClear(struct psdict *dict) {
-/* Clear all psdict keys[] and values[] */
-  int i;
-
-    for ( i=0; i<dict->next; ++i ) {
-	free(dict->keys[i]);
-	free(dict->values[i]);
-    }
     dict->next = 0;
 }
 
@@ -396,9 +380,7 @@ return( false );
 return( true );
 	}
 	value = copy(pdf_getdictvalue(pc));
-	if ( value==NULL || strcmp(value,"null")==0 )
-	    free(key);
-	else {
+	if ( value!=NULL && strcmp(value,"null")!=0 )
 	    if ( pc->pdfdict.next>=pc->pdfdict.cnt ) {
 		pc->pdfdict.keys = realloc(pc->pdfdict.keys,(pc->pdfdict.cnt+=20)*sizeof(char *));
 		pc->pdfdict.values = realloc(pc->pdfdict.values,pc->pdfdict.cnt*sizeof(char *));
@@ -406,7 +388,6 @@ return( true );
 	    pc->pdfdict.keys  [pc->pdfdict.next] = key  ;
 	    pc->pdfdict.values[pc->pdfdict.next] = value;
 	    ++pc->pdfdict.next;
-	}
     }
 }
 
@@ -678,7 +659,6 @@ return;
 			    pdf_addpages(pc,o);
 			}
 		    }
-		    free(kids);
 		}
 	    }
 	}
@@ -824,7 +804,6 @@ return ret;
 	} while ( strm.avail_out == 0 );
     } while ( ret != Z_STREAM_END );
     (void)inflateEnd(&strm);
-    free(in); free(out);
 return( ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR );
 }
 #endif /* _NO_LIBPNG */
@@ -1031,12 +1010,11 @@ return( NULL );
 	}
 	fclose(xref_stream);
     }
-    free( gen );
 return( ret );
 
 FindObjectsFromXREFObjectError_ReleaseMemAndExit:
 /* error occurred, therefore release objects and return with NULL */
-    free(ret); free(pc->subindex); pc->subindex=NULL; free(gen);
+    pc->subindex=NULL;
     pc->ocnt = 0;
     return( NULL );
 }
@@ -1218,35 +1196,11 @@ static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
 return( ent );
 }
 
-static void ECCatagorizePoints( EntityChar *ec ) {
+static void ECCategorizePoints( EntityChar *ec ) {
     Entity *ent;
 
     for ( ent=ec->splines; ent!=NULL; ent=ent->next ) if ( ent->type == et_splines ) {
-	SPLCatagorizePoints( ent->u.splines.splines );
-    }
-}
-
-static void dictfree(struct pskeydict *dict) {
-    int i;
-
-    for ( i=0; i<dict->cnt; ++i ) {
-	if ( dict->entries[i].type==ps_string || dict->entries[i].type==ps_instr ||
-		dict->entries[i].type==ps_lit )
-	    free(dict->entries[i].u.str);
-	else if ( dict->entries[i].type==ps_array || dict->entries[i].type==ps_dict )
-	    dictfree(&dict->entries[i].u.dict);
-    }
-}
-
-static void freestuff(struct psstack *stack, int sp) {
-    int i;
-
-    for ( i=0; i<sp; ++i ) {
-	if ( stack[i].type==ps_string || stack[i].type==ps_instr ||
-		stack[i].type==ps_lit )
-	    free(stack[i].u.str);
-	else if ( stack[i].type==ps_array || stack[i].type==ps_dict )
-	    dictfree(&stack[i].u.dict);
+	SPLCategorizePoints( ent->u.splines.splines );
     }
 }
 
@@ -1361,7 +1315,6 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 			t[2] = stack[sp].u.dict.entries[2].u.val;
 			t[1] = stack[sp].u.dict.entries[1].u.val;
 			t[0] = stack[sp].u.dict.entries[0].u.val;
-			dictfree(&stack[sp].u.dict);
 			MatMultiply(t,transform,transform);
 		    }
 		}
@@ -1388,7 +1341,6 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 		dash_offset = stack[sp+1].u.val;
 		for ( i=0; i<DASH_MAX && i<stack[sp].u.dict.cnt; ++i )
 		    dashes[i] = stack[sp].u.dict.entries[i].u.val;
-		dictfree(&stack[sp].u.dict);
 	    }
 	  break;
 	  case pt_setgreystroke:
@@ -1425,11 +1377,11 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 		current.x = stack[sp-2].u.val;
 		current.y = stack[sp-1].u.val;
 		sp -= 2;
-		pt = chunkalloc(sizeof(SplinePoint));
+		pt = XZALLOC(SplinePoint);
 		Transform(&pt->me,&current,transform);
 		pt->noprevcp = true; pt->nonextcp = true;
 		if ( tok==pt_moveto ) {
-		    SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
+		    SplinePointList *spl = XZALLOC(SplinePointList);
 		    spl->first = spl->last = pt;
 		    if ( cur!=NULL )
 			cur->next = spl;
@@ -1468,7 +1420,7 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 		if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
 		    Transform(&cur->last->nextcp,&ncp,transform);
 		    cur->last->nonextcp = false;
-		    pt = chunkalloc(sizeof(SplinePoint));
+		    pt = XZALLOC(SplinePoint);
 		    Transform(&pt->prevcp,&pcp,transform);
 		    Transform(&pt->me,&current,transform);
 		    pt->nonextcp = true;
@@ -1480,7 +1432,7 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 	  break;
 	  case pt_rect:
 	    if ( sp>=4 ) {
-		SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
+		SplinePointList *spl = XZALLOC(SplinePointList);
 		SplinePoint *first, *second, *third, *fourth;
 		BasePoint temp1, temp2;
 		spl->first = spl->last = pt;
@@ -1523,8 +1475,6 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 			cur->first->noprevcp = false;
 			oldlast->prev->from->next = NULL;
 			cur->last = oldlast->prev->from;
-			SplineFree(oldlast->prev);
-			SplinePointFree(oldlast);
 		    }
 		    SplineMake3(cur->last,cur->first);
 		    cur->last = cur->first;
@@ -1533,7 +1483,6 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 	    if ( tok==pt_closepath )
 	  break;
 	    else if ( tok==pt_paintnoop ) {
-		SplinePointListsFree(head);
 		head = cur = NULL;
 	  break;
 	    }
@@ -1580,13 +1529,12 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 	  break;
 	}
     }
-    freestuff(stack,sp);
     if ( head!=NULL ) {
 	ent = EntityCreate(head,linecap,linejoin,linewidth,transform);
 	ent->next = ec->splines;
 	ec->splines = ent;
     }
-    ECCatagorizePoints(ec);
+    ECCategorizePoints(ec);
     setlocale(LC_NUMERIC,oldloc);
 }
 
@@ -1680,7 +1628,6 @@ static void add_mapping(SplineFont *basesf, long *mappings, int *uvals, int nuni
 	name = realloc(name,strlen(name)+strlen(nname)+10);
 	strcat(name, "_");
 	strcat(name, nname);
-	free(nname);
     }
     ndups = 0;
     for (i=0; i < cur; i++) {
@@ -1717,10 +1664,8 @@ static void add_mapping(SplineFont *basesf, long *mappings, int *uvals, int nuni
 		else
 		    prev->next = altuni->next;
 		altuni->next = NULL;
-		AltUniFree(altuni);
 	    }
 	}
-	free(sc->name);
 	sc->name = name;
 	sc->unicodeenc = UniFromName(name,sf->uni_interp,&custom);
     }
@@ -1769,7 +1714,6 @@ return;
 			ccval += 4;
 		    }
 		    add_mapping(basesf, mappings, uvals, nuni, gid, pc->cmap_from_cid[font_num], cur);
-		    free(uvals);
 		    cur++;
 		} else
   goto fail;
@@ -1797,7 +1741,6 @@ return;
 			add_mapping(basesf, mappings, uvals, 1, gid, pc->cmap_from_cid[font_num], cur);
 			cur++;
 		    }
-		    free(uvals);
 		} else
   goto fail;
 	    }
@@ -1809,10 +1752,8 @@ return;
     fclose(file);
     /* If this is not a cid font, then regenerate the font encoding (so that it is no */
     /* longer identified as MacRoman) */
-    if ( sf->map != NULL && basesf == sf ) {
-	EncMapFree( sf->map );
+    if ( sf->map != NULL && basesf == sf )
 	sf->map = EncMapFromEncoding(sf,FindOrMakeEncoding("Original"));
-    }
 return;
   fail:
     LogError( _("Syntax errors while parsing ToUnicode CMap") );
@@ -1873,13 +1814,12 @@ static SplineFont *pdf_loadtype3(struct pdfcontext *pc) {
 
     sf = SplineFontBlank(charprocdict->next);
     if ( name!=NULL ) {
-	free(sf->fontname); free(sf->fullname); free(sf->familyname);
 	sf->fontname = name;
 	sf->familyname = copy(name);
 	sf->fullname = copy(name);
     }
-    free(sf->copyright); sf->copyright = NULL;
-    free(sf->comments); sf->comments = NULL;
+    sf->copyright = NULL;
+    sf->comments = NULL;
     sf->ascent = .8*emsize;
     sf->descent = emsize - sf->ascent;
     sf->multilayer = true;
@@ -1895,10 +1835,8 @@ static SplineFont *pdf_loadtype3(struct pdfcontext *pc) {
 	}
     }
     sf->glyphcnt = charprocdict->next;
-    PSDictFree(charprocdict);
 
     /* I'm going to ignore the encoding vector for now, and just return original */
-    free(enc);
     sf->map = EncMapFromEncoding(sf,FindOrMakeEncoding("Original"));
 
 return( sf );
@@ -1957,7 +1895,6 @@ return( NULL );
 	file = pdf_insertpfbsections(file,pc);
 	fd = _ReadPSFont(file);
 	sf = SplineFontFromPSFont(fd);
-	PSFontFree(fd);
     } else if ( type==2 ) {
 	sf = _SFReadTTF(file,0,pc->openflags,pc->fontnames[font_num],NULL);
     } else {
@@ -1981,19 +1918,7 @@ return( NULL );
 
 static void pcFree(struct pdfcontext *pc) {
 /* Free any memory that may have been allocatted earlier */
-    int i;
-
     PSDictClear(&pc->pdfdict);
-    free(pc->pdfdict.keys);
-    free(pc->pdfdict.values);
-    free(pc->objs);
-    for ( i=0; i<pc->fcnt; ++i ) free(pc->fontnames[i]);
-    free(pc->fontnames);
-    free(pc->fontobjs);
-    free(pc->cmapobjs);
-    free(pc->cmap_from_cid);
-    free(pc->pages);
-    free(pc->tokbuf);
 }
 
 char **NamesReadPDF(char *filename) {
@@ -2022,7 +1947,7 @@ char **NamesReadPDF(char *filename) {
 	goto NamesReadPDF_error;
     for ( i=0; i<pc.fcnt; ++i )
 	if ( (list[i]=copy(pc.fontnames[i]))==NULL )
-	    goto NamesReadPDFlist_error;
+	    goto NamesReadPDF_error;
     list[i]=NULL;
     fclose(pc.pdf);
     pcFree(&pc);
@@ -2030,8 +1955,6 @@ char **NamesReadPDF(char *filename) {
     return( list );
 
 /* if errors, then free memory, close files, and return a NULL */
-NamesReadPDFlist_error:
-    while ( --i>=0 ) free(list[i]);
 NamesReadPDF_error:
     pcFree(&pc);
     fclose(pc.pdf);
@@ -2098,15 +2021,11 @@ return( NULL );
 	    choice = 0;
 	else
 	    choice = ff_choose(_("Pick a font, any font..."),(const char **) names,pc.fcnt,0,_("There are multiple fonts in this file, pick one"));
-	for ( i=0; i<pc.fcnt; ++i )
-	    free(names[i]);
-	free(names);
 	if ( choice!=-1 )
 	    sf = pdf_loadfont(&pc,choice);
     }
     setlocale(LC_NUMERIC,oldloc);
     pcFree(&pc);
-    free(select_this_font);
 return( sf );
 }
 

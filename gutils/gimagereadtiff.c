@@ -84,14 +84,12 @@ GImage *GImageReadTiff(char *filename) {
 		*ipt++ =COLOR_CREATE(
 			TIFFGetR(fpt[j]),TIFFGetG(fpt[j]),TIFFGetB(fpt[j]));
 	}
-	free(raster);
 	return( ret );
     }
 
 errorGImageReadTiff:
     fprintf(stderr,"Bad input file \"%s\"\n",filename );
 errorGImageReadTiffMem:
-    free(raster); free(ret);
     TIFFClose(tif);
     return( NULL );
 }

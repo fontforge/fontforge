@@ -99,7 +99,6 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
 			nlast->next = temp;
 		    for ( nlast=temp; nlast->next!=NULL; nlast=nlast->next );
 		}
-		SplinePointListsFree(ent->u.splines.splines);
 		ent->u.splines.fill.col = ent->u.splines.stroke.col;
 	    } else {
 		new = ent->u.splines.splines;
@@ -118,7 +117,6 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
 			test->first->prevcpdef = test->last->prevcpdef;
 			test->first->prev = test->last->prev;
 			test->last->prev->to = test->first;
-			SplinePointFree(test->last);
 			test->last=test->first;
 		    }
 		    SplineSetReverse(test);
@@ -143,8 +141,6 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
 		}
 	    }
 	}
-	SplinePointListsFree(ent->clippath);
-	free(ent);
     }
 
     /* Then remove all counter-clockwise (background) contours which are at */
@@ -169,7 +165,6 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
 		    else
 			prev->next = next;
 		    last->next = NULL;
-		    SplinePointListFree(last);
 		    removed = true;
 		} else
 		    prev = last;
@@ -292,7 +287,6 @@ void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
 	cmd = add_arg(cmd, "\"");
 	/*fprintf(stdout, "---EXEC---\n%s\n----------\n", command);fflush(stdout);*/
 	system(command);
-	free(command);
 
 	ps = fopen(tempname_out, "r");
 	if(ps){
@@ -302,11 +296,8 @@ void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
 	    transform[4] = images->xoff;
 	    transform[5] = images->yoff - images->yscale*ib->height;
 	    new = SplinePointListTransform(new,transform,tpt_AllPoints);
-	    if ( sc->layers[layer].order2 ) {
-		SplineSet *o2 = SplineSetsTTFApprox(new);
-		SplinePointListsFree(new);
-		new = o2;
-	    }
+	    if ( sc->layers[layer].order2 )
+		new = SplineSetsTTFApprox(new);
 	    if ( new!=NULL ) {
 		sc->parent->onlybitmaps = false;
 		if ( !changed )
@@ -421,7 +412,6 @@ return;
 		new = SplinePointListTransform(new,transform,tpt_AllPoints);
 		if ( sc->layers[layer].order2 ) {
 		    SplineSet *o2 = SplineSetsTTFApprox(new);
-		    SplinePointListsFree(new);
 		    new = o2;
 		}
 		if ( new!=NULL ) {
@@ -510,13 +500,6 @@ return( flatten(args));
 }
 
 void SetAutoTraceArgs(void *a) {
-    int i;
-
-    if ( args!=NULL ) {
-	for ( i=0; args[i]!=NULL; ++i )
-	    free(args[i]);
-	free(args);
-    }
     args = makevector((char *) a);
 }
 
@@ -528,11 +511,9 @@ char **AutoTraceArgs(int ask) {
 
 	cret = ff_ask_string(_("Additional arguments for autotrace program:"),
 		cdef,_("Additional arguments for autotrace program:"));
-	free(cdef);
 	if ( cret==NULL )
 return( (char **) -1 );
 	args = makevector(cret);
-	free(cret);
 	SavePrefs(true);
     }
 return( args );
@@ -711,10 +692,8 @@ static void cleantempdir(char *tempdir) {
 	}
 	closedir(temp);
 	todelete[cnt] = NULL;
-	for ( cnt=0; todelete[cnt]!=NULL; ++cnt ) {
+	for ( cnt=0; todelete[cnt]!=NULL; ++cnt )
 	    unlink(todelete[cnt]);
-	    free(todelete[cnt]);
-	}
     }
     rmdir(tempdir);
 }
@@ -800,18 +779,14 @@ return( NULL );
 		ff_post_error(_("Can't run mf"),_("Could not read (or perhaps find) mf output file"));
 	    else {
 		sf = SFFromBDF(gffile,3,true);
-		free(gffile);
 		if ( sf!=NULL ) {
 		    ff_progress_change_line1(_("Autotracing..."));
 		    ff_progress_change_total(sf->glyphcnt);
 		    for ( i=0; i<sf->glyphcnt; ++i ) {
 			if ( (sc = sf->glyphs[i])!=NULL && sc->layers[ly_back].images ) {
 			    _SCAutoTrace(sc, ly_fore, args);
-			    if ( mf_clearbackgrounds ) {
-				GImageDestroy(sc->layers[ly_back].images->image);
-			        free(sc->layers[ly_back].images);
+			    if ( mf_clearbackgrounds )
 			        sc->layers[ly_back].images = NULL;
-			    }
 			}
 			if ( !ff_progress_next())
 		    break;
@@ -823,7 +798,6 @@ return( NULL );
 	    ff_post_error(_("Can't run mf"),_("MetaFont exited with an error"));
     } else
 	ff_post_error(_("Can't run mf"),_("Can't run mf"));
-    free(arglist[1]);
     cleantempdir(tempdir);
 return( sf );
 #endif

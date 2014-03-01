@@ -88,7 +88,7 @@ AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_TESTDIR([tests],[fontforge])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
-AC_CONFIG_HEADER([inc/fontforge-config.h])
+AC_CONFIG_HEADERS([config.h inc/fontforge-config.h:config.h])
 AM_INIT_AUTOMAKE([foreign -Wall subdir-objects tar-pax])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
@@ -311,9 +311,8 @@ i_do_have_native_callbacks="${fontforge_cv_native_callbacks}"
 
 AC_SEARCH_LIBS([cos],[m])
 
-dnl FIXME: Is this needed, given we are using libltdl?
-dnl The dlopen() function is in the C library for *BSD and in libdl on GLIBC-based systems
-dnl AC_SEARCH_LIBS([dlopen], [dl dld])
+# libgc (BDW garbage collector)
+PKG_CHECK_MODULES([LIBGC],[bdw-gc >= 7.2])
 
 FONTFORGE_CONFIG_X_LIBRARIES
 
@@ -326,7 +325,8 @@ if test x"${i_do_have_gui}" = xyes; then
    PKG_CHECK_MODULES([PANGO],[pango >= 1.10 pangoxft])
 fi
 
-PKG_CHECK_MODULES([FREETYPE],[freetype2])
+PKG_CHECK_MODULES([FREETYPE],[freetype2 >= 2.3.7])
+PKG_CHECK_MODULES([LIBXML],[libxml-2.0])
 
 FONTFORGE_ARG_WITH_CAIRO
 AC_ARG_VAR([FREETYPE_SOURCE],
@@ -337,17 +337,12 @@ FONTFORGE_ARG_WITH_GIFLIB
 FONTFORGE_ARG_WITH_LIBJPEG
 FONTFORGE_ARG_WITH_LIBPNG
 FONTFORGE_ARG_WITH_LIBTIFF
-FONTFORGE_ARG_WITH_LIBXML
 FONTFORGE_ARG_WITH_LIBSPIRO
 FONTFORGE_ARG_WITH_LIBUNINAMESLIST
 FONTFORGE_ARG_WITH_LIBUNICODENAMES
-FONTFORGE_ARG_WITH_ICONV
 FONTFORGE_ARG_WITH_ZEROMQ
 FONTFORGE_ARG_WITH_LIBREADLINE
 
-if test x"${i_do_have_x}" = xyes; then
-   AC_DEFINE(HAVE_GUI,[1],[Have GUI])
-fi
 if test x"${i_do_have_x}" = xyes; then
    if test x"${i_do_have_libzmq}" = xyes; then
       AC_DEFINE(BUILD_COLLAB,[1],[Build the Collab Code])
@@ -450,7 +445,6 @@ if test "$gl_gcc_warnings" = yes; then
 
   # Add some more safety measures
   gl_WARN_ADD([-D_FORTIFY_SOURCE=2])
-  gl_WARN_ADD([-fmudflap])
 
   # When compiling with GCC, prefer -isystem to -I when including system
   # include files, to avoid generating useless diagnostics for the files.
@@ -514,13 +508,20 @@ AC_CHECK_FUNCS([getcwd gethostbyname gettimeofday])
 AC_CHECK_FUNCS([mkdir munmap])
 AC_CHECK_FUNCS([nl_langinfo putenv rmdir])
 AC_CHECK_FUNCS([select setenv socket])
-AC_CHECK_FUNCS([tzset uname])
-AC_CHECK_FUNC([tzset],[:],[AC_DEFINE([_NO_TZSET],1,[Define if not using tzset.])])
+AC_CHECK_FUNCS([uname])
 
 #--------------------------------------------------------------------------
 # Put ifndef wrapper on fontforge-config.h so we don't call it repeatedly.
 AH_TOP([#ifndef _FF_CONFIG_H
-#define _FF_CONFIG_H 1])
+#define _FF_CONFIG_H 1
+
+# define malloc GC_malloc
+# define realloc GC_realloc
+# define free GC_free
+# define strdup GC_strdup
+# define strndup GC_strndup
+#define calloc fontforge_calloc
+])
 AH_BOTTOM([#endif])
 #--------------------------------------------------------------------------
 
@@ -572,17 +573,17 @@ test x"${i_do_have_libpng}" = xyes && my_libs="${my_libs} ${LIBPNG_LIBS}"
 test x"${i_do_have_libtiff}" = xyes && my_libs="${my_libs} ${LIBTIFF_LIBS}"
 test x"${i_do_have_libuninameslist}" = xyes && my_libs="${my_libs} ${LIBUNINAMESLIST_LIBS}"
 test x"${i_do_have_libunicodenames}" = xyes && my_libs="${my_libs} ${LIBUNICODENAMES_LIBS}"
-test x"${i_do_have_libxml}" = xyes && my_libs="${my_libs} ${LIBXML_LIBS}"
-test x"${i_do_have_libspiro}" = xyes && my_libs="${my_libs} ${LIBSPIRO_LIBS}"
 test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${CAIRO_LIBS}"
 test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
 test x"${i_do_have_gui}" = xyes && my_libs="${my_libs} ${PANGO_LIBS}"
 test x"${i_do_have_x}" = xyes && my_libs="${my_libs} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS}"
 test x"${i_do_have_libreadline}" = xyes && my_libs="${my_libs} ${LIBREADLINE_LIBS}"
+my_libs="${my_libs} ${LIBSPIRO_LIBS}"
 my_libs="${my_libs} ${FREETYPE_LIBS}"
 my_libs="${my_libs} ${PTHREAD_LIBS}"
 my_libs="${my_libs} ${ZLIB_LIBS}"
 my_libs="${my_libs} ${GLIB_LIBS}"
+my_libs="${my_libs} ${LIBXML_LIBS}"
 AC_SUBST([MY_LIBS],[${my_libs}])
 
 #--------------------------------------------------------------------------
@@ -794,8 +795,6 @@ Summary of optional dependencies:
   libjpeg		${i_do_have_libjpeg}  	${libjpeg_url}
   libpng		${i_do_have_libpng}  	${libpng_url}
   libtiff		${i_do_have_libtiff}  	${libtiff_url}
-  libxml		${i_do_have_libxml}  	${libxml_url}
-  libspiro		${i_do_have_libspiro}  	${libspiro_url}
   libuninameslist	${i_do_have_libuninameslist}  	${libuninameslist_url}
   libunicodenames	${i_do_have_libunicodenames}  	${libunicodenames_url}
   zeromq (libzmq)	${i_do_have_libzmq}  	${libzmq_url}

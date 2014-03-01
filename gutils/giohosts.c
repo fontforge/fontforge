@@ -75,7 +75,6 @@ return( cu_copy(url));
 	*port = strtol(temp,&end,10);
 	if ( *end!='\0' )
 	    *port = -2;
-	free(temp);
 	pt2 = ppt;
     }
     *host = cu_copyn(pt,pt2-pt);
@@ -114,10 +113,8 @@ return( password );
 		password = copy( pc[i].password );
  goto leave;
 	    }
-	    if ( strcmp(password,pc[i].password)!=0 ) {
-		free( pc[i].password );
+	    if ( strcmp(password,pc[i].password)!=0 )
 		pc[i].password = copy( password );
-	    }
  goto leave;
 	}
     }
@@ -179,7 +176,6 @@ return( cur );
     cur->addr.sin_port = 0;
     if ( isdigit(host[0])) {
     	if ( !inet_aton(host,&cur->addr.sin_addr)) {
-	    free(cur);
 #ifdef HAVE_PTHREAD_H
 	    pthread_mutex_unlock(&mutex);
 #endif
@@ -189,7 +185,6 @@ return( NULL );
 	struct hostent *he;
 	he = gethostbyname(host);
 	if ( he==NULL ) {
-	    free(cur);
 #ifdef HAVE_PTHREAD_H
 	    pthread_mutex_unlock(&mutex);
 #endif

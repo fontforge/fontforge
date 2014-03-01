@@ -1124,7 +1124,6 @@ return;
     }
 
     old->from->nextcpdef = old->to->prevcpdef = false;
-    SplineFree(old);
     CVSetCharChanged(cv,true);
 }
 

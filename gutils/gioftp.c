@@ -34,7 +34,6 @@
 
 #if defined(__MINGW32__)
 void* GIO_dispatch(GIOControl* gc) { return 0;}
-void GIO_cancel(GIOControl* gc) {}
 void GIO_init(void* handle, struct stdfuncs* _stdfuncs, int index) {}
 void GIO_term(void) {}
 #else
@@ -456,27 +455,23 @@ static int ftpgetdir(GIOControl *gc,int ctl,char *dirname,int tzdiff) {
     sprintf( buf, "CWD %s\r\n", dirname);
     if ( (ret=ftpsendr(gc,ctl,buf))<= 0 ) {
 	/* if we can't cd to it, we can't look at it */
-	free(buf); free(line);
 	if ( ret==0 ) gc->return_code = 401;		/* Unauthorized */
 return( ret );
     }
-    if ( (ret = ftpsendpassive(gc,ctl,&data_addr))<= 0 ) {
-	free(buf); free(line);
+    if ( (ret = ftpsendpassive(gc,ctl,&data_addr))<= 0 )
 return( ret );
-    }
     if (( data = socket(PF_INET,SOCK_STREAM,IPPROTO_TCP))==-1 ||
 	    setnopipe(data)==-1 ||
 	    connect(data,(struct sockaddr *) &data_addr,sizeof(data_addr))== -1 ) {
 	if ( data!=-1 )
 	    close(data);
-	free(buf); free(line);
 	gc->return_code = 602;
 	uc_strcpy(gc->status,"FTP Data Connect failed" );
 return( 0 );
     }
 
     if ( (ret = ftpsendr(gc,ctl,"LIST\r\n"))<=0 ) {
-	close(data); free(buf); free(line);
+	close(data);
 return( ret );
     }
 
@@ -491,14 +486,14 @@ return( ret );
 	    if (( ret = select(data+1,&rds,NULL,NULL,&tv))<0 ) {
 		if ( errno==EINTR )
   goto restart;
-		close(data); free(buf); free(line);
+		close(data);
 		(stdfuncs->FreeDirEntries)(last);
 		uc_strcpy(gc->status, "Connection closed by foreign host");
 		gc->return_code = 600;
 return( -1 );
 	    } else if ( gc->abort ) {
 		(stdfuncs->FreeDirEntries)(last);
-		close(data); free(buf); free(line);
+		close(data);
 return( -1 );
 	    } else if ( ret>0 )
 	break;
@@ -506,7 +501,7 @@ return( -1 );
 	}
 	if ( ret==0 ) {
 	    (stdfuncs->FreeDirEntries)(last);
-	    close(data); free(buf); free(line);
+	    close(data);
 	    uc_strcpy(gc->status, "Connection timed out");
 	    gc->return_code = 601;
 return( -1 );
@@ -539,14 +534,12 @@ return( -1 );
     close(data);
     if ( len==-1 ) {
 	(stdfuncs->FreeDirEntries)(last);
-	free(buf); free(line);
 return( -1 );
     }
     getresponse(gc,ctl);
     gc->done = true;
     gc->iodata = head;
     gc->direntrydata = true;
-    free(buf); free(line);
 return( 1 );
 }
 
@@ -680,7 +673,6 @@ void *GIO_dispatch(GIOControl *gc) {
 	    char *topath, *tohost, *tousername, *topassword; int toport;
 	    topath = (stdfuncs->decomposeURL)(gc->topath,&tohost,&toport,&tousername,&topassword);
 	    ret = ftprenamefile(gc,ctl,path,topath);
-	    free(topath); free(tohost); free(tousername); free(topassword);
 	  } break;
 	}
     }
@@ -688,20 +680,12 @@ void *GIO_dispatch(GIOControl *gc) {
   goto leave;
     (stdfuncs->PostSuccess)(gc);
     if ( ctl!=-1 ) close(ctl);
-    free(path);
-    free(host); free(username); free(password);
 return( NULL );
   leave:
     gc->done = true;
     (stdfuncs->PostError)(gc);
     if ( ctl!=-1 ) close(ctl);
-    free(path);
-    free(host); free(username); free(password);
 return( NULL );
-}
-
-void GIO_cancel(GIOControl *gc) {
-    free(gc->connectiondata);
 }
 
 void GIO_init(void *handle,struct stdfuncs *_stdfuncs,int index) {

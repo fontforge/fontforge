@@ -163,8 +163,6 @@ return( false );
     break;
 	}
     }
-    free(ss);
-    free(sp);
 return( ret );
 }
 
@@ -406,13 +404,9 @@ return( NULL );
 	if ( j!=ptcnt )
     break;
     }
-    if ( i==mm->instance_count ) {
+    if ( i==mm->instance_count )
 	/* All zeros */
-	for ( i=0 ; i<mm->instance_count; ++i )
-	    free(deltas[i]);
-	free(deltas);
 return( NULL );
-    }
 
 return( deltas );
 }
@@ -472,19 +466,15 @@ return( NULL );
 	for ( j=0; j<ptcnt; ++j )
 	    if ( deltas[i][j]!=0 )
 	break;
-	if ( j==ptcnt ) {
-	    free(deltas[i]);
+	if ( j==ptcnt )
 	    deltas[i] = NULL;
-	}
     }
     for ( i=0 ; i<mm->instance_count; ++i )
 	if ( deltas[i]!=NULL )
     break;
-    if ( i==mm->instance_count ) {
+    if ( i==mm->instance_count )
 	/* All zeros */
-	free(deltas);
 return( NULL );
-    }
 
 return( deltas );
 }
@@ -501,10 +491,8 @@ static void ttf_dumpcvar(struct alltabs *at, MMSet *mm) {
     for ( i=cnt=0; i<mm->instance_count; ++i )
 	if ( deltas[i]!=NULL )
 	    ++cnt;
-    if ( cnt==0 ) {
-	free(deltas);
+    if ( cnt==0 )
 return;
-    }
 
     tuple_size = 4+2*mm->axis_count;
     at->cvar = tmpfile();
@@ -576,17 +564,12 @@ return;
 		    putc( deltas[i][pts[j]], at->cvar );
 	    }
 	}
-	free(pts);
 	end = ftell(at->cvar);
 	fseek(at->cvar, 8+cnt*tuple_size, SEEK_SET);
 	putshort(at->cvar,end-start);
 	fseek(at->cvar, end, SEEK_SET);
 	++cnt;
     }
-
-    for ( i=0; i<mm->instance_count; ++i )
-	free( deltas[i] );
-    free(deltas);
 
     at->cvarlen = ftell(at->cvar);
     if ( at->cvarlen&1 )
@@ -675,9 +658,7 @@ static void ttf_dumpgvar(struct alltabs *at, MMSet *mm) {
 	    fseek(at->gvar,here+4+4*j,SEEK_SET);
 	    putshort( at->gvar,tupledataend-tupledatastart);
 	    fseek(at->gvar,tupledataend,SEEK_SET);
-	    free(deltas[2*j]); free(deltas[2*j+1]);
 	}
-	free(deltas);
     }
     here = ftell(at->gvar);
     fseek(at->gvar,glyphoffs+(last+1)*4,SEEK_SET);
@@ -755,7 +736,7 @@ static int AllocateStrId(struct alltabs *at,struct macname *mn) {
     if ( mn==NULL )
 return( 0 );
 
-    on = chunkalloc(sizeof(struct other_names));
+    on = XZALLOC(struct other_names);
     on->strid = at->next_strid++;
     on->mn = mn;
     on->next = at->other_names;

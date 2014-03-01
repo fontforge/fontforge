@@ -45,9 +45,6 @@ static void CVCondenseExtend(CharView *cv,struct counterinfo *ci) {
 return;
 
     SCCondenseExtend(ci, sc, CVLayer((CharViewBase *) cv),true);
-
-    free( ci->zones[0]);
-    free( ci->zones[1]);
 }
 
 typedef struct styledlg {
@@ -512,7 +509,6 @@ return( true );
 	    genchange.glyph_extension = GGadgetGetTitle8(GWidgetGetControl(ew,CID_Extension));
 	    if ( *genchange.glyph_extension=='\0' ) {
 		ff_post_error(_("Missing glyph extension"),_("You must specify a glyph extension"));
-		free(genchange.glyph_extension);
 return( true );
 	    }
 	    genchange.vertical_offset = GetReal8(ew,CID_VerticalOff,_("Vertical Offset"),&err);
@@ -524,8 +520,6 @@ return( true );
 	    genchange.extension_for_letters = GGadgetGetTitle8(GWidgetGetControl(ew,CID_Letter_Ext));
 	    genchange.extension_for_symbols = GGadgetGetTitle8(GWidgetGetControl(ew,CID_Symbol_Ext));
 	    if ( *genchange.extension_for_letters=='\0' || (*genchange.extension_for_symbols=='\0' && genchange.do_smallcap_symbols )) {
-		free( genchange.extension_for_letters );
-		free( genchange.extension_for_symbols );
 		ff_post_error(_("Missing extension"),_("You must provide a glyph extension"));
 return( true );
 	    }
@@ -591,10 +585,6 @@ return( true );
 	    FVGenericChange( (FontViewBase *) ed->fv, &genchange );
 	else
 	    CVGenericChange( (CharViewBase *) ed->cv, &genchange );
-	free(genchange.glyph_extension);
-	free(genchange.m.maps);
-	free( genchange.extension_for_letters );
-	free( genchange.extension_for_symbols );
 	ed->done = true;
     }
 return( true );
@@ -2297,7 +2287,6 @@ void ObliqueDlg(FontView *fv, CharView *cv) {
 return;
     temp = strtod(ret,&end);
     if ( *end || temp>90 || temp<-90 ) {
-	free(ret);
 	ff_post_error( _("Bad Number"),_("Bad Number") );
 return;
     }

@@ -1,4 +1,6 @@
 /* strlist.c */
+#include <fontforge-config.h>
+
 #include <string.h>
 #include <stdlib.h>
 #include "basics.h"
@@ -11,16 +13,6 @@ int string_list_count(const struct string_list *list) {
     int cnt;
     for( cnt=0; list!=NULL; list=list->next, cnt++);
     return cnt;
-}
-
-void delete_string_list(struct string_list *list) {
-    struct string_list *curr, *next;
-    for ( curr=list; curr!=NULL; curr=next ) {
-	next = curr->next;
-        free(curr->str);
-	free(curr);
-    }
-    return;
 }
 
 struct string_list *new_string_list(const char *str) {
@@ -87,6 +79,5 @@ struct string_list *sort_string_list(struct string_list* list) {
     }
     sortarray[cnt-1]->next = NULL;
     item = sortarray[0];
-    free(sortarray);
     return item;
 }

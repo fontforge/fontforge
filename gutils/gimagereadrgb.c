@@ -170,12 +170,10 @@ static void freeptrtab(unsigned char **ptrtab,long tot) {
 
     if ( ptrtab!=NULL )
 	for ( i=0; i<tot; ++i )
-	    if ( ptrtab[i]!=NULL ) {
+	    if ( ptrtab[i]!=NULL )
 		for ( j=i+1; j<tot; ++j )
 		    if ( ptrtab[j]==ptrtab[i] )
 			ptrtab[j] = NULL;
-		free(ptrtab[i]);
-	    }
 }
 
 GImage *GImageReadRgb(char *filename) {
@@ -242,7 +240,6 @@ GImage *GImageReadRgb(char *filename) {
 	    }
 	}
 	freeptrtab(ptrtab,tablen);
-	free(ptrtab); free(starttab); /*free(lengthtab);*/
     } else {
 	/* working with Verbatim image data*/
 	if ( header.chans==1 && header.bpc==1 ) {
@@ -310,7 +307,6 @@ GImage *GImageReadRgb(char *filename) {
 		    *ipt++ = COLOR_CREATE(*rpt++,*gpt++,*bpt++);
 	    }
 	    }
-	    free(r); free(g); free(b); free(a);
 	}
     }
     return( ret );
@@ -319,9 +315,6 @@ errorGImageReadRgbFile:
     fprintf(stderr,"Bad input file \"%s\"\n",filename );
 errorGImageReadRgbMem:
     freeptrtab(ptrtab,tablen);
-    free(ptrtab); free(starttab); /*free(lengthtab);*/
-    free(r); free(g); free(b); free(a);
-    GImageDestroy(ret);
     fclose(fp);
     return( NULL );
 }

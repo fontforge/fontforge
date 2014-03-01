@@ -90,9 +90,7 @@ extern int  dlist_size( struct dlistnode** list );
 extern int  dlist_isempty( struct dlistnode** list );
 
 /**
- * Remove the node from the list. The node itself is not free()ed.
- * That is still up to the caller. All this function does is preserve
- * the list structure without the node being in it.
+ * Remove the node from the list.
  */
 extern void dlist_erase( struct dlistnode** list, struct dlistnode* node );
 typedef void (*dlist_foreach_func_type)( struct dlistnode* );
@@ -122,29 +120,16 @@ extern void dlist_foreach_reverse_udata( struct dlistnode** list, dlist_foreach_
  */
 extern void dlist_pushfront_external( struct dlistnode** list, void* ptr );
 
-/**
- * Free a list of externalNode type. The externalNode memory is
- * free()ed, whatever externalNode.ptr is pointing to is not free()ed.
- */
-extern void dlist_free_external( struct dlistnode** list );
-
-
 typedef void (*dlist_visitor_func_type)( struct dlistnode* );
 
 /**
  * To create a list of bounded length, use this function. Limit is the
- * maximum length the list can reach. If list nodes have to be removed
- * to be under this limit then "f" is used as a callback to free list
- * nodes. This allows application specific freeing of a list node, and
- * the ability to maintain a limit on the length of a list as a simple
- * one line call.
+ * maximum length the list can reach.
  *
- * The current implementation expects you to only be trimming one or
- * two entries at a time. It will still work for trimming 100 entries
- * at a single time, but might not be quite as optimized for that case
- * as it could be.
+ * The current implementation takes time linear in the number of
+ * entries trimmed.
  */
-extern void dlist_trim_to_limit( struct dlistnode** list, int limit, dlist_visitor_func_type f );
+extern void dlist_trim_to_limit( struct dlistnode** list, int limit );
 
 
 #endif // _DLIST_H

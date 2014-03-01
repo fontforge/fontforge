@@ -88,14 +88,11 @@ static int WriteAfmFile(char *filename,SplineFont *sf, int formattype,
 	afm = fopen(buf,"w");
     else
 	afm = tmpfile();
-    if ( afm==NULL ) {
-	free(buf);
+    if ( afm==NULL )
 return( false );
-    }
     ret = AfmSplineFont(afm,sf,subtype,map,flags&ps_flag_afmwithmarks,fullsf,layer);
     if ( ret && strstr(buf,"://")!=NULL )
 	ret = URLFromFile(buf,afm);
-    free(buf);
     if ( fclose(afm)==-1 )
 return( false );
     if ( !ret )
@@ -115,7 +112,6 @@ return( false );
 	    strcat(pt,".afm");
 	    ff_progress_change_line2(buf);
 	    afm = fopen(buf,"w");
-	    free(buf);
 	    if ( afm==NULL )
 return( false );
 	    ret = AfmSplineFont(afm,sf,subtype,map,flags&ps_flag_afmwithmarks,NULL,layer);
@@ -136,7 +132,6 @@ return( false );
 	    strcpy(pt,".amfm");
 	ff_progress_change_line2(buf);
 	afm = fopen(buf,"w");
-	free(buf);
 	if ( afm==NULL )
 return( false );
 	ret = AmfmSplineFont(afm,mm,formattype,map,layer);
@@ -174,7 +169,6 @@ return( false );
     pt = strrchr(buf,'.');
     strcpy(pt,".enc");
     enc = fopen(buf,"wb");
-    free(buf);
     if ( enc==NULL )
 return( false );
 
@@ -237,7 +231,6 @@ return( false );
     pt = strrchr(buf,'.');
     strcpy(pt,".cfg");
     enc = fopen(buf,"wb");
-    free(buf);
     if ( enc==NULL )
 return( false );
 
@@ -281,7 +274,6 @@ int WritePfmFile(char *filename,SplineFont *sf, EncMap *map,int layer) {
 	strcpy(pt,".pfm");
     ff_progress_change_line2(buf);
     pfm = fopen(buf,"wb");
-    free(buf);
     if ( pfm==NULL )
 return( false );
     ret = PfmSplineFont(pfm,sf,map,layer);
@@ -304,7 +296,6 @@ return( true );
     else
 	strcpy(pt+1,"FontLog.txt");
     flog = fopen(buf,"w");
-    free(buf);
     if ( flog==NULL )
 return( false );
 
@@ -334,7 +325,6 @@ static int WriteBitmaps(char *filename,SplineFont *sf, int32 *sizes,int res,
 	if ( bdf==NULL ) {
 	    ff_post_notice(_("Missing Bitmap"),_("Attempt to save a pixel size that has not been created (%d@%d)"),
 		    sizes[i]&0xffff, sizes[i]>>16);
-	    free(buf);
 return( false );
 	}
 
@@ -369,7 +359,6 @@ return( false );
 	    IError( "Unexpected font type" );
 	ff_progress_next_stage();
     }
-    free(buf);
 return( true );
 }
 
@@ -416,7 +405,6 @@ return( NULL );
     while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	if ( strncmp(buffer,pfaeditflag,strlen(pfaeditflag))== 0 ) {
 	    ff_post_error(_("Wrong type of SFD file"),_("This looks like one of FontForge's SplineFont DataBase files.\nNot one of TeX's SubFont Definition files.\nAn unfortunate confusion of extensions."));
-	    free(mapping);
 return( NULL );
 	}
 	pt=buffer+strlen(buffer)-1;
@@ -508,8 +496,6 @@ return( NULL );
 	if ( thusfar>256 )
 	    LogError( _("More than 256 entries in subfont %s\n"), names[subfilecnt] );
 	++subfilecnt;
-	if ( bpt!=buffer )
-	    free(bpt);
     }
     names[subfilecnt]=NULL;
     *_names = names;
@@ -588,7 +574,6 @@ return( 0 );
     break;
 	newchars = calloc(temp.glyphcnt+extras,sizeof(SplineChar *));
 	memcpy(newchars,temp.glyphs,temp.glyphcnt*sizeof(SplineChar *));
-	if ( temp.glyphs!=chars ) free(temp.glyphs );
 	base = temp.glyphcnt;
 	temp.glyphs = newchars;
 	extras = 0;
@@ -665,13 +650,7 @@ return( 0 );
     if ( !ff_progress_next_stage())
 	err = -1;
 
-    if ( temp.glyphs!=chars )
-	free(temp.glyphs);
     GlyphHashFree( &temp );
-    free( temp.xuid );
-    free( temp.fontname );
-    free( temp.fullname );
-    free( filename );
 
     /* SaveSubFont messes up the parent and orig_pos fields. Fix 'em up */
     /* Do this after every save, else afm,tfm files might produce extraneous kerns */
@@ -690,7 +669,7 @@ return( err );
 /* ttf2tfm supports multiple sfd files. I do not. */
 static int WriteMultiplePSFont(SplineFont *sf,char *newname,int32 *sizes,
 	char *wernerfilename,EncMap *map, int layer) {
-    int err=0, tofree=false, max, filecnt;
+    int err=0, max, filecnt;
     int32 *mapping;
     char *path;
     int i;
@@ -706,7 +685,6 @@ return( 0 );
     if ( wernerfilename==NULL )
 return( 0 );
     mapping = ParseWernerSFDFile(wernerfilename,sf,&max,&names,map);
-    if ( tofree ) free(wernerfilename);
     if ( mapping==NULL )
 return( 1 );
 
@@ -720,15 +698,10 @@ return( 1 );
     ff_progress_start_indicator(10,_("Saving font"),
 	    _("Saving Multiple PostScript Fonts"),
 	    path,256,(max+1)*filecnt );
-    free(path);
 
     for ( i=0; i<=max && !err; ++i )
 	err = SaveSubFont(sf,newname,mapping,i,names,layer);
 
-    free(mapping);
-    for ( i=0; names[i]!=NULL; ++i ) free(names[i]);
-    free(names);
-    free( sizes );
     ff_progress_end_indicator();
     if ( !err )
 	SavePrefs(true);
@@ -791,7 +764,6 @@ return( WriteMultiplePSFont(sf,newname,sizes,subfontdefinition,map,layer));
 		  oldformatstate==ff_ufo ?_("Saving Unified Font Object") :
 		 _("Saving PostScript Font"),
 	    path,sf->glyphcnt,1);
-    free(path);
     if ( oldformatstate!=ff_none ) {
 	int oerr = 0;
 	int bmap = oldbitmapstate;
@@ -887,8 +859,6 @@ return( true );
 	}
 	if ( !WriteTTFFont(temp,sf,ff_none,sizes,oldbitmapstate,flags,map,layer) )
 	    err = true;
-	if ( temp!=newname )
-	    free(temp);
     } else if ( oldbitmapstate==bf_sfnt_dfont ) {
 	char *temp = newname;
 	if ( newname[strlen(newname)-1]=='.' ) {
@@ -898,8 +868,6 @@ return( true );
 	}
 	if ( !WriteMacTTFFont(temp,sf,ff_none,sizes,oldbitmapstate,flags,map,layer) )
 	    err = true;
-	if ( temp!=newname )
-	    free(temp);
     } else if ( (oldbitmapstate==bf_bdf || oldbitmapstate==bf_fnt ||
 	    oldbitmapstate==bf_ptype3 ) && !err ) {
 	ff_progress_change_line1(_("Saving Bitmap Font(s)"));
@@ -917,7 +885,6 @@ return( true );
 	if ( !WriteMacBitmaps(newname,sf,sizes,false/*oldbitmapstate==bf_nfntdfont*/,map))
 	    err = true;
     }
-    free( sizes );
     ff_progress_end_indicator();
     if ( !err )
 	SavePrefs(true);
@@ -1221,7 +1188,6 @@ int GenerateScript(SplineFont *sf,char *filename,const char *bitmaptype, int fmf
     } else {
 	ret = !_DoSave(sf,filename,sizes,res,map,subfontdefinition,layer);
     }
-    free(freeme);
 
     if ( sfs!=NULL ) {
 	for ( sfl=sfs; sfl!=NULL; sfl=sfl->next ) {
@@ -1235,11 +1201,5 @@ int GenerateScript(SplineFont *sf,char *filename,const char *bitmaptype, int fmf
 	    SFTemporaryRestoreGlyphNames(sf,former);
     }
 
-    if ( oldbitmapstate!=bf_none ) {
-	if ( sfs!=NULL ) {
-	    for ( sfi=sfs; sfi!=NULL; sfi=sfi->next )
-		free(sfi->sizes);
-	}
-    }
 return( ret );
 }

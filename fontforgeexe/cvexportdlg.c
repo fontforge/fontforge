@@ -60,7 +60,6 @@ return( true );
 	    ff_post_error(_("The only valid values for bits/pixel are 1, 2, 4 or 8"),_("The only valid values for bits/pixel are 1, 2, 4 or 8"));
 return( true );
 	}
-	free( last ); free( last_bits );
 	last = GGadgetGetTitle8(GWidgetGetControl(d->gw,CID_Size));
 	last_bits = GGadgetGetTitle8(GWidgetGetControl(d->gw,CID_Bits));
 	d->done = true;
@@ -209,7 +208,6 @@ static int ExportXBM(char *filename,SplineChar *sc, int layer, int format) {
 return( 0 );
 	if ( (pixelsize=strtol(ans,NULL,10))<=0 )
 return( 0 );
-	free(last);
 	last = ans;
 	bitsperpixel=1;
     } else {
@@ -293,7 +291,6 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
 #endif
     if ( !good )
 	ff_post_error(_("Save Failed"),_("Save Failed"));
-    free(temp);
     d->done = good;
     d->ret = good;
 }
@@ -318,7 +315,6 @@ static void GFD_exists(GIOControl *gio) {
 	    temp = u2utf8_copy(u_GFileNameTail(gio->path)))==0 ) {
 	DoExport(d,gio->path);
     }
-    free(temp);
     GFileChooserReplaceIO(d->gfc,NULL);
 }
 
@@ -332,7 +328,6 @@ static int GFD_SaveOk(GGadget *g, GEvent *e) {
 
 	    GIOfileExists(GFileChooserReplaceIO(d->gfc,
 		    GIOCreate(ret,d,GFD_exists,GFD_doesnt)));
-	    free(ret);
 	}
     }
 return( true );
@@ -355,7 +350,6 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	file = GGadgetGetTitle(d->gfc);
 	f2 = malloc(sizeof(unichar_t) * (u_strlen(file)+6));
 	u_strcpy(f2,file);
-	free(file);
 	pt = u_strrchr(f2,'.');
 	if ( pt==NULL )
 	    pt = f2+u_strlen(f2);
@@ -384,7 +378,6 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 			 format==10?".c":
 				    ".png");
 	GGadgetSetTitle(d->gfc,f2);
-	free(f2);
     }
 return( true );
 }
@@ -395,7 +388,6 @@ static void GFD_dircreated(GIOControl *gio) {
 
     GFileChooserReplaceIO(d->gfc,NULL);
     GFileChooserSetDir(d->gfc,dir);
-    free(dir);
 }
 
 static void GFD_dircreatefailed(GIOControl *gio) {
@@ -405,7 +397,6 @@ static void GFD_dircreatefailed(GIOControl *gio) {
 
     ff_post_notice(_("Couldn't create directory"),_("Couldn't create directory: %s"),
 		temp = u2utf8_copy(u_GFileNameTail(gio->path)));
-    free(temp);
     GFileChooserReplaceIO(d->gfc,NULL);
     GFileChooserReplaceIO(d->gfc,NULL);
 }
@@ -422,13 +413,11 @@ return( true );
 	if ( !GFileIsAbsolute(newdir)) {
 	    char *basedir = u2utf8_copy(GFileChooserGetDir(d->gfc));
 	    char *temp = GFileAppendFile(basedir,newdir,false);
-	    free(newdir); free(basedir);
 	    newdir = temp;
 	}
-	utemp = utf82u_copy(newdir); free(newdir);
+	utemp = utf82u_copy(newdir);
 	GIOmkDir(GFileChooserReplaceIO(d->gfc,
 		GIOCreate(utemp,d,GFD_dircreated,GFD_dircreatefailed)));
-	free(utemp);
     }
 return( true );
 }
@@ -672,9 +661,6 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     GGadgetSetTitle(gcd[0].ret,ubuf);
     GFileChooserGetChildren(gcd[0].ret,&pulldown,&files,&tf);
     GWidgetIndicateFocusGadget(tf);
-
-    if ( cur_formats!=formats && cur_formats!=bcformats )
-	GTextInfoListFree(cur_formats);
 
     memset(&d,'\0',sizeof(d));
     d.sc = sc;

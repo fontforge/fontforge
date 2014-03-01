@@ -133,12 +133,6 @@ const char CantSaveFile[] = "Can't open or write to output file %s\n";	/* exit(2
 const char NoMoreMemory[] = "Can't access more memory.\n";		/* exit(3) */
 const char LineLengthBg[] = "Error with %s. Found line too long: %s\n";	/* exit(4) */
 
-static void FreeNamesMemorySpace() {
-    long index;
-    for ( index=0; index<MAXC ; ++index )
-	free( names[index] );
-}
-
 static void FigureAlternates(long index, char *apt, int normative) {
     int alt, i;
     char *end;
@@ -219,7 +213,6 @@ static void readin(void) {
 	    fprintf( stderr, "\n%s\n",buffer );
 
 	    fclose(fp);
-	    FreeNamesMemorySpace();
 	    exit(4);
 	}
 	if ( *buffer=='#' )
@@ -357,14 +350,12 @@ static void readin(void) {
 
     if ((fp = fopen("LineBreak.txt","r"))==NULL ) {
 	fprintf( stderr, CantReadFile, "LineBreak.txt" );
-	FreeNamesMemorySpace();
 	exit(1);
     }
     while ( fgets(buffer,sizeof(buffer)-1,fp)!=NULL ) {
 	if (strlen(buffer)>=299) {	/* previous version was linelength of 300 chars, jul2012 */
 	    fprintf( stderr, LineLengthBg,"LineBreak.txt",buffer );
 	    fclose(fp);
-	    FreeNamesMemorySpace();
 	    exit(4);
 	}
 	if ( *buffer=='#' )
@@ -412,7 +403,6 @@ static void readin(void) {
 
     if ((fp = fopen("PropList.txt","r"))==NULL ) {
 	fprintf( stderr, CantReadFile, "PropList.txt" );
-	FreeNamesMemorySpace();
 	exit(1);
     }
     while ( fgets(buffer,sizeof(buffer)-1,fp)!=NULL ) {
@@ -420,7 +410,6 @@ static void readin(void) {
 	if (strlen(buffer)>=299) {	/* previous version was linelength of 300 chars, jul2012 */
 	    fprintf( stderr, LineLengthBg,"PropList.txt",buffer );
 	    fclose(fp);
-	    FreeNamesMemorySpace();
 	    exit(4);
 	}
 	if ( true || strncmp(buffer,"Property dump for:", strlen("Property dump for:"))==0 ) {
@@ -466,7 +455,6 @@ static void readin(void) {
 
     if ((fp = fopen("NamesList.txt","r"))==NULL ) {
 	fprintf( stderr, CantReadFile, "NamesList.txt" );
-	FreeNamesMemorySpace();
 	exit(1);
     }
     while ( fgets(buffer,sizeof(buffer)-1,fp)!=NULL ) {
@@ -474,7 +462,6 @@ static void readin(void) {
 	if (strlen(buffer)>=511) {
 	    fprintf( stderr, LineLengthBg,"NamesList.txt",buffer );
 	    fclose(fp);
-	    FreeNamesMemorySpace();
 	    exit(4);
 	}
 	if ( (index = strtol(buffer,NULL,16))!=0 ) {
@@ -511,7 +498,6 @@ return;
 	if (strlen(buffer)>=299) {
 	    fprintf( stderr, LineLengthBg,corp,buffer );
 	    fclose(fp);
-	    FreeNamesMemorySpace();
 	    exit(4);
 	}
 	if ( *buffer=='#' )
@@ -534,7 +520,6 @@ return;
 	    if ((names[index]= malloc(strlen(buf2)+strlen(prefix)+4)) == NULL) {
 		fprintf( stderr, NoMoreMemory );
 		fclose(fp);
-		FreeNamesMemorySpace();
 		exit(3);
 	    }
 	    strcpy(names[index],prefix); strcat(names[index],buf2);
@@ -603,7 +588,6 @@ static void dumparabicdata(FILE *header) {
     data = fopen( "ArabicForms.c","w");
     if ( data==NULL || data==NULL ) {
 	fprintf( stderr, CantSaveFile, "ArabicForms.c" );
-	FreeNamesMemorySpace();
 	exit(2);
     }
 
@@ -640,7 +624,6 @@ static void dump() {
 	fprintf( stderr, CantSaveFile, "(utype.[ch])" );
 	if ( header ) fclose( header );
 	if ( data   ) fclose( data );
-	FreeNamesMemorySpace();
 	exit(2);
     }
 
@@ -1621,6 +1604,5 @@ int main() {
     cheat();				/* over-ride with these mods after reading input files */
     dump();				/* create utype.h, utype.c and ArabicForms.c */
     dump_alttable();			/* create unialt.c */
-    FreeNamesMemorySpace();		/* cleanup alloc of memory */
 return( 0 );
 }

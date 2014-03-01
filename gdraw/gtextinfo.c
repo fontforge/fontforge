@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <fontforge-config.h>
+
 #include <stdlib.h>
 #include "gdraw.h"
 #include "ggadgetP.h"
@@ -320,7 +322,6 @@ static void ImagePathDefault(void) {
 	imagepath[0] = copy(imagedir);
 	imagepath[1] = NULL;
 	imagepathlenmax = strlen(imagedir);
-	free(_GGadget_ImagePath);
 	_GGadget_ImagePath = copy("=");
     }
 }
@@ -376,14 +377,11 @@ static void ImageCacheReload(void) {
 		    hold = *(bucket->image);
 		    *bucket->image = *temp;
 		    *temp = hold;
-		    GImageDestroy(temp);
 		}
-		free( bucket->absname );
 		bucket->absname = copy( path );
 	    }
 	}
     }
-    free(path);
 }
 
 void GGadgetSetImageDir(char *dir) {
@@ -397,11 +395,9 @@ void GGadgetSetImageDir(char *dir) {
 		if ( strcmp(imagepath[k],old)==0 )
 	    break;
 	    if ( imagepath[k]!=NULL ) {
-		free(imagepath[k]);
 		imagepath[k] = imagedir;
 		ImageCacheReload();
 	    }
-	    free(_GGadget_ImagePath);
 	    _GGadget_ImagePath = copy("=");
 	}
     }
@@ -432,13 +428,7 @@ void GGadgetSetImagePath(char *path) {
 
     if ( path==NULL )
 return;
-    free( _GGadget_ImagePath );
 
-    if ( imagepath!=NULL ) {
-	for ( k=0; imagepath[k]!=NULL; ++k )
-	    free( imagepath[k] );
-	free( imagepath );
-    }
     for ( cnt=0, pt = path; (end = strchr(pt,PATH_SEPARATOR))!=NULL; ++cnt, pt = end+1 );
     imagepath = malloc((cnt+2)*sizeof(char *));
     for ( cnt=0, pt = path; (end = strchr(pt,PATH_SEPARATOR))!=NULL; ++cnt, pt = end+1 )
@@ -481,7 +471,6 @@ return( bucket->image );
     break;
 	}
     }
-    free(path);
     if ( bucket->image!=NULL ) {
 	/* Play with the clut to make white be transparent */
 	struct _GImage *base = bucket->image->u.image;
@@ -535,20 +524,16 @@ return( ri );
 	strcpy(absname,getenv("HOME"));
 	strcat(absname,fname+1);
 	ret = GImageRead(absname);
-	free(fname);
 	ri->filename = fname = absname;
     } else {
 	char *absname;
 	ret = _GGadgetImageCache(fname,&absname);
-	if ( ret ) {
-	    free(fname);
+	if ( ret )
 	    ri->filename = fname = absname;
-	}
     }
-    if ( ret==NULL ) {
+    if ( ret==NULL )
 	ri->filename = NULL;
-	free(fname);
-    } else
+    else
 	ri->image = ret;
 
 return( ri );
@@ -622,35 +607,6 @@ int GTextInfoArrayCount(GTextInfo **ti) {
 return( i );
 }
 
-void GTextInfoFree(GTextInfo *ti) {
-    if ( !ti->text_in_resource )
-	free(ti->text);
-    free(ti);
-}
-
-void GTextInfoListFree(GTextInfo *ti) {
-    int i;
-
-    if ( ti==NULL )
-return;
-
-    for ( i=0; ti[i].text!=NULL || ti[i].image!=NULL || ti[i].line; ++i )
-	if ( !ti[i].text_in_resource )
-	    free(ti[i].text);
-    free(ti);
-}
-
-void GTextInfoArrayFree(GTextInfo **ti) {
-    int i;
-
-    if ( ti == NULL )
-return;
-    for ( i=0; ti[i]->text || ti[i]->image || ti[i]->line; ++i )
-	GTextInfoFree(ti[i]);
-    GTextInfoFree(ti[i]);	/* And free the null entry at end */
-    free(ti);
-}
-
 int GTextInfoCompare(GTextInfo *ti1, GTextInfo *ti2) {
     GTextInfo2 *_ti1 = (GTextInfo2 *) ti1, *_ti2 = (GTextInfo2 *) ti2;
 
@@ -673,7 +629,6 @@ return( 1 );
 	t1 = u2utf8_copy(ti1->text);
 	t2 = u2utf8_copy(ti2->text);
 	ret = strcoll(t1,t2);
-	free(t1); free(t2);
 return( ret );
     }
 }
@@ -698,18 +653,6 @@ return( NULL );
     }
     ti[i] = calloc(1,sizeof(GTextInfo));
 return( ti );
-}
-
-void GMenuItemArrayFree(GMenuItem *mi) {
-    int i;
-
-    if ( mi == NULL )
-return;
-    for ( i=0; mi[i].ti.text || mi[i].ti.image || mi[i].ti.line; ++i ) {
-	GMenuItemArrayFree(mi[i].sub);
-	free(mi[i].ti.text);
-    }
-    free(mi);
 }
 
 GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt) {
@@ -774,18 +717,6 @@ return( true );
 	}
     }
 return( false );
-}
-
-void GMenuItem2ArrayFree(GMenuItem2 *mi) {
-    int i;
-
-    if ( mi == NULL )
-return;
-    for ( i=0; mi[i].ti.text || mi[i].ti.image || mi[i].ti.line; ++i ) {
-	GMenuItem2ArrayFree(mi[i].sub);
-	free(mi[i].ti.text);
-    }
-    free(mi);
 }
 
 static char *shortcut_domain = "shortcuts";
@@ -1216,9 +1147,6 @@ int GStringSetResourceFileV(char *filename,uint32 checksum) {
     int i,j;
 
     if ( filename==NULL ) {
-	if ( strarray!=NULL )
-	    for ( i=0; i<slen; ++i ) free( strarray[i]);
-	free(strarray); free(smnemonics); free(intarray);
 	strarray = NULL; smnemonics = NULL; intarray = NULL;
 	slen = ilen = 0;
 return( 1 );
@@ -1236,9 +1164,6 @@ return( 0 );
 
     scnt = getushort(res);
     icnt = getushort(res);
-    if ( strarray!=NULL )
-	for ( i=0; i<slen; ++i ) free( strarray[i]);
-    free(strarray); free(smnemonics); free(intarray);
     strarray = calloc(scnt,sizeof(unichar_t *));
     smnemonics = calloc(scnt,sizeof(unichar_t));
     intarray = malloc(icnt*sizeof(int));

@@ -33,7 +33,7 @@
 #include <ustring.h>
 #include <stdio.h>
 
-#ifndef HAVE_ICONV_H
+#ifndef HAVE_ICONV
 
 /* I have written an limited iconv which will convert either to or from unichar_t */
 /* (either UCS2 or UCS4) */
@@ -154,7 +154,6 @@ return( ret );
 }
 
 void gww_iconv_close( gww_iconv_t cd) {
-    free(cd);
 }
 
 size_t gww_iconv( gww_iconv_t _cd,
@@ -1059,4 +1058,4 @@ return( char_cnt );
 }
 #else
 static const int a_file_must_define_something=1;
-#endif 	/* HAVE_ICONV_H */
+#endif 	/* HAVE_ICONV */

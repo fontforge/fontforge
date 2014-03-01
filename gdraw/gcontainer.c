@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <fontforge-config.h>
+
 #include "gwidgetP.h"
 #include "ggadgetP.h"
 #include "../gdraw/gdrawP.h"
@@ -411,7 +413,6 @@ return( handled );
 	    else
 		pwd->next = gd->next;
 	}
-	free(gd);
 	gw->widget_data = NULL;
     }
 return( handled );

@@ -221,7 +221,6 @@ InsertSubMenus(menu_info_func func,
                 mmn[j].invoke = is_cv ? cv_menuactivate : fv_menuactivate;
                 mmn[j].mid = MenuDataAdd(func, check, data, is_cv);
                 fprintf(stderr, "Redefining menu item %s\n", submenu_names[i]);
-                free(submenuu);
             }
         }
     }

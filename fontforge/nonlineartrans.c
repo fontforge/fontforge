@@ -50,15 +50,6 @@ static struct builtins { const char *name; enum operator op; } builtins[] = {
     { NULL, 0 }
 };
 
-void nlt_exprfree(struct expr *e) {
-    if ( e==NULL )
-return;
-    nlt_exprfree(e->op1);
-    nlt_exprfree(e->op2);
-    nlt_exprfree(e->op3);
-    chunkfree(e,sizeof(*e));
-}
-
 static int gettoken(struct context *c, real *val) {
     int ch, i;
     char *end, *pt;
@@ -373,11 +364,7 @@ struct expr *nlt_parseexpr(struct context *c,char *str) {
 	c->had_error = true;
 	ff_post_error(_("Bad Token"), _("Unexpected token after expression end.\nbefore ...%40s") , c->cur );
     }
-    if ( c->had_error ) {
-	nlt_exprfree(ret);
-return( NULL );
-    }
-return( ret );
+return ( c->had_error ? NULL : ret );
 }
 
 static real evaluate_expr(struct context *c,struct expr *e) {
@@ -566,7 +553,7 @@ static void SplineSetNLTrans(SplineSet *ss,struct context *c,
     /*  curves, curves may become higher order curves (which we still approx */
     /*  imate with cubics) */
 
-    first = last = chunkalloc(sizeof(SplinePoint));
+    first = last = XZALLOC(SplinePoint);
     *first = *ss->first;
     first->hintmask = NULL;
     first->next = first->prev = NULL;
@@ -575,7 +562,7 @@ static void SplineSetNLTrans(SplineSet *ss,struct context *c,
 
     if ( ss->first->next!=NULL ) {
 	for ( sp=ss->first->next->to; sp!=NULL; ) {
-	    next = chunkalloc(sizeof(SplinePoint));
+	    next = XZALLOC(SplinePoint);
 	    *next = *sp;
 	    next->hintmask = NULL;
 	    if ( everything || next->selected )
@@ -620,7 +607,6 @@ static void SplineSetNLTrans(SplineSet *ss,struct context *c,
 	    first->noprevcp = last->noprevcp;
 	    first->prevcpdef = false;
 	    first->prev->to = first;
-	    SplinePointFree(last);
 	    last = first;
 	}
 	for ( next=first ; ; ) {
@@ -699,17 +685,12 @@ int SFNLTrans(FontViewBase *fv,char *x_expr,char *y_expr) {
     struct context c;
 
     memset(&c,0,sizeof(c));
-    if ( (c.x_expr = nlt_parseexpr(&c,x_expr))==NULL )
+    if ( (c.x_expr = nlt_parseexpr(&c,x_expr))==NULL ||
+         (c.y_expr = nlt_parseexpr(&c,y_expr))==NULL )
 return( false );
-    if ( (c.y_expr = nlt_parseexpr(&c,y_expr))==NULL ) {
-	nlt_exprfree(c.x_expr);
-return( false );
-    }
 
     _SFNLTrans(fv,&c);
 
-    nlt_exprfree(c.x_expr);
-    nlt_exprfree(c.y_expr);
 return( true );
 }
 
@@ -717,20 +698,15 @@ int SSNLTrans(SplineSet *ss,char *x_expr,char *y_expr) {
     struct context c;
 
     memset(&c,0,sizeof(c));
-    if ( (c.x_expr = nlt_parseexpr(&c,x_expr))==NULL )
+    if ( (c.x_expr = nlt_parseexpr(&c,x_expr))==NULL ||
+         (c.y_expr = nlt_parseexpr(&c,y_expr))==NULL )
 return( false );
-    if ( (c.y_expr = nlt_parseexpr(&c,y_expr))==NULL ) {
-	nlt_exprfree(c.x_expr);
-return( false );
-    }
 
     while ( ss!=NULL ) {
 	SplineSetNLTrans(ss,&c,false);
 	ss = ss->next;
     }
 
-    nlt_exprfree(c.x_expr);
-    nlt_exprfree(c.y_expr);
 return( true );
 }
 
@@ -738,17 +714,12 @@ int SCNLTrans(SplineChar *sc, int layer,char *x_expr,char *y_expr) {
     struct context c;
 
     memset(&c,0,sizeof(c));
-    if ( (c.x_expr = nlt_parseexpr(&c,x_expr))==NULL )
+    if ( (c.x_expr = nlt_parseexpr(&c,x_expr))==NULL ||
+         (c.y_expr = nlt_parseexpr(&c,y_expr))==NULL )
 return( false );
-    if ( (c.y_expr = nlt_parseexpr(&c,y_expr))==NULL ) {
-	nlt_exprfree(c.x_expr);
-return( false );
-    }
 
     _SCNLTrans(sc,&c,layer);
 
-    nlt_exprfree(c.x_expr);
-    nlt_exprfree(c.y_expr);
 return( true );
 }
 
@@ -861,7 +832,7 @@ void FVPointOfView(FontViewBase *fv,struct pov_data *pov) {
 	    if ( pov->yorigin!=or_value )
 		pov->y = origin.y;
 
-	    MinimumDistancesFree(sc->md); sc->md = NULL;
+	    sc->md = NULL;
 	    if ( sc->parent->multilayer ) {
 		first = ly_fore;
 		last = sc->layer_cnt-1;

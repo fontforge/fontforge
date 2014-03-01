@@ -1484,7 +1484,6 @@ static Spline *SplineBindToPath(Spline *s,SplineSet *path) {
 	mids[i].y = pos.y + spos.y*slope.x;
     }
     ret = ApproximateSplineFromPointsSlopes(s->from,s->to,mids,i,false);
-    SplineFree(s);
 return( ret );
 }
 
@@ -1678,16 +1677,14 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 	break;
 	}
     }
-    if ( cnts!=_cnts ) free(cnts);
-    if ( lens!=_lens ) free(lens);
 
     *tot = i;
 	
 return( tp );
 }
 
-static void SplinePointReCatagorize(SplinePoint *sp,int oldpt) {
-    SplinePointCatagorize(sp);
+static void SplinePointReCategorize(SplinePoint *sp,int oldpt) {
+    SplinePointCategorize(sp);
     if ( sp->pointtype!=oldpt ) {
 	if ( sp->pointtype==pt_curve && oldpt==pt_hvcurve &&
 		((sp->nextcp.x == sp->me.x && sp->nextcp.y != sp->me.y ) ||
@@ -1716,17 +1713,14 @@ void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to,int
     /*  uses the splines to determine slopes */
     for ( sp = oldfrom.next; ; ) {
 	np = sp->to;
-	SplineFree(sp);
 	if ( np==to )
     break;
 	sp = np->next;
 	SplinePointMDFree(sc,np);
     }
     
-    free(tp);
-
-    SplinePointReCatagorize(from,oldfpt);
-    SplinePointReCatagorize(to,oldtpt);
+    SplinePointReCategorize(from,oldfpt);
+    SplinePointReCategorize(to,oldtpt);
 }
 
 static void RemoveZeroLengthSplines(SplineSet *spl, int onlyselected, bigreal bound) {
@@ -1781,7 +1775,6 @@ return;
 		    other->nextcpdef = curp->nextcpdef;
 		    other->next = curp->next;
 		    if ( curp->next!=NULL ) other->next->from = other;
-		    SplineFree(curp->prev);
 		} else {
 		    SplinePoint *other = next;
 		    other->prevcp = curp->prevcp;
@@ -1789,9 +1782,7 @@ return;
 		    other->prevcpdef = curp->prevcpdef;
 		    other->prev = curp->prev;
 		    if ( curp->prev!=NULL ) other->prev->to = other;
-		    SplineFree(curp->next);
 		}
-		SplinePointFree(curp);
 		if ( spl->first==curp ) {
 		    spl->first = next;
 		    if ( spl->last==curp )
@@ -1815,7 +1806,6 @@ SplineSet *SSRemoveZeroLengthSplines(SplineSet *base) {
 	if ( spl->first->next!=NULL && spl->first->next->to==spl->first &&
 		spl->first->nonextcp && spl->first->noprevcp ) {
 	    /* Turn it into a single point, rather than a zero length contour */
-	    chunkfree(spl->first->next,sizeof(Spline));
 	    spl->first->next = spl->first->prev = NULL;
 	}
     }
@@ -2042,14 +2032,12 @@ return( NULL );			/* Some one else should free it and reorder the spline set lis
 	/*  get deleted */
 	while ( spl->first->selected ) {
 	    nextp = spl->first->next->to;
-	    SplineFree(spl->first->next);
 	    SplinePointMDFree(sc,spl->first);
 	    spl->first = nextp;
 	    nextp->prev = NULL;
 	}
 	while ( spl->last->selected ) {
 	    nextp = spl->last->prev->from;
-	    SplineFree(spl->last->prev);
 	    SplinePointMDFree(sc,spl->last);
 	    spl->last = nextp;
 	    nextp->next = NULL;
@@ -2099,7 +2087,6 @@ void SplineCharMerge(SplineChar *sc,SplineSet **head,int type) {
 		*head = next;
 	    else
 		prev->next = next;
-	    chunkfree(spl,sizeof(*spl));
 	} else
 	    prev = spl;
     }
@@ -2251,19 +2238,14 @@ return( false );
 	good = SplineNearPoint(from->next,&test,err)!= -1;
     }
 
-    free(tp);
-    free(tp2);
     if ( good ) {
-	SplineFree(afterfrom->prev);
 	for ( sp=afterfrom; sp!=to; sp=next ) {
 	    next = sp->next->to;
-	    SplineFree(sp->next);
 	    SplinePointMDFree(sc,sp);
 	}
-	SplinePointCatagorize(from);
-	SplinePointCatagorize(to);
+	SplinePointCategorize(from);
+	SplinePointCategorize(to);
     } else {
-	SplineFree(from->next);
 	from->next = afterfrom->prev;
 	from->nextcp = fncp;
 	from->nonextcp = ( fncp.x==from->me.x && fncp.y==from->me.y);
@@ -2312,7 +2294,6 @@ static int Spline2Interpolate(SplinePoint *mid, bigreal err) {
 	SplineRefigure(mid->next);
 	SplineRefigure(mid->prev);
     }
-    free(tp);
 return( good );
 }
 
@@ -2609,7 +2590,6 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,bigreal bump_size) {
 			    sp->prev->from->nextcp = sp->prevcp;
 			sp->nextcp = sp->me; sp->nonextcp = true;
 			if ( sp->next==first ) first = NULL;
-			SplineFree(sp->next);
 			if ( s->from==ss->first ) {
 			    if ( ss->first==ss->last ) ss->last = sp;
 			    ss->first = sp;
@@ -2647,7 +2627,6 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,bigreal bump_size) {
 			    sp->next->to->prevcp = sp->nextcp;
 			sp->prevcp = sp->me; sp->noprevcp = true;
 			if ( sp->prev==first ) first = NULL;
-			SplineFree(sp->prev);
 			if ( s->to==ss->last ) {
 			    if ( ss->first==ss->last ) ss->first = sp;
 			    ss->last = sp;
@@ -2943,7 +2922,6 @@ return;
 		    sp->nextcp.y>sp->me.y-1 && sp->nextcp.y<sp->me.y+1 &&
 		    next->prevcp.x>next->me.x-1 && next->prevcp.x<next->me.x+1 &&
 		    next->prevcp.y>next->me.y-1 && next->prevcp.y<next->me.y+1 ) {
-		SplineFree(sp->next);
 		sp->next = next->next;
 		if ( sp->next!=NULL )
 		    sp->next->from = sp;
@@ -3005,7 +2983,7 @@ SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
 	}
     }
     SplineSetsRemoveAnnoyingExtrema(head,.3);
-    SPLCatagorizePoints(head);
+    SPLCategorizePoints(head);
     /* printf( "nocnt=%d totcnt=%d curdif=%d incr=%d\n", nocnt_cnt, totcnt_cnt, curdiff_cnt, incr_cnt ); */ /* Debug!!! */
 return( head );
 }
@@ -3141,7 +3119,6 @@ return;
 	    ci[contour_cnt-1].ss->next = NULL;
 	}
     }
-    free(ci);
     if ( changed )
 	SCCharChangedUpdate(sc,ly_all);
 }
@@ -3205,7 +3182,6 @@ static int SplineSetMakeLoop(SplineSet *spl,real fudge) {
 	spl->first->prevcp = spl->last->prevcp;
 	spl->first->noprevcp = spl->last->noprevcp;
 	spl->first->prevcpdef = spl->last->prevcpdef;
-	SplinePointFree(spl->last);
 	spl->last = spl->first;
 	if ( spl->spiros!=NULL ) {
 	    spl->spiros[0].ty = spl->spiros[spl->spiro_cnt-2].ty;
@@ -3262,7 +3238,6 @@ SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed) {
 			spl->first->prevcp = spl2->last->prevcp;
 			spl->first->noprevcp = spl2->last->noprevcp;
 			spl->first->prevcpdef = spl2->last->prevcpdef;
-			SplinePointFree(spl2->last);
 			SplineSetJoinCpFixup(spl->first);
 			spl->first = spl2->first;
 			spl2->first = spl2->last = NULL;
@@ -3280,7 +3255,6 @@ SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed) {
 			} else
 			    SplineSetSpirosClear(spl);
 			spl2->last = spl2->first = NULL;
-			SplinePointListFree(spl2);
 			SplineSetMakeLoop(spl,fudge);
 			*changed = true;
 		break;
@@ -3317,8 +3291,6 @@ SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head) {
 		spline->from->prev->to = spline->to;
 		spline->to->prev = spline->from->prev;
 		SplineRefigure(spline->from->prev);
-		SplinePointFree(spline->from);
-		SplineFree(spline);
 		if ( first==NULL ) first = next->from->prev;
 		if ( spl->first==NULL ) spl->first = next->from;
 		if ( spl->last==NULL ) spl->last = next->from;
@@ -3889,7 +3861,7 @@ return;
     npt = new + (pt-sf->xuid);
     if ( npt==new ) *npt++ = '[';
     sprintf(npt, "%d]", val );
-    free(sf->xuid); sf->xuid = new;
+    sf->xuid = new;
     sf->changed = true;
     sf->changed_since_xuidchanged = false;
 }
@@ -4522,7 +4494,6 @@ void SplinePointListSet(SplinePointList *tobase, SplinePointList *frombase) {
 		tspline=tspline->to->next, fspline=fspline->to->next ) {
 	    tspline->splines[0] = fspline->splines[0];
 	    tspline->splines[1] = fspline->splines[1];
-	    LinearApproxFree(tspline->approx);
 	    tspline->approx = NULL;
 	    if ( firstsp==NULL ) firstsp = tspline;
 	}
@@ -4829,7 +4800,6 @@ SplineSet *SplineSetsCorrect(SplineSet *base,int *changed) {
 		}
 	    }
 	}
-	FreeEdges(&es);
     }
 return( base );
 }
@@ -4921,9 +4891,6 @@ return( NULL );
 	    }
 	}
     }
-    free(el.ordered);
-    free(el.ends);
-    ElFreeEI(&el);
     *_base = base;
     *_lastscan = i;
 return( ret );
@@ -5007,9 +4974,6 @@ return( -1 );
 	    }
 	}
     }
-    free(el.ordered);
-    free(el.ends);
-    ElFreeEI(&el);
     ((SplineSet *) spl)->next = next;
 
     if ( cw_cnt!=0 )

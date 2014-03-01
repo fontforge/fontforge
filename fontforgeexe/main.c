@@ -28,5 +28,8 @@
 #include "fontforge.h"
 
 int main( int argc, char **argv ) {
+    GC_set_handle_fork(1);
+    GC_INIT();
+
     return fontforge_main( argc, argv );
 }

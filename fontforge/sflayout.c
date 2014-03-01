@@ -105,7 +105,6 @@ return( x );
 	    fd->base.clut->trans_index = -1;
 	}
 	x += bdfc->width;
-	if ( fd->fonttype==sftf_bitmap ) BDFCharFree( bdfc );
     }
 return( x );
 }
@@ -434,7 +433,6 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
 	    }
 	    fl->sctext[j] = NULL;
 
-	    free( fl->ottext );
 	    fl->ottext = ApplyTickedFeatures(fl->fd->sf,fl->feats,
 		    fl->script, fl->lang,
 		    rint( (fl->fd->pointsize*li->dpi)/72 ),
@@ -457,8 +455,6 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
 	li->paras = realloc(li->paras,(li->pmax = li->pcnt+30+pcnt-(pe-ps+1))*sizeof(struct paras));
     /* move any old paragraphs around */
     pdiff = pcnt-(pe-ps);
-    for ( p=ps; p<pe; ++p )
-	free(li->paras[p].para);
     if ( pdiff<0 ) {
 	for ( p=pe; p<li->pcnt; ++p )
 	    li->paras[p+pdiff] = li->paras[p];
@@ -501,8 +497,6 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
     }
     /* move any old lines around */
     ldiff = lcnt-(le-ls);
-    for ( l=ls; l<le; ++l )
-	free(li->lines[l]);
     if ( ldiff<0 ) {
 	for ( l=le; l<=li->lcnt; ++l ) {
 	    li->lines[l+ldiff] = li->lines[l];
@@ -536,23 +530,11 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
     li->ps = -1;
 }
 
-static void fontlistfree(struct fontlist *fl ) {
-    struct fontlist *nfl;
-
-    for ( ; fl!=NULL; fl=nfl ) {
-	nfl = fl->next;
-	free(fl->feats);
-	free(fl->sctext);
-	free(fl->ottext);
-	chunkfree(fl,sizeof(struct fontlist));
-    }
-}
-
 struct fontlist *LI_fontlistcopy(struct fontlist *fl ) {
     struct fontlist *nfl, *nhead=NULL, *last=NULL;
 
     for ( ; fl!=NULL; fl=fl->next ) {
-	nfl = chunkalloc(sizeof(struct fontlist));
+	nfl = XZALLOC(struct fontlist);
 	*nfl = *fl;
 	nfl->feats = LI_TagsCopy(fl->feats);
 	nfl->scmax = 0; nfl->sctext = NULL; nfl->ottext = NULL;
@@ -603,7 +585,7 @@ return;
 		if ( fl->next!=NULL && fl->next->start == pt+1-li->text )
 		    fl->end = pt-li->text;
 		else {
-		    next = chunkalloc(sizeof(struct fontlist));
+		    next = XZALLOC(struct fontlist);
 		    *next = *fl;
 		    fl->next = next;
 		    fl->end = pt-li->text;
@@ -631,9 +613,6 @@ return;
 		li->oldend = next->next;
 	    fl->next = next->next;
 	    fl->end = next->end;
-	    free(next->feats);
-	    free(next->ottext); free(next->sctext);
-	    chunkfree(next,sizeof(struct fontlist));
 	}
     }
     fontlistcheck(li);
@@ -650,7 +629,6 @@ static void LayoutInfoChangeFontList(LayoutInfo *li,int rpllen,
     int ps,pe,ls,le, p,l;
     struct fontlist *oldstart, *oldend;
 
-    fontlistfree(li->oldfontlist);
     li->oldfontlist = LI_fontlistcopy(li->fontlist);
 
     diff = rpllen - (sel_end-sel_start);
@@ -710,12 +688,8 @@ return;
 	fl = fl->next;
     } else {
 	fl->end = sel_start + rpllen;
-	for ( test=fl->next; test!=NULL && sel_end>=test->end; test=next ) {
+	for ( test=fl->next; test!=NULL && sel_end>=test->end; test=next )
 	    next = test->next;
-	    free(test->feats);
-	    free(test->sctext); free(test->ottext);
-	    chunkfree(test,sizeof(struct fontlist));
-	}
 	fl->next = test;
 	if ( test!=NULL ) {
 	    if ( li->text[fl->end]=='\n' )
@@ -747,7 +721,6 @@ int LayoutInfoReplace(LayoutInfo *li, const unichar_t *str,
     u_strcpy(new+sel_start,str);
     u_strcpy(new+sel_start+rpllen,li->text+sel_end);
     li->text = new;
-    free(old);
 
     LI_fontlistmergecheck(li);
     LayoutInfoRefigureLines(li,sel_start,sel_start+rpllen,width);
@@ -758,26 +731,15 @@ void LayoutInfo_Destroy(LayoutInfo *li) {
     struct sfmaps *m, *n;
     FontData *fd, *nfd;
 
-    free(li->paras);
-    free(li->lines);
-    fontlistfree(li->fontlist);
-    fontlistfree(li->oldfontlist);
     for ( m=li->sfmaps; m!=NULL; m=n ) {
 	n = m->next;
 	SplineCharFree(m->fake_notdef);
-	EncMapFree(m->map);
-	chunkfree(m,sizeof(struct sfmaps));
     }
     for ( fd=li->generated ; fd!=NULL; fd = nfd ) {
 	nfd = fd->next;
 	if ( fd->depends_on )
 	    fd->bdf->freetype_context = NULL;
-	if ( fd->fonttype!=sftf_bitmap )	/* If it's a bitmap font, we didn't create it (lives in sf) so we can't destroy it */
-	    BDFFontFree(fd->bdf);
-	free(fd);
     }
-    free(li->oldtext);
-    free(li->text);
 }
 
 void SFMapFill(struct sfmaps *sfmaps,SplineFont *sf) {
@@ -803,7 +765,7 @@ struct sfmaps *SFMapOfSF(LayoutInfo *li,SplineFont *sf) {
 	if ( sfmaps->sf==sf )
 return( sfmaps );
 
-    sfmaps = chunkalloc(sizeof(struct sfmaps));
+    sfmaps = XZALLOC(struct sfmaps);
     sfmaps->sf = sf;
     sfmaps->next = li->sfmaps;
     li->sfmaps = sfmaps;
@@ -874,10 +836,8 @@ FontData *LI_RegenFontData(LayoutInfo *li, FontData *ret) {
 	if ( ftc==NULL ) {
 	    if ( old!=NULL )
 		ret->bdf = old;
-	    else {
-		free(ret);
+	    else
 		ret = NULL;
-	    }
 return( ret );
 	}
 	ret->bdf = SplineFontPieceMeal(ret->sf,ret->layer,ret->pointsize,li->dpi,ret->antialias,ftc);
@@ -885,7 +845,6 @@ return( ret );
     if ( freeold ) {
 	if ( depends_on && old!=NULL )
 	    old->freetype_context = NULL;
-	BDFFontFree(old);
     }
 
     if ( ret->bdf->clut ) {
@@ -963,7 +922,7 @@ return;
 	next = li->fontlist;
     } else {
 	for ( prev = li->fontlist; prev->next!=NULL; prev=prev->next );
-	next = chunkalloc(sizeof(struct fontlist));
+	next = XZALLOC(struct fontlist);
 	*next = *prev;
 	next->scmax = 0; next->sctext = NULL; next->ottext = NULL;
 	next->feats = LI_TagsCopy(prev->feats);
@@ -1200,9 +1159,9 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     last = NULL;
     for ( i=0; i<cnt; ++i ) {
 	if ( last==NULL )
-	    last = li->fontlist = chunkalloc(sizeof(struct fontlist));
+	    last = li->fontlist = XZALLOC(struct fontlist);
 	else {
-	    last->next = chunkalloc(sizeof(struct fontlist));
+	    last->next = XZALLOC(struct fontlist);
 	    last = last->next;
 	}
 	last->fd = LI_FindFontData(li,sf,ly_fore,type,arr->vals[2*i].u.ival,true);
@@ -1272,11 +1231,8 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
 	    );
     if ( !ret )
 	ff_post_error(_("Could not write"),_("Could not write %.100s"),filename);
-    GImageDestroy(image);
 
     LayoutInfo_Destroy(li);
-    if ( freeme!=NULL )
-	arrayfree(freeme);
 }
 
 #include <stdlib.h>
@@ -1304,7 +1260,6 @@ void LayoutInfoSetTitle(LayoutInfo *li,const unichar_t *tit,int width) {
 return;
     li->oldtext = li->text;
     li->text = u_copy(tit);		/* tit might be oldtext, so must copy before freeing */
-    free(old);
     LI_fontlistmergecheck(li);
     LayoutInfoRefigureLines(li,0,-1,width);
 }
@@ -1332,7 +1287,7 @@ struct fontlist *LI_BreakFontList(LayoutInfo *li,int start,int end) {
     struct fontlist *new, *fl, *prev, *next, *first;
 
     if ( li->fontlist==NULL ) {
-	new = chunkalloc(sizeof(struct fontlist));
+	new = XZALLOC(struct fontlist);
 	new->start = start;
 	new->end = end;
 	li->fontlist = new;
@@ -1343,7 +1298,7 @@ return( new );
     for ( fl=li->fontlist; fl!=NULL && fl->end<start; fl=fl->next )
 	prev = fl;
     if ( fl==NULL ) {
-	fl = chunkalloc(sizeof(struct fontlist));
+	fl = XZALLOC(struct fontlist);
 	*fl = *prev;
 	fl->feats = LI_TagsCopy(prev->feats);
 	fl->start = prev->end;
@@ -1353,7 +1308,7 @@ return( new );
     if ( fl->start == start )
 	first = fl;
     else {
-	new = chunkalloc(sizeof(struct fontlist));
+	new = XZALLOC(struct fontlist);
 	*new = *fl;
 	new->feats = LI_TagsCopy(fl->feats);
 	new->start = start;
@@ -1368,7 +1323,7 @@ return( new );
     if ( fl==NULL && prev->end<end )
 	prev->end = end;
     if ( prev->end>end ) {
-	new = chunkalloc(sizeof(struct fontlist));
+	new = XZALLOC(struct fontlist);
 	*new = *prev;
 	new->feats = LI_TagsCopy(prev->feats);
 	new->start = end;

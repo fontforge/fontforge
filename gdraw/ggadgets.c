@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <fontforge-config.h>
+
 #include <basics.h>
 #include <stdlib.h>
 #include "utype.h"
@@ -252,11 +254,7 @@ void *GResource_font_cvt(char *val, void *def) {
 		
     fi = GDrawInstanciateFont(NULL,&rq);
 
-    free(freeme);
-
-    if ( fi==NULL )
-return( def );
-return( (void *) fi );
+return( fi==NULL ? def : (void *)fi );
 }
 
 FontInstance *GResourceFindFont(char *resourcename,FontInstance *deffont) {
@@ -514,12 +512,8 @@ void GGadgetEndPopup() {
 	GDrawCancelTimer(popup_vanish_timer);
 	popup_vanish_timer = NULL;
     }
-    if ( popup_info.img!=NULL ) {
-	if ( popup_info.free_image!=NULL )
-	    (popup_info.free_image)(popup_info.data,popup_info.img);
-	else
-	    GImageDestroy(popup_info.img);
-    }
+    if ( popup_info.img!=NULL && popup_info.free_image!=NULL )
+        (popup_info.free_image)(popup_info.data,popup_info.img);
 	    
     memset(&popup_info,0,sizeof(popup_info));
 }
@@ -643,8 +637,7 @@ return( true );
 }
 
 void GGadgetPreparePopupImage(GWindow base,const unichar_t *msg, const void *data,
-	GImage *(*get_image)(const void *data),
-	void (*free_image)(const void *data,GImage *img)) {
+	GImage *(*get_image)(const void *data)) {
     GPoint pt;
 
     GGadgetEndPopup();
@@ -655,7 +648,6 @@ return;
     popup_info.msg = msg;
     popup_info.data = data;
     popup_info.get_image = get_image;
-    popup_info.free_image = free_image;
 
     if ( popup==NULL ) {
 	GWindowAttrs pattrs;
@@ -687,18 +679,18 @@ static void popup_refresh(void) {
 }
 
 void GGadgetPreparePopup(GWindow base,const unichar_t *msg) {
-    GGadgetPreparePopupImage(base,msg,NULL,NULL,NULL);
+    GGadgetPreparePopupImage(base,msg,NULL,NULL);
 }
 
 void GGadgetPreparePopupR(GWindow base,int msg) {
-    GGadgetPreparePopupImage(base,GStringGetResource(msg,NULL),NULL,NULL,NULL);
+    GGadgetPreparePopupImage(base,GStringGetResource(msg,NULL),NULL,NULL);
 }
 
 void GGadgetPreparePopup8(GWindow base,char *msg) {
     static unichar_t popup_msg[500];
     utf82u_strncpy(popup_msg,msg,sizeof(popup_msg)/sizeof(popup_msg[0]));
     popup_msg[sizeof(popup_msg)/sizeof(popup_msg[0])-1]=0;
-    GGadgetPreparePopupImage(base,popup_msg,NULL,NULL,NULL);
+    GGadgetPreparePopupImage(base,popup_msg,NULL,NULL);
 }
 
 void _ggadget_redraw(GGadget *g) {
@@ -896,7 +888,6 @@ GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void 
     else if ( gd->flags & gg_dontcopybox )
 	g->box = gd->box;
     else {
-	g->free_box = true;
 	g->box = malloc(sizeof(GBox));
 	*g->box = *gd->box;
     }
@@ -921,10 +912,6 @@ void _ggadget_destroy(GGadget *g) {
 return;
     _GWidget_RemoveGadget(g);
     GGadgetEndPopup();
-    if ( g->free_box )
-	free( g->box );
-    free(g->popup_msg);
-    free(g);
 }
 
 void _GGadgetCloseGroup(GGadget *g) {
@@ -998,7 +985,6 @@ return;
 return;
     GDrawLayoutInit(gw,ctext,-1,NULL);
     GDrawLayoutIndexToPos(gw, cpt-ctext, &space);
-    free(ctext);
     x += space.x;
     width = space.width;
     GDrawSetLineWidth(gw,point);
@@ -1176,7 +1162,6 @@ void GGadgetSetUserData(GGadget *g,void *data) {
 }
 
 void GGadgetSetPopupMsg(GGadget *g,const unichar_t *msg) {
-    free(g->popup_msg);
     g->popup_msg = u_copy(msg);
 }
 
@@ -1207,27 +1192,24 @@ void GGadgetSetTitle8(GGadget *g,const char *title) {
     if ( g->funcs->set_title!=NULL ) {
 	unichar_t *temp = utf82u_copy(title);
 	(g->funcs->set_title)(g,temp);
-	free(temp);
     }
 }
 
 void GGadgetSetTitle8WithMn(GGadget *g,const char *title) {
     char *pt = strchr(title,'_');
-    char *freeme=NULL;
     int mnc;
 
     if ( pt!=NULL ) {
 	char *pos = pt+1;
 	mnc = utf8_ildb((const char **) &pos);
 	g->mnemonic = mnc;
-	freeme = copy(title);
-	for ( pt = freeme + (pt-title); *pt; ++pt )
+	char *temp = copy(title);
+	for ( pt = temp + (pt-title); *pt; ++pt )
 	    *pt = pt[1];
-	title = freeme;
+	title = temp;
     } else
 	g->mnemonic = 0;
     GGadgetSetTitle8(g,title);
-    free(freeme);
 }
 
 const unichar_t *_GGadgetGetTitle(GGadget *g) {
@@ -1253,7 +1235,6 @@ return( u2utf8_copy( (g->funcs->_get_title)(g) ));
     else if ( g->funcs->get_title!=NULL ) {
 	unichar_t *temp = (g->funcs->get_title)(g);
 	char *ret = u2utf8_copy(temp);
-	free(temp);
 return( ret );
     }
 

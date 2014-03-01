@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <fontforge-config.h>
+
 #include "fontP.h"
 #include "utype.h"
 #include "ustring.h"
@@ -310,13 +312,5 @@ struct font_name *_GDraw_HashFontFamily(FState *fonts,unichar_t *name, int prop)
 	fonts->font_names[ch] = fn;
     }
 return( fn );
-}
-
-void _GDraw_FreeFD(struct font_data *fd) {
-    free(fd->charmap_name);
-    free(fd->localname);
-    free(fd->fontfile);
-    free(fd->metricsfile);
-    free(fd);
 }
 

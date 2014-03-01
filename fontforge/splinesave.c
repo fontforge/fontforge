@@ -166,27 +166,17 @@ static void GIContentsFree(GlyphInfo *gi,SplineChar *dummynotdef) {
     int i,j;
 
     if ( gi->glyphcnt>0 && gi->gb[0].sc == dummynotdef ) {
-	if ( dummynotdef->layers!=NULL ) {
-	    SplinePointListsFree(dummynotdef->layers[gi->layer].splines);
+	if ( dummynotdef->layers!=NULL )
 	    dummynotdef->layers[gi->layer].splines = NULL;
-	}
-	StemInfosFree(dummynotdef->hstem);
-	StemInfosFree(dummynotdef->vstem);
 	dummynotdef->vstem = dummynotdef->hstem = NULL;
-	free(dummynotdef->layers);
 	dummynotdef->layers = NULL;
     }
 
     for ( i=0; i<gi->pcnt; ++i ) {
-	free(gi->psubrs[i].data);
-	free(gi->psubrs[i].startstop);
 	gi->psubrs[i].data = NULL;
 	gi->psubrs[i].startstop = NULL;
     }
     for ( i=0; i<gi->glyphcnt; ++i ) {
-	for ( j=0; j<gi->gb[i].bcnt; ++j )
-	    free(gi->gb[i].bits[j].data);
-	free(gi->gb[i].bits);
 	gi->gb[i].bits = NULL;
 	gi->gb[i].bcnt = 0;
     }
@@ -194,15 +184,6 @@ static void GIContentsFree(GlyphInfo *gi,SplineChar *dummynotdef) {
     gi->pcnt = 0;
     gi->bcnt = 0;
     gi->justbroken = 0;
-}
-
-static void GIFree(GlyphInfo *gi,SplineChar *dummynotdef) {
-
-    GIContentsFree(gi,dummynotdef);
-
-    free(gi->gb);
-    free(gi->psubrs);
-    free(gi->bits);
 }
 
 static void StartNextSubroutine(GrowBuf *gb,struct hintdb *hdb) {
@@ -323,18 +304,6 @@ static int NumberHints(SplineChar *scs[MmMax], int instance_count) {
 	    IError("MM font with different hint counts");
     }
 return( cnt );
-}
-
-void RefCharsFreeRef(RefChar *ref) {
-    RefChar *rnext;
-
-    while ( ref!=NULL ) {
-	rnext = ref->next;
-	/* don't free the splines */
-	free(ref->layers);
-	chunkfree(ref,sizeof(RefChar));
-	ref = rnext;
-    }
 }
 
 static void MarkTranslationRefs(SplineFont *sf,int layer) {
@@ -721,7 +690,6 @@ return( mh->subr );
 
     /* Replace an old subroutine */
     if ( mh!=NULL ) {
-	free( hdb->subrs->values[mh->subr]);
 	hdb->subrs->values[mh->subr] = (uint8 *) copyn((char *) gb.base,gb.pt-gb.base);
 	hdb->subrs->lens[mh->subr] = gb.pt-gb.base;
 	memcpy(mh->mask,mask,sizeof(mh->mask));
@@ -735,7 +703,6 @@ return( mh->subr );
 	mh->next = hdb->sublist;
 	hdb->sublist = mh;
     }
-    free(gb.base);
 
 return( mh->subr );
 }
@@ -1155,7 +1122,6 @@ static void _CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl[MmMax], int instan
 	    spl[i] = spl[i]->next;
 	}
     }
-    SplinePointListsFree(freeme);
 }
 
 static int IsPSSeacable(SplineChar *sc,int layer) {
@@ -1416,9 +1382,6 @@ static void RSC2PS1(GrowBuf *gb, SplineChar *base[MmMax],SplineChar *rsc[MmMax],
     }
     _CvtPsSplineSet(gb,spls,instance_count,current,round,hdb,
 	    base[0]->layers[layer].order2,base[0]->parent->strokedfont);
-    if ( base[0]!=rsc[0] )
-	for ( i=0; i<instance_count; ++i )
-	    SplinePointListsFree(freeme[i]);
 
     for ( i=0; i<instance_count; ++i )
 	refs[i] = rsc[i]->layers[layer].refs;
@@ -1433,8 +1396,6 @@ static void RSC2PS1(GrowBuf *gb, SplineChar *base[MmMax],SplineChar *rsc[MmMax],
 		CallTransformedHintSubr(gb,hdb,base,refs,trans,instance_count,round);
 	    _CvtPsSplineSet(gb,spls,instance_count,current,round,hdb,
 		    base[0]->layers[layer].order2,base[0]->parent->strokedfont);
-	    for ( i=0; i<instance_count; ++i )
-		SplinePointListsFree(freeme[i]);
 	} else if ( refs[0]->sc->ttf_glyph!=0x7fff &&
 		((flags&ps_flag_nohints) ||
 		 !refs[0]->sc->layers[layer].anyflexes ||
@@ -1571,14 +1532,6 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     MoveSubrsToChar(gi);
     ret = NULL;
 
-    if ( hdb!=NULL ) {
-	struct mhlist *mh, *mhnext;
-	for ( mh=hdb->sublist; mh!=NULL; mh=mhnext ) {
-	    mhnext = mh->next;
-	    free(mh);
-	}
-    }
-    free(gb.base);
     if ( flags&ps_flag_nohints ) {
 	for ( i=0; i<instance_count; ++i ) {
 	    scs[i]->hstem = oldh[i]; scs[i]->vstem = oldv[i];
@@ -2085,8 +2038,7 @@ struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
 	gi.active = &gi.gb[i];
 	SplineChar2PS(sc,NULL, round,iscjk,subrs,flags,format,&gi);
 	if ( !ff_progress_next()) {
-	    PSCharsFree(chrs);
-	    GIFree(&gi,&dummynotdef);
+	    GIContentsFree(&gi,&dummynotdef);
 return( NULL );
 	}
     }
@@ -2100,7 +2052,7 @@ return( NULL );
 
     SetupType1Chrs(chrs,subrs,&gi,false);
 
-    GIFree(&gi,&dummynotdef);
+    GIContentsFree(&gi,&dummynotdef);
 
     chrs->next = cnt;
     if ( chrs->next>chrs->cnt )
@@ -2183,8 +2135,7 @@ struct pschars *CID2ChrsSubrs(SplineFont *cidmaster,struct cidbytes *cidbytes,in
 	    SplineChar2PS(sc,NULL, round,fd->iscjk|0x100,fd->subrs,
 		    flags,ff_cid,&gi);
 	    if ( !ff_progress_next()) {
-		PSCharsFree(chrs);
-		GIFree(&gi,&dummynotdef);
+		GIContentsFree(&gi,&dummynotdef);
 return( NULL );
 	    }	
 	}
@@ -2193,7 +2144,7 @@ return( NULL );
 	SetupType1Chrs(chrs,fd->subrs,&gi,true);
 	GIContentsFree(&gi,&dummynotdef);
     }
-    GIFree(&gi,&dummynotdef);
+    GIContentsFree(&gi,&dummynotdef);
     chrs->next = cnt;
 return( chrs );
 }
@@ -2657,7 +2608,6 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 	/* Of course, I have to Reverse again to get back to my convention after*/
 	/*  saving */
     }
-    SplinePointListsFree(freeme);
 }
 
 static void DumpHints(GrowBuf *gb,StemInfo *h,int oper,int midoper,int round) {
@@ -2880,7 +2830,6 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
     if ( base!=rsc )
 	temp = freeme = SPLCopyTranslatedHintMasks(temp,base,rsc,trans);
     CvtPsSplineSet2(gb,temp,hdb,rsc->layers[layer].order2,round);
-    SplinePointListsFree(freeme);
 
     for ( r = rsc->layers[layer].refs; r!=NULL; r = r->next ) if ( r!=unsafe ) {
 	if ( !r->justtranslated ) {
@@ -2892,7 +2841,6 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 		DummyHintmask(gb,hdb);
 	    temp = SPLCopyTransformedHintMasks(r,base,trans,layer);
 	    CvtPsSplineSet2(gb,temp,hdb,rsc->layers[layer].order2,round);
-	    SplinePointListsFree(temp);
 	} else if ( r->sc->lsidebearing!=0x7fff &&
 		((flags&ps_flag_nohints) ||
 		 (!r->sc->hconflicts && !r->sc->vconflicts)) ) {
@@ -2979,7 +2927,6 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
     MoveSubrsToChar(gi);
     ret = NULL;
 
-    free(gb.base);
     if ( flags&ps_flag_nohints ) {
 	sc->hstem = oldh; sc->vstem = oldv;
 	sc->hconflicts = hc; sc->vconflicts = vc;
@@ -3005,7 +2952,7 @@ static void Type2NotDefSplines(SplineFont *sf,SplineChar *sc,int layer) {
     stem = (sf->ascent+sf->descent)/20;
     ymax = 2*sf->ascent/3;
 
-    ss = chunkalloc(sizeof(SplineSet));
+    ss = XZALLOC(SplineSet);
     ss->first = ss->last = SplinePointCreate(stem,0);
     ss->last = LineTo(ss->last,stem,ymax);
     ss->last = LineTo(ss->last,sc->width-stem,ymax);
@@ -3013,7 +2960,7 @@ static void Type2NotDefSplines(SplineFont *sf,SplineChar *sc,int layer) {
     SplineMake3(ss->last,ss->first);
     ss->last = ss->first;
 
-    ss->next = inner = chunkalloc(sizeof(SplineSet));
+    ss->next = inner = XZALLOC(SplineSet);
     inner->first = inner->last = SplinePointCreate(2*stem,stem);
     inner->last = LineTo(inner->last,sc->width-2*stem,stem);
     inner->last = LineTo(inner->last,sc->width-2*stem,ymax-stem);
@@ -3023,18 +2970,18 @@ static void Type2NotDefSplines(SplineFont *sf,SplineChar *sc,int layer) {
 
     sc->layers[layer].splines = ss;
 
-    hints = chunkalloc(sizeof(StemInfo));
+    hints = XZALLOC(StemInfo);
     hints->start = stem;
     hints->width = stem;
-    hints->next = h = chunkalloc(sizeof(StemInfo));
+    hints->next = h = XZALLOC(StemInfo);
     h->start = sc->width-2*stem;
     h->width = stem;
     sc->vstem = hints;
 
-    hints = chunkalloc(sizeof(StemInfo));
+    hints = XZALLOC(StemInfo);
     hints->start = 0;
     hints->width = stem;
-    hints->next = h = chunkalloc(sizeof(StemInfo));
+    hints->next = h = XZALLOC(StemInfo);
     h->start = ymax-stem;
     h->width = stem;
     sc->hstem = hints;
@@ -3317,7 +3264,7 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
 	}
     }
     
-    GIFree(&gi,&dummynotdef);
+    GIContentsFree(&gi,&dummynotdef);
     *_subrs = subrs;
 return( chrs );
 }
@@ -3426,7 +3373,6 @@ struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
 	fds[fd].subrs->bias = scnts[fd+1]<1240 ? 107 :
 			      scnts[fd+1]<33900 ? 1131 : 32768;
     }
-    free( scnts);
 
     for ( i=0; i<gi.pcnt; ++i ) {
 	if ( gi.psubrs[i].idx != -1 ) {
@@ -3520,7 +3466,7 @@ struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
 	chrs->values[i][len++] = 14;	/* endchar */
 	chrs->values[i][len] = '\0';
     }
-    GIFree(&gi,&dummynotdef);
+    GIContentsFree(&gi,&dummynotdef);
     *_glbls = glbls;
 return( chrs );
 }

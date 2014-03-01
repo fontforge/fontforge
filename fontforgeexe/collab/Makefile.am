@@ -45,12 +45,12 @@ fontforge_internal_collab_server_CFLAGS = $(AM_CFLAGS) $(WARN_CFLAGS)
 fontforge_internal_collab_server_CPPFLAGS = $(AM_CPPFLAGS) \
   "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc" \
   "-I$(top_builddir)/lib" "-I$(top_srcdir)/lib" \
-  $(MY_CFLAGS) $(LIBZMQ_CFLAGS)
+  $(MY_CFLAGS) $(LIBZMQ_CFLAGS) $(LIBGC_CFLAGS)
 fontforge_internal_collab_server_LDADD = $(LDADD) \
    $(top_builddir)/collab/libzmqcollab.la \
    $(top_builddir)/gutils/libgutils.la \
    $(top_builddir)/Unicode/libgunicode.la
-fontforge_internal_collab_server_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) $(LIBZMQ_LIBS) -export-dynamic
+fontforge_internal_collab_server_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) $(LIBGC_LIBS) $(LIBZMQ_LIBS) -export-dynamic
 
 endif
 

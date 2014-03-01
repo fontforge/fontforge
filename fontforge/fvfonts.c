@@ -75,7 +75,7 @@ return( NULL );
     if ( mc->lks[l].to!=NULL )
 return( mc->lks[l].to );
 
-    mc->lks[l].to = newotl = chunkalloc(sizeof(OTLookup));
+    mc->lks[l].to = newotl = XZALLOC(OTLookup);
     newotl->lookup_name = strconcat(mc->prefix,otl->lookup_name);
     newotl->lookup_type = otl->lookup_type;
     newotl->lookup_flags = otl->lookup_flags;
@@ -113,7 +113,6 @@ return( sub );
 			mc->lks[lcnt].from = otl;
 			temp = strconcat(mc->prefix,otl->lookup_name);
 			mc->lks[lcnt].to = SFFindLookup(mc->sf_to,temp);
-			free(temp);
 			mc->lks[lcnt].old = mc->lks[lcnt].to!=NULL;
 		    }
 		    ++lcnt;
@@ -122,7 +121,6 @@ return( sub );
 			    mc->subs[scnt].from = subs;
 			    temp = strconcat(mc->prefix,subs->subtable_name);
 			    mc->subs[scnt].to = SFFindLookupSubtable(mc->sf_to,temp);
-			    free(temp);
 			    mc->subs[scnt].old = mc->subs[scnt].to!=NULL;
 			}
 			++scnt;
@@ -146,7 +144,7 @@ return( NULL );
     if ( mc->subs[s].to!=NULL )
 return( mc->subs[s].to );
 
-    mc->subs[s].to = newsub = chunkalloc(sizeof(struct lookup_subtable));
+    mc->subs[s].to = newsub = XZALLOC(struct lookup_subtable);
     newsub->subtable_name = strconcat(mc->prefix,sub->subtable_name);
     newsub->lookup = MCConvertLookup(mc,sub->lookup);
     newsub->anchor_classes = sub->anchor_classes;
@@ -179,7 +177,6 @@ return( ac );		/* No translation needed */
 			if ( strcmp(testac2->name,temp)==0 )
 		    break;
 		    mc->acs[acnt].to = testac2;
-		    free(temp);
 		    mc->acs[acnt].old = mc->acs[acnt].to!=NULL;
 		}
 		++acnt;
@@ -200,7 +197,7 @@ return( NULL );
     if ( mc->acs[a].to!=NULL )
 return( mc->acs[a].to );
 
-    mc->acs[a].to = newac = chunkalloc(sizeof(AnchorClass));
+    mc->acs[a].to = newac = XZALLOC(AnchorClass);
     newac->name = strconcat(mc->prefix,ac->name);
     newac->subtable = ac->subtable ? MCConvertSubtable(mc,ac->subtable) : NULL;
     newac->next = mc->sf_to->anchor;
@@ -257,18 +254,13 @@ return;
 	    mc->sf_to->gsub_lookups = otl;
 	last = otl;
     }
-
-    free(mc->prefix);
-    free(mc->lks);
-    free(mc->subs);
-    free(mc->acs);
 }
 
 PST *PSTCopy(PST *base,SplineChar *sc,struct sfmergecontext *mc) {
     PST *head=NULL, *last=NULL, *cur;
 
     for ( ; base!=NULL; base = base->next ) {
-	cur = chunkalloc(sizeof(PST));
+	cur = XZALLOC(PST);
 	*cur = *base;
 	cur->subtable = MCConvertSubtable(mc,base->subtable);
 	if ( cur->type==pst_ligature ) {
@@ -276,7 +268,7 @@ PST *PSTCopy(PST *base,SplineChar *sc,struct sfmergecontext *mc) {
 	    cur->u.lig.lig = sc;
 	} else if ( cur->type==pst_pair ) {
 	    cur->u.pair.paired = copy(cur->u.pair.paired);
-	    cur->u.pair.vr = chunkalloc(sizeof( struct vr [2]));
+	    cur->u.pair.vr = XCALLOC(2, struct vr);
 	    memcpy(cur->u.pair.vr,base->u.pair.vr,sizeof(struct vr [2]));
 	    cur->u.pair.vr[0].adjust = ValDevTabCopy(base->u.pair.vr[0].adjust);
 	    cur->u.pair.vr[1].adjust = ValDevTabCopy(base->u.pair.vr[1].adjust);
@@ -299,17 +291,16 @@ static AnchorPoint *AnchorPointsDuplicate(AnchorPoint *base,SplineChar *sc) {
     AnchorClass *ac;
 
     for ( ; base!=NULL; base = base->next ) {
-	cur = chunkalloc(sizeof(AnchorPoint));
+	cur = XZALLOC(AnchorPoint);
 	*cur = *base;
 	cur->next = NULL;
 	for ( ac=sc->parent->anchor; ac!=NULL; ac=ac->next )
 	    if ( strcmp(ac->name,base->anchor->name)==0 )
 	break;
 	cur->anchor = ac;
-	if ( ac==NULL ) {
+	if ( ac==NULL )
 	    LogError(_("No matching AnchorClass for %s"), base->anchor->name);
-	    chunkfree(cur,sizeof(AnchorPoint));
-	} else {
+	else {
 	    if ( head==NULL )
 		head = cur;
 	    else
@@ -336,7 +327,7 @@ static void AnchorClassesAdd(SplineFont *into, SplineFont *from, struct sfmergec
 	    last = iac;
 	}
 	if ( iac==NULL ) {
-	    cur = chunkalloc(sizeof(AnchorClass));
+	    cur = XZALLOC(AnchorClass);
 	    *cur = *fac;
 	    cur->next = NULL;
 	    cur->name = copy(cur->name);
@@ -385,7 +376,7 @@ static void ASMsAdd(SplineFont *into, SplineFont *from,struct sfmergecontext *mc
     if ( into->sm!=NULL )
 	for ( last = into->sm; last->next!=NULL; last=last->next );
     for ( sm = from->sm; sm!=NULL; sm=sm->next ) {
-	nsm = chunkalloc(sizeof(ASM));
+	nsm = XZALLOC(ASM);
 	*nsm = *sm;
 	nsm->subtable = MCConvertSubtable(mc,sm->subtable);
 	nsm->subtable->sm = nsm;
@@ -460,7 +451,7 @@ struct altuni *AltUniCopy(struct altuni *altuni,SplineFont *noconflicts) {
 
     while ( altuni!=NULL ) {
 	if ( noconflicts==NULL || SFGetChar(noconflicts,altuni->unienc,NULL)==NULL ) {
-	    cur = chunkalloc(sizeof(struct altuni));
+	    cur = XZALLOC(struct altuni);
 	    cur->unienc = altuni->unienc;
 	    cur->vs = altuni->vs;
 	    cur->fid = altuni->fid;
@@ -552,7 +543,7 @@ static KernPair *KernsCopy(KernPair *kp,int *mapping,SplineFont *into,
 	    index =  _SFFindExistingSlot(into,kp->sc->unicodeenc,kp->sc->name);
 	if ( index>=0 && index<into->glyphcnt &&
 		into->glyphs[index]!=NULL ) {
-	    new = chunkalloc(sizeof(KernPair));
+	    new = XZALLOC(KernPair);
 	    new->off = kp->off;
 	    new->subtable = MCConvertSubtable(mc,kp->subtable);
 	    new->sc = into->glyphs[index];
@@ -587,7 +578,6 @@ void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index 
     for ( t_bdf=to->bitmaps, f_bdf=from->bitmaps; t_bdf!=NULL && f_bdf!=NULL; ) {
 	if ( t_bdf->pixelsize == f_bdf->pixelsize ) {
 	    if ( f_bdf->glyphs[from_index]!=NULL ) {
-		BDFCharFree(t_bdf->glyphs[to_index]);
 		t_bdf->glyphs[to_index] = BDFCharCopy(f_bdf->glyphs[from_index]);
 		t_bdf->glyphs[to_index]->sc = to->glyphs[to_index];
 		t_bdf->glyphs[to_index]->orig_pos = to_index;
@@ -603,26 +593,7 @@ void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index 
     }
 }
 
-void __GlyphHashFree(struct glyphnamehash *hash) {
-    struct glyphnamebucket *test, *next;
-    int i;
-
-    if ( hash==NULL )
-return;
-    for ( i=0; i<GN_HSIZE; ++i ) {
-	for ( test = hash->table[i]; test!=NULL; test = next ) {
-	    next = test->next;
-	    chunkfree(test,sizeof(struct glyphnamebucket));
-	}
-    }
-}
-
 static void _GlyphHashFree(SplineFont *sf) {
-
-    if ( sf->glyphnames==NULL )
-return;
-    __GlyphHashFree(sf->glyphnames);
-    free(sf->glyphnames);
     sf->glyphnames = NULL;
 }
 
@@ -650,7 +621,7 @@ return;
 	/*  font than the others. If we build the list backwards then it will */
 	/*  be the top name in the bucket, and will be the one we return */
 	for ( i=_sf->glyphcnt-1; i>=0; --i ) if ( _sf->glyphs[i]!=NULL ) {
-	    new = chunkalloc(sizeof(struct glyphnamebucket));
+	    new = XZALLOC(struct glyphnamebucket);
 	    new->sc = _sf->glyphs[i];
 	    hash = hashname(new->sc->name);
 	    new->next = gnh->table[hash];
@@ -668,7 +639,7 @@ void SFHashGlyph(SplineFont *sf,SplineChar *sc) {
     if ( sf->glyphnames==NULL )
 return;		/* No hash table, nothing to update */
 
-    new = chunkalloc(sizeof(struct glyphnamebucket));
+    new = XZALLOC(struct glyphnamebucket);
     new->sc = sc;
     hash = hashname(sc->name);
     new->next = sf->glyphnames->table[hash];
@@ -860,7 +831,6 @@ SplineChar *SFGetChar(SplineFont *sf, int unienc, const char *name ) {
 				tmp[pt-name] = '\0';
 				ind = SFCIDFindCID(sf,unienc,tmp+(start-name));
 				tmp[pt-name] = ch;
-				free(tmp);
 			}
 		}
     }
@@ -990,7 +960,6 @@ static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
 		} else {
 		    for ( prev=sc->layers[l].refs; prev->next!=ref; prev=prev->next );
 		    prev->next = ref->next;
-		    chunkfree(ref,sizeof(*ref));
 		    ref = prev;
 		}
 	    } else {
@@ -1143,7 +1112,6 @@ static void _MergeFont(SplineFont *into,SplineFont *other,struct sfmergecontext 
 	}
     }
 
-    free(mapping);
     GlyphHashFree(into);
     MergeFixupRefChars(into);
     if ( other->fv==NULL )
@@ -1271,7 +1239,6 @@ static RefChar *InterpRefs(RefChar *base, RefChar *other, real amount, SplineCha
 	if ( test!=NULL ) {
 	    test->checked = true;
 	    cur = RefCharCreate();
-	    free(cur->layers);
 	    *cur = *base;
 	    cur->orig_pos = cur->sc->orig_pos;
 	    for ( i=0; i<6; ++i )
@@ -1295,7 +1262,7 @@ return( head );
 }
 
 static void InterpPoint(SplineSet *cur, SplinePoint *base, SplinePoint *other, real amount ) {
-    SplinePoint *p = chunkalloc(sizeof(SplinePoint));
+    SplinePoint *p = XZALLOC(SplinePoint);
     int order2 = base->prev!=NULL ? base->prev->order2 : base->next!=NULL ? base->next->order2 : false;
 
     p->me.x = base->me.x + amount*(other->me.x-base->me.x);
@@ -1334,7 +1301,7 @@ static void InterpPoint(SplineSet *cur, SplinePoint *base, SplinePoint *other, r
 }
     
 static SplineSet *InterpSplineSet(SplineSet *base, SplineSet *other, real amount, SplineChar *sc) {
-    SplineSet *cur = chunkalloc(sizeof(SplineSet));
+    SplineSet *cur = XZALLOC(SplineSet);
     SplinePoint *bp, *op;
 
     for ( bp=base->first, op = other->first; ; ) {
@@ -1416,7 +1383,7 @@ return( NULL );
 	for ( k=kp2; k!=NULL && !SCSameChar(k->sc,kp1->sc); k=k->next );
 	if ( k!=NULL ) {
 	    if ( k==kp2 ) kp2 = kp2->next;
-	    nkp = chunkalloc(sizeof(KernPair));
+	    nkp = XZALLOC(KernPair);
 	    nkp->sc = new->glyphs[kp1->sc->orig_pos];
 	    nkp->off = kp1->off + amount*(k->off-kp1->off);
 	    nkp->subtable = SFSubTableFindOrMake(new,CHR('k','e','r','n'),

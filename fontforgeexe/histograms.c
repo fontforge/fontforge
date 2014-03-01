@@ -49,15 +49,6 @@ typedef struct histdata {
     int tot, max;
 } HistData;
 
-static void HistDataFree(HistData *h) {
-    int i;
-
-    for ( i=h->low; i<=h->high; ++i )
-	free(h->hist[i-h->low].chars);
-    free(h->hist);
-    free(h);
-}
-
 static HistData *HistFindBlues(SplineFont *sf,int layer, uint8 *selected, EncMap *map) {
     int i, gid, low,high, top,bottom;
     SplineChar *sc;
@@ -91,10 +82,7 @@ static HistData *HistFindBlues(SplineFont *sf,int layer, uint8 *selected, EncMap
 	    }
 	    ++ hist->hist[top-low].cnt;
 	    if ( hist->hist[top-low].char_cnt >= hist->hist[top-low].max ) {
-		if ( hist->hist[top-low].max==0 )
-		    hist->hist[top-low].chars = malloc(10*sizeof(SplineChar *));
-		else
-		    hist->hist[top-low].chars = realloc(hist->hist[top-low].chars,(hist->hist[top-low].max+10)*sizeof(SplineChar *));
+                hist->hist[top-low].chars = realloc(hist->hist[top-low].chars,(hist->hist[top-low].max+10)*sizeof(SplineChar *));
 		hist->hist[top-low].max += 10;
 	    }
 	    hist->hist[top-low].chars[hist->hist[top-low].char_cnt++] = sc;
@@ -105,16 +93,12 @@ static HistData *HistFindBlues(SplineFont *sf,int layer, uint8 *selected, EncMap
 		    h = calloc((high-bottom+10),sizeof( struct hentry ));
 		    memcpy(h+low-(bottom-10+1),hist->hist,(high+1-low)*sizeof(struct hentry));
 		    low = bottom-10+1;
-		    free( hist->hist );
 		    hist->hist = h;
 		}
 	    }
 	    ++ hist->hist[bottom-low].cnt;
 	    if ( hist->hist[bottom-low].char_cnt >= hist->hist[bottom-low].max ) {
-		if ( hist->hist[bottom-low].max==0 )
-		    hist->hist[bottom-low].chars = malloc(10*sizeof(SplineChar *));
-		else
-		    hist->hist[bottom-low].chars = realloc(hist->hist[bottom-low].chars,(hist->hist[bottom-low].max+10)*sizeof(SplineChar *));
+                hist->hist[bottom-low].chars = realloc(hist->hist[bottom-low].chars,(hist->hist[bottom-low].max+10)*sizeof(SplineChar *));
 		hist->hist[bottom-low].max += 10;
 	    }
 	    hist->hist[bottom-low].chars[hist->hist[bottom-low].char_cnt++] = sc;
@@ -127,7 +111,6 @@ static HistData *HistFindBlues(SplineFont *sf,int layer, uint8 *selected, EncMap
     if ( low!=hist->low || high!=hist->high ) {
 	h = malloc((hist->high-hist->low+1)*sizeof(struct hentry));
 	memcpy(h,hist->hist + hist->low-low,(hist->high-hist->low+1)*sizeof(struct hentry));
-	free(hist->hist);
 	hist->hist = h;
     }
 return( hist );
@@ -173,10 +156,7 @@ static HistData *HistFindStemWidths(SplineFont *sf,int layer, uint8 *selected,En
 		if ( hist->hist[val-low].char_cnt==0 ||
 			hist->hist[val-low].chars[hist->hist[val-low].char_cnt-1]!=sc ) {
 		    if ( hist->hist[val-low].char_cnt >= hist->hist[val-low].max ) {
-			if ( hist->hist[val-low].max==0 )
-			    hist->hist[val-low].chars = malloc(10*sizeof(SplineChar *));
-			else
-			    hist->hist[val-low].chars = realloc(hist->hist[val-low].chars,(hist->hist[val-low].max+10)*sizeof(SplineChar *));
+                        hist->hist[val-low].chars = realloc(hist->hist[val-low].chars,(hist->hist[val-low].max+10)*sizeof(SplineChar *));
 			hist->hist[val-low].max += 10;
 		    }
 		    hist->hist[val-low].chars[hist->hist[val-low].char_cnt++] = sc;
@@ -191,7 +171,6 @@ static HistData *HistFindStemWidths(SplineFont *sf,int layer, uint8 *selected,En
     if ( low!=hist->low || high!=hist->high ) {
 	h = malloc((hist->high-hist->low+1)*sizeof(struct hentry));
 	memcpy(h,hist->hist + hist->low-low,(hist->high-hist->low+1)*sizeof(struct hentry));
-	free(hist->hist);
 	hist->hist = h;
     }
 return( hist );
@@ -392,7 +371,7 @@ return;
 	GGadgetSetVisible(GWidgetGetControl(hist->gw,CID_BlueMsg),hist->is_pending);
     } else { /* HStem and VStem */
 	if ( !( e->u.mouse.state&ksm_shift )) {
-	    new = (char *) g_strdup_printf( "[%d]", x );
+	    new = xasprintf( "[%d]", x );
 	    GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_MainVal ), new );
 	    GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_SecondaryVal ), new );
 	} else {
@@ -401,8 +380,6 @@ return;
 	    GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_SecondaryVal ), new );
 	}
     }
-    free( old );
-    free( new );
 }
 
 static void HistExpose(GWindow pixmap, struct hist_dlg *hist) {
@@ -574,8 +551,8 @@ return;
 	p->keys = calloc(10,sizeof(char *));
 	p->values = calloc(10,sizeof(char *));
     }
-    PSDictChangeEntry(p,primary,temp=cu_copy(ret1)); free(temp);
-    PSDictChangeEntry(p,secondary,temp=cu_copy(ret2)); free(temp);
+    PSDictChangeEntry(p,primary,temp=cu_copy(ret1));
+    PSDictChangeEntry(p,secondary,temp=cu_copy(ret2));
 }
 
 static int leftside_e_h(GWindow gw, GEvent *event) {
@@ -1001,6 +978,4 @@ void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8 *select
     while ( !hist.done )
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
-
-    HistDataFree(hist.h);
 }

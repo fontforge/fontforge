@@ -1,3 +1,5 @@
+#include <fontforge-config.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -152,7 +154,6 @@ static SplineSet *FinishSet(SplineSet *old,SplineSet *active,int closed) {
 	    active->first->noprevcp = active->last->noprevcp;
 	    active->last->prev->to = active->first;
 	    active->first->prev = active->last->prev;
-	    SplinePointFree(active->last);
 	    active->last = active->first;
 	} else if ( closed ) {
 	    SplineMake3(active->last,active->first);
@@ -450,7 +451,6 @@ static int dirfind(char *dir, char *pattern,char *buffer) {
 	    *pt = '\0';
 	    ret = dirmatch(space,pattern,buffer);
 	}
-	free( space );
     }
     if ( ret==-1 )
 	ret = 0;
@@ -478,7 +478,6 @@ static void ReadIntmetrics(char *dir, struct Outlines *outline) {
 	file = fopen(filename,"rb");
     if ( file==NULL ) {
 	fprintf(stderr,"Couldn't open %s (for advance width data)\n  Oh well, advance widths will all be wrong.\n", filename );
-	free(filename);
 return;
     }
     for ( i=0; i<40; ++i ) {
@@ -519,7 +518,6 @@ return;
 	    outline->xadvance = calloc(outline->metrics_n,sizeof(int));
 	    for ( i=0; i<m; ++i )
 		outline->xadvance[i] = widths[mapping[i]];
-	    free(widths);
 	}
     }
     if ( !(flags&4) ) {
@@ -532,7 +530,6 @@ return;
 	    outline->yadvance = calloc(outline->metrics_n,sizeof(int));
 	    for ( i=0; i<m; ++i )
 		outline->yadvance[i] = widths[mapping[i]];
-	    free(widths);
 	}
     }
 
@@ -635,7 +632,6 @@ return;
 		sc->layers[ly_fore].refs = next;
 	    else
 		prev->next = next;
-	    free(rf);
 	} else {
 	    rf->orig_pos = gid;
 	    rf->sc = sf->glyphs[gid];
@@ -668,11 +664,9 @@ static void FindEncoding(SplineFont *sf,char *filename) {
 	file = fopen(encfilename,"r");
     else if ( dirfind(filename, pattern,encfilename) )
 	file = fopen(encfilename,"r");
-    free(otherdir);
 
     if ( file==NULL ) {
 	fprintf(stderr,"Couldn't open %s\n", encfilename );
-	free(encfilename);
 return;
     }
 
@@ -685,7 +679,6 @@ return;
 	    if ( *pt=='/' ) {
 		for ( end = ++pt; !isspace(*end) && *end!='\0'; ++end );
 		if ( (gid=sf->map->map[pos])!=-1 && sf->glyphs[gid]!=NULL ) {
-		    free(sf->glyphs[gid]->name);
 		    sf->glyphs[gid]->name = copyn(pt,end-pt);
 		    sf->glyphs[gid]->unicodeenc = UniFromName(sf->glyphs[gid]->name,ui_none,&custom);
 		}
@@ -695,7 +688,6 @@ return;
 	break;
 	}
     }
-    free(encfilename);
     fclose(file);
 }
 
@@ -710,14 +702,12 @@ static SplineFont *ReadOutline(char *dir) {
 	file = fopen(filename,"rb");
     if ( file==NULL ) {
 	fprintf(stderr,"Couldn't open %s\n", filename );
-	free(filename);
 return( NULL );
     }
 
     if ( getc(file)!='F' || getc(file)!='O' || getc(file)!='N' || getc(file)!='T' ||
 	    getc(file)!='\0') {	/* Final null means outline font */
 	fprintf(stderr, "%s is not an acorn risc outline font file\n", filename );
-	free(filename);
 	fclose(file);
 return( NULL );
     }
@@ -830,7 +820,6 @@ return( NULL );
     if ( isdigit(filename[strlen(filename)-1]) )
 	FindEncoding(outline.sf,filename);
 
-    free(filename);
     fclose(file);
 
     if ( !SFDWrite(outline.sf->filename,outline.sf,outline.sf->map,NULL,false) )

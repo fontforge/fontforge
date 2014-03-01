@@ -46,9 +46,6 @@ return;
 	full = malloc(strlen(filename)+1+strlen(file)+1);
 	strcpy(full,filename); strcat(full,"/"); strcat(full,file);
 	sf = LoadSplineFont(full,0);
-	if ( sf!=NULL && sf->fv==NULL )
-	    EncMapFree(sf->map);
-	free(full);
 	if ( sf==NULL )
 	    /* Do Nothing */;
 	else if ( sf->fv==(FontViewBase *) fv )
@@ -60,17 +57,14 @@ return;
 		buts[0] = _("_Yes"); buts[1] = _("_No"); buts[2] = _("_Cancel"); buts[3]=NULL;
 		ret = gwwv_ask(_("Kerning"),(const char **) buts,0,2,
 			_("Do you want to retain kerning information from the selected font\nwhen one of the glyphs being kerned will come from the base font?"));
-		if ( ret==2 ) {
-		    free(filename);
+		if ( ret==2 )
 return;
-		}
 		preserveCrossFontKerning = ret==0;
 	    }
 	    MergeFont((FontViewBase *) fv,sf,preserveCrossFontKerning);
 	}
 	file = fpt+2;
     } while ( fpt!=NULL );
-    free(filename);
 }
 
 GTextInfo *BuildFontList(FontView *except) {
@@ -92,17 +86,6 @@ GTextInfo *BuildFontList(FontView *except) {
     tf[cnt].text_is_1byte = true;
     tf[cnt++].text = (unichar_t *) _("Other ...");
 return( tf );
-}
-
-void TFFree(GTextInfo *tf) {
-/*
-    int i;
-
-    for ( i=0; tf[i].text!=NULL || tf[i].line ; ++i )
-	if ( !tf[i].text_in_resource )
-	    free( tf[i].text );
-*/
-    free(tf);
 }
 
 struct mf_data {
@@ -262,7 +245,6 @@ void FVMergeFonts(FontView *fv) {
 	while ( !d.done )
 	    GDrawProcessOneEvent(NULL);
 	GDrawDestroyWindow(gw);
-	TFFree(gcd[1].gd.u.list);
     }
 }
 
@@ -277,9 +259,6 @@ static void InterAskFilename(FontView *fv, real amount) {
     if ( filename==NULL )
 return;
     sf = LoadSplineFont(filename,0);
-    if ( sf!=NULL && sf->fv==NULL )
-	EncMapFree(sf->map);
-    free(filename);
     if ( sf==NULL )
 return;
     FontViewCreate(InterpolateFont(fv->b.sf,sf,amount,fv->b.map->enc),false);
@@ -426,5 +405,4 @@ void FVInterpolateFonts(FontView *fv) {
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
-    TFFree(gcd[1].gd.u.list);
 }

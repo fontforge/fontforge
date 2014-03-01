@@ -68,7 +68,6 @@ return;
 	    putc('0',eps);
 	putc('\n',eps);
     }
-    BDFCharFree(bdfc);
     fprintf(eps,"%%%%EndPreview\n" );
 }
 
@@ -214,9 +213,6 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     fprintf( pdf, "    /CreationDate (D:%04d%02d%02d%02d%02d%02d",
 	    1900+tm->tm_year, tm->tm_mon+1, tm->tm_mday,
 	    tm->tm_hour, tm->tm_min, tm->tm_sec );
-#ifdef _NO_TZSET
-    fprintf( pdf, "Z)\n" );
-#else
     tzset();
     if ( timezone==0 )
 	fprintf( pdf, "Z)\n" );
@@ -227,7 +223,6 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
 	    fprintf( pdf, "+" );
 	fprintf( pdf, "%02d'%02d')\n", (int)(timezone/3600),(int)(timezone/60-(timezone/3600)*60) );
     }
-#endif
     fprintf( pdf, "    /Title (%s from %s)\n", sc->name, sc->parent->fontname );
     if ( author!=NULL )
 	fprintf( pdf, "    /Author (%s)\n", author );
@@ -266,9 +261,6 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     fprintf( pdf, "startxref\n" );
     fprintf( pdf, "%d\n", (int) xrefloc );
     fprintf( pdf, "%%%%EOF\n" );
-
-    if ( objlocs!=_objlocs )
-	free(objlocs);
 
     ret = !ferror(pdf);
     setlocale(LC_NUMERIC,oldloc);
@@ -323,8 +315,6 @@ int _ExportPlate(FILE *plate,SplineChar *sc,int layer) {
 	    }
 	    if ( ss->first->prev!=NULL )
 		fprintf( plate, "  (z)\n" );
-	    if ( spiros!=ss->spiros )
-		free(spiros);
 	}
     }
     fprintf(plate, ")\n");
@@ -546,7 +536,6 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
 	    ret = !GImageWriteGImage(&gi,filename);
 	else
 	    ret = GImageWriteBmp(&gi,filename);
-	BDFCharFree(bdfc);
     } else {
 	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,NULL,layer))==NULL )
 	    bdfc = SplineCharAntiAlias(sc,pixelsize,layer,(1<<(bitsperpixel/2)));
@@ -580,7 +569,6 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
 	else
 #endif
 	    ret = GImageWriteBmp(&gi,filename);
-	BDFCharFree(bdfc);
     }
 return( ret );
 }

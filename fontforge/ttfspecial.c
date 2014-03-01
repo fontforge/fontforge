@@ -719,7 +719,6 @@ static void PfEd_Layer(SplineFont *sf, struct glyphinfo *gi, int layer, int dosp
 	    putshort(layr,cnt);
 	}
     }
-    free(glyph_data_offset_location);
 }
 
 static void PfEd_Layers(SplineFont *sf, struct PfEd_subtabs *pfed,
@@ -812,7 +811,6 @@ return;
 	putc('\0',layr);
     if ( ftell(layr) & 2 )
 	putshort(layr,0);
-    free(otherlayers);
 }
 
 void pfed_dump(struct alltabs *at, SplineFont *sf) {
@@ -889,7 +887,6 @@ return;			/* Bad version number */
     *pt = '\0';
     if ( !use_utf8 ) {
 	pt = latin1_2_utf8_copy(info->fontcomments);
-	free(start);
 	start = pt;
     }
     if ( tag==flog_TAG )
@@ -978,7 +975,6 @@ return;			/* Bad version number */
 	else
 	    info->cvt_names[i] = pfed_read_utf8(ttf,base+offsets[i]);
     }
-    free(offsets);
 }
 
 static void pfed_readglyphcomments(FILE *ttf,struct ttfinfo *info,uint32 base) {
@@ -1016,7 +1012,6 @@ return;			/* Bad version number */
 			info->chars[j]->name );
 	}
     }
-    free(grange);
 }
 
 static void pfed_readcolours(FILE *ttf,struct ttfinfo *info,uint32 base) {
@@ -1058,10 +1053,8 @@ return;			/* Bad version number */
 	ls[i].subs_off = getushort(ttf);
     }
     for ( i=0, otl=lookups; i<n && otl!=NULL; ++i, otl=otl->next ) {
-	if ( ls[i].name_off!=0 ) {
-	    free( otl->lookup_name );
+	if ( ls[i].name_off!=0 )
 	    otl->lookup_name = pfed_read_utf8(ttf,base+ls[i].name_off);
-	}
 	if ( ls[i].subs_off!=0 ) {
 	    fseek(ttf,base+ls[i].subs_off,SEEK_SET);
 	    s = getushort(ttf);
@@ -1071,10 +1064,8 @@ return;			/* Bad version number */
 		ss[j].subs_off = getushort(ttf);
 	    }
 	    for ( j=0, sub=otl->subtables; j<s && sub!=NULL; ++j, sub=sub->next ) {
-		if ( ss[j].name_off!=0 ) {
-		    free( sub->subtable_name );
+		if ( ss[j].name_off!=0 )
 		    sub->subtable_name = pfed_read_utf8(ttf,base+ss[j].name_off);
-		}
 		if ( ss[j].subs_off!=0 ) {
 		    if ( !sub->anchor_classes )
 			LogError(_("Whoops, attempt to name anchors in a subtable which doesn't contain any\n"));
@@ -1088,27 +1079,22 @@ return;			/* Bad version number */
 			k=0;
 			for ( ac=info->ahead; ac!=NULL; ac=ac->next ) {
 			    if ( ac->subtable==sub ) {
-				if ( as[k].name_off!=0 ) {
-				    free( ac->name );
+				if ( as[k].name_off!=0 )
 				    ac->name = pfed_read_utf8(ttf,base+as[k].name_off);
-				}
 			        ++k;
 			    }
 			}
-			free(as);
 		    }
 		}
 	    }
 	    /* I guess it's ok for some subtables to be unnamed, so no check for sub!=NULL */
 	    if ( j<s )
 		LogError(_("Whoops, more names than subtables of lookup %s\n"), otl->lookup_name );
-	    free(ss);
 	}
     }
     /* I guess it's ok for some lookups to be unnamed, so no check for otf!=NULL */
     if ( i<n )
 	LogError(_("Whoops, more names than lookups\n") );
-    free(ls);
 }
 
 static float pfed_get_coord(FILE *ttf,int mod) {
@@ -1235,14 +1221,13 @@ return;
 	    ss->first->prev = current->prev;
 	    ss->first->prevcp = current->prevcp;
 	    ss->first->noprevcp = current->noprevcp;
-	    SplinePointFree(current);
 	} else
 	    SplineMake(current,ss->first,type==2);
 	ss->last = ss->first;
     } else {
 	ss->last = current;
     }
-    SPLCatagorizePoints(ss);
+    SPLCategorizePoints(ss);
 }
 
 static void pfed_read_spiro_contour(FILE *ttf,SplineSet *ss,
@@ -1326,7 +1311,7 @@ static void pfed_read_glyph_layer(FILE *ttf,struct ttfinfo *info,Layer *ly,
     ss = ly->splines;			/* Only relevant for spiros where they live in someone else's layer */
     for ( i=0; i<cc; ++i ) {
 	if ( type!=1 ) {		/* Not spiros */
-	    contours[i].ss = chunkalloc(sizeof(SplineSet));
+	    contours[i].ss = XZALLOC(SplineSet);
 	    if ( i==0 )
 		ly->splines = contours[i].ss;
 	    else
@@ -1343,7 +1328,6 @@ static void pfed_read_glyph_layer(FILE *ttf,struct ttfinfo *info,Layer *ly,
 		LogError(_("Whoops, Ran out of spiros\n"));
 	}
     }
-    free(contours);
 }
 
 static void pfed_readguidelines(FILE *ttf,struct ttfinfo *info,uint32 base) {
@@ -1379,7 +1363,7 @@ return;			/* Bad version number */
 	    sp = SplinePointCreate(vs[i].pos,-info->emsize);
 	    nsp = SplinePointCreate(vs[i].pos,2*info->emsize);
 	    SplineMake(sp,nsp,info->to_order2);
-	    ss = chunkalloc(sizeof(SplineSet));
+	    ss = XZALLOC(SplineSet);
 	    ss->first = sp; ss->last = nsp;
 	    if ( vs[i].offset!=0 )
 		ss->contour_name = pfed_read_utf8(ttf,base+vs[i].offset);
@@ -1390,15 +1374,14 @@ return;			/* Bad version number */
 	    sp = SplinePointCreate(-info->emsize,hs[i].pos);
 	    nsp = SplinePointCreate(2*info->emsize,hs[i].pos);
 	    SplineMake(sp,nsp,info->to_order2);
-	    ss = chunkalloc(sizeof(SplineSet));
+	    ss = XZALLOC(SplineSet);
 	    ss->first = sp; ss->last = nsp;
 	    if ( hs[i].offset!=0 )
 		ss->contour_name = pfed_read_utf8(ttf,base+hs[i].offset);
 	    ss->next = info->guidelines.splines;
 	    info->guidelines.splines = ss;
 	}
-	SPLCatagorizePoints(info->guidelines.splines);
-	free(vs); free(hs);
+	SPLCategorizePoints(info->guidelines.splines);
     }
 }
 
@@ -1443,7 +1426,6 @@ static void pfed_read_layer(FILE *ttf,struct ttfinfo *info,int layer,int type, u
 		pfed_read_glyph_layer(ttf,info,ly,base+loca[j],type,version);
 	}
     }
-    free(ranges); free(loca);
 
     for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL )
 	info->chars[i]->ticked = false;
@@ -1528,9 +1510,6 @@ return;			/* Bad version number */
 	pfed_read_layer(ttf,info,layers[i].sf_layer,layers[i].type&0xff,
 		base,base+layers[i].data_off,version);
     }
-    for ( i=0; i<lcnt; ++i )
-	free( layers[i].name );
-    free( layers );
 }
 
 void pfed_read(FILE *ttf,struct ttfinfo *info) {
@@ -2068,8 +2047,6 @@ return(true);
 			(bdf->props[j].type & ~prt_property)==prt_atom ) {
 		    putlong(at->bdf,ftell(strings));
 		    fwrite(str,1,strlen(str)+1,strings);
-		    if ( str!=bdf->props[j].u.str )
-			free(str);
 		} else {
 		    putlong(at->bdf,bdf->props[j].u.val);
 		}
@@ -2141,7 +2118,6 @@ return( k );
 	if ( *pt=='\n' ) ++pt;
     }
     pt = copy( bdf->props[k].u.atom );
-    free( bdf->props[k].u.atom );
     bdf->props[k].u.atom = pt;
 return( k+cnt );
 }

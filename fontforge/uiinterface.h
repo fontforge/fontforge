@@ -487,7 +487,7 @@ extern struct fv_interface *fv_interface;
 void FF_SetFVInterface(struct fv_interface *fvi);
 
 /* ************************************************************************** */
-/*                       Clibboard access (copy/paste)                        */
+/*                       Clipboard access (copy/paste)                        */
 /* ************************************************************************** */
 
 struct clip_interface {
@@ -497,7 +497,7 @@ struct clip_interface {
    /*  provide a routine to call which will give data on demand */
    /*  (and another routine to clean things up) */
     void  (*add_data_type)(const char *type, void *data, int cnt, int size,
-	void *(*gendata)(void *,int32 *len), void (*freedata)(void *));
+	void *(*gendata)(void *,int32 *len));
    /* Does the clipboard contain something of the given type? */
     int   (*clip_has_type)(const char *mimetype);
    /* Ask for the clipboard, and waits (and returns) for the response */

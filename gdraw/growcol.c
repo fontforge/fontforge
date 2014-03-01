@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <fontforge-config.h>
+
 #include "gdraw.h"
 #include "gkeysym.h"
 #include "ggadgetP.h"
@@ -89,7 +91,6 @@ static void GRowColOrderIt(GRowCol *grc) {
 		memcpy(grc->ti+(i*grc->cols),grc->ti+((grc->rows-1-i)*grc->cols),grc->cols*sizeof(GTextInfo *));
 		memcpy(grc->ti+((grc->rows-1-i)*grc->cols),ti,grc->cols*sizeof(GTextInfo *));
 	    }
-	    free(ti);
 	}
     }
 }
@@ -333,7 +334,6 @@ static void GRowColSetList(GGadget *g,GTextInfo **ti,int docopy) {
     GRowCol *grc = (GRowCol *) g;
     int same;
 
-    GTextInfoArrayFree(grc->ti);
     if ( docopy || ti==NULL )
 	ti = GTextInfoArrayCopy(ti);
     grc->ti = ti;
@@ -613,12 +613,8 @@ return( false );
 return( true );
     } else if ( event->u.chr.chars[0]!='\0' && grc->orderer ) {
 	int len = u_strlen(event->u.chr.chars);
-	if ( sofar_pos+len >= grc->sofar_max ) {
-	    if ( grc->sofar_max == 0 )
-		grc->sofar = malloc((grc->sofar_max = len+10) * sizeof(unichar_t));
-	    else
-		grc->sofar = realloc(grc->sofar,(grc->sofar_max = sofar_pos+len+10)*sizeof(unichar_t));
-	}
+	if ( sofar_pos+len >= grc->sofar_max )
+            grc->sofar = realloc(grc->sofar,(grc->sofar_max = sofar_pos+len+10)*sizeof(unichar_t));
 	u_strcpy(grc->sofar+sofar_pos,event->u.chr.chars);
 	grc->sofar_pos = sofar_pos + len;
 	sel = GRowColFindPosition(grc,grc->sofar);
@@ -709,9 +705,6 @@ static void GRowCol_destroy(GGadget *g) {
 return;
     GDrawCancelTimer(grc->enduser);
     GDrawCancelTimer(grc->pressed);
-    if ( grc->freeti )
-	GTextInfoArrayFree(grc->ti);
-    free(grc->sofar);
     if ( grc->vsb!=NULL )
 	(grc->vsb->g.funcs->destroy)(&grc->vsb->g);
     _ggadget_destroy(g);
@@ -870,10 +863,9 @@ static GRowCol *_GRowColCreate(GRowCol *grc, struct gwindow *base, GGadgetData *
     grc->font = list_font;
     grc->g.takes_input = grc->g.takes_keyboard = true; grc->g.focusable = true;
 
-    if ( !(gd->flags & gg_list_internal ) ) {
+    if ( !(gd->flags & gg_list_internal ) )
 	grc->ti = GTextInfoArrayFromList(gd->u.list,&grc->ltot);
-	grc->freeti = true;
-    } else {
+    else {
 	grc->ti = (GTextInfo **) (gd->u.list);
 	grc->ltot = GTextInfoArrayCount(grc->ti);
     }

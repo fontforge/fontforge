@@ -47,6 +47,8 @@ BUILT_SOURCES =
 EXTRA_DIST =
 CLEANFILES =
 MOSTLYCLEANFILES =
+MAINTAINERCLEANFILES=config.h.in
+DISTCLEANFILES=config.h stamp-h1
 
 include_HEADERS =
 noinst_LTLIBRARIES =
@@ -103,13 +105,11 @@ EXTRA_DIST += \
 	bootstrap \
 	bootstrap.conf \
 	COPYING.gplv3 \
-	descrip.mms \
 	LICENSE \
 	doc/README-Mac.html \
 	doc/README-MS.html \
 	doc/README-unix	\
 	doc/README-Unix.html \
-	doc/Readme.VMS \
 	Packaging/FontForge-doc.spec \
 	Packaging/FontForge.spec \
 	Packaging/FontForge.static.spec \

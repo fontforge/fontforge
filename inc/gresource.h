@@ -44,7 +44,7 @@ typedef struct gresstruct {
 
 extern char *GResourceProgramName, *GResourceFullProgram, *GResourceProgramDir;
 extern int local_encoding;
-#if HAVE_ICONV_H
+#if HAVE_ICONV
 # include <iconv.h>
 extern char *iconv_local_encoding_name;
 #endif

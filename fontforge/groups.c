@@ -32,20 +32,6 @@
 
 Group *group_root = NULL;
 
-void GroupFree(Group *g) {
-    int i;
-
-    if ( g==NULL )
-return;
-
-    free(g->name);
-    free(g->glyphs);
-    for ( i=0; i<g->kid_cnt; ++i )
-	GroupFree(g->kids[i]);
-    free(g->kids);
-    chunkfree(g,sizeof(Group));
-}
-
 Group *GroupCopy(Group *g) {
     int i;
     Group *gp;
@@ -53,7 +39,7 @@ Group *GroupCopy(Group *g) {
     if ( g==NULL )
 return( NULL );
 
-    gp = chunkalloc(sizeof(Group));
+    gp = XZALLOC(Group);
     gp->name = copy(g->name);
     gp->glyphs = copy(g->glyphs);
     if ( g->kid_cnt!=0 ) {
@@ -186,7 +172,7 @@ return( NULL );
     n = loadString(file,gc);
     if ( n==NULL )
 return( NULL );
-    g = chunkalloc(sizeof(Group));
+    g = XZALLOC(Group);
     g->parent = parent;
     g->name = n;
     if ( (ch = getc(file))==':' )
@@ -195,18 +181,14 @@ return( NULL );
 	ch = getc(file);
     if ( ch=='1' )
 	g->unique = true;
-    else if ( ch!='0' ) {
-	GroupFree(g);
+    else if ( ch!='0' )
 return( NULL );
-    }
     while ( (ch = getc(file))==' ' );
     if ( ch=='"' ) {
 	ungetc(ch,file);
 	g->glyphs = loadString(file,gc);
-	if ( g->glyphs==NULL ) {
-	    GroupFree(g);
+	if ( g->glyphs==NULL )
 return( NULL );
-	}
 	lineCountIndent(file,gc);
     } else if ( ch=='\n' || ch=='\r' ) {
 	ungetc(ch,file);
@@ -224,7 +206,6 @@ return( NULL );
 	if ( i!=0 ) {
 	    g->kids = malloc(i*sizeof(Group *));
 	    memcpy(g->kids,glist,i*sizeof(Group *));
-	    free(glist);
 	}
     }
 return( g );
@@ -241,13 +222,10 @@ return;
     groups = fopen(groupfilename,"r");
     if ( groups==NULL )
 return;
-    GroupFree(group_root);
     memset(&gc,0,sizeof(gc));
     gc.found_indent = countIndent(groups);
     group_root = _LoadGroupList(groups,NULL,0,&gc);
     if ( !feof(groups))
 	LogError( _("Unparsed characters found after end of groups file (last line parsed was %d).\n"), gc.lineno );
     fclose(groups);
-
-    free(gc.buffer);
 }

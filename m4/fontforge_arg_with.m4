@@ -138,17 +138,6 @@ AC_DEFUN([FONTFORGE_ARG_WITH_LIBTIFF_fallback],
 ])
 
 
-dnl FONTFORGE_ARG_WITH_LIBXML
-dnl -------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_LIBXML],
-[
-FONTFORGE_ARG_WITH([libxml],
-        [AS_HELP_STRING([--without-libxml],[build without libxml2])],
-        [libxml-2.0],
-        [FONTFORGE_WARN_PKG_NOT_FOUND([LIBXML])],
-        [_NO_LIBXML])
-])
-
 dnl FONTFORGE_ARG_WITH_LIBREADLINE
 dnl --------------------------
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBREADLINE],
@@ -183,28 +172,18 @@ else
 fi
 ])
 
-dnl A macro that will not be needed if we can count on libspiro
-dnl having a pkg-config file. 
+dnl A macro that will not be needed if we can count on libspiro having a pkg-config file.
 dnl
 dnl FONTFORGE_ARG_WITH_LIBSPIRO
 dnl ---------------------------
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBSPIRO],
 [
-FONTFORGE_ARG_WITH_BASE([libspiro],
-   [AS_HELP_STRING([--without-libspiro],[build without support for Spiro contours])],
-   [libspiro],
-   [FONTFORGE_WARN_PKG_NOT_FOUND([LIBSPIRO])],
-   [_NO_LIBSPIRO],
-   [
-      FONTFORGE_SEARCH_LIBS([TaggedSpiroCPsToBezier],[spiro],
-         [i_do_have_libspiro=yes
-          AC_SUBST([LIBSPIRO_CFLAGS],[""])
-          AC_SUBST([LIBSPIRO_LIBS],["${found_lib}"])
-          FONTFORGE_WARN_PKG_FALLBACK([LIBSPIRO])
-          AC_CHECK_FUNC([TaggedSpiroCPsToBezier0],[AC_DEFINE([_LIBSPIRO_FUN],
-                        [1],[Libspiro returns true or false.])])],
-         [i_do_have_libspiro=no])
-   ])
+   FONTFORGE_SEARCH_LIBS([TaggedSpiroCPsToBezier],[spiro],
+       [AC_SUBST([LIBSPIRO_CFLAGS],[""])
+        AC_SUBST([LIBSPIRO_LIBS],["${found_lib}"])
+        AC_CHECK_FUNC([TaggedSpiroCPsToBezier0],[AC_DEFINE([_LIBSPIRO_FUN],
+                      [1],[Libspiro returns true or false.])])],
+       AC_MSG_ERROR([libspiro not found]))
 ])
 
 
@@ -270,17 +249,6 @@ if test x"${i_do_have_libjpeg}" != xyes; then
    AC_DEFINE([_NO_LIBJPEG],1,[Define if not using libjpeg.])
 fi
 ])
-
-
-dnl FONTFORGE_ARG_WITH_ICONV
-dnl ------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_ICONV],
-[
-AC_ARG_WITH([iconv],
-   [AS_HELP_STRING([--without-iconv],[build without the system's iconv(3); use fontforge's instead])],
-   [i_do_want_iconv="${withval}"],
-   [i_do_want_iconv=yes]
-)])
 
 
 dnl FONTFORGE_WARN_PKG_NOT_FOUND

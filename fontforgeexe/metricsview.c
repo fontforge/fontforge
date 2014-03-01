@@ -269,7 +269,6 @@ static void MVSubVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 			(int) rint((width*mv_scales[mv->scale_index])),
 			(int) rint((height*mv_scales[mv->scale_index])));
 	}
-	if ( mv->bdf!=NULL ) BDFCharFree( bdfc );
     }
     if ( si!=-1 && mv->bdf==NULL &&  MVShowGrid(mv) && mv->type==mv_kernwidth ) {
 	y = mv->perchar[si].dy-mv->yoff;
@@ -391,7 +390,6 @@ return;
 			(int) rint((width*mv_scales[mv->scale_index])),
 			(int) rint((height*mv_scales[mv->scale_index])));
 	}
-	if ( mv->bdf!=NULL ) BDFCharFree( bdfc );
     }
     if ( si!=-1 && mv->bdf==NULL && MVShowGrid(mv) && mv->type==mv_kernwidth ) {
 	x = mv->perchar[si].dx-mv->xoff;
@@ -919,11 +917,9 @@ static void MVRemetric(MetricsView *mv) {
 	if ( ti[i]->selected )
 	    feats[cnt++] = (intpt) ti[i]->userdata;
 
-    free(mv->glyphs);
     sf = mv->sf;
     if ( sf->cidmaster ) sf = sf->cidmaster;
     mv->glyphs = ApplyTickedFeatures(sf,feats,script, lang, mv->pixelsize, mv->chars);
-    free(feats);
     if ( goodsc!=NULL )
 	mv->right_to_left = SCRightToLeft(goodsc)?1:0;
 
@@ -980,14 +976,9 @@ void MVReKern(MetricsView *mv) {
 void MVRegenChar(MetricsView *mv, SplineChar *sc) {
     int i;
 
-    if( !sc->suspendMetricsViewEventPropagation )
-    {
-	if ( mv->bdf==NULL && sc->orig_pos<mv->show->glyphcnt )
-	{
-	    BDFCharFree(mv->show->glyphs[sc->orig_pos]);
-	    mv->show->glyphs[sc->orig_pos] = NULL;
-	}
-    }
+    if( !sc->suspendMetricsViewEventPropagation &&
+        mv->bdf==NULL && sc->orig_pos<mv->show->glyphcnt )
+        mv->show->glyphs[sc->orig_pos] = NULL;
 
     for ( i=0; i<mv->glyphcnt; ++i ) {
 	MVRefreshValues(mv,i);
@@ -1017,14 +1008,11 @@ return;
 		GGadgetSetEnabled(mv->perchar[i].kern,bdf==NULL);
 	}
     }
-    if ( mv->bdf==NULL ) {
-	BDFFontFree(mv->show);
+    if ( mv->bdf==NULL )
 	mv->show = NULL;
-    } else if ( bdf==NULL ) {
-	BDFFontFree(mv->show);
+    else if ( bdf==NULL )
 	mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->ptsize,mv->dpi,
 				       MVGetSplineFontPieceMealFlags( mv ), NULL );
-    }
     mv->bdf = bdf;
     MVRemetric(mv);
 }
@@ -1034,16 +1022,6 @@ static int isValidInt(unichar_t *end) {
 	return 0;
     return 1;
 }
-
-/*
- * Unused
-static int GGadgetToInt(GGadget *g)
-{
-    unichar_t *end;
-    int val = u_strtol(_GGadgetGetTitle(g),&end,10);
-    return val;
-}
-*/
 
 static real GGadgetToReal(GGadget *g)
 {
@@ -1055,14 +1033,8 @@ static real GGadgetToReal(GGadget *g)
 /* If we are in a collab session, then send the redo through */
 /* to the server to update other clients to our state.	     */
 static void MV_handle_collabclient_sendRedo( MetricsView *mv, SplineChar *sc ) {
-    if( collabclient_inSessionFV( &mv->fv->b ) ) {
+    if( collabclient_inSessionFV( &mv->fv->b ) )
 	collabclient_sendRedo_SC( sc, UNDO_LAYER_UNKNOWN );
-
-	/* CharViewBase* cv = sc->views; */
-	/* if( !cv ) */
-	/*     cv = CharViewCreate( sc, mv->fv, -1 ); */
-	/* collabclient_sendRedo( cv ); */
-    }
 }
 
 static int MV_WidthChanged(GGadget *g, GEvent *e) {
@@ -1308,10 +1280,8 @@ return( false );
 	/* If we change the kerning offset, then any pixel corrections*/
 	/*  will no longer apply (they only had meaning with the old  */
 	/*  offset) so free the device table, if any */
-	if ( kp != NULL && ((!is_diff && kp->off!=offset) || ( is_diff && offset!=0)) ) {
-	    DeviceTableFree(kp->adjust);
+	if ( kp != NULL && ((!is_diff && kp->off!=offset) || ( is_diff && offset!=0)) )
 	    kp->adjust = NULL;
-	}
 
 	offset = is_diff && kp != NULL ? kp->off+offset : offset;
 	/* If kern offset has been set to zero by user, then cleanup this kerning pair */
@@ -1330,11 +1300,10 @@ return( false );
 		    kpprev = kpcur;
 		}
 	    }
-	    chunkfree( kp,sizeof(KernPair) );
 	    kp = mv->glyphs[which-1].kp = NULL;
 	} else if ( offset != 0 ) {
 	    if ( kp==NULL ) {
-		kp = chunkalloc(sizeof(KernPair));
+		kp = XZALLOC(KernPair);
 		kp->sc = sc;
 		if ( !mv->vertical ) {
 		    kp->next = psc->kerns;
@@ -1501,11 +1470,9 @@ static void MVToggleVertical(MetricsView *mv) {
 	if ( mv->pixelsize != size ) {
 	    mv->pixelsize = size;
 	    mv->dpi = 72;
-	    if ( mv->bdf==NULL ) {
-		BDFFontFree(mv->show);
+	    if ( mv->bdf==NULL )
 		mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,
 					       MVGetSplineFontPieceMealFlags( mv ), NULL );
-	    }
 	    MVRemetric(mv);
 	}
     }
@@ -1800,7 +1767,6 @@ void MVSetSCs(MetricsView *mv, SplineChar **scs) {
 	    ustr[len] = MVFakeUnicodeOfSc(mv,scs[len]);
     ustr[len] = 0;
     GGadgetSetTitle(mv->text,ustr);
-    free(ustr);
 
     MVRemetric(mv);
 
@@ -1900,7 +1866,6 @@ return;					/* Nothing changed */
 	/*  them was set properly */
 	for ( j=start; j<end; ++j )
 	    mv->chars[j] = hold[j];
-	free(hold);
     }
     mv->clen = u_strlen(ret)-missing;
     mv->chars[mv->clen] = NULL;
@@ -1975,8 +1940,6 @@ static void MVFigureGlyphNames(MetricsView *mv,const unichar_t *names) {
     MVRemetric(mv);
 
     GGadgetSetTitle(mv->text,newtext);
-    free(newtext);
-
     GDrawRequestExpose(mv->v,NULL,false);
 }
 
@@ -1996,7 +1959,6 @@ static void MVLoadWordList(MetricsView *mv,int type)
 	GGadgetSetTitle8(mv->text,(char *) (words[0]->text));
 	if ( type==-2 )
 	    MVFigureGlyphNames(mv,_GGadgetGetTitle(mv->text)+1);
-	GTextInfoArrayFree(words);
 	mv->word_index = 0;
     }
 }
@@ -2611,7 +2573,6 @@ static void _MVMenuOverlap(MetricsView *mv, enum overlap_type ot) {
 	SplineChar *sc = mv->glyphs[i].sc;
 	if ( !SCRoundToCluster(sc, mv->layer, false, 0.03, 0.12))
 	    SCPreserveLayer(sc, mv->layer, false);
-	MinimumDistancesFree(sc->md);
 	sc->md = NULL;
 	sc->layers[mv->layer].splines = SplineSetRemoveOverlap(sc, sc->layers[mv->layer].splines, ot);
 	SCCharChangedUpdate(sc, mv->layer);
@@ -2821,7 +2782,6 @@ static void MVResetText(MetricsView *mv) {
     }
     *pt = '\0';
     GGadgetSetTitle(mv->text,new);
-    free(new );
 }
 
 static void MVMenuLigatures(GWindow gw,struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -2850,11 +2810,10 @@ static void _MVMenuScale( MetricsView *mv, int mid ) {
 
     if ( mv->pixelsize_set_by_window ) {
 	mv->pixelsize = mv_scales[mv->scale_index]*(mv->vheight - 2);
-	if ( mv->bdf==NULL ) {
-	    BDFFontFree(mv->show);
+	if ( mv->bdf==NULL )
 	    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,
 					   MVGetSplineFontPieceMealFlags( mv ), NULL );
-	} else
+	else
 	    mv->pixelsize_set_by_window = false;
     }
     MVReKern(mv);
@@ -2990,7 +2949,6 @@ static void MVMenuAA(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)
 
     mv_antialias = mv->antialias = !mv->antialias;
     mv->bdf = NULL;
-    BDFFontFree(mv->show);
     mv->show = SplineFontPieceMeal(mv->sf, mv->layer, mv->ptsize, mv->dpi,
                     MVGetSplineFontPieceMealFlags( mv ),
                     NULL);
@@ -3003,7 +2961,6 @@ static void MVMenuRenderUsingHinting(GWindow gw, struct gmenuitem *UNUSED(mi), G
 
     mv->usehinting = !mv->usehinting;
     mv->bdf = NULL;
-    BDFFontFree(mv->show);
     mv->show = SplineFontPieceMeal(mv->sf, mv->layer, mv->ptsize, mv->dpi,
 				   MVGetSplineFontPieceMealFlags( mv ),
 				   NULL);
@@ -3121,8 +3078,6 @@ return( true );
 	mv->ptsize = ptsize;
 	mv->dpi = dpi;
 	mv->pixelsize = rint( (ptsize*dpi)/72.0 );
-	if ( mv->bdf==NULL )
-	    BDFFontFree(mv->show);
 	mv->bdf = NULL;
 	mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->ptsize,mv->dpi,
 				       MVGetSplineFontPieceMealFlags( mv ), NULL );
@@ -3273,13 +3228,11 @@ static void MVMenuSizeWindow(GWindow mgw, struct gmenuitem *UNUSED(mi), GEvent *
     mv->pixelsize = mv_scales[mv->scale_index]*(mv->vheight - 2);
     mv->dpi = 72;
     mv->ptsize = mv->pixelsize;
-    if ( mv->bdf==NULL ) {
-        BDFFontFree(mv->show);
+    if ( mv->bdf==NULL )
         mv->show = SplineFontPieceMeal(
                         mv->sf, mv->layer, mv->pixelsize, 72,
 			MVGetSplineFontPieceMealFlags( mv ),
                         NULL);
-    }
     MVReKern(mv);
     MVSetVSb(mv);
 }
@@ -3294,8 +3247,6 @@ return;
     else
         --(mv->ptsize);
     mv->pixelsize = rint( (mv->ptsize*mv->dpi)/72.0 );
-    if ( mv->bdf==NULL )
-        BDFFontFree(mv->show);
     mv->bdf = NULL;
     mv->show = SplineFontPieceMeal(mv->sf, mv->layer, mv->ptsize, mv->dpi,
 				   MVGetSplineFontPieceMealFlags( mv ), NULL);
@@ -3308,7 +3259,6 @@ static void MVMenuChangeLayer(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
 
     mv->layer = mi->mid;
-    BDFFontFree(mv->show);
     mv->show = SplineFontPieceMeal(mv->sf, mv->layer, mv->ptsize, mv->dpi,
 				   MVGetSplineFontPieceMealFlags( mv ), NULL);
     MVRemetric(mv);
@@ -3544,7 +3494,6 @@ static GMenuItem2 dummyall[] = {
 static void aplistbuild(GWindow base, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(base);
 
-    GMenuItemArrayFree(mi->sub);
     mi->sub = NULL;
 
     _aplistbuild(mi, mv->sf, MVMenuAnchorPairs);
@@ -3613,7 +3562,6 @@ static void lylistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	sub[ly-1].mid = ly;
 	sub[ly-1].ti.fg = sub[ly-1].ti.bg = COLOR_DEFAULT;
     }
-    GMenuItemArrayFree(mi->sub);
     mi->sub = sub;
 }
 
@@ -3929,10 +3877,8 @@ static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	}
     vwlist[i].ti.checked = mv->bdf==NULL;
     base = i+1;
-    for ( i=base; vwlist[i].ti.text!=NULL || vwlist[i].ti.line; ++i ) {
-	free( vwlist[i].ti.text);
+    for ( i=base; vwlist[i].ti.text!=NULL || vwlist[i].ti.line; ++i )
 	vwlist[i].ti.text = NULL;
-    }
 
     if ( mv->sf->bitmaps!=NULL ) {
 	for ( bdf = mv->sf->bitmaps, i=base;
@@ -3951,7 +3897,6 @@ static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    vwlist[i].ti.fg = vwlist[i].ti.bg = COLOR_DEFAULT;
 	}
     }
-    GMenuItemArrayFree(mi->sub);
     mi->sub = GMenuItem2ArrayCopy(vwlist,NULL);
 }
 
@@ -4032,11 +3977,9 @@ return;
     if ( mv->pixelsize_set_by_window ) {
 	mv->ptsize = mv->pixelsize = mv_scales[mv->scale_index]*size;
 	mv->dpi = 72;
-	if ( mv->bdf==NULL ) {
-	    BDFFontFree(mv->show);
+	if ( mv->bdf==NULL )
 	    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->ptsize,mv->dpi,
 					   MVGetSplineFontPieceMealFlags( mv ), NULL );
-	}
     }
 
     for ( i=0; i<mv->max; ++i ) if ( mv->perchar[i].width!=NULL ) {
@@ -4751,7 +4694,6 @@ return;
 	start = pt;
     }
     cnt = i;
-    free( cnames );
     if ( cnt==0 )
 return;
     if ( within<mv->glyphcnt )
@@ -4778,11 +4720,8 @@ return;
     }
     mv->clen += cnt;
     MVRemetric(mv);
-    free(founds);
 
     GGadgetSetTitle(mv->text,newtext);
-    free(newtext);
-
     GDrawRequestExpose(mv->v,NULL,false);
 }
 
@@ -4936,7 +4875,6 @@ return( true );
 	    n->next = mv->next;
 	}
 	KCLD_MvDetach(sf->kcld,mv);
-	MetricsViewFree(mv);
       break;
       case et_focus:
       break;
@@ -4998,12 +4936,10 @@ return( NULL );
 		}
 		++cnt;
 	    }
-	    free(langtags);
 	}
 	if ( !k )
 	    ret = calloc((cnt+1),sizeof(GTextInfo));
     }
-    free(scripttags);
 return( ret );
 }
 
@@ -5220,24 +5156,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
 return( mv );
 }
 
-void MetricsViewFree(MetricsView *mv) {
-
-    if ( mv->scriptlangs!=NULL ) {
-	int i;
-	for ( i=0; mv->scriptlangs[i].text!=NULL ; ++i )
-	    free(mv->scriptlangs[i].userdata );
-	GTextInfoListFree(mv->scriptlangs);
-    }
-    BDFFontFree(mv->show);
-    /* the fields will free themselves */
-    free(mv->chars);
-    free(mv->glyphs);
-    free(mv->perchar);
-    free(mv);
-}
-
 void MVRefreshAll(MetricsView *mv) {
-
     if ( mv!=NULL ) {
 	MVRemetric(mv);
 	GDrawRequestExpose(mv->v,NULL,false);

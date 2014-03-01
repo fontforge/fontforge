@@ -193,7 +193,6 @@ static void ApplyChanges(WidthInfo *wi) {
 	    SCCharChangedUpdate(ch->sc,ly_none);
 	}
     }
-    free(rsel);
 
     for ( i=0; i<wi->real_lcnt; ++i ) {
 	ch = wi->left[i];
@@ -237,7 +236,7 @@ void AW_AutoKern(WidthInfo *wi) {
 		wi->sf->changed = true;
 	    }
 	} else if ( diff!=0 ) {
-	    kp = chunkalloc(sizeof(KernPair));
+	    kp = XZALLOC(KernPair);
 	    kp->sc = rsc;
 	    kp->off = diff;
 	    kp->subtable = wi->subtable;
@@ -777,29 +776,6 @@ void AW_BuildCharPairs(WidthInfo *wi) {
 	PairFindDistance(wi->pairs[i],wi);
 }
 
-void AW_FreeCharList(struct charone **list) {
-    int i;
-
-    if ( list==NULL )
-return;
-    for ( i=0; list[i]!=NULL; ++i ) {
-	free( list[i]->ledge );
-	free( list[i]->redge );
-	free( list[i] );
-    }
-    free(list);
-}
-
-void AW_FreeCharPairs(struct charpair **list, int cnt) {
-    int i;
-
-    if ( list==NULL )
-return;
-    for ( i=0; i<cnt; ++i )
-	free( list[i] );
-    free(list);
-}
-
 int KernThreshold(SplineFont *sf, int cnt) {
     /* We want only cnt kerning pairs in the entire font. Any pair whose */
     /*  absolute offset is less than the threshold should be removed */
@@ -828,10 +804,8 @@ return(0);
 	tot = 0;
 	for ( i=high; i>0 && tot+totals[i]<cnt; --i )
 	    tot += totals[i];
-	free(totals);
 return( i+1 );
     }
-    free(totals);
 return( 0 );
 }
 
@@ -853,7 +827,6 @@ return;
 		    sf->glyphs[i]->kerns = next;
 		else
 		    prev->next = next;
-		chunkfree(kp,sizeof(KernPair));
 	    }
 	}
     }
@@ -1012,7 +985,7 @@ return( false );
     wi->lcnt = cnt;
     wi->left[cnt] = NULL;
     if ( cnt==0 ) {
-	free(wi->left); wi->left = NULL;
+	wi->left = NULL;
 return( false );
     }
 
@@ -1042,10 +1015,9 @@ return( false );
     }
     wi->rcnt = cnt;
     wi->right[cnt] = NULL;
-    free( ch2s );
     if ( cnt==0 ) {
-	free(wi->left); wi->left = NULL;
-	free(wi->right); wi->right = NULL;
+	wi->left = NULL;
+	wi->right = NULL;
 return( false );
     }
     AW_ScriptSerifChecker(wi);
@@ -1070,15 +1042,6 @@ return( false );
 return( true );
 }
 
-static void kernsetsfree(struct kernsets *ks) {
-    int i;
-
-    for ( i=0; i<ks->cur; ++i )
-	free(ks->ch2s[i]);
-    free(ks->ch2s);
-    free(ks->ch1);
-}
-
 int AW_ReadKernPairFile(char *fn,WidthInfo *wi) {
     char *filename;
     FILE *file;
@@ -1088,10 +1051,8 @@ int AW_ReadKernPairFile(char *fn,WidthInfo *wi) {
 
     filename = utf82def_copy(fn);
     file = fopen(filename,"r");
-    free( filename );
     if ( file==NULL ) {
 	ff_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), fn );
-	free(fn);
 return( false );
     }
 
@@ -1114,12 +1075,8 @@ return( false );
     fclose(file);
     if ( !figurekernsets(wi,&ks)) {
 	ff_post_error(_("No Kern Pairs"), _("No kerning pairs found in %.200s"), fn );
-	free( filename );
-	kernsetsfree(&ks);
 return( false );
     }
-    kernsetsfree(&ks);
-    free( fn );
 return( true );
 }
 
@@ -1206,10 +1163,8 @@ return( NULL );
 	if ( list[cnt]!=NULL )
 	    ++cnt;
     }
-    if ( cnt==0 ) {
-	free(list);
+    if ( cnt==0 )
 	list = NULL;
-    }
 return( list );
 }
 
@@ -1269,7 +1224,7 @@ return( lookupmap->smap[i].to );
     if ( i==lookupmap->lc ) {
 	++lookupmap->lc;
 	lookupmap->lmap[i].from = sub->lookup;
-	lookupmap->lmap[i].to = otl = chunkalloc(sizeof(OTLookup));
+	lookupmap->lmap[i].to = otl = XZALLOC(OTLookup);
 	otl->lookup_type = gpos_pair;
 	otl->features = FeatureListCopy(sub->lookup->features);
 	for ( fl=otl->features; fl!=NULL; fl=fl->next )
@@ -1283,7 +1238,7 @@ return( lookupmap->smap[i].to );
 
     sc = lookupmap->sc++;
     lookupmap->smap[sc].from = sub;
-    lookupmap->smap[sc].to = nsub = chunkalloc(sizeof(struct lookup_subtable));
+    lookupmap->smap[sc].to = nsub = XZALLOC(struct lookup_subtable);
     nsub->subtable_name = strconcat("V",sub->subtable_name);
     nsub->per_glyph_pst_or_kern = sub->per_glyph_pst_or_kern;
     nsub->vertical_kerning = true;
@@ -1332,7 +1287,7 @@ return;
 	if ( (sc1 = SCHasVertVariant(sf->glyphs[i]))!=NULL ) {
 	    for ( kp = sf->glyphs[i]->kerns; kp!=NULL; kp=kp->next ) {
 		if ( (sc2 = SCHasVertVariant(kp->sc))!=NULL ) {
-		    vkp = chunkalloc(sizeof(KernPair));
+		    vkp = XZALLOC(KernPair);
 		    *vkp = *kp;
 		    vkp->subtable = VSubtableFromH(&lookupmap,kp->subtable);
 		    vkp->adjust = DeviceTableCopy(vkp->adjust);
@@ -1360,7 +1315,7 @@ return;
 		map2[i] = ++any2;
 	}
 	if ( any1 && any2 ) {
-	    vkc = chunkalloc(sizeof(KernClass));
+	    vkc = XZALLOC(KernClass);
 	    *vkc = *kc;
 	    vkc->subtable = VSubtableFromH(&lookupmap,kc->subtable);
 	    vkc->subtable->kc = vkc;
@@ -1389,17 +1344,7 @@ return;
 		}
 	    }
 	}
-	free(map1);
-	free(map2);
-	for ( i=1; i<kc->first_cnt; ++i )
-	    free(firsts[i]);
-	for ( i=1; i<kc->second_cnt; ++i )
-	    free(seconds[i]);
-	free(firsts);
-	free(seconds);
     }
-    free( lookupmap.lmap );
-    free( lookupmap.smap );
  }
 
 /* Scripting hooks */
@@ -1463,19 +1408,13 @@ int AutoWidthScript(FontViewBase *fv,int spacing) {
 
     wi.left = autowidthBuildCharList(wi.fv, wi.sf, &wi.lcnt, &wi.real_lcnt, &wi.l_Ipos, true );
     wi.right = autowidthBuildCharList(wi.fv, wi.sf, &wi.rcnt, &wi.real_rcnt, &wi.r_Ipos, true );
-    if ( wi.real_lcnt==0 || wi.real_rcnt==0 ) {
-	AW_FreeCharList(wi.left);
-	AW_FreeCharList(wi.right);
+    if ( wi.real_lcnt==0 || wi.real_rcnt==0 )
 return( 0 );
-    }
     AW_ScriptSerifChecker(&wi);
     wi.done = true;
     AW_InitCharPairs(&wi);
     AW_BuildCharPairs(&wi);
     AW_AutoWidth(&wi);
-    AW_FreeCharList(wi.left);
-    AW_FreeCharList(wi.right);
-    AW_FreeCharPairs(wi.pairs,wi.lcnt*wi.rcnt);
 return( true );
 }
 
@@ -1497,11 +1436,8 @@ int AutoKernScript(FontViewBase *fv,int spacing, int threshold,
     if ( kernfile==NULL ) {
 	wi.left = autowidthBuildCharList(wi.fv, wi.sf, &wi.lcnt, &wi.real_lcnt, &wi.l_Ipos, false );
 	wi.right = autowidthBuildCharList(wi.fv, wi.sf, &wi.rcnt, &wi.real_rcnt, &wi.r_Ipos, false );
-	if ( wi.lcnt==0 || wi.rcnt==0 ) {
-	    AW_FreeCharList(wi.left);
-	    AW_FreeCharList(wi.right);
+	if ( wi.lcnt==0 || wi.rcnt==0 )
 return( false );
-	}
 	AW_ScriptSerifChecker(&wi);
 	AW_InitCharPairs(&wi);
     } else {
@@ -1512,8 +1448,5 @@ return( false );
     AW_BuildCharPairs(&wi);
     AW_AutoKern(&wi);
     AW_KernRemoveBelowThreshold(wi.sf,KernThreshold(wi.sf,0));
-    AW_FreeCharList(wi.left);
-    AW_FreeCharList(wi.right);
-    AW_FreeCharPairs(wi.pairs,wi.lcnt*wi.rcnt);
 return( true );
 }

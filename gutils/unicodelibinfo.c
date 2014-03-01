@@ -75,12 +75,10 @@ void inituninameannot(void) {
     /* This should not be done until after the locale has been set */
     names_db_file = uninm_find_names_db(NULL);
     names_db = (names_db_file == NULL) ? ((uninm_names_db) 0) : uninm_names_db_open(names_db_file);
-    free(names_db_file);
     /* NOTE: you need to do uninm_names_db_close(names_db); when you exit program */
 
     blocks_db_file = uninm_find_blocks_db(NULL);
     blocks_db = (blocks_db_file == NULL) ? ((uninm_blocks_db) 0) : uninm_blocks_db_open(blocks_db_file);
-    free(blocks_db_file);
     /* NOTE: you need to do uninm_blocks_db_close(blocks_db); when you exit program */
 #endif
 }
@@ -128,11 +126,11 @@ char *unicode_name(int32 unienc) {
      */
     if( ( unienc >= 0xAC00 && unienc <= 0xD7A3 ) && ( name_data == NULL ) ) {
 	if( ( ( unienc - 0xAC00 ) % 28 ) == 0 ) {
-	    name_data = (char *) g_strdup_printf( "Hangul Syllable %s-%s",
+	    name_data = xasprintf( "Hangul Syllable %s-%s",
 		    chosung [ (unienc - 0xAC00) / (21*28) ],
 		    jungsung[ ((unienc - 0xAC00) / 28 ) % 21 ] );
 	} else {
-	    name_data = (char *) g_strdup_printf( "Hangul Syllable %s-%s-%s",
+	    name_data = xasprintf( "Hangul Syllable %s-%s-%s",
 		    chosung [ (unienc - 0xAC00) / (21*28) ],
 		    jungsung[ ((unienc - 0xAC00) / 28 ) % 21 ],
 		    jongsung[ (unienc - 0xAC00) % 28 ] );

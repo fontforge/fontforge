@@ -1,3 +1,5 @@
+#include <fontforge-config.h>
+
 #include <stdio.h>
 #include <gdraw.h>
 

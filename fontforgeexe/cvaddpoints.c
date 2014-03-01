@@ -305,7 +305,6 @@ static void CVMergeSPLS(CharView *cv,SplineSet *ss, SplinePoint *base,SplinePoin
 	SplineSetSpirosClear(ss);
     cv->p.spl->last = cv->p.spl->first = NULL;
     cv->p.spl->spiros = 0;
-    SplinePointListFree(cv->p.spl);
     cv->p.spl = NULL;
 }
 
@@ -387,7 +386,7 @@ return;			/* We clicked on the active point, that's a no-op */
 	cv->joincp = *cp; SPIRO_DESELECT(&cv->joincp);
     } else {
 	/* A new point on a new (open) contour */
-	ss = chunkalloc(sizeof(SplineSet));
+	ss = XZALLOC(SplineSet);
 	ss->next = cv->b.layerheads[cv->b.drawmode]->splines;
 	cv->b.layerheads[cv->b.drawmode]->splines = ss;
 	ss->spiros = malloc((ss->spiro_max=10)*sizeof(spiro_cp));
@@ -555,7 +554,7 @@ return;			/* We clicked on the active point, that's a no-op */
 	sp->selected = true;
 	ss = cv->p.spl;
     } else {
-	ss = chunkalloc(sizeof(SplineSet));
+	ss = XZALLOC(SplineSet);
 	sp = SplinePointCreate( cv->p.cx, cv->p.cy );
 	
 	ss->first = ss->last = sp;

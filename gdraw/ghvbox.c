@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <fontforge-config.h>
+
 #include "gdraw.h"
 #include "ggadgetP.h"
 #include <string.h>
@@ -87,7 +89,6 @@ static void GHVBox_destroy(GGadget *g) {
 	if ( gb->children[i]!=GG_Glue && gb->children[i]!=GG_ColSpan &&
 		gb->children[i]!=GG_RowSpan && gb->children[i]!=GG_HPad10 )
 	    GGadgetDestroy(gb->children[i]);
-    free(gb->children);
     _ggadget_destroy(g);
 }
 
@@ -453,8 +454,6 @@ static void GHVBoxResize(GGadget *g, int32 width, int32 height) {
         y += si.rows[r].sized;
     }
 
-    free(si.cols); free(si.rows);
-
     gb->g.inner.width = width; gb->g.inner.height = height;
     gb->g.r.width = width + 2*bp; gb->g.r.height = height + 2*bp;
     GDrawEnableExposeRequests(g->base,old_enabled);
@@ -478,7 +477,6 @@ static void GHVBoxGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
 	outer->x = outer->y = 0;
 	outer->width = si.width+2*bp; outer->height = si.height+2*bp;
     }
-    free(si.cols); free(si.rows);
 }
 
 static int GHVBoxFillsWindow(GGadget *g) {

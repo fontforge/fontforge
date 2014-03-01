@@ -84,18 +84,6 @@ struct att_dlg {
 
 static void BuildGSUBlookups(struct node *node,struct att_dlg *att);
 
-static void nodesfree(struct node *node) {
-    int i;
-
-    if ( node==NULL )
-return;
-    for ( i=0; node[i].label!=NULL; ++i ) {
-	nodesfree(node[i].children);
-	free(node[i].label);
-    }
-    free(node);
-}
-
 static int node_alphabetize(const void *_n1, const void *_n2) {
     const struct node *n1 = _n1, *n2 = _n2;
     int ret;
@@ -283,7 +271,6 @@ static void BuildAnchorLists(struct node *node,struct att_dlg *att) {
 		}
 	    }
 	}
-	free(entryexit);
     } else {
 	classcnt = 0;
 	ac = NULL;
@@ -316,13 +303,6 @@ return;
 	    ++j;
 	}
 	node->cnt = i;
-	for ( i=0; i<classcnt; ++i )
-	    free(marks[i]);
-	free(marks);
-	free(subcnts);
-	free(base);
-	free(lig);
-	free(mkmk);
     }
 }
 
@@ -570,7 +550,6 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 	    node->cnt = len;
 	}
     }
-    free(gb.base);
 }
 
 static void BuildFPST(struct node *node,struct att_dlg *att) {
@@ -763,8 +742,6 @@ static void BuildASM(struct node *node,struct att_dlg *att) {
 	    node->cnt = len;
 	}
     }
-    free(space);
-    free(used);
 }
 
 static void BuildKern2(struct node *node,struct att_dlg *att) {
@@ -972,7 +949,6 @@ static void BuildPST(struct node *node,struct att_dlg *att) {
 	} else
 	    qsort(lines,cnt,sizeof(struct node), node_alphabetize);
     }
-    free(lbuf);
 }
 
 static void BuildSubtableDispatch(struct node *node,struct att_dlg *att) {
@@ -1091,7 +1067,6 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
 	featnodes[i].build = BuildGSUBfeatures;
 	featnodes[i].label = TagFullName(_sf,featnodes[i].tag,false,false);
     }
-    free( featlist );
 
     node->children = featnodes;
     node->cnt = j;
@@ -1116,7 +1091,6 @@ static void BuildGSUBscript(struct node *node,struct att_dlg *att) {
     langnodes = calloc(lang_max+1,sizeof(struct node));
     for ( i=0; langlist[i]!=0; ++i )
 	langnodes[i].tag = langlist[i];
-    free( langlist );
 
     for ( i=0; i<lang_max; ++i ) {
 	for ( j=0; languages[j].text!=NULL && langnodes[i].tag!=(uint32) (intpt) languages[j].userdata; ++j );
@@ -1251,7 +1225,6 @@ static void BuildJSTFscript(struct node *node,struct att_dlg *att) {
 	}
     }
     if ( gc==0 ) {
-	free(extenders);
 	extenders=NULL;
 	langnodes[0].label = copy(_("No Extender Glyphs"));
 	langnodes[0].parent = node;
@@ -1604,7 +1577,6 @@ static void BuildBsLnTable(struct node *node,struct att_dlg *att) {
 	}
 	node->children[2].cnt = i;
     }
-    free(baselines);
 }
 
 static void BuildOpticalBounds(struct node *node,struct att_dlg *att) {
@@ -1755,7 +1727,6 @@ return;
 	}
 	node->cnt = ccnt;
     }
-    free(props);
 }
 
 static void BuildKernTable(struct node *node,struct att_dlg *att) {
@@ -1848,7 +1819,6 @@ return;
     scriptnodes = calloc(script_max+1,sizeof(struct node));
     for ( i=0; scriptlist[i]!=0; ++i )
 	scriptnodes[i].tag = scriptlist[i];
-    free( scriptlist );
 
     for ( i=0; i<script_max; ++i ) {
 	for ( j=0; scripts[j].text!=NULL && scriptnodes[i].tag!=(uint32) (intpt) scripts[j].userdata; ++j );
@@ -2332,13 +2302,10 @@ static void AttSave(struct att_dlg *att) {
 return;
     cret = utf82def_copy(ret);
     file = fopen(cret,"w");
-    free(cret);
     if ( file==NULL ) {
 	ff_post_error(_("Save Failed"),_("Save Failed"),ret);
-	free(ret);
 return;
     }
-    free(ret);
 
     pututf8(0xfeff,file);	/* Zero width something or other. Marks this as unicode, utf8 */
     node = NodeFindLPos(att->tables,0,&depth);
@@ -2434,10 +2401,6 @@ return;
     }
 }
 
-static void _ATT_FreeImage(const void *_ci, GImage *img) {
-    GImageDestroy(img);
-}
-
 static GImage *_ATT_PopupImage(const void *_att) {
     const struct att_dlg *att = _att;
     char *start, *pt;
@@ -2468,7 +2431,7 @@ return( NameList_GetImage(att->sf,sc,att->def_layer,pt,isliga));
 
 static void ATTStartPopup(struct att_dlg *att,struct node *node) {
     att->popup_node = node;
-    GGadgetPreparePopupImage(att->v,NULL,att,_ATT_PopupImage,_ATT_FreeImage);
+    GGadgetPreparePopupImage(att->v,NULL,att,_ATT_PopupImage);
 }
 
 static void AttMouse(struct att_dlg *att,GEvent *event) {
@@ -2747,10 +2710,7 @@ return( AttChar(att,event));
 	    GDrawDestroyWindow(gw);
       break;
       case et_destroy:
-	if ( att!=NULL ) {
-	    nodesfree(att->tables);
-	    free(att);
-	}
+      break;
     }
 return( true );
 }
@@ -2861,7 +2821,6 @@ void ShowAtt(SplineFont *sf,int def_layer) {
     while ( !att.done )
 	GDrawProcessOneEvent(NULL);
     GDrawSetUserData(att.gw,NULL);
-    nodesfree(att.tables);
     GDrawDestroyWindow(att.gw);
 }
 
@@ -2947,7 +2906,6 @@ static void BuildFCmpNodes(struct att_dlg *att, SplineFont *sf1, SplineFont *sf2
 	nf.file = tmp;
 	nf.linebuf = malloc( nf.linemax = 300 );
 	ReadKids(&nf,0,&tables[0]);
-	free(nf.linebuf);
     }
     fclose(tmp);
 }
@@ -2992,7 +2950,6 @@ return;
     if ( otherfv==NULL )
 return;
     FontCmpDlg(fv,otherfv,flags);
-    free(filename);
 }
 
 struct mf_data {
@@ -3353,5 +3310,4 @@ void FontCompareDlg(FontView *fv) {
 	GDrawSetVisible(gw,true);
 	while ( !d.done )
 	    GDrawProcessOneEvent(NULL);
-	TFFree(gcd[1].gd.u.list);
 }

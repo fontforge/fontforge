@@ -1905,20 +1905,14 @@ return( copy(orig));
     strtod(new,&end);
     setlocale(LC_NUMERIC,oldloc);
     while ( isspace(*end)) ++end;
-    if ( *end=='\0' ) {
-	char *ret = copy(new);
-	free(new);
-return( ret );
-    }
+    if ( *end=='\0' )
+return( copy(new) );
 
     /* OK, can we parse the number in the original local? */
     dval = strtod(new,&end);
     while ( isspace(*end)) ++end;
-    if ( *end!='\0' ) {
-	free(new);
+    if ( *end!='\0' )
 return( NULL );
-    }
-    free(new);
     setlocale(LC_NUMERIC,"C");
     sprintf( buffer, "%g", dval );
     setlocale(LC_NUMERIC,oldloc);
@@ -1944,7 +1938,6 @@ static char *rplarraydecimal(const char *orig,const char *decimal_point,const ch
 	if ( rpl==NULL ) {
 	    gwwv_post_notice(_("Bad type"),_("Expected array of numbers.\nFailed to parse \"%.*s\" as a number."),
 		    pt-start, start);
-	    free(new);
 return( NULL );
 	}
 	if ( npt-new + strlen(rpl) + 2 >nlen ) {
@@ -1955,15 +1948,12 @@ return( NULL );
 	if ( npt[-1]!='[' )
 	    *npt++ = ' ';
 	strcpy(npt,rpl);
-	free(rpl);
 	npt += strlen(npt);
 	while ( isspace(*pt)) ++pt;
     }
     *npt++ =']';
     *npt = '\0';
-    rpl = copy(new);
-    free(new);
-return( rpl );
+return( copy(new) );
 }
 
 static void PSPrivate_FinishEdit(GGadget *g,int r, int c, int wasnew) {
@@ -1983,7 +1973,6 @@ return;
 	tempdict = calloc(1,sizeof(*tempdict));
 	SFPrivateGuess(d->sf,ly_fore,tempdict,key,true);
 	strings[r*cols+1].u.md_str = copy(PSDictHasEntry(tempdict,key));
-	PSDictFree(tempdict);
     } else if ( c==1 && val!=NULL ) {
 	struct lconv *loc = localeconv();
 	int i;
@@ -2000,11 +1989,9 @@ return;
 	    if ( strcasecmp(val,"true")==0 || strcasecmp(val,"t")==0 || strtol(val,NULL,10)!=0 ) {
 		/* If they make a mistake about case, correct it */
 		strings[r*cols+1].u.md_str = copy("true");
-		free(val);
 		GGadgetRedraw(g);
 	    } else if ( strcasecmp(val,"false")==0 || strcasecmp(val,"f")==0 || (*val=='0' && strtol(val,NULL,10)==0) ) {
 		strings[r*cols+1].u.md_str = copy("false");
-		free(val);
 		GGadgetRedraw(g);
 	    } else
 /* GT: The words "true" and "false" should be left untranslated. We are restricted */
@@ -2018,26 +2005,19 @@ return;
 	    newval = rpldecimal(val,loc->decimal_point,oldloc);
 	    if ( newval==NULL )
 		gwwv_post_notice(_("Bad type"),_("Expected number."));
-	    else if ( strcmp(newval,val)==0 )
-		free(newval);		/* No change */
-	    else {
+	    else if ( strcmp(newval,val)!=0 ) { /* Changed */
 		strings[r*cols+1].u.md_str = newval;
-		free(val);
 		GGadgetRedraw(g);
 	    }
 	} else if ( KnownPrivates[i].type==pt_array ) {
 	    newval = rplarraydecimal(val,loc->decimal_point,oldloc);
 	    if ( newval==NULL )
 		gwwv_post_notice(_("Bad type"),_("Expected number."));
-	    else if ( strcmp(newval,val)==0 )
-		free(newval);		/* No change */
-	    else {
+	    else if ( strcmp(newval,val)!=0 ) { /* Changed */
 		strings[r*cols+1].u.md_str = newval;
-		free(val);
 		GGadgetRedraw(g);
 	    }
 	}
-	free(oldloc);
     }
 }
 
@@ -2128,11 +2108,9 @@ static int PI_Guess(GGadget *g, GEvent *e) {
 	SFPrivateGuess(d->sf,ly_fore,tempdict,key,true);
 	ret = copy(PSDictHasEntry(tempdict,key));
 	if ( ret!=NULL ) {
-	    free(strings[r*cols+1].u.md_str);
 	    strings[r*cols+1].u.md_str = ret;
 	    GGadgetRedraw(private);
 	}
-	PSDictFree(tempdict);
     }
 return( true );
 }
@@ -2170,11 +2148,9 @@ return( true );		/* can't happen */
 	SFHistogram(d->sf,ly_fore,tempdict,NULL,NULL,h);
 	ret = copy(PSDictHasEntry(tempdict,key));
 	if ( ret!=NULL ) {
-	    free(strings[r*cols+1].u.md_str);
 	    strings[r*cols+1].u.md_str = ret;
 	    GGadgetRedraw(private);
 	}
-	PSDictFree(tempdict);
     }
 return( true );
 }
@@ -2217,7 +2193,6 @@ static int GFI_NameChange(GGadget *g, GEvent *e) {
 		cp[u_strlen(cp) - strlen(" Regular")] ='\0';
 	    }
 	    GGadgetSetTitle(GWidgetGetControl(gw,CID_Human),cp);
-	    free(cp);
 	}
 	if ( gfi->family_untitled ) {
 	    const unichar_t *ept = uname+u_strlen(uname); unichar_t *temp;
@@ -2428,8 +2403,6 @@ return( SFGlyphNameCompletion(sf,t,from_tab,true));
 static void GFI_CancelClose(struct gfi_data *d) {
     int isgpos,i,j;
 
-    MacFeatListFree(GGadgetGetUserData((GWidgetGetControl(
-	    d->gw,CID_Features))));
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	struct lkdata *lk = &d->tables[isgpos];
 	for ( i=0; i<lk->cnt; ++i ) {
@@ -2439,9 +2412,7 @@ static void GFI_CancelClose(struct gfi_data *d) {
 		if ( lk->all[i].subtables[j].new )
 		    SFRemoveLookupSubTable(d->sf,lk->all[i].subtables[j].subtable,0);
 	    }
-	    free(lk->all[i].subtables);
 	}
-	free(lk->all);
     }
     GFI_Close(d);
 }
@@ -2453,7 +2424,7 @@ static struct otfname *OtfNameFromStyleNames(GGadget *me) {
     struct otfname *head=NULL, *last, *cur;
 
     for ( i=0; i<rows; ++i ) {
-	cur = chunkalloc(sizeof(struct otfname));
+	cur = XZALLOC(struct otfname);
 	cur->lang = strings[2*i  ].u.md_ival;
 	cur->name = copy(strings[2*i+1].u.md_str);
 	if ( head==NULL )
@@ -2619,10 +2590,6 @@ static int SetFontName(GWindow gw, SplineFont *sf) {
     const unichar_t *uhum = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Human));
     int diff = uc_strcmp(ufont,sf->fontname)!=0;
 
-    free(sf->familyname);
-    free(sf->fontname);
-    free(sf->weight);
-    free(sf->fullname);
     sf->familyname = cu_copy(ufamily);
     sf->fontname = cu_copy(ufont);
     sf->weight = cu_copy(uweight);
@@ -2714,7 +2681,6 @@ return( u2utf8_copy(_uGetModifiers(
       case ttf_version:
 	sprintf(versionbuf,_("Version %.20s"),
 		v=GGadgetGetTitle8(GWidgetGetControl(d->gw,CID_Version)));
-	free(v);
 return( copy(versionbuf));
       default:
 return( NULL );
@@ -2876,8 +2842,6 @@ static int CheckActiveStyleTranslation(struct gfi_data *d,
 		if ( stylelist[i][j].lang == 0x409 &&
 			(pt = strstrmatch(new,stylelist[i][j].str))!=NULL ) {
 		    if ( pt==new && strlen(stylelist[i][j].str)==strlen(new) ) {
-			free(new);
-			free(strings[3*r+2].u.md_str);
 			if ( other_lang==0x415 ) {
 			    /* polish needs a word before the translation */
 			    strings[3*r+2].u.md_str = malloc(strlen("odmiana ")+strlen(stylelist[i][other_pos].str)+1);
@@ -2894,7 +2858,6 @@ static int CheckActiveStyleTranslation(struct gfi_data *d,
 		    strncpy(temp,new,pt-new);
 		    strcpy(temp+(pt-new),stylelist[i][other_pos].str);
 		    strcat(temp+(pt-new),pt+strlen(stylelist[i][j].str));
-		    free(new);
 		    new = temp;
 		    changed = true;
 	    continue;
@@ -2903,17 +2866,14 @@ static int CheckActiveStyleTranslation(struct gfi_data *d,
 	}
     }
     if ( changed ) {
-	free(strings[3*r+2].u.md_str);
 	if ( other_lang==0x415 ) {
 	    /* polish needs a word before the translation */
 	    strings[3*r+2].u.md_str = malloc(strlen("odmiana ")+strlen(new)+1);
 	    strcpy(strings[3*r+2].u.md_str,"odmiana ");
 	    strcat(strings[3*r+2].u.md_str,new);
-	    free(new);
 	} else
 	    strings[3*r+2].u.md_str = new;
-    } else
-	free(new);
+    }
 return( changed );
 }
 
@@ -2930,12 +2890,10 @@ static void TN_StrPopupDispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
 	int rows;
 	struct matrix_data *strings = GMatrixEditGet(g, &rows);
 	strings[3*d->tn_active+2].frozen = !strings[3*d->tn_active+2].frozen;
-	if ( strings[3*d->tn_active+2].frozen ) {
-	    free( strings[3*d->tn_active+2].u.md_str );
+	if ( strings[3*d->tn_active+2].frozen )
 	    strings[3*d->tn_active+2].u.md_str = NULL;
-	} else {
+	else
 	    strings[3*d->tn_active+2].u.md_str = tn_recalculatedef(d,strings[3*d->tn_active+1].u.md_ival);
-	}
 	GGadgetRedraw(g);
       } break;
       case MID_MultiEdit:
@@ -3107,7 +3065,6 @@ return;
 	mi[MID_ToggleBase-1].ti.text = (unichar_t *) _("Same as PostScript Names");
 	temp = tn_recalculatedef(d,strings[3*r+1].u.md_ival);
 	mi[MID_ToggleBase-1].ti.disabled = (temp==NULL);
-	free(temp);
     }
     if ( c!=2 )
 	mi[MID_MultiEdit-1].ti.disabled = true;
@@ -3235,10 +3192,8 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 		for ( j=rows-1; j>=0; --j ) {
 		    if ( tns[j*3+1].u.md_ival==ofl_str_lang_data[i].strid &&
 			    tns[j*3+0].u.md_ival==ofl_str_lang_data[i].lang ) {
-			if ( k ) {
-			    free(newtns[j*3+2].u.md_str);
+			if ( k )
 			    newtns[j*3+2].u.md_str = NULL;
-			}
 		break;
 		    }
 		}
@@ -3682,10 +3637,8 @@ static void ttfuniqueidfixup(SplineFont *sf,struct gfi_data *d) {
 return;
 
     if ( !d->names_set ) {
-	for ( tln = sf->names; tln!=NULL; tln=tln->next ) {
-	    free( tln->names[ttf_uniqueid]);
+	for ( tln = sf->names; tln!=NULL; tln=tln->next )
 	    tln->names[ttf_uniqueid] = NULL;
-	}
     } else {
 	GGadget *edit = GWidgetGetControl(d->gw,CID_TNames);
 	int rows;
@@ -3715,7 +3668,6 @@ return;
 	    if ( i==rows )
 	continue;
 	    if ( strcmp(tln->names[ttf_uniqueid],strings[3*i+2].u.md_str)==0 ) {
-		free(strings[3*i+2].u.md_str);
 		strings[3*i+2].u.md_str = changed!=NULL
 			? copy( changed )
 			: NULL;
@@ -3732,12 +3684,12 @@ static void StoreTTFNames(struct gfi_data *d) {
     int rows;
     struct matrix_data *strings = GMatrixEditGet(edit, &rows);
 
-    TTFLangNamesFree(sf->names); sf->names = NULL;
+    sf->names = NULL;
 
     for ( i=0; i<rows; ++i ) {
 	for ( tln=sf->names; tln!=NULL && tln->lang!=strings[3*i].u.md_ival; tln=tln->next );
 	if ( tln==NULL ) {
-	    tln = chunkalloc(sizeof(struct ttflangname));
+	    tln = XZALLOC(struct ttflangname);
 	    tln->lang = strings[3*i].u.md_ival;
 	    tln->next = sf->names;
 	    sf->names = tln;
@@ -3789,7 +3741,6 @@ static void StoreSSNames(struct gfi_data *d) {
     struct otfname *on;
     SplineFont *sf = d->sf;
 
-    OtfFeatNameListFree(sf->feat_names);
     sf->feat_names = NULL;
 
     qsort( strings, rows, 3*sizeof(struct matrix_data), ss_cmp );
@@ -3800,12 +3751,12 @@ static void StoreSSNames(struct gfi_data *d) {
 	lang = strings[3*i].u.md_ival;
 	for ( fn=sf->feat_names; fn!=NULL && fn->tag!=tag; fn=fn->next );
 	if ( fn==NULL ) {
-	    fn = chunkalloc(sizeof(*fn));
+	    fn = XZALLOC(struct otffeatname);
 	    fn->tag = tag;
 	    fn->next = sf->feat_names;
 	    sf->feat_names = fn;
 	}
-	on = chunkalloc(sizeof(*on));
+	on = XZALLOC(struct otfname);
 	on->next = fn->names;
 	fn->names = on;
 	on->lang = lang;
@@ -3855,7 +3806,6 @@ static void GFI_ApplyLookupChanges(struct gfi_data *gfi) {
 		else
 		    last->subtables = NULL;
 	    }
-	    free(lk->all[i].subtables);
 	}
 	if ( last!=NULL )
 	    last->next = NULL;
@@ -3863,7 +3813,6 @@ static void GFI_ApplyLookupChanges(struct gfi_data *gfi) {
 	    sf->gpos_lookups = NULL;
 	else
 	    sf->gsub_lookups = NULL;
-	free(lk->all);
     }
 }
 
@@ -3948,7 +3897,6 @@ static int GFI_SetLayers(struct gfi_data *d) {
 	}
 	if ( layers[r*cols+0].u.md_str!=NULL && *layers[r*cols+0].u.md_str!='\0' &&
 		strcmp( sf->layers[origr].name, layers[r*cols+0].u.md_str)!=0 ) {
-	    free( sf->layers[origr].name );
 	    sf->layers[origr].name = copy( layers[r*cols+0].u.md_str );
 	    changed = true;
 	}
@@ -4122,7 +4070,6 @@ return(true);
 	size_top = rint(10*GetReal8(gw,CID_DesignTop,_("_Top"),&err));
 	styleid = GetInt8(gw,CID_StyleID,_("Style _ID:"),&err);
 	fontstyle_name = OtfNameFromStyleNames(GWidgetGetControl(gw,CID_StyleName));
-	OtfNameListFree(fontstyle_name);
 	if ( design_size==0 && ( size_bottom!=0 || size_top!=0 || styleid!=0 || fontstyle_name!=NULL )) {
 	    ff_post_error(_("Bad Design Size Info"),_("If the design size is 0, then all other fields on that pane must be zero (or unspecified) too."));
 return( true );
@@ -4181,7 +4128,6 @@ return(true);
 		os2version = 0;
 	    else
 		os2version = GetInt8(gw,CID_OS2Version,_("Weight, Width, Slope Only"),&err);
-	    free(os2v);
 	    /* Only use the normal routine if we get no value, because */
 	    /*  "400 Book" is a reasonable setting, but would cause GetInt */
 	    /*  to complain */
@@ -4195,7 +4141,6 @@ return(true);
 		break;
 		    }
 		}
-		free(wc);
 	    }
 	    if ( weight == 0 )
 		weight = GetInt8(gw,CID_WeightClass,_("_Weight Class"),&err);
@@ -4269,7 +4214,6 @@ return( true );
 	else {
 	    char *name = u2utf8_copy(nlitem->text);
 	    nl = NameListByName(name);
-	    free(name);
 	}
 	if ( nl->uses_unicode && !allow_utf8_glyphnames ) {
 	    ff_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set,\nbut there are names in this namelist which use characters outside\nthat range."));
@@ -4325,23 +4269,19 @@ return(true);
 	    }
 	    if ( ttfuniqueidmatch(sf,d))
 		ttfuniqueidfixup(sf,d);
-	} else {
-	    free(sf->xuid);
+	} else
 	    sf->xuid = *txt=='\0'?NULL:cu_copy(txt);
-	}
 	sf->use_xuid = usexuid;
 	sf->use_uniqueid = useuniqueid;
 
 	sf->sfntRevision = sfntRevision;
 
-	free(sf->woffMetadata);
 	sf->woffMetadata = NULL;
 	if ( *_GGadgetGetTitle(GWidgetGetControl(gw,CID_WoffMetadata))!='\0' )
 	    sf->woffMetadata = GGadgetGetTitle8(GWidgetGetControl(gw,CID_WoffMetadata));
 	sf->woffMajor = woffMajor;
 	sf->woffMinor = woffMinor;
 
-	free(sf->gasp);
 	sf->gasp_cnt = gasprows;
 	if ( gasprows==0 )
 	    sf->gasp = NULL;
@@ -4362,7 +4302,6 @@ return(true);
 	}
 	sf->head_optimized_for_cleartype = GGadgetIsChecked(GWidgetGetControl(gw,CID_HeadClearType));
 
-	OtfNameListFree(sf->fontstyle_name);
 	sf->fontstyle_name = OtfNameFromStyleNames(GWidgetGetControl(gw,CID_StyleName));
 	sf->design_size = design_size;
 	sf->design_range_bottom = size_bottom;
@@ -4370,23 +4309,23 @@ return(true);
 	sf->fontstyle_id = styleid;
 
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Notice));
-	free(sf->copyright); sf->copyright = cu_copy(txt);
+	sf->copyright = cu_copy(txt);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Comment));
-	free(sf->comments); sf->comments = u2utf8_copy(*txt?txt:NULL);
+	sf->comments = u2utf8_copy(*txt?txt:NULL);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_FontLog));
-	free(sf->fontlog); sf->fontlog = u2utf8_copy(*txt?txt:NULL);
+	sf->fontlog = u2utf8_copy(*txt?txt:NULL);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_DefBaseName));
 	if ( *txt=='\0' || GGadgetIsChecked(GWidgetGetControl(gw,CID_SameAsFontname)) )
 	    txt = NULL;
-	free(sf->defbasefilename); sf->defbasefilename = u2utf8_copy(txt);
+	sf->defbasefilename = u2utf8_copy(txt);
 	if ( sf->subfontcnt!=0 ) {
 	    sf->cidversion = cidversion;
 	} else {
 	    txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Version));
-	    free(sf->version); sf->version = cu_copy(txt);
+	    sf->version = cu_copy(txt);
 	}
 	fond = _GGadgetGetTitle(GWidgetGetControl(gw,CID_MacFOND));
-	free(sf->fondname); sf->fondname = NULL;
+	sf->fondname = NULL;
 	if ( *fond )
 	    sf->fondname = cu_copy(fond);
 	sf->macstyle = mcs;
@@ -4419,7 +4358,6 @@ return(true);
 	for ( j=0; j<_sf->subfontcnt; ++j )
 	    _sf->subfonts[j]->hasvmetrics = vmetrics;
 
-	PSDictFree(sf->private);
 	sf->private = GFI_ParsePrivate(d);
 
 	if ( d->names_set )
@@ -4523,12 +4461,10 @@ return(true);
 		GDrawRequestExpose(cv->v,NULL,false);
 	    }
 	}
-	MacFeatListFree(sf->features);
 	sf->features = GGadgetGetUserData(GWidgetGetControl(d->gw,CID_Features));
 	last_aspect = d->old_aspect;
 
 	/* Class 0 is unused */
-	MarkClassFree(sf->mark_class_cnt,sf->mark_classes,sf->mark_class_names);
 	sf->mark_class_cnt = mc_rows + 1;
 	sf->mark_classes     = malloc((mc_rows+1)*sizeof(char *));
 	sf->mark_class_names = malloc((mc_rows+1)*sizeof(char *));
@@ -4539,7 +4475,6 @@ return(true);
 	}
 
 	/* Set 0 is used */
-	MarkSetFree(sf->mark_set_cnt,sf->mark_sets,sf->mark_set_names);
 	sf->mark_set_cnt = ms_rows;
 	sf->mark_sets      = malloc((ms_rows)*sizeof(char *));
 	sf->mark_set_names = malloc((ms_rows)*sizeof(char *));
@@ -4653,7 +4588,6 @@ static void _GFI_PanoseDefault(struct gfi_data *d) {
 	d->sf->pfminfo.pfmset = false; d->sf->pfminfo.panose_set = false;
 	SFDefaultOS2Info(&info,d->sf,n);
 	d->sf->pfminfo.pfmset = old1; d->sf->pfminfo.panose_set = old2;
-	free(n);
 	for ( i=0; i<10; ++i )
 	    GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_PanFamily+i),info.panose[i]);
     }
@@ -4814,7 +4748,6 @@ static void TTFSetup(struct gfi_data *d) {
 	    info.vlinegap = vlg;
 	if ( tlg!=0 )
 	    info.os2_typolinegap = tlg;
-	free(n);
     }
 
     if ( info.weight>0 && info.weight<=900 && info.weight%100==0 )
@@ -5201,7 +5134,6 @@ static void FigureUnicode(struct gfi_data *d) {
     }
     ti[i] = calloc(1,sizeof(GTextInfo));
     GGadgetSetList(list,ti,false);
-    free(ri);
 }
 
 static int GFI_UnicodeRangeChange(GGadget *g, GEvent *e) {
@@ -5251,7 +5183,6 @@ return( true );
 		}
 	    }
 	}
-	free(found);
     }
     if ( first==-1 ) {
 	GDrawBeep(NULL);
@@ -5306,9 +5237,6 @@ static int e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct gfi_data *d = GDrawGetUserData(gw);
 	GFI_CancelClose(d);
-    } else if ( event->type==et_destroy ) {
-	struct gfi_data *d = GDrawGetUserData(gw);
-	free(d);
     } else if ( event->type==et_char ) {
 return( GFI_Char(GDrawGetUserData(gw),event));
     }
@@ -5482,14 +5410,6 @@ static void LookupSetup(struct lkdata *lk,OTLookup *lookups) {
 	for ( subcnt=0, sub=otl->subtables; sub!=NULL; ++subcnt, sub=sub->next )
 	    lk->all[cnt].subtables[subcnt].subtable = sub;
     }
-}
-
-static void LookupInfoFree(struct lkdata *lk) {
-    int cnt;
-
-    for ( cnt=0; cnt<lk->cnt; ++cnt )
-	free(lk->all[cnt].subtables);
-    free(lk->all);
 }
 
 #define LK_MARGIN 2
@@ -5916,8 +5836,6 @@ void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, int success) {
 		otl->subtables = sub->next;
 	    else
 		prev->next = sub->next;
-	    free(sub->subtable_name);
-	    chunkfree(sub,sizeof(struct lookup_subtable));
 	}
 	fprev = NULL;
 	for ( ftest=d->sf->possub; ftest!=NULL && ftest!=fpst; fprev = ftest, ftest=ftest->next );
@@ -5927,8 +5845,6 @@ void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, int success) {
 	    else
 		fprev->next = fpst->next;
 	}
-
-	chunkfree(fpst,sizeof(FPST));
     }
 }
 
@@ -5948,8 +5864,6 @@ void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success, int isnew) {
 		otl->subtables = sub->next;
 	    else
 		prev->next = sub->next;
-	    free(sub->subtable_name);
-	    chunkfree(sub,sizeof(struct lookup_subtable));
 	}
 	smprev = NULL;
 	for ( smtest=d->sf->sm; smtest!=NULL && smtest!=sm; smprev = smtest, smtest=smtest->next );
@@ -5959,7 +5873,6 @@ void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success, int isnew) {
 	    else
 		smprev->next = sm->next;
 	}
-	chunkfree(sm,sizeof(ASM));
     }
 }
 
@@ -6000,7 +5913,7 @@ static int GFI_LookupAddLookup(GGadget *g, GEvent *e) {
 	int isgpos = GTabSetGetSel(GWidgetGetControl(gfi->gw,CID_Lookups));
 	struct lkdata *lk = &gfi->tables[isgpos];
 	int i,j,k,lcnt;
-	OTLookup *otl = chunkalloc(sizeof(OTLookup)), *test;
+	OTLookup *otl = XZALLOC(OTLookup), *test;
 
 	k = 0;
 	for ( test = isgpos ? gfi->sf->gpos_lookups : gfi->sf->gsub_lookups;
@@ -6008,10 +5921,8 @@ static int GFI_LookupAddLookup(GGadget *g, GEvent *e) {
 	    ++k;
 	otl->lookup_index = k;
 
-	if ( !EditLookup(otl,isgpos,gfi->sf)) {
-	    chunkfree(otl,sizeof(OTLookup));
+	if ( !EditLookup(otl,isgpos,gfi->sf))
 return( true );
-	}
 	for ( i=lk->cnt-1; i>=0; --i ) {
 	    if ( !lk->all[i].deleted && lk->all[i].selected ) {
 		lk->all[i].selected = false;
@@ -6097,12 +6008,10 @@ static int GFI_LookupAddSubtable(GGadget *g, GEvent *e) {
 	if ( i==lk->cnt )
 return( true );
 
-	sub = chunkalloc(sizeof(struct lookup_subtable));
+	sub = XZALLOC(struct lookup_subtable);
 	sub->lookup = lk->all[i].lookup;
-	if ( !EditSubtable(sub,isgpos,gfi->sf,NULL,gfi->def_layer)) {
-	    chunkfree(sub,sizeof(struct lookup_subtable));
+	if ( !EditSubtable(sub,isgpos,gfi->sf,NULL,gfi->def_layer))
 return( true );
-	}
 	if ( lk->all[i].subtable_cnt>=lk->all[i].subtable_max )
 	    lk->all[i].subtables = realloc(lk->all[i].subtables,(lk->all[i].subtable_max+=10)*sizeof(struct lksubinfo));
 	for ( k=lk->all[i].subtable_cnt; k>j+1; --k )
@@ -6282,10 +6191,9 @@ static int GFI_LookupRevertLookup(GGadget *g, GEvent *e) {
 	/*  anything to resurrect them */
 
 	/* Finally we need to restore the original order. */
-	/* But that just means regenerating the lk structure. So free it and */
-	/*  regenerate it */
+	/* But that just means regenerating the lk structure. */
+	/* So regenerate it */
 
-	LookupInfoFree(lk);
 	LookupSetup(lk,isgpos?gfi->sf->gpos_lookups:gfi->sf->gsub_lookups);
 
 	GFI_LookupScrollbars(gfi,isgpos, true);
@@ -6444,7 +6352,6 @@ static int GFI_LookupImportLookup(GGadget *g, GEvent *e) {
 	GHVBoxSetExpandableRow(gcd[i].ret,1);
 	GHVBoxSetExpandableCol(gcd[i-1].ret,gb_expandgluesame);
 	GHVBoxFitWindow(gcd[i].ret);
-	GTextInfoListFree(ti);
 	GDrawSetVisible(gw,true);
 
 	while ( !done )
@@ -6477,7 +6384,6 @@ static int GFI_LookupImportLookup(GGadget *g, GEvent *e) {
 		    i += j-1;
 		}
 	    }
-	    free(list);
 	}
 	GDrawDestroyWindow(gw);
 
@@ -6681,7 +6587,7 @@ static void AddDFLT(OTLookup *otl) {
 	if ( hasDFLT	/* Already there */ ||
 		!hasdflt /* Shouldn't add it */ )
     continue;
-	sl = chunkalloc(sizeof(struct scriptlanglist));
+	sl = XZALLOC(struct scriptlanglist);
 	sl->script = DEFAULT_SCRIPT;
 	sl->lang_cnt = 1;
 	sl->langs[0] = DEFAULT_LANG;
@@ -6708,7 +6614,6 @@ static void AALTRemoveOld(SplineFont *sf,struct lkdata *lk) {
 		    else
 			prev->next = fl->next;
 		    fl->next = NULL;
-		    FeatureScriptLangListFree(fl);
 		}
 	break;
 	    }
@@ -6754,8 +6659,6 @@ static void AALTCreateNew(SplineFont *sf, struct lkdata *lk) {
 	lk->all[0].subtables[0].subtable = otl->subtables;
 	lk->all[0].subtables[0].new = true;
     }
-
-    SllkFree(sllk,sllk_cnt);
 }
 
 static void lookupmenu_dispatch(GWindow v, GMenuItem *mi, GEvent *e) {
@@ -6784,14 +6687,12 @@ return;
 	}
 	defname = strconcat(gfi->sf->fontname,".fea");
 	filename = gwwv_save_filename(_("Feature file?"),defname,"*.fea");
-	free(defname);
 	if ( filename==NULL )
 return;
 	/* Convert to def encoding !!! */
 	out = fopen(filename,"w");
 	if ( out==NULL ) {
 	    ff_post_error(_("Cannot open file"),_("Cannot open %s"), filename );
-	    free(filename);
 return;
 	}
 	if ( otl!=NULL )
@@ -6800,11 +6701,9 @@ return;
 	    FeatDumpFontLookups( out,gfi->sf );
 	if ( ferror(out)) {
 	    ff_post_error(_("Output error"),_("An error occurred writing %s"), filename );
-	    free(filename);
 	    fclose(out);
 return;
 	}
-	free(filename);
 	fclose(out);
     } else if ( mi->mid==CID_AddAllAlternates ) {
 	/* First we want to remove any old aalt-only lookups */
@@ -7233,7 +7132,6 @@ return;
 		    if ( lookup<0 ) lookup=0;
 		    before = lookup>=otherlk->cnt ? NULL : otherlk->all[lookup].lookup;
 		    OTLookupsCopyInto(othergfi->sf,gfi->sf,list,before);
-		    free( list );
 		} else
 		    IError("Attempt to merge subtables across fonts not permitted" );
 		GDrawRequestExpose(othergw,NULL,false);
@@ -8015,8 +7913,6 @@ return;
 	}
     }
     psgcd[k++].gd.u.list = namelistnames;
-    free(nlnames);
-
 
     if ( sf->subfontcnt!=0 ) {
 	for ( i=0; i<=13; ++i )
@@ -10744,17 +10640,6 @@ return;
     d->font = fi_font;
     GDrawWindowFontMetrics(gw,d->font,&as,&ds,&ld);
     d->as = as; d->fh = as+ds;
-
-    GTextInfoListFree(namelistnames);
-
-    for ( i=0; i<mi.initial_row_cnt; ++i )
-	free( mi.matrix_data[3*i+2].u.md_str );
-    free( mi.matrix_data );
-
-    free(tmpcreatetime);
-    free(tmpmodtime);
-
-    free(copied_copyright);
 
     GWidgetIndicateFocusGadget(ngcd[1].ret);
     PSPrivate_EnableButtons(GWidgetGetControl(d->gw,CID_Private),-1,-1);

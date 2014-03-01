@@ -262,10 +262,6 @@ return;
     }
     AutoKern2NewClass(kcd->sf,kcd->layer, lefts, rights, lcnt, rcnt,
 	    KCD_AddOffset, kcd, separation, minkern, touch, onlyCloser, 0);
-    for ( i=0; i<ocnt; ++i )
-	free(others[i]);
-    free(others);
-    free(space[0]);
 }
 
 static void KCD_AutoKernAll(KernClassDlg *kcd) {
@@ -314,12 +310,6 @@ return;
     }
     AutoKern2NewClass(kcd->sf,kcd->layer, lefts, rights, lcnt, rcnt,
 	    KCD_AddOffsetAsIs, kcd, separation, minkern, touch, onlyCloser, 0);
-    for ( i=0; i<fcnt; ++i )
-	free(firsts[i]);
-    free(firsts);
-    for ( i=0; i<scnt; ++i )
-	free(seconds[i]);
-    free(seconds);
 }
 
 /* ************************************************************************** */
@@ -327,10 +317,9 @@ return;
 /* ************************************************************************** */
 
 static void KPD_DoCancel(KernClassDlg *kcd) {
-    BDFCharFree(kcd->fsc); BDFCharFree(kcd->ssc);
     kcd->fsc = kcd->ssc = NULL;
-    free(kcd->active_adjust.corrections); kcd->active_adjust.corrections = NULL;
-    free(kcd->orig_adjust.corrections); kcd->orig_adjust.corrections = NULL;
+    kcd->active_adjust.corrections = NULL;
+    kcd->orig_adjust.corrections = NULL;
     kcd->done = true;
 }
 
@@ -349,10 +338,9 @@ static int KPD_OK(GGadget *g, GEvent *e) {
 	KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( !KPD_FinishKP(kcd))
 return( true );
-	BDFCharFree(kcd->fsc); BDFCharFree(kcd->ssc);
 	kcd->fsc = kcd->ssc = NULL;
-	free(kcd->active_adjust.corrections); kcd->active_adjust.corrections = NULL;
-	free(kcd->orig_adjust.corrections); kcd->orig_adjust.corrections = NULL;
+	kcd->active_adjust.corrections = NULL;
+	kcd->orig_adjust.corrections = NULL;
 	kcd->done = true;
     }
 return( true );
@@ -371,11 +359,9 @@ return;
 return;
     }
     kcd->offsets[kcd->old_pos] = val;
-    free(kcd->adjusts[kcd->old_pos].corrections);
     kcd->adjusts[kcd->old_pos] = kcd->active_adjust;
     kcd->active_adjust.corrections = NULL;
 
-    BDFCharFree(kcd->fsc); BDFCharFree(kcd->ssc);
     kcd->fsc = kcd->ssc = NULL;
     GDrawRequestExpose(kcd->gw,NULL,false);
     kcd->old_pos = -1;
@@ -508,7 +494,6 @@ return;
 	    if ( event->type==et_mouseup ) {
 		kcd->down = false;
 		if ( nkern!=kcd->orig_kern && kcd->active_adjust.corrections!=NULL ) {
-		    free(kcd->active_adjust.corrections);
 		    kcd->active_adjust.corrections = NULL;
 		    ubuf[0] = '0'; ubuf[1] = '\0';
 		    GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_Correction),ubuf);
@@ -562,7 +547,6 @@ return;
 	    if ( event->type==et_mouseup ) {
 		kcd->down = false;
 		if ( nkern!=kcd->orig_kern && kcd->active_adjust.corrections!=NULL ) {
-		    free(kcd->active_adjust.corrections);
 		    kcd->active_adjust.corrections = NULL;
 		    ubuf[0] = '0'; ubuf[1] = '\0';
 		    GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_Correction),ubuf);
@@ -649,11 +633,8 @@ static void KCD_UpdateGlyphFromName(KernClassDlg *kcd,int which,char* glyphname)
     if((p = strstr( localglyphname, " " )))
 	*p = '\0';
 
-    BDFCharFree(*scpos);
     *scpos = NULL;
-
     *possc = sc = SFGetChar( kcd->sf, -1, localglyphname);
-    free( localglyphname );
 
     if ( sc==NULL )
 	return;
@@ -679,9 +660,7 @@ static void KCD_UpdateGlyph(KernClassDlg *kcd,int which) {
     SplineChar *sc;
     char *temp;
     void *freetypecontext=NULL;
-//    printf("KCD_UpdateGlyph() which:%d iskp:%d\n", which, kcd->iskernpair);
 
-    BDFCharFree(*scpos);
     *scpos = NULL;
     if ( kcd->iskernpair )
     {
@@ -693,20 +672,12 @@ static void KCD_UpdateGlyph(KernClassDlg *kcd,int which) {
 	GTextInfo *sel = GGadgetGetListItemSelected(GWidgetGetControl(kcd->gw,
 		which==0 ? CID_First : CID_Second ));
 	if ( sel==NULL )
-	{
-//	    printf("KCD_UpdateGlyph() which:%d no selection...returning\n", which );
 	    return;
-	}
 	else
-	{
 	    temp = cu_copy(sel->text);
-	}
-
-//	printf("KCD_UpdateGlyph() temp:%s\n", temp );
     }
 
     *possc = sc = SFGetChar(kcd->sf,-1,temp);
-    free(temp);
     if ( sc==NULL )
 	return;
     if ( GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_FreeType)) )
@@ -805,7 +776,6 @@ return( true );
 static int KCD_ClearDevice(GGadget *g, GEvent *e) {
     KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	free(kcd->active_adjust.corrections);
 	kcd->active_adjust.corrections = NULL;
 	kcd->active_adjust.first_pixel_size = kcd->active_adjust.last_pixel_size = 0;
 	GGadgetSetTitle8(GWidgetGetControl(kcd->gw,CID_Correction),"0");
@@ -820,7 +790,6 @@ static int KCD_RevertKerning(GGadget *g, GEvent *e) {
 	char buf[20];
 	sprintf( buf, "%d", kcd->orig_kern_offset );
 	GGadgetSetTitle8(GWidgetGetControl(kcd->gw,CID_KernOffset),buf);
-	free(kcd->active_adjust.corrections);
 	kcd->active_adjust = kcd->orig_adjust;
 	if ( kcd->orig_adjust.corrections!=NULL ) {
 	    int len = kcd->orig_adjust.last_pixel_size-kcd->orig_adjust.first_pixel_size+1;
@@ -854,7 +823,7 @@ return(true);
 return(false);
 	}
 	if ( kp==NULL ) {
-	    kp = chunkalloc(sizeof(KernPair));
+	    kp = XZALLOC(KernPair);
 	    kp->next = kcd->isv?kcd->scf->vkerns:kcd->scf->kerns;
 	    kp->sc = kcd->scs;
 	    if ( kcd->isv )
@@ -864,16 +833,13 @@ return(false);
 	}
 	kp->subtable = kcd->subtable;
 	kp->off = offset;
-	if ( kp->adjust!=NULL && kcd->active_adjust.corrections!=NULL ) {
-	    free(kp->adjust->corrections);
+	if ( kp->adjust!=NULL && kcd->active_adjust.corrections!=NULL )
 	    *kp->adjust = kcd->active_adjust;
-	} else if ( kcd->active_adjust.corrections!=NULL ) {
-	    kp->adjust = chunkalloc(sizeof(DeviceTable));
+	else if ( kcd->active_adjust.corrections!=NULL ) {
+	    kp->adjust = XZALLOC(DeviceTable);
 	    *kp->adjust = kcd->active_adjust;
-	} else if ( kp->adjust!=NULL ) {
-	    DeviceTableFree(kp->adjust);
+	} else if ( kp->adjust!=NULL )
 	    kp->adjust = NULL;
-	}
 	memset(&kcd->active_adjust,0,sizeof(DeviceTable));
     }
 return( true );
@@ -961,7 +927,7 @@ static void KPD_PairSearch(KernClassDlg *kcd) {
     char buf[20];
     unichar_t ubuf[20];
 
-    free(kcd->active_adjust.corrections); kcd->active_adjust.corrections = NULL;
+    kcd->active_adjust.corrections = NULL;
     if ( kcd->scf!=NULL && kcd->scs!=NULL ) {
 	for ( kp = kcd->isv?kcd->scf->vkerns:kcd->scf->kerns; kp!=NULL && kp->sc!=kcd->scs; kp=kp->next );
 	if ( kp!=NULL ) {
@@ -1201,14 +1167,6 @@ return( true );
 	KCD_Finalize(kcd);
 
 	kc = kcd->orig;
-	for ( i=1; i<kc->first_cnt; ++i )
-	    free( kc->firsts[i]);
-	for ( i=1; i<kc->second_cnt; ++i )
-	    free( kc->seconds[i]);
-	free(kc->firsts);
-	free(kc->seconds);
-	free(kc->offsets);
-	free(kc->adjusts);
 
 	kc->subtable->separation = separation;
 	kc->subtable->minkern = minkern;
@@ -1242,15 +1200,8 @@ return( true );
 static void KC_DoCancel(KernClassDlg *kcd) {
     if ( kcd->iskernpair )
 	KPD_DoCancel(kcd);
-    else {
-	free(kcd->offsets);
-	{ int i;
-	    for ( i=0; i<kcd->first_cnt*kcd->second_cnt; ++i )
-		free(kcd->adjusts[i].corrections);
-	}
-	free(kcd->adjusts);
+    else
 	GDrawDestroyWindow(kcd->gw);
-    }
 }
 
 static int KC_Cancel(GGadget *g, GEvent *e) {
@@ -1339,14 +1290,12 @@ static void kernmenu_dispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
       break;
       case MID_ClearDevTab: {
 	DeviceTable *devtab = &kcd->adjusts[kcd->st_pos];
-	free(devtab->corrections);
 	devtab->corrections = NULL;
 	devtab->first_pixel_size = devtab->last_pixel_size = 0;
       } break;
       case MID_ClearAllDevTab:
 	for ( i=0; i<kcd->first_cnt*kcd->second_cnt; ++i ) {
 	    DeviceTable *devtab = &kcd->adjusts[i];
-	    free(devtab->corrections);
 	    devtab->corrections = NULL;
 	    devtab->first_pixel_size = devtab->last_pixel_size = 0;
 	}
@@ -1809,7 +1758,6 @@ return( false );
 		GGadgetSetList(GWidgetGetControl(kcld->gw,CID_List),
 			KCLookupSubtableArray(sf,kcd->isv),false);
 	    }
-	    free(kcd);
 	}
       break;
       case et_mouseup: case et_mousemove: case et_mousedown:
@@ -2091,7 +2039,6 @@ static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
 			    kcd->second_cnt*sizeof(int16));
 		    new[i*(kcd->second_cnt+1)+kcd->second_cnt] = 0;
 	        }
-	        free( kcd->offsets );
 	        kcd->offsets = new;
             }
 	    {
@@ -2101,7 +2048,6 @@ static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
 			    kcd->second_cnt*sizeof(DeviceTable));
 		    memset(&new[i*(kcd->second_cnt+1)+kcd->second_cnt],0,sizeof(DeviceTable));
 		}
-		free( kcd->adjusts );
 		kcd->adjusts = new;
 	    }
 	    ++kcd->second_cnt;
@@ -2194,8 +2140,6 @@ static void KCD_DeleteClass(GGadget *g,int whichclass) {
 
     (void) GMatrixEditGet(g,&rows);
     if ( is_first ) {
-	for ( i=0; i<kcd->second_cnt; ++i )
-	    free(kcd->adjusts[whichclass*kcd->second_cnt+i].corrections);
 	for ( i=whichclass+1; i<rows; ++i ) {
 	    memcpy(kcd->offsets+(i-1)*kcd->second_cnt,
 		    kcd->offsets+i*kcd->second_cnt,
@@ -2208,8 +2152,6 @@ static void KCD_DeleteClass(GGadget *g,int whichclass) {
     } else {
 	int16 *newoffs = malloc(kcd->first_cnt*(kcd->second_cnt-1)*sizeof(int16));
 	DeviceTable *newadj = malloc(kcd->first_cnt*(kcd->second_cnt-1)*sizeof(DeviceTable));
-	for ( i=0; i<kcd->first_cnt; ++i )
-	    free(kcd->adjusts[i*kcd->second_cnt+whichclass].corrections);
 	for ( i=0; i<rows; ++i ) if ( i!=whichclass ) {
 	    int newi = i>whichclass ? i-1 : i;
 	    for ( j=0; j<kcd->first_cnt; ++j ) {
@@ -2220,9 +2162,7 @@ static void KCD_DeleteClass(GGadget *g,int whichclass) {
 	    }
 	}
 	-- kcd->second_cnt;
-	free(kcd->offsets);
 	kcd->offsets = newoffs;
-	free(kcd->adjusts);
 	kcd->adjusts = newadj;
     }
 }
@@ -3018,7 +2958,6 @@ static int KCL_Delete(GGadget *g, GEvent *e) {
 		for ( kcd=kcld->sf->kcd; kcd!=NULL && kcd->orig!=kc; kcd=kcd->next );
 		if ( kcd!=NULL )
 		    KC_DoCancel(kcd);
-		KernClassListFree(kc);
 	    }
 	}
 	new[j] = calloc(1,sizeof(GTextInfo));
@@ -3107,7 +3046,6 @@ return( false );
 	    kcld->sf->vkcld = NULL;
 	else
 	    kcld->sf->kcld = NULL;
-	free(kcld);
     }
 return( true );
 }
@@ -3325,14 +3263,12 @@ void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int layer,int isv)
     if ( sc1!=NULL ) {
 	unichar_t *utemp;
 	GGadgetSetTitle(GWidgetGetControl(kcd.gw,CID_First),(utemp=uc_copy(sc1->name)));
-	free(utemp);
 	KPD_BuildKernList(&kcd);
 	KCD_UpdateGlyph(&kcd,0);
     }
     if ( sc2!=NULL ) {
 	unichar_t *utemp;
 	GGadgetSetTitle(GWidgetGetControl(kcd.gw,CID_Second),(utemp=uc_copy(sc2->name)));
-	free(utemp);
 	KCD_UpdateGlyph(&kcd,1);
 	KPD_PairSearch(&kcd);
     }

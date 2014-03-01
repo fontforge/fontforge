@@ -145,7 +145,6 @@ return;
     }
 #endif
     closedir(dir);
-    free(buffer);
     gc->iodata = head;
     gc->direntrydata = true;
     gc->return_code = 200;
@@ -239,12 +238,10 @@ void _GIO_localDispatch(GIOControl *gc) {
       case gf_renamefile:
 	topath = cu_copy(gc->topath);
 	_gio_file_renamefile(gc,path,topath);
-	free(topath);
       break;
       default:
       break;
     }
-    free(path);
 }
 
 /* pathname preceded by "file://" just strip off the "file://" and treat as a */
@@ -254,7 +251,6 @@ void *_GIO_fileDispatch(GIOControl *gc) {
     int port;
 
     path = _GIO_decomposeURL(gc->path,&host,&port,&username,&password);
-    free(host); free(username); free(password);
     switch ( gc->gf ) {
       case gf_dir:
 	_gio_file_dir(gc,path);
@@ -273,13 +269,10 @@ void *_GIO_fileDispatch(GIOControl *gc) {
       break;
       case gf_renamefile:
 	topath = _GIO_decomposeURL(gc->topath,&host,&port,&username,&password);
-	free(host); free(username); free(password); 
 	_gio_file_renamefile(gc,path,topath);
-	free(topath);
       break;
       default:
       break;
     }
-    free(path);
 return( NULL );
 }

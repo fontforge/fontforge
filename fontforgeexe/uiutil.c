@@ -149,7 +149,6 @@ return;
     }
     strcat(cmd," &" );
     system(cmd);
-    free( cmd ); free( temp ); free( format );
 }
 #endif
 
@@ -186,10 +185,8 @@ static void findbrowser(void) {
 	else if ( strchr(browser,'/')==NULL ) {
 	    if ( strstrmatch(browser,".exe")==NULL )
 		strcat(browser,".exe");
-	    if ( (path=_GFile_find_program_dir(browser))!=NULL ) {
+	    if ( (path=_GFile_find_program_dir(browser))!=NULL )
 		snprintf(browser,sizeof(browser),"%s/%s", path, getenv("BROWSER"));
-		free(path);
-	    }
 	}
 #endif
 	if ( strcmp(browser,"kde")==0 || strcmp(browser,"kfm")==0 ||
@@ -207,7 +204,6 @@ return;
 #else
 		strcpy(browser,stdbrowsers[i]);
 #endif
-	    free(path);
 return;
 	}
     }
@@ -310,9 +306,6 @@ void help(char *file) {
 
 	/* using default browser */
 	ShellExecute(NULL, "open", p_uri, NULL, NULL, SW_SHOWDEFAULT);
-
-	if(p_uri!=p_file) free(p_uri);
-	free(p_file);
     }
 }
 #else
@@ -370,7 +363,6 @@ return;
 	    if ( *tpt=='\\' )
 		*pt++ = '\\';
 	*pt = '\0';
-	free(temp);
     }
 #endif
 #if __Mac
@@ -387,7 +379,6 @@ return;
 	sprintf(temp,"file:%s",fullspec);
 #endif
 	strncpy(fullspec,temp,sizeof(fullspec));
-	free(temp);
     }
 #if __Mac
     /* This seems a bit easier... Thanks to riggle */
@@ -397,7 +388,6 @@ return;
 	    return;
 	sprintf( temp, "%s \"%s\" &", str, fullspec );
 	system(temp);
-	free(temp);
     } else {
 #elif __CygWin
     if ( browser[0]=='\0' ) {
@@ -410,7 +400,6 @@ return;
 	    return;
 	sprintf( temp, strcmp(browser,"kfmclient openURL")==0 ? "%s \"%s\" &" : "\"%s\" \"%s\" &", browser, fullspec );
 	system(temp);
-	free(temp);
     }
 }
 #endif
@@ -562,9 +551,6 @@ return( ErrChar(event));
 return( true );
 }
 
-static void noop(void *_ed) {
-}
-
 static void *genutf8data(void *_ed,int32 *len) {
     int cnt, l;
     int s_l = errdata.start_l, s_c = errdata.start_c, e_l = errdata.end_l, e_c = errdata.end_c;
@@ -625,19 +611,17 @@ static void WarnMenuCopy(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     GDrawGrabSelection(gw,sn_clipboard);
     GDrawAddSelectionType(gw,sn_clipboard,"UTF8_STRING",&errdata,1,
 	    sizeof(char),
-	    genutf8data,noop);
+	    genutf8data);
     GDrawAddSelectionType(gw,sn_clipboard,"STRING",&errdata,1,
 	    sizeof(char),
-	    genutf8data,noop);
+	    genutf8data);
 }
 
 static void WarnMenuClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int i;
 
-    for ( i=0; i<errdata.cnt; ++i ) {
-	free(errdata.errlines[i]);
+    for ( i=0; i<errdata.cnt; ++i )
 	errdata.errlines[i] = NULL;
-    }
     errdata.cnt = 0;
     GDrawRequestExpose(gw,NULL,false);
 }
@@ -724,10 +708,10 @@ return( true );
 		GDrawGrabSelection(gw,sn_primary);
 		GDrawAddSelectionType(gw,sn_primary,"UTF8_STRING",&errdata,1,
 			sizeof(char),
-			genutf8data,noop);
+			genutf8data);
 		GDrawAddSelectionType(gw,sn_primary,"STRING",&errdata,1,
 			sizeof(char),
-			genutf8data,noop);
+			genutf8data);
 	    }
 	}
       break;
@@ -804,9 +788,7 @@ static void AppendToErrorWindow(char *buffer) {
 	++pt;
     if ( errdata.cnt + linecnt > MAX_ERR_LINES ) {
 	int off = errdata.cnt + linecnt - MAX_ERR_LINES;
-	for ( i=0; i<off; ++i )
-	    free(errdata.errlines[i]);
-	for ( /*i=off*/; i<errdata.cnt; ++i )
+	for ( i=off; i<errdata.cnt; ++i )
 	    errdata.errlines[i-off] = errdata.errlines[i];
 	for ( ; i<MAX_ERR_LINES+off ; ++i )
 	    errdata.errlines[i-off] = NULL;
@@ -871,7 +853,6 @@ static void _LogError(const char *format,va_list ap) {
 	fprintf(stderr,"%s",str);
 	if ( str[strlen(str)-1]!='\n' )
 	    putc('\n',stderr);
-	free(str);
     } else {
 	if ( !ErrorWindowExists())
 	    CreateErrorWindow();
