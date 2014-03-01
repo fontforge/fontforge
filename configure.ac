@@ -244,11 +244,6 @@ FONTFORGE_ARG_ENABLE([tile-path],
                 [enable a 'tile path' command (a variant of 'expand stroke')])],
         [FONTFORGE_CONFIG_TILEPATH])
 
-FONTFORGE_ARG_DISABLE([link-test],
-        [AS_HELP_STRING([--disable-link-test],[disable the link test during build. Handy for cross compiling])],
-        [_NO_FFLINKTEST])
-AM_CONDITIONAL([BUILD_LINK_TEST],[test x"${i_do_have_link_test}" = xyes])
-
 AC_ARG_ENABLE([windows-cross-compile],
         [AS_HELP_STRING([--enable-windows-cross-compile],
                 [enable cross compile for windows extra support])],
