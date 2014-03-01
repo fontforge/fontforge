@@ -577,12 +577,12 @@ test x"${i_do_have_libpng}" = xyes && my_libs="${my_libs} ${LIBPNG_LIBS}"
 test x"${i_do_have_libtiff}" = xyes && my_libs="${my_libs} ${LIBTIFF_LIBS}"
 test x"${i_do_have_libuninameslist}" = xyes && my_libs="${my_libs} ${LIBUNINAMESLIST_LIBS}"
 test x"${i_do_have_libunicodenames}" = xyes && my_libs="${my_libs} ${LIBUNICODENAMES_LIBS}"
-test x"${i_do_have_libspiro}" = xyes && my_libs="${my_libs} ${LIBSPIRO_LIBS}"
 test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${CAIRO_LIBS}"
 test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
 test x"${i_do_have_gui}" = xyes && my_libs="${my_libs} ${PANGO_LIBS}"
 test x"${i_do_have_x}" = xyes && my_libs="${my_libs} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS}"
 test x"${i_do_have_libreadline}" = xyes && my_libs="${my_libs} ${LIBREADLINE_LIBS}"
+my_libs="${my_libs} ${LIBSPIRO_LIBS}"
 my_libs="${my_libs} ${FREETYPE_LIBS}"
 my_libs="${my_libs} ${PTHREAD_LIBS}"
 my_libs="${my_libs} ${ZLIB_LIBS}"
@@ -799,7 +799,6 @@ Summary of optional dependencies:
   libjpeg		${i_do_have_libjpeg}  	${libjpeg_url}
   libpng		${i_do_have_libpng}  	${libpng_url}
   libtiff		${i_do_have_libtiff}  	${libtiff_url}
-  libspiro		${i_do_have_libspiro}  	${libspiro_url}
   libuninameslist	${i_do_have_libuninameslist}  	${libuninameslist_url}
   libunicodenames	${i_do_have_libunicodenames}  	${libunicodenames_url}
   zeromq (libzmq)	${i_do_have_libzmq}  	${libzmq_url}

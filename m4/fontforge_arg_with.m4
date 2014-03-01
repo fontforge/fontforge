@@ -172,28 +172,18 @@ else
 fi
 ])
 
-dnl A macro that will not be needed if we can count on libspiro
-dnl having a pkg-config file. 
+dnl A macro that will not be needed if we can count on libspiro having a pkg-config file.
 dnl
 dnl FONTFORGE_ARG_WITH_LIBSPIRO
 dnl ---------------------------
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBSPIRO],
 [
-FONTFORGE_ARG_WITH_BASE([libspiro],
-   [AS_HELP_STRING([--without-libspiro],[build without support for Spiro contours])],
-   [libspiro],
-   [FONTFORGE_WARN_PKG_NOT_FOUND([LIBSPIRO])],
-   [_NO_LIBSPIRO],
-   [
-      FONTFORGE_SEARCH_LIBS([TaggedSpiroCPsToBezier],[spiro],
-         [i_do_have_libspiro=yes
-          AC_SUBST([LIBSPIRO_CFLAGS],[""])
-          AC_SUBST([LIBSPIRO_LIBS],["${found_lib}"])
-          FONTFORGE_WARN_PKG_FALLBACK([LIBSPIRO])
-          AC_CHECK_FUNC([TaggedSpiroCPsToBezier0],[AC_DEFINE([_LIBSPIRO_FUN],
-                        [1],[Libspiro returns true or false.])])],
-         [i_do_have_libspiro=no])
-   ])
+   FONTFORGE_SEARCH_LIBS([TaggedSpiroCPsToBezier],[spiro],
+       [AC_SUBST([LIBSPIRO_CFLAGS],[""])
+        AC_SUBST([LIBSPIRO_LIBS],["${found_lib}"])
+        AC_CHECK_FUNC([TaggedSpiroCPsToBezier0],[AC_DEFINE([_LIBSPIRO_FUN],
+                      [1],[Libspiro returns true or false.])])],
+       AC_MSG_ERROR([libspiro not found]))
 ])
 
 
