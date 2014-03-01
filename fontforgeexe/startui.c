@@ -64,18 +64,10 @@ extern uninm_blocks_db blocks_db;
 extern void setup_cocoa_app();
 #endif
 
-#ifdef _NO_LIBPNG
-#  define PNGLIBNAME	"libpng"
-#else
-#  include <png.h>		/* for version number to find up shared image name */
-#  if !defined(PNG_LIBPNG_VER_MAJOR) || (PNG_LIBPNG_VER_MAJOR==1 && PNG_LIBPNG_VER_MINOR<2)
-#    define PNGLIBNAME	"libpng"
-#  else
-#    define xstr(s) str(s)
-#    define str(s) #s
-#    define PNGLIBNAME	"libpng" xstr(PNG_LIBPNG_VER_MAJOR) xstr(PNG_LIBPNG_VER_MINOR)
-#  endif
-#endif
+#include <png.h>		/* for version number to find up shared image name */
+#define xstr(s) str(s)
+#define str(s) #s
+#define PNGLIBNAME	"libpng" xstr(PNG_LIBPNG_VER_MAJOR) xstr(PNG_LIBPNG_VER_MINOR)
 #ifdef __Mac
 #  include <carbon.h>
 /* For reasons obscure to me RunApplicationEventLoop is not defined in */

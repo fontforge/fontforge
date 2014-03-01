@@ -2232,15 +2232,10 @@ static void bExport(Context *c) {
 	format = 6;
     else if ( strmatch(pt,"bmp")==0 )
 	format = 7;
-#ifndef _NO_LIBPNG
     else if ( strmatch(pt,"png")==0 )
 	format = 8;
     else
 	ScriptError( c, "Bad format (first arg must be eps/fig/xbm/bmp/png)");
-#else
-    else
-	ScriptError( c, "Bad format (first arg must be eps/fig/xbm/bmp)");
-#endif
     if (( format>=4 && c->a.argc!=3 ) || (format<4 && c->a.argc==3 ))
 	ScriptError( c, "Wrong number of arguments");
     bdf=NULL;
@@ -2276,11 +2271,7 @@ static void bFontImage(Context *c) {
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
     pt = strrchr(t,'.');
-    if ( pt==NULL || (strmatch(pt,".bmp")!=0
-#ifndef _NO_LIBPNG
-	    && strmatch(pt,".png")!=0
-#endif
-	    ))
+    if ( pt==NULL || (strmatch(pt,".bmp")!=0 && strmatch(pt,".png")!=0))
 	ScriptError( c, "Unsupported image format");
 
     if ( c->a.argc>=4 )

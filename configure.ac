@@ -304,9 +304,11 @@ AC_ARG_VAR([FREETYPE_SOURCE],
         [directory where freetype source code is located for --enable-freetype-debugger;
          however, if --enable-freetype-debugger=DIR is specified, then DIR overrides
          the setting of FREETYPE_SOURCE])
+
+PKG_CHECK_MODULES([LIBPNG],[libpng])
+
 FONTFORGE_ARG_WITH_GIFLIB
 FONTFORGE_ARG_WITH_LIBJPEG
-FONTFORGE_ARG_WITH_LIBPNG
 FONTFORGE_ARG_WITH_LIBTIFF
 FONTFORGE_ARG_WITH_LIBSPIRO
 FONTFORGE_ARG_WITH_LIBUNINAMESLIST
@@ -537,17 +539,16 @@ AC_SUBST([MY_CFLAGS],[${my_cflags}])
 #--------------------------------------------------------------------------
 # Create and Set FontForge Library Flags
 
-test x"${i_do_have_giflib}" = xyes && my_libs="${my_libs} ${GIFLIB_LIBS}"
-test x"${i_do_have_libjpeg}" = xyes && my_libs="${my_libs} ${LIBJPEG_LIBS}"
-test x"${i_do_have_libpng}" = xyes && my_libs="${my_libs} ${LIBPNG_LIBS}"
-test x"${i_do_have_libtiff}" = xyes && my_libs="${my_libs} ${LIBTIFF_LIBS}"
 test x"${i_do_have_libuninameslist}" = xyes && my_libs="${my_libs} ${LIBUNINAMESLIST_LIBS}"
 test x"${i_do_have_libunicodenames}" = xyes && my_libs="${my_libs} ${LIBUNICODENAMES_LIBS}"
-test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${CAIRO_LIBS}"
-test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
+test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${CAIRO_LIBS} ${PANGOCAIRO_LIBS}"
 test x"${i_do_have_gui}" = xyes && my_libs="${my_libs} ${PANGO_LIBS}"
 test x"${i_do_have_x}" = xyes && my_libs="${my_libs} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS}"
 test x"${i_do_have_libreadline}" = xyes && my_libs="${my_libs} ${LIBREADLINE_LIBS}"
+my_libs="${my_libs} ${GIFLIB_LIBS}"
+my_libs="${my_libs} ${LIBJPEG_LIBS}"
+my_libs="${my_libs} ${LIBPNG_LIBS}"
+my_libs="${my_libs} ${LIBTIFF_LIBS}"
 my_libs="${my_libs} ${PYTHON_LIBS}"
 my_libs="${my_libs} ${LIBSPIRO_LIBS}"
 my_libs="${my_libs} ${FREETYPE_LIBS}"
@@ -749,10 +750,6 @@ Summary of optional features:
 Summary of optional dependencies:
 
   cairo			${i_do_have_cairo}  	${cairo_url}
-  giflib		${i_do_have_giflib}  	${giflib_url}
-  libjpeg		${i_do_have_libjpeg}  	${libjpeg_url}
-  libpng		${i_do_have_libpng}  	${libpng_url}
-  libtiff		${i_do_have_libtiff}  	${libtiff_url}
   libuninameslist	${i_do_have_libuninameslist}  	${libuninameslist_url}
   libunicodenames	${i_do_have_libunicodenames}  	${libunicodenames_url}
   zeromq (libzmq)	${i_do_have_libzmq}  	${libzmq_url}

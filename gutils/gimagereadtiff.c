@@ -28,12 +28,6 @@
 
 #include <fontforge-config.h>
 
-#ifdef _NO_LIBTIFF
-
-static int a_file_must_define_something=0;	/* ANSI says so */
-
-#else
-
 #include <tiffio.h>
 
 #define int32 _int32
@@ -93,5 +87,3 @@ errorGImageReadTiffMem:
     TIFFClose(tif);
     return( NULL );
 }
-
-#endif

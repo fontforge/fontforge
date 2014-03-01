@@ -361,25 +361,19 @@ static void DataURI_ImageDump(FILE *file,struct gimage *img) {
     FILE *imgf;
     int done = false;
     int threechars[3], fourchars[4], i, ch, ch_on_line;
-#if !defined( _NO_LIBJPEG)
     struct _GImage *base = img->list_len==0 ? img->u.image : img->u.images[0];
-#endif
 
     /* Technically we can only put a file into an URI if the whole thing is */
     /*  less than 1024 bytes long. But I shall ignore that issue */
     imgf = tmpfile();
-#if !defined(_NO_LIBJPEG)
     if ( base->image_type == it_true ) {
 	done = GImageWrite_Jpeg(img,imgf,78,false);
 	mimetype = "image/jpeg";
     }
-#endif
-#ifndef _NO_LIBPNG
     if ( !done ) {
 	done = GImageWrite_Png(img,imgf,false);
 	mimetype = "image/png";
     }
-#endif
     if ( !done ) {
 	GImageWrite_Bmp(img,imgf);
 	mimetype = "image/bmp";
@@ -2374,16 +2368,12 @@ return( NULL );
 	}
     }
     rewind(tmp);
-#ifndef _NO_LIBPNG
     if ( strcmp(mimetype,"image/png")==0 )
 	img = GImageRead_Png(tmp);
     else
-#endif
-#ifndef _NO_LIBJPEG
     if ( strcmp(mimetype,"image/jpeg")==0 )
 	img = GImageRead_Jpeg(tmp);
     else
-#endif
     if ( strcmp(mimetype,"image/bmp")==0 )
 	img = GImageRead_Bmp(tmp);
     else

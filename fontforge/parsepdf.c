@@ -746,18 +746,7 @@ static void pdf_85filter(FILE *to,FILE *from) {
     }
 }
 
-#ifdef _NO_LIBPNG
-
-static int haszlib(void) {
-return( false );
-}
-
-static void pdf_zfilter(FILE *to,FILE *from) {
-}
-
-#else
-
-# include <zlib.h>
+#include <zlib.h>
 
 static int haszlib(void) {
 return( true );
@@ -806,7 +795,6 @@ return ret;
     (void)inflateEnd(&strm);
 return( ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR );
 }
-#endif /* _NO_LIBPNG */
 
 static void pdf_rlefilter(FILE *to,FILE *from) {
     int ch1, ch2, i;
