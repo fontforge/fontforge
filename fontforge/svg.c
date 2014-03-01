@@ -1061,37 +1061,8 @@ return( !ferror(svg));
 /* *****************************    SVG Input    **************************** */
 /* ************************************************************************** */
 
-#ifdef _NO_LIBXML
-int HasSVG(void) {
-return( false );
-}
-
-SplineFont *SFReadSVG(char *filename, int flags) {
-return( NULL );
-}
-
-char **NamesReadSVG(char *filename) {
-return( NULL );
-}
-
-SplineSet *SplinePointListInterpretSVG(char *filename,char *memory, int memlen,
-	int em_size,int ascent,int is_stroked) {
-return( NULL );
-}
-#else
-
 #undef extended			/* used in xlink.h */
 #include <libxml/parser.h>
-
-#ifdef __CygWin
-/*
- * FIXME: Check whether this kludge is still (a) necessary, (b)
- * functional. At least (a) seems unlikely to have remained true over
- * time.
- */
-/* Nasty kludge, but xmlFree doesn't work on cygwin (or I can't get it to) */
-# define xmlFree free
-#endif
 
 static int libxml_init_base() {
 return( true );
@@ -3684,4 +3655,3 @@ return( SplinesFromEntities(ret,&flags,is_stroked));
 int HasSVG(void) {
 return( libxml_init_base());
 }
-#endif

@@ -8885,11 +8885,9 @@ static void cv_edlistcheck(CharView *cv, struct gmenuitem *mi) {
 #ifndef _NO_LIBPNG
 		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/png") &&
 #endif
-#ifndef _NO_LIBXML
 		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/svg+xml") &&
 		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/svg-xml") &&
 		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/svg") &&
-#endif
 		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/bmp") &&
 		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/eps") &&
 		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/ps");

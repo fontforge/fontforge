@@ -60,10 +60,8 @@ struct gwwv_filter def_font_filters[] = {
 	   "cff,"
 	   "cef,"
 	   "gai,"
-#ifndef _NO_LIBXML
 	   "svg,"
 	   "ufo,"
-#endif
 	   "pf3,"
 	   "ttc,"
 	   "gsf,"
@@ -94,10 +92,8 @@ struct gwwv_filter def_font_filters[] = {
 	   "cff,"
 	   "cef,"
 	   "gai,"
-#ifndef _NO_LIBXML
 	   "svg,"
 	   "ufo,"
-#endif
 	   "pf3,"
 	   "ttc,"
 	   "gsf,"
@@ -130,9 +126,7 @@ struct gwwv_filter def_font_filters[] = {
 	{N_("Type1"), "*.{pfa,pfb,gsf,cid}{.gz,.Z,.bz2,}"},
 	{N_("Type2"), "*.{otf,cef,cff,gai}{.gz,.Z,.bz2,}"},
 	{N_("Type3"), "*.{pf3,pt3}{.gz,.Z,.bz2,}"},
-#ifndef _NO_LIBXML
 	{N_("SVG"), "*.svg{.gz,.Z,.bz2,}"},
-#endif
 	{N_("FontForge's SFD"), "*.sfd{.gz,.Z,.bz2,}"},
 	{N_("Backup SFD"), "*.sfd~"},
 	{N_("Extract from PDF"), "*.pdf{.gz,.Z,.bz2,}"},

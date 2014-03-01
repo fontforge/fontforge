@@ -326,6 +326,7 @@ if test x"${i_do_have_gui}" = xyes; then
 fi
 
 PKG_CHECK_MODULES([FREETYPE],[freetype2])
+PKG_CHECK_MODULES([LIBXML],[libxml-2.0])
 
 FONTFORGE_ARG_WITH_CAIRO
 AC_ARG_VAR([FREETYPE_SOURCE],
@@ -336,7 +337,6 @@ FONTFORGE_ARG_WITH_GIFLIB
 FONTFORGE_ARG_WITH_LIBJPEG
 FONTFORGE_ARG_WITH_LIBPNG
 FONTFORGE_ARG_WITH_LIBTIFF
-FONTFORGE_ARG_WITH_LIBXML
 FONTFORGE_ARG_WITH_LIBSPIRO
 FONTFORGE_ARG_WITH_LIBUNINAMESLIST
 FONTFORGE_ARG_WITH_LIBUNICODENAMES
@@ -577,7 +577,6 @@ test x"${i_do_have_libpng}" = xyes && my_libs="${my_libs} ${LIBPNG_LIBS}"
 test x"${i_do_have_libtiff}" = xyes && my_libs="${my_libs} ${LIBTIFF_LIBS}"
 test x"${i_do_have_libuninameslist}" = xyes && my_libs="${my_libs} ${LIBUNINAMESLIST_LIBS}"
 test x"${i_do_have_libunicodenames}" = xyes && my_libs="${my_libs} ${LIBUNICODENAMES_LIBS}"
-test x"${i_do_have_libxml}" = xyes && my_libs="${my_libs} ${LIBXML_LIBS}"
 test x"${i_do_have_libspiro}" = xyes && my_libs="${my_libs} ${LIBSPIRO_LIBS}"
 test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${CAIRO_LIBS}"
 test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
@@ -588,6 +587,7 @@ my_libs="${my_libs} ${FREETYPE_LIBS}"
 my_libs="${my_libs} ${PTHREAD_LIBS}"
 my_libs="${my_libs} ${ZLIB_LIBS}"
 my_libs="${my_libs} ${GLIB_LIBS}"
+my_libs="${my_libs} ${LIBXML_LIBS}"
 AC_SUBST([MY_LIBS],[${my_libs}])
 
 #--------------------------------------------------------------------------
@@ -799,7 +799,6 @@ Summary of optional dependencies:
   libjpeg		${i_do_have_libjpeg}  	${libjpeg_url}
   libpng		${i_do_have_libpng}  	${libpng_url}
   libtiff		${i_do_have_libtiff}  	${libtiff_url}
-  libxml		${i_do_have_libxml}  	${libxml_url}
   libspiro		${i_do_have_libspiro}  	${libspiro_url}
   libuninameslist	${i_do_have_libuninameslist}  	${libuninameslist_url}
   libunicodenames	${i_do_have_libunicodenames}  	${libunicodenames_url}

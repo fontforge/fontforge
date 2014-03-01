@@ -7478,20 +7478,10 @@ return( NULL );
 	SCImportPS(sc,((PyFF_Glyph *) self)->layer,locfilename,false,psflags);
     }
     else if ( strcasecmp(pt,".svg")==0 ) {
-#ifndef _NO_LIBXML
 	SCImportSVG(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false);
-#else
-	PyErr_Format(PyExc_NotImplementedError,"Cannot read file because XML support is not enabled");
-return( NULL );
-#endif
     }
     else if ( strcasecmp(pt,".glif")==0 ) {
-#ifndef _NO_LIBXML
 	SCImportGlif(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false);
-#else
-	PyErr_Format(PyExc_NotImplementedError,"Cannot read file because XML support is not enabled");
-return( NULL );
-#endif
     }
     else if ( strcasecmp(pt,".plate")==0 ) {
 	FILE *plate = fopen(locfilename,"r");

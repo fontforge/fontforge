@@ -170,12 +170,7 @@ static struct library_descriptor {
 	1
 #endif
     },
-    { "libxml2", dlsymmod("xmlParseFile"), "This allows fontforge to load svg files and fonts and ufo fonts.", "http://xmlsoft.org/",
-#ifdef _NO_LIBXML
-	0
-#else
-	1
-#endif
+    { "libxml2", dlsymmod("xmlParseFile"), "This allows fontforge to load svg files and fonts and ufo fonts.", "http://xmlsoft.org/", 1
     },
     { "libuninameslist", dlsymmod("UnicodeNameAnnot"), "This provides fontforge with the names of all (named) unicode characters", "http://libuninameslist.sf.net/",
 #ifdef _NO_LIBUNINAMESLIST

@@ -1250,7 +1250,6 @@ static RefChar *XCopyInstanciateRefs(RefChar *refs,SplineChar *container,int lay
 return( head );
 }
 
-#ifndef _NO_LIBXML
 static int FFClipToSC(SplineChar *dummy,Undoes *cur) {
     int lcnt;
 
@@ -1415,7 +1414,6 @@ return( copy(""));
     fclose(svg);
 return( ret );
 }
-#endif
 
 static void *copybuffer2eps(void *UNUSED(_copybuffer),int32 *len) {
     Undoes *cur = &copybuffer;
@@ -1516,11 +1514,9 @@ return;
     while ( cur ) {
 	switch ( cur->undotype ) {
 	  case ut_multiple:
-#ifndef _NO_LIBXML
 	    if ( CopyContainsVectors())
 		ClipboardAddDataType("application/x-font-svg",&copybuffer,0,sizeof(char),
 			copybuffer2svgmult);
-#endif
 	    cur = cur->u.multiple.mult;
 	  break;
 	  case ut_composit:
@@ -1529,12 +1525,10 @@ return;
 	  case ut_state: case ut_statehint: case ut_statename: case ut_layers:
 	    ClipboardAddDataType("image/eps",&copybuffer,0,sizeof(char),
 		    copybuffer2eps);
-#ifndef _NO_LIBXML
 	    ClipboardAddDataType("image/svg+xml",&copybuffer,0,sizeof(char),
 		    copybuffer2svg);
 	    ClipboardAddDataType("image/svg",&copybuffer,0,sizeof(char),
 		    copybuffer2svg);
-#endif
 	    /* If the selection is one point, then export the coordinates as a string */
 	    if ( cur->u.state.splines!=NULL && cur->u.state.refs==NULL &&
 		    cur->u.state.splines->next==NULL &&
@@ -2020,7 +2014,6 @@ static void SCCheckXClipboard(SplineChar *sc,int layer,int doclear) {
     if ( no_windowing_ui )
 return;
     type = 0;
-#ifndef _NO_LIBXML
     /* SVG is a better format (than eps) if we've got it because it doesn't */
     /*  force conversion of quadratic to cubic and back */
     if ( HasSVG() && ((sx = ClipboardHasType("image/svg+xml")) ||
@@ -2028,7 +2021,6 @@ return;
 			ClipboardHasType("image/svg")) )
 	type = sx ? 1 : s_x ? 2 : 3;
     else
-#endif
     if ( ClipboardHasType("image/eps") )
 	type = 4;
     else if ( ClipboardHasType("image/ps") )
@@ -2058,10 +2050,8 @@ return;
 	rewind(temp);
 	if ( type==4 || type==5 ) {	/* eps/ps */
 	    SCImportPSFile(sc,layer,temp,doclear,-1);
-#ifndef _NO_LIBXML
 	} else if ( type<=3 ) {
 	    SCImportSVG(sc,layer,NULL,paste,len,doclear);
-#endif
 	} else {
 #ifndef _NO_LIBPNG
 	    if ( type==6 )
@@ -2075,7 +2065,6 @@ return;
     }
 }
 
-#ifndef _NO_LIBXML
 static void XClipFontToFFClip(void) {
     int32 len;
     int i;
@@ -2113,7 +2102,6 @@ return;
     copybuffer.u.multiple.mult = head;
     copybuffer.copied_from = NULL;
 }
-#endif
 
 static double PasteFigureScale(SplineFont *newsf,SplineFont *oldsf) {
 
@@ -3482,10 +3470,8 @@ return;
 return;
     }
 
-#ifndef _NO_LIBXML
     if ( copybuffer.undotype == ut_none && ClipboardHasType("application/x-font-svg"))
 	XClipFontToFFClip();
-#endif
 
     if ( copybuffer.undotype == ut_none ) {
 	j = -1;
