@@ -1035,11 +1035,7 @@ static void CVChangeSpiroMode(CharView *cv) {
 	GDrawRequestExpose(cvtools,NULL,false);
 	SCUpdateAll(cv->b.sc);
     } else
-#ifdef _NO_LIBSPIRO
-	ff_post_error(_("You may not use spiros"),_("This version of fontforge was not linked with the spiro library, so you may not use them."));
-#else
 	ff_post_error(_("You may not use spiros"),_("FontForge was unable to load libspiro, spiros are not available for use."));
-#endif
 }
 
 static void ToolsMouse(CharView *cv, GEvent *event) {

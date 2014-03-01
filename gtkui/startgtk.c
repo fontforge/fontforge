@@ -110,12 +110,7 @@ static struct library_descriptor {
 	"http://www.python.org/",
 	1
     },
-    { "libspiro", dlsymmod("TaggedSpiroCPsToBezier"), "This allows you to edit with Raph Levien's spiros.", "http://libspiro.sf.net/",
-#ifdef _NO_LIBSPIRO
-	0
-#else
-	1
-#endif
+    { "libspiro", dlsymmod("TaggedSpiroCPsToBezier"), "This allows you to edit with Raph Levien's spiros.", "http://libspiro.sf.net/", 1
     },
     { "libz", dlsymmod("deflateEnd"), "This is a prerequisite for reading png files,\n\t and is used for some pdf files.", "http://www.gzip.org/zlib/",
 #ifdef _NO_LIBPNG

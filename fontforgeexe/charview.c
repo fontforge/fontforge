@@ -3591,11 +3591,7 @@ void CVChangeSC( CharView *cv, SplineChar *sc )
 
     if ( sc->inspiro && !hasspiro() && !sc->parent->complained_about_spiros ) {
 	sc->parent->complained_about_spiros = true;
-#ifdef _NO_LIBSPIRO
-	ff_post_error(_("You may not use spiros"),_("This glyph should display spiro points, but unfortunately this version of fontforge was not linked with the spiro library, so only normal bezier points will be displayed."));
-#else
 	ff_post_error(_("You may not use spiros"),_("This glyph should display spiro points, but unfortunately FontForge was unable to load libspiro, spiros are not available for use, and normal bezier points will be displayed instead."));
-#endif
     }
 
     if ( was_fitted )
@@ -12347,11 +12343,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
 	SplineCharIsFlexible(sc,CVLayer((CharViewBase *) cv));
     if ( sc->inspiro && !hasspiro() && !sc->parent->complained_about_spiros ) {
 	sc->parent->complained_about_spiros = true;
-#ifdef _NO_LIBSPIRO
-	ff_post_error(_("You may not use spiros"),_("This glyph should display spiro points, but unfortunately this version of fontforge was not linked with the spiro library, so only normal bezier points will be displayed."));
-#else
 	ff_post_error(_("You may not use spiros"),_("This glyph should display spiro points, but unfortunately FontForge was unable to load libspiro, spiros are not available for use, and normal bezier points will be displayed instead."));
-#endif
     }
 
 }
