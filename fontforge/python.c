@@ -646,9 +646,7 @@ static PyObject *PyFF_LoadPlugin(PyObject *UNUSED(self), PyObject *args) {
     if ( !PyArg_ParseTuple(args,"s", &filename) )
 return( NULL );
 
-#if !defined(NOPLUGIN)
     LoadPlugin((char *) filename);
-#endif
 
 Py_RETURN_NONE;
 }
@@ -660,9 +658,7 @@ static PyObject *PyFF_LoadPluginDir(PyObject *UNUSED(self), PyObject *args) {
     if ( !PyArg_ParseTuple(args,"s", &filename) )
 return( NULL );
 
-#if !defined(NOPLUGIN)
     LoadPluginDir((char *) filename);
-#endif
 
 Py_RETURN_NONE;
 }
