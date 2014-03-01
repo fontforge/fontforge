@@ -179,12 +179,7 @@ static struct library_descriptor {
 	1
 #endif
     },
-    { "libfreetype", dlsymmod("FT_New_Memory_Face"), "This provides a better rasterizer than the one built in to fontforge", "http://freetype.sf.net/",
-#if _NO_FREETYPE || _NO_MMAP
-	0
-#else
-	1
-#endif
+    { "libfreetype", dlsymmod("FT_New_Memory_Face"), "This provides a better rasterizer than the one built in to fontforge", "http://freetype.sf.net/",	1
     },
     { NULL }
 };

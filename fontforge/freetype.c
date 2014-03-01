@@ -28,69 +28,6 @@
 #include "fffreetype.h"
 #include <math.h>
 
-#if _NO_FREETYPE
-
-int hasFreeType(void) {
-return( false );
-}
-
-void doneFreeType(void) {
-}
-
-int hasFreeTypeDebugger(void) {
-return( false );
-}
-
-int hasFreeTypeByteCode(void) {
-return( false );
-}
-
-int FreeTypeAtLeast(int major, int minor, int patch) {
-return( 0 );
-}
-
-char *FreeTypeStringVersion(void) {
-return( "" );
-}
-
-void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontViewBase *fv,
-	int layer, enum fontformat ff,int flags, void *share) {
-return( NULL );
-}
-
-BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int depth) {
-return( NULL );
-}
-
-BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int layer,int pixelsize,int depth) {
-return( NULL );
-}
-
-BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,int ptsize,int dpi,int depth) {
-return( NULL );
-}
-
-void FreeTypeFreeContext(void *freetypecontext) {
-}
-
-struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
-	int enc, real ptsizey, real ptsizex, int dpi, int depth) {
-return( NULL );
-}
-
-SplineSet *FreeType_GridFitChar(void *single_glyph_context,
-	int enc, real ptsizey, real ptsizex, int dpi, uint16 *width,
-	SplineChar *sc, int depth, int scaled) {
-return( NULL );
-}
-
-BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,int layer,
-	int ptsize,int dpi,int depth) {
-return( NULL );
-}
-
-#else /* do use FreeType */
-
 FT_Library ff_ft_context;
 
 int hasFreeType(void) {
@@ -1207,7 +1144,6 @@ BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int layer,int pixelsi
     ff_progress_end_indicator();
 return( bdf );
 }
-#endif
 
 void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontViewBase *fv,int layer) {
 return( _FreeTypeFontContext(sf,sc,fv,layer,sf->subfontcnt!=0?ff_otfcid:

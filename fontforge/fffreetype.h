@@ -28,7 +28,6 @@
 #ifndef _FFFREETYPE_H
 #define _FFFREETYPE_H
 
-#if !defined(_NO_FREETYPE)
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H
@@ -75,7 +74,5 @@ extern void *__FreeTypeFontContext(FT_Library context,
 	SplineFont *sf,SplineChar *sc,FontViewBase *fv,
 	int layer,
 	enum fontformat ff,int flags,void *shared_ftc);
-
-#endif /* we do have FreeType */
 
 #endif /* _FFFREETYPE_H */
