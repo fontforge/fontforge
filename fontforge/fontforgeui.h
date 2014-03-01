@@ -135,14 +135,6 @@ extern FontView *fv_list;
 extern struct openfilefilters { char *name, *filter; } def_font_filters[], *user_font_filters;
 extern int default_font_filter_index;
 
-#if !defined( FONTFORGE_CONFIG_CAPSLOCK_FOR_ALT ) || FONTFORGE_CONFIG_CAPSLOCK_FOR_ALT==0
-# define ksm_alt	ksm_meta
-#elif FONTFORGE_CONFIG_CAPSLOCK_FOR_ALT-2 == 0	/* I use this peculiar construction just in case it is defined as the empty string */
-# define ksm_alt	(ksm_meta|ksm_capslock)
-#else
-# define ksm_alt	ksm_capslock
-#endif
-
 /* The version of the library that the exe was built against */
 extern Library_Version_Configuration exe_library_version_configuration;
 

@@ -4283,7 +4283,7 @@ return( event );
     if ( dy >= 2*dx ) {
 	cv->p.x = fake->u.mouse.x = basex;
 	cv->p.cx = basetruex ;
-	if ( !(event->u.mouse.state&ksm_alt) &&
+	if ( !(event->u.mouse.state&ksm_meta) &&
 		ItalicConstrained && cv->b.sc->parent->italicangle!=0 ) {
 	    double off = tan(cv->b.sc->parent->italicangle*3.1415926535897932/180)*
 		    (cv->p.cy-basetruey);
@@ -4635,7 +4635,7 @@ return;		/* I treat this more like a modifier key change than a button press */
 
     if ( cv->active_tool == cvt_pointer ) {
 	fs.select_controls = true;
-	if ( event->u.mouse.state&ksm_alt ) {
+	if ( event->u.mouse.state&ksm_meta ) {
 	    fs.seek_controls = true;
 	    /* Allow more slop looking for control points if they asked for them */
 	    fs.c_xl -= fs.fudge; fs.c_xh += fs.fudge;
@@ -5136,7 +5136,7 @@ return;
 	/* Constrained */
 
 	fake.u.mouse = event->u.mouse;
-	if ( ((event->u.mouse.state&ksm_alt) ||
+	if ( ((event->u.mouse.state&ksm_meta) ||
 		    (!cv->cntrldown && (event->u.mouse.state&ksm_control))) &&
 		(cv->p.nextcp || cv->p.prevcp)) {
 	    real dot = (cv->p.cp.x-cv->p.constrain.x)*(p.cx-cv->p.constrain.x) +
@@ -9903,7 +9903,7 @@ static void CVMenuSpiroMakeFirst(GWindow gw, struct gmenuitem *UNUSED(mi), GEven
 
 static void CVMenuMakeLine(GWindow gw, struct gmenuitem *mi, GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    _CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_alt));
+    _CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_meta));
 }
 
 void _CVMenuNameContour(CharView *cv) {

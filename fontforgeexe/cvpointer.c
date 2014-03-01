@@ -566,7 +566,7 @@ static int ImgRefEdgeSelected(CharView *cv, FindSel *fs,GEvent *event) {
     /* Check the bounding box of references if meta is up, or if they didn't */
     /*  click on a reference edge. Point being to allow people to select */
     /*  macron or other reference which fills the bounding box */
-    if ( !(event->u.mouse.state&ksm_alt) ||
+    if ( !(event->u.mouse.state&ksm_meta) ||
 	    (fs->p->ref!=NULL && !fs->p->ref->selected)) {
 	for ( ref=cv->b.layerheads[cv->b.drawmode]->refs; ref!=NULL; ref=ref->next ) if ( ref->selected ) {
 	    if (( cv->expandedge = OnBB(cv,&ref->bb,fs->fudge))!=ee_none ) {
@@ -1362,7 +1362,7 @@ return(false);
 	CVSetCharChanged(cv,true);
     else if ( changed )
 	CVSetCharChanged(cv,2);
-    if ( input_state&ksm_alt )
+    if ( input_state&ksm_meta )
 return( false );			/* Don't merge if the meta key is down */
 
 return( CVCheckMerges( cv ));

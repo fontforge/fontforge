@@ -635,7 +635,7 @@ void CVMouseMoveRuler(CharView *cv, GEvent *event) {
     if ( cv->autonomous_ruler_w )
 return;
 
-    if ( !cv->p.pressed && (event->u.mouse.state&ksm_alt) ) {
+    if ( !cv->p.pressed && (event->u.mouse.state&ksm_meta) ) {
 	if ( cv->ruler_w!=NULL && GDrawIsVisible(cv->ruler_w)) {
 	    GDrawDestroyWindow(cv->ruler_w);
 	    cv->ruler_w = NULL;
@@ -649,7 +649,7 @@ return;
 	GDrawSetVisible(cv->ruler_w,true);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);		/* The resize needs to happen before the expose */
-    if ( !cv->p.pressed && (event->u.mouse.state&ksm_alt) ) /* but a mouse up might sneak in... */
+    if ( !cv->p.pressed && (event->u.mouse.state&ksm_meta) ) /* but a mouse up might sneak in... */
 return;
     GDrawRequestExpose(cv->ruler_w,NULL,false);
     GDrawRequestExpose(cv->v,NULL,false);
@@ -671,7 +671,7 @@ void CVMouseUpRuler(CharView *cv, GEvent *event) {
 return;
 	}
 
-	if ( !(event->u.mouse.state & ksm_alt) ) {
+	if ( !(event->u.mouse.state & ksm_meta) ) {
 	    /*cv->autonomous_ruler_w = true;*/
 
 	    if ( cv->ruler_linger_w ) {
