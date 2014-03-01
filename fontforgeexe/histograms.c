@@ -371,7 +371,7 @@ return;
 	GGadgetSetVisible(GWidgetGetControl(hist->gw,CID_BlueMsg),hist->is_pending);
     } else { /* HStem and VStem */
 	if ( !( e->u.mouse.state&ksm_shift )) {
-	    new = (char *) g_strdup_printf( "[%d]", x );
+	    new = xasprintf( "[%d]", x );
 	    GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_MainVal ), new );
 	    GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_SecondaryVal ), new );
 	} else {

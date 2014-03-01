@@ -6531,7 +6531,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	int actualuni) {
 /* This is for the popup which appears when you hover mouse over a character on main window */
     int upos=-1;
-    GString *msg = g_string_new( "" );
+    char *msg = "";
 
     /* If a glyph is multiply mapped then the inbuild unicode enc may not be */
     /*  the actual one used to access the glyph */
@@ -6561,33 +6561,28 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 #endif
 
     if ( upos == -1 ) {
-	g_string_printf( msg, "%u 0x%x U+???? \"%.25s\" ",
+	msg = xasprintf( "%u 0x%x U+???? \"%.25s\" ",
 		localenc, localenc,
-		(sc->name == NULL) ? "" : (gchar *) sc->name );
+		(sc->name == NULL) ? "" : sc->name );
     } else {
 	/* unicode name or range name */
-	gchar *uniname = (gchar *) unicode_name( upos );
+	char *uniname = unicode_name( upos );
 	if( uniname == NULL ) uniname = strdup( UnicodeRange( upos ) );
-	g_string_printf( msg, "%u 0x%x U+%04X \"%.25s\" %.100s",
+	msg = xasprintf ( "%u 0x%x U+%04X \"%.25s\" %.100s",
 		localenc, localenc, upos,
-		(sc->name == NULL) ? "" : (gchar *) sc->name, uniname );
+		(sc->name == NULL) ? "" : sc->name, uniname );
 
 	/* annotation */
-	gchar *uniannot;
-	if( ( uniannot = (gchar *) unicode_annot( upos )) != NULL ) {
-	    msg = g_string_append( msg, "\n" );
-	    msg = g_string_append( msg, uniannot );
-	    g_free( uniannot );
-	}
+	char *uniannot;
+	if( ( uniannot = unicode_annot( upos )) != NULL )
+	    msg = xasprintf("%s\n%s", msg, uniannot);
     }
 
     /* user comments */
-    if ( sc->comment!=NULL ) {
-	msg = g_string_append( msg, "\n" );
-	msg = g_string_append( msg, sc->comment );
-    }
+    if ( sc->comment!=NULL )
+        msg = xasprintf("%s\n%s", msg, sc->comment);
 
-    GGadgetPreparePopup8( gw, g_string_free( msg, FALSE ) );
+    GGadgetPreparePopup8( gw, msg );
 }
 
 static void *ddgencharlist(void *_fv,int32 *len) {

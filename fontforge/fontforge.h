@@ -36,6 +36,7 @@
 #include "splinefont.h"
 #include "uiinterface.h"
 #include "xalloc.h"
+#include "xvasprintf.h"
 
 #include <gc/gc.h>
 

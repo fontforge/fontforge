@@ -126,11 +126,11 @@ char *unicode_name(int32 unienc) {
      */
     if( ( unienc >= 0xAC00 && unienc <= 0xD7A3 ) && ( name_data == NULL ) ) {
 	if( ( ( unienc - 0xAC00 ) % 28 ) == 0 ) {
-	    name_data = (char *) g_strdup_printf( "Hangul Syllable %s-%s",
+	    name_data = xasprintf( "Hangul Syllable %s-%s",
 		    chosung [ (unienc - 0xAC00) / (21*28) ],
 		    jungsung[ ((unienc - 0xAC00) / 28 ) % 21 ] );
 	} else {
-	    name_data = (char *) g_strdup_printf( "Hangul Syllable %s-%s-%s",
+	    name_data = xasprintf( "Hangul Syllable %s-%s-%s",
 		    chosung [ (unienc - 0xAC00) / (21*28) ],
 		    jungsung[ ((unienc - 0xAC00) / 28 ) % 21 ],
 		    jongsung[ (unienc - 0xAC00) % 28 ] );
