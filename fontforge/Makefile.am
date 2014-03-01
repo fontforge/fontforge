@@ -120,11 +120,10 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 		splinerefigure.lo $(AM_CPPFLAGS) $(srcdir)/splinerefigure.c
 
 #--------------------------------------------------------------------------
-EXTRA_DIST = descrip.mms
-# TODO: need to investige these files to see if they should be distributed or
-# if there is better methods or solutions
-# EXTRA_DIST += acorn2sfd.c generate_codepoint_selector.py lff.opt stamper.c
-# EXTRA_DIST += threaddummy.c xlib.opt
+EXTRA_DIST =
+# TODO: need to investigate these files to see if they should be distributed or
+# EXTRA_DIST += acorn2sfd.c generate_codepoint_selector.py stamper.c
+# EXTRA_DIST += threaddummy.c
 
 if MACINTOSH
 EXTRA_DIST += MacFontForgeApp.zip
