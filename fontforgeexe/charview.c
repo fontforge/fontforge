@@ -12123,9 +12123,6 @@ static GMenuItem2 mblist[] = {
     { { (unichar_t *) N_("_Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Point|No Shortcut"), ptlist, ptlistcheck, NULL, 0 },
     { { (unichar_t *) N_("E_lement"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Element|No Shortcut"), ellist, ellistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools|No Shortcut"), NULL, cvpy_tllistcheck, NULL, 0 },
-#ifdef NATIVE_CALLBACKS
-    { { (unichar_t *) N_("Tools_2"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools 2|No Shortcut"), NULL, cv_tl2listcheck, NULL, 0},
-#endif
     { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Hints|No Shortcut"), htlist, htlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("View|No Shortcut"), vwlist, vwlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Metrics"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Metrics|No Shortcut"), mtlist, mtlistcheck, NULL, 0 },
@@ -12142,9 +12139,6 @@ static GMenuItem2 mblist_nomm[] = {
     { { (unichar_t *) N_("_Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Point|No Shortcut"), ptlist, ptlistcheck, NULL, 0 },
     { { (unichar_t *) N_("E_lement"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Element|No Shortcut"), ellist, ellistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools|No Shortcut"), NULL, cvpy_tllistcheck, NULL, 0 },
-#ifdef NATIVE_CALLBACKS
-    { { (unichar_t *) N_("Tools_2"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools 2|No Shortcut"), NULL, cv_tl2listcheck, NULL, 0},
-#endif
     { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Hints|No Shortcut"), htlist, htlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("View|No Shortcut"), vwlist, vwlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Metrics"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Metrics|No Shortcut"), mtlist, mtlistcheck, NULL, 0 },
@@ -12587,12 +12581,6 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     if ( cvpy_menu!=NULL )
 	mblist[4].ti.disabled = mblist_nomm[4].ti.disabled = false;
     mblist[4].sub = mblist_nomm[4].sub = cvpy_menu;
-#define CALLBACKS_INDEX 5 /* FIXME: There has to be a better way than this. */
-#ifdef NATIVE_CALLBACKS
-    if ( cv_menu!=NULL )
-	mblist[CALLBACKS_INDEX].ti.disabled = mblist_nomm[CALLBACKS_INDEX].ti.disabled = false;
-    mblist[CALLBACKS_INDEX].sub = mblist_nomm[CALLBACKS_INDEX].sub = cv_menu;
-#endif		/* NATIVE_CALLBACKS */
     gd.u.menu2 = sc->parent->mm==NULL ? mblist_nomm : mblist;
     cv->mb = GMenu2BarCreate( gw, &gd, NULL);
     GGadgetGetSize(cv->mb,&gsize);

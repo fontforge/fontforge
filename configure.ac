@@ -288,16 +288,6 @@ FONTFORGE_ARG_ENABLE([maintainer-tools],
 AM_CONDITIONAL([MAINTAINER_TOOLS],[test x"${i_do_have_maintainer_tools}" = xyes])
 AC_SUBST([MAINTAINER_TOOLS],["${i_do_have_maintainer_tools}"])
 
-# Enable this experimental feature via an obscure cache variable
-# rather than --enable.
-AC_CACHE_CHECK([whether to enable native callbacks (experimental)],
-               [fontforge_cv_native_callbacks],
-               [if test x"${fontforge_cv_native_callbacks}" != yes; then
-                   fontforge_cv_native_callbacks=no
-                fi])
-i_do_have_native_callbacks="${fontforge_cv_native_callbacks}"
-
-
 #--------------------------------------------------------------------------
 #
 # Checks for libraries.

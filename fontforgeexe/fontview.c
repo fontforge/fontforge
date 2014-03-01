@@ -5790,9 +5790,6 @@ static GMenuItem2 mblist[] = {
     { { (unichar_t *) N_("_Edit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'E' }, H_("Edit|No Shortcut"), edlist, edlistcheck, NULL, 0 },
     { { (unichar_t *) N_("E_lement"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Element|No Shortcut"), ellist, ellistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools|No Shortcut"), NULL, fvpy_tllistcheck, NULL, 0 },
-#ifdef NATIVE_CALLBACKS
-    { { (unichar_t *) N_("Tools_2"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools 2|No Shortcut"), NULL, fv_tl2listcheck, NULL, 0 },
-#endif
     { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'i' }, H_("Hints|No Shortcut"), htlist, htlistcheck, NULL, 0 },
     { { (unichar_t *) N_("E_ncoding"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Encoding|No Shortcut"), enlist, enlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("View|No Shortcut"), vwlist, vwlistcheck, NULL, 0 },
@@ -7324,12 +7321,6 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     if ( fvpy_menu!=NULL )
 	mblist[3].ti.disabled = false;
     mblist[3].sub = fvpy_menu;
-#define CALLBACKS_INDEX 4 /* FIXME: There has to be a better way than this. */
-#ifdef NATIVE_CALLBACKS
-    if ( fv_menu!=NULL )
-       mblist[CALLBACKS_INDEX].ti.disabled = false;
-    mblist[CALLBACKS_INDEX].sub = fv_menu;
-#endif      /* NATIVE_CALLBACKS */
     gd.u.menu2 = mblist;
     fv->mb = GMenu2BarCreate( gw, &gd, NULL);
     GGadgetGetSize(fv->mb,&gsize);
