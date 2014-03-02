@@ -62,7 +62,6 @@ int use_utf8_in_script = true;
 
 extern int prefRevisionsToRetain; /* sfd.c */
 
-#ifndef _NO_FFSCRIPT
 static int verbose = -1;
 static struct dictionary globals;
 
@@ -105,9 +104,7 @@ return( use_utf8_in_script ? copy(str) : latin1_2_utf8_copy(str));
 static char *script2latin1_copy(const char *str) {
 return( !use_utf8_in_script ? copy(str) : cu_copy(utf82u_copy(str)));
 }
-#endif /* _NO_FFSCRIPT */
 
-#ifndef _NO_FFSCRIPT
 static Array *arraycopy(Array *a) {
     int i;
     Array *c;
@@ -1566,13 +1563,9 @@ static void bLoadPlugin(Context *c) {
 	ScriptError( c, "Wrong number of arguments" );
     else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type of argument" );
-#if !defined(NOPLUGIN)
     _name = script2utf8_copy(c->a.vals[1].u.sval);
     name = utf82def_copy(_name);
     LoadPlugin(name);
-#else
-    ScriptError(c,"This version of fontforge does not support plugins");
-#endif
 }
 
 static void bLoadPluginDir(Context *c) {
@@ -1629,7 +1622,6 @@ exit(0);
 exit(c->a.vals[1].u.ival );
 exit(1);
 }
-#endif /* _NO_FFSCRIPT */
 
 char **GetFontNames(char *filename) {
     FILE *foo;
@@ -1684,7 +1676,6 @@ char **GetFontNames(char *filename) {
 return( ret );
 }
 
-#ifndef _NO_FFSCRIPT
 static void bFontsInFile(Context *c) {
     char **ret;
     int cnt;
@@ -2241,15 +2232,10 @@ static void bExport(Context *c) {
 	format = 6;
     else if ( strmatch(pt,"bmp")==0 )
 	format = 7;
-#ifndef _NO_LIBPNG
     else if ( strmatch(pt,"png")==0 )
 	format = 8;
     else
 	ScriptError( c, "Bad format (first arg must be eps/fig/xbm/bmp/png)");
-#else
-    else
-	ScriptError( c, "Bad format (first arg must be eps/fig/xbm/bmp)");
-#endif
     if (( format>=4 && c->a.argc!=3 ) || (format<4 && c->a.argc==3 ))
 	ScriptError( c, "Wrong number of arguments");
     bdf=NULL;
@@ -2285,11 +2271,7 @@ static void bFontImage(Context *c) {
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
     pt = strrchr(t,'.');
-    if ( pt==NULL || (strmatch(pt,".bmp")!=0
-#ifndef _NO_LIBPNG
-	    && strmatch(pt,".png")!=0
-#endif
-	    ))
+    if ( pt==NULL || (strmatch(pt,".bmp")!=0 && strmatch(pt,".png")!=0))
 	ScriptError( c, "Unsupported image format");
 
     if ( c->a.argc>=4 )
@@ -8348,8 +8330,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SelectChanged", bSelectChanged, 0 },
     { "SelectHintingNeeded", bSelectHintingNeeded, 0 },
     { "SelectWorthOutputting", bSelectWorthOutputting, 0 },
-    { "SelectGlyphsSplines", bSelectGlyphsSplines },
-    { "SelectGlyphsReferences", bSelectGlyphsReferences },
+    { "SelectGlyphsSplines", bSelectGlyphsSplines, 0 },
+    { "SelectGlyphsReferences", bSelectGlyphsReferences, 0 },
     { "SelectGlyphsBoth", bSelectGlyphsBoth, 0 },
     { "SelectByATT", bSelectByATT, 0 },
     { "SelectByPosSub", bSelectByPosSub, 0 },
@@ -9346,15 +9328,11 @@ static void handlename(Context *c,Val *val) {
 		val->u.lval = &c->trace;
 	    } else if ( strcmp(name,"$version")==0 ) {
 		val->type = v_str;
-		sprintf(name,"%d", library_version_configuration.library_source_versiondate);
+		sprintf(name,"%d", FONTFORGE_VERSIONDATE_RAW);
 		val->u.sval = copy(name);
 	    } else if ( strcmp(name,"$haspython")==0 ) {
 		val->type = v_int;
-#ifdef _NO_PYTHON
-		val->u.ival = 0;
-#else
 		val->u.ival = 1;
-#endif
 	    } else if ( GetPrefs(name+1,val)) {
 		/* Done */
 	    }
@@ -10172,9 +10150,7 @@ void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     }
     exit(0);
 }
-#endif		/* _NO_FFSCRIPT */
 
-#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 static int PythonLangFromExt(char *prog) {
     char *ext, *base;
 
@@ -10192,9 +10168,7 @@ return( 1 );
 
 return( 0 );
 }
-#endif
 
-#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
 static int DefaultLangPython(void) {
     static int def_py = -2;
     char *pt;
@@ -10211,15 +10185,11 @@ return( def_py );
 return( def_py );
 }
 
-static void _CheckIsScript(int argc, char *argv[]) {
+void CheckIsScript(int argc, char *argv[]) {
     int i, is_python = DefaultLangPython();
     char *pt;
 
-#ifndef _NO_PYTHON
-/*# ifndef GWW_TEST*/
-    FontForge_InitializeEmbeddedPython(); /* !!!!!! debug (valgrind doesn't like python) */
-/*# endif*/
-#endif
+    FontForge_InitializeEmbeddedPython();
     if ( argc==1 )
 return;
     for ( i=1; i<argc; ++i ) {
@@ -10236,30 +10206,18 @@ return;
 	    ++i;
 	    is_python = strcmp(argv[i],"py")==0;
 	} else if ( strcmp(argv[i],"-")==0 ) {	/* Someone thought that, of course, "-" meant read from a script. I guess it makes no sense with anything else... */
-#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 	    if ( is_python )
 		PyFF_Stdin();
 	    else
 		ProcessNativeScript(argc, argv,stdin);
-#elif !defined(_NO_PYTHON)
-	    PyFF_Stdin();
-#elif !defined(_NO_FFSCRIPT)
-	    ProcessNativeScript(argc, argv,stdin);
-#endif
 	} else if ( strcmp(pt,"-script")==0 ||
 		strcmp(pt,"-dry")==0 || strcmp(argv[i],"-c")==0 ) {
-#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 	    if ( is_python==-1 && strcmp(pt,"-script")==0 )
 		is_python = PythonLangFromExt(argv[i+1]);
 	    if ( is_python )
 		PyFF_Main(argc,argv,i);
 	    else
 		ProcessNativeScript(argc, argv,NULL);
-#elif !defined(_NO_PYTHON)
-	    PyFF_Main(argc,argv,i);
-#elif !defined(_NO_FFSCRIPT)
-	    ProcessNativeScript(argc, argv,NULL);
-#endif
 	} else /*if ( access(argv[i],X_OK|R_OK)==0 )*/ {
 	    FILE *temp = fopen(argv[i],"r");
 	    char buffer[200];
@@ -10270,33 +10228,17 @@ return;
 	    fclose(temp);
 	    if ( buffer[0]=='#' && buffer[1]=='!' &&
 		    (strstr(buffer,"pfaedit")!=NULL || strstr(buffer,"fontforge")!=NULL )) {
-#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 		if ( is_python==-1 )
 		    is_python = PythonLangFromExt(argv[i]);
 		if ( is_python )
 		    PyFF_Main(argc,argv,i);
 		else
 		    ProcessNativeScript(argc, argv,NULL);
-#elif !defined(_NO_PYTHON)
-		PyFF_Main(argc,argv,i);
-#elif !defined(_NO_FFSCRIPT)
-		ProcessNativeScript(argc, argv,NULL);
-#endif
 	    }
 	}
     }
 }
-#endif
 
-void CheckIsScript(int argc, char *argv[]) {
-#if defined(_NO_FFSCRIPT) && defined(_NO_PYTHON)
-return;		/* No scripts of any sort */
-#else
-    _CheckIsScript(argc, argv);
-#endif
-}
-
-#if !defined(_NO_FFSCRIPT)
 static void ExecuteNativeScriptFile(FontViewBase *fv, char *filename) {
     Context c;
     Val argv[1];
@@ -10328,20 +10270,10 @@ return;				/* Error return */
 	fclose(c.script);
     }
 }
-#endif
-
-#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
 
 void ExecuteScriptFile(FontViewBase *fv, SplineChar *sc, char *filename) {
-#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
     if ( sc!=NULL || PythonLangFromExt(filename))
 	PyFF_ScriptFile(fv,sc,filename);
     else
 	ExecuteNativeScriptFile(fv,filename);
-#elif !defined(_NO_PYTHON)
-    PyFF_ScriptFile(fv,sc,filename);
-#elif !defined(_NO_FFSCRIPT)
-    ExecuteNativeScriptFile(fv,filename);
-#endif
 }
-#endif	/* No scripting */

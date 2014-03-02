@@ -959,7 +959,7 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 	else
 	    shouldshow = cv->s1_tool;
     }
-    if ( shouldshow==cvt_magnify && (state&ksm_alt))
+    if ( shouldshow==cvt_magnify && (state&ksm_meta))
 	shouldshow = cvt_minify;
     if ( shouldshow!=cv->showing_tool ) {
 	CPEndInfo(cv);
@@ -1035,11 +1035,7 @@ static void CVChangeSpiroMode(CharView *cv) {
 	GDrawRequestExpose(cvtools,NULL,false);
 	SCUpdateAll(cv->b.sc);
     } else
-#ifdef _NO_LIBSPIRO
-	ff_post_error(_("You may not use spiros"),_("This version of fontforge was not linked with the spiro library, so you may not use them."));
-#else
 	ff_post_error(_("You may not use spiros"),_("FontForge was unable to load libspiro, spiros are not available for use."));
-#endif
 }
 
 static void ToolsMouse(CharView *cv, GEvent *event) {
@@ -3054,12 +3050,12 @@ static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
       break;
     case MID_MakeLine: {
 	CharView *cv = (CharView *) GDrawGetUserData(v);
-	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_alt));
+	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_meta));
 	break;
     }
     case MID_MakeArc: {
 	CharView *cv = (CharView *) GDrawGetUserData(v);
-	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_alt));
+	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_meta));
 	break;
     }
     case MID_InsertPtOnSplineAt: {
@@ -3839,9 +3835,9 @@ void BVToolsSetCursor(BitmapView *bv, int state,char *device) {
 	    shouldshow = bv->s1_tool;
     }
     
-    if ( shouldshow==bvt_magnify && (state&ksm_alt))
+    if ( shouldshow==bvt_magnify && (state&ksm_meta))
 	shouldshow = bvt_minify;
-    if ( (shouldshow==bvt_pencil || shouldshow==bvt_line) && (state&ksm_alt) && bv->bdf->clut!=NULL )
+    if ( (shouldshow==bvt_pencil || shouldshow==bvt_line) && (state&ksm_meta) && bv->bdf->clut!=NULL )
 	shouldshow = bvt_eyedropper;
     if ( shouldshow!=bv->showing_tool ) {
 	GDrawSetCursor(bv->v,tools[shouldshow]);

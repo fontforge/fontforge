@@ -42,4 +42,14 @@ noinst_HEADERS = pluginloading.h
 
 #--------------------------------------------------------------------------
 
+lib_LTLIBRARIES = libggc_veneer.la
+
+libggc_veneer_la_SOURCES = gc_veneer.c
+
+libggc_veneer_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc" $(LIBGC_CFLAGS)
+
+libggc_veneer_la_LIBADD = $(LIBGC_LIBS)
+
+#--------------------------------------------------------------------------
+
 -include $(top_srcdir)/git.mk

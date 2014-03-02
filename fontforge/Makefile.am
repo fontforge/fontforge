@@ -51,7 +51,8 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la	\
 	$(top_builddir)/gutils/libgioftp.la	\
-	$(top_builddir)/lib/libgnu.la
+	$(top_builddir)/lib/libgnu.la		\
+	$(top_builddir)/inc/libggc_veneer.la
 
 AM_CFLAGS = $(WARN_CFLAGS)
 
@@ -78,10 +79,10 @@ libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
 	scripting.c scstyles.c search.c sfd1.c sfd.c sflayout.c		\
 	sfundo.h spiro.c splinechar.c splinefill.c splinefont.c		\
 	splineorder2.c splineoverlap.c splinesaveafm.c splinesave.c	\
-	splinestroke.c splineutil2.c splineutil.c stamp.c start.c	\
+	splinestroke.c splineutil2.c splineutil.c start.c		\
 	stemdb.c strlist.c svg.c tottfaat.c tottfgpos.c tottf.c		\
 	tottfvar.c ttfinstrs.c ttfspecial.c ufo.c unicoderange.c	\
-	winfonts.c woff.c zapfnomen.c libstamp.c
+	winfonts.c woff.c zapfnomen.c
 
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
@@ -120,11 +121,7 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 		splinerefigure.lo $(AM_CPPFLAGS) $(srcdir)/splinerefigure.c
 
 #--------------------------------------------------------------------------
-EXTRA_DIST = descrip.mms
-# TODO: need to investige these files to see if they should be distributed or
-# if there is better methods or solutions
-# EXTRA_DIST += acorn2sfd.c generate_codepoint_selector.py lff.opt stamper.c
-# EXTRA_DIST += threaddummy.c xlib.opt
+EXTRA_DIST = acorn2sfd.c generate_codepoint_selector.py threaddummy.c
 
 if MACINTOSH
 EXTRA_DIST += MacFontForgeApp.zip

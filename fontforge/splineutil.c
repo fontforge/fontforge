@@ -5298,9 +5298,7 @@ void SplineCharFreeContents(SplineChar *sc) {
 return;
     for ( i=0; i<sc->layer_cnt; ++i )
 	LayerFreeContents(sc,i);
-#if !defined(_NO_PYTHON)
     PyFF_FreeSC(sc);
-#endif
 }
 
 void SplineCharFree(SplineChar *sc) {
@@ -5488,9 +5486,7 @@ return;
 	SplineFontFree(sf->subfonts[i]);
     GlyphHashFree(sf);
     FPSTFree(sf->possub);
-#if !defined(_NO_PYTHON)
     PyFF_FreeSF(sf);
-#endif
 }
 
 void MMSetFree(MMSet *mm) {

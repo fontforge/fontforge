@@ -39,7 +39,7 @@ libzmqcollab_la_CPPFLAGS = \
 
 libzmqcollab_la_LIBADD = $(MY_LIBS) $(GLIB_LIBS) $(LIBZMQ_LIBS)
 libzmqcollab_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBZMQCOLLAB_VERSION) \
-	${MY_LIB_LDFLAGS} $(LIBGC_LIBS) $(top_builddir)/gutils/libgutils.la
+	${MY_LIB_LDFLAGS} $(LIBGC_LIBS) $(top_builddir)/inc/libggc_veneer.la
 
 #--------------------------------------------------------------------------
 

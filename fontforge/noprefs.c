@@ -719,9 +719,7 @@ static void NOUI_LoadPrefs(void) {
     char *pt;
     struct prefs_list *pl;
 
-#if !defined(NOPLUGIN)
     LoadPluginDir(NULL);
-#endif
     LoadPfaEditEncodings();
     LoadGroupList();
 

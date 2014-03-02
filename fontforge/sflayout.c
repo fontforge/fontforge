@@ -1214,20 +1214,14 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
 	    x += line[j]->advance_width + line[j]->vr.h_adv_off;
 	}
     }
-#ifndef _NO_LIBPNG
     if ( strstrmatch(filename,".png")!=NULL )
 	ret = GImageWritePng(image,filename,false);
     else
-#endif
     if ( strstrmatch(filename,".bmp")!=NULL )
 	ret = GImageWriteBmp(image,filename);
     else
 	ff_post_error(_("Unsupported image format"),
-#ifndef _NO_LIBPNG
 		_("Unsupported image format must be bmp or png")
-#else
-		_("Unsupported image format must be bmp")
-#endif
 	    );
     if ( !ret )
 	ff_post_error(_("Could not write"),_("Could not write %.100s"),filename);
@@ -1244,11 +1238,7 @@ char *SFDefaultImage(SplineFont *sf,char *filename) {
 	char *dir = getenv("TMPDIR");
 	if ( dir==NULL ) dir = P_tmpdir;
 	filename = malloc(strlen(dir)+strlen(sf->fontname)+100);
-#ifdef _NO_LIBPNG
-	sprintf( filename, "%s/ff-preview-%s-%d-%d.bmp", dir, sf->fontname, getpid(), ++cnt );
-#else
 	sprintf( filename, "%s/ff-preview-%s-%d-%d.png", dir, sf->fontname, getpid(), ++cnt );
-#endif
     }
     FontImage(sf,filename,NULL,-1,-1);
 return( filename );

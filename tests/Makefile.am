@@ -107,4 +107,6 @@ EXTRA_DIST += link_test.c randomtest.c build-aux/missing
 
 DISTCLEANFILES = atconfig *.pe *.py randomtest
 
+MAINTAINERCLEANFILES = package.m4 $(TESTSUITE)
+
 -include $(top_srcdir)/git.mk

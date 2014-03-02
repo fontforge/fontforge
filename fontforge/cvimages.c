@@ -738,11 +738,7 @@ static SplineSet * slurpspline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     xs.s = malloc((cnt+1)*sizeof(real));
     xs.closed = (sub&1);
     for ( i=0; i<cnt; ++i )
-#ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	fscanf(fig,"%lf",&xs.s[i]);
-#else
-	fscanf(fig,"%f",&xs.s[i]);
-#endif
     /* the spec says that the last point of a closed path will duplicate the */
     /* first, but it doesn't seem to */
     if ( xs.closed && ( !RealNear(xs.cp[cnt-1].x,xs.cp[0].x) ||
@@ -946,11 +942,9 @@ return(false);
 	} else if ( format==fv_pdf ) {
 	    SCImportPDF(sc,toback?ly_back:fv->active_layer,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
 	    ++tot;
-#ifndef _NO_PYTHON
 	} else if ( format>=fv_pythonbase ) {
 	    PyFF_SCImport(sc,format-fv_pythonbase,start, toback?ly_back:fv->active_layer,flags&sf_clearbeforeinput);
 	    ++tot;
-#endif
 	}
 	if ( endpath==NULL )
     break;

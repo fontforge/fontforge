@@ -731,20 +731,10 @@ static struct ofl_download_urls *OFLibHasImage(OFLibDlg *d,int sel_font) {
 	    char *ext = strrchr(du->url,'.');
 	    if ( ext==NULL || !du->selected)
 	continue;
-	    if (
-#ifndef _NO_LIBPNG
-		    strcasecmp(ext,".png")==0 ||
-#endif
-#ifndef _NO_LIBJPEG
+	    if (    strcasecmp(ext,".png")==0 ||
 		    strcasecmp(ext,".jpeg")==0 || strcasecmp(ext,".jpg")==0 ||
-#endif
-#ifndef _NO_LIBTIFF
 		    strcasecmp(ext,".tiff")==0 || strcasecmp(ext,".tif")==0 ||
-#endif
-#ifndef _NO_LIBUNGIF
-		    strcasecmp(ext,".gif")==0 ||
-#endif
-		    strcasecmp(ext,".bmp")==0 )
+		    strcasecmp(ext,".gif")==0 || strcasecmp(ext,".bmp")==0 )
 return( du );
 	}
     }
@@ -754,20 +744,10 @@ return( du );
 	char *ext = strrchr(du->url,'.');
 	if ( ext==NULL )
     continue;
-	if (
-#ifndef _NO_LIBPNG
-		    strcasecmp(ext,".png")==0 ||
-#endif
-#ifndef _NO_LIBJPEG
+	if (	    strcasecmp(ext,".png")==0 ||
 		    strcasecmp(ext,".jpeg")==0 || strcasecmp(ext,".jpg")==0 ||
-#endif
-#ifndef _NO_LIBTIFF
 		    strcasecmp(ext,".tiff")==0 || strcasecmp(ext,".tif")==0 ||
-#endif
-#ifndef _NO_LIBUNGIF
-		    strcasecmp(ext,".gif")==0 ||
-#endif
-		    strcasecmp(ext,".bmp")==0 )
+		    strcasecmp(ext,".gif")==0 || strcasecmp(ext,".bmp")==0 )
 return( du );
     }
 return( NULL );
@@ -1769,14 +1749,14 @@ return( true );
 		OFLibEnableButtons(d);
 		GGadgetRedraw( GWidgetGetControl(d->gw,CID_Fonts));
 return( true );
-	    } else if ( event->u.mouse.state&(ksm_shift|ksm_alt) ) {
+	    } else if ( event->u.mouse.state&(ksm_shift|ksm_meta) ) {
 		d->show[index]->selected = !d->show[index]->selected;
 	    } else {
 		OFLibClearSel(d);
 		d->show[index]->selected = true;
 	    }
 	} else {
-	    if ( event->u.mouse.state&(ksm_shift|ksm_alt) ) {
+	    if ( event->u.mouse.state&(ksm_shift|ksm_meta) ) {
 		du->selected = !du->selected;
 	    } else {
 		OFLibClearSel(d);

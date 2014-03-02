@@ -83,24 +83,12 @@ int fontforge_main( int argc, char **argv ) {
     fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
     fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
     fprintf( stderr, " Executable based on sources from %s"
-	    "-ML"
 #ifdef FREETYPE_HAS_DEBUGGER
 	    "-TtfDb"
-#endif
-#ifdef _NO_PYTHON
-	    "-NoPython"
-#endif
-#ifdef FONTFORGE_CONFIG_USE_DOUBLE
-	    "-D"
 #endif
 	    ".\n",
 	    source_modtime_str );
     fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
-
-    /* I don't bother to check that the exe's exectations of the library are */
-    /*  valid. The exe only consists of this file, and so it doesn't care. */
-    /*  as long as the library is self consistant, all should be well */
-    /* check_library_version(&exe_library_version_configuration,true,false); */
 
     FindProgDir(argv[0]);
     InitSimpleStuff();
@@ -124,11 +112,7 @@ int fontforge_main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-version")==0 )
 	    doversion(source_version_str);
     }
-#  if defined(_NO_PYTHON)
-    ProcessNativeScript(argc, argv,stdin);
-#  else
     PyFF_Stdin();
-#  endif
 
 #ifndef _NO_LIBUNICODENAMES
     uninm_names_db_close(names_db);	/* close this database before exiting */

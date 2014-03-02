@@ -185,12 +185,8 @@ typedef struct fontviewbase {
     int active_layer;
     BDFFont *active_bitmap;		/* Set if the fontview displays a bitmap strike */
     uint8 *selected;			/* Current selection */
-#ifndef _NO_FFSCRIPT
     struct dictionary *fontvars;	/* Scripting */
-#endif
-#ifndef _NO_PYTHON
     void *python_fv_object;
-#endif
     struct fvcontainer *container;
     void* collabClient;                 /* The data used to talk to the collab server process */
     enum collabState_t collabState;     /* Since we want to know if we are connected, or used to be

@@ -1871,9 +1871,7 @@ static FontViewBase *_FontViewBaseCreate(SplineFont *sf) {
     }
     fv->selected = calloc(fv->map->enccount,sizeof(char));
 
-#ifndef _NO_PYTHON
     PyFF_InitFontHook(fv);
-#endif
 return( fv );
 }
 
@@ -1916,9 +1914,7 @@ static void FontViewBase_Free(FontViewBase *fv) {
 	    prev->nextsame = fv->nextsame;
 	}
     }
-#ifndef _NO_PYTHON
     PyFF_FreeFV(fv);
-#endif
 }
 
 static int FontViewBaseWinInfo(FontViewBase *fv, int *cc, int *rc) {

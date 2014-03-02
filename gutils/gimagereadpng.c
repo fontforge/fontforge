@@ -27,24 +27,17 @@
 
 #include <fontforge-config.h>
 
-#ifdef _NO_LIBPNG
+#include <png.h>
 
-static void *a_file_must_define_something=(void *) &a_file_must_define_something;
-		/* ANSI says so */
-
-#else
-
-# include <png.h>
-
-# define int32 _int32
-# define uint32 _uint32
-# define int16 _int16
-# define uint16 _uint16
-# define int8 _int8
-# define uint8 _uint8
+#define int32 _int32
+#define uint32 _uint32
+#define int16 _int16
+#define uint16 _uint16
+#define int8 _int8
+#define uint8 _uint8
 
 #include "inc/basics.h"
-# include "gimage.h"
+#include "gimage.h"
 
 static void *libpng=(void *) 1;
 
@@ -199,4 +192,3 @@ return( NULL );
     fclose(fp);
 return( ret );
 }
-#endif

@@ -28,9 +28,7 @@ include $(top_srcdir)/mk/layout.am
 
 targetdatadir = $(pkgpythondatadir)/simple
 
-if PYTHON_SCRIPTING
 targetdata_SCRIPTS = $(srcdir)/*.py
-endif PYTHON_SCRIPTING
 
 EXTRA_DIST = $(srcdir)/*.py
 

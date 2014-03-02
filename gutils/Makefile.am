@@ -37,8 +37,7 @@ libgutils_la_SOURCES = divisors.c dlist.c fsys.c gcol.c gimage.c	\
 	gimagewritejpeg.c gimagewritepng.c gimagewritexbm.c		\
 	gimagewritexpm.c gio.c giofile.c giohosts.c giomime.c		\
 	giothread.c giotrans.c giofuncP.h gioP.h gnetwork.c gutils.c	\
-	gwwintl.c prefs.c prefs.h unicodelibinfo.c unicodelibinfo.h	\
-	gc_veneer.c
+	gwwintl.c prefs.c prefs.h unicodelibinfo.c unicodelibinfo.h
 
 libgutils_la_CFLAGS = $(WARN_CFLAGS)
 
@@ -46,7 +45,7 @@ libgutils_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
 	$(MY_CFLAGS) $(LIBGC_CFLAGS)
 
-libgutils_la_LIBADD = $(MY_LIBS) $(LIBGC_LIBS) $(top_builddir)/Unicode/libgunicode.la $(top_builddir)/lib/libgnu.la
+libgutils_la_LIBADD = $(MY_LIBS) $(LIBGC_LIBS) $(top_builddir)/Unicode/libgunicode.la $(top_builddir)/lib/libgnu.la $(top_builddir)/inc/libggc_veneer.la
 if LIBZMQ
 libgutils_la_LIBADD += $(LIBZMQ_LIBS)
 endif
@@ -61,7 +60,7 @@ libgioftp_la_SOURCES = gioftp.c gioftpP.h
 libgioftp_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	$(MY_CFLAGS) $(LIBGC_CFLAGS)
 
-libgioftp_la_LIBADD = $(MY_LIBS) $(LIBGC_LIBS) $(top_builddir)/Unicode/libgunicode.la libgutils.la
+libgioftp_la_LIBADD = $(MY_LIBS) $(LIBGC_LIBS) $(top_builddir)/Unicode/libgunicode.la $(top_builddir)/inc/libggc_veneer.la
 
 libgioftp_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGIOFTP_VERSION) \
 	${MY_LIB_LDFLAGS}
