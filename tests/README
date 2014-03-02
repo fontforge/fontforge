@@ -3,27 +3,36 @@ This is a minimal testsuite for fontforge. I expect it will grow with time.
 You can execute the tests with 'make check' on top level directory or in
 this testsuite directory.
 
-Some tests will need extra fonts not bundled with FontForge. You would like
-to download them externally and place them inside fonts/ folder in order to
-enable the extra tests; otherwise they will be skipped.
+Some need extra fonts not bundled with FontForge. Some can be
+downloaded automatically; others are not readily available, and are
+documented below. If you have them, place them inside the fonts/
+folder in order to enable the extra tests; otherwise they will be
+skipped.
 
-test001.pe
+test001.pe, test1001a.py, test1001b.py
   Zapfino-4.0d3.dfont
   Zapfino-4.1d6.dfont
 
 test002.pe
   HanSans-Bold.otf	(any other cid-keyed otf file would do)
 
-test003.pe
-  MunhwaGothic-Bold	ftp://ftp.ora.com/pub/examples/nutshell/ujip/adobe/samples/MunhwaGothic-Bold
-			(any other cid-keyed non-otf file would do)
-test004.pe
-  mingliu.ttc		(any other ttc file would do)
+test010.pe
+  GillSans.dfont
 
-test005.pe
-  VKern.sfd
+test112.pe, test113.pe
+  CourierNew.ttf
 
-...
+test116.pe
+  merged.cff
+
+test123.pe, test125.pe  (available from Adobe Acrobat Reader)
+  MinionPro-Regular.otf
+
+test0101.py             (available from Mac OS X?)
+  LucidaGrande.ttc
+
+test1002.py             (available from FontFont; was originally freely available)
+  nuvo-medium-woff-demo.woff
 
 ================================================================================
 

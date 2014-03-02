@@ -1,0 +1,28 @@
+
+# tests whether the bounding boxes of all glyphs match.
+# This is designed to make sure that we get postscript references right
+# bugs often give them the wrong offsets.
+
+Open($2)
+i=0;
+tot = CharCnt()
+while ( i<tot )
+    Open($1)			# Switch to base font
+    if ( SelectIf(i)>0 && WorthOutputting(i))
+	name = CharInfo("Name")
+	bbox = CharInfo("BBox")
+	Open($2)
+	if ( SelectIf(name)<=0 )
+	    Error( "Could not find a glyph named " + name + " in " + $2 )
+	else
+	    bbox2 = CharInfo("BBox")
+	    if ( Round(bbox[0])!=Round(bbox2[0]) || Round(bbox[1])!=Round(bbox2[1])  || Round(bbox[2])!=Round(bbox2[2]) || Round(bbox[3])!=Round(bbox2[3]) )
+		Error( "Bounding boxes of glyph " +name+ " do not match. Should be " + ToString(bbox) + " but was " + ToString(bbox2) + " in " + $2 )
+	    endif
+	endif
+    endif
+    i = i+1
+endloop
+
+Open($2 )
+Close()
