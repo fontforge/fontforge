@@ -316,6 +316,7 @@ int main (int argc, char** argv)
     int port = 5556;
 
     GC_INIT();
+    set_program_name (argv[0]);
 
     if( argc >= 2 )
 	port = atoi( argv[1] );
