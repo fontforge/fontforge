@@ -241,12 +241,8 @@ static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv) {
     if ( PyTuple_GetItem(args,4)==Py_None )
 	shortcut_str = NULL;
     else {
-#if PY_MAJOR_VERSION >= 3
         PyObject *obj = PyUnicode_AsUTF8String(PyTuple_GetItem(args,4));
         shortcut_str = PyBytes_AsString(obj);
-#else /* PY_MAJOR_VERSION >= 3 */
-        shortcut_str = PyBytes_AsString(PyTuple_GetItem(args,4));
-#endif /* PY_MAJOR_VERSION >= 3 */
     }
 
     for ( i=5; i<cnt; ++i ) {
@@ -320,7 +316,6 @@ return( NULL );
 return( NULL );
 	}
 	if ( PyTuple_GetItem(args,4)!=Py_None ) {
-#if PY_MAJOR_VERSION >= 3
         PyObject *obj = PyUnicode_AsUTF8String(PyTuple_GetItem(args,4));
         if ( obj==NULL )
 return( NULL );
@@ -330,11 +325,6 @@ return( NULL );
 return( NULL );
         }
         Py_DECREF( obj );
-#else /* PY_MAJOR_VERSION >= 3 */
-	    char *shortcut_str = PyBytes_AsString(PyTuple_GetItem(args,4));
-	    if ( shortcut_str==NULL )
-return( NULL );
-#endif /* PY_MAJOR_VERSION >= 3 */
 	}
 	for ( i=5; i<cnt; ++i ) {
         utf8_name = PYBYTES_UTF8(PyTuple_GetItem(args,i));

@@ -31,11 +31,6 @@
 #include "Python.h"
 #include "structmember.h"
 
-#if PY_MAJOR_VERSION >= 3
-/* Some Python 3+ APIs use C wide characters (wchar_t) */
-#define NEED_WIDE_CHAR 1
-#endif
-
 extern int old_sfnt_flags;
 
 #include "fontforgevw.h"
@@ -58,9 +53,7 @@ extern int old_sfnt_flags;
 #include <dirent.h>
 #include <stdarg.h>
 #include <stdio.h>
-#if NEED_WIDE_CHAR
 #include <wchar.h>
-#endif
 
 #include "gnetwork.h"
 #ifdef BUILD_COLLAB
@@ -74,20 +67,7 @@ extern int prefRevisionsToRetain;
 #include "gutils/unicodelibinfo.h"
 
 
-/* This defines the name of the Python entry function that is expected
- * to exist when importing this module from Python. Use a different
- * function name for Python 2 versus 3 so that trying to import the
- * wrong version will give a reasonably-meaningful dynamic-link error
- * rather than randomly crashing.
- *
- * MUST MATCH SAME NAME IN "pyhooks/*.c"
- */
-#if PY_MAJOR_VERSION >= 3
-#define FFPY_PYTHON_ENTRY_FUNCTION fontforge_python3_init
-#else
-#define FFPY_PYTHON_ENTRY_FUNCTION fontforge_python2_init
-#endif
-PyMODINIT_FUNC FFPY_PYTHON_ENTRY_FUNCTION(const char* modulename);
+PyMODINIT_FUNC fontforge_python_init(const char* modulename);
 
 
 /* ========== MODULE DEFINITIONS ========== */
@@ -137,17 +117,11 @@ typedef struct {
     struct {
 	PyObject *module;
 	PyMODINIT_FUNC (*modinit_func)(void);
-#if PY_MAJOR_VERSION >= 3
 	PyModuleDef pymod_def;
-#endif
     } runtime;
 } module_definition;
 
-#if PY_MAJOR_VERSION >= 3
 #define MODULEDEF_RUNTIMEINFO_INIT { NULL, NULL, {PyModuleDef_HEAD_INIT,NULL,NULL,-1,NULL,NULL,NULL,NULL,NULL} }
-#else
-#define MODULEDEF_RUNTIMEINFO_INIT { NULL, NULL }
-#endif
 
 
 
@@ -156,7 +130,6 @@ typedef struct {
 static PyObject *InitializePythonMainNamespace(void);
 
 
-#if NEED_WIDE_CHAR
 /* Takes an ASCII string and returns a newly-allocated C "wide" string
  * equivalent.
  */
@@ -172,7 +145,6 @@ static wchar_t *copy_to_wide_string(const char *s) {
     }
     return ws;
 }
-#endif /* NEED_WIDE_CHAR */
 
 
 /* AnyPyString_to_UTF8() -- Takes a Python string object and returns a
@@ -187,21 +159,12 @@ char* AnyPyString_to_UTF8( PyObject* obj ) {
     if ( PyUnicode_Check(obj) ) {
 	PyObject *bytes = PyUnicode_AsUTF8String(obj);
 	if ( bytes!=NULL ) {
-#if PY_MAJOR_VERSION >= 3
 	    s = copy( PyBytes_AsString(bytes) );
-#else
-	    s = copy( PyString_AS_STRING(bytes) );
-#endif
 	    Py_DECREF(bytes);
 	}
     }
-    else {
-#if PY_MAJOR_VERSION >= 3
+    else
 	PyErr_Format(PyExc_TypeError, "Expected a string");
-#else
-	PyErr_Format(PyExc_TypeError, "Expected a string ('unicode' or UTF-8 encoded 'str')");
-#endif
-    }
     return s;
 }
 
@@ -285,8 +248,6 @@ static struct string_list *default_pyinit_dirs(void);
 static int dir_exists(const char* path);
 
 
-#if PY_MAJOR_VERSION >= 3
-
 typedef int (*cmpfunc)(PyObject*, PyObject*);
 
 /* Wrap a cmpfunc in a richcmpfunc. */
@@ -336,8 +297,6 @@ static PyObject *enrichened_compare(cmpfunc compare, PyObject *a, PyObject *b, i
     return result;
 }
 
-#endif /* PY_MAJOR_VERSION >= 3 */
-
 static int FlagsFromString(const char *str, struct flaglist *flags, const char *flagkind) {
     int i;
     i = FindFlagByName( flags, str );
@@ -369,7 +328,6 @@ int FlagsFromTuple(PyObject *tuple,struct flaglist *flags, const char *flagkind)
 return( 0 );
     /* Might just be one string, might be a tuple (or any sequence) of strings */
     if ( STRING_CHECK(tuple)) {
-#if PY_MAJOR_VERSION >= 3
         obj = PyUnicode_AsUTF8String(tuple);
         if (obj == NULL)
 return( FLAG_UNKNOWN );
@@ -377,10 +335,6 @@ return( FLAG_UNKNOWN );
         i = FlagsFromString(str,flags,flagkind);
         Py_DECREF(obj);
         return i;
-#else /* PY_MAJOR_VERSION >= 3 */
-	str = PyBytes_AsString(tuple);
-return( FlagsFromString(str,flags,flagkind));
-#endif /* PY_MAJOR_VERSION >= 3 */
     } else if ( PySequence_Check(tuple)) {
 	ret = 0;
 	for ( i=0; i<PySequence_Size(tuple); ++i ) {
@@ -391,19 +345,12 @@ return( FlagsFromString(str,flags,flagkind));
 		PyErr_Format(PyExc_TypeError, "Bad %s list, must consist of strings only", flagkind);
 return( FLAG_UNKNOWN );
 	    }
-#if PY_MAJOR_VERSION >= 3
-        {
             PyObject *obj2 = PyUnicode_AsUTF8String(obj);
             if (obj2 == NULL)
 return( FLAG_UNKNOWN );
             str = PyBytes_AsString(obj2);
             temp = FlagsFromString(str,flags,flagkind);
             Py_DECREF(obj2);
-        }
-#else /* PY_MAJOR_VERSION >= 3 */
-	    str = PyBytes_AsString(obj);
-	    temp = FlagsFromString(str,flags,flagkind);
-#endif /* PY_MAJOR_VERSION >= 3 */
 	    if ( temp==FLAG_UNKNOWN )
 return( FLAG_UNKNOWN );
 	    ret |= temp;
@@ -1352,11 +1299,9 @@ return( 1 );
 return( -1 );
 }
 
-#if PY_MAJOR_VERSION >= 3
 static PyObject *PyFFPoint_richcompare(PyObject *a, PyObject *b, int op) {
     return enrichened_compare((cmpfunc) PyFFPoint_compare, a, b, op);
 }
-#endif /* PY_MAJOR_VERSION >= 3 */
 
 static PyObject *PyFFPoint_Repr(PyFF_Point *self) {
     char buffer[200];
@@ -1422,11 +1367,7 @@ static PyTypeObject PyFF_PointType = {
     NULL,                      /* tp_print */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
-#if PY_MAJOR_VERSION >= 3
     NULL,                      /* tp_reserved */
-#else
-    (cmpfunc) PyFFPoint_compare, /* tp_compare */
-#endif
     (reprfunc) PyFFPoint_Repr, /* tp_repr */
     NULL,                      /* tp_as_number */
     NULL,                      /* tp_as_sequence */
@@ -1441,11 +1382,7 @@ static PyTypeObject PyFF_PointType = {
     "fontforge Point objects", /* tp_doc */
     NULL,                      /* tp_traverse */
     NULL,                      /* tp_clear */
-#if PY_MAJOR_VERSION >= 3
     (richcmpfunc) PyFFPoint_richcompare, /* tp_richcompare */
-#else
-    NULL,                      /* tp_richcompare */
-#endif
     0,                         /* tp_weaklistoffset */
     NULL,                      /* tp_iter */
     NULL,                      /* tp_iternext */
@@ -1468,9 +1405,7 @@ static PyTypeObject PyFF_PointType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 static PyFF_Point *PyFFPoint_CNew(double x, double y, int on_curve, int sel) {
@@ -1574,9 +1509,7 @@ static PyTypeObject PyFF_ContourIterType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -1685,11 +1618,9 @@ return( ret );
 return( -1 );		/* Arbitrary... but we can't get here=>all points same */
 }
 
-#if PY_MAJOR_VERSION >= 3
 static PyObject *PyFFContour_richcompare(PyObject *a, PyObject *b, int op) {
     return enrichened_compare((cmpfunc) PyFFContour_compare, a, b, op);
 }
-#endif /* PY_MAJOR_VERSION >= 3 */
 
 /* ************************************************************************** */
 /* Contour getters/setters */
@@ -1853,15 +1784,11 @@ static int PyFF_Contour_set_name(PyFF_Contour *self,PyObject *value, void *UNUSE
     if ( value==Py_None )
 	self->name = NULL;
     else {
-#if PY_MAJOR_VERSION >= 3
         value = PyUnicode_AsUTF8String(value);
         if ( value==NULL )
 return( -1 );
 	self->name = PyBytes_AsString(value);
 	Py_DECREF(value);
-#else
-	self->name = PyBytes_AsString(value);
-#endif
     }
 return( 0 );
 }
@@ -2948,11 +2875,7 @@ static PyTypeObject PyFF_ContourType = {
     NULL,                      /*tp_print*/
     NULL,                      /*tp_getattr*/
     NULL,                      /*tp_setattr*/
-#if PY_MAJOR_VERSION >= 3
     NULL,                      /* tp_reserved */
-#else
-    (cmpfunc)PyFFContour_compare, /*tp_compare*/
-#endif
     NULL,                      /*tp_repr*/
     NULL,                      /*tp_as_number*/
     &PyFFContour_Sequence,     /*tp_as_sequence*/
@@ -2963,19 +2886,11 @@ static PyTypeObject PyFF_ContourType = {
     NULL,                      /*tp_getattro*/
     NULL,                      /*tp_setattro*/
     NULL,                      /*tp_as_buffer*/
-#if PY_MAJOR_VERSION >= 3
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-#else
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
-#endif
     "fontforge Contour objects", /* tp_doc */
     NULL /*(traverseproc)FFContour_traverse*/,  /* tp_traverse */
     (inquiry)PyFFContour_clear,  /* tp_clear */
-#if PY_MAJOR_VERSION >= 3
     (richcmpfunc)PyFFContour_richcompare, /*tp_richcompare*/
-#else
-    NULL,                      /* tp_richcompare */
-#endif
     0,                         /* tp_weaklistoffset */
     contouriter_new,           /* tp_iter */
     NULL,                      /* tp_iternext */
@@ -2998,9 +2913,7 @@ static PyTypeObject PyFF_ContourType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -3094,9 +3007,7 @@ static PyTypeObject PyFF_LayerIterType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -3223,11 +3134,9 @@ return( ret );
 return( -1 );		/* Arbitrary... but we can't get here=>all points same */
 }
 
-#if PY_MAJOR_VERSION >= 3
 static PyObject *PyFFLayer_richcompare(PyObject *a, PyObject *b, int op) {
     return enrichened_compare((cmpfunc) PyFFLayer_compare, a, b, op);
 }
-#endif /* PY_MAJOR_VERSION >= 3 */
 
 /* ************************************************************************** */
 /* Layer getters/setters */
@@ -3670,9 +3579,7 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args) {
     PyObject *flagtuple=NULL;
     PyObject *poly=NULL;
     int argcnt;
-#if PY_MAJOR_VERSION >= 3
     PyObject *bytes;
-#endif /* PY_MAJOR_VERSION >= 3 */
 
     if ( !PySequence_Check(args) ) {
 	PyErr_Format(PyExc_TypeError, "Expected a sequence");
@@ -3683,26 +3590,18 @@ return( -1 );
 	PyErr_Format(PyExc_TypeError, "Expected a name of a pen type");
 return( -1 );
     }
-#if PY_MAJOR_VERSION >= 3
     bytes = PyUnicode_AsUTF8String(PySequence_GetItem(args,0));
     if (bytes == NULL)
 return( -1 );
     str = PyBytes_AsString(bytes);
-#else /* PY_MAJOR_VERSION >= 3 */
-    str = PyBytes_AsString(PySequence_GetItem(args,0));
-#endif /* PY_MAJOR_VERSION >= 3 */
     memset(si,0,sizeof(*si));
     if ( str==NULL ) {
-#if PY_MAJOR_VERSION >= 3
         Py_DECREF(bytes);
-#endif /* PY_MAJOR_VERSION >= 3 */
 return( -1 );
     }
     if ( strcmp(str,"circular")==0 ) {
 	if ( !PyArg_ParseTuple(args,"sd|ssO", &str, &width, &cap, &join, &flagtuple ) ) {
-#if PY_MAJOR_VERSION >= 3
         Py_DECREF(bytes);
-#endif /* PY_MAJOR_VERSION >= 3 */
 return( -1 );
 	}
 	si->stroke_type = si_std;
@@ -3710,38 +3609,28 @@ return( -1 );
 	angle = 0;
     } else if ( strcmp(str,"eliptical")==0 ) {
 	if ( !PyArg_ParseTuple(args,"sddd|ssO", &str, &width, &minor, &angle, &cap, &join, &flagtuple ) ) {
-#if PY_MAJOR_VERSION >= 3
         Py_DECREF(bytes);
-#endif /* PY_MAJOR_VERSION >= 3 */
 return( -1 );
 	}
 	si->stroke_type = si_std;
     } else if ( strcmp(str,"caligraphic")==0 || strcmp(str,"square")==0 ) {
 	if ( !PyArg_ParseTuple(args,"sddd|O", &str, &width, &minor, &angle, &flagtuple ) ) {
-#if PY_MAJOR_VERSION >= 3
         Py_DECREF(bytes);
-#endif /* PY_MAJOR_VERSION >= 3 */
 return( -1 );
 	}
 	si->stroke_type = si_caligraphic;
     } else if ( strcmp(str,"polygonal")==0 || strcmp(str,"poly")==0 ) {
 	if ( !PyArg_ParseTuple(args,"sO|O", &str, &poly, &flagtuple ) ) {
-#if PY_MAJOR_VERSION >= 3
         Py_DECREF(bytes);
-#endif /* PY_MAJOR_VERSION >= 3 */
 return( -1 );
 	}
 	si->stroke_type = si_poly;
     } else {
-#if PY_MAJOR_VERSION >= 3
         Py_DECREF(bytes);
-#endif /* PY_MAJOR_VERSION >= 3 */
         PyErr_Format(PyExc_ValueError, "Unknown stroke type %s", str );
 return( -1 );
     }
-#if PY_MAJOR_VERSION >= 3
     Py_DECREF(bytes);
-#endif /* PY_MAJOR_VERSION >= 3 */
 
     if ( poly!=NULL ) {
 	SplineSet *ss=NULL;
@@ -4103,11 +3992,7 @@ static PyTypeObject PyFF_LayerType = {
     NULL,                      /* tp_print */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
-#if PY_MAJOR_VERSION >= 3
     NULL,                      /* tp_reserved */
-#else
-    (cmpfunc)PyFFLayer_compare,/* tp_compare */
-#endif
     NULL,                      /* tp_repr */
     NULL,                      /* tp_as_number */
     &PyFFLayer_Sequence,       /* tp_as_sequence */
@@ -4118,19 +4003,11 @@ static PyTypeObject PyFF_LayerType = {
     NULL,                      /* tp_getattro */
     NULL,                      /* tp_setattro */
     NULL,                      /* tp_as_buffer */
-#if PY_MAJOR_VERSION >= 3
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
-#else
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES, /* tp_flags */
-#endif
     "fontforge Layer objects", /* tp_doc */
     NULL /*(traverseproc)FFLayer_traverse*/,  /* tp_traverse */
     (inquiry)PyFFLayer_clear,  /* tp_clear */
-#if PY_MAJOR_VERSION >= 3
     (richcmpfunc)PyFFLayer_richcompare, /* tp_richcompare */
-#else
-    NULL,                      /* tp_richcompare */
-#endif
     0,                         /* tp_weaklistoffset */
     layeriter_new,             /* tp_iter */
     NULL,                      /* tp_iternext */
@@ -4153,9 +4030,7 @@ static PyTypeObject PyFF_LayerType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -4831,9 +4706,7 @@ static PyTypeObject PyFF_GlyphPenType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -5095,9 +4968,7 @@ static PyTypeObject PyFF_LayerArrayIterType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -5146,7 +5017,6 @@ static PyObject *PyFF_LayerArrayIndex( PyObject *self, PyObject *index ) {
     int layer;
 
     if ( STRING_CHECK(index)) {
-#if PY_MAJOR_VERSION >= 3
     char *name;
     PyObject *bytes = PyUnicode_AsUTF8String(index);
     if ( bytes == NULL )
@@ -5154,10 +5024,6 @@ return( NULL );
 	name = PyBytes_AsString(bytes);
 	layer = SFFindLayerIndexByName(sc->parent,name);
     Py_DECREF(bytes);
-#else /* PY_MAJOR_VERSION >= 3 */
-	char *name = PyBytes_AsString(index);
-	layer = SFFindLayerIndexByName(sc->parent,name);
-#endif /* PY_MAJOR_VERSION >= 3 */
 	if ( layer<0 )
 return( NULL );
     } else if ( PyInt_Check(index)) {
@@ -5174,7 +5040,6 @@ static int PyFF_LayerArrayIndexAssign( PyObject *self, PyObject *index, PyObject
     int layer;
 
     if ( STRING_CHECK(index)) {
-#if PY_MAJOR_VERSION >= 3
     char *name;
     PyObject *bytes = PyUnicode_AsUTF8String(index);
     if ( bytes == NULL )
@@ -5182,10 +5047,6 @@ return( -1 );
 	name = PyBytes_AsString(bytes);
 	layer = SFFindLayerIndexByName(sc->parent,name);
     Py_DECREF(bytes);
-#else /* PY_MAJOR_VERSION >= 3 */
-	char *name = PyBytes_AsString(index);
-	layer = SFFindLayerIndexByName(sc->parent,name);
-#endif /* PY_MAJOR_VERSION >= 3 */
 	if ( layer<0 )
 return( -1 );
     } else if ( PyInt_Check(index)) {
@@ -5264,9 +5125,7 @@ static PyTypeObject PyFF_LayerArrayType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -5299,7 +5158,6 @@ static PyObject *PyFF_RefArrayIndex( PyObject *self, PyObject *index ) {
     int layer;
 
     if ( STRING_CHECK(index)) {
-#if PY_MAJOR_VERSION >= 3
     char *name;
     PyObject *bytes = PyUnicode_AsUTF8String(index);
     if( bytes==NULL )
@@ -5307,10 +5165,6 @@ return( NULL );
     name = PyBytes_AsString(bytes);
 	layer = SFFindLayerIndexByName(sc->parent,name);
     Py_DECREF( bytes );
-#else /* PY_MAJOR_VERSION >= 3 */
-	char *name = PyBytes_AsString(index);
-	layer = SFFindLayerIndexByName(sc->parent,name);
-#endif /* PY_MAJOR_VERSION >= 3 */
 	if ( layer<0 )
 return( NULL );
     } else if ( PyInt_Check(index)) {
@@ -5327,7 +5181,6 @@ static int PyFF_RefArrayIndexAssign( PyObject *self, PyObject *index, PyObject *
     int layer;
 
     if ( STRING_CHECK(index)) {
-#if PY_MAJOR_VERSION >= 3
     char *name;
     PyObject *bytes = PyUnicode_AsUTF8String(index);
     if( bytes==NULL )
@@ -5335,10 +5188,6 @@ return( -1 );
     name = PyBytes_AsString(bytes);
 	layer = SFFindLayerIndexByName(sc->parent,name);
     Py_DECREF( bytes );
-#else /* PY_MAJOR_VERSION >= 3 */
-	char *name = PyBytes_AsString(index);
-	layer = SFFindLayerIndexByName(sc->parent,name);
-#endif /* PY_MAJOR_VERSION >= 3 */
 	if ( layer<0 )
 return( -1 );
     } else if ( PyInt_Check(index)) {
@@ -5407,9 +5256,7 @@ static PyTypeObject PyFF_RefArrayType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -5517,11 +5364,7 @@ static PyTypeObject PyFF_MathKernType = {
     NULL,                      /* tp_getattro */
     NULL,                      /* tp_setattro */
     NULL,                      /* tp_as_buffer */
-#if PY_MAJOR_VERSION >= 3
     Py_TPFLAGS_DEFAULT,        /* tp_flags */
-#else
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
-#endif
     "fontforge per glyph math kerning objects", /* tp_doc */
     NULL,                      /* tp_traverse */
     NULL,                      /* tp_clear */
@@ -5548,9 +5391,7 @@ static PyTypeObject PyFF_MathKernType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -5669,11 +5510,9 @@ return( -1 );
 return( sc1<sc2 ? -1 : 1 );
 }
 
-#if PY_MAJOR_VERSION >= 3
 static PyObject *PyFFGlyph_richcompare(PyObject *a, PyObject *b, int op) {
     return enrichened_compare((cmpfunc) PyFFGlyph_compare, a, b, op);
 }
-#endif /* PY_MAJOR_VERSION >= 3 */
 
 /* ************************************************************************** */
 /* Glyph getters/setters */
@@ -5752,20 +5591,14 @@ return( Py_BuildValue("s", self->sc->name ));
 static int PyFF_Glyph_set_glyphname(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     FontViewBase *fvs;
 
-#if PY_MAJOR_VERSION >= 3
     char *str;
     PyObject *bytes = PyUnicode_AsUTF8String(value);
     if ( bytes==NULL )
 return( -1 );
     str = PyBytes_AsString(bytes);
-#else /* PY_MAJOR_VERSION >= 3 */
-    char *str = PyBytes_AsString(value);
-#endif /* PY_MAJOR_VERSION >= 3 */
 
     if ( str==NULL ) {
-#if PY_MAJOR_VERSION >= 3
         Py_DECREF(bytes);
-#endif /* PY_MAJOR_VERSION >= 3 */
 return( -1 );
     }
 
@@ -5774,9 +5607,7 @@ return( -1 );
     self->sc->name = copy(str);
     GlyphHashFree(self->sc->parent);
     SCRefreshTitles(self->sc);
-#if PY_MAJOR_VERSION >= 3
     Py_DECREF(bytes);
-#endif /* PY_MAJOR_VERSION >= 3 */
     for ( fvs=self->sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	/* Postscript encodings are by name, others are by codepoint */
 	if ( fvs->map->enc->psnames!=NULL && fvs->map->enc!=&custom ) {
@@ -6660,12 +6491,10 @@ return( NULL );
     }
     if ( PyBytes_Check(value)) {
 	str = PyBytes_AsString(value);
-#if PY_MAJOR_VERSION >= 3
     } else if ( PyUnicode_Check(value)) {
 	value = PyUnicode_AsUTF8String(value);
 	str = PyBytes_AsString(value);
 	Py_DECREF(value);
-#endif
     } else {
 	cnt = PySequence_Size(value);
 	len = 0;
@@ -7641,16 +7470,12 @@ static char *GlyphNamesFromTuple(PyObject *glyphs) {
     int i;
 
     if ( STRING_CHECK(glyphs)) {
-#if PY_MAJOR_VERSION >= 3
         PyObject *bytes = PyUnicode_AsUTF8String(glyphs);
         if (bytes == NULL)
 return( NULL );
         str = copy( PyBytes_AsString(bytes) );
         Py_DECREF( bytes );
 return( str );
-#else /* PY_MAJOR_VERSION >= 3 */
-return( copy( PyBytes_AsString(glyphs)) );
-#endif /* PY_MAJOR_VERSION >= 3 */
     }
     if ( !PySequence_Check(glyphs) ) {
 	PyErr_Format(PyExc_TypeError,"Expected tuple of glyph names");
@@ -8398,11 +8223,7 @@ static PyTypeObject PyFF_GlyphType = {
     NULL,                      /* tp_print */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
-#if PY_MAJOR_VERSION >= 3
     NULL,                      /* tp_reserved */
-#else
-    (cmpfunc)PyFFGlyph_compare,/* tp_compare */
-#endif
     (reprfunc) PyFFGlyph_Repr, /* tp_repr */
     NULL,                      /* tp_as_number */
     NULL,                      /* tp_as_sequence */
@@ -8417,11 +8238,7 @@ static PyTypeObject PyFF_GlyphType = {
     "FontForge Glyph object",  /* tp_doc */
     NULL,                      /* tp_traverse */
     NULL,                      /* tp_clear */
-#if PY_MAJOR_VERSION >= 3
     (richcmpfunc)PyFFGlyph_richcompare, /* tp_richcompare */
-#else
-    NULL,                      /* tp_richcompare */
-#endif
     0,                         /* tp_weaklistoffset */
     NULL,                      /* tp_iter */
     NULL,                      /* tp_iternext */
@@ -8444,9 +8261,7 @@ static PyTypeObject PyFF_GlyphType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -8539,9 +8354,7 @@ static PyTypeObject PyFF_CvtIterType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -8843,11 +8656,7 @@ static PyTypeObject PyFF_CvtType = {
     NULL,                      /*tp_getattro*/
     NULL,                      /*tp_setattro*/
     NULL,                      /*tp_as_buffer*/
-#if PY_MAJOR_VERSION >= 3
     Py_TPFLAGS_DEFAULT,        /*tp_flags*/
-#else
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
-#endif
     "fontforge cvt (control value table) objects", /* tp_doc */
     NULL,                      /* tp_traverse */
     NULL,                      /* tp_clear */
@@ -8874,9 +8683,7 @@ static PyTypeObject PyFF_CvtType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -9176,11 +8983,7 @@ static PyTypeObject PyFF_SelectionType = {
     NULL,                      /*tp_getattro*/
     NULL,                      /*tp_setattro*/
     NULL,                      /*tp_as_buffer*/
-#if PY_MAJOR_VERSION >= 3
     Py_TPFLAGS_DEFAULT,        /*tp_flags*/
-#else
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
-#endif
     "fontforge selection objects", /* tp_doc */
     NULL,                      /* tp_traverse */
     NULL,                      /* tp_clear */
@@ -9207,9 +9010,7 @@ static PyTypeObject PyFF_SelectionType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 
@@ -9301,9 +9102,7 @@ static PyTypeObject PyFF_LayerInfoArrayIterType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -9443,9 +9242,7 @@ static PyTypeObject PyFF_LayerInfoType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -9487,7 +9284,6 @@ static PyObject *PyFF_LayerInfoArrayIndex( PyObject *self, PyObject *index ) {
     PyFF_LayerInfo *li;
 
     if ( STRING_CHECK(index)) {
-#if PY_MAJOR_VERSION >= 3
     char *name;
     PyObject *bytes = PyUnicode_AsUTF8String(index);
     if ( bytes==NULL )
@@ -9495,10 +9291,6 @@ return( NULL );
     name = PyBytes_AsString(bytes);
     layer = SFFindLayerIndexByName(sf,name);
     Py_DECREF( bytes );
-#else /* PY_MAJOR_VERSION >= 3 */
-	char *name = PyBytes_AsString(index);
-	layer = SFFindLayerIndexByName(sf,name);
-#endif /* PY_MAJOR_VERSION >= 3 */
 	if ( layer<0 )
 return( NULL );
     } else if ( PyInt_Check(index)) {
@@ -9637,9 +9429,7 @@ static PyTypeObject PyFF_LayerInfoArrayType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -9734,11 +9524,7 @@ static PyTypeObject PyFF_MathType = {
     NULL,                      /* tp_getattro */
     NULL,                      /* tp_setattro */
     NULL,                      /* tp_as_buffer */
-#if PY_MAJOR_VERSION >= 3
     Py_TPFLAGS_DEFAULT,        /* tp_flags */
-#else
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES, /* tp_flags */
-#endif
     "fontforge math objects",  /* tp_doc */
     NULL,                      /* tp_traverse */
     NULL,                      /* tp_clear */
@@ -9765,9 +9551,7 @@ static PyTypeObject PyFF_MathType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* Build a get/set table for the math type based on the math_constants_descriptor */
@@ -9876,9 +9660,7 @@ static PyTypeObject PyFF_PrivateIterType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -9915,7 +9697,6 @@ static PyObject *PyFF_PrivateIndex( PyObject *self, PyObject *index ) {
     PyObject *tuple;
 
     if ( STRING_CHECK(index)) {
-#if PY_MAJOR_VERSION >= 3
     char *name;
     PyObject *bytes = PyUnicode_AsUTF8String(index);
     if ( bytes==NULL )
@@ -9924,11 +9705,6 @@ return( NULL );
 	if ( private!=NULL )
 	    value = PSDictHasEntry(private,name);
     Py_DECREF(bytes);
-#else /* PY_MAJOR_VERSION >= 3 */
-	char *name = PyBytes_AsString(index);
-	if ( private!=NULL )
-	    value = PSDictHasEntry(private,name);
-#endif /* PY_MAJOR_VERSION >= 3 */
     } else {
 	PyErr_Format(PyExc_TypeError, "Index must be a string" );
 return( NULL );
@@ -10089,9 +9865,7 @@ static PyTypeObject PyFF_PrivateType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -10273,9 +10047,7 @@ static PyTypeObject PyFF_FontIterType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -10400,9 +10172,7 @@ static int SetSFNTName(SplineFont *sf,PyObject *tuple,struct ttflangname *englis
     int lang, strid;
     PyObject *val;
     struct ttflangname *names;
-#if PY_MAJOR_VERSION >= 3
     PyObject *bytes;
-#endif /* PY_MAJOR_VERSION >= 3 */
 
     if ( !PySequence_Check(tuple)) {
 	PyErr_Format(PyExc_TypeError, "sfnt_name must be a tuple" );
@@ -10415,17 +10185,12 @@ return(0);
 
     val = PySequence_GetItem(tuple,0);
     if ( STRING_CHECK(val) ) {
-#if PY_MAJOR_VERSION >= 3
 	bytes = PyUnicode_AsUTF8String(val);
 	if (bytes == NULL)
 return( 0 );
 	lang_str = PyBytes_AsString(bytes);
 	lang = FlagsFromString(lang_str,sfnt_name_mslangs,"language");
 	Py_DECREF(bytes);
-#else /* PY_MAJOR_VERSION >= 3 */
-	lang_str = PyBytes_AsString(val);
-	lang = FlagsFromString(lang_str,sfnt_name_mslangs,"language");
-#endif /* PY_MAJOR_VERSION >= 3 */
 	if ( lang==FLAG_UNKNOWN ) {
 return( 0 );
 	}
@@ -10438,17 +10203,12 @@ return( 0 );
 
     val = PySequence_GetItem(tuple,1);
     if ( STRING_CHECK(val) ) {
-#if PY_MAJOR_VERSION >= 3
 	bytes = PyUnicode_AsUTF8String(val);
 	if (bytes == NULL)
 return( 0 );
 	strid_str = PyBytes_AsString(bytes);
 	strid = FlagsFromString(strid_str,sfnt_name_str_ids,"string id");
 	Py_DECREF(bytes);
-#else /* PY_MAJOR_VERSION >= 3 */
-	strid_str = PyBytes_AsString(val);
-	strid = FlagsFromString(strid_str,sfnt_name_str_ids,"string id");
-#endif /* PY_MAJOR_VERSION >= 3 */
 	if ( strid==FLAG_UNKNOWN ) {
 return( 0 );
 	}
@@ -10469,7 +10229,6 @@ return( 0 );
 return( 1 );
     }
 
-#if PY_MAJOR_VERSION >= 3
     bytes = PyUnicode_AsUTF8String(PySequence_GetItem(tuple,2));
     if ( bytes==NULL )
 return( 0 );
@@ -10483,14 +10242,6 @@ return( 0 );
         Py_DECREF(bytes);
 return( 1 );	/* If they set it to the default, there's nothing to do */
     }
-#else /* PY_MAJOR_VERSION >= 3 */
-    string = PyBytes_AsString(PySequence_GetItem(tuple,2));
-    if ( string==NULL )
-return( 0 );
-    if ( lang==0x409 && english!=NULL && english->names[strid]!=NULL &&
-	    strcmp(string,english->names[strid])==0 )
-return( 1 );	/* If they set it to the default, there's nothing to do */
-#endif /* PY_MAJOR_VERSION >= 3 */
 
     if ( names==NULL ) {
 	names = XZALLOC( struct ttflangname );
@@ -10499,9 +10250,7 @@ return( 1 );	/* If they set it to the default, there's nothing to do */
 	sf->names = names;
     }
     names->names[strid] = copy( string );
-#if PY_MAJOR_VERSION >= 3
     Py_DECREF( bytes );
-#endif /* PY_MAJOR_VERSION >= 3 */
 return( 1 );
 }
 
@@ -12236,9 +11985,7 @@ static int PyFF_Font_set_encoding(PyFF_Font *self,PyObject *value, void *UNUSED(
     FontViewBase *fv;
     char *encname;
     Encoding *new_enc;
-#if PY_MAJOR_VERSION >= 3
     PyObject *bytes;
-#endif
 
     if ( CheckIfFontClosed(self) )
 return (-1);
@@ -12247,7 +11994,6 @@ return (-1);
 	PyErr_Format(PyExc_TypeError, "Cannot delete encoding field" );
 return( -1 );
     }
-#if PY_MAJOR_VERSION >= 3
     {
         bytes = PyUnicode_AsUTF8String(value);
         if ( bytes==NULL )
@@ -12258,11 +12004,6 @@ return( -1 );
 return( -1 );
         }
     }
-#else /* PY_MAJOR_VERSION >= 3 */
-    encname = PyBytes_AsString(value);
-    if ( PyErr_Occurred()!=NULL )
-return( -1 );
-#endif /* PY_MAJOR_VERSION >= 3 */
     if ( strmatch(encname,"compacted")==0 ) {
 	fv->normal = EncMapCopy(fv->map);
 	CompactEncMap(fv->map,fv->sf);
@@ -12270,9 +12011,7 @@ return( -1 );
 	new_enc = FindOrMakeEncoding(encname);
 	if ( new_enc==NULL ) {
 	    PyErr_Format(PyExc_NameError, "Unknown encoding %s", encname);
-#if PY_MAJOR_VERSION >= 3
         Py_DECREF(bytes);
-#endif
 return -1;
 	}
 	if ( new_enc==&custom )
@@ -12291,9 +12030,7 @@ return -1;
     if ( !no_windowing_ui )
 	FontViewReformatAll(fv->sf);
 
-#if PY_MAJOR_VERSION >= 3
     Py_DECREF(bytes);
-#endif
 
 return(0);
 }
@@ -16705,9 +16442,7 @@ static PyObject *PyFF_FontIndex( PyObject *object, PyObject *index ) {
     FontViewBase *fv;
     SplineFont *sf;
     SplineChar *sc = NULL;
-#if PY_MAJOR_VERSION >= 3
     int index_is_bytes = false;
-#endif
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
@@ -16715,12 +16450,10 @@ return (NULL);
     sf = fv->sf;
     if ( STRING_CHECK(index)) {
     char *name;
-#if PY_MAJOR_VERSION >= 3
     index = PyUnicode_AsUTF8String(index);
     if (index == NULL)
         return( NULL );
     index_is_bytes = true;
-#endif
 	name = PyBytes_AsString(index);
 	sc = SFGetChar(sf,-1,name);
     } else if ( PyInt_Check(index)) {
@@ -16736,17 +16469,13 @@ return( NULL );
 return( NULL );
     }
     if ( sc==NULL ) {
-#if PY_MAJOR_VERSION >= 3
         if (index_is_bytes)
             Py_DECREF(index);
-#endif
 	PyErr_Format(PyExc_TypeError, "No such glyph" );
 return( NULL );
     }
-#if PY_MAJOR_VERSION >= 3
     if (index_is_bytes)
         Py_DECREF(index);
-#endif
 return( PySC_From_SC_I(sc));
 }
 
@@ -16755,21 +16484,17 @@ static int PyFF_FontContains( PyObject *object, PyObject *index ) {
     FontViewBase *fv;
     SplineFont *sf;
     SplineChar *sc = NULL;
-#if PY_MAJOR_VERSION >= 3
     int index_is_bytes = false;
-#endif
 
     if ( CheckIfFontClosed(self) )
 return (-1);
     fv = self->fv;
     sf = fv->sf;
     if ( STRING_CHECK(index)) {
-#if PY_MAJOR_VERSION >= 3
     index = PyUnicode_AsUTF8String(index);
     if (index == NULL)
 return( 0 );
     index_is_bytes = true;
-#endif
 	char *name = PyBytes_AsString(index);
 	sc = SFGetChar(sf,-1,name);
     } else if ( PyInt_Check(index)) {
@@ -16780,17 +16505,13 @@ return( 0 );
 	gid = fv->map->map[pos];
 	sc = gid==-1 ? NULL : sf->glyphs[gid];
     } else {
-#if PY_MAJOR_VERSION >= 3
     if (index_is_bytes)
         Py_DECREF(index);
-#endif
 	PyErr_Format(PyExc_TypeError, "Index must be an integer or a string" );
 return( -1 );
     }
-#if PY_MAJOR_VERSION >= 3
     if (index_is_bytes)
         Py_DECREF(index);
-#endif
 return( sc!=NULL );
 }
 
@@ -16860,9 +16581,7 @@ static PyTypeObject PyFF_FontType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* ************************************************************************** */
@@ -16979,9 +16698,7 @@ static PyTypeObject PyFF_AWGlyphIndexType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 static void PyFF_AWGlyph_dealloc(PyFF_AWGlyph *self) {
@@ -17119,9 +16836,7 @@ static PyTypeObject PyFF_AWGlyphType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 static void PyFF_AWContext_dealloc(PyFF_AWContext *self) {
@@ -17244,9 +16959,7 @@ static PyTypeObject PyFF_AWContextType = {
     NULL,                      /* tp_subclasses */
     NULL,                      /* tp_weaklist */
     NULL,                      /* tp_del */
-#if PY_VERSION_HEX >= 0x02060000
     0,                         /* tp_version_tag */
-#endif
 };
 
 /* User supplied python function which calculates the optical separation between */
@@ -17608,11 +17321,7 @@ void *PyFF_UnPickleMeToObjects(char *str) {
 
     PyFF_PicklerInit();
     arglist = PyTuple_New(1);
-#if PY_MAJOR_VERSION >= 3
     PyTuple_SetItem(arglist,0,Py_BuildValue("y",str)); /* Bytes object */
-#else
-    PyTuple_SetItem(arglist,0,Py_BuildValue("s",str)); /* String object */
-#endif
     result = PyEval_CallObject(unpickler, arglist);
     Py_DECREF(arglist);
     if ( PyErr_Occurred()!=NULL ) {
@@ -17755,19 +17464,11 @@ static int AddPythonTypesToModule( PyObject *module, python_type_info* typelist 
  * Python itself needs a specific "callback" function pointer for each
  * module that takes no arguments.  Used by RegisterAllPyModules().
  */
-#if PY_MAJOR_VERSION >= 3
 /* Python 3 module init functions return a pointer to the module object, or NULL */
 #define ff_crmod(name) \
 static PyMODINIT_FUNC CreatePyModule_##name(void) {\
     return CreatePyModule(&module_def_##name);\
 }
-#else
-/* Python 2 module init functions do not return any value */
-#define ff_crmod(name) \
-static void CreatePyModule_##name(void) {\
-    CreatePyModule(&module_def_##name);\
-}
-#endif
 #define ff_fixmod(name) \
     module_def_##name.runtime.modinit_func = CreatePyModule_##name
 
@@ -17870,7 +17571,6 @@ static PyObject* CreatePyModule( module_definition *mdef ) {
     if ( mdef->types != NULL && FinalizePythonTypes( mdef->types ) < 0 )
 	return NULL;
 
-#if PY_MAJOR_VERSION >= 3
     mdef->runtime.pymod_def.m_name = mdef->module_name;
     mdef->runtime.pymod_def.m_doc = mdef->docstring;
     mdef->runtime.pymod_def.m_methods = mdef->methods;
@@ -17880,9 +17580,6 @@ static PyObject* CreatePyModule( module_definition *mdef ) {
     mdef->runtime.pymod_def.m_clear = NULL;
     mdef->runtime.pymod_def.m_free = NULL;
     module = PyModule_Create( &mdef->runtime.pymod_def );
-#else
-    module = Py_InitModule3(mdef->module_name, mdef->methods, mdef->docstring);
-#endif
     mdef->runtime.module = module;
     SetPythonModuleMetadata( module );
     if ( mdef->types != NULL )
@@ -17977,30 +17674,15 @@ void FontForge_InitializeEmbeddedPython(void) {
  *
  * Also note that Python 3 expects argv to be C wide strings.
  */
-#if PY_MAJOR_VERSION >= 3
-#define ARGV_CHAR_TYPE wchar_t
-#else
-#define ARGV_CHAR_TYPE char
-#endif
-static ARGV_CHAR_TYPE ** copy_argv(char *arg0, int argc ,char **argv);
-
-/* static void HandleSigTerm(int sig) */
-/* { */
-/*     _exit(0); */
-/* } */
-
+static wchar_t ** copy_argv(char *arg0, int argc ,char **argv);
 
 void PyFF_Main(int argc,char **argv,int start) {
     char *arg;
-    ARGV_CHAR_TYPE **newargv;
+    wchar_t **newargv;
     int newargc;
     int exitcode;
 
     no_windowing_ui = running_script = true;
-
-#if !defined(__MINGW32__)
-//    signal( 15, HandleSigTerm );
-#endif
 
     PyFF_ProcessInitFiles();
 
@@ -18021,9 +17703,8 @@ void PyFF_Main(int argc,char **argv,int start) {
 
 
 /* ************************************************************************** */
-/* PYTHON INITIALIZATION   ---   Python 3.x or greater */
+/* PYTHON INITIALIZATION                                                      */
 /* ************************************************************************** */
-#if PY_MAJOR_VERSION >= 3 /*---------------------------------------------*/
 
 static void SetPythonProgramName(const char *progname) {
     static wchar_t *saved_progname=NULL;
@@ -18053,32 +17734,6 @@ static wchar_t ** copy_argv(char *arg0, int argc ,char **argv) {
     return newargv;
 }
 
-#else /* PY_MAJOR_VERSION */
-/* ************************************************************************** */
-/* PYTHON INITIALIZATION   ---   Python 2.x */
-/* ************************************************************************** */
-
-static void SetPythonProgramName(const char *progname) {
-    static char *saved_progname=NULL;
-    saved_progname = copy(progname);
-    Py_SetProgramName(saved_progname);
-}
-
-static char ** copy_argv(char *arg0, int argc ,char **argv) {
-    int i;
-    char **newargv;
-
-    newargv= calloc(argc+2,sizeof(char *));
-    newargv[0] = copy(arg0);
-
-    for ( i=0; i<argc; ++i ) {
-	newargv[i+1] = copy(argv[i]);
-    }
-    newargv[argc+1] = NULL;
-    return newargv;
-}
-
-#endif /* PY_MAJOR_VERSION */
 /* ************************************************************************** */
 /* Other python environment initializations */
 /* ************************************************************************** */
@@ -18373,28 +18028,17 @@ return;
 ** functions in the pyhook/*.c files; and those then call this
 ** function.
 */
-PyMODINIT_FUNC FFPY_PYTHON_ENTRY_FUNCTION(const char* modulename) {
+PyMODINIT_FUNC fontforge_python_init(const char* modulename) {
     doinitFontForgeMain();
     no_windowing_ui = running_script = true;
 
     RegisterAllPyModules();
     CreateAllPyModules();
 
-#if PY_MAJOR_VERSION >= 3
-    /* Python 3 expects the module object to be returned */
-    {
-	int i;
-	for ( i=0; i<NUM_MODULES; i++ ) {
-	    if (strcmp(all_modules[i]->module_name, modulename)==0 ) {
-		return all_modules[i]->runtime.module;
-	    }
-	}
-	return NULL;
-    }
-#else
-    /* Python 2 doesn't expect any return value */
-    return;
-#endif
+    for ( int i=0; i<NUM_MODULES; i++ )
+        if (strcmp(all_modules[i]->module_name, modulename)==0 )
+            return all_modules[i]->runtime.module;
+    return NULL;
 }
 
 /* These don't get translated. They are a copy of a similar list in fontinfo.c */
