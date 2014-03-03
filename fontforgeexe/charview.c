@@ -59,6 +59,7 @@ extern int _GScrollBar_Width;
 
 extern void UndoesFreeButRetainFirstN( Undoes** undopp, int retainAmount );
 static void CVMoveInWordListByOffset( CharView* cv, int offset );
+extern void CVDebugFree( DebugView *dv );
 
 int additionalCharsToShowLimit = 50;
 

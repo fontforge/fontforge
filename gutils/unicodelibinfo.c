@@ -30,6 +30,7 @@
 #include <ustring.h>
 #include "../fontforge/ffglib.h"
 #include <glib/gprintf.h>
+#include "xvasprintf.h"
 
 
 #ifndef _NO_LIBUNINAMESLIST
