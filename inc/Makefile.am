@@ -50,6 +50,8 @@ libggc_veneer_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc" $(LIBG
 
 libggc_veneer_la_LIBADD = $(LIBGC_LIBS)
 
+libggc_veneer_la_LDFLAGS = $(MY_LIB_LDFLAGS)
+
 #--------------------------------------------------------------------------
 
 -include $(top_srcdir)/git.mk
