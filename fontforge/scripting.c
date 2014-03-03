@@ -10198,9 +10198,11 @@ return;
 		strcmp(pt,"-dry")==0 || strcmp(argv[i],"-c")==0 ) {
 	    if ( is_python==-1 && strcmp(pt,"-script")==0 )
 		is_python = PythonLangFromExt(argv[i+1]);
-	    if ( is_python )
+	    if ( is_python ) {
+                if (strcmp(argv[i],"-c") == 0) /* Make command-line args and Fontforge module more conveniently available for command-line scripts */
+                    argv[i + 1] = xasprintf("from sys import argv; from fontforge import *; %s", argv[i + 1]);
 		PyFF_Main(argc,argv,i);
-	    else
+	    } else
 		ProcessNativeScript(argc, argv,NULL);
 	} else /*if ( access(argv[i],X_OK|R_OK)==0 )*/ {
 	    FILE *temp = fopen(argv[i],"r");

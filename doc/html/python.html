@@ -13,9 +13,8 @@
     Writing python scripts to change fonts in FontForge
   </H1>
   <P>
-  I assume you have a working knowledge of python (because I do not).
-  <A href="http://www.python.org/doc/">Python documentation may be found on
-  the web.</A> FontForge implements two python modules -- one great huge one
+  I assume you have a working knowledge of <A href="http://www.python.org/doc/">Python</A>.
+  FontForge implements two Python modules -- one great huge one
   called <CODE><A HREF="python.html#fontforge">fontforge</A></CODE> which provides
   access to as much of FontForge's functionality as I've had time to write,
   and one tiny one called
@@ -45,6 +44,15 @@
     <LI>
       <A href="#Font">font</A>
   </UL>
+  <H2>Command line convenience</H2>
+  <P>For convenience, Python commands given as a <CODE>-c</CODE> argument on the command line have the following code prepended:
+<BLOCKQUOTE>
+<PRE>from sys import argv; from fontforge import *</PRE>
+</BLOCKQUOTE>
+<P>Hence, the trivial script to convert a font can be written:
+<BLOCKQUOTE>
+<PRE>fontforge -c 'open(argv[1]).generate(argv[2])'</PRE>
+</BLOCKQUOTE>
   <TABLE id="module" border=1>
     <CAPTION>
       <A NAME="psMat">psMat</A>
@@ -443,26 +451,26 @@
 	  Example
 	</H3>
 	<BLOCKQUOTE>
-	  <PRE>import fontforge;
+	  <PRE>import fontforge
 
 def nameGlyph(junk,glyph):
-  print glyph.glyphname;
+  print glyph.glyphname
 
-fontforge.registerMenuItem(nameGlyph,None,None,"Glyph",None,"Print Glyph Name");
+fontforge.registerMenuItem(nameGlyph,None,None,"Glyph",None,"Print Glyph Name")
 
 def neverEnableMe(junk,glyph):
-  return False;
+  return False
 
-fontforge.registerMenuItem(nameGlyph,neverEnableMe,None,"Glyph",None,"SubMenu","Print Glyph Name");
+fontforge.registerMenuItem(nameGlyph,neverEnableMe,None,"Glyph",None,"SubMenu","Print Glyph Name")
 
 def importGlyph(junk,glyph,filename,toback):
-  print "Import";
-  print glyph.glyphname;
-  print filename;
+  print "Import"
+  print glyph.glyphname
+  print filename
 def exportGlyph(junk,glyph,filename):
-  print "Import";
-  print glyph.glyphname;
-  print filename;
+  print "Import"
+  print glyph.glyphname
+  print filename
 
 fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","foo,foobar")
 </PRE>
@@ -5169,19 +5177,7 @@ n.save("NewFont.sfd")                            #and save it.
     FontForge as a python <A NAME="extension">extension</A>
   </H2>
   <P>
-  If you have configured fontforge with the <CODE>--enable-pyextension</CODE>
-  argument, then when fontforge installs itself it will also set itself up
-  as something that can be used inside of python (up until now we have been
-  talking about using python inside of fontforge).
-  <BLOCKQUOTE id="shell">
-    <PRE><FONT COLOR="Gray">$ </FONT>./configure --enable-pyextension
-<FONT COLOR="Gray">$ </FONT>make
-<FONT COLOR="Gray">$ </FONT>sudo make install
-</PRE>
-  </BLOCKQUOTE>
-  <P>
-  once you do that you can invoke all of the above fontforge commands from
-  inside of python by saying:
+  When Fontforge is installed, it also installs a Python module, which can be accessed from Python using:
   <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">&gt;&gt;&gt; </FONT>import fontforge
 </PRE>
