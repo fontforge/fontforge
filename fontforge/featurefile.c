@@ -1654,7 +1654,7 @@ return;					/* No anchor positioning, no ligature carets */
     fprintf( out, "} GDEF;\n\n" );
 }
 
-static void dump_baseaxis(FILE *out,SplineFont *sf,struct Base *axis,char *key) {
+static void dump_baseaxis(FILE *out,struct Base *axis,char *key) {
     int i;
     struct basescript *script;
 
@@ -1694,8 +1694,8 @@ static void dump_base(FILE *out,SplineFont *sf) {
 return;
 
     fprintf( out, "table BASE {\n" );
-    dump_baseaxis(out,sf,sf->horiz_base,"Horiz");
-    dump_baseaxis(out,sf,sf->vert_base,"Vert");
+    dump_baseaxis(out,sf->horiz_base,"Horiz");
+    dump_baseaxis(out,sf->vert_base,"Vert");
     fprintf( out, "} BASE;\n\n" );
 }
 
@@ -5145,8 +5145,6 @@ static struct feat_item *fea_ParseSizeMenuName(struct parseState *tok, struct fe
 return( feat );
 }
 
-static void NameIdFree(struct nameid *);
-
 static void fea_ParseFeatureNames(struct parseState *tok,uint32 tag) {
     struct otffeatname *cur;
     struct otfname *head=NULL, *string;
@@ -6991,10 +6989,7 @@ static void fea_NameLookups(struct parseState *tok) {
 
 void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     struct parseState tok;
-    struct glyphclasses *gc, *gcnext;
     struct namedanchor *nap, *napnext;
-    struct namedvalue *nvr, *nvrnext;
-    int i,j;
     char oldloc[25];
 
     memset(&tok,0,sizeof(tok));

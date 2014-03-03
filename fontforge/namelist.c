@@ -101,7 +101,6 @@ static void psreinitnames(void) {
     /*  which means we must remove all the old hash entries before we can put */
     /*  in the new ones */
     int i;
-    struct psbucket *cur, *prev;
     NameList *nl;
 
     for ( i=0; i<HASH_SIZE; ++i )

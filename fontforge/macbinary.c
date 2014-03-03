@@ -2219,7 +2219,7 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 
 	offset += 4;
 	fseek(f,offset,SEEK_SET);
-	/* isfixed = */ getushort(f)&0x8000?1:0;
+	/* isfixed = */ getushort(f) /* &0x8000?1:0 */;
 	/* family id = */ getushort(f);
 	cur->first = getushort(f);
 	cur->last = getushort(f);
@@ -2546,7 +2546,6 @@ static SplineFont *SearchBitmapResources(FILE *f,long rlistpos,int subcnt,long r
 	long name_list,char *filename,FOND *fondlist,int flags) {
     long start = ftell(f);
     long roff;
-    int rname = -1;
     int ch1, ch2;
     int i,j;
     int res_id;
@@ -2605,7 +2604,7 @@ return( NULL );
     fseek(f,rlistpos,SEEK_SET);
     for ( i=0; i<subcnt; ++i ) {
 	res_id = getushort(f);
-	rname = (short) getushort(f);
+	/* rname = */ getushort(f);
 	/* flags = */ getc(f);
 	ch1 = getc(f); ch2 = getc(f);
 	roff = rdata_pos+((ch1<<16)|(ch2<<8)|getc(f));
@@ -2712,7 +2711,7 @@ static SplineFont *IsResourceFork(FILE *f, long offset,char *filename,int flags,
     /*  file, not at the beginning */
     unsigned char buffer[16], buffer2[16];
     long rdata_pos, map_pos, type_list, name_list, rpos;
-    int32 rdata_len, map_len;
+    int32 rdata_len;
     uint32 nfnt_pos, font_pos, fond_pos;
     unsigned long tag;
     int i, cnt, subcnt, nfnt_subcnt=0, font_subcnt=0, fond_subcnt=0;
@@ -2725,7 +2724,7 @@ return( NULL );
     rdata_pos = offset + ((buffer[0]<<24)|(buffer[1]<<16)|(buffer[2]<<8)|buffer[3]);
     map_pos = offset + ((buffer[4]<<24)|(buffer[5]<<16)|(buffer[6]<<8)|buffer[7]);
     rdata_len = ((buffer[8]<<24)|(buffer[9]<<16)|(buffer[10]<<8)|buffer[11]);
-    map_len = ((buffer[12]<<24)|(buffer[13]<<16)|(buffer[14]<<8)|buffer[15]);
+    /* map_len = ((buffer[12]<<24)|(buffer[13]<<16)|(buffer[14]<<8)|buffer[15]); */
     if ( rdata_pos+rdata_len!=map_pos || rdata_len==0 )
 return( NULL );
     fseek(f,map_pos,SEEK_SET);

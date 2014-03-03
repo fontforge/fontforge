@@ -79,7 +79,7 @@ extern void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer);
 
 
 /********************************************************************************/
-/** Allow both python.c and pythonui.c to aceess the python objects.          ***/
+/** Allow both python.c and pythonui.c to access the python objects.          ***/
 /********************************************************************************/
 
 /* Other sentinel values for end-of-array initialization */

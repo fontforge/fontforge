@@ -715,7 +715,6 @@ static PyObject *PyFF_UnicodeBlockEndFromLib(PyObject *UNUSED(self), PyObject *a
 static PyObject *PyFF_UnicodeBlockNameFromLib(PyObject *UNUSED(self), PyObject *args) {
 /* If the library is available, then get the official name for this unicode block */
 /* Use this function with UnicodeBlockStartFromLib(n), UnicodeBlockEndFromLib(n). */
-    PyObject *ret;
     char *temp;
     long val;
 
@@ -730,7 +729,6 @@ static PyObject *PyFF_UnicodeBlockNameFromLib(PyObject *UNUSED(self), PyObject *
 
 static PyObject *PyFF_UnicodeNamesListVersion(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
 /* If the library is available, then return the Nameslist Version number */
-    PyObject *ret;
     char *temp;
 
     if ( (temp=unicode_library_version())==NULL ) {
@@ -1210,7 +1208,6 @@ return( Py_BuildValue("i",ff_choose(title,(const char **) answers,cnt,def,quest)
 static PyObject *PyFF_askString(PyObject *UNUSED(self), PyObject *args) {
     char *title,*quest, *def = NULL;
     char *ret;
-    PyObject *reto;
 
     if ( no_windowing_ui ) {
 	PyErr_Format(PyExc_EnvironmentError, "No user interface");
@@ -6207,7 +6204,6 @@ static int PyFF_Glyph_set_dhints(PyFF_Glyph *self,PyObject *value, void *UNUSED(
     int i, cnt;
     double len, width;
     double lx, ly, rx, ry, ux, uy;
-    DStemInfo **_head = &sc->dstem;
 
     cnt = PySequence_Size(value);
     if ( cnt==-1 )
@@ -12979,7 +12975,6 @@ return( ret );
 static PyObject *PyFFFont_appendSFNTName(PyFF_Font *self, PyObject *args) {
     SplineFont *sf;
     struct ttflangname dummy;
-    int i;
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
@@ -15338,7 +15333,6 @@ static PyObject *PyFFFont_removeGlyph(PyFF_Font *self, PyObject *args) {
     char *name=NULL;
     FontViewBase *fv;
     SplineChar *sc;
-    int flags = 0;	/* Currently unused */
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
@@ -15369,7 +15363,7 @@ return( NULL );
 return( NULL );
 	}
     }
-    SFRemoveGlyph(fv->sf,sc,&flags);
+    SFRemoveGlyph(fv->sf,sc);
 Py_RETURN( self );
 }
 
@@ -17615,16 +17609,8 @@ static PyObject *InitializePythonMainNamespace() {
 }
 
 static void CreateAllPyModules(void) {
-    int i;
-
-    /*
-    if (!quiet)
-        printf("CreateAllPyModules()\n");
-    */
-
-    for ( i=0; i<NUM_MODULES; i++ ) {
+    for ( int i=0; i<NUM_MODULES; i++ )
         CreatePyModule( all_modules[i] );
-    }
 }
 
 
@@ -17650,11 +17636,7 @@ void FontForge_InitializeEmbeddedPython(void) {
 
     SetPythonProgramName("fontforge");
     RegisterAllPyModules();
-#ifdef MAC
-    PyMac_Initialize();
-#else
     Py_Initialize();
-#endif
     initialized = 1;
 
     /* The embedded python interpreter is now functionally

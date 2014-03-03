@@ -630,7 +630,7 @@ void ArchiveCleanup(char *archivedir) {
 static char *ArchiveParseTOC(char *listfile, enum archive_list_style ars, int *doall) {
     FILE *file;
     int nlcnt, ch, linelen, linelenmax, fcnt, choice, i, def, def_prio, prio;
-    char **files, *linebuffer, *pt, *name;
+    char **files, *linebuffer, *pt;
 
     *doall = false;
     file = fopen(listfile,"r");

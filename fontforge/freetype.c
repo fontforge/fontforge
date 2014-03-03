@@ -872,7 +872,7 @@ return( SplineSetStroke(layer->splines,&si,layer->order2));
     }
 }
 
-static SplineSet *RStrokeOutline(struct reflayer *layer,SplineChar *sc) {
+static SplineSet *RStrokeOutline(struct reflayer *layer) {
     StrokeInfo si;
 
     memset(&si,0,sizeof(si));
@@ -1047,7 +1047,7 @@ return( NULL );
 			MergeBitmaps(&bitmap,&temp,&r->layers[j].fill_brush,clipmask,rscale,&b,sc);
 		    }
 		    if ( r->layers[j].dostroke ) {
-			SplineSet *stroked = RStrokeOutline(&r->layers[j],sc);
+			SplineSet *stroked = RStrokeOutline(&r->layers[j]);
 			memset(temp.buffer,0,temp.pitch*temp.rows);
 			FillOutline(stroked,&outline,&pmax,&cmax,
 				scale,&b,sc->layers[i].order2,true);

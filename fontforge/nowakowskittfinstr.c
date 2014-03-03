@@ -2488,7 +2488,7 @@ static void assign_points_to_edge(InstrCt *ct, StemData *stem, int is_l, int *re
 }
 
 static void init_stem_edge(InstrCt *ct, StemData *stem, int is_l) {
-    real left, right, base, other;
+    real left, right, base;
     struct dependent_stem *slave;
     PointData *rpd = NULL;
     int i, *refidx = NULL;
@@ -2496,7 +2496,6 @@ static void init_stem_edge(InstrCt *ct, StemData *stem, int is_l) {
     left = ( stem->unit.x == 0 ) ? stem->left.x : stem->left.y;
     right = ( stem->unit.x == 0 ) ? stem->right.x : stem->right.y;
     base = ( is_l ) ? left : right;
-    other = ( is_l ) ? right : left;
 
     ct->edge.base = base;
     ct->edge.refpt = -1;
@@ -3517,7 +3516,7 @@ static int snap_stem_to_blue(InstrCt *ct,StemData *stem, BlueZone *blue, int idx
  * its 'highest' and 'lowest' point indices.
  */
 static void snap_to_blues(InstrCt *ct) {
-    int i, j, cvt;
+    int i, j;
     int therewerestems;      /* were there any HStems snapped to this blue? */
     StemData *stem;          /* for HStems affected by blues */
     real base; /* for the hint */
@@ -3542,7 +3541,6 @@ return;
     /* Process the blues. */
     for (i=0; i<bluecnt; i++) {
 	therewerestems = 0;
-	cvt = callargs[1] = blues[queue[i]].cvtindex;
 
 	/* Process all hints with edges within current blue zone. */
 	for ( j=0; j<ct->gd->hbundle->cnt; j++ ) {
@@ -4263,7 +4261,7 @@ return( 0 );
  * (i. e. has not yet been touched) and set freedom vector to that
  * direction in case it has not already been set.
  */
-static int SetFreedomVector( uint8 **instrs,int pnum,int ptcnt,
+static int SetFreedomVector( uint8 **instrs,int pnum,
     uint8 *touched,DiagPointInfo *diagpts,BasePoint *norm,BasePoint *fv,int pvset,int fpgm_ok ) {
 
     int i, pushpts[3];
@@ -4346,8 +4344,6 @@ return( false );
 
 static uint8 *FixDStemPoint ( InstrCt *ct,StemData *stem,
     int pt,int refpt,int firstedge,int cvt,BasePoint *fv ) {
-
-    PointData *v1, *v2;
     uint8 *instrs, *touched;
     int ptcnt;
     DiagPointInfo *diagpts;
@@ -4357,13 +4353,7 @@ static uint8 *FixDStemPoint ( InstrCt *ct,StemData *stem,
     touched = ct->touched;
     instrs = ct->pt;
 
-    if ( firstedge ) {
-        v1 = stem->keypts[0]; v2 = stem->keypts[1];
-    } else {
-        v1 = stem->keypts[2]; v2 = stem->keypts[3];
-    }
-
-    if ( SetFreedomVector( &instrs,pt,ptcnt,touched,diagpts,&stem->l_to_r,fv,true,
+    if ( SetFreedomVector( &instrs,pt,touched,diagpts,&stem->l_to_r,fv,true,
             ct->gic->fpgm_done && ct->gic->prep_done )) {
         if ( refpt == -1 ) {
             if (( fv->x == 1 && !( touched[pt] & tf_x )) || 
@@ -4571,7 +4561,7 @@ static uint8 *FixPointOnLine ( DiagPointInfo *diagpts,PointVector *line,
 
     newpv = GetVector( &line->pd1->base,&line->pd2->base,true );
 
-    if ( SetFreedomVector( &instrs,pd->ttfindex,ptcnt,touched,diagpts,&newpv,fv,false,
+    if ( SetFreedomVector( &instrs,pd->ttfindex,touched,diagpts,&newpv,fv,false,
             ct->gic->fpgm_done && ct->gic->prep_done )) {
         if ( ct->rp0 != line->pd1->ttfindex ) {
             instrs = pushpoint( instrs,line->pd1->ttfindex );

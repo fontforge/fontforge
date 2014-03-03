@@ -2726,7 +2726,7 @@ return( eret );
 static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent) {
     struct svg_state st;
     char *num, *end;
-    double x,y,swidth,sheight,width=1,height=1;
+    double swidth,sheight,width=1,height=1;
 
     memset(&st,0,sizeof(st));
     st.lc = lc_inherited;
@@ -2757,8 +2757,8 @@ static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent) {
     if ( width<=0 ) width = 1;
     num = (char *) xmlGetProp(svg,(xmlChar *) "viewBox");
     if ( num!=NULL ) {
-	x = strtod((char *) num,&end);
-	y = strtod((char *) end+1,&end);
+	/* x = */strtod((char *) num,&end);
+	/* y = */strtod((char *) end+1,&end);
 	swidth = strtod((char *) end+1,&end);
 	sheight = strtod((char *) end+1,&end);
 	xmlFree(num);
