@@ -488,11 +488,11 @@ AC_CHECK_FUNCS([uname])
 AH_TOP([#ifndef _FF_CONFIG_H
 #define _FF_CONFIG_H 1
 
-# define malloc GC_malloc
-# define realloc GC_realloc
-# define free GC_free
-# define strdup GC_strdup
-# define strndup GC_strndup
+#define malloc GC_malloc
+#define realloc GC_realloc
+#define free GC_free
+#define strdup GC_strdup
+#define strndup GC_strndup
 #define calloc fontforge_calloc
 ])
 AH_BOTTOM([#endif])
@@ -681,28 +681,8 @@ FONTFORGE_CREATE_PKGCONFIG_FILES
 AC_CONFIG_FILES([fontforgeexe/darwinsetup],[chmod +x fontforgeexe/darwinsetup])
 
 #--------------------------------------------------------------------------
-# Create FontForge and Python test scripts to be used with 'make check' or
-# individually as 'fontforge --lang=XX --script=testXXXX.XX'
+# Create FontForge and Python test driver
 AC_CONFIG_FILES([tests/atlocal])
-
-rm -f tests/*.pe tests/*.py
-
-ff_script_files="helper107 helper118A helper118B svg2ttf test001	\
-      test002 test003 test004 test005 test006 test007 test008 test009	\
-      test010 test101 test102 test103 test104 test105 test106 test107	\
-      test108 test109 test110 test111 test112 test113 test114 test115	\
-      test116 test117 test118 test119 test120 test121 test122 test123	\
-      test124 test125 test126 test127"
-for arg in ${ff_script_files}; do
-  AC_CONFIG_FILES([tests/$arg.pe])
-done
-
-py_script_files="findoverlapbugs test0001 test0101 test1001a test1001b \
-	test1001c test1001 test1002 test1003 test1004 test1005 test1006	\
-	test1007"
-for arg in ${py_script_files}; do
-  AC_CONFIG_FILES([tests/$arg.py])
-done
 
 #--------------------------------------------------------------------------
 # Collect "GIT" compile-time information to help when debugging FontForge.
@@ -723,8 +703,6 @@ AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_RAW,$FONTFORGE_MODTIME,"Epoch time that con
 AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_STR_RAW,$FONTFORGE_MODTIME_STR,
 	"A user friendly date that that configure was run at: For example 01:48 GMT 6-Sep-2012 (no quotes)")
 AC_DEFINE_UNQUOTED(FONTFORGE_VERSIONDATE_RAW,$FONTFORGE_VERSIONDATE,"YYYYMMDD as number when configure was run (no quotes)")
-
-#--------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------
 
