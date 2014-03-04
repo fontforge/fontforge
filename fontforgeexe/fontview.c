@@ -1131,7 +1131,7 @@ static void FVMenuPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED
 
     if ( fv->b.container!=NULL && fv->b.container->funcs->is_modal )
 return;
-    PrintDlg(fv,NULL,NULL);
+    PrintTextDlg(fv,NULL,NULL);
 }
 
 static void FVMenuExecute(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {

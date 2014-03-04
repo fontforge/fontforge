@@ -29,6 +29,8 @@
 #if defined(__MINGW32__)
 #include <winsock2.h>
 #include <windows.h>
+#else
+#include <unistd.h>		/* for timers & select */
 #endif
 
 #include "gxdrawP.h"
@@ -36,10 +38,8 @@
 
 #include <stdlib.h>
 #include <math.h>
-
 #include <sys/types.h>		/* for timers & select */
 #include <sys/time.h>		/* for timers & select */
-#include <unistd.h>		/* for timers & select */
 #include <signal.h>		/* error handler */
 #include <locale.h>		/* for setting the X locale properly */
 
