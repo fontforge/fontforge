@@ -31,7 +31,7 @@
 #include "ttf.h"
 #include "mm.h"
 
-char *MMAxisAbrev(char *axis_name) {
+const char *MMAxisAbrev(char *axis_name) {
     if ( strcmp(axis_name,"Weight")==0 )
 return( "wt" );
     if ( strcmp(axis_name,"Width")==0 )

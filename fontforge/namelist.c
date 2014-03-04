@@ -37,7 +37,7 @@ NameList *force_names_when_opening=NULL;
 NameList *force_names_when_saving=NULL;
 
 static struct psaltnames {
-    char *name;
+    const char *name;
     int unicode;
     int provenance;		/* 1=> Adobe PUA, 2=>AMS PUA, 3=>TeX */
 } psaltnames[];
