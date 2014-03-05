@@ -27,6 +27,9 @@
 
 #include "flaglist.h"
 
+/*********** PYTHON 3 **********/
+#if PY_MAJOR_VERSION >= 3
+
 #define PyInt_Check    PyLong_Check
 #define PyInt_AsLong   PyLong_AsLong
 #define PyInt_FromLong PyLong_FromLong
@@ -39,6 +42,20 @@
 #define STRING_FROM_FORMAT           PyUnicode_FromFormat
 
 #define PICKLE "pickle"
+
+#else /* PY_MAJOR_VERSION >= 3 */
+/*********** PYTHON 2 **********/
+
+#define ANYSTRING_CHECK(obj) ( PyUnicode_Check(obj) || PyString_Check(obj) )
+#define STRING_CHECK   PyBytes_Check
+#define STRING_TO_PY   PyBytes_FromString
+#define DECODE_UTF8(s, size, errors) PyString_Decode(s, size, "UTF-8", errors)
+#define PYBYTES_UTF8(str)            PyString_AsEncodedObject(str, "UTF-8", NULL)
+#define STRING_FROM_FORMAT           PyBytes_FromFormat
+
+#define PICKLE "cPickle"
+
+#endif /* PY_MAJOR_VERSION >= 3 */
 
 /*********** Common **********/
 #ifndef Py_TYPE
@@ -66,6 +83,46 @@
 
 
 extern char* AnyPyString_to_UTF8( PyObject* );
+
+#if PY_MAJOR_VERSION < 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION <= 7)
+#define PyBytesObject PyStringObject
+#define PyBytes_Type PyString_Type
+
+#define PyBytes_Check PyString_Check
+#define PyBytes_CheckExact PyString_CheckExact 
+#define PyBytes_CHECK_INTERNED PyString_CHECK_INTERNED
+#define PyBytes_AS_STRING PyString_AS_STRING
+#define PyBytes_GET_SIZE PyString_GET_SIZE
+#define Py_TPFLAGS_BYTES_SUBCLASS Py_TPFLAGS_STRING_SUBCLASS
+
+#define PyBytes_FromStringAndSize PyString_FromStringAndSize
+#define PyBytes_FromString PyString_FromString
+#define PyBytes_FromFormatV PyString_FromFormatV
+#define PyBytes_FromFormat PyString_FromFormat
+#define PyBytes_Size PyString_Size
+#define PyBytes_AsString PyString_AsString
+#define PyBytes_Repr PyString_Repr
+#define PyBytes_Concat PyString_Concat
+#define PyBytes_ConcatAndDel PyString_ConcatAndDel
+#define _PyBytes_Resize _PyString_Resize
+#define _PyBytes_Eq _PyString_Eq
+#define PyBytes_Format PyString_Format
+#define _PyBytes_FormatLong _PyString_FormatLong
+#define PyBytes_DecodeEscape PyString_DecodeEscape
+#define _PyBytes_Join _PyString_Join
+#define PyBytes_Decode PyString_Decode
+#define PyBytes_Encode PyString_Encode
+#define PyBytes_AsEncodedObject PyString_AsEncodedObject
+#define PyBytes_AsEncodedString PyString_AsEncodedString
+#define PyBytes_AsDecodedObject PyString_AsDecodedObject
+#define PyBytes_AsDecodedString PyString_AsDecodedString
+#define PyBytes_AsStringAndSize PyString_AsStringAndSize
+#define _PyBytes_InsertThousandsGrouping _PyString_InsertThousandsGrouping
+#endif
+
+#if PY_MAJOR_VERSION < 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION <= 4)
+typedef int Py_ssize_t;
+#endif
 
 extern SplineChar *sc_active_in_ui;
 extern FontViewBase *fv_active_in_ui;
