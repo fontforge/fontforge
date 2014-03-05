@@ -29,9 +29,11 @@ pyexec_LTLIBRARIES = psMat.la fontforge.la
 
 psMat_la_SOURCES = psMatpyhook.c
 psMat_la_LIBADD = $(LIBADD)
+psMat_la_LDFLAGS = $(MY_LIB_LDFLAGS) -module
 
 fontforge_la_SOURCES = fontforgepyhook.c
 fontforge_la_LIBADD = $(LIBADD)
+fontforge_la_LDFLAGS = $(MY_LIB_LDFLAGS) -module
 
 AM_CFLAGS = $(WARN_CFLAGS)
 
