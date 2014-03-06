@@ -2592,6 +2592,8 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 	        putc(' ',sfd);
 	        SFDDumpUTF7Str(sfd,an->subtable->subtable_name );
             }
+            else
+                fprintf(sfd, " \"\" ");
 	}
 	putc('\n',sfd);
     }
