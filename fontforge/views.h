@@ -727,6 +727,7 @@ extern void FVAutoWidth2(FontView *fv);
 extern void SC_MarkInstrDlgAsChanged(SplineChar *sc);
 
 extern void PythonUI_Init(void);
+extern void PythonUI_namedpipe_Init(void);
 
 extern void SCStroke(SplineChar *sc);
 
@@ -1390,6 +1391,8 @@ extern void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, const char* keyPrefi
 extern void Prefs_LoadDefaultPreferences( void );
 
 
+extern CharView* CharViewFindActive();
+extern FontViewBase* FontViewFindActive();
 extern FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* ), void* udata );
 extern int FontViewFind_byXUID(      FontViewBase* fv, void* udata );
 extern int FontViewFind_byXUIDConnected( FontViewBase* fv, void* udata );

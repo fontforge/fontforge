@@ -6926,6 +6926,7 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	FVTimer(fv,event);
       break;
       case et_focus:
+	  printf("fv.et_focus\n");
 	if ( event->u.focus.gained_focus )
 	    GDrawSetGIC(gw,fv->gic,0,20);
       break;
@@ -7015,6 +7016,8 @@ void FontViewRemove(FontView *fv) {
  */
 extern int osx_fontview_copy_cut_counter;
 
+static FontView* ActiveFontView = 0;
+
 static int fv_e_h(GWindow gw, GEvent *event) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
@@ -7024,6 +7027,16 @@ return( GGadgetDispatchEvent(fv->vsb,event));
     }
 
     switch ( event->type ) {
+      case et_focus:
+	  if ( event->u.focus.gained_focus )
+	  {
+	      printf("fv.et_focus fv_e_h\n");
+	      ActiveFontView = fv;
+	  }
+	  else
+	  {
+	  }
+	  break;
       case et_selclear:
 #ifdef __Mac
 	  // For some reason command + c and command + x wants
@@ -7967,6 +7980,22 @@ int FontViewFind_bySplineFont( FontViewBase* fv, void* udata )
 	return 0;
     return fv->sf == udata;
 }
+
+static int FontViewFind_ActiveWindow( FontViewBase* fvb, void* udata )
+{
+    FontView* fv = (FontView*)fvb;
+    return( fv->gw == udata || fv->v == udata );
+}
+
+FontViewBase* FontViewFindActive()
+{
+    return ActiveFontView;
+    /* GWindow w = GWindowGetCurrentFocusTopWindow(); */
+    /* FontViewBase* ret = FontViewFind( FontViewFind_ActiveWindow, w ); */
+    /* return ret; */
+}
+
+
 
 FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* udata ), void* udata )
 {

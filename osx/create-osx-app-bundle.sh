@@ -64,6 +64,8 @@ sed -i -e "s/CFBundleGetInfoStringChangeMe/$CFBundleGetInfoString/g" $TEMPDIR/Fo
 sed -i -e "s/CFBundleVersionChangeMe/$FONTFORGE_VERSIONDATE_RAW/g" $TEMPDIR/FontForge.app/Contents/Info.plist
 
 
+
+
 #
 # Now to fix the binaries to have shared library paths that are all inside
 # the distrubtion instead of off into /opt/local or where macports puts things.
@@ -73,6 +75,15 @@ dylibbundler --overwrite-dir --bundle-deps --fix-file \
   ./fontforge \
   --install-path @executable_path/../lib \
   --dest-dir ../lib
+
+# # dylibbundler wants to do overwrite-dir in order to fix the shared libraries too
+# # but we want to preserve any existing subdirs, so we do the dylibundle to another
+# # dir and then move the nice generated output to ./lib before moving on.
+# cd ../lib-bundle
+# cp -av . ../lib
+# cd ..
+# rm -rf ./lib-bundle
+# cd ./bin
 dylibbundler --overwrite-dir --bundle-deps --fix-file \
   ./FontForgeInternal/fontforge-internal-collab-server \
   --install-path @executable_path/collablib \
@@ -87,6 +98,25 @@ do
     cp -av /opt/local/lib/$if $bundle_lib/
     library-paths-opt-local-to-absolute.sh $bundle_lib/$if 
 done
+
+# cd $bundle_lib
+# cd ./python2.7/site-packages/fontforge.so
+# for if in $(find . -name "*so")
+# do
+#     echo $if
+#     library-paths-opt-local-to-absolute.sh $if
+
+#     install_name_tool -change /opt/local/home/ben/bdwgc/lib/libgc.1.dylib /Applications/FontForge.app/Contents/Resources/opt/local/lib/libgc.1.dylib $if
+#     install_name_tool -change /usr/lib/libedit.3.dylib /Applications/FontForge.app/Contents/Resources/opt/local/lib/libedit.3.dylib $if
+#     install_name_tool -change /opt/local/Library/Frameworks/Python.framework/Versions/2.7/Python \
+#        /Applications/FontForge.app/Contents/Resources//opt/local/Library/Frameworks/Python.framework/Versions/2.7/Python \
+#        $if
+
+# done
+
+
+
+
 cd $bundle_bin
 
 
