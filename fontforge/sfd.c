@@ -3827,14 +3827,21 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 			ttfindex = cur->last->nextcpindex+1;
 		    SplineMake(cur->last,pt,order2);
 		    cur->last = pt;
+		    // pt->me is a copy of 'current' so we should now move
+		    // the x coord of pt->me back to where it should be.
+		    // The whole aim here is that this spline remains an open path
+		    // when PTFLAG_FORCE_OPEN_PATH is set.
+		    pt->me.x = original_current_x;
 		}
 
 		// Move the point back to the same location it was
 		// but do not connect it back to the point that is
 		// already there.
 		if( val & SFD_PTFLAG_FORCE_OPEN_PATH )
+		{
 		    current.x = original_current_x;
-
+		}
+		
 		sp -= 6;
 	    } else
 		sp = 0;
