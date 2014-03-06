@@ -1203,6 +1203,9 @@ exit( 0 );
     collabclient_ensureClientBeacon();
     collabclient_sniffForLocalServer();
 
+    PythonUI_namedpipe_Init();
+    
+
 #if defined(__Mac)
     if ( listen_to_apple_events ) {
 	install_apple_event_handlers();
