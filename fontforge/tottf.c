@@ -3961,7 +3961,7 @@ static void AddMacName(NamTab *nt,struct macname *mn, int strid) {
 /* Undocumented fact: Windows insists on having a UniqueID string 3,1 */
 static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format) {
     int i,j;
-    struct ttflangname dummy, *cur, *useng = NULL;
+    struct ttflangname dummy, *cur;
     struct macname *mn;
     struct other_names *on, *onn;
     NamTab nt;
@@ -3980,7 +3980,6 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     for ( cur=sf->names; cur!=NULL; cur=cur->next ) {
 	if ( cur->lang==0x409 ) {
 	    dummy = *cur;
-	    useng = cur;
     break;
 	}
     }
@@ -4344,7 +4343,6 @@ return( sub );
 static FILE *Needs816Enc(SplineFont *sf,int *tlen,EncMap *map, FILE **apple, int *appletlen) {
     FILE *sub;
     const char *encname = map->enc->iconv_name!=NULL ? map->enc->iconv_name : map->enc->enc_name;
-    EncMap *oldmap = map;
     EncMap *applemap = NULL;
     Encoding *enc;
 
@@ -6115,7 +6113,7 @@ static void dumphex(struct hexout *hexout,FILE *temp,int length) {
     fprintf( hexout->type42, "\n  00\n >\n" );
 }
 
-static void dumptype42(FILE *type42,struct alltabs *at, enum fontformat format) {
+static void dumptype42(FILE *type42,struct alltabs *at) {
     FILE *temp = tmpfile();
     struct hexout hexout;
     int i, length;
@@ -6180,7 +6178,7 @@ int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
     at.opentypemode = false;
 
     if ( initTables(&at,sf,format,NULL,bf_none))
-	dumptype42(type42,&at,format);
+	dumptype42(type42,&at);
 
     setlocale(LC_NUMERIC,oldloc);
     if ( at.error || ferror(type42))
@@ -6322,8 +6320,7 @@ static void hashglyphadd(SplineChar *sc,UHash *uhash,NHash *nhash) {
 }
 
 static struct alltabs *ttc_prep(struct sflist *sfs, enum fontformat format,
-	enum bitmapformat bf,int flags, int layer, int ttcflags,
-	SplineFont *dummysf) {
+				enum bitmapformat bf,int flags, int layer,SplineFont *dummysf) {
     struct alltabs *ret;
     int fcnt, cnt, gcnt=3;
     struct sflist *sfitem;
@@ -6504,7 +6501,7 @@ return( dumpstoredtable(sf,tag,len));
 }
 
 static void ttc_perfonttables(struct alltabs *all, int me, int mainpos,
-	enum fontformat format, int flags ) {
+	enum fontformat format ) {
     struct alltabs *at = &all[me];
     struct alltabs *main = &all[mainpos];
     SplineFont *sf = at->sf;
@@ -6572,9 +6569,9 @@ static void ttc_perfonttables(struct alltabs *all, int me, int mainpos,
 }
 
 static int tablefilematch(struct taboff *tab,FILE *ttc,struct alltabs *all,int pos) {
-    int i;
+    int i, ch1, ch2;
     struct taboff *test;
-    int ch1, ch2, len;
+    unsigned len;
 
     /* See if this table (which lives in its own file) matches any tables */
     /*  with the same tag in an earlier font */
@@ -6601,8 +6598,7 @@ return( i );
 return( -1 );
 }
 
-static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
-	int flags, enum ttc_flags ttc_flags ) {
+static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format, int flags ) {
     int i,j,cnt,tot,ch,dup;
     int offset, startoffset;
     struct taboff *tab;
@@ -6668,7 +6664,7 @@ static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
 
     for ( i=0; i<cnt; ++i ) {
 	/* Now generate all tables unique to this font */
-	ttc_perfonttables(all, i, cnt, format, all[i].gi.flags );
+	ttc_perfonttables(all, i, cnt, format );
 	buildtablestructures(&all[i],all[i].sf,format);
 	/* Check for any tables which match those of a previous font */
 	for ( j=0 ; j<all[i].tabdir.numtab; ++j ) {
@@ -6850,11 +6846,11 @@ return( 0 );
     dobruteforce = true;
     if ( (ttcflags & ttc_flag_trymerge) && bf==bf_none ) {
 	dobruteforce = false;
-	ret = ttc_prep(sfs,format,bf,flags,layer,ttcflags,&dummysf);
+	ret = ttc_prep(sfs,format,bf,flags,layer,&dummysf);
 	if ( ret==NULL )
 	    dobruteforce = true;
 	else
-	    ttc_dump(ttc,ret,format,flags,ttcflags);
+	    ttc_dump(ttc,ret,format,flags);
     }
     if ( dobruteforce ) {
 	/* Create a trivial ttc where each font is its own entity and there */
