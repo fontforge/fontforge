@@ -52,6 +52,8 @@
  * wget http://unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/JIS0212.TXT
  */
 
+#include <fontforge-config.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

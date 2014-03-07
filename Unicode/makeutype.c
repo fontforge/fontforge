@@ -50,6 +50,7 @@
  * LineBreak.txt, NamesList.txt, PropList.txt,UnicodeData.txt, and the
  * binary executable file makeutype as they are no longer needed now.
  */
+#include <fontforge-config.h>
 
 
 /* Build a ctype array out of the UnicodeData.txt and PropList.txt files */
