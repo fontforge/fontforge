@@ -37,7 +37,7 @@ NameList *force_names_when_opening=NULL;
 NameList *force_names_when_saving=NULL;
 
 static struct psaltnames {
-    char *name;
+    const char *name;
     int unicode;
     int provenance;		/* 1=> Adobe PUA, 2=>AMS PUA, 3=>TeX */
 } psaltnames[];
@@ -101,7 +101,6 @@ static void psreinitnames(void) {
     /*  which means we must remove all the old hash entries before we can put */
     /*  in the new ones */
     int i;
-    struct psbucket *cur, *prev;
     NameList *nl;
 
     for ( i=0; i<HASH_SIZE; ++i )

@@ -3910,7 +3910,6 @@ struct lookup_subtable *SFSubTableFindOrMake(SplineFont *sf,uint32 tag,uint32 sc
     OTLookup *otl, *found=NULL;
     int isgpos = lookup_type>=gpos_start;
     struct lookup_subtable *sub;
-    int isnew = false;
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
     base = isgpos ? &sf->gpos_lookups : &sf->gsub_lookups;
@@ -3935,7 +3934,6 @@ return( sub );
 	found->features->scripts->lang_cnt = 1;
 
 	SortInsertLookup(sf, found);
-	isnew = true;
     }
 
     sub = XZALLOC(struct lookup_subtable);
@@ -4372,7 +4370,7 @@ int KernClassFindIndexContaining( char **firsts_or_seconds,
 }
 
 
-int KernClassContains(KernClass *kc, char *name1, char *name2, int ordered ) {
+int KernClassContains(KernClass *kc, const char *name1, const char *name2, int ordered ) {
     int infirst=0, insecond=0, scpos1, kwpos1, scpos2, kwpos2;
     int i;
 

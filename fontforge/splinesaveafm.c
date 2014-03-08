@@ -1363,10 +1363,9 @@ static void AfmBuildMarkCombos(SplineChar *sc,AnchorPoint *ap, struct cc_contain
 	    this->accents = cca;
 	    ++acnt;
 	}
-	if ( !AfmBuildCCName(this,cc)) {
-	    struct cc_accents *cca, *next;
+	if ( !AfmBuildCCName(this,cc))
 	    --cc->cnt;
-	} else
+	else
 	    this->acnt = acnt;
     } else if ( ap->ticked ) {
 	int ac_num = ap->anchor->ac_num;

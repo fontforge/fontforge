@@ -2560,7 +2560,7 @@ static void bMultipleEncodingsToReferences(Context *c) {
 		(orig = sf->glyphs[gid])!=NULL && orig->altuni!=NULL ) {
 	    prev = NULL;
 	    for ( alt = orig->altuni; alt!=NULL; alt=next ) {
-		if ( alt->vs==(unsigned)-1 ) {
+		if ( alt->vs==-1 ) {
 		    next = alt->next;
 		    uni = alt->unienc;
 		    orig->altuni = next;
@@ -2760,7 +2760,7 @@ static void bSelectAllInstancesOf(Context *c) {
 	if ( c->a.vals[i].type==v_unicode ) {
 	    int uni = c->a.vals[i].u.ival;
 	    for ( j=0; j<map->enccount; ++j ) if ( (gid=map->map[j])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
-                    for ( alt=sc->altuni; alt!=NULL && alt->unienc!=(unichar_t)uni; alt=alt->next );
+                    for ( alt=sc->altuni; alt!=NULL && alt->unienc!=uni; alt=alt->next );
 		if ( sc->unicodeenc == uni || alt!=NULL )
 		    fv->selected[j] = true;
 	    }
@@ -3112,7 +3112,6 @@ static void bRemoveDetachedGlyphs(Context *c) {
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
     SplineChar *sc;
-    int flags = -1;
     int changed = false;
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( sf->glyphs[gid]!=NULL )
@@ -3122,7 +3121,7 @@ static void bRemoveDetachedGlyphs(Context *c) {
 	sf->glyphs[gid]->ticked = true;
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && !sc->ticked ) {
-	SFRemoveGlyph(sf,sc,&flags);
+	SFRemoveGlyph(sf,sc);
 	changed = true;
     }
     if ( changed && !sf->changed ) {
@@ -4031,7 +4030,7 @@ static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
     int opos=dest->orig_pos, uenc=dest->unicodeenc;
     struct splinecharlist *scl = dest->dependents;
     RefChar *refs;
-    int layer, last;
+    int layer;
     int lc;
     Layer *layers;
 
@@ -4039,10 +4038,6 @@ static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
 return;
 
     SCPreserveLayer(dest,ly_fore,2);
-
-    last = ly_fore;
-    if ( dest->parent->multilayer )
-	last = dest->layer_cnt-1;
 
     layers = dest->layers;
     lc = dest->layer_cnt;
@@ -4117,7 +4112,6 @@ static void FVApplySubstitution(FontViewBase *fv,uint32 script, uint32 lang, uin
     int i, gid, gid2;
     SplineChar **replacements;
     uint8 *removes;
-    int flags = -1;
 
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
@@ -4159,7 +4153,7 @@ static void FVApplySubstitution(FontViewBase *fv,uint32 script, uint32 lang, uin
 		    }
 		}
 	    }
-	    SFRemoveGlyph(sf,sc,&flags);
+	    SFRemoveGlyph(sf,sc);
 	}
     }
 
@@ -5433,7 +5427,7 @@ static void bInterpolateFonts(Context *c) {
     sf = LoadSplineFont(locfilename,openflags);
     if ( sf==NULL )
 	ScriptErrorString(c,"Can't find font", c->a.vals[2].u.sval);
-    c->curfv = FVAppend(_FontViewCreate(InterpolateFont(c->curfv->sf,sf,percent/100.0, c->curfv->map->enc )));
+    c->curfv = FVAppend(_FontViewCreate(InterpolateFont(c->curfv->sf,sf,(double)percent/100.0, c->curfv->map->enc )));
 }
 
 static void bDefaultUseMyMetrics(Context *c) {
@@ -5590,7 +5584,7 @@ return;
     }
 }
 
-static void prterror(void *foo, char *msg, int pos) {
+static void prterror(void *UNUSED(foo), char *msg, int UNUSED(pos)) {
     fprintf( stderr, "%s\n", msg );
 }
 
@@ -5661,7 +5655,7 @@ static void bGetCvtAt(Context *c) {
     if ( c->a.vals[1].type!=v_int )
 	ScriptError( c, "Bad argument type" );
     for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=CHR('c','v','t',' '); tab=tab->next );
-    if ( tab==NULL || c->a.vals[1].u.ival>=tab->len/2 )
+    if ( tab==NULL || c->a.vals[1].u.ival>=(int)tab->len/2 )
 	ScriptError(c,"Cvt table is either not present or too short");
     c->return_val.type = v_int;
     c->return_val.u.ival = memushort(tab->data,tab->len,
@@ -5677,7 +5671,7 @@ static void bReplaceCvtAt(Context *c) {
     if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
 	ScriptError( c, "Bad argument type" );
     for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=CHR('c','v','t',' '); tab=tab->next );
-    if ( tab==NULL || c->a.vals[1].u.ival>=tab->len/2 )
+    if ( tab==NULL || c->a.vals[1].u.ival>=(int)tab->len/2 )
 	ScriptError(c,"Cvt table is either not present or too short");
     memputshort(tab->data,sizeof(uint16)*c->a.vals[1].u.ival,
 	    c->a.vals[2].u.ival);
@@ -6600,7 +6594,6 @@ return;
 
 static void bAddAnchorClass(Context *c) {
     AnchorClass *ac, *t;
-    unichar_t *ustr;
     SplineFont *sf = c->curfv->sf;
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
@@ -6623,8 +6616,6 @@ static void bAddAnchorClass(Context *c) {
 	ScriptErrorString(c,"This font already contains an anchor class with this name: ", c->a.vals[1].u.sval );
 
     ac->subtable = SFFindLookupSubtable(sf,c->a.vals[3].u.sval);
-    /* if ( ac->subtable==NULL )
-	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[3].u.sval); */
 
     if ( strmatch(c->a.vals[2].u.sval,"default")==0 || strmatch(c->a.vals[2].u.sval,"mark")==0 )
 	ac->type = act_mark;
@@ -6635,7 +6626,6 @@ static void bAddAnchorClass(Context *c) {
     else
 	ScriptErrorString(c,"Unknown type of anchor class. Must be one of \"default\", \"mk-mk\", or \"cursive\". ",  c->a.vals[2].u.sval);
 
-    ustr = uc_copy(c->a.vals[3].u.sval);
     ac->next = sf->anchor;
     sf->anchor = ac;
     sf->changed = true;
@@ -7328,6 +7318,8 @@ static void bAddLookupSubtable(Context *c) {
       case gsub_single: case gsub_multiple: case gsub_alternate: case gsub_ligature:
       case gpos_single: case gpos_pair:
 	sub->per_glyph_pst_or_kern = true;
+      break;
+      default:
       break;
     }
 }
@@ -8185,7 +8177,7 @@ static void bValidate(Context *c) {
     c->return_val.u.ival = SFValidate(c->curfv->sf, ly_fore, force );
 }
 
-static void bDebugCrashFontForge(Context *c)
+static void bDebugCrashFontForge(Context *UNUSED(c))
 {
     fprintf(stderr,"FontForge is crashing because you asked it to using the DebugCrashFontForge command\n");
     int *ptr = NULL;
@@ -8193,7 +8185,7 @@ static void bDebugCrashFontForge(Context *c)
 }
 
 
-static struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[] = {
+static struct builtins { const char *name; void (*func)(Context *); int nofontok; } builtins[] = {
 /* Generic utilities */
     { "Print", bPrint, 1 },
     { "Error", bError, 1 },
@@ -9055,28 +9047,24 @@ static void docall(Context *c,char *name,Val *val) {
 	} else {
 	    if ( strchr(name,'/')==NULL && strchr(c->filename,'/')!=NULL ) {
 		char *pt;
-		sub.filename = malloc(strlen(c->filename)+strlen(name)+4);
-		strcpy(sub.filename,c->filename);
+		sub.filename = strcpy(malloc(strlen(c->filename)+strlen(name)+4),c->filename);
 		pt = strrchr(sub.filename,'/');
 		strcpy(pt+1,name);
 	    }
 	    sub.script = fopen(sub.filename,"r");
 	    if ( sub.script==NULL ) {
-		char *pt;
-		if ( sub.filename==name ) {
-		    sub.filename = malloc(strlen(name)+4);
-		    strcpy(sub.filename,name);
-		}
+		const char *pt;
+		if ( sub.filename==name )
+		    sub.filename = strcpy(malloc(strlen(name)+4),name);
 		pt = sub.filename + strlen(sub.filename);
-		strcpy(pt, ".ff");
+		strcpy((char *)pt, ".ff");
 		sub.script = fopen(sub.filename,"r");
 		if ( sub.script==NULL ) {
-		    strcpy(pt, ".pe");
+		    strcpy((char *)pt, ".pe");
 		    sub.script = fopen(sub.filename,"r");
 		}
-		if ( sub.script==NULL ) {
-		    *pt = '\0';
-		}
+		if ( sub.script==NULL )
+		    pt = "";
 	    }
 	    sub.script = fopen(sub.filename,"r");
 	    if ( sub.script==NULL ) {
@@ -9748,13 +9736,9 @@ static void assign(Context *c,Val *val) {
 	    else if ( other.type == v_void )
 		ScriptError( c, "Void found on right side of assignment" );
 	    else if ( tok==tt_assign ) {
-		Val temp;
-		int argi;
-		temp = *val->u.lval;
 		*val->u.lval = other;
 		if ( other.type==v_arr )
 		    val->u.lval->u.aval = arraycopy(other.u.aval);
-		argi = val->u.lval-c->a.vals;
 	    } else if (( val->u.lval->type==v_int || val->u.lval->type==v_unicode ) &&
 		    (other.type==v_int || other.type==v_unicode || other.type==v_real)) {
 		if ( other.type==v_real )
@@ -10049,7 +10033,7 @@ void ff_VerboseCheck(void) {
 	verbose = getenv("FONTFORGE_VERBOSE")!=NULL;
 }
 
-void ProcessNativeScript(int argc, char *argv[], FILE *script) {
+_Noreturn void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     int i,j;
     Context c;
     enum token_type tok;
@@ -10214,9 +10198,11 @@ return;
 		strcmp(pt,"-dry")==0 || strcmp(argv[i],"-c")==0 ) {
 	    if ( is_python==-1 && strcmp(pt,"-script")==0 )
 		is_python = PythonLangFromExt(argv[i+1]);
-	    if ( is_python )
+	    if ( is_python ) {
+                if (strcmp(argv[i],"-c") == 0) /* Make command-line args and Fontforge module more conveniently available for command-line scripts */
+                    argv[i + 1] = xasprintf("from sys import argv; from fontforge import *; %s", argv[i + 1]);
 		PyFF_Main(argc,argv,i);
-	    else
+	    } else
 		ProcessNativeScript(argc, argv,NULL);
 	} else /*if ( access(argv[i],X_OK|R_OK)==0 )*/ {
 	    FILE *temp = fopen(argv[i],"r");

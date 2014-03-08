@@ -42,7 +42,7 @@ int HttpGetBuf(char *url, char *databuf, int *datalen, void *_lock) {
 FILE *URLToTempFile(char *url,void *_lock) {
     return NULL;
 }
-int URLFromFile(char *url,FILE *from) {
+int URLFromFile(const char *url,FILE *from) {
     return false;
 }
 #else
@@ -1417,7 +1417,7 @@ return( NULL );
     }
 }
 
-int URLFromFile(char *url,FILE *from) {
+int URLFromFile(const char *url,FILE *from) {
 
     if ( strncasecmp(url,"ftp://",6)==0 ) {
 return( FtpURLAndTempFile(url,NULL,from));

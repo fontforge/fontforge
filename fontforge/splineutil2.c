@@ -906,7 +906,6 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
     bigreal offn_, offp_, finaldiff;
     bigreal pt_pf_x, pt_pf_y, determinant;
     bigreal consts[2], rt_terms[2], rf_terms[2];
-    bigreal rtbad=0;
 
     /* If all the selected points are at the same spot, and one of the */
     /*  end-points is also at that spot, then just copy the control point */
@@ -1103,10 +1102,7 @@ return( SplineMake3(from,to));
 	    to->noprevcp = rt==0;
 return( SplineMake3(from,to));
 	}
-	
-  rtbad = -rt;
-    } else
-  rtbad = -2;
+    }
 
     trylen = (to->me.x-from->me.x)*fromunit.x + (to->me.y-from->me.y)*fromunit.y;
     if ( trylen>flen ) flen = trylen;

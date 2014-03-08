@@ -1,0 +1,30 @@
+// This script prints 'Unexpected endif found' error message
+// if $1 equals "1", after "aa" and "cc" is printed.
+
+foo="1"
+here=0
+if ( foo == "1")
+        here=1
+elseif ( foo == "2")
+        Error("Bad elseif 1");
+else
+        Error("Bad elseif 2");
+endif
+if ( here==0 )
+    Error("Bad If")
+endif
+
+foo="2"
+here=0
+if ( foo == "1")
+        Error("Bad elseif 11");
+elseif ( foo == "2")
+        here=1
+elseif ( foo == "3")
+        Error("Bad elseif 12");
+else
+        Error("Bad elseif 13");
+endif
+if ( here==0 )
+    Error("Bad If")
+endif

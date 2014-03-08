@@ -1946,7 +1946,7 @@ static void BCProtectUndoes( Undoes *undo,BDFChar *bc ) {
     }
 }
 
-void SFRemoveGlyph( SplineFont *sf,SplineChar *sc, int *flags ) {
+void SFRemoveGlyph( SplineFont *sf,SplineChar *sc ) {
     struct splinecharlist *dep, *dnext;
     struct bdfcharlist *bdep, *bdnext;
     RefChar *rf, *refs, *rnext;

@@ -4589,7 +4589,7 @@ int SplineT2SpiroIndex(Spline *spline,bigreal t,SplineSet *spl) {
     /* It appears that each spiro cp has a corresponding splinepoint, but */
     /*  I don't want to rely on that because it won't be true after a simplify*/
     Spline *sp, *lastsp=spl->first->next;
-    bigreal lastt = 0, test;
+    bigreal test;
     int i;
     BasePoint bp;
 
@@ -4612,7 +4612,6 @@ return( i-1 );
 		if ( sp==spline && t<test )
 return( i-1 );
 		lastsp = sp;
-		lastt = test;
 	break;
 	    }
 	    if ( sp->to->next==NULL || sp->to==spl->first )
@@ -5468,7 +5467,6 @@ return( head );
 
 void SplineFontFree(SplineFont *sf) {
     int i;
-    BDFFont *bdf, *bnext;
 
     if ( sf==NULL )
 return;

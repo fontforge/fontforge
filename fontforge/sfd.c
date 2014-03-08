@@ -4059,7 +4059,7 @@ static void SFDGetMinimumDistances(FILE *sfd, SplineChar *sc) {
     int pt,i, val, err;
     int ch;
     SplinePoint **mapping=NULL;
-    MinimumDistance *last, *md, *mdhead=NULL;
+    MinimumDistance *last, *md;
 
     for ( i=0; i<2; ++i ) {
 	pt = 0;
@@ -4108,9 +4108,7 @@ static void SFDGetMinimumDistances(FILE *sfd, SplineChar *sc) {
 	    md->sp2->dontinterpolate = true;
 	}
 	if ( !err ) {
-	    if ( last==NULL )
-		mdhead = md;
-	    else
+	    if ( last!=NULL )
 		last->next = md;
 	    last = md;
 	}
