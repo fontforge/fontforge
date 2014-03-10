@@ -1,0 +1,6 @@
+include fc/data/*.bmp
+include fc/data/*.png
+include fc/data/*.mcy
+inlucde fc/docs/*.txt
+include *.txt
+include fc/docs/*.txt
