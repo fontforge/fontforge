@@ -680,7 +680,11 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 		}
 	    }
 	    putc('\n',sfd);
-		if (sp->name != NULL) fprintf(sfd, "NamedP: %s\n", sp->name);
+	    if (sp->name != NULL) {
+		fputs("NamedP: ", sfd);
+		SFDDumpUTF7Str(sfd, sp->name);
+		putc('\n', sfd);
+	    }
 	    if ( sp==first )
 	break;
 	    if ( first==NULL ) first = sp;
