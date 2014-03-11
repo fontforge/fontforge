@@ -10212,8 +10212,7 @@ return;
 	    buffer[0] = '\0';
 	    fgets(buffer,sizeof(buffer),temp);
 	    fclose(temp);
-	    if ( buffer[0]=='#' && buffer[1]=='!' &&
-		    (strstr(buffer,"pfaedit")!=NULL || strstr(buffer,"fontforge")!=NULL )) {
+	    if ( buffer[0]=='#' && buffer[1]=='!' ) {
 		if ( is_python==-1 )
 		    is_python = PythonLangFromExt(argv[i]);
 		if ( is_python )
