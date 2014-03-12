@@ -3464,9 +3464,6 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
     real unblended[2][MmMax];
     int last_was_b1=false, old_last_was_b1;
 
-    if( name && !strcmp( name, "x" ) )
-	printf("PSCharStringToSplines() name:%s\n", name );
-    
     if ( !is_type2 && context->instance_count>1 )
 	memset(unblended,0,sizeof(unblended));
 
@@ -4029,9 +4026,6 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	} else { last_was_b1 = false; switch ( v ) {
 	  case 1: /* hstem */
 	  case 18: /* hstemhm */
-	      if( name && !strcmp( name, "x" ) )
-		  printf("xxxxxxxxxxxxxxxxxxxxxxxx case1/18\n");
-#if 1	      
 	    base = 0;
 	    if ( (sp&1) && ret->width == (int16) 0x8000 )
 		ret->width = stack[0];
@@ -4052,11 +4046,6 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    sameh = SameH(ret->hstem,stack[base]+coord,stack[base+1],
 				unblended,context->instance_count);
 		hint = HintNew(stack[base]+coord,stack[base+1]);
-		/* if( stack[base+1] == -21.000000 ) */
-		/* { */
-		/*     hint = HintNew( 0, 21 ); */
-		/*     hint->ghost = 1; */
-		/* } */
 		hint->hintnumber = sameh!=NULL ? sameh->hintnumber : hint_cnt++;
 		if ( !is_type2 && context->instance_count!=0 ) {
 		    hint->u.unblended = XCALLOC(2 * MmMax, real);
@@ -4074,10 +4063,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		}
 		base+=2;
 		coord = hint->start+hint->width;
-		printf("calling HintNew() hint:%p next:%p hn:%d %f %f\n", hint, hint->next, hint->hintnumber, stack[base]+coord,stack[base+1]);
 	    }
 	    sp = 0;
-#endif
 	    break;
 	  case 19: /* hintmask */
 	  case 20: /* cntrmask */
@@ -4456,26 +4443,9 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	LogError( _("end of subroutine reached with no return in %s\n"), name );
     SCCategorizePoints(ret);
 
-    if( name && (!strcmp( name, "x" ) || !strcmp( name, "V" ) ))
-    {
-	StemInfo* h = activeh;
-	printf("appending activeh for x...\n");
-
-	for ( h=activeh; h; h = h->next )
-	{
-	    printf("DumpHints(loop) h:%p next:%p start:%f width:%f ghost:%d reordered:%d\n",
-		   h, h->next, h->start, h->width,
-		   h->ghost, h->reordered );
-	    debug_printHint( h, "hints are read" );
-	    
-	}
-    }
     ret->hstem = HintsAppend(ret->hstem,activeh); activeh=NULL;
     ret->vstem = HintsAppend(ret->vstem,activev); activev=NULL;
 
-    
-
-    
     if ( cp!=0 ) { int i;
 	ret->countermasks = malloc(cp*sizeof(HintMask));
 	ret->countermask_cnt = cp;
@@ -4508,29 +4478,9 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
     ret->hstem = HintCleanup(ret->hstem,true,context->instance_count);
     ret->vstem = HintCleanup(ret->vstem,true,context->instance_count);
 
-    if( name && ( !strcmp( name, "x" ) || !strcmp( name, "V" )))
-    {
-	StemInfo* h = ret->hstem;
-	for ( h=ret->hstem; h; h = h->next )
-	{
-	    printf("name:%s\n", name );
-	    debug_printHint( h, "hints are read, after append1." );
-	}
-    }
-    
     SCGuessHHintInstancesList(ret,ly_fore);
     SCGuessVHintInstancesList(ret,ly_fore);
 
-    if( name && (!strcmp( name, "x" )  || !strcmp( name, "V" )))
-    {
-	StemInfo* h = ret->hstem;
-	for ( h=ret->hstem; h; h = h->next )
-	{
-	    printf("name:%s\n", name );
-	    debug_printHint( h, "hints are read, after append2." );
-	}
-    }
-    
     ret->hconflicts = StemListAnyConflicts(ret->hstem);
     ret->vconflicts = StemListAnyConflicts(ret->vstem);
     if ( context->instance_count==1 && !ret->hconflicts && !ret->vconflicts )

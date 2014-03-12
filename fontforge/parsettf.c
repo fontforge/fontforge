@@ -3070,7 +3070,6 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
 
     fseek(ttf,td->cff_start+td->private_offset,SEEK_SET);
 
-    printf("blueshift______________________1\n");
     td->subrsoff = -1;
     td->expansionfactor = .06;
     td->bluefuzz = 1;
@@ -3131,7 +3130,6 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
 	    td->bluescale = stack[sp-1];
 	  break;
 	  case (12<<8)+10:
-	      printf("blueshift______________________2\n");
 	    td->blueshift = stack[sp-1];
 	  break;
 	  case (12<<8)+11:
@@ -3538,7 +3536,6 @@ static void cffprivatefillup(struct psdict *private, struct topdicts *dict) {
     privateadd(private,"FamilyOtherBlues",
 	    realarray2str(dict->familyotherblues,sizeof(dict->familyotherblues)/sizeof(dict->familyotherblues[0]),true));
     privateaddreal(private,"BlueScale",dict->bluescale,0.039625);
-    printf("blueshift______________________3\n");
     privateaddreal(private,"BlueShift",dict->blueshift,7);
     privateaddreal(private,"BlueFuzz",dict->bluefuzz,1);
     privateaddintarray(private,"StdHW",dict->stdhw);
@@ -5314,7 +5311,6 @@ return( 0 );
 	else
 	    info->glyph_start = info->glyphlocations_start = 0;
     }
-    printf("read................1\n");
     if ( info->onlystrikes ) {
 	info->chars = calloc(info->glyph_cnt+1,sizeof(SplineChar *));
 	info->to_order2 = new_fonts_are_order2;
@@ -5328,13 +5324,11 @@ return( 0 );
 	readttfglyphs(ttf,info);
     } else if ( info->cff_start!=0 ) {
 	info->to_order2 = (loaded_fonts_same_as_new && new_fonts_are_order2);
-    printf("read................1.1\n");
 	if ( !readcffglyphs(ttf,info) ) {
 	    setlocale(LC_NUMERIC,oldloc);
 return( 0 );
 	}
     } else if ( info->typ1_start!=0 ) {
-    printf("read................1.2\n");
 	if ( !readtyp1glyphs(ttf,info) ) {
 	    setlocale(LC_NUMERIC,oldloc);
 return( 0 );

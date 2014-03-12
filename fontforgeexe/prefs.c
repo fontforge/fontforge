@@ -192,7 +192,8 @@ extern int prefs_cv_show_control_points_always_initially; /* from charview.c */
 extern int prefs_create_dragging_comparison_outline;      /* from charview.c */
 extern int prefs_cv_outline_thickness; /* from charview.c */
 
-extern float OpenTypeLoadHintEqualityTolerance; /* autohint.c */
+extern float OpenTypeLoadHintEqualityTolerance;  /* autohint.c */
+extern float GenerateHintWidthEqualityTolerance; /* splinesave.c */
 extern NameList *force_names_when_opening;
 extern NameList *force_names_when_saving;
 extern NameList *namelist_for_new_fonts;
@@ -400,6 +401,9 @@ static struct prefs_list {
  generate_list[] = {
 	{ N_("AskBDFResolution"), pr_bool, &ask_user_for_resolution, NULL, NULL, 'B', NULL, 0, N_("When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise FontForge will guess depending on the pixel size.") },
 	{ N_("AutoHint"), pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, N_("AutoHint changed glyphs before generating a font") },
+
+	{ N_("GenerateHintWidthEqualityTolerance"), pr_real, &GenerateHintWidthEqualityTolerance, NULL, NULL, '\0', NULL, 0, N_( "When generating a font, ignore slight rounding errors for hints that should be at the top or bottom of the glyph. For example, you might like to set this to 0.02 so that 19.999 will be considered 20. But only for the hint width value.") },
+	
 	PREFS_LIST_EMPTY
 },
  hints_list[] = {

@@ -5819,7 +5819,6 @@ static void dumpttf(FILE *ttf,struct alltabs *at) {
     int i, head_index=-1;
     /* I can't use fwrite because I (may) have to byte swap everything */
 
-    printf("dumpttf(top)\n");
     putlong(ttf,at->tabdir.version);
     putshort(ttf,at->tabdir.numtab);
     putshort(ttf,at->tabdir.searchRange);
@@ -5900,7 +5899,6 @@ static int dumpcff(struct alltabs *at,SplineFont *sf,enum fontformat format,
 	FILE *cff) {
     int ret;
 
-    printf("dumpcff(top) format: %d\n", format );
     if ( format==ff_cff ) {
 	AssignTTFGlyph(&at->gi,sf,at->map,true);
 	ret = dumptype2glyphs(sf,at);
@@ -5983,7 +5981,6 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     char oldloc[25];
     int i, anyglyphs;
 
-    printf("_WriteTTFFont(top) format:%d\n", format );
     /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
     strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;

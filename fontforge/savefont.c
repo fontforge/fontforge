@@ -738,7 +738,6 @@ int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res,
 	    oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont;
     int flags = 0;
 
-    printf("_DoSave(top)\n");
     if ( oldformatstate == ff_multiple )
 return( WriteMultiplePSFont(sf,newname,sizes,subfontdefinition,map,layer));
 
