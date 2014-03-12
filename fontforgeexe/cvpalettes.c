@@ -1396,7 +1396,8 @@ return;
 #define MID_MakeLine 100
 #define MID_MakeArc  200
 #define MID_InsertPtOnSplineAt  2309
-#define MID_NameContour  2318
+#define MID_NamePoint  2318
+#define MID_NameContour  2319
 
 static void CVLayer2Invoked(GWindow v, GMenuItem *mi, GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(v);
@@ -3062,6 +3063,11 @@ static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
 	_CVMenuInsertPt( cv );
 	break;
     }
+    case MID_NamePoint: {
+	if ( cv->p.sp )
+	    _CVMenuNamePoint( cv, cv->p.sp );
+	break;
+    }
     case MID_NameContour: {
 	_CVMenuNameContour( cv );
 	break;
@@ -3209,6 +3215,16 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	i++;
     }
 
+    if ( anysel ) {
+	mi[i].ti.text = (unichar_t *)_("Name Point...");
+	mi[i].ti.text_is_1byte = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = MID_NamePoint;
+	mi[i].invoke = CVPopupSelectInvoked;
+	i++;
+    }
+
     if ( cv->b.sc->parent->multilayer ) {
 	mi[i].ti.text = (unichar_t *) _("Make Clip Path");
 	mi[i].ti.text_is_1byte = true;
@@ -3243,6 +3259,14 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = MID_InsertPtOnSplineAt;
+	mi[i].invoke = CVPopupSelectInvoked;
+	i++;
+
+	mi[i].ti.text = (unichar_t *) _("Name Point");
+	mi[i].ti.text_is_1byte = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = MID_NamePoint;
 	mi[i].invoke = CVPopupSelectInvoked;
 	i++;
 
