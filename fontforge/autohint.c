@@ -34,6 +34,8 @@
 #include <chardata.h>
 #include "edgelist.h"
 
+float OpenTypeLoadHintEqualityTolerance = 0.0;
+
 /* to create a type 1 font we must come up with the following entries for the
   private dictionary:
     BlueValues	-- an array of 2n entries where Blue[2i]<Blue[2i+1] max n=7, Blue[i]>0
@@ -1370,6 +1372,21 @@ return;
     GlyphDataFree( gd );
 }
 
+
+/**
+ * It is like a == b, but also true if a is within
+ * tolerence of b.
+ */
+static bool equalWithTolerence( real a, real b, real tolerence )
+{
+    if( tolerence == 0.0 )
+	return a == b;
+
+    return(    (b - tolerence < a)
+	    && (b + tolerence > a ));
+}
+
+
 static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,int major) {
     SplinePointList *spl;
     SplinePoint *sp, *np;
@@ -1382,13 +1399,39 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
     /*  a hint from one side of an H to the other, it will get the whole thing */
     /*  not just the cross stem) */
 
+//    stem->width = 20;
+    printf("SCGuessHintInstancesLight() stem->start:%f width:%f sw:%f\n", stem->start, stem->width, stem->start+stem->width );
     for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
 	for ( sp=spl->first; ; sp = np ) {
-	    sm = (major?sp->me.x:sp->me.y)==stem->start;
-	    wm = (major?sp->me.x:sp->me.y)==stem->start+stem->width;
+	    
+	    float mexy = (major ? sp->me.x : sp->me.y);
+	    /* sm = (major?sp->me.x:sp->me.y)==stem->start; */
+	    /* wm = (major?sp->me.x:sp->me.y)==stem->start+stem->width; */
+	    sm = equalWithTolerence( mexy, stem->start, OpenTypeLoadHintEqualityTolerance );
+	    wm = equalWithTolerence( mexy, stem->start+stem->width, OpenTypeLoadHintEqualityTolerance );
+
+	    // V
+	    //  c.x:9.998047 __c.y:692.997070__
+	    // SCGuessHintInstancesLight() stem->start:-0.001953 width:21.000000
+
+	    /* if( !wm ) */
+	    /* { */
+	    /* 	real sw = stem->start+stem->width;    // 693 */
+	    /* 	real mec = (major?sp->me.x:sp->me.y); // 692.997070 */
+	    /* 	wm = ( mec < sw && mec + 0.004 > sw ); */
+	    /* } */
+	    
+	    /* if( sp->me.y <= stem->start && sp->me.y >= -0.001 ) */
+	    /* 	sm = 1; */
+	    
 	    if ( sp->next==NULL )
 	break;
 	    np = sp->next->to;
+	    printf("SCGuessHintInstancesLight() c.x:%f c.y:%f sm:%d wm:%d major:%d sp.x:%f np.x:%f sp.y:%f np.y:%f\n",
+		   sp->me.x, sp->me.y,
+		   sm, wm, major,
+		   sp->me.x, np->me.x,
+		   sp->me.y, np->me.y );
 	    if ( sm || wm ) {
 		if ( !major ) {
 		    if ( np->me.y==sp->me.y ) {
@@ -1419,6 +1462,7 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
 		if ( ob>oe ) { real temp=ob; ob=oe; oe=temp;}
 		cur->begin = ob;
 		cur->end = oe;
+		printf("ob:%f oe:%f sm:%d\n", ob, oe, sm );
 		if ( sm ) {
 		    if ( s==NULL || s->begin>cur->begin ) {
 			cur->next = s;
@@ -1430,9 +1474,13 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
 		    }
 		} else {
 		    if ( w==NULL || w->begin>cur->begin ) {
+			printf("**** a ... w:%p\n", w );
+			if( w )
+			    printf("**** a w->begin:%f cur->begin:%f\n", w->begin, cur->begin );
 			cur->next = w;
 			w = cur;
 		    } else {
+			printf("**** b\n");
 			p = w;
 			for ( t=w->next; t!=NULL && t->begin<cur->begin; p=t, t=t->next );
 			p->next = cur; cur->next = t;
@@ -1444,24 +1492,46 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
 	}
     }
 
+    {
+	printf("SCGuessHintInstancesLight(1) s...\n");
+	debug_printHintInstance( s, 1, "SCGuessHintInstancesLight()" );
+    }
+    
+#if 1
     /* Now we know what the right side of the stem looks like, and we know */
     /*  what the left side looks like. They may not look the same (H for example) */
     /*  Figure out the set where both are active */
     /* Unless it's a ghost hint */
+    printf("stem->width:%f s:%p w:%p\n", stem->width, s, w );
+    
     if ( stem->width==20 && s==NULL && w!=NULL ) {
 	s = w;
 	w = NULL;
+
+	{
+	    printf("dealing with a 20...s:%p\n", s );
+	    HintInstance* tmp = s;
+	    for( ; tmp; tmp = tmp->next )
+	    {
+		debug_printHintInstance( tmp, 1, "SCGuessHintInstancesLight(tmp)" );
+	    }
+	}
+	
     } else if ( stem->width==21 && s!=NULL && w==NULL) {
 	/* Just use s */;
     } else for ( p=NULL, t=s; t!=NULL; t=n ) {
 	n = t->next;
+	printf("trim_case3  A\n");
 	for ( w2=w; w2!=NULL && w2->begin<t->end ; w2=w2->next ) {
+	    printf("t.begin:%f end:%f w2.begin:%f end:%f\n", t->begin, t->end, w2->begin, w2->end );
+	    
 	    if ( w2->end<=t->begin )
-	continue;
+		continue;
 	    if ( w2->begin<=t->begin && w2->end>=t->end ) {
 		/* Perfect match */
-	break;
+		break;
 	    }
+	    printf("trim_case3  B.1\n");
 	    if ( w2->begin>=t->begin )
 		t->begin = w2->begin;
 	    if ( w2->end<=t->end ) {
@@ -1473,13 +1543,16 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
 		n = cur;
 		t->end = w2->end;
 	    }
-	break;
+	    break;
 	}
+	debug_printHintInstance( w, 1, "(w)" );
+	debug_printHintInstance( w2, 1, "(w2)" );
 	if ( w2!=NULL && w2->begin>=t->end )
 	    w2 = NULL;
 	if ( w2==NULL && w!=NULL ) {
 	    HintInstance *best = NULL;
 	    double best_off=1e10, off;
+	    printf("trim_case3  F\n");
 	    for ( w2=w; w2!=NULL ; w2=w2->next ) {
 		if ( w2->end<=t->begin )
 		    off = t->begin - w2->end;
@@ -1491,6 +1564,7 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
 		}
 	    }
 	    if ( best!=NULL && best_off<stem->width ) {
+		printf("trim_case3  G\n");
 		w2 = best;
 		if( w2->begin<t->begin )
 		    t->begin = w2->begin;
@@ -1499,6 +1573,7 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
 	    }
 	}
 	if ( w2==NULL ) {
+	    printf("trim_case3  F\n");
 	    /* No match for t (or if there were it wasn't complete) get rid */
 	    /*  of what's left of t */
 	    if ( p==NULL )
@@ -1512,7 +1587,13 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
 	n = w->next;
 	w=n;
     }
-
+#endif
+    
+    {
+	printf("SCGuessHintInstancesLight(2) s...\n");
+	debug_printHintInstance( s, 1, "SCGuessHintInstancesLight()" );
+    }
+    
     /* If we couldn't find anything, then see if there are two points which */
     /*  have the same x or y value and whose other coordinates match those of */
     /*  the hint */
@@ -2836,6 +2917,24 @@ static DStemInfo *GDFindDStems(struct glyphdata *gd) {
 return( head );
 }
 
+bool inorder( real a, real b, real c )
+{
+    return a < b && b < c;
+}
+
+/**
+ * If fluffy is near enough to exact then clamp to exact.
+ * If fluffy is more than Tolerance away from exact then
+ * just return fluffy (no change).
+ */
+real clampToIfNear( real exact, real fluffy, real Tolerance )
+{
+    if( inorder( exact - Tolerance, fluffy, exact + Tolerance ))
+	return exact;
+    
+    return fluffy;
+}
+
 void _SplineCharAutoHint( SplineChar *sc, int layer, BlueData *bd, struct glyphdata *gd2,
 	int gen_undoes ) {
     struct glyphdata *gd;
@@ -2851,23 +2950,52 @@ void _SplineCharAutoHint( SplineChar *sc, int layer, BlueData *bd, struct glyphd
     sc->changedsincelasthinted = false;
     sc->manualhints = false;
 
+    if( sc->hstem )
+	printf("_SplineCharAutoHint(1) start:%f w:%f\n", sc->hstem->start, sc->hstem->width );
+    debug_printHint( sc->hstem, "_SplineCharAutoHint(1)" );
+    
     if ( (gd=gd2)==NULL )
 	gd = GlyphDataBuild( sc,layer,bd,false );
     if ( gd!=NULL ) {
+	
 	sc->vstem = GDFindStems(gd,1);
+
+	debug_printHint( sc->hstem, "_SplineCharAutoHint(2)" );
+	if( sc->hstem )
+	    debug_printHint( sc->hstem->next, "_SplineCharAutoHint(2 next)" );
+
 	sc->hstem = GDFindStems(gd,0);
+
+	debug_printHint( sc->hstem, "_SplineCharAutoHint(3)" );
+	if( sc->hstem )
+	    debug_printHint( sc->hstem->next, "_SplineCharAutoHint(3 next)" );
+
 	if ( !gd->only_hv )
 	    sc->dstem = GDFindDStems(gd);
 	if ( gd2==NULL ) GlyphDataFree(gd);
     }
 
+    float AutohintRoundingTolerance = 0.005;
+    StemInfo* s = sc->hstem;
+    for( ; s; s = s->next )
+    {
+	s->width = clampToIfNear( 20, s->width, AutohintRoundingTolerance );
+	s->width = clampToIfNear( 21, s->width, AutohintRoundingTolerance );
+    }
+	
+    debug_printHint( sc->hstem, "_SplineCharAutoHint(e)" );
+    if( sc->hstem )
+	debug_printHint( sc->hstem->next, "_SplineCharAutoHint(e next)" );
     AutoHintRefs(sc,layer,bd,false,gen_undoes);
+
+    
 }
 
 static void __SplineCharAutoHint( SplineChar *sc, int layer, BlueData *bd, int gen_undoes ) {
     MMSet *mm = sc->parent->mm;
     int i;
 
+    printf("__SplineCharAutoHint() mm:%p\n", mm );
     if ( mm==NULL )
 	_SplineCharAutoHint(sc,layer,bd,NULL,gen_undoes);
     else {

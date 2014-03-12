@@ -2610,14 +2610,83 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
     }
 }
 
+void debug_printHintInstance( HintInstance* hi, int hin, char* msg )
+{
+    printf("___ hint instance %d %s\n", hin, msg );
+    if( !hi )
+	return;
+    
+    printf("hi.begin      %f\n", hi->begin );
+    printf("hi.end        %f\n", hi->end );
+    printf("hi.closed     %d\n", hi->closed );
+    printf("hi.cnum       %d\n", hi->counternumber );
+    printf("hi.next       %p\n", hi->next );
+    if( hi->next )
+	debug_printHintInstance( hi->next, hin+1, msg );
+}
+
+
+void debug_printHint( StemInfo *h, char* msg )
+{
+    printf("==============================\n");
+    printf("debug_printHint(%p)... %s\n", h, msg );
+    if( h )
+    {
+	printf("start         %f\n", h->start );
+	printf("width         %f\n", h->width );
+	printf("hinttype      %d\n", h->hinttype );
+	printf("ghost         %d\n", h->ghost );
+	printf("haspointleft  %d\n", h->haspointleft );
+	printf("haspointright %d\n", h->haspointright );
+	printf("hasconflicts  %d\n", h->hasconflicts );
+	printf("used          %d\n", h->used );
+	printf("tobeused      %d\n", h->tobeused );
+	printf("active        %d\n", h->active );
+	printf("enddone       %d\n", h->enddone );
+	printf("startdone     %d\n", h->startdone );
+	printf("reordered     %d\n", h->reordered );
+	printf("pendingpt     %d\n", h->pendingpt );
+	printf("linearedges   %d\n", h->linearedges );
+	printf("hintnumber    %d\n", h->hintnumber );
+	if( h->where )
+	    debug_printHintInstance( h->where, 1, "" );
+    }
+    printf("==============================\n");    
+}
+
+static bool equalWithTolerence( real a, real b, real tolerence )
+{
+    if( tolerence == 0.0 )
+	return a == b;
+
+    return(    (b - tolerence < a)
+	    && (b + tolerence > a ));
+}
+
+static int DumpHints_debug = 0;
+
 static void DumpHints(GrowBuf *gb,StemInfo *h,int oper,int midoper,int round) {
     real last = 0, cur;
     int cnt;
 
+    if(DumpHints_debug)
+    {
+	printf("DumpHints()... midoper:%d oper:%d fegetround:%d\n", midoper, oper, fegetround() );
+	debug_printHint( h, "DumpHints()" );
+    }
+    
+    
     if ( h==NULL )
 return;
     cnt = 0;
-    while ( h!=NULL && h->hintnumber!=-1 ) {
+    while ( h && h->hintnumber!=-1 ) {
+
+	if(DumpHints_debug)
+	    printf("DumpHints(loop) start:%f width:%f last:%f ghost:%d reordered:%d\n",
+		   h->start, h->width,
+		   last, h->ghost, h->reordered );
+    
+	
 	/* Type2 hints do not support negative widths except in the case of */
 	/*  ghost (now called edge) hints */
 	if ( cnt>24-2 ) {	/* stack max = 48 numbers, => 24 hints, leave a bit of slop for the width */
@@ -2632,7 +2701,9 @@ return;
 	    AddNumber2(gb,-myround2(h->width,round),round);
 	    cur -= myround2(h->width,round);
 	} else if ( h->ghost ) {
-	    if ( h->width==20 ) {
+	    printf("********* eqtest ************ h->width %f\n", h->width );
+//	    if ( h->width==20 ) {
+	    if ( equalWithTolerence( h->width, 20, 0.005 )) {
 		AddNumber2(gb,myround2(h->start,round)-last+20,round);
 		AddNumber2(gb,-20,round);
 		cur = myround2(h->start,round);
@@ -2912,8 +2983,16 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
     scs[0] = sc;
     hdb.noconflicts = !sc->hconflicts && !sc->vconflicts;
     hdb.cnt = NumberHints(hdb.scs,1);
+    if( sc->name && ( !strcmp( sc->name, "Y" ) || !strcmp( sc->name, "w" )))
+    {
+	DumpHints_debug = 1;
+	printf("SplineChar2PS2() sc->hconflicts:%d sc->vconflicts:%d\n", sc->hconflicts, sc->vconflicts );
+	
+    }
+    
     DumpHints(&gb,sc->hstem,sc->hconflicts || sc->vconflicts?18:1,
 			    sc->hconflicts || sc->vconflicts?18:1,round);
+    DumpHints_debug = 0;
     DumpHints(&gb,sc->vstem,sc->hconflicts || sc->vconflicts?-1:3,
 			    sc->hconflicts || sc->vconflicts?23:3,round);
     CounterHints2(&gb, sc, hdb.cnt );
