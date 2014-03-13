@@ -3337,4 +3337,16 @@ extern bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp );
 extern bigreal DistanceBetweenPoints( BasePoint *p1, BasePoint *p2 );
 
 
+extern void debug_printHint( StemInfo *h, char* msg );
+extern void debug_printHintInstance( HintInstance* hi, int hin, char* msg );
+
+
+/**
+ * It is like a == b, but also true if a is within
+ * tolerence of b.
+ */
+extern bool equalWithTolerence( real a, real b, real tolerence );
+
+
+
 #endif

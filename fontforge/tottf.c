@@ -1887,7 +1887,7 @@ static void dumpcffencoding(SplineFont *sf,struct alltabs *at) {
 
 static void _dumpcffstrings(FILE *file, struct pschars *strs) {
     int i, len, offsize;
-
+    
     /* First figure out the offset size */
     len = 1;
     for ( i=0; i<strs->next; ++i )
@@ -1909,8 +1909,9 @@ static void _dumpcffstrings(FILE *file, struct pschars *strs) {
 	/* last of all the strings */
 	for ( i=0; i<strs->next; ++i ) {
 	    uint8 *pt = strs->values[i], *end = pt+strs->lens[i];
-	    while ( pt<end )
+	    while ( pt<end ) {
 		putc( *pt++, file );
+	    }
 	}
     }
 }

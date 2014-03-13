@@ -4067,7 +4067,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		coord = hint->start+hint->width;
 	    }
 	    sp = 0;
-	  break;
+	    break;
 	  case 19: /* hintmask */
 	  case 20: /* cntrmask */
 	    /* If there's anything on the stack treat it as a vstem hint */
@@ -4479,8 +4479,10 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
     }
     ret->hstem = HintCleanup(ret->hstem,true,context->instance_count);
     ret->vstem = HintCleanup(ret->vstem,true,context->instance_count);
+
     SCGuessHHintInstancesList(ret,ly_fore);
     SCGuessVHintInstancesList(ret,ly_fore);
+
     ret->hconflicts = StemListAnyConflicts(ret->hstem);
     ret->vconflicts = StemListAnyConflicts(ret->vstem);
     if ( context->instance_count==1 && !ret->hconflicts && !ret->vconflicts )

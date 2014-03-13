@@ -34,6 +34,8 @@
 #include <chardata.h>
 #include "edgelist.h"
 
+float OpenTypeLoadHintEqualityTolerance = 0.0;
+
 /* to create a type 1 font we must come up with the following entries for the
   private dictionary:
     BlueValues	-- an array of 2n entries where Blue[2i]<Blue[2i+1] max n=7, Blue[i]>0
@@ -1384,8 +1386,11 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
 
     for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
 	for ( sp=spl->first; ; sp = np ) {
-	    sm = (major?sp->me.x:sp->me.y)==stem->start;
-	    wm = (major?sp->me.x:sp->me.y)==stem->start+stem->width;
+	    
+	    float mexy = (major ? sp->me.x : sp->me.y);
+	    sm = equalWithTolerence( mexy, stem->start, OpenTypeLoadHintEqualityTolerance );
+	    wm = equalWithTolerence( mexy, stem->start+stem->width, OpenTypeLoadHintEqualityTolerance );
+
 	    if ( sp->next==NULL )
 	break;
 	    np = sp->next->to;
@@ -1457,10 +1462,10 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
 	n = t->next;
 	for ( w2=w; w2!=NULL && w2->begin<t->end ; w2=w2->next ) {
 	    if ( w2->end<=t->begin )
-	continue;
+		continue;
 	    if ( w2->begin<=t->begin && w2->end>=t->end ) {
 		/* Perfect match */
-	break;
+		break;
 	    }
 	    if ( w2->begin>=t->begin )
 		t->begin = w2->begin;
@@ -1473,7 +1478,7 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
 		n = cur;
 		t->end = w2->end;
 	    }
-	break;
+	    break;
 	}
 	if ( w2!=NULL && w2->begin>=t->end )
 	    w2 = NULL;
@@ -1512,7 +1517,7 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
 	n = w->next;
 	w=n;
     }
-
+    
     /* If we couldn't find anything, then see if there are two points which */
     /*  have the same x or y value and whose other coordinates match those of */
     /*  the hint */
@@ -2836,6 +2841,26 @@ static DStemInfo *GDFindDStems(struct glyphdata *gd) {
 return( head );
 }
 
+
+static bool inorder( real a, real b, real c )
+{
+    return a < b && b < c;
+}
+
+/**
+ * If fluffy is near enough to exact then clamp to exact.
+ * If fluffy is more than Tolerance away from exact then
+ * just return fluffy (no change).
+ */
+static real clampToIfNear( real exact, real fluffy, real Tolerance )
+{
+    if( inorder( exact - Tolerance, fluffy, exact + Tolerance ))
+	return exact;
+    
+    return fluffy;
+}
+
+
 void _SplineCharAutoHint( SplineChar *sc, int layer, BlueData *bd, struct glyphdata *gd2,
 	int gen_undoes ) {
     struct glyphdata *gd;
@@ -2854,11 +2879,21 @@ void _SplineCharAutoHint( SplineChar *sc, int layer, BlueData *bd, struct glyphd
     if ( (gd=gd2)==NULL )
 	gd = GlyphDataBuild( sc,layer,bd,false );
     if ( gd!=NULL ) {
+	
 	sc->vstem = GDFindStems(gd,1);
 	sc->hstem = GDFindStems(gd,0);
+
 	if ( !gd->only_hv )
 	    sc->dstem = GDFindDStems(gd);
 	if ( gd2==NULL ) GlyphDataFree(gd);
+    }
+
+    real AutohintRoundingTolerance = 0.005;
+    StemInfo* s = sc->hstem;
+    for( ; s; s = s->next )
+    {
+	s->width = clampToIfNear( 20.0, s->width, AutohintRoundingTolerance );
+	s->width = clampToIfNear( 21.0, s->width, AutohintRoundingTolerance );
     }
 
     AutoHintRefs(sc,layer,bd,false,gen_undoes);

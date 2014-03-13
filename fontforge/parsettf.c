@@ -5311,7 +5311,6 @@ return( 0 );
 	else
 	    info->glyph_start = info->glyphlocations_start = 0;
     }
-
     if ( info->onlystrikes ) {
 	info->chars = calloc(info->glyph_cnt+1,sizeof(SplineChar *));
 	info->to_order2 = new_fonts_are_order2;

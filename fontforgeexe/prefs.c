@@ -192,6 +192,8 @@ extern int prefs_cv_show_control_points_always_initially; /* from charview.c */
 extern int prefs_create_dragging_comparison_outline;      /* from charview.c */
 extern int prefs_cv_outline_thickness; /* from charview.c */
 
+extern float OpenTypeLoadHintEqualityTolerance;  /* autohint.c */
+extern float GenerateHintWidthEqualityTolerance; /* splinesave.c */
 extern NameList *force_names_when_opening;
 extern NameList *force_names_when_saving;
 extern NameList *namelist_for_new_fonts;
@@ -325,6 +327,7 @@ static struct prefs_list {
 	{ N_("SeekCharacter"), pr_unicode, &home_char, NULL, NULL, '\0', NULL, 0, N_("When fontforge opens a (non-sfd) font it will try to display this unicode character in the fontview.")},
 	{ N_("CompactOnOpen"), pr_bool, &compact_font_on_open, NULL, NULL, 'O', NULL, 0, N_("When a font is opened, should it be made compact?")},
 	{ N_("UndoRedoLimitToLoad"), pr_int, &UndoRedoLimitToLoad, NULL, NULL, '\0', NULL, 0, N_( "The number of undo and redo operations to load from sfd files.\nWith this option you can disregard undo information while loading SFD files.\nIf set to 0 then no undo/redo information is loaded.\nIf set to -1 then all available undo/redo information is loaded without limit.") },
+	{ N_("OpenTypeLoadHintEqualityTolerance"), pr_real, &OpenTypeLoadHintEqualityTolerance, NULL, NULL, '\0', NULL, 0, N_( "When importing an OpenType font, for the purposes of hinting spline points might not exactly match boundaries. For example, a point might be -0.0002 instead of exactly 0\nThis setting gives the user some control over this allowing a small tolerance value to be fed into the OpenType loading code.\nComparisons are then not performed for raw equality but for equality within tolerence (eg, values within the range -0.0002 to 0.0002 will be considered equal to 0 when figuring out hints.") },
 	PREFS_LIST_EMPTY
 },
   navigation_list[] = {
@@ -398,6 +401,9 @@ static struct prefs_list {
  generate_list[] = {
 	{ N_("AskBDFResolution"), pr_bool, &ask_user_for_resolution, NULL, NULL, 'B', NULL, 0, N_("When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise FontForge will guess depending on the pixel size.") },
 	{ N_("AutoHint"), pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, N_("AutoHint changed glyphs before generating a font") },
+
+	{ N_("GenerateHintWidthEqualityTolerance"), pr_real, &GenerateHintWidthEqualityTolerance, NULL, NULL, '\0', NULL, 0, N_( "When generating a font, ignore slight rounding errors for hints that should be at the top or bottom of the glyph. For example, you might like to set this to 0.02 so that 19.999 will be considered 20. But only for the hint width value.") },
+	
 	PREFS_LIST_EMPTY
 },
  hints_list[] = {
