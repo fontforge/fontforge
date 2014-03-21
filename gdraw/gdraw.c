@@ -705,7 +705,7 @@ void GDrawGrabSelection(GWindow w,enum selnames sel) {
 
 void GDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
 	void *data,int32 cnt,int32 unitsize,void *(*gendata)(void *,int32 *len)) {
-    (w->display->funcs->addSelectionType)(w,sel,type,data,cnt,unitsize,gendata,gendata?NULL:free);
+    (w->display->funcs->addSelectionType)(w,sel,type,data,cnt,unitsize,gendata);
 }
 
 void *GDrawRequestSelection(GWindow w,enum selnames sn, char *typename, int32 *len) {

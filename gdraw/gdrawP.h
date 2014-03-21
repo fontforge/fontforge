@@ -236,7 +236,7 @@ struct displayfuncs {
 
     void (*grabSelection)(GWindow w,enum selnames sel);
     void (*addSelectionType)(GWindow w,enum selnames sel,char *type,
-	void *data,int32 cnt,int32 unitsize,void *(*gendata)(void *,int32 *len), void (*freedata)(void *));
+	void *data,int32 cnt,int32 unitsize,void *(*gendata)(void *,int32 *len));
     void *(*requestSelection)(GWindow w,enum selnames sn, char *typename, int32 *len);
     int (*selectionHasType)(GWindow w,enum selnames sn, char *typename);
     void (*bindSelection)(GDisplay *disp,enum selnames sn, char *atomname);

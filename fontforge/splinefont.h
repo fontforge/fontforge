@@ -1116,7 +1116,7 @@ typedef struct spline {
     */
 } Spline;
 
-#include "spiroentrypoints.h"
+#include <spiroentrypoints.h>
 #define SPIRO_SELECTED(cp)	((cp)->ty&0x80)
 #define SPIRO_DESELECT(cp)	((cp)->ty&=~0x80)
 #define SPIRO_SELECT(cp)	((cp)->ty|=0x80)

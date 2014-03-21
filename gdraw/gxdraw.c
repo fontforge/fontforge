@@ -3864,14 +3864,6 @@ return( gd->atomdata[i].xatom );
 }
 
 static void GXDrawClearSelData(GXDisplay *gd,enum selnames sel) {
-    struct seldata *sd = gd->selinfo[sel].datalist, *next;
-
-    while ( sd!=NULL ) {
-	next = sd->next;
-	if ( sd->freedata )
-	    (sd->freedata)(sd->data);
-	sd = next;
-    }
     gd->selinfo[sel].datalist = NULL;
     gd->selinfo[sel].owner = NULL;
 }
@@ -3895,8 +3887,7 @@ static void GXDrawGrabSelection(GWindow w,enum selnames sel) {
 }
 
 static void GXDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
-	void *data,int32 cnt,int32 unitsize, void *(*gendata)(void *,int32 *len),
-	void (*freedata)(void *)) {
+	void *data,int32 cnt,int32 unitsize, void *(*gendata)(void *,int32 *len)) {
     GXDisplay *gd = (GXDisplay *) (w->display);
     int typeatom = GXDrawGetAtom(gd,type);
     struct seldata *sd;
@@ -3917,7 +3908,6 @@ static void GXDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
     sd->data = data;
     sd->unitsize = unitsize;
     sd->gendata = gendata;
-    sd->freedata = freedata;
 }
 
 static void GXDrawTransmitSelection(GXDisplay *gd,XEvent *event) {

@@ -247,11 +247,9 @@ static void PSDrawGrabSelection(GWindow UNUSED(w), enum selnames UNUSED(sel)) {
 
 static void PSDrawAddSelectionType(GWindow UNUSED(w), enum selnames UNUSED(sel),
         char *UNUSED(type), void *UNUSED(data), int32 UNUSED(len),
-        int32 UNUSED(unitsize), void *(*gendata)(void *,int32 *len),
-        void (*freedata)(void *)) {
+        int32 UNUSED(unitsize), void *(*gendata)(void *,int32 *len)) {
     /* Not meaningful */
     (void)gendata;
-    (void)freedata;
 }
 
 static void *PSDrawRequestSelection(GWindow UNUSED(w), enum selnames UNUSED(sn),
