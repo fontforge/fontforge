@@ -3366,10 +3366,12 @@ static int CVCurEnc(CharView *cv)
     return( ((FontView *) (cv->b.fv))->b.map->backmap[cv->b.sc->orig_pos] );
 }
 
-static char *CVMakeTitles(CharView *cv,char *buf) {
+static char *CVMakeTitles(CharView *cv,char *buf,size_t len) {
     char *title;
     SplineChar *sc = cv->b.sc;
+    SplineFont *sf = sc->parent;
     char *uniname;
+    size_t used;
 
 /* GT: This is the title for a window showing an outline character */
 /* GT: It will look something like: */
@@ -3377,20 +3379,23 @@ static char *CVMakeTitles(CharView *cv,char *buf) {
 /* GT: $1 is the name of the glyph */
 /* GT: $2 is the glyph's encoding */
 /* GT: $3 is the font name */
-    sprintf(buf,_("%1$.80s at %2$d from %3$.90s"),
-	    sc->name, CVCurEnc(cv), sc->parent->fontname);
-    if ( sc->changed )
-	strcat(buf," *");
+    used = snprintf(buf,len,_("%1$.80s at %2$d from %3$.90s%s"),
+		    sc->name, CVCurEnc(cv), sf->fontname,
+		    sc->changed ? "*" : "");
     title = copy(buf);
 
-    /* Enhance 'buf' description with Nameslist.txt unicode name definition */
-    if ( (uniname=unicode_name(sc->unicodeenc))!=NULL ) {
-	strcat(buf, " ");
-	strcpy(buf+strlen(buf), uniname);
+    if (used < len) {
+	/* Enhance 'buf' description with Nameslist.txt unicode name definition */
+	if ( (uniname=unicode_name(sc->unicodeenc))!=NULL ) {
+	    used += snprintf(buf+used, len-used, " %s", uniname);
+	    free(uniname);
+	}
     }
 
-    if ( cv->show_ft_results || cv->dv )
-	sprintf(buf+strlen(buf), " (%gpt, %ddpi)", (double) cv->ft_pointsizey, cv->ft_dpi );
+    if (used < len && ( cv->show_ft_results || cv->dv )) {
+	snprintf(buf+used, len-used, " (%gpt, %ddpi)", (double) cv->ft_pointsizey, cv->ft_dpi );
+    }
+
     return( title );
 }
 
@@ -3402,7 +3407,7 @@ static void SC_RefreshTitles(SplineChar *sc) {
     if ( (CharView *) (sc->views)==NULL )
 return;
     for ( cv = (CharView *) (sc->views); cv!=NULL; cv=(CharView *) (cv->b.next) ) {
-	title = CVMakeTitles(cv,buf);
+	title = CVMakeTitles(cv,buf,sizeof(buf));
 	/* Could be different if one window is debugging and one is not */
 	GDrawSetWindowTitles8(cv->gw,buf,title);
     }
@@ -3554,7 +3559,7 @@ void CVChangeSC( CharView *cv, SplineChar *sc )
     CVNewScale(cv);
 
     CharIcon(cv,(FontView *) (cv->b.fv));
-    title = CVMakeTitles(cv,buf);
+    title = CVMakeTitles(cv,buf,sizeof(buf));
     GDrawSetWindowTitles8(cv->gw,buf,title);
     CVInfoDraw(cv,cv->gw);
     _CVPaletteActivate(cv,true);
@@ -4546,7 +4551,7 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
 	cv->b.drawmode = dm_back;
     }
     CharIcon(cv,(FontView *) (cv->b.fv));
-    char* title = CVMakeTitles(cv,buf);
+    char* title = CVMakeTitles(cv,buf,sizeof(buf));
     GDrawSetWindowTitles8(cv->gw,buf,title);
     CVInfoDraw(cv,cv->gw);
     _CVPaletteActivate(cv,true);
@@ -12604,7 +12609,7 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_utf8_ititle;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
-    wattrs.utf8_icon_title = CVMakeTitles(cv,buf);
+    wattrs.utf8_icon_title = CVMakeTitles(cv,buf,sizeof(buf));
     wattrs.utf8_window_title = buf;
     wattrs.icon = CharIcon(cv, fv);
     if ( wattrs.icon )
