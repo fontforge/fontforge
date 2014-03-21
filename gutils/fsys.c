@@ -30,6 +30,7 @@
 #include "ustring.h"
 #include "fileutil.h"
 #include "gfile.h"
+#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>		/* for mkdir */
 #include <unistd.h>
@@ -42,7 +43,7 @@
 #define MKDIR(A,B) mkdir(A,B)
 #endif
 
-static char dirname_[1024];
+static char dirname_[MAXPATHLEN+1];
 #if !defined(__MINGW32__)
  #include <pwd.h>
 #else
