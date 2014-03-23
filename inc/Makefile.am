@@ -46,9 +46,9 @@ lib_LTLIBRARIES = libggc_veneer.la
 
 libggc_veneer_la_SOURCES = gc_veneer.c
 
-libggc_veneer_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc" $(LIBGC_CFLAGS)
+libggc_veneer_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc" "-I$(top_builddir)/lib" "-I$(top_srcdir)/lib" $(LIBGC_CFLAGS)
 
-libggc_veneer_la_LIBADD = $(LIBGC_LIBS)
+libggc_veneer_la_LIBADD = $(LIBGC_LIBS) $(top_builddir)/lib/libgnu.la
 
 libggc_veneer_la_LDFLAGS = $(MY_LIB_LDFLAGS)
 
