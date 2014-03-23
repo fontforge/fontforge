@@ -39,12 +39,13 @@
 #endif
 
 #ifdef HAVE_PTHREAD_H
+#include <gc/gc.h> /* Makes some necessary redefinitions */
 #include <pthread.h>
 #endif
 
 struct stdfuncs {
     char *(*decomposeURL)(const unichar_t *url,char **host, int *port,
-	char **username, char **password);
+        char **username, char **password);
     void (*PostSuccess)(GIOControl *gc);
     void (*PostInter)(GIOControl *gc);
     void (*PostError)(GIOControl *gc);
