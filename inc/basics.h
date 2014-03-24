@@ -38,9 +38,6 @@
 #include <limits.h>
 #include <stdbool.h>
 
-#define true 1
-#define false 0
-
 typedef int32_t		int32;
 typedef uint32_t	uint32;
 typedef int16_t		int16;
