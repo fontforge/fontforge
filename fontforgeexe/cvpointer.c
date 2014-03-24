@@ -28,6 +28,7 @@
 #include "fontforgeui.h"
 #include <utype.h>
 #include <math.h>
+#include "gl_linked_list.h"
 #include "collabclient.h"
 extern void BackTrace( const char* msg );
 
@@ -100,32 +101,26 @@ return( true );
 return( false );
 }
 
-GList_Glib*
+gl_list_t
 CVGetSelectedPoints(CharView *cv)
 {
-    GList_Glib* ret = 0;
+    gl_list_t ret = gl_list_create_empty (GL_LINKED_LIST, NULL, NULL, NULL, false);
     /* if there are any points selected */
     SplinePointList *spl;
     Spline *spline, *first;
-    int i;
 
-    for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next )
-    {
-	if ( cv->b.sc->inspiro && hasspiro())
-	{
-	    for ( i=0; i<spl->spiro_cnt-1; ++i )
+    for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
+	if ( cv->b.sc->inspiro && hasspiro()) {
+	    for ( int i=0; i<spl->spiro_cnt-1; ++i )
 		if ( SPIRO_SELECTED(&spl->spiros[i]))
-		    ret = g_list_append( ret, &spl->spiros[i] );
-	}
-	else
-	{
+		    gl_list_add_last( ret, &spl->spiros[i] );
+	} else {
 	    if ( spl->first->selected )
-		ret = g_list_append( ret, spl->first );
+		gl_list_add_last( ret, spl->first );
 	    first = NULL;
-	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next )
-	    {
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
 		if ( spline->to->selected )
-		    ret = g_list_append( ret, spline->to );
+		    gl_list_add_last( ret, spline->to );
 		if ( first==NULL ) first = spline;
 	    }
 	}
