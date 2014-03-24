@@ -28,7 +28,6 @@
 #include "fontforgeui.h"
 #include <utype.h>
 #include <math.h>
-#include "gl_linked_list.h"
 #include "collabclient.h"
 extern void BackTrace( const char* msg );
 
@@ -104,7 +103,7 @@ return( false );
 gl_list_t
 CVGetSelectedPoints(CharView *cv)
 {
-    gl_list_t ret = gl_list_create_empty (GL_LINKED_LIST, NULL, NULL, NULL, false);
+    gl_list_t ret = gl_list_new();
     /* if there are any points selected */
     SplinePointList *spl;
     Spline *spline, *first;
