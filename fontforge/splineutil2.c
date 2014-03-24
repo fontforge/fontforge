@@ -4507,7 +4507,7 @@ SplineSet *SplineSetReverse(SplineSet *spl) {
     Spline *spline, *first, *next;
     BasePoint tp;
     SplinePoint *temp;
-    int bool;
+    int flag;
     int i;
     /* reverse the splineset so that what was the start point becomes the end */
     /*  and vice versa. This entails reversing every individual spline, and */
@@ -4521,12 +4521,12 @@ return( spl );			/* Only one point, reversal is meaningless */
     tp = spline->from->nextcp;
     spline->from->nextcp = spline->from->prevcp;
     spline->from->prevcp = tp;
-    bool = spline->from->nonextcp;
+    flag = spline->from->nonextcp;
     spline->from->nonextcp = spline->from->noprevcp;
-    spline->from->noprevcp = bool;
-    bool = spline->from->nextcpdef;
+    spline->from->noprevcp = flag;
+    flag = spline->from->nextcpdef;
     spline->from->nextcpdef = spline->from->prevcpdef;
-    spline->from->prevcpdef = bool;
+    spline->from->prevcpdef = flag;
 
     for ( ; spline!=NULL && spline!=first; spline=next ) {
 	next = spline->to->next;
@@ -4535,12 +4535,12 @@ return( spl );			/* Only one point, reversal is meaningless */
 	    tp = spline->to->nextcp;
 	    spline->to->nextcp = spline->to->prevcp;
 	    spline->to->prevcp = tp;
-	    bool = spline->to->nonextcp;
+	    flag = spline->to->nonextcp;
 	    spline->to->nonextcp = spline->to->noprevcp;
-	    spline->to->noprevcp = bool;
-	    bool = spline->to->nextcpdef;
+	    spline->to->noprevcp = flag;
+	    flag = spline->to->nextcpdef;
 	    spline->to->nextcpdef = spline->to->prevcpdef;
-	    spline->to->prevcpdef = bool;
+	    spline->to->prevcpdef = flag;
 	}
 
 	temp = spline->to;

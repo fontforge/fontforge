@@ -39,8 +39,7 @@ extern int _GScrollBar_Width;
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
-#include "dlist.h"
-
+#include "gl_linked_list.h" /* FIXME: abstract this */
 
 #include "gutils/prefs.h"
 #include "collabclientui.h"
@@ -2854,13 +2853,17 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
      if( cv->p.pretransform_spl )
      {
 	 struct CVExpose_PreTransformSPL_ud d;
+	 SplinePointList *spl;
 	 d.dopoints = 1;
 	 d.cv = cv;
 	 d.pixmap = pixmap;
 	 d.fg = DraggingComparisonOutlineColor;
 	 d.clip = &clip;
 	 d.strokeFillMode = sfm_stroke_trans;
-	 g_list_foreach( cv->p.pretransform_spl, CVExpose_PreTransformSPL_fe, &d );
+	 gl_list_iterator_t i;
+	 for (i = gl_list_iterator(cv->p.pretransform_spl); gl_list_iterator_next(&i, &spl, NULL); )
+	     CVExpose_PreTransformSPL_fe(spl, &d);
+	 gl_list_iterator_free(&i);
      }
 
     /* The call to CVExposeGlyphFill() above will have rendered a filled glyph already. */
@@ -4440,9 +4443,7 @@ typedef struct lastselectedpoint
 
 void CVFreePreTransformSPL( CharView* cv )
 {
-    if( cv->p.pretransform_spl )
-        g_list_free( cv->p.pretransform_spl );
-    cv->p.pretransform_spl = 0;
+    cv->p.pretransform_spl = NULL;
 }
 
 static void CVMaybeCreateDraggingComparisonOutline( CharView* cv )
@@ -4451,8 +4452,8 @@ static void CVMaybeCreateDraggingComparisonOutline( CharView* cv )
 	return;
     if( !cv )
 	return;
-    if( cv->p.pretransform_spl )
-	CVFreePreTransformSPL( cv );
+    CVFreePreTransformSPL( cv );
+    cv->p.pretransform_spl = gl_list_create_empty (GL_LINKED_LIST, NULL, NULL, NULL, false);
 
     Layer* l = cv->b.layerheads[cv->b.drawmode];
     if( !l || !l->splines )
@@ -4464,10 +4465,7 @@ static void CVMaybeCreateDraggingComparisonOutline( CharView* cv )
 	int anySel = 0;
 	SPLFirstVisitPoints( spl->first, isAnyControlPointSelectedVisitor, &anySel );
 	if( anySel || (cv->b.sc->inspiro && hasspiro()))
-	{
-	    cv->p.pretransform_spl = g_list_append( cv->p.pretransform_spl,
-						    SplinePointListCopy(spl) );
-	}
+	    gl_list_add_last( cv->p.pretransform_spl, SplinePointListCopy(spl) );
     }
 
 }
@@ -8444,10 +8442,9 @@ static void _CVMergeToLine(CharView *cv, int elide) {
     SplineCharMerge(cv->b.sc,&cv->b.layerheads[cv->b.drawmode]->splines,!elide);
 
     // Select the other side of the new curve
-    GList_Glib* gl = CVGetSelectedPoints( cv );
-    if( g_list_first(gl) )
-	SPSelectPrevPoint( (SplinePoint*)g_list_first(gl)->data, 1 );
-    g_list_free( gl );
+    gl_list_t gl = CVGetSelectedPoints( cv );
+    if( gl_list_size(gl) > 0 )
+	SPSelectPrevPoint( (SplinePoint*)gl_list_get_at(gl, 0), 1 );
 
     // And make the curve between the two active points a line
     _CVMenuMakeLine( cv, 0, 0 );
@@ -12238,7 +12235,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     cv->b.fv = &fv->b;
     cv->map_of_enc = fv->b.map;
     cv->enc = enc;
-    cv->p.pretransform_spl = 0;
+    cv->p.pretransform_spl = NULL;
     cv->b.drawmode = dm_fore;
 
     memset(cv->showback,-1,sizeof(cv->showback));

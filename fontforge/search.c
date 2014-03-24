@@ -31,24 +31,18 @@
 #include "search.h"
 
 static int CoordMatches(real real_off, real search_off, SearchData *s) {
-    real fudge;
     if ( real_off >= search_off-s->fudge && real_off <= search_off+s->fudge )
 return( true );
-    fudge = s->fudge_percent*search_off;
-    if ( fudge<0 ) fudge = -fudge;
-    if ( real_off >= search_off-fudge && real_off <= search_off+fudge )
-return( true );
-return( false );
+    real fudge = fabs(s->fudge_percent*search_off);
+    return real_off >= search_off-fudge && real_off <= search_off+fudge;
 }
 
 static int BPMatches(BasePoint *sc_p1,BasePoint *sc_p2,BasePoint *p_p1,BasePoint *p_p2,
 	int flip,real rot, real scale,SearchData *s) {
-    real sxoff, syoff, pxoff, pyoff;
-
-    sxoff = sc_p1->x-sc_p2->x;
-    syoff = sc_p1->y-sc_p2->y;
-    pxoff = p_p1->x-p_p2->x;
-    pyoff = p_p1->y-p_p2->y;
+    real sxoff = sc_p1->x-sc_p2->x;
+    real syoff = sc_p1->y-sc_p2->y;
+    real pxoff = p_p1->x-p_p2->x;
+    real pyoff = p_p1->y-p_p2->y;
     if ( flip&1 )
 	sxoff = -sxoff;
     if ( flip&2 )
@@ -1349,7 +1343,7 @@ return( NULL );
 /*  go through a similar process to the above */
 
 static SplineChar *RC_MakeNewGlyph(FontViewBase *fv,SplineChar *base, int index,
-	char *reason, char *morereason) {
+	const char *reason, const char *morereason) {
     char *namebuf;
     SplineFont *sf = fv->sf;
     int enc;

@@ -36,6 +36,7 @@
 /******************************************************************************/
 
 #if FREETYPE_HAS_DEBUGGER
+#include <gc/gc.h> /* Makes some necessary redefinitions */
 #include <pthread.h>
 #include <tterrors.h>
 
