@@ -39,11 +39,19 @@ export XLOCALEDIR="$bundle_share/X11/locale"
 
 WRAPPER=
 
-if [ x"$1" == "x--debug" ]; then
+if [ x"$1" == "x--debug" -o x"$1" == "x--debug-clearenv" ]; then
 
-#    do not change these here, maybe the system has something it already needs
-#    unset PYTHONHOME
-#    unset LD_LIBRARY_PATH
+    if [ x"$1" == "x--debug-clearenv" ]; then
+       # the user has instructed us to flush their environment
+       echo "flushing some python related environment variables for this script..."
+       unset PYTHONHOME
+       unset LD_LIBRARY_PATH
+       unset PYTHONPATH
+       alias python=/usr/bin/python
+       export PATH="/usr/bin:$PATH"
+       echo "Also selected the default python executable."
+       type -all python
+    fi
 
     if command -v lldb 2>/dev/null; then
         WRAPPER="gdb --args"
