@@ -1116,7 +1116,22 @@ typedef struct spline {
     */
 } Spline;
 
-#include <spiroentrypoints.h>
+#ifndef _NO_LIBSPIRO
+# include "spiroentrypoints.h"
+#else
+# define SPIRO_OPEN_CONTOUR	'{'
+# define SPIRO_CORNER		'v'
+# define SPIRO_G4		'o'
+# define SPIRO_G2		'c'
+# define SPIRO_LEFT		'['
+# define SPIRO_RIGHT		']'
+# define SPIRO_END		'z'
+typedef struct {			/* Taken from spiro.h because I want */
+    double x;				/*  to be able to compile for spiro */
+    double y;				/*  even on a system without it */
+    char ty;
+} spiro_cp;
+#endif
 #define SPIRO_SELECTED(cp)	((cp)->ty&0x80)
 #define SPIRO_DESELECT(cp)	((cp)->ty&=~0x80)
 #define SPIRO_SELECT(cp)	((cp)->ty|=0x80)

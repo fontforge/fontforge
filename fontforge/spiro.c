@@ -31,7 +31,21 @@
 /* Access to Raph Levien's spiro splines */
 /* See http://www.levien.com/spiro/ */
 
-#include "bezctx_ff.h"
+#ifdef _NO_LIBSPIRO
+
+static int has_spiro = false;
+
+SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
+    return( NULL );
+}
+
+spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *cnt) {
+return( NULL );
+}
+
+#else /* ! _NO_LIBSPIRO */
+
+#  include "bezctx_ff.h"
 
 static int has_spiro = true;
 
@@ -169,6 +183,8 @@ spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt) {
     if ( _cnt!=NULL ) *_cnt = cnt;
 return( ret );
 }
+
+#endif /* ! _NO_LIBSPIRO */
 
 int hasspiro(void) {
     return has_spiro;

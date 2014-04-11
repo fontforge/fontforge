@@ -5,6 +5,7 @@
 #include <basics.h>
 #include <stdio.h>
 
+#ifndef _NO_LIBSPIRO
 #include "bezctx_ff.h"
 #include "fontforgevw.h"	/* For LogError, else splinefont.h */
 #ifdef HAVE_IEEEFP_H
@@ -157,3 +158,4 @@ struct splinepointlist *bezctx_ff_close(bezctx *z) {
     }
     return( ss );
 }
+#endif
