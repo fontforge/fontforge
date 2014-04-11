@@ -1720,10 +1720,14 @@ static void check_image_buffers(GXDisplay *gdisp, int neww, int newh, int is_bit
     if ( gdisp->gg.iwidth == width && gdisp->gg.iheight == height && depth==gdisp->gg.img->depth )
 return;
 
-    if ( gdisp->gg.img!=NULL )
+    if ( gdisp->gg.img!=NULL ) {
+	gdisp->gg.img->data = NULL;
 	XDestroyImage(gdisp->gg.img);
-    if ( gdisp->gg.mask!=NULL )
+    }
+    if ( gdisp->gg.mask!=NULL ) {
+	gdisp->gg.mask->data = NULL;
 	XDestroyImage(gdisp->gg.mask);
+    }
     pixel_size = gdisp->pixel_size;
     temp = malloc(((width*pixel_size+gdisp->bitmap_pad-1)/gdisp->bitmap_pad)*
 	    (gdisp->bitmap_pad/8)*height);
