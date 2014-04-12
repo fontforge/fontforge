@@ -24,7 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
 
 #include "gdraw.h"
 #include "gfile.h"
@@ -192,16 +191,20 @@ static Hotkey* hotkeySetFull( char* action, char* keydefinition, int append, int
 
     // If we didn't get a hotkey (No Shortcut)
     // then we move along
-    if( !hk->state && !hk->keysym )
+    if( !hk->state && !hk->keysym ) {
+	free(hk);
 	return 0;
+    }
 	
     // If we already have a binding for that hotkey combination
     // for this window, forget the old one. One combo = One action.
     if( !append ) {
 	Hotkey* oldkey = hotkeyFindByStateAndKeysym( hotkeyGetWindowTypeString(hk),
 						     hk->state, hk->keysym );
-	if( oldkey )
+	if( oldkey ) {
 	    dlist_erase( &hotkeys, (struct dlistnode *)oldkey );
+	    free(oldkey);
+	}
     }
 	
     hk->isUserDefined = isUserDefined;
@@ -283,11 +286,14 @@ void hotkeysLoad()
 	snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", sharedir, currentlocale);
 	loadHotkeysFromFile( localefn, false, false );
     }
+    free(currentlocale);
     
     char* fn = getHotkeyFilename(0);
-    if( !fn )
+    if( !fn ) {
 	return;
+    }
     loadHotkeysFromFile( fn, true, false );
+    free(fn);
 }
 
 static void hotkeysSaveCallback(Hotkey* hk,FILE* f) {
@@ -307,6 +313,7 @@ void hotkeysSave() {
     }
     FILE* f = fopen(fn,"w");
     if( !f ) {
+	free(fn);
 	fprintf(stderr,_("Failed to open your hotkey definition file for updates.\n"));
 	return;
     }
@@ -322,6 +329,8 @@ void hotkeysSave() {
     char* newpath = getHotkeyFilename(0);
     int rc = rename( fn, newpath );
     int e = errno;
+    free(fn);
+    free(newpath);
     if( rc == -1 ) {
 	fprintf(stderr,_("Failed to rename the new hotkeys file over your old one!\n"));
 	fprintf(stderr,_("Reason:%s\n"), strerror(e));
@@ -407,12 +416,12 @@ Hotkey* hotkeyFindByMenuPath( GWindow w, char* path ) {
 char* hotkeyTextToMacModifiers( char* keydesc )
 {
     keydesc = copy( keydesc );
-    keydesc = str_replace_all( keydesc, "Ctl", "⌘" );
-    keydesc = str_replace_all( keydesc, "Command", "⌘" );
-    keydesc = str_replace_all( keydesc, "Cmd", "⌘" );
-    keydesc = str_replace_all( keydesc, "Shft", "⇧" );
-    keydesc = str_replace_all( keydesc, "Alt", "⎇" );
-    keydesc = str_replace_all( keydesc, "+", "" );
+    keydesc = str_replace_all( keydesc, "Ctl", "⌘", 1 );
+    keydesc = str_replace_all( keydesc, "Command", "⌘", 1 );
+    keydesc = str_replace_all( keydesc, "Cmd", "⌘", 1 );
+    keydesc = str_replace_all( keydesc, "Shft", "⇧", 1 );
+    keydesc = str_replace_all( keydesc, "Alt", "⎇", 1 );
+    keydesc = str_replace_all( keydesc, "+", "", 1 );
     return keydesc;
 }
 

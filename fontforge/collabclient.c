@@ -26,8 +26,6 @@
 *******************************************************************************
 ******************************************************************************/
 
-#include <fontforge-config.h>
-
 int pref_collab_sessionJoinTimeoutMS = 1000;
 int pref_collab_roundTripTimerMS = 2000;
 

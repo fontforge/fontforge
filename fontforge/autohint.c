@@ -597,6 +597,15 @@ void QuickBlues(SplineFont *_sf, int layer, BlueData *bd) {
     bd->bluecnt = bcnt;
 }
 
+void ElFreeEI(EIList *el) {
+    EI *e, *next;
+
+    for ( e = el->edges; e!=NULL; e = next ) {
+	next = e->next;
+	free(e);
+    }
+}
+
 static int EIAddEdge(Spline *spline, real tmin, real tmax, EIList *el) {
     EI *new = calloc(1,sizeof(EI));
     real min, max, temp;
@@ -666,10 +675,11 @@ static int EIAddEdge(Spline *spline, real tmin, real tmax, EIList *el) {
     if ( el->coordmax[1]<max )
 	el->coordmax[1] = max;
 
-    if ( new->hor && new->vert )
+    if ( new->hor && new->vert ) {
 	/* This spline is too small for us to notice */
+	free(new);
 return( false );
-    else {
+    } else {
 	new->next = el->edges;
 	el->edges = new;
 
@@ -902,6 +912,7 @@ StemInfo *HintCleanup(StemInfo *stem,int dosort,int instance_count) {
 		p->where = HIMerge(p->where,s->where);
 		s->where = NULL;
 		p->next = sn;
+		StemInfoFree(s);
 	    } else
 		p = s;
 	}
@@ -1160,6 +1171,7 @@ return( NULL );
 		s->where->next!=NULL && sn->where->next==NULL ) {
 	    t = sn->next;
 	    sn->next = NULL;
+	    StemInfoFree(sn);
 	    s->next = t;
 	    sn = t;
 	    if ( t==NULL )
@@ -1231,7 +1243,7 @@ HintInstance *HICopyTrans(HintInstance *hi, real mul, real offset) {
     HintInstance *first=NULL, *last, *cur, *p;
 
     while ( hi!=NULL ) {
-	cur = XZALLOC(HintInstance);
+	cur = chunkalloc(sizeof(HintInstance));
 	if ( mul>0 ) {
 	    cur->begin = hi->begin*mul+offset;
 	    cur->end = hi->end*mul+offset;
@@ -1299,7 +1311,7 @@ static HintInstance *SCGuessHintPoints(SplineChar *sc, int layer, StemInfo *stem
 	if ( val!=0x80000000 ) {
 	    for ( prev=NULL, test=head; test!=NULL && val>test->begin; prev=test, test=test->next );
 	    if ( test==NULL || val!=test->begin ) {
-		cur = XZALLOC(HintInstance);
+		cur = chunkalloc(sizeof(HintInstance));
 		cur->begin = cur->end = val;
 		cur->next = test;
 		if ( prev==NULL ) head = cur;
@@ -1319,7 +1331,7 @@ static HintInstance *StemAddHIFromActive(struct stemdata *stem,int major) {
     for ( i=0; i<stem->activecnt; ++i ) {
 	mino = dir*stem->active[i].start + ((real *) &stem->left.x)[major];
 	maxo = dir*stem->active[i].end + ((real *) &stem->left.x)[major];
-	cur = XZALLOC(HintInstance);
+	cur = chunkalloc(sizeof(HintInstance));
 	if ( dir>0 ) {
 	    cur->begin = mino;
 	    cur->end = maxo;
@@ -1343,7 +1355,7 @@ static HintInstance *DStemAddHIFromActive( struct stemdata *stem ) {
     HintInstance *head = NULL, *cur, *t;
 
     for ( i=0; i<stem->activecnt; ++i ) {
-        cur = xzalloc( sizeof( HintInstance ));
+        cur = chunkalloc( sizeof( HintInstance ));
 	cur->begin = stem->active[i].start;
 	cur->end = stem->active[i].end;
 	if ( head == NULL )
@@ -1420,7 +1432,7 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
 		}
 	    }
 	    if ( sm || wm ) {
-		cur = XZALLOC(HintInstance);
+		cur = chunkalloc(sizeof(HintInstance));
 		if ( ob>oe ) { real temp=ob; ob=oe; oe=temp;}
 		cur->begin = ob;
 		cur->end = oe;
@@ -1470,7 +1482,7 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
 	    if ( w2->begin>=t->begin )
 		t->begin = w2->begin;
 	    if ( w2->end<=t->end ) {
-		cur = XZALLOC(HintInstance);
+		cur = chunkalloc(sizeof(HintInstance));
 		cur->begin = w2->end;
 		cur->end = t->end;
 		cur->next = n;
@@ -1506,6 +1518,7 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
 	if ( w2==NULL ) {
 	    /* No match for t (or if there were it wasn't complete) get rid */
 	    /*  of what's left of t */
+	    chunkfree(t,sizeof(*t));
 	    if ( p==NULL )
 		s = n;
 	    else
@@ -1515,6 +1528,7 @@ static void SCGuessHintInstancesLight(SplineChar *sc, int layer, StemInfo *stem,
     }
     while ( w!=NULL ) {
 	n = w->next;
+	chunkfree(w,sizeof(*w));
 	w=n;
     }
     
@@ -1533,10 +1547,13 @@ static StemInfo *StemInfoAdd(StemInfo *list, StemInfo *new) {
     StemInfo *prev, *test;
 
     for ( prev=NULL, test=list; test!=NULL && new->start>test->start; prev=test, test=test->next );
-    if ( test!=NULL && test->start==new->start && test->width==new->width )
-	/* Replace the old with the new; the Guess routines still need the new */
+    if ( test!=NULL && test->start==new->start && test->width==new->width ) {
+	/* Replace the old with the new */
+	/* can't just free the new, because the Guess routines depend on it */
+	/*  being around */
 	new->next = test->next;
-    else
+	StemInfoFree(test);
+    } else
 	new->next = test;
     if ( prev==NULL )
 	list = new;
@@ -1649,7 +1666,7 @@ void SCGuessHHintInstancesAndAdd(SplineChar *sc, int layer, StemInfo *stem, real
     sc->hstem = StemInfoAdd(sc->hstem,stem);
     if ( stem->where==NULL && guess1!=0x80000000 ) {
 	if ( guess1>guess2 ) { real temp = guess1; guess1 = guess2; guess2 = temp; }
-	stem->where = XZALLOC(HintInstance);
+	stem->where = chunkalloc(sizeof(HintInstance));
 	stem->where->begin = guess1;
 	stem->where->end = guess2;
     }
@@ -1666,7 +1683,7 @@ void SCGuessVHintInstancesAndAdd(SplineChar *sc, int layer,StemInfo *stem, real 
     sc->vstem = StemInfoAdd(sc->vstem,stem);
     if ( stem->where==NULL && guess1!=0x80000000 ) {
 	if ( guess1>guess2 ) { real temp = guess1; guess1 = guess2; guess2 = temp; }
-	stem->where = XZALLOC(HintInstance);
+	stem->where = chunkalloc(sizeof(HintInstance));
 	stem->where->begin = guess1;
 	stem->where->end = guess2;
     }
@@ -1724,8 +1741,10 @@ return( true );
          * it with the new one, but not keep them both */
         if (test->unit.x == dn->unit.x && test->unit.y == dn->unit.y &&
             test->left.x == dn->left.x && test->left.y == dn->left.y &&
-            test->right.x == dn->right.x && test->right.y == dn->right.y )
+            test->right.x == dn->right.x && test->right.y == dn->right.y ) {
+            DStemInfoFree( test );
 return( false );
+        }
         dot = ( test->unit.x * dn->unit.y ) - 
               ( test->unit.y * dn->unit.x );
         if ( dot <= -0.5 || dot >= 0.5 )
@@ -1758,8 +1777,9 @@ return( false );
         /* it as one more instance for the already added stem */
         if ( !overlap ) {
             for ( hi=dn->where; hi->next != NULL; hi = hi->next ) ;
-            hi->next = xzalloc( sizeof( HintInstance ));
+            hi->next = chunkalloc( sizeof( HintInstance ));
             hi->next->begin = ibegin; hi->next->end = iend;
+            DStemInfoFree( test );
 return( false );
         /* The found stem is close but not identical to the stem we  */
         /* are going to add. So just replace the older stem with the */
@@ -1770,6 +1790,7 @@ return( false );
                 *ds = test;
             else
                 prev->next = test;
+            DStemInfoFree( dn );
 return( true );
         }
     }
@@ -1819,7 +1840,7 @@ static StemInfo *RefHintsMerge(StemInfo *into, StemInfo *rh, real mul, real offs
 	}
 	for ( h=into, prev=NULL; h!=NULL && (start>h->start || (start==h->start && width>h->width)); prev=h, h=h->next );
 	if ( h==NULL || start!=h->start || width!=h->width ) {
-	    n = XZALLOC(StemInfo);
+	    n = chunkalloc(sizeof(StemInfo));
 	    n->start = start; n->width = width;
 	    n->next = h;
 	    if ( prev==NULL )
@@ -1839,7 +1860,7 @@ static DStemInfo *RefDHintsMerge( SplineFont *sf,DStemInfo *into,DStemInfo *rh,
     double dmul;
 
     for ( ; rh!=NULL; rh=rh->next ) {
-	new = xzalloc( sizeof( DStemInfo ));
+	new = chunkalloc( sizeof( DStemInfo ));
 	*new = *rh;
 	new->left.x = xmul*new->left.x + xoffset;
 	new->right.x = xmul*new->right.x + xoffset;
@@ -1909,9 +1930,13 @@ void SCClearHints(SplineChar *sc) {
 	SCClearHintMasks(sc,layer,true);
 	SCClearRounds(sc,layer);
     }
+    StemInfosFree(sc->hstem);
+    StemInfosFree(sc->vstem);
     sc->hstem = sc->vstem = NULL;
     sc->hconflicts = sc->vconflicts = false;
+    DStemInfosFree(sc->dstem);
     sc->dstem = NULL;
+    MinimumDistancesFree(sc->md);
     sc->md = NULL;
     SCOutOfDateBackground(sc);
     if ( any )
@@ -1924,11 +1949,13 @@ static void _SCClearHintMasks(SplineChar *sc,int layer, int counterstoo) {
     RefChar *ref;
 
     if ( counterstoo ) {
+	free(sc->countermasks);
 	sc->countermasks = NULL; sc->countermask_cnt = 0;
     }
 
     for ( spl = sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
 	for ( sp = spl->first ; ; ) {
+	    chunkfree(sp->hintmask,sizeof(HintMask));
 	    sp->hintmask = NULL;
 	    if ( sp->next==NULL )
 	break;
@@ -1941,6 +1968,7 @@ static void _SCClearHintMasks(SplineChar *sc,int layer, int counterstoo) {
     for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
 	for ( spl = ref->layers[0].splines; spl!=NULL; spl=spl->next ) {
 	    for ( sp = spl->first ; ; ) {
+		chunkfree(sp->hintmask,sizeof(HintMask));
 		sp->hintmask = NULL;
 		if ( sp->next==NULL )
 	    break;
@@ -2099,6 +2127,7 @@ void SCFigureVerticalCounterMasks(SplineChar *sc) {
     if ( sc==NULL )
 return;
 
+    free(sc->countermasks);
     sc->countermask_cnt = 0;
     sc->countermasks = NULL;
 
@@ -2132,6 +2161,7 @@ void SCFigureCounterMasks(SplineChar *sc) {
     if ( sc==NULL )
 return;
 
+    free(sc->countermasks);
     sc->countermask_cnt = 0;
     sc->countermasks = NULL;
 
@@ -2302,7 +2332,8 @@ return;
 	}
     }
     for ( i=0; i<instance_count; ++i ) if ( to[i]!=NULL ) {
-	to[i]->hintmask = XZALLOC(HintMask);
+	chunkfree(to[i]->hintmask,sizeof(HintMask));
+	to[i]->hintmask = chunkalloc(sizeof(HintMask));
 	memcpy(to[i]->hintmask,mask,sizeof(HintMask));
     }
 }
@@ -2380,7 +2411,7 @@ static void AddCoord(MMH *mmh,SplinePoint *sps[MmMax],int instance_count, int is
     struct coords *coords;
     int i;
 
-    coords = XZALLOC(struct coords);
+    coords = chunkalloc(sizeof(struct coords));
     coords->next = mmh->where;
     mmh->where = coords;
     if ( ish )
@@ -2415,7 +2446,7 @@ return( hints );
 	    best = test;
 	}
     }
-    test = XZALLOC(MMH);
+    test = chunkalloc(sizeof(MMH));
     test->next = hints;
     AddCoord(test,sps,instance_count,ish);
     for ( i=0; i<instance_count; ++i )
@@ -2424,7 +2455,7 @@ return( hints );
 	for ( i=0; i<instance_count; ++i ) {
 	    if ( best->hints[i]==h[i] ) {
 		h[i]->hasconflicts = true;
-		test->map[i] = XZALLOC(StemInfo);
+		test->map[i] = chunkalloc(sizeof(StemInfo));
 		*test->map[i] = *h[i];
 		test->map[i]->where = NULL;
 		test->map[i]->used = true;
@@ -2514,11 +2545,13 @@ static int NumberMMH(MMH *mmh,int hstart,int instance_count) {
 
 	    h->hintnumber = hstart;
 
-	    for ( hi=h->where; hi!=NULL; hi=n )
+	    for ( hi=h->where; hi!=NULL; hi=n ) {
 		n = hi->next;
+		chunkfree(hi,sizeof(HintInstance));
+	    }
 	    h->where = NULL;
 	    for ( coords=mmh->where; coords!=NULL; coords = coords->next ) {
-		hi = XZALLOC(HintInstance);
+		hi = chunkalloc(sizeof(HintInstance));
 		hi->next = h->where;
 		h->where = hi;
 		hi->begin = coords->coords[i]-1;
@@ -2537,6 +2570,11 @@ static void SortMMH2(SplineChar *scs[MmMax],MMH *mmh,int instance_count,int ish)
     MMH *m;
 
     for ( i=0; i<instance_count; ++i ) {
+	for ( h= ish ? scs[i]->hstem : scs[i]->vstem; h!=NULL; h=n ) {
+	    n = h->next;
+	    if ( h->hintnumber==-1 )
+		StemInfoFree(h);
+	}
 	n = NULL;
 	for ( m = mmh ; m!=NULL; m=m->next ) {
 	    h = m->map[i];
@@ -2554,6 +2592,20 @@ static void SortMMH2(SplineChar *scs[MmMax],MMH *mmh,int instance_count,int ish)
 	    scs[i]->hstem = NULL;
 	else
 	    scs[i]->vstem = NULL;
+    }
+}
+
+static void MMHFreeList(MMH *mmh) {
+    MMH *mn;
+    struct coords *c, *n;
+
+    for ( ; mmh!=NULL; mmh = mn ) {
+	mn = mmh->next;
+	for ( c=mmh->where; c!=NULL; c=n ) {
+	    n = c->next;
+	    chunkfree(c,sizeof(struct coords));
+	}
+	chunkfree(mmh,sizeof(struct coords));
     }
 }
 
@@ -2648,6 +2700,8 @@ return;
     hcnt = NumberMMH(vs,hcnt,instance_count);
     SortMMH2(scs,hs,instance_count,true);
     SortMMH2(scs,vs,instance_count,false);
+    MMHFreeList(hs);
+    MMHFreeList(vs);
 }
 
 static int SplFigureHintMasks(SplineChar *scs[MmMax], SplineSet *spl[MmMax],
@@ -2780,7 +2834,7 @@ static StemInfo *GDFindStems(struct glyphdata *gd, int major) {
 	stem = bundle->stemlist[i];
 	l = (&stem->left.x)[other];
         r = (&stem->right.x)[other];
-	cur = xzalloc( sizeof( StemInfo ));
+	cur = chunkalloc( sizeof( StemInfo ));
 	if ( l<r ) {
 	    cur->start = l;
 	    cur->width = r - l;
@@ -2831,7 +2885,7 @@ static DStemInfo *GDFindDStems(struct glyphdata *gd) {
         
 	if ( stem->lpcnt < 2 || stem->rpcnt < 2 )
     continue;
-        cur = xzalloc( sizeof(DStemInfo) );
+        cur = chunkalloc( sizeof(DStemInfo) );
         cur->left = stem->left;
         cur->right = stem->right;
         cur->unit = stem->unit;
@@ -2867,12 +2921,15 @@ void _SplineCharAutoHint( SplineChar *sc, int layer, BlueData *bd, struct glyphd
 
     if ( gen_undoes )
 	SCPreserveHints(sc,layer);
-    sc->vstem=NULL;
-    sc->hstem=NULL;
-    sc->dstem=NULL;
-    sc->md=NULL;
+    StemInfosFree(sc->vstem); sc->vstem=NULL;
+    StemInfosFree(sc->hstem); sc->hstem=NULL;
+    DStemInfosFree(sc->dstem); sc->dstem=NULL;
+    MinimumDistancesFree(sc->md); sc->md=NULL;
 
+    free(sc->countermasks);
     sc->countermasks = NULL; sc->countermask_cnt = 0;
+    /* We'll free the hintmasks when we call SCFigureHintMasks */
+
     sc->changedsincelasthinted = false;
     sc->manualhints = false;
 
@@ -3005,8 +3062,8 @@ void SplineFontAutoHintRefs( SplineFont *_sf,int layer) {
 		    !sc->manualhints &&
 		    (sc->layers[layer].refs!=NULL && sc->layers[layer].splines==NULL)) {
 		SCPreserveHints(sc,layer);
-		sc->vstem=NULL;
-		sc->hstem=NULL;
+		StemInfosFree(sc->vstem); sc->vstem=NULL;
+		StemInfosFree(sc->hstem); sc->hstem=NULL;
 		AutoHintRefs(sc,layer,bd,true,true);
 	    }
 	}

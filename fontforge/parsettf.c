@@ -448,6 +448,7 @@ static char *_readencstring(FILE *ttf,int offset,int len,
 	    *cpt++ = getc(ttf);
 	*cpt = '\0';
 	ret = MacStrToUtf8(cstr,specific,language);
+	free(cstr);
     } else {
 	enc = enc_from_platspec(platform,specific);
 	if ( enc==NULL )
@@ -476,10 +477,12 @@ return( NULL );
 	    iconv(enc->tounicode,&in,&inlen,&out,&outlen);
 	    out[0] = '\0'; out[1] = '\0';
 	    out[2] = '\0'; out[3] = '\0';
+	    free(cstr);
 	} else {
 	    str = uc_copy("");
 	}
 	ret = u2utf8_copy(str);
+	free(str);
     }
     fseek(ttf,pos,SEEK_SET);
 return( ret );
@@ -622,7 +625,9 @@ return( true );
 /* GT: has asked for a font which is not in that file. */
 /* GT: The string will look like: <fontname> is not in <filename> */
 		    _("%1$s is not in %2$.100s"),find,fn);
+	    free(fn);
 	}
+	free(find);
     } else if ( no_windowing_ui )
 	choice = 0;
     else
@@ -631,6 +636,10 @@ return( true );
 	fseek(ttf,offsets[choice],SEEK_SET);
 	*chosenname = copy(names[choice]);
     }
+    for ( i=0; i<j; ++i )
+	free(names[i]);
+    free(names);
+    free(offsets);
 return( choice!=-1);
 }
 
@@ -647,6 +656,9 @@ static int PickCFFFont(char **fontnames) {
     else
 	choice = ff_choose(_("Pick a font, any font..."),
 	    (const char **) names,cnt,0,_("There are multiple fonts in this file, pick one"));
+    for ( i=0; i<cnt; ++i )
+	free(names[i]);
+    free(names);
 return( choice );
 }
 
@@ -870,6 +882,7 @@ return;
     if ( !hasglyf && !hascff )
 	LogError(_("This font contains neither \"CFF \" nor \"glyf\"/\"loca\" tables"));
 
+    free(tabs);
     fseek(ttf,restore_this_pos,SEEK_SET);
 }
 	    
@@ -1326,7 +1339,7 @@ return( base );
 
 static struct macname *AddMacName(FILE *ttf,
 	int strlen, int stroff,int spec,int language, struct macname *last) {
-    struct macname *new = XZALLOC(struct macname);
+    struct macname *new = chunkalloc(sizeof(struct macname));
     long pos = ftell(ttf);
     char *pt;
     int i;
@@ -1370,7 +1383,7 @@ return;
 	struct macidname *mi, *p;
 	for ( p=NULL, mi=info->macstrids; mi!=NULL && mi->id!=id; p = mi, mi=mi->next );
 	if ( mi==NULL ) {
-	    mi = XZALLOC(struct macidname);
+	    mi = chunkalloc(sizeof(struct macidname));
 	    mi->id = id;
 	    mi->last = mi->head = AddMacName(ttf,strlen,stroff,spec,language,NULL);
 	    if ( p==NULL )
@@ -1437,6 +1450,7 @@ return( old );
     strtod(str,&end);
     if ( (*end=='\0' || (isdigit(str[0]) && strchr(str,'#')!=NULL)) &&
 	    *str!='\0' ) {
+	free(str);
 	str=malloc(strlen(old)+2);
 	*str = 'a';
 	strcpy(str+1,old);
@@ -1499,8 +1513,10 @@ return;
 return;
     if ( id==ttf_postscriptname )
 	ValidatePostScriptFontName(info,str);
-    if ( *str=='\0' )
+    if ( *str=='\0' ) {
+	free(str);
 return;
+    }
 
     if ( plat==1 || plat==0 )
 	language = WinLangFromMac(language);
@@ -1508,7 +1524,7 @@ return;
 
     for ( prev=NULL, cur=info->names; cur!=NULL && cur->lang!=language; prev = cur, cur=cur->next );
     if ( cur==NULL ) {
-	cur = XZALLOC(struct ttflangname);
+	cur = chunkalloc(sizeof(struct ttflangname));
 	cur->lang = language;
 	if ( prev==NULL )
 	    info->names = cur;
@@ -1520,6 +1536,7 @@ return;
 	if ( plat==1 || plat==0 )
 	    cur->frommac[id/32] |= (1<<(id&0x1f));
     } else if ( strcmp(str,cur->names[id])==0 ) {
+	free(str);
 	if ( plat==3 )
 	    cur->frommac[id/32] &= ~(1<<(id&0x1f));
     } else if ( plat==1 ) {
@@ -1531,6 +1548,7 @@ return;
 	else
 	    LogError( _("Warning: Mac string is a subset of the Unicode string in the 'name' table\n for the %s string in the %s language.\n"),
 		    TTFNameIds(id),MSLangString(language));
+	free(str);
     } else if ( plat==3 && (cur->frommac[id/32] & (1<<(id&0x1f))) ) {
 	if ( !IsSubSetOf(cur->names[id],str) )
 	    LogError( _("Warning: Mac and Windows entries in the 'name' table differ for the\n %s string in the language %s\n Mac String: %s\nWindows String: %s\n"),
@@ -1539,6 +1557,7 @@ return;
 	else
 	    LogError( _("Warning: Mac string is a subset of the Windows string in the 'name' table\n for the %s string in the %s language.\n"),
 		    TTFNameIds(id),MSLangString(language));
+	free(cur->names[id]);
 	cur->names[id] = str;
 	cur->frommac[id/32] &= ~(1<<(id&0x1f));
     } else {
@@ -1561,8 +1580,12 @@ return;
 	    if ( ret==1 || ret==2 )
 		info->dupnamestate = ret;
 	}
-	if ( ret!=0 && ret!=1 )
+	if ( ret==0 || ret==1 )
+	    free(str);
+	else {
+	    free(cur->names[id]);
 	    cur->names[id] = str;
+	}
     }
 }
 
@@ -1618,7 +1641,7 @@ struct otfname *FindAllLangEntries(FILE *ttf, struct ttfinfo *info, int id ) {
 	    if ( platform==3 && name==id ) {
 		char *temp = _readencstring(ttf,tableoff+stroff,str_len,platform,specific,language);
 		if ( temp!=NULL ) {
-		    cur = XZALLOC(struct otfname);
+		    cur = chunkalloc(sizeof(struct otfname));
 		    cur->next = head;
 		    head = cur;
 		    cur->lang = language;
@@ -1683,12 +1706,18 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
     if ( info->fontname==NULL )
 	info->fontname = FindLangEntry(info,ttf_postscriptname);
 
-    if ( info->fontname != NULL && *info->fontname=='\0' )
+    if ( info->fontname != NULL && *info->fontname=='\0' ) {
+	free(info->fontname);
 	info->fontname = NULL;
-    if ( info->familyname != NULL && *info->familyname=='\0' )
+    }
+    if ( info->familyname != NULL && *info->familyname=='\0' ) {
+	free(info->familyname);
 	info->familyname = NULL;
-    if ( info->fullname != NULL && *info->fullname=='\0' )
+    }
+    if ( info->fullname != NULL && *info->fullname=='\0' ) {
+	free(info->fullname);
 	info->fullname = NULL;
+    }
 
     /* OpenType spec says the version string should begin with "Version " and */
     /*  end with a space and have a number in between */
@@ -1697,6 +1726,7 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
 	char *temp = copy(info->version+8);
 	if ( temp[strlen(temp)-1]==' ' )
 	    temp[strlen(temp)-1] = '\0';
+	free(info->version);
 	info->version = temp;
     }
     if ( info->fontname==NULL ) {
@@ -1778,7 +1808,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
     for ( path=i=0; path<path_cnt; ++path ) {
 	if ( endpt[path]<i )	/* Sigh. Yes there are fonts with bad endpt info */
     continue;
-	cur = XZALLOC(SplineSet);
+	cur = chunkalloc(sizeof(SplineSet));
 	if ( head==NULL )
 	    head = cur;
 	else
@@ -1789,7 +1819,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	sp = NULL;
 	while ( i<=endpt[path] ) {
 	    if ( flags[i]&_On_Curve ) {
-		sp = XZALLOC(SplinePoint);
+		sp = chunkalloc(sizeof(SplinePoint));
 		sp->me = sp->nextcp = sp->prevcp = pts[i];
 		sp->nonextcp = sp->noprevcp = true;
 		sp->ttfindex = i;
@@ -1800,7 +1830,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    } else if ( last_off ) {
 		/* two off curve points get a third on curve point created */
 		/* half-way between them. Now isn't that special */
-		sp = XZALLOC(SplinePoint);
+		sp = chunkalloc(sizeof(SplinePoint));
 		sp->me.x = (pts[i].x+pts[i-1].x)/2;
 		sp->me.y = (pts[i].y+pts[i-1].y)/2;
 		sp->nextcp = sp->prevcp = sp->me;
@@ -1830,7 +1860,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    /*  point. What on earth do they think that means? */
 	    /* Oh. I see. It's used to possition marks and such */
 	    if ( cur->first==NULL ) {
-		sp = XZALLOC(SplinePoint);
+		sp = chunkalloc(sizeof(SplinePoint));
 		sp->me.x = pts[start].x;
 		sp->me.y = pts[start].y;
 		sp->nextcp = sp->prevcp = sp->me;
@@ -1840,7 +1870,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 		cur->first = cur->last = sp;
 	    }
 	} else if ( !(flags[start]&_On_Curve) && !(flags[i-1]&_On_Curve) ) {
-	    sp = XZALLOC(SplinePoint);
+	    sp = chunkalloc(sizeof(SplinePoint));
 	    sp->me.x = (pts[start].x+pts[i-1].x)/2;
 	    sp->me.y = (pts[start].y+pts[i-1].y)/2;
 	    sp->nextcp = sp->prevcp = sp->me;
@@ -1974,8 +2004,12 @@ return;
     if ( info->to_order2 && len!=0 ) {
 	sc->ttf_instrs_len = len;
 	sc->ttf_instrs = instructions;
-    }
+    } else
+	free(instructions);
     SCCategorizePoints(sc);
+    free(endpt);
+    free(flags);
+    free(pts);
     if ( feof(ttf)) {
 	LogError( _("Reached end of file when reading simple glyph\n") );
 	info->bad_glyph_data = true;
@@ -2092,9 +2126,10 @@ return;
 		    cur->transform[3]*cur->transform[3]);
 	}
 	}
-	if ( cur->orig_pos>=info->glyph_cnt )
+	if ( cur->orig_pos>=info->glyph_cnt ) {
 	    LogError(_("Glyph %d attempts to reference glyph %d which is outside the font\n"), sc->orig_pos, cur->orig_pos );
-	else {
+	    chunkfree(cur,sizeof(*cur));
+	} else {
 	    if ( head==NULL )
 		head = cur;
 	    else
@@ -2229,8 +2264,9 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 		}
 	    }
 	}
-	info->inuse = NULL;
+	free(info->inuse); info->inuse = NULL;
     }
+    free(goffsets);
     for ( i=0; i<info->glyph_cnt ; ++i )
 	if ( info->chars[i]!=NULL )
 	    info->chars[i]->orig_pos = i;
@@ -2670,6 +2706,7 @@ return( NULL );
 	}
     }
     names[i] = NULL;
+    free(offsets);
 return( names );
 }
 
@@ -2850,6 +2887,21 @@ struct topdicts {
     uint16 *charset;
 };
 
+static void TopDictFree(struct topdicts *dict) {
+    int i;
+
+    free(dict->charset);
+    for ( i=0; i<dict->glyphs.cnt; ++i )
+	free(dict->glyphs.values[i]);
+    free(dict->glyphs.values);
+    free(dict->glyphs.lens);
+    for ( i=0; i<dict->local_subrs.cnt; ++i )
+	free(dict->local_subrs.values[i]);
+    free(dict->local_subrs.values);
+    free(dict->local_subrs.lens);
+    free(dict);
+}
+
 static void readcffsubrs(FILE *ttf, struct pschars *subs, struct ttfinfo *info) {
     uint16 count = getushort(ttf);
     int offsize;
@@ -2887,6 +2939,7 @@ return;
 	    fseek(ttf,base+offsets[i+1],SEEK_SET);
 	}
     }
+    free(offsets);
 }
 
 static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len,
@@ -3222,6 +3275,7 @@ return( NULL );
 	dicts[i]->cff_start = cff_start;
     }
     dicts[i] = NULL;
+    free(offsets);
 return( dicts );
 }
 
@@ -3606,20 +3660,32 @@ static void cffinfofillup(struct ttfinfo *info, struct topdicts *dict,
 	info->emsize = rint( 1/dict->fontmatrix[0] );
     info->ascent = .8*info->emsize;
     info->descent = info->emsize - info->ascent;
+    if ( dict->copyright!=-1 || dict->notice!=-1 )
+	free( info->copyright );
     if ( dict->copyright!=-1 )
 	info->copyright = utf8_verify_copy(getsid(dict->copyright,strings,scnt,info));
     else if ( dict->notice!=-1 )
 	info->copyright = utf8_verify_copy(getsid(dict->notice,strings,scnt,info));
-    if ( dict->familyname!=-1 )
+    if ( dict->familyname!=-1 ) {
+	free(info->familyname);
 	info->familyname = utf8_verify_copy(getsid(dict->familyname,strings,scnt,info));
-    if ( dict->fullname!=-1 )
+    }
+    if ( dict->fullname!=-1 ) {
+	free(info->fullname);
 	info->fullname = utf8_verify_copy(getsid(dict->fullname,strings,scnt,info));
-    if ( dict->weight!=-1 )
+    }
+    if ( dict->weight!=-1 ) {
+	free(info->weight);
 	info->weight = utf8_verify_copy(getsid(dict->weight,strings,scnt,info));
-    if ( dict->version!=-1 )
+    }
+    if ( dict->version!=-1 ) {
+	free(info->version);
 	info->version = utf8_verify_copy(getsid(dict->version,strings,scnt,info));
-    if ( dict->fontname!=NULL )
+    }
+    if ( dict->fontname!=NULL ) {
+	free(info->fontname);
 	info->fontname = utf8_verify_copy(dict->fontname);
+    }
     info->italicAngle = dict->italicangle;
     info->upos = dict->underlinepos;
     info->uwidth = dict->underlinewidth;
@@ -3797,9 +3863,13 @@ return( 0 );
     fontnames = readcfffontnames(ttf,NULL,info);
     which = 0;
     if ( fontnames[1]!=NULL ) {		/* More than one? Can that even happen in OpenType? */
-        which = PickCFFFont(fontnames);
-	if (which == -1)
+	which = PickCFFFont(fontnames);
+	if ( which==-1 ) {
+	    for ( i=0; fontnames[i]!=NULL; ++i )
+		free(fontnames[i]);
+	    free(fontnames);
 return( 0 );
+	}
     }
     dicts = readcfftopdicts(ttf,fontnames,info->cff_start,info, NULL);
 	/* String index is just the same as fontname index */
@@ -3828,6 +3898,9 @@ return( 0 );
 		readcffset(ttf,subdicts[j],info);
 	}
 	cidfigure(info,dicts[which],strings,scnt,&gsubs,subdicts,fdselect);
+	for ( j=0; subdicts[j]!=NULL; ++j )
+	    TopDictFree(subdicts[j]);
+	free(subdicts); free(fdselect);
     }
     if ( dicts[which]->encodingoff!=-1 )
 	readcffenc(ttf,dicts[which],info,strings,scnt);
@@ -3842,6 +3915,20 @@ return( 0 );
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    SCConvertToOrder2(info->chars[i]);
     }
+
+    for ( i=0; fontnames[i]!=NULL && i<1; ++i ) {
+	free(fontnames[i]);
+	TopDictFree(dicts[i]);
+    }
+    free(fontnames); free(dicts);
+    if ( strings!=NULL ) {
+	for ( i=0; strings[i]!=NULL; ++i )
+	    free(strings[i]);
+	free(strings);
+    }
+    for ( i=0; i<gsubs.cnt; ++i )
+	free(gsubs.values[i]);
+    free(gsubs.values); free(gsubs.lens);
 
 return( 1 );
 }
@@ -3876,6 +3963,7 @@ static int readtyp1glyphs(FILE *ttf,struct ttfinfo *info) {
     fclose(tmp);
     if ( fd!=NULL ) {
 	SplineFont *sf = SplineFontFromPSFont(fd);
+	PSFontFree(fd);
 	info->emsize = (sf->ascent+sf->descent);
 	info->ascent = sf->ascent;
 	info->descent = sf->descent;
@@ -4210,7 +4298,7 @@ static void ApplyVariationSequenceSubtable(FILE *ttf,uint32 vs_map,
 				uni );
 			info->bad_cmap = true;
 		    } else {
-			altuni = XZALLOC(struct altuni);
+			altuni = chunkalloc(sizeof(struct altuni));
 			altuni->unienc = uni;
 			altuni->vs = vs_data[i].vs;
 			altuni->fid = 0;
@@ -4244,7 +4332,7 @@ static void ApplyVariationSequenceSubtable(FILE *ttf,uint32 vs_map,
 			info->bad_cmap = true;
 		    } else {
 			SplineChar *sc = info->chars[curgid];
-			struct altuni *altuni = XZALLOC(struct altuni);
+			struct altuni *altuni = chunkalloc(sizeof(struct altuni));
 			altuni->unienc = uni;
 			altuni->vs = vs_data[i].vs;
 			altuni->fid = 0;
@@ -4351,6 +4439,9 @@ static int PickCMap(struct cmap_encs *cmap_encs,int enccnt,int def) {
     }
     ret = ff_choose(_("Pick a CMap subtable"),(const char **) choices,enccnt,def,
 	    _("Pick a CMap subtable"));
+    for ( i=0; i<enccnt; ++i )
+	free(choices[i]);
+    free(choices);
 return( ret );
 }
 
@@ -4408,6 +4499,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     }
     if ( usable_encs==0 ) {
 	LogError( _("Could not find any valid encoding tables" ));
+	free(cmap_encs);
 return;
     }
     def = -1;
@@ -4468,6 +4560,7 @@ return;
     if ( i==-1 ) {
 	if ( justinuse==git_normal )
 	    LogError( _("Could not find a usable encoding table" ));
+	free(cmap_encs);
 return;
     }
 
@@ -4672,6 +4765,12 @@ return;
 		    info->bad_cmap = true;
 		}
 	    }
+	    free(glyphs);
+	    free(rangeOffset);
+	    free(delta);
+	    free(startchars);
+	    free(endchars);
+	    free(used);
 	} else if ( format==6 ) {
 	    /* trimmed array format */
 	    /* Well, the docs say it's for 2byte encodings, but Apple actually*/
@@ -4773,8 +4872,11 @@ return;
 			    }
 			}
 		    }
+		    /*if ( last==-1 ) last = i;*/
 		}
 	    }
+	    free(subheads);
+	    free(glyphs);
 	} else if ( format==8 ) {
 	    uint32 ngroups, start, end, startglyph;
 	    if ( !enc->is_unicodefull ) {
@@ -4857,6 +4959,7 @@ return;
 	    }
 	}
     }
+    free(cmap_encs);
     if ( info->chars!=NULL )
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    if ( info->chars[i]!=NULL && info->chars[i]->unicodeenc==0xffff )
@@ -5000,6 +5103,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 		if ( indexes[i]<info->glyph_cnt && info->chars[indexes[i]]!=NULL )
 		    info->chars[indexes[i]]->name = nm; /* Too many fonts have badly named glyphs to deduce encoding from name */
 	    }
+	    free(indexes);
 	    anynames = true;
 	}
     }
@@ -5013,6 +5117,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	for ( i=0; i<chars->next; ++i ) {
 	    int gid = (intpt) (chars->values[i]);
 	    if ( gid>=0 && gid<info->glyph_cnt && chars->keys[i]!=NULL ) {
+		free(info->chars[gid]->name);
 		info->chars[gid]->name = chars->keys[i];
 		info->chars[gid]->unicodeenc = UniFromName(chars->keys[i],info->uni_interp,info->map->enc);
 		if ( map!=NULL && info->chars[gid]->unicodeenc!=-1 &&
@@ -5037,6 +5142,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 		notdefwarned = true;
 		LogError( _("Glyph %d is called \".notdef\", a singularly inept choice of name (only glyph 0\n may be called .notdef)\nFontForge will rename it.\n"), i );
 	    }
+	    free(info->chars[i]->name);
 	    info->chars[i]->name = NULL;
 	/* I used to check for glyphs with bad names (ie. names indicative of */
 	/*  another unicode code point than the one applied to the glyph) but */
@@ -5046,6 +5152,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	/* And some volt files actually assign nul strings to the name */
 	if ( (info->chars[i]->name!=NULL && *info->chars[i]->name!='\0' ))
     continue;
+	free(info->chars[i]->name);	/* If it's a null string get rid of it */
 	if ( i==0 )
 	    name = ".notdef";
 	else if ( info->chars[i]->unicodeenc==-1 ) {
@@ -5213,6 +5320,7 @@ return( false );
 		chars[i]->layers[ly_fore].refs = next;
 	    else
 		prev->next = next;
+	    chunkfree(ref,sizeof(RefChar));
 	} else {
 	    ref->sc = chars[ref->orig_pos];
 	    ref->adobe_enc = getAdobeEnc(ref->sc->name);
@@ -5251,7 +5359,7 @@ return;
 return;
     }
 
-    tab = XZALLOC(struct ttf_table);
+    tab = chunkalloc(sizeof(struct ttf_table));
     tab->tag = tag;
     tab->len = len;
     tab->data = malloc(len);
@@ -5342,6 +5450,7 @@ return( 0 );
     else if ( info->onlystrikes )
 	ff_post_error( _("No Bitmap Strikes"), _("No (useable) bitmap strikes in this TTF font: %s"), filename==NULL ? "<unknown>" : filename );
     if ( info->onlystrikes && info->bitmaps==NULL ) {
+	free(info->chars);
 	setlocale(LC_NUMERIC,oldloc);
 return( 0 );
     }
@@ -5523,6 +5632,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
 	    if ( rf->sc==NULL ) {
 		if ( prev==NULL ) sf->glyphs[i]->layers[ly_fore].refs = next;
 		else prev->next = next;
+		RefCharFree(rf);
 	    } else {
 		rf->orig_pos = rf->sc->orig_pos;
 		rf->unicode_enc = rf->sc->unicodeenc;
@@ -5616,7 +5726,7 @@ return( sf );
 }
 
 static void MMFillFromVAR(SplineFont *sf, struct ttfinfo *info) {
-    MMSet *mm = XZALLOC(MMSet);
+    MMSet *mm = chunkalloc(sizeof(MMSet));
     struct variations *v = info->variations;
     int i,j;
 
@@ -5713,6 +5823,7 @@ static void MapDoBack(EncMap *map,struct ttfinfo *info) {
 
     if ( map==NULL )		/* CID fonts */
 return;
+    free(map->backmap);		/* CFF files have this */
     map->backmax = info->glyph_cnt;
     map->backmap = malloc(info->glyph_cnt*sizeof(int));
     memset(map->backmap,-1,info->glyph_cnt*sizeof(int));
@@ -5736,35 +5847,49 @@ void TTF_PSDupsDefault(SplineFont *sf) {
     if ( english==NULL )
 return;
     if ( english->names[ttf_family]!=NULL &&
-	    strcmp(english->names[ttf_family],sf->familyname)==0 )
+	    strcmp(english->names[ttf_family],sf->familyname)==0 ) {
+	free(english->names[ttf_family]);
 	english->names[ttf_family]=NULL;
+    }
     if ( english->names[ttf_copyright]!=NULL &&
-	    strcmp(english->names[ttf_copyright],sf->copyright)==0 )
+	    strcmp(english->names[ttf_copyright],sf->copyright)==0 ) {
+	free(english->names[ttf_copyright]);
 	english->names[ttf_copyright]=NULL;
+    }
     if ( english->names[ttf_fullname]!=NULL &&
-	    strcmp(english->names[ttf_fullname],sf->fullname)==0 )
+	    strcmp(english->names[ttf_fullname],sf->fullname)==0 ) {
+	free(english->names[ttf_fullname]);
 	english->names[ttf_fullname]=NULL;
+    }
     if ( sf->subfontcnt!=0 || sf->version!=NULL ) {
 	if ( sf->subfontcnt!=0 )
 	    sprintf( versionbuf, "Version %f", sf->cidversion );
 	else
 	    sprintf(versionbuf,"Version %.20s ", sf->version);
 	if ( english->names[ttf_version]!=NULL &&
-		strcmp(english->names[ttf_version],versionbuf)==0 )
+		strcmp(english->names[ttf_version],versionbuf)==0 ) {
+	    free(english->names[ttf_version]);
 	    english->names[ttf_version]=NULL;
+	}
     }
     if ( english->names[ttf_subfamily]!=NULL &&
-	    strcmp(english->names[ttf_subfamily],SFGetModifiers(sf))==0 )
+	    strcmp(english->names[ttf_subfamily],SFGetModifiers(sf))==0 ) {
+	free(english->names[ttf_subfamily]);
 	english->names[ttf_subfamily]=NULL;
+    }
 
     /* User should not be allowed any access to this one, not ever */
+    free(english->names[ttf_postscriptname]);
     english->names[ttf_postscriptname]=NULL;
 }
 
 static void ASCIIcheck(char **str) {
 
-    if ( *str!=NULL && !AllAscii(*str))
-	*str = StripToASCII(*str);
+    if ( *str!=NULL && !AllAscii(*str)) {
+	char *temp = StripToASCII(*str);
+	free(*str);
+	*str = temp;
+    }
 }
 
 static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
@@ -5852,9 +5977,12 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 				    "Black" );
 	else
 	    sf->weight = copy("");
-    }
+    } else
+	free( info->weight );
     if ( sf->copyright==NULL )
 	sf->copyright = info->copyright;
+    else
+	free( info->copyright );
     sf->version = info->version;
     sf->italicangle = info->italicAngle;
     sf->strokewidth = info->strokewidth;
@@ -5933,6 +6061,9 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	sf->layers[ly_fore].name = NULL;
 	if ( info->layers[ly_back].name==NULL )
 	    info->layers[ly_back].name = sf->layers[ly_back].name;
+	else
+	    free( sf->layers[ly_back].name );
+	free( sf->layers );
 	sf->layers = info->layers;
 	sf->layer_cnt = info->layer_cnt;
     }
@@ -5947,6 +6078,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     } else {
 	sf->subfontcnt = info->subfontcnt;
 	sf->subfonts = info->subfonts;
+	free(info->chars);		/* This is the GID->char index, don't need it now */
 	for ( i=0; i<sf->subfontcnt; ++i ) {
 	    sf->subfonts[i]->cidmaster = sf;
 	    sf->subfonts[i]->hasvmetrics = sf->hasvmetrics;
@@ -5978,12 +6110,17 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	    _sf = k<sf->subfontcnt?sf->subfonts[k]:sf;
 	    for ( i=0; i<sf->glyphcnt; ++i ) {
 		if ( (sc = _sf->glyphs[i])!=NULL && !sc->hconflicts && !sc->vconflicts &&
-			sc->layers[ly_fore].splines!=NULL )
+			sc->layers[ly_fore].splines!=NULL ) {
+		    chunkfree( sc->layers[ly_fore].splines->first->hintmask,sizeof(HintMask) );
 		    sc->layers[ly_fore].splines->first->hintmask = NULL;
+		}
 	    }
 	    ++k;
 	} while ( k<sf->subfontcnt );
     }
+    /* should not be default as it confuses users */
+    /* SFRelativeWinAsDs(sf); */
+    free(info->savetab);
 
     if ( info->openflags & of_fontlint ) {
 	k=0;
@@ -6054,6 +6191,7 @@ SplineFont *SFReadTTF(char *filename, int flags, enum openflags openflags) {
 	*pt = '\0';
     }
     ttf = fopen(temp,"rb");
+    if ( temp!=filename ) free(temp);
     if ( ttf==NULL )
 return( NULL );
 
@@ -6134,6 +6272,7 @@ return( NULL );
 		ret[j++] = temp;
 	}
 	ret[j] = NULL;
+	free(offsets);
     } else {
 	temp = TTFGetFontName(ttf,0,0);
 	if ( temp!=NULL ) {

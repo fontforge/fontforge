@@ -104,6 +104,7 @@ static void CVStrokeIt(void *_cv, StrokeInfo *si, int justapply) {
     } else {
 	head = SplineSetStroke(cv->b.layerheads[cv->b.drawmode]->splines,si,
 		cv->b.layerheads[cv->b.drawmode]->order2);
+	SplinePointListsFree( cv->b.layerheads[cv->b.drawmode]->splines );
 	cv->b.layerheads[cv->b.drawmode]->splines = head;
     }
     CVCharChangedUpdate(&cv->b);
@@ -290,6 +291,7 @@ static void Stroke_ShowNib(StrokeDlg *sd) {
     double angle,c,s, width, height;
     int err=0;
 
+    SplinePointListsFree(sd->dummy_sf.grid.splines);
     sd->dummy_sf.grid.splines = NULL;
     if ( GGadgetIsChecked(GWidgetGetControl(sd->gw,CID_Polygon)) ) {
 	if ( sd->sc_stroke.layers[ly_fore].splines==NULL ) {
@@ -441,6 +443,14 @@ return;
 
 static void Stroke_DoClose(struct cvcontainer *cvc) {
     StrokeDlg *sd = (StrokeDlg *) cvc;
+
+     {
+	SplineChar *msc = &sd->sc_stroke;
+	SplinePointListsFree(msc->layers[0].splines);
+	SplinePointListsFree(msc->layers[1].splines);
+	free( msc->layers );
+    }
+
     sd->done = true;
 }
 
@@ -1114,6 +1124,14 @@ static void GDDChar(GradientDlg *gdd, GEvent *event) {
 
 static void GDD_DoClose(struct cvcontainer *cvc) {
     GradientDlg *gdd = (GradientDlg *) cvc;
+
+     {
+	SplineChar *msc = &gdd->sc_grad;
+	SplinePointListsFree(msc->layers[0].splines);
+	SplinePointListsFree(msc->layers[1].splines);
+	free( msc->layers );
+    }
+
     gdd->done = true;
 }
 
@@ -1264,7 +1282,7 @@ return( true );
 		start = end;
 	}
 	if ( gradient==NULL )
-	    gdd->active = gradient = XZALLOC(struct gradient);
+	    gdd->active = gradient = chunkalloc(sizeof(struct gradient));
 	gradient->start = start;
 	gradient->stop = end;
 	gradient->radius = radius;
@@ -1369,7 +1387,7 @@ static void GDDInit(GradientDlg *gdd,SplineFont *sf,Layer *ly,struct gradient *g
     if ( grad!=NULL ) {
 	SplineSet *ss1, *ss2;
 	SplinePoint *sp1, *sp2, *sp3;
-	ss1 = XZALLOC(SplineSet);
+	ss1 = chunkalloc(sizeof(SplineSet));
 	sp2 = SplinePointCreate(grad->stop.x,grad->stop.y);
 	if ( grad->radius==0 ) {
 	    sp1 = SplinePointCreate(grad->start.x,grad->start.y);
@@ -1380,7 +1398,7 @@ static void GDDInit(GradientDlg *gdd,SplineFont *sf,Layer *ly,struct gradient *g
 	    SplineMake(sp2,sp3,sf->layers[ly_fore].order2);
 	    ss1->first = sp2; ss1->last = sp3;
 	    if ( grad->start.x!=grad->stop.x || grad->start.y!=grad->stop.y ) {
-		ss2 = XZALLOC(SplineSet);
+		ss2 = chunkalloc(sizeof(SplineSet));
 		sp1 = SplinePointCreate(grad->start.x,grad->start.y);
 		ss2->first = ss2->last = sp1;
 		ss1->next = ss2;
@@ -1691,6 +1709,7 @@ static int Layer_FillGradDelete(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct layer_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
+	GradientFree(ld->fillgrad);
 	ld->fillgrad=NULL;
 	Layer_GradSet(ld);
     }
@@ -1711,6 +1730,7 @@ static int Layer_StrokeGradDelete(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct layer_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
+	GradientFree(ld->strokegrad);
 	ld->strokegrad=NULL;
 	Layer_GradSet(ld);
     }
@@ -1751,6 +1771,7 @@ static int Pat_WidthChanged(GGadget *g, GEvent *e) {
 	real height, width;
 	char buffer[50];
 
+	free(name);
 	if ( patternsc==NULL )
 return( true );
 	if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_Aspect)))
@@ -1778,6 +1799,7 @@ static int Pat_HeightChanged(GGadget *g, GEvent *e) {
 	real height, width;
 	char buffer[50];
 
+	free(name);
 	if ( patternsc==NULL )
 return( true );
 	if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_Aspect)))
@@ -1805,8 +1827,10 @@ static int Pat_TransformChanged(GGadget *g, GEvent *e) {
 
 	if ( sscanf( name, "[%lg %lg %lg %lg %lg %lg]", &trans[0], &trans[1], &trans[2],
 		&trans[3], &trans[4], &trans[5])!=6 ) {
+	    free(name );
 return( true );
 	}
+	free(name );
 
 	c = trans[0]; s = trans[1];
 	if ( c!=0 )
@@ -1880,14 +1904,17 @@ static int Pat_OK(GGadget *g, GEvent *e) {
 
 	if ( sscanf( transstring, "[%lg %lg %lg %lg %lg %lg]", &trans[0], &trans[1], &trans[2],
 		&trans[3], &trans[4], &trans[5])!=6 ) {
+	    free( transstring );
 	    ff_post_error(_("Bad Transformation matrix"),_("Bad Transformation matrix"));
 return( true );
 	}
+	free(transstring);
 
 	name = GGadgetGetTitle8(GWidgetGetControl(gw,CID_PatternName));
 	patternsc = SFGetChar(ld->sf,-1,name);
 	if ( patternsc==NULL ) {
 	    ff_post_error(_("No Glyph"),_("This font does not contain a glyph named \"%.40s\""), name);
+	    free(name);
 return( true );
 	}
 
@@ -1898,7 +1925,8 @@ return( true );
 return( true );
 
 	if ( ld->curpat == NULL )
-	    ld->curpat = XZALLOC(struct pattern);
+	    ld->curpat = chunkalloc(sizeof(struct pattern));
+	free( ld->curpat->pattern );
 	ld->curpat->pattern = name;
 	for ( i=0; i<6; ++i )
 	    ld->curpat->transform[i] = trans[i];
@@ -2203,6 +2231,7 @@ static int Layer_FillPatDelete(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct layer_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
+	PatternFree(ld->fillpat);
 	ld->fillpat=NULL;
 	Layer_PatSet(ld);
     }
@@ -2223,6 +2252,7 @@ static int Layer_StrokePatDelete(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct layer_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
+	PatternFree(ld->strokepat);
 	ld->strokepat=NULL;
 	Layer_PatSet(ld);
     }
@@ -2337,6 +2367,11 @@ return( true );
 		GGadgetIsChecked(GWidgetGetControl(gw,CID_RoundJoin))?lj_round:
 		GGadgetIsChecked(GWidgetGetControl(gw,CID_MiterJoin))?lj_miter:
 			lj_inherited;
+
+	GradientFree(ld->layer->fill_brush.gradient);
+	PatternFree(ld->layer->fill_brush.pattern);
+	GradientFree(ld->layer->stroke_pen.brush.gradient);
+	PatternFree(ld->layer->stroke_pen.brush.pattern);
 
 	ld->done = ld->ok = true;
 	ld->layer->stroke_pen = temp.stroke_pen;
@@ -3140,5 +3175,11 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     while ( !ld.done )
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(ld.gw);
+    if ( !ld.ok ) {
+	GradientFree(ld.fillgrad);
+	GradientFree(ld.strokegrad);
+	PatternFree(ld.fillpat);
+	PatternFree(ld.strokepat);
+    }
 return( ld.ok );
 }

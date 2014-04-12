@@ -43,7 +43,7 @@ libgutils_la_CFLAGS = $(WARN_CFLAGS)
 
 libgutils_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
-	$(MY_CFLAGS) $(LIBGC_CFLAGS)
+	$(MY_CFLAGS)
 
 libgutils_la_LIBADD = $(MY_LIBS) $(LIBGC_LIBS) $(top_builddir)/Unicode/libgunicode.la $(top_builddir)/lib/libgnu.la $(top_builddir)/inc/libggc_veneer.la
 if LIBZMQ

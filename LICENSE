@@ -127,7 +127,7 @@ effectsui.c		prefs.c			uiinterface.h
 encoding.c		print.c			uiutil.c
 encodingui.c		print.h			unicoderange.c
 featurefile.c		problems.c		unicoderange.h
-fffreetype.h		psfont.h
+fffreetype.h		psfont.h		utils.c
 ffpython.h		psread.c		views.h
 fontforge.h		python.c		windowmenu.c
 fontforgeui.h		pythonui.c		winfonts.c

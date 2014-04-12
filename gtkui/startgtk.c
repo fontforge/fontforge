@@ -298,13 +298,15 @@ void ShowAboutScreen(void) {
 static int DoDelayedEvents(gpointer data) {
     struct delayed_event *info = (struct delayed_event *) data;
 
-    if ( info!=NULL )
+    if ( info!=NULL ) {
 	(info->func)(info->data);
+	chunkfree(info,sizeof(struct delayed_event));
+    }
 return( FALSE );		/* cancel timer */
 }
 
 void DelayEvent(void (*func)(void *), void *data) {
-    struct delayed_event *info = XZALLOC(struct delayed_event);
+    struct delayed_event *info = chunkalloc(sizeof(struct delayed_event));
 
     info->data = data;
     info->func = func;
@@ -379,15 +381,18 @@ static int ParseArgs( gpointer data ) {
 		strcpy(fname,buffer); strcat(fname,"glyphs/contents.plist");
 		if ( GFileExists(fname)) {
 		    /* It's probably a Unified Font Object directory */
+		    free(fname);
 		    if ( ViewPostScriptFont(buffer,openflags) )
 			any = 1;
 		} else {
 		    strcpy(fname,buffer); strcat(fname,"/font.props");
 		    if ( GFileExists(fname)) {
 			/* It's probably a sf dir collection */
+			free(fname);
 			if ( ViewPostScriptFont(buffer,openflags) )
 			    any = 1;
 		    } else {
+			free(fname);
 			if ( buffer[strlen(buffer)-1]!='/' ) {
 			    /* If dirname doesn't end in "/" we'll be looking in parent dir */
 			    buffer[strlen(buffer)+1]='\0';
@@ -397,6 +402,7 @@ static int ParseArgs( gpointer data ) {
 			if ( fname!=NULL )
 			    ViewPostScriptFont(fname,openflags);
 			any = 1;	/* Even if we didn't get a font, don't bring up dlg again */
+			free(fname);
 		    }
 		}
 	    } else if ( ViewPostScriptFont(buffer,openflags)!=0 )

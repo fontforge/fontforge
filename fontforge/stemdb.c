@@ -2915,6 +2915,7 @@ static void CheckPotential( struct glyphdata *gd,struct pointdata *pd,int is_nex
 	    }
 	}
     }
+    free( vchunks );
 }
 
 static int StemIsActiveAt( struct glyphdata *gd,struct stemdata *stem,double stempos ) {
@@ -4303,6 +4304,8 @@ static void AssignPointsToBBoxHint( struct glyphdata *gd,DBounds *bounds,
 	}
 	qsort( stem->chunks,stem->chunk_cnt,sizeof( struct stem_chunk ),chunk_cmp );
     }
+    free( lpoints );
+    free( rpoints );
 }
 
 static void CheckForBoundingBoxHints( struct glyphdata *gd ) {
@@ -4855,10 +4858,10 @@ static void AssignPointsToStems( struct glyphdata *gd,int startnum,DBounds *boun
     DumpGlyphData( gd );
 #endif
 
-    gd->lspace = NULL;
-    gd->rspace = NULL;
-    gd->bothspace = NULL;
-    gd->activespace = NULL;
+    free(gd->lspace);		gd->lspace = NULL;
+    free(gd->rspace);		gd->rspace = NULL;
+    free(gd->bothspace);	gd->bothspace = NULL;
+    free(gd->activespace);	gd->activespace = NULL;
 }
 
 static void _DStemInfoToStemData( struct glyphdata *gd,DStemInfo *dsi,int *startcnt ) {
@@ -6018,10 +6021,10 @@ return( gd );
 #if GLYPH_DATA_DEBUG
     DumpGlyphData( gd );
 #endif
-    gd->lspace = NULL;
-    gd->rspace = NULL;
-    gd->bothspace = NULL;
-    gd->activespace = NULL;
+    free(gd->lspace);		gd->lspace = NULL;
+    free(gd->rspace);		gd->rspace = NULL;
+    free(gd->bothspace);	gd->bothspace = NULL;
+    free(gd->activespace);	gd->activespace = NULL;
  
 return( gd );
 }
@@ -6031,13 +6034,46 @@ void GlyphDataFree(struct glyphdata *gd) {
     if ( gd == NULL )
 return;
 
-    gd->ms = NULL;
-    gd->space = NULL;
-    gd->sspace = NULL;
-    gd->stspace = NULL;
-    gd->pspace = NULL;
+    FreeMonotonics( gd->ms );	gd->ms = NULL;
+    free( gd->space );		gd->space = NULL;
+    free( gd->sspace );		gd->sspace = NULL;
+    free( gd->stspace );	gd->stspace = NULL;
+    free( gd->pspace );		gd->pspace = NULL;
 
     /* Clean up temporary point numbers */
     for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp != NULL )
 	gd->points[i].sp->ptindex = 0;
+
+    if ( gd->hbundle != NULL ) {
+	free( gd->hbundle->stemlist );
+	free( gd->hbundle );
+    }
+    if ( gd->vbundle != NULL ) {
+	free( gd->vbundle->stemlist );
+	free( gd->vbundle );
+    }
+    if ( gd->ibundle != NULL ) {
+	free( gd->ibundle->stemlist );
+	free( gd->ibundle );
+    }
+    
+    for ( i=0; i<gd->linecnt; ++i )
+	free( gd->lines[i].points );
+    for ( i=0; i<gd->stemcnt; ++i ) {
+	free( gd->stems[i].chunks );
+	free( gd->stems[i].dependent );
+	free( gd->stems[i].serifs );
+	free( gd->stems[i].active );
+    }
+    for ( i=0; i<gd->pcnt; ++i ) {
+	free( gd->points[i].nextstems );
+	free( gd->points[i].next_is_l );
+	free( gd->points[i].prevstems );
+	free( gd->points[i].prev_is_l );
+    }
+    free( gd->lines );
+    free( gd->stems );
+    free( gd->contourends );
+    free( gd->points );
+    free( gd );
 }

@@ -123,6 +123,7 @@ return( NULL );
 
   (void) jpeg_finish_decompress(&cinfo);
   jpeg_destroy_decompress(&cinfo);
+  free(rows[0]);
 
 return( ret );
 }

@@ -494,6 +494,7 @@ static void readttfpost(FILE *ttf, struct ttfinfo *info) {
 	}
 	if ( names[0]==NULL )
 	    names[0] = standardnames[0];
+	free(indexes);
 	info->glyph_names = names;
     }
 }
@@ -600,6 +601,11 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info) {
 		    }
 		}
 	    }
+	    free(glyphs);
+	    free(rangeOffset);
+	    free(delta);
+	    free(startchars);
+	    free(endchars);
 	} else if ( format==6 ) {
 	    /* Apple's unicode format */
 	    int first, count;
@@ -1030,6 +1036,9 @@ static void DumpSimpleGlyph(FILE *ttf,FILE *eps,struct ttfinfo *info,
 	    DumpSpline(eps,&last,&pts[start],&pts[start+1]);
 	fprintf( eps,"closepath\n" );
     }
+    free(endpt);
+    free(flags);
+    free(pts);
     fprintf( eps,"fill\n" );
 }
 

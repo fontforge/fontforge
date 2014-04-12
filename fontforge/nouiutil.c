@@ -24,8 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
-
 #include "uiinterface.h"
 #include "splinefont.h"
 #include <stdarg.h>
@@ -43,6 +41,7 @@ static void NOUI_IError(const char *format,...) {
     fprintf(stderr,"%s",str);
     if ( str[strlen(str)-1]!='\n' )
 	putc('\n',stderr);
+    free(str);
     va_end(ap);
 }
 
@@ -53,6 +52,7 @@ static void NOUI__LogError(const char *format,va_list ap) {
     fprintf(stderr,"%s",str);
     if ( str[strlen(str)-1]!='\n' )
 	putc('\n',stderr);
+    free(str);
 }
 
 static void NOUI_LogError(const char *format,...) {

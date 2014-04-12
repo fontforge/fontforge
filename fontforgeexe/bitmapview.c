@@ -184,6 +184,7 @@ static char *BVMakeTitles(BitmapView *bv, BDFChar *bc,char *buf) {
     if ( (uniname=unicode_name(sc->unicodeenc))!=NULL ) {
 	strcat(buf, " ");
 	strcpy(buf+strlen(buf), uniname);
+	free(uniname);
     }
     return( title );
 }
@@ -205,6 +206,7 @@ void BVChangeBC(BitmapView *bv, BDFChar *bc, int fitit ) {
 
     title = BVMakeTitles(bv,bc,buf);
     GDrawSetWindowTitles8(bv->gw,buf,title);
+    free(title);
 
     BVPaletteChangedChar(bv);
 }
@@ -639,6 +641,7 @@ return;
     GDrawLayoutExtents(pixmap,&size);
     GDrawLayoutDraw(pixmap,x-size.width/2,y,fg);
     len = size.width;
+    free(refinfo);
 }
 
 static void BVDrawGlyph(BitmapView *bv, BDFChar *bc, GWindow pixmap, GRect *pixel,
@@ -867,6 +870,7 @@ return;
     LogoExpose(pixmap,event,&r,dm_fore);
 
     GDrawPopClip(pixmap,&old);
+    BDFCharFree( bdfc );
 }
 
 static void BVShowInfo(BitmapView *bv) {
@@ -1004,6 +1008,7 @@ static int BVRecalc(GGadget *g, GEvent *e) {
 	    FreeTypeFreeContext(freetypecontext);
 	} else
 	    bdfc = SplineCharAntiAlias(bv->bc->sc,ly_fore,bv->bdf->pixelsize,(1<<(BDFDepth(bv->bdf)/2)));
+	free(bv->bc->bitmap);
 	bv->bc->bitmap = bdfc->bitmap; bdfc->bitmap = NULL;
 	bv->bc->width = bdfc->width;
 	bv->bc->xmin = bdfc->xmin;
@@ -1011,6 +1016,7 @@ static int BVRecalc(GGadget *g, GEvent *e) {
 	bv->bc->ymin = bdfc->ymin;
 	bv->bc->ymax = bdfc->ymax;
 	bv->bc->bytes_per_line = bdfc->bytes_per_line;
+	BDFCharFree(bdfc);
 	BCCharChangedUpdate(bv->bc);
     }
 return( true );
@@ -1467,6 +1473,7 @@ return( GGadgetDispatchEvent(bv->vsb,event));
       case et_destroy:
 	BVUnlinkView(bv);
 	BVPalettesHideIfMine(bv);
+	BitmapViewFree(bv);
       break;
       case et_map:
 	if ( event->u.map.is_visible )
@@ -1751,6 +1758,7 @@ return;
     if ( ret==NULL )
 return;
     val = strtol(ret,NULL,10);
+    free(ret);
     if ( val<0 )
 return;
     if ( mi->mid==MID_SetWidth )
@@ -1837,6 +1845,7 @@ static void BVDoClear(BitmapView *bv) {
 
     if ( bc->selection!=NULL ) {
 	BCPreserveState( bc );
+	BDFFloatFree( bc->selection );
 	bv->bc->selection = NULL;
 	BCCharChangedUpdate( bc );
     } else if ( refs_changed ) {
@@ -1901,6 +1910,9 @@ static void BVMenuRmGlyph(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 	GDrawDestroyWindow(bvs->gw);
     }
     bdf->glyphs[bc->orig_pos] = NULL;
+    /* Can't free the glyph yet, need to process all the destroy events */
+    /*  which touch bc->views first */
+    DelayEvent( (void (*)(void *))BDFCharFree,bc);
     for ( fv = (FontView *) (bdf->sf->fv); fv!=NULL; fv=(FontView *) (fv->b.nextsame) )
 	GDrawRequestExpose(fv->v,NULL,false);
 }
@@ -1919,8 +1931,10 @@ return( 0 );
     yv = strtol(end+1,&end2,10);
     if ( xv==0 || xv>10 || xv<-10 || yv<=0 || yv>10 || *end!=':' || *end2!='\0' ) {
 	ff_post_error( _("Bad Number"),_("Bad Number") );
+	free(ret);
 return( 0 );
     }
+    free(ret);
     *xoff = lastx = xv; *yoff = lasty = yv;
 return( 1 );
 }
@@ -2267,6 +2281,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
     DefaultY(&pos);
 
     bv->gw = gw = GDrawCreateTopWindow(NULL,&pos,bv_e_h,bv,&wattrs);
+    free( (unichar_t *) wattrs.icon_title );
 
     GDrawGetSize(GDrawGetRoot(screen_display),&zoom);
     zoom.x = BVPalettesWidth(); zoom.width -= zoom.x-10;
@@ -2370,6 +2385,10 @@ BitmapView *BitmapViewCreatePick(int enc, FontView *fv) {
 	bdf = sf->bitmaps;
 
 return( BitmapViewCreate(BDFMakeChar(bdf,map,enc),bdf,fv,enc));
+}
+
+void BitmapViewFree(BitmapView *bv) {
+    free(bv);
 }
 
 static void BC_RefreshAll(BDFChar *bc) {

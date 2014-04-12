@@ -174,6 +174,7 @@ return;
     gcd[3].creator = GGroupCreate;
 
     GGadgetsCreate(gw,gcd);
+    GTextInfoListFree(gcd[0].gd.u.list);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
@@ -230,6 +231,7 @@ void LoadEncodingFile(void) {
 return;
     filename = utf82def_copy(fn);
     ParseEncodingFile(filename, NULL);
+    free(fn); free(filename);
     DumpPfaEditEncodings();
 }
 
@@ -352,6 +354,7 @@ return;
     *strstr(dir,"/.libs") = '\0';
 
     FindMapsInDir(block,dir);
+    free(dir);
 }
 
 struct cidmap *AskUserForCIDMap(void) {
@@ -380,6 +383,9 @@ struct cidmap *AskUserForCIDMap(void) {
     for ( i=0; i<block.cur; ++i )
 	choices[i+1] = copy(block.maps[i]);
     ret = gwwv_choose(_("Find a cidmap file..."),(const char **) choices,i+1,0,_("Please select a CID ordering"));
+    for ( i=0; i<=block.cur; ++i )
+	free( choices[i] );
+    free(choices);
     if ( ret==0 ) {
 	filename = gwwv_open_filename(_("Find a cidmap file..."),NULL,
 		"?*-?*-[0-9]*.cidmap",NULL);
@@ -422,9 +428,18 @@ struct cidmap *AskUserForCIDMap(void) {
 	    /* No map */;
 	else if ( filename==NULL )
 	    map = FindCidMap(reg,ord,supplement,NULL);
-	else
+	else {
 	    map = LoadMapFromFile(filename,reg,ord,supplement);
+	    free(filename);
+	}
+	if ( ret!=0 && reg!=block.maps[ret-1] )
+	    free(reg);
+	/*free(filename);*/	/* Freed by loadmap */
     }
+    for ( i=0; i<block.cur; ++i )
+	free( block.maps[i]);
+    free(block.maps);
+    free(block.dirs);
 return( map );
 }
 
@@ -593,6 +608,7 @@ Encoding *ParseEncodingNameFromList(GGadget *listfield) {
     if ( enc == NULL ) {
 	char *temp = u2utf8_copy(name);
 	enc = FindOrMakeEncoding(temp);
+	free(temp);
     }
     if ( enc==NULL )
 	ff_post_error(_("Bad Encoding"),_("Bad Encoding"));

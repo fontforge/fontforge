@@ -404,6 +404,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map,
     fprintf( file, "CHARS %d\n", components.char_cnt );
 
     if ( old_prop_cnt==0 ) {
+	BDFPropsFree(font);
 	font->prop_cnt = 0;
 	font->props = NULL;
     }

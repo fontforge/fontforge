@@ -24,8 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
-
 #include <stdlib.h>
 #include <string.h>
 #include "ustring.h"
@@ -78,6 +76,7 @@ static void GFD_exists(GIOControl *gio) {
 		temp = u2utf8_copy(u_GFileNameTail(d->ret)))==0 ) {
 	    d->done = true;
 	}
+	free(temp);
     }
     GFileChooserReplaceIO(d->gfc,NULL);
 }
@@ -110,6 +109,7 @@ static void GFD_dircreated(GIOControl *gio) {
 
     GFileChooserReplaceIO(d->gfc,NULL);
     GFileChooserSetDir(d->gfc,dir);
+    free(dir);
 }
 
 static void GFD_dircreatefailed(GIOControl *gio) {
@@ -138,6 +138,7 @@ static void GFD_dircreatefailed(GIOControl *gio) {
 		_("Couldn't create directory: %1$s\n%2$s\n%3$s"),
 		gio->error!=NULL ? t1 = u2utf8_copy(gio->error) : "",
 		t2 = u2utf8_copy(gio->status));
+	free(t1); free(t2);
     }
 
     GFileChooserReplaceIO(d->gfc,NULL);
@@ -151,16 +152,19 @@ static int GFD_NewDir(GGadget *g, GEvent *e) {
 	    char *temp;
 	    temp = GWidgetAskString8(_("Create directory..."),NULL,_("Directory name?"));
 	    newdir = utf82u_copy(temp);
+	    free(temp);
 	} else
 	    newdir = GWidgetAskStringR(_STR_Createdir,NULL,_STR_Dirname);
 	if ( newdir==NULL )
 return( true );
 	if ( !u_GFileIsAbsolute(newdir)) {
 	    unichar_t *temp = u_GFileAppendFile(GFileChooserGetDir(d->gfc),newdir,false);
+	    free(newdir);
 	    newdir = temp;
 	}
 	GIOmkDir(GFileChooserReplaceIO(d->gfc,
 		GIOCreate(newdir,d,GFD_dircreated,GFD_dircreatefailed)));
+	free(newdir);
     }
 return( true );
 }
@@ -368,7 +372,15 @@ char *GWidgetSaveAsFileWithGadget8(const char *title, const char *defaultfile,
 	mimes[i] = NULL;
     }
     ret = GWidgetSaveAsFileWithGadget(tit,def,filt,mimes,filter,filenamefunc,optional_gcd);
-return u2utf8_copy(ret);
+    if ( mimes!=NULL ) {
+	for ( i=0; mimes[i]!=NULL; ++i )
+	    free(mimes[i]);
+	free(mimes);
+    }
+    free(filt); free(def); free(tit);
+    utf8_ret = u2utf8_copy(ret);
+    free(ret);
+return( utf8_ret );
 }
 
 char *GWidgetSaveAsFile8(const char *title, const char *defaultfile,

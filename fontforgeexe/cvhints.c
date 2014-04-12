@@ -266,6 +266,8 @@ static void Do_OKRegen(ReviewHintData *hd) {
     SCPreserveHints(sc,CVLayer((CharViewBase *) hd->cv));
     sc->hstem = curh; sc->vstem = curv;
 
+    StemInfosFree(hd->oldh);
+    StemInfosFree(hd->oldv);
     if ( hd->lastactive!=NULL )
 	hd->lastactive->active = false;
     if ( hd->changed ) {
@@ -289,6 +291,8 @@ return( true );
 }
 
 static void DoCancel(ReviewHintData *hd) {
+    StemInfosFree(hd->cv->b.sc->hstem);
+    StemInfosFree(hd->cv->b.sc->vstem);
     hd->cv->b.sc->hstem = hd->oldh;
     hd->cv->b.sc->vstem = hd->oldv;
     hd->cv->b.sc->hconflicts = StemListAnyConflicts(hd->cv->b.sc->hstem);
@@ -331,6 +335,7 @@ return( true );			/* Eh? */
 	    hd->cv->b.sc->vconflicts = StemListAnyConflicts(hd->cv->b.sc->vstem);
 	hd->cv->b.sc->manualhints = true;
 	hd->changed = true;
+	StemInfoFree( hd->active );
 	hd->active = prev;
 	SCOutOfDateBackground(hd->cv->b.sc);
 	RH_SetupHint(hd);
@@ -679,7 +684,7 @@ return(true);
 	    SCPreserveHints(hd->cv->b.sc,layer);
 	    SCHintsChanged(hd->cv->b.sc);
 	}
-	h = XZALLOC(StemInfo);
+	h = chunkalloc(sizeof(StemInfo));
 	if ( width==-21 || width==-20 ) {
 	    base += width;
 	    width = -width;
@@ -900,6 +905,7 @@ void SCRemoveSelectedMinimumDistances(SplineChar *sc,int inx) {
 		sc->md = next;
 	    else
 		prev->next = next;
+	    chunkfree(md,sizeof(MinimumDistance));
 	} else
 	    prev = md;
     }

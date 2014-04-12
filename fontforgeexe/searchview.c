@@ -408,6 +408,14 @@ static void SVCheck(SearchView *sv) {
     }
 }
 
+static void SearchViewFree(SearchView *sv) {
+    SplinePointListsFree(sv->sd.sc_srch.layers[ly_fore].splines);
+    SplinePointListsFree(sv->sd.sc_rpl.layers[ly_fore].splines);
+    RefCharsFree(sv->sd.sc_srch.layers[ly_fore].refs);
+    RefCharsFree(sv->sd.sc_rpl.layers[ly_fore].refs);
+    free(sv);
+}
+
 static int sv_e_h(GWindow gw, GEvent *event) {
     SearchView *sv = (SearchView *) ((CharViewBase *) GDrawGetUserData(gw))->container;
 
@@ -431,6 +439,7 @@ static int sv_e_h(GWindow gw, GEvent *event) {
       case et_create:
       break;
       case et_destroy:
+	SearchViewFree(sv);
       break;
       case et_map:
 	if ( event->u.map.is_visible )
@@ -504,8 +513,10 @@ return( false );
 			searcher->chars[i]->layers[ly_fore].refs = rnext;
 		    else
 			rprev->next = rnext;
+		    RefCharFree(r);
 		    any = true;
 		} else {
+		    /*SplinePointListsFree(r->layers[0].splines); r->layers[0].splines = NULL;*/
 		    r->sc = fv->b.sf->glyphs[gid];
 		    r->orig_pos = gid;
 		    SCReinstanciateRefChar(searcher->chars[i],r,fv->b.active_layer);
@@ -877,6 +888,7 @@ void SVDestroy(SearchView *sv) {
 return;
 
     SDDestroy(&sv->sd);
+    free(sv);
 }
 
 void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {

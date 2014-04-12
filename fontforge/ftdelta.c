@@ -150,6 +150,7 @@ static void SCFindQuestionablePoints(struct qg_data *data) {
 	    SplineFindQuestionablePoints(data,s);
 	}
     }
+    SplinePointListsFree(gridfit);
 }
 
 void TopFindQuestionablePoints(struct qg_data *data) {

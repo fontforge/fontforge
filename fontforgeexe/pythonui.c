@@ -105,6 +105,7 @@ return;
 	else if ( !PyInt_Check(result)) {
 	    char *menu_item_name = u2utf8_copy(mi->ti.text);
 	    LogError(_("Return from enabling function for menu item %s must be boolean"), menu_item_name );
+	    free( menu_item_name );
 	    mi->ti.disabled = true;
 	} else
 	    mi->ti.disabled = PyInt_AsLong(result)==0;
@@ -288,6 +289,7 @@ static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv) {
 		mmn[j].invoke = is_cv ? cvpy_menuactivate : fvpy_menuactivate;
 		mmn[j].mid = MenuDataAdd(func,check,data,is_cv);
 		fprintf( stderr, "Redefining menu item %s\n", u2utf8_copy(submenuu) );
+		free(submenuu);
 	    }
 	}
     }

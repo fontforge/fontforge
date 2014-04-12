@@ -184,4 +184,5 @@ extern int copymetadata, copyttfinstr;
 
 extern FontDict *_ReadPSFont(FILE *ps);
 extern FontDict *ReadPSFont(char *fontname);
+extern void PSFontFree(FontDict *fd);
 #endif

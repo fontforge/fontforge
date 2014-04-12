@@ -225,7 +225,7 @@ struct unicoderange specialnames[] = {
 
 int NameToEncoding(SplineFont *sf,EncMap *map,const char *name) {
     int enc, uni, i, ch;
-    char *end;
+    char *end, *freeme=NULL;
     const char *upt = name;
 
     ch = utf8_ildb(&upt);
@@ -238,8 +238,10 @@ return( enc );
     enc = uni = -1;
 
     enc = SFFindSlot(sf,map,-1,name);
-    if ( enc!=-1 )
+    if ( enc!=-1 ) {
+	free(freeme);
 return( enc );
+    }
     if ( (*name=='U' || *name=='u') && name[1]=='+' ) {
 	uni = strtol(name+2,&end,16);
 	if ( *end!='\0' )
@@ -388,8 +390,10 @@ return( NULL );
     result = malloc(10*strlen(string)+1);
     if ( *string!='[' ) {
 	val = strtod(string,&end);
-	if ( end==string )
+	if ( end==string ) {
+	    free( result );
 return( NULL );
+	}
 	sprintf( result, "%g", val*scale);
 return( result );
     }
@@ -399,8 +403,10 @@ return( result );
     ++string;
     while ( *string!='\0' && *string!=']' ) {
 	val = strtod(string,&end);
-	if ( end==string )
+	if ( end==string ) {
+	    free(result);
 return( NULL );
+	}
 	sprintf( pt, "%g ", val*scale);
 	pt += strlen(pt);
 	string = end;
@@ -424,8 +430,10 @@ return( NULL );
     result = malloc(10*strlen(string)+1);
     if ( *string!='[' ) {
 	val = strtod(string,&end);
-	if ( end==string )
+	if ( end==string ) {
+	    free( result );
 return( NULL );
+	}
 	sprintf( result, "%g", rint(val*scale));
 return( result );
     }
@@ -435,8 +443,10 @@ return( result );
     ++string;
     while ( *string!='\0' && *string!=']' ) {
 	val = strtod(string,&end);
-	if ( end==string )
+	if ( end==string ) {
+	    free(result);
 return( NULL );
+	}
 	sprintf( pt, "%g ", rint(val*scale));
 	pt += strlen(pt);
 	string = end;
@@ -466,12 +476,14 @@ static void SFScalePrivate(SplineFont *sf,double scale) {
 	char *new = iscaleString(str,scale);
 	if ( new!=NULL )
 	    PSDictChangeEntry(sf->private,integerscalethese[i],new);
+	free(new);
     }
     for ( i=0; scalethese[i]!=NULL; ++i ) {
 	char *str = PSDictHasEntry(sf->private,scalethese[i]);
 	char *new = scaleString(str,scale);
 	if ( new!=NULL )
 	    PSDictChangeEntry(sf->private,scalethese[i],new);
+	free(new);
     }
 }
 
@@ -558,6 +570,7 @@ return( false );
     }
 
     FVTransFunc(sf->fv,transform,0,&bvts,trans_flags);
+    free(sf->fv->selected);
     sf->fv->selected = oldselected;
 
     if ( !sf->changed ) {
@@ -584,6 +597,7 @@ static SplineFont *_SFReadPostScript(FILE *file,char *filename) {
     ff_progress_change_line2(_("Interpreting Glyphs"));
     if ( fd!=NULL ) {
 	sf = SplineFontFromPSFont(fd);
+	PSFontFree(fd);
 	if ( sf!=NULL )
 	    CheckAfmOfPostScript(sf,filename);
     }
@@ -600,6 +614,7 @@ static SplineFont *SFReadPostScript(char *filename) {
     ff_progress_change_line2(_("Interpreting Glyphs"));
     if ( fd!=NULL ) {
 	sf = SplineFontFromPSFont(fd);
+	PSFontFree(fd);
 	if ( sf!=NULL )
 	    CheckAfmOfPostScript(sf,filename);
     }
@@ -625,6 +640,7 @@ void ArchiveCleanup(char *archivedir) {
     cmd = malloc(strlen(archivedir) + 20);
     sprintf( cmd, "rm -rf %s", archivedir );
     system( cmd );
+    free( cmd ); free(archivedir);
 }
 
 static char *ArchiveParseTOC(char *listfile, enum archive_list_style ars, int *doall) {
@@ -690,10 +706,15 @@ return( NULL );
     files[fcnt] = NULL;
     fclose(file);
 
-    if ( fcnt==0 )
+    free(linebuffer);
+    if ( fcnt==0 ) {
+	free(files);
 return( NULL );
-    else if ( fcnt==1 )
-return files[0];
+    } else if ( fcnt==1 ) {
+	char *onlyname = files[0];
+	free(files);
+return( onlyname );
+    }
 
     /* Suppose they've got an archive of a directory format font? I mean a ufo*/
     /*  or a sfdir. It won't show up in the list of files (because either     */
@@ -709,6 +730,9 @@ return files[0];
 	    break;
 	    if ( i==fcnt ) {
 		char *onlydirfont = copyn(files[0],pt-files[0]+1);
+		for ( i=0; i<fcnt; ++i )
+		    free(files[i]);
+		free(files);
 		*doall = true;
 return( onlydirfont );
 	    }
@@ -738,8 +762,15 @@ return( onlydirfont );
     }
 
     choice = ff_choose(_("Which archived item should be opened?"),(const char **) files,fcnt,def,_("There are multiple files in this archive, pick one"));
+    if ( choice==-1 )
+	name = NULL;
+    else
+	name = copy(files[choice]);
 
-return( choice==-1 ? NULL : copy(files[choice]) );
+    for ( i=0; i<fcnt; ++i )
+	free(files[i]);
+    free(files);
+return( name );
 }
 
 #define TOC_NAME	"ff-archive-table-of-contents"
@@ -777,8 +808,10 @@ return( NULL );
     if ( dir==NULL ) dir = P_tmpdir;
     archivedir = malloc(strlen(dir)+100);
     sprintf( archivedir, "%s/ffarchive-%d-%d", dir, getpid(), ++cnt );
-    if ( GFileMkDir(archivedir)!=0 )
+    if ( GFileMkDir(archivedir)!=0 ) {
+	free(archivedir);
 return( NULL );
+    }
 
     listfile = malloc(strlen(archivedir)+strlen("/" TOC_NAME)+1);
     sprintf( listfile, "%s/" TOC_NAME, archivedir );
@@ -790,11 +823,14 @@ return( NULL );
     sprintf( listcommand, "%s %s %s > %s", archivers[i].unarchive,
 	    archivers[i].listargs, name, listfile );
     if ( system(listcommand)!=0 ) {
+	free(listcommand); free(listfile);
 	ArchiveCleanup(archivedir);
 return( NULL );
     }
+    free(listcommand);
 
     desiredfile = ArchiveParseTOC(listfile, archivers[i].ars, &doall);
+    free(listfile);
     if ( desiredfile==NULL ) {
 	ArchiveCleanup(archivedir);
 return( NULL );
@@ -811,12 +847,15 @@ return( NULL );
 	    archivers[i].unarchive,
 	    archivers[i].extractargs, name, doall ? "" : desiredfile );
     if ( system(unarchivecmd)!=0 ) {
+	free(unarchivecmd); free(desiredfile);
 	ArchiveCleanup(archivedir);
 return( NULL );
     }
+    free(unarchivecmd);
 
     finalfile = malloc( strlen(archivedir) + 1 + strlen(desiredfile) + 1);
     sprintf( finalfile, "%s/%s", archivedir, desiredfile );
+    free( desiredfile );
 
     *_archivedir = archivedir;
 return( finalfile );
@@ -845,7 +884,10 @@ char *Decompress(char *name, int compression) {
     strcat(tmpfile,GFileNameTail(name));
     *strrchr(tmpfile,'.') = '\0';
     snprintf( buf, sizeof(buf), "%s < %s > %s", compressors[compression].decomp, name, tmpfile );
-return( system(buf)==0 ? tmpfile : NULL);
+    if ( system(buf)==0 )
+return( tmpfile );
+    free(tmpfile);
+return( NULL );
 }
 
 static char *ForceFileToHaveName(FILE *file, char *exten) {
@@ -917,7 +959,7 @@ return( NULL );
 		    char *spuriousname = ForceFileToHaveName(file,archivers[i].ext);
 		    strippedname = Unarchive(spuriousname,&archivedir);
 		    fclose(file); file = NULL;
-		    unlink(spuriousname);
+		    unlink(spuriousname); free(spuriousname);
 		} else
 		    strippedname = Unarchive(strippedname,&archivedir);
 		if ( strippedname==NULL )
@@ -947,7 +989,7 @@ return( NULL );
 	    char *spuriousname = ForceFileToHaveName(file,compressors[i].ext);
 	    tmpfile = Decompress(spuriousname,i);
 	    fclose(file); file = NULL;
-	    unlink(spuriousname);
+	    unlink(spuriousname); free(spuriousname);
 	} else
 	    tmpfile = Decompress(strippedname,i);
 	if ( tmpfile!=NULL ) {
@@ -973,6 +1015,7 @@ return( NULL );
 	strncat(ubuf,temp = def2utf8_copy(GFileNameTail(fullname)),100);
     else
 	strncat(ubuf,temp = def2utf8_copy(GFileNameTail(filename)),100);
+    free(temp);
     ubuf[100+len] = '\0';
     ff_progress_start_indicator(FontViewFirst()==NULL?0:10,_("Loading..."),ubuf,_("Reading Glyphs"),0,1);
     ff_progress_enable_stop(0);
@@ -1012,6 +1055,7 @@ return( NULL );
 		checked = 'F';
 	    }
 	}
+	free(temp);
 	if ( file!=NULL )
 	    fclose(file);
     } else if ( file!=NULL ) {
@@ -1060,7 +1104,7 @@ return( NULL );
 	    else {
 		char *spuriousname = ForceFileToHaveName(file,NULL);
 		sf = SFReadSVG(spuriousname,0);
-		unlink(spuriousname);
+		unlink(spuriousname); free(spuriousname);
 	    }
 	    checked = 'S';
 	} else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) {
@@ -1142,14 +1186,16 @@ return( NULL );
     if ( sf!=NULL ) {
 	SplineFont *norm = sf->mm!=NULL ? sf->mm->normal : sf;
 	if ( compression!=0 ) {
+	    free(sf->filename);
 	    *strrchr(oldstrippedname,'.') = '\0';
 	    sf->filename = copy( oldstrippedname );
 	}
 	if ( fromsfd )
 	    sf->compression = compression;
+	free( norm->origname );
 	if ( wasarchived ) {
 	    norm->origname = NULL;
-	    norm->filename = NULL;
+	    free(norm->filename); norm->filename = NULL;
 	    norm->new = true;
 	} else if ( sf->chosenname!=NULL && strippedname==filename ) {
 	    norm->origname = malloc(strlen(filename)+strlen(sf->chosenname)+8);
@@ -1159,11 +1205,13 @@ return( NULL );
 	    strcat(norm->origname,")");
 	} else
 	    norm->origname = copy(filename);
-	norm->chosenname = NULL;
+	free( norm->chosenname ); norm->chosenname = NULL;
 	if ( sf->mm!=NULL ) {
 	    int j;
-	    for ( j=0; j<sf->mm->instance_count; ++j )
+	    for ( j=0; j<sf->mm->instance_count; ++j ) {
+		free(sf->mm->instances[j]->origname);
 		sf->mm->instances[j]->origname = copy(norm->origname);
+	    }
 	}
     } else if ( !GFileExists(filename) )
 	ff_post_error(_("Couldn't open font"),_("The requested file, %.100s, does not exist"),GFileNameTail(filename));
@@ -1172,8 +1220,14 @@ return( NULL );
     else
 	ff_post_error(_("Couldn't open font"),_("%.100s is not in a known format (or uses features of that format fontforge does not support, or is so badly corrupted as to be unreadable)"),GFileNameTail(filename));
 
-    if ( tmpfile!=NULL )
+    if ( oldstrippedname!=filename )
+	free(oldstrippedname);
+    if ( fullname!=filename && fullname!=strippedname )
+	free(fullname);
+    if ( tmpfile!=NULL ) {
 	unlink(tmpfile);
+	free(tmpfile);
+    }
     if ( wasarchived )
 	ArchiveCleanup(archivedir);
     if ( (openflags&of_fstypepermitted) && sf!=NULL && (sf->pfminfo.fstype&0xff)==0x0002 ) {
@@ -1202,7 +1256,7 @@ return( copy(buffer));
 
 SplineFont *LoadSplineFont(char *filename,enum openflags openflags) {
     SplineFont *sf;
-    char *pt, *ept, *s=NULL;
+    char *pt, *ept, *tobefreed1=NULL, *tobefreed2=NULL;
     static char *extens[] = { ".sfd", ".pfa", ".pfb", ".ttf", ".otf", ".ps", ".cid", ".bin", ".dfont", ".PFA", ".PFB", ".TTF", ".OTF", ".PS", ".CID", ".BIN", ".DFONT", NULL };
     int i;
 
@@ -1224,26 +1278,34 @@ return( NULL );
 	    fclose(test);
 	}
 	if ( !ok ) {
-	    s = malloc(strlen(filename)+8);
-	    strcpy(s,filename);
-	    ept = s+strlen(s);
+	    tobefreed1 = malloc(strlen(filename)+8);
+	    strcpy(tobefreed1,filename);
+	    ept = tobefreed1+strlen(tobefreed1);
 	    for ( i=0; extens[i]!=NULL; ++i ) {
 		strcpy(ept,extens[i]);
-		if ( GFileExists(s))
+		if ( GFileExists(tobefreed1))
 	    break;
 	    }
 	    if ( extens[i]!=NULL )
-		filename = s;
+		filename = tobefreed1;
+	    else {
+		free(tobefreed1);
+		tobefreed1 = NULL;
+	    }
 	}
-    }
+    } else
+	tobefreed1 = NULL;
 
+    sf = NULL;
     sf = FontWithThisFilename(filename);
     if ( sf==NULL && *filename!='/' && strstr(filename,"://")==NULL )
-	filename = ToAbsolute(filename);
+	filename = tobefreed2 = ToAbsolute(filename);
 
     if ( sf==NULL )
 	sf = ReadSplineFont(filename,openflags);
 
+    free(tobefreed1);
+    free(tobefreed2);
 return( sf );
 }
 
@@ -1812,6 +1874,7 @@ int SFPrivateGuess(SplineFont *sf,int layer, struct psdict *private,char *name, 
 	ret = false;
 
     setlocale(LC_NUMERIC,oldloc);
+    free( oldloc );
 return( ret );
 }
 
@@ -1841,7 +1904,7 @@ return;
 		cvs->layerheads[dm_fore] = &sc->layers[ly_fore];
 	}
 	if ( !any_quads ) {
-	    sc->ttf_instrs = NULL;
+	    free(sc->ttf_instrs); sc->ttf_instrs = NULL;
 	    sc->ttf_instrs_len = 0;
 	}
     }
@@ -1855,6 +1918,7 @@ return;
     }
     MVDestroyAll(sf);
 
+    free(sf->layers[l].name);
     for ( i=l+1; i<sf->layer_cnt; ++i )
 	sf->layers[i-1] = sf->layers[i];
     -- sf->layer_cnt;
@@ -1908,6 +1972,7 @@ void SFLayerSetBackground(SplineFont *sf,int layer,int is_back) {
 	for ( gid=0; gid<_sf->glyphcnt; ++gid ) if ( (sc=_sf->glyphs[gid])!=NULL ) {
 	    sc->layers[layer].background = is_back;
 	    if ( !is_back && sc->layers[layer].images!=NULL ) {
+		ImageListsFree(sc->layers[layer].images);
 		sc->layers[layer].images = NULL;
 		SCCharChangedUpdate(sc,layer);
 	    }

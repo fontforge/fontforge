@@ -10,6 +10,7 @@ struct string_list {
     char *str;
 };
 extern int string_list_count(const struct string_list *);
+extern void delete_string_list(struct string_list *);
 extern struct string_list *new_string_list(const char *);
 extern struct string_list *prepend_string_list(struct string_list*, const char *);
 extern struct string_list *append_string_list(struct string_list*, const char *);

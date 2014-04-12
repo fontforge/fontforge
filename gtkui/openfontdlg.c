@@ -176,20 +176,24 @@ static void find_fonts_callback(GtkFileChooser *dialog) {
 		for ( i=0; fonts[cnt][i]!=NULL; ++i ) {
 		    *pt++ = ' ';
 		    strcpy(pt,fonts[cnt][i]);
+		    free(fonts[cnt][i]);
 		    pt += strlen(pt);
 		    *pt ++ = '\n';
 		}
+		free(fonts[cnt]);
 	    }
 	}
 	if ( pt>text && pt[-1]=='\n' )
 	    pt[-1]='\0';
 	else
 	    *pt = '\0';
+	free(fonts);
 	if ( *text=='\0' )
 	    gtk_widget_set_tooltip_text(GTK_WIDGET(dialog), "???");
 	else {
 	    gtk_widget_set_tooltip_text(GTK_WIDGET(dialog), text);
 	}
+	free(text);
     }
 
     for ( test=files; test!=NULL; test=test->next)
@@ -253,6 +257,7 @@ char *FVOpenFont(const char *title, const char *def_name, int mult ) {
 	    char *dir = copyn(def_name,pt-def_name);
 	    gtk_file_chooser_set_current_folder( GTK_FILE_CHOOSER( dialog ), dir );
 	    gtk_file_chooser_set_current_name( GTK_FILE_CHOOSER( dialog ), pt+1 );
+	    free(dir);
 	} else
 	    gtk_file_chooser_set_current_name( GTK_FILE_CHOOSER( dialog ), def_name );
     }

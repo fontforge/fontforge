@@ -55,6 +55,7 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si,int il) 
 	    /* Don't need a clut */;
 	else
 	    if ( (ret->u.image->clut = (GClut *) calloc(1,sizeof(GClut)))==NULL ) {
+		free(ret);
 		NoMoreMemMessage();
 		return( NULL );
 	    }
@@ -63,6 +64,10 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si,int il) 
 	    return( NULL );
     if ( il && ((id=(int *) malloc(si->ImageDesc.Height*sizeof(int)))==NULL || \
 		(iv=(uint8 *) malloc(si->ImageDesc.Height*sizeof(uint8)))==NULL) ) {
+	free(ret->u.image->clut);
+	free(ret);
+	free(id);
+	free(iv);
 	NoMoreMemMessage();
 	return( NULL );
     }
@@ -117,6 +122,8 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si,int il) 
 	    for ( i=1; i<base->height; ++i )
 		base->data[i*base->bytes_per_line+j]=iv[i];
 	}
+	free(id);
+	free(iv);
     }
     for ( i=0; i<si->ExtensionBlockCount; ++i ) {
 	if ( si->ExtensionBlocks[i].Function==0xf9 &&
@@ -170,6 +177,8 @@ GImage *GImageReadGif(char *filename) {
     il=gif->SavedImages[0].ImageDesc.Interlace;
     for ( i=0; i<gif->ImageCount; ++i ) {
 	if ( (images[i]=ProcessSavedImage(gif,&gif->SavedImages[i],il))==NULL ) {
+	    while ( --i>=0 ) free(images[i]);
+	    free(images);
 	    DGifCloseFile(gif);
 	    return( NULL );
 	}
@@ -181,5 +190,6 @@ GImage *GImageReadGif(char *filename) {
     else
 	ret = GImageCreateAnimation(images,gif->ImageCount);
     DGifCloseFile(gif);
+    free(images);
     return( ret );
 }

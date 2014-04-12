@@ -264,8 +264,10 @@ static void DoDelayedEvents(GEvent *event) {
     GTimer *t = event->u.timer.timer;
     struct delayed_event *info = (struct delayed_event *) (event->u.timer.userdata);
 
-    if ( info!=NULL )
+    if ( info!=NULL ) {
 	(info->func)(info->data);
+	free(info);
+    }
     GDrawCancelTimer(t);
 }
 
@@ -304,7 +306,7 @@ exit(0);		/* Sent everything */
     GDrawGrabSelection(splashw,sn_user1);
     GDrawAddSelectionType(splashw,sn_user1,"STRING",
 	    copy(msg),strlen(msg),1,
-	    NULL);
+	    NULL,NULL);
 
 	/* If we just sent the other fontforge a request to die, it will never*/
 	/*  take the selection back. So we should just die quietly */
@@ -607,6 +609,7 @@ return( true );
 		MenuExit(NULL,NULL,NULL);
 	    else
 		ViewPostScriptFont(arg,0);
+	    free(arg);
 	    GDrawGrabSelection(splashw,sn_user1);
 	}
       break;
@@ -627,6 +630,7 @@ static void  AddR(char *program_name, char *window_name, char *cmndline_val) {
 	strcat(full,": ");
 	strcat(full,cmndline_val);
 	GResourceAddResourceString(full,program_name);
+	free(full);
     }
 }
 
@@ -760,6 +764,16 @@ static void ensureDotFontForgeIsSetup() {
     ffensuredir( basedir, "python", S_IRWXU );
 }
 
+static void DoAutoRecoveryPostRecover_PromptUserGraphically(SplineFont *sf)
+{
+    /* Ask user to save-as file */
+    char *buts[4];
+    buts[0] = _("_OK");
+    buts[1] = 0;
+    gwwv_ask( _("Recovery Complete"),(const char **) buts,0,1,_("Your file %s has been recovered.\nYou must now Save your file to continue working on it."), sf->filename );
+    _FVMenuSaveAs( (FontView*)sf->fv );
+}
+
 
 int fontforge_main( int argc, char **argv ) {
     extern const char *source_modtime_str;
@@ -875,11 +889,11 @@ int fontforge_main( int argc, char **argv ) {
 #if defined(__Mac)
     /* The mac seems to default to the "C" locale, LANG and LC_MESSAGES are not*/
     /*  defined. This means that gettext will not bother to look up any message*/
-    /*  files -- even if we have a "C" or "POSIX" entry in the locale directory */
+    /*  files -- even if we have a "C" or "POSIX" entry in the locale diretory */
     /* Now if X11 gives us the command key, I want to force a rebinding to use */
     /*  Cmd rather than Control key -- more mac-like. But I can't do that if   */
     /*  there is no locale. So I force a locale if there is none specified */
-    /* I force the US English locale, because that's what the messages are */
+    /* I force the US English locale, because that's the what the messages are */
     /*  by default so I'm changing as little as I can. I think. */
     /* Now the locale command will treat a LANG which is "" as undefined, but */
     /*  gettext will not. So I don't bother to check for null strings or "C"  */
@@ -934,6 +948,7 @@ int fontforge_main( int argc, char **argv ) {
 	GResourceAddResourceFile(path, GResourceProgramName,false);
     }
     hotkeysLoad();
+//    loadPrefsFiles();
     Prefs_LoadDefaultPreferences();
 
     if ( load_prefs!=NULL && strcasecmp(load_prefs,"Always")==0 )
@@ -1173,15 +1188,18 @@ exit( 0 );
 		strcpy(fname,buffer); strcat(fname,"/glyphs/contents.plist");
 		if ( GFileExists(fname)) {
 		    /* It's probably a Unified Font Object directory */
+		    free(fname);
 		    if ( ViewPostScriptFont(buffer,openflags) )
 			any = 1;
 		} else {
 		    strcpy(fname,buffer); strcat(fname,"/font.props");
 		    if ( GFileExists(fname)) {
 			/* It's probably a sf dir collection */
+			free(fname);
 			if ( ViewPostScriptFont(buffer,openflags) )
 			    any = 1;
 		    } else {
+			free(fname);
 			if ( buffer[strlen(buffer)-1]!='/' ) {
 			    /* If dirname doesn't end in "/" we'll be looking in parent dir */
 			    buffer[strlen(buffer)+1]='\0';
@@ -1191,6 +1209,7 @@ exit( 0 );
 			if ( fname!=NULL )
 			    ViewPostScriptFont(fname,openflags);
 			any = 1;	/* Even if we didn't get a font, don't bring up dlg again */
+			free(fname);
 		    }
 		}
 	    } else if ( ViewPostScriptFont(buffer,openflags)!=0 )

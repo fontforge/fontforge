@@ -24,8 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
-
 #include <basics.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,6 +56,7 @@ double GetCalmReal8(GWindow gw,int cid,char *name,int *err) {
 	GDrawBeep(NULL);
 	*err = true;
     }
+    free(txt);
 return( val );
 }
 
@@ -72,6 +71,7 @@ double GetReal8(GWindow gw,int cid,char *name,int *err) {
 	GGadgetProtest8(name);
 	*err = true;
     }
+    free(txt);
 return( val );
 }
 
@@ -87,6 +87,7 @@ int GetCalmInt8(GWindow gw,int cid,char *name,int *err) {
 	GDrawBeep(NULL);
 	*err = true;
     }
+    free(txt);
 return( val );
 }
 
@@ -101,6 +102,7 @@ int GetInt8(GWindow gw,int cid,char *name,int *err) {
 	GGadgetProtest8(name);
 	*err = true;
     }
+    free(txt);
 return( val );
 }
 
@@ -127,5 +129,6 @@ return( utxt[0] );
 	    }
 	}
     }
+    free(txt);
 return( val );
 }

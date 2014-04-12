@@ -60,6 +60,7 @@ exit(1);
     for ( i=0; i<4; ++i ) {
 	if ( fgets(buffer,sizeof(buffer),src)==NULL ) {
 	    fclose(src);
+	    for ( j=0; j<i; ++j ) free(lines[j]);
 return;
 	}
 	lines[i] = strdup(buffer);
@@ -86,6 +87,7 @@ return;
 	fprintf( output, "  %s", lines[2] );
 	fprintf( output, "  %s", lines[3] );
     }
+    for ( j=0; j<4; ++j ) free(lines[j]);
 }
 
 static void ProcessDir(char *dir) {
@@ -123,6 +125,7 @@ exit( 1 );
 	fclose(output);
     closedir(d);
     chdir(here);
+    free(here);
 }
 
 int main(int argc, char **argv) {

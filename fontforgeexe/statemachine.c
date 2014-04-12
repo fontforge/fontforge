@@ -111,8 +111,31 @@ static char *indicverbs[2][16] = {
     { "", "xA", "Dx", "DxA", "xAB", "xBA", "CDx", "DCx",
 	"CDxA",  "DCxA", "DxAB", "DxBA", "CDxAB", "CDxBA", "DCxAB", "DCxBA" }};
 
+static void StatesFree(struct asm_state *old,int old_class_cnt,int old_state_cnt,
+	enum asm_type type) {
+    int i, j;
+
+    if ( type==asm_insert ) {
+	for ( i=0; i<old_state_cnt ; ++i ) {
+	    for ( j=0; j<old_class_cnt; ++j ) {
+		struct asm_state *this = &old[i*old_class_cnt+j];
+		free(this->u.insert.mark_ins);
+		free(this->u.insert.cur_ins);
+	    }
+	}
+    } else if ( type==asm_kern ) {
+	for ( i=0; i<old_state_cnt ; ++i ) {
+	    for ( j=0; j<old_class_cnt; ++j ) {
+		struct asm_state *this = &old[i*old_class_cnt+j];
+		free(this->u.kern.kerns);
+	    }
+	}
+    }
+    free(old);
+}
+
 static struct asm_state *StateCopy(struct asm_state *old,int old_class_cnt,int old_state_cnt,
-	int new_class_cnt,int new_state_cnt, enum asm_type type) {
+	int new_class_cnt,int new_state_cnt, enum asm_type type,int freeold) {
     struct asm_state *new = calloc(new_class_cnt*new_state_cnt,sizeof(struct asm_state));
     int i,j;
     int minclass = new_class_cnt<old_class_cnt ? new_class_cnt : old_class_cnt;
@@ -138,6 +161,9 @@ static struct asm_state *StateCopy(struct asm_state *old,int old_class_cnt,int o
     for ( ; i<new_state_cnt; ++i )
 	new[i*new_class_cnt+2].next_state = i;		/* Deleted glyphs should be treated as noops */
 
+    if ( freeold )
+	StatesFree(old,old_class_cnt,old_state_cnt,type);
+
 return( new );
 }
 
@@ -153,9 +179,16 @@ return;
 	for ( j=k=0; j<smd->class_cnt; ++j ) {
 	    if ( j!=removeme )
 		new[i*(smd->class_cnt-1)+k++] = smd->states[i*smd->class_cnt+j];
+	    else if ( smd->sm->type==asm_insert ) {
+		free(smd->states[i*smd->class_cnt+j].u.insert.mark_ins);
+		free(smd->states[i*smd->class_cnt+j].u.insert.cur_ins);
+	    } else if ( smd->sm->type==asm_kern ) {
+		free(smd->states[i*smd->class_cnt+j].u.kern.kerns);
+	    }
 	}
     }
 
+    free(smd->states);
     smd->states = new;
     --smd->class_cnt;
 }
@@ -333,6 +366,7 @@ return( false );
 	}
 	this->next_state = ns;
 	this->flags = flags;
+	free(this->u.kern.kerns);
 	this->u.kern.kcnt = kerns;
 	if ( kerns==0 )
 	    this->u.kern.kerns = NULL;
@@ -346,19 +380,24 @@ return( false );
 	    mlook = NULL; 		/* That's ok */
 	else if ( (mlook=SFFindLookup(smd->sf,ret8))==NULL ) {
 	    ff_post_error(_("Unknown lookup"),_("Lookup, %s, does not exist"), ret8 );
+	    free(ret8);
 return( false );
 	} else if ( mlook->lookup_type!=gsub_single ) {
 	    ff_post_error(_("Bad lookup type"),_("Lookups in contextual state machines must be simple substitutions,\n, but %s is not"), ret8 );
+	    free(ret8);
 return( false );
 	}
+	free(ret8);
 	ret8 = GGadgetGetTitle8(GWidgetGetControl(smd->editgw,CID_TagCur));
 	if ( *ret8=='\0' )
 	    clook = NULL; 		/* That's ok */
 	else if ( (clook=SFFindLookup(smd->sf,ret8))==NULL ) {
 	    ff_post_error(_("Unknown lookup"),_("Lookup, %s, does not exist"), ret8 );
+	    free(ret8);
 return( false );
 	} else if ( clook->lookup_type!=gsub_single ) {
 	    ff_post_error(_("Bad lookup type"),_("Lookups in contextual state machines must be simple substitutions,\n, but %s is not"), ret8 );
+	    free(ret8);
 return( false );
 	}
 	this->next_state = ns;
@@ -375,6 +414,7 @@ return( false );
 	mins = copy_count(smd->editgw,CID_InsMark,&cnt);
 	if ( cnt>31 ) {
 	    ff_post_error(_("Too Many Glyphs"),_("At most 31 glyphs may be specified in an insert list"));
+	    free(mins);
 return( false );
 	}
 	flags |= cnt<<5;
@@ -382,11 +422,15 @@ return( false );
 	cins = copy_count(smd->editgw,CID_InsCur,&cnt);
 	if ( cnt>31 ) {
 	    ff_post_error(_("Too Many Glyphs"),_("At most 31 glyphs may be specified in an insert list"));
+	    free(mins);
+	    free(cins);
 return( false );
 	}
 	flags |= cnt;
 	this->next_state = ns;
 	this->flags = flags;
+	free(this->u.insert.mark_ins);
+	free(this->u.insert.cur_ins);
 	this->u.insert.mark_ins = mins;
 	this->u.insert.cur_ins = cins;
     }
@@ -736,7 +780,7 @@ static void SMD_EditState(SMD *smd) {
     if ( new_cnt!=smd->state_cnt ) {
 	smd->states = StateCopy(smd->states,smd->class_cnt,smd->state_cnt,
 		smd->class_cnt,new_cnt,
-		smd->sm->type);
+		smd->sm->type,true);
 	smd->state_cnt = new_cnt;
 	SMD_SBReset(smd);
 	GDrawRequestExpose(smd->gw,NULL,false);
@@ -756,10 +800,13 @@ static void _SMD_Finish(SMD *smd, int success) {
 
     GFI_FinishSMNew(smd->d,smd->sm,success,smd->isnew);
 
+    GTextInfoListFree(smd->mactags);
     smd->done = true;
 }
 
 static void _SMD_Cancel(SMD *smd) {
+
+    StatesFree(smd->states,smd->state_cnt,smd->class_cnt,smd->sm->type);
     _SMD_Finish(smd,false);
 }
 
@@ -783,6 +830,9 @@ static int SMD_Ok(GGadget *g, GEvent *e) {
 	ASM *sm = smd->sm;
 	char *upt;
 
+	for ( i=4; i<sm->class_cnt; ++i )
+	    free(sm->classes[i]);
+	free(sm->classes);
 	sm->classes = malloc(smd->class_cnt*sizeof(char *));
 	sm->classes[0] = sm->classes[1] = sm->classes[2] = sm->classes[3] = NULL;
 	sm->class_cnt = smd->class_cnt;
@@ -792,6 +842,8 @@ static int SMD_Ok(GGadget *g, GEvent *e) {
         sm->classes[i] = copy(GlyphNameListDeUnicode(upt));
     }
 
+	StatesFree(sm->state,sm->state_cnt,sm->class_cnt,
+		sm->type);
 	sm->state_cnt = smd->state_cnt;
 	sm->state = smd->states;
 	sm->flags = (sm->flags & ~0xc000) |
@@ -1206,7 +1258,7 @@ static void SMD_NewClassRow(GGadget *g,int r) {
 
     smd->states = StateCopy(smd->states,smd->class_cnt,smd->state_cnt,
 	    smd->class_cnt+1,smd->state_cnt,
-	    smd->sm->type);
+	    smd->sm->type,true);
     ++smd->class_cnt;
     SMD_SBReset(smd);
 }
@@ -1280,7 +1332,7 @@ void StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
 	smd.class_cnt = sm->class_cnt;
 	smd.state_cnt = sm->state_cnt;
 	smd.states = StateCopy(sm->state,sm->class_cnt,sm->state_cnt,
-		smd.class_cnt,smd.state_cnt,sm->type);
+		smd.class_cnt,smd.state_cnt,sm->type,false);
     }
     smd.index = sm->type==asm_indic ? 0 : sm->type==asm_context ? 1 : sm->type==asm_insert ? 2 : 3;
 

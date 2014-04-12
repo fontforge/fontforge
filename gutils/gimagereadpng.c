@@ -91,6 +91,10 @@ return( NULL );
     {
       /* Free all of the memory associated with the png_ptr and info_ptr */
       png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
+      if ( ret!=NULL ) {
+	  GImageDestroy(ret);
+	  free(row_pointers);
+      }
       /* If we get here, we had a problem reading the file */
 return( NULL );
     }
@@ -176,6 +180,7 @@ return( NULL );
     }
 
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+    free(row_pointers);
     /* Note png b&w images come out as indexed */
 return( ret );
 }

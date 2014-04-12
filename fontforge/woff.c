@@ -324,6 +324,7 @@ return( NULL );
 	sf->woffMetadata[metaLenUncompressed] ='\0';
 	uncompress(sf->woffMetadata,&len,temp,metaLenCompressed);
 	sf->woffMetadata[len] ='\0';
+	free(temp);
     }
 
 return( sf );
@@ -440,6 +441,7 @@ return( ret );
 	newoffset = ftell(woff);
 	compress(temp,&complen,sf->woffMetadata,uncomplen);
 	fwrite(temp,1,complen,woff);
+	free(temp);
 	if ( (ftell(woff)&3)!=0 ) {
 	    /* Pad to a 4 byte boundary */
 	    if ( ftell(woff)&1 )

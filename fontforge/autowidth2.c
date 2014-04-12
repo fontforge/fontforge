@@ -155,7 +155,7 @@ static void aw2_figure_all_sidebearing(AW_Data *all) {
 	    me->lsb = me->nlsb;
 	}
     }
-    all->visual_separation = NULL;
+    free(all->visual_separation); all->visual_separation = NULL;
 
     if ( all->normalize ) {
 	/* This is the dummy flat edge we added. We want the separation between */
@@ -193,6 +193,7 @@ static void aw2_figure_all_sidebearing(AW_Data *all) {
 	if ( changed )
 	    SCCharChangedUpdate(me->sc,ly_none);
     }
+    free(rsel);
 }
 
 static int ak2_figure_kern(AW_Glyph *g1, AW_Glyph *g2, AW_Data *all) {
@@ -357,6 +358,7 @@ static void aw2_findedges(AW_Glyph *me, AW_Data *all) {
 	    me->right[i-me->imin_y] = floor(xmax - me->bb.maxx);	/* This is always non-positive, so floor will give the bigger absolute value */
 	}
     }
+    FreeMonotonics(ms);
 }
 
 static void aw2_dummyedges(AW_Glyph *flat,AW_Data *all) {
@@ -380,6 +382,8 @@ static void aw2_dummyedges(AW_Glyph *flat,AW_Data *all) {
 }
 
 static void AWGlyphFree( AW_Glyph *me) {
+    free(me->left);
+    free(me->right);
     FFPy_AWGlyphFree(me);
 }
 
@@ -507,7 +511,9 @@ void AutoWidth2(FontViewBase *fv,int separation,int min_side,int max_side,
 	all.glyphs = scripts[s].glyphs;
 	all.gcnt   = scripts[s].gcnt;
 	aw2_handlescript(&all);
+	free(all.glyphs);
     }
+    free(scripts);
     FFPy_AWDataFree(&all);
 }
 
@@ -635,6 +641,7 @@ void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
 		    else
 			last->next = next;
 		    kp->next = NULL;
+		    KernPairsFree(kp);
 		} else
 		    last = kp;
 	    }
@@ -662,7 +669,7 @@ void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
 		kern=0;
 	    if ( kern!=0 ) {
 		if ( addkp==NULL ) {
-		    kp = XZALLOC(KernPair);
+		    kp = chunkalloc(sizeof(KernPair));
 		    kp->subtable = into;
 		    kp->off = kern;
 		    if ( is_l2r ) {
@@ -681,6 +688,7 @@ void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
     }
     for ( i=0; i<cnt; ++i )
 	AWGlyphFree( &glyphs[i] );
+    free(glyphs);
     FFPy_AWDataFree(&all);
 }
 
@@ -770,6 +778,18 @@ void AutoKern2NewClass(SplineFont *sf,int layer,char **leftnames, char **rightna
 	    (*kcAddOffset)(data,i, k, kern);
 	}
     }
+
+    for ( i=0; i<lcnt; ++i ) {
+	free(ileft[i]);
+	free(left[i]);
+    }
+    free(ileft); free(left);
+    for ( i=0; i<rcnt; ++i ) {
+	free(iright[i]);
+	free(right[i]);
+    }
+    free(iright); free(right);
+    free(glyphs);
 }
 
 static void kc2AddOffset(void *data,int left_index, int right_index,int offset) {
@@ -800,6 +820,8 @@ void AutoKern2BuildClasses(SplineFont *sf,int layer,
 
     if ( kc==NULL )
 return;
+    free(kc->firsts); free(kc->seconds); free(kc->offsets);
+    free(kc->adjusts);
 
     if ( good_enough==-1 )
 	good_enough = (sf->ascent+sf->descent)/100.0;
@@ -887,7 +909,7 @@ return;
     for ( i=0; i<cnt; ++i )
 	AWGlyphFree( &glyphs[i] );
     FFPy_AWDataFree(&all);
-    glyphs = all.glyphs = NULL;
+    free(glyphs); glyphs = all.glyphs = NULL;
 
     good_enough *= good_enough;
 
@@ -924,7 +946,7 @@ return;
     kc = sub->kc;
     kc->firsts = realloc(lclassnames,(lclasscnt+1)*sizeof(char *));
     kc->first_cnt = lclasscnt;
-    lused = NULL;
+    free(lused); lused = NULL;
 
     rclassnames = malloc((rcnt+2) * sizeof(char *));
     rclasscnt = 1;
@@ -958,6 +980,8 @@ return;
     rclassnames[rclasscnt] = NULL;
     kc->seconds = realloc(rclassnames,(rclasscnt+1)*sizeof(char *));
     kc->second_cnt = rclasscnt;
+    free(rused);
+    free(visual_separation);
 	
     kc->offsets = calloc(lclasscnt*rclasscnt,sizeof(int16));;
     kc->adjusts = calloc(lclasscnt*rclasscnt,sizeof(DeviceTable));

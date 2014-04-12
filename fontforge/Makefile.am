@@ -82,12 +82,12 @@ libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
 	splinestroke.c splineutil2.c splineutil.c start.c		\
 	stemdb.c strlist.c svg.c tottfaat.c tottfgpos.c tottf.c		\
 	tottfvar.c ttfinstrs.c ttfspecial.c ufo.c unicoderange.c	\
-	winfonts.c woff.c zapfnomen.c
+	utils.c winfonts.c woff.c zapfnomen.c
 
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
-libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS) $(LIBGC_CFLAGS)
-libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD) $(LIBLTDL) $(LIBGC_LIBS)
+libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
+libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD) $(LIBLTDL)
 
 if PLUGIN_GB12345
 libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/gb12345.la

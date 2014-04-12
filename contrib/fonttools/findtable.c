@@ -48,9 +48,12 @@ static int readttfheader(FILE *ttf, int search_tag) {
 	}
 	for ( i=0; i<ttccnt; ++i ) {
 	    fseek(ttf,ttcoffsets[i],SEEK_SET);
-	    if ( readttfheader(ttf,search_tag))
+	    if ( readttfheader(ttf,search_tag)) {
+		free(ttcoffsets);
 return(true);
+	    }
 	}
+	free(ttcoffsets);
 return( false );
     }
 	

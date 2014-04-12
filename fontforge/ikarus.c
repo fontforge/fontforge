@@ -382,7 +382,7 @@ static void IkarusNameFromURWNumber(SplineChar *sc,int number) {
     if ( !urw_inited )
 	InitURWTable();
 
-    sc->name = NULL;
+    free(sc->name); sc->name = NULL;
     if ( number<sizeof(urwtable)/sizeof(urwtable[0]) ) {
 	sc->unicodeenc = urwtable[number];
 	if ( sc->unicodeenc!=-1 ) {
@@ -408,7 +408,7 @@ static void IkarusAddContour(SplineChar *sc,int npts,BasePoint *bps,
     SplinePoint *last, *next;
     int i, cw;
 
-    spl = XZALLOC(SplinePointList);
+    spl = chunkalloc(sizeof(SplinePointList));
     spl->next = sc->layers[ly_fore].splines;
     sc->layers[ly_fore].splines = spl;
     spl->first = spl->last = last = SplinePointCreate(bps[0].x,bps[0].y);
@@ -519,6 +519,10 @@ static void IkarusReadChar(SplineChar *sc,FILE *file) {
 	}
 	IkarusAddContour(sc,contours[i].npts,bps,ptype,contours[i].nest);
     }
+
+    free(contours);
+    free(bps);
+    free(ptype);
 }
 
 static void IkarusFontname(SplineFont *sf,char *fullname,char *fnam) {
@@ -542,8 +546,10 @@ static void IkarusFontname(SplineFont *sf,char *fullname,char *fnam) {
 	}
     }
 
+    free(sf->fullname);
     sf->fullname=copy(fullname);
 
+    free(sf->fontname);
     sf->fontname=copy(fullname);
     for ( pt=tpt=sf->fontname; *pt; ++pt ) {
 	if ( isalnum(*pt) || *pt=='-' || *pt=='_' || *pt=='$' )
@@ -563,6 +569,7 @@ static void IkarusFontname(SplineFont *sf,char *fullname,char *fnam) {
 	    (pt=strstr(fullname,"Blac"))!=NULL ||
 	    (pt=strstr(fullname,"Ligh"))!=NULL ||
 	    (pt=strstr(fullname,"Thin"))!=NULL ) {
+	free(sf->weight);
 	sf->weight = copyn(pt,4);
 	*pt='\0';
     }
@@ -574,6 +581,7 @@ static void IkarusFontname(SplineFont *sf,char *fullname,char *fnam) {
 	    (pt=strstr(fullname,"Expa"))!=NULL ) {
 	*pt='\0';
     }
+    free(sf->familyname);
     sf->familyname = copy(fullname);
 }
 
@@ -686,6 +694,7 @@ return( NULL );
     if ( loaded_fonts_same_as_new && new_fonts_are_order2 )
 	SFConvertToOrder2(sf);
 
+    free(numbers); free(offsets);
     fclose(file);
 return( sf );
 }

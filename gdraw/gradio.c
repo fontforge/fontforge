@@ -24,8 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
-
 #include "gdraw.h"
 #include "gresource.h"
 #include "ggadgetP.h"
@@ -484,11 +482,13 @@ return;
 	for ( prev=gr->post; prev->post!=gr; prev = prev->post );
 	prev->post = gr->post;
     }
+    free(gr->label);
     _ggadget_destroy(g);
 }
 
 static void GRadioSetTitle(GGadget *g,const unichar_t *tit) {
     GRadio *b = (GRadio *) g;
+    free(b->label);
     b->label = u_copy(tit);
 }
 
@@ -499,6 +499,9 @@ return( b->label );
 
 static void GRadioSetImageTitle(GGadget *g,GImage *img,const unichar_t *tit, int before) {
     GRadio *b = (GRadio *) g;
+    if ( b->g.free_box )
+	free( b->g.box );
+    free(b->label);
     b->label = u_copy(tit);
     b->image = img;
     b->image_precedes = before;

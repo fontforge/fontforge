@@ -42,7 +42,7 @@ static int bad_enc_warn = false;
 
 /* Does not handle conversions to Extended unix */
 
-unichar_t *encoding2u_strncpy(unichar_t *uto, const char *_from, size_t n, enum encoding cs) {
+unichar_t *encoding2u_strncpy(unichar_t *uto, const char *_from, int n, enum encoding cs) {
     unichar_t *upt=uto;
     const unichar_t *table;
     int offset;
@@ -432,6 +432,7 @@ return(false);
     if ( old_local_name!=NULL && strcmp(old_local_name,iconv_local_encoding_name)==0 )
 return( to_unicode!=(iconv_t) (-1) );
 
+    free(old_local_name);
     old_local_name = copy(iconv_local_encoding_name);
     to_utf8 = iconv_open("UTF-8",iconv_local_encoding_name);
     from_utf8 = iconv_open(iconv_local_encoding_name,"UTF-8");
@@ -535,7 +536,9 @@ unichar_t *def2u_copy(const char *from) {
     }
 #endif
     ret = encoding2u_strncpy(uto,from,len,local_encoding);
-    if ( ret!=NULL )
+    if ( ret==NULL )
+	free( uto );
+    else
 	uto[len] = '\0';
     return( ret );
 }
@@ -568,7 +571,7 @@ char *u2def_copy(const unichar_t *ufrom) {
     if ( to==NULL ) return( NULL );
     ret = u2encoding_strncpy(to,ufrom,len,local_encoding);
     if ( ret==NULL )
-        ;
+	free( to );
     else if ( local_encoding<e_first2byte )
 	to[len] = '\0';
     else {
@@ -580,6 +583,7 @@ char *u2def_copy(const unichar_t *ufrom) {
 
 char *def2utf8_copy(const char *from) {
     int len;
+    char *ret;
     unichar_t *temp, *uto;
 
     if ( from==NULL ) return( NULL );
@@ -600,13 +604,19 @@ char *def2utf8_copy(const char *from) {
     uto = (unichar_t *) malloc(sizeof(unichar_t)*(len+1));
     if ( uto==NULL ) return( NULL );
     temp = encoding2u_strncpy(uto,from,len,local_encoding);
-    if ( temp==NULL ) return( NULL );
+    if ( temp==NULL ) {
+	free( uto );
+	return( NULL );
+    }
     uto[len] = '\0';
-    return u2utf8_copy(uto);
+    ret = u2utf8_copy(uto);
+    free(uto);
+    return( ret );
 }
 
 char *utf82def_copy(const char *ufrom) {
     int len;
+    char *ret;
     unichar_t *u2from;
 
     if ( ufrom==NULL ) return( NULL );
@@ -627,5 +637,7 @@ char *utf82def_copy(const char *ufrom) {
 #endif
     if ( local_encoding==e_utf8 ) return( copy( ufrom )); /* Well, that's easy */
     u2from = utf82u_copy(ufrom);
-    return u2def_copy(u2from);
+    ret = u2def_copy(u2from);
+    free(u2from);
+    return( ret );
 }

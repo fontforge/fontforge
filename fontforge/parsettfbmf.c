@@ -120,7 +120,7 @@ return;
 	}
 return;
     }
-    bdfc = XZALLOC(BDFChar);
+    bdfc = chunkalloc(sizeof(BDFChar));
     if ( info->chars!=NULL ) {
 	if ( gid>=info->glyph_cnt || info->chars[gid]==NULL ) {
 	    if ( gid>=info->glyph_cnt ) {
@@ -147,6 +147,8 @@ return;
     } else {
 	bdfc->orig_pos = gid;
     }
+    if ( bdf->glyphs[gid]!=NULL ) /* Shouldn't happen of course */
+	BDFCharFree(bdf->glyphs[gid]);
     bdf->glyphs[gid] = bdfc;
 
     bdfc->width = metrics->hadvance;
@@ -274,6 +276,7 @@ static void BdfCRefFixup(BDFFont *bdf, int gid, int *warned, struct ttfinfo *inf
 		me->refs = head->next;
 	    else
 		prev->next = head->next;
+	    free( head );
 	}
 	/* According to the TTF spec, the xOffset and yOffset values specify   */
 	/* the top-left corner position of the component in the composite.     */
@@ -329,6 +332,8 @@ static void BdfCleanup(BDFFont *bdf,struct ttfinfo  *info) {
 
     if ( info->subfonts==NULL ) {
 	if ( info->glyph_cnt<bdf->glyphcnt ) {
+	    for ( i=info->glyph_cnt ; i<bdf->glyphcnt; ++i )
+		BDFCharFree(bdf->glyphs[i]);
 	    bdf->glyphs = realloc(bdf->glyphs,info->glyph_cnt*sizeof(BDFChar *));
 	    bdf->glyphcnt = info->glyph_cnt;
 	}
@@ -341,7 +346,10 @@ static void BdfCleanup(BDFFont *bdf,struct ttfinfo  *info) {
 	for ( i=0; i<bdf->glyphcnt; ++i ) if ( (bdfc = bdf->glyphs[i])!=NULL ) {
 	    if ( bdfc->orig_pos<cnt )
 		glyphs[ bdfc->orig_pos ] = bdfc;
+	    else
+		BDFCharFree(bdfc);
 	}
+	free(bdf->glyphs);
 	bdf->glyphs = glyphs;
 	bdf->glyphcnt = cnt;
     }
@@ -385,6 +393,7 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 			    glyphoffsets[i+1]-glyphoffsets[i],NULL,
 			    imageformat,i+first,bdf);
 	    }
+	    free(glyphoffsets);
 	  break;
 	  case 2:
 	    size = getlong(ttf);
@@ -422,6 +431,8 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 			    glyphoffsets[g+1]-glyphoffsets[g],NULL,
 			    imageformat,glyphs[g],bdf);
 	    }
+	    free(glyphoffsets);
+	    free(glyphs);
 	  break;
 	  case 5:
 	    size = getlong(ttf);
@@ -447,6 +458,7 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 			    imageformat,glyphs[g],bdf);
 		offset = -1;
 	    }
+	    free(glyphs);
 	  break;
 	  default:
 	    LogError(_("Didn't understand index format: %d\n"), indexformat );
@@ -555,8 +567,12 @@ return;
 	biggest = ff_choose_multiple(_("Load Bitmap Fonts"), choices,sel,cnt,buttons,
 		_("Do you want to load the bitmap fonts embedded in this true/open type file?\n(And if so, which)"));
     }
-    if ( biggest<0 )		/* Cancelled */
+    for ( i=0; i<cnt; ++i ) free( (unichar_t *) (choices[i]));
+    free(choices);
+    if ( biggest<0 ) {		/* Cancelled */
+	free(sizes); free(sel);
 return;
+    }
     /* Remove anything not selected */
     for ( i=j=0; i<cnt; ++i ) {
 	if ( sel[i] )
@@ -601,6 +617,7 @@ return;
 	readttfbitmapfont(ttf,info,&sizes[i],bdf);
 	ff_progress_next_stage();
     }
+    free(sizes); free(sel);
 
     ttf_bdf_read(ttf,info);
 }
@@ -717,6 +734,7 @@ return( blpos==0 ? NULL : &bl[0] );
 }
 
 static void BDFCleanupDefaultGlyphs(BDFFont *bdf) {
+    free(glyph0.bitmap);
     glyph0.bitmap = NULL;
 }
 
@@ -1147,6 +1165,10 @@ return(NULL);
 
     size->tablesize = ftell(bloc)-pos;
 
+    for ( cur=head; cur!=NULL; cur = last ) {
+	last = cur->next;
+	free(cur);
+    }
 return( size );
 }
 
@@ -1222,6 +1244,11 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
     fseek(at->bloc,2*sizeof(int32),SEEK_SET);
     for ( cur=head; cur!=NULL; cur=cur->next )
 	dumpbitmapSizeTable(at->bloc,cur);
+
+    for ( cur=head; cur!=NULL; cur=last ) {
+	last = cur->next;
+	free(cur);
+    }
 
     at->bdatlen = ftell(at->bdat);
     if ( (at->bdatlen&1)!=0 )

@@ -219,7 +219,14 @@ static int Filter_OK(GGadget *g, GEvent *e) {
     int rows,i,cnt;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-        user_font_filters = NULL;
+	if ( user_font_filters!=NULL ) {
+	    for ( i=0; user_font_filters[i].name!=NULL; ++i ) {
+		free(user_font_filters[i].name);
+		free(user_font_filters[i].filter);
+	    }
+	    free(user_font_filters);
+	    user_font_filters = NULL;
+	}
 	d = GDrawGetUserData(GGadgetGetWindow(g));
 	md = GMatrixEditGet(d->gme,&rows);
 	for ( i=cnt=0; i<rows; ++i )
@@ -399,6 +406,12 @@ static void FilterDlg(void) {
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
+
+    for ( i=0; i<cnt; ++i ) {
+	free(md[2*i].u.md_str);
+	free(md[2*i+1].u.md_str);
+    }
+    free(md);
 }
 
 struct gfc_data {
@@ -420,6 +433,7 @@ static int GFD_Ok(GGadget *g, GEvent *e) {
 	    GTextInfo *ti = GGadgetGetListItemSelected(d->rename);
 	    char *nlname = u2utf8_copy(ti->text);
 	    force_names_when_opening = NameListByName(nlname);
+	    free(nlname);
 	    if ( force_names_when_opening!=NULL && force_names_when_opening->uses_unicode &&
 		    !allow_utf8_glyphnames) {
 		ff_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
@@ -462,8 +476,10 @@ static int GFD_FilterSelected(GGadget *g, GEvent *e) {
 	} else {
 	    unichar_t *temp = utf82u_copy(ti->userdata);
 	    GFileChooserSetFilterText(d->gfc,temp);
+	    free(temp);
 	    temp = GFileChooserGetDir(d->gfc);
 	    GFileChooserSetDir(d->gfc,temp);
+	    free(temp);
 	    default_font_filter_index = GGadgetGetFirstListSelectedItem(g);
 	    SavePrefs(true);
 	}
@@ -520,6 +536,8 @@ return( true );
 	msg[len-1] = '\0';
     }
     GGadgetPreparePopup(GGadgetGetWindow(d->gfc),msg);
+    free(file);
+    free(d->lastpopupfontname);
     d->lastpopupfontname = msg;
 return( true );
 }
@@ -658,6 +676,7 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     }
     harray2[1] = &gcd[i]; harray2[2] = GCD_Glue; harray2[3] = NULL;
     gcd[i++].gd.u.list = namelistnames;
+    free(nlnames);
 
     boxes[3].gd.flags = gg_visible | gg_enabled;
     boxes[3].gd.u.boxelements = harray2;
@@ -740,11 +759,13 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[4].ret,gb_expandgluesame);
     GHVBoxFitWindow(boxes[0].ret);
+    free(namelistnames);
     GGadgetSetUserData(gcd[filter].ret,gcd[0].ret);
 
     GFileChooserConnectButtons(gcd[0].ret,harray3[1]->ret,gcd[filter].ret);
     temp = utf82u_copy(filts[default_font_filter_index]->userdata);
     GFileChooserSetFilterText(gcd[0].ret,temp);
+    free(temp);
     GFileChooserGetChildren(gcd[0].ret,NULL, NULL, &tf);
     if ( RecentFiles[0]!=NULL ) {
 	GGadgetSetList(tf,GTextInfoFromChars(RecentFiles,RECENT_MAX),false);
@@ -759,5 +780,6 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     GDrawProcessPendingEvents(NULL);		/* Give the window a chance to vanish... */
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);		/* Give the window a chance to vanish... */
+    free( d.lastpopupfontname );
 return(d.ret);
 }

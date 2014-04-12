@@ -69,12 +69,12 @@ libgunicode_la_SOURCES =	\
 libgunicode_la_CFLAGS = $(WARN_CFLAGS)
 libgunicode_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
-	$(MY_CFLAGS) $(LIBGC_CFLAGS)
+	$(MY_CFLAGS)
 
 libgunicode_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGUNICODE_VERSION) \
 	${MY_LIB_LDFLAGS} $(top_builddir)/lib/libgnu.la $(top_builddir)/inc/libggc_veneer.la
 
-libgunicode_la_LIBADD = $(MY_LIBS) $(LIBGC_LIBS)
+libgunicode_la_LIBADD = $(MY_LIBS)
 
 #--------------------------------------------------------------------------
 

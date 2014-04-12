@@ -24,8 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
-
 #ifndef X_DISPLAY_MISSING
 #include "gxdrawP.h"
 #include "gxcdrawP.h"
@@ -1700,6 +1698,9 @@ static void check_image_buffers(GXDisplay *gdisp, int neww, int newh, int is_bit
 	if ( width<400 ) width = 400;
     }
     if ( width > gdisp->gg.iwidth || (gdisp->gg.img!=NULL && depth!=gdisp->gg.img->depth) ) {
+        free(gdisp->gg.red_dith);
+        free(gdisp->gg.green_dith);
+        free(gdisp->gg.blue_dith);
 	if ( depth<=8 ) {
 	    gdisp->gg.red_dith = malloc(width*sizeof(short));
 	    gdisp->gg.green_dith = malloc(width*sizeof(short));
@@ -1746,6 +1747,8 @@ return;
 	gdisp->gg.mask = XCreateImage(gdisp->display,gdisp->visual,depth,
 		depth==1?XYBitmap:ZPixmap,
 		0,temp,width,height,gdisp->bitmap_pad,0);
+	if ( gdisp->gg.mask==NULL )
+	    free(temp);
     }
     gdisp->gg.iwidth = width; gdisp->gg.iheight = height;
     endian.foo = 0xff;
@@ -1999,6 +2002,9 @@ return;
 	XPutImage(display,w,gc,gdisp->gg.img,0,0,
 		x,y, src->width, src->height );
     }
+    
+    if (blended != NULL)
+        GImageDestroy(blended);
 }
 
 void _GXDraw_TileImage( GWindow _w, GImage *image, GRect *src, int32 x, int32 y) {

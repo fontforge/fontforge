@@ -517,6 +517,7 @@ static void svg_dumppattern(FILE *file,struct pattern *pattern,
     if ( pattern_sc!=NULL )
 	svg_dumpscdefs(file,pattern_sc,patsubname,false);
     fprintf( file, "    </pattern>\n" );
+    free(patsubname);
 }
 
 static void svg_layer_defs(FILE *file, SplineSet *splines,struct brush *fill_brush,struct pen *stroke_pen,
@@ -578,6 +579,8 @@ static void svg_dumptype3(FILE *file,SplineChar *sc,const char *name,int istop) 
 	    fprintf(file, "    <path d=\"\n");
 	    svg_pathdump(file,transed,12,!sc->layers[i].dostroke,false);
 	    fprintf(file, "\"/>\n" );
+	    if ( transed!=sc->layers[i].splines )
+		SplinePointListsFree(transed);
 	    fprintf(file, "  </g>\n" );
 	}
 	for ( ref=sc->layers[i].refs ; ref!=NULL; ref = ref->next ) {
@@ -595,6 +598,8 @@ static void svg_dumptype3(FILE *file,SplineChar *sc,const char *name,int istop) 
 		fprintf(file, "  <path d=\"\n");
 		svg_pathdump(file,transed,12,!ref->layers[j].dostroke,false);
 		fprintf(file, "\"/>\n" );
+		if ( transed!=ref->layers[j].splines )
+		    SplinePointListsFree(transed);
 		fprintf(file, "   </g>\n" );
 	    }
 	}
@@ -1126,7 +1131,11 @@ static xmlNodePtr *FindSVGFontNodes(xmlDocPtr doc) {
 
     fonts = calloc(100,sizeof(xmlNodePtr));	/* If the file has more than 100 fonts in it then it's foolish to expect the user to pick out one, so let's limit ourselves to 100 */
     cnt = _FindSVGFontNodes(xmlDocGetRootElement(doc),fonts,0,100,"svg");
-return (cnt == 0 ? NULL : fonts);
+    if ( cnt==0 ) {
+	free(fonts);
+return( NULL );
+    }
+return( fonts );
 }
 
 static xmlNodePtr SVGPickFont(xmlNodePtr *fonts,char *filename) {
@@ -1165,12 +1174,20 @@ static xmlNodePtr SVGPickFont(xmlNodePtr *fonts,char *filename) {
 	    char *fn = copy(filename);
 	    fn[lparen-filename] = '\0';
 	    ff_post_error(_("Not in Collection"),_("%s is not in %.100s"),find,fn);
+	    free(fn);
 	}
+	free(find);
     } else if ( no_windowing_ui )
 	choice = 0;
     else
 	choice = ff_choose(_("Pick a font, any font..."),(const char **) names,cnt,0,_("There are multiple fonts in this file, pick one"));
-return ( choice!=-1 ? fonts[choice] : NULL );
+    for ( cnt=0; names[cnt]!=NULL; ++cnt )
+	free(names[cnt]);
+    free(names);
+    if ( choice!=-1 )
+return( fonts[choice] );
+
+return( NULL );
 }
 
 #define PI	3.1415926535897932
@@ -1364,6 +1381,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		    cur->first->noprevcp = cur->last->noprevcp;
 		    cur->first->prev = cur->last->prev;
 		    cur->first->prev->to = cur->first;
+		    SplinePointFree(cur->last);
 		} else
 		    SplineMake(cur->last,cur->first,order2);
 		cur->last = cur->first;
@@ -1376,7 +1394,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 	    }
 	    sp = SplinePointCreate(x,y);
 	    current = sp->me;
-	    cur = XZALLOC(SplineSet);
+	    cur = chunkalloc(sizeof(SplineSet));
 	    if ( head==NULL )
 		head = cur;
 	    else
@@ -1394,6 +1412,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		    cur->first->noprevcp = cur->last->noprevcp;
 		    cur->first->prev = cur->last->prev;
 		    cur->first->prev->to = cur->first;
+		    SplinePointFree(cur->last);
 		} else
 		    SplineMake(cur->last,cur->first,order2);
 		cur->last = cur->first;
@@ -1404,7 +1423,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 	} else {
 	    if ( cur==NULL ) {
 		sp = SplinePointCreate(current.x,current.y);
-		cur = XZALLOC(SplineSet);
+		cur = chunkalloc(sizeof(SplineSet));
 		if ( head==NULL )
 		    head = cur;
 		else
@@ -1621,7 +1640,7 @@ return( NULL );
     if ( 2*rx>width ) rx = width/2;
     if ( 2*ry>height ) ry = height/2;
 
-    cur = XZALLOC(SplineSet);
+    cur = chunkalloc(sizeof(SplineSet));
     if ( rx==0 ) {
 	cur->first = SplinePointCreate(x,y+height);
 	cur->last = SplinePointCreate(x+width,y+height);
@@ -1721,7 +1740,7 @@ static SplineSet *SVGParseLine(xmlNodePtr line) {
     sp1 = SplinePointCreate(x,y);
     sp2 = SplinePointCreate(x2,y2);
     SplineMake(sp1,sp2,false);
-    cur = XZALLOC(SplineSet);
+    cur = chunkalloc(sizeof(SplineSet));
     cur->first = sp1;
     cur->last = sp2;
 return( cur );
@@ -1771,7 +1790,7 @@ return( NULL );
     if ( rx<0 ) rx = -rx;
     if ( ry<0 ) ry = -ry;
 
-    cur = XZALLOC(SplineSet);
+    cur = chunkalloc(sizeof(SplineSet));
     cur->first = SplinePointCreate(cx-rx,cy);
     cur->last = SplinePointCreate(cx,cy+ry);
     cur->first->nextcp.x = cx-rx; cur->first->nextcp.y = cy+ry;
@@ -1813,7 +1832,7 @@ return( NULL );
     y = strtod(end,&end);
     while ( isspace(*end)) ++end;
 
-    cur = XZALLOC(SplineSet);
+    cur = chunkalloc(sizeof(SplineSet));
     cur->first = cur->last = SplinePointCreate(x,y);
     while ( *end ) {
 	x = strtod(end,&end);
@@ -1829,6 +1848,7 @@ return( NULL );
 		RealNear(cur->last->me.y,cur->first->me.y) ) {
 	    cur->first->prev = cur->last->prev;
 	    cur->first->prev->to = cur->first;
+	    SplinePointFree(cur->last);
 	} else
 	    SplineMake(cur->last,cur->first,false);
 	cur->last = cur->first;
@@ -2009,7 +2029,7 @@ static void xmlParseColorSource(xmlNodePtr top,char *name,DBounds *bbox,
 	LogError(_("Could not find Color Source with id %s."), name );
     else if ( (islinear = xmlStrcmp(colour_source->name,(xmlChar *) "linearGradient")==0) ||
 	    xmlStrcmp(colour_source->name,(xmlChar *) "radialGradient")==0 ) {
-	struct gradient *grad = XZALLOC(struct gradient);
+	struct gradient *grad = chunkalloc(sizeof(struct gradient));
 	int bbox_units;
 	*_grad = grad;
 
@@ -2185,22 +2205,30 @@ static void xmlApplyColourSources(xmlNodePtr top,Entity *head,
 
     if ( fill_colour_source!=NULL ) {
 	xmlParseColorSource(top,fill_colour_source,&b,st,&grad,&epat);
+	free(fill_colour_source);
 	for ( e=head; e!=NULL; e=e->next ) if ( e->type==et_splines ) {
 	    if ( e->u.splines.fill.grad==NULL && e->u.splines.fill.tile==NULL &&
 		    e->u.splines.fill.col == COLOR_INHERITED ) {
 		e->u.splines.fill.grad = GradientCopy(grad,NULL);
+		/*e->u.splines.fill.tile = EPatternCopy(epat,NULL);*/
 	    }
 	}
+	GradientFree(grad);
+	/*EPatternFree(epat);*/
     }
 
     if ( stroke_colour_source!=NULL ) {
 	xmlParseColorSource(top,stroke_colour_source,&b,st,&grad,&epat);
+	free(stroke_colour_source);
 	for ( e=head; e!=NULL; e=e->next ) if ( e->type==et_splines ) {
 	    if ( e->u.splines.stroke.grad==NULL && e->u.splines.stroke.tile==NULL &&
 		    e->u.splines.stroke.col == COLOR_INHERITED ) {
 		e->u.splines.stroke.grad = GradientCopy(grad,NULL);
+		/*e->u.splines.stroke.tile = EPatternCopy(epat,NULL);*/
 	    }
 	}
+	GradientFree(grad);
+	/*EPatternFree(epat);*/
     }
 }
 
@@ -2390,32 +2418,42 @@ static Entity *SVGParseImage(xmlNodePtr svg) {
     xmlChar *val;
 
     val = xmlGetProp(svg,(xmlChar *) "x");
-    if ( val!=NULL )
+    if ( val!=NULL ) {
 	x = strtod((char *) val,NULL);
+	free(val);
+    }
     val = xmlGetProp(svg,(xmlChar *) "y");
-    if ( val!=NULL )
+    if ( val!=NULL ) {
 	y = strtod((char *) val,NULL);
+	free(val);
+    }
 
     val = xmlGetProp(svg,(xmlChar *) "width");
-    if ( val!=NULL )
+    if ( val!=NULL ) {
 	width = strtod((char *) val,NULL);
+	free(val);
+    }
     val = xmlGetProp(svg,(xmlChar *) "height");
-    if ( val!=NULL )
+    if ( val!=NULL ) {
 	height = strtod((char *) val,NULL);
+	free(val);
+    }
 
     val = xmlGetProp(svg,(xmlChar *) /*"xlink:href"*/ "href");
     if ( val==NULL )
 return( NULL );
     if ( strncmp((char *) val,"data:",5)!=0 ) {
 	LogError(_("FontForge only supports embedded images in data: URIs\n"));
+	free(val);
 return( NULL );		/* I can only handle data URIs */
     }
     img = GImageFromDataURI((char *) val);
+    free(val);
     if ( img==NULL )
 return( NULL );
     base = img->list_len==0 ? img->u.image : img->u.images[0];
 
-    ent = XZALLOC(Entity);
+    ent = chunkalloc(sizeof(Entity));
     ent->type = et_image;
     ent->u.image.image = img;
     ent->u.image.transform[1] = ent->u.image.transform[2] = 0;
@@ -2441,6 +2479,11 @@ static Entity *EntityCreate(SplinePointList *head,struct svg_state *state) {
     memcpy(ent->u.splines.transform,state->transform,6*sizeof(real));
     ent->clippath = SplinePointListCopy(state->clippath);
 return( ent );
+}
+
+static void SvgStateFree(struct svg_state *st) {
+    if ( st->free_clip )
+	SplinePointListFree(st->clippath);
 }
 
 static void SVGFigureStyle(struct svg_state *st,char *name,
@@ -2645,6 +2688,7 @@ return( NULL );
 		st.clippath = eret->u.splines.splines;
 		eret->u.splines.splines = NULL;
 	    }
+	    free(eret);
 	} else
 	    LogError(_("Could not find clippath named %s."), name );
 	xmlFree(name);
@@ -2667,6 +2711,7 @@ return( NULL );
 		elast = eret;
 	    }
 	}
+	SvgStateFree(&st);
 	if ( fill_colour_source!=NULL || stroke_colour_source!=NULL )
 	    xmlApplyColourSources(top,ehead,&st,fill_colour_source,stroke_colour_source);
 return( ehead );
@@ -2683,11 +2728,14 @@ return( ehead );
 	    xmlFree(name);
 	if ( svg!=NULL )
   goto tail_recurse;
+	SvgStateFree(&st);
 return( NULL );
     }
 
-    if ( !st.isvisible )
+    if ( !st.isvisible ) {
+	SvgStateFree(&st);
 return( NULL );
+    }
 
     /* basic shapes */
     head = NULL;
@@ -2720,6 +2768,7 @@ return( NULL );
     eret = EntityCreate(SplinePointListTransform(head,st.transform,tpt_AllPoints), &st);
     if ( fill_colour_source!=NULL || stroke_colour_source!=NULL )
 	xmlApplyColourSources(top,eret,&st,fill_colour_source,stroke_colour_source);
+    SvgStateFree(&st);
 return( eret );
 }
 
@@ -2843,6 +2892,7 @@ static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv,
 		    sc->unicodeenc = ArabicForms[u[0]-0x600].isolated;
 	    }
 	}
+	free(u);
     }
     if ( glyphname!=NULL ) {
 	if ( sc->unicodeenc==-1 )
@@ -2906,7 +2956,7 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
 	    /* Problably a variant glyph marked with a variation selector */
 	    /* ... not a true ligature at all */
 	    /* http://babelstone.blogspot.com/2007/06/secret-life-of-variation-selectors.html */
-	    struct altuni *altuni = XZALLOC(struct altuni);
+	    struct altuni *altuni = chunkalloc(sizeof(struct altuni));
 	    altuni->unienc = u[0];
 	    altuni->vs = u[1];
 	    altuni->fid = 0;
@@ -2959,11 +3009,13 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
 		sc->unicodeenc = 0xfb06;
 	    if ( strncmp(sc->name,"glyph",5)==0 && isdigit(sc->name[5])) {
 		/* It's a default name, we can do better */
+		free(sc->name);
 		sc->name = copy(comp);
 		for ( pt = sc->name; *pt; ++pt )
 		    if ( *pt==' ' ) *pt = '_';
 	    }
 	}
+	free(u);
     }
 }
 
@@ -2996,6 +3048,7 @@ static char *SVGGetNames(SplineFont *sf,xmlChar *g,xmlChar *utf8,SplineChar **sc
 		*pt++ = ' ';
 	    }
 	}
+	free(u);
     }
     if ( g!=NULL ) {
 	for ( gpt=(char *) g; *gpt; ) {
@@ -3045,7 +3098,10 @@ return;
 
     g2 = xmlGetProp(kern,(xmlChar *) "g2");
     u2 = xmlGetProp(kern,(xmlChar *) "u2");
+    if ( g2==NULL && u2==NULL ) {
+	free(c1);
 return;
+    }
     c2 = SVGGetNames(sf,g2,u2,&sc2);
     if ( g2!=NULL ) xmlFree(g2);
     if ( u2!=NULL ) xmlFree(u2);
@@ -3079,7 +3135,7 @@ return;
 	    if ( end2!=NULL ) *end2 = '\0';
 	    sc2 = SFGetChar(sf,-1,pt2);
 	    if ( sc2!=NULL ) {
-		KernPair *kp = XZALLOC(KernPair);
+		KernPair *kp = chunkalloc(sizeof(KernPair));
 		kp->sc = sc2;
 		kp->off = off;
 		if ( isv ) {
@@ -3101,6 +3157,7 @@ return;
 	*end1 = ' ';
 	pt1 = end1+1;
     }
+    free(c1); free(c2);
 }
 
 static SplineFont *SVGParseFont(xmlNodePtr font) {
@@ -3335,7 +3392,7 @@ return( NULL );
 	}
     }
 
-    map = XZALLOC(EncMap);
+    map = chunkalloc(sizeof(EncMap));
     map->enccount = map->encmax = map->backmax = sf->glyphcnt;
     map->enc = FindOrMakeEncoding("Original");
     map->map = malloc(sf->glyphcnt*sizeof(int));
@@ -3418,13 +3475,16 @@ static void SPLSetOrder(SplineSet *ss,int order2) {
 		    s->from->nonextcp = from->nonextcp;
 		    s->from->next = from->next;
 		    from->next->from = s->from;
+		    SplinePointFree(from);
 		    for ( to = s->from->next->to; to->next!=NULL; to=to->next->to );
 		    s->to->prevcp = to->prevcp;
 		    s->to->noprevcp = to->noprevcp;
 		    s->to->prev = to->prev;
 		    to->prev->to = s->to;
+		    SplinePointFree(to);
 		    to = s->to;
 		    from = s->from;
+		    SplineFree(s);
 		    if ( first==s ) first = from->next;
 		    s = to->prev;
 		} else {
@@ -3492,6 +3552,7 @@ return( NULL );
 	    xmlFree(name);
 	}
     }
+    free(fonts);
     strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
@@ -3530,8 +3591,13 @@ return( NULL );
 	*pt = '\0';
     }
 
-    doc = xmlParseFile(temp); /* FIXME: Can I get an error message from libxml (doc == NULL)? */
-return( doc == NULL ? NULL : _SFReadSVG(doc,filename));
+    doc = xmlParseFile(temp);
+    if ( temp!=filename ) free(temp);
+    if ( doc==NULL ) {
+	/* Can I get an error message from libxml? */
+return( NULL );
+    }
+return( _SFReadSVG(doc,filename));
 }
 
 SplineFont *SFReadSVGMem(char *data, int flags) {
@@ -3587,6 +3653,7 @@ return( NULL );
     }
     ret[cnt] = NULL;
 
+    free(fonts);
     xmlFreeDoc(doc);
 
 return( ret );

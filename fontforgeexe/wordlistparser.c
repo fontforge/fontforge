@@ -298,6 +298,7 @@ unichar_t* WordlistEscapedInputStringToRealString(
     }
 
     unichar_t* ret = (unichar_t *) utf82u_copy( buffer );
+    free(input);
     return(ret);
 }
 
@@ -373,11 +374,13 @@ GTextInfo** WordlistLoadFileToGTextInfo( int type, int words_max )
     }
     temp = utf82def_copy(filename);
     GIOChannel* file = g_io_channel_new_file( temp, "r", 0 );
+    free(temp);
     if ( !file )
     {
 	ff_post_error("Could not open", "Could not open %s", filename );
 	return 0;
     }
+    free(filename);
 
     words = malloc( words_max * sizeof(GTextInfo *));
 
@@ -391,6 +394,7 @@ GTextInfo** WordlistLoadFileToGTextInfo( int type, int words_max )
 	    gchar* buffer = 0;
 	    GIOStatus status = g_io_channel_read_line( file, &buffer, &len, 0, 0 );
 
+//	    printf("getline status:%d \n", status );
 	    if( status != G_IO_STATUS_NORMAL )
 		break;
 
@@ -399,6 +403,7 @@ GTextInfo** WordlistLoadFileToGTextInfo( int type, int words_max )
 		 || WordlistLoadFileToGTextInfo_IsLineBreak(buffer[0])
 		 || WordlistLoadFileToGTextInfo_isLineAllWhiteSpace( buffer ))
 	    {
+		free(buffer);
 		continue;
 	    }
 
@@ -406,6 +411,7 @@ GTextInfo** WordlistLoadFileToGTextInfo( int type, int words_max )
 	    words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
 	    words[cnt]->text = (unichar_t *) utf82def_copy( buffer );
 	    words[cnt++]->text_is_1byte = true;
+	    free(buffer);
 	    if( cnt >= words_max )
 		break;
 	}
@@ -454,7 +460,10 @@ GTextInfo** WordlistLoadFileToGTextInfo( int type, int words_max )
 	words[cnt] = calloc(1,sizeof(GTextInfo));
     }
     else
+    {
+	free(words);
 	words = 0;
+    }
     return words;
 }
 
@@ -504,6 +513,7 @@ void WordlistLoadToGTextInfo( GGadget* g, int* idx  )
     {
 	GGadgetSetList(g,words,true);
 	GGadgetSetTitle8(g,(char *) (words[0]->text));
+	GTextInfoArrayFree(words);
 	*idx = 0;
 	GGadgetSelectOneListItem( g, *idx );
 	Wordlist_touch( g );

@@ -38,8 +38,8 @@ void SCDeGridFit(SplineChar *sc) {
     CharView *cv;
 
     for ( cv=(CharView *) (sc->views); cv!=NULL; cv=(CharView *) (cv->b.next) ) if ( cv->show_ft_results ) {
-	cv->b.gridfit = NULL;
-	cv->raster = NULL;
+	SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
+	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	cv->show_ft_results = false;
 	GDrawRequestExpose(cv->v,NULL,false);
     }
@@ -56,8 +56,8 @@ void CVGridFitChar(CharView *cv) {
     SplineFont *sf = cv->b.sc->parent;
     int layer = CVLayer((CharViewBase *) cv);
 
-    cv->b.gridfit = NULL;
-    cv->raster = NULL;
+    SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
+    FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 
     single_glyph_context = _FreeTypeFontContext(sf,cv->b.sc,NULL,layer,
 	    sf->layers[layer].order2?ff_ttf:ff_otf,0,NULL);
@@ -87,8 +87,8 @@ void SCReGridFit(SplineChar *sc,int layer) {
 
     for ( cv=(CharView *) (sc->views); cv!=NULL; cv=(CharView *) (cv->b.next) ) if ( cv->show_ft_results ) {
 	if ( cv->show_ft_results && CVLayer((CharViewBase *) cv)==layer ) {
-	    cv->b.gridfit = NULL;
-	    cv->raster = NULL;
+	    SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
+	    FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	    CVGridFitChar(cv);
 	}
     }
@@ -136,8 +136,8 @@ return(true);
 	gridfit_pointsizex = ptsizex; gridfit_x_sameas_y = GGadgetIsChecked(GWidgetGetControl(fsd->gw,CID_SameAs));
 	SavePrefs(true);
 
-	cv->b.gridfit = NULL;
-	cv->raster = NULL;
+	SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
+	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 
 	if ( fsd->debug )
 	    CVDebugReInit(cv,true,last_fpgm);

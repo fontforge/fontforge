@@ -24,8 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -395,6 +393,7 @@ return;
     	    sscanf(pt, "%d", &val );
     	    if ( val==1 ) {			/* Can't handle vertical printing */
     		fclose(file);
+    		free(fd);
 return;
 	    }
     	} else if (( pt = strstartmatch("MappingScheme", line))!=NULL ) {
@@ -402,11 +401,13 @@ return;
     	    sscanf(pt, "%d", &val );
     	    if ( val!=2 ) {			/* Can only handle 8/8 mapping (ie. 2 byte chars) */
     		fclose(file);
+    		free(fd);
 return;
 	    }
     	} else if (( pt = strstartmatch("IsCIDFont", line))!=NULL ) {
     	    if ( strstrmatch(pt,"true")!=NULL ) {	/* I need a mapping! */
     		fclose(file);
+    		free(fd);
 return;
 	    }
     	} else if (( pt = strstartmatch("StartCharMetrics", line))!=NULL ) {
@@ -451,6 +452,7 @@ return;
 	fd->is_scalable = true;
     } else
 	buildXFont(&ti,fd);
+    free(ti.kerns); free(ti.per_char);
 }
 
 int _GPSDraw_InitFonts(FState *fonts) {
@@ -520,6 +522,7 @@ void _GPSDraw_ResetFonts(FState *fonts) {
 		for ( fd=fn->data[map]; fd!=NULL; fd=next ) {
 		    next = fd->next;
 		    if ( fd->point_size!=0 ) {
+			_GDraw_FreeFD(fd);
 			if ( prev==NULL )
 			    fn->data[map] = next;
 			else
@@ -637,6 +640,7 @@ void _GPSDraw_CopyFile(FILE *to, FILE *from) {
 			putc('\n',to);
 		}
 	    }
+	    free(buf);
 	    ch = getc(from);
 	}
     } else {

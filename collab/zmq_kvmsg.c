@@ -49,9 +49,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ******************************************************************************/
 
 //  kvmsg class - key-value message class for example applications
-
-#include <fontforge-config.h>
-
+										
 #include "zmq_kvmsg.h"
 #if !defined(__MINGW32__)
 #include <uuid/uuid.h>
@@ -134,7 +132,7 @@ s_decode_props (kvmsg_t *self)
     zmq_msg_t *msg = &self->frame [FRAME_PROPS];
     self->props_size = 0;
     while (zlist_size (self->props))
-        (void)zlist_pop (self->props);
+        free (zlist_pop (self->props));
 
     size_t remainder = zmq_msg_size (msg);
     char *prop = (char *) zmq_msg_data (msg);
@@ -179,8 +177,11 @@ kvmsg_free (void *ptr)
 
         //  Destroy property list
         while (zlist_size (self->props))
-            (void)zlist_pop (self->props);
+            free (zlist_pop (self->props));
         zlist_destroy (&self->props);
+
+        //  Free object itself
+        free (self);
     }
 }
 
@@ -526,6 +527,7 @@ kvmsg_set_prop (kvmsg_t *self, char *name, char *format, ...)
         if (memcmp (prop, existing, strlen (prop)) == 0) {
             self->props_size -= strlen (existing) + 1;
             zlist_remove (self->props, existing);
+            free (existing);
             break;
         }
         existing = zlist_next (self->props);

@@ -24,8 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
-
 #include "gdrawP.h"
 #include <gkeysym.h>
 #include <ustring.h>
@@ -704,8 +702,9 @@ void GDrawGrabSelection(GWindow w,enum selnames sel) {
 }
 
 void GDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
-	void *data,int32 cnt,int32 unitsize,void *(*gendata)(void *,int32 *len)) {
-    (w->display->funcs->addSelectionType)(w,sel,type,data,cnt,unitsize,gendata);
+	void *data,int32 cnt,int32 unitsize,void *(*gendata)(void *,int32 *len),
+	void (*freedata)(void *)) {
+    (w->display->funcs->addSelectionType)(w,sel,type,data,cnt,unitsize,gendata,freedata);
 }
 
 void *GDrawRequestSelection(GWindow w,enum selnames sn, char *typename, int32 *len) {
@@ -1131,6 +1130,7 @@ void BackgroundTimer_remove( BackgroundTimer_t* t )
 
     GDrawCancelTimer( t->timer );
     GDrawDestroyWindow( t->w );
+    free(t);
 }
 
 void BackgroundTimer_touch( BackgroundTimer_t* t )

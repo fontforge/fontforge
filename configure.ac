@@ -284,6 +284,9 @@ AC_SEARCH_LIBS([cos],[m])
 
 # libgc (BDW garbage collector)
 PKG_CHECK_MODULES([LIBGC],[bdw-gc >= 7.2])
+dnl FIXME: Is this needed, given we are using libltdl?
+dnl The dlopen() function is in the C library for *BSD and in libdl on GLIBC-based systems
+dnl AC_SEARCH_LIBS([dlopen], [dl dld])
 
 FONTFORGE_CONFIG_X_LIBRARIES
 
@@ -418,6 +421,7 @@ if test "$gl_gcc_warnings" = yes; then
 
   # Add some more safety measures
   gl_WARN_ADD([-D_FORTIFY_SOURCE=2])
+  gl_WARN_ADD([-fmudflap])
 
   # When compiling with GCC, prefer -isystem to -I when including system
   # include files, to avoid generating useless diagnostics for the files.
@@ -486,6 +490,7 @@ AC_CHECK_FUNCS([uname])
 #--------------------------------------------------------------------------
 # Put ifndef wrapper on fontforge-config.h so we don't call it repeatedly.
 AH_TOP([#ifndef _FF_CONFIG_H
+
 #define _FF_CONFIG_H 1
 
 #define malloc GC_malloc
@@ -495,6 +500,7 @@ AH_TOP([#ifndef _FF_CONFIG_H
 #define strndup GC_strndup
 #define calloc fontforge_calloc
 ])
+#define _FF_CONFIG_H 1])
 AH_BOTTOM([#endif])
 #--------------------------------------------------------------------------
 
@@ -550,7 +556,7 @@ my_libs="${my_libs} ${LIBJPEG_LIBS}"
 my_libs="${my_libs} ${LIBPNG_LIBS}"
 my_libs="${my_libs} ${LIBTIFF_LIBS}"
 my_libs="${my_libs} ${PYTHON_LIBS}"
-my_libs="${my_libs} ${LIBSPIRO_LIBS}"
+test x"${i_do_have_libspiro}" = xyes && my_libs="${my_libs} ${LIBSPIRO_LIBS}"
 my_libs="${my_libs} ${FREETYPE_LIBS}"
 my_libs="${my_libs} ${PTHREAD_LIBS}"
 my_libs="${my_libs} ${ZLIB_LIBS}"
@@ -728,6 +734,14 @@ Summary of optional features:
 Summary of optional dependencies:
 
   cairo			${i_do_have_cairo}  	${cairo_url}
+<<<<<<< HEAD
+=======
+  giflib		${i_do_have_giflib}  	${giflib_url}
+  libjpeg		${i_do_have_libjpeg}  	${libjpeg_url}
+  libpng		${i_do_have_libpng}  	${libpng_url}
+  libtiff		${i_do_have_libtiff}  	${libtiff_url}
+  libspiro		${i_do_have_libspiro}  	${libspiro_url}
+>>>>>>> parent of 5a44e70... Make libspiro mandatory
   libuninameslist	${i_do_have_libuninameslist}  	${libuninameslist_url}
   libunicodenames	${i_do_have_libunicodenames}  	${libunicodenames_url}
   zeromq (libzmq)	${i_do_have_libzmq}  	${libzmq_url}

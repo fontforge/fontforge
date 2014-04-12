@@ -1,5 +1,3 @@
-#include <fontforge-config.h>
-
 #include <Python.h>
 
 #if PY_MAJOR_VERSION >= 3

@@ -24,7 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
 
 #include "gxdrawP.h"
 #include "gxcdrawP.h"
@@ -669,6 +668,7 @@ void _GXCDraw_Image( GXWindow gw, GImage *image, GRect *src, int32 x, int32 y) {
     cairo_set_source_rgba(gw->cc,0,0,0,0);
 
     cairo_surface_destroy(is);
+    free(data);
     gw->cairo_state.fore_col = COLOR_UNKNOWN;
 }
 
@@ -711,6 +711,7 @@ void _GXCDraw_Glyph( GXWindow gw, GImage *image, GRect *src, int32 x, int32 y) {
 	/* Presumably that doesn't leave the mask surface pattern lying around */
 	/* but dereferences it so we can free it */
 	cairo_surface_destroy(is);
+	free(basedata);
     }
     gw->cairo_state.fore_col = COLOR_UNKNOWN;
 }
@@ -850,6 +851,7 @@ static void my_xft_render_layout(XftDraw *xftw,XftColor *fgcol,
 	    pango_layout_iter_get_run_extents(iter,&r2,&rect);
 	    pango_xft_render(xftw,fgcol,run->item->analysis.font,run->glyphs,
 		    x+(rect.x+PANGO_SCALE/2)/PANGO_SCALE, y+(rect.y+PANGO_SCALE/2)/PANGO_SCALE);
+	    /* I doubt I'm supposed to free (or unref) the run? */
 	}
     } while ( pango_layout_iter_next_run(iter));
     pango_layout_iter_free(iter);
@@ -957,6 +959,7 @@ return( *fdbase );
     else {
 	char *temp = u2utf8_copy(font->rq.family_name);
 	pango_font_description_set_family(fd,temp);
+	free(temp);
     }
     pango_font_description_set_style(fd,(font->rq.style&fs_italic)?
 	    PANGO_STYLE_ITALIC:
@@ -1068,6 +1071,7 @@ int32 _GXPDraw_DoText(GWindow w, int32 x, int32 y,
 	enum text_funcs drawit, struct tf_arg *arg) {
     char *temp = cnt>=0 ? u2utf8_copyn(text,cnt) : u2utf8_copy(text);
     int width = _GXPDraw_DoText8(w,x,y,temp,-1,col,drawit,arg);
+    free(temp);
 return(width);
 }
 

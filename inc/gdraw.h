@@ -450,7 +450,8 @@ extern GImage *GDrawCopyScreenToImage(GWindow w, GRect *rect);
 
 extern void GDrawGrabSelection(GWindow w,enum selnames sel);
 extern void GDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
-	void *data,int32 cnt,int32 unitsize,void *(*gendata)(void *,int32 *len));
+	void *data,int32 cnt,int32 unitsize,void *(*gendata)(void *,int32 *len),
+	void (*freedata)(void *));
 extern void *GDrawRequestSelection(GWindow w,enum selnames sn, char *typename, int32 *len);
 extern int GDrawSelectionHasType(GWindow w,enum selnames sn, char *typename);
 extern void GDrawBindSelection(GDisplay *disp,enum selnames sel, char *atomname);

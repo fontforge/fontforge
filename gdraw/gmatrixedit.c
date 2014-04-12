@@ -24,8 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
-
 #include "gdraw.h"
 #include "../gdraw/gdrawP.h"
 #include "gkeysym.h"
@@ -135,10 +133,29 @@ return;
     _GGadgetInitDefaultBox("GMatrixEditButton.",&gmatrixedit_button_box,NULL);
 }
 
+static void MatrixDataFree(GMatrixEdit *gme) {
+    int r,c;
+
+    for ( r=0; r<gme->rows; ++r ) for ( c=0; c<gme->cols; ++c ) {
+	if ( gme->col_data[c].me_type == me_string ||
+		gme->col_data[c].me_type == me_bigstr ||
+		gme->col_data[c].me_type == me_stringchoice ||
+		gme->col_data[c].me_type == me_stringchoicetrans ||
+		gme->col_data[c].me_type == me_stringchoicetag ||
+		gme->col_data[c].me_type == me_funcedit ||
+		gme->col_data[c].me_type == me_onlyfuncedit ||
+		gme->col_data[c].me_type == me_button ||
+		gme->col_data[c].me_type == me_func )
+	    free( gme->data[r*gme->cols+c].u.md_str );
+    }
+    free( gme->data );
+}
+
 static void GMatrixEdit_destroy(GGadget *g) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
     int c, i;
 
+    free(gme->newtext);
     /* The textfield gme->tf lives in the nested window and doesn't need to be destroyed */
     if ( gme->vsb!=NULL )
 	GGadgetDestroy(gme->vsb);
@@ -157,6 +174,15 @@ static void GMatrixEdit_destroy(GGadget *g) {
 	GDrawSetUserData(gme->nested,NULL);
 	GDrawDestroyWindow(gme->nested);
     }
+
+    MatrixDataFree(gme);	/* Uses col data */
+
+    for ( c=0; c<gme->cols; ++c ) {
+	if ( gme->col_data[c].enum_vals!=NULL )
+	    GMenuItemArrayFree(gme->col_data[c].enum_vals);
+	free( gme->col_data[c].title );
+    }
+    free( gme->col_data );
 
     _ggadget_destroy(g);
 }
@@ -276,6 +302,7 @@ return( 0 );
 	    pt = strchr(buf,'\n');
 	    cur = GDrawGetText8Width(gme->g.base,buf, pt==NULL ? -1: pt-buf);
 	    if ( cur>max ) max = cur;
+	    free(freeme);
 	}
 	if ( max < 10*GDrawGetText8Width(gme->g.base,"n", 1) )
 	    width = 10*GDrawGetText8Width(gme->g.base,"n", 1);
@@ -716,6 +743,7 @@ static int GME_RecalcFH(GMatrixEdit *gme) {
 	break;
 	}
 	GDrawGetText8Bounds(gme->nested, str, end, &bounds);
+	free(str);
 	if ( bounds.as>as )
 	    as = bounds.as;
 	if ( bounds.ds>ds )
@@ -873,6 +901,7 @@ static int GME_SetValue(GMatrixEdit *gme,GGadget *g ) {
 		    if ( (intpt) gme->col_data[c].enum_vals[i].ti.userdata != GME_NoChange )
 			gme->data[r*gme->cols+c].u.md_ival =
 				(intpt) gme->col_data[c].enum_vals[i].ti.userdata;
+		    free(str);
   goto good;
 		}
 	    }
@@ -896,6 +925,7 @@ static int GME_SetValue(GMatrixEdit *gme,GGadget *g ) {
 	}
 	if ( *end!='\0' ) {
 	    GTextFieldSelect(g,end-str,-1);
+	    free(str);
 	    GDrawBeep(NULL);
 return( false );
 	}
@@ -903,6 +933,7 @@ return( false );
 	    gme->data[r*gme->cols+c].u.md_addr = (void *) lval;
 	else
 	    gme->data[r*gme->cols+c].u.md_ival = lval;
+	free(str);
   goto good;
       case me_real:
 	if ( gme->validatestr!=NULL )
@@ -911,10 +942,12 @@ return( false );
 	    dval = strtod(str,&end);
 	if ( *end!='\0' ) {
 	    GTextFieldSelect(g,end-str,-1);
+	    free(str);
 	    GDrawBeep(NULL);
 return( false );
 	}
 	gme->data[r*gme->cols+c].u.md_real = dval;
+	free(str);
   goto good;
       case me_stringchoice: case me_stringchoicetrans: case me_stringchoicetag:
       case me_funcedit: case me_onlyfuncedit:
@@ -923,10 +956,12 @@ return( false );
 	    end = (gme->validatestr)(&gme->g,gme->active_row,gme->active_col,gme->wasnew,str);
 	if ( *end!='\0' ) {
 	    GTextFieldSelect(g,end-str,-1);
+	    free(str);
 	    GDrawBeep(NULL);
 return( false );
 	}
 
+	free(gme->data[r*gme->cols+c].u.md_str);
 	gme->data[r*gme->cols+c].u.md_str = str;
 	/* Used to delete the row if this were a null string. seems extreme */
   goto good;
@@ -934,6 +969,7 @@ return( false );
 	/* Eh? Can't happen */
 	GTextFieldSelect(g,0,-1);
 	GDrawBeep(NULL);
+	free(str);
 return( false );
     }
   good:
@@ -1037,6 +1073,7 @@ return;
 		gme->col_data[c].me_type == me_stringchoice ||
 		gme->col_data[c].me_type == me_stringchoicetag ||
 		gme->col_data[c].me_type == me_stringchoicetrans ) {
+	    free(gme->data[gme->active_row*gme->cols+c].u.md_str);
 	    gme->data[gme->active_row*gme->cols+c].u.md_str = NULL;
 	}
     }
@@ -1158,6 +1195,7 @@ static void GME_StrBigEdit(GMatrixEdit *gme,char *str) {
     pos.height = GDrawPointsToPixels(NULL,400);
     gme->big_done = 0;
     gw = GDrawCreateTopWindow(NULL,&pos,big_e_h,gme,&wattrs);
+    free(title_str);
 
     memset(&mgcd,0,sizeof(mgcd));
     memset(&boxes,0,sizeof(boxes));
@@ -1270,6 +1308,7 @@ static void GME_EnumStringDispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
     if ( (intpt) mi->ti.userdata == GME_NoChange )
 return;
 
+    free(gme->data[r*gme->cols+c].u.md_str);
     if ( gme->col_data[c].me_type==me_stringchoicetrans )
 	gme->data[r*gme->cols+c].u.md_str = copy( (char *) mi->ti.userdata );
     else if ( gme->col_data[c].me_type==me_stringchoicetag ) {
@@ -1387,6 +1426,7 @@ return;
 	if ( ret!=NULL ) {
 	    /* I don't bother validating it because I expect the function to */
 	    /*  do that for me */
+	    free(gme->data[r*gme->cols+c].u.md_str);
 	    gme->data[r*gme->cols+c].u.md_str = ret;
 	    GDrawRequestExpose(gme->nested,NULL,false);
 	}
@@ -1401,6 +1441,7 @@ return;
 	if ( ret!=NULL ) {
 	    /* I don't bother validating it because I expect the function to */
 	    /*  do that for me */
+	    free(gme->data[r*gme->cols+c].u.md_str);
 	    gme->data[r*gme->cols+c].u.md_str = ret;
 	    if ( gme->finishedit != NULL )
                 (gme->finishedit)(&gme->g,r,c,gme->wasnew);            
@@ -1424,6 +1465,7 @@ return;
 	    GME_StrBigEdit(gme,str);
 	else
 	    GME_StrSmallEdit(gme,str,event);
+	free(str);
     }
 }
 
@@ -1623,6 +1665,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		    if ( str!=NULL ) {
 			pt = strchr(str,'\n');
 			GDrawDrawText8(pixmap,clip.x,y,str,pt==NULL?-1:pt-str,fg);
+			free(str);
 		    }
 		}
 		GDrawPopClip(pixmap,&old);
@@ -2098,6 +2141,8 @@ void GMatrixEditSet(GGadget *g,struct matrix_data *data, int rows, int copy_it) 
 	    gme->rows = rows;
 	GME_RecalcFH(gme);
     } else {
+	MatrixDataFree(gme);
+
 	gme->rows = gme->row_max = rows;
 	if ( !copy_it ) {
 	    gme->data = data;
@@ -2148,6 +2193,7 @@ return(false);
 	gme->active_col = col;
     str = MD_Text(gme,row,col);
     GME_StrBigEdit(gme,str);
+    free(str);
 return( true );
 }
 
@@ -2194,6 +2240,7 @@ return( gme->active_col );
 void GMatrixEditSetNewText(GGadget *g, char *text) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
 
+    free(gme->newtext);
     gme->newtext = copy(text);
 }
 
@@ -2305,6 +2352,8 @@ return;
 void GMatrixEditSetColumnChoices(GGadget *g, int col, GTextInfo *ti) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
 
+    if ( gme->col_data[col].enum_vals!=NULL )
+	GMenuItemArrayFree(gme->col_data[col].enum_vals);
     if ( ti!=NULL )
 	gme->col_data[col].enum_vals = GMenuItemFromTI(ti,
 		    gme->col_data[col].me_type==me_enum );

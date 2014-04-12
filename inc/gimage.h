@@ -131,6 +131,7 @@ typedef struct gpoint {
 
 extern GImage *GImageCreate(enum image_type type, int32 width, int32 height);
 extern GImage *_GImage_Create(enum image_type type, int32 width, int32 height);
+extern void GImageDestroy(GImage *gi);
 extern GImage *GImageCreateAnimation(GImage **images, int n);
 extern GImage *GImageAddImageBefore(GImage *dest, GImage *src, int pos);
 

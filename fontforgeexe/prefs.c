@@ -240,6 +240,8 @@ int   prefs_oldval_cvInactiveHandleAlpha = 0;
 extern struct macsettingname macfeat_otftag[], *user_macfeat_otftag;
 
 static void UserSettingsFree(void) {
+
+    free( user_macfeat_otftag );
     user_macfeat_otftag = NULL;
 }
 
@@ -625,6 +627,7 @@ static void GetFileChooserPrefs(void) {
     gfc_showhidden = GFileChooserGetShowHidden();
     gfc_dirplace = GFileChooserGetDirectoryPlacement();
     foo = GFileChooserGetBookmarks();
+    free(gfc_bookmarks);
     if ( foo==NULL || foo[0]==NULL )
 	gfc_bookmarks = NULL;
     else {
@@ -640,8 +643,10 @@ static void GetFileChooserPrefs(void) {
 	}
 	if ( len>0 )
 	    gfc_bookmarks[len-1] = '\0';
-	else
+	else {
+	    free(gfc_bookmarks);
 	    gfc_bookmarks = NULL;
+	}
     }
 }
 
@@ -665,6 +670,9 @@ static int PrefsUI_GetPrefs(char *name,Val *val) {
 
 		char *tmpstr = pf->val ? *((char **) (pf->val)) : (char *) (pf->get)();
 		val->u.sval = copy( tmpstr ? tmpstr : "" );
+
+		if( ! pf->val )
+		    free( tmpstr );
 	    } else if ( pf->type == pr_encoding ) {
 		val->type = v_str;
 		if ( *((NameList **) (pf->val))==NULL )
@@ -730,8 +738,10 @@ return( -1 );
 return( -1 );
 		if ( pf->set ) {
 		    pf->set( val1->u.sval );
-		} else
+		} else {
+		    free( *((char **) (pf->val)));
 		    *((char **) (pf->val)) = copy( val1->u.sval );
+		}
 	    } else if ( pf->type == pr_encoding ) {
 		if ( val2!=NULL )
 return( -1 );
@@ -929,6 +939,7 @@ static int encmatch(const char *enc,int subok) {
     static char *last_complaint;
 
     iconv_t test;
+    free(iconv_local_encoding_name);
     iconv_local_encoding_name= NULL;
 #endif
 
@@ -954,11 +965,13 @@ return( encs[i].enc );
 	if ( test==(iconv_t) (-1) || test==NULL ) {
 	    if ( last_complaint==NULL || strcmp(last_complaint,enc)!=0 ) {
 		fprintf( stderr, "Neither FontForge nor iconv() supports your encoding (%s) we will pretend\n you asked for latin1 instead.\n", enc );
+		free( last_complaint );
 		last_complaint = copy(enc);
 	    }
 	} else {
 	    if ( last_complaint==NULL || strcmp(last_complaint,enc)!=0 ) {
 		fprintf( stderr, "FontForge does not support your encoding (%s), it will try to use iconv()\n or it will pretend the local encoding is latin1\n", enc );
+		free( last_complaint );
 		last_complaint = copy(enc);
 	    }
 	    iconv_local_encoding_name= copy(enc);
@@ -1022,6 +1035,7 @@ static void DefaultXUID(void) {
     g_random_set_seed(tv.tv_usec+1);
     r2 = g_random_int();
     sprintf( buffer, "1021 %d %d", r1, r2 );
+    free(xuid);
     xuid = copy(buffer);
 }
 
@@ -1057,6 +1071,8 @@ static void ParseNewMacFeature(FILE *p,char *line) {
     line[strlen("MacFeat:")] ='\0';
     default_mac_feature_map = SFDParseMacFeatures(p,line);
     fseek(p,-strlen(line),SEEK_CUR);
+    if ( user_mac_feature_map!=NULL )
+	MacFeatListFree(user_mac_feature_map);
     user_mac_feature_map = default_mac_feature_map;
 }
 
@@ -1365,6 +1381,8 @@ return;
 		temp = (char *) (pl->get());
 	    if ( temp!=NULL )
 		fprintf( p, "%s:\t%s\n", pl->name, temp );
+	    if ( (pl->val)==NULL )
+		free(temp);
 	  break;
 	  case pr_angle:
 	    fprintf( p, "%s:\t%g\n", pl->name, ((double) *(float *) pl->val) * RAD2DEG );
@@ -1377,6 +1395,7 @@ return;
     for ( i=0; i<SCRIPT_MENU_MAX && script_filenames[i]!=NULL; ++i ) {
 	fprintf( p, "MenuScript:\t%s\n", script_filenames[i]);
 	fprintf( p, "MenuName:\t%s\n", temp = u2utf8_copy(script_menu_names[i]));
+	free(temp);
     }
     if ( user_font_filters!=NULL ) {
 	for ( i=0; user_font_filters[i].name!=NULL; ++i ) {
@@ -1417,9 +1436,11 @@ static int Prefs_ScriptBrowse(GGadget *g, GEvent *e) {
 
 	if ( *cur=='\0' ) cur=NULL;
 	ret = gwwv_open_filename(_("Call Script"), cur, "*.pe", NULL);
+	free(cur);
 	if ( ret==NULL )
 return(true);
 	GGadgetSetTitle8(tf,ret);
+	free(ret);
     }
 return( true );
 }
@@ -1432,9 +1453,11 @@ static int Prefs_BrowseFile(GGadget *g, GEvent *e) {
 	struct prefs_list *pl = GGadgetGetUserData(tf);
 
 	ret = gwwv_open_filename(pl->name, *cur=='\0'? NULL : cur, NULL, NULL);
+	free(cur);
 	if ( ret==NULL )
 return(true);
 	GGadgetSetTitle8(tf,ret);
+	free(ret);
     }
 return( true );
 }
@@ -1712,6 +1735,7 @@ static void ChangeSetting(GGadget *list,int index,GGadget *flist) {
 
     str = cu_copy(ti[index]->text);
     ParseMacMapping(str,&temp);
+    free(str);
     if ( (ustr=AskSetting(&temp,list,index,flist))==NULL )
 return;
     GListReplaceStr(list,index,ustr,NULL);
@@ -1730,6 +1754,7 @@ static int Pref_NewMapping(GGadget *g, GEvent *e) {
 	if ( (str=AskSetting(&temp,list,-1,flist))==NULL )
 return( true );
 	GListAddStr(list,str,NULL);
+	/*free(str);*/
     }
 return( true );
 }
@@ -1781,6 +1806,7 @@ static int Pref_DefaultMapping(GGadget *g, GEvent *e) {
 	ti = Pref_MappingList(false);
 	arr = GTextInfoArrayFromList(ti,&cnt);
 	GGadgetSetList(list,arr,false);
+	GTextInfoListFree(ti);
     }
 return( true );
 }
@@ -1876,6 +1902,7 @@ return( true );
 		  if ( ti!=NULL ) {
 			char *name = u2utf8_copy(ti->text);
 			nl = NameListByName(name);
+			free(name);
 			if ( nl!=NULL && nl->uses_unicode && !allow_utf8_glyphnames)
 			    ff_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
 			else if ( nl!=NULL )
@@ -1886,18 +1913,24 @@ return( true );
 	      case pr_string: case pr_file:
 	        ret = _GGadgetGetTitle(GWidgetGetControl(gw,j*CID_PrefsOffset+CID_PrefsBase+i));
 		if ( pl->val!=NULL ) {
+		    free( *((char **) (pl->val)) );
 		    *((char **) (pl->val)) = NULL;
 		    if ( ret!=NULL && *ret!='\0' )
 			*((char **) (pl->val)) = /* u2def_*/ cu_copy(ret);
 		} else {
 		    char *cret = cu_copy(ret);
 		    (pl->set)(cret);
+		    free(cret);
 		}
 	      break;
 	      case pr_angle:
 	        *((float *) (pl->val)) = GetReal8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err)/RAD2DEG;
 	      break;
 	    }
+	}
+	for ( i=0; i<SCRIPT_MENU_MAX; ++i ) {
+	    free(script_menu_names[i]); script_menu_names[i] = NULL;
+	    free(script_filenames[i]); script_filenames[i] = NULL;
 	}
 	for ( i=0; i<mi; ++i ) {
 	    script_menu_names[i] = u_copy(names[i]);
@@ -1918,6 +1951,7 @@ return( true );
 	    u2encoding_strncpy(str,list[i]->text,maxl+1,e_mac);
 	    ParseMacMapping(str,&user_macfeat_otftag[i]);
 	}
+	free(str);
 
 	Prefs_ReplaceMacFeatures(GWidgetGetControl(gw,CID_Features));
 
@@ -1926,6 +1960,7 @@ return( true );
 	    for ( pt=xuid; *pt==' ' ; ++pt );
 	    if ( *pt=='[' ) {	/* People who know PS well, might want to put brackets arround the xuid base array, but I don't want them */
 		pt = copy(pt+1);
+		free( xuid );
 		xuid = pt;
 	    }
 	    for ( pt=xuid+strlen(xuid)-1; pt>xuid && *pt==' '; --pt );
@@ -1964,6 +1999,8 @@ return( true );
 static int Prefs_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct pref_data *p = GDrawGetUserData(GGadgetGetWindow(g));
+	MacFeatListFree(GGadgetGetUserData((GWidgetGetControl(
+		GGadgetGetWindow(g),CID_Features))));
 	p->done = true;
     }
 return( true );
@@ -1973,6 +2010,9 @@ static int e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct pref_data *p = GDrawGetUserData(gw);
 	p->done = true;
+	if(GWidgetGetControl(gw,CID_Features)) {
+	    MacFeatListFree(GGadgetGetUserData((GWidgetGetControl(gw,CID_Features))));
+	}
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("prefs.html");
@@ -2367,6 +2407,8 @@ void DoPrefs(void) {
 		    hvarray[si++] = GCD_Glue;
 		}
 		y += 26;
+		if ( pl->val==NULL )
+		    free(tempstr);
 	      break;
 	      case pr_angle:
 		sprintf(buf,"%g", *((float *) pl->val) * RAD2DEG);
@@ -2508,6 +2550,8 @@ void DoPrefs(void) {
     gcd[0].gd.pos.height = y-4;
 
     GGadgetsCreate(gw,mboxes);
+    GTextInfoListFree(mfgcd[0].gd.u.list);
+    GTextInfoListFree(msgcd[0].gd.u.list);
 
     GHVBoxSetExpandableRow(mboxes[0].ret,0);
     GHVBoxSetExpandableCol(mboxes[2].ret,gb_expandgluesame);
@@ -2547,15 +2591,25 @@ void DoPrefs(void) {
 		else
 		    list[j]->selected = false;
 	    }
+	    if ( gcd[gc+1].gd.u.list!=encodingtypes )
+		GTextInfoListFree(gcd[gc+1].gd.u.list);
 	  } break;
 	  case pr_namelist:
+	    free(gcd[gc+1].gd.u.list);
 	  break;
 	  case pr_string: case pr_file: case pr_int: case pr_real: case pr_unicode: case pr_angle:
+	    free(plabels[k][gc+1].text);
 	    if ( pl->type==pr_file || pl->type==pr_angle )
 		++gc;
 	  break;
 	}
 	gc += 2;
+    }
+
+    for ( k=0; visible_prefs_list[k].tab_name!=0; ++k ) {
+	free(aspects[k].gcd->gd.u.boxelements[0]);
+	free(aspects[k].gcd->gd.u.boxelements);
+	free(plabels[k]);
     }
 
     GWidgetHidePalettes();
@@ -2580,6 +2634,8 @@ void RecentFilesRemember(char *filename) {
 	    RecentFiles[0] = filename;
 	}
     } else {
+	if ( RecentFiles[RECENT_MAX-1]!=NULL )
+	    free( RecentFiles[RECENT_MAX-1]);
 	for ( i=RECENT_MAX-1; i>0; --i )
 	    RecentFiles[i] = RecentFiles[i-1];
 	RecentFiles[0] = copy(filename);
@@ -2621,6 +2677,7 @@ struct prefs_interface gdraw_prefs_interface = {
 };
 
 static void change_res_filename(const char *newname) {
+    free(xdefs_filename);
     xdefs_filename = copy( newname );
     SavePrefs(true);
 }
@@ -2685,6 +2742,7 @@ static int PrefsSubSet_Ok(GGadget *g, GEvent *e) {
 	    if ( ti!=NULL ) {
 		char *name = u2utf8_copy(ti->text);
 		nl = NameListByName(name);
+		free(name);
 		if ( nl!=NULL && nl->uses_unicode && !allow_utf8_glyphnames)
 		    ff_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
 		else if ( nl!=NULL )
@@ -2695,12 +2753,14 @@ static int PrefsSubSet_Ok(GGadget *g, GEvent *e) {
 	case pr_string: case pr_file:
 	    ret = _GGadgetGetTitle(GWidgetGetControl(gw,j*CID_PrefsOffset+CID_PrefsBase+i));
 	    if ( pl->val!=NULL ) {
+		free( *((char **) (pl->val)) );
 		*((char **) (pl->val)) = NULL;
 		if ( ret!=NULL && *ret!='\0' )
 		    *((char **) (pl->val)) = /* u2def_*/ cu_copy(ret);
 	    } else {
 		char *cret = cu_copy(ret);
 		(pl->set)(cret);
+		free(cret);
 	    }
 	    break;
 	case pr_angle:
@@ -2921,6 +2981,8 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
 		    hvarray[si++] = GCD_Glue;
 		}
 		y += 26;
+		if ( pl->val==NULL )
+		    free(tempstr);
 	      break;
 	      case pr_angle:
 		sprintf(buf,"%g", *((float *) pl->val) * RAD2DEG);

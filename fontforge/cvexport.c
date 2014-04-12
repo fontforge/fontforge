@@ -68,6 +68,7 @@ return;
 	    putc('0',eps);
 	putc('\n',eps);
     }
+    BDFCharFree(bdfc);
     fprintf(eps,"%%%%EndPreview\n" );
 }
 
@@ -262,6 +263,9 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     fprintf( pdf, "%d\n", (int) xrefloc );
     fprintf( pdf, "%%%%EOF\n" );
 
+    if ( objlocs!=_objlocs )
+	free(objlocs);
+
     ret = !ferror(pdf);
     setlocale(LC_NUMERIC,oldloc);
 return( ret );
@@ -315,6 +319,8 @@ int _ExportPlate(FILE *plate,SplineChar *sc,int layer) {
 	    }
 	    if ( ss->first->prev!=NULL )
 		fprintf( plate, "  (z)\n" );
+	    if ( spiros!=ss->spiros )
+		free(spiros);
 	}
     }
     fprintf(plate, ")\n");
@@ -534,6 +540,7 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
 	    ret = !GImageWriteGImage(&gi,filename);
 	else
 	    ret = GImageWriteBmp(&gi,filename);
+	BDFCharFree(bdfc);
     } else {
 	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,NULL,layer))==NULL )
 	    bdfc = SplineCharAntiAlias(sc,pixelsize,layer,(1<<(bitsperpixel/2)));
@@ -565,6 +572,7 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
 	    ret = GImageWritePng(&gi,filename,false);
 	else
 	    ret = GImageWriteBmp(&gi,filename);
+	BDFCharFree(bdfc);
     }
 return( ret );
 }

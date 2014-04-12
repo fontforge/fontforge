@@ -74,6 +74,7 @@ static void gwwv_progress__end_indicator(void) {
 
     current=old->prev;
     gtk_widget_destroy(old->progress);
+    free(old);
     if ( current!=NULL ) {
 	current->superceded = false;
 	if ( current->visible )

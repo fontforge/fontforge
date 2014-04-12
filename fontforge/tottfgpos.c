@@ -233,6 +233,7 @@ return( ScriptFromUnicode( sc->unicodeenc,sf ));
 	char *str = copyn(sc->name,pt-sc->name);
 	int uni = sf==NULL || sf->fv==NULL ? UniFromName(str,ui_none,&custom) :
 			    UniFromName(str,sf->uni_interp,sf->fv->map->enc);
+	free(str);
 	if ( uni!=-1 )
 return( ScriptFromUnicode( uni,sf ));
     }
@@ -266,6 +267,16 @@ return( true );		/* Supplemental Multilingual Plane, RTL scripts */
 return( isrighttoleft(sc->unicodeenc ));
 
 return( ScriptIsRightToLeft(SCScriptFromUnicode(sc)));
+}
+
+static void GlyphMapFree(SplineChar ***map) {
+    int i;
+
+    if ( map==NULL )
+		return;
+    for ( i=0; map[i]!=NULL; ++i )
+	free(map[i]);
+    free(map);
 }
 
 static SplineChar **FindSubs(SplineChar *sc,struct lookup_subtable *sub) {
@@ -309,6 +320,8 @@ static SplineChar **FindSubs(SplineChar *sc,struct lookup_subtable *sub) {
     ret = malloc((cnt+1)*sizeof(SplineChar *));
     memcpy(ret,space,cnt*sizeof(SplineChar *));
     ret[cnt] = NULL;
+    if ( space!=spc )
+		free(space); // Free the temp space only if it is dynamically allocated.
 	return( ret );
 }
 
@@ -893,6 +906,7 @@ static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,struct lookup_subtable *
     fseek(gpos,end,SEEK_SET);
     dumpcoveragetable(gpos,glyphs);
     fseek(gpos,0,SEEK_END);
+    free(glyphs);
 }
 
 struct sckppst {
@@ -1185,6 +1199,10 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 	dumpcoveragetable(gpos,glyphs+start_cnt);
 	glyphs[end_cnt] = gtemp;
     }
+    for ( i=0; i<cnt; ++i )
+	free(seconds[i]);
+    free(seconds);
+    free(glyphs);
 }
 
 uint16 *ClassesFromNames(SplineFont *sf,char **classnames,int class_cnt,
@@ -1234,6 +1252,7 @@ static SplineChar **GlyphsFromClasses(SplineChar **gs, int numGlyphs) {
 	if ( gs[i]!=NULL )
 	    glyphs[cnt++] = gs[i];
     glyphs[cnt++] = NULL;
+    free(gs);
 return( glyphs );
 }
 
@@ -1369,6 +1388,10 @@ static void dumpgposkernclass(FILE *gpos,SplineFont *sf,
     putshort(gpos,pos-begin_off);
     fseek(gpos,pos,SEEK_SET);
     dumpcoveragetable(gpos,glyphs);
+
+    free(glyphs);
+    free(class1);
+    free(class2);
 }
 
 static void dumpanchor(FILE *gpos,AnchorPoint *ap, int is_ttf ) {
@@ -1473,6 +1496,8 @@ return;
     fseek(gpos,start+2,SEEK_SET);
     putshort(gpos,coverage_offset-start);
     fseek(gpos,0,SEEK_END);
+
+    free(entryexit);
 }
 
 static int orderglyph(const void *_sc1,const void *_sc2) {
@@ -1620,6 +1645,7 @@ static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 		}
 	    }
 	}
+	free(aps);
     }
     coverage_offset = ftell(gpos);
     fseek(gpos,subtable_start+4,SEEK_SET);
@@ -1672,6 +1698,8 @@ static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 	}
 	dumpanchor(gpos,ap,gi->is_ttf);
     }
+    if ( markglyphs!=marks[0] )
+	free(markglyphs);
 
     fseek(gpos,subtable_start+2,SEEK_SET);	/* mark coverage table offset */
     putshort(gpos,coverage_offset-subtable_start);
@@ -1711,6 +1739,9 @@ static void dumpGSUBsimplesubs(FILE *gsub,SplineFont *sf,struct lookup_subtable 
     putshort(gsub,end-coverage_pos+2);
     fseek(gsub,end,SEEK_SET);
     dumpcoveragetable(gsub,glyphs);
+
+    free(glyphs);
+    GlyphMapFree(maps);
 }
 
 static void dumpGSUBmultiplesubs(FILE *gsub,SplineFont *sf,struct lookup_subtable *sub) {
@@ -1747,6 +1778,9 @@ static void dumpGSUBmultiplesubs(FILE *gsub,SplineFont *sf,struct lookup_subtabl
     putshort(gsub,end-coverage_pos+2);
     fseek(gsub,end,SEEK_SET);
     dumpcoveragetable(gsub,glyphs);
+
+    free(glyphs);
+    GlyphMapFree(maps);
 }
 
 static int AllToBeOutput(LigList *lig) {
@@ -1814,6 +1848,7 @@ static void dumpGSUBligdata(FILE *gsub,SplineFont *sf,
 	    putshort(gsub,ligoffsets[j]);
 	fseek(gsub,0,SEEK_END);
     }
+    free(ligoffsets);
     if ( glyphs!=NULL ) {
 	here = ftell(gsub);
 	fseek(gsub,coverage_pos,SEEK_SET);
@@ -1823,6 +1858,8 @@ static void dumpGSUBligdata(FILE *gsub,SplineFont *sf,
 	    putshort(gsub,offsets[i]);
 	fseek(gsub,here,SEEK_SET);
 	dumpcoveragetable(gsub,glyphs);
+	free(glyphs);
+	free(offsets);
     }
 }
 
@@ -1962,6 +1999,7 @@ static void dumpg___ContextChainGlyphs(FILE *lfile,SplineFont *sf,
 		putshort(lfile,lc);
 		for ( l=1; subglyphs[l]!=NULL; ++l )
 		    putshort(lfile,subglyphs[l]->ttf_glyph);
+		free(subglyphs);
 	    } else {
 		subglyphs = SFGlyphsFromNames(sf,fpst->rules[k].u.glyph.back);
 		for ( l=0; subglyphs[l]!=NULL; ++l );
@@ -1969,18 +2007,21 @@ static void dumpg___ContextChainGlyphs(FILE *lfile,SplineFont *sf,
 		curcontext = l;
 		for ( l=0; subglyphs[l]!=NULL; ++l )
 		    putshort(lfile,subglyphs[l]->ttf_glyph);
+		free(subglyphs);
 		subglyphs = SFGlyphsFromNames(sf,fpst->rules[k].u.glyph.names);
 		for ( l=0; subglyphs[l]!=NULL; ++l );
 		putshort(lfile,l);
 		curcontext += l;
 		for ( l=1; subglyphs[l]!=NULL; ++l )
 		    putshort(lfile,subglyphs[l]->ttf_glyph);
+		free(subglyphs);
 		subglyphs = SFGlyphsFromNames(sf,fpst->rules[k].u.glyph.fore);
 		for ( l=0; subglyphs[l]!=NULL; ++l );
 		putshort(lfile,l);
 		curcontext += l;
 		for ( l=0; subglyphs[l]!=NULL; ++l )
 		    putshort(lfile,subglyphs[l]->ttf_glyph);
+		free(subglyphs);
 		putshort(lfile,lc);
 	    }
 	    for ( l=0; l<fpst->rules[k].lookup_cnt; ++l )
@@ -1992,6 +2033,7 @@ static void dumpg___ContextChainGlyphs(FILE *lfile,SplineFont *sf,
 	    if ( curcontext>maxcontext ) maxcontext = curcontext;
 	}
     }
+    free(glyphs);
 
     if ( maxcontext>at->os2.maxContext )
 	at->os2.maxContext = maxcontext;
@@ -2034,6 +2076,8 @@ static void dumpg___ContextChainClass(FILE *lfile,SplineFont *sf,
     fseek(lfile,pos,SEEK_SET);
     glyphs = GlyphsFromInitialClasses(iglyphs,at->maxp.numGlyphs,iclass,initialclasses);
     dumpcoveragetable(lfile,glyphs);
+    free(glyphs);
+    free(iglyphs); free(bglyphs); free(lglyphs);
 
     if ( iscontext ) {
 	pos = ftell(lfile);
@@ -2041,6 +2085,7 @@ static void dumpg___ContextChainClass(FILE *lfile,SplineFont *sf,
 	putshort(lfile,pos-base);
 	fseek(lfile,pos,SEEK_SET);
 	DumpClass(lfile,iclass,at->maxp.numGlyphs);
+	free(iclass);
     } else {
 	pos = ftell(lfile);
 	fseek(lfile,base+2*sizeof(uint16),SEEK_SET);
@@ -2074,6 +2119,7 @@ static void dumpg___ContextChainClass(FILE *lfile,SplineFont *sf,
 	    fseek(lfile,pos,SEEK_SET);
 	    DumpClass(lfile,lclass,at->maxp.numGlyphs);
 	}
+	free(iclass); free(bclass); free(lclass);
     }
 
     ii=0;
@@ -2125,6 +2171,7 @@ static void dumpg___ContextChainClass(FILE *lfile,SplineFont *sf,
 	    }
 	}
     }
+    free(initialclasses);
 
     maxcontext = 0;
     for ( i=0; i<fpst->rule_cnt; ++i ) {
@@ -2171,6 +2218,7 @@ static void dumpg___ContextChainCoverage(FILE *lfile,SplineFont *sf,
 	    fseek(lfile,pos,SEEK_SET);
 	    glyphs = OrderedGlyphsFromNames(sf,fpst->rules[0].u.coverage.ncovers[i]);
 	    dumpcoveragetable(lfile,glyphs);
+	    free(glyphs);
 	}
     } else {
 	if ( fpst->format==pst_reversecoverage ) {
@@ -2212,6 +2260,7 @@ static void dumpg___ContextChainCoverage(FILE *lfile,SplineFont *sf,
 	    fseek(lfile,pos,SEEK_SET);
 	    glyphs = OrderedGlyphsFromNames(sf,fpst->rules[0].u.coverage.ncovers[i]);
 	    dumpcoveragetable(lfile,glyphs);
+	    free(glyphs);
 	}
 	for ( i=0; i<fpst->rules[0].u.coverage.bcnt; ++i ) {
 	    uint32 pos = ftell(lfile);
@@ -2220,6 +2269,7 @@ static void dumpg___ContextChainCoverage(FILE *lfile,SplineFont *sf,
 	    fseek(lfile,pos,SEEK_SET);
 	    glyphs = OrderedGlyphsFromNames(sf,fpst->rules[0].u.coverage.bcovers[i]);
 	    dumpcoveragetable(lfile,glyphs);
+	    free(glyphs);
 	}
 	for ( i=0; i<fpst->rules[0].u.coverage.fcnt; ++i ) {
 	    uint32 pos = ftell(lfile);
@@ -2228,6 +2278,7 @@ static void dumpg___ContextChainCoverage(FILE *lfile,SplineFont *sf,
 	    fseek(lfile,pos,SEEK_SET);
 	    glyphs = OrderedGlyphsFromNames(sf,fpst->rules[0].u.coverage.fcovers[i]);
 	    dumpcoveragetable(lfile,glyphs);
+	    free(glyphs);
 	}
     }
 
@@ -2302,6 +2353,13 @@ static void AnchorsAway(FILE *lfile,SplineFont *sf,
 	    dumpgposAnchorData(lfile,acfirst,at_basemark,marks,mkmk,classcnt,gi);
       break;
     }
+    for ( i=0; i<classcnt; ++i )
+	free(marks[i]);
+    free(base);
+    free(lig);
+    free(mkmk);
+    free(marks);
+    free(subcnts);
 }
 
 static int lookup_size_cmp(const void *_l1, const void *_l2) {
@@ -2524,6 +2582,8 @@ return( lfile );
 	    }
 	}
     }
+    free(buffer);
+    free(sizeordered);
     fclose(lfile);
 return( final );
 }
@@ -2571,8 +2631,10 @@ return( i );
 	for ( j=0; lookups[j]!=NULL && ginfo->feat_lookups[i].lookups[j]!=NULL; ++j )
 	    if ( ginfo->feat_lookups[i].lookups[j]!=lookups[j] )
 	break;
-	if ( ginfo->feat_lookups[i].lookups[j]==lookups[j] )
+	if ( ginfo->feat_lookups[i].lookups[j]==lookups[j] ) {
+	    free(lookups);
 return( i );
+	}
     }
     if ( ginfo->fcnt>=ginfo->fmax )
 	ginfo->feat_lookups = realloc(ginfo->feat_lookups,(ginfo->fmax+=20)*sizeof(struct feat_lookups));
@@ -2653,8 +2715,11 @@ return;
 			FindOrMakeNewFeatureLookup(ginfo,lookups,features[fc]);
 		/* lookups is freed or used by FindOrMakeNewFeatureLookup */
 	    }
+	    free(features);
 	}
+	free(langs);
     }
+    free(scripts);
 
     qsort(ginfo->feat_lookups,ginfo->fcnt,sizeof(struct feat_lookups),feat_alphabetize);
 
@@ -2900,6 +2965,15 @@ return( NULL );
     }
     /* And that should finish all the scripts/languages */
 
+    /* so free the ginfo script/lang data */
+    for ( i=0; i<ginfo.sc; ++i ) {
+	for ( j=0; j<ginfo.scripts[i].lc; ++j ) {
+	    free( ginfo.scripts[i].langsys[j].feature_id );
+	}
+	free( ginfo.scripts[i].langsys );
+    }
+    free( ginfo.scripts );
+
 /* Now the features */
     feature_list_table_start = ftell(g___);
     fseek(g___,6,SEEK_SET);
@@ -2962,6 +3036,11 @@ return( NULL );
 	}
     }
     /* And that should finish all the features */
+
+    /* so free the ginfo feature data */
+    for ( i=0; i<ginfo.fcnt; ++i )
+	free( ginfo.feat_lookups[i].lookups );
+    free( ginfo.feat_lookups );
 
 /* Now the lookups */
     all = is_gpos ? sf->gpos_lookups : sf->gsub_lookups;
@@ -3034,9 +3113,12 @@ return( NULL );
     while ( (i=fread(buf,1,8096,lfile))>0 )
 	fwrite(buf,1,i,g___);
     fclose(lfile);
+    free(buf);
     for ( otf = all; otf!=NULL; otf=otf->next ) if ( otf->lookup_index!=-1 ) {
-	for ( sub = otf->subtables; sub!=NULL; sub=sub->next )
+	for ( sub = otf->subtables; sub!=NULL; sub=sub->next ) {
+	    free(sub->extra_subtables);
 	    sub->extra_subtables = NULL;
+	}
 	otf->needs_extension = false;
     }
 return( g___ );
@@ -3352,6 +3434,7 @@ return;					/* No anchor positioning, no ligature carets */
 	putshort(at->gdef,pos);
 	fseek(at->gdef,0,SEEK_END);
 	DumpClass(at->gdef,mclasses,at->maxp.numGlyphs);
+	free(mclasses);
     }
 
 	/* Mark Attachment Class Subtable */
@@ -3371,6 +3454,7 @@ return;					/* No anchor positioning, no ligature carets */
 	    fseek(at->gdef,0,SEEK_END);
 	    glyphs = OrderedGlyphsFromNames(sf,sf->mark_sets[i]);
 	    dumpcoveragetable(at->gdef,glyphs);
+	    free(glyphs);
 	}
     }
 
@@ -3462,6 +3546,7 @@ static void ttf_math_dump_italic_top(FILE *mathf,struct alltabs *at, SplineFont 
     putshort(mathf,coverage_table-coverage_pos);
     fseek(mathf,coverage_table,SEEK_SET);
     dumpcoveragetable(mathf,glyphs);
+    free(glyphs);
 }
 
 static void ttf_math_dump_extended(FILE *mathf,struct alltabs *at, SplineFont *sf) {
@@ -3479,6 +3564,7 @@ static void ttf_math_dump_extended(FILE *mathf,struct alltabs *at, SplineFont *s
 		glyphs[len++] = sc;
     glyphs[len] = NULL;
     dumpcoveragetable(mathf,glyphs);
+    free(glyphs);
 }
 
 static int mkv_len(struct mathkernvertex *mkv) {
@@ -3610,6 +3696,7 @@ static void ttf_math_dump_mathkern(FILE *mathf,struct alltabs *at, SplineFont *s
     putshort(mathf,coverage_table-coverage_pos);
     fseek(mathf,coverage_table,SEEK_SET);
     dumpcoveragetable(mathf,glyphs);
+    free(glyphs);
 }
 
 static int gv_len(SplineFont *sf, struct glyphvariants *gv) {
@@ -3803,6 +3890,7 @@ static void ttf_math_dump_glyphvariant(FILE *mathf,struct alltabs *at, SplineFon
 	fseek(mathf,coverage_table,SEEK_SET);
 	dumpcoveragetable(mathf,vglyphs);
     }
+    free(vglyphs);
     if ( hlen!=0 ) {
 	coverage_table = ftell(mathf);
 	fseek( mathf, coverage_pos+2, SEEK_SET);
@@ -3810,6 +3898,7 @@ static void ttf_math_dump_glyphvariant(FILE *mathf,struct alltabs *at, SplineFon
 	fseek(mathf,coverage_table,SEEK_SET);
 	dumpcoveragetable(mathf,hglyphs);
     }
+    free(hglyphs);
 }
 
 void otf_dump_math(struct alltabs *at, SplineFont *sf) {
@@ -3968,6 +4057,7 @@ return( list );
 	array[i-1]->next = array[i];
     array[cnt-1]->next = NULL;
     list = array[0];
+    free( array );
 return( list );
 }
 
@@ -4204,6 +4294,7 @@ static void SFJstfSort(SplineFont *sf) {
 	    scripts[i-1]->next = scripts[i];
 	scripts[cnt-1]->next = NULL;
 	sf->justify = scripts[0];
+	free(scripts);
     }
 
     langs = NULL; lmax=0;
@@ -4222,6 +4313,7 @@ static void SFJstfSort(SplineFont *sf) {
 	    jscript->langs = langs[0];
 	}
     }
+    free(langs);
 
     /* don't bother to sort the lookup lists yet. We need to separate them into*/
     /* GPOS/GSUB first, might as well do it all at once later */
@@ -4257,10 +4349,14 @@ return;
 	qsort(POS,p,sizeof(OTLookup *),lookup_order);
     if ( s>1 )
 	qsort(SUB,s,sizeof(OTLookup *),lookup_order);
-    if ( p==0 )
+    if ( p==0 ) {
+	free(POS);
 	POS=NULL;
-    if ( s==0 )
+    }
+    if ( s==0 ) {
+	free(SUB);
 	SUB=NULL;
+    }
     *_SUB = SUB;
     *_POS = POS;
 }
@@ -4277,6 +4373,7 @@ return( 0 );
     putshort(jstf,i);			/* Lookup cnt */
     for ( i=0; PS[i]!=NULL; ++i )
 	putshort( jstf, PS[i]->lookup_index );
+    free(PS);
 return( here - base );
 }
 
@@ -4392,6 +4489,7 @@ return;
 	    putshort(jstf,gcnt);
 	    for ( g=0; g<gcnt; ++g )
 		putshort(jstf,glyphs[g]->ttf_glyph);
+	    free(glyphs);
 	}
 
 	offset=0;

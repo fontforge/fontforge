@@ -58,19 +58,24 @@ struct printdefaults pdefs[] = {
 /* ************************************************************************** */
 
 static int pdf_addobject(PI *pi) {
-    if ( pi->next_object>=pi->max_object ) {
+    if ( pi->next_object==0 ) {
+	pi->max_object = 100;
+	pi->object_offsets = malloc(pi->max_object*sizeof(int));
+	pi->object_offsets[pi->next_object++] = 0;	/* Object 0 is magic */
+    } else if ( pi->next_object>=pi->max_object ) {
 	pi->max_object += 100;
 	pi->object_offsets = realloc(pi->object_offsets,pi->max_object*sizeof(int));
     }
-    if ( pi->next_object==0 )
-	pi->object_offsets[pi->next_object++] = 0;	/* Object 0 is magic */
     pi->object_offsets[pi->next_object] = ftell(pi->out);
     fprintf( pi->out, "%d 0 obj\n", pi->next_object++ );
 return( pi->next_object-1 );
 }
 
 static void pdf_addpage(PI *pi) {
-    if ( pi->next_page>=pi->max_page ) {
+    if ( pi->next_page==0 ) {
+	pi->max_page = 100;
+	pi->page_objects = malloc(pi->max_page*sizeof(int));
+    } else if ( pi->next_page>=pi->max_page ) {
 	pi->max_page += 100;
 	pi->page_objects = realloc(pi->page_objects,pi->max_page*sizeof(int));
     }
@@ -710,14 +715,20 @@ int PdfDumpGlyphResources(PI *pi,SplineChar *sc) {
     fprintf(pi->out,"<<\n" );
     if ( gr.pattern_cnt!=0 ) {
 	fprintf( pi->out, "  /Pattern <<\n" );
-	for ( i=0; i<gr.pattern_cnt; ++i )
+	for ( i=0; i<gr.pattern_cnt; ++i ) {
 	    fprintf( pi->out, "    /%s %d 0 R\n", gr.pattern_names[i], gr.pattern_objs[i] );
+	    free(gr.pattern_names[i]);
+	}
+	free(gr.pattern_names); free(gr.pattern_objs);
 	fprintf( pi->out, "  >>\n");
     }
     if ( gr.image_cnt!=0 ) {
 	fprintf( pi->out, "  /XObject <<\n" );
-	for ( i=0; i<gr.image_cnt; ++i )
+	for ( i=0; i<gr.image_cnt; ++i ) {
 	    fprintf( pi->out, "    /%s %d 0 R\n", gr.image_names[i], gr.image_objs[i] );
+	    free(gr.image_names[i]);
+	}
+	free(gr.image_names); free(gr.image_objs);
 	fprintf( pi->out, "  >>\n");
     }
     if ( gr.opacity_cnt!=0 ) {
@@ -727,6 +738,7 @@ int PdfDumpGlyphResources(PI *pi,SplineChar *sc) {
 		    gr.opac_state[i].isfill ? "fill" : "stroke",
 		    gr.opac_state[i].opacity, gr.opac_state[i].obj );
 	}
+	free(gr.opac_state);
 	fprintf( pi->out, "  >>\n");
     }
     fprintf( pi->out, ">>\n" );
@@ -764,14 +776,20 @@ static int PdfDumpSFResources(PI *pi,SplineFont *sf) {
     fprintf(pi->out,"<<\n" );
     if ( gr.pattern_cnt!=0 ) {
 	fprintf( pi->out, "  /Pattern <<\n" );
-	for ( i=0; i<gr.pattern_cnt; ++i )
+	for ( i=0; i<gr.pattern_cnt; ++i ) {
 	    fprintf( pi->out, "    /%s %d 0 R\n", gr.pattern_names[i], gr.pattern_objs[i] );
+	    free(gr.pattern_names[i]);
+	}
+	free(gr.pattern_names); free(gr.pattern_objs);
 	fprintf( pi->out, "  >>\n");
     }
     if ( gr.image_cnt!=0 ) {
 	fprintf( pi->out, "  /XObject <<\n" );
-	for ( i=0; i<gr.image_cnt; ++i )
+	for ( i=0; i<gr.image_cnt; ++i ) {
 	    fprintf( pi->out, "    /%s %d 0 R\n", gr.image_names[i], gr.image_objs[i] );
+	    free(gr.image_names[i]);
+	}
+	free(gr.image_names); free(gr.image_objs);
 	fprintf( pi->out, "  >>\n");
     }
     if ( gr.opacity_cnt!=0 ) {
@@ -781,6 +799,7 @@ static int PdfDumpSFResources(PI *pi,SplineFont *sf) {
 		    gr.opac_state[i].isfill ? "fill" : "stroke",
 		    gr.opac_state[i].opacity, gr.opac_state[i].obj );
 	}
+	free(gr.opac_state);
 	fprintf( pi->out, "  >>\n");
     }
     fprintf( pi->out, ">>\n" );
@@ -1081,6 +1100,7 @@ static void pdf_build_type0(PI *pi, int sfid) {
     }
     fprintf( pi->out, "  ]\n" );
     fprintf( pi->out, "endobj\n" );
+    free(widths);
 
     fprintf( pi->out, "\n" );
 
@@ -1238,6 +1258,13 @@ static void dump_pdftrailer(PI *pi) {
     fprintf( pi->out, "startxref\n" );
     fprintf( pi->out, "%d\n",xrefloc );
     fprintf( pi->out, "%%%%EOF\n" );
+
+    for ( i=0; i<pi->sfcnt; ++i ) {
+	free(pi->sfbits[i].our_font_objs);
+	free(pi->sfbits[i].fonts);
+    }
+    free(pi->object_offsets);
+    free(pi->page_objects);
 }
 
 static void DumpIdentCMap(PI *pi, int sfid) {
@@ -2729,6 +2756,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 		    if ( langsyscallback!=NULL )
 			(langsyscallback)(tf,len,scriptsthere[s],langs[rcnt]);
 		}
+		free(randoms[rcnt]);
 	    } else {
 		randoms[rcnt] = RandomParaFromScript(scriptsthere[s],&langs[rcnt],sf);
 		for ( pt=randoms[rcnt]; *pt==' '; ++pt );
@@ -2908,6 +2936,7 @@ void DoPrinting(PI *pi,char *filename) {
     if ( fclose(pi->out)!=0 )
 	ff_post_error(_("Print Failed"),_("Failed to generate postscript in file %s"),
 		filename==NULL?"temporary":filename );
+    free(pi->sfbits);
 }
 
 /* ************************************************************************** */
@@ -3028,6 +3057,7 @@ void ScriptPrint(FontViewBase *fv,int type,int32 *pointsizes,char *samplefile,
 	    LayoutInfoInitLangSys(li,u_strlen(sample),DEFAULT_SCRIPT,DEFAULT_LANG);
 	LayoutInfoSetTitle(li, sample, width);
 	pi.sample = li;
+	free(sample);
     }
     if ( pi.printtype==pt_file || pi.printtype==pt_pdf ) {
 	if ( outputfile==NULL ) {
@@ -3051,6 +3081,8 @@ return;
 
     DoPrinting(&pi,outputfile);
 
-    if ( pi.pt==pt_fontsample )
+    if ( pi.pt==pt_fontsample ) {
 	LayoutInfo_Destroy(pi.sample);
+	free(pi.sample);
+    }
 }

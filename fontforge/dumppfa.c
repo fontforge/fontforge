@@ -348,6 +348,8 @@ return( false );
     break;
     if ( i==dict->next )
 return( false );
+    free( dict->keys[i]);
+    free( dict->values[i] );
     --dict->next;
     while ( i<dict->next ) {
 	dict->keys[i] = dict->keys[i+1];
@@ -377,6 +379,7 @@ return( -1 );
 	dict->values[dict->next] = NULL;
 	++dict->next;
     }
+    free(dict->values[i]);
     dict->values[i] = copy(newval);
 return( i );
 }
@@ -1008,6 +1011,7 @@ return;
 	    } else
 		dumpsplineset(dumpchar,data,temp,pdfopers,!sc->parent->strokedfont,false,
 			false);
+	    if ( sc->layers[i].order2 ) SplinePointListsFree(temp);
 	}
 	if ( sc->layers[i].refs!=NULL ) {
 	    if ( sc->parent->multilayer ) {
@@ -1038,6 +1042,8 @@ return;
 		    for ( ref = sc->layers[i].refs; ref!=NULL; ref=ref->next ) {
 			for ( j=0; j<ref->layer_cnt; ++j ) {
 			    temp = ref->layers[j].splines;
+			    /*if ( sc->layers[i].order2 )
+				temp = SplineSetsPSApprox(temp);*/
 			    dumpstr(dumpchar,data,pdfopers ? "q" : "gsave " );
 			    dumpsplineset(dumpchar,data,temp,pdfopers,ref->layers[j].dofill,
 				    ref->layers[j].dostroke && ref->layers[j].stroke_pen.linecap==lc_round,
@@ -1054,6 +1060,8 @@ return;
 				dumpstr(dumpchar,data, pdfopers ? "S ": "stroke " );
 			    }
 			    dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
+			    /* if ( sc->layers[layer].order2 )
+				SplinePointListsFree(temp);*/
 			}
 		    }
 		}
@@ -1622,6 +1630,9 @@ return( false );
 	dumpsubrs(dumpchar,data,sf,subrs);
 	dumpcharstrings(dumpchar,data,sf, chars );
 	dumpstr(dumpchar,data,"put\n");
+
+	PSCharsFree(chars);
+	PSCharsFree(subrs);
     }
 
     ff_progress_change_stages(1);
@@ -2387,8 +2398,13 @@ static FILE *gencidbinarydata(SplineFont *cidmaster,struct cidbytes *cidbytes,
 	fd = &cidbytes->fds[i];
 	fd->flexmax = SplineFontIsFlexible(sf,layer,flags);
 	fd->subrs = initsubrs(NULL);
-	if ( fd->subrs==NULL )
+	if ( fd->subrs==NULL ) {
+	    int j;
+	    for ( j=0; j<i; ++j )
+		PSCharsFree(cidbytes->fds[j].subrs);
+	    free( cidbytes->fds );
 return( NULL );
+	}
 	fd->iscjk = SFIsCJK(sf,map);
 	pt = PSDictHasEntry(sf->private,"lenIV");
 	if ( pt!=NULL )
@@ -2408,6 +2424,7 @@ return( NULL );
 	    leniv = cidbytes->fds[cidbytes->fdind[i]].leniv;
 	    dumpt1str(chrs,chars->values[i],chars->lens[i],leniv);
 	    if ( !ff_progress_next()) {
+		PSCharsFree(chars);
 		fclose(chrs);
 return( NULL );
 	    }
@@ -2464,6 +2481,7 @@ return( NULL );
 	    dump_index(binary,fd->sdbytes,offset);
 	    offset += fd->subrs->lens[j];
 	}
+	PSCharsFree(fd->subrs);
     }
     dump_index(binary,cidbytes->gdbytes,offset);
     if ( ftell(binary) != (cidbytes->cidcnt+1)*(cidbytes->fdbytes+cidbytes->gdbytes) +
@@ -2482,7 +2500,10 @@ return( NULL );
 	fwrite(buffer,1,len,binary);
     fclose(chrs);
 
-    cidbytes->fdind = NULL;
+    PSCharsFree(chars);
+    free( cidbytes->fdind ); cidbytes->fdind = NULL;
+    free( buffer );
+
     cidbytes->errors |= ferror(binary);
 return( binary );
 }
@@ -2577,6 +2598,7 @@ return( 0 );
 	fwrite(buffer,1,len,out);
     cidbytes.errors |= ferror(binary);
     fclose(binary);
+    free(cidbytes.fds);
 
     fprintf( out, "\n%%%%EndData\n%%%%EndResource\n%%%%EOF\n" );
 return( !cidbytes.errors );

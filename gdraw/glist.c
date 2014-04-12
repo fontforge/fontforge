@@ -24,8 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
-
 #include "gdraw.h"
 #include "gkeysym.h"
 #include "ggadgetP.h"
@@ -416,6 +414,7 @@ static void GListSetList(GGadget *g,GTextInfo **ti,int32 docopy) {
     GList *gl = (GList *) g;
     int same;
 
+    GTextInfoArrayFree(gl->ti);
     if ( docopy || ti==NULL )
 	ti = GTextInfoArrayCopy(ti);
     gl->ti = ti;
@@ -687,8 +686,12 @@ return( false );
 return( true );
     } else if ( event->u.chr.chars[0]!='\0' && gl->orderer ) {
 	int len = u_strlen(event->u.chr.chars);
-	if ( sofar_pos+len >= gl->sofar_max )
-            gl->sofar = realloc(gl->sofar,(gl->sofar_max = sofar_pos+len+10)*sizeof(unichar_t));
+	if ( sofar_pos+len >= gl->sofar_max ) {
+	    if ( gl->sofar_max == 0 )
+		gl->sofar = malloc((gl->sofar_max = len+10) * sizeof(unichar_t));
+	    else
+		gl->sofar = realloc(gl->sofar,(gl->sofar_max = sofar_pos+len+10)*sizeof(unichar_t));
+	}
 	u_strcpy(gl->sofar+sofar_pos,event->u.chr.chars);
 	gl->sofar_pos = sofar_pos + len;
 	sel = GListFindPosition(gl,gl->sofar);
@@ -781,6 +784,9 @@ static void GList_destroy(GGadget *g) {
 return;
     GDrawCancelTimer(gl->enduser);
     GDrawCancelTimer(gl->pressed);
+    if ( gl->freeti )
+	GTextInfoArrayFree(gl->ti);
+    free(gl->sofar);
     if ( gl->vsb!=NULL )
 	(gl->vsb->g.funcs->destroy)(&gl->vsb->g);
     _ggadget_destroy(g);
@@ -1009,9 +1015,10 @@ static GList *_GListCreate(GList *gl, struct gwindow *base, GGadgetData *gd,void
     gl->font = list_font;
     gl->g.takes_input = gl->g.takes_keyboard = true; gl->g.focusable = true;
 
-    if ( !(gd->flags & gg_list_internal ) )
+    if ( !(gd->flags & gg_list_internal ) ) {
 	gl->ti = GTextInfoArrayFromList(gd->u.list,&gl->ltot);
-    else {
+	gl->freeti = true;
+    } else {
 	gl->ti = (GTextInfo **) (gd->u.list);
 	gl->ltot = GTextInfoArrayCount(gl->ti);
     }

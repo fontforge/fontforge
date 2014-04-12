@@ -31,6 +31,8 @@
 #include "ffglib.h"
 #include "splinefont.h"
 
+#define free_with_debug(x) { fprintf(stderr,"%p FREE()\n",x); free(x); }
+
 
 enum widthtype { wt_width, wt_lbearing, wt_rbearing, wt_bearings, wt_vwidth };
 
@@ -306,6 +308,7 @@ extern void PasteRemoveAnchorClass(SplineFont *sf,AnchorClass *dying);
 
 /**
  * Serialize and undo into a string.
+ * You must free() the returned string.
  */
 extern char* UndoToString( SplineChar* sc, Undoes *undo );
 
@@ -485,6 +488,10 @@ extern int AutoWidthScript(FontViewBase *fv,int spacing);
 extern int AutoKernScript(FontViewBase *fv,int spacing, int threshold,
 	struct lookup_subtable *sub, char *kernfile);
 
+#ifndef _NO_FFSCRIPT
+extern void DictionaryFree(struct dictionary *dica);
+#endif
+
 extern void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontViewBase *fv );
 extern void BCSetPoint(BDFChar *bc, int x, int y, int color);
 extern void BCTransFunc(BDFChar *bc,enum bvtools type,int xoff,int yoff);
@@ -493,6 +500,7 @@ extern void skewselect(BVTFunc *bvtf,real t);
 extern BDFFloat *BDFFloatCreate(BDFChar *bc,int xmin,int xmax,int ymin,int ymax, int clear);
 extern BDFFloat *BDFFloatCopy(BDFFloat *sel);
 extern BDFFloat *BDFFloatConvert(BDFFloat *sel,int newdepth, int olddepth);
+extern void BDFFloatFree(BDFFloat *sel);
 
 extern void BCMergeReferences(BDFChar *base,BDFChar *cur,int8 xoff,int8 yoff);
 extern BDFChar *BDFGetMergedChar(BDFChar *bc) ;

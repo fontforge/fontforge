@@ -115,7 +115,7 @@ static SplineSet *SpMove(SplinePoint *sp,real offset,
     SplineSet *line;
     BasePoint test;
 
-    new = XZALLOC(SplinePoint);
+    new = chunkalloc(sizeof(SplinePoint));
     *new = *sp;
     new->hintmask = NULL;
     new->me.x += offset;
@@ -134,7 +134,7 @@ static SplineSet *SpMove(SplinePoint *sp,real offset,
     test = sp->me;
     ++test.x;
     if ( !SSPointWithin(spl,&test)) {
-	line = XZALLOC(SplineSet);
+	line = chunkalloc(sizeof(SplineSet));
 	line->first = SplinePointCreate(sp->me.x,sp->me.y);
 	line->last = SplinePointCreate(new->me.x,new->me.y);
 	SplineMake(line->first,line->last,sp->next->order2);
@@ -201,6 +201,9 @@ return;
 	    e = apt->aenext;
 	}
     }
+    free(el.ordered);
+    free(el.ends);
+    ElFreeEI(&el);
 }
 
 static SplineSet *AddVerticalExtremaAndMove(SplineSet *base,real shadow_length,
@@ -259,7 +262,7 @@ return(NULL);
 		    sp->prevcp.x += shadow_length;
 		    SplineRefigure(sp->prev);
 		} else if ( sp->next->rightedge || sp->prev->rightedge ) {
-		    new = XZALLOC(SplinePoint);
+		    new = chunkalloc(sizeof(SplinePoint));
 		    *new = *sp;
 		    new->hintmask = NULL;
 		    new->ticked = false; sp->ticked = false;
@@ -300,7 +303,7 @@ return(NULL);
 		if ( sp->next->rightedge && sp->prev->rightedge ) {
 		    lines = SpMove(sp,shadow_length,cur,lines,base);
 		} else if ( sp->next->rightedge ) {
-		    cur = XZALLOC(SplineSet);
+		    cur = chunkalloc(sizeof(SplineSet));
 		    if ( last==NULL )
 			head = cur;
 		    else
@@ -435,6 +438,8 @@ static int ClipLineTo3D(Spline *line,SplineSet *spl) {
 	SplinePoint *from = line->from;
 	SplineBisect(line,t);
 	line = from->next;
+	SplinePointFree(line->to->next->to);
+	SplineFree(line->to->next);
 	line->to->next = NULL;
 return( true );
     }
@@ -487,8 +492,10 @@ static extended *BottomFindIntersections(Spline *bottom,SplineSet *lines,SplineS
 	}
 	lines = lines->next;
     }
-    if ( tcnt==0 )
+    if ( tcnt==0 ) {
+	free(ts);
 return( NULL );
+    }
     for ( i=0; i<tcnt; ++i ) for ( j=i+1; j<tcnt; ++j ) {
 	if ( ts[i]>ts[j] ) {
 	    extended temp = ts[i];
@@ -526,6 +533,9 @@ static int MidLineCompetes(Spline *s,bigreal t,bigreal shadow_length,SplineSet *
     int ret;
 
     ret = ClipLineTo3D(line,spl);
+    SplinePointFree(line->to);		/* This might not be the same as to */
+    SplinePointFree(line->from);	/* This will be the same as from */
+    SplineFree(line);
 return( !ret );
 }
 
@@ -573,6 +583,9 @@ static SplineSet *MergeLinesToBottoms(SplineSet *bottoms,SplineSet *lines) {
 		prev->next = l->next;
 	    SplineMake(l->first,bottoms->first,l->first->next->order2);
 	    bottoms->first = l->first;
+	    SplineFree(l->last->prev);
+	    SplinePointFree(l->last);
+	    chunkfree(l,sizeof(*l));
 	}
 	for ( prev=NULL, l=lines;
 		l!=NULL && (l->last->me.x!=bottoms->last->me.x || l->last->me.y!=bottoms->last->me.y);
@@ -585,6 +598,9 @@ static SplineSet *MergeLinesToBottoms(SplineSet *bottoms,SplineSet *lines) {
 	    SplineMake(bottoms->last,l->first,l->first->next->order2);
 	    bottoms->last = l->first;
 	    l->first->next = NULL;
+	    SplineFree(l->last->prev);
+	    SplinePointFree(l->last);
+	    chunkfree(l,sizeof(*l));
 	}
 	bottoms = bottoms->next;
     }
@@ -604,7 +620,7 @@ static SplineSet *ClipBottomTo3D(SplineSet *bottom,SplineSet *lines,SplineSet *s
 	cur = NULL;
 	for ( s=bottom->first->next; s!=NULL ; s = s->to->next ) {
 	    if ( LineAtPointCompletes(lines,&s->from->me) && cur==NULL ) {
-		cur = XZALLOC(SplineSet);
+		cur = chunkalloc(sizeof(SplineSet));
 		cur->first = cur->last = SplinePointCreate(s->from->me.x,s->from->me.y);
 		if ( head==NULL )
 		    head = cur;
@@ -635,7 +651,7 @@ static SplineSet *ClipBottomTo3D(SplineSet *bottom,SplineSet *lines,SplineSet *s
 		while ( ts[i]!=-1 ) {
 		    bigreal tend = ts[i+1]==-1 ? 1 : ts[i+1];
 		    if ( MidLineCompetes(s,(ts[i]+tend)/2,shadow_length,spl)) {
-			cur = XZALLOC(SplineSet);
+			cur = chunkalloc(sizeof(SplineSet));
 			cur->first = cur->last = SplinePointMidCreate(s,ts[i]);
 			if ( head==NULL )
 			    head = cur;
@@ -650,8 +666,10 @@ static SplineSet *ClipBottomTo3D(SplineSet *bottom,SplineSet *lines,SplineSet *s
 		    } else
 			++i;
 		}
+		free(ts);
 	    }
 	}
+	SplinePointListFree(bottom);
 	bottom = next;
     }
 return( head );
@@ -708,6 +726,7 @@ return( NULL );
 	si.radius = outline_width;
 	temp = SplinePointListCopy(spl);	/* SplineSetStroke confuses the direction I think */
 	internal = SplineSetStroke(temp,&si,order2);
+	SplinePointListsFree(temp);
 	SplineSetsAntiCorrect(internal);
     }
 
@@ -722,7 +741,9 @@ return( NULL );
 	if ( outline_width!=0 ) {
 	    memset(&si,0,sizeof(si));
 	    si.radius = outline_width/2;
+	    /*si.removeoverlapifneeded = true;*/
 	    fatframe = SplineSetStroke(spl,&si,order2);
+	    SplinePointListsFree(spl);
 	    spl = fatframe; /* Don't try SplineSetRemoveOverlap: too likely to cause remove overlap problems. */
 	}
     }

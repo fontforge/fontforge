@@ -167,8 +167,10 @@ return( NULL );
 unichar_t *u_GFileGetHomeDir(void) {
     unichar_t* dir = NULL;
     char* tmp = GFileGetHomeDir();
-    if( tmp )
+    if( tmp ) {
 	dir = uc_copy(tmp);
+	free(tmp);
+    }
 return dir;
 }
 
@@ -412,6 +414,7 @@ char *_GFile_find_program_dir(char *prog) {
 	    if(!pt1) break;
 	    path = pt1+1;
 	}
+	free(tmppath);
     }
 #else
     if ( (pt = strrchr(prog,'/'))!=NULL )
@@ -438,6 +441,7 @@ char *_GFile_find_program_dir(char *prog) {
     if ( program_dir==NULL )
 return( NULL );
     GFileGetAbsoluteName(program_dir,filename,sizeof(filename));
+    free(program_dir);
     program_dir = copy(filename);
 return( program_dir );
 }
@@ -902,6 +906,7 @@ char *GFileReadAll(char *name) {
 	    if( bread==(size_t)sz )
 		return( ret );
 	}
+	free(ret);
     }
     return( 0 );
 }

@@ -91,6 +91,7 @@ static void Base_DelClean(GGadget *g, int r) {
     int rows, cols = GMatrixEditGetColCnt(g);
     struct matrix_data *md = _GMatrixEditGet(g,&rows);
 
+    BaseLangFree((struct baselangextent *) md[r*cols+cols-1].u.md_str);
     md[r*cols+cols-1].u.md_str = NULL;
 }
 
@@ -201,8 +202,10 @@ static void BaseLang_DoCancel(BaseLangDlg *b) {
     int r, rows, cols = GMatrixEditGetColCnt(g);
     struct matrix_data *md = _GMatrixEditGet(g,&rows);
 
-    for ( r=0; r<rows; ++r )
+    for ( r=0; r<rows; ++r ) {
+	BaseLangFree( (struct baselangextent *) md[r*cols+cols-1].u.md_str);
 	md[r*cols+cols-1].u.md_str = NULL;
+    }
     b->done = true;
 }
 
@@ -228,9 +231,10 @@ static int BaseLang_OK(GGadget *g, GEvent *e) {
 	if ( md==NULL )
 return( true );
 
+	BaseLangFree(b->old);
 	b->old = last = NULL;
 	for ( r=0; r<rows; ++r ) {
-	    cur = XZALLOC(struct baselangextent);
+	    cur = chunkalloc(sizeof(struct baselangextent));
 	    cur->lang = TagFromString(md[r*cols+0].u.md_str);
 	    cur->descent = md[r*cols+1].u.md_ival;
 	    cur->ascent = md[r*cols+2].u.md_ival;
@@ -560,8 +564,10 @@ static void Base_DoCancel(BaseDlg *b) {
     int r, rows, cols = GMatrixEditGetColCnt(g);
     struct matrix_data *md = _GMatrixEditGet(g,&rows);
 
-    for ( r=0; r<rows; ++r )
+    for ( r=0; r<rows; ++r ) {
+	BaseLangFree( (struct baselangextent *) md[r*cols+cols-1].u.md_str);
 	md[r*cols+cols-1].u.md_str = NULL;
+    }
     b->done = true;
 }
 
@@ -616,7 +622,8 @@ return( true );
 	    }
 	}
 
-	b->old = XZALLOC(struct Base);
+	BaseFree(b->old);
+	b->old = chunkalloc(sizeof(struct Base));
 
 	b->old->baseline_cnt = cnt;
 	if ( i!=0 ) {
@@ -628,7 +635,7 @@ return( true );
 	for ( r=0; r<rows; ++r ) {
 	    if ( cnt==0 && md[r*cols+cols-1].u.md_str==NULL )
 	continue;
-	    bs = XZALLOC(struct basescript);
+	    bs = chunkalloc(sizeof(struct basescript));
 	    bs->script = TagFromString(md[r*cols+0].u.md_str);
 	    if ( cnt!=0 ) {
 		int tag = md[cols*r+1].u.md_ival;

@@ -24,8 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
-
 #include <ggadget.h>
 #include <gwidget.h>
 
@@ -302,8 +300,11 @@ static int wheel_e_h(GWindow gw, GEvent *event) {
 	GDrawGetSize(d->wheelw,&size);
 	if ( d->wheel==NULL || 
 		GImageGetHeight(d->wheel)!=size.height ||
-		GImageGetWidth(d->wheel)!=size.width )
+		GImageGetWidth(d->wheel)!=size.width ) {
+	    if ( d->wheel!=NULL )
+		GImageDestroy(d->wheel);
 	    d->wheel = ColorWheel(size.width,size.height);
+	}
 	GDrawDrawImage(gw,d->wheel,NULL,0,0);
 	if ( d->col.hsv ) {
 	    double s = sin(d->col.h*3.1415926535897932/180.);
@@ -349,8 +350,11 @@ static int grad_e_h(GWindow gw, GEvent *event) {
     GRect size;
     if ( event->type==et_expose ) {
 	GDrawGetSize(d->wheelw,&size);
-	if ( d->grad==NULL || GImageGetHeight(d->grad)!=size.height )
+	if ( d->grad==NULL || GImageGetHeight(d->grad)!=size.height ) {
+	    if ( d->grad!=NULL )
+		GImageDestroy(d->grad);
 	    d->grad = Gradient(size.height);
+	}
 	GDrawDrawImage(gw,d->grad,NULL,0,0);
 	if ( d->col.hsv ) {
 	    int y = size.height-1-(int) rint(size.height*d->col.v);
@@ -716,6 +720,10 @@ struct hslrgba GWidgetColorA(const char *title,struct hslrgba *defcol,struct hsl
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
+    if ( d.grad!=NULL )
+	GImageDestroy(d.grad);
+    if ( d.wheel!=NULL )
+	GImageDestroy(d.wheel);
     if ( d.col.hsv || d.col.rgb ) {
 	int j;
 	for ( j=0; j<USEFUL_MAX; ++j )

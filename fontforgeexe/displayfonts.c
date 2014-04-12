@@ -148,6 +148,7 @@ return( true );
 return( true );
 	    }
 	    pgwidth = pw*scale; pgheight = ph*scale;
+	    free(cret);
 	}
 
 	ret = _GGadgetGetTitle(GWidgetGetControl(pi->setup,CID_Printer));
@@ -172,7 +173,7 @@ return( true );
 	    pi->pi.printtype = pt_file;
 
 	printtype = pi->pi.printtype;
-	printlazyprinter = copy(pi->pi.printer);
+	free(printlazyprinter); printlazyprinter = copy(pi->pi.printer);
 	pagewidth = pgwidth; pageheight = pgheight;
 
 	pi->pi.done = true;
@@ -529,6 +530,7 @@ static int PageSetup(PD *pi) {
     GGadgetsCreate(pi->setup,boxes);
     GHVBoxSetExpandableCol(boxes[4].ret,gb_expandgluesame);
     GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    GTextInfoListFree(gcd[12].gd.u.list);
     PG_SetEnabled(pi);
     GHVBoxFitWindow(boxes[0].ret);
     GDrawSetVisible(pi->setup,true);
@@ -625,12 +627,14 @@ static int PRT_OK(GGadget *g, GEvent *e) {
 	    /* int size =*/ GetInt8(pi->gw,CID_Size,_("Size"),&err);
 	    if ( err )
 return(true);
+	    free(old_bind_text);
 	    old_bind_text = GGadgetGetTitle(GWidgetGetControl(pi->gw,CID_SampleText));
 	    sample = LIConvertToPrint(
 			&((SFTextArea *) GWidgetGetControl(pi->gw,CID_SampleText))->li,
 			width, 50000, 72 );
 	    ss = LIConvertToSplines(sample, 72,cv->b.layerheads[cv->b.drawmode]->order2);
 	    LayoutInfo_Destroy(sample);
+	    free(sample);
 	    if ( bound && pi->fit_to_path )
 		SplineSetBindToPath(ss,scale,gunit,align,offset,pi->fit_to_path);
 	    if ( ss ) {
@@ -679,9 +683,11 @@ return(true);
 		if ( ret==NULL )
 return(true);
 		file = utf82def_copy(ret);
+		free(ret);
 		pi->pi.out = fopen(file,"wb");
 		if ( pi->pi.out==NULL ) {
 		    ff_post_error(_("Print Failed"),_("Failed to open file %s for output"), file);
+		    free(file);
 return(true);
 		}
 	    } else {
@@ -706,8 +712,11 @@ return(true);
 	    }
 
 	    DoPrinting(&pi->pi,file);
-	    if ( pi->pi.pt==pt_fontsample )
+	    free(file);
+	    if ( pi->pi.pt==pt_fontsample ) {
 		LayoutInfo_Destroy(pi->pi.sample);
+		free(pi->pi.sample);
+	    }
 	}
 
 	if ( pi->done!=NULL )
@@ -736,6 +745,16 @@ return( true );
 /* ************************************************************************** */
 /* ************************ Code for Display dialog ************************* */
 /* ************************************************************************** */
+
+static void TextInfoDataFree(GTextInfo *ti) {
+    int i;
+
+    if ( ti==NULL )
+return;
+    for ( i=0; ti[i].text!=NULL || ti[i].line ; ++i )
+	free(ti[i].userdata);
+    GTextInfoListFree(ti);
+}
 
 static GTextInfo *FontNames(SplineFont *cur_sf, int insert_text) {
     int cnt;
@@ -933,8 +952,10 @@ static void DSP_ChangeFontCallback(void *context,SplineFont *sf,enum sftf_fontty
     GGadgetSetTitle8(GWidgetGetControl(di->gw,CID_ScriptLang),buf);
 
     tags = SFFeaturesInScriptLang(sf,-2,script,lang);
-    if ( tags[0]==0 )
+    if ( tags[0]==0 ) {
+	free(tags);
 	tags = SFFeaturesInScriptLang(sf,-2,script,DEFAULT_LANG);
+    }
     for ( cnt=0; tags[cnt]!=0; ++cnt );
     if ( feats!=NULL )
 	for ( i=0; feats[i]!=0; ++i ) {
@@ -985,6 +1006,7 @@ static void DSP_ChangeFontCallback(void *context,SplineFont *sf,enum sftf_fontty
     ti[cnt] = calloc(1,sizeof(GTextInfo));
     /* These will become ordered because the list widget will do that */
     GGadgetSetList(GWidgetGetControl(di->gw,CID_Features),ti,false);
+    free(tags);
 }
 
 static int DSP_AAState(SplineFont *sf,BDFFont *bestbdf) {
@@ -1021,6 +1043,7 @@ static int DSP_FontChanged(GGadget *g, GEvent *e) {
 return( true );
 	sf = sel->userdata;
 
+	TextInfoDataFree(di->scriptlangs);
 	di->scriptlangs = SLOfFont(sf);
 	GGadgetSetList(GWidgetGetControl(di->gw,CID_ScriptLang),
 		GTextInfoArrayFromList(di->scriptlangs,&cnt),false);
@@ -1297,6 +1320,7 @@ static int DSP_Refresh(GGadget *g, GEvent *e) {
 	fn = FontNames(sel!=NULL? (SplineFont *) (sel->userdata) : di->pi.mainsf, di->insert_text );
 	GGadgetSetList(fontnames,GTextInfoArrayFromList(fn,NULL),false);
 	GGadgetSetEnabled(fontnames,fn[1].text!=NULL);
+	GTextInfoListFree(fn);
     }
 return( true );
 }
@@ -1485,6 +1509,8 @@ static int dsp_e_h(GWindow gw, GEvent *event) {
 	GDrawDestroyWindow(di->gw);
     } else if ( event->type==et_destroy ) {
 	PD *di = GDrawGetUserData(gw);
+	TextInfoDataFree(di->scriptlangs);
+	free(di);
 	if ( di==printwindow )
 	    printwindow = NULL;
     } else if ( event->type==et_char ) {
@@ -2181,12 +2207,14 @@ return;
     GListSetSBAlwaysVisible(gcd[11].ret,true);
     GListSetPopupCallback(gcd[11].ret,MV_FriendlyFeatures);
 
+    GTextInfoListFree(gcd[0].gd.u.list);
     DSP_SetFont(active,true);
     if ( isprint ) {
 	SFTFSetDPI(gcd[13].ret,dpi);
 	temp = PrtBuildDef(sf,&((SFTextArea *) gcd[13].ret)->li,
 		(void (*)(void *, int, uint32, uint32))LayoutInfoInitLangSys);
 	GGadgetSetTitle(gcd[13].ret, temp);
+	free(temp);
     } else {
 	active->script_unknown = true;
 	if ( old_bind_text ) {

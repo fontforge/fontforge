@@ -175,6 +175,7 @@ return;
 	}
     }
     CVCharChangedUpdate(&cv->b);
+    free(regions);
 }
 
 

@@ -31,12 +31,15 @@
 
 #include "splinefont.h"
 
+void SFUndoFreeAssociated( struct sfundoes *undo );
+void SFUndoFree( struct sfundoes *undo );
 SFUndoes* SFUndoCreateSFD( enum sfundotype t, char* staticmsg, char* sfdfrag );
 
 /**
- * Remove undo from the font level undoes on splinefont 'sf'.
+ * Remove undo from the font level undoes on splinefont 'sf' and
+ * completely free the given undo from memory.
  */
-void SFUndoRemove( SplineFont *sf, struct sfundoes *undo );
+void SFUndoRemoveAndFree( SplineFont *sf, struct sfundoes *undo );
 
 
 char* SFUndoToString( SFUndoes* undo );
