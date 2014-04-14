@@ -1726,7 +1726,7 @@ return;
 	if ( fvs->normal!=NULL ) {
 	    EncMapFree(fvs->normal);
 	    fvs->normal = EncMapCopy(fvs->map);
-	    CompactEncMap(fvs->map,fv->sf);
+	    CompactEncMap(fvs->map,temp);
 	}
     }
     ff_progress_allow_events();
