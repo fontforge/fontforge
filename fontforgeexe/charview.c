@@ -6618,7 +6618,7 @@ static void CVAddWordList(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUS
 static void CVMenuPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
-    PrintDlg(NULL,cv->b.sc,NULL);
+    PrintTextDlg(NULL,cv->b.sc,NULL);
 }
 
 static void CVMenuExecute(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {

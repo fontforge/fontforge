@@ -790,6 +790,7 @@ copyUIMethodsToBaseTable( PyMethodDef* ui, PyMethodDef* md )
 static void python_ui_fd_callback( int fd, void* udata );
 static void python_ui_setup_callback( bool makefifo )
 {
+#ifndef __MINGW32__
     int fd = 0;
     int err = 0;
     char path[ PATH_MAX + 1 ];
@@ -806,11 +807,12 @@ static void python_ui_setup_callback( bool makefifo )
     printf("PythonUI_Init(1) fd:%d\n", fd);
     GDrawAddReadFD( 0, fd, udata, python_ui_fd_callback );
     printf("PythonUI_Init(2)\n");
-    
+#endif    
 }
 
 static void python_ui_fd_callback( int fd, void* udata )
 {
+#ifndef __MINGW32__
     fprintf( stderr, "python_ui_fd_callback(top) fd:%d\n", fd );
     char data[ 1024*100 + 1 ];
     memset(data, '\0', 1024*100 );
@@ -831,7 +833,7 @@ static void python_ui_fd_callback( int fd, void* udata )
     
     GDrawRemoveReadFD( 0, fd, udata );
     python_ui_setup_callback( 0 );
-    
+#endif    
 }
 
 void PythonUI_namedpipe_Init(void) {
