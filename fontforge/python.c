@@ -12138,13 +12138,9 @@ return( -1 );
 	    char *lang_str;
 	    PYGETSTR(val, lang_str, -1);
 	    lang = FlagsFromString(lang_str,sfnt_name_mslangs,"language");
-<<<<<<< HEAD
 	    ENDPYGETSTR();
-	    if ( lang==FLAG_UNKNOWN )
-=======
 	    if ( lang==FLAG_UNKNOWN ) {
 	    OtfNameListFree(head);
->>>>>>> parent of e05e525... Use BDW garbage collector
 return( -1 );
 	    }
 	} else if ( PyInt_Check(val))

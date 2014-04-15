@@ -1055,10 +1055,10 @@ return( NULL );
     }
     if ( gv==NULL )
 	gv = chunkalloc(sizeof(struct glyphvariants));
-    free(gv->variants);
-    if ( only_parts )
-	free(variants);
-    else if ( variants!=NULL && *variants!='\0' )
+    free(gv->variants); gv->variants = NULL;
+    if ( only_parts ) {
+	free(variants); variants = NULL;
+    } else if ( variants!=NULL && *variants!='\0' )
 	gv->variants = variants;
     else {
 	gv->variants = NULL;
