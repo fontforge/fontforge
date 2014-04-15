@@ -735,14 +735,7 @@ Summary of optional features:
 Summary of optional dependencies:
 
   cairo			${i_do_have_cairo}  	${cairo_url}
-<<<<<<< HEAD
-=======
-  giflib		${i_do_have_giflib}  	${giflib_url}
-  libjpeg		${i_do_have_libjpeg}  	${libjpeg_url}
-  libpng		${i_do_have_libpng}  	${libpng_url}
-  libtiff		${i_do_have_libtiff}  	${libtiff_url}
   libspiro		${i_do_have_libspiro}  	${libspiro_url}
->>>>>>> parent of 5a44e70... Make libspiro mandatory
   libuninameslist	${i_do_have_libuninameslist}  	${libuninameslist_url}
   libunicodenames	${i_do_have_libunicodenames}  	${libunicodenames_url}
   zeromq (libzmq)	${i_do_have_libzmq}  	${libzmq_url}
