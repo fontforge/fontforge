@@ -32,7 +32,6 @@
 #include <ustring.h>
 #include <ffglib.h>
 #include <chardata.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <math.h>
 #include <setjmp.h>
