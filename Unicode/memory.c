@@ -42,5 +42,19 @@ return str ? strdup(str) : NULL;
 }
 
 char *copyn(const char *str,long n) {
-return str ? strndup(str, n) : NULL;
+    /**
+     * MIQ: Note that there is at least one site that relies on
+     *      copyn copying up to n bytes including embedded nulls.
+     *      So using strndup() doesn't provide the same outcomes
+     *      to that code.
+     *      https://github.com/fontforge/fontforge/issues/1239
+     */
+    char *ret;
+    if ( str==NULL )
+    	return( NULL );
+
+    ret = (char *) malloc(n+1);
+    memcpy(ret,str,n);
+    ret[n]='\0';
+    return( ret );
 }
