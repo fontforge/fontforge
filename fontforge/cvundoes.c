@@ -2365,6 +2365,7 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	    }
 	}
 	if ( paster->u.state.refs!=NULL ) {
+	    RefChar *last=NULL;
 	    RefChar *new, *refs;
 	    SplineChar *rsc;
 	    double scale = PasteFigureScale(sc->parent,paster->copied_from);
@@ -2392,8 +2393,7 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 		    new->layers = NULL;
 		    new->layer_cnt = 0;
 		    new->sc = rsc;
-		    new->next = sc->layers[layer].refs;
-		    sc->layers[layer].refs = new;
+		    FFLIST_SINGLE_LINKED_APPEND( sc->layers[layer].refs, last, new );
 		    SCReinstanciateRefChar(sc,new,layer);
 		    SCMakeDependent(sc,rsc);
 		} else {
@@ -2922,6 +2922,7 @@ return;
 	if ( paster->u.state.anchor!=NULL && !cvsc->searcherdummy )
 	    APMerge(cvsc,paster->u.state.anchor);
 	if ( paster->u.state.refs!=NULL && cv->drawmode!=dm_grid ) {
+	    RefChar *last=NULL;
 	    RefChar *new, *refs;
 	    SplineChar *sc;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
