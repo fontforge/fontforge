@@ -87,4 +87,42 @@ static inline int imax(int a, int b)
 
 #define IS_IN_ORDER3( a, b, c )   ( ((a)<=(b)) && ((b)<=(c)) )
 
+
+/**
+ * Many lists in FontForge are singly linked. At times you might want
+ * to append to the list which, when you only have a pointer to the
+ * start of the list can be more verbose than one would like. To use
+ * this macro you must defined a null initialized variable 'last'
+ * outside of any loop that traverses the source list. The last
+ * variable is used used by this macro to quickly append to the list
+ * as you go. This macro also assumes that the 'last' and 'newitem'
+ * types have a member "->next" which contains the single linked list
+ * pointer to the next element.
+ *
+ * Efficient list append should really be a one line call in the bulk
+ * of the code :)
+ *
+ * example:
+ * MyListObjectType* newfoolast = 0;
+ * MyListObjectType* newfoolist = 0;
+ * 
+ * for( ... iterate a source collection of foos ... )
+ * {
+ *    MyListObjectType* foocopy = CopyIt( foo );
+ *    FFLIST_SINGLE_LINKED_APPEND( newfoolist, newfoolast, foocopy );
+ * }
+ */
+#define FFLIST_SINGLE_LINKED_APPEND( head, last, newitem ) \
+		    if ( !last )		       \
+		    {				       \
+			newitem->next = 0;	       \
+			head = last = newitem;	       \
+		    }				       \
+		    else			       \
+		    {				       \
+			last->next = newitem;	       \
+			last = newitem;		       \
+		    }
+
+
 #endif
