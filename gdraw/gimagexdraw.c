@@ -1722,11 +1722,17 @@ static void check_image_buffers(GXDisplay *gdisp, int neww, int newh, int is_bit
 return;
 
     if ( gdisp->gg.img!=NULL ) {
-	gdisp->gg.img->data = NULL;
+	if (gdisp->gg.img->data) {
+	    free(gdisp->gg.img->data);
+	    gdisp->gg.img->data = NULL;
+	}
 	XDestroyImage(gdisp->gg.img);
     }
     if ( gdisp->gg.mask!=NULL ) {
-	gdisp->gg.mask->data = NULL;
+	if (gdisp->gg.mask->data) {
+	    free(gdisp->gg.mask->data);
+	    gdisp->gg.mask->data = NULL;
+	}
 	XDestroyImage(gdisp->gg.mask);
     }
     pixel_size = gdisp->pixel_size;
