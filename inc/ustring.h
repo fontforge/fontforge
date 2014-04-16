@@ -59,6 +59,11 @@ extern void u_strcpy(unichar_t *, const unichar_t *);
 extern void u_strncpy(unichar_t *, const unichar_t *,int);
 extern void cu_strncpy(char *to, const unichar_t *from, int len);
 extern void uc_strncpy(unichar_t *to, const char *from, int len);
+/**
+ * Like strncpy but passing a null 'from' will simply null terminate
+ * to[0] to give a blank result rather than a crash.
+ */
+extern char *cc_strncpy(char *to, const char *from, int len);
 extern void uc_strcat(unichar_t *, const char *);
 extern void uc_strncat(unichar_t *, const char *,int len);
 extern void cu_strcat(char *, const unichar_t *);
