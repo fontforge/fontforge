@@ -1722,6 +1722,14 @@ static void check_image_buffers(GXDisplay *gdisp, int neww, int newh, int is_bit
 return;
 
     if ( gdisp->gg.img!=NULL ) {
+	/* If gdisp->gg.img->data was allocated by GC_malloc rather
+	   than standard libc malloc then it must be set to NULL so
+	   that XDestroyImage() does not try to free it and crash.
+	   
+	   If we no longer use libgc then the following conditional
+	   block can be removed, but in case it isn't, the enclosed
+	   free() will prevent a memory leak.
+	*/
 	if (gdisp->gg.img->data) {
 	    free(gdisp->gg.img->data);
 	    gdisp->gg.img->data = NULL;
@@ -1729,6 +1737,14 @@ return;
 	XDestroyImage(gdisp->gg.img);
     }
     if ( gdisp->gg.mask!=NULL ) {
+	/* If gdisp->gg.mask->data was allocated by GC_malloc rather
+	   than standard libc malloc then it must be set to NULL so
+	   that XDestroyImage() does not try to free it and crash.
+	   
+	   If we no longer use libgc then the following conditional
+	   block can be removed, but in case it isn't, the enclosed
+	   free() will prevent a memory leak.
+	*/
 	if (gdisp->gg.mask->data) {
 	    free(gdisp->gg.mask->data);
 	    gdisp->gg.mask->data = NULL;
