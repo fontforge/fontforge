@@ -25,7 +25,14 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "fontforge-config.h"
+// For some reason including inc/fontforge-config.h here
+// still leaves strdup() to be non GC_strdup when -O3 is set on gcc 4.7.2
+#define malloc GC_malloc
+#define realloc GC_realloc
+#define free GC_free
+#define strdup GC_strdup
+#define strndup GC_strndup
+#define calloc fontforge_calloc
 
 #include <stdio.h>
 #include <string.h>
@@ -38,7 +45,7 @@ void NoMoreMemMessage(void) {
 }
 
 char *copy(const char *str) {
-return str ? strdup(str) : NULL;
+    return str ? strdup(str) : NULL;
 }
 
 char *copyn(const char *str,long n) {
