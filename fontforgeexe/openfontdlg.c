@@ -47,6 +47,7 @@ struct openfilefilters def_font_filters[] = {
 	   "pt3,"
 	   "t42,"
 	   "sfd,"
+	   "ufo,"
 	   "ttf,"
 	   "bdf,"
 	   "otf,"
@@ -86,6 +87,7 @@ struct openfilefilters def_font_filters[] = {
 	   "pt3,"
 	   "t42,"
 	   "sfd,"
+	   "ufo,"
 	   "ttf,"
 	   "otf,"
 	   "cff,"
@@ -131,6 +133,7 @@ struct openfilefilters def_font_filters[] = {
     { N_("Type2"), "*.{otf,cef,cff,gai}{.gz,.Z,.bz2,.lzma,}" },
     { N_("Type3"), "*.{pf3,pt3}{.gz,.Z,.bz2,.lzma,}" },
     { N_("SVG"), "*.svg{.gz,.Z,.bz2,.lzma,}" },
+    { N_("Unified Font Object"), "*.ufo" },
     { N_("FontForge's SFD"), "*.sfd{.gz,.Z,.bz2,.lzma,}" },
     { N_("Backup SFD"), "*.sfd~" },
     { N_("Extract from PDF"), "*.pdf{.gz,.Z,.bz2,.lzma,}" },
