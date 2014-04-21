@@ -430,6 +430,19 @@ return(true);
 	    }
 	    d->done = true;
 	    d->ret = GGadgetGetTitle(d->gfc);
+
+	    // Trim trailing '/' if its there and put that string back as
+	    // the d->gfc string.
+	    int tmplen = u_strlen( d->ret );
+	    if( tmplen > 0 ) {
+		if( d->ret[ tmplen-1 ] == '/' ) {
+		    unichar_t* tmp = u_copy( d->ret );
+		    tmp[ tmplen-1 ] = '\0';
+		    GGadgetSetTitle(d->gfc, tmp);
+		    free(tmp);
+		    d->ret = GGadgetGetTitle(d->gfc);
+		}
+	    }
 	}
     }
 return( true );
