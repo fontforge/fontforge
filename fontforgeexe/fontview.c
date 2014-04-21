@@ -1002,7 +1002,7 @@ void MenuOpen(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
     OpenDir = GFileGetHomeDocumentsDir();
     if( fv && fv->b.sf && fv->b.sf->filename )
     {
-	printf("existing name:%s\n", fv->b.sf->filename );
+//	printf("existing name:%s\n", fv->b.sf->filename );
 	char* dname = GFileDirName( fv->b.sf->filename );
 	OpenDir = dname;
     }
@@ -7030,7 +7030,6 @@ return( GGadgetDispatchEvent(fv->vsb,event));
       case et_focus:
 	  if ( event->u.focus.gained_focus )
 	  {
-	      printf("fv.et_focus fv_e_h\n");
 	      ActiveFontView = fv;
 	  }
 	  else
@@ -7047,7 +7046,7 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	     osx_fontview_copy_cut_counter--;
 	     break;
           }
-	  printf("fontview et_selclear\n");
+//	  printf("fontview et_selclear\n");
 #endif
 	ClipboardClear();
       break;

@@ -2657,8 +2657,8 @@ void debug_printHint( StemInfo *h, char* msg )
 
 bool equalWithTolerence( real a, real b, real tolerence )
 {
-    printf("equalWithTolerence(1) a:%f b:%f tol:%f\n", a, b, tolerence );
-    printf("equalWithTolerence(2) a:%lf b:%lf tol:%lf\n", a, b, tolerence );
+//    printf("equalWithTolerence(1) a:%f b:%f tol:%f\n", a, b, tolerence );
+//    printf("equalWithTolerence(2) a:%lf b:%lf tol:%lf\n", a, b, tolerence );
     
     if( tolerence == 0.0 )
 	return a == b;
