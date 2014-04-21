@@ -658,7 +658,7 @@ return;
 	needsupdate = CVClearSel(cv);
     }
 
-    printf("CVMouseDownPointer() dowidth:%d dolbearing:%d\n", dowidth, dolbearing );
+//    printf("CVMouseDownPointer() dowidth:%d dolbearing:%d\n", dowidth, dolbearing );
 
     if ( !fs->p->anysel )
     {
@@ -818,7 +818,6 @@ return;
 	} else if ( fs->p->sp!=NULL ) {
 	    needsupdate = true;
 	    fs->p->sp->selected = !fs->p->sp->selected;
-	    printf("CVMouseDownPointer(3.1)\n");
 	} else if ( fs->p->spiro!=NULL ) {
 	    needsupdate = true;
 	    fs->p->spiro->ty ^= 0x80;
