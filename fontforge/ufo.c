@@ -526,17 +526,17 @@ return( false );
     PListOutputString(plist,"note",sf->comments);
     PListOutputDate(plist,"openTypeHeadCreated",sf->creationtime);
     SplineFontFindBounds(sf,&bb);
-    if ( sf->pfminfo.hheadset ) {
-	if ( sf->pfminfo.hheadascent_add )
-	    PListOutputInteger(plist,"openTypeHheaAscender",bb.maxy+sf->pfminfo.hhead_ascent);
-	else
-	    PListOutputInteger(plist,"openTypeHheaAscender",sf->pfminfo.hhead_ascent);
-	if ( sf->pfminfo.hheaddescent_add )
-	    PListOutputInteger(plist,"openTypeHheaDescender",bb.miny+sf->pfminfo.hhead_descent);
-	else
-	    PListOutputInteger(plist,"openTypeHheaDescender",sf->pfminfo.hhead_descent);
-	PListOutputInteger(plist,"openTypeHheaLineGap",sf->pfminfo.linegap);
-    }
+
+    if ( sf->pfminfo.hheadascent_add )
+	PListOutputInteger(plist,"openTypeHheaAscender",bb.maxy+sf->pfminfo.hhead_ascent);
+    else
+	PListOutputInteger(plist,"openTypeHheaAscender",sf->pfminfo.hhead_ascent);
+    if ( sf->pfminfo.hheaddescent_add )
+	PListOutputInteger(plist,"openTypeHheaDescender",bb.miny+sf->pfminfo.hhead_descent);
+    else
+	PListOutputInteger(plist,"openTypeHheaDescender",sf->pfminfo.hhead_descent);
+    PListOutputInteger(plist,"openTypeHheaLineGap",sf->pfminfo.linegap);
+
     PListOutputNameString(plist,"openTypeNameDesigner",sf,ttf_designer);
     PListOutputNameString(plist,"openTypeNameDesignerURL",sf,ttf_designerurl);
     PListOutputNameString(plist,"openTypeNameManufacturer",sf,ttf_manufacturer);
