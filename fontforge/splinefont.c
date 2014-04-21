@@ -886,6 +886,19 @@ SplineFont *_ReadSplineFont(FILE *file,char *filename,enum openflags openflags) 
     if ( filename==NULL )
 return( NULL );
 
+    // for non URLs
+    // treat /whatever/foo.ufo/ as simply /whatever/foo.ufo
+    if ( !strstr(strippedname,"://")) {
+	int filenamelen = strlen(filename);
+	printf("strippedname:%s\n", filename );
+	
+	if( filenamelen && filename[ filenamelen-1 ] == '/' ) {
+	    filename = copy(filename);
+	    filename[filenamelen-1] = '\0';
+	}
+    }
+    
+
     strippedname = filename;
     pt = strrchr(filename,'/');
     if ( pt==NULL ) pt = filename;
