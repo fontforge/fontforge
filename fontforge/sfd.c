@@ -7868,7 +7868,7 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
     int pushedbacktok = false;
     Encoding *enc = &custom;
     struct remap *remap = NULL;
-    int hadtimes=false, haddupenc;
+    int haddupenc;
     int old_style_order2 = false;
     int had_layer_cnt=false;
 
@@ -8384,7 +8384,7 @@ exit( 1 );
 	AltUniFigure(sf,sf->map,true);
     if ( sf->sfd_version<2 )
 	SFD_AssignLookups((SplineFont1 *) sf);
-    if ( !hadtimes )
+    if ( !d.hadtimes )
 	SFTimesFromFile(sf,sfd);
 
     SFDFixupUndoRefs(sf);
