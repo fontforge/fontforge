@@ -5564,9 +5564,14 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 		++tok->err_count;
 		fea_skip_to_semi(tok);
 	    }
-	    item->u2.lcaret = malloc((len+1)*sizeof(int16));
-	    memcpy(item->u2.lcaret,carets,len*sizeof(int16));
-	    item->u2.lcaret[len] = 0;
+	    if (carets != NULL) {
+		item->u2.lcaret = malloc((len+1)*sizeof(int16));
+		memcpy(item->u2.lcaret,carets,len*sizeof(int16));
+		item->u2.lcaret[len] = 0;
+	    } else {
+		LogError(_("Expected integer or list of integer after %s on line %d of %s"), item->u1.class,
+			tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	    }
 	} else if ( strcmp(tok->tokbuf,"GlyphClassDef")==0 ) {
 	    item = XZALLOC(struct feat_item);
 	    item->type = ft_gdefclasses;
