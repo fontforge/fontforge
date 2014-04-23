@@ -3631,6 +3631,10 @@ static struct markedglyphs *fea_parseCursiveSequence(struct parseState *tok,
 	    cur->is_cursive = true;
 	    cur->is_name = true;
 	    cur->name_or_class = contents;
+	} else {
+	    LogError(_("Expect a valid glyph/CID name on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	    ++tok->err_count;
+	    return( NULL );
 	}
     } else if ( tok->type == tk_class || (tok->type==tk_char && tok->tokbuf[0]=='[')) {
 	cur = XZALLOC(struct markedglyphs);
