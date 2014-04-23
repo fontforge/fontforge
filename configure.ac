@@ -492,15 +492,6 @@ AC_CHECK_FUNC([tzset],[:],[AC_DEFINE([_NO_TZSET],1,[Define if not using tzset.])
 # Put ifndef wrapper on fontforge-config.h so we don't call it repeatedly.
 AH_TOP([#ifndef _FF_CONFIG_H
 
-#define _FF_CONFIG_H 1
-
-#define malloc GC_malloc
-#define realloc GC_realloc
-#define free GC_free
-#define strdup GC_strdup
-#define strndup GC_strndup
-#define calloc fontforge_calloc
-])
 #define _FF_CONFIG_H 1])
 AH_BOTTOM([#endif])
 #--------------------------------------------------------------------------
