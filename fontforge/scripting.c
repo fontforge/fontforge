@@ -4159,7 +4159,7 @@ static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
     int opos=dest->orig_pos, uenc=dest->unicodeenc;
     struct splinecharlist *scl = dest->dependents;
     RefChar *refs;
-    int layer;
+    int layer, last;
     int lc;
     Layer *layers;
 
@@ -9980,6 +9980,9 @@ static void assign(Context *c,Val *val) {
 	    else if ( other.type == v_void )
 		ScriptError( c, "Void found on right side of assignment" );
 	    else if ( tok==tt_assign ) {
+		Val temp;
+		int argi;
+		temp = *val->u.lval;
 		*val->u.lval = other;
 		if ( other.type==v_arr )
 		    val->u.lval->u.aval = arraycopy(other.u.aval);

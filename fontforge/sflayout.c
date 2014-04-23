@@ -1289,6 +1289,7 @@ return( filename );
 }
 
 void LayoutInfoSetTitle(LayoutInfo *li,const unichar_t *tit,int width) {
+    unichar_t *old = li->oldtext;
     if ( u_strcmp(tit,li->text)==0 )	/* If it doesn't change anything, then don't trash undoes or selection */
 return;
     li->oldtext = li->text;

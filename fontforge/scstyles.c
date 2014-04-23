@@ -2159,6 +2159,7 @@ static double SCFindCounterLen(StemInfo *hints,double min_coord,
 	double max_coord) {
     int tot=0;
     double counter_len=0;
+    struct overlaps *overlaps;
 
     overlaps = SCFindHintOverlaps(hints,min_coord,max_coord,&tot,&counter_len);
     free(overlaps);

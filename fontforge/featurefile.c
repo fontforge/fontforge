@@ -3253,6 +3253,8 @@ struct markedglyphs {
     struct markedglyphs *next;
 };
 
+static void NameIdFree(struct nameid *nm);
+
 static void fea_ParseDeviceTable(struct parseState *tok,DeviceTable *adjust)
 	{
     int first = true;
@@ -7124,7 +7126,9 @@ static void fea_NameLookups(struct parseState *tok) {
 
 void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     struct parseState tok;
+    struct glyphclasses *gc, *gcnext;
     struct namedanchor *nap, *napnext;
+    struct namedvalue *nvr, *nvrnext;
     char oldloc[25];
 
     memset(&tok,0,sizeof(tok));
@@ -7163,8 +7167,8 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
 	free(nvr->name); chunkfree(nvr->vr,sizeof(struct vr));
 	chunkfree(nvr,sizeof(*nvr));
     }
-    for ( j=0; j<2; ++j ) {
-	for ( i=0; i<tok.gm_cnt[j]; ++i ) {
+    for ( int j=0; j<2; ++j ) {
+	for ( int i=0; i<tok.gm_cnt[j]; ++i ) {
 	    free(tok.gdef_mark[j][i].name);
 	    free(tok.gdef_mark[j][i].glyphs);
 	}

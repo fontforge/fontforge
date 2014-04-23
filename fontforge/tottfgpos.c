@@ -2315,6 +2315,7 @@ static void AnchorsAway(FILE *lfile,SplineFont *sf,
     SplineChar ***marks;
     int *subcnts;
     int cmax, classcnt;
+    int i;
 
     marks = malloc((cmax=20)*sizeof(SplineChar **));
     subcnts = malloc(cmax*sizeof(int));

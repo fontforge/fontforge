@@ -764,6 +764,7 @@ static PyObject *PyFF_UnicodeBlockEndFromLib(PyObject *UNUSED(self), PyObject *a
 static PyObject *PyFF_UnicodeBlockNameFromLib(PyObject *UNUSED(self), PyObject *args) {
 /* If the library is available, then get the official name for this unicode block */
 /* Use this function with UnicodeBlockStartFromLib(n), UnicodeBlockEndFromLib(n). */
+    PyObject *ret;
     char *temp;
     long val;
 
@@ -784,7 +785,7 @@ static PyObject *PyFF_UnicodeNamesListVersion(PyObject *UNUSED(self), PyObject *
     if ( (temp=unicode_library_version())==NULL ) {
 	temp=malloc(1*sizeof(char)); *temp='\0';
     }
-    ret=Py_BuildValue("s",temp); free(temp);
+    PyObject *ret=Py_BuildValue("s",temp); free(temp);
     return( ret );
 }
 
@@ -1311,6 +1312,7 @@ return( Py_BuildValue("i",ret));
 static PyObject *PyFF_askString(PyObject *UNUSED(self), PyObject *args) {
     char *title,*quest, *def = NULL;
     char *ret;
+    PyObject *reto;
 
     if ( no_windowing_ui ) {
 	PyErr_Format(PyExc_EnvironmentError, "No user interface");
@@ -6382,6 +6384,7 @@ static int PyFF_Glyph_set_dhints(PyFF_Glyph *self,PyObject *value, void *UNUSED(
     int i, cnt;
     double len, width;
     double lx, ly, rx, ry, ux, uy;
+    DStemInfo **_head = &sc->dstem;
 
     cnt = PySequence_Size(value);
     if ( cnt==-1 )
@@ -11762,6 +11765,7 @@ return( -1 );
 return( -1 );
 	}
 	if ( lastbs==NULL )
+	    base->scripts = bs;
 	else
 	    lastbs->next = bs;
 	lastbs = bs;
@@ -13301,6 +13305,7 @@ return( ret );
 static PyObject *PyFFFont_appendSFNTName(PyFF_Font *self, PyObject *args) {
     SplineFont *sf;
     struct ttflangname dummy;
+    int i;
 
     if ( CheckIfFontClosed(self) )
 return (NULL);

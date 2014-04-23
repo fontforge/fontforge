@@ -6257,6 +6257,7 @@ void JustifyFree(Justify *just) {
 
 void SplineFontFree(SplineFont *sf) {
     int i;
+    BDFFont *bdf, *bnext;
 
     if ( sf==NULL )
 return;

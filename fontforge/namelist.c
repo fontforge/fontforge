@@ -104,6 +104,7 @@ static void psreinitnames(void) {
     NameList *nl;
 
     for ( i=0; i<HASH_SIZE; ++i ) {
+	struct psbucket *cur, *prev;
 	for ( cur = psbuckets[i]; cur!=NULL; cur=prev ) {
 	    prev = cur->prev;
 	    chunkfree(cur,sizeof(struct psbucket));
