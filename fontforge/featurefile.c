@@ -2906,6 +2906,7 @@ return( NULL );
 	char *pt1, *start1, *pt2, *start2;
 	int v1, v2;
 
+	last_val = -1;
 	for (;;) {
 	    fea_ParseTok(tok);
 	    if ( tok->type==tk_char && tok->tokbuf[0]==']' )
