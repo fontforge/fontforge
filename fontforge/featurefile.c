@@ -4668,6 +4668,7 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 		        } else if ( g->next!=NULL && g->mark_count==g->next->mark_count ) {
 			    head = fea_process_sub_ligature(tok,g,rpl,NULL);
 		        } else {
+			    head = NULL;
 			    LogError(_("Unparseable contextual sequence on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 			    ++tok->err_count;
 		        }
