@@ -6657,9 +6657,10 @@ static void fea_GDefLigCarets(SplineFont *sf, struct feat_item *f) {
 	    pst->type = pst_lcaret;
 	    pst->u.lcaret.cnt = i;
 	    pst->u.lcaret.carets = f->u2.lcaret;
-	    f->u2.lcaret = NULL;
 	}
     }
+    // Should be done in fea_featitemFree()
+    f->u2.lcaret = NULL;
 }
 
 static struct feat_item *fea_ApplyFeatureList(struct parseState *tok,
