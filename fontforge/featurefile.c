@@ -1560,7 +1560,7 @@ static void dump_gdef(FILE *out,SplineFont *sf) {
 	lcnt = 0;
 	k=0;
 	do {
-	    _sf = sf->subfontcnt==0 ? sf : _sf;
+	    _sf = sf->subfontcnt==0 ? sf : sf->subfonts[k];
 	    for ( gid=0; gid<_sf->glyphcnt; ++gid ) if ( (sc=_sf->glyphs[gid])!=NULL ) {
 		if ( l==0 ) {
 		    clsidx = sc->glyph_class!=0 ? sc->glyph_class: gdefclass(sc)+1;
@@ -1613,7 +1613,7 @@ return;					/* No anchor positioning, no ligature carets */
 		k = 0;
 		fprintf( out, "%s = [", clsnames[i] );
 		do {
-		    _sf = sf->subfontcnt==0 ? sf : _sf;
+		    _sf = sf->subfontcnt==0 ? sf : sf->subfonts[k];
 		    for ( gid=0; gid<_sf->glyphcnt; ++gid ) if ( (sc=_sf->glyphs[gid])!=NULL ) {
 			if ( sc->glyph_class==i+2 || (sc->glyph_class==0 && gdefclass(sc)==i+1 )) {
 			    if ( len+strlen(sc->name)+1 >80 ) {
