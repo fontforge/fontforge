@@ -100,26 +100,32 @@ return( true );
 return( false );
 }
 
-gl_list_t
+GList_Glib*
 CVGetSelectedPoints(CharView *cv)
 {
-    gl_list_t ret = gl_list_new();
+    GList_Glib* ret = 0;
     /* if there are any points selected */
     SplinePointList *spl;
     Spline *spline, *first;
+    int i;
 
-    for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
-	if ( cv->b.sc->inspiro && hasspiro()) {
-	    for ( int i=0; i<spl->spiro_cnt-1; ++i )
+    for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next )
+    {
+	if ( cv->b.sc->inspiro && hasspiro())
+	{
+	    for ( i=0; i<spl->spiro_cnt-1; ++i )
 		if ( SPIRO_SELECTED(&spl->spiros[i]))
-		    gl_list_add_last( ret, &spl->spiros[i] );
-	} else {
+		    ret = g_list_append( ret, &spl->spiros[i] );
+	}
+	else
+	{
 	    if ( spl->first->selected )
-		gl_list_add_last( ret, spl->first );
+		ret = g_list_append( ret, spl->first );
 	    first = NULL;
-	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next )
+	    {
 		if ( spline->to->selected )
-		    gl_list_add_last( ret, spline->to );
+		    ret = g_list_append( ret, spline->to );
 		if ( first==NULL ) first = spline;
 	    }
 	}
@@ -658,7 +664,7 @@ return;
 	needsupdate = CVClearSel(cv);
     }
 
-    printf("CVMouseDownPointer() dowidth:%d dolbearing:%d\n", dowidth, dolbearing );
+//    printf("CVMouseDownPointer() dowidth:%d dolbearing:%d\n", dowidth, dolbearing );
 
     if ( !fs->p->anysel )
     {
@@ -818,7 +824,6 @@ return;
 	} else if ( fs->p->sp!=NULL ) {
 	    needsupdate = true;
 	    fs->p->sp->selected = !fs->p->sp->selected;
-	    printf("CVMouseDownPointer(3.1)\n");
 	} else if ( fs->p->spiro!=NULL ) {
 	    needsupdate = true;
 	    fs->p->spiro->ty ^= 0x80;

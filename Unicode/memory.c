@@ -35,7 +35,7 @@ void NoMoreMemMessage(void) {
 }
 
 char *copy(const char *str) {
-return str ? strdup(str) : NULL;
+    return str ? strdup(str) : NULL;
 }
 
 char *copyn(const char *str,long n) {

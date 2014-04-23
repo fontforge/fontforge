@@ -11761,9 +11761,7 @@ return( -1 );
 	    BaseFree(base);
 return( -1 );
 	}
-	bs = chunkalloc(sizeof(struct basescript));
 	if ( lastbs==NULL )
-	    base->scripts = bs;
 	else
 	    lastbs->next = bs;
 	lastbs = bs;

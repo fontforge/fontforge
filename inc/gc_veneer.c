@@ -28,7 +28,8 @@
 
 #include <fontforge-config.h>
 
-#include "xalloc.h"
+#include <stdlib.h>
+#include <string.h>
 
 
 /* This veneer allows libgc to be used via preprocessor trickery to
@@ -39,5 +40,7 @@
 void *
 fontforge_calloc(size_t n, size_t s)
 {
-  return xzalloc(n * s);
+  size_t size = n * s;
+  void *p = malloc(size);
+  return p ? memset(p, 0, size) : NULL;
 }

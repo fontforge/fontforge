@@ -616,7 +616,6 @@ return( true );
 
     GGadgetPopupExternalEvent(event);
     if ( event->type==et_focus ) {
-	printf("GWidget_TopLevel_eh() focus\n");
 	
 	if ( event->u.focus.gained_focus ) {
 	    if ( gw->is_toplevel && !gw->is_popup && !gw->is_dying ) {

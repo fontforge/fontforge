@@ -608,8 +608,8 @@ Undoes *CVPreserveState(CharViewBase *cv) {
     Undoes *undo;
     int layer = CVLayer(cv);
 
-    if (!quiet)
-        printf("CVPreserveState() no_windowing_ui:%d maxundoes:%d\n", no_windowing_ui, maxundoes );
+//    if (!quiet)
+//        printf("CVPreserveState() no_windowing_ui:%d maxundoes:%d\n", no_windowing_ui, maxundoes );
     if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
@@ -632,7 +632,7 @@ return(NULL);
     undo->u.state.dostroke = cv->layerheads[cv->drawmode]->dostroke;
     undo->u.state.fillfirst = cv->layerheads[cv->drawmode]->fillfirst;
     undo->layer = cv->drawmode;
-    printf("CVPreserveState() dm:%d layer:%d new undo is at %p\n", cv->drawmode, layer, undo );
+//    printf("CVPreserveState() dm:%d layer:%d new undo is at %p\n", cv->drawmode, layer, undo );
 
     // MIQ: Note, this is the wrong time to call sendRedo as we are
     // currently taking the undo state snapshot, after that the app
@@ -2461,6 +2461,7 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	    }
 	}
 	if ( paster->u.state.refs!=NULL ) {
+	    RefChar *last=NULL;
 	    RefChar *new, *refs;
 	    SplineChar *rsc;
 	    double scale = PasteFigureScale(sc->parent,paster->copied_from);
@@ -2489,8 +2490,7 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 		    new->layers = NULL;
 		    new->layer_cnt = 0;
 		    new->sc = rsc;
-		    new->next = sc->layers[layer].refs;
-		    sc->layers[layer].refs = new;
+		    FFLIST_SINGLE_LINKED_APPEND( sc->layers[layer].refs, last, new );
 		    SCReinstanciateRefChar(sc,new,layer);
 		    SCMakeDependent(sc,rsc);
 		} else {
@@ -3042,6 +3042,7 @@ return;
 	if ( paster->u.state.anchor!=NULL && !cvsc->searcherdummy )
 	    APMerge(cvsc,paster->u.state.anchor);
 	if ( paster->u.state.refs!=NULL && cv->drawmode!=dm_grid ) {
+	    RefChar *last=NULL;
 	    RefChar *new, *refs;
 	    SplineChar *sc;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {

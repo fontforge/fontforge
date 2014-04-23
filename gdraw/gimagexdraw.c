@@ -1722,10 +1722,36 @@ static void check_image_buffers(GXDisplay *gdisp, int neww, int newh, int is_bit
     if ( gdisp->gg.iwidth == width && gdisp->gg.iheight == height && depth==gdisp->gg.img->depth )
 return;
 
-    if ( gdisp->gg.img!=NULL )
+    if ( gdisp->gg.img!=NULL ) {
+	/* If gdisp->gg.img->data was allocated by GC_malloc rather
+	   than standard libc malloc then it must be set to NULL so
+	   that XDestroyImage() does not try to free it and crash.
+	   
+	   If we no longer use libgc then the following conditional
+	   block can be removed, but in case it isn't, the enclosed
+	   free() will prevent a memory leak.
+	*/
+	if (gdisp->gg.img->data) {
+	    free(gdisp->gg.img->data);
+	    gdisp->gg.img->data = NULL;
+	}
 	XDestroyImage(gdisp->gg.img);
-    if ( gdisp->gg.mask!=NULL )
+    }
+    if ( gdisp->gg.mask!=NULL ) {
+	/* If gdisp->gg.mask->data was allocated by GC_malloc rather
+	   than standard libc malloc then it must be set to NULL so
+	   that XDestroyImage() does not try to free it and crash.
+	   
+	   If we no longer use libgc then the following conditional
+	   block can be removed, but in case it isn't, the enclosed
+	   free() will prevent a memory leak.
+	*/
+	if (gdisp->gg.mask->data) {
+	    free(gdisp->gg.mask->data);
+	    gdisp->gg.mask->data = NULL;
+	}
 	XDestroyImage(gdisp->gg.mask);
+    }
     pixel_size = gdisp->pixel_size;
     temp = malloc(((width*pixel_size+gdisp->bitmap_pad-1)/gdisp->bitmap_pad)*
 	    (gdisp->bitmap_pad/8)*height);

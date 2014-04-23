@@ -28,7 +28,6 @@
 #define _VIEWS_H
 
 #include "ffglib.h"
-#include "gl_xlist.h"
 #include "baseviews.h"
 
 #include <ggadget.h>
@@ -952,8 +951,9 @@ extern int CVAnySelPoints(CharView *cv);
 
 /**
  * Get all the selected points in the current cv.
+ * Caller must g_list_free() the returned value.
  */
-extern gl_list_t CVGetSelectedPoints(CharView *cv);
+extern GList_Glib* CVGetSelectedPoints(CharView *cv);
 extern void CVSelectPointAt(CharView *cv);
 extern int CVClearSel(CharView *cv);
 extern int CVSetSel(CharView *cv,int mask);
