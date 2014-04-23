@@ -247,7 +247,7 @@ static void dump_fpst_everythingelse(FILE *out, SplineFont *sf,char **classes,
     SplineFont *sub;
     SplineChar *sc;
     PST *pst;
-    int len;
+    int len = 8;
 
     if ( sf->subfontcnt==0 ) {
 	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL)
