@@ -3987,7 +3987,7 @@ static void AddMacName(NamTab *nt,struct macname *mn, int strid) {
 /* Undocumented fact: Windows insists on having a UniqueID string 3,1 */
 static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format) {
     int i,j;
-    struct ttflangname dummy, *cur;
+    struct ttflangname dummy, *cur, *useng = NULL;
     struct macname *mn;
     struct other_names *on, *onn;
     NamTab nt;
@@ -4377,6 +4377,7 @@ return( sub );
 static FILE *Needs816Enc(SplineFont *sf,int *tlen,EncMap *map, FILE **apple, int *appletlen) {
     FILE *sub;
     const char *encname = map->enc->iconv_name!=NULL ? map->enc->iconv_name : map->enc->enc_name;
+    EncMap *oldmap = map;
     EncMap *applemap = NULL;
     Encoding *enc;
 
@@ -6170,7 +6171,7 @@ static void dumphex(struct hexout *hexout,FILE *temp,int length) {
     fprintf( hexout->type42, "\n  00\n >\n" );
 }
 
-static void dumptype42(FILE *type42,struct alltabs *at) {
+static void dumptype42(FILE *type42,struct alltabs *at, enum fontformat format) {
     FILE *temp = tmpfile();
     struct hexout hexout;
     int i, length;
@@ -6672,7 +6673,8 @@ return( i );
 return( -1 );
 }
 
-static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format, int flags ) {
+static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
+	int flags, enum ttc_flags ttc_flags ) {
     int i,j,cnt,tot,ch,dup;
     int offset, startoffset;
     struct taboff *tab;

@@ -352,7 +352,7 @@ SplineFont *SFReadWinFON(char *filename,int toback) {
     SplineFont *sf;
     uint32 neoffset, recoffset, recend;
     int font_count;
-    BDFFont *bdf;
+    BDFFont *bdf, *next;
 
     fon = fopen(filename,"rb");
     if ( fon==NULL )
