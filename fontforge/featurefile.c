@@ -249,7 +249,7 @@ static void dump_fpst_everythingelse(FILE *out, SplineFont *sf,char **classes,
     SplineFont *sub;
     SplineChar *sc;
     PST *pst;
-    int len;
+    int len = 8;
 
     if ( sf->subfontcnt==0 ) {
 	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL)
@@ -1564,7 +1564,7 @@ static void dump_gdef(FILE *out,SplineFont *sf) {
 	lcnt = 0;
 	k=0;
 	do {
-	    _sf = sf->subfontcnt==0 ? sf : _sf;
+	    _sf = sf->subfontcnt==0 ? sf : sf->subfonts[k];
 	    for ( gid=0; gid<_sf->glyphcnt; ++gid ) if ( (sc=_sf->glyphs[gid])!=NULL ) {
 		if ( l==0 ) {
 		    clsidx = sc->glyph_class!=0 ? sc->glyph_class: gdefclass(sc)+1;
@@ -1617,7 +1617,7 @@ return;					/* No anchor positioning, no ligature carets */
 		k = 0;
 		fprintf( out, "%s = [", clsnames[i] );
 		do {
-		    _sf = sf->subfontcnt==0 ? sf : _sf;
+		    _sf = sf->subfontcnt==0 ? sf : sf->subfonts[k];
 		    for ( gid=0; gid<_sf->glyphcnt; ++gid ) if ( (sc=_sf->glyphs[gid])!=NULL ) {
 			if ( sc->glyph_class==i+2 || (sc->glyph_class==0 && gdefclass(sc)==i+1 )) {
 			    if ( len+strlen(sc->name)+1 >80 ) {
@@ -2928,6 +2928,7 @@ return( NULL );
 	char *pt1, *start1, *pt2, *start2;
 	int v1, v2;
 
+	last_val = -1; last_glyph[0] = '\0';
 	for (;;) {
 	    fea_ParseTok(tok);
 	    if ( tok->type==tk_char && tok->tokbuf[0]==']' )
@@ -3655,6 +3656,10 @@ static struct markedglyphs *fea_parseCursiveSequence(struct parseState *tok,
 	    cur->is_cursive = true;
 	    cur->is_name = true;
 	    cur->name_or_class = contents;
+	} else {
+	    LogError(_("Expect a valid glyph/CID name on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	    ++tok->err_count;
+	    return( NULL );
 	}
     } else if ( tok->type == tk_class || (tok->type==tk_char && tok->tokbuf[0]=='[')) {
 	cur = chunkalloc(sizeof(struct markedglyphs));
@@ -4712,6 +4717,7 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 		        } else if ( g->next!=NULL && g->mark_count==g->next->mark_count ) {
 			    head = fea_process_sub_ligature(tok,g,rpl,NULL);
 		        } else {
+			    head = NULL;
 			    LogError(_("Unparseable contextual sequence on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 			    ++tok->err_count;
 		        }
@@ -5614,9 +5620,14 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 		++tok->err_count;
 		fea_skip_to_semi(tok);
 	    }
-	    item->u2.lcaret = malloc((len+1)*sizeof(int16));
-	    memcpy(item->u2.lcaret,carets,len*sizeof(int16));
-	    item->u2.lcaret[len] = 0;
+	    if (carets != NULL) {
+		item->u2.lcaret = malloc((len+1)*sizeof(int16));
+		memcpy(item->u2.lcaret,carets,len*sizeof(int16));
+		item->u2.lcaret[len] = 0;
+	    } else {
+		LogError(_("Expected integer or list of integer after %s on line %d of %s"), item->u1.class,
+			tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	    }
 	} else if ( strcmp(tok->tokbuf,"GlyphClassDef")==0 ) {
 	    item = chunkalloc(sizeof(struct feat_item));
 	    item->type = ft_gdefclasses;
@@ -6779,9 +6790,10 @@ static void fea_GDefLigCarets(SplineFont *sf, struct feat_item *f) {
 	    pst->type = pst_lcaret;
 	    pst->u.lcaret.cnt = i;
 	    pst->u.lcaret.carets = f->u2.lcaret;
-	    f->u2.lcaret = NULL;
 	}
     }
+    // Should be done in fea_featitemFree()
+    f->u2.lcaret = NULL;
 }
 
 static struct feat_item *fea_ApplyFeatureList(struct parseState *tok,
