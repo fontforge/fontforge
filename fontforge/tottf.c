@@ -4006,6 +4006,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     for ( cur=sf->names; cur!=NULL; cur=cur->next ) {
 	if ( cur->lang==0x409 ) {
 	    dummy = *cur;
+	    useng = cur;
     break;
 	}
     }
