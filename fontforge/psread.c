@@ -286,7 +286,7 @@ return( nextch(wrapper));
 	wrapper->top = io->prev;
 	if ( io->isstopped )
 	    wrapper->endedstopped = true;
-	/* free(io->start); FIXME: Not always alloced*/
+	if (io->start != NULL) free(io->start); io->start = NULL;
 	free(io);
 	io = wrapper->top;
     }
@@ -344,7 +344,7 @@ static void ioescapeloop(IO *wrapper) {
     while ( io->prev!=NULL && !io->isstopped ) {
 	iop = io->prev;
 	wasloop = io->isloop;
-	/* free(io->start); FIXME: not always alloced*/
+	if (io->start != NULL) free(io->start); io->start = NULL;
 	free(io);
 	if ( wasloop ) {
 	    wrapper->top = iop;
@@ -368,7 +368,7 @@ static int ioescapestopped(IO *wrapper, struct psstack *stack, int sp, const siz
     while ( io->prev!=NULL ) {
 	iop = io->prev;
 	wasstopped = io->isstopped;
-	/* free(io->start); FIXME: not always alloced*/
+	if (io->start != NULL) free(io->start); io->start = NULL;
 	free(io);
 	if ( wasstopped ) {
 	    wrapper->top = iop;

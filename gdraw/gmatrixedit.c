@@ -1632,10 +1632,11 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 			    gchar *tmp = g_ucs4_to_utf8( (const gunichar *) GStringGetResource( _STR_New, NULL ),
 				   -1, NULL, NULL, NULL );
 			    buf = xasprintf( "<%s>", tmp );
-			    g_free( tmp );
+			    g_free( tmp ); tmp = NULL;
 			}
 			GDrawDrawText8( pixmap, gme->col_data[0].x - gme->off_left,y,
 				(char *) buf, -1, gmatrixedit_activecol );
+			free( buf ) ; buf = NULL ;
 		    }
 		} else {
 		    data = &gme->data[(r+gme->off_top)*gme->cols+c];

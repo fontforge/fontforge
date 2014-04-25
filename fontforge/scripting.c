@@ -9287,7 +9287,7 @@ static void docall(Context *c,char *name,Val *val) {
 		    sub.script = fopen(sub.filename,"r");
 		}
 		if ( sub.script==NULL )
-		    pt = "";
+		    *pt = '\0';
 	    }
 	    sub.script = fopen(sub.filename,"r");
 	    if ( sub.script==NULL ) {
@@ -9300,7 +9300,7 @@ static void docall(Context *c,char *name,Val *val) {
 		}
 		fclose(sub.script); sub.script = NULL;
 	    }
-	    if ( sub.filename!=name )
+	    if ( ( sub.filename!=NULL ) && ( sub.filename!=name ) )
 		free( sub.filename );
 	}
 	c->curfv = sub.curfv;

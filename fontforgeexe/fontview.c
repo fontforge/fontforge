@@ -6649,6 +6649,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	char *uniannot;
 	if( ( uniannot = unicode_annot( upos )) != NULL )
 	    msg = xasprintf("%s\n%s", msg, uniannot);
+	if ( uniannot != NULL ) free( uniannot ); uniannot = NULL;
     }
 
     /* user comments */
