@@ -9276,7 +9276,7 @@ static void docall(Context *c,char *name,Val *val) {
 	    }
 	    sub.script = fopen(sub.filename,"r");
 	    if ( sub.script==NULL ) {
-		const char *pt;
+		char *pt;
 		if ( sub.filename==name )
 		    sub.filename = strcpy(malloc(strlen(name)+4),name);
 		pt = sub.filename + strlen(sub.filename);
