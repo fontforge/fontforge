@@ -73,7 +73,7 @@ LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la	\
 	$(top_builddir)/gutils/libgioftp.la	\
 	$(top_builddir)/fontforge/libfontforge.la \
-	$(LIBGC_LIBS) $(top_builddir)/inc/libggc_veneer.la
+	$(LIBGC_LIBS) $(top_builddir)/inc/libggc_veneer.la \
 	$(top_builddir)/lib/libgnu.la
 
 GUILIBADD =
