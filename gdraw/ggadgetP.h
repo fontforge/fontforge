@@ -92,6 +92,7 @@ struct ggadget {
     unsigned int takes_keyboard: 1;
     unsigned int focusable: 1;
     unsigned int has_focus: 1;
+    unsigned int free_box: 1;
     unsigned int was_disabled: 1;
     unsigned int vert: 1;			/* For lines & scrollbars */
     unsigned int opengroup: 1;			/* For groupboxes */
@@ -256,6 +257,7 @@ typedef struct glist {
     unsigned int multiple_sel: 1;	/* Allow multiple selections */
     unsigned int exactly_one: 1;	/* List must always have something selected */
     unsigned int parentpressed: 1;	/* For listbuttons, pressed in parent */
+    unsigned int freeti: 1;		/* Free the ti array when we're destroyed */
     unsigned int ispopup: 1;		/* respond to Return and Escape */
     unsigned int sameheight: 1;		/* all lines are the same height */
     unsigned int always_show_sb: 1;	/* display scrollbar even if we don't need it */

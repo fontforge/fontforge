@@ -949,7 +949,10 @@ return( copy(""));
 	    else if ( *end==')' ) --parencnt;
 	}
 	if ( end>start ) {
-	    ret = realloc(ret,len+end-start);
+	    if ( ret==NULL )
+		ret = malloc(end-start+1);
+	    else
+		ret = realloc(ret,len+end-start);
 	    strncpy(ret+len-1,start,end-start);
 	    len += end-start;
 	    ret[len-1] = '\0';
@@ -1502,8 +1505,10 @@ return;
 	    if ( *line=='/' ) ++line;
 	    for ( pt = buffer; !isspace(*line); *pt++ = *line++ );
 	    *pt = '\0';
-	    if ( pos>=0 && pos<256 )
+	    if ( pos>=0 && pos<256 ) {
+		free(fp->fd->encoding[pos]);
 		fp->fd->encoding[pos] = copy(buffer);
+	    }
 	    while ( isspace(*line)) ++line;
 	    if ( strncmp(line,"put",3)==0 ) line+=3;
 	    while ( isspace(*line)) ++line;
@@ -1658,20 +1663,27 @@ return;
 return;
 	} else if ( endtok==NULL )
 return;
-	if ( mycmp("version",line+1,endtok)==0 )
+	if ( mycmp("version",line+1,endtok)==0 ) {
+	    free(fp->fd->fontinfo->version);
 	    fp->fd->fontinfo->version = getstring(endtok,in);
-	else if ( mycmp("Notice",line+1,endtok)==0 )
+	} else if ( mycmp("Notice",line+1,endtok)==0 ) {
+            free(fp->fd->fontinfo->notice);
 	    fp->fd->fontinfo->notice = getstring(endtok,in);
-	else if ( mycmp("Copyright",line+1,endtok)==0 )		/* cff spec allows for copyright and notice */
+	} else if ( mycmp("Copyright",line+1,endtok)==0 ) {		/* cff spec allows for copyright and notice */
+            free(fp->fd->fontinfo->notice);
 	    fp->fd->fontinfo->notice = getstring(endtok,in);
-	else if ( mycmp("FullName",line+1,endtok)==0 ) {
+	} else if ( mycmp("FullName",line+1,endtok)==0 ) {
 	    if ( fp->fd->fontinfo->fullname==NULL )
 		fp->fd->fontinfo->fullname = getstring(endtok,in);
-	} else if ( mycmp("FamilyName",line+1,endtok)==0 )
+	    else
+		free(getstring(endtok,in));
+	} else if ( mycmp("FamilyName",line+1,endtok)==0 ) {
+	    free( fp->fd->fontinfo->familyname );
 	    fp->fd->fontinfo->familyname = getstring(endtok,in);
-	else if ( mycmp("Weight",line+1,endtok)==0 )
+	} else if ( mycmp("Weight",line+1,endtok)==0 ) {
+	    free( fp->fd->fontinfo->weight );
 	    fp->fd->fontinfo->weight = getstring(endtok,in);
-	else if ( mycmp("ItalicAngle",line+1,endtok)==0 )
+	} else if ( mycmp("ItalicAngle",line+1,endtok)==0 )
 	    fp->fd->fontinfo->italicangle = strtod(endtok,NULL);
 	else if ( mycmp("UnderlinePosition",line+1,endtok)==0 )
 	    fp->fd->fontinfo->underlineposition = strtod(endtok,NULL);
@@ -1776,11 +1788,13 @@ return;
 return;
 	} else if ( endtok==NULL )
 return;
-	if ( mycmp("Registry",line+1,endtok)==0 )
+	if ( mycmp("Registry",line+1,endtok)==0 ) {
+	    free( fp->fd->registry );
 	    fp->fd->registry = getstring(endtok,in);
-	else if ( mycmp("Ordering",line+1,endtok)==0 )
+	} else if ( mycmp("Ordering",line+1,endtok)==0 ) {
+	    free( fp->fd->ordering );
 	    fp->fd->ordering = getstring(endtok,in);
-	else if ( mycmp("Supplement",line+1,endtok)==0 )		/* cff spec allows for copyright and notice */
+	} else if ( mycmp("Supplement",line+1,endtok)==0 )		/* cff spec allows for copyright and notice */
 	    fp->fd->supplement = strtol(endtok,NULL,0);
     } else {
 	if ( strstr(line,"/Private")!=NULL && (strstr(line,"dict")!=NULL || strstr(line,"<<")!=NULL )) {
@@ -1865,8 +1879,8 @@ return;
 	if ( mycmp("FontName",line+1,endtok)==0 ) {
 	    if ( fp->fd->fontname==NULL )
 		fp->fd->fontname = gettoken(endtok);
-            else
-                (void)gettoken(endtok); /* skip it */
+	    else
+		free(gettoken(endtok));	/* skip it */
 	} else if ( mycmp("PaintType",line+1,endtok)==0 )
 	    fp->fd->painttype = strtol(endtok,NULL,10);
 	else if ( mycmp("FontType",line+1,endtok)==0 )
@@ -1914,11 +1928,12 @@ return;
 	    /* Do Nothing */;
 	else if ( mycmp("BuildGlyph",line+1,endtok)==0 )
 	    /* Do Nothing */;
-	else if ( mycmp("CIDFontName",line+1,endtok)==0 )
+	else if ( mycmp("CIDFontName",line+1,endtok)==0 ) {
+	    free( fp->fd->cidfontname );
 	    fp->fd->cidfontname = gettoken(endtok);
-	else if ( mycmp("CIDFontVersion",line+1,endtok)==0 )
+	} else if ( mycmp("CIDFontVersion",line+1,endtok)==0 ) {
 	    fp->fd->cidversion = strtod(endtok,NULL);
-	else if ( mycmp("CIDFontType",line+1,endtok)==0 )
+	} else if ( mycmp("CIDFontType",line+1,endtok)==0 )
 	    fp->fd->cidfonttype = strtol(endtok,NULL,10);
 	else if ( mycmp("UIDBase",line+1,endtok)==0 )
 	    fp->fd->uniqueid = strtol(endtok,NULL,10);
@@ -2420,6 +2435,7 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
 	}
 	ff_progress_next();
     }
+    free(offsets);
 
     for ( k=0; k<fd->fdcnt; ++k ) {
 	struct private *private = fd->fds[k]->private;
@@ -2450,6 +2466,7 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
 			private->subrs->lens[i],leniv);
 	    }
 	    private->subrs->next = i;
+	    free(offsets);
 	}
 	PSDictRemoveEntry(private->private,"SubrMapOffset");
 	PSDictRemoveEntry(private->private,"SDBytes");
@@ -2619,6 +2636,7 @@ return(NULL);
     fp.fd = fp.mainfd = PSMakeEmptyFont();
     fp.fdindex = -1;
     realdecrypt(&fp,in,temp);
+    free(fp.vbuf);
     setlocale(LC_NUMERIC,oldloc);
 
     fclose(temp);
@@ -2642,6 +2660,96 @@ return(NULL);
     fd = _ReadPSFont(in);
     fclose(in);
 return( fd );
+}
+
+void PSCharsFree(struct pschars *chrs) {
+    int i;
+
+    if ( chrs==NULL )
+return;
+    for ( i=0; i<chrs->next; ++i ) {
+	if ( chrs->keys!=NULL ) free(chrs->keys[i]);
+	free(chrs->values[i]);
+    }
+    free(chrs->lens);
+    free(chrs->keys);
+    free(chrs->values);
+    free(chrs);
+}
+
+void PSDictFree(struct psdict *dict) {
+    int i;
+
+    if ( dict==NULL )
+return;
+    for ( i=0; i<dict->next; ++i ) {
+	if ( dict->keys!=NULL ) free(dict->keys[i]);
+	free(dict->values[i]);
+    }
+    free(dict->keys);
+    free(dict->values);
+    free(dict);
+}
+
+static void PrivateFree(struct private *prv) {
+    PSCharsFree(prv->subrs);
+    PSDictFree(prv->private);
+    free(prv);
+}
+
+static void FontInfoFree(struct fontinfo *fi) {
+    free(fi->familyname);
+    free(fi->fullname);
+    free(fi->notice);
+    free(fi->weight);
+    free(fi->version);
+    free(fi->blenddesignpositions);
+    free(fi->blenddesignmap);
+    free(fi->blendaxistypes);
+    free(fi);
+}
+
+void PSFontFree(FontDict *fd) {
+    int i;
+
+    if ( fd->encoding!=NULL )
+	for ( i=0; i<256; ++i )
+	    free( fd->encoding[i]);
+    free(fd->fontname);
+    free(fd->cidfontname);
+    free(fd->registry);
+    free(fd->ordering);
+    FontInfoFree(fd->fontinfo);
+    PSCharsFree(fd->chars);
+    PrivateFree(fd->private);
+    if ( fd->charprocs!=NULL ) {
+	for ( i=0; i<fd->charprocs->cnt; ++i )
+	    free(fd->charprocs->keys[i]);
+	free(fd->charprocs->keys);
+	free(fd->charprocs->values);
+	free(fd->charprocs);
+    }
+    if ( fd->cidstrs!=NULL ) {
+	for ( i=0; i<fd->cidcnt; ++i )
+	    free( fd->cidstrs[i]);
+	free(fd->cidstrs);
+    }
+    free(fd->cidlens);
+    free(fd->cidfds);
+    if ( fd->fds!=NULL ) {
+	for ( i=0; i<fd->fdcnt; ++i )
+	    PSFontFree(fd->fds[i]);
+	free(fd->fds);
+    }
+    free(fd->blendfunc);
+    free(fd->weightvector);
+    free(fd->cdv);
+    free(fd->ndv);
+
+    PSDictFree(fd->blendprivate);
+    PSDictFree(fd->blendfontinfo);
+    
+    free(fd);
 }
 
 char **_NamesReadPostScript(FILE *ps) {

@@ -51,6 +51,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef __KVMSG_H_INCLUDED__
 #define __KVMSG_H_INCLUDED__
 
+#include "fontforge-config.h"
 #include "czmq.h"
 
 //  Opaque class structure

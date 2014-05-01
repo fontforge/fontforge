@@ -58,8 +58,6 @@ The following options configure it:
 		is scaled to the screen.
 */
 
-#include <fontforge-config.h>
-
 #ifndef _WACOM_DRV_BROKEN
 static void *a_file_must_define_something = (void *) &a_file_must_define_something;
 #else

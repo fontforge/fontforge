@@ -133,6 +133,17 @@ union hash {
     union hash *table;
 };
 
+static void freetab(union hash *tab, int nchars) {
+    int i;
+
+    if ( tab && nchars>1 ) {
+	for ( i=0; i<256; ++i )
+	    if ( tab[i].table!=NULL )
+		freetab(tab[i].table,nchars-1);
+    }
+    free(tab);
+}
+
 static int fillupclut(Color *clut, union hash *tab,int index,int nchars) {
     int i;
 
@@ -241,13 +252,16 @@ static union hash *parse_colors(FILE *fp,unsigned char *line, int lsiz, int ncol
     if ( nchars==1 )
 	memset(tab,-1,256*sizeof(union hash));
     for ( i=0; i<ncols; ++i ) {
-	if ( !getdata(line,lsiz,fp) )
+	if ( !getdata(line,lsiz,fp) ) {
+	    freetab(tab,nchars);
 	    return( NULL );
+	}
 	sub = tab;
 	for ( j=0; j<nchars-1; ++j ) {
 	    if ( sub[line[j]].table==NULL ) {
 		if ( (sub[line[j]].table=(union hash *)malloc(256*sizeof(union hash)))==NULL ) {
 		    NoMoreMemMessage();
+		    freetab(tab,nchars);
 		    return( NULL );
 		}
 		if ( j==nchars-2 )
@@ -343,12 +357,16 @@ GImage *GImageReadXpm(char * filename) {
 	    ++pt; ++ipt; ++lpt;
 	}
     }
+    free(line);
+    freetab(tab,nchar);
     fclose(fp);
     return( ret );
 
 errorGImageReadXpm:
     fprintf(stderr,"Bad input file \"%s\"\n",filename );
 errorGImageReadXpmMem:
+    GImageDestroy(ret);
+    free(line); freetab(tab,nchar);
     fclose(fp);
     return( NULL );
 }

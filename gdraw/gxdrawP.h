@@ -197,6 +197,7 @@ struct seldata {
     void *data;
     void *(*gendata)(void *,int32 *len);
     /* Either the data are stored here, or we use this function to generate them on the fly */
+    void (*freedata)(void *);
     struct seldata *next;
 };
 

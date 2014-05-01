@@ -99,7 +99,7 @@ struct math_constants_descriptor math_constants_descriptor[] = {
 };
 
 struct MATH *MathTableNew(SplineFont *sf) {
-    struct MATH *math = XZALLOC(struct MATH);
+    struct MATH *math = calloc(1,sizeof(struct MATH));	/* Too big for chunkalloc */
     int emsize = sf->ascent+sf->descent;
     DBounds b;
     SplineChar *sc;
@@ -156,4 +156,17 @@ struct MATH *MathTableNew(SplineFont *sf) {
 
     math->MinConnectorOverlap = emsize/50;
 return( math );
+}
+
+void MATHFree(struct MATH *math) {
+    int i;
+
+    if ( math==NULL )
+return;
+
+    for ( i=0; math_constants_descriptor[i].ui_name!=NULL; ++i ) {
+	if ( math_constants_descriptor[i].devtab_offset>=0 )
+	    DeviceTableFree( *(DeviceTable **) (((char *) math) + math_constants_descriptor[i].devtab_offset ) );
+    }
+    free(math);
 }

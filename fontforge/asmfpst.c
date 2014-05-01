@@ -69,7 +69,7 @@ FPST *FPSTGlyphToClass(FPST *fpst) {
     if ( fpst->format!=pst_glyphs )
 return( NULL );
 
-    new = XZALLOC(FPST);
+    new = chunkalloc(sizeof(FPST));
     new->type = fpst->type;
     new->format = pst_class;
     new->subtable = fpst->subtable;
@@ -136,6 +136,20 @@ return( new );
 
 static int ValidSubs(OTLookup *otl ) {
 return( otl->lookup_type == gsub_single );
+}
+
+static void TreeFree(struct contexttree *tree) {
+    int i;
+
+    if ( tree==NULL )
+return;
+
+    for ( i=0; i<tree->branch_cnt; ++i )
+	TreeFree(tree->branches[i].branch);
+
+    free( tree->branches );
+    free( tree->rules );
+    chunkfree( tree,sizeof(*tree) );
 }
 
 static int TreeLabelState(struct contexttree *tree, int snum) {
@@ -239,7 +253,7 @@ return( true );
 }
 
 static struct contexttree *_FPST2Tree(FPST *fpst,struct contexttree *parent,int class) {
-    struct contexttree *me = XZALLOC(struct contexttree);
+    struct contexttree *me = chunkalloc(sizeof(struct contexttree));
     int i, rcnt, ccnt, k, thisclass;
     uint16 *classes;
 
@@ -286,6 +300,7 @@ static struct contexttree *_FPST2Tree(FPST *fpst,struct contexttree *parent,int 
 	    if ( classes[i]==me->rules[k].thisclassnum )
 		me->rules[k].branch = me->branches[i].branch;
     }
+    free(classes );
 return( me );
 }
 
@@ -312,8 +327,10 @@ static void FPSTBuildAllClasses(FPST *fpst) {
 static void FPSTFreeAllClasses(FPST *fpst) {
     int i;
 
-    for ( i=0; i<fpst->rule_cnt; ++i )
+    for ( i=0; i<fpst->rule_cnt; ++i ) {
+	free( fpst->rules[i].u.class.allclasses );
 	fpst->rules[i].u.class.allclasses = NULL;
+    }
 }
 
 static struct contexttree *FPST2Tree(SplineFont *sf,FPST *fpst) {
@@ -332,8 +349,10 @@ return( NULL );
 	
     ret = _FPST2Tree(fpst,NULL,0);
 
-    if ( !TreeFollowBranches(sf,ret,-1) )
+    if ( !TreeFollowBranches(sf,ret,-1) ) {
+	TreeFree(ret);
 	ret = NULL;
+    }
 
     FPSTFreeAllClasses(fpst);
 
@@ -387,9 +406,11 @@ return( false );
 	FPST *tempfpst = FPSTGlyphToClass(fpst);
 	ret = FPST2Tree(sf, tempfpst);
 	FPSTFree(tempfpst);
+	TreeFree(ret);
 return( ret!=NULL );
     } else if ( fpst->format == pst_class ) {
 	ret = FPST2Tree(sf, fpst);
+	TreeFree(ret);
 return( ret!=NULL );
     } else if ( fpst->format != pst_coverage )
 return( false );
@@ -475,6 +496,7 @@ static char *BuildMarkClass(SplineFont *sf) {
     }
     markglyphs[mg] = NULL;
     ret = GlyphListToNames(markglyphs);
+    free(markglyphs);
 return(ret);
 }
 
@@ -576,7 +598,7 @@ return( NULL );
 	    classglyphs[cg++] = classglyphs[i];
     classglyphs[cg] = NULL;
 
-    sm = XZALLOC(ASM);
+    sm = chunkalloc(sizeof(ASM));
     sm->type = asm_context;
     sm->flags = (flags&pst_r2l) ? asm_descending : 0;
 	/* This is a temporary value. It should be replaced if we will retain */
@@ -591,6 +613,8 @@ return( NULL );
     sm->classes[4] = GlyphListToNames(classglyphs);
     if ( flags&pst_ignorecombiningmarks )
 	sm->classes[5] = GlyphListToNames(markglyphs);
+    free(classglyphs); free(markglyphs);
+
 
     /* State 0,1 are start states */
     /* State 2 means we have found one interesting letter, transformed current to 'init' and marked it (in case we need to make it isolated) */
@@ -699,6 +723,7 @@ return( NULL );
 	    }
 	    ++class_cnt;
 	    gcnt += next[i];
+	    free(temp[i]);
 	}
     }
     if ( fpst->subtable->lookup->lookup_flags & pst_ignorecombiningmarks ) {
@@ -719,6 +744,8 @@ return( NULL );
 	map[gcnt++] = gall[i]->lsidebearing+4;	/* there are 4 standard classes, so our first class starts at 4 */
     }
     glyphs[gcnt] = NULL;
+    free(gall);
+    free(temp);
     *gc = gcnt;
     *mp = map;
 
@@ -740,6 +767,8 @@ return( NULL );
     for ( j=0; j<match_len; ++j )
 	(*classes)[j][nc[j]] = 0xffff;		/* End marker */
 
+    free(next);
+    free(nc);
 return( glyphs );
 }
 
@@ -782,7 +811,11 @@ return( NULL );
     if ( glyphs==NULL )
 return( NULL );
 
-    sm = XZALLOC(ASM);
+    for ( i=0; i<match_len; ++i )
+	free(tables[i]);
+    free(tables);
+
+    sm = chunkalloc(sizeof(ASM));
     sm->type = asm_context;
     sm->flags = (fpst->subtable->lookup->lookup_flags&pst_r2l) ? asm_descending : 0;
     sm->class_cnt = class_cnt;
@@ -790,6 +823,7 @@ return( NULL );
     sm->classes[0] = sm->classes[1] = sm->classes[2] = sm->classes[3] = NULL;
     for ( i=4; i<class_cnt; ++i )
 	sm->classes[i] = BuildClassNames(glyphs,map,i);
+    free(glyphs); free(map);
 
     /* Now build the state machine */
     /* we have match_len+1 states (there are 2 initial states) */
@@ -823,6 +857,9 @@ return( NULL );
     }
     /* Class 0 and class 1 should be the same. We only filled in class 1 above*/
     memcpy(sm->state,sm->state+sm->class_cnt,sm->class_cnt*sizeof(struct asm_state));
+    for ( j=0; j<match_len; ++j )
+	free(classes[j]);
+    free(classes);
 return( sm );
 }
 
@@ -902,7 +939,7 @@ static ASM *ASMFromClassFPST(SplineFont *sf,FPST *fpst, struct contexttree *tree
     struct contexttree *cur;
     int i;
 
-    sm = XZALLOC(ASM);
+    sm = chunkalloc(sizeof(ASM));
     sm->type = asm_context;
     sm->flags = (fpst->subtable->lookup->lookup_flags&pst_r2l) ? asm_descending : 0;
     /* mac class sets have four magic classes, opentype sets only have one */
@@ -958,6 +995,7 @@ ASM *ASMFromFPST(SplineFont *sf,FPST *fpst,int ordered) {
 	tree = FPST2Tree(sf, tempfpst);
 	if ( tree!=NULL ) {
 	    sm = ASMFromClassFPST(sf,tempfpst,tree);
+	    TreeFree(tree);
 	} else
 	    sm = NULL;
 	if ( tempfpst!=fpst )

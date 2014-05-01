@@ -360,13 +360,17 @@ return( SS_DiffContourCount|SS_NoMatch );
 	break;
 	    }
 	}
-	if ( bestdiff==-1 )
+	if ( bestdiff==-1 ) {
+	    free(b1); free(b2); free(match);
 return( SS_MismatchOpenClosed|SS_NoMatch );
+	}
 	match[cnt1] = bestss;
 	b2[bestcnt].maxx = b2[bestcnt].minx-1;	/* Mark as used */
 	if ( bestcnt!=cnt1 )
 	    info = SS_DisorderedContours;
     }
+    free(b2);
+    free(b1);
 
     if ( pt_err>=0 ) {
 	allmatch = true;
@@ -415,6 +419,7 @@ return( SS_MismatchOpenClosed|SS_NoMatch );
 	}
     }
 
+    free(match);
     if ( !allmatch )
 return( SS_NoMatch|SS_ContourMismatch );
 
@@ -467,6 +472,8 @@ static int SSRefCompare(const SplineSet *ss1,const SplineSet *ss2,
     if ( !(ret&SS_NoMatch) )
 	ret |= SS_UnlinkRefMatch;
 
+    SplinePointListsFree(head1);
+    SplinePointListsFree(head2);
 return( ret );
 }
 
@@ -1017,6 +1024,7 @@ static void SCAddBackgrounds(SplineChar *sc1,SplineChar *sc2) {
     RefChar *ref;
 
     SCOutOfDateBackground(sc1);
+    SplinePointListsFree(sc1->layers[ly_back].splines);
     sc1->layers[ly_back].splines = SplinePointListCopy(sc2->layers[ly_fore].splines);
     if ( sc1->layers[ly_back].splines!=NULL )
 	for ( last = sc1->layers[ly_back].splines; last->next!=NULL; last=last->next );
@@ -1141,6 +1149,7 @@ static void FDAddMissingGlyph(struct font_diff *fd,SplineChar *sc2) {
     sc->width = sc2->width;
     sc->vwidth = sc2->vwidth;
     sc->widthset = sc2->widthset;
+    free(sc->name);
     sc->name = copy(sc2->name);
     sc->unicodeenc = sc2->unicodeenc;
     SCAddBackgrounds(sc,sc2);
@@ -2212,6 +2221,9 @@ static void compareg___(struct font_diff *fd) {
 	    }
 	}
     }
+
+    free( fd->l2match1 ); free( fd->l1match2 );
+    free( fd->s2match1 ); free( fd->s1match2 );
 }
 
 static void comparegpos(struct font_diff *fd) {
@@ -2293,10 +2305,12 @@ int CompareFonts(SplineFont *sf1, EncMap *map1, SplineFont *sf2, FILE *diffs,
     if ( flags&fcf_gsub )
 	comparegsub(&fd);
 
+    free(fd.matches);
+
     if ( sf1->subfontcnt!=0 && sf2->subfontcnt!=0 ) {
-	sf1->glyphs = NULL;
+	free(sf1->glyphs); sf1->glyphs = NULL;
 	sf1->glyphcnt = sf1->glyphmax = 0;
-	sf2->glyphs = NULL;
+	free(sf2->glyphs); sf2->glyphs = NULL;
 	sf2->glyphcnt = sf2->glyphmax = 0;
     }
 

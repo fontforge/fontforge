@@ -725,7 +725,7 @@ static void AdjustAll(SplinePoint *change,BasePoint *rel,
 }
 
 static SplinePoint *RplInsertSP(SplinePoint *after,SplinePoint *nrpl,SplinePoint *rpl,SearchData *s, BasePoint *fudge) {
-    SplinePoint *new = XZALLOC(SplinePoint);
+    SplinePoint *new = chunkalloc(sizeof(SplinePoint));
     real transform[6];
 
     SVBuildTrans(s,transform);
@@ -802,7 +802,7 @@ static void DoReplaceIncomplete(SplineChar *sc,SearchData *s) {
     /* Total "fudge" amount should be spread evenly over each point */
     FudgeFigure(s,path,&fudge);
     if ( s->pointcnt!=s->rpointcnt )
-	sc->md = NULL;
+	MinimumDistancesFree(sc->md); sc->md = NULL;
 
     sc_p = s->matched_sp; p_p = path->first, r_p = rpath->first;
     if ( s->endpoints ) {
@@ -845,12 +845,16 @@ return;		/* done */
 	    /*  Need to remove some points */
 	    nsc_p = sc_p->next->to;
 	    if ( nsc_p->next==NULL ) {
+		SplinePointFree(nsc_p);
+		SplineFree(sc_p->next);
 		sc_p->next = NULL;
 		s->matched_spl->last = sc_p;
 		s->last_sp = s->last_sp==NULL ? NULL : sc_p;
 return;
 	    } else {
 		nsc_p = nsc_p->next->to;
+		SplinePointFree(sc_p->next->to);
+		SplineFree(sc_p->next);
 		sc_p->next = nsc_p->prev;
 		nsc_p->prev->from = sc_p;
 		SplineRefigure(nsc_p->prev);
@@ -960,6 +964,7 @@ static void DoReplaceFull(SplineChar *sc,SearchData *s) {
 	subtrans[5] = transform[4]*r->transform[1] + transform[5]*r->transform[3] +
 		r->transform[5];
 	new = RefCharCreate();
+	free(new->layers);
 	*new = *r;
 	memcpy(new->transform,subtrans,sizeof(subtrans));
 	new->layers = NULL;
@@ -1004,6 +1009,7 @@ void SVResetPaths(SearchData *sv) {
 
     if ( sv->sc_srch.changed_since_autosave ) {
 	sv->path = sv->sc_srch.layers[ly_fore].splines;
+	SplinePointListsFree(sv->revpath);
 	sv->revpath = SplinePointListCopy(sv->path);
 	for ( spl=sv->revpath; spl!=NULL; spl=spl->next )
 	    spl = SplineSetReverse(spl);
@@ -1011,6 +1017,7 @@ void SVResetPaths(SearchData *sv) {
     }
     if ( sv->sc_rpl.changed_since_autosave ) {
 	sv->replacepath = sv->sc_rpl.layers[ly_fore].splines;
+	SplinePointListsFree(sv->revreplace);
 	sv->revreplace = SplinePointListCopy(sv->replacepath);
 	for ( spl=sv->revreplace; spl!=NULL; spl=spl->next )
 	    spl = SplineSetReverse(spl);
@@ -1147,6 +1154,9 @@ return;
 	UndoesFree(sv->sc_srch.layers[i].undoes);
     for ( i=0; i<sv->sc_rpl.layer_cnt; ++i )
 	UndoesFree(sv->sc_rpl.layers[i].undoes);
+    free(sv->sc_srch.layers);
+    free(sv->sc_rpl.layers);
+    SplinePointListsFree(sv->revpath);
 }
 
 SearchData *SDFillup(SearchData *sv, FontViewBase *fv) {
@@ -1195,6 +1205,8 @@ static void SDCopyToSC(SplineChar *checksc,SplineChar *into,enum fvcopy_type ful
     RefChar *ref;
 
     for ( i=0; i<into->layer_cnt; ++i ) {
+	SplinePointListsFree(into->layers[i].splines);
+	RefCharsFree(into->layers[i].refs);
 	into->layers[i].splines = NULL;
 	into->layers[i].refs = NULL;
     }
@@ -1259,7 +1271,11 @@ void FVBReplaceOutlineWithReference( FontViewBase *fv, double fudge ) {
     ff_progress_end_indicator();
 
     SDDestroy(sv);
+    free(sv);
+
+    free(selected);
     memcpy(fv->selected,changed,fv->map->enccount);
+    free(changed);
 }
 
 /* This will free both the find and rpl contours */
@@ -1285,6 +1301,7 @@ int FVReplaceAll( FontViewBase *fv, SplineSet *find, SplineSet *rpl, double fudg
     ret = _DoFindAll(sv);
 
     SDDestroy(sv);
+    free(sv);
 return( ret );
 }
 
@@ -1360,6 +1377,7 @@ static SplineChar *RC_MakeNewGlyph(FontViewBase *fv,SplineChar *base, int index,
     if ( enc==-1 )
 	enc = fv->map->enccount;
     ret = SFMakeChar(sf,fv->map,enc);
+    free(ret->name);
     ret->name = namebuf;
     SFHashGlyph(sf,ret);
 
@@ -1373,6 +1391,7 @@ static void AddRef(SplineChar *sc,SplineChar *rsc, int layer) {
     RefChar *r;
 
     r = RefCharCreate();
+    free(r->layers);
     r->layers = NULL;
     r->layer_cnt = 0;
     r->sc = rsc;
@@ -1394,11 +1413,14 @@ static struct splinecharlist *DListRemove(struct splinecharlist *dependents,Spli
 return( NULL );
     else if ( dependents->sc==this_sc ) {
 	dlist = dependents->next;
+	chunkfree(dependents,sizeof(*dependents));
 return( dlist );
     } else {
 	for ( pd=dependents, dlist = pd->next; dlist!=NULL && dlist->sc!=this_sc; pd=dlist, dlist = pd->next );
-	if ( dlist!=NULL )
+	if ( dlist!=NULL ) {
 	    pd->next = dlist->next;
+	    chunkfree(dlist,sizeof(*dlist));
+	}
 return( dependents );
     }
 }

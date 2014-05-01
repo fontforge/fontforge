@@ -33,7 +33,7 @@ struct stdfuncs _GIO_stdfuncs = {
     _GIO_decomposeURL, _GIO_PostSuccess, _GIO_PostInter,
     _GIO_PostError, _GIO_RequestAuthorization, _GIO_LookupHost,
     NULL,			/* default authorizer */
-    NULL,
+    GIOFreeDirEntries,
 #ifdef GWW_TEST
     _GIO_ReportHeaders,		/* set to NULL when not debugging */
 #else
@@ -64,7 +64,11 @@ static int AddProtocol(unichar_t *prefix,int len) {
 
     if ( plen>=pmax ) {
 	pmax += 20;		/* We're never going to support 20 protocols? */
-        protocols = (struct protocols *) realloc(protocols,pmax*sizeof(struct protocols));
+	if ( plen==0 ) {
+	    protocols = (struct protocols *) malloc(pmax*sizeof(struct protocols));
+	} else {
+	    protocols = (struct protocols *) realloc(protocols,pmax*sizeof(struct protocols));
+	}
     }
     memset(protocols+plen,0,sizeof(struct protocols));
     if ( uc_strncmp(prefix,"file",len)==0 ) {
@@ -95,12 +99,16 @@ static void GIOdispatch(GIOControl *gc, enum giofuncs gf) {
     if ( temp!=NULL ) {
 	if ( gc->origpath==NULL )
 	    gc->origpath = gc->path;
+	else
+	    free(gc->path);
 	gc->path = temp;
     }
     if ( gc->topath!=NULL ) {
 	temp = _GIO_translateURL(gc->topath,gf);
-	if ( temp!=NULL )
+	if ( temp!=NULL ) {
+	    free(gc->topath);
 	    gc->topath = temp;
+	}
 	if ( gf==gf_renamefile ) {
 	    if (( pt = uc_strstr(gc->path,"://"))== NULL )
 		pt = gc->path;
@@ -198,6 +206,18 @@ void GIOrenameFile(GIOControl *gc) {
     GIOdispatch(gc,gf_renamefile);
 }
 
+void GIOFreeDirEntries(GDirEntry *ent) {
+    GDirEntry *next;
+
+    while ( ent!=NULL ) {
+	next = ent->next;
+	free(ent->name);
+	free(ent->mimetype);
+	free(ent);
+	ent = next;
+    }
+}
+
 GDirEntry *GIOgetDirData(GIOControl *gc) {
 
     if ( gc->direntrydata )
@@ -219,6 +239,15 @@ void GIOcancel(GIOControl *gc) {
     if ( gc->protocol_index>=0 && protocols[gc->protocol_index].cancel!=NULL )
 	/* Per connection cleanup, cancels io if not done and removes from any queues */
 	(protocols[gc->protocol_index].cancel)(gc);
+    if ( gc->direntrydata )
+	GIOFreeDirEntries((GDirEntry *) gc->iodata);
+    else
+	free(gc->iodata);
+    free(gc->threaddata);
+    free(gc->path);
+    free(gc->origpath);
+    free(gc->topath);
+    free(gc);
 }
 
 void GIOclose(GIOControl *gc) {
@@ -242,6 +271,7 @@ void GIOSetDefAuthorizer(int32 (*getauth)(struct giocontrol *)) {
 }
 
 void GIOSetUserAgent(unichar_t *agent) {
+    free( _GIO_stdfuncs.useragent );
     _GIO_stdfuncs.useragent = cu_copy(agent);
 }
 

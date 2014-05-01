@@ -69,7 +69,7 @@ return;
 		    4*sizeof(real));
 	    sc->layers[pos].splines = e->u.splines.splines;
 	} else if ( e->type == et_image ) {
-	    ImageList *ilist = XZALLOC(ImageList);
+	    ImageList *ilist = chunkalloc(sizeof(ImageList));
 	    struct _GImage *base = e->u.image.image->list_len==0?
 		    e->u.image.image->u.image:e->u.image.image->u.images[0];
 	    sc->layers[pos].images = ilist;
@@ -93,6 +93,7 @@ return;
 	    ss->next = sc->layers[pos].splines;
 	    sc->layers[pos].splines = e->clippath;
 	}
+	free(e);
     }
     sc->layer_cnt += cnt;
     SCMoreLayers(sc,old);
@@ -124,8 +125,10 @@ return;
 	    SCPreserveLayer(sc,layer,false);
 	    head = &sc->layers[layer].splines;
 	}
-	if ( doclear )
+	if ( doclear ) {
+	    SplinePointListsFree(*head);
 	    *head = NULL;
+	}
 	espl->next = *head;
 	*head = spl;
     }
@@ -167,8 +170,10 @@ return;
 	    SCPreserveLayer(sc,layer,false);
 	    head = &sc->layers[layer].splines;
 	}
-	if ( doclear )
+	if ( doclear ) {
+	    SplinePointListsFree(*head);
 	    *head = NULL;
+	}
 	espl->next = *head;
 	*head = spl;
     }
@@ -258,6 +263,7 @@ return;
 	} else
 	    head = last = cur;
     }
+    free(spiros);
 
     /* Raph's plate files seem to have the base line at 800, and glyphs grow */
     /*  downwards */ /* At least for Inconsola */
@@ -278,8 +284,10 @@ return;
 	SCPreserveLayer(sc,layer,false);
 	ly_head = &sc->layers[layer].splines;
     }
-    if ( doclear )
+    if ( doclear ) {
+	SplinePointListsFree(*ly_head);
 	*ly_head = NULL;
+    }
     last->next = *ly_head;
     *ly_head = head;
     SCCharChangedUpdate(sc,layer);
@@ -309,8 +317,10 @@ return;
 	    SCPreserveLayer(sc,layer,false);
 	    head = &sc->layers[layer].splines;
 	}
-	if ( doclear )
+	if ( doclear ) {
+	    SplinePointListsFree(*head);
 	    *head = NULL;
+	}
 	espl->next = *head;
 	*head = spl;
     }
@@ -337,8 +347,10 @@ return;
 	SCPreserveLayer(sc,layer,false);
 	head = &sc->layers[layer].splines;
     }
-    if ( doclear )
+    if ( doclear ) {
+	SplinePointListsFree(*head);
 	*head = NULL;
+    }
     espl->next = *head;
     *head = spl;
 
@@ -420,7 +432,7 @@ static SplineSet * slurparc(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     sa = atan2(sy-cy,sx-cx);
     ea = atan2(ey-cy,ex-cx);
 
-    spl = XZALLOC(SplinePointList);
+    spl = chunkalloc(sizeof(SplinePointList));
     spl->next = sofar;
     spl->first = sp = SplinePointCreate(sx,sy);
     spl->last = ep = SplinePointCreate(ex,ey);
@@ -468,24 +480,24 @@ static SplineSet * slurpelipse(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     dcx = cx*scale; dcy = (ascent-cy)*scale;
     drx = rx*scale; dry = ry*scale;
 
-    spl = XZALLOC(SplinePointList);
+    spl = chunkalloc(sizeof(SplinePointList));
     spl->next = sofar;
-    spl->first = sp = XZALLOC(SplinePoint);
+    spl->first = sp = chunkalloc(sizeof(SplinePoint));
     sp->me.x = dcx; sp->me.y = dcy+dry;
 	sp->nextcp.x = sp->me.x + .552*drx; sp->nextcp.y = sp->me.y;
 	sp->prevcp.x = sp->me.x - .552*drx; sp->prevcp.y = sp->me.y;
-    spl->last = sp = XZALLOC(SplinePoint);
+    spl->last = sp = chunkalloc(sizeof(SplinePoint));
     sp->me.x = dcx+drx; sp->me.y = dcy;
 	sp->nextcp.x = sp->me.x; sp->nextcp.y = sp->me.y - .552*dry;
 	sp->prevcp.x = sp->me.x; sp->prevcp.y = sp->me.y + .552*dry;
     SplineMake3(spl->first,sp);
-    sp = XZALLOC(SplinePoint);
+    sp = chunkalloc(sizeof(SplinePoint));
     sp->me.x = dcx; sp->me.y = dcy-dry;
 	sp->nextcp.x = sp->me.x - .552*drx; sp->nextcp.y = sp->me.y;
 	sp->prevcp.x = sp->me.x + .552*drx; sp->prevcp.y = sp->me.y;
     SplineMake3(spl->last,sp);
     spl->last = sp;
-    sp = XZALLOC(SplinePoint);
+    sp = chunkalloc(sizeof(SplinePoint));
     sp->me.x = dcx-drx; sp->me.y = dcy;
 	sp->nextcp.x = sp->me.x; sp->nextcp.y = sp->me.y + .552*dry;
 	sp->prevcp.x = sp->me.x; sp->prevcp.y = sp->me.y - .552*dry;
@@ -519,7 +531,7 @@ static SplineSet * slurppolyline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     else {
 	if ( sub!=1 && bps[cnt-1].x==bps[0].x && bps[cnt-1].y==bps[0].y )
 	    --cnt;
-	spl = XZALLOC(SplinePointList);
+	spl = chunkalloc(sizeof(SplinePointList));
 	if ( cnt==4 && sub==4/*arc-box*/ && radius!=0 ) {
 	    SplineFont *sf = sc->parent;
 	    real scale = sf->ascent/(8.5*80.0), r = radius*scale;	/* radii are scaled differently */
@@ -562,7 +574,7 @@ static SplineSet * slurppolyline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
 	    SplineMake3(spl->last,sp); spl->last = sp;
 	} else {
 	    for ( i=0; i<cnt; ++i ) {
-		sp = XZALLOC(SplinePoint);
+		sp = chunkalloc(sizeof(SplinePoint));
 		sp->me = sp->nextcp = sp->prevcp = bps[i];
 		sp->nonextcp = sp->noprevcp = true;
 		sp->pointtype = pt_corner;
@@ -580,6 +592,7 @@ static SplineSet * slurppolyline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
 	spl->next = sc->layers[ly_fore].splines;
 	spl->next = sofar;
     }
+    free(bps);
 return( spl );
 }
 
@@ -686,17 +699,17 @@ static SplineSet *ApproximateXSpline(struct xspline *xs,int order2) {
     size_t i, j;
     real t;
     TPoint mids[7];
-    SplineSet *spl = XZALLOC(SplineSet);
+    SplineSet *spl = chunkalloc(sizeof(SplineSet));
     SplinePoint *sp;
 
-    spl->first = spl->last = XZALLOC(SplinePoint);
+    spl->first = spl->last = chunkalloc(sizeof(SplinePoint));
     xsplineeval(&spl->first->me,0,xs);
     spl->first->pointtype = ( xs->s[0]==0 )?pt_corner:pt_curve;
     for ( i=0; i<(size_t)(xs->n-1); ++i ) {
 	if ( i==(size_t)(xs->n-2) && xs->closed )
 	    sp = spl->first;
 	else {
-	    sp = XZALLOC(SplinePoint);
+	    sp = chunkalloc(sizeof(SplinePoint));
 	    sp->pointtype = ( xs->s[i+1]==0 )?pt_corner:pt_curve;
 	    xsplineeval(&sp->me,i+1,xs);
 	}
@@ -748,6 +761,10 @@ static SplineSet * slurpspline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
 	xs.s[cnt-1] = xs.s[0];
     }
     spl = ApproximateXSpline(&xs,sc->layers[ly_fore].order2);
+
+    free(xs.cp);
+    free(xs.s);
+
     spl->next = sofar;
 return( spl );
 }
@@ -816,8 +833,10 @@ return;
 	    SCPreserveLayer(sc,layer,false);
 	    head = &sc->layers[layer].splines;
 	}
-	if ( doclear )
+	if ( doclear ) {
+	    SplinePointListsFree(*head);
 	    *head = NULL;
+	}
 	if ( sc->layers[ly_fore].order2 )
 	    spl = SplineSetsConvertOrder(spl,true);
 	for ( espl=spl; espl->next!=NULL; espl=espl->next );
@@ -847,6 +866,7 @@ GImage *ImageAlterClut(GImage *image) {
 	    nbase->clut = base->clut;
 	    base->clut = NULL;
 	    nbase->trans = base->trans;
+	    GImageDestroy(image);
 	    image = new;
 	    base = nbase;
 	} else
@@ -904,8 +924,10 @@ void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear, int layer) {
 
     image = ImageAlterClut(image);
     scale = (sc->parent->ascent+sc->parent->descent)/(real) GImageGetHeight(image);
-    if ( doclear )
+    if ( doclear ) {
+	ImageListsFree(sc->layers[layer].images);
 	sc->layers[layer].images = NULL;
+    }
     SCInsertImage(sc,image,scale,sc->parent->ascent,0,layer);
 }
 
@@ -1035,6 +1057,7 @@ return( false );
 	    base = image->list_len==0?image->u.image:image->u.images[0];
 	    if ( base->image_type!=it_mono ) {
 		ff_post_error(_("Bad image file"),_("Bad image file, not a bitmap: %.100s"),start);
+		GImageDestroy(image);
     continue;
 	    }
 	    ++tot;

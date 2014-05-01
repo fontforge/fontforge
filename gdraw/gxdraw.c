@@ -24,7 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
 
 #if defined(__MINGW32__)
 #include <winsock2.h>
@@ -763,8 +762,11 @@ static char*  u2acp_copy(const unichar_t* ustr){
 		if(alen<0) alen=0;
 		mbs[alen]='\0';
 
+		free(wcs);
 		return mbs;
 	    }
+	    free(wcs);
+	    free(mbs);
 	}
     }
     return NULL;
@@ -796,16 +798,20 @@ static void  mingw_set_wm_icon_name(Display* display, Window window, const unich
 static void  mingw_set_wm_name_utf8(Display* display, Window window, const char* utf8){
     if(utf8){
 	unichar_t* uni = utf82u_copy(utf8);
-	if(uni)
+	if(uni){
 	    mingw_set_wm_name(display, window, uni);
+	    free(uni);
+	}
     }
 }
 /* SET WM IconName utf8 */
 static void  mingw_set_wm_icon_name_utf8(Display* display, Window window, const char* utf8){
     if(utf8){
 	unichar_t* uni = utf82u_copy(utf8);
-	if(uni)
+	if(uni){
 	    mingw_set_wm_icon_name(display, window, uni);
+	    free(uni);
+	}
     }
 }
 /* GET WM Name unichar */
@@ -848,6 +854,9 @@ static unichar_t*  mingw_get_wm_name(Display* display, Window window){
 		result = ustr;
 		ustr = 0;
 	    }
+	    free(ustr);
+	    free(wcs);
+	    free(mbs);
 	    XFreeStringList(list);
 	}
 	XFree(prop.value);
@@ -857,7 +866,12 @@ static unichar_t*  mingw_get_wm_name(Display* display, Window window){
 /* GET WM Name utf8 */
 static char*  mingw_get_wm_name_utf8(Display* display, Window window){
     unichar_t* uni = mingw_get_wm_name(display, window);
-    return uni ? u2utf8_copy(uni) : NULL;
+    if(uni){
+	char* utf8 = u2utf8_copy(uni);
+	free(uni);
+	return utf8;
+    }
+    return NULL;
 }
 
 /* translate GK_ keysyms to Virtual Keys */
@@ -902,8 +916,10 @@ static GWindow _GXDraw_CreateWindow(GXDisplay *gdisp, GXWindow gw, GRect *pos,
     if ( nw==NULL )
 return( NULL );
     nw->ggc = _GXDraw_NewGGC();
-    if ( nw->ggc==NULL )
+    if ( nw->ggc==NULL ) {
+	free(nw);
 return( NULL );
+    }
     nw->display = gdisp;
     nw->eh = eh;
     nw->parent = gw;
@@ -1023,6 +1039,7 @@ return( NULL );
 	    mingw_set_wm_name(display, nw->w, wattrs->window_title);
 	    #else
 	    XmbSetWMProperties(display,nw->w,(pt = u2def_copy(wattrs->window_title)),NULL,NULL,0,NULL,NULL,NULL);
+	    free(pt);
 	    #endif
 	}
 	if ( (wattrs->mask&wam_ititle) && wattrs->icon_title!=NULL ) {
@@ -1030,6 +1047,7 @@ return( NULL );
 	    mingw_set_wm_icon_name(display, nw->w, wattrs->icon_title);
 	    #else
 	    XmbSetWMProperties(display,nw->w,NULL,(pt = u2def_copy(wattrs->icon_title)),NULL,0,NULL,NULL,NULL);
+	    free(pt);
 	    #endif
 	}
 	if ( (wattrs->mask&wam_utf8_wtitle) && wattrs->utf8_window_title!=NULL ) {
@@ -1038,6 +1056,7 @@ return( NULL );
 	    #else
 	    unichar_t *tit = utf82u_copy(wattrs->utf8_window_title);
 	    XmbSetWMProperties(display,nw->w,(pt = u2def_copy(tit)),NULL,NULL,0,NULL,NULL,NULL);
+	    free(pt); free(tit);
 	    #endif
 	}
 	if ( (wattrs->mask&wam_utf8_ititle) && wattrs->utf8_icon_title!=NULL ) {
@@ -1046,6 +1065,7 @@ return( NULL );
 	    #else
 	    unichar_t *tit = utf82u_copy(wattrs->utf8_icon_title);
 	    XmbSetWMProperties(display,nw->w,NULL,(pt = u2def_copy(tit)),NULL,0,NULL,NULL,NULL);
+	    free(pt); free(tit);
 	    #endif
 	}
 	s_h.x = pos->x; s_h.y = pos->y;
@@ -1151,8 +1171,10 @@ static GWindow GXDrawCreatePixmap(GDisplay *gdisp, uint16 width, uint16 height) 
 return( NULL );
     gw->ggc = _GXDraw_NewGGC();
     gw->ggc->bg = ((GXDisplay *) gdisp)->def_background;
-    if ( gw->ggc==NULL )
+    if ( gw->ggc==NULL ) {
+	free(gw);
 return( NULL );
+    }
     if ( width&0x8000 ) {
 	width &= 0x7fff;
 	wamcairo = true;
@@ -1187,8 +1209,10 @@ static GWindow GXDrawCreateBitmap(GDisplay *disp, uint16 width, uint16 height, u
     if ( gw==NULL )
 return( NULL );
     gw->ggc = _GXDraw_NewGGC();
-    if ( gw->ggc==NULL )
+    if ( gw->ggc==NULL ) {
+	free(gw);
 return( NULL );
+    }
     gw->ggc->bitmap_col = true;
     gw->display = (GXDisplay *) gdisp;
     gw->is_pixmap = 1;
@@ -1235,9 +1259,12 @@ static void GXDrawDestroyWindow(GWindow w) {
 #endif
     _GXPDraw_DestroyWindow(gw);
 
-    if ( gw->is_pixmap )
+    if ( gw->is_pixmap ) {
 	XFreePixmap(gw->display->display,gw->w);
-    else {
+	free(gw->ggc);
+	free(gw);
+    } else {
+	/*GTimerRemoveWindowTimers(gw);*/ /* Moved to _GXDraw_CleanUpWindow, not all windows are actively destroyed */
 	gw->is_dying = true;
 	if ( gw->display->grab_window==w ) gw->display->grab_window = NULL;
 	XDestroyWindow(gw->display->display,gw->w);
@@ -1288,9 +1315,11 @@ static void _GXDraw_RemoveRedirects(GXDisplay *gdisp,GXWindow gw) {
 	struct inputRedirect *next=gdisp->input, *test;
 	if ( next->cur_dlg == (GWindow) gw ) {
 	    gdisp->input = next->prev;
+	    free(next);
 	} else for ( test=next->prev; test!=NULL; test=test->prev ) {
 	    if ( test->cur_dlg == (GWindow) gw ) {
 		next->prev = test->prev;
+		free( test );
 	break;
 	    }
 	}
@@ -1328,9 +1357,12 @@ static void _GXDraw_CleanUpWindow( GWindow w ) {
     for ( gic = gw->all; gic!=NULL; gic = next ) {
 	next = gic->next;
 	XDestroyIC(gic->ic);
+	free(gic);
     }
 
+    free(gw->ggc);
     memset(gw,'\0',sizeof(*gw));
+    free(gw);
 }
 
 static void GXDrawReparentWindow(GWindow child,GWindow newparent, int x,int y) {
@@ -1545,6 +1577,7 @@ static void GXDrawSetWindowTitles(GWindow w, const unichar_t *title, const unich
     XmbSetWMProperties(display,gw->w,(tpt = u2def_copy(title)),
 			(ipt = u2def_copy(icontit)),
 			NULL,0,NULL,NULL,NULL);
+    free(ipt); free(tpt);
 #endif
 }
 
@@ -1562,6 +1595,8 @@ static void GXDrawSetWindowTitles8(GWindow w, const char *title, const char *ico
     XmbSetWMProperties(display,gw->w,(tpt = u2def_copy(tit)),
 			(ipt = u2def_copy(itit)),
 			NULL,0,NULL,NULL,NULL);
+    free(tit); free(tpt);
+    free(itit); free(ipt);
 #endif
 }
 
@@ -1664,6 +1699,7 @@ static unichar_t *GXDrawGetWindowTitle(GWindow w) {
     char *ret1 = GXDrawGetWindowTitle8(w);
     unichar_t *ret = utf82u_copy(ret1);
 
+    free(ret1);
 return( ret );
 #else
     GXWindow gw = (GXWindow) w;
@@ -1711,6 +1747,7 @@ return( ret );
     unichar_t *ret1 = GXDrawGetWindowTitle(w);
     char *ret = u2utf8_copy(ret1);
 
+    free(ret1);
 return( ret );
 #endif
 #endif
@@ -2501,8 +2538,10 @@ return( NULL );
     break;
     }
     XFree(lists); XFree(listp);
-    if ( ic==0 )
+    if ( ic==0 ) {
+	free(gic);
 return( NULL );
+    }
 
     gic->style = i;
     gic->w = w;
@@ -2632,7 +2671,7 @@ static void GTimerInsertOrdered(GXDisplay *gdisp,GTimer *timer) {
     }
 }
 
-static void GTimerRemove(GXDisplay *gdisp,GTimer *timer) {
+static int GTimerRemove(GXDisplay *gdisp,GTimer *timer) {
     GTimer *prev, *test;
 
     if ( gdisp->timers==timer )
@@ -2640,12 +2679,13 @@ static void GTimerRemove(GXDisplay *gdisp,GTimer *timer) {
     else {
 	prev = gdisp->timers;
 	if ( prev==NULL )
-return;
+return( false );
 	for ( test = prev->next; test!=NULL && test!=timer; prev=test, test=test->next );
 	if ( test==NULL )		/* Wasn't in the list, oh well */
-return;
+return(false);
 	prev->next = timer->next;
     }
+return( true );
 }
 
 static void GTimerRemoveWindowTimers(GXWindow gw) {
@@ -2659,9 +2699,10 @@ static void GTimerRemoveWindowTimers(GXWindow gw) {
 return;
     for ( test = prev->next; test!=NULL; ) {
 	next = test->next;
-	if ( test->owner==(GWindow) gw )
+	if ( test->owner==(GWindow) gw ) {
 	    prev->next = next;
-	else
+	    free(test);
+	} else
 	    prev = test;
 	test = next;
     }
@@ -2683,7 +2724,8 @@ static void GTimerReinstall(GXDisplay *gdisp,GTimer *timer) {
     if ( timer->repeat_time!=0 ) {
 	GTimerSetNext(timer,timer->repeat_time);
 	GTimerInsertOrdered(gdisp,timer);
-    }
+    } else
+	free(timer);
 }
 
 static GTimer *GXDrawRequestTimer(GWindow w,int32 time_from_now,int32 frequency,
@@ -2702,7 +2744,9 @@ return( timer );
 
 static void GXDrawCancelTimer(GTimer *timer) {
     GXDisplay *gdisp = ((GXWindow) (timer->owner))->display;
-    GTimerRemove(gdisp,timer);
+
+    if ( GTimerRemove(gdisp,timer))
+	free(timer);
 }
 
 static void GXDrawSyncThread(GDisplay *gd, void (*func)(void *), void *data) {
@@ -2809,6 +2853,7 @@ static void GXDrawDoThings(GXDisplay *gdisp) {
 	while ( ttd!=NULL ) {
 	    next = ttd->next;
 	    (ttd->func)(ttd->data);
+	    free(ttd);
 	    ttd = next;
 	}
 	pthread_mutex_lock(&gdisp->xthread.sync_mutex);
@@ -3040,6 +3085,8 @@ return;
 		gevent.u.chr.keysym = keysym;
 		utf82u_strncpy(gevent.u.chr.chars,pt,
 			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0]));
+		if ( pt!=charbuf )
+		    free(pt);
 #else
 		gevent.u.chr.keysym = keysym = 0;
 		gevent.u.chr.chars[0] = 0;
@@ -3739,6 +3786,7 @@ return(0);
 	    classes = malloc(cnt*sizeof(XEventClass));
     }
     XSelectExtensionEvent(gdisp->display,((GXWindow) w)->w,classes,cnt);
+    free(classes);
 return( availdevcnt );
 #else
 return( 0 );
@@ -3864,6 +3912,17 @@ return( gd->atomdata[i].xatom );
 }
 
 static void GXDrawClearSelData(GXDisplay *gd,enum selnames sel) {
+    struct seldata *sd = gd->selinfo[sel].datalist, *next;
+
+    while ( sd!=NULL ) {
+	next = sd->next;
+	if ( sd->freedata )
+	    (sd->freedata)(sd->data);
+	else
+	    free(sd->data);
+	free(sd);
+	sd = next;
+    }
     gd->selinfo[sel].datalist = NULL;
     gd->selinfo[sel].owner = NULL;
 }
@@ -3887,7 +3946,8 @@ static void GXDrawGrabSelection(GWindow w,enum selnames sel) {
 }
 
 static void GXDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
-	void *data,int32 cnt,int32 unitsize, void *(*gendata)(void *,int32 *len)) {
+	void *data,int32 cnt,int32 unitsize, void *(*gendata)(void *,int32 *len),
+	void (*freedata)(void *)) {
     GXDisplay *gd = (GXDisplay *) (w->display);
     int typeatom = GXDrawGetAtom(gd,type);
     struct seldata *sd;
@@ -3908,6 +3968,7 @@ static void GXDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
     sd->data = data;
     sd->unitsize = unitsize;
     sd->gendata = gendata;
+    sd->freedata = freedata;
 }
 
 static void GXDrawTransmitSelection(GXDisplay *gd,XEvent *event) {
@@ -3959,6 +4020,8 @@ return;
 					sd->typeatom,
 					8*sd->unitsize,PropModeReplace,
 					temp,proplen);
+	    if ( sd->gendata )
+		free( temp );
 	}
     }
     sd = gd->selinfo[which].datalist;
@@ -3973,6 +4036,7 @@ return;
 				    prop,
 				    GXDrawGetAtom(gd,"LENGTH"),32,PropModeReplace,
 				    (void *) &proplen,1);
+	free(temp);
 	prop_set = True;
     }
     if ( sd!=NULL && ( cur_targ==GXDrawGetAtom(gd,"IDENTIFY") || is_multiple )) {
@@ -4013,6 +4077,7 @@ return;
 				    prop,
 				    XA_ATOM,32,PropModeReplace,
 				    (void *) targets,i);
+	free(targets);
 	prop_set = True;
     }
     if ( is_multiple ) {
@@ -4035,6 +4100,7 @@ return;
 				    e_to_send.xselection.target,
 				    XA_ATOM,32,PropModeReplace,
 				    (void *) targets,i);
+	free(targets);
     }
 
     if ( !prop_set )

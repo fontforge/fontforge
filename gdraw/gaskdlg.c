@@ -24,8 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
-
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -165,6 +163,8 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,va_lis
     if ( d!=NULL )
 	memset(d,0,sizeof(*d));
     GGadgetInit();
+    /* u_vsnprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),question,ap);*/
+    /* u_vsnprintf() also assumes UCS4 string is null terminated */
     qbuf = g_ucs4_to_utf8( (const gunichar *)question, -1, NULL, NULL, NULL );
     if( !qbuf ) {
 	fprintf( stderr, "Failed to convert question string in DlgCreate()\n" );
@@ -181,6 +181,7 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,va_lis
     if ( screen_display==NULL ) {
 	char *temp = u2def_copy(ubuf);
 	fprintf(stderr, "%s\n", temp);
+	free(temp);
 	if ( d!=NULL ) d->done = true;
 return( NULL );
     }
@@ -307,6 +308,10 @@ return( NULL );
 	d->bcnt = bcnt;
     }
     GDrawSetVisible(gw,true);
+    free(blabels);
+    free(gcd);
+    for ( i=0; i<lb; ++i )
+	free(qlabels[i].text);
     GProgressResumeTimer();
 return( gw );
 }
@@ -446,12 +451,14 @@ static GWindow DlgCreate8(const char *title,const char *question,va_list ap,
 
     if ( d!=NULL )
 	memset(d,0,sizeof(*d));
+    /*vsnprintf(buf,sizeof(buf)/sizeof(buf[0]),question,ap);*/
     g_vasprintf( &buf, (const gchar *) question, ap );
     if ( screen_display==NULL ) {
 	fprintf(stderr, "%s\n", buf );
 	if ( d!=NULL ) d->done = true;
 return( NULL );
     }
+    /*ubuf = utf82u_copy(buf);*/
     ubuf = (unichar_t *) g_utf8_to_ucs4( (const gchar *) buf, -1, NULL, NULL, NULL);
     g_free( buf );
     if( !ubuf ) {
@@ -617,6 +624,12 @@ return( NULL );
 	d->bcnt = bcnt;
     }
     GDrawSetVisible(gw,true);
+    free(blabels);
+    free(gcd);
+    free(barray);
+    for ( i=0; i<lb; ++i )
+	free(qlabels[i].text);
+    free(ubuf);
     GProgressResumeTimer();
 return( gw );
 }
@@ -696,6 +709,9 @@ return( copy(def ));
     GDrawDestroyWindow(gw);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
+    if ( !_ggadget_use_gettext ) {
+	free(ocb[0]); free(ocb[1]);
+    }
 return(ret);
 }
 
@@ -730,6 +746,9 @@ return( copy(def ));
     GDrawDestroyWindow(gw);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
+    if ( !_ggadget_use_gettext ) {
+	free(ocb[0]); free(ocb[1]);
+    }
 return(ret);
 }
 
@@ -754,6 +773,8 @@ return;
 	GDrawRequestTimer(gw,timeout*1000,0,NULL);
     /* Continue merrily on our way. Window will destroy itself in 40 secs */
     /*  or when user kills it. We can ignore it */
+    if ( !_ggadget_use_gettext )
+	free(ob[0]);
     last = gw;
     last_title = title;
 }
@@ -811,6 +832,8 @@ void GWidgetError8(const char *title,const char *statement, ...) {
 	    GDrawProcessOneEvent(NULL);
 	GDrawDestroyWindow(gw);
     }
+    if ( !_ggadget_use_gettext )
+	free(ob[0]);
 }
 
 static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
@@ -1031,6 +1054,12 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
     GDrawSetVisible(gw,true);
     d->ret = -1;
     d->size_diff = pos.height - gcd[listi].gd.pos.height;
+    free(llabels);
+    free(array);
+    free(gcd);
+    for ( i=0; i<lb; ++i )
+	free(qlabels[i].text);
+    free(ubuf);
     GProgressResumeTimer();
 return( gw );
 }
@@ -1062,6 +1091,9 @@ return( -2 );
     GDrawDestroyWindow(gw);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
+    if ( !_ggadget_use_gettext ) {
+	free(buts[0]); free(buts[1]);
+    }
 return(d.ret);
 }
 
@@ -1128,5 +1160,8 @@ return( -2 );
     GDrawDestroyWindow(gw);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
+    if ( !_ggadget_use_gettext ) {
+	free(buts[0]); free(buts[1]);
+    }
 return(d.ret);
 }

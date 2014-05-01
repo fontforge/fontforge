@@ -1,5 +1,4 @@
 /* -*- coding: utf-8 -*- */
-#include <fontforge-config.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2222,6 +2221,7 @@ char *RandomParaFromScriptLang(uint32 script, uint32 lang, SplineFont *sf,
     if ( lf==NULL )
 	ScriptCharInit(sf,script,&chrs);
     ret = RandomPara(lf,&chrs,sf);
+    free(chrs.chars);
 return( ret );
 }
 
@@ -2263,6 +2263,7 @@ char *RandomParaFromScript(uint32 script, uint32 *lang, SplineFont *sf) {
 	*lang = CHR('d','f','l','t');
     }
     ret = RandomPara(lf,&chrs,sf);
+    free(chrs.chars);
 return( ret );
 }
 
@@ -2349,5 +2350,6 @@ char **SFScriptLangs(SplineFont *sf,struct lang_frequencies ***_freq) {
     }
     sl[pos] = NULL;
     if ( _freq!=NULL ) *_freq = freq;
+    else free(freq);
 return( sl );
 }

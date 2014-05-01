@@ -128,6 +128,7 @@ return;
 	putlong(ttf,checksum);
     }
     fclose(ttf);
+    free(offsets); free(lengths);
 }
 
 static void handlefile(char *filename) {
@@ -159,6 +160,7 @@ return;
 	handlefont(filename,i,ttc,offsets[i]);
     printf( "\n" );
     fclose(ttc);
+    free(offsets);
 }
     
 int main(int argc, char *argv[]) {

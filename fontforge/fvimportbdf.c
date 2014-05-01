@@ -67,6 +67,7 @@ return( copy( StdGlyphName(buf,*(unsigned char *) fpt,ui_none,(NameList *) -1)) 
 	char buffer[20];
 	static int unique = 0;
 	sprintf( buffer, "$u%d", ++unique );
+	free(temp);
 return( copy( buffer ));
     }
 
@@ -150,8 +151,10 @@ static void ExtendSF(SplineFont *sf, EncMap *map, int enc) {
 	memset(map->map+map->enccount,-1,(enc-map->enccount+1)*sizeof(int));
 	map->enccount = n+1;
 	if ( sf->fv!=NULL ) {
-	    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+	    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+		free(fvs->selected);
 		fvs->selected = calloc(map->enccount,1);
+	    }
 	    FontViewReformatAll(sf);
 	}
     }
@@ -164,6 +167,7 @@ static SplineChar *MakeEncChar(SplineFont *sf,EncMap *map, int enc,const char *n
     ExtendSF(sf,map,enc);
 
     sc = SFMakeChar(sf,map,enc);
+    free(sc->name);
     sc->name = cleancopy(name);
 
     uni = UniFromName(name,sf->uni_interp,map->enc);
@@ -230,8 +234,10 @@ static int figureProperEncoding(SplineFont *sf,EncMap *map, BDFFont *b, int enc,
 
     if ( i!=-1 && i<map->enccount && ((gid=map->map[i])==-1 || sf->glyphs[gid]==NULL )) {
 	SplineChar *sc = SFMakeChar(sf,map,i);
-	if ( sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) )
+	if ( sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
+	    free(sc->name);
 	    sc->name = cleancopy(name);
+	}
     }
     if ( i!=-1 && swidth!=-1 && (gid=map->map[i])!=-1 &&
 	    ((sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) ||
@@ -310,8 +316,11 @@ return;
     i = figureProperEncoding(sf,map,b,enc,name,swidth,swidth1,encname);
     if ( i!=-1 ) {
 	int gid = map->map[i];
-	if ( (bc=b->glyphs[gid])==NULL ) {
-	    b->glyphs[gid] = bc = calloc(1, sizeof(BDFChar));
+	if ( (bc=b->glyphs[gid])!=NULL ) {
+	    free(bc->bitmap);
+	    BDFFloatFree(bc->selection);
+	} else {
+	    b->glyphs[gid] = bc = chunkalloc(sizeof(BDFChar));
 	    memset( bc,'\0',sizeof( BDFChar ));
 	    bc->sc = sf->glyphs[gid];
 	    bc->orig_pos = gid;
@@ -705,6 +714,7 @@ static BDFChar *SFGrowTo(SplineFont *sf,BDFFont *b, int cc, EncMap *map) {
     if ( (gid = map->map[cc])==-1 || sf->glyphs[gid]==NULL )
 	gid = SFMakeChar(sf,map,cc)->orig_pos;
     if ( sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
+	free(sf->glyphs[gid]->name);
 	sprintf( buf, "enc-%d", cc);
 	sf->glyphs[gid]->name = cleancopy( buf );
 	sf->glyphs[gid]->unicodeenc = -1;
@@ -715,8 +725,11 @@ static BDFChar *SFGrowTo(SplineFont *sf,BDFFont *b, int cc, EncMap *map) {
 	memset(b->glyphs+b->glyphcnt,0,(sf->glyphcnt-b->glyphcnt)*sizeof(BDFChar *));
 	b->glyphcnt = sf->glyphcnt;
     }
-    if ( (bc=b->glyphs[gid])==NULL ) {
-	b->glyphs[gid] = bc = XZALLOC(BDFChar);
+    if ( (bc=b->glyphs[gid])!=NULL ) {
+	free(bc->bitmap);
+	BDFFloatFree(bc->selection);
+    } else {
+	b->glyphs[gid] = bc = chunkalloc(sizeof(BDFChar));
 	memset( bc,'\0',sizeof( BDFChar ));
 	bc->sc = sf->glyphs[gid];
 	bc->orig_pos = gid;
@@ -888,6 +901,7 @@ return( false );
     gid = map->map[enc];
     if ( charname[0]!='\0' && sf->onlybitmaps && (sf->bitmaps==NULL ||
 	    (sf->bitmaps==b && b->next==NULL )) ) {
+	free(sf->glyphs[gid]->name);
 	sf->glyphs[gid]->name = cleancopy(charname);
 	sf->glyphs[gid]->unicodeenc = -1;
     }
@@ -1528,6 +1542,9 @@ return(-2);
 	    strcpy(full,family);
     }
 
+    free(strs);
+    free(props);
+
 return( pixelsize );
 }
 
@@ -1675,6 +1692,8 @@ return( false );
 	    ff_progress_next();
 	}
     }
+    free(bitmap);
+    free(offsets);
 return( true );
 }
 
@@ -1729,6 +1748,7 @@ static void PcfReadEncodingsNames(FILE *file,struct toc *toc,SplineFont *sf,
 	    }
 	}
     }
+    free(string); free(offsets); free(encs);
 }
 
 static int PcfReadSWidths(FILE *file,struct toc *toc,BDFFont *b) {
@@ -1764,9 +1784,10 @@ static int PcfParse(FILE *file,struct toc *toc,SplineFont *sf,EncMap *map, BDFFo
     if ( metrics==NULL )
 return( false );
     b->glyphcnt = b->glyphmax = mcnt;
+    free(b->glyphs);
     b->glyphs = calloc(mcnt,sizeof(BDFChar *));
     for ( i=0; i<mcnt; ++i ) {
-	BDFChar *bc = b->glyphs[i] = XZALLOC(BDFChar);
+	BDFChar *bc = b->glyphs[i] = chunkalloc(sizeof(BDFChar));
 	memset( bc,'\0',sizeof( BDFChar ));
 	bc->xmin = metrics[i].lsb;
 	bc->xmax = metrics[i].rsb-1;
@@ -1784,6 +1805,7 @@ return( false );
 	bc->bitmap = malloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1));
 	bc->orig_pos = -1;
     }
+    free(metrics);
 
     if ( !PcfReadBitmaps(file,toc,b))
 return( false );
@@ -1795,7 +1817,7 @@ return( false );
     for ( i=0; i<mcnt; ++i ) {
 	BDFChar *bc = b->glyphs[i];
 	if ( bc->orig_pos==-1 || bc->orig_pos>=sf->glyphcnt )
-            ;
+	    BDFCharFree(bc);
 	else if ( new[bc->orig_pos]==NULL )
 	    new[bc->orig_pos] = bc;
 	else
@@ -1810,6 +1832,8 @@ return( false );
 		}
 	}
     }
+    free( b->glyphs );
+    free( mult );
     b->glyphs = new;
     b->glyphcnt = b->glyphmax = sf->glyphcnt;
 return( true );
@@ -1835,6 +1859,7 @@ static int askusersize(char *filename) {
 	guess = -1;
     else {
 	guess = strtol(ret,&end,10);
+	free(ret);
 	if ( guess<=0 || *end!='\0' ) {
 	    ff_post_error(_("Bad Number"),_("Bad Number"));
   goto retry;
@@ -1907,7 +1932,7 @@ void SFSetFontName(SplineFont *sf, char *family, char *mods,char *fullname) {
 	full = copy(n);
     else
 	full = copy(fullname);
-    sf->fullname = full;
+    free(sf->fullname); sf->fullname = full;
 
     for ( pt=tpt=n; *pt; ) {
 	if ( !isspace(*pt))
@@ -1920,11 +1945,14 @@ void SFSetFontName(SplineFont *sf, char *family, char *mods,char *fullname) {
     /* In the URW world fontnames aren't just a simple concatenation of */
     /*  family name and modifiers, so neither the family name nor the modifiers */
     /*  changed, then don't change the font name */
-    if ( strcmp(family,sf->familyname)!=0 || strcmp(n,sf->fontname)!=0 ) {
-	/* Only change anything if the font name doesn't match */
-	sf->fontname = n;
-	sf->familyname = copy(family);
-	sf->weight = NULL;
+    if ( strcmp(family,sf->familyname)==0 && strcmp(n,sf->fontname)==0 )
+	/* Don't change the fontname */
+	/* or anything else */
+	free(n);
+    else {
+	free(sf->fontname); sf->fontname = n;
+	free(sf->familyname); sf->familyname = copy(family);
+	free(sf->weight); sf->weight = NULL;
 	if ( strstrmatch(mods,"extralight")!=NULL || strstrmatch(mods,"extra-light")!=NULL )
 	    sf->weight = copy("ExtraLight");
 	else if ( strstrmatch(mods,"demilight")!=NULL || strstrmatch(mods,"demi-light")!=NULL )
@@ -2026,7 +2054,7 @@ return( NULL );
 	}
 	pixelsize = pcf_properties(bdf,toc,&ascent,&descent,&enc,family,mods,full,&dummy, filename);
 	if ( pixelsize==-2 ) {
-	    fclose(bdf);
+	    fclose(bdf); free(toc);
 	    ff_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
 return( NULL );
 	}
@@ -2045,22 +2073,26 @@ return( NULL );
     if ( pixelsize==-1 )
 	pixelsize = askusersize(filename);
     if ( pixelsize==-1 ) {
-	fclose(bdf);
+	fclose(bdf); free(toc);
 return( NULL );
     }
     if ( /* !toback && */ sf->bitmaps==NULL && sf->onlybitmaps ) {
 	/* Loading first bitmap into onlybitmap font sets the name and encoding */
 	SFSetFontName(sf,family,mods,full);
-	if ( fontname[0]!='\0' )
+	if ( fontname[0]!='\0' ) {
+	    free(sf->fontname);
 	    sf->fontname = copy(fontname);
+	}
 	map->enc = enc;
 	if ( defs.metricsset!=0 ) {
 	    sf->hasvmetrics = true;
 	    /*sf->vertical_origin = defs.vertical_origin==0?sf->ascent:defs.vertical_origin;*/
 	}
 	sf->display_size = pixelsize;
-	if ( comments[0]!='\0' )
+	if ( comments[0]!='\0' ) {
+	    free(sf->copyright);
 	    sf->copyright = copy(comments);
+	}
 	if ( upos!=0x80000000 )
 	    sf->upos = upos;
 	if ( uwidth!=0x80000000 )
@@ -2072,7 +2104,8 @@ return( NULL );
 	for ( b=sf->bitmaps; b!=NULL && (b->pixelsize!=pixelsize || BDFDepth(b)!=depth); b=b->next );
     if ( b!=NULL ) {
 	if ( !alreadyexists(pixelsize)) {
-	    fclose(bdf);
+	    fclose(bdf); free(toc);
+	    BDFPropsFree(&dummy);
 return( (BDFFont *) -1 );
 	}
     }
@@ -2099,8 +2132,10 @@ return( (BDFFont *) -1 );
 	    SFOrderBitmapList(sf);
 	}
     }
+    BDFPropsFree(b);
     b->prop_cnt = dummy.prop_cnt;
     b->props = dummy.props;
+    free(b->foundry);
     b->foundry = ( foundry[0]=='\0' ) ? NULL : copy(foundry);
     if ( ispk==1 ) {
 	while ( pk_char(bdf,sf,b,map));
@@ -2126,7 +2161,7 @@ return( (BDFFont *) -1 );
 	    }
 	}
     }
-    fclose(bdf);
+    fclose(bdf); free(toc);
     sf->changed = true;
     if ( sf->bitmaps!=NULL && sf->bitmaps->next==NULL && dummy.prop_cnt>0 &&
 	    map->enc == &custom )
@@ -2163,15 +2198,17 @@ static BDFFont *_SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback
 	    if ( system(buf)==0 )
 		filename = temp;
 	    else {
+		free(temp);
 		ff_post_error(_("Decompress Failed!"),_("Decompress Failed!"));
 return( NULL );
 	    }
 	}
     }
     ret = SFImportBDF(sf, filename,ispk, toback, map);
-    if ( temp!=NULL )
+    if ( temp!=NULL ) {
 	unlink(temp);
-    else if ( i!=-1 ) {
+	free(temp);
+    } else if ( i!=-1 ) {
 	sprintf( buf, "%s %s", compressors[i].recomp, filename );
 	system(buf);
     }
@@ -2219,12 +2256,15 @@ static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes,EncMap *map) {
 	    strikes->next = sf->bitmaps;
 	    sf->bitmaps = strikes;
 	    SFSetupBitmap(sf,strikes,map);
-	} else if ( alreadyexists(strikes->pixelsize)) {
+	} else if ( !alreadyexists(strikes->pixelsize)) {
+	    BDFFontFree(strikes);
+	} else {
 	    strikes->next = b->next;
 	    if ( prev==NULL )
 		sf->bitmaps = strikes;
 	    else
 		prev->next = strikes;
+	    BDFFontFree(b);
 	    SFSetupBitmap(sf,strikes,map);
 	}
 	strikes = snext;
@@ -2262,6 +2302,7 @@ int FVImportBDF(FontViewBase *fv, char *filename, int ispk, int toback) {
 	sprintf(buf, _("Loading font from %.100s"), filename);
 	ff_progress_change_line1(buf);
 	b = _SFImportBDF(fv->sf,full,ispk,toback, fv->map);
+	free(full);
 	if ( fpt!=NULL ) ff_progress_next_stage();
 	if ( b!=NULL ) {
 	    anyb = b;
@@ -2273,8 +2314,10 @@ int FVImportBDF(FontViewBase *fv, char *filename, int ispk, int toback) {
     ff_progress_end_indicator();
     if ( oldenccnt != fv->map->enccount ) {
 	FontViewBase *fvs;
-	for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+	for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	    free(fvs->selected);
 	    fvs->selected = calloc(fvs->map->enccount,sizeof(char));
+	}
 	FontViewReformatAll(fv->sf);
     }
     if ( anyb==NULL ) {
@@ -2326,6 +2369,7 @@ static void SFAddToBackground(SplineFont *sf,BDFFont *bdf) {
 	    SCInsertImage(sc,img,scale,yoff+(bdfc->ymax+1)*scale,bdfc->xmin*scale,ly_back);
 	}
     }
+    BDFFontFree(bdf);
 }
 
 int FVImportMult(FontViewBase *fv, char *filename, int toback, int bf) {
@@ -2424,7 +2468,7 @@ return;			/* No images */
       and all images have the same scale
     */
 
-    bdf = XZALLOC(BDFFont);
+    bdf = chunkalloc(sizeof(BDFFont));
     bdf->sf = sf;
     sf->bitmaps = bdf;
     bdf->pixelsize = (sf->ascent+sf->descent)/scale;
@@ -2435,7 +2479,7 @@ return;			/* No images */
     bdf->glyphs = calloc(sf->glyphcnt,sizeof(BDFChar *));
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
-	bdf->glyphs[i] = bdfc = XZALLOC(BDFChar);
+	bdf->glyphs[i] = bdfc = chunkalloc(sizeof(BDFChar));
 	memset( bdfc,'\0',sizeof( BDFChar ));
 	bdfc->sc = sc;
 	bdfc->orig_pos = i;

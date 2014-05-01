@@ -470,11 +470,19 @@ return( ret );
 void DefaultOtherSubrs(void) {
     int i,j;
 
-    if ( othersubrs_copyright[0]!=copyright )
+    if ( othersubrs_copyright[0]!=copyright ) {
+	for ( i=0; othersubrs_copyright[0][i]!=NULL; ++i )
+	    free( (char *) othersubrs_copyright[0][i]);
+	free(othersubrs_copyright[0]);
 	othersubrs_copyright[0] = copyright;
+    }
     for ( j=0; j<=13; ++j ) {
-	if ( othersubrs[j]!=default_othersubrs[j] )
+	if ( othersubrs[j]!=default_othersubrs[j] ) {
+	    for ( i=0; othersubrs[j][i]!=NULL; ++i )
+		free( (char *) othersubrs[j][i]);
+	    free(othersubrs[j]);
 	   othersubrs[j] = default_othersubrs[j];
+	}
     }
 }
 
@@ -527,6 +535,7 @@ return( false );
     othersubrs_copyright[0] = co;
     for ( i=0; i<14; ++i )
 	othersubrs[i] = osubs[i];
+    free(lines);
 return( true );
 }
 	

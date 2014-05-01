@@ -2030,6 +2030,8 @@ return;
 		sp->next->to = nnsp;
 		nnsp->prev = sp->next;
 		SplineRefigure(sp->next);
+		SplineFree(nsp->next);
+		SplinePointFree(nsp);
 		if ( ss->first==nsp ) ss->first = sp;
 		if ( ss->last ==nsp ) ss->last  = sp;
 		removed = true;
@@ -2079,7 +2081,7 @@ SplineSet *UnitShape(int n) {
     int i;
     BasePoint origin;
 
-    ret = XZALLOC(SplineSet);
+    ret = chunkalloc(sizeof(SplineSet));
     if ( n>=3 || n<=-3 ) {
 	/* Regular n-gon with n sides */
 	/* Inscribed in a unit circle, if n<0 then circumscribed around */
@@ -2136,7 +2138,7 @@ static SplinePointList *SinglePointStroke(SplinePoint *sp,struct strokecontext *
     SplinePoint *sp1, *sp2;
     int i;
 
-    ret = XZALLOC(SplineSet);
+    ret = chunkalloc(sizeof(SplineSet));
 
     if ( c->pentype==pt_circle && c->cap==lc_butt ) {
 	/* Leave as a single point */
@@ -2680,9 +2682,11 @@ static void PointJoint(SplinePoint *base, SplinePoint *other, bigreal resolution
     bigreal xdiff, ydiff, len, len2;
     int bad = false;
 
-    if ( other->next==NULL && other->prev==NULL )
+    if ( other->next==NULL && other->prev==NULL ) {
 	/* Fragments consisting of a single point do happen */ /* Unfortunately*/
+	SplinePointFree(other);
 return;
+    }
 
     if ( base->next==NULL ) {
 	hasnext = other;
@@ -2757,6 +2761,7 @@ return;
     SplineRefigure(base->next);
     SplineRefigure(base->prev);
     SplinePointCategorize(base);
+    SplinePointFree(other);
 }
 
 static SplineSet *JoinFragments(SplineSet *fragments,SplineSet **contours,
@@ -2770,6 +2775,7 @@ static SplineSet *JoinFragments(SplineSet *fragments,SplineSet **contours,
     for ( cur=fragments; cur!=NULL; cur=next ) {
 	next = cur->next;
 	if ( cur->first==cur->last && cur->first->prev==NULL ) {
+	    SplinePointListFree(cur);
 	    if ( prev==NULL )
 		fragments = next;
 	    else
@@ -2795,6 +2801,7 @@ static SplineSet *JoinFragments(SplineSet *fragments,SplineSet **contours,
 	    else
 		prev->next = next;
 	    cur->next = NULL;
+	    SplinePointListFree(cur);
     continue;
 	}
 	if ( test==NULL ) {
@@ -2826,6 +2833,7 @@ static SplineSet *JoinFragments(SplineSet *fragments,SplineSet **contours,
 		prev2->next = test->next;
 		if ( next==test )
 		    next = test->next;
+		SplinePointListFree(test);
 
 		xdiff = cur->last->me.x - cur->first->me.x;
 		ydiff = cur->last->me.y - cur->first->me.y;
@@ -2931,6 +2939,7 @@ static SplineSet *EdgeEffects(SplineSet *fragments,StrokeContext *c) {
 	    else
 		prev->next = next;
 	    cur->next = NULL;
+	    SplinePointListFree(cur);
 	}
     }
 
@@ -2952,12 +2961,12 @@ static SplineSet *EdgeEffects(SplineSet *fragments,StrokeContext *c) {
 		t = SplineNearPoint(s,&cur->first->me,c->resolution);
 		if ( t!=-1 ) {
 		    SplinePoint *sp = SplineBisect(s,t), *sp2;
-		    sp2 = XZALLOC(SplinePoint);
+		    sp2 = chunkalloc(sizeof(SplinePoint));
 		    *sp2 = *sp;
 		    sp->next = NULL;
 		    sp2->prev = NULL;
 		    sp2->next->from = sp2;
-		    next = XZALLOC(SplineSet);
+		    next = chunkalloc(sizeof(SplineSet));
 		    *next = *cur;
 		    cur->last = sp;
 		    next->first = sp2;
@@ -2970,12 +2979,12 @@ static SplineSet *EdgeEffects(SplineSet *fragments,StrokeContext *c) {
 		    t = SplineNearPoint(s,&cur->last->me,c->resolution);
 		    if ( t!=-1 ) {
 			SplinePoint *sp = SplineBisect(s,t), *sp2;
-			sp2 = XZALLOC(SplinePoint);
+			sp2 = chunkalloc(sizeof(SplinePoint));
 			*sp2 = *sp;
 			sp->prev = NULL;
 			sp2->next = NULL;
 			sp2->prev->to = sp2;
-			next = XZALLOC(SplineSet);
+			next = chunkalloc(sizeof(SplineSet));
 			*next = *cur;
 			cur->first = sp;
 			next->last = sp2;
@@ -3092,9 +3101,11 @@ static SplineSet *RemoveBackForthLine(SplineSet *ss) {
 
     if ( ss->first->prev==NULL )
 return( ss );
-    if ( ss->first->next->to == ss->first && ss->first->next->knownlinear )
-	/* Entire splineset is a single point: remove it all */
+    if ( ss->first->next->to == ss->first && ss->first->next->knownlinear ) {
+	/* Entire splineset is a single point */ /* Remove it all */
+	SplinePointListFree(ss);
 return( NULL );
+    }
 
     /* OK, here we've gotten rid of all the places where the line doubles back */
     /*  mirrored by one of its end-points. But there could be line segments */
@@ -3129,22 +3140,30 @@ return( ss );
 			IError("Confusion wiggles!\n");
 return(ss);
 		    }
+		    SplineFree(sp2->prev);
+		    SplineFree(sp2->next);
+		    SplinePointFree(sp2);
 		    first1->next = second2->next;
 		    first1->nextcp = second2->nextcp;
 		    first1->nonextcp = second2->nonextcp;
 		    first1->next->from = first1;
+		    SplinePointFree(second2);
 	break;
 		}
-		other = XZALLOC(SplineSet);
+		SplineFree(first1->next);
+		SplineFree(first2->next);
+		other = chunkalloc(sizeof(SplineSet));
 		other->first = other->last = second1;
 		second1->prev = first2->prev;
 		second1->prevcp = first2->prevcp;
 		second1->noprevcp = first2->noprevcp;
 		second1->prev->to = second1;
+		SplinePointFree(first2);
 		first1->next = second2->next;
 		first1->nextcp = second2->nextcp;
 		first1->nonextcp = second2->nonextcp;
 		first1->next->from = first1;
+		SplinePointFree(second2);
 		ss->first = ss->last = first1;
 		ss = RemoveBackForthLine(ss);
 		other = RemoveBackForthLine(other);
@@ -3354,6 +3373,7 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 	while ( pos<c->cur-1 ) {
 	    last = first = LeftPointFromContext(c,&pos, &newcontour);
 	    while ( newcontour && pos<c->cur ) {
+		SplinePointFree(first);
 		start_pos = pos;
 		if ( pos<c->cur )
 		    last = first = LeftPointFromContext(c,&pos, &newcontour);
@@ -3363,6 +3383,7 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 		}
 		if ( pos<start_pos || (pos+start_pos==0) ) {
 		    /* Wrapped around */
+		    SplinePointFree(first);
 		    first=last=NULL;
 		    pos = c->cur;
 	    break;
@@ -3419,7 +3440,7 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 		}
 	    }
 	    if ( first!=NULL ) {
-		ret = XZALLOC(SplineSet);
+		ret = chunkalloc(sizeof(SplineSet));
 		ret->first = first; ret->last = last;
 		ret->next = lfragments;
 		lfragments = ret;
@@ -3434,6 +3455,7 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 	while ( pos<c->cur-1 ) {
 	    last = first = RightPointFromContext(c,&pos,&newcontour);
 	    while ( newcontour && pos<c->cur ) {
+		SplinePointFree(first);
 		start_pos = pos;
 		if ( pos<c->cur )
 		    last = first = RightPointFromContext(c,&pos,&newcontour);
@@ -3443,6 +3465,7 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 		}
 		if ( pos<start_pos || (pos+start_pos==0) ) {
 		    /* Wrapped around */
+		    SplinePointFree(first);
 		    first=last=NULL;
 		    pos = c->cur;
 	    break;
@@ -3496,7 +3519,7 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 		}
 	    }
 	    if ( first!=NULL ) {
-		ret = XZALLOC(SplineSet);
+		ret = chunkalloc(sizeof(SplineSet));
 		ret->first = first; ret->last = last;
 		ret->next = rfragments;
 		rfragments = ret;
@@ -3582,6 +3605,7 @@ return(NULL);
 	ret = SplinePointListTransform(ret,c->inverse,tpt_AllPoints);
     if ( order2 )
 	ret = SplineSetsConvertOrder(ret,order2 );
+    SplinePointListFree(base);
 return(ret);
 }
 
@@ -3743,8 +3767,12 @@ return( NULL );				/* That's an error, must be closed */
 		while ( last->next!=NULL )
 		    last = last->next;
 	}
+	free(c.corners);
+	free(c.slopes);
 	ret = first;
     }
+    free(c.all);
+    free(c.tpt);
 return( ret );
 }
 
@@ -3771,12 +3799,14 @@ void FVStrokeItScript(void *_fv, StrokeInfo *si,int pointless_argument) {
 		SCPreserveState(sc,false);
 		for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
 		    temp = SplineSetStroke(sc->layers[layer].splines,si,sc->layers[layer].order2);
+		    SplinePointListsFree( sc->layers[layer].splines );
 		    sc->layers[layer].splines = temp;
 		}
 		SCCharChangedUpdate(sc,ly_all);
 	    } else {
 		SCPreserveLayer(sc,layer,false);
 		temp = SplineSetStroke(sc->layers[layer].splines,si,sc->layers[layer].order2);
+		SplinePointListsFree( sc->layers[layer].splines );
 		sc->layers[layer].splines = temp;
 		SCCharChangedUpdate(sc,layer);
 	    }

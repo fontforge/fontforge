@@ -177,11 +177,15 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
 	    if ( (c.x_expr = nlt_parseexpr(&c,expstr))==NULL )
 		d.done = d.ok = false;
 	    else {
+		free(expstr);
 		c.had_error = false;
 		expstr = cu_copy(_GGadgetGetTitle(gcd[3].ret));
-		if ( (c.y_expr = nlt_parseexpr(&c,expstr))==NULL )
+		if ( (c.y_expr = nlt_parseexpr(&c,expstr))==NULL ) {
 		    d.done = d.ok = false;
-		else {
+		    nlt_exprfree(c.x_expr);
+		} else {
+		    free(expstr);
+		    free(lasty); free(lastx);
 		    lastx = GGadgetGetTitle(gcd[1].ret);
 		    lasty = GGadgetGetTitle(gcd[3].ret);
 		}
@@ -193,6 +197,8 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
 	    _SFNLTrans((FontViewBase *) fv,&c);
 	else
 	    CVNLTrans((CharViewBase *) cv,&c);
+	nlt_exprfree(c.x_expr);
+	nlt_exprfree(c.y_expr);
     }
     GDrawDestroyWindow(d.gw);
 }
@@ -615,7 +621,7 @@ void CVPointOfView(CharView *cv,struct pov_data *pov) {
     if ( pov->yorigin!=or_value )
 	pov->y = origin.y;
 
-    cv->b.sc->md = NULL;
+    MinimumDistancesFree(cv->b.sc->md); cv->b.sc->md = NULL;
     SPLPoV(cv->b.layerheads[cv->b.drawmode]->splines,pov,anysel);
     CVCharChangedUpdate(&cv->b);
 }

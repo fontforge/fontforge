@@ -382,6 +382,7 @@ GImage *GImageRead_Bmp(FILE *file) {
 		l = bmp.height-1-i;
 		memcpy(base->data+l*base->bytes_per_line,bmp.int32_pixels+i*bmp.width,bmp.width*sizeof(uint32));
 	    }
+	    free(bmp.int32_pixels);
 	} else if ( bmp.bitsperpixel!=1 ) {
 	    if ( (ret=GImageCreate(it_index,bmp.width, bmp.height))==NULL ) {
 		NoMoreMemMessage();
@@ -392,6 +393,7 @@ GImage *GImageRead_Bmp(FILE *file) {
 		l = bmp.height-1-i;
 		memcpy(base->data+l*base->bytes_per_line,bmp.byte_pixels+i*bmp.width,bmp.width);
 	    }
+	    free(bmp.byte_pixels);
 	} else {
 	    if ( (ret=GImageCreate(it_mono,bmp.width, bmp.height))==NULL ) {
 		NoMoreMemMessage();
@@ -402,6 +404,7 @@ GImage *GImageRead_Bmp(FILE *file) {
 		l = bmp.height-1-i;
 		memcpy(base->data+l*base->bytes_per_line,bmp.byte_pixels+i*base->bytes_per_line,base->bytes_per_line);
 	    }
+	    free(bmp.byte_pixels);
 	}
     }
     if ( ret->u.image->image_type==it_index ) {
@@ -422,6 +425,9 @@ GImage *GImageRead_Bmp(FILE *file) {
 errorGImageReadBmp:
     fprintf(stderr,"Bad input file\n");
 errorGImageMemBmp:
+    GImageDestroy(ret);
+    if ( bmp.bitsperpixel>=16 ) free(bmp.int32_pixels);
+    else free(bmp.byte_pixels);
     return( NULL );
 }
 

@@ -35,16 +35,38 @@
 
 Color default_background = 0xffffff;		/* white */
 
-void FreeEdgeList(EdgeList *es) {
+static void HintsFree(Hints *h) {
+    Hints *hnext;
+    for ( ; h!=NULL; h = hnext ) {
+	hnext = h->next;
+	free(h);
+    }
+}
+
+static void _FreeEdgeList(EdgeList *es) {
     int i;
 
     /* edges will be NULL if the user tries to make an enormous bitmap */
     /*  if the linear size is bigger than several thousand, we just */
     /*  ignore the request */
     if ( es->edges!=NULL ) {
-	for ( i=0; i<es->cnt; ++i )
+	for ( i=0; i<es->cnt; ++i ) {
+	    Edge *e, *next;
+	    for ( e = es->edges[i]; e!=NULL; e = next ) {
+		next = e->esnext;
+		free(e);
+	    }
 	    es->edges[i] = NULL;
+	}
     }
+}
+
+void FreeEdges(EdgeList *es) {
+    _FreeEdgeList(es);
+    free(es->edges);
+    free(es->interesting);
+    HintsFree(es->hhints);
+    HintsFree(es->vhints);
 }
 
 bigreal TOfNextMajor(Edge *e, EdgeList *es, bigreal sought_m ) {
@@ -178,8 +200,11 @@ static void AddEdge(EdgeList *es, Spline *sp, real tmin, real tmax ) {
     e->last_opos = e->last_mpos = -2;
     e->tmin = tmin; e->tmax = tmax;
 
-    if ( e->mmin<0 || e->mmin>=e->mmax )
+    if ( e->mmin<0 || e->mmin>=e->mmax ) {
+	/*IError("Probably not serious, but we've got a zero length spline in AddEdge in %s",es->sc==NULL?<nameless>:es->sc->name);*/
+	free(e);
 return;
+    }
 
     if ( es->sc!=NULL ) for ( hint=es->hhints; hint!=NULL; hint=hint->next ) {
 	if ( hint->adjustb ) {
@@ -202,8 +227,10 @@ return;
     }
 
     mpos = (int) ceil(e->m_cur);
-    if ( mpos>e->mmax || mpos>=es->cnt )
+    if ( mpos>e->mmax || mpos>=es->cnt ) {
+	free(e);
 return;
+    }
 
     if ( e->m_cur!=ceil(e->m_cur) ) {
 	/* bring the new edge up to its first scan line */
@@ -258,13 +285,17 @@ static void AddMajorEdge(EdgeList *es, Spline *sp) {
     e->up = false;
     e->o_mmin = osp->d * es->scale;
     e->o_mmax = ( osp->a + osp->b + osp->c + osp->d ) * es->scale;
-    if ( e->o_mmin == e->o_mmax )	/* Just a point? */
+    if ( e->o_mmin == e->o_mmax ) {	/* Just a point? */
+	free(e);
 return;
+    }
     if ( e->mmin<0 )
 	IError("Grg!");
 
-    if ( ceil(e->m_cur)>e->mmax )
+    if ( ceil(e->m_cur)>e->mmax ) {
+	free(e);
 return;
+    }
 
     if ( es->majors==NULL || es->majors->mmin>=m1 ) {
 	e->esnext = es->majors;
@@ -667,6 +698,7 @@ void BCRegularizeBitmap(BDFChar *bdfc) {
 	uint8 *bitmap = malloc(bpl*(bdfc->ymax-bdfc->ymin+1));
 	for ( i=0; i<=(bdfc->ymax-bdfc->ymin); ++i )
 	    memcpy(bitmap+i*bpl,bdfc->bitmap+i*bdfc->bytes_per_line,bpl);
+	free(bdfc->bitmap);
 	bdfc->bitmap= bitmap;
 	bdfc->bytes_per_line = bpl;
     }
@@ -680,6 +712,7 @@ void BCRegularizeGreymap(BDFChar *bdfc) {
 	uint8 *bitmap = malloc(bpl*(bdfc->ymax-bdfc->ymin+1));
 	for ( i=0; i<=(bdfc->ymax-bdfc->ymin); ++i )
 	    memcpy(bitmap+i*bpl,bdfc->bitmap+i*bdfc->bytes_per_line,bpl);
+	free(bdfc->bitmap);
 	bdfc->bitmap= bitmap;
 	bdfc->bytes_per_line = bpl;
     }
@@ -1173,8 +1206,10 @@ static void SetByteMapToGrey(uint8 *bytemap,EdgeList *es,Layer *layer,Layer *alt
 		}
 	}
     }
-    if ( pat!=NULL )
+    if ( pat!=NULL ) {
+	BDFCharFree(pat->pat);
 	pat->pat = NULL;
+    }
 }
 
 static void FillImages(uint8 *bytemap,EdgeList *es,ImageList *img,Layer *layer,
@@ -1251,6 +1286,7 @@ static void ProcessLayer(uint8 *bytemap,EdgeList *es,Layer *layer,
 	FindEdgesSplineSet(layer->splines,es,true);
 	FillChar(es);
 	SetByteMapToGrey(bytemap,es,layer,alt, clipmask,sc);
+	_FreeEdgeList(es);
     }
     for ( img = layer->images; img!=NULL; img=img->next )
 	FillImages(bytemap,es,img,layer,alt,clipmask);
@@ -1268,6 +1304,7 @@ return( NULL );
     FindEdgesSplineSet(layer->splines,es,2);
     FillChar(es);
     memcpy(clipmask,es->bitmap,es->cnt*es->bytes_per_line);
+    _FreeEdgeList(es);
 return( clipmask );
 }
 
@@ -1287,10 +1324,12 @@ static void FlattenBytemap(EdgeList *es,uint8 *bytemap) {
 
 static int FigureBitmap(EdgeList *es,uint8 *bytemap, int is_aa) {
     if ( is_aa ) {
+	free(es->bitmap);
 	es->bitmap = bytemap;
 return( 8 );
     } else {
 	FlattenBytemap(es,bytemap);
+	free(bytemap);
 return( 0 );
     }
 }
@@ -1347,6 +1386,7 @@ return( NULL );
 				    &sc->layers[layer],clipmask,sc);
 			}
 		    }
+		    free(clipmask);
 		}
 		depth = FigureBitmap(&es,bytemap,is_aa);
 	    } else if ( sc->parent->strokedfont ) {
@@ -1367,7 +1407,7 @@ return( NULL );
 	}
     }
 
-    bdfc = XZALLOC(BDFChar);
+    bdfc = chunkalloc(sizeof(BDFChar));
     memset( bdfc,'\0',sizeof( BDFChar ));
     bdfc->sc = sc;
     bdfc->xmin = rint(es.omin);
@@ -1387,6 +1427,7 @@ return( NULL );
 	bdfc->bytes_per_line *= 8;
     }
     BCCompressBitmap(bdfc);
+    FreeEdges(&es);
 return( bdfc );
 }
 
@@ -1503,6 +1544,7 @@ return;
 	    }
 	}
     }
+    free(bc->bitmap);
     *bc = new;
 }
 
@@ -1739,4 +1781,44 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int ptsize,int dpi,
     else if ( flags&pf_antialias )
 	BDFClut(bdf,4);
 return( bdf );
+}
+
+void BDFCharFree(BDFChar *bdfc) {
+    BDFRefChar *head, *cur;
+    
+    if ( bdfc==NULL )
+return;
+    for ( head = bdfc->refs; head != NULL; ) {
+	cur = head; head = head->next; free( cur );
+    }
+    free(bdfc->bitmap);
+    chunkfree(bdfc,sizeof(BDFChar));
+}
+
+void BDFPropsFree(BDFFont *bdf) {
+    int i;
+
+    for ( i=0; i<bdf->prop_cnt; ++i ) {
+	free(bdf->props[i].name);
+	if ( (bdf->props[i].type&~prt_property)==prt_string ||
+		 (bdf->props[i].type&~prt_property)==prt_atom )
+	     free(bdf->props[i].u.str);
+     }
+     free( bdf->props );
+}
+
+void BDFFontFree(BDFFont *bdf) {
+    int i;
+
+    if ( bdf==NULL )
+return;
+    for ( i=0; i<bdf->glyphcnt; ++i )
+	BDFCharFree(bdf->glyphs[i]);
+    free(bdf->glyphs);
+    free(bdf->clut);
+    if ( bdf->freetype_context!=NULL )
+	FreeTypeFreeContext(bdf->freetype_context);
+    BDFPropsFree(bdf);
+    free( bdf->foundry );
+    free(bdf);
 }

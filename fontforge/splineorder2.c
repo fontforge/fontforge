@@ -156,8 +156,8 @@ return( true );
 
 static SplinePoint *MakeQuadSpline(SplinePoint *start,Spline *ttf,real x,
 	real y, real tmax,SplinePoint *oldend) {
-    Spline *new = XZALLOC(Spline);
-    SplinePoint *end = XZALLOC(SplinePoint);
+    Spline *new = chunkalloc(sizeof(Spline));
+    SplinePoint *end = chunkalloc(sizeof(SplinePoint));
 
     if ( tmax==1 ) {
 	end->roundx = oldend->roundx; end->roundy = oldend->roundy; end->dontinterpolate = oldend->dontinterpolate;
@@ -226,8 +226,8 @@ return( false );
 
 static SplinePoint *LinearSpline(Spline *ps,SplinePoint *start, real tmax) {
     real x,y;
-    Spline *new = XZALLOC(Spline);
-    SplinePoint *end = XZALLOC(SplinePoint);
+    Spline *new = chunkalloc(sizeof(Spline));
+    SplinePoint *end = chunkalloc(sizeof(SplinePoint));
 
     x = ((ps->splines[0].a*tmax+ps->splines[0].b)*tmax+ps->splines[0].c)*tmax+ps->splines[0].d;
     y = ((ps->splines[1].a*tmax+ps->splines[1].b)*tmax+ps->splines[1].c)*tmax+ps->splines[1].d;
@@ -397,7 +397,12 @@ return( end );
     for ( s=start->next; s!=NULL && !s->islinear; s=s->to->next );
     if ( s==NULL )
 return( end );
-/* Hmm. With my algorithm, checking for points of inflection actually makes */
+    for ( s=start->next; s!=NULL ; s=next ) {
+	next = s->to->next;
+	SplinePointFree(s->to);
+	SplineFree(s);
+    }
+/* Hmm. With my algorithem, checking for points of inflection actually makes */
 /*  things worse. It uses more points and the splines don't join as nicely */
 /* However if we get a bad match (a line) in the normal approx, then check */
 /*  Err... I was computing POI incorrectly. Above statement might not be correct*/
@@ -693,13 +698,13 @@ static SplinePoint *AlreadyQuadraticCheck(Spline *ps, SplinePoint *start) {
 	/* Already Quadratic, just need to find the control point */
 	/* Or linear, in which case we don't need to do much of anything */
 	Spline *spline;
-	sp = XZALLOC(SplinePoint);
+	sp = chunkalloc(sizeof(SplinePoint));
 	sp->me.x = ps->to->me.x; sp->me.y = ps->to->me.y;
 	sp->roundx = ps->to->roundx; sp->roundy = ps->to->roundy; sp->dontinterpolate = ps->to->dontinterpolate;
 	sp->ttfindex = 0xfffe;
 	sp->nextcpindex = 0xfffe;
 	sp->nonextcp = true;
-	spline = XZALLOC(Spline);
+	spline = chunkalloc(sizeof(Spline));
 	spline->order2 = true;
 	spline->from = start;
 	spline->to = sp;
@@ -831,11 +836,15 @@ static void ttfCleanup(SplinePoint *from) {
 		next->noprevcp = test->noprevcp;
 		next->prev = test->prev;
 		next->prev->to = next;
+		SplineFree(test->next);
+		SplinePointFree(test);
 	    } else {
 		test->nextcp = next->nextcp;
 		test->nonextcp = next->nonextcp;
 		test->next = next->next;
 		test->next->from = test;
+		SplineFree(next->prev);
+		SplinePointFree(next);
 		next = test->next->to;
 	    }
 	}
@@ -846,7 +855,7 @@ static void ttfCleanup(SplinePoint *from) {
 
 SplinePoint *SplineTtfApprox(Spline *ps) {
     SplinePoint *from;
-    from = XZALLOC(SplinePoint);
+    from = chunkalloc(sizeof(SplinePoint));
     *from = *ps->from;
     from->hintmask = NULL;
     ttfApprox(ps,from);
@@ -854,13 +863,13 @@ return( from );
 }
 
 SplineSet *SSttfApprox(SplineSet *ss) {
-    SplineSet *ret = XZALLOC(SplineSet);
+    SplineSet *ret = chunkalloc(sizeof(SplineSet));
     Spline *spline, *first;
 
-    ret->first = XZALLOC(SplinePoint);
+    ret->first = chunkalloc(sizeof(SplinePoint));
     *ret->first = *ss->first;
     if ( ret->first->hintmask != NULL ) {
-	ret->first->hintmask = XZALLOC(HintMask);
+	ret->first->hintmask = chunkalloc(sizeof(HintMask));
 	memcpy(ret->first->hintmask,ss->first->hintmask,sizeof(HintMask));
     }
     ret->last = ret->first;
@@ -872,7 +881,7 @@ SplineSet *SSttfApprox(SplineSet *ss) {
 	ret->last->ttfindex = spline->to->ttfindex;
 	ret->last->nextcpindex = spline->to->nextcpindex;
 	if ( spline->to->hintmask != NULL ) {
-	    ret->last->hintmask = XZALLOC(HintMask);
+	    ret->last->hintmask = chunkalloc(sizeof(HintMask));
 	    memcpy(ret->last->hintmask,spline->to->hintmask,sizeof(HintMask));
 	}
 	if ( first==NULL ) first = spline;
@@ -883,6 +892,7 @@ SplineSet *SSttfApprox(SplineSet *ss) {
 	    ret->first->noprevcp = ret->last->noprevcp;
 	    ret->first->prev = ret->last->prev;
 	    ret->last->prev->to = ret->first;
+	    SplinePointFree(ret->last);
 	    ret->last = ret->first;
 	}
     }
@@ -955,24 +965,24 @@ return;
 }
     
 SplineSet *SSPSApprox(SplineSet *ss) {
-    SplineSet *ret = XZALLOC(SplineSet);
+    SplineSet *ret = chunkalloc(sizeof(SplineSet));
     Spline *spline, *first;
     SplinePoint *to;
 
-    ret->first = XZALLOC(SplinePoint);
+    ret->first = chunkalloc(sizeof(SplinePoint));
     *ret->first = *ss->first;
     if ( ret->first->hintmask != NULL ) {
-	ret->first->hintmask = XZALLOC(HintMask);
+	ret->first->hintmask = chunkalloc(sizeof(HintMask));
 	memcpy(ret->first->hintmask,ss->first->hintmask,sizeof(HintMask));
     }
     ret->last = ret->first;
 
     first = NULL;
     for ( spline=ss->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	to = XZALLOC(SplinePoint);
+	to = chunkalloc(sizeof(SplinePoint));
 	*to = *spline->to;
 	if ( to->hintmask != NULL ) {
-	    to->hintmask = XZALLOC(HintMask);
+	    to->hintmask = chunkalloc(sizeof(HintMask));
 	    memcpy(to->hintmask,spline->to->hintmask,sizeof(HintMask));
 	}
 	if ( !spline->knownlinear ) {
@@ -993,6 +1003,7 @@ SplineSet *SSPSApprox(SplineSet *ss) {
 	    ret->first->noprevcp = ret->last->noprevcp;
 	    ret->first->prev = ret->last->prev;
 	    ret->last->prev->to = ret->first;
+	    SplinePointFree(ret->last);
 	    ret->last = ret->first;
 	}
     }
@@ -1022,6 +1033,7 @@ SplineSet *SplineSetsConvertOrder(SplineSet *ss, int to_order2) {
 	new = SplineSetsTTFApprox(ss);
     else
 	new = SplineSetsPSApprox(ss);
+    SplinePointListsFree(ss);
 return( new );
 }
 
@@ -1032,6 +1044,7 @@ void SCConvertLayerToOrder2(SplineChar *sc,int layer) {
 return;
 
     new = SplineSetsTTFApprox(sc->layers[layer].splines);
+    SplinePointListsFree(sc->layers[layer].splines);
     sc->layers[layer].splines = new;
 
     UndoesFree(sc->layers[layer].undoes);
@@ -1040,7 +1053,7 @@ return;
     sc->layers[layer].redoes = NULL;
     sc->layers[layer].order2 = true;
 
-    sc->md = NULL;
+    MinimumDistancesFree(sc->md); sc->md = NULL;
 }
 
 void SCConvertToOrder2(SplineChar *sc) {
@@ -1100,6 +1113,7 @@ void SFConvertGridToOrder2(SplineFont *_sf) {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
 
 	new = SplineSetsTTFApprox(sf->grid.splines);
+	SplinePointListsFree(sf->grid.splines);
 	sf->grid.splines = new;
 
 	UndoesFree(sf->grid.undoes); UndoesFree(sf->grid.redoes);
@@ -1125,6 +1139,7 @@ void SCConvertLayerToOrder3(SplineChar *sc,int layer) {
     int has_order2_layer_still, i;
 
     new = SplineSetsPSApprox(sc->layers[layer].splines);
+    SplinePointListsFree(sc->layers[layer].splines);
     sc->layers[layer].splines = new;
 
     UndoesFree(sc->layers[layer].undoes);
@@ -1133,7 +1148,7 @@ void SCConvertLayerToOrder3(SplineChar *sc,int layer) {
     sc->layers[layer].redoes = NULL;
     sc->layers[layer].order2 = false;
 
-    sc->md = NULL;
+    MinimumDistancesFree(sc->md); sc->md = NULL;
 
     /* OpenType/PostScript fonts don't support point matching to position */
     /*  references or anchors */
@@ -1149,6 +1164,7 @@ void SCConvertLayerToOrder3(SplineChar *sc,int layer) {
 	for ( ap = sc->anchor; ap!=NULL; ap=ap->next )
 	    ap->has_ttf_pt = false;
 
+	free(sc->ttf_instrs);
 	sc->ttf_instrs = NULL; sc->ttf_instrs_len = 0;
 	/* If this character has any cv's showing instructions then remove the instruction pane!!!!! */
     }
@@ -1201,6 +1217,7 @@ void SFConvertGridToOrder3(SplineFont *_sf) {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
 
 	new = SplineSetsPSApprox(sf->grid.splines);
+	SplinePointListsFree(sf->grid.splines);
 	sf->grid.splines = new;
 
 	UndoesFree(sf->grid.undoes); UndoesFree(sf->grid.redoes);
@@ -1285,6 +1302,7 @@ void SplineRefigure2(Spline *spline) {
     }
     if ( isnan(ysp->b) || isnan(xsp->b) )
 	IError("NaN value in spline creation");
+    LinearApproxFree(spline->approx);
     spline->approx = NULL;
     spline->knowncurved = false;
     spline->knownlinear = spline->islinear;
@@ -1624,7 +1642,7 @@ return;
 }
 
 Spline *SplineMake2(SplinePoint *from, SplinePoint *to) {
-    Spline *spline = XZALLOC(Spline);
+    Spline *spline = chunkalloc(sizeof(Spline));
 
     spline->from = from; spline->to = to;
     from->next = to->prev = spline;

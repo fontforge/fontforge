@@ -654,6 +654,7 @@ char *u2utf8_copyn(const unichar_t *ubuf,int len) {
 	*pt = '\0';
 	return( utf8buf );
     }
+    free( utf8buf );
     return( NULL );
 }
 
@@ -972,6 +973,8 @@ int endswithi(const char *haystackZ,const char *needleZ) {
     char* haystack = copytolower(haystackZ);
     char* needle   = copytolower(needleZ);
     int ret = endswith( haystack, needle );
+    free( haystack );
+    free( needle );
     return ret;
 }
 
@@ -989,6 +992,8 @@ int endswithi_partialExtension( const char *haystackZ,const char *needleZ) {
 	needle[i] = '\0';
 	ret |= endswith( haystack, needle );
     }
+    free( haystack );
+    free( needle );
     return ret;
 }
 
@@ -1008,11 +1013,15 @@ char* c_itostr( int v )
     return ret;
 }
 
-char* str_replace_all( char* s, char* orig, char* replacement )
+char* str_replace_all( char* s, char* orig, char* replacement, int free_s )
 {
     char* p = strstr( s, orig );
     if( !p )
+    {
+	if( free_s )
+	    return s;
 	return copy( s );
+    }
 
     int count = 0;
     p = s;
@@ -1048,6 +1057,8 @@ char* str_replace_all( char* s, char* orig, char* replacement )
 	remains = p + strlen(orig);
     }
 
+    if( free_s )
+	free(s);
     return ret;
 }
 

@@ -124,6 +124,7 @@ GImage *GImageReadXbm(char * filename) {
 errorGImageReadXbm:
     fprintf(stderr,"Bad input file \"%s\"\n",filename );
 errorGImageReadXbmMem:
+    GImageDestroy(gi);
     fclose(file);
     return( NULL );
 }

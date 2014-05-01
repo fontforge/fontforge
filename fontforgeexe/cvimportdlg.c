@@ -107,6 +107,7 @@ return(false);
     base = image->list_len==0?image->u.image:image->u.images[0];
     BCPreserveState(bc);
     BCFlattenFloat(bc);
+    free(bc->bitmap);
     bc->xmin = bc->ymin = 0;
     bc->xmax = base->width-1; bc->ymax = base->height-1;
     if ( !bc->byte_data && base->image_type==it_mono ) {
@@ -164,6 +165,7 @@ return(false);
 		bc->bitmap[i*bc->bytes_per_line+(j>>3)] |= (0x80>>(j&7));
 	}
     }
+    GImageDestroy(image);
     if ( bc->sc!=NULL )
 	bc->sc->widthset = true;
     BCCharChangedUpdate(bc);
@@ -412,6 +414,7 @@ return( true );
 	    flast_format = pos;
 	else
 	    last_format = pos;
+	free(ret);
 	if ( d->fv!=NULL ) {
 	    int toback = GGadgetIsChecked(d->background);
 	    if ( toback && strchr(temp,';')!=NULL && format<3 )
@@ -476,6 +479,7 @@ return( true );
 		PyFF_SCImport(d->cv->b.sc,format-fv_pythonbase,temp,
 			CVLayer((CharViewBase *) d->cv), false);
 	}
+	free(temp);
 	GDrawSetCursor(GGadgetGetWindow(g),ct_pointer);
     }
 return( true );
@@ -507,6 +511,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 		sprintf( text, "*.%s", ae );
 	    utext = utf82u_copy(text);
 	    GFileChooserSetFilterText(d->gfc,utext);
+	    free(text); free(utext);
 	}
 	GFileChooserRefreshList(d->gfc);
 	if ( d->fv!=NULL ) {
@@ -736,6 +741,9 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     d.format = gcd[5].ret;
     if ( fv!=NULL )
 	d.background = gcd[6].ret;
+
+    if ( cur_formats!=formats && cur_formats!=fvformats )
+	GTextInfoListFree(cur_formats);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);

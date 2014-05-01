@@ -169,15 +169,20 @@ static int BdfP_FinishTextField(struct bdf_dlg *bd) {
 	for ( pt=text; *pt; ++pt )
 	    if ( *pt&0x80 ) {
 		ff_post_error(_("Not ASCII"),_("All characters in the value must be in ASCII"));
+		free(text);
 return( false );
 	    }
 	val = strtol(text,&end,10);
 	if ( NumericKey(bdf->props[cur->sel_prop].name) ) {
 	    if ( *end!='\0' ) {
 		ff_post_error(_("Bad Number"),_("Must be a number"));
+		free(text);
 return( false );
 	    }
 	}
+	if ( (bdf->props[cur->sel_prop].type&~prt_property)==prt_string ||
+		(bdf->props[cur->sel_prop].type&~prt_property)==prt_atom )
+	    free(bdf->props[cur->sel_prop].u.str);
 	if ( UnknownKey(bdf->props[cur->sel_prop].name) ) {
 	    if ( *end!='\0' ) {
 		bdf->props[cur->sel_prop].type = prt_string | prt_property;
@@ -194,6 +199,7 @@ return( false );
 	    bdf->props[cur->sel_prop].type = KeyType(bdf->props[cur->sel_prop].name);
 	    bdf->props[cur->sel_prop].u.str = copy(text);
 	}
+	free(text);	    
 	bd->active = false;
 	GGadgetSetVisible(bd->tf,false);
     }
@@ -207,6 +213,7 @@ static int BdfP_DefaultAll(GGadget *g, GEvent *e) {
 	if ( res!=-1 )
 	    bd->cur->bdf->res = res;
 	BdfP_HideTextField(bd);
+	BDFPropsFree(bd->cur->bdf);
 	bd->cur->bdf->prop_cnt = bd->cur->bdf->prop_max = 0;
 	bd->cur->bdf->props = NULL;
 	BDFDefaultProps(bd->cur->bdf, bd->map, -1);
@@ -251,6 +258,10 @@ static int BdfP_DeleteCurrent(GGadget *g, GEvent *e) {
 	if ( cur->sel_prop<0 || cur->sel_prop>=bdf->prop_cnt )
 return( true );
 	BdfP_HideTextField(bd);
+	if ( (bdf->props[cur->sel_prop].type&~prt_property)==prt_string ||
+		(bdf->props[cur->sel_prop].type&~prt_property)==prt_atom )
+	    free(bdf->props[cur->sel_prop].u.str);
+	free(bdf->props[cur->sel_prop].name);
 	--bdf->prop_cnt;
 	for ( i=cur->sel_prop; i<bdf->prop_cnt; ++i )
 	    bdf->props[i] = bdf->props[i+1];
@@ -335,9 +346,11 @@ static void BdfP_DoCancel(struct bdf_dlg *bd) {
     int i;
     for ( i=0; i<bd->fcnt; ++i ) {
 	BDFFont *bdf = bd->fonts[i].bdf;
+	BDFPropsFree(bdf);
 	bdf->props = bd->fonts[i].old_props;
 	bdf->prop_cnt = bd->fonts[i].old_prop_cnt;
     }
+    free(bd->fonts);
     bd->done = true;
 }
 
@@ -364,6 +377,7 @@ return( true );
 	    int pc = bdf->prop_cnt;
 	    bdf->props = bd->fonts[i].old_props;
 	    bdf->prop_cnt = bd->fonts[i].old_prop_cnt;
+	    BDFPropsFree(bdf);
 	    bdf->props = temp;
 	    bdf->prop_cnt = pc;
 
@@ -374,6 +388,7 @@ return( true );
 		XLFD_CreateComponents(bdf,bd->map, -1, &components);
 	    bdf->res = components.res_y;
 	}
+	free(bd->fonts);
 	bd->sf->changed = true;
 	bd->done = true;
     }
@@ -557,8 +572,10 @@ static void BdfP_Invoked(GWindow v, GMenuItem *mi, GEvent *e) {
 	    bdf->props[sel].type = prt_property|prt_string;
 	    bdf->props[sel].u.str = copy("");
 	}
-    } else
+    } else {
+	free(bdf->props[sel].name);
 	bdf->props[sel].name = prop_name;
+    }
     GDrawRequestExpose(bd->v,NULL,false);
 }
 
@@ -586,6 +603,7 @@ static void BdfP_PopupMenuProps(struct bdf_dlg *bd, GEvent *e) {
     }
 
     GMenuCreatePopupMenu(bd->v,e,mi);
+    free(mi);
 }
 
 static void BdfP_Mouse(struct bdf_dlg *bd, GEvent *e) {
@@ -862,6 +880,7 @@ return;
     gcd[i++].creator = GButtonCreate;
     
     GGadgetsCreate(gw,gcd);
+    GTextInfoListFree(gcd[0].gd.u.list);
     bd.vsb = gcd[1].ret;
 
     small.main_background = small.main_foreground = COLOR_DEFAULT;

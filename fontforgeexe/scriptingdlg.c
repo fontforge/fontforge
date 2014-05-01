@@ -65,6 +65,8 @@ return(true);
 	utf82u_strcpy(insert+1,fn);
 	uc_strcat(insert,"\"()");
 	GTextFieldReplace(GWidgetGetControl(GGadgetGetWindow(g),CID_Script),insert);
+	free(insert);
+	free(fn);
     }
 return( true );
 }
@@ -73,13 +75,16 @@ static void ExecNative(GGadget *g, GEvent *e) {
     struct sd_data *sd = GDrawGetUserData(GGadgetGetWindow(g));
     Context c;
     Val args[1];
+    Array *dontfree[1];
     jmp_buf env;
 
     memset( &c,0,sizeof(c));
     memset( args,0,sizeof(args));
+    memset( dontfree,0,sizeof(dontfree));
     running_script = true;
     c.a.argc = 1;
     c.a.vals = args;
+    c.dontfree = dontfree;
     c.filename = args[0].u.sval = "ScriptDlg";
     args[0].type = v_str;
     c.return_val.type = v_void;
@@ -121,6 +126,7 @@ static void ExecPython(GGadget *g, GEvent *e) {
 
     str = GGadgetGetTitle8(GWidgetGetControl(sd->gw,CID_Script));
     PyFF_ScriptString((FontViewBase *) sd->fv,sd->sc,sd->layer,str);
+    free(str);
     running_script = false;
 }
 

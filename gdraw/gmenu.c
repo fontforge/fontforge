@@ -24,8 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
-
 #include <stdlib.h>
 #include <gdraw.h>
 #include "ggadgetP.h"
@@ -580,6 +578,8 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 		keydesc = hotkeyTextToMacModifiers( keydesc );
 	    }
 	    utf82u_strcpy( shortbuf, keydesc );
+	    if( keydesc != hk->text )
+		free( keydesc );
 	}
 
 	width = GDrawGetTextWidth(pixmap,shortbuf,-1);
@@ -1308,6 +1308,9 @@ static int gmenu_destroy(struct gmenu *m) {
 	most_recent_popup_menu = NULL;
     if ( m->donecallback )
 	(m->donecallback)(m->owner);
+    if ( m->freemi )
+	GMenuItemArrayFree(m->mi);
+    free(m);
 return( true );
 }
 
@@ -1955,8 +1958,16 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 		    GMenuDestroy(mb->child);
 		return( true );
 	    }
+	    else
+	    {
+//		    TRACE("hotkey found for event must be a non menu action... action:%s\n", hk->action );
+
+	    }
 	}
+
+//	    TRACE("END hotkey found by event! hk:%p\n", hk );
     }
+    dlist_free_external(&hklist);
 
     TRACE("menubarcheckkey(e1)\n");
 
@@ -2101,6 +2112,8 @@ return;
 	GDrawSync(NULL);
 	GDrawProcessPendingEvents(NULL);	/* popup's destroy routine must execute before we die */
     }
+    GMenuItemArrayFree(mb->mi);
+    free(mb->xs);
     _ggadget_destroy(g);
 }
 
@@ -2319,8 +2332,10 @@ void GMenuBarSetItemName(GGadget *g, int mid, const unichar_t *name) {
     GMenuItem *item;
 
     item = GMenuBarFindMid(mb->mi,mid);
-    if ( item!=NULL )
+    if ( item!=NULL ) {
+	free( item->ti.text );
 	item->ti.text = u_copy(name);
+    }
 }
 
 /* Check to see if event matches the given shortcut, expressed in our standard*/

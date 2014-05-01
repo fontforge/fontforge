@@ -1,5 +1,3 @@
-#include <fontforge-config.h>
-
 #include <stdio.h>
 #include "../inc/gkeysym.h"
 

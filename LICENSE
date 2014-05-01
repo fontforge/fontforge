@@ -127,7 +127,7 @@ effectsui.c		prefs.c			uiinterface.h
 encoding.c		print.c			uiutil.c
 encodingui.c		print.h			unicoderange.c
 featurefile.c		problems.c		unicoderange.h
-fffreetype.h		psfont.h
+fffreetype.h		psfont.h		utils.c
 ffpython.h		psread.c		views.h
 fontforge.h		python.c		windowmenu.c
 fontforgeui.h		pythonui.c		winfonts.c
@@ -182,7 +182,7 @@ excepthook.py
 
 fontforge-20120731-b/Unicode:
 char.c		makebuildtables.c	ucharmap.c
-dump.c		makeutype.c
+dump.c		makeutype.c		usprintf.c
 gwwiconv.c	memory.c		ustring.c
 
 

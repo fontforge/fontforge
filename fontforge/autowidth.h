@@ -52,6 +52,8 @@ typedef struct widthinfo {
 
 extern struct charone *AW_MakeCharOne(SplineChar *sc);
 extern void AW_InitCharPairs(WidthInfo *wi);
+extern void AW_FreeCharList(struct charone **list);
+extern void AW_FreeCharPairs(struct charpair **list, int cnt);
 extern void AW_ScriptSerifChecker(WidthInfo *wi);
 extern int AW_ReadKernPairFile(char *fn,WidthInfo *wi);
 extern void AW_BuildCharPairs(WidthInfo *wi);

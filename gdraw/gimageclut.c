@@ -24,8 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
-
 #include "gdrawP.h"
 #include "colorP.h"
 #include "charset.h"
@@ -67,6 +65,16 @@ struct colcnt {
     Color col;
     int32 cnt;
 };
+
+static void RevColListFree(struct revcol *rc) {
+    struct revcol *next;
+
+    while ( rc!=NULL ) {
+	next = rc->next;
+	free(rc);
+	rc = next;
+    }
+}
 
 static int cccomp(const void *_c1, const void *_c2) {
     register const struct colcnt *c1 = _c1, *c2 = _c2;
@@ -852,15 +860,26 @@ return( ret );
 	base = rc;
     }
     memset(&basecol,'\0',sizeof(basecol));
-return _GClutReverse(side_cnt,256,&basecol,base,base);
+    ret = _GClutReverse(side_cnt,256,&basecol,base,base);
+    while ( base!=NULL ) {
+	struct revcol *rc = base->next;
+	free(base);
+	base = rc;
+    }
+return( ret );
 }
 
 void GClut_RevCMapFree(RevCMap *rev) {
     int i;
 
-    for ( i=0; i<rev->side_cnt*rev->side_cnt*rev->side_cnt; ++i )
+    for ( i=0; i<rev->side_cnt*rev->side_cnt*rev->side_cnt; ++i ) {
 	if ( rev->cube[i].sub!=NULL )
 	    GClut_RevCMapFree(rev->cube[i].sub);
+	RevColListFree(rev->cube[i].cols[0]);
+	RevColListFree(rev->cube[i].cols[1]);
+    }
+    free(rev->cube);
+    free(rev);
 }
 
 int GImageSameClut(GClut *clut,GClut *nclut) {

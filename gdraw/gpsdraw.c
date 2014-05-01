@@ -24,8 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
-
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
@@ -33,6 +31,7 @@
 #if !defined(__MINGW32__)
 #include <sys/wait.h>
 #endif
+#include "fontforge-config.h"
 #include <unistd.h>
 
 #include "gpsdrawP.h"
@@ -247,9 +246,11 @@ static void PSDrawGrabSelection(GWindow UNUSED(w), enum selnames UNUSED(sel)) {
 
 static void PSDrawAddSelectionType(GWindow UNUSED(w), enum selnames UNUSED(sel),
         char *UNUSED(type), void *UNUSED(data), int32 UNUSED(len),
-        int32 UNUSED(unitsize), void *(*gendata)(void *,int32 *len)) {
+        int32 UNUSED(unitsize), void *(*gendata)(void *,int32 *len),
+        void (*freedata)(void *)) {
     /* Not meaningful */
     (void)gendata;
+    (void)freedata;
 }
 
 static void *PSDrawRequestSelection(GWindow UNUSED(w), enum selnames UNUSED(sn),
@@ -1122,6 +1123,8 @@ return( true );
 }
 
 static void PSDestroyContext(GPSDisplay *gd) {
+    free(gd->groot->ggc);
+    free(gd->groot);
     gd->groot = NULL;
 }
 
@@ -1213,6 +1216,7 @@ return( NULL );
 	    gdisp->lpr_args = copy(attrs->extra_lpr_args);
 	else
 	    oldea = NULL;
+	free(oldfn); free(oldpn); free(oldea);
     }
     if ( gdisp->filename==NULL ) {
 	init = tmpfile();
@@ -1280,7 +1284,7 @@ static int GPSPrinterEndJob(GWindow w,int cancel) {
     ret = PSFinishJob(ps,cancel);
     _GPSDraw_ResetFonts(gdisp->fontstate);
     PSDestroyContext(gdisp);
-    gdisp->filename=NULL;
+    free(gdisp->filename); gdisp->filename=NULL;
 return( ret );
 }
 

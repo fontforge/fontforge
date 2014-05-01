@@ -368,6 +368,7 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 		    GDrawDrawLine(pixmap,x0-3,i*fv->cbh+fv->lab_height+yorg,x0+2,i*fv->cbh+fv->lab_height+yorg,METRICS_ORIGIN);
 	    }
 	    GDrawPopClip(pixmap,&old2);
+	    if ( !fv->show->piecemeal ) BDFCharFree( bdfc );
 	}
     }
 }
@@ -641,6 +642,7 @@ int _FVMenuSaveAs(FontView *fv) {
     	char* defaultSaveDir = GFileGetHomeDocumentsDir();
 	printf("save-as:%s\n", temp );
     	char* temp2 = GFileAppendFile( defaultSaveDir, temp, 0 );
+    	free(temp);
     	temp = temp2;
     }
 #endif
@@ -648,29 +650,36 @@ int _FVMenuSaveAs(FontView *fv) {
     ret = GWidgetSaveAsFileWithGadget8(_("Save as..."),temp,0,NULL,
 				       _FVSaveAsFilterFunc, FilenameFunc,
 				       &gcd );
+    free(temp);
     if ( ret==NULL )
 return( 0 );
     filename = utf82def_copy(ret);
+    free(ret);
     FVFlattenAllBitmapSelections(fv);
     fv->b.sf->compression = 0;
     ok = SFDWrite(filename,fv->b.sf,fv->b.map,fv->b.normal,s2d);
     if ( ok ) {
 	SplineFont *sf = fv->b.cidmaster?fv->b.cidmaster:fv->b.sf->mm!=NULL?fv->b.sf->mm->normal:fv->b.sf;
+	free(sf->filename);
 	sf->filename = filename;
 	sf->save_to_dir = s2d;
+	free(sf->origname);
 	sf->origname = copy(filename);
 	sf->new = false;
 	if ( sf->mm!=NULL ) {
 	    int i;
 	    for ( i=0; i<sf->mm->instance_count; ++i ) {
+		free(sf->mm->instances[i]->filename);
 		sf->mm->instances[i]->filename = filename;
+		free(sf->mm->instances[i]->origname);
 		sf->mm->instances[i]->origname = copy(filename);
 		sf->mm->instances[i]->new = false;
 	    }
 	}
 	SplineFontSetUnChanged(sf);
 	FVSetTitles(fv->b.sf);
-    }
+    } else
+	free(filename);
 return( ok );
 }
 
@@ -958,11 +967,14 @@ void MenuExit(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *e) {
 char *GetPostScriptFontName(char *dir, int mult) {
     unichar_t *ret;
     char *u_dir;
+    char *temp;
 
     u_dir = def2utf8_copy(dir);
     ret = FVOpenFont(_("Open Font"), u_dir,mult);
+    temp = u2def_copy(ret);
 
-return( u2def_copy(ret) );
+    free(ret);
+return( temp );
 }
 
 void MergeKernInfo(SplineFont *sf,EncMap *map) {
@@ -983,6 +995,7 @@ return;				/* Cancelled */
 
     if ( !LoadKerningDataFromMetricsFile(sf,temp,map))
 	ff_post_error(_("Load of Kerning Metrics Failed"),_("Failed to load kern data from %s"), temp);
+    free(ret); free(temp);
 }
 
 static void FVMenuMergeKern(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -1023,7 +1036,9 @@ return;
 	    strcpy(full,temp); strcat(full,"/"); strcat(full,file);
 	    ViewPostScriptFont(full,0);
 	    file = fpt+2;
+	    free(full);
 	} while ( fpt!=NULL );
+	free(temp);
 	for ( fvtest=0, test=fv_list; test!=NULL; ++fvtest, test=(FontView *) (test->b.next) );
     } while ( fvtest==fvcnt );	/* did the load fail for some reason? try again */
 }
@@ -1183,6 +1198,7 @@ return;
 	    FVSetTitles(fv->b.sf);
 	}
     }
+    free(ret);
 }
 
 static void FVMenuEmbolden(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -1568,7 +1584,7 @@ static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     struct sfundoes *undo = sf->undoes;
     printf("font level undo msg:%s\n", undo->msg );
     SFUndoPerform( undo, sf );
-    SFUndoRemove( sf, undo );
+    SFUndoRemoveAndFree( sf, undo );
 }
 
 static void FVMenuCut(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -1741,6 +1757,7 @@ static int SS_ScriptChanged(GGadget *g, GEvent *e) {
 	    if ( strcmp((char *) scripts[i].text,txt)==0 )
 	break;
 	}
+	free(txt);
 	if ( scripts[i].text==NULL )
 return( true );
 	buf[0] = ((intpt) scripts[i].userdata)>>24;
@@ -2205,6 +2222,7 @@ static void FVMenuSelectByName(GWindow _gw, struct gmenuitem *UNUSED(mi), GEvent
 			GGadgetIsChecked(gcd[4].ret) ? mt_restrict :
 						       mt_and;
 	    int ret = FVSelectByName(fv,str,merge);
+	    free(str);
 	    if ( !ret )
 		done = 0;
 	}
@@ -2824,6 +2842,7 @@ static void FVShowSubFont(FontView *fv,SplineFont *new) {
 	GDrawDestroyWindow(mv->gw);
     }
     if ( wascompact ) {
+	EncMapFree(fv->b.map);
 	fv->b.map = fv->b.normal;
 	fv->b.normal = NULL;
 	fv->b.selected = realloc(fv->b.selected,fv->b.map->enccount);
@@ -2840,6 +2859,7 @@ static void FVShowSubFont(FontView *fv,SplineFont *new) {
 	    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 		(use_freetype_to_rasterize_fv && !fv->b.sf->strokedfont && !fv->b.sf->multilayer?pf_ft_nohints:0),
 	    NULL);
+    BDFFontFree(fv->filled);
     if ( fv->filled == fv->show )
 	fv->show = newbdf;
     fv->filled = newbdf;
@@ -2941,6 +2961,7 @@ static void FVMenuDisplaySubs(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 		    _("Pick a substitution to display in the window."));
 	    if ( ret!=-1 )
 		sub = SFFindLookupSubtable(sf,names[ret]);
+	    free(names);
 	    if ( ret==-1 )
 return;
 	}
@@ -3186,6 +3207,7 @@ static void FVMenuSize(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    NULL);
 	fv->filled = new;
 	FVChangeDisplayFont(fv,new);
+	BDFFontFree(old);
 	fv->b.sf->display_size = -dspsize;
 	if ( fv->b.cidmaster!=NULL ) {
 	    int i;
@@ -3217,6 +3239,7 @@ return;
 	    NULL);
 	destfv->filled = new;
 	FVChangeDisplayFont(destfv,new);
+	BDFFontFree(old);
     }
 }
 
@@ -3235,6 +3258,7 @@ static void FV_LayerChanged( FontView *fv ) {
     fv->filled = new;
     FVChangeDisplayFont(fv,new);
     fv->b.sf->display_size = -fv->filled->pixelsize;
+    BDFFontFree(old);
 }
 
 static void FVMenuChangeLayer(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
@@ -3265,6 +3289,7 @@ return;
 	fv->b.active_bitmap = NULL;
 	FVChangeDisplayFont(fv,show);
     }
+    free(ret);
 }
 
 static void FVMenuWSize(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
@@ -3437,6 +3462,7 @@ static void FVMenuEditTable(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
 
 static void FVMenuRmInstrTables(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+    TtfTablesFree(fv->b.sf->ttf_tables);
     fv->b.sf->ttf_tables = NULL;
     if ( !fv->b.sf->changed ) {
 	fv->b.sf->changed = true;
@@ -3508,14 +3534,18 @@ return;
 	uc_strcat(title,"  ");
 	temp = def2u_copy(GFileNameTail(file));
 	u_strcat(title,temp);
+	free(temp);
     }
     uc_strcat(title, " (" );
     if ( fv->b.normal ) { utf82u_strcat(title,_("Compact")); uc_strcat(title," "); }
     uc_strcat(title,enc);
     uc_strcat(title, ")" );
+    free(enc);
 
     ititle = uc_copy(fv->b.sf->fontname);
     GDrawSetWindowTitles(fv->gw,title,ititle);
+    free(title);
+    free(ititle);
 }
 
 void FVTitleUpdate(FontViewBase *fv)
@@ -3574,6 +3604,7 @@ static enum fchooserret CMapFilter(GGadget *g,GDirEntry *ent,
 		ret = fc_hide;
 	    fclose(file);
 	}
+	free(filename);
     }
 return( ret );
 }
@@ -3589,6 +3620,7 @@ return;
     if ( cmapfilename==NULL )
 return;
     MakeCIDMaster(fv->b.sf,fv->b.map,true,cmapfilename,NULL);
+    free(cmapfilename);
 }
 
 static void FVMenuFlatten(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -3613,6 +3645,7 @@ return;
     SFFindNearTop(fv->b.sf);
     SFFlattenByCMap(cidmaster,cmapname);
     SFRestoreNearTop(fv->b.sf);
+    free(cmapname);
 }
 
 static void FVMenuInsertFont(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -3630,6 +3663,7 @@ return;
     if ( filename==NULL )
 return;
     new = LoadSplineFont(filename,0);
+    free(filename);
     if ( new==NULL )
 return;
     if ( new->fv == &fv->b )		/* Already part of us */
@@ -3640,6 +3674,7 @@ return;
 	ff_post_error(_("Please close font"),_("Please close %s before inserting it into a CID font"),new->origname);
 return;
     }
+    EncMapFree(new->map);
     if ( force_names_when_opening!=NULL )
 	SFRenameGlyphsToNamelist(new,force_names_when_opening );
 
@@ -3750,9 +3785,11 @@ return;
 return;
     supple = strtol(ret,&end,10);
     if ( *end!='\0' || supple<=0 ) {
+	free(ret);
 	ff_post_error( _("Bad Number"),_("Bad Number") );
 return;
     }
+    free(ret);
     if ( supple!=cidmaster->supplement ) {
 	    /* this will make noises if it can't find an appropriate cidmap */
 	cidmap = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,supple,cidmaster);
@@ -3810,8 +3847,10 @@ return;
 	fv->b.selected = realloc(fv->b.selected,fv->b.map->enccount);
 	memset(fv->b.selected+oldcnt,0,fv->b.map->enccount-oldcnt);
     }
-    if ( fv->b.normal!=NULL )
+    if ( fv->b.normal!=NULL ) {
+	EncMapFree(fv->b.normal);
 	fv->b.normal = NULL;
+    }
     SFReplaceEncodingBDFProps(fv->b.sf,fv->b.map);
     FontViewSetTitle(fv);
     FontViewReformatOne(&fv->b);
@@ -3961,6 +4000,7 @@ static void fllistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 			fv->b.sf->backedup = bs_backedup;
 		    else
 			fv->b.sf->backedup = bs_not;
+		    free(buf);
 		}
 		if ( fv->b.sf->backedup == bs_backedup )
 		    mi->ti.disabled = false;
@@ -4576,6 +4616,7 @@ static GMenuItem2 dummyall[] = {
 static void aplistbuild(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
+    GMenuItemArrayFree(mi->sub);
     mi->sub = NULL;
 
     _aplistbuild(mi,fv->b.sf,FVMenuAnchorPairs);
@@ -4650,8 +4691,10 @@ static GMenuItem2 emptymenu[] = {
 static void FVEncodingMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
-    if ( mi->sub!=NULL )
+    if ( mi->sub!=NULL ) {
+	GMenuItemArrayFree(mi->sub);
 	mi->sub = NULL;
+    }
     mi->sub = GetEncodingMenu(FVMenuReencode,fv->b.map->enc);
 }
 
@@ -4665,9 +4708,11 @@ static void FVMenuAddUnencoded(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent 
 return;
     cnt = strtol(ret,&end,10);
     if ( *end!='\0' || cnt<=0 ) {
+	free(ret);
 	ff_post_error( _("Bad Number"),_("Bad Number") );
 return;
     }
+    free(ret);
     FVAddUnencoded((FontViewBase *) fv, cnt);
 }
 
@@ -4711,8 +4756,10 @@ return;
 static void FVForceEncodingMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
-    if ( mi->sub!=NULL )
+    if ( mi->sub!=NULL ) {
+	GMenuItemArrayFree(mi->sub);
 	mi->sub = NULL;
+    }
     mi->sub = GetEncodingMenu(FVMenuForceEncode,fv->b.map->enc);
 }
 
@@ -4727,6 +4774,7 @@ return;
     enc = FindOrMakeEncoding(ret);
     if ( enc==NULL )
 	ff_post_error(_("Invalid Encoding"),_("Invalid Encoding"));
+    free(ret);
 }
 
 static void FVMenuLoadEncoding(GWindow UNUSED(gw), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -4751,12 +4799,15 @@ static void FVMenuMakeNamelist(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent 
     snprintf(buffer, sizeof(buffer),"%s/%s.nam", getFontForgeUserDir(Config), fv->b.sf->fontname );
     temp = def2utf8_copy(buffer);
     filename = gwwv_save_filename(_("Make Namelist"), temp,"*.nam");
+    free(temp);
     if ( filename==NULL )
 return;
     temp = utf82def_copy(filename);
     file = fopen(temp,"w");
+    free(temp);
     if ( file==NULL ) {
 	ff_post_error(_("Namelist creation failed"),_("Could not write %s"), filename);
+	free(filename);
 return;
     }
     FVB_MakeNamelist((FontViewBase *) fv, file);
@@ -4790,20 +4841,26 @@ return;				/* Cancelled */
 	buts[1] = _("_Cancel");
 	buts[2] = NULL;
 	ans = gwwv_ask( _("Replace"),(const char **) buts,0,1,_("A name list with this name already exists. Replace it?"));
-	if ( ans==1 )
+	if ( ans==1 ) {
+	    free(temp);
+	    free(ret);
 return;
+	}
     }
 
     old = fopen( temp,"r");
     if ( old==NULL ) {
 	ff_post_error(_("No such file"),_("Could not read %s"), ret );
+	free(ret); free(temp);
 return;
     }
     if ( (nl = LoadNamelist(temp))==NULL ) {
 	ff_post_error(_("Bad namelist file"),_("Could not parse %s"), ret );
+	free(ret); free(temp);
         fclose(old);
 return;
     }
+    free(ret); free(temp);
     if ( nl->uses_unicode ) {
 	if ( nl->a_utf8_name!=NULL )
 	    ff_post_notice(_("Non-ASCII glyphnames"),_("This namelist contains at least one non-ASCII glyph name, namely: %s"), nl->a_utf8_name );
@@ -4867,6 +4924,7 @@ return;				/* Cancelled */
     file = fopen( temp,"r");
     if ( file==NULL ) {
 	ff_post_error(_("No such file"),_("Could not read %s"), ret );
+	free(ret); free(temp);
 return;
     }
     pt = buffer;
@@ -4889,6 +4947,7 @@ return;
 		    ++map->enccount;
 		    if ( sc==NULL ) {
 			sc = SFMakeChar(fv->b.sf,map,map->enccount-1);
+			free(sc->name);
 			sc->name = copy(buffer);
 			sc->comment = copy(".");	/* Mark as something for sfd file */
 		    }
@@ -4902,6 +4961,7 @@ return;
 	}
     }
     fclose(file);
+    free(ret); free(temp);
     FontViewReformatAll(fv->b.sf);
 }
 
@@ -4996,6 +5056,7 @@ static void lylistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	sub[ly-1].mid = ly;
 	sub[ly-1].ti.fg = sub[ly-1].ti.bg = COLOR_DEFAULT;
     }
+    GMenuItemArrayFree(mi->sub);
     mi->sub = sub;
 }
 
@@ -5052,8 +5113,10 @@ static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 
     for ( i=0; vwlist[i].ti.text==NULL || strcmp((char *) vwlist[i].ti.text, _("Bitmap _Magnification..."))!=0; ++i );
     base = i+1;
-    for ( i=base; vwlist[i].ti.text!=NULL; ++i )
+    for ( i=base; vwlist[i].ti.text!=NULL; ++i ) {
+	free( vwlist[i].ti.text);
 	vwlist[i].ti.text = NULL;
+    }
 
     vwlist[base-1].ti.disabled = true;
     if ( master->bitmaps!=NULL ) {
@@ -5075,6 +5138,7 @@ static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 		vwlist[base-1].ti.disabled = false;
 	}
     }
+    GMenuItemArrayFree(mi->sub);
     mi->sub = GMenuItem2ArrayCopy(vwlist,NULL);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
@@ -5268,8 +5332,10 @@ static void cdlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 
     for ( i=0; cdlist[i].mid!=MID_CIDFontInfo; ++i );
     base = i+2;
-    for ( i=base; cdlist[i].ti.text!=NULL; ++i )
+    for ( i=base; cdlist[i].ti.text!=NULL; ++i ) {
+	free( cdlist[i].ti.text);
 	cdlist[i].ti.text = NULL;
+    }
 
     cdlist[base-1].ti.fg = cdlist[base-1].ti.bg = COLOR_DEFAULT;
     if ( cidmaster==NULL ) {
@@ -5288,6 +5354,7 @@ static void cdlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    cdlist[i].ti.fg = cdlist[i].ti.bg = COLOR_DEFAULT;
 	}
     }
+    GMenuItemArrayFree(mi->sub);
     mi->sub = GMenuItem2ArrayCopy(cdlist,NULL);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
@@ -5349,7 +5416,13 @@ static void mmlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    mml[i].ti.fg = mml[i].ti.bg = COLOR_DEFAULT;
 	}
     }
+    GMenuItemArrayFree(mi->sub);
     mi->sub = GMenuItem2ArrayCopy(mml,NULL);
+    if ( mml!=mmlist ) {
+	for ( i=base; mml[i].ti.text!=NULL; ++i )
+	    free( mml[i].ti.text);
+	free(mml);
+    }
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
@@ -5839,8 +5912,10 @@ void FVRegenChar(FontView *fv,SplineChar *sc) {
     if ( fv->v==NULL )			/* Can happen in scripts */
 return;
 
-    if ( sc->orig_pos<fv->filled->glyphcnt )
+    if ( sc->orig_pos<fv->filled->glyphcnt ) {
+	BDFCharFree(fv->filled->glyphs[sc->orig_pos]);
 	fv->filled->glyphs[sc->orig_pos] = NULL;
+    }
     /* FVRefreshChar does NOT do this for us */
     for ( mv=fv->b.sf->metrics; mv!=NULL; mv=mv->next )
 	MVRegenChar(mv,sc);
@@ -5858,7 +5933,7 @@ return;
 static void AddSubPST(SplineChar *sc,struct lookup_subtable *sub,char *variant) {
     PST *pst;
 
-    pst = XZALLOC(PST);
+    pst = chunkalloc(sizeof(PST));
     pst->type = pst_substitution;
     pst->subtable = sub;
     pst->u.alt.components = copy(variant);
@@ -6303,12 +6378,14 @@ void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
     if( uni != -1 ) {
 	uniname = (gchar *) unicode_name( uni );
 	if ( uniname == NULL ) {
-	    uniname = strdup( UnicodeRange( uni ) );
+	    uniname = g_strdup( UnicodeRange( uni ) );
 	}
     }
 
-    if ( uniname != NULL )
+    if ( uniname != NULL ) {
 	output = g_string_append( output, uniname );
+	g_free( uniname );
+    }
 
     GDrawDrawText8( pixmap, 10, fv->mbh+fv->lab_as, output->str, -1, fg );
     g_string_free( output, TRUE );
@@ -6508,6 +6585,20 @@ return;
     }
 }
 
+static void utf82u_annot_strncat(unichar_t *to, const char *from, int len) {
+    register unichar_t ch;
+
+    to += u_strlen(to);
+    while ( (ch = utf8_ildb(&from)) != '\0' && --len>=0 ) {
+	if ( ch=='\t' ) {
+	    *(to++) = ' ';
+	    ch = ' ';
+	}
+	*(to++) = ch;
+    }
+    *to = 0;
+}
+
 void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	int actualuni) {
 /* This is for the popup which appears when you hover mouse over a character on main window */
@@ -6552,11 +6643,13 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	msg = xasprintf ( "%u 0x%x U+%04X \"%.25s\" %.100s",
 		localenc, localenc, upos,
 		(sc->name == NULL) ? "" : sc->name, uniname );
+	if ( uniname != NULL ) free( uniname ); uniname = NULL;
 
 	/* annotation */
 	char *uniannot;
 	if( ( uniannot = unicode_annot( upos )) != NULL )
 	    msg = xasprintf("%s\n%s", msg, uniannot);
+	if ( uniannot != NULL ) free( uniannot ); uniannot = NULL;
     }
 
     /* user comments */
@@ -6564,6 +6657,9 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
         msg = xasprintf("%s\n%s", msg, sc->comment);
 
     GGadgetPreparePopup8( gw, msg );
+}
+
+static void noop(void *UNUSED(_fv)) {
 }
 
 static void *ddgencharlist(void *_fv,int32 *len) {
@@ -6676,7 +6772,7 @@ return;
 		GDrawSetCursor(fv->v,ct_prohibition);
 		GDrawGrabSelection(fv->v,sn_drag_and_drop);
 		GDrawAddSelectionType(fv->v,sn_drag_and_drop,"STRING",fv,0,sizeof(char),
-			ddgencharlist);
+			ddgencharlist,noop);
 	    }
 	}
 	fv->pressed_pos = fv->end_pos = pos;
@@ -6981,6 +7077,7 @@ return;
 	    if ( bdf != NULL ) fv->show = bdf;
 	    else fv->show = new;
 	}
+	BDFFontFree(old);
 	fv->rowltot = (fv->b.map->enccount+fv->colcnt-1)/fv->colcnt;
 	GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
 	if ( fv->rowoff>fv->rowltot-fv->rowcnt ) {
@@ -6992,6 +7089,7 @@ return;
 	GDrawSetCursor(fv->v,ct_pointer);
     }
     for ( mvs=sf->metrics; mvs!=NULL; mvs=mvs->next ) if ( mvs->bdf==NULL ) {
+	BDFFontFree(mvs->show);
 	mvs->show = SplineFontPieceMeal(sf,mvs->layer,mvs->ptsize,mvs->dpi,
 		mvs->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
 	GDrawRequestExpose(mvs->gw,NULL,false);
@@ -7168,7 +7266,7 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 	if ( fv->b.sf==NULL )
 	    fv->b.sf = sf->subfonts[0];
 	sf = fv->b.sf;
-	if ( fv->b.nextsame==NULL ) { sf->map = NULL; }
+	if ( fv->b.nextsame==NULL ) { EncMapFree(sf->map); sf->map = NULL; }
 	fv->b.map = EncMap1to1(sf->glyphcnt);
 	if ( sf->compacted ) {
 	    fv->b.normal = fv->b.map;
@@ -7367,12 +7465,18 @@ static void FontView_Free(FontView *fv) {
     FontView *prev;
     FontView *fvs;
 
-    /* fv->b.sf can be NULL when usurping a font to put it into an MM */
-    if ( fv->b.sf != NULL && fv->b.nextsame==NULL && fv->b.sf->fv==&fv->b )
+    if ( fv->b.sf == NULL )	/* Happens when usurping a font to put it into an MM */
+	BDFFontFree(fv->filled);
+    else if ( fv->b.nextsame==NULL && fv->b.sf->fv==&fv->b ) {
+	EncMapFree(fv->b.map);
 	SplineFontFree(fv->b.cidmaster?fv->b.cidmaster:fv->b.sf);
-    else {
+	BDFFontFree(fv->filled);
+    } else {
+	EncMapFree(fv->b.map);
 	for ( fvs=(FontView *) (fv->b.sf->fv), i=0 ; fvs!=NULL; fvs = (FontView *) (fvs->b.nextsame) )
 	    if ( fvs->filled==fv->filled ) ++i;
+	if ( i==1 )
+	    BDFFontFree(fv->filled);
 	if ( fv->b.sf->fv==&fv->b ) {
 	    if ( fv->b.cidmaster==NULL )
 		fv->b.sf->fv = fv->b.nextsame;
@@ -7386,7 +7490,16 @@ static void FontView_Free(FontView *fv) {
 	    prev->b.nextsame = fv->b.nextsame;
 	}
     }
+#ifndef _NO_FFSCRIPT
+    DictionaryFree(fv->b.fontvars);
+    free(fv->b.fontvars);
+#endif
+    free(fv->b.selected);
+    free(fv->fontset);
+#ifndef _NO_PYTHON
     PyFF_FreeFV(&fv->b);
+#endif
+    free(fv);
 }
 
 static int FontViewWinInfo(FontView *fv, int *cc, int *rc) {
@@ -7919,6 +8032,7 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
 		    else {
 			strcpy(rpt,repr);
 			rpt += strlen( repr );
+			free(repr);
 			*rpt++ = ' ';
 		    }
 		}

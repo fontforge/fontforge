@@ -160,6 +160,8 @@ return 0;
   }
   jpeg_finish_compress(&cinfo);
   jpeg_destroy_compress(&cinfo);
+  if ( cinfo.in_color_space != JCS_GRAYSCALE )
+    free(row_pointer[0]);
 return( 1 );
 }
 

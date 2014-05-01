@@ -24,8 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
-
 #include <stdlib.h>
 #include <string.h>
 #include <ustring.h>
@@ -874,6 +872,7 @@ static void InsChrMouseMove(GWindow gw, GEvent *event) {
 	    uc_strncpy(space, uniname, 550);
 	    sprintf( cspace, " U+%04X", uch );
 	    uc_strcpy(space+u_strlen(space),cspace);
+	    free(uniname);
 	} else {
 	    if ( uch<160 )
 		sprintf(cspace, "Control Char U+%04X ", uch);
@@ -901,6 +900,7 @@ static void InsChrMouseMove(GWindow gw, GEvent *event) {
 		uc_strcat(space,"\n");
 		uc_annot_strncat(space, uniannot, left-2);
 	    }
+	    free(uniannot);
 	}
 	GGadgetPreparePopup(gw,space);
     } else if ( inschr.mouse_down ) {

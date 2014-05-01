@@ -24,7 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
 
 #include <gprogress.h>
 #include <ggadget.h>
@@ -159,6 +158,9 @@ static int progress_eh(GWindow gw, GEvent *event) {
 
     switch ( event->type ) {
       case et_destroy:
+	free(p->line1);
+	free(p->line2);
+	free(p);
       break;
       case et_close:
 	p->aborted = true;
@@ -289,6 +291,7 @@ return;
     wattrs.background_color = progress_background;
     pos.x = pos.y = 0;
     new->gw = GDrawCreateTopWindow(NULL,&pos,progress_eh,new,&wattrs);
+    free((void *) wattrs.window_title);
 
     memset(&gd,'\0',sizeof(gd)); memset(&label,'\0',sizeof(label));
     gd.pos.width = GDrawPointsToPixels(new->gw,50);
@@ -353,6 +356,7 @@ return;
 void GProgressChangeLine1(const unichar_t *line1) {
     if ( current==NULL )
 return;
+    free( current->line1 );
     current->line1 = u_copy(line1);
     if ( current->line1!=NULL ) {
 	GDrawSetFont(current->gw,current->font);
@@ -369,6 +373,7 @@ void GProgressChangeLine1R(int line1r) {
 void GProgressChangeLine2(const unichar_t *line2) {
     if ( current==NULL )
 return;
+    free( current->line2 );
     current->line2 = u_copy(line2);
     if ( current->line2!=NULL ) {
 	GDrawSetFont(current->gw,current->font);
@@ -489,16 +494,19 @@ void GProgressStartIndicator8(int delay, const char *title, const char *line1,
     GProgressStartIndicator(delay,
 	tit,l1,l2,
 	tot,stages);
+    free(l1); free(l2); free(tit);
 }
 
 void GProgressChangeLine1_8(const char *line1) {
     unichar_t *l1 = utf82u_copy(line1);
     GProgressChangeLine1(l1);
+    free(l1);
 }
 
 void GProgressChangeLine2_8(const char *line2) {
     unichar_t *l2 = utf82u_copy(line2);
     GProgressChangeLine2(l2);
+    free(l2);
 }
 
 GResInfo *_GProgressRIHead(void) {

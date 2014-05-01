@@ -24,8 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <fontforge-config.h>
-
 #include <stdlib.h>
 #include "gdraw.h"
 #include "ggadgetP.h"
@@ -553,7 +551,9 @@ return;
 	    GDrawSync(NULL);
 	    GDrawProcessWindowEvents(glb->popup);	/* popup's destroy routine must execute before we die */
 	}
+	GTextInfoArrayFree(glb->ti);
     }
+    free(b->label);
     _ggadget_destroy(g);
 }
 
@@ -579,6 +579,9 @@ static void GButtonSetInner(GButton *b) {
 static void GButtonSetTitle(GGadget *g,const unichar_t *tit) {
     GButton *b = (GButton *) g;
 
+    if ( b->g.free_box )
+	free( b->g.box );
+    free(b->label);
     b->label = u_copy(tit);
     GButtonSetInner(b);
     _ggadget_redraw(g);
@@ -587,6 +590,9 @@ static void GButtonSetTitle(GGadget *g,const unichar_t *tit) {
 static void GButtonSetImageTitle(GGadget *g,GImage *img,const unichar_t *tit, int before) {
     GButton *b = (GButton *) g;
 
+    if ( b->g.free_box )
+	free( b->g.box );
+    free(b->label);
     b->label = u_copy(tit);
     b->image = img;
     b->image_precedes = before;
@@ -672,6 +678,7 @@ static void GListButSet(GGadget *g,GTextInfo **ti,int32 docopy) {
     GListButton *gl = (GListButton *) g;
     int i;
 
+    GTextInfoArrayFree(gl->ti);
     if ( docopy || ti==NULL )
 	ti = GTextInfoArrayCopy(ti);
     gl->ti = ti;
@@ -1122,7 +1129,7 @@ static void GListButtonSelected(GGadget *g, int i) {
     _GWidget_ClearGrabGadget(&gl->g);
     if ( i<0 || i>=gl->ltot )
 return;
-    gl->label = u_copy(gl->ti[i]->text);
+    free(gl->label); gl->label = u_copy(gl->ti[i]->text);
     gl->image = gl->ti[i]->image;
     gl->image_precedes = gl->ti[i]->image_precedes;
     GButtonSetInner((GButton *) gl);

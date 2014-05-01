@@ -85,6 +85,7 @@ void SplineRefigure3(Spline *spline) {
     }
     if ( !finite(ysp->a) || !finite(xsp->a) || !finite(ysp->c) || !finite(xsp->c) || !finite(ysp->d) || !finite(xsp->d))
 	IError("NaN value in spline creation");
+    LinearApproxFree(spline->approx);
     spline->approx = NULL;
     spline->knowncurved = false;
     spline->knownlinear = spline->islinear;

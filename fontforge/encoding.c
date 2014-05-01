@@ -394,7 +394,7 @@ return( NULL );
     if ( !make_it )
 return( NULL );
 
-    enc = XZALLOC(Encoding);
+    enc = chunkalloc(sizeof(Encoding));
     *enc = temp;
     enc->enc_name = copy(name);
     if ( iconv_name!=name )
@@ -458,7 +458,7 @@ return( 0 );			/* Failure */
     if ( strmatch(name,"unicode4")==0 || strmatch(name,"ucs4")==0 )
 return( 0 );			/* Failure */
 
-    enc = XZALLOC(Encoding);
+    enc = chunkalloc(sizeof(Encoding));
     enc->enc_name = copy(name);
     enc->next = enclist;
     enclist = enc;
@@ -491,6 +491,17 @@ return( NULL );
 return( encfile );
 }
 
+static void EncodingFree(Encoding *item) {
+    int i;
+
+    free(item->enc_name);
+    if ( item->psnames!=NULL ) for ( i=0; i<item->char_cnt; ++i )
+	free(item->psnames[i]);
+    free(item->psnames);
+    free(item->unicode);
+    free(item);
+}
+
 void DeleteEncoding(Encoding *me) {
     FontViewBase *fv;
     Encoding *prev;
@@ -508,6 +519,7 @@ return;
 	for ( prev = enclist; prev!=NULL && prev->next!=me; prev=prev->next );
 	if ( prev!=NULL ) prev->next = me->next;
     }
+    EncodingFree(me);
     if ( default_encoding == me )
 	default_encoding = FindOrMakeEncoding("ISO8859-1");
     if ( default_encoding == NULL )
@@ -611,13 +623,15 @@ return( NULL );
 
 	    name = ff_ask_string( buf, NULL, buf );
 
-	    if ( name!=NULL )
+	    if ( name!=NULL ) {
 		item->enc_name = copy(name);
-            else {
+		free(name);
+	    } else {
 		if ( prev==NULL )
 		    head = item->next;
 		else
 		    prev->next = item->next;
+		EncodingFree(item);
 	    }
 	}
     }
@@ -778,7 +792,7 @@ struct altuni *CIDSetAltUnis(struct cidmap *map,int cid) {
 
     for ( alts=map->alts; alts!=NULL; alts=alts->next ) {
 	if ( alts->cid==cid ) {
-	    alt = XZALLOC(struct altuni);
+	    alt = chunkalloc(sizeof(struct altuni));
 	    alt->next = sofar;
 	    sofar = alt;
 	    alt->unienc = alts->uni;
@@ -913,7 +927,7 @@ struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
 		    ch = getc(f);
 		    while ( ch==',' ) {
 			if ( fscanf(f,"%x", (unsigned *) &uni )==1 ) {
-			    struct cidaltuni *alt = XZALLOC(struct cidaltuni);
+			    struct cidaltuni *alt = chunkalloc(sizeof(struct cidaltuni));
 			    alt->next = ret->alts;
 			    ret->alts = alt;
 			    alt->uni = uni;
@@ -966,7 +980,7 @@ return( maybe );	/* User has said it's ok to use maybe at this supplement level 
 		--pt;
 	    maybe_sup = strtol(pt,NULL,10);
 	    if ( maybe!=NULL && maybe->supplement >= maybe_sup ) {
-		maybefile = NULL;
+		free(maybefile); maybefile = NULL;
 		maybe_sup = maybe->supplement;
 	    } else
 		maybe = NULL;
@@ -1025,12 +1039,16 @@ return( maybe );
 		    maybefile = NULL;
 		}
 	    }
-	} else
+	} else {
 	    file = utf82def_copy(uret);
+	    free(uret);
+	}
     }
 
+    free(maybefile);
     if ( file!=NULL ) {
 	map = LoadMapFromFile(file,registry,ordering,supplement);
+	free(file);
 return( map );
     }
 
@@ -1056,6 +1074,7 @@ static void SFApplyOrdering(SplineFont *sf, int glyphcnt) {
 		    sc->layers[ly_fore].splines = new;
 		}
 		refs->layers[0].splines=NULL;
+		RefCharFree(refs);
 		if ( rprev==NULL )
 		    sc->layers[ly_fore].refs = rnext;
 		else
@@ -1073,6 +1092,7 @@ static void SFApplyOrdering(SplineFont *sf, int glyphcnt) {
 	    glyphs[sc->orig_pos] = sc;
     }
 
+    free(sf->glyphs);
     sf->glyphcnt = sf->glyphmax = glyphcnt;
     sf->glyphs = glyphs;
 }
@@ -1118,9 +1138,23 @@ struct cmap {
     int total;
 };
 
+static void cmapfree(struct cmap *cmap) {
+    free(cmap->registry);
+    free(cmap->ordering);
+    free(cmap->groups[cmt_coderange].ranges);
+    free(cmap->groups[cmt_notdefs].ranges);
+    free(cmap->groups[cmt_cid].ranges);
+    free(cmap->remap);
+    free(cmap);
+}
+
 static struct coderange *ExtendArray(struct coderange *ranges,int *n, int val) {
-    ranges = realloc(ranges,(*n+val)*sizeof(struct coderange));
-    memset(ranges+*n,0,val*sizeof(struct coderange));
+    if ( *n == 0 )
+	ranges = calloc(val,sizeof(struct coderange));
+    else {
+	ranges = realloc(ranges,(*n+val)*sizeof(struct coderange));
+	memset(ranges+*n,0,val*sizeof(struct coderange));
+    }
     *n += val;
 return( ranges );
 }
@@ -1319,6 +1353,7 @@ return(NULL);
     for ( fvs=new->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	fvs->cidmaster = NULL;
 	if ( fvs->sf->glyphcnt!=new->glyphcnt ) {
+	    free(fvs->selected);
 	    fvs->selected = calloc(new->glyphcnt,sizeof(char));
 	    if ( fvs->map->encmax < new->glyphcnt )
 		fvs->map->map = realloc(fvs->map->map,(fvs->map->encmax = new->glyphcnt)*sizeof(int32));
@@ -1388,6 +1423,7 @@ return( false );
 	    max = cmap->groups[cmt_cid].ranges[i].last;
 	if ( cmap->groups[cmt_cid].ranges[i].last>0x100000 ) {
 	    ff_post_error(_("Encoding Too Large"),_("Encoding Too Large"));
+	    cmapfree(cmap);
 return( false );
 	}
     }
@@ -1464,6 +1500,7 @@ return( false );
 	    warned = true;
 	}
     }
+    cmapfree(cmap);
     FontViewReformatAll(sf);
 return( true );
 }
@@ -1578,6 +1615,7 @@ return(NULL);
 	}
 	CompressCMap(cmap);
 	SFEncodeToCMap(cidmaster,sf,oldmap,cmap);
+	cmapfree(cmap);
     } else {
 	map = cidmap;
 	if ( map==NULL ) {
@@ -1630,7 +1668,9 @@ return(NULL);
     if ( !PSDictHasEntry(sf->private,"lenIV"))
 	PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	free(fvs->selected);
 	fvs->selected = calloc(fvs->sf->glyphcnt,sizeof(char));
+	EncMapFree(fvs->map);
 	fvs->map = EncMap1to1(fvs->sf->glyphcnt);
 	FVSetTitle(fvs);
     }
@@ -1676,6 +1716,7 @@ return;
 	if ( bdf->glyphs[i]!=NULL )	/* Not all glyphs exist in a piecemeal font */
 	    bdf->glyphs[i]->orig_pos = sf->glyphs[i]->orig_pos;
     }
+    free(bdf->glyphs);
     bdf->glyphs = glyphs;
     bdf->glyphcnt = bdf->glyphmax = orig_cnt;
     bdf->ticked = true;
@@ -1726,6 +1767,7 @@ return(false);			/* Custom, it's whatever's there */
 	    for ( i=0; i<map->enccount; ++i ) if ( map->map[i]!=-1 )
 		map->map[i] = sf->glyphs[map->map[i]]->orig_pos;
 	    if ( enc_cnt>map->backmax ) {
+		free(map->backmap);
 		map->backmax = enc_cnt;
 		map->backmap = malloc(enc_cnt*sizeof(int32));
 	    }
@@ -1744,6 +1786,7 @@ return(false);			/* Custom, it's whatever's there */
 	glyphs = calloc(enc_cnt,sizeof(SplineChar *));
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
 	    glyphs[sf->glyphs[i]->orig_pos] = sf->glyphs[i];
+	free(sf->glyphs);
 	sf->glyphs = glyphs;
 	sf->glyphcnt = sf->glyphmax = enc_cnt;
 return( true );
@@ -1765,6 +1808,7 @@ return( true );
 	int j = old->map[i];
 	SCBuildDummy(&dummy,sf,old,i);
 	sf->glyphs[j]->unicodeenc = dummy.unicodeenc;
+	free(sf->glyphs[j]->name);
 	sf->glyphs[j]->name = copy(dummy.name);
     }
     /* We just changed the unicode values for most glyphs */
@@ -1876,12 +1920,13 @@ return( NULL );
 	for ( j=0; j<enc->char_cnt; ++j ) {
 	    if ( encoded[j]!=-1 && enc->psnames[j]!=NULL &&
 		    strcmp(sf->glyphs[encoded[j]]->name,enc->psnames[j])!=0 ) {
+		free(sf->glyphs[encoded[j]]->name);
 		sf->glyphs[encoded[j]]->name = copy(enc->psnames[j]);
 	    }
 	}
     }
 
-    map = XZALLOC(EncMap);
+    map = chunkalloc(sizeof(EncMap));
     map->enccount = map->encmax = base + extras;
     map->map = malloc(map->enccount*sizeof(int32));
     memcpy(map->map,encoded,base*sizeof(int32));
@@ -1892,6 +1937,9 @@ return( NULL );
     for ( i = map->enccount-1; i>=0; --i ) if ( map->map[i]!=-1 )
 	map->backmap[map->map[i]] = i;
     map->enc = enc;
+
+    free(encoded);
+    free(unencoded);
 
 return( map );
 }
@@ -1907,6 +1955,7 @@ EncMap *CompactEncMap(EncMap *map, SplineFont *sf) {
     for ( i=inuse=0; i<map->enccount ; ++i )
 	if ( (gid = map->map[i])!=-1 && SCWorthOutputting(sf->glyphs[gid]))
 	    newmap[inuse++] = gid;
+    free(map->map);
     map->map = newmap;
     map->enccount = inuse;
     map->encmax = inuse;
@@ -1932,6 +1981,7 @@ static void BCProtectUndoes( Undoes *undo,BDFChar *bc ) {
 			undo->u.bmpstate.refs = brnext;
 		    else
 			brprev->next = brnext;
+		    free( brhead );
 		} else
 		    brprev = brhead;
 	    }
@@ -1994,6 +2044,7 @@ return;
 		else
 		    kprev->next = kp->next;
 		kp->next = NULL;
+		KernPairsFree(kp);
 	break;
 	    }
 	}
@@ -2016,6 +2067,7 @@ return;
 			BCPasteInto( dbc,bref->bdfc,bref->xoff,bref->yoff,false,false );
 			if ( brprev == NULL ) dbc->refs = brnext;
 			else brprev->next = brnext;
+			free( bref );
 		    } else
 			brprev = bref;
 		}
@@ -2039,6 +2091,7 @@ return;
 		BCRemoveDependent( bfc,bref );
 	    }
 	    bdf->glyphs[sc->orig_pos] = NULL;
+	    BDFCharFree(bfc);
 	}
     }
 
@@ -2228,6 +2281,7 @@ void SFMatchGlyphs(SplineFont *sf,SplineFont *target,int addempties) {
     for ( i=0; i<sf->glyphcnt; ++i )
 	if ( sf->glyphs[i]!=NULL && !sf->glyphs[i]->ticked )
 	    glyphs[j++] = sf->glyphs[i];
+    free(sf->glyphs);
     sf->glyphs = glyphs;
     sf->glyphcnt = sf->glyphmax = cnt;
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
@@ -2237,6 +2291,7 @@ void SFMatchGlyphs(SplineFont *sf,SplineFont *target,int addempties) {
 	glyphs = calloc(sf->glyphcnt,sizeof(BDFChar *));
 	for ( i=0; i<bdf->glyphcnt; ++i ) if ( bdf->glyphs[i]!=NULL )
 	    glyphs[bdf->glyphs[i]->sc->orig_pos] = bdf->glyphs[i];
+	free(bdf->glyphs);
 	bdf->glyphs = glyphs;
 	bdf->glyphcnt = bdf->glyphmax = sf->glyphcnt;
     }

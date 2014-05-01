@@ -144,6 +144,7 @@ return;
     }
     strcat(cmd," &" );
     system(cmd);
+    free( cmd ); free( temp ); free( format );
 }
 #endif
 
@@ -175,8 +176,10 @@ static void findbrowser(void) {
 	else if ( strchr(browser,'/')==NULL ) {
 	    if ( strstrmatch(browser,".exe")==NULL )
 		strcat(browser,".exe");
-	    if ( (path=_GFile_find_program_dir(browser))!=NULL )
+	    if ( (path=_GFile_find_program_dir(browser))!=NULL ) {
 		snprintf(browser,sizeof(browser),"%s/%s", path, getenv("BROWSER"));
+		free(path);
+	    }
 	}
 #endif
 	if ( strcmp(browser,"kde")==0 || strcmp(browser,"kfm")==0 ||
@@ -194,6 +197,7 @@ return;
 #else
 		strcpy(browser,stdbrowsers[i]);
 #endif
+	    free(path);
 return;
 	}
     }
@@ -298,6 +302,7 @@ return;
 	    if ( *tpt=='\\' )
 		*pt++ = '\\';
 	*pt = '\0';
+	free(temp);
     }
 #endif
 #if __Mac
@@ -313,6 +318,7 @@ return;
 	sprintf( t1, "file:%s", fullspec);
 #endif
 	strcpy(fullspec,t1);
+	free(t1);
     }
 #if __Mac
     /* This seems a bit easier... Thanks to riggle */
@@ -334,6 +340,7 @@ return;
 	sprintf( temp, strcmp(browser,"kfmclient openURL")==0 ? "%s \"%s\" &" : "\"%s\" \"%s\" &", browser, fullspec );
 	system(temp);
     }
+    free(temp);
 }
 
 #define MAX_ERR_LINES	200
@@ -478,7 +485,9 @@ static void AppendToErrorWindow(char *buffer) {
 	++pt;
     if ( errdata.cnt + linecnt > MAX_ERR_LINES ) {
 	int off = errdata.cnt + linecnt - MAX_ERR_LINES;
-	for ( i=off; i<errdata.cnt; ++i )
+	for ( i=0; i<off; ++i )
+	    free(errdata.errlines[i]);
+	for ( /*i=off*/; i<errdata.cnt; ++i )
 	    errdata.errlines[i-off] = errdata.errlines[i];
 	for ( ; i<MAX_ERR_LINES+off ; ++i )
 	    errdata.errlines[i-off] = NULL;

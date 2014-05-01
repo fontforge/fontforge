@@ -89,6 +89,7 @@ extern void GIOrenameFile(GIOControl *gc);
 extern GDirEntry *GIOgetDirData(GIOControl *gc);
 extern int32 GIOread(GIOControl *gc,void *buffer,int32 len);
 extern int32 GIOwrite(GIOControl *gc,void *buffer,int32 len);
+extern void GIOFreeDirEntries(GDirEntry *lst);
 extern void GIOcancel(GIOControl *gc);
 extern void GIOclose(GIOControl *gc);
 extern GIOControl *GIOCreate(unichar_t *path,void *userdata,

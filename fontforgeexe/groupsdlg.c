@@ -762,13 +762,18 @@ static int GroupFinishOld(struct groupdlg *grp) {
 	char *g = cu_copy(gu);
 	int oldunique = grp->oldsel->unique;
 
-	if ( !GroupValidateGlyphs(grp->oldsel,g,gu,GGadgetIsChecked(grp->unique)))
+	if ( !GroupValidateGlyphs(grp->oldsel,g,gu,GGadgetIsChecked(grp->unique))) {
+	    free(g);
 return( false );
+	}
 
+	free(grp->oldsel->name);
 	grp->oldsel->name = GGadgetGetTitle8(grp->gpname);
-	if ( *g=='\0' )
+	free(grp->oldsel->glyphs);
+	if ( *g=='\0' ) {
 	    grp->oldsel->glyphs = NULL;
-	else
+	    free(g);
+	} else
 	    grp->oldsel->glyphs = g;
 	
 	grp->oldsel->unique = GGadgetIsChecked(grp->unique);
@@ -809,6 +814,7 @@ return;
 	GGadgetSetTitle8(grp->gpname,current->name);
 	if ( glyphs==NULL ) glyphs = uc_copy("");
 	GGadgetSetTitle(grp->glyphs,glyphs);
+	free(glyphs);
 	GGadgetSetChecked(grp->unique,current->unique);
 	GGadgetSetEnabled(grp->newsub,current->glyphs==NULL || *current->glyphs=='\0');
 	GGadgetSetEnabled(grp->delete,current->parent!=NULL);
@@ -890,6 +896,7 @@ static int Group_ToSelection(GGadget *g, GEvent *e) {
 			fv->b.selected[pos] = true;
 		}
 	    }
+	    free(nm);
 	}
 
 	if ( found!=-1 )
@@ -979,6 +986,7 @@ static int Group_FromSelection(GGadget *g, GEvent *e) {
 	}
 
 	GGadgetSetTitle(grp->glyphs,vals);
+	free(vals);
     }
 return( true );
 }
@@ -1034,7 +1042,7 @@ return( true );
 return( true );
 	}
 	grp->oldsel->kids = realloc(grp->oldsel->kids,(++grp->oldsel->kid_cnt)*sizeof(Group *));
-	grp->oldsel->kids[grp->oldsel->kid_cnt-1] = new_grp = XZALLOC(Group);
+	grp->oldsel->kids[grp->oldsel->kid_cnt-1] = new_grp = chunkalloc(sizeof(Group));
 	new_grp->parent = grp->oldsel;
 	new_grp->unique = grp->oldsel->unique;
 	new_grp->name = copy(_("UntitledGroup"));
@@ -1062,6 +1070,7 @@ return( true );
 	for ( i=pos; i<parent->kid_cnt-1; ++i )
 	    parent->kids[i] = parent->kids[i+1];
 	--parent->kid_cnt;
+	GroupFree(grp->oldsel);
 	grp->oldsel = NULL;
 	GroupSBSizes(grp);
 	GroupSelected(grp);
@@ -1113,6 +1122,7 @@ return( GroupChar(grp,event));
       break;
       case et_destroy:
 	if ( grp->newsub!=NULL )
+	    free(grp);
 return( true );
     }
     if ( grp->done && grp->newsub!=NULL ) {
@@ -1121,12 +1131,15 @@ return( true );
 		grp->done = grp->oked = false;
 return( true );
 	    }
-	    if ( grp->root->kid_cnt==0 && grp->root->glyphs==NULL )
+	    GroupFree(group_root);
+	    if ( grp->root->kid_cnt==0 && grp->root->glyphs==NULL ) {
 		group_root = NULL;
-	    else
+		GroupFree(grp->root);
+	    } else
 		group_root = grp->root;
 	    SaveGroupList();
-	}
+	} else
+	    GroupFree(grp->root);
 	GDrawDestroyWindow(grp->gw);
     }
 return( true );
@@ -1146,7 +1159,7 @@ void DefineGroups(FontView *fv) {
     grp->select_callback = GroupSelected;
 
     if ( group_root==NULL ) {
-	grp->root = XZALLOC(Group);
+	grp->root = chunkalloc(sizeof(Group));
 	grp->root->name = copy(_("Groups"));
     } else
 	grp->root = GroupCopy(group_root);
@@ -1475,13 +1488,16 @@ static void EncodeToGroups(FontView *fv,Group *group, int compacted) {
 	map = EncMapNew(0,sf->glyphcnt,enc);
     }
 
-    if ( MapAddSelectedGroups(map,sf,group,compacted)==0 )
+    if ( MapAddSelectedGroups(map,sf,group,compacted)==0 ) {
 	ff_post_error(_("Nothing Selected"),_("Nothing Selected"));
-    else if ( map->enccount==0 )
+	EncMapFree(map);
+    } else if ( map->enccount==0 ) {
 	ff_post_error(_("Nothing Selected"),_("None of the glyphs in the current font match any names or code points in the selected groups"));
-    else {
+	EncMapFree(map);
+    } else {
 	fv->b.selected = realloc(fv->b.selected,map->enccount);
 	memset(fv->b.selected,0,map->enccount);
+	EncMapFree(fv->b.map);
 	fv->b.map = map;
 	FVSetTitle((FontViewBase *) fv);
 	FontViewReformatOne((FontViewBase *) fv);
@@ -1502,7 +1518,7 @@ void DisplayGroups(FontView *fv) {
     grp.root = group_root;
 
     if ( grp.root==NULL ) {
-	grp.root = XZALLOC(Group);
+	grp.root = chunkalloc(sizeof(Group));
 	grp.root->name = copy(_("Groups"));
     }
 
@@ -1570,5 +1586,7 @@ void DisplayGroups(FontView *fv) {
     GDrawSetUserData(grp.gw,NULL);
     if ( grp.oked )
 	EncodeToGroups(fv,grp.root, GGadgetIsChecked(gcd[2].ret));
+    if ( grp.root!=group_root )
+	GroupFree(grp.root);
     GDrawDestroyWindow(grp.gw);
 }

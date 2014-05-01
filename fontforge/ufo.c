@@ -266,6 +266,7 @@ return( false );
 		    fprintf( glif, " yOffset=\"%g\"", (double) ref->transform[5] );
 		fprintf( glif, "/>\n" );
 	    }
+	    free(refs);
 	}
         for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
             int ismark = (ap->type==at_mark || ap->type==at_centry);
@@ -319,6 +320,7 @@ static int GlifDump(char *glyphdir,char *gfname,SplineChar *sc,int layer) {
     char *gn = buildname(glyphdir,gfname);
     FILE *glif = fopen(gn,"w");
     int ret = _GlifDump(glif,sc,layer);
+    free(gn);
 return( ret );
 }
 
@@ -341,6 +343,7 @@ static FILE *PListCreate(char *basedir,char *sub) {
     char *fname = buildname(basedir,sub);
     FILE *plist = fopen( fname, "w" );
 
+    free(fname);
     if ( plist==NULL )
 return( NULL );
     PListOutputHeader(plist);
@@ -422,6 +425,7 @@ static void PListOutputNameString(FILE *plist, char *key, SplineFont *sf, int st
 	value=nonenglish;
     if ( value!=NULL )
 	PListOutputString(plist,key,value);
+    free(freeme);
 }
 
 static void PListOutputIntArray(FILE *plist, char *key, char *entries, int len) {
@@ -729,6 +733,7 @@ static int UFOOutputFeatures(char *basedir,SplineFont *sf) {
     FILE *feats = fopen( fname, "w" );
     int err;
 
+    free(fname);
     if ( feats==NULL )
 return( false );
     FeatDumpFontLookups(feats,sf);
@@ -748,6 +753,7 @@ int WriteUFOFont(char *basedir,SplineFont *sf,enum fontformat ff,int flags,
     /* Clean it out, if it exists */
     sprintf( foo, "rm -rf %s", basedir );
     system( foo );
+    free( foo );
 
     /* Create it */
     GFileMkDir( basedir );
@@ -767,8 +773,10 @@ return( false );
     GFileMkDir( glyphdir );
 
     plist = PListCreate(glyphdir,"contents.plist");
-    if ( plist==NULL )
+    if ( plist==NULL ) {
+	free(glyphdir);
 return( false );
+    }
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) ) {
 	char *start, *gstart;
@@ -794,7 +802,9 @@ return( false );
 	strcpy(gstart,".glif");
 	PListOutputString(plist,sc->name,gfname);
 	err |= !GlifDump(glyphdir,gfname,sc,layer);
+	free(gfname);
     }
+    free( glyphdir );
     err |= !PListOutputTrailer(plist);
 return( !err );
 }
@@ -838,6 +848,7 @@ char **NamesReadUFO(char *filename) {
     char buffer[1024];
     char **ret;
 
+    free(fn);
     if ( info==NULL )
 return( NULL );
     while ( get_thingy(info,buffer,"key")!=NULL ) {
@@ -898,6 +909,7 @@ static PyObject *LibToPython(xmlDocPtr doc,xmlNodePtr dict) {
 			if ( temp==NULL ) break;
 			else if ( xmlStrcmp(temp->name,(const xmlChar *) "key")!=0 ) keys = temp->next;
 			// If and only if the parsing succeeds, jump over any entries we read when searching for a text block.
+			free(keyname);
 		}
     }
 return( pydict );
@@ -952,17 +964,21 @@ return( ret );
     contents = (char *) xmlNodeListGetString(doc,entry->children,true);
     if ( xmlStrcmp(entry->name,(const xmlChar *) "integer")==0 ) {
 	long val = strtol(contents,NULL,0);
+	free(contents);
 return( Py_BuildValue("i",val));
     }
     if ( xmlStrcmp(entry->name,(const xmlChar *) "real")==0 ) {
 	double val = strtod(contents,NULL);
+	free(contents);
 return( Py_BuildValue("d",val));
     }
     if ( xmlStrcmp(entry->name,(const xmlChar *) "string")==0 ) {
 	PyObject *ret = Py_BuildValue("s",contents);
+	free(contents);
 return( ret );
     }
     LogError(_("Unknown python type <%s> when reading UFO/GLIF lib data."), (char *) entry->name);
+    free( contents );
 return( NULL );
 }
 
@@ -975,6 +991,7 @@ static StemInfo *GlifParseHints(xmlDocPtr doc,xmlNodePtr dict,char *hinttype) {
 	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")== 0 ) {
 	    char *keyname = (char *) xmlNodeListGetString(doc,keys->children,true);
 	    int found = strcmp(keyname,hinttype)==0;
+	    free(keyname);
 	    if ( found ) {
 		for ( array=keys->next; array!=NULL; array=array->next ) {
 		    if ( xmlStrcmp(array->name,(const xmlChar *) "array")==0 )
@@ -989,6 +1006,7 @@ static StemInfo *GlifParseHints(xmlDocPtr doc,xmlNodePtr dict,char *hinttype) {
 				    char *keyname2 = (char *) xmlNodeListGetString(doc,poswidth->children,true);
 				    int ispos = strcmp(keyname2,"position")==0, iswidth = strcmp(keyname2,"width")==0;
 				    double value;
+				    free(keyname2);
 				    for ( temp=poswidth->next; temp!=NULL; temp=temp->next ) {
 					if ( xmlStrcmp(temp->name,(const xmlChar *) "text")!=0 )
 				    break;
@@ -1001,6 +1019,7 @@ static StemInfo *GlifParseHints(xmlDocPtr doc,xmlNodePtr dict,char *hinttype) {
 					    value = strtod(valname,NULL);
 					else
 					    ispos = iswidth = false;
+					free(valname);
 					if ( ispos )
 					    pos = value;
 					else if ( iswidth )
@@ -1010,7 +1029,7 @@ static StemInfo *GlifParseHints(xmlDocPtr doc,xmlNodePtr dict,char *hinttype) {
 				}
 			    }
 			    if ( pos!=-88888888 && width!=0 ) {
-				h = XZALLOC(StemInfo);
+				h = chunkalloc(sizeof(StemInfo));
 			        h->start = pos;
 			        h->width = width;
 			        if ( width==-20 || width==-21 )
@@ -1047,8 +1066,10 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 	    (format!=NULL && xmlStrcmp(format,(xmlChar *) "1")!=0)) {
 		LogError(_("Expected glyph file with format==1"));
 		xmlFreeDoc(doc);
+		free(format);
 		return( NULL );
     }
+	free(format);
 	tmpname = (char *) xmlGetProp(glyph,(xmlChar *) "name");
 	if (glyphname != NULL) {
 		// We use the provided name from the glyph listing since the specification says to trust that one more.
@@ -1056,11 +1077,12 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		// But we still fetch the internally listed name for verification and fail on a mismatch.
 		if ((name == NULL) || ((name != NULL) && (tmpname != NULL) && (strcmp(glyphname, name) != 0))) {
 			LogError(_("Bad glyph name."));
-			tmpname = name = NULL;
+			if ( tmpname != NULL ) { free(tmpname); tmpname = NULL; }
+			if ( name != NULL ) { free(name); name = NULL; }
 			xmlFreeDoc(doc);
 			return NULL;
 		}
-		tmpname = NULL;
+		if ( tmpname != NULL ) { free(tmpname); tmpname = NULL; }
 	} else {
 		name = tmpname;
 	}
@@ -1080,7 +1102,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 	// We create a new SplineChar 
 	if (existingglyph != NULL) {
 		sc = existingglyph;
-		name = NULL;
+		free(name); name = NULL;
 	} else {
     	sc = SplineCharCreate(2);
     	sc->name = name;
@@ -1114,6 +1136,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			if ( height!=NULL )
 			sc->vwidth = strtol((char *) height,NULL,10);
 			sc->widthset = true;
+			free(width); free(height);
 		}
 	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "unicode")==0 ) {
 		if ((layerdest == ly_fore) || newsc) {
@@ -1123,6 +1146,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			sc->unicodeenc = uni;
 			else
 			AltUniAdd(sc,uni);
+			free(u);
 		}
 	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "outline")==0 ) {
 	    for ( contour = kids->children; contour!=NULL; contour=contour->next ) {
@@ -1157,6 +1181,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 				r->next = sc->layers[layerdest].refs;
 				sc->layers[layerdest].refs = r;
 		    }
+		    free(xs); free(ys); free(xys); free(yxs); free(xo); free(yo);
 		} else if ( xmlStrcmp(contour->name,(const xmlChar *) "contour")==0 ) {
 		    xmlNodePtr npoints;
 		    SplineSet *ss;
@@ -1183,7 +1208,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
                 sname = (char *) xmlGetProp(points, (xmlChar *) "name");
                 if ( sname!=NULL) {
                     /* make an AP and if necessary an AC */
-                    AnchorPoint *ap = XZALLOC(AnchorPoint);
+                    AnchorPoint *ap = chunkalloc(sizeof(AnchorPoint));
                     AnchorClass *ac;
                     char *namep = *sname=='_' ? sname + 1 : sname;
                     char *xs = (char *) xmlGetProp(points, (xmlChar *) "x");
@@ -1202,6 +1227,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
                     ap->anchor = ac;
                     ap->next = sc->anchor;
                     sc->anchor = ap;
+                    free(xs); free(ys); free(sname);
         			continue; // We stop processing the contour at this point.
                 }
             }
@@ -1210,7 +1236,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			int wasquad = -1; // This tracks whether we identified the previous curve as quadratic. (-1 means undefined.)
 			int firstpointsaidquad = -1; // This tracks the declared order of the curve leading into the first on-curve point.
 
-		    ss = XZALLOC(SplineSet);
+		    ss = chunkalloc(sizeof(SplineSet));
 			ss->first = NULL;
 
 			for ( points = contour->children; points!=NULL; points=points->next ) {
@@ -1228,10 +1254,13 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			smooths = (char *) xmlGetProp(points,(xmlChar *) "smooth");
 			if (smooths != NULL) {
 				if (strcmp(smooths,"yes") == 0) smooth = 1;
-				smooths=NULL;
+				free(smooths); smooths=NULL;
 			}
 			if ( xs==NULL || ys == NULL ) {
-				xs = ys = type = pname = NULL;
+				if (xs != NULL) { free(xs); xs = NULL; }
+				if (ys != NULL) { free(ys); ys = NULL; }
+				if (type != NULL) { free(type); type = NULL; }
+				if (pname != NULL) { free(pname); pname = NULL; }
 		    	continue;
 			}
 			x = strtod(xs,NULL); y = strtod(ys,NULL);
@@ -1365,7 +1394,10 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			        ++precnt;
 			    }
 			}
-                        xs = ys = type = pname = NULL;
+                        if (xs != NULL) { free(xs); xs = NULL; }
+                        if (ys != NULL) { free(ys); ys = NULL; }
+                        if (type != NULL) { free(type); type = NULL; }
+                        if (pname != NULL) { free(pname); pname = NULL; }
 		    }
 			// We are finished looping, so it's time to close the curve if it is to be closed.
 		    if ( !open ) {
@@ -1436,6 +1468,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			    	}
 					break;
 				}
+				free(keyname);
 		    }
 		}
 		sc->python_persistent = LibToPython(doc,dict);
@@ -1499,6 +1532,7 @@ static void UFOLoadGlyphs(SplineFont *sf,char *glyphdir, int layerdest) {
     int tot;
 
     doc = xmlParseFile(glyphlist);
+    free(glyphlist);
     if ( doc==NULL ) {
 	LogError(_("Bad contents.plist"));
 return;
@@ -1531,6 +1565,7 @@ return;
 				if (existingglyph == NULL) newsc = 1;
 				valname = (char *) xmlNodeListGetString(doc,value->children,true);
 				glyphfname = buildname(glyphdir,valname);
+				free(valname);
 				sc = UFOLoadGlyph(sf, glyphfname, glyphname, existingglyph, layerdest);
 				if ( ( sc!=NULL ) && newsc ) {
 					sc->parent = sf;
@@ -1564,6 +1599,7 @@ static void UFOHandleKern(SplineFont *sf,char *basedir,int isv) {
 
     if ( GFileExists(fname))
 	doc = xmlParseFile(fname);
+    free(fname);
     if ( doc==NULL )
 return;
 
@@ -1582,6 +1618,7 @@ return;
 	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
 	    keyname = (char *) xmlNodeListGetString(doc,keys->children,true);
 	    sc = SFGetChar(sf,-1,keyname);
+	    free(keyname);
 	    if ( sc==NULL )
 	continue;
 	    keys = value;
@@ -1593,6 +1630,7 @@ return;
 		if ( xmlStrcmp(subkeys->name,(const xmlChar *) "key")==0 ) {
 		    keyname = (char *) xmlNodeListGetString(doc,subkeys->children,true);
 		    ssc = SFGetChar(sf,-1,keyname);
+		    free(keyname);
 		    if ( ssc==NULL )
 		continue;
 		    for ( kp=isv?sc->vkerns:sc->kerns; kp!=NULL && kp->sc!=ssc; kp=kp->next );
@@ -1602,7 +1640,7 @@ return;
 		    valname = (char *) xmlNodeListGetString(doc,value->children,true);
 		    offset = strtol(valname,&end,10);
 		    if ( *end=='\0' ) {
-			kp = XZALLOC(KernPair);
+			kp = chunkalloc(sizeof(KernPair));
 			kp->off = offset;
 			kp->sc = ssc;
 			if ( isv ) {
@@ -1619,6 +1657,7 @@ return;
 				isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
 				script, gpos_pair);
 		    }
+		    free(valname);
 		}
 	    }
 	}
@@ -1633,7 +1672,7 @@ static void UFOAddName(SplineFont *sf,char *value,int strid) {
 
     for ( names=sf->names; names!=NULL && names->lang!=0x409; names=names->next );
     if ( names==NULL ) {
-	names = XZALLOC(struct ttflangname);
+	names = chunkalloc(sizeof(struct ttflangname));
 	names->next = sf->names;
 	names->lang = 0x409;
 	sf->names = names;
@@ -1645,7 +1684,7 @@ static void UFOAddPrivate(SplineFont *sf,char *key,char *value) {
     char *pt;
 
     if ( sf->private==NULL )
-	sf->private = XZALLOC(struct psdict);
+	sf->private = chunkalloc(sizeof(struct psdict));
     for ( pt=value; *pt!='\0'; ++pt ) {	/* Value might contain white space. turn into spaces */
 	if ( *pt=='\n' || *pt=='\r' || *pt=='\t' )
 	    *pt = ' ';
@@ -1671,6 +1710,7 @@ return;
 		strcpy(pt,valName);
 		pt += strlen(pt);
 	    }
+	    free(valName);
 	}
     }
     if ( pt!=space+1 ) {
@@ -1694,6 +1734,7 @@ return;
 	    char *valName = (char *) xmlNodeListGetString(doc,kid->children,true);
 	    if ( i<cnt )
 		array[i++] = strtol(valName,NULL,10);
+	    free(valName);
 	}
     }
 }
@@ -1708,6 +1749,7 @@ return( 0 );
 	if ( xmlStrcmp(kid->name,(const xmlChar *) "integer")==0 ) {
 	    char *valName = (char *) xmlNodeListGetString(doc,kid->children,true);
 	    mask |= 1<<strtol(valName,NULL,10);
+	    free(valName);
 	}
     }
 return( mask );
@@ -1725,6 +1767,7 @@ return;
 	    index = strtol(valName,NULL,10);
 	    if ( index < len<<5 )
 		res[index>>5] |= 1<<(index&31);
+	    free(valName);
 	}
     }
 }
@@ -1746,6 +1789,7 @@ return( NULL );
 
     temp = buildname(basedir,"fontinfo.plist");
     doc = xmlParseFile(temp);
+    free(temp);
     if ( doc==NULL ) {
 	/* Can I get an error message from libxml? */
 return( NULL );
@@ -1821,6 +1865,8 @@ return( NULL );
 		    UFOAddName(sf,(char *) valname,ttf_wwsfamily);
 		else if ( xmlStrcmp(keyname+12,(xmlChar *) "WWSSubfamilyName")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_wwssubfamily);
+		else
+		    free(valname);
 	    } else if ( strncmp((char *) keyname, "openTypeHhea",12)==0 ) {
 		if ( xmlStrcmp(keyname+12,(xmlChar *) "Ascender")==0 ) {
 		    sf->pfminfo.hhead_ascent = strtol((char *) valname,&end,10);
@@ -1830,11 +1876,13 @@ return( NULL );
 		    sf->pfminfo.hheaddescent_add = false;
 		} else if ( xmlStrcmp(keyname+12,(xmlChar *) "LineGap")==0 )
 		    sf->pfminfo.linegap = strtol((char *) valname,&end,10);
+		free(valname);
 		sf->pfminfo.hheadset = true;
 	    } else if ( strncmp((char *) keyname,"openTypeVhea",12)==0 ) {
 		if ( xmlStrcmp(keyname+12,(xmlChar *) "LineGap")==0 )
 		    sf->pfminfo.vlinegap = strtol((char *) valname,&end,10);
 		sf->pfminfo.vheadset = true;
+		free(valname);
 	    } else if ( strncmp((char *) keyname,"openTypeOS2",11)==0 ) {
 		sf->pfminfo.pfmset = true;
 		if ( xmlStrcmp(keyname+11,(xmlChar *) "Panose")==0 ) {
@@ -1916,6 +1964,7 @@ return( NULL );
 		    UFOGetBitArray(doc,value,sf->pfminfo.unicoderanges,4);
 		    sf->pfminfo.hasunicoderanges = true;
 		}
+		free(valname);
 	    } else if ( strncmp((char *) keyname, "postscript",10)==0 ) {
 		if ( xmlStrcmp(keyname+10,(xmlChar *) "UnderlineThickness")==0 )
 		    sf->uwidth = strtol((char *) valname,&end,10);
@@ -1942,28 +1991,38 @@ return( NULL );
 		else if ( xmlStrcmp(keyname+10,(xmlChar *) "ForceBold")==0 )
 		    UFOAddPrivate(sf,"ForceBold",(char *) value->name);
 			/* value->name is either true or false */
+		free(valname);
 	    } else if ( strncmp((char *)keyname,"macintosh",9)==0 ) {
 		if ( xmlStrcmp(keyname+9,(xmlChar *) "FONDName")==0 )
 		    sf->fondname = (char *) valname;
+		else
+		    free(valname);
 	    } else if ( xmlStrcmp(keyname,(xmlChar *) "unitsPerEm")==0 ) {
 		em = strtol((char *) valname,&end,10);
 		if ( *end!='\0' ) em = -1;
+		free(valname);
 	    } else if ( xmlStrcmp(keyname,(xmlChar *) "ascender")==0 ) {
 		as = strtod((char *) valname,&end);
 		if ( *end!='\0' ) as = -1;
 		else sf->ufo_ascent = as;
+		free(valname);
 	    } else if ( xmlStrcmp(keyname,(xmlChar *) "descender")==0 ) {
 		ds = -strtod((char *) valname,&end);
 		if ( *end!='\0' ) ds = -1;
 		else sf->ufo_descent = -ds;
+		free(valname);
 	    } else if ( xmlStrcmp(keyname,(xmlChar *) "italicAngle")==0 ||
 		    xmlStrcmp(keyname,(xmlChar *) "postscriptSlantAngle")==0 ) {
 		sf->italicangle = strtod((char *) valname,&end);
 		if ( *end!='\0' ) sf->italicangle = 0;
+		free(valname);
 	    } else if ( xmlStrcmp(keyname,(xmlChar *) "descender")==0 ) {
 		ds = -strtol((char *) valname,&end,10);
 		if ( *end!='\0' ) ds = -1;
-	    }
+		free(valname);
+	    } else
+		free(valname);
+	    free(keyname);
 	}
     }
     if ( em==-1 && as!=-1 && ds!=-1 )
@@ -1979,6 +2038,7 @@ return( NULL );
 	xmlFreeDoc(doc);
 	setlocale(LC_NUMERIC,oldloc);
 	SplineFontFree(sf);
+	free(glyphdir);
 return( NULL );
     }
     sf->ascent = as; sf->descent = ds;
@@ -1996,6 +2056,7 @@ return( NULL );
     }
     if ( sf->familyname==NULL )
 	sf->familyname = copy(sf->fontname);
+    free(stylename);
     if ( sf->weight==NULL )
 	sf->weight = copy("Regular");
     if ( sf->version==NULL && sf->names!=NULL &&
@@ -2055,6 +2116,8 @@ return( NULL );
 									layernames[(2*layercontentslayercount)+1] = copy((char*)(layerglyphdirname));
 									if (layernames[(2*layercontentslayercount)+1])
 										layercontentslayercount++; // We increment only if both pointers are valid so as to avoid read problems later.
+									else
+										free(layernames[2*layercontentslayercount]);
 								}
 							}
 						}
@@ -2096,6 +2159,8 @@ return( NULL );
 
 										// The check is redundant, but it allows us to copy from sfd.c.
 										if (( layerdest<sf->layer_cnt ) && sf->layers) {
+											if (sf->layers[layerdest].name)
+												free(sf->layers[layerdest].name);
 											sf->layers[layerdest].name = layernames[2*lcount];
 											sf->layers[layerdest].background = bg;
 											// Fetch glyphs.
@@ -2108,12 +2173,20 @@ return( NULL );
 											if (layerdest == ly_fore) sf->grid.order2 = sf->layers[layerdest].order2;
 										}
 									}
+									free(glyphlist);
 								}
+								free(glyphdir);
 							}
 						}
 					} else {
 						LogError(_("layercontents.plist lists no valid layers."));
 					}
+					// Free layer names.
+					for (lcount = 0; lcount < layercontentslayercount; lcount++) {
+						if (layernames[2*lcount]) free(layernames[2*lcount]);
+						if (layernames[2*lcount+1]) free(layernames[2*lcount+1]);
+					}
+					free(layernames);
 				}
 			}
 			xmlFreeDoc(layercontentsdoc);
@@ -2129,7 +2202,10 @@ return( NULL );
 		    SFFindOrder(sf);
    	    	SFSetOrder(sf,sf->layers[ly_fore].order2);
 		}
+	    free(glyphlist);
+		free(glyphdir);
 	}
+	free(layercontentsname);
 
     sf->map = EncMapFromEncoding(sf,FindOrMakeEncoding("Unicode"));
 
@@ -2137,6 +2213,7 @@ return( NULL );
     temp = buildname(basedir,"features.fea");
     if ( GFileExists(temp))
 	SFApplyFeatureFilename(sf,temp);
+    free(temp);
 
     UFOHandleKern(sf,basedir,0);
     UFOHandleKern(sf,basedir,1);
@@ -2145,6 +2222,7 @@ return( NULL );
     doc = NULL;
     if ( GFileExists(temp))
 	doc = xmlParseFile(temp);
+    free(temp);
     if ( doc!=NULL ) {
 		plist = xmlDocGetRootElement(doc);
 		dict = NULL;

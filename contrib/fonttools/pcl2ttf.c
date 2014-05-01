@@ -458,6 +458,7 @@ static void AddTable(struct ttf_header *hdr,struct subtables *table) {
     for ( ; i<hdr->subtable_cnt ; ++i ) {
 	new[i+1] = hdr->subtables[i];
     }
+    free(hdr->subtables);
     hdr->subtables = new;
     ++hdr->subtable_cnt;
 }
@@ -553,6 +554,7 @@ static void create_cmap(struct ttf_header *hdr,struct glyph *glyphs,int numGlyph
 		}
 	    }
 	}
+	free(avail);
 
 	/* Two encoding table pointers, one for ms, one for mac unicode */
 	/*  (same as ms) */
@@ -591,6 +593,8 @@ static void create_cmap(struct ttf_header *hdr,struct glyph *glyphs,int numGlyph
 	    putshort(cmap,cmapseg[i].rangeoff);
 	for ( i=0; i<rpos; ++i )
 	    putshort(cmap,ranges[i]);
+	free(ranges);
+	free(cmapseg);
     }
 
     table.len = ftell(cmap);
@@ -940,6 +944,8 @@ static void create_glyp_loca(FILE *pcl,struct ttf_header *hdr) {
 
     create_cmap(hdr,hdr->glyphs,hdr->actual_num);
     create_OS2(hdr,orderedglyphs,numGlyphs);
+    free(orderedglyphs);
+    free(locas);
 }
 
 static void create_post(struct ttf_header *hdr) {
@@ -1438,6 +1444,18 @@ return( true );
 /* ************************************************************************** */
 /* **************************** ui, such as it is *************************** */
 /* ************************************************************************** */
+
+static void freedata(struct ttf_header *hdr) {
+    int i;
+
+    free(hdr->subtables);
+    if ( hdr->glyphs!=NULL ) {
+	for ( i=0; i<hdr->num_chars; ++i )
+	    free( hdr->glyphs[i].continuation );
+    }
+    free(hdr->glyphs);
+    free(hdr->copyright);
+}
 
 static void parsepclfile(char *filename) {
     FILE *pcl = fopen(filename,"rb");

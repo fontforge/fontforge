@@ -117,6 +117,10 @@ void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
     i = gwwv_choose(_("Ligatures"),(const char **) choices,cnt,0,_("Select a ligature to view"));
     if ( i!=-1 && where[i]!=-1 )
 	CharViewCreate(sf->glyphs[where[i]],(FontView *) sf->fv,-1);
+    free(where);
+    for ( i=0; i<cnt; ++i )
+	free(choices[i]);
+    free(choices);
 }
 
 struct kerns {
@@ -741,6 +745,7 @@ static int KP_ChangeSize(GGadget *g, GEvent *e) {
 	if ( newsize==kpd->bdf->pixelsize )
 return( true );
 	temp = SplineFontPieceMeal(kpd->sf,kpd->layer,newsize,72,true,NULL);
+	BDFFontFree(kpd->bdf);
 	kpd->bdf = temp;
 	KP_Resize(kpd);
 	KPV_Resize(kpd);
@@ -1243,5 +1248,6 @@ return;
     GDrawSetVisible(kpd.gw,true);
     while ( !kpd.done )
 	GDrawProcessOneEvent(NULL);
+    free( kpd.kerns );
     GDrawDestroyWindow(gw);
 }

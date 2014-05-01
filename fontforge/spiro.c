@@ -31,7 +31,21 @@
 /* Access to Raph Levien's spiro splines */
 /* See http://www.levien.com/spiro/ */
 
-#include "bezctx_ff.h"
+#ifdef _NO_LIBSPIRO
+
+static int has_spiro = false;
+
+SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
+    return( NULL );
+}
+
+spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *cnt) {
+return( NULL );
+}
+
+#else /* ! _NO_LIBSPIRO */
+
+#  include "bezctx_ff.h"
 
 static int has_spiro = true;
 
@@ -51,8 +65,9 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
 	return( NULL );
     if ( n==1 ) {
 	/* Spiro only haS 1 code point sofar (no conversion needed yet) */
-	if ( (ss=XZALLOC(SplineSet))==NULL || \
+	if ( (ss=chunkalloc(sizeof(SplineSet)))==NULL || \
 	     (ss->first=ss->last=SplinePointCreate(spiros[0].x,spiros[0].y))==NULL ) {
+	    chunkfree(ss,sizeof(SplineSet));
 	    return( NULL );
 	}
     } else {
@@ -69,6 +84,7 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
 #if _LIBSPIRO_FUN
 	    if ( TaggedSpiroCPsToBezier0(spiros,bc)==0 ) {
 		if ( lastty ) spiros[n-1].ty = lastty;
+		free(bc);
 		return( NULL );
 	    }
 #else
@@ -79,6 +95,7 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
 	    spiro_cp *nspiros;
 	    if ( (nspiros=malloc((n+1)*sizeof(spiro_cp)))==NULL ) {
 		if ( lastty ) spiros[n-1].ty = lastty;
+		free(bc);
 		return( NULL );
 	    }
 	    memcpy(nspiros,spiros,(n+1)*sizeof(spiro_cp));
@@ -87,11 +104,14 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
 #if _LIBSPIRO_FUN
 	    if ( TaggedSpiroCPsToBezier0(nspiros,bc)==0 ) {
 		if ( lastty ) spiros[n-1].ty = lastty;
+		free(nspiros);
+		free(bc);
 		return( NULL );
 	    }
 #else
 	    TaggedSpiroCPsToBezier(nspiros,bc);
 #endif
+	    free(nspiros);
 	}
 	if ( lastty ) spiros[n-1].ty = lastty;
 
@@ -170,6 +190,8 @@ spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt) {
 return( ret );
 }
 
+#endif /* ! _NO_LIBSPIRO */
+
 int hasspiro(void) {
     return has_spiro;
 }
@@ -200,6 +222,7 @@ void SSRegenerateFromSpiros(SplineSet *spl) {
 	SplineSetBeziersClear(spl);
 	spl->first = temp->first;
 	spl->last = temp->last;
+	chunkfree(temp,sizeof(SplineSet));
     } else {
 	/* Didn't converge... or something ...therefore let's fake-it. */
 	int i;

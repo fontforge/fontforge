@@ -334,6 +334,7 @@ static void parseseqlookups(SplineFont *sf, const char *solooks, struct fpst_rul
 	    r->lookups[cnt].lookup = SFFindLookup(sf,temp);
 	    if ( r->lookups[cnt].lookup==NULL )
 		IError("No lookup in parseseqlookups");
+	    free(temp);
 	    pt = eoname;
 	    if ( *pt=='>' ) ++pt;
 	} else
@@ -359,6 +360,7 @@ static char *gruleitem(struct fpst_rule *r) {
 	char *temp = reversenames(r->u.glyph.back);
 	strcpy(pt,temp);
 	pt += strlen(temp);
+	free(temp);
 	*pt++ = ' ';
     }
     *pt++ = '|';
@@ -390,18 +392,22 @@ return;
     if ( pt>ruletext ) {
 	temp = GlyphNameListDeUnicode(freeme = copyn(ruletext,pt-1-ruletext));
 	r->u.glyph.back = reversenames(temp);
+	free(temp); free(freeme);
     }
     ruletext = pt+2;
     for ( pt=ruletext; *pt!='\0' && *pt!='|'; ++pt );
     if ( *pt=='\0' )
 return;
     r->u.glyph.names = GlyphNameListDeUnicode(freeme = copyn(ruletext,pt-1-ruletext));
+    free(freeme);
     ruletext = pt+2;
     for ( pt2=ruletext; (ch=utf8_ildb((const char **) &pt2))!='\0' && ch!=0x21d2; );
     if ( ch=='\0' )
 return;
-    if ( pt2!=ruletext )
+    if ( pt2!=ruletext ) {
 	r->u.glyph.fore = GlyphNameListDeUnicode(freeme = copyn(ruletext,pt2-3-ruletext));
+	free(freeme);
+    }
     parseseqlookups(sf,pt2+2,r);
 }
 
@@ -682,6 +688,7 @@ return;
 		_GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_ClassNumbers+40)),
 		    GWidgetGetControl(ccd->gw,CID_ClassList+40),
 		    &dummy,2)) {
+	    FPSTRuleContentsFree(&dummy,pst_class);
 return;
 	}
 	/* reverse the backtrack */
@@ -697,15 +704,17 @@ return;
 	    }
 	}
 	ret = classruleitem(&dummy,classes,clen,ccols);
+	FPSTRuleContentsFree(&dummy,pst_class);
 	list = GWidgetGetControl(ccd->gw,CID_GList+200);
 	md = GMatrixEditGet(list,&len);
+	free(md[ccd->row_being_edited].u.md_str);
 	md[ccd->row_being_edited].u.md_str = ret;
 	GMatrixEditSet(list,md,len,false);
 	ccd->aw = aw_classrules;
 	GDrawSetVisible(ccd->classnumber,false);
 	GDrawSetVisible(ccd->classrules,true);
     } else if ( ccd->aw==aw_glyphs ) {			/* It's from glyph list */
-	char *ret, *temp;
+	char *ret, *temp, *freeme;
 
 	memset(&dummy,0,sizeof(dummy));
 	CCD_ParseLookupList(ccd->sf,&dummy,GWidgetGetControl(ccd->gw,CID_LookupList));
@@ -718,7 +727,9 @@ return;
 	}
 	temp = GGadgetGetTitle8(GWidgetGetControl(ccd->gw,CID_GlyphList));
 	dummy.u.glyph.names = GlyphNameListDeUnicode(temp);
+	free(temp);
 	tot = CCD_GlyphNameCnt( temp = GGadgetGetTitle8(GWidgetGetControl(ccd->gw,CID_GlyphList)));
+	free(temp);
 	for ( i=0; i<dummy.lookup_cnt; ++i ) {
 	    if ( dummy.lookups[i].seq >= tot ) {
 		ff_post_error(_("Bad Sequence/Lookup List"),_("Sequence number out of bounds, must be less than %d (number of glyphs, classes or coverage tables)"),  tot );
@@ -726,12 +737,17 @@ return;
 	    }
 	}
 	temp = GGadgetGetTitle8(GWidgetGetControl(ccd->gw,CID_GlyphList+20));
-	dummy.u.glyph.back = reversenames(GlyphNameListDeUnicode(temp));
+	freeme = GlyphNameListDeUnicode(temp);
+	dummy.u.glyph.back = reversenames(freeme);
+	free(temp); free(freeme);
 	temp = GGadgetGetTitle8(GWidgetGetControl(ccd->gw,CID_GlyphList+40));
 	dummy.u.glyph.fore = GlyphNameListDeUnicode(temp);
+	free(temp);
 	ret = gruleitem(&dummy);
+	FPSTRuleContentsFree(&dummy,pst_glyphs);
 	list = GWidgetGetControl(ccd->gw,CID_GList+0);
 	md = GMatrixEditGet(list,&len);
+	free(md[ccd->row_being_edited].u.md_str);
 	md[ccd->row_being_edited].u.md_str = ret;
 	GMatrixEditSet(list,md,len,false);
 	ccd->aw = aw_grules;
@@ -762,9 +778,11 @@ static void _CCD_FromSelection(struct contextchaindlg *ccd,int cid ) {
     char *curval = GGadgetGetTitle8(GWidgetGetControl(ccd->gw,cid));
     char *new = GlyphSetFromSelection(ccd->sf,ccd->layer,curval);
 
+    free(curval);
     if ( new==NULL )
 return;
     GGadgetSetTitle8(GWidgetGetControl(ccd->gw,cid),new);
+    free(new);
 }
 
 static int CCD_FromSelection(GGadget *g, GEvent *e) {
@@ -802,6 +820,7 @@ static void CCD_NewGlyphRule(GGadget *glyphrules,int r,int c) {
     gruleitem2rule(ccd->sf,rulelist[r].u.md_str,&dummy);
     GGadgetSetTitle8(GWidgetGetControl(ccd->gw,CID_GlyphList),dummy.u.glyph.names==NULL?"":dummy.u.glyph.names);
     GGadgetSetTitle8(GWidgetGetControl(ccd->gw,CID_GlyphList+20),(temp2 = reversenames(dummy.u.glyph.back))==NULL ? "" : temp2);
+    free(temp2);
     GGadgetSetTitle8(GWidgetGetControl(ccd->gw,CID_GlyphList+40),dummy.u.glyph.fore!=NULL?dummy.u.glyph.fore:"");
 
     md = calloc(2*dummy.lookup_cnt,sizeof(struct matrix_data));
@@ -840,10 +859,13 @@ static void CCD_NewClassRule(GGadget *classrules,int r,int c) {
     classruleitem2rule(ccd->sf,rulelist[r].u.md_str,&dummy,classes,clen,ccols);
     GGadgetSetTitle8(GWidgetGetControl(ccd->gw,CID_ClassNumbers),
 	    (temp=classnumbers(dummy.u.class.ncnt,dummy.u.class.nclasses,classes[0],clen[0],ccols)));
+    free(temp);
     GGadgetSetTitle8(GWidgetGetControl(ccd->gw,CID_ClassNumbers+20),
 	    (temp=rclassnumbers(dummy.u.class.bcnt,dummy.u.class.bclasses,classes[1],clen[1],ccols)));
+    free(temp);
     GGadgetSetTitle8(GWidgetGetControl(ccd->gw,CID_ClassNumbers+40),
 	    (temp=classnumbers(dummy.u.class.fcnt,dummy.u.class.fclasses,classes[2],clen[2],ccols)));
+    free(temp);
 
     md = calloc(2*dummy.lookup_cnt,sizeof(struct matrix_data));
     for ( j=0; j<dummy.lookup_cnt; ++j ) {
@@ -851,6 +873,7 @@ static void CCD_NewClassRule(GGadget *classrules,int r,int c) {
 	md[2*j+1].u.md_ival = (intpt) dummy.lookups[j].seq;
     }
     GMatrixEditSet(lookuplist,md,dummy.lookup_cnt,false);
+    FPSTRuleContentsFree(&dummy,pst_class);
     GWidgetIndicateFocusGadget(GWidgetGetControl(ccd->gw,CID_ClassNumbers));
     for ( i=0; i<3; ++i ) {
 	if ( i!=0 && GGadgetIsChecked(GWidgetGetControl(ccd->gw,CID_SameAsClasses+i*20)) )
@@ -966,6 +989,7 @@ static void _CCD_Ok(struct contextchaindlg *ccd) {
 	    ff_post_error(_("Missing rules"),_(" There must be at least one contextual rule"));
 return;
 	}
+	FPSTRulesFree(fpst->rules,fpst->format,fpst->rule_cnt);
 	fpst->format = pst_glyphs;
 	fpst->rule_cnt = len;
 	fpst->rules = calloc(len,sizeof(struct fpst_rule));
@@ -978,6 +1002,7 @@ return;
 	    ff_post_error(_("Missing rules"),_(" There must be at least one contextual rule"));
 return;
 	}
+	FPSTRulesFree(fpst->rules,fpst->format,fpst->rule_cnt);
 	fpst->format = pst_class;
 	fpst->rule_cnt = len;
 	fpst->rules = calloc(len,sizeof(struct fpst_rule));
@@ -1016,10 +1041,12 @@ return;
 	    }
 	    if ( CCD_GlyphNameCnt(old[0].u.md_str)!=CCD_GlyphNameCnt(
 		    temp=GGadgetGetTitle8(GWidgetGetControl(ccd->gw,CID_RplList+100))) ) {
+		free(temp);
 		ff_post_error(_("Replacement mismatch"),_("In a Reverse Chaining Substitution there must be exactly as many replacements as there are glyph names in the match coverage table"));
 return;
 	    }
 	    dummy.u.rcoverage.replacements = GlyphNameListDeUnicode(temp);
+	    free(temp);
 	} else {
 	    CCD_ParseLookupList(ccd->sf,&dummy,GWidgetGetControl(ccd->gw,CID_LookupList+100));
 	    if ( dummy.lookup_cnt==0 ) {
@@ -1030,6 +1057,7 @@ return;
 return;
 	    }
 	}
+	FPSTRulesFree(fpst->rules,fpst->format,fpst->rule_cnt);
 	fpst->format = fpst->type==pst_reversesub ? pst_reversecoverage : pst_coverage;
 	fpst->rule_cnt = 1;
 	fpst->rules = calloc(1,sizeof(struct fpst_rule));
@@ -1059,7 +1087,7 @@ return;
 	    ff_post_error(_("Missing rules"),_(" There must be at least one contextual rule"));
 return;
 	}
-	dummyfpst = XZALLOC(FPST);
+	dummyfpst = chunkalloc(sizeof(FPST));
 	*dummyfpst = *fpst;
 	dummyfpst->format = pst_glyphs;
 	if ( ccd->aw==aw_classes_simple ) {
@@ -1096,22 +1124,31 @@ return;
 	    if ( ccd->aw==aw_glyphs_simple )
 		temp = GlyphNameListDeUnicode(temp);
 	    msg = FPSTRule_From_Str(ccd->sf,dummyfpst,&dummyfpst->rules[i],temp,&iswarning);
+	    if ( temp!=old[i].u.md_str )
+		free(temp);
 	    if ( msg!=NULL ) {
 		if ( !iswarning ) {
 		    ff_post_error(_("Bad rule"), "%s", msg );
+		    free(msg);
 		    FPSTClassesFree(dummyfpst);
+		    FPSTRulesFree(dummyfpst->rules,dummyfpst->format,dummyfpst->rule_cnt);
+		    chunkfree(dummyfpst,sizeof(FPST));
 return;
 		} else {
 		    ans = gwwv_ask(_("Warning"),
 			    (const char **) buts,0,1,
 			    _("%s\nProceed anyway?"), msg);
+		    free(msg);
 		    if ( ans==1 ) {
 			FPSTClassesFree(dummyfpst);
+			FPSTRulesFree(dummyfpst->rules,dummyfpst->format,dummyfpst->rule_cnt);
+			chunkfree(dummyfpst,sizeof(FPST));
 return;
 		    }
 		}
 	    }
 	}
+	FPSTRulesFree(fpst->rules,fpst->format,fpst->rule_cnt);
 	fpst->format = dummyfpst->format;
 	fpst->rule_cnt = dummyfpst->rule_cnt;
 	fpst->rules = dummyfpst->rules;
@@ -1121,6 +1158,7 @@ return;
 	    fpst->nclass = dummyfpst->nclass; fpst->bclass = dummyfpst->bclass; fpst->fclass = dummyfpst->fclass;
 	    fpst->nclassnames = dummyfpst->nclassnames; fpst->bclassnames = dummyfpst->bclassnames; fpst->fclassnames = dummyfpst->fclassnames;
 	}
+	chunkfree(dummyfpst,sizeof(FPST));
       } break;
       case aw_coverage_simple:
 	old = GMatrixEditGet(GWidgetGetControl(ccd->gw,CID_Covers),&len);
@@ -1224,6 +1262,7 @@ return;
 	for ( i=forward_start; i<len; ++i )
 	    dummy.u.coverage.fcovers[i-forward_start] = GlyphNameListDeUnicode( old[cols*i+0].u.md_str );
 	FPSTClassesFree(fpst);
+	FPSTRulesFree(fpst->rules,fpst->format,fpst->rule_cnt);
 	fpst->format = fpst->type==pst_reversesub ? pst_reversecoverage : pst_coverage;
 	fpst->rule_cnt = 1;
 	fpst->rules = calloc(1,sizeof(struct fpst_rule));
@@ -1390,6 +1429,8 @@ static int CCD_AddLookup(GGadget *g, GEvent *e) {
 	    sprintf( space, " @<%s> ", otl->lookup_name );
 	    temp = utf82u_copy(space);
 	    GTextFieldReplace(tf,temp);
+	    free(space);
+	    free(temp);
 	}
 	GGadgetSelectOneListItem(g,0);
     }
@@ -1421,6 +1462,8 @@ static int ccd_e_h(GWindow gw, GEvent *event) {
 	struct contextchaindlg *ccd = GDrawGetUserData(gw);
 	CCD_Close(ccd);
     } else if ( event->type==et_destroy ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(gw);
+	chunkfree(ccd,sizeof(struct contextchaindlg));
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("contextchain.html");
@@ -1544,6 +1587,7 @@ return( NULL );
 	    if ( do_wildcards ) {
 		unichar_t *temp = utf82u_copy(str);
 		matched = GGadgetWildMatch((unichar_t *) wild,temp,false);
+		free(temp);
 	    } else
 		matched = uc_strncmp(spt,str,match_len)==0;
 	    if ( matched ) {
@@ -1569,6 +1613,7 @@ return( NULL );
 	else
 	    ret = malloc((cnt+1)*sizeof(unichar_t *));
     }
+    free(wild);
 return( ret );
 }
 
@@ -1692,6 +1737,7 @@ static void RenameClass(struct contextchaindlg *ccd,char *old,char *new,int sect
 	for ( i=0; i<rows; ++i ) {
 	    char *oldrule = classrules[cols*i+0].u.md_str;
 	    char *newrule = rpl(oldrule,old,new);
+	    free(oldrule);
 	    classrules[cols*i+0].u.md_str = newrule;
 	}
     } else {
@@ -1726,11 +1772,13 @@ static void RenameClass(struct contextchaindlg *ccd,char *old,char *new,int sect
 		temp = rpl(oldrule,old,new);
 		*end_match = ch;
 		newrule = strconcat(temp,end_match);
+		free(temp);
 	    } else if ( sections==0x6 ) {
 		temp = rpl(end_back,old,new);
 		ch = *end_back; *end_back = '\0';
 		newrule = strconcat(oldrule,temp);
 		*end_back = ch;
+		free(temp);
 	    } else if ( sections==0x1 ) {
 		if ( end_back==NULL )
 		    newrule=NULL;
@@ -1739,6 +1787,7 @@ static void RenameClass(struct contextchaindlg *ccd,char *old,char *new,int sect
 		    temp = rpl(oldrule,old,new);
 		    *end_back = ch;
 		    newrule = strconcat(temp,end_back);
+		    free(temp);
 		}
 	    } else if ( sections==0x2 ) {
 		if ( end_match==NULL ) {
@@ -1746,11 +1795,13 @@ static void RenameClass(struct contextchaindlg *ccd,char *old,char *new,int sect
 		    ch = *end_back; *end_back = '\0';
 		    newrule = strconcat(oldrule,temp);
 		    *end_back = ch;
+		    free(temp);
 		} else if ( end_back==NULL ) {
 		    ch = *end_match; *end_match = '\0';
 		    temp = rpl(oldrule,old,new);
 		    *end_match = ch;
 		    newrule = strconcat(temp,end_match);
+		    free(temp);
 		} else {
 		    ch = *end_match; *end_match = '\0';
 		    temp = rpl(end_back,old,new);
@@ -1758,6 +1809,7 @@ static void RenameClass(struct contextchaindlg *ccd,char *old,char *new,int sect
 		    ch = *end_back; *end_back = '\0';
 		    newrule = strconcat3(oldrule,temp,end_match);
 		    *end_back = ch;
+		    free(temp);
 		}
 	    } else if ( sections==0x4 ) {
 		if ( end_match==NULL )
@@ -1767,11 +1819,14 @@ static void RenameClass(struct contextchaindlg *ccd,char *old,char *new,int sect
 		    ch = *end_match; *end_match = '\0';
 		    newrule = strconcat(oldrule,temp);
 		    *end_match = ch;
+		    free(temp);
 		}
 	    } else
 		newrule = NULL;
-	    if ( newrule!=NULL )
+	    if ( newrule!=NULL ) {
+		free(oldrule);
 		classrules[cols*i+0].u.md_str = newrule;
+	    }
 	}
     }
     GGadgetRedraw(gclassrules);
@@ -1798,6 +1853,7 @@ static void CCD_FinishClassEdit(GGadget *g,int r, int c, int wasnew) {
 	i = strtol(classes_simple[3*r+0].u.md_str,&end,10);
 	if ( *end=='\0' && i!=r ) {
 	    sprintf( buffer,"%d",r );
+	    free( classes_simple[3*r+0].u.md_str );
 	    classes_simple[3*r+0].u.md_str = copy(buffer);
 	    GGadgetRedraw(g);
 	    ff_post_error(_("Bad class name"),_("If a class name is a number, it must be the index of the class in the array of classes_simple."));
@@ -1805,6 +1861,7 @@ static void CCD_FinishClassEdit(GGadget *g,int r, int c, int wasnew) {
 	for ( i=0; i<rows; ++i ) if ( i!=r ) {
 	    if ( strcmp(classes_simple[3*i+0].u.md_str,classes_simple[3*r+0].u.md_str) == 0 ) {
 		sprintf( buffer,"%d",r );
+		free( classes_simple[3*r+0].u.md_str );
 		classes_simple[3*r+0].u.md_str = copy(buffer);
 		GGadgetRedraw(g);
 		ff_post_error(_("Bad class name"),_("The class name, %s, is already in use."), classes_simple[3*i+0].u.md_str);
@@ -1812,6 +1869,7 @@ static void CCD_FinishClassEdit(GGadget *g,int r, int c, int wasnew) {
 	}
 	if ( strcmp(classes_simple[3*r+0].u.md_str,classes_simple[3*r+2].u.md_str)!=0 ) {
 	    RenameClass(ccd,classes_simple[3*r+2].u.md_str,classes_simple[3*r+0].u.md_str,WhichSections(ccd,g));
+	    free(classes_simple[3*r+2].u.md_str);
 	    classes_simple[3*r+2].u.md_str = copy(classes_simple[3*r+0].u.md_str);
 	}
     }
@@ -1830,8 +1888,10 @@ static void CCD_ClassGoing(GGadget *g,int r) {
 	strtol(classes_simple[3*i+0].u.md_str,&end,10);
 	if ( *end=='\0' ) {
 	    sprintf(buffer,"%d",i-1);
+	    free(classes_simple[3*i+0].u.md_str);
 	    classes_simple[3*i+0].u.md_str = copy(buffer);
 	    RenameClass(ccd,classes_simple[3*i+2].u.md_str,buffer,sections);
+	    free(classes_simple[3*i+2].u.md_str);
 	    classes_simple[3*i+2].u.md_str = copy(buffer);
 	}
     }
@@ -2014,7 +2074,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 	glyph_ci[0].title = S_(glyph_ci[0].title);
     }
 
-    ccd = XZALLOC(struct contextchaindlg);
+    ccd = chunkalloc(sizeof(struct contextchaindlg));
     ccd->gfi = gfi;
     ccd->sf = sf;
     ccd->fpst = fpst;
@@ -3147,7 +3207,10 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(ccd->gw);
 
+    GTextInfoListFree(lookup_list);
     seqlookup_ci[1].enum_vals = NULL;
+
+    /* ccd is freed by the event handler when we get a et_destroy event */
 
 return;
 }

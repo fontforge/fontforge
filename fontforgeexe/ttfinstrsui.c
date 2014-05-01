@@ -240,6 +240,7 @@ static int IVParse(InstrDlg *iv) {
     uint8 *instrs;
 
     instrs = _IVParse(iv->instrdata->sf, text, &icnt, IVError, iv);
+    free(text);
 
     if ( instrs==NULL )
 return( false );
@@ -249,13 +250,17 @@ return( false );
 	for ( i=0; i<icnt; ++i )
 	    if ( instrs[i]!=iv->instrdata->instrs[i])
 	break;
-	if ( i==icnt )		/* Unchanged */
+	if ( i==icnt ) {		/* Unchanged */
+	    free(instrs);
 return( true );
+	}
     }
+    free( iv->instrdata->instrs );
     iv->instrdata->instrs = instrs;
     iv->instrdata->instr_cnt = icnt;
     iv->instrdata->max = icnt;
     iv->instrdata->changed = true;
+    free(iv->instrdata->bts );
     iv->instrdata->bts = NULL;
     instr_info_init(&iv->instrinfo);
     GScrollBarSetBounds(iv->instrinfo.vsb,0,iv->instrinfo.lheight+2,
@@ -272,6 +277,7 @@ static void IVOk(InstrDlg *iv) {
 	if ( id->sc!=NULL ) {
 	    SplineChar *sc = id->sc;
 	    CharView *cv;
+	    free(sc->ttf_instrs);
 	    sc->ttf_instrs_len = id->instr_cnt;
 	    if ( id->instr_cnt==0 )
 		sc->ttf_instrs = NULL;
@@ -295,16 +301,19 @@ static void IVOk(InstrDlg *iv) {
 		    id->sf->ttf_tables = tab->next;
 		else
 		    prev->next = tab->next;
-		if ( tab!=NULL )
+		if ( tab!=NULL ) {
 		    tab->next = NULL;
+		    TtfTablesFree(tab);
+		}
 	    } else {
 		tab = SFFindTable(id->sf,id->tag);
 		if ( tab==NULL ) {
-		    tab = XZALLOC(struct ttf_table);
+		    tab = chunkalloc(sizeof(struct ttf_table));
 		    tab->next = id->sf->ttf_tables;
 		    id->sf->ttf_tables = tab;
 		    tab->tag = id->tag;
 		}
+		free( tab->data );
 		tab->data = malloc( id->instr_cnt );
 		memcpy(tab->data,id->instrs,id->instr_cnt );
 		tab->len = id->instr_cnt;
@@ -664,6 +673,10 @@ static int iv_e_h(GWindow gw, GEvent *event) {
 	    sf->instr_dlgs = iv->instrdata->next;
 	else
 	    prev->next = iv->instrdata->next;
+	free(iv->instrdata->instrs);
+	free(iv->instrdata->bts);
+	free(iv->instrdata);
+	free(iv);
       } break;
     }
 return( true );
@@ -925,6 +938,7 @@ void IIScrollTo(struct instrinfo *ii,int ip,int mark_stop) {
 
 void IIReinit(struct instrinfo *ii,int ip) {
     instrhelpsetup();
+    free(ii->instrdata->bts);
     ii->instrdata->bts = NULL;
     instr_info_init(ii);
     GScrollBarSetBounds(ii->vsb,0,ii->lheight+2, ii->vheight<ii->fh ? 1 : ii->vheight/ii->fh);
@@ -972,6 +986,7 @@ return( true );
     if ( sv->which ) {
 	if ( *ret=='\0' ) {
 	    if ( sv->comments[sv->active]!=NULL ) {
+		free(sv->comments[sv->active]);
 		sv->comments[sv->active] = NULL;
 		sv->changed = true;
 	    }
@@ -982,6 +997,7 @@ return( true );
 	    } else {
 		if ( strcmp(sv->comments[sv->active],new)!=0 )
 		    sv->changed = true;
+		free(sv->comments[sv->active]);
 	    }
 	    sv->comments[sv->active] = new;
 	}
@@ -1031,9 +1047,11 @@ static int SV_ChangeLength(GGadget *g, GEvent *e) {
 return( true );		/* Cancelled */
 	val = strtol(ret,&e,10);
 	if ( *e || val<0 || val>65535 ) {
+	    free(ret);
 	    ff_post_error(_("Bad Number"),_("Bad Number"));
 return( false );
 	}
+	free(ret);
 	if ( val*2>sv->len ) {
 	    sv->edits = realloc(sv->edits,val*2);
 	    for ( i=sv->len/2; i<val; ++i )
@@ -1042,8 +1060,10 @@ return( false );
 	    for ( i=sv->len/2; i<val; ++i )
 		sv->comments[i] = NULL;
 	} else {
-	    for ( i=val; i<sv->len/2; ++i )
+	    for ( i=val; i<sv->len/2; ++i ) {
+		free(sv->comments[i]);
 		sv->comments[i] = NULL;
+	    }
 	}
 	sv->len = 2*val;
 	SV_SetScrollBar(sv);
@@ -1076,7 +1096,12 @@ static int SV_OK(GGadget *g, GEvent *e) {
 
 	if ( !sfinishup(sv,true) )
 return( true );
-        sf->cvt_names = NULL;
+	if ( sf->cvt_names!=NULL ) {
+	    for ( i=0; sf->cvt_names[i]!=END_CVT_NAMES; ++i )
+		free(sf->cvt_names[i]);
+	    free(sf->cvt_names);
+	    sf->cvt_names = NULL;
+	}
 	if ( sv->len==0 ) {
 	    if ( sv->table!=NULL ) {
 		prev = NULL;
@@ -1085,11 +1110,15 @@ return( true );
 		    prev->next = tab->next;
 		else
 		    sf->ttf_tables = tab->next;
+		free(sv->table->data);
+		chunkfree(sv->table,sizeof(struct ttf_table));
 		sv->table = NULL;
 	    }
 	} else {
-	    if ( sv->table==NULL ) {
-		tab = XZALLOC(struct ttf_table);
+	    if ( sv->table!=NULL )
+		free(sv->table->data);
+	    else {
+		tab = chunkalloc(sizeof(struct ttf_table));
 		tab->next = sf->ttf_tables;
 		sf->ttf_tables = tab;
 		tab->tag = sv->tag;
@@ -1232,6 +1261,8 @@ static void short_scroll(ShortView *sv,struct sbevent *sb) {
 
 static void ShortViewFree(ShortView *sv) {
     sv->sf->cvt_dlg = NULL;
+    free(sv->edits);
+    free(sv);
 }
 
 static int sv_v_e_h(GWindow gw, GEvent *event) {
@@ -1626,13 +1657,14 @@ static int Maxp_OK(GGadget *g, GEvent *e) {
 return( true );
 	mp->done = true;
 	if ( mp->tab==NULL ) {
-	    mp->tab = XZALLOC(struct ttf_table);
+	    mp->tab = chunkalloc(sizeof(struct ttf_table));
 	    mp->tab->tag = CHR('m','a','x','p');
 	    mp->tab->len = 32;
 	    mp->tab->data = calloc(32,1);
 	    mp->tab->next = mp->sf->ttf_tables;
 	    mp->sf->ttf_tables = mp->tab;
 	} else if ( mp->tab->len<32 ) {
+	    free(mp->tab->data);
 	    mp->tab->len = 32;
 	    mp->tab->data = calloc(32,1);
 	}

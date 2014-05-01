@@ -153,7 +153,11 @@ return(false);
 
     png_write_end(png_ptr, info_ptr);
 
+    free(trans_alpha);
+    free(trans_color);
+    free(palette);
     png_destroy_write_struct(&png_ptr, &info_ptr);
+    free(rows);
 return( 1 );
 }
 

@@ -73,7 +73,8 @@ LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la	\
 	$(top_builddir)/gutils/libgioftp.la	\
 	$(top_builddir)/fontforge/libfontforge.la \
-	$(top_builddir)/lib/libgnu.la $(LIBGC_LIBS) $(top_builddir)/inc/libggc_veneer.la
+	$(LIBGC_LIBS) $(top_builddir)/inc/libggc_veneer.la \
+	$(top_builddir)/lib/libgnu.la
 
 GUILIBADD =
 if GRAPHICAL_USER_INTERFACE
@@ -81,7 +82,7 @@ GUILIBADD += $(top_builddir)/gdraw/libgdraw.la $(XINPUT_LIBS)	\
 	$(XKB_LIBS)
 endif GRAPHICAL_USER_INTERFACE
 
-LDADD = $(LIBADD) $(GUILIBADD) $(LIBGC_LIBS)
+LDADD = $(LIBADD) $(GUILIBADD)
 
 AM_CFLAGS = $(WARN_CFLAGS)
 

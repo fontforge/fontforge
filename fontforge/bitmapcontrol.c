@@ -48,7 +48,7 @@ static void RemoveBDFWindows(BDFFont *bdf) {
 }
 
 static BDFFont *BDFNew(SplineFont *sf,int pixel_size, int depth) {
-    BDFFont *new = XZALLOC(BDFFont);
+    BDFFont *new = chunkalloc(sizeof(BDFFont));
     int linear_scale = 1<<(depth/2);
 
     new->sf = sf;
@@ -86,6 +86,7 @@ static void SFRemoveUnwantedBitmaps(SplineFont *sf,int32 *sizes) {
 		}
 	    }
 	    RemoveBDFWindows(bdf);
+	    BDFFontFree(bdf);
 	    sf->changed = true;
 	} else {
 	    sizes[i] = -sizes[i];		/* don't need to create it */
@@ -199,6 +200,7 @@ return;
 		*bdfc = temp;
 		bdf->glyphs[gid]->views = bdfc->views;
 		bdfc->views = NULL;
+		BDFCharFree(bdfc);
 		BCRefreshAll(bdf->glyphs[gid]);
 	    }
 	}
@@ -268,8 +270,10 @@ return;
     if ( pass==0 ) {
 	BCDestroyAll(bdf->glyphs[gid]);
 	ff_progress_allow_events();
-    } else
+    } else {
+	BDFCharFree(bdf->glyphs[gid]);
 	bdf->glyphs[gid] = NULL;
+    }
 }
 
 

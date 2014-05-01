@@ -134,6 +134,7 @@ static void GlyphMatrixInit(struct matrixinit *mi,char *glyphstr,SplineFont *sf)
 	    if ( k ) {
 		char *str = copyn(start,end-start);
 		md[1*cnt+0].u.md_str = SFNameList2NameUni(sf,str);
+		free(str);
 	    }
 	    ++cnt;
 	    while ( *end==' ' || *end==',' ) ++end;
@@ -169,6 +170,7 @@ static int JSTF_Glyph_OK(GGadget *g, GEvent *e) {
 	    if ( ret>gld->ret && ret[-1] == ' ' )
 		ret[-1] = '\0';
 	    gld->ret = GlyphNameListDeUnicode(ret);
+	    free(ret);
 	}
 	gld->done = true;
     }
@@ -280,6 +282,11 @@ char *GlyphListDlg(SplineFont *sf, char *glyphstr) {
     boxes[1].creator = GHVGroupCreate;
 
     GGadgetsCreate(gw,boxes+1);
+
+    for ( i=0; i<mi.initial_row_cnt; ++i ) {
+	free( mi.matrix_data[2*i+0].u.md_str );
+    }
+    free( mi.matrix_data );
 
     GMatrixEditSetNewText(gcd[0].ret,S_("GlyphName|New"));
     GMatrixEditSetColumnCompletion(gcd[0].ret, 0, JSTF_Glyph_Completion );
@@ -483,6 +490,8 @@ static char *JSTF_LookupListDlg(GGadget *g, int r, int c) {
 
     GGadgetsCreate(gw,boxes+1);
 
+    free( mi.matrix_data );
+
     GMatrixEditSetNewText(gcd[0].ret,S_("LookupName|New"));
     GHVBoxSetExpandableCol(boxes[0].ret,gb_expandgluesame);
 
@@ -492,6 +501,7 @@ static char *JSTF_LookupListDlg(GGadget *g, int r, int c) {
     while ( !gld.done )
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
+    GTextInfoListFree(lookup_ci[0].enum_vals);
     lookup_ci[0].enum_vals = NULL;
 return( gld.ret );
 }
@@ -576,6 +586,7 @@ return( NULL );
 	    ff_post_error(_("Unknown lookup"), _("Unknown lookup name: %60.60s"),
 		pt );
 	    *ept = ',';
+	    free(ret);
 return( (OTLookup **) -1 );
 	}
 	*ept = ',';
@@ -590,6 +601,7 @@ return( (OTLookup **) -1 );
 	if ( ret[cnt]==NULL ) {
 	    ff_post_error(_("Unknown lookup"), _("Unknown lookup name: %60.60s"),
 		pt );
+	    free(ret);
 return( (OTLookup **) -1 );
 	}
 	++cnt;
@@ -642,7 +654,7 @@ static int JSTF_Language_OK(GGadget *g, GEvent *e) {
 	    for ( j=i, cnt=0; j<rows; ++j )
 		if ( strcmp(strings[j*cols+0].u.md_str, strings[i*cols+0].u.md_str)==0 )
 		    ++cnt;
-	    cur = XZALLOC(struct jstf_lang);
+	    cur = chunkalloc(sizeof(struct jstf_lang));
 	    if ( head==NULL )
 		head = cur;
 	    else
@@ -665,6 +677,7 @@ static int JSTF_Language_OK(GGadget *g, GEvent *e) {
 			    cur->prios[cnt].enableShrink == (OTLookup **) -1 ||
 			    cur->prios[cnt].disableShrink == (OTLookup **) -1 ||
 			    cur->prios[cnt].maxShrink == (OTLookup **) -1 ) {
+			JstfLangFree(head);
 			for ( k=0; k<rows; ++k )
 			    strings[k*cols+0].u.md_str[0] &= ~0x80;
 return( true );
@@ -676,6 +689,7 @@ return( true );
 		if ( strcmp(strings[j*cols+0].u.md_str, strings[i*cols+0].u.md_str)==0 )
 		    strings[j*cols+0].u.md_str[0] |= 0x80;
 	}
+	JstfLangFree( *jd->here );
 	*jd->here = head;
 	jd->ldone = true;
     }
@@ -792,6 +806,11 @@ static char *JSTF_Langs(GGadget *g, int r, int c) {
 
     GGadgetsCreate(gw,boxes+1);
 
+    for ( i=0; i<mi.initial_row_cnt; ++i ) {
+	free( mi.matrix_data[2*i+0].u.md_str );
+    }
+    free( mi.matrix_data );
+
     GMatrixEditSetNewText(gcd[0].ret,S_("Language|New"));
     GMatrixEditSetUpDownVisible(gcd[0].ret,true);
     GHVBoxSetExpandableCol(boxes[0].ret,gb_expandgluesame);
@@ -848,7 +867,7 @@ static int JSTF_Script_OK(GGadget *g, GEvent *e) {
 	struct matrix_data *strings = GMatrixEditGet(GWidgetGetControl(jd->gw,CID_Scripts), &rows);
 
 	for ( i=0; i<rows; ++i ) {
-	    cur = XZALLOC(Justify);
+	    cur = chunkalloc(sizeof(Justify));
 	    cur->script = Str2Tag(strings[cols*i+0].u.md_str);
 	    cur->extenders = copy(strings[cols*i+1].u.md_str);
 	    cur->langs = strings[cols*i+3].u.md_addr;
@@ -858,6 +877,7 @@ static int JSTF_Script_OK(GGadget *g, GEvent *e) {
 		last->next = cur;
 	    last = cur;
 	}
+	JustifyFree(sf->justify);
 	sf->justify = head;
 	jd->done = true;
     }
@@ -865,6 +885,13 @@ return( true );
 }
 
 static void Jstf_Cancel(Jstf_Dlg *jd) {
+    int rows, i;
+    int cols = GMatrixEditGetColCnt(GWidgetGetControl(jd->gw,CID_Scripts));
+    struct matrix_data *strings = GMatrixEditGet(GWidgetGetControl(jd->gw,CID_Scripts), &rows);
+
+    for ( i=0; i<rows; ++i ) {
+	JstfLangFree(strings[cols*i+3].u.md_addr);
+    }
     jd->done = true;
 }
 
@@ -974,6 +1001,11 @@ void JustifyDlg(SplineFont *sf) {
     boxes[1].creator = GHVGroupCreate;
 
     GGadgetsCreate(gw,boxes+1);
+
+    for ( i=0; i<mi.initial_row_cnt; ++i ) {
+	free( mi.matrix_data[2*i+0].u.md_str );
+    }
+    free( mi.matrix_data );
 
     GMatrixEditSetNewText(gcd[0].ret,S_("Script|New"));
     GMatrixEditSetUpDownVisible(gcd[0].ret,true);

@@ -498,6 +498,7 @@ static void gwwv_file_def_filters(GtkWidget *dialog, const char *def_name,
 	    gtk_file_chooser_set_current_name( GTK_FILE_CHOOSER( dialog ), pt+1 );
 	} else
 	    gtk_file_chooser_set_current_name( GTK_FILE_CHOOSER( dialog ), temp );
+	free(temp);
     }
     if ( filters!=NULL ) {
 	standard = NULL;
@@ -549,6 +550,7 @@ char *gwwv_open_filename_mult(const char *title, const char *def_name,
     if ( gtk_dialog_run(GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT ) {
 	char *temp = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
 	filename = g_filename_to_utf8(temp,-1,&read,&written,NULL);
+	free(temp);
     }
 
     gtk_widget_destroy (dialog);
@@ -574,6 +576,7 @@ char *gwwv_save_filename_with_gadget(const char *title, const char *def_name,
     if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
 	char *temp = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
 	filename = g_filename_to_utf8(temp,-1,&read,&written,NULL);
+	free(temp);
     }
 
     gtk_widget_destroy (dialog);
