@@ -18219,14 +18219,17 @@ static char ** copy_argv(char *arg0, int argc ,char **argv) {
 /* ************************************************************************** */
 
 static void SetPythonModuleMetadata( PyObject *module ) {
-    char ver[32];
+    char ver[200];
     char isodate[32];
     PyObject* pyver;
     PyObject* pydate;
     int dt = FONTFORGE_VERSIONDATE_RAW;
 
     /* Make __version__ string */
-    snprintf(ver, sizeof(ver), "%u.%u", FONTFORGE_LIBFF_VERSION_MAJOR, FONTFORGE_LIBFF_VERSION_MINOR );
+    snprintf(ver, sizeof(ver), "%u.%u git:%s",
+	     FONTFORGE_LIBFF_VERSION_MAJOR,
+	     FONTFORGE_LIBFF_VERSION_MINOR,
+	     FONTFORGE_GIT_VERSION );
     pyver = STRING_TO_PY(ver);
     Py_INCREF(pyver);
     PyModule_AddObject(module, "__version__", pyver);
