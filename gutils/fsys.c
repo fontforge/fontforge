@@ -970,6 +970,15 @@ char *GFileGetHomeDocumentsDir(void)
     return ret;
 }
 
+unichar_t *u_GFileGetHomeDocumentsDir(void) {
+    unichar_t* dir = NULL;
+    char* tmp = GFileGetHomeDocumentsDir();
+    if(tmp) {
+        dir = uc_copy(tmp);
+    }
+    return dir;
+}
+
 
 char *GFileDirName(const char *path)
 {
