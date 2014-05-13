@@ -754,7 +754,7 @@ extern uint8 *DebuggerGetWatchCvts(struct debugger_context *dc, int *n);
 extern int DebuggingFpgm(struct debugger_context *dc);
 
 
-extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
+extern void PrintPreviewDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
 extern void PrintWindowClose(void);
 extern void InsertTextDlg(CharView *cv);
 

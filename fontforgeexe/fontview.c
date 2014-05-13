@@ -52,11 +52,6 @@
 #include <windows.h>
 #endif
 
-// Clash on windows for a define to PrintDlgA
-#ifdef PrintDlg
-#undef PrintDlg
-#endif
-
 int OpenCharsInNewWindow = 0;
 char *RecentFiles[RECENT_MAX] = { NULL };
 int save_to_dir = 0;			/* use sfdir rather than sfd */
@@ -1150,7 +1145,7 @@ static void FVMenuPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED
 
     if ( fv->b.container!=NULL && fv->b.container->funcs->is_modal )
 return;
-    PrintDlg(fv,NULL,NULL);
+    PrintPreviewDlg(fv,NULL,NULL);
 }
 
 static void FVMenuExecute(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {

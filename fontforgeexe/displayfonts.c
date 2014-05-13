@@ -2259,7 +2259,7 @@ return;
     }
 }
 
-void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
+void PrintPreviewDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     _PrintDlg(fv,sc,mv,true,NULL,NULL);
 }
 
