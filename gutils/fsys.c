@@ -956,6 +956,7 @@ char *GFileGetHomeDocumentsDir(void)
     my_documents[ pos++ ] = '\\';
     my_documents[ pos++ ] = '\0';
     ret = copy( my_documents );
+	_backslash_to_slash(ret);
     return ret;
 #endif
 
