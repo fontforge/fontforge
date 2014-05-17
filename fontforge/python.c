@@ -17916,7 +17916,7 @@ static int AddPythonTypesToModule( PyObject *module, python_type_info* typelist 
 #if PY_MAJOR_VERSION >= 3
 /* Python 3 module init functions return a pointer to the module object, or NULL */
 #define ff_crmod(name) \
-static PyMODINIT_FUNC CreatePyModule_##name(void) {\
+PyMODINIT_FUNC CreatePyModule_##name(void) {\
     return CreatePyModule(&module_def_##name);\
 }
 #else

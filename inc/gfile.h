@@ -91,6 +91,7 @@ extern const char *getTempDir(void);
  * and something like c:\Users\foo\Documents on windows
  */
 extern char *GFileGetHomeDocumentsDir(void);
+extern unichar_t* u_GFileGetHomeDocumentsDir(void); 
 
 /**
  * Return the directory name for the full path 'path'.

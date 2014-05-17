@@ -52,11 +52,6 @@
 #include <windows.h>
 #endif
 
-// Clash on windows for a define to PrintDlgA
-#ifdef PrintDlg
-#undef PrintDlg
-#endif
-
 int OpenCharsInNewWindow = 0;
 char *RecentFiles[RECENT_MAX] = { NULL };
 int save_to_dir = 0;			/* use sfdir rather than sfd */
@@ -115,8 +110,10 @@ int default_fv_showhmetrics=false, default_fv_showvmetrics=false,
 FontView *fv_list=NULL;
 
 static void AskAndMaybeCloseLocalCollabServers( void );
-static void FVStopWebFontServer( FontView *fv );
 
+#if BUILD_COLLAB
+static void FVStopWebFontServer( FontView *fv );
+#endif
 
 static void FV_ToggleCharChanged(SplineChar *sc) {
     int i, j;
@@ -926,6 +923,7 @@ static void _MenuExit(void *UNUSED(junk)) {
 
     FontView *fv, *next;
 
+#if BUILD_COLLAB
     if( collabclient_haveLocalServer() )
     {
 	AskAndMaybeCloseLocalCollabServers();
@@ -937,6 +935,7 @@ static void _MenuExit(void *UNUSED(junk)) {
 	printf("fv:%p running webfont server:%d\n", fv, fv->pid_webfontserver );
 	FVStopWebFontServer( fv );
     }
+#endif
 
     LastFonts_Save();
     for ( fv = fv_list; fv!=NULL; fv = next )
@@ -1146,7 +1145,7 @@ static void FVMenuPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED
 
     if ( fv->b.container!=NULL && fv->b.container->funcs->is_modal )
 return;
-    PrintDlg(fv,NULL,NULL);
+    PrintPreviewDlg(fv,NULL,NULL);
 }
 
 static void FVMenuExecute(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -5761,7 +5760,6 @@ static int kill( int pid, int sig )
     TerminateProcess( hHandle, 0 );
 }
 #endif
-#endif
 
 static void FVStopWebFontServer( FontView *fv )
 {
@@ -5773,7 +5771,6 @@ static void FVStopWebFontServer( FontView *fv )
     }
 }
 
-#ifdef BUILD_COLLAB
 static void FVMenuStopWebFontServer(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
