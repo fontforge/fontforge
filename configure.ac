@@ -195,8 +195,45 @@ AC_PATH_PROG([UNZIP],[unzip],[unzip])
 AC_PATH_PROG([UPDATE_MIME_DATABASE],[update-mime-database],[:])
 AC_PATH_PROG([UPDATE_DESKTOP_DATABASE],[update-desktop-database],[:])
 AC_PATH_PROG([PLUTIL],[plutil],[:])
-AM_PATH_PYTHON([2.7])
-PKG_CHECK_MODULES([PYTHON],[python-"${PYTHON_VERSION}"])
+
+dnl###############################
+dnl##### look for python #########
+
+use_python_cross_option=n
+python_cross_cflags=
+AC_ARG_WITH([python-cross-cflags],
+   [AS_HELP_STRING([--with-python-cross-cflags[[=-I/whatever-for-python2.7]]],[])],
+   [python_cross_cflags="${withval}"; use_python_cross_option=yes])
+python_cross_libs=
+AC_ARG_WITH([python-cross-libs],
+   [AS_HELP_STRING([--with-python-cross-libs[[=-L/whatever-for-python2.7 -lpython2.7]]],[])],
+   [python_cross_libs="${withval}"; use_python_cross_option=yes])
+python_cross_pyexecdir=
+AC_ARG_WITH([python-cross-pyexecdir],
+   [AS_HELP_STRING([--with-python-cross-pyexecdir[[=${exec_prefix}/lib64/python2.7/site-packages]]],[])],
+   [python_cross_pyexecdir="${withval}"; use_python_cross_option=yes])
+
+if test x$use_python_cross_option = xyes ; then
+   echo "provided with explicit python cross info, not probing for python binary..."
+   PYTHON_CFLAGS="$python_cross_cflags"
+   PYTHON_LIBS="$python_cross_libs"
+   PYTHON_PLATFORM=
+   PYTHON_PREFIX=
+   PYTHON_VERSION=2.7
+   pyexecdir="$python_cross_pyexecdir"
+   AC_SUBST(PYTHON_CFLAGS)
+   AC_SUBST(PYTHON_LIBS)
+   AC_SUBST(PYTHON_PLATFORM)
+   AC_SUBST(PYTHON_PREFIX)
+   AC_SUBST(PYTHON_VERSION)
+   AC_SUBST(pyexecdir)
+else
+    AM_PATH_PYTHON([2.7])
+    PKG_CHECK_MODULES([PYTHON],[python-"${PYTHON_VERSION}"])
+fi
+
+dnl###############################
+dnl###############################
 
 AM_CONDITIONAL([XDG_DESKTOP],[test x"$UPDATE_MIME_DATABASE" != "x:" -a x"$UPDATE_DESKTOP_DATABASE" != "x:"])
 
