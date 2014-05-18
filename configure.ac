@@ -595,17 +595,23 @@ AC_SUBST([MY_LIBS],[${my_libs}])
 
 #--------------------------------------------------------------------------
 
-
-pythonbinary=python
-AC_ARG_WITH([pythonbinary],
-   [AS_HELP_STRING([--with-pythonbinary[[=/path/to/python2.7]]],[])],
-   [pythonbinary="${withval}"])
-
 have_ipython=no
-if $( $pythonbinary -c 'import IPython' ); then 
-   have_ipython=yes; 
-   AC_DEFINE([HAVE_IPYTHON],[1],[have ipython])
+
+if test x$use_python_cross_option = xyes ; then
+   echo "skipping ipython detection during a cross compile"
+else
+   pythonbinary=python
+   AC_ARG_WITH([pythonbinary],
+      [AS_HELP_STRING([--with-pythonbinary[[=/path/to/python2.7]]],[])],
+      [pythonbinary="${withval}"])
+
+   have_ipython=no
+   if $( $pythonbinary -c 'import IPython' ); then 
+      have_ipython=yes; 
+      AC_DEFINE([HAVE_IPYTHON],[1],[have ipython])
+   fi
 fi
+
 AM_CONDITIONAL([HAVE_IPYTHON],[test x"${have_ipython}" = xyes])
 
 #--------------------------------------------------------------------------
