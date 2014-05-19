@@ -58,6 +58,14 @@
 #endif
 #include "collabclientui.h"
 
+
+#if defined(__MINGW32__)
+#ifndef O_NDELAY
+#define O_NDELAY 0
+#endif
+#endif // __MINGW32__
+
+
 /**
  * Use this to track if the script has joined a collab session.
  * if not then we get to very quickly avoid the collab code path :)
