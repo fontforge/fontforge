@@ -158,7 +158,7 @@ $(srcdir)/.gitignore: Makefile.am $(top_srcdir)/git.mk
 			for x in \
 				autom4te.cache \
 				configure \
-				config.h \
+				fontforge-config.h \
 				stamp-h1 \
 				libtool \
 				config.lt \

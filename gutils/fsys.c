@@ -26,13 +26,16 @@
  */
 
 #include <stdio.h>
+#include "inc/basics.h"
 #include "ustring.h"
 #include "fileutil.h"
 #include "gfile.h"
+#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>		/* for mkdir */
 #include <unistd.h>
-
+#include <glib.h>
+#include <errno.h>			/* for mkdir_p */
 
 #ifdef _WIN32
 #define MKDIR(A,B) mkdir(A)
@@ -40,11 +43,12 @@
 #define MKDIR(A,B) mkdir(A,B)
 #endif
 
-static char dirname_[1024];
+static char dirname_[MAXPATHLEN+1];
 #if !defined(__MINGW32__)
  #include <pwd.h>
 #else
- #include <Windows.h>
+ #include <windows.h>
+ #include <shlobj.h>
 #endif
 
 #if defined(__MINGW32__)
@@ -58,7 +62,75 @@ static void _u_backslash_to_slash(unichar_t* c){
 	if(*c == '\\')
 	    *c = '/';
 }
+#else
+static void _backslash_to_slash(char* UNUSED(c)){
+}
+static void _u_backslash_to_slash(unichar_t* UNUSED(c)){
+}
 #endif
+
+/* make directories.  make parent directories as needed,  with no error if
+ * the path already exists */
+int mkdir_p(const char *path, mode_t mode) {
+	struct stat st;
+	const char *e;
+	char *p = NULL;
+	char tmp[1024];
+	size_t len;
+	int r;
+
+	/* ensure the path is valid */
+	if(!(e = strrchr(path, '/')))
+return -EINVAL;
+	/* ensure path is a directory */
+	r = stat(path, &st);
+	if (r == 0 && !S_ISDIR(st.st_mode))
+return -ENOTDIR;
+
+	/* copy the pathname */
+	snprintf(tmp, sizeof(tmp),"%s", path);
+	len = strlen(tmp);
+	if(tmp[len - 1] == '/')
+	tmp[len - 1] = 0;
+
+	/* iterate mkdir over the path */
+	for(p = tmp + 1; *p; p++)
+	if(*p == '/') {
+		*p = 0;
+		r = MKDIR(tmp, mode);
+		if (r < 0 && errno != EEXIST)
+return -errno;
+		*p = '/';
+	}
+
+	/* try to make the whole path */
+	r = MKDIR(tmp, mode);
+	if(r < 0 && errno != EEXIST)
+return -errno;
+	/* creation successful or the file already exists */
+return EXIT_SUCCESS;
+}
+
+/* Wrapper for formatted variable list printing. */
+char *smprintf(const char *fmt, ...) {
+	va_list fmtargs;
+	char *ret;
+	int len;
+
+	va_start(fmtargs, fmt);
+	len = vsnprintf(NULL, 0, fmt, fmtargs);
+	va_end(fmtargs);
+	ret = malloc(++len);
+	if (ret == NULL) {
+	perror("malloc");
+exit(EXIT_FAILURE);
+	}
+
+	va_start(fmtargs, fmt);
+	vsnprintf(ret, len, fmt, fmtargs);
+	va_end(fmtargs);
+return ret;
+}
 
 char *GFileGetHomeDir(void) {
 #if defined(__MINGW32__)
@@ -73,7 +145,7 @@ return buffer;
 return NULL;
 #else
     static char *dir;
-    int uid;
+    uid_t uid;
     struct passwd *pw;
 
     dir = getenv("HOME");
@@ -98,13 +170,13 @@ unichar_t *u_GFileGetHomeDir(void) {
     char* tmp = GFileGetHomeDir();
     if( tmp ) {
 	dir = uc_copy(tmp);
-	gfree(tmp);
+	free(tmp);
     }
 return dir;
 }
 
 static void savestrcpy(char *dest,const char *src) {
-    forever {
+    for (;;) {
 	*dest = *src;
 	if ( *dest=='\0' )
     break;
@@ -112,7 +184,7 @@ static void savestrcpy(char *dest,const char *src) {
     }
 }
 
-char *GFileGetAbsoluteName(char *name, char *result, int rsiz) {
+char *GFileGetAbsoluteName(const char *name, char *result, size_t rsiz) {
     /* result may be the same as name */
     char buffer[1000];
 
@@ -174,7 +246,7 @@ char *GFileMakeAbsoluteName(char *name) {
 return( copy(buffer));
 }
 
-char *GFileBuildName(char *dir,char *fname,char *buffer,int size) {
+char *GFileBuildName(char *dir,char *fname,char *buffer,size_t size) {
     int len;
 
     if ( dir==NULL || *dir=='\0' ) {
@@ -208,7 +280,7 @@ return( buffer );
 
 /* Given a filename in a directory, pick the directory out of it, and */
 /*  create a new filename using that directory and the given nametail */
-char *GFileReplaceName(char *oldname,char *fname,char *buffer,int size) {
+char *GFileReplaceName(char *oldname,char *fname,char *buffer,size_t size) {
     int len;
     char *dirend;
 
@@ -244,7 +316,7 @@ return( (char *)oldname );
 char *GFileAppendFile(char *dir,char *name,int isdir) {
     char *ret, *pt;
 
-    ret = (char *) galloc((strlen(dir)+strlen(name)+3));
+    ret = (char *) malloc((strlen(dir)+strlen(name)+3));
     strcpy(ret,dir);
     pt = ret+strlen(ret);
     if ( pt>ret && pt[-1]!='/' )
@@ -277,7 +349,7 @@ return( false );
 int GFileIsDir(const char *file) {
   struct stat info;
   if ( stat(file, &info)==-1 )
-return 0;     
+return 0;
   else
 return( S_ISDIR(info.st_mode) );
 }
@@ -291,15 +363,16 @@ return( access(file,02)==0 );
 }
 
 int GFileModifyableDir(const char *file) {
-    char buffer[1024], *pt;
+    char buffer[1025], *pt;
 
-    strcpy(buffer,file);
+    buffer[1024]=0;
+    strncpy(buffer,file,1024);
     pt = strrchr(buffer,'/');
     if ( pt==NULL )
 	strcpy(buffer,".");
     else
 	*pt='\0';
-return( GFileModifyable(buffer));
+    return( GFileModifyable(buffer) );
 }
 
 int GFileReadable(char *file) {
@@ -342,7 +415,7 @@ char *_GFile_find_program_dir(char *prog) {
 	    if(!pt1) break;
 	    path = pt1+1;
 	}
-	gfree(tmppath);
+	free(tmppath);
     }
 #else
     if ( (pt = strrchr(prog,'/'))!=NULL )
@@ -369,7 +442,7 @@ char *_GFile_find_program_dir(char *prog) {
     if ( program_dir==NULL )
 return( NULL );
     GFileGetAbsoluteName(program_dir,filename,sizeof(filename));
-    gfree(program_dir);
+    free(program_dir);
     program_dir = copy(filename);
 return( program_dir );
 }
@@ -388,9 +461,7 @@ unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz) 
 	if ( buffer[u_strlen(buffer)-1]!='/' )
 	    uc_strcat(buffer,"/");
 	u_strcat(buffer,name);
-	#if defined(__MINGW32__)
 	_u_backslash_to_slash(buffer);
-	#endif
 
 	/* Normalize out any .. */
 	spt = rpt = buffer;
@@ -418,9 +489,7 @@ unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz) 
     if (result!=name) {
 	u_strncpy(result,name,rsiz);
 	result[rsiz-1]='\0';
-	#if defined(__MINGW32__)
 	_u_backslash_to_slash(result);
-	#endif
     }
 return(result);
 }
@@ -516,7 +585,7 @@ return( name );
 unichar_t *u_GFileAppendFile(unichar_t *dir,unichar_t *name,int isdir) {
     unichar_t *ret, *pt;
 
-    ret = (unichar_t *) galloc((u_strlen(dir)+u_strlen(name)+3)*sizeof(unichar_t));
+    ret = (unichar_t *) malloc((u_strlen(dir)+u_strlen(name)+3)*sizeof(unichar_t));
     u_strcpy(ret,dir);
     pt = ret+u_strlen(ret);
     if ( pt>ret && pt[-1]!='/' )
@@ -603,7 +672,7 @@ return(unlink(buffer));
 
 static char *GResourceProgramDir = 0;
 
-char* getGResourceProgramDir() {
+char* getGResourceProgramDir(void) {
     return GResourceProgramDir;
 }
 
@@ -644,16 +713,6 @@ char *getShareDir(void) {
 
     set = true;
 
-#if defined(__MINGW32__)
-
-    len = strlen(GResourceProgramDir) + strlen("/share/fontforge") +2;
-    sharedir = galloc(len);
-    strcpy(sharedir, GResourceProgramDir);
-    strcat(sharedir, "/share/fontforge");
-    return sharedir;
-
-#else
-
     pt = strstr(GResourceProgramDir,"/bin");
     if ( pt==NULL ) {
 #ifdef SHAREDIR
@@ -665,25 +724,23 @@ char *getShareDir(void) {
 #endif
     }
     len = (pt-GResourceProgramDir)+strlen("/share/fontforge")+1;
-    sharedir = galloc(len);
+    sharedir = malloc(len);
     strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
     strcpy(sharedir+(pt-GResourceProgramDir),"/share/fontforge");
     return( sharedir );
-#endif
 }
 
 
 char *getLocaleDir(void) {
     static char *sharedir=NULL;
     static int set=false;
-    char *pt;
 
     if ( set )
 	return( sharedir );
 
     char* prefix = getShareDir();
     int len = strlen(prefix) + strlen("/../locale") + 2;
-    sharedir = galloc(len);
+    sharedir = malloc(len);
     strcpy(sharedir,prefix);
     strcat(sharedir,"/../locale");
     set = true;
@@ -693,14 +750,13 @@ char *getLocaleDir(void) {
 char *getPixmapDir(void) {
     static char *sharedir=NULL;
     static int set=false;
-    char *pt;
 
     if ( set )
 	return( sharedir );
 
     char* prefix = getShareDir();
     int len = strlen(prefix) + strlen("/pixmaps") + 2;
-    sharedir = galloc(len);
+    sharedir = malloc(len);
     strcpy(sharedir,prefix);
     strcat(sharedir,"/pixmaps");
     set = true;
@@ -710,7 +766,6 @@ char *getPixmapDir(void) {
 char *getHelpDir(void) {
     static char *sharedir=NULL;
     static int set=false;
-    char *pt;
 
     if ( set )
 	return( sharedir );
@@ -718,12 +773,206 @@ char *getHelpDir(void) {
     char* prefix = getShareDir();
 #if defined(DOCDIR)
     prefix = DOCDIR;
-#endif    
-    char* postfix = "/../doc/fontforge/";
+#endif
+    const char* postfix = "/../doc/fontforge/";
     int len = strlen(prefix) + strlen(postfix) + 2;
-    sharedir = galloc(len);
+    sharedir = malloc(len);
     strcpy(sharedir,prefix);
     strcat(sharedir,postfix);
     set = true;
     return sharedir;
+}
+
+/* reimplementation of GFileGetHomeDir, avoiding copy().  Returns NULL if home
+ * directory cannot be found */
+char *getUserHomeDir(void) {
+#if defined(__MINGW32__)
+	char* dir = getenv("APPDATA");
+	if( dir==NULL )
+	dir = getenv("USERPROFILE");
+	if( dir!=NULL ) {
+	_backslash_to_slash(dir);
+return dir;
+	}
+return NULL;
+#else
+	uid_t uid;
+	struct passwd *pw;
+	char *home = getenv("HOME");
+
+	if( home!=NULL )
+return home;
+
+	uid = getuid();
+	while( (pw=getpwent())!=NULL ) {
+	if ( pw->pw_uid==uid ) {
+		home = pw->pw_dir;
+		endpwent();
+return home;
+	}
+	}
+	endpwent();
+return NULL;
+#endif
+}
+
+/* Find the directory in which FontForge places all of its configurations and
+ * save files.  On Unix-likes, the argument `dir` (see the below case switch,
+ * enum in inc/gfile.h) determines which directory is returned according to the
+ * XDG Base Directory Specification.  On Windows, the argument is ignored--the
+ * home directory as obtained by getUserHomeDir() is returned.  On error, NULL
+ * is returned.
+ *
+ * http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
+ */
+char *getFontForgeUserDir(int dir) {
+	const char *def;
+	const char *home, *xdg;
+	char *buf = NULL;
+
+	/* find home directory first, it is needed if any of the xdg env vars are
+	 * not set */
+	if (!(home = getUserHomeDir())) {
+	/* if getUserHomeDir returns NULL, pass NULL to calling function */
+	fprintf(stderr, "%s\n", "cannot find home directory");
+return NULL;
+	}
+#if defined(__MINGW32__)
+	/* If we are on Windows, just use the home directory (%APPDATA% or
+	 * %USERPROFILE% in that order) for everything */
+return home;
+#else
+	/* Home directory exists, so check for environment variables.  For each of
+	 * XDG_{CACHE,CONFIG,DATA}_HOME, assign `def` as the corresponding fallback
+	 * for if the environment variable does not exist. */
+	switch(dir) {
+	  case Cache:
+	xdg = getenv("XDG_CACHE_HOME");
+	def = ".cache";
+	  break;
+	  case Config:
+	xdg = getenv("XDG_CONFIG_HOME");
+	def = ".config";
+	  break;
+	  case Data:
+	xdg = getenv("XDG_DATA_HOME");
+	def = ".local/share";
+	  break;
+	  default:
+	/* for an invalid argument, return NULL */
+	fprintf(stderr, "%s\n", "invalid input");
+return NULL;
+	}
+	if(xdg != NULL)
+	/* if, for example, XDG_CACHE_HOME exists, assign the value
+	 * "$XDG_CACHE_HOME/fontforge" */
+	buf = smprintf("%s/fontforge", xdg);
+	else
+	/* if, for example, XDG_CACHE_HOME does not exist, instead assign
+	 * the value "$HOME/.cache/fontforge" */
+	buf = smprintf("%s/%s/fontforge", home, def);
+	if(buf != NULL) {
+	/* try to create buf.  If creating the directory fails, return NULL
+	 * because nothing will get saved into an inaccessible directory.  */
+	if(mkdir_p(buf, 0755) != EXIT_SUCCESS)
+return NULL;
+return buf;
+	}
+return NULL;
+#endif
+}
+
+off_t GFileGetSize(char *name) {
+/* Get the binary file size for file 'name'. Return -1 if error. */
+    struct stat buf;
+    long rc;
+
+    if ( (rc=stat(name,&buf)) )
+	return( -1 );
+    return( buf.st_size );
+}
+
+char *GFileReadAll(char *name) {
+/* Read file 'name' all into one large string. Return 0 if error. */
+    char *ret;
+    long sz;
+
+    if ( (sz=GFileGetSize(name))>=0 && \
+	 (ret=calloc(1,sz+1))!=NULL ) {
+	FILE *fp;
+	if ( (fp=fopen(name,"rb"))!=NULL ) {
+	    size_t bread=fread(ret,1,sz,fp);
+	    fclose(fp);
+
+	    if( bread==(size_t)sz )
+		return( ret );
+	}
+	free(ret);
+    }
+    return( 0 );
+}
+
+/*
+ * Write char string 'data' into file 'name'. Return -1 if error.
+ **/
+int GFileWriteAll(char *filepath, char *data) {
+    
+    if( !data )
+	return -1;
+    
+    size_t bwrite = strlen(data);
+    FILE* fp;
+
+    if ( (fp = fopen( filepath, "wb" )) != NULL ) {
+	if ( (fwrite( data, 1, bwrite, fp ) == bwrite) && \
+	     (fflush(fp) == 0) )
+	    return( (fclose(fp) == 0 ? 0: -1) );
+	fclose(fp);
+    }
+    return -1;
+}
+
+const char *getTempDir(void)
+{
+    return g_get_tmp_dir();
+}
+
+char *GFileGetHomeDocumentsDir(void)
+{
+    static char* ret = 0;
+    if( ret )
+	return ret;
+
+#if defined(__MINGW32__)
+
+    CHAR my_documents[MAX_PATH+2];
+    HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents );
+    if (result != S_OK)
+    {
+    	fprintf(stderr,"Error: Can't get My Documents path!'\n");
+        return ret;
+    }
+    int pos = strlen(my_documents);
+    my_documents[ pos++ ] = '\\';
+    my_documents[ pos++ ] = '\0';
+    ret = copy( my_documents );
+    return ret;
+#endif
+
+    // On GNU/Linux and OSX it was decided that this should be just the
+    // home directory itself.
+    ret = GFileGetHomeDir();
+    return ret;
+}
+
+
+char *GFileDirName(const char *path)
+{
+    char ret[PATH_MAX+1];
+    strncpy( ret, path, PATH_MAX );
+    _backslash_to_slash( ret );
+    char *pt = strrchr( ret, '/' );
+    if ( pt )
+	*pt = '\0';
+    return strdup(ret);
 }

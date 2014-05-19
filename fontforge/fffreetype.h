@@ -28,37 +28,30 @@
 #ifndef _FFFREETYPE_H
 #define _FFFREETYPE_H
 
-#if !defined(_NO_FREETYPE) && !defined(_NO_MMAP)
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H
-#if defined(FREETYPE_HAS_DEBUGGER) && FREETYPE_MINOR>=2
-# if defined(__MINGW32__)
-#  include <freetype/internal/internal.h>
-# else
-#  include <internal/internal.h>
-# endif
+#if FREETYPE_MINOR >= 5
+# include FT_TRUETYPE_DRIVER_H
 #endif
-#include <unistd.h>
+#if defined(FREETYPE_HAS_DEBUGGER)
+# include <internal/internal.h>
+#endif
 
 #if defined(__MINGW32__)
-# include "winmmap.h"
+# include <Windows.h>
 #else
 # include <sys/mman.h>
 #endif
 
+#include <unistd.h>
+
 extern FT_Library ff_ft_context;
 
 #if FREETYPE_HAS_DEBUGGER
-# if defined(__MINGW32__)
-#  include "freetype/truetype/ttobjs.h"
-#  include "freetype/truetype/ttdriver.h"
-#  include "freetype/truetype/ttinterp.h"
-# else
-#  include "ttobjs.h"
-#  include "ttdriver.h"
-#  include "ttinterp.h"
-# endif
+# include "ttobjs.h"
+# include "ttdriver.h"
+# include "ttinterp.h"
 #endif
 
 typedef struct freetypecontext {
@@ -81,7 +74,5 @@ extern void *__FreeTypeFontContext(FT_Library context,
 	SplineFont *sf,SplineChar *sc,FontViewBase *fv,
 	int layer,
 	enum fontformat ff,int flags,void *shared_ftc);
-
-#endif /* we do have FreeType */
 
 #endif /* _FFFREETYPE_H */

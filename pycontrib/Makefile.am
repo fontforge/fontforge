@@ -27,10 +27,19 @@
 
 include $(top_srcdir)/mk/layout.am
 
-if PYTHON_SCRIPTING
-pkgpythondata_DATA = excepthook.py
-endif PYTHON_SCRIPTING
+pkgpythondata_DATA = excepthook.py test.sfd
 
-EXTRA_DIST = excepthook.py
+if HAVE_IPYTHON
+pkgpythondata_DATA += graphicore.py
+endif
+
+if HAVE_PYTHON_EVEN
+pkgpythondata_DATA += even.py
+endif
+
+
+EXTRA_DIST = excepthook.py test.sfd README graphicore.py even.py
+
+SUBDIRS = gdraw simple collab graphicore
 
 -include $(top_srcdir)/git.mk

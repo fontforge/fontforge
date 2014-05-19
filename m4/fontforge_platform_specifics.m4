@@ -23,6 +23,9 @@ AS_CASE([$host],
        MACAPP=""
       fi
 
+      RAW_COMPILE_PLATFORM_CFLAGS=" $CFLAGS -arch x86_64 -arch i386 "
+      AC_SUBST([RAW_COMPILE_PLATFORM_CFLAGS])
+
       dnl fink puts stuff under /sw
       dnl macports puts stuff under /opt/local
       dnl but when macport/fink overwrite a standard lib, I still want the standard
@@ -76,6 +79,8 @@ AS_CASE([$host],
 
    [*sparc*],[AC_DEFINE([_Keyboard],[2])],
 
+   [*mingw*],[ LDFLAGS="$LDFLAGS -lws2_32 -lplibc" ],
+
    [*-pc-cygwin*],[
 
       AC_DEFINE([_BrokenBitmapImages],[1],[Platform specific stuff])
@@ -88,4 +93,7 @@ AS_CASE([$host],
    [:]  dnl DEFAULT AS_CASE
 
 ) dnl END AS_CASE
+
+AM_CONDITIONAL([PLATFORM_OSX],[test x"${gww_ismac}" = xyes])
+
 ])

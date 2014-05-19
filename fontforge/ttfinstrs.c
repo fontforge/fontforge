@@ -297,7 +297,7 @@ uint8 *_IVParse(SplineFont *sf, char *text, int *len,
     char *pt;
     char *end, *bend, *brack;
     int icnt=0, imax=strlen(text)/2, val, temp;
-    uint8 *instrs = galloc(imax);
+    uint8 *instrs = malloc(imax);
 
     for ( pt = text; *pt ; ++pt ) {
 	npos = 0;
@@ -467,7 +467,7 @@ return( NULL );
     break;
     }
     *len = icnt;
-return( grealloc(instrs,icnt==0?1:icnt));	/* some versions of realloc abort on 0 */
+return( realloc(instrs,icnt==0?1:icnt));	/* some versions of realloc abort on 0 */
 }
 
 int instr_typify(struct instrdata *id) {
@@ -476,7 +476,7 @@ int instr_typify(struct instrdata *id) {
     uint8 *bts;
 
     if ( id->bts==NULL )
-	id->bts = galloc(len+1);
+	id->bts = malloc(len+1);
     bts = id->bts;
     for ( i=lh=0; i<len; ++i ) {
 	bts[i] = bt_instr;
@@ -521,7 +521,7 @@ char *__IVUnParseInstrs(InstrBase *iv) {
     char *ubuf, *pt;
     int i,l;
 
-    pt = ubuf = iv->offset = iv->scroll = galloc((iv->instrdata->instr_cnt*20+1));
+    pt = ubuf = iv->offset = iv->scroll = malloc((iv->instrdata->instr_cnt*20+1));
     for ( i=l=0; i<iv->instrdata->instr_cnt; ++i ) {
 	if ( iv->lpos == l )
 	    iv->scroll = pt;

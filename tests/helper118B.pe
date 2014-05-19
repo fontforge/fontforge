@@ -1,4 +1,3 @@
-#!/usr/local/bin/fontforge
 
 # tests whether the bounding boxes of all glyphs match.
 # This is designed to make sure that we get postscript references right

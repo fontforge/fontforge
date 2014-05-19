@@ -20,7 +20,7 @@ void MetricsViewCreate(void) {
     gwwv_post_notice("NYI","Metrics View  not yet implemented");
 }
 
-void PrintDlg(void) {
+void PrintFFDlg(void) {
     gwwv_post_notice("NYI","Print  not yet implemented");
 }
 

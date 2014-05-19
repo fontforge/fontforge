@@ -27,6 +27,17 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
+# Ignore files installed by gnulib-tool
+GITIGNOREFILES = \
+	.gitmodules \
+	INSTALL \
+	aclocal.m4 \
+	config/ \
+	gnulib/ \
+	lib/ \
+	libltdl/
+
+
 #--------------------------------------------------------------------------
 
 AM_CPPFLAGS =
@@ -36,6 +47,8 @@ BUILT_SOURCES =
 EXTRA_DIST =
 CLEANFILES =
 MOSTLYCLEANFILES =
+MAINTAINERCLEANFILES=config.h.in
+DISTCLEANFILES=config.h stamp-h1
 
 include_HEADERS =
 noinst_LTLIBRARIES =
@@ -46,95 +59,69 @@ include $(top_srcdir)/mk/layout.am
 
 #--------------------------------------------------------------------------
 
-SUBDIRS = inc libltdl Unicode gutils hotkeys
+SUBDIRS = inc lib libltdl Unicode gutils
+
+if LIBZMQ
+SUBDIRS += collab
+endif
+
+SUBDIRS += fontforge
 
 if GRAPHICAL_USER_INTERFACE
 SUBDIRS += gdraw
 endif GRAPHICAL_USER_INTERFACE
 
-SUBDIRS += plugins
-SUBDIRS += fontforge po htdocs pycontrib
-SUBDIRS += cidmap
-SUBDIRS += tests
-
-if PYTHON_EXTENSION
-SUBDIRS += pyhook
-endif PYTHON_EXTENSION
+SUBDIRS += fontforgeexe pyhook
 
 if MACINTOSH
-SUBDIRS += mackeys
+SUBDIRS += mackeys osx
 endif MACINTOSH
 
-if DESKTOP
+if XDG_DESKTOP
 SUBDIRS += desktop
-endif DESKTOP
+endif XDG_DESKTOP
 
-if FONTTOOLS
-SUBDIRS += fonttools
-endif FONTTOOLS
-
-nodist_pkgconfig_DATA = libfontforge.pc libfontforgeexe.pc
-
-EXTRA_DIST += LICENSE README-Mac.html README-MS.html README-unix	\
-	README-Unix.html Readme.VMS create-osx-app-bundle.sh Portfile
-
-uninstall-local:
-	(cd desktop; $(MAKE) $(AM_MAKEFLAGS) uninstall)
+SUBDIRS += \
+	contrib \
+	doc \
+	nodejs \
+	plugins \
+	po \
+	pycontrib \
+	share \
+	tests \
+	$(NULL)
 
 #--------------------------------------------------------------------------
 
-INDENT_DIRS = Unicode gutils gdraw fontforge pyhook tests fonttools
+nodist_pkgconfig_DATA = libfontforge.pc libfontforgeexe.pc
 
-INDENT_PROFILE = \
-	--k-and-r-style \
-	--line-length110 \
-	--indent-level4 \
-	--no-tabs \
-	--blank-lines-after-procedures \
-	--no-blank-lines-after-declarations \
-	--blank-before-sizeof \
-	--space-after-cast \
-	--space-after-for \
-	--space-after-if \
-	--space-after-while \
-	--space-special-semicolon \
-	--no-space-after-function-call-names \
-	--no-space-after-parentheses \
-	--dont-break-procedure-type \
-	--dont-break-function-decl-args \
-	--no-blank-lines-after-commas \
-	--break-after-boolean-operator \
-	--dont-line-up-parentheses \
-	--paren-indentation4 \
-	--braces-on-if-line \
-	--braces-on-func-def-line \
-	--braces-on-struct-decl-line \
-	--case-brace-indentation4 \
-	--declaration-indentation1 \
-	--cuddle-do-while \
-	--cuddle-else \
-	--honour-newlines \
-	--preprocessor-indentation1 \
-	--case-indentation0 \
-	--continue-at-parentheses \
-	--leave-preprocessor-space \
-	--dont-format-comments \
-	-T\ FILE \
-	-T\ AnchorPoint \
-	-T\ BDFFont \
-	-T\ MMSet \
-	-T\ SplineChar \
-	-T\ SplineFont
+EXTRA_DIST += \
+	m4/gnulib-cache.m4 \
+	bootstrap \
+	bootstrap.conf \
+	COPYING.gplv3 \
+	LICENSE \
+	doc/README-Mac.html \
+	doc/README-MS.html \
+	doc/README-unix	\
+	doc/README-Unix.html \
+	Packaging/FontForge-doc.spec \
+	Packaging/FontForge.spec \
+	Packaging/FontForge.static.spec \
+	$(NULL)
 
-write-indent-profiles:
-	@for dir in $(INDENT_DIRS); do \
-		rm -f "$(top_srcdir)/$${dir}/.indent.pro"; \
-		echo rm -f "$(top_srcdir)/$${dir}/.indent.pro"; \
-		for flag in $(value INDENT_PROFILE); do \
-			echo "" "$${flag}" >> "$(top_srcdir)/$${dir}/.indent.pro"; \
-			echo echo '""' "$${flag}" ">>" "$(top_srcdir)/$${dir}/.indent.pro"; \
-		done; \
-	done
+#--------------------------------------------------------------------------
+
+DISTCHECK_CONFIGURE_FLAGS = --enable-theme-2012 --enable-debug
+
+#	\
+#	--disable-native-scripting --disable-python-scripting	\
+#	--without-giflib --without-libjpeg --without-libpng	\
+#	--without-libtiff --without-libxml --without-libspiro	\
+#	--without-libuninameslist --without-libunicodenames	\
+#	--without-libzmq  --without-libreadline
+
 
 #--------------------------------------------------------------------------
 

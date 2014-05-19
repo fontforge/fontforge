@@ -33,6 +33,7 @@
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
+#include <locale.h>
 
 /*#define DEBUG 1*/
 
@@ -44,11 +45,10 @@ typedef struct quartic {
 /*  lists of certain common sizes. It doesn't seem to make much difference */
 /*  when allocating stuff, but does when freeing. If the extra complexity */
 /*  is bad then put:							  */
-/*	#define chunkalloc(size)	gcalloc(1,size)			  */
+/*	#define chunkalloc(size)	calloc(1,size)			  */
 /*	#define chunkfree(item,size)	free(item)			  */
 /*  into splinefont.h after (or instead of) the definition of chunkalloc()*/
 
-#ifndef chunkalloc
 #define ALLOC_CHUNK	100		/* Number of small chunks to malloc at a time */
 #ifndef FONTFORGE_CONFIG_USE_DOUBLE
 # define CHUNK_MAX	100		/* Maximum size (in chunk units) that we are prepared to allocate */
@@ -72,7 +72,6 @@ static int chunkdebug = 0;	/* When this is set we never free anything, insuring 
 #if ALLOC_CHUNK>1
 struct chunk { struct chunk *next; };
 struct chunk2 { struct chunk2 *next; int flag; };
-static struct chunk *chunklists[CHUNK_MAX] = { 0 };
 #endif
 
 #if defined(FLAG) && ALLOC_CHUNK>1
@@ -89,106 +88,25 @@ void chunktest(void) {
 }
 #endif
 
-#ifdef USE_OUR_MEMORY
-void *chunkalloc(int size) {
-# if ALLOC_CHUNK<=1
-return( gcalloc(1,size));
-# else
-    struct chunk *item;
-    int index;
-
-    if ( size&(CHUNK_UNIT-1) )
-	size = (size+CHUNK_UNIT-1)&~(CHUNK_UNIT-1);
-
-    if ( (size&(CHUNK_UNIT-1)) || size>=CHUNK_MAX*CHUNK_UNIT || size<=sizeof(struct chunk)) {
-	fprintf( stderr, "Attempt to allocate something of size %d\n", size );
-return( gcalloc(1,size));
-    }
-#ifdef FLAG
-    chunktest();
-#endif
-    index = (size+CHUNK_UNIT-1)/CHUNK_UNIT;
-    if ( chunklists[index]==NULL ) {
-	char *pt, *end;
-	pt = galloc(ALLOC_CHUNK*size);
-	chunklists[index] = (struct chunk *) pt;
-	end = pt+(ALLOC_CHUNK-1)*size;
-	while ( pt<end ) {
-	    ((struct chunk *) pt)->next = (struct chunk *) (pt + size);
-#ifdef FLAG
-	    ((struct chunk2 *) pt)->flag = FLAG;
-#endif
-	    pt += size;
-	}
-	((struct chunk *) pt)->next = NULL;
-#ifdef FLAG
-	((struct chunk2 *) pt)->flag = FLAG;
-#endif
-    }
-    item = chunklists[index];
-    chunklists[index] = item->next;
-    memset(item,'\0',size);
-return( item );
-# endif
-}
-
-void chunkfree(void *item,int size) {
-    int index = (size+CHUNK_UNIT-1)/CHUNK_UNIT;
-#ifdef CHUNKDEBUG
-    if ( chunkdebug )
-return;
-#endif
-# if ALLOC_CHUNK<=1
-    free(item);
-# else
-    if ( item==NULL )
-return;
-
-    if ( size&(CHUNK_UNIT-1) )
-	size = (size+CHUNK_UNIT-1)&~(CHUNK_UNIT-1);
-
-    if ( (size&(CHUNK_UNIT-1)) || size>=CHUNK_MAX*CHUNK_UNIT || size<=sizeof(struct chunk)) {
-	fprintf( stderr, "Attempt to free something of size %d\n", size );
-	free(item);
-    } else {
-#ifdef LOCAL_DEBUG
-	if ( (char *) (chunklists[index]) == (char *) item ||
-		( ((char *) (chunklists[index]))<(char *) item &&
-		  ((char *) (chunklists[index]))+size>(char *) item) ||
-		( ((char *) (chunklists[index]))>(char *) item &&
-		  ((char *) (chunklists[index]))<((char *) item)+size))
-	      IError( "Memory mixup. Chunk list is wrong!!!" );
-#endif
-	((struct chunk *) item)->next = chunklists[index];
-#  ifdef FLAG
-	if ( size>=sizeof(struct chunk2))
-	    ((struct chunk2 *) item)->flag = FLAG;
-#  endif
-	chunklists[index] = (struct chunk *) item;
-    }
-#  ifdef FLAG
-    chunktest();
-#  endif
-# endif
-}
-#endif
-#endif /* USE_OUR_MEMORY */
-
 char *strconcat(const char *str1,const char *str2) {
+    char *ret;
     int len1 = strlen(str1);
-    char *ret = galloc(len1+strlen(str2)+1);
-    strcpy(ret,str1);
-    strcpy(ret+len1,str2);
-return( ret );
+    if ( (ret=malloc(len1+strlen(str2)+1))!=NULL ) {
+	strcpy(ret,str1);
+	strcpy(ret+len1,str2);
+    }
+    return( ret );
 }
 
 char *strconcat3(const char *str1,const char *str2, const char *str3) {
+    char *ret;
     int len1 = strlen(str1), len2 = strlen(str2);
-    char *ret = galloc(len1+len2+strlen(str3)+1);
-    strcpy(ret,str1);
-    strcpy(ret+len1,str2);
-    strcpy(ret+len1+len2,str3);
-return( ret );
+    if ( (ret=malloc(len1+len2+strlen(str3)+1))!=NULL ) {
+	strcpy(ret,str1);
+	strcpy(ret+len1,str2);
+	strcpy(ret+len1+len2,str3);
+    }
+    return( ret );
 }
 
 void LineListFree(LineList *ll) {
@@ -218,13 +136,16 @@ void SplineFree(Spline *spline) {
 }
 
 SplinePoint *SplinePointCreate(real x, real y) {
-    SplinePoint *sp = chunkalloc(sizeof(SplinePoint));
-    sp->me.x = x; sp->me.y = y;
-    sp->nextcp = sp->prevcp = sp->me;
-    sp->nonextcp = sp->noprevcp = true;
-    sp->nextcpdef = sp->prevcpdef = false;
-    sp->ttfindex = sp->nextcpindex = 0xfffe;
-return( sp );
+    SplinePoint *sp;
+    if ( (sp=chunkalloc(sizeof(SplinePoint)))!=NULL ) {
+	sp->me.x = x; sp->me.y = y;
+	sp->nextcp = sp->prevcp = sp->me;
+	sp->nonextcp = sp->noprevcp = true;
+	sp->nextcpdef = sp->prevcpdef = false;
+	sp->ttfindex = sp->nextcpindex = 0xfffe;
+	sp->name = NULL;
+    }
+    return( sp );
 }
 
 Spline *SplineMake3(SplinePoint *from, SplinePoint *to) {
@@ -238,12 +159,13 @@ return( spline );
 
 void SplinePointFree(SplinePoint *sp) {
     chunkfree(sp->hintmask,sizeof(HintMask));
+	free(sp->name);
     chunkfree(sp,sizeof(SplinePoint));
 }
 
 void SplinePointMDFree(SplineChar *sc, SplinePoint *sp) {
     MinimumDistance *md, *prev, *next;
-    
+
     if ( sc!=NULL ) {
 	prev = NULL;
 	for ( md = sc->md; md!=NULL; md = next ) {
@@ -260,6 +182,7 @@ void SplinePointMDFree(SplineChar *sc, SplinePoint *sp) {
     }
 
     chunkfree(sp->hintmask,sizeof(HintMask));
+	free(sp->name);
     chunkfree(sp,sizeof(SplinePoint));
 }
 
@@ -269,8 +192,8 @@ void SplinePointsFree(SplinePointList *spl) {
 
     if ( spl==NULL )
 return;
-    nonext = spl->first->next==NULL;
     if ( spl->first!=NULL ) {
+	nonext = spl->first->next==NULL;
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
 	    next = spline->to->next;
@@ -284,46 +207,16 @@ return;
 }
 
 void SplineSetBeziersClear(SplinePointList *spl) {
-    Spline *first, *spline, *next;
-    int nonext;
 
-    if ( spl==NULL )
-return;
-    
-    if ( spl->first!=NULL ) {
-	nonext = spl->first->next==NULL;
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
-	    next = spline->to->next;
-	    SplinePointFree(spline->to);
-	    SplineFree(spline);
-	    if ( first==NULL ) first = spline;
-	}
-	if ( spl->last!=spl->first || nonext )
-	    SplinePointFree(spl->first);
-    }
+    if ( spl==NULL ) return;
+    SplinePointsFree(spl);
     spl->first = spl->last = NULL;
 }
 
 void SplinePointListFree(SplinePointList *spl) {
-    Spline *first, *spline, *next;
-    int nonext;
 
-    if ( spl==NULL )
-return;
-    
-    if ( spl->first!=NULL ) {
-	nonext = spl->first->next==NULL;
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
-	    next = spline->to->next;
-	    SplinePointFree(spline->to);
-	    SplineFree(spline);
-	    if ( first==NULL ) first = spline;
-	}
-	if ( spl->last!=spl->first || nonext )
-	    SplinePointFree(spl->first);
-    }
+    if ( spl==NULL ) return;
+    SplinePointsFree(spl);
     free(spl->spiros);
     free(spl->contour_name);
     chunkfree(spl,sizeof(SplinePointList));
@@ -362,12 +255,13 @@ void SplinePointListsMDFree(SplineChar *sc,SplinePointList *spl) {
     }
 }
 
-void SplinePointListsFree(SplinePointList *head) {
-    SplinePointList *spl, *next;
+void SplinePointListsFree(SplinePointList *spl) {
+    SplinePointList *next;
 
-    for ( spl=head; spl!=NULL; spl=next ) {
+    while ( spl!=NULL ) {
 	next = spl->next;
 	SplinePointListFree(spl);
+	spl = next;
     }
 }
 
@@ -407,7 +301,7 @@ return;
 RefChar *RefCharCreate(void) {
     RefChar *ref = chunkalloc(sizeof(RefChar));
     ref->layer_cnt = 1;
-    ref->layers = gcalloc(1,sizeof(struct reflayer));
+    ref->layers = calloc(1,sizeof(struct reflayer));
     ref->layers[0].fill_brush.opacity = ref->layers[0].stroke_pen.brush.opacity = 1.0;
     ref->layers[0].fill_brush.col = ref->layers[0].stroke_pen.brush.col = COLOR_INHERITED;
     ref->layers[0].stroke_pen.width = WIDTH_INHERITED;
@@ -430,7 +324,7 @@ void RefCharsFree(RefChar *ref) {
 
 /* Remove line segments which are just one point long */
 /* Merge colinear line segments */
-/* Merge two segments each of which involves a single pixel change in one dimension (cut corners) */ 
+/* Merge two segments each of which involves a single pixel change in one dimension (cut corners) */
 static void SimplifyLineList(LineList *prev) {
     LineList *next, *lines;
 
@@ -491,12 +385,6 @@ static void FigureSpline1(Spline1 *sp1,bigreal t0, bigreal t1, Spline1D *sp ) {
 	sp1->sp.c = s*(sp->c + t0*(2*sp->b + 3*sp->a*t0));
 	sp1->sp.b = s*s*(sp->b+3*sp->a*t0);
 	sp1->sp.a = s*s*s*sp->a;
-#if 0		/* Got invoked once on a perfectly good spline */
-	sp1->s1 = sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d;
-	if ( ((sp1->s1>.001 || sp1->s1<-.001) && !RealNear((bigreal) sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d,sp1->s1)) ||
-		!RealNear(sp1->sp.d,sp1->s0))
-	    IError( "Created spline does not work in FigureSpline1");
-#endif
     }
     sp1->c0 = sp1->sp.c/3 + sp1->sp.d;
     sp1->c1 = sp1->c0 + (sp1->sp.b+sp1->sp.c)/3;
@@ -1019,7 +907,7 @@ return;
     bounds->maxx = bounds->maxy = -1e10;
 
     SplineSetQuickBounds(sc->layers[layer].splines,bounds);
-    
+
     for ( ref = sc->layers[layer].refs; ref!=NULL; ref = ref->next ) {
 	SplineSetQuickBounds(ref->layers[0].splines,&temp);
 	if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 )
@@ -1135,7 +1023,7 @@ void SplineFontQuickConservativeBounds(SplineFont *sf,DBounds *b) {
     if ( b->maxy<-65536 ) b->maxy = 0;
 }
 
-void SplinePointCatagorize(SplinePoint *sp) {
+void SplinePointCategorize(SplinePoint *sp) {
     int oldpointtype = sp->pointtype;
 
     sp->pointtype = pt_corner;
@@ -1153,7 +1041,7 @@ void SplinePointCatagorize(SplinePoint *sp) {
     } else {
 	BasePoint ndir, ncdir, ncunit, pdir, pcdir, pcunit;
 	bigreal nlen, nclen, plen, pclen;
-	bigreal dot;
+	bigreal cross, bounds;
 
 	ncdir.x = sp->nextcp.x - sp->me.x; ncdir.y = sp->nextcp.y - sp->me.y;
 	pcdir.x = sp->prevcp.x - sp->me.x; pcdir.y = sp->prevcp.y - sp->me.y;
@@ -1174,20 +1062,24 @@ void SplinePointCatagorize(SplinePoint *sp) {
 	if ( nlen!=0 ) { ndir.x /= nlen; ndir.y /= nlen; }
 	if ( plen!=0 ) { pdir.x /= plen; pdir.y /= plen; }
 
-	/* find out which side has the shorter control vector. Dot that vector */
+	/* find out which side has the shorter control vector. Cross that vector */
 	/*  with the normal of the unit vector on the other side. If the */
 	/*  result is less than 1 em-unit then we've got colinear control points */
 	/*  (within the resolution of the integer grid) */
 	/* Not quite... they could point in the same direction */
+        if ( oldpointtype==pt_curve )
+            bounds = 4.0;
+        else
+            bounds = 1.0;
 	if ( nclen!=0 && pclen!=0 &&
-		((nclen>=pclen && (dot = pcdir.x*ncunit.y - pcdir.y*ncunit.x)<1.0 && dot>-1.0 ) ||
-		 (pclen>nclen && (dot = ncdir.x*pcunit.y - ncdir.y*pcunit.x)<1.0 && dot>-1.0 )) &&
+		((nclen>=pclen && (cross = pcdir.x*ncunit.y - pcdir.y*ncunit.x)<bounds && cross>-bounds ) ||
+		 (pclen>nclen && (cross = ncdir.x*pcunit.y - ncdir.y*pcunit.x)<bounds && cross>-bounds )) &&
 		 ncdir.x*pcdir.x + ncdir.y*pcdir.y < 0 )
 	    sp->pointtype = pt_curve;
-	/* Dot product of control point with unit vector normal to line in */
+	/* Cross product of control point with unit vector normal to line in */
 	/*  opposite direction should be less than an em-unit for a tangent */
-	else if (( nclen==0 && pclen!=0 && (dot = pcdir.x*ndir.y-pcdir.y*ndir.x)<1.0 && dot>-1.0 ) ||
-		( pclen==0 && nclen!=0 && (dot = ncdir.x*pdir.y-ncdir.y*pdir.x)<1.0 && dot>-1.0 ))
+	else if (( nclen==0 && pclen!=0 && (cross = pcdir.x*ndir.y-pcdir.y*ndir.x)<bounds && cross>-bounds ) ||
+		( pclen==0 && nclen!=0 && (cross = ncdir.x*pdir.y-ncdir.y*pdir.x)<bounds && cross>-bounds ))
 	    sp->pointtype = pt_tangent;
 
 	/* If a point started out hv, and could still be hv, them make it so */
@@ -1204,31 +1096,31 @@ void SplinePointCatagorize(SplinePoint *sp) {
 int SplinePointIsACorner(SplinePoint *sp) {
     enum pointtype old = sp->pointtype, new;
 
-    SplinePointCatagorize(sp);
+    SplinePointCategorize(sp);
     new = sp->pointtype;
     sp->pointtype = old;
 return( new==pt_corner );
 }
 
-void SPLCatagorizePoints(SplinePointList *spl) {
+void SPLCategorizePoints(SplinePointList *spl) {
     Spline *spline, *first, *last=NULL;
 
     for ( ; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    SplinePointCatagorize(spline->from);
+	    SplinePointCategorize(spline->from);
 	    last = spline;
 	    if ( first==NULL ) first = spline;
 	}
 	if ( spline==NULL && last!=NULL )
-	    SplinePointCatagorize(last->to);
+	    SplinePointCategorize(last->to);
     }
 }
 
-void SCCatagorizePoints(SplineChar *sc) {
+void SCCategorizePoints(SplineChar *sc) {
     int i;
     for ( i=ly_fore; i<sc->layer_cnt; ++i )
-	SPLCatagorizePoints(sc->layers[i].splines);
+	SPLCategorizePoints(sc->layers[i].splines);
 }
 
 static int CharsNotInEncoding(FontDict *fd) {
@@ -1288,6 +1180,9 @@ SplinePointList *SplinePointListCopy1(const SplinePointList *spl) {
 	    cpt->hintmask = chunkalloc(sizeof(HintMask));
 	    memcpy(cpt->hintmask,pt->hintmask,sizeof(HintMask));
 	}
+	if ( pt->name!=NULL ) {
+		cpt->name = copy(pt->name);
+	}
 	cpt->next = cpt->prev = NULL;
 	if ( cur->first==NULL )
 	    cur->first = cur->last = cpt;
@@ -1320,7 +1215,7 @@ SplinePointList *SplinePointListCopy1(const SplinePointList *spl) {
     }
     if ( spl->spiro_cnt!=0 ) {
 	cur->spiro_cnt = cur->spiro_max = spl->spiro_cnt;
-	cur->spiros = galloc(cur->spiro_cnt*sizeof(spiro_cp));
+	cur->spiros = malloc(cur->spiro_cnt*sizeof(spiro_cp));
 	memcpy(cur->spiros,spl->spiros,cur->spiro_cnt*sizeof(spiro_cp));
     }
 return( cur );
@@ -1367,6 +1262,7 @@ static SplinePointList *SplinePointListCopySelected1(SplinePointList *spl) {
 	    cpt = chunkalloc(sizeof(SplinePoint));
 	    *cpt = *start;
 	    cpt->hintmask = NULL;
+		cpt->name = NULL;
 	    cpt->next = cpt->prev = NULL;
 	    if ( cur->first==NULL )
 		cur->first = cur->last = cpt;
@@ -1409,7 +1305,7 @@ static SplinePointList *SplinePointListCopySpiroSelected1(SplinePointList *spl) 
 	    if ( !(SPIRO_SELECTED(&list[i])) )
 	break;
 	if ( i!=0 ) {
-	    freeme = galloc(spl->spiro_cnt*sizeof(spiro_cp));
+	    freeme = malloc(spl->spiro_cnt*sizeof(spiro_cp));
 	    memcpy(freeme,list+i,(spl->spiro_cnt-1-i)*sizeof(spiro_cp));
 	    memcpy(freeme+(spl->spiro_cnt-1-i),list,i*sizeof(spiro_cp));
 	    /* And copy the list terminator */
@@ -1423,7 +1319,7 @@ static SplinePointList *SplinePointListCopySpiroSelected1(SplinePointList *spl) 
 	if ( i==spl->spiro_cnt-1 )
     break;
 	for ( j=i; j<spl->spiro_cnt-1 && SPIRO_SELECTED(&list[j]); ++j );
-	temp = galloc((j-i+2)*sizeof(spiro_cp));
+	temp = malloc((j-i+2)*sizeof(spiro_cp));
 	memcpy(temp,list+i,(j-i)*sizeof(spiro_cp));
 	temp[0].ty = SPIRO_OPEN_CONTOUR;
 	memset(temp+(j-i),0,sizeof(spiro_cp));
@@ -1525,7 +1421,7 @@ static SplinePointList *SplinePointListSplitSpiros(SplineChar *sc,SplinePointLis
 	    if ( !(SPIRO_SELECTED(&list[i])) )
 	break;
 	if ( i!=0 ) {
-	    freeme = galloc(spl->spiro_cnt*sizeof(spiro_cp));
+	    freeme = malloc(spl->spiro_cnt*sizeof(spiro_cp));
 	    memcpy(freeme,list+i,(spl->spiro_cnt-1-i)*sizeof(spiro_cp));
 	    memcpy(freeme+(spl->spiro_cnt-1-i),list,i*sizeof(spiro_cp));
 	    /* And copy the list terminator */
@@ -1538,7 +1434,7 @@ static SplinePointList *SplinePointListSplitSpiros(SplineChar *sc,SplinePointLis
 	/* Retain unselected things */
 	for ( ; i<spl->spiro_cnt-1 && !SPIRO_SELECTED(&list[i]); ++i );
 	if ( i!=start ) {
-	    temp = galloc((i-start+2)*sizeof(spiro_cp));
+	    temp = malloc((i-start+2)*sizeof(spiro_cp));
 	    memcpy(temp,list+start,(i-start)*sizeof(spiro_cp));
 	    temp[0].ty = SPIRO_OPEN_CONTOUR;
 	    memset(temp+(i-start),0,sizeof(spiro_cp));
@@ -1729,25 +1625,74 @@ void ApTransform(AnchorPoint *ap, real transform[6]) {
     BpTransform(&ap->me,&ap->me,transform);
 }
 
-static void TransformPoint(SplinePoint *sp, real transform[6]) {
-
-    BpTransform(&sp->me,&sp->me,transform);
-    if ( !sp->nonextcp ) {
-	BpTransform(&sp->nextcp,&sp->nextcp,transform);
-    } else
-	sp->nextcp = sp->me;
-    if ( !sp->noprevcp ) {
-	BpTransform(&sp->prevcp,&sp->prevcp,transform);
-    } else
-	sp->prevcp = sp->me;
-    if ( sp->pointtype == pt_hvcurve ) {
-	if ( 
-		((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x && sp->nextcp.y!=sp->me.y) ||
-		 (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y && sp->nextcp.x!=sp->me.x)))
-	    /* Do Nothing */;
-	else
-	    sp->pointtype = pt_curve;
+static void TransformPointExtended(SplinePoint *sp, real transform[6], enum transformPointMask tpmask )
+{
+    /**
+     * If we are to transform selected BCP instead of their base splinepoint
+     * then lets do that.
+     */
+    if( tpmask & tpmask_operateOnSelectedBCP
+	&& (sp->nextcpselected || sp->prevcpselected ))
+    {
+	if( sp->nextcpselected )
+	{
+	    int order2 = sp->next ? sp->next->order2 : 0;
+	    BpTransform(&sp->nextcp,&sp->nextcp,transform);
+	    SPTouchControl( sp, &sp->nextcp, order2 );
+	}
+	else if( sp->prevcpselected )
+	{
+	    int order2 = sp->next ? sp->next->order2 : 0;
+	    BpTransform(&sp->prevcp,&sp->prevcp,transform);
+	    SPTouchControl( sp, &sp->prevcp, order2 );
+	}
     }
+    else
+    {
+	/**
+	 * Transform the base splinepoints.
+	 */
+	BpTransform(&sp->me,&sp->me,transform);
+
+	if ( !sp->nonextcp )
+	{
+	    BpTransform(&sp->nextcp,&sp->nextcp,transform);
+	}
+	else
+	{
+	    sp->nextcp = sp->me;
+	}
+
+	if ( !sp->noprevcp )
+	{
+	    BpTransform(&sp->prevcp,&sp->prevcp,transform);
+	}
+	else
+	{
+	    sp->prevcp = sp->me;
+	}
+    }
+
+
+
+    if ( sp->pointtype == pt_hvcurve )
+    {
+	if(
+	    ((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x && sp->nextcp.y!=sp->me.y) ||
+	     (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y && sp->nextcp.x!=sp->me.x)))
+	{
+	    /* Do Nothing */;
+	}
+	else
+	{
+	    sp->pointtype = pt_curve;
+	}
+    }
+}
+
+static void TransformPoint(SplinePoint *sp, real transform[6])
+{
+    TransformPointExtended( sp, transform, 0 );
 }
 
 static void TransformSpiro(spiro_cp *cp, real transform[6]) {
@@ -1800,8 +1745,9 @@ static void TransformPTsInterpolateCPs(BasePoint *fromorig,Spline *spline,
 	spline->to->me = totrans;
 }
 
-SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6],
-	enum transformPointType tpt ) {
+
+SplinePointList *SplinePointListTransformExtended(SplinePointList *base, real transform[6],
+						  enum transformPointType tpt, enum transformPointMask tpmask ) {
     Spline *spline, *first;
     SplinePointList *spl;
     SplinePoint *spt, *pfirst;
@@ -1813,6 +1759,7 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 	allsel = true; anysel=false;
 	if ( tpt==tpt_OnlySelectedInterpCPs && spl->first->next!=NULL && !spl->first->next->order2 ) {
 	    lastpointorig = firstpointorig = spl->first->me;
+	    printf("SplinePointListTransformExtended() spl->first->selected %d\n", spl->first->selected );
 	    if ( spl->first->selected ) {
 		anysel = true;
 		BpTransform(&spl->first->me,&spl->first->me,transform);
@@ -1822,15 +1769,20 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 		if ( first==NULL ) first = spline;
 		orig = spline->to->me;
 		if ( spline->from->selected || spline->to->selected )
-		    TransformPTsInterpolateCPs(&lastpointorig,spline,spl->first==spline->to?&firstpointorig:&spline->to->me,transform);
+		{
+		    TransformPTsInterpolateCPs( &lastpointorig, spline,
+						spl->first==spline->to? &firstpointorig : &spline->to->me,
+						transform );
+		}
 		lastpointorig = orig;
 		if ( spline->to->selected ) anysel = true; else allsel = false;
 	    }
+	    
 	} else {
 	    for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to ) {
 		if ( pfirst==NULL ) pfirst = spt;
 		if ( tpt==tpt_AllPoints || spt->selected ) {
-		    TransformPoint(spt,transform);
+		    TransformPointExtended(spt,transform,tpmask);
 		    if ( tpt!=tpt_AllPoints ) {
 			if ( spt->next!=NULL && spt->next->order2 && !spt->next->to->selected && spt->next->to->ttfindex==0xffff ) {
 			    SplinePoint *to = spt->next->to;
@@ -1869,22 +1821,27 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 	/* Figuring out where the edges of the selection are is difficult */
 	/*  so let's just tweak all points, it shouldn't matter */
 	/* It does matter. Let's tweak all default points */
-	if ( tpt!=tpt_AllPoints && !allsel && spl->first->next!=NULL && !spl->first->next->order2 ) {
-	    pfirst = NULL;
-	    for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to ) {
-		if ( pfirst==NULL ) pfirst = spt;
-		if ( spt->selected && spt->prev!=NULL && !spt->prev->from->selected &&
-			spt->prev->from->pointtype == pt_tangent )
-		    SplineCharTangentPrevCP(spt->prev->from);
-		if ( spt->selected && spt->next!=NULL && !spt->next->to->selected &&
-			spt->next->to->pointtype == pt_tangent )
-		    SplineCharTangentNextCP(spt->next->to);
-		if ( spt->prev!=NULL && spt->prevcpdef && tpt==tpt_OnlySelected )
-		    SplineCharDefaultPrevCP(spt);
-		if ( spt->next==NULL )
-	    break;
-		if ( spt->nextcpdef && tpt==tpt_OnlySelected )
-		    SplineCharDefaultNextCP(spt);
+	if( !(tpmask & tpmask_dontFixControlPoints))
+	{
+	    if ( tpt!=tpt_AllPoints && !allsel && spl->first->next!=NULL && !spl->first->next->order2 )
+	    {
+		pfirst = NULL;
+		for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to )
+		{
+		    if ( pfirst==NULL ) pfirst = spt;
+		    if ( spt->selected && spt->prev!=NULL && !spt->prev->from->selected &&
+			 spt->prev->from->pointtype == pt_tangent )
+			SplineCharTangentPrevCP(spt->prev->from);
+		    if ( spt->selected && spt->next!=NULL && !spt->next->to->selected &&
+			 spt->next->to->pointtype == pt_tangent )
+			SplineCharTangentNextCP(spt->next->to);
+		    if ( spt->prev!=NULL && spt->prevcpdef && tpt==tpt_OnlySelected )
+			SplineCharDefaultPrevCP(spt);
+		    if ( spt->next==NULL )
+			break;
+		    if ( spt->nextcpdef && tpt==tpt_OnlySelected )
+			SplineCharDefaultNextCP(spt);
+		}
 	    }
 	}
 	first = NULL;
@@ -1896,12 +1853,19 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 return( base );
 }
 
+SplinePointList *SplinePointListTransform( SplinePointList *base, real transform[6],
+					   enum transformPointType tpt )
+{
+    enum transformPointMask tpmask = 0;
+    return SplinePointListTransformExtended( base, transform, tpt, tpmask );
+}
+
 SplinePointList *SplinePointListSpiroTransform(SplinePointList *base, real transform[6], int allpoints ) {
     SplinePointList *spl;
     int allsel, anysel;
     int i;
 
-    
+
     if ( allpoints )
 return( SplinePointListTransform(base,transform,tpt_AllPoints));
 
@@ -2201,11 +2165,11 @@ return;
     if ( sf->multilayer ) {
 	int lbase = topref->layer_cnt;
 	if ( topref->layer_cnt==0 ) {
-	    topref->layers = gcalloc(rsc->layer_cnt-1,sizeof(struct reflayer));
+	    topref->layers = calloc(rsc->layer_cnt-1,sizeof(struct reflayer));
 	    topref->layer_cnt = rsc->layer_cnt-1;
 	} else {
 	    topref->layer_cnt += rsc->layer_cnt-1;
-	    topref->layers = grealloc(topref->layers,topref->layer_cnt*sizeof(struct reflayer));
+	    topref->layers = realloc(topref->layers,topref->layer_cnt*sizeof(struct reflayer));
 	    memset(topref->layers+lbase,0,(rsc->layer_cnt-1)*sizeof(struct reflayer));
 	}
 	for ( i=ly_fore; i<rsc->layer_cnt; ++i ) {
@@ -2219,7 +2183,7 @@ return;
 	}
     } else {
 	if ( topref->layer_cnt==0 ) {
-	    topref->layers = gcalloc(1,sizeof(struct reflayer));
+	    topref->layers = calloc(1,sizeof(struct reflayer));
 	    topref->layer_cnt = 1;
 	}
 	new = SplinePointListTransform(SplinePointListCopy(rsc->layers[layer].splines),transform,tpt_AllPoints);
@@ -2238,7 +2202,7 @@ static char *copyparse(char *str) {
     if ( str==NULL )
 return( str );
 
-    rpt=ret=galloc(strlen(str)+1);
+    rpt=ret=malloc(strlen(str)+1);
     while ( *str ) {
 	if ( *str=='\\' ) {
 	    ++str;
@@ -2283,7 +2247,7 @@ char *XUIDFromFD(int xuid[20]) {
     for ( i=19; i>=0 && xuid[i]==0; --i );
     if ( i>=0 ) {
 	int j; char *pt;
-	ret = galloc(2+20*(i+1));
+	ret = malloc(2+20*(i+1));
 	pt = ret;
 	*pt++ = '[';
 	for ( j=0; j<=i; ++j ) {
@@ -2298,14 +2262,16 @@ return( ret );
 static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
     int em;
 
-    sf->fontname = utf8_verify_copy(fd->cidfontname?fd->cidfontname:fd->fontname);
+    if ( fd->cidfontname || fd->fontname ) sf->fontname = utf8_verify_copy(fd->cidfontname?fd->cidfontname:fd->fontname);
     sf->display_size = -default_fv_font_size;
     sf->display_antialias = default_fv_antialias;
     if ( fd->fontinfo!=NULL ) {
 	if ( sf->fontname==NULL && fd->fontinfo->fullname!=NULL ) {
 	    sf->fontname = EnforcePostScriptName(fd->fontinfo->fullname);
 	}
-	if ( sf->fontname==NULL ) sf->fontname = EnforcePostScriptName(fd->fontinfo->familyname);
+	if ( sf->fontname==NULL && fd->fontinfo->familyname!=NULL ){
+		sf->fontname = EnforcePostScriptName(fd->fontinfo->familyname);
+	}
 	sf->fullname = copyparse(fd->fontinfo->fullname);
 	sf->familyname = copyparse(fd->fontinfo->familyname);
 	sf->weight = copyparse(fd->fontinfo->weight);
@@ -2454,7 +2420,7 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
 	sf->map = map = EncMapNew(256+CharsNotInEncoding(fd),sf->glyphcnt,fd->encoding_name);
     } else
 	map = sf->map;
-    sf->glyphs = gcalloc(map->backmax,sizeof(SplineChar *));
+    sf->glyphs = calloc(map->backmax,sizeof(SplineChar *));
     if ( istype3 )	/* We read a type3 */
 	sf->multilayer = true;
     if ( istype3 )
@@ -2573,6 +2539,7 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *
 
 static SplineFont *SplineFontFromMMType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
     char *pt, *end, *origweight;
+    char oldloc[25];
     MMSet *mm;
     int ipos, apos, ppos, item, i;
     real blends[12];	/* At most twelve points/axis in a blenddesignmap */
@@ -2589,6 +2556,9 @@ return( NULL );
     mm = chunkalloc(sizeof(MMSet));
 
     pt = fd->weightvector;
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24]=0;
+    setlocale(LC_NUMERIC,"C");
     while ( *pt==' ' || *pt=='[' ) ++pt;
     while ( *pt!=']' && *pt!='\0' ) {
 	pscontext->blend_values[ pscontext->instance_count ] =
@@ -2604,8 +2574,8 @@ return( NULL );
     }
 
     mm->instance_count = pscontext->instance_count;
-    mm->instances = galloc(pscontext->instance_count*sizeof(SplineFont *));
-    mm->defweights = galloc(mm->instance_count*sizeof(real));
+    mm->instances = malloc(pscontext->instance_count*sizeof(SplineFont *));
+    mm->defweights = malloc(mm->instance_count*sizeof(real));
     memcpy(mm->defweights,pscontext->blend_values,mm->instance_count*sizeof(real));
     mm->normal = sf;
     _SplineFontFromType1(mm->normal,fd,pscontext);
@@ -2633,7 +2603,7 @@ return( NULL );
 	ff_post_error(_("Bad Multiple Master Font"),_("This multiple master font has %1$d instance fonts, but it needs at least %2$d master fonts for %3$d axes. FontForge will not be able to edit this correctly"),mm->instance_count,1<<mm->axis_count,mm->axis_count);
     else if ( mm->instance_count > (1<<mm->axis_count) )
 	ff_post_error(_("Bad Multiple Master Font"),_("This multiple master font has %1$d instance fonts, but FontForge can only handle %2$d master fonts for %3$d axes. FontForge will not be able to edit this correctly"),mm->instance_count,1<<mm->axis_count,mm->axis_count);
-    mm->positions = gcalloc(mm->axis_count*mm->instance_count,sizeof(real));
+    mm->positions = calloc(mm->axis_count*mm->instance_count,sizeof(real));
     pt = fd->fontinfo->blenddesignpositions;
     while ( *pt==' ' ) ++pt;
     if ( *pt=='[' ) ++pt;
@@ -2664,8 +2634,8 @@ return( NULL );
 	} else
 	    ++pt;
     }
-    
-    mm->axismaps = gcalloc(mm->axis_count,sizeof(struct axismap));
+
+    mm->axismaps = calloc(mm->axis_count,sizeof(struct axismap));
     pt = fd->fontinfo->blenddesignmap;
     while ( *pt==' ' ) ++pt;
     if ( *pt=='[' ) ++pt;
@@ -2705,8 +2675,8 @@ return( NULL );
 	    if ( ppos<2 )
 		LogError( _("Bad few values in /BlendDesignMap for axis %s.\n"), mm->axes[apos] );
 	    mm->axismaps[apos].points = ppos;
-	    mm->axismaps[apos].blends = galloc(ppos*sizeof(real));
-	    mm->axismaps[apos].designs = galloc(ppos*sizeof(real));
+	    mm->axismaps[apos].blends = malloc(ppos*sizeof(real));
+	    mm->axismaps[apos].designs = malloc(ppos*sizeof(real));
 	    memcpy(mm->axismaps[apos].blends,blends,ppos*sizeof(real));
 	    memcpy(mm->axismaps[apos].designs,designs,ppos*sizeof(real));
 	    ++apos;
@@ -2745,6 +2715,7 @@ return( NULL );
 		}
 	    }
 	}
+	setlocale(LC_NUMERIC,oldloc);
 	fd->private->private = PSDictCopy(sf->private);
 	if ( fd->blendprivate!=NULL ) {
 	    static char *arrnames[] = { "BlueValues", "OtherBlues", "FamilyBlues", "FamilyOtherBlues", "StdHW", "StdVW", "StemSnapH", "StemSnapV", NULL };
@@ -2832,7 +2803,7 @@ return( NULL );
     encmap = EncMap1to1(fd->cidcnt);
 
     sf->subfontcnt = fd->fdcnt;
-    sf->subfonts = galloc((sf->subfontcnt+1)*sizeof(SplineFont *));
+    sf->subfonts = malloc((sf->subfontcnt+1)*sizeof(SplineFont *));
     for ( i=0; i<fd->fdcnt; ++i ) {
 	if ( fd->fontmatrix[0]!=0 ) {
 	    MatMultiply(fd->fontmatrix,fd->fds[i]->fontmatrix,fd->fds[i]->fontmatrix);
@@ -2850,7 +2821,7 @@ return( NULL );
 
     map = FindCidMap(sf->cidregistry,sf->ordering,sf->supplement,sf);
 
-    chars = gcalloc(fd->cidcnt,sizeof(SplineChar *));
+    chars = calloc(fd->cidcnt,sizeof(SplineChar *));
     for ( i=0; i<fd->cidcnt; ++i ) if ( fd->cidlens[i]>0 ) {
 	j = fd->cidfds[i];		/* We get font indexes of 255 for non-existant chars */
 	uni = CID2NameUni(map,i,buffer,sizeof(buffer));
@@ -2870,7 +2841,7 @@ return( NULL );
 	ff_progress_next();
     }
     for ( i=0; i<fd->fdcnt; ++i )
-	sf->subfonts[i]->glyphs = gcalloc(sf->subfonts[i]->glyphcnt,sizeof(SplineChar *));
+	sf->subfonts[i]->glyphs = calloc(sf->subfonts[i]->glyphcnt,sizeof(SplineChar *));
     for ( i=0; i<fd->cidcnt; ++i ) if ( chars[i]!=NULL ) {
 	j = fd->cidfds[i];
 	if ( j<sf->subfontcnt ) {
@@ -2989,9 +2960,9 @@ return;
 	    for ( subref=rsc->layers[i].refs; subref!=NULL; subref=subref->next )
 		cnt += subref->layer_cnt;
 	}
-    
+
 	rf->layer_cnt = cnt;
-	rf->layers = gcalloc(cnt,sizeof(struct reflayer));
+	rf->layers = calloc(cnt,sizeof(struct reflayer));
 	cnt = 0;
 	for ( i=ly_fore; i<rsc->layer_cnt; ++i ) {
 	    if ( rsc->layers[i].splines!=NULL || rsc->layers[i].images!=NULL ) {
@@ -3039,7 +3010,7 @@ return;
 	    SplinePointListsFree(rf->layers[0].splines);
 	    rf->layers[0].splines = NULL;
 	}
-	rf->layers = gcalloc(1,sizeof(struct reflayer));
+	rf->layers = calloc(1,sizeof(struct reflayer));
 	rf->layer_cnt = 1;
 	rf->layers[0].dofill = true;
 	new = SplinePointListTransform(SplinePointListCopy(rf->sc->layers[layer].splines),rf->transform,tpt_AllPoints);
@@ -3092,7 +3063,7 @@ static void _SFReinstanciateRefs(SplineFont *sf) {
 	++cnt;
     }
 }
-	    
+
 void SFReinstanciateRefs(SplineFont *sf) {
     int i;
 
@@ -3168,7 +3139,7 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf,int layer) {
 
     if ( sc->parent->multilayer ) {
 	Layer *old = sc->layers;
-	sc->layers = grealloc(sc->layers,(sc->layer_cnt+rf->layer_cnt)*sizeof(Layer));
+	sc->layers = realloc(sc->layers,(sc->layer_cnt+rf->layer_cnt)*sizeof(Layer));
 	for ( rlayer = 0; rlayer<rf->layer_cnt; ++rlayer ) {
 	    LayerDefault(&sc->layers[sc->layer_cnt+rlayer]);
 	    sc->layers[sc->layer_cnt+rlayer].splines = rf->layers[rlayer].splines;
@@ -3317,153 +3288,6 @@ return( false );
 return( true );
 }
 
-#if 0
-/* These methods purport to solve all quartics. But they don't solve mine */
-/*  so I may have miscopied or something, but I'll give up on algebraic solns*/
-static int QuarticAlternate(Quartic *q,bigreal ts[4],bigreal offset) {
-    Spline1D sp;
-    bigreal zs[3], h, j, temp;
-    int i;
-
-    sp.a = 1; sp.b = 2*q->c; sp.c = q->c*q->c-4*q->e;
-     sp.d = q->d*q->d;
-    if ( !_CubicSolve(&sp,0,zs))
-return(-1);
-    for ( i=0; i<3; ++i )
-	if ( zs[i]>0 )
-    break;
-    if ( i>=3 )
-return( -1 );
-    h = sqrt(zs[i]);
-    j = (q->c+zs[i]-q->d/h)/2;
-
-    /* Now the roots of q are the roots of y^2+hy+j and y^2-hy+(q->e)/j */
-    i = 0;
-    temp = h*h-4*j;
-    if ( temp>=0 ) {
-	temp = sqrt(temp);
-	ts[i++] = (-h+temp)/2 - offset;
-	ts[i++] = (-h-temp)/2 - offset;
-    }
-    temp = h*h-4*q->e/j;
-    if ( temp>=0 ) {
-	temp = sqrt(temp);
-	ts[i++] = (h+temp)/2 - offset;
-	ts[i++] = (h-temp)/2 - offset;
-    }
-return( i );
-}
-
-static int _QuarticSolve(Quartic *q,bigreal ts[4]) {
-    Quartic work;
-    bigreal zs[3], pq[2], r;
-    bigreal f,offset;
-    Spline1D sp;
-    int i,j;
-
-    ts[0] = ts[1] = ts[2] = ts[3] = -1;
-    if ( RealNear(q->a,0) ) {
-	/* I got a quadratic here once so this can happen ... */
-	i = 0;
-	if ( RealNear(q->b,0)) {
-	    if ( RealNear(q->c,0)) {
-		if ( !RealNear(q->d,0))
-		    ts[i++] = -q->e/q->d;
-	    } else {
-		f = q->d*q->d - 4*q->c*q->e;
-		if ( f>=0 ) {
-		    f=sqrt(f);
-		    ts[i++] = (-q->d + f)/(2*q->c);
-		    ts[i++] = (-q->d - f)/(2*q->c);
-		}
-	    }
-	} else {
-	    sp.a = q->b; sp.b = q->c; sp.c = q->d; sp.d = q->e;
-	    ts[3] = -1;
-	    if ( !CubicSolve(&sp,0,ts))
-return( -1 );
-	    for ( i=0; i<3 && ts[i]!=-1; ++i );
-	}
-    } else if ( RealNear(q->e,0)) {
-	sp.a = q->a; sp.b = q->b; sp.c = q->c; sp.d = q->d;
-	CubicSolve(&sp,0,ts);
-	for ( i=0; i<3 && ts[i]!=-1; ++i );
-	ts[i++] = 0;
-    } else {
-	/* http://mathforum.org/dr.math/faq/faq.cubic.equations.html */
-	/* divide by q->a, substitute t=s - q->b/4 */
-	offset = q->b/(4*q->a);
-
-	work.a = 1;
-	work.b = 0;
-	work.c = (q->c-3*q->b*q->b/(8*q->a))/q->a;
-	work.d = (q->b*q->b*q->b/(8*q->a*q->a) - q->b*q->c/(2*q->a) + q->d)/q->a;
-	work.e = (-3*q->b*q->b*q->b*q->b/(256*q->a*q->a*q->a) + (q->b*q->b*q->c)/(16*q->a*q->a) -
-		q->b*q->d/(4*q->a) + q->e)/q->a;
-
-	if ( RealNear(work.e,0)) {
-	    sp.a = work.a; sp.b = work.b; sp.c = work.c; sp.d = work.d;
-	    CubicSolve(&sp,0,ts);
-	    for ( i=0; i<3 && ts[i]!=-1; ++i );
-	    ts[i++] = 0;
-	    for ( j=0; j<i; ++j )
-		ts[j] -= offset;
-	} else if ( RealNear(work.d,0)) {
-	    /* now we have a quadratic in s^2 */
-	    bigreal b24ac = work.c*work.c - 4*work.e, t1, t2;
-	    if ( b24ac<0 && b24ac>-.0001 ) b24ac = 0;
-	    if ( b24ac < 0 )	/* All roots imaginary */
-return( -1 );
-	    b24ac = sqrt(b24ac);
-	    t1 = (-work.c + b24ac)/2;
-	    t2 = (-work.c - b24ac)/2;
-	    i = 0;
-	    if ( t1>0 ) {
-		ts[0] = sqrt(t1);
-		ts[1] = -ts[0];
-		i=2;
-	    } else if ( t1>-.0001 )
-		ts[i++] = 0;
-	    if ( t2>0 ) {
-		ts[i++] = sqrt(t2);
-		ts[i] = -ts[i-1];
-		++i;
-	    } else if ( t2>-.0001 )
-		ts[i++] = 0;
-	    for ( j=0; j<i ; ++j )
-		ts[j] -= offset;
-	    if ( i==0 )
-return( -1 );
-	} else {
-	    sp.a = 1;
-	    sp.b = work.c/2;
-	    sp.c = (work.c*work.c-4*work.e)/16;
-	    sp.d = work.d*work.d/64;
-	    if ( !_CubicSolve(&sp,0,zs) )
-return( QuarticAlternate(&work,ts,offset));
-
-	    j = 0;
-	    for ( i=0; zs[i]!=-999999; ++i )
-		if ( zs[i]>0 ) {
-		    pq[j++] = zs[i];
-		    if ( j==2 )
-	    break;
-		}
-	    if ( j!=2 )
-return( QuarticAlternate(&work,ts,offset));
-	    pq[0] = sqrt(pq[0]);
-	    pq[1] = sqrt(pq[1]);
-	    r = -work.d/(8 * pq[0] *pq[1]);
-	    ts[0] = pq[0]+pq[1]+r - offset;
-	    ts[1] = pq[0]-pq[1]-r - offset;
-	    ts[2] = -pq[0]+pq[1]-r - offset;
-	    ts[3] = -pq[0]-pq[1]+r - offset;
-	    i = 4;
-	}
-    }
-return( i );
-}
-#else
 static int _QuarticSolve(Quartic *q,extended ts[4]) {
     extended extrema[5];
     Spline1D sp;
@@ -3538,7 +3362,7 @@ return( _CubicSolve(&sp,0,ts+1)+1);
 	    ts[zcnt++] = topt;
     continue;
 	}
-	forever {
+	for (;;) {
 	    t = (topt+bottomt)/2;
 	    if ( t==topt || t==bottomt ) {
 		ts[zcnt++] = t;
@@ -3562,33 +3386,6 @@ return( _CubicSolve(&sp,0,ts+1)+1);
 	ts[i] = -999999;
 return( zcnt );
 }
-#endif
-
-#if 0
-static int QuarticSolve(Quartic *q,extended ts[4]) {
-    int i,j,k;
-
-    if ( _QuarticSolve(q,ts)==-1 )
-return( -1 );
-
-    for ( i=0; i<4 && ts[i]!=-999999; ++i ) {
-	if ( ts[i]>-.0001 && ts[i]<0 ) ts[i] = 0;
-	if ( ts[i]>1.0 && ts[i]<1.0001 ) ts[i] = 1;
-	if ( ts[i]>1.0 || ts[i]<0 ) ts[i] = -999999;
-    }
-    for ( i=3; i>=0 && ts[i]==-999999; --i );
-    if ( i==-1 )
-return( -1 );
-    for ( j=i ; j>=0 ; --j ) {
-	if ( ts[j]<0 ) {
-	    for ( k=j+1; k<=i; ++k )
-		ts[k-1] = ts[k];
-	    ts[i--] = -999999;
-	}
-    }
-return(i+1);
-}
-#endif
 
 extended SplineSolve(const Spline1D *sp, real tmin, real tmax, extended sought) {
     /* We want to find t so that spline(t) = sought */
@@ -3708,8 +3505,8 @@ return(tmin);
 return(tmax);
     if (( low<0 && high>0 ) ||
 	    ( low>0 && high<0 )) {
-	
-	forever {
+
+	for (;;) {
 	    t = (tmax+tmin)/2;
 	    if ( t==tmax || t==tmin )
 return( t );
@@ -4167,26 +3964,6 @@ return( false );			/* Effectively parallel */
 return( true );
 }
 
-#if 0
-static int CheckEndpoint(BasePoint *end,Spline *s,int te,BasePoint *pts,
-	real *tarray,real *ts,int soln) {
-    bigreal t;
-    int i;
-
-    for ( i=0; i<soln; ++i )
-	if ( end->x==pts[i].x && end->y==pts[i].y )
-return( soln );
-
-    t = SplineNearPoint(s,end,.01);
-    if ( t<=0 || t>=1 )		/* If both splines are at end points then it's a join not an intersection */
-return( soln );
-    tarray[soln] = te;
-    ts[soln] = t;
-    pts[soln] = *end;
-return( soln+1 );
-}
-#endif
-
 static int AddPoint(extended x,extended y,extended t,extended s,BasePoint *pts,
 	extended t1s[3],extended t2s[3], int soln) {
     int i;
@@ -4202,45 +3979,6 @@ return( soln );
     pts[soln].y = y;
 return( soln+1 );
 }
-
-#if 0
-static int AddQuadraticSoln(extended s,const Spline *s1, const Spline *s2, BasePoint pts[3],
-	extended t1s[3], extended t2s[3], int soln ) {
-    extended t, x, y, d;
-    int i;
-
-    if ( s<-.0001 || s>1.0001 )
-return( soln );
-    if ( s<0 ) s=0; else if ( s>1 ) s=1;
-
-    x = (s2->splines[0].b*s+s2->splines[0].c)*s+s2->splines[0].d;
-    y = (s2->splines[1].b*s+s2->splines[1].c)*s+s2->splines[1].d;
-
-    for ( i=0; i<soln; ++i )
-	if ( x==pts[i].x && y==pts[i].y )
-return( soln );
-
-    d = s1->splines[0].c*(extended) s1->splines[0].c-4*(extended) s1->splines[0].a*(s1->splines[0].d-x);
-    if ( RealNear(d,0)) d = 0;
-    if ( d<0 )
-return( soln );
-    t = (-s1->splines[0].c-d)/(2*s1->splines[0].b);
-    if ( t>-.0001 && t<1.0001 ) {
-	if ( t<=0 ) {t=0; x=s1->from->me.x; y = s1->from->me.y; }
-	else if ( t>=1 ) { t=1; x=s1->to->me.x; y = s1->to->me.y; }
-	if ( RealNear(y, (s1->splines[1].b*t+s1->splines[1].c)*t+s1->splines[1].d ) )
-return( AddPoint(x,y,t,s,pts,t1s,t2s,soln));
-    }
-    t = (-s1->splines[0].c+d)/(2*s1->splines[0].b);
-    if ( t>-.0001 && t<1.0001 ) {
-	if ( t<=0 ) {t=0; x=s1->from->me.x; y = s1->from->me.y; }
-	else if ( t>=1 ) { t=1; x=s1->to->me.x; y = s1->to->me.y; }
-	if ( RealNear(y, (s1->splines[1].b*t+s1->splines[1].c)*t+s1->splines[1].d) )
-return( AddPoint(x,y,t,s,pts,t1s,t2s,soln));
-    }
-return( soln );
-}
-#endif
 
 static void IterateSolve(const Spline1D *sp,extended ts[3]) {
     /* The closed form solution has too many rounding errors for my taste... */
@@ -4377,7 +4115,7 @@ static int ICBinarySearch(int cnt,BasePoint *foundpos,extended *foundt1,extended
 		    s1->splines[other].c)*t1low+s1->splines[other].d;
     o2o = ((s2->splines[other].a*t2low+s2->splines[other].b)*t2low+
 		    s2->splines[other].c)*t2low+s2->splines[other].d;
-    forever {
+    for (;;) {
 	t1 = (t1low+t1high)/2;
 	m = ((s1->splines[major].a*t1+s1->splines[major].b)*t1+
 			s1->splines[major].c)*t1+s1->splines[major].d;
@@ -4445,7 +4183,7 @@ return( 0 );
 		    s2->splines[other].c)*t2+s2->splines[other].d;
     if ( o1o==o2o )
 	cnt = ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2,maxcnt);
-    forever {
+    for (;;) {
 	if ( cnt>=maxcnt )
     break;
 	t1 += t1diff;
@@ -4495,7 +4233,7 @@ return( false );
 
 return( true );
 }
-    
+
 /* returns 0=>no intersection, 1=>at least one, location in pts, t1s, t2s */
 /*  -1 => We couldn't figure it out in a closed form, have to do a numerical */
 /*  approximation */
@@ -4572,13 +4310,6 @@ return( 0 );
     if ( min1.x>max2.x || min2.x>max1.x || min1.y>max2.y || min2.y>max1.y )
 return( false );		/* no intersection of bounding boxes */
 
-#if 0
-    soln = CheckEndpoint(&s1->from->me,s2,0,pts,t1s,t2s,soln);
-    soln = CheckEndpoint(&s1->to->me,s2,1,pts,t1s,t2s,soln);
-    soln = CheckEndpoint(&s2->from->me,s1,0,pts,t2s,t1s,soln);
-    soln = CheckEndpoint(&s2->to->me,s1,1,pts,t2s,t1s,soln);
-#endif
-
     if ( s1->knownlinear ) {
 	spline.d = s1->splines[1].c*((bigreal) s2->splines[0].d-(bigreal) s1->splines[0].d)-
 		s1->splines[0].c*((bigreal) s2->splines[1].d-(bigreal) s1->splines[1].d);
@@ -4639,49 +4370,6 @@ return( false );
 	    soln = AddPoint(x,y,t,tempts[i],pts,t1s,t2s,soln);
 	}
 return( soln!=0 );
-#if 0		/* This doesn't work. */
-    } else if ( s1->isquadratic && s2->isquadratic ) {
-	temp.a = 0;
-	temp.b = s1->splines[1].b*s2->splines[0].b - s1->splines[0].b*s2->splines[1].b;
-	temp.c = s1->splines[1].b*s2->splines[0].c - s1->splines[0].b*s2->splines[1].c;
-	temp.d = s1->splines[1].b*(s2->splines[0].d-s1->splines[0].d) -
-		 s1->splines[0].b*(s2->splines[1].d-s1->splines[1].d);
-	d = s1->splines[1].b*s1->splines[0].c - s1->splines[0].b*s1->splines[1].c;
-	if ( RealNear(d,0)) d=0;
-	if ( d!=0 ) {
-	    temp.b /= d; temp.c /= d; temp.d /= d;
-	    /* At this point t= temp.b*s^2 + temp.c*s + temp.d */
-	    /* We substitute this back into one of our equations and get a */
-	    /*  quartic in s */
-	    quad.a = s1->splines[0].b*temp.b*temp.b;
-	    quad.b = s1->splines[0].b*2*temp.b*temp.c;
-	    quad.c = s1->splines[0].b*(2*temp.b*temp.d+temp.c*temp.c);
-	    quad.d = s1->splines[0].b*2*temp.d*temp.c;
-	    quad.e = s1->splines[0].b*temp.d*temp.d;
-	    quad.b+= s1->splines[0].c*temp.b;
-	    quad.c+= s1->splines[0].c*temp.c;
-	    quad.d+= s1->splines[0].c*temp.d;
-	    quad.e+= s1->splines[0].d;
-	    quad.e-= s2->splines[0].d;
-	    quad.d-= s2->splines[0].c;
-	    quad.c-= s2->splines[0].b;
-	    if ( QuarticSolve(&quad,tempts)==-1 )
-return( -1 );
-	    for ( i=0; i<4 && tempts[i]!=-999999; ++i )
-		soln = AddQuadraticSoln(tempts[i],s1,s2,pts,t1s,t2s,soln);
-	} else {
-	    d = temp.c*temp.c-4*temp.b*temp.c;
-	    if ( RealNear(d,0)) d = 0;
-	    if ( d<0 )
-return( soln!=0 );
-	    d = sqrt(d);
-	    s = (-temp.c-d)/(2*temp.b);
-	    soln = AddQuadraticSoln(s,s1,s2,pts,t1s,t2s,soln);
-	    s = (-temp.c+d)/(2*temp.b);
-	    soln = AddQuadraticSoln(s,s1,s2,pts,t1s,t2s,soln);
-	}
-return( soln!=0 );
-#endif
     }
     /* if one of the splines is quadratic then we can get an expression */
     /*  relating c*t+d to poly(s^3), and substituting this back we get */
@@ -5111,7 +4799,7 @@ int SplineT2SpiroIndex(Spline *spline,bigreal t,SplineSet *spl) {
     /* It appears that each spiro cp has a corresponding splinepoint, but */
     /*  I don't want to rely on that because it won't be true after a simplify*/
     Spline *sp, *lastsp=spl->first->next;
-    bigreal lastt = 0, test;
+    bigreal test;
     int i;
     BasePoint bp;
 
@@ -5134,7 +4822,6 @@ return( i-1 );
 		if ( sp==spline && t<test )
 return( i-1 );
 		lastsp = sp;
-		lastt = test;
 	break;
 	    }
 	    if ( sp->to->next==NULL || sp->to==spl->first )
@@ -5236,7 +4923,7 @@ int SSPointWithin(SplineSet *spl,BasePoint *pt) {
 	}
 	spl = spl->next;
     }
-return( cnt!=0 );	
+return( cnt!=0 );
 }
 
 void StemInfoFree(StemInfo *h) {
@@ -5399,6 +5086,38 @@ static AnchorPoint *AnchorPointsRemoveName(AnchorPoint *alist,AnchorClass *an) {
 return( alist );
 }
 
+/* Finds or adds an AnchorClass of the given name. Resets it to have the given subtable if not NULL */
+AnchorClass *SFFindOrAddAnchorClass(SplineFont *sf,char *name,struct lookup_subtable *sub) {
+    AnchorClass *ac;
+    int actype = act_unknown;
+
+    for ( ac=sf->anchor; ac!=NULL; ac=ac->next )
+        if (strcmp(name,ac->name)==0)
+    break;
+    if ( ac!=NULL && ( sub==NULL || ac->subtable==sub ) )
+return( ac );
+
+    if ( sub!=NULL )
+        actype = sub->lookup->lookup_type==gpos_cursive             ? act_curs :
+                    sub->lookup->lookup_type==gpos_mark2base        ? act_mark :
+                    sub->lookup->lookup_type==gpos_mark2ligature    ? act_mklg :
+                    sub->lookup->lookup_type==gpos_mark2mark        ? act_mkmk :
+                                                                      act_unknown;
+    if ( ac==NULL ) {
+        ac = chunkalloc(sizeof(AnchorClass));
+        ac->subtable = sub;
+        ac->type = actype;
+        ac->name = copy( name );
+        ac->next = sf->anchor;
+        sf->anchor = ac;
+    }
+    else if ( sub!=NULL && ac->subtable!=sub ) {
+        ac->subtable = sub;
+        ac->type = actype;
+    }
+return( ac );
+}
+
 static void SCRemoveAnchorClass(SplineChar *sc,AnchorClass *an) {
     Undoes *test;
 
@@ -5487,12 +5206,12 @@ AnchorPoint *AnchorPointsCopy(AnchorPoint *alist) {
 	*ap = *alist;
 	if ( ap->xadjust.corrections!=NULL ) {
 	    int len = ap->xadjust.last_pixel_size-ap->xadjust.first_pixel_size+1;
-	    ap->xadjust.corrections = galloc(len);
+	    ap->xadjust.corrections = malloc(len);
 	    memcpy(ap->xadjust.corrections,alist->xadjust.corrections,len);
 	}
 	if ( ap->yadjust.corrections!=NULL ) {
 	    int len = ap->yadjust.last_pixel_size-ap->yadjust.first_pixel_size+1;
-	    ap->yadjust.corrections = galloc(len);
+	    ap->yadjust.corrections = malloc(len);
 	    memcpy(ap->yadjust.corrections,alist->yadjust.corrections,len);
 	}
 	if ( head==NULL )
@@ -5536,7 +5255,7 @@ return( NULL );
 	if ( (&orig->xadjust)[i].corrections!=NULL ) {
 	    int len = (&orig->xadjust)[i].last_pixel_size - (&orig->xadjust)[i].first_pixel_size + 1;
 	    (&new->xadjust)[i] = (&orig->xadjust)[i];
-	    (&new->xadjust)[i].corrections = galloc(len);
+	    (&new->xadjust)[i].corrections = malloc(len);
 	    memcpy((&new->xadjust)[i].corrections,(&orig->xadjust)[i].corrections,len);
 	}
     }
@@ -5561,7 +5280,7 @@ return( NULL );
     new = chunkalloc(sizeof(DeviceTable));
     *new = *orig;
     len = orig->last_pixel_size - orig->first_pixel_size + 1;
-    new->corrections = galloc(len);
+    new->corrections = malloc(len);
     memcpy(new->corrections,orig->corrections,len);
 return( new );
 }
@@ -5597,17 +5316,17 @@ return;
     } else {
 	if ( adjust->corrections==NULL ) {
 	    adjust->first_pixel_size = adjust->last_pixel_size = size;
-	    adjust->corrections = galloc(1);
+	    adjust->corrections = malloc(1);
 	} else if ( size>=adjust->first_pixel_size &&
 		size<=adjust->last_pixel_size ) {
 	} else if ( size>adjust->last_pixel_size ) {
-	    adjust->corrections = grealloc(adjust->corrections,
+	    adjust->corrections = realloc(adjust->corrections,
 		    size-adjust->first_pixel_size);
 	    for ( i=len; i<size-adjust->first_pixel_size; ++i )
 		adjust->corrections[i] = 0;
 	    adjust->last_pixel_size = size;
 	} else {
-	    int8 *new = galloc(adjust->last_pixel_size-size+1);
+	    int8 *new = malloc(adjust->last_pixel_size-size+1);
 	    memset(new,0,adjust->first_pixel_size-size);
 	    memcpy(new+adjust->first_pixel_size-size,
 		    adjust->corrections, len);
@@ -5685,7 +5404,7 @@ static struct fpst_rule *RulesCopy(struct fpst_rule *from, int cnt,
     if ( cnt==0 )
 return( NULL );
 
-    to = gcalloc(cnt,sizeof(struct fpst_rule));
+    to = calloc(cnt,sizeof(struct fpst_rule));
     for ( i=0; i<cnt; ++i ) {
 	f = from+i; t = to+i;
 	switch ( format ) {
@@ -5698,16 +5417,16 @@ return( NULL );
 	    t->u.class.ncnt = f->u.class.ncnt;
 	    t->u.class.bcnt = f->u.class.bcnt;
 	    t->u.class.fcnt = f->u.class.fcnt;
-	    t->u.class.nclasses = galloc( f->u.class.ncnt*sizeof(uint16));
+	    t->u.class.nclasses = malloc( f->u.class.ncnt*sizeof(uint16));
 	    memcpy(t->u.class.nclasses,f->u.class.nclasses,
 		    f->u.class.ncnt*sizeof(uint16));
 	    if ( t->u.class.bcnt!=0 ) {
-		t->u.class.bclasses = galloc( f->u.class.bcnt*sizeof(uint16));
+		t->u.class.bclasses = malloc( f->u.class.bcnt*sizeof(uint16));
 		memcpy(t->u.class.bclasses,f->u.class.bclasses,
 			f->u.class.bcnt*sizeof(uint16));
 	    }
 	    if ( t->u.class.fcnt!=0 ) {
-		t->u.class.fclasses = galloc( f->u.class.fcnt*sizeof(uint16));
+		t->u.class.fclasses = malloc( f->u.class.fcnt*sizeof(uint16));
 		memcpy(t->u.class.fclasses,f->u.class.fclasses,
 			f->u.class.fcnt*sizeof(uint16));
 	    }
@@ -5718,16 +5437,16 @@ return( NULL );
 	    t->u.coverage.ncnt = f->u.coverage.ncnt;
 	    t->u.coverage.bcnt = f->u.coverage.bcnt;
 	    t->u.coverage.fcnt = f->u.coverage.fcnt;
-	    t->u.coverage.ncovers = galloc( f->u.coverage.ncnt*sizeof(char *));
+	    t->u.coverage.ncovers = malloc( f->u.coverage.ncnt*sizeof(char *));
 	    for ( j=0; j<t->u.coverage.ncnt; ++j )
 		t->u.coverage.ncovers[j] = copy(f->u.coverage.ncovers[j]);
 	    if ( t->u.coverage.bcnt!=0 ) {
-		t->u.coverage.bcovers = galloc( f->u.coverage.bcnt*sizeof(char *));
+		t->u.coverage.bcovers = malloc( f->u.coverage.bcnt*sizeof(char *));
 		for ( j=0; j<t->u.coverage.bcnt; ++j )
 		    t->u.coverage.bcovers[j] = copy(f->u.coverage.bcovers[j]);
 	    }
 	    if ( t->u.coverage.fcnt!=0 ) {
-		t->u.coverage.fcovers = galloc( f->u.coverage.fcnt*sizeof(char *));
+		t->u.coverage.fcovers = malloc( f->u.coverage.fcnt*sizeof(char *));
 		for ( j=0; j<t->u.coverage.fcnt; ++j )
 		    t->u.coverage.fcovers[j] = copy(f->u.coverage.fcovers[j]);
 	    }
@@ -5735,7 +5454,7 @@ return( NULL );
 	}
 	if ( f->lookup_cnt!=0 ) {
 	    t->lookup_cnt = f->lookup_cnt;
-	    t->lookups = galloc(t->lookup_cnt*sizeof(struct seqlookup));
+	    t->lookups = malloc(t->lookup_cnt*sizeof(struct seqlookup));
 	    memcpy(t->lookups,f->lookups,t->lookup_cnt*sizeof(struct seqlookup));
 	}
     }
@@ -5750,24 +5469,24 @@ FPST *FPSTCopy(FPST *fpst) {
     *nfpst = *fpst;
     nfpst->next = NULL;
     if ( nfpst->nccnt!=0 ) {
-	nfpst->nclass = galloc(nfpst->nccnt*sizeof(char *));
-	nfpst->nclassnames = galloc(nfpst->nccnt*sizeof(char *));
+	nfpst->nclass = malloc(nfpst->nccnt*sizeof(char *));
+	nfpst->nclassnames = malloc(nfpst->nccnt*sizeof(char *));
 	for ( i=0; i<nfpst->nccnt; ++i ) {
 	    nfpst->nclass[i] = copy(fpst->nclass[i]);
 	    nfpst->nclassnames[i] = copy(fpst->nclassnames[i]);
 	}
     }
     if ( nfpst->bccnt!=0 ) {
-	nfpst->bclass = galloc(nfpst->bccnt*sizeof(char *));
-	nfpst->bclassnames = galloc(nfpst->bccnt*sizeof(char *));
+	nfpst->bclass = malloc(nfpst->bccnt*sizeof(char *));
+	nfpst->bclassnames = malloc(nfpst->bccnt*sizeof(char *));
 	for ( i=0; i<nfpst->bccnt; ++i ) {
 	    nfpst->bclass[i] = copy(fpst->bclass[i]);
 	    nfpst->bclassnames[i] = copy(fpst->bclassnames[i]);
 	}
     }
     if ( nfpst->fccnt!=0 ) {
-	nfpst->fclass = galloc(nfpst->fccnt*sizeof(char *));
-	nfpst->fclassnames = galloc(nfpst->fccnt*sizeof(char *));
+	nfpst->fclass = malloc(nfpst->fccnt*sizeof(char *));
+	nfpst->fclassnames = malloc(nfpst->fccnt*sizeof(char *));
 	for ( i=0; i<nfpst->fccnt; ++i ) {
 	    nfpst->fclass[i] = copy(fpst->fclass[i]);
 	    nfpst->fclassnames[i] = copy(fpst->fclassnames[i]);
@@ -5871,7 +5590,7 @@ SplineChar *SplineCharCreate(int layer_cnt) {
     sc->orig_pos = 0xffff;
     sc->unicodeenc = -1;
     sc->layer_cnt = layer_cnt;
-    sc->layers = gcalloc(layer_cnt,sizeof(Layer));
+    sc->layers = calloc(layer_cnt,sizeof(Layer));
     for ( i=0; i<layer_cnt; ++i )
 	LayerDefault(&sc->layers[i]);
     sc->tex_height = sc->tex_depth = sc->italic_correction = sc->top_accent_horiz =
@@ -5920,7 +5639,7 @@ return( NULL );
     newgv->italic_adjusts = DeviceTableCopy(gv->italic_adjusts);
     newgv->part_cnt = gv->part_cnt;
     if ( gv->part_cnt!=0 ) {
-	newgv->parts = gcalloc(gv->part_cnt,sizeof(struct gv_part));
+	newgv->parts = calloc(gv->part_cnt,sizeof(struct gv_part));
 	memcpy(newgv->parts,gv->parts,gv->part_cnt*sizeof(struct gv_part));
 	for ( i=0; i<gv->part_cnt; ++i )
 	    newgv->parts[i].component = copy(gv->parts[i].component);
@@ -5940,7 +5659,7 @@ return( NULL );
 	struct mathkernvertex *mknewv = &(&mknew->top_right)[i];
 	mknewv->cnt = mkv->cnt;
 	if ( mknewv->cnt!=0 ) {
-	    mknewv->mkd = gcalloc(mkv->cnt,sizeof(struct mathkerndata));
+	    mknewv->mkd = calloc(mkv->cnt,sizeof(struct mathkerndata));
 	    for ( j=0; j<mkv->cnt; ++j ) {
 		mknewv->mkd[j].height = mkv->mkd[j].height;
 		mknewv->mkd[j].kern   = mkv->mkd[j].kern;
@@ -6010,7 +5729,7 @@ return( NULL );
     grad = chunkalloc(sizeof(struct gradient));
 
     *grad = *old;
-    grad->grad_stops = galloc(old->stop_cnt*sizeof(struct grad_stops));
+    grad->grad_stops = malloc(old->stop_cnt*sizeof(struct grad_stops));
     memcpy(grad->grad_stops,old->grad_stops,old->stop_cnt*sizeof(struct grad_stops));
     if ( transform!=NULL ) {
 	BpTransform(&grad->start,&grad->start,transform);
@@ -6056,8 +5775,8 @@ void SplineCharFreeContents(SplineChar *sc) {
 
     if ( sc==NULL )
 return;
-    free(sc->name);
-    free(sc->comment);
+    if (sc->name != NULL) free(sc->name);
+    if (sc->comment != NULL) free(sc->comment);
     for ( i=0; i<sc->layer_cnt; ++i )
 	LayerFreeContents(sc,i);
     StemInfosFree(sc->hstem);
@@ -6069,9 +5788,9 @@ return;
     AnchorPointsFree(sc->anchor);
     SplineCharListsFree(sc->dependents);
     PSTFree(sc->possub);
-    free(sc->ttf_instrs);
-    free(sc->countermasks);
-    free(sc->layers);
+    if (sc->ttf_instrs != NULL) free(sc->ttf_instrs);
+    if (sc->countermasks != NULL) free(sc->countermasks);
+    if (sc->layers != NULL) free(sc->layers);
     AltUniFree(sc->altuni);
     GlyphVariantsFree(sc->horiz_variants);
     GlyphVariantsFree(sc->vert_variants);
@@ -6079,7 +5798,7 @@ return;
     DeviceTableFree(sc->top_accent_adjusts);
     MathKernFree(sc->mathkern);
 #if defined(_NO_PYTHON)
-    free( sc->python_persistent );	/* It's a string of pickled data which we leave as a string */
+    if (sc->python_persistent != NULL) free( sc->python_persistent );	/* It's a string of pickled data which we leave as a string */
 #else
     PyFF_FreeSC(sc);
 #endif
@@ -6191,21 +5910,21 @@ KernClass *KernClassCopy(KernClass *kc) {
 return( NULL );
     new = chunkalloc(sizeof(KernClass));
     *new = *kc;
-    new->firsts = galloc(new->first_cnt*sizeof(char *));
-    new->seconds = galloc(new->second_cnt*sizeof(char *));
-    new->offsets = galloc(new->first_cnt*new->second_cnt*sizeof(int16));
+    new->firsts = malloc(new->first_cnt*sizeof(char *));
+    new->seconds = malloc(new->second_cnt*sizeof(char *));
+    new->offsets = malloc(new->first_cnt*new->second_cnt*sizeof(int16));
     memcpy(new->offsets,kc->offsets, new->first_cnt*new->second_cnt*sizeof(int16));
     for ( i=0; i<new->first_cnt; ++i )
 	new->firsts[i] = copy(kc->firsts[i]);
     for ( i=0; i<new->second_cnt; ++i )
 	new->seconds[i] = copy(kc->seconds[i]);
-    new->adjusts = gcalloc(new->first_cnt*new->second_cnt,sizeof(DeviceTable));
+    new->adjusts = calloc(new->first_cnt*new->second_cnt,sizeof(DeviceTable));
     memcpy(new->adjusts,kc->adjusts, new->first_cnt*new->second_cnt*sizeof(DeviceTable));
     for ( i=new->first_cnt*new->second_cnt-1; i>=0 ; --i ) {
 	if ( new->adjusts[i].corrections!=NULL ) {
 	    int8 *old = new->adjusts[i].corrections;
 	    int len = new->adjusts[i].last_pixel_size - new->adjusts[i].first_pixel_size + 1;
-	    new->adjusts[i].corrections = galloc(len);
+	    new->adjusts[i].corrections = malloc(len);
 	    memcpy(new->adjusts[i].corrections,old,len);
 	}
     }
@@ -6320,12 +6039,12 @@ void OtfFeatNameListFree(struct otffeatname *fn) {
 
 EncMap *EncMapNew(int enccount,int backmax,Encoding *enc) {
     EncMap *map = chunkalloc(sizeof(EncMap));
-    
+
     map->enccount = map->encmax = enccount;
     map->backmax = backmax;
-    map->map = galloc(enccount*sizeof(int));
+    map->map = malloc(enccount*sizeof(int));
     memset(map->map,-1,enccount*sizeof(int));
-    map->backmap = galloc(backmax*sizeof(int));
+    map->backmap = malloc(backmax*sizeof(int));
     memset(map->backmap,-1,backmax*sizeof(int));
     map->enc = enc;
 return(map);
@@ -6335,10 +6054,10 @@ EncMap *EncMap1to1(int enccount) {
     EncMap *map = chunkalloc(sizeof(EncMap));
     /* Used for CID fonts where CID is same as orig_pos */
     int i;
-    
+
     map->enccount = map->encmax = map->backmax = enccount;
-    map->map = galloc(enccount*sizeof(int));
-    map->backmap = galloc(enccount*sizeof(int));
+    map->map = malloc(enccount*sizeof(int));
+    map->backmap = malloc(enccount*sizeof(int));
     for ( i=0; i<enccount; ++i )
 	map->map[i] = map->backmap[i] = i;
     map->enc = &custom;
@@ -6377,14 +6096,14 @@ EncMap *EncMapCopy(EncMap *map) {
 
     new = chunkalloc(sizeof(EncMap));
     *new = *map;
-    new->map = galloc(new->encmax*sizeof(int));
-    new->backmap = galloc(new->backmax*sizeof(int));
+    new->map = malloc(new->encmax*sizeof(int));
+    new->backmap = malloc(new->backmax*sizeof(int));
     memcpy(new->map,map->map,new->enccount*sizeof(int));
     memcpy(new->backmap,map->backmap,new->backmax*sizeof(int));
     if ( map->remap ) {
 	int n;
 	for ( n=0; map->remap[n].infont!=-1; ++n );
-	new->remap = galloc(n*sizeof(struct remap));
+	new->remap = malloc(n*sizeof(struct remap));
 	memcpy(new->remap,map->remap,n*sizeof(struct remap));
     }
 return( new );
@@ -6452,7 +6171,7 @@ void BaseScriptFree(struct basescript *bs) {
 	bs = next;
     }
 }
-	
+
 void BaseFree(struct Base *base) {
     if ( base==NULL )
 return;
@@ -6469,13 +6188,13 @@ static OTLookup **OTLListCopy(OTLookup **str) {
     if ( str == NULL )
 return( NULL );
     for ( i=0 ; str[i]!=NULL; ++i );
-    ret = galloc((i+1)*sizeof( OTLookup *));
+    ret = malloc((i+1)*sizeof( OTLookup *));
     for ( i=0 ; str[i]!=NULL; ++i )
 	ret[i] = str[i];
     ret[i] = NULL;
 return( ret );
 }
-    
+
 struct jstf_lang *JstfLangsCopy(struct jstf_lang *jl) {
     struct jstf_lang *head=NULL, *last=NULL, *cur;
     int i;
@@ -6484,7 +6203,7 @@ struct jstf_lang *JstfLangsCopy(struct jstf_lang *jl) {
 	cur = chunkalloc(sizeof(*cur));
 	cur->lang = jl->lang;
 	cur->cnt = jl->cnt;
-	cur->prios = gcalloc(cur->cnt,sizeof(struct jstf_prio));
+	cur->prios = calloc(cur->cnt,sizeof(struct jstf_prio));
 	for ( i=0; i<cur->cnt; ++i ) {
 	    cur->prios[i].enableShrink = OTLListCopy( jl->prios[i].enableShrink );
 	    cur->prios[i].disableShrink = OTLListCopy( jl->prios[i].disableShrink );
@@ -6587,6 +6306,7 @@ return;
     KernClassListFree(sf->kerns);
     KernClassListFree(sf->vkerns);
     FPSTFree(sf->possub);
+    PyFF_FreeSF(sf);
     ASMFree(sf->sm);
     OtfNameListFree(sf->fontstyle_name);
     OtfFeatNameListFree(sf->feat_names);
@@ -6699,7 +6419,7 @@ static void countcluster(SplinePoint **ptspace, struct cluster *cspace,
     break;
     }
 }
-	
+
 static int _SplineCharRoundToCluster(SplineChar *sc,SplinePoint **ptspace,
 	struct cluster *cspace,int ptcnt,int is_y,int dohints,
 	int layer, int changed,
@@ -6712,7 +6432,7 @@ static int _SplineCharRoundToCluster(SplineChar *sc,SplinePoint **ptspace,
     for ( i=0; i<ptcnt; ++i )
 	countcluster(ptspace,cspace,ptcnt,is_y,i,within,max);
 
-    forever {
+    for (;;) {
 	j=0; best = cspace[0].cnt;
 	for ( i=1; i<ptcnt; ++i ) {
 	    if ( cspace[i].cnt>best ) {
@@ -6806,7 +6526,7 @@ int SCRoundToCluster(SplineChar *sc,int layer,int sel,bigreal within,bigreal max
     int l,k,changed;
     SplineSet *spl;
     SplinePoint *sp;
-    SplinePoint **ptspace;
+    SplinePoint **ptspace = NULL;
     struct cluster *cspace;
     Spline *s, *first;
 
@@ -6854,15 +6574,17 @@ int SCRoundToCluster(SplineChar *sc,int layer,int sel,bigreal within,bigreal max
 	if ( sel && selcnt==0 )
 	    sel = false;
 	if ( sel ) ptcnt = selcnt;
-	if ( ptcnt<=1 )
+	if ( ptcnt<=1 ) {
+	    free(ptspace);
 return(false);				/* Can't be any clusters */
+	}
 	if ( k==0 )
-	    ptspace = galloc((ptcnt+1)*sizeof(SplinePoint *));
+	    ptspace = malloc((ptcnt+1)*sizeof(SplinePoint *));
 	else
 	    ptspace[ptcnt] = NULL;
     }
 
-    cspace = galloc(ptcnt*sizeof(struct cluster));
+    cspace = malloc(ptcnt*sizeof(struct cluster));
 
     qsort(ptspace,ptcnt,sizeof(SplinePoint *),xcmp);
     changed = _SplineCharRoundToCluster(sc,ptspace,cspace,ptcnt,false,
@@ -7326,7 +7048,7 @@ static bigreal FindZero5(bigreal w[7],bigreal tlow, bigreal thigh) {
     test = ((((w[5]*t+w[4])*t+w[3])*t+w[2])*t+w[1])*t + w[0];
     bot_negative = test<0;
 
-    forever {
+    for (;;) {
 	t = (thigh+tlow)/2;
 	if ( thigh==t || tlow==t )
 return( t );		/* close as we can get */
@@ -7358,7 +7080,7 @@ static bigreal FindZero3(bigreal w[7],bigreal tlow, bigreal thigh) {
     test = ((w[3]*t+w[2])*t+w[1])*t + w[0];
     bot_negative = test<0;
 
-    forever {
+    for (;;) {
 	t = (thigh+tlow)/2;
 	if ( thigh==t || tlow==t )
 return( t );		/* close as we can get */
@@ -7505,12 +7227,12 @@ return( -1 );
 
 void GrowBuffer(GrowBuf *gb) {
     if ( gb->base==NULL ) {
-	gb->base = gb->pt = galloc(200);
+	gb->base = gb->pt = malloc(200);
 	gb->end = gb->base + 200;
     } else {
 	int len = (gb->end-gb->base) + 400;
 	int off = gb->pt-gb->base;
-	gb->base = grealloc(gb->base,len);
+	gb->base = realloc(gb->base,len);
 	gb->end = gb->base + len;
 	gb->pt = gb->base+off;
     }
@@ -7518,12 +7240,12 @@ void GrowBuffer(GrowBuf *gb) {
 
 void GrowBufferAdd(GrowBuf *gb,int ch) {
     if ( gb->base==NULL ) {
-	gb->base = gb->pt = galloc(200);
+	gb->base = gb->pt = malloc(200);
 	gb->end = gb->base + 200;
     } else if ( gb->pt>=gb->end ) {
 	int len = (gb->end-gb->base) + 400;
 	int off = gb->pt-gb->base;
-	gb->base = grealloc(gb->base,len);
+	gb->base = realloc(gb->base,len);
 	gb->end = gb->base + len;
 	gb->pt = gb->base+off;
     }
@@ -7538,15 +7260,26 @@ return;
     n = strlen(str);
 
     if ( gb->base==NULL ) {
-	gb->base = gb->pt = galloc(200+n);
+	gb->base = gb->pt = malloc(200+n);
 	gb->end = gb->base + 200+n;
     } else if ( gb->pt+n+1>=gb->end ) {
 	int len = (gb->end-gb->base) + n+200;
 	int off = gb->pt-gb->base;
-	gb->base = grealloc(gb->base,len);
+	gb->base = realloc(gb->base,len);
 	gb->end = gb->base + len;
 	gb->pt = gb->base+off;
     }
     strcpy((char *)gb->pt, str);
     gb->pt += n;
 }
+
+bigreal DistanceBetweenPoints( BasePoint *p1, BasePoint *p2 )
+{
+    bigreal t = pow(p1->x - p2->x,2) + pow(p1->y - p2->y,2);
+    if( !t )
+	return t;
+    
+    t = sqrt( t );
+    return t;
+}
+

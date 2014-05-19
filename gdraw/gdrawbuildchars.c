@@ -56,7 +56,7 @@
 
 static struct gchr_transform trans_space[] = {
     { 0, 0, 0x00000a0 },
-    { GREEK, 0, 0x0002003 }
+    { GREEK, 0, 0x0002001 }
 };
 
 static struct gchr_transform trans_exclam[] = {
@@ -141,7 +141,7 @@ static struct gchr_transform trans_semicolon[] = {
 };
 
 static struct gchr_transform trans_less[] = {
-    { 0, 0, 0x0002264 }
+    { 0, 0, 0x0002265 }
 };
 
 static struct gchr_transform trans_equal[] = {
@@ -149,7 +149,7 @@ static struct gchr_transform trans_equal[] = {
 };
 
 static struct gchr_transform trans_greater[] = {
-    { 0, 0, 0x0002265 },
+    { 0, 0, 0x0002264 },
     { GREEK, 0, 0x0002023 }
 };
 
@@ -182,6 +182,8 @@ static struct gchr_transform trans_A[] = {
     { ACUTE|RING, 0, 0x00001fa },
     { DBLGRAVE, 0, 0x0000200 },
     { INVBREVE, 0, 0x0000202 },
+    { DOTABOVE, 0, 0x0000226 },
+    { SLASH, 0, 0x000023a },
     { RINGBELOW, 0, 0x0001e00 },
     { DOTBELOW, 0, 0x0001ea0 },
     { HOOKABOVE, 0, 0x0001ea2 },
@@ -199,6 +201,7 @@ static struct gchr_transform trans_A[] = {
 
 static struct gchr_transform trans_B[] = {
     { GREEK, 0, 0x0000392 },
+    { SLASH, 0, 0x0000243 },
     { DOTABOVE, 0, 0x0001e02 },
     { DOTBELOW, 0, 0x0001e04 },
     { LINEBELOW, 0, 0x0001e06 }
@@ -212,6 +215,7 @@ static struct gchr_transform trans_C[] = {
     { CIRCUMFLEX, 0, 0x0000108 },
     { DOTABOVE, 0, 0x000010a },
     { CARON, 0, 0x000010c },
+    { SLASH, 0, 0x000023b },
     { ACUTE|CEDILLA, 0, 0x0001e08 }
 };
 
@@ -242,6 +246,8 @@ static struct gchr_transform trans_E[] = {
     { CARON, 0, 0x000011a },
     { DBLGRAVE, 0, 0x0000204 },
     { INVBREVE, 0, 0x0000206 },
+    { CEDILLA, 0, 0x0000228 },
+    { SLASH, 0, 0x0000246 },
     { GRAVE|MACRON, 0, 0x0001e14 },
     { ACUTE|MACRON, 0, 0x0001e16 },
     { CIRCUMFLEXBELOW, 0, 0x0001e18 },
@@ -282,6 +288,7 @@ static struct gchr_transform trans_H[] = {
     { ACUTE|GREEK, 0, 0x0001fcb },
     { CIRCUMFLEX, 0, 0x0000124 },
     { SLASH, 0, 0x0000126 },
+    { CARON, 0, 0x000021e },
     { DOTABOVE, 0, 0x0001e22 },
     { DOTBELOW, 0, 0x0001e24 },
     { DIAERESIS, 0, 0x0001e26 },
@@ -318,7 +325,8 @@ static struct gchr_transform trans_I[] = {
 
 static struct gchr_transform trans_J[] = {
     { GREEK, 0, 0x00003d1 },
-    { CIRCUMFLEX, 0, 0x0000134 }
+    { CIRCUMFLEX, 0, 0x0000134 },
+    { SLASH, 0, 0x0000248 }
 };
 
 static struct gchr_transform trans_K[] = {
@@ -327,7 +335,8 @@ static struct gchr_transform trans_K[] = {
     { CARON, 0, 0x00001e8 },
     { ACUTE, 0, 0x0001e30 },
     { DOTBELOW, 0, 0x0001e32 },
-    { LINEBELOW, 0, 0x0001e34 }
+    { LINEBELOW, 0, 0x0001e34 },
+    { SLASH, 0, 0x000a740 }
 };
 
 static struct gchr_transform trans_L[] = {
@@ -356,6 +365,7 @@ static struct gchr_transform trans_N[] = {
     { ACUTE, 0, 0x0000143 },
     { CEDILLA, 0, 0x0000145 },
     { CARON, 0, 0x0000147 },
+    { GRAVE, 0, 0x00001f8 },
     { DOTABOVE, 0, 0x0001e44 },
     { DOTBELOW, 0, 0x0001e46 },
     { LINEBELOW, 0, 0x0001e48 },
@@ -384,6 +394,10 @@ static struct gchr_transform trans_O[] = {
     { ACUTE|SLASH, 0, 0x00001fe },
     { DBLGRAVE, 0, 0x000020c },
     { INVBREVE, 0, 0x000020e },
+    { DIAERESIS|MACRON, 0, 0x000022a },
+    { TILDE|MACRON, 0, 0x000022c },
+    { DOTABOVE, 0, 0x000022e },
+    { DOTABOVE|MACRON, 0, 0x0000230 },
     { ACUTE|TILDE, 0, 0x0001e4c },
     { DIAERESIS|TILDE, 0, 0x0001e4e },
     { GRAVE|MACRON, 0, 0x0001e50 },
@@ -406,11 +420,14 @@ static struct gchr_transform trans_P[] = {
     { 0, 0, 0x00000a7 },
     { GREEK, 0, 0x00003a0 },
     { ACUTE, 0, 0x0001e54 },
-    { DOTABOVE, 0, 0x0001e56 }
+    { DOTABOVE, 0, 0x0001e56 },
+    { SLASH, 0, 0x0002c63 },
+    { SLASH, 0, 0x000a750 }
 };
 
 static struct gchr_transform trans_Q[] = {
-    { GREEK, 0, 0x0000398 }
+    { GREEK, 0, 0x0000398 },
+    { SLASH, 0, 0x000a756 }
 };
 
 static struct gchr_transform trans_R[] = {
@@ -420,6 +437,7 @@ static struct gchr_transform trans_R[] = {
     { CARON, 0, 0x0000158 },
     { DBLGRAVE, 0, 0x0000210 },
     { INVBREVE, 0, 0x0000212 },
+    { SLASH, 0, 0x000024c },
     { DOTABOVE, 0, 0x0001e58 },
     { DOTBELOW, 0, 0x0001e5a },
     { DOTBELOW|MACRON, 0, 0x0001e5c },
@@ -520,6 +538,8 @@ static struct gchr_transform trans_Y[] = {
     { ACUTE, 0, 0x00000dd },
     { CIRCUMFLEX, 0, 0x0000176 },
     { DIAERESIS, 0, 0x0000178 },
+    { MACRON, 0, 0x0000232 },
+    { SLASH, 0, 0x000024e },
     { DOTABOVE, 0, 0x0001e8e },
     { GRAVE, 0, 0x0001ef2 },
     { DOTBELOW, 0, 0x0001ef4 },
@@ -588,6 +608,7 @@ static struct gchr_transform trans_a[] = {
     { ACUTE|RING, 0, 0x00001fb },
     { DBLGRAVE, 0, 0x0000201 },
     { INVBREVE, 0, 0x0000203 },
+    { DOTABOVE, 0, 0x0000227 },
     { RINGBELOW, 0, 0x0001e01 },
     { DOTBELOW, 0, 0x0001ea1 },
     { HOOKABOVE, 0, 0x0001ea3 },
@@ -600,7 +621,8 @@ static struct gchr_transform trans_a[] = {
     { GRAVE|BREVE, 0, 0x0001eb1 },
     { BREVE|HOOKABOVE, 0, 0x0001eb3 },
     { TILDE|BREVE, 0, 0x0001eb5 },
-    { BREVE|DOTBELOW, 0, 0x0001eb7 }
+    { BREVE|DOTBELOW, 0, 0x0001eb7 },
+    { SLASH, 0, 0x0002c65 }
 };
 
 static struct gchr_transform trans_b[] = {
@@ -619,6 +641,7 @@ static struct gchr_transform trans_c[] = {
     { CIRCUMFLEX, 0, 0x0000109 },
     { DOTABOVE, 0, 0x000010b },
     { CARON, 0, 0x000010d },
+    { SLASH, 0, 0x000023c },
     { ACUTE|CEDILLA, 0, 0x0001e09 }
 };
 
@@ -650,6 +673,8 @@ static struct gchr_transform trans_e[] = {
     { CARON, 0, 0x000011b },
     { DBLGRAVE, 0, 0x0000205 },
     { INVBREVE, 0, 0x0000207 },
+    { CEDILLA, 0, 0x0000229 },
+    { SLASH, 0, 0x0000247 },
     { GRAVE|MACRON, 0, 0x0001e15 },
     { ACUTE|MACRON, 0, 0x0001e17 },
     { CIRCUMFLEXBELOW, 0, 0x0001e19 },
@@ -686,7 +711,7 @@ static struct gchr_transform trans_g[] = {
 
 static struct gchr_transform trans_h[] = {
     { SLASH|GREEK, 0, 0x000210f },
-    { 0, 0, 0x000261c },
+    { 0, 0, 0x000261e },
     { GREEK, 0, 0x00003b7 },
     { DBLGRAVE|GREEK, 0, 0x00003ae },
     { GRAVE|GREEK, 0, 0x0001f74 },
@@ -694,6 +719,7 @@ static struct gchr_transform trans_h[] = {
     { TILDE|GREEK, 0, 0x0001fc6 },
     { CIRCUMFLEX, 0, 0x0000125 },
     { SLASH, 0, 0x0000127 },
+    { CARON, 0, 0x000021f },
     { DOTABOVE, 0, 0x0001e23 },
     { DOTBELOW, 0, 0x0001e25 },
     { DIAERESIS, 0, 0x0001e27 },
@@ -738,7 +764,8 @@ static struct gchr_transform trans_i[] = {
 static struct gchr_transform trans_j[] = {
     { GREEK, 0, 0x00003d5 },
     { CIRCUMFLEX, 0, 0x0000135 },
-    { CARON, 0, 0x00001f0 }
+    { CARON, 0, 0x00001f0 },
+    { SLASH, 0, 0x0000249 }
 };
 
 static struct gchr_transform trans_k[] = {
@@ -747,7 +774,8 @@ static struct gchr_transform trans_k[] = {
     { CARON, 0, 0x00001e9 },
     { ACUTE, 0, 0x0001e31 },
     { DOTBELOW, 0, 0x0001e33 },
-    { LINEBELOW, 0, 0x0001e35 }
+    { LINEBELOW, 0, 0x0001e35 },
+    { SLASH, 0, 0x000a741 }
 };
 
 static struct gchr_transform trans_l[] = {
@@ -778,6 +806,7 @@ static struct gchr_transform trans_n[] = {
     { ACUTE, 0, 0x0000144 },
     { CEDILLA, 0, 0x0000146 },
     { CARON, 0, 0x0000148 },
+    { GRAVE, 0, 0x00001f9 },
     { DOTABOVE, 0, 0x0001e45 },
     { DOTBELOW, 0, 0x0001e47 },
     { LINEBELOW, 0, 0x0001e49 },
@@ -785,7 +814,7 @@ static struct gchr_transform trans_n[] = {
 };
 
 static struct gchr_transform trans_o[] = {
-    { 0, 0, 0x000153 },
+    { 0, 0, 0x0001536 },
     { GREEK, 0, 0x00003bf },
     { DBLGRAVE|GREEK, 0, 0x00003cc },
     { GRAVE|GREEK, 0, 0x0001f78 },
@@ -806,6 +835,10 @@ static struct gchr_transform trans_o[] = {
     { ACUTE|SLASH, 0, 0x00001ff },
     { DBLGRAVE, 0, 0x000020d },
     { INVBREVE, 0, 0x000020f },
+    { DIAERESIS|MACRON, 0, 0x000022b },
+    { TILDE|MACRON, 0, 0x000022d },
+    { DOTABOVE, 0, 0x000022f },
+    { DOTABOVE|MACRON, 0, 0x0000231 },
     { ACUTE|TILDE, 0, 0x0001e4d },
     { DIAERESIS|TILDE, 0, 0x0001e4f },
     { GRAVE|MACRON, 0, 0x0001e51 },
@@ -827,12 +860,15 @@ static struct gchr_transform trans_o[] = {
 static struct gchr_transform trans_p[] = {
     { 0, 0, 0x00000b6 },
     { GREEK, 0, 0x00003c0 },
+    { SLASH, 0, 0x0001d7d },
     { ACUTE, 0, 0x0001e55 },
-    { DOTABOVE, 0, 0x0001e57 }
+    { DOTABOVE, 0, 0x0001e57 },
+    { SLASH, 0, 0x000a751 }
 };
 
 static struct gchr_transform trans_q[] = {
-    { GREEK, 0, 0x00003b8 }
+    { GREEK, 0, 0x00003b8 },
+    { SLASH, 0, 0x000a757 }
 };
 
 static struct gchr_transform trans_r[] = {
@@ -843,6 +879,7 @@ static struct gchr_transform trans_r[] = {
     { CARON, 0, 0x0000159 },
     { DBLGRAVE, 0, 0x0000211 },
     { INVBREVE, 0, 0x0000213 },
+    { SLASH, 0, 0x000024d },
     { DOTABOVE, 0, 0x0001e59 },
     { DOTBELOW, 0, 0x0001e5b },
     { DOTBELOW|MACRON, 0, 0x0001e5d },
@@ -953,6 +990,8 @@ static struct gchr_transform trans_y[] = {
     { ACUTE, 0, 0x00000fd },
     { DIAERESIS, 0, 0x00000ff },
     { CIRCUMFLEX, 0, 0x0000177 },
+    { MACRON, 0, 0x0000233 },
+    { SLASH, 0, 0x000024f },
     { DOTABOVE, 0, 0x0001e8f },
     { RING, 0, 0x0001e99 },
     { GRAVE, 0, 0x0001ef3 },
@@ -991,101 +1030,101 @@ static struct gchr_transform trans_asciitilde[] = {
 };
 
 struct gchr_lookup _gdraw_chrlookup[95] = {
-    { 2, trans_space },         /*   */
-    { 1, trans_exclam },        /* ! */
-    { 1, trans_quotedbl },      /* " */
-    { 2, trans_numbersign },    /* # */
-    { 2, trans_dollar },        /* $ */
-    { 0, NULL },                /* % */
-    { 0, NULL },                /* & */
-    { 1, trans_quotesingle },   /* ' */
-    { 0, NULL },                /* ( */
-    { 0, NULL },                /* ) */
-    { 2, trans_asterisk },      /* * */
-    { 1, trans_plus },          /* + */
-    { 1, trans_comma },         /* , */
-    { 2, trans_hyphenminus },   /* - */
-    { 2, trans_period },        /* . */
-    { 1, trans_slash },         /* / */
-    { 1, trans_zero },          /* 0 */
-    { 0, NULL },                /* 1 */
-    { 1, trans_two },           /* 2 */
-    { 0, NULL },                /* 3 */
-    { 1, trans_four },          /* 4 */
-    { 1, trans_five },          /* 5 */
-    { 1, trans_six },           /* 6 */
-    { 1, trans_seven },         /* 7 */
-    { 0, NULL },                /* 8 */
-    { 0, NULL },                /* 9 */
-    { 1, trans_colon },         /* : */
-    { 1, trans_semicolon },     /* ; */
-    { 1, trans_less },          /* < */
-    { 1, trans_equal },         /* = */
-    { 2, trans_greater },       /* > */
-    { 1, trans_question },      /* ? */
-    { 1, trans_at },            /* @ */
-    { 33, trans_A },            /* A */
-    { 4, trans_B },             /* B */
-    { 8, trans_C },             /* C */
-    { 8, trans_D },             /* D */
-    { 28, trans_E },            /* E */
-    { 2, trans_F },             /* F */
-    { 9, trans_G },             /* G */
-    { 12, trans_H },            /* H */
-    { 24, trans_I },            /* I */
-    { 2, trans_J },             /* J */
-    { 6, trans_K },             /* K */
-    { 10, trans_L },            /* L */
-    { 4, trans_M },             /* M */
-    { 9, trans_N },             /* N */
-    { 37, trans_O },            /* O */
-    { 4, trans_P },             /* P */
-    { 1, trans_Q },             /* Q */
-    { 10, trans_R },            /* R */
-    { 10, trans_S },            /* S */
-    { 8, trans_T },             /* T */
-    { 37, trans_U },            /* U */
-    { 3, trans_V },             /* V */
-    { 10, trans_W },            /* W */
-    { 3, trans_X },             /* X */
-    { 9, trans_Y },             /* Y */
-    { 8, trans_Z },             /* Z */
-    { 1, trans_bracketleft },   /* [ */
-    { 2, trans_backslash },     /* \ */
-    { 1, trans_bracketright },  /* ] */
-    { 1, trans_asciicircum },   /* ^ */
-    { 2, trans_underscore },    /* _ */
-    { 1, trans_grave },         /* ` */
-    { 36, trans_a },            /* a */
-    { 5, trans_b },             /* b */
-    { 8, trans_c } ,            /* c */
-    { 8, trans_d },             /* d */
-    { 29, trans_e },            /* e */
-    { 3, trans_f },             /* f */
-    { 10, trans_g } ,           /* g */
-    { 15, trans_h },            /* h */
-    { 30, trans_i },            /* i */
-    { 3, trans_j },             /* j */
-    { 6, trans_k },             /* k */
-    { 10, trans_l },            /* l */
-    { 5, trans_m },             /* m */
-    { 10, trans_n },            /* n */
-    { 37, trans_o },            /* o */
-    { 4, trans_p },             /* p */
-    { 1, trans_q },             /* q */
-    { 11, trans_r },            /* r */
-    { 11, trans_s },            /* s */
-    { 10, trans_t },            /* t */
-    { 43, trans_u },            /* u */
-    { 3, trans_v },             /* v */
-    { 11, trans_w },            /* w */
-    { 3, trans_x },             /* x */
-    { 10, trans_y },            /* y */
-    { 9, trans_z },             /* z */
-    { 1, trans_braceleft },     /* { */
-    { 2, trans_bar },           /* | */
-    { 1, trans_braceright },    /* } */
-    { 1, trans_asciitilde },    /* ~ */
+    { 2, trans_space },		/*   */
+    { 1, trans_exclam },	/* ! */
+    { 1, trans_quotedbl },	/* " */
+    { 2, trans_numbersign },	/* # */
+    { 2, trans_dollar },	/* $ */
+    { 0 },			/* % */
+    { 0 },			/* & */
+    { 1, trans_quotesingle },	/* ' */
+    { 0 },			/* ( */
+    { 0 },			/* ) */
+    { 2, trans_asterisk },	/* * */
+    { 1, trans_plus },		/* + */
+    { 1, trans_comma },		/* , */
+    { 2, trans_hyphenminus },	/* - */
+    { 2, trans_period },	/* . */
+    { 1, trans_slash },		/* / */
+    { 1, trans_zero },		/* 0 */
+    { 0 },			/* 1 */
+    { 1, trans_two },		/* 2 */
+    { 0 },			/* 3 */
+    { 1, trans_four },		/* 4 */
+    { 1, trans_five },		/* 5 */
+    { 1, trans_six },		/* 6 */
+    { 1, trans_seven },		/* 7 */
+    { 0 },			/* 8 */
+    { 0 },			/* 9 */
+    { 1, trans_colon },		/* : */
+    { 1, trans_semicolon },	/* ; */
+    { 1, trans_less },		/* < */
+    { 1, trans_equal },		/* = */
+    { 2, trans_greater },	/* > */
+    { 1, trans_question },	/* ? */
+    { 1, trans_at },		/* @ */
+    { 35, trans_A },		/* A */
+    { 5, trans_B },		/* B */
+    { 9, trans_C },		/* C */
+    { 8, trans_D },		/* D */
+    { 30, trans_E },		/* E */
+    { 2, trans_F },		/* F */
+    { 9, trans_G },		/* G */
+    { 13, trans_H },		/* H */
+    { 24, trans_I },		/* I */
+    { 3, trans_J },		/* J */
+    { 7, trans_K },		/* K */
+    { 10, trans_L },		/* L */
+    { 4, trans_M },		/* M */
+    { 10, trans_N },		/* N */
+    { 41, trans_O },		/* O */
+    { 6, trans_P },		/* P */
+    { 2, trans_Q },		/* Q */
+    { 11, trans_R },		/* R */
+    { 10, trans_S },		/* S */
+    { 8, trans_T },		/* T */
+    { 37, trans_U },		/* U */
+    { 3, trans_V },		/* V */
+    { 10, trans_W },		/* W */
+    { 3, trans_X },		/* X */
+    { 11, trans_Y },		/* Y */
+    { 8, trans_Z },		/* Z */
+    { 1, trans_bracketleft },	/* [ */
+    { 2, trans_backslash },	/* \ */
+    { 1, trans_bracketright },	/* ] */
+    { 1, trans_asciicircum },	/* ^ */
+    { 2, trans_underscore },	/* _ */
+    { 1, trans_grave },		/* ` */
+    { 38, trans_a },		/* a */
+    { 5, trans_b },		/* b */
+    { 9, trans_c },		/* c */
+    { 8, trans_d },		/* d */
+    { 31, trans_e },		/* e */
+    { 3, trans_f },		/* f */
+    { 10, trans_g },		/* g */
+    { 16, trans_h },		/* h */
+    { 30, trans_i },		/* i */
+    { 4, trans_j },		/* j */
+    { 7, trans_k },		/* k */
+    { 10, trans_l },		/* l */
+    { 5, trans_m },		/* m */
+    { 11, trans_n },		/* n */
+    { 41, trans_o },		/* o */
+    { 6, trans_p },		/* p */
+    { 2, trans_q },		/* q */
+    { 12, trans_r },		/* r */
+    { 11, trans_s },		/* s */
+    { 10, trans_t },		/* t */
+    { 43, trans_u },		/* u */
+    { 3, trans_v },		/* v */
+    { 11, trans_w },		/* w */
+    { 3, trans_x },		/* x */
+    { 12, trans_y },		/* y */
+    { 9, trans_z },		/* z */
+    { 1, trans_braceleft },	/* { */
+    { 2, trans_bar },		/* | */
+    { 1, trans_braceright },	/* } */
+    { 1, trans_asciitilde },	/* ~ */
 };
 
 struct gchr_accents _gdraw_accents[] = {

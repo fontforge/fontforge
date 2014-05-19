@@ -565,7 +565,7 @@ return( gsb );
 }
 
 static GGadget *GScrollBarCreateInitialized(struct gwindow *base, GGadgetData *gd,void *data) {
-    GScrollBar *gsb = _GScrollBarCreate(gcalloc(1,sizeof(GScrollBar)),base,gd,data,&scrollbar_box);
+    GScrollBar *gsb = _GScrollBarCreate(calloc(1,sizeof(GScrollBar)),base,gd,data,&scrollbar_box);
 
 return( &gsb->g );
 }
@@ -575,7 +575,7 @@ GGadget *GScrollBarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     struct scrollbarinit *hold = gd->u.sbinit;
 
     gd->u.sbinit = NULL;
-    gsb = _GScrollBarCreate(gcalloc(1,sizeof(GScrollBar)),base,gd,data,&scrollbar_box);
+    gsb = _GScrollBarCreate(calloc(1,sizeof(GScrollBar)),base,gd,data,&scrollbar_box);
     gd->u.sbinit = hold;
 
 return( &gsb->g );
@@ -584,6 +584,11 @@ return( &gsb->g );
 int32 GScrollBarGetPos(GGadget *g) {
 return( ((GScrollBar *) g)->sb_pos );
 }
+
+int32 GScrollBarAddToPos(GGadget *g,int32 pos) {
+    return GScrollBarSetPos( g, GScrollBarGetPos(g) + pos );
+}
+
 
 int32 GScrollBarSetPos(GGadget *g,int32 pos) {
     GScrollBar *gsb = (GScrollBar *) g;

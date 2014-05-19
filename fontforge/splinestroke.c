@@ -356,7 +356,7 @@ static void LineCap(StrokeContext *c,int isend) {
     if ( cnt<2 ) cnt = 2;
     if ( c->cur+2*cnt+10 >= c->max ) {
 	int extras = 2*cnt+200;
-	c->all = grealloc(c->all,(c->max+extras)*sizeof(StrokePoint));
+	c->all = realloc(c->all,(c->max+extras)*sizeof(StrokePoint));
 	memset(c->all+c->max,0,extras*sizeof(StrokePoint));
 	c->max += extras;
     }
@@ -415,7 +415,7 @@ static void LineCap(StrokeContext *c,int isend) {
 	{
 	    struct extrapoly *ep;
 	    if ( c->ecur>=c->emax )
-		c->ep = grealloc(c->ep,(c->emax+=40)*sizeof(struct extrapoly));
+		c->ep = realloc(c->ep,(c->emax+=40)*sizeof(struct extrapoly));
 	    ep = &c->ep[c->ecur++];
 	    ep->poly[0] = done.left;
 	    ep->poly[1].x = done.left.x + c->radius*slope.x;
@@ -533,7 +533,7 @@ return;		/* Essentially colinear */ /* Won't be perfect because control points l
     if ( cnt<6 ) cnt = 6;
     if ( c->cur+2*cnt+10 >= c->max ) {
 	int extras = 2*cnt+200;
-	c->all = grealloc(c->all,(c->max+extras)*sizeof(StrokePoint));
+	c->all = realloc(c->all,(c->max+extras)*sizeof(StrokePoint));
 	memset(c->all+c->max,0,extras*sizeof(StrokePoint));
 	c->max += extras;
     }
@@ -566,7 +566,7 @@ return;		/* Essentially colinear */ /* Won't be perfect because control points l
 	    cnt=3;
 	if ( c->cur+cnt+10 >= c->max ) {
 	    int extras = cnt+200;
-	    c->all = grealloc(c->all,(c->max+extras)*sizeof(StrokePoint));
+	    c->all = realloc(c->all,(c->max+extras)*sizeof(StrokePoint));
 	    memset(c->all+c->max,0,extras*sizeof(StrokePoint));
 	    c->max += extras;
 	}
@@ -602,7 +602,7 @@ return;		/* Essentially colinear */ /* Won't be perfect because control points l
 	{
 	    struct extrapoly *ep;
 	    if ( c->ecur>=c->emax )
-		c->ep = grealloc(c->ep,(c->emax+=40)*sizeof(struct extrapoly));
+		c->ep = realloc(c->ep,(c->emax+=40)*sizeof(struct extrapoly));
 	    ep = &c->ep[c->ecur++];
 	    ep->poly[0] = base;
 	    ep->poly[1] = inter;
@@ -627,7 +627,7 @@ return;		/* Essentially colinear */ /* Won't be perfect because control points l
 	    cnt1=3;
 	if ( c->cur+cnt+cnt1+2 >= c->max ) {
 	    int extras = cnt+cnt1+200;
-	    c->all = grealloc(c->all,(c->max+extras)*sizeof(StrokePoint));
+	    c->all = realloc(c->all,(c->max+extras)*sizeof(StrokePoint));
 	    memset(c->all+c->max,0,extras*sizeof(StrokePoint));
 	    c->max += extras;
 	}
@@ -693,11 +693,11 @@ return;		/* Essentially colinear */ /* Won't be perfect because control points l
 	    vector.y = pp->left.y -center.y;
 	}
 	rot = incr_angle; was_neg = false;
-	forever {
+	for (;;) {
 	    if ( c->cur >= c->max ) {
 		int extras = 400;
 		int off = pp-c->all;
-		c->all = grealloc(c->all,(c->max+extras)*sizeof(StrokePoint));
+		c->all = realloc(c->all,(c->max+extras)*sizeof(StrokePoint));
 		memset(c->all+c->max,0,extras*sizeof(StrokePoint));
 		c->max += extras;
 		pp = &c->all[off];
@@ -915,7 +915,7 @@ static void FindStrokePointsCircle(SplineSet *ss, StrokeContext *c) {
 	    StrokePoint *p;
 	    if ( c->cur >= c->max ) {
 		int extras = len+200;
-		c->all = grealloc(c->all,(c->max+extras)*sizeof(StrokePoint));
+		c->all = realloc(c->all,(c->max+extras)*sizeof(StrokePoint));
 		memset(c->all+c->max,0,extras*sizeof(StrokePoint));
 		c->max += extras;
 	    }
@@ -1070,7 +1070,7 @@ static void SquareCap(StrokeContext *c,int isend) {
     cnt = ceil(c->radius/c->resolution);
     if ( c->cur+2*cnt+10 >= c->max ) {
 	int extras = 2*cnt+200;
-	c->all = grealloc(c->all,(c->max+extras)*sizeof(StrokePoint));
+	c->all = realloc(c->all,(c->max+extras)*sizeof(StrokePoint));
 	memset(c->all+c->max,0,extras*sizeof(StrokePoint));
 	c->max += extras;
     }
@@ -1174,7 +1174,7 @@ return;		/* Slope changes, but not enough for us to flip to a new corner */
     if ( cnt<2 ) cnt = 2;
     if ( c->cur+3*cnt+10 >= c->max ) {
 	int extras = 3*cnt+200;
-	c->all = grealloc(c->all,(c->max+extras)*sizeof(StrokePoint));
+	c->all = realloc(c->all,(c->max+extras)*sizeof(StrokePoint));
 	memset(c->all+c->max,0,extras*sizeof(StrokePoint));
 	c->max += extras;
     }
@@ -1322,7 +1322,7 @@ static void FindStrokePointsSquare(SplineSet *ss, StrokeContext *c) {
 	/*  the end points, and there will be at least two internal points */
 	if ( c->cur+len+1+8*(cnt+2) >= c->max ) {
 	    int extras = len+8*cnt+200;
-	    c->all = grealloc(c->all,(c->max+extras)*sizeof(StrokePoint));
+	    c->all = realloc(c->all,(c->max+extras)*sizeof(StrokePoint));
 	    memset(c->all+c->max,0,extras*sizeof(StrokePoint));
 	    c->max += extras;
 	}
@@ -1331,7 +1331,7 @@ static void FindStrokePointsSquare(SplineSet *ss, StrokeContext *c) {
 	    StrokePoint *p;
 	    if ( c->cur >= c->max ) {
 		int extras = len+8*cnt+200;
-		c->all = grealloc(c->all,(c->max+extras)*sizeof(StrokePoint));
+		c->all = realloc(c->all,(c->max+extras)*sizeof(StrokePoint));
 		memset(c->all+c->max,0,extras*sizeof(StrokePoint));
 		c->max += extras;
 	    }
@@ -1518,7 +1518,7 @@ static void PolyCap(StrokeContext *c,int isend) {
     cnt = ceil(c->radius/c->resolution);
     if ( c->cur+cc*cnt+10 >= c->max ) {
 	int extras = cc*cnt+200;
-	c->all = grealloc(c->all,(c->max+extras)*sizeof(StrokePoint));
+	c->all = realloc(c->all,(c->max+extras)*sizeof(StrokePoint));
 	memset(c->all+c->max,0,extras*sizeof(StrokePoint));
 	c->max += extras;
     }
@@ -1662,7 +1662,7 @@ return;
     for ( nc=start+dir; ; nc+=dir ) {
 	if ( c->cur+cnt+10 >= c->max ) {
 	    int extras = 3*cnt+200;
-	    c->all = grealloc(c->all,(c->max+extras)*sizeof(StrokePoint));
+	    c->all = realloc(c->all,(c->max+extras)*sizeof(StrokePoint));
 	    memset(c->all+c->max,0,extras*sizeof(StrokePoint));
 	    c->max += extras;
 	}
@@ -1694,67 +1694,6 @@ return;
     if ( !atbreak )
 	c->all[c->cur++] = done;
 }
-
-#if 0
-static int ExtensiveHitTest(BasePoint *pt,StrokeContext *c,StrokePoint *other,
-	int hide_if_on_edge) {
-    bigreal t, tlow, thigh, incr, bestt;
-    BasePoint rel;
-    enum hittest hit;
-    bigreal distance, bestd;
-    /* Because we only sample every now and then, if the polygon has a sharp */
-    /*  point, we might find the magic point along the trace which actually */
-    /*  causes a hit. So if we get close to the polygon, then try harder to */
-    /*  find it. */
-
-    rel.x = pt->x-other->me.x;
-    rel.y = pt->y-other->me.y;
-    if ( (hit = PolygonHitTest(c->corners,c->slopes,c->n,&rel,&distance))==ht_Inside ||
-	    (hit==ht_OnEdge && hide_if_on_edge))
-return( true );
-    if ( distance<2*c->resolution && !other->line ) {
-	tlow = thigh = other->t;
-	if ( other->t>0 )
-	    tlow = (other[-1].t + other->t)/2;
-	if ( other->t<1.0 )
-	    thigh = (other->t + other[1].t)/2;
-	if ( tlow!=thigh ) {
-	    incr = (thigh-tlow)/16;
-	    bestd = 3e30; bestt = -1;
-	    for ( t=tlow; t<=thigh+incr/2; t+=incr ) {
-		if ( t+incr/2 >=thigh )
-		    t = thigh;
-		rel.x = pt->x - (((other->sp->splines[0].a*t + other->sp->splines[0].b)*t + other->sp->splines[0].c)*t + other->sp->splines[0].d);
-		rel.y = pt->y - (((other->sp->splines[1].a*t + other->sp->splines[1].b)*t + other->sp->splines[1].c)*t + other->sp->splines[1].d);
-		if ( (hit = PolygonHitTest(c->corners,c->slopes,c->n,&rel,&distance))==ht_Inside ||
-			(hit==ht_OnEdge && hide_if_on_edge) )
-return( true );
-		if ( distance<bestd ) {
-		    bestt = t;
-		    bestd = distance;
-		}
-	    }
-	    if ( bestd<c->resolution/10 ) {
-		tlow = bestt - 2*incr/3;
-		if ( tlow<0 ) tlow=0;
-		thigh = bestt + 2*incr/3;
-		if ( thigh>1 ) thigh = 1;
-		incr /= 16;
-		for ( t=tlow; t<=thigh+incr/2; t+=incr ) {
-		    if ( t+incr/2 >=thigh )
-			t = thigh;
-		    rel.x = pt->x - (((other->sp->splines[0].a*t + other->sp->splines[0].b)*t + other->sp->splines[0].c)*t + other->sp->splines[0].d);
-		    rel.y = pt->y - (((other->sp->splines[1].a*t + other->sp->splines[1].b)*t + other->sp->splines[1].c)*t + other->sp->splines[1].d);
-		    if ( (hit = PolygonHitTest(c->corners,c->slopes,c->n,&rel,&distance))==ht_Inside ||
-			    (hit==ht_OnEdge && hide_if_on_edge) )
-return( true );
-		}
-	    }
-	}
-    }
-return( false );
-}
-#endif
 
 static void HideStrokePointsPoly(StrokeContext *c) {
     int i,j;
@@ -1895,7 +1834,7 @@ static void FindStrokePointsPoly(SplineSet *ss, StrokeContext *c) {
 	/*  c->n on each side, and sides can change independently so 2*c->n */
 	if ( c->cur+len+1+(cnt+2)*2*c->n >= c->max ) {
 	    int extras = len+(cnt+2)*2*c->n+200;
-	    c->all = grealloc(c->all,(c->max+extras)*sizeof(StrokePoint));
+	    c->all = realloc(c->all,(c->max+extras)*sizeof(StrokePoint));
 	    memset(c->all+c->max,0,extras*sizeof(StrokePoint));
 	    c->max += extras;
 	}
@@ -1907,7 +1846,7 @@ static void FindStrokePointsPoly(SplineSet *ss, StrokeContext *c) {
 	    StrokePoint *p;
 	    if ( c->cur+2 >= c->max ) {
 		int extras = 200+len;
-		c->all = grealloc(c->all,(c->max+extras)*sizeof(StrokePoint));
+		c->all = realloc(c->all,(c->max+extras)*sizeof(StrokePoint));
 		memset(c->all+c->max,0,extras*sizeof(StrokePoint));
 		c->max += extras;
 		p = &c->all[c->cur-1];
@@ -2069,7 +2008,7 @@ return;
     nnsp = nsp->next->to;
     memset(&ndir,0,sizeof(ndir));
     removed = false;
-    forever {
+    for (;;) {
 	if ( sp==nsp )
     break;
 	if ( nsp->next->knownlinear ) {
@@ -2821,8 +2760,7 @@ return;
     base->me = inter;
     SplineRefigure(base->next);
     SplineRefigure(base->prev);
-    SplinePointCatagorize(base);
-
+    SplinePointCategorize(base);
     SplinePointFree(other);
 }
 
@@ -3169,56 +3107,6 @@ return( ss );
 return( NULL );
     }
 
-#if 0
-    while ( removed ) {
-	removed = false;
-	for ( sp=ss->first; ; ) {
-	    if ( sp->next->knownlinear && sp->prev->knownlinear &&
-			ReversedLines(sp->next,sp->prev, &start, &end)) {
-		/* Lines reverse at the current point */
-		if ( sp->next->to == sp->prev->from ) {
-		    /* Entire splineset is a reversed line */ /* Remove it all */
-		    SplinePointListFree(ss);
-return( NULL );
-		}
-		/* Force the two reversed lines to have the same length by adding*/
-		/*  an internal point if needed */
-		nsp = sp->next->to;
-		psp = sp->prev->from;
-		if ( nsp->me.x != psp->me.x || nsp->me.y != psp->me.y ) {
-		    if ( nsp==end )
-			psp = SplineInsertPoint(sp->prev,nsp);
-		    else
-			nsp = SplineInsertPoint(sp->next,psp);
-		}
-		/* And then get rid of the back and forth bit */
-		nsp = sp->next->to;
-		psp = sp->prev->from;
-		SplineFree(sp->next); SplineFree(sp->prev);
-		SplinePointFree(sp);
-		nsp->prev = psp->prev;
-		nsp->prevcp = psp->prevcp;
-		nsp->noprevcp = psp->noprevcp;
-		nsp->prev->to = nsp;
-		SplinePointFree(psp);
-		if ( ss->first==sp || ss->first==psp )
-		    ss->first = nsp;
-		if ( ss->last==sp || ss->last==psp )
-		    ss->last = nsp;
-		sp = nsp;
-		removed = true;
-		if ( nsp==ss->first )
-	break;
-		else
-	continue;
-	    }
-	    sp=sp->next->to;
-	    if ( sp==ss->first )
-	break;
-	}
-    }
-#endif
-
     /* OK, here we've gotten rid of all the places where the line doubles back */
     /*  mirrored by one of its end-points. But there could be line segments */
     /*  which double back on another segment somewhere else in the contour. */
@@ -3353,7 +3241,7 @@ static int InterpolateTPoints(StrokeContext *c,int start_pos,int end_pos,
 return( end_pos-start_pos );
 
     if ( 20 >= c->tmax )
-	c->tpt = grealloc(c->tpt,(c->tmax = 20+MAX_TPOINTS)*sizeof(TPoint));
+	c->tpt = realloc(c->tpt,(c->tmax = 20+MAX_TPOINTS)*sizeof(TPoint));
 
     if ( c->all[start_pos].line ) {
 	me = c->all[start_pos-1].me;
@@ -3518,7 +3406,7 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 		    tot = MAX_TPOINTS;
 		}
 		if ( tot >= c->tmax )
-		    c->tpt = grealloc(c->tpt,(c->tmax = tot+MAX_TPOINTS)*sizeof(TPoint));
+		    c->tpt = realloc(c->tpt,(c->tmax = tot+MAX_TPOINTS)*sizeof(TPoint));
 		/* There is really no point in having a huge number of data points */
 		/*  I don't need 1000 points to approximate the curve, 10 will probably */
 		/*  do. The extra points just slow us down (we need them for the */
@@ -3600,7 +3488,7 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 		    tot = MAX_TPOINTS;
 		}
 		if ( tot >= c->tmax )
-		    c->tpt = grealloc(c->tpt,(c->tmax = tot+MAX_TPOINTS)*sizeof(TPoint));
+		    c->tpt = realloc(c->tpt,(c->tmax = tot+MAX_TPOINTS)*sizeof(TPoint));
 		ipos = start_pos; skip_cnt=0;
 		for ( i=0; i<=tot; ++i ) {
 		    TPoint *tpt = c->tpt + i;
@@ -3806,8 +3694,8 @@ return( NULL );				/* That's an error, must be closed */
 	    if ( n>max )
 		max = n;
 	}
-	c.corners = galloc(max*sizeof(BasePoint));
-	c.slopes  = galloc(max*sizeof(BasePoint));
+	c.corners = malloc(max*sizeof(BasePoint));
+	c.slopes  = malloc(max*sizeof(BasePoint));
 	memset(trans,0,sizeof(trans));
 	trans[0] = trans[3] = 1;
 	if ( !c.leave_users_center ) {

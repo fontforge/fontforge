@@ -32,6 +32,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <ustring.h>
+#include <ffglib.h>
 #include "utype.h"
 #include <sys/types.h>
 #if !defined(__MINGW32__)
@@ -59,11 +60,11 @@ struct printdefaults pdefs[] = {
 static int pdf_addobject(PI *pi) {
     if ( pi->next_object==0 ) {
 	pi->max_object = 100;
-	pi->object_offsets = galloc(pi->max_object*sizeof(int));
+	pi->object_offsets = malloc(pi->max_object*sizeof(int));
 	pi->object_offsets[pi->next_object++] = 0;	/* Object 0 is magic */
     } else if ( pi->next_object>=pi->max_object ) {
 	pi->max_object += 100;
-	pi->object_offsets = grealloc(pi->object_offsets,pi->max_object*sizeof(int));
+	pi->object_offsets = realloc(pi->object_offsets,pi->max_object*sizeof(int));
     }
     pi->object_offsets[pi->next_object] = ftell(pi->out);
     fprintf( pi->out, "%d 0 obj\n", pi->next_object++ );
@@ -73,10 +74,10 @@ return( pi->next_object-1 );
 static void pdf_addpage(PI *pi) {
     if ( pi->next_page==0 ) {
 	pi->max_page = 100;
-	pi->page_objects = galloc(pi->max_page*sizeof(int));
+	pi->page_objects = malloc(pi->max_page*sizeof(int));
     } else if ( pi->next_page>=pi->max_page ) {
 	pi->max_page += 100;
-	pi->page_objects = grealloc(pi->page_objects,pi->max_page*sizeof(int));
+	pi->page_objects = realloc(pi->page_objects,pi->max_page*sizeof(int));
     }
     pi->page_objects[pi->next_page++] = pi->next_object;
     pdf_addobject(pi);
@@ -111,7 +112,7 @@ static void pdf_finishpage(PI *pi) {
 static int pfb_getsectionlength(FILE *pfb,int sec_type,int skip_sec) {
     int len=0, sublen, ch;
 
-    forever {
+    for (;;) {
 	ch = getc(pfb);
 	if ( ch!=0x80 ) {
 	    ungetc(ch,pfb);
@@ -392,8 +393,8 @@ static void pdf_dump_type1(PI *pi,int sfid) {
 
     fd_obj = figure_fontdesc(pi, sfid, &fd,1,font_stream);
 
-    sfbit->our_font_objs = galloc((sfbit->map->enccount/256+1)*sizeof(int *));
-    sfbit->fonts = galloc((sfbit->map->enccount/256+1)*sizeof(int *));
+    sfbit->our_font_objs = malloc((sfbit->map->enccount/256+1)*sizeof(int *));
+    sfbit->fonts = malloc((sfbit->map->enccount/256+1)*sizeof(int *));
     for ( i=0; i<sfbit->map->enccount; i += 256 ) {
 	sfbit->fonts[i/256] = -1;
 	dump_pfb_encoding(pi,sfid,i,fd_obj);
@@ -466,7 +467,7 @@ static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
 	fprintf( pi->out, ">>\n" );
 	fprintf( pi->out, "stream\n" );
 	if ( grad->stop_cnt==2 ) {
-	    int col = grad->grad_stops[0].col;
+	    unsigned col = grad->grad_stops[0].col;
 	    if ( col==COLOR_INHERITED ) col = 0x000000;
 	    putc((col>>16)&0xff,pi->out);
 	    putc((col>>8 )&0xff,pi->out);
@@ -529,8 +530,8 @@ static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
 	fprintf( pi->out, "endobj\n" );
 
 	if ( gr->pattern_cnt>=gr->pattern_max ) {
-	    gr->pattern_names = grealloc(gr->pattern_names,(gr->pattern_max+=100)*sizeof(char *));
-	    gr->pattern_objs  = grealloc(gr->pattern_objs ,(gr->pattern_max     )*sizeof(int   ));
+	    gr->pattern_names = realloc(gr->pattern_names,(gr->pattern_max+=100)*sizeof(char *));
+	    gr->pattern_objs  = realloc(gr->pattern_objs ,(gr->pattern_max     )*sizeof(int   ));
 	}
 	makePatName(buffer,ref,sc,layer,!isfill,true);
 	gr->pattern_names[gr->pattern_cnt  ] = copy(buffer);
@@ -553,8 +554,8 @@ static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
 	PatternSCBounds(pattern_sc,&b);
 
 	if ( gr->pattern_cnt>=gr->pattern_max ) {
-	    gr->pattern_names = grealloc(gr->pattern_names,(gr->pattern_max+=100)*sizeof(char *));
-	    gr->pattern_objs  = grealloc(gr->pattern_objs ,(gr->pattern_max     )*sizeof(int   ));
+	    gr->pattern_names = realloc(gr->pattern_names,(gr->pattern_max+=100)*sizeof(char *));
+	    gr->pattern_objs  = realloc(gr->pattern_objs ,(gr->pattern_max     )*sizeof(int   ));
 	}
 	makePatName(buffer,ref,sc,layer,!isfill,false);
 	gr->pattern_names[gr->pattern_cnt  ] = copy(buffer);
@@ -601,7 +602,7 @@ static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
 	}
 	if ( i==-1 ) {
 	    if ( gr->opacity_cnt>=gr->opacity_max ) {
-		gr->opac_state = grealloc(gr->opac_state,(gr->opacity_max+=100)*sizeof(struct opac_state));
+		gr->opac_state = realloc(gr->opac_state,(gr->opacity_max+=100)*sizeof(struct opac_state));
 	    }
 	    gr->opac_state[gr->opacity_cnt].opacity = brush->opacity;
 	    gr->opac_state[gr->opacity_cnt].isfill  = isfill;
@@ -633,8 +634,8 @@ static void pdf_ImageCheck(PI *pi,struct glyph_res *gr,ImageList *images,
 	base = img->list_len==0 ? img->u.image : img->u.images[1];
 
 	if ( gr->image_cnt>=gr->image_max ) {
-	    gr->image_names = grealloc(gr->image_names,(gr->image_max+=100)*sizeof(char *));
-	    gr->image_objs  = grealloc(gr->image_objs ,(gr->image_max     )*sizeof(int   ));
+	    gr->image_names = realloc(gr->image_names,(gr->image_max+=100)*sizeof(char *));
+	    gr->image_objs  = realloc(gr->image_objs ,(gr->image_max     )*sizeof(int   ));
 	}
 	sprintf( buffer, "%s_ly%d_%d_image", sc->name, layer, icnt );
 	gr->image_names[gr->image_cnt  ] = copy(buffer);
@@ -854,7 +855,7 @@ static int pdf_charproc(PI *pi, SplineChar *sc) {
 	if ( ref!=NULL )
     break;
     }
-	    
+
     if ( i==sc->layer_cnt ) {
 	/* We never set the color, use d1 to specify metrics */
 	DBounds b;
@@ -989,8 +990,8 @@ static void pdf_gen_type3(PI *pi,int sfid) {
     }
 
     SplineFontFindBounds(sf,&bb);
-    sfbit->our_font_objs = galloc((map->enccount/256+1)*sizeof(int *));
-    sfbit->fonts = galloc((map->enccount/256+1)*sizeof(int *));
+    sfbit->our_font_objs = malloc((map->enccount/256+1)*sizeof(int *));
+    sfbit->fonts = malloc((map->enccount/256+1)*sizeof(int *));
     for ( i=0; i<map->enccount; i += 256 ) {
 	sfbit->fonts[i/256] = -1;
 	dump_pdf3_encoding(pi,sfid,i,&bb,notdefproc);
@@ -1054,7 +1055,7 @@ static void pdf_build_type0(PI *pi, int sfid) {
     } else
 	cidmax = cidmaster->glyphcnt + 2;	/* two extra useless glyphs in ttf */
 
-    widths = galloc(cidmax*sizeof(uint16));
+    widths = malloc(cidmax*sizeof(uint16));
 
     for ( i=0; i<cidmax; ++i ) {
 	SplineChar *sc = NULL;
@@ -1104,7 +1105,7 @@ static void pdf_build_type0(PI *pi, int sfid) {
     fprintf( pi->out, "\n" );
 
     /* OK, now we've dumped up the CID part, we need to create a Type0 Font */
-    sfbit->our_font_objs = galloc(sizeof(int));
+    sfbit->our_font_objs = malloc(sizeof(int));
     sfbit->our_font_objs[0] = pi->next_object;
     sfbit->next_font = 1;
     pdf_addobject(pi);
@@ -1122,6 +1123,7 @@ static void pdf_build_type0(PI *pi, int sfid) {
 }
 
 static void dump_pdfprologue(PI *pi) {
+/* TODO: Note, maybe this routine can be combined somehow with cvexports.c _ExportPDF() */
     time_t now;
     struct tm *tm;
     const char *author = GetAuthor();
@@ -1144,12 +1146,21 @@ static void dump_pdfprologue(PI *pi) {
     fprintf( pi->out, "  /Producer (FontForge)\n" );
     time(&now);
     tm = localtime(&now);
-    fprintf( pi->out, "  /CreationDate (D:%4d%02d%02d%02d%02d",
-	    tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday, tm->tm_hour, tm->tm_min );
+    fprintf( pi->out, "    /CreationDate (D:%04d%02d%02d%02d%02d%02d",
+	    tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec );
+#ifdef _NO_TZSET
+    fprintf( pi->out, "Z)\n" );
+#else
     if ( timezone==0 )
 	fprintf( pi->out, "Z)\n" );
-    else 
-	fprintf( pi->out, "%+02d')\n", (int) timezone/3600 );	/* doesn't handle half-hour zones */
+    else {
+	if ( timezone<0 ) /* fprintf bug - this is a kludge to print +/- in front of a %02d-padded value */
+	    fprintf( pi->out, "-" );
+	else
+	    fprintf( pi->out, "+" );
+	fprintf( pi->out, "%02d'%02d')\n", (int)(timezone/3600),(int)(timezone/60-(timezone/3600)*60) );
+    }
+#endif
     if ( author!=NULL )
 	fprintf( pi->out, "  /Author (%s)\n", author );
     fprintf( pi->out, ">>\n" );
@@ -1235,7 +1246,7 @@ static void dump_pdftrailer(PI *pi) {
     /*fprintf( pi->out, "  /Encoding /WinAnsiEncoding\n" );*/
     fprintf( pi->out, ">>\n" );
     fprintf( pi->out, "endobj\n\n" );
-    
+
     xrefloc = ftell(pi->out);
     fprintf( pi->out, "xref\n" );
     fprintf( pi->out, " 0 %d\n", pi->next_object );
@@ -2213,7 +2224,7 @@ static char *_annakarenena[] = {
     NULL
 };
 /* Serbian (Cyrillic) */
-static char *_serbcyriljohn[] = { 
+static char *_serbcyriljohn[] = {
     "У почетку беше Реч Божија, и та Реч беше у Бога, и Бог беше Реч.",
     NULL
 };
@@ -2369,32 +2380,31 @@ static char *_hangulsijo[] = {
     NULL
 };
 /* Chinese traditional */
-/* Laautzyy */
-static char *_YihKing[] = {
+/* https://en.wikipedia.org/wiki/Tao_Te_Ching */
+static char *_TaoTeChing[] = {
     "道可道非常道，",
     "名可名非常名。",
     NULL
 };
-static char *_LiiBair[] = {
+/* http://gan.wikipedia.org/wiki/%E5%B0%87%E9%80%B2%E9%85%92 */
+static char *_LiBai[] = {
     "將進酒",
     "",
     "君不見 黃河之水天上來 奔流到海不復回",
     "君不見 高堂明鏡悲白髮 朝如青絲暮成雪",
-    "人生得意須盡歡 莫使金樽空對⺝",
+    "人生得意須盡歡 莫使金樽空對月",
     "天生我材必有用 千金散盡還復來",
     "烹羊宰牛且為樂 會須一飲三百杯",
     "岑夫子 丹丘生 將進酒 君莫停",
     "與君歌一曲 請君為我側耳聽",
-    "",
     "鐘鼓饌玉不足貴 但願長醉不願醒",
     "古來聖賢皆寂寞 惟有飲者留其名",
     "陳王昔時宴平樂 斗酒十千恣讙謔",
     "主人何為言少錢 徑須沽取對君酌",
-    "五花馬 千金裘 呼兒將出換美酒",
-    "與爾同消萬古愁",
+    "五花馬 千金裘 呼兒將出換美酒 與爾同消萬古愁",
     NULL
 };
-static char *_LiiBairShort[] = {
+static char *_LiBaiShort[] = {
     "將進酒",
     "",
     "君不見 黃河之水天上來 奔流到海不復回",
@@ -2402,12 +2412,14 @@ static char *_LiiBairShort[] = {
     NULL
 };
 /* Japanese */
+/* https://ja.wikipedia.org/wiki/%E6%BA%90%E6%B0%8F%E7%89%A9%E8%AA%9E */
 static char *_Genji[] = {
-    "源⽒物語（紫式部）：いづれの御時にか、⼥御更⾐∂またさぶらひたまひける中に、いとやむごとなき際には∂らぬが、すぐれて時めきたまふ∂りけり",
+    "源氏物語（紫式部）：いづれの御時にか、女御・更衣あまた さぶらひたまひけるなかに、いとやむごとなき 際にはあらぬが、すぐれてときめきたまふありけり。",
     NULL
 };
+/* http://www.geocities.jp/sybrma/42souseki.neko.html */
 static char *_IAmACat[] = {
-    "吾輩は猫で∂る（夏ｭﾚ漱⽯）：吾輩は猫で∂る",
+    "吾輩は猫である（夏目漱石）：吾輩は猫である",
     NULL
 };
 
@@ -2417,10 +2429,6 @@ static char *_IAmACat[] = {
 /* Belorussian */
 static char *_belorussianjohn[] = {
     "У пачатку было Слова, і Слова было ў Бога, і Богам было Слова. Яно было ў пачатку ў Бога",
-#if 0		/* told this is actually russian */
-    "Вначале было Слово, и Слово было у Бога, и Слово было Бог.",
-    "Оно было в начале у Бога.",
-#endif
     NULL
 };
 /* basque */
@@ -2547,8 +2555,8 @@ static struct langsamples {
     { _hebrew, "he", sc_hebrew, CHR('h','e','b','r'), CHR('I','W','R',' ') },
     { _arabic, "ar", sc_arabic, CHR('a','r','a','b'), CHR('A','R','A',' ')},
     { _hangulsijo, "ko", sc_hangul, CHR('h','a','n','g'), CHR('K','O','R',' ')},
-    { _YihKing, "zh", sc_chinesetrad, CHR('h','a','n','i'), CHR('Z','H','T',' ')},
-    { _LiiBair, "zh", sc_chinesetrad, CHR('h','a','n','i'), CHR('Z','H','T',' ')},
+    { _TaoTeChing, "zh", sc_chinesetrad, CHR('h','a','n','i'), CHR('Z','H','T',' ')},
+    { _LiBai, "zh", sc_chinesetrad, CHR('h','a','n','i'), CHR('Z','H','T',' ')},
     { _Genji, "ja", sc_kanji, CHR('h','a','n','i'), CHR('J','A','N',' ')},
     { _IAmACat, "ja", sc_kanji, CHR('h','a','n','i'), CHR('J','A','N',' ')},
     { _donquixote, "es", sc_latin, CHR('l','a','t','n'), CHR('E','S','P',' ')},
@@ -2710,8 +2718,8 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 	    cur = sample[i].sample;
 	    for ( j=0; cur[j]!=NULL && gotem; ++j )
 		gotem = AllChars(sf,cur[j]);
-	    if ( !gotem && sample[i].sample==_LiiBair ) {
-		cur = _LiiBairShort;
+	    if ( !gotem && sample[i].sample==_LiBai ) {
+		cur = _LiBaiShort;
 		gotem = true;
 		for ( j=0; cur[j]!=NULL && gotem; ++j )
 		    gotem = AllChars(sf,cur[j]);
@@ -2728,7 +2736,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 		for ( j=0; cur[j]!=NULL; ++j ) {
 		    if ( ret )
 			utf82u_strcpy(ret+len,cur[j]);
-		    len += utf8_strlen(cur[j]);
+		    len += g_utf8_strlen( cur[j], -1 );
 		    if ( ret )
 			ret[len] = '\n';
 		    ++len;
@@ -2740,42 +2748,6 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 		    (langsyscallback)(tf,len,sample[i].otf_script,sample[i].lang);
 	    }
 	}
-
-#if 0
-	/* If no matches then put in "the quick brown...", in russian too if the encoding suggests it... */
-	if ( !ScriptInList(CHR('l','a','t','n'),scriptsdone,scnt) &&
-		ScriptInList(CHR('l','a','t','n'),scriptsthere,therecnt)) {
-	    for ( j=0; _simple[j]!=NULL; ++j ) {
-		if ( ret )
-		    utf82u_strcpy(ret+len,_simple[j]);
-		len += utf8_strlen(_simple[j]);
-		if ( ret )
-		    ret[len] = '\n';
-		++len;
-		if ( ret )
-		    ret[len] = '\n';
-		++len;
-		if ( ret && langsyscallback!=NULL )
-		    (langsyscallback)(tf,len,CHR('l','a','t','n'),CHR('E','N','G',' '));
-	    }
-	}
-	if ( !ScriptInList(CHR('c','y','r','l'),scriptsdone,scnt) &&
-		ScriptInList(CHR('c','y','r','l'),scriptsthere,therecnt)) {
-	    for ( j=0; _simplecyrill[j]!=NULL; ++j ) {
-		if ( ret )
-		    utf82u_strcpy(ret+len,_simplecyrill[j]);
-		len += utf8_strlen(_simplecyrill[j]);
-		if ( ret )
-		    ret[len] = '\n';
-		++len;
-		if ( ret )
-		    ret[len] = '\n';
-		++len;
-		if ( ret && langsyscallback!=NULL )
-		    (langsyscallback)(tf,len,CHR('c','y','r','l'),CHR('R','U','S',' '));
-	    }
-	}
-#endif
 
 	rcnt = 0;
 	for ( s=0; s<therecnt; ++s ) if ( !ScriptInList(scriptsthere[s],scriptsdone,scnt)) {
@@ -2795,7 +2767,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 		if ( *pt=='\0' )
 		    *randoms[rcnt] = '\0';
 		else {
-		    len += utf8_strlen( randoms[rcnt])+2;
+		    len += g_utf8_strlen( randoms[rcnt], -1 )+2;
 		    foundsomething = true;
 		}
 	    }
@@ -2811,7 +2783,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 	    pt = buffer;
 	    for ( gid=i=0; gid<sf->glyphcnt && pt<buffer+sizeof(buffer)-4 && i<50; ++gid ) {
 		if ( (sc=sf->glyphs[gid])!=NULL && sc->unicodeenc!=-1 ) {
-		    pt = utf8_idpb(pt,sc->unicodeenc);
+		    pt = utf8_idpb(pt,sc->unicodeenc,0);
 		    ++i;
 		}
 	    }
@@ -2825,7 +2797,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 		    if ( langsyscallback!=NULL )
 			(langsyscallback)(tf,len,DEFAULT_SCRIPT,DEFAULT_LANG);
 		} else
-		    len += utf8_strlen( buffer )+1;
+		    len += g_utf8_strlen( buffer, -1 )+1;
 	    }
 	}
 
@@ -2835,9 +2807,9 @@ return( ret );
 	}
 	if ( len == 0 ) {
 	    /* Er... We didn't find anything?! */
-return( gcalloc(1,sizeof(unichar_t)));
+return( calloc(1,sizeof(unichar_t)));
 	}
-	ret = galloc((len+1)*sizeof(unichar_t));
+	ret = malloc((len+1)*sizeof(unichar_t));
     }
 }
 
@@ -2948,7 +2920,7 @@ void DoPrinting(PI *pi,char *filename) {
 	if ( sfmax==0 ) sfmax=1;
     }
     pi->sfmax = sfmax;
-    pi->sfbits = gcalloc(sfmax,sizeof(struct sfbits));
+    pi->sfbits = calloc(sfmax,sizeof(struct sfbits));
     pi->sfcnt = 0;
 
     if ( pi->pt==pt_fontdisplay )
@@ -3033,7 +3005,7 @@ return( NULL );
 	format = 2;		/* byte-swapped ucs2 */
     else
 	rewind(file);
-    space = upt = galloc((max+1)*sizeof(unichar_t));
+    space = upt = malloc((max+1)*sizeof(unichar_t));
     end = space+max;
     if ( format!=0 ) {
 	while ( upt<end ) {
@@ -3072,7 +3044,7 @@ void ScriptPrint(FontViewBase *fv,int type,int32 *pointsizes,char *samplefile,
     pi.pt = type;
     if ( type==pt_fontsample ) {
 	int width = (pi.pagewidth-1*72)*printdpi/72;
-	li = gcalloc(1,sizeof(LayoutInfo));
+	li = calloc(1,sizeof(LayoutInfo));
 	temp[0] = 0;
 	li->wrap = true;
 	li->dpi = printdpi;

@@ -35,52 +35,17 @@
 #include <dirent.h>
 #include <ustring.h>
 #include "gfile.h"
+#include "views.h"
+#include "gwidget.h"
 
-int AutoSaveFrequency=30;
+int AutoSaveFrequency=5;
 
 #if !defined(__MINGW32__)
 # include <pwd.h>
 #endif
 
-
-char *getPfaEditDir(char *buffer) {
-    static char *editdir = NULL;
-    char *dir;
-    char olddir[1024];
-
-    if ( editdir!=NULL )
-return( editdir );
-
-    dir = GFileGetHomeDir();
-    if ( dir==NULL )
-return( NULL );
-#ifdef __VMS
-   sprintf(buffer,"%s/_FontForge", dir);
-#else
-   sprintf(buffer,"%s/.FontForge", dir);
-#endif
-   /* We used to use .PfaEdit. So if we don't find a .FontForge look for that*/
-    /*  if there is a .PfaEdit, then rename it to .FontForge */
-    if ( access(buffer,F_OK)==-1 ) {
-#ifdef __VMS
-       snprintf(olddir,sizeof(olddir),"%s/_PfaEdit", dir);
-#else
-       snprintf(olddir,sizeof(olddir),"%s/.PfaEdit", dir);
-#endif
-       if ( access(olddir,F_OK)==0 )
-	    rename(olddir,buffer);
-    }
-    free(dir);
-    /* If we still can't find it, create it */
-    if ( access(buffer,F_OK)==-1 )
-	if ( GFileMkDir(buffer)==-1 )
-return( NULL );
-    editdir = copy(buffer);
-return( editdir );
-}
-
 static char *getAutoDirName(char *buffer) {
-    char *dir=getPfaEditDir(buffer);
+    char *dir=getFontForgeUserDir(Config);
 
     if ( dir==NULL )
 return( NULL );
@@ -111,7 +76,9 @@ return;
     }
 }
 
-int DoAutoRecovery(int inquire) {
+
+int DoAutoRecoveryExtended(int inquire)
+{
     char buffer[1025];
     char *recoverdir = getAutoDirName(buffer);
     DIR *dir;
@@ -133,12 +100,18 @@ return( false );
 	    any=true;
 	    if ( sf->fv==NULL )		/* Doesn't work, cli arguments not parsed yet */
 		FontViewCreate(sf,false);
+	    fprintf( stderr, " Done\n" );
 	}
-	fprintf( stderr, " Done\n" );
     }
     closedir(dir);
 return( any );
 }
+
+int DoAutoRecovery(int inquire )
+{
+    return DoAutoRecoveryExtended( inquire );
+}
+
 
 void CleanAutoRecovery(void) {
     char buffer[1025];
@@ -161,6 +134,7 @@ return;
     }
     closedir(dir);
 }
+
 
 void _DoAutoSaves(FontViewBase *fvs) {
     FontViewBase *fv;

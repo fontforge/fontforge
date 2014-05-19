@@ -1140,7 +1140,7 @@ return( NULL );
 	in = (char *) str;
 	inlen = strlen(in);
 	outlen = (inlen+1)*4;
-	out = (char *) (ret = galloc(outlen+2));
+	out = (char *) (ret = malloc(outlen+2));
 	iconv(toutf8,&in,&inlen,&out,&outlen);
 	out[0] = '\0';
 	iconv_close(toutf8);
@@ -1156,10 +1156,10 @@ return( NULL );
     if ( table==NULL )
 return( NULL );
 
-    ret = galloc((strlen(str)+1)*3);
+    ret = malloc(strlen(str)*4+1);
     for ( rpt = ret; *ustr; ++ustr ) {
 	int ch = table[*ustr];
-	rpt = utf8_idpb(rpt,ch);
+	rpt = utf8_idpb(rpt,ch,0);
     }
     *rpt = '\0';
 return( ret );
@@ -1191,7 +1191,7 @@ return( NULL );
 	in = (char *) ustr;
 	inlen = strlen(ustr);
 	outlen = sizeof(unichar_t)*strlen(ustr);
-	out = ret = galloc(outlen+sizeof(unichar_t));
+	out = ret = malloc(outlen+sizeof(unichar_t));
 	iconv(fromutf8,&in,&inlen,&out,&outlen);
 	out[0] = out[1] = '\0';
 	out[2] = out[3] = '\0';
@@ -1217,7 +1217,7 @@ return( ret );
     if ( table==NULL )
 return( NULL );
 
-    ret = galloc(strlen(ustr)+1);
+    ret = malloc(strlen(ustr)+1);
     for ( rpt = ret; (ch=utf8_ildb(&ustr)); ) {
 	for ( i=0; i<256; ++i )
 	    if ( table[i]==ch ) {
@@ -1420,10 +1420,8 @@ struct macsettingname macfeat_otftag[] = {
     { 1, 0, CHR('r','l','i','g') },	/* Required ligatures */
     { 1, 2, CHR('l','i','g','a') },	/* Common ligatures */
     { 1, 4, CHR('d','l','i','g') },	/* rare ligatures => discretionary */
-#if 0
-    { 1, 4, CHR('h','l','i','g') },	/* rare ligatures => historic */
-    { 1, 4, CHR('a','l','i','g') },	/* rare ligatures => ?ancient? */
-#endif
+    /* { 1, 4, CHR('h','l','i','g') },	/\* rare ligatures => historic *\/ */
+    /* { 1, 4, CHR('a','l','i','g') },	/\* rare ligatures => ?ancient? *\/ */
     /* 2, 1, partially connected cursive */
     { 2, 2, CHR('i','s','o','l') },	/* Arabic forms */
     { 2, 2, CHR('c','a','l','t') },	/* ??? */
@@ -1433,22 +1431,16 @@ struct macsettingname macfeat_otftag[] = {
     /* 3, 4, initial caps */
     /* 3, 5, initial caps, small caps */
     { 4, 0, CHR('v','r','t','2') },	/* vertical forms => vertical rotation */
-#if 0
-    { 4, 0, CHR('v','k','n','a') },	/* vertical forms => vertical kana */
-#endif
+    /* { 4, 0, CHR('v','k','n','a') },	/\* vertical forms => vertical kana *\/ */
     { 6, 0, CHR('t','n','u','m') },	/* monospace numbers => Tabular numbers */
     { 10, 1, CHR('s','u','p','s') },	/* superior vertical position => superscript */
     { 10, 2, CHR('s','u','b','s') },	/* inferior vertical position => subscript */
-#if 0
-    { 10, 3, CHR('s','u','p','s') },	/* ordinal vertical position => superscript */
-#endif
+    /* { 10, 3, CHR('s','u','p','s') },	/\* ordinal vertical position => superscript *\/ */
     { 11, 1, CHR('a','f','r','c') },	/* vertical fraction => fraction ligature */
     { 11, 2, CHR('f','r','a','c') },	/* diagonal fraction => fraction ligature */
     { 16, 1, CHR('o','r','n','m') },	/* vertical fraction => fraction ligature */
     { 20, 0, CHR('t','r','a','d') },	/* traditional characters => traditional forms */
-#if 0
-    { 20, 0, CHR('t','n','a','m') },	/* traditional characters => traditional names */
-#endif
+    /* { 20, 0, CHR('t','n','a','m') },	/\* traditional characters => traditional names *\/ */
     { 20, 1, CHR('s','m','p','l') },	/* simplified characters */
     { 20, 2, CHR('j','p','7','8') },	/* jis 1978 */
     { 20, 3, CHR('j','p','8','3') },	/* jis 1983 */

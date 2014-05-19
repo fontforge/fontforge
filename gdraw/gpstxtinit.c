@@ -29,9 +29,6 @@
 #include <string.h>
 #include <dirent.h>
 
-#ifdef __VMS
-# include <vms_x_fix.h>
-#endif
 #ifndef X_DISPLAY_MISSING
 # include <X11/Xatom.h>
 #else
@@ -122,8 +119,8 @@ static int name_char(struct temp_font *tf,int ch, char *name) {
 return( find_char(tf,name));
     if ( ch>=tf->max_alloc ) {
 	if ( tf->max_alloc==256 ) tf->max_alloc = 128*256; else tf->max_alloc = 65536;
-	tf->per_char = grealloc(tf->per_char,tf->max_alloc*sizeof(XCharStruct));
-	tf->kerns = grealloc(tf->kerns,tf->max_alloc*sizeof(struct kern_info *));
+	tf->per_char = realloc(tf->per_char,tf->max_alloc*sizeof(XCharStruct));
+	tf->kerns = realloc(tf->kerns,tf->max_alloc*sizeof(struct kern_info *));
     }
     if ( ch!=-1 && ch<256 && name[0]!='\0')
 	tf->names[ch] = copy(name);
@@ -216,7 +213,7 @@ return;
 return;
     }
     tf->per_char[ch].attributes |= AFM_KERN;
-    ki = galloc(sizeof(struct kern_info));
+    ki = malloc(sizeof(struct kern_info));
     ki->next = tf->kerns[ch];
     tf->kerns[ch] = ki;
     ki->following = ch2;
@@ -257,7 +254,7 @@ static void buildXFont(struct temp_font *tf,struct font_data *fd) {
     XFontStruct *info;
     int i;
     
-    fd->info = info = galloc(sizeof(XFontStruct));
+    fd->info = info = malloc(sizeof(XFontStruct));
     /* Where do I get the ascent and descent out of a postscript font???? */
     if ( tf->font_as!=0 && tf->font_ds!=0 ) {
 	info->ascent = tf->font_as + (1000-tf->font_as+tf->font_ds)/2;
@@ -268,7 +265,7 @@ static void buildXFont(struct temp_font *tf,struct font_data *fd) {
     info->max_bounds = tf->max_b;
     if ( tf->x_h!=0 || tf->cap_h!=0 ) {
 	info->n_properties = (tf->x_h!=0)+(tf->cap_h!=0);
-	info->properties = galloc( info->n_properties*sizeof( XFontProp));
+	info->properties = malloc( info->n_properties*sizeof( XFontProp));
 	i=0;
 	if ( tf->x_h!=0 ) {
 	    info->properties[i].name = XA_X_HEIGHT;
@@ -286,7 +283,7 @@ static void buildXFont(struct temp_font *tf,struct font_data *fd) {
 	info->min_char_or_byte2 = tf->min_ch2;
 	info->max_char_or_byte2 = tf->max_ch2;
 	row = (info->max_char_or_byte2-info->min_char_or_byte2+1);
- 	info->per_char = galloc((info->max_byte1-info->min_byte1+1)*
+ 	info->per_char = malloc((info->max_byte1-info->min_byte1+1)*
  		row*sizeof(XCharStruct));
  	for ( i=info->min_byte1; i<info->max_byte1; ++i )
 	    memcpy(info->per_char+(i-info->min_byte1)*row,
@@ -296,10 +293,10 @@ static void buildXFont(struct temp_font *tf,struct font_data *fd) {
    } else {
 	info->min_char_or_byte2 = tf->min_ch;
 	info->max_char_or_byte2 = tf->max_ch;
-	info->per_char = galloc((tf->max_ch-tf->min_ch+1)*sizeof(XCharStruct));
+	info->per_char = malloc((tf->max_ch-tf->min_ch+1)*sizeof(XCharStruct));
 	memcpy(info->per_char,tf->per_char+tf->min_ch,(tf->max_ch-tf->min_ch+1)*sizeof(XCharStruct));
 	if ( tf->any_kerns ) {
-	    fd->kerns = galloc((tf->max_ch-tf->min_ch+1)*sizeof(struct kern_info *));
+	    fd->kerns = malloc((tf->max_ch-tf->min_ch+1)*sizeof(struct kern_info *));
 	    memcpy(fd->kerns,tf->per_char+tf->min_ch,(tf->max_ch-tf->min_ch+1)*sizeof(struct kern_info *));
 	}
     }
@@ -324,7 +321,7 @@ return;
     ti.min_ch = 65535;
     ti.prop = true;
     if ( fd==NULL )
-	fd = gcalloc(1,sizeof(*fd));
+	fd = calloc(1,sizeof(*fd));
 
     while ( fgets(line,sizeof(line),file)!=NULL ) {
 	int len = strlen(line);
@@ -364,10 +361,6 @@ return;
     	    } else if ( strcmp(skipwhite(pt),"FontSpecific")==0 &&
 		    fd->localname!=NULL && strcmp(fd->localname,"ZapfDingbats")==0 ) {
     		fd->map = em_zapfding;
-#if 0
-    	    } else if ( strcmp(skipwhite(pt),"ExtJIS12-88-CFEncoding")==0 ) {
-    		fd->map = em_jis208;
-#endif
     	    } else {
     		fd->map = _GDraw_ParseMapping(def2u_strncpy(ubuf,skipwhite(pt),sizeof(ubuf)/sizeof(ubuf[0])));
     		if ( fd->map==em_none ) {
@@ -375,12 +368,6 @@ return;
 			fd->charmap_name = uc_copy(skipwhite(pt));
 		    fd->map = em_max;
 		    /* Might turn out to be a user specified mapping later */
-#if 0
-    		    GDrawIError("Unknown font mapping %s in %s", skipwhite(pt), filename);
-    		    fclose(file);
-    		    gfree(fd);
-return;
-#endif
     		}
     		ti.is_8859_1 = (fd->map == em_iso8859_1);
     	    }
@@ -406,7 +393,7 @@ return;
     	    sscanf(pt, "%d", &val );
     	    if ( val==1 ) {			/* Can't handle vertical printing */
     		fclose(file);
-    		gfree(fd);
+    		free(fd);
 return;
 	    }
     	} else if (( pt = strstartmatch("MappingScheme", line))!=NULL ) {
@@ -414,21 +401,21 @@ return;
     	    sscanf(pt, "%d", &val );
     	    if ( val!=2 ) {			/* Can only handle 8/8 mapping (ie. 2 byte chars) */
     		fclose(file);
-    		gfree(fd);
+    		free(fd);
 return;
 	    }
     	} else if (( pt = strstartmatch("IsCIDFont", line))!=NULL ) {
     	    if ( strstrmatch(pt,"true")!=NULL ) {	/* I need a mapping! */
     		fclose(file);
-    		gfree(fd);
+    		free(fd);
 return;
 	    }
     	} else if (( pt = strstartmatch("StartCharMetrics", line))!=NULL ) {
 	    if ( !full )
 	break;
 	    ti.max_alloc = 256;
-	    ti.per_char = galloc(256*sizeof(XCharStruct));
-	    ti.kerns = galloc(256*sizeof(struct kern_info *));
+	    ti.per_char = malloc(256*sizeof(XCharStruct));
+	    ti.kerns = malloc(256*sizeof(struct kern_info *));
     	    ParseCharMetrics(file,&ti,line,pt);
     	} else if (( pt = strstartmatch("StartKernData", line))!=NULL ) {
 	    if ( !full )
@@ -456,14 +443,6 @@ return;
 		}
 	    }
 	}
-#if 0	/* If we can't find a font file, assume it's resident on the printer */
-	if ( fd->fontfile==NULL ) {
-	    gfree(fd->metricsfile);
-	    gfree(fd->localname);
-	    gfree(fd);
-return;
-	}
-#endif
 	fn = _GDraw_HashFontFamily(fonts,
 		def2u_strncpy(ubuf,ti.family_name,sizeof(ubuf)/sizeof(ubuf[0])),
 		ti.prop);
@@ -473,7 +452,7 @@ return;
 	fd->is_scalable = true;
     } else
 	buildXFont(&ti,fd);
-    gfree(ti.kerns); gfree(ti.per_char);
+    free(ti.kerns); free(ti.per_char);
 }
 
 int _GPSDraw_InitFonts(FState *fonts) {

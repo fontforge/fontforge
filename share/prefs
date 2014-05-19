@@ -1,0 +1,13 @@
+GlyphAutoGoto: 0 
+PrefMaxBackupsToKeep: 32
+ShowCPInfo: 0
+EditHandleSize: 7
+InactiveHandleAlpha: 120
+ExportClipboard: 0
+SnapToInt: 1
+ShowControlPointsAlways: 1
+CreateDraggingComparisonOutline: 1
+ShowSideBearings: 0
+SnapOutlines: 0
+SnapDistance: 8
+MarkExtrema: 1

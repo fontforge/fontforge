@@ -26,11 +26,8 @@
  */
 /*			 Python Interface to FontForge GTK+		      */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
+#include <fontforge-config.h>
 
-#ifndef _NO_PYTHON
 #include "Python.h"
 #include "structmember.h"
 
@@ -205,7 +202,7 @@ static void InsertSubMenus(PyObject *args,struct python_menu_shell *mn, int is_c
 	}
 	if ( mn->menu==NULL || mn->menu[j].name==NULL ) {
 	    if ( mn->cnt<=mn->max )
-		mn->menu = grealloc(mn->menu,((mn->max+=5)+1)*sizeof(struct python_menu_info));
+		mn->menu = realloc(mn->menu,((mn->max+=5)+1)*sizeof(struct python_menu_info));
 	    memset(mn->menu+j,0,2*sizeof(struct python_menu_info));
 	}
 	if ( mn->menu[j].name==NULL )
@@ -222,7 +219,7 @@ static void InsertSubMenus(PyObject *args,struct python_menu_shell *mn, int is_c
 	}
 	if ( i!=cnt-1 ) {
 	    if ( mn->menu[j].sub_menu==NULL )
-		mn->menu[j].sub_menu = gcalloc(1,sizeof(struct python_menu_shell));
+		mn->menu[j].sub_menu = calloc(1,sizeof(struct python_menu_shell));
 	    mn = mn->menu[j].sub_menu;
 	} else {
 	    Py_INCREF(func);
@@ -245,6 +242,8 @@ static PyObject *PyFF_registerMenuItem(PyObject *self, PyObject *args) {
     int flags;
     PyObject *utf8_name;
 
+    printf("PyFF_registerMenuItem(top)\n" );
+    
     if ( !no_windowing_ui ) {
 	cnt = PyTuple_Size(args);
 	if ( cnt<6 ) {
@@ -275,6 +274,7 @@ return( NULL );
 			"UTF-8",NULL);
 	    if ( utf8_name==NULL )
 return( NULL );
+        printf("utf8_name: %s\n", utf8_name );
 	    Py_DECREF(utf8_name);
 	}
 	if ( flags&menu_fv )
@@ -391,4 +391,3 @@ void PyFF_BuildCVToolsMenu(CharView *cv,GtkMenuItem *tools) {
 void PythonUI_Init(void) {
     FfPy_Replace_MenuItemStub(PyFF_registerMenuItem);
 }
-#endif

@@ -32,6 +32,9 @@
 #include "gresource.h"
 #include <string.h>
 #include <ustring.h>
+#include "../fontforge/ffglib.h"
+#include <glib/gprintf.h>
+#include "xvasprintf.h"
 
 #define DEL_SPACE	6
 
@@ -153,9 +156,7 @@ static void GMatrixEdit_destroy(GGadget *g) {
     int c, i;
 
     free(gme->newtext);
-    /* The textfield lives in the nested window and doesn't need to be destroyed */
-    /* if ( gme->tf!=NULL ) */
-	/* GGadgetDestroy(gme->tf);*/
+    /* The textfield gme->tf lives in the nested window and doesn't need to be destroyed */
     if ( gme->vsb!=NULL )
 	GGadgetDestroy(gme->vsb);
     if ( gme->hsb!=NULL )
@@ -274,17 +275,6 @@ return( 0 );
 		if ( cur>max ) max = cur;
 	    }
 	}
-#if 0
-	if ( gme->col_data[c].enum_vals!=NULL ) {
-	    GMenuItem *mi = gme->col_data[c].enum_vals;
-	    for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.line ; ++i ) {
-		if ( mi[i].ti.text!=NULL ) {
-		    cur = GDrawGetTextWidth(gme->g.base,mi[i].ti.text, -1);
-		    if ( cur>max ) max = cur;
-		}
-	    }
-	}
-#endif
 	cur = 6 * GDrawGetText8Width(gme->g.base,"n", 1);
 	if ( max<cur )
 	    max = cur;
@@ -992,10 +982,14 @@ return( true );
 
 static int GME_FinishEdit(GMatrixEdit *gme) {
 
-    if ( !gme->edit_active )
-return( true );
-    if ( !GME_SetValue(gme,gme->tf))
-return( false );
+    if ( !gme->edit_active ) {
+        gme->wasnew = false;
+        return( true );
+    }
+    if ( !GME_SetValue(gme,gme->tf)) {
+        gme->wasnew = false;
+        return( false );
+    }
     gme->edit_active = false;
     GGadgetSetVisible(gme->tf,false);
     GME_AdjustCol(gme,gme->active_col);
@@ -1374,7 +1368,7 @@ static void GMatrixEdit_StartSubGadgets(GMatrixEdit *gme,int r, int c,GEvent *ev
     if ( c==0 && r==gme->rows && event->type == et_mousedown &&
 	    event->u.mouse.button==1 && !gme->no_edit ) {
 	if ( gme->rows>=gme->row_max )
-	    gme->data = grealloc(gme->data,(gme->row_max+=10)*gme->cols*sizeof(struct matrix_data));
+	    gme->data = realloc(gme->data,(gme->row_max+=10)*gme->cols*sizeof(struct matrix_data));
 	++gme->rows;
 	for ( i=0; i<gme->cols; ++i ) {
 	    d = &gme->data[r*gme->cols+i];
@@ -1450,8 +1444,9 @@ return;
 	    free(gme->data[r*gme->cols+c].u.md_str);
 	    gme->data[r*gme->cols+c].u.md_str = ret;
 	    if ( gme->finishedit != NULL )
-		(gme->finishedit)(&gme->g,r,c,gme->wasnew);
+                (gme->finishedit)(&gme->g,r,c,gme->wasnew);            
 	    GDrawRequestExpose(gme->nested,NULL,false);
+            gme->wasnew = false; // This is an attempted hack by somebody (Frank) who admittedly has no idea what is happening in all of this sparsely commented code.
 	}
     } else if ( gme->col_data[c].me_type==me_onlyfuncedit ) {
 	/* Don't allow other editing */
@@ -1466,7 +1461,7 @@ return;
 	if ( str==NULL )
 	    str = copy("");
 	if ( str!=NULL &&
-		(utf8_strlen(str)>40 || strchr(str,'\n')!=NULL || gme->col_data[c].me_type == me_bigstr))
+		(g_utf8_strlen(str, -1)>40 || strchr(str,'\n')!=NULL || gme->col_data[c].me_type == me_bigstr))
 	    GME_StrBigEdit(gme,str);
 	else
 	    GME_StrSmallEdit(gme,str,event);
@@ -1537,9 +1532,8 @@ return;
 }
 
 static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event) {
-    int k, r,c, lastc, kludge;
-    char buf[20];
-    char *str, *pt;
+    int r,c, lastc, kludge;
+    char *buf, *str, *pt;
     GRect size;
     GRect clip, old;
     Color fg, mkbg;
@@ -1608,11 +1602,6 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		GDrawFillRect(pixmap,&clip,gme->g.box->disabled_background);
 	    else if ( gme->active_row==r+gme->off_top )
 		GDrawFillRect(pixmap,&clip,gmatrixedit_activebg);
-#if 0
-	    else
-		GDrawFillRect(pixmap,&clip,gme->g.box->main_background!=COLOR_DEFAULT?gme->g.box->main_background:
-			GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap)));
-#endif
 	    if ( gme->col_data[c].me_type == me_stringchoice ||
 		    gme->col_data[c].me_type == me_stringchoicetrans ||
 		    gme->col_data[c].me_type == me_stringchoicetag ||
@@ -1635,18 +1624,19 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		str = NULL;
 		if ( r+gme->off_top==gme->rows ) {
 		    if ( !gme->no_edit ) {
-			buf[0] = '<';
 			if ( gme->newtext!=NULL )
-			    strncpy(buf+1,gme->newtext,sizeof(buf)-2);
+			    buf = xasprintf( "<%s>", gme->newtext );
 			else if ( _ggadget_use_gettext )
-			    strncpy(buf+1,S_("Row|New"),sizeof(buf)-2);
-			else
-			    u2utf8_strcpy(buf+1,GStringGetResource(_STR_New,NULL));
-			buf[18] = '\0';
-			k = strlen(buf);
-			buf[k] = '>'; buf[k+1] = '\0';
-			GDrawDrawText8(pixmap,gme->col_data[0].x - gme->off_left,y,
-				buf,-1,gmatrixedit_activecol);
+			    buf = xasprintf( "<%s>", S_("Row|New") );
+			else {
+			    gchar *tmp = g_ucs4_to_utf8( (const gunichar *) GStringGetResource( _STR_New, NULL ),
+				   -1, NULL, NULL, NULL );
+			    buf = xasprintf( "<%s>", tmp );
+			    g_free( tmp ); tmp = NULL;
+			}
+			GDrawDrawText8( pixmap, gme->col_data[0].x - gme->off_left,y,
+				(char *) buf, -1, gmatrixedit_activecol );
+			free( buf ) ; buf = NULL ;
 		    }
 		} else {
 		    data = &gme->data[(r+gme->off_top)*gme->cols+c];
@@ -1951,7 +1941,7 @@ static GMenuItem *GMenuItemFromTI(GTextInfo *ti,int is_enum) {
     GMenuItem *mi;
 
     for ( cnt=0; ti[cnt].text!=NULL || ti[cnt].line; ++cnt );
-    mi = gcalloc((cnt+1),sizeof(GMenuItem));
+    mi = calloc((cnt+1),sizeof(GMenuItem));
     for ( cnt=0; ti[cnt].text!=NULL || ti[cnt].line; ++cnt ) {
 	mi[cnt].ti = ti[cnt];
 	if ( ti[cnt].bg == ti[cnt].fg )
@@ -1971,7 +1961,7 @@ return( mi );
 /* GMatrixElement: External interface *************************************** */
 GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     struct matrixinit *matrix = gd->u.matrix;
-    GMatrixEdit *gme = gcalloc(1,sizeof(GMatrixEdit));
+    GMatrixEdit *gme = calloc(1,sizeof(GMatrixEdit));
     int r, c, bp;
     int x;
     GRect outer;
@@ -1999,7 +1989,7 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     gme->row_max = gme->rows;
     gme->hpad = gme->vpad = GDrawPointsToPixels(base,2);
 
-    gme->col_data = gcalloc(gme->cols,sizeof(struct col_data));
+    gme->col_data = calloc(gme->cols,sizeof(struct col_data));
     for ( c=0; c<gme->cols; ++c ) {
 	gme->col_data[c].me_type = matrix->col_init[c].me_type;
 	gme->col_data[c].func = matrix->col_init[c].func;
@@ -2014,7 +2004,7 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	gme->col_data[c].fixed = false;
     }
 
-    gme->data = gcalloc(gme->rows*gme->cols,sizeof(struct matrix_data));
+    gme->data = calloc(gme->rows*gme->cols,sizeof(struct matrix_data));
     memcpy(gme->data,matrix->matrix_data,gme->rows*gme->cols*sizeof(struct matrix_data));
     for ( c=0; c<gme->cols; ++c ) {
 	enum me_type me_type = gme->col_data[c].me_type;
@@ -2158,7 +2148,7 @@ void GMatrixEditSet(GGadget *g,struct matrix_data *data, int rows, int copy_it) 
 	if ( !copy_it ) {
 	    gme->data = data;
 	} else {
-	    gme->data = gcalloc(rows*gme->cols,sizeof(struct matrix_data));
+	    gme->data = calloc(rows*gme->cols,sizeof(struct matrix_data));
 	    memcpy(gme->data,data,rows*gme->cols*sizeof(struct matrix_data));
 	    for ( c=0; c<gme->cols; ++c ) {
 		enum me_type me_type = gme->col_data[c].me_type;
@@ -2331,7 +2321,7 @@ void GMatrixEditAddButtons(GGadget *g, GGadgetCreateData *gcd) {
 	for ( base=0; gme->buttonlist[base]!=NULL; ++base );
     }
     for ( i=0; gcd[i].creator!=NULL; ++i );
-    gme->buttonlist = grealloc(gme->buttonlist,(i+base+1)*sizeof(GGadget *));
+    gme->buttonlist = realloc(gme->buttonlist,(i+base+1)*sizeof(GGadget *));
     GGadgetsCreate(g->base,gcd);
     for ( i=0; gcd[i].creator!=NULL; ++i ) {
 	gme->buttonlist[base+i] = gcd[i].ret;

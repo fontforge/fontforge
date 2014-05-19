@@ -33,32 +33,7 @@
 #include <math.h>
 #include <ctype.h>
 
-#ifdef _NO_LIBPNG
-
-SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags, char *filename,struct fontdict *fd) {
-    ff_post_error(_("WOFF not supported"), _("This version of fontforge cannot handle WOFF files. You need to recompile it with libpng and zlib") );
-return( NULL );
-}
-
-int _WriteWOFFFont(FILE *woff,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer) {
-    ff_post_error(_("WOFF not supported"), _("This version of fontforge cannot handle WOFF files. You need to recompile it with libpng and zlib") );
-return( 1 );
-}
-
-int WriteWOFFFont(char *fontname,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer) {
-    ff_post_error(_("WOFF not supported"), _("This version of fontforge cannot handle WOFF files. You need to recompile it with libpng and zlib") );
-return( 1 );
-}
-
-int CanWoff(void) {
-return( 0 );
-}
-
-#else /* ! _NO_LIBPNG */
-
-# include <zlib.h>
+#include <zlib.h>
 
 static void copydata(FILE *to,int off_to,FILE *from,int off_from, int len) {
     int ch, i;
@@ -341,11 +316,11 @@ return( NULL );
     }
 
     if ( sf!=NULL && metaOffset!=0 ) {
-	char *temp = galloc(metaLenCompressed+1);
+	char *temp = malloc(metaLenCompressed+1);
 	uLongf len = metaLenUncompressed;
 	fseek(woff,metaOffset,SEEK_SET);
 	fread(temp,1,metaLenCompressed,woff);
-	sf->woffMetadata = galloc(metaLenUncompressed+1);
+	sf->woffMetadata = malloc(metaLenUncompressed+1);
 	sf->woffMetadata[metaLenUncompressed] ='\0';
 	uncompress(sf->woffMetadata,&len,temp,metaLenCompressed);
 	sf->woffMetadata[len] ='\0';
@@ -462,7 +437,7 @@ return( ret );
     if ( sf->woffMetadata!= NULL ) {
 	int uncomplen = strlen(sf->woffMetadata);
 	uLongf complen = 2*uncomplen;
-	char *temp=galloc(complen+1);
+	char *temp=malloc(complen+1);
 	newoffset = ftell(woff);
 	compress(temp,&complen,sf->woffMetadata,uncomplen);
 	fwrite(temp,1,complen,woff);
@@ -511,5 +486,3 @@ return( ret );
 int CanWoff(void) {
     return( true );
 }
-
-#endif /* ! _NO_LIBPNG */

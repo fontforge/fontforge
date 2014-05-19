@@ -24,21 +24,15 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include <basics.h>
-
-#ifdef _NO_LIBJPEG
-
-static int a_file_must_define_something=0;	/* ANSI says so */
-
-#else
-
 #include <sys/types.h>
 #include <stdio.h>
 #include <jpeglib.h>
 #include <jerror.h>
-
 #include <setjmp.h>
-
 #include "gimage.h"
 
 /******************************************************************************/
@@ -59,7 +53,7 @@ struct my_error_mgr {
 };
 
 typedef struct my_error_mgr * my_error_ptr;
-    
+
 METHODDEF(void)
 my_error_exit (j_common_ptr cinfo)
 {
@@ -104,7 +98,7 @@ GImage *GImageRead_Jpeg(FILE *infile) {
     jpeg_destroy_decompress(&cinfo);
 return( NULL );
   }
-  
+
   jpeg_CreateDecompress(&cinfo,JPEG_LIB_VERSION,(size_t) sizeof(struct jpeg_decompress_struct));
   jpeg_stdio_src(&cinfo, infile);
   (void) jpeg_read_header(&cinfo, TRUE);
@@ -119,7 +113,7 @@ return( NULL );
     base = ret->u.image;
 
     (void) jpeg_start_decompress(&cinfo);
-    rows[0] = (JSAMPLE *) galloc(3*cinfo.image_width);
+    rows[0] = (JSAMPLE *) malloc(3*cinfo.image_width);
     js.cinfo = &cinfo; js.base = base; js.buffer = rows[0];
     while (cinfo.output_scanline < cinfo.output_height) {
 	ypos = cinfo.output_scanline;
@@ -129,21 +123,22 @@ return( NULL );
 
   (void) jpeg_finish_decompress(&cinfo);
   jpeg_destroy_decompress(&cinfo);
-  gfree(rows[0]);
+  free(rows[0]);
 
 return( ret );
 }
 
 GImage *GImageReadJpeg(char *filename) {
+/* Import a jpeg image, else return NULL if error  */
     GImage *ret;
     FILE * infile;		/* source file */
 
-  if ((infile = fopen(filename, "rb")) == NULL) {
-    fprintf(stderr,"can't open %s\n", filename);
-return( NULL );
-  }
-  ret = GImageRead_Jpeg(infile);
-  fclose(infile);
-return( ret );
+    if ((infile = fopen(filename, "rb")) == NULL) {
+	fprintf(stderr,"Can't open \"%s\"\n", filename);
+	return( NULL );
+    }
+
+    ret = GImageRead_Jpeg(infile);
+    fclose(infile);
+    return( ret );
 }
-#endif

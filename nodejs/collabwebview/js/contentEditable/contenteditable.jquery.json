@@ -1,0 +1,37 @@
+{
+	"name": "contenteditable",
+	"version": "0.1.1",
+    "title": "jQuery contentEditable",
+    "description": "Automatically adds events on 'contenteditable' fields and returns the changed data for further processing...",
+    "keywords": [
+        "cms",
+        "edit",
+		"content",
+		"editable",
+		"field"
+    ],
+    "author": {
+        "name": "Makesites",
+        "url": "http://makesites.org"
+    },
+    "maintainers": [
+        {
+            "name": "Makis Tracend",
+            "email": "makis@makesit.es",
+            "url": "http://github.com/tracend"
+        }
+    ],
+    "bugs": "https://github.com/makesites/jquery-contenteditable/issues",
+    "homepage": "https://github.com/makesites/jquery-contenteditable",
+    "docs": "https://github.com/makesites/jquery-contenteditable/wiki",
+    "download": "http://plugins.jquery.com/contenteditable",
+    "licenses": [
+		{
+		"type": "MIT License",
+		"url": "http://makesites.org/licenses/MIT"
+		}
+	], 
+	"dependencies": {
+	  "jquery": "~1.8.2"
+	}
+}

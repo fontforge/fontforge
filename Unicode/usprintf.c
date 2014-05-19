@@ -187,7 +187,6 @@ return;
 	} else if ( state->args[arg].is_short ) {
 	    unichar_t *temp = def2u_copy((char *) (state->args[arg].uval));
 	    padstr(state,arg,temp,fieldwidth,precision);
-	    free(temp);
 	} else
 	    padstr(state,arg,state->args[arg].uval,fieldwidth,precision);
       break;
@@ -255,7 +254,7 @@ int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list ap ) {
     }
     state.argmax = argmax;
     if ( argmax>sizeof(args)/sizeof(args[0]) )
-	state.args = (struct args *) gcalloc(argmax,sizeof(struct args));
+	state.args = (struct args *) calloc(argmax,sizeof(struct args));
     else
 	state.args = args;
     state.opt = str; state.end = str+len;
@@ -410,7 +409,6 @@ int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list ap ) {
 	}
     }
     addchar(&state,'\0');
-    if ( state.args!=args ) free(state.args);
 return( state.cnt-1 );		/* don't include trailing nul */
 }
 

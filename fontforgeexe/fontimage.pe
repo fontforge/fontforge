@@ -1,0 +1,99 @@
+
+if ( Strtol($version)<20080616 )
+  Error( "Please upgrade to a more recent version of fontforge" )
+endif
+
+lines=[]
+width = -1
+height = -1
+outfile = ""
+pixelsize = 24
+foundfont = 0
+
+while ( $argc > 1 )
+  if ( Strsub($1,0,1)!='-' )
+    if ( foundfont )
+      Print("Warning: Multiple font files have been given. Only the last will be used." )
+    endif
+    foundfont = 1
+    Open($1,1)
+  else
+    temp = $1
+    if ( Strsub(temp,1,2)=='-' )
+      temp = Strsub(temp,1)
+    endif
+
+    if ( temp=="-width" && $argc>2 )
+      shift
+      width = Strtol($1)
+    elseif ( temp=="-height" && $argc>2 )
+      shift
+      height = Strtol($1)
+    elseif ( temp=="-pixelsize" && $argc>2 )
+      shift
+      pixelsize = Strtol($1)
+    elseif ( temp=="-o" && $argc>2 )
+      shift
+      if ( outfile!="" )
+        Print("Multiple output files given; only the last will be used")
+      endif
+      outfile = $1
+    elseif ( temp=="-fontname" )
+      lines = lines + [ pixelsize, 0 ]
+    elseif ( temp=="-text" && $argc>2 )
+      shift
+      lines = lines + [ pixelsize, $1 ]
+    elseif ( temp=="-version" )
+      Print( "Version 1.0" )
+return(0)
+    else
+      Print( "fontimage: [--version] [--width num] [--height num] [--pixelsize num] [--fontname] [--text str] [-o outputfilename] fontfile" )
+      Print( " Produces an image containing representative glyphs of the font" )
+      Print( " --width num  Specifies the number of pixels wide to make the" )
+      Print( "    output image. If this is omitted (or specified as -1) then" )
+      Print( "    the image will be made as wide as it needs to be." )
+      Print( " --height num Specifies the number of pixels high to make the" )
+      Print( "    output image. If this is omitted (or specified as -1) then" )
+      Print( "    the image will be made as high as it needs to be." )
+      Print( " --fontname   Include the fontname as a line of text." )
+      Print( " --text str   Specifies a line of text to be printed on the image." )
+      Print( "    This may be specified multiple times to get multiple lines." )
+      Print( "    If this is omitted fontimage will chose a default set of strings" )
+      Print( "    based on what characters it thinks are likely to be interesting." )
+      Print( " --pixelsize num  Specifies the size at which the next piece(s) of" )
+      Print( "    text will be printed. This may also be specified multiple times." )
+      Print( " --o outputfilename  Specifies the name of the output image file." )
+      Print( "    It must have an extension of either '.png' or '.bmp'." )
+      Print( "    The image format will be determined by the extension." )
+      Print( "    If omitted fontimage will choose a filename based on the font name." )
+      Print( "    (png files are only supported if fontforge were compiled with png" )
+      Print( "     support and has access to a png library)" )
+return( 0 )
+    endif
+  endif
+  shift
+endloop
+
+if ( !foundfont )
+  Error( "You must specify a font." )
+endif
+
+if ( SizeOf(lines)==0 )
+# I used to have the script generate default lines, but have moved that logic
+# into fontforge
+  lines = [ pixelsize ];
+else
+  i=1;
+  while ( i<SizeOf(lines))
+    if ( TypeOf(lines[i])=="Integer" && lines[i]==0 )
+      lines[i] = " " + $fontname + " ";
+    endif
+    i=i+2;
+  endloop
+endif
+
+if ( outfile=="" )
+  outfile = $fontname + ".png"
+endif
+
+FontImage(outfile,lines,width,height)

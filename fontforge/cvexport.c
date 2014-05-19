@@ -145,12 +145,13 @@ return( ret );
 }
 
 int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
+/* TODO: Note, maybe this routine can be combined with print.c dump_pdfprologue() */
     DBounds b;
     time_t now;
     struct tm *tm;
     int ret;
     char oldloc[24];
-    int _objlocs[8], xrefloc, streamstart, streamlength, resid, nextobj;
+    int _objlocs[8], xrefloc, streamstart, streamlength, resid = 0, nextobj;
     int *objlocs = _objlocs;
     const char *author = GetAuthor();
     int i;
@@ -210,7 +211,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     fprintf( pdf, "    /Creator (FontForge)\n" );
     time(&now);
     tm = localtime(&now);
-    fprintf( pdf, "    /CreationDate (D:%04d%02d%02d%02d%2d%02d",
+    fprintf( pdf, "    /CreationDate (D:%04d%02d%02d%02d%02d%02d",
 	    1900+tm->tm_year, tm->tm_mon+1, tm->tm_mday,
 	    tm->tm_hour, tm->tm_min, tm->tm_sec );
 #ifdef _NO_TZSET
@@ -219,8 +220,13 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     tzset();
     if ( timezone==0 )
 	fprintf( pdf, "Z)\n" );
-    else 
-	fprintf( pdf, "%+02d')\n", (int) timezone/3600 );	/* doesn't handle half-hour zones */
+    else {
+	if ( timezone<0 ) /* fprintf bug - this is a kludge to print +/- in front of a %02d-padded value */
+	    fprintf( pdf, "-" );
+	else
+	    fprintf( pdf, "+" );
+	fprintf( pdf, "%02d'%02d')\n", (int)(timezone/3600),(int)(timezone/60-(timezone/3600)*60) );
+    }
 #endif
     fprintf( pdf, "    /Title (%s from %s)\n", sc->name, sc->parent->fontname );
     if ( author!=NULL )
@@ -234,7 +240,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
 	memset(&pi,0,sizeof(pi));
 	pi.out = pdf;
 	pi.max_object = 100;
-	pi.object_offsets = galloc(pi.max_object*sizeof(int));
+	pi.object_offsets = malloc(pi.max_object*sizeof(int));
 	memcpy(pi.object_offsets,objlocs,nextobj*sizeof(int));
 	pi.next_object = nextobj;
 	resobj = PdfDumpGlyphResources(&pi,sc);
@@ -482,6 +488,7 @@ return( ret );
 }
 
 int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixelsize, int bitsperpixel) {
+/* 0=*.xbm, 1=*.bmp, 2=*.png, 3=*.xpm, 4=*.c(fontforge-internal) */
     struct _GImage base;
     GImage gi;
     GClut clut;
@@ -528,11 +535,13 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
 	base.height = bdfc->ymax-bdfc->ymin+1;
 	base.trans = -1;
 	if ( format==0 )
-	    ret = GImageWriteXbm(&gi,filename);
-#ifndef _NO_LIBPNG
+	    ret = !GImageWriteXbm(&gi,filename);
 	else if ( format==2 )
 	    ret = GImageWritePng(&gi,filename,false);
-#endif
+	else if ( format==3 )
+	    ret = !GImageWriteXpm(&gi,filename);
+	else if ( format==4 )
+	    ret = !GImageWriteGImage(&gi,filename);
 	else
 	    ret = GImageWriteBmp(&gi,filename);
 	BDFCharFree(bdfc);
@@ -563,11 +572,9 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
 	scale = COLOR_CREATE(scale,scale,scale);
 	for ( i=0; i< 1<<bitsperpixel; ++i )
 	    clut.clut[(1<<bitsperpixel)-1 - i] = i*scale;
-#ifndef _NO_LIBPNG
 	if ( format==2 )
 	    ret = GImageWritePng(&gi,filename,false);
 	else
-#endif
 	    ret = GImageWriteBmp(&gi,filename);
 	BDFCharFree(bdfc);
     }
@@ -600,11 +607,13 @@ int BCExportXBM(char *filename,BDFChar *bdfc, int format) {
 	base.height = bdfc->ymax-bdfc->ymin+1;
 	base.trans = -1;
 	if ( format==0 )
-	    ret = GImageWriteXbm(&gi,filename);
-#ifndef _NO_LIBPNG
+	    ret = !GImageWriteXbm(&gi,filename);
 	else if ( format==2 )
 	    ret = GImageWritePng(&gi,filename,false);
-#endif
+	else if ( format==3 )
+	    ret = !GImageWriteXpm(&gi,filename);
+	else if ( format==4 )
+	    ret = !GImageWriteGImage(&gi,filename);
 	else
 	    ret = GImageWriteBmp(&gi,filename);
 	/* And back to normal */
@@ -624,11 +633,9 @@ int BCExportXBM(char *filename,BDFChar *bdfc, int format) {
 	scale = COLOR_CREATE(scale,scale,scale);
 	for ( i=0; i< 1<<bdfc->depth; ++i )
 	    clut.clut[(1<<bdfc->depth)-1 - i] = i*scale;
-#ifndef _NO_LIBPNG
 	if ( format==2 )
 	    ret = GImageWritePng(&gi,filename,false);
 	else
-#endif
 	    ret = GImageWriteBmp(&gi,filename);
     }
 return( ret );
@@ -658,7 +665,7 @@ static void MakeExportName(char *buffer, int blen,char *format_spec,
 		    *buffer++ = *pt++;
 		}
 #else
-		for ( pt=sc->name; *pt!='\0' && buffer<bend; )
+		for ( pt=copy(sc->name); *pt!='\0' && buffer<bend; )
 		    *buffer++ = *pt++;
 #endif
 	    } else if ( ch=='f' ) {

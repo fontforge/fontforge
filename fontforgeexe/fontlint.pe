@@ -1,0 +1,356 @@
+#!/usr/local/bin/fontforge
+
+#
+# Copyright (C) 2013 Matthew Skala
+#
+# This file is part of FontForge.
+#
+# FontForge is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# FontForge is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with FontForge.  If not, see <http://www.gnu.org/licenses/>.
+#
+# For more details see the COPYING.gplv3 file in the root directory of this
+# distribution.
+#
+# Based on the Tsukurimashou Project's fontlint script (same author).
+#
+
+# Things to check for:
+#   check_for[i][0] is 0, 1, or 2, for don't check, warn, or fatal
+#   check_for[i][1] is a string message
+#   check_for[0]..[31] refer to LSB to MSB of Validate() return
+#   check_for[32]..[63] refer to LSB to MSB of $loadState
+#   check_for[64]..[95] refer to LSB to MSB of $privateState
+#   check_for[96]..[whatever] are sequentially assigned other things
+
+# note: to work around a bug in FontForge (multidimensional arrays being
+# horribly broken), check_for[i][j] is actually stored as check_for[2*i+j]
+
+check_for=[ \
+  1,"Unknown Validate() return bit 0x1", \
+  2,"Open contour", \
+  2,"Self-intersecting glyph", \
+  2,"Wrong direction", \
+  2,"Flipped reference", \
+  2,"Missing points at extrema", \
+  2,"Unknown glyph referenced in GSUB/GPOS/MATH", \
+  2,"More points in a glyph than PostScript allows", \
+  2,"Too many hints", \
+  2,"Bad glyph name", \
+  2,"More points in a glyph than specified in 'maxp'", \
+  2,"More paths in a glyph than specified in 'maxp'", \
+  2,"More points in a composite glyph than specified in 'maxp'", \
+  2,"More paths in a composite glyph than specified in 'maxp'", \
+  2,"Instructions longer than allowed in 'maxp'", \
+  2,"More references in a glyph than specified in 'maxp'", \
+  2,"References nested more deeply than specified in 'maxp'", \
+  1,"The 'prep' or 'fpgm' tables are longer than specified in 'maxp'\n" \
+   +"             (may not be an error)", \
+  2,"Adjacent points too far apart in a glyph", \
+  2,"Non-integral coordinates in a glyph", \
+  1,"A glyph uses at least one, but not all, anchor classes in a\n" \
+   +"             subtable (may not be an error)", \
+  2,"Two glyphs have the same name", \
+  2,"Two glyphs have the same Unicode code point", \
+  2,"Overlapping hints in a glyph", \
+  1,"Unknown Validate() return bit 0x1000000", \
+  1,"Unknown Validate() return bit 0x2000000", \
+  1,"Unknown Validate() return bit 0x4000000", \
+  1,"Unknown Validate() return bit 0x8000000", \
+  1,"Unknown Validate() return bit 0x10000000", \
+  1,"Unknown Validate() return bit 0x20000000", \
+  1,"Unknown Validate() return bit 0x40000000", \
+  1,"Unknown Validate() return bit 0x80000000", \
+  2,"Bad PostScript fontname entry in the 'name' table", \
+  2,"Bad 'glyf' or 'loca' table", \
+  2,"Bad 'CFF ' table", \
+  2,"Bad 'hhea', 'hmtx', 'vhea' or 'vmtx' table", \
+  2,"Bad 'cmap' table", \
+  2,"Bad 'EBDT', 'bdat', 'EBLC' or 'bloc' (embedded bitmap) table", \
+  2,"Bad Apple GX advanced typography table", \
+  2,"Bad OpenType advanced typography table", \
+  2,"Bad version number in OS/2 table (must be >0, and must be >1 for\n" \
+   +"             OT-CFF fonts)", \
+  2,"Bad sfnt file header", \
+  1,"Unknown loadState bit 0x400", \
+  1,"Unknown loadState bit 0x800", \
+  1,"Unknown loadState bit 0x1000", \
+  1,"Unknown loadState bit 0x2000", \
+  1,"Unknown loadState bit 0x4000", \
+  1,"Unknown loadState bit 0x8000", \
+  1,"Unknown loadState bit 0x10000", \
+  1,"Unknown loadState bit 0x20000", \
+  1,"Unknown loadState bit 0x40000", \
+  1,"Unknown loadState bit 0x80000", \
+  1,"Unknown loadState bit 0x100000", \
+  1,"Unknown loadState bit 0x200000", \
+  1,"Unknown loadState bit 0x400000", \
+  1,"Unknown loadState bit 0x800000", \
+  1,"Unknown loadState bit 0x1000000", \
+  1,"Unknown loadState bit 0x2000000", \
+  1,"Unknown loadState bit 0x4000000", \
+  1,"Unknown loadState bit 0x8000000", \
+  1,"Unknown loadState bit 0x1000000", \
+  1,"Unknown loadState bit 0x20000000", \
+  1,"Unknown loadState bit 0x40000000", \
+  1,"Unknown loadState bit 0x80000000", \
+  2,"Odd number of elements in either the BlueValues or OtherBlues\n" \
+   +"             entries in the PostScript Private dictionary", \
+  2,"Disordered elements in either the BlueValues or OtherBlues\n" \
+   +"             entries in the PostScript Private dictionary", \
+  2,"Too many elements in either the BlueValues or OtherBlues entries\n" \
+   +"             in the PostScript Private dictionary", \
+  2,"Elements too close in either the BlueValues or OtherBlues\n" \
+   +"             entries in the PostScript Private dictionary (must " \
+   +"be at least\n             2*BlueFuzz+1 apart)", \
+  2,"Non-integral elements in either the BlueValues or OtherBlues\n" \
+   +"             entries in the PostScript Private dictionary", \
+  2,"Alignment zone height in either the BlueValues or OtherBlues is\n" \
+   +"             too big for the BlueScale in the PostScript Private " \
+   +"dictionary", \
+  1,"Unknown privateState bit 0x40", \
+  1,"Unknown privateState bit 0x80", \
+  2,"Odd number of elements in either the FamilyBlues or\n" \
+   +"             FamilyOtherBlues entries in the PostScript Private " \
+   +"dictionary", \
+  2,"Disordered elements in either the FamilyBlues or\n" \
+   +"             FamilyOtherBlues entries in the PostScript Private " \
+   +"dictionary", \
+  2,"Too many elements in either the FamilyBlues or FamilyOtherBlues\n" \
+   +"             entries in the PostScript Private dictionary", \
+  2,"Elements too close in either the FamilyBlues or\n" \
+   +"             FamilyOtherBlues entries in the PostScript Private " \
+   +"dictionary\n             (must be at least 2*BlueFuzz+1 apart)", \
+  2,"Non-integral elements in either the FamilyBlues or\n" \
+   +"             FamilyOtherBlues entries in the PostScript Private " \
+   +"dictionary", \
+  2,"Alignment zone height in either the FamilyBlues or\n" \
+   +"             FamilyOtherBlues is too big for the BlueScale in " \
+   +"the PostScript\n             Private dictionary", \
+  1,"Unknown privateState bit 0x4000", \
+  1,"Unknown privateState bit 0x8000", \
+  2,"Missing BlueValues entry in PostScript Private dictionary", \
+  2,"Bad BlueFuzz entry in PostScript Private dictionary", \
+  2,"Bad BlueScale entry in PostScript Private dictionary", \
+  2,"Bad StdHW entry in PostScript Private dictionary", \
+  2,"Bad StdVW entry in PostScript Private dictionary", \
+  2,"Bad StemSnapH entry in PostScript Private dictionary", \
+  2,"Bad StemSnapV entry in PostScript Private dictionary", \
+  2,"StemSnapH does not contain StdHW value in PostScript Private\n" \
+   +"             dictionary", \
+  2,"StemSnapV does not contain StdVW value in PostScript Private\n" \
+   +"             dictionary", \
+  2,"Bad BlueShift entry in PostScript Private dictionary", \
+  1,"Unknown privateState bit 0x4000000", \
+  1,"Unknown privateState bit 0x8000000", \
+  1,"Unknown privateState bit 0x1000000", \
+  1,"Unknown privateState bit 0x20000000", \
+  1,"Unknown privateState bit 0x40000000", \
+  1,"Unknown privateState bit 0x80000000", \
+  0,"Missing BlueValues entry (issue #80) when the font is quadratic\n" \
+   +"             (overrides general setting)", \
+  0,"Non-integral coordinates (issue #19) when the font is cubic\n" \
+   +"             (overrides general setting)", \
+  2,"Self-intersecting glyph (issue #2) when FontForge is able to\n" \
+   +"             correct this (overrides general setting)", \
+  1,"Flags in the OS/2 table say the font is non-free" \
+];
+
+# display usage message
+usage_message= \
+  "\nfontlint [OPTIONS] {fontfile} ...\n" \
+ +"  Validates the listed fonts\n\n" \
+ +"Options accepted:\n" \
+ +"  -f, --fatal ISSUES    treat ISSUES as fatal errors\n" \
+ +"  -i, --ignore ISSUES   ignore ISSUES\n" \
+ +"  -h, --help            display help\n" \
+ +"  -l, --list            list issues, their numbers, and disposition\n" \
+ +"  -w, --warning ISSUES  treat ISSUES as warnings\n\n" \
+ +"Lists of ISSUES may include comma-separated numbers and ranges, like\n" \
+ +"  1,2,5,8-21,24-29,48\n";
+if ($argc<=1)
+  Print(usage_message);
+  Quit(1);
+endif
+
+# process command line
+allowing_options=1;
+any_fatal=0;
+while ($argc>1)
+  # handle -- to terminate option processing
+  if ($argv[1]=='--')
+    allowing_options=0;
+
+  # handle options
+  elseif (allowing_options && (Strsub($argv[1]+' ',0,1)=='-'))
+    arg_type=-1;
+
+    # make issues into fatal errors
+    if ((Strsub($argv[1]+'  ',0,2)=='-f') \
+     || (Strsub($argv[1]+'   ',1,3)=='-f'))
+      arg_type=2;
+      
+    # explicit request for help message
+    elseif ((Strsub($argv[1]+'  ',0,2)=='-h') \
+         || (Strsub($argv[1]+'   ',1,3)=='-h'))
+      Print(usage_message);
+
+    # make issues ignored
+    elseif ((Strsub($argv[1]+'  ',0,2)=='-i') \
+         || (Strsub($argv[1]+'   ',1,3)=='-i'))
+      arg_type=0;
+      
+    # list current configuration
+    elseif ((Strsub($argv[1]+'  ',0,2)=='-l') \
+         || (Strsub($argv[1]+'   ',1,3)=='-l'))
+      Print("INFO         Here are all the currently-checked issues and " \
+           +"their status");
+      i=0;
+      while (i<SizeOf(check_for)/2)
+        istr="   "+ToString(i);
+        istr=Strsub(istr,Strlen(istr)-3);
+        if (check_for[i*2]==0)
+          Print("IGNORED  "+istr+" "+check_for[i*2+1]);
+        elseif (check_for[i*2]==1)
+          Print("WARNING  "+istr+" "+check_for[i*2+1]);
+        elseif (check_for[i*2]==2)
+          Print("ERROR    "+istr+" "+check_for[i*2+1]);
+        endif
+        i=i+1;
+      endloop
+      Print();
+
+    # make issues into warnings
+    elseif ((Strsub($argv[1]+'  ',0,2)=='-w') \
+         || (Strsub($argv[1]+'   ',1,3)=='-w'))
+      arg_type=1;
+
+    else
+      Print("ERROR        Unknown option "+$argv[1]);
+      any_fatal=1;
+    endif
+
+    # process fatal/ignore/warn options, which share syntax
+    if (arg_type>=0)
+      i=0;
+      while (i<Strlen($argv[1]))
+        if (IsDigit(Strsub($argv[1],i,i+1)))
+          break;
+        endif
+        i=i+1;
+      endloop
+      if (i<Strlen($argv[1]))
+        optarg=Strsub($argv[1],i);
+      else
+        shift;
+        optarg=$argv[1];
+      endif
+      subargs=StrSplit(optarg,',');
+      i=0;
+      while (i<SizeOf(subargs))
+        rangevals=StrSplit(subargs[i],'-');
+        if (SizeOf(rangevals)==1)
+          check_for[Strtol(rangevals[0])*2]=arg_type;
+        elseif ((SizeOf(rangevals)==2) \
+             && (Strtol(rangevals[1])>=Strtol(rangevals[0])))
+          j=Strtol(rangevals[0]);
+          while (j<=Strtol(rangevals[1]))
+            check_for[j*2]=arg_type;
+            j=j+1;
+          endloop
+        else
+        endif
+        i=i+1;
+      endloop
+    endif
+
+  # handle filenames
+  else
+    Print("CHECKING     "+$argv[1]);
+    fatal_here=0;
+    
+    Open($argv[1],9);
+    ls_result=$loadState;
+    v_result=Validate();
+    ps_result=$privateState;
+    
+    i=0;
+    ibit=1;
+    test_result=v_result;
+    while (i<96)
+      if (i==32)
+        test_result=ls_result;
+        ibit=1;
+      elseif (i==64)
+        test_result=ps_result;
+        ibit=1;
+      endif
+    
+      if (test_result & ibit)
+
+        # handle overrides
+        if ((i==2) && (check_for[2*2]!=check_for[98*2]))
+          Print("CHECKING  98 "+check_for[98*2+1]);
+          SelectAll();
+          FindIntersections();
+          RemoveOverlap();
+          if (Validate()&0x4)
+            ci=i;
+          else
+            ci=98;
+          endif
+        elseif ((i==19) && ($order==3))
+          ci=97;
+        elseif ((i==80) && ($order==2))
+          ci=96;
+        else
+          ci=i;
+        endif
+
+        istr="   "+ToString(ci);
+        istr=Strsub(istr,Strlen(istr)-3);
+        if (check_for[2*ci]==1)
+          Print("WARNING  "+istr+" "+check_for[ci*2+1]);
+        elseif (check_for[2*ci]==2)
+          Print("ERROR    "+istr+" "+check_for[ci*2+1]);
+          fatal_here=1;
+        endif
+      endif
+
+      i=i+1;
+      ibit=ibit*2;
+    endloop
+    
+    if (GetOS2Value("FSType")!=0)
+      if (check_for[2*99]==1)
+        Print("WARNING   99 "+check_for[99*2+1]);
+      elseif (check_for[2*99]==2)
+        Print("ERROR     99 "+check_for[99*2+1]);
+        any_fatal=1;
+      endif
+    endif
+
+    Close();
+
+    if (fatal_here)
+      Print("FAIL         "+$argv[1]);
+      any_fatal=1;
+    else
+      Print("PASS         "+$argv[1]);
+    endif
+    Print("");
+  endif
+
+  shift;
+endloop
+
+Quit(any_fatal);

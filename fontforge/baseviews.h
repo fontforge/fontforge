@@ -27,6 +27,7 @@
 #ifndef _BASEVIEWS_H
 #define _BASEVIEWS_H
 
+#include "ffglib.h"
 #include "splinefont.h"
 
 #define free_with_debug(x) { fprintf(stderr,"%p FREE()\n",x); free(x); }
@@ -58,6 +59,9 @@ typedef struct pressedOn {
     unsigned int rubberlining: 1;
     unsigned int transany: 1;
     unsigned int transanyrefs: 1;
+    unsigned int splineAdjacentPointsSelected: 1; /* were the points on both ends of the current clicked
+						   * spline both selected during the mouse down operation
+						   **/
     Spline *spline;
     real t;			/* location on the spline where we pressed */
     RefChar *ref;
@@ -71,17 +75,20 @@ typedef struct pressedOn {
     int spiro_index;		/* index of a clicked spiro_cp, or */
 			/* if they clicked on the spline between spiros, */
 			/* this is the spiro indexof the preceding spiro */
+    GList_Glib*      pretransform_spl; /* If we want to draw an image of the original spl while doing something
+					* this is a copy of that original spl */
 } PressedOn;
 
 /* Note: These are ordered as they are displayed in the tools palette */
-enum cvtools { cvt_pointer, cvt_magnify,
+enum cvtools {
+	cvt_pointer, cvt_magnify,
 	cvt_freehand, cvt_hand,
+	cvt_knife, cvt_ruler,
+	cvt_pen, cvt_spiro,
 	cvt_curve, cvt_hvcurve,
 	cvt_corner, cvt_tangent,
-	cvt_pen, cvt_spiro,
-	cvt_knife, cvt_ruler,
-	cvt_scale, cvt_flip,
-	cvt_rotate, cvt_skew,
+	cvt_scale, cvt_rotate,
+	cvt_flip, cvt_skew,
 	cvt_3d_rotate, cvt_perspective,
 	cvt_rect, cvt_poly,
 	cvt_elipse, cvt_star,
@@ -163,6 +170,13 @@ struct fvcontainer_funcs {
 				/* Resize the container so that fv fits */
 };
 
+enum collabState_t {
+    cs_neverConnected, //< No connection or Collab feature used this run
+    cs_disconnected,   //< Was connected at some stage, not anymore
+    cs_server,         //< The localhost is running a server process
+    cs_client          //< Connected to somebody else's server process
+};       
+
 typedef struct fontviewbase {
     struct fontviewbase *next;		/* Next on list of open fontviews */
     struct fontviewbase *nextsame;	/* Next fv looking at this font */
@@ -173,13 +187,14 @@ typedef struct fontviewbase {
     int active_layer;
     BDFFont *active_bitmap;		/* Set if the fontview displays a bitmap strike */
     uint8 *selected;			/* Current selection */
-#ifndef _NO_FFSCRIPT
     struct dictionary *fontvars;	/* Scripting */
-#endif
-#ifndef _NO_PYTHON
     void *python_fv_object;
-#endif
     struct fvcontainer *container;
+    void* collabClient;                 /* The data used to talk to the collab server process */
+    enum collabState_t collabState;     /* Since we want to know if we are connected, or used to be
+					 * we have to keep the state variable out of collabClient
+					 * itself */
+    
 } FontViewBase;
 
 enum origins { or_zero, or_center, or_lastpress, or_value, or_undefined };
@@ -289,6 +304,20 @@ extern void SCCopyLookupData(SplineChar *sc);
 extern void PasteRemoveSFAnchors(SplineFont *);
 extern void PasteAnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from);
 extern void PasteRemoveAnchorClass(SplineFont *sf,AnchorClass *dying);
+
+/**
+ * Serialize and undo into a string.
+ * You must free() the returned string.
+ */
+extern char* UndoToString( SplineChar* sc, Undoes *undo );
+
+/**
+ * Dump a list of undos for a splinechar starting at the given 'undo'.
+ * msg is used as a header message so that a dump at a particular time stands
+ * out from one that occurs later in the code.
+ */
+extern void dumpUndoChain( char* msg, SplineChar* sc, Undoes *undo );
+
 extern void ClipboardClear(void);
 extern SplineSet *ClipBoardToSplineSet(void);
 extern void BCCopySelected(BDFChar *bc,int pixelsize,int depth);
@@ -331,11 +360,11 @@ extern void FVAutoInstr(FontViewBase *fv);
 extern void FVClearInstrs(FontViewBase *fv);
 extern void FVClearHints(FontViewBase *fv);
 extern void SCAutoTrace(SplineChar *sc,int layer, int ask);
-extern char *FindAutoTraceName(void);
+extern const char *FindAutoTraceName(void);
 extern void *GetAutoTraceArgs(void);
 extern void SetAutoTraceArgs(void *a);
-extern char *FindMFName(void);
-extern char *ProgramExists(char *prog,char *buffer);
+extern const char *FindMFName(void);
+extern char *ProgramExists(const char *prog,char *buffer);
 extern void MfArgsInit(void);
 extern void FVAutoTrace(FontViewBase *fv,int ask);
 extern void FVAddEncodingSlot(FontViewBase *fv,int gid);
@@ -397,8 +426,8 @@ struct fixed_maps {
 struct genericchange {
     enum glyphchange_type gc;
     uint32 feature_tag;
-    char *glyph_extension;
-    char *extension_for_letters, *extension_for_symbols;
+    const char *glyph_extension;
+    const char *extension_for_letters, *extension_for_symbols;
     double stem_height_scale, stem_width_scale;
     double stem_height_add  , stem_width_add  ;
     double stem_threshold;
@@ -546,16 +575,10 @@ typedef struct searchdata {
     real matched_x, matched_y;
     double matched_co, matched_si;		/* Precomputed sin, cos */
     enum flipset matched_flip;
-#ifdef _HAS_LONGLONG
     unsigned long long matched_refs;	/* Bit map of which refs in the char were matched */
     unsigned long long matched_ss;	/* Bit map of which splines in the char were matched */
 				    /* In multi-path mode */
     unsigned long long matched_ss_start;/* Bit map of which splines we tried to start matches with */
-#else
-    unsigned long matched_refs;
-    unsigned long matched_ss;
-    unsigned long matched_ss_start;
-#endif
     FontViewBase *fv;
     SplineChar *curchar;
     int last_gid;
@@ -610,6 +633,12 @@ extern int   MMReblend(FontViewBase *fv, MMSet *mm);
 extern FontViewBase *MMCreateBlendedFont(MMSet *mm,FontViewBase *fv,real blends[MmMax],int tonew );
 extern void FVB_MakeNamelist(FontViewBase *fv, FILE *file);
 
+/**
+ * Code which wants the fontview to redraw it's title can call here to
+ * have that happen.
+ */
+extern void FVTitleUpdate(FontViewBase *fv);
+
 extern void AutoWidth2(FontViewBase *fv,int separation,int min_side,int max_side,
 	int chunk_height, int loop_cnt);
 extern void GuessOpticalOffset(SplineChar *sc,int layer,real *_loff, real *_roff,
@@ -631,5 +660,9 @@ extern void AutoKern2BuildClasses(SplineFont *sf,int layer,
 	int separation, int min_kern, int touching, int only_closer,
 	int autokern,
 	real good_enough);
+
+extern void MVSelectFirstKerningTable(struct metricsview *mv);
+
+extern float joinsnap;
 
 #endif

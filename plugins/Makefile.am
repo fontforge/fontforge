@@ -27,7 +27,10 @@
 
 plugindir = ${pkglibdir}/plugins
 
+AM_CFLAGS = $(WARN_CFLAGS)
+
 AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
+	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
 	"-I$(top_builddir)/fontforge" "-I$(top_srcdir)/fontforge"	\
 	$(MY_CFLAGS)
 
@@ -36,7 +39,7 @@ plugin_LTLIBRARIES =
 if PLUGIN_GB12345
 plugin_LTLIBRARIES += gb12345.la
 gb12345_la_SOURCES = gb12345.c
-gb12345_la_LDFLAGS = -module -avoid-version
+gb12345_la_LDFLAGS = -module -avoid-version ${MY_LIB_LDFLAGS}
 endif PLUGIN_GB12345
 
 -include $(top_srcdir)/git.mk

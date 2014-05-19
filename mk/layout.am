@@ -42,6 +42,11 @@
 # locations of desktop icons, see below.)
 pixmapsdir = ${pkgdatadir}/pixmaps
 
+# Where to put binaries which are really only interesting to fontforge itself.
+# For example, processes that are created to help with real time collaboration
+# but which are really not so interesting for the user to ever directly create.
+internal_bindir = ${bindir}/FontForgeInternal
+
 # Where the FontForge help system goes.
 HTDOCS_SUBDIR =
 htdocsdir = ${docdir}$(HTDOCS_SUBDIR)
@@ -52,8 +57,14 @@ pkgconfigdir = ${libdir}/pkgconfig
 # Where contributed Python scripts go.
 pkgpythondatadir = $(pkgdatadir)/python
 
+# Where contributed node.js scripts go.
+pkgnodejsdatadir = $(pkgdatadir)/nodejs
+
 # Where hotkey bindings go.
 hotkeysdir = $(pkgdatadir)/hotkeys
+
+# Where stuff that is in $top/share goes
+fontforgesharesdir = $(pkgdatadir)
 
 # Where plugin modules go.
 plugindir = ${pkglibdir}/plugins
@@ -88,6 +99,7 @@ hicolor22x22dir = ${hicolordir}/22x22/apps
 hicolor24x24dir = ${hicolordir}/24x24/apps
 hicolor32x32dir = ${hicolordir}/32x32/apps
 hicolor48x48dir = ${hicolordir}/48x48/apps
+hicolor256x256dir = ${hicolordir}/256x256/apps
 hicolorscalabledir = ${hicolordir}/scalable/apps
 
 #--------------------------------------------------------------------------

@@ -54,25 +54,15 @@ capable of using composite.
 #ifndef _XDRAW_H
 #define _XDRAW_H
 
-#ifdef __VMS
-#include <vms_x_fix.h>
-#endif
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include <fontforge-config.h>
 
 #ifndef X_DISPLAY_MISSING
 # include <X11/X.h>
 # include <X11/Xlib.h>
 # include <X11/Xutil.h>
 # ifndef _NO_XINPUT
-#  ifdef __VMS
-#   include <sys$common:[decw$include.extensions]XInput.h>
-#   include <sys$common:[decw$include.extensions]XI.h>
-#  else
-#   include <X11/extensions/XInput.h>
-#   include <X11/extensions/XI.h>
-#  endif
+#  include <X11/extensions/XInput.h>
+#  include <X11/extensions/XI.h>
 # endif
 # ifndef _NO_XKB
 #   include <X11/XKBlib.h>
@@ -84,13 +74,7 @@ capable of using composite.
 # endif
 #  define GTimer GTimer_GTK
 #  include <ft2build.h>
-#  ifdef __VMS
-#   include <Xft/Xft.h>
-typedef pid_t GPid;
-#   define G_GNUC_INTERNAL
-#  else
-#   include <X11/Xft/Xft.h>
-#  endif
+#  include <X11/Xft/Xft.h>
 #  include <pango/pango.h>
 #  undef GTimer
 #endif
@@ -98,6 +82,7 @@ typedef pid_t GPid;
 #include "gdrawP.h"
 
 #ifdef HAVE_PTHREAD_H
+# include <gc/gc.h> /* Makes some necessary redefinitions */
 # include <pthread.h>
 #endif
 
@@ -277,6 +262,8 @@ typedef struct gxdisplay /* : GDisplay */ {
     uint16 mykey_state;
     uint16 mykey_keysym;
     uint16 mykey_mask;
+    fd_callback_t fd_callbacks[ gdisplay_fd_callbacks_size ];
+    int fd_callbacks_last;
     unsigned int mykeybuild: 1;
     unsigned int default_visual: 1;
     unsigned int do_dithering: 1;
@@ -389,10 +376,15 @@ extern void _XSyncScreen(void);
 
 #if !defined(__MINGW32__)
 extern int GDrawKeyToXK(int keysym);
+#else
+extern int GDrawKeyToVK(int keysym);
 #endif
 
 # ifdef _WACOM_DRV_BROKEN
 void _GXDraw_Wacom_Init(GXDisplay *gdisp);
 void _GXDraw_Wacom_TestEvents(GXDisplay *gdisp);
 # endif	/* Wacom fix */
+
+
+
 #endif

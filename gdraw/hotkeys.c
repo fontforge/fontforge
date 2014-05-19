@@ -35,7 +35,11 @@
 #include <unistd.h>
 #include "intl.h"
 
-extern char *getPfaEditDir(char *buffer);
+#ifdef __MINGW32__
+#define fsync _commit
+#endif
+
+static int hotkeySystemCanUseMacCommand = 0;
 
 struct dlistnode* hotkeys = 0;
 
@@ -75,10 +79,13 @@ static int hotkeyHasMatchingWindowTypeString( char* windowType, Hotkey* hk ) {
  * Does the hotkey 'hk' have the right window_type to trigger its
  * action on the window 'w'.
  */
+/*
+ * Unused
 static int hotkeyHasMatchingWindowType( GWindow w, Hotkey* hk ) {
     char* windowType = GDrawGetWindowTypeName( w );
     return hotkeyHasMatchingWindowTypeString( windowType, hk );
 }
+*/
 
 static struct dlistnodeExternal*
 hotkeyFindAllByStateAndKeysym( char* windowType, uint16 state, uint16 keysym ) {
@@ -150,14 +157,14 @@ static char *getHotkeyFilename( char* extension ) {
     char *ret=NULL;
     char buffer[1025];
 
-    if ( getPfaEditDir(buffer)==NULL ) {
+    if ( getFontForgeUserDir(Config)==NULL ) {
 	fprintf(stderr,_("Can not work out where your hotkey definition file is!\n"));
 	return( NULL );
     }
     if( !extension )
 	extension = "";
     
-    sprintf(buffer,"%s/hotkeys%s", getPfaEditDir(buffer), extension);
+    sprintf(buffer,"%s/hotkeys%s", getFontForgeUserDir(Config), extension);
     ret = copy(buffer);
     return( ret );
 }
@@ -360,6 +367,39 @@ static Hotkey* hotkeyFindByAction( char* action ) {
     return 0;
 }
 
+Hotkey* isImmediateKey( GWindow w, char* path, GEvent *event )
+{
+    char* wt = GDrawGetWindowTypeName(w);
+    if(!wt)
+	return 0;
+
+    char* subMenuName = "_ImmediateKeys";
+    char line[PATH_MAX+1];
+    snprintf(line,PATH_MAX,"%s.%s.%s",wt, subMenuName, path );
+//    printf("line:%s\n",line);
+    Hotkey* hk = hotkeyFindByAction( line );
+    if( !hk )
+	return 0;
+    if( hk && !hk->action )
+	return 0;
+    
+    if( event->u.chr.keysym == hk->keysym )
+	return hk;
+
+    return 0;
+}
+
+Hotkey* hotkeyFindByMenuPathInSubMenu( GWindow w, char* subMenuName, char* path ) {
+
+    char* wt = GDrawGetWindowTypeName(w);
+    if(!wt)
+	return 0;
+
+    char line[PATH_MAX+1];
+    snprintf(line,PATH_MAX,"%s.%s%s%s",wt, subMenuName, ".Menu.", path );
+//    printf("line:%s\n",line);
+    return(hotkeyFindByAction(line));
+}
 
 Hotkey* hotkeyFindByMenuPath( GWindow w, char* path ) {
 
@@ -373,6 +413,19 @@ Hotkey* hotkeyFindByMenuPath( GWindow w, char* path ) {
 }
 
 
+char* hotkeyTextToMacModifiers( char* keydesc )
+{
+    keydesc = copy( keydesc );
+    keydesc = str_replace_all( keydesc, "Ctl", "⌘", 1 );
+    keydesc = str_replace_all( keydesc, "Command", "⌘", 1 );
+    keydesc = str_replace_all( keydesc, "Cmd", "⌘", 1 );
+    keydesc = str_replace_all( keydesc, "Shft", "⇧", 1 );
+    keydesc = str_replace_all( keydesc, "Alt", "⎇", 1 );
+    keydesc = str_replace_all( keydesc, "+", "", 1 );
+    return keydesc;
+}
+
+
 char* hotkeyTextWithoutModifiers( char* hktext ) {
     if( !strcmp( hktext, "no shortcut" )
 	|| !strcmp( hktext, "No shortcut" )
@@ -382,7 +435,26 @@ char* hotkeyTextWithoutModifiers( char* hktext ) {
     char* p = strrchr( hktext, '+' );
     if( !p )
 	return hktext;
+
+    //
+    // Handle Control++ by moving back over the last plus
+    //
+    if( p > hktext )
+    {
+	char* pp = p - 1;
+	if( *pp == '+' )
+	    --p;
+    }
     return p+1;
 }
 
 
+void hotkeySystemSetCanUseMacCommand( int v )
+{
+    hotkeySystemCanUseMacCommand = v;
+}
+
+int hotkeySystemGetCanUseMacCommand()
+{
+    return hotkeySystemCanUseMacCommand;
+}

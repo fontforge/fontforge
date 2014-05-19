@@ -44,6 +44,10 @@
 # include <langinfo.h>
 #endif
 
+#if defined(__MINGW32__)
+#include <windows.h>
+#endif
+
 #include <glib.h>
 
 static char *othersubrsfile = NULL;
@@ -140,8 +144,8 @@ static char *script_filenames[SCRIPT_MENU_MAX];
 static char *RecentFiles[RECENT_MAX];
 static int ItalicConstrained = true;
 extern int clear_tt_instructions_when_needed;	/* cvundoes.c */
-static int default_cv_width;			/* in charview.c */
-static int default_cv_height;			/* in charview.c */
+static int cv_width;			/* in charview.c */
+static int cv_height;			/* in charview.c */
 static int mv_width;				/* in metricsview.c */
 static int mv_height;				/* in metricsview.c */
 static int bv_width;				/* in bitmapview.c */
@@ -244,7 +248,7 @@ extras[] = {
     { N_("GlyphAutoGoto"), pr_bool, &cv_auto_goto, NULL, NULL, '\0', NULL, 0, N_("Typing a normal character in the glyph view window changes the window to look at that character") },
     { N_("OpenCharsInNewWindow"), pr_bool, &OpenCharsInNewWindow, NULL, NULL, '\0', NULL, 0, N_("When double clicking on a character in the font view\nopen that character in a new window, otherwise\nreuse an existing one.") },
     { N_("ArrowMoveSize"), pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, N_("The number of em-units by which an arrow key will move a selected point") },
-    { N_("ArrowAccelFactor"), pr_real, &arrowAccelFactor, NULL, NULL, '\0', NULL, 0, N_("Holding down the Alt (or Meta) key will speed up arrow key motion by this factor") },
+    { N_("ArrowAccelFactor"), pr_real, &arrowAccelFactor, NULL, NULL, '\0', NULL, 0, N_("Holding down the Shift key will speed up arrow key motion by this factor") },
     { N_("SnapDistance"), pr_real, &snapdistance, NULL, NULL, '\0', NULL, 0, N_("When the mouse pointer is within this many pixels\nof one of the various interesting features (baseline,\nwidth, grid splines, etc.) the pointer will snap\nto that feature.") },
     { N_("StopAtJoin"), pr_bool, &stop_at_join, NULL, NULL, '\0', NULL, 0, N_("When dragging points in the outline view a join may occur\n(two open contours may connect at their endpoints). When\nthis is On a join will cause FontForge to stop moving the\nselection (as if the user had released the mouse button).\nThis is handy if your fingers are inclined to wiggle a bit.") },
     { N_("UpdateFlex"), pr_bool, &updateflex, NULL, NULL, '\0', NULL, 0, N_("Figure out flex hints after every change") },
@@ -291,8 +295,8 @@ extras[] = {
     { "SeekChar", pr_unicode, &home_char, NULL, NULL, '\0', NULL, 1, NULL },
     { "CompactOnOpen", pr_bool, &compact_font_on_open, NULL, NULL, '\0', NULL, 1, NULL },
     { "PixmapDir", pr_file, &pixmapdir, NULL, NULL, 'R', NULL, 0, NULL },
-    { "DefaultCVWidth", pr_int, &default_cv_width, NULL, NULL, '\0', NULL, 1, NULL },
-    { "DefaultCVHeight", pr_int, &default_cv_height, NULL, NULL, '\0', NULL, 1, NULL },
+    { "DefaultCVWidth", pr_int, &cv_width, NULL, NULL, '\0', NULL, 1, NULL },
+    { "DefaultCVHeight", pr_int, &cv_height, NULL, NULL, '\0', NULL, 1, NULL },
     { "FCShowHidden", pr_bool, &gfc_showhidden, NULL, NULL, '\0', NULL, 1, NULL },
     { "FCDirPlacement", pr_int, &gfc_dirplace, NULL, NULL, '\0', NULL, 1, NULL },
     { "FCBookmarks", pr_string, &gfc_bookmarks, NULL, NULL, '\0', NULL, 1, NULL },
@@ -436,9 +440,9 @@ static char *getPfaEditPrefs(void) {
 
     if ( prefs!=NULL )
 return( prefs );
-    if ( getPfaEditDir(buffer)==NULL )
+    if ( getFontForgeUserDir(Config)==NULL )
 return( NULL );
-    sprintf(buffer,"%s/prefs", getPfaEditDir(buffer));
+    sprintf(buffer,"%s/prefs", getFontForgeUserDir(Config));
     prefs = copy(buffer);
 return( prefs );
 }
@@ -575,17 +579,15 @@ static int encmatch(const char *enc,int subok) {
 	{ "UCS-2-INTERNAL", e_unicode },
 	{ "ISO-10646", e_unicode },
 	{ "ISO_10646", e_unicode },
-#if 0
-	{ "eucJP", e_euc },
-	{ "EUC-JP", e_euc },
-	{ "ujis", ??? },
-	{ "EUC-KR", e_euckorean },
-#endif
+	/* { "eucJP", e_euc }, */
+	/* { "EUC-JP", e_euc }, */
+	/* { "ujis", ??? }, */
+	/* { "EUC-KR", e_euckorean }, */
 	{ NULL, 0 }
     };
     int i;
     char buffer[80];
-#if HAVE_ICONV_H
+#if HAVE_ICONV
     static char *last_complaint;
 
     iconv_t test;
@@ -608,7 +610,7 @@ return( encs[i].enc );
 	    if ( strstrmatch(enc,encs[i].name)!=NULL )
 return( encs[i].enc );
 
-#if HAVE_ICONV_H
+#if HAVE_ICONV
 	/* I only try to use iconv if the encoding doesn't match one I support*/
 	/*  loading iconv unicode data takes a while */
 	test = iconv_open(enc,FindUnicharName());
@@ -728,9 +730,7 @@ static void NOUI_LoadPrefs(void) {
     char *pt;
     struct prefs_list *pl;
 
-#if !defined(NOPLUGIN)
     LoadPluginDir(NULL);
-#endif
     LoadPfaEditEncodings();
     LoadGroupList();
 
@@ -763,22 +763,10 @@ static void NOUI_LoadPrefs(void) {
 		    script_filenames[ms++] = copy(pt);
 		else if ( strncmp(line,"MenuName:",strlen("MenuName:"))==0 && mn<SCRIPT_MENU_MAX )
 		    script_menu_names[mn++] = utf82u_copy(pt);
-#if 0
-		else if ( strncmp(line,"FontFilterName:",strlen("FontFilterName:"))==0 ) {
-		    if ( fn>=filt_max )
-			user_font_filters = grealloc(user_font_filters,((filt_max+=10)+1)*sizeof( struct openfilefilters));
-		    user_font_filters[fn].filter = NULL;
-		    user_font_filters[fn++].name = copy(pt);
-		    user_font_filters[fn].name = NULL;
-		} else if ( strncmp(line,"FontFilter:",strlen("FontFilter:"))==0 ) {
-		    if ( ff<filt_max )
-			user_font_filters[ff++].filter = copy(pt);
-		}
-#endif
 		else if ( strncmp(line,"MacMapCnt:",strlen("MacSetCnt:"))==0 ) {
 		    sscanf( pt, "%d", &msc );
 		    msp = 0;
-		    user_macfeat_otftag = gcalloc(msc+1,sizeof(struct macsettingname));
+		    user_macfeat_otftag = calloc(msc+1,sizeof(struct macsettingname));
 		} else if ( strncmp(line,"MacMapping:",strlen("MacMapping:"))==0 && msp<msc ) {
 		    ParseMacMapping(pt,&user_macfeat_otftag[msp++]);
 		} else if ( strncmp(line,"MacFeat:",strlen("MacFeat:"))==0 ) {
@@ -896,14 +884,6 @@ return;
 	fprintf( p, "MenuName:\t%s\n", temp = u2utf8_copy(script_menu_names[i]));
 	free(temp);
     }
-#if 0
-    if ( user_font_filters!=NULL ) {
-	for ( i=0; user_font_filters[i].name!=NULL; ++i ) {
-	    fprintf( p, "FontFilterName:\t%s\n", user_font_filters[i].name);
-	    fprintf( p, "FontFilter:\t%s\n", user_font_filters[i].filter);
-	}
-    }
-#endif
     if ( user_macfeat_otftag!=NULL && UserSettingsDiffer()) {
 	for ( i=0; user_macfeat_otftag[i].otf_tag!=0; ++i );
 	fprintf( p, "MacMapCnt: %d\n", i );

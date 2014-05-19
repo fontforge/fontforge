@@ -228,7 +228,7 @@ char *GWidgetOpenFileWPath8(const char *title, const char *defaultfile,
 	filt = utf82u_copy(initial_filter);
     if ( mimetypes!=NULL ) {
 	for ( i=0; mimetypes[i]!=NULL; ++i );
-	mimes = galloc((i+1)*sizeof(unichar_t *));
+	mimes = malloc((i+1)*sizeof(unichar_t *));
 	for ( i=0; mimetypes[i]!=NULL; ++i )
 	    mimes[i] = utf82u_copy(mimetypes[i]);
 	mimes[i] = NULL;

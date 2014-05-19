@@ -1,4 +1,3 @@
-#!/usr/local/bin/fontforge
 #Needs: fonts/mingliu.ttc
 # but any other ttc file would do (gulim works just fine).
 # (also needs chunkalloc turned on with 384M memory)
@@ -8,9 +7,9 @@
 
 Print( "...It's ok to get errors about 'Attempt to encode missing glyphs'")
 Print( " or 'Glyph index out of bounds'")
-Open("fonts/mingliu.ttc(PMingLiU)");
+Open("@abs_srcdir@/fonts/mingliu.ttc(PMingLiU)");
 Print( "...Read mingliu.ttc(PMingLiU)")
-Generate("results/pmingliu.ttf","bdf");
+Generate("@abs_builddir@/results/pmingliu.ttf","bdf");
 Print( "...Generated ttf")
 Close();
 Quit()

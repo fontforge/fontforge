@@ -1,0 +1,73 @@
+2.1.0  April 26, 2006
+	- Implemented --packages-as-directories in fileselect.
+
+2.1.0  Feb 26, 2006
+	- Compiled as a Universal Binary
+	- Intelligent resizing to accommodate --informative-text in
+	  all inputbox dialogs, all msgbox dialogs, and textbox.
+	  Same for --text in all dropdown dialogs.
+	- New "filesave" dialogs
+	- Added --packages-as-directories option to fileselect.
+	- Added --x-placement and --y-placement to bubble.
+
+2.0.0  Jan 2, 2006
+	- Added bubble dialog.
+	- Added secure modes for inputbox and standard-inputbox.
+	- The application now runs as a background app. This means no more annoying 
+	  menu or dock icon!
+	- Some dialogs can be floated above all other applications.
+	- Timeouts on several dialogs.
+	- Intelligent button resizing
+	- Added custom icon support to msgbox, ok-msgbox, and standard-msgbox.
+	- Added --help options (still needs improvement).
+	- Added --select-only-directories to fileselect.
+	- Restructured project directory, code hierarchy, and refactored much of the code.
+	- Cleaned up the look of several dialogs.
+	- Progressbar won't be displayed right away, to prevent showing for
+	  very short operations.
+	- Bug fixes (string-input on inputboxes, missing deallocs).
+	- New application icon.
+
+1.2.2
+	- (Didn't release)
+	- Allan's patch
+
+1.2.1  Jan, 2005
+	- (Did I even release this?).
+	- Wout's patch:
+	  added --no-show, --float, --timeout and --help options
+	  turned into a background app so that the dialog icon does not show
+	  up in the menu bar. This, together with float, is very useful for
+	  loginhooks.
+
+1.2.0  Dec 28, 2004  
+	- added dropdown and standard-dropdown controls.
+
+1.1.3  May 11, 2004
+	- fixed handling of multi-line input to progressbar.
+
+1.1.2  May 10, 2004
+	- fixed crash that would occur when printing return values containing 
+	  non-Roman characters. Thanks to Nobumi Iyanaga for finding this.
+	- added "debug" class method to CDControl and got rid of those 
+	  printf()s.
+
+1.1.1  April 26, 2004
+	- starting to use x.y.z versioning (instead of x.y)
+	- progressbar incorrectly printed error with --debug 
+	  (runControlFromOptions: always returned nil, which should only happen 
+	  on error).  This has been fixed.
+	- progressbar character encoding bug fixed. should now properly handle
+	  UTF8 labels read from stdin. see bug 942012 on sf.net page.  thanks to
+	  J-F Boquillard for finding and fixing this.
+
+1.1 
+	- added inputbox, standard-inputbox
+	- textbox window no longer closes on escape unless there's a "Cancel" 
+	  button
+	- fixed error handling for textbox when --text-from-file file is
+	  invalid.
+
+1.0
+	- initial release
+

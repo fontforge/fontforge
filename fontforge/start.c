@@ -26,7 +26,6 @@
  */
 #include "fontforgevw.h"
 #include "pluginloading.h"
-#include "annotations.h"
 #include <gfile.h>
 #include <time.h>
 #include <sys/time.h>
@@ -39,12 +38,13 @@
 
 #include <glib.h>
 
+#include "gutils/unicodelibinfo.h"
+#include "psfont.h"
+
 int32 unicode_from_adobestd[256];
 struct lconv localeinfo;
-char *coord_sep = ",";
-
-/* Unicode character names and annotations. */
-uninm_names_db names_db;
+const char *coord_sep = ",";
+int quiet = 0;
 
 static void initadobeenc(void) {
     int i,j;
@@ -86,8 +86,8 @@ static void initlibltdl(void) {
 
     if (!plugins_are_initialized()) {
         init_plugins();
-        if (getPfaEditDir(buffer)!=NULL ) {
-            strcpy(buffer,getPfaEditDir(buffer));
+        if (getFontForgeUserDir(Config)!=NULL ) {
+            strcpy(buffer,getFontForgeUserDir(Config));
             strcat(buffer,"/plugins");
             lt_dladdsearchdir(strdup(buffer));
         }
@@ -95,7 +95,6 @@ static void initlibltdl(void) {
 }
 
 void InitSimpleStuff(void) {
-    char *names_db_file;
 
     initlibrarysearchpath();
     initlibltdl();
@@ -109,14 +108,7 @@ void InitSimpleStuff(void) {
     else if ( *localeinfo.decimal_point!='.' ) coord_sep=" ";
     if ( getenv("FF_SCRIPT_IN_LATIN1") ) use_utf8_in_script=false;
 
-    /*
-     * Load character names and annotations that come from the Unicode
-     * NamesList.txt. This should not be done until after the locale
-     * has been set.
-     */
-    names_db_file = uninm_find_names_db(NULL);
-    names_db = (names_db_file == NULL) ? ((uninm_names_db) 0) : uninm_names_db_open(names_db_file);
-    free(names_db_file);
+    inituninameannot();	/* Note: unicodenames done after locales set */
 
     SetDefaults();
 }
@@ -137,8 +129,7 @@ return;
 void doversion(const char *source_version_str) {
     if ( source_version_str!=NULL )
 	printf( "fontforge %s\n", source_version_str );
-    printf( "libfontforge %d%s\n",
-	    library_version_configuration.library_source_versiondate,
-	    library_version_configuration.config_had_multilayer?"-ML":"" );
+    printf( "libfontforge %d\n",
+	    FONTFORGE_VERSIONDATE_RAW );
 exit(0);
 }

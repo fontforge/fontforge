@@ -16,7 +16,7 @@
 #define FINA	3
 
 struct letter_frequencies {
-    char *utf8_letter;
+    const char *utf8_letter;
     float frequency[4];
     float *afters;
 };
@@ -2102,7 +2102,7 @@ static void ScriptCharInit(SplineFont *sf,uint32 script, struct script_chars *ch
     } while ( k<sf->subfontcnt );
 
     chrs->cnt = cnt;
-    chrs->chars = galloc(cnt*sizeof(unichar_t));
+    chrs->chars = malloc(cnt*sizeof(unichar_t));
     cnt = 0;
     k=0;
     do {
@@ -2329,8 +2329,8 @@ char **SFScriptLangs(SplineFont *sf,struct lang_frequencies ***_freq) {
 		++extras;
     }
 
-    sl = galloc( (scnt+extras+1) * sizeof(char *));
-    freq = galloc( (scnt+extras+1) * sizeof(struct lang_frequencies *));
+    sl = malloc( (scnt+extras+1) * sizeof(char *));
+    freq = malloc( (scnt+extras+1) * sizeof(struct lang_frequencies *));
     pos = 0;
     for ( s=0 ; s<scnt; ++s ) {
 	for ( i=0; lang_frequencies[i].script!=0; ++i ) {

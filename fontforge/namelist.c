@@ -30,13 +30,14 @@
 #include "ustring.h"
 #include <utype.h>
 #include "namehash.h"
+#include "tables.h"
 
 int recognizePUA = false;
 NameList *force_names_when_opening=NULL;
 NameList *force_names_when_saving=NULL;
 
 static struct psaltnames {
-    char *name;
+    const char *name;
     int unicode;
     int provenance;		/* 1=> Adobe PUA, 2=>AMS PUA, 3=>TeX */
 } psaltnames[];
@@ -59,7 +60,7 @@ struct psbucket { const char *name; int uni; struct psbucket *prev; } *psbuckets
 
 static void psaddbucket(const char *name, int uni) {
     int hash = hashname(name);
-    struct psbucket *buck = gcalloc(1,sizeof(struct psbucket));
+    struct psbucket *buck = calloc(1,sizeof(struct psbucket));
 
     buck->name = name;
     buck->uni = uni;
@@ -100,10 +101,10 @@ static void psreinitnames(void) {
     /*  which means we must remove all the old hash entries before we can put */
     /*  in the new ones */
     int i;
-    struct psbucket *cur, *prev;
     NameList *nl;
 
     for ( i=0; i<HASH_SIZE; ++i ) {
+	struct psbucket *cur, *prev;
 	for ( cur = psbuckets[i]; cur!=NULL; cur=prev ) {
 	    prev = cur->prev;
 	    chunkfree(cur,sizeof(struct psbucket));
@@ -142,7 +143,6 @@ int UniFromName(const char *name,enum uni_interp interp,Encoding *encname) {
 	else if ( encname!=NULL && !encname->is_unicodefull &&
 		(interp==ui_ams || interp==ui_trad_chinese)) {
 	    int j;
-	    extern const int cns14pua[], amspua[];
 	    const int *pua = interp==ui_ams ? amspua : cns14pua;
 	    for ( j=0xf8ff-0xe000; j>=0; --j )
 		if ( pua[j]==i ) {
@@ -183,7 +183,6 @@ const char *StdGlyphName(char *buffer, int uni,enum uni_interp interp,NameList *
     else if ( uni!=-1  ) {
 	if ( uni>=0xe000 && uni<=0xf8ff &&
 		(interp==ui_trad_chinese || for_this_font==&ams)) {
-	    extern const int cns14pua[], amspua[];
 	    const int *pua = interp==ui_trad_chinese ? cns14pua : amspua;
 	    if ( pua[uni-0xe000]!=0 )
 		uni = pua[uni-0xe000];
@@ -298,7 +297,7 @@ return( 0 );
 	    real cutpoint;
 	    ocnt = 0;
 	    out[ocnt++] = alp[a++];
-	    forever {
+	    for (;;) {
 		if ( a<acnt ) cutpoint = (alp[a]->transform[4]+3*alp[a-1]->transform[4])/4;
 		else		cutpoint = 1e30;
 		while ( r<rcnt && refs[r]->transform[4]<cutpoint )
@@ -401,7 +400,7 @@ char **AllGlyphNames(int uni, NameList *for_this_font, SplineChar *sc) {
 	}
 	if ( rcnt>1 && alluni && (uni<0 || (uni>=0xe000 && uni<0xf900) || uni>=0xf0000 ) ) {
 	    if ( names ) {
-		names[cnt] = galloc(4+4*rcnt);
+		names[cnt] = malloc(4+4*rcnt);
 		strcpy(names[cnt],"uni");
 		pt = names[cnt]+3;
 		for ( i=0; i<rcnt; ++i ) {
@@ -419,7 +418,7 @@ char **AllGlyphNames(int uni, NameList *for_this_font, SplineChar *sc) {
 	    if ( names ) {
 		for ( i=len=0; i<rcnt; ++i )
 		    len += strlen( refs[i]->name )+1;
-		names[cnt] = pt = galloc(len);
+		names[cnt] = pt = malloc(len);
 		for ( i=len=0; i<rcnt; ++i ) {
 		    strcpy(pt,refs[i]->name);
 		    pt += strlen(pt);
@@ -435,7 +434,7 @@ char **AllGlyphNames(int uni, NameList *for_this_font, SplineChar *sc) {
 	    ++cnt;
 	}
 	if ( k==0 ) {
-	    names = galloc((cnt+1)*sizeof(char *));
+	    names = malloc((cnt+1)*sizeof(char *));
 	    names[cnt] = NULL;
 	}
     }
@@ -457,44 +456,30 @@ char **AllNamelistNames(void) {
     char **names;
 
     for ( nl = &agl, cnt=0; nl!=NULL; nl=nl->next, ++cnt );
-    names = galloc((cnt+1) *sizeof(char *));
+    names = malloc((cnt+1) *sizeof(char *));
     for ( nl = &agl, cnt=0; nl!=NULL; nl=nl->next, ++cnt )
 	names[cnt] = copy(_(nl->title));
     names[cnt] = NULL;
 return( names );
 }
 
-#if 0
-uint8 *AllNamelistUnicodes(void) {
-    NameList *nl;
-    int cnt;
-    uint8 *uses;
-
-    for ( nl = &agl, cnt=0; nl!=NULL; nl=nl->next, ++cnt );
-    uses = galloc((cnt+1) *sizeof(uint8));
-    for ( nl = &agl, cnt=0; nl!=NULL; nl=nl->next, ++cnt )
-	uses[cnt] = nl->uses_unicode;
-    uses[cnt] = 0xff;
-return( uses );
-}
-#endif
-
 NameList *DefaultNameListForNewFonts(void) {
 return( namelist_for_new_fonts );
 }
 
-NameList *NameListByName(char *name) {
+NameList *NameListByName(const char *name) {
+    const char *nameTex = "ΤεΧ Names";
     NameList *nl;
 
     /* ΤεΧ is hard tp type e.g. from scripting, so accept TeX as alias */
     if (strcmp(name,"TeX Names")==0)
-	name = copy("ΤεΧ Names");
+	name = (char *)nameTex;
 
     for ( nl = &agl; nl!=NULL; nl=nl->next ) {
 	if ( strcmp(_(nl->title),name)==0 || strcmp(nl->title,name)==0 )
-return( nl );
+	    return( nl );
     }
-return( NULL );
+    return( NULL );
 }
 
 static void NameListFreeContents(NameList *nl) {
@@ -533,7 +518,7 @@ NameList *LoadNamelist(char *filename) {
     NameList *nl, *nl2;
     char buffer[400];
     char *pt, *end, *test;
-    int uni;
+    long uni;
     int len;
     int up, ub, uc;
     int rn_cnt=0, rn_max = 0;
@@ -591,7 +576,7 @@ return( NULL );
 return( NULL );
 	    }
 	    if ( rn_cnt>=rn_max-1 )
-		nl->renames = grealloc(nl->renames,(rn_max+=20)*sizeof(struct renames));
+		nl->renames = realloc(nl->renames,(rn_max+=20)*sizeof(struct renames));
 	    nl->renames[rn_cnt].from   = copy(pt);
 	    nl->renames[rn_cnt].to     = copy(test);
 	    nl->renames[++rn_cnt].from = NULL;		/* End mark */
@@ -602,7 +587,7 @@ return( NULL );
 	    else if (( *pt=='u' || *pt=='U') && pt[1]=='+' )
 		pt += 2;
 	    uni = strtol(pt,&end,16);
-	    if ( end==pt || uni<0 || uni>=unicode4_size ) {
+	    if ( end==pt || uni<0 || (unsigned long)uni>=unicode4_size ) {
 		ff_post_error(_("NameList parsing error"),_("Bad unicode value when parsing %s\n%s"), nl->title, buffer );
 		NameListFree(nl);
 return( NULL );
@@ -633,9 +618,9 @@ return( NULL );
 	    ub = (uni&0xff00)>>8;
 	    uc = uni&0xff;
 	    if ( nl->unicode[up]==NULL )
-		nl->unicode[up] = gcalloc(256,sizeof(char **));
+		nl->unicode[up] = calloc(256,sizeof(char **));
 	    if ( nl->unicode[up][ub]==NULL )
-		nl->unicode[up][ub] = gcalloc(256,sizeof(char *));
+		nl->unicode[up][ub] = calloc(256,sizeof(char *));
 	    if ( nl->unicode[up][ub][uc]==NULL )
 		nl->unicode[up][ub][uc]=copy(pt);
 	    else {
@@ -679,20 +664,19 @@ return( false );
 }
 
 void LoadNamelistDir(char *dir) {
-    char prefdir[1024];
     DIR *diro;
     struct dirent *ent;
     char buffer[1025];
 
     if ( dir == NULL )
-	dir = getPfaEditDir(prefdir);
+	dir = getFontForgeUserDir(Config);
     if ( dir == NULL )
 return;
 
     diro = opendir(dir);
     if ( diro==NULL )		/* It's ok not to have any */
 return;
-    
+
     while ( (ent = readdir(diro))!=NULL ) {
 	if ( isnamelist(ent->d_name) ) {
 	    sprintf( buffer, "%s/%s", dir, ent->d_name );
@@ -786,7 +770,7 @@ return( buffer );
     }
 }
 
-static void BuildHash(struct glyphnamehash *hash,SplineFont *sf,char **oldnames) {
+static void BuildHash(struct glyphnamehash *hash,SplineFont *sf,const char **oldnames) {
     int gid, hv;
     SplineChar *sc;
     struct glyphnamebucket *new;
@@ -849,7 +833,7 @@ static char *DoReplacements(struct bits *bits,int bc,char **_src,char *start) {
 	}
     } else {
 	int totlen = strlen(*_src);
-	last = ret = galloc(totlen + diff + 1);
+	last = ret = malloc(totlen + diff + 1);
 	last_orig = *_src;
 	for ( i=0; i<bc; ++i ) {
 	    if ( last_orig<bits[i].start ) {
@@ -969,6 +953,8 @@ static void SFRenameLookupsByHash(SplineFont *sf,struct glyphnamehash *hash) {
 		    ReplaceByHash(&r->u.rcoverage.replacements,hash);
 	    }
 	  break;
+          default:
+          break;
 	}
     }
 
@@ -997,7 +983,7 @@ char **SFTemporaryRenameGlyphsToNamelist(SplineFont *sf,NameList *new) {
     if ( new==NULL )
 return( NULL );
 
-    ret = gcalloc(sf->glyphcnt,sizeof(char *));
+    ret = calloc(sf->glyphcnt,sizeof(char *));
     for ( gid = 0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
 	name = RenameGlyphToNamelist(buffer,sc,sf->for_new_glyphs,new,ret);
 	if ( name!=sc->name ) {
@@ -1013,15 +999,15 @@ return( NULL );
 return( ret );
 }
 
-void SFTemporaryRestoreGlyphNames(SplineFont *sf,char **former) {
+void SFTemporaryRestoreGlyphNames(SplineFont *sf,const char **former) {
     int gid;
     SplineChar *sc;
     struct glyphnamehash hash;
 
     for ( gid = 0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
 	if ( former[gid]!=NULL ) {
-	    char *old = sc->name;
-	    sc->name = former[gid];
+	    const char *old = sc->name;
+	    sc->name = copy(former[gid]);
 	    former[gid] = old;
 	}
     }

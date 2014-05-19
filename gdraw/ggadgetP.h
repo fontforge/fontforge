@@ -98,6 +98,8 @@ struct ggadget {
     unsigned int opengroup: 1;			/* For groupboxes */
     unsigned int prevlabel: 1;			/* For groupboxes */
     unsigned int contained: 1;			/* is part of a bigger ggadget (ie. a scrollbar is part of a listbox) */
+    unsigned int gg_skip_hotkey_processing: 1;
+    unsigned int gg_skip_unqualified_hotkey_processing: 1;
     short cid;
     void *data;
     GBox *box;
@@ -576,7 +578,7 @@ extern int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event);
 extern void _GButton_SetDefault(GGadget *g,int32 is_default);
 extern void _GButtonInit(void);
 extern void GListMarkDraw(GWindow pixmap,int x, int y, int height, enum gadget_state state );
-extern char **_GGadget_GetImagePath(void);
+extern const char **_GGadget_GetImagePath(void);
 extern int _GGadget_ImageInCache(GImage *image);
 
 extern int _ggadget_use_gettext;

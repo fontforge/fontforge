@@ -32,7 +32,7 @@
 #include <string.h>
 #include <utype.h>
 
-/* Look for 
+/* Look for
 Source: Microsoft Windows 2.0 SDK Programmer's Refrence, pages 639 through 645
         Microsoft Windows Device Driver Kit, Device Driver Adaptaion Guide, pages 13-1-13-15
 
@@ -118,19 +118,6 @@ struct fntheader {
     uint16	cspace;
     uint32	coloroffset;		/* Offset to color table */
     uint8	mbz2[16];		/* Freetype says 4. Online docs say 16 & earlier versions were wrong... */
-#if 0		/* Font data */
-    union {
-	/* Width below is width of bitmap, and advance width */
-	/* so no chars can extend before 0 or after advance */
-	struct v2chars { uint16 width; uint16 offset; } v2;
-	struct v3chars { uint16 width; uint32 offset; } v3;
-    } chartable[/*lastchar-firstchar+2*/258];
-    /* facename */
-    /* devicename */
-    /* bitmaps */
-	/* Each character is stored in column-major order with one byte for each row */
-	/*  then the second byte for each row, ... */
-#endif
 };
 
 
@@ -243,16 +230,6 @@ return( false );
 	fntheader.coloroffset = lgetlong(fnt);
 	for ( i=0; i<16; ++i )		/* Freetype thinks this is 4 */
 	    (void) getc(fnt);
-#if 0
-/* A font dir entry looks like this. It does not read bitspointer, bitsoffset */
-    } else {
-	fntheader.deviceoffset = lgetlong(fnt);
-	fntheader.faceoffset = lgetlong(fnt);
-	(void) lgetlong(fnt);
-	while ( (ch=getc(fnt))!=EOF && ch!='\0' );
-	fntheader.faceoffset = ftell(fnt)-base;
-	while ( (ch=getc(fnt))!=EOF && ch!='\0' );
-#endif
     }
 
     memset(charinfo,0,sizeof(charinfo));
@@ -285,12 +262,12 @@ return( false );
     fseek(fnt,base+fntheader.faceoffset,SEEK_SET);
     for ( i=0; (ch=getc(fnt))!=EOF && ch!=0; ++i );
     free(sf->familyname);
-    sf->familyname = galloc(i+2);
+    sf->familyname = malloc(i+2);
     fseek(fnt,base+fntheader.faceoffset,SEEK_SET);
     for ( i=0; (ch=getc(fnt))!=EOF && ch!=0; ++i )
 	sf->familyname[i] = ch;
     sf->familyname[i] = '\0';
-    temp = galloc(i+50);
+    temp = malloc(i+50);
     strcpy(temp,sf->familyname);
     if ( fntheader.weight<=300 && fntheader.weight>500 ) {
 	strcat(temp," ");
@@ -318,13 +295,13 @@ return( false );
     if ( fntheader.italic )
 	sf->italicangle = 11.25;
 
-    bdf = gcalloc(1,sizeof(BDFFont));
+    bdf = calloc(1,sizeof(BDFFont));
     bdf->sf = sf;
     bdf->glyphcnt = sf->glyphcnt;
     bdf->glyphmax = sf->glyphmax;
     bdf->res = fntheader.vertres;
     bdf->pixelsize = rint(fntheader.pointsize*fntheader.vertres/72.27);
-    bdf->glyphs = gcalloc(sf->glyphmax,sizeof(BDFChar *));
+    bdf->glyphs = calloc(sf->glyphmax,sizeof(BDFChar *));
     bdf->ascent = rint(.8*bdf->pixelsize);		/* shouldn't use typographical ascent */
     bdf->descent = bdf->pixelsize-bdf->ascent;
     for ( i=fntheader.firstchar; i<=fntheader.lastchar; ++i ) if ( charinfo[i].width!=0 ) {
@@ -332,7 +309,7 @@ return( false );
 
 	if ( gid>=bdf->glyphcnt ) {
 	    if ( gid>=bdf->glyphmax )
-		bdf->glyphs = grealloc(bdf->glyphs,(bdf->glyphmax=sf->glyphmax)*sizeof(BDFChar *));
+		bdf->glyphs = realloc(bdf->glyphs,(bdf->glyphmax=sf->glyphmax)*sizeof(BDFChar *));
 	    memset(bdf->glyphs+bdf->glyphcnt,0,(sf->glyphcnt-bdf->glyphcnt)*sizeof(BDFChar *));
 	    bdf->glyphcnt = sf->glyphcnt;
 	}
@@ -346,7 +323,7 @@ return( false );
 	bdfc->width = charinfo[i].width;
 	bdfc->vwidth = bdf->pixelsize;
 	bdfc->bytes_per_line = (bdfc->xmax>>3)+1;
-	bdfc->bitmap = gcalloc(bdfc->bytes_per_line*fntheader.height,sizeof(uint8));
+	bdfc->bitmap = calloc(bdfc->bytes_per_line*fntheader.height,sizeof(uint8));
 	bdfc->orig_pos = gid;
 	bdfc->sc = sf->glyphs[gid];
 	bdfc->sc->widthset = true;
@@ -677,15 +654,9 @@ typedef signed short	INT16;
 typedef int		INT;
 typedef uint32		DWORD;		/* originally unsigned long */
 typedef int32		LONG;
-#if 0
-#define CALLBACK	__stdcall
-typedef INT		(CALLBACK *FARPROC)();
-typedef LRESULT		(CALLBACK *FARPROC16)();
-#else
 #define CALLBACK
 typedef int32		FARPROC;	/* Pointers screw up the alignment on 64 bit machines */
 typedef int32		FARPROC16;	/* ditto */
-#endif
 typedef unsigned short	HANDLE16;
 typedef int32		LONG_PTR;	/* originally "long", but that won't work on 64 bit machines */
 typedef LONG_PTR        LRESULT;
@@ -847,8 +818,8 @@ int FONFontDump(char *filename,SplineFont *sf, int32 *sizes,int resol,
     ff_progress_change_line1(_("Saving Bitmap Font(s)"));
     ff_progress_change_stages(i);
     num_files = i;
-    fntarray = galloc(num_files*sizeof(FILE **));
-    file_lens = galloc(num_files*sizeof(int));
+    fntarray = (FILE **)malloc(num_files*sizeof(FILE *));
+    file_lens = (int *)malloc(num_files*sizeof(int));
 
     for ( i=0; sizes[i]!=0; ++i ) {
 	for ( bdf=sf->bitmaps; bdf!=NULL &&
@@ -1056,7 +1027,7 @@ return( false );
 
     /* FONTDIR resource */
     lputshort(fon,num_files);
-    
+
     for(res = first_res, i = 0; i < num_files; i++, res++) {
         lputshort(fon,res);
 

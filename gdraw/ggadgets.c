@@ -252,8 +252,7 @@ void *GResource_font_cvt(char *val, void *def) {
 		
     fi = GDrawInstanciateFont(NULL,&rq);
 
-    if ( freeme!=NULL )
-	free(freeme);
+    free(freeme);
 
     if ( fi==NULL )
 return( def );
@@ -406,18 +405,19 @@ return( fi );
 }
 
 static int localeptsize(void) {
+/* smaller point size to squeeze these languages in */
     const char *loc = getenv("LC_ALL");
     if ( loc==NULL ) loc = getenv("LC_CTYPE");
     if ( loc==NULL ) loc = getenv("LANG");
+    /* if ( loc==NULL ) loc = getenv("LC_MESSAGES"); */
 
-    if ( loc==NULL )
-return( -10 );
-    else if ( strncmp(loc,"ja",2)==0 ||
-		strncmp(loc,"zh",2)==0 ||
-		strncmp(loc,"ko",2)==0 )
-return( -16 );
+    if ( loc!=NULL && ( \
+		strncmp(loc,"ja",2)==0 || \
+		strncmp(loc,"zh",2)==0 || \
+		strncmp(loc,"ko",2)==0) )
+	return( -16 );
 
-return( -10 );
+    return( -10 );
 }
 
 void GGadgetInit(void) {
@@ -897,7 +897,7 @@ GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void 
 	g->box = gd->box;
     else {
 	g->free_box = true;
-	g->box = galloc(sizeof(GBox));
+	g->box = malloc(sizeof(GBox));
 	*g->box = *gd->box;
     }
     g->state = !(gd->flags&gg_visible) ? gs_invisible :
@@ -1088,6 +1088,15 @@ void GGadgetMove(GGadget *g,int32 x, int32 y ) {
     (g->funcs->move)(g,x,y);
 }
 
+void GGadgetMoveAddToY(GGadget *g, int32 yoffset )
+{
+    GRect sz;
+    GGadgetGetSize( g, &sz );
+    GGadgetMove( g, sz.x, sz.y + yoffset );
+}
+
+
+
 int32 GGadgetGetX(GGadget *g)
 {
     return g->r.x;
@@ -1119,6 +1128,26 @@ void GGadgetSetSize(GGadget *g,GRect *rct)
     GGadgetResize(g,rct->width,rct->height);
 }
 
+
+int GGadgetContainsEventLocation(GGadget *g, GEvent* e )
+{
+    switch( e->type )
+    {
+        case et_mousemove:
+        case et_mouseup: case et_mousedown:
+            return( GGadgetContains( g, e->u.mouse.x, e->u.mouse.y ));
+    }
+    
+    return 0;
+}
+
+int GGadgetContains(GGadget *g, int x, int y )
+{
+    GRect r;
+    GGadgetGetSize( g, &r );
+    return r.x < x && r.x+r.width > x
+        && r.y < y && r.y+r.height > y;
+}
 
 GRect *GGadgetGetInnerSize(GGadget *g,GRect *rct) {
 return( (g->funcs->getinnersize)(g,rct) );
@@ -1434,3 +1463,37 @@ GResInfo *_GGadgetRIHead(void) {
 	GGadgetInit();
 return( &popup_ri );
 }
+
+void GGadgetSetSkipHotkeyProcessing( GGadget *g, int v )
+{
+    if( !g )
+	return;
+
+    printf("GGadgetSetSkipHotkeyProcessing1 %d\n", g->state );
+    g->gg_skip_hotkey_processing = v;
+    printf("GGadgetSetSkipHotkeyProcessing2 %d\n", g->state );
+}
+
+int GGadgetGetSkipHotkeyProcessing( GGadget *g )
+{
+    if( !g )
+	return 0;
+
+    return (g->gg_skip_hotkey_processing);
+}
+
+void GGadgetSetSkipUnQualifiedHotkeyProcessing( GGadget *g, int v )
+{
+    if( !g )
+	return;
+    g->gg_skip_unqualified_hotkey_processing = v;
+}
+
+int GGadgetGetSkipUnQualifiedHotkeyProcessing( GGadget *g )
+{
+    if( !g )
+	return 0;
+
+    return (g->gg_skip_unqualified_hotkey_processing);
+}
+

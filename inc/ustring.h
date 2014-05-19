@@ -59,6 +59,11 @@ extern void u_strcpy(unichar_t *, const unichar_t *);
 extern void u_strncpy(unichar_t *, const unichar_t *,int);
 extern void cu_strncpy(char *to, const unichar_t *from, int len);
 extern void uc_strncpy(unichar_t *to, const char *from, int len);
+/**
+ * Like strncpy but passing a null 'from' will simply null terminate
+ * to[0] to give a blank result rather than a crash.
+ */
+extern char *cc_strncpy(char *to, const char *from, int len);
 extern void uc_strcat(unichar_t *, const char *);
 extern void uc_strncat(unichar_t *, const char *,int len);
 extern void cu_strcat(char *, const unichar_t *);
@@ -66,6 +71,10 @@ extern void cu_strncat(char *, const unichar_t *,int len);
 extern void u_strcat(unichar_t *, const unichar_t *);
 extern void u_strncat(unichar_t *, const unichar_t *, int len);
 extern int  u_strlen(const unichar_t *);
+/**
+ * Like strlen() but passing a null pointer gets a 0 length
+ */
+extern int  c_strlen(const char *);
 extern unichar_t *u_strchr(const unichar_t *,unichar_t);
 extern unichar_t *u_strrchr(const unichar_t *,unichar_t);
 extern unichar_t *uc_strstr(const unichar_t *,const char *);
@@ -81,6 +90,13 @@ extern unsigned long u_strtoul(const unichar_t *,unichar_t **,int);
 extern long   u_strtol(const unichar_t *,unichar_t **,int);
 extern double u_strtod(const unichar_t *,unichar_t **);
 
+/*
+ * Convert the integer 'v' to a string and return it.
+ * You do not own the return value, it is an internal buffer
+ * so you should copy it before using the function again
+ */
+extern char*  c_itostr( int v );
+
 extern char *strstart(const char *initial,const char *full);
 extern char *strstartmatch(const char *initial,const char *full);
 extern unichar_t *u_strstartmatch(const unichar_t *initial, const unichar_t *full);
@@ -88,7 +104,12 @@ extern unichar_t *cu_strstartmatch(const char *initial, const unichar_t *full);
 
 #define utf82u_strncpy utf82U_strncpy
 extern int32 utf8_ildb(const char **utf8_text);
-extern char *utf8_idpb(char *utf8_text,uint32 ch);
+#define UTF8IDPB_NOZERO 1	/* Allow for 0 encoded as a non-zero utf8 0xc0:0x80 char */
+#define UTF8IDPB_OLDLIMIT 2	/* Today's utf8 is agreed to be limited to {0..0x10FFFF} */
+#define UTF8IDPB_UCS2 8		/* Encode {0...0xffff} as 16bit ucs2 type values */
+#define UTF8IDPB_UTF16 16	/* Encode {0...0x10ffff} as 16bit utf16 type values */
+#define UTF8IDPB_UTF32 32	/* Encode {0...0x10ffff} as 32bit utf32 type values */
+extern char *utf8_idpb(char *utf8_text,uint32 ch,int flags);
 extern char *utf8_db(char *utf8_text);
 extern char *utf8_ib(char *utf8_text);
 extern int utf8_valid(const char *str);
@@ -96,8 +117,8 @@ extern void utf8_truncatevalid(char *str);
 extern char *latin1_2_utf8_strcpy(char *utf8buf,const char *lbuf);
 extern char *latin1_2_utf8_copy(const char *lbuf);
 extern char *utf8_2_latin1_copy(const char *utf8buf);
-extern int utf8_strlen(const char *utf8_str); /* how many characters in the string */
-extern int utf82u_strlen(const char *utf8_str); /* how many long would this be in shorts (UCS2) */
+extern long utf8_strlen(const char *utf8_str);	 /* Count how many characters in the string NOT bytes */
+extern long utf82u_strlen(const char *utf8_str); /* Count how many shorts needed to represent in UCS2 */
 extern void utf8_strncpy(register char *to, const char *from, int len); /* copy n characters NOT bytes */
 extern char *def2utf8_copy(const char *from);
 extern char *utf82def_copy(const char *ufrom);
@@ -112,15 +133,11 @@ extern char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf);
 extern char *u2utf8_copy(const unichar_t *ubuf);
 extern char *u2utf8_copyn(const unichar_t *ubuf,int len);
 extern unichar_t *encoding2u_strncpy(unichar_t *uto, const char *from, int n, enum encoding cs);
-extern char *u2encoding_strncpy(char *to, const unichar_t *ufrom, int n, enum encoding cs);
-extern unichar_t *def2u_strncpy(unichar_t *uto, const char *from, int n);
-extern char *u2def_strncpy(char *to, const unichar_t *ufrom, int n);
+extern char *u2encoding_strncpy(char *to, const unichar_t *ufrom, size_t n, enum encoding cs);
+extern unichar_t *def2u_strncpy(unichar_t *uto, const char *from, size_t n);
+extern char *u2def_strncpy(char *to, const unichar_t *ufrom, size_t n);
 extern unichar_t *def2u_copy(const char *from);
 extern char *u2def_copy(const unichar_t *ufrom);
-
-extern int u_sprintf(unichar_t *str, const unichar_t *format, ... );
-extern int u_snprintf(unichar_t *str, int len, const unichar_t *format, ... );
-extern int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list ap );
 
 extern int uAllAscii(const unichar_t *str);
 extern int AllAscii(const char *);
@@ -165,5 +182,24 @@ int endswith(const char *haystack,const char *needle);
  * No new strings are allocated, freed, or returned.
  */
 extern int u_endswith(const unichar_t *haystack,const unichar_t *needle);
+
+/**
+ * In the string 's' replace all occurances of 'orig' with 'replacement'.
+ * If you set free_s to true then the string 's' will be freed by this function.
+ * Normally you want to set free_s to 0 to avoid that. The case you will want to
+ * use free_s to 1 is chaining many calls like:
+ *
+ * char* s = copy( input );
+ * s = str_replace_all( s, "foo", "bar", 1 );
+ * s = str_replace_all( s, "baz", "gah", 1 );
+ * // use s
+ * free(s);
+ * // no leaks in the above.
+ *
+ * Note that 's' is first copied before the first call to replace_all in the above
+ * so it can be freed without concern. This also allows the ordering of replace_all
+ * in the above to be changed without having to worry about the free_s flag.
+ */
+extern char* str_replace_all( char* s, char* orig, char* replacement, int free_s );
 
 #endif

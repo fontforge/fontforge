@@ -1,7 +1,6 @@
-#!/usr/local/bin/fontforge
 #Print("....I expect this test to generate some error messages");
 #Print(".... But it should not crash, nor terminate with an error status");
-Open("fonts/GillSans.dfont");
+Open("@abs_srcdir@/fonts/GillSans.dfont");
 SelectAll();
 Simplify();
 Print("....Simplified");

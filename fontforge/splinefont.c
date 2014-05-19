@@ -236,7 +236,7 @@ return( enc );
     }
 
     enc = uni = -1;
-	
+
     enc = SFFindSlot(sf,map,-1,name);
     if ( enc!=-1 ) {
 	free(freeme);
@@ -387,7 +387,7 @@ static char *scaleString(char *string, double scale) {
 return( NULL );
 
     while ( *string==' ' ) ++string;
-    result = galloc(10*strlen(string)+1);
+    result = malloc(10*strlen(string)+1);
     if ( *string!='[' ) {
 	val = strtod(string,&end);
 	if ( end==string ) {
@@ -427,7 +427,7 @@ static char *iscaleString(char *string, double scale) {
 return( NULL );
 
     while ( *string==' ' ) ++string;
-    result = galloc(10*strlen(string)+1);
+    result = malloc(10*strlen(string)+1);
     if ( *string!='[' ) {
 	val = strtod(string,&end);
 	if ( end==string ) {
@@ -511,6 +511,8 @@ int SFScaleToEm(SplineFont *sf, int as, int des) {
     real transform[6];
     BVTFunc bvts;
     uint8 *oldselected = sf->fv->selected;
+    enum fvtrans_flags trans_flags =
+	fvt_alllayers|fvt_round_to_int|fvt_dontsetwidth|fvt_scalekernclasses|fvt_scalepstpos|fvt_dogrid;
 
     scale = (as+des)/(bigreal) (sf->ascent+sf->descent);
     sf->pfminfo.hhead_ascent = rint( sf->pfminfo.hhead_ascent * scale);
@@ -556,13 +558,18 @@ return( false );
     transform[0] = transform[3] = scale;
     transform[1] = transform[2] = transform[4] = transform[5] = 0;
     bvts.func = bvt_none;
-    sf->fv->selected = galloc(sf->fv->map->enccount);
+    sf->fv->selected = malloc(sf->fv->map->enccount);
     memset(sf->fv->selected,1,sf->fv->map->enccount);
 
     sf->ascent = as; sf->descent = des;
 
-    FVTransFunc(sf->fv,transform,0,&bvts,
-	    fvt_alllayers|fvt_round_to_int|fvt_dontsetwidth|fvt_scalekernclasses|fvt_scalepstpos|fvt_dogrid);
+    /* If someone has set an absurdly small em size, try to contain
+       the damage by not rounding to int. */
+    if ((as+des) < 32) {
+	trans_flags &= ~fvt_round_to_int;
+    }
+
+    FVTransFunc(sf->fv,transform,0,&bvts,trans_flags);
     free(sf->fv->selected);
     sf->fv->selected = oldselected;
 
@@ -570,7 +577,7 @@ return( false );
 	sf->changed = true;
 	FVSetTitles(sf);
     }
-	
+
 return( true );
 }
 
@@ -592,7 +599,7 @@ static SplineFont *_SFReadPostScript(FILE *file,char *filename) {
 	sf = SplineFontFromPSFont(fd);
 	PSFontFree(fd);
 	if ( sf!=NULL )
-	    CheckAfmOfPostScript(sf,filename,sf->map);
+	    CheckAfmOfPostScript(sf,filename);
     }
 return( sf );
 }
@@ -609,7 +616,7 @@ static SplineFont *SFReadPostScript(char *filename) {
 	sf = SplineFontFromPSFont(fd);
 	PSFontFree(fd);
 	if ( sf!=NULL )
-	    CheckAfmOfPostScript(sf,filename,sf->map);
+	    CheckAfmOfPostScript(sf,filename);
     }
 return( sf );
 }
@@ -630,7 +637,7 @@ void ArchiveCleanup(char *archivedir) {
     /* Free this directory and all files within it */
     char *cmd;
 
-    cmd = galloc(strlen(archivedir) + 20);
+    cmd = malloc(strlen(archivedir) + 20);
     sprintf( cmd, "rm -rf %s", archivedir );
     system( cmd );
     free( cmd ); free(archivedir);
@@ -660,9 +667,9 @@ return( NULL );
     /* tar outputs its table of contents as a simple list of names */
     /* zip includes a bunch of other info, headers (and lines for directories)*/
 
-    linebuffer = galloc(linelenmax+3);
+    linebuffer = malloc(linelenmax+3);
     fcnt = 0;
-    files = galloc((nlcnt+1)*sizeof(char *));
+    files = malloc((nlcnt+1)*sizeof(char *));
 
     if ( ars == ars_tar ) {
 	pt = linebuffer;
@@ -765,7 +772,7 @@ return( onlydirfont );
     free(files);
 return( name );
 }
-    
+
 #define TOC_NAME	"ff-archive-table-of-contents"
 
 char *Unarchive(char *name, char **_archivedir) {
@@ -799,17 +806,17 @@ return( NULL );
     }
 
     if ( dir==NULL ) dir = P_tmpdir;
-    archivedir = galloc(strlen(dir)+100);
+    archivedir = malloc(strlen(dir)+100);
     sprintf( archivedir, "%s/ffarchive-%d-%d", dir, getpid(), ++cnt );
     if ( GFileMkDir(archivedir)!=0 ) {
 	free(archivedir);
 return( NULL );
     }
 
-    listfile = galloc(strlen(archivedir)+strlen("/" TOC_NAME)+1);
+    listfile = malloc(strlen(archivedir)+strlen("/" TOC_NAME)+1);
     sprintf( listfile, "%s/" TOC_NAME, archivedir );
 
-    listcommand = galloc( strlen(archivers[i].unarchive) + 1 +
+    listcommand = malloc( strlen(archivers[i].unarchive) + 1 +
 			strlen( archivers[i].listargs) + 1 +
 			strlen( name ) + 3 +
 			strlen( listfile ) +4 );
@@ -831,7 +838,7 @@ return( NULL );
 
     /* I tried sending everything to stdout, but that doesn't work if the */
     /*  output is a directory file (ufo, sfdir) */
-    unarchivecmd = galloc( strlen(archivers[i].unarchive) + 1 +
+    unarchivecmd = malloc( strlen(archivers[i].unarchive) + 1 +
 			strlen( archivers[i].listargs) + 1 +
 			strlen( name ) + 1 +
 			strlen( desiredfile ) + 3 +
@@ -846,7 +853,7 @@ return( NULL );
     }
     free(unarchivecmd);
 
-    finalfile = galloc( strlen(archivedir) + 1 + strlen(desiredfile) + 1);
+    finalfile = malloc( strlen(archivedir) + 1 + strlen(desiredfile) + 1);
     sprintf( finalfile, "%s/%s", archivedir, desiredfile );
     free( desiredfile );
 
@@ -871,16 +878,12 @@ char *Decompress(char *name, int compression) {
     char *tmpfile;
 
     if ( dir==NULL ) dir = P_tmpdir;
-    tmpfile = galloc(strlen(dir)+strlen(GFileNameTail(name))+2);
+    tmpfile = malloc(strlen(dir)+strlen(GFileNameTail(name))+2);
     strcpy(tmpfile,dir);
     strcat(tmpfile,"/");
     strcat(tmpfile,GFileNameTail(name));
     *strrchr(tmpfile,'.') = '\0';
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-    sprintf( buf, "%s < %s > %s", compressors[compression].decomp, name, tmpfile );
-#else
     snprintf( buf, sizeof(buf), "%s < %s > %s", compressors[compression].decomp, name, tmpfile );
-#endif
     if ( system(buf)==0 )
 return( tmpfile );
     free(tmpfile);
@@ -892,7 +895,7 @@ static char *ForceFileToHaveName(FILE *file, char *exten) {
     static int try=0;
     FILE *newfile;
 
-    forever {
+    for (;;) {
 	sprintf( tmpfilename, P_tmpdir "/fontforge%d-%d", getpid(), try++ );
 	if ( exten!=NULL )
 	    strcat(tmpfilename,exten);
@@ -912,10 +915,10 @@ return(copy(tmpfilename));			/* The filename does not exist */
 /*  by LoadSplineFont (which does) and by RevertFile (which knows what it's doing) */
 SplineFont *_ReadSplineFont(FILE *file,char *filename,enum openflags openflags) {
     SplineFont *sf;
-    char ubuf[250], *temp;
+    char ubuf[251], *temp;
     int fromsfd = false;
     int i;
-    char *pt, *ext2, *strippedname, *oldstrippedname, *tmpfile=NULL, *paren=NULL, *fullname=filename, *rparen;
+    char *pt, *ext2, *strippedname = 0, *oldstrippedname = 0, *tmpfile=NULL, *paren=NULL, *fullname=filename, *rparen;
     char *archivedir=NULL;
     int len;
     int checked;
@@ -924,6 +927,19 @@ SplineFont *_ReadSplineFont(FILE *file,char *filename,enum openflags openflags) 
 
     if ( filename==NULL )
 return( NULL );
+
+    // for non URLs
+    // treat /whatever/foo.ufo/ as simply /whatever/foo.ufo
+    if ( !strstr(filename,"://")) {
+	int filenamelen = strlen(filename);
+	printf("strippedname:%s\n", filename );
+	
+	if( filenamelen && filename[ filenamelen-1 ] == '/' ) {
+	    filename = copy(filename);
+	    filename[filenamelen-1] = '\0';
+	}
+    }
+    
 
     strippedname = filename;
     pt = strrchr(filename,'/');
@@ -962,7 +978,7 @@ return( NULL );
 		if ( strippedname==NULL )
 return( NULL );
 		if ( strippedname!=filename && paren!=NULL ) {
-		    fullname = galloc(strlen(strippedname)+strlen(paren)+1);
+		    fullname = malloc(strlen(strippedname)+strlen(paren)+1);
 		    strcpy(fullname,strippedname);
 		    strcat(fullname,paren);
 		} else
@@ -997,7 +1013,7 @@ return( NULL );
 	}
 	compression = i+1;
 	if ( strippedname!=filename && paren!=NULL ) {
-	    fullname = galloc(strlen(strippedname)+strlen(paren)+1);
+	    fullname = malloc(strlen(strippedname)+strlen(paren)+1);
 	    strcpy(fullname,strippedname);
 	    strcat(fullname,paren);
 	} else
@@ -1006,7 +1022,7 @@ return( NULL );
 
     /* If there are no pfaedit windows, give them something to look at */
     /*  immediately. Otherwise delay a bit */
-    strcpy(ubuf,_("Loading font from "));
+    strncpy(ubuf,_("Loading font from "),sizeof(ubuf)-1);
     len = strlen(ubuf);
     if ( !wasurl || i==-1 )	/* If it wasn't compressed, or it wasn't an url, then the fullname is reasonable, else use the original name */
 	strncat(ubuf,temp = def2utf8_copy(GFileNameTail(fullname)),100);
@@ -1038,7 +1054,7 @@ return( NULL );
 /* checked == 'b'   => bdf */
 /* checked == 'i'   => ikarus */
     if ( !wasurl && GFileIsDir(strippedname) ) {
-	char *temp = galloc(strlen(strippedname)+strlen("/glyphs/contents.plist")+1);
+	char *temp = malloc(strlen(strippedname)+strlen("/glyphs/contents.plist")+1);
 	strcpy(temp,strippedname);
 	strcat(temp,"/glyphs/contents.plist");
 	if ( GFileExists(temp)) {
@@ -1104,10 +1120,6 @@ return( NULL );
 		unlink(spuriousname); free(spuriousname);
 	    }
 	    checked = 'S';
-#if 0		/* I'm not sure if this is a good test for mf files... */
-	} else if ( ch1=='%' && ch2==' ' ) {
-	    sf = SFFromMF(fullname);
-#endif
 	} else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) {
 	    sf = _SFDRead(fullname,file); file = NULL;
 	    checked = 'f';
@@ -1162,7 +1174,7 @@ return( NULL );
 		strmatch(fullname+strlen(strippedname)-4, ".fnt")==0 ) {
 	sf = SFReadWinFON(fullname,0);
     } else if ( strmatch(fullname+strlen(strippedname)-4, ".pdb")==0 ) {
-	sf = SFReadPalmPdb(fullname,0);
+	sf = SFReadPalmPdb(fullname);
     } else if ( (strmatch(fullname+strlen(fullname)-4, ".pfa")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".pfb")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".pf3")==0 ||
@@ -1199,7 +1211,7 @@ return( NULL );
 	    free(norm->filename); norm->filename = NULL;
 	    norm->new = true;
 	} else if ( sf->chosenname!=NULL && strippedname==filename ) {
-	    norm->origname = galloc(strlen(filename)+strlen(sf->chosenname)+8);
+	    norm->origname = malloc(strlen(filename)+strlen(sf->chosenname)+8);
 	    strcpy(norm->origname,filename);
 	    strcat(norm->origname,"(");
 	    strcat(norm->origname,sf->chosenname);
@@ -1274,27 +1286,12 @@ return( NULL );
 	int ok = false;
 	FILE *test = fopen(filename,"rb");
 	if ( test!=NULL ) {
-#if 0
-	    int ch1 = getc(test);
-	    int ch2 = getc(test);
-	    int ch3 = getc(test);
-	    int ch4 = getc(test);
-	    if ( ch1=='%' ) ok = true;
-	    else if (( ch1==0 && ch2==1 && ch3==0 && ch4==0 ) ||
-		    (  ch1==0 && ch2==2 && ch3==0 && ch4==0 ) ||
-		    /* Windows 3.1 Chinese version used this version for some arphic fonts */
-		    /* See discussion on freetype list, july 2004 */
-		    (ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
-		    (ch1=='t' && ch2=='r' && ch3=='u' && ch4=='e') ||
-		    (ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) ok = true;
-	    else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) ok = true;
-#endif
 	    ok = true;		/* Mac resource files are too hard to check for */
 		    /* If file exists, assume good */
 	    fclose(test);
 	}
 	if ( !ok ) {
-	    tobefreed1 = galloc(strlen(filename)+8);
+	    tobefreed1 = malloc(strlen(filename)+8);
 	    strcpy(tobefreed1,filename);
 	    ept = tobefreed1+strlen(tobefreed1);
 	    for ( i=0; extens[i]!=NULL; ++i ) {
@@ -1384,7 +1381,7 @@ char *_GetModifiers(char *fontname, char *familyname,char *weight) {
     if ( fpt!=NULL ) {
 	for ( i=0; mods[i]!=NULL; ++i ) for ( j=0; mods[i][j]!=NULL; ++j ) {
 	    if ( strcmp(fpt,mods[i][j])==0 ) {
-		strcpy(space,fullmods[i][j]);
+		strncpy(space,fullmods[i][j],sizeof(space)-1);
 return(space);
 	    }
 	}
@@ -1809,7 +1806,7 @@ static void SnapSet(struct psdict *private,real stemsnap[12], real snapcnt[12],
     char buffer[211];
 
     mi = -1;
-    for ( i=0; stemsnap[i]!=0 && i<12; ++i )
+    for ( i=0; i<12 && stemsnap[i]!=0; ++i )
 	if ( mi==-1 ) mi = i;
 	else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
     if ( mi==-1 )
@@ -1952,10 +1949,10 @@ return;
     }
     if ( name==NULL || *name=='\0' )
 	name = _("Back");
-    
+
     l = sf->layer_cnt;
     ++sf->layer_cnt;
-    sf->layers = grealloc(sf->layers,(l+1)*sizeof(LayerInfo));
+    sf->layers = realloc(sf->layers,(l+1)*sizeof(LayerInfo));
     memset(&sf->layers[l],0,sizeof(LayerInfo));
     sf->layers[l].name = copy(name);
     sf->layers[l].order2 = order2;
@@ -1963,7 +1960,7 @@ return;
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
 	Layer *old = sc->layers;
-	sc->layers = grealloc(sc->layers,(l+1)*sizeof(Layer));
+	sc->layers = realloc(sc->layers,(l+1)*sizeof(Layer));
 	memset(&sc->layers[l],0,sizeof(Layer));
 	LayerDefault(&sc->layers[l]);
 	sc->layers[l].order2 = order2;
@@ -1996,3 +1993,263 @@ void SFLayerSetBackground(SplineFont *sf,int layer,int is_back) {
 	++k;
     } while ( k<sf->subfontcnt );
 }
+
+
+int SplinePointListContains( SplinePointList* container, SplinePointList* sought )
+{
+    SplinePointList *spl;
+    for ( spl = container; spl!=NULL; spl = spl->next )
+    {
+	if( spl == sought )
+	    return 1;
+    }
+    return 0;
+}
+
+
+void SPLFirstVisitorDebug(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    printf("   splfirst:%p spline:%p udata:%p\n", splfirst, spline, udata );
+}
+
+void SPLFirstVisitorDebugSelectionState(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    printf("   splfirst:%p spline:%p udata:%p", splfirst, spline, udata );
+    printf("   from.selected:%d n:%d p:%d to.selected:%d n:%d p:%d\n",
+	   ( spline->from ? spline->from->selected       : -1 ),
+	   ( spline->from ? spline->from->nextcpselected : -1 ),
+	   ( spline->from ? spline->from->prevcpselected : -1 ),
+	   ( spline->to   ? spline->to->selected         : -1 ),
+	   ( spline->to   ? spline->to->nextcpselected   : -1 ),
+	   ( spline->to   ? spline->to->prevcpselected   : -1 )
+	);
+}
+
+
+
+
+void SPLFirstVisitSplines( SplinePoint* splfirst, SPLFirstVisitSplinesVisitor f, void* udata )
+{
+    Spline *spline=0;
+    Spline *first=0;
+    Spline *next=0;
+
+    if ( splfirst!=NULL )
+    {
+	first = NULL;
+	for ( spline = splfirst->next; spline!=NULL && spline!=first; spline = next )
+	{
+	    next = spline->to->next;
+
+	    // callback
+	    f( splfirst, spline, udata );
+
+	    if ( first==NULL )
+	    {
+		first = spline;
+	    }
+	}
+    }
+}
+
+void SPLFirstVisitPoints( SplinePoint* splfirst, SPLFirstVisitPointsVisitor f, void* udata )
+{
+    Spline *spline=0;
+    Spline *first=0;
+    Spline *next=0;
+
+    if ( splfirst!=NULL )
+    {
+	first = NULL;
+	for ( spline = splfirst->next; spline!=NULL && spline!=first; spline = next )
+	{
+	    next = spline->to->next;
+
+	    // callback
+	    if( splfirst && splfirst->next == spline )
+		f( splfirst, spline, spline->from, udata );
+	    f( splfirst, spline, spline->to, udata );
+
+	    if ( first==NULL )
+	    {
+		first = spline;
+	    }
+	}
+    }
+}
+
+
+
+typedef struct SPLFirstVisitorFoundSoughtDataS
+{
+    SplinePoint* sought;
+    int found;
+} SPLFirstVisitorFoundSoughtData;
+
+static void SPLFirstVisitorFoundSought(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    SPLFirstVisitorFoundSoughtData* d = (SPLFirstVisitorFoundSoughtData*)udata;
+//    printf("SPLFirstVisitorFoundSought()   splfirst:%p spline:%p udata:%p\n", splfirst, spline, udata );
+//    printf("SPLFirstVisitorFoundSought()   sought:%p from:%p to:%p\n", d->sought, spline->from, spline->to );
+
+    if( spline->from == d->sought || spline->to == d->sought )
+    {
+//	printf("got it!\n");
+	d->found = 1;
+    }
+}
+
+int SplinePointListContainsPoint( SplinePointList* container, SplinePoint* sought )
+{
+    if( !sought )
+	return 0;
+
+//    printf("\n\n\nSplinePointListContainsPoint(top) want:%p\n", sought );
+    SplinePointList *spl;
+    for ( spl = container; spl!=NULL; spl = spl->next )
+    {
+	//SplinePoint* p   = spl->first;
+	//SplinePoint* end = spl->last;
+
+	SPLFirstVisitorFoundSoughtData d;
+	d.sought = sought;
+	d.found  = 0;
+	SPLFirstVisitSplines( spl->first, SPLFirstVisitorFoundSought, &d );
+	if( d.found )
+	    return 1;
+    }
+    return 0;
+}
+
+
+typedef struct SPLFirstVisitorFoundSoughtXYDataS
+{
+    int use_x;
+    int use_y;
+    real x;
+    real y;
+
+    // outputs
+    int found;
+    Spline* spline;
+    SplinePoint* sp;
+
+} SPLFirstVisitorFoundSoughtXYData;
+
+static void SPLFirstVisitorFoundSoughtXY(SplinePoint* splfirst, Spline* spline, void* udata )
+{
+    SPLFirstVisitorFoundSoughtXYData* d = (SPLFirstVisitorFoundSoughtXYData*)udata;
+    int found = 0;
+
+    if( d->found )
+	return;
+
+    printf("SPLFirstVisitorFoundSoughtXY() %f %f %f\n", d->x, spline->from->me.x, spline->to->me.x );
+    if( d->use_x )
+    {
+	if( spline->from->me.x == d->x )
+	{
+	    found = 1;
+	    d->spline = spline;
+	    d->sp = spline->from;
+	}
+
+	if( spline->to->me.x == d->x )
+	{
+	    found = 1;
+	    d->spline = spline;
+	    d->sp = spline->to;
+	}
+    }
+    if( d->use_x && found && d->use_y )
+    {
+	if( d->sp->me.y != d->y )
+	{
+	    found = 0;
+	}
+    }
+    else if( d->use_y )
+    {
+	if( spline->from->me.y == d->y )
+	{
+	    found = 1;
+	    d->spline = spline;
+	    d->sp = spline->from;
+	}
+
+	if( spline->to->me.y == d->y )
+	{
+	    found = 1;
+	    d->spline = spline;
+	    d->sp = spline->to;
+	}
+    }
+
+    if( found )
+    {
+	d->found = found;
+	d->spline = spline;
+    }
+    else
+    {
+	d->sp = 0;
+    }
+}
+
+
+SplinePoint* SplinePointListContainsPointAtX( SplinePointList* container, real x )
+{
+    SplinePointList *spl;
+    for ( spl = container; spl!=NULL; spl = spl->next )
+    {
+	SPLFirstVisitorFoundSoughtXYData d;
+	d.use_x  = 1;
+	d.use_y  = 0;
+	d.x      = x;
+	d.y      = 0;
+	d.found  = 0;
+	SPLFirstVisitSplines( spl->first, SPLFirstVisitorFoundSoughtXY, &d );
+	if( d.found )
+	    return d.sp;
+    }
+    return 0;
+}
+
+SplinePoint* SplinePointListContainsPointAtY( SplinePointList* container, real y )
+{
+    SplinePointList *spl;
+    for ( spl = container; spl!=NULL; spl = spl->next )
+    {
+	SPLFirstVisitorFoundSoughtXYData d;
+	d.use_x  = 0;
+	d.use_y  = 1;
+	d.x      = 0;
+	d.y      = y;
+	d.found  = 0;
+	SPLFirstVisitSplines( spl->first, SPLFirstVisitorFoundSoughtXY, &d );
+	if( d.found )
+	    return d.sp;
+    }
+    return 0;
+}
+
+SplinePoint* SplinePointListContainsPointAtXY( SplinePointList* container, real x, real y )
+{
+    SplinePointList *spl;
+    for ( spl = container; spl!=NULL; spl = spl->next )
+    {
+	SPLFirstVisitorFoundSoughtXYData d;
+	d.use_x  = 1;
+	d.use_y  = 1;
+	d.x      = x;
+	d.y      = y;
+	d.found  = 0;
+	SPLFirstVisitSplines( spl->first, SPLFirstVisitorFoundSoughtXY, &d );
+	if( d.found )
+	    return d.sp;
+    }
+    return 0;
+}
+
+
+

@@ -12,5 +12,3 @@ abs_top_srcdir="@abs_top_srcdir@"
 abs_top_builddir="@abs_top_builddir@"
 
 MKDIR_P="@MKDIR_P@"
-
-skip_python="test x@i_do_have_python_scripting@ != xyes"

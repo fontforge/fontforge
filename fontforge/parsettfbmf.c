@@ -125,7 +125,7 @@ return;
 	if ( gid>=info->glyph_cnt || info->chars[gid]==NULL ) {
 	    if ( gid>=info->glyph_cnt ) {
 		int i;
-	        info->chars = grealloc(info->chars,(gid+1)*sizeof(SplineChar *));
+	        info->chars = realloc(info->chars,(gid+1)*sizeof(SplineChar *));
 		for ( i=info->glyph_cnt; i<gid; ++i ) {
 		    info->chars[i] = SplineCharCreate(2);
 		    info->chars[i]->orig_pos = gid;
@@ -169,15 +169,15 @@ return;
 	bdfc->depth = bdf->clut->clut_len==4 ? 2 : bdf->clut->clut_len==16 ? 4 : 8;
     }
     if ( imageformat!=8 && imageformat!=9 )
-	bdfc->bitmap = gcalloc(metrics->height*bdfc->bytes_per_line,sizeof(uint8));
+	bdfc->bitmap = calloc(metrics->height*bdfc->bytes_per_line,sizeof(uint8));
 
     if ( imageformat==8 || imageformat==9 ) {
 	/* composite */
 	num = getushort(ttf);
-	bdfc->bitmap = gcalloc( 1,sizeof( uint8 ));
+	bdfc->bitmap = calloc( 1,sizeof( uint8 ));
 	bdfc->bytes_per_line = 1;
 	for ( i=0; i<num; ++i ) {
-	    ref = gcalloc( 1,sizeof( BDFRefChar ));
+	    ref = calloc( 1,sizeof( BDFRefChar ));
 	    ref->gid = getushort(ttf);
 	    ref->xoff = (int8) getc(ttf);
 	    ref->yoff = (int8) getc(ttf);
@@ -334,7 +334,7 @@ static void BdfCleanup(BDFFont *bdf,struct ttfinfo  *info) {
 	if ( info->glyph_cnt<bdf->glyphcnt ) {
 	    for ( i=info->glyph_cnt ; i<bdf->glyphcnt; ++i )
 		BDFCharFree(bdf->glyphs[i]);
-	    bdf->glyphs = grealloc(bdf->glyphs,info->glyph_cnt*sizeof(BDFChar *));
+	    bdf->glyphs = realloc(bdf->glyphs,info->glyph_cnt*sizeof(BDFChar *));
 	    bdf->glyphcnt = info->glyph_cnt;
 	}
     } else {
@@ -342,7 +342,7 @@ static void BdfCleanup(BDFFont *bdf,struct ttfinfo  *info) {
 	for ( i=0; i<info->subfontcnt; ++i )
 	    if ( info->subfonts[i]->glyphcnt > cnt )
 		cnt = info->subfonts[i]->glyphcnt;
-	glyphs = gcalloc(cnt,sizeof(BDFChar *));
+	glyphs = calloc(cnt,sizeof(BDFChar *));
 	for ( i=0; i<bdf->glyphcnt; ++i ) if ( (bdfc = bdf->glyphs[i])!=NULL ) {
 	    if ( bdfc->orig_pos<cnt )
 		glyphs[ bdfc->orig_pos ] = bdfc;
@@ -382,7 +382,7 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	offset = getlong(ttf);
 	switch ( indexformat ) {
 	  case 1: case 3:
-	    glyphoffsets = galloc((last-first+2)*sizeof(int32));
+	    glyphoffsets = malloc((last-first+2)*sizeof(int32));
 	    for ( i=0; i<(last-first+2); ++i )
 		glyphoffsets[i] = indexformat==3?getushort(ttf):getlong(ttf);
 	    if ( indexformat==3 && ((last-first)&1) )
@@ -419,8 +419,8 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	  break;
 	  case 4:
 	    num = getlong(ttf);
-	    glyphoffsets = galloc((num+1)*sizeof(int32));
-	    glyphs = galloc((num+1)*sizeof(int32));
+	    glyphoffsets = malloc((num+1)*sizeof(int32));
+	    glyphs = malloc((num+1)*sizeof(int32));
 	    for ( g=0; g<num+1; ++g ) {
 		glyphs[g] = getushort(ttf);
 		glyphoffsets[g] = getushort(ttf);
@@ -445,7 +445,7 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	    big.vbearingY = (signed char) getc(ttf);
 	    big.vadvance = getc(ttf);
 	    num = getlong(ttf);
-	    glyphs = galloc((num+1)*sizeof(int32));
+	    glyphs = malloc((num+1)*sizeof(int32));
 	    for ( g=0; g<num; ++g ) {
 		glyphs[g] = getushort(ttf);
 	    }
@@ -487,7 +487,7 @@ void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info,int onlyone) {
     fseek(ttf,info->bitmaploc_start,SEEK_SET);
     /* version = */ getlong(ttf);		/* Had better be 0x00020000, or 2.0 */
     cnt = getlong(ttf);
-    sizes = galloc(cnt*sizeof(struct ttfsizehead));
+    sizes = malloc(cnt*sizeof(struct ttfsizehead));
     /* we may not like all the possible bitmaps. Some might be designed for */
     /*  non-square pixels, others might be color, others might be */
     /*  vertical data. So only pick out the ones we can use */
@@ -530,8 +530,8 @@ void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info,int onlyone) {
 return;
 
     /* Ask user which (if any) s/he is interested in */
-    choices = gcalloc(cnt+1,sizeof(char *));
-    sel = gcalloc(cnt,sizeof(char));
+    choices = calloc(cnt+1,sizeof(char *));
+    sel = calloc(cnt,sizeof(char));
     for ( i=0; i<cnt; ++i ) {
 	if ( sizes[i].depth==1 )
 	    sprintf(buf,"%d", sizes[i].ppem );
@@ -591,13 +591,13 @@ return;
 		glyphcnt = info->subfonts[i]->glyphcnt;
     }
     for ( i=0; i<cnt; ++i ) {
-	bdf = gcalloc(1,sizeof(BDFFont));
+	bdf = calloc(1,sizeof(BDFFont));
 	/* In cid fonts fontforge stores things by cid rather than gid */
 	bdf->glyphcnt = glyphcnt;
 	if ( sizes[i].endglyph > bdf->glyphcnt )
 	    bdf->glyphcnt = sizes[i].endglyph+1;	/* Important if we have reference glyphs */
 	bdf->glyphmax = bdf->glyphcnt;
-	bdf->glyphs = gcalloc(bdf->glyphcnt,sizeof(BDFChar *));
+	bdf->glyphs = calloc(bdf->glyphcnt,sizeof(BDFChar *));
 	bdf->pixelsize = sizes[i].ppem;
 	if ( sizes[i].ppem == sizes[i].ascent - sizes[i].descent )
 	    bdf->ascent = sizes[i].ascent;
@@ -682,14 +682,14 @@ static struct bdfcharlist *BDFAddDefaultGlyphs(BDFFont *bdf, int format) {
 	if ( BDFDepth(bdf)!=1 ) {
 	    glyph0.bytes_per_line = 1;	/* Needs to be 1 or BCRegularizeBitmap gets upset */
 	    glyph0.ymax = 1;
-	    glyph0.bitmap = gcalloc(8,1);
+	    glyph0.bitmap = calloc(8,1);
 	} else {
 	    glyph0.xmin = (w==4)?0:1;
 	    glyph0.xmax = w-1;
 	    glyph0.ymin = 0;
 	    glyph0.ymax = 8*bdf->ascent/10;
 	    glyph0.bytes_per_line = (glyph0.xmax-glyph0.xmin+8)/8;
-	    glyph0.bitmap = gcalloc((glyph0.ymax-glyph0.ymin+1)*glyph0.bytes_per_line,1);
+	    glyph0.bitmap = calloc((glyph0.ymax-glyph0.ymin+1)*glyph0.bytes_per_line,1);
 	    j = (glyph0.xmax-glyph0.xmin)>>3;
 	    bit = 0x80>>((glyph0.xmax-glyph0.xmin)&7);
 	    for ( i=0; i<=glyph0.ymax; ++i ) {
@@ -944,10 +944,6 @@ static void FillLineMetrics(struct bitmapSizeTable *size,BDFFont *bdf) {
     /* GRRRRR */
     /* Apple's ftxvalidator gets unhappy if there are no vertical line metrics*/
     /*  so even though I've no idea what they should be, I'll include something*/
-#if 0
-    size->vert.minoriginsb = size->hori.maxbeforebl;
-    size->vert.minAdvancesb = size->hori.minafterbl;
-#endif
     /* Apple seems to say that the vertical ascender/descender are half the */
     /*  pixel size (which makes sense), but MS does something else */
     size->vert.ascender = bdf->pixelsize/2;
@@ -968,11 +964,11 @@ return( false );
 static void BCPreserveAndExpand( BDFChar *bc,IBounds *ib ) {
     int bmp_width = ( bc->ymax - bc->ymin + 1 );
     
-    bc->backup = gcalloc( 1,sizeof( BDFFloat ));
+    bc->backup = calloc( 1,sizeof( BDFFloat ));
     bc->backup->bytes_per_line = bc->bytes_per_line;
     bc->backup->xmin = bc->xmin; bc->backup->xmax = bc->xmax;
     bc->backup->ymin = bc->ymin; bc->backup->ymax = bc->ymax;
-    bc->backup->bitmap = gcalloc( bc->bytes_per_line * bmp_width,sizeof( uint8 ));
+    bc->backup->bitmap = calloc( bc->bytes_per_line * bmp_width,sizeof( uint8 ));
     memcpy( bc->backup->bitmap,bc->bitmap,bc->bytes_per_line * bmp_width );
     
     BCExpandBitmapToEmBox( bc,ib->minx,ib->miny,ib->maxx,ib->maxy );
@@ -1022,7 +1018,7 @@ static void DetectWidthGroups( struct glyphinfo *gi,BDFFont *bdf,int apple ) {
 
 static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,
 	BDFFont *bdf, struct bdfcharlist *defs, struct glyphinfo *gi) {
-    struct bitmapSizeTable *size = gcalloc(1,sizeof(struct bitmapSizeTable));
+    struct bitmapSizeTable *size = calloc(1,sizeof(struct bitmapSizeTable));
     struct indexarray *cur, *last=NULL, *head=NULL;
     int i,j, final,cnt;
     FILE *subtables = tmpfile();
@@ -1066,7 +1062,7 @@ return(NULL);
 	    defs = defs->next;
 	    wasdef = true;
 	}
-	cur = galloc(sizeof(struct indexarray));
+	cur = malloc(sizeof(struct indexarray));
 	cur->next = NULL;
 	if ( last==NULL ) head = cur;
 	else last->next = cur;
@@ -1204,18 +1200,8 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
     /* aside from the names the version number is about the only difference */
     /*  I'm aware of. Oh MS adds a couple new sub-tables, but I haven't seen */
     /*  them used, and Apple also has a subtable MS doesn't support, but so what? */
-    /* Oh, of course. Apple documents version 0x10000, but it actually uses */
-    /*  version 0x20000. How silly of me to think the docs might be right */
-    /* (Apple now documents version 0x20000) */
-    /*if ( at->msbitmaps ) {*/
-	putlong(at->bdat,0x20000);
-	putlong(at->bloc,0x20000);
-#if 0
-    } else {
-	putlong(at->bdat,0x10000);
-	putlong(at->bloc,0x10000);
-    }
-#endif
+    putlong(at->bdat,0x20000);
+    putlong(at->bloc,0x20000);
     putlong(at->bloc,at->gi.strikecnt);
 
     /* leave space for the strike array at start of file */
@@ -1345,13 +1331,8 @@ void ttfdumpbitmapscaling(SplineFont *sf,struct alltabs *at,int32 *sizes) {
 	     putc(0,at->ebsc);
 	     putc(0,at->ebsc);
 	    /* Vertical line metrics */
-#if 1
 	     putc((int) rint(size.hori.ascender*expected_sizes[i]/bdf->pixelsize),at->ebsc);
 	     putc((int) rint(size.hori.descender*expected_sizes[i]/bdf->pixelsize),at->ebsc);
-#else
-	     putc((int) rint(size.vert.ascender*expected_sizes[i]/bdf->pixelsize),at->ebsc);
-	     putc((int) rint(size.vert.descender*expected_sizes[i]/bdf->pixelsize),at->ebsc);
-#endif
 	     putc((int) rint(size.vert.widthMax*expected_sizes[i]/bdf->pixelsize),at->ebsc);
 	     putc(size.vert.caretRise,at->ebsc);
 	     putc(size.vert.caretRun,at->ebsc);

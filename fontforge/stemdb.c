@@ -493,8 +493,8 @@ static void AssignStemToPoint( struct pointdata *pd,struct stemdata *stem,int is
 return;
     }
     
-    *stems = grealloc( *stems,( *stemcnt+1 )*sizeof( struct stemdata *));
-    *is_l  = grealloc( *is_l, ( *stemcnt+1 )*sizeof( int ));
+    *stems = realloc( *stems,( *stemcnt+1 )*sizeof( struct stemdata *));
+    *is_l  = realloc( *is_l, ( *stemcnt+1 )*sizeof( int ));
     (*stems)[*stemcnt] = stem;
     (*is_l )[*stemcnt] = left;
     (*stemcnt)++;
@@ -651,7 +651,9 @@ return( NULL );
 	  case 2:	/* Intersects at end-point & next entry is other side */
 	    ++i;	/*  And the two sides go in opposite directions */
 	  break;
-	}
+	  default:
+	  break;
+}
     }
     fprintf( stderr, "MonotonicFindAlong: Never found our spline.\n" );
 return( NULL );
@@ -704,6 +706,8 @@ return( true );
 	  break;
 	  case 2:	/* Intersects at end-point & next entry is other side */
 	    ++i;	/*  And the two sides go in opposite directions */
+	  break;
+	  default:
 	  break;
 	}
     }
@@ -829,7 +833,7 @@ return( ret );
 static BasePoint PerturbAlongSpline( Spline *s,BasePoint *bp,double t ) {
     BasePoint perturbed;
     
-    forever {
+    for (;;) {
 	perturbed.x = ((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d;
 	perturbed.y = ((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d;
 	if ( !RealWithin( perturbed.x,bp->x,.01 ) || !RealWithin( perturbed.y,bp->y,.01 ))
@@ -872,11 +876,11 @@ static void MakeVirtualLine(struct glyphdata *gd,BasePoint *perturbed,
 	    }
 	    if ( !i ) {
 		gd->scnt = cnt;
-		gd->sspace = galloc((cnt+1)*sizeof(Spline *));
+		gd->sspace = malloc((cnt+1)*sizeof(Spline *));
 	    } else
 		gd->sspace[cnt] = NULL;
 	}
-	gd->stspace = galloc((3*cnt+2)*sizeof(struct st));
+	gd->stspace = malloc((3*cnt+2)*sizeof(struct st));
 	SplineCharFindBounds(gd->sc,&gd->size);
 	gd->size.minx -= 10; gd->size.miny -= 10;
 	gd->size.maxx += 10; gd->size.maxy += 10;
@@ -1103,7 +1107,7 @@ return( NULL );
     
     line = &gd->lines[gd->linecnt++];
     line->pcnt = pcnt+1;
-    line->points = galloc((pcnt+1)*sizeof(struct pointdata *));
+    line->points = malloc((pcnt+1)*sizeof(struct pointdata *));
     line->points[0] = pd;
     line->unit = *dir;
     line->is_left = is_l;
@@ -1205,7 +1209,7 @@ static uint8 IsStubOrIntersection( struct glyphdata *gd, BasePoint *dir1,
     odir2 = ( is_next2 ) ? &pd2->prevunit : &pd2->nextunit;
     
     angle = fabs( GetUnitAngle( dir1,dir2 ));
-    if ( angle > stub_slope_error*1.5 && angle < PI - stub_slope_error*1.5 )
+    if ( angle > (double)stub_slope_error*1.5 && angle < PI - (double)stub_slope_error*1.5 )
 return( 0 );
 
     /* First check if it is a slightly slanted line or a curve which joins */
@@ -1617,7 +1621,7 @@ static struct stem_chunk *AddToStem( struct glyphdata *gd,struct stemdata *stem,
     }
 
     if ( i<0 ) {
-	stem->chunks = grealloc(stem->chunks,(stem->chunk_cnt+1)*sizeof(struct stem_chunk));
+	stem->chunks = realloc(stem->chunks,(stem->chunk_cnt+1)*sizeof(struct stem_chunk));
 	chunk = &stem->chunks[stem->chunk_cnt++];
 	chunk->parent = stem;
 
@@ -2870,7 +2874,7 @@ static void CheckPotential( struct glyphdata *gd,struct pointdata *pd,int is_nex
     
     stemcnt = ( is_next ) ? pd->nextcnt : pd->prevcnt;
     stems = ( is_next ) ? pd->nextstems : pd->prevstems;
-    vchunks = gcalloc( stemcnt,sizeof( VChunk ));
+    vchunks = calloc( stemcnt,sizeof( VChunk ));
     
     for ( i=0; i<stemcnt; i++ ) {
 	is_l = ( is_next ) ? pd->next_is_l[i] : pd->prev_is_l[i];
@@ -3589,32 +3593,6 @@ static void FigureStemActive( struct glyphdata *gd, struct stemdata *stem ) {
 	    activespace[acnt].sbase = activespace[acnt].ebase = proj;
 	    acnt++;
 	    ++i;
-	/* The following is probably not needed. Bounding box hints don't     */
-	/* correspond to any actual glyph features, and their "active" zones  */
-	/* usually look ugly when displayed. So we don't attempt to calculate */
-	/* those faked "active" zones and instead just exclude bounding       */
-	/* box hints from any validity checks based on the hint's "active"    */
-	/* length */
-	} else if ( chunk->stemcheat==4 && chunk->l!=NULL && chunk->r!=NULL ) {
-#if 0
-	    SplinePoint *sp = chunk->l->sp;
-	    SplinePoint *sp2 = chunk->r->sp;
-	    proj =  (sp->me.x - stem->left.x) *stem->unit.x +
-		    (sp->me.y - stem->left.y) *stem->unit.y;
-	    proj2 = (sp2->me.x - stem->left.x) *stem->unit.x +
-		    (sp2->me.y - stem->left.y) *stem->unit.y;
-	    activespace[acnt  ].curved = false;
-	    if ( proj2<proj ) {
-		activespace[acnt].start = proj2;
-		activespace[acnt].end = proj;
-	    } else {
-		activespace[acnt].start = proj;
-		activespace[acnt].end = proj2;
-	    }
-	    activespace[acnt].sbase = activespace[acnt].ebase = proj;
-	    acnt++;
-	    ++i;
-#endif
 	} else if ( chunk->stemcheat && chunk->l!=NULL && chunk->r!=NULL ) {
 	    SplinePoint *sp = chunk->l->sp;
 	    proj =  ( sp->me.x - stem->left.x ) * stem->unit.x +
@@ -3637,7 +3615,7 @@ static void FigureStemActive( struct glyphdata *gd, struct stemdata *stem ) {
 
     if ( acnt!=0 ) {
 	stem->activecnt = MergeSegmentsFinal( activespace,acnt );
-	stem->active = galloc(acnt*sizeof(struct segment));
+	stem->active = malloc(acnt*sizeof(struct segment));
 	memcpy(stem->active,activespace,acnt*sizeof(struct segment));
     }
 
@@ -4285,8 +4263,8 @@ static void AssignPointsToBBoxHint( struct glyphdata *gd,DBounds *bounds,
     SplinePoint **lpoints, **rpoints;
     struct pointdata *pd, *pd1, *pd2;
     
-    lpoints = gcalloc( gd->pcnt,sizeof( SplinePoint *));
-    rpoints = gcalloc( gd->pcnt,sizeof( SplinePoint *));
+    lpoints = calloc( gd->pcnt,sizeof( SplinePoint *));
+    rpoints = calloc( gd->pcnt,sizeof( SplinePoint *));
     dir.x = !is_v; dir.y = is_v;
     for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
 	pd = &gd->points[i];
@@ -4520,7 +4498,7 @@ return;
     acnt = MergeSegments( activespace,acnt );
     stem->activecnt = acnt;
     if ( acnt!=0 ) {
-	stem->active = galloc(acnt*sizeof(struct segment));
+	stem->active = malloc(acnt*sizeof(struct segment));
 	memcpy( stem->active,activespace,acnt*sizeof( struct segment ));
     }
 
@@ -4859,10 +4837,10 @@ static void AssignPointsToStems( struct glyphdata *gd,int startnum,DBounds *boun
 	    HalfStemNoOpposite( gd,pd,stem,&dir,2 );
 	}
     }
-    gd->lspace = galloc(gd->pcnt*sizeof(struct segment));
-    gd->rspace = galloc(gd->pcnt*sizeof(struct segment));
-    gd->bothspace = galloc(3*gd->pcnt*sizeof(struct segment));
-    gd->activespace = galloc(3*gd->pcnt*sizeof(struct segment));
+    gd->lspace = malloc(gd->pcnt*sizeof(struct segment));
+    gd->rspace = malloc(gd->pcnt*sizeof(struct segment));
+    gd->bothspace = malloc(3*gd->pcnt*sizeof(struct segment));
+    gd->activespace = malloc(3*gd->pcnt*sizeof(struct segment));
 #if GLYPH_DATA_DEBUG
     fprintf( stderr,"Going to calculate stem active zones for %s\n",gd->sc->name );
 #endif
@@ -4890,7 +4868,7 @@ static void _DStemInfoToStemData( struct glyphdata *gd,DStemInfo *dsi,int *start
     struct stemdata *stem;
     
     if ( gd->stems == NULL ) {
-	gd->stems = gcalloc( 2*gd->pcnt,sizeof( struct stemdata ));
+	gd->stems = calloc( 2*gd->pcnt,sizeof( struct stemdata ));
 	gd->stemcnt = 0;
     }
     *startcnt = gd->stemcnt;
@@ -4918,7 +4896,7 @@ static void _StemInfoToStemData( struct glyphdata *gd,StemInfo *si,DBounds *boun
     
     dir.x = !is_v; dir.y = is_v;
     if ( gd->stems == NULL ) {
-	gd->stems = gcalloc( 2*gd->pcnt,sizeof( struct stemdata ));
+	gd->stems = calloc( 2*gd->pcnt,sizeof( struct stemdata ));
 	gd->stemcnt = 0;
     }
     *startcnt = gd->stemcnt;
@@ -5224,14 +5202,14 @@ static void LookForMasterHVStem( struct stemdata *stem,BlueData *bd ) {
     if ( smaster != NULL ) {
 	stem->master = smaster;
 	if ( smaster->dependent == NULL )
-	    smaster->dependent = gcalloc( bundle->cnt*2,sizeof( struct dependent_stem ));
+	    smaster->dependent = calloc( bundle->cnt*2,sizeof( struct dependent_stem ));
 	smaster->dependent[smaster->dep_cnt].stem = stem;
 	smaster->dependent[smaster->dep_cnt].dep_type = stype;
 	smaster->dependent[smaster->dep_cnt++].lbase = !is_x;
     } else if ( emaster != NULL ) {
 	stem->master = emaster;
 	if ( emaster->dependent == NULL )
-	    emaster->dependent = gcalloc( bundle->cnt*2,sizeof( struct dependent_stem ));
+	    emaster->dependent = calloc( bundle->cnt*2,sizeof( struct dependent_stem ));
 	emaster->dependent[emaster->dep_cnt  ].stem = stem;
 	emaster->dependent[emaster->dep_cnt  ].dep_type = etype;
 	emaster->dependent[emaster->dep_cnt++].lbase = is_x;
@@ -5342,21 +5320,21 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig, int needs_deps )
 	}
     }
     
-    gd->hbundle = gcalloc( 1,sizeof( struct stembundle ));
-    gd->hbundle->stemlist = gcalloc( gd->stemcnt,sizeof( struct stemdata *));
+    gd->hbundle = calloc( 1,sizeof( struct stembundle ));
+    gd->hbundle->stemlist = calloc( gd->stemcnt,sizeof( struct stemdata *));
     gd->hbundle->unit.x = 1; gd->hbundle->unit.y = 0;
     gd->hbundle->l_to_r.x = 0; gd->hbundle->l_to_r.y = -1;
 
-    gd->vbundle = gcalloc( 1,sizeof( struct stembundle ));
-    gd->vbundle->stemlist = gcalloc( gd->stemcnt,sizeof( struct stemdata *));
+    gd->vbundle = calloc( 1,sizeof( struct stembundle ));
+    gd->vbundle->stemlist = calloc( gd->stemcnt,sizeof( struct stemdata *));
     gd->vbundle->unit.x = 0; gd->vbundle->unit.y = 1;
     gd->vbundle->l_to_r.x = 1; gd->vbundle->l_to_r.y = 0;
     
     if ( gd->has_slant && !gd->only_hv ) {
 	SplineCharFindBounds( gd->sc,&bounds );
 	
-	gd->ibundle = gcalloc( 1,sizeof( struct stembundle ));
-	gd->ibundle->stemlist = gcalloc( gd->stemcnt,sizeof( struct stemdata *));
+	gd->ibundle = calloc( 1,sizeof( struct stembundle ));
+	gd->ibundle->stemlist = calloc( gd->stemcnt,sizeof( struct stemdata *));
 	gd->ibundle->unit.x = gd->slant_unit.x; 
 	gd->ibundle->unit.y = gd->slant_unit.y;
 	gd->ibundle->l_to_r.x = -gd->ibundle->unit.y; 
@@ -5454,7 +5432,7 @@ return;
     
     refidx = ( lbase ) ? master->leftidx : master->rightidx;
     if ( refidx != -1 ) bpd = &gd->points[refidx];
-    master->serifs = grealloc(
+    master->serifs = realloc(
 	master->serifs,( scnt+1 )*sizeof( struct dependent_serif ));
     master->serifs[scnt].stem = slave;
     master->serifs[scnt].width = width;
@@ -5773,7 +5751,7 @@ struct glyphdata *GlyphDataInit( SplineChar *sc,int layer,double em_size,int onl
     if ( sc->layers[layer].splines==NULL )
 return( NULL );
 
-    gd = gcalloc( 1,sizeof( struct glyphdata ));
+    gd = calloc( 1,sizeof( struct glyphdata ));
     gd->only_hv = only_hv;
     gd->layer = layer;
     
@@ -5806,7 +5784,7 @@ return( NULL );
     gd->realcnt = gd->pcnt = SCNumberPoints( sc, layer );
     for ( i=0, ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next, ++i );
     gd->ccnt = i;
-    gd->contourends = galloc((i+1)*sizeof(int));
+    gd->contourends = malloc((i+1)*sizeof(int));
     for ( i=0, ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next, ++i ) {
 	SplinePoint *last;
 	if ( ss->first->prev!=NULL )
@@ -5849,14 +5827,14 @@ return( NULL );
 	break;
 	}
     }
-    gd->pspace = galloc( gd->pcnt*sizeof( struct pointdata *));
+    gd->pspace = malloc( gd->pcnt*sizeof( struct pointdata *));
 
     /*gd->ms = SSsToMContours(sc->layers[layer].splines,over_remove);*/	/* second argument is meaningless here */
     for ( m=gd->ms, cnt=0; m!=NULL; m=m->linked, ++cnt );
-    gd->space = galloc((cnt+2)*sizeof(Monotonic*));
+    gd->space = malloc((cnt+2)*sizeof(Monotonic*));
     gd->mcnt = cnt;
 
-    gd->points = gcalloc(gd->pcnt,sizeof(struct pointdata));
+    gd->points = calloc(gd->pcnt,sizeof(struct pointdata));
     for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) if ( ss->first->prev!=NULL ) {
 	for ( sp=ss->first; ; ) {
 	    PointInit( gd,sp,ss );
@@ -5878,25 +5856,6 @@ return( NULL );
 	    FindMatchingEdge(gd,pd,2,&pd->bothedge);
     }
 
-#if 0
-    /* Consider the slash character. We have a diagonal stem capped with two */
-    /*  horizontal lines. From the upper right corner, a line drawn normal to*/
-    /*  the right diagonal stem will intersect the top cap, very close to the*/
-    /*  upper right corner. That isn't interesting information */
-    for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
-	pd = &gd->points[i];
-	if ( pd->nextedges[0] == pd->sp->prev && pd->next_e_t[0]>.9 &&
-		gd->points[pd->sp->prev->from->ptindex].prevedges[0] == pd->sp->next ) {
-	    pd->nextedges[0] = pd->sp->prev->from->prev;
-	    pd->next_e_t[0] = 1;
-	}
-	if ( pd->prevedges[0] == pd->sp->next && pd->prev_e_t[0]<.1 &&
-		gd->points[pd->sp->next->to->ptindex].nextedges[0] == pd->sp->prev ) {
-	    pd->prevedges[0] = pd->sp->next->to->next;
-	    pd->prev_e_t[0] = 0;
-	}
-    }
-#endif
 return( gd );
 }
 
@@ -5923,7 +5882,7 @@ return( gd );
 	memcpy( &gd->bd,bd,sizeof( BlueData ));
 
     /* There will never be more lines than there are points (counting next/prev as separate) */
-    gd->lines = galloc( 2*gd->pcnt*sizeof( struct linedata ));
+    gd->lines = malloc( 2*gd->pcnt*sizeof( struct linedata ));
     gd->linecnt = 0;
     for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
 	pd = &gd->points[i];
@@ -5940,7 +5899,7 @@ return( gd );
     }
     
     /* There will never be more stems than there are points (counting next/prev as separate) */
-    gd->stems = gcalloc( 2*gd->pcnt,sizeof( struct stemdata ));
+    gd->stems = calloc( 2*gd->pcnt,sizeof( struct stemdata ));
     gd->stemcnt = 0;			/* None used so far */
 
     if ( use_existing ) {
@@ -6004,10 +5963,10 @@ return( gd );
     /* Figure out active zones at the first order (as they are needed to */
     /* determine which stems are undesired and they don't depend from */
     /* the "potential" state of left/right points in chunks */
-    gd->lspace = galloc(gd->pcnt*sizeof(struct segment));
-    gd->rspace = galloc(gd->pcnt*sizeof(struct segment));
-    gd->bothspace = galloc(3*gd->pcnt*sizeof(struct segment));
-    gd->activespace = galloc(3*gd->pcnt*sizeof(struct segment));
+    gd->lspace = malloc(gd->pcnt*sizeof(struct segment));
+    gd->rspace = malloc(gd->pcnt*sizeof(struct segment));
+    gd->bothspace = malloc(3*gd->pcnt*sizeof(struct segment));
+    gd->activespace = malloc(3*gd->pcnt*sizeof(struct segment));
 #if GLYPH_DATA_DEBUG
     fprintf( stderr,"Going to calculate stem active zones for %s\n",gd->sc->name );
 #endif

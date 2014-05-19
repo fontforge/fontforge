@@ -1,9 +1,8 @@
-#!/usr/local/bin/fontforge
 #Needs: fonts/AddExtremumTest.sfd
 
 #Check that AddExtrema doesn't distort the curve (by much).
 
-Open("fonts/AddExtremumTest.sfd")
+Open("@abs_srcdir@/fonts/AddExtremumTest.sfd")
 Reencode("Original")
 SelectAll()
 Copy()

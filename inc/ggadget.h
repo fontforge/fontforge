@@ -56,6 +56,22 @@ typedef struct gtextinfo {
     unsigned int changed: 1;			/* If a row/column widget changed this */
     unichar_t mnemonic;				/* Only for menus and menubars */
 						/* should really be in menuitem, but that wastes space and complicates GTextInfoDraw */
+    char* text_untranslated;                    /* used to simplify hotkey lookup for menus. */
+    /* 
+     * text_untranslated is either the GMenuItem2 shortcut or the GTextInfo prior
+     * to translation occurring. The shortcut text is considered first
+     * to allow the code to make the value explicit. This is useful in
+     * cases where the menu text to be translated (GTextInfo.text
+     * prior to calling sgettext() on it) is specially designed for
+     * translation, like File|New is. Having the hotkey of "New|No
+     * Shortcut" will give a text_untranslated of "New|No Shortcut".
+     * See HKTextInfoToUntranslatedText() for stripping out any
+     * potential underscore and the trailing "|Rest" string.
+     *
+     * Using a pointer like this relies on the GMenuItems used to make
+     * the menus are a static structure that outlasts the
+     * menu/gtextinfo itself.
+     **/
 } GTextInfo;
 
 #define GTEXTINFO_EMPTY { NULL, NULL, 0x000000, 0x000000, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, '\0' }
@@ -95,6 +111,7 @@ typedef struct gmenuitem {
     int mid;
 } GMenuItem;
 
+#define GMENUITEM_LINE   { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, '\0', 0, NULL, NULL, NULL, 0 }
 #define GMENUITEM_EMPTY { GTEXTINFO_EMPTY, '\0', 0, NULL, NULL, NULL, 0 }
 
 
@@ -107,8 +124,8 @@ typedef struct gmenuitem2 {
     int mid;
 } GMenuItem2;
 
+#define GMENUITEM2_LINE { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }
 #define GMENUITEM2_EMPTY { GTEXTINFO_EMPTY, NULL, NULL, NULL, NULL, 0 }
-
 
 typedef struct tabinfo {
     unichar_t *text;
@@ -187,6 +204,7 @@ enum gg_flags { gg_visible=1, gg_enabled=2, gg_pos_in_pixels=4,
 		gg_dontcopybox=0x10000000,
 		gg_pos_use0=0x20000000, gg_pos_under=0x40000000,
 		gg_pos_newline = (int) 0x80000000,
+		gg_skip_hotkey_processing = (int) 0x100000000,
 		/* Reuse some flag values for different widgets */
 		gg_file_pulldown=gg_sb_vert, gg_file_multiple = gg_list_multiplesel,
 		gg_text_xim = gg_tabset_scroll,
@@ -297,7 +315,7 @@ struct gdirentry;
 typedef enum fchooserret (*GFileChooserFilterType)(GGadget *g,struct gdirentry *ent,
 	const unichar_t *dir);
 typedef int (*GFileChooserInputFilenameFuncType)( GGadget *g,
-						  unichar_t** currentFilename,
+						  const unichar_t ** currentFilename,
 						  unichar_t* oldfilename );
 
     /* Obsolete */
@@ -351,6 +369,8 @@ GWindow GGadgetGetWindow(GGadget *g);
 void *GGadgetGetUserData(GGadget *g);
 void GGadgetSetUserData(GGadget *g, void *d);
 void GGadgetSetPopupMsg(GGadget *g, const unichar_t *msg);
+int GGadgetContains(GGadget *g, int x, int y );
+int GGadgetContainsEventLocation(GGadget *g, GEvent* e );
 GRect *GGadgetGetInnerSize(GGadget *g,GRect *rct);
 GRect *GGadgetGetSize(GGadget *g,GRect *rct);
 void GGadgetSetSize(GGadget *g,GRect *rct);
@@ -360,6 +380,7 @@ void GGadgetSetDesiredSize(GGadget *g,GRect *outer, GRect *inner);
 int GGadgetGetCid(GGadget *g);
 void GGadgetResize(GGadget *g,int32 width, int32 height );
 void GGadgetMove(GGadget *g,int32 x, int32 y );
+void GGadgetMoveAddToY(GGadget *g, int32 yoffset );
 int32 GGadgetGetX(GGadget *g);
 int32 GGadgetGetY(GGadget *g);
 void  GGadgetSetY(GGadget *g, int32 y );
@@ -423,6 +444,7 @@ void GTabSetRemoveTabByName(GGadget *g, char *name);
 
 int32 GScrollBarGetPos(GGadget *g);
 int32 GScrollBarSetPos(GGadget *g,int32 pos);
+int32 GScrollBarAddToPos(GGadget *g,int32 offset);
 void GScrollBarSetMustShow(GGadget *g, int32 sb_min, int32 sb_max, int32 sb_pagesize,
 	int32 sb_mustshow);
 void GScrollBarSetBounds(GGadget *g, int32 sb_min, int32 sb_max, int32 sb_pagesize );
@@ -446,8 +468,8 @@ void GFileChooserConnectButtons(GGadget *g,GGadget *ok, GGadget *filter);
 void GFileChooserSetFilterText(GGadget *g,const unichar_t *filter);
 void GFileChooserSetFilterFunc(GGadget *g,GFileChooserFilterType filter);
 void GFileChooserSetInputFilenameFunc(GGadget *g,GFileChooserInputFilenameFuncType filter);
-int GFileChooserDefInputFilenameFunc( GGadget *g, unichar_t** currentFilename, unichar_t* oldfilename );
-int GFileChooserSaveAsInputFilenameFunc( GGadget *g, unichar_t** ppt, unichar_t* oldfilename );
+int GFileChooserDefInputFilenameFunc( GGadget *g, const unichar_t** currentFilename, unichar_t* oldfilename );
+int GFileChooserSaveAsInputFilenameFunc( GGadget *g, const unichar_t** ppt, unichar_t* oldfilename );
 GFileChooserInputFilenameFuncType GFileChooserGetInputFilenameFunc(GGadget *g);
 void GFileChooserSetDir(GGadget *g,unichar_t *dir);
 struct giocontrol *GFileChooserReplaceIO(GGadget *g,struct giocontrol *gc);
@@ -529,8 +551,13 @@ enum fchooserret GFileChooserDefFilter(GGadget *g,struct gdirentry *ent,
 	const unichar_t *dir);
 
 GWindow GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi);
+GWindow GMenuCreatePopupMenuWithName(GWindow owner,GEvent *event, char* subMenuName,GMenuItem *mi);
 GWindow _GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi,
-	void (*donecallback)(GWindow owner));
+			      void (*donecallback)(GWindow owner));
+GWindow _GMenuCreatePopupMenuWithName(GWindow owner,GEvent *event, GMenuItem *mi,
+				      char* subMenuName, 
+				      void (*donecallback)(GWindow owner));
+
 
 GGadget *GLineCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GGroupCreate(struct gwindow *base, GGadgetData *gd,void *data);
@@ -577,7 +604,7 @@ GResImage *GGadgetResourceFindImage(char *name, GImage *def);
 void GGadgetSetImageDir(char *dir);
 void GGadgetSetImagePath(char *path);
 GImage *GGadgetImageCache(char *filename);
-int TryGGadgetImageCache(GImage *image, char *name);
+int TryGGadgetImageCache(GImage *image, const char *name);
 
 extern unichar_t *utf82u_mncopy(const char *utf8buf,unichar_t *mn);
 
@@ -601,5 +628,10 @@ extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
 extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
 
 extern void GVisibilityBoxSetToMinWH(GGadget *g);
+
+extern void GGadgetSetSkipHotkeyProcessing( GGadget *g, int v );
+extern int GGadgetGetSkipHotkeyProcessing( GGadget *g );
+extern void GGadgetSetSkipUnQualifiedHotkeyProcessing( GGadget *g, int v );
+extern int GGadgetGetSkipUnQualifiedHotkeyProcessing( GGadget *g );
 
 #endif

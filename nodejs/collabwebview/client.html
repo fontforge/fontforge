@@ -1,0 +1,32 @@
+<html>
+	<head>
+<link href='http://fonts.googleapis.com/css?family=Cutive+Mono' rel='stylesheet' type='text/css'>
+	<!-- 
+	 * Author:		Gianluca Guarini
+	 * Contact: 	gianluca.guarini@gmail.com
+	 * Website:		http://www.gianlucaguarini.com/
+	 * Twitter:		@gianlucaguarini
+	-->
+
+<style>div{ white-space: pre; font-family: 'Cutive Mono', serif; }</style>
+
+		<title>Push notification server</title>
+	</head>
+	<body>
+		<time></time>
+		<div id="container">Try to change your xml data to update this content</div>
+	<script src="socket.io/socket.io.js"></script>
+	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<script>
+	// creating a new websocket
+	var socket = io.connect('http://' + location.host);
+	// on every message recived we print the new datas inside the #container div
+	socket.on('notification', function (data) {
+		$('#container').html(data.json);
+		// $('#container').html(data.earl);
+		console.dir(data);
+		$('time').html('Last Update:' + data.time);
+	});
+	</script>
+	</body>
+</html>

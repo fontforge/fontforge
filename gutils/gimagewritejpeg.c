@@ -24,15 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
 
-#ifdef _NO_LIBJPEG
-
-static int a_file_must_define_something=0;	/* ANSI says so */
-
-#else
+#include <fontforge-config.h>
 
 #include <sys/types.h>
 #include <stdio.h>
@@ -157,7 +150,7 @@ return 0;
   jpeg_start_compress(&cinfo, TRUE);
 
   if ( cinfo.in_color_space != JCS_GRAYSCALE )
-      row_pointer[0] = (JSAMPROW) galloc(3*base->width);
+      row_pointer[0] = (JSAMPROW) malloc(3*base->width);
   while (cinfo.next_scanline < cinfo.image_height) {
     if ( cinfo.in_color_space == JCS_GRAYSCALE )
       row_pointer[0] = (unsigned char *) (base->data + cinfo.next_scanline*base->bytes_per_line);
@@ -168,7 +161,7 @@ return 0;
   jpeg_finish_compress(&cinfo);
   jpeg_destroy_compress(&cinfo);
   if ( cinfo.in_color_space != JCS_GRAYSCALE )
-    gfree(row_pointer[0]);
+    free(row_pointer[0]);
 return( 1 );
 }
 
@@ -184,5 +177,3 @@ return(0);
   fclose(outfile);
 return( ret );
 }
-
-#endif

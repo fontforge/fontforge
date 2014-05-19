@@ -33,23 +33,22 @@ dist_hicolor22x22_DATA = icons/22x22/apps/fontforge.png
 dist_hicolor24x24_DATA = icons/24x24/apps/fontforge.png
 dist_hicolor32x32_DATA = icons/32x32/apps/fontforge.png
 dist_hicolor48x48_DATA = icons/48x48/apps/fontforge.png
+dist_hicolor256x256_DATA = icons/256x256/apps/fontforge.png
 dist_hicolorscalable_DATA = icons/scalable/apps/fontforge.svg
 dist_mimepackages_DATA = fontforge.xml
 
-update-database: update-mime-database update-desktop-database
+install-data-hook: update-mime-database update-desktop-database
+uninstall-hook: update-mime-database update-desktop-database
 
-# The following ignores DESTDIR on purpose. Run after install or
-# uninstall.
 update-mime-database:
-	$(UPDATE_MIME_DATABASE) ${mimedir}
+	if test -z "$(DESTDIR)"; then $(UPDATE_MIME_DATABASE) ${mimedir} || : ; fi
 
-# The following ignores DESTDIR on purpose. Run after install or
-# uninstall.
 update-desktop-database:
-	$(UPDATE_DESKTOP_DATABASE) ${applicationsdir}
+	if test -z "$(DESTDIR)"; then $(UPDATE_DESKTOP_DATABASE) ${desktopdir} || : ; fi
 
 EXTRA_DIST = icons/src/icon-16x16-apps-fontforge.svg	\
-	icons/src/icon-24x24-apps-fontforge.svg				\
-	icons/src/icon-32x32-apps-fontforge.svg
+	icons/src/icon-24x24-apps-fontforge.svg		\
+	icons/src/icon-32x32-apps-fontforge.svg		\
+	fontforge.appdata.xml fontforge.desktop
 
 -include $(top_srcdir)/git.mk

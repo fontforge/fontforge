@@ -103,10 +103,10 @@ enum keystate_mask { ksm_shift=1, ksm_capslock=2, ksm_control=4, ksm_meta=8,
 	};
 enum mnemonic_focus { mf_normal, mf_tab, mf_mnemonic, mf_shortcut };
 
-enum event_type { et_noevent = -1, et_char, et_charup,
+enum event_type { et_noevent = -1, et_char, et_charup, // is 1
 		  et_mousemove, et_mousedown, et_mouseup,
 		  et_crossing,	/* these four are assumed to be consecutive */
-		  et_focus,
+		  et_focus, // is 7
 		  et_expose, et_visibility, et_resize, et_timer,
 		  et_close/*request by user*/, et_create,
 		  et_map, et_destroy/*window being freed*/,
@@ -393,6 +393,8 @@ extern void GDrawGetClip(GWindow w, GRect *ret);
 extern void GDrawSetClip(GWindow w, GRect *rct);
 extern void GDrawPushClip(GWindow w, GRect *rct, GRect *old);
 extern void GDrawPopClip(GWindow w, GRect *old);
+extern void GDrawPushClipOnly(GWindow w);
+extern void GDrawClipPreserve(GWindow w);
 extern GGC *GDrawGetWindowGGC(GWindow w);
 extern void GDrawSetXORBase(GWindow w,Color col);
 extern void GDrawSetXORMode(GWindow w);
@@ -401,6 +403,8 @@ extern void GDrawSetCopyThroughSubWindows(GWindow w,int16 through);
 extern void GDrawSetDashedLine(GWindow w,int16 dash_len, int16 skip_len, int16 off);
 extern void GDrawSetStippled(GWindow w,int16 ts, int32 yoff,int32 xoff);
 extern void GDrawSetLineWidth(GWindow w,int16 width);
+extern int16 GDrawGetLineWidth( GWindow w );
+
 extern void GDrawSetForeground(GWindow w,Color col);
 extern void GDrawSetBackground(GWindow w,Color col);
 
@@ -474,6 +478,76 @@ extern GTimer *GDrawRequestTimer(GWindow w,int32 time_from_now,int32 frequency,
 	void *userdata);
 extern void GDrawCancelTimer(GTimer *timer);
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//
+// Windowless timers used for background activities
+//
+
+/**
+ * Callback which will be called at a nominated frequency with a given
+ * userdata pointer.
+ */
+typedef void (* BackgroundTimerFunc )(void*);
+
+/**
+ * Internal bookkeeping for windowless timers. They are currently
+ * windowed timers on the inside but we spare the user from creating
+ * the window, keeping track of it, and having to deal with an event
+ * handling function which tries to get back a nominated userdata
+ * pointer from all that jazz.
+ */
+typedef struct BackgroundTimerstruct
+{
+    // takes userdata as arg1
+    BackgroundTimerFunc func;
+
+    // the userdata pointer that should be passed to func
+    void *userdata;
+
+    // the internal hidden window used to actually get the timer events
+    GWindow w;
+
+    // the GDraw timer associated with the above window
+    GTimer* timer;
+
+    // how often to fire the timer
+    int32 BackgroundTimerMS;
+} BackgroundTimer_t;
+
+/**
+ * Create a new windowless timer which will be fired every
+ * BackgroundTimerMS milliseconds and call func with the supplied
+ * userdata.
+ */
+BackgroundTimer_t*
+BackgroundTimer_new( int32 BackgroundTimerMS, 
+		     BackgroundTimerFunc func,
+		     void *userdata );
+
+/**
+ * Remove a windowless background timer freeing any resources
+ * associated with it.
+ */
+void BackgroundTimer_remove( BackgroundTimer_t* t );
+
+/**
+ * Make sure the timer fires at it's desired time from now(). For
+ * example, if a timer will fire every 2 seconds and is about to fire
+ * in a few ms from now, calling touch() will make it fire 2 seconds
+ * from now instead.
+ *
+ * This way if you have a timer which is to handle background issues
+ * if something doesn't happen in a scheduled amount of time, you can
+ * touch() the timer to make sure it fires again after the full
+ * elapsed time instead of having it fire too soon.
+ */
+void BackgroundTimer_touch( BackgroundTimer_t* t );
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 extern void GDrawSyncThread(GDisplay *gd, void (*func)(void *), void *data);
 
 extern GWindow GPrinterStartJob(GDisplay *gdisp,void *user_data,GPrinterAttrs *attrs);
@@ -517,5 +591,24 @@ extern int GDrawKeyState(int keysym);
 
 extern int GImageGetScaledWidth(GWindow gw, GImage *img);
 extern int GImageGetScaledHeight(GWindow gw, GImage *img);
+
+
+/* extern void setZeroMQReadFD( GDisplay *disp, */
+/* 			     int zeromq_fd, void* zeromq_datas, */
+/* 			     void (*zeromq_fd_callback)(int zeromq_fd, void* datas )); */
+
+extern void GDrawAddReadFD( GDisplay *disp,
+			    int fd, void* udata,
+			    void (*callback)(int fd, void* udata ));
+extern void GDrawRemoveReadFD( GDisplay *disp,
+			       int fd, void* udata );
+
+/**
+ * The Mac OSX build doesn't use the same core event loop as the
+ * Linux/X build. So inside the timer we can use this to double check
+ * if any fds that we should monitor for input have changed and if so
+ * service their messages.
+ */
+extern void MacServiceReadFDs(void);
 
 #endif

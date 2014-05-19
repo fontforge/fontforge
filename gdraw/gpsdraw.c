@@ -31,6 +31,7 @@
 #if !defined(__MINGW32__)
 #include <sys/wait.h>
 #endif
+#include "fontforge-config.h"
 #include <unistd.h>
 
 #include "gpsdrawP.h"
@@ -464,7 +465,7 @@ static void PSMyArc(GPSWindow ps, double cx, double cy, double radx, double rady
 	sa = temp;
     }
 }
-    
+
 static void PSDrawElipse(GPSWindow ps, GRect *rct,char *command) {
     float cx, cy, radx, rady;
     /* This does not make a very good stroked elipse if it isn't a circle */
@@ -505,7 +506,7 @@ static void PSDrawDoPoly(GPSWindow ps, GPoint *pt, int cnt, char *command) {
 		_GSPDraw_XPos(ps,pt[0].x), _GSPDraw_YPos(ps,pt[0].y));
     } else {
 	PSMoveTo(ps,pt[0].x,pt[0].y);
-	for ( i=1; i<cnt; ++i ) 
+	for ( i=1; i<cnt; ++i )
 	    PSLineTo(ps,pt[i].x,pt[i].y);
     }
     fprintf( ps->output_file, "closepath %s %%Polygon\n", command );
@@ -748,23 +749,6 @@ static void PSDrawDrawArc(GWindow w, GRect *rct,int32 sa, int32 ta, Color col) {
     cy = rct->y + rady;
     if ( radx==0 || rady==0 )
 return;
-#if 0
-    if ( radx!=rady ) {
-	sa = atan2((double) (sx-cx),(double) (sy-cy)*radx);
-	ea = atan2((double) (ex-cx),(double) (ey-cy)*rady);
-	fprintf( ps->output_file, "gsave %g %g translate 1.0 %g scale\n",
-		cx, cy, rady/radx );
-	cx = cy = 0;
-    } else {
-	sa = atan2((double) (sx-cx),(double) (sy-cy));
-	ea = atan2((double) (ex-cx),(double) (ey-cy));
-    }
-    PSDrawNewpath(ps);
-    fprintf( ps->output_file, "  %g %g %g %g %g arc\n", _GSPDraw_XPos(cx), _GSPDraw_YPos(cy), radx,
-		sa*(360./(2*3.1415926535897932)),
-		ea*(360./(2*3.1415926535897932)) );
-    fprintf( ps->output_file, "stroke %s\n", radx!=rady?"grestore":"" );
-#else
     PSDrawNewpath(ps);
     if ( radx!=rady )
 	PSMyArc(ps,cx,cy,radx,rady,sa/64.0,ta/64.0);
@@ -772,7 +756,6 @@ return;
 	fprintf( ps->output_file, "  %g %g %g %g %g arc", _GSPDraw_XPos(ps,cx), _GSPDraw_YPos(ps,cy), _GSPDraw_Distance(ps,radx),
 		    sa/64.0, (sa+ta)/64.0 );
     fprintf( ps->output_file, " stroke\n" );
-#endif
     ps->pnt_cnt = 0;
     ps->cur_x = ps->cur_y = -1;
 }
@@ -1055,13 +1038,13 @@ static int PSQueueFile(GPSWindow ps) {
 	char *argv[30];
 	int argc=0;
 	char pbuf[200], cbuf[40];
-	char buffer[1000];
+	char buffer[1025];
 	char *parg, *carg, *spt, *pt;
 
 	close(in);
 	dup2(fileno(ps->init_file),in);
 	close(fileno(ps->init_file));
-	
+
 	if ( gdisp->use_lpr ) {
 	    prog = "lpr";
 	    parg = "P";
@@ -1083,7 +1066,7 @@ static int PSQueueFile(GPSWindow ps) {
 	    argv[argc++] = pbuf;
 	}
 	if ( gdisp->lpr_args!=NULL ) {
-	    strcpy(buffer, gdisp->lpr_args );
+	    strncpy(buffer, gdisp->lpr_args,sizeof(buffer)-1 );
 	    for ( spt = buffer; *spt==' '; ++spt );
 	    while ( (pt = strchr(spt,' '))!=NULL ) {
 		argv[argc++] = spt;
@@ -1140,13 +1123,13 @@ return( true );
 }
 
 static void PSDestroyContext(GPSDisplay *gd) {
-    gfree(gd->groot->ggc);
-    gfree(gd->groot);
+    free(gd->groot->ggc);
+    free(gd->groot);
     gd->groot = NULL;
 }
 
 static GGC *_GPSDraw_NewGGC(GPSDisplay *ps) {
-    GGC *ggc = gcalloc(1,sizeof(GGC));
+    GGC *ggc = calloc(1,sizeof(GGC));
     ggc->clip.width = ggc->clip.height = 0x7fff;
     ggc->fg = 0;
     ggc->bg = 0xffffff;
@@ -1233,7 +1216,7 @@ return( NULL );
 	    gdisp->lpr_args = copy(attrs->extra_lpr_args);
 	else
 	    oldea = NULL;
-	gfree(oldfn); gfree(oldpn); gfree(oldea);
+	free(oldfn); free(oldpn); free(oldea);
     }
     if ( gdisp->filename==NULL ) {
 	init = tmpfile();
@@ -1252,7 +1235,7 @@ return( NULL );
 
     gdisp->fontstate->res = gdisp->res;
 
-    gdisp->groot = gcalloc(1,sizeof(struct gpswindow));
+    gdisp->groot = calloc(1,sizeof(struct gpswindow));
     groot = (GPSWindow)(gdisp->groot);
     groot->ggc = _GPSDraw_NewGGC(gdisp);
     groot->display = gdisp;
@@ -1301,7 +1284,7 @@ static int GPSPrinterEndJob(GWindow w,int cancel) {
     ret = PSFinishJob(ps,cancel);
     _GPSDraw_ResetFonts(gdisp->fontstate);
     PSDestroyContext(gdisp);
-    gfree(gdisp->filename); gdisp->filename=NULL;
+    free(gdisp->filename); gdisp->filename=NULL;
 return( ret );
 }
 
@@ -1362,7 +1345,7 @@ static struct displayfuncs psfuncs = {
 
     PSDrawPushClip,
     PSDrawPopClip,
-    
+
     PSDrawClear,
     PSDrawDrawLine,
     PSDrawDrawArrowLine,
@@ -1445,7 +1428,7 @@ static struct displayfuncs psfuncs = {
 GDisplay *_GPSDraw_CreateDisplay() {
     GPSDisplay *gdisp;
 
-    gdisp = gcalloc(1,sizeof(GPSDisplay));
+    gdisp = calloc(1,sizeof(GPSDisplay));
     if ( gdisp==NULL ) {
 return( NULL );
     }
@@ -1464,12 +1447,12 @@ return( NULL );
     gdisp->do_transparent = true;
     gdisp->num_copies = 1;
     gdisp->linear_thumb_cnt = 1;
-    gdisp->fontstate = gcalloc(1,sizeof(FState));
+    gdisp->fontstate = calloc(1,sizeof(FState));
     gdisp->fontstate->res = gdisp->res;
 
     gdisp->def_background = COLOR_CREATE(0xff,0xff,0xff);
     gdisp->def_background = COLOR_CREATE(0x00,0x00,0x00);
-    
+
     (gdisp->funcs->init)((GDisplay *) gdisp);
 return( (GDisplay *) gdisp);
 }

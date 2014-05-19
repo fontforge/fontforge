@@ -1,16 +1,15 @@
-#!/usr/local/bin/fontforge
 #Needs: fonts/FormalScript.sfd, fonts/dvng10a-crash.sfd
 # Tests that contextual chaining tables do not cause crashes.
 
-Open("fonts/FormalScript.sfd");
-Generate("results/FormalScript.otf","ttf",0x80);
+Open("@abs_srcdir@/fonts/FormalScript.sfd");
+Generate("@abs_builddir@/results/FormalScript.otf","ttf",0x80);
 Close();
-Open("results/FormalScript.otf");
+Open("@abs_builddir@/results/FormalScript.otf");
 Close();
 
-Open("fonts/dvng10a-crash.sfd");
-Generate("results/Deva.otf","ttf",0x80);
+Open("@abs_srcdir@/fonts/dvng10a-crash.sfd");
+Generate("@abs_builddir@/results/Deva.otf","ttf",0x80);
 Close();
-Open("results/Deva.otf");
+Open("@abs_builddir@/results/Deva.otf");
 Close();
 Quit()

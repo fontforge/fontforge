@@ -129,6 +129,16 @@ struct gtimer {
     unsigned int active: 1;
 };
 
+typedef struct fd_callback_struct
+{
+    int    fd;
+    void*  udata;
+    void (*callback)(int fd, void* udata );
+    
+} fd_callback_t;
+
+enum { gdisplay_fd_callbacks_size = 64 };
+
 struct gdisplay {
     struct displayfuncs *funcs;
     void *semaphore;				/* To lock the display against multiple threads */
@@ -140,6 +150,8 @@ struct gdisplay {
     uint16 mykey_state;
     uint16 mykey_keysym;
     uint16 mykey_mask;
+    fd_callback_t fd_callbacks[ gdisplay_fd_callbacks_size ];
+    int fd_callbacks_last;
     unsigned int mykeybuild: 1;
     /* display specific data */
 };
@@ -277,6 +289,10 @@ struct displayfuncs {
     int  (*layoutLineStart)(GWindow w,int line);
     void (*startNewSubPath)(GWindow w);
     int  (*fillRuleSetWinding)(GWindow w);
+
+    void (*PushClipOnly)(GWindow w);
+    void (*ClipPreserve)(GWindow w);
+    
 };
 
 extern GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname);

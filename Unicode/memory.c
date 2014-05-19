@@ -25,54 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include "ustring.h"
 
-/* wrappers around standard memory routines so we can trap errors. */
-static void default_trap(void) {
-    fprintf(stderr, "Attempt to allocate memory failed.\n" );
-    abort();
-}
-
-static void (*trap)(void) = default_trap;
-
-void galloc_set_trap(void (*newtrap)(void)) {
-    if ( newtrap==NULL ) newtrap = default_trap;
-    trap = newtrap;
-}
-
-#ifdef USE_OUR_MEMORY
-void *galloc(long size) {
-    void *ret;
-    /* Avoid malloc(0) as malloc is allowed to return NULL.
-     * If malloc fails, call trap() to allow it to possibly
-     * recover memory and try again.
-     */
-    while (( ret = malloc(size==0 ? sizeof(int) : size))==NULL )
-	trap();
-    memset(ret,0x3c,size);		/* fill with random junk for debugging */
-return( ret );
-}
-
-void *gcalloc(int cnt,long size) {
-    void *ret;
-    while (( ret = calloc(cnt,size))==NULL )
-	trap();
-return( ret );
-}
-
-void *grealloc(void *old,long size) {
-    void *ret;
-    while (( ret = realloc(old,size))==NULL )
-	trap();
-return( ret );
-}
-
-void gfree(void *old) {
-    free(old);
-}
-#endif /* USE_OUR_MEMORY */
 
 void NoMoreMemMessage(void) {
 /* Output an 'Out of memory' message, then continue */
@@ -80,22 +35,23 @@ void NoMoreMemMessage(void) {
 }
 
 char *copy(const char *str) {
-    char *ret;
-
-    if ( str==NULL )
-return( NULL );
-    ret = (char *) galloc(strlen(str)+1);
-    strcpy(ret,str);
-return( ret );
+    return str ? strdup(str) : NULL;
 }
 
 char *copyn(const char *str,long n) {
+    /**
+     * MIQ: Note that there is at least one site that relies on
+     *      copyn copying up to n bytes including embedded nulls.
+     *      So using strndup() doesn't provide the same outcomes
+     *      to that code.
+     *      https://github.com/fontforge/fontforge/issues/1239
+     */
     char *ret;
-
     if ( str==NULL )
-return( NULL );
-    ret = (char *) galloc(n+1);
+    	return( NULL );
+
+    ret = (char *) malloc(n+1);
     memcpy(ret,str,n);
     ret[n]='\0';
-return( ret );
+    return( ret );
 }

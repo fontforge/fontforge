@@ -24,9 +24,12 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <fontforge-config.h>
+
 #include <stddef.h>
 #include "ustring.h"
 #include "utype.h"
+#include "gc.h"
 
 long uc_strcmp(const unichar_t *str1,const char *str2) {
     long ch1, ch2;
@@ -133,6 +136,16 @@ void u_strcpy(unichar_t *to, const unichar_t *from) {
     *to = 0;
 }
 
+char *cc_strncpy(char *to, const char *from, int len) {
+    if( !from ) {
+	to[0] = '\0';
+	return to;
+    }
+    strncpy( to, from, len );
+    return to;
+}
+
+
 void u_strncpy(register unichar_t *to, const unichar_t *from, int len) {
     register unichar_t ch;
     while ( (ch = *from++) != '\0' && --len>=0 )
@@ -178,13 +191,22 @@ void u_strncat(unichar_t *to, const unichar_t *from, int len) {
     u_strncpy(to+u_strlen(to),from,len);
 }
 
-int  u_strlen(register const unichar_t *str) {
+
+int u_strlen(register const unichar_t *str) {
     register int len = 0;
 
     while ( *str++!='\0' )
 	++len;
 return( len );
 }
+
+int c_strlen( const char * p )
+{
+    if(!p)
+	return 0;
+    return strlen(p);
+}
+
 
 unichar_t *u_strchr(const unichar_t *str ,unichar_t ch) {
     register unichar_t test;
@@ -284,7 +306,7 @@ unichar_t *u_copyn(const unichar_t *pt, long n) {
     if ( n*sizeof(unichar_t)>=MEMORY_MASK )
 	n = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = (unichar_t *) galloc((n+1)*sizeof(unichar_t));
+    res = (unichar_t *) malloc((n+1)*sizeof(unichar_t));
     memcpy(res,pt,n*sizeof(unichar_t));
     res[n]='\0';
 return(res);
@@ -296,7 +318,7 @@ unichar_t *u_copynallocm(const unichar_t *pt, long n, long m) {
     if ( n*sizeof(unichar_t)>=MEMORY_MASK )
 	n = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = galloc((m+1)*sizeof(unichar_t));
+    res = malloc((m+1)*sizeof(unichar_t));
     memcpy(res,pt,n*sizeof(unichar_t));
     res[n]='\0';
 return(res);
@@ -318,7 +340,7 @@ return( u_copy( s2 ));
     else if ( s2==NULL )
 return( u_copy( s1 ));
     len1 = u_strlen(s1); len2 = u_strlen(s2);
-    pt = (unichar_t *) galloc((len1+len2+1)*sizeof(unichar_t));
+    pt = (unichar_t *) malloc((len1+len2+1)*sizeof(unichar_t));
     u_strcpy(pt,s1);
     u_strcpy(pt+len1,s2);
 return( pt );
@@ -334,7 +356,7 @@ return((unichar_t *)0);
     if ( (len+1)*sizeof(unichar_t)>=MEMORY_MASK )
 	len = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = (unichar_t *) galloc((len+1)*sizeof(unichar_t));
+    res = (unichar_t *) malloc((len+1)*sizeof(unichar_t));
     for ( rpt=res; --len>=0 ; *rpt++ = *(unsigned char *) pt++ );
     *rpt = '\0';
 return(res);
@@ -352,7 +374,7 @@ return((unichar_t *)0);
     if ( (n+1)*sizeof(unichar_t)>=MEMORY_MASK )
 	n = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = (unichar_t *) galloc((n+1)*sizeof(unichar_t));
+    res = (unichar_t *) malloc((n+1)*sizeof(unichar_t));
     for ( rpt=res; --n>=0 ; *rpt++ = *(unsigned char *) pt++ );
     *rpt = '\0';
 return(res);
@@ -368,7 +390,7 @@ return(NULL);
     if ( (len+1)>=MEMORY_MASK )
 	len = MEMORY_MASK-1;
 #endif
-    res = (char *) galloc(len+1);
+    res = (char *) malloc(len+1);
     for ( rpt=res; --len>=0 ; *rpt++ = *pt++ );
     *rpt = '\0';
 return(res);
@@ -386,7 +408,7 @@ return((char *)0);
     if ( (n+1)>=MEMORY_MASK )
 	n = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = (char *) galloc(n+1);
+    res = (char *) malloc(n+1);
     for ( rpt=res; --n>=0 ; *rpt++ = *pt++ );
     *rpt = '\0';
 return(res);
@@ -396,9 +418,8 @@ double u_strtod(const unichar_t *str, unichar_t **ptr) {
     char buf[60], *pt, *ret;
     const unichar_t *upt;
     double val;
-    extern double strtod();		/* Please don't delete this, not all of us have good ansi headers */
 
-    for ( upt=str, pt=buf; *upt<128 && *upt!='\0' && pt-buf<sizeof(buf)-1; )
+    for ( upt=str, pt=buf; *upt<128 && *upt!='\0' && pt-buf<(ptrdiff_t)(sizeof(buf)-1); )
 	*pt++ = *upt++;
     *pt = '\0';
     val = strtod(buf,&ret);
@@ -415,7 +436,6 @@ long u_strtol(const unichar_t *str, unichar_t **ptr, int base) {
     char buf[60], *pt, *ret;
     const unichar_t *upt;
     long val;
-    extern long strtol();		/* Please don't delete this, not all of us have good ansi headers */
 
     for ( upt=str, pt=buf; *upt<128 && *upt!='\0' && pt<buf+sizeof(buf)-1; )
 	*pt++ = *upt++;
@@ -474,6 +494,8 @@ return(NULL);
 }
 
 char *u_to_c(const unichar_t *ubuf) {
+    if( !ubuf )
+	return 0;
     static char buf[400];
     cu_strncpy(buf,ubuf,sizeof(buf));
 return( buf );
@@ -517,7 +539,7 @@ return( utf82u_strncpy(ubuf,utf8buf,strlen(utf8buf)+1));
 }
 
 unichar_t *utf82u_copyn(const char *utf8buf,int len) {
-    unichar_t *ubuf = (unichar_t *) galloc((len+1)*sizeof(unichar_t));
+    unichar_t *ubuf = (unichar_t *) malloc((len+1)*sizeof(unichar_t));
 return( utf82u_strncpy(ubuf,utf8buf,len+1));
 }
 
@@ -529,7 +551,7 @@ unichar_t *utf82u_copy(const char *utf8buf) {
 return( NULL );
 
     len = strlen(utf8buf);
-    ubuf = (unichar_t *) galloc((len+1)*sizeof(unichar_t));
+    ubuf = (unichar_t *) malloc((len+1)*sizeof(unichar_t));
 return( utf82u_strncpy(ubuf,utf8buf,len+1));
 }
 
@@ -538,30 +560,17 @@ void utf82u_strcat(unichar_t *to,const char *from) {
 }
 
 char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
+/* Copy unichar string 'ubuf' into utf8 buffer string 'utf8buf' */
     char *pt = utf8buf;
 
-    while ( *ubuf ) {
-	if ( *ubuf<0x80 )
-	    *pt++ = *ubuf;
-	else if ( *ubuf<0x800 ) {
-	    *pt++ = 0xc0 | (*ubuf>>6);
-	    *pt++ = 0x80 | (*ubuf&0x3f);
-	} else if ( *ubuf < 0x10000 ) {
-	    *pt++ = 0xe0 | (*ubuf>>12);
-	    *pt++ = 0x80 | ((*ubuf>>6)&0x3f);
-	    *pt++ = 0x80 | (*ubuf&0x3f);
-	} else {
-	    uint32 val = *ubuf-0x10000;
-	    int u = ((val&0xf0000)>>16)+1, z=(val&0x0f000)>>12, y=(val&0x00fc0)>>6, x=val&0x0003f;
-	    *pt++ = 0xf0 | (u>>2);
-	    *pt++ = 0x80 | ((u&3)<<4) | z;
-	    *pt++ = 0x80 | y;
-	    *pt++ = 0x80 | x;
+    if ( ubuf!=NULL ) {
+	while ( *ubuf && (pt=utf8_idpb(pt,*ubuf++,0)) );
+	if ( pt ) {
+	    *pt = '\0';
+	    return( utf8buf );
 	}
-	++ubuf;
     }
-    *pt = '\0';
-return( utf8buf );
+    return( NULL );
 }
 
 char *utf8_strchr(const char *str, int search) {
@@ -601,7 +610,7 @@ char *latin1_2_utf8_copy(const char *lbuf) {
 return( NULL );
 
     len = strlen(lbuf);
-    utf8buf = (char *) galloc(2*len+1);
+    utf8buf = (char *) malloc(2*len+1);
 return( latin1_2_utf8_strcpy(utf8buf,lbuf));
 }
 
@@ -614,7 +623,7 @@ char *utf8_2_latin1_copy(const char *utf8buf) {
 return( NULL );
 
     len = strlen(utf8buf);
-    pt = lbuf = (char *) galloc(len+1);
+    pt = lbuf = (char *) malloc(len+1);
     for ( upt=utf8buf; (ch=utf8_ildb(&upt))!='\0'; )
 	if ( ch>=0xff )
 	    *pt++ = '?';
@@ -625,29 +634,28 @@ return( lbuf );
 }
 
 char *u2utf8_copy(const unichar_t *ubuf) {
-    int len;
-    char *utf8buf;
+/* Make a utf8 string copy of unichar string ubuf */
 
     if ( ubuf==NULL )
-return( NULL );
+	return( NULL );
 
-    len = u_strlen(ubuf);
-    utf8buf = (char *) galloc((len+1)*4);
-return( u2utf8_strcpy(utf8buf,ubuf));
+    return( u2utf8_copyn(ubuf,u_strlen(ubuf)+1) );
 }
 
 char *u2utf8_copyn(const unichar_t *ubuf,int len) {
-    int i;
+/* Make a utf8 string copy of unichar string ubuf[0..len] */
     char *utf8buf, *pt;
 
-    if ( ubuf==NULL )
-return( NULL );
+    if ( ubuf==NULL || len<=0 || (utf8buf=pt=(char *)malloc(len*6+1))==NULL )
+	return( NULL );
 
-    utf8buf = pt = (char *) galloc((len+1)*4);
-    for ( i=0; i<len && *ubuf!='\0'; ++i )
-	pt = utf8_idpb(pt, *ubuf++);
-    *pt = '\0';
-return( utf8buf );
+    while ( (pt=utf8_idpb(pt,*ubuf++,0)) && --len );
+    if ( pt ) {
+	*pt = '\0';
+	return( utf8buf );
+    }
+    free( utf8buf );
+    return( NULL );
 }
 
 int32 utf8_ildb(const char **_text) {
@@ -683,46 +691,87 @@ int32 utf8_ildb(const char **_text) {
 return( val );
 }
 
-char *utf8_idpb(char *utf8_text,uint32 ch) {
-    /* Increment and deposit character */
-    if ( ch<0 || ch>=17*65536 )
-return( utf8_text );
+char *utf8_idpb(char *utf8_text,uint32 ch,int flags) {
+/* Increment and deposit character, no '\0' appended */
+/* NOTE: Unicode only needs range of 17x65535 values */
+/* and strings must be long enough to hold +4 chars. */
+/* ISO/IEC 10646 description of UTF8 allows encoding */
+/* character values up to U+7FFFFFFF before RFC3629. */
 
-    if ( ch<=127 )
-	*utf8_text++ = ch;
-    else if ( ch<=0x7ff ) {
-	*utf8_text++ = 0xc0 | (ch>>6);
-	*utf8_text++ = 0x80 | (ch&0x3f);
-    } else if ( ch<=0xffff ) {
-	*utf8_text++ = 0xe0 | (ch>>12);
-	*utf8_text++ = 0x80 | ((ch>>6)&0x3f);
-	*utf8_text++ = 0x80 | (ch&0x3f);
-    } else {
-	uint32 val = ch-0x10000;
-	int u = ((val&0xf0000)>>16)+1, z=(val&0x0f000)>>12, y=(val&0x00fc0)>>6, x=val&0x0003f;
-	*utf8_text++ = 0xf0 | (u>>2);
-	*utf8_text++ = 0x80 | ((u&3)<<4) | z;
-	*utf8_text++ = 0x80 | y;
-	*utf8_text++ = 0x80 | x;
+    if ( ch>0x7fffffff || \
+	 (!(flags&UTF8IDPB_OLDLIMIT) && ((ch>=0xd800 && ch<=0xdfff) || ch>=17*65536)) )
+	return( 0 ); /* Error, ch is out of range */
+
+    if ( (flags&(UTF8IDPB_UCS2|UTF8IDPB_UTF16|UTF8IDPB_UTF32)) ) {
+	if ( (flags&UTF8IDPB_UCS2) && ch>0xffff )
+	    return( 0 ); /* Error, ch is out of range */
+	if ( (flags&UTF8IDPB_UTF32) ) {
+	    *utf8_text++ = ((ch>>24)&0xff);
+	    *utf8_text++ = ((ch>>16)&0xff);
+	    ch &= 0xffff;
+	}
+	if ( ch>0xffff ) {
+	    /* ...here if a utf16 encoded value */
+	    unsigned long us;
+	    ch -= 0x10000;
+	    us = (ch>>10)+0xd800;
+	    *utf8_text++ = us>>8;
+	    *utf8_text++ = us&0xff;
+	    ch = (ch&0x3ff)+0xdc00;
+	}
+	*utf8_text++ = ch>>8;
+	ch &= 0xff;
+    } else if ( ch>127 || (ch==0 && (flags&UTF8IDPB_NOZERO)) ) {
+	if ( ch<=0x7ff )
+	    /* ch>=0x80 && ch<=0x7ff */
+	    *utf8_text++ = 0xc0 | (ch>>6);
+	else {
+	    if ( ch<=0xffff )
+		/* ch>=0x800 && ch<=0xffff */
+		*utf8_text++ = 0xe0 | (ch>>12);
+	    else {
+		if ( ch<=0x1fffff )
+		    /* ch>=0x10000 && ch<=0x1fffff */
+		    *utf8_text++ = 0xf0 | (ch>>18);
+		else {
+		    if ( ch<=0x3ffffff )
+			/* ch>=0x200000 && ch<=0x3ffffff */
+			*utf8_text++ = 0xf8 | (ch>>24);
+		    else {
+			/* ch>=0x4000000 && ch<=0x7fffffff */
+			*utf8_text++ = 0xfc | (ch>>30);
+			*utf8_text++ = 0x80 | ((ch>>24)&0x3f);
+		    }
+		    *utf8_text++ = 0x80 | ((ch>>18)&0x3f);
+		}
+		*utf8_text++ = 0x80 | ((ch>>12)&0x3f);
+	    }
+	    *utf8_text++ = 0x80 | ((ch>>6)&0x3f);
+	}
+	ch = 0x80 | (ch&0x3f);
     }
-return( utf8_text );
+    *utf8_text++ = ch;
+    return( utf8_text );
 }
 
-
 char *utf8_ib(char *utf8_text) {
-    int ch;
+/* Increment to next utf8 character */
+    unsigned char ch;
 
-    /* Increment character */
-    if ( (ch = *utf8_text)=='\0' )
-return( utf8_text );
+    if ( (ch = (unsigned char) *utf8_text)=='\0' )
+	return( utf8_text );
     else if ( ch<=127 )
-return( utf8_text+1 );
+	return( utf8_text+1 );
     else if ( ch<0xe0 )
-return( utf8_text+2 );
+	return( utf8_text+2 );
     else if ( ch<0xf0 )
-return( utf8_text+3 );
+	return( utf8_text+3 );
+    else if ( ch<0xf8 )
+	return( utf8_text+4 );
+    else if ( ch<0xfc )
+	return( utf8_text+5 );
     else
-return( utf8_text+4 );
+	return( utf8_text+6 );
 }
 
 int utf8_valid(const char *str) {
@@ -755,49 +804,48 @@ return;
 }
 
 char *utf8_db(char *utf8_text) {
-    /* Decrement utf8 pointer */
+/* Decrement utf8 pointer to previous utf8 character.*/
+/* NOTE: This should never happen but if the pointer */
+/* was looking at an intermediate character, it will */
+/* be properly positioned at the start of a new char */
+/* and not the previous character.		     */
     unsigned char *pt = (unsigned char *) utf8_text;
 
     --pt;
-    if ( *pt>=0xc0 )
-	/* This should never happen. The pointer was looking at an intermediate */
-	/*  character. However, if it does happen then we are now properly */
-	/*  positioned at the start of a new char */;
-    else if ( *pt>=0x80 ) {
+    if ( *pt>=0x80 && *pt<0xc0 ) {
 	--pt;
-	if ( *pt>=0xc0 )
-	    /* Done */;
-	else if ( *pt>=0x80 ) {
+	if ( *pt>=0x80 && *pt<0xc0 ) {
 	    --pt;
-	    if ( *pt>=0xc0 )
-		/* Done */;
-	    else if ( *pt>=0x80 )
+	    if ( *pt>=0x80 && *pt<0xc0 ) {
 		--pt;
+		if ( *pt>=0x80 && *pt<0xc0 ) {
+		    --pt;
+		    if ( *pt>=0x80 && *pt<0xc0 )
+			--pt;
+		}
+	    }
 	}
     }
-return( (char *) pt );
+    return( (char *) pt );
 }
 
-int utf8_strlen(const char *utf8_str) {
-    /* how many characters in the string NOT bytes */
-    int len = 0;
+long utf8_strlen(const char *utf8_str) {
+/* Count how many characters in the string NOT bytes */
+    long len = 0;
 
-    while ( utf8_ildb(&utf8_str)>0 )
-	++len;
-return( len );
+    while ( utf8_ildb(&utf8_str)>0 && ++len>0 );
+    return( len );
 }
 
-int utf82u_strlen(const char *utf8_str) {
-    /* how many shorts needed to represent it in UCS2 */
-    int ch;
-    int len = 0;
+long utf82u_strlen(const char *utf8_str) {
+/* Count how many shorts needed to represent in UCS2 */
+    int32 ch;
+    long len = 0;
 
-    while ( (ch = utf8_ildb(&utf8_str))>0 )
-	if ( ch>0x10000 )
-	    len += 2;
-	else
+    while ( (ch = utf8_ildb(&utf8_str))>0 && ++len>0 )
+	if ( ch>=0x10000 )
 	    ++len;
-return( len );
+    return( len );
 }
 
 void utf8_strncpy(register char *to, const char *from, int len) {
@@ -819,12 +867,12 @@ char *StripToASCII(const char *utf8_str) {
     const unichar_t *alt;
 
     len = strlen(utf8_str);
-    pt = newcr = (char *) galloc(len+1);
+    pt = newcr = (char *) malloc(len+1);
     end = pt+len;
     while ( (ch= utf8_ildb(&utf8_str))!='\0' ) {
 	if ( pt>=end ) {
 	    int off = pt-newcr;
-	    newcr = (char *) grealloc(newcr,(off+10)+1);
+	    newcr = (char *) realloc(newcr,(off+10)+1);
 	    pt = newcr+off;
 	    end = pt+10;
 	}
@@ -833,10 +881,10 @@ char *StripToASCII(const char *utf8_str) {
 	else if ( ch=='\r' && *utf8_str!='\n' )
 	    *pt++ = '\n';
 	else if ( ch==0xa9 /* Copyright sign */ ) {
-	    char *str = "(c)";
+	    const char *str = "(c)";
 	    if ( pt+strlen(str)>=end ) {
 		int off = pt-newcr;
-		newcr = (char *) grealloc(newcr,(off+10+strlen(str))+1);
+		newcr = (char *) realloc(newcr,(off+10+strlen(str))+1);
 		pt = newcr+off;
 		end = pt+10;
 	    }
@@ -847,7 +895,7 @@ char *StripToASCII(const char *utf8_str) {
 	    while ( *alt!='\0' ) {
 		if ( pt>=end ) {
 		    int off = pt-newcr;
-		    newcr = (char *) grealloc(newcr,(off+10)+1);
+		    newcr = (char *) realloc(newcr,(off+10)+1);
 		    pt = newcr+off;
 		    end = pt+10;
 		}
@@ -870,7 +918,7 @@ char *StripToASCII(const char *utf8_str) {
     *pt = '\0';
 return( newcr );
 }
-    
+
 int AllAscii(const char *txt) {
     for ( ; *txt!='\0'; ++txt ) {
 	if ( *txt=='\t' || *txt=='\n' || *txt=='\r' )
@@ -957,3 +1005,60 @@ int u_endswith(const unichar_t *haystack,const unichar_t *needle) {
     unichar_t* p = u_strstr( haystack + haylen - nedlen, needle );
     return p == ( haystack + haylen - nedlen );
 }
+
+char* c_itostr( int v )
+{
+    static char ret[100+1];
+    snprintf(ret,100,"%d",v );
+    return ret;
+}
+
+char* str_replace_all( char* s, char* orig, char* replacement, int free_s )
+{
+    char* p = strstr( s, orig );
+    if( !p )
+    {
+	if( free_s )
+	    return s;
+	return copy( s );
+    }
+
+    int count = 0;
+    p = s;
+    while( p )
+    {
+	p = strstr( p, orig );
+	if( !p )
+	    break;
+	p++;
+	count++;
+    }
+    count++;
+
+    // more than strictly needed, but always enough RAM.
+    int retsz = strlen(s) + count*strlen(replacement) + 1;
+    char* ret = (char *) malloc( retsz );
+    memset( ret, '\0', retsz );
+    char* output = ret;
+    char* remains = s;
+    p = remains;
+    while( p )
+    {
+	p = strstr( remains, orig );
+	if( !p )
+	{
+	    strcpy( output, remains );
+	    break;
+	}
+	if( p > remains )
+	    strncpy( output, remains, p-remains );
+	strcat( output, replacement );
+	output += strlen(output);
+	remains = p + strlen(orig);
+    }
+
+    if( free_s )
+	free(s);
+    return ret;
+}
+

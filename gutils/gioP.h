@@ -31,7 +31,7 @@
 #include <sys/types.h>
 
 #if defined(__MINGW32__)
-#include <WinSock2.h>
+#include <winsock2.h>
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -39,12 +39,13 @@
 #endif
 
 #ifdef HAVE_PTHREAD_H
+#include <gc/gc.h> /* Makes some necessary redefinitions */
 #include <pthread.h>
 #endif
 
 struct stdfuncs {
     char *(*decomposeURL)(const unichar_t *url,char **host, int *port,
-	char **username, char **password);
+        char **username, char **password);
     void (*PostSuccess)(GIOControl *gc);
     void (*PostInter)(GIOControl *gc);
     void (*PostError)(GIOControl *gc);

@@ -1,0 +1,38 @@
+#Needs: fonts/StrokeTests.sfd
+
+import sys, fontforge, psMat
+
+stroketests = sys.argv[1]
+
+print("triangle")
+font=fontforge.open(stroketests)
+font.selection.all()
+triangle=fontforge.unitShape(3).transform(psMat.scale(25))
+font.stroke("polygonal",triangle)
+font.close()
+
+print("square")
+font=fontforge.open(stroketests)
+font.selection.all()
+square=fontforge.unitShape(4).transform(psMat.scale(25))
+font.stroke("polygonal",square)
+font.close()
+
+print("pentagon")
+font=fontforge.open(stroketests)
+font.selection.all()
+pent=fontforge.unitShape(5).transform(psMat.scale(25))
+font.stroke("polygonal",pent)
+font.close()
+
+print("circular")
+font=fontforge.open(stroketests)
+font.selection.all()
+font.stroke("circular",25)
+font.close()
+
+print("caligraphic")
+font=fontforge.open(stroketests)
+font.selection.all()
+font.stroke("caligraphic",25,2,45)
+font.close()

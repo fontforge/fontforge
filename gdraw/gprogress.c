@@ -246,7 +246,7 @@ return;
 
     if ( !progress_init )
 	GProgressResInit();
-    new = gcalloc(1,sizeof(GProgress));
+    new = calloc(1,sizeof(GProgress));
     new->line1 = u_copy(line1);
     new->line2 = u_copy(line2);
     new->tot = tot;

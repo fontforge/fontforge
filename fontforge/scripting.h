@@ -78,6 +78,8 @@ typedef struct context {
     unsigned int donteval: 1;		/* Irrelevant for user defined funcs */
     unsigned int returned: 1;		/* Irrelevant for user defined funcs */
     unsigned int broken: 1;		/* Irrelevant for user defined funcs */
+    unsigned int interactive: 1;	/* Irrelevant for user defined funcs */
+    unsigned int error: 1;
     char tok_text[TOK_MAX+1];		/* Irrelevant for user defined funcs */
     enum token_type tok;		/* Irrelevant for user defined funcs */
     Val tok_val;			/* Irrelevant for user defined funcs */
@@ -86,7 +88,7 @@ typedef struct context {
 			                /*  value here */
     Val trace;				/* Irrelevant for user defined funcs */
     Val argsval;			/* Irrelevant for user defined funcs */
-    char *filename;			/* Irrelevant for user defined funcs */
+    const char *filename;		/* Irrelevant for user defined funcs */
     int lineno;				/* Irrelevant for user defined funcs */
     int ungotch;			/* Irrelevant for user defined funcs */
     FontViewBase *curfv;		/* Current fontview */

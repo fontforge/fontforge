@@ -24,32 +24,24 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
 
+#include <fontforge-config.h>
 
-#ifdef _NO_LIBPNG
+#include <png.h>
 
-static void *a_file_must_define_something=(void *) &a_file_must_define_something;
-		/* ANSI says so */
+#define int32 _int32
+#define uint32 _uint32
+#define int16 _int16
+#define uint16 _uint16
+#define int8 _int8
+#define uint8 _uint8
 
-#else
-
-# include <png.h>
-
-# define int32 _int32
-# define uint32 _uint32
-# define int16 _int16
-# define uint16 _uint16
-# define int8 _int8
-# define uint8 _uint8
-
-# include "gimage.h"
+#include "inc/basics.h"
+#include "gimage.h"
 
 static void *libpng=(void *) 1;
 
-static int loadpng() { return true; }
+static int loadpng(void) { return true; }
  
 static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
     fprintf(stderr,"%s\n", error_msg);
@@ -60,7 +52,7 @@ static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
 #endif
 }
 
-static void user_warning_fn(png_structp png_ptr, png_const_charp warning_msg) {
+static void user_warning_fn(png_structp UNUSED(png_ptr), png_const_charp warning_msg) {
     fprintf(stderr,"%s\n", warning_msg);
 }
 
@@ -73,7 +65,7 @@ GImage *GImageRead_Png(FILE *fp) {
     png_bytep trans_alpha;
     int num_trans;
     png_color_16p trans_color;
-    int i;
+    unsigned i;
 
     if ( libpng==NULL )
 	if ( !loadpng())
@@ -101,7 +93,7 @@ return( NULL );
       png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
       if ( ret!=NULL ) {
 	  GImageDestroy(ret);
-	  gfree(row_pointers);
+	  free(row_pointers);
       }
       /* If we get here, we had a problem reading the file */
 return( NULL );
@@ -142,11 +134,11 @@ return( NULL );
 		png_get_image_width(png_ptr,info_ptr),png_get_image_height(png_ptr,info_ptr));
 	clut = ret->u.image->clut;
 	if ( clut==NULL )
-	    clut = ret->u.image->clut = (GClut *) gcalloc(1,sizeof(GClut));
+	    clut = ret->u.image->clut = (GClut *) calloc(1,sizeof(GClut));
 	clut->is_grey = true;
 	png_get_PLTE(png_ptr,info_ptr,&palette,&num_palette);
 	clut->clut_len = num_palette;
-	for ( i=0; i<num_palette; ++i )
+	for ( i=0; i<(unsigned)num_palette; ++i )
 	    clut->clut[i] = COLOR_CREATE(palette[i].red,
 			palette[i].green,
 			palette[i].blue);
@@ -165,7 +157,7 @@ return( NULL );
 	    base->clut->trans_index = base->trans = trans_alpha ? trans_alpha[0] : 0;
     }
 
-    row_pointers = (png_byte **) galloc(png_get_image_height(png_ptr,info_ptr)*sizeof(png_bytep));
+    row_pointers = (png_byte **) malloc(png_get_image_height(png_ptr,info_ptr)*sizeof(png_bytep));
     for ( i=0; i<png_get_image_height(png_ptr,info_ptr); ++i )
 	row_pointers[i] = (png_bytep) (base->data + i*base->bytes_per_line);
 
@@ -179,31 +171,16 @@ return( NULL );
 	/* PNG orders its bytes as AABBGGRR instead of 00RRGGBB */
 	uint32 *ipt, *iend;
 	for ( ipt = (uint32 *) (base->data), iend=ipt+base->width*base->height; ipt<iend; ++ipt ) {
-#if 0
-	    /* Minimal support for alpha channel. Assume default background of white */
-	    if ( __gimage_can_support_alpha )
-		/* Leave alpha channel unchanged */;
-	    else if ( (*ipt&0xff000000)==0xff000000 )
-		*ipt = COLOR_CREATE( ((*ipt)&0xff) , ((*ipt>>8)&0xff) , (*ipt>>16)&0xff );
-	    else {
-		int r, g, b, a = (*ipt>>24)&0xff;
-		r = ( ((*ipt    )&0xff) * a + (255-a)*0xff ) / 255;
-		g = ( ((*ipt>>8 )&0xff) * a + (255-a)*0xff ) / 255;
-		b = ( ((*ipt>>16)&0xff) * a + (255-a)*0xff ) / 255;
-		*ipt = COLOR_CREATE( r,g,b );
-	    }
-#else
 	    uint32 r, g, b, a = *ipt&0xff000000;
 	    r = (*ipt    )&0xff;
 	    g = (*ipt>>8 )&0xff;
 	    b = (*ipt>>16)&0xff;
 	    *ipt = COLOR_CREATE( r,g,b ) | a;
-#endif
 	}
     }
 
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-    gfree(row_pointers);
+    free(row_pointers);
     /* Note png b&w images come out as indexed */
 return( ret );
 }
@@ -220,4 +197,3 @@ return( NULL );
     fclose(fp);
 return( ret );
 }
-#endif

@@ -99,7 +99,7 @@ struct math_constants_descriptor math_constants_descriptor[] = {
 };
 
 struct MATH *MathTableNew(SplineFont *sf) {
-    struct MATH *math = gcalloc(1,sizeof(struct MATH));	/* Too big for chunkalloc */
+    struct MATH *math = calloc(1,sizeof(struct MATH));	/* Too big for chunkalloc */
     int emsize = sf->ascent+sf->descent;
     DBounds b;
     SplineChar *sc;

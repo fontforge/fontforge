@@ -451,10 +451,6 @@ static void IkarusReadChar(SplineChar *sc,FILE *file) {
 
     n = getushort(file);
     number = getushort(file);
-#if 0
-    if ( enc!=sc->enc )
-	fprintf( stderr, "The font header said this should be character %d, the character header says it is %d\n", sc->enc, enc );
-#endif
     IkarusNameFromURWNumber(sc,number);
     following = getushort(file);
     if ( following!=0 )
@@ -484,7 +480,7 @@ static void IkarusReadChar(SplineChar *sc,FILE *file) {
     n = getushort(file)*2048;
     n += getushort(file);		/* Length of contour section in words */
     ncontours = (n-2)/6;
-    contours = galloc(ncontours*sizeof(struct contour));
+    contours = malloc(ncontours*sizeof(struct contour));
     ptmax = 0;
     for ( i=0; i<ncontours; ++i ) {
 	contours[i].offset = getushort(file)*4096;
@@ -496,8 +492,8 @@ static void IkarusReadChar(SplineChar *sc,FILE *file) {
 	if ( contours[i].npts > ptmax )
 	    ptmax = contours[i].npts;
     }
-    bps = galloc(ptmax*sizeof(BasePoint));
-    ptype = galloc(ptmax*sizeof(uint8));
+    bps = malloc(ptmax*sizeof(BasePoint));
+    ptype = malloc(ptmax*sizeof(uint8));
 
     base = ftell(file);
     /* 2 words here giving length (in records/words) of image data */
@@ -672,8 +668,8 @@ return( NULL );
     /* last record */ getushort(file);
     /* last word of last record */ getushort(file);
 
-    offsets = galloc(numchars*sizeof(int32));
-    numbers = galloc(numchars*sizeof(int32));
+    offsets = malloc(numchars*sizeof(int32));
+    numbers = malloc(numchars*sizeof(int32));
     maxnum = 0;
     for ( i=0; i<numchars; ++i ) {
 	numbers[i] = getushort(file);
