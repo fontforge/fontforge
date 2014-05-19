@@ -807,7 +807,9 @@ static void python_ui_setup_callback( bool makefifo )
     
     if( makefifo )
     {
+#ifndef __MINGW32__
 	err = mkfifo( path, 0600 );
+#endif
     }
     
     void* udata = 0;
