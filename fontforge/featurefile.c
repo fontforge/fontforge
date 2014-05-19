@@ -2921,7 +2921,7 @@ static char *fea_ParseGlyphClass(struct parseState *tok) {
 	++tok->err_count;
 return( NULL );
     } else {
-	char *contents;
+	char *contents = NULL;
 	int cnt=0, max=0;
 	int last_val, range_type, range_len;
 	char last_glyph[MAXT+1];
