@@ -41,6 +41,7 @@
 #include <unistd.h>		/* for timers & select */
 #include <signal.h>		/* error handler */
 #include <locale.h>		/* for setting the X locale properly */
+#include <sys/select.h>         /* select() */
 
 #ifdef HAVE_PTHREAD_H
 #  include <sys/socket.h>
