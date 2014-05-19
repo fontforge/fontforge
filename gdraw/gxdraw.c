@@ -43,10 +43,10 @@
 #include <locale.h>		/* for setting the X locale properly */
 
 #ifdef HAVE_PTHREAD_H
-//# ifndef __MINGW32__
 #  include <sys/socket.h>
+# ifndef __MINGW32__
 #  include <sys/un.h>
-//# endif
+# endif
 #endif
 
 #include <ustring.h>
