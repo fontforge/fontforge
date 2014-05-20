@@ -52,10 +52,7 @@
 #include <windows.h>
 #endif
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 622b508a8c1252eec8f30fb5a6318e9eccb13554
 int OpenCharsInNewWindow = 0;
 char *RecentFiles[RECENT_MAX] = { NULL };
 int save_to_dir = 0;			/* use sfdir rather than sfd */
@@ -1149,11 +1146,7 @@ static void FVMenuPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED
 
     if ( fv->b.container!=NULL && fv->b.container->funcs->is_modal )
 return;
-<<<<<<< HEAD
     PrintFFDlg(fv,NULL,NULL);
-=======
-    PrintPreviewDlg(fv,NULL,NULL);
->>>>>>> 622b508a8c1252eec8f30fb5a6318e9eccb13554
 }
 
 static void FVMenuExecute(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {

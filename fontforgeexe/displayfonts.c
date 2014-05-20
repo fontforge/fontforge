@@ -2259,13 +2259,8 @@ return;
     }
 }
 
-<<<<<<< HEAD
 void PrintFFDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     _PrintFFDlg(fv,sc,mv,true,NULL,NULL);
-=======
-void PrintPreviewDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
-    _PrintDlg(fv,sc,mv,true,NULL,NULL);
->>>>>>> 622b508a8c1252eec8f30fb5a6318e9eccb13554
 }
 
 static SplineSet *OnePathSelected(CharView *cv) {
