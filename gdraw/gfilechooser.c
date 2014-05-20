@@ -836,7 +836,7 @@ static void GFCRefresh(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static int GFileChooserHome(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	unichar_t* homedir = u_GFileGetHomeDir();
+	unichar_t* homedir = u_GFileGetHomeDocumentsDir();
 	if ( homedir==NULL )
 	    GGadgetSetEnabled(g,false);
 	else {
