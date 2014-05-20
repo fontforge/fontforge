@@ -2283,7 +2283,11 @@ static void MVMenuGenerateTTC(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 
 static void MVMenuPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+<<<<<<< HEAD
     PrintFFDlg(NULL, NULL, mv);
+=======
+    PrintPreviewDlg(NULL, NULL, mv);
+>>>>>>> 622b508a8c1252eec8f30fb5a6318e9eccb13554
 }
 
 static void MVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {

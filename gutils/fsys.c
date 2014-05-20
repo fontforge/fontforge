@@ -820,8 +820,8 @@ return NULL;
  * save files.  On Unix-likes, the argument `dir` (see the below case switch,
  * enum in inc/gfile.h) determines which directory is returned according to the
  * XDG Base Directory Specification.  On Windows, the argument is ignored--the
- * home directory as obtained by getUserHomeDir() is returned.  On error, NULL
- * is returned.
+ * home directory as obtained by getUserHomeDir() appended with "/FontForge" is
+ * returned. On error, NULL is returned.
  *
  * http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
  */
@@ -838,9 +838,13 @@ char *getFontForgeUserDir(int dir) {
 return NULL;
 	}
 #if defined(__MINGW32__)
-	/* If we are on Windows, just use the home directory (%APPDATA% or
-	 * %USERPROFILE% in that order) for everything */
-return home;
+	/* Allow for preferences to be saved locally in a 'portable' configuration. */ 
+	if (getenv("FF_PORTABLE") != NULL) {
+		buf = smprintf("%s/preferences/", getShareDir());
+	} else {
+		buf = smprintf("%s/FontForge/", home);
+	}
+	return buf;
 #else
 	/* Home directory exists, so check for environment variables.  For each of
 	 * XDG_{CACHE,CONFIG,DATA}_HOME, assign `def` as the corresponding fallback
@@ -956,6 +960,7 @@ char *GFileGetHomeDocumentsDir(void)
     my_documents[ pos++ ] = '\\';
     my_documents[ pos++ ] = '\0';
     ret = copy( my_documents );
+	_backslash_to_slash(ret);
     return ret;
 #endif
 
@@ -963,6 +968,15 @@ char *GFileGetHomeDocumentsDir(void)
     // home directory itself.
     ret = GFileGetHomeDir();
     return ret;
+}
+
+unichar_t *u_GFileGetHomeDocumentsDir(void) {
+    unichar_t* dir = NULL;
+    char* tmp = GFileGetHomeDocumentsDir();
+    if(tmp) {
+        dir = uc_copy(tmp);
+    }
+    return dir;
 }
 
 

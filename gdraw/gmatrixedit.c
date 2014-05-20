@@ -885,7 +885,7 @@ static void GME_StrSmallEdit(GMatrixEdit *gme,char *str, GEvent *event) {
 static int GME_SetValue(GMatrixEdit *gme,GGadget *g ) {
     int c = gme->active_col;
     int r = gme->active_row;
-    long lval;
+    intpt lval;
     double dval;
     char *end="";
     char *str = GGadgetGetTitle8(g), *pt;
