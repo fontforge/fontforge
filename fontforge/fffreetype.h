@@ -39,6 +39,7 @@
 #endif
 
 #if defined(__MINGW32__)
+# include <Winsock2.h>
 # include <Windows.h>
 #else
 # include <sys/mman.h>
