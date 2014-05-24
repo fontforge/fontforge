@@ -58,14 +58,6 @@
 #endif
 #include "collabclientui.h"
 
-
-#if defined(__MINGW32__)
-#ifndef O_NDELAY
-#define O_NDELAY 0
-#endif
-#endif // __MINGW32__
-
-
 /**
  * Use this to track if the script has joined a collab session.
  * if not then we get to very quickly avoid the collab code path :)
@@ -800,6 +792,7 @@ copyUIMethodsToBaseTable( PyMethodDef* ui, PyMethodDef* md )
 static void python_ui_fd_callback( int fd, void* udata );
 static void python_ui_setup_callback( bool makefifo )
 {
+#ifndef __MINGW32__
     int fd = 0;
     int err = 0;
     char path[ PATH_MAX + 1 ];
@@ -807,19 +800,18 @@ static void python_ui_setup_callback( bool makefifo )
     
     if( makefifo )
     {
-#ifndef __MINGW32__
 	err = mkfifo( path, 0600 );
-#endif
     }
     
     void* udata = 0;
     fd = open( path, O_RDONLY | O_NDELAY );
     GDrawAddReadFD( 0, fd, udata, python_ui_fd_callback );
-    
+#endif   
 }
 
 static void python_ui_fd_callback( int fd, void* udata )
 {
+#ifndef __MINGW32__
     char data[ 1024*100 + 1 ];
     memset(data, '\0', 1024*100 );
 //    sleep( 1 );
@@ -835,7 +827,7 @@ static void python_ui_fd_callback( int fd, void* udata )
     
     GDrawRemoveReadFD( 0, fd, udata );
     python_ui_setup_callback( 0 );
-    
+#endif    
 }
 
 void PythonUI_namedpipe_Init(void) {
