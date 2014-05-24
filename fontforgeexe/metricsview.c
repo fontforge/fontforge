@@ -965,12 +965,23 @@ static void MVRemetric(MetricsView *mv) {
 	    MVCreateFields(mv,i);
 	}
     }
+    // Refresh.
+    MVRefreshMetric(mv);
+}
+
+void MVRefreshMetric(MetricsView *mv) {
+    double iscale = mv->pixelsize_set_by_window ? 1.0 : mv_scales[mv->scale_index];
+    double scale = iscale*mv->pixelsize/(double) (mv->sf->ascent+mv->sf->descent);
+    SplineFont *sf = mv->sf;
+    int cnt;
+    // Count the valid glyphs and segfault if there is no null splinechar terminator.
+    for ( cnt=0; mv->glyphs[cnt].sc!=NULL; ++cnt );
     // Calculate positions.
-    x = 10; y = 10;
-    for ( i=0; i<cnt; ++i ) {
+    int x = 10; int y = 10;
+    for ( int i=0; i<cnt; ++i ) {
 	MVRefreshValues(mv,i);
-	sc = mv->glyphs[i].sc;
-	bdfc = mv->bdf!=NULL ? mv->bdf->glyphs[sc->orig_pos] : BDFPieceMealCheck(mv->show,sc->orig_pos);
+	SplineChar * sc = mv->glyphs[i].sc;
+	BDFChar * bdfc = mv->bdf!=NULL ? mv->bdf->glyphs[sc->orig_pos] : BDFPieceMealCheck(mv->show,sc->orig_pos);
 	mv->perchar[i].dwidth = rint(iscale * bdfc->width);
 	mv->perchar[i].dx = x;
 	mv->perchar[i].xoff = rint(iscale * mv->glyphs[i].vr.xoff);
@@ -988,6 +999,7 @@ static void MVRemetric(MetricsView *mv) {
     MVSetVSb(mv);
     MVSetSb(mv);
 }
+
 
 void MVReKern(MetricsView *mv) {
     MVRemetric(mv);
@@ -1490,7 +1502,7 @@ return( true );
 
     if( haveClassBasedKerningInView(mv) )
     {
-	MVRemetric(mv);
+	MVRefreshMetric(mv);
 	GDrawRequestExpose(mv->v,NULL,false);
     }
 
