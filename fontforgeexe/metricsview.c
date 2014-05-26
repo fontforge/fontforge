@@ -876,8 +876,11 @@ static void MVRemetric(MetricsView *mv) {
     SplineFont *sf;
 
     anysc = goodsc = NULL; goodpos = -1;
+    // We recurse through all of the characters in the metrics view.
     for ( i=0; mv->chars[i] && i<mv->clen; ++i ) {
+        // We assign the first splinechar to anysc.
 	if ( anysc==NULL ) anysc = mv->chars[i];
+        // We assign the first splinechar of a non-default script to goodsc.
 	if ( SCScriptFromUnicode(mv->chars[i])!=DEFAULT_SCRIPT ) {
 	    goodsc = mv->chars[i];
 	    goodpos = i;
@@ -887,6 +890,7 @@ static void MVRemetric(MetricsView *mv) {
     if ( _script[0]=='D' && _script[1]=='F' && _script[2]=='L' && _script[3]=='T' ) {
 	if ( goodsc!=NULL ) {
 	    /* Set the script */ /* Remember if we get here the script is DFLT */
+            // To be clear, in this case, we set the script of the metrics view according to the first non-default script in the set of selected characters.
 	    script = SCScriptFromUnicode(goodsc);
 	    buf[0] = script>>24; buf[1] = script>>16; buf[2] = script>>8; buf[3] = script;
 	    strcpy(buf+4,"{dflt}");
@@ -898,12 +902,15 @@ static void MVRemetric(MetricsView *mv) {
 	if ( anysc==NULL ) {
 	    /* If we get here the script is not DFLT */
 	    GGadgetSetTitle8(mv->script,"DFLT{dflt}");
+            // Why do se set the title to DFLT then?
 	    MVSetFeatures(mv);
 	}
     }
     _script = _GGadgetGetTitle(mv->script);
     script = DEFAULT_SCRIPT; lang = DEFAULT_LANG;
     if ( u_strlen(_script)>=4 && (u_strchr(_script,'{')==NULL || u_strchr(_script,'{')-_script>=4)) {
+        // If there is a four-character script identifier, pack it in script.
+        // If there is a language identifier, pack that in lang.
 	unichar_t *pt;
 	script = (_script[0]<<24) | (_script[1]<<16) | (_script[2]<<8) | _script[3];
 	if ( (pt = u_strchr(_script,'{'))!=NULL && u_strlen(pt+1)>=4 &&
@@ -911,6 +918,7 @@ static void MVRemetric(MetricsView *mv) {
 	    lang = (pt[1]<<24) | (pt[2]<<16) | (pt[3]<<8) | pt[4];
     }
 
+    // Parse the current list of features into feats.
     ti = GGadgetGetList(mv->features,&len);
     for ( i=cnt=0; i<len; ++i )
 	if ( ti[i]->selected ) ++cnt;
@@ -919,7 +927,8 @@ static void MVRemetric(MetricsView *mv) {
 	if ( ti[i]->selected )
 	    feats[cnt++] = (intpt) ti[i]->userdata;
 
-    free(mv->glyphs);
+    // Regenerate glyphs for the selected characters according to features, script, and resolution.
+    free(mv->glyphs); mv->glyphs = NULL;
     sf = mv->sf;
     if ( sf->cidmaster ) sf = sf->cidmaster;
     mv->glyphs = ApplyTickedFeatures(sf,feats,script, lang, mv->pixelsize, mv->chars);
@@ -927,13 +936,18 @@ static void MVRemetric(MetricsView *mv) {
     if ( goodsc!=NULL )
 	mv->right_to_left = SCRightToLeft(goodsc)?1:0;
 
+    // Count the valid glyphs and segfault if there is no null splinechar terminator.
     for ( cnt=0; mv->glyphs[cnt].sc!=NULL; ++cnt );
+    // If there are too many relative to the available rows, make space.
     if ( cnt>=mv->max ) {
 	int oldmax=mv->max;
 	mv->max = cnt+10;
 	mv->perchar = realloc(mv->perchar,mv->max*sizeof(struct metricchar));
 	memset(mv->perchar+oldmax,'\0',(mv->max-oldmax)*sizeof(struct metricchar));
     }
+    // Null names of controls in rows to be abandoned, starting at the last valid glyph and continuing to the end of mv->glyphs.
+    // This may segfault here if mv->max is less than mv->glyphcnt, thus if cnt was 10 less than mv->glyphcnt.
+    // It may segfault in GGadgetSetTitle if the gadgets do not exist.
     for ( i=cnt; i<mv->glyphcnt; ++i ) {
 	static unichar_t nullstr[] = { 0 };
 	GGadgetSetTitle(mv->perchar[i].name,nullstr);
@@ -943,17 +957,31 @@ static void MVRemetric(MetricsView *mv) {
 	if ( mv->perchar[i].kern!=NULL )
 	    GGadgetSetTitle(mv->perchar[i].kern,nullstr);
     }
+    // So we set mv->glyphcnt to something possibly less than the size of mv->glyphs.
     mv->glyphcnt = cnt;
+    // We now populate any new rows with controls.
     for ( i=0; i<cnt; ++i ) {
 	if ( mv->perchar[i].width==NULL ) {
 	    MVCreateFields(mv,i);
 	}
     }
-    x = 10; y = 10;
-    for ( i=0; i<cnt; ++i ) {
+    // Refresh.
+    MVRefreshMetric(mv);
+}
+
+void MVRefreshMetric(MetricsView *mv) {
+    double iscale = mv->pixelsize_set_by_window ? 1.0 : mv_scales[mv->scale_index];
+    double scale = iscale*mv->pixelsize/(double) (mv->sf->ascent+mv->sf->descent);
+    SplineFont *sf = mv->sf;
+    int cnt;
+    // Count the valid glyphs and segfault if there is no null splinechar terminator.
+    for ( cnt=0; mv->glyphs[cnt].sc!=NULL; ++cnt );
+    // Calculate positions.
+    int x = 10; int y = 10;
+    for ( int i=0; i<cnt; ++i ) {
 	MVRefreshValues(mv,i);
-	sc = mv->glyphs[i].sc;
-	bdfc = mv->bdf!=NULL ? mv->bdf->glyphs[sc->orig_pos] : BDFPieceMealCheck(mv->show,sc->orig_pos);
+	SplineChar * sc = mv->glyphs[i].sc;
+	BDFChar * bdfc = mv->bdf!=NULL ? mv->bdf->glyphs[sc->orig_pos] : BDFPieceMealCheck(mv->show,sc->orig_pos);
 	mv->perchar[i].dwidth = rint(iscale * bdfc->width);
 	mv->perchar[i].dx = x;
 	mv->perchar[i].xoff = rint(iscale * mv->glyphs[i].vr.xoff);
@@ -971,6 +999,7 @@ static void MVRemetric(MetricsView *mv) {
     MVSetVSb(mv);
     MVSetSb(mv);
 }
+
 
 void MVReKern(MetricsView *mv) {
     MVRemetric(mv);
@@ -1473,7 +1502,7 @@ return( true );
 
     if( haveClassBasedKerningInView(mv) )
     {
-	MVRemetric(mv);
+	MVRefreshMetric(mv);
 	GDrawRequestExpose(mv->v,NULL,false);
     }
 
