@@ -3164,7 +3164,11 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi, GEvent *UNUSED(
 
 static void FV_ChangeDisplayBitmap(FontView *fv,BDFFont *bdf) {
     FVChangeDisplayFont(fv,bdf);
-    fv->b.sf->display_size = fv->show->pixelsize;
+    if (fv->show != NULL) {
+        fv->b.sf->display_size = fv->show->pixelsize;
+    } else {
+        fv->b.sf->display_size = 1;
+    }
 }
 
 static void FVMenuSize(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {

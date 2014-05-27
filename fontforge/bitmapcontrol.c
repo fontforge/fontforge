@@ -326,6 +326,7 @@ void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
 	if ( bd->sf->onlybitmaps && bd->sf->bitmaps!=NULL ) {
 	    BDFFont *bdf;
 	    FontViewBase *fvs;
+            // Select the last bitmap font.
 	    for ( bdf=bd->sf->bitmaps; bdf->next!=NULL; bdf=bdf->next );
 	    for ( fvs = bd->sf->fv; fvs!=NULL; fvs= fvs->nextsame )
 		FVChangeDisplayBitmap(fvs,bdf);
