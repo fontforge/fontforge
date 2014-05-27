@@ -749,13 +749,13 @@ void GDrawForceUpdate(GWindow w) {
 
 void GDrawSync(GDisplay *gdisp) {
     if ( gdisp==NULL ) gdisp=screen_display;
-    if (disp != NULL)
+    if (gdisp != NULL)
     (gdisp->funcs->sync)(gdisp);
 }
 
 void GDrawPointerUngrab(GDisplay *gdisp) {
     if ( gdisp==NULL ) gdisp=screen_display;
-    if (disp != NULL)
+    if (gdisp != NULL)
     (gdisp->funcs->pointerUngrab)(gdisp);
 }
 
@@ -765,7 +765,7 @@ void GDrawPointerGrab(GWindow w) {
 
 void GDrawProcessOneEvent(GDisplay *gdisp) {
     if ( gdisp==NULL ) gdisp=screen_display;
-    if (disp != NULL)
+    if (gdisp != NULL)
     (gdisp->funcs->processOneEvent)(gdisp);
 }
 
@@ -775,7 +775,7 @@ void GDrawSkipMouseMoveEvents(GWindow w,GEvent *last) {
 
 void GDrawProcessPendingEvents(GDisplay *gdisp) {
     if ( gdisp==NULL ) gdisp=screen_display;
-    if (disp != NULL)
+    if (gdisp != NULL)
     (gdisp->funcs->processPendingEvents)(gdisp);
 }
 
@@ -785,14 +785,14 @@ void GDrawProcessWindowEvents(GWindow w) {
 
 void GDrawEventLoop(GDisplay *gdisp) {
     if ( gdisp==NULL ) gdisp=screen_display;
-    if (disp != NULL)
+    if (gdisp != NULL)
     (gdisp->funcs->eventLoop)(gdisp);
 }
 
 void GDrawPostEvent(GEvent *e) {
     GDisplay *gdisp = e->w->display;
     if ( gdisp==NULL ) gdisp=screen_display;
-    if (disp != NULL)
+    if (gdisp != NULL)
     (gdisp->funcs->postEvent)(e);
 }
 
@@ -817,14 +817,14 @@ return;
 void GDrawSyncThread(GDisplay *gdisp, void (*func)(void *), void *data) {
     if ( gdisp==NULL )
 	gdisp = screen_display;
-    if (disp != NULL)
+    if (gdisp != NULL)
     (gdisp->funcs->syncThread)(gdisp,func,data);
 }
 
 GWindow GPrinterStartJob(GDisplay *gdisp,void *user_data,GPrinterAttrs *attrs) {
     if ( gdisp==NULL )
 	gdisp = printer_display;
-    if (disp != NULL)
+    if (gdisp != NULL)
         return( (gdisp->funcs->startJob)(gdisp,user_data,attrs) );
     else
         return NULL;
