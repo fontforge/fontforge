@@ -109,8 +109,8 @@ int fontforge_main( int argc, char **argv ) {
 	    doscriptusage();
 	else if ( strcmp(pt,"-help")==0 )
 	    doscripthelp();
-	else if ( strcmp(pt,"-version")==0 )
-	    doversion(source_version_str);
+	else if ( strcmp(pt,"-version")==0 || strcmp(pt,"-v")==0 || strcmp(pt,"-V")==0 )
+	    doversion(FONTFORGE_MODTIME_STR);
     }
     PyFF_Stdin();
 
