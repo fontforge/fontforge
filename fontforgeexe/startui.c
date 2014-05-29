@@ -241,6 +241,9 @@ static void SplashLayout() {
 #ifdef FREETYPE_HAS_DEBUGGER
     uc_strcat(pt,"-TtfDb");
 #endif
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
+    uc_strcat(pt,"-D");
+#endif
     uc_strcat(pt,")");
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
@@ -814,8 +817,12 @@ int fontforge_main( int argc, char **argv ) {
         fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
         fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
         fprintf( stderr, " Based on sources from %s"
+	        "-ML"
 #ifdef FREETYPE_HAS_DEBUGGER
 	        "-TtfDb"
+#endif
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
+	        "-D"
 #endif
 	        ".\n",
 	        FONTFORGE_MODTIME_STR );

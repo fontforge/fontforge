@@ -237,6 +237,8 @@ dnl###############################
 
 AM_CONDITIONAL([XDG_DESKTOP],[test x"$UPDATE_MIME_DATABASE" != "x:" -a x"$UPDATE_DESKTOP_DATABASE" != "x:"])
 
+FONTFORGE_ARG_ENABLE_REAL
+
 AC_ARG_ENABLE([programs],
         [AS_HELP_STRING([--disable-programs],[do not build "fontforge" and related programs
                                               (but do build libraries and possibly the Python extensions)])],
@@ -763,6 +765,7 @@ Configuration:
 
 Summary of optional features:
 
+  real (floating pt)	${my_real_type}
   programs		${i_do_have_programs}
   freetype debugger	${i_do_have_freetype_debugger}
   raw points mode	${i_do_have_debug_raw_points}

@@ -44,8 +44,15 @@ int default_fv_antialias=true;
 int default_fv_bbsized=true;
 int snaptoint=0;
 
-#define RE_NearZero	.00000001
-#define RE_Factor	(1024.0*1024.0*1024.0*1024.0*1024.0*2.0) /* 52 bits => divide by 2^51 */
+/*#define DEBUG	1*/
+
+#if defined( FONTFORGE_CONFIG_USE_DOUBLE )
+# define RE_NearZero	.00000001
+# define RE_Factor	(1024.0*1024.0*1024.0*1024.0*1024.0*2.0) /* 52 bits => divide by 2^51 */
+#else
+# define RE_NearZero	.00001
+# define RE_Factor	(1024.0*1024.0*4.0)	/* 23 bits => divide by 2^22 */
+#endif
 
 int Within4RoundingErrors(bigreal v1, bigreal v2) {
     bigreal temp=v1*v2;
@@ -140,12 +147,21 @@ return( v2-v1 > re );
 int RealNear(real a,real b) {
     real d;
 
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
     if ( a==0 )
 return( b>-1e-8 && b<1e-8 );
     if ( b==0 )
 return( a>-1e-8 && a<1e-8 );
 
     d = a/(1024*1024.);
+#else		/* For floats */
+    if ( a==0 )
+return( b>-1e-5 && b<1e-5 );
+    if ( b==0 )
+return( a>-1e-5 && a<1e-5 );
+
+    d = a/(1024*64.);
+#endif
     a-=b;
     if ( d<0 )
 return( a>d && a<-d );

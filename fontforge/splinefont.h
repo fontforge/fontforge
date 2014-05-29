@@ -36,8 +36,13 @@
 # include <gwwiconv.h>
 #endif
 
-#define real		double
-#define bigreal		double
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
+# define real		double
+# define bigreal	double
+#else
+# define real		float
+# define bigreal	double
+#endif
 
 #define extended	double
 	/* Solaris wants to define extended to be unsigned [3] unless we do this*/

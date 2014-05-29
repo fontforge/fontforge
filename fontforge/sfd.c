@@ -641,6 +641,17 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
     for ( ; spl!=NULL; spl=spl->next ) {
 	first = NULL;
 	for ( sp = spl->first; ; sp=sp->next->to ) {
+#ifndef FONTFORGE_CONFIG_USE_DOUBLE
+	    if ( first==NULL )
+		fprintf( sfd, "%g %g m ", (double) sp->me.x, (double) sp->me.y );
+	    else if ( sp->prev->islinear && sp->noprevcp )		/* Don't use known linear here. save control points if there are any */
+		fprintf( sfd, " %g %g l ", (double) sp->me.x, (double) sp->me.y );
+	    else
+		fprintf( sfd, " %g %g %g %g %g %g c ",
+			(double) sp->prev->from->nextcp.x, (double) sp->prev->from->nextcp.y,
+			(double) sp->prevcp.x, (double) sp->prevcp.y,
+			(double) sp->me.x, (double) sp->me.y );
+#else
 	    if ( first==NULL )
 		fprintf( sfd, "%.12g %.12g m ", (double) sp->me.x, (double) sp->me.y );
 	    else if ( sp->prev->islinear && sp->noprevcp )		/* Don't use known linear here. save control points if there are any */
@@ -650,6 +661,7 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 			(double) sp->prev->from->nextcp.x, (double) sp->prev->from->nextcp.y,
 			(double) sp->prevcp.x, (double) sp->prevcp.y,
 			(double) sp->me.x, (double) sp->me.y );
+#endif
 	    int ptflags = 0;
 	    ptflags = sp->pointtype|(sp->selected<<2)|
 		(sp->nextcpdef<<3)|(sp->prevcpdef<<4)|

@@ -86,6 +86,9 @@ int fontforge_main( int argc, char **argv ) {
 #ifdef FREETYPE_HAS_DEBUGGER
 	    "-TtfDb"
 #endif
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
+	    "-D"
+#endif
 	    ".\n",
 	    FONTFORGE_MODTIME_STR );
     fprintf( stderr, " Based on source from git with hash:%s\n", FONTFORGE_GIT_VERSION );
