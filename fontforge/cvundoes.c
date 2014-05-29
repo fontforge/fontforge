@@ -2110,8 +2110,10 @@ return;
 	type = 4;
     else if ( ClipboardHasType("image/ps") )
 	type = 5;
+#ifndef _NO_LIBPNG
     else if ( ClipboardHasType("image/png") )
 	type = 6;
+#endif
     else if ( ClipboardHasType("image/bmp") )
 	type = 7;
 
@@ -2136,9 +2138,11 @@ return;
 	} else if ( type<=3 ) {
 	    SCImportSVG(sc,layer,NULL,paste,len,doclear);
 	} else {
+#ifndef _NO_LIBPNG
 	    if ( type==6 )
 		image = GImageRead_Png(temp);
 	    else
+#endif
 		image = GImageRead_Bmp(temp);
 	    SCAddScaleImage(sc,image,doclear,layer);
 	}

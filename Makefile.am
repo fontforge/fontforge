@@ -71,7 +71,11 @@ if GRAPHICAL_USER_INTERFACE
 SUBDIRS += gdraw
 endif GRAPHICAL_USER_INTERFACE
 
-SUBDIRS += fontforgeexe pyhook
+SUBDIRS += fontforgeexe
+
+if PYTHON_EXTENSION
+SUBDIRS += pyhook
+endif PYTHON_EXTENSION
 
 if MACINTOSH
 SUBDIRS += mackeys osx

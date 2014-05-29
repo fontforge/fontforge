@@ -27,8 +27,13 @@
 #include <fontforge-config.h>
 
 
-#include "Python.h"
-#include "structmember.h"
+#ifndef _NO_PYTHON
+# include "Python.h"
+# include "structmember.h"
+#else
+# include <utype.h>
+#endif
+
 #include "fontforgevw.h"
 #include <unistd.h>
 #include <math.h>
@@ -41,7 +46,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <time.h>
-#include "ffpython.h"
+#ifndef _NO_PYTHON
+# include "ffpython.h"
+#endif
 
 /* The UFO (Unified Font Object) format, http://unifiedfontobject.org/ */
 /* Obsolete: http://just.letterror.com/ltrwiki/UnifiedFontObject */
@@ -68,13 +75,21 @@ return( fname );
 /* ************************************************************************** */
 /* *************************   Python lib Output    ************************* */
 /* ************************************************************************** */
+#ifndef _NO_PYTHON
 static int PyObjDumpable(PyObject *value);
 static void DumpPyObject( FILE *file, PyObject *value );
+#endif
 
 static void DumpPythonLib(FILE *file,void *python_persistent,SplineChar *sc) {
     StemInfo *h;
     int has_hints = (sc!=NULL && (sc->hstem!=NULL || sc->vstem!=NULL ));
 
+#ifdef _NO_PYTHON
+    if ( has_hints ) {
+	/* Not officially part of the UFO/glif spec, but used by robofab */
+	fprintf( file, "  <lib>\n" );
+	fprintf( file, "    <dict>\n" );
+#else
     PyObject *dict = python_persistent, *items, *key, *value;
     int i, len;
     char *str;
@@ -85,6 +100,7 @@ static void DumpPythonLib(FILE *file,void *python_persistent,SplineChar *sc) {
 	    fprintf( file, "    <dict>\n" );
 	}
 	if ( has_hints ) {
+#endif
 	    fprintf( file, "      <key>com.fontlab.hintData</key>\n" );
 	    fprintf( file, "      <dict>\n" );
 	    if ( sc->hstem!=NULL ) {
@@ -114,6 +130,7 @@ static void DumpPythonLib(FILE *file,void *python_persistent,SplineChar *sc) {
 		fprintf( file, "\t</array>\n" );
 	    }
 	    fprintf( file, "      </dict>\n" );
+#ifndef _NO_PYTHON
 	}
 	/* Ok, look at the persistent data and output it (all except for a */
 	/*  hint entry -- we've already handled that with the real hints, */
@@ -136,6 +153,7 @@ static void DumpPythonLib(FILE *file,void *python_persistent,SplineChar *sc) {
 			DumpPyObject( file, value );
 	    }
 	}
+#endif
 	if ( sc!=NULL ) {
 	    fprintf( file, "    </dict>\n" );
 	    fprintf( file, "  </lib>\n" );
@@ -143,6 +161,7 @@ static void DumpPythonLib(FILE *file,void *python_persistent,SplineChar *sc) {
     }
 }
 
+#ifndef _NO_PYTHON
 static int PyObjDumpable(PyObject *value) {
     if ( PyInt_Check(value))
 return( true );
@@ -200,6 +219,7 @@ static void DumpPyObject( FILE *file, PyObject *value ) {
 	fprintf( file, "      </array>\n" );
     }
 }
+#endif
 
 /* ************************************************************************** */
 /* ****************************   GLIF Output    **************************** */
@@ -717,6 +737,7 @@ return( PListOutputTrailer(plist));
 }
 
 static int UFOOutputLib(char *basedir,SplineFont *sf) {
+#ifndef _NO_PYTHON
     if ( sf->python_persistent!=NULL && PyMapping_Check(sf->python_persistent) ) {
 	FILE *plist = PListCreate( basedir, "lib.plist" );
 
@@ -725,6 +746,7 @@ return( false );
 	DumpPythonLib(plist,sf->python_persistent,NULL);
 return( PListOutputTrailer(plist));
     }
+#endif
 return( true );
 }
 
@@ -883,6 +905,7 @@ return( kids );
 return( NULL );
 }
 
+#ifndef _NO_PYTHON
 static PyObject *XMLEntryToPython(xmlDocPtr doc,xmlNodePtr entry);
 
 static PyObject *LibToPython(xmlDocPtr doc,xmlNodePtr dict) {
@@ -981,6 +1004,7 @@ return( ret );
     free( contents );
 return( NULL );
 }
+#endif
 
 static StemInfo *GlifParseHints(xmlDocPtr doc,xmlNodePtr dict,char *hinttype) {
     StemInfo *head=NULL, *last=NULL, *h;
@@ -1471,7 +1495,9 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 				free(keyname);
 		    }
 		}
+#ifndef _NO_PYTHON
 		sc->python_persistent = LibToPython(doc,dict);
+#endif
 	    }
 	}
     }
@@ -2218,6 +2244,7 @@ return( NULL );
     UFOHandleKern(sf,basedir,0);
     UFOHandleKern(sf,basedir,1);
 
+#ifndef _NO_PYTHON
     temp = buildname(basedir,"lib.plist");
     doc = NULL;
     if ( GFileExists(temp))
@@ -2237,6 +2264,7 @@ return( NULL );
 		}
 		xmlFreeDoc(doc);
     }
+#endif
     setlocale(LC_NUMERIC,oldloc);
 return( sf );
 }

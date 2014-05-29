@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
+
 #include "fontforgeui.h"
 #include <gresource.h>
 #include <utype.h>
@@ -71,6 +73,7 @@ return(true);
 return( true );
 }
 
+#if !defined(_NO_FFSCRIPT)
 static void ExecNative(GGadget *g, GEvent *e) {
     struct sd_data *sd = GDrawGetUserData(GGadgetGetWindow(g));
     Context c;
@@ -117,7 +120,9 @@ return;			/* Error return */
     }
     running_script = false;
 }
+#endif
 
+#if !defined(_NO_PYTHON)
 static void ExecPython(GGadget *g, GEvent *e) {
     struct sd_data *sd = GDrawGetUserData(GGadgetGetWindow(g));
     char *str;
@@ -129,7 +134,9 @@ static void ExecPython(GGadget *g, GEvent *e) {
     free(str);
     running_script = false;
 }
+#endif
 
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 static void _SD_LangChanged(struct sd_data *sd) {
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_Call),
 	    !GGadgetIsChecked(GWidgetGetControl(sd->gw,CID_Python)));
@@ -142,14 +149,21 @@ static int SD_LangChanged(GGadget *g, GEvent *e) {
     }
 return( true );
 }
+#endif
 
 static int SD_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct sd_data *sd = GDrawGetUserData(GGadgetGetWindow(g));
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 	if ( GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_Python)) )
 	    ExecPython(g,e);
 	else
 	    ExecNative(g,e);
+#elif !defined(_NO_PYTHON)
+	ExecPython(g,e);
+#elif !defined(_NO_FFSCRIPT)
+	ExecNative(g,e);
+#endif
 	sd->done = true;
     }
 return( true );
@@ -192,7 +206,9 @@ void ScriptDlg(FontView *fv,CharView *cv) {
     static GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[12], boxes[5], *barray[4][8], *hvarray[4][2];
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
     GGadgetCreateData *rarray[4];
+#endif
     GTextInfo label[12];
     struct sd_data sd;
     FontView *list;
@@ -229,6 +245,7 @@ void ScriptDlg(FontView *fv,CharView *cv) {
 	gcd[i++].creator = GTextAreaCreate;
 	hvarray[l][0] = &gcd[i-1]; hvarray[l++][1] = NULL;
 
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 	gcd[i-1].gd.pos.height -= 24;
 
 	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+gcd[i-1].gd.pos.height+1;
@@ -257,6 +274,7 @@ void ScriptDlg(FontView *fv,CharView *cv) {
 	boxes[2].gd.u.boxelements = rarray;
 	boxes[2].creator = GHBoxCreate;
 	hvarray[l][0] = &boxes[2]; hvarray[l++][1] = NULL;
+#endif
 
 	barray[0][0] = barray[1][0] = barray[0][6] = barray[1][6] = GCD_Glue;
 	barray[0][2] = barray[1][2] = barray[0][4] = barray[1][4] = GCD_Glue;
@@ -298,10 +316,14 @@ void ScriptDlg(FontView *fv,CharView *cv) {
 	gcd[i++].creator = GButtonCreate;
 	barray[0][3] = &gcd[i-1];
 
+#if !defined(_NO_FFSCRIPT)
 	gcd[i].gd.pos.width = gcd[i].gd.pos.height = 5;
 	gcd[i].gd.flags = gg_visible | gg_enabled;
 	gcd[i++].creator = GSpacerCreate;
 	barray[1][3] = &gcd[i-1];
+#else
+	barray[1][3] = GCD_RowSpan;
+#endif
 
 	barray[3][0] = NULL;
 
@@ -323,11 +345,15 @@ void ScriptDlg(FontView *fv,CharView *cv) {
 	GHVBoxSetExpandableRow(boxes[0].ret,0);
 	GHVBoxFitWindow(boxes[0].ret);
     }
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_FF),cv==NULL);
+#endif
     sd.gw = gw;
     GDrawSetUserData(gw,&sd);
     GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Script));
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
     _SD_LangChanged(&sd);
+#endif
     GDrawSetVisible(gw,true);
     while ( !sd.done )
 	GDrawProcessOneEvent(NULL);
@@ -340,3 +366,4 @@ void ScriptDlg(FontView *fv,CharView *cv) {
     GDrawProcessPendingEvents(NULL);
     GDrawSetUserData(gw,NULL);
 }
+#endif	/* No scripting */

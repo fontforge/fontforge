@@ -28,6 +28,7 @@
 
 #include <fontforge-config.h>
 
+#ifndef _NO_PYTHON
 #include "Python.h"
 #include "structmember.h"
 
@@ -194,8 +195,22 @@ char* AnyPyString_to_UTF8( PyObject* obj ) {
 	    Py_DECREF(bytes);
 	}
     }
-    else
-	PyErr_Format(PyExc_TypeError, PY3OR2("Expected a string", "Expected a string ('unicode' or UTF-8 encoded 'str')"));
+#if PY_MAJOR_VERSION <= 2
+    else if ( PyString_Check(obj) ) {
+	PyObject *utf8str = PyString_AsEncodedObject(obj, "UTF-8", NULL);
+	if ( utf8str!=NULL ) {
+	    s = copy(PyString_AS_STRING(utf8str));
+	    Py_DECREF(utf8str);
+	}
+    }
+#endif
+    else {
+#if PY_MAJOR_VERSION >= 3
+	PyErr_Format(PyExc_TypeError, "Expected a string");
+#else
+	PyErr_Format(PyExc_TypeError, "Expected a string ('unicode' or UTF-8 encoded 'str')");
+#endif
+    }
     return s;
 }
 
@@ -18538,6 +18553,11 @@ PyMODINIT_FUNC FFPY_PYTHON_ENTRY_FUNCTION(const char* modulename) {
     return;
 #endif
 }
+
+#else
+#include "fontforgevw.h"
+#include "flaglist.h"
+#endif		/* _NO_PYTHON */
 
 /* These don't get translated. They are a copy of a similar list in fontinfo.c */
 static struct flaglist sfnt_name_str_ids[] = {

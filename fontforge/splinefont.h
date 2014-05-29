@@ -1491,8 +1491,10 @@ typedef struct splinechar {
     struct glyphvariants *horiz_variants;
     struct mathkern *mathkern;
 /* End of MATH/TeX fields */
+#ifndef _NO_PYTHON
     void *python_sc_object;
     void *python_temporary;
+#endif
     void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
 	/* If the glyph is used as a tile pattern, then the next two values */
 	/*  determine the amount of white space around the tile. If extra is*/
@@ -1860,7 +1862,9 @@ typedef struct splinefont {
     float sfd_version;			/* Used only when reading in an sfd file */
     struct gfi_data *fontinfo;
     struct val_data *valwin;
+#if !defined(_NO_PYTHON)
     void *python_temporary;
+#endif
     void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
     enum loadvalidation_state loadvalidation_state;
     LayerInfo *layers;
@@ -3236,6 +3240,7 @@ extern void SCClearContents(SplineChar *sc,int layer);
 extern void SCClearAll(SplineChar *sc,int layer);
 extern void BCClearAll(BDFChar *bc);
 
+#if !defined(_NO_PYTHON)
 extern void FontForge_InitializeEmbeddedPython(void);
 extern void PyFF_ErrorString(const char *msg,const char *str);
 extern void PyFF_ErrorF3(const char *frmt, const char *str, int size, int depth);
@@ -3251,6 +3256,7 @@ extern char *PyFF_PickleMeToString(void *pydata);
 extern void *PyFF_UnPickleMeToObjects(char *str);
 struct _object;		/* Python Object */
 extern void PyFF_CallDictFunc(struct _object *dict,const char *key,const char *argtypes, ... );
+#endif
 extern void doinitFontForgeMain(void);
 
 extern void InitSimpleStuff(void);

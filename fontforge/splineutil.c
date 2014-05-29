@@ -6306,7 +6306,9 @@ return;
     KernClassListFree(sf->kerns);
     KernClassListFree(sf->vkerns);
     FPSTFree(sf->possub);
+#if !defined(_NO_PYTHON)
     PyFF_FreeSF(sf);
+<<<<<<< HEAD
     ASMFree(sf->sm);
     OtfNameListFree(sf->fontstyle_name);
     OtfFeatNameListFree(sf->feat_names);
@@ -6346,6 +6348,9 @@ void MMSetFreeContents(MMSet *mm) {
 	MacNameListFree(mm->named_instances[i].names);
     }
     free(mm->named_instances);
+=======
+#endif
+>>>>>>> parent of 1774503... Make Python mandatory.
 }
 
 void MMSetFree(MMSet *mm) {

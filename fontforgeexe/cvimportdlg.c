@@ -174,18 +174,32 @@ return( true );
 
 
 static unichar_t wildimg[] = { '*', '.', '{',
+#ifndef _NO_LIBUNGIF
 'g','i','f',',',
+#endif
+#ifndef _NO_LIBPNG
 'p','n','g',',',
+#endif
+#ifndef _NO_LIBTIFF
 't','i','f','f',',',
 't','i','f',',',
+#endif
+#ifndef _NO_LIBJPEG
 'j','p','e','g',',',
 'j','p','g',',',
+#endif
 'x','p','m',',', 'x','b','m',',', 'b','m','p', '}', '\0' };
 static unichar_t wildtemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{',
+#ifndef _NO_LIBUNGIF
 'g','i','f',',',
+#endif
+#ifndef _NO_LIBPNG
 'p','n','g',',',
+#endif
+#ifndef _NO_LIBTIFF
 't','i','f','f',',',
 't','i','f',',',
+#endif
 'x','p','m',',', 'x','b','m',',', 'b','m','p', '}', '\0' };
 /* Hmm. Mac seems to use the extension 'art' for eps files sometimes */
 static unichar_t wildepstemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{', 'p','s',',', 'e','p','s',',','a','r','t','}',  0 };
@@ -475,9 +489,11 @@ return( true );
 		ImportGlif(d->cv,temp);
 	    else if ( format==fv_fig )
 		ImportFig(d->cv,temp);
+#ifndef _NO_PYTHON
 	    else if ( format>=fv_pythonbase )
 		PyFF_SCImport(d->cv->b.sc,format-fv_pythonbase,temp,
 			CVLayer((CharViewBase *) d->cv), false);
+#endif
 	}
 	free(temp);
 	GDrawSetCursor(GGadgetGetWindow(g),ct_pointer);
@@ -500,6 +516,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	int format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
 	if ( format<fv_pythonbase )
 	    GFileChooserSetFilterText(d->gfc,wildfnt[format]);
+#ifndef _NO_PYTHON
 	else {
 	    char *text;
 	    char *ae = py_ie[format-fv_pythonbase].all_extensions;
@@ -513,6 +530,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	    GFileChooserSetFilterText(d->gfc,utext);
 	    free(text); free(utext);
 	}
+#endif
 	GFileChooserRefreshList(d->gfc);
 	if ( d->fv!=NULL ) {
 	    if ( format==fv_bdf || format==fv_ttf || format==fv_pcf ||
@@ -579,6 +597,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	done = true;
     }
     base = cur_formats = fv==NULL?formats:fvformats;
+#ifndef _NO_PYTHON
     if ( py_ie!=NULL ) {
 	int cnt, extras;
 	for ( cnt=0; base[cnt].text!=NULL; ++cnt );
@@ -601,6 +620,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	    }
 	}
     }
+#endif
     if ( !hasspiro()) {
 	for ( i=0; cur_formats[i].text!=NULL; ++i )
 	    if ( ((intpt) cur_formats[i].userdata)==fv_plate ||

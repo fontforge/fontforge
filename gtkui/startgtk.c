@@ -108,7 +108,11 @@ static struct library_descriptor {
 	dlsymmod("Py_Main"),
 	"This allows users to write python scripts in fontforge",
 	"http://www.python.org/",
+#ifdef _NO_PYTHON
+	0
+#else
 	1
+#endif
     },
     { "libspiro", dlsymmod("TaggedSpiroCPsToBezier"), "This allows you to edit with Raph Levien's spiros.", "http://libspiro.sf.net/",
 #ifdef _NO_LIBSPIRO
@@ -117,19 +121,54 @@ static struct library_descriptor {
 	1
 #endif
     },
-    { "libz", dlsymmod("deflateEnd"), "This is a prerequisite for reading png files,\n\t and is used for some pdf files.", "http://www.gzip.org/zlib/", 1
+    { "libz", dlsymmod("deflateEnd"), "This is a prerequisite for reading png files,\n\t and is used for some pdf files.", "http://www.gzip.org/zlib/",
+#ifdef _NO_LIBPNG
+	0
+#else
+	1
+#endif
     },
-    { "libpng", dlsymmod("png_create_read_struct"), "This is one way to read png files.", "http://www.libpng.org/pub/png/libpng.html", 1,
+    { "libpng", dlsymmod("png_create_read_struct"), "This is one way to read png files.", "http://www.libpng.org/pub/png/libpng.html",
+#ifdef _NO_LIBPNG
+	0,
+#else
+	1,
+#endif
 	&libs[1] },
-    { "libpng12", dlsymmod("png_create_read_struct"), "This is another way to read png files.", "http://www.libpng.org/pub/png/libpng.html", 1,
+    { "libpng12", dlsymmod("png_create_read_struct"), "This is another way to read png files.", "http://www.libpng.org/pub/png/libpng.html",
+#ifdef _NO_LIBPNG
+	0,
+#else
+	1,
+#endif
 	&libs[1] },
-    { "libjpeg", dlsymmod("jpeg_CreateDecompress"), "This allows fontforge to load jpeg images.", "http://www.ijg.org/", 1
+    { "libjpeg", dlsymmod("jpeg_CreateDecompress"), "This allows fontforge to load jpeg images.", "http://www.ijg.org/",
+#ifdef _NO_LIBPNG
+	0
+#else
+	1
+#endif
     },
-    { "libtiff", dlsymmod("TIFFOpen"), "This allows fontforge to open tiff images.", "http://www.libtiff.org/",	1
+    { "libtiff", dlsymmod("TIFFOpen"), "This allows fontforge to open tiff images.", "http://www.libtiff.org/",
+#ifdef _NO_LIBTIFF
+	0
+#else
+	1
+#endif
     },
-    { "libgif", dlsymmod("DGifOpenFileName"), "This allows fontforge to open gif images.", "http://gnuwin32.sf.net/packages/libungif.htm", 1
+    { "libgif", dlsymmod("DGifOpenFileName"), "This allows fontforge to open gif images.", "http://gnuwin32.sf.net/packages/libungif.htm",
+#ifdef _NO_LIBUNGIF
+	0
+#else
+	1
+#endif
     },
-    { "libungif", dlsymmod("DGifOpenFileName"), "This allows fontforge to open gif images.", "http://gnuwin32.sf.net/packages/libungif.htm", 1
+    { "libungif", dlsymmod("DGifOpenFileName"), "This allows fontforge to open gif images.", "http://gnuwin32.sf.net/packages/libungif.htm",
+#ifdef _NO_LIBUNGIF
+	0
+#else
+	1
+#endif
     },
     { "libxml2", dlsymmod("xmlParseFile"), "This allows fontforge to load svg files and fonts and ufo fonts.", "http://xmlsoft.org/", 1
     },
@@ -483,6 +522,9 @@ int main( int argc, char **argv ) {
 #ifdef FREETYPE_HAS_DEBUGGER
 	    "-TtfDb"
 #endif
+#ifdef _NO_PYTHON
+	    "-NoPython"
+#endif
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	    "-D"
 #endif
@@ -529,7 +571,9 @@ int main( int argc, char **argv ) {
     /*FF_SetFIInterface(&gtk_fi_interface);*/
     /*FF_SetMVInterface(&gtk_mv_interface);*/
     /*FF_SetClipInterface(&gtk_clip_interface);*/
+#ifndef _NO_PYTHON
     PythonUI_Init();
+#endif
 
     InitSimpleStuff();
     if ( load_prefs!=NULL && strcasecmp(load_prefs,"Always")==0 )
@@ -585,7 +629,9 @@ int main( int argc, char **argv ) {
     }
 
     InitCursors();
+#ifndef _NO_PYTHON
     PyFF_ProcessInitFiles();
+#endif
 
     if ( splash ) {
 	splashw = create_FontForgeSplash ();
@@ -614,3 +660,26 @@ int main( int argc, char **argv ) {
     gtk_main ();
 return( 0 );
 }
+
+struct library_version_configuration exe_library_version_configuration = {
+    1 /* REPLACE_ME_WITH_MAJOR_VERSION*/,
+    0 /* REPLACE_ME_WITH_MINOR_VERSION*/,
+    LibFF_ModTime,
+    LibFF_ModTime_Str,
+    LibFF_VersionDate,
+    sizeof(struct library_version_configuration),
+    sizeof(struct splinefont),
+    sizeof(struct splinechar),
+    sizeof(struct fontviewbase),
+    sizeof(struct charviewbase),
+    sizeof(struct cvcontainer),
+    1,
+    1,
+
+#ifdef _NO_PYTHON
+    0,
+#else
+    1,
+#endif
+    0xff		/* Not currently defined */
+};

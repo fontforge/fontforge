@@ -35,6 +35,7 @@
 
 #include <fontforge-config.h>
 
+#ifndef _NO_PYTHON
 #include "Python.h"
 #include "structmember.h"
 
@@ -846,4 +847,5 @@ void PythonUI_Init(void) {
 
     
 }
+#endif
 

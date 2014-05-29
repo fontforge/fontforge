@@ -27,6 +27,12 @@
 
 #include <fontforge-config.h>
 
+#ifdef _NO_LIBJPEG
+
+static int a_file_must_define_something=0;	/* ANSI says so */
+
+#else
+
 #include <sys/types.h>
 #include <stdio.h>
 #include <jpeglib.h>
@@ -177,3 +183,5 @@ return(0);
   fclose(outfile);
 return( ret );
 }
+
+#endif

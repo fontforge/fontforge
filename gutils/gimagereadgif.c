@@ -28,6 +28,12 @@
 
 #include <fontforge-config.h>
 
+#ifdef _NO_LIBUNGIF
+
+static int a_file_must_define_something=0;	/* ANSI says so */
+
+#else /* We can build with gif_lib - therefore import gif files */
+
 #include <basics.h>
 #include <string.h>
 #include "gimage.h"
@@ -193,3 +199,5 @@ GImage *GImageReadGif(char *filename) {
     free(images);
     return( ret );
 }
+
+#endif /* ! _NO_LIBUNGIF */

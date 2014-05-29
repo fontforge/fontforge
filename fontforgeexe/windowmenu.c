@@ -176,6 +176,7 @@ return( true );
 return( false );
 }
 
+#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
 static void ScriptSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
     int index = (intpt) (mi->ti.userdata);
     FontView *fv = (FontView *) GDrawGetUserData(base);
@@ -215,6 +216,7 @@ return;
     }
     mi->sub = sub;
 }
+#endif
 
 /* Builds up a menu containing all the anchor classes */
 void _aplistbuild(struct gmenuitem *top,SplineFont *sf,

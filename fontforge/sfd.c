@@ -1246,8 +1246,13 @@ static void SFDDumpCharMath(FILE *sfd,SplineChar *sc) {
 }
 
 static void SFDPickleMe(FILE *sfd,void *python_data) {
-    char *pt;
-    char *string = PyFF_PickleMeToString(python_data);
+    char *string, *pt;
+
+#ifdef _NO_PYTHON
+    string = (char *) python_data;
+#else
+    string = PyFF_PickleMeToString(python_data);
+#endif
     if ( string==NULL )
 return;
     fprintf( sfd, "PickledData: \"" );
@@ -1292,7 +1297,12 @@ return( NULL );
     if ( pt==buf )
 return( NULL );
     *pt='\0';
+#ifdef _NO_PYTHON
+return( copy(buf));
+#else
 return( PyFF_UnPickleMeToObjects(buf));
+#endif
+    /* buf is a static buffer, I don't free it, I'll reuse it next time */
 }
 
 

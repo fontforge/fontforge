@@ -48,14 +48,22 @@ GImage *GImageRead(char * filename) {
 	    return( GImageReadXbm(filename) );
 	else if ( strcasecmp(mime,"image/x-xpixmap")==0 )
 	    return( GImageReadXpm(filename) );
+#ifndef _NO_LIBTIFF
 	else if ( strcasecmp(mime,"image/tiff")==0 )
 	    return( GImageReadTiff(filename) );
+#endif
+#ifndef _NO_LIBJPEG
 	else if ( strcasecmp(mime,"image/jpeg")==0 )
 	    return( GImageReadJpeg(filename) );
+#endif
+#ifndef _NO_LIBPNG
 	else if ( strcasecmp(mime,"image/png")==0 )
 	    return( GImageReadPng(filename) );
+#endif
+#ifndef _NO_LIBUNGIF
 	else if ( strcasecmp(mime,"image/gif")==0 )
 	    return( GImageReadGif(filename) );
+#endif
 	else if ( strcasecmp(mime,"image/x-cmu-raster")==0 || \
 		  strcasecmp(mime,"image/x-sun-raster")==0 )
 	    return( GImageReadRas(filename) );		/* Sun raster */
@@ -73,14 +81,22 @@ GImage *GImageRead(char * filename) {
 	    return( GImageReadXbm(filename) );
 	else if ( strmatch(pt,".xpm")==0 )
 	    return( GImageReadXpm(filename) );
+#ifndef _NO_LIBTIFF
 	else if ( strmatch(pt,".tiff")==0 || strmatch(pt,".tif")==0 )
 	    return( GImageReadTiff(filename) );
+#endif
+#ifndef _NO_LIBJPEG
 	else if ( strmatch(pt,".jpeg")==0 || strmatch(pt,".jpg")==0 )
 	    return( GImageReadJpeg(filename) );
+#endif
+#ifndef _NO_LIBPNG
 	else if ( strmatch(pt,".png")==0 )
 	    return( GImageReadPng(filename) );
+#endif
+#ifndef _NO_LIBUNGIF
 	else if ( strmatch(pt,".gif")==0 )
 	    return( GImageReadGif(filename) );
+#endif
 	else if ( strmatch(pt,".ras")==0 || strmatch(pt,".im1")==0 || \
 		  strmatch(pt,".im8")==0 || strmatch(pt,".im24")==0 || \
 		  strmatch(pt,".im32")==0 || strmatch(pt,".rs")==0 || \

@@ -536,8 +536,10 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
 	base.trans = -1;
 	if ( format==0 )
 	    ret = !GImageWriteXbm(&gi,filename);
+#ifndef _NO_LIBPNG
 	else if ( format==2 )
 	    ret = GImageWritePng(&gi,filename,false);
+#endif
 	else if ( format==3 )
 	    ret = !GImageWriteXpm(&gi,filename);
 	else if ( format==4 )
@@ -572,9 +574,11 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
 	scale = COLOR_CREATE(scale,scale,scale);
 	for ( i=0; i< 1<<bitsperpixel; ++i )
 	    clut.clut[(1<<bitsperpixel)-1 - i] = i*scale;
+#ifndef _NO_LIBPNG
 	if ( format==2 )
 	    ret = GImageWritePng(&gi,filename,false);
 	else
+#endif
 	    ret = GImageWriteBmp(&gi,filename);
 	BDFCharFree(bdfc);
     }
@@ -608,8 +612,10 @@ int BCExportXBM(char *filename,BDFChar *bdfc, int format) {
 	base.trans = -1;
 	if ( format==0 )
 	    ret = !GImageWriteXbm(&gi,filename);
+#ifndef _NO_LIBPNG
 	else if ( format==2 )
 	    ret = GImageWritePng(&gi,filename,false);
+#endif
 	else if ( format==3 )
 	    ret = !GImageWriteXpm(&gi,filename);
 	else if ( format==4 )
@@ -633,9 +639,11 @@ int BCExportXBM(char *filename,BDFChar *bdfc, int format) {
 	scale = COLOR_CREATE(scale,scale,scale);
 	for ( i=0; i< 1<<bdfc->depth; ++i )
 	    clut.clut[(1<<bdfc->depth)-1 - i] = i*scale;
+#ifndef _NO_LIBPNG
 	if ( format==2 )
 	    ret = GImageWritePng(&gi,filename,false);
 	else
+#endif
 	    ret = GImageWriteBmp(&gi,filename);
     }
 return( ret );

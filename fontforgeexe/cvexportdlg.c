@@ -235,7 +235,9 @@ static GTextInfo bcformats[] = {
 /* 0=*.xbm, 1=*.bmp, 2=*.png, 3=*.xpm, 4=*.c(fontforge-internal) */
     { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, (void *) 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("BMP"), NULL, 0, 0, (void *) 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+#ifndef _NO_LIBPNG
     { (unichar_t *) N_("png"), NULL, 0, 0, (void *) 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+#endif
     { (unichar_t *) N_("X Pixmap"), NULL, 0, 0, (void *) 3, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("C FontForge"), NULL, 0, 0, (void *) 4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     GTEXTINFO_EMPTY
@@ -252,7 +254,9 @@ static GTextInfo formats[] = {
     /* 0=*.xbm, 1=*.bmp, 2=*.png, 3=*.xpm, 4=*.c(fontforge-internal) */
     { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, (void *) BITMAP_FORMAT_START, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("BMP"), NULL, 0, 0, (void *) (BITMAP_FORMAT_START+1), 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+#ifndef _NO_LIBPNG
     { (unichar_t *) N_("png"), NULL, 0, 0, (void *) (BITMAP_FORMAT_START+2), 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+#endif
     { (unichar_t *) N_("X Pixmap"), NULL, 0, 0, (void *) (BITMAP_FORMAT_START+3), 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("C FontForge"), NULL, 0, 0, (void *) (BITMAP_FORMAT_START+4), 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     GTEXTINFO_EMPTY
@@ -283,8 +287,10 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
 	good = ExportPlate(temp,d->sc,d->layer);
     else if ( format<fv_pythonbase )
 	good = ExportXBM(temp,d->sc,d->layer,format-BITMAP_FORMAT_START);
+#ifndef _NO_PYTHON
     else if ( format>=fv_pythonbase )
 	PyFF_SCExport(d->sc,format-fv_pythonbase,temp,d->layer);
+#endif
     if ( !good )
 	ff_post_error(_("Save Failed"),_("Save Failed"));
     free(temp);
@@ -360,8 +366,10 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 			 format==3?".xpm":
 			 format==4?".c":
 				   ".png");
+#ifndef _NO_PYTHON
 	else if ( format>=fv_pythonbase )
 	    uc_strcpy(pt+1,py_ie[format-fv_pythonbase].extension);
+#endif
 	else
 	    uc_strcpy(pt,format==0?".eps":
 			 format==1?".fig":
@@ -492,6 +500,7 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     if ( bc==NULL )
 	formats[5].disabled = !CanBeAPlateFile(sc);
     cur_formats = bc==NULL ? formats : bcformats;
+#ifndef _NO_PYTHON
     if ( bc==NULL && py_ie!=NULL ) {
 	int cnt, extras;
 	for ( cnt=0; formats[cnt].text!=NULL; ++cnt );
@@ -514,6 +523,7 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
 	    }
 	}
     }
+#endif
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict|wam_isdlg;
@@ -635,8 +645,10 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
     if ( bc!=NULL )
 	ext = _format==0 ? "xbm" : _format==1 ? "bmp" : "png";
+#ifndef _NO_PYTHON
     else if ( _format>=fv_pythonbase )
 	ext = py_ie[_format-fv_pythonbase].extension;
+#endif
     else
 	ext = _format==0?"eps":_format==1?"fig":_format==2?"svg":
 		_format==3?"glif":
