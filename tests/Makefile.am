@@ -99,7 +99,7 @@ fonts/Ambrosia.pt3: fonts/Ambrosia.sfd
 # Inputs we can download
 fonts/MunhwaGothic-Bold:
 	$(MKDIR_P) $(builddir)/fonts
-	$(WGET) http://mirror.1000mbps.com/freebsd/ports/distfiles/MunhwaGothic-Bold -O $@
+	$(WGET) ftp://ftp.naist.jp/pub/NetBSD/packages/distfiles/adobe-cidfonts/MunhwaGothic-Bold -O $@
 
 fonts/mingliu.ttc:
 	$(MKDIR_P) $(builddir)/fonts
