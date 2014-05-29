@@ -74,7 +74,7 @@ libgunicode_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	$(MY_CFLAGS)
 
 libgunicode_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGUNICODE_VERSION) \
-	${MY_LIB_LDFLAGS} $(top_builddir)/lib/libgnu.la $(top_builddir)/inc/libggc_veneer.la
+	${MY_LIB_LDFLAGS} $(top_builddir)/lib/libgnu.la
 
 libgunicode_la_LIBADD = $(MY_LIBS)
 

@@ -51,7 +51,7 @@ libgdraw_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 libgdraw_la_LIBADD = $(MY_LIBS) $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la \
 	$(top_builddir)/fontforge/libfontforge.la \
-	$(top_builddir)/lib/libgnu.la $(LIBGC_LIBS) $(top_builddir)/inc/libggc_veneer.la
+	$(top_builddir)/lib/libgnu.la
 
 if GRAPHICAL_USER_INTERFACE
 libgdraw_la_LIBADD += $(XINPUT_LIBS)
