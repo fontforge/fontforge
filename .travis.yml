@@ -15,8 +15,6 @@ install:
   - pushd libunicodenames-1.1.0_beta1 && ./configure && make && sudo make install && popd
   - wget 'http://download.savannah.gnu.org/releases/freetype/freetype-2.5.0.1.tar.gz' -O - | tar -zxf -
   - pushd freetype-2.5.0.1 && ./configure && make && sudo make install && popd
-  - wget 'http://www.hboehm.info/gc/gc_source/gc-7.2e.tar.gz' -O - | tar -zxf -
-  - pushd gc-7.2 && ./configure && make && sudo make install && popd
   - popd
 script:
   - ./bootstrap
