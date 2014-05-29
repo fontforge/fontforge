@@ -28,6 +28,10 @@
 #include "baseviews.h"
 #include "libffstamp.h"			/* FontForge version# date time stamps */
 
+// Somebody removed the data type.
+
+#if 0
+
 struct library_version_configuration exe_library_version_configuration = {
     FONTFORGE_LIBFFE_VERSION_MAJOR,
     FONTFORGE_LIBFFE_VERSION_MINOR,
@@ -50,3 +54,5 @@ struct library_version_configuration exe_library_version_configuration = {
 #endif
     0xff		/* Not currently defined */
 };
+#endif // 0
+
