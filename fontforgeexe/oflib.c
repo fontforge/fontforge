@@ -34,7 +34,6 @@
 #include "gfile.h"
 
 #ifdef HAVE_PTHREAD_H
-#include <gc/gc.h> /* Makes some necessary redefinitions */
 #include <pthread.h>
 #endif
 

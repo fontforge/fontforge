@@ -29,7 +29,6 @@
 #include <stddef.h>
 #include "ustring.h"
 #include "utype.h"
-#include "gc.h"
 
 long uc_strcmp(const unichar_t *str1,const char *str2) {
     long ch1, ch2;
