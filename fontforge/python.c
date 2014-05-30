@@ -2861,7 +2861,7 @@ return( pt_tuple );
 
 static PyObject *PyFFContour_draw(PyFF_Contour *self, PyObject *args) {
     PyObject *pen, *tuple;
-    PyFF_Point **points;
+    PyFF_Point **points, **freeme=NULL;
     int i, start, off, last, j;
 
     if ( !PyArg_ParseTuple(args,"O", &pen ) )
@@ -7802,7 +7802,6 @@ return( calloc(1,sizeof(SplineChar *)));
 	    ch = *pt; *pt = '\0';
 	    sc = SFGetChar(sf,-1,start);
 	    if ( sc==NULL ) {
-		ENDPYGETSTR();
 		PyErr_Format(PyExc_TypeError,"String, %s, is not the name of a glyph in the expected font.", start );
 return( NULL );
 	    }
@@ -7811,7 +7810,6 @@ return( NULL );
 	    while ( *pt==' ' ) ++pt;
 	}
 	ret[cnt] = NULL;
-	ENDPYGETSTR();
 return( ret );
     }
 
@@ -9994,18 +9992,12 @@ return( Py_BuildValue("s",value));
 static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
     SplineFont *sf = ((PyFF_Private *) self)->sf;
     struct psdict *private = sf->private;
-    char *string = NULL;
+    char *string, *freeme=NULL;
     char buffer[40];
-#if PY_MAJOR_VERSION >= 3
-    int string_is_bytes = false;
-#endif
 
-    if ( STRING_CHECK(value)) {
-	PYGETSTR(index, string, -1);
-#if PY_MAJOR_VERSION >= 3
-	string_is_bytes = true;
-#endif
-    } else if ( PyFloat_Check(value)) {
+    if ( STRING_CHECK(value))
+	string = PyBytes_AsString(index);
+    else if ( PyFloat_Check(value)) {
 	double temp = PyFloat_AsDouble(value);
 	sprintf(buffer,"%g",temp);
 	string = buffer;
@@ -10015,7 +10007,7 @@ static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *v
 	string = buffer;
     } else if ( PySequence_Check(value)) {
 	int i; char *pt;
-	pt = string = malloc(PySequence_Size(value)*21+4);
+	pt = string = freeme = malloc(PySequence_Size(value)*21+4);
 	*pt++ = '[';
 	for ( i=0; i<PySequence_Size(value); ++i ) {
 	    sprintf( pt, "%g", PyFloat_AsDouble(PySequence_GetItem(value,i)));
