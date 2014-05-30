@@ -18,7 +18,7 @@ install:
   - popd
 script:
   - ./bootstrap
-  - ./configure --with-freetype-source=../freetype-2.5.0.1
+  - PYTHON=python3 ./configure --with-freetype-source=../freetype-2.5.0.1
   - make V=1
   - sudo make install
   - fontforge -version
