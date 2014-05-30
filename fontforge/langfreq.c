@@ -2177,7 +2177,7 @@ return( word_buf );
 static char *RandomPara(struct lang_frequencies *lf,
 	struct script_chars *chrs, SplineFont *sf) {
     /* paragraphs will be somewhere between 20 and 84 words */
-    int i, len = 20 + (g_random_int()/(RAND_MAX>>6));
+    int i, len = 20 + g_random_int_range(0, 65);
 #define PARA_MAX	(84*(WORD_MAX+1)+10)
     char parabuf[PARA_MAX];
     char *pt = parabuf;
