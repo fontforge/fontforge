@@ -9994,10 +9994,16 @@ static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *v
     struct psdict *private = sf->private;
     char *string, *freeme=NULL;
     char buffer[40];
+#if PY_MAJOR_VERSION >= 3
+    int string_is_bytes = false;
+#endif
 
-    if ( STRING_CHECK(value))
-	string = PyBytes_AsString(index);
-    else if ( PyFloat_Check(value)) {
+    if ( STRING_CHECK(value)) {
+	PYGETSTR(index, string, -1);
+#if PY_MAJOR_VERSION >= 3
+	string_is_bytes = true;
+#endif
+    } else if ( PyFloat_Check(value)) {
 	double temp = PyFloat_AsDouble(value);
 	sprintf(buffer,"%g",temp);
 	string = buffer;
