@@ -28,7 +28,9 @@ include $(top_srcdir)/mk/layout.am
 
 targetdatadir = $(pkgpythondatadir)/collab
 
+if PYTHON_SCRIPTING
 targetdata_SCRIPTS = $(srcdir)/*.py
+endif PYTHON_SCRIPTING
 
 EXTRA_DIST = $(srcdir)/*.py
 

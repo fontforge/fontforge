@@ -1065,9 +1065,11 @@ void FontViewMenu_Print(GtkMenuItem *menuitem, gpointer user_data) {
 }
 
 void FontViewMenu_ExecScript(GtkMenuItem *menuitem, gpointer user_data) {
+#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
     FontView *fv = FV_From_MI(menuitem);
 
     ScriptDlg(fv,NULL);
+#endif
 }
 
 void FontViewMenu_FontInfo(GtkMenuItem *menuitem, gpointer user_data) {
@@ -4498,6 +4500,7 @@ gboolean FontView_Char(GtkWidget *widget, GdkEventKey *event, gpointer user_data
     if ( gtk_im_context_filter_keypress(fv->imc,event))
 return( true );
 
+#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
     if ( isdigit(event->keyval) && (event->state&GDK_CONTROL_MASK) &&
 	    (event->state&GDK_MOD1_MASK) ) {
 	/* The Script menu isn't always up to date, so we might get one of */
@@ -4506,7 +4509,9 @@ return( true );
 	if ( index<0 ) index = 9;
 	if ( script_filenames[index]!=NULL )
 	    ExecuteScriptFile((FontViewBase *) fv,NULL,script_filenames[index]);
-    } else if ( event->keyval == GDK_Left ||
+    } else
+#endif
+    if ( event->keyval == GDK_Left ||
 	    event->keyval == GDK_Tab ||
 	    /*event->keyval == GDK_BackTab ||*/
 	    event->keyval == GDK_Up ||
@@ -5172,7 +5177,9 @@ static FontView *__FontViewCreate(SplineFont *sf) {
     fv->pressed_timer_src = -1;
 
     fv->end_pos = -1;
+#ifndef _NO_PYTHON
     PyFF_InitFontHook((FontViewBase *) fv);
+#endif
 return( fv );
 }
 
@@ -5219,7 +5226,9 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     g_object_set_data( G_OBJECT(fv->gw), "ffdata", fv );
     g_object_set_data( G_OBJECT(fv->v) , "ffdata", fv );
 
+#ifndef _NO_PYTHON
     PyFF_BuildFVToolsMenu(fv,GTK_MENU_ITEM(lookup_widget(fv->gw,"tools3")));
+#endif
 
     fv->showhmetrics = default_fv_showhmetrics;
     fv->showvmetrics = default_fv_showvmetrics && sf->hasvmetrics;
@@ -5255,6 +5264,16 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
 
     fv->vlayout = gtk_widget_create_pango_layout( fv->v, NULL );
     fv->statuslayout = gtk_widget_create_pango_layout( fv->status, NULL );
+#ifdef _NO_PYTHON
+    /* Hide the tools menu if no python */
+    gtk_widget_hide(lookup_widget( GTK_WIDGET(fv->gw), "tools3" ));
+#endif
+#if defined(_NO_PYTHON) && defined(_NO_FFSCRIPT)
+    gtk_widget_hide(lookup_widget( GTK_WIDGET(fv->gw), "execute_script1" ));
+#endif
+#if defined(_NO_FFSCRIPT)
+    gtk_widget_hide(lookup_widget( GTK_WIDGET(fv->gw), "script_menu1" ));
+#endif
 #ifndef FONTFORGE_CONFIG_TILEPATH
     gtk_widget_hide(lookup_widget( GTK_WIDGET(fv->gw), "tilepath1" ));
 #endif

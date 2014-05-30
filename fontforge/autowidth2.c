@@ -46,9 +46,11 @@ static int aw2_bbox_separation(AW_Glyph *g1, AW_Glyph *g2, AW_Data *all) {
     /* The trick is to guess a good weighting function. My guess is that */
     /*  things that look close are more important than those which look far */
     /*  So "T" and "O" should be dominated by the crossbar of the "T"... */
+#if !defined(_NO_PYTHON)
 
     if ( PyFF_GlyphSeparationHook!=NULL )
 return( PyFF_GlyphSeparation(g1,g2,all) );
+#endif
 
     imin_y = g2->imin_y > g1->imin_y ? g2->imin_y : g1->imin_y;
     imax_y = g2->imax_y < g1->imax_y ? g2->imax_y : g1->imax_y;
@@ -384,7 +386,9 @@ static void aw2_dummyedges(AW_Glyph *flat,AW_Data *all) {
 static void AWGlyphFree( AW_Glyph *me) {
     free(me->left);
     free(me->right);
+#if !defined(_NO_PYTHON)
     FFPy_AWGlyphFree(me);
+#endif
 }
 
 static void aw2_handlescript(AW_Data *all) {
@@ -515,7 +519,9 @@ void AutoWidth2(FontViewBase *fv,int separation,int min_side,int max_side,
 	free(all.glyphs);
     }
     free(scripts);
+#if !defined(_NO_PYTHON)
     FFPy_AWDataFree(&all);
+#endif		/* PYTHON */
 }
 
 void GuessOpticalOffset(SplineChar *sc,int layer,real *_loff, real *_roff,
@@ -564,7 +570,9 @@ void GuessOpticalOffset(SplineChar *sc,int layer,real *_loff, real *_roff,
 	AWGlyphFree( &glyph );
 	AWGlyphFree( &edge );
     }
+#if !defined(_NO_PYTHON)
     FFPy_AWDataFree(&all);
+#endif		/* PYTHON */
 }
 
 void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
@@ -690,7 +698,9 @@ void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
     for ( i=0; i<cnt; ++i )
 	AWGlyphFree( &glyphs[i] );
     free(glyphs);
+#if !defined(_NO_PYTHON)
     FFPy_AWDataFree(&all);
+#endif		/* PYTHON */
 }
 
 void AutoKern2NewClass(SplineFont *sf,int layer,char **leftnames, char **rightnames,
@@ -909,8 +919,11 @@ return;
     }
     for ( i=0; i<cnt; ++i )
 	AWGlyphFree( &glyphs[i] );
+#if !defined(_NO_PYTHON)
     FFPy_AWDataFree(&all);
     free(glyphs); glyphs = all.glyphs = NULL;
+#endif		/* PYTHON */
+    glyphs = all.glyphs = NULL;
 
     good_enough *= good_enough;
 

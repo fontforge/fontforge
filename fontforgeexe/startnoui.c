@@ -86,6 +86,12 @@ int fontforge_main( int argc, char **argv ) {
 #ifdef FREETYPE_HAS_DEBUGGER
 	    "-TtfDb"
 #endif
+#ifdef _NO_PYTHON
+	    "-NoPython"
+#endif
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
+	    "-D"
+#endif
 	    ".\n",
 	    FONTFORGE_MODTIME_STR );
     fprintf( stderr, " Based on source from git with hash:%s\n", FONTFORGE_GIT_VERSION );
@@ -112,7 +118,11 @@ int fontforge_main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-version")==0 || strcmp(pt,"-v")==0 || strcmp(pt,"-V")==0 )
 	    doversion(FONTFORGE_MODTIME_STR);
     }
+#  if defined(_NO_PYTHON)
+    ProcessNativeScript(argc, argv,stdin);
+#  else
     PyFF_Stdin();
+#  endif
 
 #ifndef _NO_LIBUNICODENAMES
     uninm_names_db_close(names_db);	/* close this database before exiting */

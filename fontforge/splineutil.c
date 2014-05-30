@@ -6306,7 +6306,6 @@ return;
     KernClassListFree(sf->kerns);
     KernClassListFree(sf->vkerns);
     FPSTFree(sf->possub);
-    PyFF_FreeSF(sf);
     ASMFree(sf->sm);
     OtfNameListFree(sf->fontstyle_name);
     OtfFeatNameListFree(sf->feat_names);

@@ -34,27 +34,46 @@
 /* ************************************************************************** */
 /* *********************       Error dispatchers        ********************* */
 /* ************************************************************************** */
+#if !defined(_NO_PYTHON) || !defined(_NO_FFSCRIPT)
 static void GCError(Context *c, const char *msg) {
+#ifdef _NO_PYTHON
+    ScriptError(c,msg);
+#elif defined(_NO_FFSCRIPT)
+    PyFF_ErrorString(msg,NULL);
+#else
     if ( c==NULL )
 	PyFF_ErrorString(msg,NULL);
     else
 	ScriptError(c,msg);
+#endif
 }
 
 static void GCErrorString(Context *c, const char *frmt, const char *str) {
+#ifdef _NO_PYTHON
+    ScriptErrorString(c,frmt,str);
+#elif defined(_NO_FFSCRIPT)
+    PyFF_ErrorString(frmt,str);
+#else
     if ( c==NULL )
 	PyFF_ErrorString(frmt,str);
     else
 	ScriptErrorString(c,frmt,str);
+#endif
 }
 
 static void GCError3(Context *c, const char *frmt, const char *str, int size, int depth) {
+#ifdef _NO_PYTHON
+    ScriptErrorF(c,frmt,str, size,depth);
+#elif defined(_NO_FFSCRIPT)
+    PyFF_ErrorF3(frmt,str, size,depth);
+#else
     if ( c==NULL )
 	PyFF_ErrorF3(frmt,str, size,depth);
     else
 	ScriptErrorF(c,frmt,str, size,depth);
+#endif
 }
-
+#endif
 /* ************************************************************************** */
 /* ********************* Code to compare outline glyphs ********************* */
 /* ************************************************************************** */
@@ -560,6 +579,7 @@ return( failed == 0 ? BC_Match : failed );
 /* **************** Code to selected glyphs against clipboard *************** */
 /* ************************************************************************** */
 
+#if !defined(_NO_PYTHON) || !defined(_NO_FFSCRIPT)
 static int RefCheck(const RefChar *ref1,const RefChar *ref2 ) {
     const RefChar *r1, *r2;
     int i;
@@ -783,9 +803,11 @@ return( -1 );
     if ( (ret&SS_HintMaskMismatch) && diffs_are_errors ) {
 	if ( hmfail==NULL || c==NULL )
 	    GCErrorString(c,"Hint mask mismatch in glyph", sc->name);
+#if !defined(_NO_FFSCRIPT)
 	else
 	    ScriptErrorF(c,"Hint mask mismatch at (%g,%g) in glyph: %s",
 		    hmfail->me.x, hmfail->me.y, sc->name);
+#endif
 return( -1 );
     }
     if ( (ret&SS_LayerCntMismatch) && diffs_are_errors ) {
@@ -876,6 +898,7 @@ return( -1 );
     }
 return( ret );
 }
+#endif /* !defined(_NO_PYTHON) || !defined(_NO_FFSCRIPT) */
 
 /* ************************************************************************** */
 /* *********************** Code to compare two fonts ************************ */
@@ -918,8 +941,9 @@ static void GlyphDiffSCError(struct font_diff *fd, SplineChar *sc, char *format,
 	if ( fd->held[0] ) {
 	    fputs("  ",fd->diffs);
 /* GT: FontForge needs to recognize the quotes used here(“”). If you change them */
-/* GT: (in the translated strings) file a bug. It currently also recognizes */
+/* GT: (in the translated strings) let me know. It currently also recognizes */
 /* GT: guillemets and a couple of other quotes as well. */
+/* GT:   pfaedit@users.sourceforge.net */
 	    fprintf( fd->diffs, U_("Glyph “%s” differs\n"), sc->name );
 	    fprintf( fd->diffs, "   %s", fd->held );
 	    fd->held[0] = '\0';

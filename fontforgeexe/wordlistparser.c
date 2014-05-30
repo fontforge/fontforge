@@ -35,7 +35,6 @@
 #include "inc/gwidget.h"
 #include "uiinterface.h"
 #include "wordlistparser.h"
-#include "gc.h"
 
 
 const char* Wordlist_getSCName( SplineChar* sc )

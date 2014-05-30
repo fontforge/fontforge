@@ -780,9 +780,17 @@ return;
     if ( st->li.fontlist!=NULL ) {
 	basename = malloc(strlen(st->li.fontlist->fd->sf->fontname)+8);
 	strcpy(basename, st->li.fontlist->fd->sf->fontname);
+#ifdef _NO_LIBPNG
+	strcat(basename,".bmp");
+#else
 	strcat(basename,".png");
+#endif
     }
+#ifdef _NO_LIBPNG
+    cret = gwwv_save_filename(_("Save Image"),basename, "*.bmp");
+#else
     cret = gwwv_save_filename(_("Save Image"),basename, "*.{bmp,png}");
+#endif
     free(basename);
     if ( cret==NULL )
 return;
@@ -817,13 +825,21 @@ return;
 	    x += line[j]->advance_width + line[j]->vr.h_adv_off;
 	}
     }
+#ifndef _NO_LIBPNG
     if ( strstrmatch(cret,".png")!=NULL )
 	ret = GImageWritePng(image,cret,false);
     else
+#endif
     if ( strstrmatch(cret,".bmp")!=NULL )
 	ret = GImageWriteBmp(image,cret);
     else
-	ff_post_error(_("Unsupported image format"), _("Unsupported image format must be bmp or png"));
+	ff_post_error(_("Unsupported image format"),
+#ifndef _NO_LIBPNG
+		_("Unsupported image format must be bmp or png")
+#else
+		_("Unsupported image format must be bmp")
+#endif
+	    );
     if ( !ret )
 	ff_post_error(_("Could not write"),_("Could not write %.100s"),cret);
     free( cret );

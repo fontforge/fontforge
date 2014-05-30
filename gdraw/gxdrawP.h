@@ -82,7 +82,6 @@ capable of using composite.
 #include "gdrawP.h"
 
 #ifdef HAVE_PTHREAD_H
-# include <gc/gc.h> /* Makes some necessary redefinitions */
 # include <pthread.h>
 #endif
 

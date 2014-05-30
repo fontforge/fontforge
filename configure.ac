@@ -195,47 +195,16 @@ AC_PATH_PROG([UNZIP],[unzip],[unzip])
 AC_PATH_PROG([UPDATE_MIME_DATABASE],[update-mime-database],[:])
 AC_PATH_PROG([UPDATE_DESKTOP_DATABASE],[update-desktop-database],[:])
 AC_PATH_PROG([PLUTIL],[plutil],[:])
-
-dnl###############################
-dnl##### look for python #########
-
-use_python_cross_option=n
-python_cross_cflags=
-AC_ARG_WITH([python-cross-cflags],
-   [AS_HELP_STRING([--with-python-cross-cflags[[=-I/whatever-for-python2.7]]],[])],
-   [python_cross_cflags="${withval}"; use_python_cross_option=yes])
-python_cross_libs=
-AC_ARG_WITH([python-cross-libs],
-   [AS_HELP_STRING([--with-python-cross-libs[[=-L/whatever-for-python2.7 -lpython2.7]]],[])],
-   [python_cross_libs="${withval}"; use_python_cross_option=yes])
-python_cross_pyexecdir=
-AC_ARG_WITH([python-cross-pyexecdir],
-   [AS_HELP_STRING([--with-python-cross-pyexecdir[[=${exec_prefix}/lib64/python2.7/site-packages]]],[])],
-   [python_cross_pyexecdir="${withval}"; use_python_cross_option=yes])
-
-if test x$use_python_cross_option = xyes ; then
-   echo "provided with explicit python cross info, not probing for python binary..."
-   PYTHON_CFLAGS="$python_cross_cflags"
-   PYTHON_LIBS="$python_cross_libs"
-   PYTHON_PLATFORM=
-   PYTHON_PREFIX=
-   PYTHON_VERSION=2.7
-   pyexecdir="$python_cross_pyexecdir"
-   AC_SUBST(PYTHON_CFLAGS)
-   AC_SUBST(PYTHON_LIBS)
-   AC_SUBST(PYTHON_PLATFORM)
-   AC_SUBST(PYTHON_PREFIX)
-   AC_SUBST(PYTHON_VERSION)
-   AC_SUBST(pyexecdir)
-else
-    AM_PATH_PYTHON([2.7])
-    PKG_CHECK_MODULES([PYTHON],[python-"${PYTHON_VERSION}"])
-fi
+AM_PATH_PYTHON([2.7])
+PKG_CHECK_MODULES([PYTHON],[python-"${PYTHON_VERSION}"])
+i_do_have_python_scripting=yes;
 
 dnl###############################
 dnl###############################
 
 AM_CONDITIONAL([XDG_DESKTOP],[test x"$UPDATE_MIME_DATABASE" != "x:" -a x"$UPDATE_DESKTOP_DATABASE" != "x:"])
+
+FONTFORGE_ARG_ENABLE_REAL
 
 AC_ARG_ENABLE([programs],
         [AS_HELP_STRING([--disable-programs],[do not build "fontforge" and related programs
@@ -252,6 +221,14 @@ if test x$enable_debug = xyes ; then
     CFLAGS="$CFLAGS -g -O0"
     CPPFLAGS="$CPPFLAGS -g -O0"
 fi
+
+FONTFORGE_ARG_DISABLE([native-scripting],
+        [AS_HELP_STRING([--disable-native-scripting],[disable the legacy fontforge scripting language])],
+        [_NO_FFSCRIPT])
+AM_CONDITIONAL([NATIVE_SCRIPTING],[test x"${i_do_have_native_scripting}" = xyes])
+
+FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING
+FONTFORGE_ARG_DISABLE_PYTHON_EXTENSION
 
 AC_ARG_ENABLE([freetype-debugger],
         [AS_HELP_STRING([--enable-freetype-debugger[[=DIR]]],
@@ -319,8 +296,6 @@ AC_SUBST([MAINTAINER_TOOLS],["${i_do_have_maintainer_tools}"])
 
 AC_SEARCH_LIBS([cos],[m])
 
-# libgc (BDW garbage collector)
-PKG_CHECK_MODULES([LIBGC],[bdw-gc])
 dnl FIXME: Is this needed, given we are using libltdl?
 dnl The dlopen() function is in the C library for *BSD and in libdl on GLIBC-based systems
 dnl AC_SEARCH_LIBS([dlopen], [dl dld])
@@ -344,11 +319,9 @@ AC_ARG_VAR([FREETYPE_SOURCE],
         [directory where freetype source code is located for --enable-freetype-debugger;
          however, if --enable-freetype-debugger=DIR is specified, then DIR overrides
          the setting of FREETYPE_SOURCE])
-
-PKG_CHECK_MODULES([LIBPNG],[libpng])
-
 FONTFORGE_ARG_WITH_GIFLIB
 FONTFORGE_ARG_WITH_LIBJPEG
+FONTFORGE_ARG_WITH_LIBPNG
 FONTFORGE_ARG_WITH_LIBTIFF
 FONTFORGE_ARG_WITH_LIBSPIRO
 FONTFORGE_ARG_WITH_LIBUNINAMESLIST
@@ -579,18 +552,21 @@ AC_SUBST([MY_CFLAGS],[${my_cflags}])
 #--------------------------------------------------------------------------
 # Create and Set FontForge Library Flags
 
+test x"${i_do_have_python_scripting}" = xyes && my_libs="${my_libs} ${PYTHON_LIBS}"
+test x"${i_do_have_giflib}" = xyes && my_libs="${my_libs} ${GIFLIB_LIBS}"
+test x"${i_do_have_libjpeg}" = xyes && my_libs="${my_libs} ${LIBJPEG_LIBS}"
+test x"${i_do_have_libpng}" = xyes && my_libs="${my_libs} ${LIBPNG_LIBS}"
+test x"${i_do_have_libtiff}" = xyes && my_libs="${my_libs} ${LIBTIFF_LIBS}"
 test x"${i_do_have_libuninameslist}" = xyes && my_libs="${my_libs} ${LIBUNINAMESLIST_LIBS}"
 test x"${i_do_have_libunicodenames}" = xyes && my_libs="${my_libs} ${LIBUNICODENAMES_LIBS}"
-test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${CAIRO_LIBS} ${PANGOCAIRO_LIBS}"
+test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${CAIRO_LIBS}"
+test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
 test x"${i_do_have_gui}" = xyes && my_libs="${my_libs} ${PANGO_LIBS}"
 test x"${i_do_have_x}" = xyes && my_libs="${my_libs} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS}"
 test x"${i_do_have_libreadline}" = xyes && my_libs="${my_libs} ${LIBREADLINE_LIBS}"
-my_libs="${my_libs} ${GIFLIB_LIBS}"
-my_libs="${my_libs} ${LIBJPEG_LIBS}"
-my_libs="${my_libs} ${LIBPNG_LIBS}"
-my_libs="${my_libs} ${LIBTIFF_LIBS}"
 my_libs="${my_libs} ${PYTHON_LIBS}"
 test x"${i_do_have_libspiro}" = xyes && my_libs="${my_libs} ${LIBSPIRO_LIBS}"
+my_libs="${my_libs} ${LIBSPIRO_LIBS}"
 my_libs="${my_libs} ${FREETYPE_LIBS}"
 my_libs="${my_libs} ${PTHREAD_LIBS}"
 my_libs="${my_libs} ${ZLIB_LIBS}"
@@ -765,7 +741,11 @@ Configuration:
 
 Summary of optional features:
 
+  real (floating pt)	${my_real_type}
   programs		${i_do_have_programs}
+  native scripting	${i_do_have_native_scripting}
+  python scripting	${i_do_have_python_scripting}
+  python extension	${i_do_have_python_extension}
   freetype debugger	${i_do_have_freetype_debugger}
   raw points mode	${i_do_have_debug_raw_points}
   tile path		${i_do_have_tile_path}
@@ -775,6 +755,10 @@ Summary of optional dependencies:
 
   cairo			${i_do_have_cairo}  	${cairo_url}
   libspiro		${i_do_have_libspiro}  	${libspiro_url}
+  giflib		${i_do_have_giflib}  	${giflib_url}
+  libjpeg		${i_do_have_libjpeg}  	${libjpeg_url}
+  libpng		${i_do_have_libpng}  	${libpng_url}
+  libtiff		${i_do_have_libtiff}  	${libtiff_url}
   libuninameslist	${i_do_have_libuninameslist}  	${libuninameslist_url}
   libunicodenames	${i_do_have_libunicodenames}  	${libunicodenames_url}
   zeromq (libzmq)	${i_do_have_libzmq}  	${libzmq_url}

@@ -641,6 +641,17 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
     for ( ; spl!=NULL; spl=spl->next ) {
 	first = NULL;
 	for ( sp = spl->first; ; sp=sp->next->to ) {
+#ifndef FONTFORGE_CONFIG_USE_DOUBLE
+	    if ( first==NULL )
+		fprintf( sfd, "%g %g m ", (double) sp->me.x, (double) sp->me.y );
+	    else if ( sp->prev->islinear && sp->noprevcp )		/* Don't use known linear here. save control points if there are any */
+		fprintf( sfd, " %g %g l ", (double) sp->me.x, (double) sp->me.y );
+	    else
+		fprintf( sfd, " %g %g %g %g %g %g c ",
+			(double) sp->prev->from->nextcp.x, (double) sp->prev->from->nextcp.y,
+			(double) sp->prevcp.x, (double) sp->prevcp.y,
+			(double) sp->me.x, (double) sp->me.y );
+#else
 	    if ( first==NULL )
 		fprintf( sfd, "%.12g %.12g m ", (double) sp->me.x, (double) sp->me.y );
 	    else if ( sp->prev->islinear && sp->noprevcp )		/* Don't use known linear here. save control points if there are any */
@@ -650,6 +661,7 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 			(double) sp->prev->from->nextcp.x, (double) sp->prev->from->nextcp.y,
 			(double) sp->prevcp.x, (double) sp->prevcp.y,
 			(double) sp->me.x, (double) sp->me.y );
+#endif
 	    int ptflags = 0;
 	    ptflags = sp->pointtype|(sp->selected<<2)|
 		(sp->nextcpdef<<3)|(sp->prevcpdef<<4)|
@@ -1234,8 +1246,13 @@ static void SFDDumpCharMath(FILE *sfd,SplineChar *sc) {
 }
 
 static void SFDPickleMe(FILE *sfd,void *python_data) {
-    char *pt;
-    char *string = PyFF_PickleMeToString(python_data);
+    char *string, *pt;
+
+#ifdef _NO_PYTHON
+    string = (char *) python_data;
+#else
+    string = PyFF_PickleMeToString(python_data);
+#endif
     if ( string==NULL )
 return;
     fprintf( sfd, "PickledData: \"" );
@@ -1280,7 +1297,12 @@ return( NULL );
     if ( pt==buf )
 return( NULL );
     *pt='\0';
+#ifdef _NO_PYTHON
+return( copy(buf));
+#else
 return( PyFF_UnPickleMeToObjects(buf));
+#endif
+    /* buf is a static buffer, I don't free it, I'll reuse it next time */
 }
 
 

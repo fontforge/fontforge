@@ -28,6 +28,7 @@
 
 #include <fontforge-config.h>
 
+#ifndef _NO_PYTHON
 #include "Python.h"
 #include "structmember.h"
 
@@ -194,8 +195,22 @@ char* AnyPyString_to_UTF8( PyObject* obj ) {
 	    Py_DECREF(bytes);
 	}
     }
-    else
-	PyErr_Format(PyExc_TypeError, PY3OR2("Expected a string", "Expected a string ('unicode' or UTF-8 encoded 'str')"));
+#if PY_MAJOR_VERSION <= 2
+    else if ( PyString_Check(obj) ) {
+	PyObject *utf8str = PyString_AsEncodedObject(obj, "UTF-8", NULL);
+	if ( utf8str!=NULL ) {
+	    s = copy(PyString_AS_STRING(utf8str));
+	    Py_DECREF(utf8str);
+	}
+    }
+#endif
+    else {
+#if PY_MAJOR_VERSION >= 3
+	PyErr_Format(PyExc_TypeError, "Expected a string");
+#else
+	PyErr_Format(PyExc_TypeError, "Expected a string ('unicode' or UTF-8 encoded 'str')");
+#endif
+    }
     return s;
 }
 
@@ -2846,7 +2861,7 @@ return( pt_tuple );
 
 static PyObject *PyFFContour_draw(PyFF_Contour *self, PyObject *args) {
     PyObject *pen, *tuple;
-    PyFF_Point **points;
+    PyFF_Point **points, **freeme=NULL;
     int i, start, off, last, j;
 
     if ( !PyArg_ParseTuple(args,"O", &pen ) )
@@ -7787,7 +7802,6 @@ return( calloc(1,sizeof(SplineChar *)));
 	    ch = *pt; *pt = '\0';
 	    sc = SFGetChar(sf,-1,start);
 	    if ( sc==NULL ) {
-		ENDPYGETSTR();
 		PyErr_Format(PyExc_TypeError,"String, %s, is not the name of a glyph in the expected font.", start );
 return( NULL );
 	    }
@@ -7796,7 +7810,6 @@ return( NULL );
 	    while ( *pt==' ' ) ++pt;
 	}
 	ret[cnt] = NULL;
-	ENDPYGETSTR();
 return( ret );
     }
 
@@ -9979,7 +9992,7 @@ return( Py_BuildValue("s",value));
 static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
     SplineFont *sf = ((PyFF_Private *) self)->sf;
     struct psdict *private = sf->private;
-    char *string = NULL;
+    char *string, *freeme=NULL;
     char buffer[40];
 #if PY_MAJOR_VERSION >= 3
     int string_is_bytes = false;
@@ -10000,7 +10013,7 @@ static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *v
 	string = buffer;
     } else if ( PySequence_Check(value)) {
 	int i; char *pt;
-	pt = string = malloc(PySequence_Size(value)*21+4);
+	pt = string = freeme = malloc(PySequence_Size(value)*21+4);
 	*pt++ = '[';
 	for ( i=0; i<PySequence_Size(value); ++i ) {
 	    sprintf( pt, "%g", PyFloat_AsDouble(PySequence_GetItem(value,i)));
@@ -18538,6 +18551,11 @@ PyMODINIT_FUNC FFPY_PYTHON_ENTRY_FUNCTION(const char* modulename) {
     return;
 #endif
 }
+
+#else
+#include "fontforgevw.h"
+#include "flaglist.h"
+#endif		/* _NO_PYTHON */
 
 /* These don't get translated. They are a copy of a similar list in fontinfo.c */
 static struct flaglist sfnt_name_str_ids[] = {
