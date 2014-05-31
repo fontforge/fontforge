@@ -4921,6 +4921,8 @@ return;		/* I treat this more like a modifier key change than a button press */
 	}
       break;
       case cvt_magnify: case cvt_minify:
+          //When scroll zooming, the old showing tool is the normal pointer.
+          old_showing_tool = cv->active_tool;    
       break;
       case cvt_hand:
 	CVMouseDownHand(cv);
