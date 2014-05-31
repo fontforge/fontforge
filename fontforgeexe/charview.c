@@ -4269,7 +4269,7 @@ static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
      */
     if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
     {
-	float delta = prefs_cvEditHandleSize - prefs_cvEditHandleSize_default;
+	float delta = (prefs_cvEditHandleSize - prefs_cvEditHandleSize_default) / cv->scale;
 	delta *= 1.5;
 	fs->fudge += delta;
     }
