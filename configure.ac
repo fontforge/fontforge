@@ -186,7 +186,19 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
 AC_PROG_SED
+
+#--------------------------------------------------------------------------
+# Required for building FontForge package, plus we use PKG_CHECK_MODULES in
+# a few checks and searches for programs and libraries.
+# NOTE: Some distros don't have /usr/local included in the /etc/ld.so PATH,
+# so, PKG_CHECK_MODULES may not find libraries you compile into /usr/local.
+m4_ifndef([PKG_PROG_PKG_CONFIG],
+    [m4_fatal([Could not locate the pkg-config autoconf macros.
+  These are usually located in /usr/share/aclocal/pkg.m4. If your macros
+  are in a different location, try setting the environment variable
+  ACLOCAL="aclocal -I/other/macro/dir" before running autoreconf.])])
 PKG_PROG_PKG_CONFIG
+
 AC_PATH_PROG([MSGFMT],[msgfmt],[msgfmt])
 AC_PATH_PROG([XGETTEXT],[xgettext],[xgettext])
 AC_PATH_PROG([INDENT],[indent],[indent])
@@ -587,8 +599,8 @@ else
       [pythonbinary="${withval}"])
 
    have_ipython=no
-   if $( $pythonbinary -c 'import IPython' ); then 
-      have_ipython=yes; 
+   if $( $pythonbinary -c 'import IPython' ); then
+      have_ipython=yes;
       AC_DEFINE([HAVE_IPYTHON],[1],[have ipython])
    fi
 fi
