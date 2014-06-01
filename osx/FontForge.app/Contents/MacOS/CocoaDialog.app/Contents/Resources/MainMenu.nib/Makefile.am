@@ -26,7 +26,7 @@
 
 include $(top_srcdir)/mk/layout.am
 
-FFAPP_FILES = $(wildcard *.nib)
+FFAPP_FILES = classes.nib info.nib keyedobjects.nib
 EXTRA_DIST = $(FFAPP_FILES)
 
 if PLATFORM_OSX
