@@ -28,69 +28,6 @@
 #include "fffreetype.h"
 #include <math.h>
 
-#if _NO_FREETYPE
-
-int hasFreeType(void) {
-return( false );
-}
-
-void doneFreeType(void) {
-}
-
-int hasFreeTypeDebugger(void) {
-return( false );
-}
-
-int hasFreeTypeByteCode(void) {
-return( false );
-}
-
-int FreeTypeAtLeast(int major, int minor, int patch) {
-return( 0 );
-}
-
-char *FreeTypeStringVersion(void) {
-return( "" );
-}
-
-void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontViewBase *fv,
-	int layer, enum fontformat ff,int flags, void *share) {
-return( NULL );
-}
-
-BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int depth) {
-return( NULL );
-}
-
-BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int layer,int pixelsize,int depth) {
-return( NULL );
-}
-
-BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,int ptsize,int dpi,int depth) {
-return( NULL );
-}
-
-void FreeTypeFreeContext(void *freetypecontext) {
-}
-
-struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
-	int enc, real ptsizey, real ptsizex, int dpi, int depth) {
-return( NULL );
-}
-
-SplineSet *FreeType_GridFitChar(void *single_glyph_context,
-	int enc, real ptsizey, real ptsizex, int dpi, uint16 *width,
-	SplineChar *sc, int depth, int scaled) {
-return( NULL );
-}
-
-BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,int layer,
-	int ptsize,int dpi,int depth) {
-return( NULL );
-}
-
-#else /* do use FreeType */
-
 FT_Library ff_ft_context;
 
 int hasFreeType(void) {
@@ -120,28 +57,13 @@ int hasFreeTypeByteCode(void) {
     if ( !hasFreeType())
 return( false );
 
-#if FREETYPE_MAJOR==2 && (FREETYPE_MINOR<3 || (FREETYPE_MINOR==3 && FREETYPE_PATCH<5))
-/* The internal data structures of the bytecode interpreter changed in 2.3.5 */
-/*  so we we were compliled before 2.3.5 and face a 2.3.5+ library then */
-/*  we can't use the interpretter. Similarly if we were compiled after 2.3.5 */
-/*  and face a less recent library we can't either */
-/* Here we are compiled with an old library, so if the dynamic one is new we fail */
-    if ( FreeTypeAtLeast(2,3,5)) {
+    if ( !FreeTypeAtLeast(2,3,7)) {
 	if ( !complained ) {
-	    LogError(_("This version of FontForge expects freetype 2.3.4 or less."));
+	    LogError(_("This version of FontForge expects freetype 2.3.7 or more."));
 	    complained = true;
 	}
 return( false );
     }
-#else
-    if ( !FreeTypeAtLeast(2,3,5)) {
-	if ( !complained ) {
-	    LogError(_("This version of FontForge expects freetype 2.3.5 or more."));
-	    complained = true;
-	}
-return( false );
-    }
-#endif
 
 # ifdef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
 return( true );
@@ -161,7 +83,6 @@ return( true );
 return( false );
 }
 
-# if FREETYPE_MAJOR>2 || (FREETYPE_MAJOR==2 && (FREETYPE_MINOR>1 || (FREETYPE_MINOR==1 && FREETYPE_PATCH>=4)))
 int FreeTypeAtLeast(int major, int minor, int patch) {
     int ma, mi, pa;
 
@@ -184,19 +105,6 @@ return( "" );
     sprintf( buffer, "FreeType %d.%d.%d", ma, mi, pa );
 return( buffer );
 }
-# else 
-int FreeTypeAtLeast(int major, int minor, int patch) {
-return( 0 );		/* older than 2.1.4, but don't know how old */
-}
-
-char *FreeTypeStringVersion(void) {
-
-    if ( !hasFreeType())
-return( "" );
-
-return( "FreeType 2.1.3 (or older)" );	/* older than 2.1.4, but don't know how old */
-}
-# endif
 
 static void TransitiveClosureAdd(SplineChar **new,SplineChar **old,SplineChar *sc,int layer) {
     RefChar *ref;
@@ -258,7 +166,7 @@ return( NULL );
     if ( sf->multilayer || sf->strokedfont )
 return( NULL );
 
-    ftc = gcalloc(1,sizeof(FTC));
+    ftc = calloc(1,sizeof(FTC));
     if ( shared_ftc!=NULL ) {
 	*ftc = *(FTC *) shared_ftc;
 	ftc->face = NULL;
@@ -281,7 +189,7 @@ return( NULL );
 	notdefpos = SFFindNotdef(sf,-2);	/* Do this early */
 	if ( sc!=NULL || selected!=NULL ) {
 	    /* Build up a font consisting of those characters we actually use */
-	    new = gcalloc(sf->glyphcnt,sizeof(SplineChar *));
+	    new = calloc(sf->glyphcnt,sizeof(SplineChar *));
 	    if ( sc!=NULL )
 		TransitiveClosureAdd(new,old,sc,layer);
 	    else for ( i=0; i<map->enccount; ++i )
@@ -350,7 +258,7 @@ return( NULL );
 	    for ( k=0; k<sf->subfontcnt; ++k )
 		if ( sf->subfonts[k]->glyphcnt>max )
 		    max = sf->subfonts[k]->glyphcnt;
-	    ftc->glyph_indeces = galloc(max*sizeof(int));
+	    ftc->glyph_indeces = malloc(max*sizeof(int));
 	    memset(ftc->glyph_indeces,-1,max*sizeof(int));
 	    for ( i=0; i<max; ++i ) {
 		for ( k=0; k<sf->subfontcnt; ++k ) {
@@ -362,7 +270,7 @@ return( NULL );
 		}
 	    }
 	} else {
-	    ftc->glyph_indeces = galloc(sf->glyphcnt*sizeof(int));
+	    ftc->glyph_indeces = malloc(sf->glyphcnt*sizeof(int));
 	    memset(ftc->glyph_indeces,-1,sf->glyphcnt*sizeof(int));
 	    cnt = 1;
 	    if ( notdefpos!=-1 )
@@ -477,7 +385,7 @@ static BDFChar *BdfCFromBitmap(FT_Bitmap *bitmap, int bitmap_left,
     bdfc->bytes_per_line = bitmap->pitch;
     bdfc->refs = NULL; bdfc->dependents = NULL;
     if ( bdfc->bytes_per_line==0 ) bdfc->bytes_per_line = 1;
-    bdfc->bitmap = galloc((bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line);
+    bdfc->bitmap = malloc((bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line);
     if ( bitmap->rows==0 || bitmap->width==0 )
 	memset(bdfc->bitmap,0,(bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line);
     else
@@ -610,11 +518,7 @@ static void FT_ClosePath(struct ft_context *context) {
     }
 }
 
-#if FREETYPE_MINOR>=2
 static int FT_MoveTo(const FT_Vector *to,void *user) {
-#else
-static int FT_MoveTo(FT_Vector *to,void *user) {
-#endif
     struct ft_context *context = user;
 
     FT_ClosePath(context);
@@ -641,11 +545,7 @@ static int FT_MoveTo(FT_Vector *to,void *user) {
 return( 0 );
 }
 
-#if FREETYPE_MINOR>=2
 static int FT_LineTo(const FT_Vector *to,void *user) {
-#else
-static int FT_LineTo(FT_Vector *to,void *user) {
-#endif
     struct ft_context *context = user;
     SplinePoint *sp;
 
@@ -664,11 +564,7 @@ static int FT_LineTo(FT_Vector *to,void *user) {
 return( 0 );
 }
 
-#if FREETYPE_MINOR>=2
 static int FT_ConicTo(const FT_Vector *_cp, const FT_Vector *to,void *user) {
-#else
-static int FT_ConicTo(FT_Vector *_cp, FT_Vector *to,void *user) {
-#endif
     struct ft_context *context = user;
     SplinePoint *sp;
 
@@ -692,12 +588,8 @@ static int FT_ConicTo(FT_Vector *_cp, FT_Vector *to,void *user) {
 return( 0 );
 }
 
-#if FREETYPE_MINOR>=2
 static int FT_CubicTo(const FT_Vector *cp1, const FT_Vector *cp2,
 	const FT_Vector *to,void *user) {
-#else
-static int FT_CubicTo(FT_Vector *cp1, FT_Vector *cp2,FT_Vector *to,void *user) {
-#endif
     struct ft_context *context = user;
     SplinePoint *sp;
 
@@ -805,7 +697,7 @@ return( NULL );
     if ( slot->bitmap.pixel_mode!=ft_pixel_mode_mono &&
 	    slot->bitmap.pixel_mode!=ft_pixel_mode_grays )
 return( NULL );
-    ret = galloc(sizeof(struct freetype_raster));
+    ret = malloc(sizeof(struct freetype_raster));
 
     ret->rows = slot->bitmap.rows;
     ret->cols = slot->bitmap.width;
@@ -815,7 +707,7 @@ return( NULL );
     ret->num_greys = slot->bitmap.num_grays;
 	/* Can't find any description of freetype's bitendianness */
 	/* But the obvious seems to work */
-    ret->bitmap = galloc(ret->rows*ret->bytes_per_row);
+    ret->bitmap = malloc(ret->rows*ret->bytes_per_row);
     memcpy(ret->bitmap,slot->bitmap.buffer,ret->rows*ret->bytes_per_row);
 return( ret );
 }
@@ -862,13 +754,13 @@ static void FillOutline(SplineSet *spl,FT_Outline *outline,int *pmax,int *cmax,
 		outline->n_points = pcnt;
 		if ( pcnt > *pmax || *pmax==0 ) {
 		    *pmax = pcnt==0 ? 1 : pcnt;
-		    outline->points = grealloc(outline->points,*pmax*sizeof(FT_Vector));
-		    outline->tags = grealloc(outline->tags,*pmax*sizeof(char));
+		    outline->points = realloc(outline->points,*pmax*sizeof(FT_Vector));
+		    outline->tags = realloc(outline->tags,*pmax*sizeof(char));
 		}
 		memset(outline->tags,0,pcnt);
 		if ( ccnt > *cmax || *cmax==0 ) {
 		    *cmax = ccnt==0 ? 1 : ccnt;
-		    outline->contours = grealloc(outline->contours,*cmax*sizeof(short));
+		    outline->contours = realloc(outline->contours,*cmax*sizeof(short));
 		}
 		outline->flags = ft_outline_none;
 	    }
@@ -910,13 +802,13 @@ static void FillOutline(SplineSet *spl,FT_Outline *outline,int *pmax,int *cmax,
 		outline->n_points = pcnt;
 		if ( pcnt > *pmax || *pmax==0 ) {
 		    *pmax = pcnt==0 ? 1 : pcnt;
-		    outline->points = grealloc(outline->points,*pmax*sizeof(FT_Vector));
-		    outline->tags = grealloc(outline->tags,*pmax*sizeof(char));
+		    outline->points = realloc(outline->points,*pmax*sizeof(FT_Vector));
+		    outline->tags = realloc(outline->tags,*pmax*sizeof(char));
 		}
 		memset(outline->tags,0,pcnt);
 		if ( ccnt > *cmax || *cmax==0 ) {
 		    *cmax = ccnt==0 ? 1 : ccnt;
-		    outline->contours = grealloc(outline->contours,*cmax*sizeof(short));
+		    outline->contours = realloc(outline->contours,*cmax*sizeof(short));
 		}
 		/* You might think we should set ft_outline_reverse_fill here */
 		/*  because this is a postscript font. But ff stores fonts */
@@ -989,7 +881,7 @@ return( SplineSetStroke(layer->splines,&si,layer->order2));
     }
 }
 
-static SplineSet *RStrokeOutline(struct reflayer *layer,SplineChar *sc) {
+static SplineSet *RStrokeOutline(struct reflayer *layer) {
     StrokeInfo si;
 
     memset(&si,0,sizeof(si));
@@ -1102,7 +994,7 @@ return( NULL );
 	bitmap.num_grays = 256;
 	bitmap.pixel_mode = ft_pixel_mode_grays;
     }
-    bitmap.buffer = gcalloc(bitmap.pitch*bitmap.rows,sizeof(uint8));
+    bitmap.buffer = calloc(bitmap.pitch*bitmap.rows,sizeof(uint8));
     memset(&temp,0,sizeof(temp));
     if ( sc->parent->multilayer && !(sc->layer_cnt==2 &&
 	    !sc->layers[ly_fore].dostroke &&
@@ -1111,7 +1003,7 @@ return( NULL );
 	    (sc->layers[ly_fore].fill_brush.col==COLOR_INHERITED ||
 	     sc->layers[ly_fore].fill_brush.col==0x000000)) ) {
 	temp = bitmap;
-	temp.buffer = galloc(bitmap.pitch*bitmap.rows);
+	temp.buffer = malloc(bitmap.pitch*bitmap.rows);
     }
 
     memset(&outline,0,sizeof(outline));
@@ -1141,7 +1033,7 @@ return( NULL );
 		FillOutline(sc->layers[i].splines,&outline,&pmax,&cmax,
 			scale,&b,sc->layers[i].order2,2);
 		err |= (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
-		clipmask = galloc(bitmap.pitch*bitmap.rows);
+		clipmask = malloc(bitmap.pitch*bitmap.rows);
 		memcpy(clipmask,temp.buffer,bitmap.pitch*bitmap.rows);
 	    }
 	    if ( sc->layers[i].dofill ) {
@@ -1170,7 +1062,7 @@ return( NULL );
 			MergeBitmaps(&bitmap,&temp,&r->layers[j].fill_brush,clipmask,rscale,&b,sc);
 		    }
 		    if ( r->layers[j].dostroke ) {
-			SplineSet *stroked = RStrokeOutline(&r->layers[j],sc);
+			SplineSet *stroked = RStrokeOutline(&r->layers[j]);
 			memset(temp.buffer,0,temp.pitch*temp.rows);
 			FillOutline(stroked,&outline,&pmax,&cmax,
 				scale,&b,sc->layers[i].order2,true);
@@ -1180,13 +1072,11 @@ return( NULL );
 		    }
 		}
 	    }
-	    if (clipmask != NULL)
-		free(clipmask);
+            free(clipmask);
 	}
     }
 
-    if (temp.buffer != NULL)
-	free(temp.buffer);
+    free(temp.buffer);
 
     free(outline.points);
     free(outline.tags);
@@ -1232,7 +1122,6 @@ BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int layer,int pixelsi
     ff_progress_end_indicator();
 return( bdf );
 }
-#endif
 
 void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontViewBase *fv,int layer) {
 return( _FreeTypeFontContext(sf,sc,fv,layer,sf->subfontcnt!=0?ff_otfcid:

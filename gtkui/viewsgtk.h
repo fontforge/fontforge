@@ -551,7 +551,7 @@ extern uint8 *DebuggerGetWatchCvts(struct debugger_context *dc, int *n);
 extern int DebuggingFpgm(struct debugger_context *dc);
 
 
-extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
+extern void PrintFFDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
 extern void PrintWindowClose(void);
 
 extern char *Kern2Text(SplineChar *other,KernPair *kp,int isv);

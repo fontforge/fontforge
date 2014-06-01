@@ -27,8 +27,11 @@
 include $(top_srcdir)/mk/layout.am
 
 FFAPP_FILES = fonts.conf
-ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/Resources/opt/local/etc/fonts
-ffapp_DATA = $(FFAPP_FILES)
 EXTRA_DIST = $(FFAPP_FILES)
+
+if PLATFORM_OSX
+   ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/Resources/opt/local/etc/fonts
+   ffapp_DATA = $(FFAPP_FILES)
+endif
 
 -include $(top_srcdir)/git.mk

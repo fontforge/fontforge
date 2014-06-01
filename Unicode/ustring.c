@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <fontforge-config.h>
+
 #include <stddef.h>
 #include "ustring.h"
 #include "utype.h"
@@ -132,6 +134,16 @@ void u_strcpy(unichar_t *to, const unichar_t *from) {
 	*(to++) = ch;
     *to = 0;
 }
+
+char *cc_strncpy(char *to, const char *from, int len) {
+    if( !from ) {
+	to[0] = '\0';
+	return to;
+    }
+    strncpy( to, from, len );
+    return to;
+}
+
 
 void u_strncpy(register unichar_t *to, const unichar_t *from, int len) {
     register unichar_t ch;
@@ -293,7 +305,7 @@ unichar_t *u_copyn(const unichar_t *pt, long n) {
     if ( n*sizeof(unichar_t)>=MEMORY_MASK )
 	n = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = (unichar_t *) galloc((n+1)*sizeof(unichar_t));
+    res = (unichar_t *) malloc((n+1)*sizeof(unichar_t));
     memcpy(res,pt,n*sizeof(unichar_t));
     res[n]='\0';
 return(res);
@@ -305,7 +317,7 @@ unichar_t *u_copynallocm(const unichar_t *pt, long n, long m) {
     if ( n*sizeof(unichar_t)>=MEMORY_MASK )
 	n = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = galloc((m+1)*sizeof(unichar_t));
+    res = malloc((m+1)*sizeof(unichar_t));
     memcpy(res,pt,n*sizeof(unichar_t));
     res[n]='\0';
 return(res);
@@ -327,7 +339,7 @@ return( u_copy( s2 ));
     else if ( s2==NULL )
 return( u_copy( s1 ));
     len1 = u_strlen(s1); len2 = u_strlen(s2);
-    pt = (unichar_t *) galloc((len1+len2+1)*sizeof(unichar_t));
+    pt = (unichar_t *) malloc((len1+len2+1)*sizeof(unichar_t));
     u_strcpy(pt,s1);
     u_strcpy(pt+len1,s2);
 return( pt );
@@ -343,7 +355,7 @@ return((unichar_t *)0);
     if ( (len+1)*sizeof(unichar_t)>=MEMORY_MASK )
 	len = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = (unichar_t *) galloc((len+1)*sizeof(unichar_t));
+    res = (unichar_t *) malloc((len+1)*sizeof(unichar_t));
     for ( rpt=res; --len>=0 ; *rpt++ = *(unsigned char *) pt++ );
     *rpt = '\0';
 return(res);
@@ -361,7 +373,7 @@ return((unichar_t *)0);
     if ( (n+1)*sizeof(unichar_t)>=MEMORY_MASK )
 	n = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = (unichar_t *) galloc((n+1)*sizeof(unichar_t));
+    res = (unichar_t *) malloc((n+1)*sizeof(unichar_t));
     for ( rpt=res; --n>=0 ; *rpt++ = *(unsigned char *) pt++ );
     *rpt = '\0';
 return(res);
@@ -377,7 +389,7 @@ return(NULL);
     if ( (len+1)>=MEMORY_MASK )
 	len = MEMORY_MASK-1;
 #endif
-    res = (char *) galloc(len+1);
+    res = (char *) malloc(len+1);
     for ( rpt=res; --len>=0 ; *rpt++ = *pt++ );
     *rpt = '\0';
 return(res);
@@ -395,7 +407,7 @@ return((char *)0);
     if ( (n+1)>=MEMORY_MASK )
 	n = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = (char *) galloc(n+1);
+    res = (char *) malloc(n+1);
     for ( rpt=res; --n>=0 ; *rpt++ = *pt++ );
     *rpt = '\0';
 return(res);
@@ -405,9 +417,8 @@ double u_strtod(const unichar_t *str, unichar_t **ptr) {
     char buf[60], *pt, *ret;
     const unichar_t *upt;
     double val;
-    extern double strtod();		/* Please don't delete this, not all of us have good ansi headers */
 
-    for ( upt=str, pt=buf; *upt<128 && *upt!='\0' && pt-buf<sizeof(buf)-1; )
+    for ( upt=str, pt=buf; *upt<128 && *upt!='\0' && pt-buf<(ptrdiff_t)(sizeof(buf)-1); )
 	*pt++ = *upt++;
     *pt = '\0';
     val = strtod(buf,&ret);
@@ -424,7 +435,6 @@ long u_strtol(const unichar_t *str, unichar_t **ptr, int base) {
     char buf[60], *pt, *ret;
     const unichar_t *upt;
     long val;
-    extern long strtol();		/* Please don't delete this, not all of us have good ansi headers */
 
     for ( upt=str, pt=buf; *upt<128 && *upt!='\0' && pt<buf+sizeof(buf)-1; )
 	*pt++ = *upt++;
@@ -528,7 +538,7 @@ return( utf82u_strncpy(ubuf,utf8buf,strlen(utf8buf)+1));
 }
 
 unichar_t *utf82u_copyn(const char *utf8buf,int len) {
-    unichar_t *ubuf = (unichar_t *) galloc((len+1)*sizeof(unichar_t));
+    unichar_t *ubuf = (unichar_t *) malloc((len+1)*sizeof(unichar_t));
 return( utf82u_strncpy(ubuf,utf8buf,len+1));
 }
 
@@ -540,7 +550,7 @@ unichar_t *utf82u_copy(const char *utf8buf) {
 return( NULL );
 
     len = strlen(utf8buf);
-    ubuf = (unichar_t *) galloc((len+1)*sizeof(unichar_t));
+    ubuf = (unichar_t *) malloc((len+1)*sizeof(unichar_t));
 return( utf82u_strncpy(ubuf,utf8buf,len+1));
 }
 
@@ -599,7 +609,7 @@ char *latin1_2_utf8_copy(const char *lbuf) {
 return( NULL );
 
     len = strlen(lbuf);
-    utf8buf = (char *) galloc(2*len+1);
+    utf8buf = (char *) malloc(2*len+1);
 return( latin1_2_utf8_strcpy(utf8buf,lbuf));
 }
 
@@ -612,7 +622,7 @@ char *utf8_2_latin1_copy(const char *utf8buf) {
 return( NULL );
 
     len = strlen(utf8buf);
-    pt = lbuf = (char *) galloc(len+1);
+    pt = lbuf = (char *) malloc(len+1);
     for ( upt=utf8buf; (ch=utf8_ildb(&upt))!='\0'; )
 	if ( ch>=0xff )
 	    *pt++ = '?';
@@ -856,12 +866,12 @@ char *StripToASCII(const char *utf8_str) {
     const unichar_t *alt;
 
     len = strlen(utf8_str);
-    pt = newcr = (char *) galloc(len+1);
+    pt = newcr = (char *) malloc(len+1);
     end = pt+len;
     while ( (ch= utf8_ildb(&utf8_str))!='\0' ) {
 	if ( pt>=end ) {
 	    int off = pt-newcr;
-	    newcr = (char *) grealloc(newcr,(off+10)+1);
+	    newcr = (char *) realloc(newcr,(off+10)+1);
 	    pt = newcr+off;
 	    end = pt+10;
 	}
@@ -870,10 +880,10 @@ char *StripToASCII(const char *utf8_str) {
 	else if ( ch=='\r' && *utf8_str!='\n' )
 	    *pt++ = '\n';
 	else if ( ch==0xa9 /* Copyright sign */ ) {
-	    char *str = "(c)";
+	    const char *str = "(c)";
 	    if ( pt+strlen(str)>=end ) {
 		int off = pt-newcr;
-		newcr = (char *) grealloc(newcr,(off+10+strlen(str))+1);
+		newcr = (char *) realloc(newcr,(off+10+strlen(str))+1);
 		pt = newcr+off;
 		end = pt+10;
 	    }
@@ -884,7 +894,7 @@ char *StripToASCII(const char *utf8_str) {
 	    while ( *alt!='\0' ) {
 		if ( pt>=end ) {
 		    int off = pt-newcr;
-		    newcr = (char *) grealloc(newcr,(off+10)+1);
+		    newcr = (char *) realloc(newcr,(off+10)+1);
 		    pt = newcr+off;
 		    end = pt+10;
 		}
@@ -1002,11 +1012,6 @@ char* c_itostr( int v )
     return ret;
 }
 
-char* str_rfind( char* s, char ch )
-{
-    return strrchr( s, ch );
-}
-
 char* str_replace_all( char* s, char* orig, char* replacement, int free_s )
 {
     char* p = strstr( s, orig );
@@ -1031,7 +1036,7 @@ char* str_replace_all( char* s, char* orig, char* replacement, int free_s )
 
     // more than strictly needed, but always enough RAM.
     int retsz = strlen(s) + count*strlen(replacement) + 1;
-    char* ret = (char *) galloc( retsz );
+    char* ret = (char *) malloc( retsz );
     memset( ret, '\0', retsz );
     char* output = ret;
     char* remains = s;

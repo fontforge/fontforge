@@ -186,22 +186,20 @@ static FT_Error PauseIns( TT_ExecContext exc ) {
     if ( dc->terminate )
 return( TT_Err_Execution_Too_Long );		/* Some random error code, says we're probably in a infinite loop */
     dc->exc = exc;
-#if FREETYPE_MAJOR>2 || (FREETYPE_MAJOR==2 && (FREETYPE_MINOR>1 || (FREETYPE_MINOR==1 && FREETYPE_PATCH>11 )))
     exc->grayscale = !dc->is_bitmap;		/* if we are in 'prep' or 'fpgm' freetype doesn't know this yet */
-#endif
 
     /* Set up for watch points */
     if ( dc->oldpts==NULL && exc->pts.n_points!=0 ) {
-	dc->oldpts = gcalloc(exc->pts.n_points,sizeof(FT_Vector));
+	dc->oldpts = calloc(exc->pts.n_points,sizeof(FT_Vector));
 	dc->n_points = exc->pts.n_points;
     }
     if ( dc->oldstore==NULL && exc->storeSize!=0 ) {
-	dc->oldstore = gcalloc(exc->storeSize,sizeof(FT_Long));
-	dc->storetouched = gcalloc(exc->storeSize,sizeof(uint8));
+	dc->oldstore = calloc(exc->storeSize,sizeof(FT_Long));
+	dc->storetouched = calloc(exc->storeSize,sizeof(uint8));
 	dc->storeSize = exc->storeSize;
     }
     if ( dc->oldcvt==NULL && exc->cvtSize!=0 )
-	dc->oldcvt = gcalloc(exc->cvtSize,sizeof(FT_Long));
+	dc->oldcvt = calloc(exc->cvtSize,sizeof(FT_Long));
     if ( !dc->initted_pts ) {
 	AtWp(dc,exc);
 	dc->found_wp = false;
@@ -383,7 +381,7 @@ struct debugger_context *DebuggerCreate(SplineChar *sc,int layer, real ptsizey,r
     if ( !hasFreeTypeDebugger())
 return( NULL );
 
-    dc = gcalloc(1,sizeof(struct debugger_context));
+    dc = calloc(1,sizeof(struct debugger_context));
     dc->sc = sc;
     dc->layer = layer;
     dc->debug_fpgm = dbg_fpgm;
@@ -595,10 +593,6 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     else
 	outline.n_points = /*exc->pts.n_points*/  outline.contours[outline.n_contours - 1] + 1;
     outline.points = exc->pts.cur;
-#ifndef FT_OUTLINE_SMART_DROPOUTS	/* Appeared in 2.3.7 (June, 2008) */
-/* FREETYPE_MAJOR==2 && (FREETYPE_MINOR<3 || (FREETYPE_MINOR==3 && FREETYPE_PATCH<7)) */
-    outline.flags = FT_OUTLINE_NONE;
-#else
     outline.flags = 0;
     switch ( exc->GS.scan_type ) {
       /* Taken, at Werner's suggestion, from the freetype sources: ttgload.c:1970 */
@@ -620,7 +614,6 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
 	outline.flags |= FT_OUTLINE_IGNORE_DROPOUTS;
       break;
     }
-#endif
 
     if ( exc->metrics.y_ppem < 24 )
        outline.flags |= FT_OUTLINE_HIGH_PRECISION;
@@ -668,7 +661,7 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
 	bitmap.num_grays = 0;
 	bitmap.pixel_mode = ft_pixel_mode_mono;
     }
-    bitmap.buffer = gcalloc(bitmap.pitch*bitmap.rows,sizeof(uint8));
+    bitmap.buffer = calloc(bitmap.pitch*bitmap.rows,sizeof(uint8));
 
     err = (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
 
@@ -677,7 +670,7 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
 	outline.points[i].y += yoff;
     }
 
-    ret = galloc(sizeof(struct freetype_raster));
+    ret = malloc(sizeof(struct freetype_raster));
     /* I'm not sure why I need these, but it seems I do */
     if ( depth==8 ) {
 	ret->as = floor(b.miny/64.0) + bitmap.rows;
@@ -720,7 +713,7 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
 return( ret );
 }
     
-#else
+#else /* FIXME: Don't build this stuff if it's not being used, it just makes the compiler emit lots of warnings */
 struct debugger_context;
 
 void DebuggerTerminate(struct debugger_context *dc) {

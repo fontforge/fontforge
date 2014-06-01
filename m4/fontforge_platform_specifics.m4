@@ -79,7 +79,7 @@ AS_CASE([$host],
 
    [*sparc*],[AC_DEFINE([_Keyboard],[2])],
 
-   [*mingw*],[ LDFLAGS="$LDFLAGS -lws2_32 -lplibc" ],
+   [*mingw*],[ LDFLAGS="$LDFLAGS -lws2_32" ],
 
    [*-pc-cygwin*],[
 
@@ -93,4 +93,7 @@ AS_CASE([$host],
    [:]  dnl DEFAULT AS_CASE
 
 ) dnl END AS_CASE
+
+AM_CONDITIONAL([PLATFORM_OSX],[test x"${gww_ismac}" = xyes])
+
 ])

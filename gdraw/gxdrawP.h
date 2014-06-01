@@ -54,10 +54,6 @@ capable of using composite.
 #ifndef _XDRAW_H
 #define _XDRAW_H
 
-#ifdef __VMS
-#include <vms_x_fix.h>
-#endif
-
 #include <fontforge-config.h>
 
 #ifndef X_DISPLAY_MISSING
@@ -65,13 +61,8 @@ capable of using composite.
 # include <X11/Xlib.h>
 # include <X11/Xutil.h>
 # ifndef _NO_XINPUT
-#  ifdef __VMS
-#   include <sys$common:[decw$include.extensions]XInput.h>
-#   include <sys$common:[decw$include.extensions]XI.h>
-#  else
-#   include <X11/extensions/XInput.h>
-#   include <X11/extensions/XI.h>
-#  endif
+#  include <X11/extensions/XInput.h>
+#  include <X11/extensions/XI.h>
 # endif
 # ifndef _NO_XKB
 #   include <X11/XKBlib.h>
@@ -83,13 +74,7 @@ capable of using composite.
 # endif
 #  define GTimer GTimer_GTK
 #  include <ft2build.h>
-#  ifdef __VMS
-#   include <Xft/Xft.h>
-typedef pid_t GPid;
-#   define G_GNUC_INTERNAL
-#  else
-#   include <X11/Xft/Xft.h>
-#  endif
+#  include <X11/Xft/Xft.h>
 #  include <pango/pango.h>
 #  undef GTimer
 #endif

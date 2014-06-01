@@ -1,0 +1,24 @@
+
+# test that the encodings of these two fonts match
+
+Open($2)
+i=0;
+while ( i<0xffff )
+    Open($1)			# Switch to base font
+    if ( SelectIf(UCodePoint(i))>0 )
+	name = CharInfo("Name");
+	Open($2)
+	if ( SelectIf(UCodePoint(i))<=0 )
+	    Error( "Missing Unicode " + ToString(UCodePoint(i)) + " in " + $2 )
+	else
+	    othername = CharInfo("Name")
+	    if ( name!=othername )
+		Error( "Code point " + ToString(UCodePoint(i)) + " has the wrong name. It should be " + name + " but it is " + othername + " in " + $2 )
+	    endif
+	endif
+    endif
+    i = i+1
+endloop
+
+Open($2 )
+Close()

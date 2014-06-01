@@ -62,16 +62,19 @@ libgunicode_la_SOURCES =	\
 	unialt.c		\
 	ustring.c		\
 	utype.c			\
-	usprintf.c		\
 	gwwiconv.c		\
 	combiners.h		\
 	$(NULL)
 
-libgunicode_la_CPPFLAGS = "-I$(top_builddir)/inc"	\
-	"-I$(top_srcdir)/inc" $(MY_CFLAGS)
+#	usprintf.c
+
+libgunicode_la_CFLAGS = $(WARN_CFLAGS)
+libgunicode_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
+	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
+	$(MY_CFLAGS)
 
 libgunicode_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGUNICODE_VERSION) \
-	${MY_LIB_LDFLAGS}
+	${MY_LIB_LDFLAGS} $(top_builddir)/lib/libgnu.la
 
 libgunicode_la_LIBADD = $(MY_LIBS)
 
@@ -83,7 +86,7 @@ libgunicode_la_LIBADD = $(MY_LIBS)
 
 #noinst_PROGRAMS = dump makebuildtables makeutype
 
-EXTRA_DIST = descrip.mms README.TXT #dump.c makebuildtables.c makeutype.c
+EXTRA_DIST = README.TXT #dump.c makebuildtables.c makeutype.c
 
 #--------------------------------------------------------------------------
 

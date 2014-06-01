@@ -57,7 +57,7 @@ return( NULL );
     gp->name = copy(g->name);
     gp->glyphs = copy(g->glyphs);
     if ( g->kid_cnt!=0 ) {
-	gp->kids = galloc((gp->kid_cnt=g->kid_cnt)*sizeof(Group *));
+	gp->kids = malloc((gp->kid_cnt=g->kid_cnt)*sizeof(Group *));
 	for ( i=0; i<g->kid_cnt; ++i ) {
 	    gp->kids[i] = GroupCopy(g->kids[i]);
 	    gp->kids[i]->parent = gp;
@@ -159,7 +159,7 @@ return( NULL );
     for ( i=0 ; (ch=getc(file))!=EOF && ch!='"' ; ++i ) {
 	if ( i+1>=gc->bmax ) {
 	    gc->bmax += 100;
-	    gc->buffer = grealloc(gc->buffer,gc->bmax);
+	    gc->buffer = realloc(gc->buffer,gc->bmax);
 	}
 	gc->buffer[i] = ch;
     }
@@ -214,7 +214,7 @@ return( NULL );
 	for ( i=0 ;; ++i ) {
 	    if ( i>=gmax ) {
 		gmax += 10;
-		glist = grealloc(glist,gmax*sizeof(Group *));
+		glist = realloc(glist,gmax*sizeof(Group *));
 	    }
 	    glist[i] = _LoadGroupList(file, g, expected_indent+1, gc);
 	    if ( glist[i]==NULL )
@@ -222,7 +222,7 @@ return( NULL );
 	}
 	g->kid_cnt = i;
 	if ( i!=0 ) {
-	    g->kids = galloc(i*sizeof(Group *));
+	    g->kids = malloc(i*sizeof(Group *));
 	    memcpy(g->kids,glist,i*sizeof(Group *));
 	    free(glist);
 	}

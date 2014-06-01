@@ -30,21 +30,23 @@
 #include <fontforge-config.h>
 #include "configure-fontforge.h"
 #include <basics.h>
+#include "libffstamp.h"
 #include <stdio.h>
 #include <string.h>
 #include <intl.h>
 #include "splinefont.h"
 #include "uiinterface.h"
+#include "xalloc.h"
+#include "xvasprintf.h"
 
 
-static const int unicode4_size = 17*65536;
+static const unsigned unicode4_size = 17*65536;
     /* Unicode goes up to 0x10ffff */
 
 
 extern void ProcessNativeScript(int argc, char *argv[], FILE *script);
 extern void CheckIsScript(int argc, char *argv[]);
 
-extern char *AdobeStandardEncoding[256];
 extern int32 unicode_from_adobestd[256];
 
 /* unicode_nameannot - Deprecated, but kept for older programs to access. */
@@ -85,26 +87,6 @@ extern int quiet;
 
 
 extern MacFeat *default_mac_feature_map;
-
-typedef struct library_version_configuration {
-    uint16 major, minor;
-    long library_source_modtime;
-    char *library_source_modtime_string;
-    int  library_source_versiondate;
-    uint16 sizeof_me;
-    uint16 sizeof_splinefont;
-    uint16 sizeof_splinechar;
-    uint16 sizeof_fvbase;
-    uint16 sizeof_cvbase;
-    uint16 sizeof_cvcontainer;
-    uint8  config_had_devicetables;
-    uint8  config_had_multilayer;
-    uint8  config_had_python;
-    uint8  mba1;		/* Must be all ones (0xff), config values are 0,1 need to distinquish from both */
-} Library_Version_Configuration;
-extern Library_Version_Configuration library_version_configuration;
-
-extern int check_library_version(Library_Version_Configuration *exe_lib_version, int fatal, int quiet);
 
 extern int fontforge_main(int, char **);
 #endif

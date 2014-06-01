@@ -296,13 +296,8 @@ struct ttfinfo {
     uint8 warned_morx_out_of_bounds_glyph;
     int badgid_cnt, badgid_max;		/* Used when parsing apple morx tables*/
     SplineChar **badgids;		/* which use out of range glyph IDs as temporary flags */
-#ifdef _HAS_LONGLONG
     long long creationtime;		/* seconds since 1970 */
     long long modificationtime;
-#else
-    long creationtime;
-    long modificationtime;
-#endif
     int gasp_cnt;
     struct gasp *gasp;
     struct MATH *math;
@@ -588,12 +583,6 @@ struct vorg {
     uint16 minorVersion;		/* 0 */
     short defaultVertOriginY;	/* Y coord of default vertical origin in the design coordinate system */
     uint16 numVertOriginYMetrics;	/* exceptions to the above, elements in following array */
-#if 0
-    struct {
-	uint16 glyphindex;		/* ordered */
-	short vertOrigin;
-    } origins[];
-#endif
 };
 
 struct feat_name {
@@ -739,7 +728,7 @@ struct alltabs {
     SplineFont *sf;
     EncMap *map;
     struct ttf_table *oldcvt;
-    int oldcvtlen;
+    unsigned oldcvtlen;
 };
 
 struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 cmap table */
@@ -861,11 +850,7 @@ extern void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, 
 	SplineChar ***lig,SplineChar ***mkmk,
 	struct glyphinfo *gi);
 
-#ifdef _HAS_LONGLONG
 extern void cvt_unix_to_1904( long long time, int32 result[2]);
-#else
-extern void cvt_unix_to_1904( long time, int32 result[2]);
-#endif
 
 
     /* Non-standard tables */

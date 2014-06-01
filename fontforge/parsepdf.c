@@ -306,9 +306,9 @@ static char *pdf_getdictvalue(struct pdfcontext *pc) {
 
     pdf_skipwhitespace(pc);
     ch = getc(pdf);
-    forever {
+    for (;;) {
 	if ( pt>=end ) {
-	    char *temp = grealloc(pc->tokbuf,(pc->tblen+=300));
+	    char *temp = realloc(pc->tokbuf,(pc->tblen+=300));
 	    pt = temp + (pt-pc->tokbuf);
 	    pc->tokbuf = temp;
 	    end = temp+pc->tblen;
@@ -318,7 +318,7 @@ static char *pdf_getdictvalue(struct pdfcontext *pc) {
 	    strnest = 0;
 	    while ( (ch=getc(pdf))!=EOF ) {
 		if ( pt>=end ) {
-		    char *temp = grealloc(pc->tokbuf,(pc->tblen+=300));
+		    char *temp = realloc(pc->tokbuf,(pc->tblen+=300));
 		    pt = temp + (pt-pc->tokbuf);
 		    pc->tokbuf = temp;
 		    end = temp+pc->tblen;
@@ -386,7 +386,7 @@ static int pdf_readdict(struct pdfcontext *pc) {
 return( false );
     getc(pdf);		/* Eat the second '<' */
 
-    forever {
+    for (;;) {
 	key = copy(pdf_getname(pc));
 	if ( key==NULL ) {
 	    if ( pc->compressed!=NULL ) {	/* We've read the whole object*/
@@ -400,8 +400,8 @@ return( true );
 	    free(key);
 	else {
 	    if ( pc->pdfdict.next>=pc->pdfdict.cnt ) {
-		pc->pdfdict.keys = grealloc(pc->pdfdict.keys,(pc->pdfdict.cnt+=20)*sizeof(char *));
-		pc->pdfdict.values = grealloc(pc->pdfdict.values,pc->pdfdict.cnt*sizeof(char *));
+		pc->pdfdict.keys = realloc(pc->pdfdict.keys,(pc->pdfdict.cnt+=20)*sizeof(char *));
+		pc->pdfdict.values = realloc(pc->pdfdict.values,pc->pdfdict.cnt*sizeof(char *));
 	    }
 	    pc->pdfdict.keys  [pc->pdfdict.next] = key  ;
 	    pc->pdfdict.values[pc->pdfdict.next] = value;
@@ -548,11 +548,11 @@ static int pdf_findfonts(struct pdfcontext *pc) {
     int i, j, k=0, dnum, cnum;
     char *pt, *tpt, *cmap, *desc;
 
-    pc->fontobjs = galloc(pc->ocnt*sizeof(long));
-    pc->cmapobjs = galloc(pc->ocnt*sizeof(long));
-    pc->cmap_from_cid = gcalloc(pc->ocnt,sizeof(int));
+    pc->fontobjs = malloc(pc->ocnt*sizeof(long));
+    pc->cmapobjs = malloc(pc->ocnt*sizeof(long));
+    pc->cmap_from_cid = calloc(pc->ocnt,sizeof(int));
     memset(pc->cmapobjs,-1,sizeof(long));
-    pc->fontnames = galloc(pc->ocnt*sizeof(char *));
+    pc->fontnames = malloc(pc->ocnt*sizeof(char *));
     /* First look for CID-keyed fonts with a pointer to a ToUnicode CMap */
     for ( i=1; i<pc->ocnt; ++i ) if ( pc->objs[i]!=-1 ) {	/* Object 0 is always unused */
 	if ( pdf_findobject(pc,i) && pdf_readdict(pc) ) {
@@ -727,7 +727,7 @@ static void pdf_85filter(FILE *to,FILE *from) {
     int cnt;
 
     rewind(from);
-    forever {
+    for (;;) {
 	while ( isspace(ch1=getc(from)));
 	if ( ch1==EOF || ch1=='~' )
     break;
@@ -804,7 +804,7 @@ static int pdf_zfilter(FILE *to,FILE *from) {
 	LogError( _("Flate decompression failed.\n") );
 return ret;
     }
-    in = galloc(Z_CHUNK); out = galloc(Z_CHUNK);
+    in = malloc(Z_CHUNK); out = malloc(Z_CHUNK);
 
     do {
 	strm.avail_in = fread(in,1,Z_CHUNK,from);
@@ -1045,7 +1045,7 @@ FindObjectsFromXREFObjectError_ReleaseMemAndExit:
 /* ************************************************************************** */
 
 /* ************************************************************************** */
-/* *********************** pdf graphics interpretter ************************ */
+/* *********************** pdf graphics interpreter ************************* */
 /* ************************************************************************** */
 
 /* Stolen from the PS interpreter and then modified beyond all recognition */
@@ -1204,7 +1204,7 @@ static void Transform(BasePoint *to, BasePoint *from, real trans[6]) {
 
 static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
 	real linewidth, real *transform) {
-    Entity *ent = gcalloc(1,sizeof(Entity));
+    Entity *ent = calloc(1,sizeof(Entity));
     ent->type = et_splines;
     ent->u.splines.splines = head;
     ent->u.splines.cap = linecap;
@@ -1218,11 +1218,11 @@ static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
 return( ent );
 }
 
-static void ECCatagorizePoints( EntityChar *ec ) {
+static void ECCategorizePoints( EntityChar *ec ) {
     Entity *ent;
 
     for ( ent=ec->splines; ent!=NULL; ent=ent->next ) if ( ent->type == et_splines ) {
-	SPLCatagorizePoints( ent->u.splines.splines );
+	SPLCategorizePoints( ent->u.splines.splines );
     }
 }
 
@@ -1326,7 +1326,7 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 	    else {
 		struct pskeydict dict;
 		dict.cnt = dict.max = i;
-		dict.entries = gcalloc(i,sizeof(struct pskeyval));
+		dict.entries = calloc(i,sizeof(struct pskeyval));
 		for ( j=0; j<i; ++j ) {
 		    dict.entries[j].type = stack[sp-i+j].type;
 		    dict.entries[j].u = stack[sp-i+j].u;
@@ -1586,7 +1586,7 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 	ent->next = ec->splines;
 	ec->splines = ent;
     }
-    ECCatagorizePoints(ec);
+    ECCategorizePoints(ec);
     setlocale(LC_NUMERIC,oldloc);
 }
 
@@ -1674,10 +1674,10 @@ static void add_mapping(SplineFont *basesf, long *mappings, int *uvals, int nuni
     SplineChar *sc;
 
     name = copy(StdGlyphName(buffer,uvals[0],sf->uni_interp,sf->for_new_glyphs));
-    name = grealloc(name,strlen(name)+8);
+    name = realloc(name,strlen(name)+8);
     for (i = 1; i<nuni; i++) {
 	nname = copy(StdGlyphName(buffer,uvals[i],sf->uni_interp,sf->for_new_glyphs));
-	name = grealloc(name,strlen(name)+strlen(nname)+10);
+	name = realloc(name,strlen(name)+strlen(nname)+10);
 	strcat(name, "_");
 	strcat(name, nname);
 	free(nname);
@@ -1740,7 +1740,7 @@ return;
 return;
     rewind(file);
 
-    mappings = gcalloc(sf->glyphcnt,sizeof(long));
+    mappings = calloc(sf->glyphcnt,sizeof(long));
     while ( pdf_getprotectedtok(file,tok) >= 0 ) {
 	if ( strcmp(tok,"beginbfchar") == 0 && sscanf(prevtok,"%d",&nchars)) {
 	    for (i=0; i<nchars; i++) {
@@ -1753,7 +1753,7 @@ return;
 		    /* hex string once again, dividing it into hex quartets */
 		    nhex = (strlen(tok))/4;
 		    nuni = 1;
-		    uvals = gcalloc(nhex,sizeof(int));
+		    uvals = calloc(nhex,sizeof(int));
 		    sscanf(tok,"%4x", &uvals[0]);
 		    ccval = tok + 4;
 		    /* If a single glyph is mapped to a sequence of Unicode characters, then the */
@@ -1782,7 +1782,7 @@ return;
 		    pdf_skip_brackets(file,tok) >= 0 && sscanf(tok,"%x",&end) &&
 		    pdf_skip_brackets(file,tok) >= 0 && sscanf(tok,"%lx",&mappings[cur])) {
 
-		    uvals = gcalloc(1,sizeof(int));
+		    uvals = calloc(1,sizeof(int));
 		    sscanf(tok,"%4x", &uni);
 		    /* For CMap values defining a character range we assume they should always */
 		    /* correspond to a single Unicode character (either a BMP character or a surrogate pair) */
@@ -2090,7 +2090,7 @@ return( NULL );
     } else {
 	char **names;
 	int choice;
-	names = galloc((pc.fcnt+1)*sizeof(unichar_t *));
+	names = malloc((pc.fcnt+1)*sizeof(unichar_t *));
 	for ( i=0; i<pc.fcnt; ++i )
 	    names[i] = copy(pc.fontnames[i]);
 	names[i] = NULL;

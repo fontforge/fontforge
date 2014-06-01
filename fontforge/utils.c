@@ -25,3 +25,34 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforge.h"
+#include "baseviews.h"
+#include "libffstamp.h"			/* FontForge version# date time stamps */
+
+// Somebody removed the data type.
+
+#if 0
+
+struct library_version_configuration exe_library_version_configuration = {
+    FONTFORGE_LIBFFE_VERSION_MAJOR,
+    FONTFORGE_LIBFFE_VERSION_MINOR,
+    LibFF_ModTime,			/* Seconds since 1970 (standard unix time) */
+    LibFF_ModTime_Str,			/* Version date (in char string format)    */
+    LibFF_VersionDate,			/* Version as long value, Year, month, day */
+    sizeof(struct library_version_configuration),
+    sizeof(struct splinefont),
+    sizeof(struct splinechar),
+    sizeof(struct fontviewbase),
+    sizeof(struct charviewbase),
+    sizeof(struct cvcontainer),
+    1,
+    1,
+
+#ifdef _NO_PYTHON
+    0,
+#else
+    1,
+#endif
+    0xff		/* Not currently defined */
+};
+#endif // 0
+

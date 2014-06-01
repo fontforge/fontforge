@@ -34,15 +34,15 @@
 enum { Cache, Config, Data };
 
 int mkdir_p(const char *path, mode_t mode);
-char *smprintf(char *fmt, ...);
+char *smprintf(const char *fmt, ...);
 
 extern char* GFileGetHomeDir(void);
 extern unichar_t* u_GFileGetHomeDir(void);
 
-extern char *GFileGetAbsoluteName(char *name, char *result, int rsiz);
+extern char *GFileGetAbsoluteName(const char *name, char *result, size_t rsiz);
 extern char *GFileMakeAbsoluteName(char *name);
-extern char *GFileBuildName(char *dir,char *fname,char *buffer,int size);
-extern char *GFileReplaceName(char *oldname,char *fname,char *buffer,int size);
+extern char *GFileBuildName(char *dir,char *fname,char *buffer,size_t size);
+extern char *GFileReplaceName(char *oldname,char *fname,char *buffer,size_t size);
 extern char *GFileNameTail(const char *oldname);
 extern char *GFileAppendFile(char *dir,char *name,int isdir);
 extern int GFileIsAbsolute(const char *file);
@@ -73,7 +73,7 @@ extern int u_GFileReadable(unichar_t *file);
 extern int u_GFileMkDir(unichar_t *name);
 extern int u_GFileRmDir(unichar_t *name);
 extern int u_GFileUnlink(unichar_t *name);
-extern long GFileGetSize(char *name);
+extern off_t GFileGetSize(char *name);
 extern char *GFileReadAll(char *name);
 extern int   GFileWriteAll(char *filepath, char *data);
 extern char* getGResourceProgramDir(void);
@@ -84,13 +84,14 @@ extern char *getPixmapDir(void);
 extern char *getHelpDir(void);
 extern char *getUserHomeDir(void);
 extern char *getFontForgeUserDir(int dir);
-extern char *getTempDir(void);
+extern const char *getTempDir(void);
 
 /**
  * This is the full path of ~ on OSX and Linux
  * and something like c:\Users\foo\Documents on windows
  */
 extern char *GFileGetHomeDocumentsDir(void);
+extern unichar_t* u_GFileGetHomeDocumentsDir(void); 
 
 /**
  * Return the directory name for the full path 'path'.

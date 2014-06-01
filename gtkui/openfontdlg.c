@@ -60,10 +60,8 @@ struct gwwv_filter def_font_filters[] = {
 	   "cff,"
 	   "cef,"
 	   "gai,"
-#ifndef _NO_LIBXML
 	   "svg,"
 	   "ufo,"
-#endif
 	   "pf3,"
 	   "ttc,"
 	   "gsf,"
@@ -94,10 +92,8 @@ struct gwwv_filter def_font_filters[] = {
 	   "cff,"
 	   "cef,"
 	   "gai,"
-#ifndef _NO_LIBXML
 	   "svg,"
 	   "ufo,"
-#endif
 	   "pf3,"
 	   "ttc,"
 	   "gsf,"
@@ -130,9 +126,7 @@ struct gwwv_filter def_font_filters[] = {
 	{N_("Type1"), "*.{pfa,pfb,gsf,cid}{.gz,.Z,.bz2,}"},
 	{N_("Type2"), "*.{otf,cef,cff,gai}{.gz,.Z,.bz2,}"},
 	{N_("Type3"), "*.{pf3,pt3}{.gz,.Z,.bz2,}"},
-#ifndef _NO_LIBXML
 	{N_("SVG"), "*.svg{.gz,.Z,.bz2,}"},
-#endif
 	{N_("FontForge's SFD"), "*.sfd{.gz,.Z,.bz2,}"},
 	{N_("Backup SFD"), "*.sfd~"},
 	{N_("Extract from PDF"), "*.pdf{.gz,.Z,.bz2,}"},
@@ -155,7 +149,7 @@ static void find_fonts_callback(GtkFileChooser *dialog) {
     if ( files==NULL || (cnt = g_slist_length(files))==0 )
 	gtk_widget_set_tooltip_text(GTK_WIDGET(dialog),"");
     else {
-	fonts = gcalloc(cnt,sizeof(char **));
+	fonts = calloc(cnt,sizeof(char **));
 	cnt = len = 0;
 	for ( test=files; test!=NULL; test=test->next, ++cnt) {
 	    fonts[cnt] = GetFontNames((char *) (test->data));
@@ -165,7 +159,7 @@ static void find_fonts_callback(GtkFileChooser *dialog) {
 		    len += strlen( fonts[cnt][i])+2;
 	    }
 	}
-	pt = text = galloc(len+10);
+	pt = text = malloc(len+10);
 	cnt = 0;
 	for ( test=files; test!=NULL; test=test->next, ++cnt) {
 	    if ( fonts[cnt]!=NULL ) {

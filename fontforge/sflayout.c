@@ -34,6 +34,7 @@
 #include <ustring.h>
 #include <utype.h>
 #include <chardata.h>
+#include <ffglib.h>
 
 static uint32 simple_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('k','e','r','n'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
 static uint32 arab_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('i','s','o','l'), CHR('i','n','i','t'), CHR('m','e','d','i'),CHR('f','i','n','a'), CHR('r','l','i','g'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('k','e','r','n'), CHR('c','u','r','s'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
@@ -116,7 +117,7 @@ uint32 *LI_TagsCopy(uint32 *tags) {
     if ( tags==NULL )
 return( NULL );
     for ( i=0; tags[i]!=0; ++i );
-    ret = galloc((i+1)*sizeof(uint32));
+    ret = malloc((i+1)*sizeof(uint32));
     for ( i=0; tags[i]!=0; ++i )
 	ret[i] = tags[i];
     ret[i] = 0;
@@ -210,7 +211,7 @@ static struct opentype_str **LineFromPara(struct opentype_str **str, int *_pos) 
     for ( len=0; str[len]!=NULL && !str[len]->line_break_after ; ++len );
     if ( str[len]!=NULL ) ++len;
     *_pos += len;
-    ret = galloc((len+1)*sizeof(struct opentype_str *));
+    ret = malloc((len+1)*sizeof(struct opentype_str *));
     for ( len=0; str[len]!=NULL && !str[len]->line_break_after ; ++len )
 	ret[len] = str[len];
     if ( str[len]!=NULL ) {
@@ -393,8 +394,8 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
     double scale;
 
     if ( li->lines==NULL ) {
-	li->lines = galloc(10*sizeof(struct opentype_str *));
-	li->lineheights = galloc(10*sizeof(struct lineheights));
+	li->lines = malloc(10*sizeof(struct opentype_str *));
+	li->lineheights = malloc(10*sizeof(struct lineheights));
 	li->lines[0] = NULL;
 	li->lmax = 10;
 	li->lcnt = 0;
@@ -425,7 +426,7 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
 		fl=fl->next, start = 0 ) {
 	    if ( start<0 ) start = 0;
 	    if ( fl->end - fl->start >= fl->scmax )
-		fl->sctext = grealloc(fl->sctext,((fl->scmax = fl->end-fl->start+4)+1)*sizeof(SplineChar *));
+		fl->sctext = realloc(fl->sctext,((fl->scmax = fl->end-fl->start+4)+1)*sizeof(SplineChar *));
 	    for ( i=j=0; i<fl->end-fl->start; ++i ) {
 		SplineChar *sc = FDMap(fl->fd,li->text[fl->start+i]);
 		if ( sc!=NULL && sc!=(SplineChar *) -1 )
@@ -453,7 +454,7 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
     }
 
     if ( li->pmax <= li->pcnt+pcnt - (pe-ps+1) )
-	li->paras = grealloc(li->paras,(li->pmax = li->pcnt+30+pcnt-(pe-ps+1))*sizeof(struct paras));
+	li->paras = realloc(li->paras,(li->pmax = li->pcnt+30+pcnt-(pe-ps+1))*sizeof(struct paras));
     /* move any old paragraphs around */
     pdiff = pcnt-(pe-ps);
     for ( p=ps; p<pe; ++p )
@@ -476,7 +477,7 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
 	    if ( (fl->next==NULL || fl->next->end!=fl->end) && li->text[fl->end]=='\n' )
 	break;		/* End of paragraph */
 	}
-	li->paras[p].para = galloc((len+1)*sizeof( struct paras));
+	li->paras[p].para = malloc((len+1)*sizeof( struct paras));
 	li->paras[p].start_pos = curp->start;
 	len = 0;
 	for ( fl=curp; fl!=NULL; fl=fl->next ) {
@@ -495,8 +496,8 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
     li->pcnt += pdiff;
 
     if ( li->lmax <= li->lcnt+lcnt - (le-ls) + 1 ) {
-	li->lines = grealloc(li->lines,(li->lmax = li->lcnt+30+lcnt-(le-ls+1))*sizeof(struct openfont_str **));
-	li->lineheights = grealloc(li->lineheights,li->lmax*sizeof(struct lineheights));
+	li->lines = realloc(li->lines,(li->lmax = li->lcnt+30+lcnt-(le-ls+1))*sizeof(struct openfont_str **));
+	li->lineheights = realloc(li->lineheights,li->lmax*sizeof(struct lineheights));
     }
     /* move any old lines around */
     ldiff = lcnt-(le-ls);
@@ -737,7 +738,7 @@ int LayoutInfoReplace(LayoutInfo *li, const unichar_t *str,
 	int sel_start, int sel_end, int width) {
     unichar_t *old = li->oldtext;
     int rpllen = u_strlen(str);
-    unichar_t *new = galloc((u_strlen(li->text)-(sel_end-sel_start) + rpllen+1)*sizeof(unichar_t));
+    unichar_t *new = malloc((u_strlen(li->text)-(sel_end-sel_start) + rpllen+1)*sizeof(unichar_t));
 
     li->oldtext = li->text;
     LayoutInfoChangeFontList(li,rpllen,sel_start,sel_end);
@@ -914,7 +915,7 @@ FontData *LI_FindFontData(LayoutInfo *li, SplineFont *sf,
 		test->layer==layer )
 return( test );
 
-    ret = gcalloc(1,sizeof(FontData));
+    ret = calloc(1,sizeof(FontData));
     ret->sf = sf;
     ret->fonttype = fonttype;
     ret->pointsize = size;
@@ -934,7 +935,7 @@ static FontData *FontDataCopyNoBDF(LayoutInfo *print_li, FontData *source) {
     FontData *head=NULL, *last=NULL, *cur;
 
     while ( source ) {
-	cur = gcalloc(1,sizeof(FontData));
+	cur = calloc(1,sizeof(FontData));
 	cur->sf = source->sf;
 	cur->fonttype = source->fonttype;
 	cur->pointsize = source->pointsize;
@@ -976,7 +977,7 @@ return;
 }
 
 LayoutInfo *LIConvertToPrint(LayoutInfo *li, int width, int height, int dpi) {
-    LayoutInfo *print = gcalloc(1,sizeof(LayoutInfo));
+    LayoutInfo *print = calloc(1,sizeof(LayoutInfo));
     struct fontlist *fl;
     struct fontdata *fd1, *fd2;
 
@@ -1150,9 +1151,9 @@ static Array *SFDefaultScriptsLines(Array *arr,SplineFont *sf) {
 	  }
       }
 
-      ret = gcalloc(1,sizeof(Array));
+      ret = calloc(1,sizeof(Array));
       ret->argc = 2*lcnt;
-      ret->vals = gcalloc(2*lcnt,sizeof(Val));
+      ret->vals = calloc(2*lcnt,sizeof(Val));
       for ( i=0; i<lcnt; ++i ) {
 	  ret->vals[2*i+0].type = v_int;
 	  ret->vals[2*i+0].u.ival = pixelsize;
@@ -1164,7 +1165,7 @@ return( ret );
 }
 
 void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
-    LayoutInfo *li = gcalloc(1,sizeof(LayoutInfo));
+    LayoutInfo *li = calloc(1,sizeof(LayoutInfo));
     int cnt, len, i,j, ret, p, x;
     struct fontlist *last;
     enum sftf_fonttype type = sf->layers[ly_fore].order2 ? sftf_ttf : sftf_otf;
@@ -1192,9 +1193,9 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     cnt = arr->argc/2;
     len = 1;
     for ( i=0; i<cnt; ++i )
-	len += utf8_strlen( arr->vals[2*i+1].u.sval )+1;
+	len += g_utf8_strlen( arr->vals[2*i+1].u.sval, -1 )+1;
 
-    li->text = galloc(len*sizeof(unichar_t));
+    li->text = malloc(len*sizeof(unichar_t));
     len = 0;
     last = NULL;
     for ( i=0; i<cnt; ++i ) {
@@ -1211,7 +1212,7 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
 	script = DEFAULT_SCRIPT;
 	for ( upt = li->text+len; *upt && script==DEFAULT_SCRIPT; ++upt )
 	    script = ScriptFromUnicode(*upt,NULL);
-	len += utf8_strlen( arr->vals[2*i+1].u.sval );
+	len += g_utf8_strlen( arr->vals[2*i+1].u.sval, -1 );
 	li->text[len++] = '\n';
 
 	last->end = len-1;
@@ -1286,7 +1287,7 @@ char *SFDefaultImage(SplineFont *sf,char *filename) {
 	static int cnt=0;
 	char *dir = getenv("TMPDIR");
 	if ( dir==NULL ) dir = P_tmpdir;
-	filename = galloc(strlen(dir)+strlen(sf->fontname)+100);
+	filename = malloc(strlen(dir)+strlen(sf->fontname)+100);
 #ifdef _NO_LIBPNG
 	sprintf( filename, "%s/ff-preview-%s-%d-%d.bmp", dir, sf->fontname, getpid(), ++cnt );
 #else

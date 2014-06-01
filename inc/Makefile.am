@@ -26,6 +26,9 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+MAINTAINERCLEANFILES=fontforge-config.h.in
+DISTCLEANFILES=fontforge-config.h stamp-h1 stamp-h2
+
 # FIXME: The installed headers need to be reworked for better system
 # installation. In particular, they ought to have <> instead of "" and
 # they should require a "fontforge/" prefix.
@@ -36,11 +39,5 @@ pkginclude_HEADERS = basics.h chardata.h charset.h dynamic.h	\
 	intl.h ustring.h utype.h dlist.h carbon.h gnetwork.h gutils.h
 
 noinst_HEADERS = pluginloading.h
-
-#--------------------------------------------------------------------------
-
-EXTRA_DIST = descrip.mms fontforge-config.h_vms
-
-#--------------------------------------------------------------------------
 
 -include $(top_srcdir)/git.mk

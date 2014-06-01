@@ -24,18 +24,12 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <fontforge-config.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <utype.h>
-
-/* figure out how to do divide, multiply, 1/4, 3/4 */
-#define forever for (;;)
-/* already in basics.h */
-#if 0
-typedef unsigned short unichar_t;
-typedef unsigned int uint32;
-#endif
 
 #define ACUTE		0x1
 #define GRAVE		0x2
@@ -497,7 +491,7 @@ void ParseUnicodeFile(FILE *in) {
     continue;
 	pt += 6;
 	mask = 0;
-	forever {
+	for (;;) {
 	    for ( i=0; names2[i].name!=NULL; ++i ) {
 		if ( strncmp(pt,names2[i].name,strlen(names2[i].name))==0 )
 	    break;

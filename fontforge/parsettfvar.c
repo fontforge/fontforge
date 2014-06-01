@@ -123,13 +123,13 @@ return;
 return;
     }
 
-    info->variations = gcalloc(1,sizeof(struct variations));
+    info->variations = calloc(1,sizeof(struct variations));
     info->variations->axis_count = axis_count;
     info->variations->instance_count = instance_count;
-    info->variations->axes = gcalloc(axis_count,sizeof(struct taxis));
-    info->variations->instances = gcalloc(instance_count,sizeof(struct tinstance));
+    info->variations->axes = calloc(axis_count,sizeof(struct taxis));
+    info->variations->instances = calloc(instance_count,sizeof(struct tinstance));
     for ( i=0; i<instance_count; ++i )
-	info->variations->instances[i].coords = galloc(axis_count*sizeof(real));
+	info->variations->instances[i].coords = malloc(axis_count*sizeof(real));
 
     fseek(ttf,info->fvar_start+data_off,SEEK_SET);
     for ( i=0; i<axis_count; ++i ) {
@@ -171,8 +171,8 @@ return;
     for ( i=0; i<axis_count; ++i ) {
 	pair_count = getushort(ttf);
 	if ( pair_count!=0 ) {
-	    info->variations->axes[i].mapfrom = galloc(pair_count*sizeof(real));
-	    info->variations->axes[i].mapto= galloc(pair_count*sizeof(real));
+	    info->variations->axes[i].mapfrom = malloc(pair_count*sizeof(real));
+	    info->variations->axes[i].mapto= malloc(pair_count*sizeof(real));
 	    for ( j=0; j<pair_count; ++j ) {
 		info->variations->axes[i].mapfrom[j] = getushort(ttf)/16384.0;
 		info->variations->axes[i].mapto[j] = getushort(ttf)/16384.0;
@@ -187,7 +187,7 @@ return;
 }
 
 static SplineChar **InfoCopyGlyphs(struct ttfinfo *info) {
-    SplineChar **chars = galloc(info->glyph_cnt*sizeof(SplineChar *));
+    SplineChar **chars = malloc(info->glyph_cnt*sizeof(SplineChar *));
     int i;
     RefChar *r;
 
@@ -216,7 +216,7 @@ static int *readpackeddeltas(FILE *ttf,int n) {
     int *deltas;
     int runcnt, i, j;
 
-    deltas = galloc(n*sizeof(int));
+    deltas = malloc(n*sizeof(int));
 
     i = 0;
     while ( i<n ) {
@@ -254,7 +254,7 @@ static int *readpackedpoints(FILE *ttf) {
 	n = 0;
     if ( n&0x80 )
 	n = getc(ttf)|((n&0x7f)<<8);
-    points = galloc((n+1)*sizeof(int));
+    points = malloc((n+1)*sizeof(int));
     if ( n==0 )
 	points[0] = ALL_POINTS;
     else {
@@ -557,7 +557,7 @@ return;
 return;
     }
 
-    gvars = galloc((gc+1)*sizeof(uint32));
+    gvars = malloc((gc+1)*sizeof(uint32));
     if ( gvarflags&1 ) {	/* 32 bit data */
 	for ( i=0; i<=gc; ++i )
 	    gvars[i] = getlong(ttf)+dataoff;
@@ -567,10 +567,10 @@ return;
     }
 
     v->tuple_count = globaltc;
-    v->tuples = gcalloc(globaltc,sizeof(struct tuples));
+    v->tuples = calloc(globaltc,sizeof(struct tuples));
     fseek(ttf,tupoff,SEEK_SET);
     for ( i=0; i<globaltc; ++i ) {
-	v->tuples[i].coords = galloc(axiscount*sizeof(float));
+	v->tuples[i].coords = malloc(axiscount*sizeof(float));
 	for ( j=0; j<axiscount; ++j )
 	    v->tuples[i].coords[j] = ((short) getushort(ttf))/16384.0;
 	v->tuples[i].chars = InfoCopyGlyphs(info);
@@ -635,7 +635,7 @@ static void VaryCvt(struct tuples *tuple,int *points, int *deltas,
 	cvt = tuple->cvt = chunkalloc(sizeof(struct ttf_table));
 	cvt->tag = orig_cvt->tag;
 	cvt->len = cvt->maxlen = orig_cvt->len;
-	cvt->data = galloc(cvt->len);
+	cvt->data = malloc(cvt->len);
 	memcpy(cvt->data,orig_cvt->data,cvt->len);
     }
     if ( points[0]==ALL_POINTS ) {
@@ -727,7 +727,7 @@ return;
 	    int j,k,ti;
 	    ti = tupleIndex&0xfff;
 	    if ( tupleIndex&0x8000 ) {
-		real *coords = galloc(info->variations->axis_count*sizeof(real));
+		real *coords = malloc(info->variations->axis_count*sizeof(real));
 		for ( j=0; j<info->variations->axis_count; ++j )
 		    coords[j] = ((int16) getushort(ttf))/16384.0;
 		for ( k=0 ; k<info->variations->tuple_count; ++k ) {

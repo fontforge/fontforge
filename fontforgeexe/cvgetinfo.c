@@ -1026,14 +1026,14 @@ static GTextInfo **AnchorClassesLList(SplineFont *sf) {
     if ( sf->cidmaster ) sf=sf->cidmaster;
 
     for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next );
-    ti = gcalloc(cnt+1,sizeof(GTextInfo*));
+    ti = calloc(cnt+1,sizeof(GTextInfo*));
     for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next ) {
-	ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+	ti[cnt] = calloc(1,sizeof(GTextInfo));
 	ti[cnt]->text = utf82u_copy(an->name);
 	ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
 	ti[cnt]->userdata = an;
     }
-    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+    ti[cnt] = calloc(1,sizeof(GTextInfo));
 return( ti );
 }
 
@@ -1857,7 +1857,7 @@ static void PI_FixStuff(GIData *ci) {
 	else
 	    sp->pointtype = pt_curve;
     } else if ( sp->pointtype == pt_tangent )
-	SplinePointCatagorize(sp);	/* Users can change cps so it isn't a tangent, so check */
+	SplinePointCategorize(sp);	/* Users can change cps so it isn't a tangent, so check */
 }
 
 void PI_Destroy(struct dlistnode *node) {
@@ -2629,7 +2629,7 @@ GTextInfo *SCHintList(SplineChar *sc,HintMask *hm) {
 
     for ( h=sc->hstem, i=0; h!=NULL; h=h->next, ++i );
     for ( h=sc->vstem     ; h!=NULL; h=h->next, ++i );
-    ti = gcalloc(i+1,sizeof(GTextInfo));
+    ti = calloc(i+1,sizeof(GTextInfo));
 
     for ( h=sc->hstem, i=0; h!=NULL; h=h->next, ++i ) {
 	ti[i].fg = ti[i].bg = COLOR_DEFAULT;
@@ -2680,7 +2680,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     GPoint pt;
     int j, defxpos, nextstarty, k, l;
 
-    gi = gcalloc(1,sizeof(GIData));
+    gi = calloc(1,sizeof(GIData));
 
     cur.main_background = nextcp.main_background = prevcp.main_background = COLOR_DEFAULT;
     cur.main_foreground = 0xff0000;
@@ -2730,7 +2730,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	memset(&pb,0,sizeof(pb));
 
 	j=k=0;
-	gi->gcd = galloc( gcdcount*sizeof(GGadgetCreateData) );
+	gi->gcd = malloc( gcdcount*sizeof(GGadgetCreateData) );
 	memcpy( gi->gcd, gcd, gcdcount*sizeof(GGadgetCreateData) );
 
 	label[j].text = (unichar_t *) _("_Normal");
@@ -3760,10 +3760,6 @@ void CVGetInfo(CharView *cv) {
     spiro_cp *scp;
 
     if ( !CVOneThingSel(cv,&sp,&spl,&ref,&img,&ap,&scp)) {
-#if 0
-	if ( (FontView *) (cv->b.fv)->b.cidmaster==NULL )
-	    SCCharInfo(cv->b.sc,(FontView *) (cv->b.fv)->b.map,CVCurEnc(cv));
-#endif
     } else if ( ref!=NULL )
 	RefGetInfo(cv,ref);
     else if ( img!=NULL )
@@ -3810,7 +3806,7 @@ void SCRefBy(SplineChar *sc) {
 	if ( cnt==0 )
 return;
 	if ( i==0 )
-	    deps = gcalloc(cnt+1,sizeof(unichar_t *));
+	    deps = calloc(cnt+1,sizeof(unichar_t *));
 	tot = cnt-1;
     }
 
@@ -3907,8 +3903,8 @@ return;
 	if ( tot==0 )
 return;
 	if ( j==0 ) {
-	    deps = gcalloc(tot+1,sizeof(char *));
-	    depsc = galloc(tot*sizeof(SplineChar *));
+	    deps = calloc(tot+1,sizeof(char *));
+	    depsc = malloc(tot*sizeof(SplineChar *));
 	}
     }
 

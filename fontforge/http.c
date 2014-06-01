@@ -42,7 +42,7 @@ int HttpGetBuf(char *url, char *databuf, int *datalen, void *_lock) {
 FILE *URLToTempFile(char *url,void *_lock) {
     return NULL;
 }
-int URLFromFile(char *url,FILE *from) {
+int URLFromFile(const char *url,FILE *from) {
     return false;
 }
 #else
@@ -53,7 +53,7 @@ int URLFromFile(char *url,FILE *from) {
 #include <sys/types.h>
 #include <sys/socket.h>
 #ifndef MSG_NOSIGNAL
-#define MSG_NOSIGNAL        0x0		/* linux man page for "send" implies MSG_NOSIGNAL is in sys/socket.h, but it ain't implemente for Mac and Solaris */
+#define MSG_NOSIGNAL        0x0		/* MSG_NOSIGNAL is POSIX.1-2008 (not implemented on Mac and Solaris) */
 #endif
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -363,7 +363,6 @@ return( 404 );		/* Random error */
 	ff_progress_change_total((int) ((ftell(msg)+databuflen-1)/databuflen) );
 	rewind(msg);
 	while ( (len=fread(databuf,1,databuflen,msg))>0 ) {
-/*fprintf( stderr, "Total read=%d\n", tot += len );*/
 	    if ( write(soc,databuf,len)==-1 ) {
 		fprintf( stderr, "Socket write failed3\n" );
 		close( soc );
@@ -382,17 +381,7 @@ return( 404 );
 
     first = 1; ended = 0;
     code = 404;
-#if 0
- { FILE *out;
-   char fbuf[400];
-   static int msgid=0;
-   sprintf(fbuf,"response%d", ++msgid);
-   out = fopen( fbuf,"w");
-#endif
     while ((len = read(soc,databuf,databuflen))>0 ) {
-#if 0
-  fwrite(databuf,1,len,out);
-#endif
 	if ( first ) {
 	    databuf[len] = '\0';
 	    sscanf(databuf,"HTTP/%*f %d", &code );
@@ -448,10 +437,6 @@ return( 404 );
 	if ( verbose>=2 || ( verbose!=0 && verbose<2 && !ended) )
 	    write(fileno(stdout),databuf,len);
     }
-#if 0
- fclose(out);
- }
-#endif
     if ( len==-1 )
 	fprintf( stderr, "Socket read failed\n" );
     close( soc );
@@ -709,7 +694,7 @@ return( false );
     }
 
     datalen = 8*8*1024;
-    databuf = galloc(datalen+1);
+    databuf = malloc(datalen+1);
     memset(&siteinfo,0,sizeof(siteinfo));
     siteinfo.user_id = -1;
 
@@ -781,34 +766,6 @@ return( false );
 	ff_post_error(_("Font file vanished"),_("The font file we just created can no longer be opened.") );
 return( false );
     }
-#if 0		/* Posting multiple files doesn't work */
-    } else {
-	char *previewname;
-	fprintf(formdata,"Content-Disposition: form-data; name=\"upload_file_name\";\r\n"
-			 "Content-Type: multipart/mixed; boundary=Sub%s\r\n\r\n", boundary  );
-	fprintf(formdata,"--Sub%s\r\n", boundary );
-	fprintf(formdata,"Content-Disposition: file; filename=\"%s\"\r\n"
-			 "Content-Type: application/octet-stream\r\n\r\n", fontfilename );
-	if ( !dumpfile(formdata,NULL,oflib->pathspec)) {
-	    free(databuf);
-	    ff_post_error(_("Font file vanished"),_("The font file we just created can no longer be opened.") );
-return( false );
-	}
-	fprintf(formdata,"--Sub%s\r\n", boundary );
-	previewname = strrchr(oflib->previewimage,'/');
-	if ( previewname==NULL ) previewname = oflib->previewimage;
-	else ++previewname;
-	fprintf(formdata,"Content-Disposition: file; filename=\"%s\"\r\n"
-			 "Content-Type: %s\r\n\r\n", previewname,
-			 ImageMimeType(strrchr(previewname,'.')));
-	if ( !dumpfile(formdata,NULL,oflib->previewimage)) {
-	    free(databuf);
-	    ff_post_error(_("Image file vanished"),_("The preview image we just created can no longer be opened.") );
-return( false );
-	}
-	fprintf(formdata,"--Sub%s--\r\n", boundary );
-    }
-#endif
 
     fprintf(formdata,"--%s\r\n", boundary );
     fprintf(formdata,"Content-Disposition: form-data; name=\"upload_tags\"\r\n"
@@ -854,10 +811,8 @@ return( false );
     fprintf(formdata,"--%s--\r\n", boundary );
 
     ChangeLine2_8("Transmitting font...");
-#if 0
-    findHTTPhost(&addr, "powerbook",-1);	/* Debug!!!! */
+    /*findHTTPhost(&addr, "powerbook",-1); */	/* Debug!!!! */
 	/*addr.sin_port = htons(8080); */	/* Debug!!!! */
-#endif
     soc = makeConnection(&addr);
     if ( soc==-1 ) {
 	ff_progress_end_indicator();
@@ -1077,7 +1032,7 @@ return( false );
     if ( lock!=NULL )
 	pthread_mutex_lock(lock);
     datalen = 8*8*1024;
-    databuf = galloc(datalen+1);
+    databuf = malloc(datalen+1);
     if ( lock!=NULL )
 	pthread_mutex_unlock(lock);
     else
@@ -1292,7 +1247,7 @@ return( sofar );
 		if ( tot+1>*datalen ) {
 		    if ( lock!=NULL )
 			pthread_mutex_lock(lock);
-		    databuf = grealloc(databuf,*datalen = tot+10);
+		    databuf = realloc(databuf,*datalen = tot+10);
 		    if ( lock!=NULL )
 			pthread_mutex_unlock(lock);
 		}
@@ -1377,7 +1332,7 @@ return( false );
     }
 
     datalen = 8*8*1024;
-    databuf = galloc(datalen+1);
+    databuf = malloc(datalen+1);
     cmd = databuf;
 
     ChangeLine2_8(_("Logging in..."));
@@ -1503,7 +1458,7 @@ return( NULL );
     }
 }
 
-int URLFromFile(char *url,FILE *from) {
+int URLFromFile(const char *url,FILE *from) {
 
     if ( strncasecmp(url,"ftp://",6)==0 ) {
 return( FtpURLAndTempFile(url,NULL,from));

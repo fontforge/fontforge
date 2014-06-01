@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
+#include <fontforge-config.h>
 
 #include "fontforgeui.h"
 #include "groups.h"
@@ -33,6 +33,7 @@
 #include <gio.h>
 #include <gresedit.h>
 #include <ustring.h>
+#include "../fontforge/ffglib.h"
 #include <gkeysym.h>
 #include <utype.h>
 #include <chardata.h>
@@ -51,10 +52,6 @@
 #include <windows.h>
 #endif
 
-// Clash on windows for a define to PrintDlgA
-#ifdef PrintDlg
-#undef PrintDlg
-#endif
 
 int OpenCharsInNewWindow = 0;
 char *RecentFiles[RECENT_MAX] = { NULL };
@@ -67,7 +64,7 @@ int compact_font_on_open=0;
 int navigation_mask = 0;		/* Initialized in startui.c */
 int prefs_ensure_correct_extension = 1;
 
-static char *fv_fontnames = "fontview," MONO_UI_FAMILIES;
+static char *fv_fontnames = MONO_UI_FAMILIES;
 
 #define	FV_LAB_HEIGHT	15
 
@@ -114,8 +111,10 @@ int default_fv_showhmetrics=false, default_fv_showvmetrics=false,
 FontView *fv_list=NULL;
 
 static void AskAndMaybeCloseLocalCollabServers( void );
-static void FVStopWebFontServer( FontView *fv );
 
+#if BUILD_COLLAB
+static void FVStopWebFontServer( FontView *fv );
+#endif
 
 static void FV_ToggleCharChanged(SplineChar *sc) {
     int i, j;
@@ -552,27 +551,12 @@ static int SaveAs_FormatChange(GGadget *g, GEvent *e) {
 	char *oldname = GGadgetGetTitle8(fc);
 	int *_s2d = GGadgetGetUserData(g);
 	int s2d = GGadgetIsChecked(g);
-	char *pt, *newname = galloc(strlen(oldname)+8);
-#ifdef VMS
-	char *pt2;
-
-	strcpy(newname,oldname);
-	pt = strrchr(newname,'.');
-	pt2 = strrchr(newname,'_');
-	if ( pt==NULL )
-	    pt = pt2;
-	else if ( pt2!=NULL && pt<pt2 )
-	    pt = pt2;
-	if ( pt==NULL )
-	    pt = newname+strlen(newname);
-	strcpy(pt,s2d ? "_sfdir" : ".sfd" );
-#else
+	char *pt, *newname = malloc(strlen(oldname)+8);
 	strcpy(newname,oldname);
 	pt = strrchr(newname,'.');
 	if ( pt==NULL )
 	    pt = newname+strlen(newname);
 	strcpy(pt,s2d ? ".sfdir" : ".sfd" );
-#endif
 	GGadgetSetTitle8(fc,newname);
 	save_to_dir = *_s2d = s2d;
 	SavePrefs(true);
@@ -614,7 +598,7 @@ int _FVMenuSaveAs(FontView *fv) {
 	SplineFont *sf = fv->b.cidmaster?fv->b.cidmaster:
 		fv->b.sf->mm!=NULL?fv->b.sf->mm->normal:fv->b.sf;
 	char *fn = sf->defbasefilename ? sf->defbasefilename : sf->fontname;
-	temp = galloc((strlen(fn)+10));
+	temp = malloc((strlen(fn)+10));
 	strcpy(temp,fn);
 	if ( sf->defbasefilename!=NULL )
 	    /* Don't add a default suffix, they've already told us what name to use */;
@@ -626,11 +610,7 @@ int _FVMenuSaveAs(FontView *fv) {
 	    strcat(temp,"Var");
 	else
 	    strcat(temp,"MM");
-#ifdef VMS
-	strcat(temp,save_to_dir ? "_sfdir" : ".sfd");
-#else
 	strcat(temp,save_to_dir ? ".sfdir" : ".sfd");
-#endif
 	s2d = save_to_dir;
     }
 
@@ -660,7 +640,7 @@ int _FVMenuSaveAs(FontView *fv) {
     	char* defaultSaveDir = GFileGetHomeDocumentsDir();
 	printf("save-as:%s\n", temp );
     	char* temp2 = GFileAppendFile( defaultSaveDir, temp, 0 );
-    	gfree(temp);
+    	free(temp);
     	temp = temp2;
     }
 #endif
@@ -944,6 +924,7 @@ static void _MenuExit(void *UNUSED(junk)) {
 
     FontView *fv, *next;
 
+#if BUILD_COLLAB
     if( collabclient_haveLocalServer() )
     {
 	AskAndMaybeCloseLocalCollabServers();
@@ -955,6 +936,7 @@ static void _MenuExit(void *UNUSED(junk)) {
 	printf("fv:%p running webfont server:%d\n", fv, fv->pid_webfontserver );
 	FVStopWebFontServer( fv );
     }
+#endif
 
     LastFonts_Save();
     for ( fv = fv_list; fv!=NULL; fv = next )
@@ -1033,7 +1015,7 @@ void MenuOpen(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
     OpenDir = GFileGetHomeDocumentsDir();
     if( fv && fv->b.sf && fv->b.sf->filename )
     {
-	printf("existing name:%s\n", fv->b.sf->filename );
+//	printf("existing name:%s\n", fv->b.sf->filename );
 	char* dname = GFileDirName( fv->b.sf->filename );
 	OpenDir = dname;
     }
@@ -1050,7 +1032,7 @@ return;
 	do {
 	    fpt = strstr(file,"; ");
 	    if ( fpt!=NULL ) *fpt = '\0';
-	    full = galloc(strlen(temp)+1+strlen(file)+1);
+	    full = malloc(strlen(temp)+1+strlen(file)+1);
 	    strcpy(full,temp); strcat(full,"/"); strcat(full,file);
 	    ViewPostScriptFont(full,0);
 	    file = fpt+2;
@@ -1164,7 +1146,7 @@ static void FVMenuPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED
 
     if ( fv->b.container!=NULL && fv->b.container->funcs->is_modal )
 return;
-    PrintDlg(fv,NULL,NULL);
+    PrintFFDlg(fv,NULL,NULL);
 }
 
 #if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
@@ -1593,98 +1575,17 @@ static void FVMenuRedo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(
     FVRedo((FontViewBase *) fv);
 }
 
-/*
- * Unused
-#include <stddef.h>
-static int listLength( void* p, int nextoffset ) {
-    if( !p )
-        return 0;
-    int ret = 1;
-    p = *((void**)(p + nextoffset));
-    for( ; p; ret++ ) {
-        p = *((void**)(p + nextoffset));
-    }
-    return ret;
-}
-static int pstLength( struct generic_pst * pst ) {
-    int offset = offsetof( PST, next );
-    return listLength( pst, offset );
-}
-*/
-
-
 static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     FontViewBase * fvb = (FontViewBase *) fv;
     SplineFont *sf = fvb->sf;
-    /* char* sfdchunk = 0; */
-    /* FILE* sfd = 0; */
 
-    // printf("we currently have %d splinefont level undoes\n", dlist_size((struct dlistnode **)&sf->undoes));
     if( !sf->undoes )
 	return;
 
     struct sfundoes *undo = sf->undoes;
     printf("font level undo msg:%s\n", undo->msg );
     SFUndoPerform( undo, sf );
-
-    /* switch(undo->type) { */
-    /* case sfut_fontinfo: */
-    /* 	sfdchunk = undo->sfdchunk; */
-    /* 	printf("font level undo, font info sfd:%s\n", sfdchunk ); */
-    /* 	sfd = MakeTemporaryFile(); */
-    /* 	fwrite( sfdchunk, strlen(sfdchunk), 1, sfd ); */
-    /* 	fseek( sfd, 0, SEEK_SET ); */
-
-    /* 	SFD_GetFontMetaDataData d; */
-    /* 	SFD_GetFontMetaDataData_Init( &d ); */
-    /* 	visitSFDFragment( sfd, sf, SFD_GetFontMetaData, &d ); */
-    /* 	break; */
-    /* case sfut_lookups_kerns: */
-    /* case sfut_lookups: */
-    /* 	sfdchunk = undo->sfdchunk; */
-    /* 	if( !sfdchunk ) { */
-    /* 	    ff_post_error(_("Undo information incomplete"),_("There is a splinefont level undo, but it does not contain any information to perform the undo. This is an application error, please report what you last did to the lookup tables so the developers can try to reproduce the issue and fix it.")); */
-    /* 	    SFUndoRemoveAndFree( sf, undo ); */
-    /* 	    return; */
-    /* 	} */
-
-    /* 	// Roll it on back! */
-    /* 	sfd = MakeTemporaryFile(); */
-    /* 	fwrite( sfdchunk, strlen(sfdchunk), 1, sfd ); */
-    /* 	fseek( sfd, 0, SEEK_SET ); */
-
-    /* 	while( 1 ) { */
-    /* 	    char* name = SFDMoveToNextStartChar( sfd ); */
-    /* 	    if( !name ) */
-    /* 		break; */
-
-    /* 	    int unienc = 0; */
-    /* 	    SplineChar *sc; */
-    /* 	    sc = SFGetChar( sf, unienc, name ); */
-    /* 	    if( !sc ) { */
-    /* 		ff_post_error(_("Bad undo"),_("couldn't find the character %s"), name ); */
-    /* 		break; */
-    /* 	    } */
-    /* 	    if( sc ) { */
-    /* 		// Free the stuff in sc->psts so we don't leak it. */
-    /* 		if( undo->type == sfut_lookups ) { */
-    /* 		    PSTFree(sc->possub); */
-    /* 		    sc->possub = 0; */
-    /* 		} */
-    /* 		char tok[2000]; */
-    /* 		getname( sfd, tok ); */
-    /* 		SFDGetPSTs( sfd, sc, tok ); */
-    /* 		SFDGetKerns( sfd, sc, tok ); */
-    /* 	    } */
-    /* 	    free(name); */
-    /* 	} */
-
-    /* 	if( undo->type == sfut_lookups_kerns ) { */
-    /* 	    SFDFixupRefs( sf ); */
-    /* 	} */
-    /* 	break; */
-    /* } */
     SFUndoRemoveAndFree( sf, undo );
 }
 
@@ -1727,11 +1628,6 @@ const uint8 mergefunc[] = {
 /* mt_and */
 	0, 0,
 	0, 1,
-#if 0
-/* mt_xor */
-	0, 1,
-	1, 0
-#endif
 };
 
 static enum merge_type SelMergeType(GEvent *e) {
@@ -2951,7 +2847,7 @@ static void FVShowSubFont(FontView *fv,SplineFont *new) {
 	EncMapFree(fv->b.map);
 	fv->b.map = fv->b.normal;
 	fv->b.normal = NULL;
-	fv->b.selected = grealloc(fv->b.selected,fv->b.map->enccount);
+	fv->b.selected = realloc(fv->b.selected,fv->b.map->enccount);
 	memset(fv->b.selected,0,fv->b.map->enccount);
     }
     CIDSetEncMap((FontViewBase *) fv,new);
@@ -3054,7 +2950,7 @@ static void FVMenuDisplaySubs(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 	    if ( cnt==0 )
 	break;
 	    if ( names==NULL )
-		names = galloc((cnt+3) * sizeof(char *));
+		names = malloc((cnt+3) * sizeof(char *));
 	    else {
 		names[cnt++] = "-";
 		names[cnt++] = _("New Lookup Subtable...");
@@ -3170,12 +3066,6 @@ static int md_e_h(GWindow gw, GEvent *e) {
 	}
 	d->done = true;
     } else if ( e->type==et_char ) {
-#if 0
-	if ( e->u.chr.keysym == GK_F1 || e->u.chr.keysym == GK_Help ) {
-	    help("fontinfo.html");
-return( true );
-	}
-#endif
 return( false );
     }
 return( true );
@@ -3276,7 +3166,11 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi, GEvent *UNUSED(
 
 static void FV_ChangeDisplayBitmap(FontView *fv,BDFFont *bdf) {
     FVChangeDisplayFont(fv,bdf);
-    fv->b.sf->display_size = fv->show->pixelsize;
+    if (fv->show != NULL) {
+        fv->b.sf->display_size = fv->show->pixelsize;
+    } else {
+        fv->b.sf->display_size = 1;
+    }
 }
 
 static void FVMenuSize(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
@@ -3592,37 +3486,6 @@ static void FVMenuClearHints(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *U
     FVClearHints(&fv->b);
 }
 
-#if 0
-static void FVMenuClearWidthMD(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i, changed, gid;
-    MinimumDistance *md, *prev, *next;
-
-    for ( i=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i] &&
-	    (gid = fv->b.map->map[i])!=-1 && SCWorthOutputting(fv->b.sf->glyphs[gid]) ) {
-	SplineChar *sc = fv->b.sf->glyphs[gid];
-	prev=NULL; changed = false;
-	for ( md=sc->md; md!=NULL; md=next ) {
-	    next = md->next;
-	    if ( md->sp2==NULL ) {
-		if ( prev==NULL )
-		    sc->md = next;
-		else
-		    prev->next = next;
-		chunkfree(md,sizeof(MinimumDistance));
-		changed = true;
-	    } else
-		prev = md;
-	}
-	if ( changed ) {
-	    sc->manualhints = true;
-	    SCOutOfDateBackground(sc);
-	    SCUpdateAll(sc);
-	}
-    }
-}
-#endif
-
 static void FVMenuHistograms(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     SFHistogram(fv->b.sf, fv->b.active_layer, NULL,
@@ -3663,7 +3526,7 @@ return;
     len += strlen(collabStateString);
     if ( file!=NULL )
 	len += 2+strlen(file);
-    title = galloc((len+1)*sizeof(unichar_t));
+    title = malloc((len+1)*sizeof(unichar_t));
     uc_strcpy(title,"");
 
     if(*collabStateString) {
@@ -3733,7 +3596,7 @@ static enum fchooserret CMapFilter(GGadget *g,GDirEntry *ent,
 
     if ( ret==fc_show && !ent->isdir ) {
 	int len = 3*(u_strlen(dir)+u_strlen(ent->name)+5);
-	char *filename = galloc(len);
+	char *filename = malloc(len);
 	u2def_strncpy(filename,dir,len);
 	strcat(filename,"/");
 	u2def_strncpy(buf2,ent->name,sizeof(buf2));
@@ -3846,7 +3709,7 @@ return;
     sf->display_antialias = fv->b.sf->display_antialias;
     sf->display_bbsized = fv->b.sf->display_bbsized;
     sf->display_size = fv->b.sf->display_size;
-    sf->private = gcalloc(1,sizeof(struct psdict));
+    sf->private = calloc(1,sizeof(struct psdict));
     PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
     FVInsertInCID((FontViewBase *) fv,sf);
 }
@@ -3987,7 +3850,7 @@ return;
     }
     SFForceEncoding(fv->b.sf,fv->b.map,enc);
     if ( oldcnt < fv->b.map->enccount ) {
-	fv->b.selected = grealloc(fv->b.selected,fv->b.map->enccount);
+	fv->b.selected = realloc(fv->b.selected,fv->b.map->enccount);
 	memset(fv->b.selected+oldcnt,0,fv->b.map->enccount-oldcnt);
     }
     if ( fv->b.normal!=NULL ) {
@@ -4134,7 +3997,7 @@ static void fllistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    mi->ti.disabled = true;
 	    if ( fv->b.sf->filename!=NULL ) {
 		if ( fv->b.sf->backedup == bs_dontknow ) {
-		    char *buf = galloc(strlen(fv->b.sf->filename)+20);
+		    char *buf = malloc(strlen(fv->b.sf->filename)+20);
 		    strcpy(buf,fv->b.sf->filename);
 		    if ( fv->b.sf->compression!=0 )
 			strcat(buf,compressors[fv->b.sf->compression-1].ext);
@@ -4173,11 +4036,9 @@ static void edlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 #ifndef _NO_LIBPNG
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/png") &&
 #endif
-#ifndef _NO_LIBXML
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/svg+xml") &&
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/svg-xml") &&
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/svg") &&
-#endif
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/bmp") &&
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/eps") &&
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/ps"));
@@ -5083,7 +4944,7 @@ return;				/* Cancelled */
 return;
     }
     pt = buffer;
-    forever {
+    for (;;) {
 	ch = getc(file);
 	if ( ch!=EOF && !isspace(ch)) {
 	    if ( pt<buffer+sizeof(buffer)-1 )
@@ -5095,9 +4956,9 @@ return;
 		for ( fvs=(FontView *) (fv->b.sf->fv); fvs!=NULL; fvs=(FontView *) (fvs->b.nextsame) ) {
 		    EncMap *map = fvs->b.map;
 		    if ( map->enccount+1>=map->encmax )
-			map->map = grealloc(map->map,(map->encmax += 20)*sizeof(int));
+			map->map = realloc(map->map,(map->encmax += 20)*sizeof(int));
 		    map->map[map->enccount] = -1;
-		    fvs->b.selected = grealloc(fvs->b.selected,(map->enccount+1));
+		    fvs->b.selected = realloc(fvs->b.selected,(map->enccount+1));
 		    memset(fvs->b.selected+map->enccount,0,1);
 		    ++map->enccount;
 		    if ( sc==NULL ) {
@@ -5105,7 +4966,6 @@ return;
 			free(sc->name);
 			sc->name = copy(buffer);
 			sc->comment = copy(".");	/* Mark as something for sfd file */
-			/*SCLigDefault(sc);*/
 		    }
 		    map->map[map->enccount-1] = sc->orig_pos;
 		    map->backmap[sc->orig_pos] = map->enccount-1;
@@ -5167,11 +5027,6 @@ static void enlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  case MID_Reencode: case MID_ForceReencode:
 	    mi->ti.disabled = fv->b.cidmaster!=NULL;
 	  break;
-#if 0
-	  case MID_AddUnencoded:
-	    mi->ti.disabled = fv->b.normal!=NULL;
-	  break;
-#endif
 	  case MID_DetachGlyphs: case MID_DetachAndRemoveGlyphs:
 	    mi->ti.disabled = !anyglyphs;
 	  break;
@@ -5208,7 +5063,7 @@ static void lylistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     int ly;
     GMenuItem *sub;
 
-    sub = gcalloc(sf->layer_cnt+1,sizeof(GMenuItem));
+    sub = calloc(sf->layer_cnt+1,sizeof(GMenuItem));
     for ( ly=ly_fore; ly<sf->layer_cnt; ++ly ) {
 	sub[ly-1].ti.text = utf82u_copy(sf->layers[ly].name);
 	sub[ly-1].ti.checkable = true;
@@ -5330,10 +5185,8 @@ static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    mi->ti.disabled = otl==NULL;
 	  } break;
 	  case MID_ShowHMetrics:
-	    /*mi->ti.checked = fv->showhmetrics;*/
 	  break;
 	  case MID_ShowVMetrics:
-	    /*mi->ti.checked = fv->showvmetrics;*/
 	    mi->ti.disabled = !sf->hasvmetrics;
 	  break;
 	  case MID_32x8:
@@ -5410,7 +5263,6 @@ static GMenuItem2 htlist[] = {
     { { (unichar_t *) N_("S_uggest Deltas..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Suggest Deltas|No Shortcut"), NULL, NULL, FVMenuDeltas, MID_Deltas },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Clear Hints"), (GImage *) "hintsclearvstems.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Clear Hints|No Shortcut"), NULL, NULL, FVMenuClearHints, MID_ClearHints },
-/*    { { (unichar_t *) N_("Clear _Width MD"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Clear Width MD|No Shortcut"), NULL, NULL, FVMenuClearWidthMD, MID_ClearWidthMD },*/
     { { (unichar_t *) N_("Clear Instructions"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Clear Instructions|No Shortcut"), NULL, NULL, FVMenuClearInstrs, MID_ClearInstrs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Histograms"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Histograms|No Shortcut"), histlist, NULL, NULL, 0 },
@@ -5563,7 +5415,7 @@ static void mmlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     if ( mm==NULL )
 	mml = mmlist;
     else {
-	mml = gcalloc(base+mm->instance_count+2,sizeof(GMenuItem2));
+	mml = calloc(base+mm->instance_count+2,sizeof(GMenuItem2));
 	memcpy(mml,mmlist,sizeof(mmlist));
 	mml[base-1].ti.fg = mml[base-1].ti.bg = COLOR_DEFAULT;
 	mml[base-1].ti.line = true;
@@ -5638,6 +5490,7 @@ static void FVWindowMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *e) {
     }
 }
 
+#ifdef BUILD_COLLAB
 static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -5682,6 +5535,7 @@ static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 	printf("connecting to server...sent the sfd for session start.\n");
     }
 }
+#endif
 
 static int collab_MakeChoicesArray( GHashTable* peers, char** choices, int choices_sz, int localOnly )
 {
@@ -5750,6 +5604,7 @@ static beacon_announce_t* collab_getBeaconFromChoicesArray( GHashTable* peers, i
 }
 
 
+#ifdef BUILD_COLLAB
 static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -5818,6 +5673,7 @@ static void FVMenuCollabDisconnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEv
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     collabclient_sessionDisconnect( &fv->b );
 }
+#endif
 
 static void AskAndMaybeCloseLocalCollabServers()
 {
@@ -5871,28 +5727,12 @@ static void AskAndMaybeCloseLocalCollabServers()
     printf("allServersSelected:%d\n", allServersSelected );
     if( allServersSelected )
 	collabclient_closeAllLocalServersForce();
-
-
-
-	/* if ( gwwv_ask(_("Close Server"),(const char **) buts,0,1,_("Please make sure you have saved the font before you close the server. Closing the server will force all clients which might be connected to it to also disconnect. Really close the local server"))==1 ) */
-	/* { */
-	/*     return; */
-	/* } */
-
-    /* collabclient_sessionDisconnect( &fv->b ); */
-    /* collabclient_closeLocalServer( &fv->b ); */
-
 }
 
+#ifdef BUILD_COLLAB
 static void FVMenuCollabCloseLocalServer(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-//    enum collabState_t st = collabclient_getState( &fv->b );
-//    if( st >= cs_server )
-    {
-	AskAndMaybeCloseLocalCollabServers();
-    }
+    AskAndMaybeCloseLocalCollabServers();
 }
 
 static void FVMenuStartWebFontServer(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
@@ -5907,7 +5747,6 @@ static void FVMenuStartWebFontServer(GWindow gw, struct gmenuitem *UNUSED(mi), G
     argv[1] = 0;
     gchar **envp = 0;
     GSpawnFlags flags = 0;
-    GPid child_pid;
     GError * error = 0;
     gboolean rc = g_spawn_async( getTempDir(),
 				 argv,
@@ -5992,6 +5831,7 @@ static GMenuItem2 collablist[] = {
 
     GMENUITEM2_EMPTY,				/* Extra room to show sub-font names */
 };
+#endif
 
 GMenuItem2 helplist[] = {
     { { (unichar_t *) N_("_Help"), (GImage *) "helphelp.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Help|F1"), NULL, NULL, FVMenuContextualHelp, 0 },
@@ -6017,9 +5857,6 @@ GMenuItem fvpopupmenu[] = {
     { { (unichar_t *) N_("Glyph _Info..."), (GImage *) "elementglyphinfo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuCharInfo, MID_CharInfo },
     { { (unichar_t *) N_("_Transform..."), (GImage *) "elementtransform.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, FVMenuTransform, MID_Transform },
     { { (unichar_t *) N_("_Expand Stroke..."), (GImage *) "elementexpandstroke.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'E' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuStroke, MID_Stroke },
-/*    { { (unichar_t *) N_("_Remove Overlap"), (GImage *) "overlaprm.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_RmOverlap },*/
-/*    { { (unichar_t *) N_("_Simplify"), (GImage *) "elementsimplify.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuSimplify, MID_Simplify },*/
-/*    { { (unichar_t *) N_("Add E_xtrema"), (GImage *) "elementaddextrema.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, 'X', ksm_control|ksm_shift, NULL, NULL, FVMenuAddExtrema, MID_AddExtrema },*/
     { { (unichar_t *) N_("To _Int"), (GImage *) "elementround.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRound2Int, MID_Round },
     { { (unichar_t *) N_("_Correct Direction"), (GImage *) "elementcorrectdir.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'D' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCorrectDir, MID_Correct },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, '\0', 0, NULL, NULL, NULL, 0 }, /* line */
@@ -6064,19 +5901,6 @@ void FVRefreshChar(FontView *fv,int gid) {
     /* Can happen in scripts */ /* Can happen if we do an AutoHint when generating a tiny font for freetype context */
     if ( fv->v==NULL || fv->colcnt==0 || fv->b.sf->glyphs[gid]== NULL )
 return;
-#if 0
-    /* What on earth was this code for? it breaks updates of things like "a.sc"*/
-    if ( fv->cur_subtable==NULL && strchr(fv->b.sf->glyphs[gid]->name,'.')!=NULL ) {
-	char *temp = copy(fv->b.sf->glyphs[gid]->name);
-	SplineChar *sc2;
-	*strchr(temp,'.') = '\0';
-	sc2 = SFGetChar(fv->b.sf,-1,temp);
-	if ( sc2!=NULL && sc2->orig_pos!=gid )
-	    gid = sc2->orig_pos;
-	free(temp);
-    }
-#endif
-
     for ( fv=(FontView *) (fv->b.sf->fv); fv!=NULL; fv = (FontView *) (fv->b.nextsame) ) {
 	if( !fv->colcnt )
 	    continue;
@@ -6107,12 +5931,11 @@ void FVRegenChar(FontView *fv,SplineChar *sc) {
     if ( fv->v==NULL )			/* Can happen in scripts */
 return;
 
-    /* sc->changedsincelasthinted = true;*/	/* Why was this here? */
     if ( sc->orig_pos<fv->filled->glyphcnt ) {
 	BDFCharFree(fv->filled->glyphs[sc->orig_pos]);
 	fv->filled->glyphs[sc->orig_pos] = NULL;
     }
-		/* FVRefreshChar does NOT do this for us */
+    /* FVRefreshChar does NOT do this for us */
     for ( mv=fv->b.sf->metrics; mv!=NULL; mv=mv->next )
 	MVRegenChar(mv,sc);
 
@@ -6167,23 +5990,23 @@ return( feat_sc );
 	feat_sc = SFSplineCharCreate(sf);
 	feat_sc->unicodeenc = uni;
 	if ( uni!=-1 ) {
-	    feat_sc->name = galloc(8);
+	    feat_sc->name = malloc(8);
 	    feat_sc->unicodeenc = uni;
 	    sprintf( feat_sc->name,"uni%04X", uni );
 	} else if ( fv->cur_subtable->suffix!=NULL ) {
-	    feat_sc->name = galloc(strlen(base_sc->name)+strlen(fv->cur_subtable->suffix)+2);
+	    feat_sc->name = malloc(strlen(base_sc->name)+strlen(fv->cur_subtable->suffix)+2);
 	    sprintf( feat_sc->name, "%s.%s", base_sc->name, fv->cur_subtable->suffix );
 	} else if ( fl==NULL ) {
 	    feat_sc->name = strconcat(base_sc->name,".unknown");
 	} else if ( fl->ismac ) {
 	    /* mac feature/setting */
-	    feat_sc->name = galloc(strlen(base_sc->name)+14);
+	    feat_sc->name = malloc(strlen(base_sc->name)+14);
 	    sprintf( feat_sc->name,"%s.m%d_%d", base_sc->name,
 		    (int) (fl->featuretag>>16),
 		    (int) ((fl->featuretag)&0xffff) );
 	} else {
 	    /* OpenType feature tag */
-	    feat_sc->name = galloc(strlen(base_sc->name)+6);
+	    feat_sc->name = malloc(strlen(base_sc->name)+6);
 	    sprintf( feat_sc->name,"%s.%c%c%c%c", base_sc->name,
 		    (int) (fl->featuretag>>24),
 		    (int) ((fl->featuretag>>16)&0xff),
@@ -6259,7 +6082,6 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 	base.clut = fv->show->clut;
 	GDrawSetDither(NULL, false);
 	base.trans = -1;
-	/*base.clut->trans_index = 0;*/
     } else {
 	memset(&clut,'\0',sizeof(clut));
 	gi.u.image = &base;
@@ -6503,25 +6325,19 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
     GDrawSetDither(NULL, true);
 }
 
-static char *chosung[] = { "G", "GG", "N", "D", "DD", "L", "M", "B", "BB", "S", "SS", "", "J", "JJ", "C", "K", "T", "P", "H", NULL };
-static char *jungsung[] = { "A", "AE", "YA", "YAE", "EO", "E", "YEO", "YE", "O", "WA", "WAE", "OE", "YO", "U", "WEO", "WE", "WI", "YU", "EU", "YI", "I", NULL };
-static char *jongsung[] = { "", "G", "GG", "GS", "N", "NJ", "NH", "D", "L", "LG", "LM", "LB", "LS", "LT", "LP", "LH", "M", "B", "BS", "S", "SS", "NG", "J", "C", "K", "T", "P", "H", NULL };
-
 void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
     GRect old, r;
-    char buffer[250], *pt;
-    unichar_t ubuffer[250];
     Color bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap));
+    Color fg = fvglyphinfocol;
     SplineChar *sc, dummy;
     SplineFont *sf = fv->b.sf;
     EncMap *map = fv->b.map;
-    int gid;
-    int uni;
-    Color fg = fvglyphinfocol;
-    int ulen, tlen;
+    int gid, uni, localenc;
+    GString *output = g_string_new( "" );
+    gchar *uniname = NULL;
 
     if ( event->u.expose.rect.y+event->u.expose.rect.height<=fv->mbh )
-return;
+	return;
 
     GDrawSetFont(pixmap,fv->fontset[0]);
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
@@ -6533,25 +6349,23 @@ return;
 	fv->end_pos = fv->pressed_pos = -1;	/* Can happen after reencoding */
     if ( fv->end_pos == -1 ) {
 	GDrawPopClip(pixmap,&old);
-return;
+	return;
     }
 
+    localenc = fv->end_pos;
     if ( map->remap!=NULL ) {
-	int localenc = fv->end_pos;
 	struct remap *remap = map->remap;
 	while ( remap->infont!=-1 ) {
 	    if ( localenc>=remap->infont && localenc<=remap->infont+(remap->lastenc-remap->firstenc) ) {
 		localenc += remap->firstenc-remap->infont;
-	break;
+		break;
 	    }
 	    ++remap;
 	}
-	sprintf( buffer, "%-5d (0x%04x) ", localenc, localenc );
-    } else if ( map->enc->only_1byte ||
-	    (map->enc->has_1byte && fv->end_pos<256))
-	sprintf( buffer, "%-3d (0x%02x) ", fv->end_pos, fv->end_pos );
-    else
-	sprintf( buffer, "%-5d (0x%04x) ", fv->end_pos, fv->end_pos );
+    }
+
+    g_string_printf( output, "%d (0x%x) ", localenc, localenc );
+
     sc = (gid=fv->b.map->map[fv->end_pos])!=-1 ? sf->glyphs[gid] : NULL;
     if ( fv->b.cidmaster==NULL || fv->b.normal==NULL || sc==NULL )
 	SCBuildDummy(&dummy,sf,fv->b.map,fv->end_pos);
@@ -6559,48 +6373,42 @@ return;
 	dummy = *sc;
     if ( sc==NULL ) sc = &dummy;
     uni = dummy.unicodeenc!=-1 ? dummy.unicodeenc : sc->unicodeenc;
-    if ( uni!=-1 )
-	sprintf( buffer+strlen(buffer), "U+%04X", uni );
-    else
-	sprintf( buffer+strlen(buffer), "U+????" );
-    sprintf( buffer+strlen(buffer), "  %.*s", (int) (sizeof(buffer)-strlen(buffer)-1),
-	    sc->name );
 
-    strcat(buffer,"  ");
-    utf82u_strcpy(ubuffer,buffer);
-    ulen = u_strlen(ubuffer);
-
-    if ( uni==-1 && (pt=strchr(sc->name,'.'))!=NULL && pt-sc->name<30 ) {
-	strncpy(buffer,sc->name,pt-sc->name);
-	buffer[(pt-sc->name)] = '\0';
-	uni = UniFromName(buffer,fv->b.sf->uni_interp,map->enc);
-	if ( uni!=-1 ) {
-	    sprintf( buffer, "U+%04X ", uni );
-	    uc_strcat(ubuffer,buffer);
-	}
-	fg = 0x707070;
-    }
-
-    if (uni != -1) {
-	char *uniname;
-	if ( (uniname=unicode_name(uni))!=NULL ) {
-	    /* Show unicode "Name" as defined in NameList.txt */
-	    utf82u_strncpy(ubuffer+u_strlen(ubuffer),uniname,80);
-	    free(uniname);
-	} else if ( uni>=0xAC00 && uni<=0xD7A3 ) {
-            sprintf( buffer, "Hangul Syllable %s%s%s",
-		    chosung[(uni-0xAC00)/(21*28)],
-		    jungsung[(uni-0xAC00)/28%21],
-		    jongsung[(uni-0xAC00)%28] );
-            uc_strncat(ubuffer,buffer,80);
-	} else {
-            uc_strncat(ubuffer, UnicodeRange(uni),80);
+    /* last resort at guessing unicode code point from partial name */
+    if ( uni == -1 ) {
+	char *pt = strchr( sc->name, '.' );
+	if( pt != NULL ) {
+	    gchar *buf = g_strndup( (const gchar *) sc->name, pt - sc->name );
+	    uni = UniFromName( (char *) buf, fv->b.sf->uni_interp, map->enc );
+	    g_free( buf );
 	}
     }
 
-    tlen = GDrawDrawText(pixmap,10,fv->mbh+fv->lab_as,ubuffer,ulen,fvglyphinfocol);
-    GDrawDrawText(pixmap,10+tlen,fv->mbh+fv->lab_as,ubuffer+ulen,-1,fg);
-    GDrawPopClip(pixmap,&old);
+    if ( uni != -1 )
+	g_string_append_printf( output, "U+%04X", uni );
+    else {
+	output = g_string_append( output, "U+????" );
+    }
+
+    /* postscript name */
+    g_string_append_printf( output, " \"%s\" ", sc->name );
+
+    /* code point name or range name */
+    if( uni != -1 ) {
+	uniname = (gchar *) unicode_name( uni );
+	if ( uniname == NULL ) {
+	    uniname = g_strdup( UnicodeRange( uni ) );
+	}
+    }
+
+    if ( uniname != NULL ) {
+	output = g_string_append( output, uniname );
+	g_free( uniname );
+    }
+
+    GDrawDrawText8( pixmap, 10, fv->mbh+fv->lab_as, output->str, -1, fg );
+    g_string_free( output, TRUE );
+    GDrawPopClip( pixmap, &old );
 }
 
 static void FVShowInfo(FontView *fv) {
@@ -6815,10 +6623,8 @@ static void utf82u_annot_strncat(unichar_t *to, const char *from, int len) {
 void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	int actualuni) {
 /* This is for the popup which appears when you hover mouse over a character on main window */
-    static unichar_t space[810];
-    char cspace[162];
     int upos=-1;
-    int done = false;
+    char *msg = "";
 
     /* If a glyph is multiply mapped then the inbuild unicode enc may not be */
     /*  the actual one used to access the glyph */
@@ -6846,73 +6652,32 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	    upos = 0x11a8 + sc->jamo-(19+21+1);
     }
 #endif
-    else {
-#if defined( _NO_SNPRINTF )
-	sprintf( cspace, "%u 0x%x U+???? \"%.25s\" ", localenc, localenc, sc->name==NULL?"":sc->name );
-#else
-	snprintf( cspace, sizeof(cspace), "%u 0x%x U+???? \"%.25s\" ", localenc, localenc, sc->name==NULL?"":sc->name );
-#endif
-	uc_strcpy(space,cspace);
-	done = true;
+
+    if ( upos == -1 ) {
+	msg = xasprintf( "%u 0x%x U+???? \"%.25s\" ",
+		localenc, localenc,
+		(sc->name == NULL) ? "" : sc->name );
+    } else {
+	/* unicode name or range name */
+	char *uniname = unicode_name( upos );
+	if( uniname == NULL ) uniname = strdup( UnicodeRange( upos ) );
+	msg = xasprintf ( "%u 0x%x U+%04X \"%.25s\" %.100s",
+		localenc, localenc, upos,
+		(sc->name == NULL) ? "" : sc->name, uniname );
+	if ( uniname != NULL ) free( uniname ); uniname = NULL;
+
+	/* annotation */
+	char *uniannot;
+	if( ( uniannot = unicode_annot( upos )) != NULL )
+	    msg = xasprintf("%s\n%s", msg, uniannot);
+	if ( uniannot != NULL ) free( uniannot ); uniannot = NULL;
     }
 
-    if ( !done ) {
-	char *uniname;
-	if ( (uniname=unicode_name(upos))!=NULL ) {
-	    /* uniname=unicode "Name" as defined in NameList.txt */
-#if defined( _NO_SNPRINTF )
-            sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
-                     uniname);
-#else
-            snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
-                      uniname);
-#endif
-            utf82u_strcpy(space,cspace);
-	    free(uniname);
-        } else if ( upos>=0xAC00 && upos<=0xD7A3 ) {
-#if defined( _NO_SNPRINTF )
-            sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
-                     localenc, localenc, upos, sc->name==NULL?"":sc->name,
-                     chosung[(upos-0xAC00)/(21*28)],
-                     jungsung[(upos-0xAC00)/28%21],
-                     jongsung[(upos-0xAC00)%28] );
-#else
-            snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
-                      localenc, localenc, upos, sc->name==NULL?"":sc->name,
-                      chosung[(upos-0xAC00)/(21*28)],
-                      jungsung[(upos-0xAC00)/28%21],
-                      jongsung[(upos-0xAC00)%28] );
-#endif
-            utf82u_strcpy(space,cspace);
-        } else {
-#if defined( _NO_SNPRINTF )
-            sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
-                     UnicodeRange(upos));
-#else
-            snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
-                      UnicodeRange(upos));
-#endif
-            utf82u_strcpy(space,cspace);
-        }
-    }
-    char *uniannot;
-    if ( (uniannot=unicode_annot(upos))!=NULL ) {
-	/* uniannot=unicode "Annotations" as defined in NameList.txt */
-	int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
-	if ( left>4 ) {
-	    uc_strcat(space,"\n");
-            utf82u_annot_strncat(space, uniannot, left-2);
-	}
-	free(uniannot);
-    }
-    if ( sc->comment!=NULL ) {
-	int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
-	if ( left>4 ) {
-	    uc_strcat(space,"\n\n");
-	    utf82u_strncpy(space+u_strlen(space),sc->comment,left-2);
-	}
-    }
-    GGadgetPreparePopup(gw,space);
+    /* user comments */
+    if ( sc->comment!=NULL )
+        msg = xasprintf("%s\n%s", msg, sc->comment);
+
+    GGadgetPreparePopup8( gw, msg );
 }
 
 static void noop(void *UNUSED(_fv)) {
@@ -6927,7 +6692,7 @@ static void *ddgencharlist(void *_fv,int32 *len) {
 
     for ( i=cnt=0; i<map->enccount; ++i ) if ( fv->b.selected[i] && (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL )
 	cnt += strlen(sf->glyphs[gid]->name)+1;
-    data = galloc(cnt+1); data[0] = '\0';
+    data = malloc(cnt+1); data[0] = '\0';
     for ( cnt=0, j=1 ; j<=fv->sel_index; ++j ) {
 	for ( i=cnt=0; i<map->enccount; ++i )
 	    if ( fv->b.selected[i] && (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
@@ -7278,12 +7043,9 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	FVTimer(fv,event);
       break;
       case et_focus:
-	if ( event->u.focus.gained_focus ) {
+	  printf("fv.et_focus\n");
+	if ( event->u.focus.gained_focus )
 	    GDrawSetGIC(gw,fv->gic,0,20);
-#if 0
-	    CVPaletteDeactivate();
-#endif
-	}
       break;
     }
 return( true );
@@ -7373,6 +7135,8 @@ void FontViewRemove(FontView *fv) {
  */
 extern int osx_fontview_copy_cut_counter;
 
+static FontView* ActiveFontView = 0;
+
 static int fv_e_h(GWindow gw, GEvent *event) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
@@ -7382,6 +7146,15 @@ return( GGadgetDispatchEvent(fv->vsb,event));
     }
 
     switch ( event->type ) {
+      case et_focus:
+	  if ( event->u.focus.gained_focus )
+	  {
+	      ActiveFontView = fv;
+	  }
+	  else
+	  {
+	  }
+	  break;
       case et_selclear:
 #ifdef __Mac
 	  // For some reason command + c and command + x wants
@@ -7392,7 +7165,7 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	     osx_fontview_copy_cut_counter--;
 	     break;
           }
-	  printf("fontview et_selclear\n");
+//	  printf("fontview et_selclear\n");
 #endif
 	ClipboardClear();
       break;
@@ -7467,7 +7240,7 @@ static void FontViewOpenKids(FontView *fv) {
 }
 
 static FontView *__FontViewCreate(SplineFont *sf) {
-    FontView *fv = gcalloc(1,sizeof(FontView));
+    FontView *fv = calloc(1,sizeof(FontView));
     int i;
     int ps = sf->display_size<0 ? -sf->display_size :
 	     sf->display_size==0 ? default_fv_font_size : sf->display_size;
@@ -7521,7 +7294,7 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 	    fv->b.map = CompactEncMap(EncMapCopy(fv->b.map),sf);
 	}
     }
-    fv->b.selected = gcalloc(fv->b.map->enccount,sizeof(char));
+    fv->b.selected = calloc(fv->b.map->enccount,sizeof(char));
     fv->user_requested_magnify = -1;
     fv->magnify = (ps<=9)? 3 : (ps<20) ? 2 : 1;
     fv->cbw = (ps*fv->magnify)+1;
@@ -7547,16 +7320,9 @@ static void FontViewInit(void) {
 return;
 
     done = true;
-//    printf("FontViewInit(top) mblist[0].text: %s\n", mblist[0].ti.text );
 
     mb2DoGetText(mblist);
     mbDoGetText(fvpopupmenu);
-
-
-//    printf("FontViewInit(end) mblist[0].text        : %s\n", u_to_c(mblist[0].ti.text) );
-//    printf("FontViewInit(end) mblist[0].text notrans: %s\n", mblist[0].ti.text_untranslated );
-//    printf("FontViewInit(end) mblist[0]->fileopen .text        : %s\n", u_to_c(mblist[0].sub[1].ti.text) );
-//    printf("FontViewInit(end) mblist[0]->fileopen .text notrans: %s\n", mblist[0].sub[1].ti.text_untranslated );
 }
 
 static struct resed fontview_re[] = {
@@ -7607,7 +7373,7 @@ static void FVCreateInnards(FontView *fv,GRect *pos) {
     GDrawSetGIC(fv->v,fv->gic,0,20);
     GDrawSetGIC(fv->gw,fv->gic,0,20);
 
-    fv->fontset = gcalloc(_uni_fontmax,sizeof(GFont *));
+    fv->fontset = calloc(_uni_fontmax,sizeof(GFont *));
     memset(&rq,0,sizeof(rq));
     rq.utf8_family_name = fv_fontnames;
     rq.point_size = fv_fontsize;
@@ -7703,7 +7469,6 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     pos.x = 0; pos.y = fv->mbh+fv->infoh;
     FVCreateInnards(fv,&pos);
 
-    /*GWidgetHidePalettes();*/
     if ( !hide ) {
 	GDrawSetVisible(gw,true);
 	FontViewOpenKids(fv);
@@ -8306,7 +8071,7 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
 		}
 	    }
 	    if ( k==0 )
-		ret = rpt = galloc(len+1);
+		ret = rpt = malloc(len+1);
 	    else if ( rpt!=ret && rpt[-1]==' ' )
 		rpt[-1]='\0';
 	    else
@@ -8361,6 +8126,22 @@ int FontViewFind_bySplineFont( FontViewBase* fv, void* udata )
 	return 0;
     return fv->sf == udata;
 }
+
+static int FontViewFind_ActiveWindow( FontViewBase* fvb, void* udata )
+{
+    FontView* fv = (FontView*)fvb;
+    return( fv->gw == udata || fv->v == udata );
+}
+
+FontViewBase* FontViewFindActive()
+{
+    return ActiveFontView;
+    /* GWindow w = GWindowGetCurrentFocusTopWindow(); */
+    /* FontViewBase* ret = FontViewFind( FontViewFind_ActiveWindow, w ); */
+    /* return ret; */
+}
+
+
 
 FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* udata ), void* udata )
 {

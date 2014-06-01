@@ -792,10 +792,7 @@ static void SplineSetsChangeCoord(SplineSet *spl,real old, real new,int isy,
 		    changed = true;
 		}
 	    }
-#if 0	/* will be done in Round2Int */
-	    if ( change )
-		SSRegenerateFromSpiros(spl);
-#endif
+	/* SSRegenerateFromSpiros will be done in Round2Int */
 	} else {
 	    for ( sp=spl->first; ; ) {
 		if ( isy ) {
@@ -962,7 +959,7 @@ void SCOrderAP(SplineChar *sc) {
     if ( !out )
 return;
 
-    array = galloc(cnt*sizeof(AnchorPoint *));
+    array = malloc(cnt*sizeof(AnchorPoint *));
     for ( i=0, ap=sc->anchor; ap!=NULL; ++i, ap=ap->next )
 	array[i] = ap;
     for ( i=0; i<cnt-1; ++i ) {
@@ -1026,7 +1023,7 @@ return( true );
 return( false );
 }
 
-int SCSetMetaData(SplineChar *sc,char *name,int unienc,const char *comment) {
+int SCSetMetaData(SplineChar *sc,const char *name,int unienc,const char *comment) {
     SplineFont *sf = sc->parent;
     int i, mv=0;
     int isnotdef, samename=false, sameuni=false;
@@ -1820,9 +1817,6 @@ int SFValidate(SplineFont *sf, int layer, int force) {
     int any = 0;
     SplineChar *sc;
     int cnt=0;
-#if 0		/* See comment below, leave code in just in case I'm wrong again */
-    struct ttf_table *tab;
-#endif
 
     if ( sf->cidmaster )
 	sf = sf->cidmaster;
@@ -1862,25 +1856,6 @@ return( -1 );
     } while ( k<sf->subfontcnt );
     ff_progress_end_indicator();
 
-#if 0
-    /* Ah... I no longer believe that the maxp instr_len entry refers to */
-    /* prep/fpgm. The footnote I thought was relevant I see actually */
-    /* refers to something else. Oops. */
-    if ( (tab = SFFindTable(sf,CHR('m','a','x','p')))!=NULL && tab->len>=32 ) {
-	/* If we have a maxp table then do some truetype checks */
-	/* these are only errors for fontlint, we'll fix them up when we */
-	/*  generate the font -- but fontlint needs to know this stuff */
-	int instr_len_max = memushort(tab->data,tab->len,13*sizeof(uint16));
-	if ( (tab = SFFindTable(sf,CHR('p','r','e','p')))!=NULL ) {
-	    if ( tab->len > instr_len_max )
-		any |= vs_maxp_prepfpgmtoolong;
-	}
-	if ( (tab = SFFindTable(sf,CHR('f','p','g','m')))!=NULL ) {
-	    if ( tab->len > instr_len_max )
-		any |= vs_maxp_prepfpgmtoolong;
-	}
-    }
-#endif
     /* a lot of asian ttf files have a bad postscript fontname stored in the */
     /*  name table */
 return( any&~vs_known );
@@ -2538,9 +2513,6 @@ void SCClearInstrsOrMark(SplineChar *sc, int layer, int complain) {
 	}
 	for ( ref=dep->sc->layers[layer].refs; ref!=NULL && ref->sc!=sc; ref=ref->next );
 	for ( ; ref!=NULL ; ref=ref->next ) {
-#if 0
-	    ref->point_match = false;
-#endif
 	    if ( ref->point_match ) {
 		ref->point_match_out_of_date = true;
 		had_dep = true;

@@ -221,33 +221,6 @@ return( false );
     if ( comparespline(ps,ttf,tmin,t,err) )
 return( true );
 
-#if 0
-    /* In a few cases, the following code will find a match when the above */
-    /*  would not. We move the control point slightly along a vector normal */
-    /*  to the vector between the end-points. What I really want is along */
-    /*  a vector midway between the two slopes, but that's too hard to figure */
-    sq = sqrt((x-xmin)*(x-xmin) + (y-ymin)*(y-ymin));
-    norm.x = (ymin-y)/sq; norm.y = (x-xmin)/sq;
-
-    ttf->splines[0].c += err*norm.x;
-    ttf->splines[0].b -= err*norm.x;
-    ttf->splines[1].c += err*norm.y;
-    ttf->splines[1].b -= err*norm.y;
-    if ( comparespline(ps,ttf,tmin,t,err) )
-return( true );
-
-    ttf->splines[0].c -= 2*err*norm.x;
-    ttf->splines[0].b += 2*err*norm.x;
-    ttf->splines[1].c -= 2*err*norm.y;
-    ttf->splines[1].b += 2*err*norm.y;
-    if ( comparespline(ps,ttf,tmin,t,err) )
-return( true );
-
-    ttf->splines[0].c = 2*(cx-xmin);
-    ttf->splines[0].b = xmin+x-2*cx;
-    ttf->splines[1].c = 2*(cy-ymin);
-    ttf->splines[1].b = ymin+y-2*cy;
-#endif
 return( false );
 }
 
@@ -287,7 +260,7 @@ static SplinePoint *_ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *sta
     SplinePoint *sp;
     real cx, cy;
     Spline ttf;
-    int cnt = -1, forceit, unforceable;
+    int cnt = -1, forceit;
     BasePoint end, rend, dend;
     DBounds bb;
 
@@ -357,7 +330,6 @@ return( start );
     dt = (tmax-tmin)/ddim;
     forceit = false;
 /* force_end: */
-    unforceable = false;
     for ( t=tmax; t>tmin+dt/128; t-= dt ) {		/* dt/128 is a hack to avoid rounding errors */
 	x = ((ps->splines[0].a*t+ps->splines[0].b)*t+ps->splines[0].c)*t+ps->splines[0].d;
 	y = ((ps->splines[1].a*t+ps->splines[1].b)*t+ps->splines[1].c)*t+ps->splines[1].d;
@@ -383,16 +355,8 @@ return( start );
 	    cy=ymin;
 	else
 	    cy = -(xmin-(dxdtmin/dydtmin)*ymin-x+(dxdt/dydt)*y)/(dxdtmin/dydtmin-dxdt/dydt);
-	if ( t==tmax && ((cy==y && cx==x) || (cy==ymin && cx==xmin)) )
-	    unforceable = true;
 	/* Make the quadratic spline from (xmin,ymin) through (cx,cy) to (x,y)*/
 	if ( forceit || buildtestquads(&ttf,xmin,ymin,cx,cy,x,y,tmin,t,err,ps,&bb)) {
-#if 0
-	    if ( !forceit && !unforceable && (rend.x-x)*(rend.x-x)+(rend.y-y)*(rend.y-y)<4*4 ) {
-		forceit = true;
- goto force_end;
-	    }
-#endif
 	    sp = MakeQuadSpline(start,&ttf,x,y,t,ps->to);
 	    forceit = false;
 	    if ( t==tmax )
@@ -424,7 +388,6 @@ return( sp );
 static SplinePoint *__ttfApprox(Spline *ps,real tmin, real tmax, SplinePoint *start) {
     extended inflect[2];
     int i=0;
-#if 1
     SplinePoint *end;
     Spline *s, *next;
 
@@ -439,7 +402,6 @@ return( end );
 	SplinePointFree(s->to);
 	SplineFree(s);
     }
-#endif
 /* Hmm. With my algorithem, checking for points of inflection actually makes */
 /*  things worse. It uses more points and the splines don't join as nicely */
 /* However if we get a bad match (a line) in the normal approx, then check */
@@ -935,7 +897,7 @@ SplineSet *SSttfApprox(SplineSet *ss) {
 	}
     }
     ttfCleanup(ret->first);
-    SPLCatagorizePoints(ret);
+    SPLCategorizePoints(ret);
 return( ret );
 }
 

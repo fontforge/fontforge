@@ -1,5 +1,5 @@
-#include "spiroentrypoints.h"
-#include "bezctx.h"
+#include <spiroentrypoints.h>
+#include <bezctx.h>
 
 bezctx *new_bezctx_ff(void);
 

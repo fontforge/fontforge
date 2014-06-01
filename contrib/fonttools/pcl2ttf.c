@@ -38,7 +38,6 @@
 
 #define true	1
 #define false	0
-#define forever	for (;;)
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
 
 /* ************************************************************************** */
@@ -125,7 +124,7 @@ return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
 static int skip2thingamy(FILE *pcl,char *thingamy) {
     int ch;
 
-    forever {
+    for (;;) {
 	while ( (ch=getc(pcl))!=EOF && ch!=escape_char );
 	if ( ch==EOF )
 return( false );
@@ -358,52 +357,6 @@ static int readheaderttf(FILE *pcl,struct ttf_header *hdr) {
     int i;
     int seg_id, seg_size;
 
-#if 0		/* Moved into its own routine */
-    memset(hdr,0,sizeof(*hdr));
-
-    fscanf(pcl,"%d", &hdr->header_size );
-    ch = getc(pcl);
-    if ( ch!='W' ) {
-	fprintf( stderr, "Bad font, font header command doesn't end in \"W\"\n" );
-return( false );
-    }
-    hdr->fd_size = getshort(pcl);
-    hdr->header_format = getc(pcl);
-    hdr->fonttype = getc(pcl);
-    hdr->style = getc(pcl)<<8;
-    (void) getc(pcl);
-    hdr->baseline_pos = getshort(pcl);
-    hdr->cell_width = getshort(pcl);
-    hdr->cell_height = getshort(pcl);
-    hdr->orientation = getc(pcl);
-    hdr->spacing = getc(pcl);
-    hdr->symbol_set = getshort(pcl);
-    hdr->pitch = getshort(pcl);
-    hdr->height = getshort(pcl);
-    hdr->xheight = getshort(pcl);
-    hdr->widthtype = getc(pcl);
-    hdr->style |= getc(pcl);
-    hdr->strokeweight = getc(pcl);
-    hdr->typeface = getc(pcl);
-    hdr->typeface |= getc(pcl)<<8;
-    hdr->serifstyle = getc(pcl);
-    hdr->quality = getc(pcl);
-    hdr->placement = getc(pcl);
-    hdr->upos = getc(pcl);
-    hdr->uthick = getc(pcl);
-    hdr->textheight = getshort(pcl);
-    hdr->textwidth = getshort(pcl);
-    hdr->firstcode = getshort(pcl);
-    hdr->num_chars = getshort(pcl);
-    hdr->pitchx = getc(pcl);
-    hdr->heightx = getc(pcl);
-    hdr->capheight = getshort(pcl);
-    hdr->fontnumber = getlong(pcl);
-    for ( i=0; i<16; ++i )
-	hdr->fontname[i] = getc(pcl);
-    while ( i>1 && hdr->fontname[i-1]==' ' ) --i;
-    hdr->fontname[i] = '\0';
-#endif
     hdr->scale_factor = getshort(pcl);
     hdr->mupos = (short) getshort(pcl);
     hdr->muthick = getshort(pcl);
@@ -420,7 +373,7 @@ return( false );
     for ( i=0 ; i<hdr->fd_size-72; ++i )
 	getc(pcl);
 
-    forever {
+    for (;;) {
 	seg_id = getshort(pcl);
 	seg_size = getshort(pcl);
 	if ( seg_id == (('C'<<8)|'P') ) {
@@ -1247,52 +1200,6 @@ return;
 static int readheaderbitmap(FILE *pcl,struct ttf_header *hdr) {
     int i, base;
 
-#if 0		/* Moved into its own routine */
-    memset(hdr,0,sizeof(*hdr));
-
-    fscanf(pcl,"%d", &hdr->header_size );
-    ch = getc(pcl);
-    if ( ch!='W' ) {
-	fprintf( stderr, "Bad font, font header command doesn't end in \"W\"\n" );
-return( false );
-    }
-    hdr->fd_size = getshort(pcl);
-    hdr->header_format = getc(pcl);
-    hdr->fonttype = getc(pcl);
-    hdr->style = getc(pcl)<<8;
-    (void) getc(pcl);
-    hdr->baseline_pos = getshort(pcl);
-    hdr->cell_width = getshort(pcl);
-    hdr->cell_height = getshort(pcl);
-    hdr->orientation = getc(pcl);
-    hdr->spacing = getc(pcl);
-    hdr->symbol_set = getshort(pcl);
-    hdr->pitch = getshort(pcl);
-    hdr->height = getshort(pcl);
-    hdr->xheight = getshort(pcl);
-    hdr->widthtype = getc(pcl);
-    hdr->style |= getc(pcl);
-    hdr->strokeweight = getc(pcl);
-    hdr->typeface = getc(pcl);
-    hdr->typeface |= getc(pcl)<<8;
-    hdr->serifstyle = getc(pcl);
-    hdr->quality = getc(pcl);
-    hdr->placement = getc(pcl);
-    hdr->upos = getc(pcl);
-    hdr->uthick = getc(pcl);
-    hdr->textheight = getshort(pcl);
-    hdr->textwidth = getshort(pcl);
-    hdr->firstcode = getshort(pcl);
-    hdr->num_chars = getshort(pcl);
-    hdr->pitchx = getc(pcl);
-    hdr->heightx = getc(pcl);
-    hdr->capheight = getshort(pcl);
-    hdr->fontnumber = getlong(pcl);
-    for ( i=0; i<16; ++i )
-	hdr->fontname[i] = getc(pcl);
-    while ( i>1 && hdr->fontname[i-1]==' ' ) --i;
-    hdr->fontname[i] = '\0';
-#endif
     if ( hdr->header_format==20 ) {
 	hdr->xres = getshort(pcl);
 	hdr->yres = getshort(pcl);

@@ -28,7 +28,6 @@
 #include <math.h>
 #include <gkeysym.h>
 #include <ustring.h>
-#include <ctype.h>		/* must use ctype here because freetype headers include it (prior to 2.3.5) */
 #include <gresource.h>
 
 extern GBox _ggadget_Default_Box;
@@ -52,19 +51,11 @@ void CVDebugPointPopup(CharView *cv) {
 #else
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#if FREETYPE_MINOR>=2
-#  include <internal/internal.h>
-#endif
+#include <internal/internal.h>
 #include "ttinterp.h"
 
-
-#if FREETYPE_MAJOR==2 && (FREETYPE_MINOR<3 || (FREETYPE_MINOR==3 && FREETYPE_PATCH<5))
-# define PPEMX(exc)	((exc)->size->metrics.x_ppem)
-# define PPEMY(exc)	((exc)->size->metrics.y_ppem)
-#else
 # define PPEMX(exc)	((exc)->size->root.metrics.x_ppem)
 # define PPEMY(exc)	((exc)->size->root.metrics.y_ppem)
-#endif
 
 static Color rasterbackcol = 0xffffff;
 
@@ -814,7 +805,7 @@ return( true );
 	}
 
 	DebuggerGetWatches(dv->dc,&n);
-	watches = gcalloc(n,sizeof(uint8));
+	watches = calloc(n,sizeof(uint8));
 
 	for ( ss = dv->cv->b.layerheads[dv->cv->b.drawmode]->splines; ss!=NULL; ss=ss->next ) {
 	    for ( sp=ss->first; ; ) {
@@ -1336,7 +1327,7 @@ return( DVChar(dv,event));
 	if ( i>=0 && exc!=NULL ) {
 	    watches = DebuggerGetWatchStores(dv->dc,&n);
 	    if ( watches==NULL ) {
-		watches = gcalloc(n,sizeof(uint8));
+		watches = calloc(n,sizeof(uint8));
 		DebuggerSetWatchStores(dv->dc,n,watches);
 	    }
 	    if ( i<n ) {
@@ -1426,7 +1417,7 @@ return( DVChar(dv,event));
 		    uint8 *watches;
 		    watches = DebuggerGetWatches(dv->dc,&n);
 		    if ( watches==NULL ) {
-			watches = gcalloc(n,sizeof(uint8));
+			watches = calloc(n,sizeof(uint8));
 			DebuggerSetWatches(dv->dc,n,watches);
 		    }
 		    if ( j<n ) {
@@ -1661,7 +1652,7 @@ return( DVChar(dv,event));
 	if ( i>=0 && exc!=NULL ) {
 	    watches = DebuggerGetWatchCvts(dv->dc,&n);
 	    if ( watches==NULL ) {
-		watches = gcalloc(n,sizeof(uint8));
+		watches = calloc(n,sizeof(uint8));
 		DebuggerSetWatchCvts(dv->dc,n,watches);
 	    }
 	    if ( i<n ) {
@@ -2084,7 +2075,7 @@ void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
     } else if ( dv==NULL ) {
 	int sbsize = GDrawPointsToPixels(cv->gw,_GScrollBar_Width);
 	cv->show_ft_results = false;
-	cv->dv = dv = gcalloc(1,sizeof(DebugView));
+	cv->dv = dv = calloc(1,sizeof(DebugView));
 	dv->dwidth = 260;
 	dv->scalex = scalex;
 	dv->scaley = scaley;
@@ -2270,11 +2261,7 @@ void CVDebugPointPopup(CharView *cv) {
     break;
     }
     if ( i!=-1 ) {
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	sprintf(cspace,
-#else
 	snprintf(cspace,sizeof(cspace),
-#endif
 		"Point %d %s-curve\nCur (em): %7.2f,%7.2f\nCur (px): %7.2f,%7.2f\nOrg (em): %7.2f,%7.2f",
 		i, r->tags[i]&FT_Curve_Tag_On?"On":"Off",
 		pts[i].x*dv->scalex, pts[i].y*dv->scaley,
@@ -2293,11 +2280,7 @@ void CVDebugPointPopup(CharView *cv) {
 	}
 	if ( i==-1 )
   goto no_point;
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	sprintf(cspace,
-#else
 	snprintf(cspace,sizeof(cspace),
-#endif
 		"Interpolated between %d %d\nCur (em): %7.2f,%7.2f\nCur (px): %7.2f,%7.2f\nOrg (em): %7.2f,%7.2f",
 		l,i,
 		xx*dv->scalex, yy*dv->scaley,
@@ -2307,11 +2290,7 @@ void CVDebugPointPopup(CharView *cv) {
   goto showit;
 
   no_point:
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-    sprintf(cspace,
-#else
     snprintf(cspace,sizeof(cspace),
-#endif
 		"%.2f, %.2f", (double) (cv->info.x/dv->scalex/64.0), (double) (cv->info.y/dv->scaley/64.0) );
 
   showit:
@@ -2324,11 +2303,7 @@ void CVDebugPointPopup(CharView *cv) {
 		val = 0;	/* Not in raster */
 	    else
 		val = cv->raster->bitmap[y*cv->raster->bytes_per_row+x];
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	    sprintf(cspace+strlen(cspace),
-#else
 	    snprintf(cspace+strlen(cspace),sizeof(cspace)-strlen(cspace),
-#endif
 		    "\nRaster grey=0x%02x (%.2f)", val, val/256.0 );
 	} else {
 	    if ( x<0 || x>=cv->raster->cols || y<0 || y>=cv->raster->rows )
@@ -2350,11 +2325,7 @@ void CVDebugPointPopup(CharView *cv) {
 		val = 0;
 	    else
 		val = cv->oldraster->bitmap[y*cv->oldraster->bytes_per_row+x];
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	    sprintf(cspace+strlen(cspace),
-#else
 	    snprintf(cspace+strlen(cspace),sizeof(cspace)-strlen(cspace),
-#endif
 		"\nOld Raster grey=0x%02x (%.2f)", val, val/256.0 );
 	} else {
 	    if ( x<0 || x>=cv->oldraster->cols || y<0 || y>=cv->oldraster->rows )

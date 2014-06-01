@@ -604,7 +604,7 @@ GResImage *GGadgetResourceFindImage(char *name, GImage *def);
 void GGadgetSetImageDir(char *dir);
 void GGadgetSetImagePath(char *path);
 GImage *GGadgetImageCache(char *filename);
-int TryGGadgetImageCache(GImage *image, char *name);
+int TryGGadgetImageCache(GImage *image, const char *name);
 
 extern unichar_t *utf82u_mncopy(const char *utf8buf,unichar_t *mn);
 

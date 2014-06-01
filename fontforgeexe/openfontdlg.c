@@ -47,6 +47,7 @@ struct openfilefilters def_font_filters[] = {
 	   "pt3,"
 	   "t42,"
 	   "sfd,"
+	   "ufo,"
 	   "ttf,"
 	   "bdf,"
 	   "otf,"
@@ -57,10 +58,8 @@ struct openfilefilters def_font_filters[] = {
 #ifndef _NO_LIBPNG
 	   "woff,"
 #endif
-#ifndef _NO_LIBXML
 	   "svg,"
 	   "ufo,"
-#endif
 	   "pf3,"
 	   "ttc,"
 	   "gsf,"
@@ -90,6 +89,7 @@ struct openfilefilters def_font_filters[] = {
 	   "pt3,"
 	   "t42,"
 	   "sfd,"
+	   "ufo,"
 	   "ttf,"
 	   "otf,"
 	   "cff,"
@@ -98,10 +98,8 @@ struct openfilefilters def_font_filters[] = {
 #ifndef _NO_LIBPNG
 	   "woff,"
 #endif
-#ifndef _NO_LIBXML
 	   "svg,"
 	   "ufo,"
-#endif
 	   "pf3,"
 	   "ttc,"
 	   "gsf,"
@@ -142,9 +140,8 @@ struct openfilefilters def_font_filters[] = {
     { N_("Type1"), "*.{pfa,pfb,gsf,cid}{.gz,.Z,.bz2,.lzma,}" },
     { N_("Type2"), "*.{otf,cef,cff,gai}{.gz,.Z,.bz2,.lzma,}" },
     { N_("Type3"), "*.{pf3,pt3}{.gz,.Z,.bz2,.lzma,}" },
-#ifndef _NO_LIBXML
     { N_("SVG"), "*.svg{.gz,.Z,.bz2,.lzma,}" },
-#endif
+    { N_("Unified Font Object"), "*.ufo" },
     { N_("FontForge's SFD"), "*.sfd{.gz,.Z,.bz2,.lzma,}" },
     { N_("Backup SFD"), "*.sfd~" },
     { N_("Extract from PDF"), "*.pdf{.gz,.Z,.bz2,.lzma,}" },
@@ -162,7 +159,7 @@ static GTextInfo **StandardFilters(void) {
 	cnt = 0;
 	for ( i=0; def_font_filters[i].name!=NULL; ++i ) {
 	    if ( k ) {
-		ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+		ti[cnt] = calloc(1,sizeof(GTextInfo));
 		ti[cnt]->userdata = def_font_filters[i].filter;
 		ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
 		if ( *(char *) def_font_filters[i].name == '-' )
@@ -174,7 +171,7 @@ static GTextInfo **StandardFilters(void) {
 	}
 	if ( user_font_filters!=NULL ) {
 	    if ( k ) {
-		ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+		ti[cnt] = calloc(1,sizeof(GTextInfo));
 		ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
 		/* Don't translate this name */
 		ti[cnt]->line = true;
@@ -182,7 +179,7 @@ static GTextInfo **StandardFilters(void) {
 	    ++cnt;
 	    for ( i=0; user_font_filters[i].name!=NULL; ++i ) {
 		if ( k ) {
-		    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+		    ti[cnt] = calloc(1,sizeof(GTextInfo));
 		    ti[cnt]->userdata = user_font_filters[i].filter;
 		    ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
 		    /* Don't translate this name */
@@ -195,16 +192,16 @@ static GTextInfo **StandardFilters(void) {
 	    }
 	}
 	if ( k ) {
-	    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+	    ti[cnt] = calloc(1,sizeof(GTextInfo));
 	    ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
 	    ti[cnt++]->line = true;
-	    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+	    ti[cnt] = calloc(1,sizeof(GTextInfo));
 	    ti[cnt]->userdata = (void *) -1;
 	    ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
 	    ti[cnt++]->text = utf82u_copy(_("Edit Filter List"));
-	    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+	    ti[cnt] = calloc(1,sizeof(GTextInfo));
 	} else
-	    ti = galloc((cnt+3)*sizeof(GTextInfo *));
+	    ti = malloc((cnt+3)*sizeof(GTextInfo *));
     }
     ti[default_font_filter_index]->selected = true;
 return( ti );
@@ -247,7 +244,7 @@ static int Filter_OK(GGadget *g, GEvent *e) {
 	    if ( !md[2*i].frozen )
 		++cnt;
 	if ( cnt!=0 ) {
-	    user_font_filters = galloc((cnt+1)*sizeof(struct openfilefilters));
+	    user_font_filters = malloc((cnt+1)*sizeof(struct openfilefilters));
 	    for ( i=cnt=0; i<rows; ++i ) if ( !md[2*i].frozen ) {
 		user_font_filters[cnt].name = copy(md[2*i].u.md_str);
 		user_font_filters[cnt].filter = copy(md[2*i+1].u.md_str);
@@ -340,7 +337,7 @@ static void FilterDlg(void) {
 	    }
 	}
 	if ( !k )
-	    md = gcalloc(2*cnt,sizeof(struct matrix_data));
+	    md = calloc(2*cnt,sizeof(struct matrix_data));
     }
     mi.initial_row_cnt = cnt;
     mi.matrix_data = md;
@@ -455,6 +452,19 @@ return(true);
 	    }
 	    d->done = true;
 	    d->ret = GGadgetGetTitle(d->gfc);
+
+	    // Trim trailing '/' if its there and put that string back as
+	    // the d->gfc string.
+	    int tmplen = u_strlen( d->ret );
+	    if( tmplen > 0 ) {
+		if( d->ret[ tmplen-1 ] == '/' ) {
+		    unichar_t* tmp = u_copy( d->ret );
+		    tmp[ tmplen-1 ] = '\0';
+		    GGadgetSetTitle(d->gfc, tmp);
+		    free(tmp);
+		    d->ret = GGadgetGetTitle(d->gfc);
+		}
+	    }
 	}
     }
 return( true );
@@ -540,7 +550,7 @@ return( true );
 	len = 0;
 	for ( cnt=0; fontnames[cnt]!=NULL; ++cnt )
 	    len += strlen(fontnames[cnt])+1;
-	msg = galloc((len+2)*sizeof(unichar_t));
+	msg = malloc((len+2)*sizeof(unichar_t));
 	len = 0;
 	for ( cnt=0; fontnames[cnt]!=NULL; ++cnt ) {
 	    uc_strcpy(msg+len,fontnames[cnt]);
@@ -671,7 +681,7 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     gcd[i].creator = GListButtonCreate;
     nlnames = AllNamelistNames();
     for ( cnt=0; nlnames[cnt]!=NULL; ++cnt);
-    namelistnames = gcalloc(cnt+3,sizeof(GTextInfo));
+    namelistnames = calloc(cnt+3,sizeof(GTextInfo));
     namelistnames[0].text = (unichar_t *) _("No Rename");
     namelistnames[0].text_is_1byte = true;
     if ( force_names_when_opening==NULL ) {

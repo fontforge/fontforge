@@ -217,7 +217,7 @@ static int ContourMatch(const SplineSet *ss1, const SplineSet *ss2, real err) {
 	if ( !NearSplineSet(&s->from->me,ss2,&last_found,&last_t,err))
 return( false );
 	here = s->from->me;
-	forever {
+	for (;;) {
 	    adx = dx = (3*s->splines[0].a*t + 2*s->splines[0].b)*t + s->splines[0].c;
 	    ady = dy = (3*s->splines[1].a*t + 2*s->splines[1].b)*t + s->splines[1].c;
 	    if ( adx<0 ) adx = -adx;
@@ -277,7 +277,7 @@ static int AllPointsMatch(const SplinePoint *start1, const SplinePoint *start2,
     const SplinePoint *sp1=start1, *sp2=start2;
     SplinePoint *hmfail=NULL;
 
-    forever {
+    for (;;) {
 	if ( (dx = sp1->me.x-sp2->me.x)<=err && dx>=-err &&
 		(dy = sp1->me.y-sp2->me.y)<=err && dy>=-err &&
 		(dx = sp1->nextcp.x-sp2->nextcp.x)<=err && dx>=-err &&
@@ -293,12 +293,6 @@ return( false );
 	    /* hm continues to match */;
 	else if ( sp1->hintmask!=NULL || sp2->hintmask!=NULL ) {
 	    hmfail=(SplinePoint *) sp1;
-#if 0
- printf( "HM Failure at (%g,%g) sp1 %s mask, sp2 %s mask\n",
-	 sp1->me.x, sp1->me.y,
-	 sp1->hintmask==NULL? "has no" : "has a",
-	 sp2->hintmask==NULL? "has no" : "has a" );
-#endif
 	}
 
 	if ( sp2->next==NULL && sp1->next==NULL ) {
@@ -352,9 +346,9 @@ enum Compare_Ret SSsCompare(const SplineSet *ss1, const SplineSet *ss2,
     if ( cnt1!=cnt2 )
 return( SS_DiffContourCount|SS_NoMatch );
 
-    b1 = galloc(cnt1*sizeof(DBounds));
-    b2 = galloc(cnt1*sizeof(DBounds));
-    match = galloc(cnt1*sizeof(SplineSet *));
+    b1 = malloc(cnt1*sizeof(DBounds));
+    b2 = malloc(cnt1*sizeof(DBounds));
+    match = malloc(cnt1*sizeof(SplineSet *));
     for ( ss=ss1, cnt1=0; ss!=NULL; ss=ss->next, ++cnt1 ) {
 	SplineSet *next = ss->next; ((SplineSet *) ss)->next = NULL;
 	SplineSetFindBounds(ss,&b1[cnt1]);
@@ -629,16 +623,6 @@ int CompareLayer(Context *c, const SplineSet *ss1,const SplineSet *ss2,
 
     if ( pt_err<0 && spline_err<0 )
 return( SS_PointsMatch );
-#if 0
-    /* Unfortunately we can't do this because references in the clipboard */
-    /*  don't have inline copies of their splines */
-    if ( !RefCheck( refs1,refs2 )) {
-	val = SSRefCompare(ss1,ss2,refs1,refs2,pt_err,spline_err);
-	if ( val&SS_NoMatch )
-	    val |= SS_RefMismatch;
-    } else
-	val = SSsCompare(ss1,ss2, pt_err, spline_err,_hmfail);
-#else
     val = SSsCompare(ss1,ss2, pt_err, spline_err,_hmfail);
     refc = RefCheck( refs1,refs2 );
     if ( !refc ) {
@@ -648,7 +632,6 @@ return( SS_PointsMatch );
 	    val |= SS_RefMismatch;
     } else if ( refc==2 )
 	val |= SS_RefPtMismatch;
-#endif
     if ( (val&SS_NoMatch) && diffs_are_errors ) {
 	if ( val & SS_DiffContourCount )
 	    GCErrorString(c,"Spline mismatch (different number of contours) in glyph", name);
@@ -1060,7 +1043,7 @@ static int fdRefCheck(struct font_diff *fd, SplineChar *sc1,
 return( ret );
 }
 
-static void SCAddBackgrounds(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
+static void SCAddBackgrounds(SplineChar *sc1,SplineChar *sc2) {
     SplineSet *last;
     RefChar *ref;
 
@@ -1148,7 +1131,7 @@ static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
 	}
     }
     if ( fd->last_sc==sc1 && (fd->flags&fcf_adddiff2sf1))
-	SCAddBackgrounds(sc1,sc2,fd);
+	SCAddBackgrounds(sc1,sc2);
 
     if ( sc1->width!=sc2->width )
 	GlyphDiffSCError(fd,sc1,U_("Glyph “%s” has advance width %d in %s but %d in %s\n"),
@@ -1193,7 +1176,7 @@ static void FDAddMissingGlyph(struct font_diff *fd,SplineChar *sc2) {
     free(sc->name);
     sc->name = copy(sc2->name);
     sc->unicodeenc = sc2->unicodeenc;
-    SCAddBackgrounds(sc,sc2,fd);
+    SCAddBackgrounds(sc,sc2);
 }
 
 static void comparefontglyphs(struct font_diff *fd) {
@@ -1324,7 +1307,7 @@ static void comparebitmapglyphs(struct font_diff *fd, BDFFont *bdf1, BDFFont *bd
 	    }
 	    if ( bdfc2!=NULL ) {
 		int val = BitmapCompare(bdfc,bdfc2,0,0);
-		char *leader = "   ";
+		const char *leader = "   ";
 		if ( !fd->top_diff )
 		    fprintf( fd->diffs, "%s", _("Bitmap Strikes\n") );
 		if ( !fd->middle_diff ) {
@@ -1419,7 +1402,7 @@ static void comparebitmapstrikes(struct font_diff *fd) {
     }
 }
 
-static void NameCompare(struct font_diff *fd,char *name1, char *name2, char *id) {
+static void NameCompare(struct font_diff *fd,const char *name1, const char *name2, char *id) {
 
     if (!name1) name1=""; if (!name2) name2="";
     if ( strcmp(name1,name2)!=0 ) {
@@ -1897,9 +1880,9 @@ static void MatchLookups(struct font_diff *fd) {
 	    sub->subtable_offset = scnt;
     }
     fd->lcnt1 = lcnt;
-    fd->l2match1 = gcalloc(lcnt,sizeof(OTLookup *));
+    fd->l2match1 = calloc(lcnt,sizeof(OTLookup *));
     fd->scnt1 = scnt;
-    fd->s2match1 = gcalloc(scnt,sizeof(OTLookup *));
+    fd->s2match1 = calloc(scnt,sizeof(OTLookup *));
 
     for ( scnt = lcnt=0, otl=fd->is_gpos ? sf2->gpos_lookups : sf2->gsub_lookups; otl!=NULL; otl=otl->next, ++lcnt ) {
 	otl->lookup_index = lcnt;
@@ -1908,9 +1891,9 @@ static void MatchLookups(struct font_diff *fd) {
 	    sub->subtable_offset = scnt;
     }
     fd->lcnt2 = lcnt;
-    fd->l1match2 = gcalloc(lcnt,sizeof(OTLookup *));
+    fd->l1match2 = calloc(lcnt,sizeof(OTLookup *));
     fd->scnt1 = scnt;
-    fd->s1match2 = gcalloc(scnt,sizeof(OTLookup *));
+    fd->s1match2 = calloc(scnt,sizeof(OTLookup *));
 
     for ( otl=fd->is_gpos ? sf1->gpos_lookups : sf1->gsub_lookups; otl!=NULL; otl=otl->next ) {
 	for ( otl2=fd->is_gpos ? sf2->gpos_lookups : sf2->gsub_lookups; otl2!=NULL; otl2=otl2->next ) {
@@ -2324,7 +2307,7 @@ int CompareFonts(SplineFont *sf1, EncMap *map1, SplineFont *sf2, FILE *diffs,
 	sc->ticked = false;
     for ( gid1=0; gid1<sf1->glyphcnt; ++gid1 ) if ( (sc=sf1->glyphs[gid1])!=NULL )
 	sc->ticked = false;
-    fd.matches = gcalloc(sf1->glyphcnt,sizeof(SplineChar *));
+    fd.matches = calloc(sf1->glyphcnt,sizeof(SplineChar *));
 
     for ( gid1=0; gid1<sf1->glyphcnt; ++gid1 ) if ( (sc=sf1->glyphs[gid1])!=NULL ) {
 	sc2 = SFGetChar(sf2,sc->unicodeenc,sc->name);

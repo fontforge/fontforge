@@ -132,7 +132,6 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 	char* pos  = kvmsg_get_prop (kvmsg, "pos" );
 	char* name = kvmsg_get_prop (kvmsg, "name" );
 	printf("pos:%s\n", pos );
-//	SplineChar *sc = sf->glyphs[ atoi(pos) ];
 	SplineChar* sc = SFGetOrMakeChar( sf, -1, name );
 	
 	printf("sc:%p\n", sc );
@@ -165,9 +164,8 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 	    snprintf(filename, PATH_MAX, "%s/fontforge-collab-inx-%d.sfd", getTempDir(), getpid() );
 	    GFileWriteAll( filename, (char*)data);
 	    FILE* file = fopen( filename, "rb" );
-	    Undoes* undo = SFDGetUndo( sf, file, sc,
+	    Undoes* undo = SFDGetUndo( file, sc,
 				       "UndoOperation",
-				       "EndUndoOperation",
 				       current_layer );
 	    fclose(file);
 	    if( !undo )
@@ -335,7 +333,7 @@ static void zeromq_beacon_fd_callback(int zeromq_fd, void* datas )
 		    printf("user:%s\n", ba->username );
 		    printf("mach:%s\n", ba->machinename );
 
-		    beacon_announce_t* copy = malloc( sizeof(beacon_announce_t));
+		    beacon_announce_t* copy = g_malloc( sizeof(beacon_announce_t));
 		    memcpy( copy, ba, sizeof(beacon_announce_t));
 		    copy->last_msg_from_peer_time = time(0);
 		    copy->port = ntohs( copy->port );
@@ -430,7 +428,7 @@ collabclient_ensureClientBeacon(void)
     if( client_beacon )
 	return;
     
-    peers = g_hash_table_new_full( g_str_hash, g_str_equal, 0, free );
+    peers = g_hash_table_new_full( g_str_hash, g_str_equal, 0, g_free );
     client_beacon_timerID = 0;
     
     
@@ -725,7 +723,7 @@ collabclient_sendRedo_Internal( FontViewBase *fv, SplineChar *sc, Undoes *undo, 
 static void
 collabclient_sendRedo_Internal_CV( CharViewBase *cv, Undoes *undo, int isLocalUndo )
 {
-    printf("collabclient_sendRedo_Internal_CV() cv:%p\h", cv );
+    printf("collabclient_sendRedo_Internal_CV() cv:%p\n", cv );
     collabclient_sendRedo_Internal( cv->fv, cv->sc, undo, isLocalUndo );
 }
 

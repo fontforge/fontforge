@@ -1051,7 +1051,7 @@ return( gl );
 }
 
 GGadget *GLabelCreate(struct gwindow *base, GGadgetData *gd,void *data) {
-    GLabel *gl = gcalloc(1,sizeof(GListButton));;
+    GLabel *gl = calloc(1,sizeof(GListButton));;
     int i;
 
     if ( gd->u.list!=NULL ) {
@@ -1067,7 +1067,7 @@ return( &gl->g );
 }
 
 GGadget *GButtonCreate(struct gwindow *base, GGadgetData *gd,void *data) {
-    GLabel *gl = _GLabelCreate(gcalloc(1,sizeof(GLabel)),base,gd,data,
+    GLabel *gl = _GLabelCreate(calloc(1,sizeof(GLabel)),base,gd,data,
 	    gd->flags & gg_but_default ? &_GGadget_defaultbutton_box :
 	    gd->flags & gg_but_cancel ? &_GGadget_cancelbutton_box :
 	    &_GGadget_button_box);
@@ -1078,7 +1078,7 @@ return( &gl->g );
 
 GGadget *GImageButtonCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GImageButton *gl =
-	(GImageButton *) _GLabelCreate(gcalloc(1,sizeof(GImageButton)),base,gd,data,&_GGadget_button_box);
+	(GImageButton *) _GLabelCreate(calloc(1,sizeof(GImageButton)),base,gd,data,&_GGadget_button_box);
 
     gl->g.takes_input = true;
     gl->labeltype = 1;
@@ -1103,7 +1103,7 @@ GGadget *GColorButtonCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	}
     }
     gd->label = &ti;
-    gl = gcalloc(1,sizeof(GColorButton));
+    gl = calloc(1,sizeof(GColorButton));
     gl->labeltype = 3;
     gl = (GColorButton *) _GLabelCreate((GLabel *) gl,base,gd,data,&_GGadget_colorbutton_box);
     gl->g.takes_input = true;
@@ -1157,7 +1157,7 @@ return( GTextInfoCompare(*pt1,*pt2));
 }
 
 GGadget *GListButtonCreate(struct gwindow *base, GGadgetData *gd,void *data) {
-    GListButton *gl = gcalloc(1,sizeof(GListButton));
+    GListButton *gl = calloc(1,sizeof(GListButton));
     int i;
 
     gl->labeltype = 2;

@@ -1885,7 +1885,7 @@ return( NULL );
 return( copy(orig));
     }
 
-    npt = new = galloc(2*strlen(orig)+10);
+    npt = new = malloc(2*strlen(orig)+10);
     dlen = strlen(decimal_point);
     /* now I want to change the number as little as possible. So if they use */
     /*  arabic numerals we can get by with just switching the decimal point */
@@ -1931,7 +1931,7 @@ static char *rplarraydecimal(const char *orig,const char *decimal_point,const ch
     const char *start, *pt; int ch;
 
     nlen = 2*strlen(orig)+10;
-    npt = new = gcalloc(1,nlen+1);
+    npt = new = calloc(1,nlen+1);
     *npt++ = '[';
 
     for ( pt=orig; isspace(*pt) || *pt=='['; ++pt );
@@ -1949,7 +1949,7 @@ return( NULL );
 	}
 	if ( npt-new + strlen(rpl) + 2 >nlen ) {
 	    int noff = npt-new;
-	    new = grealloc(new,nlen += strlen(rpl)+100);
+	    new = realloc(new,nlen += strlen(rpl)+100);
 	    npt = new+noff;
 	}
 	if ( npt[-1]!='[' )
@@ -1980,7 +1980,7 @@ static void PSPrivate_FinishEdit(GGadget *g,int r, int c, int wasnew) {
 return;
 
     if ( c==0 && (wasnew || val==NULL || *val=='\0')) {
-	tempdict = gcalloc(1,sizeof(*tempdict));
+	tempdict = calloc(1,sizeof(*tempdict));
 	SFPrivateGuess(d->sf,ly_fore,tempdict,key,true);
 	strings[r*cols+1].u.md_str = copy(PSDictHasEntry(tempdict,key));
 	PSDictFree(tempdict);
@@ -2051,7 +2051,7 @@ static void PSPrivate_MatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     mi->col_init = psprivate_ci;
 
     mi->initial_row_cnt = sf->private==NULL?0:sf->private->next;
-    md = gcalloc(2*(mi->initial_row_cnt+1),sizeof(struct matrix_data));
+    md = calloc(2*(mi->initial_row_cnt+1),sizeof(struct matrix_data));
     if ( sf->private!=NULL ) {
 	for ( i=j=0; i<sf->private->next; ++i ) {
 	    md[2*j  ].u.md_str = copy(sf->private->keys[i]);
@@ -2065,15 +2065,15 @@ static void PSPrivate_MatrixInit(struct matrixinit *mi,struct gfi_data *d) {
 }
 
 static struct psdict *GFI_ParsePrivate(struct gfi_data *d) {
-    struct psdict *ret = gcalloc(1,sizeof(struct psdict));
+    struct psdict *ret = calloc(1,sizeof(struct psdict));
     GGadget *private = GWidgetGetControl(d->gw,CID_Private);
     int rows, cols = GMatrixEditGetColCnt(private);
     struct matrix_data *strings = GMatrixEditGet(private, &rows);
     int i,j;
 
     ret->cnt = rows;
-    ret->keys = galloc(rows*sizeof(char *));
-    ret->values = galloc(rows*sizeof(char *));
+    ret->keys = malloc(rows*sizeof(char *));
+    ret->values = malloc(rows*sizeof(char *));
     for ( i=j=0; i<rows; ++i ) {
 	if ( strings[i*cols+0].u.md_str!=NULL && strings[i*cols+1].u.md_str!=NULL ) {
 	    ret->keys[j] = copy(strings[i*cols+0].u.md_str);
@@ -2124,7 +2124,7 @@ static int PI_Guess(GGadget *g, GEvent *e) {
 	cols = GMatrixEditGetColCnt(private);
 	r = GMatrixEditGetActiveRow(private);
 	key = strings[r*cols+0].u.md_str;
-	tempdict = gcalloc(1,sizeof(*tempdict));
+	tempdict = calloc(1,sizeof(*tempdict));
 	SFPrivateGuess(d->sf,ly_fore,tempdict,key,true);
 	ret = copy(PSDictHasEntry(tempdict,key));
 	if ( ret!=NULL ) {
@@ -2470,7 +2470,7 @@ void GListMoveSelected(GGadget *list,int offset) {
     GTextInfo **old, **new;
 
     old = GGadgetGetList(list,&len);
-    new = gcalloc(len+1,sizeof(GTextInfo *));
+    new = calloc(len+1,sizeof(GTextInfo *));
     j = (offset<0 ) ? 0 : len-1;
     for ( i=0; i<len; ++i ) if ( old[i]->selected ) {
 	if ( offset==0x80000000 || offset==0x7fffffff )
@@ -2482,19 +2482,19 @@ void GListMoveSelected(GGadget *list,int offset) {
 	    if ( (j= i+offset)>=len ) j=len-1;
 	    while ( new[j] ) --j;
 	}
-	new[j] = galloc(sizeof(GTextInfo));
+	new[j] = malloc(sizeof(GTextInfo));
 	*new[j] = *old[i];
 	new[j]->text = u_copy(new[j]->text);
 	if ( offset<0 ) ++j; else --j;
     }
     for ( i=j=0; i<len; ++i ) if ( !old[i]->selected ) {
 	while ( new[j] ) ++j;
-	new[j] = galloc(sizeof(GTextInfo));
+	new[j] = malloc(sizeof(GTextInfo));
 	*new[j] = *old[i];
 	new[j]->text = u_copy(new[j]->text);
 	++j;
     }
-    new[len] = gcalloc(1,sizeof(GTextInfo));
+    new[len] = calloc(1,sizeof(GTextInfo));
     GGadgetSetList(list,new,false);
 }
 
@@ -2503,14 +2503,14 @@ void GListDelSelected(GGadget *list) {
     GTextInfo **old, **new;
 
     old = GGadgetGetList(list,&len);
-    new = gcalloc(len+1,sizeof(GTextInfo *));
+    new = calloc(len+1,sizeof(GTextInfo *));
     for ( i=j=0; i<len; ++i ) if ( !old[i]->selected ) {
-	new[j] = galloc(sizeof(GTextInfo));
+	new[j] = malloc(sizeof(GTextInfo));
 	*new[j] = *old[i];
 	new[j]->text = u_copy(new[j]->text);
 	++j;
     }
-    new[j] = gcalloc(1,sizeof(GTextInfo));
+    new[j] = calloc(1,sizeof(GTextInfo));
     GGadgetSetList(list,new,false);
 }
 
@@ -2519,16 +2519,16 @@ GTextInfo *GListChangeLine(GGadget *list,int pos, const unichar_t *line) {
     int32 i,len;
 
     old = GGadgetGetList(list,&len);
-    new = gcalloc(len+1,sizeof(GTextInfo *));
+    new = calloc(len+1,sizeof(GTextInfo *));
     for ( i=0; i<len; ++i ) {
-	new[i] = galloc(sizeof(GTextInfo));
+	new[i] = malloc(sizeof(GTextInfo));
 	*new[i] = *old[i];
 	if ( i!=pos )
 	    new[i]->text = u_copy(new[i]->text);
 	else
 	    new[i]->text = u_copy(line);
     }
-    new[i] = gcalloc(1,sizeof(GTextInfo));
+    new[i] = calloc(1,sizeof(GTextInfo));
     GGadgetSetList(list,new,false);
     GGadgetScrollListToPos(list,pos);
 return( new[pos]);
@@ -2539,19 +2539,19 @@ GTextInfo *GListAppendLine(GGadget *list,const unichar_t *line,int select) {
     int32 i,len;
 
     old = GGadgetGetList(list,&len);
-    new = gcalloc(len+2,sizeof(GTextInfo *));
+    new = calloc(len+2,sizeof(GTextInfo *));
     for ( i=0; i<len; ++i ) {
-	new[i] = galloc(sizeof(GTextInfo));
+	new[i] = malloc(sizeof(GTextInfo));
 	*new[i] = *old[i];
 	new[i]->text = u_copy(new[i]->text);
 	if ( select ) new[i]->selected = false;
     }
-    new[i] = gcalloc(1,sizeof(GTextInfo));
+    new[i] = calloc(1,sizeof(GTextInfo));
     new[i]->fg = new[i]->bg = COLOR_DEFAULT;
     new[i]->userdata = NULL;
     new[i]->text = u_copy(line);
     new[i]->selected = select;
-    new[i+1] = gcalloc(1,sizeof(GTextInfo));
+    new[i+1] = calloc(1,sizeof(GTextInfo));
     GGadgetSetList(list,new,false);
     GGadgetScrollListToPos(list,i);
 return( new[i]);
@@ -2562,16 +2562,16 @@ GTextInfo *GListChangeLine8(GGadget *list,int pos, const char *line) {
     int32 i,len;
 
     old = GGadgetGetList(list,&len);
-    new = gcalloc(len+1,sizeof(GTextInfo *));
+    new = calloc(len+1,sizeof(GTextInfo *));
     for ( i=0; i<len; ++i ) {
-	new[i] = galloc(sizeof(GTextInfo));
+	new[i] = malloc(sizeof(GTextInfo));
 	*new[i] = *old[i];
 	if ( i!=pos )
 	    new[i]->text = u_copy(new[i]->text);
 	else
 	    new[i]->text = utf82u_copy(line);
     }
-    new[i] = gcalloc(1,sizeof(GTextInfo));
+    new[i] = calloc(1,sizeof(GTextInfo));
     GGadgetSetList(list,new,false);
     GGadgetScrollListToPos(list,pos);
 return( new[pos]);
@@ -2582,19 +2582,19 @@ GTextInfo *GListAppendLine8(GGadget *list,const char *line,int select) {
     int32 i,len;
 
     old = GGadgetGetList(list,&len);
-    new = gcalloc(len+2,sizeof(GTextInfo *));
+    new = calloc(len+2,sizeof(GTextInfo *));
     for ( i=0; i<len; ++i ) {
-	new[i] = galloc(sizeof(GTextInfo));
+	new[i] = malloc(sizeof(GTextInfo));
 	*new[i] = *old[i];
 	new[i]->text = u_copy(new[i]->text);
 	if ( select ) new[i]->selected = false;
     }
-    new[i] = gcalloc(1,sizeof(GTextInfo));
+    new[i] = calloc(1,sizeof(GTextInfo));
     new[i]->fg = new[i]->bg = COLOR_DEFAULT;
     new[i]->userdata = NULL;
     new[i]->text = utf82u_copy(line);
     new[i]->selected = select;
-    new[i+1] = gcalloc(1,sizeof(GTextInfo));
+    new[i+1] = calloc(1,sizeof(GTextInfo));
     GGadgetSetList(list,new,false);
     GGadgetScrollListToPos(list,i);
 return( new[i]);
@@ -2880,14 +2880,14 @@ static int CheckActiveStyleTranslation(struct gfi_data *d,
 			free(strings[3*r+2].u.md_str);
 			if ( other_lang==0x415 ) {
 			    /* polish needs a word before the translation */
-			    strings[3*r+2].u.md_str = galloc(strlen("odmiana ")+strlen(stylelist[i][other_pos].str)+1);
+			    strings[3*r+2].u.md_str = malloc(strlen("odmiana ")+strlen(stylelist[i][other_pos].str)+1);
 			    strcpy(strings[3*r+2].u.md_str,"odmiana ");
 			    strcat(strings[3*r+2].u.md_str,stylelist[i][other_pos].str);
 			} else
 			    strings[3*r+2].u.md_str = copy(stylelist[i][other_pos].str);
     return( true );
 		    }
-		    temp = galloc((strlen(new)
+		    temp = malloc((strlen(new)
 			    + strlen(stylelist[i][other_pos].str)
 			    - strlen(stylelist[i][j].str)
 			    +1));
@@ -2906,7 +2906,7 @@ static int CheckActiveStyleTranslation(struct gfi_data *d,
 	free(strings[3*r+2].u.md_str);
 	if ( other_lang==0x415 ) {
 	    /* polish needs a word before the translation */
-	    strings[3*r+2].u.md_str = galloc(strlen("odmiana ")+strlen(new)+1);
+	    strings[3*r+2].u.md_str = malloc(strlen("odmiana ")+strlen(new)+1);
 	    strcpy(strings[3*r+2].u.md_str,"odmiana ");
 	    strcat(strings[3*r+2].u.md_str,new);
 	    free(new);
@@ -3177,7 +3177,7 @@ static void TNMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
 	    ++cnt;
 	}
 	if ( md==NULL )
-	    md = gcalloc(3*(cnt+10),sizeof(struct matrix_data));
+	    md = calloc(3*(cnt+10),sizeof(struct matrix_data));
     }
     for ( i=0; i<cnt; ++i ) if ( md[3*cnt].u.md_ival==0x409 ) {
 	for ( j=0; ttfspecials[j]!=-1 && ttfspecials[j]!=md[3*cnt+1].u.md_ival; ++j );
@@ -3280,14 +3280,14 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 				len += strlen( bpt ) + 1;		/* for a new line */
 			}
 			if ( !m )
-			    newtns[j*3+2].u.md_str = all = pt = galloc(len+2);
+			    newtns[j*3+2].u.md_str = all = pt = malloc(len+2);
 		    }
 		    if ( pt>all ) pt[-1] = '\0';
 		    else *pt = '\0';
 		}
 	    }
 	    if ( !k ) {
-		newtns = gcalloc((rows+extras)*3,sizeof(struct matrix_data));
+		newtns = calloc((rows+extras)*3,sizeof(struct matrix_data));
 		memcpy(newtns,tns,rows*3*sizeof(struct matrix_data));
 		for ( i=0; i<rows; ++i )
 		    newtns[3*i+2].u.md_str = copy(newtns[3*i+2].u.md_str);
@@ -3340,7 +3340,7 @@ static void SSMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     for ( cnt=0, fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
 	for ( on=fn->names; on!=NULL; on=on->next, ++cnt );
     }
-    md = gcalloc(3*(cnt+10),sizeof(struct matrix_data));
+    md = calloc(3*(cnt+10),sizeof(struct matrix_data));
     for ( cnt=0, fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
 	for ( on=fn->names; on!=NULL; on=on->next, ++cnt ) {
 	    md[3*cnt  ].u.md_ival = on->lang;
@@ -3376,7 +3376,7 @@ static void SizeMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
 
     for ( cnt=0, on=sf->fontstyle_name; on!=NULL; on=on->next )
 	++cnt;
-    md = gcalloc(2*(cnt+10),sizeof(struct matrix_data));
+    md = calloc(2*(cnt+10),sizeof(struct matrix_data));
     for ( cnt=0, on=sf->fontstyle_name; on!=NULL; on=on->next, ++cnt ) {
 	md[2*cnt  ].u.md_ival = on->lang;
 	md[2*cnt+1].u.md_str = copy(on->name);
@@ -3395,7 +3395,7 @@ static int Gasp_Default(GGadget *g, GEvent *e) {
 
 	if ( !SFHasInstructions(d->sf)) {
 	    rows = 1;
-	    gasp = gcalloc(rows*5,sizeof(struct matrix_data));
+	    gasp = calloc(rows*5,sizeof(struct matrix_data));
 	    gasp[0].u.md_ival = 65535;
 	    gasp[1].u.md_ival = 0;	/* no grid fit (we have no instructions, we can't grid fit) */
 	    gasp[2].u.md_ival = 1;	/* do anti-alias */
@@ -3403,7 +3403,7 @@ static int Gasp_Default(GGadget *g, GEvent *e) {
 	    gasp[4].u.md_ival = 0;	/* do no grid fit w/ sym smooth */
 	} else {
 	    rows = 3;
-	    gasp = gcalloc(rows*5,sizeof(struct matrix_data));
+	    gasp = calloc(rows*5,sizeof(struct matrix_data));
 	    gasp[0].u.md_ival = 8;     gasp[1].u.md_ival = 0; gasp[2].u.md_ival = 1;
 		    gasp[3].u.md_ival = 0; gasp[4].u.md_ival = 0;
 	    gasp[5].u.md_ival = 16;    gasp[6].u.md_ival = 1; gasp[7].u.md_ival = 0;
@@ -3452,10 +3452,10 @@ static void GaspMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     mi->col_init = gaspci;
 
     if ( sf->gasp_cnt==0 ) {
-	md = gcalloc(5,sizeof(struct matrix_data));
+	md = calloc(5,sizeof(struct matrix_data));
 	mi->initial_row_cnt = 0;
     } else {
-	md = gcalloc(5*sf->gasp_cnt,sizeof(struct matrix_data));
+	md = calloc(5*sf->gasp_cnt,sizeof(struct matrix_data));
 	for ( i=0; i<sf->gasp_cnt; ++i ) {
 	    md[5*i  ].u.md_ival = sf->gasp[i].ppem;
 	    md[5*i+1].u.md_ival = (sf->gasp[i].flags&1)?1:0;
@@ -3515,7 +3515,7 @@ static void LayersMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     mi->col_cnt = 4;
     mi->col_init = layersci;
 
-    md = gcalloc(4*(sf->layer_cnt+1),sizeof(struct matrix_data));
+    md = calloc(4*(sf->layer_cnt+1),sizeof(struct matrix_data));
     for ( i=j=0; i<sf->layer_cnt; ++i ) {
 	md[4*j  ].u.md_str  = copy(sf->layers[i].name);
 	md[4*j+1].u.md_ival = sf->layers[i].order2;
@@ -3731,7 +3731,6 @@ static void StoreTTFNames(struct gfi_data *d) {
     GGadget *edit = GWidgetGetControl(d->gw,CID_TNames);
     int rows;
     struct matrix_data *strings = GMatrixEditGet(edit, &rows);
-    int len=0;
 
     TTFLangNamesFree(sf->names); sf->names = NULL;
 
@@ -3744,18 +3743,7 @@ static void StoreTTFNames(struct gfi_data *d) {
 	    sf->names = tln;
 	}
 	tln->names[strings[3*i+1].u.md_ival] = copy(strings[3*i+2].u.md_str );
-	if ( strings[3*i+2].u.md_str!=NULL )
-	    len += 2*utf8_strlen(strings[3*i+2].u.md_str);
     }
-#if 0
-    /* Windows has decided that this was an error */
-    if ( len>=5*1024 )
-	ff_post_notice(_("Name table too big for windows"),
-		    _("Windows has decided that fonts with 'name' tables\n"
-		    "bigger than 5K are insecure and will refuse to load\n"
-		    "them. Don't ask me why they believe this.\n"
-		    "This font will have a 'name' table bigger than that."));
-#endif
 
     TTF_PSDupsDefault(sf);
 }
@@ -4358,7 +4346,7 @@ return(true);
 	if ( gasprows==0 )
 	    sf->gasp = NULL;
 	else {
-	    sf->gasp = galloc(gasprows*sizeof(struct gasp));
+	    sf->gasp = malloc(gasprows*sizeof(struct gasp));
 	    sf->gasp_version = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_GaspVersion));
 	    for ( i=0; i<gasprows; ++i ) {
 		sf->gasp[i].ppem = gasp[5*i].u.md_ival;
@@ -4542,8 +4530,8 @@ return(true);
 	/* Class 0 is unused */
 	MarkClassFree(sf->mark_class_cnt,sf->mark_classes,sf->mark_class_names);
 	sf->mark_class_cnt = mc_rows + 1;
-	sf->mark_classes     = galloc((mc_rows+1)*sizeof(char *));
-	sf->mark_class_names = galloc((mc_rows+1)*sizeof(char *));
+	sf->mark_classes     = malloc((mc_rows+1)*sizeof(char *));
+	sf->mark_class_names = malloc((mc_rows+1)*sizeof(char *));
 	sf->mark_classes[0] = sf->mark_class_names[0] = NULL;
 	for ( i=0; i<mc_rows; ++i ) {
 	    sf->mark_class_names[i+1] = copy(markclasses[2*i+0].u.md_str);
@@ -4553,8 +4541,8 @@ return(true);
 	/* Set 0 is used */
 	MarkSetFree(sf->mark_set_cnt,sf->mark_sets,sf->mark_set_names);
 	sf->mark_set_cnt = ms_rows;
-	sf->mark_sets      = galloc((ms_rows)*sizeof(char *));
-	sf->mark_set_names = galloc((ms_rows)*sizeof(char *));
+	sf->mark_sets      = malloc((ms_rows)*sizeof(char *));
+	sf->mark_set_names = malloc((ms_rows)*sizeof(char *));
 	for ( i=0; i<ms_rows; ++i ) {
 	    sf->mark_set_names[i] = copy(marksets[2*i+0].u.md_str);
 	    sf->mark_sets[i]      = GlyphNameListDeUnicode(marksets[2*i+1].u.md_str);
@@ -5195,7 +5183,7 @@ static void FigureUnicode(struct gfi_data *d) {
     else
 	for ( cnt=0; ri[cnt].range!=NULL; ++cnt );
 
-    ti = galloc((cnt+1) * sizeof( GTextInfo * ));
+    ti = malloc((cnt+1) * sizeof( GTextInfo * ));
     for ( i=0; i<cnt; ++i ) {
 	if ( ri[i].range->first==-1 )
 	    snprintf( buffer, sizeof(buffer),
@@ -5206,12 +5194,12 @@ static void FigureUnicode(struct gfi_data *d) {
 		    _(ri[i].range->name),
 		    (int) ri[i].range->first, (int) ri[i].range->last,
 		    ri[i].cnt, ri[i].range->actual );
-	ti[i] = gcalloc(1,sizeof(GTextInfo));
+	ti[i] = calloc(1,sizeof(GTextInfo));
 	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
 	ti[i]->text = utf82u_copy(buffer);
 	ti[i]->userdata = ri[i].range;
     }
-    ti[i] = gcalloc(1,sizeof(GTextInfo));
+    ti[i] = calloc(1,sizeof(GTextInfo));
     GGadgetSetList(list,ti,false);
     free(ri);
 }
@@ -5247,7 +5235,7 @@ return( true );
 	    }
 	}
     } else if ( e->u.control.subtype == et_listdoubleclick && !r->unassigned ) {
-	char *found = gcalloc(r->last-r->first+1,1);
+	char *found = calloc(r->last-r->first+1,1);
 	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( sf->glyphs[gid]!=NULL ) {
 	    int u = sf->glyphs[gid]->unicodeenc;
 	    if ( u>=r->first && u<=r->last ) {
@@ -5485,12 +5473,12 @@ static void LookupSetup(struct lkdata *lk,OTLookup *lookups) {
 
     for ( cnt=0, otl=lookups; otl!=NULL; ++cnt, otl=otl->next );
     lk->cnt = cnt; lk->max = cnt+10;
-    lk->all = gcalloc(lk->max,sizeof(struct lkinfo));
+    lk->all = calloc(lk->max,sizeof(struct lkinfo));
     for ( cnt=0, otl=lookups; otl!=NULL; ++cnt, otl=otl->next ) {
 	lk->all[cnt].lookup = otl;
 	for ( subcnt=0, sub=otl->subtables; sub!=NULL; ++subcnt, sub=sub->next );
 	lk->all[cnt].subtable_cnt = subcnt; lk->all[cnt].subtable_max = subcnt+10;
-	lk->all[cnt].subtables = gcalloc(lk->all[cnt].subtable_max,sizeof(struct lksubinfo));
+	lk->all[cnt].subtables = calloc(lk->all[cnt].subtable_max,sizeof(struct lksubinfo));
 	for ( subcnt=0, sub=otl->subtables; sub!=NULL; ++subcnt, sub=sub->next )
 	    lk->all[cnt].subtables[subcnt].subtable = sub;
     }
@@ -6041,7 +6029,7 @@ return( true );
 	    }
 	}
 	if ( lk->cnt>=lk->max )
-	    lk->all = grealloc(lk->all,(lk->max+=10)*sizeof(struct lkinfo));
+	    lk->all = realloc(lk->all,(lk->max+=10)*sizeof(struct lkinfo));
 	for ( k=lk->cnt; k>i+1; --k )
 	    lk->all[k] = lk->all[k-1];
 	memset(&lk->all[k],0,sizeof(struct lkinfo));
@@ -6116,7 +6104,7 @@ return( true );
 return( true );
 	}
 	if ( lk->all[i].subtable_cnt>=lk->all[i].subtable_max )
-	    lk->all[i].subtables = grealloc(lk->all[i].subtables,(lk->all[i].subtable_max+=10)*sizeof(struct lksubinfo));
+	    lk->all[i].subtables = realloc(lk->all[i].subtables,(lk->all[i].subtable_max+=10)*sizeof(struct lksubinfo));
 	for ( k=lk->all[i].subtable_cnt; k>j+1; --k )
 	    lk->all[i].subtables[k] = lk->all[i].subtables[k-1];
 	memset(&lk->all[i].subtables[k],0,sizeof(struct lksubinfo));
@@ -6198,7 +6186,7 @@ return( true );
 		    else {
 			FLMerge(lkfirst->lookup,lk->all[i].lookup);
 			if ( lkfirst->subtable_cnt+lk->all[i].subtable_cnt >= lkfirst->subtable_max )
-			    lkfirst->subtables = grealloc(lkfirst->subtables,(lkfirst->subtable_max+=lk->all[i].subtable_cnt)*sizeof(struct lksubinfo));
+			    lkfirst->subtables = realloc(lkfirst->subtables,(lkfirst->subtable_max+=lk->all[i].subtable_cnt)*sizeof(struct lksubinfo));
 			memcpy(lkfirst->subtables+lkfirst->subtable_cnt,
 				lk->all[i].subtables,lk->all[i].subtable_cnt*sizeof(struct lksubinfo));
 			lkfirst->subtable_cnt += lk->all[i].subtable_cnt;
@@ -6389,7 +6377,7 @@ static int GFI_LookupImportLookup(GGadget *g, GEvent *e) {
 		}
 	    }
 	    if ( ti==NULL )
-		ti = gcalloc((cnt+1),sizeof(GTextInfo));
+		ti = calloc((cnt+1),sizeof(GTextInfo));
 	}
 
 	memset(gcd,0,sizeof(gcd));
@@ -6464,7 +6452,7 @@ static int GFI_LookupImportLookup(GGadget *g, GEvent *e) {
 	if ( done==2 ) {
 	    int32 len;
 	    GTextInfo **ti = GGadgetGetList(gcd[1].ret,&len);
-	    OTLookup **list = galloc((len+1)*sizeof(OTLookup));
+	    OTLookup **list = malloc((len+1)*sizeof(OTLookup));
 	    struct lkdata *lk = &gfi->tables[isgpos];
 	    OTLookup *before = NULL;
 
@@ -6752,7 +6740,7 @@ static void AALTCreateNew(SplineFont *sf, struct lkdata *lk) {
     continue;
 	otl = NewAALTLookup(sf,sllk,sllk_cnt,i);
 	if ( lk->cnt>=lk->max )
-	    lk->all = grealloc(lk->all,(lk->max+=10)*sizeof(struct lkinfo));
+	    lk->all = realloc(lk->all,(lk->max+=10)*sizeof(struct lkinfo));
 	for ( k=lk->cnt; k>0; --k )
 	    lk->all[k] = lk->all[k-1];
 	memset(&lk->all[0],0,sizeof(struct lkinfo));
@@ -6761,7 +6749,7 @@ static void AALTCreateNew(SplineFont *sf, struct lkdata *lk) {
 	++lk->cnt;
 
 	/* Now add the new subtable */
-	lk->all[0].subtables = gcalloc(1,sizeof(struct lksubinfo));
+	lk->all[0].subtables = calloc(1,sizeof(struct lksubinfo));
 	lk->all[0].subtable_cnt = lk->all[0].subtable_max = 1;
 	lk->all[0].subtables[0].subtable = otl->subtables;
 	lk->all[0].subtables[0].new = true;
@@ -7203,7 +7191,7 @@ return;
 			if ( !lk->all[old_lk].subtables[i].deleted && lk->all[old_lk].subtables[i].selected )
 			    ++sel_cnt;
 		    if ( lk->all[lookup].subtable_cnt+sel_cnt >= lk->all[lookup].subtable_max )
-			lk->all[lookup].subtables = grealloc(lk->all[lookup].subtables,
+			lk->all[lookup].subtables = realloc(lk->all[lookup].subtables,
 				(lk->all[lookup].subtable_max += sel_cnt+3)*sizeof(struct lksubinfo));
 		    for ( i= lk->all[lookup].subtable_cnt+sel_cnt-1; i>=subtable; --i )
 			lk->all[lookup].subtables[i] = lk->all[lookup].subtables[i-sel_cnt];
@@ -7233,7 +7221,7 @@ return;
 			if ( lk->all[i].selected )
 			    ++cnt;
 		    }
-		    list = galloc((cnt+1)*sizeof(OTLookup *));
+		    list = malloc((cnt+1)*sizeof(OTLookup *));
 		    cnt=0;
 		    for ( i=0; i<lk->cnt; ++i ) {
 			if ( lk->all[i].deleted )
@@ -7519,7 +7507,7 @@ return;
     if ( defaspect==-1 )
 	defaspect = last_aspect;
 
-    d = gcalloc(1,sizeof(struct gfi_data));
+    d = calloc(1,sizeof(struct gfi_data));
     sf->fontinfo = d;
 
     memset(&wattrs,0,sizeof(wattrs));
@@ -8017,7 +8005,7 @@ return;
     psgcd[k].creator = GListButtonCreate;
     nlnames = AllNamelistNames();
     for ( i=0; nlnames[i]!=NULL; ++i);
-    namelistnames = gcalloc(i+1,sizeof(GTextInfo));
+    namelistnames = calloc(i+1,sizeof(GTextInfo));
     for ( i=0; nlnames[i]!=NULL; ++i) {
 	namelistnames[i].text = (unichar_t *) nlnames[i];
 	namelistnames[i].text_is_1byte = true;
@@ -9667,7 +9655,7 @@ return;
     markc_mi.col_init = markc_ci;
 
     /* Class 0 is unused */
-    markc_md = gcalloc(sf->mark_class_cnt+1,2*sizeof(struct matrix_data));
+    markc_md = calloc(sf->mark_class_cnt+1,2*sizeof(struct matrix_data));
     for ( i=1; i<sf->mark_class_cnt; ++i ) {
 	markc_md[2*(i-1)+0].u.md_str = copy(sf->mark_class_names[i]);
 	markc_md[2*(i-1)+1].u.md_str = SFNameList2NameUni(sf,sf->mark_classes[i]);
@@ -9711,7 +9699,7 @@ return;
     marks_mi.col_init = marks_ci;
 
     /* Set 0 is used */
-    marks_md = gcalloc(sf->mark_set_cnt+1,2*sizeof(struct matrix_data));
+    marks_md = calloc(sf->mark_set_cnt+1,2*sizeof(struct matrix_data));
     for ( i=0; i<sf->mark_set_cnt; ++i ) {
 	marks_md[2*i+0].u.md_str = copy(sf->mark_set_names[i]);
 	marks_md[2*i+1].u.md_str = SFNameList2NameUni(sf,sf->mark_sets[i]);

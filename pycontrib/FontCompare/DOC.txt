@@ -1,0 +1,79 @@
+FONTCOMPARE
+Synopsis: A tool which tries to assess the aesthetic quality of Indic 
+fonts by making comparisons with standard set of features desired in a
+font, and assigning scores in various categories. This way, the font
+developers know where they are headed, and it would assist in making
+Indic fonts better in the longer run.
+
+Current State: Currently the application supports very basic tests, and 
+that too for Devanagari script only. The basic tests makes use of
+comparison with a standard looking Devanagri font, so that even a novice
+font developer would know that he/she is headed the right way. However this
+method of assessment greatly reduces the scope of providing tests for 
+artistic fonts. To overcome this drawback what is needed is that we have 
+a set of very good fonts with artistic appearance with no restrictive 
+licensing issues. Still the application can be used for developing any 
+kind of font, as long as we have a sample font to give the app the set of
+standards to be compared against. 
+
+How to use:
+1. For basic testing
+For testing a font on very basic grounds, all that is needed is you load
+the test font by pressing the "Load TestFont" button. Then we begin the 
+tests by pressing the "Begin Test" button.
+
+2. For advanced testing 
+If you wish to compare with a font similar to which you wish to develop 
+a font, then currently you have to create a mockfont out of the actual font
+to keep only those characteristics which affect the aesthetic quality of
+fonts, then reinstall the app and use it. (A real cumbersome process.)
+
+To achieve so you can use the mockify.py script.
+Support would be added to enable the mockifying process to be done smoothly
+using the UI.
+
+What do the scores mean:
+All scores are on a scales of 10.
+Category->Similarity to Standard font or Parameters
+
+a) Normal
+This indicates the visual similarity to the actual font without any effects
+applied. This is basically the average of the scores for all glyphs.
+
+b) Bold
+Same as Normal, except for the fact that the Bold effect is applied before 
+evaluation of scores.
+
+c) Italic
+Same as Normal, except for the fact that the Italic effect is applied before 
+evaluation of scores.
+
+d) Basic Properties
+This is a collection of many properties, one of which is whether the glyph
+is worth outputting, which inturn depends upon whether the glyph is not 
+entirely empty. 
+
+Category->Glyph Consistency
+Indicates the uniformity of structure among the various set of glyphs.
+
+Category->Readability and print proof
+Indicates the similarity to actual rendered text on print and screen in 
+varying sizes and resolutions.
+
+MOCKIFYING THE FONTS:
+The basis of the application is mockfonts. The application has a script 
+called mockify.py which enables you to make your own mockfonts and use it
+as a standard.
+
+This works on the principle of one font at a time, since the mockfont object
+occupies a bit more memory (currently). So once you make a mockfont out of
+a font that is the only standard remains, and basically you need to run the 
+mockify.py script, and then reinstall the app for you to be able to use it.
+
+Steps to mockiy:
+1.  line 42 mock_font["font"] = MockFont("../unittests/lohit.ttf",100,(0x900,0x97f))
+    replace lohit.ttf with your font after placing it in the unittests folder.
+2.  Run the command "python mockify.py"
+3. Reinstall the App.
+
+Will make this thing more automated.

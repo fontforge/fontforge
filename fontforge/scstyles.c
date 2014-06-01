@@ -203,7 +203,7 @@ static double GetCounterBlackSpace( GlyphData *gd, StemData **dstems, int dcnt,
     int i, j, icnt=0;
 
     bundle = x_dir ? gd->vbundle : gd->hbundle;
-    inters = gcalloc( dcnt + bundle->cnt,sizeof( struct segment ));
+    inters = calloc( dcnt + bundle->cnt,sizeof( struct segment ));
 
     for ( i=0; i<dcnt; i++ ) {
 	stem = dstems[i];
@@ -502,7 +502,6 @@ static void StemResize( SplineSet *ss,GlyphData *gd, StemData **dstems, int dcnt
 static void HStemResize( SplineSet *ss,GlyphData *gd,
     DBounds *orig_b, DBounds *new_b, struct genericchange *genchange ) {
 
-    BlueData *bd;
     double middle, scale, stem_scale, stem_add, stroke_add, width_new;
     double top, bot, lpos, rpos, fuzz = gd->fuzz;
     StemData *stem, *test, *upper, *lower;
@@ -516,7 +515,6 @@ static void HStemResize( SplineSet *ss,GlyphData *gd,
     stroke_add = expanded ? stem_add : 0;
     scale = genchange->v_scale;
 
-    bd = &gd->bd;
     new_b->miny = orig_b->miny * scale;
     new_b->maxy = orig_b->maxy * scale;
 
@@ -1026,7 +1024,7 @@ return( dcnt );
 
 static void MovePointToDiag( PointData *pd, StemData *stem, int is_l ) {
     BasePoint fv, *base, *ptpos;
-    double d, da, db;
+    double d, da;
 
     base = is_l ? &stem->newleft : &stem->newright;
     if ( !pd->touched ) {
@@ -1043,7 +1041,6 @@ static void MovePointToDiag( PointData *pd, StemData *stem, int is_l ) {
 
     d = stem->newunit.x * fv.y - stem->newunit.y * fv.x;
     da = ( base->x - ptpos->x )*fv.y - ( base->y - ptpos->y )*fv.x;
-    db = ( base->y - ptpos->y )*stem->newunit.x - ( base->x - ptpos->x )*stem->newunit.y;
 
     if ( fabs( d ) > 0 ) {
 	pd->newpos.x = base->x - ( da/d )*stem->newunit.x;
@@ -1195,7 +1192,7 @@ static void ShiftDependent( GlyphData *gd, PointData *pd, StemData *stem,
 
     uint8 flag = x_dir ? tf_x : tf_y;
     int i, scnt, from_min;
-    double ndot, pdot, off, dist, s, s_new, e, e_new;
+    double ndot, pdot, off, dist;
     Spline *ns;
     PointData *npd;
     StemData *tstem, *dstem = NULL;
@@ -1254,15 +1251,6 @@ return;
 	if ( dstem != NULL )
     break;
 	if ( IsExtremum( npd->sp,!x_dir ) || IsAnglePoint( npd->sp )) {
-	    if ( (&npd->base.x)[!x_dir] < (&pd->base.x)[!x_dir] ) {
-		s = x_dir ? orig_b->minx : orig_b->miny;
-		s_new = x_dir ? new_b->minx : new_b->miny;
-		e = (&pd->base.x)[!x_dir]; e_new = (&pd->newpos.x)[!x_dir];
-	    } else {
-		s = (&pd->base.x)[!x_dir]; s_new = (&pd->newpos.x)[!x_dir];
-		e = x_dir ? orig_b->maxx : orig_b->maxy;
-		e_new = x_dir ? new_b->maxx : new_b->maxy;
-	    }
 	    (&npd->newpos.x)[!x_dir] = (&pd->newpos.x)[!x_dir] +
 		((&npd->base.x)[!x_dir] - (&pd->base.x)[!x_dir]) * cscale;
 
@@ -1306,7 +1294,7 @@ static void FixDStem( GlyphData *gd, StemData *stem,  StemData **dstems, int dcn
 
     int i, is_l, pref_y, nextidx, previdx;
     PointData *pd, *lfixed=NULL, *rfixed=NULL;
-    double new_hyp, new_w, des_w, dscale, hscale, vscale, hscale1, vscale1, cscale;
+    double new_hyp, new_w, des_w, hscale, vscale, hscale1, vscale1, cscale;
     double coord_new, min, max, min_new, max_new;
     BasePoint l_to_r, left, right, temp;
     DBounds stem_b;
@@ -1549,7 +1537,6 @@ return;
      * to be aligned as in the original outline, even if horizontal and vertical ratios
      * were different
      */
-    dscale = fabs( hscale * stem->unit.x ) + fabs( vscale * stem->unit.y );
     if ( stem->keypts[0] != stem->keypts[2] && (
 	( stem->keypts[0]->sp->next->to == stem->keypts[2]->sp ) ||
 	( stem->keypts[0]->sp->prev->from == stem->keypts[2]->sp )))
@@ -1664,7 +1651,7 @@ return;
     /* Have to prepare a DStem list before further operations, since they are needed */
     /* to properly calculate counters between vertical stems */
     if ( genchange->dstem_control ) {
-	dstems = gcalloc( gd->stemcnt,sizeof( StemData *));
+	dstems = calloc( gd->stemcnt,sizeof( StemData *));
 	dcnt = PrepareDStemList( gd,dstems );
     }
 
@@ -2130,7 +2117,7 @@ static struct overlaps *SCFindHintOverlaps(StemInfo *hints,double min_coord,
     for ( h=hints, cnt=0; h!=NULL; h=h->next ) if ( !h->ghost )
 	++cnt;
 
-    overlaps = galloc((cnt+3)*sizeof(struct overlaps));
+    overlaps = malloc((cnt+3)*sizeof(struct overlaps));
     overlaps[0].start = min_coord; overlaps[0].stop = min_coord;
     overlaps[1].start = max_coord; overlaps[1].stop = max_coord;
     tot = 2;
@@ -2191,7 +2178,7 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
     AnchorPoint *ap;
 
     cnt = NumberLayerPoints(ss);
-    ptpos = gcalloc(cnt,sizeof(struct ptpos));
+    ptpos = calloc(cnt,sizeof(struct ptpos));
 
     /* Position any points which lie within a hint zone */
     order2 = false;
@@ -2670,7 +2657,7 @@ return;		/* Can't randomly add things to a CID keyed font */
 return;
 
     genchange->g.cnt = genchange->m.cnt+2;
-    genchange->g.maps = galloc(genchange->g.cnt*sizeof(struct position_maps));
+    genchange->g.maps = malloc(genchange->g.cnt*sizeof(struct position_maps));
     genchange->sf     = fv->sf;
     genchange->layer  = fv->active_layer;
 
@@ -2899,10 +2886,10 @@ return;		/* Can't randomly add things to a CID keyed font */
 return;
 
     genchange->g.cnt = genchange->m.cnt+2;
-    genchange->g.maps = galloc(genchange->g.cnt*sizeof(struct position_maps));
+    genchange->g.maps = malloc(genchange->g.cnt*sizeof(struct position_maps));
 
     if ( genchange->feature_tag!=0 ) {
-	uint32 *scripts = galloc(cnt*sizeof(uint32));
+	uint32 *scripts = malloc(cnt*sizeof(uint32));
 	int scnt = 0;
 	for ( enc=0; enc<fv->map->enccount; ++enc ) {
 	    if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
@@ -3041,7 +3028,7 @@ return;
     }
 
     genchange->g.cnt = genchange->m.cnt+2;
-    genchange->g.maps = galloc(genchange->g.cnt*sizeof(struct position_maps));
+    genchange->g.maps = malloc(genchange->g.cnt*sizeof(struct position_maps));
 
     if ( sc->layers[layer].splines!=NULL ) {
 	SCPreserveLayer(sc,layer,true);
@@ -3159,7 +3146,7 @@ return;		/* It intersects something that's already there */
 
     /* Need to add */
     if ( ci->cnts[z]>=ci->maxes[z] )
-	ci->zones[z] = grealloc(ci->zones[z],(ci->maxes[z]+=10)*sizeof(struct ci_zones));
+	ci->zones[z] = realloc(ci->zones[z],(ci->maxes[z]+=10)*sizeof(struct ci_zones));
     for ( j=ci->cnts[z]; j>i; --j )
 	ci->zones[z][j] = ci->zones[z][j-1];
     ci->zones[z][i].start = ci->zones[z][i].moveto   = start;
@@ -3779,7 +3766,7 @@ static SplineSet *LCG_EmboldenHook(SplineSet *ss_expanded,struct lcg_zones *zone
     ccnt = MaxContourCount(ss_expanded);
     if ( ccnt==0 )
 return(ss_expanded);			/* No points? Nothing to do */
-    ptmoves = galloc((ccnt+1)*sizeof(struct ptmoves));
+    ptmoves = malloc((ccnt+1)*sizeof(struct ptmoves));
     for ( ss = ss_expanded; ss!=NULL ; ss=ss->next ) {
 	if ( ss->first->prev==NULL )
     continue;
@@ -3855,7 +3842,7 @@ return( LCG_EmboldenHook(ss_expanded,zones,sc,layer));
     ccnt = MaxContourCount(ss_expanded);
     if ( ccnt==0 )
 return(ss_expanded);			/* No points? Nothing to do */
-    ptmoves = galloc((ccnt+1)*sizeof(struct ptmoves));
+    ptmoves = malloc((ccnt+1)*sizeof(struct ptmoves));
     for ( ss = ss_expanded; ss!=NULL ; ss=ss->next ) {
 	if ( ss->first->prev==NULL )
     continue;
@@ -4131,7 +4118,7 @@ static double BlueSearch(char *bluestring, double value, double bestvalue) {
     if ( *bluestring=='[' ) ++bluestring;
     if ( (bestdiff = bestvalue-value)<0 ) bestdiff = -bestdiff;
 
-    forever {
+    for (;;) {
 	try = strtod(bluestring,&end);
 	if ( bluestring==end )
 return( bestvalue );
@@ -4645,7 +4632,7 @@ static SplineSet *MakeBottomItalicSerif(double stemwidth,double endx,
 	SplinePointListFree(ss);
 	ss = newss;
     } else {
-	SPLCatagorizePoints(ss);
+	SPLCategorizePoints(ss);
     }
     { double temp;
 	if ( (temp = ss->first->me.x-ss->last->me.x)<0 ) temp = -temp;
@@ -4817,7 +4804,7 @@ static SplineSet *MakeItalicDSerif(DStemInfo *d,double stemwidth,
 	SplinePointListFree(ss);
 	ss = newss;
     } else {
-	SPLCatagorizePoints(ss);
+	SPLCategorizePoints(ss);
     }
 return( ss );
 }
@@ -5041,7 +5028,7 @@ static void FindBottomSerifOnDStem(SplineChar *sc,int layer,DStemInfo *d,
     SplinePoint *start=NULL, *end=NULL, *sp;
     SplinePointList *ss;
     double sdiff, ediff;
-    double pos, spos=0, epos=0;
+    double pos;
     double fuzz = (sc->parent->ascent+sc->parent->descent)/100;
 
     for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
@@ -5055,11 +5042,9 @@ static void FindBottomSerifOnDStem(SplineChar *sc,int layer,DStemInfo *d,
 		if ( sdiff<=10 && ( start==NULL ||
 			( sp->me.y<start->me.y /*&& (InHintRange(d->where,pos) || !InHintRange(d->where,spos))*/ ))) {
 		    start=sp;
-		    spos = pos;
 		} else if ( ediff<=10 && ( end==NULL ||
 			( sp->me.y<end->me.y /*&& (InHintRange(d->where,pos) || !InHintRange(d->where,epos))*/ ))) {
 		    end=sp;
-		    epos = pos;
 		}
 	    }
 	    if ( sp->next==NULL )
@@ -5097,7 +5082,7 @@ static void FindTopSerifOnDStem(SplineChar *sc,int layer,DStemInfo *d,
     SplinePoint *start=NULL, *end=NULL, *sp;
     SplinePointList *ss;
     double sdiff, ediff;
-    double pos, spos=0, epos=0;
+    double pos;
     double fuzz = (sc->parent->ascent+sc->parent->descent)/100;
 
     for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
@@ -5111,11 +5096,9 @@ static void FindTopSerifOnDStem(SplineChar *sc,int layer,DStemInfo *d,
 		if ( sdiff<=10 && ( start==NULL ||
 			( sp->me.y>start->me.y /*&& (InHintRange(d->where,pos) || !InHintRange(d->where,spos))*/ ))) {
 		    start=sp;
-		    spos = pos;
 		} else if ( ediff<=10 && ( end==NULL ||
 			( sp->me.y>end->me.y /*&& (InHintRange(d->where,pos) || !InHintRange(d->where,epos))*/ ))) {
 		    end=sp;
-		    epos = pos;
 		}
 	    }
 	    if ( sp->next==NULL )
@@ -6151,7 +6134,7 @@ static void FigureFTop(ItalicInfo *ii) {
     StemInfo *h;
     SplinePoint *beste, *bests, *sp;
     SplineSet *ss;
-    double bestsdiff, bestediff, sdiff, ediff;
+    double bestediff, sdiff, ediff;
     DBounds b;
     real trans[6];
 
@@ -6171,15 +6154,14 @@ return;
     for ( h=f->vstem; h!=NULL; h=h->next ) if ( h->tobeused ) {
 	for ( ss=f->layers[ii->layer].splines; ss!=NULL; ss=ss->next ) {
 	    bests = beste = NULL;
-	    bestsdiff = bestediff = 10;
+	    bestediff = 10;
 	    for ( sp=ss->first; ; ) {
 		if ( sp->me.y>.9*ii->x_height ) {
 		    if ( (sdiff = sp->me.x-h->start)<0 ) sdiff = -sdiff;
 		    if ( (ediff = sp->me.x-h->start-h->width)<0 ) ediff = -ediff;
-		    if ( sdiff<3 && (bests==NULL || sp->me.y>bests->me.y )) {
-			bestsdiff = sdiff;
+		    if ( sdiff<3 && (bests==NULL || sp->me.y>bests->me.y ))
 			bests = sp;
-		    } else if ( ediff<3 && (beste==NULL || sp->me.y>beste->me.y )) {
+		    else if ( ediff<3 && (beste==NULL || sp->me.y>beste->me.y )) {
 			bestediff = ediff;
 			beste = sp;
 		    }
@@ -6840,13 +6822,12 @@ void MakeItalic(FontViewBase *fv,CharViewBase *cv, ItalicInfo *ii) {
 
 void InitXHeightInfo(SplineFont *sf, int layer, struct xheightinfo *xi) {
     int i, j, cnt, besti;
-    double sum, val;
+    double val;
     const int MW=100;
     struct widths { double width, total; } widths[MW];
 
     memset(xi,0,sizeof(*xi));
     xi->xheight_current = SFXHeight(sf,layer,false);
-    sum = 0;
     for ( i=cnt=0; lc_botserif_str[i]!=0; ++i ) {
 	val = SCSerifHeight(SFGetChar(sf,lc_botserif_str[i],NULL),layer);
 	if ( val!=0 ) {

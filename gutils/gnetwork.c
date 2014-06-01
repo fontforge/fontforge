@@ -38,13 +38,12 @@
 
 #if defined(__MINGW32__)
 #  include <winsock2.h>
-#  include <windows.h>
-#  include <plibc.h>
 #else
 extern int h_errno;
 #  include <netdb.h>
-#  include <arpa/inet.h>
 #endif
+
+#include <arpa/inet.h>
 
 #ifdef BUILD_COLLAB
 #if !defined(__MINGW32__)
@@ -106,7 +105,7 @@ char* HostPortPack( char* hostname, int port )
 
 char* HostPortUnpack( char* packed, int* port, int port_default )
 {
-    char* colon = str_rfind( packed, ':' );
+    char* colon = strrchr( packed, ':' );
     if( !colon )
     {
 	*port = port_default;

@@ -53,7 +53,7 @@ static BDFFont *BDFNew(SplineFont *sf,int pixel_size, int depth) {
 
     new->sf = sf;
     new->glyphcnt = new->glyphmax = sf->glyphcnt;
-    new->glyphs = gcalloc(new->glyphcnt,sizeof(BDFChar *));
+    new->glyphs = calloc(new->glyphcnt,sizeof(BDFChar *));
     new->pixelsize = pixel_size;
     new->ascent = (sf->ascent*pixel_size+.5)/(sf->ascent+sf->descent);
     new->descent = pixel_size-new->ascent;
@@ -326,6 +326,7 @@ void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
 	if ( bd->sf->onlybitmaps && bd->sf->bitmaps!=NULL ) {
 	    BDFFont *bdf;
 	    FontViewBase *fvs;
+            // Select the last bitmap font.
 	    for ( bdf=bd->sf->bitmaps; bdf->next!=NULL; bdf=bdf->next );
 	    for ( fvs = bd->sf->fv; fvs!=NULL; fvs= fvs->nextsame )
 		FVChangeDisplayBitmap(fvs,bdf);

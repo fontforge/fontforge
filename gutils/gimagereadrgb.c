@@ -75,10 +75,10 @@ static int getsgiheader(struct sgiheader *head,FILE *fp) {
     if ( (head->magic=getshort(fp))<0	|| head->magic!=SGI_MAGIC || \
 	 (head->format=fgetc(fp))<0	|| \
 	 (head->bpc=fgetc(fp))<0	|| \
-	 (head->dim=getshort(fp))<0	|| \
-	 (head->width=getshort(fp))<0	|| \
-	 (head->height=getshort(fp))<0	|| \
-	 (head->chans=getshort(fp))<0	|| \
+	 (head->dim=getshort(fp))==(unsigned short)-1	||      \
+	 (head->width=getshort(fp))==(unsigned short)-1	||      \
+	 (head->height=getshort(fp))==(unsigned short)-1||      \
+	 (head->chans=getshort(fp))==(unsigned short)-1	||      \
 	 getlong(fp,&head->pixmin)	|| \
 	 getlong(fp,&head->pixmax)	|| \
 	 fread(head->dummy,sizeof(head->dummy),1,fp)<1 || \
@@ -109,7 +109,7 @@ static int readlongtab(FILE *fp,unsigned long *tab,long tablen) {
     long i;
 
     for ( i=0; i<tablen; ++i )
-	if ( getlong(fp,&tab[i]) )
+	if ( getlong(fp,(long *)&tab[i]) )
 	    return( -1 ); /* had a read error */
 
     return( 0 ); /* read everything okay */
@@ -118,7 +118,7 @@ static int readlongtab(FILE *fp,unsigned long *tab,long tablen) {
 static int find_scanline(FILE *fp,struct sgiheader *header,int cur,
 	unsigned long *starttab,unsigned char **ptrtab) {
 /* Find and expand a scanline. Return 0 if okay, else -ve if error */
-    int ch,i,cnt;
+    int ch = 0,i,cnt;
     long val;
     unsigned char *pt;
 

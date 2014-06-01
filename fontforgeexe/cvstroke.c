@@ -62,16 +62,6 @@ extern const int input_em_cnt;
 	/* For freehand */
 #define CID_CenterLine	1031
 
-#if 0
-#define CID_Width2	1032
-#define CID_Pressure1	1033
-#define CID_Pressure2	1034
-#define CID_PressureTxt	1036
-
-#define CID_Rect1	1040
-#define CID_Rect2	1041
-#endif
-
 static void CVStrokeIt(void *_cv, StrokeInfo *si, int justapply) {
     CharView *cv = _cv;
     int anypoints;
@@ -139,14 +129,6 @@ static int _Stroke_OK(StrokeDlg *sd,int isapply) {
     else if ( si!= &strokeinfo &&
 	    GGadgetIsChecked( GWidgetGetControl(sw,CID_CenterLine)) )
 	si->stroke_type = si_centerline;
-#if 0
-    if ( si!=&strokeinfo && si->stroke_type!=si_centerline ) {
-	si->pressure1 = GetReal8(sw,CID_Pressure1,_("_Pressure:"),&err);
-	si->pressure2 = GetReal8(sw,CID_Pressure2,_("_Pressure:"),&err);
-	if ( si->pressure1!=si->pressure2 )
-	    si->radius2 = GetReal8(sw,CID_Width2,_("Stroke _Width:"),&err)/2;
-    }
-#endif
     if ( si->stroke_type == si_poly ) {
 	si->poly = sd->sc_stroke.layers[ly_fore].splines;
 	if ( sd->sc_stroke.layers[ly_fore].refs != NULL ) {
@@ -342,18 +324,6 @@ static void Stroke_ShowNib(StrokeDlg *sd) {
     GDrawRequestExpose(sd->cv_stroke.v,NULL,false);
 }
 
-#if 0
-static void StrokePressureCheck(StrokeDlg *sd) {
-    int err = false;
-    real p1, p2;
-
-    p1 = GetReal8(sd->gw,CID_Pressure1,_("_Pressure:"),&err);
-    p2 = GetReal8(sd->gw,CID_Pressure2,_("_Pressure:"),&err);
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_Width2),
-	    !err && p1!=p2 && !sd->dontexpand);
-}
-#endif
-
 static void StrokeSetup(StrokeDlg *sd, enum si_type stroke_type) {
 
     sd->dontexpand = ( stroke_type==si_centerline );
@@ -373,15 +343,6 @@ static void StrokeSetup(StrokeDlg *sd, enum si_type stroke_type) {
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_MinorAxis   ), stroke_type==si_std || stroke_type==si_caligraphic);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PenAngleTxt ), stroke_type==si_std || stroke_type==si_caligraphic);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PenAngle    ), stroke_type==si_std || stroke_type==si_caligraphic);
-
-#if 0
-    if ( sd->si!=NULL ) {
-	StrokePressureCheck(sd);
-	GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_PressureTxt), stroke_type!=si_centerline);
-	GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_Pressure1), stroke_type!=si_centerline);
-	GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_Pressure2), stroke_type!=si_centerline);
-    }
-#endif
 }
 
 static int Stroke_TextChanged(GGadget *g, GEvent *e) {
@@ -427,35 +388,6 @@ static int Stroke_Polygon(GGadget *g, GEvent *e) {
     }
 return( true );
 }
-
-#if 0
-static int Stroke_PressureChange(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
-	StrokeDlg *sd = (StrokeDlg *) ((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container;
-	StrokePressureCheck(sd);
-    }
-return( true );
-}
-
-static void Stroke_PressureSet(StrokeDlg *sd,int cid, GEvent *event) {
-    char buff[20];
-    unichar_t ubuf[20];
-    const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(sd->gw,cid));
-    double old;
-    int i = cid==CID_Pressure1?0:1;
-
-    old = u_strtol(ret,NULL,10);
-    if ( event->u.mouse.pressure==0 )
-	sd->up[i] = true;
-    else if ( sd->up[i] || event->u.mouse.pressure>old ) {
-	sd->up[i] = false;
-	sprintf(buff,"%d",(int) event->u.mouse.pressure);
-	uc_strcpy(ubuf,buff);
-	GGadgetSetTitle(GWidgetGetControl(sd->gw,cid),ubuf);
-	StrokePressureCheck(sd);
-    }
-}
-#endif
 
 static void Stroke_SubResize(StrokeDlg *sd, GEvent *event) {
     int width, height;
@@ -578,7 +510,7 @@ static void StrokeInit(StrokeDlg *sd) {
 	msc->name = "Nib";
 	msc->parent = &sd->dummy_sf;
 	msc->layer_cnt = 2;
-	msc->layers = gcalloc(2,sizeof(Layer));
+	msc->layers = calloc(2,sizeof(Layer));
 	msc->width = 200;
 	LayerDefault(&msc->layers[0]);
 	LayerDefault(&msc->layers[1]);
@@ -645,38 +577,7 @@ return( true );
 	}
 return( false );
     } else if ( event->type == et_mousemove ) {
-#if 0
-	StrokeDlg *sd = (StrokeDlg *) ((CharViewBase *) GDrawGetUserData(gw))->container;
-	if ( sd->si && (!(event->u.mouse.state&0x0f00) || event->u.mouse.device!=NULL ) &&
-		!sd->dontexpand ) {
-	    if ( event->u.mouse.y >= sd->r1.y-3 && event->u.mouse.y < sd->r1.y+sd->r1.height+3 )
-		GGadgetPreparePopup8(gw,_("Press in this square with a wacom pressure sensitive tool\nto set the pressure end-point"));
-	    if ( event->u.mouse.y >= sd->r1.y && event->u.mouse.y < sd->r1.y+sd->r1.height &&
-		    event->u.mouse.device!=NULL ) {
-		if ( event->u.mouse.x>=sd->r1.x && event->u.mouse.x < sd->r1.x+sd->r1.width )
-		    Stroke_PressureSet(sd,CID_Pressure1,event);
-		if ( event->u.mouse.x>=sd->r2.x && event->u.mouse.x < sd->r2.x+sd->r2.width )
-		    Stroke_PressureSet(sd,CID_Pressure2,event);
-	    }
-	}
-#endif
     } else if ( event->type == et_expose ) {
-#if 0
-	GRect size;
-	StrokeDlg *sd = (StrokeDlg *) ((CharViewBase *) GDrawGetUserData(gw))->container;
-	GDrawSetLineWidth(gw,0);
-
-	if ( sd->si ) {
-	    GGadgetGetSize( GWidgetGetControl(gw,CID_Rect1),&size);
-	    sd->r1.x = size.x + (size.width-size.height)/2;
-	    sd->r1.y = sd->r2.y = size.y;
-	    sd->r1.width = sd->r2.width = sd->r1.height = sd->r2.height = size.height;
-	    GGadgetGetSize( GWidgetGetControl(gw,CID_Rect2),&size);
-	    sd->r2.x = size.x + (size.width-size.height)/2;
-	    GDrawDrawRect(gw,&sd->r1,0x000000);
-	    GDrawDrawRect(gw,&sd->r2,0x000000);
-	}
-#endif
     } else if ( event->type == et_map ) {
 	/* Above palettes */
 	GDrawRaise(gw);
@@ -1000,74 +901,6 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
 	boxes[5].creator = GHVGroupCreate;
 	mainarray[mi][0] = &boxes[5]; mainarray[mi++][1] = NULL;
 
-#if 0
-	if ( si!=NULL ) {
-	    swpos=0;
-
-	    sprintf( width2buf, "%g", (double) (2*def->radius2) );
-	    label[gcdoff].text = (unichar_t *) width2buf;
-	    label[gcdoff].text_is_1byte = true;
-	    gcd[gcdoff].gd.label = &label[gcdoff];
-	    gcd[gcdoff].gd.flags = gg_visible;
-	    if ( def->pressure1!=def->pressure2 )
-		gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
-	    gcd[gcdoff].gd.cid = CID_Width2;
-	    gcd[gcdoff].creator = GTextFieldCreate;
-	    gcd[gcdoff++].gd.pos.width = 50;
-	    swarray[swpos][2] = &gcd[gcdoff-1]; swarray[swpos][3] = GCD_Glue; swarray[swpos++][4] = NULL;
-
-	    swarray[swpos][0] = GCD_Glue;
-	    gcd[gcdoff].gd.pos.width = gcd[gcdoff].gd.pos.height = 20;
-	    gcd[gcdoff].gd.flags = gg_visible;
-	    gcd[gcdoff].gd.cid = CID_Rect1;
-	    gcd[gcdoff++].creator = GSpacerCreate;
-	    swarray[swpos][1] = &gcd[gcdoff-1];
-
-	    gcd[gcdoff].gd.pos.width = gcd[gcdoff].gd.pos.height = 20;
-	    gcd[gcdoff].gd.flags = gg_visible;
-	    gcd[gcdoff].gd.cid = CID_Rect2;
-	    gcd[gcdoff++].creator = GSpacerCreate;
-	    swarray[swpos][2] = &gcd[gcdoff-1]; swarray[swpos][3] = GCD_Glue; swarray[swpos++][4] = NULL;
-
-	    sd->r1.x = GDrawPointsToPixels(NULL,90);
-	    sd->r1.width=sd->r1.height=GDrawPointsToPixels(NULL,20);
-	    sd->r1.y = GDrawPointsToPixels(NULL,gcd[gcdoff-1].gd.pos.y+26);
-	    sd->r2 = sd->r1;
-	    sd->r2.x = GDrawPointsToPixels(NULL,150);
-
-	    label[gcdoff].text = (unichar_t *) _("_Pressure:");
-	    label[gcdoff].text_is_1byte = true;
-	    label[gcdoff].text_in_resource = true;
-	    gcd[gcdoff].gd.label = &label[gcdoff];
-	    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
-	    gcd[gcdoff].gd.cid = CID_PressureTxt;
-	    gcd[gcdoff++].creator = GLabelCreate;
-	    swarray[swpos][0] = &gcd[gcdoff-1];
-
-	    sprintf( pressurebuf, "%d", def->pressure1 );
-	    label[gcdoff].text = (unichar_t *) pressurebuf;
-	    label[gcdoff].text_is_1byte = true;
-	    gcd[gcdoff].gd.label = &label[gcdoff];
-	    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
-	    gcd[gcdoff].gd.cid = CID_Pressure1;
-	    gcd[gcdoff].gd.handle_controlevent = Stroke_PressureChange;
-	    gcd[gcdoff].creator = GTextFieldCreate;
-	    gcd[gcdoff++].gd.pos.width = 50;
-	    swarray[swpos][1] = &gcd[gcdoff-1];
-
-	    sprintf( pressure2buf, "%d", def->pressure2 );
-	    label[gcdoff].text = (unichar_t *) pressure2buf;
-	    label[gcdoff].text_is_1byte = true;
-	    gcd[gcdoff].gd.label = &label[gcdoff];
-	    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
-	    gcd[gcdoff].gd.cid = CID_Pressure2;
-	    gcd[gcdoff].gd.handle_controlevent = Stroke_PressureChange;
-	    gcd[gcdoff].creator = GTextFieldCreate;
-	    gcd[gcdoff++].gd.pos.width = 50;
-	    swarray[swpos][2] = &gcd[gcdoff-1]; swarray[swpos][3] = GCD_Glue; swarray[swpos++][4] = NULL;
-	}
-#endif
-
 	label[gcdoff].text = (unichar_t *) _("Remove Internal Contour");
 	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
@@ -1085,18 +918,6 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
 	gcd[gcdoff].gd.cid = CID_RmExternal;
 	gcd[gcdoff++].creator = GCheckBoxCreate;
 	mainarray[mi][0] = &gcd[gcdoff-1]; mainarray[mi++][1] = NULL;
-
-#if 0
-	label[gcdoff].text = (unichar_t *) _("Cleanup Self Intersect");
-	label[gcdoff].text_is_1byte = true;
-	label[gcdoff].text_in_resource = true;
-	gcd[gcdoff].gd.label = &label[gcdoff];
-	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | gg_utf8_popup | (def->removeoverlapifneeded?gg_cb_on:0);
-	gcd[gcdoff].gd.cid = CID_CleanupSelfIntersect;
-	gcd[gcdoff].gd.popup_msg = (unichar_t *) _("When FontForge detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections");
-	gcd[gcdoff++].creator = GCheckBoxCreate;
-	mainarray[mi][0] = &gcd[gcdoff-1]; mainarray[mi++][1] = NULL;
-#endif
 
 	gcd[gcdoff].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[gcdoff].text = (unichar_t *) _("_OK");
@@ -1469,7 +1290,7 @@ return( true );
 
 	/* Stops must be stored in ascending order */
 	qsort(md,rows,cols*sizeof(struct matrix_data),orderstops);
-	gradient->grad_stops = grealloc(gradient->grad_stops,rows*sizeof(struct grad_stops));
+	gradient->grad_stops = realloc(gradient->grad_stops,rows*sizeof(struct grad_stops));
 	gradient->stop_cnt = rows;
 	for ( i=0; i<rows; ++i ) {
 	    gradient->grad_stops[i].offset  = md[cols*i+0].u.md_real/100.0;
@@ -1520,7 +1341,7 @@ static void GDDInit(GradientDlg *gdd,SplineFont *sf,Layer *ly,struct gradient *g
 	msc->name = "Gradient";
 	msc->parent = &gdd->dummy_sf;
 	msc->layer_cnt = 2;
-	msc->layers = gcalloc(2,sizeof(Layer));
+	msc->layers = calloc(2,sizeof(Layer));
 	LayerDefault(&msc->layers[0]);
 	LayerDefault(&msc->layers[1]);
 	gdd->chars[0] = msc;
@@ -1624,7 +1445,7 @@ static void StopMatrixInit(struct matrixinit *mi,struct gradient *grad) {
     mi->col_init = stopci;
 
     if ( grad==NULL ) {
-	md = gcalloc(2*mi->col_cnt,sizeof(struct matrix_data));
+	md = calloc(2*mi->col_cnt,sizeof(struct matrix_data));
 	md[3*0+0].u.md_real = 0;
 	md[3*0+1].u.md_ival = 0x000000;
 	md[3*0+2].u.md_real = 1;
@@ -1633,7 +1454,7 @@ static void StopMatrixInit(struct matrixinit *mi,struct gradient *grad) {
 	md[3*1+2].u.md_real = 1;
 	mi->initial_row_cnt = 2;
     } else {
-	md = gcalloc(3*grad->stop_cnt,sizeof(struct matrix_data));
+	md = calloc(3*grad->stop_cnt,sizeof(struct matrix_data));
 	for ( i=0; i<grad->stop_cnt; ++i ) {
 	    md[3*i+0].u.md_real = grad->grad_stops[i].offset*100.0;
 	    md[3*i+1].u.md_ival = grad->grad_stops[i].col;

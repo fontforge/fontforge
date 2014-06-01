@@ -50,6 +50,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <stdarg.h>
+#include <fcntl.h>
 #include "ffpython.h"
 
 #include "gnetwork.h"
@@ -212,14 +213,14 @@ static int MenuDataAdd(PyObject *func,PyObject *check,PyObject *data,int is_cv) 
 
     if ( is_cv ) {
 	if ( cvpy_menu_cnt >= cvpy_menu_max )
-	    cvpy_menu_data = grealloc(cvpy_menu_data,(cvpy_menu_max+=10)*sizeof(struct python_menu_info));
+	    cvpy_menu_data = realloc(cvpy_menu_data,(cvpy_menu_max+=10)*sizeof(struct python_menu_info));
 	cvpy_menu_data[cvpy_menu_cnt].func = func;
 	cvpy_menu_data[cvpy_menu_cnt].check_enabled = check;
 	cvpy_menu_data[cvpy_menu_cnt].data = data;
 return( cvpy_menu_cnt++ );
     } else {
 	if ( fvpy_menu_cnt >= fvpy_menu_max )
-	    fvpy_menu_data = grealloc(fvpy_menu_data,(fvpy_menu_max+=10)*sizeof(struct python_menu_info));
+	    fvpy_menu_data = realloc(fvpy_menu_data,(fvpy_menu_max+=10)*sizeof(struct python_menu_info));
 	fvpy_menu_data[fvpy_menu_cnt].func = func;
 	fvpy_menu_data[fvpy_menu_cnt].check_enabled = check;
 	fvpy_menu_data[fvpy_menu_cnt].data = data;
@@ -265,7 +266,7 @@ static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv) {
 	    }
 	}
 	if ( *mn==NULL || (*mn)[j].ti.text==NULL ) {
-	    *mn = grealloc(*mn,(j+2)*sizeof(GMenuItem2));
+	    *mn = realloc(*mn,(j+2)*sizeof(GMenuItem2));
 	    memset(*mn+j,0,2*sizeof(GMenuItem2));
 	}
 	mmn = *mn;
@@ -495,6 +496,7 @@ static PyObject *PyFFFont_CollabSessionJoin(PyFF_Font *self, PyObject *args)
 }
 
 
+#ifdef BUILD_COLLAB
 static void InvokeCollabSessionSetUpdatedCallback(PyFF_Font *self) {
     if( CollabSessionSetUpdatedCallback )
     {
@@ -506,7 +508,7 @@ static void InvokeCollabSessionSetUpdatedCallback(PyFF_Font *self) {
 	Py_DECREF(arglist);
     }
 }
-
+#endif
 
 static PyObject *PyFFFont_CollabSessionRunMainLoop(PyFF_Font *self, PyObject *args)
 {
@@ -560,6 +562,157 @@ static PyObject *PyFFFont_CollabSessionSetUpdatedCallback(PyFF_Font *self, PyObj
     return result;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+#ifdef FONTFORGE_CAN_USE_GTK
+
+#define GMenuItem GMenuItem_Glib
+#define GTimer GTimer_GTK
+#define GList  GList_Glib
+#include <gdk/gdkx.h>
+#undef GTimer
+#undef GList
+#undef GMenuItem
+
+
+static void GtkWindowToMainEventLoop_fd_callback( int fd, void* datas )
+{
+//    printf("GtkWindowToMainEventLoop_fd_callback()\n");
+    gboolean may_block = false;
+    g_main_context_iteration( g_main_context_default(), may_block );
+}
+
+
+
+static PyObject *PyFFFont_addGtkWindowToMainEventLoop(PyFF_Font *self, PyObject *args)
+{
+    PyObject *result = NULL;
+    PyObject *temp;
+    int v = 0;
+
+    if ( !PyArg_ParseTuple( args, "i", &v ))
+        return( NULL );
+
+    gpointer gdkwindow = gdk_xid_table_lookup( v );
+
+    if( gdkwindow )
+    {
+        Display* d = GDK_WINDOW_XDISPLAY(gdkwindow);
+        int fd = XConnectionNumber(d);
+        if( fd )
+        {
+            gpointer udata = 0;
+            GDrawAddReadFD( 0, fd, udata, GtkWindowToMainEventLoop_fd_callback );
+        }
+    }
+    
+    /* Boilerplate to return "None" */
+    Py_INCREF(Py_None);
+    result = Py_None;
+    return result;
+}
+
+static PyObject *PyFFFont_getGtkWindowMainEventLoopFD(PyFF_Font *self, PyObject *args)
+{
+    PyObject *result = NULL;
+    PyObject *temp;
+    int v = 0;
+
+    if ( !PyArg_ParseTuple( args, "i", &v ))
+        return( NULL );
+
+    gpointer gdkwindow = gdk_xid_table_lookup( v );
+
+    if( gdkwindow )
+    {
+        Display* d = GDK_WINDOW_XDISPLAY(gdkwindow);
+        int fd = XConnectionNumber(d);
+        if( fd )
+        {
+	    return( Py_BuildValue("i", fd ));
+        }
+    }
+    
+    /* Boilerplate to return "None" */
+    Py_INCREF(Py_None);
+    result = Py_None;
+    return result;
+}
+
+static PyObject *PyFFFont_removeGtkWindowToMainEventLoop(PyFF_Font *self, PyObject *args)
+{
+    PyObject *result = NULL;
+    PyObject *temp;
+    int v = 0;
+
+    if ( !PyArg_ParseTuple( args, "i", &v ))
+        return( NULL );
+
+    gpointer gdkwindow = gdk_xid_table_lookup( v );
+
+    if( gdkwindow )
+    {
+        Display* d = GDK_WINDOW_XDISPLAY(gdkwindow);
+        int fd = XConnectionNumber(d);
+        if( fd )
+        {
+            gpointer udata = 0;
+            GDrawRemoveReadFD( 0, fd, udata );
+        }
+    }
+    
+    /* Boilerplate to return "None" */
+    Py_INCREF(Py_None);
+    result = Py_None;
+    return result;
+}
+
+static PyObject *PyFFFont_removeGtkWindowToMainEventLoopByFD(PyFF_Font *self, PyObject *args)
+{
+    PyObject *result = NULL;
+    PyObject *temp;
+    int v = 0;
+
+    if ( !PyArg_ParseTuple( args, "i", &v ))
+        return( NULL );
+
+    int fd = v;
+    gpointer udata = 0;
+    GDrawRemoveReadFD( 0, fd, udata );
+    
+    /* Boilerplate to return "None" */
+    Py_INCREF(Py_None);
+    result = Py_None;
+    return result;
+}
+
+#else
+
+#define EMPTY_METHOD				\
+    {						\
+    PyObject *result = NULL;			\
+    /* Boilerplate to return "None" */		\
+    Py_INCREF(Py_None);				\
+    result = Py_None;				\
+    return result;				\
+}
+    									\
+static PyObject *PyFFFont_addGtkWindowToMainEventLoop(PyFF_Font *self, PyObject *args)
+{ EMPTY_METHOD; }
+static PyObject *PyFFFont_getGtkWindowMainEventLoopFD(PyFF_Font *self, PyObject *args)
+{ EMPTY_METHOD; }
+static PyObject *PyFFFont_removeGtkWindowToMainEventLoop(PyFF_Font *self, PyObject *args)
+{ EMPTY_METHOD; }
+static PyObject *PyFFFont_removeGtkWindowToMainEventLoopByFD(PyFF_Font *self, PyObject *args)
+{ EMPTY_METHOD; }
+
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -603,10 +756,24 @@ PyMethodDef PyFF_FontUI_methods[] = {
    { "CollabLastChangedPos", (PyCFunction) PyFF_getLastChangedPos, METH_VARARGS, "" },
    { "CollabLastChangedCodePoint", (PyCFunction) PyFF_getLastChangedCodePoint, METH_VARARGS, "" },
    { "CollabLastSeq", (PyCFunction) PyFF_getLastSeq, METH_VARARGS, "" },
+
    
    PYMETHODDEF_EMPTY /* Sentinel */
 };
 
+PyMethodDef module_fontforge_ui_methods[] = {
+
+   // allow python code to expose it's gtk mainloop to fontforge
+   { "addGtkWindowToMainEventLoop", (PyCFunction) PyFFFont_addGtkWindowToMainEventLoop, METH_VARARGS, "fixme." },
+   { "getGtkWindowMainEventLoopFD", (PyCFunction) PyFFFont_getGtkWindowMainEventLoopFD, METH_VARARGS, "fixme." },
+   { "removeGtkWindowToMainEventLoop", (PyCFunction) PyFFFont_removeGtkWindowToMainEventLoop, METH_VARARGS, "fixme." },
+   { "removeGtkWindowToMainEventLoopByFD", (PyCFunction) PyFFFont_removeGtkWindowToMainEventLoopByFD, METH_VARARGS, "fixme." },
+
+   
+   PYMETHODDEF_EMPTY /* Sentinel */
+};
+
+    
 static PyMethodDef*
 copyUIMethodsToBaseTable( PyMethodDef* ui, PyMethodDef* md )
 {
@@ -623,13 +790,62 @@ copyUIMethodsToBaseTable( PyMethodDef* ui, PyMethodDef* md )
     return md;
 }
 
+static void python_ui_fd_callback( int fd, void* udata );
+static void python_ui_setup_callback( bool makefifo )
+{
+#ifndef __MINGW32__
+    int fd = 0;
+    int err = 0;
+    char path[ PATH_MAX + 1 ];
+    snprintf( path, PATH_MAX, "%s/python-socket", getFontForgeUserDir(Cache));
+    
+    if( makefifo )
+    {
+	err = mkfifo( path, 0600 );
+    }
+    
+    void* udata = 0;
+    fd = open( path, O_RDONLY | O_NDELAY );
+    GDrawAddReadFD( 0, fd, udata, python_ui_fd_callback );
+#endif   
+}
+
+static void python_ui_fd_callback( int fd, void* udata )
+{
+#ifndef __MINGW32__
+    char data[ 1024*100 + 1 ];
+    memset(data, '\0', 1024*100 );
+//    sleep( 1 );
+    int sz = read( fd, data, 1024*100 );
+//    fprintf( stderr, "python_ui_fd_callback() sz:%d d:%s\n", sz, data );
+
+    CharView* cv = CharViewFindActive();
+    if( cv )
+    {
+	int layer = 0;
+	PyFF_ScriptString( cv->b.fv, cv->b.sc, layer, data );
+    }
+    
+    GDrawRemoveReadFD( 0, fd, udata );
+    python_ui_setup_callback( 0 );
+#endif    
+}
+
+void PythonUI_namedpipe_Init(void) {
+    python_ui_setup_callback( 1 );
+    
+}
+
 void PythonUI_Init(void) {
     TRACE("PythonUI_Init()\n"); 
     FfPy_Replace_MenuItemStub(PyFF_registerMenuItem);
     set_pyFF_maybeCallCVPreserveState_Func( pyFF_maybeCallCVPreserveState );
     set_pyFF_sendRedoIfInSession_Func( pyFF_sendRedoIfInSession_Func_Real );
 
-    copyUIMethodsToBaseTable( PyFF_FontUI_methods, PyFF_Font_methods );
+    copyUIMethodsToBaseTable( PyFF_FontUI_methods,         PyFF_Font_methods );
+    copyUIMethodsToBaseTable( module_fontforge_ui_methods, module_fontforge_methods );
+
+    
 }
 #endif
 

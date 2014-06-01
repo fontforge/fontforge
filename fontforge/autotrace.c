@@ -77,7 +77,7 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
     /* potrace does not have this problem */
     /* But potrace does not close its paths (well, it closes the last one) */
     /*  and as with standard postscript fonts I need to reverse the splines */
-    int bgr = COLOR_RED(bgcol), bgg = COLOR_GREEN(bgcol), bgb = COLOR_BLUE(bgcol);
+    unsigned bgr = COLOR_RED(bgcol), bgg = COLOR_GREEN(bgcol), bgb = COLOR_BLUE(bgcol);
 
     memset(&sc,'\0',sizeof(sc));
     memset(layers,0,sizeof(layers));
@@ -196,13 +196,6 @@ static int mytempnam(char *buffer) {
 	strcpy(buffer,P_tmpdir);
     strcat(buffer,"/PfaEdXXXXXX");
     fd = g_mkstemp(buffer);
-#if 0
-    old = copy(buffer);
-    strcat(buffer,".bmp");
-    if ( rename(old,buffer)==-1 )
-	strcpy(buffer,old);
-    free(old);
-#endif
 return( fd );
 }
 
@@ -279,7 +272,7 @@ void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
 	else
 	    bgcol = 0xffffff;
 
-	command = galloc(32768);
+	command = malloc(32768);
 	cmd = add_arg(command, prog);
 	cmd = add_arg(cmd, " ");
 	if(args){
@@ -299,7 +292,7 @@ void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
 	cmd = add_arg(cmd, "\"");
 	/*fprintf(stdout, "---EXEC---\n%s\n----------\n", command);fflush(stdout);*/
 	system(command);
-	gfree(command);
+	free(command);
 
 	ps = fopen(tempname_out, "r");
 	if(ps){
@@ -336,15 +329,16 @@ void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
 #else
 void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
     ImageList *images;
-    char *prog, *pt;
+    const char *prog;
+    char *pt;
     SplineSet *new, *last;
     struct _GImage *ib;
     Color bgcol;
     real transform[6];
     int changed = false;
     char tempname[1025];
-    char *arglist[30];
-    int ac,i;
+    const char (* arglist[30]);
+    size_t ac,i;
     FILE *ps;
     int pid, status, fd;
     int ispotrace;
@@ -369,7 +363,7 @@ return;
 	}
 	fd = mytempnam(tempname);
 	GImageWriteBmp(images->image,tempname);
-	if ( ib->trans==-1 )
+	if ( ib->trans==(Color)-1 )
 	    bgcol = 0xffffff;		/* reasonable guess */
 	else if ( ib->image_type==it_true )
 	    bgcol = ib->trans;
@@ -414,7 +408,7 @@ return;
 		*strrchr(tempname,'/') = '\0';
 		chdir(tempname);
 	    }
-	    exit(execvp(prog,arglist)==-1);	/* If exec fails, then die */
+	    exit(execvp(prog,(char * const *)arglist)==-1);	/* If exec fails, then die */
 	} else if ( pid!=-1 ) {
 	    waitpid(pid,&status,0);
 	    if ( WIFEXITED(status)) {
@@ -475,7 +469,7 @@ return( NULL );
 	    vector[cnt] = NULL;
 return( vector );
 	}
-	vector = galloc((cnt+1)*sizeof(char *));
+	vector = malloc((cnt+1)*sizeof(char *));
     }
 return( NULL );
 }
@@ -502,7 +496,7 @@ return( NULL );
 return( ret );
 	} else if ( len<=1 )
 return( NULL );
-	ret = rpt = galloc(len);
+	ret = rpt = malloc(len);
     }
 return( NULL );
 }
@@ -595,7 +589,7 @@ return;
     _SCAutoTrace(sc, layer, args);
 }
 
-char *ProgramExists(char *prog,char *buffer) {
+char *ProgramExists(const char *prog,char *buffer) {
     char *path, *pt;
 
     if (( path = getenv("PATH"))==NULL )
@@ -623,10 +617,10 @@ return( buffer );
 return( NULL );
 }
 
-char *FindAutoTraceName(void) {
+const char *FindAutoTraceName(void) {
     static int searched=0;
     static int waspotraceprefered;
-    static char *name = NULL;
+    static const char *name = NULL;
     char buffer[1025];
 
     if ( searched && waspotraceprefered==preferpotrace )
@@ -654,9 +648,9 @@ return( name );
 return( name );
 }
 
-char *FindMFName(void) {
+const char *FindMFName(void) {
     static int searched=0;
-    static char *name = NULL;
+    static const char *name = NULL;
     char buffer[1025];
 
     if ( searched )
@@ -776,8 +770,8 @@ return( NULL );
     }
 
     ac = 0;
-    arglist[ac++] = FindMFName();
-    arglist[ac++] = galloc(strlen(mf_args)+strlen(filename)+20);
+    arglist[ac++] = (char *)FindMFName();
+    arglist[ac++] = malloc(strlen(mf_args)+strlen(filename)+20);
     arglist[ac] = NULL;
     strcpy(arglist[1],mf_args);
     strcat(arglist[1]," ");

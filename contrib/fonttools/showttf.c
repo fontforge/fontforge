@@ -1,6 +1,3 @@
-#if 0
-#include "../inc/basics.h"
-#else
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -12,7 +9,6 @@ typedef unsigned short uint16;
 typedef unsigned char uint8;
 #define true	1
 #define false	0
-#endif
 #include <string.h>
 
 static int verbose = false;
@@ -219,16 +215,6 @@ static double long2fixed(int32 val) {
     /*  and the low-order bits unsigned */
 return( (double) (val>>16) + (mant/65536.0) );
 }
-
-#if 0
-static double get2dot14(FILE *ttf) {
-    int32 val = getushort(ttf);
-    int mant = val&0x3fff;
-    /* This oddity may be needed to deal with the first 2 bits being signed */
-    /*  and the low-order bits unsigned */
-return( (double) ((val<<16)>>(16+14)) + (mant/16384.0) );
-}
-#endif
 
 static int32 filecheck(FILE *file, int start, int len) {
     uint32 sum = 0, chunk;
@@ -2191,13 +2177,7 @@ static void readttfpost(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	}
 	free(indexes);
 	free(glyphs);
-#if 1
 	info->glyph_names = names;
-#else
-	for ( i=0; i<gc; ++i )
-	    free(names[i]);
-	free(names);
-#endif
     }
     if ( info->glyph_unicode!=NULL ) {
 	if ( info->glyph_names==NULL )
@@ -3177,9 +3157,6 @@ static char *getsettingname(struct ttfinfo *info, int type, int setting) {
     if ( info->features!=NULL ) {
 	for ( k=0; info->features[k].feature!=-1 && info->features[k].feature!=type; ++k );
 	if ( info->features[k].feature!=-1 ) {
-#if 0
-	    name = info->features[k].name;		/* will be null at end of list */
-#endif
 	    for ( l=0 ; l<info->features[k].nsettings && info->features[k].settings[l].setting!=setting; ++l );
 	    if ( l<info->features[k].nsettings )
 		name = info->features[k].settings[l].name;
@@ -4789,21 +4766,6 @@ static void readttfgasp(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	    printf( "Both Grid Fitting and Anti-Aliasing\n" );
     }
 }
-
-#if 0
-static void readtablebytes(FILE *ttf, int start, int len, char *string) {
-    int i;
-
-    if ( start==0 )
-return;
-
-    fseek(ttf,start,SEEK_SET);
-    printf( "\n%s table (at %d for %d bytes)\n\t", string, start, len );
-    for ( i=0; i<len; ++i )
-	printf( "0x%x, ", getc(ttf));
-    printf("\n");
-}
-#endif
 
 static void readtableinstr(FILE *ttf, int start, int len, char *string) {
     int i, j, ch, n, ch1, ch2;

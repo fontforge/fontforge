@@ -98,6 +98,7 @@ int splash = 1;
 static int localsplash;
 static int unique = 0;
 static int listen_to_apple_events = false;
+static bool ProcessPythonInitFiles = 1;
 
 static void _dousage(void) {
     printf( "fontforge [options] [fontfiles]\n" );
@@ -242,12 +243,12 @@ static void SplashLayout() {
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcpy(pt,"  Version: ");;
-    uc_strcat(pt,source_modtime_str);
+    uc_strcat(pt,FONTFORGE_MODTIME_STR);
 
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcat(pt,"           (");
-    uc_strcat(pt,source_version_str);
+    uc_strcat(pt,FONTFORGE_MODTIME_STR);
     uc_strcat(pt,"-ML");
 #ifdef FREETYPE_HAS_DEBUGGER
     uc_strcat(pt,"-TtfDb");
@@ -262,7 +263,7 @@ static void SplashLayout() {
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcpy(pt,"  Lib Version: ");
-    uc_strcat(pt,library_version_configuration.library_source_modtime_string);
+    uc_strcat(pt,FONTFORGE_MODTIME_STR);
     lines[linecnt++] = pt+u_strlen(pt);
     lines[linecnt] = NULL;
     is = u_strchr(msg,'(');
@@ -270,7 +271,7 @@ static void SplashLayout() {
 }
 
 void DelayEvent(void (*func)(void *), void *data) {
-    struct delayed_event *info = gcalloc(1,sizeof(struct delayed_event));
+    struct delayed_event *info = calloc(1,sizeof(struct delayed_event));
 
     info->data = data;
     info->func = func;
@@ -509,12 +510,8 @@ static  OSErr install_apple_event_handlers(void) {
  /* some debugging code, for now */
  if ( getenv("HOME")!=NULL ) {
   char buffer[1024];
-#ifdef __VMS
-    sprintf( buffer, "%s/_FontForge-LogFile.txt", getenv("HOME"));
-#else
-    sprintf( buffer, "%s/.FontForge-LogFile.txt", getenv("HOME"));
-#endif
-    logfile = fopen("/tmp/LogFile.txt","w");
+  sprintf( buffer, "%s/.FontForge-LogFile.txt", getenv("HOME"));
+  logfile = fopen("/tmp/LogFile.txt","w");
  }
  if ( logfile==NULL )
   logfile = stderr;
@@ -834,7 +831,7 @@ int fontforge_main( int argc, char **argv ) {
         fprintf( stderr, "Copyright (c) 2000-2014 by George Williams. See AUTHORS for Contributors.\n" );
         fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
         fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
-        fprintf( stderr, " Executable based on sources from %s"
+        fprintf( stderr, " Based on sources from %s"
 	        "-ML"
 #ifdef FREETYPE_HAS_DEBUGGER
 	        "-TtfDb"
@@ -846,8 +843,7 @@ int fontforge_main( int argc, char **argv ) {
 	        "-D"
 #endif
 	        ".\n",
-	        source_modtime_str );
-        fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
+	        FONTFORGE_MODTIME_STR );
         fprintf( stderr, " Based on source from git with hash:%s\n", FONTFORGE_GIT_VERSION );
     }
 
@@ -860,14 +856,10 @@ int fontforge_main( int argc, char **argv ) {
 	/* Don't start X if we're just going to quit. */
 	/* if X exists, it isn't needed. If X doesn't exist it's wrong */
 	if ( !hasquit(argc,argv)) {
-#if 1
 	    /* This sequence is supposed to bring up an app without a window */
 	    /*  but X still opens an xterm */
 	    system( "osascript -e 'tell application \"X11\" to launch'" );
 	    system( "osascript -e 'tell application \"X11\" to activate'" );
-#else
-	    system( "open /Applications/Utilities/X11.app/" );
-#endif
 	}
 	setenv("DISPLAY",":0.0",0);
     } else if ( local_x==1 && *getenv("DISPLAY")!='/' && strcmp(getenv("DISPLAY"),":0.0")!=0 && strcmp(getenv("DISPLAY"),":0")!=0 )
@@ -1065,7 +1057,7 @@ int fontforge_main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-help")==0 )
 	    dousage();
 	else if ( strcmp(pt,"-version")==0 || strcmp(pt,"-v")==0 || strcmp(pt,"-V")==0 )
-	    doversion(source_version_str);
+	    doversion(FONTFORGE_MODTIME_STR);
 	else if ( strcmp(pt,"-quit")==0 )
 	    quit_request = true;
 	else if ( strcmp(pt,"-home")==0 )
@@ -1088,15 +1080,24 @@ int fontforge_main( int argc, char **argv ) {
     InitToolIconClut(default_background);
     InitToolIcons();
     InitCursors();
-#ifndef _NO_PYTHON
-    PyFF_ProcessInitFiles();
-#endif
 
-    /* Wait until the UI has started, otherwise people who don't have consoles*/
-    /*  open won't get our error messages, and it's an important one */
-    /* Scripting doesn't care about a mismatch, because scripting interpretation */
-    /*  all lives in the library */
-    check_library_version(&exe_library_version_configuration,true,false);
+    /**
+     * we have to do a quick sniff of argv[] here to see if the user
+     * wanted to skip loading these python init files.
+     */
+    for ( i=1; i<argc; ++i ) {
+	char buffer[1025];
+	char *pt = argv[i];
+
+	if ( !strcmp(pt,"-SkipPythonInitFiles")) {
+	    ProcessPythonInitFiles = 0;
+	}
+    }
+    
+#ifndef _NO_PYTHON
+    if( ProcessPythonInitFiles )
+	PyFF_ProcessInitFiles();
+#endif
 
     /* the splash screen used not to have a title bar (wam_nodecor) */
     /*  but I found I needed to know how much the window manager moved */
@@ -1161,12 +1162,8 @@ exit( 0 );
     if ( recover==-1 )
 	CleanAutoRecovery();
     else if ( recover )
-    {
-	any = DoAutoRecoveryExtended( recover-1,
-				      DoAutoRecoveryPostRecover_PromptUserGraphically );
-    }
-
-
+	any = DoAutoRecoveryExtended( recover-1 );
+			
     openflags = 0;
     for ( i=1; i<argc; ++i ) {
 	char buffer[1025];
@@ -1183,6 +1180,8 @@ exit( 0 );
 	    MenuNewComposition(NULL,NULL,NULL);
 	    any = 1;
 #  endif
+	} else if ( !strcmp(pt,"-SkipPythonInitFiles")) {
+	    // already handled above.
 	} else if ( strcmp(pt,"-last")==0 ) {
 	    if ( next_recent<RECENT_MAX && RecentFiles[next_recent]!=NULL )
 		if ( ViewPostScriptFont(RecentFiles[next_recent++],openflags))
@@ -1214,7 +1213,7 @@ exit( 0 );
 		GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
 	    if ( GFileIsDir(buffer) || (strstr(buffer,"://")!=NULL && buffer[strlen(buffer)-1]=='/')) {
 		char *fname;
-		fname = galloc(strlen(buffer)+strlen("/glyphs/contents.plist")+1);
+		fname = malloc(strlen(buffer)+strlen("/glyphs/contents.plist")+1);
 		strcpy(fname,buffer); strcat(fname,"/glyphs/contents.plist");
 		if ( GFileExists(fname)) {
 		    /* It's probably a Unified Font Object directory */
@@ -1251,6 +1250,9 @@ exit( 0 );
 
     collabclient_ensureClientBeacon();
     collabclient_sniffForLocalServer();
+
+    PythonUI_namedpipe_Init();
+    
 
 #if defined(__Mac)
     if ( listen_to_apple_events ) {

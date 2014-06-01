@@ -84,20 +84,20 @@ char* SFUndoToString( SFUndoes* undo )
 static char* findterm( char** str, char* term )
 {
     char* p;
-    if( (p = strstr( str, term )) )
+    if( (p = strstr( *str, term )) )
     {
 	p += strlen( term );
 	char* e = p;
-	while( e && e!='\n')
+	while( *e && *e!='\n')
 	    e++;
-	if( e )
+	if( *e )
 	{
 	    *e = '\0';
 	    (*str) = e+1;
 	    return p;
 	}
     }
-    return 0;
+    return NULL;
 }
 
 SFUndoes* SFUndoFromString( char* str )
@@ -199,6 +199,8 @@ void SFUndoPerform( SFUndoes* undo, SplineFont* sf )
 	    SFDFixupRefs( sf );
 	}
 	break;
+    default:
+        break;
     }
 }
 

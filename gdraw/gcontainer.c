@@ -31,6 +31,7 @@
 #include <gkeysym.h>
 #include <utype.h>
 #include <gresource.h>
+#include <string.h>
 
 static GWindow current_focus_window, previous_focus_window, last_input_window;
     /* in focus follows pointer mode, the current focus doesn't really count */
@@ -127,15 +128,21 @@ static void _GWidget_IndicateFocusGadget(GGadget *g, enum mnemonic_focus mf) {
 	fprintf( stderr, "Bad focus attempt\n" );
 return;
     }
+
+    // We recurse and find the top-level gadget.
     for ( top=g->base; top->parent!=NULL && !top->is_toplevel ; top=top->parent );
     td = (GTopLevelD *) (top->widget_data);
 
+    // We check whether the gadget in question has focus.
     if ( td->gfocus!=g ) {
+      // If not, we try to deal with the lack of focus.
 /* Hmm. KDE doesn't give us a focus out event when we make a window invisible */
 /*  So to be on the save side lets send local focus out events even when not */
 /*  strictly needed */
 	if ( /*top == current_focus_window &&*/ td->gfocus!=NULL &&
 		td->gfocus->funcs->handle_focus!=NULL ) {
+            // We use the focus handler provided by the presently focussed gadget and process a loss-of-focus event for the currently focused object.
+            memset(&e, 0, sizeof(GEvent));
 	    e.type = et_focus;
 	    e.w = top;
 	    e.u.focus.gained_focus = false;
@@ -143,8 +150,11 @@ return;
 	    (td->gfocus->funcs->handle_focus)(td->gfocus,&e);
 	}
     }
+    // We give focus to the desired gadget.
     td->gfocus = g; td->wfocus = NULL;
     if ( top == current_focus_window && g->funcs->handle_focus!=NULL ) {
+        // If the desired gadget has a focus handler, we construct an event and run it.
+        memset(&e, 0, sizeof(GEvent));
 	e.u.focus.gained_focus = true;
 	e.u.focus.mnemonic_focus = mf;
 	(g->funcs->handle_focus)(g,&e);
@@ -616,6 +626,7 @@ return( true );
 
     GGadgetPopupExternalEvent(event);
     if ( event->type==et_focus ) {
+	
 	if ( event->u.focus.gained_focus ) {
 	    if ( gw->is_toplevel && !gw->is_popup && !gw->is_dying ) {
 		if ( last_input_window!=gw )
@@ -757,9 +768,9 @@ static void MakeContainerWidget(GWindow gw) {
     if ( !widgets_initted )
 	gwidget_init();
     if ( gw->parent==NULL || gw->is_toplevel )
-	gd = gcalloc(1,sizeof(struct gtopleveldata));
+	gd = calloc(1,sizeof(struct gtopleveldata));
     else
-	gd = gcalloc(1,sizeof(struct gwidgetcontainerdata));
+	gd = calloc(1,sizeof(struct gwidgetcontainerdata));
     gw->widget_data = (struct gwidgetdata *) gd;
     gd->w = gw;
     gd->e_h = gw->eh;
@@ -1083,10 +1094,6 @@ void GWidgetSetEH(GWindow gw, GDrawEH e_h ) {
 void GWidgetHidePalettes(void) {
     GTopLevelD *td, *palette;
 
-#if 0
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
-#endif
     if ( last_paletted_focus_window==NULL )
 return;
     td = (GTopLevelD *) (last_paletted_focus_window->widget_data);
@@ -1096,52 +1103,7 @@ return;
 	    palette->w->visible_request = true;
 	}
     }
-#if 0
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
-#endif
 }
-
-#if 0
-void GPaletteDock(GWindow palette,int x, int y) {
-    GTopLevelD *td = (GTopLevelD *) (palette->widget_data);
-
-    if ( !td->ispalette || td->isdocked )
-return;
-    GDrawReparentWindow(palette,td->owner->w,x,y);
-    td->isdocked = true;
-}
-
-void GPaletteUndock(GWindow palette,int x, int y) {
-    GTopLevelD *td = (GTopLevelD *) (palette->widget_data);
-    GPoint pt;
-    GWindow root;
-
-    if ( !td->ispalette || !td->isdocked )
-return;
-
-    pt.x = x; pt.y = y;
-    root = GDrawGetRoot(palette->display);
-    GDrawTranslateCoordinates(td->owner->w,root,&pt);
-    if ( pt.x<0 ) pt.x=0;
-    if ( pt.y<0 ) pt.y=0;
-    if ( pt.x+palette->pos.width>root->pos.width )
-	pt.x = root->pos.width-palette->pos.width;
-    if ( pt.y+palette->pos.height>root->pos.height )
-	pt.y = root->pos.height-palette->pos.height;
-
-    GDrawReparentWindow(palette,root,x,y);
-    td->isdocked = false;
-}
-
-int GPaletteIsDocked(GWindow palette) {
-    GTopLevelD *td = (GTopLevelD *) (palette->widget_data);
-    if ( !td->ispalette )
-return(false);
-
-return( td->isdocked );
-}
-#endif
 
 void GWidgetReparentWindow(GWindow child,GWindow newparent, int x,int y) {
     if ( !child->is_toplevel ) {

@@ -211,7 +211,6 @@ Makefile.dynamic.in	Makefile.static.in
 
 fontforge-20120731-b/inc:
 fontforge-config.h.in
-fontforge-config.h_vms
 
 fontforge-20120731-b/plugins:
 ANALYZE_MAP.COM	Makefile.in
@@ -258,7 +257,7 @@ These are generated files, or do not have a license specified
 -------------------------------------------------------------
 
 fontforge-20120731-b/
-descrip.mms	LICENSE		README-Unix.html
+LICENSE		README-Unix.html
 fontforge.pc.in	README-Mac.html	systemspecific.in
 INSTALL		README-unix	VERSION
 
@@ -268,24 +267,24 @@ autowidth.h		fontlint.1		pua.c
 bezctx_ff.c		fontlint.pe		sfddiff.1
 bezctx_ff.h		langfreq.c		sfddiff.pe
 crctab.c		libffstamp.h		stamp.c
-descrip.mms		libstamp.pre		stamper.c
-diffstubs.c		lff.opt			threaddummy.c
+libstamp.pre		stamper.c
+diffstubs.c		threaddummy.c
 encoding.h		lookups.h		utf8.pot
-exelibstamp.pre		MacFontForgeApp.zip	xlib.opt
+exelibstamp.pre		MacFontForgeApp.zip
 fontforge.1		othersubrs.c		zapfnomen.c
 fontimage.1		potmstitle.patch
 
 fontforge-20120731-b/gdraw:
-descrip.mms	genkeysym.c	gxdraw.c	xkeysyms_unicode.c
+genkeysym.c	gxdraw.c	xkeysyms_unicode.c
 
 fontforge-20120731-b/inc:
-chardata.h	descrip.mms	dynamic.h	utype.h
+chardata.h	dynamic.h	utype.h
 
 fontforge-20120731-b/gutils:
-descrip.mms	divisors.c
+divisors.c
 
 fontforge-20120731-b/plugins:
-descrip.mms	gb12345.c
+gb12345.c
 
 fontforge-20120731-b/po:
 ca.po  el.po     es.po  it.po  ml.po  ru.po     uk.po  zh_CN.po
@@ -298,4 +297,4 @@ loadfontforge.h		README
 fontforge-20120731-b/Unicode:
 alphabet.c	cjk.c		README.TXT
 ArabicForms.c	combiners.h	unialt.c
-backtrns.c	descrip.mms	utype.c
+backtrns.c	utype.c

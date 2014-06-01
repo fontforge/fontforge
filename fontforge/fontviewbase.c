@@ -292,7 +292,6 @@ void FVRedo(FontViewBase *fv) {
 void FVJoin(FontViewBase *fv) {
     SplineFont *sf = fv->sf;
     int i,changed,gid;
-    extern float joinsnap;
 
     if ( onlycopydisplayed && fv->active_bitmap!=NULL )
 return;
@@ -327,7 +326,7 @@ static void LinkEncToGid(FontViewBase *fv,int enc, int gid) {
 	    if ( SCWorthOutputting(sf->glyphs[old_gid]) )
 		SFAddEncodingSlot(sf,old_gid);
 	    else
-		SFRemoveGlyph(sf,sf->glyphs[old_gid],&flags);
+		SFRemoveGlyph(sf,sf->glyphs[old_gid]);
 	}
     }
     map->map[enc] = gid;
@@ -817,7 +816,7 @@ void FVReencode(FontViewBase *fv,Encoding *enc) {
 	fv->map->enc = &custom;
     else {
 	map = EncMapFromEncoding(fv->sf,enc);
-	fv->selected = grealloc(fv->selected,map->enccount);
+	fv->selected = realloc(fv->selected,map->enccount);
 	memset(fv->selected,0,map->enccount);
 	EncMapFree(fv->map);
 	fv->map = map;
@@ -1183,8 +1182,8 @@ void CIDSetEncMap(FontViewBase *fv, SplineFont *new ) {
     if ( fv->cidmaster!=NULL && gcnt!=fv->sf->glyphcnt ) {
 	int i;
 	if ( fv->map->encmax<gcnt ) {
-	    fv->map->map = grealloc(fv->map->map,gcnt*sizeof(int));
-	    fv->map->backmap = grealloc(fv->map->backmap,gcnt*sizeof(int));
+	    fv->map->map = realloc(fv->map->map,gcnt*sizeof(int));
+	    fv->map->backmap = realloc(fv->map->backmap,gcnt*sizeof(int));
 	    fv->map->backmax = fv->map->encmax = gcnt;
 	}
 	for ( i=0; i<gcnt; ++i )
@@ -1193,7 +1192,7 @@ void CIDSetEncMap(FontViewBase *fv, SplineFont *new ) {
 	    memset(fv->selected+gcnt,0,fv->map->enccount-gcnt);
 	else {
 	    free(fv->selected);
-	    fv->selected = gcalloc(gcnt,sizeof(char));
+	    fv->selected = calloc(gcnt,sizeof(char));
 	}
 	fv->map->enccount = gcnt;
     }
@@ -1208,7 +1207,7 @@ void FVInsertInCID(FontViewBase *fv,SplineFont *sf) {
     SplineFont **subs;
     int i;
 
-    subs = galloc((cidmaster->subfontcnt+1)*sizeof(SplineFont *));
+    subs = malloc((cidmaster->subfontcnt+1)*sizeof(SplineFont *));
     for ( i=0; i<cidmaster->subfontcnt && cidmaster->subfonts[i]!=fv->sf; ++i )
 	subs[i] = cidmaster->subfonts[i];
     subs[i] = sf;
@@ -1439,17 +1438,17 @@ void FVAddUnencoded(FontViewBase *fv, int cnt) {
 	SplineFont *sf = fv->sf;
 	FontViewBase *fvs;
 	if ( sf->glyphcnt+cnt>=sf->glyphmax )
-	    sf->glyphs = grealloc(sf->glyphs,(sf->glyphmax = sf->glyphcnt+cnt+10)*sizeof(SplineChar *));
+	    sf->glyphs = realloc(sf->glyphs,(sf->glyphmax = sf->glyphcnt+cnt+10)*sizeof(SplineChar *));
 	memset(sf->glyphs+sf->glyphcnt,0,cnt*sizeof(SplineChar *));
 	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	    EncMap *map = fvs->map;
 	    if ( map->enccount+cnt>=map->encmax )
-		map->map = grealloc(map->map,(map->encmax += cnt+10)*sizeof(int));
+		map->map = realloc(map->map,(map->encmax += cnt+10)*sizeof(int));
 	    if ( sf->glyphcnt+cnt>=map->backmax )
-		map->backmap = grealloc(map->backmap,(map->backmax += cnt+10)*sizeof(int));
+		map->backmap = realloc(map->backmap,(map->backmax += cnt+10)*sizeof(int));
 	    for ( i=map->enccount; i<map->enccount+cnt; ++i )
 		map->map[i] = map->backmap[i] = i;
-	    fvs->selected = grealloc(fvs->selected,(map->enccount+cnt));
+	    fvs->selected = realloc(fvs->selected,(map->enccount+cnt));
 	    memset(fvs->selected+map->enccount,0,cnt);
 	    map->enccount += cnt;
 	}
@@ -1457,10 +1456,10 @@ void FVAddUnencoded(FontViewBase *fv, int cnt) {
 	FontViewReformatAll(fv->sf);
     } else {
 	if ( map->enccount+cnt>=map->encmax )
-	    map->map = grealloc(map->map,(map->encmax += cnt+10)*sizeof(int));
+	    map->map = realloc(map->map,(map->encmax += cnt+10)*sizeof(int));
 	for ( i=map->enccount; i<map->enccount+cnt; ++i )
 	    map->map[i] = -1;
-	fv->selected = grealloc(fv->selected,(map->enccount+cnt));
+	fv->selected = realloc(fv->selected,(map->enccount+cnt));
 	memset(fv->selected+map->enccount,0,cnt);
 	map->enccount += cnt;
 	FontViewReformatOne(fv);
@@ -1480,7 +1479,7 @@ void FVRemoveUnused(FontViewBase *fv) {
                 ((gid=map->map[i])==-1 || !SCWorthOutputting(sf->glyphs[gid]));
 	    --i ) {
 	if ( gid!=-1 )
-	    SFRemoveGlyph(sf,sf->glyphs[gid],&flags);
+	    SFRemoveGlyph(sf,sf->glyphs[gid]);
 	map->enccount = i;
     }
     /* We reduced the encoding, so don't really need to reallocate the selection */
@@ -1496,7 +1495,7 @@ void FVCompact(FontViewBase *fv) {
 	EncMapFree(fv->map);
 	fv->map = fv->normal;
 	fv->normal = NULL;
-	fv->selected = grealloc(fv->selected,fv->map->enccount);
+	fv->selected = realloc(fv->selected,fv->map->enccount);
 	memset(fv->selected,0,fv->map->enccount);
     } else {
 	/* We reduced the encoding, so don't really need to reallocate the selection */
@@ -1544,7 +1543,7 @@ void FVDetachAndRemoveGlyphs(FontViewBase *fv) {
 	    for ( j=map->enccount-1; j>=0 && map->map[j]!=gid; --j );
 	    map->backmap[gid] = j;
 	    if ( j==-1 ) {
-		SFRemoveGlyph(sf,sf->glyphs[gid],&flags);
+		SFRemoveGlyph(sf,sf->glyphs[gid]);
 		changed = true;
 	    } else if ( sf->glyphs[gid]!=NULL && sf->glyphs[gid]->altuni != NULL && map->enc!=&custom )
 		AltUniRemove(sf->glyphs[gid],UniFromEnc(i,map->enc));
@@ -1655,7 +1654,7 @@ return;
 	/* we can only revert to backup if it's an sfd file. So we use filename*/
 	/*  here. In the normal case we revert to whatever file we read it from*/
 	/*  (sfd or not) so we use origname */
-	char *buf = galloc(strlen(old->filename)+20);
+	char *buf = malloc(strlen(old->filename)+20);
 	strcpy(buf,old->filename);
 	if ( old->compression!=0 ) {
 	    char *tmpfile;
@@ -1677,7 +1676,7 @@ return;
     } else {
 	if ( old->compression!=0 ) {
 	    char *tmpfile;
-	    char *buf = galloc(strlen(old->filename)+20);
+	    char *buf = malloc(strlen(old->filename)+20);
 	    strcpy(buf,old->filename);
 	    strcat(buf,compressors[old->compression-1].ext);
 	    tmpfile = Decompress(buf,old->compression-1);
@@ -1719,7 +1718,7 @@ return;
 	else
 	    map = EncMapFromEncoding(fv->sf,fv->map->enc);
 	if ( map->enccount>fvs->map->enccount ) {
-	    fvs->selected = grealloc(fvs->selected,map->enccount);
+	    fvs->selected = realloc(fvs->selected,map->enccount);
 	    memset(fvs->selected+fvs->map->enccount,0,map->enccount-fvs->map->enccount);
 	}
 	EncMapFree(fv->map);
@@ -1727,7 +1726,7 @@ return;
 	if ( fvs->normal!=NULL ) {
 	    EncMapFree(fvs->normal);
 	    fvs->normal = EncMapCopy(fvs->map);
-	    CompactEncMap(fvs->map,fv->sf);
+	    CompactEncMap(fvs->map,temp);
 	}
     }
     ff_progress_allow_events();
@@ -1782,7 +1781,7 @@ void FVRevertGlyph(FontViewBase *fv) {
 		temp = *tsc;
 		tsc->dependents = NULL;
 		lc = tsc->layer_cnt;
-		undoes = galloc(lc*sizeof(Undoes *));
+		undoes = malloc(lc*sizeof(Undoes *));
 		for ( layer=0; layer<lc; ++layer ) {
 		    undoes[layer] = tsc->layers[layer].undoes;
 		    tsc->layers[layer].undoes = NULL;
@@ -1859,7 +1858,7 @@ void FVB_MakeNamelist(FontViewBase *fv, FILE *file) {
 /*                             FV Interface                                   */
 
 static FontViewBase *_FontViewBaseCreate(SplineFont *sf) {
-    FontViewBase *fv = gcalloc(1,sizeof(FontViewBase));
+    FontViewBase *fv = calloc(1,sizeof(FontViewBase));
     int i;
 
     fv->nextsame = sf->fv;
@@ -1897,7 +1896,7 @@ static FontViewBase *_FontViewBaseCreate(SplineFont *sf) {
 	if ( fv->nextsame==NULL ) EncMapFree(sf->map);
 	fv->map = EncMap1to1(sf->glyphcnt);
     }
-    fv->selected = gcalloc(fv->map->enccount,sizeof(char));
+    fv->selected = calloc(fv->map->enccount,sizeof(char));
 
 #ifndef _NO_PYTHON
     PyFF_InitFontHook(fv);
@@ -1905,7 +1904,7 @@ static FontViewBase *_FontViewBaseCreate(SplineFont *sf) {
 return( fv );
 }
 
-static FontViewBase *FontViewBase_Create(SplineFont *sf,int hide) {
+static FontViewBase *FontViewBase_Create(SplineFont *sf,int UNUSED(hide)) {
     FontViewBase *fv = _FontViewBaseCreate(sf);
 return( fv );
 }
@@ -1955,20 +1954,23 @@ static void FontViewBase_Free(FontViewBase *fv) {
     PyFF_FreeFV(fv);
 #endif
     free(fv);
+#ifndef _NO_PYTHON
+    PyFF_FreeFV(fv);
+#endif
 }
 
-static int FontViewBaseWinInfo(FontViewBase *fv, int *cc, int *rc) {
+static int FontViewBaseWinInfo(FontViewBase *UNUSED(fv), int *cc, int *rc) {
     *cc = 16; *rc = 4;
 return( -1 );
 }
 
-static void FontViewBaseSetTitle(FontViewBase *foo) { }
-static void FontViewBaseSetTitles(SplineFont *foo) { }
-static void FontViewBaseRefreshAll(SplineFont *foo) { }
-static void FontViewBaseReformatOne(FontViewBase *foo) { }
-static void FontViewBaseReformatAll(SplineFont *foo) { }
-static void FontViewBaseLayerChanged(FontViewBase *foo) { }
-static void FV_ToggleCharChanged(SplineChar *foo) { }
+static void FontViewBaseSetTitle(FontViewBase *UNUSED(foo)) { }
+static void FontViewBaseSetTitles(SplineFont *UNUSED(foo)) { }
+static void FontViewBaseRefreshAll(SplineFont *UNUSED(foo)) { }
+static void FontViewBaseReformatOne(FontViewBase *UNUSED(foo)) { }
+static void FontViewBaseReformatAll(SplineFont *UNUSED(foo)) { }
+static void FontViewBaseLayerChanged(FontViewBase *UNUSED(foo)) { }
+static void FV_ToggleCharChanged(SplineChar *UNUSED(foo)) { }
 static FontViewBase *FVAny(void) { return fv_list; }
 static int  FontIsActive(SplineFont *sf) {
     FontViewBase *fv;
@@ -1994,7 +1996,7 @@ return( fv->sf );
 return( NULL );
 }
 
-static void FVExtraEncSlots(FontViewBase *fv, int encmax) {
+static void FVExtraEncSlots(FontViewBase *UNUSED(fv), int UNUSED(encmax)) {
 }
 
 static void FontViewBase_Close(FontViewBase *fv) {
@@ -2016,17 +2018,17 @@ static void FVB_ShowFilled(FontViewBase *fv) {
     fv->active_bitmap = NULL;
 }
 
-static void FVB_ReattachCVs(SplineFont *old, SplineFont *new) {
+static void FVB_ReattachCVs(SplineFont *UNUSED(old), SplineFont *UNUSED(new)) {
 }
 
 static void FVB_DeselectAll(FontViewBase *fv) {
     memset(fv->selected,0,fv->map->encmax);
 }
 
-static void FVB_DisplayChar(FontViewBase *fv,int gid) {
+static void FVB_DisplayChar(FontViewBase *UNUSED(fv),int UNUSED(gid)) {
 }
 
-static int SFB_CloseAllInstrs(SplineFont *sf) {
+static int SFB_CloseAllInstrs(SplineFont *UNUSED(sf)) {
 return( true );
 }
 
@@ -2067,21 +2069,21 @@ void FF_SetFVInterface(struct fv_interface *fvi) {
 
 
 /******************************************************************************/
-static int NoGlyphs(struct metricsview *mv) {
+static int NoGlyphs(struct metricsview *UNUSED(mv)) {
 return( 0 );
 }
 
-static SplineChar *Nothing(struct metricsview *mv, int i) {
+static SplineChar *Nothing(struct metricsview *UNUSED(mv), int UNUSED(i)) {
 return( NULL );
 }
 
-static void NoReKern(struct splinefont *sf) {
+static void NoReKern(struct splinefont *UNUSED(sf)) {
 }
 
-static void NoReFeature(struct splinefont *sf) {
+static void NoReFeature(struct splinefont *UNUSED(sf)) {
 }
 
-static void NoCloseAll(struct splinefont *sf) {
+static void NoCloseAll(struct splinefont *UNUSED(sf)) {
 }
 
 struct mv_interface noui_mv = {

@@ -170,12 +170,7 @@ static struct library_descriptor {
 	1
 #endif
     },
-    { "libxml2", dlsymmod("xmlParseFile"), "This allows fontforge to load svg files and fonts and ufo fonts.", "http://xmlsoft.org/",
-#ifdef _NO_LIBXML
-	0
-#else
-	1
-#endif
+    { "libxml2", dlsymmod("xmlParseFile"), "This allows fontforge to load svg files and fonts and ufo fonts.", "http://xmlsoft.org/", 1
     },
     { "libuninameslist", dlsymmod("UnicodeNameAnnot"), "This provides fontforge with the names of all (named) unicode characters", "http://libuninameslist.sf.net/",
 #ifdef _NO_LIBUNINAMESLIST
@@ -184,12 +179,7 @@ static struct library_descriptor {
 	1
 #endif
     },
-    { "libfreetype", dlsymmod("FT_New_Memory_Face"), "This provides a better rasterizer than the one built in to fontforge", "http://freetype.sf.net/",
-#if _NO_FREETYPE || _NO_MMAP
-	0
-#else
-	1
-#endif
+    { "libfreetype", dlsymmod("FT_New_Memory_Face"), "This provides a better rasterizer than the one built in to fontforge", "http://freetype.sf.net/",	1
     },
     { NULL }
 };
@@ -426,7 +416,7 @@ static int ParseArgs( gpointer data ) {
 	    GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
 	    if ( GFileIsDir(buffer)) {
 		char *fname;
-		fname = galloc(strlen(buffer)+strlen("glyphs/contents.plist")+1);
+		fname = malloc(strlen(buffer)+strlen("glyphs/contents.plist")+1);
 		strcpy(fname,buffer); strcat(fname,"glyphs/contents.plist");
 		if ( GFileExists(fname)) {
 		    /* It's probably a Unified Font Object directory */

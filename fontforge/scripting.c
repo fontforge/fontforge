@@ -30,6 +30,7 @@
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>
+#include <ffglib.h>
 #include <chardata.h>
 #include <unistd.h>
 #include <math.h>
@@ -64,7 +65,7 @@ extern int prefRevisionsToRetain; /* sfd.c */
 static int verbose = -1;
 static struct dictionary globals;
 
-struct keywords { enum token_type tok; char *name; } keywords[] = {
+struct keywords { enum token_type tok; const char *name; } keywords[] = {
     { tt_if, "if" },
     { tt_else, "else" },
     { tt_elseif, "elseif" },
@@ -110,7 +111,6 @@ return( copy(str));
 return( ret );
     }
 }
-#endif /* _NO_FFSCRIPT */
 
 void arrayfree(Array *a) {
     int i;
@@ -124,15 +124,16 @@ void arrayfree(Array *a) {
     free(a->vals);
     free(a);
 }
+#endif /* _NO_FFSCRIPT */
 
 #ifndef _NO_FFSCRIPT
 static Array *arraycopy(Array *a) {
     int i;
     Array *c;
 
-    c = galloc(sizeof(Array));
+    c = malloc(sizeof(Array));
     c->argc = a->argc;
-    c->vals = galloc(c->argc*sizeof(Val));
+    c->vals = malloc(c->argc*sizeof(Val));
     memcpy(c->vals,a->vals,c->argc*sizeof(Val));
     for ( i=0; i<a->argc; ++i ) {
 	if ( a->vals[i].type==v_str )
@@ -189,10 +190,10 @@ static void DicaNewEntry(struct dictionary *dica,char *name,Val *val) {
 
     if ( dica->entries==NULL ) {
 	dica->max = 10;
-	dica->entries = galloc(dica->max*sizeof(struct dictentry));
+	dica->entries = malloc(dica->max*sizeof(struct dictentry));
     } else if ( dica->cnt>=dica->max ) {
 	dica->max += 10;
-	dica->entries = grealloc(dica->entries,dica->max*sizeof(struct dictentry));
+	dica->entries = realloc(dica->entries,dica->max*sizeof(struct dictentry));
     }
     dica->entries[dica->cnt].name = copy(name);
     dica->entries[dica->cnt].val.type = v_void;
@@ -471,7 +472,8 @@ static void bPostNotice(Context *c) {
 }
 
 static void bAskUser(Context *c) {
-    char *quest, *def="";
+    char *quest;
+    const char *def="";
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	ScriptError( c, "Wrong number of arguments" );
@@ -526,9 +528,9 @@ static void bArray(Context *c) {
     else if ( c->a.vals[1].u.ival<=0 )
 	ScriptError( c, "Argument must be positive" );
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval = malloc(sizeof(Array));
     c->return_val.u.aval->argc = c->a.vals[1].u.ival;
-    c->return_val.u.aval->vals = galloc(c->a.vals[1].u.ival*sizeof(Val));
+    c->return_val.u.aval->vals = malloc(c->a.vals[1].u.ival*sizeof(Val));
     for ( i=0; i<c->a.vals[1].u.ival; ++i )
 	c->return_val.u.aval->vals[i].type = v_void;
 }
@@ -544,7 +546,7 @@ static void bSizeOf(Context *c) {
 }
 
 static void bTypeOf(Context *c) {
-    static char *typenames[] = { "Integer", "Real", "String", "Unicode", "LValue",
+    static const char *typenames[] = { "Integer", "Real", "String", "Unicode", "LValue",
 	    "Array", "Array", "LValue", "LValue", "LValue", "Void" };
 
     if ( c->a.argc!=2 )
@@ -614,9 +616,9 @@ static void bStrSplit(Context *c) {
 	    if ( max!=-1 && cnt>max )
 		cnt = max;
 	    c->return_val.type = v_arrfree;
-	    c->return_val.u.aval = galloc(sizeof(Array));
+	    c->return_val.u.aval = malloc(sizeof(Array));
 	    c->return_val.u.aval->argc = cnt;
-	    c->return_val.u.aval->vals = galloc(cnt*sizeof(Val));
+	    c->return_val.u.aval->vals = malloc(cnt*sizeof(Val));
 	} else {
 	    if ( *pt!='\0' ) {
 		c->return_val.u.aval->vals[cnt].type = v_str;
@@ -654,7 +656,7 @@ static void bStrJoin(Context *c) {
 	}
 	if ( !k ) {
 	    c->return_val.type = v_str;
-	    c->return_val.u.sval = galloc(len+1);
+	    c->return_val.u.sval = malloc(len+1);
 	}
     }
 }
@@ -703,8 +705,8 @@ static void bStrsub(Context *c) {
 
     str = c->a.vals[1].u.sval;
     start = c->a.vals[2].u.ival;
-    end = c->a.argc==4? c->a.vals[3].u.ival : strlen(str);
-    if ( start<0 || start>strlen(str) || end<start || end>strlen(str) )
+    end = c->a.argc==4? c->a.vals[3].u.ival : (int)strlen(str);
+    if ( start<0 || start>(int)strlen(str) || end<start || end>(int)strlen(str) )
 	ScriptError( c, "Arguments out of bounds" );
     c->return_val.type = v_str;
     c->return_val.u.sval = copyn(str+start,end-start);
@@ -1119,7 +1121,7 @@ static void bUnicodeBlockNameFromLib(Context *c) {
     c->return_val.type = v_str;
 
     if ( (temp=unicode_block_name(c->a.vals[1].u.ival))==NULL ) {
-	temp=galloc(1*sizeof(char)); *temp='\0';
+	temp=malloc(1*sizeof(char)); *temp='\0';
     }
     c->return_val.u.sval=temp;
 }
@@ -1146,7 +1148,7 @@ static void bUnicodeNameFromLib(Context *c) {
     c->return_val.type = v_str;
 
     if ( (temp=unicode_name(c->a.vals[1].u.ival))==NULL ) {
-	temp=galloc(1*sizeof(char)); *temp='\0';
+	temp=malloc(1*sizeof(char)); *temp='\0';
     }
     c->return_val.u.sval = temp;
 }
@@ -1161,7 +1163,7 @@ static void bUnicodeAnnotationFromLib(Context *c) {
     c->return_val.type = v_str;
 
     if ( (temp=unicode_annot(c->a.vals[1].u.ival))==NULL ) {
-	temp=galloc(1*sizeof(char)); *temp='\0';
+	temp=malloc(1*sizeof(char)); *temp='\0';
     }
     c->return_val.u.sval = temp;
 }
@@ -1174,7 +1176,7 @@ static void bUnicodeNamesListVersion(Context *c) {
 	ScriptError( c, "Wrong number of arguments" );
 
     if ( (temp=unicode_library_version())==NULL ) {
-	temp=galloc(1*sizeof(char)); *temp='\0';
+	temp=malloc(1*sizeof(char)); *temp='\0';
     }
     c->return_val.type = v_str;
     c->return_val.u.sval = temp;
@@ -1195,7 +1197,7 @@ static void bChr(Context *c) {
 	c->return_val.u.sval = copy(buf);
     } else if ( c->a.vals[1].type==v_arr || c->a.vals[1].type==v_arrfree ) {
 	Array *arr = c->a.vals[1].u.aval;
-	temp = galloc((arr->argc+1)*sizeof(char));
+	temp = malloc((arr->argc+1)*sizeof(char));
 	for ( i=0; i<arr->argc; ++i ) {
 	    if ( arr->vals[i].type!=v_int )
 		ScriptError( c, "Bad type for argument" );
@@ -1225,7 +1227,7 @@ static void bUtf8(Context *c) {
 	c->return_val.u.sval = u2utf8_copy(buf);
     } else if ( c->a.vals[1].type==v_arr || c->a.vals[1].type==v_arrfree ) {
 	Array *arr = c->a.vals[1].u.aval;
-	temp = galloc((arr->argc+1)*sizeof(int32));
+	temp = malloc((arr->argc+1)*sizeof(int32));
 	for ( i=0; i<arr->argc; ++i ) {
 	    if ( arr->vals[i].type!=v_int )
 		ScriptError( c, "Bad type for argument" );
@@ -1247,11 +1249,11 @@ static void bUCS4(Context *c) {
 	ScriptError( c, "Wrong number of arguments" );
     else if ( c->a.vals[1].type==v_str ) {
 	const char *pt = c->a.vals[1].u.sval;
-	int i, len = utf8_strlen(pt);
+	int i, len = g_utf8_strlen( pt, -1 );
 	c->return_val.type = v_arrfree;
-	c->return_val.u.aval = galloc(sizeof(Array));
+	c->return_val.u.aval = malloc(sizeof(Array));
 	c->return_val.u.aval->argc = len;
-	c->return_val.u.aval->vals = galloc(len*sizeof(Val));
+	c->return_val.u.aval->vals = malloc(len*sizeof(Val));
 	for ( i=0; i<len; ++i ) {
 	    c->return_val.u.aval->vals[i].type = v_int;
 	    c->return_val.u.aval->vals[i].u.ival = utf8_ildb(&pt);
@@ -1266,16 +1268,16 @@ static void bOrd(Context *c) {
     else if ( c->a.vals[1].type!=v_str || ( c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	ScriptError( c, "Bad type for argument" );
     if ( c->a.argc==3 ) {
-	if ( c->a.vals[2].u.ival<0 || c->a.vals[2].u.ival>strlen( c->a.vals[1].u.sval ))
+	if ( c->a.vals[2].u.ival<0 || c->a.vals[2].u.ival>(int)strlen( c->a.vals[1].u.sval ))
 	    ScriptError( c, "Bad value for argument" );
 	c->return_val.type = v_int;
 	c->return_val.u.ival = (uint8) c->a.vals[1].u.sval[c->a.vals[2].u.ival];
     } else {
 	int i, len = strlen(c->a.vals[1].u.sval);
 	c->return_val.type = v_arrfree;
-	c->return_val.u.aval = galloc(sizeof(Array));
+	c->return_val.u.aval = malloc(sizeof(Array));
 	c->return_val.u.aval->argc = len;
-	c->return_val.u.aval->vals = galloc(len*sizeof(Val));
+	c->return_val.u.aval->vals = malloc(len*sizeof(Val));
 	for ( i=0; i<len; ++i ) {
 	    c->return_val.u.aval->vals[i].type = v_int;
 	    c->return_val.u.aval->vals[i].u.ival = (uint8) c->a.vals[1].u.sval[i];
@@ -1372,13 +1374,13 @@ return( copy(val->u.sval) );
 	char **results, *ret, *pt;
 	int len;
 
-	results = galloc(val->u.aval->argc*sizeof(char *));
+	results = malloc(val->u.aval->argc*sizeof(char *));
 	len = 0;
 	for ( j=0; j<val->u.aval->argc; ++j ) {
 	    results[j] = ToString(&val->u.aval->vals[j]);
 	    len += strlen(results[j])+2;
 	}
-	ret = pt = galloc(len+20);
+	ret = pt = malloc(len+20);
 	*pt++ = '[';
 	if ( val->u.aval->argc>0 ) {
 	    strcpy(pt,results[0]); pt += strlen(pt);
@@ -1583,7 +1585,7 @@ static void bLoadFileToString(Context *c) {
 	fseek(f,0,SEEK_END);
 	len = ftell(f);
 	rewind(f);
-	c->return_val.u.sval = galloc(len+1);
+	c->return_val.u.sval = malloc(len+1);
 	len = fread(c->return_val.u.sval,1,len,f);
 	c->return_val.u.sval[len]='\0';
 	fclose(f);
@@ -1624,14 +1626,10 @@ static void bLoadPlugin(Context *c) {
 	ScriptError( c, "Wrong number of arguments" );
     else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type of argument" );
-#if !defined(NOPLUGIN)
     _name = script2utf8_copy(c->a.vals[1].u.sval);
     name = utf82def_copy(_name); free(_name);
     LoadPlugin(name);
     free(name);
-#else
-    ScriptError(c,"This version of fontforge does not support plugins");
-#endif
 }
 
 static void bLoadPluginDir(Context *c) {
@@ -1698,7 +1696,7 @@ char **GetFontNames(char *filename) {
     char **ret = NULL;
 
     if ( GFileIsDir(filename)) {
-	char *temp = galloc(strlen(filename)+strlen("/glyphs/contents.plist")+1);
+	char *temp = malloc(strlen(filename)+strlen("/glyphs/contents.plist")+1);
 	strcpy(temp,filename);
 	strcat(temp,"/glyphs/contents.plist");
 	if ( GFileExists(temp))
@@ -1720,10 +1718,9 @@ char **GetFontNames(char *filename) {
 	    int ch2 = getc(foo);
 	    int ch3 = getc(foo);
 	    int ch4 = getc(foo);
-	    int ch5, ch6;
 	    fseek(foo, 98, SEEK_SET);
-	    ch5 = getc(foo);
-	    ch6 = getc(foo);
+	    /* ch5 */ (void)getc(foo);
+	    /* ch6 */ (void)getc(foo);
 	    fclose(foo);
 	    if (( ch1==0 && ch2==1 && ch3==0 && ch4==0 ) ||
 		    (ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
@@ -1767,9 +1764,9 @@ static void bFontsInFile(Context *c) {
     cnt = 0;
     if ( ret!=NULL ) for ( cnt=0; ret[cnt]!=NULL; ++cnt );
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval = malloc(sizeof(Array));
     c->return_val.u.aval->argc = cnt;
-    c->return_val.u.aval->vals = galloc((cnt==0?1:cnt)*sizeof(Val));
+    c->return_val.u.aval->vals = malloc((cnt==0?1:cnt)*sizeof(Val));
     if ( ret!=NULL ) for ( cnt=0; ret[cnt]!=NULL; ++cnt ) {
 	c->return_val.u.aval->vals[cnt].type = v_str;
 	c->return_val.u.aval->vals[cnt].u.sval = ret[cnt];
@@ -1888,15 +1885,9 @@ static void bSave(Context *c) {
 
 	t = script2utf8_copy(c->a.vals[1].u.sval);
 	locfilename = utf82def_copy(t);
-#ifdef VMS
-	pt = strrchr(locfilename,'_');
-	if ( pt!=NULL && strmatch(pt,"_sfdir")==0 )
-	    s2d = true;
-#else
 	pt = strrchr(locfilename,'.');
 	if ( pt!=NULL && strmatch(pt,".sfdir")==0 )
 	    s2d = true;
-#endif
 
 	int rc = SFDWriteBakExtended( locfilename,
 				      sf,c->curfv->map,c->curfv->normal,s2d,
@@ -1927,7 +1918,7 @@ static void bSave(Context *c) {
 
 static void bGenerate(Context *c) {
     SplineFont *sf = c->curfv->sf;
-    char *bitmaptype = "";
+    const char *bitmaptype = "";
     int fmflags = -1;
     int res = -1;
     char *subfontdirectory = NULL;
@@ -1982,7 +1973,7 @@ typedef SplineFont *SFArray[48];
 
 static void bGenerateFamily(Context *c) {
     SplineFont *sf = NULL;
-    char *bitmaptype = "";
+    const char *bitmaptype = "";
     int fmflags = -1;
     struct sflist *sfs, *cur, *lastsfs;
     Array *fonts;
@@ -1994,7 +1985,7 @@ static void bGenerateFamily(Context *c) {
     char *t;
     char *locfilename;
 
-    familysfs = galloc((fondmax=10)*sizeof(SFArray));
+    familysfs = malloc((fondmax=10)*sizeof(SFArray));
 
     if ( c->a.argc!=5 )
 	ScriptError( c, "Wrong number of arguments");
@@ -2067,7 +2058,7 @@ static void bGenerateFamily(Context *c) {
 	}
 	if ( !added ) {
 	    if ( fondcnt>=fondmax )
-		familysfs = grealloc(familysfs,(fondmax+=10)*sizeof(SFArray));
+		familysfs = realloc(familysfs,(fondmax+=10)*sizeof(SFArray));
 	    memset(familysfs[fondcnt],0,sizeof(SFArray));
 	    familysfs[fondcnt++][psstyle] = fv->sf;
 	}
@@ -2160,7 +2151,7 @@ static void Bitmapper(Context *c,int isavail) {
 	    ScriptError( c, "Bad type of argument");
 	rasterize = c->a.vals[2].u.ival;
     }
-    sizes = galloc((c->a.vals[1].u.aval->argc+1)*sizeof(int32));
+    sizes = malloc((c->a.vals[1].u.aval->argc+1)*sizeof(int32));
     for ( i=0; i<c->a.vals[1].u.aval->argc; ++i ) {
 	sizes[i] = c->a.vals[1].u.aval->vals[i].u.ival;
 	if ( (sizes[i]>>16)==0 )
@@ -2342,7 +2333,7 @@ static void bExport(Context *c) {
     if (( format>=4 && c->a.argc!=3 ) || (format<4 && c->a.argc==3 ))
 	ScriptError( c, "Wrong number of arguments");
     bdf=NULL;
-    if ( format>=4 ) {
+    if ( format>4 ) {
 	for ( bdf = c->curfv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if (( BDFDepth(bdf)==1 && bdf->pixelsize==c->a.vals[2].u.ival) ||
 		    (bdf->pixelsize!=(c->a.vals[2].u.ival&0xffff) &&
@@ -2466,12 +2457,12 @@ static void bPrintFont(Context *c) {
     if ( c->a.argc>=3 ) {
 	if ( c->a.vals[2].type==v_int ) {
 	    if ( c->a.vals[2].u.ival>0 ) {
-		pointsizes = gcalloc(2,sizeof(int32));
+		pointsizes = calloc(2,sizeof(int32));
 		pointsizes[0] = c->a.vals[2].u.ival;
 	    }
 	} else if ( c->a.vals[2].type==v_arr ) {
 	    Array *a = c->a.vals[2].u.aval;
-	    pointsizes = galloc((a->argc+1)*sizeof(int32));
+	    pointsizes = malloc((a->argc+1)*sizeof(int32));
 	    for ( i=0; i<a->argc; ++i ) {
 		if ( a->vals[i].type!=v_int )
 		    ScriptError( c, "Bad type for array contents");
@@ -2876,7 +2867,7 @@ static void bSelectAllInstancesOf(Context *c) {
 	if ( c->a.vals[i].type==v_unicode ) {
 	    int uni = c->a.vals[i].u.ival;
 	    for ( j=0; j<map->enccount; ++j ) if ( (gid=map->map[j])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
-		for ( alt=sc->altuni; alt!=NULL && alt->unienc!=uni; alt=alt->next );
+                    for ( alt=sc->altuni; alt!=NULL && alt->unienc!=uni; alt=alt->next );
 		if ( sc->unicodeenc == uni || alt!=NULL )
 		    fv->selected[j] = true;
 	    }
@@ -3086,7 +3077,7 @@ static void bSelectByPosSub(Context *c) {
 
 static void bSelectByColor(Context *c) {
     int col, sccol;
-    int i, any=0;
+    int i;
     EncMap *map = c->curfv->map;
     SplineFont *sf = c->curfv->sf;
 
@@ -3122,13 +3113,10 @@ static void bSelectByColor(Context *c) {
 	int gid = map->map[i];
 	if ( gid!=-1 ) {
 	    sccol =  ( sf->glyphs[gid]==NULL ) ? COLOR_DEFAULT : sf->glyphs[gid]->color;
-	    if ( c->curfv->selected[i]!=(sccol==col) ) {
+	    if ( c->curfv->selected[i]!=(sccol==col) )
 		c->curfv->selected[i] = !c->curfv->selected[i];
-		if ( c->curfv->selected[i] ) any = true;
-	    }
 	}
     }
-    /*c->curfv->sel_index = any;*/
 }
 
 /* **** Element Menu **** */
@@ -3167,7 +3155,7 @@ static void bReencode(Context *c) {
 	SFReplaceEncodingBDFProps(c->curfv->sf,c->curfv->map);
     }
     free(c->curfv->selected);
-    c->curfv->selected = gcalloc(c->curfv->map->enccount,sizeof(char));
+    c->curfv->selected = calloc(c->curfv->map->enccount,sizeof(char));
     if ( !no_windowing_ui )
 	FontViewReformatAll(c->curfv->sf);
 /*
@@ -3198,7 +3186,7 @@ static void bSetCharCnt(Context *c) {
 	ScriptError( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_int )
 	ScriptError(c,"Bad argument type");
-    else if ( c->a.vals[1].u.ival<=0 && c->a.vals[1].u.ival>10*65536 )
+    else if ( c->a.vals[1].u.ival<=0 || c->a.vals[1].u.ival>10*65536 )
 	ScriptError(c,"Argument out of bounds");
 
     newcnt = c->a.vals[1].u.ival;
@@ -3209,10 +3197,10 @@ return;
 	if ( !no_windowing_ui )
 	    FVSetTitles(c->curfv->sf);
     } else {
-	c->curfv->selected = grealloc(c->curfv->selected,newcnt);
+	c->curfv->selected = realloc(c->curfv->selected,newcnt);
 	if ( newcnt>map->encmax ) {
 	    memset(c->curfv->selected+map->enccount,0,newcnt-map->enccount);
-	    map->map = grealloc(map->map,(map->encmax=newcnt+10)*sizeof(int32));
+	    map->map = realloc(map->map,(map->encmax=newcnt+10)*sizeof(int32));
 	    memset(map->map+map->enccount,-1,(newcnt-map->enccount)*sizeof(int32));
 	}
     }
@@ -3240,7 +3228,6 @@ static void bRemoveDetachedGlyphs(Context *c) {
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
     SplineChar *sc;
-    int flags = -1;
     int changed = false;
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( sf->glyphs[gid]!=NULL )
@@ -3250,7 +3237,7 @@ static void bRemoveDetachedGlyphs(Context *c) {
 	sf->glyphs[gid]->ticked = true;
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && !sc->ticked ) {
-	SFRemoveGlyph(sf,sc,&flags);
+	SFRemoveGlyph(sf,sc);
 	changed = true;
     }
     if ( changed && !sf->changed ) {
@@ -3301,7 +3288,7 @@ static void bLoadTableFromFile(Context *c) {
     } else
 	free(tab->data);
     tab->len = len;
-    tab->data = galloc(len);
+    tab->data = malloc(len);
     fread(tab->data,1,len,file);
     fclose(file);
 }
@@ -3482,7 +3469,7 @@ static void bSetGasp(Context *c) {
     free(sf->gasp);
     sf->gasp_cnt = (arr->argc-base)/2;
     if ( sf->gasp_cnt!=0 ) {
-	sf->gasp = gcalloc(sf->gasp_cnt,sizeof(struct gasp));
+	sf->gasp = calloc(sf->gasp_cnt,sizeof(struct gasp));
 	for ( i=base; i<arr->argc; i += 2 ) {
 	    int g = (i-base)/2;
 	    sf->gasp[g].ppem = arr->vals[i].u.ival;
@@ -3856,9 +3843,9 @@ static void bGetOS2Value(Context *c) {
 	os2getint(sf->pfminfo.vlinegap,c);
     } else if ( strmatch(c->a.vals[1].u.sval,"Panose")==0 ) {
 	c->return_val.type = v_arrfree;
-	c->return_val.u.aval = galloc(sizeof(Array));
+	c->return_val.u.aval = malloc(sizeof(Array));
 	c->return_val.u.aval->argc = 10;
-	c->return_val.u.aval->vals = galloc((10+1)*sizeof(Val));
+	c->return_val.u.aval->vals = malloc((10+1)*sizeof(Val));
 	for ( i=0; i<10; ++i ) {
 	    c->return_val.u.aval->vals[i].type = v_int;
 	    c->return_val.u.aval->vals[i].u.ival = sf->pfminfo.panose[i];
@@ -3905,7 +3892,7 @@ static void bSetMaxpValue(Context *c) {
 	tab->tag = CHR('m','a','x','p');
     }
     if ( tab->len<32 ) {
-	tab->data = grealloc(tab->data,32);
+	tab->data = realloc(tab->data,32);
 	memset(tab->data+tab->len,0,32-tab->len);
 	tab->data[15] = 2;			/* Default zones to 2 */
 	tab->len = tab->maxlen = 32;
@@ -3974,9 +3961,9 @@ static void bGetFontBoundingBox(Context *c) {
 
     SplineFontFindBounds(sf,&b);
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval = malloc(sizeof(Array));
     c->return_val.u.aval->argc = 4;
-    c->return_val.u.aval->vals = galloc(4*sizeof(Val));
+    c->return_val.u.aval->vals = malloc(4*sizeof(Val));
     for ( i=0; i<4; ++i )
 	c->return_val.u.aval->vals[i].type = v_real;
     c->return_val.u.aval->vals[0].u.fval = b.minx;
@@ -4184,7 +4171,6 @@ static void bSetGlyphChanged(Context *c) {
 
 static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
     int opos=dest->orig_pos, uenc=dest->unicodeenc;
-    Undoes *u[2], *r1;
     struct splinecharlist *scl = dest->dependents;
     RefChar *refs;
     int layer, last;
@@ -4195,7 +4181,6 @@ static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
 return;
 
     SCPreserveLayer(dest,ly_fore,2);
-    u[0] = dest->layers[ly_fore].undoes; u[1] = dest->layers[ly_back].undoes; r1 = dest->layers[ly_back].redoes;
 
     free(dest->name);
     last = ly_fore;
@@ -4219,7 +4204,7 @@ return;
     layers = dest->layers;
     lc = dest->layer_cnt;
     *dest = *src;
-    dest->layers = galloc(dest->layer_cnt*sizeof(Layer));
+    dest->layers = malloc(dest->layer_cnt*sizeof(Layer));
     memcpy(&dest->layers[ly_back],&layers[ly_back],sizeof(Layer));
     for ( layer=ly_fore; layer<dest->layer_cnt; ++layer ) {
 	memcpy(&dest->layers[layer],&src->layers[layer],sizeof(Layer));
@@ -4290,15 +4275,14 @@ static void FVApplySubstitution(FontViewBase *fv,uint32 script, uint32 lang, uin
     int i, gid, gid2;
     SplineChar **replacements;
     uint8 *removes;
-    int flags = -1;
 
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
 
     /* I used to do replaces and removes as I went along, and then Werner */
     /*  gave me a font were "a" was replaced by "b" replaced by "a" */
-    replacements = gcalloc(sf->glyphcnt,sizeof(SplineChar *));
-    removes = gcalloc(sf->glyphcnt,sizeof(uint8));
+    replacements = calloc(sf->glyphcnt,sizeof(SplineChar *));
+    removes = calloc(sf->glyphcnt,sizeof(uint8));
 
     for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] &&
 	    (gid=map->map[i])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
@@ -4332,7 +4316,7 @@ static void FVApplySubstitution(FontViewBase *fv,uint32 script, uint32 lang, uin
 		    }
 		}
 	    }
-	    SFRemoveGlyph(sf,sc,&flags);
+	    SFRemoveGlyph(sf,sc);
 	}
     }
 
@@ -4726,6 +4710,7 @@ static void bItalic(Context *c) {
 		case 1: default_ii.secondary_serif = srf_flat; break;
 		case 2: default_ii.secondary_serif = srf_simpleslant; break;
 		case 3: default_ii.secondary_serif = srf_complexslant; break;
+                default: break;
 		}
 		continue;
 	    }
@@ -4794,6 +4779,8 @@ static void bItalic(Context *c) {
 		break;
 	    default_ii.lc.counter_percent = pct;
 	    continue;
+        default:
+            break;
 	}
 	{
 	    char errmsg[40];
@@ -4827,7 +4814,7 @@ static void bChangeWeight(Context *c) {
 }
 
 static void bSmallCaps(Context *c) {
-    struct smallcaps small = {};
+    struct smallcaps small;
     struct position_maps maps[2] = {{ .cur_width = -1 }, { .cur_width = 1 }};
     struct genericchange genchange = {
 	.hcounter_scale = 0.66, .lsb_scale = 0.66, .rsb_scale = 0.66,
@@ -4952,8 +4939,8 @@ static void _bMoveReference(Context *c,int position) {
 	ScriptError(c,"Bad argument type");
 
     refcnt = c->a.argc-3;
-    refnames = gcalloc(refcnt,sizeof(char *));
-    refunis = galloc(refcnt*sizeof(int));
+    refnames = calloc(refcnt,sizeof(char *));
+    refunis = malloc(refcnt*sizeof(int));
     memset(refunis,-1,refcnt*sizeof(int));
     for ( i=0; i<refcnt; ++i ) {
 	if ( c->a.vals[3+i].type==v_str )
@@ -5611,7 +5598,7 @@ static void bInterpolateFonts(Context *c) {
 	ScriptErrorString(c,"Can't find font", c->a.vals[2].u.sval);
     if ( sf->fv==NULL )
 	EncMapFree(sf->map);
-    c->curfv = FVAppend(_FontViewCreate(InterpolateFont(c->curfv->sf,sf,percent/100.0, c->curfv->map->enc )));
+    c->curfv = FVAppend(_FontViewCreate(InterpolateFont(c->curfv->sf,sf,(double)percent/100.0, c->curfv->map->enc )));
 }
 
 static void bDefaultUseMyMetrics(Context *c) {
@@ -5732,11 +5719,11 @@ return;
 	sf->ttf_tables = tab;
     }
     if ( tab->data==NULL ) {
-	tab->data = galloc(icnt);
+	tab->data = malloc(icnt);
 	memcpy(tab->data,instrs,icnt);
 	tab->len = icnt;
     } else {
-	uint8 *newi = galloc(icnt+tab->len);
+	uint8 *newi = malloc(icnt+tab->len);
 	memcpy(newi,tab->data,tab->len);
 	memcpy(newi+tab->len,instrs,icnt);
 	free(tab->data);
@@ -5759,11 +5746,11 @@ static void GlyphAddInstrs(SplineChar *sc,int replace,
 return;
     if ( sc->ttf_instrs==NULL ) {
 	SCNumberPoints(sc,ly_fore);	/* If the point numbering is wrong then we'll just throw away the instructions when we notice it */
-	sc->ttf_instrs = galloc(icnt);
+	sc->ttf_instrs = malloc(icnt);
 	memcpy(sc->ttf_instrs,instrs,icnt);
 	sc->ttf_instrs_len = icnt;
     } else {
-	uint8 *newi = galloc(icnt+sc->ttf_instrs_len);
+	uint8 *newi = malloc(icnt+sc->ttf_instrs_len);
 	memcpy(newi,sc->ttf_instrs,sc->ttf_instrs_len);
 	memcpy(newi+sc->ttf_instrs_len,instrs,icnt);
 	free(sc->ttf_instrs);
@@ -5772,7 +5759,7 @@ return;
     }
 }
 
-static void prterror(void *foo, char *msg, int pos) {
+static void prterror(void *UNUSED(foo), char *msg, int UNUSED(pos)) {
     fprintf( stderr, "%s\n", msg );
 }
 
@@ -5843,7 +5830,7 @@ static void bGetCvtAt(Context *c) {
     if ( c->a.vals[1].type!=v_int )
 	ScriptError( c, "Bad argument type" );
     for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=CHR('c','v','t',' '); tab=tab->next );
-    if ( tab==NULL || c->a.vals[1].u.ival>=tab->len/2 )
+    if ( tab==NULL || c->a.vals[1].u.ival>=(int)tab->len/2 )
 	ScriptError(c,"Cvt table is either not present or too short");
     c->return_val.type = v_int;
     c->return_val.u.ival = memushort(tab->data,tab->len,
@@ -5859,7 +5846,7 @@ static void bReplaceCvtAt(Context *c) {
     if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
 	ScriptError( c, "Bad argument type" );
     for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=CHR('c','v','t',' '); tab=tab->next );
-    if ( tab==NULL || c->a.vals[1].u.ival>=tab->len/2 )
+    if ( tab==NULL || c->a.vals[1].u.ival>=(int)tab->len/2 )
 	ScriptError(c,"Cvt table is either not present or too short");
     memputshort(tab->data,sizeof(uint16)*c->a.vals[1].u.ival,
 	    c->a.vals[2].u.ival);
@@ -5867,11 +5854,6 @@ static void bReplaceCvtAt(Context *c) {
 
 static void bPrivateToCvt(Context *c) {
     ScriptError( c, "This command has been removed.");
-#if 0
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
-    CVT_ImportPrivate(c->curfv->sf);
-#endif
 }
 
 static void bClearHints(Context *c) {
@@ -6125,10 +6107,10 @@ static void bSetCharCounterMask(Context *c) {
     sc = GetOneSelChar(c);
     if ( c->a.vals[1].u.ival>=sc->countermask_cnt ) {
 	if ( sc->countermask_cnt==0 ) {
-	    sc->countermasks = gcalloc(c->a.vals[1].u.ival+10,sizeof(HintMask));
+	    sc->countermasks = calloc(c->a.vals[1].u.ival+10,sizeof(HintMask));
 	    sc->countermask_cnt = c->a.vals[1].u.ival+1;
 	} else {
-	    sc->countermasks = grealloc(sc->countermasks,
+	    sc->countermasks = realloc(sc->countermasks,
 		    (c->a.vals[1].u.ival+1)*sizeof(HintMask));
 	    memset(sc->countermasks+sc->countermask_cnt,0,
 		    (c->a.vals[1].u.ival+1-sc->countermask_cnt)*sizeof(HintMask));
@@ -6153,7 +6135,7 @@ static void bReplaceCharCounterMasks(Context *c) {
 	ScriptError( c, "Bad argument type" );
     arr = c->a.vals[1].u.aval;
     cnt = arr->argc;
-    cm = gcalloc(cnt,sizeof(HintMask));
+    cm = calloc(cnt,sizeof(HintMask));
     for ( i=0; i<cnt; ++i ) {
 	if ( arr->vals[i].type!=v_arr || arr->vals[i].u.aval->argc>12 )
 	    ScriptError( c, "Argument must be array of array[12] of integers" );
@@ -6190,7 +6172,7 @@ static void bPrivateGuess(Context *c) {
 
     key = forceASCIIcopy(c,c->a.vals[1].u.sval);
     if ( sf->private==NULL ) {
-	sf->private = gcalloc(1,sizeof(struct psdict));
+	sf->private = calloc(1,sizeof(struct psdict));
     }
     SFPrivateGuess(sf,c->curfv->active_layer,sf->private,key,true);
     free(key);
@@ -6208,10 +6190,10 @@ static void bChangePrivateEntry(Context *c) {
     key = forceASCIIcopy(c,c->a.vals[1].u.sval);
     val = forceASCIIcopy(c,c->a.vals[2].u.sval);
     if ( sf->private==NULL ) {
-	sf->private = gcalloc(1,sizeof(struct psdict));
+	sf->private = calloc(1,sizeof(struct psdict));
 	sf->private->cnt = 10;
-	sf->private->keys = gcalloc(10,sizeof(char *));
-	sf->private->values = gcalloc(10,sizeof(char *));
+	sf->private->keys = calloc(10,sizeof(char *));
+	sf->private->values = calloc(10,sizeof(char *));
     }
     PSDictChangeEntry(sf->private,key,val);
     free(key); free(val);
@@ -6451,9 +6433,9 @@ static void bMMInstanceNames(Context *c) {
 	ScriptError( c, "Not a multiple master font" );
 
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval = malloc(sizeof(Array));
     c->return_val.u.aval->argc = mm->instance_count;
-    c->return_val.u.aval->vals = galloc(mm->instance_count*sizeof(Val));
+    c->return_val.u.aval->vals = malloc(mm->instance_count*sizeof(Val));
     for ( i=0; i<mm->instance_count; ++i ) {
 	c->return_val.u.aval->vals[i].type = v_str;
 	c->return_val.u.aval->vals[i].u.sval = copy(mm->instances[i]->fontname);
@@ -6470,9 +6452,9 @@ static void bMMAxisNames(Context *c) {
 	ScriptError( c, "Not a multiple master font" );
 
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval = malloc(sizeof(Array));
     c->return_val.u.aval->argc = mm->axis_count;
-    c->return_val.u.aval->vals = galloc(mm->axis_count*sizeof(Val));
+    c->return_val.u.aval->vals = malloc(mm->axis_count*sizeof(Val));
     for ( i=0; i<mm->axis_count; ++i ) {
 	c->return_val.u.aval->vals[i].type = v_str;
 	c->return_val.u.aval->vals[i].u.sval = copy(mm->axes[i]);
@@ -6494,9 +6476,9 @@ static void bMMAxisBounds(Context *c) {
     axis = c->a.vals[1].u.ival;
 
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval = malloc(sizeof(Array));
     c->return_val.u.aval->argc = mm->axis_count;
-    c->return_val.u.aval->vals = galloc(3*sizeof(Val));
+    c->return_val.u.aval->vals = malloc(3*sizeof(Val));
     for ( i=0; i<3; ++i )
 	c->return_val.u.aval->vals[i].type = v_int;
     c->return_val.u.aval->vals[0].u.ival = mm->axismaps[axis].min * 65536;
@@ -6645,11 +6627,11 @@ static void bCIDChangeSubFont(Context *c) {
     MVDestroyAll(c->curfv->sf);
     if ( new->glyphcnt>sf->glyphcnt ) {
 	free(c->curfv->selected);
-	c->curfv->selected = gcalloc(new->glyphcnt,sizeof(char));
+	c->curfv->selected = calloc(new->glyphcnt,sizeof(char));
 	if ( new->glyphcnt>map->encmax )
-	    map->map = grealloc(map->map,(map->encmax = new->glyphcnt)*sizeof(int32));
+	    map->map = realloc(map->map,(map->encmax = new->glyphcnt)*sizeof(int32));
 	if ( new->glyphcnt>map->backmax )
-	    map->backmap = grealloc(map->backmap,(map->backmax = new->glyphcnt)*sizeof(int32));
+	    map->backmap = realloc(map->backmap,(map->backmax = new->glyphcnt)*sizeof(int32));
 	for ( i=0; i<new->glyphcnt; ++i )
 	    map->map[i] = map->backmap[i] = i;
 	map->enccount = new->glyphcnt;
@@ -6803,7 +6785,6 @@ return;
 
 static void bAddAnchorClass(Context *c) {
     AnchorClass *ac, *t;
-    unichar_t *ustr;
     SplineFont *sf = c->curfv->sf;
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
@@ -6826,8 +6807,6 @@ static void bAddAnchorClass(Context *c) {
 	ScriptErrorString(c,"This font already contains an anchor class with this name: ", c->a.vals[1].u.sval );
 
     ac->subtable = SFFindLookupSubtable(sf,c->a.vals[3].u.sval);
-    /* if ( ac->subtable==NULL )
-	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[3].u.sval); */
 
     if ( strmatch(c->a.vals[2].u.sval,"default")==0 || strmatch(c->a.vals[2].u.sval,"mark")==0 )
 	ac->type = act_mark;
@@ -6838,8 +6817,6 @@ static void bAddAnchorClass(Context *c) {
     else
 	ScriptErrorString(c,"Unknown type of anchor class. Must be one of \"default\", \"mk-mk\", or \"cursive\". ",  c->a.vals[2].u.sval);
 
-    ustr = uc_copy(c->a.vals[3].u.sval);
-    free(ustr);
     ac->next = sf->anchor;
     sf->anchor = ac;
     sf->changed = true;
@@ -7054,7 +7031,7 @@ static void bRemoveATT(Context *c) {
 static void bRemoveLookup(Context *c) {
     OTLookup *otl;
 
-    if ( c->a.argc!=2 || c->a.argc!=3 )
+    if ( c->a.argc<2 || c->a.argc>3 )
 	ScriptError( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type for argument 1");
@@ -7099,7 +7076,7 @@ static void bMergeLookups(Context *c) {
 static void bRemoveLookupSubtable(Context *c) {
     struct lookup_subtable *sub;
 
-    if ( c->a.argc!=2 || c->a.argc!=3 )
+    if ( c->a.argc<2 || c->a.argc>3 )
 	ScriptError( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type for argument");
@@ -7209,7 +7186,7 @@ static FeatureScriptLangList *ParseFeatureList(Context *c,Array *a) {
 	    } else {
 		sl->lang_cnt = langs->argc;
 		if ( langs->argc>MAX_LANG )
-		    sl->morelangs = galloc((langs->argc-MAX_LANG)*sizeof(uint32));
+		    sl->morelangs = malloc((langs->argc-MAX_LANG)*sizeof(uint32));
 		for ( l=0; l<langs->argc; ++l ) {
 		    uint32 lang = ParseTag(c,&langs->vals[l],false,&wasmac);
 		    if ( l<MAX_LANG )
@@ -7371,9 +7348,9 @@ static void bGetLookupInfo(Context *c) {
     if ( otl==NULL )
 	ScriptErrorString(c,"Missing lookup",c->a.vals[1].u.sval);
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval = malloc(sizeof(Array));
     c->return_val.u.aval->argc = 3;
-    c->return_val.u.aval->vals = galloc(3*sizeof(Val));
+    c->return_val.u.aval->vals = malloc(3*sizeof(Val));
     c->return_val.u.aval->vals[0].type = v_str;
     c->return_val.u.aval->vals[0].u.sval = copy(
 	    otl->lookup_type==gpos_single ? "GPOS_single" :
@@ -7398,33 +7375,33 @@ static void bGetLookupInfo(Context *c) {
     c->return_val.u.aval->vals[1].type = v_int;
     c->return_val.u.aval->vals[1].u.ival = otl->lookup_flags;
     c->return_val.u.aval->vals[2].type = v_arrfree;
-    c->return_val.u.aval->vals[2].u.aval = farray = galloc(sizeof(Array));
+    c->return_val.u.aval->vals[2].u.aval = farray = malloc(sizeof(Array));
     for ( fl=otl->features, fcnt=0; fl!=NULL; fl=fl->next, ++fcnt );
     farray->argc = fcnt;
-    farray->vals = galloc(fcnt*sizeof(Val));
+    farray->vals = malloc(fcnt*sizeof(Val));
     for ( fl=otl->features, fcnt=0; fl!=NULL; fl=fl->next, ++fcnt ) {
 	farray->vals[fcnt].type = v_arrfree;
-	farray->vals[fcnt].u.aval = galloc(sizeof(Array));
+	farray->vals[fcnt].u.aval = malloc(sizeof(Array));
 	farray->vals[fcnt].u.aval->argc = 2;
-	farray->vals[fcnt].u.aval->vals = galloc(2*sizeof(Val));
+	farray->vals[fcnt].u.aval->vals = malloc(2*sizeof(Val));
 	farray->vals[fcnt].u.aval->vals[0].type = v_str;
 	farray->vals[fcnt].u.aval->vals[0].u.sval = Tag2Str(fl->featuretag,fl->ismac);
 	farray->vals[fcnt].u.aval->vals[1].type = v_arrfree;
-	farray->vals[fcnt].u.aval->vals[1].u.aval = sarray = galloc(sizeof(Array));
+	farray->vals[fcnt].u.aval->vals[1].u.aval = sarray = malloc(sizeof(Array));
 	for ( sl=fl->scripts, scnt=0; sl!=NULL; sl=sl->next, ++scnt );
 	sarray->argc = scnt;
-	sarray->vals = galloc(scnt*sizeof(Val));
+	sarray->vals = malloc(scnt*sizeof(Val));
 	for ( sl=fl->scripts, scnt=0; sl!=NULL; sl=sl->next, ++scnt ) {
 	    sarray->vals[scnt].type = v_arrfree;
-	    sarray->vals[scnt].u.aval = galloc(sizeof(Array));
+	    sarray->vals[scnt].u.aval = malloc(sizeof(Array));
 	    sarray->vals[scnt].u.aval->argc = 2;
-	    sarray->vals[scnt].u.aval->vals = galloc(2*sizeof(Val));
+	    sarray->vals[scnt].u.aval->vals = malloc(2*sizeof(Val));
 	    sarray->vals[scnt].u.aval->vals[0].type = v_str;
 	    sarray->vals[scnt].u.aval->vals[0].u.sval = Tag2Str(sl->script,false);
 	    sarray->vals[scnt].u.aval->vals[1].type = v_arrfree;
-	    sarray->vals[scnt].u.aval->vals[1].u.aval = larray = galloc(sizeof(Array));
+	    sarray->vals[scnt].u.aval->vals[1].u.aval = larray = malloc(sizeof(Array));
 	    larray->argc = sl->lang_cnt;
-	    larray->vals = galloc(sl->lang_cnt*sizeof(Val));
+	    larray->vals = malloc(sl->lang_cnt*sizeof(Val));
 	    for ( l=0; l<sl->lang_cnt; ++l ) {
 		larray->vals[l].type = v_str;
 		larray->vals[l].u.sval = Tag2Str(l<MAX_LANG?sl->langs[l]:sl->morelangs[l-MAX_LANG],false);
@@ -7449,9 +7426,9 @@ static void bGetLookupSubtables(Context *c) {
     for ( sub=otl->subtables, cnt=0; sub!=NULL; sub=sub->next, ++cnt );
 
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval = malloc(sizeof(Array));
     c->return_val.u.aval->argc = cnt;
-    c->return_val.u.aval->vals = galloc(cnt*sizeof(Val));
+    c->return_val.u.aval->vals = malloc(cnt*sizeof(Val));
     for ( sub=otl->subtables, cnt=0; sub!=NULL; sub=sub->next, ++cnt ) {
 	c->return_val.u.aval->vals[cnt].type = v_str;
 	c->return_val.u.aval->vals[cnt].u.sval = copy( sub->subtable_name );
@@ -7479,9 +7456,9 @@ static void bGetLookups(Context *c) {
 
     for ( otl=base, cnt=0; otl!=NULL; otl=otl->next, ++cnt );
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval = malloc(sizeof(Array));
     c->return_val.u.aval->argc = cnt;
-    c->return_val.u.aval->vals = galloc(cnt*sizeof(Val));
+    c->return_val.u.aval->vals = malloc(cnt*sizeof(Val));
     for ( otl=base, cnt=0; otl!=NULL; otl=otl->next, ++cnt ) {
 	c->return_val.u.aval->vals[cnt].type = v_str;
 	c->return_val.u.aval->vals[cnt].u.sval = copy( otl->lookup_name );
@@ -7537,6 +7514,8 @@ static void bAddLookupSubtable(Context *c) {
       case gsub_single: case gsub_multiple: case gsub_alternate: case gsub_ligature:
       case gpos_single: case gpos_pair:
 	sub->per_glyph_pst_or_kern = true;
+      break;
+      default:
       break;
     }
 }
@@ -7691,9 +7670,9 @@ static void FigureExtrema(Context *c,SplineChar *sc,int pos,int xextrema) {
     }
 
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval = malloc(sizeof(Array));
     c->return_val.u.aval->argc = 2;
-    c->return_val.u.aval->vals = galloc(2*sizeof(Val));
+    c->return_val.u.aval->vals = malloc(2*sizeof(Val));
     c->return_val.u.aval->vals[0].type = v_int;
     c->return_val.u.aval->vals[1].type = v_int;
     if ( minmax[0]>1e10 ) {	/* Unset. Presumably pos is outside bounding box */
@@ -7740,7 +7719,7 @@ static void FigureProfile(Context *c,SplineChar *sc,int pos,int xextrema) {
         for (m=0; m<j; m++)
           if (temp == val[m])
             goto skip1;
-        val = (double *) grealloc (val, (j + 1)*sizeof(double));
+        val = (double *) realloc (val, (j + 1)*sizeof(double));
         val[j] = temp;
         if ( j >= MAXSECT ) goto maxsect_reached;
         j++;
@@ -7778,7 +7757,7 @@ skip1:
             for (m=0; m<j; m++)
               if (temp == val[m])
                 goto skip2;
-            val = (double *) grealloc (val, (j + 1)*sizeof(double));
+            val = (double *) realloc (val, (j + 1)*sizeof(double));
             val[j] = temp;
             if ( j >= MAXSECT ) goto maxsect_reached;
             j++;
@@ -7801,9 +7780,9 @@ maxsect_reached:
     }
 
   c->return_val.type = v_arrfree;
-  c->return_val.u.aval = galloc(sizeof(Array));
+  c->return_val.u.aval = malloc(sizeof(Array));
   c->return_val.u.aval->argc = j;
-  c->return_val.u.aval->vals = galloc(j*sizeof(Val));
+  c->return_val.u.aval->vals = malloc(j*sizeof(Val));
   for (i = 0; i < j; i++){
     c->return_val.u.aval->vals[i].type = v_real;
     c->return_val.u.aval->vals[i].u.fval = val[i];
@@ -7937,9 +7916,9 @@ return;
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
 		    ;
 	    c->return_val.type = v_arrfree;
-	    c->return_val.u.aval = galloc(sizeof(Array));
+	    c->return_val.u.aval = malloc(sizeof(Array));
 	    c->return_val.u.aval->argc = i;
-	    c->return_val.u.aval->vals = galloc(i*sizeof(Val));
+	    c->return_val.u.aval->vals = malloc(i*sizeof(Val));
 	    for ( i=0, layer=0; layer<sc->layer_cnt; ++layer ) {
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i ) {
 		    c->return_val.u.aval->vals[i].u.sval = copy(ref->sc->name);
@@ -7951,15 +7930,15 @@ return;
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
 		    ;
 	    c->return_val.type = v_arrfree;
-	    c->return_val.u.aval = galloc(sizeof(Array));
+	    c->return_val.u.aval = malloc(sizeof(Array));
 	    c->return_val.u.aval->argc = i;
-	    c->return_val.u.aval->vals = galloc(i*sizeof(Val));
+	    c->return_val.u.aval->vals = malloc(i*sizeof(Val));
 	    for ( i=0, layer=0; layer<sc->layer_cnt; ++layer ) {
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i ) {
 		    c->return_val.u.aval->vals[i].type = v_arr;
-		    c->return_val.u.aval->vals[i].u.aval = galloc(sizeof(Array));
+		    c->return_val.u.aval->vals[i].u.aval = malloc(sizeof(Array));
 		    c->return_val.u.aval->vals[i].u.aval->argc = 6;
-		    c->return_val.u.aval->vals[i].u.aval->vals = galloc(6*sizeof(Val));
+		    c->return_val.u.aval->vals[i].u.aval->vals = malloc(6*sizeof(Val));
 		    for ( j=0; j<6; ++j ) {
 			c->return_val.u.aval->vals[i].u.aval->vals[j].type = v_real;
 			c->return_val.u.aval->vals[i].u.aval->vals[j].u.fval = ref->transform[j];
@@ -7979,9 +7958,9 @@ return;
 		    strmatch( c->a.vals[1].u.sval,"BoundingBox")==0 ||
 		    strmatch( c->a.vals[1].u.sval,"BB")==0 ) {
 		c->return_val.type = v_arrfree;
-		c->return_val.u.aval = galloc(sizeof(Array));
+		c->return_val.u.aval = malloc(sizeof(Array));
 		c->return_val.u.aval->argc = 4;
-		c->return_val.u.aval->vals = galloc(4*sizeof(Val));
+		c->return_val.u.aval->vals = malloc(4*sizeof(Val));
 		for ( i=0; i<4; ++i )
 		    c->return_val.u.aval->vals[i].type = v_real;
 		c->return_val.u.aval->vals[0].u.fval = b.minx;
@@ -8016,21 +7995,21 @@ static void bGetAnchorPoints(Context *c) {
 
     for ( ap=sc->anchor, cnt=0; ap!=NULL; ap=ap->next, ++cnt )
         ;
-    ret = galloc(sizeof(Array));
+    ret = malloc(sizeof(Array));
     ret->argc = cnt;
-    ret->vals = gcalloc(cnt,sizeof(Val));
+    ret->vals = calloc(cnt,sizeof(Val));
     for ( ap=sc->anchor, cnt=0; ap!=NULL; ap=ap->next, ++cnt ) {
 	ret->vals[cnt].type = v_arr;
-	ret->vals[cnt].u.aval = temp = galloc(sizeof(Array));
+	ret->vals[cnt].u.aval = temp = malloc(sizeof(Array));
 	if ( ap->type == at_baselig ) {
 	    temp->argc = 5;
-	    temp->vals = gcalloc(6,sizeof(Val));
+	    temp->vals = calloc(6,sizeof(Val));
 	    temp->vals[4].type = v_int;
 	    temp->vals[4].u.ival = ap->lig_index;
 	}
 	else {
 	    temp->argc = 4;
-	    temp->vals = gcalloc(5,sizeof(Val));
+	    temp->vals = calloc(5,sizeof(Val));
 	}
 	temp->vals[0].type = v_str;
 	temp->vals[0].u.sval = copy(ap->anchor->name);
@@ -8087,7 +8066,7 @@ static void bGetPosSub(Context *c) {
 	    if ( pst->subtable == sub || sub==NULL ) {
 		if ( i ) {
 		    ret->vals[cnt].type = v_arr;
-		    ret->vals[cnt].u.aval = temp = galloc(sizeof(Array));
+		    ret->vals[cnt].u.aval = temp = malloc(sizeof(Array));
 		    switch ( pst->type ) {
 		      default:
 		        free(temp);
@@ -8098,7 +8077,7 @@ static void bGetPosSub(Context *c) {
 		      break;
 		      case pst_position:
 			temp->argc = 6;
-			temp->vals = gcalloc(7,sizeof(Val));
+			temp->vals = calloc(7,sizeof(Val));
 			temp->vals[1].u.sval = copy("Position");
 			for ( k=2; k<6; ++k ) {
 			    temp->vals[k].type = v_int;
@@ -8108,7 +8087,7 @@ static void bGetPosSub(Context *c) {
 		      break;
 		      case pst_pair:
 			temp->argc = 11;
-			temp->vals = gcalloc(11,sizeof(Val));
+			temp->vals = calloc(11,sizeof(Val));
 			temp->vals[1].u.sval = copy("Pair");
 			temp->vals[2].type = v_str;
 			temp->vals[2].u.sval = copy(pst->u.pair.paired);
@@ -8120,7 +8099,7 @@ static void bGetPosSub(Context *c) {
 		      break;
 		      case pst_substitution:
 			temp->argc = 3;
-			temp->vals = gcalloc(4,sizeof(Val));
+			temp->vals = calloc(4,sizeof(Val));
 			temp->vals[1].u.sval = copy("Substitution");
 			temp->vals[2].type = v_str;
 			temp->vals[2].u.sval = copy(pst->u.subs.variant);
@@ -8135,7 +8114,7 @@ static void bGetPosSub(Context *c) {
 			    }
 			}
 			temp->argc = 2+subcnt;
-			temp->vals = gcalloc(2+subcnt,sizeof(Val));
+			temp->vals = calloc(2+subcnt,sizeof(Val));
 			temp->vals[1].u.sval = copy(pst->type==pst_alternate?"AltSubs":
 					    pst->type==pst_multiple?"MultSubs":
 			                    "Ligature");
@@ -8166,9 +8145,9 @@ static void bGetPosSub(Context *c) {
 		    if ( sub==NULL || sub==kp->subtable ) {
 			if ( i ) {
 			    ret->vals[cnt].type = v_arr;
-			    ret->vals[cnt].u.aval = temp = galloc(sizeof(Array));
+			    ret->vals[cnt].u.aval = temp = malloc(sizeof(Array));
 			    temp->argc = 11;
-			    temp->vals = gcalloc(temp->argc,sizeof(Val));
+			    temp->vals = calloc(temp->argc,sizeof(Val));
 			    temp->vals[0].type = v_str;
 			    temp->vals[0].u.sval = copy(kp->subtable->subtable_name);
 			    temp->vals[1].type = v_str;
@@ -8192,9 +8171,9 @@ static void bGetPosSub(Context *c) {
 	    }
 	}
 	if ( i==0 ) {
-	    ret = galloc(sizeof(Array));
+	    ret = malloc(sizeof(Array));
 	    ret->argc = cnt;
-	    ret->vals = gcalloc(cnt,sizeof(Val));
+	    ret->vals = calloc(cnt,sizeof(Val));
 	}
     }
     c->return_val.type = v_arrfree;
@@ -8403,7 +8382,7 @@ static void bValidate(Context *c) {
     c->return_val.u.ival = SFValidate(c->curfv->sf, ly_fore, force );
 }
 
-static void bDebugCrashFontForge(Context *c)
+static void bDebugCrashFontForge(Context *UNUSED(c))
 {
     fprintf(stderr,"FontForge is crashing because you asked it to using the DebugCrashFontForge command\n");
     int *ptr = NULL;
@@ -8411,7 +8390,7 @@ static void bDebugCrashFontForge(Context *c)
 }
 
 
-static struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[] = {
+static struct builtins { const char *name; void (*func)(Context *); int nofontok; } builtins[] = {
 /* Generic utilities */
     { "Print", bPrint, 1 },
     { "Error", bError, 1 },
@@ -8548,8 +8527,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SelectChanged", bSelectChanged, 0 },
     { "SelectHintingNeeded", bSelectHintingNeeded, 0 },
     { "SelectWorthOutputting", bSelectWorthOutputting, 0 },
-    { "SelectGlyphsSplines", bSelectGlyphsSplines },
-    { "SelectGlyphsReferences", bSelectGlyphsReferences },
+    { "SelectGlyphsSplines", bSelectGlyphsSplines, 0 },
+    { "SelectGlyphsReferences", bSelectGlyphsReferences, 0 },
     { "SelectGlyphsBoth", bSelectGlyphsBoth, 0 },
     { "SelectByATT", bSelectByATT, 0 },
     { "SelectByPosSub", bSelectByPosSub, 0 },
@@ -8764,7 +8743,7 @@ return( 2 );
 	}
 
     if ( ud_cnt >= ud_max )
-	userdefined = grealloc(userdefined,(ud_max+=20)*sizeof(struct builtins));
+	userdefined = realloc(userdefined,(ud_max+=20)*sizeof(struct builtins));
     userdefined[ud_cnt].name = copy(name);
     userdefined[ud_cnt].func = func;
     userdefined[ud_cnt].nofontok = !needs_font;
@@ -8799,24 +8778,6 @@ static int AddScriptLine(FILE *script, const char *line)
     fsetpos(script, &pos);
     return getc(script);
 }
-
-#if defined(__MINGW32__)
-
-ssize_t getline(char **lineptr, size_t *n, FILE *stream);
-ssize_t getline(char **lineptr, size_t *n, FILE *stream)
-{
-    int size = 1024;
-    char* s = calloc( size+1, sizeof(char) );
-    char* ret = fgets( s, size, stream );
-    if( !ret )
-    {
-	free(s);
-	return -1;
-    }
-    return s;
-}
-
-#endif
 
 static int _buffered_cgetc(Context *c) {
     if (c->interactive) {
@@ -9305,28 +9266,24 @@ static void docall(Context *c,char *name,Val *val) {
 	} else {
 	    if ( strchr(name,'/')==NULL && strchr(c->filename,'/')!=NULL ) {
 		char *pt;
-		sub.filename = galloc(strlen(c->filename)+strlen(name)+4);
-		strcpy(sub.filename,c->filename);
+		sub.filename = strcpy(malloc(strlen(c->filename)+strlen(name)+4),c->filename);
 		pt = strrchr(sub.filename,'/');
 		strcpy(pt+1,name);
 	    }
 	    sub.script = fopen(sub.filename,"r");
 	    if ( sub.script==NULL ) {
 		char *pt;
-		if ( sub.filename==name ) {
-		    sub.filename = galloc(strlen(name)+4);
-		    strcpy(sub.filename,name);
-		}
+		if ( sub.filename==name )
+		    sub.filename = strcpy(malloc(strlen(name)+4),name);
 		pt = sub.filename + strlen(sub.filename);
-		strcpy(pt, ".ff");
+		strcpy((char *)pt, ".ff");
 		sub.script = fopen(sub.filename,"r");
 		if ( sub.script==NULL ) {
-		    strcpy(pt, ".pe");
+		    strcpy((char *)pt, ".pe");
 		    sub.script = fopen(sub.filename,"r");
 		}
-		if ( sub.script==NULL ) {
+		if ( sub.script==NULL )
 		    *pt = '\0';
-		}
 	    }
 	    sub.script = fopen(sub.filename,"r");
 	    if ( sub.script==NULL ) {
@@ -9339,7 +9296,7 @@ static void docall(Context *c,char *name,Val *val) {
 		}
 		fclose(sub.script); sub.script = NULL;
 	    }
-	    if ( sub.filename!=name )
+	    if ( ( sub.filename!=NULL ) && ( sub.filename!=name ) )
 		free( sub.filename );
 	}
 	c->curfv = sub.curfv;
@@ -9367,7 +9324,7 @@ static void buildarray(Context *c,Val *val) {
 	body = NULL;
 	for ( cnt=0; tok!=tt_rbracket; ++cnt ) {
 	    if ( cnt>=max )
-		body = grealloc(body,(max+=20)*sizeof(Val));
+		body = realloc(body,(max+=20)*sizeof(Val));
 	    expr(c,&body[cnt]);
 	    dereflvalif(&body[cnt]);
 	    tok = ff_NextToken(c);
@@ -9380,9 +9337,9 @@ static void buildarray(Context *c,Val *val) {
 	val->type = v_void;
     } else {
 	val->type = v_arrfree;
-	val->u.aval = galloc(sizeof(Array));
+	val->u.aval = malloc(sizeof(Array));
 	val->u.aval->argc = cnt;
-	val->u.aval->vals = grealloc(body,cnt*sizeof(Val));
+	val->u.aval->vals = realloc(body,cnt*sizeof(Val));
     }
 }
 
@@ -9543,9 +9500,9 @@ static void handlename(Context *c,Val *val) {
 		if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 		for ( cnt=0, bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) ++cnt;
 		val->type = v_arrfree;
-		val->u.aval = galloc(sizeof(Array));
+		val->u.aval = malloc(sizeof(Array));
 		val->u.aval->argc = cnt;
-		val->u.aval->vals = galloc((cnt+1)*sizeof(Val));
+		val->u.aval->vals = malloc((cnt+1)*sizeof(Val));
 		for ( cnt=0, bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next, ++cnt) {
 		    val->u.aval->vals[cnt].type = v_int;
 		    val->u.aval->vals[cnt].u.ival = bdf->pixelsize;
@@ -9560,9 +9517,9 @@ static void handlename(Context *c,Val *val) {
 		sf = c->curfv->sf;
 		if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 		val->type = v_arrfree;
-		val->u.aval = galloc(sizeof(Array));
+		val->u.aval = malloc(sizeof(Array));
 		val->u.aval->argc = 10;
-		val->u.aval->vals = galloc((10+1)*sizeof(Val));
+		val->u.aval->vals = malloc((10+1)*sizeof(Val));
 		SFDefaultOS2Info(&pfminfo,sf,sf->fontname);
 		for ( cnt=0; cnt<10; ++cnt ) {
 		    val->u.aval->vals[cnt].type = v_int;
@@ -9574,9 +9531,9 @@ static void handlename(Context *c,Val *val) {
 		if ( c->curfv==NULL ) ScriptError(c,"No current font");
 		map = c->curfv->map;
 		val->type = v_arrfree;
-		val->u.aval = galloc(sizeof(Array));
+		val->u.aval = malloc(sizeof(Array));
 		val->u.aval->argc = map->enccount;
-		val->u.aval->vals = galloc((map->enccount+1)*sizeof(Val));
+		val->u.aval->vals = malloc((map->enccount+1)*sizeof(Val));
 		for ( i=0; i<map->enccount; ++i) {
 		    val->u.aval->vals[i].type = v_int;
 		    val->u.aval->vals[i].u.ival = c->curfv->selected[i];
@@ -9586,7 +9543,7 @@ static void handlename(Context *c,Val *val) {
 		val->u.lval = &c->trace;
 	    } else if ( strcmp(name,"$version")==0 ) {
 		val->type = v_str;
-		sprintf(name,"%d", library_version_configuration.library_source_versiondate);
+		sprintf(name,"%d", FONTFORGE_VERSIONDATE_RAW);
 		val->u.sval = copy(name);
 	    } else if ( strcmp(name,"$haspython")==0 ) {
 		val->type = v_int;
@@ -9610,7 +9567,7 @@ static void handlename(Context *c,Val *val) {
 	    /* It's ok to create this as a new variable, we're going to assign to it */
 	    if ( *name=='@' ) {
 		if ( c->curfv->fontvars==NULL )
-		    c->curfv->fontvars = gcalloc(1,sizeof(struct dictionary));
+		    c->curfv->fontvars = calloc(1,sizeof(struct dictionary));
 		DicaNewEntry(c->curfv->fontvars,name,val);
 	    } else if ( *name=='_' ) {
 		DicaNewEntry(&globals,name,val);
@@ -9846,7 +9803,7 @@ static void add(Context *c,Val *val) {
 		    temp = buffer;
 		} else
 		    temp = other.u.sval;
-		ret = galloc(strlen(val->u.sval)+strlen(temp)+1);
+		ret = malloc(strlen(val->u.sval)+strlen(temp)+1);
 		strcpy(ret,val->u.sval);
 		strcat(ret,temp);
 		if ( other.type==v_str ) free(other.u.sval);
@@ -9854,12 +9811,12 @@ static void add(Context *c,Val *val) {
 		val->u.sval = ret;
 	    } else if ( val->type==v_arr || val->type==v_arrfree ) {
 		Array *arr;
-		arr = galloc(sizeof(Array));
+		arr = malloc(sizeof(Array));
 		arr->argc = val->u.aval->argc +
 			((other.type==v_arr || other.type== v_arrfree)?
 			    other.u.aval->argc:
 			    1);
-		arr->vals = galloc(arr->argc*sizeof(Val));
+		arr->vals = malloc(arr->argc*sizeof(Val));
 		array_copy_into(arr,0,val->u.aval);
 		if ( other.type==v_arr || other.type == v_arrfree ) {
 		    array_copy_into(arr,val->u.aval->argc,other.u.aval);
@@ -10074,7 +10031,7 @@ static void assign(Context *c,Val *val) {
 		    temp = buffer;
 		} else
 		    temp = other.u.sval;
-		ret = galloc(strlen(val->u.lval->u.sval)+strlen(temp)+1);
+		ret = malloc(strlen(val->u.lval->u.sval)+strlen(temp)+1);
 		strcpy(ret,val->u.lval->u.sval);
 		strcat(ret,temp);
 		if ( other.type==v_str ) free(other.u.sval);
@@ -10103,7 +10060,7 @@ static void doforeach(Context *c) {
     if ( c->curfv==NULL )
 	ScriptError(c,"foreach requires an active font");
     selsize = c->curfv->map->enccount;
-    sel = galloc(selsize);
+    sel = malloc(selsize);
     memcpy(sel,c->curfv->selected,selsize);
     memset(c->curfv->selected,0,selsize);
     i = 0;
@@ -10347,7 +10304,7 @@ void ff_VerboseCheck(void) {
 	verbose = getenv("FONTFORGE_VERBOSE")!=NULL;
 }
 
-void ProcessNativeScript(int argc, char *argv[], FILE *script) {
+_Noreturn void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     int i,j;
     Context c;
     enum token_type tok;
@@ -10388,8 +10345,8 @@ void ProcessNativeScript(int argc, char *argv[], FILE *script) {
 	// Clear the context.
     memset( &c,0,sizeof(c));
     c.a.argc = argc-i; // Remaining arguments belong to the context.
-    c.a.vals = galloc(c.a.argc*sizeof(Val));
-    c.dontfree = gcalloc(c.a.argc,sizeof(Array*));
+    c.a.vals = malloc(c.a.argc*sizeof(Val));
+    c.dontfree = calloc(c.a.argc,sizeof(Array*));
     c.donteval = dry;
 	// Copy the context arguments.
     for ( j=i; j<argc; ++j ) {
@@ -10534,9 +10491,11 @@ return;
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 	    if ( is_python==-1 && strcmp(pt,"-script")==0 )
 		is_python = PythonLangFromExt(argv[i+1]);
-	    if ( is_python )
+	    if ( is_python ) {
+                if (strcmp(argv[i],"-c") == 0) /* Make command-line args and Fontforge module more conveniently available for command-line scripts */
+                    argv[i + 1] = xasprintf("from sys import argv; from fontforge import *; %s", argv[i + 1]);
 		PyFF_Main(argc,argv,i);
-	    else
+	    } else
 		ProcessNativeScript(argc, argv,NULL);
 #elif !defined(_NO_PYTHON)
 	    PyFF_Main(argc,argv,i);
@@ -10551,8 +10510,7 @@ return;
 	    buffer[0] = '\0';
 	    fgets(buffer,sizeof(buffer),temp);
 	    fclose(temp);
-	    if ( buffer[0]=='#' && buffer[1]=='!' &&
-		    (strstr(buffer,"pfaedit")!=NULL || strstr(buffer,"fontforge")!=NULL )) {
+	    if ( buffer[0]=='#' && buffer[1]=='!' ) {
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 		if ( is_python==-1 )
 		    is_python = PythonLangFromExt(argv[i]);

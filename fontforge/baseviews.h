@@ -364,11 +364,11 @@ extern void FVAutoInstr(FontViewBase *fv);
 extern void FVClearInstrs(FontViewBase *fv);
 extern void FVClearHints(FontViewBase *fv);
 extern void SCAutoTrace(SplineChar *sc,int layer, int ask);
-extern char *FindAutoTraceName(void);
+extern const char *FindAutoTraceName(void);
 extern void *GetAutoTraceArgs(void);
 extern void SetAutoTraceArgs(void *a);
-extern char *FindMFName(void);
-extern char *ProgramExists(char *prog,char *buffer);
+extern const char *FindMFName(void);
+extern char *ProgramExists(const char *prog,char *buffer);
 extern void MfArgsInit(void);
 extern void FVAutoTrace(FontViewBase *fv,int ask);
 extern void FVAddEncodingSlot(FontViewBase *fv,int gid);
@@ -430,8 +430,8 @@ struct fixed_maps {
 struct genericchange {
     enum glyphchange_type gc;
     uint32 feature_tag;
-    char *glyph_extension;
-    char *extension_for_letters, *extension_for_symbols;
+    const char *glyph_extension;
+    const char *extension_for_letters, *extension_for_symbols;
     double stem_height_scale, stem_width_scale;
     double stem_height_add  , stem_width_add  ;
     double stem_threshold;
@@ -579,16 +579,10 @@ typedef struct searchdata {
     real matched_x, matched_y;
     double matched_co, matched_si;		/* Precomputed sin, cos */
     enum flipset matched_flip;
-#ifdef _HAS_LONGLONG
     unsigned long long matched_refs;	/* Bit map of which refs in the char were matched */
     unsigned long long matched_ss;	/* Bit map of which splines in the char were matched */
 				    /* In multi-path mode */
     unsigned long long matched_ss_start;/* Bit map of which splines we tried to start matches with */
-#else
-    unsigned long matched_refs;
-    unsigned long matched_ss;
-    unsigned long matched_ss_start;
-#endif
     FontViewBase *fv;
     SplineChar *curchar;
     int last_gid;
@@ -673,5 +667,6 @@ extern void AutoKern2BuildClasses(SplineFont *sf,int layer,
 
 extern void MVSelectFirstKerningTable(struct metricsview *mv);
 
+extern float joinsnap;
 
 #endif

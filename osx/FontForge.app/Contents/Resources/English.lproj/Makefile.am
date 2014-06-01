@@ -27,9 +27,11 @@
 include $(top_srcdir)/mk/layout.am
 
 FFAPP_FILES = InfoPlist.string
-ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/Resources/English.lproj
-
-ffapp_DATA = $(FFAPP_FILES)
 EXTRA_DIST = $(FFAPP_FILES)
+
+if PLATFORM_OSX
+   ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/Resources/English.lproj
+   ffapp_DATA = $(FFAPP_FILES)
+endif
 
 -include $(top_srcdir)/git.mk

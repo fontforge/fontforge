@@ -13,7 +13,7 @@ PortSystem      1.0
 name            fontforge
 version         2.0.0_beta1
 set docversion  2.0.0_beta1
-revision        1388833269
+revision        1391647562
 categories      graphics fonts
 platforms       darwin
 maintainers     Ben Martin
@@ -39,6 +39,7 @@ worksrcdir      ${name}-${version}
 #  sha1    c89cf3daa09b10d7d017219551c3ed378d9ec92a \
 #  rmd160  fb2840a0f0e1206d7df914b729d43d34d1479712
 
+###use_autoreconf  yes
 # ## fetch.type      git
 # ## git.url         https://github.com/monkeyiq/fontforge-fork.git
 # ## git.branch      2012dec/buildwin
@@ -48,7 +49,6 @@ worksrcdir      ${name}-${version}
 ## fetch.type      git
 ## git.url         https://github.com/fontforge/fontforge.git
 ## git.branch      master
-use_autoreconf  yes
 
 #git.branch      vanilla
 #git.url         /usr/local/src/monkeyiq.github.com/fontforge-fork
@@ -68,6 +68,12 @@ use_autoreconf  yes
 fetch.type      git       
 git.url         /usr/local/src/github-fontforge/fontforge 
 git.branch      master    
+#git.branch      localtest/rawcompilearchflags
+#git.branch      59e825fd31867e82c6b8a48b0a9ea6e7e9411afd # no
+#git.branch      b889879be124f1cd8f838975390fdd6cd2b9d94c # no
+#git.branch      b65675b02202fb3f3b9120cdb924ad1e62bef92d # no
+#git.branch      c431257c58942e5cfe543af9d7a4632587d83fc3 # builds, no README-Mac.html (rem that file install ok)
+#git.branch       a47689e1334011e4dcd748a93c6a716385becea1 # builds, no README-Mac.html
 ##git.branch      pr/880    
 
 
@@ -100,6 +106,7 @@ depends_build \
     port:pkgconfig port:autoconf port:automake
 
 post-extract {
+    system "cd ${worksrcpath} && ./bootstrap --gnulib-srcdir=/usr/local/src/github-fontforge/gnulib "
     foreach fn { "${worksrcpath}/configure.ac" "${worksrcpath}/configure" } {
         set fn [ subst $fn ]
         if {[file exists "${fn}"]} {
@@ -120,7 +127,9 @@ configure.args  --with-cairo \
                 --enable-pixmaps-tango \
                 --mandir=${prefix}/share/man \
                 --x-includes=${prefix}/include \
-                --x-libraries=${prefix}/lib
+                --x-libraries=${prefix}/lib \
+                --with-pythonbinary=/opt/local/bin/python2.7 \
+                --enable-python-even --enable-gtk2-use --disable-silent-rules
 
 configure.cflags-append  -D__GLIB_H_INSIDE__ -Ipython2.7 -g
 configure.ldflags-append -lintl
@@ -145,7 +154,7 @@ destroot.args   docdir=${docdir}
 post-destroot {
     xinstall -d ${destroot}${docdir}
     xinstall -m 644 -W ${worksrcpath} \
-        AUTHORS INSTALL LICENSE README-Mac.html README-Unix.html README-unix \
+        AUTHORS INSTALL LICENSE \
         ${destroot}${docdir}
 }
 

@@ -44,6 +44,8 @@ extern int interpCPsOnMotion;
 
 static void CVLCheckLayerCount(CharView *cv, int resize);
 
+extern void CVDebugFree(DebugView *dv);
+
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
 #define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
@@ -179,11 +181,6 @@ static void SaveOffsets(GWindow main, GWindow palette, GPoint *off) {
 	off->y = pr.y-mr.y;
 	if ( off->x<0 ) off->x = 0;
 	if ( off->y<0 ) off->y = 0;
-#if 0
- printf( "%s is offset (%d,%d)\n", palette==cvtools?"CVTools":
-     palette==cvlayers?"CVLayers":palette==bvtools?"BVTools":
-     palette==bvlayers?"BVLayers":"BVShades", off->x, off->y );
-#endif
     }
 }
 
@@ -964,7 +961,7 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 	else
 	    shouldshow = cv->s1_tool;
     }
-    if ( shouldshow==cvt_magnify && (state&ksm_alt))
+    if ( shouldshow==cvt_magnify && (state&ksm_meta))
 	shouldshow = cvt_minify;
     if ( shouldshow!=cv->showing_tool ) {
 	CPEndInfo(cv);
@@ -1088,10 +1085,6 @@ return;			/* If the wm gave me a window the wrong size */
     /* we have two fewer buttons than commands as two bottons each control two commands */
     if ( pos<0 || pos>=cvt_max )
 	pos = cvt_none;
-#if 0
-    if ( pos==cvt_freehand && cv->b.sc->parent->order2 )
-return;			/* Not available in order2 spline mode */
-#endif
     if ( event->type == et_mousedown ) {
 	if ( isstylus && event->u.mouse.button==2 )
 	    /* Not a real button press, only touch counts. This is a modifier */;
@@ -1323,9 +1316,9 @@ static void CVLayers2Set(CharView *cv) {
     if ( cv->b.sc->layer_cnt+1>=layer2.max_layers ) {
 	top = cv->b.sc->layer_cnt+10;
 	if ( layer2.layers==NULL )
-	    layer2.layers = gcalloc(top,sizeof(BDFChar *));
+	    layer2.layers = calloc(top,sizeof(BDFChar *));
 	else {
-	    layer2.layers = grealloc(layer2.layers,top*sizeof(BDFChar *));
+	    layer2.layers = realloc(layer2.layers,top*sizeof(BDFChar *));
 	    for ( i=layer2.current_layers; i<top; ++i )
 		layer2.layers[i] = NULL;
 	}
@@ -1414,7 +1407,8 @@ return;
 #define MID_MakeLine 100
 #define MID_MakeArc  200
 #define MID_InsertPtOnSplineAt  2309
-#define MID_NameContour  2318
+#define MID_NamePoint  2318
+#define MID_NameContour  2319
 
 static void CVLayer2Invoked(GWindow v, GMenuItem *mi, GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(v);
@@ -1434,7 +1428,7 @@ return;
 	LayerDefault(&temp);
 	if ( !LayerDialog(&temp,cv->b.sc->parent))
 return;
-	sc->layers = grealloc(sc->layers,(sc->layer_cnt+1)*sizeof(Layer));
+	sc->layers = realloc(sc->layers,(sc->layer_cnt+1)*sizeof(Layer));
 	sc->layers[sc->layer_cnt] = temp;
 	cv->b.layerheads[dm_fore] = &sc->layers[sc->layer_cnt];
 	cv->b.layerheads[dm_back] = &sc->layers[ly_back];
@@ -1808,9 +1802,9 @@ static void CVLayers1Set(CharView *cv) {
     if ( cv->b.sc->layer_cnt+1>=layerinfo.max_layers ) {
 	top = cv->b.sc->layer_cnt+10;
 	if ( layerinfo.layers==NULL )
-	    layerinfo.layers = gcalloc(top,sizeof(BDFChar *));
+	    layerinfo.layers = calloc(top,sizeof(BDFChar *));
 	else {
-	    layerinfo.layers = grealloc(layerinfo.layers,top*sizeof(BDFChar *));
+	    layerinfo.layers = realloc(layerinfo.layers,top*sizeof(BDFChar *));
 	    for ( i=layerinfo.current_layers; i<top; ++i )
 		layerinfo.layers[i] = NULL;
 	}
@@ -3038,10 +3032,6 @@ static void CVPopupInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
     int pos;
 
     pos = mi->mid;
-#if 0	/* No longer show rect/poly tool */
-    if ( (pos==14 && rectelipse) || (pos==15 && polystar ))
-	pos += 2;
-#endif
     if ( pos==cvt_spiro ) {
 	CVChangeSpiroMode(cv);
     } else if ( cv->had_control ) {
@@ -3084,22 +3074,23 @@ static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
 	CVMakeClipPath(cv);
       break;
     case MID_MakeLine: {
-	CharView *cv = (CharView *) GDrawGetUserData(v);
-	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_alt));
+	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_meta));
 	break;
     }
     case MID_MakeArc: {
-	CharView *cv = (CharView *) GDrawGetUserData(v);
-	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_alt));
+	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_meta));
 	break;
     }
     case MID_InsertPtOnSplineAt: {
-	CharView *cv = (CharView *) GDrawGetUserData(v);
 	_CVMenuInsertPt( cv );
 	break;
     }
+    case MID_NamePoint: {
+	if ( cv->p.sp )
+	    _CVMenuNamePoint( cv, cv->p.sp );
+	break;
+    }
     case MID_NameContour: {
-	CharView *cv = (CharView *) GDrawGetUserData(v);
 	_CVMenuNameContour( cv );
 	break;
     }
@@ -3246,6 +3237,16 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	i++;
     }
 
+    if ( anysel ) {
+	mi[i].ti.text = (unichar_t *)_("Name Point...");
+	mi[i].ti.text_is_1byte = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = MID_NamePoint;
+	mi[i].invoke = CVPopupSelectInvoked;
+	i++;
+    }
+
     if ( cv->b.sc->parent->multilayer ) {
 	mi[i].ti.text = (unichar_t *) _("Make Clip Path");
 	mi[i].ti.text_is_1byte = true;
@@ -3280,6 +3281,14 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = MID_InsertPtOnSplineAt;
+	mi[i].invoke = CVPopupSelectInvoked;
+	i++;
+
+	mi[i].ti.text = (unichar_t *) _("Name Point");
+	mi[i].ti.text_is_1byte = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = MID_NamePoint;
 	mi[i].invoke = CVPopupSelectInvoked;
 	i++;
 
@@ -3870,9 +3879,9 @@ void BVToolsSetCursor(BitmapView *bv, int state,char *device) {
 	    shouldshow = bv->s1_tool;
     }
     
-    if ( shouldshow==bvt_magnify && (state&ksm_alt))
+    if ( shouldshow==bvt_magnify && (state&ksm_meta))
 	shouldshow = bvt_minify;
-    if ( (shouldshow==bvt_pencil || shouldshow==bvt_line) && (state&ksm_alt) && bv->bdf->clut!=NULL )
+    if ( (shouldshow==bvt_pencil || shouldshow==bvt_line) && (state&ksm_meta) && bv->bdf->clut!=NULL )
 	shouldshow = bvt_eyedropper;
     if ( shouldshow!=bv->showing_tool ) {
 	GDrawSetCursor(bv->v,tools[shouldshow]);

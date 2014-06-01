@@ -217,12 +217,12 @@ return;
     dumpchar('\n',data);
 }
 
-static void dumpstrn(void (*dumpchar)(int ch,void *data), void *data, char *buf, int n) {
+static void dumpstrn(void (*dumpchar)(int ch,void *data), void *data, const char *buf, int n) {
     while ( n-->0 )
 	dumpchar(*buf++,data);
 }
 
-static void dumpf(void (*dumpchar)(int ch,void *data), void *data, char *format, ...) {
+static void dumpf(void (*dumpchar)(int ch,void *data), void *data, const char *format, ...) {
     va_list args;
     char buffer[300];
 
@@ -232,7 +232,7 @@ static void dumpf(void (*dumpchar)(int ch,void *data), void *data, char *format,
     dumpstr(dumpchar,data,buffer);
 }
 
-static int isStdEncoding(char *encoding[256]) {
+static int isStdEncoding(const char *encoding[256]) {
     int i;
 
     for ( i=0; i<256; ++i )
@@ -244,25 +244,8 @@ return( 0 );
 return( 1 );
 }
 
-#if 0
-static void dumpsubarray(void (*dumpchar)(int ch,void *data), void *data, char *name,
-	struct pschars *subarr,int leniv) {
-    int i;
-
-    dumpf(dumpchar,data,"/%s %d array\n", name, subarr->cnt );
-    for ( i=0; i<subarr->cnt; ++i ) {
-	if ( subarr->values[i]==NULL )
-    break;
-	dumpf(dumpchar,data, "dup %d %d RD ", i, subarr->lens[i]+leniv );
-	encodestrout(dumpchar,data,subarr->values[i],subarr->lens[i],leniv);
-	dumpstr(dumpchar,data," NP\n");
-    }
-    dumpstr(dumpchar,data,"ND\n");
-}
-#endif
-
 static void dumpblues(void (*dumpchar)(int ch,void *data), void *data,
-	char *name, real *arr, int len, char *ND) {
+	const char *name, real *arr, int len, const char *ND) {
     int i;
     for ( --len; len>=0 && arr[len]==0.0; --len );
     ++len;
@@ -274,7 +257,7 @@ static void dumpblues(void (*dumpchar)(int ch,void *data), void *data,
 }
 
 static void dumpdblmaxarray(void (*dumpchar)(int ch,void *data), void *data,
-	char *name, real *arr, int len, char *modifiers, char *ND) {
+	const char *name, real *arr, int len, const char *modifiers, const char *ND) {
     int i;
     for ( --len; len>=0 && arr[len]==0.0; --len );
     ++len;
@@ -285,26 +268,13 @@ static void dumpdblmaxarray(void (*dumpchar)(int ch,void *data), void *data,
 }
 
 static void dumpdblarray(void (*dumpchar)(int ch,void *data), void *data,
-	char *name, double *arr, int len, char *modifiers, int exec) {
+	const char *name, double *arr, int len, const char *modifiers, int exec) {
     int i;
     dumpf( dumpchar,data,"/%s %c",name, exec? '{' : '[' );
     for ( i=0; i<len; ++i )
 	dumpf( dumpchar,data,"%g ", arr[i]);
     dumpf( dumpchar,data,"%c%sdef\n", exec ? '}' : ']', modifiers );
 }
-
-#if 0
-static void dumpintmaxarray(void (*dumpchar)(int ch,void *data), void *data,
-	char *name, int *arr, int len, char *modifiers) {
-    int i;
-    for ( --len; len>=0 && arr[len]==0.0; --len );
-    ++len;
-    dumpf( dumpchar,data,"/%s [",name);
-    for ( i=0; i<len; ++i )
-	dumpf( dumpchar,data,"%d ", arr[i]);
-    dumpf( dumpchar,data,"]%sdef\n", modifiers );
-}
-#endif
 
 struct psdict *PSDictCopy(struct psdict *dict) {
     struct psdict *ret;
@@ -313,10 +283,10 @@ struct psdict *PSDictCopy(struct psdict *dict) {
     if ( dict==NULL )
 return( NULL );
 
-    ret = gcalloc(1,sizeof(struct psdict));
+    ret = calloc(1,sizeof(struct psdict));
     ret->cnt = dict->cnt; ret->next = dict->next;
-    ret->keys = gcalloc(ret->cnt,sizeof(char *));
-    ret->values = gcalloc(ret->cnt,sizeof(char *));
+    ret->keys = calloc(ret->cnt,sizeof(char *));
+    ret->values = calloc(ret->cnt,sizeof(char *));
     for ( i=0; i<dict->next; ++i ) {
 	ret->keys[i] = copy(dict->keys[i]);
 	ret->values[i] = copy(dict->values[i]);
@@ -325,7 +295,7 @@ return( NULL );
 return( ret );
 }
 
-int PSDictFindEntry(struct psdict *dict, char *key) {
+int PSDictFindEntry(struct psdict *dict, const char *key) {
     int i;
 
     if ( dict==NULL )
@@ -338,7 +308,7 @@ return( i );
 return( -1 );
 }
 
-char *PSDictHasEntry(struct psdict *dict, char *key) {
+char *PSDictHasEntry(struct psdict *dict, const char *key) {
     int i;
 
     if ( dict==NULL )
@@ -367,7 +337,7 @@ return( false );
 return( true );
 }
 
-int PSDictRemoveEntry(struct psdict *dict, char *key) {
+int PSDictRemoveEntry(struct psdict *dict, const char *key) {
     int i;
 
     if ( dict==NULL )
@@ -390,7 +360,7 @@ return( false );
 return( true );
 }
 
-int PSDictChangeEntry(struct psdict *dict, char *key, char *newval) {
+int PSDictChangeEntry(struct psdict *dict, const char *key, const char *newval) {
     int i;
 
     if ( dict==NULL )
@@ -402,8 +372,8 @@ return( -1 );
     if ( i==dict->next ) {
 	if ( dict->next>=dict->cnt ) {
 	    dict->cnt += 10;
-	    dict->keys = grealloc(dict->keys,dict->cnt*sizeof(char *));
-	    dict->values = grealloc(dict->values,dict->cnt*sizeof(char *));
+	    dict->keys = realloc(dict->keys,dict->cnt*sizeof(char *));
+	    dict->values = realloc(dict->values,dict->cnt*sizeof(char *));
 	}
 	dict->keys[dict->next] = copy(key);
 	dict->values[dict->next] = NULL;
@@ -559,7 +529,7 @@ static void dumpGradient(void (*dumpchar)(int ch,void *data), void *data,
 	dumpf(dumpchar,data, "      /Decode [0 1.0 0 1.0 0 1.0]\n" );
 	dumpf(dumpchar,data, "      /DataSource <" );
 	if ( grad->stop_cnt==2 ) {
-	    int col = grad->grad_stops[0].col;
+	    unsigned col = grad->grad_stops[0].col;
 	    if ( col==COLOR_INHERITED ) col = 0x000000;
 	    dumpf(dumpchar,data,"%02x",(col>>16)&0xff);
 	    dumpf(dumpchar,data,"%02x",(col>>8 )&0xff);
@@ -574,7 +544,7 @@ static void dumpGradient(void (*dumpchar)(int ch,void *data), void *data,
 	    /*  off all the offsets, I'll just assume they are all percent*/
 	    (dumpchar)('\n',data);
 	    for ( i=0; i<=100; ++i ) {
-		int col;
+		unsigned col;
 		double t = grad->grad_stops[0].offset +
 			(grad->grad_stops[grad->stop_cnt-1].offset-
 			 grad->grad_stops[0].offset)* i/100.0;
@@ -665,8 +635,8 @@ static void dumpbrush(void (*dumpchar)(int ch,void *data), void *data,
 	else
 	    dumpf(dumpchar,data,(pdfopers ? "%g %g %g rg\n" : "%g %g %g setrgbcolor\n"),
 		    r/255.0, g/255.0, b/255.0 );
-	if ( pdfopers && brush->opacity<1.0 && brush->opacity>=0 )
-	    dumpf(dumpchar,data,"/gs_fill_opacity_%g gs\n", brush->opacity );
+	if ( pdfopers && (double)brush->opacity<1.0 && brush->opacity>=0 )
+	    dumpf(dumpchar,data,"/gs_fill_opacity_%g gs\n", (double)brush->opacity );
     }
 }
 
@@ -687,8 +657,8 @@ static void dumppenbrush(void (*dumpchar)(int ch,void *data), void *data,
 	else
 	    dumpf(dumpchar,data,(pdfopers ? "%g %g %g RG\n" : "%g %g %g setrgbcolor\n"),
 		    r/255.0, g/255.0, b/255.0 );
-	if ( pdfopers && brush->opacity<1.0 && brush->opacity>=0 )
-	    dumpf(dumpchar,data,"/gs_stroke_opacity_%g gs\n", brush->opacity );
+	if ( pdfopers && (double)brush->opacity<1.0 && brush->opacity>=0 )
+	    dumpf(dumpchar,data,"/gs_stroke_opacity_%g gs\n", (double)brush->opacity );
     }
 }
 
@@ -697,7 +667,7 @@ static void dumppen(void (*dumpchar)(int ch,void *data), void *data,
     dumppenbrush(dumpchar,data,&pen->brush,ref,sc,layer,pdfopers);
 
     if ( pen->width!=WIDTH_INHERITED )
-	dumpf(dumpchar,data,(pdfopers ? "%g w\n": "%g setlinewidth\n"), pen->width );
+	dumpf(dumpchar,data,(pdfopers ? "%g w\n": "%g setlinewidth\n"), (double)pen->width );
     if ( pen->linejoin!=lj_inherited )
 	dumpf(dumpchar,data,(pdfopers ? "%d j\n": "%d setlinejoin\n"), pen->linejoin );
     if ( pen->linecap!=lc_inherited )
@@ -706,7 +676,7 @@ static void dumppen(void (*dumpchar)(int ch,void *data), void *data,
 	dumpf(dumpchar,data,(pdfopers ? "%g %g %g %g 0 0 cm\n" : "[%g %g %g %g 0 0] concat\n"),
 		(double) pen->trans[0], (double) pen->trans[1], (double) pen->trans[2], (double) pen->trans[3]);
     if ( pen->dashes[0]!=0 || pen->dashes[1]!=DASH_INHERITED ) {
-	int i;
+	size_t i;
 	dumpchar('[',data);
 	for ( i=0; i<sizeof(pen->dashes)/sizeof(pen->dashes[0]) && pen->dashes[i]!=0; ++i )
 	    dumpf(dumpchar,data,"%d ", pen->dashes[i]);
@@ -762,10 +732,10 @@ static void FlushFilter(struct psfilter *ps) {
     uint32 val = ps->ascii85encode;
     int n = ps->ascii85n;
     if ( n!=0 ) {
-	int ch5, ch4, ch3, ch2, ch1;
+	int ch4, ch3, ch2, ch1;
 	while ( n++<4 )
 	    val<<=8;
-	ch5 = val%85; val /= 85;
+	/* ch5 = val%85; */ val /= 85;
 	ch4 = val%85; val /= 85;
 	ch3 = val%85; val /= 85;
 	ch2 = val%85;
@@ -1225,16 +1195,16 @@ return( false );
 return( true );
 }
 
-static struct pschars *initsubrs(int needsflex,MMSet *mm) {
-    extern const uint8 *const subrs[10];
-    extern const int subrslens[10];
+extern const uint8 *const subrs[10];
+extern const int subrslens[10];
+static struct pschars *initsubrs(MMSet *mm) {
     int i;
     struct pschars *sub;
 
-    sub = gcalloc(1,sizeof(struct pschars));
+    sub = calloc(1,sizeof(struct pschars));
     sub->cnt = 10;
-    sub->lens = galloc(10*sizeof(int));
-    sub->values = galloc(10*sizeof(uint8 *));
+    sub->lens = malloc(10*sizeof(int));
+    sub->values = malloc(10*sizeof(uint8 *));
     for ( i=0; i<5; ++i ) {
 	++sub->next;
 	sub->values[i] = (uint8 *) copyn((const char *) subrs[i],subrslens[i]);
@@ -1254,11 +1224,11 @@ static struct pschars *initsubrs(int needsflex,MMSet *mm) {
 return( sub );
 }
 
+extern const char **othersubrs_copyright[];
+extern const char **othersubrs[];
+extern const char *cid_othersubrs[];
 static void dumpothersubrs(void (*dumpchar)(int ch,void *data), void *data,
 	int incid, int needsflex, int needscounters, MMSet *mm ) {
-    extern const char **othersubrs_copyright[];
-    extern const char **othersubrs[];
-    extern const char *cid_othersubrs[];
     int i,j;
 
     dumpstr(dumpchar,data,"/OtherSubrs \n" );
@@ -1410,7 +1380,7 @@ static double FindMaxDiffOfBlues(char *pt, double max_diff) {
     double p1, p2;
 
     while ( *pt==' ' || *pt=='[' ) ++pt;
-    forever {
+    for (;;) {
 	p1 = strtod(pt,&end);
 	if ( end==pt )
     break;
@@ -1482,13 +1452,13 @@ static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
     int isbold=false;
     int iscjk;
     struct pschars *subrs, *chars;
-    char *ND="def";
+    const char *ND="def";
     MMSet *mm = (format==ff_mma || format==ff_mmb)? sf->mm : NULL;
     double bluescale;
 
     if ( incid==NULL ) {
 	flex_max = SplineFontIsFlexible(sf,layer,flags);
-	if ( (subrs = initsubrs(flex_max>0,mm))==NULL )
+	if ( (subrs = initsubrs(mm))==NULL )
 return( false );
 	iscjk = SFIsCJK(sf,map);
     } else {
@@ -1514,7 +1484,7 @@ return( false );
 	isbold = true;
 
     ff_progress_change_stages(2+2-hasblue);
-    if ( autohint_before_generate && SFNeedsAutoHint(sf,layer) &&
+    if ( autohint_before_generate && SFNeedsAutoHint(sf) &&
 	    !(flags&ps_flag_nohints)) {
 	ff_progress_change_line1(_("Auto Hinting Font..."));
 	SplineFontAutoHint(sf,layer);
@@ -1691,10 +1661,6 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	/*  On the off chance that fontlab objects to them let's not generate them */
 	if ( sf->ascent != 8*(sf->ascent+sf->descent)/10 )
 	    ++cnt;		/* ascent */
-#if 0
-	++cnt;		/* em */
-	++cnt;		/* descent */
-#endif
     }
     if ( format==ff_mma || format==ff_mmb )
 	cnt += 3;
@@ -1739,10 +1705,6 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	}
 	if ( sf->ascent != 8*(sf->ascent+sf->descent)/10 )
 	    dumpf(dumpchar,data," /ascent %d def\n", sf->ascent );
-#if 0
-	dumpf(dumpchar,data," /em %d def\n", sf->ascent+sf->descent );
-	dumpf(dumpchar,data," /descent %d def\n", sf->descent );
-#endif
     }
     if ( format==ff_mma || format==ff_mmb ) {
 	MMSet *mm = sf->mm;
@@ -1775,50 +1737,6 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
     dumpstr(dumpchar,data,"end readonly def\n");
 }
 
-// moved to gutils/gutils.c
-/* const char *GetAuthor(void) { */
-/* #if defined(__MINGW32__) */
-/*     static char author[200] = { '\0' }; */
-/*     if ( author[0] == '\0' ){ */
-/* 	char* name = getenv("USER"); */
-/* 	if(!name) return NULL; */
-/* 	strncpy(author, name, sizeof(author)); */
-/* 	author[sizeof(author)-1] = '\0'; */
-/*     } */
-/*     return author; */
-/* #else */
-/*     struct passwd *pwd; */
-/*     static char author[200] = { '\0' }; */
-/*     const char *ret = NULL, *pt; */
-
-/*     if ( author[0]!='\0' ) */
-/* return( author ); */
-
-/* /\* Can all be commented out if no pwd routines *\/ */
-/*     pwd = getpwuid(getuid()); */
-/* #ifndef __VMS */
-/*     if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' ) { */
-/* 	strncpy(author,pwd->pw_gecos,sizeof(author)); */
-/* 	author[sizeof(author)-1] = '\0'; */
-/* 	ret = author; */
-/*     } else if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' ) { */
-/* #else */
-/*     if ( pwd!=NULL && pwd->pw_name!=NULL && *pwd->pw_name!='\0' ) { */
-/* #endif */
-/* 	strncpy(author,pwd->pw_name,sizeof(author)); */
-/* 	author[sizeof(author)-1] = '\0'; */
-/* 	ret = author; */
-/*     } else if ( (pt=getenv("USER"))!=NULL ) { */
-/* 	strncpy(author,pt,sizeof(author)); */
-/* 	author[sizeof(author)-1] = '\0'; */
-/* 	ret = author; */
-/*     } */
-/*     endpwent(); */
-/* /\* End comment *\/ */
-/* return( ret ); */
-/* #endif */
-/* } */
-
 static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
 	SplineFont *sf, int format ) {
     time_t now;
@@ -1833,7 +1751,7 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
 	    sf->cidregistry!=NULL ) {
 	dumpf(dumpchar,data, "%%%%Title: (%s %s %s %d)\n",
 		sf->fontname, sf->cidregistry, sf->ordering, sf->supplement );
-	dumpf(dumpchar,data, "%%%%Version: %g 0\n", sf->cidversion );
+	dumpf(dumpchar,data, "%%%%Version: %g 0\n", (double)sf->cidversion );
 	/* CID keyed fonts are language level 3 */
     } else {
 	dumpf(dumpchar,data,"%%%%Title: %s\n", sf->fontname);
@@ -1891,16 +1809,16 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
     }
     if ( sf->comments!=NULL )
 	dumpascomments(dumpchar,data,sf->comments);
-    dumpf(dumpchar,data,"%% Generated by FontForge %d (http://fontforge.sf.net/)\n",
-	    library_version_configuration.library_source_versiondate);
+    dumpf(dumpchar,data,"%% Generated by FontForge %d (http://fontforge.sf.net/)\n", FONTFORGE_VERSIONDATE_RAW);
     dumpstr(dumpchar,data,"%%EndComments\n\n");
 }
 
+extern const char *mmfindfont[], *makeblendedfont[];
 static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data,
 	SplineFont *sf, int format, EncMap *map, SplineFont *fullsf, int layer ) {
     int cnt, i;
     double fm[6];
-    char *encoding[256];
+    const char (*encoding[256]);
     DBounds b;
     int uniqueid;
     char buffer[50];
@@ -1976,7 +1894,6 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	MMSet *mm = sf->mm;
 	int j,k;
 	DBounds mb[16];
-	extern const char *mmfindfont[], *makeblendedfont[];
 
 	dumpstr(dumpchar,data," /WeightVector [" );
 	for ( j=0; j<mm->instance_count; ++j ) {
@@ -2343,18 +2260,14 @@ static void dumpreencodeproc(FILE *out) {
     fprintf( out, "\n" );
 }
 
-static char *dumpnotdefenc(FILE *out,SplineFont *sf) {
-    char *notdefname;
+static const char *dumpnotdefenc(FILE *out,SplineFont *sf) {
+    const char *notdefname;
     int i;
 
-#if 0		/* At one point I thought the unicode replacement char 0xfffd */
-		/*  was a good replacement for notdef if the font contained */
-		/*  no notdef. Probably not a good idea for a PS font */
-    if ( 0xfffd<sf->glyphcnt && sf->glyphs[0xfffd]!=NULL )
-	notdefname = sf->glyphs[0xfffd]->name;
-    else
-#endif
-	notdefname = ".notdef";
+    /* At one point I thought the unicode replacement char 0xfffd */
+    /*  was a good replacement for notdef if the font contained */
+    /*  no notdef. Probably not a good idea for a PS font */
+    notdefname = ".notdef";
     fprintf( out, "/%sBase /%sNotDef [\n", sf->fontname, sf->fontname );
     for ( i=0; i<256; ++i )
 	fprintf( out, " /%s\n", notdefname );
@@ -2372,11 +2285,11 @@ return( true );
 return( false );
 }
 
+extern char *zapfnomen[];
+extern int8 zapfexists[];
 static void dumptype0stuff(FILE *out,SplineFont *sf, EncMap *map) {
     char *notdefname;
     int i,j;
-    extern char *zapfnomen[];
-    extern int8 zapfexists[];
 
     dumpreencodeproc(out);
     notdefname = dumpnotdefenc(out,sf);
@@ -2479,12 +2392,12 @@ static FILE *gencidbinarydata(SplineFont *cidmaster,struct cidbytes *cidbytes,
 
     memset(cidbytes,'\0',sizeof(struct cidbytes));
     cidbytes->fdcnt = cidmaster->subfontcnt;
-    cidbytes->fds = gcalloc(cidbytes->fdcnt,sizeof(struct fddata));
+    cidbytes->fds = calloc(cidbytes->fdcnt,sizeof(struct fddata));
     for ( i=0; i<cidbytes->fdcnt; ++i ) {
 	sf = cidmaster->subfonts[i];
 	fd = &cidbytes->fds[i];
 	fd->flexmax = SplineFontIsFlexible(sf,layer,flags);
-	fd->subrs = initsubrs(fd->flexmax>0,NULL);
+	fd->subrs = initsubrs(NULL);
 	if ( fd->subrs==NULL ) {
 	    int j;
 	    for ( j=0; j<i; ++j )
@@ -2575,7 +2488,7 @@ return( NULL );
 	    (subrtot+1) * cidbytes->gdbytes )
 	IError("SubrMap section the wrong length" );
 
-    buffer = galloc(8192);
+    buffer = malloc(8192);
 
     rewind(subrs);
     while ( (len=fread(buffer,1,8192,subrs))>0 )
@@ -2617,7 +2530,7 @@ static int dumpcidstuff(FILE *out,SplineFont *cidmaster,int flags,EncMap *map,in
     fprintf( out, "20 dict begin\n\n" );
 
     fprintf( out, "/CIDFontName /%s def\n", cidmaster->fontname );
-    fprintf( out, "/CIDFontVersion %g def\n", cidmaster->cidversion );
+    fprintf( out, "/CIDFontVersion %g def\n", (double)cidmaster->cidversion );
     fprintf( out, "/CIDFontType 0 def\n\n" );
 
     fprintf( out, "/CIDSystemInfo 3 dict dup begin\n" );
@@ -2695,7 +2608,6 @@ int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,
 	EncMap *map, SplineFont *fullsf,int layer) {
     char oldloc[24];
     int err = false;
-    extern const char **othersubrs[];
 
     if ( format!=ff_cid && format!=ff_ptype3 &&
 	    (othersubrs[0]==NULL || othersubrs[0][0]==NULL ||

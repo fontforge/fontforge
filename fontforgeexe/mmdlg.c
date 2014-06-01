@@ -110,7 +110,7 @@ static int ExecConvertDesignVector(real *designs, int dcnt, char *ndv, char *cdv
     }
     setlocale(LC_NUMERIC,oldloc);
 
-    temp = galloc(len+strlen(ndv)+strlen(cdv)+20);
+    temp = malloc(len+strlen(ndv)+strlen(cdv)+20);
     strcpy(temp,dv);
     /*strcpy(temp+len++," ");*/		/* dv always will end in a space */
 
@@ -309,7 +309,7 @@ static void MakeAppleBlend(FontView *fv,MMSet *mm,real *blends,real *normalized)
 	cur = chunkalloc(sizeof(struct ttf_table));
 	cur->tag = tab->tag;
 	cur->len = tab->len;
-	cur->data = galloc(tab->len);
+	cur->data = malloc(tab->len);
 	memcpy(cur->data,tab->data,tab->len);
 	if ( cur->tag==CHR('c','v','t',' '))
 	    cvt = cur;
@@ -349,7 +349,7 @@ struct mmcb {
 #define CID_Knowns		6005
 
 static GTextInfo *MMCB_KnownValues(MMSet *mm) {
-    GTextInfo *ti = gcalloc(mm->named_instance_count+2,sizeof(GTextInfo));
+    GTextInfo *ti = calloc(mm->named_instance_count+2,sizeof(GTextInfo));
     int i;
 
     ti[0].text = uc_copy(" --- ");
@@ -532,7 +532,7 @@ static int GCDFillupMacWeights(GGadgetCreateData *gcd, GTextInfo *label, int k,
 	an = PickNameFromMacName(mm->axismaps[i].axisnames);
 	if ( an==NULL )
 	    an = copy(mm->axes[i]);
-	axisnames[i] = galloc(strlen(axisrange)+3+strlen(an));
+	axisnames[i] = malloc(strlen(axisrange)+3+strlen(an));
 	strcpy(axisnames[i],an);
 	strcat(axisnames[i],axisrange);
 	sprintf(axisval[i],"%.4g", (double) defcoords[i]);
@@ -945,7 +945,7 @@ return( true );
 	pt[-1] = ']';
 	*pt = '\0';
 	style = PickNameFromMacName(mn);
-	name = galloc(((pt-buffer) + strlen(style) + 1)*sizeof(unichar_t));
+	name = malloc(((pt-buffer) + strlen(style) + 1)*sizeof(unichar_t));
 	utf82u_strcpy(name,style);
 	uc_strcat(name,buffer);
 	free(style);
@@ -1273,7 +1273,7 @@ static int ParseList(GWindow gw,int cid, char *str8, int *err, real start,
 	++cnt;
     if ( !isapple || start==end )
 	defdone = true;
-    list = galloc(cnt*sizeof(real));
+    list = malloc(cnt*sizeof(real));
     if ( start==end )
 	cnt = 0;
     else {
@@ -1345,7 +1345,7 @@ static char *_ChooseFonts(char *buffer, SplineFont **sfs, real *positions,
     if ( elsepart==NULL )
 return( copy(buffer));
 
-    ret = galloc(strlen(buffer)+strlen(elsepart)+40);
+    ret = malloc(strlen(buffer)+strlen(elsepart)+40);
     sprintf(ret,"dup %g le {%s} {%s} ifelse", (double) positions[i+1], buffer, elsepart );
     free(elsepart);
 return( ret );
@@ -1404,7 +1404,7 @@ static char *_NormalizeAxis(char *buffer, struct axismap *axis, int i) {
     if ( elsepart==NULL )
 return( copy(buffer));
 
-    ret = galloc(strlen(buffer)+strlen(elsepart)+40);
+    ret = malloc(strlen(buffer)+strlen(elsepart)+40);
     sprintf(ret,"dup %g le {%s} {%s} ifelse", (double) axis->designs[i+1], buffer, elsepart );
     free(elsepart);
 return( ret );
@@ -1417,7 +1417,7 @@ static char *NormalizeAxis(char *header,struct axismap *axis) {
     ret = _NormalizeAxis(buffer,axis,0);
     if ( *header ) {
 	char *temp;
-	temp = galloc(strlen(header)+strlen(ret)+2);
+	temp = malloc(strlen(header)+strlen(ret)+2);
 	strcpy(temp,header);
 	strcat(temp,ret);
 	strcat(temp,"\n");
@@ -1457,9 +1457,9 @@ static void AxisDataCopyFree(struct axismap *into,struct axismap *from,int count
     }
     for ( i=0; i<count; ++i ) {
 	into[i].points = from[i].points;
-	into[i].blends = galloc(into[i].points*sizeof(real));
+	into[i].blends = malloc(into[i].points*sizeof(real));
 	memcpy(into[i].blends,from[i].blends,into[i].points*sizeof(real));
-	into[i].designs = galloc(into[i].points*sizeof(real));
+	into[i].designs = malloc(into[i].points*sizeof(real));
 	memcpy(into[i].designs,from[i].designs,into[i].points*sizeof(real));
     }
 }
@@ -1494,7 +1494,7 @@ static void MMW_FuncsValid(MMW *mmw) {
 	    pos = 0;
 	    for ( i=0; i<mmw->axis_count; ++i )
 		pos += strlen(lines[i]);
-	    ut = galloc((pos+20)*sizeof(unichar_t));
+	    ut = malloc((pos+20)*sizeof(unichar_t));
 	    uc_strcpy(ut,"{\n" ); pos = 2;
 	    for ( i=0; i<mmw->axis_count; ++i ) {
 		uc_strcpy(ut+pos,lines[i]);
@@ -1510,7 +1510,7 @@ static void MMW_FuncsValid(MMW *mmw) {
     }
     if ( mmw->last_instance_count!=mmw->instance_count ) {
 	if ( standard_cdvs[4]==NULL ) {
-	    standard_cdvs[4] = galloc(strlen(cdv_4axis[0])+strlen(cdv_4axis[1])+
+	    standard_cdvs[4] = malloc(strlen(cdv_4axis[0])+strlen(cdv_4axis[1])+
 		    strlen(cdv_4axis[2])+2);
 	    strcpy(standard_cdvs[4],cdv_4axis[0]);
 	    strcat(standard_cdvs[4],cdv_4axis[1]);
@@ -1544,7 +1544,7 @@ static void MMW_WeightsValid(MMW *mmw) {
     real axiscoords[4], weights[2*MmMax];
 
     if ( mmw->lastw_instance_count!=mmw->instance_count ) {
-	temp = galloc(mmw->instance_count*20+1);
+	temp = malloc(mmw->instance_count*20+1);
 	pos = 0;
 	if ( mmw->old!=NULL && mmw->instance_count==mmw->old->instance_count ) {
 	    for ( i=0; i<mmw->instance_count; ++i ) {
@@ -1608,7 +1608,7 @@ static GTextInfo *NamedDesigns(MMW *mmw) {
 return( NULL );
 
     cnt = mmw->old->named_instance_count;
-    ti = gcalloc((cnt+1),sizeof(GTextInfo));
+    ti = calloc((cnt+1),sizeof(GTextInfo));
     for ( i=0; i<mmw->old->named_instance_count; ++i ) {
 	pt = buffer; *pt++='[';
 	for ( j=0; j<mmw->old->axis_count; ++j ) {
@@ -1618,7 +1618,7 @@ return( NULL );
 	pt[-1] = ']';
 	ustyle = PickNameFromMacName(mmw->old->named_instances[i].names);
 	ti[i].bg = ti[i].fg = COLOR_DEFAULT;
-	ti[i].text = galloc((strlen(buffer)+3+strlen(ustyle))*sizeof(unichar_t));
+	ti[i].text = malloc((strlen(buffer)+3+strlen(ustyle))*sizeof(unichar_t));
 	utf82u_strcpy(ti[i].text,ustyle);
 	uc_strcat(ti[i].text," ");
 	uc_strcat(ti[i].text,buffer);
@@ -1630,7 +1630,7 @@ return(ti);
 }
 
 static GTextInfo *TiFromFont(SplineFont *sf) {
-    GTextInfo *ti = gcalloc(1,sizeof(GTextInfo));
+    GTextInfo *ti = calloc(1,sizeof(GTextInfo));
     ti->text = uc_copy(sf->fontname);
     ti->fg = ti->bg = COLOR_DEFAULT;
     ti->userdata = sf;
@@ -1657,7 +1657,7 @@ static GTextInfo **FontList(MMW *mmw, int instance, int *sel) {
     ++cnt;	/* New */
     ++cnt;	/* Browse... */
 
-    ti = galloc((cnt+1)*sizeof(GTextInfo *));
+    ti = malloc((cnt+1)*sizeof(GTextInfo *));
     pos = -1;
     cnt = 0;
     if ( mmw->old!=NULL ) {
@@ -1681,16 +1681,16 @@ static GTextInfo **FontList(MMW *mmw, int instance, int *sel) {
 	ti[cnt++] = TiFromFont( mmw->loaded[i]);
     }
     if ( pos==-1 ) pos=cnt;
-    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+    ti[cnt] = calloc(1,sizeof(GTextInfo));
     ti[cnt]->text = utf82u_copy(S_("Font|New"));
     ti[cnt]->bg = ti[cnt]->fg = COLOR_DEFAULT;
     ++cnt;
-    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+    ti[cnt] = calloc(1,sizeof(GTextInfo));
     ti[cnt]->text = utf82u_copy(_("Browse..."));
     ti[cnt]->bg = ti[cnt]->fg = COLOR_DEFAULT;
     ti[cnt]->userdata = (void *) (-1);
     ++cnt;
-    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+    ti[cnt] = calloc(1,sizeof(GTextInfo));
 
     ti[pos]->selected = true;
     *sel = pos;
@@ -1729,9 +1729,9 @@ static void MMW_ParseNamedStyles(MMSet *setto,MMW *mmw) {
 
     setto->named_instance_count = len;
     if ( len!=0 ) {
-	setto->named_instances = gcalloc(len,sizeof(struct named_instance));
+	setto->named_instances = calloc(len,sizeof(struct named_instance));
 	for ( i=0; i<len; ++i ) {
-	    setto->named_instances[i].coords = gcalloc(setto->axis_count,sizeof(real));
+	    setto->named_instances[i].coords = calloc(setto->axis_count,sizeof(real));
 	    upt = u_strchr(ti[i]->text,'[');
 	    if ( upt!=NULL ) {
 		for ( j=0, ++upt; j<setto->axis_count; ++j ) {
@@ -1872,18 +1872,18 @@ continue;
     for ( i=0; i<setto->axis_count; ++i )
 	setto->axes[i] = dlgmm->axes[i];
     setto->axismaps = dlgmm->axismaps;
-    setto->defweights = gcalloc(setto->instance_count,sizeof(real));
+    setto->defweights = calloc(setto->instance_count,sizeof(real));
     if ( !isapple )
 	memcpy(setto->defweights,weights,setto->instance_count*sizeof(real));
     free(dlgmm->defweights);
-    setto->positions = galloc(setto->instance_count*setto->axis_count*sizeof(real));
+    setto->positions = malloc(setto->instance_count*setto->axis_count*sizeof(real));
     for ( i=0; i<setto->instance_count; ++i ) {
 	int k = i<defpos ? i : i+1;
 	memcpy(setto->positions+i*setto->axis_count,dlgmm->positions+k*dlgmm->axis_count,
 		setto->axis_count*sizeof(real));
     }
     free(dlgmm->positions);
-    setto->instances = gcalloc(setto->instance_count,sizeof(SplineFont *));
+    setto->instances = calloc(setto->instance_count,sizeof(SplineFont *));
     for ( i=0; i<setto->instance_count; ++i ) {
 	if ( dlgmm->instances[i]!=NULL ) {
 	    int k = i<defpos ? i : i+1;
@@ -1901,7 +1901,7 @@ continue;
 	    char buffer[20];
 	    sprintf(buffer,"%g", (double) fbt );
 	    if ( oldprivate==NULL )
-		setto->normal->private = gcalloc(1,sizeof(struct psdict));
+		setto->normal->private = calloc(1,sizeof(struct psdict));
 	    PSDictChangeEntry(setto->normal->private,"ForceBoldThreshold",buffer);
 	}
     }
@@ -2377,9 +2377,9 @@ return(true);
 	    if ( sf->fv==NULL ) {
 		if ( mmw->lcnt>=mmw->lmax ) {
 		    if ( mmw->lmax==0 )
-			mmw->loaded = galloc((mmw->lmax=10)*sizeof(SplineFont *));
+			mmw->loaded = malloc((mmw->lmax=10)*sizeof(SplineFont *));
 		    else
-			mmw->loaded = grealloc(mmw->loaded,(mmw->lmax+=10)*sizeof(SplineFont *));
+			mmw->loaded = realloc(mmw->loaded,(mmw->lmax+=10)*sizeof(SplineFont *));
 		}
 		mmw->loaded[mmw->lcnt++] = sf;
 		for ( i=0; i<mmw->instance_count; ++i ) {
@@ -2452,21 +2452,21 @@ static MMSet *MMCopy(MMSet *orig) {
     mm->axis_count = 4;
     for ( i=0; i<orig->axis_count; ++i )
 	mm->axes[i] = copy(orig->axes[i]);
-    mm->instances = gcalloc(AppleMmMax+1,sizeof(SplineFont *));
+    mm->instances = calloc(AppleMmMax+1,sizeof(SplineFont *));
     memcpy(mm->instances,orig->instances,orig->instance_count*sizeof(SplineFont *));
     if ( mm->apple )
 	mm->instances[orig->instance_count] = orig->normal;
-    mm->positions = gcalloc((AppleMmMax+1)*4,sizeof(real));
+    mm->positions = calloc((AppleMmMax+1)*4,sizeof(real));
     for ( i=0; i<orig->instance_count; ++i )
 	memcpy(mm->positions+i*4,orig->positions+i*orig->axis_count,orig->axis_count*sizeof(real));
-    mm->defweights = gcalloc(AppleMmMax+1,sizeof(real));
+    mm->defweights = calloc(AppleMmMax+1,sizeof(real));
     memcpy(mm->defweights,orig->defweights,orig->instance_count*sizeof(real));
-    mm->axismaps = gcalloc(4,sizeof(struct axismap));
+    mm->axismaps = calloc(4,sizeof(struct axismap));
     for ( i=0; i<orig->axis_count; ++i ) {
 	mm->axismaps[i].points = orig->axismaps[i].points;
-	mm->axismaps[i].blends = galloc(mm->axismaps[i].points*sizeof(real));
+	mm->axismaps[i].blends = malloc(mm->axismaps[i].points*sizeof(real));
 	memcpy(mm->axismaps[i].blends,orig->axismaps[i].blends,mm->axismaps[i].points*sizeof(real));
-	mm->axismaps[i].designs = galloc(mm->axismaps[i].points*sizeof(real));
+	mm->axismaps[i].designs = malloc(mm->axismaps[i].points*sizeof(real));
 	memcpy(mm->axismaps[i].designs,orig->axismaps[i].designs,mm->axismaps[i].points*sizeof(real));
 	mm->axismaps[i].min = orig->axismaps[i].min;
 	mm->axismaps[i].max = orig->axismaps[i].max;
@@ -2514,10 +2514,10 @@ void MMWizard(MMSet *mm) {
 	mmw.axis_count = 1;
 	mmw.instance_count = 2;
 	mmw.mm->axis_count = 4; mmw.mm->instance_count = AppleMmMax+1;
-	mmw.mm->instances = gcalloc(AppleMmMax+1,sizeof(SplineFont *));
-	mmw.mm->positions = gcalloc((AppleMmMax+1)*4,sizeof(real));
-	mmw.mm->defweights = gcalloc(AppleMmMax+1,sizeof(real));
-	mmw.mm->axismaps = gcalloc(4,sizeof(struct axismap));
+	mmw.mm->instances = calloc(AppleMmMax+1,sizeof(SplineFont *));
+	mmw.mm->positions = calloc((AppleMmMax+1)*4,sizeof(real));
+	mmw.mm->defweights = calloc(AppleMmMax+1,sizeof(real));
+	mmw.mm->axismaps = calloc(4,sizeof(struct axismap));
 	mmw.isnew = true;
     }
 
@@ -2815,8 +2815,8 @@ void MMWizard(MMSet *mm) {
 		    len2 += strlen(buffer);
 		}
 		if ( l==0 ) {
-		    normalized[i] = galloc(len2+2);
-		    designs[i] = galloc(len1+2);
+		    normalized[i] = malloc(len2+2);
+		    designs[i] = malloc(len1+2);
 		} else {
 		    normalized[i][len2-1] = '\0';
 		    designs[i][len1-1] = '\0';

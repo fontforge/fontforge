@@ -543,27 +543,12 @@ static int SaveAs_FormatChange(GtkWidget *g, gpointer data) {
     char *oldname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dlg));
     int *_s2d = data;
     int s2d = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g));
-    char *pt, *newname = galloc(strlen(oldname)+8);
-#ifdef VMS
-    char *pt2;
-
-    strcpy(newname,oldname);
-    pt = strrchr(newname,'.');
-    pt2 = strrchr(newname,'_');
-    if ( pt==NULL )
-	pt = pt2;
-    else if ( pt2!=NULL && pt<pt2 )
-	pt = pt2;
-    if ( pt==NULL )
-	pt = newname+strlen(newname);
-    strcpy(pt,s2d ? "_sfdir" : ".sfd" );
-#else
+    char *pt, *newname = malloc(strlen(oldname)+8);
     strcpy(newname,oldname);
     pt = strrchr(newname,'.');
     if ( pt==NULL )
 	pt = newname+strlen(newname);
     strcpy(pt,s2d ? ".sfdir" : ".sfd" );
-#endif
     gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dlg),newname);
     save_to_dir = *_s2d = s2d;
     SavePrefs(true);
@@ -591,7 +576,7 @@ int _FVMenuSaveAs(FontView *fv) {
 	SplineFont *sf = fv->b.cidmaster?fv->b.cidmaster:
 		fv->b.sf->mm!=NULL?fv->b.sf->mm->normal:fv->b.sf;
 	char *fn = sf->defbasefilename ? sf->defbasefilename : sf->fontname;
-	temp = galloc((strlen(fn)+10));
+	temp = malloc((strlen(fn)+10));
 	strcpy(temp,fn);
 	if ( sf->defbasefilename!=NULL )
 	    /* Don't add a default suffix, they've already told us what name to use */;
@@ -603,11 +588,7 @@ int _FVMenuSaveAs(FontView *fv) {
 	    strcat(temp,"Var");
 	else
 	    strcat(temp,"MM");
-#ifdef VMS
-	strcat(temp,save_to_dir ? "_sfdir" : ".sfd");
-#else
 	strcat(temp,save_to_dir ? ".sfdir" : ".sfd");
-#endif
 	s2d = save_to_dir;
     }
 
@@ -982,7 +963,7 @@ return;
 	do {
 	    fpt = strstr(file,"; ");
 	    if ( fpt!=NULL ) *fpt = '\0';
-	    full = galloc(strlen(temp)+1+strlen(file)+1);
+	    full = malloc(strlen(temp)+1+strlen(file)+1);
 	    strcpy(full,temp); strcat(full,"/"); strcat(full,file);
 	    ViewPostScriptFont(full,0);
 	    file = fpt+2;
@@ -1080,7 +1061,7 @@ void FontViewMenu_OpenMetrics(GtkMenuItem *menuitem, gpointer user_data) {
 void FontViewMenu_Print(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 
-    PrintDlg(fv,NULL,NULL);
+    PrintFFDlg(fv,NULL,NULL);
 }
 
 void FontViewMenu_ExecScript(GtkMenuItem *menuitem, gpointer user_data) {
@@ -1713,12 +1694,6 @@ void FontViewMenu_BuildComposite(GtkMenuItem *menuitem, gpointer user_data) {
     FVBuildAccent( (FontViewBase *) FV_From_MI(menuitem), false );
 }
 
-#if 0
-void FontViewMenu_BuildDuplicatem(GtkMenuItem *menuitem, gpointer user_data) {
-    FVBuildDuplicate( (FontViewBase *) FV_From_MI(menuitem));
-}
-#endif
-
 #ifdef KOREAN
 void FontViewMenu_ShowGroup(GtkMenuItem *menuitem, gpointer user_data) {
     ShowGroup( ((FontView *) FV_From_MI(menuitem))->b.sf );
@@ -1886,7 +1861,7 @@ static void FVShowSubFont(FontView *fv,SplineFont *new) {
 	EncMapFree(fv->b.map);
 	fv->b.map = fv->b.normal;
 	fv->b.normal = NULL;
-	fv->b.selected = grealloc(fv->b.selected,fv->b.map->enccount);
+	fv->b.selected = realloc(fv->b.selected,fv->b.map->enccount);
 	memset(fv->b.selected,0,fv->b.map->enccount);
     }
     CIDSetEncMap((FontViewBase *) fv,new);
@@ -1978,7 +1953,7 @@ void FontViewMenu_DisplaySubstitutions(GtkMenuItem *menuitem, gpointer user_data
 	    if ( cnt==0 )
 	break;
 	    if ( names==NULL )
-		names = galloc((cnt+3) * sizeof(char *));
+		names = malloc((cnt+3) * sizeof(char *));
 	    else {
 		names[cnt++] = "-";
 		names[cnt++] = _("New Lookup Subtable...");
@@ -2384,13 +2359,6 @@ void FontViewMenu_EditTable(GtkMenuItem *menuitem, gpointer user_data) {
 				  CHR('c','v','t',' '));
 }
 
-void FontViewMenu_PrivateToCvt(GtkMenuItem *menuitem, gpointer user_data) {
-#if 0
-    FontView *fv = FV_From_MI(menuitem);
-    CVT_ImportPrivate(fv->b.sf);
-#endif
-}
-
 void FontViewMenu_ClearInstrs(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     FVClearInstrs((FontViewBase *) fv);
@@ -2432,7 +2400,7 @@ return;
     }
     if ( file!=NULL )
 	len += 2+strlen(file);
-    title = galloc((len+1));
+    title = malloc((len+1));
     strcpy(title,fv->b.sf->fontname);
     if ( fv->b.sf->changed )
 	strcat(title,"*");
@@ -2607,7 +2575,7 @@ return;
     sf->display_antialias = fv->b.sf->display_antialias;
     sf->display_bbsized = fv->b.sf->display_bbsized;
     sf->display_size = fv->b.sf->display_size;
-    sf->private = gcalloc(1,sizeof(struct psdict));
+    sf->private = calloc(1,sizeof(struct psdict));
     PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
     FVInsertInCID((FontViewBase *) fv,sf);
 }
@@ -2726,7 +2694,7 @@ static void FontViewMenu_Reencode(GtkMenuItem *menuitem, gpointer user_data) {
 	fv->b.map->enc = &custom;
     else {
 	map = EncMapFromEncoding(fv->b.sf,enc);
-	fv->b.selected = grealloc(fv->b.selected,map->enccount);
+	fv->b.selected = realloc(fv->b.selected,map->enccount);
 	memset(fv->b.selected,0,map->enccount);
 	EncMapFree(fv->b.map);
 	fv->b.map = map;
@@ -2762,7 +2730,7 @@ return;
     enc = FindOrMakeEncoding(user_data);
     SFForceEncoding(fv->b.sf,fv->b.map,enc);
     if ( oldcnt < fv->b.map->enccount ) {
-	fv->b.selected = grealloc(fv->b.selected,fv->b.map->enccount);
+	fv->b.selected = realloc(fv->b.selected,fv->b.map->enccount);
 	memset(fv->b.selected+oldcnt,0,fv->b.map->enccount-oldcnt);
     }
     if ( fv->b.normal!=NULL ) {
@@ -3081,7 +3049,7 @@ return;				/* Cancelled */
 return;
     }
     pt = buffer;
-    forever {
+    for (;;) {
 	ch = getc(file);
 	if ( ch!=EOF && !isspace(ch)) {
 	    if ( pt<buffer+sizeof(buffer)-1 )
@@ -3093,9 +3061,9 @@ return;
 		for ( fvs=(FontView *) fv->b.sf->fv; fvs!=NULL; fvs=(FontView *) fvs->b.nextsame ) {
 		    EncMap *map = fvs->b.map;
 		    if ( map->enccount+1>=map->encmax )
-			map->map = grealloc(map->map,(map->encmax += 20)*sizeof(int));
+			map->map = realloc(map->map,(map->encmax += 20)*sizeof(int));
 		    map->map[map->enccount] = -1;
-		    fvs->b.selected = grealloc(fvs->b.selected,(map->enccount+1));
+		    fvs->b.selected = realloc(fvs->b.selected,(map->enccount+1));
 		    memset(fvs->b.selected+map->enccount,0,1);
 		    ++map->enccount;
 		    if ( sc==NULL ) {
@@ -3190,14 +3158,6 @@ void FontViewMenu_ActivateEdit(GtkMenuItem *menuitem, gpointer user_data) {
     /* I can only determine the contents of the clipboard asyncronously */
     /*  hence I can't check to see if it contains something that is pastable */
     /*  So all I can do with paste is check that something is selected */
-#if 0
-    int not_pasteable = pos==-1 ||
-		    (!CopyContainsSomething() &&
-		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/png") &&
-		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/svg") &&
-		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/bmp") &&
-		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/eps"));
-#endif
     GtkWidget *w;
     int gid;
     static char *poslist[] = { "cut2", "copy2", "copy_reference1", "copy_width1",
@@ -3815,23 +3775,23 @@ return( feat_sc );
 	feat_sc->parent = sf;
 	feat_sc->unicodeenc = uni;
 	if ( uni!=-1 ) {
-	    feat_sc->name = galloc(8);
+	    feat_sc->name = malloc(8);
 	    feat_sc->unicodeenc = uni;
 	    sprintf( feat_sc->name,"uni%04X", uni );
 	} else if ( fv->cur_subtable->suffix!=NULL ) {
-	    feat_sc->name = galloc(strlen(base_sc->name)+strlen(fv->cur_subtable->suffix)+2);
+	    feat_sc->name = malloc(strlen(base_sc->name)+strlen(fv->cur_subtable->suffix)+2);
 	    sprintf( feat_sc->name, "%s.%s", base_sc->name, fv->cur_subtable->suffix );
 	} else if ( fl==NULL ) {
 	    feat_sc->name = strconcat(base_sc->name,".unknown");
 	} else if ( fl->ismac ) {
 	    /* mac feature/setting */
-	    feat_sc->name = galloc(strlen(base_sc->name)+14);
+	    feat_sc->name = malloc(strlen(base_sc->name)+14);
 	    sprintf( feat_sc->name,"%s.m%d_%d", base_sc->name,
 		    (int) (fl->featuretag>>16),
 		    (int) ((fl->featuretag)&0xffff) );
 	} else {
 	    /* OpenType feature tag */
-	    feat_sc->name = galloc(strlen(base_sc->name)+6);
+	    feat_sc->name = malloc(strlen(base_sc->name)+6);
 	    sprintf( feat_sc->name,"%s.%c%c%c%c", base_sc->name,
 		    (int) (fl->featuretag>>24),
 		    (int) ((fl->featuretag>>16)&0xff),
@@ -3993,11 +3953,6 @@ static PangoFontDescription *FVCheckFont(FontView *fv,int type) {
     int family = type>>2;
     char *fontnames;
 
-#if 0		/* How do I do this in gtk???? */
-    static char *resourcenames[] = { "FontView.SerifFamily", "FontView.ScriptFamily",
-	    "FontView.FrakturFamily", "FontView.DoubleStruckFamily",
-	    "FontView.SansFamily", "FontView.MonoFamily", NULL };
-#endif
     static char *defaultfontnames[] = {
 	    "times,serif,caslon,clearlyu,unifont",
 	    "script,formalscript,clearlyu,unifont",
@@ -4009,13 +3964,7 @@ static PangoFontDescription *FVCheckFont(FontView *fv,int type) {
 	};
 
     if ( fv->fontset[type]==NULL ) {
-#if 0
-	fontnames = GResourceFindString(resourcenames[family]);
-#else
-	fontnames = NULL;
-#endif
-	if ( fontnames==NULL )
-	    fontnames = defaultfontnames[family];
+        fontnames = defaultfontnames[family];
 
 	pfd = pango_font_description_new();
 	pango_font_description_set_family(pfd,fontnames);
@@ -4286,17 +4235,6 @@ gboolean FontViewView_Expose(GtkWidget *widget, GdkEventExpose *event, gpointer 
 		index = utf8_strlen(utf8_buf)-1;
 		pango_layout_index_to_pos(fv->vlayout,index,&pos);
 		width = (pos.x+pos.width)/1000;
-#if 0
-		if ( width==0 ) {
-		    utf8_buf[0] = 0xe0 | (0xfffd>>12);
-		    utf8_buf[1] = 0x80 | ((0xfffd>>6)&0x3f);
-		    utf8_buf[2] = 0x80 | (0xfffd&0x3f);
-		    utf8_buf[3] = 0;
-		    pango_layout_set_text( fv->vlayout, utf8_buf, -1);
-		    pango_layout_index_to_pos(fv->vlayout,0,&pos);
-		    width = (pos.x+pos.width)/1000;
-		}
-#endif
 		if ( width >= fv->cbw-1 ) {
 		    gdk_gc_set_clip_rectangle(gc,&r);
 		    width = fv->cbw-1;
@@ -4613,18 +4551,6 @@ return( true );
 	    if ( pos==end_pos ) ++pos;
 	    if ( pos>=fv->b.map->enccount ) pos = 0;
 	  break;
-#if 0
-	  case GDK_BackTab:
-	    pos = end_pos;
-	    do {
-		--pos;
-		if ( pos<0 ) pos = fv->b.map->enccount-1;
-	    } while ( pos!=end_pos &&
-		    ((gid=fv->b.map->map[pos])==-1 || !SCWorthOutputting(fv->b.sf->glyphs[gid])));
-	    if ( pos==end_pos ) --pos;
-	    if ( pos<0 ) pos = 0;
-	  break;
-#endif
 	  case GDK_Left: case GDK_KP_Left:
 	    pos = end_pos-1;
 	  break;
@@ -4740,46 +4666,24 @@ void SCPreparePopup(GtkTooltips *tip,GtkWidget *v,SplineChar *sc,struct remap *r
     }
 #endif
     else {
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	sprintf( space, "%u 0x%x U+???? \"%.25s\" ", localenc, localenc, sc->name==NULL?"":sc->name );
-#else
 	snprintf( space, sizeof(space), "%u 0x%x U+???? \"%.25s\" ", localenc, localenc, sc->name==NULL?"":sc->name );
-#endif
 	done = true;
     }
     if ( done )
 	/* Do Nothing */;
     else if ( upos<0x110000 && _UnicodeNameAnnot!=NULL &&
 	    _UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].name!=NULL ) {
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	sprintf( space, "%u 0x%x U+%04x \"%.25s\"", localenc, localenc, upos, sc->name==NULL?"":sc->name,
-		_UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].name);
-#else
 	snprintf( space, sizeof(space), "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
 		_UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].name);
-#endif
     } else if ( upos>=0xAC00 && upos<=0xD7A3 ) {
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	sprintf( space, "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
-		localenc, localenc, upos, sc->name==NULL?"":sc->name,
-		chosung[(upos-0xAC00)/(21*28)],
-		jungsung[(upos-0xAC00)/28%21],
-		jongsung[(upos-0xAC00)%28] );
-#else
 	snprintf( space, sizeof(space), "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
 		localenc, localenc, upos, sc->name==NULL?"":sc->name,
 		chosung[(upos-0xAC00)/(21*28)],
 		jungsung[(upos-0xAC00)/28%21],
 		jongsung[(upos-0xAC00)%28] );
-#endif
     } else {
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	sprintf( space, "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
-	    	UnicodeRange(upos));
-#else
 	snprintf( space, sizeof(space), "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
 	    	UnicodeRange(upos));
-#endif
     }
     if ( upos>=0 && upos<0x110000 && _UnicodeNameAnnot!=NULL &&
 	    _UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].annot!=NULL ) {
@@ -5216,7 +5120,7 @@ static void FontViewOpenKids(FontView *fv) {
 }
 
 static FontView *__FontViewCreate(SplineFont *sf) {
-    FontView *fv = gcalloc(1,sizeof(FontView));
+    FontView *fv = calloc(1,sizeof(FontView));
     int i;
     int ps = sf->display_size<0 ? -sf->display_size :
 	     sf->display_size==0 ? default_fv_font_size : sf->display_size;
@@ -5260,7 +5164,7 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 	if ( fv->b.nextsame==NULL ) EncMapFree(sf->map);
 	fv->b.map = EncMap1to1(sf->glyphcnt);
     }
-    fv->b.selected = gcalloc(fv->b.map->enccount,sizeof(char));
+    fv->b.selected = calloc(fv->b.map->enccount,sizeof(char));
     fv->user_requested_magnify = -1;
     fv->magnify = (ps<=9)? 3 : (ps<20) ? 2 : 1;
     fv->cbw = (ps*fv->magnify)+1;
@@ -5295,7 +5199,7 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     if ( !done ) { FontViewInit(); done=true;}
 
     fv->gw = create_FontView();
-    fv->fontset = gcalloc(_uni_fontmax,sizeof(PangoFont *));
+    fv->fontset = calloc(_uni_fontmax,sizeof(PangoFont *));
     g_object_set_data (G_OBJECT (fv->gw), "ffdata", fv );
     fv->v = lookup_widget( fv->gw,"view" );
     fv->status = lookup_widget( fv->gw,"status" );

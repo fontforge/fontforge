@@ -235,7 +235,7 @@ int32 *ParseBitmapSizes(GGadget *g,char *msg,int *err) {
 	pt = end+1;
 	end2 = NULL;
     }
-    sizes = galloc((i+1)*sizeof(int32));
+    sizes = malloc((i+1)*sizeof(int32));
 
     for ( i=0, pt = val; *pt!='\0' ; ) {
 	sizes[i]=rint(u_strtod(pt,&end));
@@ -351,10 +351,6 @@ return( false );
 		    d->sfnt_flags |= ttf_flag_oldkern;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_DummyDSIG)) )
 		    d->sfnt_flags |= ttf_flag_dummyDSIG;
-#if 0
-		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_BrokenSize)) )
-		    d->sfnt_flags |= ttf_flag_brokensize;
-#endif
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments)) )
 		    d->sfnt_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
@@ -477,25 +473,18 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdLayers),flags&ttf_flag_pfed_layers);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_TeXTable),flags&ttf_flag_TeXtable);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap),flags&ttf_flag_glyphmap);
-#if 0
-    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_BrokenSize),flags&ttf_flag_brokensize);
-#endif
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OldKern),
 	    (flags&ttf_flag_oldkern) && !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_AppleMode)));
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_DummyDSIG),flags&ttf_flag_dummyDSIG);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_FontLog),flags&ps_flag_outputfontlog);
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Hints),which!=1);
-    /*GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),which!=1);*/
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),which!=1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Round),which!=1);
     if ( which!=1 && (flags&ps_flag_nohints)) {
-	/*GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),false);*/
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),false);
-	/*GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),false);*/
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Flex),false);
     }
-    /*GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Restrict256),(which==0 || which==3) && !iscid);*/
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_AFM),which!=1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_AFMmarks),which!=1);
@@ -1177,7 +1166,7 @@ static enum fchooserret GFileChooserFilterWernerSFDs(GGadget *g,GDirEntry *ent,
     FILE *file;
 
     if ( ret==fc_show && !ent->isdir ) {
-	char *filename = galloc(u_strlen(dir)+u_strlen(ent->name)+5);
+	char *filename = malloc(u_strlen(dir)+u_strlen(ent->name)+5);
 	cu_strcpy(filename,dir);
 	strcat(filename,"/");
 	cu_strcat(filename,ent->name);
@@ -1290,7 +1279,7 @@ static int OFLibUploadGather(struct gfc_data *d,unichar_t *path) {
     ret = OFLibUploadFont( &oflib );
     if ( oflib.upload_id!=NULL ) {
 	char *baseurl = "http://openfontlibrary.org/media/files/";
-	char *uploadcontrol = galloc(strlen(baseurl) + strlen(oflib.upload_id) + 1 );
+	char *uploadcontrol = malloc(strlen(baseurl) + strlen(oflib.upload_id) + 1 );
 	strcpy(uploadcontrol,baseurl);
 	strcat(uploadcontrol,oflib.upload_id);
 	help(uploadcontrol);
@@ -1825,7 +1814,7 @@ return;
     unichar_t *ret = GGadgetGetTitle(d->gfc);
     unichar_t *dup, *pt, *tpt;
 
-    dup = galloc((u_strlen(ret)+30)*sizeof(unichar_t));
+    dup = malloc((u_strlen(ret)+30)*sizeof(unichar_t));
     u_strcpy(dup,ret);
     free(ret);
     pt = u_strrchr(dup,'.');
@@ -1867,7 +1856,7 @@ return( true );
 	}
 
 	ret = GGadgetGetTitle(d->gfc);
-	dup = galloc((u_strlen(ret)+30)*sizeof(unichar_t));
+	dup = malloc((u_strlen(ret)+30)*sizeof(unichar_t));
 	u_strcpy(dup,ret);
 	free(ret);
 	pt = u_strrchr(dup,'.');
@@ -2081,7 +2070,7 @@ static unichar_t *BitmapList(SplineFont *sf) {
     unichar_t *uret;
 
     for ( bdf=sf->bitmaps, i=0; bdf!=NULL; bdf=bdf->next, ++i );
-    pt = cret = galloc((i+1)*20);
+    pt = cret = malloc((i+1)*20);
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	if ( pt!=cret ) *pt++ = ',';
 	if ( bdf->clut==NULL )
@@ -2118,31 +2107,6 @@ static unichar_t *uStyleName(SplineFont *sf) {
 return( uc_copy(buffer+1));
 }
 
-#if 0 && defined( HAVE_PTHREAD_H )
-static void *BackgroundValidate(void *_d) {
-    struct gfc_data *d = _d;
-    SplineFont *sf = d->sf, *ssf;
-    int k, gid;
-    SplineChar *sc;
-
-    if ( sf->cidmaster!=NULL )
-	sf = sf->cidmaster;
-    k=0;
-    do {
-	ssf = sf->subfontcnt==0 ? sf : sf->subfonts[k];
-	for ( gid = 0; gid<ssf->glyphcnt; ++gid ) if ( (sc=ssf->glyphs[gid])!=NULL ) {
-	    if ( d->please_die_thread )
-pthread_exit(NULL);
-	    if ( !(sc->validation_state&vs_known) )
-		SCValidate(sc,true);
-	}
-	++k;
-    } while ( k<sf->subfontcnt );
-
-return( NULL );
-}
-#endif
-
 static GTextInfo *SFUsableLayerNames(SplineFont *sf,int def_layer) {
     int gid, layer, cnt = 1, k, known;
     SplineFont *_sf;
@@ -2174,7 +2138,7 @@ static GTextInfo *SFUsableLayerNames(SplineFont *sf,int def_layer) {
 	    def_layer = ly_fore;
     }
 
-    ti = gcalloc(cnt+1,sizeof(GTextInfo));
+    ti = calloc(cnt+1,sizeof(GTextInfo));
     cnt=0;
     for ( layer=0; layer<sf->layer_cnt; ++layer ) if ( sf->layers[layer].ticked ) {
 	ti[cnt].text = (unichar_t *) sf->layers[layer].name;
@@ -2215,14 +2179,6 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
     memset(&d,'\0',sizeof(d));
     d.sf = sf;
     d.layer = layer;
-#if 0 && defined(HAVE_PTHREAD_H)
-    /* Drat. my allocation routines are not thread safe */
-    /* If I can't create the thread, that's not a real problem. The font just*/
-    /*  won't be prevalidated */
-    if ( !sf->multilayer && !sf->strokedfont && !sf->onlybitmaps )
-	if ( pthread_create(&d.validate_thread,NULL,BackgroundValidate,(void *) &d)==0 )
-	    d.thread_active = true;
-#endif
 
     if ( !done ) {
 	done = true;
@@ -2246,7 +2202,7 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
 	/*  and I want people to know why they can't generate a family */
 	FontView *fv;
 	SplineFont *dup=NULL/*, *badenc=NULL*/;
-	familysfs = galloc((fondmax=10)*sizeof(SFArray));
+	familysfs = malloc((fondmax=10)*sizeof(SFArray));
 	memset(familysfs[0],0,sizeof(familysfs[0]));
 	familysfs[0][0] = sf;
 	fondcnt = 1;
@@ -2296,7 +2252,7 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
 	    if ( fc==fondcnt ) {
 		/* Create a new fond containing just this font */
 		if ( fondcnt>=fondmax )
-		    familysfs = grealloc(familysfs,(fondmax+=10)*sizeof(SFArray));
+		    familysfs = realloc(familysfs,(fondmax+=10)*sizeof(SFArray));
 		memset(familysfs[fondcnt],0,sizeof(SFArray));
 		familysfs[fondcnt++][psstyle] = fv->b.sf;
 	    }
@@ -2618,7 +2574,7 @@ return( 0 );
     gcd[k].creator = GListButtonCreate;
     nlnames = AllNamelistNames();
     for ( cnt=0; nlnames[cnt]!=NULL; ++cnt);
-    namelistnames = gcalloc(cnt+3,sizeof(GTextInfo));
+    namelistnames = calloc(cnt+3,sizeof(GTextInfo));
     namelistnames[0].text = (unichar_t *) _("No Rename");
     namelistnames[0].text_is_1byte = true;
     if ( force_names_when_saving==NULL ) {
@@ -3174,7 +3130,7 @@ return( 0 );
     free(lynames);
     free(label[9].text);
     if ( family ) {
-	for ( i=13; i<k; ++i ) if ( gcd[i].gd.popup_msg!=NULL )
+	for ( i=13; i<k; ++i )
 	    free((unichar_t *) gcd[i].gd.popup_msg);
     } else {
 	GHVBoxSetExpandableCol(boxes[6].ret,1);
@@ -3187,7 +3143,7 @@ return( 0 );
 	SplineFont *master = sf->cidmaster ? sf->cidmaster : sf;
 	char *fn = master->defbasefilename!=NULL ? master->defbasefilename :
 		master->fontname;
-	unichar_t *temp = galloc(sizeof(unichar_t)*(strlen(fn)+30));
+	unichar_t *temp = malloc(sizeof(unichar_t)*(strlen(fn)+30));
 	uc_strcpy(temp,fn);
 	uc_strcat(temp,savefont_extensions[ofs]!=NULL?savefont_extensions[ofs]:bitmapextensions[old]);
 	GGadgetSetTitle(gcd[0].ret,temp);

@@ -192,6 +192,8 @@ extern int prefs_cv_show_control_points_always_initially; /* from charview.c */
 extern int prefs_create_dragging_comparison_outline;      /* from charview.c */
 extern int prefs_cv_outline_thickness; /* from charview.c */
 
+extern float OpenTypeLoadHintEqualityTolerance;  /* autohint.c */
+extern float GenerateHintWidthEqualityTolerance; /* splinesave.c */
 extern NameList *force_names_when_opening;
 extern NameList *force_names_when_saving;
 extern NameList *namelist_for_new_fonts;
@@ -298,15 +300,6 @@ static struct prefs_list {
 /* GT: translated (which the user sees, and should probably have added spaces,*/
 /* GT: and one untranslated which needs the current odd format */
 	{ N_("ResourceFile"), pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, N_("When FontForge starts up, it loads display related resources from a\nproperty on the screen. Sometimes it is useful to be able to store\nthese resources in a file. These resources are only read at start\nup, so changing this has no effect until the next time you start\nFontForge.") },
-#if 0
-	{ N_("PixmapDir"), pr_file, &pixmapdir, NULL, NULL, 'R', NULL, 0, N_(
-	    "As FontForge creates windows, it loads images for its menus\n"
-	    "from files in a standard directory. You may change this to\n"
-	    "point to a different directory to load a different icon set.\n"
-	    "(If you want no icons at all, change to an empty directory).\n"
-	    "This may not effect windows of a type that is already initialized,\n"
-	    "restarting FontForge will fix that.")},
-#endif
 	{ N_("HelpDir"), pr_file, &helpdir, NULL, NULL, 'H', NULL, 0, N_("The directory on your local system in which FontForge will search for help\nfiles.  If a file is not found there, then FontForge will look for it on the net.") },
 	{ N_("OtherSubrsFile"), pr_file, &othersubrsfile, NULL, NULL, 'O', NULL, 0, N_("If you wish to replace Adobe's OtherSubrs array (for Type1 fonts)\nwith an array of your own, set this to point to a file containing\na list of up to 14 PostScript subroutines. Each subroutine must\nbe preceded by a line starting with '%%%%' (any text before the\nfirst '%%%%' line will be treated as an initial copyright notice).\nThe first three subroutines are for flex hints, the next for hint\nsubstitution (this MUST be present), the 14th (or 13 as the\nnumbering actually starts with 0) is for counter hints.\nThe subroutines should not be enclosed in a [ ] pair.") },
 	{ N_("FreeTypeInFontView"), pr_bool, &use_freetype_to_rasterize_fv, NULL, NULL, 'O', NULL, 0, N_("Use the FreeType rasterizer (when available)\nto rasterize glyphs in the font view.\nThis generally results in better quality.") },
@@ -336,6 +329,7 @@ static struct prefs_list {
 	{ N_("SeekCharacter"), pr_unicode, &home_char, NULL, NULL, '\0', NULL, 0, N_("When fontforge opens a (non-sfd) font it will try to display this unicode character in the fontview.")},
 	{ N_("CompactOnOpen"), pr_bool, &compact_font_on_open, NULL, NULL, 'O', NULL, 0, N_("When a font is opened, should it be made compact?")},
 	{ N_("UndoRedoLimitToLoad"), pr_int, &UndoRedoLimitToLoad, NULL, NULL, '\0', NULL, 0, N_( "The number of undo and redo operations to load from sfd files.\nWith this option you can disregard undo information while loading SFD files.\nIf set to 0 then no undo/redo information is loaded.\nIf set to -1 then all available undo/redo information is loaded without limit.") },
+	{ N_("OpenTypeLoadHintEqualityTolerance"), pr_real, &OpenTypeLoadHintEqualityTolerance, NULL, NULL, '\0', NULL, 0, N_( "When importing an OpenType font, for the purposes of hinting spline points might not exactly match boundaries. For example, a point might be -0.0002 instead of exactly 0\nThis setting gives the user some control over this allowing a small tolerance value to be fed into the OpenType loading code.\nComparisons are then not performed for raw equality but for equality within tolerence (eg, values within the range -0.0002 to 0.0002 will be considered equal to 0 when figuring out hints.") },
 	PREFS_LIST_EMPTY
 },
   navigation_list[] = {
@@ -409,6 +403,9 @@ static struct prefs_list {
  generate_list[] = {
 	{ N_("AskBDFResolution"), pr_bool, &ask_user_for_resolution, NULL, NULL, 'B', NULL, 0, N_("When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise FontForge will guess depending on the pixel size.") },
 	{ N_("AutoHint"), pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, N_("AutoHint changed glyphs before generating a font") },
+
+	{ N_("GenerateHintWidthEqualityTolerance"), pr_real, &GenerateHintWidthEqualityTolerance, NULL, NULL, '\0', NULL, 0, N_( "When generating a font, ignore slight rounding errors for hints that should be at the top or bottom of the glyph. For example, you might like to set this to 0.02 so that 19.999 will be considered 20. But only for the hint width value.") },
+	
 	PREFS_LIST_EMPTY
 },
  hints_list[] = {
@@ -578,7 +575,7 @@ static void ProcessFileChooserPrefs(void) {
     GFileChooserSetShowHidden(gfc_showhidden);
     GFileChooserSetDirectoryPlacement(gfc_dirplace);
     if ( gfc_bookmarks==NULL ) {
-	b = galloc(8*sizeof(unichar_t *));
+	b = malloc(8*sizeof(unichar_t *));
 	i = 0;
 #ifdef __Mac
 	b[i++] = uc_copy("~/Library/Fonts/");
@@ -607,7 +604,7 @@ static void ProcessFileChooserPrefs(void) {
 	    start = pt+1;
 	}
 	start = gfc_bookmarks;
-	b = galloc((i+2)*sizeof(unichar_t *));
+	b = malloc((i+2)*sizeof(unichar_t *));
 	for ( i=0; ; ++i ) {
 	    pt = strchr(start,';');
 	    if ( pt!=NULL )
@@ -637,7 +634,7 @@ static void GetFileChooserPrefs(void) {
 	int i,len=0;
 	for ( i=0; foo[i]!=NULL; ++i )
 	    len += 4*u_strlen(foo[i])+1;
-	gfc_bookmarks = galloc(len+10);
+	gfc_bookmarks = malloc(len+10);
 	len = 0;
 	for ( i=0; foo[i]!=NULL; ++i ) {
 	    u2utf8_strcpy(gfc_bookmarks+len,foo[i]);
@@ -805,7 +802,7 @@ return( sharedir );
 #if defined(__MINGW32__)
 
     len = strlen(GResourceProgramDir) + strlen("/share/fontforge") +1;
-    sharedir = galloc(len);
+    sharedir = malloc(len);
     strcpy(sharedir, GResourceProgramDir);
     strcat(sharedir, "/share/fontforge");
     return sharedir;
@@ -825,7 +822,7 @@ return( NULL );
 #endif
     }
     len = (pt-GResourceProgramDir)+strlen("/share/fontforge")+1;
-    sharedir = galloc(len);
+    sharedir = malloc(len);
     strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
     strcpy(sharedir+(pt-GResourceProgramDir),"/share/fontforge");
 return( sharedir );
@@ -929,18 +926,16 @@ static int encmatch(const char *enc,int subok) {
 	{ "UCS-2-INTERNAL", e_unicode },
 	{ "ISO-10646", e_unicode },
 	{ "ISO_10646", e_unicode },
-#if 0
-	{ "eucJP", e_euc },
-	{ "EUC-JP", e_euc },
-	{ "ujis", ??? },
-	{ "EUC-KR", e_euckorean },
-#endif
+	/* { "eucJP", e_euc }, */
+	/* { "EUC-JP", e_euc }, */
+	/* { "ujis", ??? }, */
+	/* { "EUC-KR", e_euckorean }, */
 	{ NULL, 0 }
     };
 
     int i;
     char buffer[80];
-#if HAVE_ICONV_H
+#if HAVE_ICONV
     static char *last_complaint;
 
     iconv_t test;
@@ -963,7 +958,7 @@ return( encs[i].enc );
 	    if ( strstrmatch(enc,encs[i].name)!=NULL )
 return( encs[i].enc );
 
-#if HAVE_ICONV_H
+#if HAVE_ICONV
 	/* I only try to use iconv if the encoding doesn't match one I support*/
 	/*  loading iconv unicode data takes a while */
 	test = iconv_open(enc,FindUnicharName());
@@ -1121,7 +1116,7 @@ static void PrefsUI_LoadPrefs_FromFile( char* filename )
 		    script_menu_names[mn++] = utf82u_copy(pt);
 		else if ( strncmp(line,"FontFilterName:",strlen("FontFilterName:"))==0 ) {
 		    if ( fn>=filt_max )
-			user_font_filters = grealloc(user_font_filters,((filt_max+=10)+1)*sizeof( struct openfilefilters));
+			user_font_filters = realloc(user_font_filters,((filt_max+=10)+1)*sizeof( struct openfilefilters));
 		    user_font_filters[fn].filter = NULL;
 		    user_font_filters[fn++].name = copy(pt);
 		    user_font_filters[fn].name = NULL;
@@ -1131,7 +1126,7 @@ static void PrefsUI_LoadPrefs_FromFile( char* filename )
 		} else if ( strncmp(line,"MacMapCnt:",strlen("MacSetCnt:"))==0 ) {
 		    sscanf( pt, "%d", &msc );
 		    msp = 0;
-		    user_macfeat_otftag = gcalloc(msc+1,sizeof(struct macsettingname));
+		    user_macfeat_otftag = calloc(msc+1,sizeof(struct macsettingname));
 		} else if ( strncmp(line,"MacMapping:",strlen("MacMapping:"))==0 && msp<msc ) {
 		    ParseMacMapping(pt,&user_macfeat_otftag[msp++]);
 		} else if ( strncmp(line,"MacFeat:",strlen("MacFeat:"))==0 ) {
@@ -1209,9 +1204,7 @@ static void PrefsUI_LoadPrefs(void)
     char *pt;
     struct prefs_list *pl;
 
-#if !defined(NOPLUGIN)
     LoadPluginDir(NULL);
-#endif
     LoadPfaEditEncodings();
     LoadGroupList();
 
@@ -1246,7 +1239,7 @@ static void PrefsUI_LoadPrefs(void)
 		    script_menu_names[mn++] = utf82u_copy(pt);
 		else if ( strncmp(line,"FontFilterName:",strlen("FontFilterName:"))==0 ) {
 		    if ( fn>=filt_max )
-			user_font_filters = grealloc(user_font_filters,((filt_max+=10)+1)*sizeof( struct openfilefilters));
+			user_font_filters = realloc(user_font_filters,((filt_max+=10)+1)*sizeof( struct openfilefilters));
 		    user_font_filters[fn].filter = NULL;
 		    user_font_filters[fn++].name = copy(pt);
 		    user_font_filters[fn].name = NULL;
@@ -1256,7 +1249,7 @@ static void PrefsUI_LoadPrefs(void)
 		} else if ( strncmp(line,"MacMapCnt:",strlen("MacSetCnt:"))==0 ) {
 		    sscanf( pt, "%d", &msc );
 		    msp = 0;
-		    user_macfeat_otftag = gcalloc(msc+1,sizeof(struct macsettingname));
+		    user_macfeat_otftag = calloc(msc+1,sizeof(struct macsettingname));
 		} else if ( strncmp(line,"MacMapping:",strlen("MacMapping:"))==0 && msp<msc ) {
 		    ParseMacMapping(pt,&user_macfeat_otftag[msp++]);
 		} else if ( strncmp(line,"MacFeat:",strlen("MacFeat:"))==0 ) {
@@ -1478,7 +1471,7 @@ static GTextInfo *Pref_MappingList(int use_user) {
     char buf[60];
 
     for ( i=0; msn[i].otf_tag!=0; ++i );
-    ti = gcalloc(i+1,sizeof( GTextInfo ));
+    ti = calloc(i+1,sizeof( GTextInfo ));
 
     for ( i=0; msn[i].otf_tag!=0; ++i ) {
 	sprintf(buf,"%3d,%2d %c%c%c%c",
@@ -1492,15 +1485,15 @@ return( ti );
 void GListAddStr(GGadget *list,unichar_t *str, void *ud) {
     int32 i,len;
     GTextInfo **ti = GGadgetGetList(list,&len);
-    GTextInfo **replace = galloc((len+2)*sizeof(GTextInfo *));
+    GTextInfo **replace = malloc((len+2)*sizeof(GTextInfo *));
 
-    replace[len+1] = gcalloc(1,sizeof(GTextInfo));
+    replace[len+1] = calloc(1,sizeof(GTextInfo));
     for ( i=0; i<len; ++i ) {
-	replace[i] = galloc(sizeof(GTextInfo));
+	replace[i] = malloc(sizeof(GTextInfo));
 	*replace[i] = *ti[i];
 	replace[i]->text = u_copy(ti[i]->text);
     }
-    replace[i] = gcalloc(1,sizeof(GTextInfo));
+    replace[i] = calloc(1,sizeof(GTextInfo));
     replace[i]->fg = replace[i]->bg = COLOR_DEFAULT;
     replace[i]->text = str;
     replace[i]->userdata = ud;
@@ -1510,15 +1503,15 @@ void GListAddStr(GGadget *list,unichar_t *str, void *ud) {
 void GListReplaceStr(GGadget *list,int index, unichar_t *str, void *ud) {
     int32 i,len;
     GTextInfo **ti = GGadgetGetList(list,&len);
-    GTextInfo **replace = galloc((len+2)*sizeof(GTextInfo *));
+    GTextInfo **replace = malloc((len+2)*sizeof(GTextInfo *));
 
     for ( i=0; i<len; ++i ) {
-	replace[i] = galloc(sizeof(GTextInfo));
+	replace[i] = malloc(sizeof(GTextInfo));
 	*replace[i] = *ti[i];
 	if ( i!=index )
 	    replace[i]->text = u_copy(ti[i]->text);
     }
-    replace[i] = gcalloc(1,sizeof(GTextInfo));
+    replace[i] = calloc(1,sizeof(GTextInfo));
     replace[index]->text = str;
     replace[index]->userdata = ud;
     GGadgetSetList(list,replace,false);
@@ -1946,14 +1939,14 @@ return( true );
 
 	list = GGadgetGetList(GWidgetGetControl(gw,CID_Mapping),&len);
 	UserSettingsFree();
-	user_macfeat_otftag = galloc((len+1)*sizeof(struct macsettingname));
+	user_macfeat_otftag = malloc((len+1)*sizeof(struct macsettingname));
 	user_macfeat_otftag[len].otf_tag = 0;
 	maxl = 0;
 	for ( i=0; i<len; ++i ) {
 	    t = u_strlen(list[i]->text);
 	    if ( t>maxl ) maxl = t;
 	}
-	str = galloc(maxl+3);
+	str = malloc(maxl+3);
 	for ( i=0; i<len; ++i ) {
 	    u2encoding_strncpy(str,list[i]->text,maxl+1,e_mac);
 	    ParseMacMapping(str,&user_macfeat_otftag[i]);
@@ -2258,9 +2251,9 @@ void DoPrefs(void) {
     aspects[0].selected = true;
 
     for ( k=0; visible_prefs_list[k].tab_name!=0; ++k ) {
-	pgcd = gcalloc(gcnt[k]+4,sizeof(GGadgetCreateData));
-	plabel = gcalloc(gcnt[k]+4,sizeof(GTextInfo));
-	hvarray = gcalloc((gcnt[k]+6)*5+2,sizeof(GGadgetCreateData *));
+	pgcd = calloc(gcnt[k]+4,sizeof(GGadgetCreateData));
+	plabel = calloc(gcnt[k]+4,sizeof(GTextInfo));
+	hvarray = calloc((gcnt[k]+6)*5+2,sizeof(GGadgetCreateData *));
 
 	aspects[k].text = (unichar_t *) visible_prefs_list[k].tab_name;
 	aspects[k].text_is_1byte = true;
@@ -2361,7 +2354,7 @@ void DoPrefs(void) {
 		int cnt;
 		GTextInfo *namelistnames;
 		for ( cnt=0; nlnames[cnt]!=NULL; ++cnt);
-		namelistnames = gcalloc(cnt+1,sizeof(GTextInfo));
+		namelistnames = calloc(cnt+1,sizeof(GTextInfo));
 		for ( cnt=0; nlnames[cnt]!=NULL; ++cnt) {
 		    namelistnames[cnt].text = (unichar_t *) nlnames[cnt];
 		    namelistnames[cnt].text_is_1byte = true;
@@ -2807,9 +2800,9 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
     }
 
     int itemCount = 100;
-    pgcd = gcalloc(itemCount,sizeof(GGadgetCreateData));
-    plabel = gcalloc(itemCount,sizeof(GTextInfo));
-    hvarray = gcalloc((itemCount)*5,sizeof(GGadgetCreateData *));
+    pgcd = calloc(itemCount,sizeof(GGadgetCreateData));
+    plabel = calloc(itemCount,sizeof(GTextInfo));
+    hvarray = calloc((itemCount)*5,sizeof(GGadgetCreateData *));
     memset(&p,'\0',sizeof(p));
     memset(&wattrs,0,sizeof(wattrs));
     memset(sgcd,0,sizeof(sgcd));
@@ -2935,7 +2928,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
 		int cnt;
 		GTextInfo *namelistnames;
 		for ( cnt=0; nlnames[cnt]!=NULL; ++cnt);
-		namelistnames = gcalloc(cnt+1,sizeof(GTextInfo));
+		namelistnames = calloc(cnt+1,sizeof(GTextInfo));
 		for ( cnt=0; nlnames[cnt]!=NULL; ++cnt) {
 		    namelistnames[cnt].text = (unichar_t *) nlnames[cnt];
 		    namelistnames[cnt].text_is_1byte = true;

@@ -220,30 +220,6 @@ static void FixIt(struct problems *p) {
     RefChar *r;
     int ncp_changed, pcp_changed;
 
-#if 0	/* The ultimate cause (the thing we need to fix) for these two errors */
-	/* is that the stem is wrong, it's too hard to fix that here, so best */
-	/* not to attempt to fix the proximal cause */
-    if ( p->explaining==_("This glyph contains a horizontal hint near the specified width") ) {
-	for ( h=p->sc->hstem; h!=NULL && !h->active; h=h->next );
-	if ( h!=NULL ) {
-	    h->width = p->widthval;
-	    SCOutOfDateBackground(p->sc);
-	    SCUpdateAll(p->sc);
-	} else
-	    IError("Could not find hint");
-return;
-    }
-    if ( p->explaining==_("This glyph contains a vertical hint near the specified width") ) {
-	for ( h=p->sc->vstem; h!=NULL && !h->active; h=h->next );
-	if ( h!=NULL ) {
-	    h->width = p->widthval;
-	    SCOutOfDateBackground(p->sc);
-	    SCUpdateAll(p->sc);
-	} else
-	    IError("Could not find hint");
-return;
-    }
-#endif
     if ( p->explaining==_("This reference has been flipped, so the paths in it are drawn backwards") ) {
 	for ( r=p->sc->layers[p->layer].refs; r!=NULL && !r->selected; r = r->next );
 	if ( r!=NULL ) {
@@ -2026,7 +2002,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     }
 
     if ( p->missinganchor && !p->finish ) {
-	forever {
+	for (;;) {
 	    p->missinganchor_class = SCValidateAnchors(sc);
 	    if ( p->missinganchor_class == NULL )
 	break;
@@ -2147,7 +2123,7 @@ static void mgreplace(char **base, char *str,char *end, char *new, SplineChar *s
 	else
 	    strcpy(str,end+1);	/* Skip the space */
     } else {
-	char *res = galloc(strlen(*base)+strlen(new)-(end-str)+1);
+	char *res = malloc(strlen(*base)+strlen(new)-(end-str)+1);
 	strncpy(res,*base,str-*base);
 	strcpy(res+(str-*base),new);
 	strcat(res,end);
@@ -2188,9 +2164,9 @@ static void mark_to_replace(struct problems *p,struct mgask_data *d, char *rpl) 
 
     if ( p->rpl_cnt >= p->rpl_max ) {
 	if ( p->rpl_max == 0 )
-	    p->mg = galloc((p->rpl_max = 30)*sizeof(struct mgrpl));
+	    p->mg = malloc((p->rpl_max = 30)*sizeof(struct mgrpl));
 	else
-	    p->mg = grealloc(p->mg,(p->rpl_max += 30)*sizeof(struct mgrpl));
+	    p->mg = realloc(p->mg,(p->rpl_max += 30)*sizeof(struct mgrpl));
     }
     ch = *d->end; *d->end = '\0';
     p->mg[p->rpl_cnt].search = copy( d->start );
@@ -4285,7 +4261,7 @@ char *VSErrorsFromMask(int mask, int private_mask) {
 	    len += strlen( _(vserrornames[m]))+2;
     if ( private_mask != 0 )
 	len += strlen( _("Bad Private Dictionary")) +2;
-    ret = galloc(len+1);
+    ret = malloc(len+1);
     len = 0;
     for ( m=0, bit=(vs_known<<1) ; bit<=vs_last; ++m, bit<<=1 )
 	if ( (mask&bit) && vserrornames[m]!=NULL ) {

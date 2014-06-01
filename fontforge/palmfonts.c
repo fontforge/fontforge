@@ -59,7 +59,7 @@ struct font {
     } chars[258];
 };
 
-static SplineFont *MakeContainer(struct font *fn, char *family, char *style) {
+static SplineFont *MakeContainer(struct font *fn, char *family, const char *style) {
     SplineFont *sf;
     int em;
     int i;
@@ -69,7 +69,7 @@ static SplineFont *MakeContainer(struct font *fn, char *family, char *style) {
     sf = SplineFontBlank(256);
     free(sf->familyname); free(sf->fontname); free(sf->fullname);
     sf->familyname = copy(family);
-    sf->fontname = galloc(strlen(family)+strlen(style)+2);
+    sf->fontname = malloc(strlen(family)+strlen(style)+2);
     strcpy(sf->fontname,family);
     if ( *style!='\0' ) {
 	strcat(sf->fontname,"-");
@@ -113,7 +113,7 @@ static void PalmReadBitmaps(SplineFont *sf,FILE *file,int imagepos,
 return;
 
     imagesize = (density*fn->rowwords/72)*(density*fn->frectheight/72);
-    fontImage = galloc(2*imagesize);
+    fontImage = malloc(2*imagesize);
     fseek(file,imagepos,SEEK_SET);
     for ( i=0; i<imagesize; ++i )
 	fontImage[i] = getushort(file);
@@ -122,14 +122,14 @@ return;
 return;
     }
 
-    bdf = gcalloc(1,sizeof(BDFFont));
+    bdf = calloc(1,sizeof(BDFFont));
     bdf->sf = sf;
     bdf->next = sf->bitmaps;
     sf->bitmaps = bdf;
     bdf->glyphcnt = sf->glyphcnt;
     bdf->glyphmax = sf->glyphmax;
     bdf->pixelsize = pixelsize;
-    bdf->glyphs = gcalloc(sf->glyphmax,sizeof(BDFChar *));
+    bdf->glyphs = calloc(sf->glyphmax,sizeof(BDFChar *));
     bdf->ascent = density*fn->ascent/72;
     bdf->descent = pixelsize - bdf->ascent;
     bdf->res = 72;
@@ -149,7 +149,7 @@ return;
 	    bdfc->width = density*fn->chars[index].width/72;
 	    bdfc->vwidth = pixelsize;
 	    bdfc->bytes_per_line = ((bdfc->xmax-bdfc->xmin)>>3) + 1;
-	    bdfc->bitmap = gcalloc(bdfc->bytes_per_line*(density*fn->frectheight)/72,sizeof(uint8));
+	    bdfc->bitmap = calloc(bdfc->bytes_per_line*(density*fn->frectheight)/72,sizeof(uint8));
 	    bdfc->orig_pos = gid;
 	    bdfc->sc = sf->glyphs[gid];
 	    bdf->glyphs[gid] = bdfc;
@@ -168,9 +168,8 @@ return;
     }
 }
 
-static SplineFont *PalmTestFont(FILE *file,int end, char *family,char *style) {
+static SplineFont *PalmTestFont(FILE *file,int end, char *family,const char *style) {
     int type;
-    int frectwidth, descent;
     int owtloc;
     int pos = ftell(file);
     struct density {
@@ -196,12 +195,12 @@ return( NULL );
     /* maxWidth = */ (void) getushort(file);
     /* kernmax = */ (void) getushort(file);
     /* ndescent = */ (void) getushort(file);
-    frectwidth = getushort(file);
+    /* frectwidth = */ (void) getushort(file);
     fn.frectheight = getushort(file);
     owtloc = ftell(file);
     owtloc += 2*getushort(file);
     fn.ascent = getushort(file);
-    descent = getushort(file);
+    /* descent = */ (void) getushort(file);
     fn.leading = getushort(file);
     fn.rowwords = getushort(file);
     if ( feof(file) || ftell(file)>=end || fn.first>fn.last || fn.last>255 ||
@@ -270,7 +269,7 @@ static char *palmreadstring(FILE *file) {
     char *str, *pt;
 
     for ( i=0; (ch=getc(file))!=0 && ch!=EOF; ++i);
-    str = pt = galloc(i+1);
+    str = pt = malloc(i+1);
     fseek(file,pos,SEEK_SET);
     while ( (ch=getc(file))!=0 && ch!=EOF )
 	*pt++ = ch;
@@ -328,7 +327,7 @@ return( NULL );
 return( sf );
 }
 
-SplineFont *SFReadPalmPdb(char *filename,int toback) {
+SplineFont *SFReadPalmPdb(char *filename) {
     char name[33];
     FILE *file;
     int num_records, i, file_end;
@@ -343,7 +342,8 @@ return( NULL );
     file_end = ftell(file);
     fseek(file,0,SEEK_SET);
 
-    if ( fread(name,1,32,file)==-1 )
+    fread(name,1,32,file);
+    if ( ferror(file) )
   goto fail;
     name[32]=0;
     fseek(file,0x2c,SEEK_CUR);		/* Find start of record list */
@@ -379,7 +379,7 @@ return( NULL );			/* failed */
 
 static FILE *MakeFewRecordPdb(char *filename,int cnt) {
     FILE *file;
-    char *fn = galloc(strlen(filename)+8), *pt1, *pt2;
+    char *fn = malloc(strlen(filename)+8), *pt1, *pt2;
     long now;
     int i;
 
@@ -541,10 +541,10 @@ return( NULL );
 
     if ( rowWords!=NULL ) {
 	*rowWords = rw;
-	*offsets = galloc((fn->lastChar-fn->firstChar+3)*sizeof(int));
-	*widths = galloc((fn->lastChar-fn->firstChar+3)*sizeof(int));
+	*offsets = malloc((fn->lastChar-fn->firstChar+3)*sizeof(int));
+	*widths = malloc((fn->lastChar-fn->firstChar+3)*sizeof(int));
     }
-    image = gcalloc(bdf->pixelsize*rw,sizeof(uint16));
+    image = calloc(bdf->pixelsize*rw,sizeof(uint16));
     rbits = 0;
     for ( i=fn->firstChar; i<=fn->lastChar; ++i ) {
 	if ( offsets!=NULL )
@@ -589,7 +589,7 @@ return( NULL );
 return( image );
 }
 
-int WritePalmBitmaps(char *filename,SplineFont *sf, int32 *sizes,EncMap *map) {
+int WritePalmBitmaps(const char *filename,SplineFont *sf, int32 *sizes,EncMap *map) {
     BDFFont *base=NULL, *temp;
     BDFFont *densities[4];	/* Be prepared for up to quad density */
     				/* Ignore 1.5 density. No docs on how odd metrics get rounded */

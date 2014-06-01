@@ -32,19 +32,19 @@
 #include "splinefont.h"
 #include "ffglib.h"
 
-char* Wordlist_getSCName( SplineChar* sc );
+const char* Wordlist_getSCName( SplineChar* sc );
 
-typedef int (*WordlistEscpaedInputStringToRealString_getFakeUnicodeOfScFunc)( SplineChar *sc, void* udata );
-extern int WordlistEscpaedInputStringToRealString_getFakeUnicodeAsScUnicodeEnc( SplineChar *sc, void* udata );
+typedef int (*WordlistEscapedInputStringToRealString_getFakeUnicodeOfScFunc)( SplineChar *sc, void* udata );
+extern int WordlistEscapedInputStringToRealString_getFakeUnicodeAsScUnicodeEnc( SplineChar *sc, void* udata );
 
-extern unichar_t* WordlistEscpaedInputStringToRealString(
+extern unichar_t* WordlistEscapedInputStringToRealString(
     SplineFont* sf,
     unichar_t* input_const,
     GArray** selected_out,
-    WordlistEscpaedInputStringToRealString_getFakeUnicodeOfScFunc getUnicodeFunc,
+    WordlistEscapedInputStringToRealString_getFakeUnicodeOfScFunc getUnicodeFunc,
     void* udata );
 
-extern unichar_t* WordlistEscpaedInputStringToRealStringBasic(
+extern unichar_t* WordlistEscapedInputStringToRealStringBasic(
     SplineFont* sf,
     unichar_t* input_const,
     GArray** selected_out );
@@ -58,6 +58,10 @@ extern void Wordlist_touch( GGadget* g );
 extern void WordlistLoadToGTextInfo( GGadget* g, int* idx  );
 
 extern void WordlistTrimTrailingSingleSlash( unichar_t* txt );
+
+extern unichar_t* Wordlist_selectionClear( SplineFont* sf, EncMap *map, unichar_t* txtu );
+extern unichar_t* Wordlist_selectionAdd( SplineFont* sf, EncMap *map, unichar_t* txtu, int offset );
+
 
 extern unichar_t* Wordlist_advanceSelectedCharsBy( SplineFont* sf, EncMap *map, unichar_t* txtu, int offset );
 

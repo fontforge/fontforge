@@ -213,33 +213,6 @@ static void instr_resize(InstrDlg *iv,GEvent *event) {
     GDrawMove(ii->v,size.x,size.y);
     GDrawResize(ii->v,size.width,size.height);
     ii->vheight = size.height; ii->vwidth = size.width;
-#if 0
-    /* Multiple of the number of lines we've got */
-    if ( (event->u.resize.size.height-iv->oc_height-4)%ii->fh!=0 ) {
-	int lc = (event->u.resize.size.height-iv->oc_height+ii->fh/2)/ii->fh;
-	if ( lc<=0 ) lc = 1;
-	GDrawResize(iv->gw, event->u.resize.size.width,lc*ii->fh+iv->oc_height+4);
-return;
-    }
-
-    pos.width = GDrawPointsToPixels(iv->gw,_GScrollBar_Width);
-    pos.height = event->u.resize.size.height-iv->oc_height;
-    pos.x = event->u.resize.size.width-pos.width; pos.y = 0;
-    GGadgetResize(ii->vsb,pos.width,pos.height);
-    GGadgetMove(ii->vsb,pos.x,pos.y);
-    pos.width = pos.x; pos.x = 0;
-    GDrawResize(ii->v,pos.width,pos.height);
-
-    GGadgetResize(iv->text,event->u.resize.size.width,pos.height);
-
-    GGadgetGetSize(iv->cancel,&size);
-    GGadgetMove(iv->ok,10,event->u.resize.size.height-iv->oc_height+6);
-    GGadgetMove(iv->cancel,event->u.resize.size.width-13-size.width,event->u.resize.size.height-iv->oc_height+9);
-    GGadgetMove(iv->edit,(event->u.resize.size.width-size.width)/2,event->u.resize.size.height-iv->oc_height+9);
-    GGadgetMove(iv->parse,(event->u.resize.size.width-size.width)/2,event->u.resize.size.height-iv->oc_height+9);
-
-    ii->vheight = pos.height; ii->vwidth = pos.width;
-#endif
     lh = ii->lheight;
 
     GScrollBarSetBounds(ii->vsb,0,lh+2,ii->vheight<ii->fh ? 1 : ii->vheight/ii->fh);
@@ -309,7 +282,7 @@ static void IVOk(InstrDlg *iv) {
 	    if ( id->instr_cnt==0 )
 		sc->ttf_instrs = NULL;
 	    else {
-		sc->ttf_instrs = galloc( id->instr_cnt );
+		sc->ttf_instrs = malloc( id->instr_cnt );
 		memcpy(sc->ttf_instrs,id->instrs,id->instr_cnt );
 	    }
 	    for ( cv=(CharView *) (sc->views); cv!=NULL; cv=(CharView *) (cv->b.next) )
@@ -341,7 +314,7 @@ static void IVOk(InstrDlg *iv) {
 		    tab->tag = id->tag;
 		}
 		free( tab->data );
-		tab->data = galloc( id->instr_cnt );
+		tab->data = malloc( id->instr_cnt );
 		memcpy(tab->data,id->instrs,id->instr_cnt );
 		tab->len = id->instr_cnt;
 	    }
@@ -646,10 +619,6 @@ static int iv_e_h(GWindow gw, GEvent *event) {
 
     switch ( event->type ) {
       case et_expose:
-#if 0
-	  GDrawDrawLine(gw,0,iv->instrinfo.vheight,
-		  iv->instrinfo.vwidth+400,iv->instrinfo.vheight,0x000000);
-#endif
       break;
       case et_resize:
 	instr_resize(iv,event);
@@ -714,7 +683,7 @@ return( true );
 }
 
 static void InstrDlgCreate(struct instrdata *id,char *title) {
-    InstrDlg *iv = gcalloc(1,sizeof(*iv));
+    InstrDlg *iv = calloc(1,sizeof(*iv));
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -924,11 +893,11 @@ return;
 	SCNumberPoints(sc,CVLayer((CharViewBase *) cv));
 	GDrawRequestExpose(cv->v,NULL,false);
     }
-    id = gcalloc(1,sizeof(*id));
+    id = calloc(1,sizeof(*id));
     id->instr_cnt = id->max = sc->ttf_instrs_len;
     id->sf = sc->parent;
     id->sc = sc;
-    id->instrs = galloc(id->max+1);
+    id->instrs = malloc(id->max+1);
     if ( sc->ttf_instrs!=NULL )
 	memcpy(id->instrs,sc->ttf_instrs,id->instr_cnt);
     sprintf(title,_("TrueType Instructions for %.50s"),sc->name);
@@ -1084,10 +1053,10 @@ return( false );
 	}
 	free(ret);
 	if ( val*2>sv->len ) {
-	    sv->edits = grealloc(sv->edits,val*2);
+	    sv->edits = realloc(sv->edits,val*2);
 	    for ( i=sv->len/2; i<val; ++i )
 		sv->edits[i] = 0;
-	    sv->comments = grealloc(sv->comments,val*sizeof(char *));
+	    sv->comments = realloc(sv->comments,val*sizeof(char *));
 	    for ( i=sv->len/2; i<val; ++i )
 		sv->comments[i] = NULL;
 	} else {
@@ -1155,8 +1124,8 @@ return( true );
 		tab->tag = sv->tag;
 		sv->table = tab;
 	    }
-	    sv->table->data = galloc(sv->len);
-	    sf->cvt_names = galloc(((sv->len>>1)+1)*sizeof(char *));
+	    sv->table->data = malloc(sv->len);
+	    sf->cvt_names = malloc(((sv->len>>1)+1)*sizeof(char *));
 	    for ( i=0; i<sv->len/2; ++i ) {
 		sv->table->data[i<<1] = (sv->edits[i]>>8)&0xff;
 		sv->table->data[(i<<1)+1] = sv->edits[i]&0xff;
@@ -1393,7 +1362,7 @@ return( true );
 
 /* cvt table */
 static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
-    ShortView *sv = gcalloc(1,sizeof(ShortView));
+    ShortView *sv = calloc(1,sizeof(ShortView));
     char title[60];
     GRect pos, subpos, gsize;
     GWindow gw;
@@ -1418,17 +1387,17 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	tab = SFFindTable(sf->mm->normal,tag);
     if ( tab!=NULL ) {
 	sv->len = tab->len;
-	sv->edits = galloc(tab->len+1);
-	sv->comments = gcalloc((tab->len/2+1),sizeof(char *));
+	sv->edits = malloc(tab->len+1);
+	sv->comments = calloc((tab->len/2+1),sizeof(char *));
 	for ( i=0; i<tab->len/2; ++i )
 	    sv->edits[i] = (tab->data[i<<1]<<8) | tab->data[(i<<1)+1];
 	if ( sf->cvt_names!=NULL )
 	    for ( i=0; i<tab->len/2 && sf->cvt_names[i]!=END_CVT_NAMES; ++i )
 		sv->comments[i] = copy(sf->cvt_names[i]);
     } else {
-	sv->edits = galloc(2);
+	sv->edits = malloc(2);
 	sv->len = 0;
-	sv->comments = gcalloc(1,sizeof(char *));
+	sv->comments = calloc(1,sizeof(char *));
     }
 
     title[0] = (tag>>24)&0xff;
@@ -1691,13 +1660,13 @@ return( true );
 	    mp->tab = chunkalloc(sizeof(struct ttf_table));
 	    mp->tab->tag = CHR('m','a','x','p');
 	    mp->tab->len = 32;
-	    mp->tab->data = gcalloc(32,1);
+	    mp->tab->data = calloc(32,1);
 	    mp->tab->next = mp->sf->ttf_tables;
 	    mp->sf->ttf_tables = mp->tab;
 	} else if ( mp->tab->len<32 ) {
 	    free(mp->tab->data);
 	    mp->tab->len = 32;
-	    mp->tab->data = gcalloc(32,1);
+	    mp->tab->data = calloc(32,1);
 	}
 	mp->tab->data[14] = zones>>8; mp->tab->data[15] = zones&0xff;
 	mp->tab->data[16] = tp>>8; mp->tab->data[17] = tp&0xff;
@@ -1978,11 +1947,11 @@ void SFEditTable(SplineFont *sf, uint32 tag) {
 return;
 	}
 
-	id = gcalloc(1,sizeof(*id));
+	id = calloc(1,sizeof(*id));
 	id->sf = sf;
 	id->tag = tag;
 	id->instr_cnt = id->max = tab==NULL ? 0 : tab->len;
-	id->instrs = galloc(id->max+1);
+	id->instrs = malloc(id->max+1);
 	if ( tab!=NULL && tab->data!=NULL )
 	    memcpy(id->instrs,tab->data,id->instr_cnt);
 	else

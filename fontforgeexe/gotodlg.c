@@ -37,7 +37,7 @@ return( strcmp((char *) (t1->text),(char *) (t2->text)));
 }
 
 static GTextInfo *AvailableRanges(SplineFont *sf,EncMap *map) {
-    GTextInfo *ret = gcalloc(unicoderange_cnt+3,sizeof(GTextInfo));
+    GTextInfo *ret = calloc(unicoderange_cnt+3,sizeof(GTextInfo));
     int i, cnt, ch, pos;
 
     for ( i=cnt=0; unicoderange[i].name!=NULL; ++i ) {
@@ -139,7 +139,7 @@ return( NULL );
 return( NULL );
     if ( do_wildcards ) {
 	pt = spt;
-	spt = galloc((u_strlen(spt)+2)*sizeof(unichar_t));
+	spt = malloc((u_strlen(spt)+2)*sizeof(unichar_t));
 	u_strcpy(spt,pt);
 	uc_strcat(spt,"*");
     }
@@ -167,7 +167,7 @@ return( NULL );
 	else if ( cnt==0 )
     break;
 	else
-	    ret = galloc((cnt+1)*sizeof(unichar_t *));
+	    ret = malloc((cnt+1)*sizeof(unichar_t *));
     }
     if ( do_wildcards )
 	free(spt);

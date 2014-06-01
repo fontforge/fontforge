@@ -114,6 +114,6 @@ extern int collabclient_inSessionFV( FontViewBase* fv );
  * now disconnected.
  */
 extern enum collabState_t collabclient_getState( FontViewBase* fv );
-extern char*         collabclient_stateToString( enum collabState_t s );
+extern const char*        collabclient_stateToString( enum collabState_t s );
 
 #endif

@@ -65,9 +65,9 @@ static int AddProtocol(unichar_t *prefix,int len) {
     if ( plen>=pmax ) {
 	pmax += 20;		/* We're never going to support 20 protocols? */
 	if ( plen==0 ) {
-	    protocols = (struct protocols *) galloc(pmax*sizeof(struct protocols));
+	    protocols = (struct protocols *) malloc(pmax*sizeof(struct protocols));
 	} else {
-	    protocols = (struct protocols *) grealloc(protocols,pmax*sizeof(struct protocols));
+	    protocols = (struct protocols *) realloc(protocols,pmax*sizeof(struct protocols));
 	}
     }
     memset(protocols+plen,0,sizeof(struct protocols));
@@ -162,7 +162,7 @@ return;
 	    /* could put stuff here to queue functions if we get too many */
 	    /*  threads, or perhaps even a thread pool */
 	    uc_strcpy(gc->status,"Queued");
-	    gc->threaddata = (struct gio_threaddata *) galloc(sizeof(struct gio_threaddata));
+	    gc->threaddata = (struct gio_threaddata *) malloc(sizeof(struct gio_threaddata));
 	    gc->threaddata->mutex = initmutex;
 	    gc->threaddata->cond = initcond;
 	    if ( _GIO_stdfuncs.gdraw_sync_thread!=NULL )
@@ -257,7 +257,7 @@ void GIOclose(GIOControl *gc) {
 GIOControl *GIOCreate(unichar_t *path,void *userdata,
 	void (*receivedata)(struct giocontrol *),
 	void (*receiveerror)(struct giocontrol *)) {
-    GIOControl *gc = (GIOControl *) gcalloc(1,sizeof(GIOControl));
+    GIOControl *gc = (GIOControl *) calloc(1,sizeof(GIOControl));
 
     gc->path = u_copy(path);
     gc->userdata = userdata;

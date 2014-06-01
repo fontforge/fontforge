@@ -43,15 +43,11 @@ extern const void *gwwv_NSAddImage(char *name,uint32_t options);
 #    define dlopen(name,foo) libtool_laopen(name,foo)
 void *libtool_laopen(const char *filename, int flags);
 #   endif
-#ifdef __VMS
-# define SO_EXT	".exe"
-#else
-# define SO_EXT		".so"
-# define SO_0_EXT	".so.0"
-# define SO_1_EXT	".so.1"
-# define SO_2_EXT	".so.2"
-# define SO_6_EXT	".so.6"
-#endif
+#define SO_EXT		".so"
+#define SO_0_EXT	".so.0"
+#define SO_1_EXT	".so.1"
+#define SO_2_EXT	".so.2"
+#define SO_6_EXT	".so.6"
 #define DL_CONST
 #  endif
 

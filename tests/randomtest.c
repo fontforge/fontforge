@@ -45,8 +45,6 @@
 
 #define true	1
 #define false	0
-#define forever	for (;;)
-
 
 
 #ifdef TEST_FREETYPE
@@ -487,7 +485,7 @@ exit(1);
 #else
 	mkdir(results_dir);
 #endif
-    forever
+    for (;;)
 	do_test();
 
 return( 0 );

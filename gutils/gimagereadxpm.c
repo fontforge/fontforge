@@ -82,23 +82,6 @@ good they are.
 ............................+...................................
 */
 
-static long LookupXColorName(char *name) {
-#if 0 && !defined( X_DISPLAY_MISSING )
-    XColor ret;
-    Display *display;
-
-    if ( screen_display==NULL )
-return( COLOR_UNKNOWN );
-
-    display = ((GXDisplay *) screen_display)->display;
-    if ( XParseColor(display,DefaultColormap(display,DefaultScreen(display)),
-	    name,&ret))
-return( ((ret.red>>8)<<16) | (ret.green&0xff00) | (ret.blue>>8) );
-#endif	/* NO X */
-
-return( COLOR_UNKNOWN );
-}
-
 static int getstring(unsigned char *buf,int sz,FILE *fp) {
 /* get a string of text within "" marks and skip */
 /* backslash sequences, or concatenated strings. */
@@ -209,7 +192,6 @@ static long parsecol(char *start, char *end) {
 	    /* How do I translate from HSB to RGB???? */
 	    ;
 	}
-    } else if ( (ret=LookupXColorName(start))!=-1 ) {
     } else if ( strcmp(start,"white")==0 ) {
 	ret = COLOR_CREATE(255,255,255);
     } else {
@@ -241,7 +223,7 @@ static char *findnextkey(char *str) {
 
 static long findcol(char *str) {
     char *pt, *end;
-    char *try_order = "cgm"; /* Try in this order to find something */
+    const char *try_order = "cgm"; /* Try in this order to find something */
 
     while ( *try_order ) {
 	pt = findnextkey(str);
@@ -314,7 +296,7 @@ GImage *GImageReadXpm(char * filename) {
     line=NULL; tab=NULL; nchar=0;
     /* If file begins with XPM then read lines using getstring;() */
     /* otherwise for XPM2 read lines using function gww_getline() */
-    if ( (fgets((char *)buf,sizeof(buf),fp))<0 )
+    if ( (fgets((char *)buf,sizeof(buf),fp))==NULL )
 	goto errorGImageReadXpm;
     if ( strstr((char *) buf,"XPM2")!=NULL )
 	getdata = gww_getline;

@@ -51,6 +51,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "fontforge/collabclientpriv.h"
 #include "fontforge-internal-collab-server.h"
 #include "collab/zmq_kvmsg.h"
+#include "progname.h"
 
 #define SUBTREE "/client/"
 
@@ -316,6 +317,12 @@ s_flush_ttl (zloop_t *loop, zmq_pollitem_t *poller, void *args)
 int main (int argc, char** argv)
 {
     int port = 5556;
+
+#ifdef FF_USE_LIBGC
+    GC_INIT();
+    set_program_name (argv[0]);
+#endif
+
     if( argc >= 2 )
 	port = atoi( argv[1] );
 	

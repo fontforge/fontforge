@@ -44,9 +44,9 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si,int il) 
     GImage *ret;
     struct _GImage *base;
     ColorMapObject *m = gif->SColorMap;  /* gif_lib.h, NULL if not exists. */
-    int i,j,k,*id;
+    int i,j,k,*id = NULL;
     long l;
-    uint8 *d,*iv;
+    uint8 *d,*iv = NULL;
 
     /* Create memory to hold image, exit with NULL if not enough memory */
     if ( si->ImageDesc.ColorMap!=NULL ) m=si->ImageDesc.ColorMap;

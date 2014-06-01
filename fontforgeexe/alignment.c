@@ -86,7 +86,7 @@ static void SpaceMany(CharView *cv,DBounds *b, int dir, int region_size, int cnt
 	    dir = 1;		/* Space out along y axis */
     }
 
-    regions = galloc(cnt*sizeof(struct region));
+    regions = malloc(cnt*sizeof(struct region));
     rcnt = 0;
     for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	sp=spl->first;
@@ -201,7 +201,6 @@ static void AlignTwoMaybeAsk(CharView *cv,SplinePoint *sp1, SplinePoint *sp2)
 	HorizontalAlignment = 1;
     }
     else {
-	// This would have done a box alignment in AverageTwo()
 	char *buts[5];
 
 	buts[0] = _("_Horizontal");
@@ -239,59 +238,6 @@ static void AlignTwoMaybeAsk(CharView *cv,SplinePoint *sp1, SplinePoint *sp2)
 	sp1->me.x = sp2->me.x = xpos;
     }
 
-    if ( sp1->prev ) SplineRefigure(sp1->prev);
-    if ( sp1->next ) SplineRefigure(sp1->next);
-    if ( sp2->prev ) SplineRefigure(sp2->prev);
-    if ( sp2->next ) SplineRefigure(sp2->next);
-    CVCharChangedUpdate(&cv->b);
-}
-
-static void AverageTwo(CharView *cv,SplinePoint *sp1, SplinePoint *sp2) {
-    real xoff, yoff, xpos, ypos, pos0, pos1;
-
-
-    xoff = sp1->me.x - sp2->me.x;
-    yoff = sp1->me.y - sp2->me.y;
-    printf("AverageTwo() %f %f, %f %f,   xoff:%f  yoff:%f\n",
-	   sp1->me.x, sp2->me.x,
-	   sp1->me.y, sp2->me.y,
-	   xoff, yoff );
-    CVPreserveState((CharViewBase *) cv);
-    if ( fabs(yoff)<fabs(xoff)/2 ) {
-	printf("average y\n");
-	/* average y */
-	ypos = rint( (sp1->me.y+sp2->me.y)/2 );
-	sp1->prevcp.y += ypos-sp1->me.y;
-	sp1->nextcp.y += ypos-sp1->me.y;
-	sp2->prevcp.y += ypos-sp2->me.y;
-	sp2->nextcp.y += ypos-sp2->me.y;
-	sp1->me.y = sp2->me.y = ypos;
-    } else if ( fabs(xoff)<fabs(yoff)/2 ) {
-	/* average x */
-	printf("average x\n");
-	xpos = rint( (sp1->me.x+sp2->me.x)/2 );
-	sp1->prevcp.x += xpos-sp1->me.x;
-	sp1->nextcp.x += xpos-sp1->me.x;
-	sp2->prevcp.x += xpos-sp2->me.x;
-	sp2->nextcp.x += xpos-sp2->me.x;
-	sp1->me.x = sp2->me.x = xpos;
-    } else if ( (xoff>0 && yoff>0) || (xoff<0 && yoff<0 ) ) {
-	/* if ( xoff<0 ) { xoff= -xoff; yoff= -ypos; } */
-	printf("case 1\n");
-	pos1 = rint((sp1->me.x+sp2->me.x-sp1->me.y-sp2->me.y)/4);
-	pos0 = (sp1->me.x+sp1->me.y)/2;
-	SpAdjustTo(sp1,pos0+pos1,pos0-pos1);
-	pos0 = (sp2->me.x+sp2->me.y)/2;
-	SpAdjustTo(sp2,pos0+pos1,pos0-pos1);
-    } else {
-	/* if ( xoff<0 ) { xoff= -xoff; yoff= -ypos; } */
-	printf("case 2\n");
-	pos0 = rint((sp1->me.x+sp2->me.x+sp1->me.y+sp2->me.y)/4);
-	pos1 = (sp1->me.x-sp1->me.y)/2;
-	SpAdjustTo(sp1,pos0+pos1,pos0-pos1);
-	pos1 = (sp2->me.x-sp2->me.y)/2;
-	SpAdjustTo(sp2,pos0+pos1,pos0-pos1);
-    }
     if ( sp1->prev ) SplineRefigure(sp1->prev);
     if ( sp1->next ) SplineRefigure(sp1->next);
     if ( sp2->prev ) SplineRefigure(sp2->prev);
@@ -320,7 +266,6 @@ static void AlignManyMaybeAsk(CharView *cv,DBounds *b) {
     }
     else
     {
-	// This would have done a box alignment in AverageTwo()
 	char *buts[5];
 
 	buts[0] = _("_Horizontal");
@@ -384,59 +329,6 @@ static void AlignManyMaybeAsk(CharView *cv,DBounds *b) {
     CVCharChangedUpdate(&cv->b);
 }
 
-
-static void AverageMany(CharView *cv,DBounds *b) {
-    real xoff, yoff, xpos, ypos;
-    SplinePoint *sp;
-    SplineSet *spl;
-
-    xoff = b->maxx - b->minx;
-    yoff = b->maxy - b->miny;
-    CVPreserveState((CharViewBase *) cv);
-    if ( yoff<xoff ) {
-	/* average y */
-	ypos = rint( (b->maxy+b->miny)/2 );
-	for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
-	    sp=spl->first;
-	    while ( 1 ) {
-		if ( sp->selected ) {
-		    sp->prevcp.y += ypos-sp->me.y;
-		    sp->nextcp.y += ypos-sp->me.y;
-		    sp->me.y = ypos;
-		    if ( sp->prev ) SplineRefigure(sp->prev);
-		    if ( sp->next ) SplineRefigure(sp->next);
-		}
-		if ( sp->next==NULL )
-	    break;
-		sp = sp->next->to;
-		if ( sp==spl->first )
-	    break;
-	    }
-	}
-    } else if ( xoff<yoff/2 ) {
-	/* constrain x */
-	xpos = rint( (b->maxx+b->minx)/2 );
-	for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
-	    sp=spl->first;
-	    while ( 1 ) {
-		if ( sp->selected ) {
-		    sp->prevcp.x += xpos-sp->me.x;
-		    sp->nextcp.x += xpos-sp->me.x;
-		    sp->me.x = xpos;
-		    if ( sp->prev ) SplineRefigure(sp->prev);
-		    if ( sp->next ) SplineRefigure(sp->next);
-		}
-		if ( sp->next==NULL )
-	    break;
-		sp = sp->next->to;
-		if ( sp==spl->first )
-	    break;
-	    }
-	}
-    } else {
-    }
-    CVCharChangedUpdate(&cv->b);
-}
 
 struct rcd {
     CharView *cv;

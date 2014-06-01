@@ -127,7 +127,7 @@ def main():
         print(
 """Now as a normal user, you can compile fontforge by doing:
 
-    ./autogen.sh
+    ./bootstrap
     ./configure
     make -j
 
@@ -141,7 +141,7 @@ or install it:
 
 If you want to make debian FontForge packages, as a normal user, do:
 
-    ./autogen.sh
+    ./bootstrap
     dpkg-buildpackage -rfakeroot -b
 
 Then install packages "{}" in *parent* directory, as root, by doing:

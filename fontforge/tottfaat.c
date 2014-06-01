@@ -111,7 +111,7 @@ static int CountKerns(struct alltabs *at, SplineFont *sf, struct kerncounts *kcn
 	/*  length is a long. BUT... there's a damn binsearch header with */
 	/*  shorts in it still */
 	int b=0;
-	kcnt->hbreaks = galloc((at->gi.gcnt+1)*sizeof(int));
+	kcnt->hbreaks = malloc((at->gi.gcnt+1)*sizeof(int));
 	cnt = 0;
 	for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
 	    j = 0;
@@ -132,7 +132,7 @@ static int CountKerns(struct alltabs *at, SplineFont *sf, struct kerncounts *kcn
 	kcnt->hsubs = 0;
     if ( vcnt>=10000 ) {
 	int b=0;
-	kcnt->vbreaks = galloc((at->gi.gcnt+1)*sizeof(int));
+	kcnt->vbreaks = malloc((at->gi.gcnt+1)*sizeof(int));
 	vcnt = 0;
 	for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
 	    j = 0;
@@ -191,8 +191,8 @@ return;
 	breaks = isv ? kcnt.vbreaks : kcnt.hbreaks;
 	if ( c!=0 ) {
 	    km = isv ? kcnt.mv : kcnt.mh;
-	    glnum = galloc(km*sizeof(uint16));
-	    offsets = galloc(km*sizeof(uint16));
+	    glnum = malloc(km*sizeof(uint16));
+	    offsets = malloc(km*sizeof(uint16));
 	    gid = 0;
 	    for ( b=0; b<bmax; ++b ) {
 		c = bmax==1 ? c : breaks[b];
@@ -652,8 +652,8 @@ static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont
 	if ( k==0 ) {
 	    if ( gcnt==0 )
 return( features );
-	    glyphs = galloc((gcnt+1)*sizeof(SplineChar *));
-	    maps = galloc((gcnt+1)*sizeof(uint16));
+	    glyphs = malloc((gcnt+1)*sizeof(SplineChar *));
+	    maps = malloc((gcnt+1)*sizeof(uint16));
 	} else {
 	    glyphs[gcnt] = NULL; maps[gcnt] = 0;
 	}
@@ -704,7 +704,7 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
 	int ignoremarks) {
     LigList *l;
     struct splinecharlist *comp;
-    uint16 *used = gcalloc(at->maxp.numGlyphs,sizeof(uint16));
+    uint16 *used = calloc(at->maxp.numGlyphs,sizeof(uint16));
     SplineChar **cglyphs;
     uint16 *map;
     int i,j,k,class, state_max, state_cnt, base, last;
@@ -744,8 +744,8 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
 	if ( anymarks )
 	    ++class;
     }
-    cglyphs = galloc((charcnt+1)*sizeof(SplineChar *));
-    map = galloc((charcnt+1)*sizeof(uint16));
+    cglyphs = malloc((charcnt+1)*sizeof(SplineChar *));
+    map = malloc((charcnt+1)*sizeof(uint16));
     j=0;
     for ( i=k=0; i<at->maxp.numGlyphs; ++i ) if ( used[i] ) {
 	j = at->gi.bygid[i];
@@ -775,16 +775,16 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
     /* Note: the ligofme list is so ordered that the longest ligatures come first */
     /*  we will depend on that in the case of "ffl", "ffi", "ff" */
     state_max = 40; state_cnt = 2;
-    states = galloc(state_max*sizeof(struct transition *));
-    states[0] = gcalloc(class,sizeof(struct transition));	/* Initial state */
-    states[1] = gcalloc(class,sizeof(struct transition));	/* other Initial state */
+    states = malloc(state_max*sizeof(struct transition *));
+    states[0] = calloc(class,sizeof(struct transition));	/* Initial state */
+    states[1] = calloc(class,sizeof(struct transition));	/* other Initial state */
     for ( i=0; i<gcnt; ++i ) {
 	if ( state_cnt>=state_max )
-	    states = grealloc(states,(state_max += 40)*sizeof(struct transition *));
+	    states = realloc(states,(state_max += 40)*sizeof(struct transition *));
 	base = state_cnt;
 	states[0][used[glyphs[i]->ttf_glyph]].next_state = state_cnt;
 	states[1][used[glyphs[i]->ttf_glyph]].next_state = state_cnt;
-	states[state_cnt++] = gcalloc(class,sizeof(struct transition));
+	states[state_cnt++] = calloc(class,sizeof(struct transition));
 	for ( l=glyphs[i]->ligofme; l!=NULL; l=l->next ) if ( l->lig->subtable==sub ) {
 	    if ( l->ccnt > maxccnt ) maxccnt = l->ccnt;
 	    last = base;
@@ -795,9 +795,9 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
 		    else {
 			states[last][used[comp->sc->ttf_glyph]].next_state = state_cnt;
 			if ( state_cnt>=state_max )
-			    states = grealloc(states,(state_max += 40)*sizeof(struct transition *));
+			    states = realloc(states,(state_max += 40)*sizeof(struct transition *));
 			last = state_cnt;
-			states[state_cnt++] = gcalloc(class,sizeof(struct transition));
+			states[state_cnt++] = calloc(class,sizeof(struct transition));
 		    }
 		} else {
 		    last = states[last][used[comp->sc->ttf_glyph]].next_state;
@@ -824,7 +824,7 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
     }
     /* Ok, we've got the state machine now. Convert it into apple's wierd */
     /*  (space saving) format */
-    trans = galloc(class*state_cnt*sizeof(struct trans_entries));
+    trans = malloc(class*state_cnt*sizeof(struct trans_entries));
     trans_cnt = 0;
     for ( i=0; i<state_cnt; ++i ) for ( j=0; j<class; ++j ) {
 	if ( states[i][j].ismark )
@@ -870,9 +870,9 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
 	putshort( temp, states[i][j].trans_ent );
 
     /* Now figure out the ligature actions (and all the other tables) */
-    actions = galloc(trans_cnt*maxccnt*sizeof(uint32));
-    components = galloc(trans_cnt*maxccnt*sizeof(uint16));
-    lig_glyphs = galloc(trans_cnt*sizeof(uint16));
+    actions = malloc(trans_cnt*maxccnt*sizeof(uint32));
+    components = malloc(trans_cnt*maxccnt*sizeof(uint16));
+    lig_glyphs = malloc(trans_cnt*sizeof(uint16));
     acnt = lcnt = 0;
     for ( i=0; i<trans_cnt; ++i ) if ( trans[i].l!=NULL ) {
 	lig_glyphs[lcnt] = trans[i].l->lig->u.lig.lig->ttf_glyph;
@@ -934,7 +934,7 @@ static struct feature *aat_dumpmorx_ligatures(struct alltabs *at, SplineFont *sf
     struct feature *cur;
     LigList *l;
 
-    glyphs = galloc((at->maxp.numGlyphs+1)*sizeof(SplineChar *));
+    glyphs = malloc((at->maxp.numGlyphs+1)*sizeof(SplineChar *));
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
 	sf->glyphs[i]->ticked = false;
 
@@ -991,8 +991,8 @@ static void morx_dumpnestedsubs(FILE *temp,SplineFont *sf,OTLookup *otl,struct g
 	    }
 	}
 	if ( !j ) {
-	    glyphs = galloc((gcnt+1)*sizeof(SplineChar *));
-	    map = galloc(gcnt*sizeof(uint16));
+	    glyphs = malloc((gcnt+1)*sizeof(SplineChar *));
+	    map = malloc(gcnt*sizeof(uint16));
 	    glyphs[gcnt] = NULL;
 	}
     }
@@ -1009,7 +1009,7 @@ static uint16 *NamesToGlyphs(SplineFont *sf,char *names,uint16 *cnt) {
 
     for ( c=0, pt=names; *pt; ++pt )
 	if ( *pt==' ' ) ++c;
-    ret = galloc((c+1)*sizeof(uint16));
+    ret = malloc((c+1)*sizeof(uint16));
 
     for ( c=0, pt=names; *pt; ) {
 	while ( *pt==' ' ) ++pt;
@@ -1060,8 +1060,8 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
 	    }
 	}
     }
-    glyphs = galloc((gcnt+1)*sizeof(SplineChar *));
-    map = galloc((gcnt+1)*sizeof(uint16));
+    glyphs = malloc((gcnt+1)*sizeof(SplineChar *));
+    map = malloc((gcnt+1)*sizeof(uint16));
     gcnt = 0;
     for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 && sf->glyphs[at->gi.bygid[i]]->lsidebearing!=1 ) {
 	glyphs[gcnt] = sf->glyphs[at->gi.bygid[i]];
@@ -1070,11 +1070,11 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
     glyphs[gcnt] = NULL;
 
     /* Give each subs tab an index into the mac's substitution lookups */
-    transdata = gcalloc(sm->state_cnt*sm->class_cnt,sizeof(struct transdata));
+    transdata = calloc(sm->state_cnt*sm->class_cnt,sizeof(struct transdata));
     stcnt = 0;
     subslookups = NULL; subsins = NULL;
     if ( sm->type==asm_context ) {
-	subslookups = galloc(2*sm->state_cnt*sm->class_cnt*sizeof(OTLookup));
+	subslookups = malloc(2*sm->state_cnt*sm->class_cnt*sizeof(OTLookup));
 	for ( j=0; j<sm->state_cnt*sm->class_cnt; ++j ) {
 	    struct asm_state *this = &sm->state[j];
 	    transdata[j].mark_index = transdata[j].cur_index = 0xffff;
@@ -1096,7 +1096,7 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
 	    }
 	}
     } else if ( sm->type==asm_insert ) {
-	subsins = galloc(2*sm->state_cnt*sm->class_cnt*sizeof(struct ins));
+	subsins = malloc(2*sm->state_cnt*sm->class_cnt*sizeof(struct ins));
 	for ( j=0; j<sm->state_cnt*sm->class_cnt; ++j ) {
 	    struct asm_state *this = &sm->state[j];
 	    transdata[j].mark_index = transdata[j].cur_index = 0xffff;
@@ -1154,7 +1154,7 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
 	}
     }
 
-    trans = galloc(sm->state_cnt*sm->class_cnt*sizeof(struct trans));
+    trans = malloc(sm->state_cnt*sm->class_cnt*sizeof(struct trans));
     tcnt = 0;
     for ( j=0; j<sm->state_cnt*sm->class_cnt; ++j ) {
 	struct asm_state *this = &sm->state[j];
@@ -1380,7 +1380,7 @@ static uint32 *FormedScripts(SplineFont *sf) {
 			for ( i=0; i<sl->lang_cnt; ++i ) {
 			    if ( (i<MAX_LANG ? sl->langs[i] : sl->morelangs[i-MAX_LANG])==DEFAULT_LANG ) {
 				if ( scnt<=smax )
-				    ret = grealloc(ret,(smax+=5)*sizeof(uint32));
+				    ret = realloc(ret,(smax+=5)*sizeof(uint32));
 				ret[scnt++] = sl->script;
 			    }
 			}
@@ -1392,7 +1392,7 @@ static uint32 *FormedScripts(SplineFont *sf) {
     if ( scnt==0 )
 return( NULL );
     if ( scnt<=smax )
-	ret = grealloc(ret,(smax+=1)*sizeof(uint32));
+	ret = realloc(ret,(smax+=1)*sizeof(uint32));
     ret[scnt] = 0;
 return( ret );
 }
@@ -1479,7 +1479,7 @@ static struct feature *featuresOrderByType(struct feature *features) {
     if ( cnt==1 ) {
 return( features );
     }
-    all = galloc(cnt*sizeof(struct feature *));
+    all = malloc(cnt*sizeof(struct feature *));
     for ( i=0, f=features; f!=NULL; f=f->next, ++i )
 	all[i] = f;
     for ( i=0; i<cnt-1; ++i ) for ( j=i+1; j<cnt; ++j ) {
@@ -1660,7 +1660,7 @@ return;
 	    ++fcnt;		/* Add one for "All Typographic Features" */
 	    ++scnt;		/* Add one for All Features */
 	    at->feat = tmpfile();
-	    at->feat_name = galloc((fcnt+scnt+1)*sizeof(struct feat_name));
+	    at->feat_name = malloc((fcnt+scnt+1)*sizeof(struct feat_name));
 	    putlong(at->feat,0x00010000);
 	    putshort(at->feat,fcnt);
 	    putshort(at->feat,0);
@@ -1838,7 +1838,7 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,
     putlong(at->morx,0);		/* disable */
     fs_cnt += 2;
 
-    buf = galloc(16*1024);
+    buf = malloc(16*1024);
     /* Subtables */
     for ( f=features; f!=NULL; f=f->next ) if ( f->chain==chain ) {
 	putlong(at->morx,f->feature_len+12);		/* Size of header needs to be added */
@@ -2069,7 +2069,7 @@ uint16 *props_array(SplineFont *sf,struct glyphinfo *gi) {
     PST *pst;
     int p;
 
-    props = gcalloc(gi->gcnt+1,sizeof(uint16));
+    props = calloc(gi->gcnt+1,sizeof(uint16));
     props[gi->gcnt] = -1;
 
     for ( i=0; i<gi->gcnt; ++i ) if ( (p = gi->bygid==NULL ? i : gi->bygid[i])!=-1 ) {
@@ -2235,7 +2235,7 @@ return( 0xffff );
 }
 
 int16 *PerGlyphDefBaseline(SplineFont *sf,int *def_baseline) {
-    int16 *baselines = galloc(sf->glyphcnt*sizeof(int16));
+    int16 *baselines = malloc(sf->glyphcnt*sizeof(int16));
     int gid, bsln, i, any;
     SplineChar *sc;
     int counts[32];		/* Apple supports a max of 32 baselines, but only 5 are defined */
