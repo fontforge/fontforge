@@ -192,12 +192,12 @@ AC_PROG_SED
 # a few checks and searches for programs and libraries.
 # NOTE: Some distros don't have /usr/local included in the /etc/ld.so PATH,
 # so, PKG_CHECK_MODULES may not find libraries you compile into /usr/local.
-m4_ifndef([PKG_PROG_PKG_CONFIG],
-    [m4_fatal([Could not locate the pkg-config autoconf macros.
-  These are usually located in /usr/share/aclocal/pkg.m4. If your macros
-  are in a different location, try setting the environment variable
-  ACLOCAL="aclocal -I/other/macro/dir" before running autoreconf.])])
-PKG_PROG_PKG_CONFIG
+m4_ifndef([PKG_PROG_PKG_CONFIG],[m4_fatal(
+  [Could not locate the pkg-config autoconf macros.
+   These are usually located in /usr/share/aclocal/pkg.m4. If your macros
+   are in a different location, try setting the environment variable
+   ACLOCAL="aclocal -I/other/macro/dir" before running autoreconf.])])
+PKG_PROG_PKG_CONFIG([0.25])
 
 AC_PATH_PROG([MSGFMT],[msgfmt],[msgfmt])
 AC_PATH_PROG([XGETTEXT],[xgettext],[xgettext])
