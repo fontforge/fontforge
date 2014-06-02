@@ -1,3 +1,25 @@
+Installing FontForge
+====================
+
+1. Dependencies
+---------------
+
+Note that you should have build tools, build dependencies
+and runtime dependencies installed. The exact method to do this
+depends on your OS.
+
+On Ubuntu, for example, you should get:
+
+```
+sudo apt-get install packaging-dev pkg-config python-dev libpango1.0-dev libglib2.0-dev libxml2-dev giflib-dbg libjpeg-dev libtiff-dev
+```
+
+If you want to draw Spiro curves, you will need 
+[libspiro](https://github.com/fontforge/libspiro) too.
+
+2. Installing
+-------------
+
 To install from a git checkout:
 
 ```
@@ -7,23 +29,18 @@ make
 [sudo] make install
 ```
 
-Note that you should have build tools, build dependencies
-and runtime dependencies installed. The exact method to do this
-depends on your OS. On Ubuntu, for example, you should get:
- - [packaging-dev](https://apps.ubuntu.com/cat/applications/packaging-dev/)
-   should get you covered for building
- - you can see the build dependencies in the
-   [debian/control](https://github.com/fontforge/fontforge/blob/master/debian/control)
-   file
+**Note:** you can see the build dependencies in the
+[debian/control](https://github.com/fontforge/fontforge/blob/master/debian/control)
+file (or you can run `sudo ./debian/deb-build-dep` if you have aptitude to automate
+this).
 
-(or you can run `sudo ./debian/deb-build-dep` if you have aptitude to automate this)
+3. Linking
+----------
 
- - for the runtime dependencies you also need
-   to install [libspiro](https://github.com/fontforge/libspiro)
- 
- 
 If after installation, running `fontforge` gives you some
 "*.so cannot open shared object file" style errors, you
 might have to run this as well:
 
-    sudo ldconfig
+```
+sudo ldconfig
+```
