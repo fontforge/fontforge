@@ -26,8 +26,8 @@
 
 include $(top_srcdir)/mk/layout.am
 
-FFAPP_FILES = classes.nib info.nib keyedobjects.nib
-EXTRA_DIST = $(FFAPP_FILES)
+FFAPP_FILES = classes.nib info.nib objects.nib
+EXTRA_DIST = $(FFAPP_FILES) info.nib.orig objects.nib.orig
 
 if PLATFORM_OSX
    ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/MainMenu.nib
