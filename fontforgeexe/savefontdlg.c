@@ -108,10 +108,6 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_FontLog		1116
 #define CID_TTF_DummyDSIG	1117
 
-#ifdef HAVE_PTHREAD_H
-#include <pthread.h>
-#endif
-
 struct gfc_data {
     int done;
     int sod_done;
@@ -135,11 +131,6 @@ struct gfc_data {
     SplineFont *sf;
     EncMap *map;
     int layer;
-#ifdef HAVE_PTHREAD_H
-    uint8 please_die_thread;
-    uint8 thread_active;
-    pthread_t validate_thread;
-#endif
 };
 
 static GTextInfo formattypes[] = {
@@ -1514,13 +1505,6 @@ return;
 	    }
 	}
     } else if ( !d->sf->multilayer && !d->sf->strokedfont && !d->sf->onlybitmaps ) {
-#ifdef HAVE_PTHREAD_H
-	if ( d->thread_active ) {
-	    d->please_die_thread = true;
-	    pthread_join(d->validate_thread,NULL);
-	    d->thread_active = false;
-	}
-#endif
 	if ( oldformatstate == ff_ptype3 || oldformatstate == ff_none )
 	    /* No point in validating type3 fonts */;
 	else if ( (old_validate = GGadgetIsChecked(d->validate))) {
@@ -3180,14 +3164,7 @@ return( 0 );
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !d.done )
-	GDrawProcessOneEvent(NULL);
+        GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
-#ifdef HAVE_PTHREAD_H
-    if ( d.thread_active ) {
-	d.please_die_thread = true;
-	pthread_join(d.validate_thread,NULL);
-	d.thread_active = false;
-    }
-#endif
 return(d.ret);
 }
