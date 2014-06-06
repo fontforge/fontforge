@@ -1,20 +1,25 @@
 Contributing to FontForge
 =========================
 
-Reporting a bug
+Reporting An Issue
 ---------------
 
-1. Please head over to the [GitHub issue tracker](https://github.com/fontforge/fontforge/issues).
-2. Up in the search box, try to search and see if the problem you are facing was reported already.
-   - If it was, please put your own report with the FontForge version, symptoms, error message and
-     your Operating System (Windows, Mac OS, GNU+Linux, ...). If the current report is similar to
-     what you are facing, please bump the issue so that developers are aware that it still warrants
-     a fix.
-   - If it was not, just open up a new issue.
+Please head over to the [GitHub issue tracker](https://github.com/fontforge/fontforge/issues).
+
+Up in the search box, try to search and see if the problem you are facing was reported already.
+
+- If it was, please put your own report with the FontForge version, symptoms, error message and
+  your Operating System (Windows, Mac OS, GNU+Linux, ...). If the current report is similar to
+  what you are facing, please bump the issue so that developers are aware that it still warrants
+  a fix.
+
+- If it was not, just open up a new issue.
+
+- If you are reporting a crash, include a debugger backtrace report, a file to reproduce the crash with, and step by step instructions (ideally a screencast video) to reproduce it
 
 Thank you!
 
-Contributing to upstream
+Contributing Code
 ------------------------
 
 ### Coding Style
