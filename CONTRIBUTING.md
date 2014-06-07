@@ -42,5 +42,5 @@ Pull Requests are submitted via GitHub, an online developers’ network.
 - Commit your changes locally using `git`, and push them to your personal fork.
 - From the main page of your fork, click on the green “Fork” button in order to submit a Pull
   Request.
-
-**Note:** All Pull Requests will be tested via [Travis CI](https://travis-ci.org/) before merge.
+- Your pull request will be tested via [Travis CI](https://travis-ci.org/) to automatically indicate that your changes do not prevent compilation. FontForge is a big program, so Travis can easily take over 20 minutes to confirm your changes are buildable. Please be patient. 
+- If it reports back that there are problems, you can log into the Travis system and check the log report for your pull request to see what the problem was. If no error is shown, just re-run the Travis test for your pull-request (that failed) to see a fresh report since the last report may be for someone else that did a later pull request, or for mainline code. If you add new code to fix your issue/problem, then take note that you need to check the next pull request in the Travis system. Travis issue numbers are different from GitHub issue numbers.
