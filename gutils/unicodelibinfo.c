@@ -103,7 +103,7 @@ char *unicode_name(int32 unienc) {
 
     char *name_data=NULL;
 #ifndef _NO_LIBUNINAMESLIST
-#ifndef _LIBUNINAMESLIST_FUN
+#if (_LIBUNINAMESLIST_FUN >= 3)
     /* old libuninameslist library code */
     if ( _UnicodeNameAnnot!=NULL &&
 	    _UnicodeNameAnnot[unienc>>16][(unienc>>8)&0xff][unienc&0xff].name!=NULL ) {
@@ -224,7 +224,7 @@ char *unicode_annot(int32 unienc) {
     char *annot_data=NULL;
 
 #ifndef _NO_LIBUNINAMESLIST
-#ifndef _LIBUNINAMESLIST_FUN
+#if (_LIBUNINAMESLIST_FUN >= 3)
     /* old libuninameslist library code */
     if ( _UnicodeNameAnnot!=NULL &&
 	    _UnicodeNameAnnot[unienc>>16][(unienc>>8)&0xff][unienc&0xff].annot!=NULL ) {
@@ -332,7 +332,7 @@ char *unicode_library_version(void) {
 /* realize that these need to be updated to keep current too but not made */
 /* at same time that FontForge is released (release dates not in sync).   */
 
-#if !(_NO_LIBUNINAMESLIST) && _LIBUNINAMESLIST_FUN
+#if !(_NO_LIBUNINAMESLIST) && (_LIBUNINAMESLIST_FUN >= 3)
     /* libuninameslist-0.3.20130501-1 and later have a "version" function */
     char *version_str;
 

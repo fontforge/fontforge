@@ -32,7 +32,7 @@ test x"${i_do_have_tifflib}" = xyes -a x"${__have_libtiff_pkg_config}" != xyes  
 test x"${i_do_have_giflib}" = xyes && __private_deps="${__private_deps} ${GIFLIB_LIBS}"
 test x"${i_do_have_libjpeg}" = xyes && __private_deps="${__private_deps} ${LIBJPEG_LIBS}"
 test x"${i_do_have_libspiro}" = xyes && test x"${with_libspiro}" != xno && __private_deps="${__private_deps} ${LIBSPIRO_LIBS}"
-test x"${i_do_have_libuninameslist}" = xyes && __private_deps="${__private_deps} ${LIBUNINAMESLIST_LIBS}"
+test x"${i_do_have_libuninameslist}" = xyes && test x"${with_libuninameslist}" && __private_deps="${__private_deps} ${LIBUNINAMESLIST_LIBS}"
 test x"${i_do_have_libunicodenames}" = xyes && __private_deps="${__private_deps} ${LIBUNICODENAMES_LIBS}"
 test x"${i_do_have_x}" = xyes && __private_deps="${__private_deps} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS}"
 __private_deps="${__private_deps} ${PTHREAD_LIBS}"
