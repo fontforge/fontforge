@@ -172,28 +172,49 @@ else
 fi
 ])
 
-dnl A macro that will not be needed if we can count on libspiro
-dnl having a pkg-config file. 
-dnl
 dnl FONTFORGE_ARG_WITH_LIBSPIRO
 dnl ---------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_LIBSPIRO],
-[
-FONTFORGE_ARG_WITH_BASE([libspiro],
-   [AS_HELP_STRING([--without-libspiro],[build without support for Spiro contours])],
-   [libspiro],
-   [FONTFORGE_WARN_PKG_NOT_FOUND([LIBSPIRO])],
-   [_NO_LIBSPIRO],
-   [
-      FONTFORGE_SEARCH_LIBS([TaggedSpiroCPsToBezier],[spiro],
-         [i_do_have_libspiro=yes
-          AC_SUBST([LIBSPIRO_CFLAGS],[""])
-          AC_SUBST([LIBSPIRO_LIBS],["${found_lib}"])
-          FONTFORGE_WARN_PKG_FALLBACK([LIBSPIRO])
-          AC_CHECK_FUNC([TaggedSpiroCPsToBezier0],[AC_DEFINE([_LIBSPIRO_FUN],
-                        [1],[Libspiro returns true or false.])])],
+dnl Add with libspiro support by default (only if libspiro library exists AND
+dnl spiroentrypoints.h header file exist). If both found, then check further
+dnl to see if this version of libspiro also has TaggedSpiroCPsToBezier0().
+dnl If TaggedSpiroCPsToBezier0() also exists, then also set _LIBSPIRO_FUN=1
+dnl If user defines --without-libspiro, then do not include libspiro.
+dnl If user defines --with-libspiro, then fail with error if there is no
+dnl libspiro library OR no spiroentrypoints.h header file.
+AC_DEFUN([FONTFORGE_ARG_WITH_LIBSPIRO],[
+AC_ARG_WITH([libspiro],[AS_HELP_STRING([--without-libspiro],[build without support for Spiro contours])],
+            [],[with_libspiro=check])
+
+AC_ARG_VAR([LIBSPIRO_CFLAGS],[C compiler flags for LIBSPIRO, overriding automatic detection])
+AC_ARG_VAR([LIBSPIRO_LIBS],[linker flags for LIBSPIRO, overriding automatic detection])
+AC_CHECK_HEADER([spiroentrypoints.h],[i_do_have_libspiro=yes],[i_do_have_libspiro=no])
+if test "x$i_do_have_libspiro" = xyes; then
+   FONTFORGE_SEARCH_LIBS([TaggedSpiroCPsToBezier],[spiro],
+         [LIBSPIRO_LIBS="LIBSPIRO_LIBS ${found_lib}"
+          AC_CHECK_FUNC([TaggedSpiroCPsToBezier0],
+                [AC_DEFINE([_LIBSPIRO_FUN],[1],[LibSpiro >= 0.2, includes TaggedSpiroCPsToBezier0()])])],
          [i_do_have_libspiro=no])
-   ])
+fi
+
+AC_MSG_CHECKING([Build with libspiro support?])
+if test "x$with_libspiro" = xyes; then
+   if test "x$i_do_have_libspiro" != xno; then
+      AC_MSG_RESULT([yes])
+   else
+      AC_MSG_FAILURE([ERROR: Please install the Developer version of libspiro],[1])
+   fi
+else
+   if test "x$i_do_have_libspiro" = xno || test "x$with_libspiro" = xno; then
+      AC_MSG_RESULT([no])
+      AC_DEFINE([_NO_LIBSPIRO],[1],[Define if not using libspiro library])
+      LIBSPIRO_CFLAGS=""
+      LIBSPIRO_LIBS=""
+   else
+      AC_MSG_RESULT([yes])
+   fi
+fi
+AC_SUBST([LIBSPIRO_CFLAGS])
+AC_SUBST([LIBSPIRO_LIBS])
 ])
 
 
