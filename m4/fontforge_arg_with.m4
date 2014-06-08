@@ -188,23 +188,23 @@ AC_ARG_WITH([libspiro],[AS_HELP_STRING([--without-libspiro],[build without suppo
 AC_ARG_VAR([LIBSPIRO_CFLAGS],[C compiler flags for LIBSPIRO, overriding automatic detection])
 AC_ARG_VAR([LIBSPIRO_LIBS],[linker flags for LIBSPIRO, overriding automatic detection])
 AC_CHECK_HEADER([spiroentrypoints.h],[i_do_have_libspiro=yes],[i_do_have_libspiro=no])
-if test "x$i_do_have_libspiro" = xyes; then
+if test x"${i_do_have_libspiro}" = xyes; then
    FONTFORGE_SEARCH_LIBS([TaggedSpiroCPsToBezier],[spiro],
-         [LIBSPIRO_LIBS="LIBSPIRO_LIBS ${found_lib}"
+         [LIBSPIRO_LIBS="${LIBSPIRO_LIBS} ${found_lib}"
           AC_CHECK_FUNC([TaggedSpiroCPsToBezier0],
                 [AC_DEFINE([_LIBSPIRO_FUN],[1],[LibSpiro >= 0.2, includes TaggedSpiroCPsToBezier0()])])],
          [i_do_have_libspiro=no])
 fi
 
 AC_MSG_CHECKING([Build with libspiro support?])
-if test "x$with_libspiro" = xyes; then
-   if test "x$i_do_have_libspiro" != xno; then
+if test x"${with_libspiro}" = xyes; then
+   if test x"${i_do_have_libspiro}" != xno; then
       AC_MSG_RESULT([yes])
    else
       AC_MSG_FAILURE([ERROR: Please install the Developer version of libspiro],[1])
    fi
 else
-   if test "x$i_do_have_libspiro" = xno || test "x$with_libspiro" = xno; then
+   if test x"${i_do_have_libspiro}" = xno || test x"${with_libspiro}" = xno; then
       AC_MSG_RESULT([no])
       AC_DEFINE([_NO_LIBSPIRO],[1],[Define if not using libspiro library])
       LIBSPIRO_CFLAGS=""
