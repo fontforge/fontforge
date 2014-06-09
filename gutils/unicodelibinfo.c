@@ -107,13 +107,13 @@ char *unicode_name(int32 unienc) {
 
     char *name_data=NULL;
 #ifndef _NO_LIBUNINAMESLIST
-#if (_LIBUNINAMESLIST_FUN >= 3)
+#if (_LIBUNINAMESLIST_FUN <= 3)
     /* old libuninameslist library code */
     if ( _UnicodeNameAnnot!=NULL &&
 	    _UnicodeNameAnnot[unienc>>16][(unienc>>8)&0xff][unienc&0xff].name!=NULL ) {
 	name_data=copy(_UnicodeNameAnnot[unienc>>16][(unienc>>8)&0xff][unienc&0xff].name);
     }
-    //fprintf(stderr,"use old code library ->%s<-\n",name_data\n");
+    //fprintf(stderr,"use old code library ->%s<-\n",name_data);
 #else
     /* new libuninameslist library code */
     name_data=copy(uniNamesList_name(unienc));
@@ -122,7 +122,7 @@ char *unicode_name(int32 unienc) {
 #else
     /* libunicodesnames library code */
     name_data=copy(uninm_name(names_db,(unsigned int)(unienc)));
-    //fprintf(stderr,"libunicodes library ->%s<-\n",name_data\n");
+    //fprintf(stderr,"libunicodes library ->%s<-\n",name_data);
 #endif
 
     /* George Williams' improvisation on Hangul Syllable range
