@@ -31,26 +31,57 @@ AC_DEFUN([FONTFORGE_ARG_WITH],
    [FONTFORGE_ARG_WITH_BASE([$1],[$2],[$3],[$4],[$5],[eval AS_TR_SH(i_do_have_$1)=no])])
 
 
-dnl FONTFORGE_ARG_WITH_LIBNAMESLIST
-dnl -------------------------------
-dnl Check if libuninameslist exists, and if yes, then also see if it has 3 newer functions in it
-AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST],
-[
-   FONTFORGE_ARG_WITH_BASE([libuninameslist],
+dnl FONTFORGE_ARG_WITH_LIBUNINAMESLIST
+dnl ----------------------------------
+dnl Add with libuninameslist support by default (only if the libuninameslist
+dnl library exists AND uninameslist.h header file exist). If both are found,
+dnl then check further to see if this version of libuninameslist also has
+dnl uniNamesList_NamesListVersion(). If uniNamesList_NamesListVersion() also
+dnl exists, then set _LIBUNINAMESLIST_FUN=3 since this is version >= 0.3.
+dnl If uniNamesList_blockCount() also exists, then _LIBUNINAMESLIST_FUN>=4
+dnl If user defines --without-libuninameslist, then don't use libuninameslist.
+dnl If user defines --with-libuninameslist, then fail with error if there is
+dnl no libuninameslist library OR no uninameslist.h header file.
+AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST],[
+AC_ARG_WITH([libuninameslist],
       [AS_HELP_STRING([--without-libuninameslist],[build without Unicode Name or Annotation support])],
-      [libuninameslist],
-      [FONTFORGE_WARN_PKG_NOT_FOUND([LIBUNINAMESLIST])],
-      [_NO_LIBUNINAMESLIST],
-      [
-       FONTFORGE_SEARCH_LIBS([UnicodeNameAnnot],[uninameslist],
-         [i_do_have_libuninameslist=yes
-          AC_SUBST([LIBUNINAMESLIST_CFLAGS],[""])
-          AC_SUBST([LIBUNINAMESLIST_LIBS],["${found_lib}"])
-          AC_CHECK_FUNC([uniNamesList_NamesListVersion],[i_do_have_libuninamesfun=yes
-			AC_DEFINE([_LIBUNINAMESLIST_FUN],
-                        [1],[Libuninameslist library has 3 new functions.])])],
-         [i_do_have_libuninameslist=no])
-       ])
+      [],[with_libuninameslist=check])
+
+AC_ARG_VAR([LIBUNINAMESLIST_CFLAGS],[C compiler flags for LIBUNINAMESLIST, overriding automatic detection])
+AC_ARG_VAR([LIBUNINAMESLIST_LIBS],[linker flags for LIBUNINAMESLIST, overriding automatic detection])
+AC_CHECK_HEADER([uninameslist.h],[i_do_have_libuninameslist=yes],[i_do_have_libuninameslist=no])
+if test x"${i_do_have_libuninameslist}" = xyes; then
+   have_libuninameslist=0
+   FONTFORGE_SEARCH_LIBS([UnicodeNameAnnot],[uninameslist],
+      [LIBUNINAMESLIST_LIBS="${LIBUNINAMESLIST_LIBS} ${found_lib}"
+       AC_CHECK_FUNC([uniNamesList_NamesListVersion],[have_libuninameslist=3])
+       AC_CHECK_FUNC([uniNamesList_blockCount],[have_libuninameslist=4])
+       AC_DEFINE_UNQUOTED([_LIBUNINAMESLIST_FUN],[$have_libuninameslist],[LibUninNamesList library >= 0.3])
+      ],[i_do_have_libuninameslist=no])
+fi
+
+AC_MSG_CHECKING([Build with LibUniNamesList Unicode support?])
+if test x"${with_libuninameslist}" = xyes; then
+   if test x"${i_do_have_libuninameslist}" != xno; then
+      AC_MSG_RESULT([yes])
+   else
+      AC_MSG_FAILURE([ERROR: Please install the Developer version of libuninameslist],[1])
+   fi
+else
+   if test x"${i_do_have_libuninameslist}" = xno || test x"${with_libuninameslist}" = xno; then
+      AC_MSG_RESULT([no])
+      AC_DEFINE([_NO_LIBUNINAMESLIST],[1],[Define if not using libuninameslist library])
+      LIBUNINAMESLIST_CFLAGS=""
+      LIBUNINAMESLIST_LIBS=""
+   else
+      AC_MSG_RESULT([yes])
+   fi
+fi
+AC_SUBST([LIBUNINAMESLIST_CFLAGS])
+AC_SUBST([LIBUNINAMESLIST_LIBS])
+
+AC_DEFINE([_NO_LIBUNICODENAMES],[1],[Define if not using libunicodenames])
+i_do_have_libunicodenames=no
 ])
 
 
@@ -87,6 +118,9 @@ else
    FONTFORGE_WARN_PKG_NOT_FOUND([LIBUNICODENAMES])
    AC_DEFINE([_NO_LIBUNICODENAMES],1,[Define if not using libunicodenames.])
 fi
+AC_DEFINE([_NO_LIBUNINAMESLIST],[1],[Define if not using libuninameslist library])
+i_do_have_libuninameslist=nocheck
+with_libuninameslist=no
 ])
 
 
@@ -172,28 +206,49 @@ else
 fi
 ])
 
-dnl A macro that will not be needed if we can count on libspiro
-dnl having a pkg-config file. 
-dnl
 dnl FONTFORGE_ARG_WITH_LIBSPIRO
 dnl ---------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_LIBSPIRO],
-[
-FONTFORGE_ARG_WITH_BASE([libspiro],
-   [AS_HELP_STRING([--without-libspiro],[build without support for Spiro contours])],
-   [libspiro],
-   [FONTFORGE_WARN_PKG_NOT_FOUND([LIBSPIRO])],
-   [_NO_LIBSPIRO],
-   [
-      FONTFORGE_SEARCH_LIBS([TaggedSpiroCPsToBezier],[spiro],
-         [i_do_have_libspiro=yes
-          AC_SUBST([LIBSPIRO_CFLAGS],[""])
-          AC_SUBST([LIBSPIRO_LIBS],["${found_lib}"])
-          FONTFORGE_WARN_PKG_FALLBACK([LIBSPIRO])
-          AC_CHECK_FUNC([TaggedSpiroCPsToBezier0],[AC_DEFINE([_LIBSPIRO_FUN],
-                        [1],[Libspiro returns true or false.])])],
+dnl Add with libspiro support by default (only if libspiro library exists AND
+dnl spiroentrypoints.h header file exist). If both found, then check further
+dnl to see if this version of libspiro also has TaggedSpiroCPsToBezier0().
+dnl If TaggedSpiroCPsToBezier0() also exists, then also set _LIBSPIRO_FUN=1
+dnl If user defines --without-libspiro, then do not include libspiro.
+dnl If user defines --with-libspiro, then fail with error if there is no
+dnl libspiro library OR no spiroentrypoints.h header file.
+AC_DEFUN([FONTFORGE_ARG_WITH_LIBSPIRO],[
+AC_ARG_WITH([libspiro],[AS_HELP_STRING([--without-libspiro],[build without support for Spiro contours])],
+            [],[with_libspiro=check])
+
+AC_ARG_VAR([LIBSPIRO_CFLAGS],[C compiler flags for LIBSPIRO, overriding automatic detection])
+AC_ARG_VAR([LIBSPIRO_LIBS],[linker flags for LIBSPIRO, overriding automatic detection])
+AC_CHECK_HEADER([spiroentrypoints.h],[i_do_have_libspiro=yes],[i_do_have_libspiro=no])
+if test x"${i_do_have_libspiro}" = xyes; then
+   FONTFORGE_SEARCH_LIBS([TaggedSpiroCPsToBezier],[spiro],
+         [LIBSPIRO_LIBS="${LIBSPIRO_LIBS} ${found_lib}"
+          AC_CHECK_FUNC([TaggedSpiroCPsToBezier0],
+                [AC_DEFINE([_LIBSPIRO_FUN],[1],[LibSpiro >= 0.2, includes TaggedSpiroCPsToBezier0()])])],
          [i_do_have_libspiro=no])
-   ])
+fi
+
+AC_MSG_CHECKING([Build with libspiro support?])
+if test x"${with_libspiro}" = xyes; then
+   if test x"${i_do_have_libspiro}" != xno; then
+      AC_MSG_RESULT([yes])
+   else
+      AC_MSG_FAILURE([ERROR: Please install the Developer version of libspiro],[1])
+   fi
+else
+   if test x"${i_do_have_libspiro}" = xno || test x"${with_libspiro}" = xno; then
+      AC_MSG_RESULT([no])
+      AC_DEFINE([_NO_LIBSPIRO],[1],[Define if not using libspiro library])
+      LIBSPIRO_CFLAGS=""
+      LIBSPIRO_LIBS=""
+   else
+      AC_MSG_RESULT([yes])
+   fi
+fi
+AC_SUBST([LIBSPIRO_CFLAGS])
+AC_SUBST([LIBSPIRO_LIBS])
 ])
 
 

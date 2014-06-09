@@ -31,7 +31,9 @@
 #include <basics.h>
 
 /* These functions are used with uninameslist or unicodenames library, if */
-/* available  (oldest function listed first, latest function listed last) */
+/* available (oldest function listed first, latest function listed last). */
+/* These functions simplify the interface between FontForge and libraries */
+/* so that either library can be used or none at all with common results. */
 extern void inituninameannot(void);
 extern char *unicode_name(int32 unienc);
 extern char *unicode_annot(int32 unienc);
@@ -39,7 +41,6 @@ extern int32 unicode_block_start(int32 block_i);
 extern int32 unicode_block_end(int32 block_i);
 extern char *unicode_block_name(int32 block_i);
 extern char *unicode_library_version(void);
-
-
+extern int32 unicode_block_count(void);
 
 #endif
