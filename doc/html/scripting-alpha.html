@@ -3286,6 +3286,13 @@ SetGasp([8,2,16,1,65535,3])
 	    If there is no unicode annotation for this value, or no library available,
 	    then return empty string "". It can execute with no current font.
 	  <DT>
+	    <A NAME="UnicodeBlockCountFromLib">U</A>nicodeBlockCountFromLib()
+	  <DD>
+	    Return the number of Unicode Blocks for this list as described by www.unicode.org.
+	    Currently, the blocks are {0..233}, spanning unicode values {uni0..uni10FFFF}.
+	    If there is no library available, then return -1.
+	    This can execute with no current font.
+	  <DT>
 	    <A NAME="UnicodeBlockEndFromLib">U</A>nicodeBlockEndFromLib(val)
 	  <DD>
 	    Returns the Unicode Block end value as described by www.unicode.org.

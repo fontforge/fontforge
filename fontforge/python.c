@@ -754,6 +754,12 @@ static PyObject *PyFF_UnicodeNameFromLib(PyObject *UNUSED(self), PyObject *args)
     return( ret );
 }
 
+static PyObject *PyFF_UnicodeBlockCountFromLib(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+/* If the library is available, then return the number of name blocks */
+
+    return( Py_BuildValue("i", unicode_block_count()) );
+}
+
 static PyObject *PyFF_UnicodeBlockStartFromLib(PyObject *UNUSED(self), PyObject *args) {
 /* If the library is available, then get the official start for this unicode block */
 /* Use this function with UnicodeBlockNameFromLib(n) & UnicodeBlockEndFromLib(n). */
@@ -4189,7 +4195,7 @@ static PyTypeObject PyFF_LayerType = {
     NULL,                      /* tp_getattro */
     NULL,                      /* tp_setattro */
     NULL,                      /* tp_as_buffer */
-    PY3OR2(Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, 
+    PY3OR2(Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
 	   Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES), /* tp_flags */
     "fontforge Layer objects", /* tp_doc */
     NULL /*(traverseproc)FFLayer_traverse*/,  /* tp_traverse */
@@ -17519,6 +17525,7 @@ PyMethodDef module_fontforge_methods[] = {
     { "nameFromUnicode", PyFF_NameFromUnicode, METH_VARARGS, "Given a unicode code point and (optionally) a namelist, find the corresponding glyph name" },
     { "UnicodeNameFromLib", PyFF_UnicodeNameFromLib, METH_VARARGS, "Return the www.unicode.org name for a given unicode character value" },
     { "UnicodeAnnotationFromLib", PyFF_UnicodeAnnotationFromLib, METH_VARARGS, "Return the www.unicode.org annotation(s) for a given unicode character value" },
+    { "UnicodeBlockCountFromLib", PyFF_UnicodeBlockCountFromLib, METH_NOARGS, "Return the www.unicode.org block count" },
     { "UnicodeBlockStartFromLib", PyFF_UnicodeBlockStartFromLib, METH_VARARGS, "Return the www.unicode.org block start, for example block[0]={0..127} -> 0" },
     { "UnicodeBlockEndFromLib", PyFF_UnicodeBlockEndFromLib, METH_VARARGS, "Return the www.unicode.org block end, for example block[1]={128..255} -> 255" },
     { "UnicodeBlockNameFromLib", PyFF_UnicodeBlockNameFromLib, METH_VARARGS, "Return the www.unicode.org block name, for example block[2]={256..383} -> Latin Extended-A" },
@@ -17572,7 +17579,7 @@ PyMethodDef module_fontforge_methods[] = {
     PYMETHODDEF_EMPTY,
     PYMETHODDEF_EMPTY,
     PYMETHODDEF_EMPTY,
-    
+
     PYMETHODDEF_EMPTY  /* Sentinel */
 };
 

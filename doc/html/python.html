@@ -288,6 +288,14 @@
 	then return empty string "". It can execute with no current font.</TD>
     </TR>
     <TR>
+      <TD><CODE>UnicodeBlockCountFromLib</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Return the number of Unicode Blocks as described by www.unicode.org.
+	Currently, the blocks are {0..233}, spanning unicode values {uni0..uni10FFFF}.
+	If there is no value, or no library available, then return -1.
+	This can execute with no current font.</TD>
+    </TR>
+    <TR>
       <TD><CODE>UnicodeBlockEndFromLib</CODE></TD>
       <TD><CODE>(n)</CODE></TD>
       <TD>Returns the Unicode Block end value as described by www.unicode.org.
