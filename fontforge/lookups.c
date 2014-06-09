@@ -35,6 +35,7 @@
 #include <stdarg.h>
 #include "ttf.h"
 #include "lookups.h"
+#include "xvasprintf.h"
 
 struct opentype_feature_friendlynames friendlies[] = {
     { CHR('a','a','l','t'),	"aalt", N_("Access All Alternates"),	gsub_single_mask|gsub_alternate_mask },

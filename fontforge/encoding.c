@@ -38,6 +38,7 @@
 #include "psfont.h"
 #include "ffglib.h"
 #include <glib/gprintf.h>
+#include "xvasprintf.h"
 
 Encoding *default_encoding = NULL;
 
