@@ -4007,7 +4007,7 @@ return( true );
 	    sf = pstkd->sf;
 	    oldsfd = SFDCreateUndoForLookup( sf, lookup_type );
 
-	    if( DEBUG )
+	    if( DEBUG && oldsfd )
 		GFileWriteAll( "/tmp/old-lookup-table.sfd", oldsfd );
 	}
 
