@@ -157,7 +157,6 @@ libpng_url="http://www.libpng.org/"
 libxml_url="http://www.xmlsoft.org/"
 libspiro_url="https://github.com/fontforge/libspiro"
 libuninameslist_url="https://github.com/fontforge/libuninameslist"
-libunicodenames_url="https://bitbucket.org/sortsmill/libunicodenames"
 libzmq_url="http://www.zeromq.org/"
 libreadline_url="http://www.gnu.org/software/readline"
 
@@ -337,26 +336,13 @@ FONTFORGE_ARG_WITH_LIBPNG
 FONTFORGE_ARG_WITH_LIBTIFF
 FONTFORGE_ARG_WITH_LIBSPIRO
 FONTFORGE_ARG_WITH_LIBUNINAMESLIST
-FONTFORGE_ARG_WITH_LIBUNICODENAMES
+#FONTFORGE_ARG_WITH_LIBUNICODENAMES
 FONTFORGE_ARG_WITH_ZEROMQ
 FONTFORGE_ARG_WITH_LIBREADLINE
 
 if test x"${i_do_have_x}" = xyes; then
    if test x"${i_do_have_libzmq}" = xyes; then
       AC_DEFINE(BUILD_COLLAB,[1],[Build the Collab Code])
-   fi
-fi
-
-# We have both libraries but did not choose which one to use yet
-if test x"${i_do_have_libuninameslist}" = xyes; then
-   if test x"${i_do_have_libunicodenames}" = xyes; then
-      if test x"${i_do_have_libuninamesfun}" = xyes; then
-	  i_do_have_libunicodenames=no
-	  AC_DEFINE(_NO_LIBUNICODENAMES)
-      else
-	  i_do_have_libuninameslist=no
-	  AC_DEFINE(_NO_LIBUNINAMESLIST)
-      fi
    fi
 fi
 
@@ -765,17 +751,17 @@ Summary of optional features:
 
 Summary of optional dependencies:
 
-  cairo			${i_do_have_cairo}  	${cairo_url}
-  libspiro		${i_do_have_libspiro}  	${libspiro_url}
-  giflib		${i_do_have_giflib}  	${giflib_url}
-  libjpeg		${i_do_have_libjpeg}  	${libjpeg_url}
-  libpng		${i_do_have_libpng}  	${libpng_url}
-  libtiff		${i_do_have_libtiff}  	${libtiff_url}
-  libuninameslist	${i_do_have_libuninameslist}  	${libuninameslist_url}
-  libunicodenames	${i_do_have_libunicodenames}  	${libunicodenames_url}
-  zeromq (libzmq)	${i_do_have_libzmq}  	${libzmq_url}
-  libreadline		${i_do_have_libreadline}  	${libreadline_url}
-  X Window System	${i_do_have_x}
+Optional Library	UseIt?	HaveIt?	WebsiteURL
+  cairo				${i_do_have_cairo}	${cairo_url}
+  libspiro		${with_libspiro}	${i_do_have_libspiro}	${libspiro_url}
+  giflib			${i_do_have_giflib}	${giflib_url}
+  libjpeg			${i_do_have_libjpeg}	${libjpeg_url}
+  libpng			${i_do_have_libpng}	${libpng_url}
+  libtiff			${i_do_have_libtiff}	${libtiff_url}
+  libuninameslist	${with_libuninameslist}	${i_do_have_libuninameslist}	${libuninameslist_url}
+  zeromq (libzmq)		${i_do_have_libzmq}	${libzmq_url}
+  libreadline			${i_do_have_libreadline}	${libreadline_url}
+  X Window System		${i_do_have_x}
 ])
 
 #--------------------------------------------------------------------------

@@ -861,6 +861,37 @@ static void MVCreateFields(MetricsView *mv,int i) {
 static void MVSetSb(MetricsView *mv);
 static int MVSetVSb(MetricsView *mv);
 
+void MVRefreshMetric(MetricsView *mv) {
+    double iscale = mv->pixelsize_set_by_window ? 1.0 : mv_scales[mv->scale_index];
+    double scale = iscale*mv->pixelsize/(double) (mv->sf->ascent+mv->sf->descent);
+    SplineFont *sf = mv->sf;
+    int cnt;
+    // Count the valid glyphs and segfault if there is no null splinechar terminator.
+    for ( cnt=0; mv->glyphs[cnt].sc!=NULL; ++cnt );
+    // Calculate positions.
+    int x = 10; int y = 10;
+    for ( int i=0; i<cnt; ++i ) {
+	MVRefreshValues(mv,i);
+	SplineChar * sc = mv->glyphs[i].sc;
+	BDFChar * bdfc = mv->bdf!=NULL ? mv->bdf->glyphs[sc->orig_pos] : BDFPieceMealCheck(mv->show,sc->orig_pos);
+	mv->perchar[i].dwidth = rint(iscale * bdfc->width);
+	mv->perchar[i].dx = x;
+	mv->perchar[i].xoff = rint(iscale * mv->glyphs[i].vr.xoff);
+	mv->perchar[i].yoff = rint(iscale * mv->glyphs[i].vr.yoff);
+	mv->perchar[i].kernafter = rint(iscale * mv->glyphs[i].vr.h_adv_off);
+	x += mv->perchar[i].dwidth + mv->perchar[i].kernafter;
+
+	mv->perchar[i].dheight = rint(sc->vwidth*scale);
+	mv->perchar[i].dy = y;
+	if ( mv->vertical ) {
+	    mv->perchar[i].kernafter = rint( iscale * mv->glyphs[i].vr.v_adv_off);
+	    y += mv->perchar[i].dheight + mv->perchar[i].kernafter;
+	}
+    }
+    MVSetVSb(mv);
+    MVSetSb(mv);
+}
+
 static void MVRemetric(MetricsView *mv) {
     SplineChar *anysc, *goodsc;
     int i, cnt, x, y, goodpos;
@@ -968,38 +999,6 @@ static void MVRemetric(MetricsView *mv) {
     // Refresh.
     MVRefreshMetric(mv);
 }
-
-void MVRefreshMetric(MetricsView *mv) {
-    double iscale = mv->pixelsize_set_by_window ? 1.0 : mv_scales[mv->scale_index];
-    double scale = iscale*mv->pixelsize/(double) (mv->sf->ascent+mv->sf->descent);
-    SplineFont *sf = mv->sf;
-    int cnt;
-    // Count the valid glyphs and segfault if there is no null splinechar terminator.
-    for ( cnt=0; mv->glyphs[cnt].sc!=NULL; ++cnt );
-    // Calculate positions.
-    int x = 10; int y = 10;
-    for ( int i=0; i<cnt; ++i ) {
-	MVRefreshValues(mv,i);
-	SplineChar * sc = mv->glyphs[i].sc;
-	BDFChar * bdfc = mv->bdf!=NULL ? mv->bdf->glyphs[sc->orig_pos] : BDFPieceMealCheck(mv->show,sc->orig_pos);
-	mv->perchar[i].dwidth = rint(iscale * bdfc->width);
-	mv->perchar[i].dx = x;
-	mv->perchar[i].xoff = rint(iscale * mv->glyphs[i].vr.xoff);
-	mv->perchar[i].yoff = rint(iscale * mv->glyphs[i].vr.yoff);
-	mv->perchar[i].kernafter = rint(iscale * mv->glyphs[i].vr.h_adv_off);
-	x += mv->perchar[i].dwidth + mv->perchar[i].kernafter;
-
-	mv->perchar[i].dheight = rint(sc->vwidth*scale);
-	mv->perchar[i].dy = y;
-	if ( mv->vertical ) {
-	    mv->perchar[i].kernafter = rint( iscale * mv->glyphs[i].vr.v_adv_off);
-	    y += mv->perchar[i].dheight + mv->perchar[i].kernafter;
-	}
-    }
-    MVSetVSb(mv);
-    MVSetSb(mv);
-}
-
 
 void MVReKern(MetricsView *mv) {
     MVRemetric(mv);

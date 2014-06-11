@@ -52,6 +52,8 @@
 #include <windows.h>
 #endif
 
+#include "xvasprintf.h"
+
 
 int OpenCharsInNewWindow = 0;
 char *RecentFiles[RECENT_MAX] = { NULL };

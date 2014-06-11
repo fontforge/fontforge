@@ -36,9 +36,6 @@
 #include <intl.h>
 #include "splinefont.h"
 #include "uiinterface.h"
-#include "xalloc.h"
-#include "xvasprintf.h"
-
 
 static const unsigned unicode4_size = 17*65536;
     /* Unicode goes up to 0x10ffff */

@@ -33,6 +33,7 @@
 #include "psfont.h"
 #include <ffglib.h>
 #include <glib/gprintf.h>
+#include "xvasprintf.h"
 
 /* This operations are designed to work on a single font. NOT a CID collection*/
 /*  A CID collection must be treated one sub-font at a time */

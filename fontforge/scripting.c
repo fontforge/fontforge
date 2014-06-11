@@ -55,6 +55,8 @@
 
 #include "gutils/unicodelibinfo.h"
 
+#include "xvasprintf.h"
+
 int no_windowing_ui = false;
 int running_script = false;
 int use_utf8_in_script = true;
@@ -1097,6 +1099,15 @@ static void bNameFromUnicode(Context *c) {
 
     c->return_val.type = v_str;
     c->return_val.u.sval = copy(StdGlyphName(buffer,c->a.vals[1].u.ival,uniinterp,for_new_glyphs));
+}
+
+static void bUnicodeBlockCountFromLib(Context *c) {
+/* If the library is available, then return the number of name blocks */
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments" );
+
+    c->return_val.type=v_int;
+    c->return_val.u.ival=unicode_block_count();
 }
 
 static void bUnicodeBlockEndFromLib(Context *c) {
@@ -4683,17 +4694,17 @@ static void bItalic(Context *c) {
 		    default_ii.transform_top_xh_serifs = (flags & 0x0002) ? 1 : 0;
 		    default_ii.transform_top_as_serifs = (flags & 0x0004) ? 1 : 0;
 		    default_ii.transform_diagon_serifs = (flags & 0x0008) ? 1 : 0;
-		    
+
 		    default_ii.a_from_d = (flags & 0x0010) ? 1 : 0;
 		    default_ii.f_long_tail = (flags & 0x0020) ? 1 : 0;
 		    default_ii.f_rotate_top = (flags & 0x0040) ? 1 : 0;
 		    default_ii.pq_deserif = (flags & 0x0080) ? 1 : 0;
-		    
+
 		    default_ii.cyrl_phi = (flags & 0x0100) ? 1 : 0;
 		    default_ii.cyrl_i = (flags & 0x0200) ? 1 : 0;
 		    default_ii.cyrl_pi = (flags & 0x0400) ? 1 : 0;
 		    default_ii.cyrl_te = (flags & 0x0800) ? 1 : 0;
-		    
+
 		    default_ii.cyrl_sha = (flags & 0x1000) ? 1 : 0;
 		    default_ii.cyrl_dje = (flags & 0x2000) ? 1 : 0;
 		    default_ii.cyrl_dzhe = (flags & 0x4000) ? 1 : 0;
@@ -4724,8 +4735,8 @@ static void bItalic(Context *c) {
 		pct = c->a.vals[i].u.ival;
 	    else
 		break;
-	    default_ii.lc.lsb_percent = default_ii.lc.rsb_percent = 
-		default_ii.uc.lsb_percent = default_ii.uc.rsb_percent = 
+	    default_ii.lc.lsb_percent = default_ii.lc.rsb_percent =
+		default_ii.uc.lsb_percent = default_ii.uc.rsb_percent =
 		default_ii.neither.lsb_percent =
 		default_ii.neither.rsb_percent = pct;
 	    continue;
@@ -4862,7 +4873,7 @@ static void bSmallCaps(Context *c) {
 	    ScriptError(c,"Bad argument 2 type in SmallCaps");
     }
     genchange.hcounter_scale = genchange.lsb_scale = genchange.rsb_scale = h_scale;
-    
+
     if ( c->a.argc>3 ) {
 	if ( c->a.vals[3].type==v_real )
 	    stem_w = c->a.vals[3].u.fval;
@@ -8431,6 +8442,7 @@ static struct builtins { const char *name; void (*func)(Context *); int nofontok
     { "GetEnv", bGetEnv, 1 },
     { "UnicodeFromName", bUnicodeFromName, 1 },
     { "NameFromUnicode", bNameFromUnicode, 1 },
+    { "UnicodeBlockCountFromLib", bUnicodeBlockCountFromLib, 1 },
     { "UnicodeBlockEndFromLib", bUnicodeBlockEndFromLib, 1 },
     { "UnicodeBlockNameFromLib", bUnicodeBlockNameFromLib, 1},
     { "UnicodeBlockStartFromLib", bUnicodeBlockStartFromLib, 1 },
@@ -10323,7 +10335,7 @@ _Noreturn void ProcessNativeScript(int argc, char *argv[], FILE *script) {
 	    	i = 0;
     } else {
 		// Count valid arguments but only allow one order. (?)
-		if ( argc>i+1 && (strcmp(argv[i],"-nosplash")==0 || strcmp(argv[i],"--nosplash")==0 
+		if ( argc>i+1 && (strcmp(argv[i],"-nosplash")==0 || strcmp(argv[i],"--nosplash")==0
 		                    || strcmp(argv[i],"-quiet")==0 || strcmp(argv[i],"--quiet")==0 ))
 			++i;
 		if ( argc>i+1 && (strncmp(argv[i],"-lang=",6)==0 || strncmp(argv[i],"--lang=",7)==0 ))
