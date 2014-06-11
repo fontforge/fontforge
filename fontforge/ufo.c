@@ -592,25 +592,25 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
       xmlNodePtr contourxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "contour", NULL);
 	    // fprintf( glif, "    <contour>\n" );
 	    for ( sp=spl->first; sp!=NULL; ) {
-			/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
-			// We write the next on-curve point.
-			if (!isquad || sp->ttfindex != 0xffff || !SPInterpolate(sp) || sp->pointtype!=pt_curve || sp->name != NULL) {
-        xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
-            char* xfloat = NULL;
-            char* yfloat = NULL;
-            asprintf(&xfloat, "%g", (double)sp->me.x);
-            asprintf(&yfloat, "%g", (double)sp->me.y);
-        xmlSetProp(contourxml, BAD_CAST "x", BAD_CAST xfloat);
-        xmlSetProp(contourxml, BAD_CAST "y", BAD_CAST yfloat);
-        xmlSetProp(contourxml, BAD_CAST "type", BAD_CAST (
-          sp->prev==NULL        ? "move"   :
+		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
+		// We write the next on-curve point.
+		if (!isquad || sp->ttfindex != 0xffff || !SPInterpolate(sp) || sp->pointtype!=pt_curve || sp->name != NULL) {
+		  xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
+		  char* xfloat = NULL;
+		  char* yfloat = NULL;
+		  asprintf(&xfloat, "%g", (double)sp->me.x);
+		  asprintf(&yfloat, "%g", (double)sp->me.y);
+		  xmlSetProp(pointxml, BAD_CAST "x", BAD_CAST xfloat);
+		  xmlSetProp(pointxml, BAD_CAST "y", BAD_CAST yfloat);
+		  xmlSetProp(pointxml, BAD_CAST "type", BAD_CAST (
+		  sp->prev==NULL        ? "move"   :
 					sp->prev->knownlinear ? "line"   :
 					isquad 		      ? "qcurve" :
 					"curve"));
-        if (sp->pointtype != pt_corner) xmlSetProp(contourxml, BAD_CAST "smooth", BAD_CAST "yes");
-        if (sp->name !=NULL) xmlSetProp(contourxml, BAD_CAST "name", BAD_CAST sp->name);
-        free(xfloat); xfloat = NULL;
-        free(yfloat); yfloat = NULL;
+		  if (sp->pointtype != pt_corner) xmlSetProp(pointxml, BAD_CAST "smooth", BAD_CAST "yes");
+		  if (sp->name !=NULL) xmlSetProp(pointxml, BAD_CAST "name", BAD_CAST sp->name);
+		  free(xfloat); xfloat = NULL;
+		  free(yfloat); yfloat = NULL;
 /*
 				fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\"%s%s%s%s/>\n",
 					(double) sp->me.x, (double) sp->me.y,
@@ -622,11 +622,11 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
 					sp->name?" name=\"":"",
 					sp->name?sp->name:"",
 					sp->name?"\"":"" ); */
-      }
-			if ( sp->next==NULL )
-	    	break;
-			// We write control points.
-			if ( !sp->next->knownlinear ) {
+		}
+		if ( sp->next==NULL )
+	    	  break;
+		// We write control points.
+		if ( !sp->next->knownlinear ) {
                           xmlNodePtr pointxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "point", NULL);
                           char* xfloat = NULL;
                           char* yfloat = NULL;
@@ -638,9 +638,9 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
                           free(yfloat); yfloat = NULL;
 		    	  // fprintf( glif, "      <point x=\"%g\" y=\"%g\"/>\n",
 			  //   (double) sp->nextcp.x, (double) sp->nextcp.y );
-                        }
-			sp = sp->next->to;
-			if ( !isquad && !sp->prev->knownlinear ) {
+		}
+		sp = sp->next->to;
+		if ( !isquad && !sp->prev->knownlinear ) {
                           xmlNodePtr pointxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "point", NULL);
                           char* xfloat = NULL;
                           char* yfloat = NULL;
@@ -652,8 +652,8 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
                           free(yfloat); yfloat = NULL;
                           // fprintf( glif, "      <point x=\"%g\" y=\"%g\"/>\n",
                           //   (double) sp->prevcp.x, (double) sp->prevcp.y );
-                        }
-			if ( sp==spl->first )
+		}
+		if ( sp==spl->first )
 	    		break;
 	    }
 	    // fprintf( glif, "    </contour>\n" );
