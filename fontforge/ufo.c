@@ -575,10 +575,11 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
             asprintf(&yfloat, "%g", ap->me.y);
             asprintf(&nametmp, "%s%s", ismark ? "_" : "", ap->anchor->name);
             xmlNodePtr contourxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "contour", NULL);
-            xmlSetProp(contourxml, BAD_CAST "x", BAD_CAST xfloat);
-            xmlSetProp(contourxml, BAD_CAST "y", BAD_CAST yfloat);
-            xmlSetProp(contourxml, BAD_CAST "type", BAD_CAST "move");
-            xmlSetProp(contourxml, BAD_CAST "name", BAD_CAST nametmp);
+            xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
+            xmlSetProp(pointxml, BAD_CAST "x", BAD_CAST xfloat);
+            xmlSetProp(pointxml, BAD_CAST "y", BAD_CAST yfloat);
+            xmlSetProp(pointxml, BAD_CAST "type", BAD_CAST "move");
+            xmlSetProp(pointxml, BAD_CAST "name", BAD_CAST nametmp);
             free(xfloat); xfloat = NULL;
             free(yfloat); yfloat = NULL;
             free(nametmp); nametmp = NULL;
@@ -588,7 +589,7 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
             // fprintf( glif, "    </contour>\n" );
         }
 	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
-      xmlNodePtr contourxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "point", NULL);
+      xmlNodePtr contourxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "contour", NULL);
 	    // fprintf( glif, "    <contour>\n" );
 	    for ( sp=spl->first; sp!=NULL; ) {
 			/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
