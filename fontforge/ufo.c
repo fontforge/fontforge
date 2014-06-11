@@ -120,11 +120,9 @@ static xmlNodePtr xmlNewNodeString(xmlNsPtr ns, const xmlChar * name, char * val
   return childtmp;
 }
 static xmlNodePtr xmlNewNodeVPrintf(xmlNsPtr ns, const xmlChar * name, char * format, va_list arguments) {
-  size_t text_size = vsnprintf(NULL, 0, format, arguments);
-  char * valtmp = malloc(text_size + 1);
-  if (valtmp == NULL) return NULL;
-  if (vsprintf(valtmp, format, arguments) < 0) {
-    free(valtmp) ; valtmp = NULL; return NULL;
+  char * valtmp = NULL;
+  if (vasprintf(&valtmp, format, arguments) < 0) {
+    return NULL;
   }
   xmlNodePtr childtmp = xmlNewNode(NULL, BAD_CAST name); // Create a named node.
   xmlNodePtr valtmpxml = xmlNewText(BAD_CAST valtmp); // Make a text node for the value.
@@ -663,6 +661,7 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
     }
     xmlNodePtr pythonblob = PythonLibToXML(sc->python_persistent, sc);
     xmlAddChild(topglyphxml, pythonblob);
+    return topglyphxml;
     // DumpPythonLib(glif, sc->python_persistent, sc);
     // fprintf( glif, "</glyph>\n" );
     // err = ferror(glif);
@@ -676,13 +675,15 @@ static int GlifDump(char *glyphdir,char *gfname,SplineChar *sc,int layer) {
     // FILE *glif = fopen(gn,"w");
     // int ret = _GlifDump(glif,sc,layer);
     xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0");
+    if (doc == NULL) return 0;
     xmlNodePtr root_node = _GlifToXML(sc, layer);
+    if (root_node == NULL) {xmlFreeDoc(doc); doc = NULL; return 0;}
     xmlDocSetRootElement(doc, root_node);
-    xmlSaveFormatFileEnc(gn, doc, "UTF-8", 1);
+    int ret = (xmlSaveFormatFileEnc(gn, doc, "UTF-8", 1) != -1);
     xmlFreeDoc(doc); doc = NULL;
     free(gn);
 // return( ret );
-return ( doc != NULL );
+return ret;
 }
 
 int _ExportGlif(FILE *glif,SplineChar *sc,int layer) {
@@ -864,9 +865,9 @@ xmlNodePtr PListAddString(xmlNodePtr parent, const char *key, const char *value)
         }
 	++value;
     }
-    xmlNodePtr valnode = xmlNewChild(parent, NULL, BAD_CAST "key", tmpstring); // "<string>%s</string>" tmpstring
+    xmlNodePtr valnode = xmlNewChild(parent, NULL, BAD_CAST "string", tmpstring); // "<string>%s</string>" tmpstring
 #else
-    xmlNodePtr valnode = xmlNewChild(parent, NULL, BAD_CAST "key", value); // "<string>%s</string>" tmpstring
+    xmlNodePtr valnode = xmlNewChild(parent, NULL, BAD_CAST "string", value); // "<string>%s</string>" tmpstring
 #endif
 }
 
