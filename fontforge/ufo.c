@@ -49,6 +49,9 @@
 # include "ffpython.h"
 #endif
 
+#include <stdarg.h>
+#include <string.h>
+
 #undef extended			/* used in xlink.h */
 #include <libxml/tree.h>
 
@@ -988,6 +991,7 @@ return;
 		// fputc(*value++,plist);
             if (tmppos == tmpsize) { tmpsize *= 2; tmp = realloc(tmp, tmpsize); }
 	}
+        tmp[tmppos] = '\0';
         if (tmp != NULL) {
           xmlNewChildString(arrayxml, NULL, BAD_CAST "integer", BAD_CAST tmp); // "<integer>%s</integer>" tmp
           free(tmp); tmp = NULL;
