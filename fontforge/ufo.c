@@ -149,6 +149,23 @@ static xmlNodePtr xmlNewChildPrintf(xmlNodePtr parent, xmlNsPtr ns, const xmlCha
   va_end(arguments);
   return output;
 }
+static void xmlSetPropVPrintf(xmlNodePtr target, const xmlChar * name, char * format, va_list arguments) {
+  char * valtmp = NULL;
+  // Generate the value.
+  if (vasprintf(&valtmp, format, arguments) < 0) {
+    return;
+  }
+  xmlSetProp(target, name, valtmp); // Set the property.
+  free(valtmp); valtmp = NULL; // Free the temporary text store.
+  return;
+}
+static void xmlSetPropPrintf(xmlNodePtr target, const xmlChar * name, char * format, ...) {
+  va_list arguments;
+  va_start(arguments, format);
+  xmlSetPropVPrintf(target, name, format, arguments);
+  va_end(arguments);
+  return;
+}
 
 /* ************************************************************************** */
 /* *************************   Python lib Output    ************************* */
@@ -468,44 +485,36 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
     char numstring[32];
     memset(numstring, 0, sizeof(numstring));
 
-    // if ( glif==NULL )
-    //   return( false );
-
     // fprintf( glif, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" );
     /* No DTD for these guys??? */
     // Is there a DTD for glif data? (asks Frank)
-    // fprintf( glif, "<glyph name=\"%s\" format=\"1\">\n", sc->name );
+
     xmlNodePtr topglyphxml = xmlNewNode(NULL, BAD_CAST "glyph"); // Create the glyph node.
     xmlSetProp(topglyphxml, "name", sc->name); // Set the name for the glyph.
     xmlSetProp(topglyphxml, "format", "1"); // Set the format of the glyph.
+    // "<glyph name=\"%s\" format=\"1\">" sc->name
+
     xmlNodePtr tmpxml2 = xmlNewChild(topglyphxml, NULL, BAD_CAST "advance", NULL); // Create the advance node.
-    asprintf(&stringtmp, "%d", sc->width);
-    xmlSetProp(tmpxml2, BAD_CAST "width", BAD_CAST stringtmp);
-    free(stringtmp); stringtmp = NULL;
+    xmlSetPropPrintf(tmpxml2, BAD_CAST "width", "%d", sc->width);
     if ( sc->parent->hasvmetrics ) {
-	// fprintf( glif, "  <advance width=\"%d\" height=\"%d\"/>\n", sc->width, sc->vwidth );
       asprintf(&stringtmp, "%d", sc->width);
       xmlSetProp(tmpxml2, BAD_CAST "height", stringtmp);
       free(stringtmp); stringtmp = NULL;
-    } else {
-	// fprintf( glif, "  <advance width=\"%d\"/>\n", sc->width );
     }
+    // "<advance width=\"%d\" height=\"%d\"/>" sc->width sc->vwidth
+
     if ( sc->unicodeenc!=-1 ) {
-      char * hexstring = NULL;
-      asprintf(&hexstring, "%04X", sc->unicodeenc);
       xmlNodePtr unicodexml = xmlNewChild(topglyphxml, NULL, BAD_CAST "unicode", NULL);
-      xmlSetProp(unicodexml, BAD_CAST "hex", BAD_CAST hexstring);
-      free(hexstring); hexstring = NULL;
-	// fprintf( glif, "  <unicode hex=\"%04X\"/>\n", sc->unicodeenc );
+      xmlSetPropPrintf(unicodexml, BAD_CAST "hex", "%04X", sc->unicodeenc);
     }
+    // "<unicode hex=\"%04X\"/>\n" sc->unicodeenc
+
     for ( altuni = sc->altuni; altuni!=NULL; altuni = altuni->next )
 	if ( altuni->vs==-1 && altuni->fid==0 ) {
-      char * hexstring = NULL;
-      asprintf(&hexstring, "%04X", sc->unicodeenc);
-      xmlNewChild(topglyphxml, NULL, BAD_CAST "unicode", NULL); xmlSetProp(topglyphxml, BAD_CAST "hex", BAD_CAST hexstring);
-      free(hexstring); hexstring = NULL;
-	    // fprintf( glif, "  <unicode hex=\"%04x\"/>\n", altuni->unienc );
-    }
+          xmlNodePtr unicodexml = xmlNewChild(topglyphxml, NULL, BAD_CAST "unicode", NULL);
+          xmlSetPropPrintf(unicodexml, BAD_CAST "hex", "%04X", altuni->unienc);
+        }
+        // "<unicode hex=\"%04X\"/>" altuni->unienc
 
     if ( sc->layers[layer].refs!=NULL || sc->layers[layer].splines!=NULL ) {
       xmlNodePtr outlinexml = xmlNewChild(topglyphxml, NULL, BAD_CAST "outline", NULL);
@@ -525,93 +534,65 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
 	    for ( i=0; i<cnt; ++i ) {
 		ref = refs[i];
     xmlNodePtr componentxml = xmlNewChild(outlinexml, NULL, BAD_CAST "component", NULL);
-		// fprintf( glif, "    <component base=\"%s\"", ref->sc->name );
+		// "<component base=\"%s\"" ref->sc->name
     char *floattmp = NULL;
 		if ( ref->transform[0]!=1 ) {
-        asprintf(&floattmp, "%g", (double) ref->transform[0]);
-        xmlSetProp(componentxml, BAD_CAST "xScale", floattmp);
-        free(floattmp); floattmp = NULL;
-		    // fprintf( glif, " xScale=\"%g\"", (double) ref->transform[0] );
-    }
+                  xmlSetPropPrintf(componentxml, BAD_CAST "xScale", "%g", (double) ref->transform[0]);
+		    // "xScale=\"%g\"" (double)ref->transform[0]
+                }
 		if ( ref->transform[3]!=1 ) {
-        asprintf(&floattmp, "%g", (double) ref->transform[3]);
-        xmlSetProp(componentxml, BAD_CAST "yScale", floattmp);
-        free(floattmp); floattmp = NULL;
-		    // fprintf( glif, " yScale=\"%g\"", (double) ref->transform[3] );
-    }
+                  xmlSetPropPrintf(componentxml, BAD_CAST "yScale", "%g", (double) ref->transform[3]);
+		    // "yScale=\"%g\"" (double)ref->transform[3]
+                }
 		if ( ref->transform[1]!=0 ) {
-        asprintf(&floattmp, "%g", (double) ref->transform[1]);
-        xmlSetProp(componentxml, BAD_CAST "xyScale", floattmp);
-        free(floattmp); floattmp = NULL;
-		    // fprintf( glif, " xyScale=\"%g\"", (double) ref->transform[1] );
-    }
+                  xmlSetPropPrintf(componentxml, BAD_CAST "xyScale", "%g", (double) ref->transform[1]);
+		    // "xyScale=\"%g\"" (double)ref->transform[1]
+                }
 		if ( ref->transform[2]!=0 ) {
-        asprintf(&floattmp, "%g", (double) ref->transform[2]);
-        xmlSetProp(componentxml, BAD_CAST "yxScale", floattmp);
-        free(floattmp); floattmp = NULL;
-		    // fprintf( glif, " yxScale=\"%g\"", (double) ref->transform[2] );
-    }
+                  xmlSetPropPrintf(componentxml, BAD_CAST "yxScale", "%g", (double) ref->transform[2]);
+		    // "yxScale=\"%g\"" (double)ref->transform[2]
+                }
 		if ( ref->transform[4]!=0 ) {
-        asprintf(&floattmp, "%g", (double) ref->transform[4]);
-        xmlSetProp(componentxml, BAD_CAST "xOffset", floattmp);
-        free(floattmp); floattmp = NULL;
-		    // fprintf( glif, " xOffset=\"%g\"", (double) ref->transform[4] );
-    }
+                  xmlSetPropPrintf(componentxml, BAD_CAST "xOffset", "%g", (double) ref->transform[4]);
+		    // "xOffset=\"%g\"" (double)ref->transform[4]
+                }
 		if ( ref->transform[5]!=0 ) {
-        asprintf(&floattmp, "%g", (double) ref->transform[5]);
-        xmlSetProp(componentxml, BAD_CAST "yOffset", floattmp);
-        free(floattmp); floattmp = NULL;
-		    // fprintf( glif, " yOffset=\"%g\"", (double) ref->transform[5] );
-    }
-		// fprintf( glif, "/>\n" );
+                  xmlSetPropPrintf(componentxml, BAD_CAST "yOffset", "%g", (double) ref->transform[5]);
+		    // "yOffset=\"%g\"" (double)ref->transform[5]
+                }
+		// "/>"
 	    }
 	    free(refs);
 	}
         for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
             int ismark = (ap->type==at_mark || ap->type==at_centry);
-            char* xfloat = NULL;
-            char* yfloat = NULL;
-            char* nametmp = NULL;
-            asprintf(&xfloat, "%g", ap->me.x);
-            asprintf(&yfloat, "%g", ap->me.y);
-            asprintf(&nametmp, "%s%s", ismark ? "_" : "", ap->anchor->name);
             xmlNodePtr contourxml = xmlNewChild(outlinexml, NULL, BAD_CAST "contour", NULL);
+            // "<contour>"
             xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
-            xmlSetProp(pointxml, BAD_CAST "x", BAD_CAST xfloat);
-            xmlSetProp(pointxml, BAD_CAST "y", BAD_CAST yfloat);
-            xmlSetProp(pointxml, BAD_CAST "type", BAD_CAST "move");
-            xmlSetProp(pointxml, BAD_CAST "name", BAD_CAST nametmp);
-            free(xfloat); xfloat = NULL;
-            free(yfloat); yfloat = NULL;
-            free(nametmp); nametmp = NULL;
-            // fprintf( glif, "    <contour>\n" );
-            // fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"move\" name=\"%s%s\"/>\n", ap->me.x, ap->me.y,
-            //                 ismark ? "_" : "", ap->anchor->name );
-            // fprintf( glif, "    </contour>\n" );
+            xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", ap->me.x);
+            xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", ap->me.y);
+            xmlSetPropPrintf(pointxml, BAD_CAST "type", BAD_CAST "move");
+            xmlSetPropPrintf(pointxml, BAD_CAST "name", "%s%s", ismark ? "_" : "", ap->anchor->name);
+            // "<point x=\"%g\" y=\"%g\" type=\"move\" name=\"%s%s\"/>" ap->me.x ap->me.y (ismark ? "_" : "") ap->anchor->name
+            // "</contour>"
         }
 	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
-      xmlNodePtr contourxml = xmlNewChild(outlinexml, NULL, BAD_CAST "contour", NULL);
+            xmlNodePtr contourxml = xmlNewChild(outlinexml, NULL, BAD_CAST "contour", NULL);
 	    // fprintf( glif, "    <contour>\n" );
 	    for ( sp=spl->first; sp!=NULL; ) {
 		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
 		// We write the next on-curve point.
 		if (!isquad || sp->ttfindex != 0xffff || !SPInterpolate(sp) || sp->pointtype!=pt_curve || sp->name != NULL) {
 		  xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
-		  char* xfloat = NULL;
-		  char* yfloat = NULL;
-		  asprintf(&xfloat, "%g", (double)sp->me.x);
-		  asprintf(&yfloat, "%g", (double)sp->me.y);
-		  xmlSetProp(pointxml, BAD_CAST "x", BAD_CAST xfloat);
-		  xmlSetProp(pointxml, BAD_CAST "y", BAD_CAST yfloat);
-		  xmlSetProp(pointxml, BAD_CAST "type", BAD_CAST (
+		  xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)sp->me.x);
+		  xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->me.y);
+		  xmlSetPropPrintf(pointxml, BAD_CAST "type", BAD_CAST (
 		  sp->prev==NULL        ? "move"   :
 					sp->prev->knownlinear ? "line"   :
 					isquad 		      ? "qcurve" :
 					"curve"));
 		  if (sp->pointtype != pt_corner) xmlSetProp(pointxml, BAD_CAST "smooth", BAD_CAST "yes");
 		  if (sp->name !=NULL) xmlSetProp(pointxml, BAD_CAST "name", BAD_CAST sp->name);
-		  free(xfloat); xfloat = NULL;
-		  free(yfloat); yfloat = NULL;
 /*
 				fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\"%s%s%s%s/>\n",
 					(double) sp->me.x, (double) sp->me.y,
@@ -629,37 +610,23 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
 		// We write control points.
 		if ( !sp->next->knownlinear ) {
                           xmlNodePtr pointxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "point", NULL);
-                          char* xfloat = NULL;
-                          char* yfloat = NULL;
-                          asprintf(&xfloat, "%g", (double)sp->nextcp.x);
-                          asprintf(&yfloat, "%g", (double)sp->nextcp.y);
-                          xmlSetProp(pointxml, BAD_CAST "x", BAD_CAST xfloat);
-                          xmlSetProp(pointxml, BAD_CAST "y", BAD_CAST yfloat);
-                          free(xfloat); xfloat = NULL;
-                          free(yfloat); yfloat = NULL;
-		    	  // fprintf( glif, "      <point x=\"%g\" y=\"%g\"/>\n",
-			  //   (double) sp->nextcp.x, (double) sp->nextcp.y );
+                          xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)sp->nextcp.x);
+                          xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->nextcp.y);
+		    	  // "<point x=\"%g\" y=\"%g\"/>\n" (double)sp->nextcp.x (double)sp->nextcp.y
 		}
 		sp = sp->next->to;
 		if ( !isquad && !sp->prev->knownlinear ) {
                           xmlNodePtr pointxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "point", NULL);
-                          char* xfloat = NULL;
-                          char* yfloat = NULL;
-                          asprintf(&xfloat, "%g", (double)sp->prevcp.x);
-                          asprintf(&yfloat, "%g", (double)sp->prevcp.y);
-                          xmlSetProp(pointxml, BAD_CAST "x", BAD_CAST xfloat);
-                          xmlSetProp(pointxml, BAD_CAST "y", BAD_CAST yfloat);
-                          free(xfloat); xfloat = NULL;
-                          free(yfloat); yfloat = NULL;
-                          // fprintf( glif, "      <point x=\"%g\" y=\"%g\"/>\n",
-                          //   (double) sp->prevcp.x, (double) sp->prevcp.y );
+                          xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)sp->prevcp.x);
+                          xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->prevcp.y);
+                          // "<point x=\"%g\" y=\"%g\"/>\n" (double)sp->prevcp.x (double)sp->prevcp.y
 		}
 		if ( sp==spl->first )
 	    		break;
 	    }
-	    // fprintf( glif, "    </contour>\n" );
+	    // "</contour>"
 	}
-	// fprintf( glif, "  </outline>\n" );
+	// "</outline>"
     }
     xmlNodePtr pythonblob = PythonLibToXML(sc->python_persistent, sc);
     xmlAddChild(topglyphxml, pythonblob);
@@ -755,11 +722,8 @@ static void PListOutputInteger(FILE *plist, const char *key, int value) {
 }
 
 static void PListAddInteger(xmlNodePtr parent, const char *key, int value) {
-    char * tmp = NULL;
-    asprintf(&tmp, "%d", value);
     xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
-    xmlNewChild(parent, NULL, BAD_CAST "integer", BAD_CAST tmp);
-    free(tmp); tmp = NULL;
+    xmlNewChildPrintf(parent, NULL, BAD_CAST "integer", "%d", value);
 }
 
 static void PListOutputReal(FILE *plist, const char *key, double value) {
@@ -768,10 +732,8 @@ static void PListOutputReal(FILE *plist, const char *key, double value) {
 }
 
 static void PListAddReal(xmlNodePtr parent, const char *key, double value) {
-    char * tmp = NULL;
-    asprintf(&tmp, "%g", value);
     xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
-    xmlNewChild(parent, NULL, BAD_CAST "real", BAD_CAST tmp);
+    xmlNewChildPrintf(parent, NULL, BAD_CAST "real", "%g", value);
     // fprintf( plist, "\t<key>%s</key>\n", key );
     // fprintf( plist, "\t<real>%g</real>\n", value );
 }
@@ -807,12 +769,10 @@ static void PListAddDate(xmlNodePtr parent, const char *key, time_t timestamp) {
 /*  \"HH:MM:SS\" is hour:minute:second. The hour is in the range 0:23.	*/
 /* Minutes and seconds are in the range 0-59.				*/
     struct tm *tm = gmtime(&timestamp);
-    char * tmp = NULL;
-    asprintf(&tmp, "%4d/%02d/%02d %02d:%02d:%02d", tm->tm_year+1900, tm->tm_mon+1,
-	    tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
     xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
-    xmlNewChild(parent, NULL, BAD_CAST "string", BAD_CAST tmp);
-    free(tmp); tmp = NULL;
+    xmlNewChildPrintf(parent, NULL, BAD_CAST "string",
+            "%4d/%02d/%02d %02d:%02d:%02d", tm->tm_year+1900, tm->tm_mon+1,
+	    tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 }
 
 // TODO: If we output from libxml2, can we skip escaping characters in the string?
@@ -834,7 +794,7 @@ static void PListOutputString(FILE *plist, const char *key, const char *value) {
 }
 
 int countOccurrence(const char* big, const char* little) {
-    char * tmp = big;
+    const char * tmp = big;
     int output = 0;
     while (tmp = strstr(big, little)) { output ++; tmp ++; }
     return output;
