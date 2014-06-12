@@ -493,7 +493,8 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
     if ( sc->unicodeenc!=-1 ) {
       char * hexstring = NULL;
       asprintf(&hexstring, "%04X", sc->unicodeenc);
-      xmlNewChild(topglyphxml, NULL, BAD_CAST "unicode", NULL); xmlSetProp(topglyphxml, BAD_CAST "hex", BAD_CAST hexstring);
+      xmlNodePtr unicodexml = xmlNewChild(topglyphxml, NULL, BAD_CAST "unicode", NULL);
+      xmlSetProp(unicodexml, BAD_CAST "hex", BAD_CAST hexstring);
       free(hexstring); hexstring = NULL;
 	// fprintf( glif, "  <unicode hex=\"%04X\"/>\n", sc->unicodeenc );
     }
@@ -574,7 +575,7 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
             asprintf(&xfloat, "%g", ap->me.x);
             asprintf(&yfloat, "%g", ap->me.y);
             asprintf(&nametmp, "%s%s", ismark ? "_" : "", ap->anchor->name);
-            xmlNodePtr contourxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "contour", NULL);
+            xmlNodePtr contourxml = xmlNewChild(outlinexml, NULL, BAD_CAST "contour", NULL);
             xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
             xmlSetProp(pointxml, BAD_CAST "x", BAD_CAST xfloat);
             xmlSetProp(pointxml, BAD_CAST "y", BAD_CAST yfloat);
@@ -589,7 +590,7 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
             // fprintf( glif, "    </contour>\n" );
         }
 	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
-      xmlNodePtr contourxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "contour", NULL);
+      xmlNodePtr contourxml = xmlNewChild(outlinexml, NULL, BAD_CAST "contour", NULL);
 	    // fprintf( glif, "    <contour>\n" );
 	    for ( sp=spl->first; sp!=NULL; ) {
 		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
