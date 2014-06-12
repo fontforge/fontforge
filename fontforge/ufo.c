@@ -172,91 +172,8 @@ static void xmlSetPropPrintf(xmlNodePtr target, const xmlChar * name, char * for
 /* ************************************************************************** */
 #ifndef _NO_PYTHON
 static int PyObjDumpable(PyObject *value);
-static void DumpPyObject( FILE *file, PyObject *value );
-#endif
-
-static void DumpPythonLib(FILE *file,void *python_persistent,SplineChar *sc) {
-    StemInfo *h;
-    int has_hints = (sc!=NULL && (sc->hstem!=NULL || sc->vstem!=NULL ));
-
-#ifdef _NO_PYTHON
-    if ( has_hints ) {
-	/* Not officially part of the UFO/glif spec, but used by robofab */
-	fprintf( file, "  <lib>\n" );
-	fprintf( file, "    <dict>\n" );
-#else
-    PyObject *dict = python_persistent, *items, *key, *value;
-    int i, len;
-    char *str;
-
-    if ( has_hints || (dict!=NULL && PyMapping_Check(dict)) ) {
-	if ( sc!=NULL ) {
-	    fprintf( file, "  <lib>\n" );
-	    fprintf( file, "    <dict>\n" );
-	}
-	if ( has_hints ) {
-#endif
-	    fprintf( file, "      <key>com.fontlab.hintData</key>\n" );
-	    fprintf( file, "      <dict>\n" );
-	    if ( sc->hstem!=NULL ) {
-		fprintf( file, "\t<key>hhints</key>\n" );
-		fprintf( file, "\t<array>\n" );
-		for ( h = sc->hstem; h!=NULL; h=h->next ) {
-		    fprintf( file, "\t  <dict>\n" );
-		    fprintf( file, "\t    <key>position</key>" );
-		    fprintf( file, "\t    <integer>%d</integer>\n", (int) rint(h->start));
-		    fprintf( file, "\t    <key>width</key>" );
-		    fprintf( file, "\t    <integer>%d</integer>\n", (int) rint(h->width));
-		    fprintf( file, "\t  </dict>\n" );
-		}
-		fprintf( file, "\t</array>\n" );
-	    }
-	    if ( sc->vstem!=NULL ) {
-		fprintf( file, "\t<key>vhints</key>\n" );
-		fprintf( file, "\t<array>\n" );
-		for ( h = sc->vstem; h!=NULL; h=h->next ) {
-		    fprintf( file, "\t  <dict>\n" );
-		    fprintf( file, "\t    <key>position</key>\n" );
-		    fprintf( file, "\t    <integer>%d</integer>\n", (int) rint(h->start));
-		    fprintf( file, "\t    <key>width</key>\n" );
-		    fprintf( file, "\t    <integer>%d</integer>\n", (int) rint(h->width));
-		    fprintf( file, "\t  </dict>\n" );
-		}
-		fprintf( file, "\t</array>\n" );
-	    }
-	    fprintf( file, "      </dict>\n" );
-#ifndef _NO_PYTHON
-	}
-	/* Ok, look at the persistent data and output it (all except for a */
-	/*  hint entry -- we've already handled that with the real hints, */
-	/*  no point in retaining out of date hints too */
-	if ( dict != NULL ) {
-	    items = PyMapping_Items(dict);
-	    len = PySequence_Size(items);
-	    for ( i=0; i<len; ++i ) {
-			PyObject *item = PySequence_GetItem(items,i);
-			key = PyTuple_GetItem(item,0);
-			if ( !PyBytes_Check(key))		/* Keys need not be strings */
-			continue;
-			str = PyBytes_AsString(key);
-			if ( !str || (strcmp(str,"com.fontlab.hintData")==0 && sc!=NULL) )	/* Already done */
-			continue;
-			value = PyTuple_GetItem(item,1);
-			if ( !value || !PyObjDumpable(value))
-			continue;
-			fprintf( file, "    <key>%s</key>\n", str );
-			DumpPyObject( file, value );
-	    }
-	}
-#endif
-	if ( sc!=NULL ) {
-	    fprintf( file, "    </dict>\n" );
-	    fprintf( file, "  </lib>\n" );
-	}
-    }
-}
-
 xmlNodePtr PyObjectToXML( PyObject *value );
+#endif
 
 xmlNodePtr PythonLibToXML(void *python_persistent,SplineChar *sc) {
     int has_hints = (sc!=NULL && (sc->hstem!=NULL || sc->vstem!=NULL ));
@@ -377,45 +294,6 @@ return( true );
 return( false );
 }
 
-static void DumpPyObject( FILE *file, PyObject *value ) {
-    if (PyDict_Check(value)) {
-		fprintf( file, "      <dict>\n" );
-		DumpPythonLib(file,value,NULL);
-		fprintf( file, "      </dict>\n" );
-	} else if ( PyMapping_Check(value)) {
-		fprintf( file, "      <dict>\n" );
-		DumpPythonLib(file,value,NULL);
-		fprintf( file, "      </dict>\n" );
-	} else if ( PyBytes_Check(value)) {		/* Must precede the sequence check */
-		char *str = PyBytes_AsString(value);
-		if (str != NULL) {
-			fprintf( file, "      <string>%s</string>\n", str );
-		}
-    } else if ( value==Py_True )
-	fprintf( file, "      <true/>\n" );
-    else if ( value==Py_False )
-	fprintf( file, "      <false/>\n" );
-    else if ( value==Py_None )
-	fprintf( file, "      <none/>\n" );
-    else if (PyInt_Check(value))
-	fprintf( file, "      <integer>%ld</integer>\n", PyInt_AsLong(value) );
-    else if (PyFloat_Check(value))
-	fprintf( file, "      <real>%g</real>\n", PyFloat_AsDouble(value) );
-    else if (PySequence_Check(value)) {
-	int i, len = PySequence_Size(value);
-
-	fprintf( file, "      <array>\n" );
-	for ( i=0; i<len; ++i ) {
-	    PyObject *obj = PySequence_GetItem(value,i);
-	    if ( PyObjDumpable(obj)) {
-		fprintf( file, "  ");
-		DumpPyObject(file,obj);
-	    }
-	}
-	fprintf( file, "      </array>\n" );
-    }
-}
-
 xmlNodePtr PyObjectToXML( PyObject *value ) {
     xmlNodePtr childtmp = NULL;
     xmlNodePtr valtmpxml = NULL;
@@ -467,6 +345,7 @@ xmlNodePtr PyObjectToXML( PyObject *value ) {
 /* ************************************************************************** */
 /* ****************************   GLIF Output    **************************** */
 /* ************************************************************************** */
+
 static int refcomp(const void *_r1, const void *_r2) {
     const RefChar *ref1 = *(RefChar * const *)_r1;
     const RefChar *ref2 = *(RefChar * const *)_r2;
@@ -668,13 +547,6 @@ int _ExportGlif(FILE *glif,SplineChar *sc,int layer) {
 /* ****************************    UFO Output    **************************** */
 /* ************************************************************************** */
 
-static void PListOutputHeader(FILE *plist) {
-    fprintf( plist, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" );
-    fprintf( plist, "<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n" );
-    fprintf( plist, "<plist version=\"1.0\">\n" );
-    fprintf( plist, "    <dict>\n" );
-}
-
 static FILE *PListCreate(const char *basedir, const char *sub) {
     char *fname = buildname(basedir,sub);
     FILE *plist = fopen( fname, "w" );
@@ -705,30 +577,9 @@ xmlDocPtr PlistInit() {
     return doc;
 }
 
-static int PListOutputTrailer(FILE *plist) {
-    int ret = true;
-    fprintf( plist, "    </dict>\n" );
-    fprintf( plist, "</plist>\n" );
-    if ( ferror(plist))
-	ret = false;
-    if ( fclose(plist) )
-	ret = false;
-return( ret );
-}
-
-static void PListOutputInteger(FILE *plist, const char *key, int value) {
-    fprintf( plist, "\t<key>%s</key>\n", key );
-    fprintf( plist, "\t<integer>%d</integer>\n", value );
-}
-
 static void PListAddInteger(xmlNodePtr parent, const char *key, int value) {
     xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
     xmlNewChildPrintf(parent, NULL, BAD_CAST "integer", "%d", value);
-}
-
-static void PListOutputReal(FILE *plist, const char *key, double value) {
-    fprintf( plist, "\t<key>%s</key>\n", key );
-    fprintf( plist, "\t<real>%g</real>\n", value );
 }
 
 static void PListAddReal(xmlNodePtr parent, const char *key, double value) {
@@ -738,28 +589,9 @@ static void PListAddReal(xmlNodePtr parent, const char *key, double value) {
     // fprintf( plist, "\t<real>%g</real>\n", value );
 }
 
-static void PListOutputBoolean(FILE *plist, const char *key, int value) {
-    fprintf( plist, "\t<key>%s</key>\n", key );
-    fprintf( plist, value ? "\t<true/>\n" : "\t<false/>\n" );
-}
-
 static void PListAddBoolean(xmlNodePtr parent, const char *key, int value) {
     xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
     xmlNewChild(parent, NULL, BAD_CAST (value ? "true": "false"), NULL);
-}
-
-static void PListOutputDate(FILE *plist, const char *key, time_t timestamp) {
-/* openTypeHeadCreated = string format as \"YYYY/MM/DD HH:MM:SS\".	*/
-/* \"YYYY/MM/DD\" is year/month/day. The month is in the range 1-12 and	*/
-/* the day is in the range 1-end of month.				*/
-/*  \"HH:MM:SS\" is hour:minute:second. The hour is in the range 0:23.	*/
-/* Minutes and seconds are in the range 0-59.				*/
-    struct tm *tm = gmtime(&timestamp);
-
-    fprintf( plist, "\t<key>%s</key>\n", key );
-    fprintf( plist, "\t<string>%4d/%02d/%02d %02d:%02d:%02d</string>\n",
-	    tm->tm_year+1900, tm->tm_mon+1,
-	    tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec );
 }
 
 static void PListAddDate(xmlNodePtr parent, const char *key, time_t timestamp) {
@@ -773,24 +605,6 @@ static void PListAddDate(xmlNodePtr parent, const char *key, time_t timestamp) {
     xmlNewChildPrintf(parent, NULL, BAD_CAST "string",
             "%4d/%02d/%02d %02d:%02d:%02d", tm->tm_year+1900, tm->tm_mon+1,
 	    tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-}
-
-// TODO: If we output from libxml2, can we skip escaping characters in the string?
-
-static void PListOutputString(FILE *plist, const char *key, const char *value) {
-    if ( value==NULL ) value = "";
-    fprintf( plist, "\t<key>%s</key>\n", key );
-    fprintf( plist, "\t<string>" );
-    while ( *value ) {
-	if ( *value=='<' )
-	    fprintf( plist,"&lt;");
-	else if ( *value == '&' )
-	    fprintf( plist,"&amp;");
-	else
-	    putc(*value,plist);
-	++value;
-    }
-    fprintf(plist, "</string>\n" );
 }
 
 int countOccurrence(const char* big, const char* little) {
@@ -833,28 +647,6 @@ xmlNodePtr PListAddString(xmlNodePtr parent, const char *key, const char *value)
 #endif
 }
 
-static void PListOutputNameString(FILE *plist, const char *key, const SplineFont *sf, int strid) {
-    char *value=NULL, *nonenglish=NULL, *freeme=NULL;
-    struct ttflangname *nm;
-
-    for ( nm=sf->names; nm!=NULL; nm=nm->next ) {
-	if ( nm->names[strid]!=NULL ) {
-	    nonenglish = nm->names[strid];
-	    if ( nm->lang == 0x409 ) {
-		value = nm->names[strid];
-    break;
-	    }
-	}
-    }
-    if ( value==NULL && strid==ttf_version && sf->version!=NULL )
-	value = freeme = strconcat("Version ",sf->version);
-    if ( value==NULL )
-	value=nonenglish;
-    if ( value!=NULL )
-	PListOutputString(plist,key,value);
-    free(freeme);
-}
-
 static void PListAddNameString(xmlNodePtr parent, const char *key, const SplineFont *sf, int strid) {
     char *value=NULL, *nonenglish=NULL, *freeme=NULL;
     struct ttflangname *nm;
@@ -878,16 +670,6 @@ static void PListAddNameString(xmlNodePtr parent, const char *key, const SplineF
     free(freeme);
 }
 
-static void PListOutputIntArray(FILE *plist, const char *key, const char *entries, int len) {
-    int i;
-
-    fprintf( plist, "\t<key>%s</key>\n", key );
-    fprintf( plist, "\t<array>\n" );
-    for ( i=0; i<len; ++i )
-	fprintf( plist, "\t\t<integer>%d</integer>\n", entries[i] );
-    fprintf( plist, "\t</array>\n" );
-}
-
 static void PListAddIntArray(xmlNodePtr parent, const char *key, const char *entries, int len) {
     int i;
     xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
@@ -895,38 +677,6 @@ static void PListAddIntArray(xmlNodePtr parent, const char *key, const char *ent
     for ( i=0; i<len; ++i ) {
       xmlNewChildInteger(arrayxml, NULL, BAD_CAST "integer", entries[i]);
     }
-}
-
-static void PListOutputPrivateArray(FILE *plist, const char *key, struct psdict *private) {
-    char *value;
-    int skipping;
-
-    if ( private==NULL )
-return;
-    value = PSDictHasEntry(private,key);
-    if ( value==NULL )
-return;
-
-    while ( *value==' ' || *value=='[' ) ++value;
-
-    fprintf( plist, "\t<key>postscript%s</key>\n", key );
-    fprintf( plist, "\t<array>\n" );
-    for (;;) {
-	fprintf( plist, "\t\t<integer>" );
-	skipping=0;
-	while ( *value!=']' && *value!='\0' && *value!=' ' ) {
-	    if ( *value=='.' || skipping ) {
-		skipping=true;
-		++value;
-	    } else
-		fputc(*value++,plist);
-	}
-	fprintf( plist, "</integer>\n" );
-	while ( *value==' ' ) ++value;
-	if ( *value==']' || *value=='\0' )
-    break;
-    }
-    fprintf( plist, "\t</array>\n" );
 }
 
 static void PListAddPrivateArray(xmlNodePtr parent, const char *key, struct psdict *private) {
@@ -963,21 +713,6 @@ return;
 	if ( *value==']' || *value=='\0' ) break;
     }
     // "</array>"
-}
-
-static void PListOutputPrivateThing(FILE *plist, const char *key, struct psdict *private, char *type) {
-    char *value;
-
-    if ( private==NULL )
-return;
-    value = PSDictHasEntry(private,key);
-    if ( value==NULL )
-return;
-
-    while ( *value==' ' || *value=='[' ) ++value;
-
-    fprintf( plist, "\t<key>postscript%s</key>\n", key );
-    fprintf( plist, "\t<%s>%s</%s>\n", type, value, type );
 }
 
 static void PListAddPrivateThing(xmlNodePtr parent, const char *key, struct psdict *private, char *type) {
@@ -1214,19 +949,6 @@ static int UFOOutputGroups(const char *basedir, const SplineFont *sf) {
     xmlFreeDoc(plistdoc); // Free the memory.
     xmlCleanupParser();
     return true;
-}
-
-static void KerningPListOutputGlyph(FILE *plist, const char *key, const KernPair *kp) {
-    fprintf( plist, "\t<key>%s</key>\n", key );
-    fprintf( plist, "\t<dict>\n" );
-    while ( kp!=NULL ) {
-	if ( kp->off!=0 && SCWorthOutputting(kp->sc)) {
-	    fprintf( plist, "\t    <key>%s</key>\n", kp->sc->name );
-	    fprintf( plist, "\t    <integer>%d</integer>\n", kp->off );
-	}
-	kp = kp->next;
-    }
-    fprintf( plist, "\t</dict>\n" );
 }
 
 static void KerningPListAddGlyph(xmlNodePtr parent, const char *key, const KernPair *kp) {
