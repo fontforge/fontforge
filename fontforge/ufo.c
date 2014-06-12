@@ -199,7 +199,7 @@ xmlNodePtr PythonLibToXML(void *python_persistent,SplineChar *sc) {
                 xmlNewChild(hintdict, NULL, BAD_CAST "key", BAD_CAST "hhints");
 		//                                       "      <key>hhints</key>"
 		//                                       "      <array>"
-                xmlNodePtr hintarray = xmlNewChild(dictnode, NULL, BAD_CAST "array", NULL);
+                xmlNodePtr hintarray = xmlNewChild(hintdict, NULL, BAD_CAST "array", NULL);
 		for ( h = sc->hstem; h!=NULL; h=h->next ) {
                     char * valtmp = NULL;
                     xmlNodePtr stemdict = xmlNewChild(hintarray, NULL, BAD_CAST "dict", NULL);
@@ -221,7 +221,7 @@ xmlNodePtr PythonLibToXML(void *python_persistent,SplineChar *sc) {
                 xmlNewChild(hintdict, NULL, BAD_CAST "key", BAD_CAST "vhints");
 		//                                       "      <key>vhints</key>"
 		//                                       "      <array>"
-                xmlNodePtr hintarray = xmlNewChild(dictnode, NULL, BAD_CAST "array", NULL);
+                xmlNodePtr hintarray = xmlNewChild(hintdict, NULL, BAD_CAST "array", NULL);
 		for ( h = sc->vstem; h!=NULL; h=h->next ) {
                     char * valtmp = NULL;
                     xmlNodePtr stemdict = xmlNewChild(hintarray, NULL, BAD_CAST "dict", NULL);
