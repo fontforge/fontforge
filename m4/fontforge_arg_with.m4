@@ -173,13 +173,20 @@ AC_DEFUN([FONTFORGE_ARG_WITH_LIBTIFF_fallback],
 
 
 dnl FONTFORGE_ARG_WITH_LIBREADLINE
-dnl --------------------------
+dnl ------------------------------
+dnl Add with libreadline support by default, only if libreadline library exists
+dnl AND readline/readline.h header file exist.
+dnl If user defines --without-libreadline, then do not include libreadline.
+dnl If user defines --with-libreadline, then fail with error if there is no
+dnl libreadline library OR no readline/readline.h header file.
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBREADLINE],
 [
 AC_ARG_VAR([LIBREADLINE_CFLAGS],[C compiler flags for LIBREADLINE, overriding the automatic detection])
 AC_ARG_VAR([LIBREADLINE_LIBS],[linker flags for LIBREADLINE, overriding the automatic detection])
 AC_ARG_WITH([libreadline],[AS_HELP_STRING([--without-libreadline],[build without READLINE support])],
-            [i_do_have_libreadline="${withval}"],[i_do_have_libreadline=yes])
+            [i_do_have_libreadline="${withval}"; with_libreadline="${withval}"],
+            [i_do_have_libreadline=yes; with_libreadline=check])
+
 if test x"${i_do_have_libreadline}" = xyes -a x"${LIBREADLINE_LIBS}" = x; then
    FONTFORGE_SEARCH_LIBS([rl_readline_version],[readline],
 		  [LIBREADLINE_LIBS="${LIBREADLINE_LIBS} ${found_lib}"],
@@ -194,17 +201,30 @@ if test x"${i_do_have_libreadline}" = xyes -a x"${LIBREADLINE_LIBS}" = x; then
    fi
 fi
 if test x"${i_do_have_libreadline}" = xyes -a x"${LIBREADLINE_CFLAGS}" = x; then
-   AC_CHECK_HEADER([readline/readline.h],[AC_SUBST([LIBREADLINE_CFLAGS],[""])],[i_do_have_libreadline=no])
+   AC_CHECK_HEADER([readline/readline.h],[$LIBREADLINE_CFLAGS=""],[i_do_have_libreadline=no])
 fi
-if test x"${i_do_have_libreadline}" = xyes; then
-   if test x"${LIBREADLINE_LIBS}" != x; then
-      AC_SUBST([LIBREADLINE_LIBS],["${LIBREADLINE_LIBS}"])
+
+AC_MSG_CHECKING([Build with LibReadLine support?])
+if test x"${with_libreadline}" = xyes; then
+   if test x"${i_do_have_libreadline}" != xno; then
+      AC_MSG_RESULT([yes])
+   else
+      AC_MSG_FAILURE([ERROR: Please install the Developer version of libreadline],[1])
    fi
 else
-   FONTFORGE_WARN_PKG_NOT_FOUND([LIBREADLINE])
-   AC_DEFINE([_NO_LIBREADLINE],1,[Define if not using libreadline.])
+   if test x"${i_do_have_libreadline}" = xno || test x"${with_libreadline}" = xno; then
+      AC_MSG_RESULT([no])
+      AC_DEFINE([_NO_LIBREADLINE],1,[Define if not using libreadline.])
+      LIBREADLINE_CFLAGS=""
+      LIBREADLINE_LIBS=""
+   else
+      AC_MSG_RESULT([yes])
+   fi
 fi
+AC_SUBST([LIBREADLINE_CFLAGS])
+AC_SUBST([LIBREADLINE_LIBS])
 ])
+
 
 dnl FONTFORGE_ARG_WITH_LIBSPIRO
 dnl ---------------------------
