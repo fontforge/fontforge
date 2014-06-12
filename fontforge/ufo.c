@@ -834,9 +834,9 @@ static void PListOutputString(FILE *plist, const char *key, const char *value) {
 }
 
 int countOccurrence(const char* big, const char* little) {
-    char * tmp;
+    char * tmp = big;
     int output = 0;
-    while (tmp = strstr(big, little)) output ++;
+    while (tmp = strstr(big, little)) { output ++; tmp ++; }
     return output;
 }
 
