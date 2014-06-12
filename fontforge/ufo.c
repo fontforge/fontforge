@@ -507,8 +507,9 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
 	}
 	// "</outline>"
     }
+    xmlNodePtr libxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "lib", NULL);
     xmlNodePtr pythonblob = PythonLibToXML(sc->python_persistent, sc);
-    xmlAddChild(topglyphxml, pythonblob);
+    xmlAddChild(libxml, pythonblob);
     return topglyphxml;
     // DumpPythonLib(glif, sc->python_persistent, sc);
     // fprintf( glif, "</glyph>\n" );
