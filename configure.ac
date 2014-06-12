@@ -760,7 +760,7 @@ Optional Library	UseIt?	HaveIt?	WebsiteURL
   libtiff			${i_do_have_libtiff}	${libtiff_url}
   libuninameslist	${with_libuninameslist}	${i_do_have_libuninameslist}	${libuninameslist_url}
   zeromq (libzmq)		${i_do_have_libzmq}	${libzmq_url}
-  libreadline			${i_do_have_libreadline}	${libreadline_url}
+  libreadline		${with_libreadline}	${i_do_have_libreadline}	${libreadline_url}
   X Window System		${i_do_have_x}
 ])
 
