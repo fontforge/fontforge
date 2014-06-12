@@ -488,14 +488,14 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
 	    	  break;
 		// We write control points.
 		if ( !sp->next->knownlinear ) {
-                          xmlNodePtr pointxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "point", NULL);
+                          xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
                           xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)sp->nextcp.x);
                           xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->nextcp.y);
 		    	  // "<point x=\"%g\" y=\"%g\"/>\n" (double)sp->nextcp.x (double)sp->nextcp.y
 		}
 		sp = sp->next->to;
 		if ( !isquad && !sp->prev->knownlinear ) {
-                          xmlNodePtr pointxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "point", NULL);
+                          xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
                           xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)sp->prevcp.x);
                           xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->prevcp.y);
                           // "<point x=\"%g\" y=\"%g\"/>\n" (double)sp->prevcp.x (double)sp->prevcp.y
