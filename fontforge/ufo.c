@@ -55,8 +55,7 @@
 #undef extended			/* used in xlink.h */
 #include <libxml/tree.h>
 
-/* The UFO (Unified Font Object) format, http://unifiedfontobject.org/ */
-/* Obsolete: http://just.letterror.com/ltrwiki/UnifiedFontObject */
+/* The UFO (Unified Font Object) format ( http://unifiedfontobject.org/ ) */
 /* is a directory containing a bunch of (mac style) property lists and another*/
 /* directory containing glif files (and contents.plist). */
 
@@ -260,11 +259,11 @@ xmlNodePtr PythonLibToXML(void *python_persistent,SplineChar *sc) {
 			value = PyTuple_GetItem(item,1);
 			if ( !value || !PyObjDumpable(value))
 			continue;
-			// fprintf( file, "    <key>%s</key>\n", str );
+			// "<key>%s</key>" str
       xmlNewChild(dictnode, NULL, BAD_CAST "key", str);
       xmlNodePtr tmpNode = PyObjectToXML(value);
       xmlAddChild(dictnode, tmpNode);
-			// DumpPyObject( file, value );
+			// "<...>...</...>"
 	    }
 	}
 #endif
@@ -364,9 +363,10 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
     char numstring[32];
     memset(numstring, 0, sizeof(numstring));
 
-    // fprintf( glif, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" );
+    // "<?xml version=\"1.0\" encoding=\"UTF-8\""
     /* No DTD for these guys??? */
     // Is there a DTD for glif data? (asks Frank)
+    // Perhaps we need to make one.
 
     xmlNodePtr topglyphxml = xmlNewNode(NULL, BAD_CAST "glyph"); // Create the glyph node.
     xmlSetProp(topglyphxml, "name", sc->name); // Set the name for the glyph.
@@ -457,7 +457,7 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
         }
 	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
             xmlNodePtr contourxml = xmlNewChild(outlinexml, NULL, BAD_CAST "contour", NULL);
-	    // fprintf( glif, "    <contour>\n" );
+	    // "<contour>\n"
 	    for ( sp=spl->first; sp!=NULL; ) {
 		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
 		// We write the next on-curve point.
@@ -472,17 +472,10 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
 					"curve"));
 		  if (sp->pointtype != pt_corner) xmlSetProp(pointxml, BAD_CAST "smooth", BAD_CAST "yes");
 		  if (sp->name !=NULL) xmlSetProp(pointxml, BAD_CAST "name", BAD_CAST sp->name);
-/*
-				fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\"%s%s%s%s/>\n",
-					(double) sp->me.x, (double) sp->me.y,
-					sp->prev==NULL        ? "move"   :
-					sp->prev->knownlinear ? "line"   :
-					isquad 		      ? "qcurve" :
-								"curve",
-					sp->pointtype!=pt_corner?" smooth=\"yes\"":"",
-					sp->name?" name=\"":"",
-					sp->name?sp->name:"",
-					sp->name?"\"":"" ); */
+                  // "<point x=\"%g\" y=\"%g\" type=\"%s\"%s%s%s%s/>\n" (double)sp->me.x (double)sp->me.y
+		  // (sp->prev==NULL ? "move" : sp->prev->knownlinear ? "line" : isquad ? "qcurve" : "curve")
+		  // (sp->pointtype!=pt_corner?" smooth=\"yes\"":"")
+		  // (sp->name?" name=\"":"") (sp->name?sp->name:"") (sp->name?"\"":"")
 		}
 		if ( sp->next==NULL )
 	    	  break;
@@ -511,18 +504,10 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
     xmlNodePtr pythonblob = PythonLibToXML(sc->python_persistent, sc);
     xmlAddChild(libxml, pythonblob);
     return topglyphxml;
-    // DumpPythonLib(glif, sc->python_persistent, sc);
-    // fprintf( glif, "</glyph>\n" );
-    // err = ferror(glif);
-    // if ( fclose(glif))
-	// err = true;
-// return( !err );
 }
 
 static int GlifDump(char *glyphdir,char *gfname,SplineChar *sc,int layer) {
     char *gn = buildname(glyphdir,gfname);
-    // FILE *glif = fopen(gn,"w");
-    // int ret = _GlifDump(glif,sc,layer);
     xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0");
     if (doc == NULL) return 0;
     xmlNodePtr root_node = _GlifToXML(sc, layer);
@@ -531,8 +516,7 @@ static int GlifDump(char *glyphdir,char *gfname,SplineChar *sc,int layer) {
     int ret = (xmlSaveFormatFileEnc(gn, doc, "UTF-8", 1) != -1);
     xmlFreeDoc(doc); doc = NULL;
     free(gn);
-// return( ret );
-return ret;
+    return ret;
 }
 
 int _ExportGlif(FILE *glif,SplineChar *sc,int layer) {
@@ -574,7 +558,6 @@ xmlDocPtr PlistInit() {
     dtd = xmlCreateIntSubset(doc, BAD_CAST "plist", BAD_CAST "-//Apple Computer//DTD PLIST 1.0//EN", BAD_CAST "http://www.apple.com/DTDs/PropertyList-1.0.dtd");
     root_node = xmlNewNode(NULL, BAD_CAST "plist");
     xmlDocSetRootElement(doc, root_node);
-    // dict_node = xmlNewChild(root_node, NULL, BAD_CAST "dict", NULL);
     return doc;
 }
 
@@ -586,8 +569,6 @@ static void PListAddInteger(xmlNodePtr parent, const char *key, int value) {
 static void PListAddReal(xmlNodePtr parent, const char *key, double value) {
     xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
     xmlNewChildPrintf(parent, NULL, BAD_CAST "real", "%g", value);
-    // fprintf( plist, "\t<key>%s</key>\n", key );
-    // fprintf( plist, "\t<real>%g</real>\n", value );
 }
 
 static void PListAddBoolean(xmlNodePtr parent, const char *key, int value) {
@@ -616,7 +597,6 @@ int countOccurrence(const char* big, const char* little) {
 }
 
 xmlNodePtr PListAddString(xmlNodePtr parent, const char *key, const char *value) {
-    // TODO: We need to return two non-contained objects (key and string) somehow if we are to keep this function structure.
     if ( value==NULL ) value = "";
     xmlNodePtr keynode = xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key); // "<key>%s</key>" key
 #ifdef ESCAPE_LIBXML_STRINGS
@@ -682,7 +662,6 @@ static void PListAddIntArray(xmlNodePtr parent, const char *key, const char *ent
 
 static void PListAddPrivateArray(xmlNodePtr parent, const char *key, struct psdict *private) {
     char *value;
-    // TODO: Move the skip parsing into another function.
     if ( private==NULL )
 return;
     value = PSDictHasEntry(private,key);
@@ -702,7 +681,6 @@ return;
 		++value;
 	    else
                 tmp[tmppos++] = *value++;
-		// fputc(*value++,plist);
             if (tmppos == tmpsize) { tmpsize *= 2; tmp = realloc(tmp, tmpsize); }
 	}
         tmp[tmppos] = '\0';
@@ -763,7 +741,6 @@ static int UFOOutputMetaInfo(const char *basedir,SplineFont *sf) {
 }
 
 static int UFOOutputFontInfo(const char *basedir, const SplineFont *sf, int layer) {
-    // FILE *plist = PListCreate( basedir, "fontinfo.plist" );
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
     xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the dict.
@@ -1739,7 +1716,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		    } else
 				last->next = ss;
 				last = ss;
-		}
+		    }
 	    }
 	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "lib")==0 ) {
 	    xmlNodePtr keys, temp, dict = FindNode(kids->children,"dict");
