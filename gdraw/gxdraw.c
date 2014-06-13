@@ -3171,6 +3171,15 @@ return;
 	if ( (event->xbutton.state&0x40) && gdisp->twobmouse_win )
 	    gevent.u.mouse.button = 2;
 	if ( event->type == MotionNotify ) {
+#if defined (__MINGW32__) || __CygWin
+        //For some reason, a mouse move event is triggered even if it hasn't moved.
+        if(gdisp->mousemove_last_x == event->xbutton.x &&
+           gdisp->mousemove_last_y == event->xbutton.y) {
+            return;
+        }
+        gdisp->mousemove_last_x = event->xbutton.x;
+        gdisp->mousemove_last_y = event->xbutton.y;
+#endif
 	    gevent.type = et_mousemove;
 	    gevent.u.mouse.button = 0;
 	    gevent.u.mouse.clicks = 0;
