@@ -900,14 +900,12 @@ int fontforge_main( int argc, char **argv ) {
 
 #if defined(__MINGW32__)
     {
-	char  path[MAX_PATH+4];
-	char  *c = path;
-	unsigned int  len = GetModuleFileNameA(NULL, path, MAX_PATH);
-	path[len] = '\0';
-	for(; *c; *c++) /* backslash to slash */
-	    if(*c == '\\')
-		*c = '/';
-	GResourceSetProg(path);
+        char path[MAX_PATH];
+        unsigned int len = GetModuleFileNameA(NULL, path, MAX_PATH);
+        path[len] = '\0';
+        
+        //The '.exe' must be removed as resources presumes it's not there.
+        GResourceSetProg(GFileRemoveExtension(GFileNormalizePath(path)));
     }
 #else
     GResourceSetProg(argv[0]);
