@@ -3044,7 +3044,7 @@ static char *SVGGetNames(SplineFont *sf,xmlChar *g,xmlChar *utf8,SplineChar **sc
 	    temp = SFGetChar(sf,u[i],NULL);
 	    if ( temp!=NULL ) {
 		if ( *sc==NULL ) *sc = temp;
-		len = strlen(temp->name)+1;
+		len += strlen(temp->name)+1;
 	    }
 	}
     }
