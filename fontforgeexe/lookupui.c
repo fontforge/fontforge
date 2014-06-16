@@ -4292,6 +4292,7 @@ return( copy(str));
 	/*  or things in the private use area */
 	if ( sc!=NULL && sc->unicodeenc>32 && sc->unicodeenc!=')' &&
 		!( sc->unicodeenc<0x7f && isalpha(sc->unicodeenc)) &&
+	        !issurrogate(sc->unicodeenc) &&
 		!isprivateuse(sc->unicodeenc)) {
 	    *rpt++ = '(';
 	    rpt = utf8_idpb(rpt,sc->unicodeenc,0);
@@ -4324,6 +4325,7 @@ return( copy(sc->name));
     strcpy(temp,sc->name);
     if ( sc->unicodeenc>32 && sc->unicodeenc!=')' && add_char_to_name_list &&
 	    !( sc->unicodeenc<0x7f && isalpha(sc->unicodeenc)) &&
+	    !issurrogate(sc->unicodeenc) &&
 	    !isprivateuse(sc->unicodeenc)) {
 	pt = temp+len;
 	*pt++ = '(';
@@ -4344,6 +4346,7 @@ return( NULL );
     utf82u_strcpy(temp,sc->name);
     if ( sc->unicodeenc>32 && sc->unicodeenc!=')' && add_char_to_name_list &&
 	    !( sc->unicodeenc<0x7f && isalpha(sc->unicodeenc)) &&
+	    !issurrogate(sc->unicodeenc) &&
 	    !isprivateuse(sc->unicodeenc)) {
 	len = u_strlen(temp);
 	temp[len] = '(';
@@ -4426,6 +4429,7 @@ return( NULL );
 			len = u_strlen(temp);
 			if ( sc->unicodeenc>32 && add_char_to_name_list &&
 				!( sc->unicodeenc<0x7f && isalpha(sc->unicodeenc)) &&
+				!issurrogate(sc->unicodeenc) &&
 			        !isprivateuse(sc->unicodeenc)) {
 			    temp[len] = '(';
 			    temp[len+1] = sc->unicodeenc;

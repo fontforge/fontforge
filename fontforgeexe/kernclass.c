@@ -1491,7 +1491,8 @@ return( false );
 	snprintf( buf, blen, "!%s", start );
 	*pt = ch;
 return( true );
-    } else if ( sc->unicodeenc==-1 || isprivateuse(sc->unicodeenc))	/* Pango complains that privateuse code points are "Invalid UTF8 strings" */
+    } else if ( sc->unicodeenc==-1 || isprivateuse(sc->unicodeenc)
+	       || issurrogate(sc->unicodeenc))	/* Pango complains that privateuse code points are "Invalid UTF8 strings" */
 	snprintf( buf, blen, "%s", start );
     else {
 	char *bpt = utf8_idpb(buf,sc->unicodeenc,0);
