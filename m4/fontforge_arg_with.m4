@@ -46,6 +46,44 @@ AC_ARG_WITH([$1],[AS_HELP_STRING([--without-$1],[$3])],
 ])
 
 
+dnl FONTFORGE_BUILD_YES_NO_HALT(library_name, LIBRARY_NAME, build_message)
+dnl ----------------------------------------------------------------------
+dnl Commonly repeated code used in the --without-lib_name routines to test
+dnl whether to continue or create a forced-halt. The forced-halt seems to
+dnl be necessary since some superscripts such as homebrew (see issue#1366)
+dnl that call ./bootstrap or ./autogen.sh enable a quiet mode where users
+dnl won't see why ./configure fails. This forced-halt also aids users by
+dnl giving an immediate answer as to why ./configure fails (see lots of
+dnl issues before this where users run into problems, but reason for fail
+dnl isn't immediately clear) - anser is usually in adding a developer pkg
+dnl since some distros normally distribute compiled binaries to save space.
+dnl This also avoids using pkg-config since some versions don't check the
+dnl additional directories such as /usr/local by default without users
+dnl adding additional mods to make them check these other sub-directories.
+dnl Function initially tested-out in function FONTFORGE_ARG_WITH_LIBSPIRO()
+AC_DEFUN([FONTFORGE_BUILD_YES_NO_HALT],[
+AC_MSG_CHECKING([$3])
+if test x"${AS_TR_SH(with_$1)}" = xyes; then
+   if test x"${AS_TR_SH(i_do_have_$1)}" != xno; then
+      AC_MSG_RESULT([yes])
+   else
+      AC_MSG_FAILURE([ERROR: Please install the Developer version of $1],[1])
+   fi
+else
+   if test x"${AS_TR_SH(i_do_have_$1)}" = xno || test x"${AS_TR_SH(with_$1)}" = xno; then
+      AC_MSG_RESULT([no])
+      AC_DEFINE([_NO_$2],1,[Define if not using $1])
+      AS_TR_SH($2_CFLAGS)=""
+      AS_TR_SH($2_LIBS)=""
+   else
+      AC_MSG_RESULT([yes])
+   fi
+fi
+AC_SUBST([$2_CFLAGS])
+AC_SUBST([$2_LIBS])
+])
+
+
 dnl FONTFORGE_ARG_WITH_LIBUNINAMESLIST
 dnl ----------------------------------
 dnl Add with libuninameslist support by default (only if the libuninameslist
@@ -71,25 +109,8 @@ if test x"${i_do_have_libuninameslist}" = xyes; then
       ],[i_do_have_libuninameslist=no])
 fi
 
-AC_MSG_CHECKING([Build with LibUniNamesList Unicode support?])
-if test x"${with_libuninameslist}" = xyes; then
-   if test x"${i_do_have_libuninameslist}" != xno; then
-      AC_MSG_RESULT([yes])
-   else
-      AC_MSG_FAILURE([ERROR: Please install the Developer version of libuninameslist],[1])
-   fi
-else
-   if test x"${i_do_have_libuninameslist}" = xno || test x"${with_libuninameslist}" = xno; then
-      AC_MSG_RESULT([no])
-      AC_DEFINE([_NO_LIBUNINAMESLIST],[1],[Define if not using libuninameslist library])
-      LIBUNINAMESLIST_CFLAGS=""
-      LIBUNINAMESLIST_LIBS=""
-   else
-      AC_MSG_RESULT([yes])
-   fi
-fi
-AC_SUBST([LIBUNINAMESLIST_CFLAGS])
-AC_SUBST([LIBUNINAMESLIST_LIBS])
+
+FONTFORGE_BUILD_YES_NO_HALT([libuninameslist],[LIBUNINAMESLIST],[Build with LibUniNamesList Unicode support?])
 
 AC_DEFINE([_NO_LIBUNICODENAMES],[1],[Define if not using libunicodenames])
 i_do_have_libunicodenames=no
@@ -210,25 +231,7 @@ if test x"${i_do_have_libreadline}" = xyes -a x"${LIBREADLINE_CFLAGS}" = x; then
    AC_CHECK_HEADER([readline/readline.h],[$LIBREADLINE_CFLAGS=""],[i_do_have_libreadline=no])
 fi
 
-AC_MSG_CHECKING([Build with LibReadLine support?])
-if test x"${with_libreadline}" = xyes; then
-   if test x"${i_do_have_libreadline}" != xno; then
-      AC_MSG_RESULT([yes])
-   else
-      AC_MSG_FAILURE([ERROR: Please install the Developer version of libreadline],[1])
-   fi
-else
-   if test x"${i_do_have_libreadline}" = xno || test x"${with_libreadline}" = xno; then
-      AC_MSG_RESULT([no])
-      AC_DEFINE([_NO_LIBREADLINE],1,[Define if not using libreadline.])
-      LIBREADLINE_CFLAGS=""
-      LIBREADLINE_LIBS=""
-   else
-      AC_MSG_RESULT([yes])
-   fi
-fi
-AC_SUBST([LIBREADLINE_CFLAGS])
-AC_SUBST([LIBREADLINE_LIBS])
+FONTFORGE_BUILD_YES_NO_HALT([libreadline],[LIBREADLINE],[Build with LibReadLine support?])
 ])
 
 
@@ -253,25 +256,7 @@ if test x"${i_do_have_libspiro}" = xyes; then
          [i_do_have_libspiro=no])
 fi
 
-AC_MSG_CHECKING([Build with libspiro support?])
-if test x"${with_libspiro}" = xyes; then
-   if test x"${i_do_have_libspiro}" != xno; then
-      AC_MSG_RESULT([yes])
-   else
-      AC_MSG_FAILURE([ERROR: Please install the Developer version of libspiro],[1])
-   fi
-else
-   if test x"${i_do_have_libspiro}" = xno || test x"${with_libspiro}" = xno; then
-      AC_MSG_RESULT([no])
-      AC_DEFINE([_NO_LIBSPIRO],[1],[Define if not using libspiro library])
-      LIBSPIRO_CFLAGS=""
-      LIBSPIRO_LIBS=""
-   else
-      AC_MSG_RESULT([yes])
-   fi
-fi
-AC_SUBST([LIBSPIRO_CFLAGS])
-AC_SUBST([LIBSPIRO_LIBS])
+FONTFORGE_BUILD_YES_NO_HALT([libspiro],[LIBSPIRO],[Build with LibSpiro Curve Contour support?])
 ])
 
 
