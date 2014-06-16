@@ -191,16 +191,18 @@ void SplinePointsFree(SplinePointList *spl) {
     int nonext;
 
     if ( spl==NULL )
-return;
+      return;
     if ( spl->first!=NULL ) {
-	nonext = spl->first->next==NULL;
+	nonext = spl->first->next==NULL; // If there is no spline, we set a flag.
 	first = NULL;
+        // We start on the first spline if it exists.
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
-	    next = spline->to->next;
-	    SplinePointFree(spline->to);
-	    SplineFree(spline);
-	    if ( first==NULL ) first = spline;
+	    next = spline->to->next; // Cache the location of the next spline.
+	    SplinePointFree(spline->to); // Free the destination point.
+	    SplineFree(spline); // Free the spline.
+	    if ( first==NULL ) first = spline; // We want to avoid repeating the circuit.
 	}
+        // If the path is open or has no splines, free the starting point.
 	if ( spl->last!=spl->first || nonext )
 	    SplinePointFree(spl->first);
     }

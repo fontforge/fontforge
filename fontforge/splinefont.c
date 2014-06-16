@@ -1896,20 +1896,21 @@ void SFRemoveLayer(SplineFont *sf,int l) {
     SplineChar *sc;
     CharViewBase *cvs;
     FontViewBase *fvs;
-    int layers, any_quads;
+    int layers, any_quads = false;
 
     if ( sf->subfontcnt!=0 || l<=ly_fore || sf->multilayer )
 return;
 
     for ( layers=ly_fore, any_quads=0; layers<sf->layer_cnt; ++layers ) {
 	if ( layers!=l && sf->layers[layers].order2 )
-	    any_quads = true;
+	    any_quads = true; // Check whether remaining layers have quadratics.
     }
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
 	LayerFreeContents(sc,l);
+        // Move the other layers and close the gap.
 	for ( i=l+1; i<sc->layer_cnt; ++i )
 	    sc->layers[i-1] = sc->layers[i];
-	-- sc->layer_cnt;
+	-- sc->layer_cnt; // Decrement the layer count.
 	for ( cvs = sc->views; cvs!=NULL; cvs=cvs->next ) {
 	    if ( cvs->layerheads[dm_back] - sc->layers >= sc->layer_cnt )
 		cvs->layerheads[dm_back] = &sc->layers[ly_back];
@@ -1934,7 +1935,7 @@ return;
     free(sf->layers[l].name);
     for ( i=l+1; i<sf->layer_cnt; ++i )
 	sf->layers[i-1] = sf->layers[i];
-    -- sf->layer_cnt;
+    -- sf->layer_cnt; // Decrement the layer count.
 }
 
 void SFAddLayer(SplineFont *sf,char *name,int order2,int background) {
