@@ -1896,12 +1896,12 @@ void SFRemoveLayer(SplineFont *sf,int l) {
     SplineChar *sc;
     CharViewBase *cvs;
     FontViewBase *fvs;
-    int layers, any_quads = false;
+    int layers, any_quads;
 
     if ( sf->subfontcnt!=0 || l<=ly_fore || sf->multilayer )
 return;
 
-    for ( layers=ly_fore, any_quads=0; layers<sf->layer_cnt; ++layers ) {
+    for ( layers = ly_fore, any_quads = false; layers<sf->layer_cnt; ++layers ) {
 	if ( layers!=l && sf->layers[layers].order2 )
 	    any_quads = true; // Check whether remaining layers have quadratics.
     }
