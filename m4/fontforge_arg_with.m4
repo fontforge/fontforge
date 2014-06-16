@@ -263,44 +263,43 @@ FONTFORGE_BUILD_YES_NO_HALT([libspiro],[LIBSPIRO],[Build with LibSpiro Curve Con
 ])
 
 
-dnl There is no pkg-config support for giflib, at least on Gentoo. (17 Jul 2012)
-dnl
 dnl FONTFORGE_ARG_WITH_GIFLIB
 dnl -------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_GIFLIB],
-[
-AC_ARG_VAR([GIFLIB_CFLAGS],[C compiler flags for GIFLIB, overriding the automatic detection])
-AC_ARG_VAR([GIFLIB_LIBS],[linker flags for GIFLIB, overriding the automatic detection])
-AC_ARG_WITH([giflib],[AS_HELP_STRING([--without-giflib],[build without GIF support])],
-            [i_do_have_giflib="${withval}"],[i_do_have_giflib=yes])
+dnl Add with giflib or libungif support by default (only if library AND header
+dnl file exists). If both found, then check for enhanced DGifOpenFileName
+dnl If user defines --without-giflib, then do not include giflib or libungif.
+dnl If user defines --with-giflib, then fail with error if there is no
+dnl giflib or libungif library OR no gif_lib.h header file.
+AC_DEFUN([FONTFORGE_ARG_WITH_GIFLIB],[
+FONTFORGE_ARG_WITHOUT([giflib],[GIFLIB],[build without GIF or LIBUNGIF support])
+
 if test x"${i_do_have_giflib}" = xyes -a x"${GIFLIB_LIBS}" = x; then
    FONTFORGE_SEARCH_LIBS([DGifOpenFileName],[gif ungif],
-                  [AC_SUBST([GIFLIB_LIBS],["${found_lib}"])],
-                  [i_do_have_giflib=no])
-fi
-dnl version 5+ breaks basic interface, so must use enhanced "DGifOpenFileName"
-if test x"${i_do_have_giflib}" = xyes -a x"${GIFLIB_LIBS}" = x; then
+         [GIFLIB_LIBS="${GIFLIB_LIBS} ${found_lib}"],[i_do_have_giflib=no])
+   dnl version 5+ breaks basic interface, so must use enhanced "DGifOpenFileName"
    FONTFORGE_SEARCH_LIBS([EGifGetGifVersion],[gif ungif],
-                  [AC_SUBST([_GIFLIB_5PLUS],["${found_lib}"])],[])
+         [AC_SUBST([_GIFLIB_5PLUS],["${found_lib}"])],[])
 fi
 if test x"${i_do_have_giflib}" = xyes -a x"${GIFLIB_CFLAGS}" = x; then
-   AC_CHECK_HEADER(gif_lib.h,[AC_SUBST([GIFLIB_CFLAGS],[""])],[i_do_have_giflib=no])
+   AC_CHECK_HEADER(gif_lib.h,[],[i_do_have_giflib=no])
    if test x"${i_do_have_giflib}" = xyes; then
       AC_CACHE_CHECK([for ExtensionBlock.Function in gif_lib.h],
         ac_cv_extensionblock_in_giflib,
         [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <gif_lib.h>],[ExtensionBlock foo; foo.Function=3;])],
           [ac_cv_extensionblock_in_giflib=yes],[ac_cv_extensionblock_in_giflib=no])])
       if test x"${ac_cv_extensionblock_in_giflib}" != xyes; then
-         AC_MSG_WARN([FontForge found giflib or libungif but cannot use this version. We will build without it.])
+         AC_MSG_WARN([FontForge found giflib or libungif but cannot use this version.])
          i_do_have_giflib=no
       fi
    fi
 fi
+
+FONTFORGE_BUILD_YES_NO_HALT([giflib],[GIFLIB],[Build with GIFLIB or LIBUNGIF support?])
 if test x"${i_do_have_giflib}" != xyes; then
-   FONTFORGE_WARN_PKG_NOT_FOUND([GIFLIB])
    AC_DEFINE([_NO_LIBUNGIF],1,[Define if not using giflib or libungif.)])
 fi
 ])
+
 
 dnl There is no pkg-config support for libjpeg, at least on Gentoo. (17 Jul 2012)
 dnl
