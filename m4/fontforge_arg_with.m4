@@ -31,6 +31,59 @@ AC_DEFUN([FONTFORGE_ARG_WITH],
    [FONTFORGE_ARG_WITH_BASE([$1],[$2],[$3],[$4],[$5],[eval AS_TR_SH(i_do_have_$1)=no])])
 
 
+dnl FONTFORGE_ARG_WITHOUT(library_name, LIBRARY_NAME, without-help-message)
+dnl -----------------------------------------------------------------------
+dnl Commonly repeated code used in the --without-lib_name routines to create
+dnl CFLAGS and LIBS, plus prompt user if they want to build with or without.
+dnl default is to set as 'check' unless the user specifies 'yes' or 'no'
+AC_DEFUN([FONTFORGE_ARG_WITHOUT],[
+AC_ARG_VAR([$2_CFLAGS],[C compiler flags for $2, overriding automatic detection])
+AC_ARG_VAR([$2_LIBS],[Linker flags for $2, overriding automatic detection])
+
+AC_ARG_WITH([$1],[AS_HELP_STRING([--without-$1],[$3])],
+        [AS_TR_SH(i_do_have_$1)="${withval}"; AS_TR_SH(with_$1)="${withval}"],
+        [AS_TR_SH(i_do_have_$1)=yes; AS_TR_SH(with_$1)=check])
+])
+
+
+dnl FONTFORGE_BUILD_YES_NO_HALT(library_name, LIBRARY_NAME, build_message)
+dnl ----------------------------------------------------------------------
+dnl Commonly repeated code used in the --without-lib_name routines to test
+dnl whether to continue or create a forced-halt. The forced-halt seems to
+dnl be necessary since some superscripts such as homebrew (see issue#1366)
+dnl that call ./bootstrap or ./autogen.sh enable a quiet mode where users
+dnl won't see why ./configure fails. This forced-halt also aids users by
+dnl giving an immediate answer as to why ./configure fails (see lots of
+dnl issues before this where users run into problems, but reason for fail
+dnl isn't immediately clear) - anser is usually in adding a developer pkg
+dnl since some distros normally distribute compiled binaries to save space.
+dnl This also avoids using pkg-config since some versions don't check the
+dnl additional directories such as /usr/local by default without users
+dnl adding additional mods to make them check these other sub-directories.
+dnl Function initially tested-out in function FONTFORGE_ARG_WITH_LIBSPIRO()
+AC_DEFUN([FONTFORGE_BUILD_YES_NO_HALT],[
+AC_MSG_CHECKING([$3])
+if test x"${AS_TR_SH(with_$1)}" = xyes; then
+   if test x"${AS_TR_SH(i_do_have_$1)}" != xno; then
+      AC_MSG_RESULT([yes])
+   else
+      AC_MSG_FAILURE([ERROR: Please install the Developer version of $1],[1])
+   fi
+else
+   if test x"${AS_TR_SH(i_do_have_$1)}" = xno || test x"${AS_TR_SH(with_$1)}" = xno; then
+      AC_MSG_RESULT([no])
+      AC_DEFINE([_NO_$2],1,[Define if not using $1])
+      AS_TR_SH($2_CFLAGS)=""
+      AS_TR_SH($2_LIBS)=""
+   else
+      AC_MSG_RESULT([yes])
+   fi
+fi
+AC_SUBST([$2_CFLAGS])
+AC_SUBST([$2_LIBS])
+])
+
+
 dnl FONTFORGE_ARG_WITH_LIBUNINAMESLIST
 dnl ----------------------------------
 dnl Add with libuninameslist support by default (only if the libuninameslist
@@ -43,14 +96,12 @@ dnl If user defines --without-libuninameslist, then don't use libuninameslist.
 dnl If user defines --with-libuninameslist, then fail with error if there is
 dnl no libuninameslist library OR no uninameslist.h header file.
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST],[
-AC_ARG_WITH([libuninameslist],
-      [AS_HELP_STRING([--without-libuninameslist],[build without Unicode Name or Annotation support])],
-      [],[with_libuninameslist=check])
+FONTFORGE_ARG_WITHOUT([libuninameslist],[LIBUNINAMESLIST],[build without Unicode Name or Annotation support])
 
-AC_ARG_VAR([LIBUNINAMESLIST_CFLAGS],[C compiler flags for LIBUNINAMESLIST, overriding automatic detection])
-AC_ARG_VAR([LIBUNINAMESLIST_LIBS],[linker flags for LIBUNINAMESLIST, overriding automatic detection])
-AC_CHECK_HEADER([uninameslist.h],[i_do_have_libuninameslist=yes],[i_do_have_libuninameslist=no])
-if test x"${i_do_have_libuninameslist}" = xyes; then
+if test x"${i_do_have_libuninameslist}" = xyes -a x"${LIBUNINAMESLIST_CFLAGS}" = x; then
+AC_CHECK_HEADER([uninameslist.h],[],[i_do_have_libuninameslist=no])
+fi
+if test x"${i_do_have_libuninameslist}" = xyes -a x"${LIBUNINAMESLIST_LIBS}" = x; then
    have_libuninameslist=0
    FONTFORGE_SEARCH_LIBS([UnicodeNameAnnot],[uninameslist],
       [LIBUNINAMESLIST_LIBS="${LIBUNINAMESLIST_LIBS} ${found_lib}"
@@ -60,25 +111,7 @@ if test x"${i_do_have_libuninameslist}" = xyes; then
       ],[i_do_have_libuninameslist=no])
 fi
 
-AC_MSG_CHECKING([Build with LibUniNamesList Unicode support?])
-if test x"${with_libuninameslist}" = xyes; then
-   if test x"${i_do_have_libuninameslist}" != xno; then
-      AC_MSG_RESULT([yes])
-   else
-      AC_MSG_FAILURE([ERROR: Please install the Developer version of libuninameslist],[1])
-   fi
-else
-   if test x"${i_do_have_libuninameslist}" = xno || test x"${with_libuninameslist}" = xno; then
-      AC_MSG_RESULT([no])
-      AC_DEFINE([_NO_LIBUNINAMESLIST],[1],[Define if not using libuninameslist library])
-      LIBUNINAMESLIST_CFLAGS=""
-      LIBUNINAMESLIST_LIBS=""
-   else
-      AC_MSG_RESULT([yes])
-   fi
-fi
-AC_SUBST([LIBUNINAMESLIST_CFLAGS])
-AC_SUBST([LIBUNINAMESLIST_LIBS])
+FONTFORGE_BUILD_YES_NO_HALT([libuninameslist],[LIBUNINAMESLIST],[Build with LibUniNamesList Unicode support?])
 
 AC_DEFINE([_NO_LIBUNICODENAMES],[1],[Define if not using libunicodenames])
 i_do_have_libunicodenames=no
@@ -179,13 +212,8 @@ dnl AND readline/readline.h header file exist.
 dnl If user defines --without-libreadline, then do not include libreadline.
 dnl If user defines --with-libreadline, then fail with error if there is no
 dnl libreadline library OR no readline/readline.h header file.
-AC_DEFUN([FONTFORGE_ARG_WITH_LIBREADLINE],
-[
-AC_ARG_VAR([LIBREADLINE_CFLAGS],[C compiler flags for LIBREADLINE, overriding the automatic detection])
-AC_ARG_VAR([LIBREADLINE_LIBS],[linker flags for LIBREADLINE, overriding the automatic detection])
-AC_ARG_WITH([libreadline],[AS_HELP_STRING([--without-libreadline],[build without READLINE support])],
-            [i_do_have_libreadline="${withval}"; with_libreadline="${withval}"],
-            [i_do_have_libreadline=yes; with_libreadline=check])
+AC_DEFUN([FONTFORGE_ARG_WITH_LIBREADLINE],[
+FONTFORGE_ARG_WITHOUT([libreadline],[LIBREADLINE],[build without READLINE support])
 
 if test x"${i_do_have_libreadline}" = xyes -a x"${LIBREADLINE_LIBS}" = x; then
    FONTFORGE_SEARCH_LIBS([rl_readline_version],[readline],
@@ -204,25 +232,7 @@ if test x"${i_do_have_libreadline}" = xyes -a x"${LIBREADLINE_CFLAGS}" = x; then
    AC_CHECK_HEADER([readline/readline.h],[$LIBREADLINE_CFLAGS=""],[i_do_have_libreadline=no])
 fi
 
-AC_MSG_CHECKING([Build with LibReadLine support?])
-if test x"${with_libreadline}" = xyes; then
-   if test x"${i_do_have_libreadline}" != xno; then
-      AC_MSG_RESULT([yes])
-   else
-      AC_MSG_FAILURE([ERROR: Please install the Developer version of libreadline],[1])
-   fi
-else
-   if test x"${i_do_have_libreadline}" = xno || test x"${with_libreadline}" = xno; then
-      AC_MSG_RESULT([no])
-      AC_DEFINE([_NO_LIBREADLINE],1,[Define if not using libreadline.])
-      LIBREADLINE_CFLAGS=""
-      LIBREADLINE_LIBS=""
-   else
-      AC_MSG_RESULT([yes])
-   fi
-fi
-AC_SUBST([LIBREADLINE_CFLAGS])
-AC_SUBST([LIBREADLINE_LIBS])
+FONTFORGE_BUILD_YES_NO_HALT([libreadline],[LIBREADLINE],[Build with LibReadLine support?])
 ])
 
 
@@ -236,13 +246,12 @@ dnl If user defines --without-libspiro, then do not include libspiro.
 dnl If user defines --with-libspiro, then fail with error if there is no
 dnl libspiro library OR no spiroentrypoints.h header file.
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBSPIRO],[
-AC_ARG_WITH([libspiro],[AS_HELP_STRING([--without-libspiro],[build without support for Spiro contours])],
-            [],[with_libspiro=check])
+FONTFORGE_ARG_WITHOUT([libspiro],[LIBSPIRO],[build without support for Spiro contours])
 
-AC_ARG_VAR([LIBSPIRO_CFLAGS],[C compiler flags for LIBSPIRO, overriding automatic detection])
-AC_ARG_VAR([LIBSPIRO_LIBS],[linker flags for LIBSPIRO, overriding automatic detection])
-AC_CHECK_HEADER([spiroentrypoints.h],[i_do_have_libspiro=yes],[i_do_have_libspiro=no])
-if test x"${i_do_have_libspiro}" = xyes; then
+if test x"${i_do_have_libspiro}" = xyes -a x"${LIBSPIRO_CFLAGS}" = x; then
+   AC_CHECK_HEADER([spiroentrypoints.h],[],[i_do_have_libspiro=no])
+fi
+if test x"${i_do_have_libspiro}" = xyes -a x"${LIBSPIRO_LIBS}" = x; then
    FONTFORGE_SEARCH_LIBS([TaggedSpiroCPsToBezier],[spiro],
          [LIBSPIRO_LIBS="${LIBSPIRO_LIBS} ${found_lib}"
           AC_CHECK_FUNC([TaggedSpiroCPsToBezier0],
@@ -250,66 +259,47 @@ if test x"${i_do_have_libspiro}" = xyes; then
          [i_do_have_libspiro=no])
 fi
 
-AC_MSG_CHECKING([Build with libspiro support?])
-if test x"${with_libspiro}" = xyes; then
-   if test x"${i_do_have_libspiro}" != xno; then
-      AC_MSG_RESULT([yes])
-   else
-      AC_MSG_FAILURE([ERROR: Please install the Developer version of libspiro],[1])
-   fi
-else
-   if test x"${i_do_have_libspiro}" = xno || test x"${with_libspiro}" = xno; then
-      AC_MSG_RESULT([no])
-      AC_DEFINE([_NO_LIBSPIRO],[1],[Define if not using libspiro library])
-      LIBSPIRO_CFLAGS=""
-      LIBSPIRO_LIBS=""
-   else
-      AC_MSG_RESULT([yes])
-   fi
-fi
-AC_SUBST([LIBSPIRO_CFLAGS])
-AC_SUBST([LIBSPIRO_LIBS])
+FONTFORGE_BUILD_YES_NO_HALT([libspiro],[LIBSPIRO],[Build with LibSpiro Curve Contour support?])
 ])
 
 
-dnl There is no pkg-config support for giflib, at least on Gentoo. (17 Jul 2012)
-dnl
 dnl FONTFORGE_ARG_WITH_GIFLIB
 dnl -------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_GIFLIB],
-[
-AC_ARG_VAR([GIFLIB_CFLAGS],[C compiler flags for GIFLIB, overriding the automatic detection])
-AC_ARG_VAR([GIFLIB_LIBS],[linker flags for GIFLIB, overriding the automatic detection])
-AC_ARG_WITH([giflib],[AS_HELP_STRING([--without-giflib],[build without GIF support])],
-            [i_do_have_giflib="${withval}"],[i_do_have_giflib=yes])
+dnl Add with giflib or libungif support by default (only if library AND header
+dnl file exists). If both found, then check for enhanced DGifOpenFileName
+dnl If user defines --without-giflib, then do not include giflib or libungif.
+dnl If user defines --with-giflib, then fail with error if there is no
+dnl giflib or libungif library OR no gif_lib.h header file.
+AC_DEFUN([FONTFORGE_ARG_WITH_GIFLIB],[
+FONTFORGE_ARG_WITHOUT([giflib],[GIFLIB],[build without GIF or LIBUNGIF support])
+
 if test x"${i_do_have_giflib}" = xyes -a x"${GIFLIB_LIBS}" = x; then
    FONTFORGE_SEARCH_LIBS([DGifOpenFileName],[gif ungif],
-                  [AC_SUBST([GIFLIB_LIBS],["${found_lib}"])],
-                  [i_do_have_giflib=no])
-fi
-dnl version 5+ breaks basic interface, so must use enhanced "DGifOpenFileName"
-if test x"${i_do_have_giflib}" = xyes -a x"${GIFLIB_LIBS}" = x; then
+         [GIFLIB_LIBS="${GIFLIB_LIBS} ${found_lib}"],[i_do_have_giflib=no])
+   dnl version 5+ breaks basic interface, so must use enhanced "DGifOpenFileName"
    FONTFORGE_SEARCH_LIBS([EGifGetGifVersion],[gif ungif],
-                  [AC_SUBST([_GIFLIB_5PLUS],["${found_lib}"])],[])
+         [AC_SUBST([_GIFLIB_5PLUS],["${found_lib}"])],[])
 fi
 if test x"${i_do_have_giflib}" = xyes -a x"${GIFLIB_CFLAGS}" = x; then
-   AC_CHECK_HEADER(gif_lib.h,[AC_SUBST([GIFLIB_CFLAGS],[""])],[i_do_have_giflib=no])
+   AC_CHECK_HEADER(gif_lib.h,[],[i_do_have_giflib=no])
    if test x"${i_do_have_giflib}" = xyes; then
       AC_CACHE_CHECK([for ExtensionBlock.Function in gif_lib.h],
         ac_cv_extensionblock_in_giflib,
         [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <gif_lib.h>],[ExtensionBlock foo; foo.Function=3;])],
           [ac_cv_extensionblock_in_giflib=yes],[ac_cv_extensionblock_in_giflib=no])])
       if test x"${ac_cv_extensionblock_in_giflib}" != xyes; then
-         AC_MSG_WARN([FontForge found giflib or libungif but cannot use this version. We will build without it.])
+         AC_MSG_WARN([FontForge found giflib or libungif but cannot use this version.])
          i_do_have_giflib=no
       fi
    fi
 fi
+
+FONTFORGE_BUILD_YES_NO_HALT([giflib],[GIFLIB],[Build with GIFLIB or LIBUNGIF support?])
 if test x"${i_do_have_giflib}" != xyes; then
-   FONTFORGE_WARN_PKG_NOT_FOUND([GIFLIB])
    AC_DEFINE([_NO_LIBUNGIF],1,[Define if not using giflib or libungif.)])
 fi
 ])
+
 
 dnl There is no pkg-config support for libjpeg, at least on Gentoo. (17 Jul 2012)
 dnl
