@@ -1180,6 +1180,7 @@ return;
 			    fprintf( out, "<anchor NULL>" );	/* In adobe's example no anchor class is given */
 			}
 		    }
+                    fprintf(out,";\n");
 		}
 	    }
 	}
