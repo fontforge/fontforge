@@ -472,6 +472,15 @@ case $host in
 esac
 AC_SUBST([MY_LIB_LDFLAGS], [${my_lib_ldflags}])
 
+# Native Windows Python modules have a '.pyd' extension and not '.dll'
+pyhook_file_extension=""
+case $host in
+    *mingw*)
+        pyhook_file_extension="${pyhook_file_extension} -shrext \".pyd\""
+    ;;
+esac
+AC_SUBST([PYHOOK_FILE_EXTENSION], [${pyhook_file_extension}])
+
 AC_LANG_POP
 
 #--------------------------------------------------------------------------
