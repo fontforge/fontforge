@@ -98,8 +98,10 @@ dnl no libuninameslist library OR no uninameslist.h header file.
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST],[
 FONTFORGE_ARG_WITHOUT([libuninameslist],[LIBUNINAMESLIST],[build without Unicode Name or Annotation support])
 
-AC_CHECK_HEADER([uninameslist.h],[i_do_have_libuninameslist=yes],[i_do_have_libuninameslist=no])
-if test x"${i_do_have_libuninameslist}" = xyes; then
+if test x"${i_do_have_libuninameslist}" = xyes -a x"${LIBUNINAMESLIST_CFLAGS}" = x; then
+AC_CHECK_HEADER([uninameslist.h],[],[i_do_have_libuninameslist=no])
+fi
+if test x"${i_do_have_libuninameslist}" = xyes -a x"${LIBUNINAMESLIST_LIBS}" = x; then
    have_libuninameslist=0
    FONTFORGE_SEARCH_LIBS([UnicodeNameAnnot],[uninameslist],
       [LIBUNINAMESLIST_LIBS="${LIBUNINAMESLIST_LIBS} ${found_lib}"
@@ -108,7 +110,6 @@ if test x"${i_do_have_libuninameslist}" = xyes; then
        AC_DEFINE_UNQUOTED([_LIBUNINAMESLIST_FUN],[$have_libuninameslist],[LibUninNamesList library >= 0.3])
       ],[i_do_have_libuninameslist=no])
 fi
-
 
 FONTFORGE_BUILD_YES_NO_HALT([libuninameslist],[LIBUNINAMESLIST],[Build with LibUniNamesList Unicode support?])
 
@@ -247,8 +248,10 @@ dnl libspiro library OR no spiroentrypoints.h header file.
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBSPIRO],[
 FONTFORGE_ARG_WITHOUT([libspiro],[LIBSPIRO],[build without support for Spiro contours])
 
-AC_CHECK_HEADER([spiroentrypoints.h],[i_do_have_libspiro=yes],[i_do_have_libspiro=no])
-if test x"${i_do_have_libspiro}" = xyes; then
+if test x"${i_do_have_libspiro}" = xyes -a x"${LIBSPIRO_CFLAGS}" = x; then
+   AC_CHECK_HEADER([spiroentrypoints.h],[],[i_do_have_libspiro=no])
+fi
+if test x"${i_do_have_libspiro}" = xyes -a x"${LIBSPIRO_LIBS}" = x; then
    FONTFORGE_SEARCH_LIBS([TaggedSpiroCPsToBezier],[spiro],
          [LIBSPIRO_LIBS="${LIBSPIRO_LIBS} ${found_lib}"
           AC_CHECK_FUNC([TaggedSpiroCPsToBezier0],
