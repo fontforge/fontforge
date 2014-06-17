@@ -340,6 +340,10 @@ typedef struct gxdisplay /* : GDisplay */ {
     PangoFontMap *pangoc_fontmap;
     PangoContext *pangoc_context;
 # endif
+# if defined(__MINGW32__) || __CygWin
+    int32  mousemove_last_x;
+    int32  mousemove_last_y;
+#endif
     Window last_nontransient_window;
 } GXDisplay;
 

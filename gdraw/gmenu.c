@@ -803,6 +803,10 @@ return( true );
 	if ( !event->u.crossing.entered )
 	    UnsetInitialPress(m);
 return( true );
+    } else if ((event->type==et_mouseup || event->type==et_mousedown) &&
+               (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
+        //From scrollbar.c: X treats a scroll as a mousedown/mouseup event
+        return GGadgetDispatchEvent(m->vsb,event);
     }
 
     p.x = event->u.mouse.x; p.y = event->u.mouse.y;
