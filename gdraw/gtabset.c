@@ -967,7 +967,7 @@ void GTabSetSetNestedMouse(GGadget *g, int (*nm)(GGadget *,GEvent *)) {
     gts->nested_mouse = nm;
 }
 
-void GTabSetChangeTabName(GGadget *g, char *name, int pos) {
+void GTabSetChangeTabName(GGadget *g, const char *name, int pos) {
     GTabSet *gts = (GTabSet *) g;
 
     if ( pos==gts->tabcnt && gts->nowindow ) {

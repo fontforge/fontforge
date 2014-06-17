@@ -1276,7 +1276,7 @@ return(false);
 	    bool preserveState = false;
 	    CVVisitAllControlPoints( cv, preserveState,
 	    			     FE_touchControlPoint,
-	    			     (void*)cv->b.layerheads[cv->b.drawmode]->order2 );
+	    			     (void*)(intptr_t)cv->b.layerheads[cv->b.drawmode]->order2 );
 	}
     }
     
@@ -1393,7 +1393,7 @@ static void touchControlPointsVisitor ( void* key,
 				 bool isnext,
 				 void* udata )
 {
-    SPTouchControl( sp, which, (int)udata );
+    SPTouchControl( sp, which, (int)(intptr_t)udata );
 }
 
 int CVMouseMovePointer(CharView *cv, GEvent *event) {
@@ -1530,7 +1530,7 @@ return( false );
 	// visiting all is a hammer left below in case it might be needed.
 	CVVisitAdjacentToSelectedControlPoints( cv, false,
 						touchControlPointsVisitor,
-						(void*)cv->b.layerheads[cv->b.drawmode]->order2 );
+						(void*)(intptr_t)cv->b.layerheads[cv->b.drawmode]->order2 );
 	/* CVVisitAllControlPoints( cv, false, */
 	/* 			 touchControlPointsVisitor, */
 	/* 			 (void*)cv->b.layerheads[cv->b.drawmode]->order2 ); */

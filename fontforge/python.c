@@ -5623,11 +5623,10 @@ static PyObject *PyFFGlyph_Repr(PyFF_Glyph *self) {
 	repr = malloc( space_needed );
 
 #ifdef DEBUG
-    at = sprintf(repr, "<%s at 0x%lx sc=0x%lx",
-		 Py_TYPENAME(self), (unsigned long)(self), (unsigned long)(self->sc));
+    at = sprintf(repr, "<%s at 0x%p sc=0x%p",
+		 Py_TYPENAME(self), self, self->sc);
 #else
-    at = sprintf(repr, "<%s at 0x%lx",
-		 Py_TYPENAME(self), (unsigned long)(self));
+    at = sprintf(repr, "<%s at 0x%p", Py_TYPENAME(self), self);
 #endif
     if ( self->sc==NULL ) {
 	strcpy( &repr[at], " CLOSED>" );
@@ -10385,14 +10384,14 @@ static PyObject *PyFFFont_Repr(PyFF_Font *self) {
     PyObject *ret;
     char prefix[256];
 #ifdef DEBUG
-    snprintf(prefix,sizeof(prefix), "<%s at 0x%lx fv=0x%lx sf=0x%lx",
+    snprintf(prefix,sizeof(prefix), "<%s at 0x%p fv=0x%p sf=0x%p",
 	     Py_TYPENAME(self),
-	     (unsigned long)(self),
-	     (unsigned long)(self->fv),
-	     (unsigned long)(self->fv ? self->fv->sf : 0) );
+	     self,
+	     self->fv,
+	     (self->fv ? self->fv->sf : 0) );
 #else
-    snprintf(prefix,sizeof(prefix), "<%s at 0x%lx",
-	     Py_TYPENAME(self), (unsigned long)(self) );
+    snprintf(prefix,sizeof(prefix), "<%s at 0x%p",
+	     Py_TYPENAME(self), self );
 #endif
     if ( self->fv==NULL )
 	ret = STRING_FROM_FORMAT("%s CLOSED>",prefix);

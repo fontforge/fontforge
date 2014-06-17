@@ -367,7 +367,7 @@ static int BdfP_OK(GGadget *g, GEvent *e) {
 	struct bdf_dlg *bd = GDrawGetUserData(GGadgetGetWindow(g));
 	int i;
 	struct xlfd_components components;
-	char *xlfd;
+	const char *xlfd;
 
 	if ( !BdfP_FinishTextField(bd))
 return( true );

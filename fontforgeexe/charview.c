@@ -2874,7 +2874,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	 d.fg = DraggingComparisonOutlineColor;
 	 d.clip = &clip;
 	 d.strokeFillMode = sfm_stroke_trans;
-	 g_list_foreach( cv->p.pretransform_spl, CVExpose_PreTransformSPL_fe, &d );
+	 g_list_foreach( cv->p.pretransform_spl, (GFunc)CVExpose_PreTransformSPL_fe, &d );
      }
 
     /* The call to CVExposeGlyphFill() above will have rendered a filled glyph already. */
@@ -3505,7 +3505,7 @@ static void CVChangeSC_fetchTab( CharView *cv, int tabnumber )
 
 static void CVSetCharSelectorValueFromSC( CharView *cv, SplineChar *sc )
 {
-    char* title = Wordlist_getSCName( sc );
+    const char* title = Wordlist_getSCName( sc );
     TRACE("CVSetCharSelectorValueFromSC() title:%s\n", title );
     GGadgetSetTitle8(cv->charselector, title);
 }
@@ -7486,7 +7486,7 @@ void FE_touchControlPoint( void* key,
 			   void* udata )
 {
     TRACE("FE_touchControlPoint() which:%p\n", which );
-    SPTouchControl( sp, which, (int)udata );
+    SPTouchControl( sp, which, (int)(intptr_t)udata );
 }
 
 void FE_unselectBCP( void* key,
@@ -8504,7 +8504,7 @@ static void _CVMergeToLine(CharView *cv, int elide) {
     g_list_free( gl );
 
     // And make the curve between the two active points a line
-    _CVMenuMakeLine( cv, 0, 0 );
+    _CVMenuMakeLine( (CharViewBase*) cv, 0, 0 );
     SCClearSelPt(cv->b.sc);
     CVCharChangedUpdate(&cv->b);
 }
@@ -13212,7 +13212,7 @@ struct sc_interface gdraw_sc_interface = {
     SC_MoreLayers
 };
 
-static void UI_CVGlyphRenameFixup(SplineFont *sf,char *oldname, char *newname) {
+static void UI_CVGlyphRenameFixup(SplineFont *sf, const char *oldname, const char *newname) {
     int gid, i;
     SplineChar *sc;
     CharView *cv;

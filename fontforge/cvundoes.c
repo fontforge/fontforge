@@ -974,7 +974,7 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	    SCSynchronizeLBearing(sc,undo->u.state.lbearingchange,layer);
 	}
 	if ( layer==ly_fore && undo->undotype==ut_statename ) {
-	    const char *temp = sc->name;
+	    char *temp = sc->name;
 	    int uni = sc->unicodeenc;
 	    PST *possub = sc->possub;
 	    char *comment = sc->comment;

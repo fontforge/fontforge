@@ -32,7 +32,7 @@
 enum res_type { rt_int, rt_double, rt_bool/* int */, rt_color, rt_string };
 
 typedef struct gresstruct {
-    char *resname;
+    const char *resname;
     enum res_type type;
     void *val;
     void *(*cvt)(char *,void *);	/* converts a string into a whatever */

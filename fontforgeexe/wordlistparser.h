@@ -39,7 +39,7 @@ extern int WordlistEscapedInputStringToRealString_getFakeUnicodeAsScUnicodeEnc( 
 
 extern unichar_t* WordlistEscapedInputStringToRealString(
     SplineFont* sf,
-    unichar_t* input_const,
+    const unichar_t* input_const,
     GArray** selected_out,
     WordlistEscapedInputStringToRealString_getFakeUnicodeOfScFunc getUnicodeFunc,
     void* udata );

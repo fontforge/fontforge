@@ -770,7 +770,7 @@ return( buffer );
     }
 }
 
-static void BuildHash(struct glyphnamehash *hash,SplineFont *sf,const char **oldnames) {
+static void BuildHash(struct glyphnamehash *hash,SplineFont *sf, char **oldnames) {
     int gid, hv;
     SplineChar *sc;
     struct glyphnamebucket *new;
@@ -999,14 +999,14 @@ return( NULL );
 return( ret );
 }
 
-void SFTemporaryRestoreGlyphNames(SplineFont *sf,const char **former) {
+void SFTemporaryRestoreGlyphNames(SplineFont *sf, char **former) {
     int gid;
     SplineChar *sc;
     struct glyphnamehash hash;
 
     for ( gid = 0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
 	if ( former[gid]!=NULL ) {
-	    const char *old = sc->name;
+	    char *old = sc->name;
 	    sc->name = copy(former[gid]);
 	    former[gid] = old;
 	}

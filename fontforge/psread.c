@@ -37,7 +37,8 @@
 #endif
 
 typedef struct _io {
-    const char *macro, *start;
+    const char *macro;
+    char *start;
     FILE *ps, *fog;
     char fogbuf[60];
     int backedup, cnt, isloop, isstopped, fogns;

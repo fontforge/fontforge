@@ -466,7 +466,7 @@ return( true );
 
 static void do_popup_color(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     struct gcol_data *d = GDrawGetUserData(gw);
-    struct hslrgba *col = mi->ti.userdata;
+    const struct hslrgba *col = mi->ti.userdata;
 
     d->col = *col;
     GCol_ShowTexts(d);

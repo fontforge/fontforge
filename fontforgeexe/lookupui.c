@@ -2136,7 +2136,7 @@ return( true );
                 int askresult = 0;
     /* want to support keeping APs when class is removed from subtable */
 		buts[0] = _("_Remove"); buts[1] = _("_Cancel"); buts[2]=NULL;
-		askresult = gwwv_ask(_("Remove Anchor Class?"),(const char **) buts,0,1,2,_("Do you really want to remove the anchor class, %.80s?\nThis will remove all anchor points associated with that class."),
+		askresult = gwwv_ask(_("Remove Anchor Class?"),(const char **) buts,0,1,_("Do you really want to remove the anchor class, %.80s?\nThis will remove all anchor points associated with that class."),
 			ac->name );
                 if ( askresult==1 )
 return( true );

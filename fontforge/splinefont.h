@@ -414,8 +414,8 @@ struct scriptlanglist {
 
 extern struct opentype_feature_friendlynames {
     uint32 tag;
-    const char *tagstr;
-    const char *friendlyname;
+    char *tagstr;
+    char *friendlyname;
     int masks;
 } friendlies[];
 
@@ -851,7 +851,7 @@ typedef struct undoes {
 	    int16 width, vwidth;
 	    int16 lbearingchange;
 	    int unicodeenc;			/* only for ut_statename */
-	    const char *charname;		/* only for ut_statename */
+	    char *charname;			/* only for ut_statename */
 	    char *comment;			/* in utf8 */
 	    PST *possub;			/* only for ut_statename */
 	    struct splinepointlist *splines;
@@ -924,10 +924,10 @@ typedef struct sfundoes {
 
 
 typedef struct enc {
-    const char *enc_name;
+    char *enc_name;
     int char_cnt;	/* Size of the next two arrays */
     int32 *unicode;	/* unicode value for each encoding point */
-    const char **psnames;	/* optional postscript name for each encoding point */
+    char **psnames;	/* optional postscript name for each encoding point */
     struct enc *next;
     unsigned int builtin: 1;
     unsigned int hidden: 1;
@@ -1409,7 +1409,7 @@ struct altuni { struct altuni *next; int32 unienc, vs; uint32 fid; };
 	/* NOTE: GlyphInfo displays vs==-1 as vs==0, and fixes things up */
 
 typedef struct splinechar {
-    const char *name;
+    char *name;
     int unicodeenc;
     int orig_pos;		/* Original position in the glyph list */
     int16 width, vwidth;
@@ -1935,7 +1935,7 @@ struct sflist {
     BDFFont **bdfs;		/* Ditto */
     EncMap *map;
     struct sflist *next;
-    const char **former_names;
+    char **former_names;
     int len;
 };
 
@@ -2982,7 +2982,7 @@ extern const char *RenameGlyphToNamelist(char *buffer, SplineChar *sc,NameList *
 	NameList *new, char **sofar);
 extern void SFRenameGlyphsToNamelist(SplineFont *sf,NameList *new);
 extern char **SFTemporaryRenameGlyphsToNamelist(SplineFont *sf,NameList *new);
-extern void SFTemporaryRestoreGlyphNames(SplineFont *sf,const char **former);
+extern void SFTemporaryRestoreGlyphNames(SplineFont *sf, char **former);
 
 extern void doversion(const char *);
 
@@ -3164,7 +3164,7 @@ extern void OTLookupsCopyInto(SplineFont *into_sf,SplineFont *from_sf,
 extern struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 script, uint32 lang,
 	int pixelsize, SplineChar **glyphs);
 extern int VerticalKernFeature(SplineFont *sf, OTLookup *otl, int ask);
-extern void SFGlyphRenameFixup(SplineFont *sf, const char *old, char *new, int rename_related_glyphs);
+extern void SFGlyphRenameFixup(SplineFont *sf, const char *old, const char *new, int rename_related_glyphs);
 
 struct sllk { uint32 script; int cnt, max; OTLookup **lookups; int lcnt, lmax; uint32 *langs; };
 extern void SllkFree(struct sllk *sllk,int sllk_cnt);
