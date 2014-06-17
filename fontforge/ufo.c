@@ -532,17 +532,6 @@ int _ExportGlif(FILE *glif,SplineChar *sc,int layer) {
 /* ****************************    UFO Output    **************************** */
 /* ************************************************************************** */
 
-static FILE *PListCreate(const char *basedir, const char *sub) {
-    char *fname = buildname(basedir,sub);
-    FILE *plist = fopen( fname, "w" );
-
-    free(fname);
-    if ( plist==NULL )
-return( NULL );
-    PListOutputHeader(plist);
-return( plist );
-}
-
 xmlDocPtr PlistInit() {
     // Some of this code is pasted from libxml2 samples.
     xmlDocPtr doc = NULL;
