@@ -172,13 +172,19 @@ AC_DEFUN([FONTFORGE_ARG_WITH_CAIRO],
 
 dnl FONTFORGE_ARG_WITH_LIBPNG
 dnl -------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_LIBPNG],
-[
-FONTFORGE_ARG_WITH([libpng],
-        [AS_HELP_STRING([--without-libpng],[build without PNG support])],
-        [libpng],
-        [FONTFORGE_WARN_PKG_NOT_FOUND([LIBPNG])],
-        [_NO_LIBPNG])
+AC_DEFUN([FONTFORGE_ARG_WITH_LIBPNG],[
+FONTFORGE_ARG_WITHOUT([libpng],[LIBPNG],[build without PNG support])
+
+if test x"${i_do_have_libpng}" = xyes -a x"${LIBPNG_CFLAGS}" = x; then
+   AC_CHECK_HEADER([png.h],[$LIBPNG_CFLAGS=""],[i_do_have_libpng=no])
+fi
+if test x"${i_do_have_libpng}" = xyes -a x"${LIBPNG_LIBS}" = x; then
+   FONTFORGE_SEARCH_LIBS([png_init_io],[png],
+         [LIBPNG_LIBS="${LIBPNG_LIBS} ${found_lib}"],
+         [i_do_have_libpng=no])
+fi
+
+FONTFORGE_BUILD_YES_NO_HALT([libpng],[LIBPNG],[Build with PNG support?])
 ])
 
 

@@ -765,7 +765,7 @@ Optional Library	UseIt?	HaveIt?	WebsiteURL
   libspiro		${with_libspiro}	${i_do_have_libspiro}	${libspiro_url}
   giflib		${with_giflib}	${i_do_have_giflib}	${giflib_url}
   libjpeg			${i_do_have_libjpeg}	${libjpeg_url}
-  libpng			${i_do_have_libpng}	${libpng_url}
+  libpng		${with_libpng}	${i_do_have_libpng}	${libpng_url}
   libtiff			${i_do_have_libtiff}	${libtiff_url}
   libuninameslist	${with_libuninameslist}	${i_do_have_libuninameslist}	${libuninameslist_url}
   zeromq (libzmq)		${i_do_have_libzmq}	${libzmq_url}
