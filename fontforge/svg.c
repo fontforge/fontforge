@@ -1375,8 +1375,9 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 
     while ( *path ) {
 	while ( *path==' ' ) ++path;
-	while ( isalpha(*path))
-	    type = *path++;
+        if ( isalpha(*path)) {
+            type = *path++;
+        }
 	if ( *path=='\0' && type!='z' && type!='Z' )
     break;
 	if ( type=='m' || type=='M' ) {
@@ -1388,8 +1389,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		    cur->first->prev = cur->last->prev;
 		    cur->first->prev->to = cur->first;
 		    SplinePointFree(cur->last);
-		} else
-		    SplineMake(cur->last,cur->first,order2);
+		}
 		cur->last = cur->first;
 	    }
 	    x = strtod((char *) path,&end);
