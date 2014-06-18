@@ -2031,7 +2031,7 @@ static void MakeSCLookups(SplineFont *sf,struct lookup_subtable **c2sc,
 static SplineChar *MakeSmallCapName(char *buffer, int bufsize, SplineFont *sf,
 	SplineChar *sc,struct genericchange *genchange) {
     SplineChar *lc_sc;
-    char *ext;
+    const char *ext;
     int lower;
 
     if ( sc->unicodeenc>=0 && sc->unicodeenc<0x10000 ) {

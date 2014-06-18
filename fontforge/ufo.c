@@ -729,7 +729,7 @@ static int UFOOutputMetaInfo(const char *basedir,SplineFont *sf) {
     return true;
 }
 
-static int UFOOutputFontInfo(const char *basedir, const SplineFont *sf, int layer) {
+static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
     xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the dict.
@@ -986,7 +986,7 @@ static int UFOOutputLib(const char *basedir, const SplineFont *sf) {
 return( true );
 }
 
-static int UFOOutputFeatures(const char *basedir, const SplineFont *sf) {
+static int UFOOutputFeatures(const char *basedir, SplineFont *sf) {
     char *fname = buildname(basedir,"features.fea");
     FILE *feats = fopen( fname, "w" );
     int err;
@@ -1000,7 +1000,7 @@ return( false );
 return( !err );
 }
 
-int WriteUFOFont(const char *basedir, const SplineFont *sf, enum fontformat ff,int flags,
+int WriteUFOFont(const char *basedir, SplineFont *sf, enum fontformat ff,int flags,
 	const EncMap *map,int layer) {
     char *foo = malloc( strlen(basedir) +20 ), *glyphdir, *gfname;
     int err;

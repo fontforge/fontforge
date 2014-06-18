@@ -437,7 +437,7 @@ GWindow GTabSetGetSubwindow(GGadget *g,int pos);
 int GTabSetGetTabLines(GGadget *g);
 void GTabSetSetNestedExpose(GGadget *g, void (*)(GWindow,GGadget *,GEvent *));
 void GTabSetSetNestedMouse(GGadget *g, int (*)(GGadget *,GEvent *));
-void GTabSetChangeTabName(GGadget *g, char *name, int pos);
+void GTabSetChangeTabName(GGadget *g, const char *name, int pos);
 void GTabSetRemetric(GGadget *g);
 void GTabSetRemoveTabByPos(GGadget *g, int pos);
 void GTabSetRemoveTabByName(GGadget *g, char *name);
@@ -487,7 +487,7 @@ int GFileChooserGetShowHidden(void);
 void GFileChooserSetDirectoryPlacement(int dp);
 int GFileChooserGetDirectoryPlacement(void);
 void GFileChooserSetBookmarks(unichar_t **b);
-void GFileChooserSetPaths(GGadget *g, char **path);
+void GFileChooserSetPaths(GGadget *g, const char* const* path);
 unichar_t **GFileChooserGetBookmarks(void);
 void GFileChooserSetPrefsChangedCallback(void *data, void (*p_c)(void *));
 
@@ -538,7 +538,7 @@ extern void GGadgetPreparePopupImage(GWindow base,const unichar_t *msg,
 	void (*free_image)(const void *data,GImage *img));
 extern void GGadgetPreparePopup(GWindow base,const unichar_t *msg);
 extern void GGadgetPreparePopupR(GWindow base,int msg);
-extern void GGadgetPreparePopup8(GWindow base,char *msg);
+extern void GGadgetPreparePopup8(GWindow base, const char *msg);
 extern void GGadgetEndPopup(void);
 extern void GGadgetPopupExternalEvent(GEvent *e);
 
@@ -603,7 +603,7 @@ GResImage *GGadgetResourceFindImage(char *name, GImage *def);
 
 void GGadgetSetImageDir(char *dir);
 void GGadgetSetImagePath(char *path);
-GImage *GGadgetImageCache(char *filename);
+GImage *GGadgetImageCache(const char *filename);
 int TryGGadgetImageCache(GImage *image, const char *name);
 
 extern unichar_t *utf82u_mncopy(const char *utf8buf,unichar_t *mn);

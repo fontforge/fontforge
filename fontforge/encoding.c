@@ -948,7 +948,7 @@ return( ret );
 
 struct cidmap *FindCidMap(char *registry,char *ordering,int supplement,SplineFont *sf) {
     struct cidmap *map, *maybe=NULL;
-    const char *file;
+    char *file;
     char *maybefile=NULL;
     int maybe_sup = -1;
     const char *buts[3], *buts2[3], *buts3[3];

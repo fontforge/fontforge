@@ -412,19 +412,19 @@ int GFileModifyableDir(const char *file) {
     return( GFileModifyable(buffer) );
 }
 
-int GFileReadable(char *file) {
+int GFileReadable(const char *file) {
 return( access(file,04)==0 );
 }
 
-int GFileMkDir(char *name) {
+int GFileMkDir(const char *name) {
 return( MKDIR(name,0755));
 }
 
-int GFileRmDir(char *name) {
+int GFileRmDir(const char *name) {
 return(rmdir(name));
 }
 
-int GFileUnlink(char *name) {
+int GFileUnlink(const char *name) {
 return(unlink(name));
 }
 

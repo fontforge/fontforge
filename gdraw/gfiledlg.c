@@ -82,7 +82,7 @@ return( true );
 
 static unichar_t *GWidgetOpenFileWPath(const unichar_t *title, const unichar_t *defaultfile,
 	const unichar_t *initial_filter, unichar_t **mimetypes,
-	GFileChooserFilterType filter, char **path) {
+	GFileChooserFilterType filter, const char* const* path) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -213,7 +213,7 @@ return( GWidgetOpenFileWPath(title,defaultfile,initial_filter,mimetypes,filter,N
 
 char *GWidgetOpenFileWPath8(const char *title, const char *defaultfile,
 	const char *initial_filter, char **mimetypes,
-	GFileChooserFilterType filter, char **path) {
+	GFileChooserFilterType filter, const char* const* path) {
     unichar_t *tit=NULL, *def=NULL, *filt=NULL, **mimes=NULL, *ret;
     char *utf8_ret;
     int i;

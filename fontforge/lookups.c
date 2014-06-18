@@ -3720,7 +3720,7 @@ struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 sc
 return( data.str );
 }
 
-static void doreplace(char **haystack,char *start,char *rpl,int slen) {
+static void doreplace(char **haystack,char *start,const char *rpl,int slen) {
     int rlen;
     char *pt = start+slen;
 
@@ -3744,7 +3744,7 @@ static void doreplace(char **haystack,char *start,char *rpl,int slen) {
     }
 }
 
-static int rplstr(char **haystack,const char *search, char *rpl,int multipleoccurances) {
+static int rplstr(char **haystack,const char *search, const char *rpl,int multipleoccurances) {
     char *start, *pt, *base = *haystack;
     int ch, match, slen = strlen(search);
     int any = 0;
@@ -3779,7 +3779,7 @@ return( true );
     }
 }
 
-static int rplglyphname(char **haystack,const char *search, char *rpl) {
+static int rplglyphname(char **haystack,const char *search, const char *rpl) {
     /* If we change "f" to "uni0066" then we should also change "f.sc" to */
     /*  "uni0066.sc" and "f_f_l" to "uni0066_uni0066_l" */
     char *start, *pt, *base = *haystack;
@@ -3819,7 +3819,7 @@ return( false );			/* In particular don't rename ourselves*/
 
 static int glyphnameIsComponent(const char *haystack, const char *search) {
     /* Check for a glyph name in ligature names and dotted names */
-    char *start, *pt;
+    const char *start, *pt;
     size_t slen = strlen(search);
 
     if ( slen>=strlen( haystack ))
@@ -3838,7 +3838,7 @@ return( true );
     }
 }
 
-static int gvfixup(struct glyphvariants *gv,const char *old, char *new) {
+static int gvfixup(struct glyphvariants *gv,const char *old, const char *new) {
     int i;
     int ret=0;
 
@@ -3855,7 +3855,7 @@ return( false );
 return( ret );
 }
 
-void SFGlyphRenameFixup(SplineFont *sf, const char *old, char *new, int rename_related_glyphs) {
+void SFGlyphRenameFixup(SplineFont *sf, const char *old, const char *new, int rename_related_glyphs) {
 /* NOTE: Existing GUI behaviour renames glyphs, rename_related_glyphs turns */
 /* off this behaviour for scripting - see github issue #523 */
     int k, gid, isv;

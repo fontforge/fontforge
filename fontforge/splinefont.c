@@ -1339,8 +1339,8 @@ static const char *modifierlistfull[] = { "Italic", "Oblique", "Kursive", "Cursi
 static const char **mods[] = { knownweights, modifierlist, NULL };
 static const char **fullmods[] = { realweights, modifierlistfull, NULL };
 
-char *_GetModifiers(char *fontname, char *familyname,char *weight) {
-    char *pt, *fpt;
+const char *_GetModifiers(const char *fontname, const char *familyname, const char *weight) {
+    const char *pt, *fpt;
     static char space[20];
     int i, j;
 
@@ -1396,7 +1396,7 @@ return( fpt );
 return( weight==NULL || *weight=='\0' ? "Regular": weight );
 }
 
-char *SFGetModifiers(SplineFont *sf) {
+const char *SFGetModifiers(const SplineFont *sf) {
 return( _GetModifiers(sf->fontname,sf->familyname,sf->weight));
 }
 

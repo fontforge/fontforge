@@ -35,9 +35,9 @@ extern int GFileIsDir(const char *file);
 extern int GFileExists(const char *file);
 extern int GFileModifyable(const char *file);
 extern int GFileModifyableDir(const char *file);
-extern int GFileReadable(char *file);
-extern int GFileMkDir(char *name);
-extern int GFileRmDir(char *name);
-extern int GFileUnlink(char *name);
+extern int GFileReadable(const char *file);
+extern int GFileMkDir(const char *name);
+extern int GFileRmDir(const char *name);
+extern int GFileUnlink(const char *name);
 
 #endif

@@ -2288,7 +2288,7 @@ return( false );
 extern char *zapfnomen[];
 extern int8 zapfexists[];
 static void dumptype0stuff(FILE *out,SplineFont *sf, EncMap *map) {
-    char *notdefname;
+    const char *notdefname;
     int i,j;
 
     dumpreencodeproc(out);

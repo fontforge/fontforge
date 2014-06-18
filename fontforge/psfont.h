@@ -109,7 +109,7 @@ typedef struct fontdict {
     int languagelevel;		/* (optional) */
     int wmode;			/* (optional) chooses between alternate metric sets */
 /* non-type0 entries */
-    const char (*encoding[256]);
+    char (*encoding[256]);
     real fontbb[4];
     int uniqueid;		/* (optional) open range between 4,000,000 and 4,999,999 */
     int xuid[20];		/* (optional) */
