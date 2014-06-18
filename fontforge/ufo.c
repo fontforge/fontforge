@@ -397,7 +397,7 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
 
     if ( sc->layers[layer].refs!=NULL || sc->layers[layer].splines!=NULL ) {
       xmlNodePtr outlinexml = xmlNewChild(topglyphxml, NULL, BAD_CAST "outline", NULL);
-	// fprintf( glif, "  <outline>\n" );
+	// "<outline>"
 	/* RoboFab outputs components in alphabetic (case sensitive) order */
 	/*  I've been asked to do that too */
 	if ( sc->layers[layer].refs!=NULL ) {
@@ -457,7 +457,7 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
         }
 	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
             xmlNodePtr contourxml = xmlNewChild(outlinexml, NULL, BAD_CAST "contour", NULL);
-	    // "<contour>\n"
+	    // "<contour>"
 	    for ( sp=spl->first; sp!=NULL; ) {
 		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
 		// We write the next on-curve point.
@@ -578,10 +578,10 @@ static void PListAddDate(xmlNodePtr parent, const char *key, time_t timestamp) {
 	    tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 }
 
-int countOccurrence(const char* big, const char* little) {
+int count_occurrence(const char* big, const char* little) {
     const char * tmp = big;
     int output = 0;
-    while (tmp = strstr(big, little)) { output ++; tmp ++; }
+    while (tmp = strstr(tmp, little)) { output ++; tmp ++; }
     return output;
 }
 
@@ -590,9 +590,9 @@ xmlNodePtr PListAddString(xmlNodePtr parent, const char *key, const char *value)
     xmlNodePtr keynode = xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key); // "<key>%s</key>" key
 #ifdef ESCAPE_LIBXML_STRINGS
     size_t main_size = strlen(value) +
-                       (countOccurrence(value, "<") * (strlen("&lt")-strlen("<"))) +
-                       (countOccurrence(value, ">") * (strlen("&gt")-strlen("<"))) +
-                       (countOccurrence(value, "&") * (strlen("&amp")-strlen("<")));
+                       (count_occurrence(value, "<") * (strlen("&lt")-strlen("<"))) +
+                       (count_occurrence(value, ">") * (strlen("&gt")-strlen("<"))) +
+                       (count_occurrence(value, "&") * (strlen("&amp")-strlen("<")));
     char *tmpstring = malloc(main_size + 1); tmpstring[0] = '\0';
     off_t pos1 = 0;
     while ( *value ) {
@@ -1000,16 +1000,217 @@ return( false );
 return( !err );
 }
 
-int WriteUFOFont(const char *basedir, SplineFont *sf, enum fontformat ff,int flags,
-	const EncMap *map,int layer) {
-    char *foo = malloc( strlen(basedir) +20 ), *glyphdir, *gfname;
+static size_t count_caps(const char * input) {
+  size_t count = 0;
+  for (int i = 0; input[i] != '\0'; i++) {
+    if ((input[i] >= 'A') && (input[i] <= 'Z')) count ++;
+  }
+  return count;
+}
+
+static char * upper_case(const char * input) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  off_t pos = 0;
+  if (output == NULL) return NULL;
+  while (pos < output_length) {
+    if ((input[pos] >= 'a') && (input[pos] <= 'z')) {
+      output[pos] = (char)(((unsigned char) input[pos]) - 0x20U);
+    } else {
+      output[pos] = input[pos];
+    }
+    pos++;
+  }
+  return output;
+}
+
+static char * same_case(const char * input) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  off_t pos = 0;
+  if (output == NULL) return NULL;
+  while (pos < output_length) {
+    output[pos] = input[pos];
+    pos++;
+  }
+  return output;
+}
+
+static char * delimit_null(const char * input, char delimiter) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  if (output == NULL) return NULL;
+  off_t pos = 0;
+  while (pos < output_length) {
+    if (input[pos] == delimiter) {
+      output[pos] = '\0';
+    } else {
+      output[pos] = input[pos];
+    }
+    pos++;
+  }
+  return output;
+}
+
+const char * DOS_reserved[12] = {"CON", "PRN", "AUX", "CLOCK$", "NUL", "COM1", "COM2", "COM3", "COM4", "LPT1", "LPT2", "LPT3"};
+const int DOS_reserved_count = 12;
+
+int polyMatch(const char * input, int reference_count, const char ** references) {
+  for (off_t pos = 0; pos < reference_count; pos++) {
+    if (strcmp(references[pos], input) == 0) return 1;
+  }
+  return 0;
+}
+
+int is_DOS_drive(char * input) {
+  if ((input != NULL) &&
+     (strlen(input) == 2) &&
+     (((input[0] >= 'A') && (input[0] <= 'Z')) || ((input[0] >= 'a') && (input[0] <= 'z'))) &&
+     (input[1] == ':'))
+       return 1;
+  return 0;
+}
+
+char * ufo_name_mangle(const char * input, const char * prefix, const char * suffix, int flags) {
+  // flags & 1 determines whether to post-pad caps (something implemented in the standard).
+  // flags & 2 determines whether to replace a leading '.' (standard).
+  // flags & 4 determines whether to restrict DOS names (standard).
+  // flags & 8 determines whether to implement additional character restrictions.
+  // The specification lists '"' '*' '+' '/' ':' '<' '>' '?' '[' '\\' ']' '|'
+  // and also anything in the range 0x00-0x1F and 0x7F.
+  // Our additional restriction list includes '\'' '&' '%' '$' '#' '`' '=' '!' ';'
+  // Standard behavior comes from passing a flags value of 7.
+  const char * standard_restrict = "\"*+/:<>?[]\\]|";
+  const char * extended_restrict = "\'&%$#`=!;";
+  size_t prefix_length = strlen(prefix);
+  size_t max_length = 255 - prefix_length - strlen(suffix);
+  size_t input_length = strlen(input);
+  size_t stop_pos = ((max_length < input_length) ? max_length : input_length); // Minimum.
+  size_t output_length_1 = input_length;
+  if (flags & 1) output_length_1 += count_caps(input); // Add space for underscore pads on caps.
+  off_t output_pos = 0;
+  char * output = malloc(output_length_1 + 1);
+  for (int i = 0; i < input_length; i++) {
+    if (strchr(standard_restrict, input[i]) || (input[i] <= 0x1F) || (input[i] >= 0x7F)) {
+      output[output_pos++] = '_'; // If the character is restricted, place an underscore.
+    } else if ((flags & 8) && strchr(extended_restrict, input[i])) {
+      output[output_pos++] = '_'; // If the extended restriction list is enabled and matches, ....
+    } else if ((flags & 1) && (input[i] >= 'A') && (input[i] <= 'Z')) {
+      output[output_pos++] = input[i];
+      output[output_pos++] = '_'; // If we have a capital letter, we post-pad if desired.
+    } else if ((flags & 2) && (i == 0) && (prefix_length == 0) && (input[i] == '.')) {
+      output[output_pos++] = '_'; // If we have a leading '.', we convert to an underscore.
+    } else {
+      output[output_pos++] = input[i];
+    }
+  }
+  output[output_pos] = '\0';
+  if (output_pos > max_length) {
+    output[max_length] = '\0';
+  }
+  char * output2 = NULL;
+  off_t output2_pos = 0;
+  {
+    char * disposable = malloc(output_length_1 + 1);
+    strcpy(disposable, output); // strtok rewrites the input string, so we make a copy.
+    output2 = malloc((2 * output_length_1) + 1); // It's easier to pad than to calculate.
+    output2_pos = 0;
+    char * saveptr = NULL;
+    char * current = strtok_r(disposable, ".", &saveptr); // We get the first name part.
+    while (current != NULL) {
+      char * uppered = upper_case(output);
+      if (polyMatch(current, DOS_reserved_count, DOS_reserved) || is_DOS_drive(current)) {
+        output2[output2_pos++] = '_';
+      }
+      for (off_t parti = 0; current[parti] != '\0'; parti++) {
+        output2[output2_pos++] = current[parti];
+      }
+      current = strtok_r(NULL, ".", &saveptr);
+      if (current != NULL) output2[output2_pos++] = '.';
+    }
+    output2[output2_pos] = '\0';
+    output2 = realloc(output2, output2_pos + 1);
+    free(disposable); disposable = NULL;
+  }
+  free(output); output = NULL;
+  return output2;
+}
+
+#ifdef FF_UTHASH_GLIF_NAMES
+#include "uthash.h"
+struct glif_name {
+  long int gid;
+  char * glif_name;
+  UT_hash_handle gid_hash;
+  UT_hash_handle glif_name_hash;
+};
+struct glif_name * glif_name_new() {
+  struct glif_name * output = malloc(sizeof(struct glif_name));
+  if (output == NULL) return NULL;
+  memset(output, 0, sizeof(struct glif_name));
+  return output;
+}
+struct glif_name_index {
+  struct glif_name * gid_hash;
+  struct glif_name * glif_name_hash;
+};
+struct glif_name_index * glif_name_index_new() {
+  struct glif_name * output = malloc(sizeof(struct glif_name_index));
+  if (output == NULL) return NULL;
+  memset(output, 0, sizeof(struct glif_name_index));
+  return output;
+}
+void glif_name_hash_add(struct glif_name_index * hash, struct glif_name * item) {
+  HASH_ADD(gid_hash, hash->gid_hash, gid, sizeof(item->gid), item);
+  HASH_ADD_KEYPTR(glif_name_hash, hash->glif_name_hash, gid, strlen(item->glif_name), item);
+}
+struct glif_name * glif_name_search_glif_name(struct glif_name_index * hash, const char * glif_name) {
+  struct glif_name * output = NULL;
+  HASH_FIND_STR(hash->glif_name_hash, glif_name, output);
+  return output;
+}
+struct glif_name * glif_name_search_gid(struct glif_name_index * hash, long int gid) {
+  struct glif_name * output = NULL;
+  HASH_FIND_INT(hash->gid_hash, &gid, output);
+  return output;
+}
+int glif_name_track_collide(struct glif_name_index * hash, long int gid, const char * glif_name) {
+  if ((glif_name_search_gid(hash, gid) != NULL) ||
+      (glif_name_search_glif_name(hash, glif_name) != NULL)
+    return 1;
+  return 0;
+}
+void glif_name_track_new(struct glif_name_index * hash, long int gid, const char * glif_name) {
+  struct glif_name * new_node = glif_name_new();
+  new_node->gid = gid;
+  new_node->glif_name = malloc(strlen(glif_name)+1);
+  strcpy(new_node->glif_name, glif_name);
+  glif_name_hash_add(hash, new_node);
+}
+void glif_name_hash_remove(struct glif_name_index * hash, struct glif_name * item) {
+  HASH_DEL(hash->gid_hash, item);
+  HASH_DEL(hash->glif_name_hash, item);
+}
+void glif_name_hash_destroy(struct glif_name_index * hash) {
+  struct glif_name *current, *tmp;
+  HASH_ITER(hh, hash, current, tmp) {
+    glif_name_hash_remove(hash, current);
+    if (current->glif_name != NULL) { free(current->glif_name); current->glif_name = NULL; }
+    free(current); current = NULL;
+  }
+}
+#endif
+
+int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int flags,
+	const EncMap *map,int layer, int all) {
+    char *foo = NULL, *glyphdir, *gfname;
     int err;
     FILE *plist;
     int i;
     SplineChar *sc;
 
     /* Clean it out, if it exists */
-    sprintf( foo, "rm -rf %s", basedir );
+    asprintf(&foo, "rm -rf %s", basedir);
     system( foo );
     free( foo );
 
@@ -1033,36 +1234,61 @@ return( false );
 
     glyphdir = buildname(basedir,"glyphs");
     GFileMkDir( glyphdir );
-
+#ifdef FF_UTHASH_GLIF_NAMES
+    struct glif_name_index _glif_name_hash;
+    struct glif_name_index * glif_name_hash = &_glif_name_hash; // Open the hash table.
+    memset(glif_name_hash, 0, sizeof(glif_name_index));
+#endif
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) ) {
-	const char *start;
-        char *gstart;
-	gstart = gfname = malloc(2*strlen(sc->name)+20);
-	start = sc->name;
-	if ( *start=='.' ) {
-	    *gstart++ = '_';
-	    ++start;
-	}
-	while ( *start ) {
-	    /* Now the spec has a very complicated algorithm for producing a */
-	    /*  filename, dividing the glyph name into chunks at every period*/
-	    /*  and then again at every underscore, and then adding an under-*/
-	    /*  score at the end of a chunk if the chunk begins with a capital*/
-	    /* BUT... */
-	    /* That's not what RoboFAB does. It simply adds an underscore after*/
-	    /*  every capital letter. Much easier. And since people have */
-	    /*  complained that I follow the spec, let's not. */
-	    *gstart++ = *start;
-	    if ( isupper( *start++ ))
-	        *gstart++ = '_';
-	}
-	strcpy(gstart,".glif");
-	PListAddString(dictnode,sc->name,gfname); // Add the glyph to the table of contents.
-	err |= !GlifDump(glyphdir,gfname,sc,layer);
-	free(gfname);
+        // TODO: If the splinechar has a glif name (another TODO), try to use that.
+        // If not, call the mangler.
+        char * startname = ufo_name_mangle(sc->name, "", ".glif", 7);
+        // Name exclusions are case insensitive, so we uppercase.
+        char * name_numbered = upper_case(startname);
+        char * name_base = same_case(startname); // This is in case we need a number added.
+        long int name_number = 0;
+#ifdef FF_UTHASH_GLIF_NAMES
+        if (strlen(startname) > (255 - 15 - strlen(".glif"))) {
+          // If the numbered name base is too long, we crop it.
+          name_base[(255 - 15 - strlen(".glif"))] = '\0';
+          name_base = realloc(name_base, (255 - 15 - strlen(".glif")) + 1));
+        }
+        // Check the resulting name against a hash table of names.
+        if (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL) {
+          // If the name is taken, we must make space for a 15-digit number.
+          char * name_base_upper = upper_case(name_base);
+          while (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL) {
+            name_number++; // Remangle the name until we have no more matches.
+            free(name_numbered); name_numbered = NULL;
+            asprintf(&name_numbered, "%s%15d", name_base_upper, name_number);
+          }
+          free(name_base_upper); name_base_upper = NULL;
+        }
+        // Insert the result into the hash table.
+        glif_name_track_new(glif_name_hash, i, name_numbered);
+#endif
+        // Now we want the correct capitalization.
+        free(name_numbered); name_numbered = NULL;
+        if (name_number > 0) {
+          asprintf(&name_numbered, "%s%15ld", name_base, name_number);
+        } else {
+          asprintf(&name_numbered, "%s", startname);
+        }
+        free(name_base); name_base = NULL;
+        free(startname); startname = NULL;
+        char * final_name = NULL;
+        asprintf(&final_name, "%s.glif", name_numbered); // Generate the final name.
+        free(name_numbered); name_numbered = NULL;
+	PListAddString(dictnode,sc->name,final_name); // Add the glyph to the table of contents.
+        // TODO: Optionally skip rewriting an untouched glyph.
+        // Do we track modified glyphs carefully enough for this?
+	err |= !GlifDump(glyphdir,final_name,sc,layer);
+	free(final_name); final_name = NULL;        
     }
-
-    char *fname = buildname(glyphdir, "contents.plist"); // Build the file name.
+#ifdef FF_UTHASH_GLIF_NAMES
+    glif_name_hash_destroy(glif_name_hash); // Close the hash table.
+#endif
+    char *fname = buildname(glyphdir, "contents.plist"); // Build the file name for the contents.
     xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
     free(fname); fname = NULL;
     xmlFreeDoc(plistdoc); // Free the memory.
@@ -1070,6 +1296,11 @@ return( false );
 
     free( glyphdir );
 return( !err );
+}
+
+int WriteUFOFont(const char *basedir, SplineFont *sf, enum fontformat ff, int flags,
+	const EncMap *map, int layer) {
+  return WriteUFOFontFlex(basedir, sf, ff, flags, map, layer, 0);
 }
 
 /* ************************************************************************** */
