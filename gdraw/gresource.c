@@ -51,7 +51,7 @@ static int rcompar(const void *_r1,const void *_r2) {
 return( strcmp(r1->res,r2->res));
 }
 
-int _GResource_FindResName(char *name) {
+int _GResource_FindResName(const char *name) {
     int top=rsummit, bottom = rbase;
     int test, cmp;
 
