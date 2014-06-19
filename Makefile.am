@@ -113,6 +113,7 @@ EXTRA_DIST += \
 	Packaging/FontForge-doc.spec \
 	Packaging/FontForge.spec \
 	Packaging/FontForge.static.spec \
+        uthash/src \
 	$(NULL)
 
 #--------------------------------------------------------------------------
