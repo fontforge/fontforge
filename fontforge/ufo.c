@@ -66,6 +66,8 @@
 /* UFO format 2.0 includes an adobe feature file "features.fea" and slightly */
 /*  different/more tags in fontinfo.plist */
 
+// http://sourcefrog.net/weblog/software/languages/C/unused.html
+
 static char *buildname(const char *basedir, const char *sub) {
     char *fname = malloc(strlen(basedir)+strlen(sub)+2);
 
@@ -78,35 +80,49 @@ return( fname );
 
 static xmlNodePtr xmlNewChildInteger(xmlNodePtr parent, xmlNsPtr ns, const xmlChar * name, long int value) {
   char * valtmp = NULL;
-  asprintf(&valtmp, "%ld", value); // Textify the value to be enclosed.
-  xmlNodePtr childtmp = xmlNewChild(parent, NULL, BAD_CAST name, BAD_CAST valtmp); // Make a text node for the value.
-  free(valtmp); valtmp = NULL; // Free the temporary text store.
-  return childtmp;
+  // Textify the value to be enclosed.
+  if (asprintf(&valtmp, "%ld", value) >= 0) {
+    xmlNodePtr childtmp = xmlNewChild(parent, NULL, BAD_CAST name, BAD_CAST valtmp); // Make a text node for the value.
+    free(valtmp); valtmp = NULL; // Free the temporary text store.
+    return childtmp;
+  }
+  return NULL;
 }
 static xmlNodePtr xmlNewNodeInteger(xmlNsPtr ns, const xmlChar * name, long int value) {
   char * valtmp = NULL;
   xmlNodePtr childtmp = xmlNewNode(NULL, BAD_CAST name); // Create a named node.
-  asprintf(&valtmp, "%ld", value); // Textify the value to be enclosed.
-  xmlNodePtr valtmpxml = xmlNewText(BAD_CAST valtmp); // Make a text node for the value.
-  xmlAddChild(childtmp, valtmpxml); // Attach the text node as content of the named node.
-  free(valtmp); valtmp = NULL; // Free the temporary text store.
+  // Textify the value to be enclosed.
+  if (asprintf(&valtmp, "%ld", value) >= 0) {
+    xmlNodePtr valtmpxml = xmlNewText(BAD_CAST valtmp); // Make a text node for the value.
+    xmlAddChild(childtmp, valtmpxml); // Attach the text node as content of the named node.
+    free(valtmp); valtmp = NULL; // Free the temporary text store.
+  } else {
+    xmlFreeNode(childtmp); childtmp = NULL;
+  }
   return childtmp;
 }
 static xmlNodePtr xmlNewChildFloat(xmlNodePtr parent, xmlNsPtr ns, const xmlChar * name, double value) {
   char * valtmp = NULL;
-  asprintf(&valtmp, "%g", value); // Textify the value to be enclosed.
-  xmlNodePtr childtmp = xmlNewChild(parent, NULL, BAD_CAST name, BAD_CAST valtmp); // Make a text node for the value.
-  free(valtmp); valtmp = NULL; // Free the temporary text store.
-  return childtmp;
+  // Textify the value to be enclosed.
+  if (asprintf(&valtmp, "%g", value) >= 0) {
+    xmlNodePtr childtmp = xmlNewChild(parent, NULL, BAD_CAST name, BAD_CAST valtmp); // Make a text node for the value.
+    free(valtmp); valtmp = NULL; // Free the temporary text store.
+    return childtmp;
+  }
+  return NULL;
 }
 static xmlNodePtr xmlNewNodeFloat(xmlNsPtr ns, const xmlChar * name, double value) {
   char * valtmp = NULL;
   xmlNodePtr childtmp = xmlNewNode(NULL, BAD_CAST name); // Create a named node.
-  asprintf(&valtmp, "%g", value); // Textify the value to be enclosed.
-  xmlNodePtr valtmpxml = xmlNewText(BAD_CAST valtmp); // Make a text node for the value.
-  xmlAddChild(childtmp, valtmpxml); // Attach the text node as content of the named node.
-  free(valtmp); valtmp = NULL; // Free the temporary text store.
-  return childtmp;
+  // Textify the value to be enclosed.
+  if (asprintf(&valtmp, "%g", value) >= 0) {
+    xmlNodePtr valtmpxml = xmlNewText(BAD_CAST valtmp); // Make a text node for the value.
+    xmlAddChild(childtmp, valtmpxml); // Attach the text node as content of the named node.
+    free(valtmp); valtmp = NULL; // Free the temporary text store.
+  } else {
+    xmlFreeNode(childtmp); childtmp = NULL;
+  }
+  return NULL;
 }
 static xmlNodePtr xmlNewChildString(xmlNodePtr parent, xmlNsPtr ns, const xmlChar * name, char * value) {
   xmlNodePtr childtmp = xmlNewChild(parent, NULL, BAD_CAST name, BAD_CAST value); // Make a text node for the value.
@@ -318,10 +334,13 @@ xmlNodePtr PyObjectToXML( PyObject *value ) {
         // "<integer>%ld</integer>"
     } else if (PyFloat_Check(value)) {
         childtmp = xmlNewNode(NULL, BAD_CAST "real");
-        asprintf(&valtmp, "%g", PyFloat_AsDouble(value));
-        valtmpxml = xmlNewText(BAD_CAST valtmp);
-        xmlAddChild(childtmp, valtmpxml);
-        free(valtmp); valtmp = NULL;
+        if (asprintf(&valtmp, "%g", PyFloat_AsDouble(value)) < 0) {
+          valtmpxml = xmlNewText(BAD_CAST valtmp);
+          xmlAddChild(childtmp, valtmpxml);
+          free(valtmp); valtmp = NULL;
+        } else {
+          xmlFreeNode(childtmp); childtmp = NULL;
+        }
         // "<real>%g</real>"
     } else if (PySequence_Check(value)) {
 	int i, len = PySequence_Size(value);
@@ -376,9 +395,10 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
     xmlNodePtr tmpxml2 = xmlNewChild(topglyphxml, NULL, BAD_CAST "advance", NULL); // Create the advance node.
     xmlSetPropPrintf(tmpxml2, BAD_CAST "width", "%d", sc->width);
     if ( sc->parent->hasvmetrics ) {
-      asprintf(&stringtmp, "%d", sc->width);
-      xmlSetProp(tmpxml2, BAD_CAST "height", stringtmp);
-      free(stringtmp); stringtmp = NULL;
+      if (asprintf(&stringtmp, "%d", sc->width) >= 0) {
+        xmlSetProp(tmpxml2, BAD_CAST "height", stringtmp);
+        free(stringtmp); stringtmp = NULL;
+      }
     }
     // "<advance width=\"%d\" height=\"%d\"/>" sc->width sc->vwidth
 
@@ -1155,28 +1175,28 @@ struct glif_name_index {
   struct glif_name * glif_name_hash;
 };
 struct glif_name_index * glif_name_index_new() {
-  struct glif_name * output = malloc(sizeof(struct glif_name_index));
+  struct glif_name_index * output = malloc(sizeof(struct glif_name_index));
   if (output == NULL) return NULL;
   memset(output, 0, sizeof(struct glif_name_index));
   return output;
 }
 void glif_name_hash_add(struct glif_name_index * hash, struct glif_name * item) {
   HASH_ADD(gid_hash, hash->gid_hash, gid, sizeof(item->gid), item);
-  HASH_ADD_KEYPTR(glif_name_hash, hash->glif_name_hash, gid, strlen(item->glif_name), item);
-}
-struct glif_name * glif_name_search_glif_name(struct glif_name_index * hash, const char * glif_name) {
-  struct glif_name * output = NULL;
-  HASH_FIND_STR(hash->glif_name_hash, glif_name, output);
-  return output;
+  HASH_ADD_KEYPTR(glif_name_hash, hash->glif_name_hash, item->glif_name, strlen(item->glif_name), item);
 }
 struct glif_name * glif_name_search_gid(struct glif_name_index * hash, long int gid) {
   struct glif_name * output = NULL;
-  HASH_FIND_INT(hash->gid_hash, &gid, output);
+  HASH_FIND(gid_hash, hash->gid_hash, &gid, sizeof(gid), output);
+  return output;
+}
+struct glif_name * glif_name_search_glif_name(struct glif_name_index * hash, const char * glif_name) {
+  struct glif_name * output = NULL;
+  HASH_FIND(glif_name_hash, hash->glif_name_hash, glif_name, strlen(glif_name), output);
   return output;
 }
 int glif_name_track_collide(struct glif_name_index * hash, long int gid, const char * glif_name) {
   if ((glif_name_search_gid(hash, gid) != NULL) ||
-      (glif_name_search_glif_name(hash, glif_name) != NULL)
+      (glif_name_search_glif_name(hash, glif_name) != NULL))
     return 1;
   return 0;
 }
@@ -1188,12 +1208,12 @@ void glif_name_track_new(struct glif_name_index * hash, long int gid, const char
   glif_name_hash_add(hash, new_node);
 }
 void glif_name_hash_remove(struct glif_name_index * hash, struct glif_name * item) {
-  HASH_DEL(hash->gid_hash, item);
-  HASH_DEL(hash->glif_name_hash, item);
+  HASH_DELETE(gid_hash, hash->gid_hash, item);
+  HASH_DELETE(glif_name_hash, hash->glif_name_hash, item);
 }
 void glif_name_hash_destroy(struct glif_name_index * hash) {
   struct glif_name *current, *tmp;
-  HASH_ITER(hh, hash, current, tmp) {
+  HASH_ITER(gid_hash, hash->gid_hash, current, tmp) {
     glif_name_hash_remove(hash, current);
     if (current->glif_name != NULL) { free(current->glif_name); current->glif_name = NULL; }
     free(current); current = NULL;
@@ -1210,9 +1230,10 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
     SplineChar *sc;
 
     /* Clean it out, if it exists */
-    asprintf(&foo, "rm -rf %s", basedir);
-    system( foo );
-    free( foo );
+    if (asprintf(&foo, "rm -rf %s", basedir) >= 0) {
+      if (system( foo ) == -1) fprintf(stderr, "Error clearing %s.\n", basedir);
+      free( foo ); foo = NULL;
+    }
 
     /* Create it */
     GFileMkDir( basedir );
@@ -1237,7 +1258,7 @@ return( false );
 #ifdef FF_UTHASH_GLIF_NAMES
     struct glif_name_index _glif_name_hash;
     struct glif_name_index * glif_name_hash = &_glif_name_hash; // Open the hash table.
-    memset(glif_name_hash, 0, sizeof(glif_name_index));
+    memset(glif_name_hash, 0, sizeof(struct glif_name_index));
 #endif
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) ) {
         // TODO: If the splinechar has a glif name (another TODO), try to use that.
@@ -1251,7 +1272,7 @@ return( false );
         if (strlen(startname) > (255 - 15 - strlen(".glif"))) {
           // If the numbered name base is too long, we crop it.
           name_base[(255 - 15 - strlen(".glif"))] = '\0';
-          name_base = realloc(name_base, (255 - 15 - strlen(".glif")) + 1));
+          name_base = realloc(name_base, ((255 - 15 - strlen(".glif")) + 1));
         }
         // Check the resulting name against a hash table of names.
         if (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL) {
@@ -1260,7 +1281,7 @@ return( false );
           while (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL) {
             name_number++; // Remangle the name until we have no more matches.
             free(name_numbered); name_numbered = NULL;
-            asprintf(&name_numbered, "%s%15d", name_base_upper, name_number);
+            asprintf(&name_numbered, "%s%15ld", name_base_upper, name_number);
           }
           free(name_base_upper); name_base_upper = NULL;
         }
