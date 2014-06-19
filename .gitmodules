@@ -3,4 +3,4 @@
 	url = git://git.sv.gnu.org/gnulib
 [submodule "uthash"]
 	path = uthash
-	url = git://github.com/troydhansen/uthash
+	url = git://github.com/troydhanson/uthash
