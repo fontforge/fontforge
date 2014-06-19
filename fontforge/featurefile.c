@@ -2086,10 +2086,54 @@ static char *fea_canonicalClassOrder(char *class) {
 return( class );
 }
 
+#ifdef FF_UTHASH_GLIF_NAMES
+#include "glif_name_hash.h"
+#endif
+
 static int fea_classesIntersect(char *class1, char *class2) {
     char *pt1, *start1, *pt2, *start2;
     int ch1, ch2;
 
+#ifdef FF_UTHASH_GLIF_NAMES
+    struct glif_name_index _glif_name_hash;
+    struct glif_name_index * glif_name_hash = &_glif_name_hash; // Open the hash table.
+    memset(glif_name_hash, 0, sizeof(struct glif_name_index));
+    long int index = 0;
+    long int break_point = 0;
+    int output = 0;
+    // Parse the first input.
+    for ( pt1=class1 ; output == 0; ) {
+        while ( *pt1==' ' ) ++pt1;
+        if ( *pt1=='\0' )
+            output = -1; // We cancel further action if one list is blank.
+        for ( start1 = pt1; *pt1!=' ' && *pt1!='\0'; ++pt1 );
+        ch1 = *pt1; *pt1 = '\0'; // Cache the byte and terminate.
+        // We do not want to add the same name twice. It breaks the hash.
+        if (glif_name_search_glif_name(glif_name_hash, start1) == NULL) {
+          glif_name_track_new(glif_name_hash, index++, start1);
+        }
+        *pt1 = ch1; // Restore the byte.
+    }
+    break_point = index; // Divide the entries from the two sources by index.
+    // Parse the second input.
+    for ( pt2=class2 ; output == 0; ) {
+        while ( *pt2==' ' ) ++pt2;
+        if ( *pt2=='\0' )
+            output = -1; // We cancel further action if one list is blank.
+        for ( start2 = pt2; *pt2!=' ' && *pt2!='\0'; ++pt2 );
+        ch1 = *pt1; *pt1 = '\0'; // Cache the byte and terminate.
+        struct glif_name * tmp = NULL;
+        if ((tmp = glif_name_search_glif_name(glif_name_hash, start1)) == NULL) {
+          glif_name_track_new(glif_name_hash, index++, start1);
+        } else if (tmp->gid < break_point) {
+          output = 1;
+        }
+        *pt1 = ch1; // Restore the byte.
+    }
+    glif_name_hash_destroy(glif_name_hash); // Close the hash table.
+    if (output == 1) return 1;
+    return 0;
+#else
     for ( pt1=class1 ; ; ) {
         while ( *pt1==' ' ) ++pt1;
         if ( *pt1=='\0' )
@@ -2110,6 +2154,7 @@ static int fea_classesIntersect(char *class1, char *class2) {
         }
         *pt1 = ch1;
     }
+#endif
 }
 
 
