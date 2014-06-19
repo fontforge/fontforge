@@ -66,8 +66,6 @@
 /* UFO format 2.0 includes an adobe feature file "features.fea" and slightly */
 /*  different/more tags in fontinfo.plist */
 
-// http://sourcefrog.net/weblog/software/languages/C/unused.html
-
 static char *buildname(const char *basedir, const char *sub) {
     char *fname = malloc(strlen(basedir)+strlen(sub)+2);
 
