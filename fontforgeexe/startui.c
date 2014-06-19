@@ -792,6 +792,51 @@ static void DoAutoRecoveryPostRecover_PromptUserGraphically(SplineFont *sf)
     _FVMenuSaveAs( (FontView*)sf->fv );
 }
 
+#if defined(__MINGW32__) && !defined(_NO_LIBCAIRO)
+/**
+ * \brief Load fonts from the specified folder for the UI to use.
+ * This should only be used if Cairo is used on Windows, which defaults to the
+ * Win32 font backend.
+ * This is an ANSI version, so files which contain characters outside of the
+ * user's locale will fail to be loaded.
+ * \param prefix The folder to read fonts from. Currently the pixmaps folder
+ *               and the folder 'ui-fonts' in the FontForge preferences folder.
+ */
+static void WinLoadUserFonts(const char *prefix) {
+    HANDLE fileHandle;
+    WIN32_FIND_DATA fileData;
+    char path[MAX_PATH], *ext;
+    HRESULT ret;
+    int i;
+
+    if (prefix == NULL) {
+        return;
+    }
+    ret = snprintf(path, MAX_PATH, "%s/*.???", prefix);
+    if (ret <= 0 || ret >= MAX_PATH) {
+        return;
+    }
+
+    fileHandle = FindFirstFileA(path, &fileData);
+    if (fileHandle != INVALID_HANDLE_VALUE) do {
+        ext = strrchr(fileData.cFileName, '.');
+        if (!ext || (strcasecmp(ext, ".ttf") && strcasecmp(ext, ".ttc") &&
+                     strcasecmp(ext,".otf")))
+        {
+            continue;
+        }
+        ret = snprintf(path, MAX_PATH, "%s/%s", prefix, fileData.cFileName);
+        if (ret > 0 && ret < MAX_PATH) {
+            //printf("WIN32-FONT-TEST: %s\n", path);
+            ret = AddFontResourceExA(path, FR_PRIVATE, NULL);
+            //if (ret > 0) {
+            //    printf("\tLOADED FONT OK!\n");
+            //}
+        }
+    } while (FindNextFileA(fileHandle, &fileData) != 0);
+}
+#endif
+
 
 int fontforge_main( int argc, char **argv ) {
     extern const char *source_modtime_str;
@@ -808,6 +853,7 @@ int fontforge_main( int argc, char **argv ) {
     int ds, ld;
     int openflags=0;
     int doopen=0, quit_request=0;
+    bool use_cairo = true;
 
     g_type_init();
 
@@ -1019,9 +1065,10 @@ int fontforge_main( int argc, char **argv ) {
 # endif
 	else if ( strncmp(pt,"-usecairo",strlen("-usecairo"))==0 ) {
 	    if ( strcmp(pt,"-usecairo=no")==0 )
-		GDrawEnableCairo(false);
+	        use_cairo = false;
 	    else
-		GDrawEnableCairo(true);
+	        use_cairo = true;
+	    GDrawEnableCairo(use_cairo);
 	} else if ( strcmp(pt,"-nosplash")==0 )
 	    splash = 0;
 	else if ( strcmp(pt,"-quiet")==0 )
@@ -1073,6 +1120,30 @@ int fontforge_main( int argc, char **argv ) {
     }
 
     ensureDotFontForgeIsSetup();
+#if defined(__MINGW32__) && !defined(_NO_LIBCAIRO)
+    //Load any custom fonts for the user interface
+    if (use_cairo) {
+        char *system_load = getGResourceProgramDir();
+        char *user_load = getFontForgeUserDir(Data);
+        char lbuf[MAX_PATH];
+        int lret;
+
+        if (system_load != NULL) {
+            //Follow the FontConfig APPSHAREFONTDIR location
+            lret = snprintf(lbuf, MAX_PATH, "%s/../share/fonts", system_load);
+            if (lret > 0 && lret < MAX_PATH) {
+                WinLoadUserFonts(lbuf);
+            }
+        }
+        if (user_load != NULL) {
+            lret = snprintf(lbuf, MAX_PATH, "%s/%s", user_load, "ui-fonts");
+            if (lret > 0 && lret < MAX_PATH) {
+                WinLoadUserFonts(lbuf);
+            }
+            free(user_load);
+        }
+    }
+#endif
     GDrawCreateDisplays(display,argv[0]);
     default_background = GDrawGetDefaultBackground(screen_display);
     InitToolIconClut(default_background);
