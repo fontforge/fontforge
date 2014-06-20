@@ -1039,6 +1039,7 @@ static char * upper_case(const char * input) {
     }
     pos++;
   }
+  output[pos] = '\0';
   return output;
 }
 
@@ -1051,6 +1052,7 @@ static char * same_case(const char * input) {
     output[pos] = input[pos];
     pos++;
   }
+  output[pos] = '\0';
   return output;
 }
 
