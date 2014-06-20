@@ -1429,7 +1429,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
     }
     if ( sc->unicodeenc!=-1 &&
 	    ((map->enc->is_unicodebmp && sc->unicodeenc<0x10000) ||
-	     (map->enc->is_unicodefull && (unsigned)sc->unicodeenc<unicode4_size)) )
+	     (map->enc->is_unicodefull && sc->unicodeenc < (int)unicode4_size)) )
 	/* If we have altunis, then the backmap may not give the primary */
 	/*  unicode code point, which is what we need here */
 	fprintf(sfd, "Encoding: %d %d %d\n", sc->unicodeenc, sc->unicodeenc,
