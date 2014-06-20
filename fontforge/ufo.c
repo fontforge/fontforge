@@ -524,7 +524,7 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
     return topglyphxml;
 }
 
-static int GlifDump(char *glyphdir,char *gfname,SplineChar *sc,int layer) {
+static int GlifDump(const char *glyphdir, const char *gfname, const SplineChar *sc, int layer) {
     char *gn = buildname(glyphdir,gfname);
     xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0");
     if (doc == NULL) return 0;
@@ -1220,6 +1220,9 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
     xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Make the dict.
 
     GFileMkDir( glyphdir );
+    int i;
+    SplineChar * sc;
+    int err;
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) ) {
 	PListAddString(dictnode,sc->name,sc->glif_name); // Add the glyph to the table of contents.
         // TODO: Optionally skip rewriting an untouched glyph.
@@ -1232,6 +1235,7 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
     free(fname); fname = NULL;
     xmlFreeDoc(plistdoc); // Free the memory.
     xmlCleanupParser();
+    return err;
 }
 
 int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int flags,
@@ -1326,7 +1330,7 @@ return( false );
         char * numberedlayerpath = NULL;
         if (layer_pos == ly_fore) {
           numberedlayerpath = strdup("glyphs");
-        else if (sf->layers[layer_pos].ufo_path != NULL) {
+        } else if (sf->layers[layer_pos].ufo_path != NULL) {
           layer_path_start = strdup(sf->layers[layer_pos].ufo_path);
           numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "glyphs.", "", 7);
         } else {
@@ -1338,7 +1342,7 @@ return( false );
         xmlNewChild(layernode, NULL, BAD_CAST "string", numberedlayername);
         xmlNewChild(layernode, NULL, BAD_CAST "string", numberedlayerpath);
         // We write the glyph directory.
-        WriteUFOLayer(glyphdir, sf, layer_pos);
+        err |= WriteUFOLayer(glyphdir, sf, layer_pos);
         free(numberedlayername); numberedlayername = NULL;
         free(numberedlayerpath); numberedlayerpath = NULL;
       }
@@ -1353,7 +1357,7 @@ return( false );
 #endif
     } else {
         glyphdir = buildname(basedir,"glyphs");
-        WriteUFOLayer(glyphdir, sf, layer_pos);
+        WriteUFOLayer(glyphdir, sf, layer);
     }
 
     free( glyphdir );
