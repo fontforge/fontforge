@@ -4691,7 +4691,7 @@ return( NULL );			/* No variation selectors */
 	any = 0;
 	for ( gid=mingid; gid<=maxgid; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
 	    for ( altuni = sc->altuni; altuni!=NULL; altuni=altuni->next ) {
-		if ( altuni->unienc!=-1 && (unsigned)altuni->unienc<unicode4_size &&
+		if ( altuni->unienc!=-1 && altuni->unienc < (int)unicode4_size &&
 			altuni->vs==vses[i] && altuni->fid==0 ) {
 		    for ( au=sc->altuni; au!=NULL; au=au->next )
 			if ( au->unienc==altuni->unienc && au->vs==-1 && au->fid==0 )

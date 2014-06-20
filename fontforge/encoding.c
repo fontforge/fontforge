@@ -1876,7 +1876,7 @@ return( NULL );
 	}
 	if ( !found ) {
 	    if ( sc->unicodeenc!=-1 &&
-                 (unsigned)sc->unicodeenc<unicode4_size &&
+                 sc->unicodeenc < (int)unicode4_size &&
 		     (j = EncFromUni(sc->unicodeenc,enc))!= -1 )
 		encoded[j] = i;
 	    else {

@@ -15689,7 +15689,7 @@ return (NULL);
     fv = self->fv;
     if ( !PyArg_ParseTuple(args,"i|s", &uni, &name ) )
 return( NULL );
-    if ( uni<-1 || (unsigned)uni>=unicode4_size ) {
+    if ( uni<-1 || uni >= (int)unicode4_size ) {
 	PyErr_Format(PyExc_ValueError, "Unicode codepoint, %d, out of range, must be either -1 or between 0 and 0x10ffff", uni );
 return( NULL );
     } else if ( uni==-1 && name==NULL ) {
@@ -15763,7 +15763,7 @@ return (NULL);
 	if ( !PyArg_ParseTuple(args,"i", &uni ) )
 return( NULL );
     }
-    if ( uni<-1 || (unsigned)uni>=unicode4_size ) {
+    if ( uni<-1 || uni >= (int)unicode4_size ) {
 	PyErr_Format(PyExc_ValueError, "Unicode codepoint, %d, out of range, must be either -1 or between 0 and 0x10ffff", uni );
 return( NULL );
     }
@@ -15793,7 +15793,7 @@ return( NULL );
 	    uni = -1;
 	} else if ( !PyArg_ParseTuple(args,"i|s", &uni, &name ) )
 return( NULL );
-	if ( uni<-1 || (unsigned)uni>=unicode4_size ) {
+	if ( uni<-1 || uni >= (int)unicode4_size ) {
 	    PyErr_Format(PyExc_ValueError, "Unicode codepoint, %d, out of range, must be either -1 or between 0 and 0x10ffff", uni );
 return( NULL );
 	} else if ( uni==-1 && name==NULL ) {
