@@ -2121,10 +2121,10 @@ static int fea_classesIntersect(char *class1, char *class2) {
         if ( *pt2=='\0' )
             output = -1; // We cancel further action if one list is blank.
         for ( start2 = pt2; *pt2!=' ' && *pt2!='\0'; ++pt2 );
-        ch1 = *pt1; *pt1 = '\0'; // Cache the byte and terminate.
+        ch1 = *pt2; *pt2 = '\0'; // Cache the byte and terminate.
         struct glif_name * tmp = NULL;
-        if ((tmp = glif_name_search_glif_name(glif_name_hash, start1)) == NULL) {
-          glif_name_track_new(glif_name_hash, index++, start1);
+        if ((tmp = glif_name_search_glif_name(glif_name_hash, start2)) == NULL) {
+          glif_name_track_new(glif_name_hash, index++, start2);
         } else if (tmp->gid < break_point) {
           output = 1;
         }
