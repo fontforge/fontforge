@@ -2128,7 +2128,7 @@ static int fea_classesIntersect(char *class1, char *class2) {
         } else if (tmp->gid < break_point) {
           output = 1;
         }
-        *pt1 = ch1; // Restore the byte.
+        *pt2 = ch2; // Restore the byte.
     }
     glif_name_hash_destroy(glif_name_hash); // Close the hash table.
     if (output == 1) return 1;

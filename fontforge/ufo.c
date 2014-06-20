@@ -1137,9 +1137,10 @@ char * ufo_name_mangle(const char * input, const char * prefix, const char * suf
     char * current = strtok_r(disposable, ".", &saveptr); // We get the first name part.
     while (current != NULL) {
       char * uppered = upper_case(output);
-      if (polyMatch(current, DOS_reserved_count, DOS_reserved) || is_DOS_drive(current)) {
-        output2[output2_pos++] = '_';
+      if (polyMatch(uppered, DOS_reserved_count, DOS_reserved) || is_DOS_drive(uppered)) {
+        output2[output2_pos++] = '_'; // Prefix an underscore if it's a reserved name.
       }
+      free(uppered); uppered = NULL;
       for (off_t parti = 0; current[parti] != '\0'; parti++) {
         output2[output2_pos++] = current[parti];
       }
