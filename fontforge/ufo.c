@@ -736,7 +736,7 @@ static void PListAddPrivateThing(xmlNodePtr parent, const char *key, struct psdi
 static int UFOOutputMetaInfo(const char *basedir,SplineFont *sf) {
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
-    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the dict.
+    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
     PListAddString(dictnode,"creator","net.GitHub.FontForge");
     PListAddInteger(dictnode,"formatVersion",2);
     char *fname = buildname(basedir, "metainfo.plist"); // Build the file name.
@@ -750,7 +750,7 @@ static int UFOOutputMetaInfo(const char *basedir,SplineFont *sf) {
 static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
-    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the dict.
+    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
 
     DBounds bb;
     double test;
@@ -926,7 +926,7 @@ static int UFOOutputGroups(const char *basedir, const SplineFont *sf) {
     /* Should I omit a file I don't use? Or leave it blank? */
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
-    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the dict.
+    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
     // TODO: Maybe output things.
     char *fname = buildname(basedir, "groups.plist"); // Build the file name.
     xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
@@ -951,7 +951,7 @@ static int UFOOutputKerning(const char *basedir, const SplineFont *sf) {
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
-    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the dict.
+    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) && sc->kerns!=NULL )
 	KerningPListAddGlyph(dictnode,sc->name,sc->kerns);
@@ -970,7 +970,7 @@ static int UFOOutputVKerning(const char *basedir, const SplineFont *sf) {
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
-    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the dict.
+    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
 
     for ( i=sf->glyphcnt-1; i>=0; --i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) && sc->vkerns!=NULL ) break;
     if ( i<0 ) return( true );
@@ -1090,6 +1090,7 @@ int is_DOS_drive(char * input) {
 }
 
 char * ufo_name_mangle(const char * input, const char * prefix, const char * suffix, int flags) {
+  // This does not append the prefix or the suffix.
   // flags & 1 determines whether to post-pad caps (something implemented in the standard).
   // flags & 2 determines whether to replace a leading '.' (standard).
   // flags & 4 determines whether to restrict DOS names (standard).
@@ -1159,6 +1160,60 @@ char * ufo_name_mangle(const char * input, const char * prefix, const char * suf
 #include "glif_name_hash.h"
 #endif
 
+char * ufo_name_number(
+#ifdef FF_UTHASH_GLIF_NAMES
+struct glif_name_index * glif_name_hash,
+#else
+void * glif_name_hash,
+#endif
+int index, const char * input, const char * prefix, const char * suffix, int flags) {
+        // This does not append the prefix or the suffix.
+        // The specification deals with name collisions by appending a 15-digit decimal number to the name.
+        // But the name length cannot exceed 255 characters, so it is necessary to crop the base name if it is too long.
+        // Name exclusions are case insensitive, so we uppercase.
+        char * name_numbered = upper_case(input);
+        char * full_name_base = same_case(input); // This is in case we do not need a number added.
+        if (strlen(input) > (255 - strlen(prefix) - strlen(suffix))) {
+          // If the numbered name base is too long, we crop it, even if we are not numbering.
+          full_name_base[(255 - strlen(suffix))] = '\0';
+          full_name_base = realloc(full_name_base, ((255 - strlen(prefix) - strlen(suffix)) + 1));
+        }
+        char * name_base = same_case(input); // This is in case we need a number added.
+        long int name_number = 0;
+#ifdef FF_UTHASH_GLIF_NAMES
+        if (glif_name_hash != NULL) {
+          if (strlen(input) > (255 - 15 - strlen(prefix) - strlen(suffix))) {
+            // If the numbered name base is too long, we crop it.
+            name_base[(255 - 15 - strlen(suffix))] = '\0';
+            name_base = realloc(name_base, ((255 - 15 - strlen(prefix) - strlen(suffix)) + 1));
+          }
+          // Check the resulting name against a hash table of names.
+          if (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL) {
+            // If the name is taken, we must make space for a 15-digit number.
+            char * name_base_upper = upper_case(name_base);
+            while (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL) {
+              name_number++; // Remangle the name until we have no more matches.
+              free(name_numbered); name_numbered = NULL;
+              asprintf(&name_numbered, "%s%15ld", name_base_upper, name_number);
+            }
+            free(name_base_upper); name_base_upper = NULL;
+          }
+          // Insert the result into the hash table.
+          glif_name_track_new(glif_name_hash, index, name_numbered);
+        }
+#endif
+        // Now we want the correct capitalization.
+        free(name_numbered); name_numbered = NULL;
+        if (name_number > 0) {
+          asprintf(&name_numbered, "%s%15ld", name_base, name_number);
+        } else {
+          asprintf(&name_numbered, "%s", full_name_base);
+        }
+        free(name_base); name_base = NULL;
+        free(full_name_base); full_name_base = NULL;
+        return name_numbered;
+}
+
 int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int flags,
 	const EncMap *map,int layer, int all) {
     char *foo = NULL, *glyphdir, *gfname;
@@ -1197,47 +1252,20 @@ return( false );
     struct glif_name_index _glif_name_hash;
     struct glif_name_index * glif_name_hash = &_glif_name_hash; // Open the hash table.
     memset(glif_name_hash, 0, sizeof(struct glif_name_index));
+#else
+    struct glif_name_index * glif_name_hash = NULL;
 #endif
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) ) {
         // TODO: If the splinechar has a glif name (another TODO), try to use that.
         // If not, call the mangler.
         char * startname = ufo_name_mangle(sc->name, "", ".glif", 7);
-        // Name exclusions are case insensitive, so we uppercase.
-        char * name_numbered = upper_case(startname);
-        char * name_base = same_case(startname); // This is in case we need a number added.
-        long int name_number = 0;
-#ifdef FF_UTHASH_GLIF_NAMES
-        if (strlen(startname) > (255 - 15 - strlen(".glif"))) {
-          // If the numbered name base is too long, we crop it.
-          name_base[(255 - 15 - strlen(".glif"))] = '\0';
-          name_base = realloc(name_base, ((255 - 15 - strlen(".glif")) + 1));
-        }
-        // Check the resulting name against a hash table of names.
-        if (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL) {
-          // If the name is taken, we must make space for a 15-digit number.
-          char * name_base_upper = upper_case(name_base);
-          while (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL) {
-            name_number++; // Remangle the name until we have no more matches.
-            free(name_numbered); name_numbered = NULL;
-            asprintf(&name_numbered, "%s%15ld", name_base_upper, name_number);
-          }
-          free(name_base_upper); name_base_upper = NULL;
-        }
-        // Insert the result into the hash table.
-        glif_name_track_new(glif_name_hash, i, name_numbered);
-#endif
-        // Now we want the correct capitalization.
-        free(name_numbered); name_numbered = NULL;
-        if (name_number > 0) {
-          asprintf(&name_numbered, "%s%15ld", name_base, name_number);
-        } else {
-          asprintf(&name_numbered, "%s", startname);
-        }
-        free(name_base); name_base = NULL;
+        // Number the name (as the specification requires) if there is a collision.
+        // And add it to the hash table with its index.
+        char * numberedname = ufo_name_number(glif_name_hash, i, startname, "", ".glif", 7);
         free(startname); startname = NULL;
         char * final_name = NULL;
-        asprintf(&final_name, "%s.glif", name_numbered); // Generate the final name.
-        free(name_numbered); name_numbered = NULL;
+        asprintf(&final_name, "%s%s%s", "", numberedname, ".glif"); // Generate the final name with prefix and suffix.
+        free(numberedname); numberedname = NULL;
 	PListAddString(dictnode,sc->name,final_name); // Add the glyph to the table of contents.
         // TODO: Optionally skip rewriting an untouched glyph.
         // Do we track modified glyphs carefully enough for this?
