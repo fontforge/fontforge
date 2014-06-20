@@ -1214,8 +1214,28 @@ int index, const char * input, const char * prefix, const char * suffix, int fla
         return name_numbered;
 }
 
+int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
+    xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
+    xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
+    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Make the dict.
+
+    GFileMkDir( glyphdir );
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) ) {
+	PListAddString(dictnode,sc->name,sc->glif_name); // Add the glyph to the table of contents.
+        // TODO: Optionally skip rewriting an untouched glyph.
+        // Do we track modified glyphs carefully enough for this?
+	err |= !GlifDump(glyphdir,sc->glif_name,sc,layer);
+    }
+
+    char *fname = buildname(glyphdir, "contents.plist"); // Build the file name for the contents.
+    xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
+    free(fname); fname = NULL;
+    xmlFreeDoc(plistdoc); // Free the memory.
+    xmlCleanupParser();
+}
+
 int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int flags,
-	const EncMap *map,int layer, int all) {
+	const EncMap *map,int layer, int all_layers) {
     char *foo = NULL, *glyphdir, *gfname;
     int err;
     FILE *plist;
@@ -1242,23 +1262,20 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
     if ( err )
 return( false );
 
-    xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
-    xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
-    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Make the dict.
-
-    glyphdir = buildname(basedir,"glyphs");
-    GFileMkDir( glyphdir );
 #ifdef FF_UTHASH_GLIF_NAMES
     struct glif_name_index _glif_name_hash;
     struct glif_name_index * glif_name_hash = &_glif_name_hash; // Open the hash table.
     memset(glif_name_hash, 0, sizeof(struct glif_name_index));
 #else
-    struct glif_name_index * glif_name_hash = NULL;
+    void * glif_name_hash = NULL;
 #endif
+    // First we generate glif names.
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) ) {
-        // TODO: If the splinechar has a glif name (another TODO), try to use that.
-        // If not, call the mangler.
-        char * startname = ufo_name_mangle(sc->name, "", ".glif", 7);
+        char * startname = NULL;
+        if (sc->glif_name != NULL)
+          startname = strdup(sc->glif_name); // If the splinechar has a glif name, try to use that.
+        else
+          startname = ufo_name_mangle(sc->name, "", ".glif", 7); // If not, call the mangler.
         // Number the name (as the specification requires) if there is a collision.
         // And add it to the hash table with its index.
         char * numberedname = ufo_name_number(glif_name_hash, i, startname, "", ".glif", 7);
@@ -1266,20 +1283,78 @@ return( false );
         char * final_name = NULL;
         asprintf(&final_name, "%s%s%s", "", numberedname, ".glif"); // Generate the final name with prefix and suffix.
         free(numberedname); numberedname = NULL;
-	PListAddString(dictnode,sc->name,final_name); // Add the glyph to the table of contents.
-        // TODO: Optionally skip rewriting an untouched glyph.
-        // Do we track modified glyphs carefully enough for this?
-	err |= !GlifDump(glyphdir,final_name,sc,layer);
-	free(final_name); final_name = NULL;        
+        // We update the saved glif_name only if it is different (so as to minimize churn).
+        if ((sc->glif_name != NULL) && (strcmp(sc->glif_name, final_name) != 0))
+          free(sc->glif_name); sc->glif_name = NULL;
+        if (sc->glif_name == NULL)
+          sc->glif_name = final_name;
+        else
+	  free(final_name); final_name = NULL;
     }
 #ifdef FF_UTHASH_GLIF_NAMES
     glif_name_hash_destroy(glif_name_hash); // Close the hash table.
 #endif
-    char *fname = buildname(glyphdir, "contents.plist"); // Build the file name for the contents.
-    xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
-    free(fname); fname = NULL;
-    xmlFreeDoc(plistdoc); // Free the memory.
-    xmlCleanupParser();
+    
+    if (all_layers) {
+#ifdef FF_UTHASH_GLIF_NAMES
+      struct glif_name_index _layer_name_hash;
+      struct glif_name_index * layer_name_hash = &_layer_name_hash; // Open the hash table.
+      memset(layer_name_hash, 0, sizeof(struct glif_name_index));
+      struct glif_name_index _layer_path_hash;
+      struct glif_name_index * layer_path_hash = &_layer_path_hash; // Open the hash table.
+      memset(layer_path_hash, 0, sizeof(struct glif_name_index));
+#else
+      void * layer_name_hash = NULL;
+#endif
+      xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
+      xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
+      xmlNodePtr arraynode = xmlNewChild(rootnode, NULL, BAD_CAST "array", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Make the dict.
+	
+      int layer_pos;
+      for (layer_pos = 0; layer_pos < sf->layer_cnt; layer_pos++) {
+        glyphdir = buildname(basedir,"glyphs");
+        xmlNodePtr layernode = xmlNewChild(arraynode, NULL, BAD_CAST "array", NULL);
+        // We make the layer name.
+        char * layer_name_start = NULL;
+        if (layer_pos == ly_fore) layer_name_start = "public.default";
+        else if (layer_pos == ly_back) layer_name_start = "public.background";
+        else layer_name_start = sf->layers[layer_pos].name;
+        if (layer_name_start == NULL) layer_name_start = "unnamed"; // The remangle step adds any needed numbers.
+        char * numberedlayername = ufo_name_number(layer_name_hash, layer_pos, layer_name_start, "", "", 7);
+        // We make the layer path.
+        char * layer_path_start = NULL;
+        char * numberedlayerpath = NULL;
+        if (layer_pos == ly_fore) {
+          numberedlayerpath = strdup("glyphs");
+        else if (sf->layers[layer_pos].ufo_path != NULL) {
+          layer_path_start = strdup(sf->layers[layer_pos].ufo_path);
+          numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "glyphs.", "", 7);
+        } else {
+          layer_path_start = ufo_name_mangle(sf->layers[layer_pos].name, "glyphs.", "", 7);
+          numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "glyphs.", "", 7);
+        }
+        if (layer_path_start != NULL) { free(layer_path_start); layer_path_start = NULL; }
+        // We write to the layer contents.
+        xmlNewChild(layernode, NULL, BAD_CAST "string", numberedlayername);
+        xmlNewChild(layernode, NULL, BAD_CAST "string", numberedlayerpath);
+        // We write the glyph directory.
+        WriteUFOLayer(glyphdir, sf, layer_pos);
+        free(numberedlayername); numberedlayername = NULL;
+        free(numberedlayerpath); numberedlayerpath = NULL;
+      }
+      char *fname = buildname(basedir, "layercontents.plist"); // Build the file name for the contents.
+      xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
+      free(fname); fname = NULL;
+      xmlFreeDoc(plistdoc); // Free the memory.
+      xmlCleanupParser();
+#ifdef FF_UTHASH_GLIF_NAMES
+      glif_name_hash_destroy(layer_name_hash); // Close the hash table.
+      glif_name_hash_destroy(layer_path_hash); // Close the hash table.
+#endif
+    } else {
+        glyphdir = buildname(basedir,"glyphs");
+        WriteUFOLayer(glyphdir, sf, layer_pos);
+    }
 
     free( glyphdir );
 return( !err );
@@ -2617,7 +2692,12 @@ return( NULL );
 					if (layercontentslayercount > 0) {
 						// Start reading layers.
 						for (lcount = 0; lcount < layercontentslayercount; lcount++) {
-                                                	if ((glyphdir = buildname(basedir,layernames[2*lcount+1]))) {
+							// We refuse to load a layer with an incorrect prefix.
+                                                	if (
+							(((strcmp(layernames[2*lcount],"public.default")==0) &&
+							(strcmp(layernames[2*lcount+1],"glyphs") == 0)) ||
+							(strstr(layernames[2*lcount+1],"glyphs.") == layernames[2*lcount+1])) &&
+							(glyphdir = buildname(basedir,layernames[2*lcount+1]))) {
                                                         	if ((glyphlist = buildname(glyphdir,"contents.plist"))) {
 									if ( !GFileExists(glyphlist)) {
 										LogError(_("No glyphs directory or no contents file"));
@@ -2645,7 +2725,10 @@ return( NULL );
 										if (( layerdest<sf->layer_cnt ) && sf->layers) {
 											if (sf->layers[layerdest].name)
 												free(sf->layers[layerdest].name);
-											sf->layers[layerdest].name = layernames[2*lcount];
+											sf->layers[layerdest].name = strdup(layernames[2*lcount]);
+											if (sf->layers[layerdest].ufo_path)
+												free(sf->layers[layerdest].ufo_path);
+											sf->layers[layerdest].ufo_path = strdup(layernames[2*lcount+1]);
 											sf->layers[layerdest].background = bg;
 											// Fetch glyphs.
 											UFOLoadGlyphs(sf,glyphdir,layerdest);

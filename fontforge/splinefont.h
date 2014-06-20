@@ -1504,6 +1504,7 @@ typedef struct splinechar {
 	/*  will be used. */
     real tile_margin;			/* If the glyph is used as a tile */
     DBounds tile_bounds;
+    char * glif_name; // This stores the base name of the glyph when saved to U. F. O..
 } SplineChar;
 
 #define TEX_UNDEF 0x7fff
@@ -1654,6 +1655,7 @@ typedef struct layerinfo {
     unsigned int order2: 1;			/* Layer's data are order 2 bezier splines (truetype) rather than order 3 (postscript) */
 						/* In all glyphs in the font */
     unsigned int ticked: 1;
+    char * ufo_path;
 } LayerInfo;
 
 /* Baseline data from the 'BASE' table */

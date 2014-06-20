@@ -5804,6 +5804,7 @@ return;
 #else
     PyFF_FreeSC(sc);
 #endif
+    if (sc->glif_name != NULL) { free(sc->glif_name); sc->glif_name = NULL; }
 }
 
 void SplineCharFree(SplineChar *sc) {
