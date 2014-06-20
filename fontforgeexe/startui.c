@@ -855,7 +855,9 @@ int fontforge_main( int argc, char **argv ) {
     int doopen=0, quit_request=0;
     bool use_cairo = true;
 
+#if !(GLIB_CHECK_VERSION(2, 35, 0))
     g_type_init();
+#endif
 
     /* Must be done before we cache the current directory */
     /* Change to HOME dir if specified on the commandline */
