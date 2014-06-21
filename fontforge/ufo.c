@@ -431,6 +431,7 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
 	    for ( i=0; i<cnt; ++i ) {
 		ref = refs[i];
     xmlNodePtr componentxml = xmlNewChild(outlinexml, NULL, BAD_CAST "component", NULL);
+    xmlSetPropPrintf(componentxml, BAD_CAST "base", "%s", ref->sc->name);
 		// "<component base=\"%s\"" ref->sc->name
     char *floattmp = NULL;
 		if ( ref->transform[0]!=1 ) {
@@ -468,7 +469,7 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
             xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
             xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", ap->me.x);
             xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", ap->me.y);
-            xmlSetPropPrintf(pointxml, BAD_CAST "type", BAD_CAST "move");
+            xmlSetPropPrintf(pointxml, BAD_CAST "type", "move");
             xmlSetPropPrintf(pointxml, BAD_CAST "name", "%s%s", ismark ? "_" : "", ap->anchor->name);
             // "<point x=\"%g\" y=\"%g\" type=\"move\" name=\"%s%s\"/>" ap->me.x ap->me.y (ismark ? "_" : "") ap->anchor->name
             // "</contour>"
