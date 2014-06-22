@@ -3658,7 +3658,7 @@ static struct markedglyphs *fea_parseCursiveSequence(struct parseState *tok,
 	    cur->is_name = true;
 	    cur->name_or_class = contents;
 	} else {
-	    LogError(_("Expect a valid glyph/CID name on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	    LogError(_("Expected a valid glyph/CID name on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	    ++tok->err_count;
 	    return( NULL );
 	}
@@ -5626,7 +5626,7 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 		memcpy(item->u2.lcaret,carets,len*sizeof(int16));
 		item->u2.lcaret[len] = 0;
 	    } else {
-		LogError(_("Expected integer or list of integer after %s on line %d of %s"), item->u1.class,
+		LogError(_("Expected integer or list of integers after %s on line %d of %s"), item->u1.class,
 			tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	    }
 	} else if ( strcmp(tok->tokbuf,"GlyphClassDef")==0 ) {
