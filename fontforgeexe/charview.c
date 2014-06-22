@@ -3392,7 +3392,8 @@ static char *CVMakeTitles(CharView *cv,char *buf,size_t len) {
 /* GT: $1 is the name of the glyph */
 /* GT: $2 is the glyph's encoding */
 /* GT: $3 is the font name */
-    used = snprintf(buf,len,_("%1$.80s at %2$d from %3$.90s%s"),
+/* GT: $4 is the changed flag ('*' for the changed items)*/
+    used = snprintf(buf,len,_("%1$.80s at %2$d from %3$.90s%4$s"),
 		    sc->name, CVCurEnc(cv), sf->fontname,
 		    sc->changed ? "*" : "");
     title = copy(buf);
