@@ -1738,6 +1738,7 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
     OTLookup *otl;
     FeatureScriptLangList *fl;
     struct scriptlanglist *sl;
+    int has_DFLT = 0;
 
     GTree* ht = g_tree_new_full( tree_strcasecmp, 0, free, NULL );
 
@@ -1756,10 +1757,18 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
 				    for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) if ( sl->script==scripts[s] ) {
 					    for ( subl=0; subl<sl->lang_cnt; ++subl ) {
 						char key[100];
-						snprintf(key,sizeof key,"%c%c%c%c %c%c%c%c",
+                                                const uint32 DFLT_int = (uint32)'D' << 24 | (uint32)'F' << 16 |
+                                                (uint32)'L' << 8 | (uint32)'T';
+                                                const uint32 dflt_int = (uint32)'d' << 24 | (uint32)'f' << 16 |
+                                                (uint32)'l' << 8 | (uint32)'t';
+						if ((scripts[s] == DFLT_int) && (langs[l] == dflt_int)) {
+						  has_DFLT = 1;
+						} else {
+						  snprintf(key,sizeof key,"%c%c%c%c %c%c%c%c",
 							 scripts[s]>>24, scripts[s]>>16, scripts[s]>>8, scripts[s],
 							 langs[l]>>24, langs[l]>>16, langs[l]>>8, langs[l] );
-						g_tree_insert( ht, copy(key), "" );
+						  g_tree_insert( ht, copy(key), "" );
+						}
 					    }
 					}
 				}
@@ -1769,7 +1778,7 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
 	    }
 	}
     }
-
+    if (has_DFLT) { dump_header_languagesystem_hash_fe((gpointer)"DFLT dflt", (gpointer)"", (gpointer)out); }
     g_tree_foreach( ht, dump_header_languagesystem_hash_fe, out );
     fprintf( out, "\n" );
 }
