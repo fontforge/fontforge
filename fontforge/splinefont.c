@@ -1906,11 +1906,14 @@ return;
 	    any_quads = true; // Check whether remaining layers have quadratics.
     }
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
-	LayerFreeContents(sc,l);
-        // Move the other layers and close the gap.
-	for ( i=l+1; i<sc->layer_cnt; ++i )
+	// sc->layers may be less than sf->layers.
+	if (l < sc->layer_cnt) {
+	  LayerFreeContents(sc,l);
+	  // Move the other layers and close the gap.
+	  for ( i=l+1; i<sc->layer_cnt; ++i )
 	    sc->layers[i-1] = sc->layers[i];
-	-- sc->layer_cnt; // Decrement the layer count.
+	  -- sc->layer_cnt; // Decrement the layer count.
+        }
 	for ( cvs = sc->views; cvs!=NULL; cvs=cvs->next ) {
 	    if ( cvs->layerheads[dm_back] - sc->layers >= sc->layer_cnt )
 		cvs->layerheads[dm_back] = &sc->layers[ly_back];
@@ -1933,6 +1936,7 @@ return;
     MVDestroyAll(sf);
 
     free(sf->layers[l].name);
+    if (sf->layers[l].ufo_path != NULL) free(sf->layers[l].ufo_path);
     for ( i=l+1; i<sf->layer_cnt; ++i )
 	sf->layers[i-1] = sf->layers[i];
     -- sf->layer_cnt; // Decrement the layer count.

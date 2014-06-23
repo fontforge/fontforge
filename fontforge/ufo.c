@@ -78,35 +78,49 @@ return( fname );
 
 static xmlNodePtr xmlNewChildInteger(xmlNodePtr parent, xmlNsPtr ns, const xmlChar * name, long int value) {
   char * valtmp = NULL;
-  asprintf(&valtmp, "%ld", value); // Textify the value to be enclosed.
-  xmlNodePtr childtmp = xmlNewChild(parent, NULL, BAD_CAST name, BAD_CAST valtmp); // Make a text node for the value.
-  free(valtmp); valtmp = NULL; // Free the temporary text store.
-  return childtmp;
+  // Textify the value to be enclosed.
+  if (asprintf(&valtmp, "%ld", value) >= 0) {
+    xmlNodePtr childtmp = xmlNewChild(parent, NULL, BAD_CAST name, BAD_CAST valtmp); // Make a text node for the value.
+    free(valtmp); valtmp = NULL; // Free the temporary text store.
+    return childtmp;
+  }
+  return NULL;
 }
 static xmlNodePtr xmlNewNodeInteger(xmlNsPtr ns, const xmlChar * name, long int value) {
   char * valtmp = NULL;
   xmlNodePtr childtmp = xmlNewNode(NULL, BAD_CAST name); // Create a named node.
-  asprintf(&valtmp, "%ld", value); // Textify the value to be enclosed.
-  xmlNodePtr valtmpxml = xmlNewText(BAD_CAST valtmp); // Make a text node for the value.
-  xmlAddChild(childtmp, valtmpxml); // Attach the text node as content of the named node.
-  free(valtmp); valtmp = NULL; // Free the temporary text store.
+  // Textify the value to be enclosed.
+  if (asprintf(&valtmp, "%ld", value) >= 0) {
+    xmlNodePtr valtmpxml = xmlNewText(BAD_CAST valtmp); // Make a text node for the value.
+    xmlAddChild(childtmp, valtmpxml); // Attach the text node as content of the named node.
+    free(valtmp); valtmp = NULL; // Free the temporary text store.
+  } else {
+    xmlFreeNode(childtmp); childtmp = NULL;
+  }
   return childtmp;
 }
 static xmlNodePtr xmlNewChildFloat(xmlNodePtr parent, xmlNsPtr ns, const xmlChar * name, double value) {
   char * valtmp = NULL;
-  asprintf(&valtmp, "%g", value); // Textify the value to be enclosed.
-  xmlNodePtr childtmp = xmlNewChild(parent, NULL, BAD_CAST name, BAD_CAST valtmp); // Make a text node for the value.
-  free(valtmp); valtmp = NULL; // Free the temporary text store.
-  return childtmp;
+  // Textify the value to be enclosed.
+  if (asprintf(&valtmp, "%g", value) >= 0) {
+    xmlNodePtr childtmp = xmlNewChild(parent, NULL, BAD_CAST name, BAD_CAST valtmp); // Make a text node for the value.
+    free(valtmp); valtmp = NULL; // Free the temporary text store.
+    return childtmp;
+  }
+  return NULL;
 }
 static xmlNodePtr xmlNewNodeFloat(xmlNsPtr ns, const xmlChar * name, double value) {
   char * valtmp = NULL;
   xmlNodePtr childtmp = xmlNewNode(NULL, BAD_CAST name); // Create a named node.
-  asprintf(&valtmp, "%g", value); // Textify the value to be enclosed.
-  xmlNodePtr valtmpxml = xmlNewText(BAD_CAST valtmp); // Make a text node for the value.
-  xmlAddChild(childtmp, valtmpxml); // Attach the text node as content of the named node.
-  free(valtmp); valtmp = NULL; // Free the temporary text store.
-  return childtmp;
+  // Textify the value to be enclosed.
+  if (asprintf(&valtmp, "%g", value) >= 0) {
+    xmlNodePtr valtmpxml = xmlNewText(BAD_CAST valtmp); // Make a text node for the value.
+    xmlAddChild(childtmp, valtmpxml); // Attach the text node as content of the named node.
+    free(valtmp); valtmp = NULL; // Free the temporary text store.
+  } else {
+    xmlFreeNode(childtmp); childtmp = NULL;
+  }
+  return NULL;
 }
 static xmlNodePtr xmlNewChildString(xmlNodePtr parent, xmlNsPtr ns, const xmlChar * name, char * value) {
   xmlNodePtr childtmp = xmlNewChild(parent, NULL, BAD_CAST name, BAD_CAST value); // Make a text node for the value.
@@ -318,10 +332,13 @@ xmlNodePtr PyObjectToXML( PyObject *value ) {
         // "<integer>%ld</integer>"
     } else if (PyFloat_Check(value)) {
         childtmp = xmlNewNode(NULL, BAD_CAST "real");
-        asprintf(&valtmp, "%g", PyFloat_AsDouble(value));
-        valtmpxml = xmlNewText(BAD_CAST valtmp);
-        xmlAddChild(childtmp, valtmpxml);
-        free(valtmp); valtmp = NULL;
+        if (asprintf(&valtmp, "%g", PyFloat_AsDouble(value)) < 0) {
+          valtmpxml = xmlNewText(BAD_CAST valtmp);
+          xmlAddChild(childtmp, valtmpxml);
+          free(valtmp); valtmp = NULL;
+        } else {
+          xmlFreeNode(childtmp); childtmp = NULL;
+        }
         // "<real>%g</real>"
     } else if (PySequence_Check(value)) {
 	int i, len = PySequence_Size(value);
@@ -376,9 +393,10 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
     xmlNodePtr tmpxml2 = xmlNewChild(topglyphxml, NULL, BAD_CAST "advance", NULL); // Create the advance node.
     xmlSetPropPrintf(tmpxml2, BAD_CAST "width", "%d", sc->width);
     if ( sc->parent->hasvmetrics ) {
-      asprintf(&stringtmp, "%d", sc->width);
-      xmlSetProp(tmpxml2, BAD_CAST "height", stringtmp);
-      free(stringtmp); stringtmp = NULL;
+      if (asprintf(&stringtmp, "%d", sc->width) >= 0) {
+        xmlSetProp(tmpxml2, BAD_CAST "height", stringtmp);
+        free(stringtmp); stringtmp = NULL;
+      }
     }
     // "<advance width=\"%d\" height=\"%d\"/>" sc->width sc->vwidth
 
@@ -397,7 +415,7 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
 
     if ( sc->layers[layer].refs!=NULL || sc->layers[layer].splines!=NULL ) {
       xmlNodePtr outlinexml = xmlNewChild(topglyphxml, NULL, BAD_CAST "outline", NULL);
-	// fprintf( glif, "  <outline>\n" );
+	// "<outline>"
 	/* RoboFab outputs components in alphabetic (case sensitive) order */
 	/*  I've been asked to do that too */
 	if ( sc->layers[layer].refs!=NULL ) {
@@ -413,6 +431,7 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
 	    for ( i=0; i<cnt; ++i ) {
 		ref = refs[i];
     xmlNodePtr componentxml = xmlNewChild(outlinexml, NULL, BAD_CAST "component", NULL);
+    xmlSetPropPrintf(componentxml, BAD_CAST "base", "%s", ref->sc->name);
 		// "<component base=\"%s\"" ref->sc->name
     char *floattmp = NULL;
 		if ( ref->transform[0]!=1 ) {
@@ -450,14 +469,14 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
             xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
             xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", ap->me.x);
             xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", ap->me.y);
-            xmlSetPropPrintf(pointxml, BAD_CAST "type", BAD_CAST "move");
+            xmlSetPropPrintf(pointxml, BAD_CAST "type", "move");
             xmlSetPropPrintf(pointxml, BAD_CAST "name", "%s%s", ismark ? "_" : "", ap->anchor->name);
             // "<point x=\"%g\" y=\"%g\" type=\"move\" name=\"%s%s\"/>" ap->me.x ap->me.y (ismark ? "_" : "") ap->anchor->name
             // "</contour>"
         }
 	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
             xmlNodePtr contourxml = xmlNewChild(outlinexml, NULL, BAD_CAST "contour", NULL);
-	    // "<contour>\n"
+	    // "<contour>"
 	    for ( sp=spl->first; sp!=NULL; ) {
 		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
 		// We write the next on-curve point.
@@ -506,7 +525,7 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
     return topglyphxml;
 }
 
-static int GlifDump(char *glyphdir,char *gfname,SplineChar *sc,int layer) {
+static int GlifDump(const char *glyphdir, const char *gfname, const SplineChar *sc, int layer) {
     char *gn = buildname(glyphdir,gfname);
     xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0");
     if (doc == NULL) return 0;
@@ -578,10 +597,10 @@ static void PListAddDate(xmlNodePtr parent, const char *key, time_t timestamp) {
 	    tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 }
 
-int countOccurrence(const char* big, const char* little) {
+int count_occurrence(const char* big, const char* little) {
     const char * tmp = big;
     int output = 0;
-    while (tmp = strstr(big, little)) { output ++; tmp ++; }
+    while (tmp = strstr(tmp, little)) { output ++; tmp ++; }
     return output;
 }
 
@@ -590,9 +609,9 @@ xmlNodePtr PListAddString(xmlNodePtr parent, const char *key, const char *value)
     xmlNodePtr keynode = xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key); // "<key>%s</key>" key
 #ifdef ESCAPE_LIBXML_STRINGS
     size_t main_size = strlen(value) +
-                       (countOccurrence(value, "<") * (strlen("&lt")-strlen("<"))) +
-                       (countOccurrence(value, ">") * (strlen("&gt")-strlen("<"))) +
-                       (countOccurrence(value, "&") * (strlen("&amp")-strlen("<")));
+                       (count_occurrence(value, "<") * (strlen("&lt")-strlen("<"))) +
+                       (count_occurrence(value, ">") * (strlen("&gt")-strlen("<"))) +
+                       (count_occurrence(value, "&") * (strlen("&amp")-strlen("<")));
     char *tmpstring = malloc(main_size + 1); tmpstring[0] = '\0';
     off_t pos1 = 0;
     while ( *value ) {
@@ -718,7 +737,7 @@ static void PListAddPrivateThing(xmlNodePtr parent, const char *key, struct psdi
 static int UFOOutputMetaInfo(const char *basedir,SplineFont *sf) {
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
-    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the dict.
+    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
     PListAddString(dictnode,"creator","net.GitHub.FontForge");
     PListAddInteger(dictnode,"formatVersion",2);
     char *fname = buildname(basedir, "metainfo.plist"); // Build the file name.
@@ -732,7 +751,7 @@ static int UFOOutputMetaInfo(const char *basedir,SplineFont *sf) {
 static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
-    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the dict.
+    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
 
     DBounds bb;
     double test;
@@ -908,7 +927,7 @@ static int UFOOutputGroups(const char *basedir, const SplineFont *sf) {
     /* Should I omit a file I don't use? Or leave it blank? */
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
-    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the dict.
+    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
     // TODO: Maybe output things.
     char *fname = buildname(basedir, "groups.plist"); // Build the file name.
     xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
@@ -933,7 +952,7 @@ static int UFOOutputKerning(const char *basedir, const SplineFont *sf) {
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
-    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the dict.
+    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) && sc->kerns!=NULL )
 	KerningPListAddGlyph(dictnode,sc->name,sc->kerns);
@@ -952,7 +971,7 @@ static int UFOOutputVKerning(const char *basedir, const SplineFont *sf) {
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
-    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the dict.
+    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
 
     for ( i=sf->glyphcnt-1; i>=0; --i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) && sc->vkerns!=NULL ) break;
     if ( i<0 ) return( true );
@@ -1000,18 +1019,241 @@ return( false );
 return( !err );
 }
 
-int WriteUFOFont(const char *basedir, SplineFont *sf, enum fontformat ff,int flags,
-	const EncMap *map,int layer) {
-    char *foo = malloc( strlen(basedir) +20 ), *glyphdir, *gfname;
+static size_t count_caps(const char * input) {
+  size_t count = 0;
+  for (int i = 0; input[i] != '\0'; i++) {
+    if ((input[i] >= 'A') && (input[i] <= 'Z')) count ++;
+  }
+  return count;
+}
+
+static char * upper_case(const char * input) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  off_t pos = 0;
+  if (output == NULL) return NULL;
+  while (pos < output_length) {
+    if ((input[pos] >= 'a') && (input[pos] <= 'z')) {
+      output[pos] = (char)(((unsigned char) input[pos]) - 0x20U);
+    } else {
+      output[pos] = input[pos];
+    }
+    pos++;
+  }
+  output[pos] = '\0';
+  return output;
+}
+
+static char * same_case(const char * input) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  off_t pos = 0;
+  if (output == NULL) return NULL;
+  while (pos < output_length) {
+    output[pos] = input[pos];
+    pos++;
+  }
+  output[pos] = '\0';
+  return output;
+}
+
+static char * delimit_null(const char * input, char delimiter) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  if (output == NULL) return NULL;
+  off_t pos = 0;
+  while (pos < output_length) {
+    if (input[pos] == delimiter) {
+      output[pos] = '\0';
+    } else {
+      output[pos] = input[pos];
+    }
+    pos++;
+  }
+  return output;
+}
+
+const char * DOS_reserved[12] = {"CON", "PRN", "AUX", "CLOCK$", "NUL", "COM1", "COM2", "COM3", "COM4", "LPT1", "LPT2", "LPT3"};
+const int DOS_reserved_count = 12;
+
+int polyMatch(const char * input, int reference_count, const char ** references) {
+  for (off_t pos = 0; pos < reference_count; pos++) {
+    if (strcmp(references[pos], input) == 0) return 1;
+  }
+  return 0;
+}
+
+int is_DOS_drive(char * input) {
+  if ((input != NULL) &&
+     (strlen(input) == 2) &&
+     (((input[0] >= 'A') && (input[0] <= 'Z')) || ((input[0] >= 'a') && (input[0] <= 'z'))) &&
+     (input[1] == ':'))
+       return 1;
+  return 0;
+}
+
+char * ufo_name_mangle(const char * input, const char * prefix, const char * suffix, int flags) {
+  // This does not append the prefix or the suffix.
+  // flags & 1 determines whether to post-pad caps (something implemented in the standard).
+  // flags & 2 determines whether to replace a leading '.' (standard).
+  // flags & 4 determines whether to restrict DOS names (standard).
+  // flags & 8 determines whether to implement additional character restrictions.
+  // The specification lists '"' '*' '+' '/' ':' '<' '>' '?' '[' '\\' ']' '|'
+  // and also anything in the range 0x00-0x1F and 0x7F.
+  // Our additional restriction list includes '\'' '&' '%' '$' '#' '`' '=' '!' ';'
+  // Standard behavior comes from passing a flags value of 7.
+  const char * standard_restrict = "\"*+/:<>?[]\\]|";
+  const char * extended_restrict = "\'&%$#`=!;";
+  size_t prefix_length = strlen(prefix);
+  size_t max_length = 255 - prefix_length - strlen(suffix);
+  size_t input_length = strlen(input);
+  size_t stop_pos = ((max_length < input_length) ? max_length : input_length); // Minimum.
+  size_t output_length_1 = input_length;
+  if (flags & 1) output_length_1 += count_caps(input); // Add space for underscore pads on caps.
+  off_t output_pos = 0;
+  char * output = malloc(output_length_1 + 1);
+  for (int i = 0; i < input_length; i++) {
+    if (strchr(standard_restrict, input[i]) || (input[i] <= 0x1F) || (input[i] >= 0x7F)) {
+      output[output_pos++] = '_'; // If the character is restricted, place an underscore.
+    } else if ((flags & 8) && strchr(extended_restrict, input[i])) {
+      output[output_pos++] = '_'; // If the extended restriction list is enabled and matches, ....
+    } else if ((flags & 1) && (input[i] >= 'A') && (input[i] <= 'Z')) {
+      output[output_pos++] = input[i];
+      output[output_pos++] = '_'; // If we have a capital letter, we post-pad if desired.
+    } else if ((flags & 2) && (i == 0) && (prefix_length == 0) && (input[i] == '.')) {
+      output[output_pos++] = '_'; // If we have a leading '.', we convert to an underscore.
+    } else {
+      output[output_pos++] = input[i];
+    }
+  }
+  output[output_pos] = '\0';
+  if (output_pos > max_length) {
+    output[max_length] = '\0';
+  }
+  char * output2 = NULL;
+  off_t output2_pos = 0;
+  {
+    char * disposable = malloc(output_length_1 + 1);
+    strcpy(disposable, output); // strtok rewrites the input string, so we make a copy.
+    output2 = malloc((2 * output_length_1) + 1); // It's easier to pad than to calculate.
+    output2_pos = 0;
+    char * saveptr = NULL;
+    char * current = strtok_r(disposable, ".", &saveptr); // We get the first name part.
+    while (current != NULL) {
+      char * uppered = upper_case(output);
+      if (polyMatch(uppered, DOS_reserved_count, DOS_reserved) || is_DOS_drive(uppered)) {
+        output2[output2_pos++] = '_'; // Prefix an underscore if it's a reserved name.
+      }
+      free(uppered); uppered = NULL;
+      for (off_t parti = 0; current[parti] != '\0'; parti++) {
+        output2[output2_pos++] = current[parti];
+      }
+      current = strtok_r(NULL, ".", &saveptr);
+      if (current != NULL) output2[output2_pos++] = '.';
+    }
+    output2[output2_pos] = '\0';
+    output2 = realloc(output2, output2_pos + 1);
+    free(disposable); disposable = NULL;
+  }
+  free(output); output = NULL;
+  return output2;
+}
+
+#ifdef FF_UTHASH_GLIF_NAMES
+#include "glif_name_hash.h"
+#endif
+
+char * ufo_name_number(
+#ifdef FF_UTHASH_GLIF_NAMES
+struct glif_name_index * glif_name_hash,
+#else
+void * glif_name_hash,
+#endif
+int index, const char * input, const char * prefix, const char * suffix, int flags) {
+        // This does not append the prefix or the suffix.
+        // The specification deals with name collisions by appending a 15-digit decimal number to the name.
+        // But the name length cannot exceed 255 characters, so it is necessary to crop the base name if it is too long.
+        // Name exclusions are case insensitive, so we uppercase.
+        char * name_numbered = upper_case(input);
+        char * full_name_base = same_case(input); // This is in case we do not need a number added.
+        if (strlen(input) > (255 - strlen(prefix) - strlen(suffix))) {
+          // If the numbered name base is too long, we crop it, even if we are not numbering.
+          full_name_base[(255 - strlen(suffix))] = '\0';
+          full_name_base = realloc(full_name_base, ((255 - strlen(prefix) - strlen(suffix)) + 1));
+        }
+        char * name_base = same_case(input); // This is in case we need a number added.
+        long int name_number = 0;
+#ifdef FF_UTHASH_GLIF_NAMES
+        if (glif_name_hash != NULL) {
+          if (strlen(input) > (255 - 15 - strlen(prefix) - strlen(suffix))) {
+            // If the numbered name base is too long, we crop it.
+            name_base[(255 - 15 - strlen(suffix))] = '\0';
+            name_base = realloc(name_base, ((255 - 15 - strlen(prefix) - strlen(suffix)) + 1));
+          }
+          // Check the resulting name against a hash table of names.
+          if (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL) {
+            // If the name is taken, we must make space for a 15-digit number.
+            char * name_base_upper = upper_case(name_base);
+            while (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL) {
+              name_number++; // Remangle the name until we have no more matches.
+              free(name_numbered); name_numbered = NULL;
+              asprintf(&name_numbered, "%s%15ld", name_base_upper, name_number);
+            }
+            free(name_base_upper); name_base_upper = NULL;
+          }
+          // Insert the result into the hash table.
+          glif_name_track_new(glif_name_hash, index, name_numbered);
+        }
+#endif
+        // Now we want the correct capitalization.
+        free(name_numbered); name_numbered = NULL;
+        if (name_number > 0) {
+          asprintf(&name_numbered, "%s%15ld", name_base, name_number);
+        } else {
+          asprintf(&name_numbered, "%s", full_name_base);
+        }
+        free(name_base); name_base = NULL;
+        free(full_name_base); full_name_base = NULL;
+        return name_numbered;
+}
+
+int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
+    xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
+    xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
+    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Make the dict.
+
+    GFileMkDir( glyphdir );
+    int i;
+    SplineChar * sc;
+    int err;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) ) {
+	PListAddString(dictnode,sc->name,sc->glif_name); // Add the glyph to the table of contents.
+        // TODO: Optionally skip rewriting an untouched glyph.
+        // Do we track modified glyphs carefully enough for this?
+	err |= !GlifDump(glyphdir,sc->glif_name,sc,layer);
+    }
+
+    char *fname = buildname(glyphdir, "contents.plist"); // Build the file name for the contents.
+    xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
+    free(fname); fname = NULL;
+    xmlFreeDoc(plistdoc); // Free the memory.
+    xmlCleanupParser();
+    return err;
+}
+
+int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int flags,
+	const EncMap *map,int layer, int all_layers) {
+    char *foo = NULL, *glyphdir, *gfname;
     int err;
     FILE *plist;
     int i;
     SplineChar *sc;
 
     /* Clean it out, if it exists */
-    sprintf( foo, "rm -rf %s", basedir );
-    system( foo );
-    free( foo );
+    if (asprintf(&foo, "rm -rf %s", basedir) >= 0) {
+      if (system( foo ) == -1) fprintf(stderr, "Error clearing %s.\n", basedir);
+      free( foo ); foo = NULL;
+    }
 
     /* Create it */
     GFileMkDir( basedir );
@@ -1027,49 +1269,107 @@ int WriteUFOFont(const char *basedir, SplineFont *sf, enum fontformat ff,int fla
     if ( err )
 return( false );
 
-    xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
-    xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
-    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Make the dict.
-
-    glyphdir = buildname(basedir,"glyphs");
-    GFileMkDir( glyphdir );
-
+#ifdef FF_UTHASH_GLIF_NAMES
+    struct glif_name_index _glif_name_hash;
+    struct glif_name_index * glif_name_hash = &_glif_name_hash; // Open the hash table.
+    memset(glif_name_hash, 0, sizeof(struct glif_name_index));
+#else
+    void * glif_name_hash = NULL;
+#endif
+    // First we generate glif names.
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) ) {
-	const char *start;
-        char *gstart;
-	gstart = gfname = malloc(2*strlen(sc->name)+20);
-	start = sc->name;
-	if ( *start=='.' ) {
-	    *gstart++ = '_';
-	    ++start;
-	}
-	while ( *start ) {
-	    /* Now the spec has a very complicated algorithm for producing a */
-	    /*  filename, dividing the glyph name into chunks at every period*/
-	    /*  and then again at every underscore, and then adding an under-*/
-	    /*  score at the end of a chunk if the chunk begins with a capital*/
-	    /* BUT... */
-	    /* That's not what RoboFAB does. It simply adds an underscore after*/
-	    /*  every capital letter. Much easier. And since people have */
-	    /*  complained that I follow the spec, let's not. */
-	    *gstart++ = *start;
-	    if ( isupper( *start++ ))
-	        *gstart++ = '_';
-	}
-	strcpy(gstart,".glif");
-	PListAddString(dictnode,sc->name,gfname); // Add the glyph to the table of contents.
-	err |= !GlifDump(glyphdir,gfname,sc,layer);
-	free(gfname);
+        char * startname = NULL;
+        if (sc->glif_name != NULL)
+          startname = strdup(sc->glif_name); // If the splinechar has a glif name, try to use that.
+        else
+          startname = ufo_name_mangle(sc->name, "", ".glif", 7); // If not, call the mangler.
+        // Number the name (as the specification requires) if there is a collision.
+        // And add it to the hash table with its index.
+        char * numberedname = ufo_name_number(glif_name_hash, i, startname, "", ".glif", 7);
+        free(startname); startname = NULL;
+        char * final_name = NULL;
+        asprintf(&final_name, "%s%s%s", "", numberedname, ".glif"); // Generate the final name with prefix and suffix.
+        free(numberedname); numberedname = NULL;
+        // We update the saved glif_name only if it is different (so as to minimize churn).
+        if ((sc->glif_name != NULL) && (strcmp(sc->glif_name, final_name) != 0))
+          free(sc->glif_name); sc->glif_name = NULL;
+        if (sc->glif_name == NULL)
+          sc->glif_name = final_name;
+        else
+	  free(final_name); final_name = NULL;
     }
-
-    char *fname = buildname(glyphdir, "contents.plist"); // Build the file name.
-    xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
-    free(fname); fname = NULL;
-    xmlFreeDoc(plistdoc); // Free the memory.
-    xmlCleanupParser();
+#ifdef FF_UTHASH_GLIF_NAMES
+    glif_name_hash_destroy(glif_name_hash); // Close the hash table.
+#endif
+    
+    if (all_layers) {
+#ifdef FF_UTHASH_GLIF_NAMES
+      struct glif_name_index _layer_name_hash;
+      struct glif_name_index * layer_name_hash = &_layer_name_hash; // Open the hash table.
+      memset(layer_name_hash, 0, sizeof(struct glif_name_index));
+      struct glif_name_index _layer_path_hash;
+      struct glif_name_index * layer_path_hash = &_layer_path_hash; // Open the hash table.
+      memset(layer_path_hash, 0, sizeof(struct glif_name_index));
+#else
+      void * layer_name_hash = NULL;
+#endif
+      xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
+      xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
+      xmlNodePtr arraynode = xmlNewChild(rootnode, NULL, BAD_CAST "array", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Make the dict.
+	
+      int layer_pos;
+      for (layer_pos = 0; layer_pos < sf->layer_cnt; layer_pos++) {
+        glyphdir = buildname(basedir,"glyphs");
+        xmlNodePtr layernode = xmlNewChild(arraynode, NULL, BAD_CAST "array", NULL);
+        // We make the layer name.
+        char * layer_name_start = NULL;
+        if (layer_pos == ly_fore) layer_name_start = "public.default";
+        else if (layer_pos == ly_back) layer_name_start = "public.background";
+        else layer_name_start = sf->layers[layer_pos].name;
+        if (layer_name_start == NULL) layer_name_start = "unnamed"; // The remangle step adds any needed numbers.
+        char * numberedlayername = ufo_name_number(layer_name_hash, layer_pos, layer_name_start, "", "", 7);
+        // We make the layer path.
+        char * layer_path_start = NULL;
+        char * numberedlayerpath = NULL;
+        if (layer_pos == ly_fore) {
+          numberedlayerpath = strdup("glyphs");
+        } else if (sf->layers[layer_pos].ufo_path != NULL) {
+          layer_path_start = strdup(sf->layers[layer_pos].ufo_path);
+          numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "glyphs.", "", 7);
+        } else {
+          layer_path_start = ufo_name_mangle(sf->layers[layer_pos].name, "glyphs.", "", 7);
+          numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "glyphs.", "", 7);
+        }
+        if (layer_path_start != NULL) { free(layer_path_start); layer_path_start = NULL; }
+        // We write to the layer contents.
+        xmlNewChild(layernode, NULL, BAD_CAST "string", numberedlayername);
+        xmlNewChild(layernode, NULL, BAD_CAST "string", numberedlayerpath);
+        // We write the glyph directory.
+        err |= WriteUFOLayer(glyphdir, sf, layer_pos);
+        free(numberedlayername); numberedlayername = NULL;
+        free(numberedlayerpath); numberedlayerpath = NULL;
+      }
+      char *fname = buildname(basedir, "layercontents.plist"); // Build the file name for the contents.
+      xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
+      free(fname); fname = NULL;
+      xmlFreeDoc(plistdoc); // Free the memory.
+      xmlCleanupParser();
+#ifdef FF_UTHASH_GLIF_NAMES
+      glif_name_hash_destroy(layer_name_hash); // Close the hash table.
+      glif_name_hash_destroy(layer_path_hash); // Close the hash table.
+#endif
+    } else {
+        glyphdir = buildname(basedir,"glyphs");
+        WriteUFOLayer(glyphdir, sf, layer);
+    }
 
     free( glyphdir );
 return( !err );
+}
+
+int WriteUFOFont(const char *basedir, SplineFont *sf, enum fontformat ff, int flags,
+	const EncMap *map, int layer) {
+  return WriteUFOFontFlex(basedir, sf, ff, flags, map, layer, 0);
 }
 
 /* ************************************************************************** */
@@ -2399,7 +2699,12 @@ return( NULL );
 					if (layercontentslayercount > 0) {
 						// Start reading layers.
 						for (lcount = 0; lcount < layercontentslayercount; lcount++) {
-                                                	if ((glyphdir = buildname(basedir,layernames[2*lcount+1]))) {
+							// We refuse to load a layer with an incorrect prefix.
+                                                	if (
+							(((strcmp(layernames[2*lcount],"public.default")==0) &&
+							(strcmp(layernames[2*lcount+1],"glyphs") == 0)) ||
+							(strstr(layernames[2*lcount+1],"glyphs.") == layernames[2*lcount+1])) &&
+							(glyphdir = buildname(basedir,layernames[2*lcount+1]))) {
                                                         	if ((glyphlist = buildname(glyphdir,"contents.plist"))) {
 									if ( !GFileExists(glyphlist)) {
 										LogError(_("No glyphs directory or no contents file"));
@@ -2427,7 +2732,10 @@ return( NULL );
 										if (( layerdest<sf->layer_cnt ) && sf->layers) {
 											if (sf->layers[layerdest].name)
 												free(sf->layers[layerdest].name);
-											sf->layers[layerdest].name = layernames[2*lcount];
+											sf->layers[layerdest].name = strdup(layernames[2*lcount]);
+											if (sf->layers[layerdest].ufo_path)
+												free(sf->layers[layerdest].ufo_path);
+											sf->layers[layerdest].ufo_path = strdup(layernames[2*lcount+1]);
 											sf->layers[layerdest].background = bg;
 											// Fetch glyphs.
 											UFOLoadGlyphs(sf,glyphdir,layerdest);
