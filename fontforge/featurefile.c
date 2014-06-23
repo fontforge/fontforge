@@ -1723,7 +1723,7 @@ static gboolean dump_header_languagesystem_hash_fe( gpointer key,
 						gpointer user_data )
 {
     FILE *out = (FILE*)user_data;
-    fprintf( out, "\nlanguagesystem %s;", (char*)key );
+    fprintf( out, "languagesystem %s;\n", (char*)key );
     return 0;
 }
 
