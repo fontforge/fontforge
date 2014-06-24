@@ -191,14 +191,15 @@ xmlNodePtr PyObjectToXML( PyObject *value );
 xmlNodePtr PythonLibToXML(void *python_persistent,SplineChar *sc) {
     int has_hints = (sc!=NULL && (sc->hstem!=NULL || sc->vstem!=NULL ));
     xmlNodePtr retval = NULL, dictnode = NULL, keynode = NULL, valnode = NULL;
+    // retval = xmlNewNode(NULL, BAD_CAST "lib"); //     "<lib>"
+    dictnode = xmlNewNode(NULL, BAD_CAST "dict"); //     "  <dict>"
     PyObject *dict = python_persistent, *items, *key, *value;
     if ( has_hints 
 #ifndef _NO_PYTHON
          || (dict!=NULL && PyMapping_Check(dict) && sc!=NULL)
 #endif
        ) {
-        // retval = xmlNewNode(NULL, BAD_CAST "lib");    // "<lib>"
-        dictnode = xmlNewNode(NULL, BAD_CAST "dict"); // "  <dict>"
+
         xmlAddChild(retval, dictnode);
         /* Not officially part of the UFO/glif spec, but used by robofab */
 	if ( has_hints ) {
@@ -281,9 +282,9 @@ xmlNodePtr PythonLibToXML(void *python_persistent,SplineChar *sc) {
 	    }
 	}
 #endif
-      //                                                 "  </dict>"
-      // //                                                 "</lib>"
     }
+    //                                                 "  </dict>"
+    // //                                                 "</lib>"
     return dictnode;
 }
 
