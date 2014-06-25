@@ -2564,7 +2564,7 @@ return;
 	*pt = '\0';
 	tok->value = strtol(tok->tokbuf,NULL,tok->base);
 return;
-    } else if ( ch=='@' || ch=='_' || ch=='\\' || isalnum(ch)) {	/* Names can't start with dot */
+    } else if ( ch=='@' || ch=='_' || ch=='\\' || isalnum(ch) || ch=='.') {	/* Most names can't start with dot */
 	int check_keywords = true;
 	tok->type = tk_name;
 	if ( ch=='@' ) {
@@ -2584,43 +2584,51 @@ return;
 	}
 	*pt = '\0';
 	ungetc(ch,in);
-	if ( pt>start+31 ) {
-	    /* Adobe says glyphnames are 31 chars, but Mangal uses longer names */
-	    LogError(_("Name, %s%s, too long on line %d of %s"),
-		    tok->tokbuf, pt>=tok->tokbuf+MAXT?"...":"",
-		    tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-	    if ( pt>=tok->tokbuf+MAXT )
+	// We are selective about names starting with a dot. .notdef and .null are acceptable.
+	if ((start[0] == '.') && (strcmp(start, ".notdef") != 0) && (strcmp(start, ".null") != 0)) {
+	    if ( !tok->skipping ) {
+		LogError(_("Unexpected character (0x%02X) on line %d of %s"), start[0], tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		++tok->err_count;
-	} else if ( pt==start ) {
-	    LogError(_("Missing name on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-	    ++tok->err_count;
-	}
+	    }
+	} else {
+		if ( pt>start+31 ) {
+		    /* Adobe says glyphnames are 31 chars, but Mangal uses longer names */
+		    LogError(_("Name, %s%s, too long on line %d of %s"),
+			    tok->tokbuf, pt>=tok->tokbuf+MAXT?"...":"",
+			    tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+		    if ( pt>=tok->tokbuf+MAXT )
+			++tok->err_count;
+		} else if ( pt==start ) {
+		    LogError(_("Missing name on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+		    ++tok->err_count;
+		}
 
-	if ( check_keywords && do_keywords) {
-	    int i;
-	    for ( i=tk_firstkey; fea_keywords[i].name!=NULL; ++i ) {
-		if ( strcmp(fea_keywords[i].name,tok->tokbuf)==0 ) {
-		    tok->type = fea_keywords[i].tok;
-	    break;
+		if ( check_keywords && do_keywords) {
+		    int i;
+		    for ( i=tk_firstkey; fea_keywords[i].name!=NULL; ++i ) {
+			if ( strcmp(fea_keywords[i].name,tok->tokbuf)==0 ) {
+			    tok->type = fea_keywords[i].tok;
+		    break;
+			}
+		    }
+		    if ( tok->type==tk_include )
+			fea_handle_include(tok);
 		}
-	    }
-	    if ( tok->type==tk_include )
-		fea_handle_include(tok);
-	}
-	if ( tok->type==tk_name && pt-tok->tokbuf<=4 && pt!=tok->tokbuf ) {
-	    unsigned char tag[4];
-	    tok->could_be_tag = true;
-	    memset(tag,' ',4);
-	    tag[0] = tok->tokbuf[0];
-	    if ( tok->tokbuf[1]!='\0' ) {
-		tag[1] = tok->tokbuf[1];
-		if ( tok->tokbuf[2]!='\0' ) {
-		    tag[2] = tok->tokbuf[2];
-		    if ( tok->tokbuf[3]!='\0' )
-			tag[3] = tok->tokbuf[3];
+		if ( tok->type==tk_name && pt-tok->tokbuf<=4 && pt!=tok->tokbuf ) {
+		    unsigned char tag[4];
+		    tok->could_be_tag = true;
+		    memset(tag,' ',4);
+		    tag[0] = tok->tokbuf[0];
+		    if ( tok->tokbuf[1]!='\0' ) {
+			tag[1] = tok->tokbuf[1];
+			if ( tok->tokbuf[2]!='\0' ) {
+			    tag[2] = tok->tokbuf[2];
+			    if ( tok->tokbuf[3]!='\0' )
+				tag[3] = tok->tokbuf[3];
+			}
+		    }
+		    tok->tag = (tag[0]<<24) | (tag[1]<<16) | (tag[2]<<8) | tag[3];
 		}
-	    }
-	    tok->tag = (tag[0]<<24) | (tag[1]<<16) | (tag[2]<<8) | tag[3];
 	}
     } else {
 	/* I've already handled the special characters # @ and \ */
