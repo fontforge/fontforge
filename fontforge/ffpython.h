@@ -109,6 +109,7 @@ typedef struct ff_point {
     float x,y;
     uint8 on_curve;
     uint8 selected;
+    char *name;
 } PyFF_Point;
 static PyTypeObject PyFF_PointType;
 
