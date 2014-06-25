@@ -4,20 +4,25 @@ Contributing to FontForge
 Reporting An Issue
 ---------------
 
-Please head over to the [GitHub issue tracker](https://github.com/fontforge/fontforge/issues).
+Use the [GitHub issue tracker](https://github.com/fontforge/fontforge/issues).
 
-Up in the search box, try to search and see if the problem you are facing was reported already.
+First, up in the search box, try searching for similar issues to see if the problem you are facing was reported already. If it was, and your issue is related but not quite the same, please comment on that issue with your own report.If it was not already reported, just open up a new issue. Be sure to include:
 
-- If it was, please put your own report with the FontForge version, symptoms, error message and
-  your Operating System (Windows, Mac OS, GNU+Linux, ...). If the current report is similar to
-  what you are facing, please bump the issue so that developers are aware that it still warrants
-  a fix.
+* your Operating System and version, 
+* your FontForge version and where you got it from, 
+* **what happens, step by step, to produce the issue** 
+* **what error messages you see,**
+* **what you expect to happen**
 
-- If it was not, just open up a new issue.
+An easy way to report issues is to record a screencast videos where you explain these things as they happen, and upload it to YouTube and include the YouTube link in your report. 
 
-- If you are reporting a crash, include a debugger backtrace report, a file to reproduce the crash with, and step by step instructions (ideally a screencast video) to reproduce it
+You can also drag and drop screenshot images into the issue text area from your desktop - and they'll be automatically uploaded and added to the report.
 
-Thank you!
+To reproduce the issue, it can helpful to share with the developer community the files you are working with. If you can make a file that is small and only contains what is needed to reproduce the issue, please fork the fontforge repo and add these files to <https://github.com/you/fontforge/tree/master/tests> and submit a pull request.
+
+### Crash reports
+
+If you are reporting a crash, include a debugger backtrace report.
 
 Contributing Code
 ------------------------
