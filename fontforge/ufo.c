@@ -552,6 +552,24 @@ int _ExportGlif(FILE *glif,SplineChar *sc,int layer) {
 /* ****************************    UFO Output    **************************** */
 /* ************************************************************************** */
 
+void clear_cached_ufo_paths(SplineFont * sf) {
+  // We cache the glif names and the layer paths.
+  // This is helpful for preserving the structure of a U. F. O. to be edited.
+  // But it may be desirable to purge that data on final output for consistency.
+  // This function does that.
+  int i;
+  // First we clear the glif names.
+  for (i = 0; i < sf->glyphcnt; i++) {
+    struct splinechar * sc = sf->glyphs[i];
+    if (sc->glif_name != NULL) { free(sc->glif_name); sc->glif_name = NULL; }
+  }
+  // Then we clear the layer names.
+  for (i = 0; i < sf->layer_cnt; i++) {
+    struct layerinfo * ly = &(sf->layers[i]);
+    if (ly->ufo_path != NULL) { free(ly->ufo_path); ly->ufo_path = NULL; }
+  }
+}
+
 xmlDocPtr PlistInit() {
     // Some of this code is pasted from libxml2 samples.
     xmlDocPtr doc = NULL;
