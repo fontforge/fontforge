@@ -1352,9 +1352,9 @@ return;					/* No support for apple "lookups" */
 	fprintf( out, "  lookupflag" );
 	first = true;
 	for ( i=0; i<4; ++i ) if ( otl->lookup_flags&(1<<i)) {
-	    if ( !first )
-		putc(',',out);
-	    else
+	    if ( !first ) {
+		// putc(',',out); // The specification says to do this, but Adobe's software uses spaces.
+	    } else
 		first = false;
 	    fprintf( out, " %s", flagnames[i] );
 	}
