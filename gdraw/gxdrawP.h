@@ -278,6 +278,8 @@ typedef struct gxdisplay /* : GDisplay */ {
     unsigned int has_xkb: 1;		/* we were able to initialize the XKB extension */
     unsigned int supports_alpha_images: 1;
     unsigned int supports_alpha_windows: 1;
+    int err_flag;
+    char * err_report;
     struct gcstate gcstate[2];			/* 0 is state for normal images, 1 for bitmap (pixmaps) */
     Display *display;
     Window root;

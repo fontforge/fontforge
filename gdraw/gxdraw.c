@@ -3534,6 +3534,15 @@ static void GXDrawSync(GDisplay *gdisp) {
     XSync(((GXDisplay *) gdisp)->display,false);
 }
 
+void dispatchError(GDisplay *gdisp) {
+    if ((gdisp->err_flag) && (gdisp->err_report)) {
+      GDrawIErrorRun("%s",gdisp->err_report);
+    }
+    if (gdisp->err_report) {
+      free(gdisp->err_report); gdisp->err_report = NULL;
+    }
+}
+
 /* Munch events until we no longer have any top level windows. That essentially*/
 /*  means no windows (even if they got reparented, we still think they are top)*/
 /*  At that point try very hard to clear out the event queue. It is conceivable*/
@@ -3548,6 +3557,7 @@ static void GXDrawEventLoop(GDisplay *gd) {
 	    GXDrawWaitForEvent(gdisp);
 	    XNextEvent(display,&event);
 	    dispatchEvent(gdisp, &event);
+	    dispatchError(gd);
 	}
 	XSync(display,false);
 	GXDrawProcessPendingEvents(gd);
