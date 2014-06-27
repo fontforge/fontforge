@@ -117,6 +117,8 @@ static void ProcessText(unichar_t *ubuf,char *buf, enum err_type et) {
     GDrawResize(error,max_len+30,15*line+50);
 }
 
+GDisplay *global_gd;
+
 void _GDraw_InitError(GDisplay *gd) {
     GRect screen, pos;
     static unichar_t title[]= { 'E', 'r', 'r', 'o', 'r', '\0' };
@@ -129,6 +131,8 @@ void _GDraw_InitError(GDisplay *gd) {
 	static_gd = gd;
     else
 	screen_display = gd = static_gd;
+
+    global_gd = static_gd;
 
     if ( gd==NULL )
 return;
@@ -164,12 +168,43 @@ return;
 }
 
 void GDrawIError(const char *fmt,...) {
+  // GDrawIErrorRun was the previous version of this function.
+  // This new function intercepts the calls and stashes them for future processing.
+  // This avoids stack overflows in certain cases.
+  GDisplay * gd = global_gd;
+  char * buffer = NULL;
+  va_list ap;
+  va_start(ap, fmt);
+  vasprintf(&buffer, fmt, ap);
+  va_end(ap);
+  if (buffer != NULL ) {
+    if ( gd==NULL ) {
+      fprintf(stderr, "%s", buffer); // If there is no display, we write to stderr.
+    } else {
+      if ((gd->err_flag) && (gd->err_report != NULL)) {
+        if (strlen(gd->err_report) + strlen(buffer) + 1 < 2048) {
+          // If there is an existing error message, we concatenate if there is space.
+          char * tmp;
+          asprintf(&tmp, "%s%s\n", gd->err_report, buffer);
+          free(gd->err_report); gd->err_report = tmp;
+        }
+      } else {
+        // If there is no existing error message, we copy to the right spot.
+        asprintf(&gd->err_report, "%s\n", buffer);
+      }
+      gd->err_flag |= 1;
+    }
+  }
+  free(buffer); buffer = NULL;
+}
+
+void GDrawIErrorRun(const char *fmt,...) {
     char buf[1025]; unichar_t ubuf[1025];
     va_list ap;
 
     strcpy(buf,"Internal Error:\n");
     va_start(ap, fmt);
-    vsprintf(buf+strlen(buf), fmt, ap);
+    vsnprintf(buf+strlen(buf), sizeof(buf)-strlen(buf), fmt, ap);
     va_end(ap);
     fprintf( stderr, "%s\n", buf );
     _GDraw_InitError(NULL);
