@@ -3881,34 +3881,45 @@ void SplineRemoveExtremaTooClose(Spline1D *sp, extended *_t1, extended *_t2 ) {
 int IntersectLines(BasePoint *inter,
 	BasePoint *line1_1, BasePoint *line1_2,
 	BasePoint *line2_1, BasePoint *line2_2) {
+    // A lot of functions call this with the same address as an input and the output.
+    // In order to avoid unexpected behavior, we delay writing to the output until the end.
     bigreal s1, s2;
-
+    BasePoint _output;
+    BasePoint * output = &_output;
     if ( line1_1->x == line1_2->x ) {
-	inter->x = line1_1->x;
+        // Line 1 is vertical.
+	output->x = line1_1->x;
 	if ( line2_1->x == line2_2->x ) {
+            // Line 2 is vertical.
 	    if ( line2_1->x!=line1_1->x )
-return( false );		/* Parallel vertical lines */
-	    inter->y = (line1_1->y+line2_1->y)/2;
-	} else
-	    inter->y = line2_1->y + (inter->x-line2_1->x) * (line2_2->y - line2_1->y)/(line2_2->x - line2_1->x);
-return( true );
+              return( false );		/* Parallel vertical lines */
+	    output->y = (line1_1->y+line2_1->y)/2;
+	} else {
+	    output->y = line2_1->y + (output->x-line2_1->x) * (line2_2->y - line2_1->y)/(line2_2->x - line2_1->x);
+        }
+        *inter = *output;
+        return( true );
     } else if ( line2_1->x == line2_2->x ) {
-	inter->x = line2_1->x;
-	inter->y = line1_1->y + (inter->x-line1_1->x) * (line1_2->y - line1_1->y)/(line1_2->x - line1_1->x);
-return( true );
+        // Line 2 is vertical, but we know that line 1 is not.
+	output->x = line2_1->x;
+	output->y = line1_1->y + (output->x-line1_1->x) * (line1_2->y - line1_1->y)/(line1_2->x - line1_1->x);
+        *inter = *output;
+        return( true );
     } else {
+        // Both lines are oblique.
 	s1 = (line1_2->y - line1_1->y)/(line1_2->x - line1_1->x);
 	s2 = (line2_2->y - line2_1->y)/(line2_2->x - line2_1->x);
 	if ( RealNear(s1,s2)) {
 	    if ( !RealNear(line1_1->y + (line2_1->x-line1_1->x) * s1,line2_1->y))
-return( false );
-	    inter->x = (line1_2->x+line2_2->x)/2;
-	    inter->y = (line1_2->y+line2_2->y)/2;
+              return( false );
+	    output->x = (line1_2->x+line2_2->x)/2;
+	    output->y = (line1_2->y+line2_2->y)/2;
 	} else {
-	    inter->x = (s1*line1_1->x - s2*line2_1->x - line1_1->y + line2_1->y)/(s1-s2);
-	    inter->y = line1_1->y + (inter->x-line1_1->x) * s1;
+	    output->x = (s1*line1_1->x - s2*line2_1->x - line1_1->y + line2_1->y)/(s1-s2);
+	    output->y = line1_1->y + (output->x-line1_1->x) * s1;
 	}
-return( true );
+        *inter = *output;
+        return( true );
     }
 }
 
