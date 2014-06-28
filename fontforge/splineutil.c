@@ -3881,12 +3881,16 @@ void SplineRemoveExtremaTooClose(Spline1D *sp, extended *_t1, extended *_t2 ) {
 int IntersectLines(BasePoint *inter,
 	BasePoint *line1_1, BasePoint *line1_2,
 	BasePoint *line2_1, BasePoint *line2_2) {
+    // A lot of functions call this with the same address as an input and the output.
+    // In order to avoid unexpected behavior, we delay writing to the output until the end.
     bigreal s1, s2;
     BasePoint _output;
     BasePoint * output = &_output;
     if ( line1_1->x == line1_2->x ) {
+        // Line 1 is vertical.
 	output->x = line1_1->x;
 	if ( line2_1->x == line2_2->x ) {
+            // Line 2 is vertical.
 	    if ( line2_1->x!=line1_1->x )
               return( false );		/* Parallel vertical lines */
 	    output->y = (line1_1->y+line2_1->y)/2;
@@ -3896,11 +3900,13 @@ int IntersectLines(BasePoint *inter,
         *inter = *output;
         return( true );
     } else if ( line2_1->x == line2_2->x ) {
+        // Line 2 is vertical, but we know that line 1 is not.
 	output->x = line2_1->x;
 	output->y = line1_1->y + (output->x-line1_1->x) * (line1_2->y - line1_1->y)/(line1_2->x - line1_1->x);
         *inter = *output;
         return( true );
     } else {
+        // Both lines are oblique.
 	s1 = (line1_2->y - line1_1->y)/(line1_2->x - line1_1->x);
 	s2 = (line2_2->y - line2_1->y)/(line2_2->x - line2_1->x);
 	if ( RealNear(s1,s2)) {
