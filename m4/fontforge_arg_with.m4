@@ -172,6 +172,11 @@ AC_DEFUN([FONTFORGE_ARG_WITH_CAIRO],
 
 dnl FONTFORGE_ARG_WITH_LIBPNG
 dnl -------------------------
+dnl Add with libpng support by default (only if the libpng library exists
+dnl AND png.h header file exist).
+dnl If user defines --without-libpng, then don't use libpng.
+dnl If user defines --with-libpng, then fail with error if there is no
+dnl libpng library OR no png.h header file.
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBPNG],[
 FONTFORGE_ARG_WITHOUT([libpng],[LIBPNG],[build without PNG support])
 
