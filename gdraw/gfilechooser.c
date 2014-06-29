@@ -161,9 +161,6 @@ enum fchooserret GFileChooserDefFilter(GGadget *g,GDirEntry *ent,const unichar_t
     GFileChooser *gfc = (GFileChooser *) g;
     int i;
     char *mime;
-    char utf8_ent_name[PATH_MAX+1];
-    utf8_ent_name[PATH_MAX]=0;
-    strncpy( utf8_ent_name, u_to_c( ent->name ), PATH_MAX );
 
     if ( uc_strcmp(ent->name,".")==0 )	/* Don't show the current directory entry */
 	return( fc_hide );
@@ -183,17 +180,22 @@ enum fchooserret GFileChooserDefFilter(GGadget *g,GDirEntry *ent,const unichar_t
 	return( fc_hide );
     /* match the mimetypes */
     if( ent->mimetype )
-    {
-	mime = u_to_c(ent->mimetype);
-    }
-    else
-    {
-	mime = GIOGetMimeType(utf8_ent_name, false);
+	mime = copy(u_to_c(ent->mimetype));
+    else {
+	char utf8_ent_name[PATH_MAX+1];
+	strncpy(utf8_ent_name,u_to_c( ent->name ),PATH_MAX);
+	utf8_ent_name[PATH_MAX]=0;
+	mime = GIOGetMimeType(utf8_ent_name,false);
     }
 
-    for ( i=0; gfc->mimetypes[i]!=NULL; ++i )
-	if (strcasecmp(u_to_c(gfc->mimetypes[i]), mime) == 0)
-	    return( fc_show );
+    if ( mime!=NULL ) {
+	for ( i=0; gfc->mimetypes[i]!=NULL; ++i )
+	    if ( strcasecmp(u_to_c(gfc->mimetypes[i]),mime)==0 ) {
+		free(mime);
+		return( fc_show );
+	    }
+	free(mime);
+    }
 
     return( fc_hide );
 }
