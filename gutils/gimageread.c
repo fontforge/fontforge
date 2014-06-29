@@ -39,37 +39,47 @@ GImage *GImageRead(char * filename) {
 	return( NULL );
 
     /* Try finding correct routine to use based on GTK mime type */
-    if ( GFileExists(filename) ) {
-	mime=GIOGetMimeType(filename, true);
+    if ( GFileExists(filename) && (mime=GIOGetMimeType(filename,true))!=NULL ) {
 
-	if ( strcasecmp(mime,"image/bmp")==0 )
+	if ( strcasecmp(mime,"image/bmp")==0 ) {
+	    free(mime);
 	    return( GImageReadBmp(filename) );
-	else if ( strcasecmp(mime,"image/x-xbitmap")==0 )
+	} else if ( strcasecmp(mime,"image/x-xbitmap")==0 ) {
+	    free(mime);
 	    return( GImageReadXbm(filename) );
-	else if ( strcasecmp(mime,"image/x-xpixmap")==0 )
+	} else if ( strcasecmp(mime,"image/x-xpixmap")==0 ) {
+	    free(mime);
 	    return( GImageReadXpm(filename) );
 #ifndef _NO_LIBTIFF
-	else if ( strcasecmp(mime,"image/tiff")==0 )
+	} else if ( strcasecmp(mime,"image/tiff")==0 ) {
+	    free(mime);
 	    return( GImageReadTiff(filename) );
 #endif
 #ifndef _NO_LIBJPEG
-	else if ( strcasecmp(mime,"image/jpeg")==0 )
+	} else if ( strcasecmp(mime,"image/jpeg")==0 ) {
+	    free(mime);
 	    return( GImageReadJpeg(filename) );
 #endif
 #ifndef _NO_LIBPNG
-	else if ( strcasecmp(mime,"image/png")==0 )
+	} else if ( strcasecmp(mime,"image/png")==0 ) {
+	    free(mime);
 	    return( GImageReadPng(filename) );
 #endif
 #ifndef _NO_LIBUNGIF
-	else if ( strcasecmp(mime,"image/gif")==0 )
+	} else if ( strcasecmp(mime,"image/gif")==0 ) {
+	    free(mime);
 	    return( GImageReadGif(filename) );
 #endif
-	else if ( strcasecmp(mime,"image/x-cmu-raster")==0 || \
-		  strcasecmp(mime,"image/x-sun-raster")==0 )
+	} else if ( strcasecmp(mime,"image/x-cmu-raster")==0 || \
+		  strcasecmp(mime,"image/x-sun-raster")==0 ) {
+	    free(mime);
 	    return( GImageReadRas(filename) );		/* Sun raster */
-	else if ( strcasecmp(mime,"image/x-rgb")==0 || \
-		  strcasecmp(mime,"image/x-sgi")==0 )
+	} else if ( strcasecmp(mime,"image/x-rgb")==0 || \
+		  strcasecmp(mime,"image/x-sgi")==0 ) {
+	    free(mime);
 	    return( GImageReadRgb(filename) );		/* SGI format */
+	}
+	free(mime);
     }
 
     /* Try finding correct routine to use based on filename suffix */
