@@ -172,11 +172,16 @@ AC_DEFUN([FONTFORGE_ARG_WITH_CAIRO],
 
 dnl FONTFORGE_ARG_WITH_LIBPNG
 dnl -------------------------
+dnl Add with libpng support by default (only if the libpng library exists
+dnl AND png.h header file exist).
+dnl If user defines --without-libpng, then don't use libpng.
+dnl If user defines --with-libpng, then fail with error if there is no
+dnl libpng library OR no png.h header file.
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBPNG],[
 FONTFORGE_ARG_WITHOUT([libpng],[LIBPNG],[build without PNG support])
 
 if test x"${i_do_have_libpng}" = xyes -a x"${LIBPNG_CFLAGS}" = x; then
-   AC_CHECK_HEADER([png.h],[$LIBPNG_CFLAGS=""],[i_do_have_libpng=no])
+   AC_CHECK_HEADER([png.h],[],[i_do_have_libpng=no])
 fi
 if test x"${i_do_have_libpng}" = xyes -a x"${LIBPNG_LIBS}" = x; then
    FONTFORGE_SEARCH_LIBS([png_init_io],[png],
@@ -190,24 +195,30 @@ FONTFORGE_BUILD_YES_NO_HALT([libpng],[LIBPNG],[Build with PNG support?])
 
 dnl FONTFORGE_ARG_WITH_LIBTIFF
 dnl --------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_LIBTIFF],
-[
-FONTFORGE_ARG_WITH_BASE([libtiff],
-        [AS_HELP_STRING([--without-libtiff],[build without TIFF support])],
-        [libtiff-4],
-        [FONTFORGE_WARN_PKG_NOT_FOUND([LIBTIFF])],
-        [_NO_LIBTIFF],
-        [FONTFORGE_ARG_WITH_LIBTIFF_fallback])
-])
-dnl
-AC_DEFUN([FONTFORGE_ARG_WITH_LIBTIFF_fallback],
-[
-   FONTFORGE_SEARCH_LIBS([TIFFClose],[tiff],
-      [i_do_have_libtiff=yes
-       AC_SUBST([LIBTIFF_CFLAGS],[""])
-       AC_SUBST([LIBTIFF_LIBS],["${found_lib}"])
-       FONTFORGE_WARN_PKG_FALLBACK([LIBTIFF])],
-      [i_do_have_libtiff=no])
+dnl Add with libtiff support by default (only if the libtiff library exists
+dnl AND tiffio.h header file exist). First, verify that TIFFRewriteField is
+dnl NOT accessible, otherwise this is an old tiff library (less than v4.0).
+dnl libtiff 4 and higher have bigtiff support.
+dnl If user defines --without-libtiff, then don't use libtiff.
+dnl If user defines --with-libtiff, then fail with error if there is no
+dnl libtiff library OR libtiff < ver4.0, OR no tiffio.h header file.
+AC_DEFUN([FONTFORGE_ARG_WITH_LIBTIFF],[
+FONTFORGE_ARG_WITHOUT([libtiff],[LIBTIFF],[build without TIFF support])
+
+if test x"${i_do_have_libtiff}" = xyes -a x"${LIBTIFF_CFLAGS}" = x; then
+   AC_CHECK_HEADER([tiffio.h],[],[i_do_have_libtiff=no])
+fi
+if test x"${i_do_have_libtiff}" = xyes -a x"${LIBTIFF_LIBS}" = x; then
+   FONTFORGE_SEARCH_LIBS([TIFFRewriteField],[tiff],
+         [i_do_have_libtiff=no],[])
+   if test x"${i_do_have_libtiff}" = xyes; then
+      FONTFORGE_SEARCH_LIBS([TIFFClose],[tiff],
+            [LIBTIFF_LIBS="${LIBTIFF_LIBS} ${found_lib}"],
+            [i_do_have_libtiff=no])
+   fi
+fi
+
+FONTFORGE_BUILD_YES_NO_HALT([libtiff],[LIBTIFF],[Build with TIFF support?])
 ])
 
 
@@ -235,7 +246,7 @@ if test x"${i_do_have_libreadline}" = xyes -a x"${LIBREADLINE_LIBS}" = x; then
    fi
 fi
 if test x"${i_do_have_libreadline}" = xyes -a x"${LIBREADLINE_CFLAGS}" = x; then
-   AC_CHECK_HEADER([readline/readline.h],[$LIBREADLINE_CFLAGS=""],[i_do_have_libreadline=no])
+   AC_CHECK_HEADER([readline/readline.h],[LIBREADLINE_CFLAGS=""],[i_do_have_libreadline=no])
 fi
 
 FONTFORGE_BUILD_YES_NO_HALT([libreadline],[LIBREADLINE],[Build with LibReadLine support?])
@@ -307,28 +318,25 @@ fi
 ])
 
 
-dnl There is no pkg-config support for libjpeg, at least on Gentoo. (17 Jul 2012)
-dnl
 dnl FONTFORGE_ARG_WITH_LIBJPEG
 dnl --------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_LIBJPEG],
-[
-AC_ARG_VAR([LIBJPEG_CFLAGS],[C compiler flags for LIBJPEG, overriding the automatic detection])
-AC_ARG_VAR([LIBJPEG_LIBS],[linker flags for LIBJPEG, overriding the automatic detection])
-AC_ARG_WITH([libjpeg],[AS_HELP_STRING([--without-libjpeg],[build without JPEG support])],
-            [i_do_have_libjpeg="${withval}"],[i_do_have_libjpeg=yes])
+dnl Add libjpeg support by default (only if library AND header exist).
+dnl If user defines --without-libjpeg, then do not include libjpeg.
+dnl If user defines --with-libjpeg, then fail and stop with error if
+dnl there is no libjpeg library OR no jpeglib.h header file.
+AC_DEFUN([FONTFORGE_ARG_WITH_LIBJPEG],[
+FONTFORGE_ARG_WITHOUT([libjpeg],[LIBJPEG],[build without JPEG support])
+
+if test x"${i_do_have_libjpeg}" = xyes -a x"${LIBJPEG_CFLAGS}" = x; then
+   AC_CHECK_HEADER([jpeglib.h],[],[i_do_have_libjpeg=no])
+fi
 if test x"${i_do_have_libjpeg}" = xyes -a x"${LIBJPEG_LIBS}" = x; then
    FONTFORGE_SEARCH_LIBS([jpeg_CreateDecompress],[jpeg],
-                  [AC_SUBST([LIBJPEG_LIBS],["${found_lib}"])],
-                  [i_do_have_libjpeg=no])
+         [LIBJPEG_LIBS="${LIBJPEG_LIBS} ${found_lib}"],
+         [i_do_have_libjpeg=no])
 fi
-if test x"${i_do_have_libjpeg}" = xyes -a x"${LIBJPEG_CFLAGS}" = x; then
-   AC_CHECK_HEADER([jpeglib.h],[AC_SUBST([LIBJPEG_CFLAGS],[""])],[i_do_have_libjpeg=no])
-fi
-if test x"${i_do_have_libjpeg}" != xyes; then
-   FONTFORGE_WARN_PKG_NOT_FOUND([LIBJPEG])
-   AC_DEFINE([_NO_LIBJPEG],1,[Define if not using libjpeg.])
-fi
+
+FONTFORGE_BUILD_YES_NO_HALT([libjpeg],[LIBJPEG],[Build with JPEG support?])
 ])
 
 
