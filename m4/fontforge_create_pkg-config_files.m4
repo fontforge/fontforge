@@ -8,13 +8,8 @@ AC_DEFUN([FONTFORGE_CREATE_PKGCONFIG_FILES],
 # strip off "alpha", "beta", "pre", or similar designations.
 __cleaned_version="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
 
-PKG_CHECK_EXISTS([libtiff-4],
-        [__have_libtiff_pkg_config=yes],
-        [__have_libtiff_pkg_config=no])
-
 __pkg_deps=""
 test x"${i_do_have_python_scripting}" = xyes && __pkg_deps="${__pkg_deps} python-${PYTHON_VERSION}"
-test x"${i_do_have_libtiff}" = xyes -a x"${__have_libtiff_pkg_config}" = xyes && __pkg_deps="${__pkg_deps} libtiff-4"
 test x"${i_do_have_libxml}" = xyes && __pkg_deps="${__pkg_deps} libxml-2.0"
 test x"${i_do_have_cairo}" = xyes && __pkg_deps="${__pkg_deps} cairo"
 test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} pangocairo"
@@ -31,6 +26,7 @@ test x"${i_do_have_tifflib}" = xyes -a x"${__have_libtiff_pkg_config}" != xyes  
 test x"${i_do_have_giflib}" = xyes && test x"${with_giflib}" != xno && __private_deps="${__private_deps} ${GIFLIB_LIBS}"
 test x"${i_do_have_libjpeg}" = xyes && test x"${with_libjpeg}" != xno && __private_deps="${__private_deps} ${LIBJPEG_LIBS}"
 test x"${i_do_have_libpng}" = xyes && test x"${with_libpng}" != xno && __private_deps="${__private_deps} ${LIBPNG_LIBS}"
+test x"${i_do_have_libtiff}" = xyes && test x"${with_libtiff}" != xno && __private_deps="${__private_deps} ${LIBTIFF_LIBS}"
 test x"${i_do_have_libspiro}" = xyes && test x"${with_libspiro}" != xno && __private_deps="${__private_deps} ${LIBSPIRO_LIBS}"
 test x"${i_do_have_libuninameslist}" = xyes && test x"${with_libuninameslist}" != xno && __private_deps="${__private_deps} ${LIBUNINAMESLIST_LIBS}"
 test x"${i_do_have_libunicodenames}" = xyes && __private_deps="${__private_deps} ${LIBUNICODENAMES_LIBS}"

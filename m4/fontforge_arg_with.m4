@@ -195,24 +195,30 @@ FONTFORGE_BUILD_YES_NO_HALT([libpng],[LIBPNG],[Build with PNG support?])
 
 dnl FONTFORGE_ARG_WITH_LIBTIFF
 dnl --------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_LIBTIFF],
-[
-FONTFORGE_ARG_WITH_BASE([libtiff],
-        [AS_HELP_STRING([--without-libtiff],[build without TIFF support])],
-        [libtiff-4],
-        [FONTFORGE_WARN_PKG_NOT_FOUND([LIBTIFF])],
-        [_NO_LIBTIFF],
-        [FONTFORGE_ARG_WITH_LIBTIFF_fallback])
-])
-dnl
-AC_DEFUN([FONTFORGE_ARG_WITH_LIBTIFF_fallback],
-[
-   FONTFORGE_SEARCH_LIBS([TIFFClose],[tiff],
-      [i_do_have_libtiff=yes
-       AC_SUBST([LIBTIFF_CFLAGS],[""])
-       AC_SUBST([LIBTIFF_LIBS],["${found_lib}"])
-       FONTFORGE_WARN_PKG_FALLBACK([LIBTIFF])],
-      [i_do_have_libtiff=no])
+dnl Add with libtiff support by default (only if the libtiff library exists
+dnl AND tiffio.h header file exist). First, verify that TIFFRewriteField is
+dnl NOT accessible, otherwise this is an old tiff library (less than v4.0).
+dnl libtiff 4 and higher have bigtiff support.
+dnl If user defines --without-libtiff, then don't use libtiff.
+dnl If user defines --with-libtiff, then fail with error if there is no
+dnl libtiff library OR libtiff < ver4.0, OR no tiffio.h header file.
+AC_DEFUN([FONTFORGE_ARG_WITH_LIBTIFF],[
+FONTFORGE_ARG_WITHOUT([libtiff],[LIBTIFF],[build without TIFF support])
+
+if test x"${i_do_have_libtiff}" = xyes -a x"${LIBTIFF_CFLAGS}" = x; then
+   AC_CHECK_HEADER([tiffio.h],[],[i_do_have_libtiff=no])
+fi
+if test x"${i_do_have_libtiff}" = xyes -a x"${LIBTIFF_LIBS}" = x; then
+   FONTFORGE_SEARCH_LIBS([TIFFRewriteField],[tiff],
+         [i_do_have_libtiff=no],[])
+   if test x"${i_do_have_libtiff}" = xyes; then
+      FONTFORGE_SEARCH_LIBS([TIFFClose],[tiff],
+            [LIBTIFF_LIBS="${LIBTIFF_LIBS} ${found_lib}"],
+            [i_do_have_libtiff=no])
+   fi
+fi
+
+FONTFORGE_BUILD_YES_NO_HALT([libtiff],[LIBTIFF],[Build with TIFF support?])
 ])
 
 
@@ -314,11 +320,10 @@ fi
 
 dnl FONTFORGE_ARG_WITH_LIBJPEG
 dnl --------------------------
-dnl Add with libjpeg support by default (only if library AND header file
-dnl exists). If both found.
+dnl Add libjpeg support by default (only if library AND header exist).
 dnl If user defines --without-libjpeg, then do not include libjpeg.
-dnl If user defines --with-libjpeg, then fail with error if there is no
-dnl libjpeg library OR no jpeglib.h header file.
+dnl If user defines --with-libjpeg, then fail and stop with error if
+dnl there is no libjpeg library OR no jpeglib.h header file.
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBJPEG],[
 FONTFORGE_ARG_WITHOUT([libjpeg],[LIBJPEG],[build without JPEG support])
 
