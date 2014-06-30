@@ -201,17 +201,17 @@ return( unknown );
 //
 
 // Copyright (C) 2012 Khaled Hosny
-// 
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, see <http://www.gnu.org/licenses/>.
 
@@ -224,7 +224,7 @@ return( unknown );
 char*
 GIOGetMimeType( const char *path, int sniff_data )
 {
-    char *content_type, *mime;
+    char *content_type, *mime, *temp;
     int sniff_length = 4096;
     guchar sniff_buffer[sniff_length];
     gboolean uncertain;
@@ -250,11 +250,11 @@ GIOGetMimeType( const char *path, int sniff_data )
         }
     }
 
-    mime = g_content_type_get_mime_type (content_type);
+    temp = g_content_type_get_mime_type (content_type);
     g_free (content_type);
 
-    if (!mime)
-	mime = "*/*";
+    mime = copy(temp);	/* ...convert to generic malloc/free */
+    g_free(temp);
 
     return mime;
 }
