@@ -36,7 +36,7 @@ int HasLicense(SplineFont *sf,FILE *tmp) {
 int OFLibUploadFont(OFLibData *oflib) {
     return false;
 }
-int HttpGetBuf(char *url, char *databuf, int *datalen, void *_lock) {
+int HttpGetBuf(const char *url, char *databuf, int *datalen, void *_lock) {
     return -1;
 }
 FILE *URLToTempFile(char *url,void *_lock) {
@@ -966,7 +966,7 @@ return( copy(url));
 return( path );
 }
 
-static FILE *HttpURLToTempFile(char *url, void *_lock) {
+static FILE *HttpURLToTempFile(const char *url, void *_lock) {
     pthread_mutex_t *lock = _lock;
     struct sockaddr_in addr;
     char *pt, *host, *filename, *username, *password;
@@ -1131,7 +1131,7 @@ return( ret );
 }
 
 /* Perform an HTTP GET, and return the results in the supplied buffer */
-int HttpGetBuf(char *url, char *databuf, int *datalen, void *_lock) {
+int HttpGetBuf(const char *url, char *databuf, int *datalen, void *_lock) {
     pthread_mutex_t *lock = _lock;
     struct sockaddr_in addr;
     char *pt, *host, *filename, *username, *password;
@@ -1289,7 +1289,7 @@ return( -2 );		/* Stopped by user */
 return( sofar );
 }
 
-static int FtpURLAndTempFile(char *url,FILE **to,FILE *from) {
+static int FtpURLAndTempFile(const char *url,FILE **to,FILE *from) {
     struct sockaddr_in addr, data_addr;
     char *host, *filename, *username, *password;
     int port;

@@ -3171,6 +3171,15 @@ return;
 	if ( (event->xbutton.state&0x40) && gdisp->twobmouse_win )
 	    gevent.u.mouse.button = 2;
 	if ( event->type == MotionNotify ) {
+#if defined (__MINGW32__) || __CygWin
+        //For some reason, a mouse move event is triggered even if it hasn't moved.
+        if(gdisp->mousemove_last_x == event->xbutton.x &&
+           gdisp->mousemove_last_y == event->xbutton.y) {
+            return;
+        }
+        gdisp->mousemove_last_x = event->xbutton.x;
+        gdisp->mousemove_last_y = event->xbutton.y;
+#endif
 	    gevent.type = et_mousemove;
 	    gevent.u.mouse.button = 0;
 	    gevent.u.mouse.clicks = 0;
@@ -3525,6 +3534,15 @@ static void GXDrawSync(GDisplay *gdisp) {
     XSync(((GXDisplay *) gdisp)->display,false);
 }
 
+void dispatchError(GDisplay *gdisp) {
+    if ((gdisp->err_flag) && (gdisp->err_report)) {
+      GDrawIErrorRun("%s",gdisp->err_report);
+    }
+    if (gdisp->err_report) {
+      free(gdisp->err_report); gdisp->err_report = NULL;
+    }
+}
+
 /* Munch events until we no longer have any top level windows. That essentially*/
 /*  means no windows (even if they got reparented, we still think they are top)*/
 /*  At that point try very hard to clear out the event queue. It is conceivable*/
@@ -3539,6 +3557,7 @@ static void GXDrawEventLoop(GDisplay *gd) {
 	    GXDrawWaitForEvent(gdisp);
 	    XNextEvent(display,&event);
 	    dispatchEvent(gdisp, &event);
+	    dispatchError(gd);
 	}
 	XSync(display,false);
 	GXDrawProcessPendingEvents(gd);

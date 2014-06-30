@@ -819,7 +819,7 @@ return( true );
 		  case rt_image: {
 		    GResImage *ri = *((GResImage **) (extras->val));
 		    if ( ri!=NULL && ri->filename!=NULL ) {
-			char **paths = _GGadget_GetImagePath();
+			const char* const* paths = _GGadget_GetImagePath();
 			int i;
 			for ( i=0; paths[i]!=NULL; ++i ) {
 			    if ( strncmp(paths[i],ri->filename,strlen(paths[i]))==0 ) {

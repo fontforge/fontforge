@@ -377,7 +377,7 @@ return( sf );
 return( NULL );			/* failed */
 }
 
-static FILE *MakeFewRecordPdb(char *filename,int cnt) {
+static FILE *MakeFewRecordPdb(const char *filename,int cnt) {
     FILE *file;
     char *fn = malloc(strlen(filename)+8), *pt1, *pt2;
     long now;

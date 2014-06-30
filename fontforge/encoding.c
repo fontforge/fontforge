@@ -948,7 +948,7 @@ return( ret );
 
 struct cidmap *FindCidMap(char *registry,char *ordering,int supplement,SplineFont *sf) {
     struct cidmap *map, *maybe=NULL;
-    const char *file;
+    char *file;
     char *maybefile=NULL;
     int maybe_sup = -1;
     const char *buts[3], *buts2[3], *buts3[3];
@@ -1876,7 +1876,7 @@ return( NULL );
 	}
 	if ( !found ) {
 	    if ( sc->unicodeenc!=-1 &&
-                 (unsigned)sc->unicodeenc<unicode4_size &&
+                 sc->unicodeenc < (int)unicode4_size &&
 		     (j = EncFromUni(sc->unicodeenc,enc))!= -1 )
 		encoded[j] = i;
 	    else {
@@ -2394,22 +2394,7 @@ return( -1 );
 return( -1 );
 	}
 	if ( tpt-(char *) to == sizeof(unichar_t) )
-	{
-#if defined(__MINGW32__)
-	    {
-		printf("UniFromEnc(original ret) enc:%d initial result:%ld\n", enc, to[0] );
-		// For whatever reason the mingw32 build seems to always produce
-		// a result in byte swapped order.
-		unichar_t t = to[0];
-		printf("UniFromEnc(ret1) %ld\n",t );
-		unichar_t low16  = t & 0xFFFF;
-		unichar_t high16 = t >> 16;
-		t = (low16<<16) | high16;
-		printf("UniFromEnc(ret2) enc:%d final result:%ld\n", enc, t );
-		to[0] = t;
-	    }
-	    printf("UniFromEnc(final ret) %ld\n",to[0] );
-#endif	    
+	{	    
 	    return( to[0] );
 	}
     } else if ( encname->tounicode_func!=NULL ) {

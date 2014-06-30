@@ -1803,7 +1803,7 @@ void GFileChooserSetPrefsChangedCallback(void *data, void (*p_c)(void *)) {
     prefs_changed_data = data;
 }
 
-void GFileChooserSetPaths(GGadget *g,char **path) {
+void GFileChooserSetPaths(GGadget *g, const char* const* path) {
     unichar_t **dirs = NULL;
     int dcnt;
     GFileChooser *gfc = (GFileChooser *) g;

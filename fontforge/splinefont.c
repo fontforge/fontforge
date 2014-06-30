@@ -1339,8 +1339,8 @@ static const char *modifierlistfull[] = { "Italic", "Oblique", "Kursive", "Cursi
 static const char **mods[] = { knownweights, modifierlist, NULL };
 static const char **fullmods[] = { realweights, modifierlistfull, NULL };
 
-char *_GetModifiers(char *fontname, char *familyname,char *weight) {
-    char *pt, *fpt;
+const char *_GetModifiers(const char *fontname, const char *familyname, const char *weight) {
+    const char *pt, *fpt;
     static char space[20];
     int i, j;
 
@@ -1396,7 +1396,7 @@ return( fpt );
 return( weight==NULL || *weight=='\0' ? "Regular": weight );
 }
 
-char *SFGetModifiers(SplineFont *sf) {
+const char *SFGetModifiers(const SplineFont *sf) {
 return( _GetModifiers(sf->fontname,sf->familyname,sf->weight));
 }
 
@@ -1901,15 +1901,19 @@ void SFRemoveLayer(SplineFont *sf,int l) {
     if ( sf->subfontcnt!=0 || l<=ly_fore || sf->multilayer )
 return;
 
-    for ( layers=ly_fore, any_quads=0; layers<sf->layer_cnt; ++layers ) {
+    for ( layers = ly_fore, any_quads = false; layers<sf->layer_cnt; ++layers ) {
 	if ( layers!=l && sf->layers[layers].order2 )
-	    any_quads = true;
+	    any_quads = true; // Check whether remaining layers have quadratics.
     }
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
-	LayerFreeContents(sc,l);
-	for ( i=l+1; i<sc->layer_cnt; ++i )
+	// sc->layers may be less than sf->layers.
+	if (l < sc->layer_cnt) {
+	  LayerFreeContents(sc,l);
+	  // Move the other layers and close the gap.
+	  for ( i=l+1; i<sc->layer_cnt; ++i )
 	    sc->layers[i-1] = sc->layers[i];
-	-- sc->layer_cnt;
+	  -- sc->layer_cnt; // Decrement the layer count.
+        }
 	for ( cvs = sc->views; cvs!=NULL; cvs=cvs->next ) {
 	    if ( cvs->layerheads[dm_back] - sc->layers >= sc->layer_cnt )
 		cvs->layerheads[dm_back] = &sc->layers[ly_back];
@@ -1932,9 +1936,10 @@ return;
     MVDestroyAll(sf);
 
     free(sf->layers[l].name);
+    if (sf->layers[l].ufo_path != NULL) free(sf->layers[l].ufo_path);
     for ( i=l+1; i<sf->layer_cnt; ++i )
 	sf->layers[i-1] = sf->layers[i];
-    -- sf->layer_cnt;
+    -- sf->layer_cnt; // Decrement the layer count.
 }
 
 void SFAddLayer(SplineFont *sf,char *name,int order2,int background) {

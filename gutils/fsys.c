@@ -51,23 +51,60 @@ static char dirname_[MAXPATHLEN+1];
  #include <shlobj.h>
 #endif
 
+/**
+ * \brief Removes the extension from a file path, if it exists.
+ * This method assumes that the path is already normalized.
+ * \param path The path to be modified. Is modified in-place.
+ * \return A pointer to the input path.
+ */
+char *GFileRemoveExtension(char *path) {
+    char *ext = strrchr(path, '.');
+    if (ext) {
+        char *fp = strrchr(path, '/');
+        if (!fp || ext > fp) {
+            *ext = '\0';
+        }
+    }
+    return path;
+}
+
+/**
+ * \brief Normalizes the file path as necessary.
+ * On Windows, this means changing backlashes to slashes.
+ *
+ * \param path The file path to be modified. Is modified in-place.
+ * \return A pointer to the input path
+ */
+char *GFileNormalizePath(char *path) {
 #if defined(__MINGW32__)
-static void _backslash_to_slash(char* c){
-    for(; *c; c++)
-	if(*c == '\\')
-	    *c = '/';
-}
-static void _u_backslash_to_slash(unichar_t* c){
-    for(; *c; c++)
-	if(*c == '\\')
-	    *c = '/';
-}
-#else
-static void _backslash_to_slash(char* UNUSED(c)){
-}
-static void _u_backslash_to_slash(unichar_t* UNUSED(c)){
-}
+    char *ptr;
+    for(ptr = path; *ptr; ptr++) {
+        if (*ptr == '\\') {
+            *ptr = '/';
+        }
+    }
 #endif
+    return path;
+}
+
+/**
+ * \brief Normalizes the file path as necessary.
+ * Unicode version of GFileNormalizePath.
+ *
+ * \param path The file path to be modified. Is modified in-place.
+ * \return A pointer to the input path
+ */
+unichar_t *u_GFileNormalizePath(unichar_t *path) {
+#if defined(__MINGW32__)
+    unichar_t *ptr;
+    for (ptr = path; *ptr; ptr++) {
+        if (*ptr == '\\') {
+            *ptr = '/';
+        }
+    }
+#endif
+    return path;
+}
 
 /* make directories.  make parent directories as needed,  with no error if
  * the path already exists */
@@ -139,7 +176,7 @@ char *GFileGetHomeDir(void) {
 	dir = getenv("USERPROFILE");
     if(dir){
 	char* buffer = copy(dir);
-	_backslash_to_slash(buffer);
+	GFileNormalizePath(buffer);
 return buffer;
     }
 return NULL;
@@ -199,7 +236,7 @@ char *GFileGetAbsoluteName(const char *name, char *result, size_t rsiz) {
 	    strcat(buffer,"/");
 	strcat(buffer,name);
 	#if defined(__MINGW32__)
-	_backslash_to_slash(buffer);
+	GFileNormalizePath(buffer);
 	#endif
 
 	/* Normalize out any .. */
@@ -233,7 +270,7 @@ char *GFileGetAbsoluteName(const char *name, char *result, size_t rsiz) {
 	strncpy(result,name,rsiz);
 	result[rsiz-1]='\0';
 	#if defined(__MINGW32__)
-	_backslash_to_slash(result);
+	GFileNormalizePath(result);
 	#endif
     }
 return(result);
@@ -375,19 +412,19 @@ int GFileModifyableDir(const char *file) {
     return( GFileModifyable(buffer) );
 }
 
-int GFileReadable(char *file) {
+int GFileReadable(const char *file) {
 return( access(file,04)==0 );
 }
 
-int GFileMkDir(char *name) {
+int GFileMkDir(const char *name) {
 return( MKDIR(name,0755));
 }
 
-int GFileRmDir(char *name) {
+int GFileRmDir(const char *name) {
 return(rmdir(name));
 }
 
-int GFileUnlink(char *name) {
+int GFileUnlink(const char *name) {
 return(unlink(name));
 }
 
@@ -461,7 +498,7 @@ unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz) 
 	if ( buffer[u_strlen(buffer)-1]!='/' )
 	    uc_strcat(buffer,"/");
 	u_strcat(buffer,name);
-	_u_backslash_to_slash(buffer);
+	u_GFileNormalizePath(buffer);
 
 	/* Normalize out any .. */
 	spt = rpt = buffer;
@@ -489,7 +526,7 @@ unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz) 
     if (result!=name) {
 	u_strncpy(result,name,rsiz);
 	result[rsiz-1]='\0';
-	_u_backslash_to_slash(result);
+	u_GFileNormalizePath(result);
     }
 return(result);
 }
@@ -791,7 +828,7 @@ char *getUserHomeDir(void) {
 	if( dir==NULL )
 	dir = getenv("USERPROFILE");
 	if( dir!=NULL ) {
-	_backslash_to_slash(dir);
+	GFileNormalizePath(dir);
 return dir;
 	}
 return NULL;
@@ -960,7 +997,7 @@ char *GFileGetHomeDocumentsDir(void)
     my_documents[ pos++ ] = '\\';
     my_documents[ pos++ ] = '\0';
     ret = copy( my_documents );
-	_backslash_to_slash(ret);
+	GFileNormalizePath(ret);
     return ret;
 #endif
 
@@ -984,7 +1021,7 @@ char *GFileDirName(const char *path)
 {
     char ret[PATH_MAX+1];
     strncpy( ret, path, PATH_MAX );
-    _backslash_to_slash( ret );
+    GFileNormalizePath( ret );
     char *pt = strrchr( ret, '/' );
     if ( pt )
 	*pt = '\0';

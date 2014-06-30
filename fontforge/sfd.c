@@ -1412,6 +1412,7 @@ void SFDDumpCharStartingMarker(FILE *sfd,SplineChar *sc) {
 
 
 static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int todir,int saveUndoes) {
+    // TODO: Output the U. F. O. glif name.
     ImageList *img;
     KernPair *kp;
     PST *pst;
@@ -1429,7 +1430,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
     }
     if ( sc->unicodeenc!=-1 &&
 	    ((map->enc->is_unicodebmp && sc->unicodeenc<0x10000) ||
-	     (map->enc->is_unicodefull && (unsigned)sc->unicodeenc<unicode4_size)) )
+	     (map->enc->is_unicodefull && sc->unicodeenc < (int)unicode4_size)) )
 	/* If we have altunis, then the backmap may not give the primary */
 	/*  unicode code point, which is what we need here */
 	fprintf(sfd, "Encoding: %d %d %d\n", sc->unicodeenc, sc->unicodeenc,
@@ -2200,6 +2201,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	SFDDumpUTF7Str(sfd,sf->layers[i].name);
 	fprintf( sfd, " %d\n", sf->layers[i].background );
     }
+    // TODO: Output U. F. O. layer path.
     if ( sf->strokedfont )
 	fprintf(sfd, "StrokedFont: %d\n", sf->strokedfont );
     else if ( sf->multilayer )
@@ -4991,6 +4993,7 @@ char* SFDMoveToNextStartChar( FILE* sfd ) {
 
 
 static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf, int had_sf_layer_cnt) {
+    // TODO: Read the U. F. O. glif name.
     SplineChar *sc;
     char tok[2000], ch;
     RefChar *lastr=NULL, *ref;
@@ -7624,6 +7627,7 @@ bool SFD_GetFontMetaData( FILE *sfd,
     }
     else if ( strmatch(tok,"Layer:")==0 )
     {
+        // TODO: Read the U. F. O. path.
 	int layer, o2, bk;
 	getint(sfd,&layer);
 	if ( layer>=sf->layer_cnt ) {

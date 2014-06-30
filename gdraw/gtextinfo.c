@@ -286,8 +286,9 @@ GTextInfo *GTextInfoCopy(GTextInfo *ti) {
 return( copy);
 }
 
-static const char *imagedir = "fontforge-pixmaps";	/* This is the system pixmap directory */
-static const char **imagepath;			/* May contain user directories too */
+static const char *imagedir_default = "fontforge-pixmaps";
+static char *imagedir = NULL;	/* This is the system pixmap directory */
+static char **imagepath = NULL;			/* May contain user directories too */
 static size_t imagepathlenmax = 0;
 
 struct image_bucket {
@@ -299,8 +300,8 @@ struct image_bucket {
 #define IC_SIZE	127
 static struct image_bucket *imagecache[IC_SIZE];
 
-static int hash_filename(char *_pt ) {
-    unsigned char *pt = (unsigned char *) _pt;
+static int hash_filename(const char *_pt ) {
+    const unsigned char *pt = (const unsigned char *) _pt;
     int val = 0;
 
     while ( *pt ) {
@@ -317,17 +318,20 @@ return( val%IC_SIZE );
 static void ImagePathDefault(void) {
     if ( imagepath==NULL ) {
 	imagepath = malloc(2*sizeof(void *));
-	imagepath[0] = copy(imagedir);
+	imagepath[0] = (imagedir == NULL) ? copy(imagedir_default) : copy(imagedir);
 	imagepath[1] = NULL;
-	imagepathlenmax = strlen(imagedir);
+	imagepathlenmax = strlen(imagepath[0]);
 	free(_GGadget_ImagePath);
 	_GGadget_ImagePath = copy("=");
     }
 }
 
-const char **_GGadget_GetImagePath(void) {
+/**
+ * \return The image path. The return value should not be freed or modified.
+ */
+const char* const* _GGadget_GetImagePath(void) {
     ImagePathDefault();
-return( imagepath );
+    return (const char* const*) imagepath;
 }
 
 int _GGadget_ImageInCache(GImage *image) {
@@ -388,28 +392,43 @@ static void ImageCacheReload(void) {
 
 void GGadgetSetImageDir(char *dir) {
     int k;
+    char *ptr = imagedir;
+    //Check if imagedir has been initialised
+    if (ptr == NULL) {
+        //We shall check later if ptr should be freed or not
+        ptr = (char*) imagedir_default;
+    }
+    
+    if (dir != NULL && strcmp(ptr,dir) != 0) {
+        imagedir = copy(dir);
+        if (imagepath != NULL) {
+            for (k=0; imagepath[k] != NULL; ++k) {
+                if (strcmp(imagepath[k],ptr) == 0) {
+                    break;
+                }
+            }
 
-    if ( dir!=NULL && strcmp(imagedir,dir)!=0 ) {
-	const char *old = imagedir;
-	imagedir = copy( dir );
-	if ( imagepath!=NULL ) {
-	    for ( k=0; imagepath[k]!=NULL; ++k )
-		if ( strcmp(imagepath[k],old)==0 )
-	    break;
-	    if ( imagepath[k]!=NULL ) {
-		free(imagepath[k]);
-		imagepath[k] = imagedir;
-		ImageCacheReload();
-	    }
-	    free(_GGadget_ImagePath);
-	    _GGadget_ImagePath = copy("=");
-	}
+            if (ptr != imagedir_default) {
+                free(ptr);
+            }
+            if (imagepath[k] != NULL) {
+                free(imagepath[k]);
+                imagepath[k] = copy(imagedir);
+                ImageCacheReload();
+            }
+            free(_GGadget_ImagePath);
+            _GGadget_ImagePath = copy("=");
+        }
     }
 }
 
 static char *ImagePathFigureElement(char *start, int len) {
-    if ( *start=='=' && len==1 )
-return( imagedir );
+    if ( *start=='=' && len==1 ) {
+        if (imagedir == NULL) {
+            return copy(imagedir_default);
+        }
+        return copy(imagedir);
+    }
     else if ( *start=='~' && start[1]=='/' && len>=2 && getenv("HOME")!=NULL ) {
 	int hlen = strlen(getenv("HOME"));
 	char *absname = malloc( hlen+len+8 );
@@ -453,7 +472,7 @@ return;
     _GGadget_ImagePath = copy(path);
 }
 
-static GImage *_GGadgetImageCache(char *filename, char **foundname) {
+static GImage *_GGadgetImageCache(const char *filename, char **foundname) {
     int index = hash_filename(filename);
     struct image_bucket *bucket;
     char *path;
@@ -502,7 +521,7 @@ return( bucket->image );
 return( bucket->image );
 }
 
-GImage *GGadgetImageCache(char *filename) {
+GImage *GGadgetImageCache(const char *filename) {
 return( _GGadgetImageCache(filename,NULL));
 }
 

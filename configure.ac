@@ -472,6 +472,15 @@ case $host in
 esac
 AC_SUBST([MY_LIB_LDFLAGS], [${my_lib_ldflags}])
 
+# Native Windows Python modules have a '.pyd' extension and not '.dll'
+pyhook_file_extension=""
+case $host in
+    *mingw*)
+        pyhook_file_extension="${pyhook_file_extension} -shrext \".pyd\""
+    ;;
+esac
+AC_SUBST([PYHOOK_FILE_EXTENSION], [${pyhook_file_extension}])
+
 AC_LANG_POP
 
 #--------------------------------------------------------------------------
@@ -754,10 +763,10 @@ Summary of optional dependencies:
 Optional Library	UseIt?	HaveIt?	WebsiteURL
   cairo				${i_do_have_cairo}	${cairo_url}
   libspiro		${with_libspiro}	${i_do_have_libspiro}	${libspiro_url}
-  giflib			${i_do_have_giflib}	${giflib_url}
-  libjpeg			${i_do_have_libjpeg}	${libjpeg_url}
-  libpng			${i_do_have_libpng}	${libpng_url}
-  libtiff			${i_do_have_libtiff}	${libtiff_url}
+  giflib		${with_giflib}	${i_do_have_giflib}	${giflib_url}
+  libjpeg		${with_libjpeg}	${i_do_have_libjpeg}	${libjpeg_url}
+  libpng		${with_libpng}	${i_do_have_libpng}	${libpng_url}
+  libtiff		${with_libtiff}	${i_do_have_libtiff}	${libtiff_url}
   libuninameslist	${with_libuninameslist}	${i_do_have_libuninameslist}	${libuninameslist_url}
   zeromq (libzmq)		${i_do_have_libzmq}	${libzmq_url}
   libreadline		${with_libreadline}	${i_do_have_libreadline}	${libreadline_url}

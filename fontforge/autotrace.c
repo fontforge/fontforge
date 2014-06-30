@@ -228,7 +228,7 @@ return( NULL );
 
 
 #if defined(__MINGW32__)
-static char* add_arg(char* buffer, char* s)
+static char* add_arg(char* buffer, const char* s)
 {
     while( *s ) *buffer++ = *s++;
     *buffer = '\0';
@@ -241,9 +241,10 @@ void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
     Color bgcol;
     int   ispotrace;
     real  transform[6];
-    char   tempname_in[1025];
-    char   tempname_out[1025];
-    char  *prog, *command, *cmd;
+    char  tempname_in[1025];
+    char  tempname_out[1025];
+    const char *prog;
+    char  *command, *cmd;
     FILE  *ps;
     int i, changed = false;
 

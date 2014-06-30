@@ -3508,7 +3508,7 @@ static void FontViewSetTitle(FontView *fv) {
     if ( fv->gw==NULL )		/* In scripting */
 return;
 
-    char* collabStateString = "";
+    const char* collabStateString = "";
     if( collabclient_inSessionFV( &fv->b )) {
 	printf("collabclient_getState( fv ) %d %d\n",
 	       fv->b.collabState, collabclient_getState( &fv->b ));
@@ -5713,7 +5713,7 @@ static void AskAndMaybeCloseLocalCollabServers()
 
 	    if( sel[i] )
 	    {
-		FontViewBase* fv = FontViewFind( FontViewFind_byCollabBasePort, port );
+		FontViewBase* fv = FontViewFind( FontViewFind_byCollabBasePort, (void*)(intptr_t)port );
 		if( fv )
 		    collabclient_sessionDisconnect( fv );
 		printf("CLOSING port:%d fv:%p\n", port, fv );
@@ -8118,7 +8118,7 @@ int FontViewFind_byCollabBasePort( FontViewBase* fv, void* udata )
 {
     if( !fv || !fv->sf || !fv->collabClient )
 	return 0;
-    int port = (int)udata;
+    int port = (int)(intptr_t)udata;
     return port == collabclient_getBasePort( fv->collabClient );
 }
 
@@ -8137,7 +8137,7 @@ static int FontViewFind_ActiveWindow( FontViewBase* fvb, void* udata )
 
 FontViewBase* FontViewFindActive()
 {
-    return ActiveFontView;
+    return (FontViewBase*) ActiveFontView;
     /* GWindow w = GWindowGetCurrentFocusTopWindow(); */
     /* FontViewBase* ret = FontViewFind( FontViewFind_ActiveWindow, w ); */
     /* return ret; */
@@ -8149,7 +8149,7 @@ FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* udata ), void*
 {
     FontViewBase *fv;
     printf("FontViewFind(top) fv_list:%p\n", fv_list );
-    for ( fv=fv_list; fv!=NULL; fv=fv->next )
+    for ( fv = (FontViewBase*)fv_list; fv!=NULL; fv=fv->next )
     {
 	if( testFunc( fv, udata ))
 	    return fv;

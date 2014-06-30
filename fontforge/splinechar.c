@@ -2706,7 +2706,7 @@ static void _CVChngNoUpdate(CharViewBase *cv,int changed) {
     _SCChngNoUpdate(cv->sc,CVLayer(cv),changed);
 }
 
-static void CVGlphRenameFixup(SplineFont *sf,char *oldname, char *newname) {
+static void CVGlphRenameFixup(SplineFont *sf, const char *oldname, const char *newname) {
 }
 
 static void CV__LayerPaletteCheck(SplineFont *sf) {

@@ -1363,6 +1363,7 @@ static PyObject *PyFFPoint_dup(PyFF_Point *self) {
     ret->y = self->y;
     ret->on_curve = self->on_curve;
     ret->selected = self->selected;
+    ret->name = copy(self->name);
 return( (PyObject *) ret );
 }
 
@@ -1427,6 +1428,24 @@ return( 1 );
 return( -1 );
 }
 
+static PyObject *PyFFPoint_get_name(PyFF_Point *self, void *UNUSED(closure)) {
+    if (self->name==NULL)
+	Py_RETURN_NONE;
+    return (Py_BuildValue("s", self->name));
+}
+
+static int PyFFPoint_set_name(PyFF_Point *self,PyObject *value, void *UNUSED(closure)) {
+    if (self->name != NULL) {
+	free(self->name);
+	self->name = NULL;
+    }
+    if ( value!=Py_None ) {
+	PYGETSTR(value, self->name, -1);
+	ENDPYGETSTR();
+    }
+return( 0 );
+}
+
 #if PY_MAJOR_VERSION >= 3
 static PyObject *PyFFPoint_richcompare(PyObject *a, PyObject *b, int op) {
     return enrichened_compare((cmpfunc) PyFFPoint_compare, a, b, op);
@@ -1468,6 +1487,13 @@ static PyMethodDef FFPoint_methods[] = {
     {(char *)"__reduce__", (PyCFunction)PyFFPoint_pickleReducer, METH_NOARGS,
      (char *)"cPickle calls this routine when it wants to pickle us" },
     PYMETHODDEF_EMPTY /* Sentinel */
+};
+
+static PyGetSetDef FFPoint_getset[] = {
+        {(char *)"name",
+     (getter)PyFFPoint_get_name, (setter)PyFFPoint_set_name,
+     (char *)"Points may be named", NULL},
+    PYGETSETDEF_EMPTY /* Sentinel */
 };
 
 static PyObject *PyFFPoint_New(PyTypeObject *type, PyObject *args, PyObject *UNUSED(kwds)) {
@@ -1518,7 +1544,7 @@ static PyTypeObject PyFF_PointType = {
     NULL,                      /* tp_iternext */
     FFPoint_methods,           /* tp_methods */
     FFPoint_members,           /* tp_members */
-    NULL,                      /* tp_getset */
+    FFPoint_getset,            /* tp_getset */
     NULL,                      /* tp_base */
     NULL,                      /* tp_dict */
     NULL,                      /* tp_descr_get */
@@ -1538,13 +1564,14 @@ static PyTypeObject PyFF_PointType = {
     0,                         /* tp_version_tag */
 };
 
-static PyFF_Point *PyFFPoint_CNew(double x, double y, int on_curve, int sel) {
+static PyFF_Point *PyFFPoint_CNew(double x, double y, int on_curve, int sel, char *name) {
     /* Convenience routine for creating a new point from C */
     PyFF_Point *self = (PyFF_Point *) PyFFPoint_New(&PyFF_PointType,NULL,NULL);
     self->x = x;
     self->y = y;
     self->on_curve = on_curve;
     self->selected = sel;
+    self->name = copy(name);
 return( self );
 }
 
@@ -1813,7 +1840,7 @@ return( 0 );
     if ( !val ) {
 	self->closed = false;
 	if ( self->pt_cnt>1 && self->points[0]->on_curve )
-	    self->points[self->pt_cnt++] = PyFFPoint_CNew(self->points[0]->x,self->points[0]->y,true,false);
+	    self->points[self->pt_cnt++] = PyFFPoint_CNew(self->points[0]->x,self->points[0]->y,true,false,NULL);
     } else {
 	self->closed = true;
 	if ( self->pt_cnt>1 && self->points[0]->on_curve &&
@@ -1982,7 +2009,7 @@ static PyObject *PyFFContour_Concat( PyObject *_c1, PyObject *_c2 ) {
                 !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c2)) ||
 	    c1->is_quadratic != c2->is_quadratic ) {
 	if ( PyTuple_Check(_c2) && PyArg_ParseTuple(_c2,"dd",&x,&y)) {
-	    PyFF_Point *pt = PyFFPoint_CNew(x,y,true,false);
+	    PyFF_Point *pt = PyFFPoint_CNew(x,y,true,false,NULL);
 	    memset(&dummy,0,sizeof(dummy));
 	    dummy.pt_cnt = 1;
 	    dummy.points = dummies; dummies[0] = pt;
@@ -2024,7 +2051,7 @@ static PyObject *PyFFContour_InPlaceConcat( PyObject *_self, PyObject *_c2 ) {
                 !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c2)) ||
 	    self->is_quadratic != c2->is_quadratic ) {
 	if ( PyTuple_Check(_c2) && PyArg_ParseTuple(_c2,"dd",&x,&y)) {
-	    PyFF_Point *pt = PyFFPoint_CNew(x,y,true,false);
+	    PyFF_Point *pt = PyFFPoint_CNew(x,y,true,false,NULL);
 	    memset(&dummy,0,sizeof(dummy));
 	    dummy.pt_cnt = 1;
 	    dummy.points = dummies; dummies[0] = pt;
@@ -2249,7 +2276,7 @@ return( NULL );
         /* Messes with self->points */
         PyMem_Resize(self->points,PyFF_Point *,self->pt_max += 10);
     }
-    self->points[0] = PyFFPoint_CNew(x,y,true,false);
+    self->points[0] = PyFFPoint_CNew(x,y,true,false,NULL);
     self->pt_cnt = 1;
     PyFFContour_ClearSpiros((PyFF_Contour *) self);
 
@@ -2283,7 +2310,7 @@ return( NULL );
     }
     for ( i=self->pt_cnt-1; i>pos; --i )
 	self->points[i+1] = self->points[i];
-    self->points[pos+1] = PyFFPoint_CNew(x,y,true,false);
+    self->points[pos+1] = PyFFPoint_CNew(x,y,true,false,NULL);
     PyFFContour_ClearSpiros((PyFF_Contour *) self);
     ++self->pt_cnt;
 
@@ -2304,9 +2331,9 @@ return( NULL );
 	if ( !PyArg_ParseTuple( args, "dddddd|i", &x[0], &y[0], &x[1], &y[1], &x[2], &y[2], &pos ))
 return( NULL );
     }
-    np = PyFFPoint_CNew(x[0],y[0],false,false);
-    pp = PyFFPoint_CNew(x[1],y[1],false,false);
-    p = PyFFPoint_CNew(x[2],y[2],true,false);
+    np = PyFFPoint_CNew(x[0],y[0],false,false,NULL);
+    pp = PyFFPoint_CNew(x[1],y[1],false,false,NULL);
+    p = PyFFPoint_CNew(x[2],y[2],true,false,NULL);
     if ( p==NULL ) {
 	Py_XDECREF(pp);
 	Py_XDECREF(np);
@@ -2350,8 +2377,8 @@ return( NULL );
 	if ( !PyArg_ParseTuple( args, "dddd|i", &x[0], &y[0], &x[1], &y[1], &pos ))
 return( NULL );
     }
-    cp = PyFFPoint_CNew(x[0],y[0],false,false);
-    p = PyFFPoint_CNew(x[1],y[1],true,false);
+    cp = PyFFPoint_CNew(x[0],y[0],false,false,NULL);
+    p = PyFFPoint_CNew(x[1],y[1],true,false,NULL);
     if ( p==NULL ) {
 	Py_XDECREF(cp);
 return( NULL );
@@ -2406,7 +2433,7 @@ return( NULL );
     for ( i=self->pt_cnt-1; i>pos; --i )
 	self->points[i+1] = self->points[i];
     if ( p==NULL )
-	self->points[pos+1] = PyFFPoint_CNew(x,y,on,false);
+	self->points[pos+1] = PyFFPoint_CNew(x,y,on,false,NULL);
     else {
 	self->points[pos+1] = p;
 	Py_INCREF( (PyObject *) p);
@@ -4278,6 +4305,7 @@ return( NULL );
 	    if ( c->pt_cnt==1 ) {
 		ss->first = ss->last = SplinePointCreate(c->points[0]->x,c->points[0]->y);
 		ss->first->selected = c->points[0]->selected;
+		ss->first->name = copy(c->points[0]->name);
 		SPLCategorizePoints(ss);
 return( ss );
 	    }
@@ -4289,6 +4317,7 @@ return( ss );
 	    if ( c->points[i]->on_curve ) {
 		sp = SplinePointCreate(c->points[i]->x,c->points[i]->y);
 		sp->selected = c->points[i]->selected;
+		sp->name = copy(c->points[i]->name);
 		sp->ttfindex = next++;
 		index = -1;
 		if ( i>0 && !c->points[i-1]->on_curve )
@@ -4309,6 +4338,7 @@ return( ss );
 		if ( !c->points[i-1]->on_curve ) {
 		    sp = SplinePointCreate((c->points[i]->x+c->points[i-1]->x)/2,(c->points[i]->y+c->points[i-1]->y)/2);
 		    sp->selected = c->points[i]->selected;
+		    sp->name = copy(c->points[i]->name);
 		    sp->ttfindex = -1;
 		    sp->prevcp.x = c->points[i-1]->x;
 		    sp->prevcp.y = c->points[i-1]->y;
@@ -4331,6 +4361,7 @@ return( ss );
 	    if ( !c->points[i-1]->on_curve ) {
 		sp = SplinePointCreate((c->points[0]->x+c->points[i-1]->x)/2,(c->points[0]->y+c->points[i-1]->y)/2);
 		sp->selected = c->points[0]->selected;
+		sp->name = copy(c->points[0]->name);
 		sp->ttfindex = -1;
 		sp->prevcp.x = c->points[i-1]->x;
 		sp->prevcp.y = c->points[i-1]->y;
@@ -4357,6 +4388,7 @@ return( ss );
 	continue;
 	    sp = SplinePointCreate(c->points[i]->x,c->points[i]->y);
 	    sp->selected = c->points[i]->selected;
+	    sp->name = copy(c->points[i]->name);
 	    sp->ttfindex = next++;
 	    nexti = previ = -1;
 	    if ( i==0 )
@@ -4434,7 +4466,7 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
     for ( k=0; k<2; ++k ) {
 	if ( ss->first->next == NULL ) {
 	    if ( k )
-		ret->points[0] = PyFFPoint_CNew(ss->first->me.x,ss->first->me.y,true,ss->first->selected);
+		ret->points[0] = PyFFPoint_CNew(ss->first->me.x,ss->first->me.y,true,ss->first->selected,ss->first->name);
 	    cnt = 1;
 	} else if ( ss->first->next->order2 ) {
 	    ret->is_quadratic = true;
@@ -4443,19 +4475,20 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 	    if ( SPInterpolate(ss->first) ) {
 		skip = ss->first->prev->from;
 		if ( k )
-		    ret->points[cnt] = PyFFPoint_CNew(skip->nextcp.x,skip->nextcp.y,false,skip->selected);
+		    ret->points[cnt] = PyFFPoint_CNew(skip->nextcp.x,skip->nextcp.y,false,skip->selected,skip->name);
 		++cnt;
 	    }
 	    for ( sp=ss->first; ; ) {
 		if ( !SPInterpolate(sp) ) {
 		    if ( k )
-			ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true,sp->selected);
+			ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true,sp->selected, sp->name);
 		    ++cnt;
 		}
 		if ( !sp->nonextcp && sp!=skip ) {
 		    if ( k )
 			ret->points[cnt] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false,
-				sp->selected && SPInterpolate(sp));
+							  sp->selected && SPInterpolate(sp), 
+							  sp->name);
 		    ++cnt;
 		}
 		if ( sp->next==NULL )
@@ -4468,14 +4501,14 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 	    ret->is_quadratic = false;
 	    for ( sp=ss->first, cnt=0; ; ) {
 		if ( k )
-		    ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true, sp->selected);
+		    ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true, sp->selected, sp->name);
 		++cnt;			/* Sp itself */
 		if ( sp->next==NULL )
 	    break;
 		if ( !sp->nonextcp || !sp->next->to->noprevcp ) {
 		    if ( k ) {
-			ret->points[cnt  ] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false,false);
-			ret->points[cnt+1] = PyFFPoint_CNew(sp->next->to->prevcp.x,sp->next->to->prevcp.y,false,false);
+			ret->points[cnt  ] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false,false,NULL);
+			ret->points[cnt+1] = PyFFPoint_CNew(sp->next->to->prevcp.x,sp->next->to->prevcp.y,false,false,NULL);
 		    }
 		    cnt += 2;		/* not a line => 2 control points */
 		}
@@ -5623,11 +5656,10 @@ static PyObject *PyFFGlyph_Repr(PyFF_Glyph *self) {
 	repr = malloc( space_needed );
 
 #ifdef DEBUG
-    at = sprintf(repr, "<%s at 0x%lx sc=0x%lx",
-		 Py_TYPENAME(self), (unsigned long)(self), (unsigned long)(self->sc));
+    at = sprintf(repr, "<%s at 0x%p sc=0x%p",
+		 Py_TYPENAME(self), self, self->sc);
 #else
-    at = sprintf(repr, "<%s at 0x%lx",
-		 Py_TYPENAME(self), (unsigned long)(self));
+    at = sprintf(repr, "<%s at 0x%p", Py_TYPENAME(self), self);
 #endif
     if ( self->sc==NULL ) {
 	strcpy( &repr[at], " CLOSED>" );
@@ -10385,14 +10417,14 @@ static PyObject *PyFFFont_Repr(PyFF_Font *self) {
     PyObject *ret;
     char prefix[256];
 #ifdef DEBUG
-    snprintf(prefix,sizeof(prefix), "<%s at 0x%lx fv=0x%lx sf=0x%lx",
+    snprintf(prefix,sizeof(prefix), "<%s at 0x%p fv=0x%p sf=0x%p",
 	     Py_TYPENAME(self),
-	     (unsigned long)(self),
-	     (unsigned long)(self->fv),
-	     (unsigned long)(self->fv ? self->fv->sf : 0) );
+	     self,
+	     self->fv,
+	     (self->fv ? self->fv->sf : 0) );
 #else
-    snprintf(prefix,sizeof(prefix), "<%s at 0x%lx",
-	     Py_TYPENAME(self), (unsigned long)(self) );
+    snprintf(prefix,sizeof(prefix), "<%s at 0x%p",
+	     Py_TYPENAME(self), self );
 #endif
     if ( self->fv==NULL )
 	ret = STRING_FROM_FORMAT("%s CLOSED>",prefix);
@@ -15690,7 +15722,7 @@ return (NULL);
     fv = self->fv;
     if ( !PyArg_ParseTuple(args,"i|s", &uni, &name ) )
 return( NULL );
-    if ( uni<-1 || (unsigned)uni>=unicode4_size ) {
+    if ( uni<-1 || uni >= (int)unicode4_size ) {
 	PyErr_Format(PyExc_ValueError, "Unicode codepoint, %d, out of range, must be either -1 or between 0 and 0x10ffff", uni );
 return( NULL );
     } else if ( uni==-1 && name==NULL ) {
@@ -15764,7 +15796,7 @@ return (NULL);
 	if ( !PyArg_ParseTuple(args,"i", &uni ) )
 return( NULL );
     }
-    if ( uni<-1 || (unsigned)uni>=unicode4_size ) {
+    if ( uni<-1 || uni >= (int)unicode4_size ) {
 	PyErr_Format(PyExc_ValueError, "Unicode codepoint, %d, out of range, must be either -1 or between 0 and 0x10ffff", uni );
 return( NULL );
     }
@@ -15794,7 +15826,7 @@ return( NULL );
 	    uni = -1;
 	} else if ( !PyArg_ParseTuple(args,"i|s", &uni, &name ) )
 return( NULL );
-	if ( uni<-1 || (unsigned)uni>=unicode4_size ) {
+	if ( uni<-1 || uni >= (int)unicode4_size ) {
 	    PyErr_Format(PyExc_ValueError, "Unicode codepoint, %d, out of range, must be either -1 or between 0 and 0x10ffff", uni );
 return( NULL );
 	} else if ( uni==-1 && name==NULL ) {

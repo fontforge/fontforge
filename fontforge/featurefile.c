@@ -1180,6 +1180,7 @@ return;
 			    fprintf( out, "<anchor NULL>" );	/* In adobe's example no anchor class is given */
 			}
 		    }
+                    fprintf(out,";\n");
 		}
 	    }
 	}
@@ -1351,17 +1352,17 @@ return;					/* No support for apple "lookups" */
 	fprintf( out, "  lookupflag" );
 	first = true;
 	for ( i=0; i<4; ++i ) if ( otl->lookup_flags&(1<<i)) {
-	    if ( !first )
-		putc(',',out);
-	    else
+	    if ( !first ) {
+		// putc(',',out); // The specification says to do this, but Adobe's software uses spaces.
+	    } else
 		first = false;
 	    fprintf( out, " %s", flagnames[i] );
 	}
 	if ( (otl->lookup_flags&0xff00)!=0 ) {
 	    int index = (otl->lookup_flags>>8)&0xff;
 	    if ( index<sf->mark_class_cnt ) {
-		if ( !first )
-		    putc(',',out);
+		// if ( !first )
+		//     putc(',',out);
 		fprintf( out, " MarkAttachmentType @" );
 		dump_ascii( out, sf->mark_class_names[index]);
 	    }
@@ -1369,8 +1370,8 @@ return;					/* No support for apple "lookups" */
 	if ( otl->lookup_flags&pst_usemarkfilteringset ) {
 	    int index = (otl->lookup_flags>>16)&0xffff;
 	    if ( index<sf->mark_set_cnt ) {
-		if ( !first )
-		    putc(',',out);
+		// if ( !first )
+		//     putc(',',out);
 		fprintf( out, " UseMarkFilteringSet @" );
 		dump_ascii( out, sf->mark_set_names[index]);
 	    }
@@ -1722,7 +1723,7 @@ static gboolean dump_header_languagesystem_hash_fe( gpointer key,
 						gpointer user_data )
 {
     FILE *out = (FILE*)user_data;
-    fprintf( out, "\nlanguagesystem %s;", (char*)key );
+    fprintf( out, "languagesystem %s;\n", (char*)key );
     return 0;
 }
 
@@ -1737,6 +1738,7 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
     OTLookup *otl;
     FeatureScriptLangList *fl;
     struct scriptlanglist *sl;
+    int has_DFLT = 0;
 
     GTree* ht = g_tree_new_full( tree_strcasecmp, 0, free, NULL );
 
@@ -1755,10 +1757,18 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
 				    for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) if ( sl->script==scripts[s] ) {
 					    for ( subl=0; subl<sl->lang_cnt; ++subl ) {
 						char key[100];
-						snprintf(key,sizeof key,"%c%c%c%c %c%c%c%c",
+                                                const uint32 DFLT_int = (uint32)'D' << 24 | (uint32)'F' << 16 |
+                                                (uint32)'L' << 8 | (uint32)'T';
+                                                const uint32 dflt_int = (uint32)'d' << 24 | (uint32)'f' << 16 |
+                                                (uint32)'l' << 8 | (uint32)'t';
+						if ((scripts[s] == DFLT_int) && (langs[l] == dflt_int)) {
+						  has_DFLT = 1;
+						} else {
+						  snprintf(key,sizeof key,"%c%c%c%c %c%c%c%c",
 							 scripts[s]>>24, scripts[s]>>16, scripts[s]>>8, scripts[s],
 							 langs[l]>>24, langs[l]>>16, langs[l]>>8, langs[l] );
-						g_tree_insert( ht, copy(key), "" );
+						  g_tree_insert( ht, copy(key), "" );
+						}
 					    }
 					}
 				}
@@ -1768,7 +1778,7 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
 	    }
 	}
     }
-
+    if (has_DFLT) { dump_header_languagesystem_hash_fe((gpointer)"DFLT dflt", (gpointer)"", (gpointer)out); }
     g_tree_foreach( ht, dump_header_languagesystem_hash_fe, out );
     fprintf( out, "\n" );
 }
@@ -2085,10 +2095,54 @@ static char *fea_canonicalClassOrder(char *class) {
 return( class );
 }
 
+#ifdef FF_UTHASH_GLIF_NAMES
+#include "glif_name_hash.h"
+#endif
+
 static int fea_classesIntersect(char *class1, char *class2) {
     char *pt1, *start1, *pt2, *start2;
     int ch1, ch2;
 
+#ifdef FF_UTHASH_GLIF_NAMES
+    struct glif_name_index _glif_name_hash;
+    struct glif_name_index * glif_name_hash = &_glif_name_hash; // Open the hash table.
+    memset(glif_name_hash, 0, sizeof(struct glif_name_index));
+    long int index = 0;
+    long int break_point = 0;
+    int output = 0;
+    // Parse the first input.
+    for ( pt1=class1 ; output == 0; ) {
+        while ( *pt1==' ' ) ++pt1;
+        if ( *pt1=='\0' )
+            output = -1; // We cancel further action if one list is blank.
+        for ( start1 = pt1; *pt1!=' ' && *pt1!='\0'; ++pt1 );
+        ch1 = *pt1; *pt1 = '\0'; // Cache the byte and terminate.
+        // We do not want to add the same name twice. It breaks the hash.
+        if (glif_name_search_glif_name(glif_name_hash, start1) == NULL) {
+          glif_name_track_new(glif_name_hash, index++, start1);
+        }
+        *pt1 = ch1; // Restore the byte.
+    }
+    break_point = index; // Divide the entries from the two sources by index.
+    // Parse the second input.
+    for ( pt2=class2 ; output == 0; ) {
+        while ( *pt2==' ' ) ++pt2;
+        if ( *pt2=='\0' )
+            output = -1; // We cancel further action if one list is blank.
+        for ( start2 = pt2; *pt2!=' ' && *pt2!='\0'; ++pt2 );
+        ch1 = *pt2; *pt2 = '\0'; // Cache the byte and terminate.
+        struct glif_name * tmp = NULL;
+        if ((tmp = glif_name_search_glif_name(glif_name_hash, start2)) == NULL) {
+          glif_name_track_new(glif_name_hash, index++, start2);
+        } else if (tmp->gid < break_point) {
+          output = 1;
+        }
+        *pt2 = ch2; // Restore the byte.
+    }
+    glif_name_hash_destroy(glif_name_hash); // Close the hash table.
+    if (output == 1) return 1;
+    return 0;
+#else
     for ( pt1=class1 ; ; ) {
         while ( *pt1==' ' ) ++pt1;
         if ( *pt1=='\0' )
@@ -2109,6 +2163,7 @@ static int fea_classesIntersect(char *class1, char *class2) {
         }
         *pt1 = ch1;
     }
+#endif
 }
 
 
@@ -2509,7 +2564,7 @@ return;
 	*pt = '\0';
 	tok->value = strtol(tok->tokbuf,NULL,tok->base);
 return;
-    } else if ( ch=='@' || ch=='_' || ch=='\\' || isalnum(ch)) {	/* Names can't start with dot */
+    } else if ( ch=='@' || ch=='_' || ch=='\\' || isalnum(ch) || ch=='.') {	/* Most names can't start with dot */
 	int check_keywords = true;
 	tok->type = tk_name;
 	if ( ch=='@' ) {
@@ -2529,43 +2584,51 @@ return;
 	}
 	*pt = '\0';
 	ungetc(ch,in);
-	if ( pt>start+31 ) {
-	    /* Adobe says glyphnames are 31 chars, but Mangal uses longer names */
-	    LogError(_("Name, %s%s, too long on line %d of %s"),
-		    tok->tokbuf, pt>=tok->tokbuf+MAXT?"...":"",
-		    tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-	    if ( pt>=tok->tokbuf+MAXT )
+	// We are selective about names starting with a dot. .notdef and .null are acceptable.
+	if ((start[0] == '.') && (strcmp(start, ".notdef") != 0) && (strcmp(start, ".null") != 0)) {
+	    if ( !tok->skipping ) {
+		LogError(_("Unexpected character (0x%02X) on line %d of %s"), start[0], tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		++tok->err_count;
-	} else if ( pt==start ) {
-	    LogError(_("Missing name on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-	    ++tok->err_count;
-	}
+	    }
+	} else {
+		if ( pt>start+31 ) {
+		    /* Adobe says glyphnames are 31 chars, but Mangal uses longer names */
+		    LogError(_("Name, %s%s, too long on line %d of %s"),
+			    tok->tokbuf, pt>=tok->tokbuf+MAXT?"...":"",
+			    tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+		    if ( pt>=tok->tokbuf+MAXT )
+			++tok->err_count;
+		} else if ( pt==start ) {
+		    LogError(_("Missing name on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+		    ++tok->err_count;
+		}
 
-	if ( check_keywords && do_keywords) {
-	    int i;
-	    for ( i=tk_firstkey; fea_keywords[i].name!=NULL; ++i ) {
-		if ( strcmp(fea_keywords[i].name,tok->tokbuf)==0 ) {
-		    tok->type = fea_keywords[i].tok;
-	    break;
+		if ( check_keywords && do_keywords) {
+		    int i;
+		    for ( i=tk_firstkey; fea_keywords[i].name!=NULL; ++i ) {
+			if ( strcmp(fea_keywords[i].name,tok->tokbuf)==0 ) {
+			    tok->type = fea_keywords[i].tok;
+		    break;
+			}
+		    }
+		    if ( tok->type==tk_include )
+			fea_handle_include(tok);
 		}
-	    }
-	    if ( tok->type==tk_include )
-		fea_handle_include(tok);
-	}
-	if ( tok->type==tk_name && pt-tok->tokbuf<=4 && pt!=tok->tokbuf ) {
-	    unsigned char tag[4];
-	    tok->could_be_tag = true;
-	    memset(tag,' ',4);
-	    tag[0] = tok->tokbuf[0];
-	    if ( tok->tokbuf[1]!='\0' ) {
-		tag[1] = tok->tokbuf[1];
-		if ( tok->tokbuf[2]!='\0' ) {
-		    tag[2] = tok->tokbuf[2];
-		    if ( tok->tokbuf[3]!='\0' )
-			tag[3] = tok->tokbuf[3];
+		if ( tok->type==tk_name && pt-tok->tokbuf<=4 && pt!=tok->tokbuf ) {
+		    unsigned char tag[4];
+		    tok->could_be_tag = true;
+		    memset(tag,' ',4);
+		    tag[0] = tok->tokbuf[0];
+		    if ( tok->tokbuf[1]!='\0' ) {
+			tag[1] = tok->tokbuf[1];
+			if ( tok->tokbuf[2]!='\0' ) {
+			    tag[2] = tok->tokbuf[2];
+			    if ( tok->tokbuf[3]!='\0' )
+				tag[3] = tok->tokbuf[3];
+			}
+		    }
+		    tok->tag = (tag[0]<<24) | (tag[1]<<16) | (tag[2]<<8) | tag[3];
 		}
-	    }
-	    tok->tag = (tag[0]<<24) | (tag[1]<<16) | (tag[2]<<8) | tag[3];
 	}
     } else {
 	/* I've already handled the special characters # @ and \ */
@@ -3657,7 +3720,7 @@ static struct markedglyphs *fea_parseCursiveSequence(struct parseState *tok,
 	    cur->is_name = true;
 	    cur->name_or_class = contents;
 	} else {
-	    LogError(_("Expect a valid glyph/CID name on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	    LogError(_("Expected a valid glyph/CID name on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	    ++tok->err_count;
 	    return( NULL );
 	}
@@ -5625,7 +5688,7 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 		memcpy(item->u2.lcaret,carets,len*sizeof(int16));
 		item->u2.lcaret[len] = 0;
 	    } else {
-		LogError(_("Expected integer or list of integer after %s on line %d of %s"), item->u1.class,
+		LogError(_("Expected integer or list of integers after %s on line %d of %s"), item->u1.class,
 			tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	    }
 	} else if ( strcmp(tok->tokbuf,"GlyphClassDef")==0 ) {

@@ -100,7 +100,7 @@ unichar_t *GWidgetSaveAsFileWithGadget(const unichar_t *title, const unichar_t *
 char *GWidgetOpenFile8(const char *title, const char *defaultfile,
 	const char *initial_filter, char **mimetypes,GFileChooserFilterType filter);
 char *GWidgetOpenFileWPath8(const char *title, const char *defaultfile,
-	const char *initial_filter, char **mimetypes,GFileChooserFilterType filter,char **path);
+	const char *initial_filter, char **mimetypes,GFileChooserFilterType filter, const char* const* path);
 char *GWidgetSaveAsFileWithGadget8(const char *title, const char *defaultfile,
 				   const char *initial_filter, char **mimetypes,
 				   GFileChooserFilterType filter,
