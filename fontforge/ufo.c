@@ -193,10 +193,9 @@ xmlNodePtr PythonLibToXML(void *python_persistent,SplineChar *sc) {
     xmlNodePtr retval = NULL, dictnode = NULL, keynode = NULL, valnode = NULL;
     // retval = xmlNewNode(NULL, BAD_CAST "lib"); //     "<lib>"
     dictnode = xmlNewNode(NULL, BAD_CAST "dict"); //     "  <dict>"
-    PyObject *dict = python_persistent, *items, *key, *value;
     if ( has_hints 
 #ifndef _NO_PYTHON
-         || (dict!=NULL && PyMapping_Check(dict) && sc!=NULL)
+         || (python_persistent!=NULL && PyMapping_Check((PyObject *)python_persistent) && sc!=NULL)
 #endif
        ) {
 
@@ -255,6 +254,7 @@ xmlNodePtr PythonLibToXML(void *python_persistent,SplineChar *sc) {
 	    //                                           "    </dict>"
 	}
 #ifndef _NO_PYTHON
+        PyObject *dict = python_persistent, *items, *key, *value;
 	/* Ok, look at the persistent data and output it (all except for a */
 	/*  hint entry -- we've already handled that with the real hints, */
 	/*  no point in retaining out of date hints too */
@@ -1111,6 +1111,17 @@ int is_DOS_drive(char * input) {
   return 0;
 }
 
+// Because Windows does not offer strtok_r but does offer strtok_s, which is almost identical,
+// we add a simple compatibility layer.
+// It might be nice to move support functions into a dedicated file at some point.
+static char * strtok_r_ff_ufo(char *s1, const char *s2, char **lasts) {
+#ifdef __MINGW32__
+      return strtok_s(s1, s2, lasts);
+#else
+      return strtok_r(s1, s2, lasts);
+#endif
+}
+
 char * ufo_name_mangle(const char * input, const char * prefix, const char * suffix, int flags) {
   // This does not append the prefix or the suffix.
   // flags & 1 determines whether to post-pad caps (something implemented in the standard).
@@ -1157,7 +1168,7 @@ char * ufo_name_mangle(const char * input, const char * prefix, const char * suf
     output2 = malloc((2 * output_length_1) + 1); // It's easier to pad than to calculate.
     output2_pos = 0;
     char * saveptr = NULL;
-    char * current = strtok_r(disposable, ".", &saveptr); // We get the first name part.
+    char * current = strtok_r_ff_ufo(disposable, ".", &saveptr); // We get the first name part.
     while (current != NULL) {
       char * uppered = upper_case(output);
       if (polyMatch(uppered, DOS_reserved_count, DOS_reserved) || is_DOS_drive(uppered)) {
@@ -1167,7 +1178,7 @@ char * ufo_name_mangle(const char * input, const char * prefix, const char * suf
       for (off_t parti = 0; current[parti] != '\0'; parti++) {
         output2[output2_pos++] = current[parti];
       }
-      current = strtok_r(NULL, ".", &saveptr);
+      current = strtok_r_ff_ufo(NULL, ".", &saveptr);
       if (current != NULL) output2[output2_pos++] = '.';
     }
     output2[output2_pos] = '\0';
