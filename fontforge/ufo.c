@@ -193,7 +193,6 @@ xmlNodePtr PythonLibToXML(void *python_persistent,SplineChar *sc) {
     xmlNodePtr retval = NULL, dictnode = NULL, keynode = NULL, valnode = NULL;
     // retval = xmlNewNode(NULL, BAD_CAST "lib"); //     "<lib>"
     dictnode = xmlNewNode(NULL, BAD_CAST "dict"); //     "  <dict>"
-    PyObject *dict = python_persistent, *items, *key, *value;
     if ( has_hints 
 #ifndef _NO_PYTHON
          || (dict!=NULL && PyMapping_Check(dict) && sc!=NULL)
@@ -255,6 +254,7 @@ xmlNodePtr PythonLibToXML(void *python_persistent,SplineChar *sc) {
 	    //                                           "    </dict>"
 	}
 #ifndef _NO_PYTHON
+        PyObject *dict = python_persistent, *items, *key, *value;
 	/* Ok, look at the persistent data and output it (all except for a */
 	/*  hint entry -- we've already handled that with the real hints, */
 	/*  no point in retaining out of date hints too */
