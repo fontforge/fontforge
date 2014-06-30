@@ -195,7 +195,7 @@ xmlNodePtr PythonLibToXML(void *python_persistent,SplineChar *sc) {
     dictnode = xmlNewNode(NULL, BAD_CAST "dict"); //     "  <dict>"
     if ( has_hints 
 #ifndef _NO_PYTHON
-         || (dict!=NULL && PyMapping_Check(dict) && sc!=NULL)
+         || (python_persistent!=NULL && PyMapping_Check(dict) && sc!=NULL)
 #endif
        ) {
 
