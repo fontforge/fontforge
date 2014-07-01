@@ -56,7 +56,7 @@ typedef struct giocontrol {
     unichar_t *error;
     unichar_t status[80];
 } GIOControl;
-    
+
 typedef struct gdirentry {
     unichar_t *name;
     unichar_t *mimetype;
@@ -104,6 +104,6 @@ extern char *_GIO_decomposeURL(const unichar_t *url,char **host, int *port, char
 
 extern void GIO_SetThreadCallback(void (*callback)(void *,void *,void *));
 
-extern char* GIOGetMimeType (const char *path, int sniff_data);
+extern char *GIOGetMimeType(const char *path, int sniff_data);
 
 #endif
