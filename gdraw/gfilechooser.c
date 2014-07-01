@@ -200,23 +200,28 @@ enum fchooserret GFileChooserDefFilter(GGadget *g,GDirEntry *ent,const unichar_t
     return( fc_hide );
 }
 
-static GImage *GFileChooserPickIcon(GDirEntry *e)
-{
-    char mime[PATH_MAX+1];
+static GImage *GFileChooserPickIcon(GDirEntry *e) {
+    char mime[100];
     char utf8_ent_name[PATH_MAX+1];
-    mime[PATH_MAX] = utf8_ent_name[PATH_MAX] = 0;
-    strncpy( mime,          u_to_c(e->mimetype), PATH_MAX );
-    strncpy( utf8_ent_name, u_to_c( e->name ),   PATH_MAX );
+    mime[0] = mime[99] = utf8_ent_name[PATH_MAX] = 0;
+    strncpy(utf8_ent_name,u_to_c(e->name),PATH_MAX);
 
     InitChooserIcons();
 
     if ( e->isdir ) {
-	if ( !strcmp(utf8_ent_name,".."))
+	if ( !strcmp(utf8_ent_name,"..") )
 	    return( &_GIcon_updir );
 	return( &_GIcon_dir );
     }
-    if ( !e->mimetype ) {
-	strncpy( mime, GIOGetMimeType(utf8_ent_name, false), PATH_MAX );
+    if ( e->mimetype ) {
+	strncpy(mime,u_to_c(e->mimetype),99);
+    } else {
+	char *temp;
+	if ( (temp=GIOguessMimeType(utf8_ent_name)) || (temp=GIOGetMimeType(utf8_ent_name,false)) ) {
+	    strncpy(mime,temp,99);
+	    free(temp);
+	} else
+	    return( &_GIcon_unknown );
     }
     if (strncasecmp("text/", mime, 5) == 0) {
 	if (strcasecmp("text/html", mime) == 0)
