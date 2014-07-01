@@ -11,7 +11,7 @@ depends on your OS.
 On Ubuntu, for example, you should get:
 
 ```
-sudo apt-get install packaging-dev pkg-config python-dev libpango1.0-dev libglib2.0-dev libxml2-dev giflib-dbg libjpeg-dev libtiff-dev
+sudo apt-get install packaging-dev pkg-config python-dev libpango1.0-dev libglib2.0-dev libxml2-dev giflib-dbg libjpeg-dev libtiff-dev uthash-dev
 ```
 
 If you want to draw Spiro curves, you will need 
