@@ -42,6 +42,7 @@ const char *MimeListFromExt[] = {
 	/*18 core */	"application/x-core",
 	/*19 .tar */	"application/x-tar",
 	/*20 .zip */	"application/x-compressed",
+	/* vnd.font-fontforge-sfd Officially registered with IANA on 14 May 2008 */
 	/*21 .sfd */	"application/vnd.font-fontforge-sfd",
 	/*22 .pdf */	"application/pdf",
 	/*23 .ttf */	"application/x-font-ttf",
