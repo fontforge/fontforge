@@ -33,13 +33,11 @@
 
 GImage *GImageRead(char * filename) {
 /* Go read an input image file. Return NULL if cannot guess file type */
-    char *mime, *pt;
+/* First try filename dot3 extension then try sniffing if can't guess */
+    char *mime;
 
-    if (filename == NULL )
-	return( NULL );
-
-    /* Try finding correct routine to use based on GTK mime type */
-    if ( GFileExists(filename) && (mime=GIOGetMimeType(filename,true))!=NULL ) {
+    if ( filename!=NULL && GFileExists(filename) &&
+	 ((mime=GIOguessMimeType(filename)) || (mime=GIOGetMimeType(filename,true))) ) {
 
 	if ( strcasecmp(mime,"image/bmp")==0 ) {
 	    free(mime);
@@ -80,41 +78,6 @@ GImage *GImageRead(char * filename) {
 	    return( GImageReadRgb(filename) );		/* SGI format */
 	}
 	free(mime);
-    }
-
-    /* Try finding correct routine to use based on filename suffix */
-    if ( (pt=strrchr(filename,'.'))!=NULL ) {
-
-	if ( strmatch(pt,".bmp")==0 )
-	    return( GImageReadBmp(filename) );
-	else if ( strmatch(pt,".xbm")==0 )
-	    return( GImageReadXbm(filename) );
-	else if ( strmatch(pt,".xpm")==0 )
-	    return( GImageReadXpm(filename) );
-#ifndef _NO_LIBTIFF
-	else if ( strmatch(pt,".tiff")==0 || strmatch(pt,".tif")==0 )
-	    return( GImageReadTiff(filename) );
-#endif
-#ifndef _NO_LIBJPEG
-	else if ( strmatch(pt,".jpeg")==0 || strmatch(pt,".jpg")==0 )
-	    return( GImageReadJpeg(filename) );
-#endif
-#ifndef _NO_LIBPNG
-	else if ( strmatch(pt,".png")==0 )
-	    return( GImageReadPng(filename) );
-#endif
-#ifndef _NO_LIBUNGIF
-	else if ( strmatch(pt,".gif")==0 )
-	    return( GImageReadGif(filename) );
-#endif
-	else if ( strmatch(pt,".ras")==0 || strmatch(pt,".im1")==0 || \
-		  strmatch(pt,".im8")==0 || strmatch(pt,".im24")==0 || \
-		  strmatch(pt,".im32")==0 || strmatch(pt,".rs")==0 || \
-		  strmatch(pt,".sun")==0 )
-	    return( GImageReadRas(filename) );		/* Sun raster */
-	else if ( strmatch(pt,".rgb")==0 || strmatch(pt,".rgba")==0 || \
-		  strmatch(pt,".sgi")==0 || strmatch(pt,".bw")==0 )
-	    return( GImageReadRgb(filename) );		/* SGI format */
     }
 
     return( NULL );

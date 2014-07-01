@@ -139,8 +139,11 @@ char* GIOGetMimeType(const char *path,int sniff_data) {
     temp=g_content_type_get_mime_type(content_type);
     g_free(content_type);
 
-    mime=copy(temp);	/* ...convert to generic malloc/free */
-    g_free(temp);
+    if ( temp!=NULL ) {
+	mime=copy(temp);	/* ...convert to generic malloc/free */
+	g_free(temp);
+    } else
+	mime=0;
 
     return( mime );
 }

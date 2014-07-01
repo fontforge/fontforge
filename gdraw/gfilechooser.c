@@ -188,7 +188,7 @@ enum fchooserret GFileChooserDefFilter(GGadget *g,GDirEntry *ent,const unichar_t
 	mime = GIOGetMimeType(utf8_ent_name,false);
     }
 
-    if ( mime!=NULL ) {
+    if ( mime ) {
 	for ( i=0; gfc->mimetypes[i]!=NULL; ++i )
 	    if ( strcasecmp(u_to_c(gfc->mimetypes[i]),mime)==0 ) {
 		free(mime);
