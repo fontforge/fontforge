@@ -218,6 +218,7 @@ static GImage *GFileChooserPickIcon(GDirEntry *e) {
     } else {
 	char *temp;
 	if ( (temp=GIOguessMimeType(utf8_ent_name)) || (temp=GIOGetMimeType(utf8_ent_name,false)) ) {
+	    e->mimetype=u_copy(c_to_u(temp));
 	    strncpy(mime,temp,99);
 	    free(temp);
 	} else
