@@ -65,4 +65,3 @@ return( NULL );
 }
 #endif
 
-#include "g_giomime.c"
