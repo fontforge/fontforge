@@ -207,7 +207,7 @@ fontforge-20120731-b/gdraw:
 Makefile.dynamic.in	Makefile.static.in
 
 fontforge-20120731-b/gutils:
-Makefile.dynamic.in	Makefile.static.in
+giomime.c	Makefile.dynamic.in	Makefile.static.in
 
 fontforge-20120731-b/inc:
 fontforge-config.h.in

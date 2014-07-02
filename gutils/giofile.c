@@ -87,7 +87,7 @@ static void _gio_file_dir(GIOControl *gc,char *path) {
     DIR *dir;
     struct dirent *ent;
     GDirEntry *head=NULL, *last=NULL, *cur;
-    char *buffer, *ept;
+    char *buffer, *ept, *temp;
     struct stat statb;
 
     dir = opendir(path);
@@ -113,8 +113,11 @@ return;
 	cur->modtime = statb.st_mtime;
 	cur->isdir   = S_ISDIR(cur->mode);
 	cur->isexe   = !cur->isdir && (cur->mode & 0100);
-	cur->mimetype= u_copy(c_to_u(GIOGetMimeType(buffer, false)));
-	
+	if ( (temp=GIOguessMimeType(buffer)) || (temp=GIOGetMimeType(buffer,false)) ) {
+	    cur->mimetype = u_copy(c_to_u(temp));
+	    free(temp);
+	}
+
 	if ( last==NULL )
 	    head = last = cur;
 	else {
@@ -273,7 +276,7 @@ void *_GIO_fileDispatch(GIOControl *gc) {
       break;
       case gf_renamefile:
 	topath = _GIO_decomposeURL(gc->topath,&host,&port,&username,&password);
-	free(host); free(username); free(password); 
+	free(host); free(username); free(password);
 	_gio_file_renamefile(gc,path,topath);
 	free(topath);
       break;
