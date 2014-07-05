@@ -1020,6 +1020,7 @@ char *GFileDirName(const char *path)
 {
     char ret[PATH_MAX+1];
     strncpy( ret, path, PATH_MAX );
+    ret[PATH_MAX] = '\0';
     GFileNormalizePath( ret );
     char *pt = strrchr( ret, '/' );
     if ( pt )
