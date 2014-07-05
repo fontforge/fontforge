@@ -2235,6 +2235,15 @@ return( true );
 
 #define MID_Warnings	3000
 
+static void MVMenuOpen(GWindow gw, struct gmenuitem *mi, GEvent *g) {
+    MetricsView *d = (MetricsView*)GDrawGetUserData(gw);
+    FontView *fv = NULL;
+    if (d) {
+        fv = (FontView*)d->fv;
+    }
+    _FVMenuOpen(fv);
+}
+
 static void MVMenuClose(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     GDrawDestroyWindow(gw);
 }
@@ -3443,7 +3452,7 @@ static GMenuItem2 dummyitem[] = {
 };
 static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("Font|_New"), (GImage *) "filenew.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("New|No Shortcut"), NULL, NULL, MenuNew, 0 },
-    { { (unichar_t *) N_("_Open"), (GImage *) "fileopen.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Open|No Shortcut"), NULL, NULL, MenuOpen, 0 },
+    { { (unichar_t *) N_("_Open"), (GImage *) "fileopen.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Open|No Shortcut"), NULL, NULL, MVMenuOpen, 0 },
     { { (unichar_t *) N_("Recen_t"), (GImage *) "filerecent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, NULL, dummyitem, MenuRecentBuild, NULL, MID_Recent },
     { { (unichar_t *) N_("_Close"), (GImage *) "fileclose.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Close|No Shortcut"), NULL, NULL, MVMenuClose, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */

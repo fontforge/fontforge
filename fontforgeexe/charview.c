@@ -6512,6 +6512,15 @@ return;
     GTabSetRemetric(cv->tabs);
 }
 
+static void CVMenuOpen(GWindow gw, struct gmenuitem *mi, GEvent *g) {
+    CharView *d = (CharView*)GDrawGetUserData(gw);
+    FontView *fv = NULL;
+    if (d) {
+        fv = (FontView*)d->b.fv;
+    }
+    _FVMenuOpen(fv);
+}
+
 static void CVMenuOpenBitmap(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     if ( cv->b.fv->sf->bitmaps==NULL )
@@ -11540,7 +11549,7 @@ static GMenuItem2 dummyitem[] = {
 };
 static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("Font|_New"), (GImage *) "filenew.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("New|No Shortcut"), NULL, NULL, MenuNew, MID_New },
-    { { (unichar_t *) N_("_Open"), (GImage *) "fileopen.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Open|No Shortcut"), NULL, NULL, MenuOpen, MID_Open },
+    { { (unichar_t *) N_("_Open"), (GImage *) "fileopen.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Open|No Shortcut"), NULL, NULL, CVMenuOpen, MID_Open },
     { { (unichar_t *) N_("Recen_t"), (GImage *) "filerecent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, NULL, dummyitem, MenuRecentBuild, NULL, MID_Recent },
     { { (unichar_t *) N_("_Close"), (GImage *) "fileclose.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Close|No Shortcut"), NULL, NULL, CVMenuClose, MID_Close },
     { { (unichar_t *) N_("C_lose Tab"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Close Tab|No Shortcut"), NULL, NULL, CVMenuCloseTab, MID_CloseTab },
