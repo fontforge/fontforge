@@ -2865,6 +2865,7 @@ static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv,
     name = xmlGetProp(glyph,(xmlChar *) "horiz-adv-x");
     if ( name!=NULL ) {
 	sc->width = strtod((char *) name,NULL);
+        sc->widthset = true;
 	xmlFree(name);
     } else
 	sc->width = defh;
