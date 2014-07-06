@@ -655,8 +655,7 @@ return( false );
 int u_GFileIsDir(const unichar_t *file) {
     char buffer[1024];
     u2def_strncpy(buffer,file,sizeof(buffer));
-    strcat(buffer,"/.");
-return( access(buffer,0)==0 );
+    return GFileIsDir(buffer);
 }
 
 int u_GFileExists(const unichar_t *file) {
@@ -1021,6 +1020,7 @@ char *GFileDirName(const char *path)
 {
     char ret[PATH_MAX+1];
     strncpy( ret, path, PATH_MAX );
+    ret[PATH_MAX] = '\0';
     GFileNormalizePath( ret );
     char *pt = strrchr( ret, '/' );
     if ( pt )
