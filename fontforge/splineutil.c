@@ -3530,6 +3530,7 @@ return( -1 );
 
 extended IterateSplineSolveFixup(const Spline1D *sp, extended tmin, extended tmax,
 	extended sought) {
+    // Search between tmin and tmax for a t-value at which the spline outputs sought.
     extended t;
     bigreal factor;
     extended val, valp, valm;
