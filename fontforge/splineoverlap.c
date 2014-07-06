@@ -569,7 +569,8 @@ ValidateMListTs(input2->monos);
   struct preintersection * tmppreinter;
   fprintf(stderr, "Merge %p (%f, %f) into %p (%f, %f).\n", input2, input2->inter.x, input2->inter.y,
     input1, input1->inter.x, input1->inter.y);
-  for (spline_mod = input2->monos; spline_mod != NULL; spline_mod = spline_mod->next) {
+  struct mlist * previousmlist = NULL;
+  for (spline_mod = input2->monos; spline_mod != NULL; previousmlist = spline_mod, spline_mod = spline_mod->next) {
     if (spline_mod->isend) {
       if (spline_mod->m->end == input2) {
         // Set the end of this spline to the right intersection only if the current value matches.
@@ -607,8 +608,11 @@ ValidateMListTs(input2->monos);
           int zflag1 = 0, zflag2 = 0;
           if (MonotonicCheckZeroLength(spline_mod->m)) { zflag1 = 1; }
           if (MonotonicCheckZeroLength(spline_mod->m->next)) { zflag2 = 1; }
-          if (zflag1) { MonotonicElide(&(input2->monos), spline_mod->m); fprintf(stderr, "Remove zero-length segment.\n"); }
           if (zflag2) { MonotonicElide(&(input2->monos), spline_mod->m->next); fprintf(stderr, "Remove zero-length segment.\n"); }
+          if (zflag1) {
+            MonotonicElide(&(input2->monos), spline_mod->m); fprintf(stderr, "Remove zero-length segment.\n");
+            if (previousmlist != NULL) spline_mod = previousmlist; else spline_mod = input2->monos;
+          }
         }
       }
     } else {
@@ -648,8 +652,11 @@ ValidateMListTs(input2->monos);
           int zflag1 = 0, zflag2 = 0;
           if (MonotonicCheckZeroLength(spline_mod->m)) { zflag1 = 1; }
           if (MonotonicCheckZeroLength(spline_mod->m->prev)) { zflag2 = 1; }
-          if (zflag1) { MonotonicElide(&(input2->monos), spline_mod->m); fprintf(stderr, "Remove zero-length segment.\n"); }
           if (zflag2) { MonotonicElide(&(input2->monos), spline_mod->m->prev); fprintf(stderr, "Remove zero-length segment.\n"); }
+          if (zflag1) {
+            MonotonicElide(&(input2->monos), spline_mod->m); fprintf(stderr, "Remove zero-length segment.\n");
+            if (previousmlist != NULL) spline_mod = previousmlist; else spline_mod = input2->monos;
+          }
         }
       }
     }
@@ -2080,9 +2087,9 @@ static Intersection *FindIntersections(Monotonic *ms, enum overlap_type ot) {
     }
 
     ilist = TurnPreInter2Inter(ms);
+    FigureProperMonotonicsAtIntersections(ilist);
     // Remove invalid segments.
     CleanMonotonics(&ms);
-    FigureProperMonotonicsAtIntersections(ilist);
 
     /* Now suppose we have a contour which intersects nothing? */
     /* with no intersections we lose track of it and it will vanish */
