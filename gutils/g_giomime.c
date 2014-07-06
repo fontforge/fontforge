@@ -116,22 +116,21 @@ char *GIOguessMimeType(const char *path) {
 }
 
 char* GIOGetMimeType(const char *path) {
-    char *content_type, *mime, *temp;
-    int sniff_length=4096;
-    guchar sniff_buffer[sniff_length];
-    gboolean uncertain;
+/* Get file mime type by sniffing a portion of the file */
+/* If that does not work, then depend on guessing type. */
+#define	sniff_length	4096
+    char *content_type=NULL,*mime=0;
+    FILE *fp;
 
-    content_type=g_content_type_guess(path,NULL,0,NULL);
-
-    FILE *fp=fopen(path,"rb");
-    if ( fp!=NULL ) {
+    if ( (fp=fopen(path,"rb"))!=NULL ) {
+	guchar sniff_buffer[sniff_length];
+	gboolean uncertain;
 	size_t res=fread(sniff_buffer,1,sniff_length,fp);
 	fclose (fp);
-	if (res>=0 ) {
+	if ( res>=0 ) {
 	    // first force guessing file type from the content only by passing
 	    // NULL for file name, if the result is not certain try again with
 	    // file name
-	    g_free(content_type);
 	    content_type=g_content_type_guess(NULL,sniff_buffer,res,&uncertain);
 	    if (uncertain) {
 		g_content_type_guess(path,sniff_buffer,res,NULL);
@@ -139,14 +138,19 @@ char* GIOGetMimeType(const char *path) {
         }
     }
 
-    temp=g_content_type_get_mime_type(content_type);
-    g_free(content_type);
+    if ( content_type==NULL )
+	/* if sniffing failed - then try and guess the file type */
+	content_type=g_content_type_guess(path,NULL,0,NULL);
 
-    if ( temp!=NULL ) {
-	mime=copy(temp);	/* ...convert to generic malloc/free */
-	g_free(temp);
-    } else
-	mime=0;
+    if ( content_type!=NULL ) {
+	char *temp=g_content_type_get_mime_type(content_type);
+	g_free(content_type);
+
+	if ( temp!=NULL ) {
+	    mime=copy(temp);	/* ...convert to generic malloc/free */
+	    g_free(temp);
+	}
+    }
 
     return( mime );
 }
