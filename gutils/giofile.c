@@ -113,7 +113,7 @@ return;
 	cur->modtime = statb.st_mtime;
 	cur->isdir   = S_ISDIR(cur->mode);
 	cur->isexe   = !cur->isdir && (cur->mode & 0100);
-	if ( (temp=GIOguessMimeType(buffer)) || (temp=GIOGetMimeType(buffer,false)) ) {
+	if ( (temp=GIOguessMimeType(buffer)) || (temp=GIOGetMimeType(buffer)) ) {
 	    cur->mimetype = u_copy(c_to_u(temp));
 	    free(temp);
 	}

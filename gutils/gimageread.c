@@ -37,7 +37,7 @@ GImage *GImageRead(char * filename) {
     char *mime;
 
     if ( filename!=NULL && GFileExists(filename) &&
-	 ((mime=GIOguessMimeType(filename)) || (mime=GIOGetMimeType(filename,true))) ) {
+	 ((mime=GIOguessMimeType(filename)) || (mime=GIOGetMimeType(filename))) ) {
 
 	if ( strcasecmp(mime,"image/bmp")==0 ) {
 	    free(mime);
