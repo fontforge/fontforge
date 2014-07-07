@@ -3329,13 +3329,17 @@ return;						/* Use cids instead */
     } else {
 	fseek(ttf,dict->cff_start+dict->encodingoff,SEEK_SET);
 	format = getc(ttf);
+        /* Mask off high (additional encoding bit) and check format type */
 	if ( (format&0x7f)==0 ) {
+            /* format 0 is a 1-1 map of glyph_id to code, starting with id 1 */
 	    cnt = getc(ttf);
 	    for ( i=1; i<=cnt && i<info->glyph_cnt; ++i )
 		map->map[getc(ttf)] = i;
 	} else if ( (format&0x7f)==1 ) {
 	    cnt = getc(ttf);
-	    pos = 0;
+            /* CFF encodings start with glyph_id 1 since 0 is always .notdef */
+	    pos = 1;
+            /* Parse format 1 code ranges */
 	    for ( i=0; i<cnt ; ++i ) {
 		first = getc(ttf);
 		last = first + getc(ttf)-1;
@@ -3350,6 +3354,7 @@ return;						/* Use cids instead */
 	    LogError( _("Unexpected encoding format in cff: %d\n"), format );
 	    if ( info!=NULL ) info->bad_cff = true;
 	}
+        /* if additional encoding bit set, add all additional encodings */
 	if ( format&0x80 ) {
 	    cnt = getc(ttf);
 	    for ( i=0; i<cnt; ++i ) {
