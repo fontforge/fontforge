@@ -381,6 +381,13 @@ static void MListReplaceMonotonic(struct mlist * input, struct monotonic * findm
     if (current->m == findm && current->isend == isend) { current->m = replacem; }
 }
 
+static void MListReplaceMonotonicT(struct mlist * input, struct monotonic * findm, int isend, extended t) {
+  // This replaces a reference to one monotonic with a reference to another.
+  struct mlist * current;
+  for (current = input; current != NULL; current = current->next)
+    if (current->m == findm && current->isend == isend) { current->t = t; }
+}
+
 static void MListCleanEmpty(struct mlist ** base_pointer) {
   // It is necessary to use double pointers so that we can set the previous reference.
   struct mlist ** current_pointer = base_pointer;
@@ -602,6 +609,7 @@ ValidateMListTs(input2->monos);
               else if (tmppreinter->m2 == spline_mod->m->next && tmppreinter->t2 == spline_mod->m->next->tstart) tmppreinter->t2 = tmpt;
             }
             spline_mod->m->next->tstart = tmpt; // Set the t-value.
+            MListReplaceMonotonicT(input2->monos, spline_mod->m->next, 0, tmpt); // Reset the t-value for the mlist entry for that monotonic.
           }
           fprintf(stderr, "Remap 1 adjacent start.\n");
           // Check for zero-length segments. (We cache the decision variables so that we don't dereference nulled pointers.)
@@ -646,6 +654,7 @@ ValidateMListTs(input2->monos);
               else if (tmppreinter->m2 == spline_mod->m->prev && tmppreinter->t2 == spline_mod->m->prev->tend) tmppreinter->t2 = tmpt;
             }
             spline_mod->m->prev->tend = tmpt;
+            MListReplaceMonotonicT(input2->monos, spline_mod->m->prev, 1, tmpt); // Reset the t-value for the mlist entry for that monotonic.
           }
           fprintf(stderr, "Remap 1 adjacent end.\n");
           // Check for zero-length segments. (We cache the decision variables so that we don't dereference nulled pointers.)
@@ -1154,7 +1163,6 @@ ValidateMListTs(il->monos);
         }
     }
 
-    // TODO: Perhaps adjust other segments starting or ending at the intersection when adjusting the intersection?
     if ( m1->tstart==0 && m1->start==NULL &&
 	    Within16RoundingErrors(m1->s->from->me.x,inter->x) && Within16RoundingErrors(m1->s->from->me.y,inter->y)) {
         // If the spline starts close to the intersection, move the intersection to the beginning of the spline.
