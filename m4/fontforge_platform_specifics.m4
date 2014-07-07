@@ -79,7 +79,7 @@ AS_CASE([$host],
 
    [*sparc*],[AC_DEFINE([_Keyboard],[2])],
 
-   [*mingw*],[ LDFLAGS="$LDFLAGS -lws2_32 -lplibc" ],
+   [*mingw*],[ LDFLAGS="$LDFLAGS -lws2_32" ],
 
    [*-pc-cygwin*],[
 

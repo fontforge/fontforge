@@ -43,16 +43,14 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 		echo '  [$(PACKAGE_URL)])'; \
 	} >'$(srcdir)/package.m4'
 
-# mirror providing free access to this file
-#MunhwaGothic-Bold:
-#	$(WGET) "http://mirror.1000mbps.com/freebsd/ports/distfiles/MunhwaGothic-Bold" -O fonts/MunhwaGothic-Bold
-
 noinst_FILES = * fonts/* results/* results
 
 EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE) atlocal.in
-TESTSUITE = $(srcdir)/testsuite
+TESTSUITE = $(builddir)/testsuite
 
-check-local: atconfig atlocal $(TESTSUITE) $(top_builddir)/fontforgeexe/fontforge
+FONTFORGE = $(top_builddir)/fontforgeexe/fontforge
+
+check-local: $(builddir)/fonts atconfig atlocal $(TESTSUITE) $(FONTFORGE)
 	$(MKDIR_P) $(builddir)/results
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
 
@@ -61,12 +59,12 @@ installcheck-local: atconfig atlocal $(TESTSUITE)
 	$(SHELL) '$(TESTSUITE)' AUTOTEST_PATH='$(bindir)' $(TESTSUITEFLAGS)
 
 clean-local:
-	test ! -f '$(TESTSUITE)' || $(SHELL) '$(TESTSUITE)' --clean
+	test ! -f '$(TESTSUITE)' || $(SHELL) '$(abs_builddir)/testsuite' --clean
 	rm -fR $(builddir)/results/*
 
 AUTOM4TE = $(SHELL) $(srcdir)/build-aux/missing --run autom4te
 AUTOTEST = $(AUTOM4TE) --language=autotest
-$(TESTSUITE): $(srcdir)/testsuite.at $(srcdir)/package.m4
+$(TESTSUITE): $(srcdir)/testsuite.at $(srcdir)/package.m4 $(GENERATED_INPUTS)
 	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at
 	mv $@.tmp $@
 
@@ -84,27 +82,68 @@ EXTRA_DIST += fonts/AddExtremaTest2.sfd fonts/AddExtremumTest.sfd	\
 	fonts/SimplifyBugs.sfd fonts/SplineOverlapBug1.sfd		\
 	fonts/StrokeTests.sfd fonts/VKern.sfd README
 
+# generated test inputs
+GENERATED_INPUTS =							\
+	fonts/MunhwaGothic-Bold						\
+	fonts/mingliu.ttc						\
+	fonts/Ambrosia.pt3
+
+MAYBE_GENERATED_INPUTS =						\
+	fonts/MinionPro-Regular.fea
+
+# Inputs we can generate from files in git
+fonts/Ambrosia.pt3: fonts/Ambrosia.sfd
+	$(MKDIR_P) $(builddir)/fonts
+	$(FONTFORGE) -c 'open(argv[1]).generate(argv[2])' $< $@
+
+# Inputs we can download
+fonts/MunhwaGothic-Bold:
+	$(MKDIR_P) $(builddir)/fonts
+	$(WGET) ftp://ftp.naist.jp/pub/NetBSD/packages/distfiles/adobe-cidfonts/MunhwaGothic-Bold -O $@
+
+fonts/mingliu.ttc:
+	$(MKDIR_P) $(builddir)/fonts
+	$(WGET) http://www.fontsupply.com/fonts/mingliu.ttc -O $@
+
+# Inputs we can generate from files that aren't available
+fonts/MinionPro-Regular.fea: fonts/MinionPro-Regular.otf
+	$(MKDIR_P) $(builddir)/fonts
+	$(FONTFORGE) -c 'open(argv[1]).generateFeatureFile(argv[2])' $< $@
+
 # native test scripts
-EXTRA_DIST += helper107.pe.in helper118A.pe.in helper118B.pe.in		\
-	svg2ttf.pe.in test001.pe.in test002.pe.in test003.pe.in		\
-	test004.pe.in test005.pe.in test006.pe.in test007.pe.in		\
-	test008.pe.in test009.pe.in test010.pe.in test101.pe.in		\
-	test102.pe.in test103.pe.in test104.pe.in test105.pe.in		\
-	test106.pe.in test107.pe.in test108.pe.in test109.pe.in		\
-	test110.pe.in test111.pe.in test112.pe.in test113.pe.in		\
-	test114.pe.in test115.pe.in test116.pe.in test117.pe.in		\
-	test118.pe.in test119.pe.in test120.pe.in test121.pe.in		\
-	test122.pe.in test123.pe.in test124.pe.in test125.pe.in		\
-	test126.pe.in test127.pe.in
+EXTRA_DIST += helper107.pe helper118A.pe helper118B.pe		\
+	svg2ttf.pe test001.pe test002.pe test003.pe		\
+	test004.pe test005.pe test006.pe test007.pe		\
+	test008.pe test009.pe test010.pe test101.pe		\
+	test102.pe test103.pe test104.pe test105.pe		\
+	test106.pe test107.pe test108.pe test109.pe		\
+	test110.pe test111.pe test112.pe test113.pe		\
+	test114.pe test115.pe test116.pe test117.pe		\
+	test118.pe test119.pe test120.pe test121.pe		\
+	test122.pe test123.pe test124.pe test125.pe		\
+	test126.pe test127.pe
 
 # python test scripts
-EXTRA_DIST += findoverlapbugs.py.in test0001.py.in test0101.py.in	\
-	test1001.py.in test1001a.py.in test1001b.py.in test1001c.py.in	\
-	test1002.py.in test1003.py.in test1004.py.in test1005.py.in	\
-	test1006.py.in test1007.py.in
+EXTRA_DIST += findoverlapbugs.py test0001.py test0101.py	\
+	test1001.py test1001a.py test1001b.py test1001c.py	\
+	test1002.py test1003.py test1004.py test1005.py		\
+	test1006.py test1007.py
 
 EXTRA_DIST += link_test.c randomtest.c build-aux/missing
 
-DISTCLEANFILES = atconfig *.pe *.py randomtest
+DISTCLEANFILES = atconfig randomtest $(GENERATED_INPUTS) fonts/*.afm $(TESTSUITE)
+
+MAINTAINERCLEANFILES = package.m4 testsuite.dir testsuite.log results
+
+GITIGNOREFILES = $(MAYBE_GENERATED_INPUTS)			\
+	fonts/Zapfino-4.0d3.dfont				\
+	fonts/Zapfino-4.1d6.dfont				\
+	fonts/HanSans-Bold.otf					\
+	fonts/GillSans.dfont					\
+	fonts/CourierNew.ttf					\
+	fonts/merged.cff					\
+	fonts/MinionPro-Regular.otf				\
+	fonts/LucidaGrande.ttc					\
+	fonts/nuvo-medium-woff-demo.woff
 
 -include $(top_srcdir)/git.mk

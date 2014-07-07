@@ -50,6 +50,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <stdarg.h>
+#include <fcntl.h>
 #include "ffpython.h"
 
 #include "gnetwork.h"
@@ -789,6 +790,52 @@ copyUIMethodsToBaseTable( PyMethodDef* ui, PyMethodDef* md )
     return md;
 }
 
+static void python_ui_fd_callback( int fd, void* udata );
+static void python_ui_setup_callback( bool makefifo )
+{
+#ifndef __MINGW32__
+    int fd = 0;
+    int err = 0;
+    char path[ PATH_MAX + 1 ];
+    snprintf( path, PATH_MAX, "%s/python-socket", getFontForgeUserDir(Cache));
+    
+    if( makefifo )
+    {
+	err = mkfifo( path, 0600 );
+    }
+    
+    void* udata = 0;
+    fd = open( path, O_RDONLY | O_NDELAY );
+    GDrawAddReadFD( 0, fd, udata, python_ui_fd_callback );
+#endif   
+}
+
+static void python_ui_fd_callback( int fd, void* udata )
+{
+#ifndef __MINGW32__
+    char data[ 1024*100 + 1 ];
+    memset(data, '\0', 1024*100 );
+//    sleep( 1 );
+    int sz = read( fd, data, 1024*100 );
+//    fprintf( stderr, "python_ui_fd_callback() sz:%d d:%s\n", sz, data );
+
+    CharView* cv = CharViewFindActive();
+    if( cv )
+    {
+	int layer = 0;
+	PyFF_ScriptString( cv->b.fv, cv->b.sc, layer, data );
+    }
+    
+    GDrawRemoveReadFD( 0, fd, udata );
+    python_ui_setup_callback( 0 );
+#endif    
+}
+
+void PythonUI_namedpipe_Init(void) {
+    python_ui_setup_callback( 1 );
+    
+}
+
 void PythonUI_Init(void) {
     TRACE("PythonUI_Init()\n"); 
     FfPy_Replace_MenuItemStub(PyFF_registerMenuItem);
@@ -797,6 +844,8 @@ void PythonUI_Init(void) {
 
     copyUIMethodsToBaseTable( PyFF_FontUI_methods,         PyFF_Font_methods );
     copyUIMethodsToBaseTable( module_fontforge_ui_methods, module_fontforge_methods );
+
+    
 }
 #endif
 

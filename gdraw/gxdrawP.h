@@ -278,6 +278,8 @@ typedef struct gxdisplay /* : GDisplay */ {
     unsigned int has_xkb: 1;		/* we were able to initialize the XKB extension */
     unsigned int supports_alpha_images: 1;
     unsigned int supports_alpha_windows: 1;
+    int err_flag;
+    char * err_report;
     struct gcstate gcstate[2];			/* 0 is state for normal images, 1 for bitmap (pixmaps) */
     Display *display;
     Window root;
@@ -340,6 +342,10 @@ typedef struct gxdisplay /* : GDisplay */ {
     PangoFontMap *pangoc_fontmap;
     PangoContext *pangoc_context;
 # endif
+# if defined(__MINGW32__) || __CygWin
+    int32  mousemove_last_x;
+    int32  mousemove_last_y;
+#endif
     Window last_nontransient_window;
 } GXDisplay;
 

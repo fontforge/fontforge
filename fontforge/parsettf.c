@@ -505,14 +505,15 @@ char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
     /* esel = */ getushort(ttf);
     /* rshift = */ getushort(ttf);
     for ( i=0; i<num; ++i ) {
-	tag = getlong(ttf);
-	/* checksum = */ getlong(ttf);
-	nameoffset = off2+getlong(ttf);
-	if ( tag==CHR('n','a','m','e'))
-    break;
+        tag = getlong(ttf);
+        /* checksum = */ getlong(ttf);
+        nameoffset = off2+getlong(ttf);
+        /* length = */ getlong(ttf);
+        if ( tag==CHR('n','a','m','e'))
+            break;
     }
     if ( i==num )
-return( NULL );
+        return( NULL );
 
     fseek(ttf,nameoffset,SEEK_SET);
     /* format = */ getushort(ttf);
@@ -520,60 +521,60 @@ return( NULL );
     stringoffset = nameoffset+getushort(ttf);
     fullval = famval = 0;
     for ( i=0; i<num; ++i ) {
-	plat = getushort(ttf);
-	spec = getushort(ttf);
-	lang = getushort(ttf);
-	name = getushort(ttf);
-	len = getushort(ttf);
-	off = getushort(ttf);
-	enc = enc_from_platspec(plat,spec);
-	if ( enc==NULL )
-    continue;
-	val = 0;
-	if ( plat==3 && !enc->is_custom && lang==locale )
-	    val = 15;
-	else if ( plat==3 && !enc->is_custom && (lang&0xff)==(locale&0xff) )
-	    val = 14;
-	else if ( (plat==0 || plat==1) && !enc->is_custom && lang==maclang )
-	    val = 13;
-    /* Ok, that didn't work, how about an english name? */
-	else if ( plat==3 && !enc->is_custom && lang==0x409 )
-	    val = 12;
-	else if ( plat==3 && !enc->is_custom && (lang&0xff)==0x09 )
-	    val = 11;
-	else if ( (plat==0 || plat==1) && !enc->is_custom && lang==0 )
-	    val = 10;
-    /* failing that I'll take what I can get */
-	else if ( !enc->is_custom )
-	    val = 1;
-	if ( name==4 && val>fullval ) {
-	    fullval = val;
-	    fullstr = off;
-	    fulllen = len;
-	    fullplat = plat;
-	    fullspec = spec;
-	    fulllang = lang;
-	    if ( val==12 )
-    break;
-	} else if ( name==1 && val>famval ) {
-	    famval = val;
-	    famstr = off;
-	    famlen = len;
-	    famplat = plat;
-	    famspec = spec;
-	    famlang = lang;
-	}
+        plat = getushort(ttf);
+        spec = getushort(ttf);
+        lang = getushort(ttf);
+        name = getushort(ttf);
+        len = getushort(ttf);
+        off = getushort(ttf);
+        enc = enc_from_platspec(plat,spec);
+        if ( enc==NULL )
+            continue;
+        val = 0;
+        if ( plat==3 && !enc->is_custom && lang==locale )
+            val = 15;
+        else if ( plat==3 && !enc->is_custom && (lang&0xff)==(locale&0xff) )
+            val = 14;
+        else if ( (plat==0 || plat==1) && !enc->is_custom && lang==maclang )
+            val = 13;
+        /* Ok, that didn't work, how about an english name? */
+        else if ( plat==3 && !enc->is_custom && lang==0x409 )
+            val = 12;
+        else if ( plat==3 && !enc->is_custom && (lang&0xff)==0x09 )
+            val = 11;
+        else if ( (plat==0 || plat==1) && !enc->is_custom && lang==0 )
+            val = 10;
+        /* failing that I'll take what I can get */
+        else if ( !enc->is_custom )
+            val = 1;
+        if ( name==4 && val>fullval ) {
+            fullval = val;
+            fullstr = off;
+            fulllen = len;
+            fullplat = plat;
+            fullspec = spec;
+            fulllang = lang;
+            if ( val==12 )
+                break;
+        } else if ( name==1 && val>famval ) {
+            famval = val;
+            famstr = off;
+            famlen = len;
+            famplat = plat;
+            famspec = spec;
+            famlang = lang;
+        }
     }
     if ( fullval==0 ) {
-	if ( famval==0 )
-return( NULL );
-	fullstr = famstr;
-	fulllen = famlen;
-	fullplat = famplat;
-	fullspec = famspec;
-	fulllang = famlang;
+        if ( famval==0 )
+            return( NULL );
+        fullstr = famstr;
+        fulllen = famlen;
+        fullplat = famplat;
+        fullspec = famspec;
+        fulllang = famlang;
     }
-return( _readencstring(ttf,stringoffset+fullstr,fulllen,fullplat,fullspec,fulllang));
+    return( _readencstring(ttf,stringoffset+fullstr,fulllen,fullplat,fullspec,fulllang));
 }
 
 static int PickTTFFont(FILE *ttf,char *filename,char **chosenname) {
@@ -2006,7 +2007,7 @@ return;
 	sc->ttf_instrs = instructions;
     } else
 	free(instructions);
-    SCCatagorizePoints(sc);
+    SCCategorizePoints(sc);
     free(endpt);
     free(flags);
     free(pts);
@@ -3328,13 +3329,17 @@ return;						/* Use cids instead */
     } else {
 	fseek(ttf,dict->cff_start+dict->encodingoff,SEEK_SET);
 	format = getc(ttf);
+        /* Mask off high (additional encoding bit) and check format type */
 	if ( (format&0x7f)==0 ) {
+            /* format 0 is a 1-1 map of glyph_id to code, starting with id 1 */
 	    cnt = getc(ttf);
 	    for ( i=1; i<=cnt && i<info->glyph_cnt; ++i )
 		map->map[getc(ttf)] = i;
 	} else if ( (format&0x7f)==1 ) {
 	    cnt = getc(ttf);
-	    pos = 0;
+            /* CFF encodings start with glyph_id 1 since 0 is always .notdef */
+	    pos = 1;
+            /* Parse format 1 code ranges */
 	    for ( i=0; i<cnt ; ++i ) {
 		first = getc(ttf);
 		last = first + getc(ttf)-1;
@@ -3349,6 +3354,7 @@ return;						/* Use cids instead */
 	    LogError( _("Unexpected encoding format in cff: %d\n"), format );
 	    if ( info!=NULL ) info->bad_cff = true;
 	}
+        /* if additional encoding bit set, add all additional encodings */
 	if ( format&0x80 ) {
 	    cnt = getc(ttf);
 	    for ( i=0; i<cnt; ++i ) {
@@ -5419,7 +5425,6 @@ return( 0 );
 	else
 	    info->glyph_start = info->glyphlocations_start = 0;
     }
-
     if ( info->onlystrikes ) {
 	info->chars = calloc(info->glyph_cnt+1,sizeof(SplineChar *));
 	info->to_order2 = new_fonts_are_order2;

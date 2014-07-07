@@ -60,7 +60,6 @@ return;
     fclose(plate);
 }
 
-#ifndef _NO_LIBXML
 static void ImportSVG(CharView *cv,char *path) {
     SCImportSVG(cv->b.sc,CVLayer((CharViewBase *) cv),path,NULL,0,false);
 }
@@ -68,7 +67,6 @@ static void ImportSVG(CharView *cv,char *path) {
 static void ImportGlif(CharView *cv,char *path) {
     SCImportGlif(cv->b.sc,CVLayer((CharViewBase *) cv),path,NULL,0,false);
 }
-#endif
 
 static void ImportFig(CharView *cv,char *path) {
     SCImportFig(cv->b.sc,CVLayer((CharViewBase *) cv),path,false);
@@ -223,10 +221,8 @@ static unichar_t wildmac[] = { '*', '{', 'b', 'i', 'n', ',', 'h', 'q', 'x', ',',
 static unichar_t wildwin[] = { '*', '{', 'f', 'o', 'n', ',', 'f', 'n', 't', '}',  '\0' };
 static unichar_t wildpalm[] = { '*', 'p', 'd', 'b',  '\0' };
 static unichar_t *wildchr[] = { wildimg, wildps, wildpdf,
-#ifndef _NO_LIBXML
 wildsvg,
 wildglif,
-#endif
 wildplate,
 wildfig };
 static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildpcf, wildmac,
@@ -234,12 +230,8 @@ wildwin, wildpalm,
 wildimg, wildtemplate, wildps, wildepstemplate,
 wildpdf, wildpdftemplate,
 wildplate, wildplatetemplate,
-#ifndef _NO_LIBXML
 wildsvg, wildsvgtemplate,
 wildglif, wildgliftemplate,
-#else
-NULL, NULL, NULL, NULL,
-#endif
 wildfig
 };
 
@@ -392,10 +384,8 @@ static GTextInfo formats[] = {
     { (unichar_t *) N_("Image"), NULL, 0, 0, (void *) fv_image, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("EPS"), NULL, 0, 0, (void *) fv_eps, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("PDF page graphics"), NULL, 0, 0, (void *) fv_pdf, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-#ifndef _NO_LIBXML
     { (unichar_t *) N_("SVG"), NULL, 0, 0, (void *) fv_svg, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("Glif"), NULL, 0, 0, (void *) fv_glif, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-#endif
     { (unichar_t *) N_("Raph's plate files"), NULL, 0, 0, (void *) fv_plate, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("XFig"), NULL, 0, 0, (void *) fv_fig, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     GTEXTINFO_EMPTY
@@ -414,12 +404,10 @@ static GTextInfo fvformats[] = {
     { (unichar_t *) N_("EPS"), NULL, 0, 0, (void *) fv_eps, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("EPS Template"), NULL, 0, 0, (void *) fv_epstemplate, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("PDF page graphics"), NULL, 0, 0, (void *) fv_pdf, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-#ifndef _NO_LIBXML
     { (unichar_t *) N_("SVG"), NULL, 0, 0, (void *) fv_svg, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("SVG Template"), NULL, 0, 0, (void *) fv_svgtemplate, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("Glif"), NULL, 0, 0, (void *) fv_glif, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("Glif Template"), NULL, 0, 0, (void *) fv_gliftemplate, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-#endif
     GTEXTINFO_EMPTY
 };
 
@@ -495,12 +483,10 @@ return( true );
 		ImportPDF(d->cv,temp);
 	    else if ( format==fv_plate )
 		ImportPlate(d->cv,temp);
-#ifndef _NO_LIBXML
 	    else if ( format==fv_svg )
 		ImportSVG(d->cv,temp);
 	    else if ( format==fv_glif )
 		ImportGlif(d->cv,temp);
-#endif
 	    else if ( format==fv_fig )
 		ImportFig(d->cv,temp);
 #ifndef _NO_PYTHON

@@ -29,16 +29,18 @@
 #include <winsock2.h>
 #include <windows.h>
 #endif
-
+ 
 #include "gxdrawP.h"
 #include "gxcdrawP.h"
 
 #include <stdlib.h>
 #include <math.h>
 
+#if !defined(__MINGW32__)
+#include <unistd.h>		/* for timers & select */
+#endif
 #include <sys/types.h>		/* for timers & select */
 #include <sys/time.h>		/* for timers & select */
-#include <unistd.h>		/* for timers & select */
 #include <signal.h>		/* error handler */
 #include <locale.h>		/* for setting the X locale properly */
 
@@ -559,7 +561,7 @@ static int myerrorhandler(Display *disp, XErrorEvent *err) {
     else
 	majorcode = "";
     if ( err->request_code==45 && lastfontrequest!=NULL )
-	fprintf( stderr, "Error attempting to load font:\n  %s\nThe X Server clained the font existed, but when I asked for it,\nI got this error instead:\n\n", lastfontrequest );
+	fprintf( stderr, "Error attempting to load font:\n  %s\nThe X Server claimed the font existed, but when I asked for it,\nI got this error instead:\n\n", lastfontrequest );
     XGetErrorText(disp,err->error_code,buffer,sizeof(buffer));
     fprintf( stderr, "X Error of failed request: %s\n", buffer );
     fprintf( stderr, "  Major opcode of failed request:  %d.%d (%s)\n",
@@ -3169,6 +3171,15 @@ return;
 	if ( (event->xbutton.state&0x40) && gdisp->twobmouse_win )
 	    gevent.u.mouse.button = 2;
 	if ( event->type == MotionNotify ) {
+#if defined (__MINGW32__) || __CygWin
+        //For some reason, a mouse move event is triggered even if it hasn't moved.
+        if(gdisp->mousemove_last_x == event->xbutton.x &&
+           gdisp->mousemove_last_y == event->xbutton.y) {
+            return;
+        }
+        gdisp->mousemove_last_x = event->xbutton.x;
+        gdisp->mousemove_last_y = event->xbutton.y;
+#endif
 	    gevent.type = et_mousemove;
 	    gevent.u.mouse.button = 0;
 	    gevent.u.mouse.clicks = 0;
@@ -3523,6 +3534,15 @@ static void GXDrawSync(GDisplay *gdisp) {
     XSync(((GXDisplay *) gdisp)->display,false);
 }
 
+void dispatchError(GDisplay *gdisp) {
+    if ((gdisp->err_flag) && (gdisp->err_report)) {
+      GDrawIErrorRun("%s",gdisp->err_report);
+    }
+    if (gdisp->err_report) {
+      free(gdisp->err_report); gdisp->err_report = NULL;
+    }
+}
+
 /* Munch events until we no longer have any top level windows. That essentially*/
 /*  means no windows (even if they got reparented, we still think they are top)*/
 /*  At that point try very hard to clear out the event queue. It is conceivable*/
@@ -3537,6 +3557,7 @@ static void GXDrawEventLoop(GDisplay *gd) {
 	    GXDrawWaitForEvent(gdisp);
 	    XNextEvent(display,&event);
 	    dispatchEvent(gdisp, &event);
+	    dispatchError(gd);
 	}
 	XSync(display,false);
 	GXDrawProcessPendingEvents(gd);

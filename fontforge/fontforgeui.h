@@ -27,6 +27,7 @@
 #ifndef _PFAEDITUI_H_
 #define _PFAEDITUI_H_
 
+#include <fontforge-config.h>
 #include "ffglib.h"
 #include "fontforgevw.h"
 #include <gprogress.h>
@@ -135,21 +136,11 @@ extern FontView *fv_list;
 extern struct openfilefilters { char *name, *filter; } def_font_filters[], *user_font_filters;
 extern int default_font_filter_index;
 
-#if !defined( FONTFORGE_CONFIG_CAPSLOCK_FOR_ALT ) || FONTFORGE_CONFIG_CAPSLOCK_FOR_ALT==0
-# define ksm_alt	ksm_meta
-#elif FONTFORGE_CONFIG_CAPSLOCK_FOR_ALT-2 == 0	/* I use this peculiar construction just in case it is defined as the empty string */
-# define ksm_alt	(ksm_meta|ksm_capslock)
-#else
-# define ksm_alt	ksm_capslock
-#endif
-
-/* The version of the library that the exe was built against */
-extern Library_Version_Configuration exe_library_version_configuration;
-
 #define SERIF_UI_FAMILIES	"dejavu serif,times,caslon,serif,clearlyu,unifont"
 #define SANS_UI_FAMILIES	"dejavu sans,helvetica,caliban,sans,clearlyu,unifont"
 #define MONO_UI_FAMILIES	"courier,monospace,clearlyu,unifont"
 #define FIXED_UI_FAMILIES	"monospace,fixed,clearlyu,unifont"
 
 #define isprivateuse(enc) ((enc)>=0xe000 && (enc)<=0xf8ff)
+#define issurrogate(enc) ((enc)>=0xd800 && (enc)<=0xd8ff)
 #endif

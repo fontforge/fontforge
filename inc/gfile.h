@@ -36,9 +36,13 @@ enum { Cache, Config, Data };
 int mkdir_p(const char *path, mode_t mode);
 char *smprintf(const char *fmt, ...);
 
+extern char *GFileNormalizePath(char *path);
+extern unichar_t *u_GFileNormalizePath(unichar_t *path);
+
 extern char* GFileGetHomeDir(void);
 extern unichar_t* u_GFileGetHomeDir(void);
 
+extern char *GFileRemoveExtension(char *path);
 extern char *GFileGetAbsoluteName(const char *name, char *result, size_t rsiz);
 extern char *GFileMakeAbsoluteName(char *name);
 extern char *GFileBuildName(char *dir,char *fname,char *buffer,size_t size);
@@ -53,10 +57,10 @@ extern int GFileIsDir(const char *file);
 extern int GFileExists(const char *file);
 extern int GFileModifyable(const char *file);
 extern int GFileModifyableDir(const char *file);
-extern int GFileReadable(char *file);
-extern int GFileMkDir(char *name);
-extern int GFileRmDir(char *name);
-extern int GFileUnlink(char *name);
+extern int GFileReadable(const char *file);
+extern int GFileMkDir(const char *name);
+extern int GFileRmDir(const char *name);
+extern int GFileUnlink(const char *name);
 extern char *_GFile_find_program_dir(char *prog);
 extern unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz);
 extern unichar_t *u_GFileBuildName(unichar_t *dir,unichar_t *fname,unichar_t *buffer,int size);
@@ -91,6 +95,7 @@ extern const char *getTempDir(void);
  * and something like c:\Users\foo\Documents on windows
  */
 extern char *GFileGetHomeDocumentsDir(void);
+extern unichar_t* u_GFileGetHomeDocumentsDir(void); 
 
 /**
  * Return the directory name for the full path 'path'.

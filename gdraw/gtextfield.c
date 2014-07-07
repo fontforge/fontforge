@@ -1972,9 +1972,9 @@ static int gtextfield_sel(GGadget *g, GEvent *event) {
 	if ( event->u.selclear.sel==sn_primary && gt->sel_start!=gt->sel_end ) {
 	    gt->sel_start = gt->sel_end = gt->sel_base;
 	    _ggadget_redraw(g);
-return( true );
+            return( true );
 	}
-return( false );
+        return( false );
     }
 
     if ( gt->has_dd_cursor )

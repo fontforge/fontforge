@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <fontforge-config.h>
+
 #include <stddef.h>
 #include "ustring.h"
 #include "utype.h"
@@ -132,6 +134,16 @@ void u_strcpy(unichar_t *to, const unichar_t *from) {
 	*(to++) = ch;
     *to = 0;
 }
+
+char *cc_strncpy(char *to, const char *from, int len) {
+    if( !from ) {
+	to[0] = '\0';
+	return to;
+    }
+    strncpy( to, from, len );
+    return to;
+}
+
 
 void u_strncpy(register unichar_t *to, const unichar_t *from, int len) {
     register unichar_t ch;

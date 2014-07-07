@@ -26,10 +26,16 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef _GUTILS_UNICODELIBINFO_C_
+#define _GUTILS_UNICODELIBINFO_C_
+
+#include <fontforge-config.h>
+
 #include "unicodelibinfo.h"
 #include <ustring.h>
 #include "../fontforge/ffglib.h"
 #include <glib/gprintf.h>
+#include "xvasprintf.h"
 
 
 #ifndef _NO_LIBUNINAMESLIST
@@ -101,13 +107,13 @@ char *unicode_name(int32 unienc) {
 
     char *name_data=NULL;
 #ifndef _NO_LIBUNINAMESLIST
-#ifndef _LIBUNINAMESLIST_FUN
+#if (_LIBUNINAMESLIST_FUN <= 3)
     /* old libuninameslist library code */
     if ( _UnicodeNameAnnot!=NULL &&
 	    _UnicodeNameAnnot[unienc>>16][(unienc>>8)&0xff][unienc&0xff].name!=NULL ) {
 	name_data=copy(_UnicodeNameAnnot[unienc>>16][(unienc>>8)&0xff][unienc&0xff].name);
     }
-    //fprintf(stderr,"use old code library ->%s<-\n",name_data\n");
+    //fprintf(stderr,"use old code library ->%s<-\n",name_data);
 #else
     /* new libuninameslist library code */
     name_data=copy(uniNamesList_name(unienc));
@@ -116,7 +122,7 @@ char *unicode_name(int32 unienc) {
 #else
     /* libunicodesnames library code */
     name_data=copy(uninm_name(names_db,(unsigned int)(unienc)));
-    //fprintf(stderr,"libunicodes library ->%s<-\n",name_data\n");
+    //fprintf(stderr,"libunicodes library ->%s<-\n",name_data);
 #endif
 
     /* George Williams' improvisation on Hangul Syllable range
@@ -128,11 +134,11 @@ char *unicode_name(int32 unienc) {
      */
     if( ( unienc >= 0xAC00 && unienc <= 0xD7A3 ) && ( name_data == NULL ) ) {
 	if( ( ( unienc - 0xAC00 ) % 28 ) == 0 ) {
-	    name_data = (char *) g_strdup_printf( "Hangul Syllable %s-%s",
+	    name_data = xasprintf( "Hangul Syllable %s-%s",
 		    chosung [ (unienc - 0xAC00) / (21*28) ],
 		    jungsung[ ((unienc - 0xAC00) / 28 ) % 21 ] );
 	} else {
-	    name_data = (char *) g_strdup_printf( "Hangul Syllable %s-%s-%s",
+	    name_data = xasprintf( "Hangul Syllable %s-%s-%s",
 		    chosung [ (unienc - 0xAC00) / (21*28) ],
 		    jungsung[ ((unienc - 0xAC00) / 28 ) % 21 ],
 		    jongsung[ (unienc - 0xAC00) % 28 ] );
@@ -190,6 +196,7 @@ unicode_expand_c:
 }
 
 static int unicode_block_check(int block_i) {
+#if (_LIBUNINAMESLIST_FUN <= 3)
 /* Older uninameslist database needs to be checked from start since we do */
 /* not know which is the last block. Currently this should be around 234. */
     if ( _UnicodeBlock!=NULL ) {
@@ -202,6 +209,12 @@ static int unicode_block_check(int block_i) {
 	    return( i );
     }
     return( -1 );
+#else
+    /* libuninameslist-0.4.2014____ has a function to return block count. */
+    if ( _UnicodeBlock!=NULL && block_i < uniNamesList_blockCount() )
+	return( block_i );
+    return( -1 );
+#endif
 }
 #endif
 
@@ -222,25 +235,62 @@ char *unicode_annot(int32 unienc) {
     char *annot_data=NULL;
 
 #ifndef _NO_LIBUNINAMESLIST
-#ifndef _LIBUNINAMESLIST_FUN
+#if (_LIBUNINAMESLIST_FUN <= 3)
     /* old libuninameslist library code */
     if ( _UnicodeNameAnnot!=NULL &&
 	    _UnicodeNameAnnot[unienc>>16][(unienc>>8)&0xff][unienc&0xff].annot!=NULL ) {
 	annot_data=unicode_nicer(_UnicodeNameAnnot[unienc>>16][(unienc>>8)&0xff][unienc&0xff].annot);
     }
-    //fprintf(stderr,"use old code library - annotation ->%s<-\n",annot_data);
+    //fprintf(stderr,"use old code unicode_annot() - annotation ->%s<-\n",annot_data);
 #else
     /* new libuninameslist library code */
     annot_data=unicode_nicer(uniNamesList_annot(unienc));
-    //fprintf(stderr,"new library - annotation ->%s<-\n",annot_data);
+    //fprintf(stderr,"new unicode_annot() - annotation ->%s<-\n",annot_data);
 #endif
 #else
     /* libunicodesnames library code */
     annot_data=copy(uninm_annotation(names_db,(unsigned int)(unienc)));
-    //fprintf(stderr,"libunicodes library - annotation ->%s<-\n",annot_data);
+    //fprintf(stderr,"libunicodes unicode_annot() - annotation ->%s<-\n",annot_data);
 #endif
 
     return( annot_data );
+#endif
+}
+
+int32 unicode_block_count(void) {
+/* Return the number of unicode blocks contained in this NameList library */
+#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+    /* no nameslist library available to use */
+    return( -1 );
+#else
+    int32 unicount;
+
+    unicount=-1;
+#ifndef _NO_LIBUNINAMESLIST
+#if (_LIBUNINAMESLIST_FUN >= 4)
+    /* version 0.4+ have function to do this */
+    unicount=uniNamesList_blockCount();
+    //fprintf(stderr,"ver 0.4+ unicode_block_count(), have %d\n",unicount);
+#else
+    /* old libuninameslist<=0.3 library code */
+    if ( _UnicodeBlock!=NULL ) {
+	int i;
+
+	for ( i=0; i<100000; ++i )
+	    if ( _UnicodeBlock[i].end>=0x10ffff )
+		break;
+	if ( i>0 )
+	    unicount = i;
+	//fprintf(stderr,"old code unicode_block_count(), have %d, %d\n",i,unicount);
+    }
+#endif
+#else
+    /* libunicodesnames library code */
+    unicount=uninm_num_blocks(blocks_db);
+    //fprintf(stderr,"libunicodes unicode_block_count() have %d\n",unicount);
+#endif
+
+    return( unicount );
 #endif
 }
 
@@ -257,14 +307,20 @@ int32 unicode_block_start(int32 block_i) {
 
     unistart=-1;
 #ifndef _NO_LIBUNINAMESLIST
-    /* old libuninameslist library code */
+#if (_LIBUNINAMESLIST_FUN >= 4)
+    /* version 0.4+ have function to do this */
+    unistart=uniNamesList_blockStart(block_i);
+    //fprintf(stderr,"ver 0.4+ code unicode_block_start(), have %d %d\n",block_i,unistart);
+#else
+    /* old libuninameslist<=0.3 library code */
     if ( (unistart=unicode_block_check(block_i))>=0 )
 	unistart=_UnicodeBlock[unistart].start;
-    //fprintf(stderr,"use old code library, got values of %d %d\n",block_i,unistart);
+    //fprintf(stderr,"use old code unicode_block_start(), have %d %d\n",block_i,unistart);
+#endif
 #else
     /* libunicodesnames library code */
     unistart=uninm_block_start(blocks_db,(unsigned int)(block_i));
-    //fprintf(stderr,"libunicodes library ->%s<-\n",name_data\n");
+    //fprintf(stderr,"libunicodes unicode_block_start()have %d %d\n",block_i,unistart);
 #endif
 
     return( unistart );
@@ -284,14 +340,20 @@ int32 unicode_block_end(int32 block_i) {
 
     uniend=-1;
 #ifndef _NO_LIBUNINAMESLIST
-    /* old libuninameslist library code */
+#if (_LIBUNINAMESLIST_FUN >= 4)
+    /* version 0.4+ have function to do this */
+    uniend=uniNamesList_blockEnd(block_i);
+    //fprintf(stderr,"ver 0.4+ code unicode_block_end(), have %d %d\n",block_i,uniend);
+#else
+    /* old libuninameslist<=0.3 library code */
     if ( (uniend=unicode_block_check(block_i))>=0 )
 	uniend=_UnicodeBlock[uniend].end;
-    //fprintf(stderr,"use old code library, got values of %d %d\n",block_i,uniend);
+    //fprintf(stderr,"use old code unicode_block_end(), have %d %d\n",block_i,uniend);
+#endif
 #else
     /* libunicodesnames library code */
     uniend=uninm_block_end(blocks_db,(unsigned int)(block_i));
-    //fprintf(stderr,"libunicodes library ->%s<-\n",name_data\n");
+    //fprintf(stderr,"libunicodes unicode_block_end(), have %d %d\n",block_i,uniend);
 #endif
 
     return( uniend );
@@ -309,15 +371,21 @@ char *unicode_block_name(int32 block_i) {
 #else
     char *name_data=NULL;
 #ifndef _NO_LIBUNINAMESLIST
+#if (_LIBUNINAMESLIST_FUN >= 4)
+    /* version 0.4+ have function to do this */
+    name_data=copy(uniNamesList_blockName(block_i));
+    //fprintf(stderr,"ver 0.4+ code unicode_block_name(), have %d ->%s<-\n",block_i,name_data);
+#else
     int i;
-    /* old libuninameslist library code */
+    /* old libuninameslist<=0.3 library code */
     if ( (i=unicode_block_check(block_i))>=0 )
 	name_data=copy(_UnicodeBlock[i].name);
-    //fprintf(stderr,"use old code library, got values of %d %d %s\n",i,block_i,name_data);
+    //fprintf(stderr,"use old code unicode_block_name(), have %d %d ->%s<-\n",i,block_i,name_data);
+#endif
 #else
     /* libunicodesnames library code */
     name_data=copy(uninm_block_name(blocks_db,(unsigned int)(block_i)));
-    //fprintf(stderr,"libunicodes library ->%s<-\n",name_data\n");
+    //fprintf(stderr,"libunicodes unicode_block_name() %d ->%s<-\n",block_i,name_data);
 #endif
 
     return( name_data );
@@ -330,7 +398,7 @@ char *unicode_library_version(void) {
 /* realize that these need to be updated to keep current too but not made */
 /* at same time that FontForge is released (release dates not in sync).   */
 
-#if !(_NO_LIBUNINAMESLIST) && _LIBUNINAMESLIST_FUN
+#if !(_NO_LIBUNINAMESLIST) && (_LIBUNINAMESLIST_FUN >= 3)
     /* libuninameslist-0.3.20130501-1 and later have a "version" function */
     char *version_str;
 
@@ -344,3 +412,5 @@ char *unicode_library_version(void) {
     return( NULL );
 #endif
 }
+
+#endif

@@ -56,7 +56,7 @@ typedef struct giocontrol {
     unichar_t *error;
     unichar_t status[80];
 } GIOControl;
-    
+
 typedef struct gdirentry {
     unichar_t *name;
     unichar_t *mimetype;
@@ -98,16 +98,13 @@ extern GIOControl *GIOCreate(unichar_t *path,void *userdata,
 extern void GIOSetDefAuthorizer(int32 (*getauth)(struct giocontrol *));
 extern void GIOSetUserAgent(unichar_t *agent);
 
-//extern unichar_t *GIOguessMimeType(const unichar_t *path,int isdir);
-//extern unichar_t *_GioMacMime(const char *path);
-extern char *GIOGetMimeType(const char *path, bool sniff_data);
-
 extern char *GIO_PasswordCache(char *proto,char *host,char *username,char *password);
 extern char *_GIO_decomposeURL(const unichar_t *url,char **host, int *port, char **username,
 	char **password);
 
 extern void GIO_SetThreadCallback(void (*callback)(void *,void *,void *));
 
-extern char* GIOGetMimeType (const char *path, int sniff_data);
+extern char *GIOguessMimeType(const char *path);
+extern char *GIOGetMimeType(const char *path);
 
 #endif

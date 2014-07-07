@@ -181,10 +181,11 @@
 #define MID_SpiroLeft	2315
 #define MID_SpiroRight	2316
 #define MID_SpiroMakeFirst 2317
-#define MID_NameContour	2318
-#define MID_AcceptableExtrema 2319
-#define MID_MakeArc	2320
-#define MID_ClipPath	2321
+#define MID_NamePoint	2318
+#define MID_NameContour	2319
+#define MID_AcceptableExtrema 2320
+#define MID_MakeArc	2321
+#define MID_ClipPath	2322
 
 #define MID_AutoHint	2400
 #define MID_ClearHStem	2401

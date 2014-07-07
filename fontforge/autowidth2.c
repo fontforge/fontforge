@@ -439,6 +439,7 @@ SplineChar ***GlyphClassesFromNames(SplineFont *sf,char **classnames,
 	    else
 		classes[i] = malloc((clen+1)*sizeof(SplineChar *));
 	}
+	if ( cn != NULL ) free( cn ) ; cn = NULL ;
     }
 return( classes );
 }
@@ -920,8 +921,9 @@ return;
 	AWGlyphFree( &glyphs[i] );
 #if !defined(_NO_PYTHON)
     FFPy_AWDataFree(&all);
-#endif		/* PYTHON */
     free(glyphs); glyphs = all.glyphs = NULL;
+#endif		/* PYTHON */
+    glyphs = all.glyphs = NULL;
 
     good_enough *= good_enough;
 

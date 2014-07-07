@@ -161,9 +161,6 @@ enum fchooserret GFileChooserDefFilter(GGadget *g,GDirEntry *ent,const unichar_t
     GFileChooser *gfc = (GFileChooser *) g;
     int i;
     char *mime;
-    char utf8_ent_name[PATH_MAX+1];
-    utf8_ent_name[PATH_MAX]=0;
-    strncpy( utf8_ent_name, u_to_c( ent->name ), PATH_MAX );
 
     if ( uc_strcmp(ent->name,".")==0 )	/* Don't show the current directory entry */
 	return( fc_hide );
@@ -183,38 +180,49 @@ enum fchooserret GFileChooserDefFilter(GGadget *g,GDirEntry *ent,const unichar_t
 	return( fc_hide );
     /* match the mimetypes */
     if( ent->mimetype )
-    {
-	mime = u_to_c(ent->mimetype);
-    }
-    else
-    {
-	mime = GIOGetMimeType(utf8_ent_name, false);
+	mime = copy(u_to_c(ent->mimetype));
+    else {
+	char utf8_ent_name[PATH_MAX+1];
+	strncpy(utf8_ent_name,u_to_c( ent->name ),PATH_MAX);
+	utf8_ent_name[PATH_MAX]=0;
+	mime = GIOGetMimeType(utf8_ent_name);
     }
 
-    for ( i=0; gfc->mimetypes[i]!=NULL; ++i )
-	if (strcasecmp(u_to_c(gfc->mimetypes[i]), mime) == 0)
-	    return( fc_show );
+    if ( mime ) {
+	for ( i=0; gfc->mimetypes[i]!=NULL; ++i )
+	    if ( strcasecmp(u_to_c(gfc->mimetypes[i]),mime)==0 ) {
+		free(mime);
+		return( fc_show );
+	    }
+	free(mime);
+    }
 
     return( fc_hide );
 }
 
-static GImage *GFileChooserPickIcon(GDirEntry *e)
-{
-    char mime[PATH_MAX+1];
+static GImage *GFileChooserPickIcon(GDirEntry *e) {
+    char mime[100];
     char utf8_ent_name[PATH_MAX+1];
-    mime[PATH_MAX] = utf8_ent_name[PATH_MAX] = 0;
-    strncpy( mime,          u_to_c(e->mimetype), PATH_MAX );
-    strncpy( utf8_ent_name, u_to_c( e->name ),   PATH_MAX );
+    mime[0] = mime[99] = utf8_ent_name[PATH_MAX] = 0;
+    strncpy(utf8_ent_name,u_to_c(e->name),PATH_MAX);
 
     InitChooserIcons();
 
     if ( e->isdir ) {
-	if ( !strcmp(utf8_ent_name,".."))
+	if ( !strcmp(utf8_ent_name,"..") )
 	    return( &_GIcon_updir );
 	return( &_GIcon_dir );
     }
-    if ( !e->mimetype ) {
-	strncpy( mime, GIOGetMimeType(utf8_ent_name, false), PATH_MAX );
+    if ( e->mimetype ) {
+	strncpy(mime,u_to_c(e->mimetype),99);
+    } else {
+	char *temp;
+	if ( (temp=GIOguessMimeType(utf8_ent_name)) || (temp=GIOGetMimeType(utf8_ent_name)) ) {
+	    e->mimetype=u_copy(c_to_u(temp));
+	    strncpy(mime,temp,99);
+	    free(temp);
+	} else
+	    return( &_GIcon_unknown );
     }
     if (strncasecmp("text/", mime, 5) == 0) {
 	if (strcasecmp("text/html", mime) == 0)
@@ -836,7 +844,7 @@ static void GFCRefresh(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static int GFileChooserHome(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	unichar_t* homedir = u_GFileGetHomeDir();
+	unichar_t* homedir = u_GFileGetHomeDocumentsDir();
 	if ( homedir==NULL )
 	    GGadgetSetEnabled(g,false);
 	else {
@@ -1318,7 +1326,7 @@ return;
     if ( u_GFileIsAbsolute(tit) ){
 	base = uc_strstr(tit, "://");
 	if(!base) base = (unichar_t*) tit;
-	if(pt > base && pt[1] && (pt[1]!='.' || pt[2]!='\0')){
+	if(pt > base && pt[1] && (pt[1]!='.' || pt[2]!='\0') && !u_GFileIsDir(tit)){
 	    gfc->lastname = u_copy(pt+1);
 	    dir = u_copyn(tit, pt-tit);
 	}
@@ -1801,7 +1809,7 @@ void GFileChooserSetPrefsChangedCallback(void *data, void (*p_c)(void *)) {
     prefs_changed_data = data;
 }
 
-void GFileChooserSetPaths(GGadget *g,char **path) {
+void GFileChooserSetPaths(GGadget *g, const char* const* path) {
     unichar_t **dirs = NULL;
     int dcnt;
     GFileChooser *gfc = (GFileChooser *) g;

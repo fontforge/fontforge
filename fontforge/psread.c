@@ -37,7 +37,8 @@
 #endif
 
 typedef struct _io {
-    const char *macro, *start;
+    const char *macro;
+    char *start;
     FILE *ps, *fog;
     char fogbuf[60];
     int backedup, cnt, isloop, isstopped, fogns;
@@ -286,7 +287,7 @@ return( nextch(wrapper));
 	wrapper->top = io->prev;
 	if ( io->isstopped )
 	    wrapper->endedstopped = true;
-	/* free(io->start); FIXME: Not always alloced*/
+	if (io->start != NULL) free(io->start); io->start = NULL;
 	free(io);
 	io = wrapper->top;
     }
@@ -344,7 +345,7 @@ static void ioescapeloop(IO *wrapper) {
     while ( io->prev!=NULL && !io->isstopped ) {
 	iop = io->prev;
 	wasloop = io->isloop;
-	/* free(io->start); FIXME: not always alloced*/
+	if (io->start != NULL) free(io->start); io->start = NULL;
 	free(io);
 	if ( wasloop ) {
 	    wrapper->top = iop;
@@ -368,7 +369,7 @@ static int ioescapestopped(IO *wrapper, struct psstack *stack, int sp, const siz
     while ( io->prev!=NULL ) {
 	iop = io->prev;
 	wasstopped = io->isstopped;
-	/* free(io->start); FIXME: not always alloced*/
+	if (io->start != NULL) free(io->start); io->start = NULL;
 	free(io);
 	if ( wasstopped ) {
 	    wrapper->top = iop;
@@ -597,12 +598,12 @@ return( transform[0]==1 && transform[3]==1 && transform[1]==0 && transform[2]==0
 	transform[4]==0 && transform[5]==0 );
 }
 
-static void ECCatagorizePoints( EntityChar *ec ) {
+static void ECCategorizePoints( EntityChar *ec ) {
     Entity *ent;
 
     for ( ent=ec->splines; ent!=NULL; ent=ent->next ) if ( ent->type == et_splines ) {
-	SPLCatagorizePoints( ent->u.splines.splines );
-	SPLCatagorizePoints( ent->clippath );
+	SPLCategorizePoints( ent->u.splines.splines );
+	SPLCategorizePoints( ent->clippath );
     }
 }
 
@@ -802,7 +803,7 @@ static void copyarray(struct pskeydict *to,struct pskeydict *from, struct garbag
     collectgarbage(tofrees,to);
 }
 
-static int aload(unsigned sp, struct psstack *stack,int stacktop, struct garbage *tofrees) {
+static int aload(unsigned sp, struct psstack *stack,size_t stacktop, struct garbage *tofrees) {
     int i;
 
     if ( sp>=1 && stack[sp-1].type==ps_array ) {
@@ -823,7 +824,7 @@ static int aload(unsigned sp, struct psstack *stack,int stacktop, struct garbage
 		++sp;
 	    }
 	}
-	if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+	if ( sp<stacktop ) {
 	    stack[sp].type = ps_array;
 	    stack[sp].u.dict = dict;
 	    ++sp;
@@ -957,6 +958,8 @@ static int DoMatOp(int tok,int sp,struct psstack *stack) {
 		stack[sp-1].u.dict.entries[0].u.val = t[0];
 		nsp = sp-1;
 	    }
+	  break;
+	  default:
 	  break;
 	}
 	stack[nsp-1] = stack[sp-1];
@@ -1255,7 +1258,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     int tok, i, j;
     struct psstack stack[100];
     real dval;
-    int sp=0;
+    unsigned sp=0;
     SplinePoint *pt;
     RefChar *ref, *lastref=NULL;
     real transform[6], t[6];
@@ -1340,7 +1343,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 			stack[sp++].u.str = copy("");
 		    else {
 			*gb.pt = '\0'; gb.pt = gb.base;
-			stack[sp++].u.str = copy(gb.base);
+			stack[sp++].u.str = copy((char *)gb.base);
 		    }
 		}
 	    }
@@ -1521,7 +1524,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	  case pt_index:
 	    if ( sp>0 ) {
 		i = stack[--sp].u.val;
-		if ( sp>i && i>=0 ) {
+		if ( i>=0 && sp>(unsigned)i ) {
 		    stack[sp] = stack[sp-i-1];
 		    if ( stack[sp].type==ps_string || stack[sp].type==ps_instr ||
 			    stack[sp].type==ps_lit )
@@ -2341,6 +2344,8 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		      case 5:
 			r = b*255.; g = p*255.; bl = q*255.;
 		      break;
+		      default:
+		      break;
 		    }
 		    fore = COLOR_CREATE(r,g,bl);
 		}
@@ -2582,10 +2587,10 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	    }
 	  break;
 	  case pt_counttomark:
-	    for ( i=0; i<sp; ++i )
+	    for ( i=0; (unsigned)i<sp; ++i )
 		if ( stack[sp-1-i].type==ps_mark )
 	    break;
-	    if ( i==sp )
+	    if ( (unsigned)i==sp )
 		LogError( _("No mark in counttomark\n") );
 	    else if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].type = ps_num;
@@ -2593,10 +2598,10 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	    }
 	  break;
 	  case pt_cleartomark:
-	    for ( i=0; i<sp; ++i )
+	    for ( i=0; (unsigned)i<sp; ++i )
 		if ( stack[sp-1-i].type==ps_mark )
 	    break;
-	    if ( i==sp )
+	    if ( (unsigned)i==sp )
 		LogError( _("No mark in cleartomark\n") );
 	    else {
 		while ( sp>=i ) {
@@ -2610,10 +2615,10 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	    }
 	  break;
 	  case pt_closearray:
-	    for ( i=0; i<sp; ++i )
+	    for ( i=0; (unsigned)i<sp; ++i )
 		if ( stack[sp-1-i].type==ps_mark )
 	    break;
-	    if ( i==sp )
+	    if ( (unsigned)i==sp )
 		LogError( _("No mark in ] (close array)\n") );
 	    else {
 		struct pskeydict dict;
@@ -2794,7 +2799,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	cnt = sp-1-i;
 	if ( cnt>rs->max ) cnt = rs->max;
 	rs->cnt = cnt;
-	for ( j=i+1; j<sp; ++j )
+	for ( j=i+1; (unsigned)j<sp; ++j )
 	    rs->stack[j-i-1] = stack[j].u.val;
     }
     freestuff(stack,sp,&dict,&gb,&tofrees);
@@ -2808,7 +2813,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	SplinePointListsFree(gsaves[gsp].clippath);
     }
     SplinePointListsFree(clippath);
-    ECCatagorizePoints(ec);
+    ECCategorizePoints(ec);
     if ( ec->width == UNDEFINED_WIDTH )
 	ec->width = wrapper->advance_width;
     setlocale(LC_NUMERIC,oldloc);
@@ -2910,8 +2915,7 @@ return( head );
 	    memset(&si,'\0',sizeof(si));
 	    si.join = sc->layers[layer].stroke_pen.linejoin;
 	    si.cap = sc->layers[layer].stroke_pen.linecap;
-	    /* si.removeoverlapifneeded = *flags & sf_removeoverlap ? 1 : 0;*/
-	    si.radius = sc->layers[layer].stroke_pen.width/2.0;
+	    si.radius = sc->layers[layer].stroke_pen.width/2.0f;
 	    if ( sc->layers[layer].stroke_pen.width==WIDTH_INHERITED )
 		si.radius = .5;
 	    if ( si.cap == lc_inherited ) si.cap = lc_butt;
@@ -3122,7 +3126,6 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 		memset(&si,'\0',sizeof(si));
 		si.join = ent->u.splines.join;
 		si.cap = ent->u.splines.cap;
-		/* si.removeoverlapifneeded = *flags & sf_removeoverlap ? 1 : 0;*/
 		si.radius = ent->u.splines.stroke_width/2;
 		if ( ent->u.splines.stroke_width==WIDTH_INHERITED )
 		    si.radius = .5;
@@ -3229,7 +3232,7 @@ return( NULL );
 return( cur );
 }
 
-static void SCInterpretPS(FILE *ps,SplineChar *sc, int *flags) {
+static void SCInterpretPS(FILE *ps,SplineChar *sc) {
     EntityChar ec;
     real dval;
     char tokbuf[10];
@@ -3269,7 +3272,6 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp,char **encoding) {
     SplineChar *sc; EntityChar dummy;
     RefChar *p, *ref, *next;
     IO wrapper;
-    int flags = -1;
 
     wrapper.top = NULL;
     wrapper.advance_width = UNDEFINED_WIDTH;
@@ -3287,7 +3289,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp,char **encoding) {
 		cp->keys[cp->next] = copy(tokbuf);
 		cp->values[cp->next++] = sc;
 		sc->name = copy(tokbuf);
-		SCInterpretPS(ps,sc,&flags);
+		SCInterpretPS(ps,sc);
        		ff_progress_next();
 	    } else {
 		memset(&dummy,0,sizeof(dummy));
@@ -3345,8 +3347,8 @@ Encoding *PSSlurpEncodings(FILE *file) {
     char tokbuf[200];
     IO wrapper;
     real dval;
-    int i, max, any, enc, codepointsonly;
-    int tok;
+    size_t i, any;
+    int max, enc, codepointsonly, tok;
 
     wrapper.top = NULL;
     wrapper.advance_width = UNDEFINED_WIDTH;
@@ -3366,9 +3368,10 @@ return( head );
 	}
 	codepointsonly = CheckCodePointsComment(&wrapper);
 
-	max = -1; any = 0; i=0;
-	while ( (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof &&
-		tok!=pt_closearray && tok!=pt_closecurly ) {
+	max = -1; any = 0;
+	for (i = 0; (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof &&
+                 tok!=pt_closearray && tok!=pt_closecurly;
+             i++) {
 	    if ( tok==pt_namelit && i<sizeof(names)/sizeof(names[0]) ) {
 		max = i;
 		if ( strcmp(tokbuf,".notdef")==0 ) {
@@ -3385,17 +3388,14 @@ return( head );
 		    any = 1;
 		}
 	    }
-	    ++i;
 	}
 	if ( encname!=NULL ) {
 	    tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf));
 	    if ( tok==pt_def ) {
 		/* Good */
-		;
 	    } else {
         	/* TODO! */
         	/* I guess it's not good... */
-        	;
 	    }
 	}
 	if ( max!=-1 ) {
@@ -3821,6 +3821,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		  case 9: if ( stack[sp-1]<0 ) stack[sp-1]= -stack[sp-1]; break;	/* abs */
 		  case 14: stack[sp-1] = -stack[sp-1]; break;		/* neg */
 		  case 26: stack[sp-1] = sqrt(stack[sp-1]); break;	/* sqrt */
+		  default: break;
 		}
 	      break;
 	      case 3: case 4: case 10: case 11: case 12: case 15: case 24:
@@ -3846,6 +3847,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		  break;
 		  case 15: /* eq */
 		    stack[sp-2] = (stack[sp-1]==stack[sp-2]);
+		  break;
+		  default:
 		  break;
 		}
 		--sp;
@@ -4237,7 +4240,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		coord = hint->start+hint->width;
 	    }
 	    sp = 0;
-	  break;
+	    break;
 	  case 19: /* hintmask */
 	  case 20: /* cntrmask */
 	    /* If there's anything on the stack treat it as a vstem hint */
@@ -4614,7 +4617,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
   done:
     if ( pcsp!=0 )
 	LogError( _("end of subroutine reached with no return in %s\n"), name );
-    SCCatagorizePoints(ret);
+    SCCategorizePoints(ret);
 
     ret->hstem = HintsAppend(ret->hstem,activeh); activeh=NULL;
     ret->vstem = HintsAppend(ret->vstem,activev); activev=NULL;
@@ -4652,8 +4655,10 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
     }
     ret->hstem = HintCleanup(ret->hstem,true,context->instance_count);
     ret->vstem = HintCleanup(ret->vstem,true,context->instance_count);
+
     SCGuessHHintInstancesList(ret,ly_fore);
     SCGuessVHintInstancesList(ret,ly_fore);
+
     ret->hconflicts = StemListAnyConflicts(ret->hstem);
     ret->vconflicts = StemListAnyConflicts(ret->vstem);
     if ( context->instance_count==1 && !ret->hconflicts && !ret->vconflicts )

@@ -42,6 +42,4 @@ gb12345_la_SOURCES = gb12345.c
 gb12345_la_LDFLAGS = -module -avoid-version ${MY_LIB_LDFLAGS}
 endif PLUGIN_GB12345
 
-EXTRA_DIST = ANALYZE_MAP.COM descrip.mms
-
 -include $(top_srcdir)/git.mk

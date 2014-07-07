@@ -5087,6 +5087,15 @@
 		  </child>
 
 		  <child>
+		    <widget class="GtkMenuItem" id="name_point1">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Name Point...</property>
+		      <property name="use_underline">True</property>
+		      <signal name="activate" handler="CharViewMenu_NamePoint" last_modification_time="Fri, 11 Mar 2014 14:42:48 GMT"/>
+		    </widget>
+		  </child>
+
+		  <child>
 		    <widget class="GtkMenuItem" id="name_contour1">
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_Name Contour...</property>

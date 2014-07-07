@@ -702,6 +702,7 @@ enum genfam { gf_none, gf_macfamily, gf_ttc };
 
 extern void FVMarkHintsOutOfDate(SplineChar *sc);
 extern void FVRefreshChar(FontView *fv,int gid);
+extern void _FVMenuOpen(FontView *fv);
 extern int _FVMenuSave(FontView *fv);
 extern int _FVMenuSaveAs(FontView *fv);
 extern int _FVMenuGenerate(FontView *fv,int family);
@@ -727,6 +728,7 @@ extern void FVAutoWidth2(FontView *fv);
 extern void SC_MarkInstrDlgAsChanged(SplineChar *sc);
 
 extern void PythonUI_Init(void);
+extern void PythonUI_namedpipe_Init(void);
 
 extern void SCStroke(SplineChar *sc);
 
@@ -753,7 +755,7 @@ extern uint8 *DebuggerGetWatchCvts(struct debugger_context *dc, int *n);
 extern int DebuggingFpgm(struct debugger_context *dc);
 
 
-extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
+extern void PrintFFDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
 extern void PrintWindowClose(void);
 extern void InsertTextDlg(CharView *cv);
 
@@ -802,7 +804,6 @@ extern void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuXRes(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuSaveAll(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e);
-extern void MenuOpen(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuIndex(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuAbout(GWindow base,struct gmenuitem *mi,GEvent *e);
@@ -1309,6 +1310,7 @@ extern void CVRegenFill(CharView *cv);
 extern void RulerDlg(CharView *cv);
 extern int  CVCountSelectedPoints(CharView *cv);
 extern void _CVMenuInsertPt(CharView *cv);
+extern void _CVMenuNamePoint(CharView *cv, SplinePoint *sp);
 extern void _CVMenuNameContour(CharView *cv);
 
 // sfd.c
@@ -1394,6 +1396,8 @@ extern void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, const char* keyPrefi
 extern void Prefs_LoadDefaultPreferences( void );
 
 
+extern CharView* CharViewFindActive();
+extern FontViewBase* FontViewFindActive();
 extern FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* ), void* udata );
 extern int FontViewFind_byXUID(      FontViewBase* fv, void* udata );
 extern int FontViewFind_byXUIDConnected( FontViewBase* fv, void* udata );

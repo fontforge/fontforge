@@ -47,6 +47,7 @@ struct openfilefilters def_font_filters[] = {
 	   "pt3,"
 	   "t42,"
 	   "sfd,"
+	   "ufo,"
 	   "ttf,"
 	   "bdf,"
 	   "otf,"
@@ -57,10 +58,8 @@ struct openfilefilters def_font_filters[] = {
 #ifndef _NO_LIBPNG
 	   "woff,"
 #endif
-#ifndef _NO_LIBXML
 	   "svg,"
 	   "ufo,"
-#endif
 	   "pf3,"
 	   "ttc,"
 	   "gsf,"
@@ -90,6 +89,7 @@ struct openfilefilters def_font_filters[] = {
 	   "pt3,"
 	   "t42,"
 	   "sfd,"
+	   "ufo,"
 	   "ttf,"
 	   "otf,"
 	   "cff,"
@@ -98,10 +98,8 @@ struct openfilefilters def_font_filters[] = {
 #ifndef _NO_LIBPNG
 	   "woff,"
 #endif
-#ifndef _NO_LIBXML
 	   "svg,"
 	   "ufo,"
-#endif
 	   "pf3,"
 	   "ttc,"
 	   "gsf,"
@@ -142,9 +140,8 @@ struct openfilefilters def_font_filters[] = {
     { N_("Type1"), "*.{pfa,pfb,gsf,cid}{.gz,.Z,.bz2,.lzma,}" },
     { N_("Type2"), "*.{otf,cef,cff,gai}{.gz,.Z,.bz2,.lzma,}" },
     { N_("Type3"), "*.{pf3,pt3}{.gz,.Z,.bz2,.lzma,}" },
-#ifndef _NO_LIBXML
     { N_("SVG"), "*.svg{.gz,.Z,.bz2,.lzma,}" },
-#endif
+    { N_("Unified Font Object"), "*.ufo" },
     { N_("FontForge's SFD"), "*.sfd{.gz,.Z,.bz2,.lzma,}" },
     { N_("Backup SFD"), "*.sfd~" },
     { N_("Extract from PDF"), "*.pdf{.gz,.Z,.bz2,.lzma,}" },
@@ -455,6 +452,19 @@ return(true);
 	    }
 	    d->done = true;
 	    d->ret = GGadgetGetTitle(d->gfc);
+
+	    // Trim trailing '/' if its there and put that string back as
+	    // the d->gfc string.
+	    int tmplen = u_strlen( d->ret );
+	    if( tmplen > 0 ) {
+		if( d->ret[ tmplen-1 ] == '/' ) {
+		    unichar_t* tmp = u_copy( d->ret );
+		    tmp[ tmplen-1 ] = '\0';
+		    GGadgetSetTitle(d->gfc, tmp);
+		    free(tmp);
+		    d->ret = GGadgetGetTitle(d->gfc);
+		}
+	    }
 	}
     }
 return( true );

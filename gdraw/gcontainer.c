@@ -31,6 +31,7 @@
 #include <gkeysym.h>
 #include <utype.h>
 #include <gresource.h>
+#include <string.h>
 
 static GWindow current_focus_window, previous_focus_window, last_input_window;
     /* in focus follows pointer mode, the current focus doesn't really count */
@@ -127,15 +128,21 @@ static void _GWidget_IndicateFocusGadget(GGadget *g, enum mnemonic_focus mf) {
 	fprintf( stderr, "Bad focus attempt\n" );
 return;
     }
+
+    // We recurse and find the top-level gadget.
     for ( top=g->base; top->parent!=NULL && !top->is_toplevel ; top=top->parent );
     td = (GTopLevelD *) (top->widget_data);
 
+    // We check whether the gadget in question has focus.
     if ( td->gfocus!=g ) {
+      // If not, we try to deal with the lack of focus.
 /* Hmm. KDE doesn't give us a focus out event when we make a window invisible */
 /*  So to be on the save side lets send local focus out events even when not */
 /*  strictly needed */
 	if ( /*top == current_focus_window &&*/ td->gfocus!=NULL &&
 		td->gfocus->funcs->handle_focus!=NULL ) {
+            // We use the focus handler provided by the presently focussed gadget and process a loss-of-focus event for the currently focused object.
+            memset(&e, 0, sizeof(GEvent));
 	    e.type = et_focus;
 	    e.w = top;
 	    e.u.focus.gained_focus = false;
@@ -143,8 +150,11 @@ return;
 	    (td->gfocus->funcs->handle_focus)(td->gfocus,&e);
 	}
     }
+    // We give focus to the desired gadget.
     td->gfocus = g; td->wfocus = NULL;
     if ( top == current_focus_window && g->funcs->handle_focus!=NULL ) {
+        // If the desired gadget has a focus handler, we construct an event and run it.
+        memset(&e, 0, sizeof(GEvent));
 	e.u.focus.gained_focus = true;
 	e.u.focus.mnemonic_focus = mf;
 	(g->funcs->handle_focus)(g,&e);
@@ -616,6 +626,7 @@ return( true );
 
     GGadgetPopupExternalEvent(event);
     if ( event->type==et_focus ) {
+	
 	if ( event->u.focus.gained_focus ) {
 	    if ( gw->is_toplevel && !gw->is_popup && !gw->is_dying ) {
 		if ( last_input_window!=gw )

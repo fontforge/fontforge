@@ -88,7 +88,7 @@ typedef struct context {
 			                /*  value here */
     Val trace;				/* Irrelevant for user defined funcs */
     Val argsval;			/* Irrelevant for user defined funcs */
-    char *filename;			/* Irrelevant for user defined funcs */
+    char *filename;		/* Irrelevant for user defined funcs */
     int lineno;				/* Irrelevant for user defined funcs */
     int ungotch;			/* Irrelevant for user defined funcs */
     FontViewBase *curfv;		/* Current fontview */

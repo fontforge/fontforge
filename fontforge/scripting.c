@@ -55,6 +55,8 @@
 
 #include "gutils/unicodelibinfo.h"
 
+#include "xvasprintf.h"
+
 int no_windowing_ui = false;
 int running_script = false;
 int use_utf8_in_script = true;
@@ -111,7 +113,6 @@ return( copy(str));
 return( ret );
     }
 }
-#endif /* _NO_FFSCRIPT */
 
 void arrayfree(Array *a) {
     int i;
@@ -125,6 +126,7 @@ void arrayfree(Array *a) {
     free(a->vals);
     free(a);
 }
+#endif /* _NO_FFSCRIPT */
 
 #ifndef _NO_FFSCRIPT
 static Array *arraycopy(Array *a) {
@@ -1099,6 +1101,15 @@ static void bNameFromUnicode(Context *c) {
     c->return_val.u.sval = copy(StdGlyphName(buffer,c->a.vals[1].u.ival,uniinterp,for_new_glyphs));
 }
 
+static void bUnicodeBlockCountFromLib(Context *c) {
+/* If the library is available, then return the number of name blocks */
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments" );
+
+    c->return_val.type=v_int;
+    c->return_val.u.ival=unicode_block_count();
+}
+
 static void bUnicodeBlockEndFromLib(Context *c) {
 /* If the library is available, then get the official Nth block end */
     if ( c->a.argc!=2 )
@@ -1626,14 +1637,10 @@ static void bLoadPlugin(Context *c) {
 	ScriptError( c, "Wrong number of arguments" );
     else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type of argument" );
-#if !defined(NOPLUGIN)
     _name = script2utf8_copy(c->a.vals[1].u.sval);
     name = utf82def_copy(_name); free(_name);
     LoadPlugin(name);
     free(name);
-#else
-    ScriptError(c,"This version of fontforge does not support plugins");
-#endif
 }
 
 static void bLoadPluginDir(Context *c) {
@@ -2337,7 +2344,7 @@ static void bExport(Context *c) {
     if (( format>=4 && c->a.argc!=3 ) || (format<4 && c->a.argc==3 ))
 	ScriptError( c, "Wrong number of arguments");
     bdf=NULL;
-    if ( format>=4 ) {
+    if ( format>4 ) {
 	for ( bdf = c->curfv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if (( BDFDepth(bdf)==1 && bdf->pixelsize==c->a.vals[2].u.ival) ||
 		    (bdf->pixelsize!=(c->a.vals[2].u.ival&0xffff) &&
@@ -2670,7 +2677,7 @@ static void bMultipleEncodingsToReferences(Context *c) {
 		(orig = sf->glyphs[gid])!=NULL && orig->altuni!=NULL ) {
 	    prev = NULL;
 	    for ( alt = orig->altuni; alt!=NULL; alt=next ) {
-		if ( alt->vs==(unsigned)-1 ) {
+		if ( alt->vs==-1 ) {
 		    next = alt->next;
 		    uni = alt->unienc;
 		    orig->altuni = next;
@@ -2871,7 +2878,7 @@ static void bSelectAllInstancesOf(Context *c) {
 	if ( c->a.vals[i].type==v_unicode ) {
 	    int uni = c->a.vals[i].u.ival;
 	    for ( j=0; j<map->enccount; ++j ) if ( (gid=map->map[j])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
-                    for ( alt=sc->altuni; alt!=NULL && alt->unienc!=(unichar_t)uni; alt=alt->next );
+                    for ( alt=sc->altuni; alt!=NULL && alt->unienc!=uni; alt=alt->next );
 		if ( sc->unicodeenc == uni || alt!=NULL )
 		    fv->selected[j] = true;
 	    }
@@ -3232,7 +3239,6 @@ static void bRemoveDetachedGlyphs(Context *c) {
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
     SplineChar *sc;
-    int flags = -1;
     int changed = false;
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( sf->glyphs[gid]!=NULL )
@@ -3242,7 +3248,7 @@ static void bRemoveDetachedGlyphs(Context *c) {
 	sf->glyphs[gid]->ticked = true;
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && !sc->ticked ) {
-	SFRemoveGlyph(sf,sc,&flags);
+	SFRemoveGlyph(sf,sc);
 	changed = true;
     }
     if ( changed && !sf->changed ) {
@@ -4280,7 +4286,6 @@ static void FVApplySubstitution(FontViewBase *fv,uint32 script, uint32 lang, uin
     int i, gid, gid2;
     SplineChar **replacements;
     uint8 *removes;
-    int flags = -1;
 
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
@@ -4322,7 +4327,7 @@ static void FVApplySubstitution(FontViewBase *fv,uint32 script, uint32 lang, uin
 		    }
 		}
 	    }
-	    SFRemoveGlyph(sf,sc,&flags);
+	    SFRemoveGlyph(sf,sc);
 	}
     }
 
@@ -4689,17 +4694,17 @@ static void bItalic(Context *c) {
 		    default_ii.transform_top_xh_serifs = (flags & 0x0002) ? 1 : 0;
 		    default_ii.transform_top_as_serifs = (flags & 0x0004) ? 1 : 0;
 		    default_ii.transform_diagon_serifs = (flags & 0x0008) ? 1 : 0;
-		    
+
 		    default_ii.a_from_d = (flags & 0x0010) ? 1 : 0;
 		    default_ii.f_long_tail = (flags & 0x0020) ? 1 : 0;
 		    default_ii.f_rotate_top = (flags & 0x0040) ? 1 : 0;
 		    default_ii.pq_deserif = (flags & 0x0080) ? 1 : 0;
-		    
+
 		    default_ii.cyrl_phi = (flags & 0x0100) ? 1 : 0;
 		    default_ii.cyrl_i = (flags & 0x0200) ? 1 : 0;
 		    default_ii.cyrl_pi = (flags & 0x0400) ? 1 : 0;
 		    default_ii.cyrl_te = (flags & 0x0800) ? 1 : 0;
-		    
+
 		    default_ii.cyrl_sha = (flags & 0x1000) ? 1 : 0;
 		    default_ii.cyrl_dje = (flags & 0x2000) ? 1 : 0;
 		    default_ii.cyrl_dzhe = (flags & 0x4000) ? 1 : 0;
@@ -4730,8 +4735,8 @@ static void bItalic(Context *c) {
 		pct = c->a.vals[i].u.ival;
 	    else
 		break;
-	    default_ii.lc.lsb_percent = default_ii.lc.rsb_percent = 
-		default_ii.uc.lsb_percent = default_ii.uc.rsb_percent = 
+	    default_ii.lc.lsb_percent = default_ii.lc.rsb_percent =
+		default_ii.uc.lsb_percent = default_ii.uc.rsb_percent =
 		default_ii.neither.lsb_percent =
 		default_ii.neither.rsb_percent = pct;
 	    continue;
@@ -4868,7 +4873,7 @@ static void bSmallCaps(Context *c) {
 	    ScriptError(c,"Bad argument 2 type in SmallCaps");
     }
     genchange.hcounter_scale = genchange.lsb_scale = genchange.rsb_scale = h_scale;
-    
+
     if ( c->a.argc>3 ) {
 	if ( c->a.vals[3].type==v_real )
 	    stem_w = c->a.vals[3].u.fval;
@@ -5604,7 +5609,7 @@ static void bInterpolateFonts(Context *c) {
 	ScriptErrorString(c,"Can't find font", c->a.vals[2].u.sval);
     if ( sf->fv==NULL )
 	EncMapFree(sf->map);
-    c->curfv = FVAppend(_FontViewCreate(InterpolateFont(c->curfv->sf,sf,percent/100.0, c->curfv->map->enc )));
+    c->curfv = FVAppend(_FontViewCreate(InterpolateFont(c->curfv->sf,sf,(double)percent/100.0, c->curfv->map->enc )));
 }
 
 static void bDefaultUseMyMetrics(Context *c) {
@@ -5765,7 +5770,7 @@ return;
     }
 }
 
-static void prterror(void *foo, char *msg, int pos) {
+static void prterror(void *UNUSED(foo), char *msg, int UNUSED(pos)) {
     fprintf( stderr, "%s\n", msg );
 }
 
@@ -5836,7 +5841,7 @@ static void bGetCvtAt(Context *c) {
     if ( c->a.vals[1].type!=v_int )
 	ScriptError( c, "Bad argument type" );
     for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=CHR('c','v','t',' '); tab=tab->next );
-    if ( tab==NULL || c->a.vals[1].u.ival>=tab->len/2 )
+    if ( tab==NULL || c->a.vals[1].u.ival>=(int)tab->len/2 )
 	ScriptError(c,"Cvt table is either not present or too short");
     c->return_val.type = v_int;
     c->return_val.u.ival = memushort(tab->data,tab->len,
@@ -5852,7 +5857,7 @@ static void bReplaceCvtAt(Context *c) {
     if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
 	ScriptError( c, "Bad argument type" );
     for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=CHR('c','v','t',' '); tab=tab->next );
-    if ( tab==NULL || c->a.vals[1].u.ival>=tab->len/2 )
+    if ( tab==NULL || c->a.vals[1].u.ival>=(int)tab->len/2 )
 	ScriptError(c,"Cvt table is either not present or too short");
     memputshort(tab->data,sizeof(uint16)*c->a.vals[1].u.ival,
 	    c->a.vals[2].u.ival);
@@ -6791,7 +6796,6 @@ return;
 
 static void bAddAnchorClass(Context *c) {
     AnchorClass *ac, *t;
-    unichar_t *ustr;
     SplineFont *sf = c->curfv->sf;
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
@@ -6814,8 +6818,6 @@ static void bAddAnchorClass(Context *c) {
 	ScriptErrorString(c,"This font already contains an anchor class with this name: ", c->a.vals[1].u.sval );
 
     ac->subtable = SFFindLookupSubtable(sf,c->a.vals[3].u.sval);
-    /* if ( ac->subtable==NULL )
-	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[3].u.sval); */
 
     if ( strmatch(c->a.vals[2].u.sval,"default")==0 || strmatch(c->a.vals[2].u.sval,"mark")==0 )
 	ac->type = act_mark;
@@ -6826,8 +6828,6 @@ static void bAddAnchorClass(Context *c) {
     else
 	ScriptErrorString(c,"Unknown type of anchor class. Must be one of \"default\", \"mk-mk\", or \"cursive\". ",  c->a.vals[2].u.sval);
 
-    ustr = uc_copy(c->a.vals[3].u.sval);
-    free(ustr);
     ac->next = sf->anchor;
     sf->anchor = ac;
     sf->changed = true;
@@ -7042,7 +7042,7 @@ static void bRemoveATT(Context *c) {
 static void bRemoveLookup(Context *c) {
     OTLookup *otl;
 
-    if ( c->a.argc!=2 || c->a.argc!=3 )
+    if ( c->a.argc<2 || c->a.argc>3 )
 	ScriptError( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type for argument 1");
@@ -7087,7 +7087,7 @@ static void bMergeLookups(Context *c) {
 static void bRemoveLookupSubtable(Context *c) {
     struct lookup_subtable *sub;
 
-    if ( c->a.argc!=2 || c->a.argc!=3 )
+    if ( c->a.argc<2 || c->a.argc>3 )
 	ScriptError( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type for argument");
@@ -7525,6 +7525,8 @@ static void bAddLookupSubtable(Context *c) {
       case gsub_single: case gsub_multiple: case gsub_alternate: case gsub_ligature:
       case gpos_single: case gpos_pair:
 	sub->per_glyph_pst_or_kern = true;
+      break;
+      default:
       break;
     }
 }
@@ -8391,7 +8393,7 @@ static void bValidate(Context *c) {
     c->return_val.u.ival = SFValidate(c->curfv->sf, ly_fore, force );
 }
 
-static void bDebugCrashFontForge(Context *c)
+static void bDebugCrashFontForge(Context *UNUSED(c))
 {
     fprintf(stderr,"FontForge is crashing because you asked it to using the DebugCrashFontForge command\n");
     int *ptr = NULL;
@@ -8399,7 +8401,7 @@ static void bDebugCrashFontForge(Context *c)
 }
 
 
-static struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[] = {
+static struct builtins { const char *name; void (*func)(Context *); int nofontok; } builtins[] = {
 /* Generic utilities */
     { "Print", bPrint, 1 },
     { "Error", bError, 1 },
@@ -8440,6 +8442,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "GetEnv", bGetEnv, 1 },
     { "UnicodeFromName", bUnicodeFromName, 1 },
     { "NameFromUnicode", bNameFromUnicode, 1 },
+    { "UnicodeBlockCountFromLib", bUnicodeBlockCountFromLib, 1 },
     { "UnicodeBlockEndFromLib", bUnicodeBlockEndFromLib, 1 },
     { "UnicodeBlockNameFromLib", bUnicodeBlockNameFromLib, 1},
     { "UnicodeBlockStartFromLib", bUnicodeBlockStartFromLib, 1 },
@@ -8536,8 +8539,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SelectChanged", bSelectChanged, 0 },
     { "SelectHintingNeeded", bSelectHintingNeeded, 0 },
     { "SelectWorthOutputting", bSelectWorthOutputting, 0 },
-    { "SelectGlyphsSplines", bSelectGlyphsSplines },
-    { "SelectGlyphsReferences", bSelectGlyphsReferences },
+    { "SelectGlyphsSplines", bSelectGlyphsSplines, 0 },
+    { "SelectGlyphsReferences", bSelectGlyphsReferences, 0 },
     { "SelectGlyphsBoth", bSelectGlyphsBoth, 0 },
     { "SelectByATT", bSelectByATT, 0 },
     { "SelectByPosSub", bSelectByPosSub, 0 },
@@ -8787,24 +8790,6 @@ static int AddScriptLine(FILE *script, const char *line)
     fsetpos(script, &pos);
     return getc(script);
 }
-
-#if defined(__MINGW32__)
-
-ssize_t getline(char **lineptr, size_t *n, FILE *stream);
-ssize_t getline(char **lineptr, size_t *n, FILE *stream)
-{
-    int size = 1024;
-    char* s = calloc( size+1, sizeof(char) );
-    char* ret = fgets( s, size, stream );
-    if( !ret )
-    {
-	free(s);
-	return -1;
-    }
-    return s;
-}
-
-#endif
 
 static int _buffered_cgetc(Context *c) {
     if (c->interactive) {
@@ -9293,28 +9278,24 @@ static void docall(Context *c,char *name,Val *val) {
 	} else {
 	    if ( strchr(name,'/')==NULL && strchr(c->filename,'/')!=NULL ) {
 		char *pt;
-		sub.filename = malloc(strlen(c->filename)+strlen(name)+4);
-		strcpy(sub.filename,c->filename);
+		sub.filename = strcpy(malloc(strlen(c->filename)+strlen(name)+4),c->filename);
 		pt = strrchr(sub.filename,'/');
 		strcpy(pt+1,name);
 	    }
 	    sub.script = fopen(sub.filename,"r");
 	    if ( sub.script==NULL ) {
 		char *pt;
-		if ( sub.filename==name ) {
-		    sub.filename = malloc(strlen(name)+4);
-		    strcpy(sub.filename,name);
-		}
+		if ( sub.filename==name )
+		    sub.filename = strcpy(malloc(strlen(name)+4),name);
 		pt = sub.filename + strlen(sub.filename);
-		strcpy(pt, ".ff");
+		strcpy((char *)pt, ".ff");
 		sub.script = fopen(sub.filename,"r");
 		if ( sub.script==NULL ) {
-		    strcpy(pt, ".pe");
+		    strcpy((char *)pt, ".pe");
 		    sub.script = fopen(sub.filename,"r");
 		}
-		if ( sub.script==NULL ) {
+		if ( sub.script==NULL )
 		    *pt = '\0';
-		}
 	    }
 	    sub.script = fopen(sub.filename,"r");
 	    if ( sub.script==NULL ) {
@@ -9327,7 +9308,7 @@ static void docall(Context *c,char *name,Val *val) {
 		}
 		fclose(sub.script); sub.script = NULL;
 	    }
-	    if ( sub.filename!=name )
+	    if ( ( sub.filename!=NULL ) && ( sub.filename!=name ) )
 		free( sub.filename );
 	}
 	c->curfv = sub.curfv;
@@ -9574,7 +9555,7 @@ static void handlename(Context *c,Val *val) {
 		val->u.lval = &c->trace;
 	    } else if ( strcmp(name,"$version")==0 ) {
 		val->type = v_str;
-		sprintf(name,"%d", library_version_configuration.library_source_versiondate);
+		sprintf(name,"%d", FONTFORGE_VERSIONDATE_RAW);
 		val->u.sval = copy(name);
 	    } else if ( strcmp(name,"$haspython")==0 ) {
 		val->type = v_int;
@@ -10335,7 +10316,7 @@ void ff_VerboseCheck(void) {
 	verbose = getenv("FONTFORGE_VERBOSE")!=NULL;
 }
 
-void ProcessNativeScript(int argc, char *argv[], FILE *script) {
+_Noreturn void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     int i,j;
     Context c;
     enum token_type tok;
@@ -10354,7 +10335,7 @@ void ProcessNativeScript(int argc, char *argv[], FILE *script) {
 	    	i = 0;
     } else {
 		// Count valid arguments but only allow one order. (?)
-		if ( argc>i+1 && (strcmp(argv[i],"-nosplash")==0 || strcmp(argv[i],"--nosplash")==0 
+		if ( argc>i+1 && (strcmp(argv[i],"-nosplash")==0 || strcmp(argv[i],"--nosplash")==0
 		                    || strcmp(argv[i],"-quiet")==0 || strcmp(argv[i],"--quiet")==0 ))
 			++i;
 		if ( argc>i+1 && (strncmp(argv[i],"-lang=",6)==0 || strncmp(argv[i],"--lang=",7)==0 ))
@@ -10522,9 +10503,11 @@ return;
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 	    if ( is_python==-1 && strcmp(pt,"-script")==0 )
 		is_python = PythonLangFromExt(argv[i+1]);
-	    if ( is_python )
+	    if ( is_python ) {
+                if (strcmp(argv[i],"-c") == 0) /* Make command-line args and Fontforge module more conveniently available for command-line scripts */
+                    argv[i + 1] = xasprintf("from sys import argv; from fontforge import *; %s", argv[i + 1]);
 		PyFF_Main(argc,argv,i);
-	    else
+	    } else
 		ProcessNativeScript(argc, argv,NULL);
 #elif !defined(_NO_PYTHON)
 	    PyFF_Main(argc,argv,i);
@@ -10539,8 +10522,7 @@ return;
 	    buffer[0] = '\0';
 	    fgets(buffer,sizeof(buffer),temp);
 	    fclose(temp);
-	    if ( buffer[0]=='#' && buffer[1]=='!' &&
-		    (strstr(buffer,"pfaedit")!=NULL || strstr(buffer,"fontforge")!=NULL )) {
+	    if ( buffer[0]=='#' && buffer[1]=='!' ) {
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 		if ( is_python==-1 )
 		    is_python = PythonLangFromExt(argv[i]);

@@ -3351,15 +3351,19 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *sf) {
 return;					/* No anchor positioning, no ligature carets */
 
     at->gdef = tmpfile();
-    if ( sf->mark_set_cnt==0 )
+    if ( sf->mark_set_cnt==0 ) {
 	putlong(at->gdef,0x00010000);		/* Version */
-    else
+        putshort(at->gdef, needsclass ? 12 : 0 ); /* glyph class defn table */
+    } else {
 	putlong(at->gdef,0x00010002);		/* Version with mark sets */
-    putshort(at->gdef, needsclass ? 14 : 0 );	/* glyph class defn table */
+        putshort(at->gdef, needsclass ? 14 : 0 ); /* glyph class defn table */
+    }
     putshort(at->gdef, 0 );			/* attachment list table */
     putshort(at->gdef, 0 );			/* ligature caret table (come back and fix up later) */
     putshort(at->gdef, 0 );			/* mark attachment class table */
-    putshort(at->gdef, 0 );			/* mark attachment set table only meaningful if version is 0x10002, but doesn't hurt to output always*/
+    if ( sf->mark_set_cnt>0 ) {
+        putshort(at->gdef, 0 );                 /* mark attachment set table only meaningful if version is 0x10002*/
+    }
 
 	/* Glyph class subtable */
     if ( needsclass ) {

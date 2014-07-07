@@ -897,7 +897,7 @@ SplineSet *SSttfApprox(SplineSet *ss) {
 	}
     }
     ttfCleanup(ret->first);
-    SPLCatagorizePoints(ret);
+    SPLCategorizePoints(ret);
 return( ret );
 }
 

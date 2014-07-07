@@ -33,78 +33,51 @@
 
 GImage *GImageRead(char * filename) {
 /* Go read an input image file. Return NULL if cannot guess file type */
-    char *mime, *pt;
+/* First try filename dot3 extension then try sniffing if can't guess */
+    char *mime;
 
-    if (filename == NULL )
-	return( NULL );
+    if ( filename!=NULL && GFileExists(filename) &&
+	 ((mime=GIOguessMimeType(filename)) || (mime=GIOGetMimeType(filename))) ) {
 
-    /* Try finding correct routine to use based on GTK mime type */
-    if ( GFileExists(filename) ) {
-	mime=GIOGetMimeType(filename, true);
-
-	if ( strcasecmp(mime,"image/bmp")==0 )
+	if ( strcasecmp(mime,"image/bmp")==0 ) {
+	    free(mime);
 	    return( GImageReadBmp(filename) );
-	else if ( strcasecmp(mime,"image/x-xbitmap")==0 )
+	} else if ( strcasecmp(mime,"image/x-xbitmap")==0 ) {
+	    free(mime);
 	    return( GImageReadXbm(filename) );
-	else if ( strcasecmp(mime,"image/x-xpixmap")==0 )
+	} else if ( strcasecmp(mime,"image/x-xpixmap")==0 ) {
+	    free(mime);
 	    return( GImageReadXpm(filename) );
 #ifndef _NO_LIBTIFF
-	else if ( strcasecmp(mime,"image/tiff")==0 )
+	} else if ( strcasecmp(mime,"image/tiff")==0 ) {
+	    free(mime);
 	    return( GImageReadTiff(filename) );
 #endif
 #ifndef _NO_LIBJPEG
-	else if ( strcasecmp(mime,"image/jpeg")==0 )
+	} else if ( strcasecmp(mime,"image/jpeg")==0 ) {
+	    free(mime);
 	    return( GImageReadJpeg(filename) );
 #endif
 #ifndef _NO_LIBPNG
-	else if ( strcasecmp(mime,"image/png")==0 )
+	} else if ( strcasecmp(mime,"image/png")==0 ) {
+	    free(mime);
 	    return( GImageReadPng(filename) );
 #endif
 #ifndef _NO_LIBUNGIF
-	else if ( strcasecmp(mime,"image/gif")==0 )
+	} else if ( strcasecmp(mime,"image/gif")==0 ) {
+	    free(mime);
 	    return( GImageReadGif(filename) );
 #endif
-	else if ( strcasecmp(mime,"image/x-cmu-raster")==0 || \
-		  strcasecmp(mime,"image/x-sun-raster")==0 )
+	} else if ( strcasecmp(mime,"image/x-cmu-raster")==0 || \
+		  strcasecmp(mime,"image/x-sun-raster")==0 ) {
+	    free(mime);
 	    return( GImageReadRas(filename) );		/* Sun raster */
-	else if ( strcasecmp(mime,"image/x-rgb")==0 || \
-		  strcasecmp(mime,"image/x-sgi")==0 )
+	} else if ( strcasecmp(mime,"image/x-rgb")==0 || \
+		  strcasecmp(mime,"image/x-sgi")==0 ) {
+	    free(mime);
 	    return( GImageReadRgb(filename) );		/* SGI format */
-    }
-
-    /* Try finding correct routine to use based on filename suffix */
-    if ( (pt=strrchr(filename,'.'))!=NULL ) {
-
-	if ( strmatch(pt,".bmp")==0 )
-	    return( GImageReadBmp(filename) );
-	else if ( strmatch(pt,".xbm")==0 )
-	    return( GImageReadXbm(filename) );
-	else if ( strmatch(pt,".xpm")==0 )
-	    return( GImageReadXpm(filename) );
-#ifndef _NO_LIBTIFF
-	else if ( strmatch(pt,".tiff")==0 || strmatch(pt,".tif")==0 )
-	    return( GImageReadTiff(filename) );
-#endif
-#ifndef _NO_LIBJPEG
-	else if ( strmatch(pt,".jpeg")==0 || strmatch(pt,".jpg")==0 )
-	    return( GImageReadJpeg(filename) );
-#endif
-#ifndef _NO_LIBPNG
-	else if ( strmatch(pt,".png")==0 )
-	    return( GImageReadPng(filename) );
-#endif
-#ifndef _NO_LIBUNGIF
-	else if ( strmatch(pt,".gif")==0 )
-	    return( GImageReadGif(filename) );
-#endif
-	else if ( strmatch(pt,".ras")==0 || strmatch(pt,".im1")==0 || \
-		  strmatch(pt,".im8")==0 || strmatch(pt,".im24")==0 || \
-		  strmatch(pt,".im32")==0 || strmatch(pt,".rs")==0 || \
-		  strmatch(pt,".sun")==0 )
-	    return( GImageReadRas(filename) );		/* Sun raster */
-	else if ( strmatch(pt,".rgb")==0 || strmatch(pt,".rgba")==0 || \
-		  strmatch(pt,".sgi")==0 || strmatch(pt,".bw")==0 )
-	    return( GImageReadRgb(filename) );		/* SGI format */
+	}
+	free(mime);
     }
 
     return( NULL );

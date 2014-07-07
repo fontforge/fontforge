@@ -31,6 +31,7 @@
 #if !defined(__MINGW32__)
 #include <sys/wait.h>
 #endif
+#include "fontforge-config.h"
 #include <unistd.h>
 
 #include "gpsdrawP.h"

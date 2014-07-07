@@ -2760,8 +2760,7 @@ return;
     base->me = inter;
     SplineRefigure(base->next);
     SplineRefigure(base->prev);
-    SplinePointCatagorize(base);
-
+    SplinePointCategorize(base);
     SplinePointFree(other);
 }
 

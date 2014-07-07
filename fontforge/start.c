@@ -118,6 +118,9 @@ void doinitFontForgeMain(void) {
 
     if ( inited )
 return;
+#ifdef __MINGW32__
+    FindProgDir(NULL);
+#endif
     InitSimpleStuff();
     if ( default_encoding==NULL )
 	default_encoding=FindOrMakeEncoding("ISO8859-1");
@@ -129,8 +132,7 @@ return;
 void doversion(const char *source_version_str) {
     if ( source_version_str!=NULL )
 	printf( "fontforge %s\n", source_version_str );
-    printf( "libfontforge %d%s\n",
-	    library_version_configuration.library_source_versiondate,
-	    library_version_configuration.config_had_multilayer?"-ML":"" );
+    printf( "libfontforge %d\n",
+	    FONTFORGE_VERSIONDATE_RAW );
 exit(0);
 }

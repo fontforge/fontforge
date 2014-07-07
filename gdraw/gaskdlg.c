@@ -172,7 +172,7 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,va_lis
     }
     g_vasprintf(&buf, qbuf, ap);
     g_free( qbuf );
-    ubuf = (unichar_t *) g_utf8_to_ucs4( (const gchar*) buf, -1, NULL, NULL, NULL );
+    ubuf = (unichar_t *) g_utf8_to_ucs4( buf, -1, NULL, NULL, NULL );
     g_free( buf );
     if( !ubuf ) {
 	fprintf( stderr, "Failed to convert formatted string in DlgCreate()\n" );

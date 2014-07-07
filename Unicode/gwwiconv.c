@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include <basics.h>
 #include <gwwiconv.h>
 #include <charset.h>
@@ -33,7 +35,7 @@
 #include <ustring.h>
 #include <stdio.h>
 
-#ifndef HAVE_ICONV_H
+#ifndef HAVE_ICONV
 
 /* I have written an limited iconv which will convert either to or from unichar_t */
 /* (either UCS2 or UCS4) */
@@ -1059,4 +1061,4 @@ return( char_cnt );
 }
 #else
 static const int a_file_must_define_something=1;
-#endif 	/* HAVE_ICONV_H */
+#endif 	/* HAVE_ICONV */

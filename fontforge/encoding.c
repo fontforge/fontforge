@@ -38,6 +38,7 @@
 #include "psfont.h"
 #include "ffglib.h"
 #include <glib/gprintf.h>
+#include "xvasprintf.h"
 
 Encoding *default_encoding = NULL;
 
@@ -617,12 +618,11 @@ return( NULL );
 		return( NULL );
 	    }
 	    if ( item==head && item->next==NULL )
-		buf = (char *) g_strdup(_( "Please name this encoding" ));
+		buf = strdup(_( "Please name this encoding" ));
 	    else
-		buf = (char *) g_strdup_printf(_( "Please name encoding %d in this file" ), i );
+		buf = xasprintf(_( "Please name encoding %d in this file" ), i );
 
 	    name = ff_ask_string( buf, NULL, buf );
-	    g_free( buf );
 
 	    if ( name!=NULL ) {
 		item->enc_name = copy(name);
@@ -948,11 +948,11 @@ return( ret );
 
 struct cidmap *FindCidMap(char *registry,char *ordering,int supplement,SplineFont *sf) {
     struct cidmap *map, *maybe=NULL;
-    const char *file;
+    char *file;
     char *maybefile=NULL;
     int maybe_sup = -1;
     const char *buts[3], *buts2[3], *buts3[3];
-    gchar *buf = NULL;
+    char *buf = NULL;
     int ret;
 
     if ( sf!=NULL && sf->cidmaster ) sf = sf->cidmaster;
@@ -1006,16 +1006,14 @@ return( maybe );
 
     if ( file==NULL ) {
 	char *uret;
-	buf = g_strdup_printf( "%s-%s-*.cidmap", registry, ordering );
+	buf = xasprintf( "%s-%s-*.cidmap", registry, ordering );
 	if ( maybe==NULL && maybefile==NULL ) {
 	    buts3[0] = _("_Browse"); buts3[1] = _("_Give Up"); buts3[2] = NULL;
 	    ret = ff_ask(_("No cidmap file..."),(const char **)buts3,0,1,_("FontForge was unable to find a cidmap file for this font. It is not essential to have one, but some things will work better if you do. If you have not done so you might want to download the cidmaps from:\n   http://FontForge.sourceforge.net/cidmaps.tgz\nand then gunzip and untar them and move them to:\n  %.80s\n\nWould you like to search your local disk for an appropriate file?"),
 		    getFontForgeShareDir()==NULL?"/usr/share/fontforge":getFontForgeShareDir()
 		    );
-	    if ( ret==1 || no_windowing_ui ) {
-		g_free( buf );
+	    if ( ret==1 || no_windowing_ui )
 		buf = NULL;
-	    }
 	}
 	uret = NULL;
 	if ( ( buf != NULL ) && !no_windowing_ui ) {
@@ -1878,7 +1876,7 @@ return( NULL );
 	}
 	if ( !found ) {
 	    if ( sc->unicodeenc!=-1 &&
-                 (unsigned)sc->unicodeenc<unicode4_size &&
+                 sc->unicodeenc < (int)unicode4_size &&
 		     (j = EncFromUni(sc->unicodeenc,enc))!= -1 )
 		encoded[j] = i;
 	    else {
@@ -1999,7 +1997,7 @@ static void BCProtectUndoes( Undoes *undo,BDFChar *bc ) {
     }
 }
 
-void SFRemoveGlyph( SplineFont *sf,SplineChar *sc, int *flags ) {
+void SFRemoveGlyph( SplineFont *sf,SplineChar *sc ) {
     struct splinecharlist *dep, *dnext;
     struct bdfcharlist *bdep, *bdnext;
     RefChar *rf, *refs, *rnext;
@@ -2396,22 +2394,7 @@ return( -1 );
 return( -1 );
 	}
 	if ( tpt-(char *) to == sizeof(unichar_t) )
-	{
-#if defined(__MINGW32__)
-	    {
-		printf("UniFromEnc(original ret) enc:%d initial result:%ld\n", enc, to[0] );
-		// For whatever reason the mingw32 build seems to always produce
-		// a result in byte swapped order.
-		unichar_t t = to[0];
-		printf("UniFromEnc(ret1) %ld\n",t );
-		unichar_t low16  = t & 0xFFFF;
-		unichar_t high16 = t >> 16;
-		t = (low16<<16) | high16;
-		printf("UniFromEnc(ret2) enc:%d final result:%ld\n", enc, t );
-		to[0] = t;
-	    }
-	    printf("UniFromEnc(final ret) %ld\n",to[0] );
-#endif	    
+	{	    
 	    return( to[0] );
 	}
     } else if ( encname->tounicode_func!=NULL ) {

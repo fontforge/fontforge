@@ -922,7 +922,6 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
     bigreal offn_, offp_, finaldiff;
     bigreal pt_pf_x, pt_pf_y, determinant;
     bigreal consts[2], rt_terms[2], rf_terms[2];
-    bigreal rtbad=0;
 
     /* If all the selected points are at the same spot, and one of the */
     /*  end-points is also at that spot, then just copy the control point */
@@ -1119,10 +1118,7 @@ return( SplineMake3(from,to));
 	    to->noprevcp = rt==0;
 return( SplineMake3(from,to));
 	}
-	
-  rtbad = -rt;
-    } else
-  rtbad = -2;
+    }
 
     trylen = (to->me.x-from->me.x)*fromunit.x + (to->me.y-from->me.y)*fromunit.y;
     if ( trylen>flen ) flen = trylen;
@@ -1686,8 +1682,8 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 return( tp );
 }
 
-static void SplinePointReCatagorize(SplinePoint *sp,int oldpt) {
-    SplinePointCatagorize(sp);
+static void SplinePointReCategorize(SplinePoint *sp,int oldpt) {
+    SplinePointCategorize(sp);
     if ( sp->pointtype!=oldpt ) {
 	if ( sp->pointtype==pt_curve && oldpt==pt_hvcurve &&
 		((sp->nextcp.x == sp->me.x && sp->nextcp.y != sp->me.y ) ||
@@ -1725,8 +1721,8 @@ void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to,int
     
     free(tp);
 
-    SplinePointReCatagorize(from,oldfpt);
-    SplinePointReCatagorize(to,oldtpt);
+    SplinePointReCategorize(from,oldfpt);
+    SplinePointReCategorize(to,oldtpt);
 }
 
 static void RemoveZeroLengthSplines(SplineSet *spl, int onlyselected, bigreal bound) {
@@ -2260,8 +2256,8 @@ return( false );
 	    SplineFree(sp->next);
 	    SplinePointMDFree(sc,sp);
 	}
-	SplinePointCatagorize(from);
-	SplinePointCatagorize(to);
+	SplinePointCategorize(from);
+	SplinePointCategorize(to);
     } else {
 	SplineFree(from->next);
 	from->next = afterfrom->prev;
@@ -3005,7 +3001,7 @@ SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
 	}
     }
     SplineSetsRemoveAnnoyingExtrema(head,.3);
-    SPLCatagorizePoints(head);
+    SPLCategorizePoints(head);
     /* printf( "nocnt=%d totcnt=%d curdif=%d incr=%d\n", nocnt_cnt, totcnt_cnt, curdiff_cnt, incr_cnt ); */ /* Debug!!! */
 return( head );
 }
@@ -4556,7 +4552,7 @@ SplineSet *SplineSetReverse(SplineSet *spl) {
     Spline *spline, *first, *next;
     BasePoint tp;
     SplinePoint *temp;
-    int bool;
+    int flag;
     int i;
     /* reverse the splineset so that what was the start point becomes the end */
     /*  and vice versa. This entails reversing every individual spline, and */
@@ -4570,12 +4566,12 @@ return( spl );			/* Only one point, reversal is meaningless */
     tp = spline->from->nextcp;
     spline->from->nextcp = spline->from->prevcp;
     spline->from->prevcp = tp;
-    bool = spline->from->nonextcp;
+    flag = spline->from->nonextcp;
     spline->from->nonextcp = spline->from->noprevcp;
-    spline->from->noprevcp = bool;
-    bool = spline->from->nextcpdef;
+    spline->from->noprevcp = flag;
+    flag = spline->from->nextcpdef;
     spline->from->nextcpdef = spline->from->prevcpdef;
-    spline->from->prevcpdef = bool;
+    spline->from->prevcpdef = flag;
 
     for ( ; spline!=NULL && spline!=first; spline=next ) {
 	next = spline->to->next;
@@ -4584,12 +4580,12 @@ return( spl );			/* Only one point, reversal is meaningless */
 	    tp = spline->to->nextcp;
 	    spline->to->nextcp = spline->to->prevcp;
 	    spline->to->prevcp = tp;
-	    bool = spline->to->nonextcp;
+	    flag = spline->to->nonextcp;
 	    spline->to->nonextcp = spline->to->noprevcp;
-	    spline->to->noprevcp = bool;
-	    bool = spline->to->nextcpdef;
+	    spline->to->noprevcp = flag;
+	    flag = spline->to->nextcpdef;
 	    spline->to->nextcpdef = spline->to->prevcpdef;
-	    spline->to->prevcpdef = bool;
+	    spline->to->prevcpdef = flag;
 	}
 
 	temp = spline->to;

@@ -33,6 +33,7 @@ include $(top_srcdir)/mk/layout.am
 noinst_HEADERS = fontforge-internal-collab-server.h
 EXTRA_DIST = 
 MOSTLYCLEANFILES =
+GITIGNOREFILES =
 
 #--------------------------------------------------------------------------
 
@@ -51,6 +52,8 @@ fontforge_internal_collab_server_LDADD = $(LDADD) \
    $(top_builddir)/gutils/libgutils.la \
    $(top_builddir)/Unicode/libgunicode.la
 fontforge_internal_collab_server_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) $(LIBZMQ_LIBS) -export-dynamic
+
+GITIGNOREFILES += $(internal_bin_PROGRAMS)
 
 endif
 

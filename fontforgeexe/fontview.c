@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
+#include <fontforge-config.h>
 
 #include "fontforgeui.h"
 #include "groups.h"
@@ -52,10 +52,8 @@
 #include <windows.h>
 #endif
 
-// Clash on windows for a define to PrintDlgA
-#ifdef PrintDlg
-#undef PrintDlg
-#endif
+#include "xvasprintf.h"
+
 
 int OpenCharsInNewWindow = 0;
 char *RecentFiles[RECENT_MAX] = { NULL };
@@ -68,7 +66,7 @@ int compact_font_on_open=0;
 int navigation_mask = 0;		/* Initialized in startui.c */
 int prefs_ensure_correct_extension = 1;
 
-static char *fv_fontnames = "fontview," MONO_UI_FAMILIES;
+static char *fv_fontnames = MONO_UI_FAMILIES;
 
 #define	FV_LAB_HEIGHT	15
 
@@ -115,8 +113,10 @@ int default_fv_showhmetrics=false, default_fv_showvmetrics=false,
 FontView *fv_list=NULL;
 
 static void AskAndMaybeCloseLocalCollabServers( void );
-static void FVStopWebFontServer( FontView *fv );
 
+#if BUILD_COLLAB
+static void FVStopWebFontServer( FontView *fv );
+#endif
 
 static void FV_ToggleCharChanged(SplineChar *sc) {
     int i, j;
@@ -926,6 +926,7 @@ static void _MenuExit(void *UNUSED(junk)) {
 
     FontView *fv, *next;
 
+#if BUILD_COLLAB
     if( collabclient_haveLocalServer() )
     {
 	AskAndMaybeCloseLocalCollabServers();
@@ -937,6 +938,7 @@ static void _MenuExit(void *UNUSED(junk)) {
 	printf("fv:%p running webfont server:%d\n", fv, fv->pid_webfontserver );
 	FVStopWebFontServer( fv );
     }
+#endif
 
     LastFonts_Save();
     for ( fv = fv_list; fv!=NULL; fv = next )
@@ -1003,21 +1005,16 @@ static void FVMenuMergeKern(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UN
     MergeKernInfo(fv->b.sf,fv->b.map);
 }
 
-void MenuOpen(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
-{
+void _FVMenuOpen(FontView *fv) {
     char *temp;
     char *eod, *fpt, *file, *full;
     FontView *test; int fvcnt, fvtest;
 
     char* OpenDir = NULL;
 #if defined(__MINGW32__)
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    OpenDir = GFileGetHomeDocumentsDir();
-    if( fv && fv->b.sf && fv->b.sf->filename )
-    {
-	printf("existing name:%s\n", fv->b.sf->filename );
-	char* dname = GFileDirName( fv->b.sf->filename );
-	OpenDir = dname;
+    OpenDir = GFileGetHomeDocumentsDir(); //Default value
+    if (fv && fv->b.sf && fv->b.sf->filename) {
+        OpenDir = GFileDirName(fv->b.sf->filename);
     }
 #endif
 
@@ -1041,6 +1038,13 @@ return;
 	free(temp);
 	for ( fvtest=0, test=fv_list; test!=NULL; ++fvtest, test=(FontView *) (test->b.next) );
     } while ( fvtest==fvcnt );	/* did the load fail for some reason? try again */
+    
+    free(OpenDir);
+}
+
+static void FVMenuOpen(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    FontView *fv = (FontView*) GDrawGetUserData(gw);
+    _FVMenuOpen(fv);
 }
 
 static void MenuBrowseOFLib(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -1146,7 +1150,7 @@ static void FVMenuPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED
 
     if ( fv->b.container!=NULL && fv->b.container->funcs->is_modal )
 return;
-    PrintDlg(fv,NULL,NULL);
+    PrintFFDlg(fv,NULL,NULL);
 }
 
 #if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
@@ -3166,7 +3170,11 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi, GEvent *UNUSED(
 
 static void FV_ChangeDisplayBitmap(FontView *fv,BDFFont *bdf) {
     FVChangeDisplayFont(fv,bdf);
-    fv->b.sf->display_size = fv->show->pixelsize;
+    if (fv->show != NULL) {
+        fv->b.sf->display_size = fv->show->pixelsize;
+    } else {
+        fv->b.sf->display_size = 1;
+    }
 }
 
 static void FVMenuSize(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
@@ -3502,7 +3510,7 @@ static void FontViewSetTitle(FontView *fv) {
     if ( fv->gw==NULL )		/* In scripting */
 return;
 
-    char* collabStateString = "";
+    const char* collabStateString = "";
     if( collabclient_inSessionFV( &fv->b )) {
 	printf("collabclient_getState( fv ) %d %d\n",
 	       fv->b.collabState, collabclient_getState( &fv->b ));
@@ -4032,11 +4040,9 @@ static void edlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 #ifndef _NO_LIBPNG
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/png") &&
 #endif
-#ifndef _NO_LIBXML
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/svg+xml") &&
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/svg-xml") &&
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/svg") &&
-#endif
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/bmp") &&
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/eps") &&
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/ps"));
@@ -4366,7 +4372,7 @@ static GMenuItem2 fllist[] = {
 #if HANYANG
     { { (unichar_t *) N_("_Hangul"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Hangul|No Shortcut"), hglist, hglistcheck, NULL, 0 },
 #endif
-    { { (unichar_t *) N_("_Open"), (GImage *) "fileopen.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Open|No Shortcut"), NULL, NULL, MenuOpen, 0 },
+    { { (unichar_t *) N_("_Open"), (GImage *) "fileopen.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Open|No Shortcut"), NULL, NULL, FVMenuOpen, 0 },
     { { (unichar_t *) N_("Browse web"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Browse web|No Shortcut"), sites, NULL, NULL, 0 },
     { { (unichar_t *) N_("Recen_t"), (GImage *) "filerecent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, H_("Recent|No Shortcut"), dummyitem, MenuRecentBuild, NULL, MID_Recent },
     { { (unichar_t *) N_("_Close"), (GImage *) "fileclose.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Close|No Shortcut"), NULL, NULL, FVMenuClose, 0 },
@@ -5709,7 +5715,7 @@ static void AskAndMaybeCloseLocalCollabServers()
 
 	    if( sel[i] )
 	    {
-		FontViewBase* fv = FontViewFind( FontViewFind_byCollabBasePort, port );
+		FontViewBase* fv = FontViewFind( FontViewFind_byCollabBasePort, (void*)(intptr_t)port );
 		if( fv )
 		    collabclient_sessionDisconnect( fv );
 		printf("CLOSING port:%d fv:%p\n", port, fv );
@@ -5775,7 +5781,6 @@ static int kill( int pid, int sig )
     TerminateProcess( hHandle, 0 );
 }
 #endif
-#endif
 
 static void FVStopWebFontServer( FontView *fv )
 {
@@ -5787,7 +5792,6 @@ static void FVStopWebFontServer( FontView *fv )
     }
 }
 
-#ifdef BUILD_COLLAB
 static void FVMenuStopWebFontServer(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -6624,7 +6628,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	int actualuni) {
 /* This is for the popup which appears when you hover mouse over a character on main window */
     int upos=-1;
-    GString *msg = g_string_new( "" );
+    char *msg = "";
 
     /* If a glyph is multiply mapped then the inbuild unicode enc may not be */
     /*  the actual one used to access the glyph */
@@ -6654,35 +6658,30 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 #endif
 
     if ( upos == -1 ) {
-	g_string_printf( msg, "%u 0x%x U+???? \"%.25s\" ",
+	msg = xasprintf( "%u 0x%x U+???? \"%.25s\" ",
 		localenc, localenc,
-		(sc->name == NULL) ? "" : (gchar *) sc->name );
+		(sc->name == NULL) ? "" : sc->name );
     } else {
 	/* unicode name or range name */
-	gchar *uniname = (gchar *) unicode_name( upos );
-	if( uniname == NULL ) uniname = g_strdup( UnicodeRange( upos ) );
-	g_string_printf( msg, "%u 0x%x U+%04X \"%.25s\" %.100s",
+	char *uniname = unicode_name( upos );
+	if( uniname == NULL ) uniname = strdup( UnicodeRange( upos ) );
+	msg = xasprintf ( "%u 0x%x U+%04X \"%.25s\" %.100s",
 		localenc, localenc, upos,
-		(sc->name == NULL) ? "" : (gchar *) sc->name,
-		(uniname == NULL) ? "" : uniname );
-	if ( uniname != NULL ) g_free( uniname );
+		(sc->name == NULL) ? "" : sc->name, uniname );
+	if ( uniname != NULL ) free( uniname ); uniname = NULL;
 
 	/* annotation */
-	gchar *uniannot;
-	if( ( uniannot = (gchar *) unicode_annot( upos )) != NULL ) {
-	    msg = g_string_append( msg, "\n" );
-	    msg = g_string_append( msg, uniannot );
-	    g_free( uniannot );
-	}
+	char *uniannot;
+	if( ( uniannot = unicode_annot( upos )) != NULL )
+	    msg = xasprintf("%s\n%s", msg, uniannot);
+	if ( uniannot != NULL ) free( uniannot ); uniannot = NULL;
     }
 
     /* user comments */
-    if ( sc->comment!=NULL ) {
-	msg = g_string_append( msg, "\n" );
-	msg = g_string_append( msg, sc->comment );
-    }
+    if ( sc->comment!=NULL )
+        msg = xasprintf("%s\n%s", msg, sc->comment);
 
-    GGadgetPreparePopup8( gw, g_string_free( msg, FALSE ) );
+    GGadgetPreparePopup8( gw, msg );
 }
 
 static void noop(void *UNUSED(_fv)) {
@@ -7048,6 +7047,7 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	FVTimer(fv,event);
       break;
       case et_focus:
+	  printf("fv.et_focus\n");
 	if ( event->u.focus.gained_focus )
 	    GDrawSetGIC(gw,fv->gic,0,20);
       break;
@@ -7139,6 +7139,8 @@ void FontViewRemove(FontView *fv) {
  */
 extern int osx_fontview_copy_cut_counter;
 
+static FontView* ActiveFontView = 0;
+
 static int fv_e_h(GWindow gw, GEvent *event) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
@@ -7148,6 +7150,15 @@ return( GGadgetDispatchEvent(fv->vsb,event));
     }
 
     switch ( event->type ) {
+      case et_focus:
+	  if ( event->u.focus.gained_focus )
+	  {
+	      ActiveFontView = fv;
+	  }
+	  else
+	  {
+	  }
+	  break;
       case et_selclear:
 #ifdef __Mac
 	  // For some reason command + c and command + x wants
@@ -7158,7 +7169,7 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	     osx_fontview_copy_cut_counter--;
 	     break;
           }
-	  printf("fontview et_selclear\n");
+//	  printf("fontview et_selclear\n");
 #endif
 	ClipboardClear();
       break;
@@ -8109,7 +8120,7 @@ int FontViewFind_byCollabBasePort( FontViewBase* fv, void* udata )
 {
     if( !fv || !fv->sf || !fv->collabClient )
 	return 0;
-    int port = (int)udata;
+    int port = (int)(intptr_t)udata;
     return port == collabclient_getBasePort( fv->collabClient );
 }
 
@@ -8120,11 +8131,27 @@ int FontViewFind_bySplineFont( FontViewBase* fv, void* udata )
     return fv->sf == udata;
 }
 
+static int FontViewFind_ActiveWindow( FontViewBase* fvb, void* udata )
+{
+    FontView* fv = (FontView*)fvb;
+    return( fv->gw == udata || fv->v == udata );
+}
+
+FontViewBase* FontViewFindActive()
+{
+    return (FontViewBase*) ActiveFontView;
+    /* GWindow w = GWindowGetCurrentFocusTopWindow(); */
+    /* FontViewBase* ret = FontViewFind( FontViewFind_ActiveWindow, w ); */
+    /* return ret; */
+}
+
+
+
 FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* udata ), void* udata )
 {
     FontViewBase *fv;
     printf("FontViewFind(top) fv_list:%p\n", fv_list );
-    for ( fv=fv_list; fv!=NULL; fv=fv->next )
+    for ( fv = (FontViewBase*)fv_list; fv!=NULL; fv=fv->next )
     {
 	if( testFunc( fv, udata ))
 	    return fv;

@@ -608,8 +608,8 @@ Undoes *CVPreserveState(CharViewBase *cv) {
     Undoes *undo;
     int layer = CVLayer(cv);
 
-    if (!quiet)
-        printf("CVPreserveState() no_windowing_ui:%d maxundoes:%d\n", no_windowing_ui, maxundoes );
+//    if (!quiet)
+//        printf("CVPreserveState() no_windowing_ui:%d maxundoes:%d\n", no_windowing_ui, maxundoes );
     if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
@@ -632,7 +632,7 @@ return(NULL);
     undo->u.state.dostroke = cv->layerheads[cv->drawmode]->dostroke;
     undo->u.state.fillfirst = cv->layerheads[cv->drawmode]->fillfirst;
     undo->layer = cv->drawmode;
-    printf("CVPreserveState() dm:%d layer:%d new undo is at %p\n", cv->drawmode, layer, undo );
+//    printf("CVPreserveState() dm:%d layer:%d new undo is at %p\n", cv->drawmode, layer, undo );
 
     // MIQ: Note, this is the wrong time to call sendRedo as we are
     // currently taking the undo state snapshot, after that the app
@@ -974,7 +974,7 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	    SCSynchronizeLBearing(sc,undo->u.state.lbearingchange,layer);
 	}
 	if ( layer==ly_fore && undo->undotype==ut_statename ) {
-	    const char *temp = sc->name;
+	    char *temp = sc->name;
 	    int uni = sc->unicodeenc;
 	    PST *possub = sc->possub;
 	    char *comment = sc->comment;
@@ -1318,7 +1318,6 @@ static RefChar *XCopyInstanciateRefs(RefChar *refs,SplineChar *container,int lay
 return( head );
 }
 
-#ifndef _NO_LIBXML
 static int FFClipToSC(SplineChar *dummy,Undoes *cur) {
     int lcnt;
 
@@ -1493,7 +1492,6 @@ return( copy(""));
     fclose(svg);
 return( ret );
 }
-#endif
 
 static void *copybuffer2eps(void *UNUSED(_copybuffer),int32 *len) {
     Undoes *cur = &copybuffer;
@@ -1599,11 +1597,9 @@ return;
     while ( cur ) {
 	switch ( cur->undotype ) {
 	  case ut_multiple:
-#ifndef _NO_LIBXML
 	    if ( CopyContainsVectors())
 		ClipboardAddDataType("application/x-font-svg",&copybuffer,0,sizeof(char),
 			copybuffer2svgmult,noop);
-#endif
 	    cur = cur->u.multiple.mult;
 	  break;
 	  case ut_composit:
@@ -1612,12 +1608,10 @@ return;
 	  case ut_state: case ut_statehint: case ut_statename: case ut_layers:
 	    ClipboardAddDataType("image/eps",&copybuffer,0,sizeof(char),
 		    copybuffer2eps,noop);
-#ifndef _NO_LIBXML
 	    ClipboardAddDataType("image/svg+xml",&copybuffer,0,sizeof(char),
 		    copybuffer2svg,noop);
 	    ClipboardAddDataType("image/svg",&copybuffer,0,sizeof(char),
 		    copybuffer2svg,noop);
-#endif
 	    /* If the selection is one point, then export the coordinates as a string */
 	    if ( cur->u.state.splines!=NULL && cur->u.state.refs==NULL &&
 		    cur->u.state.splines->next==NULL &&
@@ -2105,7 +2099,6 @@ static void SCCheckXClipboard(SplineChar *sc,int layer,int doclear) {
     if ( no_windowing_ui )
 return;
     type = 0;
-#ifndef _NO_LIBXML
     /* SVG is a better format (than eps) if we've got it because it doesn't */
     /*  force conversion of quadratic to cubic and back */
     if ( HasSVG() && ((sx = ClipboardHasType("image/svg+xml")) ||
@@ -2113,7 +2106,6 @@ return;
 			ClipboardHasType("image/svg")) )
 	type = sx ? 1 : s_x ? 2 : 3;
     else
-#endif
     if ( ClipboardHasType("image/eps") )
 	type = 4;
     else if ( ClipboardHasType("image/ps") )
@@ -2143,10 +2135,8 @@ return;
 	rewind(temp);
 	if ( type==4 || type==5 ) {	/* eps/ps */
 	    SCImportPSFile(sc,layer,temp,doclear,-1);
-#ifndef _NO_LIBXML
 	} else if ( type<=3 ) {
 	    SCImportSVG(sc,layer,NULL,paste,len,doclear);
-#endif
 	} else {
 #ifndef _NO_LIBPNG
 	    if ( type==6 )
@@ -2161,7 +2151,6 @@ return;
     free(paste);
 }
 
-#ifndef _NO_LIBXML
 static void XClipFontToFFClip(void) {
     int32 len;
     int i;
@@ -2200,7 +2189,6 @@ return;
     copybuffer.u.multiple.mult = head;
     copybuffer.copied_from = NULL;
 }
-#endif
 
 static double PasteFigureScale(SplineFont *newsf,SplineFont *oldsf) {
 
@@ -2477,6 +2465,7 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	    }
 	}
 	if ( paster->u.state.refs!=NULL ) {
+	    RefChar *last=NULL;
 	    RefChar *new, *refs;
 	    SplineChar *rsc;
 	    double scale = PasteFigureScale(sc->parent,paster->copied_from);
@@ -2505,8 +2494,7 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 		    new->layers = NULL;
 		    new->layer_cnt = 0;
 		    new->sc = rsc;
-		    new->next = sc->layers[layer].refs;
-		    sc->layers[layer].refs = new;
+		    FFLIST_SINGLE_LINKED_APPEND( sc->layers[layer].refs, last, new );
 		    SCReinstanciateRefChar(sc,new,layer);
 		    SCMakeDependent(sc,rsc);
 		} else {
@@ -3058,6 +3046,7 @@ return;
 	if ( paster->u.state.anchor!=NULL && !cvsc->searcherdummy )
 	    APMerge(cvsc,paster->u.state.anchor);
 	if ( paster->u.state.refs!=NULL && cv->drawmode!=dm_grid ) {
+	    RefChar *last=NULL;
 	    RefChar *new, *refs;
 	    SplineChar *sc;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
@@ -3608,10 +3597,8 @@ return;
 return;
     }
 
-#ifndef _NO_LIBXML
     if ( copybuffer.undotype == ut_none && ClipboardHasType("application/x-font-svg"))
 	XClipFontToFFClip();
-#endif
 
     if ( copybuffer.undotype == ut_none ) {
 	j = -1;

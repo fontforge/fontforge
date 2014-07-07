@@ -77,10 +77,10 @@ static int svg_outfontheader(FILE *file, SplineFont *sf,int layer) {
 	latin1ToUtf8Out(file,sf->comments);
 	fprintf( file, "\n-->\n" );
     }
-    fprintf( file, "<svg>\n" );
+    fprintf( file, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\">\n" );
     time(&now);
     fprintf( file, "<metadata>\nCreated by FontForge %d at %s",
-	    library_version_configuration.library_source_versiondate, ctime(&now) );
+	    FONTFORGE_VERSIONDATE_RAW, ctime(&now) );
     if ( author!=NULL )
 	fprintf(file," By %s\n", author);
     else
@@ -1042,7 +1042,7 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
     setlocale(LC_NUMERIC,"C");
     fprintf(svg, "<?xml version=\"1.0\" standalone=\"no\"?>\n" );
     fprintf(svg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\" >\n" );
-    fprintf(svg, "<svg viewBox=\"%d %d %d %d\">\n",
+    fprintf(svg, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" viewBox=\"%d %d %d %d\">\n",
 	    (int) floor(b.minx), (int) floor(b.miny),
 	    (int) ceil(b.maxx), (int) ceil(b.maxy));
     fprintf(svg, "  <g transform=\"matrix(1 0 0 -1 0 %d)\">\n",
@@ -1066,44 +1066,8 @@ return( !ferror(svg));
 /* *****************************    SVG Input    **************************** */
 /* ************************************************************************** */
 
-#ifdef _NO_LIBXML
-int HasSVG(void) {
-return( false );
-}
-
-SplineFont *SFReadSVG(char *filename, int flags) {
-return( NULL );
-}
-
-char **NamesReadSVG(char *filename) {
-return( NULL );
-}
-
-SplineSet *SplinePointListInterpretSVG(char *filename,char *memory, int memlen,
-	int em_size,int ascent,int is_stroked) {
-return( NULL );
-}
-#else
-
-#ifndef HAVE_ICONV_H
-# undef iconv
-# undef iconv_t
-# undef iconv_open
-# undef iconv_close
-#endif
-
 #undef extended			/* used in xlink.h */
 #include <libxml/parser.h>
-
-#ifdef __CygWin
-/*
- * FIXME: Check whether this kludge is still (a) necessary, (b)
- * functional. At least (a) seems unlikely to have remained true over
- * time.
- */
-/* Nasty kludge, but xmlFree doesn't work on cygwin (or I can't get it to) */
-# define xmlFree free
-#endif
 
 static int libxml_init_base() {
 return( true );
@@ -1411,8 +1375,9 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 
     while ( *path ) {
 	while ( *path==' ' ) ++path;
-	while ( isalpha(*path))
-	    type = *path++;
+        if ( isalpha(*path)) {
+            type = *path++;
+        }
 	if ( *path=='\0' && type!='z' && type!='Z' )
     break;
 	if ( type=='m' || type=='M' ) {
@@ -1424,8 +1389,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		    cur->first->prev = cur->last->prev;
 		    cur->first->prev->to = cur->first;
 		    SplinePointFree(cur->last);
-		} else
-		    SplineMake(cur->last,cur->first,order2);
+		}
 		cur->last = cur->first;
 	    }
 	    x = strtod((char *) path,&end);
@@ -2809,7 +2773,7 @@ return( NULL );
     if ( head==NULL )
 return( NULL );
 
-    SPLCatagorizePoints(head);
+    SPLCategorizePoints(head);
 
     eret = EntityCreate(SplinePointListTransform(head,st.transform,tpt_AllPoints), &st);
     if ( fill_colour_source!=NULL || stroke_colour_source!=NULL )
@@ -2821,7 +2785,7 @@ return( eret );
 static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent) {
     struct svg_state st;
     char *num, *end;
-    double x,y,swidth,sheight,width=1,height=1;
+    double swidth,sheight,width=1,height=1;
 
     memset(&st,0,sizeof(st));
     st.lc = lc_inherited;
@@ -2852,8 +2816,8 @@ static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent) {
     if ( width<=0 ) width = 1;
     num = (char *) xmlGetProp(svg,(xmlChar *) "viewBox");
     if ( num!=NULL ) {
-	x = strtod((char *) num,&end);
-	y = strtod((char *) end+1,&end);
+	/* x = */strtod((char *) num,&end);
+	/* y = */strtod((char *) end+1,&end);
 	swidth = strtod((char *) end+1,&end);
 	sheight = strtod((char *) end+1,&end);
 	xmlFree(num);
@@ -2888,7 +2852,7 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,int *flags) {
 	else sc->parent->multilayer = true;
     }
 
-    SCCatagorizePoints(sc);
+    SCCategorizePoints(sc);
 }
 
 static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv,
@@ -2901,6 +2865,7 @@ static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv,
     name = xmlGetProp(glyph,(xmlChar *) "horiz-adv-x");
     if ( name!=NULL ) {
 	sc->width = strtod((char *) name,NULL);
+        sc->widthset = true;
 	xmlFree(name);
     } else
 	sc->width = defh;
@@ -3080,7 +3045,7 @@ static char *SVGGetNames(SplineFont *sf,xmlChar *g,xmlChar *utf8,SplineChar **sc
 	    temp = SFGetChar(sf,u[i],NULL);
 	    if ( temp!=NULL ) {
 		if ( *sc==NULL ) *sc = temp;
-		len = strlen(temp->name)+1;
+		len += strlen(temp->name)+1;
 	    }
 	}
     }
@@ -3758,4 +3723,3 @@ return( SplinesFromEntities(ret,&flags,is_stroked));
 int HasSVG(void) {
 return( libxml_init_base());
 }
-#endif

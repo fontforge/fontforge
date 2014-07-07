@@ -243,12 +243,12 @@ static void SplashLayout() {
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcpy(pt,"  Version: ");;
-    uc_strcat(pt,source_modtime_str);
+    uc_strcat(pt,FONTFORGE_MODTIME_STR);
 
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcat(pt,"           (");
-    uc_strcat(pt,source_version_str);
+    uc_strcat(pt,FONTFORGE_MODTIME_STR);
     uc_strcat(pt,"-ML");
 #ifdef FREETYPE_HAS_DEBUGGER
     uc_strcat(pt,"-TtfDb");
@@ -263,7 +263,7 @@ static void SplashLayout() {
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcpy(pt,"  Lib Version: ");
-    uc_strcat(pt,library_version_configuration.library_source_modtime_string);
+    uc_strcat(pt,FONTFORGE_MODTIME_STR);
     lines[linecnt++] = pt+u_strlen(pt);
     lines[linecnt] = NULL;
     is = u_strchr(msg,'(');
@@ -381,7 +381,7 @@ static pascal OSErr OpenApplicationAE( const AppleEvent * theAppleEvent,
 	start_splash_screen();
     system( "DYLD_LIBRARY_PATH=\"\"; osascript -e 'tell application \"X11\" to activate'" );
     if ( fv_list==NULL )
-	MenuOpen(NULL,NULL,NULL);
+	_FVMenuOpen(NULL);
  fprintf( logfile, " event processed %d.\n", noErr ); fflush( logfile );
 return( noErr );
 }
@@ -393,7 +393,7 @@ static pascal OSErr ReopenApplicationAE( const AppleEvent * theAppleEvent,
 	start_splash_screen();
     system( "DYLD_LIBRARY_PATH=\"\"; osascript -e 'tell application \"X11\" to activate'" );
     if ( fv_list==NULL )
-	MenuOpen(NULL,NULL,NULL);
+	_FVMenuOpen(NULL);
  fprintf( logfile, " event processed %d.\n", noErr ); fflush( logfile );
 return( noErr );
 }
@@ -622,7 +622,7 @@ return( true );
 	    if ( strcmp(arg,"-new")==0 || strcmp(arg,"--new")==0 )
 		FontNew();
 	    else if ( strcmp(arg,"-open")==0 || strcmp(arg,"--open")==0 )
-		MenuOpen(NULL,NULL,NULL);
+		_FVMenuOpen(NULL);
 	    else if ( strcmp(arg,"-quit")==0 || strcmp(arg,"--quit")==0 )
 		MenuExit(NULL,NULL,NULL);
 	    else
@@ -792,6 +792,51 @@ static void DoAutoRecoveryPostRecover_PromptUserGraphically(SplineFont *sf)
     _FVMenuSaveAs( (FontView*)sf->fv );
 }
 
+#if defined(__MINGW32__) && !defined(_NO_LIBCAIRO)
+/**
+ * \brief Load fonts from the specified folder for the UI to use.
+ * This should only be used if Cairo is used on Windows, which defaults to the
+ * Win32 font backend.
+ * This is an ANSI version, so files which contain characters outside of the
+ * user's locale will fail to be loaded.
+ * \param prefix The folder to read fonts from. Currently the pixmaps folder
+ *               and the folder 'ui-fonts' in the FontForge preferences folder.
+ */
+static void WinLoadUserFonts(const char *prefix) {
+    HANDLE fileHandle;
+    WIN32_FIND_DATA fileData;
+    char path[MAX_PATH], *ext;
+    HRESULT ret;
+    int i;
+
+    if (prefix == NULL) {
+        return;
+    }
+    ret = snprintf(path, MAX_PATH, "%s/*.???", prefix);
+    if (ret <= 0 || ret >= MAX_PATH) {
+        return;
+    }
+
+    fileHandle = FindFirstFileA(path, &fileData);
+    if (fileHandle != INVALID_HANDLE_VALUE) do {
+        ext = strrchr(fileData.cFileName, '.');
+        if (!ext || (strcasecmp(ext, ".ttf") && strcasecmp(ext, ".ttc") &&
+                     strcasecmp(ext,".otf")))
+        {
+            continue;
+        }
+        ret = snprintf(path, MAX_PATH, "%s/%s", prefix, fileData.cFileName);
+        if (ret > 0 && ret < MAX_PATH) {
+            //printf("WIN32-FONT-TEST: %s\n", path);
+            ret = AddFontResourceExA(path, FR_PRIVATE, NULL);
+            //if (ret > 0) {
+            //    printf("\tLOADED FONT OK!\n");
+            //}
+        }
+    } while (FindNextFileA(fileHandle, &fileData) != 0);
+}
+#endif
+
 
 int fontforge_main( int argc, char **argv ) {
     extern const char *source_modtime_str;
@@ -808,8 +853,11 @@ int fontforge_main( int argc, char **argv ) {
     int ds, ld;
     int openflags=0;
     int doopen=0, quit_request=0;
+    bool use_cairo = true;
 
+#if !(GLIB_CHECK_VERSION(2, 35, 0))
     g_type_init();
+#endif
 
     /* Must be done before we cache the current directory */
     /* Change to HOME dir if specified on the commandline */
@@ -831,7 +879,7 @@ int fontforge_main( int argc, char **argv ) {
         fprintf( stderr, "Copyright (c) 2000-2014 by George Williams. See AUTHORS for Contributors.\n" );
         fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
         fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
-        fprintf( stderr, " Executable based on sources from %s"
+        fprintf( stderr, " Based on sources from %s"
 	        "-ML"
 #ifdef FREETYPE_HAS_DEBUGGER
 	        "-TtfDb"
@@ -843,8 +891,7 @@ int fontforge_main( int argc, char **argv ) {
 	        "-D"
 #endif
 	        ".\n",
-	        source_modtime_str );
-        fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
+	        FONTFORGE_MODTIME_STR );
         fprintf( stderr, " Based on source from git with hash:%s\n", FONTFORGE_GIT_VERSION );
     }
 
@@ -901,14 +948,12 @@ int fontforge_main( int argc, char **argv ) {
 
 #if defined(__MINGW32__)
     {
-	char  path[MAX_PATH+4];
-	char  *c = path;
-	unsigned int  len = GetModuleFileNameA(NULL, path, MAX_PATH);
-	path[len] = '\0';
-	for(; *c; *c++) /* backslash to slash */
-	    if(*c == '\\')
-		*c = '/';
-	GResourceSetProg(path);
+        char path[MAX_PATH];
+        unsigned int len = GetModuleFileNameA(NULL, path, MAX_PATH);
+        path[len] = '\0';
+        
+        //The '.exe' must be removed as resources presumes it's not there.
+        GResourceSetProg(GFileRemoveExtension(GFileNormalizePath(path)));
     }
 #else
     GResourceSetProg(argv[0]);
@@ -1022,9 +1067,10 @@ int fontforge_main( int argc, char **argv ) {
 # endif
 	else if ( strncmp(pt,"-usecairo",strlen("-usecairo"))==0 ) {
 	    if ( strcmp(pt,"-usecairo=no")==0 )
-		GDrawEnableCairo(false);
+	        use_cairo = false;
 	    else
-		GDrawEnableCairo(true);
+	        use_cairo = true;
+	    GDrawEnableCairo(use_cairo);
 	} else if ( strcmp(pt,"-nosplash")==0 )
 	    splash = 0;
 	else if ( strcmp(pt,"-quiet")==0 )
@@ -1058,7 +1104,7 @@ int fontforge_main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-help")==0 )
 	    dousage();
 	else if ( strcmp(pt,"-version")==0 || strcmp(pt,"-v")==0 || strcmp(pt,"-V")==0 )
-	    doversion(source_version_str);
+	    doversion(FONTFORGE_MODTIME_STR);
 	else if ( strcmp(pt,"-quit")==0 )
 	    quit_request = true;
 	else if ( strcmp(pt,"-home")==0 )
@@ -1076,6 +1122,30 @@ int fontforge_main( int argc, char **argv ) {
     }
 
     ensureDotFontForgeIsSetup();
+#if defined(__MINGW32__) && !defined(_NO_LIBCAIRO)
+    //Load any custom fonts for the user interface
+    if (use_cairo) {
+        char *system_load = getGResourceProgramDir();
+        char *user_load = getFontForgeUserDir(Data);
+        char lbuf[MAX_PATH];
+        int lret;
+
+        if (system_load != NULL) {
+            //Follow the FontConfig APPSHAREFONTDIR location
+            lret = snprintf(lbuf, MAX_PATH, "%s/../share/fonts", system_load);
+            if (lret > 0 && lret < MAX_PATH) {
+                WinLoadUserFonts(lbuf);
+            }
+        }
+        if (user_load != NULL) {
+            lret = snprintf(lbuf, MAX_PATH, "%s/%s", user_load, "ui-fonts");
+            if (lret > 0 && lret < MAX_PATH) {
+                WinLoadUserFonts(lbuf);
+            }
+            free(user_load);
+        }
+    }
+#endif
     GDrawCreateDisplays(display,argv[0]);
     default_background = GDrawGetDefaultBackground(screen_display);
     InitToolIconClut(default_background);
@@ -1099,12 +1169,6 @@ int fontforge_main( int argc, char **argv ) {
     if( ProcessPythonInitFiles )
 	PyFF_ProcessInitFiles();
 #endif
-
-    /* Wait until the UI has started, otherwise people who don't have consoles*/
-    /*  open won't get our error messages, and it's an important one */
-    /* Scripting doesn't care about a mismatch, because scripting interpretation */
-    /*  all lives in the library */
-    check_library_version(&exe_library_version_configuration,true,false);
 
     /* the splash screen used not to have a title bar (wam_nodecor) */
     /*  but I found I needed to know how much the window manager moved */
@@ -1258,6 +1322,9 @@ exit( 0 );
     collabclient_ensureClientBeacon();
     collabclient_sniffForLocalServer();
 
+    PythonUI_namedpipe_Init();
+    
+
 #if defined(__Mac)
     if ( listen_to_apple_events ) {
 	install_apple_event_handlers();
@@ -1267,7 +1334,7 @@ exit( 0 );
     } else
 #endif
     if ( doopen || !any )
-	MenuOpen(NULL,NULL,NULL);
+	_FVMenuOpen(NULL);
     GDrawEventLoop(NULL);
 
     hotkeysSave();

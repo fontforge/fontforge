@@ -13,9 +13,8 @@
     Writing python scripts to change fonts in FontForge
   </H1>
   <P>
-  I assume you have a working knowledge of python (because I do not).
-  <A href="http://www.python.org/doc/">Python documentation may be found on
-  the web.</A> FontForge implements two python modules -- one great huge one
+  I assume you have a working knowledge of <A href="http://www.python.org/doc/">Python</A>.
+  FontForge implements two Python modules -- one great huge one
   called <CODE><A HREF="python.html#fontforge">fontforge</A></CODE> which provides
   access to as much of FontForge's functionality as I've had time to write,
   and one tiny one called
@@ -47,6 +46,15 @@
     <LI>
       <A href="#Font">font</A>
   </UL>
+  <H2>Command line convenience</H2>
+  <P>For convenience, Python commands given as a <CODE>-c</CODE> argument on the command line have the following code prepended:
+<BLOCKQUOTE>
+<PRE>from sys import argv; from fontforge import *</PRE>
+</BLOCKQUOTE>
+<P>Hence, the trivial script to convert a font can be written:
+<BLOCKQUOTE>
+<PRE>fontforge -c 'open(argv[1]).generate(argv[2])'</PRE>
+</BLOCKQUOTE>
   <TABLE id="module" border=1>
     <CAPTION>
       <A NAME="psMat">psMat</A>
@@ -280,6 +288,14 @@
 	then return empty string "". It can execute with no current font.</TD>
     </TR>
     <TR>
+      <TD><CODE>UnicodeBlockCountFromLib</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Return the number of Unicode Blocks as described by www.unicode.org.
+	Currently, the blocks are {0..233}, spanning unicode values {uni0..uni10FFFF}.
+	If there is no value, or no library available, then return -1.
+	This can execute with no current font.</TD>
+    </TR>
+    <TR>
       <TD><CODE>UnicodeBlockEndFromLib</CODE></TD>
       <TD><CODE>(n)</CODE></TD>
       <TD>Returns the Unicode Block end value as described by www.unicode.org.
@@ -320,7 +336,7 @@
       <TD><CODE>UnicodeNamesListVersion</CODE></TD>
       <TD><CODE>()</CODE></TD>
       <TD>Return the Unicode Nameslist Version (as described by www.unicode.org).
-	libuninameslist and libunicodenames are released on schedules depending on
+	libuninameslist is released on a schedule that depends on
 	when www.unicode.org releases new information. These dates do not match
 	FontForge release dates, therefore users might not keep this optional library
 	upto current updates. This instruction can be used to test if the Nameslist
@@ -445,26 +461,26 @@
 	  Example
 	</H3>
 	<BLOCKQUOTE>
-	  <PRE>import fontforge;
+	  <PRE>import fontforge
 
 def nameGlyph(junk,glyph):
-  print glyph.glyphname;
+  print glyph.glyphname
 
-fontforge.registerMenuItem(nameGlyph,None,None,"Glyph",None,"Print Glyph Name");
+fontforge.registerMenuItem(nameGlyph,None,None,"Glyph",None,"Print Glyph Name")
 
 def neverEnableMe(junk,glyph):
-  return False;
+  return False
 
-fontforge.registerMenuItem(nameGlyph,neverEnableMe,None,"Glyph",None,"SubMenu","Print Glyph Name");
+fontforge.registerMenuItem(nameGlyph,neverEnableMe,None,"Glyph",None,"SubMenu","Print Glyph Name")
 
 def importGlyph(junk,glyph,filename,toback):
-  print "Import";
-  print glyph.glyphname;
-  print filename;
+  print "Import"
+  print glyph.glyphname
+  print filename
 def exportGlyph(junk,glyph,filename):
-  print "Import";
-  print glyph.glyphname;
-  print filename;
+  print "Import"
+  print glyph.glyphname
+  print filename
 
 fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","foo,foobar")
 </PRE>
@@ -768,6 +784,10 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TD><CODE>selected</CODE></TD>
       <TD colspan=2>Whether this point is selected in the UI. If an off-curve point
 	is selected in means the preceding (interpolated) on-curve point is selected.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>name</CODE></TD>
+      <TD colspan=2>The point name (generally there is no name)</TD>
     </TR>
     <TR>
     </TR>
@@ -2728,7 +2748,7 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE>select</CODE></TD>
       <TD><CODE>(args)</CODE></TD>
-      <TD>There may be an arbetrary number of arguments. Each argument may be either:
+      <TD>There may be an arbitrary number of arguments. Each argument may be either:
 	<UL>
 	  <LI>
 	    A glyph name<BR>
@@ -2744,7 +2764,7 @@ pen = None;				# Finalize the pen. This tells FontForge
 	    A tuple of flags.<BR>
 	    (If you wish to specify a single flag it must still be in a tuple, and you
 	    must append a trailing comma to the flag (so <CODE>("more",) </CODE>rather
-	    than just <CODE><STRIKE>("more")</STRIKE></CODE>). FF needs the flags to
+	    than just <CODE>("more")</CODE>). FF needs the flags to
 	    be in a tuple otherwise it can't distinguish them from glyph names)
 	    <DL>
 	      <DT>
@@ -2842,8 +2862,8 @@ pen = None;				# Finalize the pen. This tells FontForge
 	ScriptScriptPercentScaleDown<BR>
 	DelimitedSubFormulaMinHeight<BR>
 	...</CODE><BR>
-	(These names begin with capital letters, not python's conventions but
-	MicroSoft's)<BR>
+	(These names begin with capital letters, not Python's conventions but
+	Microsoft's)<BR>
 	These all take (16 bit) integer values.<BR>
 	I do not currently provide python access to any associated device tables.</TD>
     </TR>
@@ -3194,13 +3214,13 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE>macstyle</CODE></TD>
       <TD COLSPAN=2><pre>
-          Bit 0: Bold (if set to 1); 
-          Bit 1: Italic (if set to 1) 
-          Bit 2: Underline (if set to 1) 
-          Bit 3: Outline (if set to 1) 
-          Bit 4: Shadow (if set to 1) 
-          Bit 5: Condensed (if set to 1) 
-          Bit 6: Extended (if set to 1) 
+          Bit 0: Bold (if set to 1);
+          Bit 1: Italic (if set to 1)
+          Bit 2: Underline (if set to 1)
+          Bit 3: Outline (if set to 1)
+          Bit 4: Shadow (if set to 1)
+          Bit 5: Condensed (if set to 1)
+          Bit 6: Extended (if set to 1)
           Bits 7-15: Reserved (set to 0).
           </pre>
       (<a href="http://www.microsoft.com/typography/otspec/head.htm">source</a>)</TD>
@@ -5171,19 +5191,7 @@ n.save("NewFont.sfd")                            #and save it.
     FontForge as a python <A NAME="extension">extension</A>
   </H2>
   <P>
-  If you have configured fontforge with the <CODE>--enable-pyextension</CODE>
-  argument, then when fontforge installs itself it will also set itself up
-  as something that can be used inside of python (up until now we have been
-  talking about using python inside of fontforge).
-  <BLOCKQUOTE id="shell">
-    <PRE><FONT COLOR="Gray">$ </FONT>./configure --enable-pyextension
-<FONT COLOR="Gray">$ </FONT>make
-<FONT COLOR="Gray">$ </FONT>sudo make install
-</PRE>
-  </BLOCKQUOTE>
-  <P>
-  once you do that you can invoke all of the above fontforge commands from
-  inside of python by saying:
+  When Fontforge is installed, it also installs a Python module, which can be accessed from Python using:
   <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">&gt;&gt;&gt; </FONT>import fontforge
 </PRE>

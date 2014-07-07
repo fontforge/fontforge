@@ -41,7 +41,7 @@
 #include <gkeysym.h>
 #include "print.h"
 
-typedef struct printdlg {
+typedef struct printffdlg {
     struct printinfo pi;
     GWindow gw;
     GWindow setup;
@@ -1544,7 +1544,7 @@ return( false );
 return( true );
 }
     
-static void _PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv,
+static void _PrintFFDlg(FontView *fv,SplineChar *sc,MetricsView *mv,
 	int isprint,CharView *cv,SplineSet *fit_to_path) {
     GRect pos;
     GWindowAttrs wattrs;
@@ -2259,8 +2259,8 @@ return;
     }
 }
 
-void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
-    _PrintDlg(fv,sc,mv,true,NULL,NULL);
+void PrintFFDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
+    _PrintFFDlg(fv,sc,mv,true,NULL,NULL);
 }
 
 static SplineSet *OnePathSelected(CharView *cv) {
@@ -2294,7 +2294,7 @@ return( sel );
 }
 
 void InsertTextDlg(CharView *cv) {
-    _PrintDlg(NULL,cv->b.sc,NULL,false,cv,OnePathSelected(cv));
+    _PrintFFDlg(NULL,cv->b.sc,NULL,false,cv,OnePathSelected(cv));
 }
 
 void PrintWindowClose(void) {

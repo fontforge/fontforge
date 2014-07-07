@@ -1,5 +1,0 @@
-#!@abs_top_builddir@/fontforgeexe/fontforge
-#Needs: fonts/merged.cff
-
-Open("@abs_srcdir@/fonts/merged.cff")
-Quit()

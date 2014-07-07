@@ -191,16 +191,18 @@ void SplinePointsFree(SplinePointList *spl) {
     int nonext;
 
     if ( spl==NULL )
-return;
+      return;
     if ( spl->first!=NULL ) {
-	nonext = spl->first->next==NULL;
+	nonext = spl->first->next==NULL; // If there is no spline, we set a flag.
 	first = NULL;
+        // We start on the first spline if it exists.
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
-	    next = spline->to->next;
-	    SplinePointFree(spline->to);
-	    SplineFree(spline);
-	    if ( first==NULL ) first = spline;
+	    next = spline->to->next; // Cache the location of the next spline.
+	    SplinePointFree(spline->to); // Free the destination point.
+	    SplineFree(spline); // Free the spline.
+	    if ( first==NULL ) first = spline; // We want to avoid repeating the circuit.
 	}
+        // If the path is open or has no splines, free the starting point.
 	if ( spl->last!=spl->first || nonext )
 	    SplinePointFree(spl->first);
     }
@@ -1023,7 +1025,7 @@ void SplineFontQuickConservativeBounds(SplineFont *sf,DBounds *b) {
     if ( b->maxy<-65536 ) b->maxy = 0;
 }
 
-void SplinePointCatagorize(SplinePoint *sp) {
+void SplinePointCategorize(SplinePoint *sp) {
     int oldpointtype = sp->pointtype;
 
     sp->pointtype = pt_corner;
@@ -1096,31 +1098,31 @@ void SplinePointCatagorize(SplinePoint *sp) {
 int SplinePointIsACorner(SplinePoint *sp) {
     enum pointtype old = sp->pointtype, new;
 
-    SplinePointCatagorize(sp);
+    SplinePointCategorize(sp);
     new = sp->pointtype;
     sp->pointtype = old;
 return( new==pt_corner );
 }
 
-void SPLCatagorizePoints(SplinePointList *spl) {
+void SPLCategorizePoints(SplinePointList *spl) {
     Spline *spline, *first, *last=NULL;
 
     for ( ; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    SplinePointCatagorize(spline->from);
+	    SplinePointCategorize(spline->from);
 	    last = spline;
 	    if ( first==NULL ) first = spline;
 	}
 	if ( spline==NULL && last!=NULL )
-	    SplinePointCatagorize(last->to);
+	    SplinePointCategorize(last->to);
     }
 }
 
-void SCCatagorizePoints(SplineChar *sc) {
+void SCCategorizePoints(SplineChar *sc) {
     int i;
     for ( i=ly_fore; i<sc->layer_cnt; ++i )
-	SPLCatagorizePoints(sc->layers[i].splines);
+	SPLCategorizePoints(sc->layers[i].splines);
 }
 
 static int CharsNotInEncoding(FontDict *fd) {
@@ -3879,34 +3881,45 @@ void SplineRemoveExtremaTooClose(Spline1D *sp, extended *_t1, extended *_t2 ) {
 int IntersectLines(BasePoint *inter,
 	BasePoint *line1_1, BasePoint *line1_2,
 	BasePoint *line2_1, BasePoint *line2_2) {
+    // A lot of functions call this with the same address as an input and the output.
+    // In order to avoid unexpected behavior, we delay writing to the output until the end.
     bigreal s1, s2;
-
+    BasePoint _output;
+    BasePoint * output = &_output;
     if ( line1_1->x == line1_2->x ) {
-	inter->x = line1_1->x;
+        // Line 1 is vertical.
+	output->x = line1_1->x;
 	if ( line2_1->x == line2_2->x ) {
+            // Line 2 is vertical.
 	    if ( line2_1->x!=line1_1->x )
-return( false );		/* Parallel vertical lines */
-	    inter->y = (line1_1->y+line2_1->y)/2;
-	} else
-	    inter->y = line2_1->y + (inter->x-line2_1->x) * (line2_2->y - line2_1->y)/(line2_2->x - line2_1->x);
-return( true );
+              return( false );		/* Parallel vertical lines */
+	    output->y = (line1_1->y+line2_1->y)/2;
+	} else {
+	    output->y = line2_1->y + (output->x-line2_1->x) * (line2_2->y - line2_1->y)/(line2_2->x - line2_1->x);
+        }
+        *inter = *output;
+        return( true );
     } else if ( line2_1->x == line2_2->x ) {
-	inter->x = line2_1->x;
-	inter->y = line1_1->y + (inter->x-line1_1->x) * (line1_2->y - line1_1->y)/(line1_2->x - line1_1->x);
-return( true );
+        // Line 2 is vertical, but we know that line 1 is not.
+	output->x = line2_1->x;
+	output->y = line1_1->y + (output->x-line1_1->x) * (line1_2->y - line1_1->y)/(line1_2->x - line1_1->x);
+        *inter = *output;
+        return( true );
     } else {
+        // Both lines are oblique.
 	s1 = (line1_2->y - line1_1->y)/(line1_2->x - line1_1->x);
 	s2 = (line2_2->y - line2_1->y)/(line2_2->x - line2_1->x);
 	if ( RealNear(s1,s2)) {
 	    if ( !RealNear(line1_1->y + (line2_1->x-line1_1->x) * s1,line2_1->y))
-return( false );
-	    inter->x = (line1_2->x+line2_2->x)/2;
-	    inter->y = (line1_2->y+line2_2->y)/2;
+              return( false );
+	    output->x = (line1_2->x+line2_2->x)/2;
+	    output->y = (line1_2->y+line2_2->y)/2;
 	} else {
-	    inter->x = (s1*line1_1->x - s2*line2_1->x - line1_1->y + line2_1->y)/(s1-s2);
-	    inter->y = line1_1->y + (inter->x-line1_1->x) * s1;
+	    output->x = (s1*line1_1->x - s2*line2_1->x - line1_1->y + line2_1->y)/(s1-s2);
+	    output->y = line1_1->y + (output->x-line1_1->x) * s1;
 	}
-return( true );
+        *inter = *output;
+        return( true );
     }
 }
 
@@ -4799,7 +4812,7 @@ int SplineT2SpiroIndex(Spline *spline,bigreal t,SplineSet *spl) {
     /* It appears that each spiro cp has a corresponding splinepoint, but */
     /*  I don't want to rely on that because it won't be true after a simplify*/
     Spline *sp, *lastsp=spl->first->next;
-    bigreal lastt = 0, test;
+    bigreal test;
     int i;
     BasePoint bp;
 
@@ -4822,7 +4835,6 @@ return( i-1 );
 		if ( sp==spline && t<test )
 return( i-1 );
 		lastsp = sp;
-		lastt = test;
 	break;
 	    }
 	    if ( sp->to->next==NULL || sp->to==spl->first )
@@ -5803,6 +5815,7 @@ return;
 #else
     PyFF_FreeSC(sc);
 #endif
+    if (sc->glif_name != NULL) { free(sc->glif_name); sc->glif_name = NULL; }
 }
 
 void SplineCharFree(SplineChar *sc) {

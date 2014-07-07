@@ -206,7 +206,7 @@ Generate(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file[,namelist-name]]]]])
 		kern_statemachine
 	    </UL>
 	    <P>
-      The lookup flags define what glyphs to include or ignore. 
+      The lookup flags define what glyphs to include or ignore.
 	    <TABLE BORDER CELLPADDING="2">
 	      <TR>
           <TD>0</TD>
@@ -2094,16 +2094,16 @@ SetLBearing(lbearing)
 	    y and transforms all selected glyphs using those expressions.
 	    <BLOCKQUOTE>
 	      <PRE>&lt;e0&gt; := "x" | "y" | "-" &lt;e0&gt; | "!" &lt;e0&gt; | "(" &lt;expr&gt; ")" |
-	"sin" "(" &lt;expr&gt; ")" | "cos" "(" &lt;expr&gt; ")" | "tan" "(" &lt;expr&gt; ")" | 
+	"sin" "(" &lt;expr&gt; ")" | "cos" "(" &lt;expr&gt; ")" | "tan" "(" &lt;expr&gt; ")" |
 	"log" "(" &lt;expr&gt; ")" | "exp" "(" &lt;expr&gt; ")" | "sqrt" "(" &lt;expr&gt; ")" |
-	"abs" "(" &lt;expr&gt; ")" | 
+	"abs" "(" &lt;expr&gt; ")" |
 	"rint" "(" &lt;expr&gt; ")" | "float" "(" &lt;expr&gt; ")" | "ceil" "(" &lt;expr&gt; ")"
 &lt;e1&gt; := &lt;e0&gt; "^" &lt;e1&gt;
-&lt;e2&gt; := &lt;e1&gt; "*" &lt;e2&gt; | &lt;e1&gt; "/" &lt;e2&gt; | &lt;e1&gt; "%" &lt;e2&gt; 
+&lt;e2&gt; := &lt;e1&gt; "*" &lt;e2&gt; | &lt;e1&gt; "/" &lt;e2&gt; | &lt;e1&gt; "%" &lt;e2&gt;
 &lt;e3&gt; := &lt;e2&gt; "+" &lt;e3&gt; | &lt;e2&gt; "-" &lt;e3&gt;
 &lt;e4&gt; := &lt;e3&gt; "==" &lt;e4&gt; | &lt;e3&gt; "!=" &lt;e4&gt; |
 	&lt;e3&gt; "&gt;=" &lt;e4&gt; | &lt;e3&gt; "&gt;" &lt;e4&gt; |
-	&lt;e3&gt; "&lt;=" &lt;e4&gt; | &lt;e3&gt; "&lt;" &lt;e4&gt; 
+	&lt;e3&gt; "&lt;=" &lt;e4&gt; | &lt;e3&gt; "&lt;" &lt;e4&gt;
 &lt;e5&gt; := &lt;e4&gt; "&amp;&amp;" &lt;e5&gt; | &lt;e4&gt; "||" &lt;e5&gt;
 &lt;expr&gt; := &lt;e5&gt; "?" &lt;expr&gt; ":"
 
@@ -3286,6 +3286,13 @@ SetGasp([8,2,16,1,65535,3])
 	    If there is no unicode annotation for this value, or no library available,
 	    then return empty string "". It can execute with no current font.
 	  <DT>
+	    <A NAME="UnicodeBlockCountFromLib">U</A>nicodeBlockCountFromLib()
+	  <DD>
+	    Return the number of Unicode Blocks for this list as described by www.unicode.org.
+	    Currently, the blocks are {0..233}, spanning unicode values {uni0..uni10FFFF}.
+	    If there is no library available, then return -1.
+	    This can execute with no current font.
+	  <DT>
 	    <A NAME="UnicodeBlockEndFromLib">U</A>nicodeBlockEndFromLib(val)
 	  <DD>
 	    Returns the Unicode Block end value as described by www.unicode.org.
@@ -3323,7 +3330,7 @@ SetGasp([8,2,16,1,65535,3])
 	    <A NAME="UnicodeNamesListVersion">U</A>nicodeNamesListVersion()
 	  <DD>
 	    Return the Unicode Nameslist Version (as described by www.unicode.org).
-	    libuninameslist and libunicodenames are released on schedules depending on
+	    libuninameslist is released on a schedule that depends on
 	    when www.unicode.org releases new information. These dates do not match
 	    FontForge release dates, therefore users might not keep this optional library
 	    upto current updates. This instruction can be used to test if the Nameslist

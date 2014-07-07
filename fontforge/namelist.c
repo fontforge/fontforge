@@ -37,7 +37,7 @@ NameList *force_names_when_opening=NULL;
 NameList *force_names_when_saving=NULL;
 
 static struct psaltnames {
-    char *name;
+    const char *name;
     int unicode;
     int provenance;		/* 1=> Adobe PUA, 2=>AMS PUA, 3=>TeX */
 } psaltnames[];
@@ -101,10 +101,10 @@ static void psreinitnames(void) {
     /*  which means we must remove all the old hash entries before we can put */
     /*  in the new ones */
     int i;
-    struct psbucket *cur, *prev;
     NameList *nl;
 
     for ( i=0; i<HASH_SIZE; ++i ) {
+	struct psbucket *cur, *prev;
 	for ( cur = psbuckets[i]; cur!=NULL; cur=prev ) {
 	    prev = cur->prev;
 	    chunkfree(cur,sizeof(struct psbucket));
@@ -770,7 +770,7 @@ return( buffer );
     }
 }
 
-static void BuildHash(struct glyphnamehash *hash,SplineFont *sf,const char **oldnames) {
+static void BuildHash(struct glyphnamehash *hash,SplineFont *sf, char **oldnames) {
     int gid, hv;
     SplineChar *sc;
     struct glyphnamebucket *new;
@@ -999,14 +999,14 @@ return( NULL );
 return( ret );
 }
 
-void SFTemporaryRestoreGlyphNames(SplineFont *sf,const char **former) {
+void SFTemporaryRestoreGlyphNames(SplineFont *sf, char **former) {
     int gid;
     SplineChar *sc;
     struct glyphnamehash hash;
 
     for ( gid = 0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
 	if ( former[gid]!=NULL ) {
-	    const char *old = sc->name;
+	    char *old = sc->name;
 	    sc->name = copy(former[gid]);
 	    former[gid] = old;
 	}

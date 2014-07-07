@@ -566,7 +566,7 @@ static int ImgRefEdgeSelected(CharView *cv, FindSel *fs,GEvent *event) {
     /* Check the bounding box of references if meta is up, or if they didn't */
     /*  click on a reference edge. Point being to allow people to select */
     /*  macron or other reference which fills the bounding box */
-    if ( !(event->u.mouse.state&ksm_alt) ||
+    if ( !(event->u.mouse.state&ksm_meta) ||
 	    (fs->p->ref!=NULL && !fs->p->ref->selected)) {
 	for ( ref=cv->b.layerheads[cv->b.drawmode]->refs; ref!=NULL; ref=ref->next ) if ( ref->selected ) {
 	    if (( cv->expandedge = OnBB(cv,&ref->bb,fs->fudge))!=ee_none ) {
@@ -664,7 +664,7 @@ return;
 	needsupdate = CVClearSel(cv);
     }
 
-    printf("CVMouseDownPointer() dowidth:%d dolbearing:%d\n", dowidth, dolbearing );
+//    printf("CVMouseDownPointer() dowidth:%d dolbearing:%d\n", dowidth, dolbearing );
 
     if ( !fs->p->anysel )
     {
@@ -824,7 +824,6 @@ return;
 	} else if ( fs->p->sp!=NULL ) {
 	    needsupdate = true;
 	    fs->p->sp->selected = !fs->p->sp->selected;
-	    printf("CVMouseDownPointer(3.1)\n");
 	} else if ( fs->p->spiro!=NULL ) {
 	    needsupdate = true;
 	    fs->p->spiro->ty ^= 0x80;
@@ -1277,7 +1276,7 @@ return(false);
 	    bool preserveState = false;
 	    CVVisitAllControlPoints( cv, preserveState,
 	    			     FE_touchControlPoint,
-	    			     (void*)cv->b.layerheads[cv->b.drawmode]->order2 );
+	    			     (void*)(intptr_t)cv->b.layerheads[cv->b.drawmode]->order2 );
 	}
     }
     
@@ -1363,7 +1362,7 @@ return(false);
 	CVSetCharChanged(cv,true);
     else if ( changed )
 	CVSetCharChanged(cv,2);
-    if ( input_state&ksm_alt )
+    if ( input_state&ksm_meta )
 return( false );			/* Don't merge if the meta key is down */
 
 return( CVCheckMerges( cv ));
@@ -1394,7 +1393,7 @@ static void touchControlPointsVisitor ( void* key,
 				 bool isnext,
 				 void* udata )
 {
-    SPTouchControl( sp, which, (int)udata );
+    SPTouchControl( sp, which, (int)(intptr_t)udata );
 }
 
 int CVMouseMovePointer(CharView *cv, GEvent *event) {
@@ -1531,7 +1530,7 @@ return( false );
 	// visiting all is a hammer left below in case it might be needed.
 	CVVisitAdjacentToSelectedControlPoints( cv, false,
 						touchControlPointsVisitor,
-						(void*)cv->b.layerheads[cv->b.drawmode]->order2 );
+						(void*)(intptr_t)cv->b.layerheads[cv->b.drawmode]->order2 );
 	/* CVVisitAllControlPoints( cv, false, */
 	/* 			 touchControlPointsVisitor, */
 	/* 			 (void*)cv->b.layerheads[cv->b.drawmode]->order2 ); */

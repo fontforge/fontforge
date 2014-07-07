@@ -30,22 +30,10 @@
 #include <basics.h>
 #include <dlist.h>
 #include "configure-fontforge.h"
-#ifdef HAVE_ICONV_H
+#ifdef HAVE_ICONV
 # include <iconv.h>
-/* libiconv.h defines iconv as taking a const pointer for inbuf. iconv doesn't*/
-/* OH, JOY! A new version of libiconv does not use the const! Even better, the man page says it does */
-# ifdef _LIBICONV_VERSION
-#  if _LIBICONV_VERSION >= 0x10B
-#   define ICONV_CONST
-#  else
-#   define ICONV_CONST	const
-#  endif
-# else
-#  define ICONV_CONST
-# endif
 #else
 # include <gwwiconv.h>
-#  define ICONV_CONST
 #endif
 
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
@@ -426,8 +414,8 @@ struct scriptlanglist {
 
 extern struct opentype_feature_friendlynames {
     uint32 tag;
-    const char *tagstr;
-    const char *friendlyname;
+    char *tagstr;
+    char *friendlyname;
     int masks;
 } friendlies[];
 
@@ -863,7 +851,7 @@ typedef struct undoes {
 	    int16 width, vwidth;
 	    int16 lbearingchange;
 	    int unicodeenc;			/* only for ut_statename */
-	    const char *charname;		/* only for ut_statename */
+	    char *charname;			/* only for ut_statename */
 	    char *comment;			/* in utf8 */
 	    PST *possub;			/* only for ut_statename */
 	    struct splinepointlist *splines;
@@ -936,10 +924,10 @@ typedef struct sfundoes {
 
 
 typedef struct enc {
-    const char *enc_name;
+    char *enc_name;
     int char_cnt;	/* Size of the next two arrays */
     int32 *unicode;	/* unicode value for each encoding point */
-    const char **psnames;	/* optional postscript name for each encoding point */
+    char **psnames;	/* optional postscript name for each encoding point */
     struct enc *next;
     unsigned int builtin: 1;
     unsigned int hidden: 1;
@@ -1421,7 +1409,7 @@ struct altuni { struct altuni *next; int32 unienc, vs; uint32 fid; };
 	/* NOTE: GlyphInfo displays vs==-1 as vs==0, and fixes things up */
 
 typedef struct splinechar {
-    const char *name;
+    char *name;
     int unicodeenc;
     int orig_pos;		/* Original position in the glyph list */
     int16 width, vwidth;
@@ -1516,6 +1504,7 @@ typedef struct splinechar {
 	/*  will be used. */
     real tile_margin;			/* If the glyph is used as a tile */
     DBounds tile_bounds;
+    char * glif_name; // This stores the base name of the glyph when saved to U. F. O..
 } SplineChar;
 
 #define TEX_UNDEF 0x7fff
@@ -1666,6 +1655,7 @@ typedef struct layerinfo {
     unsigned int order2: 1;			/* Layer's data are order 2 bezier splines (truetype) rather than order 3 (postscript) */
 						/* In all glyphs in the font */
     unsigned int ticked: 1;
+    char * ufo_path;
 } LayerInfo;
 
 /* Baseline data from the 'BASE' table */
@@ -1947,7 +1937,7 @@ struct sflist {
     BDFFont **bdfs;		/* Ditto */
     EncMap *map;
     struct sflist *next;
-    const char **former_names;
+    char **former_names;
     int len;
 };
 
@@ -2110,7 +2100,7 @@ extern int WriteTTC(const char *filename,struct sflist *sfs,enum fontformat form
 extern long mactime(void);
 extern int WriteSVGFont(const char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,int layer);
 extern int _WriteSVGFont(FILE *file,SplineFont *sf,int flags,EncMap *enc,int layer);
-extern int WriteUFOFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,int layer);
+extern int WriteUFOFont(const char *fontname, SplineFont *sf, enum fontformat format,int flags, const EncMap *enc,int layer);
 extern void SfListFree(struct sflist *sfs);
 extern void TTF_PSDupsDefault(SplineFont *sf);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
@@ -2134,8 +2124,8 @@ extern int SFForceEncoding(SplineFont *sf,EncMap *old,Encoding *new_map);
 extern int CountOfEncoding(Encoding *encoding_name);
 extern void SFMatchGlyphs(SplineFont *sf,SplineFont *target,int addempties);
 extern void MMMatchGlyphs(MMSet *mm);
-extern char *_GetModifiers(char *fontname, char *familyname,char *weight);
-extern char *SFGetModifiers(SplineFont *sf);
+extern const char *_GetModifiers(const char *fontname, const char *familyname, const char *weight);
+extern const char *SFGetModifiers(const SplineFont *sf);
 extern const unichar_t *_uGetModifiers(const unichar_t *fontname, const unichar_t *familyname,
 	const unichar_t *weight);
 extern void SFSetFontName(SplineFont *sf, char *family, char *mods, char *fullname);
@@ -2255,7 +2245,7 @@ extern void _SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real transform[6
 extern KernClass *KernClassCopy(KernClass *kc);
 extern void KernClassFreeContents(KernClass *kc);
 extern void KernClassListFree(KernClass *kc);
-extern int KernClassContains(KernClass *kc, char *name1, char *name2, int ordered );
+extern int KernClassContains(KernClass *kc, const char *name1, const char *name2, int ordered );
 extern void OTLookupFree(OTLookup *lookup);
 extern void OTLookupListFree(OTLookup *lookup );
 extern FPST *FPSTCopy(FPST *fpst);
@@ -2322,10 +2312,10 @@ extern void SplineCharQuickBounds(SplineChar *sc, DBounds *b);
 extern void SplineSetQuickConservativeBounds(SplineSet *ss,DBounds *b);
 extern void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b);
 extern void SplineFontQuickConservativeBounds(SplineFont *sf,DBounds *b);
-extern void SplinePointCatagorize(SplinePoint *sp);
+extern void SplinePointCategorize(SplinePoint *sp);
 extern int SplinePointIsACorner(SplinePoint *sp);
-extern void SPLCatagorizePoints(SplinePointList *spl);
-extern void SCCatagorizePoints(SplineChar *sc);
+extern void SPLCategorizePoints(SplinePointList *spl);
+extern void SCCategorizePoints(SplineChar *sc);
 extern SplinePointList *SplinePointListCopy1(const SplinePointList *spl);
 extern SplinePointList *SplinePointListCopy(const SplinePointList *base);
 extern SplinePointList *SplinePointListCopySelected(SplinePointList *base);
@@ -2795,15 +2785,15 @@ extern SplineFont *LoadSplineFont(char *filename,enum openflags);
 extern SplineFont *_ReadSplineFont(FILE *file,char *filename, enum openflags openflags);
 extern SplineFont *ReadSplineFont(char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
 extern FILE *URLToTempFile(char *url,void *lock);
-extern int URLFromFile(char *url,FILE *from);
-extern int HttpGetBuf(char *url, char *databuf, int *datalen, void *mutex);
+extern int URLFromFile(const char *url,FILE *from);
+extern int HttpGetBuf(const char *url, char *databuf, int *datalen, void *mutex);
 extern void ArchiveCleanup(char *archivedir);
 extern char *Unarchive(char *name, char **_archivedir);
 extern char *Decompress(char *name, int compression);
 extern SplineFont *SFFromBDF(char *filename,int ispk,int toback);
 extern SplineFont *SFFromMF(char *filename);
 extern void SFCheckPSBitmap(SplineFont *sf);
-extern uint16 _MacStyleCode( char *styles, SplineFont *sf, uint16 *psstyle );
+extern uint16 _MacStyleCode( const char *styles, SplineFont *sf, uint16 *psstyle );
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern SplineFont *SFReadIkarus(char *fontname);
 extern SplineFont *_SFReadPdfFont(FILE *ttf,char *filename,enum openflags openflags);
@@ -2852,7 +2842,7 @@ extern void BCDoUndo(BDFChar *bc);
 extern int isaccent(int uni);
 extern int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc, int layer);
 extern int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc, int layer,int onlyaccents);
-extern int SFIsRotatable(SplineFont *sf,SplineChar *sc, int layer);
+extern int SFIsRotatable(SplineFont *sf,SplineChar *sc);
 extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *bmp, int disp_only);
 extern int SCAppendAccent(SplineChar *sc,int layer, char *glyph_name,int uni,uint32 pos);
 extern const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int nocheck);
@@ -2994,7 +2984,7 @@ extern const char *RenameGlyphToNamelist(char *buffer, SplineChar *sc,NameList *
 	NameList *new, char **sofar);
 extern void SFRenameGlyphsToNamelist(SplineFont *sf,NameList *new);
 extern char **SFTemporaryRenameGlyphsToNamelist(SplineFont *sf,NameList *new);
-extern void SFTemporaryRestoreGlyphNames(SplineFont *sf,const char **former);
+extern void SFTemporaryRestoreGlyphNames(SplineFont *sf, char **former);
 
 extern void doversion(const char *);
 
@@ -3049,7 +3039,7 @@ extern int BpWithin(BasePoint *first, BasePoint *mid, BasePoint *last);
 enum psstrokeflags { /* sf_removeoverlap=2,*/ sf_handle_eraser=4,
 	sf_correctdir=8, sf_clearbeforeinput=16 };
 
-extern char *MMAxisAbrev(char *axis_name);
+extern const char *MMAxisAbrev(char *axis_name);
 extern char *MMMakeMasterFontname(MMSet *mm,int ipos,char **fullname);
 extern char *MMGuessWeight(MMSet *mm,int ipos,char *def);
 extern char *MMExtractNth(char *pt,int ipos);
@@ -3176,7 +3166,7 @@ extern void OTLookupsCopyInto(SplineFont *into_sf,SplineFont *from_sf,
 extern struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 script, uint32 lang,
 	int pixelsize, SplineChar **glyphs);
 extern int VerticalKernFeature(SplineFont *sf, OTLookup *otl, int ask);
-extern void SFGlyphRenameFixup(SplineFont *sf, const char *old, char *new, int rename_related_glyphs);
+extern void SFGlyphRenameFixup(SplineFont *sf, const char *old, const char *new, int rename_related_glyphs);
 
 struct sllk { uint32 script; int cnt, max; OTLookup **lookups; int lcnt, lmax; uint32 *langs; };
 extern void SllkFree(struct sllk *sllk,int sllk_cnt);
@@ -3234,7 +3224,7 @@ extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int gid,
 	char *format_spec, EncMap *map);
 
 extern EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc);
-extern void SFRemoveGlyph(SplineFont *sf,SplineChar *sc, int *flags);
+extern void SFRemoveGlyph(SplineFont *sf,SplineChar *sc);
 extern void SFAddEncodingSlot(SplineFont *sf,int gid);
 extern void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int baseenc);
 extern void SCDoRedo(SplineChar *sc,int layer);
@@ -3439,6 +3429,18 @@ extern bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp );
 
 
 extern bigreal DistanceBetweenPoints( BasePoint *p1, BasePoint *p2 );
+
+
+extern void debug_printHint( StemInfo *h, char* msg );
+extern void debug_printHintInstance( HintInstance* hi, int hin, char* msg );
+
+
+/**
+ * It is like a == b, but also true if a is within
+ * tolerence of b.
+ */
+extern bool equalWithTolerence( real a, real b, real tolerence );
+
 
 
 #endif

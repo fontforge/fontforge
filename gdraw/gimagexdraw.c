@@ -1663,6 +1663,7 @@ static void gdraw_bitmap(GXWindow w, struct _GImage *image, GClut *clut,
 	Color trans, GRect *src, int x, int y) {
     XImage *xi;
     GXDisplay *gdisp = w->display;
+    uint8 *newdata = NULL;
 
     xi = XCreateImage(gdisp->display,gdisp->visual,1,XYBitmap,0,(char *) (image->data),
 	    image->width, image->height,8,image->bytes_per_line);
@@ -1670,10 +1671,10 @@ static void gdraw_bitmap(GXWindow w, struct _GImage *image, GClut *clut,
 	/* sigh. The server doesn't use our convention. I might be able just */
 	/*  to change this field but it doesn't say, so best not to */
 	int len = image->bytes_per_line*image->height;
-	uint8 *newdata = malloc(len), *pt, *ipt, *end;
+	uint8 *pt, *ipt, *end;
 	int m1,m2,val;
 
-	for ( ipt = image->data, pt=newdata, end=pt+len; pt<end; ++pt, ++ipt ) {
+	for ( ipt = image->data, pt=newdata=malloc(len), end=pt+len; pt<end; ++pt, ++ipt ) {
 	    val = 0;
 	    for ( m1=1, m2=0x80; m2!=0; m1<<=1, m2>>=1 )
 		if ( *ipt&m1 ) val|=m2;
@@ -1682,7 +1683,7 @@ static void gdraw_bitmap(GXWindow w, struct _GImage *image, GClut *clut,
 	xi->data = (char *) newdata;
     }
     gdraw_xbitmap(w,xi,clut,trans,src,x,y);
-    if ( (uint8 *) (xi->data)==image->data ) xi->data = NULL;
+    if ( (uint8 *) (xi->data)==image->data || (uint8 *) (xi->data)==newdata ) xi->data = NULL;
     XDestroyImage(xi);
 }
 
@@ -1721,10 +1722,36 @@ static void check_image_buffers(GXDisplay *gdisp, int neww, int newh, int is_bit
     if ( gdisp->gg.iwidth == width && gdisp->gg.iheight == height && depth==gdisp->gg.img->depth )
 return;
 
-    if ( gdisp->gg.img!=NULL )
+    if ( gdisp->gg.img!=NULL ) {
+	/* If gdisp->gg.img->data was allocated by GC_malloc rather
+	   than standard libc malloc then it must be set to NULL so
+	   that XDestroyImage() does not try to free it and crash.
+	   
+	   If we no longer use libgc then the following conditional
+	   block can be removed, but in case it isn't, the enclosed
+	   free() will prevent a memory leak.
+	*/
+	if (gdisp->gg.img->data) {
+	    free(gdisp->gg.img->data);
+	    gdisp->gg.img->data = NULL;
+	}
 	XDestroyImage(gdisp->gg.img);
-    if ( gdisp->gg.mask!=NULL )
+    }
+    if ( gdisp->gg.mask!=NULL ) {
+	/* If gdisp->gg.mask->data was allocated by GC_malloc rather
+	   than standard libc malloc then it must be set to NULL so
+	   that XDestroyImage() does not try to free it and crash.
+	   
+	   If we no longer use libgc then the following conditional
+	   block can be removed, but in case it isn't, the enclosed
+	   free() will prevent a memory leak.
+	*/
+	if (gdisp->gg.mask->data) {
+	    free(gdisp->gg.mask->data);
+	    gdisp->gg.mask->data = NULL;
+	}
 	XDestroyImage(gdisp->gg.mask);
+    }
     pixel_size = gdisp->pixel_size;
     temp = malloc(((width*pixel_size+gdisp->bitmap_pad-1)/gdisp->bitmap_pad)*
 	    (gdisp->bitmap_pad/8)*height);

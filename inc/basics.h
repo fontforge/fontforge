@@ -27,20 +27,17 @@
 #ifndef _BASICS_H
 #define _BASICS_H
 
-# include <fontforge-config.h>
+#include <fontforge-config.h>
 #include <stdio.h>		/* for NULL */
 #ifdef HAVE_STDINT_H
-# include <stdint.h>
+#include <stdint.h>
 #else
-# include <inttypes.h>
+#include <inttypes.h>
 #endif
 #include <stdlib.h>		/* for free */
 #include <limits.h>
+#include <stdbool.h>
 
-#define true 1
-#define false 0
-
-typedef int bool;
 typedef int32_t		int32;
 typedef uint32_t	uint32;
 typedef int16_t		int16;
@@ -86,5 +83,43 @@ static inline int imax(int a, int b)
 }
 
 #define IS_IN_ORDER3( a, b, c )   ( ((a)<=(b)) && ((b)<=(c)) )
+
+
+/**
+ * Many lists in FontForge are singly linked. At times you might want
+ * to append to the list which, when you only have a pointer to the
+ * start of the list can be more verbose than one would like. To use
+ * this macro you must defined a null initialized variable 'last'
+ * outside of any loop that traverses the source list. The last
+ * variable is used used by this macro to quickly append to the list
+ * as you go. This macro also assumes that the 'last' and 'newitem'
+ * types have a member "->next" which contains the single linked list
+ * pointer to the next element.
+ *
+ * Efficient list append should really be a one line call in the bulk
+ * of the code :)
+ *
+ * example:
+ * MyListObjectType* newfoolast = 0;
+ * MyListObjectType* newfoolist = 0;
+ * 
+ * for( ... iterate a source collection of foos ... )
+ * {
+ *    MyListObjectType* foocopy = CopyIt( foo );
+ *    FFLIST_SINGLE_LINKED_APPEND( newfoolist, newfoolast, foocopy );
+ * }
+ */
+#define FFLIST_SINGLE_LINKED_APPEND( head, last, newitem ) \
+		    if ( !last )		       \
+		    {				       \
+			newitem->next = 0;	       \
+			head = last = newitem;	       \
+		    }				       \
+		    else			       \
+		    {				       \
+			last->next = newitem;	       \
+			last = newitem;		       \
+		    }
+
 
 #endif

@@ -698,7 +698,11 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 		}
 	    }
 	    putc('\n',sfd);
-		if (sp->name != NULL) fprintf(sfd, "NamedP: %s\n", sp->name);
+	    if (sp->name != NULL) {
+		fputs("NamedP: ", sfd);
+		SFDDumpUTF7Str(sfd, sp->name);
+		putc('\n', sfd);
+	    }
 	    if ( sp==first )
 	break;
 	    if ( first==NULL ) first = sp;
@@ -1408,6 +1412,7 @@ void SFDDumpCharStartingMarker(FILE *sfd,SplineChar *sc) {
 
 
 static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int todir,int saveUndoes) {
+    // TODO: Output the U. F. O. glif name.
     ImageList *img;
     KernPair *kp;
     PST *pst;
@@ -1425,7 +1430,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
     }
     if ( sc->unicodeenc!=-1 &&
 	    ((map->enc->is_unicodebmp && sc->unicodeenc<0x10000) ||
-	     (map->enc->is_unicodefull && (unsigned)sc->unicodeenc<unicode4_size)) )
+	     (map->enc->is_unicodefull && sc->unicodeenc < (int)unicode4_size)) )
 	/* If we have altunis, then the backmap may not give the primary */
 	/*  unicode code point, which is what we need here */
 	fprintf(sfd, "Encoding: %d %d %d\n", sc->unicodeenc, sc->unicodeenc,
@@ -2196,6 +2201,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	SFDDumpUTF7Str(sfd,sf->layers[i].name);
 	fprintf( sfd, " %d\n", sf->layers[i].background );
     }
+    // TODO: Output U. F. O. layer path.
     if ( sf->strokedfont )
 	fprintf(sfd, "StrokedFont: %d\n", sf->strokedfont );
     else if ( sf->multilayer )
@@ -2633,6 +2639,8 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 	        putc(' ',sfd);
 	        SFDDumpUTF7Str(sfd,an->subtable->subtable_name );
             }
+            else
+                fprintf(sfd, " \"\" ");
 	}
 	putc('\n',sfd);
     }
@@ -3891,14 +3899,21 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 			ttfindex = cur->last->nextcpindex+1;
 		    SplineMake(cur->last,pt,order2);
 		    cur->last = pt;
+		    // pt->me is a copy of 'current' so we should now move
+		    // the x coord of pt->me back to where it should be.
+		    // The whole aim here is that this spline remains an open path
+		    // when PTFLAG_FORCE_OPEN_PATH is set.
+		    pt->me.x = original_current_x;
 		}
 
 		// Move the point back to the same location it was
 		// but do not connect it back to the point that is
 		// already there.
 		if( val & SFD_PTFLAG_FORCE_OPEN_PATH )
+		{
 		    current.x = original_current_x;
-
+		}
+		
 		sp -= 6;
 	    } else
 		sp = 0;
@@ -4167,9 +4182,7 @@ static void SFDGetMinimumDistances(FILE *sfd, SplineChar *sc) {
 	    md->sp2->dontinterpolate = true;
 	}
 	if ( !err ) {
-	    if ( last==NULL )
-		mdhead = md;
-	    else
+	    if ( last!=NULL )
 		last->next = md;
 	    last = md;
 	} else
@@ -4980,6 +4993,7 @@ char* SFDMoveToNextStartChar( FILE* sfd ) {
 
 
 static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf, int had_sf_layer_cnt) {
+    // TODO: Read the U. F. O. glif name.
     SplineChar *sc;
     char tok[2000], ch;
     RefChar *lastr=NULL, *ref;
@@ -7613,6 +7627,7 @@ bool SFD_GetFontMetaData( FILE *sfd,
     }
     else if ( strmatch(tok,"Layer:")==0 )
     {
+        // TODO: Read the U. F. O. path.
 	int layer, o2, bk;
 	getint(sfd,&layer);
 	if ( layer>=sf->layer_cnt ) {
@@ -7977,7 +7992,7 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
     int pushedbacktok = false;
     Encoding *enc = &custom;
     struct remap *remap = NULL;
-    int hadtimes=false, haddupenc;
+    int haddupenc;
     int old_style_order2 = false;
     int had_layer_cnt=false;
 
@@ -8494,7 +8509,7 @@ exit( 1 );
 	AltUniFigure(sf,sf->map,true);
     if ( sf->sfd_version<2 )
 	SFD_AssignLookups((SplineFont1 *) sf);
-    if ( !hadtimes )
+    if ( !d.hadtimes )
 	SFTimesFromFile(sf,sfd);
 
     SFDFixupUndoRefs(sf);

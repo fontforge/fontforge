@@ -1824,14 +1824,14 @@ return( true );
 		OFLibEnableButtons(d);
 		GGadgetRedraw( GWidgetGetControl(d->gw,CID_Fonts));
 return( true );
-	    } else if ( event->u.mouse.state&(ksm_shift|ksm_alt) ) {
+	    } else if ( event->u.mouse.state&(ksm_shift|ksm_meta) ) {
 		d->show[index]->selected = !d->show[index]->selected;
 	    } else {
 		OFLibClearSel(d);
 		d->show[index]->selected = true;
 	    }
 	} else {
-	    if ( event->u.mouse.state&(ksm_shift|ksm_alt) ) {
+	    if ( event->u.mouse.state&(ksm_shift|ksm_meta) ) {
 		du->selected = !du->selected;
 	    } else {
 		OFLibClearSel(d);

@@ -2417,7 +2417,7 @@ static SplineSet *JoinAContour(Intersection *startil,MList *ml) {
     break;
 	}
     }
-    SPLCatagorizePoints(ss);
+    SPLCategorizePoints(ss);
     if ( allexclude && SplinePointListIsClockwise(ss)==1 )
 	SplineSetReverse(ss);
 return( ss );

@@ -34,6 +34,7 @@
 #include <utype.h>
 #include <gwidget.h>
 
+float GenerateHintWidthEqualityTolerance = 0.0;
 int autohint_before_generate = 1;
 
 /* Let's talk about references. */
@@ -2660,6 +2661,62 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
     SplinePointListsFree(freeme);
 }
 
+void debug_printHintInstance( HintInstance* hi, int hin, char* msg )
+{
+    printf("___ hint instance %d %s\n", hin, msg );
+    if( !hi )
+	return;
+    
+    printf("hi.begin      %f\n", hi->begin );
+    printf("hi.end        %f\n", hi->end );
+    printf("hi.closed     %d\n", hi->closed );
+    printf("hi.cnum       %d\n", hi->counternumber );
+    printf("hi.next       %p\n", hi->next );
+    if( hi->next )
+	debug_printHintInstance( hi->next, hin+1, msg );
+}
+
+
+void debug_printHint( StemInfo *h, char* msg )
+{
+    printf("==============================\n");
+    printf("debug_printHint(%p)... %s\n", h, msg );
+    if( h )
+    {
+	printf("start         %f\n", h->start );
+	printf("width         %f\n", h->width );
+	printf("hinttype      %d\n", h->hinttype );
+	printf("ghost         %d\n", h->ghost );
+	printf("haspointleft  %d\n", h->haspointleft );
+	printf("haspointright %d\n", h->haspointright );
+	printf("hasconflicts  %d\n", h->hasconflicts );
+	printf("used          %d\n", h->used );
+	printf("tobeused      %d\n", h->tobeused );
+	printf("active        %d\n", h->active );
+	printf("enddone       %d\n", h->enddone );
+	printf("startdone     %d\n", h->startdone );
+	printf("reordered     %d\n", h->reordered );
+	printf("pendingpt     %d\n", h->pendingpt );
+	printf("linearedges   %d\n", h->linearedges );
+	printf("hintnumber    %d\n", h->hintnumber );
+	if( h->where )
+	    debug_printHintInstance( h->where, 1, "" );
+    }
+    printf("==============================\n");    
+}
+
+bool equalWithTolerence( real a, real b, real tolerence )
+{
+//    printf("equalWithTolerence(1) a:%f b:%f tol:%f\n", a, b, tolerence );
+//    printf("equalWithTolerence(2) a:%lf b:%lf tol:%lf\n", a, b, tolerence );
+    
+    if( tolerence == 0.0 )
+	return a == b;
+
+    return(    (b - tolerence < a)
+	    && (b + tolerence > a ));
+}
+
 static void DumpHints(GrowBuf *gb,StemInfo *h,int oper,int midoper,int round) {
     real last = 0, cur;
     int cnt;
@@ -2667,7 +2724,7 @@ static void DumpHints(GrowBuf *gb,StemInfo *h,int oper,int midoper,int round) {
     if ( h==NULL )
 return;
     cnt = 0;
-    while ( h!=NULL && h->hintnumber!=-1 ) {
+    while ( h && h->hintnumber!=-1 ) {
 	/* Type2 hints do not support negative widths except in the case of */
 	/*  ghost (now called edge) hints */
 	if ( cnt>24-2 ) {	/* stack max = 48 numbers, => 24 hints, leave a bit of slop for the width */
@@ -2682,7 +2739,7 @@ return;
 	    AddNumber2(gb,-myround2(h->width,round),round);
 	    cur -= myround2(h->width,round);
 	} else if ( h->ghost ) {
-	    if ( h->width==20 ) {
+	    if ( equalWithTolerence( h->width, 20, GenerateHintWidthEqualityTolerance )) {
 		AddNumber2(gb,myround2(h->start,round)-last+20,round);
 		AddNumber2(gb,-20,round);
 		cur = myround2(h->start,round);

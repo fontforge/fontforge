@@ -662,7 +662,7 @@ static void AdjustSplineSet(TD *td,int order2) {
 	    new->last = lastsp;
 
 	for ( sp = new->first; sp!=NULL; ) {
-	    SplinePointCatagorize(sp);
+	    SplinePointCategorize(sp);
 	    if ( sp->next==NULL )
 	break;
 	    sp = sp->next->to;
@@ -695,7 +695,7 @@ static void TileSplineSets(TD *td,SplineSet **head,int order2) {
 	} else
 	    prev = spl;
     }
-    SPLCatagorizePoints(td->result);
+    SPLCategorizePoints(td->result);
     if ( *head==NULL )
 	*head = td->result;
     else {

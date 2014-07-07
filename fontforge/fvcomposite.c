@@ -1261,7 +1261,7 @@ return( false );
 return( true );
 }
 
-int SFIsRotatable(SplineFont *sf,SplineChar *sc,int layer) {
+int SFIsRotatable(SplineFont *sf,SplineChar *sc) {
     char *end;
     int cid;
 
@@ -1348,7 +1348,7 @@ return( !onlyaccents || hascomposing(sf,sc->unicodeenc,sc) );
     if ( !onlyaccents && SCMakeDotless(sf,sc,layer,NULL,false,false))
 return( true );
 
-return( SFIsRotatable(sf,sc,layer));
+return( SFIsRotatable(sf,sc));
 }
 
 static int SPInRange(SplinePoint *sp, real ymin, real ymax) {
@@ -1385,7 +1385,7 @@ static void _SplineSetFindXRange(SplinePointList *spl, DBounds *bounds,
 }
 
 static real _SplineSetFindXRangeAtYExtremum(SplinePointList *spl, DBounds *bounds,
-	int findymax, real yextreme, real ia) {
+	int findymax, real yextreme) {
     Spline *spline;
     extended t0, t1, t2, t3;
     bigreal y0, y1, y2, y3, x;
@@ -1442,7 +1442,7 @@ return( yextreme );
 /*  character looks like so that we can do an optical accent placement */
 /* I currently think the best bet is to find the very highest point(s) and */
 /*  center on that. I used to find the bounds of the top quarter of the char */
-static real SCFindTopXRange(SplineChar *sc,int layer,DBounds *bounds, real ia) {
+static real SCFindTopXRange(SplineChar *sc,int layer,DBounds *bounds) {
     RefChar *rf;
     real yextreme = -0x80000;
 
@@ -1450,9 +1450,9 @@ static real SCFindTopXRange(SplineChar *sc,int layer,DBounds *bounds, real ia) {
     bounds->minx = bounds->maxx = 0;
 
     for ( rf=sc->layers[layer].refs; rf!=NULL; rf = rf->next )
-	yextreme = _SplineSetFindXRangeAtYExtremum(rf->layers[0].splines,bounds,true,yextreme,ia);
+	yextreme = _SplineSetFindXRangeAtYExtremum(rf->layers[0].splines,bounds,true,yextreme);
 
-    yextreme = _SplineSetFindXRangeAtYExtremum(sc->layers[layer].splines,bounds,true,yextreme,ia);
+    yextreme = _SplineSetFindXRangeAtYExtremum(sc->layers[layer].splines,bounds,true,yextreme);
     if ( yextreme == -0x80000 ) yextreme = 0;
 return( yextreme );
 }
@@ -1465,9 +1465,9 @@ static real SCFindBottomXRange(SplineChar *sc,int layer,DBounds *bounds, real ia
     bounds->minx = bounds->maxx = 0;
 
     for ( rf=sc->layers[layer].refs; rf!=NULL; rf = rf->next )
-	yextreme = _SplineSetFindXRangeAtYExtremum(rf->layers[0].splines,bounds,false,yextreme,ia);
+	yextreme = _SplineSetFindXRangeAtYExtremum(rf->layers[0].splines,bounds,false,yextreme);
 
-    yextreme = _SplineSetFindXRangeAtYExtremum(sc->layers[layer].splines,bounds,false,yextreme,ia);
+    yextreme = _SplineSetFindXRangeAtYExtremum(sc->layers[layer].splines,bounds,false,yextreme);
     if ( yextreme == 0x80000 ) yextreme = 0;
 return( yextreme );
 }
@@ -2178,7 +2178,7 @@ return;
 		if ( CharCenterHighest ) {
 		    if ( basech!='b' && basech!='d' && basech!='h' && basech!='n' && basech!='r' && basech!=0xf8 &&
 			    basech!='B' && basech!='D' && basech!='L' && basech!=0xd8 )
-			ybase = SCFindTopXRange(sc,layer,&bb,ia);
+			ybase = SCFindTopXRange(sc,layer,&bb);
 		    if ( ((basech=='h' && ch==0x307) ||	/* dot over the stem in hdot */
 			    basech=='i' || basech=='j' || basech==0x131 || basech==0xf6be || basech==0x237 ||
 			    (basech=='k' && ch==0x301) ||
@@ -2810,7 +2810,7 @@ return;
     } else if ( sc->unicodeenc>=0x2010 && sc->unicodeenc<=0x2015 ) {
 	DoRules( sf,sc,layer,bdf,disp_only );
 return;
-    } else if ( SFIsRotatable(sf,sc,layer) ) {
+    } else if ( SFIsRotatable(sf,sc) ) {
 	DoRotation( sf,sc,layer,bdf,disp_only );
 return;
     } else if ( sc->unicodeenc==0x131 || sc->unicodeenc==0x237 || sc->unicodeenc==0xf6be ) {

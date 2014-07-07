@@ -1,6 +1,0 @@
-#!@abs_top_builddir@/fontforgeexe/fontforge
-#Needs: fonts/cmbsy10.pfb
-#Make sure merge fonts works...
-
-New();
-MergeFonts("@abs_srcdir@/fonts/cmbsy10.pfb")

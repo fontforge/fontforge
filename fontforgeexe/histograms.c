@@ -33,6 +33,7 @@
 #include "psfont.h"
 #include <ffglib.h>
 #include <glib/gprintf.h>
+#include "xvasprintf.h"
 
 /* This operations are designed to work on a single font. NOT a CID collection*/
 /*  A CID collection must be treated one sub-font at a time */
@@ -392,7 +393,7 @@ return;
 	GGadgetSetVisible(GWidgetGetControl(hist->gw,CID_BlueMsg),hist->is_pending);
     } else { /* HStem and VStem */
 	if ( !( e->u.mouse.state&ksm_shift )) {
-	    new = (char *) g_strdup_printf( "[%d]", x );
+	    new = xasprintf( "[%d]", x );
 	    GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_MainVal ), new );
 	    GGadgetSetTitle8( GWidgetGetControl( hist->gw, CID_SecondaryVal ), new );
 	} else {

@@ -127,9 +127,8 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	splashimage.c startui.c statemachine.c tilepath.c transform.c	        \
 	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
 	usermenu.c macobjective.h                                               \
-    collabclientui.c collabclientui.h                                       \
-	sfundo.c \
-	wordlistparser.c wordlistparser.h exelibstamp.c
+	collabclientui.c collabclientui.h                                       \
+	sfundo.c wordlistparser.c wordlistparser.h
 
 else !GRAPHICAL_USER_INTERFACE
 
@@ -142,7 +141,7 @@ MACFFEXE_LIBADD=macobjective.o
 endif MACINTOSH
 
 libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS) $(GTK2_CFLAGS)
-libfontforgeexe_la_LIBADD = $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MACFFEXE_LIBADD) $(MY_LIBS) $(GTK2_LIBS)
+libfontforgeexe_la_LIBADD = $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MACFFEXE_LIBADD) $(MY_LIBS) $(GTK2_LIBS) $(top_builddir)/fontforge/libfontforge.la
 
 libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBFONTFORGEEXE_VERSION) \
 	${MY_LIB_LDFLAGS}

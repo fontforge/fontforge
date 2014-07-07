@@ -1892,7 +1892,7 @@ static void dumpcffencoding(SplineFont *sf,struct alltabs *at) {
 
 static void _dumpcffstrings(FILE *file, struct pschars *strs) {
     int i, len, offsize;
-
+    
     /* First figure out the offset size */
     len = 1;
     for ( i=0; i<strs->next; ++i )
@@ -1914,8 +1914,9 @@ static void _dumpcffstrings(FILE *file, struct pschars *strs) {
 	/* last of all the strings */
 	for ( i=0; i<strs->next; ++i ) {
 	    uint8 *pt = strs->values[i], *end = pt+strs->lens[i];
-	    while ( pt<end )
+	    while ( pt<end ) {
 		putc( *pt++, file );
+	    }
 	}
     }
 }
@@ -4690,7 +4691,7 @@ return( NULL );			/* No variation selectors */
 	any = 0;
 	for ( gid=mingid; gid<=maxgid; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
 	    for ( altuni = sc->altuni; altuni!=NULL; altuni=altuni->next ) {
-		if ( altuni->unienc!=-1 && (unsigned)altuni->unienc<unicode4_size &&
+		if ( altuni->unienc!=-1 && altuni->unienc < (int)unicode4_size &&
 			altuni->vs==vses[i] && altuni->fid==0 ) {
 		    for ( au=sc->altuni; au!=NULL; au=au->next )
 			if ( au->unienc==altuni->unienc && au->vs==-1 && au->fid==0 )
@@ -6379,8 +6380,7 @@ static void hashglyphadd(SplineChar *sc,UHash *uhash,NHash *nhash) {
 }
 
 static struct alltabs *ttc_prep(struct sflist *sfs, enum fontformat format,
-	enum bitmapformat bf,int flags, int layer, int ttcflags,
-	SplineFont *dummysf) {
+				enum bitmapformat bf,int flags, int layer,SplineFont *dummysf) {
     struct alltabs *ret;
     int fcnt, cnt, gcnt=3;
     struct sflist *sfitem;
@@ -6575,7 +6575,7 @@ return( dumpstoredtable(sf,tag,len));
 }
 
 static void ttc_perfonttables(struct alltabs *all, int me, int mainpos,
-	enum fontformat format, int flags ) {
+	enum fontformat format ) {
     struct alltabs *at = &all[me];
     struct alltabs *main = &all[mainpos];
     SplineFont *sf = at->sf;
@@ -6645,9 +6645,9 @@ static void ttc_perfonttables(struct alltabs *all, int me, int mainpos,
 }
 
 static int tablefilematch(struct taboff *tab,FILE *ttc,struct alltabs *all,int pos) {
-    int i;
+    int i, ch1, ch2;
     struct taboff *test;
-    int ch1, ch2, len;
+    unsigned len;
 
     /* See if this table (which lives in its own file) matches any tables */
     /*  with the same tag in an earlier font */
@@ -6741,7 +6741,7 @@ static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
 
     for ( i=0; i<cnt; ++i ) {
 	/* Now generate all tables unique to this font */
-	ttc_perfonttables(all, i, cnt, format, all[i].gi.flags );
+	ttc_perfonttables(all, i, cnt, format );
 	buildtablestructures(&all[i],all[i].sf,format);
 	/* Check for any tables which match those of a previous font */
 	for ( j=0 ; j<all[i].tabdir.numtab; ++j ) {
@@ -6926,7 +6926,7 @@ return( 0 );
     dobruteforce = true;
     if ( (ttcflags & ttc_flag_trymerge) && bf==bf_none ) {
 	dobruteforce = false;
-	ret = ttc_prep(sfs,format,bf,flags,layer,ttcflags,&dummysf);
+	ret = ttc_prep(sfs,format,bf,flags,layer,&dummysf);
 	if ( ret==NULL )
 	    dobruteforce = true;
 	else

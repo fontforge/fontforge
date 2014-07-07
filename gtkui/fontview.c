@@ -1061,7 +1061,7 @@ void FontViewMenu_OpenMetrics(GtkMenuItem *menuitem, gpointer user_data) {
 void FontViewMenu_Print(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 
-    PrintDlg(fv,NULL,NULL);
+    PrintFFDlg(fv,NULL,NULL);
 }
 
 void FontViewMenu_ExecScript(GtkMenuItem *menuitem, gpointer user_data) {
