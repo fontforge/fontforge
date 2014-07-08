@@ -28,9 +28,40 @@
 #define _EDGELIST2_H
 #include "splinefont.h"
 
+struct monotonic;
+
+typedef struct mlist {
+    Spline *s;
+    struct monotonic *m;			/* May get slightly munched but will */
+			/* always have right spline. we fix when we need it */
+    extended t;
+    int isend;
+    BasePoint unit;
+    struct mlist *next;
+} MList;
+
+typedef struct intersection {
+    MList *monos;
+    BasePoint inter;
+    struct intersection *next;
+} Intersection;
+ 
+typedef struct preintersection {
+    BasePoint inter;
+    struct monotonic *m1; bigreal t1;
+    struct monotonic *m2; bigreal t2;
+    unsigned int is_close: 1;
+    struct preintersection *next;
+} PreIntersection;    
+
+#define FF_RELATIONAL_GEOM
+
 typedef struct monotonic {
     Spline *s;
     extended tstart, tend;
+#ifdef FF_RELATIONAL_GEOM
+    extended otstart, otend;
+#endif
     struct monotonic *next, *prev;	/* along original contour */
     uint8 xup;				/* increasing t => increasing x */
     uint8 yup;
