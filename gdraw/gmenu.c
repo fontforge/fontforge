@@ -102,8 +102,8 @@ static GResInfo gmenu_ri = {
     NULL
 };
 
-static char* HKTextInfoToUntranslatedText( char* text_untranslated );
-static char* HKTextInfoToUntranslatedTextFromTextInfo( GTextInfo* ti );
+char* HKTextInfoToUntranslatedText( char* text_untranslated );
+char* HKTextInfoToUntranslatedTextFromTextInfo( GTextInfo* ti );
 
 static void GMenuBarChangeSelection(GMenuBar *mb, int newsel,GEvent *);
 static struct gmenu *GMenuCreateSubMenu(struct gmenu *parent,GMenuItem *mi,int disable);
@@ -982,7 +982,7 @@ static char* str_remove_all_single_char( char * ret, char ch )
  *
  * The return value is owned by this function, do not free it.
  */
-static char* HKTextInfoToUntranslatedText(char *text_untranslated) {
+char* HKTextInfoToUntranslatedText(char *text_untranslated) {
     char ret[PATH_MAX+1];
     char* pt;
     int i;
@@ -1002,7 +1002,7 @@ static char* HKTextInfoToUntranslatedText(char *text_untranslated) {
  * Call HKTextInfoToUntranslatedText on ti->text_untranslated
  * guarding against the chance of null for ti, and ti->text_untranslated
  */
-static char* HKTextInfoToUntranslatedTextFromTextInfo( GTextInfo* ti )
+char* HKTextInfoToUntranslatedTextFromTextInfo( GTextInfo* ti )
 {
     if( !ti )
 	return 0;
