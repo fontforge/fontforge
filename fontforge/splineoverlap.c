@@ -73,7 +73,11 @@
 /*  The free up our temporary data structures, merge in any open splinesets  */
 /*	free the old closed splinesets					     */
 
-#define FF_OVERLAP_VERBOSE
+// Frank recommends using the following macro whenever making changes
+// to this code and capturing and diffing output in order to track changes
+// in errors and reports.
+// (The pointers tend to clutter the diff a bit.)
+// #define FF_OVERLAP_VERBOSE
 
 static char *glyphname=NULL;
 
