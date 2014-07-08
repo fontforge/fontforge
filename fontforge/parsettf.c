@@ -3341,8 +3341,10 @@ return;						/* Use cids instead */
 	    pos = 1;
             /* Parse format 1 code ranges */
 	    for ( i=0; i<cnt ; ++i ) {
+                /* next byte is code of first character in range */
 		first = getc(ttf);
-		last = first + getc(ttf)-1;
+                /* next byte is the number of additional characters in range */
+		last = first + getc(ttf);
 		while ( first<=last && first<256 ) {
 		    if ( pos<info->glyph_cnt )
 			map->map[first] = pos;
