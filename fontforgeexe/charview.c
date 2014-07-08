@@ -3957,7 +3957,7 @@ void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 /* GT: Background, make it short */
 		cv->b.layerheads[cv->b.drawmode]->background ? _("Back") :
 /* GT: Foreground, make it short */
-		_("Fore") ),
+		_("Fore") )
 	      );
     GDrawDrawText8(pixmap,LAYER_DATA,ybase,buffer,-1,fg);
     GDrawDrawText8(pixmap,LAYER_DATA,ybase,buffer,-1,fg);
