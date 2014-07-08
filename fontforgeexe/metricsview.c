@@ -4896,6 +4896,13 @@ static int mv_e_h(GWindow gw, GEvent *event) {
 	MVChar(mv,event);
       break;
       case et_charup:
+	if ((event->u.chr.keysym == GK_Tab) && (!(event->u.chr.state&ksm_meta))) {
+	  // We want to allow somebody to move the cursor position
+	  // forwards with tab and backwards with shift + tab.
+	  // GGadget *active = GWindowGetFocusGadgetOfWindow(mv->gw); if (event->u.chr.state&ksm_shift) return 0;
+	  // For now, we just return 0 so that the default event handler takes care.
+	  return 0;
+	}
 	  if ( event->u.chr.keysym == GK_Left || event->u.chr.keysym==GK_KP_Left
 	       || event->u.chr.keysym == GK_Right || event->u.chr.keysym==GK_KP_Right ) {
 	      if( event->u.chr.state&ksm_meta ) {
