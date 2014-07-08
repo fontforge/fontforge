@@ -1119,7 +1119,7 @@ return;			/* If the wm gave me a window the wrong size */
 	    char * menuname = NULL;
 	    Hotkey* toolhotkey = NULL;
             if (mininame != NULL) {
-              if (asprintf(&menuname, "%s%s", "CharView.Menu.Point.Tools.", mininame) != -1) {
+              if (asprintf(&menuname, "%s%s", "Point.Tools.", mininame) != -1) {
 	        toolhotkey = hotkeyFindByMenuPath(cv->gw, menuname);
 	        free(menuname); menuname = NULL;
               }
