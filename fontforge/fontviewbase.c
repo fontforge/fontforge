@@ -1954,9 +1954,6 @@ static void FontViewBase_Free(FontViewBase *fv) {
     PyFF_FreeFV(fv);
 #endif
     free(fv);
-#ifndef _NO_PYTHON
-    PyFF_FreeFV(fv);
-#endif
 }
 
 static int FontViewBaseWinInfo(FontViewBase *UNUSED(fv), int *cc, int *rc) {
