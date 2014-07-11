@@ -623,7 +623,7 @@ int count_occurrence(const char* big, const char* little) {
     return output;
 }
 
-xmlNodePtr PListAddString(xmlNodePtr parent, const char *key, const char *value) {
+void PListAddString(xmlNodePtr parent, const char *key, const char *value) {
     if ( value==NULL ) value = "";
     xmlNodePtr keynode = xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key); // "<key>%s</key>" key
 #ifdef ESCAPE_LIBXML_STRINGS
