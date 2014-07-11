@@ -778,14 +778,17 @@ return( false );
 static char *getPfaEditPrefs(void) {
     static char *prefs=NULL;
     char buffer[1025];
+    char *ffdir;
 
     if ( prefs!=NULL )
-return( prefs );
-    if ( getFontForgeUserDir(Config)==NULL )
-return( NULL );
-    sprintf(buffer,"%s/prefs", getFontForgeUserDir(Config));
+        return prefs;
+    ffdir = getFontForgeUserDir(Config);
+    if ( ffdir==NULL )
+        return NULL;
+    sprintf(buffer,"%s/prefs", ffdir);
+    free(ffdir);
     prefs = copy(buffer);
-return( prefs );
+    return prefs;
 }
 
 static char *PrefsUI_getFontForgeShareDir(void) {
