@@ -2656,10 +2656,11 @@ void LastFonts_Save(void) {
     if ( ffdir ) {
         sprintf(buffer, "%s/FontsOpenAtLastQuit", ffdir);
         preserve = fopen(buffer,"w");
+        free(ffdir);
     }
 
     for ( fv = fv_list; fv!=NULL; fv = next ) {
-	next = (FontView *) (fv->b.next);
+        next = (FontView *) (fv->b.next);
         if ( preserve ) {
             SplineFont *sf = fv->b.cidmaster?fv->b.cidmaster:fv->b.sf;
             fprintf(preserve, "%s\n", sf->filename?sf->filename:sf->origname);
