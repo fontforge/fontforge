@@ -482,14 +482,17 @@ return( 1 );
 static char *getPfaEditEncodings(void) {
     static char *encfile=NULL;
     char buffer[1025];
+    char *ffdir;
 
     if ( encfile!=NULL )
-return( encfile );
-    if ( getFontForgeUserDir(Config)==NULL )
-return( NULL );
-    sprintf(buffer,"%s/Encodings.ps", getFontForgeUserDir(Config));
+        return encfile;
+    ffdir = getFontForgeUserDir(Config);
+    if ( ffdir==NULL )
+        return NULL;
+    sprintf(buffer,"%s/Encodings.ps", ffdir);
+    free(ffdir);
     encfile = copy(buffer);
-return( encfile );
+    return encfile;
 }
 
 static void EncodingFree(Encoding *item) {

@@ -2008,25 +2008,23 @@ static void MVFigureGlyphNames(MetricsView *mv,const unichar_t *names) {
     GDrawRequestExpose(mv->v,NULL,false);
 }
 
-static void MVLoadWordList(MetricsView *mv,int type)
-{
+static void MVLoadWordList(MetricsView *mv, int type) {
     int words_max = 1024*128;
     GTextInfo** words = WordlistLoadFileToGTextInfo( type, words_max );
-    if( !words )
-    {
-	GGadgetSetTitle8(mv->text,"");
-	return;
+    if ( !words ) {
+	    GGadgetSetTitle8(mv->text,"");
+	    return;
     }
 
-    if( words[0] )
-    {
-	GGadgetSetList(mv->text,words,true);
-	GGadgetSetTitle8(mv->text,(char *) (words[0]->text));
-	if ( type==-2 )
-	    MVFigureGlyphNames(mv,_GGadgetGetTitle(mv->text)+1);
-	GTextInfoArrayFree(words);
-	mv->word_index = 0;
+    if ( words[0] ) {
+	    GGadgetSetList(mv->text,words,true);
+	    GGadgetSetTitle8(mv->text,(char *) (words[0]->text));
+	    if ( type==-2 )
+	        MVFigureGlyphNames(mv,_GGadgetGetTitle(mv->text)+1);
+	    GTextInfoArrayFree(words);
+	    mv->word_index = 0;
     }
+    free(words);
 }
 
 static int MV_TextChanged(GGadget *g, GEvent *e) {

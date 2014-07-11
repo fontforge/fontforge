@@ -10006,13 +10006,14 @@ void _CVMenuNamePoint(CharView *cv, SplinePoint *sp) {
 
     oldname = (sp->name && *sp->name) ? sp->name : NULL;
     ret = gwwv_ask_string(_("Name this point"), oldname,
-			      _("Please name this point"));
+                  _("Please name this point"));
     if ( ret!=NULL ) {
-	name = *ret ? ret : NULL;
-	if (name != oldname || (name && oldname && strcmp(name,oldname))) {
-	    sp->name = name;
-	    CVCharChangedUpdate(&cv->b);
-	}
+        name = *ret ? ret : NULL;
+        if (name != oldname || (name && oldname && strcmp(name,oldname))) {
+            sp->name = name;
+            CVCharChangedUpdate(&cv->b);
+        }
+        free(ret);
     }
 }
 

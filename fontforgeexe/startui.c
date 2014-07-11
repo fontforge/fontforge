@@ -658,18 +658,21 @@ static int ReopenLastFonts(void) {
     FILE *old;
     int any = 0;
 
-    if ( ffdir==NULL )
-return( false );
+    if ( ffdir==NULL ) return false;
+
     sprintf( buffer, "%s/FontsOpenAtLastQuit", ffdir );
     old = fopen(buffer,"r");
-    if ( old==NULL )
-return( false );
+    if ( old==NULL ) {
+        free(ffdir);
+        return false;
+    }
     while ( fgets(buffer,sizeof(buffer),old)!=NULL ) {
-	if ( ViewPostScriptFont(g_strchomp(buffer),0)!=0 )
-	    any = 1;
+    if ( ViewPostScriptFont(g_strchomp(buffer),0)!=0 )
+        any = 1;
     }
     fclose(old);
-return( any );
+    free(ffdir);
+    return any;
 }
 
 #if defined(__Mac)
