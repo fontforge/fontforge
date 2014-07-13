@@ -20,6 +20,8 @@ You can also drag and drop screenshot images into the issue text area from your 
 
 To reproduce the issue, it can helpful to share with the developer community the files you are working with. If you can make a file that is small and only contains what is needed to reproduce the issue, please fork the fontforge repo and add these files to <https://github.com/you/fontforge/tree/master/tests> and submit a pull request. You can also place files on your own website or a file sharing service temporarily (such as MegaUpload, DropBox, Google Drive, etc.) Finally, if you do not wish to make your files publicly available, you can provide an email address for a FontForge developer to contact you at to get a private copy of the file.
 
+Please don't close other people's issues - ask them to close the issue if it is closed to their satisfaction.
+
 ### Crash reports
 
 If you are reporting a crash, include a debugger backtrace report.
