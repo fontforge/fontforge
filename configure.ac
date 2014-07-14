@@ -325,7 +325,6 @@ fi
 PKG_CHECK_MODULES([FREETYPE],[freetype2 >= 2.3.7])
 PKG_CHECK_MODULES([LIBXML],[libxml-2.0])
 
-FONTFORGE_ARG_WITH_CAIRO
 AC_ARG_VAR([FREETYPE_SOURCE],
         [directory where freetype source code is located for --enable-freetype-debugger;
          however, if --enable-freetype-debugger=DIR is specified, then DIR overrides
@@ -334,6 +333,7 @@ FONTFORGE_ARG_WITH_GIFLIB
 FONTFORGE_ARG_WITH_LIBJPEG
 FONTFORGE_ARG_WITH_LIBPNG
 FONTFORGE_ARG_WITH_LIBTIFF
+FONTFORGE_ARG_WITH_CAIRO # do this test only 'after' zlib and png checks
 FONTFORGE_ARG_WITH_LIBSPIRO
 FONTFORGE_ARG_WITH_LIBUNINAMESLIST
 #FONTFORGE_ARG_WITH_LIBUNICODENAMES
@@ -761,7 +761,7 @@ Summary of optional features:
 Summary of optional dependencies:
 
 Optional Library	UseIt?	HaveIt?	WebsiteURL
-  cairo				${i_do_have_cairo}	${cairo_url}
+  cairo			${with_cairo}	${i_do_have_cairo}	${cairo_url}
   libspiro		${with_libspiro}	${i_do_have_libspiro}	${libspiro_url}
   giflib		${with_giflib}	${i_do_have_giflib}	${giflib_url}
   libjpeg		${with_libjpeg}	${i_do_have_libjpeg}	${libjpeg_url}

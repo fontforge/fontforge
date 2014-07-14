@@ -159,14 +159,55 @@ with_libuninameslist=no
 
 dnl FONTFORGE_ARG_WITH_CAIRO
 dnl ------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_CAIRO],
-[
-   FONTFORGE_ARG_WITH([cairo],
-      [AS_HELP_STRING([--without-cairo],
-                      [build without Cairo graphics (use regular X graphics instead)])],
-      [cairo >= 1.6],
-      [FONTFORGE_WARN_PKG_NOT_FOUND([CAIRO])],
-      [_NO_LIBCAIRO])
+dnl Add with cairo support by default (only if cairo and headers exist).
+dnl Additionally, zlib, png and their header files should exist too.
+dnl If user defines --without-cairo, then don't use cairo graphics.
+dnl If user defines --with-cairo, then fail with error if there is no
+dnl cairo or headers available.
+dnl You will need to test for zlib and png before running this function.
+dnl Latest version here indicated cairo >= 1.6
+dnl function=`cairo_format_stride_for_width` will verify cairo >= 1.6
+AC_DEFUN([FONTFORGE_ARG_WITH_CAIRO],[
+FONTFORGE_ARG_WITHOUT([cairo],[LIBCAIRO],[build without Cairo graphics (use regular X graphics instead)])
+
+if test x"${with_cairo}" != xno; then
+dnl try the easy path first with PKG_CHECK_MODULES() else check using
+dnl lib and header checks for distros/OSes with weak pkg-config setups.
+   PKG_CHECK_MODULES([LIBCAIRO],[cairo >= 1.6],[i_do_have_cairo=yes],
+         [if test x"${i_do_have_cairo}" != xno -a x"${LIBCAIRO_CFLAGS}" = x; then
+             AC_CHECK_HEADER([cairo/cairo.h],[],[i_do_have_cairo=no])
+          fi
+          if test x"${i_do_have_cairo}" != xno -a x"${LIBCAIRO_LIBS}" = x; then
+             FONTFORGE_SEARCH_LIBS([cairo_format_stride_for_width],[cairo],
+                   [LIBCAIRO_LIBS="${LIBCAIRO_LIBS} ${found_lib}"],
+                   [i_do_have_cairo=no])
+          fi])
+fi
+
+AC_MSG_CHECKING([Build with Cairo support?])
+if test x"${with_cairo}" != xno; then
+   if test x"${i_do_have_libpng}" != xyes || test x"${with_libpng}" = xno; then
+      AC_MSG_FAILURE([ERROR: Please install the Developer version of libpng],[1])
+   fi
+fi
+if test x"${with_cairo}" = xyes; then
+   if test x"${i_do_have_cairo}" != xno; then
+      AC_MSG_RESULT([yes])
+   else
+      AC_MSG_FAILURE([ERROR: Please install the Developer version of Cairo],[1])
+   fi
+else
+   if test x"${i_do_have_cairo}" = xno || test x"${with_cairo}" = xno; then
+      AC_MSG_RESULT([no])
+      AC_DEFINE([_NO_LIBCAIRO],1,[Define if not using cairo])
+      AS_TR_SH(LIBCAIRO_CFLAGS)=""
+      AS_TR_SH(LIBCAIRO_LIBS)=""
+   else
+      AC_MSG_RESULT([yes])
+   fi
+fi
+AC_SUBST([LIBCAIRO_CFLAGS])
+AC_SUBST([LIBCAIRO_LIBS])
 ])
 
 
