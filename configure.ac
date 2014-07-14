@@ -762,14 +762,14 @@ Summary of optional dependencies:
 
 Optional Library	UseIt?	HaveIt?	WebsiteURL
   cairo			${with_cairo}	${i_do_have_cairo}	${cairo_url}
-  libspiro		${with_libspiro}	${i_do_have_libspiro}	${libspiro_url}
   giflib		${with_giflib}	${i_do_have_giflib}	${giflib_url}
   libjpeg		${with_libjpeg}	${i_do_have_libjpeg}	${libjpeg_url}
   libpng		${with_libpng}	${i_do_have_libpng}	${libpng_url}
+  libreadline		${with_libreadline}	${i_do_have_libreadline}	${libreadline_url}
+  libspiro		${with_libspiro}	${i_do_have_libspiro}	${libspiro_url}
   libtiff		${with_libtiff}	${i_do_have_libtiff}	${libtiff_url}
   libuninameslist	${with_libuninameslist}	${i_do_have_libuninameslist}	${libuninameslist_url}
   zeromq (libzmq)		${i_do_have_libzmq}	${libzmq_url}
-  libreadline		${with_libreadline}	${i_do_have_libreadline}	${libreadline_url}
   X Window System		${i_do_have_x}
 ])
 
