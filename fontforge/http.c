@@ -876,11 +876,11 @@ return( false );
 /* Currently the OFLib will not accept txt files. Nor will it accept afm files */
     if ( oflib->upload_fontlog && oflib->sf->fontlog ) {
 	FILE *tmp = tmpfile();
-	ChangeLine2_8("Preparing to transmit font log file...");
+	ChangeLine2_8("Preparing to transmit FONTLOG file...");
 	fwrite(oflib->sf->fontlog,1,strlen(oflib->sf->fontlog),tmp);
 	rewind(tmp);
-	if ( !UploadAdditionalFile(tmp,"FontLog.txt",databuf,datalen,
-		boundary,&siteinfo,&addr,"font log")) {
+	if ( !UploadAdditionalFile(tmp,"FONTLOG.txt",databuf,datalen,
+		boundary,&siteinfo,&addr,"FONTLOG")) {
 	    free(databuf);
 return( false );
 	}
