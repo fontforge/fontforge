@@ -3167,13 +3167,13 @@ return( NULL );
     }
     for ( i=0; i<gv->part_cnt; ++i )
 	BDFCharFree(others[i]);
-    BDFCharFree(me);
     free(others);
 
     memset(base->clut,'\0',sizeof(*base->clut));
     bg = GDrawGetDefaultBackground(NULL);
     fg = GDrawGetDefaultForeground(NULL);
     clut_scale = me->depth == 8 ? 8 : 4;
+    BDFCharFree(me);
     base->clut->clut_len = 1<<clut_scale;
     for ( l=0; l<(1<<clut_scale); ++l )
 	base->clut->clut[l] =

@@ -2042,11 +2042,11 @@ return( (SplineFont *) _NamesReadPostScript(pfb) );	/* This closes the font for 
     fd = _ReadPSFont(pfb);
     sf = NULL;
     if ( fd!=NULL ) {
-	sf = SplineFontFromPSFont(fd);
-	PSFontFree(fd);
-	/* There is no FOND in a postscript file, so we can't read any kerning*/
+	    sf = SplineFontFromPSFont(fd);
+	    PSFontFree(fd);
+	    /* There is no FOND in a postscript file, so we can't read any kerning*/
+        fclose(pfb);
     }
-    fclose(pfb);
 return( sf );
 }
 

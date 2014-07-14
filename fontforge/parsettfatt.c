@@ -5605,8 +5605,8 @@ return;
 		}
 		free(ls);
 	    }
+	    free(bs);
 	}
-	free(bs);
     }
 }
 

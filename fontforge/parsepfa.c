@@ -2658,7 +2658,8 @@ FontDict *ReadPSFont(char *fontname) {
 return(NULL);
     }
     fd = _ReadPSFont(in);
-    fclose(in);
+    if ( fd!=NULL )
+        fclose(in);
 return( fd );
 }
 

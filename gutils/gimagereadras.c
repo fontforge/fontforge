@@ -290,39 +290,43 @@ GImage *GImageReadRas(char *filename) {
     }
 
     if ( header.Type==TypeOld || header.Type==TypeStandard ) {	/* Synonymous */
-	if ( header.Depth==1 )
-	    ret = ReadRasBitmap(ret,header.Width,header.Height,fp);
-	else if ( header.Depth==8 )
-	    ret = ReadRas8Bit(ret,header.Width,header.Height,fp);
-	else if ( header.Depth==24 )
-	    ret = ReadRas24Bit(ret,header.Width,header.Height,fp);
-	else
-	    ret = ReadRas32Bit(ret,header.Width,header.Height,fp);
+	    if ( header.Depth==1 )
+	        ret = ReadRasBitmap(ret,header.Width,header.Height,fp);
+	    else if ( header.Depth==8 )
+	        ret = ReadRas8Bit(ret,header.Width,header.Height,fp);
+	    else if ( header.Depth==24 )
+	        ret = ReadRas24Bit(ret,header.Width,header.Height,fp);
+	    else
+	        ret = ReadRas32Bit(ret,header.Width,header.Height,fp);
     } else if ( header.Type==TypeRGB ) {
-	/* I think this type is the same as standard except rgb not bgr */
-	if ( header.Depth==1 )
-	    ret = ReadRasBitmap(ret,header.Width,header.Height,fp);
-	else if ( header.Depth==8 )
-	    ret = ReadRas8Bit(ret,header.Width,header.Height,fp);
-	else if ( header.Depth==24 )
-	    ret = ReadRas24RBit(ret,header.Width,header.Height,fp);
-	else
-	    ret = ReadRas32RBit(ret,header.Width,header.Height,fp);
+	    /* I think this type is the same as standard except rgb not bgr */
+	    if ( header.Depth==1 )
+	        ret = ReadRasBitmap(ret,header.Width,header.Height,fp);
+	    else if ( header.Depth==8 )
+	        ret = ReadRas8Bit(ret,header.Width,header.Height,fp);
+	    else if ( header.Depth==24 )
+	        ret = ReadRas24RBit(ret,header.Width,header.Height,fp);
+	    else
+	        ret = ReadRas32RBit(ret,header.Width,header.Height,fp);
     } else if ( header.Type==TypeByteEncoded ) {
-	if ( header.Depth==8 )
-	    ret = ReadRle8Bit(ret,header.Width,header.Height,fp);
-	else
-	    /* Don't bother with most rle formats */
-	    /* TODO: if someone wants to do this - accept more formats */
-	    free( ret );
-    } else
+	    if ( header.Depth==8 )
+	        ret = ReadRle8Bit(ret,header.Width,header.Height,fp);
+	    else {
+	        /* Don't bother with most rle formats */
+	        /* TODO: if someone wants to do this - accept more formats */
+	        fprintf(stderr,"Unsupported input file type\n");
+	        goto errorGImageReadRas;
+	    }
+    } else {
 	    /* Don't bother with other formats */
 	    /* TODO: if someone wants to do this - accept more formats */
-	    free( ret );
+        fprintf(stderr,"Unsupported input file type\n");
+	    goto errorGImageReadRas;
+	}
     if ( ret!=NULL ) {
-	/* All okay if reached here, return converted image */
-	fclose(fp);
-	return( ret );
+	    /* All okay if reached here, return converted image */
+	    fclose(fp);
+	    return( ret );
     }
 
 errorGImageReadRas:
