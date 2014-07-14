@@ -533,9 +533,11 @@ static int MidLineCompetes(Spline *s,bigreal t,bigreal shadow_length,SplineSet *
     int ret;
 
     ret = ClipLineTo3D(line,spl);
-    SplinePointFree(line->to);		/* This might not be the same as to */
-    SplinePointFree(line->from);	/* This will be the same as from */
-    SplineFree(line);
+    if ( ret == false ) {
+        SplinePointFree(line->to);		/* This might not be the same as to */
+        SplinePointFree(line->from);	/* This will be the same as from */
+        SplineFree(line);
+    }
 return( !ret );
 }
 
