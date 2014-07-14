@@ -2021,10 +2021,9 @@ static void MVLoadWordList(MetricsView *mv, int type) {
 	    GGadgetSetTitle8(mv->text,(char *) (words[0]->text));
 	    if ( type==-2 )
 	        MVFigureGlyphNames(mv,_GGadgetGetTitle(mv->text)+1);
-	    GTextInfoArrayFree(words);
 	    mv->word_index = 0;
     }
-    free(words);
+    GTextInfoArrayFree(words);
 }
 
 static int MV_TextChanged(GGadget *g, GEvent *e) {
