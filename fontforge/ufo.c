@@ -1937,8 +1937,6 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 					}
 			        sp->nextcp = pre[1];
 			        sp->nonextcp = false;
-			        sp->prevcp = pre[0];
-			        sp->noprevcp = false;
 			        if ( ss->first==NULL ) {
 						// This is indeed possible if the first three points are control points.
 				    	ss->first = sp;
