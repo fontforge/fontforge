@@ -1326,7 +1326,7 @@ return;
     if ( u_GFileIsAbsolute(tit) ){
 	base = uc_strstr(tit, "://");
 	if(!base) base = (unichar_t*) tit;
-	if(pt > base && pt[1] && (pt[1]!='.' || pt[2]!='\0') && !u_GFileIsDir(tit)){
+	if(pt > base && pt[1] && (pt[1]!='.' || pt[2]!='\0')){
 	    gfc->lastname = u_copy(pt+1);
 	    dir = u_copyn(tit, pt-tit);
 	}
