@@ -3017,7 +3017,7 @@ return( NULL );
 		    for ( ++last_val; last_val<tok->value; ++last_val ) {
 			contents = fea_cid_validate(tok,last_val);
 			if ( contents!=NULL )
-			    cnt = fea_AddGlyphs(&glyphs,&max,cnt,contents);
+			    cnt = fea_AddGlyphs(&glyphs,&max,cnt,contents); contents = NULL;
 		    }
 		    contents = fea_cid_validate(tok,tok->value);
 		} else if ( last_glyph[0]!='\0' && tok->type==tk_name ) {
@@ -3057,7 +3057,7 @@ return( NULL );
 			    if ( v1==v2 )
 			break;
 			    if ( contents!=NULL )
-				cnt = fea_AddGlyphs(&glyphs,&max,cnt,contents);
+				cnt = fea_AddGlyphs(&glyphs,&max,cnt,contents); contents = NULL;
 			}
 		    } else {
 			v1 = strtol(start1,NULL,10);
@@ -3073,7 +3073,7 @@ return( NULL );
 			    if ( v1==v2 )
 			break;
 			    if ( contents!=NULL )
-				cnt = fea_AddGlyphs(&glyphs,&max,cnt,contents);
+				cnt = fea_AddGlyphs(&glyphs,&max,cnt,contents); contents = NULL;
 			}
 		    }
 		} else {
@@ -3091,7 +3091,7 @@ return( NULL );
 	break;
 	    }
 	    if ( contents!=NULL )
-		cnt = fea_AddGlyphs(&glyphs,&max,cnt,contents);
+		cnt = fea_AddGlyphs(&glyphs,&max,cnt,contents); contents = NULL;
 	}
 	if ( glyphs==NULL )
 	    glyphs = copy("");	/* Is it legal to have an empty class? I can't think of any use for one */
