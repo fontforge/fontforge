@@ -975,11 +975,10 @@ void GImageResize(struct _GImage *tobase, struct _GImage *fbase,
 		if (( bit>>=1 )==0 ) {bit=0x80; ++pt8;}
 	      break;
 	    }
-
+    }}
     if ( oldrev!=rev )
-	GClut_RevCMapFree(rev);
+	    GClut_RevCMapFree(rev);
 }
-}}
 
 GImage *GImageResize32(GImage *from, GRect *src, int width, int height, Color trans) {
     GImage *to;

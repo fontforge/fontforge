@@ -2008,25 +2008,22 @@ static void MVFigureGlyphNames(MetricsView *mv,const unichar_t *names) {
     GDrawRequestExpose(mv->v,NULL,false);
 }
 
-static void MVLoadWordList(MetricsView *mv,int type)
-{
+static void MVLoadWordList(MetricsView *mv, int type) {
     int words_max = 1024*128;
     GTextInfo** words = WordlistLoadFileToGTextInfo( type, words_max );
-    if( !words )
-    {
-	GGadgetSetTitle8(mv->text,"");
-	return;
+    if ( !words ) {
+	    GGadgetSetTitle8(mv->text,"");
+	    return;
     }
 
-    if( words[0] )
-    {
-	GGadgetSetList(mv->text,words,true);
-	GGadgetSetTitle8(mv->text,(char *) (words[0]->text));
-	if ( type==-2 )
-	    MVFigureGlyphNames(mv,_GGadgetGetTitle(mv->text)+1);
-	GTextInfoArrayFree(words);
-	mv->word_index = 0;
+    if ( words[0] ) {
+	    GGadgetSetList(mv->text,words,true);
+	    GGadgetSetTitle8(mv->text,(char *) (words[0]->text));
+	    if ( type==-2 )
+	        MVFigureGlyphNames(mv,_GGadgetGetTitle(mv->text)+1);
+	    mv->word_index = 0;
     }
+    GTextInfoArrayFree(words);
 }
 
 static int MV_TextChanged(GGadget *g, GEvent *e) {
@@ -4425,6 +4422,7 @@ static void _MVSubVMouse(MetricsView *mv,GEvent *event) {
 }
 
 static void MVSubMouse(MetricsView *mv,GEvent *event) {
+    // This handles mouse events in the preview area.
     int i, x, y, j, within, ybase;
     SplineChar *sc;
     int diff;
@@ -4713,13 +4711,16 @@ static void MVMouse(MetricsView *mv,GEvent *event) {
     int i;
 
     if ( event->u.mouse.y< mv->topend || event->u.mouse.y >= mv->displayend ) {
+    // mv->displayend > mv->topend
+    // This triggers when the mouse is in the data entry grid.
 	if ( event->u.mouse.y >= mv->displayend &&
 		event->u.mouse.y<mv->height-mv->sbh ) {
+	    // This excludes the scroll bar.
 	    event->u.mouse.x += (mv->coff*mv->mwidth);
 	    for ( i=0; i<mv->glyphcnt; ++i ) {
 		if ( event->u.mouse.x >= mv->perchar[i].mx &&
 			event->u.mouse.x < mv->perchar[i].mx+mv->perchar[i].mwidth )
-	    break;
+	    break; // This triggers only if the column has an associated character.
 	    }
 	    if ( i<mv->glyphcnt )
 		SCPreparePopup(mv->gw,mv->glyphs[i].sc,mv->fv->b.map->remap,
@@ -4891,9 +4892,23 @@ static int mv_e_h(GWindow gw, GEvent *event) {
 	    MVResize(mv);
       break;
       case et_char:
+	if ((event->u.chr.keysym == GK_Tab) && (!(event->u.chr.state&ksm_meta))) {
+	  // We want to allow somebody to move the cursor position
+	  // forwards with tab and backwards with shift + tab.
+	  // GGadget *active = GWindowGetFocusGadgetOfWindow(mv->gw); if (event->u.chr.state&ksm_shift) return 0;
+	  // For now, we just return 0 so that the default event handler takes care.
+	  return 0;
+	}
 	MVChar(mv,event);
       break;
       case et_charup:
+	if ((event->u.chr.keysym == GK_Tab) && (!(event->u.chr.state&ksm_meta))) {
+	  // We want to allow somebody to move the cursor position
+	  // forwards with tab and backwards with shift + tab.
+	  // GGadget *active = GWindowGetFocusGadgetOfWindow(mv->gw); if (event->u.chr.state&ksm_shift) return 0;
+	  // For now, we just return 0 so that the default event handler takes care.
+	  return 0;
+	}
 	  if ( event->u.chr.keysym == GK_Left || event->u.chr.keysym==GK_KP_Left
 	       || event->u.chr.keysym == GK_Right || event->u.chr.keysym==GK_KP_Right ) {
 	      if( event->u.chr.state&ksm_meta ) {

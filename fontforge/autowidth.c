@@ -1114,7 +1114,6 @@ return( false );
     fclose(file);
     if ( !figurekernsets(wi,&ks)) {
 	ff_post_error(_("No Kern Pairs"), _("No kerning pairs found in %.200s"), fn );
-	free( filename );
 	kernsetsfree(&ks);
 return( false );
     }

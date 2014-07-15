@@ -1314,7 +1314,7 @@ void FVClearHints(FontViewBase *fv) {
     }
 }
 
-FontViewBase *ViewPostScriptFont(char *filename,int openflags) {
+FontViewBase *ViewPostScriptFont(const char *filename,int openflags) {
     SplineFont *sf = LoadSplineFont(filename,openflags);
     extern NameList *force_names_when_opening;
     if ( sf==NULL )
@@ -1954,9 +1954,6 @@ static void FontViewBase_Free(FontViewBase *fv) {
     PyFF_FreeFV(fv);
 #endif
     free(fv);
-#ifndef _NO_PYTHON
-    PyFF_FreeFV(fv);
-#endif
 }
 
 static int FontViewBaseWinInfo(FontViewBase *UNUSED(fv), int *cc, int *rc) {

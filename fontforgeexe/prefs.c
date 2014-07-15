@@ -778,14 +778,17 @@ return( false );
 static char *getPfaEditPrefs(void) {
     static char *prefs=NULL;
     char buffer[1025];
+    char *ffdir;
 
     if ( prefs!=NULL )
-return( prefs );
-    if ( getFontForgeUserDir(Config)==NULL )
-return( NULL );
-    sprintf(buffer,"%s/prefs", getFontForgeUserDir(Config));
+        return prefs;
+    ffdir = getFontForgeUserDir(Config);
+    if ( ffdir==NULL )
+        return NULL;
+    sprintf(buffer,"%s/prefs", ffdir);
+    free(ffdir);
     prefs = copy(buffer);
-return( prefs );
+    return prefs;
 }
 
 static char *PrefsUI_getFontForgeShareDir(void) {
@@ -2653,10 +2656,11 @@ void LastFonts_Save(void) {
     if ( ffdir ) {
         sprintf(buffer, "%s/FontsOpenAtLastQuit", ffdir);
         preserve = fopen(buffer,"w");
+        free(ffdir);
     }
 
     for ( fv = fv_list; fv!=NULL; fv = next ) {
-	next = (FontView *) (fv->b.next);
+        next = (FontView *) (fv->b.next);
         if ( preserve ) {
             SplineFont *sf = fv->b.cidmaster?fv->b.cidmaster:fv->b.sf;
             fprintf(preserve, "%s\n", sf->filename?sf->filename:sf->origname);

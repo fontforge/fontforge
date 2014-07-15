@@ -41,6 +41,7 @@ extern int interpCPsOnMotion;
 #include <utype.h>
 #include <gresource.h>
 #include "charview_private.h"
+#include "gdraw/hotkeys.h"
 
 static void CVLCheckLayerCount(CharView *cv, int resize);
 
@@ -1045,6 +1046,8 @@ static void CVChangeSpiroMode(CharView *cv) {
 #endif
 }
 
+char* HKTextInfoToUntranslatedTextFromTextInfo( GTextInfo* ti ); // From ../gdraw/gmenu.c.
+
 static void ToolsMouse(CharView *cv, GEvent *event) {
     int i = (event->u.mouse.y/27), j = (event->u.mouse.x/27), mi=i;
     int pos;
@@ -1111,7 +1114,22 @@ return;			/* If the wm gave me a window the wrong size */
 		else if ( pos==cvt_spiroright )
 		    msg = _("Add a next constraint point (sometimes like a tangent)");
 	    }
-	    GGadgetPreparePopup8(cvtools,msg);
+	    // We want to display the hotkey for the key in question if possible.
+	    char * mininame = HKTextInfoToUntranslatedTextFromTextInfo(&cvtoollist[pos].ti);
+	    char * menuname = NULL;
+	    Hotkey* toolhotkey = NULL;
+            if (mininame != NULL) {
+              if (asprintf(&menuname, "%s%s", "Point.Tools.", mininame) != -1) {
+	        toolhotkey = hotkeyFindByMenuPath(cv->gw, menuname);
+	        free(menuname); menuname = NULL;
+              }
+              free(mininame); mininame = NULL;
+            }
+	    char * finalmsg = NULL;
+	    if (toolhotkey != NULL && asprintf(&finalmsg, "%s (%s)", msg, toolhotkey->text) != -1) {
+	      GGadgetPreparePopup8(cvtools, finalmsg);
+	      free(finalmsg); finalmsg = NULL;
+	    } else GGadgetPreparePopup8(cvtools, msg); // That's what we were doing before. Much simpler.
 	} else if ( pos!=cv->pressed_tool || cv->had_control != (((event->u.mouse.state&ksm_control) || styluscntl)?1:0) )
 	    cv->pressed_display = cvt_none;
 	else

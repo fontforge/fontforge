@@ -3530,6 +3530,7 @@ return( -1 );
 
 extended IterateSplineSolveFixup(const Spline1D *sp, extended tmin, extended tmax,
 	extended sought) {
+    // Search between tmin and tmax for a t-value at which the spline outputs sought.
     extended t;
     bigreal factor;
     extended val, valp, valm;
@@ -5083,16 +5084,16 @@ static AnchorPoint *AnchorPointsRemoveName(AnchorPoint *alist,AnchorClass *an) {
 	next = ap->next;
 	if ( ap->anchor == an ) {
 	    if ( prev==NULL )
-		alist = next;
+		    alist = next;
 	    else
-		prev->next = next;
+		    prev->next = next;
 	    ap->next = NULL;
-	    AnchorPointsFree(ap);
 	    if ( an->type == act_mark || (an->type==act_mklg && ap->type==at_mark))
 		next = NULL;	/* Only one instance of an anchor class in a glyph for mark to base anchors */
 				/*  Or for the mark glyphs of ligature classes */
 			        /*  Mark to mark & cursive will (probably) have 2 occurances */
 			        /*  and ligatures may have lots */
+	    AnchorPointsFree(ap);
 	} else
 	    prev = ap;
     }

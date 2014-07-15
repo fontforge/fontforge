@@ -225,9 +225,16 @@ SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags, char *fil
     fseek(woff,0,SEEK_END);
     len = ftell(woff);
     rewind(woff);
-    if ( getlong(woff)!=CHR('w','O','F','F') ) {
-	LogError(_("Bad signature in WOFF"));
-return( NULL );
+    {
+        int signature = getlong(woff);
+        if ( signature==CHR('w','O','F','2') ) {
+            // TODO: add support for WOFF2
+            LogError(_("WOFF2 is not supported yet."));
+            return NULL;
+        } else if ( signature!=CHR('w','O','F','F') ) {
+            LogError(_("Bad signature in WOFF header."));
+            return NULL;
+        }
     }
     flavour = getlong(woff);
     iscff = (flavour==CHR('O','T','T','O'));
