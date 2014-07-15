@@ -1012,6 +1012,7 @@ int fontforge_main( int argc, char **argv ) {
 	char shareDir[PATH_MAX];
 	char* sd = getShareDir();
 	strncpy( shareDir, sd, PATH_MAX );
+    shareDir[PATH_MAX-1] = '\0';
 	if(!sd) {
 	    strcpy( shareDir, SHAREDIR );
 	}

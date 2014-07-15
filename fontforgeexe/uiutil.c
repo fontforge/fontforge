@@ -252,6 +252,7 @@ static void AppendSupportedLocale(char *fullspec) {
 
     /* first, try checking entire string */
     strncpy(buffer,loc,sizeof(buffer));
+    buffer[sizeof(buffer)-1] = '\0';
     if ( SupportedLocale(fullspec,buffer) )
 	return;
 
@@ -388,6 +389,7 @@ return;
 	sprintf(temp,"file:%s",fullspec);
 #endif
 	strncpy(fullspec,temp,sizeof(fullspec));
+    fullspec[sizeof(fullspec)-1] = '\0';
 	free(temp);
     }
 #if __Mac
