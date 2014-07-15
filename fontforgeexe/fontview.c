@@ -1039,7 +1039,7 @@ return;
 	for ( fvtest=0, test=fv_list; test!=NULL; ++fvtest, test=(FontView *) (test->b.next) );
     } while ( fvtest==fvcnt );	/* did the load fail for some reason? try again */
     
-    free(OpenDir);
+    if (OpenDir != NULL) free(OpenDir);
 }
 
 static void FVMenuOpen(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
