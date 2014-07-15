@@ -241,15 +241,17 @@ Encoding *_FindOrMakeEncoding(const char *name,int make_it) {
     /* iconv is not case sensitive */
 
     if ( strncasecmp(name,"iso8859_",8)==0 || strncasecmp(name,"koi8_",5)==0 ) {
-	/* Fixup for old naming conventions */
-	strncpy(buffer,name,sizeof(buffer));
-	*strchr(buffer,'_') = '-';
-	name = buffer;
+	    /* Fixup for old naming conventions */
+	    strncpy(buffer,name,sizeof(buffer));
+        buffer[sizeof(buffer)-1] = '\0';
+	    *strchr(buffer,'_') = '-';
+	    name = buffer;
     } else if ( strcasecmp(name,"iso-8859")==0 ) {
-	/* Fixup for old naming conventions */
-	strncpy(buffer,name,3);
-	strncpy(buffer+3,name+4,sizeof(buffer)-3);
-	name = buffer;
+	    /* Fixup for old naming conventions */
+	    strncpy(buffer,name,3);
+	    strncpy(buffer+3,name+4,sizeof(buffer)-3);
+        buffer[sizeof(buffer)-1] = '\0';
+	    name = buffer;
     } else if ( strcasecmp(name,"isolatin1")==0 ) {
         name = "iso8859-1";
     } else if ( strcasecmp(name,"isocyrillic")==0 ) {
