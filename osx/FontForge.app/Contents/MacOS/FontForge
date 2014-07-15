@@ -5,10 +5,12 @@ if test "x$DEBUG_LAUNCHER" != x; then
 fi
 
 name=`basename "$0"`
-tmp="$0"
-tmp=`dirname "$tmp"`
-tmp=`dirname "$tmp"`
-bundle=`dirname "$tmp"`
+
+# take everywhere to run
+# tmp=`dirname "$0"`
+# tmp=`dirname "$tmp"`
+# bundle=`dirname "$tmp"`
+
 bundle=/Applications/FontForge.app
 scriptdir=/Applications/FontForge.app/Contents/MacOS/
 bundle_contents="$bundle"/Contents
@@ -20,7 +22,7 @@ bundle_data="$bundle_res"/opt/local/share
 bundle_etc="$bundle_res"/opt/local/etc
 bundle_share="$bundle_res"/opt/local/share
 
-#export DYLD_LIBRARY_PATH="$bundle_lib"
+#export DYLD_LIBRARY_PATH="$bundle_lib:$DYLD_LIBRARY_PATH"
 export XDG_CONFIG_DIRS="$bundle_etc"/xdg
 export XDG_DATA_DIRS="$bundle_data"
 export GTK_DATA_PREFIX="$bundle_res"
@@ -36,6 +38,8 @@ export FONTCONFIG_FILE="$bundle_etc/fonts/fonts.conf"
 export LANG=en_US.UTF-8
 export XLOCALEDIR="$bundle_share/X11/locale"
 
+# Path wrapper
+if (! [ $PWD ] || [  "$PWD" == "/" ]); then $PWD="$HOME"; fi
 
 WRAPPER=
 
@@ -57,7 +61,8 @@ if [ x"$1" == "x--debug" -o x"$1" == "x--debug-clearenv" ]; then
         WRAPPER="gdb --args"
         WRAPPER="script $HOME/FontForge-Debug-Output.txt lldb --debug --source /Applications/FontForge.app/Contents/MacOS/debug-script -- "
         $WRAPPER
-        # $WRAPPER $bundle_bin/fontforge "$2" "$3" "$4" "$5" "$6"
+        # shift
+        # $WRAPPER $bundle_bin/fontforge $*
         exit
     else
         echo "You must installed the XCode Command Lines Tools to run FontForge"
