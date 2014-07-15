@@ -913,50 +913,51 @@ return(copy(tmpfilename));			/* The filename does not exist */
 
 /* This does not check currently existing fontviews, and should only be used */
 /*  by LoadSplineFont (which does) and by RevertFile (which knows what it's doing) */
-SplineFont *_ReadSplineFont(FILE *file,char *filename,enum openflags openflags) {
+SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags openflags) {
     SplineFont *sf;
     char ubuf[251], *temp;
     int fromsfd = false;
     int i;
-    char *pt, *ext2, *strippedname = 0, *oldstrippedname = 0, *tmpfile=NULL, *paren=NULL, *fullname=filename, *rparen;
+    char *pt, *ext2, *strippedname = 0, *oldstrippedname = 0, *tmpfile=NULL, *paren=NULL, *fullname, *rparen;
     char *archivedir=NULL;
     int len;
     int checked;
     int compression=0;
     int wasurl = false, nowlocal = true, wasarchived=false;
+    char * fname = copy(filename);
+    fullname = fname;
 
     if ( filename==NULL ) return NULL;
 
     // Some explorers (PCManFM) may pass a file:// URL, special case it
     // here so that we don't defer to the HTTP code.
     if ( strncmp(filename,"file://",7)==0 ) {
-        filename = g_uri_unescape_string(filename+7, NULL);
-        fullname = filename;
+        fname = g_uri_unescape_string(filename+7, NULL);
+        fullname = fname;
     }
 
     // For non-URLs:
     // treat /whatever/foo.ufo/ as simply /whatever/foo.ufo
-    if ( !strstr(filename,"://")) {
+    if ( !strstr(fname,"://")) {
 	    int filenamelen = strlen(filename);
-	    printf("strippedname:%s\n", filename );
 	
 	    if( filenamelen && filename[ filenamelen-1 ] == '/' ) {
-	        filename = copy(filename);
-	        filename[filenamelen-1] = '\0';
+	        fname[filenamelen-1] = '\0';
 	    }
     }
 
-    strippedname = filename;
-    pt = strrchr(filename,'/');
-    if ( pt==NULL ) pt = filename;
+    printf("strippedname:%s\n", fname );
+    strippedname = fname;
+    pt = strrchr(fname,'/');
+    if ( pt==NULL ) pt = fname;
     /* Someone gave me a font "Nafees Nastaleeq(Updated).ttf" and complained */
     /*  that ff wouldn't open it */
     /* Now someone will complain about "Nafees(Updated).ttc(fo(ob)ar)" */
     if ( (paren = strrchr(pt,'('))!=NULL &&
 	    (rparen = strrchr(paren,')'))!=NULL &&
 	    rparen[1]=='\0' ) {
-	    strippedname = copy(filename);
-	    strippedname[paren-filename] = '\0';
+	    strippedname = copy(fname);
+	    strippedname[paren-fname] = '\0';
     }
 
     if ( strstr(strippedname,"://")!=NULL ) {
@@ -982,7 +983,7 @@ SplineFont *_ReadSplineFont(FILE *file,char *filename,enum openflags openflags) 
 		    strippedname = Unarchive(strippedname,&archivedir);
 		if ( strippedname==NULL )
             return NULL;
-		if ( strippedname!=filename && paren!=NULL ) {
+		if ( strippedname!=fname && paren!=NULL ) {
 		    fullname = malloc(strlen(strippedname)+strlen(paren)+1);
 		    strcpy(fullname,strippedname);
 		    strcat(fullname,paren);
@@ -1017,7 +1018,7 @@ SplineFont *_ReadSplineFont(FILE *file,char *filename,enum openflags openflags) 
         return NULL;
 	}
 	compression = i+1;
-	if ( strippedname!=filename && paren!=NULL ) {
+	if ( strippedname!=fname && paren!=NULL ) {
 	    fullname = malloc(strlen(strippedname)+strlen(paren)+1);
 	    strcpy(fullname,strippedname);
 	    strcat(fullname,paren);
@@ -1032,7 +1033,7 @@ SplineFont *_ReadSplineFont(FILE *file,char *filename,enum openflags openflags) 
     if ( !wasurl || i==-1 )	/* If it wasn't compressed, or it wasn't an url, then the fullname is reasonable, else use the original name */
 	    strncat(ubuf,temp = def2utf8_copy(GFileNameTail(fullname)),100);
     else
-	    strncat(ubuf,temp = def2utf8_copy(GFileNameTail(filename)),100);
+	    strncat(ubuf,temp = def2utf8_copy(GFileNameTail(fname)),100);
     free(temp);
     ubuf[100+len] = '\0';
     ff_progress_start_indicator(FontViewFirst()==NULL?0:10,_("Loading..."),ubuf,_("Reading Glyphs"),0,1);
@@ -1215,14 +1216,14 @@ SplineFont *_ReadSplineFont(FILE *file,char *filename,enum openflags openflags) 
 	        norm->origname = NULL;
 	        free(norm->filename); norm->filename = NULL;
 	        norm->new = true;
-	    } else if ( sf->chosenname!=NULL && strippedname==filename ) {
-	        norm->origname = malloc(strlen(filename)+strlen(sf->chosenname)+8);
-	        strcpy(norm->origname,filename);
+	    } else if ( sf->chosenname!=NULL && strippedname==fname ) {
+	        norm->origname = malloc(strlen(fname)+strlen(sf->chosenname)+8);
+	        strcpy(norm->origname,fname);
 	        strcat(norm->origname,"(");
 	        strcat(norm->origname,sf->chosenname);
 	        strcat(norm->origname,")");
 	    } else
-	        norm->origname = copy(filename);
+	        norm->origname = copy(fname);
 	    free( norm->chosenname ); norm->chosenname = NULL;
 	    if ( sf->mm!=NULL ) {
 	        int j;
@@ -1231,16 +1232,16 @@ SplineFont *_ReadSplineFont(FILE *file,char *filename,enum openflags openflags) 
 	    	    sf->mm->instances[j]->origname = copy(norm->origname);
 	        }
 	    }
-    } else if ( !GFileExists(filename) )
-	    ff_post_error(_("Couldn't open font"),_("The requested file, %.100s, does not exist"),GFileNameTail(filename));
-    else if ( !GFileReadable(filename) )
-	    ff_post_error(_("Couldn't open font"),_("You do not have permission to read %.100s"),GFileNameTail(filename));
+    } else if ( !GFileExists(fname) )
+	    ff_post_error(_("Couldn't open font"),_("The requested file, %.100s, does not exist"),GFileNameTail(fname));
+    else if ( !GFileReadable(fname) )
+	    ff_post_error(_("Couldn't open font"),_("You do not have permission to read %.100s"),GFileNameTail(fname));
     else
 	    ff_post_error(_("Couldn't open font"),_("%.100s is not in a known format (or uses features of that format fontforge does not support, or is so badly corrupted as to be unreadable)"),GFileNameTail(filename));
 
-    if ( oldstrippedname!=filename )
+    if ( oldstrippedname!=fname )
 	    free(oldstrippedname);
-    if ( fullname!=filename && fullname!=strippedname )
+    if ( fullname!=fname && fullname!=strippedname )
 	    free(fullname);
     if ( tmpfile!=NULL ) {
 	    unlink(tmpfile);
@@ -1255,13 +1256,14 @@ SplineFont *_ReadSplineFont(FILE *file,char *filename,enum openflags openflags) 
 	    buts[0] = _("_Yes"); buts[1] = _("_No"); buts[2] = NULL;
 	    if ( ff_ask(_("Restricted Font"),(const char **) buts,1,1,_("This font is marked with an FSType of 2 (Restricted\nLicense). That means it is not editable without the\npermission of the legal owner.\n\nDo you have such permission?"))==1 ) {
 	        SplineFontFree(sf);
-            return NULL;
+                sf = NULL;
 	    }
     }
+    if (fname != NULL && fname != filename) free(fname); fname = NULL;
     return sf;
 }
 
-SplineFont *ReadSplineFont(char *filename,enum openflags openflags) {
+SplineFont *ReadSplineFont(const char *filename,enum openflags openflags) {
 return( _ReadSplineFont(NULL,filename,openflags));
 }
 
@@ -1272,11 +1274,12 @@ char *ToAbsolute(char *filename) {
 return( copy(buffer));
 }
 
-SplineFont *LoadSplineFont(char *filename,enum openflags openflags) {
+SplineFont *LoadSplineFont(const char *filename,enum openflags openflags) {
     SplineFont *sf;
     char *pt, *ept, *tobefreed1=NULL, *tobefreed2=NULL;
     static char *extens[] = { ".sfd", ".pfa", ".pfb", ".ttf", ".otf", ".ps", ".cid", ".bin", ".dfont", ".PFA", ".PFB", ".TTF", ".OTF", ".PS", ".CID", ".BIN", ".DFONT", NULL };
     int i;
+    char * fname = NULL;
 
     if ( filename==NULL )
 return( NULL );
@@ -1305,25 +1308,23 @@ return( NULL );
 	    break;
 	    }
 	    if ( extens[i]!=NULL )
-		filename = tobefreed1;
+		fname = tobefreed1;
 	    else {
 		free(tobefreed1);
-		tobefreed1 = NULL;
+		fname = tobefreed1 = copy(filename);
 	    }
 	}
-    } else
-	tobefreed1 = NULL;
+    } else fname = tobefreed1 = copy(filename);
 
     sf = NULL;
-    sf = FontWithThisFilename(filename);
-    if ( sf==NULL && *filename!='/' && strstr(filename,"://")==NULL )
-	filename = tobefreed2 = ToAbsolute(filename);
-
+    sf = FontWithThisFilename(fname);
+    if ( sf==NULL && *fname!='/' && strstr(fname,"://")==NULL )
+	fname = tobefreed2 = ToAbsolute(fname);
     if ( sf==NULL )
-	sf = ReadSplineFont(filename,openflags);
+	sf = ReadSplineFont(fname,openflags);
 
-    free(tobefreed1);
-    free(tobefreed2);
+    if (tobefreed1 != NULL) free(tobefreed1);
+    if (tobefreed2 != NULL) free(tobefreed2);
 return( sf );
 }
 
