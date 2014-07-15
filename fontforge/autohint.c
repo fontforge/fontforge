@@ -2889,8 +2889,8 @@ static DStemInfo *GDFindDStems(struct glyphdata *gd) {
         cur->left = stem->left;
         cur->right = stem->right;
         cur->unit = stem->unit;
-        MergeDStemInfo( gd->sf,&head,cur );
-	cur->where = DStemAddHIFromActive( stem );
+        cur->where = DStemAddHIFromActive( stem );
+        MergeDStemInfo(gd->sf, &head, cur);
     }
 return( head );
 }
