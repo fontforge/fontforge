@@ -180,6 +180,7 @@ static void findbrowser(void) {
 
     if ( getenv("BROWSER")!=NULL ) {
 	strncpy(browser,getenv("BROWSER"),sizeof(browser));
+    browser[sizeof(browser)-1] = '\0';
 #if __CygWin			/* Get rid of any dos style names */
 	if ( isalpha(browser[0]) && browser[1]==':' && browser[2]=='\\' )
 	    cygwin_conv_to_full_posix_path(getenv("BROWSER"),browser);
