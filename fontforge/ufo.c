@@ -1745,6 +1745,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "outline")==0 ) {
 	    for ( contour = kids->children; contour!=NULL; contour=contour->next ) {
 		if ( xmlStrcmp(contour->name,(const xmlChar *) "component")==0 ) {
+		    // We have a reference.
 		    char *base = (char *) xmlGetProp(contour,(xmlChar *) "base"),
 			*xs = (char *) xmlGetProp(contour,(xmlChar *) "xScale"),
 			*ys = (char *) xmlGetProp(contour,(xmlChar *) "yScale"),
@@ -1778,15 +1779,6 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		    free(xs); free(ys); free(xys); free(yxs); free(xo); free(yo);
 		} else if ( xmlStrcmp(contour->name,(const xmlChar *) "contour")==0 ) {
 		    xmlNodePtr npoints;
-		    SplineSet *ss;
-		    SplinePoint *sp;
-			SplinePoint *sp2;
-		    BasePoint pre[2], init[4];
-		    int precnt=0, initcnt=0, open=0;
-			// precnt seems to count control points leading into the next on-curve point. pre stores those points.
-			// initcnt counts the control points that appear before the first on-curve point. This can get updated at the beginning and/or the end of the list.
-			// This is important for determining the order of the closing curve.
-			// A further improvement would be to prefetch the entire list so as to know the declared order of a curve before processing the point.
 
 			// We now look for anchor points.
             char *sname;
@@ -1827,6 +1819,16 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
             }
 
 			// If we have not identified the contour as holding an anchor point, we continue processing it as a rendered shape.
+			SplineSet *ss;
+			SplinePoint *sp;
+			SplinePoint *sp2;
+			BasePoint pre[2], init[4];
+			int precnt=0, initcnt=0, open=0;
+			// precnt seems to count control points leading into the next on-curve point. pre stores those points.
+			// initcnt counts the control points that appear before the first on-curve point. This can get updated at the beginning and/or the end of the list.
+			// This is important for determining the order of the closing curve.
+			// A further improvement would be to prefetch the entire list so as to know the declared order of a curve before processing the point.
+
 			int wasquad = -1; // This tracks whether we identified the previous curve as quadratic. (-1 means undefined.)
 			int firstpointsaidquad = -1; // This tracks the declared order of the curve leading into the first on-curve point.
 
@@ -1920,15 +1922,13 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			    }
 			    precnt = 0;
 			} else {
-				// This handles non-end-points (control points).
-			    if ( wasquad==-1 && precnt==2 ) {
+				// This handles off-curve points (control points).
+			    if ((wasquad == true || wasquad==-1) && precnt==2 ) {
 				// We don't know whether the current curve is quadratic or cubic, but, if we're hitting three off-curve points in a row, something is off.
 				// As mentioned below, we assume in this case that we're dealing with a quadratic TrueType curve that needs implied points.
 				// We create those points since they are adjustable in Fontforge.
 				// There is not a valid case as far as Frank knows in which a cubic curve would have implied points.
 				/* Undocumented fact: If there are no on-curve points (and therefore no indication of quadratic/cubic), assume truetype implied points */
-					memcpy(init,pre,sizeof(pre));
-					initcnt = 1;
 					// We make the point between the two already cached control points.
 					sp = SplinePointCreate((pre[1].x+pre[0].x)/2,(pre[1].y+pre[0].y)/2);
 					sp->ttfindex = 0xffff;
@@ -1949,8 +1949,10 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			            SplineMake(ss->last,sp,true);
                     }
 			        ss->last = sp;
-					// We make the point between the previously cached control point and the new control point.
-					sp = SplinePointCreate((x+pre[1].x)/2,(y+pre[1].y)/2);
+#if 1
+			        // We make the point between the previously cached control point and the new control point.
+			        // We have decided that the curve is quadratic, so we can make the next implied point as well.
+			        sp = SplinePointCreate((x+pre[1].x)/2,(y+pre[1].y)/2);
 			        sp->prevcp = pre[1];
 			        sp->noprevcp = false;
 					sp->ttfindex = 0xffff;
@@ -1958,12 +1960,16 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			        ss->last = sp;
 			        pre[0].x = x; pre[0].y = y;
 			        precnt = 1;
+#else
+			        // Let us instead save the second implied point for later.
+			        pre[0].x = pre[1].x; pre[0].y = pre[1].y;
+			        pre[1].x = x; pre[1].y = y;
+			        precnt = 2;
+#endif
 					wasquad = true;
-			    } else if ( wasquad==true && precnt==1 && 0 ) {
+			    } else if ( wasquad==true && precnt==1) {
 					// Frank thinks that this might generate false positives for qcurves.
-					// The only case in which this would create a qcurve missed by the previous condition block
-					// and the point type reader would, it seems, be a cubic curve trailing a quadratic curve.
-					// This seems not to be the best way to handle it.
+					// This seems not to be the best way to handle it, but mixed-order spline sets are rare.
 					sp = SplinePointCreate((x+pre[0].x)/2,(y+pre[0].y)/2);
 					if (pname != NULL) {
 						sp->name = copy(pname);
@@ -1971,7 +1977,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			        sp->prevcp = pre[0];
 			        sp->noprevcp = false;
 					sp->ttfindex = 0xffff;
-			        if ( ss->last==NULL ) {
+			        if ( ss->first==NULL ) {
 				    	ss->first = sp;
 			            memcpy(init,pre,sizeof(pre));
 			            initcnt = 1;
@@ -2004,7 +2010,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			    memcpy(init+precnt,temp,sizeof(temp));
 			    initcnt += precnt;
 			}
-			if ( (firstpointsaidquad==true && initcnt>0) || initcnt==1 ) {
+			if ( ((firstpointsaidquad==true || (firstpointsaidquad == -1 && wasquad == true)) && initcnt>0) || initcnt==1 ) {
 				// If the final curve is declared quadratic or is assumed to be by control point count, we proceed accordingly.
 			    int i;
 			    for ( i=0; i<initcnt-1; ++i ) {
@@ -2025,7 +2031,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			    ss->last->nonextcp = ss->first->noprevcp = false;
 				wasquad = false;
 			}
-			SplineMake(ss->last,ss->first,firstpointsaidquad);
+			SplineMake(ss->last, ss->first, (firstpointsaidquad==true || (firstpointsaidquad == -1 && wasquad == true)));
 			ss->last = ss->first;
 		    }
 		    if ( last==NULL ) {
