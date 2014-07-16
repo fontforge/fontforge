@@ -2365,6 +2365,7 @@ static int MMW_CheckBrowse(GGadget *g, GEvent *e) {
 	    if ( temp==NULL )
 return(true);
 	    sf = LoadSplineFont(temp,0);
+	    free(temp);
 	    if ( sf==NULL )
 return(true);
 	    if ( sf->cidmaster!=NULL || sf->subfonts!=0 ) {
