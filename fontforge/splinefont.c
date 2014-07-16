@@ -1313,7 +1313,7 @@ return( NULL );
 		free(tobefreed1);
 		fname = tobefreed1 = copy(filename);
 	    }
-	}
+	} else fname = tobefreed1 = copy(filename);
     } else fname = tobefreed1 = copy(filename);
 
     sf = NULL;
