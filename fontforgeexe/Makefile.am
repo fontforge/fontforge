@@ -121,7 +121,7 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	encodingui.c fontinfo.c fontview.c freetypeui.c fvfontsdlg.c	\
 	fvmetricsdlg.c gotodlg.c groupsdlg.c histograms.c images.c		\
 	kernclass.c layer2layer.c lookupui.c macencui.c math.c			\
-	metricsview.c mmdlg.c nonlineartransui.c oflib.c openfontdlg.c	        \
+	metricsview.c mmdlg.c nonlineartransui.c openfontdlg.c	        \
 	prefs.c problems.c pythonui.c savefontdlg.c scriptingdlg.c		\
 	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	        \
 	splashimage.c startui.c statemachine.c tilepath.c transform.c	        \
