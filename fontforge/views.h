@@ -816,7 +816,6 @@ extern void mb2FreeGetText(GMenuItem2 *mb);
 extern void mb2DoGetText(GMenuItem2 *mb);
 extern void mbFreeGetText(GMenuItem *mb);
 extern void mbDoGetText(GMenuItem *mb);
-extern void OFLibBrowse(void);
 extern int RecentFilesAny(void);
 extern void _aplistbuild(struct gmenuitem *mi,SplineFont *sf,
 	void (*func)(GWindow,struct gmenuitem *,GEvent *));
