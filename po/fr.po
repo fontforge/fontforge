@@ -14,7 +14,7 @@ msgstr ""
 "Project-Id-Version: FontForge 2.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-07-15 14:55+0200\n"
-"PO-Revision-Date: 2014-07-15 18:50+0100\n"
+"PO-Revision-Date: 2014-07-16 09:26+0100\n"
 "Last-Translator: Adrien Tétar <adri-from-59 <at> hotmail <period> fr>\n"
 "Language-Team: French <fr.c@li.org>\n"
 "Language: fr\n"
@@ -14426,7 +14426,7 @@ msgstr "_Dernier"
 #: ../fontforgeexe/charview.c:11771 ../fontforgeexe/fontview.c:4508
 #: ../fontforgeexe/metricsview.c:3504 ../fontforgeexe/metricsview.c:3559
 msgid "_Remove Overlap"
-msgstr "Recou_vrements"
+msgstr "Enlever les recou_vrements"
 
 #: ../fontforgeexe/charview.c:11772 ../fontforgeexe/fontview.c:4509
 #: ../fontforgeexe/metricsview.c:3505
