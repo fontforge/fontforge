@@ -7118,10 +7118,15 @@ static void CVPreviewModeSet(GWindow gw, int checked ) {
 static void CVMenuPreview(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     int checked = mi->ti.checked;
 
+#if 0
+    // This has the effect of breaking the button since cv_auto_goto and HaveModifiers tend to be false.
+    // The purpose of these checks is unclear.
     if( !cv_auto_goto ) {
 	if( !HaveModifiers )
 	    return;
     }
+#endif // 0
+
     CVPreviewModeSet(gw, checked);
 }
 
