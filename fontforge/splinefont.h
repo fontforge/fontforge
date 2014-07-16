@@ -1959,7 +1959,6 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		    ttf_flag_TeXtable=0x80,
 		    ttf_flag_ofm=0x100,
 		    ttf_flag_oldkern=0x200,	/* never set in conjunction with applemode */
-		    ttf_flag_brokensize=0x400,	/* Adobe originally issued fonts with a bug in the size feature. They now claim (Aug 2006) that this has been fixed. Legacy programs will do the wrong thing with the fixed feature though */
 		    ttf_flag_pfed_lookupnames=0x800,
 		    ttf_flag_pfed_guides=0x1000,
 		    ttf_flag_pfed_layers=0x2000,

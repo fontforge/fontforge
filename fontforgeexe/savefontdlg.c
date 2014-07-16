@@ -101,7 +101,6 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_TTF_OldKern		1109
 #define CID_TTF_GlyphMap	1110
 #define CID_TTF_OFM		1111
-/*#define CID_TTF_BrokenSize	1112*/
 #define CID_TTF_PfEdLookups	1113
 #define CID_TTF_PfEdGuides	1114
 #define CID_TTF_PfEdLayers	1115
@@ -488,9 +487,6 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),which!=0 && which!=3);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OldKern),which!=0 );
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_DummyDSIG),which!=0 );
-#if 0
-    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_BrokenSize),which!=0 );
-#endif
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEd),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdComments),which!=0);
@@ -2176,10 +2172,6 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
 	old_sfnt_flags |=  ttf_flag_applemode;
 	old_sfnt_flags &= ~ttf_flag_otmode;
     }
-
-    /* Let's not support broken size any more */
-    old_sfnt_flags &= ~ttf_flag_brokensize;
-    old_psotb_flags &= ~ttf_flag_brokensize;
 
     if ( family ) {
 	/* I could just disable the menu item, but I think it's a bit confusing*/

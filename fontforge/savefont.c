@@ -1140,7 +1140,6 @@ int GenerateScript(SplineFont *sf,char *filename,const char *bitmaptype, int fmf
 		if ( fmflags&0x400 ) old_sfnt_flags |= ttf_flag_ofm;
 		if ( (fmflags&0x800) && !(old_sfnt_flags&ttf_flag_applemode) )
 		    old_sfnt_flags |= ttf_flag_oldkern;
-		if ( fmflags&0x1000 ) old_sfnt_flags |= ttf_flag_brokensize;
 		if ( fmflags&0x2000 ) old_sfnt_flags |= ttf_flag_symbol;
 		if ( fmflags&0x4000 ) old_sfnt_flags |= ttf_flag_dummyDSIG;
 		if ( fmflags&0x800000 ) old_sfnt_flags |= ttf_flag_pfed_lookupnames;
@@ -1183,7 +1182,6 @@ int GenerateScript(SplineFont *sf,char *filename,const char *bitmaptype, int fmf
 	    if ( fmflags&0x400 ) old_sfnt_flags |= ttf_flag_ofm;
 	    if ( (fmflags&0x800) && !(old_sfnt_flags&ttf_flag_applemode) )
 		old_sfnt_flags |= ttf_flag_oldkern;
-	    if ( fmflags&0x1000 ) old_sfnt_flags |= ttf_flag_brokensize;
 	    if ( fmflags&0x2000 ) old_sfnt_flags |= ttf_flag_symbol;
 	    if ( fmflags&0x4000 ) old_sfnt_flags |= ttf_flag_dummyDSIG;
 	    if ( fmflags&0x800000 ) old_sfnt_flags |= ttf_flag_pfed_lookupnames;

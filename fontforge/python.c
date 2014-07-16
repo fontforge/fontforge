@@ -15314,7 +15314,6 @@ struct flaglist gen_flags[] = {
     { "TeX-table", 0x0200 },
     { "ofm", 0x0400 },
     { "old-kern", 0x0800 },
-    { "broken-size", 0x1000 },
     { "symbol", 0x2000 },
     { "dummy-dsig", 0x4000 },
     { "dummy-DSIG", 0x4000 },
