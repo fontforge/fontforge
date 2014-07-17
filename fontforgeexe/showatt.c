@@ -2989,7 +2989,7 @@ static void FCAskFilename(FontView *fv,int flags) {
     if ( filename==NULL )
 return;
     otherfv = (FontView *) ViewPostScriptFont(filename,0);
-    free(filename);
+    free(filename); filename = NULL;
     if ( otherfv==NULL )
 return;
     FontCmpDlg(fv,otherfv,flags);
