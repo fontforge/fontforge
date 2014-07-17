@@ -126,8 +126,6 @@ static int loacal_markextrema, loacal_markpoi, loacal_showrulers,
     loacal_showcpinfo, loacal_showsidebearings, loacal_showpoints,
     loacal_showfilled, loacal_showtabs, loacal_showrefnames;
 static int oldsystem=100;
-static char *oflib_username;
-static char *oflib_password;
 static int rectelipse=0, polystar=0, regular_star=0;	/* from cvpalettes.c */
 static int center_out[2]={0,0};			/* from cvpalettes.c */
 static float rr_radius=0;				/* from cvpalettes.c */
@@ -155,7 +153,6 @@ static int old_validate = true;
 static int old_fontlog = false;
 static int home_char = 'A';
 static int compact_font_on_open=0;
-static int oflib_automagic_preview;		/* from oflib.c */
 static int aa_pixelsize;			/* from anchorsaway.c */
 
 static int gfc_showhidden, gfc_dirplace;
@@ -274,8 +271,6 @@ extras[] = {
     { "ShowFilled", pr_int, &loacal_showfilled, NULL, NULL, '\0', NULL, 1, NULL },
     { "ShowTabs", pr_int, &loacal_showtabs, NULL, NULL, '\0', NULL, 1, NULL },
     { "DefaultScreenDpiSystem", pr_int, &oldsystem, NULL, NULL, '\0', NULL, 1, NULL },
-    { "OFLibUsername", pr_string, &oflib_username, NULL, NULL, '\0', NULL, 1, NULL },
-    { "OFLibPassword", pr_string, &oflib_password, NULL, NULL, '\0', NULL, 1, NULL },
     { "RegularStar", pr_bool, &regular_star, NULL, NULL, '\0', NULL, 1, NULL },
     { "PolyStar", pr_bool, &polystar, NULL, NULL, '\0', NULL, 1, NULL },
     { "RectEllipse", pr_bool, &rectelipse, NULL, NULL, '\0', NULL, 1, NULL },
@@ -300,7 +295,6 @@ extras[] = {
     { "FCShowHidden", pr_bool, &gfc_showhidden, NULL, NULL, '\0', NULL, 1, NULL },
     { "FCDirPlacement", pr_int, &gfc_dirplace, NULL, NULL, '\0', NULL, 1, NULL },
     { "FCBookmarks", pr_string, &gfc_bookmarks, NULL, NULL, '\0', NULL, 1, NULL },
-    { "OFLibAutomagicPreview", pr_int, &oflib_automagic_preview, NULL, NULL, '\0', NULL, 1, NULL },
     { "DefaultMVWidth", pr_int, &mv_width, NULL, NULL, '\0', NULL, 1, NULL },
     { "DefaultMVHeight", pr_int, &mv_height, NULL, NULL, '\0', NULL, 1, NULL },
     { "DefaultBVWidth", pr_int, &bv_width, NULL, NULL, '\0', NULL, 1, NULL },

@@ -3004,11 +3004,6 @@ return( NULL );
     if ( size_params_ptr!=0 ) {
 	size_params_loc = ftell(g___);
 	fseek(g___,size_params_ptr,SEEK_SET);
-	/* When Adobe first released fonts containing the 'size' feature */
-	/*  they did not follow the spec, and the offset to the size parameters */
-	/*  was relative to the wrong location. They claim (Aug 2006) that */
-	/*  this has been fixed. FF used to do what Adobe did. Many programs */
-	/*  expect broken sizes tables now, but we don't supply them. */
 	putshort(g___,size_params_loc-size_params_ptr);
 	fseek(g___,size_params_loc,SEEK_SET);
 	putshort(g___,sf->design_size);

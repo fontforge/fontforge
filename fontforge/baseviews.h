@@ -211,22 +211,6 @@ struct pov_data {
     double sintilt;		/* Used internally */
 };
 
-typedef struct {
-    SplineFont *sf;
-    char *pathspec;			/* In utf8, not necessarily local encoding */
-    char *username, *password;
-    char *name;
-    char *description;
-    char *tags;
-    char *artists;
-    int notsafeforwork;
-    int oflicense;
-    char *previewimage;			/* NULL => No image */
-    uint8 upload_license;
-    uint8 upload_fontlog;
-    char *upload_id;			/* Way to manipulate upload on OFLib */
-} OFLibData;
-
 enum counter_type { ct_squish, ct_retain, ct_auto };
 
 struct lcg_zones {
@@ -543,9 +527,6 @@ extern void MVCopyChar(FontViewBase *fv, BDFFont *bdf, SplineChar *sc, enum fvco
 extern void PasteIntoMV(FontViewBase *fv, BDFFont *bdf,SplineChar *sc, int doclear);
 
 extern void ExecuteScriptFile(FontViewBase *fv, SplineChar *sc, char *filename);
-
-extern int HasLicense(SplineFont *,FILE *);
-extern int OFLibUploadFont(OFLibData *);
 
 enum search_flags { sv_reverse = 0x1, sv_flips = 0x2, sv_rotate = 0x4,
 	sv_scale = 0x8, sv_endpoints=0x10 };

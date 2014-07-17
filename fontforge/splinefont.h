@@ -1959,7 +1959,6 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		    ttf_flag_TeXtable=0x80,
 		    ttf_flag_ofm=0x100,
 		    ttf_flag_oldkern=0x200,	/* never set in conjunction with applemode */
-		    ttf_flag_brokensize=0x400,	/* Adobe originally issued fonts with a bug in the size feature. They now claim (Aug 2006) that this has been fixed. Legacy programs will do the wrong thing with the fixed feature though */
 		    ttf_flag_pfed_lookupnames=0x800,
 		    ttf_flag_pfed_guides=0x1000,
 		    ttf_flag_pfed_layers=0x2000,
@@ -2786,7 +2785,6 @@ extern SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openfl
 extern SplineFont *ReadSplineFont(const char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
 extern FILE *URLToTempFile(char *url,void *lock);
 extern int URLFromFile(const char *url,FILE *from);
-extern int HttpGetBuf(const char *url, char *databuf, int *datalen, void *mutex);
 extern void ArchiveCleanup(char *archivedir);
 extern char *Unarchive(char *name, char **_archivedir);
 extern char *Decompress(char *name, int compression);
