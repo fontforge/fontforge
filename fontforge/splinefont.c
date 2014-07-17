@@ -933,6 +933,7 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
     // here so that we don't defer to the HTTP code.
     if ( strncmp(filename,"file://",7)==0 ) {
         fname = g_uri_unescape_string(filename+7, NULL);
+        free(fullname);
         fullname = fname;
     }
 
@@ -1015,6 +1016,7 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 	    strippedname = tmpfile;
 	} else {
 	    ff_post_error(_("Decompress Failed!"),_("Decompress Failed!"));
+	    ArchiveCleanup(archivedir);
         return NULL;
 	}
 	compression = i+1;
