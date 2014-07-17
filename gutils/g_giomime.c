@@ -39,7 +39,7 @@ const char *MimeListFromExt[] = {
 	/*14 .java */	"text/java",
 	/*15 .ps */	"text/fontps",
 	/*16 .pfa */	"text/ps",
-	/*17 .obj */	"application/x-object"
+	/*17 .obj */	"application/x-object",
 	/*18 core */	"application/x-core",
 	/*19 .tar */	"application/x-tar",
 	/*20 .zip */	"application/x-compressed",
