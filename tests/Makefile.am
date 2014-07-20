@@ -78,6 +78,7 @@ EXTRA_DIST += fonts/AddExtremaTest2.sfd fonts/AddExtremumTest.sfd	\
 	fonts/Hinting.sfd fonts/ItalicHand.sfd				\
 	fonts/NimbusLGCUni-Regular.sfd fonts/NumberPoints.sfd		\
 	fonts/OmittedCharBugs.sfd fonts/OverlapBugs.sfd			\
+        fonts/OverlapCounts1.sfd                                \
 	fonts/QuadOverlapBugs.sfd fonts/QuadraticConversionBug.sfd	\
 	fonts/SimplifyBugs.sfd fonts/SplineOverlapBug1.sfd		\
 	fonts/StrokeTests.sfd fonts/VKern.sfd README
@@ -127,7 +128,7 @@ EXTRA_DIST += helper107.pe helper118A.pe helper118B.pe		\
 EXTRA_DIST += findoverlapbugs.py test0001.py test0101.py	\
 	test1001.py test1001a.py test1001b.py test1001c.py	\
 	test1002.py test1003.py test1004.py test1005.py		\
-	test1006.py test1007.py
+	test1006.py test1007.py test1008a.py test1008b.py
 
 EXTRA_DIST += link_test.c randomtest.c build-aux/missing
 

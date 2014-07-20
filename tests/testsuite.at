@@ -97,6 +97,8 @@ check_python([Clockwise direction test],[test1004.py],[DirectionTest.sfd])
 check_python([Generate duplicate fonts test],[test1005.py],[AddExtremaTest2.sfd])
 check_python([Math table test],[test1006.py])
 check_python([Check for splinestroke 0 len fail],[test1007.py],[ayn+meem.init.svg])
+check_python([Remove overlap spline count checks 1],[test1008a.py],[OverlapCounts1.sfd])
+check_python([Remove overlap spline count checks 2],[test1008b.py],[OverlapBugs.sfd])
 #check_python([find overlap bug],[findoverlapbugs.py])
 
 #--------------------------------------------------------------------------
