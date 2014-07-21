@@ -23,6 +23,8 @@
 import sys, fontforge
 
 showSummaryListing = True
+showContoursOnFail = False
+dontFailTest  = False
 
 
 # Capture summary of glyphs and their contours in a list
@@ -77,6 +79,7 @@ print "Applying \"remove overlap\" to all glyphs"
 for glyphName in font1:
   glyph = font1[glyphName]
   glyph.removeOverlap()
+  #glyph.simplify()
 
 print ""
 
@@ -164,13 +167,66 @@ expectedBefore = {
   'y':      (  3, ''  ), # 121
   'z':      (  3, ''  ), # 122
 
-  'braceleft':    (  3, ''  ), # 123
-  'bar':          (  3, ''  ), # 124
-  'braceright':   (  2, ''  ), # 125
-  'asciitilde':   (  3, ''  ), # 126
-  'uni007F':      (  2, ''  ), # 127
+  'braceleft':      (  3, ''  ), # 123
+  'bar':            (  3, ''  ), # 124
+  'braceright':     (  2, ''  ), # 125
+  'asciitilde':     (  3, ''  ), # 126
+  'uni007F':        (  2, ''  ), # 127
 
-  'Aring':                  (  3, ''  ), # 197
+  'uni00A0':        (  2, ''  ), # 160
+  'exclamdown':     (  4, ''  ), # 161
+  'cent':           (  4, ''  ), # 162
+  'sterling':       (  4, ''  ), # 163
+  'currency':       (  2, ''  ), # 164
+  'yen':            (  4, ''  ), # 165
+  'brokenbar':      (  5, ''  ), # 166
+  'section':        (  6, ''  ), # 167
+  'dieresis':       (  5, ''  ), # 168
+  'copyright':      (  4, ''  ), # 169
+  'ordfeminine':    (  2, ''  ), # 170
+  'guillemotleft':  (  2, ''  ), # 171
+  'logicalnot':     (  2, ''  ), # 172
+  'uni00AD':        (  7, ''  ), # 173
+  'registered':     (  3, ''  ), # 174
+  'macron':         (  4, ''  ), # 175
+  'degree':         (  2, ''  ), # 176
+  'plusminus':      (  2, ''  ), # 177
+  'uni00B2':        (  2, ''  ), # 178
+  'uni00B3':        (  3, ''  ), # 179
+  'acute':          (  4, ''  ), # 180
+  'uni00B5':        (  5, ''  ), # 181
+  'paragraph':      (  3, ''  ), # 182
+  'periodcentered': (  4, ''  ), # 183
+  'cedilla':        (  2, ''  ), # 184
+  'uni00B9':        (  2, ''  ), # 185
+  'ordmasculine':   (  2, ''  ), # 186
+  'guillemotright': (  2, ''  ), # 187
+  'onequarter':     (  2, ''  ), # 188
+  'onehalf':        (  3, ''  ), # 189
+  'threequarters':  (  2, ''  ), # 190
+  'questiondown':   (  2, ''  ), # 191
+  'Agrave':         (  2, ''  ), # 192
+  'Aacute':         (  2, ''  ), # 193
+  'Acircumflex':    (  2, ''  ), # 194
+  'Atilde':         (  4, ''  ), # 195
+  'Adieresis':      (  2, ''  ), # 196
+  'Aring':          (  3, ''  ), # 197
+
+  'AE':             (  4, ''  ), # 198
+  'Ccedilla':       (  2, ''  ), # 199
+  'Egrave':         (  2, ''  ), # 200
+  'Eacute':         (  3, ''  ), # 201
+  'Ecircumflex':    (  4, ''  ), # 202
+  'Edieresis':      (  3, ''  ), # 203
+  'Igrave':         (  4, ''  ), # 204
+  'Iacute':         (  3, ''  ), # 205
+  'Icircumflex':    (  2, ''  ), # 206
+  'Idieresis':      (  6, ''  ), # 207
+  'Eth':            (  4, ''  ), # 208
+  'Ntilde':         (  2, ''  ), # 209
+  'Ograve':         (  2, ''  ), # 210
+  'Oacute':         (  2, ''  ), # 211
+
 
   'accordion.accOldEE':     ( 17, ''  ), # 256 
   'accordion.accStdbase':   (  4, ''  ), # 257 
@@ -255,7 +311,59 @@ expectedAfter = {
   'asciitilde':   (  2, ''  ), # 126
   'uni007F':      (  1, ''  ), # 127
 
-  'Aring':                  (  2, ''  ), # 197
+  'uni00A0':        (  1, ''  ), # 160
+  'exclamdown':     (  3, ''  ), # 161
+  'cent':           (  3, ''  ), # 162
+  'sterling':       (  3, ''  ), # 163
+  'currency':       (  2, ''  ), # 164
+  'yen':            (  3, ''  ), # 165
+  'brokenbar':      (  4, ''  ), # 166
+  'section':        (  6, ''  ), # 167
+  'dieresis':       (  9, ''  ), # 168
+  'copyright':      (  4, ''  ), # 169
+  'ordfeminine':    (  2, ''  ), # 170
+  'guillemotleft':  (  1, ''  ), # 171
+  'logicalnot':     (  1, ''  ), # 172
+  'uni00AD':        (  7, ''  ), # 173
+  'registered':     (  4, ''  ), # 174
+  'macron':         (  2, ''  ), # 175
+  'degree':         (  1, ''  ), # 176
+  'plusminus':      (  1, ''  ), # 177
+  'uni00B2':        (  3, ''  ), # 178
+  'uni00B3':        (  2, ''  ), # 179
+  'acute':          (  2, ''  ), # 180
+  'uni00B5':        (  3, ''  ), # 181
+  'paragraph':      (  3, ''  ), # 182
+  'periodcentered': (  4, ''  ), # 183
+  'cedilla':        (  1, ''  ), # 184
+  'uni00B9':        (  1, ''  ), # 185
+  'ordmasculine':   (  1, ''  ), # 186
+  'guillemotright': (  1, ''  ), # 187
+  'onequarter':     (  1, ''  ), # 188
+  'onehalf':        (  2, ''  ), # 189
+  'threequarters':  (  1, ''  ), # 190
+  'questiondown':   (  1, ''  ), # 191
+  'Agrave':         (  3, ''  ), # 192
+  'Aacute':         (  1, ''  ), # 193
+  'Acircumflex':    (  2, ''  ), # 194
+  'Atilde':         (  5, ''  ), # 195
+  'Adieresis':      (  2, ''  ), # 196
+  'Aring':          (  2, ''  ), # 197
+
+  'AE':             (  5, ''  ), # 198
+  'Ccedilla':       (  4, ''  ), # 199
+  'Egrave':         (  2, ''  ), # 200
+  'Eacute':         (  2, ''  ), # 201
+  'Ecircumflex':    (  6, ''  ), # 202
+  'Edieresis':      (  5, ''  ), # 203
+  'Igrave':         (  6, ''  ), # 204
+  'Iacute':         (  5, ''  ), # 205
+  'Icircumflex':    (  1, ''  ), # 206
+  'Idieresis':      (  5, ''  ), # 207
+  'Eth':            (  3, ''  ), # 208
+  'Ntilde':         (  1, ''  ), # 209
+  'Ograve':         (  1, ''  ), # 210
+  'Oacute':         (  1, ''  ), # 211
 
   'accordion.accOldEE':     (  3, ''  ), # 256 
   'accordion.accStdbase':   (  5, ''  ), # 257 
@@ -281,6 +389,7 @@ for glyphName in font1:
   glyph   = font1[glyphName]
   gid     = glyph.encoding
   glyphsSeen += 1
+  beforeProblemSeen = afterProblemSeen = False
   glyphNameQ = "'" + glyphName + "':"
 
   (beforeGID, beforeName, beforeCount, beforeCloseds, beforeAllClosed) = notesBefore[glyphName]
@@ -293,18 +402,23 @@ for glyphName in font1:
     (beforeCountExpected, beforeClosedsExpected) = expectedBefore[glyphName]
 
     if beforeCountExpected != beforeCount:
-      print "  %3d %-8s Expected 'before' count %d does not match actual count %d" % (gid, glyphNameQ, beforeCountExpected, beforeCount)
-      problemsSeen += 1
+      print " %3d %-8s Expected 'before' count %d does not match result %d" % (gid, glyphNameQ, beforeCountExpected, beforeCount)
+      beforeProblemSeen = True
 
     if beforeClosedsExpected != '':
       if beforeClosedsExpected != beforeCloseds:
-        print "  %3d %-8s Expected 'before' closed flags does not match result: '%s' vs. '%s'" % (gid, glyphNameQ, beforeClosedsExpected, beforeCloseds)
-        problemsSeen += 1
+        print " %3d %-8s Expected 'before' closed flags does not match result: '%s' vs. '%s'" % (gid, glyphNameQ, beforeClosedsExpected, beforeCloseds)
+        beforeProblemSeen = True
 
     else:
       if not beforeAllClosed:
-        print "  %3d %-8s Expected all 'before' closed flags to be true, saw '%s'" % (gid, glyphNameQ, beforeCloseds)
-        problemsSeen += 1
+        print " %3d %-8s Expected all 'before' closed flags to be true, saw '%s'" % (gid, glyphNameQ, beforeCloseds)
+        beforeProblemSeen = True
+
+    if beforeProblemSeen:
+      problemsSeen += 1
+      glyphNameQ = "'" + beforeName + "'"
+      print "  %4d  %-16s %3d    %s" % (beforeGID, glyphNameQ, beforeCount, beforeCloseds)
 
 
   # Check results after "remove overlap"
@@ -313,33 +427,46 @@ for glyphName in font1:
     (afterCountExpected,  afterClosedsExpected)  = expectedAfter[glyphName] 
 
     if afterCountExpected != afterCount:
-      print "  %3d %-8s Expected 'after' count %d does not match result %d" % (gid, glyphNameQ, afterCountExpected, afterCount)
-      problemsSeen += 1
+      print " %3d %-8s Expected 'after' count %d does not match result %d" % (gid, glyphNameQ, afterCountExpected, afterCount)
+      afterProblemSeen = True
 
     if afterClosedsExpected != '':
       if afterClosedsExpected != afterCloseds:
-        print "  %3d %-8s Expected 'after' closed flags does not match result: '%s' vs. '%s'" % (gid, glyphNameQ, afterClosedsExpected, afterCloseds)
-        problemsSeen += 1
+        print " %3d %-8s Expected 'after' closed flags does not match result: '%s' vs. '%s'" % (gid, glyphNameQ, afterClosedsExpected, afterCloseds)
+        afterProblemSeen = True
 
     else:
       if not afterAllClosed:
-        print "  %3d %-8s Expected all 'after' closed flags to be true, saw '%s'" % (gid, glyphNameQ, afterCloseds)
-        problemsSeen += 1
+        print " %3d %-8s Expected all 'after' closed flags to be true, saw '%s'" % (gid, glyphNameQ, afterCloseds)
+        afterProblemSeen = True
   
     glyphsChecked += 1
 
-print "  %d glyphs were seen in font" % (glyphsSeen)
-print "  %d result characters were checked" % (glyphsChecked)
+    if afterProblemSeen:
+      problemsSeen += 1
+      glyphNameQ = "'" + afterName + "'"
+      print "  %4d  %-16s %3d    %s" % (afterGID, glyphNameQ, afterCount, afterCloseds)
+      if showContoursOnFail:
+        glyphLayer  = glyph.layers[glyph.activeLayer]
+        print glyphLayer
 
-if problemsSeen:
-  print "  %d problems were detected - failing this test!" % (problemsSeen)
-  #raise ValueError("  %d problems were detected - failing this test!" % (problemsSeen))
-  sys.exit("  %d problems were detected - failing this test!" % (problemsSeen))
+print ""
+print "  %d glyphs were seen in font" % (glyphsSeen)
+print "  %d result glyphs were checked" % (glyphsChecked)
 
 if glyphsChecked == 0:
   print "  %d glyphs were seen in font, but none were checked for result spline counts" % (glyphsSeen)
 
-print "  No problems found - test successful"
-sys.exit(0)
+if problemsSeen:
+  if dontFailTest:
+    print "  %d failing glyphs were detected - would fail this test..." % (problemsSeen)
+    print "      but 'no fail' flag set."
+    sys.exit(0)
+  else:
+    print "  %d failing glyphs were detected - failing this test!" % (problemsSeen)
+    sys.exit("  %d failing glyphs were detected - failing this test!" % (problemsSeen))
+else:
+  print "  No problems found - test successful"
+  sys.exit(0)
 
 # vim:ft=python:ts=2:sw=2:et:is:hls:ss=10:tw=222:

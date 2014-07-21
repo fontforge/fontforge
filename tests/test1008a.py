@@ -23,6 +23,8 @@
 import sys, fontforge
 
 showSummaryListing = True
+showContoursOnFail = False
+dontFailTest  = False
 
 
 # Capture summary of glyphs and their contours in a list
@@ -77,6 +79,7 @@ print "Applying \"remove overlap\" to all glyphs"
 for glyphName in font1:
   glyph = font1[glyphName]
   glyph.removeOverlap()
+  #glyph.simplify()
 
 print ""
 
@@ -156,6 +159,7 @@ for glyphName in font1:
   glyph   = font1[glyphName]
   gid     = glyph.encoding
   glyphsSeen += 1
+  beforeProblemSeen = afterProblemSeen = False
   glyphNameQ = "'" + glyphName + "':"
 
   (beforeGID, beforeName, beforeCount, beforeCloseds, beforeAllClosed) = notesBefore[glyphName]
@@ -168,18 +172,23 @@ for glyphName in font1:
     (beforeCountExpected, beforeClosedsExpected) = expectedBefore[glyphName]
 
     if beforeCountExpected != beforeCount:
-      print "  %3d %-8s Expected 'before' count %d does not match actual count %d" % (gid, glyphNameQ, beforeCountExpected, beforeCount)
-      problemsSeen += 1
+      print " %3d %-8s Expected 'before' count %d does not match result %d" % (gid, glyphNameQ, beforeCountExpected, beforeCount)
+      beforeProblemSeen = True
 
     if beforeClosedsExpected != '':
       if beforeClosedsExpected != beforeCloseds:
-        print "  %3d %-8s Expected 'before' closed flags does not match result: '%s' vs. '%s'" % (gid, glyphNameQ, beforeClosedsExpected, beforeCloseds)
-        problemsSeen += 1
+        print " %3d %-8s Expected 'before' closed flags does not match result: '%s' vs. '%s'" % (gid, glyphNameQ, beforeClosedsExpected, beforeCloseds)
+        beforeProblemSeen = True
 
     else:
       if not beforeAllClosed:
-        print "  %3d %-8s Expected all 'before' closed flags to be true, saw '%s'" % (gid, glyphNameQ, beforeCloseds)
-        problemsSeen += 1
+        print " %3d %-8s Expected all 'before' closed flags to be true, saw '%s'" % (gid, glyphNameQ, beforeCloseds)
+        beforeProblemSeen = True
+
+    if beforeProblemSeen:
+      problemsSeen += 1
+      glyphNameQ = "'" + beforeName + "'"
+      print "  %4d  %-16s %3d    %s" % (beforeGID, glyphNameQ, beforeCount, beforeCloseds)
 
 
   # Check results after "remove overlap"
@@ -188,32 +197,46 @@ for glyphName in font1:
     (afterCountExpected,  afterClosedsExpected)  = expectedAfter[glyphName] 
 
     if afterCountExpected != afterCount:
-      print "  %3d %-8s Expected 'after' count %d does not match result %d" % (gid, glyphNameQ, afterCountExpected, afterCount)
-      problemsSeen += 1
+      print " %3d %-8s Expected 'after' count %d does not match result %d" % (gid, glyphNameQ, afterCountExpected, afterCount)
+      afterProblemSeen = True
 
     if afterClosedsExpected != '':
       if afterClosedsExpected != afterCloseds:
-        print "  %3d %-8s Expected 'after' closed flags does not match result: '%s' vs. '%s'" % (gid, glyphNameQ, afterClosedsExpected, afterCloseds)
-        problemsSeen += 1
+        print " %3d %-8s Expected 'after' closed flags does not match result: '%s' vs. '%s'" % (gid, glyphNameQ, afterClosedsExpected, afterCloseds)
+        afterProblemSeen = True
 
     else:
       if not afterAllClosed:
-        print "  %3d %-8s Expected all 'after' closed flags to be true, saw '%s'" % (gid, glyphNameQ, afterCloseds)
-        problemsSeen += 1
+        print " %3d %-8s Expected all 'after' closed flags to be true, saw '%s'" % (gid, glyphNameQ, afterCloseds)
+        afterProblemSeen = True
   
     glyphsChecked += 1
 
-print "  %d result characters were checked" % (glyphsChecked)
+    if afterProblemSeen:
+      problemsSeen += 1
+      glyphNameQ = "'" + afterName + "'"
+      print "  %4d  %-16s %3d    %s" % (afterGID, glyphNameQ, afterCount, afterCloseds)
+      if showContoursOnFail:
+        glyphLayer  = glyph.layers[glyph.activeLayer]
+        print glyphLayer
 
-if problemsSeen:
-  print "  %d problems were detected - failing this test!" % (problemsSeen)
-  #raise ValueError("  %d problems were detected - failing this test!" % (problemsSeen))
-  sys.exit("  %d problems were detected - failing this test!" % (problemsSeen))
+print ""
+print "  %d glyphs were seen in font" % (glyphsSeen)
+print "  %d result glyphs were checked" % (glyphsChecked)
 
 if glyphsChecked == 0:
   print "  %d glyphs were seen in font, but none were checked for result spline counts" % (glyphsSeen)
 
-print "  No problems found - test successful"
-sys.exit(0)
+if problemsSeen:
+  if dontFailTest:
+    print "  %d failing glyphs were detected - would fail this test..." % (problemsSeen)
+    print "      but 'no fail' flag set."
+    sys.exit(0)
+  else:
+    print "  %d failing glyphs were detected - failing this test!" % (problemsSeen)
+    sys.exit("  %d failing glyphs were detected - failing this test!" % (problemsSeen))
+else:
+  print "  No problems found - test successful"
+  sys.exit(0)
 
 # vim:ft=python:ts=2:sw=2:et:is:hls:ss=10:tw=222:
