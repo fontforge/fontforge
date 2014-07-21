@@ -24,7 +24,7 @@ import sys, fontforge
 
 showSummaryListing = True
 showContoursOnFail = False
-dontFailTest  = False
+dontFailTest  = True
 
 
 # Capture summary of glyphs and their contours in a list
@@ -460,7 +460,7 @@ if glyphsChecked == 0:
 if problemsSeen:
   if dontFailTest:
     print "  %d failing glyphs were detected - would fail this test..." % (problemsSeen)
-    print "      but 'no fail' flag set."
+    print "      but 'do not fail' flag set."
     sys.exit(0)
   else:
     print "  %d failing glyphs were detected - failing this test!" % (problemsSeen)
