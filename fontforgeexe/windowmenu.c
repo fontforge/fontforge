@@ -26,10 +26,11 @@
  */
 #include <fontforge-config.h>
 
-# include "fontforgeui.h"
-# include <gfile.h>
-# include "splinefont.h"
-#  include "ustring.h"
+#include "fontforgeui.h"
+#include "basics.h"
+#include <gfile.h>
+#include "splinefont.h"
+#include "ustring.h"
 
 static void WindowSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
     GDrawRaise(mi->ti.userdata);
@@ -266,10 +267,13 @@ void mbDoGetText(GMenuItem *mb) {
     if ( mb==NULL )
 return;
     for ( i=0; mb[i].ti.text!=NULL || mb[i].ti.line || mb[i].ti.image!=NULL; ++i ) {
-	if( mb[i].shortcut )
-	    mb[i].ti.text_untranslated = mb[i].shortcut;
-	else
-	    mb[i].ti.text_untranslated = mb[i].ti.text;
+	if( mb[i].shortcut ) {
+	    unichar_t tmp[2];
+	    tmp[0] = mb[i].shortcut;
+	    tmp[1] = (unichar_t)(0);
+	    mb[i].ti.text_untranslated = cu_copy(tmp);
+	} else
+	    mb[i].ti.text_untranslated = cu_copy(mb[i].ti.text);
 	if ( mb[i].ti.text!=NULL ) {
 	    mb[i].ti.text = (unichar_t *) S_((char *) mb[i].ti.text);
 	    if ( mb[i].sub!=NULL )
@@ -286,9 +290,9 @@ void mb2DoGetText(GMenuItem2 *mb) {
 return;
     for ( i=0; mb[i].ti.text!=NULL || mb[i].ti.line || mb[i].ti.image!=NULL; ++i ) {
 	if( mb[i].shortcut )
-	    mb[i].ti.text_untranslated = mb[i].shortcut;
+	    mb[i].ti.text_untranslated = copy(mb[i].shortcut);
 	else
-	    mb[i].ti.text_untranslated = mb[i].ti.text;
+	    mb[i].ti.text_untranslated = cu_copy(mb[i].ti.text);
 	if ( mb[i].ti.text!=NULL ) {
 	    mb[i].ti.text = (unichar_t *) S_((char *) mb[i].ti.text);
 	    if ( mb[i].sub!=NULL )

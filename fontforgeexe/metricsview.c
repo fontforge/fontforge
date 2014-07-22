@@ -115,8 +115,12 @@ static void selectUserChosenWordListGlyphs( MetricsView *mv, void* userdata )
 {
     printf("selectUserChosenWordListGlyphs(top)\n");
     MVSelectSetForAll( mv, 0 );
-    if( userdata > 0 && userdata!=-1 && userdata!=-2 )
+    // The previous check thought that userdata was in integer and wanted to verify that
+    // it was positive and not equal to -1 or to -2. Frank changed it.
+    if( userdata != NULL)
     {
+	if (userdata == (void*)(-1) || userdata == (void*)(-2))
+	  fprintf(stderr, "Possible error; see the code here.\n");
 	GArray* selected = (GArray*)userdata;
 	int i = 0;
 	for (i = 0; i < selected->len; i++)
@@ -1856,7 +1860,7 @@ static void MVTextChanged(MetricsView *mv) {
     // convert the slash escpae codes and the like to the real string we will use
     // for the metrics window
     printf("MVTextChanged(top) p:%p ret:%s\n", ret, u_to_c(ret));
-    GArray* selected = 0;
+    GArray* selected = NULL;
     unichar_t* retnew = WordlistEscapedInputStringToRealString(
 	mv->sf,
 	ret, &selected,

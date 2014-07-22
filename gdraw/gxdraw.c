@@ -58,6 +58,10 @@
 
 enum cm_type { cmt_default=-1, cmt_current, cmt_copy, cmt_private };
 
+void GDrawIErrorRun(const char *fmt,...);
+void GDrawIError(const char *fmt,...);
+
+
 #ifndef X_DISPLAY_MISSING
 # include <X11/Xatom.h>
 # include <X11/keysym.h>

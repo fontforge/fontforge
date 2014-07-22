@@ -188,7 +188,7 @@ static int PyObjDumpable(PyObject *value);
 xmlNodePtr PyObjectToXML( PyObject *value );
 #endif
 
-xmlNodePtr PythonLibToXML(void *python_persistent,SplineChar *sc) {
+xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc) {
     int has_hints = (sc!=NULL && (sc->hstem!=NULL || sc->vstem!=NULL ));
     xmlNodePtr retval = NULL, dictnode = NULL, keynode = NULL, valnode = NULL;
     // retval = xmlNewNode(NULL, BAD_CAST "lib"); //     "<lib>"
@@ -369,13 +369,13 @@ static int refcomp(const void *_r1, const void *_r2) {
 return( strcmp( ref1->sc->name, ref2->sc->name) );
 }
 
-xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
-    struct altuni *altuni;
+xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
+    const struct altuni *altuni;
     int isquad = sc->layers[layer].order2;
-    SplineSet *spl;
-    SplinePoint *sp;
-    AnchorPoint *ap;
-    RefChar *ref;
+    const SplineSet *spl;
+    const SplinePoint *sp;
+    const AnchorPoint *ap;
+    const RefChar *ref;
     int err;
     char * stringtmp = NULL;
     char numstring[32];
@@ -420,7 +420,7 @@ xmlNodePtr _GlifToXML(SplineChar *sc,int layer) {
 	/* RoboFab outputs components in alphabetic (case sensitive) order */
 	/*  I've been asked to do that too */
 	if ( sc->layers[layer].refs!=NULL ) {
-	    RefChar **refs;
+	    const RefChar **refs;
 	    int i, cnt;
 	    for ( cnt=0, ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( SCWorthOutputting(ref->sc))
 		++cnt;

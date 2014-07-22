@@ -7980,6 +7980,12 @@ bool SFD_GetFontMetaData( FILE *sfd,
     return true;
 }
 
+void SFD_GetFontMetaDataVoid( FILE *sfd,
+			  char *tok,
+			  SplineFont *sf,
+			  void* d ) {
+  SFD_GetFontMetaData(sfd, tok, sf, d);
+}
 
 static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 				int fromdir, char *dirname, float sfdversion )

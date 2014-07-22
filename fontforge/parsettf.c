@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforge.h"
+#include "splinefont.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>
@@ -3314,7 +3315,7 @@ return;						/* Use cids instead */
     map = EncMapNew(256,256,&custom);
     if ( dict->encodingoff==0 || dict->encodingoff==1 ) {
 	/* Standard Encodings */
-	char **enc = dict->encodingoff==0 ? AdobeStandardEncoding : AdobeExpertEncoding;
+	char **enc = dict->encodingoff==0 ? (char **)AdobeStandardEncoding : (char **)AdobeExpertEncoding;
 	map->enc = FindOrMakeEncoding( dict->encodingoff==0 ?
 		"AdobeStandard" : "Custom" );
 	if ( map->enc==NULL )

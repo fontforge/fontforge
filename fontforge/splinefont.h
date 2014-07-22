@@ -2511,7 +2511,7 @@ extern void SplineCharMerge(SplineChar *sc,SplineSet **head,int type);
 extern void SPLNearlyHvCps(SplineChar *sc,SplineSet *ss,bigreal err);
 extern void SPLNearlyHvLines(SplineChar *sc,SplineSet *ss,bigreal err);
 extern int  SPLNearlyLines(SplineChar *sc,SplineSet *ss,bigreal err);
-extern int SPInterpolate(SplinePoint *sp);
+extern int SPInterpolate(const SplinePoint *sp);
 extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 	struct simplifyinfo *smpl);
 extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
@@ -2740,6 +2740,10 @@ extern bool SFD_GetFontMetaData( FILE *sfd,
                                  char *tok,
                                  SplineFont *sf,
                                  SFD_GetFontMetaDataData* d );
+extern void SFD_GetFontMetaDataVoid( FILE *sfd,
+                                 char *tok,
+                                 SplineFont *sf,
+                                 void* d );
 typedef void (*visitSFDFragmentFunc)( FILE *sfd, char *tokbuf, SplineFont *sf, void* udata );
 extern void visitSFDFragment( FILE *sfd, SplineFont *sf, visitSFDFragmentFunc ufunc, void* udata );
 extern char* DumpSplineFontMetadata( SplineFont *sf );
