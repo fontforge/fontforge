@@ -197,7 +197,6 @@ int WordlistEscapedInputStringToRealString_getFakeUnicodeAsScUnicodeEnc( SplineC
     return( sc->unicodeenc );
 }
 
-
 unichar_t* WordlistEscapedInputStringToRealString(
     SplineFont* sf,
     const unichar_t* input_const,
@@ -273,17 +272,32 @@ unichar_t* WordlistEscapedInputStringToRealString(
 	    if( sc )
 	    {
 		TRACE("ToRealString have an sc!... in:%p updated_in:%p\n", in, updated_in );
+		// TRACE("Got input_const: %s\n", u_to_c(input_const));
+		// TRACE("Got unicode encoding: %d\n", sc->unicodeenc);
 		in = updated_in;
 		int n = getUnicodeFunc( sc, udata );
 		TRACE("ToRealString orig_pos:%d\n", sc->orig_pos );
 		if( n == -1 )
 		{
-		    printf("ToRealString NO UNICODE, orig_pos:%d\n", sc->orig_pos );
-		    printf("ToRealString NO UNICODE, name:%s\n", sc->name );
+		    /*
+		     * Okay, this probably means we've got an unencoded glyph (generally
+		     * used for OpenType substitutions).
+		     * Redeem the value from the SplineFont datamap instead of fetching from
+		     * the Unicode identifier.
+		     */
+		    n = sf->map->backmap[sc->orig_pos];
+
+		    /*
+		     * Unencoded glyphs have special mappings in the SplineFont that
+		     * start from 65536 (values beyond Unicode, 65535 being the reserved
+		     * "frontier" value).
+		     */
+		    if ( n < 65536 ) {
+		        printf("ToRealString: backmapped position does not match Unicode encoding\n");
+		        printf("orig_pos: %d, backmap: %d, attached unicode enc: %d\n", sc->orig_pos, n, sc->unicodeenc );
+		        printf("ToRealString: INVALID CHAR POSITION, name: %s\n", sc->name );
+		    }
 		}
-		
-//		printf("ToRealString have an sc!... n:%d\n", n );
-//		printf("sc->unic:%d\n",sc->unicodeenc);
 
 		TRACE("calling utf8_idpb buffer:%s out:%s ch:%d\n", buffer, out, n );
 		
