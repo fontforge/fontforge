@@ -13832,7 +13832,7 @@ return (NULL);
     int cnt1, cnt2, acnt;
     int16 *offs=NULL;
     int separation= -1, touch=0, do_autokern=false, only_closer=0, autokern=true;
-    double class_error_distance;
+    double class_error_distance = -1;
     /* arguments:
      *  (char *lookupname, char *newsubtabname, char ***classes1, char ***classes2, int *offsets [,char *after_sub_name])
      *  (char *lookupname, char *newsubtabname, int separation, char ***classes1, char ***classes2 [, int only_closer, int autokern, char *after_sub_name])
