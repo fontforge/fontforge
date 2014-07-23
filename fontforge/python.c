@@ -11766,7 +11766,7 @@ static int PyFF_Font_set_baseline(PyFF_Font *self, PyObject *value, void *UNUSED
     int basecnt,i;
     struct Base *base;
     int scriptcnt,langcnt,featcnt,j,k;
-    struct basescript *bs, *lastbs;
+    struct basescript *bs = NULL, *lastbs;
     struct baselangextent *ln, *lastln;
     struct baselangextent *ft, *lastft;
 
