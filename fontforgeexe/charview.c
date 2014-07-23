@@ -12902,13 +12902,31 @@ return( true );
 return( false );
 }
 
+static int charview_ready = false;
+
+static void CharViewFinish() {
+  // The memory leak is limited and reachable.
+  if ( !charview_ready ) return;
+    charview_ready = false;
+    mb2FreeGetText(mblist);
+    mb2FreeGetText(spiroptlist);
+    int i;
+    for ( i=0; mblist_nomm[i].ti.text!=NULL; ++i ) {
+      free(mblist_nomm[i].ti.text_untranslated); mblist_nomm[i].ti.text_untranslated = NULL;
+    }
+}
+
+void CharViewFinishNonStatic() {
+  CharViewFinish();
+}
+
 static void CharViewInit(void) {
     int i;
-    static int done = false;
+    // static int done = false; // superseded by charview_active.
 
-    if ( done )
+    if ( charview_ready )
 return;
-    done = true;
+    charview_ready = true;
 //    TRACE("CharViewInit(top) mblist[0].text before translation: %s\n", mblist[0].ti.text );
 
     mb2DoGetText(mblist);
@@ -12928,6 +12946,7 @@ return;
 
 	mblist_nomm[i].ti.text = (unichar_t *) _((char *) mblist_nomm[i].ti.text);
     }
+    atexit(&CharViewFinishNonStatic);
 }
 
 static int nested_cv_e_h(GWindow gw, GEvent *event) {

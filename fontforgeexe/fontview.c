@@ -7313,16 +7313,29 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 return( fv );
 }
 
-static void FontViewInit(void) {
-    static int done = false;
+static int fontview_ready = false;
 
-    if ( done )
+static void FontViewFinish() {
+    if (!fontview_ready) return;
+    mb2FreeGetText(mblist);
+    mbFreeGetText(fvpopupmenu);
+}
+
+void FontViewFinishNonStatic() {
+    FontViewFinish();
+}
+
+static void FontViewInit(void) {
+    // static int done = false; // superseded by fontview_ready.
+
+    if ( fontview_ready )
 return;
 
-    done = true;
+    fontview_ready = true;
 
     mb2DoGetText(mblist);
     mbDoGetText(fvpopupmenu);
+    atexit(&FontViewFinishNonStatic);
 }
 
 static struct resed fontview_re[] = {

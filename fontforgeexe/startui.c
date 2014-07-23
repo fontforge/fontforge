@@ -1344,6 +1344,13 @@ exit( 0 );
 	_FVMenuOpen(NULL);
     GDrawEventLoop(NULL);
     GDrawDestroyDisplays();
+
+    // These free menu translations, mostly.
+    BitmapViewFinishNonStatic();
+    MetricsViewFinishNonStatic();
+    CharViewFinishNonStatic();
+    FontViewFinishNonStatic();
+
     ClearImageCache(); // This frees the contents of imagecache.
     hotkeysSave();
     LastFonts_Save();

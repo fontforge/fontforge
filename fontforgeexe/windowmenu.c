@@ -260,6 +260,21 @@ void _aplistbuild(struct gmenuitem *top,SplineFont *sf,
     top->sub = sub;
 }
 
+void mbFreeGetText(GMenuItem *mb) {
+    /* free gettext substitutions on this menu and all sub menus */
+    int i;
+
+    if ( mb==NULL )
+return;
+    for ( i=0; mb[i].ti.text!=NULL || mb[i].ti.line || mb[i].ti.image!=NULL; ++i ) {
+        if (mb[i].ti.text_untranslated != NULL) { free(mb[i].ti.text_untranslated); mb[i].ti.text_untranslated = NULL; }
+	if ( mb[i].ti.text!=NULL ) {
+	    if ( mb[i].sub!=NULL )
+		mbFreeGetText(mb[i].sub);
+	}
+    }
+}
+
 void mbDoGetText(GMenuItem *mb) {
     /* perform gettext substitutions on this menu and all sub menus */
     int i;
@@ -278,6 +293,21 @@ return;
 	    mb[i].ti.text = (unichar_t *) S_((char *) mb[i].ti.text);
 	    if ( mb[i].sub!=NULL )
 		mbDoGetText(mb[i].sub);
+	}
+    }
+}
+
+void mb2FreeGetText(GMenuItem2 *mb) {
+    /* free gettext substitutions on this menu and all sub menus */
+    int i;
+
+    if ( mb==NULL )
+return;
+    for ( i=0; mb[i].ti.text!=NULL || mb[i].ti.line || mb[i].ti.image!=NULL; ++i ) {
+	if (mb[i].ti.text_untranslated != NULL) { free(mb[i].ti.text_untranslated); mb[i].ti.text_untranslated = NULL; }
+	if ( mb[i].ti.text!=NULL ) {
+	    if ( mb[i].sub!=NULL )
+		mb2FreeGetText(mb[i].sub);
 	}
     }
 }

@@ -5070,14 +5070,24 @@ static unsigned char metricsicon_bits[] = {
    0x24, 0x10, 0x20, 0x00, 0x24, 0x10, 0x20, 0x00, 0x74, 0x10, 0x00, 0x00,
    0x55, 0x55, 0x00, 0x00, 0x04, 0x10, 0x00, 0x00};
 
-static void MetricsViewInit(void ) {
-    static int inited = false;
+static int metricsview_ready = false;
 
-    if ( !inited ) {
+static void MetricsViewFinish() {
+  if (!metricsview_ready) return;
+  mb2FreeGetText(mblist);
+}
+
+void MetricsViewFinishNonStatic() {
+  MetricsViewFinish();
+}
+
+static void MetricsViewInit(void ) {
+    // static int inited = false; // superseded by metricsview_ready.
+    if (metricsview_ready) return;
 	mv_text_init[2].text = (unichar_t *) _((char *) mv_text_init[2].text);
 	mb2DoGetText(mblist);
 	MVColInit();
-    }
+    atexit(&MetricsViewFinishNonStatic);
 }
 
 MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {

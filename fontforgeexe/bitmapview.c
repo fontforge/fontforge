@@ -2225,17 +2225,30 @@ static unsigned char bitmap_bits[] = {
    0x30, 0x0c, 0xf0, 0x03, 0xf0, 0x03, 0x30, 0x0c, 0x30, 0x0c, 0x30, 0x0c,
    0x30, 0x0c, 0xfc, 0x03, 0xfc, 0x03, 0x00, 0x00};
 
+static int bitmapview_ready = false;
+
+static void BitmapViewFinish() {
+  if ( !bitmapview_ready ) return;
+  bitmapview_ready = 0;
+  mb2FreeGetText(mblist);
+}
+
+void BitmapViewFinishNonStatic() {
+  BitmapViewFinish();
+}
+
 static void BitmapViewInit(void) {
-    static int done = false;
+    // static int done = false; // superseded by bitmapview_ready.
     int i;
 
-    if ( done )
+    if ( bitmapview_ready )
 return;
-    done = true;
+    bitmapview_ready = true;
 
     mb2DoGetText(mblist);
     for ( i=0; BVFlipNames[i]!=NULL ; ++i )
 	BVFlipNames[i] = S_(BVFlipNames[i]);
+    atexit(&BitmapViewFinishNonStatic);
 }
 
 BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
