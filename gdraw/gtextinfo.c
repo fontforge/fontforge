@@ -518,7 +518,10 @@ return( bucket->image );
     }
     if ( foundname!=NULL && bucket->image!=NULL )
 	*foundname = copy( bucket->absname );
-return( bucket->image );
+    GImage * output = bucket->image;
+    if (bucket->filename != NULL) free(bucket->filename);
+    free(bucket); bucket = NULL;
+return( output );
 }
 
 GImage *GGadgetImageCache(const char *filename) {

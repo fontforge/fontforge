@@ -1032,7 +1032,7 @@ static void DefaultXUID(void) {
     g_random_set_seed(tv.tv_usec+1);
     r2 = g_random_int();
     sprintf( buffer, "1021 %d %d", r1, r2 );
-    free(xuid);
+    if (xuid != NULL) free(xuid);
     xuid = copy(buffer);
 }
 
@@ -1957,7 +1957,7 @@ return( true );
 	    for ( pt=xuid; *pt==' ' ; ++pt );
 	    if ( *pt=='[' ) {	/* People who know PS well, might want to put brackets arround the xuid base array, but I don't want them */
 		pt = copy(pt+1);
-		free( xuid );
+		if (xuid != NULL) free( xuid );
 		xuid = pt;
 	    }
 	    for ( pt=xuid+strlen(xuid)-1; pt>xuid && *pt==' '; --pt );

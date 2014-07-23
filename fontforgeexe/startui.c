@@ -1340,7 +1340,7 @@ exit( 0 );
     if ( doopen || !any )
 	_FVMenuOpen(NULL);
     GDrawEventLoop(NULL);
-
+    GDrawDestroyDisplays();
     hotkeysSave();
     LastFonts_Save();
 

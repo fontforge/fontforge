@@ -6358,7 +6358,7 @@ void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
 	    ++remap;
 	}
     }
-
+    g_string_free(output, TRUE);
     g_string_printf( output, "%d (0x%x) ", localenc, localenc );
 
     sc = (gid=fv->b.map->map[fv->end_pos])!=-1 ? sf->glyphs[gid] : NULL;
