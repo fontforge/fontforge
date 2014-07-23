@@ -5805,6 +5805,8 @@ static int PyFF_Glyph_set_activeLayer(PyFF_Glyph *self,PyObject *value, void *UN
 	ENDPYGETSTR();
 	if ( layer<0 )
 return( -1 );
+    } else {
+        return -1;
     }
     if ( layer<0 || layer>=self->sc->layer_cnt ) {
 	PyErr_Format(PyExc_ValueError, "Layer is out of range" );
