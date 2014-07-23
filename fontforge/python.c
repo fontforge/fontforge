@@ -1253,7 +1253,7 @@ return( NULL );
 return( NULL );
     }
     cnt = PySequence_Size(answero);
-    answers = malloc((cnt+1)*sizeof(char *));
+    answers = calloc(cnt+1, sizeof(char *));
     if ( cancel==-1 )
 	cancel = cnt-1;
     if ( cancel<0 || cancel>=cnt || def<0 || def>=cnt ) {
@@ -1303,7 +1303,7 @@ return( NULL );
 return( NULL );
     }
     cnt = PySequence_Size(answero);
-    answers = malloc((cnt+1)*sizeof(char *));
+    answers = calloc(cnt+1, sizeof(char *));
     if ( def<0 || def>=cnt ) {
 	PyErr_Format(PyExc_ValueError, "Value out of bounds for 4th argument");
 	free(title);
@@ -3856,10 +3856,10 @@ return( -1 );
     if ( c==FLAG_UNKNOWN )
 return( -1 );
     j = FlagsFromString(join,linejoin,"linejoin type");
-    if ( c==FLAG_UNKNOWN )
+    if ( j==FLAG_UNKNOWN )
 return( -1 );
     f = FlagsFromTuple(flagtuple,strokeflags,"stroke flag");
-    if ( c==FLAG_UNKNOWN )
+    if ( f==FLAG_UNKNOWN )
 return( -1 );
 
     si->radius = width/2;
@@ -5138,10 +5138,11 @@ static void layersiter_dealloc(layersiterobject *di) {
 
 static PyObject *layersiter_iternextkey(layersiterobject *di) {
     PyFF_LayerArray *d = di->layers;
-    SplineFont *sf = d->sc->parent;
+    SplineFont *sf;
 
     if (d == NULL )
 return NULL;
+    sf = d->sc->parent;
 
     if ( di->pos<sf->layer_cnt )
 return( Py_BuildValue("s",sf->layers[di->pos++].name) );
@@ -5805,6 +5806,8 @@ static int PyFF_Glyph_set_activeLayer(PyFF_Glyph *self,PyObject *value, void *UN
 	ENDPYGETSTR();
 	if ( layer<0 )
 return( -1 );
+    } else {
+        return -1;
     }
     if ( layer<0 || layer>=self->sc->layer_cnt ) {
 	PyErr_Format(PyExc_ValueError, "Layer is out of range" );
@@ -9324,10 +9327,11 @@ static void layerinfoiter_dealloc(layerinfoiterobject *di) {
 
 static PyObject *layerinfoiter_iternextkey(layerinfoiterobject *di) {
     PyFF_LayerInfoArray *d = di->layers;
-    SplineFont *sf = d->sf;
+    SplineFont *sf;
 
     if (d == NULL )
 return NULL;
+    sf = d->sf;
 
     if ( di->pos<sf->layer_cnt )
 return( Py_BuildValue("s",sf->layers[di->pos++].name) );
@@ -10870,6 +10874,8 @@ return(-1);
 	ENDPYGETSTR();
 	if ( layer<0 )
 return( -1 );
+    } else {
+        return -1;
     }
     if ( layer<0 || layer>=self->fv->sf->layer_cnt ) {
 	PyErr_Format(PyExc_ValueError, "Layer is out of range" );
@@ -11762,7 +11768,7 @@ static int PyFF_Font_set_baseline(PyFF_Font *self, PyObject *value, void *UNUSED
     int basecnt,i;
     struct Base *base;
     int scriptcnt,langcnt,featcnt,j,k;
-    struct basescript *bs, *lastbs;
+    struct basescript *bs = NULL, *lastbs;
     struct baselangextent *ln, *lastln;
     struct baselangextent *ft, *lastft;
 
@@ -12522,7 +12528,7 @@ return( 0 );
 return( -1 );
 	}
 	classes[i] = GlyphNamesFromTuple(subtuple);
-	if ( classes[i+1]==NULL ) {
+	if ( classes[i]==NULL ) {
 	    FreeStringArray( i, names );
 	    FreeStringArray( i, classes );
 return( -1 );
@@ -13832,7 +13838,7 @@ return (NULL);
     int cnt1, cnt2, acnt;
     int16 *offs=NULL;
     int separation= -1, touch=0, do_autokern=false, only_closer=0, autokern=true;
-    double class_error_distance;
+    double class_error_distance = -1;
     /* arguments:
      *  (char *lookupname, char *newsubtabname, char ***classes1, char ***classes2, int *offsets [,char *after_sub_name])
      *  (char *lookupname, char *newsubtabname, int separation, char ***classes1, char ***classes2 [, int only_closer, int autokern, char *after_sub_name])
@@ -14399,8 +14405,8 @@ return( BAD_FEATURE_LIST );
 return( BAD_FEATURE_LIST );
 	} else if ( PySequence_Size(scripts)==0 ) {
 	    PyErr_Format(PyExc_TypeError, "No scripts specified for feature %s", PyBytes_AsString(PySequence_GetItem(subs,0)));
+        FeatureScriptLangListFree(flhead);
 return( BAD_FEATURE_LIST );
-	    FeatureScriptLangListFree(flhead);
 	}
 	sltail = NULL;
 	for ( s=0; s<PySequence_Size(scripts); ++s ) {
