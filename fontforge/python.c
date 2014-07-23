@@ -10872,6 +10872,8 @@ return(-1);
 	ENDPYGETSTR();
 	if ( layer<0 )
 return( -1 );
+    } else {
+        return -1;
     }
     if ( layer<0 || layer>=self->fv->sf->layer_cnt ) {
 	PyErr_Format(PyExc_ValueError, "Layer is out of range" );
