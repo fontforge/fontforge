@@ -16927,46 +16927,33 @@ static PyObject *PyFF_FontIndex( PyObject *object, PyObject *index ) {
     FontViewBase *fv;
     SplineFont *sf;
     SplineChar *sc = NULL;
-#if PY_MAJOR_VERSION >= 3
-    int index_is_bytes = false;
-#endif
 
     if ( CheckIfFontClosed(self) )
-return (NULL);
+        return (NULL);
     fv = self->fv;
     sf = fv->sf;
     if ( STRING_CHECK(index)) {
 	char *name;
 	PYGETSTR(index, name, NULL);
-#if PY_MAJOR_VERSION >= 3
-	index_is_bytes = true;
-#endif
 	sc = SFGetChar(sf,-1,name);
+        ENDPYGETSTR();
     } else if ( PyInt_Check(index)) {
 	int pos = PyInt_AsLong(index), gid;
 	if ( pos<0 || pos>=fv->map->enccount ) {
 	    PyErr_Format(PyExc_TypeError, "Index out of bounds");
-return( NULL );
+            return( NULL );
 	}
 	gid = fv->map->map[pos];
 	sc = gid==-1 ? NULL : sf->glyphs[gid];
     } else {
 	PyErr_Format(PyExc_TypeError, "Index must be an integer or a string" );
-return( NULL );
+        return( NULL );
     }
     if ( sc==NULL ) {
-#if PY_MAJOR_VERSION >= 3
-        if (index_is_bytes)
-            Py_DECREF(index);
-#endif
 	PyErr_Format(PyExc_TypeError, "No such glyph" );
-return( NULL );
+        return( NULL );
     }
-#if PY_MAJOR_VERSION >= 3
-    if (index_is_bytes)
-        Py_DECREF(index);
-#endif
-return( PySC_From_SC_I(sc));
+    return( PySC_From_SC_I(sc));
 }
 
 static int PyFF_FontContains( PyObject *object, PyObject *index ) {
@@ -16974,41 +16961,28 @@ static int PyFF_FontContains( PyObject *object, PyObject *index ) {
     FontViewBase *fv;
     SplineFont *sf;
     SplineChar *sc = NULL;
-#if PY_MAJOR_VERSION >= 3
-    int index_is_bytes = false;
-#endif
 
     if ( CheckIfFontClosed(self) )
-return (-1);
+        return (-1);
     fv = self->fv;
     sf = fv->sf;
     if ( STRING_CHECK(index)) {
 	char *name;
         PYGETSTR(index, name, 0);
-#if PY_MAJOR_VERSION >= 3
-	index_is_bytes = true;
-#endif
 	sc = SFGetChar(sf,-1,name);
+        ENDPYGETSTR();
     } else if ( PyInt_Check(index)) {
 	int pos = PyInt_AsLong(index), gid;
 	if ( pos<0 || pos>=fv->map->enccount ) {
-return( 0 );
+            return( 0 );
 	}
 	gid = fv->map->map[pos];
 	sc = gid==-1 ? NULL : sf->glyphs[gid];
     } else {
-#if PY_MAJOR_VERSION >= 3
-    if (index_is_bytes)
-        Py_DECREF(index);
-#endif
 	PyErr_Format(PyExc_TypeError, "Index must be an integer or a string" );
-return( -1 );
+        return( -1 );
     }
-#if PY_MAJOR_VERSION >= 3
-    if (index_is_bytes)
-        Py_DECREF(index);
-#endif
-return( sc!=NULL );
+    return( sc!=NULL );
 }
 
 static PySequenceMethods PyFF_FontSequence = {
