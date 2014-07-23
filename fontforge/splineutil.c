@@ -6332,6 +6332,11 @@ return;
     free(sf->ordering);
     MacFeatListFree(sf->features);
     /* We don't free the EncMap. That field is only a temporary pointer. Let the FontViewBase free it, that's where it really lives */
+    // TODO: But that doesn't always get freed. The statement below causes double-frees, so we need to come up with better conditions.
+    #if 0
+    if (sf->cidmaster == NULL || sf->cidmaster == sf)
+      if (sf->map != NULL) { free(sf->map); sf->map = NULL; }
+    #endif // 0
     SplinePointListsFree(sf->grid.splines);
     AnchorClassesFree(sf->anchor);
     TtfTablesFree(sf->ttf_tables);
