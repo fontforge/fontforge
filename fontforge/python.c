@@ -3856,10 +3856,10 @@ return( -1 );
     if ( c==FLAG_UNKNOWN )
 return( -1 );
     j = FlagsFromString(join,linejoin,"linejoin type");
-    if ( c==FLAG_UNKNOWN )
+    if ( j==FLAG_UNKNOWN )
 return( -1 );
     f = FlagsFromTuple(flagtuple,strokeflags,"stroke flag");
-    if ( c==FLAG_UNKNOWN )
+    if ( f==FLAG_UNKNOWN )
 return( -1 );
 
     si->radius = width/2;
