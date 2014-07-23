@@ -6363,6 +6363,16 @@ return;
     BaseFree(sf->horiz_base);
     BaseFree(sf->vert_base);
     JustifyFree(sf->justify);
+    if (sf->layers != NULL) {
+      int layer;
+      for (layer = 0; layer < sf->layer_cnt; layer ++) {
+        if (sf->layers[layer].name != NULL) {
+          free(sf->layers[layer].name);
+          sf->layers[layer].name = NULL;
+        }
+      }
+      free(sf->layers); sf->layers = NULL;
+    }   
     free(sf);
 }
 

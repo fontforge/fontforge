@@ -952,6 +952,8 @@ static void _MenuExit(void *UNUSED(junk)) {
 	    GDrawProcessPendingEvents(NULL);
 	}
     }
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
     exit(0);
 }
 
