@@ -1984,7 +1984,11 @@ return;
 			if ( *pt!='\0' && pt[strlen(pt)-1]==' ' )
 			pt[strlen(pt)-1] = '\0';
 		}
-		if (info->chars[glyphs[i]]->possub->u.subs.variant == NULL) {
+		if (glyphs[i] < 0 || glyphs[i] > info->glyph_cnt) {
+		        fprintf(stderr, "This glyph is out of bounds.\n");
+		} else if (info->chars[glyphs[i]] == NULL || info->chars[glyphs[i]]->possub == NULL) {
+		        if (justinuse != git_justinuse) fprintf( stderr , "This glyph isn't loaded yet.\n" );
+		} else if (info->chars[glyphs[i]]->possub->u.subs.variant == NULL) {
 			fprintf( stderr , "info->chars[glyphs[%d]]->possub->u.subs.variant is null. glyphs[%d] = %d. info->chars[%d]->name = \"%s\".\n" , i , i , glyphs[i] , glyphs[i] , info->chars[glyphs[i]]->name ) ;
 		}
     }
