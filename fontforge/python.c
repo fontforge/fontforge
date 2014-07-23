@@ -5138,10 +5138,11 @@ static void layersiter_dealloc(layersiterobject *di) {
 
 static PyObject *layersiter_iternextkey(layersiterobject *di) {
     PyFF_LayerArray *d = di->layers;
-    SplineFont *sf = d->sc->parent;
+    SplineFont *sf;
 
     if (d == NULL )
 return NULL;
+    sf = d->sc->parent;
 
     if ( di->pos<sf->layer_cnt )
 return( Py_BuildValue("s",sf->layers[di->pos++].name) );
@@ -9326,10 +9327,11 @@ static void layerinfoiter_dealloc(layerinfoiterobject *di) {
 
 static PyObject *layerinfoiter_iternextkey(layerinfoiterobject *di) {
     PyFF_LayerInfoArray *d = di->layers;
-    SplineFont *sf = d->sf;
+    SplineFont *sf;
 
     if (d == NULL )
 return NULL;
+    sf = d->sf;
 
     if ( di->pos<sf->layer_cnt )
 return( Py_BuildValue("s",sf->layers[di->pos++].name) );
