@@ -300,6 +300,25 @@ struct image_bucket {
 #define IC_SIZE	127
 static struct image_bucket *imagecache[IC_SIZE];
 
+void InitImageCache() {
+  memset(imagecache, 0, IC_SIZE * sizeof(struct image_bucket *));
+}
+
+void ClearImageCache() {
+      for ( int i=0; i<IC_SIZE; ++i ) {
+        struct image_bucket * bucket;
+        struct image_bucket * nextbucket;
+	for ( bucket = imagecache[i]; bucket!=NULL; bucket=nextbucket ) {
+          nextbucket = bucket->next;
+          if (bucket->filename != NULL) { free(bucket->filename); bucket->filename = NULL; }
+          if (bucket->absname != NULL) { free(bucket->absname); bucket->absname = NULL; }
+          if (bucket->image != NULL) { GImageDestroy(bucket->image); bucket->image = NULL; }
+          free(bucket);
+        }
+        imagecache[i] = NULL;
+     }
+}
+
 static int hash_filename(const char *_pt ) {
     const unsigned char *pt = (const unsigned char *) _pt;
     int val = 0;

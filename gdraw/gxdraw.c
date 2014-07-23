@@ -4649,7 +4649,7 @@ return( NULL );
 
 #ifdef X_HAVE_UTF8_STRING	/* Don't even try without this. I don't want to have to guess encodings myself... */
     /* X Input method initialization */
-    free(XSetLocaleModifiers(""));
+    XSetLocaleModifiers(""); // As it turns out, we can't free this here.
     gdisp->im = XOpenIM(display, XrmGetDatabase(display),
 	    GResourceProgramName, GResourceProgramName);
     /* The only reason this seems to fail is if XMODIFIERS contains an @im */
