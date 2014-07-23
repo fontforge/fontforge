@@ -1253,7 +1253,7 @@ return( NULL );
 return( NULL );
     }
     cnt = PySequence_Size(answero);
-    answers = malloc((cnt+1)*sizeof(char *));
+    answers = calloc(cnt+1, sizeof(char *));
     if ( cancel==-1 )
 	cancel = cnt-1;
     if ( cancel<0 || cancel>=cnt || def<0 || def>=cnt ) {
@@ -1303,7 +1303,7 @@ return( NULL );
 return( NULL );
     }
     cnt = PySequence_Size(answero);
-    answers = malloc((cnt+1)*sizeof(char *));
+    answers = calloc(cnt+1, sizeof(char *));
     if ( def<0 || def>=cnt ) {
 	PyErr_Format(PyExc_ValueError, "Value out of bounds for 4th argument");
 	free(title);
@@ -3856,10 +3856,10 @@ return( -1 );
     if ( c==FLAG_UNKNOWN )
 return( -1 );
     j = FlagsFromString(join,linejoin,"linejoin type");
-    if ( c==FLAG_UNKNOWN )
+    if ( j==FLAG_UNKNOWN )
 return( -1 );
     f = FlagsFromTuple(flagtuple,strokeflags,"stroke flag");
-    if ( c==FLAG_UNKNOWN )
+    if ( f==FLAG_UNKNOWN )
 return( -1 );
 
     si->radius = width/2;
@@ -5138,10 +5138,11 @@ static void layersiter_dealloc(layersiterobject *di) {
 
 static PyObject *layersiter_iternextkey(layersiterobject *di) {
     PyFF_LayerArray *d = di->layers;
-    SplineFont *sf = d->sc->parent;
+    SplineFont *sf;
 
     if (d == NULL )
 return NULL;
+    sf = d->sc->parent;
 
     if ( di->pos<sf->layer_cnt )
 return( Py_BuildValue("s",sf->layers[di->pos++].name) );
@@ -5805,6 +5806,8 @@ static int PyFF_Glyph_set_activeLayer(PyFF_Glyph *self,PyObject *value, void *UN
 	ENDPYGETSTR();
 	if ( layer<0 )
 return( -1 );
+    } else {
+        return -1;
     }
     if ( layer<0 || layer>=self->sc->layer_cnt ) {
 	PyErr_Format(PyExc_ValueError, "Layer is out of range" );
@@ -9324,10 +9327,11 @@ static void layerinfoiter_dealloc(layerinfoiterobject *di) {
 
 static PyObject *layerinfoiter_iternextkey(layerinfoiterobject *di) {
     PyFF_LayerInfoArray *d = di->layers;
-    SplineFont *sf = d->sf;
+    SplineFont *sf;
 
     if (d == NULL )
 return NULL;
+    sf = d->sf;
 
     if ( di->pos<sf->layer_cnt )
 return( Py_BuildValue("s",sf->layers[di->pos++].name) );
@@ -10870,6 +10874,8 @@ return(-1);
 	ENDPYGETSTR();
 	if ( layer<0 )
 return( -1 );
+    } else {
+        return -1;
     }
     if ( layer<0 || layer>=self->fv->sf->layer_cnt ) {
 	PyErr_Format(PyExc_ValueError, "Layer is out of range" );
@@ -11762,7 +11768,7 @@ static int PyFF_Font_set_baseline(PyFF_Font *self, PyObject *value, void *UNUSED
     int basecnt,i;
     struct Base *base;
     int scriptcnt,langcnt,featcnt,j,k;
-    struct basescript *bs, *lastbs;
+    struct basescript *bs = NULL, *lastbs;
     struct baselangextent *ln, *lastln;
     struct baselangextent *ft, *lastft;
 
@@ -12522,7 +12528,7 @@ return( 0 );
 return( -1 );
 	}
 	classes[i] = GlyphNamesFromTuple(subtuple);
-	if ( classes[i+1]==NULL ) {
+	if ( classes[i]==NULL ) {
 	    FreeStringArray( i, names );
 	    FreeStringArray( i, classes );
 return( -1 );
@@ -13832,7 +13838,7 @@ return (NULL);
     int cnt1, cnt2, acnt;
     int16 *offs=NULL;
     int separation= -1, touch=0, do_autokern=false, only_closer=0, autokern=true;
-    double class_error_distance;
+    double class_error_distance = -1;
     /* arguments:
      *  (char *lookupname, char *newsubtabname, char ***classes1, char ***classes2, int *offsets [,char *after_sub_name])
      *  (char *lookupname, char *newsubtabname, int separation, char ***classes1, char ***classes2 [, int only_closer, int autokern, char *after_sub_name])
@@ -14399,8 +14405,8 @@ return( BAD_FEATURE_LIST );
 return( BAD_FEATURE_LIST );
 	} else if ( PySequence_Size(scripts)==0 ) {
 	    PyErr_Format(PyExc_TypeError, "No scripts specified for feature %s", PyBytes_AsString(PySequence_GetItem(subs,0)));
+        FeatureScriptLangListFree(flhead);
 return( BAD_FEATURE_LIST );
-	    FeatureScriptLangListFree(flhead);
 	}
 	sltail = NULL;
 	for ( s=0; s<PySequence_Size(scripts); ++s ) {
@@ -16927,46 +16933,33 @@ static PyObject *PyFF_FontIndex( PyObject *object, PyObject *index ) {
     FontViewBase *fv;
     SplineFont *sf;
     SplineChar *sc = NULL;
-#if PY_MAJOR_VERSION >= 3
-    int index_is_bytes = false;
-#endif
 
     if ( CheckIfFontClosed(self) )
-return (NULL);
+        return (NULL);
     fv = self->fv;
     sf = fv->sf;
     if ( STRING_CHECK(index)) {
 	char *name;
 	PYGETSTR(index, name, NULL);
-#if PY_MAJOR_VERSION >= 3
-	index_is_bytes = true;
-#endif
 	sc = SFGetChar(sf,-1,name);
+        ENDPYGETSTR();
     } else if ( PyInt_Check(index)) {
 	int pos = PyInt_AsLong(index), gid;
 	if ( pos<0 || pos>=fv->map->enccount ) {
 	    PyErr_Format(PyExc_TypeError, "Index out of bounds");
-return( NULL );
+            return( NULL );
 	}
 	gid = fv->map->map[pos];
 	sc = gid==-1 ? NULL : sf->glyphs[gid];
     } else {
 	PyErr_Format(PyExc_TypeError, "Index must be an integer or a string" );
-return( NULL );
+        return( NULL );
     }
     if ( sc==NULL ) {
-#if PY_MAJOR_VERSION >= 3
-        if (index_is_bytes)
-            Py_DECREF(index);
-#endif
 	PyErr_Format(PyExc_TypeError, "No such glyph" );
-return( NULL );
+        return( NULL );
     }
-#if PY_MAJOR_VERSION >= 3
-    if (index_is_bytes)
-        Py_DECREF(index);
-#endif
-return( PySC_From_SC_I(sc));
+    return( PySC_From_SC_I(sc));
 }
 
 static int PyFF_FontContains( PyObject *object, PyObject *index ) {
@@ -16974,41 +16967,28 @@ static int PyFF_FontContains( PyObject *object, PyObject *index ) {
     FontViewBase *fv;
     SplineFont *sf;
     SplineChar *sc = NULL;
-#if PY_MAJOR_VERSION >= 3
-    int index_is_bytes = false;
-#endif
 
     if ( CheckIfFontClosed(self) )
-return (-1);
+        return (-1);
     fv = self->fv;
     sf = fv->sf;
     if ( STRING_CHECK(index)) {
 	char *name;
         PYGETSTR(index, name, 0);
-#if PY_MAJOR_VERSION >= 3
-	index_is_bytes = true;
-#endif
 	sc = SFGetChar(sf,-1,name);
+        ENDPYGETSTR();
     } else if ( PyInt_Check(index)) {
 	int pos = PyInt_AsLong(index), gid;
 	if ( pos<0 || pos>=fv->map->enccount ) {
-return( 0 );
+            return( 0 );
 	}
 	gid = fv->map->map[pos];
 	sc = gid==-1 ? NULL : sf->glyphs[gid];
     } else {
-#if PY_MAJOR_VERSION >= 3
-    if (index_is_bytes)
-        Py_DECREF(index);
-#endif
 	PyErr_Format(PyExc_TypeError, "Index must be an integer or a string" );
-return( -1 );
+        return( -1 );
     }
-#if PY_MAJOR_VERSION >= 3
-    if (index_is_bytes)
-        Py_DECREF(index);
-#endif
-return( sc!=NULL );
+    return( sc!=NULL );
 }
 
 static PySequenceMethods PyFF_FontSequence = {
