@@ -12526,7 +12526,7 @@ return( 0 );
 return( -1 );
 	}
 	classes[i] = GlyphNamesFromTuple(subtuple);
-	if ( classes[i+1]==NULL ) {
+	if ( classes[i]==NULL ) {
 	    FreeStringArray( i, names );
 	    FreeStringArray( i, classes );
 return( -1 );
