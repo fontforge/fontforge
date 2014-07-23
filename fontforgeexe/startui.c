@@ -1151,6 +1151,7 @@ int fontforge_main( int argc, char **argv ) {
     }
 #endif
     GDrawCreateDisplays(display,argv[0]);
+    atexit(&GDrawDestroyDisplays); // We register the destructor so that it runs even if we call exit without finishing this function.
     default_background = GDrawGetDefaultBackground(screen_display);
     InitToolIconClut(default_background);
     InitToolIcons();

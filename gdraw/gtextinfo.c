@@ -321,7 +321,7 @@ static void ImagePathDefault(void) {
 	imagepath[0] = (imagedir == NULL) ? copy(imagedir_default) : copy(imagedir);
 	imagepath[1] = NULL;
 	imagepathlenmax = strlen(imagepath[0]);
-	free(_GGadget_ImagePath);
+	if (_GGadget_ImagePath != NULL) free(_GGadget_ImagePath);
 	_GGadget_ImagePath = copy("=");
     }
 }
@@ -416,7 +416,7 @@ void GGadgetSetImageDir(char *dir) {
                 imagepath[k] = copy(imagedir);
                 ImageCacheReload();
             }
-            free(_GGadget_ImagePath);
+            if (_GGadget_ImagePath != NULL) free(_GGadget_ImagePath);
             _GGadget_ImagePath = copy("=");
         }
     }
@@ -451,7 +451,7 @@ void GGadgetSetImagePath(char *path) {
 
     if ( path==NULL )
 return;
-    free( _GGadget_ImagePath );
+    if (_GGadget_ImagePath != NULL) free( _GGadget_ImagePath );
 
     if ( imagepath!=NULL ) {
 	for ( k=0; imagepath[k]!=NULL; ++k )
@@ -518,10 +518,7 @@ return( bucket->image );
     }
     if ( foundname!=NULL && bucket->image!=NULL )
 	*foundname = copy( bucket->absname );
-    GImage * output = bucket->image;
-    if (bucket->filename != NULL) free(bucket->filename);
-    free(bucket); bucket = NULL;
-return( output );
+return(bucket->image);
 }
 
 GImage *GGadgetImageCache(const char *filename) {

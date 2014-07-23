@@ -6331,8 +6331,10 @@ void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
     GString *output = g_string_new( "" );
     gchar *uniname = NULL;
 
-    if ( event->u.expose.rect.y+event->u.expose.rect.height<=fv->mbh )
+    if ( event->u.expose.rect.y+event->u.expose.rect.height<=fv->mbh ) {
+        g_string_free( output, TRUE ); output = NULL;
 	return;
+    }
 
     GDrawSetFont(pixmap,fv->fontset[0]);
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
@@ -6343,6 +6345,7 @@ void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
 	    fv->end_pos<0 || fv->pressed_pos<0 )
 	fv->end_pos = fv->pressed_pos = -1;	/* Can happen after reencoding */
     if ( fv->end_pos == -1 ) {
+        g_string_free( output, TRUE ); output = NULL;
 	GDrawPopClip(pixmap,&old);
 	return;
     }
@@ -6358,7 +6361,6 @@ void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
 	    ++remap;
 	}
     }
-    g_string_free(output, TRUE);
     g_string_printf( output, "%d (0x%x) ", localenc, localenc );
 
     sc = (gid=fv->b.map->map[fv->end_pos])!=-1 ? sf->glyphs[gid] : NULL;
@@ -6402,8 +6404,9 @@ void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
     }
 
     GDrawDrawText8( pixmap, 10, fv->mbh+fv->lab_as, output->str, -1, fg );
-    g_string_free( output, TRUE );
+    g_string_free( output, TRUE ); output = NULL;
     GDrawPopClip( pixmap, &old );
+    return;
 }
 
 static void FVShowInfo(FontView *fv) {

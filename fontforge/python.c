@@ -18145,16 +18145,27 @@ static void RegisterAllPyModules(void) {
     }
 }
 
+static int python_initialized = 0;
+
+void FontForge_FinalizeEmbeddedPython(void) {
+    // static int python_initialized is declared above.
+    if ( !python_initialized )
+	return;
+
+    Py_Finalize();
+    python_initialized = 0;
+}
+
 /* This is called to start up the embedded python interpreter */
 void FontForge_InitializeEmbeddedPython(void) {
-    static int initialized = 0;
-    if ( initialized )
+    // static int python_initialized is declared above.
+    if ( python_initialized )
 	return;
 
     SetPythonProgramName("fontforge");
     RegisterAllPyModules();
     Py_Initialize();
-    initialized = 1;
+    python_initialized = 1;
 
     /* The embedded python interpreter is now functionally
      * "running". We can modify it to our needs.
