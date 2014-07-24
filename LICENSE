@@ -111,7 +111,7 @@ cvknife.c		nonlineartransui.c	statemachine.c
 cvpalettes.c		noprefs.c		stemdb.c
 cvpointer.c		nouiutil.c		stemdb.h
 cvruler.c		nowakowskittfinstr.c	svg.c
-cvshapes.c		tilepath.c
+cvshapes.c		oflib.c			tilepath.c
 cvstroke.c		openfontdlg.c		tottf.c
 cvtranstools.c		palmfonts.c		tottfaat.c
 cvundoes.c		parsepdf.c		tottfgpos.c
