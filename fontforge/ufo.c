@@ -543,9 +543,9 @@ int _ExportGlif(FILE *glif,SplineChar *sc,int layer) {
     xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0");
     xmlNodePtr root_node = _GlifToXML(sc, layer);
     xmlDocSetRootElement(doc, root_node);
-    xmlDocFormatDump(glif, doc, 1);
+    int output_status = xmlDocFormatDump(glif, doc, 1);
     xmlFreeDoc(doc); doc = NULL;
-    return ( doc != NULL );
+    return ( output_status != -1 );
 }
 
 /* ************************************************************************** */
