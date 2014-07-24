@@ -77,7 +77,7 @@
 // to this code and capturing and diffing output in order to track changes
 // in errors and reports.
 // (The pointers tend to clutter the diff a bit.)
-// #define FF_OVERLAP_VERBOSE
+#define FF_OVERLAP_VERBOSE
 
 static char *glyphname=NULL;
 
@@ -3266,19 +3266,23 @@ static SplineSet *JoinAllNeeded(Intersection *ilist) {
     Intersection *il;
     SplineSet *head=NULL, *last=NULL, *cur, *test;
     MList *ml;
+    int reverse_flag = 0; // We set this if we're following a path backwards so that we know to fix it when done.
 
     for ( il=ilist; il!=NULL; il=il->next ) {
 	/* Try to preserve direction */
 	for (;;) {
+	    reverse_flag = 0;
 	    // We loop until there are no more monotonics connected to this intersection.
-	    // First we iterate through the connected monotonics until we find one that is needed and starts at this intersection.
+	    // First we iterate through the connected monotonics until we find one that is needed (and not already handled) and starts at this intersection.
 	    for ( ml=il->monos; ml!=NULL && (!ml->m->isneeded || ml->m->end==il); ml=ml->next );
 	    // If we do not find such a monotonic, we allow monotonics that end at this intersection.
 	    if ( ml==NULL ) {
 		for ( ml=il->monos; ml!=NULL && !ml->m->isneeded; ml=ml->next );
 		if (ml != NULL) {
 		  // Unfortunately, this probably means that something is wrong since we ought to have only closed curves at this point.
+		  // The problem is most likely in the needed/unneeded logic.
 		  SONotify("An intersection has a terminating monotonic but not a starting monotonic.\n");
+		  reverse_flag = 1; // We'll need to reverse this later.
 		}
 	    }
 	    if ( ml==NULL )
@@ -3293,6 +3297,7 @@ static SplineSet *JoinAllNeeded(Intersection *ilist) {
 	/* break; */
 	    }
 	    cur = JoinAContour(il,ml);
+	    if (reverse_flag == 1) SplineSetReverse(cur);
 	    if ( head==NULL )
 		head = cur;
 	    else {
