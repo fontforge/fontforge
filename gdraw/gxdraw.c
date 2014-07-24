@@ -4556,8 +4556,10 @@ void _GXDraw_DestroyDisplay(GDisplay * gdisp) {
     if (gdispc->fence_stipple != BadAlloc && gdispc->fence_stipple != BadDrawable && gdispc->fence_stipple != BadValue) {
       XFreePixmap(gdispc->display, gdispc->fence_stipple); gdispc->fence_stipple = BadAlloc;
     }
-    if (gdispc->groot->ggc != NULL) { free(gdispc->groot->ggc); gdispc->groot->ggc = NULL; }
-    if (gdispc->groot != NULL) { free(gdispc->groot); gdispc->groot = NULL; }
+    if (gdispc->groot != NULL) {
+      if (gdispc->groot->ggc != NULL) { free(gdispc->groot->ggc); gdispc->groot->ggc = NULL; }
+      free(gdispc->groot); gdispc->groot = NULL;
+    }
     if (gdispc->im != NULL) { XCloseIM(gdispc->im); gdispc->im = NULL; }
     if (gdispc->display != NULL) { XCloseDisplay(gdispc->display); gdispc->display = NULL; }
     return;
