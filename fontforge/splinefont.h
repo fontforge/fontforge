@@ -2789,6 +2789,7 @@ extern SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openfl
 extern SplineFont *ReadSplineFont(const char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
 extern FILE *URLToTempFile(char *url,void *lock);
 extern int URLFromFile(const char *url,FILE *from);
+extern int HttpGetBuf(const char *url, char *databuf, int *datalen, void *mutex);
 extern void ArchiveCleanup(char *archivedir);
 extern char *Unarchive(char *name, char **_archivedir);
 extern char *Decompress(char *name, int compression);
