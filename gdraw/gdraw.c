@@ -931,8 +931,14 @@ return;
 }
 
 void GDrawDestroyDisplays() {
-  _GXDraw_DestroyDisplay(screen_display);
-  _GPSDraw_DestroyDisplay(printer_display);
+  if (screen_display != NULL) {
+    _GXDraw_DestroyDisplay(screen_display);
+    screen_display = NULL;
+  }
+  if (printer_display != NULL) {
+    _GPSDraw_DestroyDisplay(printer_display);
+    printer_display = NULL;
+  }
 }
 
 void GDrawCreateDisplays(char *displayname,char *programname) {
