@@ -1068,7 +1068,7 @@ static extended RealDistance(extended v1, extended v2) {
 }
 
 static int RealCloser(extended ref0, extended ref1, extended queryval) {
-  if (RealDistance(ref1, queryval) > RealDistance(ref0, queryval)) return 1;
+  if (RealDistance(ref1, queryval) < RealDistance(ref0, queryval)) return 1;
   return 0;
 }
 
@@ -1119,6 +1119,11 @@ static void SplitMonotonicAtFlex(Monotonic *m,int which,bigreal coord,
 	}
     } else {
 	t = IterateSplineSolveFixup(&m->s->splines[which],m->tstart,m->tend,coord);
+	// Generally, this fails not because the value is far out of bounds but because it's very near to one of the ends
+        // (in which case the solver may not be able to find a t-value that produces the desired coordinate)
+        // or because it's just out bounds by a little bit due to rounding errors and nudging and such.
+        // In the second case, we could navigate into the adjacent monotonic and try to put a new intersection there,
+        // but it's more likely that the desired/expected result is putting the point at the end of the segment.
 	if ( t==-1 ) {
           // If the solver fails, we try to match an end if feasible.
 	  if (which) {
@@ -1134,10 +1139,27 @@ static void SplitMonotonicAtFlex(Monotonic *m,int which,bigreal coord,
               if (Within16RoundingErrors(coord, startx)) t = m->tstart;
             }
           }
+          if (t != -1) SONotify("Spline solver failed to find a value; falling back to approximate monotonic end.\n");
+	}
+	if ( t==-1 ) {
+          // If that matching fails, we accept some extra fuzziness.
+	  if (which) {
+            if (RealCloser(starty, endy, coord)) {
+              if (RealNear(coord, endy)) t = m->tend;
+            } else {
+              if (RealNear(coord, starty)) t = m->tstart;
+            }
+          } else {
+            if (RealCloser(startx, endx, coord)) {
+              if (RealNear(coord, endx)) t = m->tend;
+            } else {
+              if (RealNear(coord, startx)) t = m->tstart;
+            }
+          }
+          if (t != -1) SONotify("Spline solver failed to find a value; falling back to roughly approximate monotonic end.\n");
 	}
         if (t == -1)
 	    SOError("Intersection failed!\n");
-        else SONotify("Spline solver failed to find a value; falling back to monotonic end.\n");
     }
     if ((t == m->tend)
 #ifdef FF_RELATIONAL_GEOM
