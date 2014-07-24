@@ -12346,6 +12346,7 @@ static int PyFF_Font_set_encoding(PyFF_Font *self,PyObject *value, void *UNUSED(
     FontViewBase *fv;
     char *encname;
     Encoding *new_enc;
+    int force = 0;
 
     if ( CheckIfFontClosed(self) )
 return (-1);
@@ -12363,13 +12364,19 @@ return( -1 );
 	fv->normal = EncMapCopy(fv->map);
 	CompactEncMap(fv->map,fv->sf);
     } else {
+        if ( encname[0] == '!' ){
+            encname += 1;
+            force = 1;
+        }
 	new_enc = FindOrMakeEncoding(encname);
 	if ( new_enc==NULL ) {
 	    PyErr_Format(PyExc_NameError, "Unknown encoding %s", encname);
 	    ENDPYGETSTR();
 return -1;
 	}
-	if ( new_enc==&custom )
+        if ( force )
+            SFForceEncoding(fv->sf,fv->map,new_enc);
+	else if ( new_enc==&custom )
 	    fv->map->enc = &custom;
 	else {
 	    EncMap *map = EncMapFromEncoding(fv->sf,new_enc);
