@@ -2287,8 +2287,8 @@ static void AnchorClassD(SplineFont *sf, struct lookup_subtable *sub, int def_la
     wattrs.utf8_window_title = buffer;
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
-    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,300));
-    pos.height = GDrawPointsToPixels(NULL,200);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,325));
+    pos.height = GDrawPointsToPixels(NULL,250);
     acd.gw = gw = GDrawCreateTopWindow(NULL,&pos,acd_e_h,&acd,&wattrs);
 
     i = 0;
