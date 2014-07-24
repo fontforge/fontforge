@@ -12922,7 +12922,7 @@ void CharViewFinishNonStatic() {
 
 static void CharViewInit(void) {
     int i;
-    // static int done = false; // superseded by charview_active.
+    // static int done = false; // superseded by charview_ready.
 
     if ( charview_ready )
 return;
