@@ -77,7 +77,7 @@
 // to this code and capturing and diffing output in order to track changes
 // in errors and reports.
 // (The pointers tend to clutter the diff a bit.)
-#define FF_OVERLAP_VERBOSE
+// #define FF_OVERLAP_VERBOSE
 
 static char *glyphname=NULL;
 
