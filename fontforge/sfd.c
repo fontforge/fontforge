@@ -7980,6 +7980,12 @@ bool SFD_GetFontMetaData( FILE *sfd,
     return true;
 }
 
+void SFD_GetFontMetaDataVoid( FILE *sfd,
+			  char *tok,
+			  SplineFont *sf,
+			  void* d ) {
+  SFD_GetFontMetaData(sfd, tok, sf, d);
+}
 
 static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 				int fromdir, char *dirname, float sfdversion )
@@ -7999,7 +8005,7 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
     orig_pos = 0;		/* Only used for compatibility with extremely old sfd files */
 
     sf = SplineFontEmpty();
-    if ( sfdversion<2 ) {
+    if ( sfdversion>0 && sfdversion<2 ) {
 	/* If it's an old style sfd file with old style features we need some */
 	/*  extra data space to do the conversion from old to new */
 	sf = realloc(sf,sizeof(SplineFont1));
@@ -8155,9 +8161,10 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	} else if ( strmatch(tok,"ScriptLang:")==0 ) {
 	    int i,j,k;
 	    int imax, jmax, kmax;
-	    if ( sf->sfd_version>=2 ) {
+	    if ( sf->sfd_version==0 || sf->sfd_version>=2 ) {
 		IError( "Script lang lists should not happen in version 2 sfd files." );
-exit(1);
+                SplineFontFree(sf);
+                return NULL;
 	    }
 	    getint(sfd,&imax);
 	    ((SplineFont1 *) sf)->sli_cnt = imax;
@@ -8284,9 +8291,10 @@ exit(1);
 	} else if ( strmatch(tok,"TableOrder:")==0 ) {
 	    int temp;
 	    struct table_ordering *ord;
-	    if ( sfdversion>=2 ) {
+	    if ( sfdversion==0 || sfdversion>=2 ) {
 		IError("Table ordering specified in version 2 sfd file.\n" );
-exit( 1 );
+                SplineFontFree(sf);
+                return NULL;
 	    }
 	    ord = chunkalloc(sizeof(struct table_ordering));
 	    ord->table_tag = gettag(sfd);

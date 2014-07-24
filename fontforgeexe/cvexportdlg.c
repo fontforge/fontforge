@@ -420,7 +420,7 @@ static int GFD_NewDir(GGadget *g, GEvent *e) {
         if ( newdir==NULL )
             return( true );
         if ( !GFileIsAbsolute(newdir)) {
-            char *tmp_dir = GFileChooserGetDir(d->gfc);
+            unichar_t *tmp_dir = GFileChooserGetDir(d->gfc);
             char *basedir = u2utf8_copy(tmp_dir);
             char *temp = GFileAppendFile(basedir,newdir,false);
             free(newdir); free(basedir); free(tmp_dir);

@@ -58,6 +58,10 @@
 
 enum cm_type { cmt_default=-1, cmt_current, cmt_copy, cmt_private };
 
+void GDrawIErrorRun(const char *fmt,...);
+void GDrawIError(const char *fmt,...);
+
+
 #ifndef X_DISPLAY_MISSING
 # include <X11/Xatom.h>
 # include <X11/keysym.h>
@@ -899,6 +903,24 @@ return 0;
 }
 
 #endif
+
+#if 0
+static void _GXDraw_DestroyWindow(GXDisplay *gdisp, GWindow input) {
+  // TODO: Reconcile differences between this function (written from _GXDraw_CreateWindow)
+  // with the actual function GXDrawDestroyWindow below.
+  GXWindow inputc = (GXWindow)input;
+  if (inputc->w != NULL) { 
+    if (inputc->is_pixmap) {
+      XFreePixmap(gdisp->display, inputc->w);
+    } else {
+      XDestroyWindow(gdisp->display, inputc->w);
+    }
+    inputc->w = NULL;
+  }
+  if (inputc->gc != NULL) { XFreeGC(gdisp->display, inputc->gc); inputc->gc = NULL; }
+  free(input);
+}
+#endif // 0
 
 static GWindow _GXDraw_CreateWindow(GXDisplay *gdisp, GXWindow gw, GRect *pos,
 	int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
@@ -4526,6 +4548,21 @@ static void GDrawInitXKB(GXDisplay *gdisp) {
 #endif
 }
 
+void _GXDraw_DestroyDisplay(GDisplay * gdisp) {
+    GXDisplay* gdispc = (GXDisplay*)(gdisp);
+    if (gdispc->grey_stipple != BadAlloc && gdispc->grey_stipple != BadDrawable && gdispc->grey_stipple != BadValue) {
+      XFreePixmap(gdispc->display, gdispc->grey_stipple); gdispc->grey_stipple = BadAlloc;
+    }
+    if (gdispc->fence_stipple != BadAlloc && gdispc->fence_stipple != BadDrawable && gdispc->fence_stipple != BadValue) {
+      XFreePixmap(gdispc->display, gdispc->fence_stipple); gdispc->fence_stipple = BadAlloc;
+    }
+    if (gdispc->groot->ggc != NULL) { free(gdispc->groot->ggc); gdispc->groot->ggc = NULL; }
+    if (gdispc->groot != NULL) { free(gdispc->groot); gdispc->groot = NULL; }
+    if (gdispc->im != NULL) { XCloseIM(gdispc->im); gdispc->im = NULL; }
+    if (gdispc->display != NULL) { XCloseDisplay(gdispc->display); gdispc->display = NULL; }
+    return;
+}
+
 GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname) {
     GXDisplay *gdisp;
     Display *display;
@@ -4612,7 +4649,7 @@ return( NULL );
 
 #ifdef X_HAVE_UTF8_STRING	/* Don't even try without this. I don't want to have to guess encodings myself... */
     /* X Input method initialization */
-    XSetLocaleModifiers("");
+    XSetLocaleModifiers(""); // As it turns out, we can't free this here.
     gdisp->im = XOpenIM(display, XrmGetDatabase(display),
 	    GResourceProgramName, GResourceProgramName);
     /* The only reason this seems to fail is if XMODIFIERS contains an @im */

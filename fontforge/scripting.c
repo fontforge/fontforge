@@ -10538,6 +10538,9 @@ return;
 	    }
 	}
     }
+#ifndef _NO_PYTHON
+    FontForge_FinalizeEmbeddedPython();
+#endif
 }
 #endif
 
@@ -10589,12 +10592,16 @@ return;				/* Error return */
 
 void ExecuteScriptFile(FontViewBase *fv, SplineChar *sc, char *filename) {
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
-    if ( sc!=NULL || PythonLangFromExt(filename))
+    if ( sc!=NULL || PythonLangFromExt(filename)) {
+        FontForge_InitializeEmbeddedPython();
 	PyFF_ScriptFile(fv,sc,filename);
-    else
+        FontForge_FinalizeEmbeddedPython();
+    } else
 	ExecuteNativeScriptFile(fv,filename);
 #elif !defined(_NO_PYTHON)
+    FontForge_InitializeEmbeddedPython();
     PyFF_ScriptFile(fv,sc,filename);
+    FontForge_FinalizeEmbeddedPython();
 #elif !defined(_NO_FFSCRIPT)
     ExecuteNativeScriptFile(fv,filename);
 #endif

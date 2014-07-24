@@ -1278,7 +1278,8 @@ return( copy(buffer));
 
 SplineFont *LoadSplineFont(const char *filename,enum openflags openflags) {
     SplineFont *sf;
-    char *pt, *ept, *tobefreed1=NULL, *tobefreed2=NULL;
+    const char *pt;
+    char *ept, *tobefreed1=NULL, *tobefreed2=NULL;
     static char *extens[] = { ".sfd", ".pfa", ".pfb", ".ttf", ".otf", ".ps", ".cid", ".bin", ".dfont", ".PFA", ".PFB", ".TTF", ".OTF", ".PS", ".CID", ".BIN", ".DFONT", NULL };
     int i;
     char * fname = NULL;

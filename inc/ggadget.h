@@ -601,6 +601,8 @@ typedef struct gresimage {
 } GResImage;
 GResImage *GGadgetResourceFindImage(char *name, GImage *def);
 
+void InitImageCache();
+void ClearImageCache();
 void GGadgetSetImageDir(char *dir);
 void GGadgetSetImagePath(char *path);
 GImage *GGadgetImageCache(const char *filename);

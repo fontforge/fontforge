@@ -2312,7 +2312,7 @@ static int Spline2Interpolate(SplinePoint *mid, bigreal err) {
 return( good );
 }
 
-int SPInterpolate(SplinePoint *sp) {
+int SPInterpolate(const SplinePoint *sp) {
     /* Using truetype rules, can we interpolate this point? */
 return( !sp->dontinterpolate && !sp->nonextcp && !sp->noprevcp &&
 	    !sp->roundx && !sp->roundy &&

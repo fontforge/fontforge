@@ -1094,6 +1094,9 @@ void _GXPDraw_FontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld) {
     *ds = pango_font_metrics_get_descent(fm)/PANGO_SCALE;
     *ld = 0;
     pango_font_metrics_unref(fm);
+    // pango_font_unref(pfont);
+    // This function has disappeared from Pango with no explanation.
+    // But we still leak memory here.
 }
 
 /* ************************************************************************** */

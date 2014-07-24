@@ -930,6 +930,11 @@ return;
     gdisp->mykeybuild = false;
 }
 
+void GDrawDestroyDisplays() {
+  _GXDraw_DestroyDisplay(screen_display);
+  _GPSDraw_DestroyDisplay(printer_display);
+}
+
 void GDrawCreateDisplays(char *displayname,char *programname) {
     GIO_SetThreadCallback((void (*)(void *,void *,void *)) GDrawSyncThread);
     screen_display = _GXDraw_CreateDisplay(displayname,programname);

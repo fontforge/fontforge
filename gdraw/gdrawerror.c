@@ -24,7 +24,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#define _GNU_SOURCE
+// GNU stdio does not enable vasprintf if we fail to define this.
 #include <stdio.h>
+#include <string.h>
 #include <stdarg.h>
 
 #include "gdrawP.h"
@@ -175,8 +179,9 @@ void GDrawIError(const char *fmt,...) {
   char * buffer = NULL;
   va_list ap;
   va_start(ap, fmt);
-  vasprintf(&buffer, fmt, ap);
+  int preret = vasprintf(&buffer, fmt, ap);
   va_end(ap);
+  if (preret < 0 ) return;
   if (buffer != NULL ) {
     if ( gd==NULL ) {
       fprintf(stderr, "%s", buffer); // If there is no display, we write to stderr.

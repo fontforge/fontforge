@@ -1150,7 +1150,10 @@ int fontforge_main( int argc, char **argv ) {
         }
     }
 #endif
+    InitImageCache(); // This is in gtextinfo.c. It zeroes imagecache for us.
+    atexit(&ClearImageCache); // We register the destructor, which is also in gtextinfo.c.
     GDrawCreateDisplays(display,argv[0]);
+    atexit(&GDrawDestroyDisplays); // We register the destructor so that it runs even if we call exit without finishing this function.
     default_background = GDrawGetDefaultBackground(screen_display);
     InitToolIconClut(default_background);
     InitToolIcons();
@@ -1340,7 +1343,15 @@ exit( 0 );
     if ( doopen || !any )
 	_FVMenuOpen(NULL);
     GDrawEventLoop(NULL);
+    GDrawDestroyDisplays();
 
+    // These free menu translations, mostly.
+    BitmapViewFinishNonStatic();
+    MetricsViewFinishNonStatic();
+    CharViewFinishNonStatic();
+    FontViewFinishNonStatic();
+
+    ClearImageCache(); // This frees the contents of imagecache.
     hotkeysSave();
     LastFonts_Save();
 

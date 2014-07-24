@@ -313,6 +313,7 @@ typedef int (*GDrawEH)(GWindow,GEvent *);
 extern unichar_t *GDrawKeysyms[];
 extern GDisplay *screen_display, *printer_display;
 
+extern void GDrawDestroyDisplays();
 extern void GDrawCreateDisplays(char *displayname,char *programname);
 extern void *GDrawNativeDisplay(GDisplay *);
 extern void GDrawTerm(GDisplay *disp);

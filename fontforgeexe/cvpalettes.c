@@ -1415,18 +1415,19 @@ return;
     }
 }
 
-#define MID_LayerInfo	1
-#define MID_NewLayer	2
-#define MID_DelLayer	3
-#define MID_First	4
-#define MID_Earlier	5
-#define MID_Later	6
-#define MID_Last	7
-#define MID_MakeLine 100
-#define MID_MakeArc  200
-#define MID_InsertPtOnSplineAt  2309
-#define MID_NamePoint  2318
-#define MID_NameContour  2319
+// Frank changed the prefix from MID to MIDL in order to avert conflicts with values set in charview_private.h.
+#define MIDL_LayerInfo	1
+#define MIDL_NewLayer	2
+#define MIDL_DelLayer	3
+#define MIDL_First	4
+#define MIDL_Earlier	5
+#define MIDL_Later	6
+#define MIDL_Last	7
+#define MIDL_MakeLine 100
+#define MIDL_MakeArc  200
+#define MIDL_InsertPtOnSplineAt  2309
+#define MIDL_NamePoint  2318
+#define MIDL_NameContour  2319
 
 static void CVLayer2Invoked(GWindow v, GMenuItem *mi, GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(v);
@@ -1438,11 +1439,11 @@ static void CVLayer2Invoked(GWindow v, GMenuItem *mi, GEvent *e) {
     buts[0] = _("_Yes"); buts[1]=_("_No"); buts[2] = NULL;
 
     switch ( mi->mid ) {
-      case MID_LayerInfo:
+      case MIDL_LayerInfo:
 	if ( !LayerDialog(cv->b.layerheads[cv->b.drawmode],cv->b.sc->parent))
 return;
       break;
-      case MID_NewLayer:
+      case MIDL_NewLayer:
 	LayerDefault(&temp);
 	if ( !LayerDialog(&temp,cv->b.sc->parent))
 return;
@@ -1452,7 +1453,7 @@ return;
 	cv->b.layerheads[dm_back] = &sc->layers[ly_back];
 	++sc->layer_cnt;
       break;
-      case MID_DelLayer:
+      case MIDL_DelLayer:
 	if ( sc->layer_cnt==2 )		/* May not delete the last foreground layer */
 return;
 	if ( gwwv_ask(_("Cannot Be Undone"),(const char **) buts,0,1,_("This operation cannot be undone, do it anyway?"))==1 )
@@ -1468,7 +1469,7 @@ return;
 	if ( layer==sc->layer_cnt )
 	    cv->b.layerheads[dm_fore] = &sc->layers[layer-1];
       break;
-      case MID_First:
+      case MIDL_First:
 	if ( layer==ly_fore )
 return;
 	temp = sc->layers[layer];
@@ -1477,7 +1478,7 @@ return;
 	sc->layers[i+1] = temp;
 	cv->b.layerheads[dm_fore] = &sc->layers[ly_fore];
       break;
-      case MID_Earlier:
+      case MIDL_Earlier:
 	if ( layer==ly_fore )
 return;
 	temp = sc->layers[layer];
@@ -1485,7 +1486,7 @@ return;
 	sc->layers[layer-1] = temp;
 	cv->b.layerheads[dm_fore] = &sc->layers[layer-1];
       break;
-      case MID_Later:
+      case MIDL_Later:
 	if ( layer==sc->layer_cnt-1 )
 return;
 	temp = sc->layers[layer];
@@ -1493,7 +1494,7 @@ return;
 	sc->layers[layer+1] = temp;
 	cv->b.layerheads[dm_fore] = &sc->layers[layer+1];
       break;
-      case MID_Last:
+      case MIDL_Last:
 	if ( layer==sc->layer_cnt-1 )
 return;
 	temp = sc->layers[layer];
@@ -1512,8 +1513,8 @@ static void Layer2Menu(CharView *cv,GEvent *event, int nolayer) {
     int i;
     static char *names[] = { N_("Layer Info..."), N_("New Layer..."), N_("Del Layer"), (char *) -1,
 	    N_("_First"), N_("_Earlier"), N_("L_ater"), N_("_Last"), NULL };
-    static int mids[] = { MID_LayerInfo, MID_NewLayer, MID_DelLayer, -1,
-	    MID_First, MID_Earlier, MID_Later, MID_Last, 0 };
+    static int mids[] = { MIDL_LayerInfo, MIDL_NewLayer, MIDL_DelLayer, -1,
+	    MIDL_First, MIDL_Earlier, MIDL_Later, MIDL_Last, 0 };
     int layer = CVLayer(&cv->b);
 
     memset(mi,'\0',sizeof(mi));
@@ -1527,13 +1528,13 @@ static void Layer2Menu(CharView *cv,GEvent *event, int nolayer) {
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = mids[i];
 	mi[i].invoke = CVLayer2Invoked;
-	if ( mids[i]!=MID_NewLayer && nolayer )
+	if ( mids[i]!=MIDL_NewLayer && nolayer )
 	    mi[i].ti.disabled = true;
-	if (( mids[i]==MID_First || mids[i]==MID_Earlier ) && layer==ly_fore )
+	if (( mids[i]==MIDL_First || mids[i]==MIDL_Earlier ) && layer==ly_fore )
 	    mi[i].ti.disabled = true;
-	if (( mids[i]==MID_Last || mids[i]==MID_Later ) && layer==cv->b.sc->layer_cnt-1 )
+	if (( mids[i]==MIDL_Last || mids[i]==MIDL_Later ) && layer==cv->b.sc->layer_cnt-1 )
 	    mi[i].ti.disabled = true;
-	if ( mids[i]==MID_DelLayer && cv->b.sc->layer_cnt==2 )
+	if ( mids[i]==MIDL_DelLayer && cv->b.sc->layer_cnt==2 )
 	    mi[i].ti.disabled = true;
     }
     GMenuCreatePopupMenu(cvlayers2,event, mi);
@@ -3091,24 +3092,24 @@ static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
       case 3:
 	CVMakeClipPath(cv);
       break;
-    case MID_MakeLine: {
-	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_meta));
+    case MIDL_MakeLine: {
+	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MIDL_MakeArc, e!=NULL && (e->u.mouse.state&ksm_meta));
 	break;
     }
-    case MID_MakeArc: {
-	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_meta));
+    case MIDL_MakeArc: {
+	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MIDL_MakeArc, e!=NULL && (e->u.mouse.state&ksm_meta));
 	break;
     }
-    case MID_InsertPtOnSplineAt: {
+    case MIDL_InsertPtOnSplineAt: {
 	_CVMenuInsertPt( cv );
 	break;
     }
-    case MID_NamePoint: {
+    case MIDL_NamePoint: {
 	if ( cv->p.sp )
 	    _CVMenuNamePoint( cv, cv->p.sp );
 	break;
     }
-    case MID_NameContour: {
+    case MIDL_NameContour: {
 	_CVMenuNameContour( cv );
 	break;
     }
@@ -3260,7 +3261,7 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i].ti.text_is_1byte = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
-	mi[i].mid = MID_NamePoint;
+	mi[i].mid = MIDL_NamePoint;
 	mi[i].invoke = CVPopupSelectInvoked;
 	i++;
     }
@@ -3282,7 +3283,7 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i].ti.text_is_1byte = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
-	mi[i].mid = MID_MakeLine;
+	mi[i].mid = MIDL_MakeLine;
 	mi[i].invoke = CVPopupSelectInvoked;
 	i++;
 
@@ -3290,7 +3291,7 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i].ti.text_is_1byte = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
-	mi[i].mid = MID_MakeArc;
+	mi[i].mid = MIDL_MakeArc;
 	mi[i].invoke = CVPopupSelectInvoked;
 	i++;
 
@@ -3298,7 +3299,7 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i].ti.text_is_1byte = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
-	mi[i].mid = MID_InsertPtOnSplineAt;
+	mi[i].mid = MIDL_InsertPtOnSplineAt;
 	mi[i].invoke = CVPopupSelectInvoked;
 	i++;
 
@@ -3306,7 +3307,7 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i].ti.text_is_1byte = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
-	mi[i].mid = MID_NamePoint;
+	mi[i].mid = MIDL_NamePoint;
 	mi[i].invoke = CVPopupSelectInvoked;
 	i++;
 
@@ -3314,7 +3315,7 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i].ti.text_is_1byte = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
-	mi[i].mid = MID_NameContour;
+	mi[i].mid = MIDL_NameContour;
 	mi[i].invoke = CVPopupSelectInvoked;
 	i++;
     }

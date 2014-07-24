@@ -34,6 +34,7 @@
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
 #include <locale.h>
+#include "sfd1.h" // This has the extended SplineFont type SplineFont1 for old file versions.
 
 /*#define DEBUG 1*/
 
@@ -6282,6 +6283,33 @@ return;
     }
     CopyBufferClearCopiedFrom(sf);
     PasteRemoveSFAnchors(sf);
+    if ( sf->sfd_version>0 && sf->sfd_version<2 ) {
+      // Free special data.
+      SplineFont1* oldsf = (SplineFont1*)sf;
+      // First the script language lists.
+      if (oldsf->script_lang != NULL) {
+        int scripti;
+        for (scripti = 0; oldsf->script_lang[scripti] != NULL; scripti ++) {
+          int scriptj;
+          for (scriptj = 0; oldsf->script_lang[scripti][scriptj].script != 0; scriptj ++) {
+            if (oldsf->script_lang[scripti][scriptj].langs != NULL) free(oldsf->script_lang[scripti][scriptj].langs);
+          }
+          free(oldsf->script_lang[scripti]); oldsf->script_lang[scripti] = NULL;
+        }
+        free(oldsf->script_lang); oldsf->script_lang = NULL;
+      }
+      // Then the table orderings.
+      {
+        struct table_ordering *ord = oldsf->orders;
+        while (ord != NULL) {
+          struct table_ordering *ordtofree = ord;
+          if (ord->ordered_features != NULL) free(ord->ordered_features);
+          ord = ord->next;
+          chunkfree(ordtofree, sizeof(struct table_ordering));
+        }
+        oldsf->orders = NULL;
+      }
+    }
     for ( bdf = sf->bitmaps; bdf!=NULL; bdf = bnext ) {
 	bnext = bdf->next;
 	BDFFontFree(bdf);
@@ -6304,6 +6332,11 @@ return;
     free(sf->ordering);
     MacFeatListFree(sf->features);
     /* We don't free the EncMap. That field is only a temporary pointer. Let the FontViewBase free it, that's where it really lives */
+    // TODO: But that doesn't always get freed. The statement below causes double-frees, so we need to come up with better conditions.
+    #if 0
+    if (sf->cidmaster == NULL || sf->cidmaster == sf)
+      if (sf->map != NULL) { free(sf->map); sf->map = NULL; }
+    #endif // 0
     SplinePointListsFree(sf->grid.splines);
     AnchorClassesFree(sf->anchor);
     TtfTablesFree(sf->ttf_tables);
@@ -6335,6 +6368,16 @@ return;
     BaseFree(sf->horiz_base);
     BaseFree(sf->vert_base);
     JustifyFree(sf->justify);
+    if (sf->layers != NULL) {
+      int layer;
+      for (layer = 0; layer < sf->layer_cnt; layer ++) {
+        if (sf->layers[layer].name != NULL) {
+          free(sf->layers[layer].name);
+          sf->layers[layer].name = NULL;
+        }
+      }
+      free(sf->layers); sf->layers = NULL;
+    }   
     free(sf);
 }
 

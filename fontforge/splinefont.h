@@ -2511,7 +2511,7 @@ extern void SplineCharMerge(SplineChar *sc,SplineSet **head,int type);
 extern void SPLNearlyHvCps(SplineChar *sc,SplineSet *ss,bigreal err);
 extern void SPLNearlyHvLines(SplineChar *sc,SplineSet *ss,bigreal err);
 extern int  SPLNearlyLines(SplineChar *sc,SplineSet *ss,bigreal err);
-extern int SPInterpolate(SplinePoint *sp);
+extern int SPInterpolate(const SplinePoint *sp);
 extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 	struct simplifyinfo *smpl);
 extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
@@ -2740,6 +2740,10 @@ extern bool SFD_GetFontMetaData( FILE *sfd,
                                  char *tok,
                                  SplineFont *sf,
                                  SFD_GetFontMetaDataData* d );
+extern void SFD_GetFontMetaDataVoid( FILE *sfd,
+                                 char *tok,
+                                 SplineFont *sf,
+                                 void* d );
 typedef void (*visitSFDFragmentFunc)( FILE *sfd, char *tokbuf, SplineFont *sf, void* udata );
 extern void visitSFDFragment( FILE *sfd, SplineFont *sf, visitSFDFragmentFunc ufunc, void* udata );
 extern char* DumpSplineFontMetadata( SplineFont *sf );
@@ -3242,6 +3246,7 @@ extern void BCClearAll(BDFChar *bc);
 
 #if !defined(_NO_PYTHON)
 extern void FontForge_InitializeEmbeddedPython(void);
+extern void FontForge_FinalizeEmbeddedPython(void);
 extern void PyFF_ErrorString(const char *msg,const char *str);
 extern void PyFF_ErrorF3(const char *frmt, const char *str, int size, int depth);
 extern void PyFF_Stdin(void);
