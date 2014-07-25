@@ -3159,14 +3159,17 @@ static SplineSet *JoinAContour(Intersection *startil,MList *ml) {
     Monotonic *finalm;
     MList *lastml;
 
+    // Start building a new spline.
     ss->first = last = SplinePointCreate(startil->inter.x,startil->inter.y);
     curil = startil;
     for (;;) {
 	if ( allexclude && !ml->m->exclude ) allexclude = false;
 	finalm = NULL;
+	// Create a spline on the attached monotonic if it is in fact connected here.
 	if ( ml->m->start==curil ) {
 	    last = MonoFollowForward(&curil,ml,last,&finalm);
 	} else if ( ml->m->end==curil ) {
+	    SONotify("Building contour backwards.\n");
 	    last = MonoFollowBackward(&curil,ml,last,&finalm);
 	} else {
 	    SOError( "Couldn't find endpoint (%g,%g).\n",
@@ -3176,14 +3179,18 @@ static SplineSet *JoinAContour(Intersection *startil,MList *ml) {
     break;
 	}
 	if ( curil==startil ) {
+	    // Close the curve if we're back at the beginning.
+	    // Connect the first point to the last segment.
 	    ss->first->prev = last->prev;
 	    ss->first->prevcp = last->prevcp;
 	    ss->first->noprevcp = last->noprevcp;
 	    last->prev->to = ss->first;
+	    // And then delete the last point since it's been replaced by the first.
 	    SplinePointFree(last);
 	    ss->last = ss->first;
     break;
 	}
+	// Find the record for the current monotonic at the newly traversed intersection.
 	lastml = FindMLOfM(curil,finalm);
 	if ( lastml==NULL ) {
 	    SOError("Could not find finalm");
@@ -3192,6 +3199,7 @@ static SplineSet *JoinAContour(Intersection *startil,MList *ml) {
 	    if ( ml==NULL )
 		for ( ml=curil->monos; ml!=NULL && !ml->m->isneeded; ml=ml->next );
 	} else {
+	    
 	    int k; MList *bestml; bigreal bestdot;
 	    for ( k=0; k<2; ++k ) {
 		bestml = NULL; bestdot = -2;
@@ -3280,13 +3288,25 @@ static SplineSet *JoinAllNeeded(Intersection *ilist) {
     Intersection *il;
     SplineSet *head=NULL, *last=NULL, *cur, *test;
     MList *ml;
+    int reverse_flag = 0; // We set this if we're following a path backwards so that we know to fix it when done.
 
     for ( il=ilist; il!=NULL; il=il->next ) {
 	/* Try to preserve direction */
 	for (;;) {
+	    reverse_flag = 0;
+	    // We loop until there are no more monotonics connected to this intersection.
+	    // First we iterate through the connected monotonics until we find one that is needed (and not already handled) and starts at this intersection.
 	    for ( ml=il->monos; ml!=NULL && (!ml->m->isneeded || ml->m->end==il); ml=ml->next );
-	    if ( ml==NULL )
+	    // If we do not find such a monotonic, we allow monotonics that end at this intersection.
+	    if ( ml==NULL ) {
 		for ( ml=il->monos; ml!=NULL && !ml->m->isneeded; ml=ml->next );
+		if (ml != NULL) {
+		  // Unfortunately, this probably means that something is wrong since we ought to have only closed curves at this point.
+		  // The problem is most likely in the needed/unneeded logic.
+		  SONotify("An intersection has a terminating monotonic but not a starting monotonic.\n");
+		  reverse_flag = 1; // We'll need to reverse this later.
+		}
+	    }
 	    if ( ml==NULL )
 	break;
 	    if ( !MonoGoesSomewhereUseful(il,ml->m)) {
@@ -3299,6 +3319,7 @@ static SplineSet *JoinAllNeeded(Intersection *ilist) {
 	/* break; */
 	    }
 	    cur = JoinAContour(il,ml);
+	    if (reverse_flag == 1) SplineSetReverse(cur);
 	    if ( head==NULL )
 		head = cur;
 	    else {
