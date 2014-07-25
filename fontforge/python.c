@@ -12342,36 +12342,16 @@ return (NULL);
 return( Py_BuildValue("s", self->fv->map->enc->enc_name));
 }
 
-static int PyFF_Font_set_encoding(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
-    FontViewBase *fv;
-    char *encname;
+static int FontReencode(FontViewBase *fv, const char *encname, int force) {
     Encoding *new_enc;
-    int force = false;
 
-    if ( CheckIfFontClosed(self) )
-return (-1);
-    fv = self->fv;
-    if ( value==NULL ) {
-	PyErr_Format(PyExc_TypeError, "Cannot delete encoding field" );
-return( -1 );
-    }
-    PYGETSTR(value, encname, -1);
-    if ( PyErr_Occurred()!=NULL ) {
-	ENDPYGETSTR();
-return( -1 );
-    }
     if ( strmatch(encname,"compacted")==0 ) {
 	fv->normal = EncMapCopy(fv->map);
 	CompactEncMap(fv->map,fv->sf);
     } else {
-	if ( encname[0] == '!' ){
-	    encname += 1;
-	    force = true;
-	}
 	new_enc = FindOrMakeEncoding(encname);
 	if ( new_enc==NULL ) {
 	    PyErr_Format(PyExc_NameError, "Unknown encoding %s", encname);
-	    ENDPYGETSTR();
 return -1;
 	}
 	if ( force )
@@ -12396,9 +12376,29 @@ return -1;
     if ( !no_windowing_ui )
 	FontViewReformatAll(fv->sf);
 
+return 0;
+}
+
+static int PyFF_Font_set_encoding(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
+    char *encname;
+    int force = false;
+    int ret;
+
+    if ( CheckIfFontClosed(self) )
+return (-1);
+    if ( value==NULL ) {
+	PyErr_Format(PyExc_TypeError, "Cannot delete encoding field" );
+return( -1 );
+    }
+    PYGETSTR(value, encname, -1);
+    if ( PyErr_Occurred()!=NULL ) {
+	ENDPYGETSTR();
+return( -1 );
+    }
+    ret = FontReencode(self->fv, encname, 0);
     ENDPYGETSTR();
 
-return(0);
+return(ret);
 }
 
 /* Not really the right question now... but this is the closest we come */
@@ -16796,6 +16796,21 @@ return( NULL );
 return( Py_BuildValue("i", SFValidate(sf,fv->active_layer,force)));
 }
 
+static PyObject *PyFFFont_reencode(PyFF_Font *self, PyObject *args) {
+    int force=0;
+    const char *encname;
+
+    if ( CheckIfFontClosed(self) )
+return ( NULL );
+    if ( !PyArg_ParseTuple(args, "s|i", &encname, &force) )
+return ( NULL );
+
+    if ( FontReencode(self->fv, encname, force) != 0 )
+return ( NULL );
+
+Py_RETURN( self );
+}
+
 
 PyMethodDef PyFF_Font_methods[] = {
     { "appendSFNTName", (PyCFunction) PyFFFont_appendSFNTName, METH_VARARGS, "Adds or replaces a name in the sfnt 'name' table. Takes three arguments, a language, a string id, and the string value" },
@@ -16893,6 +16908,7 @@ PyMethodDef PyFF_Font_methods[] = {
     { "transform", (PyCFunction)PyFFFont_Transform, METH_VARARGS, "Transform a font by a 6 element matrix." },
     { "nltransform", (PyCFunction)PyFFFont_NLTransform, METH_VARARGS, "Transform a font by non-linear expessions for x and y." },
     { "validate", (PyCFunction)PyFFFont_validate, METH_VARARGS, "Check whether a font is valid and return True if it is." },
+    { "reencode", (PyCFunction)PyFFFont_reencode, METH_VARARGS, "Reencodes the current font into the given encoding." },
 
 //    { "CollabSessionStart", (PyCFunction) PyFFFont_CollabSessionStart, METH_VARARGS, "Start a collab session at the given address (or the public IP address by default)" },
 
