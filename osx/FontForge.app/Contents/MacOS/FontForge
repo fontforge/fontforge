@@ -4,6 +4,24 @@ if test "x$DEBUG_LAUNCHER" != x; then
     set -x
 fi
 
+# $0 is possibly relative path to this script.
+SCRIPT_PATH="$( cd "$( dirname "$0" )" && pwd )"
+PKGBASEPATH="$( cd "${SCRIPT_PATH}/../.." && pwd )"
+
+echo "PKGBASE: $PKGBASEPATH"
+
+if [ y"$PKGBASEPATH" != "y/Applications/FontForge.app" ]; then
+  COCOA_DIALOG="${SCRIPT_PATH}/CocoaDialog.app/Contents/MacOS/CocoaDialog";
+  $COCOA_DIALOG msgbox --no-newline \
+    --title "FontForge: Error starting" \
+    --text "FontForge is in the wrong place on your computer." \
+    --informative-text "Please ensure that the FontForge.app directory is directly inside your /Applications folder. A Finder window will now open with the current location of FontForge.app to help you relocate it." \
+    --button1 "OK" --float
+    BASEPATH="$( cd "${PKGBASEPATH}/.." && pwd )"
+    open "$BASEPATH"
+    exit;
+fi
+
 name=`basename "$0"`
 tmp="$0"
 tmp=`dirname "$tmp"`
