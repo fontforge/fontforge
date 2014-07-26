@@ -1416,7 +1416,8 @@ return;
 
 void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	Color fg, int dopoints, DRect *clip ) {
-    CVDrawSplineSetSpecialized( cv, pixmap, set, fg, dopoints, clip, sfm_stroke, 0 );
+    CVDrawSplineSetSpecialized( cv, pixmap, set, fg, dopoints, clip,
+				sfm_stroke, 0 );
 }
 
 
@@ -1582,13 +1583,22 @@ void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *
     }
 
     if( strokeFillMode != sfm_nothing ) {
+
  	/*
 	 * If we were filling, we have to stroke the outline again to properly show
 	 * clip path splines which will possibly have a different stroke color
 	 */
+	Color thinfgcolor = fg;
+	enum outlinesfm_flags fgstrokeFillMode = sfm_stroke;
+	if( strokeFillMode==sfm_stroke_trans )
+	    fgstrokeFillMode = sfm_stroke_trans;
+	if( shouldShowFilledUsingCairo(cv) ) {
+	    thinfgcolor = (thinfgcolor | 0x01000000) & 0x01ffffff;
+	    fgstrokeFillMode = sfm_stroke_trans;
+	}
 	CVDrawSplineSetOutlineOnly( cv, pixmap, set,
-                                fg, dopoints, clip,
-                                ( strokeFillMode==sfm_stroke_trans ? sfm_stroke_trans : sfm_stroke ) );
+				    thinfgcolor, dopoints, clip,
+				    fgstrokeFillMode );
 
     if( prefs_cv_outline_thickness > 1 )
     {
@@ -1599,6 +1609,10 @@ void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *
             // thickness here.
             int strokeWidth = prefs_cv_outline_thickness * 2 * cv->scale;
             Color strokefg = foreoutthicklinecol;
+
+	    if( shouldShowFilledUsingCairo(cv) ) {
+		strokefg = (strokefg | 0x01000000) & 0x01ffffff;
+	    }
 
             GRect old;
             GDrawPushClipOnly( pixmap );
@@ -1614,7 +1628,6 @@ void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *
             GDrawSetLineWidth( pixmap, oldwidth );
         }
     }
-    
     
     
     }
@@ -1642,9 +1655,14 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
 		layer->fill_brush.col!=view_bgcol )
 	    fg = layer->fill_brush.col;
     }
+
     if ( ml && !active && layer!=&cv->b.sc->layers[ly_back] )
 	GDrawSetDashedLine(pixmap,5,5,cv->xoff+cv->height-cv->yoff);
-    CVDrawSplineSetSpecialized(cv,pixmap,layer->splines,fg,dopoints && active,clip,strokeFillMode,0);
+    
+    CVDrawSplineSetSpecialized( cv, pixmap, layer->splines,
+				fg, dopoints && active, clip,
+				strokeFillMode, 0 );
+    
     if ( ml && !active && layer!=&cv->b.sc->layers[ly_back] )
 	GDrawSetDashedLine(pixmap,0,0,0);
 }
@@ -2890,7 +2908,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	strokeFillMode = sfm_stroke;
     }
     if( GlyphHasBeenFilled ) {
-	strokeFillMode = sfm_stroke;
+	strokeFillMode = sfm_stroke_trans;
     }
 
     if ( layer<0 ) /* Guide lines are special */
