@@ -1027,3 +1027,13 @@ char *GFileDirName(const char *path)
 	*pt = '\0';
     return strdup(ret);
 }
+
+char *GFileBaseName( const char *path )
+{
+    char *pt = strrchr( path, '/' );
+    if ( !pt )
+	return path;
+    // a final slash was found, so we know that p+1 is a valid
+    // address in the string.
+    return pt+1;
+}
