@@ -242,7 +242,7 @@ s_collector (zloop_t *loop, zmq_pollitem_t *poller, void *args)
 		strcpy( ba.fontname, fontname );
 	    }
 
-	    service_beacon = zbeacon_new( 5670 );
+	    service_beacon = zbeacon_new( self->ctx, 5670 );
 	    zbeacon_set_interval (service_beacon, 300 );
 	    zbeacon_publish (service_beacon, (byte*)&ba, sizeof(ba));
 	}
