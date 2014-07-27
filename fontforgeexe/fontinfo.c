@@ -8233,7 +8233,7 @@ return;
 
     LayersMatrixInit(&layersmi,d);
 
-    lgcd[k].gd.pos.width = 300; lgcd[k].gd.pos.height = 200;
+    lgcd[k].gd.pos.width = 300; lgcd[k].gd.pos.height = 180;
     lgcd[k].gd.flags = sf->multilayer ? gg_visible : (gg_enabled | gg_visible);
     lgcd[k].gd.cid = CID_Backgrounds;
     lgcd[k].gd.u.matrix = &layersmi;
