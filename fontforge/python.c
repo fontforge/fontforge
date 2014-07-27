@@ -12381,7 +12381,6 @@ return 0;
 
 static int PyFF_Font_set_encoding(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     char *encname;
-    int force = false;
     int ret;
 
     if ( CheckIfFontClosed(self) )
