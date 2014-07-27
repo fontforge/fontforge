@@ -432,7 +432,7 @@ collabclient_ensureClientBeacon(void)
     client_beacon_timerID = 0;
     
     
-    client_beacon = zbeacon_new (5670);
+    client_beacon = zbeacon_new( obtainMainZMQContext(), 5670 );
     zbeacon_subscribe (client_beacon, NULL, 0);
     int fd = 0;
     size_t fdsz = sizeof(fd);
