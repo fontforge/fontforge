@@ -7437,6 +7437,8 @@ return( lookups_e_h(gw,event,false));
 }
 
 void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
+    // This opens the Font Info box to the tab specified by defaspect,
+    // which indexes the array aspects, populated below.
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -10445,6 +10447,10 @@ return;
     ubox[0].creator = GVBoxCreate;
 
 /******************************************************************************/
+
+    // This is where the indices for the different tabs get set as referenced by defaspect.
+    // If you change something here, it's probably a good idea to grep for calls to FontInfo
+    // in order to confirm/adjust the defaspect arguments.
 
     memset(&mlabel,0,sizeof(mlabel));
     memset(&mgcd,0,sizeof(mgcd));
