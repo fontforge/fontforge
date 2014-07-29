@@ -1035,10 +1035,8 @@ int fontforge_main( int argc, char **argv ) {
     if ( default_encoding==NULL )
 	default_encoding=&custom;	/* In case iconv is broken */
 
-    // This check also starts the embedded python,
-    // we must call PythonUI_Init() before CheckIsScript()
-    // to allow GUI code to potentially add extra methods to the
-    // python objects.
+    // This no longer starts embedded Python unless control passes to the Python executors,
+    // which exit independently rather than returning here.
     CheckIsScript(argc,argv); /* Will run the script and exit if it is a script */
 					/* If there is no UI, there is always a script */
 			                /*  and we will never return from the above */
@@ -1172,6 +1170,12 @@ int fontforge_main( int argc, char **argv ) {
 	}
     }
     
+#ifndef _NO_PYTHON
+/*# ifndef GWW_TEST*/
+    FontForge_InitializeEmbeddedPython(); /* !!!!!! debug (valgrind doesn't like python) */
+/*# endif*/
+#endif
+
 #ifndef _NO_PYTHON
     if( ProcessPythonInitFiles )
 	PyFF_ProcessInitFiles();
@@ -1344,6 +1348,12 @@ exit( 0 );
 	_FVMenuOpen(NULL);
     GDrawEventLoop(NULL);
     GDrawDestroyDisplays();
+
+#ifndef _NO_PYTHON
+/*# ifndef GWW_TEST*/
+    FontForge_FinalizeEmbeddedPython(); /* !!!!!! debug (valgrind doesn't like python) */
+/*# endif*/
+#endif
 
     // These free menu translations, mostly.
     BitmapViewFinishNonStatic();
