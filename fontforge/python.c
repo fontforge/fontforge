@@ -18175,6 +18175,12 @@ _Noreturn void PyFF_Main(int argc,char **argv,int start) {
 
     no_windowing_ui = running_script = true;
 
+#ifndef _NO_PYTHON
+/*# ifndef GWW_TEST*/
+    FontForge_InitializeEmbeddedPython(); /* !!!!!! debug (valgrind doesn't like python) */
+/*# endif*/
+#endif
+
     PyFF_ProcessInitFiles();
 
     /* Skip '-script' option */
@@ -18189,6 +18195,11 @@ _Noreturn void PyFF_Main(int argc,char **argv,int start) {
 
     /* Run Python */
     exitcode = Py_Main( newargc, newargv );
+#ifndef _NO_PYTHON
+/*# ifndef GWW_TEST*/
+    FontForge_FinalizeEmbeddedPython(); /* !!!!!! debug (valgrind doesn't like python) */
+/*# endif*/
+#endif
     exit(exitcode);
 }
 
@@ -18306,6 +18317,12 @@ static void AddSpiroConstants( PyObject *module ) {
 _Noreturn void PyFF_Stdin(void) {
     no_windowing_ui = running_script = true;
 
+#ifndef _NO_PYTHON
+/*# ifndef GWW_TEST*/
+    FontForge_InitializeEmbeddedPython(); /* !!!!!! debug (valgrind doesn't like python) */
+/*# endif*/
+#endif
+
     PyFF_ProcessInitFiles();
 
     if ( isatty(fileno(stdin)))
@@ -18313,6 +18330,12 @@ _Noreturn void PyFF_Stdin(void) {
     else
 	PyRun_SimpleFile(stdin,"<stdin>");
     exit(0);
+#ifndef _NO_PYTHON
+/*# ifndef GWW_TEST*/
+    FontForge_FinalizeEmbeddedPython(); /* !!!!!! debug (valgrind doesn't like python) */
+/*# endif*/
+#endif
+
 }
 
 

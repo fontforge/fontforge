@@ -10467,11 +10467,6 @@ static void _CheckIsScript(int argc, char *argv[]) {
     int i, is_python = DefaultLangPython();
     char *pt;
 
-#ifndef _NO_PYTHON
-/*# ifndef GWW_TEST*/
-    FontForge_InitializeEmbeddedPython(); /* !!!!!! debug (valgrind doesn't like python) */
-/*# endif*/
-#endif
     if ( argc==1 )
 return;
     for ( i=1; i<argc; ++i ) {
@@ -10538,9 +10533,6 @@ return;
 	    }
 	}
     }
-#ifndef _NO_PYTHON
-    FontForge_FinalizeEmbeddedPython();
-#endif
 }
 #endif
 
