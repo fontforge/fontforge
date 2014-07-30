@@ -47,6 +47,18 @@ extern char *GFileGetAbsoluteName(const char *name, char *result, size_t rsiz);
 extern char *GFileMakeAbsoluteName(char *name);
 extern char *GFileBuildName(char *dir,char *fname,char *buffer,size_t size);
 extern char *GFileReplaceName(char *oldname,char *fname,char *buffer,size_t size);
+/**
+ * Return the file name for the full path 'path'. This is like the
+ * shell "basename" command, for example:
+ * GFileBaseName("/a/b/c/foo.sfd") returns "foo.sfd".
+ *
+ * You might be looking for GFileBaseName(), this function does basename from the shell.
+ *
+ * The return value is a pointer either being the same as path or a
+ * pointer into the string that path points to. So no memory is
+ * allocated by this function and the return value is dependant on the
+ * 'path' string you passed in.
+ */ 
 extern char *GFileNameTail(const char *oldname);
 extern char *GFileAppendFile(char *dir,char *name,int isdir);
 extern int GFileIsAbsolute(const char *file);
@@ -108,17 +120,7 @@ extern unichar_t* u_GFileGetHomeDocumentsDir(void);
  */
 extern char *GFileDirName(const char *path );
 
-/**
- * Return the file name for the full path 'path'. This is like the
- * shell "basename" command, for example:
- * GFileBaseName("/a/b/c/foo.sfd") returns "foo.sfd".
- *
- * The return value is a pointer either being the same as path or a
- * pointer into the string that path points to. So no memory is
- * allocated by this function and the return value is dependant on the
- * 'path' string you passed in.
- */ 
-extern char *GFileBaseName(const char *path);
+
 
 
 

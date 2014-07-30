@@ -662,8 +662,8 @@ return( 0 );
 	char* newpath = copyn( filename, strlen(filename) + strlen(".sfd") + 1 );
 	strcat( newpath, ".sfd" );
 
-	char* oldfn = GFileBaseName( filename );
-	char* newfn = GFileBaseName( newpath );
+	char* oldfn = GFileNameTail( filename );
+	char* newfn = GFileNameTail( newpath );
 	
 	LogError( _("You tried to save with the filename %s but it was saved as %s. "),
 		  oldfn, newfn );
