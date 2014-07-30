@@ -341,13 +341,16 @@ return( buffer );
 }
 
 char *GFileNameTail(const char *oldname) {
-    char *pt;
+    char *pt = 0;
 
     pt = strrchr(oldname,'/');
-    if ( pt !=NULL )
-return( pt+1);
-    else
-return( (char *)oldname );
+
+    // a final slash was found, so we know that p+1 is a valid
+    // address in the string.
+    if ( pt )
+	return( pt+1);
+
+    return( (char *)oldname );
 }
 
 char *GFileAppendFile(char *dir,char *name,int isdir) {
@@ -1027,3 +1030,4 @@ char *GFileDirName(const char *path)
 	*pt = '\0';
     return strdup(ret);
 }
+

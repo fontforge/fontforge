@@ -64,7 +64,6 @@ extern int onlycopydisplayed, copymetadata, copyttfinstr, add_char_to_name_list;
 int home_char='A';
 int compact_font_on_open=0;
 int navigation_mask = 0;		/* Initialized in startui.c */
-int prefs_ensure_correct_extension = 1;
 
 static char *fv_fontnames = MONO_UI_FAMILIES;
 
@@ -628,9 +627,6 @@ int _FVMenuSaveAs(FontView *fv) {
     gcd.creator = GCheckBoxCreate;
 
     GFileChooserInputFilenameFuncType FilenameFunc = GFileChooserDefInputFilenameFunc;
-    if( prefs_ensure_correct_extension ) {
-	FilenameFunc = GFileChooserSaveAsInputFilenameFunc;
-    }
 
 #if defined(__MINGW32__)
     //
@@ -655,6 +651,28 @@ int _FVMenuSaveAs(FontView *fv) {
 return( 0 );
     filename = utf82def_copy(ret);
     free(ret);
+
+    if(!(endswithi( filename, ".sfdir") || endswithi( filename, ".sfd")))
+    {
+	// they forgot the extension, so we force the default of .sfd
+	// and alert them to the fact that we have done this and we
+	// are not saving to a OTF, TTF, UFO formatted file
+
+	char* extension = ".sfd";
+	char* newpath = copyn( filename, strlen(filename) + strlen(".sfd") + 1 );
+	strcat( newpath, ".sfd" );
+
+	char* oldfn = GFileNameTail( filename );
+	char* newfn = GFileNameTail( newpath );
+	
+	LogError( _("You tried to save with the filename %s but it was saved as %s. "),
+		  oldfn, newfn );
+	LogError( _("Please choose File/Generate Fonts to save to other formats."));
+	
+	free(filename);
+	filename = newpath;
+    }
+    
     FVFlattenAllBitmapSelections(fv);
     fv->b.sf->compression = 0;
     ok = SFDWrite(filename,fv->b.sf,fv->b.map,fv->b.normal,s2d);
