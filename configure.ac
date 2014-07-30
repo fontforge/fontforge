@@ -80,6 +80,10 @@ m4_define([libgutils_info],[libgutils_major_version:libgutils_minor_version:0])
 m4_define([libzmqcollab_info],[libzmqcollab_major_version:libzmqcollab_minor_version:0])
 
 #--------------------------------------------------------------------------
+BLANK1=''; AC_SUBST(BLANK1)
+AC_SUBST([BLANK2],[""])
+
+#--------------------------------------------------------------------------
 AC_INIT([fontforge],[fontforge_version],[fontforge-devel@lists.sourceforge.net],
 	[fontforge_package_name],[https://github.com/fontforge/fontforge])
 AC_CONFIG_SRCDIR([Unicode/ArabicForms.c])

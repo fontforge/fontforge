@@ -1,0 +1,3 @@
+usr/share/locale/*
+Packaging/icons/*		usr/share/icons/
+debian/fontforge.xpm		usr/share/pixmaps/
