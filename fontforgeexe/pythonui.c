@@ -797,16 +797,22 @@ static void python_ui_setup_callback( bool makefifo )
     int fd = 0;
     int err = 0;
     char path[ PATH_MAX + 1 ];
-    snprintf( path, PATH_MAX, "%s/python-socket", getFontForgeUserDir(Cache));
-    
-    if( makefifo )
-    {
-	err = mkfifo( path, 0600 );
+    char *userCacheDir;
+
+    userCacheDir = getFontForgeUserDir(Cache);
+    if ( userCacheDir!=NULL ) {
+        snprintf( path, PATH_MAX, "%s/python-socket", userCacheDir);
+        free(userCacheDir);
+
+        if( makefifo )
+        {
+            err = mkfifo( path, 0600 );
+        }
+
+        void* udata = 0;
+        fd = open( path, O_RDONLY | O_NDELAY );
+        GDrawAddReadFD( 0, fd, udata, python_ui_fd_callback );
     }
-    
-    void* udata = 0;
-    fd = open( path, O_RDONLY | O_NDELAY );
-    GDrawAddReadFD( 0, fd, udata, python_ui_fd_callback );
 #endif   
 }
 
