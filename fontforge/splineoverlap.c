@@ -1217,6 +1217,11 @@ static void SplitMonotonicAtFlex(Monotonic *m,int which,bigreal coord,
     }
 }
 
+static void SplitMonotonicAt(Monotonic *m,int which,bigreal coord,
+	struct inter_data *id) {
+  SplitMonotonicAtFlex(m, which, coord, id, 1);
+}
+
 static void SplitMonotonicAtFake(Monotonic *m,int which,bigreal coord,
 	struct inter_data *id) {
   SplitMonotonicAtFlex(m, which, coord, id, 0);
