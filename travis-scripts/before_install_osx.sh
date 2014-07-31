@@ -16,10 +16,6 @@ cat ./travis-scripts/fontforge.rb
 echo "updated the brew fontforge Formula..."
 
 
-$ git fetch origin +refs/pull/1591/merge:
-$ git checkout -qf FETCH_HEAD
-
-
 pushd .
 cd /tmp
 wget http://xquartz.macosforge.org/downloads/SL/XQuartz-2.7.6.dmg
