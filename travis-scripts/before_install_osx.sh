@@ -3,6 +3,8 @@ set -ev
 
 echo "pwd:" 
 pwd
+echo "listing"
+ls -l
 brew update
 
 echo "checking system for existing fontforge.rb"
