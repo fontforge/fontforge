@@ -700,7 +700,6 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     }
     harray2[1] = &gcd[i]; harray2[2] = GCD_Glue; harray2[3] = NULL;
     gcd[i++].gd.u.list = namelistnames;
-    free(nlnames);
 
     boxes[3].gd.flags = gg_visible | gg_enabled;
     boxes[3].gd.u.boxelements = harray2;
@@ -805,5 +804,9 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);		/* Give the window a chance to vanish... */
     free( d.lastpopupfontname );
+    for ( cnt=0; nlnames[cnt]!=NULL; ++cnt) {
+	free(nlnames[cnt]);
+    }
+    free(nlnames);
 return(d.ret);
 }
