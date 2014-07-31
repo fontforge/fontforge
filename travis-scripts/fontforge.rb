@@ -16,6 +16,10 @@ class MyDownloadStrategy < GitDownloadStrategy
 
     %W{reset --hard pr{TRAVIS_PULL_REQUEST}}
   end
+  def reset
+#    quiet_safe_system 'git', *reset_args
+  end
+
 end
 
 class Fontforge < Formula
