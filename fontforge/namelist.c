@@ -667,23 +667,29 @@ void LoadNamelistDir(char *dir) {
     DIR *diro;
     struct dirent *ent;
     char buffer[1025];
+    char *userConfigDir = NULL;
 
-    if ( dir == NULL )
-	dir = getFontForgeUserDir(Config);
-    if ( dir == NULL )
-return;
+    if ( dir == NULL ) {
+	dir = userConfigDir = getFontForgeUserDir(Config);
+        if ( dir == NULL )
+            return;
+    }
 
     diro = opendir(dir);
-    if ( diro==NULL )		/* It's ok not to have any */
-return;
-
-    while ( (ent = readdir(diro))!=NULL ) {
-	if ( isnamelist(ent->d_name) ) {
-	    sprintf( buffer, "%s/%s", dir, ent->d_name );
-	    LoadNamelist(buffer);
-	}
+    if ( diro!=NULL ) {         /* It's ok not to have any */
+        while ( (ent = readdir(diro))!=NULL ) {
+            if ( isnamelist(ent->d_name) ) {
+                sprintf( buffer, "%s/%s", dir, ent->d_name );
+                LoadNamelist(buffer);
+            }
+        }
+        closedir(diro);
     }
-    closedir(diro);
+
+    if ( userConfigDir!=NULL ) 
+        free(userConfigDir);
+
+    return;
 }
 /* ************************************************************************** */
 const char *RenameGlyphToNamelist(char *buffer, SplineChar *sc,NameList *old,
