@@ -1,6 +1,8 @@
 #!/bin/bash
 set -ev
 
+echo "pwd:" 
+pwd
 brew update
 
 echo "checking system for existing fontforge.rb"
