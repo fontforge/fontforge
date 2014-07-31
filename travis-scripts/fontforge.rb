@@ -4,8 +4,10 @@ class MyDownloadStrategy < GitDownloadStrategy
   # get the PR
   def fetch
     super
-    system "git fetch origin pull/{TRAVIS_PULL_REQUEST}/head:pr{TRAVIS_PULL_REQUEST}"
-    system "git checkout pr{TRAVIS_PULL_REQUEST}"
+#    system "git fetch origin pull/{TRAVIS_PULL_REQUEST}/head:pr{TRAVIS_PULL_REQUEST}"
+#    system "git checkout pr{TRAVIS_PULL_REQUEST}"
+    system "git fetch origin +refs/pull/{TRAVIS_PULL_REQUEST}/merge:pr{TRAVIS_PULL_REQUEST}"
+    system "git checkout -qf pr{TRAVIS_PULL_REQUEST}"
   end
   def reset_args
     ref = case @ref_type
@@ -17,7 +19,7 @@ class MyDownloadStrategy < GitDownloadStrategy
     %W{reset --hard pr{TRAVIS_PULL_REQUEST}}
   end
   def reset
-#    quiet_safe_system 'git', *reset_args
+    quiet_safe_system 'git', *reset_args
   end
 
 end
