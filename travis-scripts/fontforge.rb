@@ -108,6 +108,8 @@ class Fontforge < Formula
        puts "adding python to pkgconfigpath: " + ENV["PKG_CONFIG_PATH"]
     end
 
+    system "git fetch origin pull/${TRAVIS_PULL_REQUEST}/head:pr${TRAVIS_PULL_REQUEST}"
+    system "git checkout pr${TRAVIS_PULL_REQUEST}"
     system "./bootstrap" if build.head?
     system "./configure", *args
 

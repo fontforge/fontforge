@@ -7,12 +7,17 @@ echo "checking system for existing fontforge.rb"
 #find /usr -name "fontforge.rb"
 ls -l /usr/local/Library/Formula/fontforge.rb
 echo "------------------------"
-sed -i -e "s|url 'https://github.com/fontforge/fontforge.git'.*|url 'https://github.com/fontforge/fontforge.git', :branch => 'BRANCHNAME'|g" ./travis-scripts/fontforge.rb
-cat ./travis-scripts/fontforge.rb
-sed -i -e "s|BRANCHNAME|pull/${TRAVIS_PULL_REQUEST}/head|g" ./travis-scripts/fontforge.rb
+#sed -i -e "s|url 'https://github.com/fontforge/fontforge.git'.*|url 'https://github.com/fontforge/fontforge.git', :branch => 'BRANCHNAME'|g" ./travis-scripts/fontforge.rb
+#cat ./travis-scripts/fontforge.rb
+#sed -i -e "s|BRANCHNAME|+refs/pull/${TRAVIS_PULL_REQUEST}/merge|g" ./travis-scripts/fontforge.rb
+
 sudo cp ./travis-scripts/fontforge.rb /usr/local/Library/Formula/fontforge.rb
 cat ./travis-scripts/fontforge.rb
 echo "updated the brew fontforge Formula..."
+
+
+$ git fetch origin +refs/pull/1591/merge:
+$ git checkout -qf FETCH_HEAD
 
 
 pushd .
