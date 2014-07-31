@@ -11,6 +11,7 @@ echo "------------------------"
 #cat ./travis-scripts/fontforge.rb
 #sed -i -e "s|BRANCHNAME|+refs/pull/${TRAVIS_PULL_REQUEST}/merge|g" ./travis-scripts/fontforge.rb
 
+sed -i -e "s|TRAVIS_PULL_REQUEST|${TRAVIS_PULL_REQUEST}|g" ./travis-scripts/fontforge.rb
 sudo cp ./travis-scripts/fontforge.rb /usr/local/Library/Formula/fontforge.rb
 cat ./travis-scripts/fontforge.rb
 echo "updated the brew fontforge Formula..."
