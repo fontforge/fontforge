@@ -19,6 +19,6 @@ PyMODINIT_FUNC PyInit_fontforge(void) {
 /* Python 2 module initialization */
 PyMODINIT_FUNC initfontforge(void);
 PyMODINIT_FUNC initfontforge(void) {
-    return FFPY_PYTHON_ENTRY_FUNCTION("fontforge");
+    FFPY_PYTHON_ENTRY_FUNCTION("fontforge");
 }
 #endif

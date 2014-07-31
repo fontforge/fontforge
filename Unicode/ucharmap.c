@@ -33,7 +33,7 @@
 #include <charset.h>
 #include <chardata.h>
 
-enum encoding local_encoding = e_iso8859_1;
+int local_encoding = e_iso8859_1;
 #if HAVE_ICONV
 char *iconv_local_encoding_name = NULL;
 #endif
