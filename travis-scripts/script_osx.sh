@@ -15,7 +15,10 @@ export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PYPKGCONFIG"
 export ZLIB_CFLAGS="-I/usr/include"
 export ZLIB_LIBS="-L/usr/lib -lz"
 
+export LDFLAGS="$LDFLAGS -lintl"
+
 ./configure --prefix=/usr/local --with-x \
-            --with-pythonbinary=/usr/local/opt/python/bin/python
+            --with-pythonbinary=/usr/local/opt/python/bin/python \
+            --with-static-imagelibs
 
 fontforge -version

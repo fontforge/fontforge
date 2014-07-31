@@ -29,7 +29,7 @@ brew install cairo python libspiro fontconfig
 brew link python
 
 brew install cairo pango autoconf automake libtool pkg-config glib pango cairo ossp-uuid \
-             libpng jpeg libtiff giflib libspiro czmq fontconfig
+             libpng jpeg libtiff giflib libspiro czmq fontconfig xft
 
 
 
