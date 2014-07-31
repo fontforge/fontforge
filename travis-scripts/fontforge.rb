@@ -53,7 +53,7 @@ class Fontforge < Formula
 
   head do
 #    url 'https://github.com/fontforge/fontforge.git', :using => MyDownloadStrategy
-    url 'file:///Users/travis/build/fontforge/fontforge', :branch => 'FETCH_HEAD'
+    url 'file:///Users/travis/build/fontforge/fontforge', :branch => 'FETCH_HEAD', :using => GitDownloadStrategy
     depends_on "autoconf" => :build
     depends_on "automake" => :build
     depends_on "libtool" => :build
