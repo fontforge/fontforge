@@ -7,6 +7,7 @@ class MyDownloadStrategy < GitDownloadStrategy
     system "git fetch origin pull/{TRAVIS_PULL_REQUEST}/head:pr{TRAVIS_PULL_REQUEST}"
     system "git checkout -qf pr{TRAVIS_PULL_REQUEST}"
     system "git branch"
+    system "grep build_stops fontforgeexe/fontview.c"
 #    system "git fetch origin +refs/pull/{TRAVIS_PULL_REQUEST}/merge:pr{TRAVIS_PULL_REQUEST}"
 #    system "git checkout -qf pr{TRAVIS_PULL_REQUEST}"
   end
@@ -20,6 +21,7 @@ class MyDownloadStrategy < GitDownloadStrategy
     %W{reset --hard pr{TRAVIS_PULL_REQUEST}}
   end
   def reset
+    system "grep build_stops fontforgeexe/fontview.c"
     quiet_safe_system 'git', *reset_args
   end
 
