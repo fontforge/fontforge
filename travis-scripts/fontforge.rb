@@ -3,11 +3,15 @@ require 'formula'
 class MyDownloadStrategy < GitDownloadStrategy
   # get the PR
   def fetch
-    super
-    system "git fetch origin pull/{TRAVIS_PULL_REQUEST}/head:pr{TRAVIS_PULL_REQUEST}"
-    system "git checkout -qf pr{TRAVIS_PULL_REQUEST}"
-    system "git branch"
+    system "rsync -av /Users/travis/build/fontforge/fontforge /Library/Caches/Homebrew/fontforge--git"
     system "grep build_stops fontforgeexe/fontview.c"
+
+#    super
+#    system "git fetch origin pull/{TRAVIS_PULL_REQUEST}/head:pr{TRAVIS_PULL_REQUEST}"
+#    system "git checkout -qf pr{TRAVIS_PULL_REQUEST}"
+#    system "git branch"
+#    system "grep build_stops fontforgeexe/fontview.c"
+
 #    system "git fetch origin +refs/pull/{TRAVIS_PULL_REQUEST}/merge:pr{TRAVIS_PULL_REQUEST}"
 #    system "git checkout -qf pr{TRAVIS_PULL_REQUEST}"
   end
@@ -53,7 +57,8 @@ class Fontforge < Formula
 
   head do
 #    url 'https://github.com/fontforge/fontforge.git', :using => MyDownloadStrategy
-    url 'file:///Users/travis/build/fontforge/fontforge', :branch => 'FETCH_HEAD', :using => GitDownloadStrategy
+#    url 'file:///Users/travis/build/fontforge/fontforge', :branch => 'FETCH_HEAD', :using => GitDownloadStrategy
+    url 'file:///Users/travis/build/fontforge/fontforge', :branch => 'FETCH_HEAD', :using => MyDownloadStrategy
     depends_on "autoconf" => :build
     depends_on "automake" => :build
     depends_on "libtool" => :build
