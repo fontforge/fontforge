@@ -52,8 +52,8 @@ class Fontforge < Formula
   end
 
   head do
-    url 'https://github.com/fontforge/fontforge.git', :using => MyDownloadStrategy
-
+#    url 'https://github.com/fontforge/fontforge.git', :using => MyDownloadStrategy
+    url 'file:///Users/travis/build/fontforge/fontforge', :branch => 'FETCH_HEAD'
     depends_on "autoconf" => :build
     depends_on "automake" => :build
     depends_on "libtool" => :build
