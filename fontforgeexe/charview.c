@@ -41,7 +41,7 @@ extern int _GScrollBar_Width;
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
 #include "dlist.h"
-
+#include "c-strtod.h"
 
 #include "gutils/prefs.h"
 #include "collabclientui.h"
@@ -1865,19 +1865,15 @@ static void CVDrawBlues(CharView *cv,GWindow pixmap,char *bluevals,char *others,
 	Color col) {
     double blues[24];
     char *pt, *end;
-    char oldloc[25];
     int i=0, bcnt=0;
     GRect r;
     char buf[20];
     int len,len2;
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
     if ( bluevals!=NULL ) {
 	for ( pt = bluevals; isspace( *pt ) || *pt=='['; ++pt);
 	while ( i<14 && *pt!='\0' && *pt!=']' ) {
-	    blues[i] = strtod(pt,&end);
+	    blues[i] = c_strtod(pt,&end);
 	    if ( pt==end )
 	break;
 	    ++i;
@@ -1889,7 +1885,7 @@ static void CVDrawBlues(CharView *cv,GWindow pixmap,char *bluevals,char *others,
     if ( others!=NULL ) {
 	for ( pt = others; isspace( *pt ) || *pt=='['; ++pt);
 	while ( i<24 && *pt!='\0' && *pt!=']' ) {
-	    blues[i] = strtod(pt,&end);
+	    blues[i] = c_strtod(pt,&end);
 	    if ( pt==end )
 	break;
 	    ++i;
@@ -1898,7 +1894,6 @@ static void CVDrawBlues(CharView *cv,GWindow pixmap,char *bluevals,char *others,
 	}
 	if ( i&1 ) --i;
     }
-    setlocale(LC_NUMERIC,oldloc);
     bcnt = i;
     if ( i==0 )
 return;

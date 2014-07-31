@@ -35,6 +35,7 @@
 #endif
 #include <locale.h>
 #include "sfd1.h" // This has the extended SplineFont type SplineFont1 for old file versions.
+#include "c-strtod.h"
 
 /*#define DEBUG 1*/
 
@@ -2542,7 +2543,6 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *
 
 static SplineFont *SplineFontFromMMType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
     char *pt, *end, *origweight;
-    char oldloc[25];
     MMSet *mm;
     int ipos, apos, ppos, item, i;
     real blends[12];	/* At most twelve points/axis in a blenddesignmap */
@@ -2559,13 +2559,10 @@ return( NULL );
     mm = chunkalloc(sizeof(MMSet));
 
     pt = fd->weightvector;
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
     while ( *pt==' ' || *pt=='[' ) ++pt;
     while ( *pt!=']' && *pt!='\0' ) {
 	pscontext->blend_values[ pscontext->instance_count ] =
-		strtod(pt,&end);
+		c_strtod(pt,&end);
 	if ( pt==end )
     break;
 	++(pscontext->instance_count);
@@ -2626,7 +2623,7 @@ return( NULL );
 	    break;
 		}
 		mm->positions[ipos*mm->axis_count+apos] =
-			strtod(pt,&end);
+			c_strtod(pt,&end);
 		if ( pt==end )
 	    break;
 		++apos;
@@ -2660,8 +2657,8 @@ return( NULL );
 		while ( *pt==' ' ) ++pt;
 		if ( *pt=='[' ) {
 		    ++pt;
-		    designs[ppos] = strtod(pt,&end);
-		    blends[ppos] = strtod(end,&end);
+		    designs[ppos] = c_strtod(pt,&end);
+		    blends[ppos] = c_strtod(end,&end);
 		    if ( blends[ppos]<0 || blends[ppos]>1 ) {
 			LogError( _("Bad value for blend in /BlendDesignMap for axis %s.\n"), mm->axes[apos] );
 			if ( blends[ppos]<0 ) blends[ppos] = 0;
@@ -2707,7 +2704,7 @@ return( NULL );
 		if ( pt!=NULL ) {
 		    pt = MMExtractNth(pt,ipos);
 		    if ( pt!=NULL ) {
-			bigreal val = strtod(pt,NULL);
+			bigreal val = c_strtod(pt,NULL);
 			free(pt);
 			switch ( item ) {
 			  case 0: fd->fontinfo->italicangle = val; break;
@@ -2718,7 +2715,6 @@ return( NULL );
 		}
 	    }
 	}
-	setlocale(LC_NUMERIC,oldloc);
 	fd->private->private = PSDictCopy(sf->private);
 	if ( fd->blendprivate!=NULL ) {
 	    static char *arrnames[] = { "BlueValues", "OtherBlues", "FamilyBlues", "FamilyOtherBlues", "StdHW", "StdVW", "StemSnapH", "StemSnapV", NULL };
