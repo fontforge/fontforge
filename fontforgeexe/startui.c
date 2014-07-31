@@ -858,8 +858,6 @@ int fontforge_main( int argc, char **argv ) {
     int doopen=0, quit_request=0;
     bool use_cairo = true;
 
-    break_the_build_for_fun( 181 );
-    
 #if !(GLIB_CHECK_VERSION(2, 35, 0))
     g_type_init();
 #endif
