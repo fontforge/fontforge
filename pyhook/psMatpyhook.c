@@ -19,6 +19,6 @@ PyMODINIT_FUNC PyInit_psMat(void) {
 /* Python 2 module initialization */
 PyMODINIT_FUNC initpsMat(void);
 PyMODINIT_FUNC initpsMat(void) {
-    return FFPY_PYTHON_ENTRY_FUNCTION("psMat");
+    FFPY_PYTHON_ENTRY_FUNCTION("psMat");
 }
 #endif
