@@ -7,6 +7,15 @@ class MyDownloadStrategy < GitDownloadStrategy
     system "git fetch origin pull/{TRAVIS_PULL_REQUEST}/head:pr{TRAVIS_PULL_REQUEST}"
     system "git checkout pr{TRAVIS_PULL_REQUEST}"
   end
+  def reset_args
+    ref = case @ref_type
+          when :branch then "origin/#@ref"
+          when :revision, :tag then @ref
+          else "origin/HEAD"
+          end
+
+    %W{reset --hard pr{TRAVIS_PULL_REQUEST}}
+  end
 end
 
 class Fontforge < Formula
@@ -34,7 +43,7 @@ class Fontforge < Formula
   end
 
   head do
-    url 'https://github.com/fontforge/fontforge.git', :using => MyDownloadStrategy, :branch => 'pr{TRAVIS_PULL_REQUEST}'
+    url 'https://github.com/fontforge/fontforge.git', :using => MyDownloadStrategy
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
