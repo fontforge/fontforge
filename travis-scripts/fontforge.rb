@@ -85,7 +85,8 @@ class Fontforge < Formula
 
   def install
     system "pwd"
-
+    system "grep build_stops fontforgeexe/fontview.c"
+    system "ls -l travis-scripts"
     args = ["--prefix=#{prefix}",
             "--enable-double",
             "--without-freetype-bytecode"]
