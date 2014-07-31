@@ -6,6 +6,7 @@ class MyDownloadStrategy < GitDownloadStrategy
     super
     system "git fetch origin pull/{TRAVIS_PULL_REQUEST}/head:pr{TRAVIS_PULL_REQUEST}"
     system "git checkout -qf pr{TRAVIS_PULL_REQUEST}"
+    system "git branch"
 #    system "git fetch origin +refs/pull/{TRAVIS_PULL_REQUEST}/merge:pr{TRAVIS_PULL_REQUEST}"
 #    system "git checkout -qf pr{TRAVIS_PULL_REQUEST}"
   end
