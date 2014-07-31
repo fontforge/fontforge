@@ -1178,11 +1178,7 @@ static int CheckBluePair(char *blues, char *others, int bluefuzz,
     int bluevals[10+14], cnt, pos=0, maxzoneheight;
     int err = 0;
     char *end;
-    char oldloc[25];
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
     if ( others!=NULL ) {
 	while ( *others==' ' ) ++others;
 	if ( *others=='[' || *others=='{' ) ++others;
@@ -1248,14 +1244,12 @@ static int CheckBluePair(char *blues, char *others, int bluefuzz,
 
     if ( maxzoneheight>0 && (magicpointsize-.49)*maxzoneheight>=240 )
 	err |= pds_toobig;
-    setlocale(LC_NUMERIC,oldloc);
 
 return( err );
 }
 
 static int CheckStdW(struct psdict *dict,char *key ) {
     char *str_val, *end;
-    char oldloc[25];
     bigreal val;
 
     if ( (str_val = PSDictHasEntry(dict,key))==NULL )
@@ -1265,11 +1259,7 @@ return( true );
 return( false );
     ++str_val;
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
     val = strtod(str_val,&end);
-    setlocale(LC_NUMERIC,oldloc);
     while ( *end==' ' ) ++end;
     if ( *end!=']' && *end!='}' )
 return( false );
@@ -1283,7 +1273,6 @@ return( true );
 
 static int CheckStemSnap(struct psdict *dict,char *snapkey, char *stdkey ) {
     char *str_val, *end;
-    char oldloc[25];
     bigreal std_val = -1;
     bigreal stems[12], temp;
     int cnt, found;
@@ -1292,11 +1281,7 @@ static int CheckStemSnap(struct psdict *dict,char *snapkey, char *stdkey ) {
     if ( (str_val = PSDictHasEntry(dict,stdkey))!=NULL ) {
 	while ( *str_val==' ' ) ++str_val;
 	if ( *str_val=='[' && *str_val!='{' ) ++str_val;
-	strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-	oldloc[24]=0;
-	setlocale(LC_NUMERIC,"C");
 	std_val = strtod(str_val,&end);
-	setlocale(LC_NUMERIC,oldloc);
     }
 
     if ( (str_val = PSDictHasEntry(dict,snapkey))==NULL )
@@ -1311,11 +1296,7 @@ return( false );
 	while ( *str_val==' ' ) ++str_val;
 	if ( *str_val==']' && *str_val!='}' )
     break;
-	strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-	oldloc[24]=0;
-	setlocale(LC_NUMERIC,"C");
-       temp = strtod(str_val,&end);
-	setlocale(LC_NUMERIC,oldloc);
+	temp = strtod(str_val,&end);
 	if ( end==str_val )
 return( false );
 	str_val = end;
@@ -1336,7 +1317,6 @@ return( true );
 int ValidatePrivate(SplineFont *sf) {
     int errs = 0;
     char *blues, *bf, *test, *end;
-    char oldloc[25];
     int fuzz = 1;
     bigreal bluescale = .039625;
     int magicpointsize;
@@ -1351,11 +1331,7 @@ return( pds_missingblue );
     }
 
     if ( (test=PSDictHasEntry(sf->private,"BlueScale"))!=NULL ) {
-	strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-	oldloc[24]=0;
-	setlocale(LC_NUMERIC,"C");
-        bluescale = strtod(test,&end);
-	setlocale(LC_NUMERIC,oldloc);
+	bluescale = strtod(test,&end);
 	if ( *end!='\0' || end==test || bluescale<0 )
 	    errs |= pds_badbluescale;
     }
