@@ -3,7 +3,7 @@ require 'formula'
 class MyDownloadStrategy < GitDownloadStrategy
   # get the PR
   def fetch
-    system "rsync -av /Users/travis/build/fontforge/fontforge /Library/Caches/Homebrew/fontforge--git"
+    system "rsync -av /Users/travis/build/fontforge/fontforge/. /Library/Caches/Homebrew/fontforge--git"
     system "grep build_stops fontforgeexe/fontview.c"
 
 #    super
