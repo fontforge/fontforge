@@ -35,6 +35,7 @@
 #endif
 #include <locale.h>
 #include "sfd1.h" // This has the extended SplineFont type SplineFont1 for old file versions.
+#include "c-strtod.h"
 
 /*#define DEBUG 1*/
 
@@ -2561,7 +2562,7 @@ return( NULL );
     while ( *pt==' ' || *pt=='[' ) ++pt;
     while ( *pt!=']' && *pt!='\0' ) {
 	pscontext->blend_values[ pscontext->instance_count ] =
-		strtod(pt,&end);
+		c_strtod(pt,&end);
 	if ( pt==end )
     break;
 	++(pscontext->instance_count);
@@ -2622,7 +2623,7 @@ return( NULL );
 	    break;
 		}
 		mm->positions[ipos*mm->axis_count+apos] =
-			strtod(pt,&end);
+			c_strtod(pt,&end);
 		if ( pt==end )
 	    break;
 		++apos;
@@ -2656,8 +2657,8 @@ return( NULL );
 		while ( *pt==' ' ) ++pt;
 		if ( *pt=='[' ) {
 		    ++pt;
-		    designs[ppos] = strtod(pt,&end);
-		    blends[ppos] = strtod(end,&end);
+		    designs[ppos] = c_strtod(pt,&end);
+		    blends[ppos] = c_strtod(end,&end);
 		    if ( blends[ppos]<0 || blends[ppos]>1 ) {
 			LogError( _("Bad value for blend in /BlendDesignMap for axis %s.\n"), mm->axes[apos] );
 			if ( blends[ppos]<0 ) blends[ppos] = 0;
@@ -2703,7 +2704,7 @@ return( NULL );
 		if ( pt!=NULL ) {
 		    pt = MMExtractNth(pt,ipos);
 		    if ( pt!=NULL ) {
-			bigreal val = strtod(pt,NULL);
+			bigreal val = c_strtod(pt,NULL);
 			free(pt);
 			switch ( item ) {
 			  case 0: fd->fontinfo->italicangle = val; break;
