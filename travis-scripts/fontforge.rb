@@ -1,5 +1,14 @@
 require 'formula'
 
+class MyDownloadStrategy < GitDownloadStrategy
+  # get the PR
+  def fetch
+    super
+    system "git fetch origin pull/{TRAVIS_PULL_REQUEST}/head:pr{TRAVIS_PULL_REQUEST}"
+    system "git checkout pr{TRAVIS_PULL_REQUEST}"
+  end
+end
+
 class Fontforge < Formula
   homepage 'http://fontforge.org/'
   revision 1
@@ -25,7 +34,7 @@ class Fontforge < Formula
   end
 
   head do
-    url 'https://github.com/fontforge/fontforge.git'
+    url 'https://github.com/fontforge/fontforge.git', :using => MyDownloadStrategy
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
@@ -63,8 +72,6 @@ class Fontforge < Formula
 
   def install
     system "pwd"
-    system "git fetch origin pull/${TRAVIS_PULL_REQUEST}/head:pr${TRAVIS_PULL_REQUEST}"
-    system "git checkout pr${TRAVIS_PULL_REQUEST}"
 
     args = ["--prefix=#{prefix}",
             "--enable-double",
