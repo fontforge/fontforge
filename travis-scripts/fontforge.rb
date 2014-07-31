@@ -34,7 +34,7 @@ class Fontforge < Formula
   end
 
   head do
-    url 'https://github.com/fontforge/fontforge.git', :using => MyDownloadStrategy
+    url 'https://github.com/fontforge/fontforge.git', :using => MyDownloadStrategy, :branch => 'pr{TRAVIS_PULL_REQUEST}'
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
