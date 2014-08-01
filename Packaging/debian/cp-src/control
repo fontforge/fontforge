@@ -13,7 +13,7 @@ XS-Python-Version: all
 Build-Depends: debhelper (>= 9),
                autotools-dev,
                libjpeg-dev,
-               libtiff5-dev,
+               libtiff-dev,
                libpng-dev,
                libgif-dev,
                libxt-dev,
