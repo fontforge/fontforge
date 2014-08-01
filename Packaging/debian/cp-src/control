@@ -30,7 +30,8 @@ Build-Depends: debhelper (>= 9),
                libcairo2-dev,
                chrpath,
                libltdl-dev,
-               git
+               git,
+               uthash-dev
 Standards-Version: 3.9.5
 Homepage: http://fontforge.github.io/
 Vcs-Git: git://github.com/fontforge/fontforge/
