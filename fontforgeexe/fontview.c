@@ -669,9 +669,6 @@ return( 0 );
 		  oldfn, newfn );
 	LogError( _("Please choose File/Generate Fonts to save to other formats."));
 
-	The_build_stops_here = 1;
-	
-	
 	free(filename);
 	filename = newpath;
     }
