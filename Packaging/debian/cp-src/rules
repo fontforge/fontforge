@@ -27,7 +27,6 @@ endif
 
 override_dh_auto_configure:
 	$(CURDIR)/bootstrap
-	aclocal;  autoconf;  automake --add-missing;  libtoolize --force --copy
 	$(CURDIR)/configure $(CROSS) ${CONFIG_OPTS} --enable-pyextension 
 
 override_dh_install: 
