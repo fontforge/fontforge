@@ -49,6 +49,7 @@ deb-src-control:
 endif
 
 deb-src: deb-src-control
+	cd tests ; make prefetch-fonts ;
 	cd .. ; if [ "$(F_FAKE_PRODUCT_NAME)" != "$(F_PACKAGE_NAME)" ] ; then cp -pRP $(F_FAKE_PRODUCT_NAME) $(F_PACKAGE_NAME) ; fi ; cd $(F_PACKAGE_NAME) ; yes | debuild -S -sa ;
 
 deb: deb-src-control
