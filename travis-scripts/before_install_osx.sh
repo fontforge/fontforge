@@ -1,24 +1,16 @@
 #!/bin/bash
 set -ev
 
-echo "pwd:" 
-pwd
-echo "listing"
-ls -l
 brew update
-
-echo "checking system for existing fontforge.rb"
-#find /usr -name "fontforge.rb"
-ls -l /usr/local/Library/Formula/fontforge.rb
-echo "------------------------"
-#sed -i -e "s|url 'https://github.com/fontforge/fontforge.git'.*|url 'https://github.com/fontforge/fontforge.git', :branch => 'BRANCHNAME'|g" ./travis-scripts/fontforge.rb
-#cat ./travis-scripts/fontforge.rb
-#sed -i -e "s|BRANCHNAME|+refs/pull/${TRAVIS_PULL_REQUEST}/merge|g" ./travis-scripts/fontforge.rb
 
 sed -i -e "s|{TRAVIS_PULL_REQUEST}|${TRAVIS_PULL_REQUEST}|g" ./travis-scripts/fontforge.rb
 sudo cp ./travis-scripts/fontforge.rb /usr/local/Library/Formula/fontforge.rb
+echo "*****"
+echo "*****"
+echo "***** using homebrew formula fontforge.rb:"
 cat ./travis-scripts/fontforge.rb
-echo "updated the brew fontforge Formula..."
+echo "*****"
+echo "*****"
 
 # optional: can cut out X this block while testing git stuff
 pushd .

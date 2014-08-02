@@ -4,16 +4,6 @@ class MyDownloadStrategy < GitDownloadStrategy
   # get the PR
   def fetch
     system "rsync -av /Users/travis/build/fontforge/fontforge/. /Library/Caches/Homebrew/fontforge--git"
-    system "grep build_stops fontforgeexe/fontview.c"
-
-#    super
-#    system "git fetch origin pull/{TRAVIS_PULL_REQUEST}/head:pr{TRAVIS_PULL_REQUEST}"
-#    system "git checkout -qf pr{TRAVIS_PULL_REQUEST}"
-#    system "git branch"
-#    system "grep build_stops fontforgeexe/fontview.c"
-
-#    system "git fetch origin +refs/pull/{TRAVIS_PULL_REQUEST}/merge:pr{TRAVIS_PULL_REQUEST}"
-#    system "git checkout -qf pr{TRAVIS_PULL_REQUEST}"
   end
   def reset_args
     ref = case @ref_type
@@ -25,7 +15,6 @@ class MyDownloadStrategy < GitDownloadStrategy
     %W{reset --hard pr{TRAVIS_PULL_REQUEST}}
   end
   def reset
-    system "grep build_stops fontforgeexe/fontview.c"
     quiet_safe_system 'git', *reset_args
   end
 
@@ -94,9 +83,6 @@ class Fontforge < Formula
   end
 
   def install
-    system "pwd"
-    system "grep build_stops fontforgeexe/fontview.c"
-    system "ls -l travis-scripts"
     args = ["--prefix=#{prefix}",
             "--enable-double",
             "--without-freetype-bytecode"]
