@@ -91,6 +91,10 @@ GENERATED_INPUTS =							\
 MAYBE_GENERATED_INPUTS =						\
 	fonts/MinionPro-Regular.fea
 
+.PHONY: prefetch-fonts
+
+prefetch-fonts: fonts/MunhwaGothic-Bold	fonts/mingliu.ttc
+
 # Inputs we can generate from files in git
 fonts/Ambrosia.pt3: fonts/Ambrosia.sfd
 	$(MKDIR_P) $(builddir)/fonts
