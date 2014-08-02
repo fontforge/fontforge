@@ -1,8 +1,0 @@
-005_x_www_browser.diff 
-008_libgif.diff
-020_fix_pyext_path.diff
-024_def_background.diff
-027_catch_ctrl-c_signal.diff
-900_debian_HelpDir_path.diff
-901_ld_as_needed.diff
-902_fix_optipng_reads.diff
