@@ -95,7 +95,6 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
     if( cc->sequence >= cc->roundTripTimerWaitingSeq )
 	cc->roundTripTimerWaitingSeq = 0;
 		    
-
     char* uuid = kvmsg_get_prop (kvmsg, "uuid" );
     byte* data = kvmsg_body (kvmsg);
     size_t data_size = kvmsg_size (kvmsg);
@@ -309,19 +308,21 @@ static void zeromq_beacon_fd_callback(int zeromq_fd, void* datas )
 {
 //    cloneclient_t* cc = (cloneclient_t*)datas;
 
-//    printf("zeromq_beacon_fd_callback(top)\n");
+    printf("zeromq_beacon_fd_callback(top)\n");
     
     int opt = 0;
     size_t optsz = sizeof(int);
     zmq_getsockopt( zbeacon_socket (client_beacon), ZMQ_EVENTS, &opt, &optsz );
+    printf("zeromq_beacon_fd_callback(2) opt:%d\n", opt );
 
-    if( opt & ZMQ_POLLIN )
+//    if( opt & ZMQ_POLLIN )
     {
 	printf("zeromq_beacon_fd_callback() have message!\n");
 
 	while( 1 )
 	{
 	    char *ipaddress = zstr_recv_nowait (zbeacon_socket (client_beacon));
+	    printf("zeromq_beacon_fd_callback() have data? p:%p\n", ipaddress );
 	    if( ipaddress )
 	    {
 		printf("zeromq_beacon_fd_callback() have message! ip:%s\n", ipaddress );
@@ -332,6 +333,11 @@ static void zeromq_beacon_fd_callback(int zeromq_fd, void* datas )
 		    printf("uuid:%s\n", ba->uuid );
 		    printf("user:%s\n", ba->username );
 		    printf("mach:%s\n", ba->machinename );
+
+		    if( ba->version > 1 && strlen(ba->xuid) ) {
+			printf("have a beacon back for xuid:%s\n", ba->xuid );
+		    }
+		    
 
 		    beacon_announce_t* copy = g_malloc( sizeof(beacon_announce_t));
 		    memcpy( copy, ba, sizeof(beacon_announce_t));
@@ -433,7 +439,9 @@ collabclient_ensureClientBeacon(void)
     
     
     client_beacon = zbeacon_new( obtainMainZMQContext(), 5670 );
+    DEBUG("client beacon address: %s\n", zbeacon_hostname(client_beacon));
     zbeacon_subscribe (client_beacon, NULL, 0);
+    zsocket_set_rcvtimeo (zbeacon_socket (client_beacon), 100);
     int fd = 0;
     size_t fdsz = sizeof(fd);
     int rc = zmq_getsockopt( zbeacon_socket(client_beacon), ZMQ_FD, &fd, &fdsz );
@@ -582,7 +590,7 @@ void collabclient_free( void** ccvp )
 
 #ifdef BUILD_COLLAB
 
-static void collabclient_sendSFD( void* ccvp, char* sfd, char* fontname )
+static void collabclient_sendSFD( void* ccvp, char* sfd, char* xuid, char* fontname )
 {
     cloneclient_t* cc = (cloneclient_t*)ccvp;
 
@@ -591,6 +599,12 @@ static void collabclient_sendSFD( void* ccvp, char* sfd, char* fontname )
     kvmsg_set_body (kvmsg, sfd, strlen(sfd));
     kvmsg_set_prop (kvmsg, "type", MSG_TYPE_SFD );
     kvmsg_set_prop (kvmsg, "fontname", fontname );
+    uint8_t uuid[ beacon_announce_uuid_sz ];
+    ff_uuid_generate( uuid );
+    kvmsg_set_prop (kvmsg, "uuid", uuid );
+    printf("****** XUID: %s\n", xuid );
+    kvmsg_set_prop (kvmsg, "xuid", xuid );
+//    sf->xuid
 //    kvmsg_set_prop (kvmsg, "ttl", "%d", randof (30));
     kvmsg_send     (kvmsg, cc->publisher);
     kvmsg_destroy (&kvmsg);
@@ -805,7 +819,7 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
     {
 	char* sfd = GFileReadAll( filename );
 	printf("connecting to server...4 sfd:%p\n", sfd );
-	collabclient_sendSFD( cc, sfd, fv->b.sf->fontname );
+	collabclient_sendSFD( cc, sfd, fv->b.sf->xuid, fv->b.sf->fontname );
     }
     GFileUnlink(filename);
     printf("connecting to server...sent the sfd for session start.\n");
