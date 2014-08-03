@@ -67,4 +67,12 @@ extern char* HostPortUnpack( char* packed, int* port, int port_default );
  */
 char* ff_uuid_generate( char* target );
 
+/**
+ * This test might be improved in the future.
+ * You pass a string which might have the form of a UUID (or be "\0 whatever") or
+ * just be a null pointer, and the function returns true of the uuid string
+ * you passed in conforms to being a uuid.
+ */
+extern int ff_uuid_isValid( char* uuid );
+
 #endif

@@ -38,6 +38,7 @@
 #ifndef _ALREADY_INCLUDED_FF_COLLAB_CLIENT_PRIV_H
 #define _ALREADY_INCLUDED_FF_COLLAB_CLIENT_PRIV_H
 
+
 #define MAGIC_VALUE 0xbeef
 #define SUBTREE "/client/"
 
@@ -71,7 +72,7 @@
 #include "views.h"
 #include "inc/gwidget.h"
 #include "inc/gnetwork.h"
-
+#include "splinefont.h"
 
 
 
@@ -153,8 +154,15 @@ typedef struct {
     // to the publisher
     int publisher_sendseq;
 
+    // When we send off an SFD then we record the uuid of that file here
+    // so that we can know if we get a beacon back from the server with
+    // the same info or not.
+    char   unacknowledged_beacon_uuid[ 40 ];
+    time_t unacknowledged_beacon_sendTime;
+    
 
 } cloneclient_t;
+
 
 #endif // build_collab
 #endif // already_included_ff_collab_client_priv_h
