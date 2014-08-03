@@ -678,6 +678,9 @@ return;
     free(ti);
 }
 
+/* The list is terminated with an empty entry. Not a NULL pointer, but 
+ * rather an empty entry terminates lists of GTextInfo entries.  (!)
+ */
 void GTextInfoArrayFree(GTextInfo **ti) {
     int i;
 
