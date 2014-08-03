@@ -38,6 +38,7 @@
 #ifndef _ALREADY_INCLUDED_FF_COLLAB_CLIENT_PRIV_H
 #define _ALREADY_INCLUDED_FF_COLLAB_CLIENT_PRIV_H
 
+
 #define MAGIC_VALUE 0xbeef
 #define SUBTREE "/client/"
 
@@ -61,7 +62,6 @@
 #define beacon_announce_machinename_sz  50
 #define beacon_announce_ip_sz           20
 #define beacon_announce_fontname_sz     40
-#define beacon_announce_xuid_sz         15
 
 
 #include "ffglib.h"
@@ -72,7 +72,7 @@
 #include "views.h"
 #include "inc/gwidget.h"
 #include "inc/gnetwork.h"
-
+#include "splinefont.h"
 
 
 
@@ -89,7 +89,6 @@ typedef struct {
     time_t last_msg_from_peer_time;
     uint8_t ip[beacon_announce_ip_sz];
     uint8_t fontname[beacon_announce_fontname_sz];
-    uint8_t xuid       [beacon_announce_xuid_sz];
 } beacon_announce_t;
 
 /**
@@ -155,10 +154,15 @@ typedef struct {
     // to the publisher
     int publisher_sendseq;
 
-
+    // When we send off an SFD then we record the uuid of that file here
+    // so that we can know if we get a beacon back from the server with
+    // the same info or not.
+    char   unacknowledged_beacon_uuid[ 40 ];
+    time_t unacknowledged_beacon_sendTime;
     
 
 } cloneclient_t;
+
 
 #endif // build_collab
 #endif // already_included_ff_collab_client_priv_h

@@ -232,7 +232,7 @@ s_collector (zloop_t *loop, zmq_pollitem_t *poller, void *args)
 	    memset( &ba, 0, sizeof(ba));
 	    strcpy( ba.protocol, "fontforge-collab" );
 	    ba.version = 2;
-	    char* uuid = kvmsg_get_prop (kvmsg, "uuid" );
+	    char* uuid = kvmsg_get_prop (kvmsg, "collab_uuid" );
 	    if( uuid ) {
 		strcpy( ba.uuid, uuid );
 	    } else {
@@ -253,11 +253,6 @@ s_collector (zloop_t *loop, zmq_pollitem_t *poller, void *args)
 		strcpy( ba.fontname, fontname );
 	    }
 
-	    strcpy( ba.xuid, "" );
-	    char* xuid = kvmsg_get_prop (kvmsg, "xuid" );
-	    if( xuid )
-		strcpy( ba.xuid, xuid );
-	    
 
 	    service_beacon = zbeacon_new( self->ctx, 5670 );
 	    zbeacon_set_interval (service_beacon, 300 );
