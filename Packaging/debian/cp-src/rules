@@ -50,4 +50,4 @@ override_dh_strip: nox
 	dh_strip --dbg-package=fontforge-dbg
 	# deal with some lintian failure
 	chmod 0644 $(CURDIR)/debian/lib*/usr/lib/lib*.so.*
-	(cd $(CURDIR)/debian/python-fontforge/usr/lib; for i in python*; do mv $$i/site-packages $$i/dist-packages; done)
+	(cd $(CURDIR)/debian/python-fontforge/usr/lib; for i in python*; do if [ -e $$i/site-packages ] ; then mv $$i/site-packages $$i/dist-packages; fi ; done)
