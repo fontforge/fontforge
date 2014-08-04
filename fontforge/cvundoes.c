@@ -686,6 +686,7 @@ return(NULL);
     undo = chunkalloc(sizeof(Undoes));
 
     undo->undotype = ut_state;
+    undo->layer = dm_fore;
     undo->was_modified = sc->changed;
     undo->was_order2 = sc->layers[layer].order2;
     undo->u.state.width = sc->width;
@@ -843,6 +844,7 @@ return(NULL);
     undo->was_modified = sc->changed;
     undo->was_order2 = sc->layers[ly_fore].order2;
     undo->u.state.width = sc->width;
+    undo->layer = dm_fore;
 
     Undoes* ret = AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes);
 
@@ -930,11 +932,18 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	Layer *head = layer==ly_grid ? &sc->parent->grid : &sc->layers[layer];
 	SplinePointList *spl = head->splines;
 
+	printf("SCUndoAct() ut_state case, layer:%d sc:%p scn:%s scw:%d uw:%d\n",
+	       layer, sc, sc->name, sc->width, undo->u.state.width );
+	
 	if ( layer==ly_fore ) {
 	    int width = sc->width;
 	    int vwidth = sc->vwidth;
 	    if ( sc->width!=undo->u.state.width )
+	    {
+		printf("SCUndoAct() sc:%p scn:%s scw:%d uw:%d\n",
+		       sc, sc->name, sc->width, undo->u.state.width );
 		SCSynchronizeWidth(sc,undo->u.state.width,width,NULL);
+	    }
 	    sc->vwidth = undo->u.state.vwidth;
 	    undo->u.state.width = width;
 	    undo->u.state.vwidth = vwidth;

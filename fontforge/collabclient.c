@@ -32,6 +32,9 @@ int pref_collab_roundTripTimerMS = 2000;
 #include "collabclientpriv.h"
 #include "inc/basics.h"
 
+int DEBUG_SHOW_SFD_CHUNKS = 0;
+
+
 void collabclient_CVPreserveStateCalled( CharViewBase *cv )
 {
 #ifdef BUILD_COLLAB

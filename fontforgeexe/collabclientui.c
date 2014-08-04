@@ -180,7 +180,7 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 		    printf("*** warning ut_statehint not handled\n");
 		    break;
 		}
-		
+
 		printf("________________________ READ undo.layer: %d  dm:%d layer_sz:%d\n",
 		       undo->layer, cv->drawmode, cv->sc->layer_cnt );
 		int selectedlayer = cv->drawmode;
@@ -194,13 +194,21 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 		undo->next = 0;
 		undo->next = cv->layerheads[selectedlayer]->redoes;
 		cv->layerheads[selectedlayer]->redoes = undo;
+		printf("________________________ READ ... 2\n");
+		printf("________________________ READ ... 2... ly_fore:%d cv.layer:%d\n", ly_fore, CVLayer(cv));
+		// cv->layerheads[cv->drawmode]-cv->sc->layers;
+		printf("________________________ READ ... 2...         dm:%d\n", cv->drawmode );
+		printf("________________________ READ ... 2... sc->layers:%p\n", cv->sc->layers );
+		printf("________________________ READ ... 2... lh.dm     :%p\n", cv->layerheads[cv->drawmode] );
+		
 		CVDoRedo( cv );
-
+		printf("________________________ READ ... 3\n");
 		char* isLocalUndo = kvmsg_get_prop (kvmsg, "isLocalUndo" );
 		if( isLocalUndo )
 		{
 		    if( isLocalUndo[0] == '1' )
 		    {
+			printf("________________________ READ ... isLocal. \n");
 			Undoes* undo = cv->layerheads[selectedlayer]->undoes;
 			if( undo )
 			{
@@ -210,6 +218,7 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 			}
 		    }
 		}
+		printf("________________________ READ ... 4\n");
 
 		if( cv->drawmode != oldlayer )
 		{
@@ -217,6 +226,7 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 		    CVCharChangedUpdate( cv );
 
 		}
+		printf("________________________ READ ... 5\n");
 		
 		
 	    }
@@ -308,35 +318,35 @@ static void zeromq_beacon_fd_callback(int zeromq_fd, void* datas )
 {
 //    cloneclient_t* cc = (cloneclient_t*)datas;
 
-    printf("zeromq_beacon_fd_callback(top)\n");
+//    printf("zeromq_beacon_fd_callback(top)\n");
     
     int opt = 0;
     size_t optsz = sizeof(int);
     zmq_getsockopt( zbeacon_socket (client_beacon), ZMQ_EVENTS, &opt, &optsz );
-    printf("zeromq_beacon_fd_callback(2) opt:%d\n", opt );
+//    printf("zeromq_beacon_fd_callback(2) opt:%d\n", opt );
 
     if( opt & ZMQ_POLLIN )
     {
-	printf("zeromq_beacon_fd_callback() have message!\n");
+//	printf("zeromq_beacon_fd_callback() have message!\n");
 
 	while( 1 )
 	{
 	    char *ipaddress = zstr_recv_nowait (zbeacon_socket (client_beacon));
-	    printf("zeromq_beacon_fd_callback() have data? p:%p\n", ipaddress );
+//	    printf("zeromq_beacon_fd_callback() have data? p:%p\n", ipaddress );
 	    if( ipaddress )
 	    {
-		printf("zeromq_beacon_fd_callback() have message! ip:%s\n", ipaddress );
+//		printf("zeromq_beacon_fd_callback() have message! ip:%s\n", ipaddress );
 		zframe_t *content = zframe_recv_nowait (zbeacon_socket (client_beacon));
 		if( content )
 		{
 		    beacon_announce_t* ba = (beacon_announce_t*)zframe_data(content);
-		    printf("uuid:%s\n", ba->uuid );
-		    printf("user:%s\n", ba->username );
-		    printf("mach:%s\n", ba->machinename );
+//		    printf("uuid:%s\n", ba->uuid );
+//		    printf("user:%s\n", ba->username );
+//		    printf("mach:%s\n", ba->machinename );
 
-		    if( ba->version >= 2 && ff_uuid_isValid(ba->uuid) ) {
-			printf("have a beacon back for xuid:%s\n", ba->uuid );
-		    }
+//		    if( ba->version >= 2 && ff_uuid_isValid(ba->uuid) ) {
+//			printf("have a beacon back for xuid:%s\n", ba->uuid );
+//		    }
 		    
 		    beacon_announce_t* copy = g_malloc( sizeof(beacon_announce_t));
 		    memcpy( copy, ba, sizeof(beacon_announce_t));
@@ -515,6 +525,8 @@ void* collabclient_new( char* address, int port )
 #ifdef BUILD_COLLAB
 
     printf("collabclient_new() address:%s port:%d\n", address, port );
+
+    DEBUG_SHOW_SFD_CHUNKS = getenv("FONTFORGE_DEBUG_COLLAB_SHOW_SFD_CHUNKS") > 0;
     
     cloneclient_t *cc = 0;
     cc = (cloneclient_t *) zmalloc (sizeof (cloneclient_t));
@@ -685,8 +697,8 @@ collabclient_sendRedo_Internal( FontViewBase *fv, SplineChar *sc, Undoes *undo, 
     char* uuid = fv->sf->xuid;
     printf("uuid:%s\n", uuid );
 
-    printf("________________________ WRITE undo.layer: %d layer_sz:%d\n",
-	   undo->layer, sc->layer_cnt );
+    printf("________________________ WRITE undo.layer: %d type:%d layer_sz:%d\n",
+	   undo->layer, undo->undotype, sc->layer_cnt );
     
     int idx = 0;
     char filename[PATH_MAX];
@@ -1095,12 +1107,14 @@ void collabclient_sendRedo_SC( SplineChar *sc, int layer )
     if( !cc )
 	return;
 
-    printf("collabclient_sendRedo(SC) fv:%p\n", fv );
+    printf("collabclient_sendRedo(SC) fv:%p layer:%d\n", fv, layer );
     printf("collabclient_sendRedo() preserveUndo:%p\n", cc->preserveUndo );
     if( !cc->preserveUndo )
 	return;
 
-//    dumpUndoChain( "start of collabclient_sendRedo()", sc, sc->layers[layer].undoes );
+    if( DEBUG_SHOW_SFD_CHUNKS )
+	dumpUndoChain( "start of collabclient_sendRedo()", sc, sc->layers[layer].undoes );
+    if( true )
     {
 	Undoes* undo = sc->layers[layer].undoes;
 	while( undo && undo->undotype == ut_statehint )
@@ -1110,6 +1124,21 @@ void collabclient_sendRedo_SC( SplineChar *sc, int layer )
 	}
 	sc->layers[layer].undoes = undo;
     }
+
+#if 0    
+    // This is a special case for testing metricsview
+    // for undo chains 3,1,7: ut_statehint, ut_state, ut_width
+    {
+	Undoes* undo = sc->layers[layer].undoes;
+	if( undo && undo->next && undo->undotype == ut_state && undo->next->undotype == ut_width )
+	    undo = undo->next;
+	// FIXME: throwing away info here, should do better.
+	sc->layers[layer].undoes = undo;
+    }
+#endif
+    if( DEBUG_SHOW_SFD_CHUNKS )
+	dumpUndoChain( "start of collabclient_sendRedo(2)", sc, sc->layers[layer].undoes );
+
     
     SCDoUndo( sc, layer );
 //    CVDoUndo( cv );
