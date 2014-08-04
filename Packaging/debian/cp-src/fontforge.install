@@ -1,2 +1,2 @@
 usr/bin/*
-Packaging/fontforge.desktop     usr/share/applications/
+desktop/fontforge.desktop     usr/share/applications/
