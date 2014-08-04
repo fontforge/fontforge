@@ -1,3 +1,3 @@
 usr/share/locale/*
-desktop/icons/*		usr/share/icons/
+Packaging/icons/*		usr/share/icons/
 debian/fontforge.xpm		usr/share/pixmaps/

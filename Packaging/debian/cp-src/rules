@@ -33,7 +33,7 @@ override_dh_install:
 	dh_install
 	find $(CURDIR)/debian/libfontforge1/usr/lib -name "*.la" -delete
 	-rm -rf $(CURDIR)/debian/libfontforge1/usr/lib/pkgconfig 
-	cp -pRP desktop/fontforge.xml $(CURDIR)/debian/fontforge.sharedmimeinfo 
+	cp Packaging/fontforge.xml $(CURDIR)/debian/fontforge.sharedmimeinfo 
 	chrpath -d $(CURDIR)/debian/fontforge/usr/bin/fontforge
 	touch @
 
