@@ -915,11 +915,13 @@ return NULL;
 	 * the value "$HOME/.cache/fontforge" */
 	buf = smprintf("%s/%s/fontforge", home, def);
 	if(buf != NULL) {
-	/* try to create buf.  If creating the directory fails, return NULL
-	 * because nothing will get saved into an inaccessible directory.  */
-	if(mkdir_p(buf, 0755) != EXIT_SUCCESS)
-return NULL;
-return buf;
+	    /* try to create buf.  If creating the directory fails, return NULL
+	     * because nothing will get saved into an inaccessible directory.  */
+            if ( mkdir_p(buf, 0755) != EXIT_SUCCESS ) {
+                free(buf);
+                return NULL;
+            }
+            return buf;
 	}
 return NULL;
 #endif
