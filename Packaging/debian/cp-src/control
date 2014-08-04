@@ -83,7 +83,7 @@ Description: font editor - non-X version
 Package: fontforge-common
 Architecture: all
 Depends: ${misc:Depends}
-Breaks: fontforge (<< 0.0.20120101+git-3), fontforge-nox (<< 0.0.20120101+git-3)
+Breaks: fontforge (<< ${binary:Version}), fontforge-nox (<< ${binary:Version})
 Description: font editor (common files)
  Besides being a font editor, FontForge is also a font format
  converter, and can convert among PostScript (ASCII & binary Type 1,
@@ -111,8 +111,8 @@ Section: libs
 Architecture: any
 Depends: ${misc:Depends},
 	 ${shlibs:Depends}
-Breaks: fontforge (<= 0.0.20090224), libfontforge-dev (<< 0.0.20120101+git-3)
-Replaces: fontforge (<= 0.0.20090224), libfontforge-dev (<< 0.0.20120101+git-3)
+Breaks: fontforge (<< ${binary:Version}), libfontforge-dev (<< ${binary:Version})
+Replaces: fontforge (<< ${binary:Version}), libfontforge-dev (<< ${binary:Version})
 Description: font editor - runtime library
  Besides being a font editor, FontForge is also a font format
  converter, and can convert among PostScript (ASCII & binary Type 1,
@@ -126,8 +126,8 @@ Section: libs
 Architecture: any
 Depends: ${misc:Depends},
 	 ${shlibs:Depends}
-Breaks: fontforge (<= 0.0.20090224)
-Replaces: fontforge (<= 0.0.20090224)
+Breaks: fontforge (<< ${binary:Version})
+Replaces: fontforge (<< ${binary:Version})
 Description: font editor - runtime graphics and widget library
  Besides being a font editor, FontForge is also a font format
  converter, and can convert among PostScript (ASCII & binary Type 1,
