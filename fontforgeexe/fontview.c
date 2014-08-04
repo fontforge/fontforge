@@ -66,6 +66,7 @@ int compact_font_on_open=0;
 int navigation_mask = 0;		/* Initialized in startui.c */
 
 static char *fv_fontnames = MONO_UI_FAMILIES;
+extern char* pref_collab_last_server_connected_to;
 
 #define	FV_LAB_HEIGHT	15
 
@@ -5670,14 +5671,25 @@ static void FVMenuCollabConnectToExplicitAddress(GWindow gw, struct gmenuitem *U
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
-    printf("connecting to server... explicit address...\n");
+    printf("********** connecting to server... explicit address... p:%p\n", pref_collab_last_server_connected_to);
 
+    char* default_server = "localhost";
+    if( pref_collab_last_server_connected_to ) {
+	default_server = pref_collab_last_server_connected_to;
+    }
+    
     char* res = gwwv_ask_string(
     	"Connect to Collab Server",
-    	"localhost",
+    	default_server,
     	"Please enter the network location of the Collab server you wish to connect to...");
     if( res )
     {
+	if( pref_collab_last_server_connected_to ) {
+	    free( pref_collab_last_server_connected_to );
+	}
+	pref_collab_last_server_connected_to = copy( res );
+	SavePrefs(true);
+	
     	int port_default = 5556;
     	int port = port_default;
     	char address[IPADDRESS_STRING_LENGTH_T];

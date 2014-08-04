@@ -191,6 +191,8 @@ extern int prefs_cv_show_control_points_always_initially; /* from charview.c */
 extern int prefs_create_dragging_comparison_outline;      /* from charview.c */
 extern int prefs_cv_outline_thickness; /* from charview.c */
 
+extern char *pref_collab_last_server_connected_to; /* in collabclient.c */
+
 extern float OpenTypeLoadHintEqualityTolerance;  /* autohint.c */
 extern float GenerateHintWidthEqualityTolerance; /* splinesave.c */
 extern NameList *force_names_when_opening;
@@ -513,6 +515,7 @@ static struct prefs_list {
 	{ "DefaultBVWidth", pr_int, &bv_width, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "DefaultBVHeight", pr_int, &bv_height, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "AnchorControlPixelSize", pr_int, &aa_pixelsize, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "CollabLastServerConnectedTo", pr_string, &pref_collab_last_server_connected_to, NULL, NULL, '\0', NULL, 1, NULL },
 #ifdef _NO_LIBCAIRO
 	{ "UseCairoDrawing", pr_bool, &prefs_usecairo, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
 #endif
