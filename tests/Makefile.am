@@ -64,7 +64,7 @@ clean-local:
 
 AUTOM4TE = $(SHELL) $(srcdir)/build-aux/missing --run autom4te
 AUTOTEST = $(AUTOM4TE) --language=autotest
-$(TESTSUITE): $(srcdir)/testsuite.at $(srcdir)/package.m4 $(GENERATED_INPUTS)
+$(TESTSUITE): $(srcdir)/testsuite.at $(srcdir)/package.m4 $(GENERATED_INPUTS) $(FETCHED_INPUTS)
 	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at
 	mv $@.tmp $@
 
@@ -84,16 +84,18 @@ EXTRA_DIST += fonts/AddExtremaTest2.sfd fonts/AddExtremumTest.sfd	\
 
 # generated test inputs
 GENERATED_INPUTS =							\
-	fonts/MunhwaGothic-Bold						\
-	fonts/mingliu.ttc						\
 	fonts/Ambrosia.pt3
+
+FETCHED_INPUTS = \
+	fonts/MunhwaGothic-Bold						\
+	fonts/mingliu.ttc	
 
 MAYBE_GENERATED_INPUTS =						\
 	fonts/MinionPro-Regular.fea
 
 .PHONY: prefetch-fonts
 
-prefetch-fonts: fonts/MunhwaGothic-Bold	fonts/mingliu.ttc
+prefetch-fonts: $(FETCHED_INPUTS)
 
 # Inputs we can generate from files in git
 fonts/Ambrosia.pt3: fonts/Ambrosia.sfd
