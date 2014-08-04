@@ -105,11 +105,11 @@ fonts/Ambrosia.pt3: fonts/Ambrosia.sfd
 # Inputs we can download
 fonts/MunhwaGothic-Bold:
 	$(MKDIR_P) $(builddir)/fonts
-	$(WGET) ftp://ftp.naist.jp/pub/NetBSD/packages/distfiles/adobe-cidfonts/MunhwaGothic-Bold -O $@
+	if [ ! -e $@ ] ; then $(WGET) ftp://ftp.naist.jp/pub/NetBSD/packages/distfiles/adobe-cidfonts/MunhwaGothic-Bold -O $@ ; fi ;
 
 fonts/mingliu.ttc:
 	$(MKDIR_P) $(builddir)/fonts
-	$(WGET) http://www.fontsupply.com/fonts/mingliu.ttc -O $@
+	if [ ! -e $@ ] ; then $(WGET) http://www.fontsupply.com/fonts/mingliu.ttc -O $@ ; fi ;
 
 # Inputs we can generate from files that aren't available
 fonts/MinionPro-Regular.fea: fonts/MinionPro-Regular.otf
