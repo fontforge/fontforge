@@ -703,6 +703,7 @@ static void MVRefreshValues(MetricsView *mv, int i) {
 if( !mv->perchar[i].width )
 return;
 
+printf("MVRefreshValues() **** setting width to %d\n", sc->width );
     sprintf(buf,"%d",mv->vertical ? sc->vwidth : sc->width);
     GGadgetSetTitle8(mv->perchar[i].width,buf);
 
@@ -1084,6 +1085,14 @@ static real GGadgetToReal(GGadget *g)
     return val;
 }
 
+static void MV_handle_collabclient_maybeSnapshot( MetricsView *mv, SplineChar *sc ) {
+    if ( collabclient_inSessionFV(&mv->fv->b) ) {
+	int dohints = 0;
+	SCPreserveState( sc, dohints );
+    }
+}
+
+
 /* If we are in a collab session, then send the redo through */
 /* to the server to update other clients to our state.	     */
 static void MV_handle_collabclient_sendRedo( MetricsView *mv, SplineChar *sc ) {
@@ -1142,6 +1151,7 @@ return( true );
 
 	    SCSynchronizeWidth(sc,val,sc->width,NULL);
 	    SCCharChangedUpdate(sc,ly_none);
+	    printf("mv_widthChanged() sending collab\n");
 	    MV_handle_collabclient_sendRedo(mv,sc);
 
 	} else if ( mv->vertical && val!=sc->vwidth ) {
@@ -4667,6 +4677,7 @@ return;
 	    // nothing
 	}
 
+	printf("mvsubmouse() mv->pressedwidth:%d \n", mv->pressedwidth );
 	mv->pressed = false;
 	mv->activeoff = 0;
 	sc = mv->glyphs[i].sc;
@@ -4674,6 +4685,7 @@ return;
 	    mv->pressedwidth = false;
 	    if ( mv->right_to_left ) diff = -diff;
 	    diff = diff*(mv->sf->ascent+mv->sf->descent)/(mv->pixelsize*iscale);
+	    printf("mvsubmouse() diff:%d \n", diff );
 	    if ( diff!=0 ) {
 		SCPreserveWidth(sc);
 		SCSynchronizeWidth(sc,sc->width+diff,sc->width,NULL);
@@ -4689,6 +4701,8 @@ return;
 		MVRefreshValues(mv,i-1);
 	    }
 	} else if ( mv->type!=mv_kernonly ) {
+	    printf("mvsubmouse() not kern only \n" );
+	    MV_handle_collabclient_maybeSnapshot(mv,sc);
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[5] = 0;
@@ -4696,6 +4710,8 @@ return;
 		    (mv->sf->ascent+mv->sf->descent)/(mv->pixelsize*iscale);
 	    if ( transform[4]!=0 )
 		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL, 0 | fvt_alllayers );
+
+	    MV_handle_collabclient_sendRedo(mv,sc);
 	}
 	mv->pressedwidth = false;
 	mv->pressedkern = false;
