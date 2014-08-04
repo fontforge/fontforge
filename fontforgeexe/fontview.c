@@ -6651,7 +6651,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	int actualuni) {
 /* This is for the popup which appears when you hover mouse over a character on main window */
     int upos=-1;
-    char *msg = "";
+    char *msg, *msg_old;
 
     /* If a glyph is multiply mapped then the inbuild unicode enc may not be */
     /*  the actual one used to access the glyph */
@@ -6694,17 +6694,24 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	if ( uniname != NULL ) free( uniname ); uniname = NULL;
 
 	/* annotation */
-	char *uniannot;
-	if( ( uniannot = unicode_annot( upos )) != NULL )
-	    msg = xasprintf("%s\n%s", msg, uniannot);
-	if ( uniannot != NULL ) free( uniannot ); uniannot = NULL;
+        char *uniannot = unicode_annot( upos );
+        if( uniannot != NULL ) {
+            msg_old = msg;
+            msg = xasprintf("%s\n%s", msg_old, uniannot);
+            free(msg_old);
+            free( uniannot );
+        }
     }
 
     /* user comments */
-    if ( sc->comment!=NULL )
-        msg = xasprintf("%s\n%s", msg, sc->comment);
+    if ( sc->comment!=NULL ) {
+        msg_old = msg;
+        msg = xasprintf("%s\n%s", msg_old, sc->comment);
+        free(msg_old);
+    }
 
     GGadgetPreparePopup8( gw, msg );
+    free(msg);
 }
 
 static void noop(void *UNUSED(_fv)) {
