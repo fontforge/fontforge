@@ -52,7 +52,7 @@
 // Set to true if you want to see the raw SFD undo fragments which
 // are moving to/from the server.
 //
-#define DEBUG_SHOW_SFD_CHUNKS 0
+extern int DEBUG_SHOW_SFD_CHUNKS; // defined in collabclient.c
 
 
 
