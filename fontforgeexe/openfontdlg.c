@@ -548,6 +548,7 @@ return( pos!=-1 );
     if ( ufile==NULL )
 return( true );
     file = u2def_copy(ufile);
+    free(ufile);
 
     fontnames = GetFontNames(file);
     if ( fontnames==NULL || fontnames[0]==NULL )
@@ -566,6 +567,12 @@ return( true );
 	msg[len-1] = '\0';
     }
     GGadgetPreparePopup(GGadgetGetWindow(d->gfc),msg);
+    if ( fontnames!=NULL ) {
+        for ( cnt=0; fontnames[cnt]!=NULL; ++cnt ) {
+            free(fontnames[cnt]);
+        }
+        free(fontnames);
+    }
     free(file);
     free(d->lastpopupfontname);
     d->lastpopupfontname = msg;
