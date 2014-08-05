@@ -47,14 +47,15 @@ int AutoSaveFrequency=5;
 static char *getAutoDirName(char *buffer) {
     char *dir=getFontForgeUserDir(Config);
 
-    if ( dir==NULL )
-return( NULL );
-    sprintf(buffer,"%s/autosave", dir);
-    if ( access(buffer,F_OK)==-1 )
-	if ( GFileMkDir(buffer)==-1 )
-return( NULL );
-    dir = copy(buffer);
-return( dir );
+    if ( dir!=NULL ) {
+        sprintf(buffer,"%s/autosave", dir);
+        free(dir);
+        if ( access(buffer,F_OK)==-1 )
+            if ( GFileMkDir(buffer)==-1 )
+                return( NULL );
+        dir = copy(buffer);
+    }
+    return( dir );
 }
 
 static void MakeAutoSaveName(SplineFont *sf) {

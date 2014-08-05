@@ -1886,6 +1886,10 @@ typedef struct splinefont {
 	    /* ufo_descent is negative */
 
     struct sfundoes *undoes;
+    enum {
+	collab_uuid_sz = 40 
+    } SplineFontConstants;
+    char collab_uuid[ collab_uuid_sz ];
 } SplineFont;
 
 struct axismap {

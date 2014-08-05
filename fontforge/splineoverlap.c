@@ -1219,14 +1219,12 @@ static void SplitMonotonicAtFlex(Monotonic *m,int which,bigreal coord,
 
 static void SplitMonotonicAt(Monotonic *m,int which,bigreal coord,
 	struct inter_data *id) {
-  return SplitMonotonicAtFlex(m, which, coord,
-	id, 1);
+  SplitMonotonicAtFlex(m, which, coord, id, 1);
 }
 
 static void SplitMonotonicAtFake(Monotonic *m,int which,bigreal coord,
 	struct inter_data *id) {
-  return SplitMonotonicAtFlex(m, which, coord,
-	id, 0);
+  SplitMonotonicAtFlex(m, which, coord, id, 0);
 }
 
 /* An IEEE double has 52 bits of precision. So one unit of rounding error will be */

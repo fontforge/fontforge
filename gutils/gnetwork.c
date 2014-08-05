@@ -135,3 +135,11 @@ char* ff_uuid_generate( char* target )
 
     return target;
 }
+
+int ff_uuid_isValid( char* uuid )
+{
+    if( !uuid ) return 0;
+    if( !strlen(uuid)) return 0;
+    return 1;
+}
+

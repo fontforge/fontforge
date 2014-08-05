@@ -28,9 +28,13 @@
 
 int pref_collab_sessionJoinTimeoutMS = 1000;
 int pref_collab_roundTripTimerMS = 2000;
+char* pref_collab_last_server_connected_to = 0;
 
 #include "collabclientpriv.h"
 #include "inc/basics.h"
+
+int DEBUG_SHOW_SFD_CHUNKS = 0;
+
 
 void collabclient_CVPreserveStateCalled( CharViewBase *cv )
 {

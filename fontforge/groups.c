@@ -70,17 +70,25 @@ return( gp );
 /***************************** File IO for Groups *****************************/
 /******************************************************************************/
 
+/*  Returns the same string on each call, only allocating a new string 
+    when called the first time. 
+    May return NULL if user's config dir cannot be determined.
+*/
+
 static char *getPfaEditGroups(void) {
     static char *groupname=NULL;
     char buffer[1025];
+    char *userConfigDir;
 
-    if ( groupname!=NULL )
-return( groupname );
-    if ( getFontForgeUserDir(Config)==NULL )
-return( NULL );
-    sprintf(buffer,"%s/groups", getFontForgeUserDir(Config));
-    groupname = copy(buffer);
-return( groupname );
+    if ( groupname==NULL ) {
+        userConfigDir = getFontForgeUserDir(Config);
+        if ( userConfigDir!=NULL ) {
+            sprintf(buffer,"%s/groups", userConfigDir);
+            groupname = copy(buffer);
+            free(userConfigDir);
+        }
+    }
+    return( groupname );
 }
 
 static void _SaveGroupList(FILE *file, Group *g, int indent) {

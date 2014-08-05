@@ -64,9 +64,9 @@ extern int onlycopydisplayed, copymetadata, copyttfinstr, add_char_to_name_list;
 int home_char='A';
 int compact_font_on_open=0;
 int navigation_mask = 0;		/* Initialized in startui.c */
-int prefs_ensure_correct_extension = 1;
 
 static char *fv_fontnames = MONO_UI_FAMILIES;
+extern char* pref_collab_last_server_connected_to;
 
 #define	FV_LAB_HEIGHT	15
 
@@ -628,9 +628,6 @@ int _FVMenuSaveAs(FontView *fv) {
     gcd.creator = GCheckBoxCreate;
 
     GFileChooserInputFilenameFuncType FilenameFunc = GFileChooserDefInputFilenameFunc;
-    if( prefs_ensure_correct_extension ) {
-	FilenameFunc = GFileChooserSaveAsInputFilenameFunc;
-    }
 
 #if defined(__MINGW32__)
     //
@@ -655,6 +652,28 @@ int _FVMenuSaveAs(FontView *fv) {
 return( 0 );
     filename = utf82def_copy(ret);
     free(ret);
+
+    if(!(endswithi( filename, ".sfdir") || endswithi( filename, ".sfd")))
+    {
+	// they forgot the extension, so we force the default of .sfd
+	// and alert them to the fact that we have done this and we
+	// are not saving to a OTF, TTF, UFO formatted file
+
+	char* extension = ".sfd";
+	char* newpath = copyn( filename, strlen(filename) + strlen(".sfd") + 1 );
+	strcat( newpath, ".sfd" );
+
+	char* oldfn = GFileNameTail( filename );
+	char* newfn = GFileNameTail( newpath );
+	
+	LogError( _("You tried to save with the filename %s but it was saved as %s. "),
+		  oldfn, newfn );
+	LogError( _("Please choose File/Generate Fonts to save to other formats."));
+
+	free(filename);
+	filename = newpath;
+    }
+    
     FVFlattenAllBitmapSelections(fv);
     fv->b.sf->compression = 0;
     ok = SFDWrite(filename,fv->b.sf,fv->b.map,fv->b.normal,s2d);
@@ -5652,14 +5671,25 @@ static void FVMenuCollabConnectToExplicitAddress(GWindow gw, struct gmenuitem *U
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
-    printf("connecting to server... explicit address...\n");
+    printf("********** connecting to server... explicit address... p:%p\n", pref_collab_last_server_connected_to);
 
+    char* default_server = "localhost";
+    if( pref_collab_last_server_connected_to ) {
+	default_server = pref_collab_last_server_connected_to;
+    }
+    
     char* res = gwwv_ask_string(
     	"Connect to Collab Server",
-    	"localhost",
+    	default_server,
     	"Please enter the network location of the Collab server you wish to connect to...");
     if( res )
     {
+	if( pref_collab_last_server_connected_to ) {
+	    free( pref_collab_last_server_connected_to );
+	}
+	pref_collab_last_server_connected_to = copy( res );
+	SavePrefs(true);
+	
     	int port_default = 5556;
     	int port = port_default;
     	char address[IPADDRESS_STRING_LENGTH_T];
@@ -6633,7 +6663,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	int actualuni) {
 /* This is for the popup which appears when you hover mouse over a character on main window */
     int upos=-1;
-    char *msg = "";
+    char *msg, *msg_old;
 
     /* If a glyph is multiply mapped then the inbuild unicode enc may not be */
     /*  the actual one used to access the glyph */
@@ -6676,17 +6706,24 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	if ( uniname != NULL ) free( uniname ); uniname = NULL;
 
 	/* annotation */
-	char *uniannot;
-	if( ( uniannot = unicode_annot( upos )) != NULL )
-	    msg = xasprintf("%s\n%s", msg, uniannot);
-	if ( uniannot != NULL ) free( uniannot ); uniannot = NULL;
+        char *uniannot = unicode_annot( upos );
+        if( uniannot != NULL ) {
+            msg_old = msg;
+            msg = xasprintf("%s\n%s", msg_old, uniannot);
+            free(msg_old);
+            free( uniannot );
+        }
     }
 
     /* user comments */
-    if ( sc->comment!=NULL )
-        msg = xasprintf("%s\n%s", msg, sc->comment);
+    if ( sc->comment!=NULL ) {
+        msg_old = msg;
+        msg = xasprintf("%s\n%s", msg_old, sc->comment);
+        free(msg_old);
+    }
 
     GGadgetPreparePopup8( gw, msg );
+    free(msg);
 }
 
 static void noop(void *UNUSED(_fv)) {

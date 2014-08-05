@@ -341,13 +341,16 @@ return( buffer );
 }
 
 char *GFileNameTail(const char *oldname) {
-    char *pt;
+    char *pt = 0;
 
     pt = strrchr(oldname,'/');
-    if ( pt !=NULL )
-return( pt+1);
-    else
-return( (char *)oldname );
+
+    // a final slash was found, so we know that p+1 is a valid
+    // address in the string.
+    if ( pt )
+	return( pt+1);
+
+    return( (char *)oldname );
 }
 
 char *GFileAppendFile(char *dir,char *name,int isdir) {
@@ -912,11 +915,13 @@ return NULL;
 	 * the value "$HOME/.cache/fontforge" */
 	buf = smprintf("%s/%s/fontforge", home, def);
 	if(buf != NULL) {
-	/* try to create buf.  If creating the directory fails, return NULL
-	 * because nothing will get saved into an inaccessible directory.  */
-	if(mkdir_p(buf, 0755) != EXIT_SUCCESS)
-return NULL;
-return buf;
+	    /* try to create buf.  If creating the directory fails, return NULL
+	     * because nothing will get saved into an inaccessible directory.  */
+            if ( mkdir_p(buf, 0755) != EXIT_SUCCESS ) {
+                free(buf);
+                return NULL;
+            }
+            return buf;
 	}
 return NULL;
 #endif
@@ -1027,3 +1032,4 @@ char *GFileDirName(const char *path)
 	*pt = '\0';
     return strdup(ret);
 }
+

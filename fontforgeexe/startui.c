@@ -783,6 +783,7 @@ static void ensureDotFontForgeIsSetup() {
     }
     ffensuredir( basedir, "",       S_IRWXU );
     ffensuredir( basedir, "python", S_IRWXU );
+    free(basedir);
 }
 
 static void DoAutoRecoveryPostRecover_PromptUserGraphically(SplineFont *sf)

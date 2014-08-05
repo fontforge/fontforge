@@ -1218,41 +1218,6 @@ int GFileChooserDefInputFilenameFunc( GGadget *g,
     return 0;
 }
 
-int GFileChooserSaveAsInputFilenameFunc( GGadget *g,
-					 const unichar_t ** ppt,
-					 unichar_t* oldfilename ) {
-    const unichar_t* pt = *ppt;
-    char* p = u_to_c(pt);
-    int plen = strlen(p);
-    int ew = endswithi( p, ".sfdir") || endswithi( p, ".sfd");
-
-    if( !ew ) {
-	if( endswithi( u_to_c(oldfilename), ".sfd")
-	    || endswithi( u_to_c(oldfilename), ".sfdir")) {
-	    *ppt = u_copy(oldfilename);
-	    return 1;
-	}
-    }
-
-    /**
-     * If there is not a correct extension there already, then we will
-     * add one for the user to be helpful.
-     */
-    if( pt==*ppt) {
-	char* extension = ".sfd";
-	if( *p && p[plen-1] == '.' )
-	    extension = "sfd";
-	if( !ew ) {
-	    pt = u_concat( pt, c_to_u(extension) );
-	}
-    }
-
-    int ret = (pt != *ppt);
-    *ppt = pt;
-    return(ret);
-}
-
-
 void GFileChooserSetInputFilenameFunc(GGadget *g,GFileChooserInputFilenameFuncType func) {
     GFileChooser *gfc = (GFileChooser *) g;
     if ( func==NULL )

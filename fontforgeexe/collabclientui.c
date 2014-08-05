@@ -95,7 +95,6 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
     if( cc->sequence >= cc->roundTripTimerWaitingSeq )
 	cc->roundTripTimerWaitingSeq = 0;
 		    
-
     char* uuid = kvmsg_get_prop (kvmsg, "uuid" );
     byte* data = kvmsg_body (kvmsg);
     size_t data_size = kvmsg_size (kvmsg);
@@ -181,7 +180,7 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 		    printf("*** warning ut_statehint not handled\n");
 		    break;
 		}
-		
+
 		printf("________________________ READ undo.layer: %d  dm:%d layer_sz:%d\n",
 		       undo->layer, cv->drawmode, cv->sc->layer_cnt );
 		int selectedlayer = cv->drawmode;
@@ -195,13 +194,21 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 		undo->next = 0;
 		undo->next = cv->layerheads[selectedlayer]->redoes;
 		cv->layerheads[selectedlayer]->redoes = undo;
+		printf("________________________ READ ... 2\n");
+		printf("________________________ READ ... 2... ly_fore:%d cv.layer:%d\n", ly_fore, CVLayer(cv));
+		// cv->layerheads[cv->drawmode]-cv->sc->layers;
+		printf("________________________ READ ... 2...         dm:%d\n", cv->drawmode );
+		printf("________________________ READ ... 2... sc->layers:%p\n", cv->sc->layers );
+		printf("________________________ READ ... 2... lh.dm     :%p\n", cv->layerheads[cv->drawmode] );
+		
 		CVDoRedo( cv );
-
+		printf("________________________ READ ... 3\n");
 		char* isLocalUndo = kvmsg_get_prop (kvmsg, "isLocalUndo" );
 		if( isLocalUndo )
 		{
 		    if( isLocalUndo[0] == '1' )
 		    {
+			printf("________________________ READ ... isLocal. \n");
 			Undoes* undo = cv->layerheads[selectedlayer]->undoes;
 			if( undo )
 			{
@@ -211,6 +218,7 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 			}
 		    }
 		}
+		printf("________________________ READ ... 4\n");
 
 		if( cv->drawmode != oldlayer )
 		{
@@ -218,6 +226,7 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 		    CVCharChangedUpdate( cv );
 
 		}
+		printf("________________________ READ ... 5\n");
 		
 		
 	    }
@@ -314,25 +323,31 @@ static void zeromq_beacon_fd_callback(int zeromq_fd, void* datas )
     int opt = 0;
     size_t optsz = sizeof(int);
     zmq_getsockopt( zbeacon_socket (client_beacon), ZMQ_EVENTS, &opt, &optsz );
+//    printf("zeromq_beacon_fd_callback(2) opt:%d\n", opt );
 
     if( opt & ZMQ_POLLIN )
     {
-	printf("zeromq_beacon_fd_callback() have message!\n");
+//	printf("zeromq_beacon_fd_callback() have message!\n");
 
 	while( 1 )
 	{
 	    char *ipaddress = zstr_recv_nowait (zbeacon_socket (client_beacon));
+//	    printf("zeromq_beacon_fd_callback() have data? p:%p\n", ipaddress );
 	    if( ipaddress )
 	    {
-		printf("zeromq_beacon_fd_callback() have message! ip:%s\n", ipaddress );
+//		printf("zeromq_beacon_fd_callback() have message! ip:%s\n", ipaddress );
 		zframe_t *content = zframe_recv_nowait (zbeacon_socket (client_beacon));
 		if( content )
 		{
 		    beacon_announce_t* ba = (beacon_announce_t*)zframe_data(content);
-		    printf("uuid:%s\n", ba->uuid );
-		    printf("user:%s\n", ba->username );
-		    printf("mach:%s\n", ba->machinename );
+//		    printf("uuid:%s\n", ba->uuid );
+//		    printf("user:%s\n", ba->username );
+//		    printf("mach:%s\n", ba->machinename );
 
+//		    if( ba->version >= 2 && ff_uuid_isValid(ba->uuid) ) {
+//			printf("have a beacon back for xuid:%s\n", ba->uuid );
+//		    }
+		    
 		    beacon_announce_t* copy = g_malloc( sizeof(beacon_announce_t));
 		    memcpy( copy, ba, sizeof(beacon_announce_t));
 		    copy->last_msg_from_peer_time = time(0);
@@ -433,7 +448,9 @@ collabclient_ensureClientBeacon(void)
     
     
     client_beacon = zbeacon_new( obtainMainZMQContext(), 5670 );
+    DEBUG("client beacon address: %s\n", zbeacon_hostname(client_beacon));
     zbeacon_subscribe (client_beacon, NULL, 0);
+    zsocket_set_rcvtimeo (zbeacon_socket (client_beacon), 100);
     int fd = 0;
     size_t fdsz = sizeof(fd);
     int rc = zmq_getsockopt( zbeacon_socket(client_beacon), ZMQ_FD, &fd, &fdsz );
@@ -508,6 +525,8 @@ void* collabclient_new( char* address, int port )
 #ifdef BUILD_COLLAB
 
     printf("collabclient_new() address:%s port:%d\n", address, port );
+
+    DEBUG_SHOW_SFD_CHUNKS = getenv("FONTFORGE_DEBUG_COLLAB_SHOW_SFD_CHUNKS") > 0;
     
     cloneclient_t *cc = 0;
     cc = (cloneclient_t *) zmalloc (sizeof (cloneclient_t));
@@ -582,7 +601,7 @@ void collabclient_free( void** ccvp )
 
 #ifdef BUILD_COLLAB
 
-static void collabclient_sendSFD( void* ccvp, char* sfd, char* fontname )
+static void collabclient_sendSFD( void* ccvp, char* sfd, char* collab_uuid, char* fontname )
 {
     cloneclient_t* cc = (cloneclient_t*)ccvp;
 
@@ -591,6 +610,8 @@ static void collabclient_sendSFD( void* ccvp, char* sfd, char* fontname )
     kvmsg_set_body (kvmsg, sfd, strlen(sfd));
     kvmsg_set_prop (kvmsg, "type", MSG_TYPE_SFD );
     kvmsg_set_prop (kvmsg, "fontname", fontname );
+    printf("****** collab_uuid: %s\n", collab_uuid );
+    kvmsg_set_prop (kvmsg, "collab_uuid", collab_uuid );
 //    kvmsg_set_prop (kvmsg, "ttl", "%d", randof (30));
     kvmsg_send     (kvmsg, cc->publisher);
     kvmsg_destroy (&kvmsg);
@@ -676,8 +697,8 @@ collabclient_sendRedo_Internal( FontViewBase *fv, SplineChar *sc, Undoes *undo, 
     char* uuid = fv->sf->xuid;
     printf("uuid:%s\n", uuid );
 
-    printf("________________________ WRITE undo.layer: %d layer_sz:%d\n",
-	   undo->layer, sc->layer_cnt );
+    printf("________________________ WRITE undo.layer: %d type:%d layer_sz:%d\n",
+	   undo->layer, undo->undotype, sc->layer_cnt );
     
     int idx = 0;
     char filename[PATH_MAX];
@@ -760,6 +781,41 @@ static void collabclient_sniffForLocalServer_timer( void* udata )
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef BUILD_COLLAB
+
+BackgroundTimer_t* beacon_moon_bounce_timerID = 0;
+
+static void beacon_moon_bounce_timer_callback( void* ccvp )
+{
+    cloneclient_t *cc = (cloneclient_t*)ccvp;
+    char* sought_uuid = cc->unacknowledged_beacon_uuid;
+
+    BackgroundTimer_remove( beacon_moon_bounce_timerID );
+    beacon_moon_bounce_timerID = 0;
+    
+    time_t tt = time(0);
+    GHashTableIter iter;
+    gpointer key, value;
+
+    g_hash_table_iter_init (&iter, peers);
+    while (g_hash_table_iter_next (&iter, &key, &value)) 
+    {
+	beacon_announce_t* ba = (beacon_announce_t*)value;
+	if( !strcmp( ba->uuid, sought_uuid ))
+	{
+	    printf("it took %d seconds to get a beacon back from the server\n",
+		   tt - cc->unacknowledged_beacon_sendTime );
+	    strcpy( cc->unacknowledged_beacon_uuid, "" );
+	    cc->unacknowledged_beacon_sendTime = 0;
+	    return;
+	}
+    }
+
+    LogError( _("Collab: A beacon has not been received from the server"));
+    LogError( _("Collab: Please ensure that UDP port 5670 is not firewalled."));
+}
+#endif
+
 
 void collabclient_sessionStart( void* ccvp, FontView *fv )
 {
@@ -796,6 +852,12 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
     }
     
     printf("Starting a session, sending it the current SFD as a baseline...\n");
+    if( !ff_uuid_isValid( fv->b.sf->collab_uuid))
+	ff_uuid_generate( fv->b.sf->collab_uuid );
+    strcpy( cc->unacknowledged_beacon_uuid, fv->b.sf->collab_uuid );
+    time( &cc->unacknowledged_beacon_sendTime );
+
+    
     int s2d = 0;
     char filename[PATH_MAX];
     snprintf(filename, PATH_MAX, "%s/fontforge-collab-start-%d.sfd", getTempDir(), getpid());
@@ -805,7 +867,7 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
     {
 	char* sfd = GFileReadAll( filename );
 	printf("connecting to server...4 sfd:%p\n", sfd );
-	collabclient_sendSFD( cc, sfd, fv->b.sf->fontname );
+	collabclient_sendSFD( cc, sfd, fv->b.sf->collab_uuid, fv->b.sf->fontname );
     }
     GFileUnlink(filename);
     printf("connecting to server...sent the sfd for session start.\n");
@@ -814,9 +876,10 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
 
     collabclient_setHaveLocalServer( 1 );
 
+    beacon_moon_bounce_timerID = BackgroundTimer_new( 3000, beacon_moon_bounce_timer_callback, cc );
+
 #endif
 }
-
 
 
 
@@ -1044,12 +1107,14 @@ void collabclient_sendRedo_SC( SplineChar *sc, int layer )
     if( !cc )
 	return;
 
-    printf("collabclient_sendRedo(SC) fv:%p\n", fv );
+    printf("collabclient_sendRedo(SC) fv:%p layer:%d\n", fv, layer );
     printf("collabclient_sendRedo() preserveUndo:%p\n", cc->preserveUndo );
     if( !cc->preserveUndo )
 	return;
 
-//    dumpUndoChain( "start of collabclient_sendRedo()", sc, sc->layers[layer].undoes );
+    if( DEBUG_SHOW_SFD_CHUNKS )
+	dumpUndoChain( "start of collabclient_sendRedo()", sc, sc->layers[layer].undoes );
+    if( true )
     {
 	Undoes* undo = sc->layers[layer].undoes;
 	while( undo && undo->undotype == ut_statehint )
@@ -1059,6 +1124,21 @@ void collabclient_sendRedo_SC( SplineChar *sc, int layer )
 	}
 	sc->layers[layer].undoes = undo;
     }
+
+#if 0    
+    // This is a special case for testing metricsview
+    // for undo chains 3,1,7: ut_statehint, ut_state, ut_width
+    {
+	Undoes* undo = sc->layers[layer].undoes;
+	if( undo && undo->next && undo->undotype == ut_state && undo->next->undotype == ut_width )
+	    undo = undo->next;
+	// FIXME: throwing away info here, should do better.
+	sc->layers[layer].undoes = undo;
+    }
+#endif
+    if( DEBUG_SHOW_SFD_CHUNKS )
+	dumpUndoChain( "start of collabclient_sendRedo(2)", sc, sc->layers[layer].undoes );
+
     
     SCDoUndo( sc, layer );
 //    CVDoUndo( cv );
