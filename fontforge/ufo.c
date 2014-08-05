@@ -1488,9 +1488,9 @@ static PyObject *LibToPython(xmlDocPtr doc,xmlNodePtr dict) {
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
 		// See that the item is in fact a key.
 		if ( xmlStrcmp(keys->name,(const xmlChar *) "key")== 0 ) {
-			// Fetch the name, which, according to the libxml specification, is the first child.
+			// Fetch the key name, which, according to the libxml specification, is the first child of the key entry.
 			char *keyname = (char *) xmlNodeListGetString(doc,keys->children,true);
-			// In a property list, the value is a sibling of the key name.
+			// In a property list, the value entry is a sibling of the key entry. The value itself is a child.
 			// Iterate through the following siblings (including keys (!)) until we find a text entry.
 			for ( temp=keys->next; temp!=NULL; temp=temp->next ) {
 				if ( xmlStrcmp(temp->name,(const xmlChar *) "text")!=0 ) break;
