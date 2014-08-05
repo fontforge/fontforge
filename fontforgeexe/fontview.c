@@ -8138,6 +8138,9 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
 		*rpt='\0';
 	}
     }
+    // else {
+    //     printf("Clicked on Cancel!\n");
+    // }
     FontViewFree(&gs.fv->b);
     GDrawSetUserData(gs.gw,NULL);
     GDrawSetUserData(dw,NULL);

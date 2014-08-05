@@ -646,8 +646,15 @@ static void KCD_UpdateGlyphFromName(KernClassDlg *kcd,int which,char* glyphname)
 
     char* localglyphname = copy( glyphname );
     char* p = 0;
-    if((p = strstr( localglyphname, " " )))
-	*p = '\0';
+
+    /*
+     * This is to know if we have multiple glyphs selected, in which case
+     * they are space-separated.
+     * localglyphname will be NULL if the user deselects all glyphs in the chooser
+     * and clicks on Cancel. So NULL-check before dereferencing.
+     */
+    if( localglyphname != NULL && (p = strstr( localglyphname, " " )) )
+        *p = '\0';
 
     BDFCharFree(*scpos);
     *scpos = NULL;
