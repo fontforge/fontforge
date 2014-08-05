@@ -195,7 +195,7 @@ xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc) {
     dictnode = xmlNewNode(NULL, BAD_CAST "dict"); //     "  <dict>"
     if ( has_hints 
 #ifndef _NO_PYTHON
-         || (python_persistent!=NULL && PyMapping_Check((PyObject *)python_persistent) && sc!=NULL)
+         || (python_persistent!=NULL && PyMapping_Check((PyObject *)python_persistent))
 #endif
        ) {
 
@@ -207,49 +207,51 @@ xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc) {
 	    //                                           "    <key>com.fontlab.hintData</key>\n"
 	    //                                           "    <dict>"
             xmlNodePtr hintdict = xmlNewChild(dictnode, NULL, BAD_CAST "dict", NULL);
-	    if ( sc->hstem!=NULL ) {
-                StemInfo *h;
-                xmlNewChild(hintdict, NULL, BAD_CAST "key", BAD_CAST "hhints");
-		//                                       "      <key>hhints</key>"
-		//                                       "      <array>"
-                xmlNodePtr hintarray = xmlNewChild(hintdict, NULL, BAD_CAST "array", NULL);
-		for ( h = sc->hstem; h!=NULL; h=h->next ) {
-                    char * valtmp = NULL;
-                    xmlNodePtr stemdict = xmlNewChild(hintarray, NULL, BAD_CAST "dict", NULL);
-		    //                                   "        <dict>"
-                    xmlNewChild(stemdict, NULL, BAD_CAST "key", "position");
-		    //                                   "          <key>position</key>"
-                    xmlNewChildInteger(stemdict, NULL, BAD_CAST "integer", (int) rint(h->start));
-		    //                                   "          <integer>%d</integer>\n" ((int) rint(h->start))
-                    xmlNewChild(stemdict, NULL, BAD_CAST "key", "width");
-		    //                                   "          <key>width</key>"
-                    xmlNewChildInteger(stemdict, NULL, BAD_CAST "integer", (int) rint(h->width));
-		    //                                   "          <integer>%d</integer>\n" ((int) rint(h->width))
-		    //                                   "        </dict>\n"
-		}
-		//                                       "      </array>\n"
-	    }
-	    if ( sc->vstem!=NULL ) {
-                StemInfo *h;
-                xmlNewChild(hintdict, NULL, BAD_CAST "key", BAD_CAST "vhints");
-		//                                       "      <key>vhints</key>"
-		//                                       "      <array>"
-                xmlNodePtr hintarray = xmlNewChild(hintdict, NULL, BAD_CAST "array", NULL);
-		for ( h = sc->vstem; h!=NULL; h=h->next ) {
-                    char * valtmp = NULL;
-                    xmlNodePtr stemdict = xmlNewChild(hintarray, NULL, BAD_CAST "dict", NULL);
-		    //                                   "        <dict>"
-                    xmlNewChild(stemdict, NULL, BAD_CAST "key", "position");
-		    //                                   "          <key>position</key>"
-                    xmlNewChildInteger(stemdict, NULL, BAD_CAST "integer", (int) rint(h->start));
-		    //                                   "          <integer>%d</integer>\n" ((int) rint(h->start))
-                    xmlNewChild(stemdict, NULL, BAD_CAST "key", "width");
-		    //                                   "          <key>width</key>"
-                    xmlNewChildInteger(stemdict, NULL, BAD_CAST "integer", (int) rint(h->width));
-		    //                                   "          <integer>%d</integer>\n" ((int) rint(h->width))
-		    //                                   "        </dict>\n"
-		}
-		//                                       "      </array>\n"
+            if ( sc != NULL ) {
+	        if ( sc->hstem!=NULL ) {
+                    StemInfo *h;
+                    xmlNewChild(hintdict, NULL, BAD_CAST "key", BAD_CAST "hhints");
+                    //                                   "      <key>hhints</key>"
+                    //                                   "      <array>"
+                    xmlNodePtr hintarray = xmlNewChild(hintdict, NULL, BAD_CAST "array", NULL);
+                    for ( h = sc->hstem; h!=NULL; h=h->next ) {
+                        char * valtmp = NULL;
+                        xmlNodePtr stemdict = xmlNewChild(hintarray, NULL, BAD_CAST "dict", NULL);
+		        //                               "        <dict>"
+                        xmlNewChild(stemdict, NULL, BAD_CAST "key", "position");
+		        //                               "          <key>position</key>"
+                        xmlNewChildInteger(stemdict, NULL, BAD_CAST "integer", (int) rint(h->start));
+		        //                               "          <integer>%d</integer>\n" ((int) rint(h->start))
+                        xmlNewChild(stemdict, NULL, BAD_CAST "key", "width");
+		        //                               "          <key>width</key>"
+                        xmlNewChildInteger(stemdict, NULL, BAD_CAST "integer", (int) rint(h->width));
+		        //                               "          <integer>%d</integer>\n" ((int) rint(h->width))
+		        //                               "        </dict>\n"
+		    }
+		    //                                   "      </array>\n"
+	        }
+	        if ( sc->vstem!=NULL ) {
+                    StemInfo *h;
+                    xmlNewChild(hintdict, NULL, BAD_CAST "key", BAD_CAST "vhints");
+                    //                                   "      <key>vhints</key>"
+                    //                                   "      <array>"
+                    xmlNodePtr hintarray = xmlNewChild(hintdict, NULL, BAD_CAST "array", NULL);
+                    for ( h = sc->vstem; h!=NULL; h=h->next ) {
+                        char * valtmp = NULL;
+                        xmlNodePtr stemdict = xmlNewChild(hintarray, NULL, BAD_CAST "dict", NULL);
+                        //                               "        <dict>"
+                        xmlNewChild(stemdict, NULL, BAD_CAST "key", "position");
+                        //                               "          <key>position</key>"
+                        xmlNewChildInteger(stemdict, NULL, BAD_CAST "integer", (int) rint(h->start));
+                        //                               "          <integer>%d</integer>\n" ((int) rint(h->start))
+                        xmlNewChild(stemdict, NULL, BAD_CAST "key", "width");
+                        //                               "          <key>width</key>"
+                        xmlNewChildInteger(stemdict, NULL, BAD_CAST "integer", (int) rint(h->width));
+                        //                               "          <integer>%d</integer>\n" ((int) rint(h->width))
+                        //                               "        </dict>\n"
+                    }
+                    //                                   "      </array>\n"
+	        }
 	    }
 	    //                                           "    </dict>"
 	}
