@@ -319,7 +319,7 @@ xmlNodePtr PyObjectToXML( PyObject *value ) {
     } else if ( PyBytes_Check(value)) {		/* Must precede the sequence check */
       char *str = PyBytes_AsString(value);
       if (str != NULL) {
-        childtmp = xmlNewNode(NULL, BAD_CAST "integer"); // Create a string node.
+        childtmp = xmlNewNodeString(NULL, BAD_CAST "string", str); // Create a string node.
           // "<string>%s</string>" str
       }
     } else if ( value==Py_True )
