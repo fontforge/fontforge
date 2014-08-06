@@ -195,7 +195,7 @@ xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc) {
     dictnode = xmlNewNode(NULL, BAD_CAST "dict"); //     "  <dict>"
     if ( has_hints 
 #ifndef _NO_PYTHON
-         || (python_persistent!=NULL && PyMapping_Check((PyObject *)python_persistent) && sc!=NULL)
+         || (python_persistent!=NULL && PyMapping_Check((PyObject *)python_persistent))
 #endif
        ) {
 
@@ -207,49 +207,51 @@ xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc) {
 	    //                                           "    <key>com.fontlab.hintData</key>\n"
 	    //                                           "    <dict>"
             xmlNodePtr hintdict = xmlNewChild(dictnode, NULL, BAD_CAST "dict", NULL);
-	    if ( sc->hstem!=NULL ) {
-                StemInfo *h;
-                xmlNewChild(hintdict, NULL, BAD_CAST "key", BAD_CAST "hhints");
-		//                                       "      <key>hhints</key>"
-		//                                       "      <array>"
-                xmlNodePtr hintarray = xmlNewChild(hintdict, NULL, BAD_CAST "array", NULL);
-		for ( h = sc->hstem; h!=NULL; h=h->next ) {
-                    char * valtmp = NULL;
-                    xmlNodePtr stemdict = xmlNewChild(hintarray, NULL, BAD_CAST "dict", NULL);
-		    //                                   "        <dict>"
-                    xmlNewChild(stemdict, NULL, BAD_CAST "key", "position");
-		    //                                   "          <key>position</key>"
-                    xmlNewChildInteger(stemdict, NULL, BAD_CAST "integer", (int) rint(h->start));
-		    //                                   "          <integer>%d</integer>\n" ((int) rint(h->start))
-                    xmlNewChild(stemdict, NULL, BAD_CAST "key", "width");
-		    //                                   "          <key>width</key>"
-                    xmlNewChildInteger(stemdict, NULL, BAD_CAST "integer", (int) rint(h->width));
-		    //                                   "          <integer>%d</integer>\n" ((int) rint(h->width))
-		    //                                   "        </dict>\n"
-		}
-		//                                       "      </array>\n"
-	    }
-	    if ( sc->vstem!=NULL ) {
-                StemInfo *h;
-                xmlNewChild(hintdict, NULL, BAD_CAST "key", BAD_CAST "vhints");
-		//                                       "      <key>vhints</key>"
-		//                                       "      <array>"
-                xmlNodePtr hintarray = xmlNewChild(hintdict, NULL, BAD_CAST "array", NULL);
-		for ( h = sc->vstem; h!=NULL; h=h->next ) {
-                    char * valtmp = NULL;
-                    xmlNodePtr stemdict = xmlNewChild(hintarray, NULL, BAD_CAST "dict", NULL);
-		    //                                   "        <dict>"
-                    xmlNewChild(stemdict, NULL, BAD_CAST "key", "position");
-		    //                                   "          <key>position</key>"
-                    xmlNewChildInteger(stemdict, NULL, BAD_CAST "integer", (int) rint(h->start));
-		    //                                   "          <integer>%d</integer>\n" ((int) rint(h->start))
-                    xmlNewChild(stemdict, NULL, BAD_CAST "key", "width");
-		    //                                   "          <key>width</key>"
-                    xmlNewChildInteger(stemdict, NULL, BAD_CAST "integer", (int) rint(h->width));
-		    //                                   "          <integer>%d</integer>\n" ((int) rint(h->width))
-		    //                                   "        </dict>\n"
-		}
-		//                                       "      </array>\n"
+            if ( sc != NULL ) {
+	        if ( sc->hstem!=NULL ) {
+                    StemInfo *h;
+                    xmlNewChild(hintdict, NULL, BAD_CAST "key", BAD_CAST "hhints");
+                    //                                   "      <key>hhints</key>"
+                    //                                   "      <array>"
+                    xmlNodePtr hintarray = xmlNewChild(hintdict, NULL, BAD_CAST "array", NULL);
+                    for ( h = sc->hstem; h!=NULL; h=h->next ) {
+                        char * valtmp = NULL;
+                        xmlNodePtr stemdict = xmlNewChild(hintarray, NULL, BAD_CAST "dict", NULL);
+		        //                               "        <dict>"
+                        xmlNewChild(stemdict, NULL, BAD_CAST "key", "position");
+		        //                               "          <key>position</key>"
+                        xmlNewChildInteger(stemdict, NULL, BAD_CAST "integer", (int) rint(h->start));
+		        //                               "          <integer>%d</integer>\n" ((int) rint(h->start))
+                        xmlNewChild(stemdict, NULL, BAD_CAST "key", "width");
+		        //                               "          <key>width</key>"
+                        xmlNewChildInteger(stemdict, NULL, BAD_CAST "integer", (int) rint(h->width));
+		        //                               "          <integer>%d</integer>\n" ((int) rint(h->width))
+		        //                               "        </dict>\n"
+		    }
+		    //                                   "      </array>\n"
+	        }
+	        if ( sc->vstem!=NULL ) {
+                    StemInfo *h;
+                    xmlNewChild(hintdict, NULL, BAD_CAST "key", BAD_CAST "vhints");
+                    //                                   "      <key>vhints</key>"
+                    //                                   "      <array>"
+                    xmlNodePtr hintarray = xmlNewChild(hintdict, NULL, BAD_CAST "array", NULL);
+                    for ( h = sc->vstem; h!=NULL; h=h->next ) {
+                        char * valtmp = NULL;
+                        xmlNodePtr stemdict = xmlNewChild(hintarray, NULL, BAD_CAST "dict", NULL);
+                        //                               "        <dict>"
+                        xmlNewChild(stemdict, NULL, BAD_CAST "key", "position");
+                        //                               "          <key>position</key>"
+                        xmlNewChildInteger(stemdict, NULL, BAD_CAST "integer", (int) rint(h->start));
+                        //                               "          <integer>%d</integer>\n" ((int) rint(h->start))
+                        xmlNewChild(stemdict, NULL, BAD_CAST "key", "width");
+                        //                               "          <key>width</key>"
+                        xmlNewChildInteger(stemdict, NULL, BAD_CAST "integer", (int) rint(h->width));
+                        //                               "          <integer>%d</integer>\n" ((int) rint(h->width))
+                        //                               "        </dict>\n"
+                    }
+                    //                                   "      </array>\n"
+	        }
 	    }
 	    //                                           "    </dict>"
 	}
@@ -319,7 +321,7 @@ xmlNodePtr PyObjectToXML( PyObject *value ) {
     } else if ( PyBytes_Check(value)) {		/* Must precede the sequence check */
       char *str = PyBytes_AsString(value);
       if (str != NULL) {
-        childtmp = xmlNewNode(NULL, BAD_CAST "integer"); // Create a string node.
+        childtmp = xmlNewNodeString(NULL, BAD_CAST "string", str); // Create a string node.
           // "<string>%s</string>" str
       }
     } else if ( value==Py_True )
@@ -1488,9 +1490,9 @@ static PyObject *LibToPython(xmlDocPtr doc,xmlNodePtr dict) {
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
 		// See that the item is in fact a key.
 		if ( xmlStrcmp(keys->name,(const xmlChar *) "key")== 0 ) {
-			// Fetch the name, which, according to the libxml specification, is the first child.
+			// Fetch the key name, which, according to the libxml specification, is the first child of the key entry.
 			char *keyname = (char *) xmlNodeListGetString(doc,keys->children,true);
-			// In a property list, the value is a sibling of the key name.
+			// In a property list, the value entry is a sibling of the key entry. The value itself is a child.
 			// Iterate through the following siblings (including keys (!)) until we find a text entry.
 			for ( temp=keys->next; temp!=NULL; temp=temp->next ) {
 				if ( xmlStrcmp(temp->name,(const xmlChar *) "text")!=0 ) break;
