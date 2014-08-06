@@ -1035,7 +1035,8 @@ void _FVMenuOpen(FontView *fv) {
 #if defined(__MINGW32__)
     OpenDir = GFileGetHomeDocumentsDir(); //Default value
     if (fv && fv->b.sf && fv->b.sf->filename) {
-        OpenDir = GFileDirName(fv->b.sf->filename);
+	free(OpenDir);
+        OpenDir = copy( GFileDirName( fv->b.sf->filename));
     }
 #endif
 
@@ -1060,7 +1061,7 @@ return;
 	for ( fvtest=0, test=fv_list; test!=NULL; ++fvtest, test=(FontView *) (test->b.next) );
     } while ( fvtest==fvcnt );	/* did the load fail for some reason? try again */
     
-    if (OpenDir != NULL) free(OpenDir);
+    free( OpenDir );
 }
 
 static void FVMenuOpen(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
