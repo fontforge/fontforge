@@ -2128,10 +2128,10 @@ static char *KCD_PickGlyphsForClass(GGadget *g,int r, int c) {
     int which    = GWidgetGetControl(kcd->gw,CID_ClassList+100) == g;
     int widgetid = whichToWidgetID( which );
     char *new = GlyphSetFromSelection(kcd->sf,kcd->layer,classes[r*cols+c].u.md_str);
-
-    GGadgetSetTitle8(GWidgetGetControl(kcd->gw,widgetid),new );
-    KCD_UpdateGlyphFromName(kcd,which,new);
-
+    if (new != NULL) {
+      GGadgetSetTitle8(GWidgetGetControl(kcd->gw,widgetid),new );
+      KCD_UpdateGlyphFromName(kcd,which,new);
+    }
     char *other = GGadgetGetTitle8(GWidgetGetControl(kcd->gw,whichToWidgetID( !which )));
     if( other )
     {
