@@ -123,7 +123,7 @@ static xmlNodePtr xmlNewNodeFloat(xmlNsPtr ns, const xmlChar * name, double valu
   return NULL;
 }
 static xmlNodePtr xmlNewChildString(xmlNodePtr parent, xmlNsPtr ns, const xmlChar * name, char * value) {
-  xmlNodePtr childtmp = xmlNewChild(parent, NULL, BAD_CAST name, BAD_CAST value); // Make a text node for the value.
+  xmlNodePtr childtmp = xmlNewTextChild(parent, ns, BAD_CAST name, BAD_CAST value); // Make a text node for the value.
   return childtmp;
 }
 static xmlNodePtr xmlNewNodeString(xmlNsPtr ns, const xmlChar * name, char * value) {
@@ -653,7 +653,7 @@ void PListAddString(xmlNodePtr parent, const char *key, const char *value) {
     }
     xmlNodePtr valnode = xmlNewChild(parent, NULL, BAD_CAST "string", tmpstring); // "<string>%s</string>" tmpstring
 #else
-    xmlNodePtr valnode = xmlNewChild(parent, NULL, BAD_CAST "string", value); // "<string>%s</string>" tmpstring
+    xmlNodePtr valnode = xmlNewTextChild(parent, NULL, BAD_CAST "string", value); // "<string>%s</string>" tmpstring
 #endif
 }
 
@@ -1374,8 +1374,8 @@ return( false );
         }
         if (layer_path_start != NULL) { free(layer_path_start); layer_path_start = NULL; }
         // We write to the layer contents.
-        xmlNewChild(layernode, NULL, BAD_CAST "string", numberedlayername);
-        xmlNewChild(layernode, NULL, BAD_CAST "string", numberedlayerpath);
+        xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayername);
+        xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayerpath);
         // We write the glyph directory.
         err |= WriteUFOLayer(glyphdir, sf, layer_pos);
         free(numberedlayername); numberedlayername = NULL;
