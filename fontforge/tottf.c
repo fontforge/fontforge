@@ -5676,13 +5676,15 @@ return( false );
 	}
 	AssignTTFBitGlyph(&at->gi,sf,at->map,bsizes);
     }
-    if ( at->gi.gcnt>=65535 ) {
-	/* You might think we could use GID 65535, but it is used as a "No Glyph" */
-	/*  mark in many places (cmap tables, mac substitutions to delete a glyph */
+    if ( at->gi.gcnt>65535 ) {
 	ff_post_error(_("Too many glyphs"), _("The 'sfnt' format is currently limited to 65535 glyphs, and your font has %d of them."),
 		at->gi.gcnt );
 	AbortTTF(at,sf);
 return( false );
+    } else if ( at->gi.gcnt==65535 ) {
+        /* GID 65535 is used as a "No Glyph" mark in many places (cmap tables, mac substitutions to delete a glyph */
+        LogError(_("Your font has exactly 65535 glyphs. Encoding 65535 is the limit and is often used as a magic \
+            value, so it may cause quirks.\n"));
     }
 
 
@@ -6513,7 +6515,7 @@ return( NULL );
     free(uhash);
     free(nhash);
 
-    if ( dummysf->glyphcnt>=0xffff ) {
+    if ( dummysf->glyphcnt>0xffff ) {
 	free(dummysf->glyphs);
 	free(bygid);
 	for ( sfitem= sfs, cnt=0; sfitem!=NULL; sfitem=sfitem->next, ++cnt )
