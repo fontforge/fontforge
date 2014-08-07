@@ -29,7 +29,9 @@ If you are reporting a crash, include a debugger backtrace report.
 Contributing Code
 ------------------------
 
-**We request that all pull requests be actively reviewed by at least one other developer, and for 2014 Frank Trampe has volunteered to do that if no one else gets there first, and aims to do so within 1 week of pull request submission.**
+We request that all pull requests be actively reviewed by at least one other developer, and for 2014 Frank Trampe has volunteered to do that if no one else gets there first. He aims to review your PR within 1 week of your most recent commit.
+
+### How To Contribute, Step by Step
 
 Contribute directly to the codebase using GitHub's Pull Requests. 
 
@@ -51,3 +53,15 @@ is required now that FontForge is not a single-man project anymore.
 - Return statements should be inline with the indentation level they are being put on.
 - Use POSIX/gnulib APIs in preference to glib, e.g. `strdup` instead of `g_strdup` and `xvasprintf`
   instead of `g_printf_strdup`. This minimizes the impact of non-standard types and functions.
+
+### People To Ask
+
+Various areas of the codebase have been worked on by different people in recent years, so if you are unfamiliar with the general area you're working in, please feel free to chat with people who have experience in that area:
+
+* Build System: Debian - Frank Trampe (frank-trampe)
+* Build System: OS X (Applicatoin bundle, Homebrew) - Dr Ben Martin (monkeyiq)
+* Build System: Windows - Jeremie Tan (jtanx)
+* Feature: Collab - Dr Ben Martin
+* Feature: Multi Glyph CharView - Dr Ben Martin
+* Feature: UFO import/export - Frank Trampe (frank-trampe)
+* Crashes: Frank Trampe, Adrien Tetar (adrientetar)
