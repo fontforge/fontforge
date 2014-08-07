@@ -133,7 +133,9 @@ char* GIOGetMimeType(const char *path) {
 	    // file name
 	    content_type=g_content_type_guess(NULL,sniff_buffer,res,&uncertain);
 	    if (uncertain) {
-		g_content_type_guess(path,sniff_buffer,res,NULL);
+	        if (content_type!=NULL)
+                    g_free(content_type);
+		content_type=g_content_type_guess(path,sniff_buffer,res,NULL);
             }
         }
     }
