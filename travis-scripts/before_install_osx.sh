@@ -1,6 +1,8 @@
 #!/bin/bash
 set -ev
 
+wget -O uthash-master.zip https://github.com/troydhanson/uthash/archive/master.zip && unzip uthash-master.zip && mv uthash-master uthash ;
+
 brew update
 
 sed -i -e "s|{TRAVIS_PULL_REQUEST}|${TRAVIS_PULL_REQUEST}|g" ./travis-scripts/fontforge.rb
