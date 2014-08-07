@@ -137,7 +137,7 @@ DISTCHECK_CONFIGURE_FLAGS = --enable-theme-2012 --enable-debug
 # understand without grouching, so we use a sneaky trick, specifically
 # a blank macro from configure.ac so as to bypass evaluation.
 
-@BLANK2@include $(top_srcdir)/pkg.mk
+@BLANK2@-include $(top_srcdir)/pkg.mk
 
 -include $(top_srcdir)/git.mk
 
