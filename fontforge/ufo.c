@@ -700,12 +700,17 @@ return;
     xmlNodePtr arrayxml = xmlNewChild(parent, NULL, BAD_CAST "array", NULL); // "<array>"
     while ( *value==' ' || *value=='[' ) ++value;
     for (;;) {
+	int havedot=0;
 	int skipping=0;
         size_t tmpsize = 8;
         char * tmp = malloc(tmpsize);
         off_t tmppos = 0;
 	while ( *value!=']' && *value!='\0' && *value!=' ' && tmp!=NULL) {
-            if (*value=='.') skipping = true;
+            // We now deal with non-integers as necessary.
+            if (*value=='.') {
+              if (havedot) skipping = true;
+              else havedot = 1;
+            }
 	    if (skipping)
 		++value;
 	    else
@@ -714,7 +719,10 @@ return;
 	}
         tmp[tmppos] = '\0';
         if (tmp != NULL) {
-          xmlNewChildString(arrayxml, NULL, BAD_CAST "integer", BAD_CAST tmp); // "<integer>%s</integer>" tmp
+          if (havedot)
+            xmlNewChildString(arrayxml, NULL, BAD_CAST "real", BAD_CAST tmp); // "<real>%s</real>" tmp
+          else
+            xmlNewChildString(arrayxml, NULL, BAD_CAST "integer", BAD_CAST tmp); // "<integer>%s</integer>" tmp
           free(tmp); tmp = NULL;
         }
 	while ( *value==' ' ) ++value;
@@ -735,12 +743,17 @@ static void PListAddPrivateThing(xmlNodePtr parent, const char *key, struct psdi
     xmlNewChildPrintf(parent, NULL, BAD_CAST "key", "postscript%s", key); // "<key>postscript%s</key>" key
     while ( *value==' ' || *value=='[' ) ++value;
     {
+	int havedot=0;
 	int skipping=0;
         size_t tmpsize = 8;
         char * tmp = malloc(tmpsize);
         off_t tmppos = 0;
 	while ( *value!=']' && *value!='\0' && *value!=' ' && tmp!=NULL) {
-            if (*value=='.') skipping = true;
+            // We now deal with non-integers as necessary.
+            if (*value=='.') {
+              if (havedot) skipping = true;
+              else havedot = 1;
+            }
 	    if (skipping)
 		++value;
 	    else
@@ -748,7 +761,10 @@ static void PListAddPrivateThing(xmlNodePtr parent, const char *key, struct psdi
             if (tmppos == tmpsize) { tmpsize *= 2; tmp = realloc(tmp, tmpsize); }
 	}
         if (tmp != NULL) {
-          xmlNewChildString(parent, NULL, BAD_CAST "integer", BAD_CAST tmp); // "<integer>%s</integer>" tmp
+          if (havedot)
+            xmlNewChildString(parent, NULL, BAD_CAST "real", BAD_CAST tmp); // "<real>%s</real>" tmp
+          else
+            xmlNewChildString(parent, NULL, BAD_CAST "integer", BAD_CAST tmp); // "<integer>%s</integer>" tmp
           free(tmp); tmp = NULL;
         }
 	while ( *value==' ' ) ++value;
