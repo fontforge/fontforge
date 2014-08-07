@@ -112,12 +112,8 @@ EXTRA_DIST += \
 	doc/README-Unix.html \
 	Packaging/FontForge-doc.spec \
 	Packaging/FontForge.spec \
-	Packaging/FontForge.static.spec
-
-if -e uthash/src ];
-then
-	EXTRA_DIST += uthash/src
-fi;
+	Packaging/FontForge.static.spec \
+	uthash/src \
 	$(NULL)
 
 #--------------------------------------------------------------------------
@@ -141,7 +137,7 @@ DISTCHECK_CONFIGURE_FLAGS = --enable-theme-2012 --enable-debug
 # understand without grouching, so we use a sneaky trick, specifically
 # a blank macro from configure.ac so as to bypass evaluation.
 
-@BLANK2@-include $(top_srcdir)/pkg.mk
+@BLANK2@include $(top_srcdir)/pkg.mk
 
 -include $(top_srcdir)/git.mk
 
