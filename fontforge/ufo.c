@@ -760,6 +760,7 @@ static void PListAddPrivateThing(xmlNodePtr parent, const char *key, struct psdi
                 tmp[tmppos++] = *value++;
             if (tmppos == tmpsize) { tmpsize *= 2; tmp = realloc(tmp, tmpsize); }
 	}
+        tmp[tmppos] = '\0';
         if (tmp != NULL) {
           if (havedot)
             xmlNewChildString(parent, NULL, BAD_CAST "real", BAD_CAST tmp); // "<real>%s</real>" tmp
