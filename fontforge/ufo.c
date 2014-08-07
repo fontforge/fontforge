@@ -1571,25 +1571,26 @@ return( LibToPython(doc,entry));
 	}
 return( ret );
     }
-
-    contents = (char *) xmlNodeListGetString(doc,entry->children,true);
-    if ( xmlStrcmp(entry->name,(const xmlChar *) "integer")==0 ) {
+    if ((entry->children != NULL) && ((contents = (char *) xmlNodeListGetString(doc,entry->children,true)) != NULL)) {
+      contents = (char *) xmlNodeListGetString(doc,entry->children,true);
+      if ( xmlStrcmp(entry->name,(const xmlChar *) "integer")==0 ) {
 	long val = strtol(contents,NULL,0);
 	free(contents);
 return( Py_BuildValue("i",val));
-    }
-    if ( xmlStrcmp(entry->name,(const xmlChar *) "real")==0 ) {
+      }
+      if ( xmlStrcmp(entry->name,(const xmlChar *) "real")==0 ) {
 	double val = strtod(contents,NULL);
 	free(contents);
 return( Py_BuildValue("d",val));
-    }
-    if ( xmlStrcmp(entry->name,(const xmlChar *) "string")==0 ) {
+      }
+      if ( xmlStrcmp(entry->name,(const xmlChar *) "string")==0 ) {
 	PyObject *ret = Py_BuildValue("s",contents);
 	free(contents);
 return( ret );
-    }
-    LogError(_("Unknown python type <%s> when reading UFO/GLIF lib data."), (char *) entry->name);
-    free( contents );
+      }
+      LogError(_("Unknown python type <%s> when reading UFO/GLIF lib data."), (char *) entry->name);
+      free( contents );
+    } else LogError(_("Missing value when reading UFO/GLIF lib data."));
 return( NULL );
 }
 #endif
