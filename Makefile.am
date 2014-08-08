@@ -130,18 +130,18 @@ DISTCHECK_CONFIGURE_FLAGS = --enable-theme-2012 --enable-debug
 
 #--------------------------------------------------------------------------
 
+uthash/src:
+	if [ ! -e uthash/src ]; then \
+	if [ -e uthash ] ; then rm -r uthash ; fi ; \
+	git clone https://github.com/troydhanson/uthash ; \
+	fi ;
+
 # We inline a selection of targets from Frank's standard packaging Makefile.
 
 # automake can't parse certain parts of Makefile syntax,
 # and there isn't an easy way to make it copy things that it doesn't
 # understand without grouching, so we use a sneaky trick, specifically
 # a blank macro from configure.ac so as to bypass evaluation.
-
-uthash/src:
-	if [ ! -e uthash/src ]; then \
-	if [ -e uthash ] ; then rm -r uthash ; fi ; \
-	git clone https://github.com/troydhanson/uthash ; \
-	fi ;
 
 @BLANK2@-include $(top_srcdir)/pkg.mk
 
