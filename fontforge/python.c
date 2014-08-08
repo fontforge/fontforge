@@ -1140,6 +1140,51 @@ static PyObject *PyFF_hasSpiro(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
 return( ret );
 }
 
+GList_Glib* closingFunctionList = 0;
+
+static PyObject *PyFF_onAppClosing(PyObject *self, PyObject *args) {
+    int i, cnt;
+
+    cnt = PyTuple_Size(args);
+    printf("PyFF_onAppClosing() cnt:%d\n", cnt );
+    if ( cnt<1 ) {
+	PyErr_Format(PyExc_TypeError, "Too few arguments");
+	return( NULL );
+    }
+    if (!PyCallable_Check(PyTuple_GetItem(args,0))) {
+	PyErr_Format(PyExc_TypeError, "First argument is not callable" );
+	return( NULL );
+    }
+    PyObject *func = PyTuple_GetItem(args,0);
+    Py_INCREF(func);
+    closingFunctionList = g_list_prepend( closingFunctionList, func );
+    
+    PyObject *ret = Py_True;
+    Py_INCREF(ret);
+    return( ret );
+}
+
+static void python_call_onClosingFunctions_fe( gpointer data, gpointer udata )
+{
+    PyObject *func = (PyObject*)data;
+    printf("python_call_onClosingFunctions_fe() f:%p\n", func );
+    if( func )
+    {
+	PyObject *arglist, *result;
+	arglist = PyTuple_New(0);
+	result = PyEval_CallObject( func, arglist);
+	if ( !result )
+	{ // error 
+	}
+    }
+}
+
+void python_call_onClosingFunctions()
+{
+    g_list_foreach( closingFunctionList,
+		    python_call_onClosingFunctions_fe, 0 );
+}
+
 /* ************************************************************************** */
 /* ************************ User Interface routines ************************* */
 /* ************************************************************************** */
@@ -17524,6 +17569,7 @@ PyMethodDef module_fontforge_methods[] = {
     { "savePrefs", PyFF_SavePrefs, METH_NOARGS, "Save FontForge preference items" },
     { "loadPrefs", PyFF_LoadPrefs, METH_NOARGS, "Load FontForge preference items" },
     { "hasSpiro", PyFF_hasSpiro, METH_NOARGS, "Returns whether this fontforge has access to Raph Levien's spiro package"},
+    { "onAppClosing", PyFF_onAppClosing, METH_VARARGS, "add a python function which is called when fontforge is closing down"},    
     { "defaultOtherSubrs", PyFF_DefaultOtherSubrs, METH_NOARGS, "Use FontForge's default \"othersubrs\" functions for Type1 fonts" },
     { "readOtherSubrsFile", PyFF_ReadOtherSubrsFile, METH_VARARGS, "Read from a file, \"othersubrs\" functions for Type1 fonts" },
     { "loadEncodingFile", PyFF_LoadEncodingFile, METH_VARARGS, "Load an encoding file into the list of encodings" },

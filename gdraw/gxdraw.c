@@ -74,6 +74,8 @@ void GDrawIError(const char *fmt,...);
 extern int gdraw_xkeysym_2_unicode[];
 
 
+extern int cmdlinearg_forceUIHidden;
+
 static void GXDrawTransmitSelection(GXDisplay *gd,XEvent *event);
 static void GXDrawClearSelData(GXDisplay *gd,enum selnames sel);
 
@@ -1401,6 +1403,9 @@ static void GXDrawSetVisible(GWindow w, int visible) {
     GXWindow gw = (GXWindow) w;
     GXDisplay *gdisp = gw->display;
 
+    if( cmdlinearg_forceUIHidden )
+	visible = false;
+    
     gw->visible_request = visible;
     if ( visible ) {
 	XMapWindow(gdisp->display,gw->w);

@@ -67,6 +67,7 @@ int navigation_mask = 0;		/* Initialized in startui.c */
 
 static char *fv_fontnames = MONO_UI_FAMILIES;
 extern char* pref_collab_last_server_connected_to;
+extern void python_call_onClosingFunctions();
 
 #define	FV_LAB_HEIGHT	15
 
@@ -114,9 +115,6 @@ FontView *fv_list=NULL;
 
 static void AskAndMaybeCloseLocalCollabServers( void );
 
-#if BUILD_COLLAB
-static void FVStopWebFontServer( FontView *fv );
-#endif
 
 static void FV_ToggleCharChanged(SplineChar *sc) {
     int i, j;
@@ -951,12 +949,7 @@ static void _MenuExit(void *UNUSED(junk)) {
 	AskAndMaybeCloseLocalCollabServers();
     }
 
-    for ( fv = fv_list; fv!=NULL; fv = next )
-    {
-	next = (FontView *) (fv->b.next);
-	printf("fv:%p running webfont server:%d\n", fv, fv->pid_webfontserver );
-	FVStopWebFontServer( fv );
-    }
+    python_call_onClosingFunctions();
 #endif
 
     LastFonts_Save();
@@ -1442,8 +1435,6 @@ static void FVMenuCondense(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 #define MID_CollabDisconnect    22002
 #define MID_CollabCloseLocalServer  22003
 #define MID_CollabConnectToExplicitAddress 22004
-#define MID_StartWebFontServer      22005
-#define MID_StopWebFontServer       22006
 
 
 #define MID_Warnings	3000
@@ -5772,36 +5763,6 @@ static void FVMenuCollabCloseLocalServer(GWindow gw, struct gmenuitem *UNUSED(mi
     AskAndMaybeCloseLocalCollabServers();
 }
 
-static void FVMenuStartWebFontServer(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
-{
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    char command_line[PATH_MAX+1];
-    sprintf(command_line, "%s/nodejs/collabwebview/collabwebview.sh", getShareDir() );
-    printf("command_line:%s\n", command_line );
-    char* argv[5];
-    argv[0] = command_line;
-    argv[1] = 0;
-    gchar **envp = 0;
-    GSpawnFlags flags = 0;
-    GError * error = 0;
-    gboolean rc = g_spawn_async( getTempDir(),
-				 argv,
-				 envp,
-				 flags,
-				 0, 0,
-				 &fv->pid_webfontserver,
-				 &error );
-    if( !rc )
-    {
-	fv->pid_webfontserver = 0;
-	fprintf(stderr, "Error starting collab webfont server\n");
-	if( error )
-	    fprintf(stderr, "code:%d message:%s\n", error->code, error->message );
-    }
-
-
-}
 
 #if defined(__MINGW32__)
 //
@@ -5814,22 +5775,6 @@ static int kill( int pid, int sig )
     TerminateProcess( hHandle, 0 );
 }
 #endif
-
-static void FVStopWebFontServer( FontView *fv )
-{
-    printf("stop %d\n", fv->pid_webfontserver );
-    if( fv->pid_webfontserver )
-    {
-	kill( fv->pid_webfontserver, SIGTERM );
-	g_spawn_close_pid( fv->pid_webfontserver );
-    }
-}
-
-static void FVMenuStopWebFontServer(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
-{
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    FVStopWebFontServer( fv );
-}
 
 
 
@@ -5862,9 +5807,6 @@ static GMenuItem2 collablist[] = {
     { { (unichar_t *) N_("_Disconnect"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Disconnect|No Shortcut"), NULL, NULL, FVMenuCollabDisconnect, MID_CollabDisconnect },
     GMENUITEM2_LINE,
     { { (unichar_t *) N_("Close local server"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Close local server|No Shortcut"), NULL, NULL, FVMenuCollabCloseLocalServer, MID_CollabCloseLocalServer },
-    GMENUITEM2_LINE,
-    { { (unichar_t *) N_("Start Webfont server"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Start Webfont server|No Shortcut"), NULL, NULL, FVMenuStartWebFontServer, MID_StartWebFontServer },
-    { { (unichar_t *) N_("Stop Webfont server"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Stop Webfont server|No Shortcut"), NULL, NULL, FVMenuStopWebFontServer, MID_StopWebFontServer },
 
     GMENUITEM2_EMPTY,				/* Extra room to show sub-font names */
 };
