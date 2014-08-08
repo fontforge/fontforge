@@ -123,7 +123,7 @@ static xmlNodePtr xmlNewNodeFloat(xmlNsPtr ns, const xmlChar * name, double valu
   return NULL;
 }
 static xmlNodePtr xmlNewChildString(xmlNodePtr parent, xmlNsPtr ns, const xmlChar * name, char * value) {
-  xmlNodePtr childtmp = xmlNewChild(parent, NULL, BAD_CAST name, BAD_CAST value); // Make a text node for the value.
+  xmlNodePtr childtmp = xmlNewTextChild(parent, ns, BAD_CAST name, BAD_CAST value); // Make a text node for the value.
   return childtmp;
 }
 static xmlNodePtr xmlNewNodeString(xmlNsPtr ns, const xmlChar * name, char * value) {
@@ -653,7 +653,7 @@ void PListAddString(xmlNodePtr parent, const char *key, const char *value) {
     }
     xmlNodePtr valnode = xmlNewChild(parent, NULL, BAD_CAST "string", tmpstring); // "<string>%s</string>" tmpstring
 #else
-    xmlNodePtr valnode = xmlNewChild(parent, NULL, BAD_CAST "string", value); // "<string>%s</string>" tmpstring
+    xmlNodePtr valnode = xmlNewTextChild(parent, NULL, BAD_CAST "string", value); // "<string>%s</string>" tmpstring
 #endif
 }
 
@@ -700,12 +700,17 @@ return;
     xmlNodePtr arrayxml = xmlNewChild(parent, NULL, BAD_CAST "array", NULL); // "<array>"
     while ( *value==' ' || *value=='[' ) ++value;
     for (;;) {
+	int havedot=0;
 	int skipping=0;
         size_t tmpsize = 8;
         char * tmp = malloc(tmpsize);
         off_t tmppos = 0;
 	while ( *value!=']' && *value!='\0' && *value!=' ' && tmp!=NULL) {
-            if (*value=='.') skipping = true;
+            // We now deal with non-integers as necessary.
+            if (*value=='.') {
+              if (havedot) skipping = true;
+              else havedot = 1;
+            }
 	    if (skipping)
 		++value;
 	    else
@@ -714,7 +719,10 @@ return;
 	}
         tmp[tmppos] = '\0';
         if (tmp != NULL) {
-          xmlNewChildString(arrayxml, NULL, BAD_CAST "integer", BAD_CAST tmp); // "<integer>%s</integer>" tmp
+          if (havedot)
+            xmlNewChildString(arrayxml, NULL, BAD_CAST "real", BAD_CAST tmp); // "<real>%s</real>" tmp
+          else
+            xmlNewChildString(arrayxml, NULL, BAD_CAST "integer", BAD_CAST tmp); // "<integer>%s</integer>" tmp
           free(tmp); tmp = NULL;
         }
 	while ( *value==' ' ) ++value;
@@ -735,20 +743,29 @@ static void PListAddPrivateThing(xmlNodePtr parent, const char *key, struct psdi
     xmlNewChildPrintf(parent, NULL, BAD_CAST "key", "postscript%s", key); // "<key>postscript%s</key>" key
     while ( *value==' ' || *value=='[' ) ++value;
     {
+	int havedot=0;
 	int skipping=0;
         size_t tmpsize = 8;
         char * tmp = malloc(tmpsize);
         off_t tmppos = 0;
 	while ( *value!=']' && *value!='\0' && *value!=' ' && tmp!=NULL) {
-            if (*value=='.') skipping = true;
+            // We now deal with non-integers as necessary.
+            if (*value=='.') {
+              if (havedot) skipping = true;
+              else havedot = 1;
+            }
 	    if (skipping)
 		++value;
 	    else
                 tmp[tmppos++] = *value++;
             if (tmppos == tmpsize) { tmpsize *= 2; tmp = realloc(tmp, tmpsize); }
 	}
+        tmp[tmppos] = '\0';
         if (tmp != NULL) {
-          xmlNewChildString(parent, NULL, BAD_CAST "integer", BAD_CAST tmp); // "<integer>%s</integer>" tmp
+          if (havedot)
+            xmlNewChildString(parent, NULL, BAD_CAST "real", BAD_CAST tmp); // "<real>%s</real>" tmp
+          else
+            xmlNewChildString(parent, NULL, BAD_CAST "integer", BAD_CAST tmp); // "<integer>%s</integer>" tmp
           free(tmp); tmp = NULL;
         }
 	while ( *value==' ' ) ++value;
@@ -1374,8 +1391,8 @@ return( false );
         }
         if (layer_path_start != NULL) { free(layer_path_start); layer_path_start = NULL; }
         // We write to the layer contents.
-        xmlNewChild(layernode, NULL, BAD_CAST "string", numberedlayername);
-        xmlNewChild(layernode, NULL, BAD_CAST "string", numberedlayerpath);
+        xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayername);
+        xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayerpath);
         // We write the glyph directory.
         err |= WriteUFOLayer(glyphdir, sf, layer_pos);
         free(numberedlayername); numberedlayername = NULL;
@@ -1555,25 +1572,26 @@ return( LibToPython(doc,entry));
 	}
 return( ret );
     }
-
-    contents = (char *) xmlNodeListGetString(doc,entry->children,true);
-    if ( xmlStrcmp(entry->name,(const xmlChar *) "integer")==0 ) {
+    if ((entry->children != NULL) && ((contents = (char *) xmlNodeListGetString(doc,entry->children,true)) != NULL)) {
+      contents = (char *) xmlNodeListGetString(doc,entry->children,true);
+      if ( xmlStrcmp(entry->name,(const xmlChar *) "integer")==0 ) {
 	long val = strtol(contents,NULL,0);
 	free(contents);
 return( Py_BuildValue("i",val));
-    }
-    if ( xmlStrcmp(entry->name,(const xmlChar *) "real")==0 ) {
+      }
+      if ( xmlStrcmp(entry->name,(const xmlChar *) "real")==0 ) {
 	double val = strtod(contents,NULL);
 	free(contents);
 return( Py_BuildValue("d",val));
-    }
-    if ( xmlStrcmp(entry->name,(const xmlChar *) "string")==0 ) {
+      }
+      if ( xmlStrcmp(entry->name,(const xmlChar *) "string")==0 ) {
 	PyObject *ret = Py_BuildValue("s",contents);
 	free(contents);
 return( ret );
-    }
-    LogError(_("Unknown python type <%s> when reading UFO/GLIF lib data."), (char *) entry->name);
-    free( contents );
+      }
+      LogError(_("Unknown python type <%s> when reading UFO/GLIF lib data."), (char *) entry->name);
+      free( contents );
+    } else LogError(_("Missing value when reading UFO/GLIF lib data."));
 return( NULL );
 }
 #endif
