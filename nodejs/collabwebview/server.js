@@ -43,7 +43,10 @@ if( req.url.endsWith(".ttf")) {
       res.writeHead(500);
       return res.end( 'Error loading font!' );
     }
-    res.writeHead( 200 );
+
+    res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    res.setHeader('Expires', '-1');
+    res.setHeader('Pragma', 'no-cache');
     res.end( data );
   });
 
