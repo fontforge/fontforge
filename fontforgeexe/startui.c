@@ -1080,6 +1080,8 @@ int fontforge_main( int argc, char **argv ) {
 	    /* already checked for this earlier, no need to do it again */;
 	else if ( strcmp(pt,"-unique")==0 )
 	    unique = 1;
+	else if ( strcmp(pt,"-forceuihidden")==0 )
+	    cmdlinearg_forceUIHidden = 0;
 	else if ( strcmp(pt,"-recover")==0 && i<argc-1 ) {
 	    ++i;
 	    if ( strcmp(argv[i],"none")==0 )
@@ -1270,11 +1272,12 @@ exit( 0 );
 		if ( ViewPostScriptFont(RecentFiles[next_recent++],openflags))
 		    any = 1;
 	} else if ( strcmp(pt,"-sync")==0 || strcmp(pt,"-memory")==0 ||
-		strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
-		strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 ||
-		strcmp(pt,"-dontopenxdevices")==0 || strcmp(pt,"-unique")==0 ||
-		strncmp(pt,"-usecairo",strlen("-usecairo"))==0 ||
-		strcmp(pt,"-home")==0 || strcmp(pt,"-quiet")==0 )
+		    strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
+		    strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 ||
+		    strcmp(pt,"-dontopenxdevices")==0 || strcmp(pt,"-unique")==0 ||
+		    strncmp(pt,"-usecairo",strlen("-usecairo"))==0 ||
+		    strcmp(pt,"-home")==0 || strcmp(pt,"-quiet")==0
+		    || strcmp(pt,"-forceuihidden")==0 )
 	    /* Already done, needed to be before display opened */;
 	else if ( strncmp(pt,"-psn_",5)==0 )
 	    /* Already done */;
@@ -1289,6 +1292,7 @@ exit( 0 );
 	else if ( strcmp(pt,"-open")==0 )
 	    doopen = true;
 	else {
+	    printf("else argv[i]:%s\n", argv[i] );
 	    if ( strstr(argv[i],"://")!=NULL ) {		/* Assume an absolute URL */
 		strncpy(buffer,argv[i],sizeof(buffer));
 		buffer[sizeof(buffer)-1]= '\0';

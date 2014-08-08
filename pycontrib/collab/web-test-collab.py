@@ -7,6 +7,58 @@ import fontforge
 import select
 import json
 import os
+import signal
+import subprocess
+
+thisScriptDirName = os.path.dirname(os.path.realpath(__file__))
+
+# uname_os = os.uname()[0];
+# nodejsPath = "node"
+# if uname_os == "Darwin": 
+#     nodejsPath = "/Applications/FontForge.app/Contents/Resources/opt/local/bin/node"
+
+def openURLInBrowser( earl ):
+    uname_os = os.uname()[0];
+    openURLCommand = "xdg-open"
+    if uname_os == "Darwin": 
+        openURLCommand = "open"
+    #
+    # start the browser on the URL
+    #
+    if uname_os == "Windows": 
+        subprocess.Popen([ "cmd", "/c", "start", earl ] )
+    else:
+        subprocess.Popen([ openURLCommand, earl ] )
+
+
+
+#######################
+#######################
+## web server interface
+## (this is done in webcollab.py now)
+##
+# start the nodejs server
+# oldpwd = os.getcwd()
+# os.chdir( thisScriptDirName )
+# os.chdir( "../../nodejs/collabwebview/" )
+# serverjs = subprocess.Popen( [ nodejsPath, "server.js" ], cwd=os.getcwd() )
+# os.chdir( oldpwd )
+
+# def sighandler( signum, frame ):
+#     print 'Signal handler called with signal', signum
+#     serverjs.kill()
+#     sys.exit(0)
+
+# signal.signal(signal.SIGUSR2, sighandler)
+# signal.signal(signal.SIGTERM, sighandler)
+# #signal.signal(signal.KILL,   sighandler)
+# signal.signal(signal.SIGINT,  sighandler)
+# signal.signal(signal.SIGTERM, sighandler)
+
+#######################
+#######################
+
+
 
 myipaddr = "127.0.0.1"
 
@@ -57,6 +109,9 @@ newfont=fontforge.font()
 f = newfont.CollabSessionJoin()
 fontforge.logWarning( "Joined session, font name: " + f.fullname )
 
+openURLInBrowser( "http://localhost:8000" )
+
+fontforge.logWarning("web-test-collab: starting up...");
 f.CollabSessionSetUpdatedCallback( OnCollabUpdate )
 while True:
     f.CollabSessionRunMainLoop()

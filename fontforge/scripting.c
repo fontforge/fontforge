@@ -52,6 +52,7 @@
 #include "scripting.h"
 #include "scriptfuncs.h"
 #include "flaglist.h"
+#include "gutils/prefs.h"
 
 #include "gutils/unicodelibinfo.h"
 
@@ -10474,6 +10475,8 @@ return;
 	if ( *pt=='-' && pt[1]=='-' && pt[2]!='\0' ) ++pt;
 	if ( strcmp(pt,"-nosplash")==0 || strcmp(pt,"-quiet")==0 )
 	    /* Skip it */;
+	else if ( strcmp(pt,"-forceuihidden")==0 )
+	    cmdlinearg_forceUIHidden = true;
 	else if ( strcmp(pt,"-lang=py")==0 )
 	    is_python = true;
 	else if ( strcmp(pt,"-lang=ff")==0 || strcmp(pt,"-lang=pe")==0 )

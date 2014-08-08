@@ -101,6 +101,10 @@ return;
     }
     cnt = precnt;
     for ( fv = (FontViewBase *) fv_list; fv!=NULL; fv = fv->next ) {
+	if( !((FontView *) fv)->gw ) {
+	    continue;
+	}
+	
 	AddMI(&sub[cnt++],((FontView *) fv)->gw,fv->sf->changed,true);
 	for ( i=0; i<fv->sf->glyphcnt; ++i ) if ( fv->sf->glyphs[i]!=NULL ) {
 	    for ( cv = fv->sf->glyphs[i]->views; cv!=NULL; cv=cv->next )
