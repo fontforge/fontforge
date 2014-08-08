@@ -12,10 +12,6 @@ import subprocess
 
 thisScriptDirName = os.path.dirname(os.path.realpath(__file__))
 
-# uname_os = os.uname()[0];
-# nodejsPath = "node"
-# if uname_os == "Darwin": 
-#     nodejsPath = "/Applications/FontForge.app/Contents/Resources/opt/local/bin/node"
 
 def openURLInBrowser( earl ):
     uname_os = os.uname()[0];
@@ -29,34 +25,6 @@ def openURLInBrowser( earl ):
         subprocess.Popen([ "cmd", "/c", "start", earl ] )
     else:
         subprocess.Popen([ openURLCommand, earl ] )
-
-
-
-#######################
-#######################
-## web server interface
-## (this is done in webcollab.py now)
-##
-# start the nodejs server
-# oldpwd = os.getcwd()
-# os.chdir( thisScriptDirName )
-# os.chdir( "../../nodejs/collabwebview/" )
-# serverjs = subprocess.Popen( [ nodejsPath, "server.js" ], cwd=os.getcwd() )
-# os.chdir( oldpwd )
-
-# def sighandler( signum, frame ):
-#     print 'Signal handler called with signal', signum
-#     serverjs.kill()
-#     sys.exit(0)
-
-# signal.signal(signal.SIGUSR2, sighandler)
-# signal.signal(signal.SIGTERM, sighandler)
-# #signal.signal(signal.KILL,   sighandler)
-# signal.signal(signal.SIGINT,  sighandler)
-# signal.signal(signal.SIGTERM, sighandler)
-
-#######################
-#######################
 
 
 
