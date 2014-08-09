@@ -143,10 +143,10 @@ return( name );
 
 /* Handles *?{}[] wildcards */
 int GGadgetWildMatch(unichar_t *pattern, unichar_t *name,int ignorecase) {
-    unichar_t *eop = pattern + u_strlen(pattern);
-
     if ( pattern==NULL )
 return( true );
+
+    unichar_t *eop = pattern + u_strlen(pattern);
 
     name = SubMatch(pattern,eop,name,ignorecase);
     if ( name==NULL )
@@ -491,8 +491,10 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 	uc_strcat(freeme,"/");
 	dir = freeme;
     }
-    if ( gfc->hpos>=gfc->hmax )
-	gfc->history = realloc(gfc->history,(gfc->hmax+20)*sizeof(unichar_t *));
+    if ( gfc->hpos>=gfc->hmax ) {
+	gfc->hmax = gfc->hmax+20;
+	gfc->history = realloc(gfc->history,(gfc->hmax)*sizeof(unichar_t *));
+    }
     if ( gfc->hcnt==0 ) {
 	gfc->history[gfc->hcnt++] = u_copy(dir);
     } else if ( u_strcmp(gfc->history[gfc->hpos],dir)==0 )

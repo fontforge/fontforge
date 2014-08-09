@@ -138,7 +138,7 @@ static void GListOrderIt(GList *gl) {
 static void GListClearSel(GList *gl) {
     int i;
 
-    for ( i=0; i<gl->ltot; ++i )
+    for ( i=0; (i<gl->ltot && gl->ti[i]!=NULL); ++i )
 	gl->ti[i]->selected = false;
 }
 
