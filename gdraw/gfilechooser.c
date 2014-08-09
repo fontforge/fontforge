@@ -143,10 +143,10 @@ return( name );
 
 /* Handles *?{}[] wildcards */
 int GGadgetWildMatch(unichar_t *pattern, unichar_t *name,int ignorecase) {
-    unichar_t *eop = pattern + u_strlen(pattern);
-
     if ( pattern==NULL )
 return( true );
+
+    unichar_t *eop = pattern + u_strlen(pattern);
 
     name = SubMatch(pattern,eop,name,ignorecase);
     if ( name==NULL )
