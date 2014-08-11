@@ -2121,6 +2121,7 @@ extern void SFFindNearTop(SplineFont *);
 extern void SFRestoreNearTop(SplineFont *);
 extern int SFForceEncoding(SplineFont *sf,EncMap *old,Encoding *new_map);
 extern int CountOfEncoding(Encoding *encoding_name);
+extern int SFReencode(SplineFont *sf, const char *encname, int force);
 extern void SFMatchGlyphs(SplineFont *sf,SplineFont *target,int addempties);
 extern void MMMatchGlyphs(MMSet *mm);
 extern const char *_GetModifiers(const char *fontname, const char *familyname, const char *weight);
