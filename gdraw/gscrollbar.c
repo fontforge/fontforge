@@ -511,6 +511,8 @@ static void GScrollBarFit(GScrollBar *gsb) {
 
     gsb->sbborder = GBoxBorderWidth(gsb->g.base,gsb->g.box);
     gsb->thumbborder = GBoxBorderWidth(gsb->g.base,gsb->thumbbox);
+    /* FIXME: workaround for incorrect calculation. */
+    if ( gsb->thumbborder > 5 ) gsb->thumbborder = 5;
     gsb->arrowsize = gsb->sbborder +
 	    2*GDrawPointsToPixels(gsb->g.base,2) +
 	    GDrawPointsToPixels(gsb->g.base,_GScrollBar_Width)/2-
@@ -625,8 +627,8 @@ return;
     gsb->thumbsize = (gsb->g.vert?gsb->g.inner.height:gsb->g.inner.width);
     if ( sb_max-sb_min > sb_pagesize )
 	gsb->thumbsize = (gsb->thumbsize*gsb->sb_pagesize)/(sb_max-sb_min);
-    if ( gsb->thumbsize<2*gsb->thumbborder+4 ) {
-	gsb->thumbsize = 2*gsb->thumbborder+6;
+    if ( gsb->thumbsize<2*gsb->thumbborder+10 ) {
+	gsb->thumbsize = 2*gsb->thumbborder+10;
 	if ( gsb->thumbsize>(gsb->g.vert?gsb->g.inner.height:gsb->g.inner.width) )
 	    gsb->thumbsize = (gsb->g.vert?gsb->g.inner.height:gsb->g.inner.width);
     }
