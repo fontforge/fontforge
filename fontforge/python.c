@@ -12357,7 +12357,7 @@ return( -1 );
 	ENDPYGETSTR();
 return( -1 );
     }
-    ret = SFFontReencode(self->fv->sf, encname, 0);
+    ret = SFReencode(self->fv->sf, encname, 0);
     if ( ret==-1 )
 	PyErr_Format(PyExc_NameError, "Unknown encoding %s", encname);
     ENDPYGETSTR();
@@ -16769,7 +16769,7 @@ return ( NULL );
     if ( !PyArg_ParseTuple(args, "s|i", &encname, &force) )
 return ( NULL );
 
-    if ( SFFontReencode(self->fv->sf, encname, force) != 0 ) {
+    if ( SFReencode(self->fv->sf, encname, force) != 0 ) {
 	PyErr_Format(PyExc_NameError, "Unknown encoding %s", encname);
 return ( NULL );
     }

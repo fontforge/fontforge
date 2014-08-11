@@ -3142,7 +3142,7 @@ static void bReencode(Context *c) {
 	ScriptError(c,"Bad argument type");
     if ( c->a.argc==3 )
 	force = c->a.vals[2].u.ival;
-    ret = SFFontReencode(c->curfv->sf, c->a.vals[1].u.sval, force);
+    ret = SFReencode(c->curfv->sf, c->a.vals[1].u.sval, force);
     if ( ret==-1 )
 	ScriptErrorString(c,"Unknown encoding", c->a.vals[1].u.sval);
 }

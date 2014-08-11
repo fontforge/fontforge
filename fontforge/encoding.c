@@ -2003,7 +2003,7 @@ static void BCProtectUndoes( Undoes *undo,BDFChar *bc ) {
     }
 }
 
-int SFFontReencode(SplineFont *sf, const char *encname, int force) {
+int SFReencode(SplineFont *sf, const char *encname, int force) {
     Encoding *new_enc;
     FontViewBase *fv = sf->fv;
 
