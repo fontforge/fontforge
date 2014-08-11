@@ -2003,6 +2003,42 @@ static void BCProtectUndoes( Undoes *undo,BDFChar *bc ) {
     }
 }
 
+int SFFontReencode(SplineFont *sf, const char *encname, int force) {
+    Encoding *new_enc;
+    FontViewBase *fv = sf->fv;
+
+    if ( strmatch(encname,"compacted")==0 ) {
+	fv->normal = EncMapCopy(fv->map);
+	CompactEncMap(fv->map,sf);
+    } else {
+	new_enc = FindOrMakeEncoding(encname);
+	if ( new_enc==NULL )
+return -1;
+	if ( force )
+	    SFForceEncoding(sf,fv->map,new_enc);
+	else if ( new_enc==&custom )
+	    fv->map->enc = &custom;
+	else {
+	    EncMap *map = EncMapFromEncoding(sf,new_enc);
+	    EncMapFree(fv->map);
+	    fv->map = map;
+	    if ( !no_windowing_ui )
+		FVSetTitle(fv);
+	}
+	if ( fv->normal!=NULL ) {
+	    EncMapFree(fv->normal);
+	    fv->normal = NULL;
+	}
+	SFReplaceEncodingBDFProps(sf,fv->map);
+    }
+    free(fv->selected);
+    fv->selected = calloc(fv->map->enccount,sizeof(char));
+    if ( !no_windowing_ui )
+	FontViewReformatAll(sf);
+
+return 0;
+}
+
 void SFRemoveGlyph( SplineFont *sf,SplineChar *sc ) {
     struct splinecharlist *dep, *dnext;
     struct bdfcharlist *bdep, *bdnext;

@@ -3134,6 +3134,7 @@ static void bSelectByColor(Context *c) {
 static void bReencode(Context *c) {
     Encoding *new_enc;
     int force = 0;
+    int ret;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	ScriptError( c, "Wrong number of arguments");
@@ -3141,39 +3142,9 @@ static void bReencode(Context *c) {
 	ScriptError(c,"Bad argument type");
     if ( c->a.argc==3 )
 	force = c->a.vals[2].u.ival;
-    if ( strmatch(c->a.vals[1].u.sval,"compacted")==0 ) {
-	c->curfv->normal = EncMapCopy(c->curfv->map);
-	CompactEncMap(c->curfv->map,c->curfv->sf);
-    } else {
-	new_enc = FindOrMakeEncoding(c->a.vals[1].u.sval);
-	if ( new_enc==NULL )
-	    ScriptErrorString(c,"Unknown encoding", c->a.vals[1].u.sval);
-	if ( force )
-	    SFForceEncoding(c->curfv->sf,c->curfv->map,new_enc);
-	else if ( new_enc==&custom )
-	    c->curfv->map->enc = &custom;
-	else {
-	    EncMap *map = EncMapFromEncoding(c->curfv->sf,new_enc);
-	    EncMapFree(c->curfv->map);
-	    c->curfv->map = map;
-	    if ( !no_windowing_ui )
-		FVSetTitles(c->curfv->sf);
-	}
-	if ( c->curfv->normal!=NULL ) {
-	    EncMapFree(c->curfv->normal);
-	    c->curfv->normal = NULL;
-	}
-	SFReplaceEncodingBDFProps(c->curfv->sf,c->curfv->map);
-    }
-    free(c->curfv->selected);
-    c->curfv->selected = calloc(c->curfv->map->enccount,sizeof(char));
-    if ( !no_windowing_ui )
-	FontViewReformatAll(c->curfv->sf);
-/*
-    c->curfv->sf->changed = true;
-    c->curfv->sf->changed_since_autosave = true;
-    c->curfv->sf->changed_since_xuidchanged = true;
-*/
+    ret = SFFontReencode(c->curfv->sf, c->a.vals[1].u.sval, force);
+    if ( ret==-1 )
+	ScriptErrorString(c,"Unknown encoding", c->a.vals[1].u.sval);
 }
 
 static void bRenameGlyphs(Context *c) {

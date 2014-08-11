@@ -12342,43 +12342,6 @@ return (NULL);
 return( Py_BuildValue("s", self->fv->map->enc->enc_name));
 }
 
-static int FontReencode(FontViewBase *fv, const char *encname, int force) {
-    Encoding *new_enc;
-
-    if ( strmatch(encname,"compacted")==0 ) {
-	fv->normal = EncMapCopy(fv->map);
-	CompactEncMap(fv->map,fv->sf);
-    } else {
-	new_enc = FindOrMakeEncoding(encname);
-	if ( new_enc==NULL ) {
-	    PyErr_Format(PyExc_NameError, "Unknown encoding %s", encname);
-return -1;
-	}
-	if ( force )
-	    SFForceEncoding(fv->sf,fv->map,new_enc);
-	else if ( new_enc==&custom )
-	    fv->map->enc = &custom;
-	else {
-	    EncMap *map = EncMapFromEncoding(fv->sf,new_enc);
-	    EncMapFree(fv->map);
-	    fv->map = map;
-	    if ( !no_windowing_ui )
-		FVSetTitle(fv);
-	}
-	if ( fv->normal!=NULL ) {
-	    EncMapFree(fv->normal);
-	    fv->normal = NULL;
-	}
-	SFReplaceEncodingBDFProps(fv->sf,fv->map);
-    }
-    free(fv->selected);
-    fv->selected = calloc(fv->map->enccount,sizeof(char));
-    if ( !no_windowing_ui )
-	FontViewReformatAll(fv->sf);
-
-return 0;
-}
-
 static int PyFF_Font_set_encoding(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     char *encname;
     int ret;
@@ -12394,7 +12357,9 @@ return( -1 );
 	ENDPYGETSTR();
 return( -1 );
     }
-    ret = FontReencode(self->fv, encname, 0);
+    ret = SFFontReencode(self->fv->sf, encname, 0);
+    if ( ret==-1 )
+	PyErr_Format(PyExc_NameError, "Unknown encoding %s", encname);
     ENDPYGETSTR();
 
 return(ret);
@@ -16804,8 +16769,10 @@ return ( NULL );
     if ( !PyArg_ParseTuple(args, "s|i", &encname, &force) )
 return ( NULL );
 
-    if ( FontReencode(self->fv, encname, force) != 0 )
+    if ( SFFontReencode(self->fv->sf, encname, force) != 0 ) {
+	PyErr_Format(PyExc_NameError, "Unknown encoding %s", encname);
 return ( NULL );
+    }
 
 Py_RETURN( self );
 }
