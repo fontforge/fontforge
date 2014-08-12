@@ -313,9 +313,12 @@ dnl AC_SEARCH_LIBS([dlopen], [dl dld])
 
 FONTFORGE_CONFIG_X_LIBRARIES
 
-# zlib is a requirement. It is too commonly available to bother
-# leaving out.
-PKG_CHECK_MODULES([ZLIB],[zlib])
+# zlib is a requirement. It is too commonly available to bother leaving out.
+AC_CHECK_LIB([zlib],[deflateEnd],[AC_CHECK_HEADER([zlib.h],[have_libz=yes])],
+      [AC_CHECK_LIB([z],[deflateEnd],[AC_CHECK_HEADER([zlib.h],[have_libz=yes])])])
+if test x"${have_libz}" != xyes; then
+   AC_MSG_FAILURE([ERROR: Please install the Developer version of zlib],[1])
+fi
 PKG_CHECK_MODULES([GLIB],[glib-2.0 >= 2.6 gio-2.0])
 
 if test x"${i_do_have_gui}" = xyes; then
