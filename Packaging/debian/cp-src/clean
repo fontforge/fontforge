@@ -1,0 +1,13 @@
+debian/fontforge.sharedmimeinfo
+debian/fontforge.desktop
+Unicode/.libs
+Unicode/Makefile.in
+gdraw/.libs
+gdraw/Makefile.in
+fontforge/Makefile.in
+gutils/Makefile.in
+fontforge/FontForge.pot
+Makefile.in aclocal.m4
+ltmain.sh config.log
+configure.lineno
+
