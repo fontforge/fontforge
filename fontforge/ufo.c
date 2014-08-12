@@ -335,7 +335,7 @@ xmlNodePtr PyObjectToXML( PyObject *value ) {
         // "<integer>%ld</integer>"
     } else if (PyFloat_Check(value)) {
         childtmp = xmlNewNode(NULL, BAD_CAST "real");
-        if (asprintf(&valtmp, "%g", PyFloat_AsDouble(value)) < 0) {
+        if (asprintf(&valtmp, "%g", PyFloat_AsDouble(value)) >= 0) {
           valtmpxml = xmlNewText(BAD_CAST valtmp);
           xmlAddChild(childtmp, valtmpxml);
           free(valtmp); valtmp = NULL;
