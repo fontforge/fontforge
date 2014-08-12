@@ -59,8 +59,14 @@ installcheck-local: atconfig atlocal $(TESTSUITE)
 	$(SHELL) '$(TESTSUITE)' AUTOTEST_PATH='$(bindir)' $(TESTSUITEFLAGS)
 
 clean-local:
-	test ! -f '$(TESTSUITE)' || $(SHELL) '$(abs_builddir)/testsuite' --clean
 	rm -fR $(builddir)/results/*
+
+# test ! -f '$(abs_builddir)/testsuite' || bash -x '$(abs_builddir)/testsuite' --clean
+# The previous line breaks the build in parallel mode sometimes.
+# distclean-am calls clean-am which calls clean-local,
+# but it also calls distclean-generic, which removes the items listed in $(DISTCLEANFILES),
+# which includes $(TESTSUITE)
+# rm -fR $(builddir)/results/*
 
 AUTOM4TE = $(SHELL) $(srcdir)/build-aux/missing --run autom4te
 AUTOTEST = $(AUTOM4TE) --language=autotest
@@ -88,8 +94,16 @@ GENERATED_INPUTS =							\
 	fonts/mingliu.ttc						\
 	fonts/Ambrosia.pt3
 
+FETCHED_INPUTS =							\
+	fonts/MunhwaGothic-Bold						\
+	fonts/mingliu.ttc
+
 MAYBE_GENERATED_INPUTS =						\
 	fonts/MinionPro-Regular.fea
+
+.PHONY: prefetch-fonts
+
+prefetch-fonts: $(FETCHED_INPUTS)
 
 # Inputs we can generate from files in git
 fonts/Ambrosia.pt3: fonts/Ambrosia.sfd
@@ -97,13 +111,33 @@ fonts/Ambrosia.pt3: fonts/Ambrosia.sfd
 	$(FONTFORGE) -c 'open(argv[1]).generate(argv[2])' $< $@
 
 # Inputs we can download
+$(srcdir)/fetched-fonts/MunhwaGothic-Bold:
+	$(MKDIR_P) $(srcdir)/fetched-fonts
+	if [ ! -e $@ ] ; then $(WGET) ftp://ftp.naist.jp/pub/NetBSD/packages/distfiles/adobe-cidfonts/MunhwaGothic-Bold -O $@ ; fi ;
+
+$(srcdir)/fetched-fonts/mingliu.ttc:
+	$(MKDIR_P) $(srcdir)/fetched-fonts
+	if [ ! -e $@ ] ; then $(WGET) http://www.fontsupply.com/fonts/mingliu.ttc -O $@ ; fi ;
+
 fonts/MunhwaGothic-Bold:
 	$(MKDIR_P) $(builddir)/fonts
-	$(WGET) ftp://ftp.naist.jp/pub/NetBSD/packages/distfiles/adobe-cidfonts/MunhwaGothic-Bold -O $@
+	if [ ! -e $@ ] ; then \
+	if [ -e $(srcdir)/fetched-fonts/MunhwaGothic-Bold ]; then \
+	cp -pRP $(srcdir)/fetched-fonts/MunhwaGothic-Bold $@ ; \
+	else \
+	$(WGET) ftp://ftp.naist.jp/pub/NetBSD/packages/distfiles/adobe-cidfonts/MunhwaGothic-Bold -O $@ ; \
+	fi ; \
+	fi ;
 
 fonts/mingliu.ttc:
 	$(MKDIR_P) $(builddir)/fonts
-	$(WGET) http://www.fontsupply.com/fonts/mingliu.ttc -O $@
+	if [ ! -e $@ ] ; then \
+	if [ -e $(srcdir)/fetched-fonts/mingliu.ttc ]; then \
+	cp -pRP $(srcdir)/fetched-fonts/mingliu.ttc $@ ; \
+	else \
+	$(WGET) http://www.fontsupply.com/fonts/mingliu.ttc -O $@ ; \
+	fi ; \
+	fi ;
 
 # Inputs we can generate from files that aren't available
 fonts/MinionPro-Regular.fea: fonts/MinionPro-Regular.otf
@@ -131,7 +165,7 @@ EXTRA_DIST += findoverlapbugs.py test0001.py test0101.py	\
 
 EXTRA_DIST += link_test.c randomtest.c build-aux/missing
 
-DISTCLEANFILES = atconfig randomtest $(GENERATED_INPUTS) fonts/*.afm $(TESTSUITE)
+DISTCLEANFILES = atconfig randomtest $(GENERATED_INPUTS) fonts/*.afm $(TESTSUITE) testsuite.log
 
 MAINTAINERCLEANFILES = package.m4 testsuite.dir testsuite.log results
 
