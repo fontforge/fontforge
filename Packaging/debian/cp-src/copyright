@@ -1,0 +1,46 @@
+This package was debianized by Baruch Even <baruch@debian.org> on
+Fri, 31 Aug 2001 22:51:17 +0300.
+
+Since 30 Mar 2006, it is maintained by Kęstutis Biliūnas <kebil@kaunas.init.lt>
+helped by the Debian Fonts Task Force <pkg-fonts-devel@lists.alioth.debian.org>.
+
+Frank Trampe copied most of the metadata in order to provide upstream FontForge with automatic packaging functionality.
+
+Source code now comes from http://github.com/fontforge/fontforge
+
+Upstream Author: George Williams <gww@silcom.com>
+
+Copyright © 2000-2010 by George Williams
+
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions are met:
+
+   Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+   Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+   The name of the author may not be used to endorse or promote products
+   derived from this software without specific prior written permission.
+
+   THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+   WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+   MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+   EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+   OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+   OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The configure script is subject to the GNU General public license.
+
+Debian GNU/Linux users may find the full text of the GPL version 2 in
+/usr/share/common-licenses/GPL-2.
+
+The Debian packaging is © 2006-2010, Debian Fonts Task Force
+<pkg-fonts-devel@lists.alioth.debian.org> and is licensed under the GPL,
+see `/usr/share/common-licenses/GPL-2'.

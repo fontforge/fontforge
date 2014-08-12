@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# this should be run from the top-level directory (one above debian/)
+# so run it as: debian/make-clean-tarball
+
+vers=$(awk '/LibFF_VersionDate/{ print $3 }' fontforge/libffstamp.h)
+
+## strip these files and directories from the produced archive:
+
+skiplist="admintools
+cidmap
+cidmapsrc
+debian
+fonttools
+gtkui
+htdocs
+mac-Resources
+Packaging
+Readme.VMS
+test"
+
+git archive --format=tar --prefix="fontforge-0.0.${vers}/" HEAD $(ls -1 | grep -vFx "${skiplist}" ) | gzip -n9 > ../fontforge_0.0.${vers}.orig.tar.gz
