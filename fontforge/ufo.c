@@ -266,21 +266,25 @@ xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc) {
 	    items = PyMapping_Items(dict);
 	    len = PySequence_Size(items);
 	    for ( i=0; i<len; ++i ) {
+			// According to the Python reference manual,
+			// PySequence_GetItem returns a reference that we must release,
+			// but PyTuple_GetItem returns a borrowed reference.
 			PyObject *item = PySequence_GetItem(items,i);
 			key = PyTuple_GetItem(item,0);
 			if ( !PyBytes_Check(key))		/* Keys need not be strings */
-			continue;
+			{ Py_DECREF(item); item = NULL; continue; }
 			str = PyBytes_AsString(key);
 			if ( !str || (strcmp(str,"com.fontlab.hintData")==0 && sc!=NULL) )	/* Already done */
-			continue;
+			{ Py_DECREF(item); item = NULL; continue; }
 			value = PyTuple_GetItem(item,1);
 			if ( !value || !PyObjDumpable(value))
-			continue;
+			{ Py_DECREF(item); item = NULL; continue; }
 			// "<key>%s</key>" str
       xmlNewChild(dictnode, NULL, BAD_CAST "key", str);
       xmlNodePtr tmpNode = PyObjectToXML(value);
       xmlAddChild(dictnode, tmpNode);
 			// "<...>...</...>"
+			Py_DECREF(item); item = NULL;
 	    }
 	}
 #endif
@@ -350,9 +354,12 @@ xmlNodePtr PyObjectToXML( PyObject *value ) {
         // "<array>"
 	for ( i=0; i<len; ++i ) {
 	    PyObject *obj = PySequence_GetItem(value,i);
-	    if ( PyObjDumpable(obj)) {
+	    if (obj != NULL) {
+	      if ( PyObjDumpable(obj)) {
 		itemtmp = PyObjectToXML(obj);
                 xmlAddChild(childtmp, itemtmp);
+	      }
+              Py_DECREF(obj); obj = NULL;
 	    }
 	}
         // "</array>"
