@@ -70,7 +70,7 @@ clean-local:
 
 AUTOM4TE = $(SHELL) $(srcdir)/build-aux/missing --run autom4te
 AUTOTEST = $(AUTOM4TE) --language=autotest
-$(TESTSUITE): $(srcdir)/testsuite.at $(srcdir)/package.m4 $(GENERATED_INPUTS)
+$(TESTSUITE): $(srcdir)/testsuite.at $(srcdir)/package.m4 $(GENERATED_INPUTS) $(FETCHED_INPUTS)
 	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at
 	mv $@.tmp $@
 
@@ -95,8 +95,8 @@ GENERATED_INPUTS =							\
 	fonts/Ambrosia.pt3
 
 FETCHED_INPUTS =							\
-	fonts/MunhwaGothic-Bold						\
-	fonts/mingliu.ttc
+	$(srcdir)/fonts/MunhwaGothic-Bold				\
+	$(srcdir)/fonts/mingliu.ttc
 
 MAYBE_GENERATED_INPUTS =						\
 	fonts/MinionPro-Regular.fea
