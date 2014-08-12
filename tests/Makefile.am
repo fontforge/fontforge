@@ -95,8 +95,8 @@ GENERATED_INPUTS =							\
 	fonts/Ambrosia.pt3
 
 FETCHED_INPUTS =							\
-	$(srcdir)/fonts/MunhwaGothic-Bold				\
-	$(srcdir)/fonts/mingliu.ttc
+	$(srcdir)/fetched-fonts/MunhwaGothic-Bold				\
+	$(srcdir)/fetched-fonts/mingliu.ttc
 
 MAYBE_GENERATED_INPUTS =						\
 	fonts/MinionPro-Regular.fea
