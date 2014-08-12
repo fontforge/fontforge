@@ -1,0 +1,7 @@
+?package(fontforge):needs="X11" \
+  section="Applications/Graphics" \
+  title="FontForge" \
+  longtitle="Font Editor for PS, TrueType and OpenType fonts" \
+  command="/usr/bin/fontforge" \
+  hints="Fonts" \
+  icon="/usr/share/pixmaps/fontforge.xpm"
