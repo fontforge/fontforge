@@ -1496,6 +1496,7 @@ typedef struct splinechar {
     void *python_temporary;
 #endif
     void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
+    int python_persistent_has_lists;
 	/* If the glyph is used as a tile pattern, then the next two values */
 	/*  determine the amount of white space around the tile. If extra is*/
 	/*  non-zero then we add it to the max components of the bbox and   */
@@ -1868,6 +1869,7 @@ typedef struct splinefont {
     void *python_temporary;
 #endif
     void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
+    int python_persistent_has_lists; // This affects whether arrays exist as tuples or as lists (thus allowing us to use tuples for foreign data).
     enum loadvalidation_state loadvalidation_state;
     LayerInfo *layers;
     int layer_cnt;
@@ -3262,6 +3264,7 @@ extern void PyFF_ScriptString(struct fontviewbase *fv,SplineChar *sc,int layer,c
 extern void PyFF_FreeFV(struct fontviewbase *fv);
 extern void PyFF_FreeSC(SplineChar *sc);
 extern void PyFF_FreeSF(SplineFont *sf);
+extern void PyFF_FreePythonPersistent(void *python_persistent);
 extern void PyFF_ProcessInitFiles(void);
 extern char *PyFF_PickleMeToString(void *pydata);
 extern void *PyFF_UnPickleMeToObjects(char *str);
