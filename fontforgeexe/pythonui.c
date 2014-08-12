@@ -49,6 +49,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <errno.h>
 #include <stdarg.h>
 #include <fcntl.h>
 #include "ffpython.h"
@@ -796,23 +797,37 @@ static void python_ui_setup_callback( bool makefifo )
 #ifndef __MINGW32__
     int fd = 0;
     int err = 0;
-    char path[ PATH_MAX + 1 ];
-    char *userCacheDir;
+    char *userCacheDir, *sockPath;
 
     userCacheDir = getFontForgeUserDir(Cache);
-    if ( userCacheDir!=NULL ) {
-        snprintf( path, PATH_MAX, "%s/python-socket", userCacheDir);
-        free(userCacheDir);
-
-        if( makefifo )
-        {
-            err = mkfifo( path, 0600 );
-        }
-
-        void* udata = 0;
-        fd = open( path, O_RDONLY | O_NDELAY );
-        GDrawAddReadFD( 0, fd, udata, python_ui_fd_callback );
+    if ( userCacheDir==NULL ) {
+        fprintf(stderr, "PythonUISetup: failed to discover user cache dir path\n");
+        return;
     }
+
+    asprintf(&sockPath, "%s/python-socket", userCacheDir);
+    free(userCacheDir);
+
+    if( makefifo ) {
+        err = mkfifo( sockPath, 0600 );
+        if ( err==-1  &&  errno!=EEXIST) {
+            fprintf(stderr, "PythonUISetup: unable to mkfifo('%s'): errno %d\n", sockPath, errno);
+            free(sockPath);
+            return;
+        }
+    }
+
+    fd = open( sockPath, O_RDONLY | O_NDELAY );
+    if ( fd==-1) {
+        fprintf(stderr, "PythonUISetup: unable to open socket '%s': errno %d\n", sockPath, errno);
+        free(sockPath);
+        return;
+    }
+    free(sockPath);
+
+    void* udata = 0;
+    GDrawAddReadFD( 0, fd, udata, python_ui_fd_callback );
+    return;
 #endif   
 }
 
