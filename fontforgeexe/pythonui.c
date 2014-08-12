@@ -26,6 +26,9 @@
  */
 /*			   Python Interface to FontForge		      */
 
+// to get asprintf() defined from stdio.h on GNU platforms
+#define _GNU_SOURCE 1
+
 #define GTimer GTimer_GTK
 #define GList  GList_Glib
 #include <glib.h>
@@ -51,6 +54,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <fcntl.h>
 #include "ffpython.h"
 
@@ -801,7 +805,7 @@ static void python_ui_setup_callback( bool makefifo )
 
     userCacheDir = getFontForgeUserDir(Cache);
     if ( userCacheDir==NULL ) {
-        fprintf(stderr, "PythonUISetup: failed to discover user cache dir path\n");
+        LogError("PythonUISetup: failed to discover user cache dir path");
         return;
     }
 
@@ -811,7 +815,7 @@ static void python_ui_setup_callback( bool makefifo )
     if( makefifo ) {
         err = mkfifo( sockPath, 0600 );
         if ( err==-1  &&  errno!=EEXIST) {
-            fprintf(stderr, "PythonUISetup: unable to mkfifo('%s'): errno %d\n", sockPath, errno);
+            LogError("PythonUISetup: unable to mkfifo('%s'): errno %d\n", sockPath, errno);
             free(sockPath);
             return;
         }
@@ -819,7 +823,7 @@ static void python_ui_setup_callback( bool makefifo )
 
     fd = open( sockPath, O_RDONLY | O_NDELAY );
     if ( fd==-1) {
-        fprintf(stderr, "PythonUISetup: unable to open socket '%s': errno %d\n", sockPath, errno);
+        LogError("PythonUISetup: unable to open socket '%s': errno %d\n", sockPath, errno);
         free(sockPath);
         return;
     }
