@@ -209,9 +209,13 @@ static void DicaNewEntry(struct dictionary *dica,char *name,Val *val) {
 static void calldatafree(Context *c) {
     int i;
 
-    for ( i=1; i<c->a.argc; ++i ) {	/* child may have freed some args itself by shifting, but argc will reflect the proper values none the less */
-	if ( c->a.vals[i].type == v_str )
-	    free( c->a.vals[i].u.sval );
+    /* child may have freed some args itself by shifting, 
+       but argc will reflect the proper values none the less */
+    for ( i=1; i<c->a.argc; ++i ) {     
+        if ( c->a.vals[i].type == v_str ) {
+            free( c->a.vals[i].u.sval );
+            c->a.vals[i].u.sval = NULL;
+        }
 	if ( c->a.vals[i].type == v_arrfree || (c->a.vals[i].type == v_arr && c->dontfree[i]!=c->a.vals[i].u.aval ))
 	    arrayfree( c->a.vals[i].u.aval );
 	c->a.vals[i].type = v_void;
@@ -6028,7 +6032,7 @@ static void _AddHint(Context *c,int ish) {
     if ( c->a.vals[2].type==v_int )
 	width = c->a.vals[2].u.ival;
     else if ( c->a.vals[2].type==v_real )
-	start = c->a.vals[2].u.fval;
+        width = c->a.vals[2].u.fval;
     else
 	ScriptError( c, "Bad argument type" );
     if ( width<=0 && width!=-20 && width!=-21 )
