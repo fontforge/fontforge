@@ -4033,6 +4033,7 @@ static void bSetCharName(Context *c) {
 	uni = UniFromName(name,c->curfv->sf->uni_interp,c->curfv->map->enc);
     }
     SCSetMetaData(sc,name,uni,comment);
+    free(comment);
     /* SCLigDefault(sc); */	/* Not appropriate for indic scripts. May not be appropriate anywhere. Seems to confuse people even when it is appropriate */
 }
 
@@ -4058,6 +4059,8 @@ static void bSetUnicodeValue(Context *c) {
 	name = copy(StdGlyphName(buffer,uni,c->curfv->sf->uni_interp,c->curfv->sf->for_new_glyphs));
     }
     SCSetMetaData(sc,name,uni,comment);
+    free(name);
+    free(comment);
     /*SCLigDefault(sc);*/
 }
 
