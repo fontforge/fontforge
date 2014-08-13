@@ -607,6 +607,11 @@ static void PListAddReal(xmlNodePtr parent, const char *key, double value) {
     xmlNewChildPrintf(parent, NULL, BAD_CAST "real", "%g", value);
 }
 
+static void PListAddIntegerOrReal(xmlNodePtr parent, const char *key, double value) {
+    if (value == floor(value)) PListAddInteger(parent, key, (int)value);
+    else PListAddReal(parent, key, value);
+}
+
 static void PListAddBoolean(xmlNodePtr parent, const char *key, int value) {
     xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
     xmlNewChild(parent, NULL, BAD_CAST (value ? "true": "false"), NULL);
@@ -813,18 +818,13 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
     test = SFCapHeight(sf,layer,true);
     if ( test>0 )
 	PListAddInteger(dictnode,"capHeight",(int) rint(test));
-    if ( sf->ufo_ascent==0 )
-	PListAddInteger(dictnode,"ascender",sf->ascent);
-    else if ( sf->ufo_ascent==floor(sf->ufo_ascent))
-	PListAddInteger(dictnode,"ascender",sf->ufo_ascent);
-    else
-	PListAddReal(dictnode,"ascender",sf->ufo_ascent);
-    if ( sf->ufo_descent==0 )
-	PListAddInteger(dictnode,"descender",-sf->descent);
-    else if ( sf->ufo_descent==floor(sf->ufo_descent))
-	PListAddInteger(dictnode,"descender",sf->ufo_descent);
-    else
-	PListAddReal(dictnode,"descender",sf->ufo_descent);
+    if ( sf->invalidem ) {
+	PListAddIntegerOrReal(dictnode,"ascender",sf->ufo_ascent);
+	PListAddIntegerOrReal(dictnode,"descender",sf->ufo_descent);
+    } else {
+	PListAddIntegerOrReal(dictnode,"ascender",sf->ascent);
+	PListAddIntegerOrReal(dictnode,"descender",sf->descent);
+    }
     PListAddReal(dictnode,"italicAngle",sf->italicangle);
     PListAddString(dictnode,"note",sf->comments);
     PListAddDate(dictnode,"openTypeHeadCreated",sf->creationtime);
@@ -2617,7 +2617,7 @@ return( NULL );
 		    free(valname);
 	    } else if ( xmlStrcmp(keyname,(xmlChar *) "unitsPerEm")==0 ) {
 		em = strtol((char *) valname,&end,10);
-		if ( *end!='\0' ) em = -1;
+		if ( *end!='\0' || em < 0 ) em = -1;
 		free(valname);
 	    } else if ( xmlStrcmp(keyname,(xmlChar *) "ascender")==0 ) {
 		as = strtod((char *) valname,&end);
@@ -2634,22 +2634,19 @@ return( NULL );
 		sf->italicangle = strtod((char *) valname,&end);
 		if ( *end!='\0' ) sf->italicangle = 0;
 		free(valname);
-	    } else if ( xmlStrcmp(keyname,(xmlChar *) "descender")==0 ) {
-		ds = -strtol((char *) valname,&end,10);
-		if ( *end!='\0' ) ds = -1;
-		free(valname);
 	    } else
 		free(valname);
 	    free(keyname);
 	}
     }
-    if ( em==-1 && as!=-1 && ds!=-1 )
+    if ( em==-1 && as>=0 && ds>=0 )
 	em = as + ds;
-    if ( em==as+ds )
+    if ( em==as+ds ) {
 	/* Yay! They follow my conventions */;
-    else if ( em!=-1 ) {
+    } else if ( em!=-1 ) {
 	as = 800*em/1000;
 	ds = em-as;
+	sf->invalidem = 1;
     }
     if ( em==-1 ) {
 	LogError(_("This font does not specify unitsPerEm"));
