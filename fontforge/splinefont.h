@@ -1744,7 +1744,7 @@ typedef struct splinefont {
     char *defbasefilename;
     char *version;
     real italicangle, upos, uwidth;		/* In font info */
-    int ascent, descent;
+    int ascent, descent, invalidem; // If invalidem, then we use the format-specific ascent and descent on export.
     int uniqueid;				/* Not copied when reading in!!!! */
     int glyphcnt, glyphmax;			/* allocated size of glyphs array */
     SplineChar **glyphs;

@@ -2180,6 +2180,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
     fprintf(sfd, "UnderlineWidth: %g\n", (double) sf->uwidth );
     fprintf(sfd, "Ascent: %d\n", sf->ascent );
     fprintf(sfd, "Descent: %d\n", sf->descent );
+    fprintf(sfd, "InvalidEm: %d\n", sf->invalidem );
     if ( sf->sfntRevision!=sfntRevisionUnset )
 	fprintf(sfd, "sfntRevision: 0x%08x\n", sf->sfntRevision );
     if ( sf->woffMajor!=woffUnset ) {
@@ -7592,6 +7593,10 @@ bool SFD_GetFontMetaData( FILE *sfd,
     {
 	getint(sfd,&sf->descent);
     }
+    else if ( strmatch(tok,"InvalidEm:")==0 )
+    {
+	getint(sfd,&sf->invalidem);
+    }
     else if ( strmatch(tok,"woffMajor:")==0 )
     {
 	getint(sfd,&sf->woffMajor);
@@ -8698,6 +8703,8 @@ return( NULL );
 		getint(sfd,&sf.ascent);
 	    } else if ( strmatch(tok,"Descent:")==0 ) {
 		getint(sfd,&sf.descent);
+	    } else if ( strmatch(tok,"InvalidEm:")==0 ) {
+		getint(sfd,&sf.invalidem);
 	    }
 	    pos = ftell(sfd);
 	}
