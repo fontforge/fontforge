@@ -224,6 +224,7 @@ static void calldatafree(Context *c) {
 	}
 }
 
+/* coverity[+kill] */
 static void traceback(Context *c) {
     int cnt = 0;
     while ( c!=NULL ) {
