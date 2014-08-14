@@ -979,10 +979,10 @@ static void DetectWidthGroups( struct glyphinfo *gi,BDFFont *bdf,int apple ) {
     IBounds ib, ib2;
     int i, j, cnt, final;
     
-    for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i]!=-1 && bdf->glyphs[gi->bygid[i]]!=NULL )
+    for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i] >= 0 && gi->bygid[i] < bdf->glyphcnt && bdf->glyphs[gi->bygid[i]]!=NULL )
 	bdf->glyphs[gi->bygid[i]]->widthgroup = false;
 
-    for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i]!=-1 && (bc=bdf->glyphs[gi->bygid[i]])!=NULL ) {
+    for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i] >= 0 && gi->bygid[i] < bdf->glyphcnt && (bc=bdf->glyphs[gi->bygid[i]])!=NULL ) {
 	BDFCharQuickBounds( bc,&ib,0,0,true,true );
 	if (( apple || HasOutputtableBitmap( bc ) || bc->refs == NULL ) &&
 		ib.minx >= 0 && ib.maxx <= bc->width &&
