@@ -452,8 +452,10 @@ static char *_readencstring(FILE *ttf,int offset,int len,
 	free(cstr);
     } else {
 	enc = enc_from_platspec(platform,specific);
-	if ( enc==NULL )
-return( NULL );
+	if ( enc==NULL ) {
+	  fseek(ttf, pos, SEEK_SET);
+	  return( NULL );
+	}
 	if ( enc->is_unicodebmp ) {
 	    str = pt = malloc((sizeof(unichar_t)/2)*len+sizeof(unichar_t));
 	    for ( i=0; i<len/2; ++i ) {
