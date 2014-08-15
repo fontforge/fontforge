@@ -174,7 +174,7 @@ class Fontforge < Formula
        puts "***********************************************"
        puts "***********************************************"
        puts "***********************************************"
-       system "./osx/create-osx-app-bundle.sh"
+       system "./travisosxpack/create-osx-app-bundle.sh"
     end
 
   end
