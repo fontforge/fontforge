@@ -1245,7 +1245,7 @@ static void SFDDumpCharMath(FILE *sfd,SplineChar *sc) {
     }
 }
 
-static void SFDPickleMe(FILE *sfd,void *python_data) {
+static void SFDPickleMe(FILE *sfd,void *python_data, int python_data_has_lists) {
     char *string, *pt;
 
 #ifdef _NO_PYTHON
@@ -1255,6 +1255,9 @@ static void SFDPickleMe(FILE *sfd,void *python_data) {
 #endif
     if ( string==NULL )
 return;
+    if (python_data_has_lists)
+    fprintf( sfd, "PickledDataWithLists: \"" );
+    else
     fprintf( sfd, "PickledData: \"" );
     for ( pt=string; *pt; ++pt ) {
 	if ( *pt=='\\' || *pt=='"' )
@@ -1267,7 +1270,7 @@ return;
 #endif
 }
 
-static void *SFDUnPickle(FILE *sfd) {
+static void *SFDUnPickle(FILE *sfd, int python_data_has_lists) {
     int ch, quoted;
     static int max = 0;
     static char *buf = NULL;
@@ -1469,7 +1472,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	    sc->horiz_variants!=NULL || sc->mathkern!=NULL )
 	SFDDumpCharMath(sfd,sc);
     if ( sc->python_persistent!=NULL )
-	SFDPickleMe(sfd,sc->python_persistent);
+	SFDPickleMe(sfd,sc->python_persistent,sc->python_persistent_has_lists);
 #if HANYANG
     if ( sc->compositionunit )
 	fprintf( sfd, "CompositionUnit: %d %d\n", sc->jamo, sc->varient );
@@ -2571,7 +2574,7 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 	}
     }
     if ( sf->python_persistent!=NULL )
-	SFDPickleMe(sfd,sf->python_persistent);
+	SFDPickleMe(sfd,sf->python_persistent, sf->python_persistent_has_lists);
     if ( sf->subfontcnt!=0 ) {
 	/* CID fonts have no encodings, they have registry info instead */
 	fprintf(sfd, "Registry: %s\n", sf->cidregistry );
@@ -5224,7 +5227,11 @@ return( NULL );
 	} else if ( strmatch(tok,"Validated:")==0 ) {
 	    getsint(sfd,(int16 *) &sc->layers[current_layer].validation_state);
 	} else if ( strmatch(tok,"PickledData:")==0 ) {
-	    sc->python_persistent = SFDUnPickle(sfd);
+	    sc->python_persistent = SFDUnPickle(sfd, 0);
+	    sc->python_persistent_has_lists = 0;
+	} else if ( strmatch(tok,"PickledDataWithLists:")==0 ) {
+	    sc->python_persistent = SFDUnPickle(sfd, 1);
+	    sc->python_persistent_has_lists = 1;
 	} else if ( strmatch(tok,"Back")==0 ) {
 	    while ( isspace(ch=nlgetc(sfd)));
 	    ungetc(ch,sfd);
@@ -8327,7 +8334,27 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	} else if ( strmatch(tok,"BeginSubrs:")==0 ) {	/* leave in so we don't croak on old sfd files */
 	    SFDGetSubrs(sfd);
 	} else if ( strmatch(tok,"PickledData:")==0 ) {
-	    sf->python_persistent = SFDUnPickle(sfd);
+	    if (sf->python_persistent != NULL) {
+#if defined(_NO_PYTHON)
+	      free( sf->python_persistent );	/* It's a string of pickled data which we leave as a string */
+#else
+	      PyFF_FreePythonPersistent(sf->python_persistent);
+#endif
+	      sf->python_persistent = NULL;
+	    }
+	    sf->python_persistent = SFDUnPickle(sfd, 0);
+	    sf->python_persistent_has_lists = 0;
+	} else if ( strmatch(tok,"PickledDataWithLists:")==0 ) {
+	    if (sf->python_persistent != NULL) {
+#if defined(_NO_PYTHON)
+	      free( sf->python_persistent );	/* It's a string of pickled data which we leave as a string */
+#else
+	      PyFF_FreePythonPersistent(sf->python_persistent);
+#endif
+	      sf->python_persistent = NULL;
+	    }
+	    sf->python_persistent = SFDUnPickle(sfd, 1);
+	    sf->python_persistent_has_lists = 1;
 	} else if ( strmatch(tok,"MMCounts:")==0 ) {
 	    MMSet *mm = sf->mm = chunkalloc(sizeof(MMSet));
 	    getint(sfd,&mm->instance_count);

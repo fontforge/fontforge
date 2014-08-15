@@ -184,11 +184,11 @@ static void xmlSetPropPrintf(xmlNodePtr target, const xmlChar * name, char * for
 /* *************************   Python lib Output    ************************* */
 /* ************************************************************************** */
 #ifndef _NO_PYTHON
-static int PyObjDumpable(PyObject *value);
-xmlNodePtr PyObjectToXML( PyObject *value );
+static int PyObjDumpable(PyObject *value, int has_lists);
+xmlNodePtr PyObjectToXML( PyObject *value, int has_lists );
 #endif
 
-xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc) {
+xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc, int has_lists) {
     int has_hints = (sc!=NULL && (sc->hstem!=NULL || sc->vstem!=NULL ));
     xmlNodePtr retval = NULL, dictnode = NULL, keynode = NULL, valnode = NULL;
     // retval = xmlNewNode(NULL, BAD_CAST "lib"); //     "<lib>"
@@ -261,6 +261,8 @@ xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc) {
 	/*  hint entry -- we've already handled that with the real hints, */
 	/*  no point in retaining out of date hints too */
 	if ( dict != NULL ) {
+          if (!PyMapping_Check((PyObject *)python_persistent)) fprintf(stderr, "python_persistent is not a mapping.\n");
+          else {
             int i, len;
             char *str;
 	    items = PyMapping_Items(dict);
@@ -277,15 +279,16 @@ xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc) {
 			if ( !str || (strcmp(str,"com.fontlab.hintData")==0 && sc!=NULL) )	/* Already done */
 			{ Py_DECREF(item); item = NULL; continue; }
 			value = PyTuple_GetItem(item,1);
-			if ( !value || !PyObjDumpable(value))
+			if ( !value || !PyObjDumpable(value, has_lists))
 			{ Py_DECREF(item); item = NULL; continue; }
 			// "<key>%s</key>" str
       xmlNewChild(dictnode, NULL, BAD_CAST "key", str);
-      xmlNodePtr tmpNode = PyObjectToXML(value);
+      xmlNodePtr tmpNode = PyObjectToXML(value, has_lists);
       xmlAddChild(dictnode, tmpNode);
 			// "<...>...</...>"
 			Py_DECREF(item); item = NULL;
 	    }
+	  }
 	}
 #endif
     }
@@ -295,14 +298,20 @@ xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc) {
 }
 
 #ifndef _NO_PYTHON
-static int PyObjDumpable(PyObject *value) {
+static int PyObjDumpable(PyObject *value, int has_lists) {
+    if ( PyTuple_Check(value))
+return( true ); // Note that this means two different things depending upon has_lists.
+    if ( PyList_Check(value))
+return( true );
     if ( PyInt_Check(value))
 return( true );
     if ( PyFloat_Check(value))
 return( true );
 	if ( PyDict_Check(value))
 return( true );
-    if ( PySequence_Check(value))		/* Catches strings and tuples */
+    if ( PyBytes_Check(value))
+return( true );
+    if ( has_lists && PyList_Check(value))
 return( true );
     if ( PyMapping_Check(value))
 return( true );
@@ -314,14 +323,26 @@ return( true );
 return( false );
 }
 
-xmlNodePtr PyObjectToXML( PyObject *value ) {
+xmlNodePtr PyObjectToXML( PyObject *value, int has_lists ) {
     xmlNodePtr childtmp = NULL;
     xmlNodePtr valtmpxml = NULL;
     char * valtmp = NULL;
-    if (PyDict_Check(value)) {
-      childtmp = PythonLibToXML(value,NULL);
+    if (has_lists && PyTuple_Check(value) && (PyTuple_Size(value) == 3) &&
+       PyBytes_Check(PyTuple_GetItem(value,0)) && PyBytes_Check(PyTuple_GetItem(value,1))) {
+      // This is a chunk of unrecognized data.
+      // Since there's no equivalent in X. M. L., we can use the Tuple for this special case.
+      // But we can only do this if the arrays are being mapped as lists rather than as tuples.
+      // So we miss foreign data in old S. F. D. versions.
+      // childtmp = xmlNewNode(NULL, (xmlChar*)(PyBytes_AsString(PyTuple_GetItem(value,0)))); // Set name.
+      // xmlNodeSetContent(childtmp, (xmlChar*)(PyBytes_AsString(PyTuple_GetItem(value,1)))); // Set contents.
+      xmlDocPtr innerdoc = xmlReadMemory((xmlChar*)(PyBytes_AsString(PyTuple_GetItem(value,1))),
+                                         PyBytes_Size(PyTuple_GetItem(value,1)), "noname.xml", NULL, 0);
+      childtmp = xmlCopyNode(xmlDocGetRootElement(innerdoc), 1);
+      xmlFreeDoc(innerdoc); innerdoc = NULL;
+    } else if (PyDict_Check(value)) {
+      childtmp = PythonLibToXML(value,NULL,has_lists);
     } else if ( PyMapping_Check(value)) {
-      childtmp = PythonLibToXML(value,NULL);
+      childtmp = PythonLibToXML(value,NULL,has_lists);
     } else if ( PyBytes_Check(value)) {		/* Must precede the sequence check */
       char *str = PyBytes_AsString(value);
       if (str != NULL) {
@@ -347,19 +368,21 @@ xmlNodePtr PyObjectToXML( PyObject *value ) {
           xmlFreeNode(childtmp); childtmp = NULL;
         }
         // "<real>%g</real>"
-    } else if (PySequence_Check(value)) {
-	int i, len = PySequence_Size(value);
+    } else if ((!has_lists && PyTuple_Check(value)) || (has_lists && PyList_Check(value))) {
+        // Note that PyList is an extension of PySequence, so the original PySequence code would work either way.
+        // But we want to be able to detect mismatches.
+	int i, len = ( has_lists ? PyList_Size(value) : PyTuple_Size(value) );
         xmlNodePtr itemtmp = NULL;
         childtmp = xmlNewNode(NULL, BAD_CAST "array");
         // "<array>"
 	for ( i=0; i<len; ++i ) {
-	    PyObject *obj = PySequence_GetItem(value,i);
+	    PyObject *obj = ( has_lists ? PyList_GetItem(value,i) : PyTuple_GetItem(value,i) );
 	    if (obj != NULL) {
-	      if ( PyObjDumpable(obj)) {
-		itemtmp = PyObjectToXML(obj);
+	      if ( PyObjDumpable(obj, has_lists)) {
+	        itemtmp = PyObjectToXML(obj, has_lists);
                 xmlAddChild(childtmp, itemtmp);
 	      }
-              Py_DECREF(obj); obj = NULL;
+              obj = NULL; // PyTuple_GetItem and PyList_GetItem both return borrowed references.
 	    }
 	}
         // "</array>"
@@ -530,7 +553,7 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
 	// "</outline>"
     }
     xmlNodePtr libxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "lib", NULL);
-    xmlNodePtr pythonblob = PythonLibToXML(sc->python_persistent, sc);
+    xmlNodePtr pythonblob = PythonLibToXML(sc->python_persistent, sc, sc->python_persistent_has_lists);
     xmlAddChild(libxml, pythonblob);
     return topglyphxml;
 }
@@ -1038,7 +1061,7 @@ static int UFOOutputLib(const char *basedir, const SplineFont *sf) {
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) return false; // Find the root node.
 
-    xmlNodePtr dictnode = PythonLibToXML(sf->python_persistent,NULL);
+    xmlNodePtr dictnode = PythonLibToXML(sf->python_persistent,NULL,sf->python_persistent_has_lists);
     xmlAddChild(rootnode, dictnode);
 
     char *fname = buildname(basedir, "lib.plist"); // Build the file name.
@@ -1491,9 +1514,9 @@ return( NULL );
 }
 
 #ifndef _NO_PYTHON
-static PyObject *XMLEntryToPython(xmlDocPtr doc,xmlNodePtr entry);
+static PyObject *XMLEntryToPython(xmlDocPtr doc, xmlNodePtr entry, int has_lists);
 
-static PyObject *LibToPython(xmlDocPtr doc,xmlNodePtr dict) {
+static PyObject *LibToPython(xmlDocPtr doc, xmlNodePtr dict, int has_lists) {
 	// This function is responsible for parsing keys in dicts.
     PyObject *pydict = PyDict_New();
     PyObject *item = NULL;
@@ -1512,10 +1535,10 @@ static PyObject *LibToPython(xmlDocPtr doc,xmlNodePtr dict) {
 			}
 			// Convert the X.M.L. entry into a Python object.
 			item = NULL;
-			if ( temp!=NULL) item = XMLEntryToPython(doc,temp);
+			if ( temp!=NULL) item = XMLEntryToPython(doc,temp,has_lists);
 			if ( item!=NULL ) PyDict_SetItemString(pydict, keyname, item );
 			if ( temp==NULL ) break;
-			else if ( xmlStrcmp(temp->name,(const xmlChar *) "key")!=0 ) keys = temp->next;
+			else if ( xmlStrcmp(temp->name,(const xmlChar *) "key")!=0 ) keys = temp;
 			// If and only if the parsing succeeds, jump over any entries we read when searching for a text block.
 			free(keyname);
 		}
@@ -1523,7 +1546,7 @@ static PyObject *LibToPython(xmlDocPtr doc,xmlNodePtr dict) {
 return( pydict );
 }
 
-static PyObject *XMLEntryToPython(xmlDocPtr doc,xmlNodePtr entry) {
+static PyObject *XMLEntryToPython(xmlDocPtr doc,xmlNodePtr entry, int has_lists) {
     char *contents;
 
     if ( xmlStrcmp(entry->name,(const xmlChar *) "true")==0 ) {
@@ -1540,7 +1563,7 @@ return( Py_None );
     }
 
     if ( xmlStrcmp(entry->name,(const xmlChar *) "dict")==0 )
-return( LibToPython(doc,entry));
+return( LibToPython(doc,entry, has_lists));
     if ( xmlStrcmp(entry->name,(const xmlChar *) "array")==0 ) {
 	xmlNodePtr sub;
 	int cnt;
@@ -1554,21 +1577,24 @@ return( LibToPython(doc,entry));
 	continue;
 	    ++cnt;
 	}
-	ret = PyTuple_New(cnt);
+	ret = ( has_lists ? PyList_New(cnt) : PyTuple_New(cnt) );
 	for ( cnt=0, sub=entry->children; sub!=NULL; sub=sub->next ) {
 	    if ( xmlStrcmp(sub->name,(const xmlChar *) "text")==0 )
 	continue;
-	    item = XMLEntryToPython(doc,sub);
+	    item = XMLEntryToPython(doc,sub,has_lists);
 	    if ( item==NULL ) {
 		item = Py_None;
 		Py_INCREF(item);
 	    }
-	    PyTuple_SetItem(ret,cnt,item);
+	    if (has_lists) PyList_SetItem(ret,cnt,item);
+	    else PyTuple_SetItem(ret,cnt,item);
 	    ++cnt;
 	}
 return( ret );
     }
-    if ((entry->children != NULL) && ((contents = (char *) xmlNodeListGetString(doc,entry->children,true)) != NULL)) {
+    if ((entry->children != NULL) && ((contents = (char *) xmlNodeListGetString(doc,entry->children,true)) != NULL) &&
+       (( xmlStrcmp(entry->name,(const xmlChar *) "integer")==0 ) || ( xmlStrcmp(entry->name,(const xmlChar *) "real")==0 ) ||
+       ( xmlStrcmp(entry->name,(const xmlChar *) "string")==0 ))) {
       contents = (char *) xmlNodeListGetString(doc,entry->children,true);
       if ( xmlStrcmp(entry->name,(const xmlChar *) "integer")==0 ) {
 	long val = strtol(contents,NULL,0);
@@ -1585,9 +1611,24 @@ return( Py_BuildValue("d",val));
 	free(contents);
 return( ret );
       }
-      LogError(_("Unknown python type <%s> when reading UFO/GLIF lib data."), (char *) entry->name);
+      
       free( contents );
-    } else LogError(_("Missing value when reading UFO/GLIF lib data."));
+    }
+    if (has_lists) {
+      // This special handler for unrecognized content depends
+      // on the fact that there's no X. M. L. equivalent for the Python tuple.
+      xmlBufferPtr buf = xmlBufferCreate(); // Create a buffer for dumping this portion of the tree.
+      xmlNodeDump(buf, doc, entry, 0, 0); // Dump the tree into the buffer.
+      xmlChar* tmpcontent = xmlBufferContent(buf); // Get the string from the buffer.
+      PyObject* ret = PyTuple_New(3); // Make a tuple in the Python tree.
+      PyTuple_SetItem(ret, 0, PyBytes_FromString((char*)entry->name)); // Store the node name.
+      PyTuple_SetItem(ret, 1, PyBytes_FromString((char*)tmpcontent)); // Store the node content.
+      PyTuple_SetItem(ret, 2, Py_None);
+      Py_INCREF(Py_None);
+      xmlBufferFree(buf);
+      return ret;
+    }
+    LogError(_("Unknown python type <%s> when reading UFO/GLIF lib data."), (char *) entry->name);
 return( NULL );
 }
 #endif
@@ -2088,7 +2129,8 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		    }
 		}
 #ifndef _NO_PYTHON
-		sc->python_persistent = LibToPython(doc,dict);
+		sc->python_persistent = LibToPython(doc,dict,1);
+		sc->python_persistent_has_lists = 1;
 #endif
 	    }
 	}
@@ -2856,7 +2898,8 @@ return( NULL );
 			dict==NULL ) {
 			LogError(_("Expected property list file"));
 		} else {
-			sf->python_persistent = LibToPython(doc,dict);
+			sf->python_persistent = LibToPython(doc,dict,1);
+			sf->python_persistent_has_lists = 1;
 		}
 		xmlFreeDoc(doc);
     }

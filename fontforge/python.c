@@ -18430,6 +18430,10 @@ void PyFF_FreeSC(SplineChar *sc) {
     Py_XDECREF( (PyObject *) (sc->python_temporary));
 }
 
+extern void PyFF_FreePythonPersistent(void *python_persistent) {
+    Py_XDECREF((PyObject *)python_persistent);
+}
+
 static void LoadFilesInPythonInitDir(char *dir) {
     DIR *diro;
     struct dirent *ent;
