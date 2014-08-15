@@ -58,6 +58,10 @@ class Fontforge < Formula
     depends_on 'ossp-uuid'
     depends_on 'zeromq'
     depends_on 'czmq'
+    depends_on 'dylibbundler'
+    depends_on 'gtk+'
+    depends_on 'pygtk'
+    depends_on 'node'
   end
 
   option 'with-gif', 'Build with GIF support'
@@ -160,6 +164,19 @@ class Fontforge < Formula
 
     system "make"
     system "make install"
+
+    if build.head?
+       File.chmod(0774, "./osx/create-osx-app-bundle.sh")
+       puts "***********************************************"
+       puts "***********************************************"
+       puts "***********************************************"
+       puts "rolling a binary package for this build...(2)"
+       puts "***********************************************"
+       puts "***********************************************"
+       puts "***********************************************"
+       system "./travis-scripts/create-osx-app-bundle-homebrew.sh"
+    end
+
   end
 
   test do
