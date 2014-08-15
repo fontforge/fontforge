@@ -58,7 +58,7 @@ class Fontforge < Formula
     depends_on 'ossp-uuid'
     depends_on 'zeromq'
     depends_on 'czmq'
-#    depends_on 'dylibbunder'
+    depends_on 'dylibbundler'
     depends_on 'gtk+'
     depends_on 'pygtk'
     depends_on 'node'
