@@ -2021,12 +2021,14 @@ return -1;
 	else {
 	    EncMap *map = EncMapFromEncoding(sf,new_enc);
 	    EncMapFree(fv->map);
+	    if (fv->sf != NULL && fv->map == fv->sf->map) { fv->sf->map = map; }
 	    fv->map = map;
 	    if ( !no_windowing_ui )
 		FVSetTitle(fv);
 	}
 	if ( fv->normal!=NULL ) {
 	    EncMapFree(fv->normal);
+	    if (fv->sf != NULL && fv->map == fv->sf->map) { fv->sf->map = NULL; }
 	    fv->normal = NULL;
 	}
 	SFReplaceEncodingBDFProps(sf,fv->map);
