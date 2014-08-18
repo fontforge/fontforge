@@ -988,7 +988,7 @@ static void DetectWidthGroups( struct glyphinfo *gi,BDFFont *bdf,int apple ) {
 		ib.minx >= 0 && ib.maxx <= bc->width &&
 		ib.maxy < bdf->ascent && ib.miny >= -bdf->descent ) {
 	    cnt = 1;
-	    for ( j=i+1; j<gi->gcnt; ++j ) if ( gi->bygid[j]!=-1 && (bc2=bdf->glyphs[gi->bygid[j]])!=NULL ) {
+	    for ( j=i+1; j<gi->gcnt; ++j ) if ( gi->bygid[j] >= 0 && gi->bygid[j] < bdf->glyphcnt && (bc2=bdf->glyphs[gi->bygid[j]])!=NULL ) {
 		BDFCharQuickBounds( bc2,&ib2,0,0,true,true );
 		if (( !apple && !HasOutputtableBitmap( bc2 ) && bc2->refs != NULL ) ||
 			ib2.minx < 0 || ib2.maxx > bc->width || ib2.miny < -bdf->descent ||
@@ -1006,7 +1006,7 @@ static void DetectWidthGroups( struct glyphinfo *gi,BDFFont *bdf,int apple ) {
 	    if ( cnt>20 ) {		/* We must have at least, oh, 20 glyphs with the same metrics */
 		bc->widthgroup = true;
 		BCPreserveAndExpand( bc,&ib );
-		for ( j=i+1; j<=final; ++j ) if ( gi->bygid[j] != -1 && ( bc2=bdf->glyphs[gi->bygid[j]])!=NULL ) {
+		for ( j=i+1; j<=final; ++j ) if ( gi->bygid[j] >= 0 && gi->bygid[j] < bdf->glyphcnt && ( bc2=bdf->glyphs[gi->bygid[j]])!=NULL ) {
 		    bc2->widthgroup = true;
 		    BCPreserveAndExpand( bc2,&ib );
 		}
@@ -1223,12 +1223,13 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
 	/* correctly calculate reference placement in composite glyphs */
 	DetectWidthGroups( &at->gi,bdf,at->applebitmaps );
 	/* Apple doesn't support composite bitmaps ( EBDT formats 8 and 9) */
-	for ( j=0; j < at->gi.gcnt; ++j ) if ( at->gi.bygid[j]!=-1 && ( bc = bdf->glyphs[at->gi.bygid[j]] ) != NULL )
+	for ( j=0; j < at->gi.gcnt; ++j ) if ( at->gi.bygid[j] >= 0 && at->gi.bygid[j] < bdf->glyphcnt && ( bc = bdf->glyphs[at->gi.bygid[j]] ) != NULL )
+            BCPrepareForOutput( bc,at->applebitmaps );
 	    BCPrepareForOutput( bc,at->applebitmaps );
 	bl = BDFAddDefaultGlyphs(bdf, at->format);
 	cur = ttfdumpstrikelocs(at->bloc,at->bdat,bdf,bl,&at->gi);
 	BDFCleanupDefaultGlyphs(bdf);
-	for ( j=0; j < at->gi.gcnt; ++j ) if ( at->gi.bygid[j]!=-1 && ( bc = bdf->glyphs[at->gi.bygid[j]] ) != NULL )
+	for ( j=0; j < at->gi.gcnt; ++j ) if ( at->gi.bygid[j] >= 0 && at->gi.bygid[j] < bdf->glyphcnt && ( bc = bdf->glyphs[at->gi.bygid[j]] ) != NULL )
 	    BCRestoreAfterOutput( bc );
 
 	if ( cur==NULL )
