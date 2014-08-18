@@ -6,10 +6,11 @@ branches:
 os:
   - linux
   - osx
-    env:
-       foo=bar
 
 before_install: ./travis-scripts/before_install_${TRAVIS_OS_NAME}.sh
 install:        ./travis-scripts/install_${TRAVIS_OS_NAME}.sh
 script:         ./travis-scripts/script_${TRAVIS_OS_NAME}.sh
+
+env:
+   foo=bar foo2=bar2 foo3=bar3
 
