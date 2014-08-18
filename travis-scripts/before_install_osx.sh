@@ -1,6 +1,17 @@
 #!/bin/bash
 set -ev
 
+# setup ssh
+echo -n $id_rsa_{00..30} >> ~/.ssh/id_rsa_base64
+base64 --decode ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
+chmod 600 ~/.ssh/id_rsa
+echo -e "Host bigv\n\tStrictHostKeyChecking no\n\tHostname fontforge.default.fontforge.uk0.bigv.io\n\tUser travisci\n\tIdentityFile ~/.ssh/id_rsa\n" >> ~/.ssh/config
+
+
+# test the secure env variables and ability to upload
+date >| /tmp/testfile
+scp /tmp/testfile bigv:/tmp/
+
 brew update
 
 sed -i -e "s|{TRAVIS_PULL_REQUEST}|${TRAVIS_PULL_REQUEST}|g" ./travis-scripts/fontforge.rb
