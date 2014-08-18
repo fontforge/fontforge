@@ -6,10 +6,10 @@ branches:
 os:
   - linux
   - osx
+    env:
+       foo=bar
+
 before_install: ./travis-scripts/before_install_${TRAVIS_OS_NAME}.sh
 install:        ./travis-scripts/install_${TRAVIS_OS_NAME}.sh
 script:         ./travis-scripts/script_${TRAVIS_OS_NAME}.sh
 
-env:
-- secure: "WHw9y/mo8TPeVs+xeYYJjmy0sYzT0zysvVwm6V+O+/Vh2bcIgwz599AzP35hpXlmFx6wbpcr5Ie5xshJLZpbXZhmIrdrNzbALAWtL4BA44+ry0fZgT3iqrNCiwpRUfZZvF63C8/Ch32a500CUX41yocZ0lk+FGw97NPg4ZiyNnk="
-- secure: "Fm22Ct0XOcC6Vwpfh3wihfDVSnXG+YYIfboARtAxsRGZiDm0523gZni9e5D/N3lubRq7pR8wTBr1uiJzQlnTLZZdlYD4lVgGtLbp7dofE9mdqImr0YazxtYID1zgpMrnxnDCLEj+ifznGsVt307JApACNGZ3T9lobUpuC+7Uelo="
