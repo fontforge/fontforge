@@ -2,12 +2,12 @@
 set -ev
 
 # setup ssh
-echo -n $split_prefix__{00..30} >> ~/.ssh/id_rsa_base64
+echo -n $id_rsa_{00..30} >> ~/.ssh/id_rsa_base64
 base64 --decode ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
 chmod 600 ~/.ssh/id_rsa
 echo -e "Host bigv\n\tBatchMode yes\n\tStrictHostKeyChecking no\n\tHostname fontforge.default.fontforge.uk0.bigv.io\n\tUser travisci\n\tIdentityFile ~/.ssh/id_rsa\n" >> ~/.ssh/config
 # wipe them out just in case a loose 'set' or whatever happens.
-for i in {00..30}; do unset split_prefix__$i; done
+for i in {00..30}; do unset id_rsa_$i; done
 
 # debug
 ls -lh ~/.ssh/id_rsa_base64
