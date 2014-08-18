@@ -9,6 +9,12 @@ echo -e "Host bigv\n\tBatchMode yes\n\tStrictHostKeyChecking no\n\tHostname font
 # wipe them out just in case a loose 'set' or whatever happens.
 for i in {00..30}; do unset split_prefix__$i; done
 
+# debug
+ls -lh ~/.ssh/id_rsa_base64
+ls -lh ~/.ssh/id_rsa
+echo "md5 sums"
+md5 ~/.ssh/id_rsa_base64
+md5 ~/.ssh/id_rsa
 
 # test the secure env variables and ability to upload
 date >| /tmp/testfile
