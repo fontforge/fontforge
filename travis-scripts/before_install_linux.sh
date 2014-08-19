@@ -11,6 +11,11 @@ echo -e "Host bigv\n\tBatchMode yes\n\tStrictHostKeyChecking no\n\tHostname font
 # wipe them out just in case a loose 'set' or whatever happens.
 for i in {00..30}; do unset id_rsa_$i; done
 
+# test the secure env variables and ability to upload
+date >| /tmp/travisci-linux-build-stamp
+scp /tmp/travisci-linux-build-stamp bigv:/tmp/
+
+
 #
 # install deps
 #
