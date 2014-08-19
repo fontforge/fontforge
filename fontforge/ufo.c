@@ -1619,10 +1619,10 @@ return( ret );
       // on the fact that there's no X. M. L. equivalent for the Python tuple.
       xmlBufferPtr buf = xmlBufferCreate(); // Create a buffer for dumping this portion of the tree.
       xmlNodeDump(buf, doc, entry, 0, 0); // Dump the tree into the buffer.
-      xmlChar* tmpcontent = xmlBufferContent(buf); // Get the string from the buffer.
+      const xmlChar* tmpcontent = xmlBufferContent(buf); // Get the string from the buffer.
       PyObject* ret = PyTuple_New(3); // Make a tuple in the Python tree.
-      PyTuple_SetItem(ret, 0, PyBytes_FromString((char*)entry->name)); // Store the node name.
-      PyTuple_SetItem(ret, 1, PyBytes_FromString((char*)tmpcontent)); // Store the node content.
+      PyTuple_SetItem(ret, 0, PyBytes_FromString((const char*)entry->name)); // Store the node name.
+      PyTuple_SetItem(ret, 1, PyBytes_FromString((const char*)tmpcontent)); // Store the node content.
       PyTuple_SetItem(ret, 2, Py_None);
       Py_INCREF(Py_None);
       xmlBufferFree(buf);
