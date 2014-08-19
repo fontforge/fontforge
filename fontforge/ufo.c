@@ -1009,7 +1009,7 @@ static void KerningPListAddGlyph(xmlNodePtr parent, const char *key, const KernP
     xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key); // "<key>%s</key>" key
     xmlNodePtr dictxml = xmlNewChild(parent, NULL, BAD_CAST "dict", NULL); // "<dict>"
     while ( kp!=NULL ) {
-      xmlNewChildInteger(dictxml, NULL, BAD_CAST kp->sc->name, kp->off); // "<key>%s</key><integer>%d</integer>" kp->sc->name kp->off
+      PListAddInteger(dictxml, kp->sc->name, kp->off); // "<key>%s</key><integer>%d</integer>" kp->sc->name kp->off
       kp = kp->next;
     }
 }
