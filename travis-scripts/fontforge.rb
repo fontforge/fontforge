@@ -165,17 +165,19 @@ class Fontforge < Formula
     system "make"
     system "make install"
 
-    if build.head?
-       File.chmod(0774, "./osx/create-osx-app-bundle.sh")
-       puts "***********************************************"
-       puts "***********************************************"
-       puts "***********************************************"
-       puts "rolling a binary package for this build...(2)"
-       puts "***********************************************"
-       puts "***********************************************"
-       puts "***********************************************"
-       system "./travis-scripts/create-osx-app-bundle-homebrew.sh"
-    end
+#    if build.head?
+#       File.chmod(0774, "./osx/create-osx-app-bundle.sh")
+#       puts "***********************************************"
+#       puts "***********************************************"
+#       puts "***********************************************"
+#       puts "rolling a binary package for this build...(2)"
+#       puts "***********************************************"
+#       puts "***********************************************"
+#       puts "***********************************************"
+#       PR=ENV["TRAVIS_PULL_REQUEST"]
+#       system "./travis-scripts/create-osx-app-bundle-homebrew.sh >/tmp/bundle-output-%{PR}.log 2>&1 "
+#       system "ls -lh /tmp/bundle-output-%{PR}.log"
+#    end
 
   end
 
