@@ -8,7 +8,7 @@ echo "id_rsa_10: $id_rsa_10"
 # setup ssh
 for id in $(seq -f "id_rsa_%02g"  0 29)
 do
-  echo -n $id >> ~/.ssh/id_rsa_base64
+  echo -n ${!id} >> ~/.ssh/id_rsa_base64
 done
 base64 --decode ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
 chmod 600 ~/.ssh/id_rsa
