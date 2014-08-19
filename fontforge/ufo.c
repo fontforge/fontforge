@@ -846,7 +846,7 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 	PListAddIntegerOrReal(dictnode,"descender",sf->ufo_descent);
     } else {
 	PListAddIntegerOrReal(dictnode,"ascender",sf->ascent);
-	PListAddIntegerOrReal(dictnode,"descender",sf->descent);
+	PListAddIntegerOrReal(dictnode,"descender",-sf->descent);
     }
     PListAddReal(dictnode,"italicAngle",sf->italicangle);
     PListAddString(dictnode,"note",sf->comments);
