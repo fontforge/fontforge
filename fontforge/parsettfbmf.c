@@ -554,11 +554,6 @@ return;
 	    for ( i=0; i<cnt; ++i )
 		sel[i] = true;
 	}
-    } else if ( no_windowing_ui ) {
-	if ( onlyone ) {
-	    if ( biggest!=-1 ) sel[biggest] = true;
-	} else
-	    biggest = -2;
     } else if ( onlyone ) {
 	biggest=ff_choose(_("Load Bitmap Fonts"), choices,cnt,biggest,
 		_("Do you want to load the bitmap fonts embedded in this true/open type file?\n(And if so, which)"));
