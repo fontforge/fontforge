@@ -851,7 +851,7 @@ return;
 }
 
 static void _LogError(const char *format,va_list ap) {
-    char buffer[500], nbuffer[600], *str, *pt, *npt;
+    char buffer[2500], nbuffer[2600], *str, *pt, *npt;
     vsnprintf(buffer,sizeof(buffer),format,ap);
     for ( pt=buffer, npt=nbuffer; *pt!='\0' && npt<nbuffer+sizeof(nbuffer)-2; ) {
 	*npt++ = *pt++;
