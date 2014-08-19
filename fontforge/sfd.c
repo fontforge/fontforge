@@ -226,7 +226,6 @@ static void SFDDumpUTF7Str(FILE *sfd, const char *_str) {
 	utf7_encode(sfd,prev);
     }
     putc('"',sfd);
-    putc(' ',sfd);
 }
 
 
@@ -763,6 +762,7 @@ static void SFDDumpAnchorPoints(FILE *sfd,AnchorPoint *ap) {
     {
 	fprintf( sfd, "AnchorPoint: " );
 	SFDDumpUTF7Str(sfd,ap->anchor->name);
+	putc(' ',sfd);
 	fprintf( sfd, "%g %g %s %d",
 		(double) ap->me.x, (double) ap->me.y,
 		ap->type==at_centry ? "entry" :
@@ -1099,7 +1099,8 @@ static void SFDDumpTtfTable(FILE *sfd,struct ttf_table *tab,SplineFont *sf) {
 		    ended=true;
 		else if ( sf->cvt_names[i]!=NULL ) {
 		    putc(' ',sfd);
-		    SFDDumpUTF7Str(sfd,sf->cvt_names[i] );
+		    SFDDumpUTF7Str(sfd,sf->cvt_names[i]);
+		    putc(' ',sfd);
 		}
 	    }
 	    putc('\n',sfd);
@@ -1348,8 +1349,10 @@ void SFD_DumpPST( FILE *sfd, SplineChar *sc ) {
 		    "AlternateSubs2:", "MultipleSubs2:", "Ligature2:",
 		    "LCarets2:", NULL };
 	    fprintf( sfd, "%s ", keywords[pst->type] );
-	    if ( pst->subtable!=NULL )
-		SFDDumpUTF7Str(sfd,pst->subtable->subtable_name );
+	    if ( pst->subtable!=NULL ) {
+		SFDDumpUTF7Str(sfd,pst->subtable->subtable_name);
+		putc(' ',sfd);
+	    }
 	    if ( pst->type==pst_position ) {
 		fprintf( sfd, "dx=%d dy=%d dh=%d dv=%d",
 			pst->u.pos.xoff, pst->u.pos.yoff,
@@ -1394,7 +1397,7 @@ void SFD_DumpKerns( FILE *sfd, SplineChar *sc, int *newgids ) {
 		    fprintf( sfd, " %d %d ",
 			    newgids!=NULL?newgids[kp->sc->orig_pos]:kp->sc->orig_pos,
 			    kp->off );
-		    SFDDumpUTF7Str(sfd,kp->subtable->subtable_name );
+		    SFDDumpUTF7Str(sfd,kp->subtable->subtable_name);
 		    if ( kp->adjust!=NULL ) putc(' ',sfd);
 		    SFDDumpDeviceTable(sfd,kp->adjust);
 		}
@@ -1408,7 +1411,7 @@ void SFDDumpCharStartingMarker(FILE *sfd,SplineChar *sc) {
 	fprintf(sfd, "StartChar: %s\n", sc->name );
     else {
 	fprintf(sfd, "StartChar: " );
-	SFDDumpUTF7Str(sfd,sc->name );
+	SFDDumpUTF7Str(sfd,sc->name);
 	putc('\n',sfd);
     }
 }
@@ -1582,7 +1585,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
                 fprintf( sfd, " %d %d ",
                          newgids!=NULL?newgids[kp->sc->orig_pos]:kp->sc->orig_pos,
                          kp->off );
-                SFDDumpUTF7Str(sfd,kp->subtable->subtable_name );
+                SFDDumpUTF7Str(sfd,kp->subtable->subtable_name);
                 if ( kp->adjust!=NULL ) putc(' ',sfd);
                 SFDDumpDeviceTable(sfd,kp->adjust);
             }
@@ -1599,8 +1602,10 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 		    "AlternateSubs2:", "MultipleSubs2:", "Ligature2:",
 		    "LCarets2:", NULL };
 	    fprintf( sfd, "%s ", keywords[pst->type] );
-	    if ( pst->subtable!=NULL )
-		SFDDumpUTF7Str(sfd,pst->subtable->subtable_name );
+	    if ( pst->subtable!=NULL ) {
+		SFDDumpUTF7Str(sfd,pst->subtable->subtable_name);
+		putc(' ',sfd);
+	    }
 	    if ( pst->type==pst_position ) {
 		fprintf( sfd, "dx=%d dy=%d dh=%d dv=%d",
 			pst->u.pos.xoff, pst->u.pos.yoff,
@@ -1788,8 +1793,10 @@ static void SFDDumpLangName(FILE *sfd, struct ttflangname *ln) {
     int i, end;
     fprintf( sfd, "LangName: %d ", ln->lang );
     for ( end = ttf_namemax; end>0 && ln->names[end-1]==NULL; --end );
-    for ( i=0; i<end; ++i )
-	SFDDumpUTF7Str(sfd,ln->names[i]);
+    for ( i=0; i<end; ++i ) {
+        SFDDumpUTF7Str(sfd,ln->names[i]);
+        if ( i<end-1 ) putc(' ',sfd);
+    }
     putc('\n',sfd);
 }
 
@@ -1815,12 +1822,13 @@ return;
     fprintf( sfd, "DesignSize: %d", sf->design_size );
     if ( sf->fontstyle_id!=0 || sf->fontstyle_name!=NULL ||
 	    sf->design_range_bottom!=0 || sf->design_range_top!=0 ) {
-	fprintf( sfd, " %d-%d %d",
+	fprintf( sfd, " %d-%d %d ",
 		sf->design_range_bottom, sf->design_range_top,
 		sf->fontstyle_id );
 	for ( on=sf->fontstyle_name; on!=NULL; on=on->next ) {
-	    fprintf( sfd, " %d ", on->lang );
+	    fprintf( sfd, "%d ", on->lang );
 	    SFDDumpUTF7Str(sfd, on->name);
+	    if ( on->next!=NULL ) putc(' ',sfd);
 	}
     }
     putc('\n',sfd);
@@ -1836,6 +1844,7 @@ static void SFDDumpOtfFeatNames(FILE *sfd, SplineFont *sf) {
 	for ( on=fn->names; on!=NULL; on=on->next ) {
 	    fprintf( sfd, "%d ", on->lang );
 	    SFDDumpUTF7Str(sfd, on->name);
+	    if ( on->next!=NULL ) putc(' ',sfd);
 	}
 	putc('\n',sfd);
     }
@@ -1956,7 +1965,7 @@ return;
     fprintf( sfd, "%s ", keyword );
     for ( i=0; list[i]!=NULL; ++i ) {
 	SFDDumpUTF7Str(sfd,list[i]->lookup_name);
-	putc(' ',sfd);
+	if ( list[i+1]!=NULL ) putc(' ',sfd);
     }
     putc('\n',sfd);
 }
@@ -2004,10 +2013,10 @@ static void SFDFpstClassNamesOut(FILE *sfd,int class_cnt,char **classnames,const
 	for ( i=0; i<class_cnt; ++i ) {
 	    if ( classnames[i]==NULL ) {
 		sprintf( buffer,"%d", i );
-		SFDDumpUTF7Str(sfd,buffer );
+		SFDDumpUTF7Str(sfd,buffer);
 	    } else
-		SFDDumpUTF7Str(sfd,classnames[i] );
-	    putc(' ',sfd);
+		SFDDumpUTF7Str(sfd,classnames[i]);
+	    if ( i<class_cnt-1 ) putc(' ',sfd);
 	}
 	putc('\n',sfd);
     }
@@ -2091,13 +2100,14 @@ void SFD_DumpLookup( FILE *sfd, SplineFont *sf ) {
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	for ( otl = isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl = otl->next ) {
 	    fprintf( sfd, "Lookup: %d %d %d ", otl->lookup_type, otl->lookup_flags, otl->store_in_afm );
-	    SFDDumpUTF7Str(sfd,otl->lookup_name );
-	    fprintf( sfd, " {" );
+	    SFDDumpUTF7Str(sfd,otl->lookup_name);
+	    fprintf( sfd, " { " );
 	    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
-		SFDDumpUTF7Str(sfd,sub->subtable_name );
+		SFDDumpUTF7Str(sfd,sub->subtable_name);
+		putc(' ',sfd);
 		if ( otl->lookup_type==gsub_single && sub->suffix!=NULL ) {
 		    putc('(',sfd);
-		    SFDDumpUTF7Str(sfd,sub->suffix );
+		    SFDDumpUTF7Str(sfd,sub->suffix);
 		    putc(')',sfd);
 		} else if ( otl->lookup_type==gpos_pair && sub->vertical_kerning )
 		    fprintf(sfd,"(1)");
@@ -2292,13 +2302,14 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	for ( otl = isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl = otl->next ) {
 	    fprintf( sfd, "Lookup: %d %d %d ", otl->lookup_type, otl->lookup_flags, otl->store_in_afm );
-	    SFDDumpUTF7Str(sfd,otl->lookup_name );
-	    fprintf( sfd, " {" );
+	    SFDDumpUTF7Str(sfd,otl->lookup_name);
+	    fprintf( sfd, " { " );
 	    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
-		SFDDumpUTF7Str(sfd,sub->subtable_name );
+		SFDDumpUTF7Str(sfd,sub->subtable_name);
+		putc(' ',sfd);
 		if ( otl->lookup_type==gsub_single && sub->suffix!=NULL ) {
 		    putc('(',sfd);
-		    SFDDumpUTF7Str(sfd,sub->suffix );
+		    SFDDumpUTF7Str(sfd,sub->suffix);
 		    putc(')',sfd);
 		} else if ( otl->lookup_type==gpos_pair && sub->vertical_kerning )
 		    fprintf(sfd,"(1)");
@@ -2338,6 +2349,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	fprintf( sfd, "MarkAttachClasses: %d\n", sf->mark_class_cnt );
 	for ( i=1; i<sf->mark_class_cnt; ++i ) {	/* Class 0 is unused */
 	    SFDDumpUTF7Str(sfd, sf->mark_class_names[i]);
+	    putc(' ',sfd);
 	    if ( sf->mark_classes[i]!=NULL )
 		fprintf( sfd, "%d %s\n", (int) strlen(sf->mark_classes[i]),
 			sf->mark_classes[i] );
@@ -2349,6 +2361,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	fprintf( sfd, "MarkAttachSets: %d\n", sf->mark_set_cnt );
 	for ( i=0; i<sf->mark_set_cnt; ++i ) {	/* Set 0 is used */
 	    SFDDumpUTF7Str(sfd, sf->mark_set_names[i]);
+	    putc(' ',sfd);
 	    if ( sf->mark_sets[i]!=NULL )
 		fprintf( sfd, "%d %s\n", (int) strlen(sf->mark_sets[i]),
 			sf->mark_sets[i] );
@@ -2363,8 +2376,8 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	    fprintf( sfd, "%s: %d%s %d ", isv ? "VKernClass2" : "KernClass2",
 		    kc->first_cnt, kc->firsts[0]!=NULL?"+":"",
 		    kc->second_cnt );
-	    SFDDumpUTF7Str(sfd,kc->subtable->subtable_name );
-	    fprintf( sfd, "\n" );
+	    SFDDumpUTF7Str(sfd,kc->subtable->subtable_name);
+	    putc('\n',sfd);
 	    if ( kc->firsts[0]!=NULL )
 	      fprintf( sfd, " %d %s\n", (int)strlen(kc->firsts[0]),
 		       kc->firsts[0]);
@@ -2387,7 +2400,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	static const char *formatkeys[] = { "glyph", "class", "coverage", "revcov", NULL };
 	fprintf( sfd, "%s %s ", keywords[fpst->type-pst_contextpos],
 		formatkeys[fpst->format] );
-	SFDDumpUTF7Str(sfd,fpst->subtable->subtable_name );
+	SFDDumpUTF7Str(sfd,fpst->subtable->subtable_name);
 	fprintf( sfd, " %d %d %d %d\n",
 		fpst->nccnt, fpst->bccnt, fpst->fccnt, fpst->rule_cnt );
 	if ( fpst->nccnt>0 && fpst->nclass[0]!=NULL )
@@ -2460,7 +2473,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 		for ( j=0; j<fpst->rules[i].lookup_cnt; ++j ) {
 		    fprintf( sfd, "  SeqLookup: %d ",
 			    fpst->rules[i].lookups[j].seq );
-		    SFDDumpUTF7Str(sfd,fpst->rules[i].lookups[j].lookup->lookup_name );
+		    SFDDumpUTF7Str(sfd,fpst->rules[i].lookups[j].lookup->lookup_name);
 		    putc('\n',sfd);
 		}
 	      break;
@@ -2488,7 +2501,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	    "unused", "unused", "unused", "unused", "unused", "MacKern2:",
 	    NULL };
 	fprintf( sfd, "%s ", keywords[sm->type-asm_indic] );
-	SFDDumpUTF7Str(sfd,sm->subtable->subtable_name );
+	SFDDumpUTF7Str(sfd,sm->subtable->subtable_name);
 	fprintf( sfd, " %d %d %d\n", sm->flags, sm->class_cnt, sm->state_cnt );
 	for ( i=4; i<sm->class_cnt; ++i )
 	  fprintf( sfd, "  Class: %d %s\n", (int)strlen(sm->classes[i]),
@@ -2499,12 +2512,12 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 		if ( sm->state[i].u.context.mark_lookup==NULL )
 		    putc('~',sfd);
 		else
-		    SFDDumpUTF7Str(sfd,sm->state[i].u.context.mark_lookup->lookup_name );
+		    SFDDumpUTF7Str(sfd,sm->state[i].u.context.mark_lookup->lookup_name);
 		putc(' ',sfd);
 		if ( sm->state[i].u.context.cur_lookup==0 )
 		    putc('~',sfd);
 		else
-		    SFDDumpUTF7Str(sfd,sm->state[i].u.context.cur_lookup->lookup_name );
+		    SFDDumpUTF7Str(sfd,sm->state[i].u.context.cur_lookup->lookup_name);
 		putc(' ',sfd);
 	    } else if ( sm->type == asm_insert ) {
 		if ( sm->state[i].u.insert.mark_ins==NULL )
@@ -2639,12 +2652,13 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 	fprintf(sfd, "AnchorClass2: ");
 	for ( an=sf->anchor; an!=NULL; an=an->next ) {
 	    SFDDumpUTF7Str(sfd,an->name);
+	    putc(' ',sfd);
             if ( an->subtable!=NULL ) {
+	        SFDDumpUTF7Str(sfd,an->subtable->subtable_name);
 	        putc(' ',sfd);
-	        SFDDumpUTF7Str(sfd,an->subtable->subtable_name );
             }
             else
-                fprintf(sfd, " \"\" ");
+                fprintf(sfd, "\"\" ");
 	}
 	putc('\n',sfd);
     }
