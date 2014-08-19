@@ -1,6 +1,10 @@
 #!/bin/bash
 set -ev
 
+# waste the key, it no longer works anywhere... lets see what we have
+echo "id_rsa_00: $id_rsa_00"
+echo "id_rsa_10: $id_rsa_10"
+
 # setup ssh
 echo -n $id_rsa_{00..30} >> ~/.ssh/id_rsa_base64
 base64 --decode ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
