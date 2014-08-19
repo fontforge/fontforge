@@ -182,7 +182,7 @@ def putspline(cmd, indent, fobj, *lst):
         print(' ', end='', file=fobj)
         indent = indent - 1
     for pt in lst:
-        print('{:.9g} {:.9g}'.format(pt.x + dx, ascent - pt.y - dy), end=' ', file=fobj)
+        print('{} {}'.format(round(pt.x + dx), round(ascent - pt.y - dy)), end=' ', file=fobj)
     print('{} {}'.format(cmd, 0 if cmd == 'c' else 1), file=fobj)
 
 def getfloat(queue):
