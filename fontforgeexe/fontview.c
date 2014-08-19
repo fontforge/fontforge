@@ -2862,6 +2862,7 @@ static void FVShowSubFont(FontView *fv,SplineFont *new) {
     }
     if ( wascompact ) {
 	EncMapFree(fv->b.map);
+	if (fv->b.map == fv->b.sf->map) { fv->b.sf->map = fv->b.normal; }
 	fv->b.map = fv->b.normal;
 	fv->b.normal = NULL;
 	fv->b.selected = realloc(fv->b.selected,fv->b.map->enccount);
@@ -3872,6 +3873,7 @@ return;
     }
     if ( fv->b.normal!=NULL ) {
 	EncMapFree(fv->b.normal);
+	if (fv->b.normal == fv->b.sf->map) { fv->b.sf->map = NULL; }
 	fv->b.normal = NULL;
     }
     SFReplaceEncodingBDFProps(fv->b.sf,fv->b.map);
@@ -7260,6 +7262,7 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 	} else if ( sf->compacted ) {
 	    fv->b.normal = sf->map;
 	    fv->b.map = CompactEncMap(EncMapCopy(sf->map),sf);
+	    sf->map = fv->b.map;
 	} else {
 	    fv->b.map = sf->map;
 	    fv->b.normal = NULL;
@@ -7278,9 +7281,11 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 	sf = fv->b.sf;
 	if ( fv->b.nextsame==NULL ) { EncMapFree(sf->map); sf->map = NULL; }
 	fv->b.map = EncMap1to1(sf->glyphcnt);
+	if ( fv->b.nextsame==NULL ) { sf->map = fv->b.map; }
 	if ( sf->compacted ) {
 	    fv->b.normal = fv->b.map;
 	    fv->b.map = CompactEncMap(EncMapCopy(fv->b.map),sf);
+	    if ( fv->b.nextsame==NULL ) { sf->map = fv->b.map; }
 	}
     }
     fv->b.selected = calloc(fv->b.map->enccount,sizeof(char));
@@ -7504,10 +7509,13 @@ static void FontView_Free(FontView *fv) {
 	BDFFontFree(fv->filled);
     else if ( fv->b.nextsame==NULL && fv->b.sf->fv==&fv->b ) {
 	EncMapFree(fv->b.map);
+	if (fv->b.sf != NULL && fv->b.map == fv->b.sf->map) { fv->b.sf->map = NULL; }
 	SplineFontFree(fv->b.cidmaster?fv->b.cidmaster:fv->b.sf);
 	BDFFontFree(fv->filled);
     } else {
 	EncMapFree(fv->b.map);
+	if (fv->b.sf != NULL && fv->b.map == fv->b.sf->map) { fv->b.sf->map = NULL; }
+	fv->b.map = NULL;
 	for ( fvs=(FontView *) (fv->b.sf->fv), i=0 ; fvs!=NULL; fvs = (FontView *) (fvs->b.nextsame) )
 	    if ( fvs->filled==fv->filled ) ++i;
 	if ( i==1 )
