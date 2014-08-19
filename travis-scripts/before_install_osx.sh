@@ -1,11 +1,9 @@
 #!/bin/bash
 set -ev
 
-# waste the key, it no longer works anywhere... lets see what we have
-echo "id_rsa_00: $id_rsa_00"
-echo "id_rsa_10: $id_rsa_10"
-
-# setup ssh
+#
+# Take the collection of secure environment variables and reconstitute an SSH key
+#
 for id in $(seq -f "id_rsa_%02g"  0 29)
 do
   echo -n ${!id} >> ~/.ssh/id_rsa_base64
@@ -15,13 +13,6 @@ chmod 600 ~/.ssh/id_rsa
 echo -e "Host bigv\n\tBatchMode yes\n\tStrictHostKeyChecking no\n\tHostname fontforge.default.fontforge.uk0.bigv.io\n\tUser travisci\n\tIdentityFile ~/.ssh/id_rsa\n" >> ~/.ssh/config
 # wipe them out just in case a loose 'set' or whatever happens.
 for i in {00..30}; do unset id_rsa_$i; done
-
-# debug
-ls -lh ~/.ssh/id_rsa_base64
-ls -lh ~/.ssh/id_rsa
-echo "md5 sums"
-md5 ~/.ssh/id_rsa_base64
-md5 ~/.ssh/id_rsa
 
 # test the secure env variables and ability to upload
 date >| /tmp/testfile
