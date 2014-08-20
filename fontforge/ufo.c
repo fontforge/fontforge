@@ -76,6 +76,33 @@ static char *buildname(const char *basedir, const char *sub) {
 return( fname );
 }
 
+static void extractNumericVersion(const char * textVersion, int * versionMajor, int * versionMinor) {
+  // We extract integer values for major and minor versions from a version string.
+  *versionMajor = -1; *versionMinor = -1;
+  if (textVersion == NULL) return;
+  char *nextText1 = NULL;
+  char *nextText2 = NULL;
+  int tempVersion = -1;
+  tempVersion = strtol(textVersion, &nextText1, 10);
+  if (tempVersion != -1 && nextText1 != NULL && (nextText1[0] == '\0' || nextText1[0] == ' ' || nextText1[0] == '.')) {
+    *versionMajor = tempVersion;
+  } else return;
+  if (nextText1[0] == '\0') return;
+  tempVersion = strtol(nextText1+1, &nextText2, 10);
+  if (tempVersion != -1 && nextText2 != NULL && (nextText2[0] == '\0' || nextText2[0] == ' ' || nextText2[0] == '.')) {
+    *versionMinor = tempVersion;
+  } else return;
+  return;
+}
+
+static void injectNumericVersion(char ** textVersion, int versionMajor, int versionMinor) {
+  // We generate a version string from numeric values if available.
+  if (versionMajor == -1) asprintf(textVersion, "");
+  else if (versionMinor == -1) asprintf(textVersion, "%d", versionMajor);
+  else asprintf(textVersion, "%d.%d", versionMajor, versionMinor);
+  return;
+}
+
 static xmlNodePtr xmlNewChildInteger(xmlNodePtr parent, xmlNsPtr ns, const xmlChar * name, long int value) {
   char * valtmp = NULL;
   // Textify the value to be enclosed.
@@ -832,6 +859,14 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 /* Same keys in both formats */
     PListAddString(dictnode,"familyName",sf->familyname_with_timestamp ? sf->familyname_with_timestamp : sf->familyname);
     PListAddString(dictnode,"styleName",SFGetModifiers(sf));
+    {
+      // We attempt to get numeric major and minor versions for U. F. O. out of the FontForge version string.
+      int versionMajor = -1;
+      int versionMinor = -1;
+      if (sf->version != NULL) extractNumericVersion(sf->version, &versionMajor, &versionMinor);
+      if (versionMajor >= 0) PListAddInteger(dictnode,"versionMajor", versionMajor);
+      if (versionMinor >= 0) PListAddInteger(dictnode,"versionMinor", versionMinor);
+    }
     PListAddString(dictnode,"copyright",sf->copyright);
     PListAddNameString(dictnode,"trademark",sf,ttf_trademark);
     PListAddInteger(dictnode,"unitsPerEm",sf->ascent+sf->descent);
@@ -2466,6 +2501,8 @@ return( NULL );
     strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
+    int versionMajor = -1; // These are not native SplineFont values.
+    int versionMinor = -1; // We store the U. F. O. values and then process them at the end.
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
 	for ( value = keys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
 		value = value->next );
@@ -2676,6 +2713,14 @@ return( NULL );
 		sf->italicangle = strtod((char *) valname,&end);
 		if ( *end!='\0' ) sf->italicangle = 0;
 		free(valname);
+	    } else if ( xmlStrcmp(keyname,(xmlChar *) "versionMajor")==0 ) {
+		versionMajor = strtol((char *) valname,&end, 10);
+		if ( *end!='\0' ) versionMajor = -1;
+		free(valname);
+	    } else if ( xmlStrcmp(keyname,(xmlChar *) "versionMinor")==0 ) {
+		versionMinor = strtol((char *) valname,&end, 10);
+		if ( *end!='\0' ) versionMinor = -1;
+		free(valname);
 	    } else
 		free(valname);
 	    free(keyname);
@@ -2715,6 +2760,10 @@ return( NULL );
     free(stylename);
     if ( sf->weight==NULL )
 	sf->weight = copy("Regular");
+    // We first try to set the SplineFont version by using the native numeric U. F. O. values.
+    if ( sf->version==NULL && versionMajor != -1 )
+      injectNumericVersion(&sf->version, versionMajor, versionMinor);
+    // If that fails, we attempt to use the TrueType values.
     if ( sf->version==NULL && sf->names!=NULL &&
 	    sf->names->names[ttf_version]!=NULL &&
 	    strncmp(sf->names->names[ttf_version],"Version ",8)==0 )
