@@ -1,4 +1,6 @@
 #!/bin/bash
+
+. ./travis-scripts/common.sh
 set -ev
 
 #
@@ -18,6 +20,8 @@ for i in {00..09}; do unset id_rsa_0$i; done
 # test the secure env variables and ability to upload
 date >| /tmp/testfile
 scp /tmp/testfile bigv:/tmp/
+
+SYNC_TO_BIGV
 
 brew update
 brew config
