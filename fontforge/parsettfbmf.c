@@ -255,37 +255,39 @@ return;
 }
 
 static void BdfCRefFixup(BDFFont *bdf, int gid, int *warned, struct ttfinfo *info) {
-    BDFChar *me = bdf->glyphs[gid], *bdfc;
+    BDFChar *bdfc = bdf->glyphs[gid], *bdfcRefd;
     BDFRefChar *head, *prev = NULL, *next;
 
-    for ( head=me->refs; head!=NULL; head=next ) {
-	bdfc = head->gid < bdf->glyphcnt ? bdf->glyphs[head->gid] : NULL;
-	next = head->next;
-	if ( bdfc != NULL ) {
-	    head->bdfc = bdfc;
-	    BCMakeDependent( me,bdfc );
-	    prev = head;
-	} else if ( !*warned ) {
-	    /* Glyphs aren't named yet */
-	    LogError(_("Glyph %d in bitmap strike %d pixels refers to a missing glyph (%d)"),
-		    gid, bdf->pixelsize, head->gid );
-	    info->bad_embedded_bitmap = true;
-	    *warned = true;
-	    /* Remove bad reference from the list */
-	    if ( prev == NULL )
-		me->refs = head->next;
-	    else
-		prev->next = head->next;
-	    free( head );
-	}
-	/* According to the TTF spec, the xOffset and yOffset values specify   */
-	/* the top-left corner position of the component in the composite.     */
-	/* In our program it is more convenient to manipulate values specified */
-	/* relatively to the original position of the reference's parent glyph.*/
-	/* So we have to perform this conversion each time we read or write    */
-	/* an embedded TTF bitmap. */
-	head->xoff = head->xoff - bdfc->xmin + me->xmin;
-	head->yoff = me->ymax - bdfc->ymax - head->yoff;
+    for ( head=bdfc->refs; head!=NULL; head=next ) {
+        bdfcRefd = head->gid < bdf->glyphcnt ? bdf->glyphs[head->gid] : NULL;
+        next = head->next;
+        if ( bdfcRefd != NULL ) {
+            head->bdfc = bdfcRefd;
+            BCMakeDependent( bdfc, bdfcRefd );
+            prev = head;
+            /* According to the TTF spec, the xOffset and yOffset values specify   */
+            /* the top-left corner position of the component in the composite.     */
+            /* In our program it is more convenient to manipulate values specified */
+            /* relatively to the original position of the reference's parent glyph.*/
+            /* So we have to perform this conversion each time we read or write    */
+            /* an embedded TTF bitmap. */
+            head->xoff = head->xoff - bdfcRefd->xmin + bdfc->xmin;
+            head->yoff = bdfc->ymax - bdfcRefd->ymax - head->yoff;
+        } else {
+            if ( !*warned ) {
+                /* Glyphs aren't named yet */
+                LogError(_("Glyph %d in bitmap strike %d pixels refers to a missing glyph (%d)"),
+                        gid, bdf->pixelsize, head->gid );
+                info->bad_embedded_bitmap = true;
+                *warned = true;
+            }
+            /* Remove bad reference node from the singly-linked list */
+            if ( prev == NULL )
+                bdfc->refs = head->next;
+            else
+                prev->next = head->next;
+            free( head );
+        }
     }
 }
 
