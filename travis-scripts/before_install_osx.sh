@@ -20,6 +20,7 @@ date >| /tmp/testfile
 scp /tmp/testfile bigv:/tmp/
 
 brew update
+brew config
 
 sed -i -e "s|{TRAVIS_PULL_REQUEST}|${TRAVIS_PULL_REQUEST}|g" ./travis-scripts/fontforge.rb
 sudo cp ./travis-scripts/fontforge.rb /usr/local/Library/Formula/fontforge.rb

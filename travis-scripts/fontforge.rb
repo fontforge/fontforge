@@ -177,9 +177,9 @@ class Fontforge < Formula
        # puts "***********************************************"
        # puts "***********************************************"
        # puts "***********************************************"
-       # PR=ENV["TRAVIS_PULL_REQUEST"]
-       # system "./travis-scripts/create-osx-app-bundle-homebrew.sh >/tmp/bundle-output-%{PR}.log 2>&1 "
-       # system "ls -lh /tmp/bundle-output-%{PR}.log"
+       # pullreq=ENV["TRAVIS_PULL_REQUEST"]
+       # system "./travis-scripts/create-osx-app-bundle-homebrew.sh >/tmp/bundle-output-%{pullreq}.log 2>&1 "
+       # system "ls -lh /tmp/bundle-output-%{pullreq}.log"
     end
 
   end
