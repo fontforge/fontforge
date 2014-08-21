@@ -46,3 +46,5 @@ execution.
 For example, the file
 /opt/local/share/macports/Tcl/port1.0/portconfigure.tcl default
 configure.ldflags {"-L${prefix}/lib -Wl,-headerpad_max_install_names"}
+
+This is a Travis test.
