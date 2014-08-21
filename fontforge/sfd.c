@@ -1450,6 +1450,15 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	    fprintf( sfd, " %06x.%06x.%x", altuni->unienc, altuni->vs, altuni->fid );
 	putc( '\n', sfd);
     }
+    if ( sc->glif_name ) {
+        fprintf(sfd, "GlifName: ");
+        if ( AllAscii(sc->glif_name))
+	    fprintf(sfd, "%s", sc->glif_name );
+        else {
+	    SFDDumpUTF7Str(sfd,sc->glif_name);
+        }
+        putc('\n',sfd);
+    }
     fprintf(sfd, "Width: %d\n", sc->width );
     if ( sc->vwidth!=sc->parent->ascent+sc->parent->descent )
 	fprintf(sfd, "VWidth: %d\n", sc->vwidth );
@@ -5011,7 +5020,6 @@ char* SFDMoveToNextStartChar( FILE* sfd ) {
 
 
 static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf, int had_sf_layer_cnt) {
-    // TODO: Read the U. F. O. glif name.
     SplineChar *sc;
     char tok[2000], ch;
     RefChar *lastr=NULL, *ref;
@@ -5112,6 +5120,21 @@ return( NULL );
             else {
 		ungetc(ch,sfd);
 		script = gettag(sfd);
+            }
+	} else if ( strmatch(tok,"GlifName:")==0 ) {
+            while ( isspace(ch=nlgetc(sfd)));
+            ungetc(ch,sfd);
+            sc = SFSplineCharCreate(sf);
+            if ( ch!='"' ) {
+              if ( getname(sfd,tok)!=1 ) {
+                LogError(_("Invalid glif name.\n"));
+              }
+	      sc->glif_name = copy(tok);
+            } else {
+	      sc->glif_name = SFDReadUTF7Str(sfd);
+	      if ( sc->name==NULL ) {
+                LogError(_("Invalid glif name.\n"));
+	      }
             }
 	} else if ( strmatch(tok,"Width:")==0 ) {
 	    getsint(sfd,&sc->width);

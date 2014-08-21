@@ -2260,8 +2260,14 @@ return;
 				if (existingglyph == NULL) newsc = 1;
 				valname = (char *) xmlNodeListGetString(doc,value->children,true);
 				glyphfname = buildname(glyphdir,valname);
-				free(valname);
 				sc = UFOLoadGlyph(sf, glyphfname, glyphname, existingglyph, layerdest);
+				// We want to stash the glif name (minus the extension) for future use.
+				if (sc != NULL && sc->glif_name == NULL && valname != NULL) {
+				  char * tmppos = strrchr(valname, '.'); if (tmppos) *tmppos = '\0';
+				  sc->glif_name = copy(valname);
+				  if (tmppos) *tmppos = '.';
+				}
+				free(valname);
 				if ( ( sc!=NULL ) && newsc ) {
 					sc->parent = sf;
 					if ( sf->glyphcnt>=sf->glyphmax )
