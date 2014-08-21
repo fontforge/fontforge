@@ -1209,8 +1209,10 @@ return( true );
 }
 
 static void readdate(FILE *ttf,struct ttfinfo *info,int ismod) {
-    int date[4], date1970[4], year[2];
-    int i;
+    int i, date[4];
+    /* The difference in seconds between 1904 Mac and 1970 Unix epoch times  24107 days */
+    int date1970[4] = {45184, 31781, 0, 0};
+
     /* Dates in sfnt files are seconds since 1904. I adjust to unix time */
     /*  seconds since 1970 by figuring out how many seconds were in between */
 
@@ -1218,21 +1220,6 @@ static void readdate(FILE *ttf,struct ttfinfo *info,int ismod) {
     date[2] = getushort(ttf);
     date[1] = getushort(ttf);
     date[0] = getushort(ttf);
-    memset(date1970,0,sizeof(date1970));
-    year[0] = (60*60*24*365L)&0xffff;
-    year[1] = (60*60*24*365L)>>16;
-    for ( i=1904; i<1970; ++i ) {
-	date1970[0] += year[0];
-	date1970[1] += year[1];
-	if ( (i&3)==0 && (i%100!=0 || i%400==0))
-	    date1970[0] += 24*60*60L;		/* Leap year */
-	date1970[1] += (date1970[0]>>16);
-	date1970[0] &= 0xffff;
-	date1970[2] += date1970[1]>>16;
-	date1970[1] &= 0xffff;
-	date1970[3] += date1970[2]>>16;
-	date1970[2] &= 0xffff;
-    }
 
     for ( i=0; i<3; ++i ) {
 	date[i] -= date1970[i];
