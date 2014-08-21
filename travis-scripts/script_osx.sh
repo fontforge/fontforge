@@ -19,8 +19,8 @@ ls -lh /tmp/bundle-output-${PR}.log
 echo "grabbing logs to server for inspection..."
 cp /tmp/bundle-output-${PR}.log $TO_BIGV_OUTPUTPATH
 cp ~/FontForge.app.zip          $TO_BIGV_OUTPUTPATH
+date >| $TO_BIGV_OUTPUTPATH/osx-build-end-timestamp
 SYNC_TO_BIGV
-scp /tmp/bundle-output*.log ~/FontForge.app.zip bigv:/tmp/
 set -e
 fontforge -version
 

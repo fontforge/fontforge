@@ -1,4 +1,5 @@
 #!/bin/bash
+. ./travis-scripts/common.sh
 set -ev
 
 #
@@ -12,8 +13,8 @@ echo -e "Host bigv\n\tBatchMode yes\n\tStrictHostKeyChecking no\n\tHostname font
 for i in {00..30}; do unset id_rsa_$i; done
 
 # test the secure env variables and ability to upload
-date >| /tmp/travisci-linux-build-stamp
-scp /tmp/travisci-linux-build-stamp bigv:/tmp/
+date >| $TO_BIGV_OUTPUTPATH/linux-build-start-timestamp
+SYNC_TO_BIGV
 
 
 #

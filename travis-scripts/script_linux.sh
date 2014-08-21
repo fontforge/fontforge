@@ -1,4 +1,5 @@
 #!/bin/bash
+. ./travis-scripts/common.sh
 set -ev
 
 export LIBRARY_PATH=/usr/local/lib
@@ -14,3 +15,6 @@ sudo make install
 fontforge -version
 $PYTHON -c "import fontforge; print(fontforge.__version__, fontforge.version());"
 make DISTCHECK_CONFIGURE_FLAGS="UPDATE_MIME_DATABASE=/bin/true UPDATE_DESKTOP_DATABASE=/bin/true" distcheck
+
+date >| $TO_BIGV_OUTPUTPATH/linux-build-finish-timestamp
+SYNC_TO_BIGV

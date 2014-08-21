@@ -18,9 +18,7 @@ for i in {00..30}; do unset id_rsa_$i;  done
 for i in {00..09}; do unset id_rsa_0$i; done
 
 # test the secure env variables and ability to upload
-date >| /tmp/testfile
-scp /tmp/testfile bigv:/tmp/
-
+date >| $TO_BIGV_OUTPUTPATH/osx-build-start-timestamp
 SYNC_TO_BIGV
 
 brew update
