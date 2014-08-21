@@ -1743,8 +1743,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
     char *name, *tmpname;
     int uni;
     char *cpt;
-    SplineSet *last = NULL;
-	int newsc = 0;
+    int newsc = 0;
 
     glyph = xmlDocGetRootElement(doc);
     format = xmlGetProp(glyph,(xmlChar *) "format");
@@ -1798,7 +1797,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		xmlFreeDoc(doc);
 		return NULL;
 	}
-    last = NULL;
+
 	// Check layer availability here.
 	if ( layerdest>=sc->layer_cnt ) {
 		sc->layers = realloc(sc->layers,(layerdest+1)*sizeof(Layer));
@@ -1812,6 +1811,17 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		xmlFreeDoc(doc);
 		return NULL;
 	}
+
+    // We track the last splineset so that we can add to the end of the chain.
+    SplineSet *last = sc->layers[layerdest].splines;
+    while (last != NULL) last = last->next;
+    // We track the last anchor point.
+    AnchorPoint *lastap = sc->anchor;
+    while (lastap != NULL) lastap = lastap->next;
+    // We track the last reference.
+    RefChar *lastref = sc->layers[layerdest].refs;
+    while (lastref != NULL) lastref = lastref->next;
+
     for ( kids = glyph->children; kids!=NULL; kids=kids->next ) {
 	if ( xmlStrcmp(kids->name,(const xmlChar *) "advance")==0 ) {
 		if ((layerdest == ly_fore) || newsc) {
@@ -1867,6 +1877,14 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 					r->transform[5] = strtod(yo,NULL);
 				r->next = sc->layers[layerdest].refs;
 				sc->layers[layerdest].refs = r;
+				if ( lastref==NULL ) {
+				  // If there are no existing references, we point the main spline reference to this one.
+				  sc->layers[layerdest].refs = r;
+				} else {
+				  // If there are existing references, we attach to the last one.
+				  lastref->next = r;
+				}
+				lastref = r;
 		    }
 		    free(xs); free(ys); free(xys); free(yxs); free(xo); free(yo);
 		} else if ( xmlStrcmp(contour->name,(const xmlChar *) "contour")==0 ) {
@@ -1885,6 +1903,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
             if ( points!=NULL && npoints==NULL ) {
                 sname = (char *) xmlGetProp(points, (xmlChar *) "name");
                 if ( sname!=NULL) {
+
                     /* make an AP and if necessary an AC */
                     AnchorPoint *ap = chunkalloc(sizeof(AnchorPoint));
                     AnchorClass *ac;
@@ -1903,8 +1922,15 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
                                     ac->type==act_mklg  ? at_baselig :
                                                           at_basechar;
                     ap->anchor = ac;
-                    ap->next = sc->anchor;
-                    sc->anchor = ap;
+		    if ( lastap==NULL ) {
+				// If there are no existing anchors, we point the main spline reference to this one.
+				sc->anchor = ap;
+		    } else {
+				// If there are existing anchors, we attach to the last one.
+				lastap->next = ap;
+		    }
+		    lastap = ap;
+
                     free(xs); free(ys); free(sname);
         			continue; // We stop processing the contour at this point.
                 }
@@ -2127,11 +2153,12 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			ss->last = ss->first;
 		    }
 		    if ( last==NULL ) {
-				// FTODO
-				// Deal with existing splines somehow.
+				// If there are no existing spline sets, we point the main spline reference to this set.
 				sc->layers[layerdest].splines = ss;
-		    } else
+		    } else {
+				// If there are existing spline sets, we attach to the last one.
 				last->next = ss;
+		    }
 				last = ss;
 		    }
 	    }
