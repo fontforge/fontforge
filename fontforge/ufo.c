@@ -1328,7 +1328,7 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
     GFileMkDir( glyphdir );
     int i;
     SplineChar * sc;
-    int err;
+    int err = 0;
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) ) {
 	PListAddString(dictnode,sc->name,sc->glif_name); // Add the glyph to the table of contents.
         // TODO: Optionally skip rewriting an untouched glyph.
@@ -1422,7 +1422,6 @@ return( false );
 	
       int layer_pos;
       for (layer_pos = 0; layer_pos < sf->layer_cnt; layer_pos++) {
-        glyphdir = buildname(basedir,"glyphs");
         xmlNodePtr layernode = xmlNewChild(arraynode, NULL, BAD_CAST "array", NULL);
         // We make the layer name.
         char * layer_name_start = NULL;
@@ -1434,23 +1433,30 @@ return( false );
         // We make the layer path.
         char * layer_path_start = NULL;
         char * numberedlayerpath = NULL;
+        char * numberedlayerpathwithglyphs = NULL;
         if (layer_pos == ly_fore) {
           numberedlayerpath = strdup("glyphs");
+          asprintf(&numberedlayerpathwithglyphs, "%s", numberedlayerpath);
         } else if (sf->layers[layer_pos].ufo_path != NULL) {
           layer_path_start = strdup(sf->layers[layer_pos].ufo_path);
-          numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "glyphs.", "", 7);
+          numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "", "", 7);
+          asprintf(&numberedlayerpathwithglyphs, "%s", numberedlayerpath);
         } else {
           layer_path_start = ufo_name_mangle(sf->layers[layer_pos].name, "glyphs.", "", 7);
           numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "glyphs.", "", 7);
+          asprintf(&numberedlayerpathwithglyphs, "glyphs.%s", numberedlayerpath);
         }
         if (layer_path_start != NULL) { free(layer_path_start); layer_path_start = NULL; }
         // We write to the layer contents.
         xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayername);
-        xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayerpath);
+        xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayerpathwithglyphs);
+        glyphdir = buildname(basedir, numberedlayerpathwithglyphs);
         // We write the glyph directory.
         err |= WriteUFOLayer(glyphdir, sf, layer_pos);
         free(numberedlayername); numberedlayername = NULL;
         free(numberedlayerpath); numberedlayerpath = NULL;
+        free(numberedlayerpathwithglyphs); numberedlayerpathwithglyphs = NULL;
+        free(glyphdir); glyphdir = NULL;
       }
       char *fname = buildname(basedir, "layercontents.plist"); // Build the file name for the contents.
       xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
@@ -1464,15 +1470,26 @@ return( false );
     } else {
         glyphdir = buildname(basedir,"glyphs");
         WriteUFOLayer(glyphdir, sf, layer);
+        free(glyphdir); glyphdir = NULL;
     }
-
-    free( glyphdir );
 return( !err );
+}
+
+int SplineFontHasUFOLayerNames(SplineFont *sf) {
+  if (sf == NULL || sf->layers == NULL) return 0;
+  int layer_pos = 0;
+  for (layer_pos = 0; layer_pos < sf->layer_cnt; layer_pos++) {
+    if (sf->layers[layer_pos].ufo_path != NULL) return 1;
+  }
+  return 0;
 }
 
 int WriteUFOFont(const char *basedir, SplineFont *sf, enum fontformat ff, int flags,
 	const EncMap *map, int layer) {
-  return WriteUFOFontFlex(basedir, sf, ff, flags, map, layer, 0);
+  if (SplineFontHasUFOLayerNames(sf))
+    return WriteUFOFontFlex(basedir, sf, ff, flags, map, layer, 1);
+  else
+    return WriteUFOFontFlex(basedir, sf, ff, flags, map, layer, 0);
 }
 
 /* ************************************************************************** */
@@ -2889,8 +2906,10 @@ return( NULL );
 											bg = 0;
 										} else if (strcmp(layernames[2*lcount],"public.background")==0) {
 											layerdest = ly_back;
+											sf->multilayer |= 1;
 										} else {
 											layerdest = auxpos++;
+											sf->multilayer |= 1;
 										}
 
 										// We ensure that the splinefont layer list has sufficient space.

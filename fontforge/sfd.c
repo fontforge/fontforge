@@ -2222,7 +2222,9 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
     for ( i=0; i<sf->layer_cnt; ++i ) {
 	fprintf( sfd, "Layer: %d %d ", i, sf->layers[i].order2/*, sf->layers[i].background*/ );
 	SFDDumpUTF7Str(sfd,sf->layers[i].name);
-	fprintf( sfd, " %d\n", sf->layers[i].background );
+	fprintf( sfd, " %d", sf->layers[i].background );
+	if (sf->layers[i].ufo_path != NULL) { putc(' ',sfd); SFDDumpUTF7Str(sfd,sf->layers[i].ufo_path); }
+	putc('\n',sfd);
     }
     // TODO: Output U. F. O. layer path.
     if ( sf->strokedfont )
@@ -5124,7 +5126,6 @@ return( NULL );
 	} else if ( strmatch(tok,"GlifName:")==0 ) {
             while ( isspace(ch=nlgetc(sfd)));
             ungetc(ch,sfd);
-            sc = SFSplineCharCreate(sf);
             if ( ch!='"' ) {
               if ( getname(sfd,tok)!=1 ) {
                 LogError(_("Invalid glif name.\n"));
@@ -5132,7 +5133,7 @@ return( NULL );
 	      sc->glif_name = copy(tok);
             } else {
 	      sc->glif_name = SFDReadUTF7Str(sfd);
-	      if ( sc->name==NULL ) {
+	      if ( sc->glif_name==NULL ) {
                 LogError(_("Invalid glif name.\n"));
 	      }
             }
@@ -7702,6 +7703,9 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	    getint(sfd,&bk);
 	    sf->layers[layer].background = bk;
 	}
+	while ( (ch=nlgetc(sfd))==' ' );
+	ungetc(ch,sfd);
+	if ( ch!='\n' ) { sf->layers[layer].ufo_path = SFDReadUTF7Str(sfd); }
     }
     else if ( strmatch(tok,"StrokedFont:")==0 )
     {
