@@ -1052,6 +1052,23 @@ return( true );
 return( false );
 }
 
+int SCDrawsSomethingOnLayer(SplineChar *sc, int layer) {
+    int l;
+    RefChar *ref;
+
+    if ( sc==NULL )
+return( false );
+    if (layer<sc->layer_cnt) {
+	if ( sc->layers[layer].splines!=NULL || sc->layers[layer].images!=NULL )
+return( true );
+	for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next )
+	    for ( l=0; l<ref->layer_cnt; ++l )
+		if ( ref->layers[l].splines!=NULL )
+return( true );
+    }
+return( false );
+}
+
 int SCWorthOutputting(SplineChar *sc) {
 return( sc!=NULL &&
 	( SCDrawsSomething(sc) || sc->widthset || sc->anchor!=NULL ||
@@ -1060,6 +1077,14 @@ return( sc!=NULL &&
 #endif
 	    sc->dependents!=NULL /*||
 	    sc->width!=sc->parent->ascent+sc->parent->descent*/ ) );
+}
+
+int LayerWorthOutputting(SplineFont *sf, int layer) {
+  int glyphpos = 0;
+  for (glyphpos = 0; glyphpos < sf->glyphcnt; glyphpos++) {
+    if (SCDrawsSomethingOnLayer(sf->glyphs[glyphpos], layer)) return 1;
+  }
+  return 0;
 }
 
 int CIDWorthOutputting(SplineFont *cidmaster, int enc) {

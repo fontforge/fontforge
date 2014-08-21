@@ -1422,6 +1422,9 @@ return( false );
 	
       int layer_pos;
       for (layer_pos = 0; layer_pos < sf->layer_cnt; layer_pos++) {
+        // We don't want to emit the default background layer unless it has stuff in it or was in the input U. F. O..
+        if (layer_pos == ly_back && !LayerWorthOutputting(sf, layer_pos) && sf->layers[layer_pos].ufo_path == NULL) continue;
+        // We start building the layer contents entry.
         xmlNodePtr layernode = xmlNewChild(arraynode, NULL, BAD_CAST "array", NULL);
         // We make the layer name.
         char * layer_name_start = NULL;
