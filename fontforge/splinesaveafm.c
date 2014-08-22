@@ -1084,7 +1084,7 @@ int SCHasData(SplineChar *sc) {
 
     if ( sc==NULL )
 return( false );
-    for ( layer = 0; layer<sc->layer_cnt; ++layer ) if ( !sc->layers[layer].python_persistent ) return true;
+    for ( layer = 0; layer<sc->layer_cnt; ++layer ) if ( sc->layers[layer].python_persistent ) return true;
     return false;
 }
 
@@ -1093,6 +1093,13 @@ int LayerWorthOutputting(SplineFont *sf, int layer) {
   for (glyphpos = 0; glyphpos < sf->glyphcnt; glyphpos++) {
     if (SCDrawsSomethingOnLayer(sf->glyphs[glyphpos], layer)) return 1;
   }
+  return 0;
+}
+
+int SCLWorthOutputtingOrHasData(SplineChar *sc, int layer) {
+  if (layer >= sc->layer_cnt) return 0;
+  if (SCDrawsSomethingOnLayer(sc, layer)) return 1;
+  if (sc->layers[layer].python_persistent) return 1;
   return 0;
 }
 

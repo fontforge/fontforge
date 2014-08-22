@@ -2710,6 +2710,7 @@ extern int SCDrawsSomethingOnLayer(SplineChar *sc, int layer);
 extern int SCWorthOutputting(SplineChar *sc);
 extern int SCHasData(SplineChar *sc);
 extern int LayerWorthOutputting(SplineFont *sf, int layer);
+extern int SCLWorthOutputtingOrHasData(SplineChar *sc, int layer);
 extern int SFFindNotdef(SplineFont *sf, int fixed);
 extern int doesGlyphExpandHorizontally(SplineChar *sc);
 extern int IsntBDFChar(BDFChar *bdfc);

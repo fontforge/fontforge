@@ -429,6 +429,7 @@ return( strcmp( ref1->sc->name, ref2->sc->name) );
 }
 
 xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
+    if (layer > sc->layer_cnt) return NULL;
     const struct altuni *altuni;
     int isquad = sc->layers[layer].order2;
     const SplineSet *spl;
@@ -1332,12 +1333,13 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
     int i;
     SplineChar * sc;
     int err = 0;
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) || SCHasData(sc=sf->glyphs[i]) ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCLWorthOutputtingOrHasData(sc=sf->glyphs[i], layer) ||
+      ( layer == ly_fore && (SCWorthOutputting(sc) || SCHasData(sc) || sc->glif_name != NULL) ) ) {
 	PListAddString(dictnode,sc->name,sc->glif_name); // Add the glyph to the table of contents.
         // TODO: Optionally skip rewriting an untouched glyph.
         // Do we track modified glyphs carefully enough for this?
 	err |= !GlifDump(glyphdir,sc->glif_name,sc,layer);
-    }
+      }
 
     char *fname = buildname(glyphdir, "contents.plist"); // Build the file name for the contents.
     xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
@@ -1879,7 +1881,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			*xo = (char *) xmlGetProp(contour,(xmlChar *) "xOffset"),
 			*yo = (char *) xmlGetProp(contour,(xmlChar *) "yOffset");
 		    RefChar *r;
-		    if ( base==NULL )
+		    if ( base==NULL || strcmp(base,"") == 0 )
 				LogError(_("component with no base glyph"));
 		    else {
 				r = RefCharCreate();
@@ -1898,7 +1900,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 					r->transform[4] = strtod(xo,NULL);
 				if ( yo!=NULL )
 					r->transform[5] = strtod(yo,NULL);
-				r->next = sc->layers[layerdest].refs;
+
 				sc->layers[layerdest].refs = r;
 				if ( lastref==NULL ) {
 				  // If there are no existing references, we point the main spline reference to this one.
@@ -1909,7 +1911,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 				}
 				lastref = r;
 		    }
-		    free(xs); free(ys); free(xys); free(yxs); free(xo); free(yo);
+		    if (xs) free(xs); if (ys) free(ys); if (xys) free(xys); if (yxs) free(yxs); if (xo) free(xo); if (yo) free(yo);
 		} else if ( xmlStrcmp(contour->name,(const xmlChar *) "contour")==0 ) {
 		    xmlNodePtr npoints;
 
@@ -1933,8 +1935,8 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
                     char *namep = *sname=='_' ? sname + 1 : sname;
                     char *xs = (char *) xmlGetProp(points, (xmlChar *) "x");
                     char *ys = (char *) xmlGetProp(points, (xmlChar *) "y");
-                    ap->me.x = strtod(xs,NULL);
-                    ap->me.y = strtod(ys,NULL);
+                    if (xs) { ap->me.x = strtod(xs,NULL); free(xs); }
+                    if (ys) { ap->me.y = strtod(ys,NULL); free(ys); }
 
                     ac = SFFindOrAddAnchorClass(sf,namep,NULL);
                     if (*sname=='_')
@@ -1954,7 +1956,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		    }
 		    lastap = ap;
 
-                    free(xs); free(ys); free(sname);
+                    free(sname);
         			continue; // We stop processing the contour at this point.
                 }
             }
@@ -1976,7 +1978,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		    ss = chunkalloc(sizeof(SplineSet));
 			ss->first = NULL;
 
-			for ( points = contour->children; points!=NULL; points=points->next ) {
+		    for ( points = contour->children; points!=NULL; points=points->next ) {
 			char *xs, *ys, *type, *pname, *smooths;
 			double x,y;
 			int smooth = 0;
@@ -2014,18 +2016,21 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 				}
 				if (smooth == 1) sp->pointtype = pt_curve;
 				else sp->pointtype = pt_corner;
-			    if ( strcmp(type,"move")==0 ) {
-					open = true;
+
+			    if ( ss->first==NULL ) {
+			        // So this is the first real point!
 			        ss->first = ss->last = sp;
-			    } else if ( ss->first==NULL ) {
-					ss->first = ss->last = sp;
+			        // We move the lead-in points to the init buffer as we may need them for the final curve.
 			        memcpy(init,pre,sizeof(pre));
 			        initcnt = precnt;
-			        if ( strcmp(type,"qcurve")==0 )
-				    wasquad = true;
-					if ( strcmp(type,"curve")==0 )
-					wasquad = false;
-					firstpointsaidquad = wasquad;
+			        if ( strcmp(type,"move")==0 ) {
+			          open = true;
+			          if (initcnt != 0) LogError(_("We cannot have lead-in points for an open curve.\n"));
+			        }
+			    } else if ( strcmp(type,"move")==0 ) LogError(_("The move point must be at the beginning of the contour.\n"));
+
+			    if ( strcmp(type,"move")==0 ) {
+			        // This is already handled.
 			    } else if ( strcmp(type,"line")==0 ) {
 				SplineMake(ss->last,sp,false);
 			        ss->last = sp;
@@ -2079,16 +2084,16 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			        sp->nextcp = pre[1];
 			        sp->nonextcp = false;
 			        if ( ss->first==NULL ) {
-						// This is indeed possible if the first three points are control points.
-				    	ss->first = sp;
-						memcpy(init,pre,sizeof(pre));
-			            initcnt = 1;
-					} else {
-				    	ss->last->nextcp = sp->prevcp = pre[0];
-			            ss->last->nonextcp = sp->noprevcp = false;
-			            initcnt = 0;
-			            SplineMake(ss->last,sp,true);
-                    }
+				    // This is indeed possible if the first three points are control points.
+				    ss->first = sp;
+				    memcpy(init,pre,sizeof(pre));
+				    initcnt = 1;
+				} else {
+				    ss->last->nextcp = sp->prevcp = pre[0];
+				    ss->last->nonextcp = sp->noprevcp = false;
+				    initcnt = 0;
+				    SplineMake(ss->last,sp,true);
+				}
 			        ss->last = sp;
 #if 1
 			        // We make the point between the previously cached control point and the new control point.
@@ -2140,8 +2145,8 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
                         if (type != NULL) { free(type); type = NULL; }
                         if (pname != NULL) { free(pname); pname = NULL; }
 		    }
-			// We are finished looping, so it's time to close the curve if it is to be closed.
-		    if ( !open ) {
+		    // We are finished looping, so it's time to close the curve if it is to be closed.
+		    if ( !open && ss->first != NULL ) {
 			// init has a list of control points leading into the first point. pre has a list of control points trailing the last processed on-curve point.
 			// We merge pre into init and use init as the list of control points between the last processed on-curve point and the first on-curve point.
 			if ( precnt!=0 ) {
@@ -2175,14 +2180,19 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			SplineMake(ss->last, ss->first, (firstpointsaidquad==true || (firstpointsaidquad == -1 && wasquad == true)));
 			ss->last = ss->first;
 		    }
-		    if ( last==NULL ) {
+		    if (ss->first == NULL) {
+				LogError(_("This spline set has no points.\n"));
+				SplinePointListFree(ss); ss = NULL;
+		    } else {
+		        if ( last==NULL ) {
 				// If there are no existing spline sets, we point the main spline reference to this set.
 				sc->layers[layerdest].splines = ss;
-		    } else {
+		        } else {
 				// If there are existing spline sets, we attach to the last one.
 				last->next = ss;
-		    }
+		        }
 				last = ss;
+		    }
 		    }
 	    }
 	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "lib")==0 ) {
@@ -2239,7 +2249,7 @@ return( _UFOLoadGlyph(sf,doc,glifname,glyphname,existingglyph,layerdest));
 }
 
 
-static void UFORefFixup(SplineFont *sf, SplineChar *sc ) {
+static void UFORefFixup(SplineFont *sf, SplineChar *sc, int layer ) {
     RefChar *r, *prev;
     SplineChar *rsc;
 
@@ -2249,23 +2259,40 @@ static void UFORefFixup(SplineFont *sf, SplineChar *sc ) {
     prev = NULL;
 	// For each reference, attempt to locate the real splinechar matching the name stored in the fake splinechar.
 	// Free the fake splinechar afterwards.
-    for ( r=sc->layers[ly_fore].refs; r!=NULL; r=r->next ) {
+    for ( r=sc->layers[layer].refs; r!=NULL; r=r->next ) {
+		if (r->sc->name == NULL || strcmp(r->sc->name, "") == 0) {
+			LogError(_("There's a reference to a glyph with no name."));
+			prev = r; continue;
+		}
+		if (r->sc->ticked) {
+		  // We've already fixed this one.
+		  prev = r; continue;
+		}
 		rsc = SFGetChar(sf,-1, r->sc->name);
-		if ( rsc==NULL ) {
-			LogError(_("Failed to find glyph %s when fixing up references"), r->sc->name);
+		if ( rsc==NULL || rsc->name == NULL || strcmp(rsc->name,"") == 0 ) {
+			if (rsc != NULL) {
+			  LogError(_("Invalid glyph for %s when fixing up references."), r->sc->name);
+			} else
+			LogError(_("Failed to find glyph %s when fixing up references."), r->sc->name);
+			SplineCharFree(r->sc); // Delete the fake glyph.
+			r->sc = NULL;
+			// Elide r from the list and free it.
 			if ( prev==NULL )
 			sc->layers[ly_fore].refs = r->next;
 			else
 			prev->next = r->next;
-			SplineCharFree(r->sc);
-			/* Memory leak. We loose r */
+			RefCharFree(r);
+			r = prev;
 		} else {
-			UFORefFixup(sf,rsc);
+			UFORefFixup(sf,rsc, layer);
+			if (r->sc->layer_cnt > 0) {
+			  fprintf(stderr, "Danger!\n");
+			}
 			SplineCharFree(r->sc);
 			r->sc = rsc;
-			prev = r;
 			SCReinstanciateRefChar(sc,r,ly_fore);
 		}
+		prev = r;
     }
 }
 
@@ -2336,7 +2363,7 @@ return;
 
     GlyphHashFree(sf);
     for ( i=0; i<sf->glyphcnt; ++i )
-	UFORefFixup(sf,sf->glyphs[i]);
+	UFORefFixup(sf,sf->glyphs[i], layerdest);
 }
 
 static void UFOHandleKern(SplineFont *sf,char *basedir,int isv) {
