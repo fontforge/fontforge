@@ -5788,8 +5788,14 @@ void SplineCharFreeContents(SplineChar *sc) {
 return;
     if (sc->name != NULL) free(sc->name);
     if (sc->comment != NULL) free(sc->comment);
-    for ( i=0; i<sc->layer_cnt; ++i )
+    for ( i=0; i<sc->layer_cnt; ++i ) {
+#if defined(_NO_PYTHON)
+        if (sc->layers[i].python_persistent != NULL) free( sc->layers[i].python_persistent );	/* It's a string of pickled data which we leave as a string */
+#else
+        PyFF_FreeSCLayer(sc, i);
+#endif
 	LayerFreeContents(sc,i);
+    }
     StemInfosFree(sc->hstem);
     StemInfosFree(sc->vstem);
     DStemInfosFree(sc->dstem);
@@ -5808,11 +5814,6 @@ return;
     DeviceTableFree(sc->italic_adjusts);
     DeviceTableFree(sc->top_accent_adjusts);
     MathKernFree(sc->mathkern);
-#if defined(_NO_PYTHON)
-    if (sc->python_persistent != NULL) free( sc->python_persistent );	/* It's a string of pickled data which we leave as a string */
-#else
-    PyFF_FreeSC(sc);
-#endif
     if (sc->glif_name != NULL) { free(sc->glif_name); sc->glif_name = NULL; }
 }
 

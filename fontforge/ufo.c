@@ -579,9 +579,12 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
 	}
 	// "</outline>"
     }
-    xmlNodePtr libxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "lib", NULL);
-    xmlNodePtr pythonblob = PythonLibToXML(sc->python_persistent, sc, sc->python_persistent_has_lists);
-    xmlAddChild(libxml, pythonblob);
+    if (sc->layers[layer].python_persistent != NULL || (layer == ly_fore && (sc->hstem!=NULL || sc->vstem!=NULL ))) {
+      // If the layer has lib data or if this is the foreground and the glyph has hints, we output lib data.
+      xmlNodePtr libxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "lib", NULL);
+      xmlNodePtr pythonblob = PythonLibToXML(sc->layers[layer].python_persistent, (layer == ly_fore ? sc : NULL), sc->layers[layer].python_persistent_has_lists);
+      xmlAddChild(libxml, pythonblob);
+    }
     return topglyphxml;
 }
 
@@ -1329,7 +1332,7 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
     int i;
     SplineChar * sc;
     int err = 0;
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) || SCHasData(sc=sf->glyphs[i]) ) {
 	PListAddString(dictnode,sc->name,sc->glif_name); // Add the glyph to the table of contents.
         // TODO: Optionally skip rewriting an untouched glyph.
         // Do we track modified glyphs carefully enough for this?
@@ -1380,7 +1383,7 @@ return( false );
     void * glif_name_hash = NULL;
 #endif
     // First we generate glif names.
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) || SCHasData(sf->glyphs[i]) ) {
         char * startname = NULL;
         if (sc->glif_name != NULL)
           startname = strdup(sc->glif_name); // If the splinechar has a glif name, try to use that.
@@ -2211,8 +2214,10 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		    }
 		}
 #ifndef _NO_PYTHON
-		sc->python_persistent = LibToPython(doc,dict,1);
-		sc->python_persistent_has_lists = 1;
+		if (sc->layers[layerdest].python_persistent == NULL) {
+		  sc->layers[layerdest].python_persistent = LibToPython(doc,dict,1);
+		  sc->layers[layerdest].python_persistent_has_lists = 1;
+		} else LogError(_("Duplicate lib data.\n"));
 #endif
 	    }
 	}

@@ -1483,8 +1483,11 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	    sc->top_accent_horiz!=TEX_UNDEF || sc->vert_variants!=NULL ||
 	    sc->horiz_variants!=NULL || sc->mathkern!=NULL )
 	SFDDumpCharMath(sfd,sc);
+#if 0
+    // This is now layer-specific.
     if ( sc->python_persistent!=NULL )
 	SFDPickleMe(sfd,sc->python_persistent,sc->python_persistent_has_lists);
+#endif // 0
 #if HANYANG
     if ( sc->compositionunit )
 	fprintf( sfd, "CompositionUnit: %d %d\n", sc->jamo, sc->varient );
@@ -1584,6 +1587,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	SFDDumpRefs(sfd,sc->layers[i].refs,newgids);
 	if ( sc->layers[i].validation_state&vs_known )
 	    fprintf( sfd, "Validated: %d\n", sc->layers[i].validation_state );
+        if ( sc->layers[i].python_persistent!=NULL )
+	  SFDPickleMe(sfd,sc->layers[i].python_persistent,sc->layers[i].python_persistent_has_lists);
     }
     for ( v=0; v<2; ++v ) {
 	kp = v ? sc->vkerns : sc->kerns;
@@ -5264,12 +5269,6 @@ return( NULL );
 	    SFDGetMinimumDistances(sfd,sc);
 	} else if ( strmatch(tok,"Validated:")==0 ) {
 	    getsint(sfd,(int16 *) &sc->layers[current_layer].validation_state);
-	} else if ( strmatch(tok,"PickledData:")==0 ) {
-	    sc->python_persistent = SFDUnPickle(sfd, 0);
-	    sc->python_persistent_has_lists = 0;
-	} else if ( strmatch(tok,"PickledDataWithLists:")==0 ) {
-	    sc->python_persistent = SFDUnPickle(sfd, 1);
-	    sc->python_persistent_has_lists = 1;
 	} else if ( strmatch(tok,"Back")==0 ) {
 	    while ( isspace(ch=nlgetc(sfd)));
 	    ungetc(ch,sfd);
@@ -5449,6 +5448,16 @@ return( NULL );
 	    else
 		lasti->next = img;
 	    lasti = img;
+	} else if ( strmatch(tok,"PickledData:")==0 ) {
+	    if (current_layer < sc->layer_cnt) {
+	      sc->layers[current_layer].python_persistent = SFDUnPickle(sfd, 0);
+	      sc->layers[current_layer].python_persistent_has_lists = 0;
+	    }
+	} else if ( strmatch(tok,"PickledDataWithLists:")==0 ) {
+	    if (current_layer < sc->layer_cnt) {
+	      sc->layers[current_layer].python_persistent = SFDUnPickle(sfd, 1);
+	      sc->layers[current_layer].python_persistent_has_lists = 1;
+	    }
 	} else if ( strmatch(tok,"OrigType1:")==0 ) {	/* Accept, slurp, ignore contents */
 	    SFDGetType1(sfd);
 	} else if ( strmatch(tok,"TtfInstrs:")==0 ) {	/* Binary format */

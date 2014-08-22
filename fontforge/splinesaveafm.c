@@ -1079,6 +1079,15 @@ return( sc!=NULL &&
 	    sc->width!=sc->parent->ascent+sc->parent->descent*/ ) );
 }
 
+int SCHasData(SplineChar *sc) {
+    int layer,l;
+
+    if ( sc==NULL )
+return( false );
+    for ( layer = 0; layer<sc->layer_cnt; ++layer ) if ( !sc->layers[layer].python_persistent ) return true;
+    return false;
+}
+
 int LayerWorthOutputting(SplineFont *sf, int layer) {
   int glyphpos = 0;
   for (glyphpos = 0; glyphpos < sf->glyphcnt; glyphpos++) {

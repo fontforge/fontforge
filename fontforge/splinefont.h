@@ -1290,6 +1290,8 @@ typedef struct layer /* : reflayer */{
     Undoes *redoes;
     uint32 validation_state;
     uint32 old_vs;
+    void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
+    int python_persistent_has_lists;
 } Layer;
 
 enum layer_type { ly_all=-2, ly_grid= -1, ly_back=0, ly_fore=1,
@@ -1495,8 +1497,11 @@ typedef struct splinechar {
     void *python_sc_object;
     void *python_temporary;
 #endif
+#if 0
+    // Python persistent data is now in the layers.
     void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
     int python_persistent_has_lists;
+#endif // 0
 	/* If the glyph is used as a tile pattern, then the next two values */
 	/*  determine the amount of white space around the tile. If extra is*/
 	/*  non-zero then we add it to the max components of the bbox and   */
@@ -2703,6 +2708,7 @@ extern int SplineFontIsFlexible(SplineFont *sf,int layer, int flags);
 extern int SCDrawsSomething(SplineChar *sc);
 extern int SCDrawsSomethingOnLayer(SplineChar *sc, int layer);
 extern int SCWorthOutputting(SplineChar *sc);
+extern int SCHasData(SplineChar *sc);
 extern int LayerWorthOutputting(SplineFont *sf, int layer);
 extern int SFFindNotdef(SplineFont *sf, int fixed);
 extern int doesGlyphExpandHorizontally(SplineChar *sc);
@@ -3265,6 +3271,7 @@ extern void PyFF_ScriptFile(struct fontviewbase *fv,SplineChar *sc,char *filenam
 extern void PyFF_ScriptString(struct fontviewbase *fv,SplineChar *sc,int layer,char *str);
 extern void PyFF_FreeFV(struct fontviewbase *fv);
 extern void PyFF_FreeSC(SplineChar *sc);
+void PyFF_FreeSCLayer(SplineChar *sc, int layer);
 extern void PyFF_FreeSF(SplineFont *sf);
 extern void PyFF_FreePythonPersistent(void *python_persistent);
 extern void PyFF_ProcessInitFiles(void);
