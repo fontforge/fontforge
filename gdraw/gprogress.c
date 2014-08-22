@@ -198,7 +198,7 @@ static GResInfo progress_ri = {
     NULL,
     progress_re,
     N_("Progress"),
-    N_("Popup windows"),
+    N_("Progress Bars"),
     "GProgress",
     "Gdraw",
     false,
