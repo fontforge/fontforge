@@ -1210,11 +1210,22 @@ return( true );
 
 static void readdate(FILE *ttf,struct ttfinfo *info,int ismod) {
     int i, date[4];
-    /* The difference in seconds between 1904 Mac and 1970 Unix epoch times  24107 days */
-    int date1970[4] = {45184, 31781, 0, 0};
+    /* TTFs have creation and modification timestamps in the 'head' table.  */
+    /* These are 64 bit values in network order / big-endian and denoted    */
+    /* as 'LONGDATETIME'.                                                   */
+    /* These timestamps are in "number of seconds since 00:00 1904-01-01",  */
+    /* noted some places as a Mac OS epoch time value.  We use Unix epoch   */
+    /* timestamps which are "number of seconds since 00:00 1970-01-01".     */
+    /* The difference between these two epoch values is a constant number   */ 
+    /* of seconds, and so we convert from Mac to Unix time by simple        */
+    /* subtraction of that constant difference.                             */
 
-    /* Dates in sfnt files are seconds since 1904. I adjust to unix time */
-    /*  seconds since 1970 by figuring out how many seconds were in between */
+    /*      (31781 * 65536) + 45184 = 2082844800 secs is 24107 days */
+    int date1970[4] = {45184, 31781, 0, 0}; 
+
+    /* As there was not (nor still is?) a portable way to do 64-bit math aka*/
+    /* "long long" the code below works on 16-bit slices of the full value. */
+    /* The lowest 16 bits is operated on, then the next 16 bits, and so on. */
 
     date[3] = getushort(ttf);
     date[2] = getushort(ttf);
