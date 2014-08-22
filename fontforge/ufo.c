@@ -647,6 +647,7 @@ xmlDocPtr PlistInit() {
     doc = xmlNewDoc(BAD_CAST "1.0");
     dtd = xmlCreateIntSubset(doc, BAD_CAST "plist", BAD_CAST "-//Apple Computer//DTD PLIST 1.0//EN", BAD_CAST "http://www.apple.com/DTDs/PropertyList-1.0.dtd");
     root_node = xmlNewNode(NULL, BAD_CAST "plist");
+    xmlSetProp(root_node, BAD_CAST "version", BAD_CAST "1.0");
     xmlDocSetRootElement(doc, root_node);
     return doc;
 }
