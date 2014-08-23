@@ -159,7 +159,9 @@ typedef struct {
     // the same info or not.
     char   unacknowledged_beacon_uuid[ 40 ];
     time_t unacknowledged_beacon_sendTime;
-    
+
+    // If the session is closing then we return false for 'inSession'
+    int sessionIsClosing;
 
 } cloneclient_t;
 
