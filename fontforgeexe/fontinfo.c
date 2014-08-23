@@ -10778,6 +10778,10 @@ return;
 }
 
 void FontMenuFontInfo(void *_fv) {
+    if ( _fv && collabclient_inSessionFV( _fv) ) {
+	gwwv_post_error(_("Feature Not Available"), _("The Font Information Dialog is not available in collaboration mode yet."));
+	return;
+    }
     FontInfo( ((FontViewBase *) _fv)->sf,((FontViewBase *) _fv)->active_layer,-1,false);
 }
 

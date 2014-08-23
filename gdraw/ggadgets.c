@@ -1162,7 +1162,8 @@ return( g->state!=gs_invisible );
 }
 
 void GGadgetSetEnabled(GGadget *g,int enabled) {
-    (g->funcs->setenabled)(g,enabled);
+    if(g)
+	(g->funcs->setenabled)(g,enabled);
 }
 
 int GGadgetIsEnabled(GGadget *g) {
