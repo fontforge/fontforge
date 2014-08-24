@@ -2630,14 +2630,14 @@ FontDict *_ReadPSFont(FILE *in) {
 return(NULL);
     }
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,uselocale(LC_NUMERIC,NULL) );
+    uselocale(LC_NUMERIC,"C");
     memset(&fp,'\0',sizeof(fp));
     fp.fd = fp.mainfd = PSMakeEmptyFont();
     fp.fdindex = -1;
     realdecrypt(&fp,in,temp);
     free(fp.vbuf);
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
 
     fclose(temp);
 

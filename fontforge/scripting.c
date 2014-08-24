@@ -794,7 +794,7 @@ static void bStrftime(Context *c) {
     if ( c->a.argc>=3 )
 	isgmt = c->a.vals[2].u.ival;
     if ( c->a.argc>=4 )
-	oldloc = setlocale(LC_TIME, c->a.vals[3].u.sval);
+	oldloc = uselocale(LC_TIME, c->a.vals[3].u.sval);
 
     time(&now);
     if ( isgmt )
@@ -804,7 +804,7 @@ static void bStrftime(Context *c) {
     strftime(buffer,sizeof(buffer),c->a.vals[1].u.sval,tm);
 
     if ( oldloc!=NULL )
-	(void) setlocale(LC_TIME, oldloc);
+	(void) uselocale(LC_TIME, oldloc);
 
     c->return_val.type = v_str;
     c->return_val.u.sval = copy(buffer);

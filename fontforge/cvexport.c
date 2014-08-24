@@ -80,8 +80,8 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int layer, int preview) {
     char oldloc[24];
     const char *author = GetAuthor();
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,uselocale(LC_NUMERIC,NULL) );
+    uselocale(LC_NUMERIC,"C");
 
     fprintf( eps, "%%!PS-Adobe-3.0 EPSF-3.0\n" );
     SplineCharLayerFindBounds(sc,layer,&b);
@@ -127,7 +127,7 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int layer, int preview) {
 	fprintf( eps, "fill grestore\n" );
     fprintf( eps, "%%%%EOF\n" );
     ret = !ferror(eps);
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
 return( ret );
 }
 
@@ -157,8 +157,8 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     int i;
 
     SFUntickAll(sc->parent);
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,uselocale(LC_NUMERIC,NULL) );
+    uselocale(LC_NUMERIC,"C");
 
     fprintf( pdf, "%%PDF-1.4\n%%\201\342\202\203\n" );	/* Header comment + binary comment */
     /* Every document contains a catalog which points to a page tree, which */
@@ -271,7 +271,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
 	free(objlocs);
 
     ret = !ferror(pdf);
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
 return( ret );
 }
 
@@ -296,8 +296,8 @@ int _ExportPlate(FILE *plate,SplineChar *sc,int layer) {
     spiro_cp *spiros;
     int i, ret;
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,uselocale(LC_NUMERIC,NULL) );
+    uselocale(LC_NUMERIC,"C");
     /* Output closed contours first, then open. Plate files can only handle */
     /*  one open contour (I think) and it must be at the end */
     fprintf( plate, "(plate\n" );
@@ -329,7 +329,7 @@ int _ExportPlate(FILE *plate,SplineChar *sc,int layer) {
     }
     fprintf(plate, ")\n");
     ret = !ferror(plate);
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
 return( ret );
 }
 

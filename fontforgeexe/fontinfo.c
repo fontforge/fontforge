@@ -1901,9 +1901,9 @@ return( copy(orig));
     }
     *npt = '\0';
 
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
     strtod(new,&end);
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
     while ( isspace(*end)) ++end;
     if ( *end=='\0' ) {
 	char *ret = copy(new);
@@ -1919,9 +1919,9 @@ return( ret );
 return( NULL );
     }
     free(new);
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
     sprintf( buffer, "%g", dval );
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
 return( copy(buffer));
 }
 
@@ -1992,7 +1992,7 @@ return;
 	break;
 	if ( KnownPrivates[i].name==NULL )	/* If we don't recognize it, leave it be */
 return;
-	oldloc = copy(setlocale(LC_NUMERIC,NULL));
+	oldloc = copy(uselocale(LC_NUMERIC,NULL));
 
 	for ( pt=val; isspace(*pt); ++pt );
 	for ( ept = val+strlen(val-1); ept>pt && isspace(*ept); --ept );

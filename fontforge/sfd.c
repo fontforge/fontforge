@@ -2975,9 +2975,9 @@ int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal,int todir)
     if ( sfd==NULL )
 return( 0 );
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    strncpy( oldloc,uselocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
     if ( sf->cidmaster!=NULL ) {
 	sf=sf->cidmaster;
 	gc = 1;
@@ -2989,7 +2989,7 @@ return( 0 );
 	EncMapFree(map);
     } else
 	err = SFDDump(sfd,sf,map,normal,todir,filename);
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
     if ( ferror(sfd) ) err = true;
     if ( !err && !todir && strstr(filename,"://")!=NULL )
 	err = !URLFromFile(filename,sfd);
@@ -8622,13 +8622,13 @@ static SplineFont *SFD_Read(char *filename,FILE *sfd, int fromdir) {
     }
     if ( sfd==NULL )
 return( NULL );
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    strncpy( oldloc,uselocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
     ff_progress_change_stages(2);
     if ( (version = SFDStartsCorrectly(sfd,tok))!=-1 )
 	sf = SFD_GetFont(sfd,NULL,tok,fromdir,filename,version);
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
     if ( sf!=NULL ) {
 	sf->filename = copy(filename);
 	if ( sf->mm!=NULL ) {
@@ -8685,9 +8685,9 @@ SplineChar *SFDReadOneChar(SplineFont *cur_sf,const char *name) {
 	sfd = fopen(cur_sf->filename,"r");
     if ( sfd==NULL )
 return( NULL );
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    strncpy( oldloc,uselocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
 
     memset(&sf,0,sizeof(sf));
     memset(&layers,0,sizeof(layers));
@@ -8764,7 +8764,7 @@ return( NULL );
 
     if ( sf.layers!=layers )
 	free(sf.layers);
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
 return( sc );
 }
 
@@ -8965,9 +8965,9 @@ return(NULL);
 	fclose( asfd );
 return( NULL );
     }
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    strncpy( oldloc,uselocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
     ret = SlurpRecovery(asfd,tok,sizeof(tok));
     if ( ret==NULL ) {
 	const char *buts[3];
@@ -8975,7 +8975,7 @@ return( NULL );
 	if ( ff_ask(_("Recovery Failed"),(const char **) buts,0,1,_("Automagic recovery of changes to %.80s failed.\nShould FontForge try again to recover next time you start it?"),tok)==0 )
 	    unlink(autosavename);
     }
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
     fclose(asfd);
     if ( ret )
 	ret->autosavename = copy(autosavename);
@@ -9000,9 +9000,9 @@ return;
     for ( i=0; i<sf->subfontcnt; ++i )
 	if ( sf->subfonts[i]->glyphcnt>max ) max = sf->subfonts[i]->glyphcnt;
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    strncpy( oldloc,uselocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
     if ( !sf->new && sf->origname!=NULL )	/* might be a new file */
 	fprintf( asfd, "Base: %s%s\n", sf->origname,
 		sf->compression==0?"":compressors[sf->compression-1].ext );
@@ -9032,7 +9032,7 @@ return;
     fprintf( asfd, "EndChars\n" );
     fprintf( asfd, "EndSplineFont\n" );
     fclose(asfd);
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
     sf->changed_since_autosave = false;
 }
 
@@ -9066,9 +9066,9 @@ char **NamesReadSFD(char *filename) {
 
     if ( sfd==NULL )
 return( NULL );
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    strncpy( oldloc,uselocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
     if ( SFDStartsCorrectly(sfd,tok)!=-1 ) {
 	while ( !feof(sfd)) {
 	    if ( (eof = getname(sfd,tok))!=1 ) {
@@ -9086,7 +9086,7 @@ return( NULL );
 	    }
 	}
     }
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
     fclose(sfd);
 return( ret );
 }

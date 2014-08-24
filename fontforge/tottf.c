@@ -6038,9 +6038,9 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     int i, anyglyphs;
 
     /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    strncpy( oldloc,uselocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
 
     if ( format==ff_otfcid || format== ff_cffcid ) {
 	if ( sf->cidmaster ) sf = sf->cidmaster;
@@ -6085,7 +6085,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	if ( initTables(&at,sf,format,bsizes,bf))
 	    dumpttf(ttf,&at);
     }
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
     if ( at.error || ferror(ttf))
 return( 0 );
 
@@ -6222,9 +6222,9 @@ int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
     int i;
 
     /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    strncpy( oldloc,uselocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
 
     if ( sf->subfontcnt!=0 ) sf = sf->subfonts[0];
 
@@ -6240,7 +6240,7 @@ int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
 	dumptype42(type42,&at,format);
     free(at.gi.loca);
 
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
     if ( at.error || ferror(type42))
 return( 0 );
 

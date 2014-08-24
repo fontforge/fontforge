@@ -211,9 +211,9 @@ int32 *ParseBitmapSizes(GGadget *g,char *msg,int *err) {
     int32 *sizes;
     char oldloc[25];
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    strncpy( oldloc,uselocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
 
     *err = false;
     end2 = NULL;
@@ -245,7 +245,7 @@ int32 *ParseBitmapSizes(GGadget *g,char *msg,int *err) {
 	while ( *end==' ' || *end==',' ) ++end;
 	pt = end;
     }
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
     if ( *err )
 return( NULL );
     sizes[i] = 0;

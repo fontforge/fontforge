@@ -272,10 +272,10 @@ void hotkeysLoad()
     snprintf(localefn,PATH_MAX,"%s/hotkeys/default", sharedir );
     loadHotkeysFromFile( localefn, false, true );
     
-    // FUTURE: perhaps find out how to convert en_AU.UTF-8 that setlocale()
+    // FUTURE: perhaps find out how to convert en_AU.UTF-8 that uselocale()
     //   gives to its fallback of en_GB. There are likely to be a bunch of other
     //   languages which are similar but have specific locales
-    char* currentlocale = copy(setlocale(LC_MESSAGES, 0));
+    char* currentlocale = copy(uselocale(LC_MESSAGES, 0));
     snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", sharedir, currentlocale);
     loadHotkeysFromFile( localefn, false, false );
     while((p = strrchr( currentlocale, '.' ))) {

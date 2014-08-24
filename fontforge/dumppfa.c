@@ -2615,8 +2615,8 @@ int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,
 	flags &= ~ps_flag_noflex;
 
     /* make sure that all reals get output with '.' for decimal points */
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,uselocale(LC_NUMERIC,NULL) );
+    uselocale(LC_NUMERIC,"C");
     if ( (format==ff_mma || format==ff_mmb) && sf->mm!=NULL )
 	sf = sf->mm->normal;
     if ( format==ff_cid )
@@ -2626,7 +2626,7 @@ int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,
 	if ( format==ff_ptype0 )
 	    dumptype0stuff(out,sf,map);
     }
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
     if ( ferror(out) || err)
 return( 0 );
 

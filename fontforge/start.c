@@ -104,7 +104,7 @@ void InitSimpleStuff(void) {
     initrand();
     initadobeenc();
 
-    setlocale(LC_ALL,"");
+    uselocale(LC_ALL,"");
     localeinfo = *localeconv();
     coord_sep = ",";
     if ( *localeinfo.decimal_point=='.' ) coord_sep=",";
