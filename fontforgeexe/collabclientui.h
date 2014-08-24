@@ -165,9 +165,10 @@ extern int Collab_getLastChangedPos( void );
 extern int Collab_getLastChangedCodePoint( void );
 
 
-
+#ifdef BUILD_COLLAB
 typedef void (*collabclient_notification_cb)( FontViewBase* fv );
 extern void collabclient_addSessionJoiningCallback( collabclient_notification_cb func );
 extern void collabclient_addSessionLeavingCallback( collabclient_notification_cb func );
+#endif // BUILD_COLLAB
 
 #endif
