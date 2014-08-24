@@ -1313,6 +1313,7 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
 int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int flags,
 	const EncMap *map,int layer, int all_layers) {
     char *foo = NULL, *glyphdir, *gfname;
+    char oldloc[25];
     int err;
     FILE *plist;
     int i;
@@ -1325,7 +1326,11 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
     }
 
     /* Create it */
-    GFileMkDir( basedir );
+    if (GFileMkDir( basedir ) == -1) return false;
+
+    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    oldloc[24] = '\0';
+    setlocale(LC_NUMERIC,"C");
 
     err  = !UFOOutputMetaInfo(basedir,sf);
     err |= !UFOOutputFontInfo(basedir,sf,layer);
@@ -1335,8 +1340,10 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
     err |= !UFOOutputLib(basedir,sf);
     err |= !UFOOutputFeatures(basedir,sf);
 
-    if ( err )
-return( false );
+    if ( err ) {
+        setlocale(LC_NUMERIC,oldloc);
+        return false;
+    }
 
 #ifdef FF_UTHASH_GLIF_NAMES
     struct glif_name_index _glif_name_hash;
@@ -1433,7 +1440,8 @@ return( false );
     }
 
     free( glyphdir );
-return( !err );
+    setlocale(LC_NUMERIC,oldloc);
+    return !err;
 }
 
 int WriteUFOFont(const char *basedir, SplineFont *sf, enum fontformat ff, int flags,
