@@ -15864,6 +15864,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
+
 /* Print sample flags */
 static struct flaglist printflags[] = {
     { "fontdisplay", 0 },
@@ -15875,87 +15876,81 @@ static struct flaglist printflags[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
+/* font.printSample(type, [pointsize, [sample, [output-filename]]])     */
+
 static PyObject *PyFFFont_printSample(PyFF_Font *self, PyObject *args) {
     int type, i, inlinesample = true;
-    int32 *pointsizes=NULL;
-    char *samplefile=NULL, *output=NULL;
-    unichar_t *sample=NULL;
-    char *locfilename=NULL;
-    int arg_cnt;
+    char *typeArg, *sampleArg=NULL, *outputArg=NULL;
+    int pointsizeArg=INT_MIN;
+    PyObject *pointsizeTuple=NULL;
     PyObject *arg;
-    char *ptype;
+    int32 *pointsizes=NULL;
+    char *samplefile=NULL;
+    unichar_t *sample=NULL;
 
     if ( CheckIfFontClosed(self) )
-return (NULL);
-    arg_cnt = PyTuple_Size(args);
-    if ( arg_cnt<1 || arg_cnt>4 ) {
-	PyErr_Format(PyExc_ValueError, "Wrong number of arguments" );
-return( NULL );
+        return (NULL);
+
+    /* Attempt parse assuming pointsize is a single integer */
+    if ( !PyArg_ParseTuple(args,"s|iss",&typeArg,&pointsizeArg,&sampleArg,&outputArg) ) {
+        PyErr_Clear();
+        /* Attempt parse hoping pointsize is a tuple/list of integers */
+        if ( !PyArg_ParseTuple(args,"s|Oss",&typeArg,&pointsizeTuple,&sampleArg,&outputArg) ) {
+            PyErr_Format(PyExc_TypeError,"Expecting 1 to 4 args with type string as first arg");
+            return( NULL );
+        }
+        if ( !PyTuple_Check(pointsizeTuple) && !PyList_Check(pointsizeTuple)) {
+            PyErr_Format(PyExc_TypeError, "Second arg must be an integer, or a tuple or list of integers" );
+            return( NULL );
+        }
+        if ( PySequence_Size(pointsizeTuple) < 1 ) {
+            PyErr_Format(PyExc_TypeError, "Second arg must be an integer, or a tuple or list of integers" );
+            return( NULL );
+        } 
     }
 
-    ptype = PyBytes_AsString(PyTuple_GetItem(args,0));
-    if ( ptype==NULL )
-return( NULL );
-    type = FlagsFromString(ptype,printflags,"print sample type");
+    type = FlagsFromString(typeArg,printflags,"print sample type");
     if ( type==FLAG_UNKNOWN ) {
-return( NULL );
+        return( NULL );
     }
     if ( type==4 ) {
-	type=3;
-	inlinesample = false;
+        type=3;
+        inlinesample = false;
     }
-    if ( arg_cnt>1 ) {
-	arg = PyTuple_GetItem(args,1);
-	if ( PyInt_Check(arg)) {
-	    int val = PyInt_AsLong(arg);
-	    if ( val>0 ) {
-		pointsizes = calloc(2,sizeof(int32));
-		pointsizes[0] = val;
-	    }
-	} else if ( PySequence_Check(arg) ) {
-	    int subcnt = PySequence_Size(arg);
-	    pointsizes = malloc((subcnt+1)*sizeof(int32));
-	    for ( i=0; i<subcnt; ++i ) {
-		pointsizes[i] = PyInt_AsLong(PySequence_GetItem(arg,i));
-		if ( PyErr_Occurred()) {
-		    free(pointsizes);
-return( NULL );
-		}
-	    }
-	    pointsizes[i] = 0;
-	} else {
-	    PyErr_Format(PyExc_TypeError, "Unexpected type for pointsize" );
-return( NULL );
-	}
+    if ( pointsizeArg!=INT_MIN ) {
+        if ( pointsizeArg>0 ) {
+            pointsizes = calloc(2,sizeof(int32));
+            pointsizes[0] = pointsizeArg;
+        }
+    } else if ( pointsizeTuple!=NULL ) {
+        int subcnt = PySequence_Size(pointsizeTuple);
+        pointsizes = malloc((subcnt+1)*sizeof(int32));
+        for ( i=0; i<subcnt; ++i ) {
+            arg = PySequence_GetItem(pointsizeTuple,i);
+            pointsizes[i] = PyInt_AsLong(arg);
+            Py_DECREF(arg);
+            if ( PyErr_Occurred()) {
+                free(pointsizes);
+                return( NULL );
+            }
+        }
+        pointsizes[i] = 0;
     }
-    if ( arg_cnt>2 ) {
-	char *str = PyBytes_AsString(PyTuple_GetItem(args,2));
-	if ( str==NULL ) {
-            free(pointsizes);
-return( NULL );
-	}
-	if ( inlinesample ) {
-	    sample = utf82u_copy(str);
-	    samplefile = NULL;
-	} else {
-	    samplefile = locfilename = utf82def_copy(str);
-	    sample = NULL;
-	}
+    if ( sampleArg!=NULL ) {
+        if ( inlinesample ) {
+            sample = utf82u_copy(sampleArg);
+            samplefile = NULL;
+        } else {
+            samplefile = utf82def_copy(sampleArg);
+            sample = NULL;
+        }
     }
-    if ( arg_cnt>3 ) {
-	output = PyBytes_AsString(PyTuple_GetItem(args,3));
-	if ( output==NULL ) {
-            free(pointsizes);
-            free(locfilename);
-            free(sample);
-return( NULL );
-	}
-    }
-    ScriptPrint(self->fv,type,pointsizes,samplefile,sample,output);
+
+    ScriptPrint(self->fv,type,pointsizes,samplefile,sample,outputArg);
     free(pointsizes);
-    free(locfilename);
+    free(samplefile);
     /* ScriptPrint frees sample for us */
-Py_RETURN(self);
+    Py_RETURN(self);
 }
 
 static PyObject *PyFFFont_randomText(PyFF_Font *self, PyObject *args) {
