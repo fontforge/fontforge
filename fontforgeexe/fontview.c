@@ -5742,10 +5742,12 @@ static void AskAndMaybeCloseLocalCollabServers()
 	    if( sel[i] )
 	    {
 		FontViewBase* fv = FontViewFind( FontViewFind_byCollabBasePort, (void*)(intptr_t)port );
+#ifdef BUILD_COLLAB
 		if( fv )
 		    collabclient_sessionDisconnect( fv );
 		printf("CLOSING port:%d fv:%p\n", port, fv );
 		collabclient_closeLocalServer( port );
+#endif // BUILD_COLLAB
 	    }
 	}
 	else

@@ -418,7 +418,7 @@ static void collabclient_roundTripTimer( void* ccvp )
 	collabclient_sessionReconnect( cc );
     }
 }
-#endif
+
 
 
 typedef struct _CollabSessionCallbacks CollabSessionCallbacks;
@@ -514,6 +514,7 @@ void collabclient_sessionDisconnect( FontViewBase* fv )
 #endif
 }
 
+#endif
 
 #ifdef BUILD_COLLAB
 
