@@ -754,7 +754,7 @@ return( XCreateWindow(gdisp->display, gdisp->root,
 #if defined(__MINGW32__)
 /* FIXME: Xming+WindowsWM hack */
 
-/* unichar to ActiveCodePage, this is not limited to setlocale() */
+/* unichar to ActiveCodePage, this is not limited to uselocale() */
 static char*  u2acp_copy(const unichar_t* ustr){
     if(ustr){
 	int wlen = u_strlen(ustr);
@@ -4586,7 +4586,7 @@ GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname) {
     if ( display==NULL )
 return( NULL );
 
-    setlocale(LC_ALL,"");
+    uselocale(LC_ALL,"");
     XSupportsLocale();
     XSetLocaleModifiers("");
 

@@ -5399,8 +5399,8 @@ static int readttf(FILE *ttf, struct ttfinfo *info, char *filename) {
 return( 0 );
     }
     /* TrueType doesn't need this but opentype dictionaries do */
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,uselocale(LC_NUMERIC,NULL) );
+    uselocale(LC_NUMERIC,"C");
     readttfpreglyph(ttf,info);
     ff_progress_change_total(info->glyph_cnt);
 
@@ -5421,7 +5421,7 @@ return( 0 );
 	buts[3] = NULL;
 	choice = ff_ask(_("Pick a font, any font..."),(const char **) buts,0,2,_("This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' table. FontForge can only deal with one at a time, please pick which one you want to use"));
 	if ( choice==2 ) {
-	    setlocale(LC_NUMERIC,oldloc);
+	    uselocale(LC_NUMERIC,oldloc);
 return( 0 );
 	} else if ( choice==0 )
 	    info->cff_start=0;
@@ -5442,16 +5442,16 @@ return( 0 );
     } else if ( info->cff_start!=0 ) {
 	info->to_order2 = (loaded_fonts_same_as_new && new_fonts_are_order2);
 	if ( !readcffglyphs(ttf,info) ) {
-	    setlocale(LC_NUMERIC,oldloc);
+	    uselocale(LC_NUMERIC,oldloc);
 return( 0 );
 	}
     } else if ( info->typ1_start!=0 ) {
 	if ( !readtyp1glyphs(ttf,info) ) {
-	    setlocale(LC_NUMERIC,oldloc);
+	    uselocale(LC_NUMERIC,oldloc);
 return( 0 );
 	}
     } else {
-	setlocale(LC_NUMERIC,oldloc);
+	uselocale(LC_NUMERIC,oldloc);
 return( 0 );
     }
     if ( info->bitmapdata_start!=0 && info->bitmaploc_start!=0 )
@@ -5460,7 +5460,7 @@ return( 0 );
 	ff_post_error( _("No Bitmap Strikes"), _("No (useable) bitmap strikes in this TTF font: %s"), filename==NULL ? "<unknown>" : filename );
     if ( info->onlystrikes && info->bitmaps==NULL ) {
 	free(info->chars);
-	setlocale(LC_NUMERIC,oldloc);
+	uselocale(LC_NUMERIC,oldloc);
 return( 0 );
     }
     if ( info->hmetrics_start!=0 )
@@ -5531,7 +5531,7 @@ return( 0 );
 	tex_read(ttf,info);
     if ( info->math_start!=0 )
 	otf_read_math(ttf,info);
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
     if ( !info->onlystrikes && info->glyphlocations_start!=0 && info->glyph_start!=0 )
 	ttfFixupReferences(info);
     /* Can't fix up any postscript references until we create a SplineFont */

@@ -925,9 +925,9 @@ static void svg_sfdump(FILE *file,SplineFont *sf,int layer) {
     char oldloc[25];
     struct altuni *altuni;
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    strncpy( oldloc,uselocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
 	sf->glyphs[i]->ticked = false;
@@ -989,7 +989,7 @@ static void svg_sfdump(FILE *file,SplineFont *sf,int layer) {
     svg_dumpkerns(file,sf,false);
     svg_dumpkerns(file,sf,true);
     svg_outfonttrailer(file);
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
 }
 
 int _WriteSVGFont(FILE *file,SplineFont *sf,int flags,
@@ -1038,8 +1038,8 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
     if ( b.miny>-sc->parent->descent ) b.miny = -sc->parent->descent;
     if ( b.maxy<em_size ) b.maxy = em_size;
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,uselocale(LC_NUMERIC,NULL) );
+    uselocale(LC_NUMERIC,"C");
     fprintf(svg, "<?xml version=\"1.0\" standalone=\"no\"?>\n" );
     fprintf(svg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\" >\n" );
     fprintf(svg, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" viewBox=\"%d %d %d %d\">\n",
@@ -1058,7 +1058,7 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
     fprintf(svg, "  </g>\n\n" );
     fprintf(svg, "</svg>\n" );
 
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
 return( !ferror(svg));
 }
 
@@ -3564,11 +3564,11 @@ return( NULL );
 	}
     }
     free(fonts);
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    strncpy( oldloc,uselocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
     sf = SVGParseFont(font);
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
     xmlFreeDoc(doc);
 
     if ( sf!=NULL ) {
@@ -3697,11 +3697,11 @@ return( NULL );
 return( NULL );
     }
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    strncpy( oldloc,uselocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
     ret = SVGParseSVG(top,em_size,ascent);
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
     xmlFreeDoc(doc);
 
     if ( loaded_fonts_same_as_new )

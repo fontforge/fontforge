@@ -1285,7 +1285,7 @@ return( temp );
 }
 
 int MacLangFromLocale(void) {
-    /*const char *loc = setlocale(LC_MESSAGES,NULL);*/ /* This always returns "C" for me, even when it shouldn't be */
+    /*const char *loc = uselocale(LC_MESSAGES,NULL);*/ /* This always returns "C" for me, even when it shouldn't be */
     const char *loc;
     static int found=-1;
     int i;

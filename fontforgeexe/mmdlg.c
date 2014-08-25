@@ -100,15 +100,15 @@ static int ExecConvertDesignVector(real *designs, int dcnt, char *ndv, char *cdv
     char oldloc[25];
 
     /* PostScript parses things in "C" locale too */
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    strncpy( oldloc,uselocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
     len = 0;
     for ( j=0; j<dcnt; ++j ) {
 	sprintf(dv+len, "%g ", (double) designs[j]);
 	len += strlen(dv+len);
     }
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
 
     temp = malloc(len+strlen(ndv)+strlen(cdv)+20);
     strcpy(temp,dv);

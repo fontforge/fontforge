@@ -1838,8 +1838,8 @@ int SFPrivateGuess(SplineFont *sf,int layer, struct psdict *private,char *name, 
     char *oldloc;
     int ret;
 
-    oldloc = copy(setlocale(LC_NUMERIC,NULL));
-    setlocale(LC_NUMERIC,"C");
+    oldloc = copy(uselocale(LC_NUMERIC,NULL));
+    uselocale(LC_NUMERIC,"C");
     ret = true;
 
     if ( strcmp(name,"BlueValues")==0 || strcmp(name,"OtherBlues")==0 ) {
@@ -1895,7 +1895,7 @@ int SFPrivateGuess(SplineFont *sf,int layer, struct psdict *private,char *name, 
     } else
 	ret = false;
 
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
     free( oldloc );
 return( ret );
 }

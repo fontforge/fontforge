@@ -1290,9 +1290,9 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 
     tokbuf = malloc(tokbufsize);
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    strncpy( oldloc,uselocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
 
     memset(&gb,'\0',sizeof(GrowBuf));
     memset(&dict,'\0',sizeof(dict));
@@ -2816,7 +2816,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     ECCategorizePoints(ec);
     if ( ec->width == UNDEFINED_WIDTH )
 	ec->width = wrapper->advance_width;
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
     free(tokbuf);
 }
 

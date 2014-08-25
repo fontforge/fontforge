@@ -2472,9 +2472,9 @@ return( NULL );
     }
 
     sf = SplineFontEmpty();
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    strncpy( oldloc,uselocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
 	for ( value = keys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
 		value = value->next );
@@ -2702,7 +2702,7 @@ return( NULL );
     if ( em==-1 ) {
 	LogError(_("This font does not specify unitsPerEm"));
 	xmlFreeDoc(doc);
-	setlocale(LC_NUMERIC,oldloc);
+	uselocale(LC_NUMERIC,oldloc);
 	SplineFontFree(sf);
 return( NULL );
     }
@@ -2913,7 +2913,7 @@ return( NULL );
 		xmlFreeDoc(doc);
     }
 #endif
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
 return( sf );
 }
 
@@ -2935,11 +2935,11 @@ return( NULL );
     if ( doc==NULL )
 return( NULL );
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
+    strncpy( oldloc,uselocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    uselocale(LC_NUMERIC,"C");
     sc = _UFOLoadGlyph(sf,doc,filename,NULL,NULL,ly_fore);
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(LC_NUMERIC,oldloc);
 
     if ( sc==NULL )
 return( NULL );
