@@ -1054,7 +1054,7 @@ return(NULL);
     /* then we copy the subtables from the temp file to bloc */
 
     /* the pointers */
-    for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i]!=-1 && (bc=bdf->glyphs[gi->bygid[i]])!=NULL ) {
+    for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i]>=0 && gi->bygid[i]<bdf->glyphcnt && (bc=bdf->glyphs[gi->bygid[i]])!=NULL ) {
 	int wasdef = false;
 	if ( defs!=NULL && defs->bc->sc->ttf_glyph < bc->sc->ttf_glyph ) {
 	    --i;
@@ -1076,7 +1076,7 @@ return(NULL);
 	    cur->last = bc->sc->ttf_glyph;
 	else {
 	    for ( j=i+1; j<gi->gcnt ; ++j ) {
-		if ( gi->bygid[j]==-1 || (bc2=bdf->glyphs[gi->bygid[j]])==NULL )
+		if ( gi->bygid[j]<0 || gi->bygid[j]>=bdf->glyphcnt || (bc2=bdf->glyphs[gi->bygid[j]])==NULL )
 	    break;
 		else if ( bc2->widthgroup!=bc->widthgroup ||
 			(bc->widthgroup && (bc->width!=bc2->width || bc->vwidth!=bc2->vwidth)) )
