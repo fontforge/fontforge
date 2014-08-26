@@ -12141,25 +12141,27 @@ static PyObject *PyFF_Font_get_size_feature(PyFF_Font *self, void *UNUSED(closur
     SplineFont *sf;
 
     if ( CheckIfFontClosed(self) )
-return (NULL);
+        return (NULL);
     sf = self->fv->sf;
     if ( sf->design_size==0 )
-Py_RETURN_NONE;
+        Py_RETURN_NONE;
 
     for ( names=sf->fontstyle_name, cnt=0; names!=NULL; names=names->next, ++cnt );
     if ( cnt==0 )
-return( Py_BuildValue("(d)", sf->design_size/10.0));
+        return( Py_BuildValue("(d)", sf->design_size/10.0));
     tuple = PyTuple_New(cnt);
     for ( names=sf->fontstyle_name, cnt=0; names!=NULL; names=names->next, ++cnt ) {
-	for ( i=0; sfnt_name_mslangs[i].name!=NULL ; ++i )
+	for ( i=0; sfnt_name_mslangs[i].name!=NULL ; ++i ) {
 	    if ( sfnt_name_mslangs[i].flag == names->lang )
-	break;
-	if ( sfnt_name_mslangs[i].flag == names->lang )
-	    PyTuple_SetItem(tuple,i,Py_BuildValue("ss", sfnt_name_mslangs[i].name, names->name));
-	else
-	    PyTuple_SetItem(tuple,i,Py_BuildValue("is", names->lang, names->name));
+                break;
+        }
+	if ( sfnt_name_mslangs[i].flag == names->lang ) {
+            PyTuple_SetItem(tuple,cnt,Py_BuildValue("ss", sfnt_name_mslangs[i].name, names->name));
+        } else {
+            PyTuple_SetItem(tuple,cnt,Py_BuildValue("is", names->lang, names->name));
+        }
     }
-return( Py_BuildValue("(dddiO)", sf->design_size/10.0,
+    return( Py_BuildValue("(dddiO)", sf->design_size/10.0,
 	sf->design_range_bottom/10.0, sf->design_range_top/10.,
 	sf->fontstyle_id, tuple ));
 }
