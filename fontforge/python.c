@@ -7947,19 +7947,15 @@ static PyObject *PyFFGlyph_getPosSub(PyObject *self, PyObject *args) {
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
 
-    if ( PySequence_Size(args)!=1 ) {
-	PyErr_Format(PyExc_TypeError,"Expected a subtable name");
-return( NULL );
+    if ( !PyArg_ParseTuple(args,"s",&subname) ) {
+        return( NULL );
     }
-    subname = PyBytes_AsString(PySequence_GetItem(args,0));
-    if ( subname==NULL )
-return( NULL );
     if ( *subname=='*' )
 	sub = NULL;
     else {
 	sub = SFFindLookupSubtable(sf,subname);
 	if ( sub==NULL ) {
-	    PyErr_Format(PyExc_KeyError, "Unknown lookup subtable: %s",subname);
+	    PyErr_Format(PyExc_KeyError, "Unknown lookup subtable: '%s'",subname);
 return( NULL );
 	}
     }
@@ -8054,19 +8050,15 @@ static PyObject *PyFFGlyph_removePosSub(PyObject *self, PyObject *args) {
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
 
-    if ( PySequence_Size(args)!=1 ) {
-	PyErr_Format(PyExc_TypeError,"Expected a subtable name");
-return( NULL );
+    if ( !PyArg_ParseTuple(args,"s",&subname) ) {
+        return( NULL );
     }
-    subname = PyBytes_AsString(PySequence_GetItem(args,0));
-    if ( subname==NULL )
-return( NULL );
     if ( *subname=='*' )
 	sub = NULL;
     else {
 	sub = SFFindLookupSubtable(sf,subname);
 	if ( sub==NULL ) {
-	    PyErr_Format(PyExc_KeyError, "Unknown lookup subtable: %s",subname);
+	    PyErr_Format(PyExc_KeyError, "Unknown lookup subtable: '%s'",subname);
 return( NULL );
 	}
     }
