@@ -1225,7 +1225,6 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
 	/* Apple doesn't support composite bitmaps ( EBDT formats 8 and 9) */
 	for ( j=0; j < at->gi.gcnt; ++j ) if ( at->gi.bygid[j] >= 0 && at->gi.bygid[j] < bdf->glyphcnt && ( bc = bdf->glyphs[at->gi.bygid[j]] ) != NULL )
             BCPrepareForOutput( bc,at->applebitmaps );
-	    BCPrepareForOutput( bc,at->applebitmaps );
 	bl = BDFAddDefaultGlyphs(bdf, at->format);
 	cur = ttfdumpstrikelocs(at->bloc,at->bdat,bdf,bl,&at->gi);
 	BDFCleanupDefaultGlyphs(bdf);
