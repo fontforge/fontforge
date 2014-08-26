@@ -1840,13 +1840,13 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 
     // We track the last splineset so that we can add to the end of the chain.
     SplineSet *last = sc->layers[layerdest].splines;
-    while (last != NULL) last = last->next;
+    while (last != NULL && last->next != NULL) last = last->next;
     // We track the last anchor point.
     AnchorPoint *lastap = sc->anchor;
-    while (lastap != NULL) lastap = lastap->next;
+    while (lastap != NULL && lastap->next != NULL) lastap = lastap->next;
     // We track the last reference.
     RefChar *lastref = sc->layers[layerdest].refs;
-    while (lastref != NULL) lastref = lastref->next;
+    while (lastref != NULL && lastref->next != NULL) lastref = lastref->next;
 
     for ( kids = glyph->children; kids!=NULL; kids=kids->next ) {
 	if ( xmlStrcmp(kids->name,(const xmlChar *) "advance")==0 ) {
@@ -1902,7 +1902,6 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 				if ( yo!=NULL )
 					r->transform[5] = strtod(yo,NULL);
 
-				sc->layers[layerdest].refs = r;
 				if ( lastref==NULL ) {
 				  // If there are no existing references, we point the main spline reference to this one.
 				  sc->layers[layerdest].refs = r;
