@@ -12179,7 +12179,7 @@ static int PyFF_Font_set_size_feature(PyFF_Font *self,PyObject *value,
     if ( CheckIfFontClosed(self) )
 return (-1);
     sf = self->fv->sf;
-    if ( value==NULL ) {
+    if ( value==NULL || value==Py_None ) {
 	sf->design_size = 0;
 	/* Setting the design size to zero means there will be no 'size' feature in the output */
 return( 0 );
@@ -12204,14 +12204,16 @@ return( -1 );
 return( 0 );
     }
 
-    if ( !PyArg_ParseTuple(value,"dddiO", &temp, &bot, &top, &id, &names ))
+    if ( !PyArg_ParseTuple(value,"dddiO", &temp, &bot, &top, &id, &names )) {
+        PyErr_Format(PyExc_TypeError,"Expecting 1 or 5 arguments");
 return( -1 );
+    }
     sf->design_size = rint(10.0*temp);
     sf->design_range_bottom = rint(10.0*bot);
     sf->design_range_top = rint(10.0*top);
     sf->fontstyle_id = id;
 
-    if ( !PySequence_Check(names)) {
+    if ( !PyTuple_Check(names) && !PyList_Check(names)) {
 	PyErr_Format(PyExc_TypeError,"Final argument must be a tuple of tuples");
 return( -1 );
     }
@@ -12221,12 +12223,8 @@ return( -1 );
 	PyObject *val;
 	int lang;
 
-	if ( !PySequence_Check(subtuple)) {
-	    PyErr_Format(PyExc_TypeError, "Value must be a tuple" );
-	    OtfNameListFree(head);
-return( -1 );
-	}
-	if ( PySequence_Size(subtuple) != 2 ) {
+        if ( (!PyTuple_Check(subtuple) && !PyList_Check(subtuple)) ||
+	         (PySequence_Size(subtuple) != 2) ) { 
 	    PyErr_Format(PyExc_TypeError, "Value must be a tuple of a language name and string" );
 	    OtfNameListFree(head);
 return( -1 );
@@ -12237,25 +12235,35 @@ return( -1 );
 	    PYGETSTR(val, lang_str, -1);
 	    lang = FlagsFromString(lang_str,sfnt_name_mslangs,"language");
 	    ENDPYGETSTR();
+            Py_DECREF(val);
 	    if ( lang==FLAG_UNKNOWN ) {
-	    OtfNameListFree(head);
+                OtfNameListFree(head);
 return( -1 );
 	    }
-	} else if ( PyInt_Check(val))
+	} else if ( PyInt_Check(val)) {
 	    lang = PyInt_AsLong(val);
-	else {
+            Py_DECREF(val);
+        } else {
+            Py_DECREF(val);
 	    PyErr_Format(PyExc_TypeError, "Language must be a string or an integer");
 	    OtfNameListFree(head);
 return( -1 );
 	}
-
-	string = PyBytes_AsString(PySequence_GetItem(subtuple,1));
-	if ( string==NULL ) {
+	val = PySequence_GetItem(subtuple,1);
+	if ( STRING_CHECK(val) ) {
+	    char *other_str;
+	    PYGETSTR(val, other_str, -1);
+	    string = copy(other_str);
+	    ENDPYGETSTR();
+            Py_DECREF(val);
+	} else {
+            Py_DECREF(val);
+	    PyErr_Format(PyExc_TypeError, "Name must be a string");
 	    OtfNameListFree(head);
-return( -1 );
+            return( -1 );
 	}
 	cur = chunkalloc(sizeof( struct otfname ));
-	cur->name = copy(string);
+	cur->name = string;
 	cur->lang = lang;
 	cur->next = NULL;
 	if ( head==NULL )
