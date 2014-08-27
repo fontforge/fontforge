@@ -6347,15 +6347,19 @@ return( Py_BuildValue("s", glyphclasses[self->sc->glyph_class].name ));
 
 static int PyFF_Glyph_set_glyphclass(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int gc;
-    char *str = PyBytes_AsString(value);
+    char *glyphclassname;
 
-    if ( str==NULL )
-return( -1 );
-    gc = FlagsFromString(str,glyphclasses,"glyph class");
+    if ( !STRING_CHECK(value)) {
+	PyErr_Format(PyExc_TypeError,"Expected glyph class name string");
+        return( -1 );
+    }
+    PYGETSTR(value, glyphclassname, -1);
+    gc = FlagsFromString(glyphclassname,glyphclasses,"glyph class");
+    ENDPYGETSTR();
     if ( gc==FLAG_UNKNOWN )
-return( -1 );
+        return( -1 );
     self->sc->glyph_class = gc;
-return( 0 );
+    return( 0 );
 }
 
 static PyObject *PyFF_Glyph_get_foreground(PyFF_Glyph *self, void *UNUSED(closure)) {
