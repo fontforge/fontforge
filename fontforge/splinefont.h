@@ -2326,6 +2326,7 @@ extern void SplineFontQuickConservativeBounds(SplineFont *sf,DBounds *b);
 extern void SplinePointCategorize(SplinePoint *sp);
 extern int SplinePointIsACorner(SplinePoint *sp);
 extern void SPLCategorizePoints(SplinePointList *spl);
+extern void SPLCategorizePointsKeepCorners(SplinePointList *spl);
 extern void SCCategorizePoints(SplineChar *sc);
 extern SplinePointList *SplinePointListCopy1(const SplinePointList *spl);
 extern SplinePointList *SplinePointListCopy(const SplinePointList *base);

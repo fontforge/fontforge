@@ -1121,6 +1121,33 @@ void SPLCategorizePoints(SplinePointList *spl) {
     }
 }
 
+void SPLCategorizePointsKeepCorners(SplinePointList *spl) {
+    // It's important when round-tripping U. F. O. data that we keep corners as corners and non-corners as non-corners.
+    Spline *spline, *first, *last=NULL;
+    int old_type;
+
+    for ( ; spl!=NULL; spl = spl->next ) {
+	first = NULL;
+	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+	    // If it is a corner, we leave it as a corner.
+	    if ((old_type = spline->from->pointtype) != pt_corner) {
+	      SplinePointCategorize(spline->from);
+	      // If it was not a corner, we do not let it change to a corner.
+	      if (spline->from->pointtype == pt_corner) spline->from->pointtype = old_type;
+	    }
+	    last = spline;
+	    if ( first==NULL ) first = spline;
+	}
+	if ( spline==NULL && last!=NULL )
+	    // If it is a corner, we leave it as a corner.
+	    if ((old_type = last->to->pointtype) != pt_corner) {
+	      SplinePointCategorize(last->to);
+	      // If it was not a corner, we do not let it change to a corner.
+	      if (last->to->pointtype == pt_corner) last->to->pointtype = old_type;
+	    }
+    }
+}
+
 void SCCategorizePoints(SplineChar *sc) {
     int i;
     for ( i=ly_fore; i<sc->layer_cnt; ++i )

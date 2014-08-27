@@ -2233,7 +2233,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 	}
     }
     xmlFreeDoc(doc);
-    SPLCategorizePoints(sc->layers[layerdest].splines);
+    SPLCategorizePointsKeepCorners(sc->layers[layerdest].splines);
 return( sc );
 }
 
