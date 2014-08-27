@@ -1143,7 +1143,7 @@ return( ret );
 GList_Glib* closingFunctionList = 0;
 
 static PyObject *PyFF_onAppClosing(PyObject *self, PyObject *args) {
-    int i, cnt;
+    int cnt;
 
     cnt = PyTuple_Size(args);
     printf("PyFF_onAppClosing() cnt:%d\n", cnt );
@@ -2939,7 +2939,7 @@ return( pt_tuple );
 
 static PyObject *PyFFContour_draw(PyFF_Contour *self, PyObject *args) {
     PyObject *pen, *tuple;
-    PyFF_Point **points, **freeme=NULL;
+    PyFF_Point **points;
     int i, start, off, last, j;
 
     if ( !PyArg_ParseTuple(args,"O", &pen ) )
