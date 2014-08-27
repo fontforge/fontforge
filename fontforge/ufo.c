@@ -2259,14 +2259,15 @@ static void UFORefFixup(SplineFont *sf, SplineChar *sc, int layer ) {
     prev = NULL;
 	// For each reference, attempt to locate the real splinechar matching the name stored in the fake splinechar.
 	// Free the fake splinechar afterwards.
-    for ( r=sc->layers[layer].refs; r!=NULL; r=r->next ) {
+    r=sc->layers[layer].refs;
+    while ( r!=NULL ) {
 		if (r->sc->name == NULL || strcmp(r->sc->name, "") == 0) {
 			LogError(_("There's a reference to a glyph with no name."));
-			prev = r; continue;
+			prev = r; r = r->next; continue;
 		}
 		if (r->sc->ticked) {
 		  // We've already fixed this one.
-		  prev = r; continue;
+		  prev = r; r = r->next; continue;
 		}
 		rsc = SFGetChar(sf,-1, r->sc->name);
 		if ( rsc==NULL || rsc->name == NULL || strcmp(rsc->name,"") == 0 ) {
@@ -2277,12 +2278,11 @@ static void UFORefFixup(SplineFont *sf, SplineChar *sc, int layer ) {
 			SplineCharFree(r->sc); // Delete the fake glyph.
 			r->sc = NULL;
 			// Elide r from the list and free it.
-			if ( prev==NULL )
-			sc->layers[ly_fore].refs = r->next;
-			else
-			prev->next = r->next;
+			if ( prev==NULL ) sc->layers[layer].refs = r->next;
+			else prev->next = r->next;
 			RefCharFree(r);
-			r = prev;
+			if ( prev==NULL ) r = sc->layers[layer].refs;
+			else r = prev->next;
 		} else {
 			UFORefFixup(sf,rsc, layer);
 			if (r->sc->layer_cnt > 0) {
@@ -2290,9 +2290,9 @@ static void UFORefFixup(SplineFont *sf, SplineChar *sc, int layer ) {
 			}
 			SplineCharFree(r->sc);
 			r->sc = rsc;
-			SCReinstanciateRefChar(sc,r,ly_fore);
+			SCReinstanciateRefChar(sc,r,layer);
+			prev = r; r = r->next;
 		}
-		prev = r;
     }
 }
 
