@@ -1716,6 +1716,7 @@ struct pfminfo {		/* A misnomer now. OS/2 info would be more accurate, but that'
     int16 os2_subxsize, os2_subysize, os2_subxoff, os2_subyoff;
     int16 os2_supxsize, os2_supysize, os2_supxoff, os2_supyoff;
     int16 os2_strikeysize, os2_strikeypos;
+    int16 os2_capheight, os2_xheight;
     char os2_vendor[4];
     int16 os2_family_class;
     uint32 codepages[2];

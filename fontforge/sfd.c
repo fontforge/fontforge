@@ -2298,6 +2298,8 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	fprintf(sfd, "OS2StrikeYSize: %d\n", sf->pfminfo.os2_strikeysize );
 	fprintf(sfd, "OS2StrikeYPos: %d\n", sf->pfminfo.os2_strikeypos );
     }
+    fprintf(sfd, "OS2CapHeight: %d\n", sf->pfminfo.os2_capheight );
+    fprintf(sfd, "OS2XHeight: %d\n", sf->pfminfo.os2_xheight );
     if ( sf->pfminfo.os2_family_class!=0 )
 	fprintf(sfd, "OS2FamilyClass: %d\n", sf->pfminfo.os2_family_class );
     if ( sf->pfminfo.os2_vendor[0]!='\0' ) {
@@ -7610,6 +7612,14 @@ bool SFD_GetFontMetaData( FILE *sfd,
     else if ( strmatch(tok,"OS2StrikeYPos:")==0 )
     {
 	getsint(sfd,&sf->pfminfo.os2_strikeypos);
+    }
+    else if ( strmatch(tok,"OS2CapHeight:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_capheight);
+    }
+    else if ( strmatch(tok,"OS2XHeight:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_xheight);
     }
     else if ( strmatch(tok,"OS2FamilyClass:")==0 )
     {

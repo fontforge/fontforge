@@ -11528,6 +11528,8 @@ ff_gs_os2int2(os2_supysize)
 ff_gs_os2int2(os2_supyoff)
 ff_gs_os2int2(os2_strikeysize)
 ff_gs_os2int2(os2_strikeypos)
+ff_gs_os2int2(os2_capheight)
+ff_gs_os2int2(os2_xheight)
 ff_gs_os2int2(os2_family_class)
 
 ff_gs_os2bit(winascent_add)
@@ -13074,6 +13076,12 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {(char *)"os2_strikeypos",
      (getter)PyFF_Font_get_OS2_os2_strikeypos, (setter)PyFF_Font_set_OS2_os2_strikeypos,
      (char *)"OS/2 Strikethrough YPosition", NULL},
+    {(char *)"os2_capheight",
+     (getter)PyFF_Font_get_OS2_os2_capheight, (setter)PyFF_Font_set_OS2_os2_capheight,
+     (char *)"OS/2 Capital Height", NULL},
+    {(char *)"os2_xheight",
+     (getter)PyFF_Font_get_OS2_os2_xheight, (setter)PyFF_Font_set_OS2_os2_xheight,
+     (char *)"OS/2 x Height", NULL},
     {(char *)"os2_family_class",
      (getter)PyFF_Font_get_OS2_os2_family_class, (setter)PyFF_Font_set_OS2_os2_family_class,
      (char *)"OS/2 Family Class", NULL},

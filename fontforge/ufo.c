@@ -875,12 +875,18 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
     PListAddString(dictnode,"copyright",sf->copyright);
     PListAddNameString(dictnode,"trademark",sf,ttf_trademark);
     PListAddInteger(dictnode,"unitsPerEm",sf->ascent+sf->descent);
+// We decided that it would be more helpful to round-trip the U. F. O. data.
+#if 0
     test = SFXHeight(sf,layer,true);
     if ( test>0 )
 	PListAddInteger(dictnode,"xHeight",(int) rint(test));
     test = SFCapHeight(sf,layer,true);
     if ( test>0 )
 	PListAddInteger(dictnode,"capHeight",(int) rint(test));
+#else
+    if (sf->pfminfo.os2_capheight) PListAddInteger(dictnode,"capHeight",sf->pfminfo.os2_capheight);
+    if (sf->pfminfo.os2_xheight) PListAddInteger(dictnode,"xHeight",sf->pfminfo.os2_xheight);
+#endif // 0
     if ( sf->invalidem ) {
 	PListAddIntegerOrReal(dictnode,"ascender",sf->ufo_ascent);
 	PListAddIntegerOrReal(dictnode,"descender",sf->ufo_descent);
@@ -2793,6 +2799,10 @@ return( NULL );
 		if ( *end!='\0' ) ds = -1;
 		else sf->ufo_descent = -ds;
 		free(valname);
+	    } else if ( xmlStrcmp(keyname,(xmlChar *) "xHeight")==0 ) {
+		sf->pfminfo.os2_xheight = strtol((char *) valname,&end,10);
+	    } else if ( xmlStrcmp(keyname,(xmlChar *) "capHeight")==0 ) {
+		sf->pfminfo.os2_capheight = strtol((char *) valname,&end,10);
 	    } else if ( xmlStrcmp(keyname,(xmlChar *) "italicAngle")==0 ||
 		    xmlStrcmp(keyname,(xmlChar *) "postscriptSlantAngle")==0 ) {
 		sf->italicangle = strtod((char *) valname,&end);
