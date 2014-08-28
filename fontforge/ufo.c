@@ -487,8 +487,11 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
 	    refs = malloc(cnt*sizeof(RefChar *));
 	    for ( cnt=0, ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( SCWorthOutputting(ref->sc))
 		refs[cnt++] = ref;
+	    // It seems that sorting these breaks something.
+#if 0
 	    if ( cnt>1 )
 		qsort(refs,cnt,sizeof(RefChar *),refcomp);
+#endif // 0
 	    for ( i=0; i<cnt; ++i ) {
 		ref = refs[i];
     xmlNodePtr componentxml = xmlNewChild(outlinexml, NULL, BAD_CAST "component", NULL);
