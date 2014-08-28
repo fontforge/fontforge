@@ -550,7 +550,7 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
 		  xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->me.y);
 		  xmlSetPropPrintf(pointxml, BAD_CAST "type", BAD_CAST (
 		  sp->prev==NULL        ? "move"   :
-					sp->prev->knownlinear ? "line"   :
+					sp->noprevcp ? "line"   :
 					isquad 		      ? "qcurve" :
 					"curve"));
 		  if (sp->pointtype != pt_corner) xmlSetProp(pointxml, BAD_CAST "smooth", BAD_CAST "yes");
@@ -563,14 +563,14 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
 		if ( sp->next==NULL )
 	    	  break;
 		// We write control points.
-		if ( !sp->next->knownlinear ) {
+		if ( !sp->nonextcp ) {
                           xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
                           xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)sp->nextcp.x);
                           xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->nextcp.y);
 		    	  // "<point x=\"%g\" y=\"%g\"/>\n" (double)sp->nextcp.x (double)sp->nextcp.y
 		}
 		sp = sp->next->to;
-		if ( !isquad && !sp->prev->knownlinear ) {
+		if ( !isquad && !sp->noprevcp ) {
                           xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
                           xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)sp->prevcp.x);
                           xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->prevcp.y);
