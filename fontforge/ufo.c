@@ -2824,9 +2824,9 @@ return( NULL );
 		else sf->ufo_descent = -ds;
 		free(valname);
 	    } else if ( xmlStrcmp(keyname,(xmlChar *) "xHeight")==0 ) {
-		sf->pfminfo.os2_xheight = strtol((char *) valname,&end,10);
+		sf->pfminfo.os2_xheight = strtol((char *) valname,&end,10); free(valname);
 	    } else if ( xmlStrcmp(keyname,(xmlChar *) "capHeight")==0 ) {
-		sf->pfminfo.os2_capheight = strtol((char *) valname,&end,10);
+		sf->pfminfo.os2_capheight = strtol((char *) valname,&end,10); free(valname);
 	    } else if ( xmlStrcmp(keyname,(xmlChar *) "italicAngle")==0 ||
 		    xmlStrcmp(keyname,(xmlChar *) "postscriptSlantAngle")==0 ) {
 		sf->italicangle = strtod((char *) valname,&end);
