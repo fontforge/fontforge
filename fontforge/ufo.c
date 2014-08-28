@@ -1023,9 +1023,8 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 	PListAddPrivateThing(dictnode, "BlueFuzz", sf->private, "integer");
 	PListAddPrivateThing(dictnode, "BlueShift", sf->private, "integer");
 	PListAddPrivateThing(dictnode, "BlueScale", sf->private, "real");
-	if ( (pt=PSDictHasEntry(sf->private,"ForceBold"))!=NULL &&
-		strstr(pt,"true")!=NULL )
-	    PListAddBoolean(dictnode, "postscriptForceBold", true );
+	if ( (pt=PSDictHasEntry(sf->private,"ForceBold"))!=NULL )
+	    PListAddBoolean(dictnode, "postscriptForceBold", strstr(pt,"true")!=NULL ? true : false );
     }
     if ( sf->fondname!=NULL )
     PListAddString(dictnode,"macintoshFONDName",sf->fondname);
