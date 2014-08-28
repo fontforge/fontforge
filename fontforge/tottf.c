@@ -2140,7 +2140,7 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
     dumpsid(cfff,at,sf->version,0);
     dumpsid(cfff,at,sf->copyright,1);
     dumpsid(cfff,at,sf->fullname?sf->fullname:sf->fontname,2);
-    dumpsid(cfff,at,sf->familyname,3);
+    dumpsid(cfff,at,sf->pfminfo.os2_family_name?sf->pfminfo.os2_family_name:sf->familyname,3);
     dumpsid(cfff,at,sf->weight,4);
     if ( at->gi.fixed_width>0 ) dumpintoper(cfff,1,(12<<8)|1);
     if ( sf->italicangle!=0 ) dumpdbloper(cfff,sf->italicangle,(12<<8)|2);
@@ -2256,7 +2256,7 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
 
     dumpsid(cfff,at,sf->copyright,1);
     dumpsid(cfff,at,sf->fullname?sf->fullname:sf->fontname,2);
-    dumpsid(cfff,at,sf->familyname,3);
+    dumpsid(cfff,at,sf->pfminfo.os2_family_name?sf->pfminfo.os2_family_name:sf->familyname,3);
     dumpsid(cfff,at,sf->weight,4);
     /* FontMatrix  (identity here, real ones in sub fonts)*/
     /* Actually there is no fontmatrix in the adobe cid font I'm looking at */
@@ -3783,7 +3783,7 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     if ( dummy->names[ttf_copyright]==NULL || *dummy->names[ttf_copyright]=='\0' )
 	dummy->names[ttf_copyright] = utf8_verify_copy(sf->copyright);
     if ( dummy->names[ttf_family]==NULL || *dummy->names[ttf_family]=='\0' )
-	dummy->names[ttf_family] = utf8_verify_copy(sf->familyname);
+	dummy->names[ttf_family] = utf8_verify_copy(sf->pfminfo.os2_family_name?sf->pfminfo.os2_family_name:sf->familyname);
     if ( dummy->names[ttf_subfamily]==NULL || *dummy->names[ttf_subfamily]=='\0' )
 	dummy->names[ttf_subfamily] = utf8_verify_copy(SFGetModifiers(sf));
     if ( dummy->names[ttf_uniqueid]==NULL || *dummy->names[ttf_uniqueid]=='\0' ) {

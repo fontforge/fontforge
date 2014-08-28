@@ -2179,6 +2179,12 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	fprintf(sfd, "FullName: %s\n", sf->fullname );
     if ( sf->familyname!=NULL )
 	fprintf(sfd, "FamilyName: %s\n", sf->familyname );
+    if ( sf->pfminfo.os2_family_name ) {
+	fprintf(sfd, "OS2FamilyName: "); SFDDumpUTF7Str(sfd,sf->pfminfo.os2_family_name); putc('\n', sfd);
+    }
+    if ( sf->pfminfo.os2_style_name ) {
+	fprintf(sfd, "OS2StyleName: "); SFDDumpUTF7Str(sfd,sf->pfminfo.os2_style_name ); putc('\n', sfd);
+    }
     if ( sf->weight!=NULL )
 	fprintf(sfd, "Weight: %s\n", sf->weight );
     if ( sf->copyright!=NULL )
@@ -7370,6 +7376,14 @@ bool SFD_GetFontMetaData( FILE *sfd,
     {
 	geteol(sfd,val);
 	sf->familyname = copy(val);
+    }
+    else if ( strmatch(tok,"OS2FamilyName:")==0 )
+    {
+	if (!sf->pfminfo.os2_family_name) sf->pfminfo.os2_family_name = SFDReadUTF7Str(sfd);
+    }
+    else if ( strmatch(tok,"OS2StyleName:")==0 )
+    {
+	if (!sf->pfminfo.os2_style_name) sf->pfminfo.os2_style_name = SFDReadUTF7Str(sfd);
     }
     else if ( strmatch(tok,"DefaultBaseFilename:")==0 )
     {

@@ -3640,7 +3640,8 @@ static SplineFont *cffsffillup(struct topdicts *subdict, char **strings,
 	sf->copyright = utf8_verify_copy(getsid(subdict->copyright,strings,scnt,info));
     else
 	sf->copyright = utf8_verify_copy(getsid(subdict->notice,strings,scnt,info));
-    sf->familyname = utf8_verify_copy(getsid(subdict->familyname,strings,scnt,info));
+    sf->pfminfo.os2_family_name = utf8_verify_copy(getsid(subdict->familyname,strings,scnt,info));
+    sf->familyname = copy(sf->pfminfo.os2_family_name);
     sf->fullname = utf8_verify_copy(getsid(subdict->fullname,strings,scnt,info));
     sf->weight = utf8_verify_copy(getsid(subdict->weight,strings,scnt,info));
     sf->version = utf8_verify_copy(getsid(subdict->version,strings,scnt,info));
@@ -5699,6 +5700,8 @@ static SplineFont *SFFromTuple(SplineFont *basesf,struct variations *v,int tuple
 
     sf->fontname = MMMakeMasterFontname(mm,tuple,&sf->fullname);
     sf->familyname = copy(basesf->familyname);
+    if ( sf->pfminfo.os2_family_name ) sf->pfminfo.os2_family_name = copy(basesf->pfminfo.os2_family_name);
+    if ( sf->pfminfo.os2_style_name ) sf->pfminfo.os2_style_name = copy(basesf->pfminfo.os2_style_name);
     sf->weight = copy("All");
     sf->italicangle = basesf->italicangle;
     sf->strokewidth = basesf->strokewidth;
@@ -5916,6 +5919,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->fontname = info->fontname;
     sf->fullname = info->fullname;
     sf->familyname = info->familyname;
+    sf->pfminfo.os2_family_name = info->familyname;
     sf->chosenname = info->chosenname;
     sf->onlybitmaps = info->onlystrikes;
     sf->layers[ly_fore].order2 = info->to_order2;
@@ -5971,6 +5975,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	    sf->fontname = EnforcePostScriptName(sf->familyname);
 	if ( sf->fontname==NULL ) sf->fontname = EnforcePostScriptName("UntitledTTF");
     }
+    if ( sf->familyname==NULL && sf->pfminfo.os2_family_name != NULL ) sf->familyname = copy( sf->pfminfo.os2_family_name );
     if ( sf->fullname==NULL ) sf->fullname = copy( sf->fontname );
     if ( sf->familyname==NULL ) sf->familyname = copy( sf->fontname );
     if ( sf->weight==NULL ) {

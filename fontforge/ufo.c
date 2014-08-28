@@ -864,6 +864,8 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 /* Same keys in both formats */
     PListAddString(dictnode,"familyName",sf->familyname_with_timestamp ? sf->familyname_with_timestamp : sf->familyname);
     PListAddString(dictnode,"styleName",SFGetModifiers(sf));
+    if (sf->pfminfo.os2_family_name != NULL) PListAddString(dictnode,"styleMapFamilyName", sf->pfminfo.os2_family_name);
+    if (sf->pfminfo.os2_style_name != NULL) PListAddString(dictnode,"styleMapStyleName", sf->pfminfo.os2_style_name);
     {
       // We attempt to get numeric major and minor versions for U. F. O. out of the FontForge version string.
       int versionMajor = -1;
@@ -2603,23 +2605,45 @@ return( NULL );
 	    keyname = xmlNodeListGetString(doc,keys->children,true);
 	    valname = xmlNodeListGetString(doc,value->children,true);
 	    keys = value;
-	    if ( xmlStrcmp(keyname,(xmlChar *) "familyName")==0 )
-		sf->familyname = (char *) valname;
-	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleName")==0 )
-		stylename = (char *) valname;
+	    if ( xmlStrcmp(keyname,(xmlChar *) "familyName")==0 ) {
+		if (sf->familyname == NULL) sf->familyname = (char *) valname;
+		else free(valname);
+	    }
+	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleName")==0 ) {
+		if (stylename == NULL) stylename = (char *) valname;
+		else free(valname);
+	    }
+	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleMapFamilyName")==0 ) {
+		if (sf->pfminfo.os2_family_name == NULL) sf->pfminfo.os2_family_name = (char *) valname;
+		else free(valname);
+	    }
+	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleMapStyleName")==0 ) {
+		if (sf->pfminfo.os2_style_name == NULL) sf->pfminfo.os2_style_name = (char *) valname;
+		else free(valname);
+	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "fullName")==0 ||
-		    xmlStrcmp(keyname,(xmlChar *) "postscriptFullName")==0 )
-		sf->fullname = (char *) valname;
+		    xmlStrcmp(keyname,(xmlChar *) "postscriptFullName")==0 ) {
+		if (sf->fullname == NULL) sf->fullname = (char *) valname;
+		else free(valname);
+	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "fontName")==0 ||
-		    xmlStrcmp(keyname,(xmlChar *) "postscriptFontName")==0 )
-		sf->fontname = (char *) valname;
+		    xmlStrcmp(keyname,(xmlChar *) "postscriptFontName")==0 ) {
+		if (sf->fontname == NULL) sf->fontname = (char *) valname;
+		else free(valname);
+	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "weightName")==0 ||
-		    xmlStrcmp(keyname,(xmlChar *) "postscriptWeightName")==0 )
-		sf->weight = (char *) valname;
-	    else if ( xmlStrcmp(keyname,(xmlChar *) "note")==0 )
-		sf->comments = (char *) valname;
-	    else if ( xmlStrcmp(keyname,(xmlChar *) "copyright")==0 )
-		sf->copyright = (char *) valname;
+		    xmlStrcmp(keyname,(xmlChar *) "postscriptWeightName")==0 ) {
+		if (sf->weight == NULL) sf->weight = (char *) valname;
+		else free(valname);
+	    }
+	    else if ( xmlStrcmp(keyname,(xmlChar *) "note")==0 ) {
+		if (sf->comments == NULL) sf->comments = (char *) valname;
+		else free(valname);
+	    }
+	    else if ( xmlStrcmp(keyname,(xmlChar *) "copyright")==0 ) {
+		if (sf->copyright == NULL) sf->copyright = (char *) valname;
+		else free(valname);
+	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "trademark")==0 )
 		UFOAddName(sf,(char *) valname,ttf_trademark);
 	    else if ( strncmp((char *) keyname,"openTypeName",12)==0 ) {
@@ -2641,9 +2665,9 @@ return( NULL );
 		    UFOAddName(sf,(char *) valname,ttf_uniqueid);
 		else if ( xmlStrcmp(keyname+12,(xmlChar *) "Description")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_descriptor);
-		else if ( xmlStrcmp(keyname+12,(xmlChar *) "PreferedFamilyName")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "PreferredFamilyName")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_preffamilyname);
-		else if ( xmlStrcmp(keyname+12,(xmlChar *) "PreferedSubfamilyName")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "PreferredSubfamilyName")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_prefmodifiers);
 		else if ( xmlStrcmp(keyname+12,(xmlChar *) "CompatibleFullName")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_compatfull);
@@ -2850,8 +2874,10 @@ return( NULL );
 	else
 	    sf->fullname = copy(sf->fontname);
     }
-    if ( sf->familyname==NULL )
-	sf->familyname = copy(sf->fontname);
+    if ( sf->familyname==NULL ) {
+	if (sf->pfminfo.os2_family_name != NULL) sf->familyname=copy(sf->pfminfo.os2_family_name);
+	else sf->familyname = copy(sf->fontname);
+    }
     free(stylename);
     if ( sf->weight==NULL )
 	sf->weight = copy("Regular");
