@@ -249,7 +249,7 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 static void zeromq_subscriber_fd_callback(int zeromq_fd, void* datas )
 {
     cloneclient_t* cc = (cloneclient_t*)datas;
-    
+
 //    printf("zeromq_subscriber_fd_callback(1)\n");
 
     int opt = 0;
@@ -419,6 +419,7 @@ static void collabclient_roundTripTimer( void* ccvp )
     }
 }
 
+#endif
 
 
 typedef struct _CollabSessionCallbacks CollabSessionCallbacks;
@@ -487,12 +488,12 @@ void collabclient_notifySessionLeaving( cloneclient_t *cc, FontViewBase* fv )
 void collabclient_addSessionJoiningCallback( collabclient_notification_cb func )
 {
     void* data = 0;
-    g_signal_connect( getSessionCallbacksObject(), "joining", func, data );
+    g_signal_connect( getSessionCallbacksObject(), "joining", (GCallback)func, data );
 }
 void collabclient_addSessionLeavingCallback( collabclient_notification_cb func )
 {
     void* data = 0;
-    g_signal_connect( getSessionCallbacksObject(), "leaving", func, data );
+    g_signal_connect( getSessionCallbacksObject(), "leaving", (GCallback)func, data );
 }
 
 
@@ -513,8 +514,6 @@ void collabclient_sessionDisconnect( FontViewBase* fv )
 
 #endif
 }
-
-#endif
 
 #ifdef BUILD_COLLAB
 

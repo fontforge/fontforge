@@ -165,6 +165,20 @@ typedef struct {
 
 } cloneclient_t;
 
+#else
+
+/*
+ * have this type around to allow functions to exist which will only perform
+ * work when HAVE_COLLAB is defined. ie, this is a stub struct so that cloneclient_t
+ * can be used in function arguments.
+ */
+typedef struct {
+    int magic_number;    //  Magic number to test if the pointer is likely valid
+    
+    int WARNING_i_am_a_stub_do_not_delete_me;
+    
+} cloneclient_t;
+
 
 #endif // build_collab
 #endif // already_included_ff_collab_client_priv_h

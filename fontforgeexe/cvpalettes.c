@@ -203,10 +203,8 @@ static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *),
     if ( palettes_docked )
 	ReparentFixup(gw,v,0,pos->y,pos->width,pos->height);
 
-#ifdef BUILD_COLLAB
     collabclient_addSessionJoiningCallback( onCollabSessionStateChanged );
     collabclient_addSessionLeavingCallback( onCollabSessionStateChanged );
-#endif
     
 return( gw );
 }

@@ -943,14 +943,13 @@ static void _MenuExit(void *UNUSED(junk)) {
 
     FontView *fv, *next;
 
-#if BUILD_COLLAB
     if( collabclient_haveLocalServer() )
     {
 	AskAndMaybeCloseLocalCollabServers();
     }
 
     python_call_onClosingFunctions();
-#endif
+
 
     LastFonts_Save();
     for ( fv = fv_list; fv!=NULL; fv = next )
@@ -5717,6 +5716,9 @@ static void AskAndMaybeCloseLocalCollabServers()
     char* choices[101];
     collabclient_trimOldBeaconInformation( 0 );
     GHashTable* peers = collabclient_getServersFromBeaconInfomration();
+    if( !peers )
+	return;
+    
     int localOnly = 1;
     int max = collab_MakeChoicesArray( peers, choices, choices_sz, localOnly );
     if( !max )
@@ -5742,12 +5744,10 @@ static void AskAndMaybeCloseLocalCollabServers()
 	    if( sel[i] )
 	    {
 		FontViewBase* fv = FontViewFind( FontViewFind_byCollabBasePort, (void*)(intptr_t)port );
-#ifdef BUILD_COLLAB
 		if( fv )
 		    collabclient_sessionDisconnect( fv );
 		printf("CLOSING port:%d fv:%p\n", port, fv );
 		collabclient_closeLocalServer( port );
-#endif // BUILD_COLLAB
 	    }
 	}
 	else
@@ -5761,7 +5761,6 @@ static void AskAndMaybeCloseLocalCollabServers()
 	collabclient_closeAllLocalServersForce();
 }
 
-#ifdef BUILD_COLLAB
 static void FVMenuCollabCloseLocalServer(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
     AskAndMaybeCloseLocalCollabServers();
@@ -5803,6 +5802,8 @@ static void collablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
 	}
     }
 }
+
+#ifdef BUILD_COLLAB
 
 static GMenuItem2 collablist[] = {
     { { (unichar_t *) N_("_Start Session..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Start Session...|No Shortcut"), NULL, NULL, FVMenuCollabStart, MID_CollabStart },
