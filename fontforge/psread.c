@@ -824,11 +824,6 @@ static int aload(unsigned sp, struct psstack *stack,size_t stacktop, struct garb
 		++sp;
 	    }
 	}
-	if ( sp<stacktop ) {
-	    stack[sp].type = ps_array;
-	    stack[sp].u.dict = dict;
-	    ++sp;
-	}
     }
 return( sp );
 }
