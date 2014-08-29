@@ -1300,7 +1300,7 @@ return( gwwv_ask(_("Use Kerning Class?"),(const char **) yesno,0,1,
 static int MV_ChangeKerning(MetricsView *mv, int which, int offset, int is_diff) {
     SplineChar *sc = mv->glyphs[which].sc;
     SplineChar *psc = mv->glyphs[which-1].sc;
-    KernPair *kp;
+    KernPair *kp = 0;
     KernClass *kc; int index;
     int i;
     struct lookup_subtable *sub = GGadgetGetListItemSelected(mv->subtable_list)->userdata;
@@ -1350,7 +1350,12 @@ return( false );
 	/* If we change the kerning offset, then any pixel corrections*/
 	/*  will no longer apply (they only had meaning with the old  */
 	/*  offset) so free the device table, if any */
+	printf("kp:%p which:%d", kp, which );
+	if( kp )
+	    printf("isdiff:%d kpoff:%d offset:%d", is_diff, kp->off, offset );
+	printf("\n");
 	if ( kp != NULL && ((!is_diff && kp->off!=offset) || ( is_diff && offset!=0)) ) {
+	    printf("AT FREE!!! kp->adjust:%p\n",kp->adjust);
 	    DeviceTableFree(kp->adjust);
 	    kp->adjust = NULL;
 	}
@@ -1358,6 +1363,7 @@ return( false );
 	offset = is_diff && kp != NULL ? kp->off+offset : offset;
 	/* If kern offset has been set to zero by user, then cleanup this kerning pair */
 	if ( kp != NULL && offset == 0 ) {
+	    printf("kp cleanup... kp:%p\n", kp );
 	    KernPair *kpcur, *kpprev;
 	    KernPair **kphead = mv->vertical ? &psc->vkerns : &psc->kerns;
 	    if ( kp == *kphead ) {
@@ -1370,6 +1376,13 @@ return( false );
 		break;
 		    }
 		    kpprev = kpcur;
+		}
+	    }
+
+	    int i = 0;
+	    for( i=0; mv->glyphs[i].sc; i++ ) {
+		if( i!=which && mv->glyphs[i].kp == kp ) {
+		    mv->glyphs[i].kp = 0;
 		}
 	    }
 	    chunkfree( kp,sizeof(KernPair) );
@@ -1475,6 +1488,36 @@ return( false );
 			}
 		    }
 		}
+	    }
+	}
+    }
+
+    printf("kc:%p\n", kc );
+    // refresh other kerning input boxes if they are the same characters
+    static int MV_ChangeKerning_Nested = 0;
+    int refreshOtherPairEntries = true;
+    if( !MV_ChangeKerning_Nested && refreshOtherPairEntries && mv->glyphs[0].sc )
+    {
+	int i = 1;
+	for( ; mv->glyphs[i].sc; i++ )
+	{
+	    printf("%d\n", i);
+	    if( i != which
+		&& sc  == mv->glyphs[i].sc
+		&& psc == mv->glyphs[i-1].sc )
+	    {
+		
+		GGadget *g = mv->perchar[i].kern;
+		unichar_t *end;
+		int val = u_strtol(_GGadgetGetTitle(g),&end,10);
+		printf("%d GOT SAME PAIR1: %d %s\n", i, val, tostr(val));
+
+		MV_ChangeKerning_Nested = 1;
+		int which = (intpt) GGadgetGetUserData(g);
+		printf("%d SETTING which:%d to val:%d\n", i, which, offset );
+		MV_ChangeKerning( mv, which, offset, is_diff );
+		GGadgetSetTitle8( g, tostr(offset) );
+		MV_ChangeKerning_Nested = 0;
 	    }
 	}
     }

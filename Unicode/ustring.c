@@ -1061,3 +1061,16 @@ char* str_replace_all( char* s, char* orig, char* replacement, int free_s )
     return ret;
 }
 
+int toint( char* v )
+{
+    if( !v )
+        return 0;
+    return atoi(v);
+}
+char* tostr( int v )
+{
+    const int bufsz = 100;
+    static char buf[101];
+    snprintf(buf,bufsz,"%d",v);
+    return buf;
+}

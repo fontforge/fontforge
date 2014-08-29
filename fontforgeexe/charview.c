@@ -3541,7 +3541,6 @@ void CVChangeSC( CharView *cv, SplineChar *sc )
     cv->additionalCharsToShowActiveIndex = 0;
     cv->additionalCharsToShow[0] = sc;
     
-
     CVDebugFree(cv->dv);
 
     if ( cv->expandedge != ee_none ) {
@@ -4616,10 +4615,14 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
 	unichar_t *srctxt = GGadgetGetTitle( cv->charselector );
 	TRACE("Switching the active splinechar, so updating the [] in the input box\n");
 	TRACE("INPUT        : %s\n", u_to_c(srctxt));
+	int endsWithSlash = u_endswith( srctxt, c_to_u("/"));
+
 	unichar_t* p = 0;
-	p = Wordlist_selectionClear( sf, map, srctxt );
+	p = Wordlist_selectionClear( sf, map, srctxt );	
 	TRACE("UNSELECTed   : %s\n", u_to_c(p));
 	p = Wordlist_selectionAdd(   sf, map, p, idx );
+	if( endsWithSlash )
+	    uc_strcat( p, "/" );
 	TRACE("NEW SELECTION: %s\n", u_to_c(p));
 	GGadgetSetTitle( cv->charselector, p );
     }
@@ -8922,19 +8925,6 @@ static char* getValueFromUser( CharView *cv, const char* windowTitle, const char
     return ret;
 }
 
-static int toint( char* v )
-{
-    if( !v )
-        return 0;
-    return atoi(v);
-}
-static char* tostr( int v )
-{
-    const int bufsz = 100;
-    static char buf[101];
-    snprintf(buf,bufsz,"%d",v);
-    return buf;
-}
 
 
 static void CVRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e)
@@ -12632,8 +12622,10 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	    int i=0;
 	    unichar_t *ret = GGadgetGetTitle( cv->charselector );
 	    GArray* selected = 0;
-	    WordlistTrimTrailingSingleSlash( ret );
+	    TRACE("TextChanged1 txt:%s\n", u_to_c(ret));
+//	    WordlistTrimTrailingSingleSlash( ret );
 	    ret = WordlistEscapedInputStringToRealStringBasic( sf, ret, &selected );
+	    TRACE("TextChanged2 txt:%s\n", u_to_c(ret));
 	    
 	    const unichar_t *pt, *ept, *tpt;
 	    pt = ret;
