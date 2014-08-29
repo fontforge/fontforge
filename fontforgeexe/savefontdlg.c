@@ -209,11 +209,9 @@ int32 *ParseBitmapSizes(GGadget *g,char *msg,int *err) {
     const unichar_t *val = _GGadgetGetTitle(g), *pt; unichar_t *end, *end2;
     int i;
     int32 *sizes;
-    char oldloc[25];
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    DECLARE_TEMP_LOCALE()
+    SWITCH_TO_C_LOCALE()
 
     *err = false;
     end2 = NULL;
@@ -245,7 +243,7 @@ int32 *ParseBitmapSizes(GGadget *g,char *msg,int *err) {
 	while ( *end==' ' || *end==',' ) ++end;
 	pt = end;
     }
-    setlocale(LC_NUMERIC,oldloc);
+    SWITCH_TO_OLD_LOCALE()
     if ( *err )
 return( NULL );
     sizes[i] = 0;

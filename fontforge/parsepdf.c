@@ -1273,13 +1273,11 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
     DashType dashes[DASH_MAX];
     int dash_offset = 0;
     Entity *ent;
-    char oldloc[25];
     char tokbuf[100];
     const int tokbufsize = 100;
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    DECLARE_TEMP_LOCALE()
+    SWITCH_TO_C_LOCALE()
 
     transform[0] = transform[3] = 1.0;
     transform[1] = transform[2] = transform[4] = transform[5] = 0;
@@ -1587,7 +1585,7 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 	ec->splines = ent;
     }
     ECCategorizePoints(ec);
-    setlocale(LC_NUMERIC,oldloc);
+    SWITCH_TO_OLD_LOCALE()
 }
 
 static SplineChar *pdf_InterpretSC(struct pdfcontext *pc,char *glyphname,
@@ -1998,12 +1996,11 @@ static void pcFree(struct pdfcontext *pc) {
 
 char **NamesReadPDF(char *filename) {
     struct pdfcontext pc;
-    char oldloc[24];
     int i;
     char **list;
 
-    strcpy(oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    DECLARE_TEMP_LOCALE()
+    SWITCH_TO_C_LOCALE()
     memset(&pc,0,sizeof(pc));
     if ( (pc.pdf=fopen(filename,"r"))==NULL )
 	return( NULL );
@@ -2026,7 +2023,7 @@ char **NamesReadPDF(char *filename) {
     list[i]=NULL;
     fclose(pc.pdf);
     pcFree(&pc);
-    setlocale(LC_NUMERIC,oldloc);
+    SWITCH_TO_OLD_LOCALE()
     return( list );
 
 /* if errors, then free memory, close files, and return a NULL */
@@ -2035,7 +2032,7 @@ NamesReadPDFlist_error:
 NamesReadPDF_error:
     pcFree(&pc);
     fclose(pc.pdf);
-    setlocale(LC_NUMERIC,oldloc);
+    SWITCH_TO_OLD_LOCALE()
     return( NULL );
 }
 
@@ -2043,30 +2040,29 @@ SplineFont *_SFReadPdfFont(FILE *pdf,char *filename, enum openflags openflags) {
     char *select_this_font = NULL, *pt;
     struct pdfcontext pc;
     SplineFont *sf = NULL;
-    char oldloc[24];
     int i;
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    DECLARE_TEMP_LOCALE()
+    SWITCH_TO_C_LOCALE()
     memset(&pc,0,sizeof(pc));
     pc.pdf = pdf;
     pc.openflags = openflags;
     if ( (pc.objs = FindObjects(&pc))==NULL ) {
 	LogError( _("Doesn't look like a valid pdf file, couldn't find xref section") );
 	pcFree(&pc);
-	setlocale(LC_NUMERIC,oldloc);
+	SWITCH_TO_OLD_LOCALE()
 return( NULL );
     }
     if ( pc.encrypted ) {
 	LogError( _("This pdf file contains an /Encrypt dictionary, and FontForge does not currently\nsupport pdf encryption" ));
 	pcFree(&pc);
-	setlocale(LC_NUMERIC,oldloc);
+	SWITCH_TO_OLD_LOCALE()
 return( NULL );
     }
     if ( pdf_findfonts(&pc)==0 ) {
 	LogError( _("This pdf file has no fonts"));
 	pcFree(&pc);
-	setlocale(LC_NUMERIC,oldloc);
+	SWITCH_TO_OLD_LOCALE()
 return( NULL );
     }
     // parse the chosen font name
@@ -2104,7 +2100,7 @@ return( NULL );
 	if ( choice!=-1 )
 	    sf = pdf_loadfont(&pc,choice);
     }
-    setlocale(LC_NUMERIC,oldloc);
+    SWITCH_TO_OLD_LOCALE()
     pcFree(&pc);
     free(select_this_font);
 return( sf );
@@ -2131,27 +2127,27 @@ Entity *EntityInterpretPDFPage(FILE *pdf,int select_page) {
     char *ret;
     int choice;
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    DECLARE_TEMP_LOCALE()
+    SWITCH_TO_C_LOCALE()
     memset(&pc,0,sizeof(pc));
     pc.pdf = pdf;
     pc.openflags = 0;
     if ( (pc.objs = FindObjects(&pc))==NULL ) {
 	LogError( _("Doesn't look like a valid pdf file, couldn't find xref section") );
 	pcFree(&pc);
-	setlocale(LC_NUMERIC,oldloc);
+	SWITCH_TO_OLD_LOCALE()
 return( NULL );
     }
     if ( pc.encrypted ) {
 	LogError( _("This pdf file contains an /Encrypt dictionary, and FontForge does not currently\nsupport pdf encryption" ));
 	pcFree(&pc);
-	setlocale(LC_NUMERIC,oldloc);
+	SWITCH_TO_OLD_LOCALE()
 return( NULL );
     }
     if ( pdf_findpages(&pc)==0 ) {
 	LogError( _("This pdf file has no pages"));
 	pcFree(&pc);
-	setlocale(LC_NUMERIC,oldloc);
+	SWITCH_TO_OLD_LOCALE()
 return( NULL );
     }
     if ( pc.pcnt==1 ) {
@@ -2167,19 +2163,19 @@ return( NULL );
 	    ret = ff_ask_string(_("Pick a page"),"1",buffer);
 	    if ( ret==NULL ) {
 		pcFree(&pc);
-		setlocale(LC_NUMERIC,oldloc);
+		SWITCH_TO_OLD_LOCALE()
 return( NULL );
 	    }
 	    choice = strtol(ret,NULL,10)-1;
 	    if ( choice<0 || choice>=pc.pcnt ) {
 		pcFree(&pc);
-		setlocale(LC_NUMERIC,oldloc);
+		SWITCH_TO_OLD_LOCALE()
 return( NULL );
 	    }
 	}
 	ent = pdf_InterpretEntity(&pc,choice);
     }
-    setlocale(LC_NUMERIC,oldloc);
+    SWITCH_TO_OLD_LOCALE()
     pcFree(&pc);
 return( ent );
 }

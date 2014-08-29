@@ -3453,6 +3453,14 @@ extern void debug_printHintInstance( HintInstance* hi, int hin, char* msg );
  */
 extern bool equalWithTolerence( real a, real b, real tolerence );
 
-
+#if 0
+#define DECLARE_TEMP_LOCALE() char oldloc[25];
+#define SWITCH_TO_C_LOCALE() strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 ); oldloc[24]='\0'; setlocale(LC_NUMERIC,"C");
+#define SWITCH_TO_OLD_LOCALE() setlocale(LC_NUMERIC,oldloc);
+#else
+#define DECLARE_TEMP_LOCALE() locale_t tmplocale; locale_t oldlocale;
+#define SWITCH_TO_C_LOCALE() tmplocale = newlocale(LC_NUMERIC_MASK, "C", NULL); if (tmplocale == NULL || (oldlocale = uselocale(tmplocale)) == NULL) fprintf(stderr, "Locale error.\n");
+#define SWITCH_TO_OLD_LOCALE() if (oldlocale != NULL) { uselocale(oldlocale); freelocale(tmplocale); tmplocale = NULL; }
+#endif
 
 #endif

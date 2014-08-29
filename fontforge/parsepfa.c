@@ -2620,7 +2620,6 @@ return;
 FontDict *_ReadPSFont(FILE *in) {
     FILE *temp;
     struct fontparse fp;
-    char oldloc[24];
     struct stat b;
 
     temp = tmpfile();
@@ -2630,14 +2629,14 @@ FontDict *_ReadPSFont(FILE *in) {
 return(NULL);
     }
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    DECLARE_TEMP_LOCALE()
+    SWITCH_TO_C_LOCALE()
     memset(&fp,'\0',sizeof(fp));
     fp.fd = fp.mainfd = PSMakeEmptyFont();
     fp.fdindex = -1;
     realdecrypt(&fp,in,temp);
     free(fp.vbuf);
-    setlocale(LC_NUMERIC,oldloc);
+    SWITCH_TO_OLD_LOCALE()
 
     fclose(temp);
 

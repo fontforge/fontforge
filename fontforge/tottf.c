@@ -6034,13 +6034,11 @@ static void ATinit(struct alltabs *at,SplineFont *sf,EncMap *map,int flags, int 
 int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *map, int layer) {
     struct alltabs at;
-    char oldloc[25];
     int i, anyglyphs;
 
     /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    DECLARE_TEMP_LOCALE()
+    SWITCH_TO_C_LOCALE()
 
     if ( format==ff_otfcid || format== ff_cffcid ) {
 	if ( sf->cidmaster ) sf = sf->cidmaster;
@@ -6085,7 +6083,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	if ( initTables(&at,sf,format,bsizes,bf))
 	    dumpttf(ttf,&at);
     }
-    setlocale(LC_NUMERIC,oldloc);
+    SWITCH_TO_OLD_LOCALE()
     if ( at.error || ferror(ttf))
 return( 0 );
 
@@ -6218,13 +6216,11 @@ static void dumptype42(FILE *type42,struct alltabs *at, enum fontformat format) 
 int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
 	int flags,EncMap *map,int layer) {
     struct alltabs at;
-    char oldloc[25];
     int i;
 
     /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    DECLARE_TEMP_LOCALE()
+    SWITCH_TO_C_LOCALE()
 
     if ( sf->subfontcnt!=0 ) sf = sf->subfonts[0];
 
@@ -6240,7 +6236,7 @@ int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
 	dumptype42(type42,&at,format);
     free(at.gi.loca);
 
-    setlocale(LC_NUMERIC,oldloc);
+    SWITCH_TO_OLD_LOCALE()
     if ( at.error || ferror(type42))
 return( 0 );
 

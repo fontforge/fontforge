@@ -1965,15 +1965,14 @@ static void cleanupnames(SplineFont *sf) {
 }
 
 void FeatDumpFontLookups(FILE *out,SplineFont *sf) {
-    char oldloc[24];
 
     if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
 
     SFFindUnusedLookups(sf);
 
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    DECLARE_TEMP_LOCALE()
+    SWITCH_TO_C_LOCALE()
     untick_lookups(sf);
     preparenames(sf);
     gdef_markclasscheck(out,sf,NULL);
@@ -1982,7 +1981,7 @@ void FeatDumpFontLookups(FILE *out,SplineFont *sf) {
     dump_gdef(out,sf);
     dump_base(out,sf);
     cleanupnames(sf);
-    setlocale(LC_NUMERIC,oldloc);
+    SWITCH_TO_OLD_LOCALE()
 }
 
 
@@ -7208,7 +7207,6 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     struct glyphclasses *gc, *gcnext;
     struct namedanchor *nap, *napnext;
     struct namedvalue *nvr, *nvrnext;
-    char oldloc[25];
 
     memset(&tok,0,sizeof(tok));
     tok.line[0] = 1;
@@ -7218,11 +7216,10 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     if ( sf->cidmaster ) sf = sf->cidmaster;
     tok.sf = sf;
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    DECLARE_TEMP_LOCALE()
+    SWITCH_TO_C_LOCALE()
     fea_ParseFeatureFile(&tok);
-    setlocale(LC_NUMERIC,oldloc);
+    SWITCH_TO_OLD_LOCALE()
     if ( tok.err_count==0 ) {
 	tok.sofar = fea_reverseList(tok.sofar);
 	fea_ApplyFile(&tok, tok.sofar);

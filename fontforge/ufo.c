@@ -1313,7 +1313,6 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
 int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int flags,
 	const EncMap *map,int layer, int all_layers) {
     char *foo = NULL, *glyphdir, *gfname;
-    char oldloc[25];
     int err;
     FILE *plist;
     int i;
@@ -1328,9 +1327,9 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
     /* Create it */
     if (GFileMkDir( basedir ) == -1) return false;
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24] = '\0';
-    setlocale(LC_NUMERIC,"C");
+    DECLARE_TEMP_LOCALE()
+    SWITCH_TO_C_LOCALE()
+
 
     err  = !UFOOutputMetaInfo(basedir,sf);
     err |= !UFOOutputFontInfo(basedir,sf,layer);
@@ -1341,7 +1340,7 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
     err |= !UFOOutputFeatures(basedir,sf);
 
     if ( err ) {
-        setlocale(LC_NUMERIC,oldloc);
+        SWITCH_TO_OLD_LOCALE()
         return false;
     }
 
@@ -1389,10 +1388,11 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
 #else
       void * layer_name_hash = NULL;
 #endif
+      SWITCH_TO_OLD_LOCALE()
       xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
       xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
       xmlNodePtr arraynode = xmlNewChild(rootnode, NULL, BAD_CAST "array", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Make the dict.
-	
+      SWITCH_TO_C_LOCALE()
       int layer_pos;
       for (layer_pos = 0; layer_pos < sf->layer_cnt; layer_pos++) {
         glyphdir = buildname(basedir,"glyphs");
@@ -1440,7 +1440,7 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
     }
 
     free( glyphdir );
-    setlocale(LC_NUMERIC,oldloc);
+    SWITCH_TO_OLD_LOCALE()
     return !err;
 }
 
@@ -2448,7 +2448,7 @@ SplineFont *SFReadUFO(char *basedir, int flags) {
     xmlChar *keyname, *valname;
     char *stylename=NULL;
     char *temp, *glyphlist, *glyphdir;
-    char oldloc[25], *end;
+    char *end;
     int as = -1, ds= -1, em= -1;
 
     if ( !libxml_init_base()) {
@@ -2472,9 +2472,8 @@ return( NULL );
     }
 
     sf = SplineFontEmpty();
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    DECLARE_TEMP_LOCALE()
+    SWITCH_TO_C_LOCALE()
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
 	for ( value = keys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
 		value = value->next );
@@ -2702,7 +2701,7 @@ return( NULL );
     if ( em==-1 ) {
 	LogError(_("This font does not specify unitsPerEm"));
 	xmlFreeDoc(doc);
-	setlocale(LC_NUMERIC,oldloc);
+	SWITCH_TO_OLD_LOCALE()
 	SplineFontFree(sf);
 return( NULL );
     }
@@ -2733,6 +2732,7 @@ return( NULL );
 	char * layercontentsname = buildname(basedir,"layercontents.plist");
 	char ** layernames = NULL;
 	if (layercontentsname == NULL) {
+		SWITCH_TO_OLD_LOCALE()
 		return( NULL );
 	} else if ( GFileExists(layercontentsname)) {
 		xmlDocPtr layercontentsdoc = NULL;
@@ -2913,14 +2913,13 @@ return( NULL );
 		xmlFreeDoc(doc);
     }
 #endif
-    setlocale(LC_NUMERIC,oldloc);
+    SWITCH_TO_OLD_LOCALE()
 return( sf );
 }
 
 SplineSet *SplinePointListInterpretGlif(SplineFont *sf,char *filename,char *memory, int memlen,
 	int em_size,int ascent,int is_stroked) {
     xmlDocPtr doc;
-    char oldloc[25];
     SplineChar *sc;
     SplineSet *ss;
 
@@ -2935,11 +2934,11 @@ return( NULL );
     if ( doc==NULL )
 return( NULL );
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
+    DECLARE_TEMP_LOCALE()
+    SWITCH_TO_C_LOCALE()
     setlocale(LC_NUMERIC,"C");
     sc = _UFOLoadGlyph(sf,doc,filename,NULL,NULL,ly_fore);
-    setlocale(LC_NUMERIC,oldloc);
+    SWITCH_TO_OLD_LOCALE()
 
     if ( sc==NULL )
 return( NULL );
