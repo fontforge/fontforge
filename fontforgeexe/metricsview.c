@@ -1373,6 +1373,7 @@ return( false );
 		}
 	    }
 
+	    // avoid dangling refrences to kp
 	    int i = 0;
 	    for( i=0; mv->glyphs[i].sc; i++ ) {
 		if( i!=which && mv->glyphs[i].kp == kp ) {
