@@ -1350,12 +1350,7 @@ return( false );
 	/* If we change the kerning offset, then any pixel corrections*/
 	/*  will no longer apply (they only had meaning with the old  */
 	/*  offset) so free the device table, if any */
-	printf("kp:%p which:%d", kp, which );
-	if( kp )
-	    printf("isdiff:%d kpoff:%d offset:%d", is_diff, kp->off, offset );
-	printf("\n");
 	if ( kp != NULL && ((!is_diff && kp->off!=offset) || ( is_diff && offset!=0)) ) {
-	    printf("AT FREE!!! kp->adjust:%p\n",kp->adjust);
 	    DeviceTableFree(kp->adjust);
 	    kp->adjust = NULL;
 	}
@@ -1363,7 +1358,6 @@ return( false );
 	offset = is_diff && kp != NULL ? kp->off+offset : offset;
 	/* If kern offset has been set to zero by user, then cleanup this kerning pair */
 	if ( kp != NULL && offset == 0 ) {
-	    printf("kp cleanup... kp:%p\n", kp );
 	    KernPair *kpcur, *kpprev;
 	    KernPair **kphead = mv->vertical ? &psc->vkerns : &psc->kerns;
 	    if ( kp == *kphead ) {
@@ -1492,7 +1486,6 @@ return( false );
 	}
     }
 
-    printf("kc:%p\n", kc );
     // refresh other kerning input boxes if they are the same characters
     static int MV_ChangeKerning_Nested = 0;
     int refreshOtherPairEntries = true;
@@ -1501,7 +1494,6 @@ return( false );
 	int i = 1;
 	for( ; mv->glyphs[i].sc; i++ )
 	{
-	    printf("%d\n", i);
 	    if( i != which
 		&& sc  == mv->glyphs[i].sc
 		&& psc == mv->glyphs[i-1].sc )
@@ -1510,11 +1502,9 @@ return( false );
 		GGadget *g = mv->perchar[i].kern;
 		unichar_t *end;
 		int val = u_strtol(_GGadgetGetTitle(g),&end,10);
-		printf("%d GOT SAME PAIR1: %d %s\n", i, val, tostr(val));
 
 		MV_ChangeKerning_Nested = 1;
 		int which = (intpt) GGadgetGetUserData(g);
-		printf("%d SETTING which:%d to val:%d\n", i, which, offset );
 		MV_ChangeKerning( mv, which, offset, is_diff );
 		GGadgetSetTitle8( g, tostr(offset) );
 		MV_ChangeKerning_Nested = 0;
@@ -1912,14 +1902,12 @@ static void MVTextChanged(MetricsView *mv) {
 
     // convert the slash escpae codes and the like to the real string we will use
     // for the metrics window
-    printf("MVTextChanged(top) p:%p ret:%s\n", ret, u_to_c(ret));
     GArray* selected = NULL;
     unichar_t* retnew = WordlistEscapedInputStringToRealString(
 	mv->sf,
 	ret, &selected,
 	WordlistEscapedInputStringToRealString_getFakeUnicodeAs_MVFakeUnicodeOfSc, mv );
     ret = retnew;
-    printf("MVTextChanged(done processing) p:%p ret:%s\n", ret, u_to_c(ret));
 
 
     if (( ret[0]<0x10000 && isrighttoleft(ret[0]) && !mv->right_to_left ) ||
