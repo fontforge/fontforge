@@ -7783,18 +7783,26 @@ return( tuple );
 }
 
 static char *GlyphNamesFromTuple(PyObject *glyphs) {
-    int cnt, len;
+    int cnt, len, deltalen;
     char *str, *ret, *pt;
     int i;
 
+    /* if called with a string, assume already in output format and return */
     if ( STRING_CHECK(glyphs)) {
 	PYGETSTR(glyphs, str, NULL);
 	str = copy(str);
 	ENDPYGETSTR();
+        if ( strlen(str)==0 ) {
+            free(str);
+	    PyErr_Format(PyExc_TypeError,"Glyph name strings may not be empty");
+            return( NULL );
+        }
+        return str;
     }
-    if ( !PySequence_Check(glyphs) ) {
-	PyErr_Format(PyExc_TypeError,"Expected tuple of glyph names");
-return(NULL );
+
+    if ( !PyTuple_Check(glyphs) && !PyList_Check(glyphs)) {
+        PyErr_Format(PyExc_TypeError,"Expected tuple of glyph names");
+        return(NULL );
     }
     cnt = PySequence_Size(glyphs);
     len = 0;
@@ -7802,14 +7810,23 @@ return(NULL );
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
 	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
 	    SplineChar *sc = ((PyFF_Glyph *) aglyph)->sc;
-	    str = copy(sc->name);
-	} else
-	    str = PyBytes_AsString(aglyph);
-	if ( str==NULL ) {
+	    deltalen = strlen(sc->name);
+            Py_DECREF(aglyph);
+	} else if ( STRING_CHECK(aglyph)) {
+            PYGETSTR(aglyph, str, NULL);
+            deltalen = strlen(str);
+            ENDPYGETSTR();
+            Py_DECREF(aglyph);
+        } else {
+            Py_DECREF(aglyph);
 	    PyErr_Format(PyExc_TypeError,"Expected tuple of glyph names");
-return( NULL );
+            return( NULL );
 	}
-	len += strlen(str)+1;
+        if ( deltalen==0 ) {
+	    PyErr_Format(PyExc_TypeError,"Glyph name strings may not be empty");
+            return( NULL );
+        }
+	len += deltalen+1;
     }
 
     ret = pt = malloc(len+1);
@@ -7818,8 +7835,13 @@ return( NULL );
 	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
 	    SplineChar *sc = ((PyFF_Glyph *) aglyph)->sc;
 	    str = copy(sc->name);
-	} else
-	    str = PyBytes_AsString(aglyph);
+            Py_DECREF(aglyph);
+	} else {
+            PYGETSTR(aglyph, str, NULL);
+            str = copy(str);
+            ENDPYGETSTR();
+            Py_DECREF(aglyph);
+        }
 	strcpy(pt,str);
 	pt += strlen(pt);
 	*pt++ = ' ';
@@ -7827,7 +7849,7 @@ return( NULL );
     if ( pt!=ret )
 	--pt;
     *pt = '\0';
-return( ret );
+    return( ret );
 }
 
 static char **GlyphNameArrayFromTuple(PyObject *glyphs) {
@@ -12517,25 +12539,31 @@ static int PyFF_Font_set_mark_classes(PyFF_Font *self,PyObject *value, void *UNU
     PyObject *subtuple;
 
     if ( CheckIfFontClosed(self) )
-return (-1);
+        return (-1);
     sf = self->fv->sf;
-    if ( value==NULL || value==Py_None )
-	cnt = 0;
-    else {
-	cnt = PySequence_Size(value);
-	if ( cnt==-1 )
-return( -1 );
-	if ( cnt>=256 ) {
-	    PyErr_Format(PyExc_ValueError, "There may be at most 255 mark classes" );
-return( -1 );
-	}
+    if ( value==NULL || value==Py_None ) {
+        /* del font.markClasses  or  font.markClasses=None  removes old values */
+        cnt = 0;
+    } else if ( !PyTuple_Check(value) && !PyList_Check(value)) {
+        PyErr_Format(PyExc_TypeError,"Expecting a tuple of tuples of names and glyphs");
+        return( -1 );
+    } else {
+        /* we may get too many tuples, or too few (an empty tuple), or an error */
+        cnt = PySequence_Size(value);
+        if ( cnt==-1 )
+            return( -1 );
+        if ( cnt>=256 ) {
+            PyErr_Format(PyExc_ValueError, "There may be at most 255 mark classes" );
+            return( -1 );
+        }
     }
     if ( cnt==0 ) {
+        /* markClasses is being removed, delete any old, reset counts and pointers */
 	MarkClassFree(sf->mark_class_cnt,sf->mark_classes,sf->mark_class_names);
 	sf->mark_class_cnt = 0;
 	sf->mark_classes = NULL;
 	sf->mark_class_names = NULL;
-return( 0 );
+        return( 0 );
     }
 
     names = malloc((cnt+1)*sizeof(char *));
@@ -12544,16 +12572,26 @@ return( 0 );
     /* Fill in names[] and classes[], starting at index 1 instead of 0 */
     for ( i=1; i<=cnt; ++i ) {
 	names[i] = classes[i] = NULL;
-	if ( !PyArg_ParseTuple(PySequence_GetItem(value,i),"(sO)", &nm, &subtuple)) {
+        PyObject *seqItem = PySequence_GetItem(value,i-1);
+	if ( !PyArg_ParseTuple(seqItem,"sO", &nm, &subtuple)) {
+            PyErr_Format(PyExc_TypeError,"Expecting inner tuples to be name and glyphs");
+            Py_DECREF(seqItem);
 	    FreeStringArray( i, names );
 	    FreeStringArray( i, classes );
-return( -1 );
+            return( -1 );
 	}
+        Py_DECREF(seqItem);
+        if ( strlen(nm)==0 ) {
+            PyErr_Format(PyExc_TypeError,"Mark class name strings may not be empty");
+            FreeStringArray( i, names );
+            FreeStringArray( i, classes );
+            return( -1 );
+        }
 	classes[i] = GlyphNamesFromTuple(subtuple);
 	if ( classes[i]==NULL ) {
 	    FreeStringArray( i, names );
 	    FreeStringArray( i, classes );
-return( -1 );
+            return( -1 );
 	}
 	names[i] = copy(nm);
     }
