@@ -1300,7 +1300,7 @@ return( gwwv_ask(_("Use Kerning Class?"),(const char **) yesno,0,1,
 static int MV_ChangeKerning(MetricsView *mv, int which, int offset, int is_diff) {
     SplineChar *sc = mv->glyphs[which].sc;
     SplineChar *psc = mv->glyphs[which-1].sc;
-    KernPair *kp;
+    KernPair *kp = 0;
     KernClass *kc; int index;
     int i;
     struct lookup_subtable *sub = GGadgetGetListItemSelected(mv->subtable_list)->userdata;
@@ -1370,6 +1370,14 @@ return( false );
 		break;
 		    }
 		    kpprev = kpcur;
+		}
+	    }
+
+	    // avoid dangling refrences to kp
+	    int i = 0;
+	    for( i=0; mv->glyphs[i].sc; i++ ) {
+		if( i!=which && mv->glyphs[i].kp == kp ) {
+		    mv->glyphs[i].kp = 0;
 		}
 	    }
 	    chunkfree( kp,sizeof(KernPair) );
@@ -1475,6 +1483,32 @@ return( false );
 			}
 		    }
 		}
+	    }
+	}
+    }
+
+    // refresh other kerning input boxes if they are the same characters
+    static int MV_ChangeKerning_Nested = 0;
+    int refreshOtherPairEntries = true;
+    if( !MV_ChangeKerning_Nested && refreshOtherPairEntries && mv->glyphs[0].sc )
+    {
+	int i = 1;
+	for( ; mv->glyphs[i].sc; i++ )
+	{
+	    if( i != which
+		&& sc  == mv->glyphs[i].sc
+		&& psc == mv->glyphs[i-1].sc )
+	    {
+		
+		GGadget *g = mv->perchar[i].kern;
+		unichar_t *end;
+		int val = u_strtol(_GGadgetGetTitle(g),&end,10);
+
+		MV_ChangeKerning_Nested = 1;
+		int which = (intpt) GGadgetGetUserData(g);
+		MV_ChangeKerning( mv, which, offset, is_diff );
+		GGadgetSetTitle8( g, tostr(offset) );
+		MV_ChangeKerning_Nested = 0;
 	    }
 	}
     }
@@ -1869,14 +1903,12 @@ static void MVTextChanged(MetricsView *mv) {
 
     // convert the slash escpae codes and the like to the real string we will use
     // for the metrics window
-    printf("MVTextChanged(top) p:%p ret:%s\n", ret, u_to_c(ret));
     GArray* selected = NULL;
     unichar_t* retnew = WordlistEscapedInputStringToRealString(
 	mv->sf,
 	ret, &selected,
 	WordlistEscapedInputStringToRealString_getFakeUnicodeAs_MVFakeUnicodeOfSc, mv );
     ret = retnew;
-    printf("MVTextChanged(done processing) p:%p ret:%s\n", ret, u_to_c(ret));
 
 
     if (( ret[0]<0x10000 && isrighttoleft(ret[0]) && !mv->right_to_left ) ||

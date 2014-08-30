@@ -202,4 +202,8 @@ extern int u_endswith(const unichar_t *haystack,const unichar_t *needle);
  */
 extern char* str_replace_all( char* s, char* orig, char* replacement, int free_s );
 
+
+int toint( char* v );
+char* tostr( int v );
+
 #endif
