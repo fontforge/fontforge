@@ -91,7 +91,10 @@ const char* Wordlist_getSCName( SplineChar* sc )
 
 
 
-static SplineChar* WordlistEscapedInputStringToRealString_readGlyphName( SplineFont *sf, char* in, char* in_end, char** updated_in, char* glyphname )
+static SplineChar*
+WordlistEscapedInputStringToRealString_readGlyphName(
+    SplineFont *sf, char* in, char* in_end,
+    char** updated_in, char* glyphname )
 {
 //    printf("WordlistEscapedInputStringToRealString_readGlyphName(top)\n");
 
@@ -105,15 +108,13 @@ static SplineChar* WordlistEscapedInputStringToRealString_readGlyphName( SplineF
     // Get the largest possible 'glyphname' from the input stream.
     memset( glyphname, '\0', PATH_MAX );
     char* outname = glyphname;
-//    printf("WordlistEscapedInputStringToRealString_readGlyphName(top2) %c\n", *in);
     while( *in != '/' && *in != ' ' && *in != ']' && in != in_end )
     {
-//	printf("WordlistEscapedInputStringToRealString_readGlyphName(add) %c\n", *in );
 	*outname = *in;
 	++outname;
 	in++;
     }
-    bool FullMatchEndsOnSpace = (*in == ' ');
+    bool FullMatchEndsOnSpace = 0;
     char* maxpos = in;
     char* endpos = maxpos-1;
 //    printf("WordlistEscapedInputStringToRealString_readGlyphName(x1) -->:%s:<--\n", glyphname);
@@ -187,7 +188,8 @@ static SplineChar* WordlistEscapedInputStringToRealString_readGlyphName( SplineF
 
 
     *updated_in = endpos;
-//    printf("WordlistEscapedInputStringToRealString_readGlyphName(end) gn:%s\n", glyphname );
+
+    // printf("WordlistEscapedInputStringToRealString_readGlyphName(end) gn:%s\n", glyphname );
     return 0;
 }
 
@@ -752,8 +754,63 @@ unichar_t* Wordlist_advanceSelectedCharsBy( SplineFont* sf, EncMap *map, unichar
 }
 
 
+/**
+ * haveSelection is set to true iff there is 1+ selections i txtu
+ */
+static unichar_t* Wordlist_selectionStringOnly( unichar_t* txtu, int* haveSelection )
+{
+    static unichar_t ret[ PATH_MAX ];
+    int limit = PATH_MAX;
+    memset( ret, 0, sizeof(unichar_t) * PATH_MAX );
+    *haveSelection = 0;
+    
+    int inSelection = 0;
+    unichar_t *dst = ret;
+    const unichar_t *src_end = 0;
+    const unichar_t *src = 0;
+    src_end=txtu+u_strlen(txtu);
+    for ( src=txtu; src < src_end; ++src )
+    {
+	if( *src == '[' )
+	{
+	    inSelection = 1;
+	    *haveSelection = 1;
+	    continue;
+	}
+	if( *src == ']' )
+	{
+	    inSelection = 0;
+	    continue;
+	}
+
+	if( inSelection )
+	{
+	    *dst = *src;
+	    dst++;
+	}
+    }
+    
+    return ret;
+}
 
 
+bool Wordlist_selectionsEqual( unichar_t* s1, unichar_t* s2 )
+{
+    static unichar_t s1stripped[ PATH_MAX ];
+    static unichar_t s2stripped[ PATH_MAX ];
+    int s1HasSelection = 0;
+    int s2HasSelection = 0;
+
+    u_strcpy( s1stripped, Wordlist_selectionStringOnly( s1, &s1HasSelection ));
+    u_strcpy( s2stripped, Wordlist_selectionStringOnly( s2, &s2HasSelection ));
+
+    if( s1HasSelection && !s2HasSelection )
+	return false;
+    if( !s1HasSelection && s2HasSelection )
+	return false;
+
+    return !u_strcmp( s1stripped, s2stripped );
+}
 
 
 

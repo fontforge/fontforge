@@ -65,4 +65,6 @@ extern unichar_t* Wordlist_selectionAdd( SplineFont* sf, EncMap *map, unichar_t*
 
 extern unichar_t* Wordlist_advanceSelectedCharsBy( SplineFont* sf, EncMap *map, unichar_t* txtu, int offset );
 
+extern bool Wordlist_selectionsEqual( unichar_t* s1, unichar_t* s2 );
+
 #endif

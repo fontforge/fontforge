@@ -158,7 +158,6 @@ void onCollabSessionStateChanged( GObject* gobj, FontViewBase* fv )
 {
     bool inCollab = collabclient_inSessionFV( fv );
 
-    printf("AAA onCollabSessionStateChanged() fv:%p inSession:%d\n",fv,inCollab );
     GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_AddLayer),    !inCollab );
     GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_RemoveLayer), !inCollab );
     GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_RenameLayer), !inCollab );
