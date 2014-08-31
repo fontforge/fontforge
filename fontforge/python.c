@@ -10055,11 +10055,11 @@ static PyObject *PyFF_PrivateIndex( PyObject *self, PyObject *index ) {
 	    value = PSDictHasEntry(private,name);
 	ENDPYGETSTR();
     } else {
-	PyErr_Format(PyExc_TypeError, "Index must be a string" );
+	PyErr_Format(PyExc_TypeError, "Private dictionary index must be a string" );
 return( NULL );
     }
     if ( value==NULL ) {
-	PyErr_Format(PyExc_TypeError, "No such entry" );
+	PyErr_Format(PyExc_TypeError, "No such dictionary entry for specified index" );
 return( NULL );
     }
     strtod(value,&end); while ( *end==' ' ) ++end;
@@ -10099,15 +10099,11 @@ static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *v
     struct psdict *private = sf->private;
     char *string, *freeme=NULL;
     char buffer[40];
-#if PY_MAJOR_VERSION >= 3
-    int string_is_bytes = false;
-#endif
 
     if ( STRING_CHECK(value)) {
-	PYGETSTR(index, string, -1);
-#if PY_MAJOR_VERSION >= 3
-	string_is_bytes = true;
-#endif
+	PYGETSTR(value, string, -1);
+        string = freeme = copy(string);
+	ENDPYGETSTR();
     } else if ( PyFloat_Check(value)) {
 	double temp = PyFloat_AsDouble(value);
 	sprintf(buffer,"%g",temp);
@@ -10128,34 +10124,26 @@ static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *v
 	if ( pt[-1]==' ' ) --pt;
 	*pt++ = ']'; *pt = '\0';
     } else {
-#if PY_MAJOR_VERSION >= 3
-	if (string_is_bytes)
-	    Py_DECREF(string);
-#endif
-	PyErr_Format(PyExc_TypeError, "Tuple expected for argument" );
-return( -1 );
+	PyErr_Format(PyExc_TypeError, "Assignment value must be string, float, integer or tuple" );
+        return( -1 );
     }
 
     if ( STRING_CHECK(index)) {
 	char *name;
-	PYGETSTR(index, name, -1);
 	if ( private==NULL )
 	    sf->private = private = calloc(1,sizeof(struct psdict));
-	ENDPYGETSTR();
+	PYGETSTR(index, name, -1);
 	PSDictChangeEntry(private,name,string);
+	ENDPYGETSTR();
     } else {
-#if PY_MAJOR_VERSION >= 3
-	if (string_is_bytes)
-	    Py_DECREF(string);
-#endif
-	PyErr_Format(PyExc_TypeError, "Index must be a string" );
-return( -1 );
+        if ( freeme!=NULL) 
+            free(freeme);
+	PyErr_Format(PyExc_TypeError, "Private dictionary index must be a string" );
+        return( -1 );
     }
-#if PY_MAJOR_VERSION >= 3
-    if (string_is_bytes)
-	Py_DECREF(string);
-#endif
-return( 0 );
+    if ( freeme!=NULL) 
+        free(freeme);
+    return( 0 );
 }
 
 static PyMappingMethods PyFF_PrivateMapping = {
