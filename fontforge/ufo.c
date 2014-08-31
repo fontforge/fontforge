@@ -923,8 +923,8 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
     PListAddNameString(dictnode,"openTypeNameVersion",sf,ttf_version);
     PListAddNameString(dictnode,"openTypeNameUniqueID",sf,ttf_uniqueid);
     PListAddNameString(dictnode,"openTypeNameDescription",sf,ttf_descriptor);
-    PListAddNameString(dictnode,"openTypeNamePreferedFamilyName",sf,ttf_preffamilyname);
-    PListAddNameString(dictnode,"openTypeNamePreferedSubfamilyName",sf,ttf_prefmodifiers);
+    PListAddNameString(dictnode,"openTypeNamePreferredFamilyName",sf,ttf_preffamilyname);
+    PListAddNameString(dictnode,"openTypeNamePreferredSubfamilyName",sf,ttf_prefmodifiers);
     PListAddNameString(dictnode,"openTypeNameCompatibleFullName",sf,ttf_compatfull);
     PListAddNameString(dictnode,"openTypeNameSampleText",sf,ttf_sampletext);
     PListAddNameString(dictnode,"openTypeWWSFamilyName",sf,ttf_wwsfamily);
