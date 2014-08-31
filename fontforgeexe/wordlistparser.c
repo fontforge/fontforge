@@ -365,33 +365,7 @@ unichar_t* WordlistEscapedInputStringToRealStringBasic(
 /************************************************************/
 /************************************************************/
 
-/**
- * This is the array of characters that are referenced from a
- * wordlistline. I'd felt that such a setup was much better than the
- * previous string wrangling, and with fonts that have splinechars
- * that have no unicode value, it makes more sense to explicitly
- * address the string this way.
- * 
- * for example,
- * ab/comma/slash will have 4 elements in the array and a null sc as element this[4].
- * this[0].sc = 'a'
- * this[1].sc = 'b'
- * this[2].sc = ','
- * this[3].sc = '/'
- * this[4].sc = \0
- *
- * currentGlyphIndex is a hang over from old code, still might be handy if you have a pointer
- * to a single WordListChar element and you want to know what splinechar it is in the string.
- * Selections are now handled using isSelected in each element.
- */
-typedef struct wordlistchar {
-    SplineChar* sc;
-    int isSelected;
-    int currentGlyphIndex;
-} WordListChar;
-
 static int WordListLineSz = 1024;
-typedef WordListChar* WordListLine;
 
 int WordListLine_countSelected( WordListLine wll )
 {
@@ -400,6 +374,13 @@ int WordListLine_countSelected( WordListLine wll )
 	ret += wll->isSelected;
     }
     return ret;
+}
+
+WordListLine WordListLine_end( WordListLine wll )
+{
+    for( ; wll->sc; wll++ ) {
+    }
+    return wll;
 }
 
 
@@ -465,6 +446,8 @@ WordListLine WordlistEscapedInputStringToParsedDataComplex(
 	    SplineChar* sc = WordlistEscapedInputStringToRealString_readGlyphName( sf, in, in_end, &updated_in, glyphname );
 	    if( sc )
 	    {
+		printf("have sc:%p\n", sc );
+		printf("have sc.name:%s\n", sc->name );
 		in = updated_in;
 		int n = getUnicodeFunc( sc, udata );
 		if( n == -1 )
