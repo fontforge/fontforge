@@ -12618,25 +12618,22 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	    int i=0;
 	    unichar_t *ret = GGadgetGetTitle( cv->charselector );
 	    GArray* selected = 0;
-//	    WordlistTrimTrailingSingleSlash( ret );
-	    ret = WordlistEscapedInputStringToRealStringBasic( sf, ret, &selected );
-	    
-	    const unichar_t *pt, *ept, *tpt;
-	    pt = ret;
-	    ept=ret+u_strlen(ret);
+
+	    WordListLine wll = WordlistEscapedInputStringToParsedData( sf, ret );
+	    WordListLine pt = wll;
+	    WordListLine ept = WordListLine_end(wll);
+	    WordListLine tpt = 0;
 	    for ( tpt=pt; tpt<ept; ++tpt )
 	    {
-		int ch = *tpt;
 		if( tpt == pt )
 		{
 		    // your own char at the leading of the text
-		    SplineChar* sc = SFGetOrMakeCharFromUnicodeBasic( sf, ch );
-		    cv->additionalCharsToShow[i] = sc;
+		    cv->additionalCharsToShow[i] = tpt->sc;
 		    i++;
 		    continue;
 		}
 		
-		cv->additionalCharsToShow[i] = SFGetOrMakeCharFromUnicodeBasic( sf, ch );
+		cv->additionalCharsToShow[i] = tpt->sc;
 
 		i++;
 		if( i >= additionalCharsToShowLimit )
@@ -12644,37 +12641,31 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	    }
 	    free(ret);
 
-	    if( selected )
+	    if( wll->sc )
 	    {
-		int i = 0;
-		for (i = 0; i < selected->len; i++)
+		if( wll->isSelected )
 		{
-		    int v = g_array_index (selected, gint, i);
-		    TRACE("selection i:%d v:%d\n", i, v );
-		    if( !v )
+		    // first char selected, nothing to do!
+		}
+		else
+		{
+		    while( wll->sc && !(wll->isSelected))
+			wll++;
+		    if( wll->sc && wll->isSelected )
 		    {
-			// first char selected, nothing to do!
-			break;
-		    }
-
-		    if( v < additionalCharsToShowLimit )
-		    {
-			SplineChar* xc = cv->additionalCharsToShow[v];
+			SplineChar* xc = wll->sc;
 			if( xc )
 			{
 			    TRACE("selected v:%d xc:%s\n", v, xc->name );
 			    int xoff = cv->xoff;
-			    CVSwitchActiveSC( cv, xc, v );
+			    CVSwitchActiveSC( cv, xc, wll->currentGlyphIndex );
 			    CVHScrollSetPos( cv, xoff );
 			    hadSelection = 1;
 			}
+			
 		    }
-		    break;
 		}
 	    }
-	    
-	    g_array_unref( selected );
-	    
 	}
 	free(txt);
 
