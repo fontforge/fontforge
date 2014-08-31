@@ -7422,6 +7422,7 @@ return;
 return;
     else if ( pos>= map->enccount ) /* pos = 0; */
 return;
+
     if ( pos>=0 && pos<map->enccount )
 	CVChangeChar(cv,pos);
 }
