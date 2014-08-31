@@ -545,14 +545,18 @@ return;
 	sel[0] = true;
     else if ( no_windowing_ui ) {
 	if ( onlyone ) {
-	    biggest=0;
+	    biggest=-1; // We may not find one.
 	    for ( i=1; i<cnt; ++i )
-		if ( sizes[i].ppem>sizes[biggest].ppem && sizes[i].depth==1 )
+		if ( sizes[i].depth==1 && (biggest < 0 || sizes[i].ppem>sizes[biggest].ppem) )
 		    biggest = i;
 	    sel[biggest] = true;
 	} else {
-	    for ( i=0; i<cnt; ++i )
+	    biggest=-1;
+	    for ( i=0; i<cnt; ++i ) {
 		sel[i] = true;
+		if ( sizes[i].depth==1 && (biggest < 0 || sizes[i].ppem>sizes[biggest].ppem) )
+		    biggest = i;
+	    }
 	}
     } else if ( no_windowing_ui ) {
 	if ( onlyone ) {
