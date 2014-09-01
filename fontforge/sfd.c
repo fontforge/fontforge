@@ -3856,7 +3856,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 	    ch2 = nlgetc(sfd);		/* : */
 		// We are either fetching a splineset name (Named:) or a point name (NamedP:).
 		if (ch2=='P') { if ((nlgetc(sfd)==':') && (pt!=NULL)) { if (pt->name!=NULL) {free(pt->name);} pt->name = SFDReadUTF7Str(sfd); } }
-		else if (ch2==':') cur->contour_name = SFDReadUTF7Str(sfd);
+		else if (ch2==':') { if (cur != NULL) cur->contour_name = SFDReadUTF7Str(sfd); else free(SFDReadUTF7Str(sfd)); }
         continue;
 	} else if ( ch=='P' ) {
 	    int flags;
@@ -3870,7 +3870,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 	    nlgetc(sfd);		/* s */
 	    nlgetc(sfd);		/* : */
 	    getint(sfd,&flags);
-	    cur->is_clip_path = flags&1;
+	    if (cur != NULL) cur->is_clip_path = flags&1;
 	}
 	pt = NULL;
 	if ( ch=='l' || ch=='m' ) {
@@ -3920,7 +3920,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 		    {
 			real offset = 0.1;
 			current.x += offset;
-			if( !SplinePointListContainsPointAtX( cur, current.x ))
+			if( !cur || !SplinePointListContainsPointAtX( cur, current.x ))
 			{
 			    break;
 			}
@@ -5034,6 +5034,18 @@ char* SFDMoveToNextStartChar( FILE* sfd ) {
     return 0;
 }
 
+static int PeekMatch(FILE *stream, const char * target) {
+  // This returns 1 if target matches the next characters in the stream.
+  int pos1 = 0;
+  int lastread = getc(stream);
+  while (target[pos1] != '\0' && lastread != EOF && lastread == target[pos1]) {
+    pos1 ++; lastread = getc(stream);
+  }
+  if (lastread != EOF) ungetc(lastread, stream);
+  int pos2 = pos1;
+  while (pos2 > 0) { ungetc(target[--pos2], stream); }
+  return (target[pos1] == '\0');
+}
 
 static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf, int had_sf_layer_cnt) {
     SplineChar *sc;
@@ -5269,7 +5281,9 @@ return( NULL );
 	} else if ( strmatch(tok,"Fore")==0 ) {
 	    while ( isspace(ch = nlgetc(sfd)));
 	    ungetc(ch,sfd);
-	    if ( ch!='I' && ch!='R' && ch!='S' && ch!='V') {
+	    if ( ch!='I' && ch!='R' && ch!='S' && ch!='V' && ch!=' ' && ch!='\n' && 
+	         !PeekMatch(sfd, "Pickled") && !PeekMatch(sfd, "EndChar") &&
+	         !PeekMatch(sfd, "Fore") && !PeekMatch(sfd, "Back") && !PeekMatch(sfd, "Layer") ) {
 		/* Old format, without a SplineSet token */
 		sc->layers[ly_fore].splines = SFDGetSplineSet(sfd,sc->layers[ly_fore].order2);
 	    }
@@ -5281,7 +5295,9 @@ return( NULL );
 	} else if ( strmatch(tok,"Back")==0 ) {
 	    while ( isspace(ch=nlgetc(sfd)));
 	    ungetc(ch,sfd);
-	    if ( ch!='I' && ch!='R' && ch!='S' && ch!='V') {
+	    if ( ch!='I' && ch!='R' && ch!='S' && ch!='V' && ch!=' ' && ch!='\n' &&
+	         !PeekMatch(sfd, "Pickled") && !PeekMatch(sfd, "EndChar") &&
+	         !PeekMatch(sfd, "Fore") && !PeekMatch(sfd, "Back") && !PeekMatch(sfd, "Layer") ) {
 		/* Old format, without a SplineSet token */
 		sc->layers[ly_back].splines = SFDGetSplineSet(sfd,sc->layers[ly_back].order2);
 		oldback = true;
