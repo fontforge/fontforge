@@ -99,14 +99,14 @@ static int ExecConvertDesignVector(real *designs, int dcnt, char *ndv, char *cdv
     int j, len, cnt;
 
     /* PostScript parses things in "C" locale too */
-    DECLARE_TEMP_LOCALE()
-    SWITCH_TO_C_LOCALE()
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     len = 0;
     for ( j=0; j<dcnt; ++j ) {
 	sprintf(dv+len, "%g ", (double) designs[j]);
 	len += strlen(dv+len);
     }
-    SWITCH_TO_OLD_LOCALE()
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 
     temp = malloc(len+strlen(ndv)+strlen(cdv)+20);
     strcpy(temp,dv);

@@ -2629,14 +2629,14 @@ FontDict *_ReadPSFont(FILE *in) {
 return(NULL);
     }
 
-    DECLARE_TEMP_LOCALE()
-    SWITCH_TO_C_LOCALE()
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     memset(&fp,'\0',sizeof(fp));
     fp.fd = fp.mainfd = PSMakeEmptyFont();
     fp.fdindex = -1;
     realdecrypt(&fp,in,temp);
     free(fp.vbuf);
-    SWITCH_TO_OLD_LOCALE()
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 
     fclose(temp);
 

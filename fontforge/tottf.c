@@ -6037,8 +6037,8 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     int i, anyglyphs;
 
     /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
-    DECLARE_TEMP_LOCALE()
-    SWITCH_TO_C_LOCALE()
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
 
     if ( format==ff_otfcid || format== ff_cffcid ) {
 	if ( sf->cidmaster ) sf = sf->cidmaster;
@@ -6083,7 +6083,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	if ( initTables(&at,sf,format,bsizes,bf))
 	    dumpttf(ttf,&at);
     }
-    SWITCH_TO_OLD_LOCALE()
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     if ( at.error || ferror(ttf))
 return( 0 );
 
@@ -6219,8 +6219,8 @@ int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
     int i;
 
     /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
-    DECLARE_TEMP_LOCALE()
-    SWITCH_TO_C_LOCALE()
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
 
     if ( sf->subfontcnt!=0 ) sf = sf->subfonts[0];
 
@@ -6236,7 +6236,7 @@ int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
 	dumptype42(type42,&at,format);
     free(at.gi.loca);
 
-    SWITCH_TO_OLD_LOCALE()
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     if ( at.error || ferror(type42))
 return( 0 );
 

@@ -210,8 +210,8 @@ int32 *ParseBitmapSizes(GGadget *g,char *msg,int *err) {
     int i;
     int32 *sizes;
 
-    DECLARE_TEMP_LOCALE()
-    SWITCH_TO_C_LOCALE()
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
 
     *err = false;
     end2 = NULL;
@@ -243,7 +243,7 @@ int32 *ParseBitmapSizes(GGadget *g,char *msg,int *err) {
 	while ( *end==' ' || *end==',' ) ++end;
 	pt = end;
     }
-    SWITCH_TO_OLD_LOCALE()
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     if ( *err )
 return( NULL );
     sizes[i] = 0;

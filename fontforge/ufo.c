@@ -1327,8 +1327,8 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
     /* Create it */
     if (GFileMkDir( basedir ) == -1) return false;
 
-    DECLARE_TEMP_LOCALE()
-    SWITCH_TO_C_LOCALE()
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
 
 
     err  = !UFOOutputMetaInfo(basedir,sf);
@@ -1340,7 +1340,7 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
     err |= !UFOOutputFeatures(basedir,sf);
 
     if ( err ) {
-        SWITCH_TO_OLD_LOCALE()
+        switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
         return false;
     }
 
@@ -1388,11 +1388,11 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
 #else
       void * layer_name_hash = NULL;
 #endif
-      SWITCH_TO_OLD_LOCALE()
+      switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
       xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
       xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
       xmlNodePtr arraynode = xmlNewChild(rootnode, NULL, BAD_CAST "array", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Make the dict.
-      SWITCH_TO_C_LOCALE()
+      switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
       int layer_pos;
       for (layer_pos = 0; layer_pos < sf->layer_cnt; layer_pos++) {
         glyphdir = buildname(basedir,"glyphs");
@@ -1440,7 +1440,7 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
     }
 
     free( glyphdir );
-    SWITCH_TO_OLD_LOCALE()
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     return !err;
 }
 
@@ -2472,8 +2472,8 @@ return( NULL );
     }
 
     sf = SplineFontEmpty();
-    DECLARE_TEMP_LOCALE()
-    SWITCH_TO_C_LOCALE()
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
 	for ( value = keys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
 		value = value->next );
@@ -2701,7 +2701,7 @@ return( NULL );
     if ( em==-1 ) {
 	LogError(_("This font does not specify unitsPerEm"));
 	xmlFreeDoc(doc);
-	SWITCH_TO_OLD_LOCALE()
+	switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 	SplineFontFree(sf);
 return( NULL );
     }
@@ -2732,7 +2732,7 @@ return( NULL );
 	char * layercontentsname = buildname(basedir,"layercontents.plist");
 	char ** layernames = NULL;
 	if (layercontentsname == NULL) {
-		SWITCH_TO_OLD_LOCALE()
+		switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 		return( NULL );
 	} else if ( GFileExists(layercontentsname)) {
 		xmlDocPtr layercontentsdoc = NULL;
@@ -2913,7 +2913,7 @@ return( NULL );
 		xmlFreeDoc(doc);
     }
 #endif
-    SWITCH_TO_OLD_LOCALE()
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 return( sf );
 }
 
@@ -2934,11 +2934,11 @@ return( NULL );
     if ( doc==NULL )
 return( NULL );
 
-    DECLARE_TEMP_LOCALE()
-    SWITCH_TO_C_LOCALE()
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     setlocale(LC_NUMERIC,"C");
     sc = _UFOLoadGlyph(sf,doc,filename,NULL,NULL,ly_fore);
-    SWITCH_TO_OLD_LOCALE()
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 
     if ( sc==NULL )
 return( NULL );

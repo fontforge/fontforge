@@ -79,8 +79,8 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int layer, int preview) {
     int ret;
     const char *author = GetAuthor();
 
-    DECLARE_TEMP_LOCALE()
-    SWITCH_TO_C_LOCALE()
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
 
     fprintf( eps, "%%!PS-Adobe-3.0 EPSF-3.0\n" );
     SplineCharLayerFindBounds(sc,layer,&b);
@@ -126,7 +126,7 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int layer, int preview) {
 	fprintf( eps, "fill grestore\n" );
     fprintf( eps, "%%%%EOF\n" );
     ret = !ferror(eps);
-    SWITCH_TO_OLD_LOCALE()
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 return( ret );
 }
 
@@ -156,8 +156,8 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     int i;
 
     SFUntickAll(sc->parent);
-    DECLARE_TEMP_LOCALE()
-    SWITCH_TO_C_LOCALE()
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
 
     fprintf( pdf, "%%PDF-1.4\n%%\201\342\202\203\n" );	/* Header comment + binary comment */
     /* Every document contains a catalog which points to a page tree, which */
@@ -270,7 +270,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
 	free(objlocs);
 
     ret = !ferror(pdf);
-    SWITCH_TO_OLD_LOCALE()
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 return( ret );
 }
 
@@ -295,8 +295,8 @@ int _ExportPlate(FILE *plate,SplineChar *sc,int layer) {
     spiro_cp *spiros;
     int i, ret;
 
-    DECLARE_TEMP_LOCALE()
-    SWITCH_TO_C_LOCALE()
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     /* Output closed contours first, then open. Plate files can only handle */
     /*  one open contour (I think) and it must be at the end */
     fprintf( plate, "(plate\n" );
@@ -328,7 +328,7 @@ int _ExportPlate(FILE *plate,SplineChar *sc,int layer) {
     }
     fprintf(plate, ")\n");
     ret = !ferror(plate);
-    SWITCH_TO_OLD_LOCALE()
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 return( ret );
 }
 
