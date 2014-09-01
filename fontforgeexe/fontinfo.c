@@ -1868,12 +1868,13 @@ static struct col_init psprivate_ci[] = {
     { me_string, NULL, NULL, NULL, N_("Value") }
     };
 
-static char *rpldecimal(const char *orig,const char *decimal_point,const char *oldloc) {
+static char *rpldecimal(const char *orig,const char *decimal_point, locale_t tmplocale) {
     char *end;
     char *new, *npt; const char *pt;
     int dlen;
     double dval;
     char buffer[40];
+    locale_t oldlocale;
 
     /* if the current locale uses a "." for a decimal point the we don't need */
     /*  to translate the number, just check that it is valid */
@@ -1901,9 +1902,9 @@ return( copy(orig));
     }
     *npt = '\0';
 
-    setlocale(LC_NUMERIC,"C");
+    oldlocale = uselocale(tmplocale);
     strtod(new,&end);
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(oldlocale);
     while ( isspace(*end)) ++end;
     if ( *end=='\0' ) {
 	char *ret = copy(new);
@@ -1919,13 +1920,13 @@ return( ret );
 return( NULL );
     }
     free(new);
-    setlocale(LC_NUMERIC,"C");
+    oldlocale = uselocale(tmplocale);
     sprintf( buffer, "%g", dval );
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale(oldlocale);
 return( copy(buffer));
 }
 
-static char *rplarraydecimal(const char *orig,const char *decimal_point,const char *oldloc) {
+static char *rplarraydecimal(const char *orig,const char *decimal_point, locale_t tmplocale) {
     char *new, *npt, *rpl;
     int nlen;
     const char *start, *pt; int ch;
@@ -1939,7 +1940,7 @@ static char *rplarraydecimal(const char *orig,const char *decimal_point,const ch
 	start=pt;
 	while ( *pt!=']' && *pt!=' ' && *pt!='\0' ) ++pt;
 	ch = *pt; *(char *) pt = '\0';
-	rpl = rpldecimal(start,decimal_point,oldloc);
+	rpl = rpldecimal(start,decimal_point,tmplocale);
 	*(char *) pt = ch;
 	if ( rpl==NULL ) {
 	    gwwv_post_notice(_("Bad type"),_("Expected array of numbers.\nFailed to parse \"%.*s\" as a number."),
@@ -1973,7 +1974,7 @@ static void PSPrivate_FinishEdit(GGadget *g,int r, int c, int wasnew) {
     char *key = strings[r*cols+0].u.md_str;
     char *val = strings[r*cols+1].u.md_str;
     char *pt, *ept, *newval;
-    char *oldloc;
+    locale_t tmplocale;
     struct psdict *tempdict;
 
     if ( key==NULL )
@@ -1992,7 +1993,9 @@ return;
 	break;
 	if ( KnownPrivates[i].name==NULL )	/* If we don't recognize it, leave it be */
 return;
-	oldloc = copy(setlocale(LC_NUMERIC,NULL));
+
+	tmplocale = newlocale(LC_NUMERIC_MASK, "C", NULL);
+	if (tmplocale == NULL) fprintf(stderr, "Locale error.\n");
 
 	for ( pt=val; isspace(*pt); ++pt );
 	for ( ept = val+strlen(val-1); ept>pt && isspace(*ept); --ept );
@@ -2015,7 +2018,7 @@ return;
 	    if ( *pt!='\0' && (*pt!='{' || (ept>=pt && *ept!='}')) )
 		gwwv_post_notice(_("Bad type"),_("Expected PostScript code.\nWhich usually begins with a \"{\" and ends with a \"}\"."));
 	} else if ( KnownPrivates[i].type==pt_number ) {
-	    newval = rpldecimal(val,loc->decimal_point,oldloc);
+	    newval = rpldecimal(val,loc->decimal_point,tmplocale);
 	    if ( newval==NULL )
 		gwwv_post_notice(_("Bad type"),_("Expected number."));
 	    else if ( strcmp(newval,val)==0 )
@@ -2026,7 +2029,7 @@ return;
 		GGadgetRedraw(g);
 	    }
 	} else if ( KnownPrivates[i].type==pt_array ) {
-	    newval = rplarraydecimal(val,loc->decimal_point,oldloc);
+	    newval = rplarraydecimal(val,loc->decimal_point,tmplocale);
 	    if ( newval==NULL )
 		gwwv_post_notice(_("Bad type"),_("Expected number."));
 	    else if ( strcmp(newval,val)==0 )
@@ -2037,7 +2040,7 @@ return;
 		GGadgetRedraw(g);
 	    }
 	}
-	free(oldloc);
+	if (tmplocale != NULL) { freelocale(tmplocale); tmplocale = NULL; }
     }
 }
 

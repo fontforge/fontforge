@@ -922,12 +922,10 @@ return( uni==-1 || uni>=0x10000 ||
 
 static void svg_sfdump(FILE *file,SplineFont *sf,int layer) {
     int defwid, i, formeduni;
-    char oldloc[25];
     struct altuni *altuni;
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
 	sf->glyphs[i]->ticked = false;
@@ -989,7 +987,7 @@ static void svg_sfdump(FILE *file,SplineFont *sf,int layer) {
     svg_dumpkerns(file,sf,false);
     svg_dumpkerns(file,sf,true);
     svg_outfonttrailer(file);
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 }
 
 int _WriteSVGFont(FILE *file,SplineFont *sf,int flags,
@@ -1027,7 +1025,7 @@ return( ret );
 }
 
 int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
-    char oldloc[24], *end;
+    char *end;
     int em_size;
     DBounds b;
 
@@ -1038,8 +1036,8 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
     if ( b.miny>-sc->parent->descent ) b.miny = -sc->parent->descent;
     if ( b.maxy<em_size ) b.maxy = em_size;
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     fprintf(svg, "<?xml version=\"1.0\" standalone=\"no\"?>\n" );
     fprintf(svg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\" >\n" );
     fprintf(svg, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" viewBox=\"%d %d %d %d\">\n",
@@ -1058,7 +1056,7 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
     fprintf(svg, "  </g>\n\n" );
     fprintf(svg, "</svg>\n" );
 
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 return( !ferror(svg));
 }
 
@@ -3544,7 +3542,6 @@ void SFLSetOrder(SplineFont *sf, int layerdest, int order2) {
 static SplineFont *_SFReadSVG(xmlDocPtr doc, char *filename) {
     xmlNodePtr *fonts, font;
     SplineFont *sf;
-    char oldloc[25];
     char *chosenname = NULL;
 
     fonts = FindSVGFontNodes(doc);
@@ -3564,11 +3561,10 @@ return( NULL );
 	}
     }
     free(fonts);
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     sf = SVGParseFont(font);
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     xmlFreeDoc(doc);
 
     if ( sf!=NULL ) {

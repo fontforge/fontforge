@@ -794,7 +794,7 @@ static void bStrftime(Context *c) {
     if ( c->a.argc>=3 )
 	isgmt = c->a.vals[2].u.ival;
     if ( c->a.argc>=4 )
-	oldloc = setlocale(LC_TIME, c->a.vals[3].u.sval);
+	oldloc = setlocale(LC_TIME, c->a.vals[3].u.sval); // TODO
 
     time(&now);
     if ( isgmt )

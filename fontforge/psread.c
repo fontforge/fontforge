@@ -1276,7 +1276,6 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     DashType dashes[DASH_MAX];
     int dash_offset = 0;
     Entity *ent;
-    char oldloc[25];
     int warned = 0;
     struct garbage tofrees;
     SplineSet *clippath = NULL;
@@ -1285,9 +1284,8 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 
     tokbuf = malloc(tokbufsize);
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
 
     memset(&gb,'\0',sizeof(GrowBuf));
     memset(&dict,'\0',sizeof(dict));
@@ -2811,7 +2809,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     ECCategorizePoints(ec);
     if ( ec->width == UNDEFINED_WIDTH )
 	ec->width = wrapper->advance_width;
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     free(tokbuf);
 }
 

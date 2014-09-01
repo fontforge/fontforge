@@ -35,6 +35,7 @@
 #else
 # include <gwwiconv.h>
 #endif
+#include "locale.h"
 
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
 # define real		double
@@ -3452,6 +3453,31 @@ extern void debug_printHintInstance( HintInstance* hi, int hin, char* msg );
  * tolerence of b.
  */
 extern bool equalWithTolerence( real a, real b, real tolerence );
+
+static inline void switch_to_c_locale(locale_t * tmplocale_p, locale_t * oldlocale_p) {
+  *tmplocale_p = newlocale(LC_NUMERIC_MASK, "C", NULL);
+  if (*tmplocale_p == NULL) fprintf(stderr, "Failed to create temporary locale.\n");
+  else if ((*oldlocale_p = uselocale(*tmplocale_p)) == NULL) {
+    fprintf(stderr, "Failed to change locale.\n");
+    freelocale(*tmplocale_p); *tmplocale_p = NULL;
+  }
+}
+
+static inline void switch_to_old_locale(locale_t * tmplocale_p, locale_t * oldlocale_p) {
+  if (*oldlocale_p != NULL) { uselocale(*oldlocale_p); } else { uselocale(LC_GLOBAL_LOCALE); }
+  *oldlocale_p = NULL;
+  if (*tmplocale_p != NULL) { freelocale(*tmplocale_p); *tmplocale_p = NULL; }
+}
+
+#if 0
+#define DECLARE_TEMP_LOCALE() char oldloc[25];
+#define SWITCH_TO_C_LOCALE() strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 ); oldloc[24]='\0'; setlocale(LC_NUMERIC,"C");
+#define SWITCH_TO_OLD_LOCALE() setlocale(LC_NUMERIC,oldloc);
+#else
+#define DECLARE_TEMP_LOCALE() locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+#define SWITCH_TO_C_LOCALE() switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
+#define SWITCH_TO_OLD_LOCALE() switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
+#endif
 
 
 
