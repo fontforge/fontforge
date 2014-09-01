@@ -120,6 +120,13 @@ char* GIOGetMimeType(const char *path) {
 /* If that does not work, then depend on guessing type. */
 #define	sniff_length	4096
     char *content_type=NULL,*mime=0;
+
+/*
+   Doing this on Windows is horrendously slow. glib on Windows also only uses
+   the sniff buffer iff MIME detection via file extension fails, and even
+   then, only for determining if it /looks like/ a text file.
+*/
+#ifndef __MINGW32__
     FILE *fp;
 
     if ( (fp=fopen(path,"rb"))!=NULL ) {
@@ -139,6 +146,7 @@ char* GIOGetMimeType(const char *path) {
             }
         }
     }
+#endif
 
     if ( content_type==NULL )
 	/* if sniffing failed - then try and guess the file type */
