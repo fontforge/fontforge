@@ -3045,7 +3045,7 @@ return( NULL );
 	}
 	free(layercontentsname);
 
-    sf->map = EncMapFromEncoding(sf,FindOrMakeEncoding("Unicode"));
+    sf->map = EncMap1to1(sf->glyphcnt);
 
     /* Might as well check for feature files even if version 1 */
     temp = buildname(basedir,"features.fea");
