@@ -1794,30 +1794,37 @@ return( NULL );
     if ( rx<0 ) rx = -rx;
     if ( ry<0 ) ry = -ry;
 
+    /* a magic number to make cubic beziers approximate ellipses    */
+    /*            4/3 * ( sqrt(2) - 1 ) = 0.55228...                */
+    /*   also     4/3 * tan(t/4)   where t = 90 b/c we do 4 curves  */
+    double magic = 0.5522847498307933984022516322796;
+    /* offset from on-curve point to control points                 */
+    double drx = rx * magic;
+    double dry = ry * magic;
     cur = chunkalloc(sizeof(SplineSet));
     cur->first = SplinePointCreate(cx-rx,cy);
-    cur->last = SplinePointCreate(cx,cy+ry);
-    cur->first->nextcp.x = cx-rx; cur->first->nextcp.y = cy+ry;
-    cur->last->prevcp = cur->first->nextcp;
+    cur->first->nextcp.x = cx-rx; cur->first->nextcp.y = cy+dry;
+    cur->first->prevcp.x = cx-rx; cur->first->prevcp.y = cy-dry;
     cur->first->noprevcp = cur->first->nonextcp = false;
+    cur->last = SplinePointCreate(cx,cy+ry);
+    cur->last->prevcp.x = cx-drx; cur->last->prevcp.y = cy+ry;
+    cur->last->nextcp.x = cx+drx; cur->last->nextcp.y = cy+ry;
     cur->last->noprevcp = cur->last->nonextcp = false;
-    SplineMake(cur->first,cur->last,true);
+    SplineMake(cur->first,cur->last,false);
     sp = SplinePointCreate(cx+rx,cy);
-    sp->prevcp.x = cx+rx; sp->prevcp.y = cy+ry;
-    sp->nextcp.x = cx+rx; sp->nextcp.y = cy-ry;
+    sp->prevcp.x = cx+rx; sp->prevcp.y = cy+dry;
+    sp->nextcp.x = cx+rx; sp->nextcp.y = cy-dry;
     sp->nonextcp = sp->noprevcp = false;
-    cur->last->nextcp = sp->prevcp;
-    SplineMake(cur->last,sp,true);
+    SplineMake(cur->last,sp,false);
     cur->last = sp;
     sp = SplinePointCreate(cx,cy-ry);
-    sp->prevcp = cur->last->nextcp;
-    sp->nextcp.x = cx-rx; sp->nextcp.y = cy-ry;
+    sp->prevcp.x = cx+drx; sp->prevcp.y = cy-ry;
+    sp->nextcp.x = cx-drx; sp->nextcp.y = cy-ry;
     sp->nonextcp = sp->noprevcp = false;
-    cur->first->prevcp = sp->nextcp;
-    SplineMake(cur->last,sp,true);
-    SplineMake(sp,cur->first,true);
+    SplineMake(cur->last,sp,false);
+    SplineMake(sp,cur->first,false);
     cur->last = cur->first;
-return( cur );
+    return( cur );
 }
 
 static SplineSet *SVGParsePoly(xmlNodePtr poly, int isgon) {
