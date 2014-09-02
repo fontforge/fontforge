@@ -5815,7 +5815,7 @@ return( 0 );
 }
 
 static PyObject *PyFF_Glyph_get_persistent(PyFF_Glyph *self, void *UNUSED(closure)) {
-    if ( self->sc->layer_cnt <= ly_fore && self->sc->layers[ly_fore].python_persistent==NULL )
+    if ( self->sc->layer_cnt <= ly_fore || self->sc->layers[ly_fore].python_persistent==NULL )
 Py_RETURN_NONE;
     Py_INCREF( (PyObject *) (self->sc->layers[ly_fore].python_persistent) );
 return( self->sc->layers[ly_fore].python_persistent );
