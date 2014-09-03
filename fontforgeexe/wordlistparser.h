@@ -37,12 +37,6 @@ const char* Wordlist_getSCName( SplineChar* sc );
 typedef int (*WordlistEscapedInputStringToRealString_getFakeUnicodeOfScFunc)( SplineChar *sc, void* udata );
 extern int WordlistEscapedInputStringToRealString_getFakeUnicodeAsScUnicodeEnc( SplineChar *sc, void* udata );
 
-extern unichar_t* WordlistEscapedInputStringToRealString(
-    SplineFont* sf,
-    const unichar_t* input_const,
-    GArray** selected_out,
-    WordlistEscapedInputStringToRealString_getFakeUnicodeOfScFunc getUnicodeFunc,
-    void* udata );
 
 extern unichar_t* WordlistEscapedInputStringToRealStringBasic(
     SplineFont* sf,
@@ -95,6 +89,8 @@ typedef WordListChar* WordListLine;
 
 extern bool Wordlist_selectionsEqual( unichar_t* s1, unichar_t* s2 );
 extern WordListLine WordListLine_end( WordListLine wll );
+extern int WordListLine_size( WordListLine wll );
+extern unichar_t* WordListLine_toustr( WordListLine wll );
 
 extern WordListLine WordlistEscapedInputStringToParsedData( SplineFont* sf,
 							    unichar_t* input_const );

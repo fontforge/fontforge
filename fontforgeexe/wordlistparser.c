@@ -37,6 +37,27 @@
 #include "wordlistparser.h"
 
 
+static void dump_ustr( char* msg, unichar_t* u )
+{
+    char u8buf[1001];
+    char* pt = u8buf;
+    memset( u8buf, 0, 1000 );
+    printf("%s\n", msg );
+    unichar_t* p = u;
+    unichar_t* e = u + u_strlen( u );
+    for( ; p!=e; ++p )
+    {
+	unichar_t buf[5];
+	buf[0] = *p;
+	buf[1] = '\0';
+	printf("walk %d %s\n", *p, u_to_c(buf));
+
+	pt = utf8_idpb( pt, *p, 0);
+    }
+    printf("%s u8str:%s\n", msg, u8buf );
+}
+
+
 const char* Wordlist_getSCName( SplineChar* sc )
 {
     /* printf("Wordlist_getSCName() sc->name:%s\n", sc->name ); */
@@ -133,12 +154,13 @@ WordlistEscapedInputStringToRealString_readGlyphName(
 
 	    char* endptr = 0;
 	    long unicodepoint = strtoul( glyphname+1, &endptr, 16 );
+	    TRACE("AAA glyphname:%s\n", glyphname+1 );
+	    TRACE("AAA unicodepoint:%d\n", unicodepoint );
 	    sc = SFGetChar( sf, unicodepoint, 0 );
 	    if( sc && endptr )
 	    {
 		char* endofglyphname = glyphname + strlen(glyphname);
-//		printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname );
-		for( ; endptr != endofglyphname; endptr++ )
+		for( ; endptr < endofglyphname; endptr++ )
 		    --endpos;
 	    }
 	    if( !sc )
@@ -161,7 +183,7 @@ WordlistEscapedInputStringToRealString_readGlyphName(
 		{
 		    char* endofglyphname = glyphname + strlen(glyphname);
 //		    printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname );
-		    for( ; endptr != endofglyphname; endptr++ )
+		    for( ; endptr < endofglyphname; endptr++ )
 			--endpos;
 		}
 	    }
@@ -194,133 +216,133 @@ WordlistEscapedInputStringToRealString_readGlyphName(
 }
 
 
+static SplineChar*
+u_WordlistEscapedInputStringToRealString_readGlyphName(
+    SplineFont *sf, unichar_t* in, unichar_t* in_end,
+    unichar_t** updated_in, unichar_t* glyphname )
+{
+    int startedWithBackSlash = (*in == '\\');
+    if( *in != '/' && *in != '\\' )
+	return 0;
+    bool startsWithBackSlash = *in == '\\';
+    // move over the delimiter that we know we are on
+    in++;
+    unichar_t* startpos = in;
+
+    // Get the largest possible 'glyphname' from the input stream.
+    memset( glyphname, '\0', PATH_MAX );
+    unichar_t* outname = glyphname;
+    while( *in != '/'
+	   && ( !startsWithBackSlash || *in != '\\' )
+	   && *in != ' ' && *in != ']' && in != in_end )
+    {
+	*outname = *in;
+	++outname;
+	in++;
+    }
+    bool FullMatchEndsOnSpace = 0;
+    unichar_t* maxpos = in;
+    unichar_t* endpos = maxpos-1;
+    TRACE("WordlistEscapedInputStringToRealString_readGlyphName(x1) -->:%s:<--\n", u_to_c(glyphname));
+
+    int loopCounter = 0;
+    int firstLookup = 1;
+    for( ; endpos >= startpos; endpos--, loopCounter++ )
+    {
+//	printf("WordlistEscapedInputStringToRealString_readGlyphName(trim loop top) gn:%s\n", u_to_c(glyphname) );
+	SplineChar* sc = 0;
+	
+	if( startedWithBackSlash )
+	{
+	    if( glyphname[0] == 'u' )
+		glyphname++;
+
+	    unichar_t* endptr = 0;
+	    long unicodepoint = u_strtoul( glyphname+1, &endptr, 16 );
+	    TRACE("AAA glyphname:%s\n", u_to_c(glyphname+1) );
+	    TRACE("AAA unicodepoint:%d\n", unicodepoint );
+	    sc = SFGetChar( sf, unicodepoint, 0 );
+	    if( sc && endptr )
+	    {
+		unichar_t* endofglyphname = glyphname + u_strlen(glyphname);
+		/* printf("glyphname:%p\n", glyphname ); */
+		/* printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname ); */
+		for( ; endptr < endofglyphname; endptr++ )
+		    --endpos;
+	    }
+	    if( !sc )
+	    {
+		printf("WordlistEscapedInputStringToRealString_readGlyphName() no char found for backslashed unicodepoint:%ld\n", unicodepoint );
+		uc_strcpy(glyphname,"backslash");
+		sc = SFGetChar( sf, -1, u_to_c(glyphname) );
+		endpos = startpos;
+	    }
+	}
+	else
+	{
+	    if( uc_startswith( glyphname, "uni"))
+	    {
+		unichar_t* endptr = 0;
+		long unicodepoint = u_strtoul( glyphname+3, &endptr, 16 );
+		TRACE("uni prefix, codepoint: %d\n", unicodepoint );
+		sc = SFGetChar( sf, unicodepoint, 0 );
+		if( sc && endptr )
+		{
+		    unichar_t* endofglyphname = glyphname + u_strlen(glyphname);
+//		    printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname );
+		    for( ; endptr < endofglyphname; endptr++ )
+			--endpos;
+		}
+	    }
+	    
+	    if( firstLookup && glyphname[0] == '#' )
+	    {
+		unichar_t* endptr = 0;
+		long unicodepoint = u_strtoul( glyphname+1, &endptr, 16 );
+//		printf("WordlistEscapedInputStringToRealString_readGlyphName() unicodepoint:%ld\n", unicodepoint );
+		sc = SFGetChar( sf, unicodepoint, 0 );
+		if( sc && endptr )
+		{
+		    unichar_t* endofglyphname = glyphname + u_strlen(glyphname);
+//		    printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname );
+		    for( ; endptr < endofglyphname; endptr++ )
+			--endpos;
+		}
+	    }
+	    if( !sc )
+	    {
+//		printf("WordlistEscapedInputStringToRealString_readGlyphName(getchar) gn:%s\n", glyphname );
+		sc = SFGetChar( sf, -1, u_to_c(glyphname) );
+	    }
+	}
+
+	if( sc )
+	{
+//	    printf("WordlistEscapedInputStringToRealString_readGlyphName(found!) gn:%s start:%p end:%p\n", glyphname, startpos, endpos );
+	    if( !loopCounter && FullMatchEndsOnSpace )
+	    {
+		endpos++;
+	    }
+	    *updated_in = endpos;
+	    return sc;
+	}
+	if( glyphname[0] != '\0' )
+	    glyphname[ u_strlen(glyphname)-1 ] = '\0';
+    }
+
+
+    *updated_in = endpos;
+
+    // printf("WordlistEscapedInputStringToRealString_readGlyphName(end) gn:%s\n", glyphname );
+    return 0;
+}
+
+
 int WordlistEscapedInputStringToRealString_getFakeUnicodeAsScUnicodeEnc( SplineChar *sc, void* udata )
 {
     return( sc->unicodeenc );
 }
 
-unichar_t* WordlistEscapedInputStringToRealString(
-    SplineFont* sf,
-    const unichar_t* input_const,
-    GArray** selected_out,
-    WordlistEscapedInputStringToRealString_getFakeUnicodeOfScFunc getUnicodeFunc,
-    void* udata )
-{
-    char* input = u2utf8_copy(input_const);
-
-    // truncate insanely long lines rather than crash
-    if( strlen(input) > PATH_MAX )
-	input[PATH_MAX] = '\0';
-
-//    printf("MVEscapedInputStringToRealString(top) input:%s\n", input );
-    int  buffer_sz = PATH_MAX;
-    char buffer[PATH_MAX+1];
-    memset( buffer, '\0', buffer_sz );
-    char *out = buffer;
-    char* in = input;
-    char* in_end = input + strlen(input);
-    // trim comment and beyond from input
-    {
-	char* p = input;
-	while( p && p < in_end  )
-	{
-	    p = strchr( p, '#' );
-	    if( p > input && *(p-1) == '/' )
-	    {
-		p++;
-		continue;
-	    }
-	    if( p )
-		*p = '\0';
-	    break;
-	}
-    }
-    in_end = input + strlen(input);
-
-//    printf("MVEscapedInputStringToRealString() in:%p in_end:%p\n", in, in_end );
-
-    GArray* selected = g_array_new( 1, 1, sizeof(int));
-    *selected_out = selected;
-    int addingGlyphsToSelected = 0;
-    int currentGlyphIndex = -1;
-    for ( ; in != in_end; in++ )
-    {
-	char ch = *in;
-//	printf("got ch:%c buf:%s\n", ch, buffer );
-
-	if( ch == '[' )
-	{
-	    addingGlyphsToSelected = 1;
-	    continue;
-	}
-	if( ch == ']' )
-	{
-	    addingGlyphsToSelected = 0;
-	    continue;
-	}
-	currentGlyphIndex++;
-	if( addingGlyphsToSelected )
-	{
-	    int selectGlyph = currentGlyphIndex;
-	    g_array_append_val( selected, selectGlyph );
-	}
-
-	if( ch == '/' || ch == '\\' )
-	{
-	    // start of a glyph name
-	    char glyphname[ PATH_MAX+1 ];
-	    char* updated_in = 0;
-	    SplineChar* sc = WordlistEscapedInputStringToRealString_readGlyphName( sf, in, in_end, &updated_in, glyphname );
-	    if( sc )
-	    {
-		TRACE("ToRealString have an sc!... in:%p updated_in:%p\n", in, updated_in );
-		TRACE("Got input_const: %s\n", u_to_c(input_const));
-		TRACE("Got unicode encoding: %d\n", sc->unicodeenc);
-		TRACE("Got sc.pos: %d\n", sc->orig_pos);
-
-		in = updated_in;
-		int n = getUnicodeFunc( sc, udata );
-		TRACE("ToRealString orig_pos:%d\n", sc->orig_pos );
-		if( n == -1 )
-		{
-		    TRACE("no unicode, at -1\n");
-		    
-		    /*
-		     * Okay, this probably means we've got an unencoded glyph (generally
-		     * used for OpenType substitutions).
-		     * Redeem the value from the SplineFont datamap instead of fetching from
-		     * the Unicode identifier.
-		     */
-		    n = sf->map->backmap[sc->orig_pos];
-
-		    /*
-		     * Unencoded glyphs have special mappings in the SplineFont that
-		     * start from 65536 (values beyond Unicode, 65535 being the reserved
-		     * "frontier" value).
-		     */
-		    if ( n < 65536 ) {
-		        printf("ToRealString: backmapped position does not match Unicode encoding\n");
-		        printf("orig_pos: %d, backmap: %d, attached unicode enc: %d\n", sc->orig_pos, n, sc->unicodeenc );
-		        printf("ToRealString: INVALID CHAR POSITION, name: %s\n", sc->name );
-		    }
-		}
-
-		TRACE("calling utf8_idpb buffer:%s out:%s ch:%d\n", buffer, out, n );
-		
-		out = utf8_idpb( out, n, 0 );
-		if( !out )
-		    printf("ToRealString error on out\n");
-		continue;
-	    }
-	}
-
-	*out++ = ch;
-    }
-
-    unichar_t* ret = (unichar_t *) utf82u_copy( buffer );
-    free(input);
-    return(ret);
-}
 
 //
 // If there is only one trailing slash, then remove it.
@@ -344,22 +366,6 @@ void WordlistTrimTrailingSingleSlash( unichar_t* txt )
 }
 
 
-/**
- *
- * DEPRECATED
- * 
- * use WordlistEscapedInputStringToParsedData() instead.
- */
-unichar_t* WordlistEscapedInputStringToRealStringBasic(
-    SplineFont* sf,
-    unichar_t* input_const,
-    GArray** selected_out )
-{
-    unichar_t* ret = WordlistEscapedInputStringToRealString(
-	sf, input_const, selected_out,
-	WordlistEscapedInputStringToRealString_getFakeUnicodeAsScUnicodeEnc, 0 );
-    return ret;
-}
 
 /************************************************************/
 /************************************************************/
@@ -383,30 +389,33 @@ WordListLine WordListLine_end( WordListLine wll )
     return wll;
 }
 
+int WordListLine_size( WordListLine wll )
+{
+    int ret = 0;
+    for( ; wll->sc; wll++ ) {
+	++ret;
+    }
+    return ret;
+}
+
 
 WordListLine WordlistEscapedInputStringToParsedDataComplex(
     SplineFont* sf,
     const unichar_t* input_const,
-//    GArray** selected_out,
     WordlistEscapedInputStringToRealString_getFakeUnicodeOfScFunc getUnicodeFunc,
     void* udata )
 {
-    char* input = u2utf8_copy(input_const);
-
-    // truncate insanely long lines rather than crash
-    if( strlen(input) > PATH_MAX )
-	input[PATH_MAX] = '\0';
-
+    unichar_t* input = u_copy( input_const );
     WordListChar* ret = calloc( WordListLineSz, sizeof(WordListChar));
     WordListChar* out = ret;
-    char* in = input;
-    char* in_end = input + strlen(input);
+    unichar_t* in     = input;
+    unichar_t* in_end = input + u_strlen(input);
     // trim comment and beyond from input
     {
-	char* p = input;
+	unichar_t* p = input;
 	while( p && p < in_end  )
 	{
-	    p = strchr( p, '#' );
+	    p = u_strchr( p, '#' );
 	    if( p > input && *(p-1) == '/' )
 	    {
 		p++;
@@ -417,14 +426,14 @@ WordListLine WordlistEscapedInputStringToParsedDataComplex(
 	    break;
 	}
     }
-    in_end = input + strlen(input);
+    in_end = input + u_strlen(input);
 
     int addingGlyphsToSelected = 0;
     int currentGlyphIndex = -1;
-    for ( ; in != in_end; in++ )
+    for ( ; in < in_end; in++ )
     {
-	char ch = *in;
-
+	unichar_t ch = *in;
+	TRACE("in:%p end:%p got char %d %c\n", in, in_end, ch, ch );
 	if( ch == '[' )
 	{
 	    addingGlyphsToSelected = 1;
@@ -441,13 +450,11 @@ WordListLine WordlistEscapedInputStringToParsedDataComplex(
 	if( ch == '/' || ch == '\\' )
 	{
 	    // start of a glyph name
-	    char glyphname[ PATH_MAX+1 ];
-	    char* updated_in = 0;
-	    SplineChar* sc = WordlistEscapedInputStringToRealString_readGlyphName( sf, in, in_end, &updated_in, glyphname );
+	    unichar_t glyphname[ PATH_MAX+1 ];
+	    unichar_t* updated_in = 0;
+	    SplineChar* sc = u_WordlistEscapedInputStringToRealString_readGlyphName( sf, in, in_end, &updated_in, glyphname );
 	    if( sc )
 	    {
-		printf("have sc:%p\n", sc );
-		printf("have sc.name:%s\n", sc->name );
 		in = updated_in;
 		int n = getUnicodeFunc( sc, udata );
 		if( n == -1 )
@@ -488,7 +495,7 @@ WordListLine WordlistEscapedInputStringToParsedDataComplex(
 	char glyphname[10];
 	glyphname[0] = ch;
 	glyphname[1] ='\0';
-	SplineChar* sc = SFGetChar( sf, -1, glyphname );
+	SplineChar* sc = SFGetChar( sf, ch, 0 );
 	out->sc = sc;
 	out->isSelected = isSelected;
 	out->currentGlyphIndex = currentGlyphIndex;
@@ -909,6 +916,16 @@ bool Wordlist_selectionsEqual( unichar_t* s1, unichar_t* s2 )
     return !u_strcmp( s1stripped, s2stripped );
 }
 
+
+unichar_t* WordListLine_toustr( WordListLine wll )
+{
+    unichar_t* ret = calloc( WordListLine_size(wll)+1, sizeof(unichar_t));
+    unichar_t* p = ret;
+    for( ; wll->sc; wll++, p++ ) {
+	*p = wll->sc->unicodeenc;
+    }
+    return ret;
+}
 
 
 
