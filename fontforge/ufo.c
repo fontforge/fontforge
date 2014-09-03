@@ -477,55 +477,6 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
     if ( sc->layers[layer].refs!=NULL || sc->layers[layer].splines!=NULL ) {
       xmlNodePtr outlinexml = xmlNewChild(topglyphxml, NULL, BAD_CAST "outline", NULL);
 	// "<outline>"
-	/* RoboFab outputs components in alphabetic (case sensitive) order */
-	/*  I've been asked to do that too */
-	if ( sc->layers[layer].refs!=NULL ) {
-	    const RefChar **refs;
-	    int i, cnt;
-	    for ( cnt=0, ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( SCWorthOutputting(ref->sc))
-		++cnt;
-	    refs = malloc(cnt*sizeof(RefChar *));
-	    for ( cnt=0, ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( SCWorthOutputting(ref->sc))
-		refs[cnt++] = ref;
-	    // It seems that sorting these breaks something.
-#if 0
-	    if ( cnt>1 )
-		qsort(refs,cnt,sizeof(RefChar *),refcomp);
-#endif // 0
-	    for ( i=0; i<cnt; ++i ) {
-		ref = refs[i];
-    xmlNodePtr componentxml = xmlNewChild(outlinexml, NULL, BAD_CAST "component", NULL);
-    xmlSetPropPrintf(componentxml, BAD_CAST "base", "%s", ref->sc->name);
-		// "<component base=\"%s\"" ref->sc->name
-    char *floattmp = NULL;
-		if ( ref->transform[0]!=1 ) {
-                  xmlSetPropPrintf(componentxml, BAD_CAST "xScale", "%g", (double) ref->transform[0]);
-		    // "xScale=\"%g\"" (double)ref->transform[0]
-                }
-		if ( ref->transform[3]!=1 ) {
-                  xmlSetPropPrintf(componentxml, BAD_CAST "yScale", "%g", (double) ref->transform[3]);
-		    // "yScale=\"%g\"" (double)ref->transform[3]
-                }
-		if ( ref->transform[1]!=0 ) {
-                  xmlSetPropPrintf(componentxml, BAD_CAST "xyScale", "%g", (double) ref->transform[1]);
-		    // "xyScale=\"%g\"" (double)ref->transform[1]
-                }
-		if ( ref->transform[2]!=0 ) {
-                  xmlSetPropPrintf(componentxml, BAD_CAST "yxScale", "%g", (double) ref->transform[2]);
-		    // "yxScale=\"%g\"" (double)ref->transform[2]
-                }
-		if ( ref->transform[4]!=0 ) {
-                  xmlSetPropPrintf(componentxml, BAD_CAST "xOffset", "%g", (double) ref->transform[4]);
-		    // "xOffset=\"%g\"" (double)ref->transform[4]
-                }
-		if ( ref->transform[5]!=0 ) {
-                  xmlSetPropPrintf(componentxml, BAD_CAST "yOffset", "%g", (double) ref->transform[5]);
-		    // "yOffset=\"%g\"" (double)ref->transform[5]
-                }
-		// "/>"
-	    }
-	    free(refs);
-	}
         for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
             int ismark = (ap->type==at_mark || ap->type==at_centry);
             xmlNodePtr contourxml = xmlNewChild(outlinexml, NULL, BAD_CAST "contour", NULL);
@@ -581,6 +532,56 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
 	    }
 	    // "</contour>"
 	}
+	/* RoboFab outputs components in alphabetic (case sensitive) order */
+	/*  I've been asked to do that too */
+	if ( sc->layers[layer].refs!=NULL ) {
+	    const RefChar **refs;
+	    int i, cnt;
+	    for ( cnt=0, ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( SCWorthOutputting(ref->sc))
+		++cnt;
+	    refs = malloc(cnt*sizeof(RefChar *));
+	    for ( cnt=0, ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( SCWorthOutputting(ref->sc))
+		refs[cnt++] = ref;
+	    // It seems that sorting these breaks something.
+#if 0
+	    if ( cnt>1 )
+		qsort(refs,cnt,sizeof(RefChar *),refcomp);
+#endif // 0
+	    for ( i=0; i<cnt; ++i ) {
+		ref = refs[i];
+    xmlNodePtr componentxml = xmlNewChild(outlinexml, NULL, BAD_CAST "component", NULL);
+    xmlSetPropPrintf(componentxml, BAD_CAST "base", "%s", ref->sc->name);
+		// "<component base=\"%s\"" ref->sc->name
+    char *floattmp = NULL;
+		if ( ref->transform[0]!=1 ) {
+                  xmlSetPropPrintf(componentxml, BAD_CAST "xScale", "%g", (double) ref->transform[0]);
+		    // "xScale=\"%g\"" (double)ref->transform[0]
+                }
+		if ( ref->transform[3]!=1 ) {
+                  xmlSetPropPrintf(componentxml, BAD_CAST "yScale", "%g", (double) ref->transform[3]);
+		    // "yScale=\"%g\"" (double)ref->transform[3]
+                }
+		if ( ref->transform[1]!=0 ) {
+                  xmlSetPropPrintf(componentxml, BAD_CAST "xyScale", "%g", (double) ref->transform[1]);
+		    // "xyScale=\"%g\"" (double)ref->transform[1]
+                }
+		if ( ref->transform[2]!=0 ) {
+                  xmlSetPropPrintf(componentxml, BAD_CAST "yxScale", "%g", (double) ref->transform[2]);
+		    // "yxScale=\"%g\"" (double)ref->transform[2]
+                }
+		if ( ref->transform[4]!=0 ) {
+                  xmlSetPropPrintf(componentxml, BAD_CAST "xOffset", "%g", (double) ref->transform[4]);
+		    // "xOffset=\"%g\"" (double)ref->transform[4]
+                }
+		if ( ref->transform[5]!=0 ) {
+                  xmlSetPropPrintf(componentxml, BAD_CAST "yOffset", "%g", (double) ref->transform[5]);
+		    // "yOffset=\"%g\"" (double)ref->transform[5]
+                }
+		// "/>"
+	    }
+	    free(refs);
+	}
+
 	// "</outline>"
     }
     if (sc->layers[layer].python_persistent != NULL || (layer == ly_fore && (sc->hstem!=NULL || sc->vstem!=NULL ))) {
