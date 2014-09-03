@@ -534,7 +534,7 @@ collabclient_ensureClientBeacon(void)
     int fd = 0;
     size_t fdsz = sizeof(fd);
     int rc = zmq_getsockopt( zbeacon_socket(client_beacon), ZMQ_FD, &fd, &fdsz );
-    printf("beacon rc:%d fd:%d\n", rc, fd );
+//    printf("beacon rc:%d fd:%d\n", rc, fd );
 //    GDrawAddReadFD( 0, fd, cc, zeromq_beacon_fd_callback );
     client_beacon_timerID = BackgroundTimer_new( 1000, zeromq_beacon_timer_callback, 0 );
 }
@@ -847,10 +847,10 @@ static void collabclient_sniffForLocalServer_timer( void* udata )
     char* p = zstr_recv_nowait( cc->socket );
     if( p )
     {
-	printf("collabclient_sniffForLocalServer_timer() p:%s\n", p);
+//	printf("collabclient_sniffForLocalServer_timer() p:%s\n", p);
 	if( !strcmp(p,"pong"))
 	{
-	    printf("******* have local server!\n");
+//	    printf("******* have local server!\n");
 	    cc->haveServer = 1;
 	}
     }

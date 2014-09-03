@@ -121,13 +121,12 @@ static void selectUserChosenWordListGlyphs( MetricsView *mv, void* userdata )
     {
 	if (userdata == (void*)(-1) || userdata == (void*)(-2))
 	  fprintf(stderr, "Possible error; see the code here.\n");
-	GArray* selected = (GArray*)userdata;
-	int i = 0;
-	for (i = 0; i < selected->len; i++)
-	{
-	    int v = g_array_index (selected, gint, i);
-	    printf("selectUserChosenWordListGlyphs(iter) i:%d v:%d\n", i, v );
-	    MVSelectChar( mv, v );
+
+	WordListLine wll = (WordListLine)userdata;
+	for( ; wll->sc; wll++ ) {
+	    if( wll->isSelected ) {
+		MVSelectChar( mv, wll->currentGlyphIndex );
+	    }
 	}
     }
 }
@@ -1893,7 +1892,7 @@ static int WordlistEscapedInputStringToRealString_getFakeUnicodeAs_MVFakeUnicode
 
 
 static void MVTextChanged(MetricsView *mv) {
-    const unichar_t *ret, *pt, *ept, *tpt;
+    const unichar_t *ret = 0, *pt, *ept, *tpt;
     int i,ei, j, start=0, end=0;
     int missing;
     int direction_change = false;
@@ -1903,13 +1902,10 @@ static void MVTextChanged(MetricsView *mv) {
 
     // convert the slash escpae codes and the like to the real string we will use
     // for the metrics window
-    GArray* selected = NULL;
-    unichar_t* retnew = WordlistEscapedInputStringToRealString(
-	mv->sf,
-	ret, &selected,
-	WordlistEscapedInputStringToRealString_getFakeUnicodeAs_MVFakeUnicodeOfSc, mv );
-    ret = retnew;
-
+    WordListLine wll = WordlistEscapedInputStringToParsedDataComplex(
+    	mv->sf, _GGadgetGetTitle(mv->text),
+    	WordlistEscapedInputStringToRealString_getFakeUnicodeAs_MVFakeUnicodeOfSc, mv );
+    ret = WordListLine_toustr( wll );
 
     if (( ret[0]<0x10000 && isrighttoleft(ret[0]) && !mv->right_to_left ) ||
 	    ( ret[0]<0x10000 && !isrighttoleft(ret[0]) && mv->right_to_left )) {
@@ -1993,11 +1989,8 @@ return;					/* Nothing changed */
 	if( len )
 	    gt = ti[0];
     }
-    if( selected )
-    {
-        selectUserChosenWordListGlyphs( mv, selected );
-	g_array_unref( selected );
-    }
+
+    selectUserChosenWordListGlyphs( mv, wll );
     GDrawRequestExpose(mv->v,NULL,false);
 }
 
@@ -3156,9 +3149,6 @@ static void MVMoveInWordListByOffset( MetricsView *mv, int offset )
 	    else
 		MVTextChanged(mv);
 	    ti = NULL;
-
-//	    GTextInfo* gt = GGadgetGetListItemSelected(mv->text);
-//	    selectUserChosenWordListGlyphs( mv, gt->userdata );
 	}
     }
 }

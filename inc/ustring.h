@@ -183,6 +183,9 @@ int endswith(const char *haystack,const char *needle);
  */
 extern int u_endswith(const unichar_t *haystack,const unichar_t *needle);
 
+extern int u_startswith(const unichar_t *haystack,const unichar_t *needle);
+extern int uc_startswith(const unichar_t *haystack,const char* needle);
+
 /**
  * In the string 's' replace all occurances of 'orig' with 'replacement'.
  * If you set free_s to true then the string 's' will be freed by this function.

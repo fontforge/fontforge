@@ -12593,6 +12593,7 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	
 	cv->charselectoridx = pos;
 	char* txt = GGadgetGetTitle8( cv->charselector );
+	TRACE("char selector changed to:%s\n", txt );
 	{
 	    int tabnum = GTabSetGetSel(cv->tabs);
 	    TRACE("tab num:%d\n", tabnum );
@@ -12617,8 +12618,6 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	{
 	    int i=0;
 	    unichar_t *ret = GGadgetGetTitle( cv->charselector );
-	    GArray* selected = 0;
-
 	    WordListLine wll = WordlistEscapedInputStringToParsedData( sf, ret );
 	    WordListLine pt = wll;
 	    WordListLine ept = WordListLine_end(wll);
