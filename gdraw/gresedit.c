@@ -331,7 +331,7 @@ static int GRE_InheritFontChange(GGadget *g, GEvent *e) {
 		*res->font = ifd.font;
  
 		GGadgetSetTitle8(g,ifd.spec);
-		GRE_FigureInheritance(gre,res,cid_off,cid_off+2,false,
+		GRE_FigureInheritance(gre,res,cid_off,cid_off+2,true,
 			(void *) &ifd, inherit_font_change);
 		free( ifd.spec );
 	    }

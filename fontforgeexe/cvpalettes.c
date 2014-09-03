@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "collabclientui.h"
 
 int palettes_docked=1;
 int rectelipse=0, polystar=0, regular_star=1;
@@ -111,6 +112,32 @@ static GFont *toolsfont=NULL, *layersfont=NULL;
 #define BV_LAYERS_WIDTH		73
 #define BV_SHADES_HEIGHT	(8+9*16)
 
+/* These are control ids for the layers palette controls */
+#define CID_VBase	1000
+#define CID_VGrid	(CID_VBase+ly_grid)
+#define CID_VBack	(CID_VBase+ly_back)
+#define CID_VFore	(CID_VBase+ly_fore)
+
+#define CID_EBase	3000
+#define CID_EGrid	(CID_EBase+ly_grid)
+#define CID_EBack	(CID_EBase+ly_back)
+#define CID_EFore	(CID_EBase+ly_fore)
+
+#define CID_QBase	5000
+#define CID_QGrid	(CID_QBase+ly_grid)
+#define CID_QBack	(CID_QBase+ly_back)
+#define CID_QFore	(CID_QBase+ly_fore)
+
+#define CID_FBase	7000
+
+#define CID_SB		8000
+#define CID_Edit	8001
+
+#define CID_AddLayer    9000
+#define CID_RemoveLayer 9001
+#define CID_RenameLayer 9002
+#define CID_LayersMenu  9003
+
 static void ReparentFixup(GWindow child,GWindow parent, int x, int y, int width, int height ) {
     /* This is so nice */
     /* KDE does not honor my request for a border for top level windows */
@@ -125,6 +152,15 @@ static void ReparentFixup(GWindow child,GWindow parent, int x, int y, int width,
     if ( width!=0 )
 	GDrawResize(child,width,height);
     GDrawSetWindowBorder(child,1,GDrawGetDefaultForeground(NULL));
+}
+
+void onCollabSessionStateChanged( GObject* gobj, FontViewBase* fv )
+{
+    bool inCollab = collabclient_inSessionFV( fv );
+
+    GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_AddLayer),    !inCollab );
+    GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_RemoveLayer), !inCollab );
+    GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_RenameLayer), !inCollab );
 }
 
 /* Initialize a window that is to be used for a palette. Specific widgets and other functionality are added elsewhere. */
@@ -165,8 +201,14 @@ static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *),
     gw = GDrawCreateTopWindow(NULL,&newpos,eh,user_data,wattrs);
     if ( palettes_docked )
 	ReparentFixup(gw,v,0,pos->y,pos->width,pos->height);
+
+    collabclient_addSessionJoiningCallback( onCollabSessionStateChanged );
+    collabclient_addSessionLeavingCallback( onCollabSessionStateChanged );
+    
 return( gw );
 }
+
+
 
 /* Return screen coordinates of the palette in off, relative to the root window origin. */
 static void SaveOffsets(GWindow main, GWindow palette, GPoint *off) {
@@ -1278,31 +1320,6 @@ return( cvtools );
     /* ******************  Layers Palette  ********************* */
     /* ********************************************************* */
 
-/* These are control ids for the layers palette controls */
-#define CID_VBase	1000
-#define CID_VGrid	(CID_VBase+ly_grid)
-#define CID_VBack	(CID_VBase+ly_back)
-#define CID_VFore	(CID_VBase+ly_fore)
-
-#define CID_EBase	3000
-#define CID_EGrid	(CID_EBase+ly_grid)
-#define CID_EBack	(CID_EBase+ly_back)
-#define CID_EFore	(CID_EBase+ly_fore)
-
-#define CID_QBase	5000
-#define CID_QGrid	(CID_QBase+ly_grid)
-#define CID_QBack	(CID_QBase+ly_back)
-#define CID_QFore	(CID_QBase+ly_fore)
-
-#define CID_FBase	7000
-
-#define CID_SB		8000
-#define CID_Edit	8001
-
-#define CID_AddLayer    9000
-#define CID_RemoveLayer 9001
-#define CID_RenameLayer 9002
-#define CID_LayersMenu  9003
 
 
 /* Create a layer thumbnail */
@@ -1857,6 +1874,9 @@ static void CVLayers1Set(CharView *cv) {
  * are created or hid here, only the state of existing gadgets is changed.
  * New layer gadgets are created in CVLCheckLayerCount(). */
 void CVLayersSet(CharView *cv) {
+    if( cv )
+	onCollabSessionStateChanged( 0, cv->b.fv );
+    
     if ( cv->b.sc->parent->multilayer ) {
 	CVLayers2Set(cv);
 return;
@@ -3040,6 +3060,7 @@ return( cvlayers );
     GVisibilityBoxSetToMinWH(GWidgetGetControl(cvlayers,CID_VGrid));
     GVisibilityBoxSetToMinWH(GWidgetGetControl(cvlayers,CID_VBack));
     GVisibilityBoxSetToMinWH(GWidgetGetControl(cvlayers,CID_VFore));
+
 return( cvlayers );
 }
 

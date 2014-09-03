@@ -77,6 +77,8 @@ int collabclient_inSession( CharViewBase *cv )
     if( !cv->fv )
 	return 0;
     cloneclient_t* cc = cv->fv->collabClient;
+    if( cc && cc->sessionIsClosing )
+	return 0;
     return cc!=0;
 
 #endif
@@ -90,6 +92,8 @@ int collabclient_inSessionFV( FontViewBase* fv )
     if( !fv )
 	return 0;
     cloneclient_t* cc = fv->collabClient;
+    if( cc && cc->sessionIsClosing )
+	return 0;
     return cc!=0;
 
 #endif

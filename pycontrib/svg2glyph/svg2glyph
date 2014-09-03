@@ -221,7 +221,8 @@ for fname in args:
     root = parse(fname)
     name = root.getElementsByTagName('title')[0].childNodes[0].data
     dx = dy = 0
-    handle_transform(root.getElementsByTagName('g')[0])
+    groups = root.getElementsByTagName('g')[0]
+    handle_transform(groups)
     if name in psnames_to_uni:
         uni = psnames_to_uni[name]
     else:
@@ -229,7 +230,7 @@ for fname in args:
     gname = name
     if case_insensitive and (re.match('^[A-Z]$', name) or re.match('^[AO]E$', name)):
         gname = '_{}'.format(name.lower())
-    paths = root.getElementsByTagName('path')
+    paths = groups.getElementsByTagName('path')
     glyph = join(output_dir, '{}.glyph'.format(gname))
     dest = open(glyph, 'w')
     print('{} -> {}'.format(fname, glyph))

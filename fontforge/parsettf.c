@@ -1209,30 +1209,28 @@ return( true );
 }
 
 static void readdate(FILE *ttf,struct ttfinfo *info,int ismod) {
-    int date[4], date1970[4], year[2];
-    int i;
-    /* Dates in sfnt files are seconds since 1904. I adjust to unix time */
-    /*  seconds since 1970 by figuring out how many seconds were in between */
+    int i, date[4];
+    /* TTFs have creation and modification timestamps in the 'head' table.  */
+    /* These are 64 bit values in network order / big-endian and denoted    */
+    /* as 'LONGDATETIME'.                                                   */
+    /* These timestamps are in "number of seconds since 00:00 1904-01-01",  */
+    /* noted some places as a Mac OS epoch time value.  We use Unix epoch   */
+    /* timestamps which are "number of seconds since 00:00 1970-01-01".     */
+    /* The difference between these two epoch values is a constant number   */ 
+    /* of seconds, and so we convert from Mac to Unix time by simple        */
+    /* subtraction of that constant difference.                             */
+
+    /*      (31781 * 65536) + 45184 = 2082844800 secs is 24107 days */
+    int date1970[4] = {45184, 31781, 0, 0}; 
+
+    /* As there was not (nor still is?) a portable way to do 64-bit math aka*/
+    /* "long long" the code below works on 16-bit slices of the full value. */
+    /* The lowest 16 bits is operated on, then the next 16 bits, and so on. */
 
     date[3] = getushort(ttf);
     date[2] = getushort(ttf);
     date[1] = getushort(ttf);
     date[0] = getushort(ttf);
-    memset(date1970,0,sizeof(date1970));
-    year[0] = (60*60*24*365L)&0xffff;
-    year[1] = (60*60*24*365L)>>16;
-    for ( i=1904; i<1970; ++i ) {
-	date1970[0] += year[0];
-	date1970[1] += year[1];
-	if ( (i&3)==0 && (i%100!=0 || i%400==0))
-	    date1970[0] += 24*60*60L;		/* Leap year */
-	date1970[1] += (date1970[0]>>16);
-	date1970[0] &= 0xffff;
-	date1970[2] += date1970[1]>>16;
-	date1970[1] &= 0xffff;
-	date1970[3] += date1970[2]>>16;
-	date1970[2] &= 0xffff;
-    }
 
     for ( i=0; i<3; ++i ) {
 	date[i] -= date1970[i];
@@ -5394,7 +5392,6 @@ return( false );
 }
 
 static int readttf(FILE *ttf, struct ttfinfo *info, char *filename) {
-    char oldloc[24];
     int i;
 
     ff_progress_change_stages(3);
@@ -5402,8 +5399,8 @@ static int readttf(FILE *ttf, struct ttfinfo *info, char *filename) {
 return( 0 );
     }
     /* TrueType doesn't need this but opentype dictionaries do */
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     readttfpreglyph(ttf,info);
     ff_progress_change_total(info->glyph_cnt);
 
@@ -5424,7 +5421,7 @@ return( 0 );
 	buts[3] = NULL;
 	choice = ff_ask(_("Pick a font, any font..."),(const char **) buts,0,2,_("This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' table. FontForge can only deal with one at a time, please pick which one you want to use"));
 	if ( choice==2 ) {
-	    setlocale(LC_NUMERIC,oldloc);
+          switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 return( 0 );
 	} else if ( choice==0 )
 	    info->cff_start=0;
@@ -5445,16 +5442,16 @@ return( 0 );
     } else if ( info->cff_start!=0 ) {
 	info->to_order2 = (loaded_fonts_same_as_new && new_fonts_are_order2);
 	if ( !readcffglyphs(ttf,info) ) {
-	    setlocale(LC_NUMERIC,oldloc);
+	    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 return( 0 );
 	}
     } else if ( info->typ1_start!=0 ) {
 	if ( !readtyp1glyphs(ttf,info) ) {
-	    setlocale(LC_NUMERIC,oldloc);
+	    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 return( 0 );
 	}
     } else {
-	setlocale(LC_NUMERIC,oldloc);
+	switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 return( 0 );
     }
     if ( info->bitmapdata_start!=0 && info->bitmaploc_start!=0 )
@@ -5463,7 +5460,7 @@ return( 0 );
 	ff_post_error( _("No Bitmap Strikes"), _("No (useable) bitmap strikes in this TTF font: %s"), filename==NULL ? "<unknown>" : filename );
     if ( info->onlystrikes && info->bitmaps==NULL ) {
 	free(info->chars);
-	setlocale(LC_NUMERIC,oldloc);
+	switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 return( 0 );
     }
     if ( info->hmetrics_start!=0 )
@@ -5534,7 +5531,7 @@ return( 0 );
 	tex_read(ttf,info);
     if ( info->math_start!=0 )
 	otf_read_math(ttf,info);
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     if ( !info->onlystrikes && info->glyphlocations_start!=0 && info->glyph_start!=0 )
 	ttfFixupReferences(info);
     /* Can't fix up any postscript references until we create a SplineFont */
