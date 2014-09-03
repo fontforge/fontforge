@@ -2972,6 +2972,7 @@ return( sc );
     }
 return( sc );
 #else
+    LogError(_("Reference to a non-existent glyph name on line %d of %s."), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
     return NULL;
 #endif // 0
 }
