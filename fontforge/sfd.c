@@ -3854,7 +3854,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 	    ch2 = nlgetc(sfd);		/* : */
 		// We are either fetching a splineset name (Named:) or a point name (NamedP:).
 		if (ch2=='P') { if ((nlgetc(sfd)==':') && (pt!=NULL)) { if (pt->name!=NULL) {free(pt->name);} pt->name = SFDReadUTF7Str(sfd); } }
-		else if (ch2==':') { if (cur != NULL) cur->contour_name = SFDReadUTF7Str(sfd); else free(SFDReadUTF7Str(sfd)); }
+		else if (ch2==':') { if (cur != NULL) cur->contour_name = SFDReadUTF7Str(sfd); else { char * freetmp = SFDReadUTF7Str(sfd); free(freetmp); freetmp = NULL; } }
         continue;
 	} else if ( ch=='P' ) {
 	    int flags;
