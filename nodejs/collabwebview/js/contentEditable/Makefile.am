@@ -27,7 +27,7 @@
 include $(top_srcdir)/mk/layout.am
 
 targetdatadir = $(pkgnodejsdatadir)/collabwebview/js/contentEditable
-targetdata_SCRIPTS = $(srcdir)/*.js $(srcdir)/*.json $(srcdir)/*.html
+targetdata_DATA = $(srcdir)/*.js $(srcdir)/*.json $(srcdir)/*.html
 EXTRA_DIST = $(srcdir)/*.js $(srcdir)/*.json $(srcdir)/*.html
 
 -include $(top_srcdir)/git.mk
