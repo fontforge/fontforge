@@ -532,8 +532,10 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
 	    }
 	    // "</contour>"
 	}
-	/* RoboFab outputs components in alphabetic (case sensitive) order */
-	/*  I've been asked to do that too */
+	/* RoboFab outputs components in alphabetic (case sensitive) order. */
+	/* Somebody asked George to do that too (as in the disabled code below). */
+	/* But it seems important to leave the ordering as it is. */
+	/* And David Raymond advises that tampering with the ordering can break things. */
 	if ( sc->layers[layer].refs!=NULL ) {
 	    const RefChar **refs;
 	    int i, cnt;
