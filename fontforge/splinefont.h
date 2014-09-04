@@ -2767,7 +2767,7 @@ extern void SFDDumpMacFeat(FILE *sfd,MacFeat *mf);
 extern MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok);
 extern int SFDDoesAnyBackupExist(char* filename);
 extern int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal, int todir);
-extern int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal);
+extern int SFDWriteBak(char *filename,SplineFont *sf,EncMap *map,EncMap *normal);
 extern int SFDWriteBakExtended(char* locfilename,
 			       SplineFont *sf,EncMap *map,EncMap *normal,
 			       int s2d,
