@@ -3454,6 +3454,51 @@ extern void debug_printHintInstance( HintInstance* hi, int hin, char* msg );
  */
 extern bool equalWithTolerence( real a, real b, real tolerence );
 
+#ifndef LC_ALL_MASK
+// If the locale header does not contain the locale definitions, we supply our own.
+// This code came from user Armada on Stack Overflow
+// ( http://stackoverflow.com/questions/6561723/thread-specific-locale-manipulation-in-c ).
+#define locale_t         _locale_t
+#define freelocale       _free_locale
+
+#define LC_GLOBAL_LOCALE ((locale_t)-1)
+#define LC_ALL_MASK      LC_ALL
+#define LC_COLLATE_MASK  LC_COLLATE
+#define LC_CTYPE_MASK    LC_CTYPE
+#define LC_MONETARY_MASK LC_MONETARY
+#define LC_NUMERIC_MASK  LC_NUMERIC
+#define LC_TIME_MASK     LC_TIME
+
+// Base locale is ignored and mixing of masks is not supported
+#define newlocale(mask, locale, base) _create_locale(mask, locale)
+
+locale_t uselocale(locale_t new_locale)
+{
+    // Retrieve the current per thread locale setting
+    bool bIsPerThread = (_configthreadlocale(0) == _ENABLE_PER_THREAD_LOCALE);
+
+    // Retrieve the current thread-specific locale
+    locale_t old_locale = bIsPerThread ? _get_current_locale() : LC_GLOBAL_LOCALE;
+
+    if(new_locale == LC_GLOBAL_LOCALE)
+    {
+        // Restore the global locale
+        _configthreadlocale(_DISABLE_PER_THREAD_LOCALE);
+    }
+    else if(new_locale != NULL)
+    {
+        // Configure the thread to set the locale only for this thread
+        _configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
+
+        // Set all locale categories
+        for(int i = LC_MIN; i <= LC_MAX; i++)
+            setlocale(i, new_locale->locinfo->lc_category[i].locale);
+    }
+
+    return old_locale;
+}
+#endif
+
 static inline void switch_to_c_locale(locale_t * tmplocale_p, locale_t * oldlocale_p) {
   *tmplocale_p = newlocale(LC_NUMERIC_MASK, "C", NULL);
   if (*tmplocale_p == NULL) fprintf(stderr, "Failed to create temporary locale.\n");
