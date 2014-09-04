@@ -1351,7 +1351,7 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
         // TODO: Optionally skip rewriting an untouched glyph.
         // Do we track modified glyphs carefully enough for this?
 	err |= !GlifDump(glyphdir,sc->glif_name,sc,layer);
-      }
+    }
 
     char *fname = buildname(glyphdir, "contents.plist"); // Build the file name for the contents.
     xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
