@@ -479,8 +479,6 @@ WordListLine WordlistEscapedInputStringToParsedDataComplex(
 		    }
 		}
 
-		TRACE("calling utf8_idpb buffer:%s out:%s ch:%d\n", buffer, out, n );
-
 		out->sc = sc;
 		out->isSelected = isSelected;
 		out->currentGlyphIndex = currentGlyphIndex;

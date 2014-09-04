@@ -12655,7 +12655,7 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 			SplineChar* xc = wll->sc;
 			if( xc )
 			{
-			    TRACE("selected v:%d xc:%s\n", v, xc->name );
+			    TRACE("selected v:%d xc:%s\n", wll->currentGlyphIndex, xc->name );
 			    int xoff = cv->xoff;
 			    CVSwitchActiveSC( cv, xc, wll->currentGlyphIndex );
 			    CVHScrollSetPos( cv, xoff );
