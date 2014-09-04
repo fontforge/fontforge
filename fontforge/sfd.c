@@ -1450,6 +1450,15 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	    fprintf( sfd, " %06x.%06x.%x", altuni->unienc, altuni->vs, altuni->fid );
 	putc( '\n', sfd);
     }
+    if ( sc->glif_name ) {
+        fprintf(sfd, "GlifName: ");
+        if ( AllAscii(sc->glif_name))
+	    fprintf(sfd, "%s", sc->glif_name );
+        else {
+	    SFDDumpUTF7Str(sfd,sc->glif_name);
+        }
+        putc('\n',sfd);
+    }
     fprintf(sfd, "Width: %d\n", sc->width );
     if ( sc->vwidth!=sc->parent->ascent+sc->parent->descent )
 	fprintf(sfd, "VWidth: %d\n", sc->vwidth );
@@ -1474,8 +1483,11 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	    sc->top_accent_horiz!=TEX_UNDEF || sc->vert_variants!=NULL ||
 	    sc->horiz_variants!=NULL || sc->mathkern!=NULL )
 	SFDDumpCharMath(sfd,sc);
+#if 0
+    // This is now layer-specific.
     if ( sc->python_persistent!=NULL )
 	SFDPickleMe(sfd,sc->python_persistent,sc->python_persistent_has_lists);
+#endif // 0
 #if HANYANG
     if ( sc->compositionunit )
 	fprintf( sfd, "CompositionUnit: %d %d\n", sc->jamo, sc->varient );
@@ -1557,7 +1569,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 		SFDDumpPattern(sfd,"StrokePattern:", sc->layers[i].stroke_pen.brush.pattern );
 	} else {
 	    if ( sc->layers[i].images==NULL && sc->layers[i].splines==NULL &&
-		    sc->layers[i].refs==NULL )
+		    sc->layers[i].refs==NULL && sc->layers[i].validation_state&vs_known == 0 &&
+		    sc->layers[i].python_persistent == NULL)
     continue;
 	    if ( i==ly_back )
 		fprintf( sfd, "Back\n" );
@@ -1575,6 +1588,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	SFDDumpRefs(sfd,sc->layers[i].refs,newgids);
 	if ( sc->layers[i].validation_state&vs_known )
 	    fprintf( sfd, "Validated: %d\n", sc->layers[i].validation_state );
+        if ( sc->layers[i].python_persistent!=NULL )
+	  SFDPickleMe(sfd,sc->layers[i].python_persistent,sc->layers[i].python_persistent_has_lists);
     }
     for ( v=0; v<2; ++v ) {
 	kp = v ? sc->vkerns : sc->kerns;
@@ -2165,6 +2180,12 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	fprintf(sfd, "FullName: %s\n", sf->fullname );
     if ( sf->familyname!=NULL )
 	fprintf(sfd, "FamilyName: %s\n", sf->familyname );
+    if ( sf->pfminfo.os2_family_name ) {
+	fprintf(sfd, "OS2FamilyName: "); SFDDumpUTF7Str(sfd,sf->pfminfo.os2_family_name); putc('\n', sfd);
+    }
+    if ( sf->pfminfo.os2_style_name ) {
+	fprintf(sfd, "OS2StyleName: "); SFDDumpUTF7Str(sfd,sf->pfminfo.os2_style_name ); putc('\n', sfd);
+    }
     if ( sf->weight!=NULL )
 	fprintf(sfd, "Weight: %s\n", sf->weight );
     if ( sf->copyright!=NULL )
@@ -2213,7 +2234,9 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
     for ( i=0; i<sf->layer_cnt; ++i ) {
 	fprintf( sfd, "Layer: %d %d ", i, sf->layers[i].order2/*, sf->layers[i].background*/ );
 	SFDDumpUTF7Str(sfd,sf->layers[i].name);
-	fprintf( sfd, " %d\n", sf->layers[i].background );
+	fprintf( sfd, " %d", sf->layers[i].background );
+	if (sf->layers[i].ufo_path != NULL) { putc(' ',sfd); SFDDumpUTF7Str(sfd,sf->layers[i].ufo_path); }
+	putc('\n',sfd);
     }
     // TODO: Output U. F. O. layer path.
     if ( sf->strokedfont )
@@ -2282,6 +2305,8 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	fprintf(sfd, "OS2StrikeYSize: %d\n", sf->pfminfo.os2_strikeysize );
 	fprintf(sfd, "OS2StrikeYPos: %d\n", sf->pfminfo.os2_strikeypos );
     }
+    fprintf(sfd, "OS2CapHeight: %d\n", sf->pfminfo.os2_capheight );
+    fprintf(sfd, "OS2XHeight: %d\n", sf->pfminfo.os2_xheight );
     if ( sf->pfminfo.os2_family_class!=0 )
 	fprintf(sfd, "OS2FamilyClass: %d\n", sf->pfminfo.os2_family_class );
     if ( sf->pfminfo.os2_vendor[0]!='\0' ) {
@@ -3829,7 +3854,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 	    ch2 = nlgetc(sfd);		/* : */
 		// We are either fetching a splineset name (Named:) or a point name (NamedP:).
 		if (ch2=='P') { if ((nlgetc(sfd)==':') && (pt!=NULL)) { if (pt->name!=NULL) {free(pt->name);} pt->name = SFDReadUTF7Str(sfd); } }
-		else if (ch2==':') cur->contour_name = SFDReadUTF7Str(sfd);
+		else if (ch2==':') { if (cur != NULL) cur->contour_name = SFDReadUTF7Str(sfd); else { char * freetmp = SFDReadUTF7Str(sfd); free(freetmp); freetmp = NULL; } }
         continue;
 	} else if ( ch=='P' ) {
 	    int flags;
@@ -3843,7 +3868,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 	    nlgetc(sfd);		/* s */
 	    nlgetc(sfd);		/* : */
 	    getint(sfd,&flags);
-	    cur->is_clip_path = flags&1;
+	    if (cur != NULL) cur->is_clip_path = flags&1;
 	}
 	pt = NULL;
 	if ( ch=='l' || ch=='m' ) {
@@ -3893,7 +3918,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 		    {
 			real offset = 0.1;
 			current.x += offset;
-			if( !SplinePointListContainsPointAtX( cur, current.x ))
+			if( !cur || !SplinePointListContainsPointAtX( cur, current.x ))
 			{
 			    break;
 			}
@@ -5007,9 +5032,20 @@ char* SFDMoveToNextStartChar( FILE* sfd ) {
     return 0;
 }
 
+static int PeekMatch(FILE *stream, const char * target) {
+  // This returns 1 if target matches the next characters in the stream.
+  int pos1 = 0;
+  int lastread = getc(stream);
+  while (target[pos1] != '\0' && lastread != EOF && lastread == target[pos1]) {
+    pos1 ++; lastread = getc(stream);
+  }
+  if (lastread != EOF) ungetc(lastread, stream);
+  int pos2 = pos1;
+  while (pos2 > 0) { ungetc(target[--pos2], stream); }
+  return (target[pos1] == '\0');
+}
 
 static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf, int had_sf_layer_cnt) {
-    // TODO: Read the U. F. O. glif name.
     SplineChar *sc;
     char tok[2000], ch;
     RefChar *lastr=NULL, *ref;
@@ -5110,6 +5146,20 @@ return( NULL );
             else {
 		ungetc(ch,sfd);
 		script = gettag(sfd);
+            }
+	} else if ( strmatch(tok,"GlifName:")==0 ) {
+            while ( isspace(ch=nlgetc(sfd)));
+            ungetc(ch,sfd);
+            if ( ch!='"' ) {
+              if ( getname(sfd,tok)!=1 ) {
+                LogError(_("Invalid glif name.\n"));
+              }
+	      sc->glif_name = copy(tok);
+            } else {
+	      sc->glif_name = SFDReadUTF7Str(sfd);
+	      if ( sc->glif_name==NULL ) {
+                LogError(_("Invalid glif name.\n"));
+	      }
             }
 	} else if ( strmatch(tok,"Width:")==0 ) {
 	    getsint(sfd,&sc->width);
@@ -5229,7 +5279,9 @@ return( NULL );
 	} else if ( strmatch(tok,"Fore")==0 ) {
 	    while ( isspace(ch = nlgetc(sfd)));
 	    ungetc(ch,sfd);
-	    if ( ch!='I' && ch!='R' && ch!='S' && ch!='V') {
+	    if ( ch!='I' && ch!='R' && ch!='S' && ch!='V' && ch!=' ' && ch!='\n' && 
+	         !PeekMatch(sfd, "Pickled") && !PeekMatch(sfd, "EndChar") &&
+	         !PeekMatch(sfd, "Fore") && !PeekMatch(sfd, "Back") && !PeekMatch(sfd, "Layer") ) {
 		/* Old format, without a SplineSet token */
 		sc->layers[ly_fore].splines = SFDGetSplineSet(sfd,sc->layers[ly_fore].order2);
 	    }
@@ -5238,16 +5290,12 @@ return( NULL );
 	    SFDGetMinimumDistances(sfd,sc);
 	} else if ( strmatch(tok,"Validated:")==0 ) {
 	    getsint(sfd,(int16 *) &sc->layers[current_layer].validation_state);
-	} else if ( strmatch(tok,"PickledData:")==0 ) {
-	    sc->python_persistent = SFDUnPickle(sfd, 0);
-	    sc->python_persistent_has_lists = 0;
-	} else if ( strmatch(tok,"PickledDataWithLists:")==0 ) {
-	    sc->python_persistent = SFDUnPickle(sfd, 1);
-	    sc->python_persistent_has_lists = 1;
 	} else if ( strmatch(tok,"Back")==0 ) {
 	    while ( isspace(ch=nlgetc(sfd)));
 	    ungetc(ch,sfd);
-	    if ( ch!='I' && ch!='R' && ch!='S' && ch!='V') {
+	    if ( ch!='I' && ch!='R' && ch!='S' && ch!='V' && ch!=' ' && ch!='\n' &&
+	         !PeekMatch(sfd, "Pickled") && !PeekMatch(sfd, "EndChar") &&
+	         !PeekMatch(sfd, "Fore") && !PeekMatch(sfd, "Back") && !PeekMatch(sfd, "Layer") ) {
 		/* Old format, without a SplineSet token */
 		sc->layers[ly_back].splines = SFDGetSplineSet(sfd,sc->layers[ly_back].order2);
 		oldback = true;
@@ -5423,6 +5471,16 @@ return( NULL );
 	    else
 		lasti->next = img;
 	    lasti = img;
+	} else if ( strmatch(tok,"PickledData:")==0 ) {
+	    if (current_layer < sc->layer_cnt) {
+	      sc->layers[current_layer].python_persistent = SFDUnPickle(sfd, 0);
+	      sc->layers[current_layer].python_persistent_has_lists = 0;
+	    }
+	} else if ( strmatch(tok,"PickledDataWithLists:")==0 ) {
+	    if (current_layer < sc->layer_cnt) {
+	      sc->layers[current_layer].python_persistent = SFDUnPickle(sfd, 1);
+	      sc->layers[current_layer].python_persistent_has_lists = 1;
+	    }
 	} else if ( strmatch(tok,"OrigType1:")==0 ) {	/* Accept, slurp, ignore contents */
 	    SFDGetType1(sfd);
 	} else if ( strmatch(tok,"TtfInstrs:")==0 ) {	/* Binary format */
@@ -7334,6 +7392,14 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	geteol(sfd,val);
 	sf->familyname = copy(val);
     }
+    else if ( strmatch(tok,"OS2FamilyName:")==0 )
+    {
+	if (!sf->pfminfo.os2_family_name) sf->pfminfo.os2_family_name = SFDReadUTF7Str(sfd);
+    }
+    else if ( strmatch(tok,"OS2StyleName:")==0 )
+    {
+	if (!sf->pfminfo.os2_style_name) sf->pfminfo.os2_style_name = SFDReadUTF7Str(sfd);
+    }
     else if ( strmatch(tok,"DefaultBaseFilename:")==0 )
     {
 	geteol(sfd,val);
@@ -7576,6 +7642,14 @@ bool SFD_GetFontMetaData( FILE *sfd,
     {
 	getsint(sfd,&sf->pfminfo.os2_strikeypos);
     }
+    else if ( strmatch(tok,"OS2CapHeight:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_capheight);
+    }
+    else if ( strmatch(tok,"OS2XHeight:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_xheight);
+    }
     else if ( strmatch(tok,"OS2FamilyClass:")==0 )
     {
 	getsint(sfd,&sf->pfminfo.os2_family_class);
@@ -7677,6 +7751,9 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	    getint(sfd,&bk);
 	    sf->layers[layer].background = bk;
 	}
+	while ( (ch=nlgetc(sfd))==' ' );
+	ungetc(ch,sfd);
+	if ( ch!='\n' ) { sf->layers[layer].ufo_path = SFDReadUTF7Str(sfd); }
     }
     else if ( strmatch(tok,"StrokedFont:")==0 )
     {

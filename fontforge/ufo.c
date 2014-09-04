@@ -76,6 +76,33 @@ static char *buildname(const char *basedir, const char *sub) {
 return( fname );
 }
 
+static void extractNumericVersion(const char * textVersion, int * versionMajor, int * versionMinor) {
+  // We extract integer values for major and minor versions from a version string.
+  *versionMajor = -1; *versionMinor = -1;
+  if (textVersion == NULL) return;
+  char *nextText1 = NULL;
+  char *nextText2 = NULL;
+  int tempVersion = -1;
+  tempVersion = strtol(textVersion, &nextText1, 10);
+  if (tempVersion != -1 && nextText1 != NULL && (nextText1[0] == '\0' || nextText1[0] == ' ' || nextText1[0] == '.')) {
+    *versionMajor = tempVersion;
+  } else return;
+  if (nextText1[0] == '\0') return;
+  tempVersion = strtol(nextText1+1, &nextText2, 10);
+  if (tempVersion != -1 && nextText2 != NULL && (nextText2[0] == '\0' || nextText2[0] == ' ' || nextText2[0] == '.')) {
+    *versionMinor = tempVersion;
+  } else return;
+  return;
+}
+
+static void injectNumericVersion(char ** textVersion, int versionMajor, int versionMinor) {
+  // We generate a version string from numeric values if available.
+  if (versionMajor == -1) asprintf(textVersion, "");
+  else if (versionMinor == -1) asprintf(textVersion, "%d", versionMajor);
+  else asprintf(textVersion, "%d.%d", versionMajor, versionMinor);
+  return;
+}
+
 static xmlNodePtr xmlNewChildInteger(xmlNodePtr parent, xmlNsPtr ns, const xmlChar * name, long int value) {
   char * valtmp = NULL;
   // Textify the value to be enclosed.
@@ -402,6 +429,7 @@ return( strcmp( ref1->sc->name, ref2->sc->name) );
 }
 
 xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
+    if (layer > sc->layer_cnt) return NULL;
     const struct altuni *altuni;
     int isquad = sc->layers[layer].order2;
     const SplineSet *spl;
@@ -449,8 +477,65 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
     if ( sc->layers[layer].refs!=NULL || sc->layers[layer].splines!=NULL ) {
       xmlNodePtr outlinexml = xmlNewChild(topglyphxml, NULL, BAD_CAST "outline", NULL);
 	// "<outline>"
-	/* RoboFab outputs components in alphabetic (case sensitive) order */
-	/*  I've been asked to do that too */
+        for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+            int ismark = (ap->type==at_mark || ap->type==at_centry);
+            xmlNodePtr contourxml = xmlNewChild(outlinexml, NULL, BAD_CAST "contour", NULL);
+            // "<contour>"
+            xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
+            xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", ap->me.x);
+            xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", ap->me.y);
+            xmlSetPropPrintf(pointxml, BAD_CAST "type", "move");
+            xmlSetPropPrintf(pointxml, BAD_CAST "name", "%s%s", ismark ? "_" : "", ap->anchor->name);
+            // "<point x=\"%g\" y=\"%g\" type=\"move\" name=\"%s%s\"/>" ap->me.x ap->me.y (ismark ? "_" : "") ap->anchor->name
+            // "</contour>"
+        }
+	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
+            xmlNodePtr contourxml = xmlNewChild(outlinexml, NULL, BAD_CAST "contour", NULL);
+	    // "<contour>"
+	    for ( sp=spl->first; sp!=NULL; ) {
+		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
+		// We write the next on-curve point.
+		if (!isquad || sp->ttfindex != 0xffff || !SPInterpolate(sp) || sp->pointtype!=pt_curve || sp->name != NULL) {
+		  xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
+		  xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)sp->me.x);
+		  xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->me.y);
+		  xmlSetPropPrintf(pointxml, BAD_CAST "type", BAD_CAST (
+		  sp->prev==NULL        ? "move"   :
+					sp->noprevcp ? "line"   :
+					isquad 		      ? "qcurve" :
+					"curve"));
+		  if (sp->pointtype != pt_corner) xmlSetProp(pointxml, BAD_CAST "smooth", BAD_CAST "yes");
+		  if (sp->name !=NULL) xmlSetProp(pointxml, BAD_CAST "name", BAD_CAST sp->name);
+                  // "<point x=\"%g\" y=\"%g\" type=\"%s\"%s%s%s%s/>\n" (double)sp->me.x (double)sp->me.y
+		  // (sp->prev==NULL ? "move" : sp->prev->knownlinear ? "line" : isquad ? "qcurve" : "curve")
+		  // (sp->pointtype!=pt_corner?" smooth=\"yes\"":"")
+		  // (sp->name?" name=\"":"") (sp->name?sp->name:"") (sp->name?"\"":"")
+		}
+		if ( sp->next==NULL )
+	    	  break;
+		// We write control points.
+		if ( !sp->nonextcp ) {
+                          xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
+                          xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)sp->nextcp.x);
+                          xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->nextcp.y);
+		    	  // "<point x=\"%g\" y=\"%g\"/>\n" (double)sp->nextcp.x (double)sp->nextcp.y
+		}
+		sp = sp->next->to;
+		if ( !isquad && !sp->noprevcp ) {
+                          xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
+                          xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)sp->prevcp.x);
+                          xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->prevcp.y);
+                          // "<point x=\"%g\" y=\"%g\"/>\n" (double)sp->prevcp.x (double)sp->prevcp.y
+		}
+		if ( sp==spl->first )
+	    		break;
+	    }
+	    // "</contour>"
+	}
+	/* RoboFab outputs components in alphabetic (case sensitive) order. */
+	/* Somebody asked George to do that too (as in the disabled code below). */
+	/* But it seems important to leave the ordering as it is. */
+	/* And David Raymond advises that tampering with the ordering can break things. */
 	if ( sc->layers[layer].refs!=NULL ) {
 	    const RefChar **refs;
 	    int i, cnt;
@@ -459,8 +544,11 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
 	    refs = malloc(cnt*sizeof(RefChar *));
 	    for ( cnt=0, ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( SCWorthOutputting(ref->sc))
 		refs[cnt++] = ref;
+	    // It seems that sorting these breaks something.
+#if 0
 	    if ( cnt>1 )
 		qsort(refs,cnt,sizeof(RefChar *),refcomp);
+#endif // 0
 	    for ( i=0; i<cnt; ++i ) {
 		ref = refs[i];
     xmlNodePtr componentxml = xmlNewChild(outlinexml, NULL, BAD_CAST "component", NULL);
@@ -495,66 +583,15 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
 	    }
 	    free(refs);
 	}
-        for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
-            int ismark = (ap->type==at_mark || ap->type==at_centry);
-            xmlNodePtr contourxml = xmlNewChild(outlinexml, NULL, BAD_CAST "contour", NULL);
-            // "<contour>"
-            xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
-            xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", ap->me.x);
-            xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", ap->me.y);
-            xmlSetPropPrintf(pointxml, BAD_CAST "type", "move");
-            xmlSetPropPrintf(pointxml, BAD_CAST "name", "%s%s", ismark ? "_" : "", ap->anchor->name);
-            // "<point x=\"%g\" y=\"%g\" type=\"move\" name=\"%s%s\"/>" ap->me.x ap->me.y (ismark ? "_" : "") ap->anchor->name
-            // "</contour>"
-        }
-	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
-            xmlNodePtr contourxml = xmlNewChild(outlinexml, NULL, BAD_CAST "contour", NULL);
-	    // "<contour>"
-	    for ( sp=spl->first; sp!=NULL; ) {
-		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
-		// We write the next on-curve point.
-		if (!isquad || sp->ttfindex != 0xffff || !SPInterpolate(sp) || sp->pointtype!=pt_curve || sp->name != NULL) {
-		  xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
-		  xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)sp->me.x);
-		  xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->me.y);
-		  xmlSetPropPrintf(pointxml, BAD_CAST "type", BAD_CAST (
-		  sp->prev==NULL        ? "move"   :
-					sp->prev->knownlinear ? "line"   :
-					isquad 		      ? "qcurve" :
-					"curve"));
-		  if (sp->pointtype != pt_corner) xmlSetProp(pointxml, BAD_CAST "smooth", BAD_CAST "yes");
-		  if (sp->name !=NULL) xmlSetProp(pointxml, BAD_CAST "name", BAD_CAST sp->name);
-                  // "<point x=\"%g\" y=\"%g\" type=\"%s\"%s%s%s%s/>\n" (double)sp->me.x (double)sp->me.y
-		  // (sp->prev==NULL ? "move" : sp->prev->knownlinear ? "line" : isquad ? "qcurve" : "curve")
-		  // (sp->pointtype!=pt_corner?" smooth=\"yes\"":"")
-		  // (sp->name?" name=\"":"") (sp->name?sp->name:"") (sp->name?"\"":"")
-		}
-		if ( sp->next==NULL )
-	    	  break;
-		// We write control points.
-		if ( !sp->next->knownlinear ) {
-                          xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
-                          xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)sp->nextcp.x);
-                          xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->nextcp.y);
-		    	  // "<point x=\"%g\" y=\"%g\"/>\n" (double)sp->nextcp.x (double)sp->nextcp.y
-		}
-		sp = sp->next->to;
-		if ( !isquad && !sp->prev->knownlinear ) {
-                          xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
-                          xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)sp->prevcp.x);
-                          xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->prevcp.y);
-                          // "<point x=\"%g\" y=\"%g\"/>\n" (double)sp->prevcp.x (double)sp->prevcp.y
-		}
-		if ( sp==spl->first )
-	    		break;
-	    }
-	    // "</contour>"
-	}
+
 	// "</outline>"
     }
-    xmlNodePtr libxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "lib", NULL);
-    xmlNodePtr pythonblob = PythonLibToXML(sc->python_persistent, sc, sc->python_persistent_has_lists);
-    xmlAddChild(libxml, pythonblob);
+    if (sc->layers[layer].python_persistent != NULL || (layer == ly_fore && (sc->hstem!=NULL || sc->vstem!=NULL ))) {
+      // If the layer has lib data or if this is the foreground and the glyph has hints, we output lib data.
+      xmlNodePtr libxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "lib", NULL);
+      xmlNodePtr pythonblob = PythonLibToXML(sc->layers[layer].python_persistent, (layer == ly_fore ? sc : NULL), sc->layers[layer].python_persistent_has_lists);
+      xmlAddChild(libxml, pythonblob);
+    }
     return topglyphxml;
 }
 
@@ -833,15 +870,31 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 /* Same keys in both formats */
     PListAddString(dictnode,"familyName",sf->familyname_with_timestamp ? sf->familyname_with_timestamp : sf->familyname);
     PListAddString(dictnode,"styleName",SFGetModifiers(sf));
+    if (sf->pfminfo.os2_family_name != NULL) PListAddString(dictnode,"styleMapFamilyName", sf->pfminfo.os2_family_name);
+    if (sf->pfminfo.os2_style_name != NULL) PListAddString(dictnode,"styleMapStyleName", sf->pfminfo.os2_style_name);
+    {
+      // We attempt to get numeric major and minor versions for U. F. O. out of the FontForge version string.
+      int versionMajor = -1;
+      int versionMinor = -1;
+      if (sf->version != NULL) extractNumericVersion(sf->version, &versionMajor, &versionMinor);
+      if (versionMajor >= 0) PListAddInteger(dictnode,"versionMajor", versionMajor);
+      if (versionMinor >= 0) PListAddInteger(dictnode,"versionMinor", versionMinor);
+    }
     PListAddString(dictnode,"copyright",sf->copyright);
     PListAddNameString(dictnode,"trademark",sf,ttf_trademark);
     PListAddInteger(dictnode,"unitsPerEm",sf->ascent+sf->descent);
+// We decided that it would be more helpful to round-trip the U. F. O. data.
+#if 0
     test = SFXHeight(sf,layer,true);
     if ( test>0 )
 	PListAddInteger(dictnode,"xHeight",(int) rint(test));
     test = SFCapHeight(sf,layer,true);
     if ( test>0 )
 	PListAddInteger(dictnode,"capHeight",(int) rint(test));
+#else
+    if (sf->pfminfo.os2_capheight) PListAddInteger(dictnode,"capHeight",sf->pfminfo.os2_capheight);
+    if (sf->pfminfo.os2_xheight) PListAddInteger(dictnode,"xHeight",sf->pfminfo.os2_xheight);
+#endif // 0
     if ( sf->invalidem ) {
 	PListAddIntegerOrReal(dictnode,"ascender",sf->ufo_ascent);
 	PListAddIntegerOrReal(dictnode,"descender",sf->ufo_descent);
@@ -873,8 +926,8 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
     PListAddNameString(dictnode,"openTypeNameVersion",sf,ttf_version);
     PListAddNameString(dictnode,"openTypeNameUniqueID",sf,ttf_uniqueid);
     PListAddNameString(dictnode,"openTypeNameDescription",sf,ttf_descriptor);
-    PListAddNameString(dictnode,"openTypeNamePreferedFamilyName",sf,ttf_preffamilyname);
-    PListAddNameString(dictnode,"openTypeNamePreferedSubfamilyName",sf,ttf_prefmodifiers);
+    PListAddNameString(dictnode,"openTypeNamePreferredFamilyName",sf,ttf_preffamilyname);
+    PListAddNameString(dictnode,"openTypeNamePreferredSubfamilyName",sf,ttf_prefmodifiers);
     PListAddNameString(dictnode,"openTypeNameCompatibleFullName",sf,ttf_compatfull);
     PListAddNameString(dictnode,"openTypeNameSampleText",sf,ttf_sampletext);
     PListAddNameString(dictnode,"openTypeWWSFamilyName",sf,ttf_wwsfamily);
@@ -973,9 +1026,8 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 	PListAddPrivateThing(dictnode, "BlueFuzz", sf->private, "integer");
 	PListAddPrivateThing(dictnode, "BlueShift", sf->private, "integer");
 	PListAddPrivateThing(dictnode, "BlueScale", sf->private, "real");
-	if ( (pt=PSDictHasEntry(sf->private,"ForceBold"))!=NULL &&
-		strstr(pt,"true")!=NULL )
-	    PListAddBoolean(dictnode, "postscriptForceBold", true );
+	if ( (pt=PSDictHasEntry(sf->private,"ForceBold"))!=NULL )
+	    PListAddBoolean(dictnode, "postscriptForceBold", strstr(pt,"true")!=NULL ? true : false );
     }
     if ( sf->fondname!=NULL )
     PListAddString(dictnode,"macintoshFONDName",sf->fondname);
@@ -1294,8 +1346,9 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
     GFileMkDir( glyphdir );
     int i;
     SplineChar * sc;
-    int err;
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) ) {
+    int err = 0;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCLWorthOutputtingOrHasData(sc=sf->glyphs[i], layer) ||
+      ( layer == ly_fore && (SCWorthOutputting(sc) || SCHasData(sc) || sc->glif_name != NULL) ) ) {
 	PListAddString(dictnode,sc->name,sc->glif_name); // Add the glyph to the table of contents.
         // TODO: Optionally skip rewriting an untouched glyph.
         // Do we track modified glyphs carefully enough for this?
@@ -1352,7 +1405,7 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
     void * glif_name_hash = NULL;
 #endif
     // First we generate glif names.
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) || SCHasData(sf->glyphs[i]) ) {
         char * startname = NULL;
         if (sc->glif_name != NULL)
           startname = strdup(sc->glif_name); // If the splinechar has a glif name, try to use that.
@@ -1395,7 +1448,9 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
       switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
       int layer_pos;
       for (layer_pos = 0; layer_pos < sf->layer_cnt; layer_pos++) {
-        glyphdir = buildname(basedir,"glyphs");
+        // We don't want to emit the default background layer unless it has stuff in it or was in the input U. F. O..
+        if (layer_pos == ly_back && !LayerWorthOutputting(sf, layer_pos) && sf->layers[layer_pos].ufo_path == NULL) continue;
+        // We start building the layer contents entry.
         xmlNodePtr layernode = xmlNewChild(arraynode, NULL, BAD_CAST "array", NULL);
         // We make the layer name.
         char * layer_name_start = NULL;
@@ -1407,23 +1462,30 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
         // We make the layer path.
         char * layer_path_start = NULL;
         char * numberedlayerpath = NULL;
+        char * numberedlayerpathwithglyphs = NULL;
         if (layer_pos == ly_fore) {
           numberedlayerpath = strdup("glyphs");
+          asprintf(&numberedlayerpathwithglyphs, "%s", numberedlayerpath);
         } else if (sf->layers[layer_pos].ufo_path != NULL) {
           layer_path_start = strdup(sf->layers[layer_pos].ufo_path);
-          numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "glyphs.", "", 7);
+          numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "", "", 7);
+          asprintf(&numberedlayerpathwithglyphs, "%s", numberedlayerpath);
         } else {
           layer_path_start = ufo_name_mangle(sf->layers[layer_pos].name, "glyphs.", "", 7);
           numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "glyphs.", "", 7);
+          asprintf(&numberedlayerpathwithglyphs, "glyphs.%s", numberedlayerpath);
         }
         if (layer_path_start != NULL) { free(layer_path_start); layer_path_start = NULL; }
         // We write to the layer contents.
         xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayername);
-        xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayerpath);
+        xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayerpathwithglyphs);
+        glyphdir = buildname(basedir, numberedlayerpathwithglyphs);
         // We write the glyph directory.
         err |= WriteUFOLayer(glyphdir, sf, layer_pos);
         free(numberedlayername); numberedlayername = NULL;
         free(numberedlayerpath); numberedlayerpath = NULL;
+        free(numberedlayerpathwithglyphs); numberedlayerpathwithglyphs = NULL;
+        free(glyphdir); glyphdir = NULL;
       }
       char *fname = buildname(basedir, "layercontents.plist"); // Build the file name for the contents.
       xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
@@ -1437,16 +1499,27 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
     } else {
         glyphdir = buildname(basedir,"glyphs");
         WriteUFOLayer(glyphdir, sf, layer);
+        free(glyphdir); glyphdir = NULL;
     }
-
-    free( glyphdir );
     switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     return !err;
 }
 
+int SplineFontHasUFOLayerNames(SplineFont *sf) {
+  if (sf == NULL || sf->layers == NULL) return 0;
+  int layer_pos = 0;
+  for (layer_pos = 0; layer_pos < sf->layer_cnt; layer_pos++) {
+    if (sf->layers[layer_pos].ufo_path != NULL) return 1;
+  }
+  return 0;
+}
+
 int WriteUFOFont(const char *basedir, SplineFont *sf, enum fontformat ff, int flags,
 	const EncMap *map, int layer) {
-  return WriteUFOFontFlex(basedir, sf, ff, flags, map, layer, 0);
+  if (SplineFontHasUFOLayerNames(sf))
+    return WriteUFOFontFlex(basedir, sf, ff, flags, map, layer, 1);
+  else
+    return WriteUFOFontFlex(basedir, sf, ff, flags, map, layer, 0);
 }
 
 /* ************************************************************************** */
@@ -1717,8 +1790,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
     char *name, *tmpname;
     int uni;
     char *cpt;
-    SplineSet *last = NULL;
-	int newsc = 0;
+    int newsc = 0;
 
     glyph = xmlDocGetRootElement(doc);
     format = xmlGetProp(glyph,(xmlChar *) "format");
@@ -1772,7 +1844,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		xmlFreeDoc(doc);
 		return NULL;
 	}
-    last = NULL;
+
 	// Check layer availability here.
 	if ( layerdest>=sc->layer_cnt ) {
 		sc->layers = realloc(sc->layers,(layerdest+1)*sizeof(Layer));
@@ -1786,6 +1858,17 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		xmlFreeDoc(doc);
 		return NULL;
 	}
+
+    // We track the last splineset so that we can add to the end of the chain.
+    SplineSet *last = sc->layers[layerdest].splines;
+    while (last != NULL && last->next != NULL) last = last->next;
+    // We track the last anchor point.
+    AnchorPoint *lastap = sc->anchor;
+    while (lastap != NULL && lastap->next != NULL) lastap = lastap->next;
+    // We track the last reference.
+    RefChar *lastref = sc->layers[layerdest].refs;
+    while (lastref != NULL && lastref->next != NULL) lastref = lastref->next;
+
     for ( kids = glyph->children; kids!=NULL; kids=kids->next ) {
 	if ( xmlStrcmp(kids->name,(const xmlChar *) "advance")==0 ) {
 		if ((layerdest == ly_fore) || newsc) {
@@ -1820,7 +1903,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			*xo = (char *) xmlGetProp(contour,(xmlChar *) "xOffset"),
 			*yo = (char *) xmlGetProp(contour,(xmlChar *) "yOffset");
 		    RefChar *r;
-		    if ( base==NULL )
+		    if ( base==NULL || strcmp(base,"") == 0 )
 				LogError(_("component with no base glyph"));
 		    else {
 				r = RefCharCreate();
@@ -1839,10 +1922,17 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 					r->transform[4] = strtod(xo,NULL);
 				if ( yo!=NULL )
 					r->transform[5] = strtod(yo,NULL);
-				r->next = sc->layers[layerdest].refs;
-				sc->layers[layerdest].refs = r;
+
+				if ( lastref==NULL ) {
+				  // If there are no existing references, we point the main spline reference to this one.
+				  sc->layers[layerdest].refs = r;
+				} else {
+				  // If there are existing references, we attach to the last one.
+				  lastref->next = r;
+				}
+				lastref = r;
 		    }
-		    free(xs); free(ys); free(xys); free(yxs); free(xo); free(yo);
+		    if (xs) free(xs); if (ys) free(ys); if (xys) free(xys); if (yxs) free(yxs); if (xo) free(xo); if (yo) free(yo);
 		} else if ( xmlStrcmp(contour->name,(const xmlChar *) "contour")==0 ) {
 		    xmlNodePtr npoints;
 
@@ -1859,14 +1949,15 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
             if ( points!=NULL && npoints==NULL ) {
                 sname = (char *) xmlGetProp(points, (xmlChar *) "name");
                 if ( sname!=NULL) {
+
                     /* make an AP and if necessary an AC */
                     AnchorPoint *ap = chunkalloc(sizeof(AnchorPoint));
                     AnchorClass *ac;
                     char *namep = *sname=='_' ? sname + 1 : sname;
                     char *xs = (char *) xmlGetProp(points, (xmlChar *) "x");
                     char *ys = (char *) xmlGetProp(points, (xmlChar *) "y");
-                    ap->me.x = strtod(xs,NULL);
-                    ap->me.y = strtod(ys,NULL);
+                    if (xs) { ap->me.x = strtod(xs,NULL); free(xs); }
+                    if (ys) { ap->me.y = strtod(ys,NULL); free(ys); }
 
                     ac = SFFindOrAddAnchorClass(sf,namep,NULL);
                     if (*sname=='_')
@@ -1877,9 +1968,16 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
                                     ac->type==act_mklg  ? at_baselig :
                                                           at_basechar;
                     ap->anchor = ac;
-                    ap->next = sc->anchor;
-                    sc->anchor = ap;
-                    free(xs); free(ys); free(sname);
+		    if ( lastap==NULL ) {
+				// If there are no existing anchors, we point the main spline reference to this one.
+				sc->anchor = ap;
+		    } else {
+				// If there are existing anchors, we attach to the last one.
+				lastap->next = ap;
+		    }
+		    lastap = ap;
+
+                    free(sname);
         			continue; // We stop processing the contour at this point.
                 }
             }
@@ -1901,7 +1999,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		    ss = chunkalloc(sizeof(SplineSet));
 			ss->first = NULL;
 
-			for ( points = contour->children; points!=NULL; points=points->next ) {
+		    for ( points = contour->children; points!=NULL; points=points->next ) {
 			char *xs, *ys, *type, *pname, *smooths;
 			double x,y;
 			int smooth = 0;
@@ -1939,18 +2037,21 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 				}
 				if (smooth == 1) sp->pointtype = pt_curve;
 				else sp->pointtype = pt_corner;
-			    if ( strcmp(type,"move")==0 ) {
-					open = true;
+
+			    if ( ss->first==NULL ) {
+			        // So this is the first real point!
 			        ss->first = ss->last = sp;
-			    } else if ( ss->first==NULL ) {
-					ss->first = ss->last = sp;
+			        // We move the lead-in points to the init buffer as we may need them for the final curve.
 			        memcpy(init,pre,sizeof(pre));
 			        initcnt = precnt;
-			        if ( strcmp(type,"qcurve")==0 )
-				    wasquad = true;
-					if ( strcmp(type,"curve")==0 )
-					wasquad = false;
-					firstpointsaidquad = wasquad;
+			        if ( strcmp(type,"move")==0 ) {
+			          open = true;
+			          if (initcnt != 0) LogError(_("We cannot have lead-in points for an open curve.\n"));
+			        }
+			    } else if ( strcmp(type,"move")==0 ) LogError(_("The move point must be at the beginning of the contour.\n"));
+
+			    if ( strcmp(type,"move")==0 ) {
+			        // This is already handled.
 			    } else if ( strcmp(type,"line")==0 ) {
 				SplineMake(ss->last,sp,false);
 			        ss->last = sp;
@@ -2004,16 +2105,16 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			        sp->nextcp = pre[1];
 			        sp->nonextcp = false;
 			        if ( ss->first==NULL ) {
-						// This is indeed possible if the first three points are control points.
-				    	ss->first = sp;
-						memcpy(init,pre,sizeof(pre));
-			            initcnt = 1;
-					} else {
-				    	ss->last->nextcp = sp->prevcp = pre[0];
-			            ss->last->nonextcp = sp->noprevcp = false;
-			            initcnt = 0;
-			            SplineMake(ss->last,sp,true);
-                    }
+				    // This is indeed possible if the first three points are control points.
+				    ss->first = sp;
+				    memcpy(init,pre,sizeof(pre));
+				    initcnt = 1;
+				} else {
+				    ss->last->nextcp = sp->prevcp = pre[0];
+				    ss->last->nonextcp = sp->noprevcp = false;
+				    initcnt = 0;
+				    SplineMake(ss->last,sp,true);
+				}
 			        ss->last = sp;
 #if 1
 			        // We make the point between the previously cached control point and the new control point.
@@ -2065,8 +2166,8 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
                         if (type != NULL) { free(type); type = NULL; }
                         if (pname != NULL) { free(pname); pname = NULL; }
 		    }
-			// We are finished looping, so it's time to close the curve if it is to be closed.
-		    if ( !open ) {
+		    // We are finished looping, so it's time to close the curve if it is to be closed.
+		    if ( !open && ss->first != NULL ) {
 			// init has a list of control points leading into the first point. pre has a list of control points trailing the last processed on-curve point.
 			// We merge pre into init and use init as the list of control points between the last processed on-curve point and the first on-curve point.
 			if ( precnt!=0 ) {
@@ -2100,13 +2201,19 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			SplineMake(ss->last, ss->first, (firstpointsaidquad==true || (firstpointsaidquad == -1 && wasquad == true)));
 			ss->last = ss->first;
 		    }
-		    if ( last==NULL ) {
-				// FTODO
-				// Deal with existing splines somehow.
+		    if (ss->first == NULL) {
+				LogError(_("This spline set has no points.\n"));
+				SplinePointListFree(ss); ss = NULL;
+		    } else {
+		        if ( last==NULL ) {
+				// If there are no existing spline sets, we point the main spline reference to this set.
 				sc->layers[layerdest].splines = ss;
-		    } else
+		        } else {
+				// If there are existing spline sets, we attach to the last one.
 				last->next = ss;
+		        }
 				last = ss;
+		    }
 		    }
 	    }
 	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "lib")==0 ) {
@@ -2138,14 +2245,16 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		    }
 		}
 #ifndef _NO_PYTHON
-		sc->python_persistent = LibToPython(doc,dict,1);
-		sc->python_persistent_has_lists = 1;
+		if (sc->layers[layerdest].python_persistent == NULL) {
+		  sc->layers[layerdest].python_persistent = LibToPython(doc,dict,1);
+		  sc->layers[layerdest].python_persistent_has_lists = 1;
+		} else LogError(_("Duplicate lib data.\n"));
 #endif
 	    }
 	}
     }
     xmlFreeDoc(doc);
-    SPLCategorizePoints(sc->layers[layerdest].splines);
+    SPLCategorizePointsKeepCorners(sc->layers[layerdest].splines);
 return( sc );
 }
 
@@ -2161,7 +2270,7 @@ return( _UFOLoadGlyph(sf,doc,glifname,glyphname,existingglyph,layerdest));
 }
 
 
-static void UFORefFixup(SplineFont *sf, SplineChar *sc ) {
+static void UFORefFixup(SplineFont *sf, SplineChar *sc, int layer ) {
     RefChar *r, *prev;
     SplineChar *rsc;
 
@@ -2171,22 +2280,39 @@ static void UFORefFixup(SplineFont *sf, SplineChar *sc ) {
     prev = NULL;
 	// For each reference, attempt to locate the real splinechar matching the name stored in the fake splinechar.
 	// Free the fake splinechar afterwards.
-    for ( r=sc->layers[ly_fore].refs; r!=NULL; r=r->next ) {
+    r=sc->layers[layer].refs;
+    while ( r!=NULL ) {
+		if (r->sc->name == NULL || strcmp(r->sc->name, "") == 0) {
+			LogError(_("There's a reference to a glyph with no name."));
+			prev = r; r = r->next; continue;
+		}
+		if (r->sc->ticked) {
+		  // We've already fixed this one.
+		  prev = r; r = r->next; continue;
+		}
 		rsc = SFGetChar(sf,-1, r->sc->name);
-		if ( rsc==NULL ) {
-			LogError(_("Failed to find glyph %s when fixing up references"), r->sc->name);
-			if ( prev==NULL )
-			sc->layers[ly_fore].refs = r->next;
-			else
-			prev->next = r->next;
-			SplineCharFree(r->sc);
-			/* Memory leak. We loose r */
+		if ( rsc==NULL || rsc->name == NULL || strcmp(rsc->name,"") == 0 ) {
+			if (rsc != NULL) {
+			  LogError(_("Invalid glyph for %s when fixing up references."), r->sc->name);
+			} else
+			LogError(_("Failed to find glyph %s when fixing up references."), r->sc->name);
+			SplineCharFree(r->sc); // Delete the fake glyph.
+			r->sc = NULL;
+			// Elide r from the list and free it.
+			if ( prev==NULL ) sc->layers[layer].refs = r->next;
+			else prev->next = r->next;
+			RefCharFree(r);
+			if ( prev==NULL ) r = sc->layers[layer].refs;
+			else r = prev->next;
 		} else {
-			UFORefFixup(sf,rsc);
+			UFORefFixup(sf,rsc, layer);
+			if (r->sc->layer_cnt > 0) {
+			  fprintf(stderr, "Danger!\n");
+			}
 			SplineCharFree(r->sc);
 			r->sc = rsc;
-			prev = r;
-			SCReinstanciateRefChar(sc,r,ly_fore);
+			SCReinstanciateRefChar(sc,r,layer);
+			prev = r; r = r->next;
 		}
     }
 }
@@ -2234,8 +2360,14 @@ return;
 				if (existingglyph == NULL) newsc = 1;
 				valname = (char *) xmlNodeListGetString(doc,value->children,true);
 				glyphfname = buildname(glyphdir,valname);
-				free(valname);
 				sc = UFOLoadGlyph(sf, glyphfname, glyphname, existingglyph, layerdest);
+				// We want to stash the glif name (minus the extension) for future use.
+				if (sc != NULL && sc->glif_name == NULL && valname != NULL) {
+				  char * tmppos = strrchr(valname, '.'); if (tmppos) *tmppos = '\0';
+				  sc->glif_name = copy(valname);
+				  if (tmppos) *tmppos = '.';
+				}
+				free(valname);
 				if ( ( sc!=NULL ) && newsc ) {
 					sc->parent = sf;
 					if ( sf->glyphcnt>=sf->glyphmax )
@@ -2252,7 +2384,7 @@ return;
 
     GlyphHashFree(sf);
     for ( i=0; i<sf->glyphcnt; ++i )
-	UFORefFixup(sf,sf->glyphs[i]);
+	UFORefFixup(sf,sf->glyphs[i], layerdest);
 }
 
 static void UFOHandleKern(SplineFont *sf,char *basedir,int isv) {
@@ -2472,6 +2604,8 @@ return( NULL );
     }
 
     sf = SplineFontEmpty();
+    int versionMajor = -1; // These are not native SplineFont values.
+    int versionMinor = -1; // We store the U. F. O. values and then process them at the end.
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
     switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
@@ -2483,23 +2617,45 @@ return( NULL );
 	    keyname = xmlNodeListGetString(doc,keys->children,true);
 	    valname = xmlNodeListGetString(doc,value->children,true);
 	    keys = value;
-	    if ( xmlStrcmp(keyname,(xmlChar *) "familyName")==0 )
-		sf->familyname = (char *) valname;
-	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleName")==0 )
-		stylename = (char *) valname;
+	    if ( xmlStrcmp(keyname,(xmlChar *) "familyName")==0 ) {
+		if (sf->familyname == NULL) sf->familyname = (char *) valname;
+		else free(valname);
+	    }
+	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleName")==0 ) {
+		if (stylename == NULL) stylename = (char *) valname;
+		else free(valname);
+	    }
+	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleMapFamilyName")==0 ) {
+		if (sf->pfminfo.os2_family_name == NULL) sf->pfminfo.os2_family_name = (char *) valname;
+		else free(valname);
+	    }
+	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleMapStyleName")==0 ) {
+		if (sf->pfminfo.os2_style_name == NULL) sf->pfminfo.os2_style_name = (char *) valname;
+		else free(valname);
+	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "fullName")==0 ||
-		    xmlStrcmp(keyname,(xmlChar *) "postscriptFullName")==0 )
-		sf->fullname = (char *) valname;
+		    xmlStrcmp(keyname,(xmlChar *) "postscriptFullName")==0 ) {
+		if (sf->fullname == NULL) sf->fullname = (char *) valname;
+		else free(valname);
+	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "fontName")==0 ||
-		    xmlStrcmp(keyname,(xmlChar *) "postscriptFontName")==0 )
-		sf->fontname = (char *) valname;
+		    xmlStrcmp(keyname,(xmlChar *) "postscriptFontName")==0 ) {
+		if (sf->fontname == NULL) sf->fontname = (char *) valname;
+		else free(valname);
+	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "weightName")==0 ||
-		    xmlStrcmp(keyname,(xmlChar *) "postscriptWeightName")==0 )
-		sf->weight = (char *) valname;
-	    else if ( xmlStrcmp(keyname,(xmlChar *) "note")==0 )
-		sf->comments = (char *) valname;
-	    else if ( xmlStrcmp(keyname,(xmlChar *) "copyright")==0 )
-		sf->copyright = (char *) valname;
+		    xmlStrcmp(keyname,(xmlChar *) "postscriptWeightName")==0 ) {
+		if (sf->weight == NULL) sf->weight = (char *) valname;
+		else free(valname);
+	    }
+	    else if ( xmlStrcmp(keyname,(xmlChar *) "note")==0 ) {
+		if (sf->comments == NULL) sf->comments = (char *) valname;
+		else free(valname);
+	    }
+	    else if ( xmlStrcmp(keyname,(xmlChar *) "copyright")==0 ) {
+		if (sf->copyright == NULL) sf->copyright = (char *) valname;
+		else free(valname);
+	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "trademark")==0 )
 		UFOAddName(sf,(char *) valname,ttf_trademark);
 	    else if ( strncmp((char *) keyname,"openTypeName",12)==0 ) {
@@ -2521,9 +2677,9 @@ return( NULL );
 		    UFOAddName(sf,(char *) valname,ttf_uniqueid);
 		else if ( xmlStrcmp(keyname+12,(xmlChar *) "Description")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_descriptor);
-		else if ( xmlStrcmp(keyname+12,(xmlChar *) "PreferedFamilyName")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "PreferredFamilyName")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_preffamilyname);
-		else if ( xmlStrcmp(keyname+12,(xmlChar *) "PreferedSubfamilyName")==0 )
+		else if ( xmlStrcmp(keyname+12,(xmlChar *) "PreferredSubfamilyName")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_prefmodifiers);
 		else if ( xmlStrcmp(keyname+12,(xmlChar *) "CompatibleFullName")==0 )
 		    UFOAddName(sf,(char *) valname,ttf_compatfull);
@@ -2679,10 +2835,22 @@ return( NULL );
 		if ( *end!='\0' ) ds = -1;
 		else sf->ufo_descent = -ds;
 		free(valname);
+	    } else if ( xmlStrcmp(keyname,(xmlChar *) "xHeight")==0 ) {
+		sf->pfminfo.os2_xheight = strtol((char *) valname,&end,10); free(valname);
+	    } else if ( xmlStrcmp(keyname,(xmlChar *) "capHeight")==0 ) {
+		sf->pfminfo.os2_capheight = strtol((char *) valname,&end,10); free(valname);
 	    } else if ( xmlStrcmp(keyname,(xmlChar *) "italicAngle")==0 ||
 		    xmlStrcmp(keyname,(xmlChar *) "postscriptSlantAngle")==0 ) {
 		sf->italicangle = strtod((char *) valname,&end);
 		if ( *end!='\0' ) sf->italicangle = 0;
+		free(valname);
+	    } else if ( xmlStrcmp(keyname,(xmlChar *) "versionMajor")==0 ) {
+		versionMajor = strtol((char *) valname,&end, 10);
+		if ( *end!='\0' ) versionMajor = -1;
+		free(valname);
+	    } else if ( xmlStrcmp(keyname,(xmlChar *) "versionMinor")==0 ) {
+		versionMinor = strtol((char *) valname,&end, 10);
+		if ( *end!='\0' ) versionMinor = -1;
 		free(valname);
 	    } else
 		free(valname);
@@ -2718,11 +2886,17 @@ return( NULL );
 	else
 	    sf->fullname = copy(sf->fontname);
     }
-    if ( sf->familyname==NULL )
-	sf->familyname = copy(sf->fontname);
+    if ( sf->familyname==NULL ) {
+	if (sf->pfminfo.os2_family_name != NULL) sf->familyname=copy(sf->pfminfo.os2_family_name);
+	else sf->familyname = copy(sf->fontname);
+    }
     free(stylename);
     if ( sf->weight==NULL )
 	sf->weight = copy("Regular");
+    // We first try to set the SplineFont version by using the native numeric U. F. O. values.
+    if ( sf->version==NULL && versionMajor != -1 )
+      injectNumericVersion(&sf->version, versionMajor, versionMinor);
+    // If that fails, we attempt to use the TrueType values.
     if ( sf->version==NULL && sf->names!=NULL &&
 	    sf->names->names[ttf_version]!=NULL &&
 	    strncmp(sf->names->names[ttf_version],"Version ",8)==0 )
@@ -2816,8 +2990,10 @@ return( NULL );
 											bg = 0;
 										} else if (strcmp(layernames[2*lcount],"public.background")==0) {
 											layerdest = ly_back;
+											sf->multilayer |= 1;
 										} else {
 											layerdest = auxpos++;
+											sf->multilayer |= 1;
 										}
 
 										// We ensure that the splinefont layer list has sufficient space.
@@ -2880,7 +3056,7 @@ return( NULL );
 	}
 	free(layercontentsname);
 
-    sf->map = EncMapFromEncoding(sf,FindOrMakeEncoding("Unicode"));
+    sf->map = EncMap1to1(sf->glyphcnt);
 
     /* Might as well check for feature files even if version 1 */
     temp = buildname(basedir,"features.fea");

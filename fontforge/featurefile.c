@@ -2938,20 +2938,28 @@ return(sc);
 return( sc );
     enc = SFFindSlot(sf,map,-1,name);
     if ( enc!=-1 ) {
+#if 0
 	sc = SFMakeChar(sf,map,enc);
 	if ( sc!=NULL ) {
 	    sc->widthset = true;
 	    free(sc->name);
 	    sc->name = copy(name);
 	}
-return( sc );
+#else
+	sc = SFGetChar(sf,enc,NULL);
+#endif // 0
+	if (sc != NULL) return( sc );
     }
 
+    // It is unclear why the first call to SFGetChar would not find this.
     for ( gid=sf->glyphcnt-1; gid>=0; --gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
 	if ( strcmp(sc->name,name)==0 )
 return( sc );
     }
 
+#if 0
+// Adding a blank glyph based upon a bad reference in a feature file seems to be bad practice.
+// And the method of extending the encoding here is dangerous.
 /* Not in the encoding, so add it */
     enc = map->enccount;
     sc = SFMakeChar(sf,map,enc);
@@ -2962,6 +2970,10 @@ return( sc );
 	sc->unicodeenc = UniFromName(name,ui_none,&custom);
     }
 return( sc );
+#else
+    LogError(_("Reference to a non-existent glyph name on line %d of %s."), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+    return NULL;
+#endif // 0
 }
 
 static char *fea_glyphname_validate(struct parseState *tok,char *name) {

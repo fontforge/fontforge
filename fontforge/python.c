@@ -5815,14 +5815,15 @@ return( 0 );
 }
 
 static PyObject *PyFF_Glyph_get_persistent(PyFF_Glyph *self, void *UNUSED(closure)) {
-    if ( self->sc->python_persistent==NULL )
+    if ( self->sc->layer_cnt <= ly_fore || self->sc->layers[ly_fore].python_persistent==NULL )
 Py_RETURN_NONE;
-    Py_INCREF( (PyObject *) (self->sc->python_persistent) );
-return( self->sc->python_persistent );
+    Py_INCREF( (PyObject *) (self->sc->layers[ly_fore].python_persistent) );
+return( self->sc->layers[ly_fore].python_persistent );
 }
 
 static int PyFF_Glyph_set_persistent(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
-    PyObject *old = self->sc->python_persistent;
+    if ( self->sc->layer_cnt <= ly_fore ) return -1;
+    PyObject *old = self->sc->layers[ly_fore].python_persistent;
 
     /* I'd rather not store None, because C routines don't understand it */
     /*  and they occasionally need to know whether there is something real */
@@ -5830,7 +5831,7 @@ static int PyFF_Glyph_set_persistent(PyFF_Glyph *self,PyObject *value, void *UNU
     if ( value==Py_None )
 	value = NULL;
     Py_XINCREF(value);
-    self->sc->python_persistent = value;
+    self->sc->layers[ly_fore].python_persistent = value;
     Py_XDECREF(old);
 return( 0 );
 }
@@ -11533,6 +11534,8 @@ ff_gs_os2int2(os2_supysize)
 ff_gs_os2int2(os2_supyoff)
 ff_gs_os2int2(os2_strikeysize)
 ff_gs_os2int2(os2_strikeypos)
+ff_gs_os2int2(os2_capheight)
+ff_gs_os2int2(os2_xheight)
 ff_gs_os2int2(os2_family_class)
 
 ff_gs_os2bit(winascent_add)
@@ -13105,6 +13108,12 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {(char *)"os2_strikeypos",
      (getter)PyFF_Font_get_OS2_os2_strikeypos, (setter)PyFF_Font_set_OS2_os2_strikeypos,
      (char *)"OS/2 Strikethrough YPosition", NULL},
+    {(char *)"os2_capheight",
+     (getter)PyFF_Font_get_OS2_os2_capheight, (setter)PyFF_Font_set_OS2_os2_capheight,
+     (char *)"OS/2 Capital Height", NULL},
+    {(char *)"os2_xheight",
+     (getter)PyFF_Font_get_OS2_os2_xheight, (setter)PyFF_Font_set_OS2_os2_xheight,
+     (char *)"OS/2 x Height", NULL},
     {(char *)"os2_family_class",
      (getter)PyFF_Font_get_OS2_os2_family_class, (setter)PyFF_Font_set_OS2_os2_family_class,
      (char *)"OS/2 Family Class", NULL},
@@ -18453,8 +18462,15 @@ void PyFF_FreeSC(SplineChar *sc) {
 	((PyFF_Glyph *) (sc->python_sc_object))->sc = NULL;
 	Py_DECREF( (PyObject *) (sc->python_sc_object));
     }
+#if 0
+    // This is now layer-specific.
     Py_XDECREF( (PyObject *) (sc->python_persistent));
+#endif // 0
     Py_XDECREF( (PyObject *) (sc->python_temporary));
+}
+
+void PyFF_FreeSCLayer(SplineChar *sc, int layer) {
+    Py_XDECREF( (PyObject *) (sc->layers[layer].python_persistent));
 }
 
 extern void PyFF_FreePythonPersistent(void *python_persistent) {

@@ -1121,6 +1121,33 @@ void SPLCategorizePoints(SplinePointList *spl) {
     }
 }
 
+void SPLCategorizePointsKeepCorners(SplinePointList *spl) {
+    // It's important when round-tripping U. F. O. data that we keep corners as corners and non-corners as non-corners.
+    Spline *spline, *first, *last=NULL;
+    int old_type;
+
+    for ( ; spl!=NULL; spl = spl->next ) {
+	first = NULL;
+	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+	    // If it is a corner, we leave it as a corner.
+	    if ((old_type = spline->from->pointtype) != pt_corner) {
+	      SplinePointCategorize(spline->from);
+	      // If it was not a corner, we do not let it change to a corner.
+	      if (spline->from->pointtype == pt_corner) spline->from->pointtype = old_type;
+	    }
+	    last = spline;
+	    if ( first==NULL ) first = spline;
+	}
+	if ( spline==NULL && last!=NULL )
+	    // If it is a corner, we leave it as a corner.
+	    if ((old_type = last->to->pointtype) != pt_corner) {
+	      SplinePointCategorize(last->to);
+	      // If it was not a corner, we do not let it change to a corner.
+	      if (last->to->pointtype == pt_corner) last->to->pointtype = old_type;
+	    }
+    }
+}
+
 void SCCategorizePoints(SplineChar *sc) {
     int i;
     for ( i=ly_fore; i<sc->layer_cnt; ++i )
@@ -5788,8 +5815,14 @@ void SplineCharFreeContents(SplineChar *sc) {
 return;
     if (sc->name != NULL) free(sc->name);
     if (sc->comment != NULL) free(sc->comment);
-    for ( i=0; i<sc->layer_cnt; ++i )
+    for ( i=0; i<sc->layer_cnt; ++i ) {
+#if defined(_NO_PYTHON)
+        if (sc->layers[i].python_persistent != NULL) free( sc->layers[i].python_persistent );	/* It's a string of pickled data which we leave as a string */
+#else
+        PyFF_FreeSCLayer(sc, i);
+#endif
 	LayerFreeContents(sc,i);
+    }
     StemInfosFree(sc->hstem);
     StemInfosFree(sc->vstem);
     DStemInfosFree(sc->dstem);
@@ -5808,11 +5841,6 @@ return;
     DeviceTableFree(sc->italic_adjusts);
     DeviceTableFree(sc->top_accent_adjusts);
     MathKernFree(sc->mathkern);
-#if defined(_NO_PYTHON)
-    if (sc->python_persistent != NULL) free( sc->python_persistent );	/* It's a string of pickled data which we leave as a string */
-#else
-    PyFF_FreeSC(sc);
-#endif
     if (sc->glif_name != NULL) { free(sc->glif_name); sc->glif_name = NULL; }
 }
 
@@ -6306,6 +6334,10 @@ return;
         oldsf->orders = NULL;
       }
     }
+    // Free the special names.
+    if (sf->pfminfo.os2_family_name) { free(sf->pfminfo.os2_family_name); sf->pfminfo.os2_family_name = NULL; }
+    if (sf->pfminfo.os2_style_name) { free(sf->pfminfo.os2_style_name); sf->pfminfo.os2_style_name = NULL; }
+    // Free the bitmaps.
     for ( bdf = sf->bitmaps; bdf!=NULL; bdf = bnext ) {
 	bnext = bdf->next;
 	BDFFontFree(bdf);

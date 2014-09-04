@@ -3540,10 +3540,12 @@ void SFSetOrder(SplineFont *sf,int order2) {
 void SFLSetOrder(SplineFont *sf, int layerdest, int order2) {
     int i;
 
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
-	    SPLSetOrder(sf->glyphs[i]->layers[layerdest].splines,order2);
+    for ( i=0; i<sf->glyphcnt; ++i )
+      if ( sf->glyphs[i]!=NULL && layerdest < sf->glyphs[i]->layer_cnt) {
+	    if (sf->glyphs[i]->layers[layerdest].splines != NULL)
+	      SPLSetOrder(sf->glyphs[i]->layers[layerdest].splines,order2);
 	    sf->glyphs[i]->layers[layerdest].order2 = order2;
-    }
+      }
 }
 
 static SplineFont *_SFReadSVG(xmlDocPtr doc, char *filename) {

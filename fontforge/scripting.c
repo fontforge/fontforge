@@ -3767,6 +3767,10 @@ static void bSetOS2Value(Context *c) {
 	setss16(&sf->pfminfo.os2_strikeysize,sf,c);
     } else if ( strmatch(c->a.vals[1].u.sval,"StrikeOutPos")==0 ) {
 	setss16(&sf->pfminfo.os2_strikeypos,sf,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"CapHeight")==0 ) {
+	setss16(&sf->pfminfo.os2_capheight,sf,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"XHeight")==0 ) {
+	setss16(&sf->pfminfo.os2_xheight,sf,c);
     } else {
 	ScriptErrorString(c,"Unknown OS/2 field: ", c->a.vals[1].u.sval );
     }
@@ -3858,6 +3862,10 @@ static void bGetOS2Value(Context *c) {
 	os2getint(sf->pfminfo.os2_strikeysize,c);
     } else if ( strmatch(c->a.vals[1].u.sval,"StrikeOutPos")==0 ) {
 	os2getint(sf->pfminfo.os2_strikeypos,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"CapHeight")==0 ) {
+	os2getint(sf->pfminfo.os2_capheight,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"XHeight")==0 ) {
+	os2getint(sf->pfminfo.os2_xheight,c);
     } else {
 	ScriptErrorString(c,"Unknown OS/2 field: ", c->a.vals[1].u.sval );
     }
