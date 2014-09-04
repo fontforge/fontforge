@@ -209,9 +209,13 @@ static void DicaNewEntry(struct dictionary *dica,char *name,Val *val) {
 static void calldatafree(Context *c) {
     int i;
 
-    for ( i=1; i<c->a.argc; ++i ) {	/* child may have freed some args itself by shifting, but argc will reflect the proper values none the less */
-	if ( c->a.vals[i].type == v_str )
-	    free( c->a.vals[i].u.sval );
+    /* child may have freed some args itself by shifting, 
+       but argc will reflect the proper values none the less */
+    for ( i=1; i<c->a.argc; ++i ) {     
+        if ( c->a.vals[i].type == v_str ) {
+            free( c->a.vals[i].u.sval );
+            c->a.vals[i].u.sval = NULL;
+        }
 	if ( c->a.vals[i].type == v_arrfree || (c->a.vals[i].type == v_arr && c->dontfree[i]!=c->a.vals[i].u.aval ))
 	    arrayfree( c->a.vals[i].u.aval );
 	c->a.vals[i].type = v_void;
@@ -224,6 +228,7 @@ static void calldatafree(Context *c) {
 	}
 }
 
+/* coverity[+kill] */
 static void traceback(Context *c) {
     int cnt = 0;
     while ( c!=NULL ) {
@@ -789,7 +794,7 @@ static void bStrftime(Context *c) {
     if ( c->a.argc>=3 )
 	isgmt = c->a.vals[2].u.ival;
     if ( c->a.argc>=4 )
-	oldloc = setlocale(LC_TIME, c->a.vals[3].u.sval);
+	oldloc = setlocale(LC_TIME, c->a.vals[3].u.sval); // TODO
 
     time(&now);
     if ( isgmt )
@@ -3762,6 +3767,10 @@ static void bSetOS2Value(Context *c) {
 	setss16(&sf->pfminfo.os2_strikeysize,sf,c);
     } else if ( strmatch(c->a.vals[1].u.sval,"StrikeOutPos")==0 ) {
 	setss16(&sf->pfminfo.os2_strikeypos,sf,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"CapHeight")==0 ) {
+	setss16(&sf->pfminfo.os2_capheight,sf,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"XHeight")==0 ) {
+	setss16(&sf->pfminfo.os2_xheight,sf,c);
     } else {
 	ScriptErrorString(c,"Unknown OS/2 field: ", c->a.vals[1].u.sval );
     }
@@ -3853,6 +3862,10 @@ static void bGetOS2Value(Context *c) {
 	os2getint(sf->pfminfo.os2_strikeysize,c);
     } else if ( strmatch(c->a.vals[1].u.sval,"StrikeOutPos")==0 ) {
 	os2getint(sf->pfminfo.os2_strikeypos,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"CapHeight")==0 ) {
+	os2getint(sf->pfminfo.os2_capheight,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"XHeight")==0 ) {
+	os2getint(sf->pfminfo.os2_xheight,c);
     } else {
 	ScriptErrorString(c,"Unknown OS/2 field: ", c->a.vals[1].u.sval );
     }
@@ -4033,6 +4046,7 @@ static void bSetCharName(Context *c) {
 	uni = UniFromName(name,c->curfv->sf->uni_interp,c->curfv->map->enc);
     }
     SCSetMetaData(sc,name,uni,comment);
+    free(comment);
     /* SCLigDefault(sc); */	/* Not appropriate for indic scripts. May not be appropriate anywhere. Seems to confuse people even when it is appropriate */
 }
 
@@ -4058,6 +4072,8 @@ static void bSetUnicodeValue(Context *c) {
 	name = copy(StdGlyphName(buffer,uni,c->curfv->sf->uni_interp,c->curfv->sf->for_new_glyphs));
     }
     SCSetMetaData(sc,name,uni,comment);
+    free(name);
+    free(comment);
     /*SCLigDefault(sc);*/
 }
 
@@ -6028,7 +6044,7 @@ static void _AddHint(Context *c,int ish) {
     if ( c->a.vals[2].type==v_int )
 	width = c->a.vals[2].u.ival;
     else if ( c->a.vals[2].type==v_real )
-	start = c->a.vals[2].u.fval;
+        width = c->a.vals[2].u.fval;
     else
 	ScriptError( c, "Bad argument type" );
     if ( width<=0 && width!=-20 && width!=-21 )

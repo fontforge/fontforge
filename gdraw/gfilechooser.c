@@ -491,7 +491,7 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 	uc_strcat(freeme,"/");
 	dir = freeme;
     }
-    if ( gfc->hpos>=gfc->hmax ) {
+    if ( gfc->hpos+1>=gfc->hmax ) {
 	gfc->hmax = gfc->hmax+20;
 	gfc->history = realloc(gfc->history,(gfc->hmax)*sizeof(unichar_t *));
     }

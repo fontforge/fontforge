@@ -3905,7 +3905,9 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
     SSRemoveStupidControlPoints(base);
     SplineSetsRemoveAnnoyingExtrema(base,.3);
     /*SSOverlapClusterCpAngles(base,.01);*/
-    base = SSRemoveReversals(base);
+    // base = SSRemoveReversals(base);
+    // Frank suspects that improvements to FindIntersections have made SSRemoveReverals unnecessary.
+    // And it breaks certain glyphs such as the only glyph in rmo-triangle2.sfd from debugfonts.
     ms = SSsToMContours(base,ot);
     ilist = FindIntersections(ms,ot);
     Validate(ms,ilist);

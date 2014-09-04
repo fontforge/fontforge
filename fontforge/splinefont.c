@@ -1835,11 +1835,10 @@ int SFPrivateGuess(SplineFont *sf,int layer, struct psdict *private,char *name, 
     real snapcnt[12];
     real stemsnap[12];
     char buffer[211];
-    char *oldloc;
     int ret;
 
-    oldloc = copy(setlocale(LC_NUMERIC,NULL));
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     ret = true;
 
     if ( strcmp(name,"BlueValues")==0 || strcmp(name,"OtherBlues")==0 ) {
@@ -1895,8 +1894,7 @@ int SFPrivateGuess(SplineFont *sf,int layer, struct psdict *private,char *name, 
     } else
 	ret = false;
 
-    setlocale(LC_NUMERIC,oldloc);
-    free( oldloc );
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 return( ret );
 }
 

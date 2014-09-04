@@ -226,7 +226,6 @@ static void SFDDumpUTF7Str(FILE *sfd, const char *_str) {
 	utf7_encode(sfd,prev);
     }
     putc('"',sfd);
-    putc(' ',sfd);
 }
 
 
@@ -763,6 +762,7 @@ static void SFDDumpAnchorPoints(FILE *sfd,AnchorPoint *ap) {
     {
 	fprintf( sfd, "AnchorPoint: " );
 	SFDDumpUTF7Str(sfd,ap->anchor->name);
+	putc(' ',sfd);
 	fprintf( sfd, "%g %g %s %d",
 		(double) ap->me.x, (double) ap->me.y,
 		ap->type==at_centry ? "entry" :
@@ -1099,7 +1099,8 @@ static void SFDDumpTtfTable(FILE *sfd,struct ttf_table *tab,SplineFont *sf) {
 		    ended=true;
 		else if ( sf->cvt_names[i]!=NULL ) {
 		    putc(' ',sfd);
-		    SFDDumpUTF7Str(sfd,sf->cvt_names[i] );
+		    SFDDumpUTF7Str(sfd,sf->cvt_names[i]);
+		    putc(' ',sfd);
 		}
 	    }
 	    putc('\n',sfd);
@@ -1245,7 +1246,7 @@ static void SFDDumpCharMath(FILE *sfd,SplineChar *sc) {
     }
 }
 
-static void SFDPickleMe(FILE *sfd,void *python_data) {
+static void SFDPickleMe(FILE *sfd,void *python_data, int python_data_has_lists) {
     char *string, *pt;
 
 #ifdef _NO_PYTHON
@@ -1255,6 +1256,9 @@ static void SFDPickleMe(FILE *sfd,void *python_data) {
 #endif
     if ( string==NULL )
 return;
+    if (python_data_has_lists)
+    fprintf( sfd, "PickledDataWithLists: \"" );
+    else
     fprintf( sfd, "PickledData: \"" );
     for ( pt=string; *pt; ++pt ) {
 	if ( *pt=='\\' || *pt=='"' )
@@ -1267,7 +1271,7 @@ return;
 #endif
 }
 
-static void *SFDUnPickle(FILE *sfd) {
+static void *SFDUnPickle(FILE *sfd, int python_data_has_lists) {
     int ch, quoted;
     static int max = 0;
     static char *buf = NULL;
@@ -1345,8 +1349,10 @@ void SFD_DumpPST( FILE *sfd, SplineChar *sc ) {
 		    "AlternateSubs2:", "MultipleSubs2:", "Ligature2:",
 		    "LCarets2:", NULL };
 	    fprintf( sfd, "%s ", keywords[pst->type] );
-	    if ( pst->subtable!=NULL )
-		SFDDumpUTF7Str(sfd,pst->subtable->subtable_name );
+	    if ( pst->subtable!=NULL ) {
+		SFDDumpUTF7Str(sfd,pst->subtable->subtable_name);
+		putc(' ',sfd);
+	    }
 	    if ( pst->type==pst_position ) {
 		fprintf( sfd, "dx=%d dy=%d dh=%d dv=%d",
 			pst->u.pos.xoff, pst->u.pos.yoff,
@@ -1391,7 +1397,7 @@ void SFD_DumpKerns( FILE *sfd, SplineChar *sc, int *newgids ) {
 		    fprintf( sfd, " %d %d ",
 			    newgids!=NULL?newgids[kp->sc->orig_pos]:kp->sc->orig_pos,
 			    kp->off );
-		    SFDDumpUTF7Str(sfd,kp->subtable->subtable_name );
+		    SFDDumpUTF7Str(sfd,kp->subtable->subtable_name);
 		    if ( kp->adjust!=NULL ) putc(' ',sfd);
 		    SFDDumpDeviceTable(sfd,kp->adjust);
 		}
@@ -1405,7 +1411,7 @@ void SFDDumpCharStartingMarker(FILE *sfd,SplineChar *sc) {
 	fprintf(sfd, "StartChar: %s\n", sc->name );
     else {
 	fprintf(sfd, "StartChar: " );
-	SFDDumpUTF7Str(sfd,sc->name );
+	SFDDumpUTF7Str(sfd,sc->name);
 	putc('\n',sfd);
     }
 }
@@ -1444,6 +1450,15 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	    fprintf( sfd, " %06x.%06x.%x", altuni->unienc, altuni->vs, altuni->fid );
 	putc( '\n', sfd);
     }
+    if ( sc->glif_name ) {
+        fprintf(sfd, "GlifName: ");
+        if ( AllAscii(sc->glif_name))
+	    fprintf(sfd, "%s", sc->glif_name );
+        else {
+	    SFDDumpUTF7Str(sfd,sc->glif_name);
+        }
+        putc('\n',sfd);
+    }
     fprintf(sfd, "Width: %d\n", sc->width );
     if ( sc->vwidth!=sc->parent->ascent+sc->parent->descent )
 	fprintf(sfd, "VWidth: %d\n", sc->vwidth );
@@ -1468,8 +1483,11 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	    sc->top_accent_horiz!=TEX_UNDEF || sc->vert_variants!=NULL ||
 	    sc->horiz_variants!=NULL || sc->mathkern!=NULL )
 	SFDDumpCharMath(sfd,sc);
+#if 0
+    // This is now layer-specific.
     if ( sc->python_persistent!=NULL )
-	SFDPickleMe(sfd,sc->python_persistent);
+	SFDPickleMe(sfd,sc->python_persistent,sc->python_persistent_has_lists);
+#endif // 0
 #if HANYANG
     if ( sc->compositionunit )
 	fprintf( sfd, "CompositionUnit: %d %d\n", sc->jamo, sc->varient );
@@ -1551,7 +1569,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 		SFDDumpPattern(sfd,"StrokePattern:", sc->layers[i].stroke_pen.brush.pattern );
 	} else {
 	    if ( sc->layers[i].images==NULL && sc->layers[i].splines==NULL &&
-		    sc->layers[i].refs==NULL )
+		    sc->layers[i].refs==NULL && sc->layers[i].validation_state&vs_known == 0 &&
+		    sc->layers[i].python_persistent == NULL)
     continue;
 	    if ( i==ly_back )
 		fprintf( sfd, "Back\n" );
@@ -1569,6 +1588,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	SFDDumpRefs(sfd,sc->layers[i].refs,newgids);
 	if ( sc->layers[i].validation_state&vs_known )
 	    fprintf( sfd, "Validated: %d\n", sc->layers[i].validation_state );
+        if ( sc->layers[i].python_persistent!=NULL )
+	  SFDPickleMe(sfd,sc->layers[i].python_persistent,sc->layers[i].python_persistent_has_lists);
     }
     for ( v=0; v<2; ++v ) {
 	kp = v ? sc->vkerns : sc->kerns;
@@ -1579,7 +1600,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
                 fprintf( sfd, " %d %d ",
                          newgids!=NULL?newgids[kp->sc->orig_pos]:kp->sc->orig_pos,
                          kp->off );
-                SFDDumpUTF7Str(sfd,kp->subtable->subtable_name );
+                SFDDumpUTF7Str(sfd,kp->subtable->subtable_name);
                 if ( kp->adjust!=NULL ) putc(' ',sfd);
                 SFDDumpDeviceTable(sfd,kp->adjust);
             }
@@ -1596,8 +1617,10 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 		    "AlternateSubs2:", "MultipleSubs2:", "Ligature2:",
 		    "LCarets2:", NULL };
 	    fprintf( sfd, "%s ", keywords[pst->type] );
-	    if ( pst->subtable!=NULL )
-		SFDDumpUTF7Str(sfd,pst->subtable->subtable_name );
+	    if ( pst->subtable!=NULL ) {
+		SFDDumpUTF7Str(sfd,pst->subtable->subtable_name);
+		putc(' ',sfd);
+	    }
 	    if ( pst->type==pst_position ) {
 		fprintf( sfd, "dx=%d dy=%d dh=%d dv=%d",
 			pst->u.pos.xoff, pst->u.pos.yoff,
@@ -1785,8 +1808,10 @@ static void SFDDumpLangName(FILE *sfd, struct ttflangname *ln) {
     int i, end;
     fprintf( sfd, "LangName: %d ", ln->lang );
     for ( end = ttf_namemax; end>0 && ln->names[end-1]==NULL; --end );
-    for ( i=0; i<end; ++i )
-	SFDDumpUTF7Str(sfd,ln->names[i]);
+    for ( i=0; i<end; ++i ) {
+        SFDDumpUTF7Str(sfd,ln->names[i]);
+        if ( i<end-1 ) putc(' ',sfd);
+    }
     putc('\n',sfd);
 }
 
@@ -1812,12 +1837,13 @@ return;
     fprintf( sfd, "DesignSize: %d", sf->design_size );
     if ( sf->fontstyle_id!=0 || sf->fontstyle_name!=NULL ||
 	    sf->design_range_bottom!=0 || sf->design_range_top!=0 ) {
-	fprintf( sfd, " %d-%d %d",
+	fprintf( sfd, " %d-%d %d ",
 		sf->design_range_bottom, sf->design_range_top,
 		sf->fontstyle_id );
 	for ( on=sf->fontstyle_name; on!=NULL; on=on->next ) {
-	    fprintf( sfd, " %d ", on->lang );
+	    fprintf( sfd, "%d ", on->lang );
 	    SFDDumpUTF7Str(sfd, on->name);
+	    if ( on->next!=NULL ) putc(' ',sfd);
 	}
     }
     putc('\n',sfd);
@@ -1833,6 +1859,7 @@ static void SFDDumpOtfFeatNames(FILE *sfd, SplineFont *sf) {
 	for ( on=fn->names; on!=NULL; on=on->next ) {
 	    fprintf( sfd, "%d ", on->lang );
 	    SFDDumpUTF7Str(sfd, on->name);
+	    if ( on->next!=NULL ) putc(' ',sfd);
 	}
 	putc('\n',sfd);
     }
@@ -1953,7 +1980,7 @@ return;
     fprintf( sfd, "%s ", keyword );
     for ( i=0; list[i]!=NULL; ++i ) {
 	SFDDumpUTF7Str(sfd,list[i]->lookup_name);
-	putc(' ',sfd);
+	if ( list[i+1]!=NULL ) putc(' ',sfd);
     }
     putc('\n',sfd);
 }
@@ -2001,10 +2028,10 @@ static void SFDFpstClassNamesOut(FILE *sfd,int class_cnt,char **classnames,const
 	for ( i=0; i<class_cnt; ++i ) {
 	    if ( classnames[i]==NULL ) {
 		sprintf( buffer,"%d", i );
-		SFDDumpUTF7Str(sfd,buffer );
+		SFDDumpUTF7Str(sfd,buffer);
 	    } else
-		SFDDumpUTF7Str(sfd,classnames[i] );
-	    putc(' ',sfd);
+		SFDDumpUTF7Str(sfd,classnames[i]);
+	    if ( i<class_cnt-1 ) putc(' ',sfd);
 	}
 	putc('\n',sfd);
     }
@@ -2088,13 +2115,14 @@ void SFD_DumpLookup( FILE *sfd, SplineFont *sf ) {
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	for ( otl = isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl = otl->next ) {
 	    fprintf( sfd, "Lookup: %d %d %d ", otl->lookup_type, otl->lookup_flags, otl->store_in_afm );
-	    SFDDumpUTF7Str(sfd,otl->lookup_name );
-	    fprintf( sfd, " {" );
+	    SFDDumpUTF7Str(sfd,otl->lookup_name);
+	    fprintf( sfd, " { " );
 	    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
-		SFDDumpUTF7Str(sfd,sub->subtable_name );
+		SFDDumpUTF7Str(sfd,sub->subtable_name);
+		putc(' ',sfd);
 		if ( otl->lookup_type==gsub_single && sub->suffix!=NULL ) {
 		    putc('(',sfd);
-		    SFDDumpUTF7Str(sfd,sub->suffix );
+		    SFDDumpUTF7Str(sfd,sub->suffix);
 		    putc(')',sfd);
 		} else if ( otl->lookup_type==gpos_pair && sub->vertical_kerning )
 		    fprintf(sfd,"(1)");
@@ -2152,6 +2180,12 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	fprintf(sfd, "FullName: %s\n", sf->fullname );
     if ( sf->familyname!=NULL )
 	fprintf(sfd, "FamilyName: %s\n", sf->familyname );
+    if ( sf->pfminfo.os2_family_name ) {
+	fprintf(sfd, "OS2FamilyName: "); SFDDumpUTF7Str(sfd,sf->pfminfo.os2_family_name); putc('\n', sfd);
+    }
+    if ( sf->pfminfo.os2_style_name ) {
+	fprintf(sfd, "OS2StyleName: "); SFDDumpUTF7Str(sfd,sf->pfminfo.os2_style_name ); putc('\n', sfd);
+    }
     if ( sf->weight!=NULL )
 	fprintf(sfd, "Weight: %s\n", sf->weight );
     if ( sf->copyright!=NULL )
@@ -2200,7 +2234,9 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
     for ( i=0; i<sf->layer_cnt; ++i ) {
 	fprintf( sfd, "Layer: %d %d ", i, sf->layers[i].order2/*, sf->layers[i].background*/ );
 	SFDDumpUTF7Str(sfd,sf->layers[i].name);
-	fprintf( sfd, " %d\n", sf->layers[i].background );
+	fprintf( sfd, " %d", sf->layers[i].background );
+	if (sf->layers[i].ufo_path != NULL) { putc(' ',sfd); SFDDumpUTF7Str(sfd,sf->layers[i].ufo_path); }
+	putc('\n',sfd);
     }
     // TODO: Output U. F. O. layer path.
     if ( sf->strokedfont )
@@ -2269,6 +2305,8 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	fprintf(sfd, "OS2StrikeYSize: %d\n", sf->pfminfo.os2_strikeysize );
 	fprintf(sfd, "OS2StrikeYPos: %d\n", sf->pfminfo.os2_strikeypos );
     }
+    fprintf(sfd, "OS2CapHeight: %d\n", sf->pfminfo.os2_capheight );
+    fprintf(sfd, "OS2XHeight: %d\n", sf->pfminfo.os2_xheight );
     if ( sf->pfminfo.os2_family_class!=0 )
 	fprintf(sfd, "OS2FamilyClass: %d\n", sf->pfminfo.os2_family_class );
     if ( sf->pfminfo.os2_vendor[0]!='\0' ) {
@@ -2289,13 +2327,14 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	for ( otl = isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl = otl->next ) {
 	    fprintf( sfd, "Lookup: %d %d %d ", otl->lookup_type, otl->lookup_flags, otl->store_in_afm );
-	    SFDDumpUTF7Str(sfd,otl->lookup_name );
-	    fprintf( sfd, " {" );
+	    SFDDumpUTF7Str(sfd,otl->lookup_name);
+	    fprintf( sfd, " { " );
 	    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
-		SFDDumpUTF7Str(sfd,sub->subtable_name );
+		SFDDumpUTF7Str(sfd,sub->subtable_name);
+		putc(' ',sfd);
 		if ( otl->lookup_type==gsub_single && sub->suffix!=NULL ) {
 		    putc('(',sfd);
-		    SFDDumpUTF7Str(sfd,sub->suffix );
+		    SFDDumpUTF7Str(sfd,sub->suffix);
 		    putc(')',sfd);
 		} else if ( otl->lookup_type==gpos_pair && sub->vertical_kerning )
 		    fprintf(sfd,"(1)");
@@ -2335,6 +2374,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	fprintf( sfd, "MarkAttachClasses: %d\n", sf->mark_class_cnt );
 	for ( i=1; i<sf->mark_class_cnt; ++i ) {	/* Class 0 is unused */
 	    SFDDumpUTF7Str(sfd, sf->mark_class_names[i]);
+	    putc(' ',sfd);
 	    if ( sf->mark_classes[i]!=NULL )
 		fprintf( sfd, "%d %s\n", (int) strlen(sf->mark_classes[i]),
 			sf->mark_classes[i] );
@@ -2346,6 +2386,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	fprintf( sfd, "MarkAttachSets: %d\n", sf->mark_set_cnt );
 	for ( i=0; i<sf->mark_set_cnt; ++i ) {	/* Set 0 is used */
 	    SFDDumpUTF7Str(sfd, sf->mark_set_names[i]);
+	    putc(' ',sfd);
 	    if ( sf->mark_sets[i]!=NULL )
 		fprintf( sfd, "%d %s\n", (int) strlen(sf->mark_sets[i]),
 			sf->mark_sets[i] );
@@ -2360,8 +2401,8 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	    fprintf( sfd, "%s: %d%s %d ", isv ? "VKernClass2" : "KernClass2",
 		    kc->first_cnt, kc->firsts[0]!=NULL?"+":"",
 		    kc->second_cnt );
-	    SFDDumpUTF7Str(sfd,kc->subtable->subtable_name );
-	    fprintf( sfd, "\n" );
+	    SFDDumpUTF7Str(sfd,kc->subtable->subtable_name);
+	    putc('\n',sfd);
 	    if ( kc->firsts[0]!=NULL )
 	      fprintf( sfd, " %d %s\n", (int)strlen(kc->firsts[0]),
 		       kc->firsts[0]);
@@ -2384,7 +2425,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	static const char *formatkeys[] = { "glyph", "class", "coverage", "revcov", NULL };
 	fprintf( sfd, "%s %s ", keywords[fpst->type-pst_contextpos],
 		formatkeys[fpst->format] );
-	SFDDumpUTF7Str(sfd,fpst->subtable->subtable_name );
+	SFDDumpUTF7Str(sfd,fpst->subtable->subtable_name);
 	fprintf( sfd, " %d %d %d %d\n",
 		fpst->nccnt, fpst->bccnt, fpst->fccnt, fpst->rule_cnt );
 	if ( fpst->nccnt>0 && fpst->nclass[0]!=NULL )
@@ -2457,7 +2498,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 		for ( j=0; j<fpst->rules[i].lookup_cnt; ++j ) {
 		    fprintf( sfd, "  SeqLookup: %d ",
 			    fpst->rules[i].lookups[j].seq );
-		    SFDDumpUTF7Str(sfd,fpst->rules[i].lookups[j].lookup->lookup_name );
+		    SFDDumpUTF7Str(sfd,fpst->rules[i].lookups[j].lookup->lookup_name);
 		    putc('\n',sfd);
 		}
 	      break;
@@ -2485,7 +2526,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	    "unused", "unused", "unused", "unused", "unused", "MacKern2:",
 	    NULL };
 	fprintf( sfd, "%s ", keywords[sm->type-asm_indic] );
-	SFDDumpUTF7Str(sfd,sm->subtable->subtable_name );
+	SFDDumpUTF7Str(sfd,sm->subtable->subtable_name);
 	fprintf( sfd, " %d %d %d\n", sm->flags, sm->class_cnt, sm->state_cnt );
 	for ( i=4; i<sm->class_cnt; ++i )
 	  fprintf( sfd, "  Class: %d %s\n", (int)strlen(sm->classes[i]),
@@ -2496,12 +2537,12 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 		if ( sm->state[i].u.context.mark_lookup==NULL )
 		    putc('~',sfd);
 		else
-		    SFDDumpUTF7Str(sfd,sm->state[i].u.context.mark_lookup->lookup_name );
+		    SFDDumpUTF7Str(sfd,sm->state[i].u.context.mark_lookup->lookup_name);
 		putc(' ',sfd);
 		if ( sm->state[i].u.context.cur_lookup==0 )
 		    putc('~',sfd);
 		else
-		    SFDDumpUTF7Str(sfd,sm->state[i].u.context.cur_lookup->lookup_name );
+		    SFDDumpUTF7Str(sfd,sm->state[i].u.context.cur_lookup->lookup_name);
 		putc(' ',sfd);
 	    } else if ( sm->type == asm_insert ) {
 		if ( sm->state[i].u.insert.mark_ins==NULL )
@@ -2571,7 +2612,7 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 	}
     }
     if ( sf->python_persistent!=NULL )
-	SFDPickleMe(sfd,sf->python_persistent);
+	SFDPickleMe(sfd,sf->python_persistent, sf->python_persistent_has_lists);
     if ( sf->subfontcnt!=0 ) {
 	/* CID fonts have no encodings, they have registry info instead */
 	fprintf(sfd, "Registry: %s\n", sf->cidregistry );
@@ -2636,12 +2677,13 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 	fprintf(sfd, "AnchorClass2: ");
 	for ( an=sf->anchor; an!=NULL; an=an->next ) {
 	    SFDDumpUTF7Str(sfd,an->name);
+	    putc(' ',sfd);
             if ( an->subtable!=NULL ) {
+	        SFDDumpUTF7Str(sfd,an->subtable->subtable_name);
 	        putc(' ',sfd);
-	        SFDDumpUTF7Str(sfd,an->subtable->subtable_name );
             }
             else
-                fprintf(sfd, " \"\" ");
+                fprintf(sfd, "\"\" ");
 	}
 	putc('\n',sfd);
     }
@@ -2938,7 +2980,6 @@ return;
 
 int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal,int todir) {
     FILE *sfd;
-    char oldloc[25];
     int i, gc;
     char *tempfilename = filename;
     int err = false;
@@ -2958,9 +2999,8 @@ int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal,int todir)
     if ( sfd==NULL )
 return( 0 );
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     if ( sf->cidmaster!=NULL ) {
 	sf=sf->cidmaster;
 	gc = 1;
@@ -2972,7 +3012,7 @@ return( 0 );
 	EncMapFree(map);
     } else
 	err = SFDDump(sfd,sf,map,normal,todir,filename);
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     if ( ferror(sfd) ) err = true;
     if ( !err && !todir && strstr(filename,"://")!=NULL )
 	err = !URLFromFile(filename,sfd);
@@ -3814,7 +3854,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 	    ch2 = nlgetc(sfd);		/* : */
 		// We are either fetching a splineset name (Named:) or a point name (NamedP:).
 		if (ch2=='P') { if ((nlgetc(sfd)==':') && (pt!=NULL)) { if (pt->name!=NULL) {free(pt->name);} pt->name = SFDReadUTF7Str(sfd); } }
-		else if (ch2==':') cur->contour_name = SFDReadUTF7Str(sfd);
+		else if (ch2==':') { if (cur != NULL) cur->contour_name = SFDReadUTF7Str(sfd); else { char * freetmp = SFDReadUTF7Str(sfd); free(freetmp); freetmp = NULL; } }
         continue;
 	} else if ( ch=='P' ) {
 	    int flags;
@@ -3828,7 +3868,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 	    nlgetc(sfd);		/* s */
 	    nlgetc(sfd);		/* : */
 	    getint(sfd,&flags);
-	    cur->is_clip_path = flags&1;
+	    if (cur != NULL) cur->is_clip_path = flags&1;
 	}
 	pt = NULL;
 	if ( ch=='l' || ch=='m' ) {
@@ -3878,7 +3918,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 		    {
 			real offset = 0.1;
 			current.x += offset;
-			if( !SplinePointListContainsPointAtX( cur, current.x ))
+			if( !cur || !SplinePointListContainsPointAtX( cur, current.x ))
 			{
 			    break;
 			}
@@ -4992,9 +5032,20 @@ char* SFDMoveToNextStartChar( FILE* sfd ) {
     return 0;
 }
 
+static int PeekMatch(FILE *stream, const char * target) {
+  // This returns 1 if target matches the next characters in the stream.
+  int pos1 = 0;
+  int lastread = getc(stream);
+  while (target[pos1] != '\0' && lastread != EOF && lastread == target[pos1]) {
+    pos1 ++; lastread = getc(stream);
+  }
+  if (lastread != EOF) ungetc(lastread, stream);
+  int pos2 = pos1;
+  while (pos2 > 0) { ungetc(target[--pos2], stream); }
+  return (target[pos1] == '\0');
+}
 
 static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf, int had_sf_layer_cnt) {
-    // TODO: Read the U. F. O. glif name.
     SplineChar *sc;
     char tok[2000], ch;
     RefChar *lastr=NULL, *ref;
@@ -5095,6 +5146,20 @@ return( NULL );
             else {
 		ungetc(ch,sfd);
 		script = gettag(sfd);
+            }
+	} else if ( strmatch(tok,"GlifName:")==0 ) {
+            while ( isspace(ch=nlgetc(sfd)));
+            ungetc(ch,sfd);
+            if ( ch!='"' ) {
+              if ( getname(sfd,tok)!=1 ) {
+                LogError(_("Invalid glif name.\n"));
+              }
+	      sc->glif_name = copy(tok);
+            } else {
+	      sc->glif_name = SFDReadUTF7Str(sfd);
+	      if ( sc->glif_name==NULL ) {
+                LogError(_("Invalid glif name.\n"));
+	      }
             }
 	} else if ( strmatch(tok,"Width:")==0 ) {
 	    getsint(sfd,&sc->width);
@@ -5214,7 +5279,9 @@ return( NULL );
 	} else if ( strmatch(tok,"Fore")==0 ) {
 	    while ( isspace(ch = nlgetc(sfd)));
 	    ungetc(ch,sfd);
-	    if ( ch!='I' && ch!='R' && ch!='S' && ch!='V') {
+	    if ( ch!='I' && ch!='R' && ch!='S' && ch!='V' && ch!=' ' && ch!='\n' && 
+	         !PeekMatch(sfd, "Pickled") && !PeekMatch(sfd, "EndChar") &&
+	         !PeekMatch(sfd, "Fore") && !PeekMatch(sfd, "Back") && !PeekMatch(sfd, "Layer") ) {
 		/* Old format, without a SplineSet token */
 		sc->layers[ly_fore].splines = SFDGetSplineSet(sfd,sc->layers[ly_fore].order2);
 	    }
@@ -5223,12 +5290,12 @@ return( NULL );
 	    SFDGetMinimumDistances(sfd,sc);
 	} else if ( strmatch(tok,"Validated:")==0 ) {
 	    getsint(sfd,(int16 *) &sc->layers[current_layer].validation_state);
-	} else if ( strmatch(tok,"PickledData:")==0 ) {
-	    sc->python_persistent = SFDUnPickle(sfd);
 	} else if ( strmatch(tok,"Back")==0 ) {
 	    while ( isspace(ch=nlgetc(sfd)));
 	    ungetc(ch,sfd);
-	    if ( ch!='I' && ch!='R' && ch!='S' && ch!='V') {
+	    if ( ch!='I' && ch!='R' && ch!='S' && ch!='V' && ch!=' ' && ch!='\n' &&
+	         !PeekMatch(sfd, "Pickled") && !PeekMatch(sfd, "EndChar") &&
+	         !PeekMatch(sfd, "Fore") && !PeekMatch(sfd, "Back") && !PeekMatch(sfd, "Layer") ) {
 		/* Old format, without a SplineSet token */
 		sc->layers[ly_back].splines = SFDGetSplineSet(sfd,sc->layers[ly_back].order2);
 		oldback = true;
@@ -5404,6 +5471,16 @@ return( NULL );
 	    else
 		lasti->next = img;
 	    lasti = img;
+	} else if ( strmatch(tok,"PickledData:")==0 ) {
+	    if (current_layer < sc->layer_cnt) {
+	      sc->layers[current_layer].python_persistent = SFDUnPickle(sfd, 0);
+	      sc->layers[current_layer].python_persistent_has_lists = 0;
+	    }
+	} else if ( strmatch(tok,"PickledDataWithLists:")==0 ) {
+	    if (current_layer < sc->layer_cnt) {
+	      sc->layers[current_layer].python_persistent = SFDUnPickle(sfd, 1);
+	      sc->layers[current_layer].python_persistent_has_lists = 1;
+	    }
 	} else if ( strmatch(tok,"OrigType1:")==0 ) {	/* Accept, slurp, ignore contents */
 	    SFDGetType1(sfd);
 	} else if ( strmatch(tok,"TtfInstrs:")==0 ) {	/* Binary format */
@@ -7315,6 +7392,14 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	geteol(sfd,val);
 	sf->familyname = copy(val);
     }
+    else if ( strmatch(tok,"OS2FamilyName:")==0 )
+    {
+	if (!sf->pfminfo.os2_family_name) sf->pfminfo.os2_family_name = SFDReadUTF7Str(sfd);
+    }
+    else if ( strmatch(tok,"OS2StyleName:")==0 )
+    {
+	if (!sf->pfminfo.os2_style_name) sf->pfminfo.os2_style_name = SFDReadUTF7Str(sfd);
+    }
     else if ( strmatch(tok,"DefaultBaseFilename:")==0 )
     {
 	geteol(sfd,val);
@@ -7557,6 +7642,14 @@ bool SFD_GetFontMetaData( FILE *sfd,
     {
 	getsint(sfd,&sf->pfminfo.os2_strikeypos);
     }
+    else if ( strmatch(tok,"OS2CapHeight:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_capheight);
+    }
+    else if ( strmatch(tok,"OS2XHeight:")==0 )
+    {
+	getsint(sfd,&sf->pfminfo.os2_xheight);
+    }
     else if ( strmatch(tok,"OS2FamilyClass:")==0 )
     {
 	getsint(sfd,&sf->pfminfo.os2_family_class);
@@ -7658,6 +7751,9 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	    getint(sfd,&bk);
 	    sf->layers[layer].background = bk;
 	}
+	while ( (ch=nlgetc(sfd))==' ' );
+	ungetc(ch,sfd);
+	if ( ch!='\n' ) { sf->layers[layer].ufo_path = SFDReadUTF7Str(sfd); }
     }
     else if ( strmatch(tok,"StrokedFont:")==0 )
     {
@@ -8327,7 +8423,27 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	} else if ( strmatch(tok,"BeginSubrs:")==0 ) {	/* leave in so we don't croak on old sfd files */
 	    SFDGetSubrs(sfd);
 	} else if ( strmatch(tok,"PickledData:")==0 ) {
-	    sf->python_persistent = SFDUnPickle(sfd);
+	    if (sf->python_persistent != NULL) {
+#if defined(_NO_PYTHON)
+	      free( sf->python_persistent );	/* It's a string of pickled data which we leave as a string */
+#else
+	      PyFF_FreePythonPersistent(sf->python_persistent);
+#endif
+	      sf->python_persistent = NULL;
+	    }
+	    sf->python_persistent = SFDUnPickle(sfd, 0);
+	    sf->python_persistent_has_lists = 0;
+	} else if ( strmatch(tok,"PickledDataWithLists:")==0 ) {
+	    if (sf->python_persistent != NULL) {
+#if defined(_NO_PYTHON)
+	      free( sf->python_persistent );	/* It's a string of pickled data which we leave as a string */
+#else
+	      PyFF_FreePythonPersistent(sf->python_persistent);
+#endif
+	      sf->python_persistent = NULL;
+	    }
+	    sf->python_persistent = SFDUnPickle(sfd, 1);
+	    sf->python_persistent_has_lists = 1;
 	} else if ( strmatch(tok,"MMCounts:")==0 ) {
 	    MMSet *mm = sf->mm = chunkalloc(sizeof(MMSet));
 	    getint(sfd,&mm->instance_count);
@@ -8569,7 +8685,7 @@ return( dval );
 
 static SplineFont *SFD_Read(char *filename,FILE *sfd, int fromdir) {
     SplineFont *sf=NULL;
-    char oldloc[25], tok[2000];
+    char tok[2000];
     double version;
 
     if ( sfd==NULL ) {
@@ -8581,13 +8697,12 @@ static SplineFont *SFD_Read(char *filename,FILE *sfd, int fromdir) {
     }
     if ( sfd==NULL )
 return( NULL );
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     ff_progress_change_stages(2);
     if ( (version = SFDStartsCorrectly(sfd,tok))!=-1 )
 	sf = SFD_GetFont(sfd,NULL,tok,fromdir,filename,version);
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     if ( sf!=NULL ) {
 	sf->filename = copy(filename);
 	if ( sf->mm!=NULL ) {
@@ -8644,9 +8759,8 @@ SplineChar *SFDReadOneChar(SplineFont *cur_sf,const char *name) {
 	sfd = fopen(cur_sf->filename,"r");
     if ( sfd==NULL )
 return( NULL );
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
 
     memset(&sf,0,sizeof(sf));
     memset(&layers,0,sizeof(layers));
@@ -8723,7 +8837,7 @@ return( NULL );
 
     if ( sf.layers!=layers )
 	free(sf.layers);
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 return( sc );
 }
 
@@ -8916,7 +9030,7 @@ return( true );
 SplineFont *SFRecoverFile(char *autosavename,int inquire,int *state) {
     FILE *asfd = fopen( autosavename,"r");
     SplineFont *ret;
-    char oldloc[25], tok[1025];
+    char tok[1025];
 
     if ( asfd==NULL )
 return(NULL);
@@ -8924,9 +9038,8 @@ return(NULL);
 	fclose( asfd );
 return( NULL );
     }
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     ret = SlurpRecovery(asfd,tok,sizeof(tok));
     if ( ret==NULL ) {
 	const char *buts[3];
@@ -8934,7 +9047,7 @@ return( NULL );
 	if ( ff_ask(_("Recovery Failed"),(const char **) buts,0,1,_("Automagic recovery of changes to %.80s failed.\nShould FontForge try again to recover next time you start it?"),tok)==0 )
 	    unlink(autosavename);
     }
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     fclose(asfd);
     if ( ret )
 	ret->autosavename = copy(autosavename);
@@ -8944,7 +9057,6 @@ return( ret );
 void SFAutoSave(SplineFont *sf,EncMap *map) {
     int i, k, max;
     FILE *asfd;
-    char oldloc[25];
     SplineFont *ssf;
 
     if ( no_windowing_ui )		/* No autosaves when just scripting */
@@ -8959,9 +9071,8 @@ return;
     for ( i=0; i<sf->subfontcnt; ++i )
 	if ( sf->subfonts[i]->glyphcnt>max ) max = sf->subfonts[i]->glyphcnt;
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     if ( !sf->new && sf->origname!=NULL )	/* might be a new file */
 	fprintf( asfd, "Base: %s%s\n", sf->origname,
 		sf->compression==0?"":compressors[sf->compression-1].ext );
@@ -8991,7 +9102,7 @@ return;
     fprintf( asfd, "EndChars\n" );
     fprintf( asfd, "EndSplineFont\n" );
     fclose(asfd);
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     sf->changed_since_autosave = false;
 }
 
@@ -9019,15 +9130,14 @@ return;
 
 char **NamesReadSFD(char *filename) {
     FILE *sfd = fopen(filename,"r");
-    char oldloc[25],tok[2000];
+    char tok[2000];
     char **ret = NULL;
     int eof;
 
     if ( sfd==NULL )
 return( NULL );
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     if ( SFDStartsCorrectly(sfd,tok)!=-1 ) {
 	while ( !feof(sfd)) {
 	    if ( (eof = getname(sfd,tok))!=1 ) {
@@ -9045,7 +9155,7 @@ return( NULL );
 	    }
 	}
     }
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     fclose(sfd);
 return( ret );
 }

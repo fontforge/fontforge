@@ -511,6 +511,8 @@ static void GScrollBarFit(GScrollBar *gsb) {
 
     gsb->sbborder = GBoxBorderWidth(gsb->g.base,gsb->g.box);
     gsb->thumbborder = GBoxBorderWidth(gsb->g.base,gsb->thumbbox);
+    /* FIXME: workaround for incorrect calculation. */
+    if ( gsb->thumbborder > 5 ) gsb->thumbborder = 5;
     gsb->arrowsize = gsb->sbborder +
 	    2*GDrawPointsToPixels(gsb->g.base,2) +
 	    GDrawPointsToPixels(gsb->g.base,_GScrollBar_Width)/2-
@@ -603,8 +605,8 @@ int32 GScrollBarSetPos(GGadget *g,int32 pos) {
 	gsb->thumbpos = 0;
     else
 	gsb->thumbpos =
-	    (gsb->g.vert?gsb->g.inner.height:gsb->g.inner.width)*(pos-gsb->sb_min)/
-		    (gsb->sb_max-gsb->sb_min);
+	    ((gsb->g.vert?gsb->g.inner.height:gsb->g.inner.width)-gsb->size_offset)
+	      *(pos-gsb->sb_min)/(gsb->sb_max-gsb->sb_min);
     _ggadget_redraw(g);
 return( pos );
 }
@@ -622,13 +624,17 @@ return;
     gsb->sb_max = sb_max;
     gsb->sb_pagesize = sb_pagesize;
     gsb->sb_mustshow = sb_mustshow;
+    gsb->size_offset = 0;
     gsb->thumbsize = (gsb->g.vert?gsb->g.inner.height:gsb->g.inner.width);
     if ( sb_max-sb_min > sb_pagesize )
 	gsb->thumbsize = (gsb->thumbsize*gsb->sb_pagesize)/(sb_max-sb_min);
-    if ( gsb->thumbsize<2*gsb->thumbborder+4 ) {
-	gsb->thumbsize = 2*gsb->thumbborder+6;
-	if ( gsb->thumbsize>(gsb->g.vert?gsb->g.inner.height:gsb->g.inner.width) )
+    if ( gsb->thumbsize<2*gsb->thumbborder+10 ) {
+        gsb->size_offset = 2*gsb->thumbborder+10 - gsb->thumbsize;
+	gsb->thumbsize = 2*gsb->thumbborder+10;
+	if ( gsb->thumbsize>(gsb->g.vert?gsb->g.inner.height:gsb->g.inner.width) ) {
+	    gsb->size_offset = 0;
 	    gsb->thumbsize = (gsb->g.vert?gsb->g.inner.height:gsb->g.inner.width);
+        }
     }
     GScrollBarSetPos(g,gsb->sb_pos);
 }

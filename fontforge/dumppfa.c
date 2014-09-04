@@ -2606,7 +2606,6 @@ return( !cidbytes.errors );
 
 int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,
 	EncMap *map, SplineFont *fullsf,int layer) {
-    char oldloc[24];
     int err = false;
 
     if ( format!=ff_cid && format!=ff_ptype3 &&
@@ -2615,8 +2614,8 @@ int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,
 	flags &= ~ps_flag_noflex;
 
     /* make sure that all reals get output with '.' for decimal points */
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     if ( (format==ff_mma || format==ff_mmb) && sf->mm!=NULL )
 	sf = sf->mm->normal;
     if ( format==ff_cid )
@@ -2626,7 +2625,7 @@ int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,
 	if ( format==ff_ptype0 )
 	    dumptype0stuff(out,sf,map);
     }
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     if ( ferror(out) || err)
 return( 0 );
 

@@ -627,7 +627,7 @@ return( true );
 		temp = -1;
 		if (( ept = u_strchr(pt,'\n'))!=NULL )
 		    temp = ept-pt;
-		GDrawDrawText(popup,x,y,pt,temp,popup_foreground);
+		if (temp > 0) GDrawDrawText(popup,x,y,pt,temp,popup_foreground);
 		y += fh;
 		pt = ept+1;
 	    } while ( ept!=NULL && *pt!='\0' );
@@ -1162,7 +1162,8 @@ return( g->state!=gs_invisible );
 }
 
 void GGadgetSetEnabled(GGadget *g,int enabled) {
-    (g->funcs->setenabled)(g,enabled);
+    if(g)
+	(g->funcs->setenabled)(g,enabled);
 }
 
 int GGadgetIsEnabled(GGadget *g) {

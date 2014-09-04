@@ -943,14 +943,13 @@ static void _MenuExit(void *UNUSED(junk)) {
 
     FontView *fv, *next;
 
-#if BUILD_COLLAB
     if( collabclient_haveLocalServer() )
     {
 	AskAndMaybeCloseLocalCollabServers();
     }
 
     python_call_onClosingFunctions();
-#endif
+
 
     LastFonts_Save();
     for ( fv = fv_list; fv!=NULL; fv = next )
@@ -2862,6 +2861,7 @@ static void FVShowSubFont(FontView *fv,SplineFont *new) {
     }
     if ( wascompact ) {
 	EncMapFree(fv->b.map);
+	if (fv->b.map == fv->b.sf->map) { fv->b.sf->map = fv->b.normal; }
 	fv->b.map = fv->b.normal;
 	fv->b.normal = NULL;
 	fv->b.selected = realloc(fv->b.selected,fv->b.map->enccount);
@@ -3872,6 +3872,7 @@ return;
     }
     if ( fv->b.normal!=NULL ) {
 	EncMapFree(fv->b.normal);
+	if (fv->b.normal == fv->b.sf->map) { fv->b.sf->map = NULL; }
 	fv->b.normal = NULL;
     }
     SFReplaceEncodingBDFProps(fv->b.sf,fv->b.map);
@@ -5715,6 +5716,9 @@ static void AskAndMaybeCloseLocalCollabServers()
     char* choices[101];
     collabclient_trimOldBeaconInformation( 0 );
     GHashTable* peers = collabclient_getServersFromBeaconInfomration();
+    if( !peers )
+	return;
+    
     int localOnly = 1;
     int max = collab_MakeChoicesArray( peers, choices, choices_sz, localOnly );
     if( !max )
@@ -5757,7 +5761,6 @@ static void AskAndMaybeCloseLocalCollabServers()
 	collabclient_closeAllLocalServersForce();
 }
 
-#ifdef BUILD_COLLAB
 static void FVMenuCollabCloseLocalServer(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
     AskAndMaybeCloseLocalCollabServers();
@@ -5799,6 +5802,8 @@ static void collablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
 	}
     }
 }
+
+#ifdef BUILD_COLLAB
 
 static GMenuItem2 collablist[] = {
     { { (unichar_t *) N_("_Start Session..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Start Session...|No Shortcut"), NULL, NULL, FVMenuCollabStart, MID_CollabStart },
@@ -7260,6 +7265,7 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 	} else if ( sf->compacted ) {
 	    fv->b.normal = sf->map;
 	    fv->b.map = CompactEncMap(EncMapCopy(sf->map),sf);
+	    sf->map = fv->b.map;
 	} else {
 	    fv->b.map = sf->map;
 	    fv->b.normal = NULL;
@@ -7278,9 +7284,11 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 	sf = fv->b.sf;
 	if ( fv->b.nextsame==NULL ) { EncMapFree(sf->map); sf->map = NULL; }
 	fv->b.map = EncMap1to1(sf->glyphcnt);
+	if ( fv->b.nextsame==NULL ) { sf->map = fv->b.map; }
 	if ( sf->compacted ) {
 	    fv->b.normal = fv->b.map;
 	    fv->b.map = CompactEncMap(EncMapCopy(fv->b.map),sf);
+	    if ( fv->b.nextsame==NULL ) { sf->map = fv->b.map; }
 	}
     }
     fv->b.selected = calloc(fv->b.map->enccount,sizeof(char));
@@ -7504,10 +7512,13 @@ static void FontView_Free(FontView *fv) {
 	BDFFontFree(fv->filled);
     else if ( fv->b.nextsame==NULL && fv->b.sf->fv==&fv->b ) {
 	EncMapFree(fv->b.map);
+	if (fv->b.sf != NULL && fv->b.map == fv->b.sf->map) { fv->b.sf->map = NULL; }
 	SplineFontFree(fv->b.cidmaster?fv->b.cidmaster:fv->b.sf);
 	BDFFontFree(fv->filled);
     } else {
 	EncMapFree(fv->b.map);
+	if (fv->b.sf != NULL && fv->b.map == fv->b.sf->map) { fv->b.sf->map = NULL; }
+	fv->b.map = NULL;
 	for ( fvs=(FontView *) (fv->b.sf->fv), i=0 ; fvs!=NULL; fvs = (FontView *) (fvs->b.nextsame) )
 	    if ( fvs->filled==fv->filled ) ++i;
 	if ( i==1 )

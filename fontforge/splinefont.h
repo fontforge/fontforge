@@ -35,6 +35,7 @@
 #else
 # include <gwwiconv.h>
 #endif
+#include "locale.h"
 
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
 # define real		double
@@ -1290,6 +1291,8 @@ typedef struct layer /* : reflayer */{
     Undoes *redoes;
     uint32 validation_state;
     uint32 old_vs;
+    void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
+    int python_persistent_has_lists;
 } Layer;
 
 enum layer_type { ly_all=-2, ly_grid= -1, ly_back=0, ly_fore=1,
@@ -1495,7 +1498,11 @@ typedef struct splinechar {
     void *python_sc_object;
     void *python_temporary;
 #endif
+#if 0
+    // Python persistent data is now in the layers.
     void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
+    int python_persistent_has_lists;
+#endif // 0
 	/* If the glyph is used as a tile pattern, then the next two values */
 	/*  determine the amount of white space around the tile. If extra is*/
 	/*  non-zero then we add it to the max components of the bbox and   */
@@ -1710,10 +1717,13 @@ struct pfminfo {		/* A misnomer now. OS/2 info would be more accurate, but that'
     int16 os2_subxsize, os2_subysize, os2_subxoff, os2_subyoff;
     int16 os2_supxsize, os2_supysize, os2_supxoff, os2_supyoff;
     int16 os2_strikeysize, os2_strikeypos;
+    int16 os2_capheight, os2_xheight;
     char os2_vendor[4];
     int16 os2_family_class;
     uint32 codepages[2];
     uint32 unicoderanges[4];
+    char *os2_family_name;
+    char *os2_style_name;
 };
 
 struct ttf_table {
@@ -1868,6 +1878,7 @@ typedef struct splinefont {
     void *python_temporary;
 #endif
     void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
+    int python_persistent_has_lists; // This affects whether arrays exist as tuples or as lists (thus allowing us to use tuples for foreign data).
     enum loadvalidation_state loadvalidation_state;
     LayerInfo *layers;
     int layer_cnt;
@@ -2319,6 +2330,7 @@ extern void SplineFontQuickConservativeBounds(SplineFont *sf,DBounds *b);
 extern void SplinePointCategorize(SplinePoint *sp);
 extern int SplinePointIsACorner(SplinePoint *sp);
 extern void SPLCategorizePoints(SplinePointList *spl);
+extern void SPLCategorizePointsKeepCorners(SplinePointList *spl);
 extern void SCCategorizePoints(SplineChar *sc);
 extern SplinePointList *SplinePointListCopy1(const SplinePointList *spl);
 extern SplinePointList *SplinePointListCopy(const SplinePointList *base);
@@ -2699,7 +2711,11 @@ extern void SplineFontAutoHintRefs( SplineFont *sf, int layer);
 extern StemInfo *HintCleanup(StemInfo *stem,int dosort,int instance_count);
 extern int SplineFontIsFlexible(SplineFont *sf,int layer, int flags);
 extern int SCDrawsSomething(SplineChar *sc);
+extern int SCDrawsSomethingOnLayer(SplineChar *sc, int layer);
 extern int SCWorthOutputting(SplineChar *sc);
+extern int SCHasData(SplineChar *sc);
+extern int LayerWorthOutputting(SplineFont *sf, int layer);
+extern int SCLWorthOutputtingOrHasData(SplineChar *sc, int layer);
 extern int SFFindNotdef(SplineFont *sf, int fixed);
 extern int doesGlyphExpandHorizontally(SplineChar *sc);
 extern int IsntBDFChar(BDFChar *bdfc);
@@ -3261,7 +3277,9 @@ extern void PyFF_ScriptFile(struct fontviewbase *fv,SplineChar *sc,char *filenam
 extern void PyFF_ScriptString(struct fontviewbase *fv,SplineChar *sc,int layer,char *str);
 extern void PyFF_FreeFV(struct fontviewbase *fv);
 extern void PyFF_FreeSC(SplineChar *sc);
+void PyFF_FreeSCLayer(SplineChar *sc, int layer);
 extern void PyFF_FreeSF(SplineFont *sf);
+extern void PyFF_FreePythonPersistent(void *python_persistent);
 extern void PyFF_ProcessInitFiles(void);
 extern char *PyFF_PickleMeToString(void *pydata);
 extern void *PyFF_UnPickleMeToObjects(char *str);
@@ -3449,6 +3467,31 @@ extern void debug_printHintInstance( HintInstance* hi, int hin, char* msg );
  * tolerence of b.
  */
 extern bool equalWithTolerence( real a, real b, real tolerence );
+
+static inline void switch_to_c_locale(locale_t * tmplocale_p, locale_t * oldlocale_p) {
+  *tmplocale_p = newlocale(LC_NUMERIC_MASK, "C", NULL);
+  if (*tmplocale_p == NULL) fprintf(stderr, "Failed to create temporary locale.\n");
+  else if ((*oldlocale_p = uselocale(*tmplocale_p)) == NULL) {
+    fprintf(stderr, "Failed to change locale.\n");
+    freelocale(*tmplocale_p); *tmplocale_p = NULL;
+  }
+}
+
+static inline void switch_to_old_locale(locale_t * tmplocale_p, locale_t * oldlocale_p) {
+  if (*oldlocale_p != NULL) { uselocale(*oldlocale_p); } else { uselocale(LC_GLOBAL_LOCALE); }
+  *oldlocale_p = NULL;
+  if (*tmplocale_p != NULL) { freelocale(*tmplocale_p); *tmplocale_p = NULL; }
+}
+
+#if 0
+#define DECLARE_TEMP_LOCALE() char oldloc[25];
+#define SWITCH_TO_C_LOCALE() strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 ); oldloc[24]='\0'; setlocale(LC_NUMERIC,"C");
+#define SWITCH_TO_OLD_LOCALE() setlocale(LC_NUMERIC,oldloc);
+#else
+#define DECLARE_TEMP_LOCALE() locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+#define SWITCH_TO_C_LOCALE() switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
+#define SWITCH_TO_OLD_LOCALE() switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
+#endif
 
 
 

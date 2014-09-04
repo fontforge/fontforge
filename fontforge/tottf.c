@@ -2140,7 +2140,7 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
     dumpsid(cfff,at,sf->version,0);
     dumpsid(cfff,at,sf->copyright,1);
     dumpsid(cfff,at,sf->fullname?sf->fullname:sf->fontname,2);
-    dumpsid(cfff,at,sf->familyname,3);
+    dumpsid(cfff,at,sf->pfminfo.os2_family_name?sf->pfminfo.os2_family_name:sf->familyname,3);
     dumpsid(cfff,at,sf->weight,4);
     if ( at->gi.fixed_width>0 ) dumpintoper(cfff,1,(12<<8)|1);
     if ( sf->italicangle!=0 ) dumpdbloper(cfff,sf->italicangle,(12<<8)|2);
@@ -2256,7 +2256,7 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
 
     dumpsid(cfff,at,sf->copyright,1);
     dumpsid(cfff,at,sf->fullname?sf->fullname:sf->fontname,2);
-    dumpsid(cfff,at,sf->familyname,3);
+    dumpsid(cfff,at,sf->pfminfo.os2_family_name?sf->pfminfo.os2_family_name:sf->familyname,3);
     dumpsid(cfff,at,sf->weight,4);
     /* FontMatrix  (identity here, real ones in sub fonts)*/
     /* Actually there is no fontmatrix in the adobe cid font I'm looking at */
@@ -3783,7 +3783,7 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     if ( dummy->names[ttf_copyright]==NULL || *dummy->names[ttf_copyright]=='\0' )
 	dummy->names[ttf_copyright] = utf8_verify_copy(sf->copyright);
     if ( dummy->names[ttf_family]==NULL || *dummy->names[ttf_family]=='\0' )
-	dummy->names[ttf_family] = utf8_verify_copy(sf->familyname);
+	dummy->names[ttf_family] = utf8_verify_copy(sf->pfminfo.os2_family_name?sf->pfminfo.os2_family_name:sf->familyname);
     if ( dummy->names[ttf_subfamily]==NULL || *dummy->names[ttf_subfamily]=='\0' )
 	dummy->names[ttf_subfamily] = utf8_verify_copy(SFGetModifiers(sf));
     if ( dummy->names[ttf_uniqueid]==NULL || *dummy->names[ttf_uniqueid]=='\0' ) {
@@ -6034,13 +6034,11 @@ static void ATinit(struct alltabs *at,SplineFont *sf,EncMap *map,int flags, int 
 int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *map, int layer) {
     struct alltabs at;
-    char oldloc[25];
     int i, anyglyphs;
 
     /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
 
     if ( format==ff_otfcid || format== ff_cffcid ) {
 	if ( sf->cidmaster ) sf = sf->cidmaster;
@@ -6085,7 +6083,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	if ( initTables(&at,sf,format,bsizes,bf))
 	    dumpttf(ttf,&at);
     }
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     if ( at.error || ferror(ttf))
 return( 0 );
 
@@ -6218,13 +6216,11 @@ static void dumptype42(FILE *type42,struct alltabs *at, enum fontformat format) 
 int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
 	int flags,EncMap *map,int layer) {
     struct alltabs at;
-    char oldloc[25];
     int i;
 
     /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
 
     if ( sf->subfontcnt!=0 ) sf = sf->subfonts[0];
 
@@ -6240,7 +6236,7 @@ int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
 	dumptype42(type42,&at,format);
     free(at.gi.loca);
 
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     if ( at.error || ferror(type42))
 return( 0 );
 

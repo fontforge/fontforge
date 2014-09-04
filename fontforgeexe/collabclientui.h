@@ -164,4 +164,10 @@ extern char* Collab_getLastChangedName( void );
 extern int Collab_getLastChangedPos( void );
 extern int Collab_getLastChangedCodePoint( void );
 
+
+typedef void (*collabclient_notification_cb)( FontViewBase* fv );
+extern void collabclient_addSessionJoiningCallback( collabclient_notification_cb func );
+extern void collabclient_addSessionLeavingCallback( collabclient_notification_cb func );
+
+
 #endif

@@ -3508,11 +3508,9 @@ static void CVChangeSC_storeTab( CharView *cv, int tabnumber )
 
 static void CVChangeSC_fetchTab( CharView *cv, int tabnumber )
 {
-    TRACE("CVChangeSC_fetchTab() %d\n", tabnumber );
     if( tabnumber < charview_cvtabssz )
     {
 	CharViewTab* t = &cv->cvtabs[tabnumber];
-	TRACE("CVChangeSC_fetchTab() %s\n", t->charselected );
 	GGadgetSetTitle8(cv->charselector, t->charselected );
     }
 }
@@ -3520,7 +3518,6 @@ static void CVChangeSC_fetchTab( CharView *cv, int tabnumber )
 static void CVSetCharSelectorValueFromSC( CharView *cv, SplineChar *sc )
 {
     const char* title = Wordlist_getSCName( sc );
-    TRACE("CVSetCharSelectorValueFromSC() title:%s\n", title );
     GGadgetSetTitle8(cv->charselector, title);
 }
 	    
@@ -3541,7 +3538,6 @@ void CVChangeSC( CharView *cv, SplineChar *sc )
     cv->additionalCharsToShowActiveIndex = 0;
     cv->additionalCharsToShow[0] = sc;
     
-
     CVDebugFree(cv->dv);
 
     if ( cv->expandedge != ee_none ) {
@@ -4614,14 +4610,21 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
 	SplineFont* sf = cv->b.sc->parent;
 	EncMap *map = ((FontView *) (cv->b.fv))->b.map;
 	unichar_t *srctxt = GGadgetGetTitle( cv->charselector );
-	TRACE("Switching the active splinechar, so updating the [] in the input box\n");
-	TRACE("INPUT        : %s\n", u_to_c(srctxt));
+	int endsWithSlash = u_endswith( srctxt, c_to_u("/"));
+
 	unichar_t* p = 0;
-	p = Wordlist_selectionClear( sf, map, srctxt );
-	TRACE("UNSELECTed   : %s\n", u_to_c(p));
+	p = Wordlist_selectionClear( sf, map, srctxt );	
 	p = Wordlist_selectionAdd(   sf, map, p, idx );
-	TRACE("NEW SELECTION: %s\n", u_to_c(p));
-	GGadgetSetTitle( cv->charselector, p );
+	if( endsWithSlash )
+	    uc_strcat( p, "/" );
+
+	// only update when the selection has changed.
+	// updating this string is a non reversable operation if the
+	// user is part way through typing some text.
+	if( !Wordlist_selectionsEqual( srctxt, p ))
+	{
+	    GGadgetSetTitle( cv->charselector, p );
+	}
     }
     
     
@@ -7419,6 +7422,7 @@ return;
 return;
     else if ( pos>= map->enccount ) /* pos = 0; */
 return;
+
     if ( pos>=0 && pos<map->enccount )
 	CVChangeChar(cv,pos);
 }
@@ -7923,7 +7927,6 @@ return;
 	    {
 		TRACE("left/right on the charselector!\n");
 	    }
-	    TRACE("up/down/l/r on the charselector!\n");
 	    int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? -1 : 1;
 	    Wordlist_MoveByOffset( cv->charselector, &cv->charselectoridx, dir );
 
@@ -8922,19 +8925,6 @@ static char* getValueFromUser( CharView *cv, const char* windowTitle, const char
     return ret;
 }
 
-static int toint( char* v )
-{
-    if( !v )
-        return 0;
-    return atoi(v);
-}
-static char* tostr( int v )
-{
-    const int bufsz = 100;
-    static char buf[101];
-    snprintf(buf,bufsz,"%d",v);
-    return buf;
-}
 
 
 static void CVRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e)
@@ -12581,8 +12571,6 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
     SplineChar *sc = cv->b.sc;
     SplineFont* sf = sc->parent;
 
-    TRACE("CV_OnCharSelectorTextChanged(top)\n");
-    
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged )
     {
 	int pos = e->u.control.u.tf_changed.from_pulldown;
@@ -12605,8 +12593,7 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	
 	cv->charselectoridx = pos;
 	char* txt = GGadgetGetTitle8( cv->charselector );
-	TRACE("text changed: %s\n", txt );
-
+	TRACE("char selector changed to:%s\n", txt );
 	{
 	    int tabnum = GTabSetGetSel(cv->tabs);
 	    TRACE("tab num:%d\n", tabnum );
@@ -12631,26 +12618,21 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	{
 	    int i=0;
 	    unichar_t *ret = GGadgetGetTitle( cv->charselector );
-	    GArray* selected = 0;
-	    WordlistTrimTrailingSingleSlash( ret );
-	    ret = WordlistEscapedInputStringToRealStringBasic( sf, ret, &selected );
-	    
-	    const unichar_t *pt, *ept, *tpt;
-	    pt = ret;
-	    ept=ret+u_strlen(ret);
+	    WordListLine wll = WordlistEscapedInputStringToParsedData( sf, ret );
+	    WordListLine pt = wll;
+	    WordListLine ept = WordListLine_end(wll);
+	    WordListLine tpt = 0;
 	    for ( tpt=pt; tpt<ept; ++tpt )
 	    {
-		int ch = *tpt;
 		if( tpt == pt )
 		{
 		    // your own char at the leading of the text
-		    SplineChar* sc = SFGetOrMakeCharFromUnicodeBasic( sf, ch );
-		    cv->additionalCharsToShow[i] = sc;
+		    cv->additionalCharsToShow[i] = tpt->sc;
 		    i++;
 		    continue;
 		}
 		
-		cv->additionalCharsToShow[i] = SFGetOrMakeCharFromUnicodeBasic( sf, ch );
+		cv->additionalCharsToShow[i] = tpt->sc;
 
 		i++;
 		if( i >= additionalCharsToShowLimit )
@@ -12658,37 +12640,31 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	    }
 	    free(ret);
 
-	    if( selected )
+	    if( wll->sc )
 	    {
-		int i = 0;
-		for (i = 0; i < selected->len; i++)
+		if( wll->isSelected )
 		{
-		    int v = g_array_index (selected, gint, i);
-		    TRACE("selection i:%d v:%d\n", i, v );
-		    if( !v )
+		    // first char selected, nothing to do!
+		}
+		else
+		{
+		    while( wll->sc && !(wll->isSelected))
+			wll++;
+		    if( wll->sc && wll->isSelected )
 		    {
-			// first char selected, nothing to do!
-			break;
-		    }
-
-		    if( v < additionalCharsToShowLimit )
-		    {
-			SplineChar* xc = cv->additionalCharsToShow[v];
+			SplineChar* xc = wll->sc;
 			if( xc )
 			{
-			    TRACE("selected v:%d xc:%s\n", v, xc->name );
+			    TRACE("selected v:%d xc:%s\n", wll->currentGlyphIndex, xc->name );
 			    int xoff = cv->xoff;
-			    CVSwitchActiveSC( cv, xc, v );
+			    CVSwitchActiveSC( cv, xc, wll->currentGlyphIndex );
 			    CVHScrollSetPos( cv, xoff );
 			    hadSelection = 1;
 			}
+			
 		    }
-		    break;
 		}
 	    }
-	    
-	    g_array_unref( selected );
-	    
 	}
 	free(txt);
 

@@ -30,6 +30,7 @@
 #include "collabclientui.h"
 #include "uiinterface.h"
 #include "sfundo.h"
+#include "../fontforge/ffglib.h"
 
 int  collabclient_setHaveLocalServer( int v );
 
@@ -248,7 +249,7 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
 static void zeromq_subscriber_fd_callback(int zeromq_fd, void* datas )
 {
     cloneclient_t* cc = (cloneclient_t*)datas;
-    
+
 //    printf("zeromq_subscriber_fd_callback(1)\n");
 
     int opt = 0;
@@ -417,13 +418,93 @@ static void collabclient_roundTripTimer( void* ccvp )
 	collabclient_sessionReconnect( cc );
     }
 }
+
 #endif
+
+
+typedef struct _CollabSessionCallbacks CollabSessionCallbacks;
+typedef struct _CollabSessionCallbacksClass CollabSessionCallbacksClass;
+struct _CollabSessionCallbacks         { GObject parent_instance; };
+struct _CollabSessionCallbacksClass    { GObjectClass parent_class; };
+GType collab_sessioncallbacks_get_type (void);
+static void collab_sessioncallbacks_init (CollabSessionCallbacks *self) {}
+
+static void
+collab_sessioncallbacks_class_init (CollabSessionCallbacksClass *klass)
+{
+    GType argtypes[] = { G_TYPE_POINTER, NULL };
+    
+    g_signal_newv ("joining",
+		   (collab_sessioncallbacks_get_type ()),
+		   G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+		   NULL /* closure */,
+		   NULL /* accumulator */,
+		   NULL /* accumulator data */,
+		   g_cclosure_marshal_VOID__POINTER,
+		   G_TYPE_NONE /* return_type */,
+		   1           /* n_params */,
+		   argtypes    /* param_types */);
+    g_signal_newv ("leaving",
+		   (collab_sessioncallbacks_get_type ()),
+		   G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+		   NULL /* closure */,
+		   NULL /* accumulator */,
+		   NULL /* accumulator data */,
+		   g_cclosure_marshal_VOID__POINTER,
+			 G_TYPE_NONE /* return_type */,
+		   1           /* n_params */,
+		   argtypes    /* param_types */);
+}
+
+G_DEFINE_TYPE (CollabSessionCallbacks, collab_sessioncallbacks, G_TYPE_OBJECT)
+
+
+gpointer getSessionCallbacksObject()
+{
+    static gpointer ret = 0;
+    if( !ret )
+	ret = g_object_new( collab_sessioncallbacks_get_type(), 0 );
+    return ret;
+}
+
+void collabclient_notifySessionJoining( cloneclient_t *cc, FontViewBase* fv )
+{
+#ifdef BUILD_COLLAB
+    
+    printf("AAA collabclient_notifySessionJoining() fv:%p\n", fv);
+    g_signal_emit_by_name( getSessionCallbacksObject(), "joining", fv );
+    
+#endif    
+}
+void collabclient_notifySessionLeaving( cloneclient_t *cc, FontViewBase* fv )
+{
+#ifdef BUILD_COLLAB
+    
+    cc->sessionIsClosing = 1;
+    g_signal_emit_by_name( getSessionCallbacksObject(), "leaving", fv );
+
+#endif
+}
+void collabclient_addSessionJoiningCallback( collabclient_notification_cb func )
+{
+    void* data = 0;
+    g_signal_connect( getSessionCallbacksObject(), "joining", (GCallback)func, data );
+}
+void collabclient_addSessionLeavingCallback( collabclient_notification_cb func )
+{
+    void* data = 0;
+    g_signal_connect( getSessionCallbacksObject(), "leaving", (GCallback)func, data );
+}
+
 
 void collabclient_sessionDisconnect( FontViewBase* fv )
 {
 #ifdef BUILD_COLLAB
     
     cloneclient_t *cc = fv->collabClient;
+
+    collabclient_notifySessionLeaving( cc, fv );
+
 
     fv->collabState = cs_disconnected;
     fv->collabClient = 0;
@@ -433,7 +514,6 @@ void collabclient_sessionDisconnect( FontViewBase* fv )
 
 #endif
 }
-
 
 #ifdef BUILD_COLLAB
 
@@ -454,7 +534,7 @@ collabclient_ensureClientBeacon(void)
     int fd = 0;
     size_t fdsz = sizeof(fd);
     int rc = zmq_getsockopt( zbeacon_socket(client_beacon), ZMQ_FD, &fd, &fdsz );
-    printf("beacon rc:%d fd:%d\n", rc, fd );
+//    printf("beacon rc:%d fd:%d\n", rc, fd );
 //    GDrawAddReadFD( 0, fd, cc, zeromq_beacon_fd_callback );
     client_beacon_timerID = BackgroundTimer_new( 1000, zeromq_beacon_timer_callback, 0 );
 }
@@ -541,7 +621,8 @@ void* collabclient_new( char* address, int port )
     cc->preserveUndo = 0;
     cc->roundTripTimerWaitingSeq = 0;
     collabclient_remakeSockets( cc );
-
+    cc->sessionIsClosing = 0;
+    
     int32 roundTripTimerMS = pref_collab_roundTripTimerMS;
     cc->roundTripTimer = BackgroundTimer_new( roundTripTimerMS, 
 					      collabclient_roundTripTimer,
@@ -766,10 +847,10 @@ static void collabclient_sniffForLocalServer_timer( void* udata )
     char* p = zstr_recv_nowait( cc->socket );
     if( p )
     {
-	printf("collabclient_sniffForLocalServer_timer() p:%s\n", p);
+//	printf("collabclient_sniffForLocalServer_timer() p:%s\n", p);
 	if( !strcmp(p,"pong"))
 	{
-	    printf("******* have local server!\n");
+//	    printf("******* have local server!\n");
 	    cc->haveServer = 1;
 	}
     }
@@ -878,6 +959,7 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
 
     beacon_moon_bounce_timerID = BackgroundTimer_new( 3000, beacon_moon_bounce_timer_callback, cc );
 
+    collabclient_notifySessionJoining( cc, fv );
 #endif
 }
 
@@ -985,6 +1067,7 @@ FontViewBase* collabclient_sessionJoin( void* ccvp, FontView *fv )
 	fv->b.collabClient = 0;
 	newfv->collabState = cs_client;
 	FVTitleUpdate( newfv );
+	collabclient_notifySessionJoining( cc, newfv );
 
 	ret = newfv;
 	/* cloneclient_t* newc = collabclient_new( cc->address, cc->port ); */

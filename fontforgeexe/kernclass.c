@@ -1276,14 +1276,18 @@ static int KCD_TextSelect(GGadget *g, GEvent *e) {
 	char *start, *pt, *name;
 	int i;
 
-	for ( upt=uname; *upt!='(' && *upt!=' '; ++upt );
+        /* length of initial text contents up until blank, '(' or end-of-string */
+        for ( upt=uname; *upt!='\0' && *upt!='(' && *upt!=' '; ++upt );
 	name = u2utf8_copyn(uname,upt-uname);
+        /* if string empty or invalid for any reason, quit processing text */
+        if ( name==NULL )
+            return( false );
 	nlen = strlen(name);
 
 	for ( i=0; i<rows; ++i ) {
 	    for ( start = classes[i].u.md_str; start!=NULL && *start!='\0'; ) {
 		while ( *start==' ' ) ++start;
-		for ( pt=start; *pt!='\0' && *pt!=' ' && *pt!='(' && *pt!='\0'; ++pt );
+                for ( pt=start; *pt!='\0' && *pt!=' ' && *pt!='('; ++pt );
 		if ( pt-start == nlen && strncmp(name,start,nlen)==0 ) {
 		    GMatrixEditScrollToRowCol(list,i,0);
 		    GMatrixEditActivateRowCol(list,i,0);
@@ -1291,11 +1295,11 @@ static int KCD_TextSelect(GGadget *g, GEvent *e) {
 			KCD_VShow(kcd,i);
 		    else
 			KCD_HShow(kcd,i);
-return( true );
+                    return( true );
 		}
 		if ( *pt=='(' ) {
 		    while ( *pt!=')' && *pt!='\0' ) ++pt;
-		    ++pt;
+		    if ( *pt==')' ) ++pt;
 		}
 		start = pt;
 	    }
