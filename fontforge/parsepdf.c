@@ -1870,16 +1870,15 @@ static SplineFont *pdf_loadtype3(struct pdfcontext *pc) {
   goto fail;
     if ( sscanf(fontmatrix,"[%lg",&emsize)!=1 || emsize==0 )
   goto fail;
-    emsize = 1.0/emsize;
-    enc = copy(enc);
-    name = copy(name+1);
-
     if ( !pdf_getcharprocs(pc,cp))
   goto fail;
+
+    emsize = 1.0/emsize;
     charprocdict = PSDictCopy(&pc->pdfdict);
 
     sf = SplineFontBlank(charprocdict->next);
     if ( name!=NULL ) {
+        name = copy(name+1);
 	free(sf->fontname); free(sf->fullname); free(sf->familyname);
 	sf->fontname = name;
 	sf->familyname = copy(name);
@@ -1905,7 +1904,6 @@ static SplineFont *pdf_loadtype3(struct pdfcontext *pc) {
     PSDictFree(charprocdict);
 
     /* I'm going to ignore the encoding vector for now, and just return original */
-    free(enc);
     sf->map = EncMapFromEncoding(sf,FindOrMakeEncoding("Original"));
 
 return( sf );
