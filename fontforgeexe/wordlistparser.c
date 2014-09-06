@@ -155,7 +155,7 @@ WordlistEscapedInputStringToRealString_readGlyphName(
 	    char* endptr = 0;
 	    long unicodepoint = strtoul( glyphname+1, &endptr, 16 );
 	    TRACE("AAA glyphname:%s\n", glyphname+1 );
-	    TRACE("AAA unicodepoint:%d\n", unicodepoint );
+	    TRACE("AAA unicodepoint:%ld\n", unicodepoint );
 	    sc = SFGetChar( sf, unicodepoint, 0 );
 	    if( sc && endptr )
 	    {
@@ -284,7 +284,7 @@ u_WordlistEscapedInputStringToRealString_readGlyphName(
 	    {
 		unichar_t* endptr = 0;
 		long unicodepoint = u_strtoul( glyphname+3, &endptr, 16 );
-		TRACE("uni prefix, codepoint: %d\n", unicodepoint );
+		TRACE("uni prefix, codepoint: %ld\n", unicodepoint );
 		sc = SFGetChar( sf, unicodepoint, 0 );
 		if( sc && endptr )
 		{
