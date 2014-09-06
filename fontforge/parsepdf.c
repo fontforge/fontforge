@@ -1078,7 +1078,7 @@ static char *toknames[] = { "m", "l", "c", "v",
 	"y", "h", "re",
 	"q", "Q", "cm", "w", "j", "J",
 	"M", "d",
-	"S", "s", "f" /* "F" is an alternate form for "f"*/, "f*", "B"
+	"S", "s", "f" /* "F" is an alternate form for "f"*/, "f*", "B",
 	"B*", "b", "b*", "n",
 	"d1", "d0",
 	"SC", "sc", "G", "g",
