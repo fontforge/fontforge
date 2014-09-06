@@ -15218,37 +15218,25 @@ return( fontiter_New( self,index,NULL) );
 
 
 static PyObject *PyFFFont_Save(PyFF_Font *self, PyObject *args) {
-    char *filename;
+    char *filename = NULL;
+    int localRevisionsToRetain = -1;
     char *locfilename = NULL;
     char *pt;
     FontViewBase *fv;
     int s2d=false;
-    int localRevisionsToRetain = -1;
 
     if ( CheckIfFontClosed(self) )
 	return(NULL);
     fv = self->fv;
 
-    int haveFilename = 0;
-    if ( PySequence_Size(args) == 2 )
-    {
-	haveFilename = 1;
-	if ( !PyArg_ParseTuple(args,"es|i", "UTF-8", &filename, &localRevisionsToRetain ))
-	    return( NULL );
-    }
-    if ( PySequence_Size(args) == 1 )
-    {
-	haveFilename = 1;
-	if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
-	    return( NULL );
-    }
+    if ( !PyArg_ParseTuple(args,"|esi", "UTF-8", &filename, &localRevisionsToRetain ))
+        return( NULL );
 
-
-    if ( haveFilename )
+    if ( filename!=NULL )
     {
 	/* Save As - Filename was provided */
 	locfilename = utf82def_copy(filename);
-	free(filename);
+	PyMem_Free(filename);
 
 	pt = strrchr(locfilename,'.');
 	if ( pt!=NULL && strmatch(pt,".sfdir")==0 )

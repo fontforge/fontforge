@@ -723,7 +723,7 @@ int _FVMenuSave(FontView *fv) {
 	ret = _FVMenuSaveAs(fv);
     else {
 	FVFlattenAllBitmapSelections(fv);
-	if ( !SFDWriteBak(sf,fv->b.map,fv->b.normal) )
+	if ( !SFDWriteBak(sf->filename,sf,fv->b.map,fv->b.normal) )
 	    ff_post_error(_("Save Failed"),_("Save Failed"));
 	else {
 	    SplineFontSetUnChanged(sf);
