@@ -14,8 +14,8 @@ msgstr ""
 "Project-Id-Version: FontForge 2.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-07-15 14:55+0200\n"
-"PO-Revision-Date: 2014-07-16 09:26+0100\n"
-"Last-Translator: Adrien Tétar <adri-from-59 <at> hotmail <period> fr>\n"
+"PO-Revision-Date: 2014-09-07 13:03+0100\n"
+"Last-Translator: Adrien Tétar <adri-from-59 <at> hotmail <period> org>\n"
 "Language-Team: French <fr.c@li.org>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -65,8 +65,8 @@ msgid ""
 "  http://www.ctan.org/\n"
 "It's part of the TeX distribution"
 msgstr ""
-"Impossible de trouver mf => variable d'environnement METAFONT, ou "
-"télécharger depuis :\n"
+"Impossible de trouver mf – variable d'environnement METAFONT, ou télécharger "
+"depuis :\n"
 " http://www.tug.org/\n"
 " http://www.ctan.org/\n"
 "Il est inclus dans toute distribution TeX/Omega"
@@ -92,7 +92,7 @@ msgstr "METAFONT a abandonné la compilation"
 #: ../fontforge/autowidth2.c:634 ../fontforge/autowidth2.c:751
 #: ../fontforge/autowidth2.c:889
 msgid "Glyph too big"
-msgstr "Glyphes trop grands"
+msgstr "Glyphe trop grand"
 
 #: ../fontforge/autowidth2.c:496 ../fontforge/autowidth2.c:559
 #: ../fontforge/autowidth2.c:634 ../fontforge/autowidth2.c:751
@@ -112,7 +112,7 @@ msgstr "Échec d'AutoWidth  sur %s\n"
 #: ../fontforge/fvimportbdf.c:2032 ../fontforge/palmfonts.c:395
 #: ../fontforge/winfonts.c:909
 msgid "Couldn't open file"
-msgstr "Lecture du fichier impossible"
+msgstr "Impossible de lire le fichier"
 
 #: ../fontforge/autowidth.c:1093 ../fontforge/encoding.c:593
 #: ../fontforge/fvimportbdf.c:2032 ../fontforge/palmfonts.c:395
@@ -145,7 +145,7 @@ msgstr "Bitmap manquante"
 #: ../fontforge/bitmapcontrol.c:222
 #, c-format
 msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"
-msgstr "Régération d'une taille de pixel qui n'a pas été créée (%d@%d)"
+msgstr "Régénération d'une taille de pixel qui n'a pas été créée (%d@%d)"
 
 #: ../fontforge/collabclient.c:121
 msgid "Disconnected"
@@ -11873,9 +11873,8 @@ msgid "writing system|Script"
 msgstr "système d'écriture"
 
 #: ../fontforgeexe/basedlg.c:413
-#, fuzzy
 msgid "Default Baseline"
-msgstr "Tout par défaut"
+msgstr "Repère par défaut"
 
 #: ../fontforgeexe/basedlg.c:616
 msgid "Bad default baseline"
@@ -11889,14 +11888,12 @@ msgid ""
 msgstr ""
 
 #: ../fontforgeexe/basedlg.c:722
-#, fuzzy
 msgid "Vertical Baselines"
-msgstr "Fractions alternatives"
+msgstr "Repères verticaux"
 
 #: ../fontforgeexe/basedlg.c:722
-#, fuzzy
 msgid "Horizontal Baselines"
-msgstr "Crénage horizontal"
+msgstr "Repères horizontaux"
 
 #: ../fontforgeexe/basedlg.c:740
 msgid ""
@@ -12276,7 +12273,7 @@ msgstr "Préfér_ences..."
 #: ../fontforgeexe/bitmapview.c:2129 ../fontforgeexe/charview.c:11579
 #: ../fontforgeexe/fontview.c:4407 ../fontforgeexe/metricsview.c:3468
 msgid "_X Resource Editor..."
-msgstr ""
+msgstr "Editeur d'UI X…"
 
 #: ../fontforgeexe/bitmapview.c:2131 ../fontforgeexe/charview.c:11581
 #: ../fontforgeexe/fontview.c:4409 ../fontforgeexe/metricsview.c:3470
@@ -12560,7 +12557,7 @@ msgstr "Composante"
 #: ../fontforgeexe/charinfo.c:148 ../fontforgeexe/fontview.c:4425
 #: ../fontforgeexe/fontview.c:4564 ../fontforgeexe/groupsdlg.c:44
 msgid "Color|Choose..."
-msgstr ""
+msgstr "Choisir…"
 
 #: ../fontforgeexe/charinfo.c:149 ../fontforgeexe/fontview.c:4426
 #: ../fontforgeexe/fontview.c:4565 ../fontforgeexe/groupsdlg.c:45
@@ -13377,7 +13374,7 @@ msgstr ""
 
 #: ../fontforgeexe/charinfo.c:5177
 msgid "Select By Lookup Subtable"
-msgstr "sélection par _Sous-table..."
+msgstr "Sélection par _Sous-table..."
 
 #: ../fontforgeexe/charinfo.c:5189
 msgid "Select Glyphs in lookup subtable"
@@ -14507,7 +14504,7 @@ msgstr "_Transformer..."
 
 #: ../fontforgeexe/charview.c:11807 ../fontforgeexe/fontview.c:4551
 msgid "_Point of View Projection..."
-msgstr "_Point de Vue Projection..."
+msgstr "_Projection selon un plan…"
 
 #: ../fontforgeexe/charview.c:11808 ../fontforgeexe/fontview.c:4552
 msgid "_Non Linear Transform..."
@@ -14640,11 +14637,11 @@ msgstr "Génération automatique de _hints"
 
 #: ../fontforgeexe/charview.c:11863 ../fontforgeexe/fontview.c:5256
 msgid "Hint _Substitution Pts"
-msgstr "Hint Point_s de Substitution"
+msgstr "Hint point_s de substitution"
 
 #: ../fontforgeexe/charview.c:11864 ../fontforgeexe/fontview.c:5257
 msgid "Auto _Counter Hint"
-msgstr "Hint auto des _Contre-poinçons"
+msgstr "Hint auto des _contre-poinçons"
 
 #: ../fontforgeexe/charview.c:11865 ../fontforgeexe/fontview.c:5258
 msgid "_Don't AutoHint"
@@ -14664,7 +14661,7 @@ msgstr "_Débogage..."
 
 #: ../fontforgeexe/charview.c:11870 ../fontforgeexe/fontview.c:5267
 msgid "S_uggest Deltas..."
-msgstr "S_uggérer des Deltas..."
+msgstr "S_uggérer des deltas…"
 
 #: ../fontforgeexe/charview.c:11872
 msgid "_Clear HStem"
@@ -14746,12 +14743,12 @@ msgstr "Cen_trer 1/3 avant, 2/3 après"
 #: ../fontforgeexe/charview.c:11957 ../fontforgeexe/fontview.c:5282
 #: ../fontforgeexe/metricsview.c:3791
 msgid "Set _LBearing..."
-msgstr "Définir approche _Gauche..."
+msgstr "Définir approche _gauche..."
 
 #: ../fontforgeexe/charview.c:11958 ../fontforgeexe/fontview.c:5283
 #: ../fontforgeexe/metricsview.c:3792
 msgid "Set _RBearing..."
-msgstr "Définir approche _Droite..."
+msgstr "Définir approche _droite..."
 
 #: ../fontforgeexe/charview.c:11959 ../fontforgeexe/fontview.c:5284
 #: ../fontforgeexe/metricsview.c:3793
@@ -14761,7 +14758,7 @@ msgstr "Définir les approches..."
 #: ../fontforgeexe/charview.c:11961 ../fontforgeexe/fontview.c:5286
 #: ../fontforgeexe/fontview.c:5871 ../fontforgeexe/metricsview.c:3795
 msgid "Set _Vertical Advance..."
-msgstr "Définir chasse _Verticale..."
+msgstr "Définir chasse _verticale..."
 
 #: ../fontforgeexe/charview.c:11963 ../fontforgeexe/fontview.c:5289
 #: ../fontforgeexe/metricsview.c:3799
@@ -14780,7 +14777,7 @@ msgstr "Crénage vert. à partir du crénage hor."
 
 #: ../fontforgeexe/charview.c:11966 ../fontforgeexe/metricsview.c:3802
 msgid "Remove Kern _Pairs"
-msgstr "Supprimer _Paires de crénage"
+msgstr "Supprimer _paires de crénage"
 
 #: ../fontforgeexe/charview.c:11967 ../fontforgeexe/metricsview.c:3803
 msgid "Remove VKern Pairs"
@@ -14807,7 +14804,7 @@ msgstr "P_aires ancrées"
 
 #: ../fontforgeexe/charview.c:12053
 msgid "_Anchor Control..."
-msgstr "Contrôle des _Ancres..."
+msgstr "Contrôle des _ancres..."
 
 #: ../fontforgeexe/charview.c:12054
 msgid "Anchor _Glyph at Point"
@@ -14909,21 +14906,18 @@ msgid "Reference Names"
 msgstr "Préférences..."
 
 #: ../fontforgeexe/charview.c:12089
-#, fuzzy
 msgid "_Fill"
-msgstr "_Fichier"
+msgstr "_Remplir"
 
 #: ../fontforgeexe/charview.c:12090
-#, fuzzy
 msgid "Previe_w"
-msgstr "_Revoir"
+msgstr "Aperçu"
 
 #: ../fontforgeexe/charview.c:12091
 msgid "Dragging Comparison Outline"
 msgstr ""
 
 #: ../fontforgeexe/charview.c:12093
-#, fuzzy
 msgid "Pale_ttes"
 msgstr "_Palettes"
 
@@ -16332,19 +16326,16 @@ msgid "Re_move"
 msgstr "ôter"
 
 #: ../fontforgeexe/cvhints.c:539
-#, fuzzy
 msgid "Previous Hint."
-msgstr "Point précédent(_V)"
+msgstr "Hint précédent"
 
 #: ../fontforgeexe/cvhints.c:550
-#, fuzzy
 msgid "Next Hint."
-msgstr "Point suivant(_E)"
+msgstr "Hint suivant"
 
 #: ../fontforgeexe/cvhints.c:555
-#, fuzzy
 msgid "Regenerate Hint Substitution Points"
-msgstr "Hint Point_s de Substitution"
+msgstr "Hint point_s de substitution"
 
 #: ../fontforgeexe/cvhints.c:561
 msgid ""
@@ -16476,19 +16467,19 @@ msgstr "En arrière-plan"
 
 #: ../fontforgeexe/cvpalettes.c:246 ../fontforgeexe/cvpalettes.c:3823
 msgid "Pointer"
-msgstr "Pointer"
+msgstr "Pointeur"
 
 #: ../fontforgeexe/cvpalettes.c:246 ../fontforgeexe/cvpalettes.c:3823
 msgid "Magnify (Minify with alt)"
-msgstr "Agrandir (ou rétrécir avec Alt)"
+msgstr "Zoom (arrière avec Alt)"
 
 #: ../fontforgeexe/cvpalettes.c:247
 msgid "Draw a freehand curve"
-msgstr "Dessiner à main-levée"
+msgstr "Dessin à main-levée"
 
 #: ../fontforgeexe/cvpalettes.c:247
 msgid "Scroll by hand"
-msgstr "Faire défiler à la main"
+msgstr "Défilement à la main"
 
 #: ../fontforgeexe/cvpalettes.c:248
 msgid "Cut splines in two"
@@ -16496,12 +16487,11 @@ msgstr "Scinder la courbe"
 
 #: ../fontforgeexe/cvpalettes.c:248
 msgid "Measure distance, angle between points"
-msgstr "Mesurer la distance ou l'angle entre deux points"
+msgstr "Mesures"
 
 #: ../fontforgeexe/cvpalettes.c:249
 msgid "Add a point, then drag out its control points"
-msgstr ""
-"Ajouter un point, puis faire glisser pour placer des points de contrôle"
+msgstr "Courbes interactives"
 
 #: ../fontforgeexe/cvpalettes.c:249
 msgid "Change whether spiro is active or not"
@@ -16509,11 +16499,11 @@ msgstr "Activer/désactiver Spiro"
 
 #: ../fontforgeexe/cvpalettes.c:250
 msgid "Add a curve point"
-msgstr "Ajouter une point de courbe"
+msgstr "Ajouter un point courbe"
 
 #: ../fontforgeexe/cvpalettes.c:250
 msgid "Add a curve point always either horizontal or vertical"
-msgstr "Ajouter un point de _courbe verrouillé sur l'axe horiz. ou vert."
+msgstr "Ajouter un point courbe H/V"
 
 #: ../fontforgeexe/cvpalettes.c:251
 msgid "Add a corner point"
@@ -16533,7 +16523,7 @@ msgstr "Pivoter la sélection"
 
 #: ../fontforgeexe/cvpalettes.c:253
 msgid "Flip the selection"
-msgstr "Appliquer une symétrie à la selection"
+msgstr "Appliquer une symétrie à la sélection"
 
 #: ../fontforgeexe/cvpalettes.c:253
 msgid "Skew the selection"
@@ -16556,23 +16546,20 @@ msgid "Polygon or Star"
 msgstr "Polygone ou étoile"
 
 #: ../fontforgeexe/cvpalettes.c:258 ../fontforgeexe/cvpalettes.c:286
-#, fuzzy
 msgid "_Pointer"
-msgstr "Pointer"
+msgstr "_Pointeur"
 
 #: ../fontforgeexe/cvpalettes.c:259 ../fontforgeexe/cvpalettes.c:287
 msgid "_Magnify"
 msgstr ""
 
 #: ../fontforgeexe/cvpalettes.c:260 ../fontforgeexe/cvpalettes.c:288
-#, fuzzy
 msgid "_Freehand"
 msgstr "À main levée"
 
 #: ../fontforgeexe/cvpalettes.c:261 ../fontforgeexe/cvpalettes.c:289
-#, fuzzy
 msgid "_Scroll"
-msgstr "Faire défiler bitmap"
+msgstr "Faire défiler"
 
 #: ../fontforgeexe/cvpalettes.c:262 ../fontforgeexe/cvpalettes.c:290
 #: ../fontforgeexe/cvpalettes.c:293
@@ -16581,9 +16568,8 @@ msgstr ""
 
 #: ../fontforgeexe/cvpalettes.c:263 ../fontforgeexe/cvpalettes.c:291
 #: ../fontforgeexe/cvpalettes.c:294
-#, fuzzy
 msgid "_Ruler"
-msgstr "Masque_r règles"
+msgstr "Mesu_res"
 
 #: ../fontforgeexe/cvpalettes.c:265
 msgid "P_en"
@@ -16600,34 +16586,31 @@ msgstr ""
 #: ../fontforgeexe/cvpalettes.c:273 ../fontforgeexe/cvpalettes.c:305
 #: ../fontforgeexe/cvstroke.c:1874
 msgid "Rotate"
-msgstr "Pivoter..."
+msgstr "Pivoter"
 
 #: ../fontforgeexe/cvpalettes.c:274 ../fontforgeexe/cvpalettes.c:306
 msgid "Flip"
-msgstr "Symétrie..."
+msgstr "Symétrie"
 
 #: ../fontforgeexe/cvpalettes.c:275 ../fontforgeexe/cvpalettes.c:307
 msgid "Ske_w"
 msgstr ""
 
 #: ../fontforgeexe/cvpalettes.c:276 ../fontforgeexe/cvpalettes.c:308
-#, fuzzy
 msgid "_3D Rotate"
-msgstr "Pivoter..."
+msgstr "Rotation _3D"
 
 #: ../fontforgeexe/cvpalettes.c:277 ../fontforgeexe/cvpalettes.c:309
 msgid "Perspecti_ve"
 msgstr ""
 
 #: ../fontforgeexe/cvpalettes.c:279 ../fontforgeexe/cvpalettes.c:311
-#, fuzzy
 msgid "Rectan_gle"
-msgstr "Rectangle"
+msgstr "Rectan_gle"
 
 #: ../fontforgeexe/cvpalettes.c:280 ../fontforgeexe/cvpalettes.c:312
-#, fuzzy
 msgid "Pol_ygon"
-msgstr "Polygone"
+msgstr "Pol_ygone"
 
 #: ../fontforgeexe/cvpalettes.c:281 ../fontforgeexe/cvpalettes.c:313
 #: ../fontforgeexe/cvpalettes.c:754 ../fontforgeexe/cvpalettes.c:760
@@ -16683,11 +16666,11 @@ msgstr "Taille des points"
 #: ../fontforgeexe/cvpalettes.c:437 ../fontforgeexe/cvpalettes.c:438
 #: ../fontforgeexe/cvpalettes.c:475 ../fontforgeexe/cvpalettes.c:694
 msgid "Radius:   "
-msgstr "Rayon:   "
+msgstr "Rayon :   "
 
 #: ../fontforgeexe/cvpalettes.c:439 ../fontforgeexe/cvpalettes.c:722
 msgid "Angle:"
-msgstr "Angle:"
+msgstr "Angle :"
 
 #: ../fontforgeexe/cvpalettes.c:473 ../fontforgeexe/cvpalettes.c:3145
 msgid "Corner"
@@ -16700,7 +16683,7 @@ msgstr "C_entrer"
 
 #: ../fontforgeexe/cvpalettes.c:475 ../fontforgeexe/cvpalettes.c:694
 msgid "Diameter:"
-msgstr "Diamètre:"
+msgstr "Diamètre :"
 
 #: ../fontforgeexe/cvpalettes.c:533
 msgid "Shape Type"
@@ -16774,7 +16757,7 @@ msgstr "Irréversible"
 #: ../fontforgeexe/cvpalettes.c:1458 ../fontforgeexe/cvpalettes.c:2333
 #: ../fontforgeexe/cvpalettes.c:2688
 msgid "This operation cannot be undone, do it anyway?"
-msgstr "Cette opération ne peut pas être défaite, continuer malgré tout?"
+msgstr "Cette opération ne pourra être annulée, continuer malgré tout ?"
 
 #: ../fontforgeexe/cvpalettes.c:1513
 msgid "Layer Info..."
@@ -16818,9 +16801,8 @@ msgid "Is Layer Editable?"
 msgstr "Ce calque est-il éditable ?"
 
 #: ../fontforgeexe/cvpalettes.c:2385
-#, fuzzy
 msgid "New Layer"
-msgstr "Nouveau calque..."
+msgstr "Nouveau calque"
 
 #: ../fontforgeexe/cvpalettes.c:2388
 msgid "Shift Contents To _First"
@@ -16880,9 +16862,8 @@ msgid "-"
 msgstr ""
 
 #: ../fontforgeexe/cvpalettes.c:2946
-#, fuzzy
 msgid "Delete the current layer"
-msgstr "Supprimer le caractère"
+msgstr "Supprimer le calque"
 
 #: ../fontforgeexe/cvpalettes.c:2958
 msgid "Add a new layer"
@@ -17042,7 +17023,7 @@ msgstr "Dans Rectangle"
 
 #: ../fontforgeexe/cvpointer.c:1905
 msgid "_Radius:"
-msgstr "_Rayon:   "
+msgstr "_Rayon :   "
 
 #: ../fontforgeexe/cvpointer.c:1913 ../fontforgeexe/fontinfo.c:203
 msgid "3"
@@ -17253,9 +17234,8 @@ msgid ""
 msgstr "_Calligraphie"
 
 #: ../fontforgeexe/cvstroke.c:704
-#, fuzzy
 msgid "_Polygon"
-msgstr "Polygone"
+msgstr "_Polygone"
 
 #: ../fontforgeexe/cvstroke.c:716
 msgid "_Don't Expand"
@@ -17733,7 +17713,6 @@ msgid "Sort|Alphabetic"
 msgstr "Alphabétique"
 
 #: ../fontforgeexe/deltaui.c:406
-#, fuzzy
 msgid "Glyph Order"
 msgstr "Ordre des glyphes"
 
@@ -22413,11 +22392,12 @@ msgid "Use quadratic splines for the guidelines layer of the font"
 msgstr ""
 
 #: ../fontforgeexe/fontinfo.c:8226
-#, fuzzy
 msgid ""
 "\n"
 "Layers:"
-msgstr "Calques"
+msgstr ""
+"\n"
+"Calques :"
 
 #: ../fontforgeexe/fontinfo.c:8261
 msgid ""
@@ -23158,7 +23138,7 @@ msgstr ""
 
 #: ../fontforgeexe/fontview.c:1842
 msgid "Select by Script"
-msgstr "Sélection par Système d'écriture"
+msgstr "Sélection par système d'écriture"
 
 #: ../fontforgeexe/fontview.c:1857
 #, fuzzy
@@ -23257,6 +23237,8 @@ msgid ""
 "Enter either a wildcard pattern (to match glyph names)\n"
 " or a unicode encoding like \"U+0065\"."
 msgstr ""
+"Entrez une expression à métacaractère (pour trouver des noms\n"
+"de glyphes) ou un encodage Unicode comme \"U+0065\"."
 
 #: ../fontforgeexe/fontview.c:2131
 msgid ""
@@ -23369,7 +23351,7 @@ msgstr ""
 
 #: ../fontforgeexe/fontview.c:3792
 msgid "Change Supplement..."
-msgstr ""
+msgstr "Changer de supplément…"
 
 #: ../fontforgeexe/fontview.c:3792
 #, c-format
@@ -23418,7 +23400,7 @@ msgstr "Scripts"
 
 #: ../fontforgeexe/fontview.c:4415
 msgid "_All Fonts"
-msgstr "Tout: vecteurs et bitmaps"
+msgstr "Tout (vecteurs et bitmaps)"
 
 #: ../fontforgeexe/fontview.c:4416
 msgid "_Displayed Font"
@@ -23426,11 +23408,11 @@ msgstr "Seulement la fonte courante"
 
 #: ../fontforgeexe/fontview.c:4418
 msgid "Glyph _Metadata"
-msgstr "y compris les métadonnées"
+msgstr "Y compris les métadonnées"
 
 #: ../fontforgeexe/fontview.c:4420
 msgid "_TrueType Instructions"
-msgstr "y compris les instructions _TrueType"
+msgstr "Y compris les instructions _TrueType"
 
 #: ../fontforgeexe/fontview.c:4442
 msgid "Select by _Color"
@@ -23438,24 +23420,23 @@ msgstr "sélection par _Couleur"
 
 #: ../fontforgeexe/fontview.c:4443
 msgid "Select by _Wildcard..."
-msgstr ""
+msgstr "Sélectionner par métacaractère…"
 
 #: ../fontforgeexe/fontview.c:4444
 msgid "Select by _Script..."
-msgstr "sélection par système d'écriture..."
+msgstr "Sélection par système d'écriture…"
 
 #: ../fontforgeexe/fontview.c:4446
 msgid "_Glyphs Worth Outputting"
 msgstr "_Vrais glyphes"
 
 #: ../fontforgeexe/fontview.c:4447
-#, fuzzy
 msgid "Glyphs with only _References"
-msgstr "Différence entre les glyphes\n"
+msgstr "Glyphes uniq. avec références"
 
 #: ../fontforgeexe/fontview.c:4448
 msgid "Glyphs with only S_plines"
-msgstr ""
+msgstr "Glyphes uniq. avec splines"
 
 #: ../fontforgeexe/fontview.c:4449
 #, fuzzy
@@ -23476,15 +23457,15 @@ msgstr "glyphes sans _Hints"
 
 #: ../fontforgeexe/fontview.c:4453
 msgid "Autohinta_ble"
-msgstr ""
+msgstr "Autohinta_ble"
 
 #: ../fontforgeexe/fontview.c:4455
 msgid "Hold [Shift] key to merge"
-msgstr ""
+msgstr "Maintenir [Shift] pour fusionner"
 
 #: ../fontforgeexe/fontview.c:4456
 msgid "Hold [Control] key to restrict"
-msgstr ""
+msgstr "Maintenir [Ctrl] pour restreindre"
 
 #: ../fontforgeexe/fontview.c:4458
 msgid "Selec_t By Lookup Subtable..."
@@ -23492,7 +23473,7 @@ msgstr "sélection par _Sous-table..."
 
 #: ../fontforgeexe/fontview.c:4465
 msgid "Undo Fontlevel"
-msgstr "Annuler pour toute la fonte"
+msgstr "Annuler tout"
 
 #: ../fontforgeexe/fontview.c:4470
 msgid "Copy _Lookup Data"
@@ -23531,14 +23512,12 @@ msgid "Copy _From"
 msgstr "Contenu de la copie"
 
 #: ../fontforgeexe/fontview.c:4522
-#, fuzzy
 msgid "Add _Small Capitals..."
-msgstr "Capitales vers petites capitales"
+msgstr "Ajouter des petites capitales…"
 
 #: ../fontforgeexe/fontview.c:4523
-#, fuzzy
 msgid "Add Subscripts/Superscripts..."
-msgstr "Indices & Exposants"
+msgstr "Ajouter exposants/indices…"
 
 #: ../fontforgeexe/fontview.c:4535
 msgid "Buil_d Duplicate Glyph"
@@ -23572,10 +23551,9 @@ msgstr "Montrer les dé_pendances"
 
 #: ../fontforgeexe/fontview.c:4583
 msgid "Mass Glyph _Rename..."
-msgstr "Rennomage massif de glyphes..."
+msgstr "Renommage massif de glyphes…"
 
 #: ../fontforgeexe/fontview.c:4584
-#, fuzzy
 msgid "Set _Color"
 msgstr "Choisir la couleur"
 
@@ -23589,7 +23567,7 @@ msgstr "_Valider..."
 
 #: ../fontforgeexe/fontview.c:4592
 msgid "Set E_xtremum Bound..."
-msgstr ""
+msgstr "Régler la tolérance aux extremums…"
 
 #: ../fontforgeexe/fontview.c:4599
 msgid "Other Info"
@@ -23778,11 +23756,11 @@ msgstr "Suppr_imer les cases inutilisées"
 
 #: ../fontforgeexe/fontview.c:4995
 msgid "_Detach Glyphs"
-msgstr "_Détacher les Glyphes"
+msgstr "_Détacher les glyphes"
 
 #: ../fontforgeexe/fontview.c:4996
 msgid "Detach & Remo_ve Glyphs..."
-msgstr "Détacher et Supprimer les glyphes..."
+msgstr "Détacher et supprimer les glyphes..."
 
 #: ../fontforgeexe/fontview.c:4998
 msgid "Add E_ncoding Name..."
@@ -23794,7 +23772,7 @@ msgstr "Chargement du codage"
 
 #: ../fontforgeexe/fontview.c:5000
 msgid "Ma_ke From Font..."
-msgstr "Faire à partir de (_K)"
+msgstr "À partir d'une fonte (_K)"
 
 #: ../fontforgeexe/fontview.c:5001
 msgid "Remove En_coding..."
@@ -23802,11 +23780,11 @@ msgstr "Suppression du codage"
 
 #: ../fontforgeexe/fontview.c:5003
 msgid "Display By _Groups..."
-msgstr "Afficher par _Groupes..."
+msgstr "Afficher par _groupes…"
 
 #: ../fontforgeexe/fontview.c:5004
 msgid "D_efine Groups..."
-msgstr "Définir des groupes"
+msgstr "Définir des group_es…"
 
 #: ../fontforgeexe/fontview.c:5006
 msgid "_Save Namelist of Font..."
@@ -23826,16 +23804,15 @@ msgstr "Créer des glyphes nommés..."
 
 #: ../fontforgeexe/fontview.c:5092
 msgid "_Show ATT"
-msgstr "Propriétés _typo avancées"
+msgstr "Propriétés _typo. avancées"
 
 #: ../fontforgeexe/fontview.c:5093
 msgid "Display S_ubstitutions..."
 msgstr "Montrer les S_ubstitutions..."
 
 #: ../fontforgeexe/fontview.c:5096
-#, fuzzy
 msgid "Label Gl_yph By"
-msgstr "Titrer _les Glyphes avec"
+msgstr "Titrer les gl_yphes avec"
 
 #: ../fontforgeexe/fontview.c:5098
 msgid "S_how H. Metrics..."
@@ -23878,9 +23855,8 @@ msgid "_96 pixel outline"
 msgstr "Contour de _96 pixels"
 
 #: ../fontforgeexe/fontview.c:5110
-#, fuzzy
 msgid "_128 pixel outline"
-msgstr "Contour de _48 pixels"
+msgstr "Contour de _128 pixels"
 
 #: ../fontforgeexe/fontview.c:5112
 msgid "_Fit to em"
@@ -23916,13 +23892,12 @@ msgid "Edit 'cvt '..."
 msgstr "Éditer 'cvt '..."
 
 #: ../fontforgeexe/fontview.c:5266
-#, fuzzy
 msgid "Remove Instr Tables"
-msgstr "Ôter le contour intérieur"
+msgstr "Supprimer les tables"
 
 #: ../fontforgeexe/fontview.c:5269
 msgid "_Clear Hints"
-msgstr "Supprimer les hints(_C)"
+msgstr "Supprimer les hints (_C)"
 
 #: ../fontforgeexe/fontview.c:5272
 msgid "Histograms"
@@ -23975,7 +23950,7 @@ msgstr "_Infos fonte CID..."
 #. GT: Here (and following) MM means "MultiMaster"
 #: ../fontforgeexe/fontview.c:5402
 msgid "_Create MM..."
-msgstr "_Créer une Multi-Master..."
+msgstr "_Créer un Multi-Master..."
 
 #: ../fontforgeexe/fontview.c:5403
 msgid "MM _Validity Check"
@@ -23987,11 +23962,11 @@ msgstr "_Infos MM..."
 
 #: ../fontforgeexe/fontview.c:5405
 msgid "_Blend to New Font..."
-msgstr "Méla_nger dans une Nouvelle Fonte..."
+msgstr "Méla_nger dans une nouvelle fonte..."
 
 #: ../fontforgeexe/fontview.c:5406
 msgid "MM Change Default _Weights..."
-msgstr "MM Changer les _Poids..."
+msgstr "MM Changer les _poids..."
 
 #: ../fontforgeexe/fontview.c:5627
 msgid "Connect to Collab Server"
@@ -24043,7 +24018,7 @@ msgstr "_Index"
 
 #: ../fontforgeexe/fontview.c:5844
 msgid "_About..."
-msgstr "À _Propos..."
+msgstr "À _propos..."
 
 #: ../fontforgeexe/fontview.c:5845
 msgid "_License..."
@@ -24145,7 +24120,6 @@ msgid "Background color for the drawing area of all views"
 msgstr ""
 
 #: ../fontforgeexe/fontview.c:7648
-#, fuzzy
 msgid "View"
 msgstr "_Vue"
 
@@ -24395,9 +24369,8 @@ msgid "Merge into selection"
 msgstr "Fusionner avec la sélection courante"
 
 #: ../fontforgeexe/groupsdlg.c:43
-#, fuzzy
 msgid "Select by Color"
-msgstr "sélection par _Couleur"
+msgstr "Sélection par _couleur"
 
 #: ../fontforgeexe/groupsdlg.c:698
 #, fuzzy
@@ -24686,7 +24659,6 @@ msgid "A list of lookup names"
 msgstr "Une liste de glyphes :"
 
 #: ../fontforgeexe/justifydlg.c:495
-#, fuzzy
 msgid "LookupName|New"
 msgstr "Nouvelle"
 
@@ -24864,9 +24836,8 @@ msgid ""
 msgstr "Correction table de devices"
 
 #: ../fontforgeexe/kernclass.c:2474
-#, fuzzy
 msgid "Revert Kerning"
-msgstr "Crénage vertical"
+msgstr "Annuler le crénage"
 
 #: ../fontforgeexe/kernclass.c:2478
 msgid ""
@@ -24894,9 +24865,8 @@ msgid "Lookup Subtable: %s"
 msgstr ""
 
 #: ../fontforgeexe/kernclass.c:2707
-#, fuzzy
 msgid "Show Kerning"
-msgstr "Crénage Math."
+msgstr "Afficher le crénage"
 
 #: ../fontforgeexe/kernclass.c:2722 ../fontforgeexe/lookupui.c:4741
 #: ../fontforgeexe/lookupui.c:5669
@@ -26201,9 +26171,8 @@ msgid "Yi Modern"
 msgstr "Yi moderne"
 
 #: ../fontforgeexe/lookupui.c:683
-#, fuzzy
 msgid "Chinese Hong Kong"
-msgstr "Chinois de Hong-Kong zh_HK"
+msgstr "Chinois de Hong-Kong"
 
 #: ../fontforgeexe/lookupui.c:684
 msgid "Chinese Phonetic"
@@ -26424,7 +26393,7 @@ msgstr "Ignorer les ligatures"
 
 #: ../fontforgeexe/lookupui.c:1814
 msgid "Ignore Combining Marks"
-msgstr "Ignorer les marques"
+msgstr "Ignorer les diacritiques combinantes"
 
 #. GT: Process is a verb here and Mark is a noun.
 #. GT: Marks of the given mark class are to be processed
@@ -27205,14 +27174,12 @@ msgid "Kern:"
 msgstr "Crénage:"
 
 #: ../fontforgeexe/metricsview.c:1276
-#, fuzzy
 msgid "_Alter Class"
-msgstr " Classes de post-chaîne"
+msgstr "Modifier la classe"
 
 #: ../fontforgeexe/metricsview.c:1277
-#, fuzzy
 msgid "_Create Pair"
-msgstr "Échec de la création"
+msgstr "_Créer une paire"
 
 #: ../fontforgeexe/metricsview.c:1279
 msgid "Use Kerning Class?"
@@ -27232,9 +27199,8 @@ msgstr ""
 "glyphes) ?"
 
 #: ../fontforgeexe/metricsview.c:1962 ../fontforgeexe/wordlistparser.c:457
-#, fuzzy
 msgid "Load Glyph Name List..."
-msgstr "Charger les noms de glyphes"
+msgstr "Charger une liste de noms de glyphes"
 
 #: ../fontforgeexe/metricsview.c:3050
 #, c-format
@@ -28001,9 +27967,8 @@ msgid ""
 msgstr ""
 
 #: ../fontforgeexe/prefs.c:309
-#, fuzzy
 msgid "UseCairoDrawing"
-msgstr "Eléments pour boîtes graphiques"
+msgstr "Utiliser le rendu Cairo"
 
 #: ../fontforgeexe/prefs.c:309 ../fontforgeexe/prefs.c:519
 msgid ""
@@ -28083,9 +28048,8 @@ msgid ""
 msgstr ""
 
 #: ../fontforgeexe/prefs.c:330
-#, fuzzy
 msgid "CompactOnOpen"
-msgstr "Compacté"
+msgstr "Ouvrir avec encodage compact"
 
 #: ../fontforgeexe/prefs.c:330
 msgid "When a font is opened, should it be made compact?"
@@ -28140,9 +28104,8 @@ msgid ""
 msgstr ""
 
 #: ../fontforgeexe/prefs.c:345 ../fontforgeexe/prefs.c:2700
-#, fuzzy
 msgid "InterpolateCPsOnMotion"
-msgstr "Interpoler fontes..."
+msgstr "Interpoler les points lors du déplacement"
 
 #: ../fontforgeexe/prefs.c:345 ../fontforgeexe/prefs.c:2700
 msgid ""
@@ -28194,7 +28157,6 @@ msgid ""
 msgstr ""
 
 #: ../fontforgeexe/prefs.c:356
-#, fuzzy
 msgid "AutoKernDialog"
 msgstr "Crénage auto..."
 
@@ -29270,7 +29232,6 @@ msgid ""
 msgstr ""
 
 #: ../fontforgeexe/problems.c:2610
-#, fuzzy
 msgid "_Skip"
 msgstr "Sauter"
 
@@ -31440,19 +31401,16 @@ msgid "Resultant Y Position"
 msgstr "Position de la séquence:"
 
 #: ../fontforgeexe/scstylesui.c:972
-#, fuzzy
 msgid "Create Subscript/Superscript"
-msgstr "Indices & Exposants"
+msgstr "Créer indices/exposants"
 
 #: ../fontforgeexe/scstylesui.c:973
-#, fuzzy
 msgid "Create Small Caps"
-msgstr "Capitales vers petites capitales"
+msgstr "Créer des petites capitales"
 
 #: ../fontforgeexe/scstylesui.c:974
-#, fuzzy
 msgid "Change Glyphs"
-msgstr "glyphes _Modifiés"
+msgstr "Glyphes modifiés"
 
 #: ../fontforgeexe/scstylesui.c:992
 msgid ""
@@ -31473,14 +31431,12 @@ msgid "Glyph Extension:"
 msgstr "Extension de glyphe :"
 
 #: ../fontforgeexe/scstylesui.c:1051
-#, fuzzy
 msgid "Vertical Offset:"
-msgstr "Formes verticales"
+msgstr "Décalage vertical :"
 
 #: ../fontforgeexe/scstylesui.c:1079 ../fontforgeexe/scstylesui.c:1194
-#, fuzzy
 msgid "Introduction"
-msgstr "Supprimer les instructions"
+msgstr "Introduction"
 
 #: ../fontforgeexe/scstylesui.c:1087
 msgid ""
