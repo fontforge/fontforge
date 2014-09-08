@@ -2057,19 +2057,22 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			        ss->last = sp;
 			    } else if ( strcmp(type,"curve")==0 ) {
 				wasquad = false;
-				if ( precnt==2 ) {
-				    ss->last->nextcp = pre[0];
-			        ss->last->nonextcp = false;
-			        sp->prevcp = pre[1];
-			        sp->noprevcp = false;
-				} else if ( precnt==1 ) {
-				    ss->last->nextcp = sp->prevcp = pre[0];
-			        ss->last->nonextcp = sp->noprevcp = false;
+				if (ss->first == sp) {
+				  firstpointsaidquad = false;
 				}
-				SplineMake(ss->last,sp,false);
+				if ( precnt==2 && ss->first != sp ) {
+				    ss->last->nextcp = pre[0];
+				    ss->last->nonextcp = false;
+				    sp->prevcp = pre[1];
+				    sp->noprevcp = false;
+				    SplineMake(ss->last,sp,false);
+				}
 			        ss->last = sp;
 			    } else if ( strcmp(type,"qcurve")==0 ) {
 					wasquad = true;
+				if (ss->first == sp) {
+				  firstpointsaidquad = true;
+				}
 					if ( precnt>0 && precnt<=2 ) {
 						if ( precnt==2 ) {
 							// If we have two cached control points and the end point is quadratic, we need an implied point between the two control points.
