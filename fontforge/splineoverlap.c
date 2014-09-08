@@ -3500,9 +3500,11 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 	break;
 	    nsp = sp->next->to;
 	    if ( BpClose(&sp->me,&nsp->me,error) ) {
+		// A spline with ends this close is likely to cause problems.
+		// So we want to remove it, or, if it is significant, to consolidate the end points.
 		if ( BpClose(&sp->me,&sp->nextcp,2*error) &&
 			BpClose(&nsp->me,&nsp->prevcp,2*error)) {
-		    /* Remove the spline */
+		    /* Remove the spline if the control points are also extremely close */
 		    if ( nsp==sp ) {
 			/* Only this spline in the contour, so remove the contour */
 			base->next = NULL;
@@ -3514,7 +3516,13 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 			base = NULL;
 	break;
 		    }
+		    // We want to remove the spline following sp.
+		    // This requires that we rewrite the following spline so that it starts at sp,
+		    // that we point the control point reference in sp to the next control point,
+		    // and that we refigure the spline.
+		    // So, first we free the next spline.
 		    SplineFree(sp->next);
+		    // If the next point has a next control point, we copy it to the next control point for this point.
 		    if ( nsp->nonextcp ) {
 			sp->nextcp = sp->me;
 			sp->nonextcp = true;
@@ -3523,8 +3531,9 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 			sp->nonextcp = false;
 		    }
 		    sp->nextcpdef = nsp->nextcpdef;
-		    sp->next = nsp->next;
+		    sp->next = nsp->next; // Change the spline reference.
 		    if ( nsp->next!=NULL ) {
+			// Make the next spline refer to sp and refigure it.
 			nsp->next->from = sp;
 			SplineRefigure(sp->next);
 		    }
@@ -3537,7 +3546,7 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 	break;
 		    nsp = sp->next->to;
 		} else {
-		    /* Leave the spline, but move the two points together */
+		    /* Leave the spline, since it goes places, but move the two points together */
 		    BasePoint new;
 		    new.x = (sp->me.x+nsp->me.x)/2;
 		    new.y = (sp->me.y+nsp->me.y)/2;
@@ -3549,9 +3558,34 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 		    nsp->me = new;
 		    nsp->nextcp.x += dx; nsp->nextcp.y += dy;
 		    nsp->prevcp.x += dx; nsp->prevcp.y += dy;
+		    if (sp->next->order2) {
+		      // The control points must be identical if the curve is quadratic.
+		      BasePoint new2;
+		      new.x = (sp->nextcp.x+nsp->prevcp.x)/2;
+		      new.y = (sp->nextcp.y+nsp->prevcp.y)/2;
+		      sp->nextcp = nsp->prevcp = new2;
+		    }
 		    SplineRefigure(sp->next);
-		    if ( sp->prev ) SplineRefigure(sp->prev);
-		    if ( nsp->next ) SplineRefigure(nsp->next);
+		    if ( sp->prev ) {
+		      if (sp->prev->order2) {
+		        // The control points must be identical if the curve is quadratic.
+		        BasePoint new2;
+		        new.x = (sp->prev->from->nextcp.x+sp->prevcp.x)/2;
+		        new.y = (sp->prev->from->nextcp.y+sp->prevcp.y)/2;
+		        sp->prev->from->nextcp = sp->prevcp = new2;
+		      }
+		      SplineRefigure(sp->prev);
+		    }
+		    if ( nsp->next ) {
+		      if (nsp->next->order2) {
+		        // The control points must be identical if the curve is quadratic.
+		        BasePoint new2;
+		        new.x = (nsp->nextcp.x+nsp->next->to->prevcp.x)/2;
+		        new.y = (nsp->nextcp.y+nsp->next->to->prevcp.y)/2;
+		        nsp->nextcp = nsp->next->to->prevcp = new2;
+		      }
+		      SplineRefigure(nsp->next);
+		    }
 		}
 	    }
 	    sp = nsp;
@@ -3561,30 +3595,48 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 	if ( sp->prev!=NULL && !sp->noprevcp ) {
 	    int refigure = false;
 	    if ( sp->me.x-sp->prevcp.x>-error && sp->me.x-sp->prevcp.x<error ) {
+		// We round the x-value of the previous control point to the on-curve point value if it is close.
 		sp->prevcp.x = sp->me.x;
+		// If the curve is quadratic, we need to update the corresponding values in the previous point.
+		if ((sp->prev) && (sp->prev->order2) && (sp->prev->from)) sp->prev->from->nextcp.x = sp->me.x;
 		refigure = true;
 	    }
 	    if ( sp->me.y-sp->prevcp.y>-error && sp->me.y-sp->prevcp.y<error ) {
+		// We round the y-value of the previous control point to the on-curve point value if it is close.
 		sp->prevcp.y = sp->me.y;
+		// If the curve is quadratic, we need to update the corresponding values in the previous point.
+		if ((sp->prev) && (sp->prev->order2) && (sp->prev->from)) sp->prev->from->nextcp.y = sp->me.y;
 		refigure = true;
 	    }
-	    if ( sp->me.x==sp->prevcp.x && sp->me.y==sp->prevcp.y )
+	    if ( sp->me.x==sp->prevcp.x && sp->me.y==sp->prevcp.y ) {
+		// We disable the control point if necessary.
 		sp->noprevcp = true;
+		if ((sp->prev) && (sp->prev->order2) && (sp->prev->from)) sp->prev->from->nonextcp = true;
+	    }
 	    if ( refigure )
 		SplineRefigure(sp->prev);
 	}
 	if ( sp->next!=NULL && !sp->nonextcp ) {
 	    int refigure = false;
 	    if ( sp->me.x-sp->nextcp.x>-error && sp->me.x-sp->nextcp.x<error ) {
+		// We round the x-value of the next control point to the on-curve point value if it is close.
 		sp->nextcp.x = sp->me.x;
+		// If the curve is quadratic, we need to update the corresponding values in the next point.
+		if ((sp->next) && (sp->next->order2) && (sp->next->to)) sp->next->to->prevcp.x = sp->me.x;
 		refigure = true;
 	    }
 	    if ( sp->me.y-sp->nextcp.y>-error && sp->me.y-sp->nextcp.y<error ) {
+		// We round the x-value of the next control point to the on-curve point value if it is close.
 		sp->nextcp.y = sp->me.y;
+		// If the curve is quadratic, we need to update the corresponding values in the next point.
+		if ((sp->next) && (sp->next->order2) && (sp->next->to)) sp->next->to->prevcp.y = sp->me.y;
 		refigure = true;
 	    }
-	    if ( sp->me.x==sp->nextcp.x && sp->me.y==sp->nextcp.y )
+	    if ( sp->me.x==sp->nextcp.x && sp->me.y==sp->nextcp.y ) {
+		// We disable the control point if necessary.
 		sp->nonextcp = true;
+		if ((sp->next) && (sp->next->order2) && (sp->next->to)) sp->next->to->noprevcp = true;
+	    }
 	    if ( refigure )
 		SplineRefigure(sp->next);
 	}
