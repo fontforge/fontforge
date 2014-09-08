@@ -951,7 +951,10 @@ void PrepareUnlinkRmOvrlp(SplineFont *sf,const char *filename,int layer) {
 	    refnext = ref->next;
 	    SCRefToSplines(sc,ref,layer);
 	}
+#if 0
+	// We await testing on the necessity of this operation.
 	SCRoundToCluster(sc,layer,false,.03,.12);
+#endif // 0
 	sc->layers[layer].splines = SplineSetRemoveOverlap(sc,sc->layers[layer].splines,over_remove);
 	no_windowing_ui = false;
 	if ( !sc->manualhints )

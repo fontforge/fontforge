@@ -134,26 +134,26 @@ extended evalSpline(Spline *s, extended t, int dim) {
 
 static void ValidateMonotonic(Monotonic *ms) {
   if (ms->start != NULL) {
-    if (!RealWithin(ms->start->inter.x, evalSpline(ms->s, ms->tstart, 0), 0.01) ||
-        !RealWithin(ms->start->inter.y, evalSpline(ms->s, ms->tstart, 1), 0.01))
+    if (!RealWithin(ms->start->inter.x, evalSpline(ms->s, ms->tstart, 0), 0.00001) ||
+        !RealWithin(ms->start->inter.y, evalSpline(ms->s, ms->tstart, 1), 0.00001))
       SOError("The start of the monotonic does not match the listed intersection.\n");
     ValidateMListTs(ms->start->monos);
   }
   if (ms->end != NULL) {
-    if (!RealWithin(ms->end->inter.x, evalSpline(ms->s, ms->tend, 0), 0.01) ||
-        !RealWithin(ms->end->inter.y, evalSpline(ms->s, ms->tend, 1), 0.01))
+    if (!RealWithin(ms->end->inter.x, evalSpline(ms->s, ms->tend, 0), 0.00001) ||
+        !RealWithin(ms->end->inter.y, evalSpline(ms->s, ms->tend, 1), 0.00001))
       SOError("The end of the monotonic does not match the listed intersection.\n");
     ValidateMListTs(ms->end->monos);
   }
   if (ms->tstart == 0) {
-    if (!Within64RoundingErrors(ms->s->from->me.x, evalSpline(ms->s, ms->tstart, 0)) ||
-        !Within64RoundingErrors(ms->s->from->me.y, evalSpline(ms->s, ms->tstart, 1)))
+    if (!RealWithin(ms->s->from->me.x, evalSpline(ms->s, ms->tstart, 0), 0.00001) ||
+        !RealWithin(ms->s->from->me.y, evalSpline(ms->s, ms->tstart, 1), 0.00001))
       SOError("The start of the monotonic does not match that of the containing spline.\n");
   }
   if (ms->tend == 1) {
-    if (!Within64RoundingErrors(ms->s->to->me.x, evalSpline(ms->s, ms->tend, 0)) ||
-        !Within64RoundingErrors(ms->s->to->me.y, evalSpline(ms->s, ms->tend, 1)))
-      SOError("The start of the monotonic does not match that of the containing spline.\n");
+    if (!RealWithin(ms->s->to->me.x, evalSpline(ms->s, ms->tend, 0), 0.00001) ||
+        !RealWithin(ms->s->to->me.y, evalSpline(ms->s, ms->tend, 1), 0.00001))
+      SOError("The end of the monotonic does not match that of the containing spline.\n");
   }
   return;
 }
@@ -921,12 +921,12 @@ return;
 	      _AddSpline(il,m2,t,false);
 	      // If the end of m before break-up has a reference to m, we must replace that reference with one to m2.
 	      if (m2->end != NULL) MListReplaceMonotonic(m2->end->monos, m, m2, true);
-ValidateMonotonic(m);
-ValidateMonotonic(m2);
+// ValidateMonotonic(m);
+// ValidateMonotonic(m2);
 	}
     }
 ValidateMListTs_IF_VERBOSE(il->monos)
-ValidateMonotonic(m);
+// ValidateMonotonic(m);
 // Validate(m, NULL);
 }
 
@@ -1433,6 +1433,8 @@ static Intersection *AddIntersection(Intersection *ilist,Monotonic *m1,
 	Monotonic *m2,extended t1,extended t2,BasePoint *inter) {
     Intersection *il;
     extended ot1 = t1, ot2 = t2;
+// ValidateMonotonic(m1);
+// ValidateMonotonic(m2);
     for ( il = ilist; il!=NULL; il=il->next )
 ValidateMListTs_IF_VERBOSE(il->monos)
     /* This is just a join between two adjacent monotonics. There might already*/
@@ -1536,8 +1538,8 @@ return( ilist );
 return( ilist );
     for ( il = ilist; il!=NULL; il=il->next )
 ValidateMListTs_IF_VERBOSE(il->monos)
-ValidateMonotonic(m1);
-ValidateMonotonic(m2);
+// ValidateMonotonic(m1);
+// ValidateMonotonic(m2);
 // If all else fails, we try to add an intersection.
 return( _AddIntersection(ilist,m1,m2,t1,t2,inter));
 }
@@ -1574,8 +1576,8 @@ return( ilist );
     ilist = _AddIntersection(ilist,m1,m2,id1.t,id2.t,&id2.inter);
     // if ( check!=ilist )
 	// IError("Added too many intersections.");
-ValidateMonotonic(m1);
-ValidateMonotonic(m2);
+// ValidateMonotonic(m1);
+// ValidateMonotonic(m2);
 return( ilist );
 }
 
@@ -1647,6 +1649,7 @@ static void FindMonotonicIntersection(Monotonic *m1,Monotonic *m2) {
     int pick;
     int oncebefore=false;
 
+    // ValidateMonotonic(m1); ValidateMonotonic(m2);
     // We bound the common area of the two splines since any intersection must be there.
     b.minx = m1->b.minx>m2->b.minx ? m1->b.minx : m2->b.minx;
     b.maxx = m1->b.maxx<m2->b.maxx ? m1->b.maxx : m2->b.maxx;
@@ -1966,6 +1969,7 @@ return;		/* Not interesting. Only intersection is at an endpoint */
 	break;
 	}
     }
+    // ValidateMonotonic(m1); ValidateMonotonic(m2);
 return;
 }
 
@@ -2289,6 +2293,7 @@ static Intersection *FindIntersections(Monotonic *ms, enum overlap_type ot) {
 		    m2->b.miny > m1->b.maxy ||
 		    m2->b.maxy < m1->b.miny )
 	continue;		/* Can't intersect since they don't have overlapping bounding boxes */
+	    // ValidateMonotonic(m1); ValidateMonotonic(m2);
 	    if ( CoincidentIntersect(m1,m2,pts,t1s,t2s) ) {
 		// If the splines are nearly coincident , we add up to 4 preintersections with the close flag.
 		for ( i=0; i<4 && t1s[i]!=-1; ++i ) {
@@ -3909,6 +3914,14 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
     // Frank suspects that improvements to FindIntersections have made SSRemoveReverals unnecessary.
     // And it breaks certain glyphs such as the only glyph in rmo-triangle2.sfd from debugfonts.
     ms = SSsToMContours(base,ot);
+    {
+      Monotonic * tmpm = ms;
+      while (tmpm != NULL) {
+        ValidateMonotonic(tmpm);
+        tmpm = tmpm->linked;
+        if (tmpm == ms) break;
+      }
+    }
     ilist = FindIntersections(ms,ot);
     Validate(ms,ilist);
     if ( ot==over_findinter || ot==over_fisel ) {

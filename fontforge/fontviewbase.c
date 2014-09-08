@@ -853,8 +853,13 @@ void FVOverlap(FontViewBase *fv,enum overlap_type ot) {
 	    SCWorthOutputting((sc=fv->sf->glyphs[gid])) &&
 	    !sc->ticked ) {
 	sc->ticked = true;
+#if 0
+	// We await testing on the necessity of this operation.
 	if ( !SCRoundToCluster(sc,ly_all,false,.03,.12))
 	    SCPreserveLayer(sc,fv->active_layer,false);
+#else
+	    SCPreserveLayer(sc,fv->active_layer,false);
+#endif // 0
 	MinimumDistancesFree(sc->md);
 	if ( sc->parent->multilayer ) {
 	    first = ly_fore;
