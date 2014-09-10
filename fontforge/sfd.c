@@ -141,6 +141,19 @@ static DStemInfo *SFDReadDHints( SplineFont *sf,FILE *sfd,int old );
 extern void ExtractHints(SplineChar *sc,void *hints,int docopy);
 extern void *UHintCopy(SplineChar *sc,int docopy);
 
+static int PeekMatch(FILE *stream, const char * target) {
+  // This returns 1 if target matches the next characters in the stream.
+  int pos1 = 0;
+  int lastread = getc(stream);
+  while (target[pos1] != '\0' && lastread != EOF && lastread == target[pos1]) {
+    pos1 ++; lastread = getc(stream);
+  }
+  if (lastread != EOF) ungetc(lastread, stream);
+  int pos2 = pos1;
+  while (pos2 > 0) { ungetc(target[--pos2], stream); }
+  return (target[pos1] == '\0');
+}
+
 static void utf7_encode(FILE *sfd,long ch) {
 
     putc(base64[(ch>>18)&0x3f],sfd);
@@ -724,6 +737,9 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 	}
 	if ( spl->is_clip_path ) {
 	    fprintf( sfd, "  PathFlags: %d\n", spl->is_clip_path );
+	}
+	if ( spl->start_offset ) {
+	    fprintf( sfd, "  PathStart: %d\n", spl->start_offset );
 	}
     }
     fprintf( sfd, "EndSplineSet\n" );
@@ -3853,19 +3869,30 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 		if (ch2=='P') { if ((nlgetc(sfd)==':') && (pt!=NULL)) { if (pt->name!=NULL) {free(pt->name);} pt->name = SFDReadUTF7Str(sfd); } }
 		else if (ch2==':') { if (cur != NULL) cur->contour_name = SFDReadUTF7Str(sfd); else { char * freetmp = SFDReadUTF7Str(sfd); free(freetmp); freetmp = NULL; } }
         continue;
-	} else if ( ch=='P' ) {
+	} else if ( ch=='P' && PeekMatch(sfd,"ath") ) {
 	    int flags;
 	    nlgetc(sfd);		/* a */
 	    nlgetc(sfd);		/* t */
 	    nlgetc(sfd);		/* h */
-	    nlgetc(sfd);		/* F */
-	    nlgetc(sfd);		/* l */
-	    nlgetc(sfd);		/* a */
-	    nlgetc(sfd);		/* g */
-	    nlgetc(sfd);		/* s */
-	    nlgetc(sfd);		/* : */
-	    getint(sfd,&flags);
-	    if (cur != NULL) cur->is_clip_path = flags&1;
+	    if (PeekMatch(sfd,"Flags:")) {
+	      nlgetc(sfd);		/* F */
+	      nlgetc(sfd);		/* l */
+	      nlgetc(sfd);		/* a */
+	      nlgetc(sfd);		/* g */
+	      nlgetc(sfd);		/* s */
+	      nlgetc(sfd);		/* : */
+	      getint(sfd,&flags);
+	      if (cur != NULL) cur->is_clip_path = flags&1;
+	    } else if (PeekMatch(sfd,"Start:")) {
+	      nlgetc(sfd);		/* S */
+	      nlgetc(sfd);		/* t */
+	      nlgetc(sfd);		/* a */
+	      nlgetc(sfd);		/* r */
+	      nlgetc(sfd);		/* t */
+	      nlgetc(sfd);		/* : */
+	      getint(sfd,&flags);
+	      if (cur != NULL) cur->start_offset = flags;
+	    }
 	}
 	pt = NULL;
 	if ( ch=='l' || ch=='m' ) {
@@ -3879,6 +3906,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 		if ( ch=='m' ) {
 		    SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
 		    spl->first = spl->last = pt;
+		    spl->start_offset = 0;
 		    if ( cur!=NULL ) {
 			if ( SFDCloseCheck(cur,order2))
 			    --ttfindex;
@@ -5027,19 +5055,6 @@ char* SFDMoveToNextStartChar( FILE* sfd ) {
 
     }
     return 0;
-}
-
-static int PeekMatch(FILE *stream, const char * target) {
-  // This returns 1 if target matches the next characters in the stream.
-  int pos1 = 0;
-  int lastread = getc(stream);
-  while (target[pos1] != '\0' && lastread != EOF && lastread == target[pos1]) {
-    pos1 ++; lastread = getc(stream);
-  }
-  if (lastread != EOF) ungetc(lastread, stream);
-  int pos2 = pos1;
-  while (pos2 > 0) { ungetc(target[--pos2], stream); }
-  return (target[pos1] == '\0');
 }
 
 static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf, int had_sf_layer_cnt) {

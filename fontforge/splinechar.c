@@ -1897,6 +1897,7 @@ static SplineSet *UnitCircle(int clockwise) {
     for ( i=0; i<4; ++i )
 	SplineMake3(sps[i], sps[i+1]);
     spl->first = sps[0]; spl->last = sps[4];
+    spl->start_offset = 0;
     if ( !clockwise )
 	SplineSetReverse(spl);
 return( spl );
@@ -1941,6 +1942,7 @@ return(false);
     if ( first ) {
 	spl->first = end;
 	spl->last = end;
+	spl->start_offset = 0;
     } else {
 	spl->last = end;
 	s = end->next;
@@ -2027,6 +2029,7 @@ static int EllipseClockwise(SplinePoint *sp1,SplinePoint *sp2,BasePoint *slope1,
     SplineMake3(e1,e2);
     ss = chunkalloc(sizeof(SplineSet));
     ss->first = ss->last = e1;
+    ss->start_offset = 0;
     ret = SplinePointListIsClockwise(ss);
     SplinePointListFree(ss);
 return( ret );
@@ -2086,6 +2089,7 @@ return( false );
     SplinePointFree(spl->first);
     SplinePointFree(spl->last);
     spl->first = spl->last = NULL;
+    spl->start_offset = 0;
     SplinePointListFree(spl);
 return( true );
 }

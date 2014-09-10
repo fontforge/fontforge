@@ -66,7 +66,8 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
     if ( n==1 ) {
 	/* Spiro only haS 1 code point sofar (no conversion needed yet) */
 	if ( (ss=chunkalloc(sizeof(SplineSet)))==NULL || \
-	     (ss->first=ss->last=SplinePointCreate(spiros[0].x,spiros[0].y))==NULL ) {
+	     (ss->first=ss->last=SplinePointCreate(spiros[0].x,spiros[0].y))==NULL ||
+	     (ss->start_offset = 0) != 0) {
 	    chunkfree(ss,sizeof(SplineSet));
 	    return( NULL );
 	}
@@ -221,6 +222,7 @@ void SSRegenerateFromSpiros(SplineSet *spl) {
 	/* Regenerated new SplineSet. Discard old copy. Keep new copy. */
 	SplineSetBeziersClear(spl);
 	spl->first = temp->first;
+	spl->start_offset = 0;
 	spl->last = temp->last;
 	chunkfree(temp,sizeof(SplineSet));
     } else {
@@ -239,6 +241,7 @@ void SSRegenerateFromSpiros(SplineSet *spl) {
 	/* dump the prior SplineSet and now show this line-art instead */
 	SplineSetBeziersClear(spl);
 	spl->first = first;
+	spl->start_offset = 0;
 	if ( SPIRO_SPL_OPEN(spl))
 	    spl->last = last;
 	else {

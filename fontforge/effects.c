@@ -123,9 +123,10 @@ static SplineSet *SpMove(SplinePoint *sp,real offset,
     new->prevcp.x += offset;
     new->prev = new->next = NULL;
 
-    if ( cur->first==NULL )
+    if ( cur->first==NULL ) {
 	cur->first = new;
-    else
+	cur->start_offset = 0;
+    } else
 	SplineMake(cur->last,new,sp->next->order2);
     cur->last = new;
 
@@ -585,6 +586,7 @@ static SplineSet *MergeLinesToBottoms(SplineSet *bottoms,SplineSet *lines) {
 		prev->next = l->next;
 	    SplineMake(l->first,bottoms->first,l->first->next->order2);
 	    bottoms->first = l->first;
+	    bottoms->start_offset = 0;
 	    SplineFree(l->last->prev);
 	    SplinePointFree(l->last);
 	    chunkfree(l,sizeof(*l));

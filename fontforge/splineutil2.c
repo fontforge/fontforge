@@ -1790,6 +1790,7 @@ return;
 		SplinePointFree(curp);
 		if ( spl->first==curp ) {
 		    spl->first = next;
+		    spl->start_offset = 0;
 		    if ( spl->last==curp )
 			spl->last = next;
 		} else if ( spl->last==curp )
@@ -2041,6 +2042,7 @@ return( NULL );			/* Some one else should free it and reorder the spline set lis
 	    SplineFree(spl->first->next);
 	    SplinePointMDFree(sc,spl->first);
 	    spl->first = nextp;
+	    spl->start_offset = 0;
 	    nextp->prev = NULL;
 	}
 	while ( spl->last->selected ) {
@@ -2053,6 +2055,7 @@ return( NULL );			/* Some one else should free it and reorder the spline set lis
     } else {
 	while ( spl->first->selected ) {
 	    spl->first = spl->first->next->to;
+	    spl->start_offset = 0;
 	    spl->last = spl->first;
 	}
     }
@@ -2609,6 +2612,7 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,bigreal bump_size) {
 			if ( s->from==ss->first ) {
 			    if ( ss->first==ss->last ) ss->last = sp;
 			    ss->first = sp;
+			    ss->start_offset = 0;
 			}
 			SplinePointMDFree(sc,s->from);
 			sp->next = s; s->from = sp;
@@ -2645,7 +2649,10 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,bigreal bump_size) {
 			if ( sp->prev==first ) first = NULL;
 			SplineFree(sp->prev);
 			if ( s->to==ss->last ) {
-			    if ( ss->first==ss->last ) ss->first = sp;
+			    if ( ss->first==ss->last ) {
+			      ss->first = sp;
+			      ss->start_offset = 0;
+			    }
 			    ss->last = sp;
 			}
 			SplinePointMDFree(sc,s->to);
@@ -2819,8 +2826,10 @@ static void SPLStartToExtremum(SplineChar *sc,SplinePointList *spl) {
 		if ( sp==spl->first )
 	    break;
 	    }
-	    if ( sp!=spl->first )
+	    if ( sp!=spl->first ) {
 		spl->first = spl->last = sp;
+		spl->start_offset = 0;
+	    }
 	}
 	spl = spl->next;
     }
@@ -2890,8 +2899,10 @@ return;		/* Ignore any splines which are just dots */
 		else if ( sp->next->to == nsp )
 	      goto nogood;		/* Nothing to remove */
 		if ( SplinesRemoveBetweenMaybe(sc,sp,nsp,smpl->flags,smpl->err)) {
-		    if ( spl->last==spl->first )
+		    if ( spl->last==spl->first ) {
 			spl->last = spl->first = sp;	/* We know this point didn't get removed */
+			spl->start_offset = 0;
+		    }
 		}
 	      nogood:
 		sp = nsp;
@@ -2910,6 +2921,7 @@ return;
 	    if ( spl->first==spl->last )
 		spl->last = first;
 	    spl->first = first;
+	    spl->start_offset = 0;
 	}
     }
 
@@ -2927,8 +2939,10 @@ return;
 return;
 	if ( smpl->flags!=sf_cleanup ) {
 	    if ( SplinesRemoveMidMaybe(sc,sp,smpl->flags,smpl->err,lenmax2) ) {
-		if ( spl->first==sp )
+		if ( spl->first==sp ) {
 		    spl->first = next;
+		    spl->start_offset = 0;
+		}
 		if ( spl->last==sp )
 		    spl->last = next;
     continue;
@@ -3032,6 +3046,7 @@ void SPLStartToLeftmost(SplineChar *sc,SplinePointList *spl, int *changed) {
 	    }
 	    SplineSetSpirosClear(spl);
 	    spl->first = spl->last = best;
+	    spl->start_offset = 0;
 	}
     }
 }
@@ -3262,6 +3277,8 @@ SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed) {
 			SplineSetJoinCpFixup(spl->first);
 			spl->first = spl2->first;
 			spl2->first = spl2->last = NULL;
+			spl->start_offset = 0;
+			spl2->start_offset = 0;
 			if ( prev!=NULL )
 			    prev->next = spl2->next;
 			else
@@ -3276,6 +3293,7 @@ SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed) {
 			} else
 			    SplineSetSpirosClear(spl);
 			spl2->last = spl2->first = NULL;
+			spl2->start_offset = 0;
 			SplinePointListFree(spl2);
 			SplineSetMakeLoop(spl,fudge);
 			*changed = true;
@@ -3304,7 +3322,10 @@ SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head) {
 		if ( spline->from==spline->to )
 	    break;
 		if ( spl->last==spline->from ) spl->last = NULL;
-		if ( spl->first==spline->from ) spl->first = NULL;
+		if ( spl->first==spline->from ) {
+		  spl->first = NULL;
+		  spl->start_offset = 0;
+		}
 		if ( first==spline->from->prev ) first=NULL;
 		/*SplinesRemoveBetween(sc,spline->from->prev->from,spline->to);*/
 		spline->to->prevcp = spline->from->prevcp;
@@ -3316,7 +3337,10 @@ SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head) {
 		SplinePointFree(spline->from);
 		SplineFree(spline);
 		if ( first==NULL ) first = next->from->prev;
-		if ( spl->first==NULL ) spl->first = next->from;
+		if ( spl->first==NULL ) {
+		  spl->first = next->from;
+		  spl->start_offset = 0;
+		}
 		if ( spl->last==NULL ) spl->last = next->from;
 	    } else {
 		if ( first==NULL ) first = spline;
@@ -3742,8 +3766,10 @@ void SplineSetAddExtrema(SplineChar *sc, SplineSet *ss,enum ae_type between_sele
 	break;
 	    nextp = sp->next->to;
 	    if ( sp->ticked ) {
-		if ( sp==ss->first )
+		if ( sp==ss->first ) {
 		    ss->first = ss->last = nextp;
+		    ss->start_offset = 0;
+		}
 		SplinesRemoveBetween(sc,sp->prev->from,nextp,1);
 	    }
 	    sp = nextp;
@@ -4600,6 +4626,7 @@ return( spl );			/* Only one point, reversal is meaningless */
     if ( spl->first!=spl->last ) {
 	temp = spl->first;
 	spl->first = spl->last;
+	spl->start_offset = 0;
 	spl->last = temp;
 	spl->first->prev = NULL;
 	spl->last->next = NULL;

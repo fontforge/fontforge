@@ -45,6 +45,7 @@ static void bezctx_ff_moveto(bezctx *z, double x, double y, int is_open) {
 	bc->ss = ss;
     }
     bc->ss->first = bc->ss->last = SplinePointCreate(x,y);
+    bc->ss->start_offset = 0;
     bc->is_open = is_open;
 }
 
