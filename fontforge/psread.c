@@ -2241,6 +2241,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		for ( i=0; i<DASH_MAX && dashes[i]!=0; ++i );
 		dict.cnt = dict.max = i;
 		dict.entries = calloc(i,sizeof(struct pskeyval));
+                dict.is_executable = false;
 		for ( j=0; j<i; ++j ) {
 		    dict.entries[j].type = ps_num;
 		    dict.entries[j].u.val = dashes[j];
@@ -2617,6 +2618,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		struct pskeydict dict;
 		dict.cnt = dict.max = i;
 		dict.entries = calloc(i,sizeof(struct pskeyval));
+                dict.is_executable = false;
 		for ( j=0; j<i; ++j ) {
 		    dict.entries[j].type = stack[sp-i+j].type;
 		    dict.entries[j].u = stack[sp-i+j].u;
@@ -2634,6 +2636,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		struct pskeydict dict;
 		dict.cnt = dict.max = stack[sp-1].u.val;
 		dict.entries = calloc(dict.cnt,sizeof(struct pskeyval));
+                dict.is_executable = false;
 		/* all entries are inited to void */
 		stack[sp-1].type = ps_array;
 		stack[sp-1].u.dict = dict;

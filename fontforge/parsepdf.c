@@ -1334,6 +1334,7 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 		struct pskeydict dict;
 		dict.cnt = dict.max = i;
 		dict.entries = calloc(i,sizeof(struct pskeyval));
+                dict.is_executable = false;
 		for ( j=0; j<i; ++j ) {
 		    dict.entries[j].type = stack[sp-i+j].type;
 		    dict.entries[j].u = stack[sp-i+j].u;
