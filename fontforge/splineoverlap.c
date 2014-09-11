@@ -134,26 +134,26 @@ extended evalSpline(Spline *s, extended t, int dim) {
 
 static void ValidateMonotonic(Monotonic *ms) {
   if (ms->start != NULL) {
-    if (!RealWithin(ms->start->inter.x, evalSpline(ms->s, ms->tstart, 0), 0.01) ||
-        !RealWithin(ms->start->inter.y, evalSpline(ms->s, ms->tstart, 1), 0.01))
+    if (!RealWithin(ms->start->inter.x, evalSpline(ms->s, ms->tstart, 0), 0.00001) ||
+        !RealWithin(ms->start->inter.y, evalSpline(ms->s, ms->tstart, 1), 0.00001))
       SOError("The start of the monotonic does not match the listed intersection.\n");
     ValidateMListTs(ms->start->monos);
   }
   if (ms->end != NULL) {
-    if (!RealWithin(ms->end->inter.x, evalSpline(ms->s, ms->tend, 0), 0.01) ||
-        !RealWithin(ms->end->inter.y, evalSpline(ms->s, ms->tend, 1), 0.01))
+    if (!RealWithin(ms->end->inter.x, evalSpline(ms->s, ms->tend, 0), 0.00001) ||
+        !RealWithin(ms->end->inter.y, evalSpline(ms->s, ms->tend, 1), 0.00001))
       SOError("The end of the monotonic does not match the listed intersection.\n");
     ValidateMListTs(ms->end->monos);
   }
   if (ms->tstart == 0) {
-    if (!Within64RoundingErrors(ms->s->from->me.x, evalSpline(ms->s, ms->tstart, 0)) ||
-        !Within64RoundingErrors(ms->s->from->me.y, evalSpline(ms->s, ms->tstart, 1)))
+    if (!RealWithin(ms->s->from->me.x, evalSpline(ms->s, ms->tstart, 0), 0.00001) ||
+        !RealWithin(ms->s->from->me.y, evalSpline(ms->s, ms->tstart, 1), 0.00001))
       SOError("The start of the monotonic does not match that of the containing spline.\n");
   }
   if (ms->tend == 1) {
-    if (!Within64RoundingErrors(ms->s->to->me.x, evalSpline(ms->s, ms->tend, 0)) ||
-        !Within64RoundingErrors(ms->s->to->me.y, evalSpline(ms->s, ms->tend, 1)))
-      SOError("The start of the monotonic does not match that of the containing spline.\n");
+    if (!RealWithin(ms->s->to->me.x, evalSpline(ms->s, ms->tend, 0), 0.00001) ||
+        !RealWithin(ms->s->to->me.y, evalSpline(ms->s, ms->tend, 1), 0.00001))
+      SOError("The end of the monotonic does not match that of the containing spline.\n");
   }
   return;
 }
@@ -921,12 +921,12 @@ return;
 	      _AddSpline(il,m2,t,false);
 	      // If the end of m before break-up has a reference to m, we must replace that reference with one to m2.
 	      if (m2->end != NULL) MListReplaceMonotonic(m2->end->monos, m, m2, true);
-ValidateMonotonic(m);
-ValidateMonotonic(m2);
+// ValidateMonotonic(m);
+// ValidateMonotonic(m2);
 	}
     }
 ValidateMListTs_IF_VERBOSE(il->monos)
-ValidateMonotonic(m);
+// ValidateMonotonic(m);
 // Validate(m, NULL);
 }
 
@@ -1424,8 +1424,9 @@ ValidateMListTs_IF_VERBOSE(closest->monos)
         AddSpline(closest,m2,t2);
 ValidateMListTs_IF_VERBOSE(closest->monos)
     }
-          for ( il = ilist; il!=NULL; il=il->next )
+          for ( il = ilist; il!=NULL; il=il->next ) {
 ValidateMListTs_IF_VERBOSE(il->monos)
+          }
 return( ilist );
 }
 
@@ -1433,8 +1434,11 @@ static Intersection *AddIntersection(Intersection *ilist,Monotonic *m1,
 	Monotonic *m2,extended t1,extended t2,BasePoint *inter) {
     Intersection *il;
     extended ot1 = t1, ot2 = t2;
-    for ( il = ilist; il!=NULL; il=il->next )
+// ValidateMonotonic(m1);
+// ValidateMonotonic(m2);
+    for ( il = ilist; il!=NULL; il=il->next ) {
 ValidateMListTs_IF_VERBOSE(il->monos)
+    }
     /* This is just a join between two adjacent monotonics. There might already*/
     /*  be an intersection there, but if there be, we've already found it */
     /* Do this now, because no point wasting the time it takes to ImproveInter*/
@@ -1534,10 +1538,11 @@ return( ilist );
 	    ((RealWithin(m2->tstart,t2,.01) && m2->start==il) ||
 	     (RealWithin(m2->tend,t2,.01) && m2->end==il)) )
 return( ilist );
-    for ( il = ilist; il!=NULL; il=il->next )
+    for ( il = ilist; il!=NULL; il=il->next ) {
 ValidateMListTs_IF_VERBOSE(il->monos)
-ValidateMonotonic(m1);
-ValidateMonotonic(m2);
+    }
+// ValidateMonotonic(m1);
+// ValidateMonotonic(m2);
 // If all else fails, we try to add an intersection.
 return( _AddIntersection(ilist,m1,m2,t1,t2,inter));
 }
@@ -1554,15 +1559,18 @@ static Intersection *SplitMonotonicsAt(Monotonic *m1,Monotonic *m2,
 	 Within64RoundingErrors(coord,((m2->s->splines[which].a*m2->tstart+m2->s->splines[which].b)*m2->tstart+m2->s->splines[which].c)*m2->tstart+m2->s->splines[which].d) ||
 	 Within64RoundingErrors(coord,((m2->s->splines[which].a*m2->tend+m2->s->splines[which].b)*m2->tend+m2->s->splines[which].c)*m2->tend+m2->s->splines[which].d ) )
 return( ilist );
-    for ( Intersection * il = ilist; il!=NULL; il=il->next )
+    for ( Intersection * il = ilist; il!=NULL; il=il->next ) {
 ValidateMListTs_IF_VERBOSE(il->monos)
+    }
     SplitMonotonicAtFake(m1,which,coord,&id1);
     SplitMonotonicAtFake(m2,which,coord,&id2);
-    for ( Intersection * il = ilist; il!=NULL; il=il->next )
+    for ( Intersection * il = ilist; il!=NULL; il=il->next ) {
 ValidateMListTs_IF_VERBOSE(il->monos)
+    }
     if ( !id1.new && !id2.new ) {
-    for ( Intersection * il = ilist; il!=NULL; il=il->next )
+    for ( Intersection * il = ilist; il!=NULL; il=il->next ) {
 ValidateMListTs_IF_VERBOSE(il->monos)
+    }
 return( ilist );
     }
     if ( !id1.new )
@@ -1574,8 +1582,8 @@ return( ilist );
     ilist = _AddIntersection(ilist,m1,m2,id1.t,id2.t,&id2.inter);
     // if ( check!=ilist )
 	// IError("Added too many intersections.");
-ValidateMonotonic(m1);
-ValidateMonotonic(m2);
+// ValidateMonotonic(m1);
+// ValidateMonotonic(m2);
 return( ilist );
 }
 
@@ -1647,6 +1655,7 @@ static void FindMonotonicIntersection(Monotonic *m1,Monotonic *m2) {
     int pick;
     int oncebefore=false;
 
+    // ValidateMonotonic(m1); ValidateMonotonic(m2);
     // We bound the common area of the two splines since any intersection must be there.
     b.minx = m1->b.minx>m2->b.minx ? m1->b.minx : m2->b.minx;
     b.maxx = m1->b.maxx<m2->b.maxx ? m1->b.maxx : m2->b.maxx;
@@ -1966,6 +1975,7 @@ return;		/* Not interesting. Only intersection is at an endpoint */
 	break;
 	}
     }
+    // ValidateMonotonic(m1); ValidateMonotonic(m2);
 return;
 }
 
@@ -2289,6 +2299,7 @@ static Intersection *FindIntersections(Monotonic *ms, enum overlap_type ot) {
 		    m2->b.miny > m1->b.maxy ||
 		    m2->b.maxy < m1->b.miny )
 	continue;		/* Can't intersect since they don't have overlapping bounding boxes */
+	    // ValidateMonotonic(m1); ValidateMonotonic(m2);
 	    if ( CoincidentIntersect(m1,m2,pts,t1s,t2s) ) {
 		// If the splines are nearly coincident , we add up to 4 preintersections with the close flag.
 		for ( i=0; i<4 && t1s[i]!=-1; ++i ) {
@@ -3489,9 +3500,11 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 	break;
 	    nsp = sp->next->to;
 	    if ( BpClose(&sp->me,&nsp->me,error) ) {
+		// A spline with ends this close is likely to cause problems.
+		// So we want to remove it, or, if it is significant, to consolidate the end points.
 		if ( BpClose(&sp->me,&sp->nextcp,2*error) &&
 			BpClose(&nsp->me,&nsp->prevcp,2*error)) {
-		    /* Remove the spline */
+		    /* Remove the spline if the control points are also extremely close */
 		    if ( nsp==sp ) {
 			/* Only this spline in the contour, so remove the contour */
 			base->next = NULL;
@@ -3503,7 +3516,13 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 			base = NULL;
 	break;
 		    }
+		    // We want to remove the spline following sp.
+		    // This requires that we rewrite the following spline so that it starts at sp,
+		    // that we point the control point reference in sp to the next control point,
+		    // and that we refigure the spline.
+		    // So, first we free the next spline.
 		    SplineFree(sp->next);
+		    // If the next point has a next control point, we copy it to the next control point for this point.
 		    if ( nsp->nonextcp ) {
 			sp->nextcp = sp->me;
 			sp->nonextcp = true;
@@ -3512,8 +3531,9 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 			sp->nonextcp = false;
 		    }
 		    sp->nextcpdef = nsp->nextcpdef;
-		    sp->next = nsp->next;
+		    sp->next = nsp->next; // Change the spline reference.
 		    if ( nsp->next!=NULL ) {
+			// Make the next spline refer to sp and refigure it.
 			nsp->next->from = sp;
 			SplineRefigure(sp->next);
 		    }
@@ -3526,7 +3546,7 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 	break;
 		    nsp = sp->next->to;
 		} else {
-		    /* Leave the spline, but move the two points together */
+		    /* Leave the spline, since it goes places, but move the two points together */
 		    BasePoint new;
 		    new.x = (sp->me.x+nsp->me.x)/2;
 		    new.y = (sp->me.y+nsp->me.y)/2;
@@ -3538,9 +3558,34 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 		    nsp->me = new;
 		    nsp->nextcp.x += dx; nsp->nextcp.y += dy;
 		    nsp->prevcp.x += dx; nsp->prevcp.y += dy;
+		    if (sp->next->order2) {
+		      // The control points must be identical if the curve is quadratic.
+		      BasePoint new2;
+		      new.x = (sp->nextcp.x+nsp->prevcp.x)/2;
+		      new.y = (sp->nextcp.y+nsp->prevcp.y)/2;
+		      sp->nextcp = nsp->prevcp = new2;
+		    }
 		    SplineRefigure(sp->next);
-		    if ( sp->prev ) SplineRefigure(sp->prev);
-		    if ( nsp->next ) SplineRefigure(nsp->next);
+		    if ( sp->prev ) {
+		      if (sp->prev->order2) {
+		        // The control points must be identical if the curve is quadratic.
+		        BasePoint new2;
+		        new.x = (sp->prev->from->nextcp.x+sp->prevcp.x)/2;
+		        new.y = (sp->prev->from->nextcp.y+sp->prevcp.y)/2;
+		        sp->prev->from->nextcp = sp->prevcp = new2;
+		      }
+		      SplineRefigure(sp->prev);
+		    }
+		    if ( nsp->next ) {
+		      if (nsp->next->order2) {
+		        // The control points must be identical if the curve is quadratic.
+		        BasePoint new2;
+		        new.x = (nsp->nextcp.x+nsp->next->to->prevcp.x)/2;
+		        new.y = (nsp->nextcp.y+nsp->next->to->prevcp.y)/2;
+		        nsp->nextcp = nsp->next->to->prevcp = new2;
+		      }
+		      SplineRefigure(nsp->next);
+		    }
 		}
 	    }
 	    sp = nsp;
@@ -3550,30 +3595,48 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 	if ( sp->prev!=NULL && !sp->noprevcp ) {
 	    int refigure = false;
 	    if ( sp->me.x-sp->prevcp.x>-error && sp->me.x-sp->prevcp.x<error ) {
+		// We round the x-value of the previous control point to the on-curve point value if it is close.
 		sp->prevcp.x = sp->me.x;
+		// If the curve is quadratic, we need to update the corresponding values in the previous point.
+		if ((sp->prev) && (sp->prev->order2) && (sp->prev->from)) sp->prev->from->nextcp.x = sp->me.x;
 		refigure = true;
 	    }
 	    if ( sp->me.y-sp->prevcp.y>-error && sp->me.y-sp->prevcp.y<error ) {
+		// We round the y-value of the previous control point to the on-curve point value if it is close.
 		sp->prevcp.y = sp->me.y;
+		// If the curve is quadratic, we need to update the corresponding values in the previous point.
+		if ((sp->prev) && (sp->prev->order2) && (sp->prev->from)) sp->prev->from->nextcp.y = sp->me.y;
 		refigure = true;
 	    }
-	    if ( sp->me.x==sp->prevcp.x && sp->me.y==sp->prevcp.y )
+	    if ( sp->me.x==sp->prevcp.x && sp->me.y==sp->prevcp.y ) {
+		// We disable the control point if necessary.
 		sp->noprevcp = true;
+		if ((sp->prev) && (sp->prev->order2) && (sp->prev->from)) sp->prev->from->nonextcp = true;
+	    }
 	    if ( refigure )
 		SplineRefigure(sp->prev);
 	}
 	if ( sp->next!=NULL && !sp->nonextcp ) {
 	    int refigure = false;
 	    if ( sp->me.x-sp->nextcp.x>-error && sp->me.x-sp->nextcp.x<error ) {
+		// We round the x-value of the next control point to the on-curve point value if it is close.
 		sp->nextcp.x = sp->me.x;
+		// If the curve is quadratic, we need to update the corresponding values in the next point.
+		if ((sp->next) && (sp->next->order2) && (sp->next->to)) sp->next->to->prevcp.x = sp->me.x;
 		refigure = true;
 	    }
 	    if ( sp->me.y-sp->nextcp.y>-error && sp->me.y-sp->nextcp.y<error ) {
+		// We round the x-value of the next control point to the on-curve point value if it is close.
 		sp->nextcp.y = sp->me.y;
+		// If the curve is quadratic, we need to update the corresponding values in the next point.
+		if ((sp->next) && (sp->next->order2) && (sp->next->to)) sp->next->to->prevcp.y = sp->me.y;
 		refigure = true;
 	    }
-	    if ( sp->me.x==sp->nextcp.x && sp->me.y==sp->nextcp.y )
+	    if ( sp->me.x==sp->nextcp.x && sp->me.y==sp->nextcp.y ) {
+		// We disable the control point if necessary.
 		sp->nonextcp = true;
+		if ((sp->next) && (sp->next->order2) && (sp->next->to)) sp->next->to->noprevcp = true;
+	    }
 	    if ( refigure )
 		SplineRefigure(sp->next);
 	}
@@ -3909,6 +3972,14 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
     // Frank suspects that improvements to FindIntersections have made SSRemoveReverals unnecessary.
     // And it breaks certain glyphs such as the only glyph in rmo-triangle2.sfd from debugfonts.
     ms = SSsToMContours(base,ot);
+    {
+      Monotonic * tmpm = ms;
+      while (tmpm != NULL) {
+        ValidateMonotonic(tmpm);
+        tmpm = tmpm->linked;
+        if (tmpm == ms) break;
+      }
+    }
     ilist = FindIntersections(ms,ot);
     Validate(ms,ilist);
     if ( ot==over_findinter || ot==over_fisel ) {
