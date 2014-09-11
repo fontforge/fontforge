@@ -191,6 +191,12 @@ static long *FindObjects(struct pdfcontext *pc) {
 
     cnt=0; ret=NULL; gen=NULL; /* no objects to return yet */
     while ( 1 ) {
+        if ( start < 0 || start > 10000000 || num < 0 || num > 10000000 || 
+             start+num > 10000000 ) {
+            free(ret); free(gen);
+            pc->ocnt = 0;
+            return( NULL );
+        }
 	if ( start+num>cnt ) {
 	    /* increase memory needed for XREFs. Mark last location = -2 */
 	    ret_old=ret; gen_old=gen; pc->ocnt=(int)(start+num);
