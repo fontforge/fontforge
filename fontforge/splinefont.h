@@ -1156,6 +1156,7 @@ typedef struct splinepointlist {
     uint8 ticked;
     uint8 beziers_need_optimizer;	/* If the spiros have changed in spiro mode, then reverting to bezier mode might, someday, run a simplifier */
     uint8 is_clip_path;			/* In type3/svg fonts */
+    int start_offset; // This indicates which point is the canonical first for purposes of outputting to U. F. O..
     char *contour_name;
 } SplinePointList, SplineSet;
 

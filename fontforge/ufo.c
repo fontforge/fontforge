@@ -492,6 +492,23 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
 	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
             xmlNodePtr contourxml = xmlNewChild(outlinexml, NULL, BAD_CAST "contour", NULL);
 	    // "<contour>"
+	    // We write any leading control points.
+	    if (spl->start_offset == -2) {
+		if ( spl->first && spl->first->prev && spl->first->prev->from && !spl->first->prev->from->nonextcp ) {
+                          xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
+                          xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)spl->first->prev->from->nextcp.x);
+                          xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)spl->first->prev->from->nextcp.y);
+                          // "<point x=\"%g\" y=\"%g\"/>\n" (double)sp->prevcp.x (double)sp->prevcp.y
+		}
+	    }
+	    if (spl->start_offset <= -1) {
+		if ( !isquad && spl->first && !spl->first->noprevcp ) {
+                          xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
+                          xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)spl->first->prevcp.x);
+                          xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)spl->first->prevcp.y);
+                          // "<point x=\"%g\" y=\"%g\"/>\n" (double)sp->prevcp.x (double)sp->prevcp.y
+		}
+	    }
 	    for ( sp=spl->first; sp!=NULL; ) {
 		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
 		// We write the next on-curve point.
@@ -514,14 +531,15 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
 		if ( sp->next==NULL )
 	    	  break;
 		// We write control points.
-		if ( !sp->nonextcp ) {
+		// The conditionals regarding the start offset avoid duplicating points previously written.
+		if ( !sp->nonextcp && sp->next && (sp->next->to != spl->first || spl->start_offset > -2)) {
                           xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
                           xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)sp->nextcp.x);
                           xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->nextcp.y);
 		    	  // "<point x=\"%g\" y=\"%g\"/>\n" (double)sp->nextcp.x (double)sp->nextcp.y
 		}
 		sp = sp->next->to;
-		if ( !isquad && !sp->noprevcp ) {
+		if ( !isquad && !sp->noprevcp && (sp != spl->first || spl->start_offset > -1)) {
                           xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
                           xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)sp->prevcp.x);
                           xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->prevcp.y);
@@ -636,6 +654,48 @@ void clear_cached_ufo_paths(SplineFont * sf) {
   for (i = 0; i < sf->layer_cnt; i++) {
     struct layerinfo * ly = &(sf->layers[i]);
     if (ly->ufo_path != NULL) { free(ly->ufo_path); ly->ufo_path = NULL; }
+  }
+}
+
+void clear_cached_ufo_point_starts(SplineFont * sf) {
+  // We store the offset from the leading spline point at which to start output
+  // so as to be able to start curves on control points as some incoming U. F. O. files do.
+  // But we may want to clear these sometimes.
+  int splinechar_index;
+  for (splinechar_index = 0; splinechar_index < sf->glyphcnt; splinechar_index ++) {
+    struct splinechar *sc = sf->glyphs[splinechar_index];
+    if (sc != NULL) {
+      int layer_index;
+      for (layer_index = 0; layer_index < sc->layer_cnt; layer_index ++) {
+        // We look at the actual shapes for this layer.
+        {
+          struct splinepointlist *spl;
+          for (spl = sc->layers[layer_index].splines; spl != NULL; spl = spl->next) {
+            spl->start_offset = 0;
+          }
+        }
+        // And then we go hunting for shapes in the refchars.
+        {
+          struct refchar *rc;
+          for (rc = sc->layers[layer_index].refs; rc != NULL; rc = rc->next) {
+            int reflayer_index;
+            for (reflayer_index = 0; reflayer_index < rc->layer_cnt; reflayer_index ++) {
+              struct splinepointlist *spl;
+              for (spl = rc->layers[reflayer_index].splines; spl != NULL; spl = spl->next) {
+                spl->start_offset = 0;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  // The SplineFont also has a grid.
+  {
+    struct splinepointlist *spl;
+    for (spl = sf->grid.splines; spl != NULL; spl = spl->next) {
+      spl->start_offset = 0;
+    }
   }
 }
 
@@ -1352,7 +1412,9 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
 	PListAddString(dictnode,sc->name,sc->glif_name); // Add the glyph to the table of contents.
         // TODO: Optionally skip rewriting an untouched glyph.
         // Do we track modified glyphs carefully enough for this?
-	err |= !GlifDump(glyphdir,sc->glif_name,sc,layer);
+        char * final_name;
+        asprintf(&final_name, "%s%s%s", "", sc->glif_name, ".glif"); // Generate the final name with prefix and suffix.
+	err |= !GlifDump(glyphdir,final_name,sc,layer);
     }
 
     char *fname = buildname(glyphdir, "contents.plist"); // Build the file name for the contents.
@@ -1415,16 +1477,16 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
         // And add it to the hash table with its index.
         char * numberedname = ufo_name_number(glif_name_hash, i, startname, "", ".glif", 7);
         free(startname); startname = NULL;
-        char * final_name = NULL;
-        asprintf(&final_name, "%s%s%s", "", numberedname, ".glif"); // Generate the final name with prefix and suffix.
-        free(numberedname); numberedname = NULL;
         // We update the saved glif_name only if it is different (so as to minimize churn).
-        if ((sc->glif_name != NULL) && (strcmp(sc->glif_name, final_name) != 0))
+        if ((sc->glif_name != NULL) && (strcmp(sc->glif_name, numberedname) != 0)) {
           free(sc->glif_name); sc->glif_name = NULL;
-        if (sc->glif_name == NULL)
-          sc->glif_name = final_name;
-        else
-	  free(final_name); final_name = NULL;
+	}
+        if (sc->glif_name == NULL) {
+          sc->glif_name = numberedname;
+        } else {
+	  free(numberedname);
+	}
+	numberedname = NULL;
     }
 #ifdef FF_UTHASH_GLIF_NAMES
     glif_name_hash_destroy(glif_name_hash); // Close the hash table.
@@ -2057,19 +2119,22 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			        ss->last = sp;
 			    } else if ( strcmp(type,"curve")==0 ) {
 				wasquad = false;
-				if ( precnt==2 ) {
-				    ss->last->nextcp = pre[0];
-			        ss->last->nonextcp = false;
-			        sp->prevcp = pre[1];
-			        sp->noprevcp = false;
-				} else if ( precnt==1 ) {
-				    ss->last->nextcp = sp->prevcp = pre[0];
-			        ss->last->nonextcp = sp->noprevcp = false;
+				if (ss->first == sp) {
+				  firstpointsaidquad = false;
 				}
-				SplineMake(ss->last,sp,false);
+				if ( precnt==2 && ss->first != sp ) {
+				    ss->last->nextcp = pre[0];
+				    ss->last->nonextcp = false;
+				    sp->prevcp = pre[1];
+				    sp->noprevcp = false;
+				    SplineMake(ss->last,sp,false);
+				}
 			        ss->last = sp;
 			    } else if ( strcmp(type,"qcurve")==0 ) {
 					wasquad = true;
+				if (ss->first == sp) {
+				  firstpointsaidquad = true;
+				}
 					if ( precnt>0 && precnt<=2 ) {
 						if ( precnt==2 ) {
 							// If we have two cached control points and the end point is quadratic, we need an implied point between the two control points.
@@ -2168,6 +2233,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		    }
 		    // We are finished looping, so it's time to close the curve if it is to be closed.
 		    if ( !open && ss->first != NULL ) {
+			ss->start_offset = -initcnt;
 			// init has a list of control points leading into the first point. pre has a list of control points trailing the last processed on-curve point.
 			// We merge pre into init and use init as the list of control points between the last processed on-curve point and the first on-curve point.
 			if ( precnt!=0 ) {

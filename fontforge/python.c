@@ -4349,6 +4349,7 @@ return( NULL );
 	if ( !c->points[0]->on_curve ) {
 	    if ( c->pt_cnt==1 ) {
 		ss->first = ss->last = SplinePointCreate(c->points[0]->x,c->points[0]->y);
+		ss->start_offset = 0;
 		ss->first->selected = c->points[0]->selected;
 		ss->first->name = copy(c->points[0]->name);
 		SPLCategorizePoints(ss);
@@ -4374,9 +4375,10 @@ return( ss );
 		    sp->prevcp.y = c->points[index]->y;
 		    sp->noprevcp = false;
 		}
-		if ( ss->last==NULL )
+		if ( ss->last==NULL ) {
 		    ss->first = sp;
-		else
+		    ss->start_offset = 0;
+		} else
 		    SplineMake2(ss->last,sp);
 		ss->last = sp;
 	    } else {
@@ -4388,9 +4390,10 @@ return( ss );
 		    sp->prevcp.x = c->points[i-1]->x;
 		    sp->prevcp.y = c->points[i-1]->y;
 		    sp->noprevcp = false;
-		    if ( ss->last==NULL )
+		    if ( ss->last==NULL ) {
 			ss->first = sp;
-		    else
+			ss->start_offset = 0;
+		    } else
 			SplineMake2(ss->last,sp);
 		    ss->last = sp;
 		}
@@ -4411,9 +4414,10 @@ return( ss );
 		sp->prevcp.x = c->points[i-1]->x;
 		sp->prevcp.y = c->points[i-1]->y;
 		sp->noprevcp = false;
-		if ( ss->last==NULL )
+		if ( ss->last==NULL ) {
 		    ss->first = sp;
-		else
+		    ss->start_offset = 0;
+		} else
 		    SplineMake2(ss->last,sp);
 		ss->last = sp;
 	    }
@@ -4473,9 +4477,10 @@ return( NULL );
 return( NULL );
 		}
 	    }
-	    if ( ss->last==NULL )
+	    if ( ss->last==NULL ) {
 		ss->first = sp;
-	    else
+		ss->start_offset = 0;
+	    } else
 		SplineMake3(ss->last,sp);
 	    ss->last = sp;
 	}
@@ -4673,6 +4678,7 @@ return( NULL );
     ss->next = sc->layers[layer].splines;
     sc->layers[layer].splines = ss;
     ss->first = ss->last = SplinePointCreate(x,y);
+    ss->start_offset = 0;
 
     ((PyFF_GlyphPen *) self)->ended = false;
     ((PyFF_GlyphPen *) self)->changed = true;
@@ -4787,9 +4793,10 @@ return( NULL );
 	    sp->prevcp.x = x1; sp->prevcp.y = y1;
 	    sp->nonextcp = false;
 	    sp->nextcp.x = x2; sp->nextcp.y = y2;
-	    if ( ss->first==NULL )
+	    if ( ss->first==NULL ) {
 		ss->first = ss->last = sp;
-	    else {
+		ss->start_offset = 0;
+	    } else {
 		SplineMake2(ss->last,sp);
 		ss->last = sp;
 	    }

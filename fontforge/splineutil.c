@@ -215,6 +215,7 @@ void SplineSetBeziersClear(SplinePointList *spl) {
     if ( spl==NULL ) return;
     SplinePointsFree(spl);
     spl->first = spl->last = NULL;
+    spl->start_offset = 0;
 }
 
 void SplinePointListFree(SplinePointList *spl) {
@@ -1215,9 +1216,10 @@ SplinePointList *SplinePointListCopy1(const SplinePointList *spl) {
 		cpt->name = copy(pt->name);
 	}
 	cpt->next = cpt->prev = NULL;
-	if ( cur->first==NULL )
+	if ( cur->first==NULL ) {
 	    cur->first = cur->last = cpt;
-	else {
+	    cur->start_offset = 0;
+	} else {
 	    spline = chunkalloc(sizeof(Spline));
 	    *spline = *pt->prev;
 	    spline->from = cur->last;
@@ -1295,9 +1297,10 @@ static SplinePointList *SplinePointListCopySelected1(SplinePointList *spl) {
 	    cpt->hintmask = NULL;
 		cpt->name = NULL;
 	    cpt->next = cpt->prev = NULL;
-	    if ( cur->first==NULL )
+	    if ( cur->first==NULL ) {
 		cur->first = cur->last = cpt;
-	    else {
+		cur->start_offset = 0;
+	    } else {
 		spline = chunkalloc(sizeof(Spline));
 		*spline = *start->prev;
 		spline->from = cur->last;
@@ -1518,6 +1521,7 @@ static SplinePointList *SplinePointListSplit(SplineChar *sc,SplinePointList *spl
 	if ( head==NULL ) {
 	    head = cur = spl;
 	    spl->first = spl->last = NULL;
+	    spl->start_offset = 0;
 	} else {
 	    cur = chunkalloc(sizeof(SplinePointList));
 	    last->next = cur;
@@ -1525,8 +1529,10 @@ static SplinePointList *SplinePointListSplit(SplineChar *sc,SplinePointList *spl
 	last = cur;
 
 	while ( start!=NULL && !start->selected && start!=first ) {
-	    if ( cur->first==NULL )
+	    if ( cur->first==NULL ) {
 		cur->first = start;
+		cur->start_offset = 0;
+	    }
 	    cur->last = start;
 	    if ( start->next!=NULL ) {
 		next = start->next->to;

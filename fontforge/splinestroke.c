@@ -2032,7 +2032,7 @@ return;
 		SplineRefigure(sp->next);
 		SplineFree(nsp->next);
 		SplinePointFree(nsp);
-		if ( ss->first==nsp ) ss->first = sp;
+		if ( ss->first==nsp ) { ss->first = sp; ss->start_offset = 0; }
 		if ( ss->last ==nsp ) ss->last  = sp;
 		removed = true;
 	    } else
@@ -2816,20 +2816,24 @@ static SplineSet *JoinFragments(SplineSet *fragments,SplineSet **contours,
 	if ( test!=NULL || test2!=NULL ) {
 	    if ( test!=NULL ) {
 		PointJoint(cur->last,test->first,resolution);
-		if ( cur==test )
+		if ( cur==test ) {
 		    cur->first = cur->last;
-		else
+		    cur->start_offset = 0;
+		} else
 		    cur->last = test->last;
 	    } else {
 		PointJoint(cur->first,test2->last,resolution);
 		if ( cur==test2 )
 		    cur->last = cur->first;
-		else
+		else {
 		    cur->first = test2->first;
+		    cur->start_offset = 0;
+		}
 		test = test2;
 	    }
 	    if ( cur!=test ) {
 		test->first = test->last = NULL;
+		cur->start_offset = 0;
 		prev2->next = test->next;
 		if ( next==test )
 		    next = test->next;
@@ -2986,7 +2990,7 @@ static SplineSet *EdgeEffects(SplineSet *fragments,StrokeContext *c) {
 			sp2->prev->to = sp2;
 			next = chunkalloc(sizeof(SplineSet));
 			*next = *cur;
-			cur->first = sp;
+			cur->first = sp; cur->start_offset = 0;
 			next->last = sp2;
 			cur->next = next;
 		break;
@@ -3165,6 +3169,7 @@ return(ss);
 		first1->next->from = first1;
 		SplinePointFree(second2);
 		ss->first = ss->last = first1;
+		ss->start_offset = 0;
 		ss = RemoveBackForthLine(ss);
 		other = RemoveBackForthLine(other);
 		if ( ss==NULL )

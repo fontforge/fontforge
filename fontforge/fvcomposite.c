@@ -2499,6 +2499,7 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int layer,BDFFont *bdf,int dis
 	SplineMake(sp,first,sc->layers[layer].order2);
 	sc->layers[layer].splines = chunkalloc(sizeof(SplinePointList));
 	sc->layers[layer].splines->first = sc->layers[layer].splines->last = first;
+	sc->layers[layer].splines->start_offset = 0;
 	sc->width = width;
 	sc->widthset = true;
 	SCCharChangedUpdate(sc,layer);
