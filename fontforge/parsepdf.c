@@ -63,27 +63,30 @@ struct pdfcontext {
 
 static long FindXRef(FILE *pdf) {
 /* Find 'startxref' in FILE pdf and return the value found, else return -1 */
-    int ch;
     long xrefpos;
+    /* From end of file, back up over expected trailer:                  */
+    /*    CR/LF, '%%EOF', CR/LF, byte offset number, CR/LF, 'startxref', */
+    /* plus a little more.  Have observed offset numbers of 8 decimal    */
+    /* digits, so allow for 10 digit numbers.                            */
+    char buffer[40];
+    const size_t fillcnt = sizeof(buffer) - 1;
+    char *pt;
 
-    if (fseek(pdf,-5-2-8-2-10-2,SEEK_END)==0 ) {
-	while ( (ch=getc(pdf))>=0 ) {
-	    while ( ch=='s' && \
-		   (ch=getc(pdf))=='t' && \
-		   (ch=getc(pdf))=='a' && \
-		   (ch=getc(pdf))=='r' && \
-		   (ch=getc(pdf))=='t' && \
-		   (ch=getc(pdf))=='x' && \
-		   (ch=getc(pdf))=='r' && \
-		   (ch=getc(pdf))=='e' && \
-		   (ch=getc(pdf))=='f' ) {
-		if ( fscanf(pdf,"%ld",&xrefpos)!=1 ) return( -1 );
+    if ( fseek(pdf,-fillcnt,SEEK_END)!=0 )
+        return( -1 );
 
-		return( xrefpos );
-	    }
-	}
-    }
-    return( -1 );
+    if ( fread(buffer,1,fillcnt,pdf)!=fillcnt )
+        return( -1 );
+
+    buffer[fillcnt] = '\0';
+
+    if ( (pt=strstr(buffer,"startxref"))==NULL )
+        return( -1 );
+
+    if ( sscanf(pt,"startxref %ld",&xrefpos)!=1 ) 
+        return( -1 );
+
+    return( xrefpos );
 }
 
 static int findkeyword(FILE *pdf, char *keyword, char *end) {
