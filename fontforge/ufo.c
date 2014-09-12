@@ -1409,12 +1409,13 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
     int err = 0;
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCLWorthOutputtingOrHasData(sc=sf->glyphs[i], layer) ||
       ( layer == ly_fore && (SCWorthOutputting(sc) || SCHasData(sc) || sc->glif_name != NULL) ) ) {
-	PListAddString(dictnode,sc->name,sc->glif_name); // Add the glyph to the table of contents.
         // TODO: Optionally skip rewriting an untouched glyph.
         // Do we track modified glyphs carefully enough for this?
         char * final_name;
         asprintf(&final_name, "%s%s%s", "", sc->glif_name, ".glif"); // Generate the final name with prefix and suffix.
+	PListAddString(dictnode,sc->name,final_name); // Add the glyph to the table of contents.
 	err |= !GlifDump(glyphdir,final_name,sc,layer);
+        free(final_name); final_name = NULL;
     }
 
     char *fname = buildname(glyphdir, "contents.plist"); // Build the file name for the contents.
