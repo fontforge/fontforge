@@ -857,7 +857,7 @@ static FILE *pdf_defilterstream(struct pdfcontext *pc) {
     /*  to another */
     FILE *res, *old, *pdf = pc->pdf;
     int i,length,ch;
-    char *pt, *end;
+    char *pt, *end, *ptDecodeParms;
 
     if ( pc->compressed!=NULL ) {
 	LogError( _("A pdf stream object may not be a compressed object"));
@@ -881,6 +881,7 @@ return( NULL );
 
     if ( (pt=PSDictHasEntry(&pc->pdfdict,"Filter"))==NULL )
 return( res );
+    ptDecodeParms = PSDictHasEntry(&pc->pdfdict,"DecodeParms");
     while ( *pt==' ' || *pt=='[' || *pt==']' || *pt=='/' ) ++pt;	/* Yes, I saw a null array once */
     while ( *pt!='\0' ) {
 	for ( end=pt; isalnum(*end); ++end );
@@ -894,6 +895,11 @@ return( res );
 	    pdf_85filter(res,old);
 	    pt += strlen("ASCII85Decode");
 	} else if ( strmatch("FlateDecode",pt)==0 && haszlib()) {
+            if ( ptDecodeParms!=NULL ) {
+	        LogError( _("Unsupported decode filter parameters : %s"), ptDecodeParms );
+	        fclose(old); fclose(res);
+                return( NULL );
+            }
 	    pdf_zfilter(res,old);
 	    pt += strlen("FlateDecode");
 	} else if ( strmatch("RunLengthDecode",pt)==0 ) {
