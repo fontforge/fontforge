@@ -404,7 +404,7 @@ return( false );
 	    }
 return( true );
 	}
-	value = copy(pdf_getdictvalue(pc));
+	value = pdf_getdictvalue(pc);
 	if ( value==NULL || strcmp(value,"null")==0 )
 	    free(key);
 	else {
@@ -412,8 +412,8 @@ return( true );
 		pc->pdfdict.keys = realloc(pc->pdfdict.keys,(pc->pdfdict.cnt+=20)*sizeof(char *));
 		pc->pdfdict.values = realloc(pc->pdfdict.values,pc->pdfdict.cnt*sizeof(char *));
 	    }
-	    pc->pdfdict.keys  [pc->pdfdict.next] = key  ;
-	    pc->pdfdict.values[pc->pdfdict.next] = value;
+	    pc->pdfdict.keys  [pc->pdfdict.next] = key;
+	    pc->pdfdict.values[pc->pdfdict.next] = copy(value);
 	    ++pc->pdfdict.next;
 	}
     }
@@ -577,7 +577,7 @@ static int pdf_findfonts(struct pdfcontext *pc) {
 		sscanf(desc, "%d", &dnum);
 		if ( *pt=='/' || *pt=='(' )
 		    ++pt;
-		tpt = copy(pt);
+                tpt = copy(pt);
 
 		dnum = pdf_getdescendantfont( pc,dnum );
 		if ( dnum > 0 ) {
@@ -590,7 +590,9 @@ static int pdf_findfonts(struct pdfcontext *pc) {
 		    /* they no longer look as CID-keyed fonts */
 		    pc->cmap_from_cid[k] = 1;
 		    k++;
-		}
+		} else {
+                    free(tpt);
+                }
 	    }
 	}
     }
@@ -646,6 +648,8 @@ return( val );
     if ( val<0 || val>=pc->ocnt || pc->objs[val]==-1 )
 return( 0 );
     here = ftell(pc->pdf);
+    if ( here < 0 )
+        return( 0 );
     if ( !pdf_findobject(pc,val))
 return( 0 );
     pdf = pc->compressed ? pc->compressed : pc->pdf;
@@ -1737,14 +1741,16 @@ static void add_mapping(SplineFont *basesf, long *mappings, int *uvals, int nuni
 	free(sc->name);
 	sc->name = name;
 	sc->unicodeenc = UniFromName(name,sf->uni_interp,&custom);
+    } else {
+        free(name);
     }
 }
 
 static void pdf_getcmap(struct pdfcontext *pc, SplineFont *basesf, int font_num) {
     FILE *file;
     int i, j, gid, start, end, uni, cur=0, nuni, nhex, nchars, lo, *uvals;
-    long *mappings;
-    char tok[200], *ccval, prevtok[200];
+    long *mappings = NULL;
+    char tok[200], *ccval, prevtok[200]="";
     SplineFont *sf = basesf->subfontcnt > 0 ? basesf->subfonts[0] : basesf;
 
     if ( !pdf_findobject(pc,pc->cmapobjs[font_num]) || !pdf_readdict(pc) )
@@ -1827,8 +1833,10 @@ return;
 	EncMapFree( sf->map );
 	sf->map = EncMapFromEncoding(sf,FindOrMakeEncoding("Original"));
     }
+    free(mappings);
 return;
   fail:
+    free(mappings);
     LogError( _("Syntax errors while parsing ToUnicode CMap") );
 }
 
@@ -1968,6 +1976,8 @@ return( NULL );
 	FontDict *fd;
 	file = pdf_insertpfbsections(file,pc);
 	fd = _ReadPSFont(file);
+        if ( fd==NULL)
+            return( NULL );
 	sf = SplineFontFromPSFont(fd);
 	PSFontFree(fd);
     } else if ( type==2 ) {
