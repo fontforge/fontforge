@@ -494,7 +494,7 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
 	    // "<contour>"
 	    // We write any leading control points.
 	    if (spl->start_offset == -2) {
-		if ( spl->first && spl->first->prev && spl->first->prev->from && !spl->first->prev->from->nonextcp ) {
+		if (spl->first && spl->first->prev && spl->first->prev->from && !spl->first->prev->from->nonextcp && !spl->first->prev->order2) {
                           xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
                           xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)spl->first->prev->from->nextcp.x);
                           xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)spl->first->prev->from->nextcp.y);
@@ -502,7 +502,7 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
 		}
 	    }
 	    if (spl->start_offset <= -1) {
-		if ( !isquad && spl->first && !spl->first->noprevcp ) {
+		if (spl->first && !spl->first->noprevcp) {
                           xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
                           xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)spl->first->prevcp.x);
                           xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)spl->first->prevcp.y);
@@ -532,14 +532,14 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
 	    	  break;
 		// We write control points.
 		// The conditionals regarding the start offset avoid duplicating points previously written.
-		if ( !sp->nonextcp && sp->next && (sp->next->to != spl->first || spl->start_offset > -2)) {
+		if (sp && !sp->nonextcp && sp->next && (sp->next->to != spl->first || spl->start_offset > -2) && sp->next && !sp->next->order2) {
                           xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
                           xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)sp->nextcp.x);
                           xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->nextcp.y);
 		    	  // "<point x=\"%g\" y=\"%g\"/>\n" (double)sp->nextcp.x (double)sp->nextcp.y
 		}
 		sp = sp->next->to;
-		if ( !isquad && !sp->noprevcp && (sp != spl->first || spl->start_offset > -1)) {
+		if (sp && !sp->noprevcp && (sp != spl->first || spl->start_offset > -1)) {
                           xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
                           xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", (double)sp->prevcp.x);
                           xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", (double)sp->prevcp.y);
