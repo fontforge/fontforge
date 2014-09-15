@@ -1826,8 +1826,14 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 		sp->nonextcp = sp->noprevcp = true;
 		sp->ttfindex = i;
 		sp->nextcpindex = 0xffff;
-		if ( last_off && cur->last!=NULL )
+		if ( last_off ) {
+		  sp->noprevcp = false;
+		  if ( cur->last!=NULL ) {
+		    cur->last->nonextcp = false;
 		    FigureControls(cur->last,sp,&pts[i-1],is_order2);
+		    cur->last->nonextcp = false; // FigureControls reads and changes, so we do this twice.
+		  }
+		}
 		last_off = false;
 	    } else if ( last_off ) {
 		/* two off curve points get a third on curve point created */
