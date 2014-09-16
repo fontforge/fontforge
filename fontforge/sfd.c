@@ -3761,7 +3761,7 @@ static int SFDCloseCheck(SplinePointList *spl,int order2) {
 	    RealNear(spl->first->me.y,spl->last->me.y)) {
 	SplinePoint *oldlast = spl->last;
 	spl->first->prevcp = oldlast->prevcp;
-	spl->first->noprevcp = false;
+	spl->first->noprevcp = oldlast->noprevcp;
 	oldlast->prev->from->next = NULL;
 	spl->last = oldlast->prev->from;
 	chunkfree(oldlast->prev,sizeof(*oldlast));
