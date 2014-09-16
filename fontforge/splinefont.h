@@ -3499,6 +3499,8 @@ locale_t uselocale(locale_t new_locale)
 }
 #endif
 
+#include "ustring.h"
+
 static inline void switch_to_c_locale(locale_t * tmplocale_p, locale_t * oldlocale_p) {
 #ifndef __MINGW32__
   *tmplocale_p = newlocale(LC_NUMERIC_MASK, "C", NULL);
@@ -3509,7 +3511,7 @@ static inline void switch_to_c_locale(locale_t * tmplocale_p, locale_t * oldloca
   }
 #else
   // Yes, it is dirty. But so is an operating system that doesn't support threaded locales.
-  *tmplocale_p = (char*)copy(setlocale(LC_NUMERIC_MASK, "C"));
+  *tmplocale_p = (locale_t)copy(setlocale(LC_NUMERIC_MASK, "C"));
   if (*tmplocale_p == NULL) fprintf(stderr, "Failed to change locale.\n");
 #endif
 }
