@@ -838,14 +838,18 @@ void SplineSetQuickBounds(SplineSet *ss,DBounds *b) {
 	    // according to Adam Twardoch,
 	    // the OpenType values that rely upon this function
 	    // expect control points to be included.
-	    if ( sp->prevcp.y < b->miny ) b->miny = sp->prevcp.y;
-	    if ( sp->prevcp.x < b->minx ) b->minx = sp->prevcp.x;
-	    if ( sp->prevcp.y > b->maxy ) b->maxy = sp->prevcp.y;
-	    if ( sp->prevcp.x > b->maxx ) b->maxx = sp->prevcp.x;
-	    if ( sp->nextcp.y < b->miny ) b->miny = sp->nextcp.y;
-	    if ( sp->nextcp.x < b->minx ) b->minx = sp->nextcp.x;
-	    if ( sp->nextcp.y > b->maxy ) b->maxy = sp->nextcp.y;
-	    if ( sp->nextcp.x > b->maxx ) b->maxx = sp->nextcp.x;
+	    if ( !sp->noprevcp ) {
+	      if ( sp->prevcp.y < b->miny ) b->miny = sp->prevcp.y;
+	      if ( sp->prevcp.x < b->minx ) b->minx = sp->prevcp.x;
+	      if ( sp->prevcp.y > b->maxy ) b->maxy = sp->prevcp.y;
+	      if ( sp->prevcp.x > b->maxx ) b->maxx = sp->prevcp.x;
+	    }
+	    if ( !sp->nonextcp ) {
+	      if ( sp->nextcp.y < b->miny ) b->miny = sp->nextcp.y;
+	      if ( sp->nextcp.x < b->minx ) b->minx = sp->nextcp.x;
+	      if ( sp->nextcp.y > b->maxy ) b->maxy = sp->nextcp.y;
+	      if ( sp->nextcp.x > b->maxx ) b->maxx = sp->nextcp.x;
+	    }
 	    if ( sp->next==NULL )
 	break;
 	    sp = sp->next->to;
