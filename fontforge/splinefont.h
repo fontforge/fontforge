@@ -3500,18 +3500,32 @@ locale_t uselocale(locale_t new_locale)
 #endif
 
 static inline void switch_to_c_locale(locale_t * tmplocale_p, locale_t * oldlocale_p) {
+#ifndef __MINGW32__
   *tmplocale_p = newlocale(LC_NUMERIC_MASK, "C", NULL);
   if (*tmplocale_p == NULL) fprintf(stderr, "Failed to create temporary locale.\n");
   else if ((*oldlocale_p = uselocale(*tmplocale_p)) == NULL) {
     fprintf(stderr, "Failed to change locale.\n");
     freelocale(*tmplocale_p); *tmplocale_p = NULL;
   }
+#else
+  // Yes, it is dirty. But so is an operating system that doesn't support threaded locales.
+  *tmplocale_p = (char*)copy(setlocale(LC_NUMERIC_MASK, "C"));
+  if (*tmplocale_p == NULL) fprintf(stderr, "Failed to change locale.\n");
+#endif
 }
 
 static inline void switch_to_old_locale(locale_t * tmplocale_p, locale_t * oldlocale_p) {
+#ifndef __MINGW32__
   if (*oldlocale_p != NULL) { uselocale(*oldlocale_p); } else { uselocale(LC_GLOBAL_LOCALE); }
-  *oldlocale_p = NULL;
+  *oldlocale_p = NULL; // This ends the lifecycle of the temporary old locale storage.
   if (*tmplocale_p != NULL) { freelocale(*tmplocale_p); *tmplocale_p = NULL; }
+#else
+  if (*oldlocale_p != NULL) {
+    setlocale(LC_NUMERIC_MASK, (char*)(*oldlocale_p));
+    free((char*)(*oldlocale_p));
+    *oldlocale_p = NULL;
+  }
+#endif
 }
 
 #if 0
