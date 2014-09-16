@@ -834,6 +834,18 @@ void SplineSetQuickBounds(SplineSet *ss,DBounds *b) {
 	    if ( sp->me.x < b->minx ) b->minx = sp->me.x;
 	    if ( sp->me.y > b->maxy ) b->maxy = sp->me.y;
 	    if ( sp->me.x > b->maxx ) b->maxx = sp->me.x;
+	    // Frank added the control points to the calculation since,
+	    // according to Adam Twardoch,
+	    // the OpenType values that rely upon this function
+	    // expect control points to be included.
+	    if ( sp->prevcp.y < b->miny ) b->miny = sp->prevcp.y;
+	    if ( sp->prevcp.x < b->minx ) b->minx = sp->prevcp.x;
+	    if ( sp->prevcp.y > b->maxy ) b->maxy = sp->prevcp.y;
+	    if ( sp->prevcp.x > b->maxx ) b->maxx = sp->prevcp.x;
+	    if ( sp->nextcp.y < b->miny ) b->miny = sp->nextcp.y;
+	    if ( sp->nextcp.x < b->minx ) b->minx = sp->nextcp.x;
+	    if ( sp->nextcp.y > b->maxy ) b->maxy = sp->nextcp.y;
+	    if ( sp->nextcp.x > b->maxx ) b->maxx = sp->nextcp.x;
 	    if ( sp->next==NULL )
 	break;
 	    sp = sp->next->to;
