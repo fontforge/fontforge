@@ -2670,6 +2670,8 @@ return( NULL );
     }
 
     sf = SplineFontEmpty();
+    SFDefaultOS2Info(&sf->pfminfo, sf, ""); // We set the default pfm values.
+    sf->pfminfo.pfmset = 1; // We flag the pfminfo as present since we expect the U. F. O. to set any desired values.
     int versionMajor = -1; // These are not native SplineFont values.
     int versionMinor = -1; // We store the U. F. O. values and then process them at the end.
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
