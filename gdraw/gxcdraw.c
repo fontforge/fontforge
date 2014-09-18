@@ -1070,6 +1070,7 @@ int32 _GXPDraw_DoText(GWindow w, int32 x, int32 y,
 	const unichar_t *text, int32 cnt, Color col,
 	enum text_funcs drawit, struct tf_arg *arg) {
     char *temp = cnt>=0 ? u2utf8_copyn(text,cnt) : u2utf8_copy(text);
+    if (temp == NULL) return 0;
     int width = _GXPDraw_DoText8(w,x,y,temp,-1,col,drawit,arg);
     free(temp);
 return(width);
