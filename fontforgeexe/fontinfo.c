@@ -1647,6 +1647,11 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_OS2Version		3031
 #define CID_UseTypoMetrics	3032
 #define CID_WeightWidthSlopeOnly	3033
+// Maybe we could insert these above and change the numbering.
+#define CID_CapHeight		3034
+#define CID_CapHeightLab		3035
+#define CID_XHeight		3036
+#define CID_XHeightLab		3037
 
 #define CID_SubSuperDefault	3100
 #define CID_SubXSize		3101
@@ -4006,6 +4011,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int upos, uwid, as, des, err = false, weight=0;
 	int uniqueid, linegap=0, vlinegap=0, winascent=0, windescent=0;
 	int tlinegap=0, tascent=0, tdescent=0, hascent=0, hdescent=0;
+	int capheight=0, xheight=0;
 	int winaoff=true, windoff=true;
 	int taoff=true, tdoff=true, haoff = true, hdoff = true;
 	real ia, cidversion;
@@ -4218,6 +4224,8 @@ return(true);
 	    hdoff = GGadgetIsChecked(GWidgetGetControl(gw,CID_HHeadDescentIsOff));
 	    hascent  = GetInt8(gw,CID_HHeadAscent,haoff ? _("_HHead Ascent Offset:") : _("HHead Ascent:"),&err);
 	    hdescent = GetInt8(gw,CID_HHeadDescent,hdoff ? _("HHead De_scent Offset:") : _("HHead Descent:"),&err);
+	    capheight = GetInt8(gw,CID_CapHeight, _("Ca_pital Height:"),&err);
+	    xheight = GetInt8(gw,CID_XHeight, _("_X Height:"),&err);
 	    if ( err )
 return(true);
 
@@ -4473,6 +4481,8 @@ return(true);
 	    sf->pfminfo.hhead_descent = hdescent;
 	    sf->pfminfo.hheadascent_add = haoff;
 	    sf->pfminfo.hheaddescent_add = hdoff;
+	    sf->pfminfo.os2_capheight = capheight;
+	    sf->pfminfo.os2_xheight = xheight;
 	    sf->pfminfo.pfmset = true;
 
 	    sf->pfminfo.subsuper_set = !GGadgetIsChecked(GWidgetGetControl(gw,CID_SubSuperDefault));
@@ -4912,6 +4922,13 @@ static void TTFSetup(struct gfi_data *d) {
     sprintf( buffer, "%d", info.os2_typodescent );
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_TypoDescent),ubuf);
+
+    sprintf( buffer, "%d", info.os2_capheight );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_CapHeight),ubuf);
+    sprintf( buffer, "%d", info.os2_xheight );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_XHeight),ubuf);
 
     GGadgetSetChecked(GWidgetGetControl(d->gw,CID_HHeadAscentIsOff),info.hheadascent_add);
     GFI_AsDsLab(d,CID_HHeadAscentIsOff,true);
@@ -7448,7 +7465,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     GTabInfo aspects[26], vaspects[6], lkaspects[3];
     GGadgetCreateData mgcd[10], ngcd[19], psgcd[30], tngcd[8],
 	pgcd[12], vgcd[19], pangcd[23], comgcd[4], txgcd[23], floggcd[4],
-	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[7], metgcd[29], vagcd[3], ssgcd[23],
+	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[7], metgcd[33], vagcd[3], ssgcd[23],
 	xugcd[8], dgcd[6], ugcd[6], gaspgcd[5], gaspgcd_def[2], lksubgcd[2][4],
 	lkgcd[2], lkbuttonsgcd[15], cgcd[12], lgcd[20], msgcd[7], ssngcd[8],
 	woffgcd[8], privategcd_def[4];
@@ -7459,7 +7476,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	    lkbox[7], cbox[6], lbox[8], msbox[3], ssboxes[4], woffbox[2];
     GGadgetCreateData *marray[7], *marray2[9], *narray[29], *narray2[7], *narray3[3],
 	*xuarray[20], *psarray[10], *psarray2[21], *psarray4[10],
-	*pparray[6], *vradio[5], *varray[38], *metarray[46],
+	*pparray[6], *vradio[5], *varray[38], *metarray[53],
 	*ssarray[58], *panarray[40], *comarray[3], *flogarray[3],
 	*mkarray[6], *msarray[6],
 	*txarray[5], *txarray2[30],
@@ -7473,7 +7490,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	*ssvarray[4], *woffarray[16];
     GTextInfo mlabel[10], nlabel[18], pslabel[30], tnlabel[7],
 	plabel[12], vlabel[19], panlabel[22], comlabel[3], txlabel[23],
-	mflabel[8], mclabel[8], szlabel[17], mklabel[7], metlabel[28],
+	mflabel[8], mclabel[8], szlabel[17], mklabel[7], metlabel[32],
 	sslabel[23], xulabel[8], dlabel[5], ulabel[3], gasplabel[5],
 	lkbuttonslabel[14], clabel[11], floglabel[3], llabel[20], mslabel[7],
 	ssnlabel[7], wofflabel[8], privatelabel_def[3];
@@ -8477,6 +8494,7 @@ return;
 
     memset(&metgcd,0,sizeof(metgcd));
     memset(&metlabel,'\0',sizeof(metlabel));
+    memset(&metarray,'\0',sizeof(metarray));
 
     i = j = 0;
 
@@ -8753,6 +8771,51 @@ return;
     metgcd[i++].creator = GTextFieldCreate;
     metarray[j++] = GCD_Glue;
     metarray[j++] = NULL;
+
+    metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-2].gd.pos.y+26+6;
+    metlabel[i].text = (unichar_t *) _("Ca_pital Height:");
+    metlabel[i].text_is_1byte = true;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    metgcd[i].gd.popup_msg = (unichar_t *) _("This denotes the height of X.");
+    metgcd[i].gd.cid = CID_CapHeightLab;
+    metarray[j++] = &metgcd[i];
+    metgcd[i++].creator = GLabelCreate;
+
+    metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
+    metgcd[i].gd.pos.width = 50;
+    metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	/* value set later */
+    metgcd[i].gd.cid = CID_CapHeight;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metarray[j++] = &metgcd[i];
+    metgcd[i++].creator = GTextFieldCreate;
+    metarray[j++] = GCD_Glue;
+    metarray[j++] = NULL;
+
+    metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-2].gd.pos.y+26+6;
+    metlabel[i].text = (unichar_t *) _("_X Height:");
+    metlabel[i].text_is_1byte = true;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    metgcd[i].gd.popup_msg = (unichar_t *) _("This denotes the height of x.");
+    metgcd[i].gd.cid = CID_XHeightLab;
+    metarray[j++] = &metgcd[i];
+    metgcd[i++].creator = GLabelCreate;
+
+    metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
+    metgcd[i].gd.pos.width = 50;
+    metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	/* value set later */
+    metgcd[i].gd.cid = CID_XHeight;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metarray[j++] = &metgcd[i];
+    metgcd[i++].creator = GTextFieldCreate;
+    metarray[j++] = GCD_Glue;
+    metarray[j++] = NULL;
+
     metarray[j++] = GCD_Glue; metarray[j++] = GCD_Glue; metarray[j++] = GCD_Glue;
 
     metarray[j++] = NULL; metarray[j++] = NULL;
