@@ -1902,9 +1902,9 @@ return( copy(orig));
     }
     *npt = '\0';
 
-    oldlocale = uselocale(tmplocale);
+    oldlocale = uselocale_hack(tmplocale);
     strtod(new,&end);
-    uselocale(oldlocale);
+    uselocale_hack(oldlocale);
     while ( isspace(*end)) ++end;
     if ( *end=='\0' ) {
 	char *ret = copy(new);
@@ -1920,9 +1920,9 @@ return( ret );
 return( NULL );
     }
     free(new);
-    oldlocale = uselocale(tmplocale);
+    oldlocale = uselocale_hack(tmplocale);
     sprintf( buffer, "%g", dval );
-    uselocale(oldlocale);
+    uselocale_hack(oldlocale);
 return( copy(buffer));
 }
 
@@ -1994,7 +1994,7 @@ return;
 	if ( KnownPrivates[i].name==NULL )	/* If we don't recognize it, leave it be */
 return;
 
-	tmplocale = newlocale(LC_NUMERIC_MASK, "C", NULL);
+	tmplocale = newlocale_hack(LC_NUMERIC_MASK, "C", NULL);
 	if (tmplocale == NULL) fprintf(stderr, "Locale error.\n");
 
 	for ( pt=val; isspace(*pt); ++pt );
@@ -2040,7 +2040,7 @@ return;
 		GGadgetRedraw(g);
 	    }
 	}
-	if (tmplocale != NULL) { freelocale(tmplocale); tmplocale = NULL; }
+	if (tmplocale != NULL) { freelocale_hack(tmplocale); tmplocale = NULL; }
     }
 }
 

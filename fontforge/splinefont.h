@@ -3501,8 +3501,12 @@ locale_t uselocale(locale_t new_locale)
 
 #include "ustring.h"
 
+#ifdef __MINGW32_
+#define BAD_LOCALE_HACK
+#endif
+
 static inline void switch_to_c_locale(locale_t * tmplocale_p, locale_t * oldlocale_p) {
-#ifndef __MINGW32__
+#ifndef BAD_LOCALE_HACK
   *tmplocale_p = newlocale(LC_NUMERIC_MASK, "C", NULL);
   if (*tmplocale_p == NULL) fprintf(stderr, "Failed to create temporary locale.\n");
   else if ((*oldlocale_p = uselocale(*tmplocale_p)) == NULL) {
@@ -3511,13 +3515,13 @@ static inline void switch_to_c_locale(locale_t * tmplocale_p, locale_t * oldloca
   }
 #else
   // Yes, it is dirty. But so is an operating system that doesn't support threaded locales.
-  *tmplocale_p = (locale_t)copy(setlocale(LC_NUMERIC_MASK, "C"));
-  if (*tmplocale_p == NULL) fprintf(stderr, "Failed to change locale.\n");
+  *oldlocale_p = (locale_t)copy(setlocale(LC_NUMERIC_MASK, "C"));
+  if (*oldlocale_p == NULL) fprintf(stderr, "Failed to change locale.\n");
 #endif
 }
 
 static inline void switch_to_old_locale(locale_t * tmplocale_p, locale_t * oldlocale_p) {
-#ifndef __MINGW32__
+#ifndef BAD_LOCALE_HACK
   if (*oldlocale_p != NULL) { uselocale(*oldlocale_p); } else { uselocale(LC_GLOBAL_LOCALE); }
   *oldlocale_p = NULL; // This ends the lifecycle of the temporary old locale storage.
   if (*tmplocale_p != NULL) { freelocale(*tmplocale_p); *tmplocale_p = NULL; }
@@ -3527,6 +3531,31 @@ static inline void switch_to_old_locale(locale_t * tmplocale_p, locale_t * oldlo
     free((char*)(*oldlocale_p));
     *oldlocale_p = NULL;
   }
+#endif
+}
+
+static inline locale_t newlocale_hack(int category_mask, const char *locale, locale_t base) {
+  // Note that, in the interest of minimizing the hack, we drop the category mask on Wingdows.
+#ifndef BAD_LOCALE_HACK
+  return newlocale(category_mask, locale, base);
+#else
+  return (locale_t)copy(locale);
+#endif
+}
+
+static inline locale_t uselocale_hack(locale_t dataset) {
+#ifndef BAD_LOCALE_HACK
+  return uselocale(dataset);
+#else
+  return (locale_t)copy(setlocale(LC_ALL_MASK, (char*)dataset));
+#endif
+}
+
+static inline void freelocale_hack(locale_t dataset) {
+#ifndef BAD_LOCALE_HACK
+  freelocale(dataset);
+#else
+  if (dataset != NULL) { free(dataset); }
 #endif
 }
 
