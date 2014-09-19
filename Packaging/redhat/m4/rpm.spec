@@ -1,0 +1,166 @@
+dnl This gets processed by m4.
+dnl Macros:
+dnl   PACKAGE_NAME
+dnl   PACKAGE_VERSION
+dnl   BINARY
+dnl   BINARY_TARGET
+dnl   PREFIX
+dnl   SOURCE_TARBALL_NAME
+
+Name: PACKAGE_NAME
+Version: PACKAGE_VERSION
+Release: 1
+License: BSD 4-clause License
+Vendor: FontForge
+URL: http://fontforge.github.io/
+Packager: Package Maintainer <releases@fontforge.org>
+Summary: Computer typeface editor
+Source: SOURCE_TARBALL_NAME
+Requires: libgdraw4 = PACKAGE_VERSION`', libfontforge1 = PACKAGE_VERSION`', fontforge-common = PACKAGE_VERSION`'
+
+%prep
+%setup
+
+%description
+FontForge provides a complete suite of tools for producing high-quality typefaces and supports a wide range of file formats including TrueType, OpenType, PostScript, and U. F. O..
+
+%build
+./bootstrap;
+./configure --prefix=`'PREFIX --libdir=`'PREFIX`'/lib --mandir=`'PREFIX`'/share/man --with-regular-link --enable-devicetables --enable-type3 --enable-pyextension;
+make;
+
+%install
+make install DESTDIR="$RPM_BUILD_ROOT";
+find "$RPM_BUILD_ROOT"/`'PREFIX`'/lib -name "*.la" -delete;
+chrpath -d "$RPM_BUILD_ROOT"/`'PREFIX`'/bin/fontforge;
+chmod 0644 "$RPM_BUILD_ROOT"/`'PREFIX`'/lib/lib*.so.*;
+(cd "$RPM_BUILD_ROOT"/`'PREFIX`'/lib; for i in python*; do if [ -e $i/site-packages ] ; then mv $i/site-packages $i/dist-packages; fi ; done)
+mkdir -p "$RPM_BUILD_ROOT"/usr/share/pixmaps ;
+cp -pRP desktop/icons/* "$RPM_BUILD_ROOT"/`'PREFIX`'/share/icons/ ;
+cp -pRP Packaging/debian/cp-src/fontforge.xpm "$RPM_BUILD_ROOT"/`'PREFIX`'/share/pixmaps/ ;
+cp -pRP desktop/fontforge.desktop "$RPM_BUILD_ROOT"/`'PREFIX`'/share/applications/ ;
+
+%pre
+
+%post
+
+%preun
+
+%postun
+
+%clean
+
+%files
+%defattr(-,root,root)
+%attr(0755,root,root) PREFIX`'/bin/fontforge
+%attr(0755,root,root) PREFIX`'/bin/fontimage
+%attr(0755,root,root) PREFIX`'/bin/fontlint
+%attr(0755,root,root) PREFIX`'/bin/sfddiff
+%attr(0644,root,root) PREFIX`'/share/applications/fontforge.desktop
+
+%package -n libfontforge1
+Requires: libgcc1
+Summary: FontForge libraries
+
+%description -n libfontforge1
+FontForge provides a complete suite of tools for producing high-quality typefaces and supports a wide range of file formats including TrueType, OpenType, PostScript, and U. F. O..
+
+%pre -n libfontforge1
+
+%post -n libfontforge1
+
+%preun -n libfontforge1
+
+%postun -n libfontforge1
+
+%files -n libfontforge1
+%defattr(-,root,root)
+%attr(0644,root,root) PREFIX`'/lib/libgioftp.so.*
+%attr(0644,root,root) PREFIX`'/lib/libgunicode.so.*
+%attr(0644,root,root) PREFIX`'/lib/libfontforge.so.*
+%attr(0644,root,root) PREFIX`'/lib/libfontforgeexe.so.*
+%attr(0644,root,root) PREFIX`'/lib/libgutils.so.*
+
+%package -n libfontforge-dev
+Requires: libfontforge1 = PACKAGE_VERSION`', libgdraw4 = PACKAGE_VERSION`'
+Summary: FontForge development headers
+
+%description -n libfontforge-dev
+FontForge provides a complete suite of tools for producing high-quality typefaces and supports a wide range of file formats including TrueType, OpenType, PostScript, and U. F. O..
+
+%pre -n libfontforge-dev
+
+%post -n libfontforge-dev
+
+%preun -n libfontforge-dev
+
+%postun -n libfontforge-dev
+
+%files -n libfontforge-dev
+%defattr(-,root,root)
+%attr(0644,root,root) PREFIX`'/include/fontforge/*.h
+%attr(0644,root,root) PREFIX`'/lib/pkgconfig/*.pc
+
+%package -n libgdraw4
+Requires: libgcc1
+Summary: gdraw libraries
+
+%description -n libgdraw4
+FontForge provides a complete suite of tools for producing high-quality typefaces and supports a wide range of file formats including TrueType, OpenType, PostScript, and U. F. O..
+
+%pre -n libgdraw4
+
+%post -n libgdraw4
+
+%preun -n libgdraw4
+
+%postun -n libgdraw4
+
+%files -n libgdraw4
+%defattr(-,root,root)
+%attr(0644,root,root) PREFIX`'/lib/libgdraw.so.*
+
+%package -n python-fontforge
+Requires: libfontforge1 = PACKAGE_VERSION`'
+Summary: Python bindings
+
+%description -n python-fontforge
+FontForge provides a complete suite of tools for producing high-quality typefaces and supports a wide range of file formats including TrueType, OpenType, PostScript, and U. F. O..
+
+%pre -n python-fontforge
+
+%post -n python-fontforge
+
+%preun -n python-fontforge
+
+%postun -n python-fontforge
+
+%files -n python-fontforge
+%defattr(-,root,root)
+%attr(0644,root,root) PREFIX`'/lib/python*/dist-packages/psMat.so
+%attr(0644,root,root) PREFIX`'/lib/python*/dist-packages/fontforge.so
+%attr(0644,root,root) PREFIX`'/share/fontforge/python/excepthook.py
+
+%package common
+Summary: Python bindings
+
+%description common
+FontForge provides a complete suite of tools for producing high-quality typefaces and supports a wide range of file formats including TrueType, OpenType, PostScript, and U. F. O..
+
+%pre common
+
+%post common
+
+%preun common
+
+%postun common
+
+%files common
+%defattr(-,root,root)
+%attr(0644,root,root) PREFIX`'/share/locale/*/LC_MESSAGES/FontForge.mo
+%attr(0644,root,root) PREFIX`'/share/icons/*x*/apps/fontforge.png
+%attr(0644,root,root) PREFIX`'/share/icons/src/icon-*x*-apps-fontforge.svg
+%attr(0644,root,root) PREFIX`'/share/icons/scalable/apps/fontforge.svg
+%attr(0644,root,root) PREFIX`'/share/icons/*x*/apps/fontforge.png
+%attr(0644,root,root) PREFIX`'/share/pixmaps/fontforge.xpm
+
