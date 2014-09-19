@@ -1473,7 +1473,7 @@ return;
 return;
     } else if ( oldformatstate==ff_pfbmacbin && !post_warned) {
 	post_warned = true;
-	ff_post_notice(_("The 'POST' type1 format is probably deprecated"),_("The 'POST' type1 format is probably depreciated and may not work in future version of the mac."));
+	ff_post_notice(_("The 'POST' type1 format is probably deprecated"),_("The 'POST' type1 format is probably deprecated and may not work in future version of the mac."));
     }
 
     if ( d->family ) {

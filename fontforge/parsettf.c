@@ -3761,7 +3761,7 @@ static void cfffigure(struct ttfinfo *info, struct topdicts *dict,
 	}
     }
     /* Need to do a reference fixup here !!!!! just in case some idiot */
-    /*  used type1 char strings -- or used the depreciated meaning of */
+    /*  used type1 char strings -- or used the deprecated meaning of */
     /*  endchar (==seac) */
 }
 
@@ -5637,7 +5637,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
 	}
 
     /* A CFF font could contain type1 charstrings, or a type2 font could use */
-    /*  the depreciated convention that endchar =~ seac */
+    /*  the deprecated convention that endchar =~ seac */
     if ( info->cff_length!=0 )
 	SFInstanciateRefs(sf);
 

@@ -3138,7 +3138,7 @@ return( type==0 ? "All typographic features" :
 	type==26 ? "Ideographic Spacing" :
 	type==27 ? "?Accented leters (undocumented)?" :
 	type==103 ? "CJK Roman spacing" :
-/* Compatability (depreciated) ... */
+/* Compatability (deprecated) ... */
 	type==100 ? "(adobe) Character Spacing" :
 	type==101 ? "(adobe) Kana Spacing" :
 	type==102 ? "(adobe) Kanji Spacing" :

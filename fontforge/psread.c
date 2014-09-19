@@ -3686,7 +3686,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	    switch ( v ) {
 	      case 0: /* dotsection */
 		if ( is_type2 )
-		    LogError( _("%s\'s dotsection operator is depreciated for Type2\n"), name );
+		    LogError( _("%s\'s dotsection operator is deprecated for Type2\n"), name );
 		sp = 0;
 	      break;
 	      case 1: /* vstem3 */	/* specifies three v hints zones at once */
@@ -3771,7 +3771,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		if ( sp<5 ) LogError( _("Stack underflow on seac in %s\n"), name );
 		if ( is_type2 ) {
 			if ( v==6 ) LogError( _("%s\'s SEAC operator is invalid for Type2\n"), name );
-			else LogError( _("%s\'s SEAC-like endchar operator is depreciated for Type2\n"), name );
+			else LogError( _("%s\'s SEAC-like endchar operator is deprecated for Type2\n"), name );
 		}
 		/* stack[0] must be the lsidebearing of the accent. I'm not sure why */
 		r1 = RefCharCreate();
@@ -4320,7 +4320,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		closepath(cur,is_type2);
 	    pcsp = 0;
 	    if ( sp==4 ) {
-		/* In Type2 strings endchar has a depreciated function of doing */
+		/* In Type2 strings endchar has a deprecated function of doing */
 		/*  a seac (which doesn't exist at all). Except enchar takes */
 		/*  4 args and seac takes 5. Bleah */
 		stack[4] = stack[3]; stack[3] = stack[2]; stack[2] = stack[1]; stack[1] = stack[0];
