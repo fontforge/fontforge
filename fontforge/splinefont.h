@@ -537,6 +537,7 @@ typedef struct anchorpoint {
 } AnchorPoint;
 
 typedef struct kernpair {
+    // Note that the left character in the pair has the reference to the kerning pair, which in turn references the right character.
     struct lookup_subtable *subtable;
     struct splinechar *sc;
     int16 off;
@@ -552,9 +553,9 @@ typedef struct kernclass {
     					/*  and means everything not specified elsewhere */
     struct lookup_subtable *subtable;
     uint16 kcid;			/* Temporary value, used for many things briefly */
-    int16 *offsets;			/* array of first_cnt*second_cnt entries */
+    int16 *offsets;			/* array of first_cnt*second_cnt entries with 0 representing no data */
     DeviceTable *adjusts;		/* array of first_cnt*second_cnt entries */
-    struct kernclass *next;
+    struct kernclass *next;		// Note that, in most cases, a typeface needs only one struct kernclass since it can contain all classes.
 } KernClass;
 
 enum possub_type { pst_null, pst_position, pst_pair,
@@ -1466,7 +1467,7 @@ typedef struct splinechar {
     struct splinecharlist *dependents;
 	    /* The dependents list is a list of all characters which refenence*/
 	    /*  the current character directly */
-    KernPair *kerns;
+    KernPair *kerns; // Note that the left character in the pair has the reference to the kerning pair, which in turn references the right character.
     KernPair *vkerns;
     PST *possub;		/* If we are a ligature then this tells us what */
 				/*  It may also contain a bunch of other stuff now */
