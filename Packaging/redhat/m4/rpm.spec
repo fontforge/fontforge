@@ -10,7 +10,7 @@ dnl   SOURCE_TARBALL_NAME
 Name: PACKAGE_NAME
 Version: PACKAGE_VERSION
 Release: 1
-License: BSD 4-clause License
+License: GPLv3
 Vendor: FontForge
 URL: http://fontforge.github.io/
 Packager: Package Maintainer <releases@fontforge.org>
