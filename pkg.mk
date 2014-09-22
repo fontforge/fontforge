@@ -20,6 +20,7 @@ else
 F_PACKAGE_VERSION:=$(F_PRODUCT_VERSION)
 endif
 DEB_PACKAGE_VERSION:=$(F_PACKAGE_VERSION)-$(DEB_VERSION_TRAILER)
+RPM_PACKAGE_VERSION:=$(shell echo $(F_PACKAGE_VERSION) | sed -e 's/-/./g')
 CHANGELOG_TIME:=$(shell date "+%a, %d %b %Y %H:%M:%S")
 CHANGELOG_TIMESTAMP:=$(CHANGELOG_TIME) -0500
 F_PACKAGER_NAME?=Package Maintainer
@@ -60,9 +61,11 @@ deb: deb-src-control
 
 rpm-src-control:
 	mkdir -p redhat ;
-	for file in packaging/redhat/m4/* ; do m4 -D "PACKAGE_NAME=$(PACKAGE_NAME)" -D "PACKAGE_VERSION=$(PACKAGE_VERSION)" -D "BINARY=0" -D "CLIENT=1" -D "SERVER=0" -D "PREFIX=$(PREFIX)" < "$$file" > redhat/"`basename "$$file"`" ; done ;
+	for file in Packaging/redhat/m4/* ; do m4 -D "PACKAGE_NAME=$(F_PACKAGE_NAME)" -D "PACKAGE_VERSION=$(RPM_PACKAGE_VERSION)" -D "BINARY=0" -D "PREFIX=/usr" -D "SOURCE_TARBALL_NAME=$(F_PACKAGE_NAME)-$(RPM_PACKAGE_VERSION).tar.gz" < "$$file" > redhat/"`basename "$$file"`" ; done ;
 
 rpm-src: rpm-src-control
-	cd .. ; cp -pRP $(F_FAKE_PRODUCT_NAME)/redhat/rpm.spec ./$(F_PACKAGE_NAME)-$(F_PACKAGE_VERSION).spec ; if [ "$(F_FAKE_PRODUCT_NAME)" != "$(F_PACKAGE_NAME)" ] ; then cp -pRP $(F_FAKE_PRODUCT_NAME) $(PACKAGE_NAME)-$(PACKAGE_VERSION) ; fi ; tar -czf $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.gz $(PACKAGE_NAME)-$(PACKAGE_VERSION) ;
+	$(MAKE) uthash/src;
+	cd tests ; $(MAKE) prefetch-fonts ;
+	cd .. ; cp -pRP $(F_FAKE_PRODUCT_NAME)/redhat/rpm.spec ./$(F_PACKAGE_NAME)-$(RPM_PACKAGE_VERSION).spec ; if [ "$(F_FAKE_PRODUCT_NAME)" != "$(F_PACKAGE_NAME)-$(F_PACKAGE_VERSION)" ] ; then cp -pRP $(F_FAKE_PRODUCT_NAME) $(F_PACKAGE_NAME)-$(RPM_PACKAGE_VERSION) ; fi ; tar -czf $(F_PACKAGE_NAME)-$(RPM_PACKAGE_VERSION).tar.gz $(F_PACKAGE_NAME)-$(RPM_PACKAGE_VERSION) ;
 
 
