@@ -81,22 +81,22 @@ FontForge provides a complete suite of tools for producing high-quality typeface
 %attr(0644,root,root) PREFIX`'/lib/libfontforgeexe.so.*
 %attr(0644,root,root) PREFIX`'/lib/libgutils.so.*
 
-%package -n libfontforge-dev
+%package -n fontforge-devel
 Requires: libfontforge1 = PACKAGE_VERSION`', libgdraw4 = PACKAGE_VERSION`'
 Summary: FontForge development headers
 
-%description -n libfontforge-dev
+%description -n fontforge-devel
 FontForge provides a complete suite of tools for producing high-quality typefaces and supports a wide range of file formats including TrueType, OpenType, PostScript, and U. F. O..
 
-%pre -n libfontforge-dev
+%pre -n fontforge-devel
 
-%post -n libfontforge-dev
+%post -n fontforge-devel
 
-%preun -n libfontforge-dev
+%preun -n fontforge-devel
 
-%postun -n libfontforge-dev
+%postun -n fontforge-devel
 
-%files -n libfontforge-dev
+%files -n fontforge-devel
 %defattr(-,root,root)
 %attr(0644,root,root) PREFIX`'/include/fontforge/*.h
 %attr(0644,root,root) PREFIX`'/lib/pkgconfig/*.pc
