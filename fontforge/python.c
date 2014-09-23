@@ -15487,10 +15487,7 @@ return(NULL);
 	    ret->sizes = malloc((cnt+1)*sizeof(int32));
 	    ret->sizes[cnt] = 0;
 	    for ( cnt=0, bdf=ret->sf->bitmaps; bdf!=NULL; bdf=bdf->next, ++cnt ) {
-		if ( bdf->clut==NULL )
-		    ret->sizes[cnt] = bdf->pixelsize;
-		else
-		    ret->sizes[cnt] = (BDFDepth(bdf)<<16) | bdf->pixelsize;
+		ret->sizes[cnt] = (BDFDepth(bdf)<<16) | bdf->pixelsize;
 	    }
 	}
     }
