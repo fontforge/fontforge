@@ -2635,7 +2635,7 @@ func_gnulib_tool ()
             ;;
       esac
 
-      $opt_copy || func_append_uniq gnulib_tool_options " --symlink"
+      $opt_copy && func_append_uniq gnulib_tool_options " --symlink"
 
       func_append_uniq gnulib_tool_options " $gnulib_mode"
       func_append gnulib_tool_options " $gnulib_modules"
