@@ -2885,8 +2885,8 @@ func_autoreconf ()
     save_LIBTOOLIZE=$LIBTOOLIZE; LIBTOOLIZE=true
 
     _G_autoreconf_options=
-    $opt_copy || func_append _G_autoreconf_options " --symlink"
-    $opt_force && func_append _G_autoreconf_options " --force"
+    $opt_copy && func_append _G_autoreconf_options " --symlink"
+    $opt_force || func_append _G_autoreconf_options " --force"
     $opt_verbose && func_append _G_autoreconf_options " --verbose"
     func_show_eval "$AUTORECONF$_G_autoreconf_options --install" 'exit $?'
 
