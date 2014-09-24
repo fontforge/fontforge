@@ -15,7 +15,7 @@ if [ y"$PKGBASEPATH" != "y/Applications/FontForge.app" ]; then
   $COCOA_DIALOG msgbox --no-newline \
     --title "FontForge: Error starting" \
     --text "FontForge is in the wrong place on your computer." \
-    --informative-text "Please ensure that the FontForge.app directory is directly inside your /Applications folder. A Finder window will now open with the current location of FontForge.app to help you relocate it." \
+    --informative-text "Please ensure that the FontForge.app directory is directly inside your /Applications folder." \
     --button1 "OK" --float
     BASEPATH="$( cd "${PKGBASEPATH}/.." && pwd )"
     open "$BASEPATH"
