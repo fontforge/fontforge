@@ -3448,8 +3448,10 @@ static void bSetGasp(Context *c) {
 	    ScriptError(c,"'gasp' Pixel size out of range");
 	if ( i!=base && arr->vals[i].u.ival<=arr->vals[i-2].u.ival )
 	    ScriptError(c,"'gasp' Pixel size out of order");
-	if ( arr->vals[i+1].u.ival<0 || arr->vals[i+1].u.ival>3 )
+	if ( arr->vals[i+1].u.ival<0 || arr->vals[i+1].u.ival>15 )
 	    ScriptError(c,"'gasp' flag out of range");
+        if ( arr->vals[i+1].u.ival>3 )
+            sf->gasp_version=1;
     }
     if ( arr->argc>=2 && arr->vals[arr->argc-2].u.ival!=65535 )
 	ScriptError(c,"'gasp' Final pixel size must be 65535");
