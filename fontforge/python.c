@@ -12629,7 +12629,7 @@ return( -1 );
     }
     sf = self->fv->sf;
     if ( (oldem = sf->ascent+sf->descent)<=0 ) oldem = 1;
-    ds = newem * sf->descent /oldem;
+    ds = rint( (double) newem * sf->descent / oldem );
     as = newem - ds;
     SFScaleToEm(sf,as,ds);
 return( 0 );
