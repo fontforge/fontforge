@@ -11021,6 +11021,7 @@ return;
 
 static void htlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+    int cvlayer = CVLayer((CharViewBase *) cv);
     BasePoint *bp[4], unit;
     int multilayer = cv->b.sc->parent->multilayer;
     int i=0, num = 0;
@@ -11032,10 +11033,12 @@ static void htlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_AutoHint:
-	    mi->ti.disabled = (CVLayer((CharViewBase *) cv) == -1) || multilayer;
+	    mi->ti.disabled = cvlayer == ly_grid || multilayer;
 	  break;
 	  case MID_HintSubsPt:
-	    mi->ti.disabled = cv->b.layerheads[cv->b.drawmode]->order2 || multilayer;
+	    mi->ti.disabled = multilayer ||
+		              cv->b.layerheads[cv->b.drawmode]->order2 ||
+		              cvlayer == ly_grid;
 	  break;
 	  case MID_AutoCounter:
 	    mi->ti.disabled = multilayer;
@@ -11048,7 +11051,7 @@ static void htlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  case MID_EditInstructions:
 	    mi->ti.disabled = multilayer ||
 		!cv->b.layerheads[cv->b.drawmode]->order2 ||
-		(CVLayer((CharViewBase *) cv) == -1);
+		cvlayer == ly_grid;
 	  break;
 	  case MID_Debug:
 	    mi->ti.disabled = multilayer ||
@@ -11059,6 +11062,11 @@ static void htlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    mi->ti.disabled = multilayer ||
 		!cv->b.layerheads[cv->b.drawmode]->order2 ||
 		!hasFreeTypeDebugger();
+	  break;
+          case  MID_ClearHStem:
+          case  MID_ClearVStem:
+          case  MID_ClearDStem:
+	    mi->ti.disabled = cvlayer == ly_grid;
 	  break;
 	  case MID_ClearInstr:
 	    mi->ti.disabled = cv->b.sc->ttf_instrs_len==0;
@@ -11071,6 +11079,10 @@ static void htlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  break;
 	  case MID_AddDHint:
 	    mi->ti.disabled = num != 4 || !PointsDiagonalable( cv->b.sc->parent,bp,&unit ) || multilayer;
+	  break;
+          case  MID_CreateHHint:
+          case  MID_CreateVHint:
+	    mi->ti.disabled = cvlayer == ly_grid;
 	  break;
 	  case MID_ReviewHints:
 	    mi->ti.disabled = (cv->b.sc->hstem==NULL && cv->b.sc->vstem==NULL ) || multilayer;
@@ -11221,25 +11233,28 @@ static void cv_cblistcheck(CharView *cv, struct gmenuitem *mi) {
 static void cv_nplistcheck(CharView *cv, struct gmenuitem *mi) {
     SplineChar *sc = cv->b.sc;
     int order2 = cv->b.layerheads[cv->b.drawmode]->order2;
+    int is_grid_layer = cv->b.drawmode == dm_grid;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_PtsNone:
+	    mi->ti.disabled = !order2 || is_grid_layer;
 	    mi->ti.checked = (cv->showpointnumbers == 0);
 	  break;
 	  case MID_PtsTrue:
-	    mi->ti.disabled = !order2;
+	    mi->ti.disabled = !order2 || is_grid_layer;
 	    mi->ti.checked = cv->showpointnumbers && order2;
 	  break;
 	  case MID_PtsPost:
-	    mi->ti.disabled = order2;
+	    mi->ti.disabled = order2 || is_grid_layer;
 	    mi->ti.checked = cv->showpointnumbers && !order2 && sc->numberpointsbackards;
 	  break;
 	  case MID_PtsSVG:
-	    mi->ti.disabled = order2;
+	    mi->ti.disabled = order2 || is_grid_layer;
 	    mi->ti.checked = cv->showpointnumbers && !order2 && !sc->numberpointsbackards;
 	  break;
           case MID_PtsPos:
+	    mi->ti.disabled = is_grid_layer;
             mi->ti.checked = (cv->showpointnumbers == 2);
 	}
     }
