@@ -1948,6 +1948,9 @@ static void _SCClearHintMasks(SplineChar *sc,int layer, int counterstoo) {
     SplinePoint *sp;
     RefChar *ref;
 
+    if ( layer<0 || layer>=sc->layer_cnt )
+        return;
+
     if ( counterstoo ) {
 	free(sc->countermasks);
 	sc->countermasks = NULL; sc->countermask_cnt = 0;
@@ -2002,6 +2005,10 @@ void SCModifyHintMasksAdd(SplineChar *sc,int layer, StemInfo *new) {
     int index;
     StemInfo *h;
     int i;
+
+    if ( layer<0 || layer>=sc->layer_cnt )
+        return;
+
     /* We've added a new stem. Figure out where it goes and modify the */
     /*  hintmasks accordingly */
 

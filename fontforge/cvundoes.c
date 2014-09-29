@@ -657,6 +657,9 @@ return( undo );
 Undoes *SCPreserveHints(SplineChar *sc,int layer) {
     Undoes *undo;
 
+    if ( layer<0 || layer>=sc->layer_cnt )
+        return( NULL );
+
     if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
     if ( !preserve_hint_undoes )

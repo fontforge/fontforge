@@ -5746,6 +5746,9 @@ struct glyphdata *GlyphDataInit( SplineChar *sc,int layer,double em_size,int onl
     int cnt;
     double iangle;
 
+    if ( layer<0 || layer>=sc->layer_cnt )
+        return( NULL );
+
     /* We only hint one layer at a time */
     /* We shan't try to hint references yet */
     if ( sc->layers[layer].splines==NULL )

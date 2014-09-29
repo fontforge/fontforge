@@ -5049,10 +5049,10 @@ static PyObject *PyFF_Glyph_get_a_layer(PyFF_Glyph *self,int layeri) {
     Layer *layer;
     PyFF_Layer *ly;
 
-    if ( layeri<-1 || layeri>=sc->layer_cnt ) {
-	PyErr_Format(PyExc_ValueError, "Bad layer" );
+    if ( layeri<ly_grid || layeri>=sc->layer_cnt ) {
+	PyErr_Format(PyExc_ValueError, "Layer is out of range" );
 return( NULL );
-    } else if ( layeri==-1 )
+    } else if ( layeri==ly_grid )
 	layer = &sc->parent->grid;
     else
 	layer = &sc->layers[layeri];
@@ -5109,10 +5109,10 @@ static int PyFF_Glyph_set_a_layer(PyFF_Glyph *self,PyObject *value, void *UNUSED
     SplineSet *ss, *newss;
     int isquad;
 
-    if ( layeri<-1 || layeri>=sc->layer_cnt ) {
-	PyErr_Format(PyExc_ValueError, "Bad layer" );
+    if ( layeri<ly_grid || layeri>=sc->layer_cnt ) {
+	PyErr_Format(PyExc_ValueError, "Layer is out of range" );
 return( -1 );
-    } else if ( layeri==-1 )
+    } else if ( layeri==ly_grid )
 	layer = &sc->parent->grid;
     else
 	layer = &sc->layers[layeri];
@@ -8489,9 +8489,14 @@ Py_RETURN( self );
 
 static PyObject *PyFFGlyph_preserveLayer(PyFF_Glyph *self, PyObject *args) {
     int layer = self->layer, dohints=false;
+    SplineChar *sc = self->sc;
 
     if ( !PyArg_ParseTuple(args,"|ii", &layer, &dohints ) )
-return( NULL );
+        return( NULL );
+    if ( layer<0 || layer>=sc->layer_cnt ) {
+        PyErr_Format(PyExc_ValueError, "Layer is out of range" );
+        return( NULL );
+    }
     _SCPreserveLayer(self->sc,layer,dohints);
 Py_RETURN( self );
 }
@@ -9686,7 +9691,7 @@ return( -1 );
 return( -1 );
     }
     if ( value==NULL ) {
-	if ( layer>=2 )
+	if ( layer>ly_fore )
 	    SFRemoveLayer(sf,layer);
 	else {
 	    PyErr_Format(PyExc_ValueError, "You may not delete the background or foreground layers" );

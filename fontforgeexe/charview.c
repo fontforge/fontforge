@@ -3088,7 +3088,7 @@ void CVRegenFill(CharView *cv) {
 	int size = cv->scale*(cv->b.fv->sf->ascent+cv->b.fv->sf->descent);
 	int clut_len= 2;
 
-        if ( layer==-1 ) layer=ly_fore; /* otherwise crashes when using guides layer! */
+        if ( layer==ly_grid ) layer=ly_fore; /* otherwise crashes when using guides layer! */
 
 	/* Generally I don't think there's much point in doing an anti-aliased*/
 	/*  fill. But on the "M" (and "W") glyph of extravigant caps, ft won't*/
@@ -6591,7 +6591,7 @@ static void CVInkscapeAdjust(CharView *cv) {
     DBounds b;
     int layer = CVLayer((CharViewBase *) cv);
 
-    if (layer != -1) SplineCharLayerQuickBounds(cv->b.sc,layer,&b);
+    if (layer != ly_grid) SplineCharLayerQuickBounds(cv->b.sc,layer,&b);
     else {
         b.minx = b.miny = 1e10;
         b.maxx = b.maxy = -1e10;
@@ -9628,8 +9628,8 @@ static void CVMenuRound2Hundredths(GWindow gw, struct gmenuitem *UNUSED(mi), GEv
 
 static void CVMenuCluster(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    int layer = cv->b.drawmode == dm_grid ? -1 :
-		cv->b.drawmode == dm_back ? 0
+    int layer = cv->b.drawmode == dm_grid ? ly_grid :
+		cv->b.drawmode == dm_back ? ly_back
 					: cv->b.layerheads[dm_fore] - cv->b.sc->layers;
     SCRoundToCluster(cv->b.sc,layer,true,.1,.5);
 }
@@ -9654,8 +9654,8 @@ static void CVMenuPatternTile(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 static void _CVMenuOverlap(CharView *cv,enum overlap_type ot) {
     /* We know it's more likely that we'll find a problem in the overlap code */
     /*  than anywhere else, so let's save the current state against a crash */
-    int layer = cv->b.drawmode == dm_grid ? -1 :
-		cv->b.drawmode == dm_back ? 0
+    int layer = cv->b.drawmode == dm_grid ? ly_grid :
+		cv->b.drawmode == dm_back ? ly_back
 					: cv->b.layerheads[dm_fore] - cv->b.sc->layers;
 
     DoAutoSaves();

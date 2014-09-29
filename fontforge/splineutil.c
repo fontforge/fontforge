@@ -6565,7 +6565,7 @@ return( changed );
 	if ( !changed ) {
 	    if ( layer==ly_all )
 		SCPreserveState(sc,dohints);
-	    else if ( layer!=-1 )
+	    else if ( layer!=ly_grid )
 		SCPreserveLayer(sc,layer,dohints);
 	    changed = true;
 	}
@@ -6627,8 +6627,8 @@ int SCRoundToCluster(SplineChar *sc,int layer,int sel,bigreal within,bigreal max
     /* point in it */
     /* if "sel" is true then we are only interested in selected points */
     /* (if there are no selected points then all points in the current layer) */
-    /* if "layer"==-1 then use sf->grid. if layer==-2 then all foreground layers*/
-    /* if "layer"==ly_fore or -2 then round hints that fall in our clusters too*/
+    /* if "layer"==ly_grid then use sf->grid. if layer==ly_all then all foreground layers*/
+    /* if "layer"==ly_fore or ly_all then round hints that fall in our clusters too*/
     int ptcnt, selcnt;
     int l,k,changed;
     SplineSet *spl;
@@ -6659,7 +6659,7 @@ int SCRoundToCluster(SplineChar *sc,int layer,int sel,bigreal within,bigreal max
 		}
 	    }
 	} else {
-	    if ( layer==-1 )
+	    if ( layer==ly_grid )
 		spl = sc->parent->grid.splines;
 	    else
 		spl = sc->layers[layer].splines;
@@ -6695,17 +6695,17 @@ return(false);				/* Can't be any clusters */
 
     qsort(ptspace,ptcnt,sizeof(SplinePoint *),xcmp);
     changed = _SplineCharRoundToCluster(sc,ptspace,cspace,ptcnt,false,
-	    (layer==-2 || layer==ly_fore) && !sel,layer,false,within,max);
+	    (layer==ly_all || layer==ly_fore) && !sel,layer,false,within,max);
 
     qsort(ptspace,ptcnt,sizeof(SplinePoint *),ycmp);
     changed = _SplineCharRoundToCluster(sc,ptspace,cspace,ptcnt,true,
-	    (layer==-2 || layer==ly_fore) && !sel,layer,changed,within,max);
+	    (layer==ly_all || layer==ly_fore) && !sel,layer,changed,within,max);
 
     free(ptspace);
     free(cspace);
 
     if ( changed ) {
-	if ( layer==-2 ) {
+	if ( layer==ly_all ) {
 	    for ( l=ly_fore; l<sc->layer_cnt; ++l ) {
 		for ( spl = sc->layers[l].splines; spl!=NULL; spl=spl->next ) {
 		    first = NULL;
@@ -6717,7 +6717,7 @@ return(false);				/* Can't be any clusters */
 		}
 	    }
 	} else {
-	    if ( layer==-1 )
+	    if ( layer==ly_grid )
 		spl = sc->parent->grid.splines;
 	    else
 		spl = sc->layers[layer].splines;
