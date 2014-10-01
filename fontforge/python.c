@@ -1854,6 +1854,10 @@ return( -1 );
 return( 0 );
     if ( self->pt_cnt!=0 ) {
 	ss = SSFromContour(self,NULL);
+        if ( ss==NULL ) {
+            /* SSFromContour() will have set an exception */
+            return( -1 );
+        }
 	PyFFContour_clear(self);
 	if ( val )
 	    ss2 = SplineSetsTTFApprox(ss);
@@ -1911,6 +1915,10 @@ return( NULL );
 	SplineSet *ss;
 	uint16 cnt;
 	ss = SSFromContour(self,NULL);
+        if ( ss==NULL ) {
+            PyErr_SetString(PyExc_AttributeError, "Empty Contour");
+            return( NULL );
+        }
 	self->spiros = SplineSet2SpiroCP(ss,&cnt);
 	self->spiro_cnt = cnt;
     }
@@ -1944,6 +1952,10 @@ return( -1 );
 return( -1 );
     }
     cnt = PySequence_Size(spirotuple);
+    if ( cnt < 1 ) {
+	PyErr_Format(PyExc_TypeError, "Please specify a tuple of spiro control points" );
+        return( -1 );
+    }
     PyFFContour_ClearSpiros((PyFF_Contour *) self);
     spiros = malloc((cnt+1)*sizeof(spiro_cp));
     spiros[cnt].x = spiros[cnt].y = 0;
@@ -3878,9 +3890,17 @@ return( -1 );
 	if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(poly)) ) {
 	    order2 = ((PyFF_Contour *) poly)->is_quadratic;
 	    ss = SSFromContour((PyFF_Contour *) poly,&start);
+            if ( ss==NULL ) {
+                PyErr_SetString(PyExc_AttributeError, "Empty Contour");
+                return( -1 );
+            }
 	} else if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(poly)) ) {
 	    order2 = ((PyFF_Layer *) poly)->is_quadratic;
 	    ss = SSFromLayer((PyFF_Layer *) poly);
+            if ( ss==NULL ) {
+                PyErr_SetString(PyExc_AttributeError, "Empty Layer");
+                return( -1 );
+            }
 	} else {
 	    PyErr_Format(PyExc_TypeError, "Second argument must be a (FontForge) Contour or Layer");
 return( -1 );
