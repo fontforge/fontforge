@@ -334,6 +334,9 @@ int SCNumberPoints(SplineChar *sc,int layer) {
     SplinePoint *sp;
     RefChar *ref;
 
+    if ( layer<0 || layer>=sc->layer_cnt )
+        return( pnum );
+
     if ( sc->layers[layer].order2 ) {		/* TrueType and its complexities. I ignore svg here */
 	if ( sc->layers[layer].refs!=NULL ) {
 	    /* if there are references there can't be splines. So if we've got*/
