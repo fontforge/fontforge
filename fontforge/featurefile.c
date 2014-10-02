@@ -400,23 +400,32 @@ return;
     putc('>',out);
 }
 
+int kernclass_for_feature_file(struct splinefont *sf, struct kernclass *kc, int flags) {
+  // Note that this is not a complete logical inverse of sister function kernclass_for_groups_plist.
+  return ((flags & FF_KERNCLASS_FLAG_FEATURE) ||
+  (!(flags & FF_KERNCLASS_FLAG_NATIVE) && (kc->feature || sf->preferred_kerning != 1)));
+}
+
 static void dump_kernclass(FILE *out,SplineFont *sf,struct lookup_subtable *sub) {
     int i,j;
     KernClass *kc = sub->kc;
+    
+    // We only export classes and rules here that have not been emitted in groups.plist and kerning.plist.
+    // The feature file can reference classes from groups.plist, but kerning.plist cannot reference groups from the feature file.
 
-    for ( i=0; i<kc->first_cnt; ++i ) if ( kc->firsts[i]!=NULL ) {
+    for ( i=0; i<kc->first_cnt; ++i ) if ( kc->firsts[i]!=NULL && kernclass_for_feature_file(sf, kc, kc->firsts_flags[i])) {
 	fprintf( out, "    @kc%d_first_%d = [", sub->subtable_offset, i );
 	dump_glyphnamelist(out,sf,kc->firsts[i] );
 	fprintf( out, "];\n" );
     }
-    for ( i=0; i<kc->second_cnt; ++i ) if ( kc->seconds[i]!=NULL ) {
+    for ( i=0; i<kc->second_cnt; ++i ) if ( kc->seconds[i]!=NULL && kernclass_for_feature_file(sf, kc, kc->seconds_flags[i])) {
 	fprintf( out, "    @kc%d_second_%d = [", sub->subtable_offset, i );
 	dump_glyphnamelist(out,sf,kc->seconds[i] );
 	fprintf( out, "];\n" );
     }
     for ( i=0; i<kc->first_cnt; ++i ) if ( kc->firsts[i]!=NULL ) {
 	for ( j=0; j<kc->second_cnt; ++j ) if ( kc->seconds[j]!=NULL ) {
-	    if ( kc->offsets[i*kc->second_cnt+j]!=0 )
+	    if ( kc->offsets[i*kc->second_cnt+j]!=0 && kernclass_for_feature_file(sf, kc, kc->offsets_flags[i]) )
 		fprintf( out, "    pos @kc%d_first_%d @kc%d_second_%d %d;\n",
 			sub->subtable_offset, i,
 			sub->subtable_offset, j,
@@ -2303,7 +2312,7 @@ struct parseState {
     unsigned int skipping: 1;
     SplineFont *sf;
     struct scriptlanglist *def_langsyses;
-    struct glyphclasses *classes;
+    struct glyphclasses *classes; // TODO: This eventually needs to merge with the SplineFont group storage. For now, it needs to copy from it at first invocation.
     struct namedanchor *namedAnchors;
     struct namedvalue *namedValueRs;
     struct feat_item *sofar;
@@ -2989,13 +2998,16 @@ static char *fea_ParseGlyphClass(struct parseState *tok) {
     char *glyphs = NULL;
 
     if ( tok->type==tk_class ) {
+	// If the class references another class, just copy that.
 	glyphs = fea_lookup_class_complain(tok,tok->tokbuf);
     } else if ( tok->type!=tk_char || tok->tokbuf[0]!='[' ) {
+	// If it is not a class, we want a list to parse. Anything else is wrong.
 	LogError(_("Expected '[' in glyph class definition on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
 return( NULL );
     } else {
-	char *contents = NULL;
+	// Start parsing the list.
+	char *contents = NULL; // This is a temporary buffer used for each cycle below.
 	int cnt=0, max=0;
 	int last_val, range_type, range_len;
 	char last_glyph[MAXT+1];
@@ -3006,8 +3018,9 @@ return( NULL );
 	for (;;) {
 	    fea_ParseTok(tok);
 	    if ( tok->type==tk_char && tok->tokbuf[0]==']' )
-	break;
+	break; // End of list.
 	    if ( tok->type==tk_class ) {
+		// Stash the entire contents of the referenced class for inclusion in this class (later).
 		contents = fea_lookup_class_complain(tok,tok->tokbuf);
 		last_val=-1; last_glyph[0] = '\0';
 	    } else if ( tok->type==tk_cid ) {
@@ -3017,6 +3030,7 @@ return( NULL );
 		strcpy(last_glyph,tok->tokbuf); last_val = -1;
 		contents = fea_glyphname_validate(tok,tok->tokbuf);
 	    } else if ( tok->type==tk_char && tok->tokbuf[0]=='-' ) {
+		// It's a range extending from the previous token.
 		fea_ParseTok(tok);
 		if ( last_val!=-1 && tok->type==tk_cid ) {
 		    if ( last_val>=tok->value ) {
@@ -3235,12 +3249,12 @@ static void fea_ParseGlyphClassDef(struct parseState *tok) {
 return;
     }
     fea_ParseTok(tok);
-    contents = fea_ParseGlyphClass(tok);
+    contents = fea_ParseGlyphClass(tok); // Make a list of referenced glyphs.
     if ( contents==NULL ) {
 	fea_skip_to_semi(tok);
 return;
     }
-    fea_AddClassDef(tok,classname,copy(contents));
+    fea_AddClassDef(tok,classname,copy(contents)); // Put the list into a class.
     fea_end_statement(tok);
 }
 
@@ -7214,6 +7228,26 @@ static void fea_NameLookups(struct parseState *tok) {
     FVRefreshAll(sf);
 }
 
+void CopySplineFontGroupsForFeatureFile(SplineFont *sf, struct parseState* tok) {
+  struct ff_glyphclasses *ff_current = sf->groups;
+  struct glyphclasses *feature_current = tok->classes;
+  // It may be useful to run this multiple times, appending to an existing list, so we traverse to the end.
+  while (feature_current != NULL && feature_current->next != NULL) feature_current = feature_current->next;
+  struct glyphclasses *feature_tmp = NULL;
+  while (ff_current != NULL) {
+    // Only groups with feature-compatible names get copied.
+    if (ff_current->classname != NULL && ff_current->classname[0] == '@') {
+      feature_tmp = calloc(1, sizeof(struct glyphclasses));
+      feature_tmp->classname = copy(ff_current->classname);
+      feature_tmp->glyphs = copy(ff_current->glyphs);
+      if (feature_current != NULL) feature_current->next = feature_tmp;
+      else tok->classes = feature_tmp;
+      feature_current = feature_tmp;
+    }
+    ff_current = ff_current->next;
+  }
+}
+
 void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     struct parseState tok;
     struct glyphclasses *gc, *gcnext;
@@ -7227,6 +7261,7 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     tok.base = 10;
     if ( sf->cidmaster ) sf = sf->cidmaster;
     tok.sf = sf;
+    CopySplineFontGroupsForFeatureFile(sf, &tok);
 
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
     switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.

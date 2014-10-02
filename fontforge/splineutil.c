@@ -5967,7 +5967,6 @@ void OTLookupListFree(OTLookup *lookup ) {
 KernClass *KernClassCopy(KernClass *kc) {
     KernClass *new;
     int i;
-
     if ( kc==NULL )
 return( NULL );
     new = chunkalloc(sizeof(KernClass));
@@ -5976,10 +5975,29 @@ return( NULL );
     new->seconds = malloc(new->second_cnt*sizeof(char *));
     new->offsets = malloc(new->first_cnt*new->second_cnt*sizeof(int16));
     memcpy(new->offsets,kc->offsets, new->first_cnt*new->second_cnt*sizeof(int16));
-    for ( i=0; i<new->first_cnt; ++i )
+    // Group kerning.
+    if (kc->firsts_names) new->firsts_names = calloc(new->first_cnt,sizeof(char *));
+    if (kc->seconds_names) new->seconds_names = calloc(new->second_cnt,sizeof(char *));
+    if (kc->firsts_flags) {
+	new->firsts_flags = calloc(new->first_cnt,sizeof(int));
+	memcpy(new->firsts_flags, kc->firsts_flags, new->first_cnt*sizeof(int));
+    }
+    if (kc->seconds_flags) {
+	new->seconds_flags = calloc(new->second_cnt,sizeof(int));
+	memcpy(new->seconds_flags, kc->seconds_flags, new->second_cnt*sizeof(int));
+    }
+    if (kc->offsets_flags) {
+	new->offsets_flags = calloc(new->first_cnt*new->second_cnt,sizeof(int));
+	memcpy(new->offsets_flags, kc->offsets_flags, new->first_cnt*new->second_cnt*sizeof(int));
+    }
+    for ( i=0; i<new->first_cnt; ++i ) {
 	new->firsts[i] = copy(kc->firsts[i]);
-    for ( i=0; i<new->second_cnt; ++i )
+	if (new->firsts_names) new->firsts_names[i] = copy(kc->firsts_names[i]);
+    }
+    for ( i=0; i<new->second_cnt; ++i ) {
 	new->seconds[i] = copy(kc->seconds[i]);
+	if (new->seconds_names) new->seconds_names[i] = copy(kc->seconds_names[i]);
+    }
     new->adjusts = calloc(new->first_cnt*new->second_cnt,sizeof(DeviceTable));
     memcpy(new->adjusts,kc->adjusts, new->first_cnt*new->second_cnt*sizeof(DeviceTable));
     for ( i=new->first_cnt*new->second_cnt-1; i>=0 ; --i ) {
@@ -5990,13 +6008,15 @@ return( NULL );
 	    memcpy(new->adjusts[i].corrections,old,len);
 	}
     }
+
+
+
     new->next = NULL;
 return( new );
 }
 
 void KernClassFreeContents(KernClass *kc) {
     int i;
-
     for ( i=1; i<kc->first_cnt; ++i )
 	free(kc->firsts[i]);
     for ( i=1; i<kc->second_cnt; ++i )
@@ -6007,6 +6027,19 @@ void KernClassFreeContents(KernClass *kc) {
     for ( i=kc->first_cnt*kc->second_cnt-1; i>=0 ; --i )
 	free(kc->adjusts[i].corrections);
     free(kc->adjusts);
+    if (kc->firsts_flags) free(kc->firsts_flags);
+    if (kc->seconds_flags) free(kc->seconds_flags);
+    if (kc->offsets_flags) free(kc->offsets_flags);
+    if (kc->firsts_names) {
+      for ( i=kc->first_cnt-1; i>=0 ; --i )
+	free(kc->firsts_names[i]);
+      free(kc->firsts_names);
+    }
+    if (kc->seconds_names) {
+      for ( i=kc->second_cnt-1; i>=0 ; --i )
+	free(kc->seconds_names[i]);
+      free(kc->seconds_names);
+    }
 }
 
 void KernClassListFree(KernClass *kc) {
@@ -6409,6 +6442,7 @@ return;
     OtfFeatNameListFree(sf->feat_names);
     MarkClassFree(sf->mark_class_cnt,sf->mark_classes,sf->mark_class_names);
     MarkSetFree(sf->mark_set_cnt,sf->mark_sets,sf->mark_set_names);
+    GlyphGroupsFree(sf->groups);
     free( sf->gasp );
 #if defined(_NO_PYTHON)
     free( sf->python_persistent );	/* It's a string of pickled data which we leave as a string */
@@ -6429,6 +6463,190 @@ return;
       free(sf->layers); sf->layers = NULL;
     }   
     free(sf);
+}
+
+#if 0
+// These are in splinefont.h.
+#define GROUP_NAME_KERNING_UFO 1
+#define GROUP_NAME_KERNING_FEATURE 2
+#define GROUP_NAME_VERTICAL 4 // Otherwise horizontal.
+#define GROUP_NAME_RIGHT 8 // Otherwise left (or above).
+#endif // 0
+
+
+void GlyphGroupFree(struct ff_glyphclasses* group) {
+  if (group->classname != NULL) free(group->classname);
+  if (group->glyphs != NULL) free(group->glyphs);
+  free(group);
+}
+
+void GlyphGroupsFree(struct ff_glyphclasses* root) {
+  struct ff_glyphclasses* current = root;
+  struct ff_glyphclasses* next;
+  while (current != NULL) {
+    next = current->next;
+    GlyphGroupFree(current);
+    current = next;
+  }
+}
+
+int GroupNameType(const char *input) {
+  int kerning_type = 0; // 1 for U. F. O., 2 for feature file.
+  int kerning_vert = 0;
+  int kerning_side = 0; // 1 for left, 2 for right.
+  if (strchr(input, ' ') || strchr(input, '\n')) return -1;
+  if (strncmp(input, "public.kern", strlen("public.kern")) == 0) {
+    int off1 = strlen("public.kern");
+    char nextc = *(input+off1);
+    if (nextc == '1') kerning_side = 1;
+    if (nextc == '2') kerning_side = 2;
+    if (kerning_side != 0 && *(input+off1+1) == '.' && *(input+off1+2) != '\0')
+      kerning_type = 1;
+    else return -1;
+  } else if (strncmp(input, "public.vkern", strlen("public.vkern")) == 0) {
+    kerning_vert = 1;
+    int off1 = strlen("public.vkern");
+    char nextc = *(input+off1);
+    if (nextc == '1') kerning_side = 1;
+    if (nextc == '2') kerning_side = 2;
+    if (kerning_side != 0 && *(input+off1+1) == '.' && *(input+off1+2) != '\0')
+      kerning_type = 1;
+    else return -1;
+  } else if (strncmp(input, "@MMK_", strlen("@MMK_")) == 0) {
+    int off1 = strlen("@MMK_");
+    char nextc = *(input+off1);
+    if (nextc == 'L') kerning_side = 1;
+    else if (nextc == 'R') kerning_side = 2;
+    else if (nextc == 'A') { kerning_side = 1; kerning_vert = 1; }
+    else if (nextc == 'B') { kerning_side = 2; kerning_vert = 1; }
+    if (kerning_side != 0 && *(input+off1+1) == '_' && *(input+off1+2) != '\0')
+      kerning_type = 2;
+    else return -1;
+  }
+  return kerning_type | ((kerning_side == 2) ? GROUP_NAME_RIGHT : 0) | (kerning_vert * GROUP_NAME_VERTICAL);
+}
+
+int CountKerningClasses(SplineFont *sf) {
+    struct kernclass *current_kernclass;
+    int isv;
+    int isr;
+    int i;
+    int absolute_index = 0; // This gives us a unique index for each kerning class.
+    // First we catch the existing names.
+    absolute_index = 0;
+    for (isv = 0; isv < 2; isv++)
+    for (current_kernclass = (isv ? sf->vkerns : sf->kerns); current_kernclass != NULL; current_kernclass = current_kernclass->next)
+    for (isr = 0; isr < 2; isr++) {
+      // for ( i=0; i< (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt); ++i );
+      // absolute_index +=i;
+      absolute_index += (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt);
+    }
+    return absolute_index;
+}
+
+#ifdef FF_UTHASH_GLIF_NAMES
+int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_hash) {
+    struct kernclass *current_kernclass;
+    int isv;
+    int isr;
+    int i;
+    int absolute_index = 0; // This gives us a unique index for each kerning class.
+    // First we catch the existing names.
+    absolute_index = 0;
+    for (isv = 0; isv < 2; isv++)
+    for (current_kernclass = (isv ? sf->vkerns : sf->kerns); current_kernclass != NULL; current_kernclass = current_kernclass->next)
+    for (isr = 0; isr < 2; isr++) {
+    for ( i=0; i < (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt); ++i )
+    if ( (isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]) != NULL ) {
+        // Add it to the hash table with its index.
+        glif_name_track_new(class_name_hash, absolute_index + i, (isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]));
+    }
+    absolute_index +=i;
+    }
+    return absolute_index;
+}
+#endif
+
+int KerningClassSeekByAbsoluteIndex(const struct splinefont *sf, int seek_index, struct kernclass **okc, int *oisv, int *oisr, int *ooffset) {
+    int current = 0;
+    struct kernclass *current_kernclass;
+    int isv;
+    int isr;
+    int absolute_index = 0; // This gives us a unique index for each kerning class.
+    // First we catch the existing names.
+    absolute_index = 0;
+    for (isv = 0; isv < 2; isv++)
+    for (current_kernclass = (isv ? sf->vkerns : sf->kerns); current_kernclass != NULL; current_kernclass = current_kernclass->next)
+    for (isr = 0; isr < 2; isr++) {
+      if (seek_index < absolute_index + (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt)) {
+        *okc = current_kernclass;
+        *oisv = isv;
+        *oisr = isr;
+        *ooffset = seek_index - absolute_index;
+        return 1;
+      }
+      absolute_index += (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt);
+    }
+    return 0;
+}
+
+struct ff_glyphclasses *SFGetGroup(const struct splinefont *sf, int index, const char *name) {
+  if (sf == NULL) return NULL;
+  struct ff_glyphclasses *ret = sf->groups;
+  while (ret != NULL && (ret->classname == NULL || strcmp(ret->classname, name) != 0)) ret = ret->next;
+  return ret;
+}
+
+int StringInStrings(char const* const* space, int length, const char *target) {
+  int pos;
+  for (pos = 0; pos < length; pos++) if (strcmp(space[pos], target) == 0) break;
+  return pos;
+}
+
+char **StringExplode(const char *input, char delimiter) {
+  if (input == NULL) return NULL;
+  const char *pstart = input;
+  const char *pend = input;
+  int entry_count = 0;
+  while (*pend != '\0') {
+    while (*pstart == delimiter) pstart++;
+    pend = pstart;
+    while (*pend != delimiter && *pend != '\0') pend++;
+    if (pend > pstart) entry_count++;
+    pstart = pend;
+  }
+  char **output = calloc(entry_count + 1, sizeof(char*));
+  pstart = input;
+  pend = input;
+  entry_count = 0;
+  while (*pend != '\0') {
+    while (*pstart == delimiter) pstart++;
+    pend = pstart;
+    while (*pend != delimiter && *pend != '\0') pend++;
+    if (pend > pstart) output[entry_count++] = strndup(pstart, pend-pstart);
+    pstart = pend;
+  }
+  return output;
+}
+
+void ExplodedStringFree(char **input) {
+  int index = 0;
+  while (input[index] != NULL) free(input[index++]);
+  free(input);
+}
+
+int SFKerningGroupExistsSpecific(const struct splinefont *sf, const char *groupname, int isv, int isr) {
+  if (sf == NULL) return 0;
+  if (isv) {
+    if (sf->vkerns == NULL) return 0;
+    if (isr) return (StringInStrings(sf->vkerns->seconds_names, sf->vkerns->second_cnt, groupname) < sf->vkerns->second_cnt);
+    else return (StringInStrings(sf->vkerns->firsts_names, sf->vkerns->first_cnt, groupname) < sf->vkerns->first_cnt);
+  } else {
+    if (sf->kerns == NULL) return 0;
+    if (isr) return (StringInStrings(sf->kerns->seconds_names, sf->kerns->second_cnt, groupname) < sf->kerns->second_cnt);
+    else return (StringInStrings(sf->kerns->firsts_names, sf->kerns->first_cnt, groupname) < sf->kerns->first_cnt);
+  }
+  return 0;
 }
 
 void MMSetFreeContents(MMSet *mm) {
