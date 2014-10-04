@@ -17852,8 +17852,10 @@ static module_definition module_def_psMat = {
 
 
 static void PyFF_PicklerInit(void) {
-    if ( pickler==NULL )
-	PyRun_SimpleString("import " PICKLE ";\nimport __FontForge_Internals___;\n__FontForge_Internals___.initPickles(" PICKLE ".dumps," PICKLE ".loads);");
+    if ( pickler==NULL ) {
+        FontForge_InitializeEmbeddedPython();
+        PyRun_SimpleString("import " PICKLE ";\nimport __FontForge_Internals___;\n__FontForge_Internals___.initPickles(" PICKLE ".dumps," PICKLE ".loads);");
+    }
 }
 
 static void PyFF_PickleTypesInit(void) {
