@@ -6042,6 +6042,27 @@ void KernClassFreeContents(KernClass *kc) {
     }
 }
 
+void KernClassClearSpecialContents(KernClass *kc) {
+    // This frees and zeros special data not handled by the FontForge GUI,
+    // most of which comes from U. F. O..
+    int i;
+    if (kc->firsts_flags) { free(kc->firsts_flags); kc->firsts_flags = NULL; }
+    if (kc->seconds_flags) { free(kc->seconds_flags); kc->seconds_flags = NULL; }
+    if (kc->offsets_flags) { free(kc->offsets_flags); kc->offsets_flags = NULL; }
+    if (kc->firsts_names) {
+      for ( i=kc->first_cnt-1; i>=0 ; --i )
+	free(kc->firsts_names[i]);
+      free(kc->firsts_names);
+      kc->firsts_names = NULL;
+    }
+    if (kc->seconds_names) {
+      for ( i=kc->second_cnt-1; i>=0 ; --i )
+	free(kc->seconds_names[i]);
+      free(kc->seconds_names);
+      kc->seconds_names = NULL;
+    }
+}
+
 void KernClassListFree(KernClass *kc) {
     KernClass *n;
 
@@ -6049,6 +6070,16 @@ void KernClassListFree(KernClass *kc) {
 	KernClassFreeContents(kc);
 	n = kc->next;
 	chunkfree(kc,sizeof(KernClass));
+	kc = n;
+    }
+}
+
+void KernClassListClearSpecialContents(KernClass *kc) {
+    KernClass *n;
+
+    while ( kc ) {
+	KernClassClearSpecialContents(kc);
+	n = kc->next;
 	kc = n;
     }
 }
@@ -6443,6 +6474,8 @@ return;
     MarkClassFree(sf->mark_class_cnt,sf->mark_classes,sf->mark_class_names);
     MarkSetFree(sf->mark_set_cnt,sf->mark_sets,sf->mark_set_names);
     GlyphGroupsFree(sf->groups);
+    GlyphGroupKernsFree(sf->groupkerns);
+    GlyphGroupKernsFree(sf->groupvkerns);
     free( sf->gasp );
 #if defined(_NO_PYTHON)
     free( sf->python_persistent );	/* It's a string of pickled data which we leave as a string */
@@ -6459,10 +6492,53 @@ return;
           free(sf->layers[layer].name);
           sf->layers[layer].name = NULL;
         }
+        if (sf->layers[layer].ufo_path != NULL) {
+          free(sf->layers[layer].ufo_path);
+          sf->layers[layer].ufo_path = NULL;
+        }
       }
       free(sf->layers); sf->layers = NULL;
     }   
     free(sf);
+}
+
+void SplineFontClearSpecial(SplineFont *sf) {
+    int i;
+
+    if ( sf==NULL )
+return;
+    if ( sf->mm!=NULL ) {
+	MMSetClearSpecial(sf->mm);
+return;
+    }
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	struct splinechar *sc = sf->glyphs[i];
+	if (sc->glif_name != NULL) { free(sc->glif_name); sc->glif_name = NULL; }
+    }
+    for ( i=0; i<sf->subfontcnt; ++i )
+	SplineFontClearSpecial(sf->subfonts[i]);
+    KernClassListClearSpecialContents(sf->kerns);
+    KernClassListClearSpecialContents(sf->vkerns);
+    if (sf->groups) { GlyphGroupsFree(sf->groups); sf->groups = NULL; }
+    if (sf->groupkerns) { GlyphGroupKernsFree(sf->groupkerns); sf->groupkerns = NULL; }
+    if (sf->groupvkerns) { GlyphGroupKernsFree(sf->groupvkerns); sf->groupvkerns = NULL; }
+    if (sf->python_persistent) {
+#if defined(_NO_PYTHON)
+      free( sf->python_persistent );	/* It's a string of pickled data which we leave as a string */
+#else
+      PyFF_FreeSF(sf);
+#endif
+      sf->python_persistent = NULL;
+    }
+    if (sf->layers != NULL) {
+      int layer;
+      for (layer = 0; layer < sf->layer_cnt; layer ++) {
+        if (sf->layers[layer].ufo_path != NULL) {
+          free(sf->layers[layer].ufo_path);
+          sf->layers[layer].ufo_path = NULL;
+        }
+      }
+    }   
 }
 
 #if 0
@@ -6524,6 +6600,22 @@ int GroupNameType(const char *input) {
     else return -1;
   }
   return kerning_type | ((kerning_side == 2) ? GROUP_NAME_RIGHT : 0) | (kerning_vert * GROUP_NAME_VERTICAL);
+}
+
+void GlyphGroupKernFree(struct ff_rawoffsets* groupkern) {
+  if (groupkern->left != NULL) free(groupkern->left);
+  if (groupkern->right != NULL) free(groupkern->right);
+  free(groupkern);
+}
+
+void GlyphGroupKernsFree(struct ff_rawoffsets* root) {
+  struct ff_rawoffsets* current = root;
+  struct ff_rawoffsets* next;
+  while (current != NULL) {
+    next = current->next;
+    GlyphGroupKernFree(current);
+    current = next;
+  }
 }
 
 int CountKerningClasses(SplineFont *sf) {
@@ -6686,6 +6778,15 @@ void MMSetFree(MMSet *mm) {
     MMSetFreeContents(mm);
 
     chunkfree(mm,sizeof(*mm));
+}
+
+void MMSetClearSpecial(MMSet *mm) {
+    int i;
+
+    for ( i=0; i<mm->instance_count; ++i ) {
+	SplineFontClearSpecial(mm->instances[i]);
+    }
+    SplineFontClearSpecial(mm->normal);
 }
 
 static int xcmp(const void *_p1, const void *_p2) {

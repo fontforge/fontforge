@@ -2296,7 +2296,9 @@ extern void SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real xoff, real y
 extern void _SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real transform[6]);
 extern KernClass *KernClassCopy(KernClass *kc);
 extern void KernClassFreeContents(KernClass *kc);
+extern void KernClassClearSpecialContents(KernClass *kc);
 extern void KernClassListFree(KernClass *kc);
+extern void KernClassListClearSpecialContents(KernClass *kc);
 extern int KernClassContains(KernClass *kc, const char *name1, const char *name2, int ordered );
 extern void OTLookupFree(OTLookup *lookup);
 extern void OTLookupListFree(OTLookup *lookup );
@@ -2334,6 +2336,7 @@ extern void BaseLangFree(struct baselangextent *extent);
 extern void BaseScriptFree(struct basescript *bs);
 extern void BaseFree(struct Base *base);
 extern void SplineFontFree(SplineFont *sf);
+extern void SplineFontClearSpecial(SplineFont *sf);
 
 #if 1
 // These relate to experimental support for U. F. O. groups.
@@ -2345,6 +2348,8 @@ extern void SplineFontFree(SplineFont *sf);
 void GlyphGroupFree(struct ff_glyphclasses* group);
 void GlyphGroupsFree(struct ff_glyphclasses* root);
 int GroupNameType(const char *input);
+void GlyphGroupKernFree(struct ff_rawoffsets* groupkern);
+void GlyphGroupKernsFree(struct ff_rawoffsets* root);
 int CountKerningClasses(SplineFont *sf);
 #ifdef FF_UTHASH_GLIF_NAMES
 struct glif_name_index;
@@ -2369,6 +2374,7 @@ extern void MarkSetFree(int cnt,char **classes,char **names);
 extern void MarkClassFree(int cnt,char **classes,char **names);
 extern void MMSetFreeContents(MMSet *mm);
 extern void MMSetFree(MMSet *mm);
+extern void MMSetClearSpecial(MMSet *mm);
 extern void SFRemoveUndoes(SplineFont *sf,uint8 *selected,EncMap *map);
 extern void SplineRefigure3(Spline *spline);
 extern void SplineRefigure(Spline *spline);
