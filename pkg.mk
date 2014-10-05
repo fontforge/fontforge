@@ -54,7 +54,7 @@ endif
 deb-src: deb-src-control
 	$(MAKE) uthash/src;
 	cd tests ; $(MAKE) prefetch-fonts ;
-	for cfile in config/* ; do if [ -e "$cfile" ] ; then rm -f "$cfile" ; fi ; done ;
+	for cfile in config/* m4/* ; do if [ -e "$cfile" ] ; then rm -f "$cfile" ; fi ; done ;
 	cd .. ; if [ "$(F_FAKE_PRODUCT_NAME)" != "$(F_PACKAGE_NAME)" ] ; then cp -pRP $(F_FAKE_PRODUCT_NAME) $(F_PACKAGE_NAME) ; fi ; cd $(F_PACKAGE_NAME) ; yes | debuild -S -sa ;
 
 deb: deb-src-control
@@ -70,7 +70,7 @@ rpm-src-control:
 rpm-src: rpm-src-control
 	$(MAKE) uthash/src;
 	cd tests ; $(MAKE) prefetch-fonts ;
-	for cfile in config/* ; do if [ -e "$cfile" ] ; then rm -f "$cfile" ; fi ; done ;
+	for cfile in config/* m4/* ; do if [ -e "$cfile" ] ; then rm -f "$cfile" ; fi ; done ;
 	cd .. ; cp -pRP $(F_FAKE_PRODUCT_NAME)/redhat/rpm.spec ./$(F_PACKAGE_NAME)-$(RPM_PACKAGE_VERSION).spec ; if [ "$(F_FAKE_PRODUCT_NAME)" != "$(F_PACKAGE_NAME)-$(F_PACKAGE_VERSION)" ] ; then cp -pRP $(F_FAKE_PRODUCT_NAME) $(F_PACKAGE_NAME)-$(RPM_PACKAGE_VERSION) ; fi ; tar -czf $(F_PACKAGE_NAME)-$(RPM_PACKAGE_VERSION).tar.gz $(F_PACKAGE_NAME)-$(RPM_PACKAGE_VERSION) ;
 
 
