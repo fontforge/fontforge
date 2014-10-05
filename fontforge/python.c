@@ -2832,7 +2832,7 @@ static PyObject *PyFFContour_BoundingBox(PyFF_Contour *self, PyObject *UNUSED(ar
     int i;
 
     if ( self->pt_cnt==0 )
-return( Py_BuildValue("(dddd)", 0,0,0,0 ));
+        return( Py_BuildValue("(dddd)", 0.0, 0.0, 0.0, 0.0 ));
 
     xmin = xmax = self->points[0]->x;
     ymin = ymax = self->points[0]->y;
@@ -2863,7 +2863,9 @@ return( NULL );
 		pnum = 0;
 	    if ( self->points[pnum]->on_curve ) {
 		end.x = self->points[pnum]->x; end.y = self->points[pnum]->y;
-return( Py_BuildValue("((dddd)(dddd))", 0,0,end.x-start.x,start.x, 0,0,end.y-start.y,start.y ));
+                return( Py_BuildValue("((dddd)(dddd))", 
+                                        0.0, 0.0,end.x-start.x,start.x, 
+                                        0.0, 0.0,end.y-start.y,start.y ));
 	    } else {
 		ncp.x = self->points[pnum]->x; ncp.y = self->points[pnum]->y;
 		if ( ++pnum>=self->pt_cnt )
@@ -2891,8 +2893,8 @@ return( Py_BuildValue("((dddd)(dddd))", 0,0,end.x-start.x,start.x, 0,0,end.y-sta
 	    }
 	}
 	cx = 2*(ncp.x-start.x); cy = 2*(ncp.y-start.y);
-return( Py_BuildValue("((dddd)(dddd))", 0,end.x-start.x-cx,cx,start.x,
-					0,end.y-start.y-cy,cy,start.y ));
+        return( Py_BuildValue("((dddd)(dddd))", 0.0,end.x-start.x-cx,cx,start.x,
+                                                0.0,end.y-start.y-cy,cy,start.y ));
     } else {
 	if ( !self->points[pnum]->on_curve ) {
 	    if ( ( --pnum )<0 ) pnum = self->pt_cnt-1;
@@ -18267,12 +18269,7 @@ _Noreturn void PyFF_Main(int argc,char **argv,int start) {
 
     no_windowing_ui = running_script = true;
 
-#ifndef _NO_PYTHON
-/*# ifndef GWW_TEST*/
-    FontForge_InitializeEmbeddedPython(); /* !!!!!! debug (valgrind doesn't like python) */
-/*# endif*/
-#endif
-
+    FontForge_InitializeEmbeddedPython();
     PyFF_ProcessInitFiles();
 
     /* Skip '-script' option */
@@ -18287,11 +18284,7 @@ _Noreturn void PyFF_Main(int argc,char **argv,int start) {
 
     /* Run Python */
     exitcode = Py_Main( newargc, newargv );
-#ifndef _NO_PYTHON
-/*# ifndef GWW_TEST*/
-    FontForge_FinalizeEmbeddedPython(); /* !!!!!! debug (valgrind doesn't like python) */
-/*# endif*/
-#endif
+    FontForge_FinalizeEmbeddedPython();
     exit(exitcode);
 }
 
@@ -18409,25 +18402,16 @@ static void AddSpiroConstants( PyObject *module ) {
 _Noreturn void PyFF_Stdin(void) {
     no_windowing_ui = running_script = true;
 
-#ifndef _NO_PYTHON
-/*# ifndef GWW_TEST*/
-    FontForge_InitializeEmbeddedPython(); /* !!!!!! debug (valgrind doesn't like python) */
-/*# endif*/
-#endif
-
+    FontForge_InitializeEmbeddedPython();
     PyFF_ProcessInitFiles();
 
     if ( isatty(fileno(stdin)))
 	PyRun_InteractiveLoop(stdin,"<stdin>");
     else
 	PyRun_SimpleFile(stdin,"<stdin>");
-    exit(0);
-#ifndef _NO_PYTHON
-/*# ifndef GWW_TEST*/
-    FontForge_FinalizeEmbeddedPython(); /* !!!!!! debug (valgrind doesn't like python) */
-/*# endif*/
-#endif
 
+    FontForge_FinalizeEmbeddedPython();
+    exit(0);
 }
 
 
