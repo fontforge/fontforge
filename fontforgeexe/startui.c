@@ -1165,7 +1165,6 @@ int fontforge_main( int argc, char **argv ) {
      * wanted to skip loading these python init files.
      */
     for ( i=1; i<argc; ++i ) {
-	char buffer[1025];
 	char *pt = argv[i];
 
 	if ( !strcmp(pt,"-SkipPythonInitFiles")) {
