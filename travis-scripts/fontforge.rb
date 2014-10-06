@@ -147,7 +147,7 @@ class Fontforge < Formula
     # Fix install location of Python extension; see:
     # http://sourceforge.net/mailarchive/message.php?msg_id=26827938
     inreplace "Makefile" do |s|
-      s.gsub! "python setup.py install --prefix=$(prefix) --root=$(DESTDIR)", "python setup.py install --prefix=$(prefix)"
+#      s.gsub! "python setup.py install --prefix=$(prefix) --root=$(DESTDIR)", "python setup.py install --prefix=$(prefix)"
     end
 
     # Replace FlatCarbon headers with the real paths
