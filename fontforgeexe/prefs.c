@@ -1193,10 +1193,10 @@ static void PrefsUI_LoadPrefs(void)
 {
     char *prefs = getPfaEditPrefs();
     FILE *p;
-    char line[1100];
+    char line[1100], path[PATH_MAX];
     int i, j, ri=0, mn=0, ms=0, fn=0, ff=0, filt_max=0;
     int msp=0, msc=0;
-    char *pt;
+    char *pt, *real_xdefs_filename = NULL;
     struct prefs_list *pl;
 
     LoadPluginDir(NULL);
@@ -1304,10 +1304,9 @@ static void PrefsUI_LoadPrefs(void)
     //
     // If the user has no theme set, then use the default
     //
-    if ( !xdefs_filename )
+    real_xdefs_filename = xdefs_filename;
+    if ( !real_xdefs_filename )
     {
-	char path[PATH_MAX];
-
 	fprintf(stderr,"no xdefs_filename!\n");
 	if (!quiet) {
 	    fprintf(stderr,"TESTING: getPixmapDir:%s\n", getPixmapDir() );
@@ -1317,11 +1316,10 @@ static void PrefsUI_LoadPrefs(void)
 	snprintf(path, PATH_MAX, "%s/%s", getPixmapDir(), "resources" );
 	if (!quiet)
 	    fprintf(stderr,"trying default theme:%s\n", path );
-	if(GFileExists(path))
-	    change_res_filename( path );
+	real_xdefs_filename = path;
     }
-    if ( xdefs_filename!=NULL )
-	GResourceAddResourceFile(xdefs_filename,GResourceProgramName,true);
+    GResourceAddResourceFile(real_xdefs_filename,GResourceProgramName,true);
+
     if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
 	fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
 
