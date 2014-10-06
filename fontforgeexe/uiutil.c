@@ -42,8 +42,6 @@ extern void cygwin_conv_to_full_posix_path(const char *win,char *unx);
 extern void cygwin_conv_to_full_win32_path(const char *unx,char *win);
 #endif
 
-char *helpdir = NULL;
-
 #if __CygWin
 /* Try to find the default browser by looking it up in the windows registry */
 /* The registry is organized as a tree. We are interested in the subtree */
@@ -333,15 +331,8 @@ return;
 
     if ( strstr(file,"http://")==NULL ) {
 	memset(fullspec,0,sizeof(fullspec));
-	if ( ! GFileIsAbsolute(file) ) {
-	    printf("...helpdir:%p\n", helpdir );
-	    if ( helpdir==NULL || *helpdir=='\0' ) {
-		snprintf(fullspec, PATH_MAX, "%s", getHelpDir());
-	    } else {
-		printf("...helpdir2:%s\n", helpdir );
-		strncpy(fullspec,helpdir,sizeof fullspec - 1);
-	    }
-	}
+	if ( ! GFileIsAbsolute(file) )
+	    snprintf(fullspec, PATH_MAX, "%s", getHelpDir());
 	strcat(fullspec,file);
 	if (( pt = strrchr(fullspec,'#') )!=NULL ) *pt ='\0';
 	if ( !GFileReadable( fullspec )) {
