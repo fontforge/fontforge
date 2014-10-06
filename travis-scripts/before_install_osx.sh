@@ -21,6 +21,7 @@ for i in {00..09}; do unset id_rsa_0$i; done
 date >| $TO_BIGV_OUTPUTPATH/osx-build-start-timestamp
 SYNC_TO_BIGV
 
+type -all brew
 brew update
 brew config
 
