@@ -1,5 +1,7 @@
 #!/bin/bash
 
+type -all brew
+
 . ./travis-scripts/common.sh
 set -ev
 
