@@ -2414,6 +2414,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
     fprintf( sfd, "DEI: 91125\n" );
     for ( isv=0; isv<2; ++isv ) {
 	for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc = kc->next ) {
+	  if (kc->firsts_names == NULL && kc->seconds_names == NULL && kc->firsts_flags == NULL && kc->seconds_flags == NULL) {
 	    fprintf( sfd, "%s: %d%s %d ", isv ? "VKernClass2" : "KernClass2",
 		    kc->first_cnt, kc->firsts[0]!=NULL?"+":"",
 		    kc->second_cnt );
@@ -2434,6 +2435,40 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 		SFDDumpDeviceTable(sfd,&kc->adjusts[i]);
 	    }
 	    fprintf( sfd, "\n" );
+	  } else {
+	    fprintf( sfd, "%s: %d%s %d ", isv ? "VKernClass3" : "KernClass3",
+		    kc->first_cnt, kc->firsts[0]!=NULL?"+":"",
+		    kc->second_cnt );
+	    SFDDumpUTF7Str(sfd,kc->subtable->subtable_name);
+	    putc('\n',sfd);
+	    if ( kc->firsts[0]!=NULL ) {
+	      fprintf( sfd, " %d ", ((kc->firsts_flags && kc->firsts_flags[0]) ? kc->firsts_flags[0] : 0));
+	      SFDDumpUTF7Str(sfd, ((kc->firsts_names && kc->firsts_names[0]) ? kc->firsts_names[0] : ""));
+	      fprintf( sfd, " " );
+	      SFDDumpUTF7Str(sfd,kc->firsts[0]);
+	      fprintf( sfd, "\n" );
+	    }
+	    for ( i=1; i<kc->first_cnt; ++i ) {
+	      fprintf( sfd, " %d ", ((kc->firsts_flags && kc->firsts_flags[i]) ? kc->firsts_flags[i] : 0));
+	      SFDDumpUTF7Str(sfd, ((kc->firsts_names && kc->firsts_names[i]) ? kc->firsts_names[i] : ""));
+	      fprintf( sfd, " " );
+	      SFDDumpUTF7Str(sfd,kc->firsts[i]);
+	      fprintf( sfd, "\n" );
+	    }
+	    for ( i=1; i<kc->second_cnt; ++i ) {
+	      fprintf( sfd, " %d ", ((kc->seconds_flags && kc->seconds_flags[i]) ? kc->seconds_flags[i] : 0));
+	      SFDDumpUTF7Str(sfd, ((kc->seconds_names && kc->seconds_names[i]) ? kc->seconds_names[i] : ""));
+	      fprintf( sfd, " " );
+	      SFDDumpUTF7Str(sfd,kc->seconds[i]);
+	      fprintf( sfd, "\n" );
+	    }
+	    for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i ) {
+		fprintf( sfd, " %d %d", ((kc->offsets_flags && kc->offsets_flags[i]) ? kc->offsets_flags[i] : 0), kc->offsets[i]);
+		putc(' ',sfd);
+		SFDDumpDeviceTable(sfd,&kc->adjusts[i]);
+	    }
+	    fprintf( sfd, "\n" );
+	  }
 	}
     }
     for ( fpst=sf->possub; fpst!=NULL; fpst=fpst->next ) {
@@ -2535,6 +2570,25 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	SFDFpstClassNamesOut(sfd,fpst->bccnt,fpst->bclassnames,"BClassNames");
 	SFDFpstClassNamesOut(sfd,fpst->fccnt,fpst->fclassnames,"FClassNames");
 	fprintf( sfd, "EndFPST\n" );
+    }
+    struct ff_glyphclasses *grouptmp;
+    for ( grouptmp = sf->groups; grouptmp != NULL; grouptmp = grouptmp->next ) {
+      fprintf(sfd, "Group: ");
+      SFDDumpUTF7Str(sfd, grouptmp->classname); fprintf(sfd, " ");
+      SFDDumpUTF7Str(sfd, grouptmp->glyphs); fprintf(sfd, "\n");
+    }
+    struct ff_rawoffsets *groupkerntmp;
+    for ( groupkerntmp = sf->groupkerns; groupkerntmp != NULL; groupkerntmp = groupkerntmp->next ) {
+      fprintf(sfd, "GroupKern: ");
+      SFDDumpUTF7Str(sfd, groupkerntmp->left); fprintf(sfd, " ");
+      SFDDumpUTF7Str(sfd, groupkerntmp->right); fprintf(sfd, " ");
+      fprintf(sfd, "%d\n", groupkerntmp->offset);
+    }
+    for ( groupkerntmp = sf->groupvkerns; groupkerntmp != NULL; groupkerntmp = groupkerntmp->next ) {
+      fprintf(sfd, "GroupVKern: ");
+      SFDDumpUTF7Str(sfd, groupkerntmp->left); fprintf(sfd, " ");
+      SFDDumpUTF7Str(sfd, groupkerntmp->right); fprintf(sfd, " ");
+      fprintf(sfd, "%d\n", groupkerntmp->offset);
     }
     for ( sm=sf->sm; sm!=NULL; sm=sm->next ) {
 	static const char *keywords[] = { "MacIndic2:", "MacContext2:", "MacLigature2:", "unused", "MacSimple2:", "MacInsert2:",
@@ -7933,11 +7987,14 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	}
     }
     else if ( strmatch(tok,"KernClass2:")==0 || strmatch(tok,"VKernClass2:")==0 ||
-	      strmatch(tok,"KernClass:")==0 || strmatch(tok,"VKernClass:")==0 )
+	      strmatch(tok,"KernClass:")==0 || strmatch(tok,"VKernClass:")==0 ||
+	      strmatch(tok,"KernClass3:")==0 || strmatch(tok,"VKernClass3:")==0 )
     {
+	int kernclassversion = 0;
+	if (tok[9] >= '0' && tok[9] <= '9') kernclassversion = tok[9] - '0';
 	int temp, classstart=1;
 	int isv = tok[0]=='V';
-	int old = strchr(tok,'2')==NULL;
+	int old = (kernclassversion == 0);
 
 	if ( (sf->sfd_version<2)!=old ) {
 	    IError( "Version mixup in Kerning Classes of sfd file." );
@@ -7966,25 +8023,57 @@ bool SFD_GetFontMetaData( FILE *sfd,
 		kc->subtable = NULL;
 	    }
 	}
-	kc->firsts = malloc(kc->first_cnt*sizeof(char *));
-	kc->seconds = malloc(kc->second_cnt*sizeof(char *));
-	kc->offsets = malloc(kc->first_cnt*kc->second_cnt*sizeof(int16));
+	kc->firsts = calloc(kc->first_cnt,sizeof(char *));
+	kc->seconds = calloc(kc->second_cnt,sizeof(char *));
+	kc->offsets = calloc(kc->first_cnt*kc->second_cnt,sizeof(int16));
 	kc->adjusts = calloc(kc->first_cnt*kc->second_cnt,sizeof(DeviceTable));
+	if (kernclassversion >= 3) {
+	  kc->firsts_flags = calloc(kc->first_cnt, sizeof(int));
+	  kc->seconds_flags = calloc(kc->second_cnt, sizeof(int));
+	  kc->offsets_flags = calloc(kc->first_cnt*kc->second_cnt, sizeof(int));
+	  kc->firsts_names = calloc(kc->first_cnt, sizeof(char*));
+	  kc->seconds_names = calloc(kc->second_cnt, sizeof(char*));
+	}
 	kc->firsts[0] = NULL;
 	for ( i=classstart; i<kc->first_cnt; ++i ) {
+	  if (kernclassversion < 3) {
 	    getint(sfd,&temp);
 	    kc->firsts[i] = malloc(temp+1); kc->firsts[i][temp] = '\0';
 	    nlgetc(sfd);	/* skip space */
 	    fread(kc->firsts[i],1,temp,sfd);
+	  } else {
+	    getint(sfd,&kc->firsts_flags[i]);
+	    while ((ch=nlgetc(sfd)) == ' '); ungetc(ch, sfd); if (ch == '\n' || ch == EOF) continue;
+	    kc->firsts_names[i] = SFDReadUTF7Str(sfd);
+	    while ((ch=nlgetc(sfd)) == ' '); ungetc(ch, sfd); if (ch == '\n' || ch == EOF) continue;
+	    kc->firsts[i] = SFDReadUTF7Str(sfd);
+            if (kc->firsts[i] == NULL) kc->firsts[i] = copy(""); // In certain places, this must be defined.
+	    while ((ch=nlgetc(sfd)) == ' ' || ch == '\n'); ungetc(ch, sfd);
+	  }
 	}
 	kc->seconds[0] = NULL;
 	for ( i=1; i<kc->second_cnt; ++i ) {
+	  if (kernclassversion < 3) {
 	    getint(sfd,&temp);
 	    kc->seconds[i] = malloc(temp+1); kc->seconds[i][temp] = '\0';
 	    nlgetc(sfd);	/* skip space */
 	    fread(kc->seconds[i],1,temp,sfd);
+	  } else {
+	    getint(sfd,&temp);
+	    kc->seconds_flags[i] = temp;
+	    while ((ch=nlgetc(sfd)) == ' '); ungetc(ch, sfd); if (ch == '\n' || ch == EOF) continue;
+	    kc->seconds_names[i] = SFDReadUTF7Str(sfd);
+	    while ((ch=nlgetc(sfd)) == ' '); ungetc(ch, sfd); if (ch == '\n' || ch == EOF) continue;
+	    kc->seconds[i] = SFDReadUTF7Str(sfd);
+            if (kc->seconds[i] == NULL) kc->seconds[i] = copy(""); // In certain places, this must be defined.
+	    while ((ch=nlgetc(sfd)) == ' ' || ch == '\n'); ungetc(ch, sfd);
+	  }
 	}
 	for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i ) {
+	  if (kernclassversion >= 3) {
+	    getint(sfd,&temp);
+	    kc->offsets_flags[i] = temp;
+	  }
 	    getint(sfd,&temp);
 	    kc->offsets[i] = temp;
 	    SFDReadDeviceTable(sfd,&kc->adjusts[i]);
@@ -8031,6 +8120,44 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	    d->lastfp->next = fpst;
 	d->lastfp = fpst;
 	SFDParseChainContext(sfd,sf,fpst,tok,old);
+    }
+    else if ( strmatch(tok,"Group:")==0 ) {
+        struct ff_glyphclasses *grouptmp = calloc(1, sizeof(struct ff_glyphclasses));
+        while ((ch=nlgetc(sfd)) == ' '); ungetc(ch, sfd);
+        grouptmp->classname = SFDReadUTF7Str(sfd);
+        while ((ch=nlgetc(sfd)) == ' '); ungetc(ch, sfd);
+        grouptmp->glyphs = SFDReadUTF7Str(sfd);
+        while ((ch=nlgetc(sfd)) == ' ' || ch == '\n'); ungetc(ch, sfd);
+        if (d->lastgroup != NULL) d->lastgroup->next = grouptmp; else sf->groups = grouptmp;
+        d->lastgroup = grouptmp;
+    }
+    else if ( strmatch(tok,"GroupKern:")==0 ) {
+        int temp = 0;
+        struct ff_rawoffsets *kerntmp = calloc(1, sizeof(struct ff_rawoffsets));
+        while ((ch=nlgetc(sfd)) == ' '); ungetc(ch, sfd);
+        kerntmp->left = SFDReadUTF7Str(sfd);
+        while ((ch=nlgetc(sfd)) == ' '); ungetc(ch, sfd);
+        kerntmp->right = SFDReadUTF7Str(sfd);
+        while ((ch=nlgetc(sfd)) == ' '); ungetc(ch, sfd);
+        getint(sfd,&temp);
+        kerntmp->offset = temp;
+        while ((ch=nlgetc(sfd)) == ' ' || ch == '\n'); ungetc(ch, sfd);
+        if (d->lastgroupkern != NULL) d->lastgroupkern->next = kerntmp; else sf->groupkerns = kerntmp;
+        d->lastgroupkern = kerntmp;
+    }
+    else if ( strmatch(tok,"GroupVKern:")==0 ) {
+        int temp = 0;
+        struct ff_rawoffsets *kerntmp = calloc(1, sizeof(struct ff_rawoffsets));
+        while ((ch=nlgetc(sfd)) == ' '); ungetc(ch, sfd);
+        kerntmp->left = SFDReadUTF7Str(sfd);
+        while ((ch=nlgetc(sfd)) == ' '); ungetc(ch, sfd);
+        kerntmp->right = SFDReadUTF7Str(sfd);
+        while ((ch=nlgetc(sfd)) == ' '); ungetc(ch, sfd);
+        getint(sfd,&temp);
+        kerntmp->offset = temp;
+        while ((ch=nlgetc(sfd)) == ' ' || ch == '\n'); ungetc(ch, sfd);
+        if (d->lastgroupvkern != NULL) d->lastgroupvkern->next = kerntmp; else sf->groupvkerns = kerntmp;
+        d->lastgroupvkern = kerntmp;
     }
     else if ( strmatch(tok,"MacIndic2:")==0 || strmatch(tok,"MacContext2:")==0 ||
 	      strmatch(tok,"MacLigature2:")==0 || strmatch(tok,"MacSimple2:")==0 ||

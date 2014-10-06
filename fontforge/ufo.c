@@ -55,6 +55,10 @@
 #undef extended			/* used in xlink.h */
 #include <libxml/tree.h>
 
+#ifdef FF_UTHASH_GLIF_NAMES
+#include "glif_name_hash.h"
+#endif
+
 /* The UFO (Unified Font Object) format ( http://unifiedfontobject.org/ ) */
 /* is a directory containing a bunch of (mac style) property lists and another*/
 /* directory containing glif files (and contents.plist). */
@@ -101,6 +105,203 @@ static void injectNumericVersion(char ** textVersion, int versionMajor, int vers
   else if (versionMinor == -1) asprintf(textVersion, "%d", versionMajor);
   else asprintf(textVersion, "%d.%d", versionMajor, versionMinor);
   return;
+}
+
+static size_t count_caps(const char * input) {
+  size_t count = 0;
+  for (int i = 0; input[i] != '\0'; i++) {
+    if ((input[i] >= 'A') && (input[i] <= 'Z')) count ++;
+  }
+  return count;
+}
+
+static char * upper_case(const char * input) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  off_t pos = 0;
+  if (output == NULL) return NULL;
+  while (pos < output_length) {
+    if ((input[pos] >= 'a') && (input[pos] <= 'z')) {
+      output[pos] = (char)(((unsigned char) input[pos]) - 0x20U);
+    } else {
+      output[pos] = input[pos];
+    }
+    pos++;
+  }
+  output[pos] = '\0';
+  return output;
+}
+
+static char * same_case(const char * input) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  off_t pos = 0;
+  if (output == NULL) return NULL;
+  while (pos < output_length) {
+    output[pos] = input[pos];
+    pos++;
+  }
+  output[pos] = '\0';
+  return output;
+}
+
+static char * delimit_null(const char * input, char delimiter) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  if (output == NULL) return NULL;
+  off_t pos = 0;
+  while (pos < output_length) {
+    if (input[pos] == delimiter) {
+      output[pos] = '\0';
+    } else {
+      output[pos] = input[pos];
+    }
+    pos++;
+  }
+  return output;
+}
+
+const char * DOS_reserved[12] = {"CON", "PRN", "AUX", "CLOCK$", "NUL", "COM1", "COM2", "COM3", "COM4", "LPT1", "LPT2", "LPT3"};
+const int DOS_reserved_count = 12;
+
+int polyMatch(const char * input, int reference_count, const char ** references) {
+  for (off_t pos = 0; pos < reference_count; pos++) {
+    if (strcmp(references[pos], input) == 0) return 1;
+  }
+  return 0;
+}
+
+int is_DOS_drive(char * input) {
+  if ((input != NULL) &&
+     (strlen(input) == 2) &&
+     (((input[0] >= 'A') && (input[0] <= 'Z')) || ((input[0] >= 'a') && (input[0] <= 'z'))) &&
+     (input[1] == ':'))
+       return 1;
+  return 0;
+}
+
+char * ufo_name_mangle(const char * input, const char * prefix, const char * suffix, int flags) {
+  // This does not append the prefix or the suffix.
+  // flags & 1 determines whether to post-pad caps (something implemented in the standard).
+  // flags & 2 determines whether to replace a leading '.' (standard).
+  // flags & 4 determines whether to restrict DOS names (standard).
+  // flags & 8 determines whether to implement additional character restrictions.
+  // The specification lists '"' '*' '+' '/' ':' '<' '>' '?' '[' '\\' ']' '|'
+  // and also anything in the range 0x00-0x1F and 0x7F.
+  // Our additional restriction list includes '\'' '&' '%' '$' '#' '`' '=' '!' ';'
+  // Standard behavior comes from passing a flags value of 7.
+  const char * standard_restrict = "\"*+/:<>?[]\\]|";
+  const char * extended_restrict = "\'&%$#`=!;";
+  size_t prefix_length = strlen(prefix);
+  size_t max_length = 255 - prefix_length - strlen(suffix);
+  size_t input_length = strlen(input);
+  size_t stop_pos = ((max_length < input_length) ? max_length : input_length); // Minimum.
+  size_t output_length_1 = input_length;
+  if (flags & 1) output_length_1 += count_caps(input); // Add space for underscore pads on caps.
+  off_t output_pos = 0;
+  char * output = malloc(output_length_1 + 1);
+  for (int i = 0; i < input_length; i++) {
+    if (strchr(standard_restrict, input[i]) || (input[i] <= 0x1F) || (input[i] >= 0x7F)) {
+      output[output_pos++] = '_'; // If the character is restricted, place an underscore.
+    } else if ((flags & 8) && strchr(extended_restrict, input[i])) {
+      output[output_pos++] = '_'; // If the extended restriction list is enabled and matches, ....
+    } else if ((flags & 1) && (input[i] >= 'A') && (input[i] <= 'Z')) {
+      output[output_pos++] = input[i];
+      output[output_pos++] = '_'; // If we have a capital letter, we post-pad if desired.
+    } else if ((flags & 2) && (i == 0) && (prefix_length == 0) && (input[i] == '.')) {
+      output[output_pos++] = '_'; // If we have a leading '.', we convert to an underscore.
+    } else {
+      output[output_pos++] = input[i];
+    }
+  }
+  output[output_pos] = '\0';
+  if (output_pos > max_length) {
+    output[max_length] = '\0';
+  }
+  char * output2 = NULL;
+  off_t output2_pos = 0;
+  {
+    char * disposable = malloc(output_length_1 + 1);
+    strcpy(disposable, output); // strtok rewrites the input string, so we make a copy.
+    output2 = malloc((2 * output_length_1) + 1); // It's easier to pad than to calculate.
+    output2_pos = 0;
+    char * saveptr = NULL;
+    char * current = strtok_r(disposable, ".", &saveptr); // We get the first name part.
+    while (current != NULL) {
+      char * uppered = upper_case(output);
+      if (polyMatch(uppered, DOS_reserved_count, DOS_reserved) || is_DOS_drive(uppered)) {
+        output2[output2_pos++] = '_'; // Prefix an underscore if it's a reserved name.
+      }
+      free(uppered); uppered = NULL;
+      for (off_t parti = 0; current[parti] != '\0'; parti++) {
+        output2[output2_pos++] = current[parti];
+      }
+      current = strtok_r(NULL, ".", &saveptr);
+      if (current != NULL) output2[output2_pos++] = '.';
+    }
+    output2[output2_pos] = '\0';
+    output2 = realloc(output2, output2_pos + 1);
+    free(disposable); disposable = NULL;
+  }
+  free(output); output = NULL;
+  return output2;
+}
+
+char * ufo_name_number(
+#ifdef FF_UTHASH_GLIF_NAMES
+struct glif_name_index * glif_name_hash,
+#else
+void * glif_name_hash,
+#endif
+int index, const char * input, const char * prefix, const char * suffix, int flags) {
+        // This does not append the prefix or the suffix.
+        // The specification deals with name collisions by appending a 15-digit decimal number to the name.
+        // But the name length cannot exceed 255 characters, so it is necessary to crop the base name if it is too long.
+        // Name exclusions are case insensitive, so we uppercase.
+        // flags & 16 forces appending a number.
+        char * name_numbered = upper_case(input);
+        char * full_name_base = same_case(input); // This is in case we do not need a number added.
+        if (strlen(input) > (255 - strlen(prefix) - strlen(suffix))) {
+          // If the numbered name base is too long, we crop it, even if we are not numbering.
+          full_name_base[(255 - strlen(suffix))] = '\0';
+          full_name_base = realloc(full_name_base, ((255 - strlen(prefix) - strlen(suffix)) + 1));
+        }
+        char * name_base = same_case(input); // This is in case we need a number added.
+        long int name_number = 0;
+#ifdef FF_UTHASH_GLIF_NAMES
+        if (glif_name_hash != NULL) {
+          if (strlen(input) > (255 - 15 - strlen(prefix) - strlen(suffix))) {
+            // If the numbered name base is too long, we crop it.
+            name_base[(255 - 15 - strlen(suffix))] = '\0';
+            name_base = realloc(name_base, ((255 - 15 - strlen(prefix) - strlen(suffix)) + 1));
+          }
+          int number_once = ((flags & 16) ? 1 : 0);
+          // Check the resulting name against a hash table of names.
+          if (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL || number_once) {
+            // If the name is taken, we must make space for a 15-digit number.
+            char * name_base_upper = upper_case(name_base);
+            while (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL || number_once) {
+              name_number++; // Remangle the name until we have no more matches.
+              free(name_numbered); name_numbered = NULL;
+              asprintf(&name_numbered, "%s%15ld", name_base_upper, name_number);
+              number_once = 0;
+            }
+            free(name_base_upper); name_base_upper = NULL;
+          }
+          // Insert the result into the hash table.
+          glif_name_track_new(glif_name_hash, index, name_numbered);
+        }
+#endif
+        // Now we want the correct capitalization.
+        free(name_numbered); name_numbered = NULL;
+        if (name_number > 0) {
+          asprintf(&name_numbered, "%s%15ld", name_base, name_number);
+        } else {
+          asprintf(&name_numbered, "%s", full_name_base);
+        }
+        free(name_base); name_base = NULL;
+        free(full_name_base); full_name_base = NULL;
+        return name_numbered;
 }
 
 static xmlNodePtr xmlNewChildInteger(xmlNodePtr parent, xmlNsPtr ns, const xmlChar * name, long int value) {
@@ -557,10 +758,10 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
 	if ( sc->layers[layer].refs!=NULL ) {
 	    const RefChar **refs;
 	    int i, cnt;
-	    for ( cnt=0, ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( SCWorthOutputting(ref->sc))
+	    for ( cnt=0, ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ((SCWorthOutputting(ref->sc) || SCHasData(ref->sc) || ref->sc->glif_name != NULL))
 		++cnt;
 	    refs = malloc(cnt*sizeof(RefChar *));
-	    for ( cnt=0, ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( SCWorthOutputting(ref->sc))
+	    for ( cnt=0, ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ((SCWorthOutputting(ref->sc) || SCHasData(ref->sc) || ref->sc->glif_name != NULL))
 		refs[cnt++] = ref;
 	    // It seems that sorting these breaks something.
 #if 0
@@ -1101,15 +1302,208 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 return true;
 }
 
-static int UFOOutputGroups(const char *basedir, const SplineFont *sf) {
-    /* These don't act like fontforge's groups. There are comments that this */
-    /*  could be used for defining classes (kerning classes, etc.) but no */
-    /*  resolution saying that the actually are. */
-    /* Should I omit a file I don't use? Or leave it blank? */
+int kernclass_for_groups_plist(struct splinefont *sf, struct kernclass *kc, int flags) {
+  // Note that this is not a complete logical inverse of sister function kernclass_for_feature_file.
+  return ((flags & FF_KERNCLASS_FLAG_NATIVE) ||
+  (!(flags & FF_KERNCLASS_FLAG_FEATURE) && !kc->feature && sf->preferred_kerning == 1));
+}
+
+int UFONameKerningClasses(SplineFont *sf) {
+#ifdef FF_UTHASH_GLIF_NAMES
+    struct glif_name_index _class_name_hash;
+    struct glif_name_index * class_name_hash = &_class_name_hash; // Open the hash table.
+    memset(class_name_hash, 0, sizeof(struct glif_name_index));
+#else
+    void * class_name_hash = NULL;
+#endif
+    struct kernclass *current_kernclass;
+    int isv;
+    int isr;
+    int i;
+    int absolute_index = 0; // This gives us a unique index for each kerning class.
+    // First we catch the existing names.
+#ifdef FF_UTHASH_GLIF_NAMES
+    HashKerningClassNames(sf, class_name_hash);
+#endif
+    // Next we create names for the unnamed. Note that we currently avoid naming anything that might go into the feature file (since that handler currently creates its own names).
+    absolute_index = 0;
+    for (isv = 0; isv < 2; isv++)
+    for ( current_kernclass = (isv ? sf->vkerns : sf->kerns); current_kernclass != NULL; current_kernclass = current_kernclass->next )
+    for (isr = 0; isr < 2; isr++) {
+      for ( i=0; i< (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt); i++ )
+      if ( ((isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]) == NULL) &&
+        kernclass_for_groups_plist(sf, current_kernclass, (isr ? current_kernclass->seconds_flags[i] : current_kernclass->firsts_flags[i]))
+        ) {
+        int classflags = isr ? current_kernclass->seconds_flags[i] : current_kernclass->firsts_flags[i];
+        // If the splinefont is not forcing a default group type and the group is already flagged for a feature file or to have a feature-compatible name, we give it a feature-compatible name.
+        // Otherwise, we give it a native U. F. O. name.
+        char * startname =
+          (
+            (
+              (
+                (sf->preferred_kerning == 0) &&
+                (classflags & (FF_KERNCLASS_FLAG_FEATURE | FF_KERNCLASS_FLAG_NAMETYPE))
+              ) ||
+              (sf->preferred_kerning & 2)
+            ) ?
+            (
+              isv ?
+              (isr ? "@MMK_B_FF" : "@MMK_A_FF") :
+              (isr ? "@MMK_R_FF" : "@MMK_L_FF")
+            ) :
+            (
+              isv ?
+              (isr ? "public.vkern2.FF" : "public.vkern1.FF") :
+              (isr ? "public.kern2.FF" : "public.kern1.FF")
+            )
+          );
+        // We must flag the group as being destined for the native file if it has a non-feature-compatible name. Otherwise, we might corrupt the feature file if it ever starts using the names.
+        if (startname[0] != '@') {
+          if (isr) { current_kernclass->seconds_flags[i] |= FF_KERNCLASS_FLAG_NATIVE; current_kernclass->seconds_flags[i] &= ~FF_KERNCLASS_FLAG_FEATURE; }
+          else { current_kernclass->firsts_flags[i] |= FF_KERNCLASS_FLAG_NATIVE; current_kernclass->firsts_flags[i] &= ~FF_KERNCLASS_FLAG_FEATURE; }
+        }
+        // Number the name uniquely. (Note the number-forcing flag.)
+        // And add it to the hash table with its index.
+        char * numberedname = ufo_name_number(class_name_hash, absolute_index + i, startname, "", "", 23);
+        if (isr) current_kernclass->seconds_names[i] = numberedname;
+        else current_kernclass->firsts_names[i] = numberedname;
+	numberedname = NULL;
+      }
+      absolute_index +=i;
+    }
+#ifdef FF_UTHASH_GLIF_NAMES
+    glif_name_hash_destroy(class_name_hash); // Close the hash table.
+#endif
+}
+
+static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
+    SplineChar *sc;
+
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
     xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
-    // TODO: Maybe output things.
+
+    // In order to preserve ordering, we do some very icky and inefficient things.
+    // First, we assign names to any unnamed kerning groups using the public.kern syntax if the splinefont is set to use native U. F. O. kerning.
+    // We assign @MMK names otherwise.
+    // In assigning names, we check collisions both with other kerning classes and with natively listed groups.
+    UFONameKerningClasses(sf);
+
+    // Once names are assigned, we start outputting the native groups, with some exceptions.
+    // Since we consider kerning groups to be natively handled, any group with a kerning-style name gets checked against kerning classes.
+    // If it exists, we output it and flag it as output in a temporary array. If it does not exist, we skip it.
+    // When this is complete, we go through the left and right kerning classes and output any that have not been output, adding them to the native list as we do so.
+
+    int kerning_class_count = CountKerningClasses(sf);
+    char *output_done = kerning_class_count ? calloc(kerning_class_count, sizeof(char)) : NULL;
+
+#ifdef FF_UTHASH_GLIF_NAMES
+    struct glif_name_index _class_name_hash;
+    struct glif_name_index * class_name_hash = &_class_name_hash; // Open the hash table.
+    memset(class_name_hash, 0, sizeof(struct glif_name_index));
+    HashKerningClassNames(sf, class_name_hash);
+#else
+    void * class_name_hash = NULL;
+#endif
+    struct ff_glyphclasses *current_group;
+    for (current_group = sf->groups; current_group != NULL; current_group = current_group->next) {
+      if (current_group->classname != NULL) {
+        int grouptype = GroupNameType(current_group->classname);
+        if (grouptype > 0) {
+          // We skip the group if it has a corrupt feature-like name.
+          if (grouptype & (GROUP_NAME_KERNING_UFO | GROUP_NAME_KERNING_FEATURE)) {
+            // If the group is a kerning group, we defer to the native kerning data for existence and content.
+            struct glif_name *class_name_record = glif_name_search_glif_name(class_name_hash, current_group->classname);
+            if (class_name_record != NULL) {
+              int absolute_index = class_name_record->gid; // This gives us a unique index for the kerning class.
+              struct kernclass *kc;
+              int isv;
+              int isr;
+              int i;
+              int offset;
+              if (KerningClassSeekByAbsoluteIndex(sf, absolute_index, &kc, &isv, &isr, &offset)) {
+                // The group still exists.
+                xmlNewChild(dictnode, NULL, BAD_CAST "key", current_group->classname);
+                xmlNodePtr grouparray = xmlNewChild(dictnode, NULL, BAD_CAST "array", NULL);
+                // We use the results of the preceding search in order to get the list.
+                char *rawglyphlist = (
+                  isv ?
+                  (isr ? kc->seconds[offset] : kc->firsts[offset]) :
+                  (isr ? kc->seconds[offset] : kc->firsts[offset])
+                );
+                // We need to convert from the space-delimited string to something more easily accessed on a per-item basis.
+                char **glyphlist = StringExplode(rawglyphlist, ' ');
+                // We will then output only those entries for which SFGetChar succeeds.
+                int index = 0;
+                while (glyphlist[index] != NULL) {
+                  if (SFGetChar(sf, -1, glyphlist[index]))
+                    xmlNewChild(grouparray, NULL, BAD_CAST "string", glyphlist[index]);
+                  index++;
+                }
+                ExplodedStringFree(glyphlist);
+                // We flag the output of this kerning class as complete.
+                output_done[absolute_index] |= 1;
+              }
+            }
+          }
+        } else {
+          // If the group is not a kerning group, we just output it raw (for now).
+          xmlNewChild(dictnode, NULL, BAD_CAST "key", current_group->classname);
+          xmlNodePtr grouparray = xmlNewChild(dictnode, NULL, BAD_CAST "array", NULL);
+          // We need to convert from the space-delimited string to something more easily accessed on a per-item basis.
+          char **glyphlist = StringExplode(current_group->glyphs, ' ');
+          // We will then output only those entries for which SFGetChar succeeds.
+          int index = 0;
+          while (glyphlist[index] != NULL) {
+            if (SFGetChar(sf, -1, glyphlist[index]))
+              xmlNewChild(grouparray, NULL, BAD_CAST "string", glyphlist[index]);
+            index++;
+          }
+          ExplodedStringFree(glyphlist);
+        }
+      }
+    }
+    {
+      // Oh. But we've not finished yet. Some kerning classes may not be in the groups listing.
+      struct kernclass *current_kernclass;
+      int isv;
+      int isr;
+      int i;
+      int absolute_index = 0;
+      for (isv = 0; isv < 2; isv++)
+      for (current_kernclass = (isv ? sf->vkerns : sf->kerns); current_kernclass != NULL; current_kernclass = current_kernclass->next)
+      for (isr = 0; isr < 2; isr++) {
+        for (i=0; i < (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt); ++i) {
+          const char *classname = (isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]);
+          const char *rawglyphlist = (isr ? current_kernclass->seconds[i] : current_kernclass->firsts[i]);
+          int classflags = (isr ? current_kernclass->seconds_flags[i] : current_kernclass->firsts_flags[i]);
+          // Note that we only output if the kernclass is destined for U. F. O. and has not already met said fate.
+          if (classname != NULL && rawglyphlist != NULL &&
+              !output_done[absolute_index + i] && kernclass_for_groups_plist(sf, current_kernclass, classflags)) {
+                xmlNewChild(dictnode, NULL, BAD_CAST "key", classname);
+                xmlNodePtr grouparray = xmlNewChild(dictnode, NULL, BAD_CAST "array", NULL);
+                // We need to convert from the space-delimited string to something more easily accessed on a per-item basis.
+                char **glyphlist = StringExplode(rawglyphlist, ' ');
+                // We will then output only those entries for which SFGetChar succeeds.
+                int index = 0;
+                while (glyphlist[index] != NULL) {
+                  if (SFGetChar(sf, -1, glyphlist[index]))
+                    xmlNewChild(grouparray, NULL, BAD_CAST "string", glyphlist[index]);
+                }
+                ExplodedStringFree(glyphlist);
+                // We flag the output of this kerning class as complete.
+                output_done[absolute_index + i] |= 1;
+          }
+        }
+        absolute_index +=i;
+      }
+    }
+
+#ifdef FF_UTHASH_GLIF_NAMES
+    glif_name_hash_destroy(class_name_hash); // Close the hash table.
+#endif
+    if (output_done != NULL) { free(output_done); output_done = NULL; }
+
     char *fname = buildname(basedir, "groups.plist"); // Build the file name.
     xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
     free(fname); fname = NULL;
@@ -1127,6 +1521,7 @@ static void KerningPListAddGlyph(xmlNodePtr parent, const char *key, const KernP
     }
 }
 
+#ifndef FF_UTHASH_GLIF_NAMES
 static int UFOOutputKerning(const char *basedir, const SplineFont *sf) {
     SplineChar *sc;
     int i;
@@ -1167,6 +1562,260 @@ static int UFOOutputVKerning(const char *basedir, const SplineFont *sf) {
     return true;
 }
 
+static int UFOOutputKerning2(const char *basedir, const SplineFont *sf, int isv) {
+  if (isv) return UFOOutputVKerning(basedir, sf);
+  else return UFOOutputKerning(basedir, sf);
+}
+
+#else // FF_UTHASH_GLIF_NAMES
+// New approach.
+// We will build a tree.
+
+struct ufo_kerning_tree_left;
+struct ufo_kerning_tree_right;
+struct ufo_kerning_tree_left {
+  char *name;
+  struct ufo_kerning_tree_right *first_right;
+  struct ufo_kerning_tree_right *last_right;
+  struct ufo_kerning_tree_left *next;
+};
+
+struct ufo_kerning_tree_right {
+  char *name;
+  int value;
+  struct ufo_kerning_tree_right *next;
+};
+
+struct ufo_kerning_tree_session {
+  struct ufo_kerning_tree_left *first_left;
+  struct ufo_kerning_tree_left *last_left;
+  int left_group_count;
+  struct glif_name_index _left_group_name_hash;
+  int class_pair_count;
+  struct glif_name_index _class_pair_hash;
+};
+
+void ufo_kerning_tree_destroy_contents(struct ufo_kerning_tree_session *session) {
+  struct ufo_kerning_tree_left *current_left;
+  struct ufo_kerning_tree_left *next_left;
+  for (current_left = session->first_left; current_left != NULL; current_left = next_left) {
+    next_left = current_left->next;
+    struct ufo_kerning_tree_right *current_right;
+    struct ufo_kerning_tree_right *next_right;
+    for (current_right = current_left->first_right; current_right != NULL; current_right = next_right) {
+      next_right = current_right->next;
+      if (current_right->name != NULL) free(current_right->name);
+      free(current_right);
+    }
+    if (current_left->name != NULL) free(current_left->name);
+    free(current_left);
+  }
+  memset(session, 0, sizeof(struct ufo_kerning_tree_session));
+}
+
+int ufo_kerning_tree_attempt_insert(struct ufo_kerning_tree_session *session, const char *left_name, const char *right_name, int value) {
+  struct glif_name_index *left_group_name_hash = &(session->_left_group_name_hash);
+  struct glif_name_index *class_pair_hash = &(session->_class_pair_hash);
+  char *tmppairname = NULL;
+  asprintf(&tmppairname, "%s %s", left_name, right_name);
+  struct ufo_kerning_tree_left *first_left = NULL;
+  struct ufo_kerning_tree_left *last_left = NULL;
+  if (!glif_name_search_glif_name(class_pair_hash, tmppairname)) {
+    struct ufo_kerning_tree_left *current_left;
+    // We look for a tree node matching the left side of the pair.
+    for (current_left = session->first_left; current_left != NULL &&
+      (current_left->name == NULL || strcmp(current_left->name, left_name));
+      current_left = current_left->next);
+    // If the search fails, we make a new node.
+    if (current_left == NULL) {
+      current_left = calloc(1, sizeof(struct ufo_kerning_tree_left));
+      current_left->name = copy(left_name);
+      if (session->last_left != NULL) session->last_left->next = current_left;
+      else session->first_left = current_left;
+      session->last_left = current_left;
+    }
+    {
+      // We already know from the pair hash search that this pair does not exist.
+      // So we go right to the end.
+      struct ufo_kerning_tree_right *current_right = calloc(1, sizeof(struct ufo_kerning_tree_right));
+      current_right->name = copy(right_name);
+      current_right->value = value;
+      if (current_left->last_right != NULL) current_left->last_right->next = current_right;
+      else current_left->first_right = current_right;
+      current_left->last_right = current_right;
+      char *newpairname = NULL;
+      asprintf(&newpairname, "%s %s", left_name, right_name);
+      glif_name_track_new(class_pair_hash, session->class_pair_count++, newpairname);
+      free(newpairname); newpairname = NULL;
+    }
+  }
+  free(tmppairname); tmppairname = NULL;
+}
+
+
+static int UFOOutputKerning2(const char *basedir, SplineFont *sf, int isv) {
+    SplineChar *sc;
+    int i, j;
+
+    xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
+    xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
+    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
+
+    // In order to preserve ordering, we do some very icky and inefficient things.
+    // First, we assign names to any unnamed kerning groups using the public.kern syntax if the splinefont is set to use native U. F. O. kerning.
+    // We assign @MMK names otherwise.
+    // In assigning names, we check collisions both with other kerning classes and with natively listed groups.
+    UFONameKerningClasses(sf);
+
+    // Once names are assigned, we start outputting the native groups, with some exceptions.
+    // Since we consider kerning groups to be natively handled, any group with a kerning-style name gets checked against kerning classes.
+    // If it exists, we output it and flag it as output in a temporary array. If it does not exist, we skip it.
+    // When this is complete, we go through the left and right kerning classes and output any that have not been output, adding them to the native list as we do so.
+
+    int kerning_class_count = CountKerningClasses(sf);
+    int kerning_class_pair_count = kerning_class_count * kerning_class_count;
+    char *output_done = kerning_class_pair_count ? calloc(kerning_class_pair_count, sizeof(char)) : NULL;
+
+    struct ufo_kerning_tree_session _session;
+    memset(&_session, 0, sizeof(struct ufo_kerning_tree_session));
+    struct ufo_kerning_tree_session *session = &_session;
+
+    struct glif_name_index _class_name_hash;
+    struct glif_name_index * class_name_hash = &_class_name_hash; // Open the hash table.
+    memset(class_name_hash, 0, sizeof(struct glif_name_index));
+    HashKerningClassNames(sf, class_name_hash);
+
+    // We process the raw kerning list first in order to give preference to the original ordering.
+    struct ff_rawoffsets *current_groupkern;
+    for (current_groupkern = (isv ? sf->groupvkerns : sf->groupkerns); current_groupkern != NULL; current_groupkern = current_groupkern->next) {
+      if (current_groupkern->left != NULL && current_groupkern->right != NULL) {
+        int left_grouptype = GroupNameType(current_groupkern->left);
+        int right_grouptype = GroupNameType(current_groupkern->right);
+        int offset = 0;
+        int valid = 0;
+        if (left_grouptype > 0 && right_grouptype > 0) {
+          // It's a pure class look-up.
+          struct glif_name *left_class_name_record = glif_name_search_glif_name(class_name_hash, current_groupkern->left);
+          struct glif_name *right_class_name_record = glif_name_search_glif_name(class_name_hash, current_groupkern->right);
+          if ((left_grouptype & right_grouptype & (GROUP_NAME_KERNING_UFO | GROUP_NAME_KERNING_FEATURE)) &&
+            !(left_grouptype & GROUP_NAME_RIGHT) && (right_grouptype & GROUP_NAME_RIGHT) &&
+            ((left_grouptype & GROUP_NAME_VERTICAL) == (isv * GROUP_NAME_VERTICAL)) &&
+            ((right_grouptype & GROUP_NAME_VERTICAL) == (isv * GROUP_NAME_VERTICAL)) &&
+            left_class_name_record != NULL && right_class_name_record != NULL) {
+            // If the group is a kerning group, we defer to the native kerning data for existence and content.
+            {
+              int left_absolute_index = left_class_name_record->gid; // This gives us a unique index for the kerning class.
+              int right_absolute_index = right_class_name_record->gid; // This gives us a unique index for the kerning class.
+              struct kernclass *left_kc, *right_kc;
+              int left_isv, right_isv;
+              int left_isr, right_isr;
+              int left_offset, right_offset;
+              if (KerningClassSeekByAbsoluteIndex(sf, left_absolute_index, &left_kc, &left_isv, &left_isr, &left_offset) &&
+                KerningClassSeekByAbsoluteIndex(sf, right_absolute_index, &right_kc, &right_isv, &right_isr, &right_offset) &&
+                left_kc == right_kc) {
+                offset = left_kc->offsets[left_offset*left_kc->second_cnt+right_offset];
+                valid = 1;
+              }
+            }
+          }
+        } else if (left_grouptype == 0 && right_grouptype == 0) {
+          // It's a plain kerning pair.
+          struct splinechar *sc = SFGetChar(sf, -1, current_groupkern->left);
+          struct splinechar *ssc = SFGetChar(sf, -1, current_groupkern->right);
+          if (sc && ssc) {
+            struct kernpair *current_kernpair = (isv ? sc->vkerns : sc->kerns);
+            while (current_kernpair != NULL && current_kernpair->sc != ssc) current_kernpair = current_kernpair->next;
+            if (current_kernpair != NULL && current_kernpair->sc == ssc) {
+              offset = current_kernpair->off;
+              valid = 1;
+            }
+          }
+        } else if (left_grouptype == 0 && right_grouptype > 0) {
+          // It's a mixed pair. FontForge does not handle these natively right now, so, if the two references are valid, we output the raw value.
+          struct splinechar *sc = SFGetChar(sf, -1, current_groupkern->left);
+          struct glif_name *right_class_name_record = glif_name_search_glif_name(class_name_hash, current_groupkern->right);
+          if ((right_grouptype & (GROUP_NAME_KERNING_UFO | GROUP_NAME_KERNING_FEATURE)) &&
+            (right_grouptype & GROUP_NAME_RIGHT) &&
+            ((right_grouptype & GROUP_NAME_VERTICAL) == (isv * GROUP_NAME_VERTICAL)) &&
+            right_class_name_record != NULL &&
+            sc != NULL) {
+            offset = current_groupkern->offset;
+            valid = 1;
+          }
+        } else if (left_grouptype > 0 && right_grouptype == 0) {
+          // It's a mixed pair. FontForge does not handle these natively right now, so, if the two references are valid, we output the raw value.
+          struct splinechar *ssc = SFGetChar(sf, -1, current_groupkern->right);
+          struct glif_name *left_class_name_record = glif_name_search_glif_name(class_name_hash, current_groupkern->left);
+          if ((left_grouptype & (GROUP_NAME_KERNING_UFO | GROUP_NAME_KERNING_FEATURE)) &&
+            !(left_grouptype & GROUP_NAME_RIGHT) &&
+            ((left_grouptype & GROUP_NAME_VERTICAL) == (isv * GROUP_NAME_VERTICAL)) &&
+            left_class_name_record != NULL &&
+            sc != NULL) {
+            offset = current_groupkern->offset;
+            valid = 1;
+          }
+        } else {
+          // Something is wrong.
+        }
+        if (valid) {
+          ufo_kerning_tree_attempt_insert(session, current_groupkern->left, current_groupkern->right, offset);
+        }
+      }
+    }
+    {
+      // Oh. But we've not finished yet. New class kerns may not be in the original list.
+      struct kernclass *kc;
+      char *left_name;
+      char *right_name;
+      for (kc = isv ? sf->vkerns : sf->kerns; kc != NULL; kc = kc->next)
+      if (kc->firsts_names && kc->seconds_names && kc->firsts_flags && kc->seconds_flags &&
+        kc->offsets_flags)
+      for ( i=0; i<kc->first_cnt; ++i ) if ( kc->firsts[i]!=NULL && kc->firsts_names[i]!=NULL && kernclass_for_groups_plist(sf, kc, kc->firsts_flags[i]))
+        for ( j=0; j<kc->second_cnt; ++j ) if ( kc->seconds[j]!=NULL && kc->seconds_names[j]!=NULL && kernclass_for_groups_plist(sf, kc, kc->firsts_flags[j]))
+          if (kernclass_for_groups_plist(sf, kc, kc->offsets_flags[i*kc->second_cnt+j]) && kc->offsets[i*kc->second_cnt+j] != 0)
+            ufo_kerning_tree_attempt_insert(session, kc->firsts_names[i], kc->seconds_names[j], kc->offsets[i*kc->second_cnt+j]);
+    }
+    {
+      // And don't forget about pair kerns.
+      for ( i=0; i<sf->glyphcnt; ++i ) {
+        struct splinechar *sc = sf->glyphs[i];
+        struct kernpair *kp;
+        if ( (SCWorthOutputting(sc) || SCHasData(sc) || sc->glif_name != NULL) && (isv ? sc->vkerns : sc->kerns ) !=NULL )
+          for (kp = (isv ? sc->vkerns : sc->kerns); kp != NULL; kp = kp->next)
+            if (kp->sc != NULL && sc->name != NULL && kp->sc->name != NULL)
+              ufo_kerning_tree_attempt_insert(session, sc->name, kp->sc->name, kp->off);
+      }
+    }
+
+    {
+      // Output time has arrived.
+      struct ufo_kerning_tree_left *current_left;
+      for (current_left = session->first_left; current_left != NULL; current_left = current_left->next) {
+        if (current_left->name != NULL) {
+          xmlNewChild(dictnode, NULL, BAD_CAST "key", BAD_CAST current_left->name); // "<key>%s</key>" key
+          xmlNodePtr dictxml = xmlNewChild(dictnode, NULL, BAD_CAST "dict", NULL); // "<dict>"
+          struct ufo_kerning_tree_right *current_right;
+          for (current_right = current_left->first_right; current_right != NULL; current_right = current_right->next)
+            if (current_right->name != NULL) PListAddInteger(dictxml, current_right->name, current_right->value);
+        }
+      }
+    }
+
+    glif_name_hash_destroy(class_name_hash); // Close the hash table.
+    ufo_kerning_tree_destroy_contents(session);
+
+    if (output_done != NULL) { free(output_done); output_done = NULL; }
+
+    char *fname = buildname(basedir, (isv ? "vkerning.plist" : "kerning.plist")); // Build the file name.
+    xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
+    free(fname); fname = NULL;
+    xmlFreeDoc(plistdoc); // Free the memory.
+    xmlCleanupParser();
+    return true;
+}
+
+#endif // FF_UTHASH_GLIF_NAMES
+
 static int UFOOutputLib(const char *basedir, const SplineFont *sf) {
 #ifndef _NO_PYTHON
     if ( sf->python_persistent==NULL || PyMapping_Check(sf->python_persistent) == 0) return true;
@@ -1198,204 +1847,6 @@ return( false );
     err = ferror(feats);
     fclose(feats);
 return( !err );
-}
-
-static size_t count_caps(const char * input) {
-  size_t count = 0;
-  for (int i = 0; input[i] != '\0'; i++) {
-    if ((input[i] >= 'A') && (input[i] <= 'Z')) count ++;
-  }
-  return count;
-}
-
-static char * upper_case(const char * input) {
-  size_t output_length = strlen(input);
-  char * output = malloc(output_length + 1);
-  off_t pos = 0;
-  if (output == NULL) return NULL;
-  while (pos < output_length) {
-    if ((input[pos] >= 'a') && (input[pos] <= 'z')) {
-      output[pos] = (char)(((unsigned char) input[pos]) - 0x20U);
-    } else {
-      output[pos] = input[pos];
-    }
-    pos++;
-  }
-  output[pos] = '\0';
-  return output;
-}
-
-static char * same_case(const char * input) {
-  size_t output_length = strlen(input);
-  char * output = malloc(output_length + 1);
-  off_t pos = 0;
-  if (output == NULL) return NULL;
-  while (pos < output_length) {
-    output[pos] = input[pos];
-    pos++;
-  }
-  output[pos] = '\0';
-  return output;
-}
-
-static char * delimit_null(const char * input, char delimiter) {
-  size_t output_length = strlen(input);
-  char * output = malloc(output_length + 1);
-  if (output == NULL) return NULL;
-  off_t pos = 0;
-  while (pos < output_length) {
-    if (input[pos] == delimiter) {
-      output[pos] = '\0';
-    } else {
-      output[pos] = input[pos];
-    }
-    pos++;
-  }
-  return output;
-}
-
-const char * DOS_reserved[12] = {"CON", "PRN", "AUX", "CLOCK$", "NUL", "COM1", "COM2", "COM3", "COM4", "LPT1", "LPT2", "LPT3"};
-const int DOS_reserved_count = 12;
-
-int polyMatch(const char * input, int reference_count, const char ** references) {
-  for (off_t pos = 0; pos < reference_count; pos++) {
-    if (strcmp(references[pos], input) == 0) return 1;
-  }
-  return 0;
-}
-
-int is_DOS_drive(char * input) {
-  if ((input != NULL) &&
-     (strlen(input) == 2) &&
-     (((input[0] >= 'A') && (input[0] <= 'Z')) || ((input[0] >= 'a') && (input[0] <= 'z'))) &&
-     (input[1] == ':'))
-       return 1;
-  return 0;
-}
-
-char * ufo_name_mangle(const char * input, const char * prefix, const char * suffix, int flags) {
-  // This does not append the prefix or the suffix.
-  // flags & 1 determines whether to post-pad caps (something implemented in the standard).
-  // flags & 2 determines whether to replace a leading '.' (standard).
-  // flags & 4 determines whether to restrict DOS names (standard).
-  // flags & 8 determines whether to implement additional character restrictions.
-  // The specification lists '"' '*' '+' '/' ':' '<' '>' '?' '[' '\\' ']' '|'
-  // and also anything in the range 0x00-0x1F and 0x7F.
-  // Our additional restriction list includes '\'' '&' '%' '$' '#' '`' '=' '!' ';'
-  // Standard behavior comes from passing a flags value of 7.
-  const char * standard_restrict = "\"*+/:<>?[]\\]|";
-  const char * extended_restrict = "\'&%$#`=!;";
-  size_t prefix_length = strlen(prefix);
-  size_t max_length = 255 - prefix_length - strlen(suffix);
-  size_t input_length = strlen(input);
-  size_t stop_pos = ((max_length < input_length) ? max_length : input_length); // Minimum.
-  size_t output_length_1 = input_length;
-  if (flags & 1) output_length_1 += count_caps(input); // Add space for underscore pads on caps.
-  off_t output_pos = 0;
-  char * output = malloc(output_length_1 + 1);
-  for (int i = 0; i < input_length; i++) {
-    if (strchr(standard_restrict, input[i]) || (input[i] <= 0x1F) || (input[i] >= 0x7F)) {
-      output[output_pos++] = '_'; // If the character is restricted, place an underscore.
-    } else if ((flags & 8) && strchr(extended_restrict, input[i])) {
-      output[output_pos++] = '_'; // If the extended restriction list is enabled and matches, ....
-    } else if ((flags & 1) && (input[i] >= 'A') && (input[i] <= 'Z')) {
-      output[output_pos++] = input[i];
-      output[output_pos++] = '_'; // If we have a capital letter, we post-pad if desired.
-    } else if ((flags & 2) && (i == 0) && (prefix_length == 0) && (input[i] == '.')) {
-      output[output_pos++] = '_'; // If we have a leading '.', we convert to an underscore.
-    } else {
-      output[output_pos++] = input[i];
-    }
-  }
-  output[output_pos] = '\0';
-  if (output_pos > max_length) {
-    output[max_length] = '\0';
-  }
-  char * output2 = NULL;
-  off_t output2_pos = 0;
-  {
-    char * disposable = malloc(output_length_1 + 1);
-    strcpy(disposable, output); // strtok rewrites the input string, so we make a copy.
-    output2 = malloc((2 * output_length_1) + 1); // It's easier to pad than to calculate.
-    output2_pos = 0;
-    char * saveptr = NULL;
-    char * current = strtok_r(disposable, ".", &saveptr); // We get the first name part.
-    while (current != NULL) {
-      char * uppered = upper_case(output);
-      if (polyMatch(uppered, DOS_reserved_count, DOS_reserved) || is_DOS_drive(uppered)) {
-        output2[output2_pos++] = '_'; // Prefix an underscore if it's a reserved name.
-      }
-      free(uppered); uppered = NULL;
-      for (off_t parti = 0; current[parti] != '\0'; parti++) {
-        output2[output2_pos++] = current[parti];
-      }
-      current = strtok_r(NULL, ".", &saveptr);
-      if (current != NULL) output2[output2_pos++] = '.';
-    }
-    output2[output2_pos] = '\0';
-    output2 = realloc(output2, output2_pos + 1);
-    free(disposable); disposable = NULL;
-  }
-  free(output); output = NULL;
-  return output2;
-}
-
-#ifdef FF_UTHASH_GLIF_NAMES
-#include "glif_name_hash.h"
-#endif
-
-char * ufo_name_number(
-#ifdef FF_UTHASH_GLIF_NAMES
-struct glif_name_index * glif_name_hash,
-#else
-void * glif_name_hash,
-#endif
-int index, const char * input, const char * prefix, const char * suffix, int flags) {
-        // This does not append the prefix or the suffix.
-        // The specification deals with name collisions by appending a 15-digit decimal number to the name.
-        // But the name length cannot exceed 255 characters, so it is necessary to crop the base name if it is too long.
-        // Name exclusions are case insensitive, so we uppercase.
-        char * name_numbered = upper_case(input);
-        char * full_name_base = same_case(input); // This is in case we do not need a number added.
-        if (strlen(input) > (255 - strlen(prefix) - strlen(suffix))) {
-          // If the numbered name base is too long, we crop it, even if we are not numbering.
-          full_name_base[(255 - strlen(suffix))] = '\0';
-          full_name_base = realloc(full_name_base, ((255 - strlen(prefix) - strlen(suffix)) + 1));
-        }
-        char * name_base = same_case(input); // This is in case we need a number added.
-        long int name_number = 0;
-#ifdef FF_UTHASH_GLIF_NAMES
-        if (glif_name_hash != NULL) {
-          if (strlen(input) > (255 - 15 - strlen(prefix) - strlen(suffix))) {
-            // If the numbered name base is too long, we crop it.
-            name_base[(255 - 15 - strlen(suffix))] = '\0';
-            name_base = realloc(name_base, ((255 - 15 - strlen(prefix) - strlen(suffix)) + 1));
-          }
-          // Check the resulting name against a hash table of names.
-          if (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL) {
-            // If the name is taken, we must make space for a 15-digit number.
-            char * name_base_upper = upper_case(name_base);
-            while (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL) {
-              name_number++; // Remangle the name until we have no more matches.
-              free(name_numbered); name_numbered = NULL;
-              asprintf(&name_numbered, "%s%15ld", name_base_upper, name_number);
-            }
-            free(name_base_upper); name_base_upper = NULL;
-          }
-          // Insert the result into the hash table.
-          glif_name_track_new(glif_name_hash, index, name_numbered);
-        }
-#endif
-        // Now we want the correct capitalization.
-        free(name_numbered); name_numbered = NULL;
-        if (name_number > 0) {
-          asprintf(&name_numbered, "%s%15ld", name_base, name_number);
-        } else {
-          asprintf(&name_numbered, "%s", full_name_base);
-        }
-        free(name_base); name_base = NULL;
-        free(full_name_base); full_name_base = NULL;
-        return name_numbered;
 }
 
 int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
@@ -1450,8 +1901,8 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
     err  = !UFOOutputMetaInfo(basedir,sf);
     err |= !UFOOutputFontInfo(basedir,sf,layer);
     err |= !UFOOutputGroups(basedir,sf);
-    err |= !UFOOutputKerning(basedir,sf);
-    err |= !UFOOutputVKerning(basedir,sf);
+    err |= !UFOOutputKerning2(basedir,sf,0); // Horizontal.
+    err |= !UFOOutputKerning2(basedir,sf,1); // Vertical.
     err |= !UFOOutputLib(basedir,sf);
     err |= !UFOOutputFeatures(basedir,sf);
 
@@ -2454,6 +2905,325 @@ return;
 	UFORefFixup(sf,sf->glyphs[i], layerdest);
 }
 
+static struct ff_glyphclasses *GlyphGroupDeduplicate(struct ff_glyphclasses *group_base, struct splinefont *sf, int check_kerns) {
+  // This removes internal duplicates from the specified group and also, if desired, the groups duplicating entities already named as kerning classes.
+  // It takes the list head as its argument and returns the new list head (which may be the same unless the first item duplicates a kerning class).
+  int temp_index = 0;
+#ifdef FF_UTHASH_GLIF_NAMES
+  struct glif_name_index _group_name_hash;
+  struct glif_name_index * group_name_hash = &_group_name_hash; // Open the group hash table.
+  memset(group_name_hash, 0, sizeof(struct glif_name_index));
+  struct glif_name_index _class_name_hash;
+  struct glif_name_index * class_name_hash = &_class_name_hash; // Open the class hash table.
+  memset(class_name_hash, 0, sizeof(struct glif_name_index));
+  if (check_kerns && sf) HashKerningClassNames(sf, class_name_hash);
+  struct ff_glyphclasses *group_current = group_base;
+  struct ff_glyphclasses *group_prev = NULL;
+  while (group_current != NULL) {
+    if (group_current->classname == NULL || group_current->classname[0] == '\0' ||
+      glif_name_search_glif_name(group_name_hash, group_current->classname) ||
+      (check_kerns && sf && glif_name_search_glif_name(class_name_hash, group_current->classname))) {
+      if (group_prev != NULL) group_prev->next = group_current->next;
+      else group_base = group_current->next;
+      GlyphGroupFree(group_current);
+      if (group_prev != NULL) group_current = group_prev->next;
+      else group_current = group_base;
+    } else {
+      glif_name_track_new(group_name_hash, temp_index++, group_current->classname);
+      group_prev = group_current; group_current = group_current->next;
+    }
+  }
+  glif_name_hash_destroy(class_name_hash);
+  glif_name_hash_destroy(group_name_hash);
+#endif
+  return group_base;
+}
+
+#define GROUP_NAME_KERNING_UFO 1
+#define GROUP_NAME_KERNING_FEATURE 2
+#define GROUP_NAME_VERTICAL 4 // Otherwise horizontal.
+#define GROUP_NAME_RIGHT 8 // Otherwise left (or above).
+
+static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_base) {
+  // This silently ignores already extant groups for now but avoids duplicates unless group_base has internal duplication.
+  int left_count = 0, right_count = 0, above_count = 0, below_count = 0;
+  int left_start = 0, right_start = 0, above_start = 0, below_start = 0;
+#ifdef FF_UTHASH_GLIF_NAMES
+    struct glif_name_index _class_name_hash;
+    struct glif_name_index * class_name_hash = &_class_name_hash; // Open the hash table.
+    memset(class_name_hash, 0, sizeof(struct glif_name_index));
+    HashKerningClassNames(sf, class_name_hash);
+#else
+    void * class_name_hash = NULL;
+#endif
+  // It is very difficult to create speculative indices for the unmerged group members during the size calculation.
+  // So we expect that the incoming group list has no duplicates (as after a run through GlyphGroupDeduplicate).
+  struct ff_glyphclasses *current_group;
+  for (current_group = group_base; current_group != NULL; current_group = current_group->next) {
+    int group_type = GroupNameType(current_group->classname);
+    if ((group_type != -1) && (group_type & (GROUP_NAME_KERNING_UFO|GROUP_NAME_KERNING_FEATURE))) {
+      if (group_type & GROUP_NAME_VERTICAL) {
+        if (group_type & GROUP_NAME_RIGHT) {
+          below_count++;
+        } else {
+          above_count++;
+        }
+      } else {
+        if (group_type & GROUP_NAME_RIGHT) {
+          right_count++;
+        } else {
+          left_count++;
+        }
+      }
+    }
+  }
+  // Allocate lookups if needed.
+  if (sf->kerns == NULL && (left_count || right_count)) {
+    sf->kerns = calloc(1, sizeof(struct kernclass));
+    sf->kerns->subtable = SFSubTableFindOrMake(sf, CHR('k','e','r','n'), DEFAULT_SCRIPT, gpos_pair);
+    sf->kerns->firsts = calloc(1, sizeof(char *));
+    sf->kerns->firsts_names = calloc(1, sizeof(char *));
+    sf->kerns->firsts_flags = calloc(1, sizeof(int));
+    sf->kerns->seconds = calloc(1, sizeof(char *));
+    sf->kerns->seconds_names = calloc(1, sizeof(char *));
+    sf->kerns->seconds_flags = calloc(1, sizeof(int));
+    sf->kerns->offsets = calloc(1, sizeof(int16));
+    sf->kerns->offsets_flags = calloc(1, sizeof(int));
+    sf->kerns->first_cnt = 1;
+    sf->kerns->second_cnt = 1;
+  }
+  if (sf->vkerns == NULL && (above_count || below_count)) {
+    sf->vkerns = calloc(1, sizeof(struct kernclass));
+    sf->vkerns->subtable = SFSubTableFindOrMake(sf, CHR('v','k','r','n'), DEFAULT_SCRIPT, gpos_pair);
+    sf->vkerns->firsts = calloc(1, sizeof(char *));
+    sf->vkerns->firsts_names = calloc(1, sizeof(char *));
+    sf->vkerns->firsts_flags = calloc(1, sizeof(int));
+    sf->vkerns->seconds = calloc(1, sizeof(char *));
+    sf->vkerns->seconds_names = calloc(1, sizeof(char *));
+    sf->vkerns->seconds_flags = calloc(1, sizeof(int));
+    sf->vkerns->offsets = calloc(1, sizeof(int16));
+    sf->vkerns->offsets_flags = calloc(1, sizeof(int));
+    sf->vkerns->first_cnt = 1;
+    sf->vkerns->second_cnt = 1;
+  }
+  // Set starts.
+  if (sf->kerns != NULL) { left_start = sf->kerns->first_cnt; right_start = sf->kerns->second_cnt; }
+  if (sf->vkerns != NULL) { above_start = sf->vkerns->first_cnt; below_start = sf->vkerns->second_cnt; }
+  // Make space for the new entries.
+  // We start by allocating space for the offsets and offsets flags. We then copy the old contents, row-by-row.
+  if ((left_count > 0 || right_count > 0) && ((sf->kerns->first_cnt + left_count) * (sf->kerns->second_cnt + right_count) > 0)) {
+    // Offsets.
+    int16 *tmp_offsets = calloc((sf->kerns->first_cnt + left_count) * (sf->kerns->second_cnt + right_count), sizeof(int16));
+    if (sf->kerns->offsets) {
+      int rowpos;
+      for (rowpos = 0; rowpos < sf->kerns->first_cnt; rowpos ++) {
+        memcpy((void *)tmp_offsets + (rowpos * (sf->kerns->second_cnt + right_count)) * sizeof(int16), (void *)(sf->kerns->offsets) + (rowpos * sf->kerns->second_cnt) * sizeof(int16), sf->kerns->second_cnt * sizeof(int16));
+      }
+      free(sf->kerns->offsets);
+    }
+    sf->kerns->offsets = tmp_offsets;
+    // Offset flags.
+    int *tmp_offsets_flags = calloc((sf->kerns->first_cnt + left_count) * (sf->kerns->second_cnt + right_count), sizeof(int));
+    if (sf->kerns->offsets_flags) {
+      int rowpos;
+      for (rowpos = 0; rowpos < sf->kerns->first_cnt; rowpos ++) {
+        memcpy((void *)tmp_offsets_flags + (rowpos * (sf->kerns->second_cnt + right_count)) * sizeof(int), (void *)(sf->kerns->offsets_flags) + (rowpos * sf->kerns->second_cnt) * sizeof(int), sf->kerns->second_cnt * sizeof(int));
+      }
+      free(sf->kerns->offsets_flags);
+    }
+    sf->kerns->offsets_flags = tmp_offsets_flags;
+    // Adjusts.
+    DeviceTable *tmp_adjusts = calloc((sf->kerns->first_cnt + left_count) * (sf->kerns->second_cnt + right_count), sizeof(DeviceTable));
+    if (sf->kerns->adjusts) {
+      int rowpos;
+      for (rowpos = 0; rowpos < sf->kerns->first_cnt; rowpos ++) {
+        memcpy((void *)tmp_adjusts + (rowpos * (sf->kerns->second_cnt + right_count)) * sizeof(DeviceTable), (void *)(sf->kerns->adjusts) + (rowpos * sf->kerns->second_cnt) * sizeof(DeviceTable), sf->kerns->second_cnt * sizeof(DeviceTable));
+      }
+      free(sf->kerns->adjusts);
+    }
+    sf->kerns->adjusts = tmp_adjusts;
+  }
+  if ((above_count > 0 || below_count > 0) && ((sf->vkerns->first_cnt + above_count) * (sf->vkerns->second_cnt + below_count) > 0)) {
+    // Offsets.
+    int16 *tmp_offsets = calloc((sf->vkerns->first_cnt + above_count) * (sf->vkerns->second_cnt + below_count), sizeof(int16));
+    if (sf->vkerns->offsets) {
+      int rowpos;
+      for (rowpos = 0; rowpos < sf->vkerns->first_cnt; rowpos ++) {
+        memcpy((void *)tmp_offsets + (rowpos * (sf->vkerns->second_cnt + below_count)) * sizeof(int16), (void *)(sf->vkerns->offsets) + (rowpos * sf->vkerns->second_cnt) * sizeof(int16), sf->vkerns->second_cnt * sizeof(int16));
+      }
+      free(sf->vkerns->offsets);
+    }
+    sf->vkerns->offsets = tmp_offsets;
+    // Offset flags.
+    int *tmp_offsets_flags = calloc((sf->vkerns->first_cnt + above_count) * (sf->vkerns->second_cnt + below_count), sizeof(int));
+    if (sf->vkerns->offsets_flags) {
+      int rowpos;
+      for (rowpos = 0; rowpos < sf->vkerns->first_cnt; rowpos ++) {
+        memcpy((void *)tmp_offsets_flags + (rowpos * (sf->vkerns->second_cnt + below_count)) * sizeof(int), (void *)(sf->vkerns->offsets_flags) + (rowpos * sf->vkerns->second_cnt) * sizeof(int), sf->vkerns->second_cnt * sizeof(int));
+      }
+      free(sf->vkerns->offsets_flags);
+    }
+    sf->vkerns->offsets_flags = tmp_offsets_flags;
+    // Adjusts.
+    DeviceTable *tmp_adjusts = calloc((sf->vkerns->first_cnt + above_count) * (sf->vkerns->second_cnt + below_count), sizeof(DeviceTable));
+    if (sf->vkerns->adjusts) {
+      int rowpos;
+      for (rowpos = 0; rowpos < sf->vkerns->first_cnt; rowpos ++) {
+        memcpy((void *)tmp_adjusts + (rowpos * (sf->vkerns->second_cnt + above_count)) * sizeof(DeviceTable), (void *)(sf->vkerns->adjusts) + (rowpos * sf->vkerns->second_cnt) * sizeof(DeviceTable), sf->vkerns->second_cnt * sizeof(DeviceTable));
+      }
+      free(sf->vkerns->adjusts);
+    }
+    sf->vkerns->adjusts = tmp_adjusts;
+  }
+  // Since the linear data need no repositioning, we can just use realloc. But it's important that we zero the new space in case it does not get filled.
+  if (left_count > 0) {
+    sf->kerns->firsts = realloc(sf->kerns->firsts, sizeof(char *) * (sf->kerns->first_cnt + left_count));
+    memset((void*)sf->kerns->firsts + sf->kerns->first_cnt * sizeof(char *), 0, left_count * sizeof(char *));
+    sf->kerns->firsts_names = realloc(sf->kerns->firsts_names, sizeof(char *) * (sf->kerns->first_cnt + left_count));
+    memset((void*)sf->kerns->firsts_names + sf->kerns->first_cnt * sizeof(char *), 0, left_count * sizeof(char *));
+    sf->kerns->firsts_flags = realloc(sf->kerns->firsts_flags, sizeof(int) * (sf->kerns->first_cnt + left_count));
+    memset((void*)sf->kerns->firsts_flags + sf->kerns->first_cnt * sizeof(int), 0, left_count * sizeof(int));
+    sf->kerns->first_cnt += left_count;
+  }
+  if (right_count > 0) {
+    sf->kerns->seconds = realloc(sf->kerns->seconds, sizeof(char *) * (sf->kerns->second_cnt + right_count));
+    memset((void*)sf->kerns->seconds + sf->kerns->second_cnt * sizeof(char *), 0, right_count * sizeof(char *));
+    sf->kerns->seconds_names = realloc(sf->kerns->seconds_names, sizeof(char *) * (sf->kerns->second_cnt + right_count));
+    memset((void*)sf->kerns->seconds_names + sf->kerns->second_cnt * sizeof(char *), 0, right_count * sizeof(char *));
+    sf->kerns->seconds_flags = realloc(sf->kerns->seconds_flags, sizeof(int) * (sf->kerns->second_cnt + right_count));
+    memset((void*)sf->kerns->seconds_flags + sf->kerns->second_cnt * sizeof(int), 0, right_count * sizeof(int));
+    sf->kerns->second_cnt += right_count;
+  }
+  if (above_count > 0) {
+    sf->vkerns->firsts = realloc(sf->vkerns->firsts, sizeof(char *) * (sf->vkerns->first_cnt + above_count));
+    memset((void*)sf->vkerns->firsts + sf->vkerns->first_cnt * sizeof(char *), 0, above_count * sizeof(char *));
+    sf->vkerns->firsts_names = realloc(sf->vkerns->firsts_names, sizeof(char *) * (sf->vkerns->first_cnt + above_count));
+    memset((void*)sf->vkerns->firsts_names + sf->vkerns->first_cnt * sizeof(char *), 0, above_count * sizeof(char *));
+    sf->vkerns->firsts_flags = realloc(sf->vkerns->firsts_flags, sizeof(int) * (sf->vkerns->first_cnt + above_count));
+    memset((void*)sf->vkerns->firsts_flags + sf->vkerns->first_cnt * sizeof(int), 0, above_count * sizeof(int));
+    sf->vkerns->first_cnt += above_count;
+  }
+  if (below_count > 0) {
+    sf->vkerns->seconds = realloc(sf->vkerns->seconds, sizeof(char *) * (sf->vkerns->second_cnt + below_count));
+    memset((void*)sf->vkerns->seconds + sf->vkerns->second_cnt * sizeof(char *), 0, below_count * sizeof(char *));
+    sf->vkerns->seconds_names = realloc(sf->vkerns->seconds_names, sizeof(char *) * (sf->vkerns->second_cnt + below_count));
+    memset((void*)sf->vkerns->seconds_names + sf->vkerns->second_cnt * sizeof(char *), 0, below_count * sizeof(char *));
+    sf->vkerns->seconds_flags = realloc(sf->vkerns->seconds_flags, sizeof(int) * (sf->vkerns->second_cnt + below_count));
+    memset((void*)sf->vkerns->seconds_flags + sf->vkerns->second_cnt * sizeof(char *), 0, below_count * sizeof(int));
+    sf->vkerns->second_cnt += below_count;
+  }
+  // Start copying.
+  left_count = 0; right_count = 0; above_count = 0; below_count = 0;
+  for (current_group = group_base; current_group != NULL; current_group = current_group->next) {
+    int group_type = GroupNameType(current_group->classname);
+    // This function only gets used in processing groups.plist right now, so it assumes that the groups are native as below.
+    if ((group_type != -1) && (group_type & (GROUP_NAME_KERNING_UFO|GROUP_NAME_KERNING_FEATURE))) {
+      if (group_type & GROUP_NAME_VERTICAL) {
+        if (group_type & GROUP_NAME_RIGHT) {
+          sf->vkerns->seconds[below_start + below_count] = copy(current_group->glyphs);
+          sf->vkerns->seconds_names[below_start + below_count] = copy(current_group->classname);
+          sf->vkerns->seconds_flags[below_start + below_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type | GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
+          below_count++;
+        } else {
+          sf->vkerns->firsts[above_start + above_count] = copy(current_group->glyphs);
+          sf->vkerns->firsts_names[above_start + above_count] = copy(current_group->classname);
+          sf->vkerns->firsts_flags[above_start + above_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type | GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
+          above_count++;
+        }
+      } else {
+        if (group_type & GROUP_NAME_RIGHT) {
+          sf->kerns->seconds[right_start + right_count] = copy(current_group->glyphs);
+          sf->kerns->seconds_names[right_start + right_count] = copy(current_group->classname);
+          sf->kerns->seconds_flags[right_start + right_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type | GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
+          right_count++;
+        } else {
+          sf->kerns->firsts[left_start + left_count] = copy(current_group->glyphs);
+          sf->kerns->firsts_names[left_start + left_count] = copy(current_group->classname);
+          sf->kerns->firsts_flags[left_start + left_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type | GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
+          left_count++;
+        }
+      }
+    }
+  }
+}
+
+static void UFOHandleGroups(SplineFont *sf, char *basedir) {
+    char *fname = buildname(basedir, "groups.plist");
+    xmlDocPtr doc=NULL;
+    xmlNodePtr plist,dict,keys,value,subkeys;
+    char *keyname, *valname;
+    struct ff_glyphclasses *current_group = NULL;
+    // We want to start at the end of the list of groups already in the SplineFont (probably not any right now).
+    for (current_group = sf->groups; current_group != NULL && current_group->next != NULL; current_group = current_group->next);
+    int group_count;
+
+    if ( GFileExists(fname))
+	doc = xmlParseFile(fname);
+    free(fname);
+    if ( doc==NULL )
+return;
+
+    plist = xmlDocGetRootElement(doc);
+    dict = FindNode(plist->children,"dict");
+    if ( xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 || dict==NULL ) {
+	LogError(_("Expected property list file"));
+	xmlFreeDoc(doc);
+return;
+    }
+    for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
+	for ( value = keys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
+		value = value->next );
+	if ( value==NULL )
+    break;
+	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
+	    keyname = (char *) xmlNodeListGetString(doc,keys->children,true);
+	    SplineChar *sc = SFGetChar(sf,-1,keyname);
+	    if ( sc!=NULL ) { LogError(_("Skipping group %s with same name as a glyph.\n"), keyname); free(keyname); keyname = NULL; continue; }
+            struct ff_glyphclasses *sfg = SFGetGroup(sf,-1,keyname);
+	    if ( sfg!=NULL ) { LogError(_("Skipping duplicate group %s.\n"), keyname); free(keyname); keyname = NULL; continue; }
+	    sfg = calloc(1, sizeof(struct ff_glyphclasses)); // We allocate space for the new group.
+	    sfg->classname = keyname; keyname = NULL; // We name it.
+	    if (current_group == NULL) sf->groups = sfg;
+	    else current_group->next = sfg;
+	    current_group = sfg; // And we put it at the end of the list.
+	    // We prepare to populate it. We will match to native glyphs first (in order to validate) and then convert back to strings later.
+	    RefChar *members_native = NULL;
+	    RefChar *member_native_current = NULL;
+	    int member_count = 0;
+	    int member_list_length = 0; // This makes it easy to allocate a string at the end.
+	    // We fetch the contents now. They are in an array, but we do not verify that.
+	    keys = value;
+	    for ( subkeys = keys->children; subkeys!=NULL; subkeys = subkeys->next ) {
+		if ( xmlStrcmp(subkeys->name,(const xmlChar *) "string")==0 ) {
+		    keyname = (char *) xmlNodeListGetString(doc,subkeys->children,true); // Get the member name.
+		    SplineChar *ssc = SFGetChar(sf,-1,keyname); // Try to match an existing glyph.
+		    if ( ssc==NULL ) { LogError(_("Skipping non-existent glyph %s in group %s.\n"), keyname, current_group->classname); free(keyname); keyname = NULL; continue; }
+		    member_list_length += strlen(keyname) + 1; member_count++; // Make space for its name.
+		    free(keyname); // Free the name for now. (We get it directly from the SplineChar later.)
+		    RefChar *member_native_temp = calloc(1, sizeof(RefChar)); // Make an entry in the list for the native reference.
+		    member_native_temp->sc = ssc; ssc = NULL;
+		    if (member_native_current == NULL) members_native = member_native_temp;
+		    else member_native_current->next = member_native_temp;
+		    member_native_current = member_native_temp; // Add it to the end of the list.
+		}
+	    }
+	    if (member_list_length == 0) member_list_length++; // We must have space for a zero-terminator even if the list is empty. A non-empty list has space for a space at the end that we can use.
+	    current_group->glyphs = malloc(member_list_length ? member_list_length : 1); // We allocate space for the list.
+	    current_group->glyphs[0] = '\0';
+	    for (member_native_current = members_native; member_native_current != NULL; member_native_current = member_native_current->next) {
+                if (member_native_current != members_native) strcat(current_group->glyphs, " ");
+	        strcat(current_group->glyphs, member_native_current->sc->name);
+	    }
+	    RefCharsFree(members_native); members_native = NULL;
+	}
+    }
+    // The preceding routine was sufficiently complicated that it seemed like a good idea to perform the deduplication in a separate block.
+    sf->groups = GlyphGroupDeduplicate(sf->groups, sf, 1);
+    // We now add kerning classes for any groups that are named like kerning classes.
+    MakeKerningClasses(sf, sf->groups);
+    xmlFreeDoc(doc);
+}
+
 static void UFOHandleKern(SplineFont *sf,char *basedir,int isv) {
     char *fname = buildname(basedir,isv ? "vkerning.plist" : "kerning.plist");
     xmlDocPtr doc=NULL;
@@ -2530,6 +3300,183 @@ return;
 	    }
 	}
     }
+    xmlFreeDoc(doc);
+}
+
+int TryAddRawGroupKern(struct splinefont *sf, int isv, struct glif_name_index *class_name_pair_hash, int *current_groupkern_index_p, struct ff_rawoffsets **current_groupkern_p, const char *left, const char *right, int offset) {
+  char *pairtext;
+  int success = 0;
+  if (left && right && asprintf(&pairtext, "%s %s", left, right) > 0 && pairtext) {
+    if (!glif_name_search_glif_name(class_name_pair_hash, pairtext)) {
+      glif_name_track_new(class_name_pair_hash, (*current_groupkern_index_p)++, pairtext);
+      struct ff_rawoffsets *tmp_groupkern = calloc(1, sizeof(struct ff_rawoffsets));
+      tmp_groupkern->left = copy(left);
+      tmp_groupkern->right = copy(right);
+      tmp_groupkern->offset = offset;
+      if (*current_groupkern_p == NULL) {
+        if (isv) sf->groupvkerns = tmp_groupkern;
+        else sf->groupkerns = tmp_groupkern;
+      } else (*current_groupkern_p)->next = tmp_groupkern;
+      *current_groupkern_p = tmp_groupkern;
+      success = 1;
+    }
+    free(pairtext); pairtext = NULL;
+  }
+  return success;
+}
+
+static void UFOHandleKern3(SplineFont *sf,char *basedir,int isv) {
+    char *fname = buildname(basedir,isv ? "vkerning.plist" : "kerning.plist");
+    xmlDocPtr doc=NULL;
+    xmlNodePtr plist,dict,keys,value,subkeys;
+    char *keyname, *valname;
+    int offset;
+    SplineChar *sc, *ssc;
+    KernPair *kp;
+    char *end;
+    uint32 script;
+
+    if ( GFileExists(fname))
+	doc = xmlParseFile(fname);
+    free(fname);
+    if ( doc==NULL )
+return;
+
+    plist = xmlDocGetRootElement(doc);
+    dict = FindNode(plist->children,"dict");
+    if ( xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 || dict==NULL ) {
+	LogError(_("Expected property list file"));
+	xmlFreeDoc(doc);
+return;
+    }
+
+    // We want a hash table of group names for reference.
+    struct glif_name_index _group_name_hash;
+    struct glif_name_index * group_name_hash = &_group_name_hash; // Open the group hash table.
+    memset(group_name_hash, 0, sizeof(struct glif_name_index));
+    struct ff_glyphclasses *current_group = NULL;
+    int current_group_index = 0;
+    for (current_group = sf->groups, current_group_index = 0; current_group != NULL; current_group = current_group->next, current_group_index++)
+      if (current_group->classname != NULL) glif_name_track_new(group_name_hash, current_group_index, current_group->classname);
+    // We also want a hash table of kerning class names. (We'll probably standardize on one approach or the other later.)
+    struct glif_name_index _class_name_hash;
+    struct glif_name_index * class_name_hash = &_class_name_hash; // Open the group hash table.
+    memset(class_name_hash, 0, sizeof(struct glif_name_index));
+    HashKerningClassNames(sf, class_name_hash);
+    // We also want a hash table of the lookup pairs.
+    struct glif_name_index _class_name_pair_hash;
+    struct glif_name_index * class_name_pair_hash = &_class_name_pair_hash; // Open the group hash table.
+    memset(class_name_pair_hash, 0, sizeof(struct glif_name_index));
+    // We need to track the head of the group kerns.
+    struct ff_rawoffsets *current_groupkern = NULL;
+    int current_groupkern_index = 0;
+    // We want to start at the end of the list of kerns already in the SplineFont (probably not any right now).
+    for (current_groupkern = (isv ? sf->groupvkerns : sf->groupkerns); current_groupkern != NULL && current_groupkern->next != NULL; current_groupkern = current_groupkern->next);
+
+    // Read the left node. Set sc if it matches a character or isgroup and the associated values if it matches a group.
+    // Read the right node. Set ssc if it matches a character or isgroup and the associated values if it matches a group.
+    // If sc and ssc, add a kerning pair to sc for ssc.
+    // If left_isgroup and right_isgroup, use the processed values in order to offset.
+    for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
+	for ( value = keys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
+		value = value->next );
+	if ( value==NULL )
+    break;
+	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
+	    keyname = (char *) xmlNodeListGetString(doc,keys->children,true);
+            // Search for a glyph first.
+	    sc = SFGetChar(sf,-1,keyname);
+            // Search for a group.
+            struct glif_name *left_class_name_record = glif_name_search_glif_name(class_name_hash, keyname);
+	    free(keyname);
+            if (sc == NULL && left_class_name_record == NULL) { LogError(_("kerning.plist references an entity that is neither a glyph nor a group.")); continue; }
+	    keys = value; // Set the offset for the next round.
+            // This key represents the left/above side of the pair. The child keys represent its right/below complements.
+	    for ( subkeys = value->children; subkeys!=NULL; subkeys = subkeys->next ) {
+		for ( value = subkeys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
+			value = value->next );
+		if ( value==NULL )
+	    break;
+		if ( xmlStrcmp(subkeys->name,(const xmlChar *) "key")==0 ) {
+		    // Get the second name of the pair.
+		    keyname = (char *) xmlNodeListGetString(doc,subkeys->children,true);
+		    // Get the offset in numeric form.
+		    valname = (char *) xmlNodeListGetString(doc,value->children,true);
+		    offset = strtol(valname,&end,10);
+		    if (*end != '\0') { LogError(_("kerning.plist has a non-numeric offset.")); continue; }
+		    free(valname); valname = NULL;
+		    subkeys = value; // Set the iterator for the next use.
+		    // Search for a character.
+		    ssc = SFGetChar(sf,-1,keyname);
+		    // Search for a group.
+		    struct glif_name *right_class_name_record = glif_name_search_glif_name(class_name_hash, keyname);
+		    free(keyname);
+		    if (ssc == NULL && right_class_name_record == NULL) { LogError(_("kerning.plist references an entity that is neither a glyph nor a group.")); continue; }
+
+		  if (sc && ssc) {
+		    KernPair *lastkp = NULL;
+		    for ( kp=(isv?sc->vkerns:sc->kerns); kp!=NULL && kp->sc!=ssc; lastkp = kp, kp=kp->next );
+		    if ( kp!=NULL ) { LogError(_("kerning.plist defines kerning between two glyphs that are already kerned.")); continue; }
+		    // We do not want to add the virtual entry until we have confirmed the possibility of adding the real entry as precedes this.
+		    if (!TryAddRawGroupKern(sf, isv, class_name_pair_hash, &current_groupkern_index, &current_groupkern, sc->name, ssc->name, offset)) {
+		      LogError(_("kerning.plist defines kerning between two glyphs that are already partially kerned.")); continue;
+		    }
+		    {
+			kp = chunkalloc(sizeof(KernPair));
+			kp->off = offset;
+			kp->sc = ssc;
+			if ( isv ) {
+			    if (lastkp != NULL) lastkp->next = kp;
+			    else sc->vkerns = kp;
+			    lastkp = kp;
+			    // kp->next = sc->vkerns;
+			    // sc->vkerns = kp;
+			} else {
+			    if (lastkp != NULL) lastkp->next = kp;
+			    else sc->kerns = kp;
+			    lastkp = kp;
+			    // kp->next = sc->kerns;
+			    // sc->kerns = kp;
+			}
+			script = SCScriptFromUnicode(sc);
+			if ( script==DEFAULT_SCRIPT )
+			    script = SCScriptFromUnicode(ssc);
+			kp->subtable = SFSubTableFindOrMake(sf,
+				isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
+				script, gpos_pair);
+		    }
+		  } else if (sc && right_class_name_record) {
+		    if (!TryAddRawGroupKern(sf, isv, class_name_pair_hash, &current_groupkern_index, &current_groupkern, sc->name, right_class_name_record->glif_name, offset)) {
+		      LogError(_("kerning.plist defines kerning between two glyphs that are already partially kerned.")); continue;
+		    }
+		  } else if (ssc && left_class_name_record) {
+		    if (!TryAddRawGroupKern(sf, isv, class_name_pair_hash, &current_groupkern_index, &current_groupkern, left_class_name_record->glif_name, ssc->name, offset)) {
+		      LogError(_("kerning.plist defines kerning between two glyphs that are already partially kerned.")); continue;
+		    }
+		  } else if (left_class_name_record && right_class_name_record) {
+		    struct kernclass *left_kc, *right_kc;
+		    int left_isv, right_isv, left_isr, right_isr, left_offset, right_offset;
+		    int left_grouptype = GroupNameType(keyname);
+		    int left_exists = KerningClassSeekByAbsoluteIndex(sf, left_class_name_record->gid, &left_kc, &left_isv, &left_isr, &left_offset);
+		    int right_exists = KerningClassSeekByAbsoluteIndex(sf, right_class_name_record->gid, &right_kc, &right_isv, &right_isr, &right_offset);
+		    if ((left_kc == NULL) || (right_kc == NULL)) { LogError(_("kerning.plist references a missing kerning class.")); continue; } // I don't know how this would happen, at least as the code is now, but we do need to throw an error.
+		    if ((left_kc != right_kc)) { LogError(_("kerning.plist defines an offset between classes in different lookups.")); continue; }
+		    if ((left_offset > left_kc->first_cnt) || (right_offset > right_kc->second_cnt)) { LogError(_("There is a kerning class index error.")); continue; }
+		    if (left_kc->offsets_flags[left_offset*left_kc->second_cnt+right_offset]) { LogError(_("kerning.plist attempts to redefine a class kerning offset.")); continue; }
+		    // All checks pass. We add the virtual pair and then the real one.
+		    if (!TryAddRawGroupKern(sf, isv, class_name_pair_hash, &current_groupkern_index, &current_groupkern, left_class_name_record->glif_name, right_class_name_record->glif_name, offset)) {
+		      LogError(_("kerning.plist defines kerning between two glyphs that are already partially kerned.")); continue;
+		    }
+		    left_kc->offsets[left_offset*left_kc->second_cnt+right_offset] = offset;
+		    left_kc->offsets_flags[left_offset*left_kc->second_cnt+right_offset] |= FF_KERNCLASS_FLAG_NATIVE;
+		  }
+		}
+	    }
+	}
+    }
+    glif_name_hash_destroy(group_name_hash);
+    glif_name_hash_destroy(class_name_hash);
+    glif_name_hash_destroy(class_name_pair_hash);
     xmlFreeDoc(doc);
 }
 
@@ -3127,14 +4074,16 @@ return( NULL );
 
     sf->map = EncMap1to1(sf->glyphcnt);
 
+    UFOHandleGroups(sf, basedir);
+
+    UFOHandleKern3(sf,basedir,0);
+    UFOHandleKern3(sf,basedir,1);
+
     /* Might as well check for feature files even if version 1 */
     temp = buildname(basedir,"features.fea");
     if ( GFileExists(temp))
 	SFApplyFeatureFilename(sf,temp);
     free(temp);
-
-    UFOHandleKern(sf,basedir,0);
-    UFOHandleKern(sf,basedir,1);
 
 #ifndef _NO_PYTHON
     temp = buildname(basedir,"lib.plist");

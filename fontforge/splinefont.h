@@ -537,6 +537,7 @@ typedef struct anchorpoint {
 } AnchorPoint;
 
 typedef struct kernpair {
+    // Note that the left character in the pair has the reference to the kerning pair, which in turn references the right character.
     struct lookup_subtable *subtable;
     struct splinechar *sc;
     int16 off;
@@ -545,16 +546,30 @@ typedef struct kernpair {
     struct kernpair *next;
 } KernPair;
 
+#define FF_KERNCLASS_FLAG_NATIVE 2 // If set, the class goes into groups.plist or kerning.plist.
+#define FF_KERNCLASS_FLAG_FEATURE 4 // If set, the class or rule goes into the feature file. In the present configuration, this ought to be zero always.
+#define FF_KERNCLASS_FLAG_NAMETYPE 8 // If unset (default), the class has a standard name, which translates to a U. F. O. name starting in public.kern, which may be illegal in the feature file. If set, it has a name like @MMK_.
+#define FF_KERNCLASS_FLAG_NAMELEGACY 16 // If set, the class has a U. F. O. name starting in @kc as FontForge liked to do in the past.
+#define FF_KERNCLASS_FLAG_VIRTUAL 32 // If unset (default), the class is a real character class and does not conflict with same-sided classes. If set, FontForge mostly ignores the class except for U. F. O. input/output.
+#define FF_KERNCLASS_FLAG_FLATTEN 64 // If unset (default), the class gets exported as a class. If set, it gets exported as its first member (in order to support class-character kerns).
+#define FF_KERNCLASS_FLAG_SINGLECHAR (FF_KERNCLASS_FLAG_VIRTUAL | FF_KERNCLASS_FLAG_FLATTEN) // We expect to see these used together.
+
 typedef struct kernclass {
     int first_cnt, second_cnt;		/* Count of classes for first and second chars */
     char **firsts;			/* list of a space separated list of char names */
     char **seconds;			/*  one entry for each class. Entry 0 is null */
     					/*  and means everything not specified elsewhere */
+    char **firsts_names; // We need to track the names of the classes in order to round-trip U. F. O. data.
+    char **seconds_names;
+    int *firsts_flags; // This tracks the storage format of the class in U. F. O. (groups.plist or features.fea) and whether it's a single-character class.
+    int *seconds_flags; // We also track the name format (@MMK or public.kern).
     struct lookup_subtable *subtable;
     uint16 kcid;			/* Temporary value, used for many things briefly */
-    int16 *offsets;			/* array of first_cnt*second_cnt entries */
-    DeviceTable *adjusts;		/* array of first_cnt*second_cnt entries */
-    struct kernclass *next;
+    int16 *offsets;			/* array of first_cnt*second_cnt entries with 0 representing no data */
+    int *offsets_flags;
+    DeviceTable *adjusts;		/* array of first_cnt*second_cnt entries representing resolution-specific adjustments */
+    struct kernclass *next;		// Note that, in most cases, a typeface needs only one struct kernclass since it can contain all classes.
+    int feature; // This indicates whether the kerning class came from a feature file. This is important during export.
 } KernClass;
 
 enum possub_type { pst_null, pst_position, pst_pair,
@@ -1466,7 +1481,7 @@ typedef struct splinechar {
     struct splinecharlist *dependents;
 	    /* The dependents list is a list of all characters which refenence*/
 	    /*  the current character directly */
-    KernPair *kerns;
+    KernPair *kerns; // Note that the left character in the pair has the reference to the kerning pair, which in turn references the right character.
     KernPair *vkerns;
     PST *possub;		/* If we are a ligature then this tells us what */
 				/*  It may also contain a bunch of other stuff now */
@@ -1747,6 +1762,23 @@ struct gasp {
     uint16 flags;
 };
 
+struct ff_glyphclasses {
+    // This matches struct glyphclasses from featurefile.c for now. We may make the references numeric in the future.
+    // There may be a matching entry as a class elsewhere. For now, the output driver is responsible for eliminating duplicates.
+    // In the interest of preserving orderings, we shall output from here, checking for value overrides from kerning classes on each kerning group entry.
+    char *classname, *glyphs;
+    struct ff_glyphclasses *next;
+};
+
+struct ff_rawoffsets {
+    // This stores raw offsets as read from kerning.plist.
+    // FontForge shall output these after native data and shall output only those for which it has not emitted native data.
+    char *left;
+    char *right;
+    int offset;
+    struct ff_rawoffsets *next;
+};
+
 typedef struct splinefont {
     char *fontname, *fullname, *familyname, *weight;
     char *familyname_with_timestamp;
@@ -1864,6 +1896,9 @@ typedef struct splinefont {
     int mark_set_cnt;
     char **mark_sets;			/* glyph name list */
     char **mark_set_names;		/* used within ff, utf8 (the name we've given to this class of marks) */
+    struct ff_glyphclasses *groups; // This stores arbitrary named character lists for use in kerning or in the feature file.
+    struct ff_rawoffsets *groupkerns;
+    struct ff_rawoffsets *groupvkerns;
     long long creationtime;		/* seconds since 1970 */
     long long modificationtime;
     short os2_version;			/* 0 means default rather than the real version 0 */
@@ -1902,6 +1937,7 @@ typedef struct splinefont {
 	collab_uuid_sz = 40 
     } SplineFontConstants;
     char collab_uuid[ collab_uuid_sz ];
+    int preferred_kerning; // 1 for U. F. O. native, 2 for feature file, 0 undefined. Input functions shall flag 2, I think. This shall be a temporary value absent from S. F. D. for now.
 } SplineFont;
 
 struct axismap {
@@ -2260,7 +2296,9 @@ extern void SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real xoff, real y
 extern void _SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real transform[6]);
 extern KernClass *KernClassCopy(KernClass *kc);
 extern void KernClassFreeContents(KernClass *kc);
+extern void KernClassClearSpecialContents(KernClass *kc);
 extern void KernClassListFree(KernClass *kc);
+extern void KernClassListClearSpecialContents(KernClass *kc);
 extern int KernClassContains(KernClass *kc, const char *name1, const char *name2, int ordered );
 extern void OTLookupFree(OTLookup *lookup);
 extern void OTLookupListFree(OTLookup *lookup );
@@ -2298,6 +2336,32 @@ extern void BaseLangFree(struct baselangextent *extent);
 extern void BaseScriptFree(struct basescript *bs);
 extern void BaseFree(struct Base *base);
 extern void SplineFontFree(SplineFont *sf);
+extern void SplineFontClearSpecial(SplineFont *sf);
+
+#if 1
+// These relate to experimental support for U. F. O. groups.
+#define GROUP_NAME_KERNING_UFO 1
+#define GROUP_NAME_KERNING_FEATURE 2
+#define GROUP_NAME_VERTICAL 4 // Otherwise horizontal.
+#define GROUP_NAME_RIGHT 8 // Otherwise left (or above).
+
+void GlyphGroupFree(struct ff_glyphclasses* group);
+void GlyphGroupsFree(struct ff_glyphclasses* root);
+int GroupNameType(const char *input);
+void GlyphGroupKernFree(struct ff_rawoffsets* groupkern);
+void GlyphGroupKernsFree(struct ff_rawoffsets* root);
+int CountKerningClasses(SplineFont *sf);
+#ifdef FF_UTHASH_GLIF_NAMES
+struct glif_name_index;
+int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_hash);
+#endif
+int KerningClassSeekByAbsoluteIndex(const struct splinefont *sf, int seek_index, struct kernclass **okc, int *oisv, int *oisr, int *ooffset);
+struct ff_glyphclasses *SFGetGroup(const struct splinefont *sf, int index, const char *name);
+int StringInStrings(char const* const* space, int length, const char *target);
+char **StringExplode(const char *input, char delimiter);
+void ExplodedStringFree(char **input);
+int SFKerningGroupExistsSpecific(const struct splinefont *sf, const char *groupname, int isv, int isr);
+#endif // 1
 extern struct jstf_lang *JstfLangsCopy(struct jstf_lang *jl);
 extern void JstfLangFree(struct jstf_lang *jl);
 extern void JustifyFree(Justify *just);
@@ -2310,6 +2374,7 @@ extern void MarkSetFree(int cnt,char **classes,char **names);
 extern void MarkClassFree(int cnt,char **classes,char **names);
 extern void MMSetFreeContents(MMSet *mm);
 extern void MMSetFree(MMSet *mm);
+extern void MMSetClearSpecial(MMSet *mm);
 extern void SFRemoveUndoes(SplineFont *sf,uint8 *selected,EncMap *map);
 extern void SplineRefigure3(Spline *spline);
 extern void SplineRefigure(Spline *spline);
@@ -2752,6 +2817,9 @@ typedef struct sfd_getfontmetadatadata
     OTLookup*           lastsotl;
     KernClass*          lastkc;
     KernClass*          lastvkc;
+    struct ff_glyphclasses* lastgroup;
+    struct ff_rawoffsets* lastgroupkern;
+    struct ff_rawoffsets* lastgroupvkern;
     FPST*               lastfp;
     ASM*                lastsm;
     struct ttf_table*   lastttf[2];
