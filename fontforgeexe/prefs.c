@@ -149,7 +149,6 @@ extern int new_em_size;				/* in splineutil2.c */
 extern int new_fonts_are_order2;		/* in splineutil2.c */
 extern int loaded_fonts_same_as_new;		/* in splineutil2.c */
 extern int use_second_indic_scripts;		/* in tottfgpos.c */
-extern char *helpdir;				/* in uiutil.c */
 static char *othersubrsfile = NULL;
 extern MacFeat *default_mac_feature_map,	/* from macenc.c */
 		*user_mac_feature_map;
@@ -301,7 +300,6 @@ static struct prefs_list {
 /* GT: translated (which the user sees, and should probably have added spaces,*/
 /* GT: and one untranslated which needs the current odd format */
 	{ N_("ResourceFile"), pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, N_("When FontForge starts up, it loads the user interface theme from\nthis file. Any changes will only take effect the next time you start FontForge.") },
-	{ N_("HelpDir"), pr_file, &helpdir, NULL, NULL, 'H', NULL, 0, N_("The directory on your local system in which FontForge will search for help\nfiles.  If a file is not found there, then FontForge will look for it on the net.") },
 	{ N_("OtherSubrsFile"), pr_file, &othersubrsfile, NULL, NULL, 'O', NULL, 0, N_("If you wish to replace Adobe's OtherSubrs array (for Type1 fonts)\nwith an array of your own, set this to point to a file containing\na list of up to 14 PostScript subroutines. Each subroutine must\nbe preceded by a line starting with '%%%%' (any text before the\nfirst '%%%%' line will be treated as an initial copyright notice).\nThe first three subroutines are for flex hints, the next for hint\nsubstitution (this MUST be present), the 14th (or 13 as the\nnumbering actually starts with 0) is for counter hints.\nThe subroutines should not be enclosed in a [ ] pair.") },
 	{ N_("FreeTypeInFontView"), pr_bool, &use_freetype_to_rasterize_fv, NULL, NULL, 'O', NULL, 0, N_("Use the FreeType rasterizer (when available)\nto rasterize glyphs in the font view.\nThis generally results in better quality.") },
 	{ N_("FreeTypeAAFillInOutlineView"), pr_bool, &use_freetype_with_aa_fill_cv, NULL, NULL, 'O', NULL, 0, N_("When filling using freetype in the outline view,\nhave freetype render the glyph antialiased.") },
@@ -1043,16 +1041,9 @@ static void DefaultXUID(void) {
     xuid = copy(buffer);
 }
 
-static void DefaultHelp(void) {
-    if ( helpdir==NULL ) {
-	helpdir = copy(getHelpDir());
-    }
-}
-
 static void PrefsUI_SetDefaults(void) {
 
     DefaultXUID();
-    DefaultHelp();
     local_encoding = DefaultEncoding();
 }
 

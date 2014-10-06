@@ -37,8 +37,6 @@ extern void cygwin_conv_to_full_posix_path(const char *win,char *unx);
 extern void cygwin_conv_to_full_win32_path(const char *unx,char *win);
 #endif
 
-char *helpdir = NULL;
-
 #if __CygWin
 /* Try to find the default browser by looking it up in the windows registry */
 /* The registry is organized as a tree. We are interested in the subtree */
@@ -261,18 +259,8 @@ return;
 
     if ( strstr(file,"http://")==NULL ) {
 	fullspec[0] = 0;
-	if ( *file!='/' ) {
-	    if ( helpdir==NULL || *helpdir=='\0' ) {
-#ifdef DOCDIR
-		strcpy(fullspec,DOCDIR "/");
-#elif defined(SHAREDIR)
-		strcpy(fullspec,SHAREDIR "/doc/fontforge/");
-#else
-		strcpy(fullspec,"/usr/local/share/doc/fontforge/");
-#endif
-	    } else
-		strcpy(fullspec,helpdir);
-	}
+	if ( *file!='/' )
+	    strcpy(fullspec,getHelpDir());
 	strcat(fullspec,file);
 	if (( pt = strrchr(fullspec,'#') )!=NULL ) *pt ='\0';
 	if ( !GFileReadable( fullspec )) {
