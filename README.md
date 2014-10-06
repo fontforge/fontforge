@@ -20,3 +20,5 @@ Contributing guidelines
 -----------------------
 
 Please see [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+This is a branch to test out TravisCI and find what is failing.
