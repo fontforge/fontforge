@@ -1650,6 +1650,7 @@ int ufo_kerning_tree_attempt_insert(struct ufo_kerning_tree_session *session, co
     }
   }
   free(tmppairname); tmppairname = NULL;
+  return 0;
 }
 
 
