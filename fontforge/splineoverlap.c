@@ -3561,8 +3561,8 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 		    if (sp->next->order2) {
 		      // The control points must be identical if the curve is quadratic.
 		      BasePoint new2;
-		      new.x = (sp->nextcp.x+nsp->prevcp.x)/2;
-		      new.y = (sp->nextcp.y+nsp->prevcp.y)/2;
+		      new2.x = (sp->nextcp.x+nsp->prevcp.x)/2;
+		      new2.y = (sp->nextcp.y+nsp->prevcp.y)/2;
 		      sp->nextcp = nsp->prevcp = new2;
 		    }
 		    SplineRefigure(sp->next);
@@ -3570,8 +3570,8 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 		      if (sp->prev->order2) {
 		        // The control points must be identical if the curve is quadratic.
 		        BasePoint new2;
-		        new.x = (sp->prev->from->nextcp.x+sp->prevcp.x)/2;
-		        new.y = (sp->prev->from->nextcp.y+sp->prevcp.y)/2;
+		        new2.x = (sp->prev->from->nextcp.x+sp->prevcp.x)/2;
+		        new2.y = (sp->prev->from->nextcp.y+sp->prevcp.y)/2;
 		        sp->prev->from->nextcp = sp->prevcp = new2;
 		      }
 		      SplineRefigure(sp->prev);
@@ -3580,8 +3580,8 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 		      if (nsp->next->order2) {
 		        // The control points must be identical if the curve is quadratic.
 		        BasePoint new2;
-		        new.x = (nsp->nextcp.x+nsp->next->to->prevcp.x)/2;
-		        new.y = (nsp->nextcp.y+nsp->next->to->prevcp.y)/2;
+		        new2.x = (nsp->nextcp.x+nsp->next->to->prevcp.x)/2;
+		        new2.y = (nsp->nextcp.y+nsp->next->to->prevcp.y)/2;
 		        nsp->nextcp = nsp->next->to->prevcp = new2;
 		      }
 		      SplineRefigure(nsp->next);
