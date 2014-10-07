@@ -835,13 +835,13 @@ return;
     if (kc->firsts != NULL) {
       int tmppos;
       for (tmppos = 0; tmppos < kc->first_cnt; tmppos++)
-        if (kc->firsts[tmppos] != NULL) { free(kc->firsts); kc->firsts = NULL; }
+        if (kc->firsts[tmppos] != NULL) { free(kc->firsts[tmppos]); kc->firsts[tmppos] = NULL; }
       free(kc->firsts); kc->firsts = NULL;
     }
     if (kc->seconds != NULL) {
       int tmppos;
       for (tmppos = 0; tmppos < kc->second_cnt; tmppos++)
-        if (kc->seconds[tmppos] != NULL) { free(kc->seconds); kc->seconds = NULL; }
+        if (kc->seconds[tmppos] != NULL) { free(kc->seconds[tmppos]); kc->seconds[tmppos] = NULL; }
       free(kc->seconds); kc->seconds = NULL;
     }
     free(kc->offsets);
