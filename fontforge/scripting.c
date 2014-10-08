@@ -10398,8 +10398,10 @@ _Noreturn void ProcessNativeScript(int argc, char *argv[], FILE *script) {
 		// If the script is accessible, we start to parse it.
 		c.lineno = 1;
 		// Set the jump environment for returning from the error reporter.
-		while (setjmp(env));
-		c.err_env = &env;
+                if (c.interactive) {
+                    while (setjmp(env));
+                    c.err_env = &env;
+                }
 		// Parse and execute.
 		while ( c.script && !c.error && !c.returned && !c.broken && (tok = ff_NextToken(&c))!=tt_eof ) {
 			ff_backuptok(&c);
