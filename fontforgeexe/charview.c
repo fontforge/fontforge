@@ -362,19 +362,19 @@ const int input_em_cnt = sizeof(input_em)/sizeof(input_em[0])-1;
 /* Positions on the info line */
 #define RPT_BASE	5		/* Place to draw the pointer icon */
 #define RPT_DATA	13		/* x,y text after above */
-#define SPT_BASE	73		/* Place to draw selected pt icon */
-#define SPT_DATA	87		/* Any text for it */
-#define SOF_BASE	147		/* Place to draw selection to pointer icon */
-#define SOF_DATA	169		/* Any text for it */
-#define SDS_BASE	229		/* Place to draw distance icon */
-#define SDS_DATA	251		/* Any text for it */
-#define SAN_BASE	281		/* Place to draw angle icon */
-#define SAN_DATA	303		/* Any text for it */
-#define MAG_BASE	333		/* Place to draw magnification icon */
-#define MAG_DATA	344		/* Any text for it */
-#define LAYER_DATA	404		/* Text to show the current layer */
-#define CODERANGE_DATA	474		/* Text to show the current code range (if the debugger be active) */
-#define FLAGS_DATA	650		/* Text to show the current drawmode flags */
+#define SPT_BASE	83		/* Place to draw selected pt icon */
+#define SPT_DATA	97		/* Any text for it */
+#define SOF_BASE	157		/* Place to draw selection to pointer icon */
+#define SOF_DATA	179		/* Any text for it */
+#define SDS_BASE	259		/* Place to draw distance icon */
+#define SDS_DATA	281		/* Any text for it */
+#define SAN_BASE	331		/* Place to draw angle icon */
+#define SAN_DATA	353		/* Any text for it */
+#define MAG_BASE	383		/* Place to draw magnification icon */
+#define MAG_DATA	394		/* Any text for it */
+#define LAYER_DATA	454		/* Text to show the current layer */
+#define CODERANGE_DATA	574		/* Text to show the current code range (if the debugger be active) */
+#define FLAGS_DATA	724		/* Text to show the current drawmode flags */
 
 void CVDrawRubberRect(GWindow pixmap, CharView *cv) {
     GRect r;
@@ -3916,22 +3916,22 @@ void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     spiro_cp *cp;
 
     GDrawSetFont(pixmap,cv->small);
-    r.x = RPT_DATA; r.width = 60;
+    r.x = RPT_DATA; r.width = SPT_BASE-RPT_DATA;
     r.y = cv->mbh+cv->charselectorh; r.height = cv->infoh-1;
     GDrawFillRect(pixmap,&r,bg);
-    r.x = SPT_DATA; r.width = 60;
+    r.x = SPT_DATA; r.width = SOF_BASE-SPT_DATA;
     GDrawFillRect(pixmap,&r,bg);
-    r.x = SOF_DATA; r.width = 60;
+    r.x = SOF_DATA; r.width = SDS_BASE-SOF_DATA;
     GDrawFillRect(pixmap,&r,bg);
-    r.x = SDS_DATA; r.width = 30;
+    r.x = SDS_DATA; r.width = SAN_BASE-SDS_DATA;
     GDrawFillRect(pixmap,&r,bg);
-    r.x = SAN_DATA; r.width = 30;
+    r.x = SAN_DATA; r.width = MAG_BASE-SAN_DATA;
     GDrawFillRect(pixmap,&r,bg);
-    r.x = MAG_DATA; r.width = 60;
+    r.x = MAG_DATA; r.width = LAYER_DATA-MAG_DATA;
     GDrawFillRect(pixmap,&r,bg);
-    r.x = LAYER_DATA; r.width = 90;
+    r.x = LAYER_DATA; r.width = CODERANGE_DATA-LAYER_DATA;
     GDrawFillRect(pixmap,&r,bg);
-    r.x = CODERANGE_DATA; r.width = 200;
+    r.x = CODERANGE_DATA; r.width = FLAGS_DATA-CODERANGE_DATA;
     GDrawFillRect(pixmap,&r,bg);
     r.x = FLAGS_DATA; r.width = 200;
     GDrawFillRect(pixmap,&r,bg);
