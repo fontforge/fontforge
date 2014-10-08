@@ -852,13 +852,13 @@ return;
     if (kc->firsts_names != NULL) {
       int tmppos;
       for (tmppos = 0; tmppos < kc->first_cnt; tmppos++)
-        if (kc->firsts_names[tmppos] != NULL) { free(kc->firsts_names); kc->firsts_names = NULL; }
+        if (kc->firsts_names[tmppos] != NULL) { free(kc->firsts_names[tmppos]); kc->firsts_names[tmppos] = NULL; }
       free(kc->firsts_names); kc->firsts_names = NULL;
     }
     if (kc->seconds_names != NULL) {
       int tmppos;
       for (tmppos = 0; tmppos < kc->second_cnt; tmppos++)
-        if (kc->seconds_names[tmppos] != NULL) { free(kc->seconds_names); kc->seconds_names = NULL; }
+        if (kc->seconds_names[tmppos] != NULL) { free(kc->seconds_names[tmppos]); kc->seconds_names[tmppos] = NULL; }
       free(kc->seconds_names); kc->seconds_names = NULL;
     }
     if (kc->firsts_flags != NULL) { free(kc->firsts_flags); kc->firsts_flags = NULL; }
