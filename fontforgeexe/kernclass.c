@@ -2296,7 +2296,7 @@ static void KCD_RowMotion(GGadget *g,int oldr, int newr) {
 	    kcd->seconds_names[oldr] = kcd->seconds_names[newr];
 	    kcd->seconds_names[newr] = name;
 	}
-	if (kcd->firsts_flags) {
+	if (kcd->seconds_flags) {
 	    int flags = kcd->seconds_flags[oldr];
 	    kcd->seconds_flags[oldr] = kcd->seconds_flags[newr];
 	    kcd->seconds_flags[newr] = flags;
@@ -2341,7 +2341,7 @@ static void KCD_DeleteClass(GGadget *g,int whichclass) {
 	  memmove(kcd->firsts_names+whichclass, kcd->firsts_names+whichclass + 1, (kcd->first_cnt - whichclass - 1) * sizeof(char*));
 	  kcd->firsts_names = realloc(kcd->firsts_names, (kcd->first_cnt - 1) * sizeof(char*));
 	}
-	if (kcd->seconds_flags) {
+	if (kcd->firsts_flags) {
 	  memmove(kcd->firsts_flags+whichclass, kcd->firsts_flags+whichclass + 1, (kcd->first_cnt - whichclass - 1) * sizeof(int));
 	  kcd->firsts_flags = realloc(kcd->firsts_flags, (kcd->first_cnt - 1) * sizeof(int));
 	}
