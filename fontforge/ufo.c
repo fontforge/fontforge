@@ -2566,6 +2566,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 
 			    if ( strcmp(type,"move")==0 ) {
 			        // This is already handled.
+			        SplinePointFree(sp); sp = NULL;
 			    } else if ( strcmp(type,"line")==0 ) {
 				SplineMake(ss->last,sp,false);
 			        ss->last = sp;
@@ -2603,6 +2604,8 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 					}
 					SplineMake(ss->last,sp,true);
 					ss->last = sp;
+			    } else {
+			        SplinePointFree(sp); sp = NULL;
 			    }
 			    precnt = 0;
 			} else {
