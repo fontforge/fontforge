@@ -5877,6 +5877,22 @@ return;
 	    GScrollBarSetBounds(cv->dv->ii.vsb,0,cv->dv->ii.lheight+1,
 		    cv->dv->ii.vheight/cv->dv->ii.fh);
 	}
+
+	{
+	  GRect charselector_size;
+	  GRect charselectorNext_size;
+	  GRect charselectorPrev_size;
+	  GGadgetGetSize(cv->charselector, &charselector_size);
+	  GGadgetGetSize(cv->charselectorPrev, &charselectorPrev_size);
+	  GGadgetGetSize(cv->charselectorNext, &charselectorNext_size);
+	  int new_charselector_width = newwidth + sbsize - ( 4 * charselector_size.x ) - charselectorNext_size.width - charselectorPrev_size.width;
+	  int new_charselectorPrev_x = newwidth + sbsize - ( 2 * charselector_size.x ) - charselectorNext_size.width - charselectorPrev_size.width;
+	  int new_charselectorNext_x = newwidth + sbsize - ( 1 * charselector_size.x ) - charselectorNext_size.width;
+	  GGadgetResize(cv->charselector, new_charselector_width, charselector_size.height);
+	  GGadgetMove(cv->charselectorPrev, new_charselectorPrev_x, charselectorPrev_size.y);
+	  GGadgetMove(cv->charselectorNext, new_charselectorNext_x, charselectorNext_size.y);
+	}
+
 	if ( cv->showrulers ) {
 	    newheight -= cv->rulerh;
 	    newwidth -= cv->rulerh;
@@ -12849,6 +12865,8 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     GGadgetTakesKeyboard(cv->tabs,false);
 
     _CharViewCreate( cv, sc, fv, enc, show );
+    // Frank wants to avoid needing to implement scaling twice.
+    CVResize(cv);
 
     return( cv );
 }
