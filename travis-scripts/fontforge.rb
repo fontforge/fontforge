@@ -140,14 +140,14 @@ class Fontforge < Formula
 
     # Fix hard-coded install locations that don't respect the target bindir
     inreplace "Makefile" do |s|
-      s.gsub! "/Applications", "$(prefix)"
-      s.gsub! "ln -s /usr/local/bin/fontforge", "ln -s $(bindir)/fontforge"
+#      s.gsub! "/Applications", "$(prefix)"
+#      s.gsub! "ln -s /usr/local/bin/fontforge", "ln -s $(bindir)/fontforge"
     end
 
     # Fix install location of Python extension; see:
     # http://sourceforge.net/mailarchive/message.php?msg_id=26827938
     inreplace "Makefile" do |s|
-      s.gsub! "python setup.py install --prefix=$(prefix) --root=$(DESTDIR)", "python setup.py install --prefix=$(prefix)"
+#      s.gsub! "python setup.py install --prefix=$(prefix) --root=$(DESTDIR)", "python setup.py install --prefix=$(prefix)"
     end
 
     # Replace FlatCarbon headers with the real paths
