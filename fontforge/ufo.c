@@ -2563,11 +2563,13 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			          open = true;
 			          if (initcnt != 0) LogError(_("We cannot have lead-in points for an open curve.\n"));
 			        }
-			    } else if ( strcmp(type,"move")==0 ) LogError(_("The move point must be at the beginning of the contour.\n"));
+			    }
 
 			    if ( strcmp(type,"move")==0 ) {
-			        // This is already handled.
-			        SplinePointFree(sp); sp = NULL;
+			        if (ss->first != sp) {
+			          LogError(_("The move point must be at the beginning of the contour.\n"));
+			          SplinePointFree(sp); sp = NULL;
+			        }
 			    } else if ( strcmp(type,"line")==0 ) {
 				SplineMake(ss->last,sp,false);
 			        ss->last = sp;
