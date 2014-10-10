@@ -1,15 +1,15 @@
 #Needs: fonts/FormalScript.sfd, fonts/dvng10a-crash.sfd
 # Tests that contextual chaining tables do not cause crashes.
 
-Open("@abs_srcdir@/fonts/FormalScript.sfd");
-Generate("@abs_builddir@/results/FormalScript.otf","ttf",0x80);
+Open($1);
+Generate("FormalScript.otf","ttf",0x80);
 Close();
-Open("@abs_builddir@/results/FormalScript.otf");
+Open("FormalScript.otf");
 Close();
 
-Open("@abs_srcdir@/fonts/dvng10a-crash.sfd");
-Generate("@abs_builddir@/results/Deva.otf","ttf",0x80);
+Open($2);
+Generate("Deva.otf","ttf",0x80);
 Close();
-Open("@abs_builddir@/results/Deva.otf");
+Open("Deva.otf");
 Close();
 Quit()

@@ -4,12 +4,12 @@
 # per glyph
 #tests whether we get references right in postscript fonts
 
-Open("@abs_srcdir@/fonts/NimbusLGCUni-Regular.sfd")
-Generate("@abs_builddir@/results/Nimbus.otf")
-Generate("@abs_builddir@/results/Nimbus.ttf")
-Generate("@abs_builddir@/results/Nimbus.pfb")
-"helper118A.pe"("@abs_srcdir@/fonts/NimbusLGCUni-Regular.sfd","@abs_builddir@/results/Nimbus.otf")
-"helper118A.pe"("@abs_srcdir@/fonts/NimbusLGCUni-Regular.sfd","@abs_builddir@/results/Nimbus.ttf")
-"helper118B.pe"("@abs_srcdir@/fonts/NimbusLGCUni-Regular.sfd","@abs_builddir@/results/Nimbus.otf")
-"helper118B.pe"("@abs_srcdir@/fonts/NimbusLGCUni-Regular.sfd","@abs_builddir@/results/Nimbus.pfb")
+Open($1)
+Generate("Nimbus.otf")
+Generate("Nimbus.ttf")
+Generate("Nimbus.pfb")
+"helper118A.pe"($1,"Nimbus.otf")
+"helper118A.pe"($1,"Nimbus.ttf")
+"helper118B.pe"($1,"Nimbus.otf")
+"helper118B.pe"($1,"Nimbus.pfb")
 Quit()

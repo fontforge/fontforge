@@ -1,8 +1,8 @@
 #Needs: fonts/CourierNew.ttf
 #Make sure we can count points properly when the contour starts on an off curve point
 
-Open("@abs_srcdir@/fonts/CourierNew.ttf");
-Generate("@abs_builddir@/results/CourierNew.ttf")
+Open($1);
+Generate("CourierNew.ttf")
 Close()
-Open("@abs_builddir@/results/CourierNew.ttf")
+Open("CourierNew.ttf")
 Quit()

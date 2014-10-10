@@ -4,7 +4,7 @@
 # control points, but must not be because the instructions depend on it
 # being there.
 
-Open("@abs_srcdir@/fonts/DejaVuSerif.sfd")
+Open($1)
 Reencode("original")
 cnt=CharCnt()
 ptcnts = Array(cnt)
@@ -21,8 +21,8 @@ while ( i<cnt )
 endloop
 cnt = j
 
-Generate("@abs_builddir@/results/DejaVuSerif1.ttf")
-Open("@abs_builddir@/results/DejaVuSerif1.ttf")
+Generate("DejaVuSerif1.ttf")
+Open("DejaVuSerif1.ttf")
 
 i=0
 while ( i<cnt )
@@ -33,8 +33,8 @@ while ( i<cnt )
   ++i;
 endloop
 
-Generate("@abs_builddir@/results/DejaVuSerif2.ttf")
-Open("@abs_builddir@/results/DejaVuSerif2.ttf")
+Generate("DejaVuSerif2.ttf")
+Open("DejaVuSerif2.ttf")
 
 i=0
 while ( i<cnt )
