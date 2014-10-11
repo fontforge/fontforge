@@ -94,5 +94,10 @@ extern unichar_t* WordListLine_toustr( WordListLine wll );
 
 extern WordListLine WordlistEscapedInputStringToParsedData( SplineFont* sf,
 							    unichar_t* input_const );
+extern WordListLine WordlistEscapedInputStringToParsedDataComplex(
+    SplineFont* sf,
+    const unichar_t* input_const,
+    WordlistEscapedInputStringToRealString_getFakeUnicodeOfScFunc getUnicodeFunc,
+    void* udata );
 
 #endif

@@ -36,6 +36,9 @@
 #include <locale.h>
 #include "sfd1.h" // This has the extended SplineFont type SplineFont1 for old file versions.
 #include "c-strtod.h"
+#ifdef FF_UTHASH_GLIF_NAMES
+# include "glif_name_hash.h"
+#endif
 
 /*#define DEBUG 1*/
 
@@ -6731,12 +6734,12 @@ int SFKerningGroupExistsSpecific(const struct splinefont *sf, const char *groupn
   if (sf == NULL) return 0;
   if (isv) {
     if (sf->vkerns == NULL) return 0;
-    if (isr) return (StringInStrings(sf->vkerns->seconds_names, sf->vkerns->second_cnt, groupname) < sf->vkerns->second_cnt);
-    else return (StringInStrings(sf->vkerns->firsts_names, sf->vkerns->first_cnt, groupname) < sf->vkerns->first_cnt);
+    if (isr) return (StringInStrings((const char * const *)sf->vkerns->seconds_names, sf->vkerns->second_cnt, groupname) < sf->vkerns->second_cnt);
+    else return (StringInStrings((const char * const *)sf->vkerns->firsts_names, sf->vkerns->first_cnt, groupname) < sf->vkerns->first_cnt);
   } else {
     if (sf->kerns == NULL) return 0;
-    if (isr) return (StringInStrings(sf->kerns->seconds_names, sf->kerns->second_cnt, groupname) < sf->kerns->second_cnt);
-    else return (StringInStrings(sf->kerns->firsts_names, sf->kerns->first_cnt, groupname) < sf->kerns->first_cnt);
+    if (isr) return (StringInStrings((const char * const *)sf->kerns->seconds_names, sf->kerns->second_cnt, groupname) < sf->kerns->second_cnt);
+    else return (StringInStrings((const char * const *)sf->kerns->firsts_names, sf->kerns->first_cnt, groupname) < sf->kerns->first_cnt);
   }
   return 0;
 }
