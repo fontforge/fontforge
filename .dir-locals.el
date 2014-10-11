@@ -1,5 +1,4 @@
-((nil . ((show-trailing-whitespace . nil)
-         (eval . (c-add-style "fontforge"
+((nil . ((eval . (c-add-style "fontforge"
                               '("stroustrup"
                                 (indent-tabs-mode . t)
                                 (tab-width . 8)
