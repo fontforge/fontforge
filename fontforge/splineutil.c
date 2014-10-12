@@ -6650,7 +6650,7 @@ int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_ha
     absolute_index = 0;
     for (isv = 0; isv < 2; isv++)
     for (current_kernclass = (isv ? sf->vkerns : sf->kerns); current_kernclass != NULL; current_kernclass = current_kernclass->next)
-    for (isr = 0; isr < 2; isr++) {
+    for (isr = 0; isr < 2; isr++) if ( (isr ? current_kernclass->seconds_names : current_kernclass->firsts_names) != NULL ) {
     for ( i=0; i < (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt); ++i )
     if ( (isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]) != NULL ) {
         // Add it to the hash table with its index.

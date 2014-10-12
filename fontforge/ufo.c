@@ -1308,6 +1308,14 @@ int kernclass_for_groups_plist(struct splinefont *sf, struct kernclass *kc, int 
   (!(flags & FF_KERNCLASS_FLAG_FEATURE) && !kc->feature && sf->preferred_kerning == 1));
 }
 
+void ClassKerningAddExtensions(struct kernclass * target) {
+  if (target->firsts_names == NULL && target->first_cnt) target->firsts_names = calloc(target->first_cnt, sizeof(char *));
+  if (target->seconds_names == NULL && target->second_cnt) target->seconds_names = calloc(target->second_cnt, sizeof(char *));
+  if (target->firsts_flags == NULL && target->first_cnt) target->firsts_flags = calloc(target->first_cnt, sizeof(int));
+  if (target->seconds_flags == NULL && target->second_cnt) target->seconds_flags = calloc(target->second_cnt, sizeof(int));
+  if (target->offsets_flags == NULL && (target->first_cnt * target->second_cnt)) target->offsets_flags = calloc(target->first_cnt * target->second_cnt, sizeof(int));
+}
+
 int UFONameKerningClasses(SplineFont *sf) {
 #ifdef FF_UTHASH_GLIF_NAMES
     struct glif_name_index _class_name_hash;
@@ -1330,6 +1338,14 @@ int UFONameKerningClasses(SplineFont *sf) {
     for (isv = 0; isv < 2; isv++)
     for ( current_kernclass = (isv ? sf->vkerns : sf->kerns); current_kernclass != NULL; current_kernclass = current_kernclass->next )
     for (isr = 0; isr < 2; isr++) {
+      // If the special class kerning storage blocks are unallocated, we allocate them if using native U. F. O. class kerning or skip the naming otherwise.
+      if ( (isr ? current_kernclass->seconds_names : current_kernclass->firsts_names) == NULL ) {
+        if ( !(current_kernclass->feature) && (sf->preferred_kerning == 1) ) {
+          ClassKerningAddExtensions(current_kernclass);
+        } else {
+          continue;
+        }
+      }
       for ( i=0; i< (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt); i++ )
       if ( ((isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]) == NULL) &&
         kernclass_for_groups_plist(sf, current_kernclass, (isr ? current_kernclass->seconds_flags[i] : current_kernclass->firsts_flags[i]))
@@ -1473,7 +1489,8 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
       for (isv = 0; isv < 2; isv++)
       for (current_kernclass = (isv ? sf->vkerns : sf->kerns); current_kernclass != NULL; current_kernclass = current_kernclass->next)
       for (isr = 0; isr < 2; isr++) {
-        for (i=0; i < (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt); ++i) {
+        for (i=0; i < (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt); ++i)
+        if (isr ? current_kernclass->seconds_names : current_kernclass->firsts_names) {
           const char *classname = (isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]);
           const char *rawglyphlist = (isr ? current_kernclass->seconds[i] : current_kernclass->firsts[i]);
           int classflags = (isr ? current_kernclass->seconds_flags[i] : current_kernclass->firsts_flags[i]);

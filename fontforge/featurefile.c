@@ -413,19 +413,19 @@ static void dump_kernclass(FILE *out,SplineFont *sf,struct lookup_subtable *sub)
     // We only export classes and rules here that have not been emitted in groups.plist and kerning.plist.
     // The feature file can reference classes from groups.plist, but kerning.plist cannot reference groups from the feature file.
 
-    for ( i=0; i<kc->first_cnt; ++i ) if ( kc->firsts[i]!=NULL && kernclass_for_feature_file(sf, kc, kc->firsts_flags[i])) {
+    for ( i=0; i<kc->first_cnt; ++i ) if ( kc->firsts[i]!=NULL && kernclass_for_feature_file(sf, kc, kc->firsts_flags ? kc->firsts_flags[i] : 0)) {
 	fprintf( out, "    @kc%d_first_%d = [", sub->subtable_offset, i );
 	dump_glyphnamelist(out,sf,kc->firsts[i] );
 	fprintf( out, "];\n" );
     }
-    for ( i=0; i<kc->second_cnt; ++i ) if ( kc->seconds[i]!=NULL && kernclass_for_feature_file(sf, kc, kc->seconds_flags[i])) {
+    for ( i=0; i<kc->second_cnt; ++i ) if ( kc->seconds[i]!=NULL && kernclass_for_feature_file(sf, kc, kc->seconds_flags ? kc->seconds_flags[i] : 0)) {
 	fprintf( out, "    @kc%d_second_%d = [", sub->subtable_offset, i );
 	dump_glyphnamelist(out,sf,kc->seconds[i] );
 	fprintf( out, "];\n" );
     }
     for ( i=0; i<kc->first_cnt; ++i ) if ( kc->firsts[i]!=NULL ) {
 	for ( j=0; j<kc->second_cnt; ++j ) if ( kc->seconds[j]!=NULL ) {
-	    if ( kc->offsets[i*kc->second_cnt+j]!=0 && kernclass_for_feature_file(sf, kc, kc->offsets_flags[i]) )
+	    if ( kc->offsets[i*kc->second_cnt+j]!=0 && kernclass_for_feature_file(sf, kc, kc->offsets_flags ? kc->offsets_flags[i] : 0) )
 		fprintf( out, "    pos @kc%d_first_%d @kc%d_second_%d %d;\n",
 			sub->subtable_offset, i,
 			sub->subtable_offset, j,
