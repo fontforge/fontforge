@@ -3973,6 +3973,8 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 			if ( cur->last->nextcpindex==0xfffe )
 			    cur->last->nextcpindex = 0xffff;
 			SplineMake(cur->last,pt,order2);
+			cur->last->nonextcp = 1;
+			pt->noprevcp = 1;
 			cur->last = pt;
 		    }
 		}
