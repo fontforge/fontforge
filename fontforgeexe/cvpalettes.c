@@ -158,9 +158,16 @@ void onCollabSessionStateChanged( GObject* gobj, FontViewBase* fv )
 {
     bool inCollab = collabclient_inSessionFV( fv );
 
-    GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_AddLayer),    !inCollab );
-    GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_RemoveLayer), !inCollab );
-    GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_RenameLayer), !inCollab );
+    if (cvlayers != NULL) {
+      GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_AddLayer),    !inCollab );
+      GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_RemoveLayer), !inCollab );
+      GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_RenameLayer), !inCollab );
+    } else if (cvlayers2 != NULL && 0) {
+      // These controls seem not to exist in cvlayers2. We can look deeper into this later.
+      GGadgetSetEnabled(GWidgetGetControl(cvlayers2,CID_AddLayer),    !inCollab );
+      GGadgetSetEnabled(GWidgetGetControl(cvlayers2,CID_RemoveLayer), !inCollab );
+      GGadgetSetEnabled(GWidgetGetControl(cvlayers2,CID_RenameLayer), !inCollab );
+    }
 }
 
 /* Initialize a window that is to be used for a palette. Specific widgets and other functionality are added elsewhere. */
