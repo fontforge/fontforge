@@ -10,7 +10,15 @@ PKGBASEPATH="$( cd "${SCRIPT_PATH}/../.." && pwd )"
 
 echo "PKGBASE: $PKGBASEPATH"
 
-if [ y"$PKGBASEPATH" != "y/Applications/FontForge.app" ]; then
+APPLICATIONS_FONTFORGE="/Applications/FontForge.app"
+if [ -L $APPLICATIONS_FONTFORGE ]; then
+    echo "your fontforge install is using a link...";
+    APPLICATIONS_FONTFORGE=$(readlink $APPLICATIONS_FONTFORGE);
+    echo "you actually installed the real file into $APPLICATIONS_FONTFORGE"
+fi
+
+
+if [ y"$PKGBASEPATH" != "y$APPLICATIONS_FONTFORGE" ]; then
   COCOA_DIALOG="${SCRIPT_PATH}/CocoaDialog.app/Contents/MacOS/CocoaDialog";
   $COCOA_DIALOG msgbox --no-newline \
     --title "FontForge: Error starting" \
