@@ -457,7 +457,7 @@ static int GFD_Ok(GGadget *g, GEvent *e) {
 return(true);
 	    }
 	    d->done = true;
-	    d->ret = GGadgetGetTitle(d->gfc);
+	    d->ret = u_GFileNormalizePath(GGadgetGetTitle(d->gfc));
 
 	    // Trim trailing '/' if its there and put that string back as
 	    // the d->gfc string.
