@@ -1028,7 +1028,7 @@ void _FVMenuOpen(FontView *fv) {
     DefaultDir = copy(GFileGetHomeDocumentsDir()); //Default value
     if (fv && fv->b.sf && fv->b.sf->filename) {
         free(DefaultDir);
-        DefaultDir = GFileDirName(fv->b.sf->filename);
+        DefaultDir = GFileDirNameEx(fv->b.sf->filename, true);
     }
 #endif
 

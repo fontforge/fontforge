@@ -1041,7 +1041,7 @@ unichar_t *u_GFileGetHomeDocumentsDir(void) {
 }
 
 
-char *GFileDirName(const char *path)
+char *GFileDirNameEx(const char *path, int treat_as_file)
 {
     char *ret = NULL;
     if (path != NULL) {
@@ -1054,7 +1054,7 @@ char *GFileDirName(const char *path)
             
             strcpy(ret, path);
             GFileNormalizePath(ret);
-            if (!GFileIsDir(ret)) {
+            if (treat_as_file || !GFileIsDir(ret)) {
                 pt = strrchr(ret, '/');
                 if (pt != NULL) {
                     *pt = '\0';
@@ -1071,5 +1071,9 @@ char *GFileDirName(const char *path)
         }
     }
     return ret;
+}
+
+char *GFileDirName(const char *path) {
+    return GFileDirNameEx(path, 0);
 }
 

@@ -118,7 +118,14 @@ extern unichar_t* u_GFileGetHomeDocumentsDir(void);
  *
  * The return value must be freed.
  */
-extern char *GFileDirName(const char *path );
+extern char *GFileDirName(const char *path);
+
+/**
+ * Exactly like GFileDirName, but optionally treats the path as if
+ * it were a file. This is needed for cases of treating UFO and sfdir folders as
+ * 'files'.
+ */
+ extern char *GFileDirNameEx(const char *path, int treat_as_file);
 
 
 
