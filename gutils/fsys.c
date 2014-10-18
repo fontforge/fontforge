@@ -589,6 +589,27 @@ return( pt+1);
 return( (unichar_t *)oldname );
 }
 
+/**
+ * Remove the 'root' part of the file path if it is absolute;
+ * On Unix this is '/' and on Windows this is for e.g. 'C:/'
+ */
+static unichar_t *u_GFileRemoveRoot(unichar_t *path) {
+    //May happen on Windows too e.g. CygWin
+    if (*path == '/') {
+        path++;
+    }
+#ifdef _WIN32
+    //Check if it is a drive letter path
+    else if (((path[0] >= 'A' && path[0] <= 'Z') ||
+              (path[0] >= 'a' && path[0] <= 'z')) &&
+             path[1] == ':' && path[2] == '/') {
+             
+        path += 3;
+    }
+#endif
+    return path;
+}
+
 unichar_t *u_GFileNormalize(unichar_t *name) {
     unichar_t *pt, *base, *ppt;
 
@@ -597,10 +618,9 @@ unichar_t *u_GFileNormalize(unichar_t *name) {
 	if ( base==NULL )
 return( name );
 	++base;
-    } else if ( *name=='/' )
-	base = name+1;
-    else
-	base = name;
+    }
+    
+    base = u_GFileRemoveRoot(name);
     for ( pt=base; *pt!='\0'; ) {
 	if ( *pt=='/' )
 	    u_strcpy(pt,pt+1);
@@ -1021,15 +1041,39 @@ unichar_t *u_GFileGetHomeDocumentsDir(void) {
 }
 
 
-char *GFileDirName(const char *path)
+char *GFileDirNameEx(const char *path, int treat_as_file)
 {
-    static char ret[PATH_MAX+1];
-    strncpy( ret, path, PATH_MAX );
-    ret[PATH_MAX] = '\0';
-    GFileNormalizePath( ret );
-    char *pt = strrchr( ret, '/' );
-    if ( pt )
-	*pt = '\0';
+    char *ret = NULL;
+    if (path != NULL) {
+        //Must allocate enough space to append a trailing slash.
+        size_t len = strlen(path);
+        ret = malloc(len + 2);
+        
+        if (ret != NULL) {
+            char *pt;
+            
+            strcpy(ret, path);
+            GFileNormalizePath(ret);
+            if (treat_as_file || !GFileIsDir(ret)) {
+                pt = strrchr(ret, '/');
+                if (pt != NULL) {
+                    *pt = '\0';
+                }
+            }
+            
+            //Keep only one trailing slash
+            len = strlen(ret);
+            for (pt = ret + len - 1; pt >= ret && *pt == '/'; pt--) {
+                *pt = '\0';
+            }
+            *++pt = '/';
+            *++pt = '\0';
+        }
+    }
     return ret;
+}
+
+char *GFileDirName(const char *path) {
+    return GFileDirNameEx(path, 0);
 }
 

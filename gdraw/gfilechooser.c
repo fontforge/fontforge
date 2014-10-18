@@ -512,10 +512,15 @@ static int GFileChooserTextChanged(GGadget *t,GEvent *e) {
     GGadget *g = (GGadget *)GGadgetGetUserData(t);
 
     const unichar_t *pt, *spt;
-    unichar_t * pt_toFree = 0;
+    unichar_t * pt_toFree = 0, *local_toFree = 0;
     if ( e->type!=et_controlevent || e->u.control.subtype!=et_textchanged )
 return( true );
     spt = pt = _GGadgetGetTitle(t);
+#ifdef _WIN32
+    local_toFree = u_GFileNormalizePath(u_copy(spt));
+    pt = spt = local_toFree;
+#endif    
+    
     if ( pt==NULL )
 return( true );
     gfc = (GFileChooser *) GGadgetGetUserData(t);
@@ -556,6 +561,9 @@ return( true );
     free(gfc->lastname); gfc->lastname = NULL;
     if(pt_toFree)
 	free(pt_toFree);
+    
+    if (local_toFree)
+        free(local_toFree);
 
     if(gfc->inputfilenameprevchar)
 	free(gfc->inputfilenameprevchar);
@@ -1129,11 +1137,15 @@ void GFileChooserPopupCheck(GGadget *g,GEvent *e) {
 void GFileChooserFilterIt(GGadget *g) {
     GFileChooser *gfc = (GFileChooser *) g;
     unichar_t *pt, *spt, *slashpt, *dir, *temp;
+    unichar_t *tofree = NULL;
     int wasdir;
 
     wasdir = gfc->lastname!=NULL;
 
     spt = (unichar_t *) _GGadgetGetTitle(&gfc->name->g);
+#ifdef _WIN32
+    spt = tofree = u_GFileNormalizePath(u_copy(spt));
+#endif
     if ( *spt=='\0' ) {		/* Werner tells me that pressing the Filter button with nothing should show the default filter mask */
 	if ( gfc->wildcard!=NULL )
 	    GGadgetSetTitle(&gfc->name->g,gfc->wildcard);
@@ -1169,6 +1181,7 @@ return;
     }
     GFileChooserScanDir(gfc,dir);
     free(dir);
+    free(tofree);
 }
 
 /* A function that may be connected to a filter button as its handle_controlevent */
