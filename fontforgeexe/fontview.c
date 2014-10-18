@@ -1035,19 +1035,11 @@ void _FVMenuOpen(FontView *fv) {
     for ( fvcnt=0, test=fv_list; test!=NULL; ++fvcnt, test=(FontView *) (test->b.next) );
     do {
         if (NewDir != NULL) {
-            char *tmp = NewDir;
-            size_t len = strlen(NewDir);
+            if (OpenDir != DefaultDir) {
+                free(OpenDir);
+            }
             
-            //Must append a trailing slash
-            if (tmp[len-1] == '/' || asprintf(&tmp, "%s/", NewDir) > 0) {
-                if (OpenDir != DefaultDir) {
-                    free(OpenDir);
-                }
-                OpenDir = tmp;
-            }
-            if (tmp != OpenDir) {
-                free(NewDir);
-            }
+            OpenDir = NewDir;
             NewDir = NULL;
         } else if (OpenDir != DefaultDir) {
             free(OpenDir);
