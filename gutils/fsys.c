@@ -1043,13 +1043,33 @@ unichar_t *u_GFileGetHomeDocumentsDir(void) {
 
 char *GFileDirName(const char *path)
 {
-    static char ret[PATH_MAX+1];
-    strncpy( ret, path, PATH_MAX );
-    ret[PATH_MAX] = '\0';
-    GFileNormalizePath( ret );
-    char *pt = strrchr( ret, '/' );
-    if ( pt )
-	*pt = '\0';
+    char *ret = NULL;
+    if (path != NULL) {
+        //Must allocate enough space to append a trailing slash.
+        size_t len = strlen(path);
+        ret = malloc(len + 2);
+        
+        if (ret != NULL) {
+            char *pt;
+            
+            strcpy(ret, path);
+            GFileNormalizePath(ret);
+            if (!GFileIsDir(ret)) {
+                pt = strrchr(ret, '/');
+                if (pt != NULL) {
+                    *pt = '\0';
+                }
+            }
+            
+            //Keep only one trailing slash
+            len = strlen(ret);
+            for (pt = ret + len - 1; pt >= ret && *pt == '/'; pt--) {
+                *pt = '\0';
+            }
+            *++pt = '/';
+            *++pt = '\0';
+        }
+    }
     return ret;
 }
 

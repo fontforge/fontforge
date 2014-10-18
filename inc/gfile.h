@@ -112,11 +112,11 @@ extern unichar_t* u_GFileGetHomeDocumentsDir(void);
 /**
  * Return the directory name for the full path 'path'.
  * This is like the shell "dirname" command, for example:
- * GFileDirName("/a/b/c/foo.sfd") returns "/a/b/c".
+ * GFileDirName("/a/b/c/foo.sfd") returns "/a/b/c/".
  * This will also handle mingw paths as expected.
+ * A trailing slash is always appended.
  *
- * The return value is owned by the function which is not reenterant.
- * Do not try to free the return value.
+ * The return value must be freed.
  */
 extern char *GFileDirName(const char *path );
 
