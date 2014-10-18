@@ -2169,6 +2169,8 @@ static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,uint32 start, uin
     SplineChar *sc = SplineCharCreate(2);
     int gbb[4];
 
+    sc->layers[ly_fore].background = 0;
+    sc->layers[ly_back].background = 1;
     sc->unicodeenc = -1;
     sc->vwidth = info->emsize;
     sc->orig_pos = gid;
