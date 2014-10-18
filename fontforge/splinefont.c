@@ -1238,7 +1238,9 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 	    ff_post_error(_("Couldn't open font"),_("The requested file, %.100s, does not exist"),GFileNameTail(fname));
     else if ( !GFileReadable(fname) )
 	    ff_post_error(_("Couldn't open font"),_("You do not have permission to read %.100s"),GFileNameTail(fname));
-    else
+    else if ( GFileIsDir(fname) ) {
+        LogError(_("Couldn't open directory as a font: %s"), fname);
+    } else
 	    ff_post_error(_("Couldn't open font"),_("%.100s is not in a known format (or uses features of that format fontforge does not support, or is so badly corrupted as to be unreadable)"),GFileNameTail(filename));
 
     if ( oldstrippedname!=fname )
