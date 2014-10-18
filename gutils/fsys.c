@@ -589,6 +589,27 @@ return( pt+1);
 return( (unichar_t *)oldname );
 }
 
+/**
+ * Remove the 'root' part of the file path if it is absolute;
+ * On Unix this is '/' and on Windows this is for e.g. 'C:/'
+ */
+static unichar_t *u_GFileRemoveRoot(unichar_t *path) {
+    //May happen on Windows too e.g. CygWin
+    if (*path == '/') {
+        path++;
+    }
+#ifdef _WIN32
+    //Check if it is a drive letter path
+    else if (((path[0] >= 'A' && path[0] <= 'Z') ||
+              (path[0] >= 'a' && path[0] <= 'z')) &&
+             path[1] == ':' && path[2] == '/') {
+             
+        path += 3;
+    }
+#endif
+    return path;
+}
+
 unichar_t *u_GFileNormalize(unichar_t *name) {
     unichar_t *pt, *base, *ppt;
 
@@ -597,10 +618,9 @@ unichar_t *u_GFileNormalize(unichar_t *name) {
 	if ( base==NULL )
 return( name );
 	++base;
-    } else if ( *name=='/' )
-	base = name+1;
-    else
-	base = name;
+    }
+    
+    base = u_GFileRemoveRoot(name);
     for ( pt=base; *pt!='\0'; ) {
 	if ( *pt=='/' )
 	    u_strcpy(pt,pt+1);
