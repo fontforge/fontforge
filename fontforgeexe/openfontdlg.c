@@ -468,7 +468,7 @@ return(true);
 		    tmp[ tmplen-1 ] = '\0';
 		    GGadgetSetTitle(d->gfc, tmp);
 		    free(tmp);
-		    d->ret = GGadgetGetTitle(d->gfc);
+		    d->ret = u_GFileNormalizePath(GGadgetGetTitle(d->gfc));
 		}
 	    }
 	}
