@@ -1025,7 +1025,7 @@ void _FVMenuOpen(FontView *fv) {
 
     char* OpenDir = NULL;
 #if defined(__MINGW32__)
-    OpenDir = GFileGetHomeDocumentsDir(); //Default value
+    OpenDir = copy(GFileGetHomeDocumentsDir()); //Default value
     if (fv && fv->b.sf && fv->b.sf->filename) {
 	free(OpenDir);
         OpenDir = copy( GFileDirName( fv->b.sf->filename));
