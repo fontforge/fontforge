@@ -493,13 +493,18 @@ return( ret );
 
 char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
     int i,num;
-    int32 tag, nameoffset, stringoffset;
+    int32 tag, nameoffset, namelength, stringoffset;
     int plat, spec, lang, name, len, off, val;
     int fullval, fullstr, fulllen, famval, famstr, famlen;
     Encoding *enc;
     int fullplat, fullspec, fulllang, famplat, famspec, famlang;
     int locale = MSLanguageFromLocale();
     int maclang = WinLangToMac(locale);
+    long ttfFileSize;
+
+    /* Determine file size to check table offset bounds */
+    fseek(ttf,0,SEEK_END);
+    ttfFileSize = ftell(ttf);
 
     fseek(ttf,offset,SEEK_SET);
     /* version = */ getlong(ttf);
@@ -507,15 +512,21 @@ char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
     /* srange = */ getushort(ttf);
     /* esel = */ getushort(ttf);
     /* rshift = */ getushort(ttf);
+    if ( feof(ttf) )
+        return( NULL );
     for ( i=0; i<num; ++i ) {
         tag = getlong(ttf);
         /* checksum = */ getlong(ttf);
         nameoffset = off2+getlong(ttf);
-        /* length = */ getlong(ttf);
+        namelength = getlong(ttf);
+        if ( feof(ttf) )
+            return( NULL );
         if ( tag==CHR('n','a','m','e'))
             break;
     }
     if ( i==num )
+        return( NULL );
+    if ( nameoffset+namelength > ttfFileSize )
         return( NULL );
 
     fseek(ttf,nameoffset,SEEK_SET);
@@ -580,8 +591,38 @@ char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
     return( _readencstring(ttf,stringoffset+fullstr,fulllen,fullplat,fullspec,fulllang));
 }
 
+/* Chooses which font to open from a TTC TrueType Collection font file.      */
+/*                                                                           */
+/* There are five ways that one enclosed font is selected:                   */
+/*   1)  there is only one font enclosed, so we force defaulting to that one.*/
+/*   2a) the filename has a font index appended, we choose that N'th font.   */
+/*   2b) the filename has a font name appended, we try to match that name    */
+/*           in list of discovered font names and select that named font.    */
+/*   3)  the user is prompted with a list of all discovered font names, and  */
+/*           asked to select one, and then that N'th font is chosen.         */
+/*   4)  when there is no UI, then font index zero is used.                  */
+/*                                                                           */
+/* On failure and no font is chosen, returns false.                          */
+/*                                                                           */
+/* On success, true is returned.  The chosen font name (allocated) pointer   */
+/*   is returned via 'chosenname'. Additionally, the file position is set    */
+/*   pointing to the chosen TTF font offset table, ready for reading the     */
+/*   TTF header.                                                             */
+/*                                                                           */
+/* Example filename strings with appended font selector:                     */
+/*     ./tests/fonts/mingliu.windows.ttc(PMingLiU)                           */
+/*     ./tests/fonts/mingliu.windows.ttc(1)                                  */
+/*                                                                           */
+/* 'offsets' is a list of file offsets to each enclosed TTF offset table.    */
+/* 'names' is a list of font names as found in each enclosed name table.     */
+/* 'names' is used to search for a matching font name, or to present as a    */
+/*    list to the user via ff_choose() to select from.                       */
+/*  Once the chosen font index is determined, offsets[choice] is used to     */
+/*    call fseek() to position to the chosen TTF header offset table. Then   */
+/*    the chosen font name is copied into 'chosenname'.                      */
+
 static int PickTTFFont(FILE *ttf,char *filename,char **chosenname) {
-    int32 *offsets, cnt, i, choice, j;
+    int32 *offsets, cnt, i, choice;
     char **names;
     char *pt, *lparen, *rparen;
 
@@ -591,15 +632,17 @@ static int PickTTFFont(FILE *ttf,char *filename,char **chosenname) {
 	/* This is easy, don't bother to ask the user, there's no choice */
 	int32 offset = getlong(ttf);
 	fseek(ttf,offset,SEEK_SET);
-return( true );
+        return( true );
     }
+
     offsets = malloc(cnt*sizeof(int32));
     for ( i=0; i<cnt; ++i )
 	offsets[i] = getlong(ttf);
     names = malloc(cnt*sizeof(char *));
-    for ( i=j=0; i<cnt; ++i ) {
-	names[j] = TTFGetFontName(ttf,offsets[i],0);
-	if ( names[j]!=NULL ) ++j;
+    for ( i=0; i<cnt; ++i ) {
+	names[i] = TTFGetFontName(ttf,offsets[i],0);
+        if ( names[i]==NULL ) 
+            names[i] = copy("<no name>");
     }
     pt = strrchr(filename,'/');
     if ( pt==NULL ) pt = filename;
@@ -609,16 +652,17 @@ return( true );
     if ( (lparen = strrchr(pt,'('))!=NULL &&
 	    (rparen = strrchr(lparen,')'))!=NULL &&
 	    rparen[1]=='\0' ) {
-	char *find = copy(lparen+1);
-	pt = strchr(find,')');
-	if ( pt!=NULL ) *pt='\0';
+        char *find = copyn(lparen+1, rparen-lparen-1);
 	for ( choice=cnt-1; choice>=0; --choice )
-	    if ( strcmp(names[choice],find)==0 )
-	break;
+            if ( names[choice]!=NULL )
+	        if ( strcmp(names[choice],find)==0 )
+	            break;
 	if ( choice==-1 ) {
 	    char *end;
 	    choice = strtol(find,&end,10);
 	    if ( *end!='\0' )
+		choice = -1;
+            else if ( choice < 0 || choice >= cnt )
 		choice = -1;
 	}
 	if ( choice==-1 ) {
@@ -635,12 +679,16 @@ return( true );
     } else if ( no_windowing_ui )
 	choice = 0;
     else
-	choice = ff_choose(_("Pick a font, any font..."),(const char **) names,j,0,_("There are multiple fonts in this file, pick one"));
+	choice = ff_choose(_("Pick a font, any font..."),(const char **) names,cnt,0,_("There are multiple fonts in this file, pick one"));
+    if ( choice < -1 || choice >= cnt )
+        choice = -1;
     if ( choice!=-1 ) {
+        /* position file to start of the chosen TTF font header */
 	fseek(ttf,offsets[choice],SEEK_SET);
-	*chosenname = copy(names[choice]);
+	*chosenname = names[choice];
+	names[choice] = NULL;
     }
-    for ( i=0; i<j; ++i )
+    for ( i=0; i<cnt; ++i )
 	free(names[i]);
     free(names);
     free(offsets);
@@ -1008,6 +1056,12 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	/* checksum */ getlong(ttf);
 	offset = getlong(ttf);
 	length = getlong(ttf);
+        if ( offset+length > info->ttfFileSize ) {
+	    LogError(_("Table '%c%c%c%c' extends beyond end of file and must be ignored."),
+	    	            tag>>24, tag>>16, tag>>8, tag );
+	    info->bad_sfnt_header = true;
+            continue;
+        }
 #ifdef DEBUG
  printf( "%c%c%c%c\n", tag>>24, (tag>>16)&0xff, (tag>>8)&0xff, tag&0xff );
 #endif
@@ -5401,6 +5455,11 @@ return( false );
 
 static int readttf(FILE *ttf, struct ttfinfo *info, char *filename) {
     int i;
+
+    /* Determine file size to check table offset bounds */
+    fseek(ttf,0,SEEK_END);
+    info->ttfFileSize = ftell(ttf);
+    fseek(ttf,0,SEEK_SET);
 
     ff_progress_change_stages(3);
     if ( !readttfheader(ttf,info,filename,&info->chosenname)) {
