@@ -416,14 +416,11 @@ FONTFORGE_ARG_WITH([libzmq],
         [ libczmq >= 2.2.0 libzmq >= 4.0.4 ],
         [FONTFORGE_WARN_PKG_NOT_FOUND([LIBZMQ])],
         [_NO_LIBZMQ], [NO_LIBZMQ=1])
-if test "x$i_do_have_libzmq" = xyes; then
-   if test "x${WINDOWS_CROSS_COMPILE}" = x; then
-      AC_MSG_WARN([Using zeromq enables collab, which needs libuuid, so I'm checking for that now...])
-      CHECK_LIBUUID
-   fi
-fi
+        if test "x$i_do_have_libzmq" = xyes; then
+           AC_MSG_WARN([Using zeromq enables collab, which needs libuuid, so I'm checking for that now...])
+        CHECK_LIBUUID
+        fi
 
-LIBZMQ_CFLAGS+=" $LIBUUID_CFLAGS"
-LIBZMQ_LIBS+=" $LIBUUID_LIBS"
-
+        LIBZMQ_CFLAGS+=" $LIBUUID_CFLAGS"
+        LIBZMQ_LIBS+=" $LIBUUID_LIBS"
 ])

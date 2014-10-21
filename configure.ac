@@ -283,11 +283,6 @@ FONTFORGE_ARG_ENABLE([tile-path],
                 [enable a 'tile path' command (a variant of 'expand stroke')])],
         [FONTFORGE_CONFIG_TILEPATH])
 
-AC_ARG_ENABLE([windows-cross-compile],
-        [AS_HELP_STRING([--enable-windows-cross-compile],
-                [enable cross compile for windows extra support])],
-        [WINDOWS_CROSS_COMPILE=yes])
-
 #--------------------------------------------------------------------------
 # Theme pixmap ICON selection.
 # Go with tango by default. Retain older 2012 theme for those who like it.
