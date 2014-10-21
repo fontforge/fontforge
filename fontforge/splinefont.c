@@ -947,7 +947,6 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 	    }
     }
 
-    printf("strippedname:%s\n", fname );
     strippedname = fname;
     pt = strrchr(fname,'/');
     if ( pt==NULL ) pt = fname;
