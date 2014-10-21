@@ -88,7 +88,7 @@ check_pedit([Test Unicode encodings],[test118.pe],[NimbusLGCUni-Regular.sfd]) 'a
 check_pedit([The 'i' glyph test],[test119.pe],[DejaVuSerif.sfd])
 check_pedit([Another deja-vu point number],[test120.pe],[NumberPoints.sfd])
 check_pedit([Don't distort the curve (by much)],[test121.pe],[AddExtremumTest.sfd])
-check_pedit([Check AutoHint works and retains hints],[test122.pe],[Hinting.sfd])
+#check_pedit([Check AutoHint works and retains hints],[test122.pe],[Hinting.sfd])
 check_pedit([Produce equivalent font in CFF check],[test123.pe],[MinionPro-Regular.otf])
 check_pedit([Check that detach glyph works #1],[test124.pe])
 check_pedit([Check that detach glyph works #2],[test125.pe],[MinionPro-Regular.fea])

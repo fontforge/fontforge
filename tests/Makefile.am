@@ -91,12 +91,10 @@ EXTRA_DIST += fonts/AddExtremaTest2.sfd fonts/AddExtremumTest.sfd	\
 # generated test inputs
 GENERATED_INPUTS =							\
 	fonts/MunhwaGothic-Bold						\
-	fonts/mingliu.ttc						\
 	fonts/Ambrosia.pt3
 
 FETCHED_INPUTS =							\
-	$(srcdir)/fetched-fonts/MunhwaGothic-Bold				\
-	$(srcdir)/fetched-fonts/mingliu.ttc
+	$(srcdir)/fetched-fonts/MunhwaGothic-Bold
 
 MAYBE_GENERATED_INPUTS =						\
 	fonts/MinionPro-Regular.fea
@@ -114,10 +112,6 @@ fonts/Ambrosia.pt3: fonts/Ambrosia.sfd
 $(srcdir)/fetched-fonts/MunhwaGothic-Bold:
 	$(MKDIR_P) $(srcdir)/fetched-fonts
 	if [ ! -e $@ ] ; then $(WGET) ftp://ftp.naist.jp/pub/NetBSD/packages/distfiles/adobe-cidfonts/MunhwaGothic-Bold -O $@ ; fi ;
-
-$(srcdir)/fetched-fonts/mingliu.ttc:
-	$(MKDIR_P) $(srcdir)/fetched-fonts
-	if [ ! -e $@ ] ; then $(WGET) http://www.fontsupply.com/fonts/mingliu.ttc -O $@ ; fi ;
 
 fonts/MunhwaGothic-Bold:
 	$(MKDIR_P) $(builddir)/fonts
