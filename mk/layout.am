@@ -45,7 +45,7 @@ pixmapsdir = ${pkgdatadir}/pixmaps
 # Where to put binaries which are really only interesting to fontforge itself.
 # For example, processes that are created to help with real time collaboration
 # but which are really not so interesting for the user to ever directly create.
-internal_bindir = ${bindir}/FontForgeInternal
+internal_bindir = ${libexecdir}/bin/FontForgeInternal
 
 # Where the FontForge help system goes.
 HTDOCS_SUBDIR =
