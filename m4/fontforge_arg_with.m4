@@ -394,8 +394,9 @@ AC_DEFUN([FONTFORGE_WARN_PKG_FALLBACK],
 
 AC_DEFUN([CHECK_LIBOSSPUUID],
 	[
-	PKG_CHECK_MODULES([LIBOSSPUUID], [ossp-uuid >= 1.6], ,
-            AC_MSG_ERROR([libossp-uuid development files required]))
+        PKG_CHECK_MODULES([LIBOSSPUUID], [ossp-uuid >= 1.6], ,
+            PKG_CHECK_MODULES([LIBOSSPUUID], [uuid >= 1.6], ,
+                AC_MSG_ERROR([libossp-uuid development files required])))
 	AC_SUBST([LIBOSSPUUID_CFLAGS])
 	AC_SUBST([LIBOSSPUUID_LIBS])
 	])
