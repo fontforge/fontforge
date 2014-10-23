@@ -57,7 +57,6 @@ extern int DEBUG_SHOW_SFD_CHUNKS; // defined in collabclient.c
 
 
 #define beacon_announce_protocol_sz     20
-#define beacon_announce_uuid_sz         40
 #define beacon_announce_username_sz     50
 #define beacon_announce_machinename_sz  50
 #define beacon_announce_ip_sz           20
@@ -74,12 +73,13 @@ extern int DEBUG_SHOW_SFD_CHUNKS; // defined in collabclient.c
 #include "inc/gnetwork.h"
 #include "splinefont.h"
 
+#include <ossp/uuid.h>
 
 
 typedef struct {
     uint8_t protocol   [beacon_announce_protocol_sz];
     uint8_t version;
-    uint8_t uuid       [beacon_announce_uuid_sz];
+    uint8_t uuid       [UUID_LEN_STR + 1];
     uint8_t username   [beacon_announce_username_sz];
     uint8_t machinename[beacon_announce_machinename_sz];
     uint16_t port; // network byte order //

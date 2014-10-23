@@ -46,9 +46,7 @@ extern int h_errno;
 #include <arpa/inet.h>
 
 #ifdef BUILD_COLLAB
-#if !defined(__MINGW32__)
-#include <uuid/uuid.h>
-#endif
+#include <ossp/uuid.h>
 #endif
 
 
@@ -119,18 +117,18 @@ char* HostPortUnpack( char* packed, int* port, int port_default )
 
 
 //
-// target must be at least 1b4e28ba-2fa1-11d2-883f-0016d3cca427 + null in length.
+// target must be at least UUID_LEN_STR + null in length.
 //
 char* ff_uuid_generate( char* target )
 {
     strcpy( target, "" );
 
 #ifdef BUILD_COLLAB
-#if !defined(__MINGW32__)
-    uuid_t uuid;
-    uuid_generate (uuid);
-    uuid_unparse_lower( uuid, target );
-#endif
+    uuid_t *uuid;
+    uuid_create (&uuid);
+    uuid_make (uuid, UUID_MAKE_V1);
+    uuid_export (uuid, UUID_FMT_STR, &target, NULL);
+    uuid_destroy (uuid);
 #endif // collab guard.
 
     return target;
