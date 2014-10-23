@@ -73,7 +73,7 @@ extern int DEBUG_SHOW_SFD_CHUNKS; // defined in collabclient.c
 #include "inc/gnetwork.h"
 #include "splinefont.h"
 
-#include <ossp/uuid.h>
+#include <uuid.h>
 
 
 typedef struct {

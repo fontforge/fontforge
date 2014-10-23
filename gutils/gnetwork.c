@@ -29,6 +29,10 @@
 #include "inc/gnetwork.h"
 #include "inc/ustring.h"
 
+#ifdef BUILD_COLLAB
+#include <uuid.h>
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -44,11 +48,6 @@ extern int h_errno;
 #endif
 
 #include <arpa/inet.h>
-
-#ifdef BUILD_COLLAB
-#include <ossp/uuid.h>
-#endif
-
 
 char* ff_gethostname( char* outstring, int outstring_sz )
 {
