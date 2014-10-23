@@ -3625,33 +3625,30 @@ SplineFont *SFReadUFO(char *basedir, int flags) {
 return( NULL );
     }
 
-    temp = buildname(basedir,"fontinfo.plist");
-    doc = xmlParseFile(temp);
-    free(temp);
-    if ( doc==NULL ) {
-	/* Can I get an error message from libxml? */
-return( NULL );
-    }
-    plist = xmlDocGetRootElement(doc);
-    dict = FindNode(plist->children,"dict");
-    if ( xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 || dict==NULL ) {
-	LogError(_("Expected property list file"));
-	xmlFreeDoc(doc);
-return( NULL );
-    }
-
     sf = SplineFontEmpty();
     SFDefaultOS2Info(&sf->pfminfo, sf, ""); // We set the default pfm values.
     sf->pfminfo.pfmset = 1; // We flag the pfminfo as present since we expect the U. F. O. to set any desired values.
     int versionMajor = -1; // These are not native SplineFont values.
     int versionMinor = -1; // We store the U. F. O. values and then process them at the end.
+
+    temp = buildname(basedir,"fontinfo.plist");
+    doc = xmlParseFile(temp);
+    free(temp);
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
     switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
-    for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
+    if ( doc!=NULL ) {
+      plist = xmlDocGetRootElement(doc);
+      dict = FindNode(plist->children,"dict");
+      if ( xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 || dict==NULL ) {
+	LogError(_("Expected property list file"));
+	xmlFreeDoc(doc);
+      return( NULL );
+      }
+      for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
 	for ( value = keys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
 		value = value->next );
 	if ( value==NULL )
-    break;
+          break;
 	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
 	    keyname = xmlNodeListGetString(doc,keys->children,true);
 	    valname = xmlNodeListGetString(doc,value->children,true);
@@ -3895,6 +3892,8 @@ return( NULL );
 		free(valname);
 	    free(keyname);
 	}
+      }
+      xmlFreeDoc(doc);
     }
     if ( em==-1 && as>=0 && ds>=0 )
 	em = as + ds;
@@ -3906,11 +3905,8 @@ return( NULL );
 	sf->invalidem = 1;
     }
     if ( em==-1 ) {
-	LogError(_("This font does not specify unitsPerEm"));
-	xmlFreeDoc(doc);
-	switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
-	SplineFontFree(sf);
-return( NULL );
+	LogError(_("This font does not specify unitsPerEm, so we guess 1000."));
+	em = 1000;
     }
     sf->ascent = as; sf->descent = ds;
     if ( sf->fontname==NULL ) {
@@ -3929,7 +3925,7 @@ return( NULL );
 	if (sf->pfminfo.os2_family_name != NULL) sf->familyname=copy(sf->pfminfo.os2_family_name);
 	else sf->familyname = copy(sf->fontname);
     }
-    free(stylename);
+    free(stylename); stylename = NULL;
     if ( sf->weight==NULL )
 	sf->weight = copy("Regular");
     // We first try to set the SplineFont version by using the native numeric U. F. O. values.
@@ -3940,7 +3936,6 @@ return( NULL );
 	    sf->names->names[ttf_version]!=NULL &&
 	    strncmp(sf->names->names[ttf_version],"Version ",8)==0 )
 	sf->version = copy(sf->names->names[ttf_version]+8);
-    xmlFreeDoc(doc);
 
 	char * layercontentsname = buildname(basedir,"layercontents.plist");
 	char ** layernames = NULL;
