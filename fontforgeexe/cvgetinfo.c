@@ -3470,7 +3470,7 @@ return( true );
 }
 
 static void SpiroPointGetInfo(CharView *cv, spiro_cp *scp, SplinePointList *spl) {
-    static GIData gi;
+    GIData *gip = calloc(1, sizeof(GIData));
     GRect pos;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[20];
@@ -3483,12 +3483,12 @@ static void SpiroPointGetInfo(CharView *cv, spiro_cp *scp, SplinePointList *spl)
     GPoint pt;
     int j,k;
 
-    gi.cv = cv;
-    gi.sc = cv->b.sc;
-    gi.curcp = scp;
-    gi.curspl = spl;
-    gi.oldstate = SplinePointListCopy(cv->b.layerheads[cv->b.drawmode]->splines);
-    gi.done = false;
+    gip->cv = cv;
+    gip->sc = cv->b.sc;
+    gip->curcp = scp;
+    gip->curspl = spl;
+    gip->oldstate = SplinePointListCopy(cv->b.layerheads[cv->b.drawmode]->splines);
+    gip->done = false;
     CVPreserveState(&cv->b);
 
     root = GDrawGetRoot(NULL);
@@ -3515,14 +3515,14 @@ static void SpiroPointGetInfo(CharView *cv, spiro_cp *scp, SplinePointList *spl)
 	if ( pos.y+pos.height+20 > screensize.height )
 	    pos.y = screensize.height - pos.height - 20;
 	if ( pos.y<0 ) pos.y = 0;
-	gi.gw = GDrawCreateTopWindow(NULL,&pos,pi_e_h,&gi,&wattrs);
+	gip->gw = GDrawCreateTopWindow(NULL,&pos,pi_e_h,gip,&wattrs);
 
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
 	memset(&pb,0,sizeof(pb));
 
 	j=k=0;
-	gi.gcd = gcd;
+	gip->gcd = gcd;
 
 	label[j].text = (unichar_t *) _("_X:");
 	label[j].text_is_1byte = true;
@@ -3731,7 +3731,7 @@ static void SpiroPointGetInfo(CharView *cv, spiro_cp *scp, SplinePointList *spl)
 	pb[0].gd.u.boxelements = varray;
 	pb[0].creator = GHVGroupCreate;
 
-	GGadgetsCreate(gi.gw,pb);
+	GGadgetsCreate(gip->gw,pb);
 
 	GHVBoxSetExpandableRow(pb[0].ret,gb_expandglue);
 	GHVBoxSetExpandableCol(pb[2].ret,gb_expandglue);
@@ -3740,15 +3740,14 @@ static void SpiroPointGetInfo(CharView *cv, spiro_cp *scp, SplinePointList *spl)
 	GHVBoxSetExpandableCol(pb[5].ret,gb_expandglue);
 	GHVBoxSetExpandableCol(pb[6].ret,gb_expandgluesame);
 
-	SpiroChangePoint(&gi);
+	SpiroChangePoint(gip);
 
 	GHVBoxFitWindow(pb[0].ret);
 
     GWidgetHidePalettes();
-    GDrawSetVisible(gi.gw,true);
-    while ( !gi.done )
+    GDrawSetVisible(gip->gw,true);
+    while ( !gip->done )
 	GDrawProcessOneEvent(NULL);
-    GDrawDestroyWindow(gi.gw);
 }
 
 void CVGetInfo(CharView *cv) {
