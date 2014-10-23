@@ -4,4 +4,4 @@
 # they would be empty and would be omitted when saving the sfd).
 
 Print("A warning about 'Bad kerning' is ok")
-Open("@abs_srcdir@/fonts/OmittedCharBugs.sfd")
+Open($1)

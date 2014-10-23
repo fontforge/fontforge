@@ -11,4 +11,4 @@ while ( i < $argc )
   i++
 endloop
 
-GenerateFamily("@abs_builddir@/results/AmbrosiaAll.otf.dfont","dfont",16,a)
+GenerateFamily("AmbrosiaAll.otf.dfont","dfont",16,a)

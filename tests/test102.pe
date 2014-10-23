@@ -2,6 +2,6 @@
 #Used to have a bug in AutoHint so that it would go into an infinite loop
 # on a path containing a 0 length spline.
 
-Open("@abs_srcdir@/fonts/AHBugs.sfd")
+Open($1)
 SelectAll()
 AutoHint()

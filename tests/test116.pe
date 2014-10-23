@@ -1,4 +1,4 @@
 #Needs: fonts/merged.cff
 
-Open("@abs_srcdir@/fonts/merged.cff")
+Open($1)
 Quit()

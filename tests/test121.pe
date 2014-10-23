@@ -2,7 +2,7 @@
 
 #Check that AddExtrema doesn't distort the curve (by much).
 
-Open("@abs_srcdir@/fonts/AddExtremumTest.sfd")
+Open($1)
 Reencode("Original")
 SelectAll()
 Copy()

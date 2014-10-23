@@ -1,11 +1,11 @@
 #Needs: fonts/n019003l.pfb
 # Another test that contextual chaining tables do not cause crashes.
 
-Open("@abs_srcdir@/fonts/n019003l.pfb");
-Generate("@abs_builddir@/results/NimbusSansRegular.otf","ttf",0x80);
+Open($1);
+Generate("NimbusSansRegular.otf","ttf",0x80);
 Close();
-Open("@abs_builddir@/results/NimbusSansRegular.otf");
-Save("@abs_builddir@/results/NimbusSansRegular.sfd");
+Open("NimbusSansRegular.otf");
+Save("NimbusSansRegular.sfd");
 Close();
-Open("@abs_builddir@/results/NimbusSansRegular.sfd");
+Open("NimbusSansRegular.sfd");
 Quit()

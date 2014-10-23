@@ -1,81 +1,81 @@
 #Needs: fonts/Caliban.sfd fonts/Zapfino-4.0d3.dfont fonts/Zapfino-4.1d6.dfont
 
-Open("@abs_srcdir@/fonts/Caliban.sfd");
+Open($1);
 Print( "...Opened Caliban")
 SelectAll()
 AutoHint();
 Print("...AutoHinted");
-Save("@abs_builddir@/results/Caliban.sfd");
+Save("Caliban.sfd");
 Print("...Saved As");
-Save("@abs_builddir@/results/Caliban.sfdir");
+Save("Caliban.sfdir");
 Print("...Saved As dir");
-Generate("@abs_builddir@/results/Caliban.ps","bdf",-1);
+Generate("Caliban.ps","bdf",-1);
 Print( "...Generated type0")
-Generate("@abs_builddir@/results/Caliban.ttf","ms",2);
+Generate("Caliban.ttf","ms",2);
 Print( "...Generated ttf w/ ms bitmaps")
-Generate("@abs_builddir@/results/Caliban.ttf","apple",-1);
+Generate("Caliban.ttf","apple",-1);
 Print( "...Generated ttf w/ apple bitmaps")
-Generate("@abs_builddir@/results/Caliban.otf","ms",-1);
+Generate("Caliban.otf","ms",-1);
 Print( "...Generated otf w/ ms bitmaps")
-Generate("@abs_builddir@/results/Caliban.otf","ttf",0x80);
+Generate("Caliban.otf","ttf",0x80);
 Print( "...Generated otf w/ both apple and ot modes set (& bitmaps)")
-Generate("@abs_builddir@/results/Caliban.dfont","sbit",-1);
+Generate("Caliban.dfont","sbit",-1);
 Print( "...Generated sbit")
-Generate("@abs_builddir@/results/Caliban.","otb",-1);
+Generate("Caliban.","otb",-1);
 Print( "...Generated X11 opentype bitmap")
-Generate("@abs_builddir@/results/Caliban.dfont","dfont",-1);
+Generate("Caliban.dfont","dfont",-1);
 Print( "...Generated dfont w/ apple bitmaps")
 SetFontOrder(2);
 ClearTable("cvt ")
 SelectAll()
 AutoInstr();
 Print("...AutoInstructed");
-Generate("@abs_builddir@/results/Caliban.ttf","apple",-1);
+Generate("Caliban.ttf","apple",-1);
 Print( "...Generated ttf w/ apple bitmaps (again) and instructions")
 Close();
 
-Open("@abs_builddir@/results/Caliban.sfd");
+Open("Caliban.sfd");
 Print( "...Read sfd")
 Close();
-Open("@abs_builddir@/results/Caliban.sfdir");
+Open("Caliban.sfdir");
 Print( "...Read sfdir")
 Close();
-Open("@abs_builddir@/results/Caliban.ps");
+Open("Caliban.ps");
 Print( "...Read type0 (if FontForge did not understand /CalibanBase, then that is ok)")
 Close();
-Open("@abs_builddir@/results/Caliban.ttf");
+Open("Caliban.ttf");
 Print( "...Read ttf")
 Close();
-Open("@abs_builddir@/results/Caliban.otf");
+Open("Caliban.otf");
 Print( "...Read otf")
 Close();
-Open("@abs_builddir@/results/Caliban.dfont");
+Open("Caliban.dfont");
 Print( "...Read dfont")
 Close();
-Open("@abs_builddir@/results/Caliban.otb");
+Open("Caliban.otb");
 Print( "...Read otb")
 Close();
-Open("@abs_builddir@/results/Caliban-10.bdf");
-Generate("@abs_builddir@/results/Caliban.dfont","sbit",-1);
+Open("Caliban-10.bdf");
+Generate("Caliban.dfont","sbit",-1);
 Print( "...Read bdf & Generated sbit")
 Close();
 
 New();
-Save("@abs_builddir@/results/foo.sfd");
+Save("foo.sfd");
 Print( "...Saved new font")
 Close();
 
-Open("@abs_srcdir@/fonts/Zapfino-4.0d3.dfont");
-Generate("@abs_builddir@/results/Zapfino.ttf","",0x10);
+Open($2);
+Generate("Zapfino.ttf","",0x10);
 Close()
 #We used to get PointCount errors in the above.
-Open("@abs_builddir@/results/Zapfino.ttf")
+Open("Zapfino.ttf")
 Close()
 Print( "...Handled Zapfino with control points at points")
 
 Print( "This font has odd 'morx' tables, we just don't want to crash")
-Open("@abs_srcdir@/fonts/Zapfino-4.1d6.dfont");
-Generate("@abs_builddir@/results/Zapfino.ttf","",0x10);
+Open($3);
+Generate("Zapfino.ttf","",0x10);
 Close()
 
 Quit()

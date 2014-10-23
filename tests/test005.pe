@@ -1,6 +1,6 @@
 #Needs: fonts/VKern.sfd
 
-Open("@abs_srcdir@/fonts/VKern.sfd");
+Open($1);
 Select("A");
 if ( CharInfo("Kern","V")!=-246 )
     Error("Kerning information incorrect")
@@ -26,8 +26,8 @@ if ( CharInfo("VKern","W.vert")!=-200 )
     Error("After VKernFromHKern VKerning information incorrect2")
 endif
 
-Generate("@abs_builddir@/results/VKern.otf","",0);
-Open("@abs_builddir@/results/VKern.otf");
+Generate("VKern.otf","",0);
+Open("VKern.otf");
 Select("A.vert");
 if ( CharInfo("VKern","V.vert")!=-246 )
     Error("From otf VKerning information incorrect")
@@ -36,8 +36,8 @@ if ( CharInfo("VKern","W.vert")!=-200 )
     Error("From otf VKerning information incorrect2")
 endif
 
-Generate("@abs_builddir@/results/VKern.otf","",0x10);
-Open("@abs_builddir@/results/VKern.otf");
+Generate("VKern.otf","",0x10);
+Open("VKern.otf");
 Select("A.vert");
 if ( CharInfo("VKern","V.vert")!=-246 )
     Error("From otf VKerning information incorrect3")
@@ -46,8 +46,8 @@ if ( CharInfo("VKern","W.vert")!=-200 )
     Error("From otf VKerning information incorrect4")
 endif
 
-Generate("@abs_builddir@/results/VKern.svg");
-Open("@abs_builddir@/results/VKern.svg");
+Generate("VKern.svg");
+Open("VKern.svg");
 Select("A.vert");
 /* I don't try to do classed based kerning in svg. It's all flat */
 if ( CharInfo("VKern","V.vert")!=-246 && CharInfo("VKern","W.vert")!=-200 )

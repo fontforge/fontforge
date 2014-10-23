@@ -1,6 +1,6 @@
 #Needs: fonts/ItalicHand.sfd
 #Make sure we can generate GPOS, GSUB and morx tables without crashing.
 
-Open("@abs_srcdir@/fonts/ItalicHand.sfd")
-Generate("@abs_builddir@/results/ItalicHand.ttf","",0);
-Generate("@abs_builddir@/results/ItalicHand.ttf","",16);
+Open($1)
+Generate("ItalicHand.ttf","",0);
+Generate("ItalicHand.ttf","",16);
