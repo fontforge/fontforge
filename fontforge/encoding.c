@@ -1221,6 +1221,8 @@ return( NULL );
 	    } else if ( strncmp(end,bcc,strlen(bcc))==0 ) {
 		in = cmt_cid;
 		in_is_single = 1;
+	    } else {
+		fprintf(stderr, "Unrecognized cidmap section.\n");
 	    }
 	    if ( in!=cmt_out ) {
 		pos = cmap->groups[in].n;
