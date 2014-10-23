@@ -45,7 +45,7 @@ sudo installer -pkg /Volumes/XQuartz-*/XQuartz.pkg -target /
 popd 
 
 echo "doing an OSX before install step."
-brew install cairo python libspiro fontconfig
+brew install cairo python libspiro fontconfig ossp-uuid
 brew link python
 
 #
