@@ -642,7 +642,7 @@ static int PickTTFFont(FILE *ttf,char *filename,char **chosenname) {
     for ( i=0; i<cnt; ++i ) {
 	names[i] = TTFGetFontName(ttf,offsets[i],0);
         if ( names[i]==NULL ) 
-            names[i] = copy("<no name>");
+            asprintf(&names[i], "<Unknown font name %d>", i+1);
     }
     pt = strrchr(filename,'/');
     if ( pt==NULL ) pt = filename;
