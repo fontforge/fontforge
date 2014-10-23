@@ -51,7 +51,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //  kvmsg class - key-value message class for example applications
 										
 #include "zmq_kvmsg.h"
-#include <ossp/uuid.h>
+#include <uuid.h>
 #include "zlist.h"
 
 #include <glib.h>
