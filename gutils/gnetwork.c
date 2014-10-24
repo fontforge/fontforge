@@ -30,7 +30,7 @@
 #include "inc/ustring.h"
 
 #ifdef BUILD_COLLAB
-#include <uuid.h>
+#include "czmq.h"
 #endif
 
 #include <sys/types.h>
@@ -116,18 +116,16 @@ char* HostPortUnpack( char* packed, int* port, int port_default )
 
 
 //
-// target must be at least UUID_LEN_STR + null in length.
+// target must be at least 32 bytes + NUL in length.
 //
 char* ff_uuid_generate( char* target )
 {
-    strcpy( target, "" );
-
 #ifdef BUILD_COLLAB
-    uuid_t *uuid;
-    uuid_create (&uuid);
-    uuid_make (uuid, UUID_MAKE_V1);
-    uuid_export (uuid, UUID_FMT_STR, &target, NULL);
-    uuid_destroy (uuid);
+    zuuid_t *uuid = zuuid_new ();
+    strcpy (target, zuuid_str (uuid));
+    zuuid_destroy (&uuid);
+#else
+    strcpy( target, "" );
 #endif // collab guard.
 
     return target;

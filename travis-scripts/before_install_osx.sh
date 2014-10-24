@@ -1,6 +1,6 @@
 #!/bin/bash
 
-type -all brew
+type -a brew
 
 . ./travis-scripts/common.sh
 set -ev
@@ -45,7 +45,7 @@ sudo installer -pkg /Volumes/XQuartz-*/XQuartz.pkg -target /
 popd 
 
 echo "doing an OSX before install step."
-brew install cairo python libspiro fontconfig ossp-uuid
+brew install cairo python libspiro fontconfig
 brew link python
 
 #

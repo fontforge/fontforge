@@ -392,15 +392,6 @@ dnl ---------------------------
 AC_DEFUN([FONTFORGE_WARN_PKG_FALLBACK],
    [AC_MSG_WARN([No pkg-config file was found for $1, but the library is present and we will try to use it.])])
 
-AC_DEFUN([CHECK_LIBOSSPUUID],
-	[
-        PKG_CHECK_MODULES([LIBOSSPUUID], [ossp-uuid >= 1.6], ,
-            PKG_CHECK_MODULES([LIBOSSPUUID], [uuid >= 1.6], ,
-                AC_MSG_ERROR([libossp-uuid development files required])))
-	AC_SUBST([LIBOSSPUUID_CFLAGS])
-	AC_SUBST([LIBOSSPUUID_LIBS])
-	])
-
 dnl FONTFORGE_ARG_WITH_ZEROMQ
 dnl -------------------------
 AC_DEFUN([FONTFORGE_ARG_WITH_ZEROMQ],
@@ -410,11 +401,4 @@ FONTFORGE_ARG_WITH([libzmq],
         [ libczmq >= 2.2.0 libzmq >= 4.0.4 ],
         [FONTFORGE_WARN_PKG_NOT_FOUND([LIBZMQ])],
         [_NO_LIBZMQ], [NO_LIBZMQ=1])
-        if test "x$i_do_have_libzmq" = xyes; then
-           AC_MSG_WARN([Using zeromq enables collab, which needs libossp-uuid, so I'm checking for that now...])
-        CHECK_LIBOSSPUUID
-        fi
-
-        LIBZMQ_CFLAGS+=" $LIBOSSPUUID_CFLAGS"
-        LIBZMQ_LIBS+=" $LIBOSSPUUID_LIBS"
 ])

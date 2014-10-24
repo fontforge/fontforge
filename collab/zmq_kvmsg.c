@@ -51,8 +51,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //  kvmsg class - key-value message class for example applications
 										
 #include "zmq_kvmsg.h"
-#include <uuid.h>
-#include "zlist.h"
 
 #include <glib.h>
 #include <inttypes.h>
@@ -454,7 +452,7 @@ kvmsg_uuid (kvmsg_t *self)
 {
     assert (self);
     if (self->present [FRAME_UUID]
-    &&  zmq_msg_size (&self->frame [FRAME_UUID]) == UUID_LEN_BIN)
+    &&  zmq_msg_size (&self->frame [FRAME_UUID]) == 16)
         return (byte *) zmq_msg_data (&self->frame [FRAME_UUID]);
     else
         return NULL;
@@ -468,16 +466,14 @@ kvmsg_set_uuid (kvmsg_t *self)
 {
     assert (self);
     zmq_msg_t *msg = &self->frame [FRAME_UUID];
-    uuid_t *uuid;
+    zuuid_t *uuid = zuuid_new ();
+    size_t sz = zuuid_size (uuid);
     unsigned char *uuid_buf = NULL;
-    uuid_create (&uuid);
-    uuid_make (uuid, UUID_MAKE_V1);
-    uuid_export (uuid, UUID_FMT_BIN, &uuid_buf, NULL);
     if (self->present [FRAME_UUID])
         zmq_msg_close (msg);
-    zmq_msg_init_size (msg, UUID_LEN_BIN);
-    memcpy (zmq_msg_data (msg), uuid_buf, UUID_LEN_BIN);
-    uuid_destroy (uuid);
+    zmq_msg_init_size (msg, sz);
+    memcpy (zmq_msg_data (msg), zuuid_data (uuid), sz);
+    zuuid_destroy (&uuid);
     self->present [FRAME_UUID] = 1;
 }
 
