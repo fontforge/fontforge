@@ -919,7 +919,7 @@ static PyObject *PyFF_FontsInFile(PyObject *UNUSED(self), PyObject *args) {
 return( NULL );
     locfilename = utf82def_copy(filename);
     free(filename);
-    ret = GetFontNames(locfilename);
+    ret = GetFontNames(locfilename, 1);
     free(locfilename);
     cnt = 0;
     if ( ret!=NULL ) for ( cnt=0; ret[cnt]!=NULL; ++cnt );

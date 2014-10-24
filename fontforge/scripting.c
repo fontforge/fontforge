@@ -1708,7 +1708,7 @@ exit(1);
 }
 #endif /* _NO_FFSCRIPT */
 
-char **GetFontNames(char *filename) {
+char **GetFontNames(char *filename, int do_slow) {
     FILE *foo;
     char **ret = NULL;
 
@@ -1747,7 +1747,8 @@ char **GetFontNames(char *filename) {
 	    } else if (( ch1=='%' && ch2=='!' ) ||
 			( ch1==0x80 && ch2=='\01' ) ) {	/* PFB header */
 		ret = NamesReadPostScript(filename);
-	    } else if ( ch1=='%' && ch2=='P' && ch3=='D' && ch4=='F' ) {
+	    } else if ( ch1=='%' && ch2=='P' && ch3=='D' && ch4=='F' && do_slow ) {
+	        // We are disabling scanning for P. D. F. until we can address the performance issues.
 		ret = NamesReadPDF(filename);
 	    } else if ( ch1=='<' && ch2=='?' && (ch3=='x'||ch3=='X') && (ch4=='m'||ch4=='M') ) {
 		ret = NamesReadSVG(filename);
@@ -1775,7 +1776,7 @@ static void bFontsInFile(Context *c) {
 	ScriptError( c, "FontsInFile expects a filename" );
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
-    ret = GetFontNames(locfilename);
+    ret = GetFontNames(locfilename, 1);
     free(t); free(locfilename);
 
     cnt = 0;
