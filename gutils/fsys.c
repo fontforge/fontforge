@@ -741,8 +741,8 @@ char* getLibexecDir_NonWindows(void)
     // https://github.com/fontforge/fontforge/pull/1838 and is not
     // tested on Windows yet.
     //
-    static char path[MAX_PATH+4];
-    snprintf( path, MAX_PATH, "%s/../libexec/", getGResourceProgramDir());
+    static char path[PATH_MAX+4];
+    snprintf( path, PATH_MAX, "%s/../libexec/", getGResourceProgramDir());
     return path;
 }
 
