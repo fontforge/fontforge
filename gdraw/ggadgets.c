@@ -627,6 +627,8 @@ return( true );
 		temp = -1;
 		if (( ept = u_strchr(pt,'\n'))!=NULL )
 		    temp = ept-pt;
+		else
+		    temp = u_strlen(pt);
 		if (temp > 0) GDrawDrawText(popup,x,y,pt,temp,popup_foreground);
 		y += fh;
 		pt = ept+1;
