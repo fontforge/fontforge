@@ -610,7 +610,7 @@ static int msgpopup_eh(GWindow popup,GEvent *event) {
 
 	popup_visible = true;
 	pt = msg = (unichar_t *) popup_info.msg;
-	if ( pt==NULL && popup_info.img==NULL ) {
+	if ( (pt==NULL || *pt=='\0') && popup_info.img==NULL ) {
 	    GGadgetEndPopup();
 return( true );
 	}
@@ -623,14 +623,18 @@ return( true );
 	    GDrawWindowFontMetrics(popup,popup_font,&as, &ds, &ld);
 	    fh = as+ds;
 	    y += as;
-	    do {
-		temp = -1;
+	    while ( *pt!='\0' ) {
+                /* Find end of this line, if multiline text */
 		if (( ept = u_strchr(pt,'\n'))!=NULL )
-		    temp = ept-pt;
-		if (temp > 0) GDrawDrawText(popup,x,y,pt,temp,popup_foreground);
+		    temp = ept-pt;  /* display next segment of multiline text */
+                else
+                    temp = -1;     /* last line, so display remainder of text */
+		GDrawDrawText(popup,x,y,pt,temp,popup_foreground);
 		y += fh;
 		pt = ept+1;
-	    } while ( ept!=NULL && *pt!='\0' );
+                if ( ept==NULL )
+                    break;
+	    }
 	}
     } else if ( event->type == et_timer && event->u.timer.timer==popup_timer ) {
 	GGadgetPopupTest(event);
