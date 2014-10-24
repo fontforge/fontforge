@@ -45,7 +45,8 @@ class Fontforge < Formula
 #    url 'https://github.com/fontforge/fontforge.git', :using => MyDownloadStrategy
 #    url 'file:///Users/travis/build/fontforge/fontforge', :branch => 'FETCH_HEAD', :using => GitDownloadStrategy
     url 'file:///Users/travis/build/fontforge/fontforge', :branch => 'FETCH_HEAD', :using => MyDownloadStrategy
-
+  end
+  
     option "with-gif", "Build with GIF support"
     option "with-x", "Build with X11 support, building the app bundle"
 
