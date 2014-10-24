@@ -85,10 +85,12 @@ dylibbundler --overwrite-dir --bundle-deps --fix-file \
 # cd ..
 # rm -rf ./lib-bundle
 # cd ./bin
+cd $bundle_libexec/bin
 dylibbundler --overwrite-dir --bundle-deps --fix-file \
   ./FontForgeInternal/fontforge-internal-collab-server \
   --install-path @executable_path/collablib \
   --dest-dir ./FontForgeInternal/collablib
+cd -
 
 cp -av /usr/lib/libedit* $bundle_lib/
 cp -av /usr/lib/libedit* $bundle_libexec/bin/FontForgeInternal/collablib/
@@ -156,7 +158,7 @@ done
 
 cd $bundle_bin
 install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/../lib/libedit.3.dylib fontforge 
-cd ./FontForgeInternal
+cd $bundle_libexec/bin/FontForgeInternal/
 install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/collablib/libedit.3.dylib fontforge-internal-collab-server
 cd $bundle_bin
 

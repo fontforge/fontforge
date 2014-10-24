@@ -735,6 +735,18 @@ char* getGResourceProgramDir(void) {
     return GResourceProgramDir;
 }
 
+char* getLibexecDir_NonWindows(void) 
+{
+    // FIXME this was indirectly introduced by
+    // https://github.com/fontforge/fontforge/pull/1838 and is not
+    // tested on Windows yet.
+    //
+    static char path[PATH_MAX+4];
+    snprintf( path, PATH_MAX, "%s/../libexec/", getGResourceProgramDir());
+    return path;
+}
+
+
 
 void FindProgDir(char *prog) {
 #if defined(__MINGW32__)

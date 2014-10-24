@@ -909,14 +909,15 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
     //
     {
 	char command_line[PATH_MAX+1];
-	sprintf(command_line,
-		"%s/FontForgeInternal/fontforge-internal-collab-server %d",
-		getGResourceProgramDir(), cc->port );
+	
 #if defined(__MINGW32__)
-//	chdir(getGResourceProgramDir());
-//	sprintf(command_line, "ffcollab.bat" );
 
 	sprintf(command_line, "'%s/ffcollab.bat' %d", getGResourceProgramDir(), cc->port );
+	
+#else	
+	sprintf(command_line,
+		"%s/bin/FontForgeInternal/fontforge-internal-collab-server %d",
+		getLibexecDir_NonWindows(), cc->port );
 #endif	
 	printf("command_line:%s\n", command_line );
 	GError * error = 0;

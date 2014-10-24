@@ -128,11 +128,12 @@ echo "... dylibbunder on main fontforge executable is now complete..."
 # cd ..
 # rm -rf ./lib-bundle
 # cd ./bin
+cd $bundle_libexec/bin
 dylibbundler --overwrite-dir --bundle-deps --fix-file \
   ./FontForgeInternal/fontforge-internal-collab-server \
   --install-path @executable_path/collablib \
   --dest-dir ./FontForgeInternal/collablib
-
+cd -
 echo "... dylibbunder on collab server is complete ..."
 
 cp -av /usr/lib/libedit* $bundle_lib/
@@ -217,7 +218,7 @@ done
 
 cd $bundle_bin
 install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/../lib/libedit.3.dylib fontforge 
-cd ./FontForgeInternal
+cd $bundle_libexec/bin/FontForgeInternal/
 install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/collablib/libedit.3.dylib fontforge-internal-collab-server
 cd $bundle_bin
 
