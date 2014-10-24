@@ -26,6 +26,10 @@
  */
 #include <fontforge-config.h>
 
+#include "inc/gnetwork.h"
+#include "collabclientui.h"
+#include "collabclientpriv.h"
+
 #include "fontforgeui.h"
 #include "groups.h"
 #include "psfont.h"
@@ -40,10 +44,6 @@
 #include <gresource.h>
 #include <math.h>
 #include <unistd.h>
-
-#include "inc/gnetwork.h"
-#include "collabclientui.h"
-#include "collabclientpriv.h"
 
 #include "gutils/unicodelibinfo.h"
 #include "sfundo.h"

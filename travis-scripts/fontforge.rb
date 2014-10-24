@@ -55,7 +55,6 @@ class Fontforge < Formula
     depends_on 'glib'
     depends_on 'pango'
     depends_on 'cairo'
-    depends_on 'ossp-uuid'
     depends_on 'zeromq'
     depends_on 'czmq'
     depends_on 'dylibbundler'

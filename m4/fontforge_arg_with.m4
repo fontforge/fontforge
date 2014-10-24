@@ -392,21 +392,6 @@ dnl ---------------------------
 AC_DEFUN([FONTFORGE_WARN_PKG_FALLBACK],
    [AC_MSG_WARN([No pkg-config file was found for $1, but the library is present and we will try to use it.])])
 
-AC_DEFUN([CHECK_LIBUUID],
-	[
-	PKG_CHECK_MODULES([LIBUUID], [uuid >= 1.41.2], [LIBUUID_FOUND=yes], [LIBUUID_FOUND=no])
-	if test "$LIBUUID_FOUND" = "no" ; then
-	    PKG_CHECK_MODULES([LIBUUID], [uuid], [LIBUUID_FOUND=yes], [LIBUUID_FOUND=no])
-	    if test "$LIBUUID_FOUND" = "no" ; then
-                AC_MSG_ERROR([libuuid development files required])
-            else
-                LIBUUID_CFLAGS+=" -I$(pkg-config --variable=includedir uuid)/uuid "
-            fi
-	fi
-	AC_SUBST([LIBUUID_CFLAGS])
-	AC_SUBST([LIBUUID_LIBS])
-	])
-
 dnl FONTFORGE_ARG_WITH_ZEROMQ
 dnl -------------------------
 AC_DEFUN([FONTFORGE_ARG_WITH_ZEROMQ],
@@ -416,14 +401,4 @@ FONTFORGE_ARG_WITH([libzmq],
         [ libczmq >= 2.2.0 libzmq >= 4.0.4 ],
         [FONTFORGE_WARN_PKG_NOT_FOUND([LIBZMQ])],
         [_NO_LIBZMQ], [NO_LIBZMQ=1])
-if test "x$i_do_have_libzmq" = xyes; then
-   if test "x${WINDOWS_CROSS_COMPILE}" = x; then
-      AC_MSG_WARN([Using zeromq enables collab, which needs libuuid, so I'm checking for that now...])
-      CHECK_LIBUUID
-   fi
-fi
-
-LIBZMQ_CFLAGS+=" $LIBUUID_CFLAGS"
-LIBZMQ_LIBS+=" $LIBUUID_LIBS"
-
 ])

@@ -57,7 +57,7 @@ extern int DEBUG_SHOW_SFD_CHUNKS; // defined in collabclient.c
 
 
 #define beacon_announce_protocol_sz     20
-#define beacon_announce_uuid_sz         40
+#define beacon_announce_uuid_sz         33
 #define beacon_announce_username_sz     50
 #define beacon_announce_machinename_sz  50
 #define beacon_announce_ip_sz           20
@@ -74,6 +74,7 @@ extern int DEBUG_SHOW_SFD_CHUNKS; // defined in collabclient.c
 #include "inc/gnetwork.h"
 #include "splinefont.h"
 
+#include "czmq.h"
 
 
 typedef struct {

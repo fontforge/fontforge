@@ -1,6 +1,6 @@
 #!/bin/bash
 
-type -all brew
+type -a brew
 
 . ./travis-scripts/common.sh
 set -ev
