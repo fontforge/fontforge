@@ -11,6 +11,7 @@ scriptdir=$TEMPDIR/FontForge.app/Contents/MacOS
 bundle_res=$TEMPDIR/FontForge.app/Contents/Resources
 bundle_bin="$bundle_res/opt/local/bin"
 bundle_lib="$bundle_res/opt/local/lib"
+bundle_libexec="$bundle_res/opt/local/libexec"
 bundle_etc="$bundle_res/opt/local/etc"
 bundle_share="$bundle_res/opt/local/share"
 export PATH="$PATH:$scriptdir"
@@ -90,7 +91,7 @@ dylibbundler --overwrite-dir --bundle-deps --fix-file \
   --dest-dir ./FontForgeInternal/collablib
 
 cp -av /usr/lib/libedit* $bundle_lib/
-cp -av /usr/lib/libedit* $bundle_bin/FontForgeInternal/collablib/
+cp -av /usr/lib/libedit* $bundle_libexec/bin/FontForgeInternal/collablib/
 
 cd $bundle_lib
 for if in libXcomposite.1.dylib libXcursor.1.dylib libXdamage.1.dylib libXfixes.3.dylib libXinerama.1.dylib libXrandr.2.dylib libatk-1.0.0.dylib libgdk-x11-2.0.0.dylib libgdk_pixbuf-2.0.0.dylib libgtk-x11-2.0.0.dylib libtest-1.0.0.dylib
@@ -145,7 +146,7 @@ do
   otool -L  $if | grep libedit
   install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/../lib/libedit.3.dylib $if
 done
-cd $bundle_bin/FontForgeInternal/collablib/
+cd $bundle_libexec/bin/FontForgeInternal/collablib/
 for if in *dylib 
 do 
   echo $if 
