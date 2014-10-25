@@ -74,8 +74,6 @@ extern int DEBUG_SHOW_SFD_CHUNKS; // defined in collabclient.c
 #include "inc/gnetwork.h"
 #include "splinefont.h"
 
-#include "czmq.h"
-
 
 typedef struct {
     uint8_t protocol   [beacon_announce_protocol_sz];
