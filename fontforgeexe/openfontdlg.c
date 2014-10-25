@@ -532,11 +532,8 @@ return( false );
     GFileChooserGetChildren(d->gfc,NULL, &list, NULL);
     if ( list==NULL )
 return( false );
-    GGadgetGetSize(list,&size);
-    if ( event->u.mouse.x < size.x || event->u.mouse.y <size.y ||
-	    event->u.mouse.x >= size.x+size.width ||
-	    event->u.mouse.y >= size.y+size.height )
-return( false );
+    if ( !GGadgetWithin(list,event->u.mouse.x,event->u.mouse.y) )
+        return( false );
     pos = GListIndexFromY(list,event->u.mouse.y);
     if ( pos == d->filename_popup_pos )
 return( pos!=-1 );
