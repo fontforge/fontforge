@@ -8195,6 +8195,12 @@ FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* udata ), void*
     return 0;
 }
 
+FontView* FontViewFindUI( int (*testFunc)( FontViewBase*, void* udata ), void* udata )
+{
+    return (FontView*)FontViewFind( testFunc, udata );
+}
+
+
 /****************************************/
 /****************************************/
 /****************************************/

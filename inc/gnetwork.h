@@ -57,11 +57,21 @@ extern char* HostPortPack( char* hostname, int port );
 extern char* HostPortUnpack( char* packed, int* port, int port_default );
 
 /**
+ * This is ZUUID_LEN. Because that length is stable and to avoid bringing in
+ * the czmq header file it is redeclared from base form here.
+ */
+#define FF_UUID_BINARY_SIZE   16   
+/**
+ * min length of a buffer that will contain an ascii string serialiation of a uuid
+ */
+#define FF_UUID_STRING_SIZE   33   
+
+/**
  * generate a new uuid and stringify it into the target area provided
  * after the call target should contain something like
  * 1b4e28ba-2fa1-11d2-883f-0016d3cca427
  * with the trailing NUL. Before the call target needs to be at least
- * UUID_LEN_STR + 1 bytes long.
+ * FF_UUID_STRING_SIZE bytes long.
  * the 'target' is also the return value.
  */
 char* ff_uuid_generate( char* target );

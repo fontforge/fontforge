@@ -36,6 +36,7 @@
 # include <gwwiconv.h>
 #endif
 #include "locale.h"
+#include <gnetwork.h>
 
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
 # define real		double
@@ -1933,10 +1934,7 @@ typedef struct splinefont {
 	    /* ufo_descent is negative */
 
     struct sfundoes *undoes;
-    enum {
-	collab_uuid_sz = 40 
-    } SplineFontConstants;
-    char collab_uuid[ collab_uuid_sz ];
+    char collab_uuid[ FF_UUID_STRING_SIZE ];
     int preferred_kerning; // 1 for U. F. O. native, 2 for feature file, 0 undefined. Input functions shall flag 2, I think. This shall be a temporary value absent from S. F. D. for now.
 } SplineFont;
 

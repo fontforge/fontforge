@@ -31,6 +31,7 @@
 #include "uiinterface.h"
 #include "sfundo.h"
 #include "../fontforge/ffglib.h"
+#include "fontforgeexe.h"
 
 int  collabclient_setHaveLocalServer( int v );
 
@@ -59,7 +60,7 @@ int Collab_getLastChangedCodePoint( void )
   // client beacon for discovery
   static zbeacon_t* client_beacon = 0;
   static GHashTable* peers = 0;
-  static int client_beacon_timerID = 0;
+  static BackgroundTimer_t* client_beacon_timerID = 0;
 #endif
 
 
@@ -102,7 +103,7 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
     byte* msgtype = kvmsg_get_prop (kvmsg, "type" );
 
     printf("cc process_update() uuid:%s\n", uuid );
-    FontView* fv = FontViewFind( FontViewFind_byXUIDConnected, uuid );
+    FontView* fv = FontViewFindUI( FontViewFind_byXUIDConnected, uuid );
     printf("fv:%p\n", fv );
     if( fv )
     {
@@ -402,7 +403,7 @@ static void collabclient_roundTripTimer( void* ccvp )
 		      _("FontForge expected some input from the server by now.\nWould you like to try to reconnect to the collaboration session?"))==1 )
 	{
 	    // break session
-	    FontView* fv = FontViewFind( FontViewFind_byCollabPtr, cc );
+	    FontView* fv = FontViewFindUI( FontViewFind_byCollabPtr, cc );
 	    if( fv )
 	    {
 		printf("fv:%p\n", fv );
@@ -662,7 +663,7 @@ void collabclient_free( void** ccvp )
     zsocket_destroy( cc->ctx, cc->publisher  );
     BackgroundTimer_remove( cc->roundTripTimer );
 
-    FontView* fv = FontViewFind( FontViewFind_byCollabPtr, cc );
+    FontView* fv = FontViewFindUI( FontViewFind_byCollabPtr, cc );
     if( fv )
     {
 	fv->b.collabClient = 0;
@@ -960,7 +961,7 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
 
     beacon_moon_bounce_timerID = BackgroundTimer_new( 3000, beacon_moon_bounce_timer_callback, cc );
 
-    collabclient_notifySessionJoining( cc, fv );
+    collabclient_notifySessionJoining( cc, (FontViewBase*)fv );
 #endif
 }
 
@@ -1107,7 +1108,7 @@ void collabclient_sessionReconnect( void* ccvp )
     collabclient_remakeSockets( cc );
     cc->publisher_sendseq = 1;
 
-    FontView* fv = FontViewFind( FontViewFind_byCollabPtr, cc );
+    FontView* fv = FontViewFindUI( FontViewFind_byCollabPtr, cc );
     if( fv )
     {
 	collabclient_sessionJoin( cc, fv );
