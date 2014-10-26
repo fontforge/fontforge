@@ -317,7 +317,7 @@ s_ping (zloop_t *loop, zmq_pollitem_t *poller, void *args)
 /* } */
 
 static int
-s_flush_ttl (zloop_t *loop, zmq_pollitem_t *poller, void *args)
+s_flush_ttl (zloop_t *loop, int unused, void *args)
 {
 //    clonesrv_t *self = (clonesrv_t *) args;
 //    if (self->kvmap)

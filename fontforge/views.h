@@ -1405,6 +1405,7 @@ extern void Prefs_LoadDefaultPreferences( void );
 extern CharView* CharViewFindActive();
 extern FontViewBase* FontViewFindActive();
 extern FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* ), void* udata );
+
 extern int FontViewFind_byXUID(      FontViewBase* fv, void* udata );
 extern int FontViewFind_byXUIDConnected( FontViewBase* fv, void* udata );
 extern int FontViewFind_byCollabPtr(  FontViewBase* fv, void* udata );

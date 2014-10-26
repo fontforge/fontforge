@@ -54,6 +54,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <glib.h>
 #include <inttypes.h>
+#include "inc/gnetwork.h"
 
 #define DEBUG zclock_log
 
@@ -452,10 +453,11 @@ kvmsg_uuid (kvmsg_t *self)
 {
     assert (self);
     if (self->present [FRAME_UUID]
-    &&  zmq_msg_size (&self->frame [FRAME_UUID]) == 16)
-        return (byte *) zmq_msg_data (&self->frame [FRAME_UUID]);
-    else
-        return NULL;
+	&& zmq_msg_size (&self->frame [FRAME_UUID]) == FF_UUID_BINARY_SIZE )
+    {
+	return (byte *) zmq_msg_data (&self->frame [FRAME_UUID]);
+    }
+    return NULL;
 }
 
 
@@ -468,7 +470,6 @@ kvmsg_set_uuid (kvmsg_t *self)
     zmq_msg_t *msg = &self->frame [FRAME_UUID];
     zuuid_t *uuid = zuuid_new ();
     size_t sz = zuuid_size (uuid);
-    unsigned char *uuid_buf = NULL;
     if (self->present [FRAME_UUID])
         zmq_msg_close (msg);
     zmq_msg_init_size (msg, sz);
@@ -646,7 +647,7 @@ void kvmap_visit( zhash_t* kvmap, int64_t minsequence,
     args.q = q;
     args.minsequence = minsequence;
     int rc = zhash_foreach ( kvmap, kvmap_visit_buildq_foreach_fn, &args );
-    g_queue_foreach( q, callback, argument );
+    g_queue_foreach( q, (GFunc)callback, argument );
     g_queue_free(q);
 }
 
