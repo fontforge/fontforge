@@ -302,10 +302,10 @@ return( true );
     strcpy(buf,filename);
     pt = strrchr(buf,'/');
     if ( pt==NULL )
-	strcat(buf,"FontLog.txt");
+	strcat(buf,"FONTLOG.txt");
     else
-	strcpy(pt+1,"FontLog.txt");
-    flog = fopen(buf,"w");
+	strcpy(pt+1,"FONTLOG.txt");
+    flog = fopen(buf,"a"); // We changed this to append if the file exists.
     free(buf);
     if ( flog==NULL )
 return( false );
