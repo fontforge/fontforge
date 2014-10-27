@@ -829,7 +829,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 
     fontlog_k = k;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    label[k].text = (unichar_t *) _("Output FONTLOG-output.txt");
+    label[k].text = (unichar_t *) _("Output FONTLOG.txt");
     label[k].text_is_1byte = true;
     gcd[k].gd.popup_msg = (unichar_t *) _(
 	"The FONTLOG is a text file containing relevant information\n"
@@ -838,8 +838,8 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 	"Usage within an open font project is highly recommended but not required.\n"
 	"If your font already contains a fontlog table (see the Element->Font Info)\n"
 	"and you check this box, then the internal fontlog information will be\n"
-	"written to the file \"FONTLOG-output.txt\" in the same directory\n"
-	"as the font itself. You may need to manually merge this with your own FONTLOG.txt");
+	"appended to the file \"FONTLOG.txt\" in the same directory\n"
+	"as the font itself.");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_FontLog;
     gcd[k++].creator = GCheckBoxCreate;
