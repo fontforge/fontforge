@@ -152,7 +152,7 @@
 
  /* Subtable tags */
 # define fcmt_TAG	CHR('f','c','m','t')		/* Font Comment */
-# define flog_TAG	CHR('f','l','o','g')		/* Font Log */
+# define flog_TAG	CHR('f','l','o','g')		/* FONTLOG */
 # define cmnt_TAG	CHR('c','m','n','t')		/* Glyph Comments */
 # define cvtc_TAG	CHR('c','v','t','c')		/* Comments for each cvt entry */
 # define colr_TAG	CHR('c','o','l','r')		/* Glyph color flags */
