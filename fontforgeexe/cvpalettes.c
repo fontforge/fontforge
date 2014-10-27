@@ -893,10 +893,18 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 /*	else								 */
 	    GDrawDrawImage(pixmap,buttons[mi][j],NULL,j*27+1,i*27+1);
 	norm = (mi*2+j!=tool);
-	GDrawDrawLine(pixmap,j*27,i*27,j*27+25,i*27,norm?0xe0e0e0:0x707070);
-	GDrawDrawLine(pixmap,j*27,i*27,j*27,i*27+25,norm?0xe0e0e0:0x707070);
-	GDrawDrawLine(pixmap,j*27,i*27+25,j*27+25,i*27+25,norm?0x707070:0xe0e0e0);
-	GDrawDrawLine(pixmap,j*27+25,i*27,j*27+25,i*27+25,norm?0x707070:0xe0e0e0);
+	{
+	  // These are from charview.c.
+	  extern int cvbutton3d; // Default 1.
+	  extern Color cvbutton3dedgelightcol; // Default 0xe0e0e0.
+	  extern Color cvbutton3dedgedarkcol; // Default 0x707070.
+	  if (cvbutton3d) {
+	    GDrawDrawLine(pixmap,j*27,i*27,j*27+25,i*27,norm?cvbutton3dedgelightcol:cvbutton3dedgedarkcol);
+	    GDrawDrawLine(pixmap,j*27,i*27,j*27,i*27+25,norm?cvbutton3dedgelightcol:cvbutton3dedgedarkcol);
+	    GDrawDrawLine(pixmap,j*27,i*27+25,j*27+25,i*27+25,norm?cvbutton3dedgedarkcol:cvbutton3dedgelightcol);
+	    GDrawDrawLine(pixmap,j*27+25,i*27,j*27+25,i*27+25,norm?cvbutton3dedgedarkcol:cvbutton3dedgelightcol);
+	  }
+	}
     }
     GDrawSetFont(pixmap,toolsfont);
     temp.x = 52-16; temp.y = i*27; temp.width = 16; temp.height = 4*12;

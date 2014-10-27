@@ -127,6 +127,7 @@ struct cvshows CVShowsPrevewToggleSavedState;
 #define CID_getValueFromUser  CID_Base + 1
 
 
+// Note that the default values supplied in CVColInit over-ride these values.
 static Color pointcol = 0xff0000;
 static Color firstpointcol = 0x707000;
 static Color selectedpointcol = 0xc8c800;
@@ -184,6 +185,9 @@ static Color DraggingComparisonAlphaChannelOverride = 0x88000000;
 static Color foreoutthicklinecol = 0x20707070;
 static Color backoutthicklinecol = 0x20707070;
 int prefs_cv_outline_thickness = 1;
+int cvbutton3d = 1;
+Color cvbutton3dedgelightcol = 0xe0e0e0;
+Color cvbutton3dedgedarkcol = 0x707070;
 
 // Format is 0x AA RR GG BB.
 
@@ -192,6 +196,10 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e );
 static void CVHScrollSetPos( CharView *cv, int newpos );
 
 static int cvcolsinited = false;
+
+// Note that the GResource names for these preferences are defined separately in CVColInit.
+// It would be wise to match any changes to these data structures with changes to the values in CVColInit.
+
 static struct resed charview_re[] = {
     { N_("Point Color"), "PointColor", rt_color, &pointcol, N_("The color of an on-curve point"), NULL, { 0 }, 0, 0 },
     { N_("First Point Color"), "FirstPointColor", rt_color, &firstpointcol, N_("The color of the point which is the start of a contour"), NULL, { 0 }, 0, 0 },
@@ -338,6 +346,61 @@ return;
     GResEditFind( charview2_re, "CharView.");
     cvcolsinited = true;
 
+  // These value over-ride the static initializers.
+  // Note that the base resource names are copied from charview_re and charview2_re.
+  pointcol = GResourceFindColor("CharView.PointColor",0xff0000);
+  firstpointcol = GResourceFindColor("CharView.FirstPointColor",0x707000);
+  selectedpointcol = GResourceFindColor("CharView.SelectedPointColor",0xc8c800);
+  selectedpointwidth = GResourceFindInt("CharView.SelectedPointWidth",2);
+  extremepointcol = GResourceFindColor("CharView.ExtremePointColor",0xc00080);
+  pointofinflectioncol = GResourceFindColor("CharView.PointOfInflectionColor",0x008080);
+  almosthvcol = GResourceFindColor("CharView.AlmostHVColor",0x00ff80);
+  nextcpcol = GResourceFindColor("CharView.NextCPColor",0x007090);
+  prevcpcol = GResourceFindColor("CharView.PointColor",0xcc00cc);
+  selectedcpcol = GResourceFindColor("CharView.SelectedCPColor",0xffffff);
+  coordcol = GResourceFindColor("CharView.CoordinateColor",0x808080);
+  widthcol = GResourceFindColor("CharView.WidthColor",0x000000);
+  widthselcol = GResourceFindColor("CharView.WidthSelColor",0x00ff00);
+  lbearingselcol = GResourceFindColor("CharView.LBearingSelColor",0x00ff00);
+  widthgridfitcol = GResourceFindColor("CharView.GridFitWidthColor",0x009800);
+  lcaretcol = GResourceFindColor("CharView.LigatureCaretColor",0x909040);
+  rastercol = GResourceFindColor("CharView.RasterColor",0xffa0a0a0);		/* Translucent */
+  rasternewcol = GResourceFindColor("CharView.RasterNewColor",0xff909090);
+  rasteroldcol = GResourceFindColor("CharView.RasterOldColor",0xffc0c0c0);
+  rastergridcol = GResourceFindColor("CharView.RasterGridColor",0xffb0b0ff);
+  rasterdarkcol = GResourceFindColor("CharView.RasterDarkColor",0xff606060);
+  deltagridcol = GResourceFindColor("CharView.DeltaGridColor",0xcc0000);
+  italiccoordcol = GResourceFindColor("CharView.ItalicCoordColor",0x909090);
+  metricslabelcol = GResourceFindColor("CharView.MetricsLabelColor",0x00000);
+  hintlabelcol = GResourceFindColor("CharView.HintLabelColor",0x00cccc);
+  bluevalstipplecol = GResourceFindColor("CharView.BlueValuesStippledColor",0x808080ff);	/* Translucent */
+  fambluestipplecol = GResourceFindColor("CharView.FamilyBlueStippledColor",0x80ff7070);	/* Translucent */
+  mdhintcol = GResourceFindColor("CharView.xxxxxx",0x80e04040);		/* Translucent */
+  dhintcol = GResourceFindColor("CharView.DHintColor",0x80d0a0a0);		/* Translucent */
+  hhintcol = GResourceFindColor("CharView.HHintColor",0x80a0d0a0);		/* Translucent */
+  vhintcol = GResourceFindColor("CharView.VHintColor",0x80c0c0ff);		/* Translucent */
+  hflexhintcol = GResourceFindColor("CharView.HFlexHintColor",0x00ff00);
+  vflexhintcol = GResourceFindColor("CharView.VFlexHintColor",0x00ff00);
+  conflicthintcol = GResourceFindColor("CharView.ConflictHintColor",0x00ffff);
+  hhintactivecol = GResourceFindColor("CharView.HHintActiveColor",0x00a000);
+  vhintactivecol = GResourceFindColor("CharView.VHintActiveColor",0x0000ff);
+  anchorcol = GResourceFindColor("CharView.AnchorColor",0x0040ff);
+  anchoredoutlinecol = GResourceFindColor("CharView.AnchoredOutlineColor",0x0040ff);
+  templateoutlinecol = GResourceFindColor("CharView.TemplateOutlineColor",0x009800);
+  oldoutlinecol = GResourceFindColor("CharView.OldOutlineColor",0x008000);
+  transformorigincol = GResourceFindColor("CharView.TransformOriginColor",0x000000);
+  guideoutlinecol = GResourceFindColor("CharView.GuideOutlineColor",0x808080);
+  gridfitoutlinecol = GResourceFindColor("CharView.GridFitOutlineColor",0x009800);
+  backoutlinecol = GResourceFindColor("CharView.BackgroundOutlineColor",0x009800);
+  foreoutlinecol = GResourceFindColor("CharView.ForegroundOutlineColor",0x000000);
+  clippathcol = GResourceFindColor("CharView.ClipPathColor",0x0000ff);
+  openpathcol = GResourceFindColor("CharView.OpenPathColor",0x660000);
+  backimagecol = GResourceFindColor("CharView.BackgroundImageColor",0x707070);
+  fillcol = GResourceFindColor("CharView.FillColor",0x80707070);		/* Translucent */
+  tracecol = GResourceFindColor("CharView.TraceColor",0x008000);
+  rulerbigtickcol = GResourceFindColor("CharView.RulerBigTickColor",0x008000);
+  // previewfillcol = GResourceFindColor(,0x0f0f0f);
+  // The code below defaults differently from the static initializer (from which we copied this value).
     if( GResourceFindColor("CharView.PreviewFillColor", COLOR_UNKNOWN) == COLOR_UNKNOWN ) {
 	// no explicit previewfillcolor
 	previewfillcol = fillcol;
@@ -346,6 +409,13 @@ return;
 	    previewfillcol = 0x000000;
 	}
     }
+  DraggingComparisonOutlineColor = GResourceFindColor("CharView.DraggingComparisonOutlineColor",0x8800BB00);
+  DraggingComparisonAlphaChannelOverride = GResourceFindColor("CharView.DraggingComparisonAlphaChannelOverride",0x88000000);
+  foreoutthicklinecol = GResourceFindColor("CharView.ForegroundThickOutlineColor",0x20707070);
+  backoutthicklinecol = GResourceFindColor("CharView.BackgroundThickOutlineColor",0x20707070);
+  cvbutton3d = GResourceFindInt("CharView.Button3D", 1);
+  cvbutton3dedgelightcol = GResourceFindColor("CharView.Button3DEdgeLightColor", 0xe0e0e0);
+  cvbutton3dedgedarkcol = GResourceFindColor("CharView.Button3DEdgeDarkColor", 0x707070);
 }
 
 
