@@ -1394,6 +1394,7 @@ int UFONameKerningClasses(SplineFont *sf) {
 
 static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
     SplineChar *sc;
+    int has_content = 0;
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
@@ -1459,6 +1460,7 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
                 ExplodedStringFree(glyphlist);
                 // We flag the output of this kerning class as complete.
                 output_done[absolute_index] |= 1;
+                has_content = 1;
               }
             }
           }
@@ -1476,6 +1478,7 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
             index++;
           }
           ExplodedStringFree(glyphlist);
+          has_content = 1;
         }
       }
     }
@@ -1510,6 +1513,7 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
                 ExplodedStringFree(glyphlist);
                 // We flag the output of this kerning class as complete.
                 output_done[absolute_index + i] |= 1;
+                                has_content = 1;
           }
         }
         absolute_index +=i;
@@ -1522,7 +1526,7 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
     if (output_done != NULL) { free(output_done); output_done = NULL; }
 
     char *fname = buildname(basedir, "groups.plist"); // Build the file name.
-    xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
+    if (has_content) xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
     free(fname); fname = NULL;
     xmlFreeDoc(plistdoc); // Free the memory.
     xmlCleanupParser();
@@ -1542,16 +1546,19 @@ static void KerningPListAddGlyph(xmlNodePtr parent, const char *key, const KernP
 static int UFOOutputKerning(const char *basedir, const SplineFont *sf) {
     SplineChar *sc;
     int i;
+    int has_content = 0;
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
     xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (dictnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
 
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) && sc->kerns!=NULL )
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) && sc->kerns!=NULL ) {
 	KerningPListAddGlyph(dictnode,sc->name,sc->kerns);
+	has_content = 1;
+    }
 
     char *fname = buildname(basedir, "kerning.plist"); // Build the file name.
-    xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
+    if (has_content) xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document if it's not empty.
     free(fname); fname = NULL;
     xmlFreeDoc(plistdoc); // Free the memory.
     xmlCleanupParser();
@@ -1561,6 +1568,7 @@ static int UFOOutputKerning(const char *basedir, const SplineFont *sf) {
 static int UFOOutputVKerning(const char *basedir, const SplineFont *sf) {
     SplineChar *sc;
     int i;
+    int has_content = 0;
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
@@ -1568,11 +1576,13 @@ static int UFOOutputVKerning(const char *basedir, const SplineFont *sf) {
 
     for ( i=sf->glyphcnt-1; i>=0; --i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) && sc->vkerns!=NULL ) break;
     if ( i<0 ) return( true );
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL && sc->vkerns!=NULL )
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL && sc->vkerns!=NULL ) {
 	KerningPListAddGlyph(dictnode,sc->name,sc->vkerns);
+	has_content = 1;
+    }
 
     char *fname = buildname(basedir, "vkerning.plist"); // Build the file name.
-    xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
+    if (has_content) xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document if it's not empty.
     free(fname); fname = NULL;
     xmlFreeDoc(plistdoc); // Free the memory.
     xmlCleanupParser();
@@ -1674,6 +1684,7 @@ int ufo_kerning_tree_attempt_insert(struct ufo_kerning_tree_session *session, co
 static int UFOOutputKerning2(const char *basedir, SplineFont *sf, int isv) {
     SplineChar *sc;
     int i, j;
+    int has_content = 0;
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
@@ -1815,6 +1826,7 @@ static int UFOOutputKerning2(const char *basedir, SplineFont *sf, int isv) {
           struct ufo_kerning_tree_right *current_right;
           for (current_right = current_left->first_right; current_right != NULL; current_right = current_right->next)
             if (current_right->name != NULL) PListAddInteger(dictxml, current_right->name, current_right->value);
+          has_content = 1;
         }
       }
     }
@@ -1825,7 +1837,7 @@ static int UFOOutputKerning2(const char *basedir, SplineFont *sf, int isv) {
     if (output_done != NULL) { free(output_done); output_done = NULL; }
 
     char *fname = buildname(basedir, (isv ? "vkerning.plist" : "kerning.plist")); // Build the file name.
-    xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
+    if (has_content) xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
     free(fname); fname = NULL;
     xmlFreeDoc(plistdoc); // Free the memory.
     xmlCleanupParser();
