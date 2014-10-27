@@ -5755,9 +5755,9 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
 	units = 10; littleunits=2;
     } else if ( onehundred<100 ) {
 	units = 25; littleunits=5;
-    } else if ( onehundred<500 ) {
+    } else if ( onehundred<500/2 ) {
 	units = 100; littleunits=20;
-    } else if ( onehundred<1000 ) {
+    } else if ( onehundred<1000/2 ) {
 	// The next numbers (1000 and up) take more space to display, so Frank has adjusted the thresholds.
 	units = 250; littleunits=50;
     } else if ( onehundred<5000/2 ) {
