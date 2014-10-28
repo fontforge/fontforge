@@ -8142,6 +8142,7 @@ int FontViewFind_byXUIDConnected( FontViewBase* fv, void* udata )
     if( !fv || !fv->sf )
 	return 0;
     return ( fv->collabState == cs_server || fv->collabState == cs_client )
+	&& fv->sf->xuid
 	&& !strcmp( fv->sf->xuid, (char*)udata );
 }
 
