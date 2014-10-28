@@ -1,9 +1,7 @@
 #!/bin/bash
 
+# A quick sanity check to show if we are working on an osx machine.
 type -a brew
-
-. ./travis-scripts/common.sh
-set -ev
 
 #
 # Take the collection of secure environment variables and reconstitute an SSH key
@@ -18,6 +16,12 @@ echo -e "Host bigv\n\tBatchMode yes\n\tStrictHostKeyChecking no\n\tHostname font
 # wipe them out just in case a loose 'set' or whatever happens.
 for i in {00..30}; do unset id_rsa_$i;  done
 for i in {00..09}; do unset id_rsa_0$i; done
+
+#
+# now that we have the key setup, bring in the SYNC function.
+#
+. ./travis-scripts/common.sh
+set -ev
 
 # test the secure env variables and ability to upload
 date >| $TO_BIGV_OUTPUTPATH/osx-build-start-timestamp

@@ -22,6 +22,9 @@ echo "grabbing logs to server for inspection..."
 cp /tmp/bundle-output-${PR}.log $TO_BIGV_OUTPUTPATH
 cp ~/FontForge.app.zip          $TO_BIGV_OUTPUTPATH
 date >| $TO_BIGV_OUTPUTPATH/osx-build-end-timestamp
+echo "These are the files going over"
+ls -lhR $TO_BIGV_OUTPUTPATH
+
 SYNC_TO_BIGV
 set -e
 fontforge -version
