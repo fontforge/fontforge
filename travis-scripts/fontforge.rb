@@ -7,7 +7,7 @@ require 'formula'
 class MyDownloadStrategy < GitDownloadStrategy
   # get the PR
   def fetch
-    system "rsync -av /Users/travis/build/fontforge/fontforge/. /Library/Caches/Homebrew/fontforge--git"
+    system "rsync -a /Users/travis/build/fontforge/fontforge/. /Library/Caches/Homebrew/fontforge--git"
   end
   def reset_args
     ref = case @ref_type
@@ -123,7 +123,7 @@ class Fontforge < Formula
     # roll a package
     #
     # WARNING: using rsync runs into all sorts of troubles with autotools.
-    system "cp -avL . /tmp/fontforge-source-tree/"
+    system "cp -aL . /tmp/fontforge-source-tree/"
 
   end
 
