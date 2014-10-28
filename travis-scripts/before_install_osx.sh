@@ -45,8 +45,14 @@ sudo installer -pkg /Volumes/XQuartz-*/XQuartz.pkg -target /
 popd 
 
 echo "doing an OSX before install step."
-brew install cairo python libspiro fontconfig
-brew link python
+# python may require a little force to install. In October 2014
+# there were issues with easy_install and pip not letting the install
+# step complete.
+set +ev
+brew install python
+brew link --overwrite python
+set -ev
+brew install cairo libspiro fontconfig
 
 #
 # this forces version 4.0.4 and 2.2.0 respectively.
