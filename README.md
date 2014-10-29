@@ -20,3 +20,5 @@ Contributing guidelines
 -----------------------
 
 Please see [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+This is a test branch for Travis CI on osx. Force rebuild1.

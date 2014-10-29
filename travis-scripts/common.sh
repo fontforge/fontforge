@@ -54,7 +54,7 @@ SYNC_TO_BIGV() {
     if [ "y$HAVE_SSH_KEY" = y1 ]; then
       rsync -av $BASEPATH bigv:/tmp/ 
     else
-      echo "WARNING: No SSH key setip, no server sync for this build..."
+      echo "WARNING: No SSH key setup, no server sync for this build..."
     fi
 }
 

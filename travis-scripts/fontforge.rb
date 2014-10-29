@@ -7,7 +7,7 @@ require 'formula'
 class MyDownloadStrategy < GitDownloadStrategy
   # get the PR
   def fetch
-    system "rsync -av /Users/travis/build/fontforge/fontforge/. /Library/Caches/Homebrew/fontforge--git"
+    system "rsync -a /Users/travis/build/fontforge/fontforge/. /Library/Caches/Homebrew/fontforge--git"
   end
   def reset_args
     ref = case @ref_type
@@ -118,19 +118,13 @@ class Fontforge < Formula
     # Link this to enable symlinking into /Applications with brew linkapps.
     ln_s "#{share}/fontforge/osx/Fontforge.app", "#{prefix}"
 
-    system "cp -avL . /tmp/fontforge-source-tree/"
+    #
+    # Now we create a copy in /tmp that the script_osx.sh can use to
+    # roll a package
+    #
+    # WARNING: using rsync runs into all sorts of troubles with autotools.
+    system "cp -aL . /tmp/fontforge-source-tree/"
 
-       # File.chmod(0774, "./osx/create-osx-app-bundle.sh")
-       # puts "***********************************************"
-       # puts "***********************************************"
-       # puts "***********************************************"
-       # puts "rolling a binary package for this build...(2)"
-       # puts "***********************************************"
-       # puts "***********************************************"
-       # puts "***********************************************"
-       # pullreq=ENV["TRAVIS_PULL_REQUEST"]
-       # system "./travis-scripts/create-osx-app-bundle-homebrew.sh >/tmp/bundle-output-%{pullreq}.log 2>&1 "
-       # system "ls -lh /tmp/bundle-output-%{pullreq}.log"
   end
 
   test do
