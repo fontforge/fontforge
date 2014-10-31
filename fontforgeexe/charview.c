@@ -10113,7 +10113,8 @@ void _CVMenuNamePoint(CharView *cv, SplinePoint *sp) {
             sp->name = name;
             CVCharChangedUpdate(&cv->b);
         }
-        free(ret);
+        if (name != ret) { free(ret); ret = NULL; }
+        if (name != oldname) { free(oldname); oldname = NULL; }
     }
 }
 
