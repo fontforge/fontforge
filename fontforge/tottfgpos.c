@@ -361,7 +361,7 @@ void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *su
     memset(marks,0,classcnt*sizeof(SplineChar **));
     gmax = gi==NULL ? sf->glyphcnt : gi->gcnt;
     for ( j=0; j<2; ++j ) {
-	for ( i=0; i<gmax; ++i ) if ( (gid = gi==NULL ? i : gi->bygid[i])!=-1 && sf->glyphs[gid]!=NULL ) {
+	for ( i=0; i<gmax; ++i ) if ( (gid = gi==NULL ? i : gi->bygid[i])!=-1 && gid < sf->glyphcnt && sf->glyphs[gid]!=NULL ) {
 	    for ( ac = _ac, k=0; k<classcnt; ac=ac->next ) if ( ac->matches ) {
 		for ( test=sf->glyphs[gid]->anchor; test!=NULL ; test=test->next ) {
 		    if ( test->anchor==ac ) {
@@ -1606,15 +1606,20 @@ static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 		/* 2 for component count, for each component an offset to an offset to an anchor record */
 	}
 	++max;
-	aps = malloc((classcnt*max)*sizeof(AnchorPoint *));
+        int special_ceiling = classcnt*max;
+	aps = malloc((classcnt*max+max)*sizeof(AnchorPoint *));
 	for ( j=0; j<cnt; ++j ) {
-	    memset(aps,0,(classcnt*max)*sizeof(AnchorPoint *));
+	    memset(aps,0,(classcnt*max+max)*sizeof(AnchorPoint *));
 	    pos = 0;
 	    for ( ap=base[j]->anchor; ap!=NULL ; ap=ap->next )
 		for ( k=0, ac=_ac; k<classcnt; ac=ac->next ) if ( ac->matches ) {
 		    if ( ap->anchor==ac ) {
 			if ( ap->lig_index>pos ) pos = ap->lig_index;
-			aps[k*max+ap->lig_index] = ap;
+			if (k*max+ap->lig_index > special_ceiling || k*max+ap->lig_index < 0) {
+				fprintf(stderr, "A ligature index is invalid.\n");
+			} else {
+				aps[k*max+ap->lig_index] = ap;
+			}
 		    }
 		    ++k;
 		}
@@ -1645,7 +1650,7 @@ static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 		}
 	    }
 	}
-	free(aps);
+	free(aps); aps = NULL;
     }
     coverage_offset = ftell(gpos);
     fseek(gpos,subtable_start+4,SEEK_SET);
@@ -1876,6 +1881,7 @@ static uint16 *FigureInitialClasses(FPST *fpst) {
     uint16 *initial = malloc((fpst->nccnt+1)*sizeof(uint16));
     int i, cnt, j;
 
+    initial[fpst->nccnt] = 0xffff;
     for ( i=cnt=0; i<fpst->rule_cnt; ++i ) {
 	for ( j=0; j<cnt ; ++j )
 	    if ( initial[j] == fpst->rules[i].u.class.nclasses[0] )
@@ -2437,6 +2443,8 @@ return( true );
 static void otf_dumpALookup(FILE *lfile, OTLookup *otl, SplineFont *sf,
 	struct alltabs *at) {
     struct lookup_subtable *sub;
+    int lookup_sub_table_contains_no_data_count = 0;
+    int lookup_sub_table_is_too_big_count = 0;
 
     otl->lookup_offset = ftell(lfile);
     for ( sub = otl->subtables; sub!=NULL; sub=sub->next ) {
@@ -2496,14 +2504,20 @@ static void otf_dumpALookup(FILE *lfile, OTLookup *otl, SplineFont *sf,
 	      break;
 	    }
 	    if ( ftell(lfile)-sub->subtable_offset==0 ) {
-		IError( "Lookup sub table, %s in %s, contains no data.\n",
-			sub->subtable_name, sub->lookup->lookup_name );
+		if ( lookup_sub_table_contains_no_data_count < 32 ) {
+		  IError( "Lookup sub table, %s in %s, contains no data.\n",
+		  	sub->subtable_name, sub->lookup->lookup_name );
+		  lookup_sub_table_contains_no_data_count ++;
+		}
 		sub->unused = true;
 		sub->subtable_offset = -1;
 	    } else if ( sub->extra_subtables==NULL &&
 		    ftell(lfile)-sub->subtable_offset>65535 )
-		IError( "Lookup sub table, %s in %s, is too big. Will not be useable.\n",
-			sub->subtable_name, sub->lookup->lookup_name );
+		if ( lookup_sub_table_is_too_big_count < 32 ) {
+		  IError( "Lookup sub table, %s in %s, is too big. Will not be useable.\n",
+		  	sub->subtable_name, sub->lookup->lookup_name );
+		  lookup_sub_table_is_too_big_count ++;
+		}
 	}
     }
     otl->lookup_length = ftell(lfile)-otl->lookup_offset;
