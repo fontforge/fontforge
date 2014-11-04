@@ -947,9 +947,9 @@ static void _MenuExit(void *UNUSED(junk)) {
     {
 	AskAndMaybeCloseLocalCollabServers();
     }
-
+#ifndef _NO_PYTHON
     python_call_onClosingFunctions();
-
+#endif
 
     LastFonts_Save();
     for ( fv = fv_list; fv!=NULL; fv = next )
