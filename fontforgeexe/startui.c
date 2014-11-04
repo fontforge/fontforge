@@ -1336,9 +1336,9 @@ exit( 0 );
 
     collabclient_ensureClientBeacon();
     collabclient_sniffForLocalServer();
-
+#ifndef _NO_PYTHON
     PythonUI_namedpipe_Init();
-    
+#endif
 
 #if defined(__Mac)
     if ( listen_to_apple_events ) {
