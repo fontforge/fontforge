@@ -513,13 +513,13 @@ void CVCheckResizeCursors(CharView *cv) {
 	    /* if ( cv->showhmetrics && cv->info.x > cv->b.sc->width-fudge && */
 	    /* 	 cv->info.x<cv->b.sc->width+fudge && cv->b.container==NULL && */
 	    /* 	 usemymetrics==NULL ) */
-	    if( CVNearRBearingLine( cv, cv->info.x, fudge ))
+      if ( cv->showhmetrics && NearCaret(cv->b.sc,cv->info.x,fudge)!=-1 &&
+		    usemymetrics==NULL )
+		cv->expandedge = ee_right;
+	    else if( CVNearRBearingLine( cv, cv->info.x, fudge ))
 		cv->expandedge = ee_right;
 	    else if( CVNearLBearingLine( cv, cv->info.x, fudge ))
 		cv->expandedge = ee_left;
-	    else if ( cv->showhmetrics && NearCaret(cv->b.sc,cv->info.x,fudge)!=-1 &&
-		    usemymetrics==NULL )
-		cv->expandedge = ee_right;
 	    if ( cv->showvmetrics && cv->b.sc->parent->hasvmetrics && cv->b.container==NULL &&
 		    cv->info.y > /*cv->b.sc->parent->vertical_origin*/-cv->b.sc->vwidth-fudge &&
 		    cv->info.y < /*cv->b.sc->parent->vertical_origin*/-cv->b.sc->vwidth+fudge )
@@ -687,7 +687,16 @@ return;
 	    SetCur(cv);
 	    needsupdate = true;
 	}
-	if ( dolbearing )
+	if ( nearcaret!=-1 )
+	{
+	    PST *pst;
+	    for ( pst=cv->b.sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
+	    cv->lcarets = pst;
+	    cv->nearcaret = nearcaret;
+	    cv->expandedge = ee_right;
+	    SetCur(cv);
+	}
+	else if ( dolbearing )
 	{
 	    if ( event->u.mouse.state&ksm_shift )
 		cv->lbearingsel = !cv->lbearingsel;
@@ -754,15 +763,6 @@ return;
 		cv->expandedge = ee_none;
 	    SetCur(cv);
 	    needsupdate = true;
-	}
-	else if ( nearcaret!=-1 )
-	{
-	    PST *pst;
-	    for ( pst=cv->b.sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
-	    cv->lcarets = pst;
-	    cv->nearcaret = nearcaret;
-	    cv->expandedge = ee_right;
-	    SetCur(cv);
 	}
 	else
 	{
