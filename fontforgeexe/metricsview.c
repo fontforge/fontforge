@@ -4123,6 +4123,31 @@ return;
     GGadgetMove(mv->rbearinglab,2,mv->displayend+2+3*(mv->fh+4));
     GGadgetMove(mv->kernlab,2,mv->displayend+2+4*(mv->fh+4));
 
+    {
+      int newwidth = mv->width;
+      GRect scriptselector_size;
+      GRect charselector_size;
+      GRect charselectorNext_size;
+      GRect charselectorPrev_size;
+      GRect subtable_list_size;
+      GGadgetGetSize(mv->script, &scriptselector_size);
+      GGadgetGetSize(mv->text, &charselector_size);
+      GGadgetGetSize(mv->textPrev, &charselectorPrev_size);
+      GGadgetGetSize(mv->textNext, &charselectorNext_size);
+      GGadgetGetSize(mv->subtable_list, &subtable_list_size);
+      int new_charselector_width = newwidth - charselector_size.x -       charselectorNext_size.width - 2 - charselectorPrev_size.width - 2 - subtable_list_size.width - 10 - 10;
+      if (new_charselector_width < GDrawPointsToPixels(mv->gw,100))
+        new_charselector_width = GDrawPointsToPixels(mv->gw,100);
+      int new_charselectorPrev_x = charselector_size.x + new_charselector_width + 4;
+      int new_charselectorNext_x = new_charselectorPrev_x + charselectorPrev_size.width + 4;
+      int new_subtableselector_x = new_charselectorNext_x + charselectorNext_size.width + 10;
+
+      GGadgetResize(mv->text, new_charselector_width, charselector_size.height);
+      GGadgetMove(mv->textPrev, new_charselectorPrev_x, charselectorPrev_size.y);
+      GGadgetMove(mv->textNext, new_charselectorNext_x, charselectorNext_size.y);
+      GGadgetMove(mv->subtable_list, new_subtableselector_x, subtable_list_size.y);
+    }
+
     mv->vwidth = mv->dwidth-mv->xstart;
     mv->vheight = mv->displayend-mv->topend-2;
     GDrawResize(mv->v,mv->vwidth, mv->vheight);
