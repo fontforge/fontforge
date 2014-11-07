@@ -1389,8 +1389,10 @@ void SFD_DumpPST( FILE *sfd, SplineChar *sc ) {
 	    } else if ( pst->type==pst_lcaret ) {
 		int i;
 		fprintf( sfd, "%d ", pst->u.lcaret.cnt );
-		for ( i=0; i<pst->u.lcaret.cnt; ++i )
-		    fprintf( sfd, "%d ", pst->u.lcaret.carets[i] );
+		for ( i=0; i<pst->u.lcaret.cnt; ++i ) {
+		    fprintf( sfd, "%d", pst->u.lcaret.carets[i] );
+                    if ( i<pst->u.lcaret.cnt-1 ) putc(' ',sfd);
+                }
 		fprintf( sfd, "\n" );
 	    } else
 		fprintf( sfd, "%s\n", pst->u.lig.components );
