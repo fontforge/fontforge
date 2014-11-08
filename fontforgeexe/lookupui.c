@@ -2074,7 +2074,7 @@ static int AnchorClassD_ShowAnchors(GGadget *g, GEvent *e) {
 return( true );
 	ac = classes[2*row+1].u.md_addr;
 	if ( ac==NULL || ac->subtable==NULL) {
-	    ac = SFAddAnchorClass(acd->sf,acd->sub,classes[2*row+1].u.md_str);
+	    ac = SFAddAnchorClass(acd->sf,acd->sub,classes[2*row+0].u.md_str);
 	} else if ( ac->subtable!=acd->sub ) {
 	    ff_post_error(_("Name in use"),_("The name, %.80s, has already been used to identify an anchor class in a different lookup subtable (%.80s)"),
 		    ac->name, ac->subtable->subtable_name );
