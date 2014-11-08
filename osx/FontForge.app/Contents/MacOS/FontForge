@@ -80,6 +80,15 @@ if [ x"$1" == "x--debug" -o x"$1" == "x--debug-clearenv" ]; then
     fi
 
     if command -v lldb 2>/dev/null; then
+
+        export PYTHONPATH="/Applications/FontForge.app/Contents/MacOS/Even.app/Contents/Resources/lib/"
+        export PATH="$PATH:$bundle_bin"
+        export PYTHON="$bundle_bin/Python.framework.*/bin/python"
+        export PYTHONHOME="$bundle_bin/Python.framework.2.7"
+
+        echo "have set up python stuff... PYTHONHOME: $PYTHONHOME "
+        echo "have set up python stuff... PYTHON:     $PYTHON "
+
         WRAPPER="gdb --args"
         WRAPPER="script $HOME/FontForge-Debug-Output.txt lldb --debug --source /Applications/FontForge.app/Contents/MacOS/debug-script -- "
         $WRAPPER
