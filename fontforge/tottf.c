@@ -595,9 +595,14 @@ return( EOF );
 return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
 }
 
+static int short_too_long_warned = 0;
+
 void putshort(FILE *file,int sval) {
     if ( sval<-32768 || sval>65535 )
-	IError(_("Attempt to output %d into a 16-bit field. It will be truncated and the file may not be useful."), sval );
+	if (!short_too_long_warned) {
+	  IError(_("Attempt to output %d into a 16-bit field. It will be truncated and the file may not be useful."), sval );
+	  short_too_long_warned = 1;
+	}
     putc((sval>>8)&0xff,file);
     putc(sval&0xff,file);
 }
@@ -6038,6 +6043,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     struct alltabs at;
     int i, anyglyphs;
 
+    short_too_long_warned = 0; // This is a static variable defined for putshort.
     /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
     switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
