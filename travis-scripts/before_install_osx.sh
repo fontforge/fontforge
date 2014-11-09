@@ -12,15 +12,21 @@ do
 done
 base64 --decode ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
 chmod 600 ~/.ssh/id_rsa
+ls -l ~/.ssh/id_rsa
 echo -e "Host bigv\n\tBatchMode yes\n\tStrictHostKeyChecking no\n\tHostname fontforge.default.fontforge.uk0.bigv.io\n\tUser travisci\n\tIdentityFile ~/.ssh/id_rsa\n" >> ~/.ssh/config
-# wipe them out just in case a loose 'set' or whatever happens.
-for i in {00..30}; do unset id_rsa_$i;  done
-for i in {00..09}; do unset id_rsa_0$i; done
-
 #
 # now that we have the key setup, bring in the SYNC function.
 #
 . ./travis-scripts/common.sh
+#
+# wipe them out just in case a loose 'set' or whatever happens.
+#
+for i in {00..30}; do unset id_rsa_$i;  done
+for i in {00..09}; do unset id_rsa_0$i; done
+
+#
+# Start the work
+#
 set -ev
 
 # test the secure env variables and ability to upload
