@@ -97,7 +97,20 @@ extern int AutoSaveFrequency;
 int splash = 1;
 static int localsplash;
 static int unique = 0;
-static int listen_to_apple_events = false;
+
+/**
+ * In osx versions prior to 10.9.x a special -psn_ flag was supplied
+ * when fontforge was run by osx in some cases. For opening an sfd
+ * file from finder we need to register the openWith event in order to
+ * get the name of the file to open. So it makes sense to always
+ * register for Apple events on OSX so that we can get those file
+ * names as they come through.
+ */
+#if defined(__Mac)
+    static int listen_to_apple_events = true;
+#else
+    static int listen_to_apple_events = false;
+#endif
 static bool ProcessPythonInitFiles = 1;
 
 static void _dousage(void) {
