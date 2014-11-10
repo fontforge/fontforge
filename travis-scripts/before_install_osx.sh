@@ -12,7 +12,6 @@ do
 done
 base64 --decode ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
 chmod 600 ~/.ssh/id_rsa
-ls -l ~/.ssh/id_rsa
 echo -e "Host bigv\n\tBatchMode yes\n\tStrictHostKeyChecking no\n\tHostname fontforge.default.fontforge.uk0.bigv.io\n\tUser travisci\n\tIdentityFile ~/.ssh/id_rsa\n" >> ~/.ssh/config
 #
 # now that we have the key setup, bring in the SYNC function.
