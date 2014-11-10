@@ -1355,6 +1355,21 @@ static void CVLayers2Set(CharView *cv) {
     GGadgetSetChecked(GWidgetGetControl(cvlayers2,CID_VBack),cv->showback[0]&1);
     GGadgetSetChecked(GWidgetGetControl(cvlayers2,CID_VGrid),cv->showgrids);
 
+    int ly = 0;
+    // We want to look at the unhandled layers.
+    if (ly <= ly_back) ly = ly_back + 1;
+    if (ly <= ly_fore) ly = ly_fore + 1;
+    if (ly <= ly_grid) ly = ly_grid + 1;
+    while (ly < cv->b.sc->parent->layer_cnt) {
+      GGadget *tmpgadget = GWidgetGetControl(cvlayers2, CID_VBase + ly);
+      if (tmpgadget != NULL) {
+        // We set a low cap on the number of layers provisioned with check boxes for safety.
+        // So it is important to check that this exists.
+        GGadgetSetChecked(tmpgadget, cv->showback[ly>>5]&(1<<(ly&31)));
+      }
+      ly ++;
+    }
+
 	 /* set old to NULL */
     layer2.offtop = 0;
     for ( i=2; i<layer2.current_layers; ++i ) {
@@ -1435,6 +1450,8 @@ return;
 	} else if ( layer2.offtop+i>=layer2.current_layers ) {
     break;
 	} else if ( layer2.layers[layer2.offtop+i]!=NULL ) {
+#if 0
+	    // This is currently broken, and we do not have time to fix it.
 	    BDFChar *bdfc = layer2.layers[layer2.offtop+i];
 	    base.data = bdfc->bitmap;
 	    base.bytes_per_line = bdfc->bytes_per_line;
@@ -1443,6 +1460,21 @@ return;
 	    GDrawDrawImage(pixmap,&gi,NULL,
 		    r.x+2+bdfc->xmin,
 		    CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT+as-bdfc->ymax);
+#else
+	    // This logic comes from CVInfoDrawText.
+	    const int layernamesz = 100;
+	    char layername[layernamesz+1];
+	    strncpy(layername,_("Guide"),layernamesz);
+	    int idx = layer2.offtop+i-1;
+	    if(idx >= 0 && idx < cv->b.sc->parent->layer_cnt) {
+	      strncpy(layername,cv->b.sc->parent->layers[idx].name,layernamesz);
+	    } else {
+	      fprintf(stderr, "Invalid layer!\n");
+	    }
+	    // And this comes from above.
+	    GDrawDrawText8(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
+		    (char *) layername,-1,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
+#endif // 0
 	}
     }
 }
@@ -1653,6 +1685,8 @@ return(true);
       case et_controlevent:
 	if ( event->u.control.subtype == et_radiochanged ) {
 	    enum drawmode dm = cv->b.drawmode;
+	    int tmpcid = -1;
+	    int tmplayer = -1;
 	    switch(GGadgetGetCid(event->u.control.g)) {
 	      case CID_VFore:
 		CVShows.showfore = cv->showfore = GGadgetIsChecked(event->u.control.g);
@@ -1672,6 +1706,20 @@ return(true);
 	      case CID_VGrid:
 		CVShows.showgrids = cv->showgrids = GGadgetIsChecked(event->u.control.g);
 	      break;
+	      default:
+		tmpcid = GGadgetGetCid(event->u.control.g);
+		tmplayer = tmpcid - CID_VBase;
+		if (tmpcid < 0 || tmplayer < 0) break;
+		// We check that the layer is valid (since the code does not presently, as far as Frank knows, handle layer deletion).
+		// We also check that the CID is within the allocated range (although this may not be necessary since the checkbox would not exist otherwise).
+		if (tmplayer > 0 && tmplayer < 999 && tmplayer < cv->b.sc->parent->layer_cnt) {
+		  if (GGadgetIsChecked(event->u.control.g)) {
+		    cv->showback[tmplayer>>5]|=(1<<(tmplayer&31));
+		  } else {
+		    cv->showback[tmplayer>>5]&=~(1<<(tmplayer&31));
+		  }
+		}
+		break;
 	    }
 	    GDrawRequestExpose(cv->v,NULL,false);
 	    if ( dm!=cv->b.drawmode )
@@ -1777,6 +1825,23 @@ return;
     gcd[5].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[5].gd.box = &radio_box;
     gcd[5].creator = GCheckBoxCreate;
+
+    int wi = 6; // Widget index.
+    int ly = 0;
+    // We want to look at the unhandled layers.
+    if (ly <= ly_back) ly = ly_back + 1;
+    if (ly <= ly_fore) ly = ly_fore + 1;
+    if (ly <= ly_grid) ly = ly_grid + 1;
+    while (ly < cv->b.sc->parent->layer_cnt && wi < 24) {
+      gcd[wi].gd.pos.x = 5; gcd[wi].gd.pos.y = gcd[wi-1].gd.pos.y+CV_LAYERS2_LINE_HEIGHT; 
+      gcd[wi].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
+      gcd[wi].gd.cid = CID_VBase + ly; // There are plenty of CID values available for these above CID_VBase.
+      gcd[wi].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
+      gcd[wi].gd.box = &radio_box;
+      gcd[wi].creator = GCheckBoxCreate;
+      ly++;
+      wi++;
+    }
 
     if ( cv->showgrids ) gcd[3].gd.flags |= gg_cb_on;
     if ( cv->showback[0]&1 ) gcd[4].gd.flags |= gg_cb_on;
