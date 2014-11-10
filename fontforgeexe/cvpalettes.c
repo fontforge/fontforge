@@ -1435,6 +1435,8 @@ return;
 	} else if ( layer2.offtop+i>=layer2.current_layers ) {
     break;
 	} else if ( layer2.layers[layer2.offtop+i]!=NULL ) {
+#if 0
+	    // This is currently broken, and we do not have time to fix it.
 	    BDFChar *bdfc = layer2.layers[layer2.offtop+i];
 	    base.data = bdfc->bitmap;
 	    base.bytes_per_line = bdfc->bytes_per_line;
@@ -1443,6 +1445,21 @@ return;
 	    GDrawDrawImage(pixmap,&gi,NULL,
 		    r.x+2+bdfc->xmin,
 		    CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT+as-bdfc->ymax);
+#else
+	    // This logic comes from CVInfoDrawText.
+	    const int layernamesz = 100;
+	    char layername[layernamesz+1];
+	    strncpy(layername,_("Guide"),layernamesz);
+	    if(cv->b.drawmode!=dm_grid) {
+	      int idx = layer2.offtop+i-1;
+	      if(idx >= 0 && idx < cv->b.sc->parent->layer_cnt) {
+	        strncpy(layername,cv->b.sc->parent->layers[idx].name,layernamesz);
+	      }
+	    }
+	    // And this comes from above.
+	    GDrawDrawText8(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
+		    (char *) layername,-1,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
+#endif // 0
 	}
     }
 }
