@@ -35,6 +35,7 @@ if [ ! -e /tmp/bigvbase/have-key ]; then
     echo 0 > /tmp/bigvbase/have-key
   else
     echo 1 > /tmp/bigvbase/have-key
+    HAVE_SSH_KEY=1;
   fi
 else
   if [ y$(cat /tmp/bigvbase/have-key) = y1 ]; then 

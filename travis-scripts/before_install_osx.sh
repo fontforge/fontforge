@@ -13,14 +13,19 @@ done
 base64 --decode ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
 chmod 600 ~/.ssh/id_rsa
 echo -e "Host bigv\n\tBatchMode yes\n\tStrictHostKeyChecking no\n\tHostname fontforge.default.fontforge.uk0.bigv.io\n\tUser travisci\n\tIdentityFile ~/.ssh/id_rsa\n" >> ~/.ssh/config
-# wipe them out just in case a loose 'set' or whatever happens.
-for i in {00..30}; do unset id_rsa_$i;  done
-for i in {00..09}; do unset id_rsa_0$i; done
-
 #
 # now that we have the key setup, bring in the SYNC function.
 #
 . ./travis-scripts/common.sh
+#
+# wipe them out just in case a loose 'set' or whatever happens.
+#
+for i in {00..30}; do unset id_rsa_$i;  done
+for i in {00..09}; do unset id_rsa_0$i; done
+
+#
+# Start the work
+#
 set -ev
 
 # test the secure env variables and ability to upload
@@ -66,5 +71,6 @@ git checkout ab7f37834a28b4d6f3c584f08e5b993d8c191653 Library/Formula/zeromq.rb
 git checkout 3ad14e1e3f7d0131b3eee7fb4ce38a65e22a5187 Library/Formula/czmq.rb
 brew install czmq zeromq
 popd
+
 
 
