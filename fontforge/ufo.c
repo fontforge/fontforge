@@ -4010,6 +4010,47 @@ return( NULL );
 						if (layerglyphdirname != NULL) { xmlFree(layerglyphdirname); layerglyphdirname = NULL; }
 					}
 				}
+				{
+					// Some typefaces (from very reputable shops) identify as following version 2 of the U. F. O. specification
+					// but have multiple layers and a layercontents.plist and omit the foreground layer from layercontents.plist.
+					// So, if the layercontents.plist includes no foreground layer and makes no other use of the directory glyphs
+					// and if that directory exists within the typeface, we map it to the foreground.
+					// Note that FontForge cannot round-trip this anomaly at present and shall include the foreground in
+					// layercontents.plist in any exported U. F. O..
+					int tmply = 0; // Temporary layer index.
+					while (tmply < layercontentslayercount && strcmp(layernames[2*tmply], "public.default") &&
+					  strcmp(layernames[2*tmply+1], "glyphs")) tmply ++;
+					// If tmply == layercontentslayercount then we know that no layer was named public.default and that no layer
+					// used the glyphs directory.
+					char * layerpath = buildname(basedir, "glyphs");
+					if (tmply == layercontentslayercount && layerpath != NULL && GFileExists(layerpath)) {
+						layercontentsvaluecount = 2;
+						// Note the copying here.
+						xmlChar * layerlabel = (xmlChar*)"public.default";
+						xmlChar * layerglyphdirname = (xmlChar*)"glyphs";
+						// We need two values (as noted above) per layer entry and ignore any layer lacking those.
+						if ((layercontentsvaluecount > 1) && (layernamesbuffersize < INT_MAX/2)) {
+							// Resize the layer names array as necessary.
+							if (layercontentslayercount >= layernamesbuffersize) {
+								layernamesbuffersize *= 2;
+								layernames = realloc(layernames, 2*sizeof(char*)*layernamesbuffersize);
+							}
+							// Fail silently on allocation failure; it's highly unlikely.
+							if (layernames != NULL) {
+								layernames[2*layercontentslayercount] = copy((char*)(layerlabel));
+								if (layernames[2*layercontentslayercount]) {
+									layernames[(2*layercontentslayercount)+1] = copy((char*)(layerglyphdirname));
+									if (layernames[(2*layercontentslayercount)+1])
+										layercontentslayercount++; // We increment only if both pointers are valid so as to avoid read problems later.
+									else
+										free(layernames[2*layercontentslayercount]);
+								}
+							}
+						}
+					}
+					if (layerpath != NULL) { free(layerpath); layerpath = NULL; }
+				}
+
 				if (layernames != NULL) {
 					int lcount = 0;
 					int auxpos = 2;
