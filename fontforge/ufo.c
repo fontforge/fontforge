@@ -4046,8 +4046,8 @@ return( NULL );
 										if ( layerdest+1>sf->layer_cnt ) {
  										    sf->layers = realloc(sf->layers,(layerdest+1)*sizeof(LayerInfo));
 										    memset(sf->layers+sf->layer_cnt,0,((layerdest+1)-sf->layer_cnt)*sizeof(LayerInfo));
+										    sf->layer_cnt = layerdest+1;
 										}
-										sf->layer_cnt = layerdest+1;
 
 										// The check is redundant, but it allows us to copy from sfd.c.
 										if (( layerdest<sf->layer_cnt ) && sf->layers) {
