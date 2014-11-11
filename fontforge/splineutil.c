@@ -1223,7 +1223,7 @@ SplinePointList *SplinePointListCopy1(const SplinePointList *spl) {
     cur->is_clip_path = spl->is_clip_path;
     cur->spiro_cnt = cur->spiro_max = 0;
     cur->spiros = 0;
-
+    if (spl->contour_name != NULL) cur->contour_name = copy(spl->contour_name);
     for ( pt=spl->first; ;  ) {
 	cpt = SplinePointCreate( 0, 0 );
 	*cpt = *pt;
