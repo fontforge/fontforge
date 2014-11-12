@@ -1217,7 +1217,7 @@ static void adjustLBearing( CharView *cv, SplineChar *sc, real val )
     }
 }
 
-void CVHScrollSetPos_public( CharView *cv, int newpos );
+void CVHScrollSetPos_public( CharView *cv, int newpos ); // This is in charview.c.
 
 /* Move the selection and return whether we did a merge */
 int CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state) {
