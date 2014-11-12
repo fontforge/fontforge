@@ -2620,20 +2620,13 @@ struct lookup_data {
 
 static int ApplyLookupAtPos(uint32 tag, OTLookup *otl,struct lookup_data *data,int pos);
 
-static int GlyphNameInClass(const char *name,char *class ) {
+static int GlyphNameInClass(const char *name,const char *class) {
     const char *pt;
     int len = strlen(name);
 
-    if ( class==NULL )
-return( false );
-
-    pt = copy(class);
-    while ( (pt=strstr(pt,name))!=NULL ) {
-	if ( pt==NULL )
-return( false );
+    for (pt = class; pt && (pt=strstr(pt,name))!=NULL; pt += len) {
 	if ( (pt==class || pt[-1]==' ') && (pt[len]=='\0' || pt[len]==' '))
 return( true );
-	pt+=len;
     }
 
 return( false );
