@@ -1217,6 +1217,7 @@ static void adjustLBearing( CharView *cv, SplineChar *sc, real val )
     }
 }
 
+void CVHScrollSetPos_public( CharView *cv, int newpos );
 
 /* Move the selection and return whether we did a merge */
 int CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state) {
@@ -1322,7 +1323,8 @@ return(false);
     if ( cv->lbearingsel ) {
 
 	printf("lbearing dx:%f\n", dx );
-	adjustLBearing( cv, cv->b.sc, dx );
+	adjustLBearing( cv, cv->b.sc, -dx );
+	CVHScrollSetPos_public( cv, cv->xoff + dx * cv->scale );
 	changed = true;
     }
     if ( cv->vwidthsel ) {
