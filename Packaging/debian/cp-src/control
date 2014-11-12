@@ -95,6 +95,8 @@ Package: libfontforge-dev
 Section: libdevel
 Architecture: any
 Depends: ${misc:Depends},
+     libpango1.0-dev,
+     libcairo2-dev,
 	 libfontforge1 (= ${binary:Version}),
 	 libgdraw4 (= ${binary:Version})
 Description: font editor - runtime library (development files)
