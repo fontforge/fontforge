@@ -1214,9 +1214,20 @@ static void adjustLBearing( CharView *cv, SplineChar *sc, real val )
 	transform[4] = val;
 	printf("adjustLBearing val:%f min:%f v-min:%f\n",val,bb.minx,(bb.minx+val));
 	FVTrans( (FontViewBase *) cv->b.fv, sc, transform, NULL, 0 | fvt_alllayers );
+	// We copy and adapt some code from FVTrans in order to adjust the CharView carets.
+	// We omit the fvt_scalepstpos for FVTrans since other CharView code seems to skip updating the SplineChar.
+	PST *pst;
+	for ( pst = cv->b.sc->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->type == pst_lcaret ) {
+		int j;
+		for ( j=0; j<pst->u.lcaret.cnt; ++j )
+		    pst->u.lcaret.carets[j] = rint(pst->u.lcaret.carets[j]+val);
+	    }
+	}
     }
 }
 
+void CVHScrollSetPos_public( CharView *cv, int newpos ); // This is in charview.c.
 
 /* Move the selection and return whether we did a merge */
 int CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state) {
@@ -1322,7 +1333,8 @@ return(false);
     if ( cv->lbearingsel ) {
 
 	printf("lbearing dx:%f\n", dx );
-	adjustLBearing( cv, cv->b.sc, dx );
+	adjustLBearing( cv, cv->b.sc, -dx );
+	CVHScrollSetPos_public( cv, cv->xoff + dx * cv->scale );
 	changed = true;
     }
     if ( cv->vwidthsel ) {

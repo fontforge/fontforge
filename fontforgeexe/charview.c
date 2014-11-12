@@ -6022,6 +6022,10 @@ static void CVHScrollSetPos( CharView *cv, int newpos )
     }
 }
 
+void CVHScrollSetPos_public( CharView *cv, int newpos ) {
+  CVHScrollSetPos(cv, newpos);
+}
+
 static void CVHScroll(CharView *cv, struct sbevent *sb) {
     int newpos = cv->xoff;
 
