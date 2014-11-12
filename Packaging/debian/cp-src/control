@@ -3,34 +3,34 @@ Section: fonts
 Priority: optional
 Maintainer: Package Maintainer <releases@fontforge.org>
 Uploaders: Frank Trampe <frank.trampe@gmail.com>,
-	   Debian Fonts Task Force <pkg-fonts-devel@lists.alioth.debian.org>,
-	   Christian Perrier <bubulle@debian.org>,
-	   Davide Viti <zinosat@tiscali.it>,
-	   Rogério Brito <rbrito@ime.usp.br>,
+           Debian Fonts Task Force <pkg-fonts-devel@lists.alioth.debian.org>,
+           Christian Perrier <bubulle@debian.org>,
+           Davide Viti <zinosat@tiscali.it>,
+           Rogério Brito <rbrito@ime.usp.br>,
            Hideki Yamane <henrich@debian.org>,
            Daniel Kahn Gillmor <dkg@fifthhorseman.net>
 XS-Python-Version: all
-Build-Depends: debhelper (>= 9),
-               autotools-dev,
-               libjpeg-dev,
-               libtiff-dev,
-               libpng-dev,
-               libgif-dev,
-               libxt-dev,
-               libfreetype6-dev,
-               autoconf,
+Build-Depends: autoconf,
                automake,
-               libtool (>= 1.9),
+               autotools-dev,
                bzip2,
-               libxml2-dev,
-               libuninameslist-dev,
-               libspiro-dev,
-               python-dev (>= 2.7),
-               libpango1.0-dev,
-               libcairo2-dev,
                chrpath,
+               debhelper (>= 9),
+               git,
+               libcairo2-dev,
+               libfreetype6-dev,
+               libgif-dev,
+               libjpeg-dev,
                libltdl-dev,
-               git
+               libpango1.0-dev,
+               libpng-dev,
+               libspiro-dev,
+               libtiff-dev,
+               libtool (>= 1.9),
+               libuninameslist-dev,
+               libxml2-dev,
+               libxt-dev,
+               python-dev (>= 2.7)
 Standards-Version: 3.9.5
 Homepage: http://fontforge.github.io/
 Vcs-Git: git://github.com/fontforge/fontforge/
@@ -39,13 +39,13 @@ Vcs-Browser: http://github.com/fontforge/fontforge/
 Package: fontforge
 Architecture: any
 Multi-Arch: foreign
-Depends: ${misc:Depends},
-         fontforge-common (= ${source:Version}),
+Depends: fontforge-common (= ${source:Version}),
          libfontforge1 (= ${binary:Version}),
          libgdraw4 (= ${binary:Version}),
+         ${misc:Depends},
          ${shlibs:Depends}
-Conflicts: fontforge-nox, defoma
-Suggests: fontforge-doc, potrace, autotrace, python-fontforge, fontforge-extras 
+Conflicts: defoma, fontforge-nox
+Suggests: autotrace, fontforge-doc, fontforge-extras, potrace, python-fontforge
 Description: font editor
  Besides being a font editor, FontForge is also a font format
  converter, and can convert among PostScript (ASCII & binary Type 1,
@@ -60,11 +60,11 @@ Description: font editor
 Package: fontforge-nox
 Architecture: any
 Multi-Arch: foreign
-Depends: ${misc:Depends},
-         fontforge-common (= ${source:Version}),
+Depends: fontforge-common (= ${source:Version}),
          libfontforge1 (= ${binary:Version}),
+         ${misc:Depends},
          ${shlibs:Depends}
-Conflicts: fontforge, defoma
+Conflicts: defoma, fontforge
 Description: font editor - non-X version
  Besides being a font editor, FontForge is also a font format
  converter, and can convert among PostScript (ASCII & binary Type 1,
@@ -94,11 +94,11 @@ Description: font editor (common files)
 Package: libfontforge-dev
 Section: libdevel
 Architecture: any
-Depends: ${misc:Depends},
-     libpango1.0-dev,
-     libcairo2-dev,
-	 libfontforge1 (= ${binary:Version}),
-	 libgdraw4 (= ${binary:Version})
+Depends: libcairo2-dev,
+         libfontforge1 (= ${binary:Version}),
+         libgdraw4 (= ${binary:Version}),
+         libpango1.0-dev,
+         ${misc:Depends}
 Description: font editor - runtime library (development files)
  Besides being a font editor, FontForge is also a font format
  converter, and can convert among PostScript (ASCII & binary Type 1,
@@ -110,23 +110,23 @@ Description: font editor - runtime library (development files)
 Package: libfontforge1
 Section: libs
 Architecture: any
-Depends: ${misc:Depends},
-	 ${shlibs:Depends}
-Breaks: fontforge (<< ${binary:Version}), libfontforge-dev (<< ${binary:Version})
-Replaces: fontforge (<< ${binary:Version}), libfontforge-dev (<< ${binary:Version})
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Breaks: fontforge (<< ${binary:Version}),
+        libfontforge-dev (<< ${binary:Version})
+Replaces: fontforge (<< ${binary:Version}),
+          libfontforge-dev (<< ${binary:Version})
 Description: font editor - runtime library
  Besides being a font editor, FontForge is also a font format
  converter, and can convert among PostScript (ASCII & binary Type 1,
  some Type 3s, some Type 0s), TrueType, and OpenType (Type2),
  CID-keyed, SVG, CFF and multiple-master fonts.
  .
- This package contains the runtime library. 
+ This package contains the runtime library.
 
 Package: libgdraw4
 Section: libs
 Architecture: any
-Depends: ${misc:Depends},
-	 ${shlibs:Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}
 Breaks: fontforge (<< ${binary:Version})
 Replaces: fontforge (<< ${binary:Version})
 Description: font editor - runtime graphics and widget library
@@ -135,14 +135,14 @@ Description: font editor - runtime graphics and widget library
  some Type 3s, some Type 0s), TrueType, and OpenType (Type2),
  CID-keyed, SVG, CFF and multiple-master fonts.
  .
- This package contains the graphics and widget runtime library. 
+ This package contains the graphics and widget runtime library.
 
 Package: python-fontforge
 Architecture: any
-Depends: ${misc:Depends},
-	 ${shlibs:Depends},
-	 ${python:Depends},
-	 libfontforge1 (= ${binary:Version})
+Depends: libfontforge1 (= ${binary:Version}),
+         ${misc:Depends},
+         ${python:Depends},
+         ${shlibs:Depends}
 XB-Python-Version: ${python:Versions}
 Provides: ${python:Provides}
 Section: python
@@ -159,8 +159,7 @@ Package: fontforge-dbg
 Section: debug
 Architecture: any
 Priority: extra
-Depends: ${misc:Depends},
-         fontforge (= ${binary:Version})
+Depends: fontforge (= ${binary:Version}), ${misc:Depends}
 Description: debugging symbols for fontforge
  Besides being a font editor, FontForge is also a font format
  converter, and can convert among PostScript (ASCII & binary Type 1,
