@@ -6594,21 +6594,26 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 		    // We want to add to the ends of the lists.
 		    KernPair *lastkp = NULL;
 		    KernPair *tmpkp = NULL;
-		    for ( tmpkp=(vkern?sc->vkerns:sc->kerns); tmpkp!=NULL; lastkp = tmpkp, tmpkp=tmpkp->next );
-		    // Populate the kerning pair.
-		    kp->sc = other;
-		    kp->subtable = sub;
-		    // Add to the list.
-		    if ( vkern ) {
+		    for ( tmpkp=(vkern?sc->vkerns:sc->kerns); tmpkp!=NULL && (tmpkp->sc != other || tmpkp->subtable != sub); lastkp = tmpkp, tmpkp=tmpkp->next );
+		    if (tmpkp == NULL) {
+		      // Populate the kerning pair.
+		      kp->sc = other;
+		      kp->subtable = sub;
+		      // Add to the list.
+		      if ( vkern ) {
 			if (lastkp) lastkp->next = kp;
 			else sc->vkerns = kp;
 			lastkp = kp;
-		    } else {
+		      } else {
 			if (lastkp) lastkp->next = kp;
 			else sc->kerns = kp;
 			lastkp = kp;
+		      }
+		      PSTFree(pst);
+		    } else {
+		      LogError(_("Discarding a duplicate kerning pair."));
+		      SplineCharFree(sc); sc = NULL;
 		    }
-		    PSTFree(pst);
 		} else {
 		    // We want to add to the end of the list.
 		    PST *lastpst = NULL;
