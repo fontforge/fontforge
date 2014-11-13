@@ -373,10 +373,14 @@ void WordlistTrimTrailingSingleSlash( unichar_t* txt )
 
 static int WordListLineSz = 1024;
 
+static int WordListLine_hasCodePoint( WordListLine wll ) {
+    return wll && (wll->sc || wll->fallbackCode);
+}
+
 int WordListLine_countSelected( WordListLine wll )
 {
     int ret = 0;
-    for( ; wll->sc || wll->fallbackCode; wll++ ) {
+    for( ; WordListLine_hasCodePoint(wll); wll++ ) {
 	ret += wll->isSelected;
     }
     return ret;
@@ -384,7 +388,7 @@ int WordListLine_countSelected( WordListLine wll )
 
 WordListLine WordListLine_end( WordListLine wll )
 {
-    for( ; wll->sc || wll->fallbackCode; wll++ ) {
+    for( ; WordListLine_hasCodePoint(wll); wll++ ) {
     }
     return wll;
 }
@@ -392,7 +396,7 @@ WordListLine WordListLine_end( WordListLine wll )
 int WordListLine_size( WordListLine wll )
 {
     int ret = 0;
-    for( ; wll->sc || wll->fallbackCode; wll++ ) {
+    for( ; WordListLine_hasCodePoint(wll); wll++ ) {
 	++ret;
     }
     return ret;
@@ -756,7 +760,7 @@ unichar_t* Wordlist_selectionAdd( SplineFont* sf, EncMap *map, unichar_t* txtu, 
     WordlistTrimTrailingSingleSlash( txtu );
     WordListLine wll = WordlistEscapedInputStringToParsedData( sf, txtu );
 
-    for( i = 0; wll->sc || wll->fallbackCode; wll++, i++ )
+    for( i = 0; WordListLine_hasCodePoint(wll); wll++, i++ )
     {
 	SplineChar* sc = wll->sc;
         int element_selected = wll->isSelected;
@@ -812,7 +816,7 @@ unichar_t* Wordlist_advanceSelectedCharsBy( SplineFont* sf, EncMap *map, unichar
 	wll->isSelected = 1;
     
     memset( ret, 0, sizeof(unichar_t) * PATH_MAX );
-    for( i = 0; wll->sc || wll->fallbackCode; wll++, i++ )
+    for( i = 0; WordListLine_hasCodePoint(wll); wll++, i++ )
     {
 	SplineChar* sc = wll->sc;
         int element_selected = wll->isSelected;
@@ -922,7 +926,7 @@ unichar_t* WordListLine_toustr( WordListLine wll )
 {
     unichar_t* ret = calloc( WordListLine_size(wll)+1, sizeof(unichar_t));
     unichar_t* p = ret;
-    for( ; wll->sc || wll->fallbackCode; wll++, p++ ) {
+    for( ; WordListLine_hasCodePoint(wll); wll++, p++ ) {
 	*p = wll->sc ? wll->sc->unicodeenc : wll->fallbackCode;
     }
     return ret;
