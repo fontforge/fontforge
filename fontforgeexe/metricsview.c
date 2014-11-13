@@ -1610,7 +1610,6 @@ return( mv->sf->glyphs[ch-mv->fake_unicode_base] );
       // Due to the mechanics of the word list parser and the limited use cases for slot 0 in this context,
       // we do not allow an encoding value of 0.
       sc = SFSplineCharCreate(sf);
-      sc->unicodeenc = ch;
       sc->name = malloc(8);
       sc->unicodeenc = ch;
       sprintf( sc->name,"uni%04X", ch );
