@@ -83,6 +83,7 @@ typedef struct wordlistchar {
     SplineChar* sc;
     int isSelected;
     int currentGlyphIndex;
+    int fallbackCode;
 } WordListChar;
 
 typedef WordListChar* WordListLine;

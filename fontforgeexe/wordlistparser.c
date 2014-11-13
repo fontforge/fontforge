@@ -376,7 +376,7 @@ static int WordListLineSz = 1024;
 int WordListLine_countSelected( WordListLine wll )
 {
     int ret = 0;
-    for( ; wll->sc; wll++ ) {
+    for( ; wll->sc || wll->fallbackCode; wll++ ) {
 	ret += wll->isSelected;
     }
     return ret;
@@ -384,7 +384,7 @@ int WordListLine_countSelected( WordListLine wll )
 
 WordListLine WordListLine_end( WordListLine wll )
 {
-    for( ; wll->sc; wll++ ) {
+    for( ; wll->sc || wll->fallbackCode; wll++ ) {
     }
     return wll;
 }
@@ -392,7 +392,7 @@ WordListLine WordListLine_end( WordListLine wll )
 int WordListLine_size( WordListLine wll )
 {
     int ret = 0;
-    for( ; wll->sc; wll++ ) {
+    for( ; wll->sc || wll->fallbackCode; wll++ ) {
 	++ret;
     }
     return ret;
@@ -497,6 +497,7 @@ WordListLine WordlistEscapedInputStringToParsedDataComplex(
 	out->sc = sc;
 	out->isSelected = isSelected;
 	out->currentGlyphIndex = currentGlyphIndex;
+	out->fallbackCode = ch;
 	out++;
     }
 
@@ -755,7 +756,7 @@ unichar_t* Wordlist_selectionAdd( SplineFont* sf, EncMap *map, unichar_t* txtu, 
     WordlistTrimTrailingSingleSlash( txtu );
     WordListLine wll = WordlistEscapedInputStringToParsedData( sf, txtu );
 
-    for( i = 0; wll->sc; wll++, i++ )
+    for( i = 0; wll->sc || wll->fallbackCode; wll++, i++ )
     {
 	SplineChar* sc = wll->sc;
         int element_selected = wll->isSelected;
@@ -765,7 +766,8 @@ unichar_t* Wordlist_selectionAdd( SplineFont* sf, EncMap *map, unichar_t* txtu, 
 	
         if( element_selected )
         {
-            int pos = map->backmap[ sc->orig_pos ];
+	    // There is some sort of remapping that happens here.
+            int pos = sc ? map->backmap[ sc->orig_pos ] : wll->fallbackCode;
             TRACE("pos1:%d\n", pos );
             TRACE("map:%d\n", map->map[ pos ] );
             int gid = pos < 0 || pos >= map->enccount ? -2 : map->map[pos];
@@ -777,12 +779,13 @@ unichar_t* Wordlist_selectionAdd( SplineFont* sf, EncMap *map, unichar_t* txtu, 
                 sc = sf->glyphs[gid];
         }
         
-        
+        // We put the element to be selected in brackets.
         if( element_selected )
             uc_strcat( ret, "[" );
 
         /* uc_strcat( ret, "/" ); */
         /* uc_strcat( ret, scarray[i]->name ); */
+	// We output the element (selected or not).
         uc_strcat( ret, Wordlist_getSCName( sc ));
 
         if( element_selected )
@@ -809,14 +812,14 @@ unichar_t* Wordlist_advanceSelectedCharsBy( SplineFont* sf, EncMap *map, unichar
 	wll->isSelected = 1;
     
     memset( ret, 0, sizeof(unichar_t) * PATH_MAX );
-    for( i = 0; wll->sc; wll++, i++ )
+    for( i = 0; wll->sc || wll->fallbackCode; wll++, i++ )
     {
 	SplineChar* sc = wll->sc;
         int element_selected = wll->isSelected;
 
         if( element_selected )
         {
-            int pos = map->backmap[ sc->orig_pos ];
+            int pos = sc ? map->backmap[ sc->orig_pos ] : wll->fallbackCode;
             pos += offset;
             int gid = pos < 0 || pos >= map->enccount ? -2 : map->map[pos];
             if( gid == -2 )
@@ -919,8 +922,8 @@ unichar_t* WordListLine_toustr( WordListLine wll )
 {
     unichar_t* ret = calloc( WordListLine_size(wll)+1, sizeof(unichar_t));
     unichar_t* p = ret;
-    for( ; wll->sc; wll++, p++ ) {
-	*p = wll->sc->unicodeenc;
+    for( ; wll->sc || wll->fallbackCode; wll++, p++ ) {
+	*p = wll->sc ? wll->sc->unicodeenc : wll->fallbackCode;
     }
     return ret;
 }
