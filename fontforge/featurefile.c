@@ -6591,20 +6591,35 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 		    }
 		}
 		if ( kp!=NULL ) {
+		    // We want to add to the ends of the lists.
+		    KernPair *lastkp = NULL;
+		    KernPair *tmpkp = NULL;
+		    for ( tmpkp=(vkern?sc->vkerns:sc->kerns); tmpkp!=NULL; lastkp = tmpkp, tmpkp=tmpkp->next );
+		    // Populate the kerning pair.
 		    kp->sc = other;
 		    kp->subtable = sub;
+		    // Add to the list.
 		    if ( vkern ) {
-			kp->next = sc->vkerns;
-			sc->vkerns = kp;
+			if (lastkp) lastkp->next = kp;
+			else sc->vkerns = kp;
+			lastkp = kp;
 		    } else {
-			kp->next = sc->kerns;
-			sc->kerns = kp;
+			if (lastkp) lastkp->next = kp;
+			else sc->kerns = kp;
+			lastkp = kp;
 		    }
 		    PSTFree(pst);
 		} else {
+		    // We want to add to the end of the list.
+		    PST *lastpst = NULL;
+		    PST *tmppst = NULL;
+		    for ( tmppst=sc->possub; tmppst!=NULL; lastpst = tmppst, tmppst=tmppst->next );
+		    // Populate.
 		    pst->subtable = sub;
-		    pst->next = sc->possub;
-		    sc->possub = pst;
+		    // Add to the list.
+		    if (lastpst) lastpst->next = pst;
+		    else sc->possub = pst;
+		    lastpst = pst;
 		}
 	    } else if ( l->type == ft_pstclass ) {
 		lefts.classes[kcnt] = copy(fea_canonicalClassOrder(l->u1.class));
@@ -6640,12 +6655,17 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 	    kc->offsets = calloc(kc->first_cnt*kc->second_cnt,sizeof(int16));
 	    kc->adjusts = calloc(kc->first_cnt*kc->second_cnt,sizeof(DeviceTable));
 	    fea_fillKernClass(kc,first);
+	    KernClass *lastkc = NULL;
+	    KernClass *tmpkc = NULL;
+	    for ( tmpkc=(sub->vertical_kerning?tok->sf->vkerns:tok->sf->kerns); tmpkc!=NULL; lastkc = tmpkc, tmpkc=tmpkc->next );
 	    if ( sub->vertical_kerning ) {
-		kc->next = tok->sf->vkerns;
-		tok->sf->vkerns = kc;
+		if (lastkc) lastkc->next = kc;
+		else tok->sf->vkerns = kc;
+		lastkc = kc;
 	    } else {
-		kc->next = tok->sf->kerns;
-		tok->sf->kerns = kc;
+		if (lastkc) lastkc->next = kc;
+		else tok->sf->kerns = kc;
+		lastkc = kc;
 	    }
 	}
 	sub = NULL;
