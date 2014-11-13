@@ -92,6 +92,23 @@ extern WordListLine WordListLine_end( WordListLine wll );
 extern int WordListLine_size( WordListLine wll );
 extern unichar_t* WordListLine_toustr( WordListLine wll );
 
+/**
+ * Parse the string input_const into a WordListLine of WordListChar
+ * structures for each character in input_const. A structure such as
+ * WordListChar is used to describe each character so that you can
+ * quickly tell if it should be "selected" in the user interface and
+ * what the character index is.
+ *
+ * The input_const string can be complex, including selectors for
+ * glyphs so that many unichar_t are consumed to select a single
+ * splinechar. So the currentGlyphIndex allows you to see which
+ * SplineChar from 0 upwards the current WordListChar is.
+ *
+ * NOTE that this function (and
+ * WordlistEscapedInputStringToParsedDataComplex) may create
+ * splinechar instances in the splinefont that you pass in. So the
+ * function may not be free of side effects.
+ */
 extern WordListLine WordlistEscapedInputStringToParsedData( SplineFont* sf,
 							    unichar_t* input_const );
 extern WordListLine WordlistEscapedInputStringToParsedDataComplex(
