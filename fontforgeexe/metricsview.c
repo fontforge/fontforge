@@ -1594,13 +1594,28 @@ static SplineChar *MVSCFromUnicode(MetricsView *mv, SplineFont *sf, EncMap *map,
 	    ch<=mv->fake_unicode_base+mv->sf->glyphcnt )
 return( mv->sf->glyphs[ch-mv->fake_unicode_base] );
 
-    i = SFFindSlot(sf,map,ch,NULL);
-    if ( i==-1 )
-return( NULL );
-    else {
+    i = SFFindSlot(sf,map,ch,NULL); // We try to find an existing encoding slot first regardless of the encoding.
+
+    if (i != -1 || (!map->enc->is_compact && (!map->enc->enc_name || strcmp(map->enc->enc_name, "Custom")))) {
+      // If we have a real encoding, we make sure that the new character fits.
+      if ( i==-1 )
+        return( NULL );
+      else {
 	sc = SFMakeChar(sf,map,i);
 	if ( bdf!=NULL )
 	    BDFMakeChar(bdf,map,i);
+      }
+    } else if (ch < 0xFFFD && ch > 0) {
+      // If the encoding map is compact and the value is missing, we just check that the value is reasonable and make a slot.
+      // Due to the mechanics of the word list parser and the limited use cases for slot 0 in this context,
+      // we do not allow an encoding value of 0.
+      sc = SFSplineCharCreate(sf);
+      sc->name = malloc(8);
+      sc->unicodeenc = ch;
+      sprintf( sc->name,"uni%04X", ch );
+      SFAddGlyphAndEncode(sf, sc, map, map->enccount);
+    } else {
+      return NULL;
     }
 return( sc );
 }
