@@ -2118,11 +2118,10 @@ static int fea_classesIntersect(char *class1, char *class2) {
     long int index = 0;
     long int break_point = 0;
     int output = 0;
+    if (class1[0] == '\0' || class2[0] == '\0') return 0; // We cancel further action if one list is blank.
     // Parse the first input.
-    for ( pt1=class1 ; output == 0; ) {
+    for ( pt1=class1 ; output == 0 && pt1[0] != '\0'; ) {
         while ( *pt1==' ' ) ++pt1;
-        if ( *pt1=='\0' )
-            output = -1; // We cancel further action if one list is blank.
         for ( start1 = pt1; *pt1!=' ' && *pt1!='\0'; ++pt1 );
         ch1 = *pt1; *pt1 = '\0'; // Cache the byte and terminate.
         // We do not want to add the same name twice. It breaks the hash.
@@ -2133,12 +2132,10 @@ static int fea_classesIntersect(char *class1, char *class2) {
     }
     break_point = index; // Divide the entries from the two sources by index.
     // Parse the second input.
-    for ( pt2=class2 ; output == 0; ) {
+    for ( pt2=class2 ; output == 0 && pt2[0] != '\0'; ) {
         while ( *pt2==' ' ) ++pt2;
-        if ( *pt2=='\0' )
-            output = -1; // We cancel further action if one list is blank.
         for ( start2 = pt2; *pt2!=' ' && *pt2!='\0'; ++pt2 );
-        ch1 = *pt2; *pt2 = '\0'; // Cache the byte and terminate.
+        ch2 = *pt2; *pt2 = '\0'; // Cache the byte and terminate.
         struct glif_name * tmp = NULL;
         if ((tmp = glif_name_search_glif_name(glif_name_hash, start2)) == NULL) {
           glif_name_track_new(glif_name_hash, index++, start2);
