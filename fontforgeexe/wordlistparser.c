@@ -493,7 +493,7 @@ WordListLine WordlistEscapedInputStringToParsedDataComplex(
 	char glyphname[10];
 	glyphname[0] = ch;
 	glyphname[1] ='\0';
-	SplineChar* sc = SFGetChar( sf, ch, 0 );
+	SplineChar* sc = SFGetOrMakeChar( sf, ch, 0 );
 	out->sc = sc;
 	out->isSelected = isSelected;
 	out->currentGlyphIndex = currentGlyphIndex;
