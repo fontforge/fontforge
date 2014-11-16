@@ -2118,11 +2118,10 @@ static int fea_classesIntersect(char *class1, char *class2) {
     long int index = 0;
     long int break_point = 0;
     int output = 0;
+    if (class1[0] == '\0' || class2[0] == '\0') return 0; // We cancel further action if one list is blank.
     // Parse the first input.
-    for ( pt1=class1 ; output == 0; ) {
+    for ( pt1=class1 ; output == 0 && pt1[0] != '\0'; ) {
         while ( *pt1==' ' ) ++pt1;
-        if ( *pt1=='\0' )
-            output = -1; // We cancel further action if one list is blank.
         for ( start1 = pt1; *pt1!=' ' && *pt1!='\0'; ++pt1 );
         ch1 = *pt1; *pt1 = '\0'; // Cache the byte and terminate.
         // We do not want to add the same name twice. It breaks the hash.
@@ -2133,12 +2132,10 @@ static int fea_classesIntersect(char *class1, char *class2) {
     }
     break_point = index; // Divide the entries from the two sources by index.
     // Parse the second input.
-    for ( pt2=class2 ; output == 0; ) {
+    for ( pt2=class2 ; output == 0 && pt2[0] != '\0'; ) {
         while ( *pt2==' ' ) ++pt2;
-        if ( *pt2=='\0' )
-            output = -1; // We cancel further action if one list is blank.
         for ( start2 = pt2; *pt2!=' ' && *pt2!='\0'; ++pt2 );
-        ch1 = *pt2; *pt2 = '\0'; // Cache the byte and terminate.
+        ch2 = *pt2; *pt2 = '\0'; // Cache the byte and terminate.
         struct glif_name * tmp = NULL;
         if ((tmp = glif_name_search_glif_name(glif_name_hash, start2)) == NULL) {
           glif_name_track_new(glif_name_hash, index++, start2);
@@ -6591,20 +6588,40 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 		    }
 		}
 		if ( kp!=NULL ) {
-		    kp->sc = other;
-		    kp->subtable = sub;
-		    if ( vkern ) {
-			kp->next = sc->vkerns;
-			sc->vkerns = kp;
+		    // We want to add to the ends of the lists.
+		    KernPair *lastkp = NULL;
+		    KernPair *tmpkp = NULL;
+		    for ( tmpkp=(vkern?sc->vkerns:sc->kerns); tmpkp!=NULL && (tmpkp->sc != other || tmpkp->subtable != sub); lastkp = tmpkp, tmpkp=tmpkp->next );
+		    if (tmpkp == NULL) {
+		      // Populate the kerning pair.
+		      kp->sc = other;
+		      kp->subtable = sub;
+		      // Add to the list.
+		      if ( vkern ) {
+			if (lastkp) lastkp->next = kp;
+			else sc->vkerns = kp;
+			lastkp = kp;
+		      } else {
+			if (lastkp) lastkp->next = kp;
+			else sc->kerns = kp;
+			lastkp = kp;
+		      }
+		      PSTFree(pst);
 		    } else {
-			kp->next = sc->kerns;
-			sc->kerns = kp;
+		      LogError(_("Discarding a duplicate kerning pair."));
+		      SplineCharFree(sc); sc = NULL;
 		    }
-		    PSTFree(pst);
 		} else {
+		    // We want to add to the end of the list.
+		    PST *lastpst = NULL;
+		    PST *tmppst = NULL;
+		    for ( tmppst=sc->possub; tmppst!=NULL; lastpst = tmppst, tmppst=tmppst->next );
+		    // Populate.
 		    pst->subtable = sub;
-		    pst->next = sc->possub;
-		    sc->possub = pst;
+		    // Add to the list.
+		    if (lastpst) lastpst->next = pst;
+		    else sc->possub = pst;
+		    lastpst = pst;
 		}
 	    } else if ( l->type == ft_pstclass ) {
 		lefts.classes[kcnt] = copy(fea_canonicalClassOrder(l->u1.class));
@@ -6640,12 +6657,17 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 	    kc->offsets = calloc(kc->first_cnt*kc->second_cnt,sizeof(int16));
 	    kc->adjusts = calloc(kc->first_cnt*kc->second_cnt,sizeof(DeviceTable));
 	    fea_fillKernClass(kc,first);
+	    KernClass *lastkc = NULL;
+	    KernClass *tmpkc = NULL;
+	    for ( tmpkc=(sub->vertical_kerning?tok->sf->vkerns:tok->sf->kerns); tmpkc!=NULL; lastkc = tmpkc, tmpkc=tmpkc->next );
 	    if ( sub->vertical_kerning ) {
-		kc->next = tok->sf->vkerns;
-		tok->sf->vkerns = kc;
+		if (lastkc) lastkc->next = kc;
+		else tok->sf->vkerns = kc;
+		lastkc = kc;
 	    } else {
-		kc->next = tok->sf->kerns;
-		tok->sf->kerns = kc;
+		if (lastkc) lastkc->next = kc;
+		else tok->sf->kerns = kc;
+		lastkc = kc;
 	    }
 	}
 	sub = NULL;
