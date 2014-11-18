@@ -98,6 +98,7 @@ Depends: libcairo2-dev,
          libfontforge1 (= ${binary:Version}),
          libgdraw4 (= ${binary:Version}),
          libpango1.0-dev,
+         python-dev (>= 2.7),
          ${misc:Depends}
 Description: font editor - runtime library (development files)
  Besides being a font editor, FontForge is also a font format
