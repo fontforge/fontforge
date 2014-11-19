@@ -1935,7 +1935,7 @@ typedef struct splinefont {
 
     struct sfundoes *undoes;
     char collab_uuid[ FF_UUID_STRING_SIZE ];
-    int preferred_kerning; // 1 for U. F. O. native, 2 for feature file, 0 undefined. Input functions shall flag 2, I think. This shall be a temporary value absent from S. F. D. for now.
+    int preferred_kerning; // 1 for U. F. O. native, 2 for feature file, 0 undefined. Input functions shall flag 2, I think. This is now in S. F. D. in order to round-trip U. F. O. consistently.
 } SplineFont;
 
 struct axismap {
@@ -2013,7 +2013,8 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		    ttf_flag_pfed_guides=0x1000,
 		    ttf_flag_pfed_layers=0x2000,
 		    ttf_flag_symbol=0x4000,
-		    ttf_flag_dummyDSIG=0x8000
+		    ttf_flag_dummyDSIG=0x8000,
+		    ttf_native_kern=0x10000 // This applies mostly to U. F. O. right now.
 		};
 enum ttc_flags { ttc_flag_trymerge=0x1, ttc_flag_cff=0x2 };
 enum openflags { of_fstypepermitted=1, of_askcmap=2, of_all_glyphs_in_ttc=4,

@@ -2257,6 +2257,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	putc('\n',sfd);
     }
     // TODO: Output U. F. O. layer path.
+    if (sf->preferred_kerning != 0) fprintf(sfd, "PreferredKerning: %d\n", sf->preferred_kerning);
     if ( sf->strokedfont )
 	fprintf(sfd, "StrokedFont: %d\n", sf->strokedfont );
     else if ( sf->multilayer )
@@ -7824,6 +7825,12 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	while ( (ch=nlgetc(sfd))==' ' );
 	ungetc(ch,sfd);
 	if ( ch!='\n' ) { sf->layers[layer].ufo_path = SFDReadUTF7Str(sfd); }
+    }
+    else if ( strmatch(tok,"PreferredKerning:")==0 )
+    {
+	int temp;
+	getint(sfd,&temp);
+	sf->preferred_kerning = temp;
     }
     else if ( strmatch(tok,"StrokedFont:")==0 )
     {

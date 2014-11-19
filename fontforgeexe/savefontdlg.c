@@ -106,6 +106,7 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_TTF_PfEdLayers	1115
 #define CID_FontLog		1116
 #define CID_TTF_DummyDSIG	1117
+#define CID_NativeKern		1118
 
 struct gfc_data {
     int done;
@@ -371,6 +372,8 @@ return( false );
 
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_FontLog)) )
 		    d->sfnt_flags |= ps_flag_outputfontlog;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_NativeKern)) )
+		    d->sfnt_flags |= ttf_native_kern; // This applies mostly to U. F. O. right now.
 	    } else {				/* PS + OpenType Bitmap */
 		d->ps_flags = d->psotb_flags = 0;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFMmarks)) )
@@ -465,6 +468,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 	    (flags&ttf_flag_oldkern) && !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_AppleMode)));
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_DummyDSIG),flags&ttf_flag_dummyDSIG);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_FontLog),flags&ps_flag_outputfontlog);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_NativeKern),flags&ttf_native_kern);
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Hints),which!=1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),which!=1);
@@ -507,11 +511,11 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     int k,fontlog_k,group,group2;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[32];
-    GTextInfo label[32];
+    GGadgetCreateData gcd[33];
+    GTextInfo label[33];
     GRect pos;
-    GGadgetCreateData *hvarray1[21], *hvarray2[42], *harray[7], *varray[11];
-    GGadgetCreateData boxes[5];
+    GGadgetCreateData *hvarray1[21], *hvarray2[42], *hvarray3[4], *harray[7], *varray[11];
+    GGadgetCreateData boxes[6];
 
     d->sod_done = false;
     d->sod_which = which;
@@ -843,6 +847,25 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_FontLog;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray3[0] = &gcd[k-1];
+
+    gcd[k].gd.pos.y = gcd[k-1].gd.pos.y; gcd[k].gd.pos.x = gcd[k-2].gd.pos.x;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Force native kerning");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.popup_msg = (unichar_t *) _(
+	"Use native kerning structures (instead of a feature file) even when this might lose information.\n");
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_NativeKern;
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray3[1] = &gcd[k-1];
+
+    hvarray3[2] = NULL; hvarray3[3] = NULL;
+
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = hvarray3;
+    boxes[4].gd.label = NULL;
+    boxes[4].creator = GHVGroupCreate;
 
     gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = gcd[group2].gd.pos.y+gcd[group2].gd.pos.height+10-3;
     gcd[k].gd.pos.width = -1;
@@ -866,15 +889,15 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     harray[3] = GCD_Glue; harray[4] = &gcd[k-1]; harray[5] = GCD_Glue;
     harray[6] = NULL;
 
-    boxes[4].gd.flags = gg_enabled|gg_visible;
-    boxes[4].gd.u.boxelements = harray;
-    boxes[4].creator = GHBoxCreate;
+    boxes[5].gd.flags = gg_enabled|gg_visible;
+    boxes[5].gd.u.boxelements = harray;
+    boxes[5].creator = GHBoxCreate;
 
     varray[0] = &boxes[2]; varray[1] = NULL;
     varray[2] = &boxes[3]; varray[3] = NULL;
-    varray[4] = &gcd[fontlog_k];; varray[5] = NULL;
+    varray[4] = &boxes[4]; varray[5] = NULL;
     varray[6] = GCD_Glue; varray[7] = NULL;
-    varray[8] = &boxes[4]; varray[9] = NULL;
+    varray[8] = &boxes[5]; varray[9] = NULL;
     varray[10] = NULL;
 
     boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
