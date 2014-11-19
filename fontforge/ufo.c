@@ -1509,6 +1509,7 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
                 while (glyphlist[index] != NULL) {
                   if (SFGetChar(sf, -1, glyphlist[index]))
                     xmlNewChild(grouparray, NULL, BAD_CAST "string", glyphlist[index]);
+                  index++;
                 }
                 ExplodedStringFree(glyphlist);
                 // We flag the output of this kerning class as complete.
@@ -1548,6 +1549,8 @@ static int UFOOutputKerning(const char *basedir, const SplineFont *sf) {
     int i;
     int has_content = 0;
 
+    if (sf->preferred_kerning != 1) return true; // This goes into the feature file by default now.
+
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
     xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (dictnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
@@ -1569,6 +1572,8 @@ static int UFOOutputVKerning(const char *basedir, const SplineFont *sf) {
     SplineChar *sc;
     int i;
     int has_content = 0;
+
+    if (sf->preferred_kerning != 1) return true; // This goes into the feature file by default now.
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
@@ -1682,9 +1687,10 @@ int ufo_kerning_tree_attempt_insert(struct ufo_kerning_tree_session *session, co
 
 
 static int UFOOutputKerning2(const char *basedir, SplineFont *sf, int isv) {
-    SplineChar *sc;
     int i, j;
     int has_content = 0;
+
+    if (sf->preferred_kerning != 1) return true; // This goes into the feature file by default now.
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
@@ -1779,7 +1785,7 @@ static int UFOOutputKerning2(const char *basedir, SplineFont *sf, int isv) {
             !(left_grouptype & GROUP_NAME_RIGHT) &&
             ((left_grouptype & GROUP_NAME_VERTICAL) == (isv * GROUP_NAME_VERTICAL)) &&
             left_class_name_record != NULL &&
-            sc != NULL) {
+            ssc != NULL) {
             offset = current_groupkern->offset;
             valid = 1;
           }
@@ -2974,6 +2980,22 @@ static struct ff_glyphclasses *GlyphGroupDeduplicate(struct ff_glyphclasses *gro
   return group_base;
 }
 
+static uint32 script_from_glyph_list(SplineFont *sf, const char *glyph_names) {
+  uint32 script = DEFAULT_SCRIPT;
+  char *delimited_names;
+  off_t name_char_pos;
+  name_char_pos = 0;
+  delimited_names = delimit_null(glyph_names, ' ');
+  while (script == DEFAULT_SCRIPT && glyph_names[name_char_pos] != '\0') {
+    SplineChar *sc = SFGetChar(sf, -1, delimited_names + name_char_pos);
+    script = SCScriptFromUnicode(sc);
+    name_char_pos += strlen(delimited_names + name_char_pos);
+    if (glyph_names[name_char_pos] != '\0') name_char_pos ++;
+  }
+  free(delimited_names); delimited_names = NULL;
+  return script;
+}
+
 #define GROUP_NAME_KERNING_UFO 1
 #define GROUP_NAME_KERNING_FEATURE 2
 #define GROUP_NAME_VERTICAL 4 // Otherwise horizontal.
@@ -3180,6 +3202,49 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
       }
     }
   }
+#ifdef UFO_GUESS_SCRIPTS
+  // Check the script in each element of each group (for each polarity) until a character is of a script other than DFLT.
+  if (sf->kerns != NULL) {
+    uint32 script = DEFAULT_SCRIPT;
+    int class_index;
+    class_index = 0;
+    while (script == DEFAULT_SCRIPT && class_index < sf->kerns->first_cnt) {
+      if (sf->kerns->firsts[class_index] != NULL) script = script_from_glyph_list(sf, sf->kerns->firsts[class_index]);
+      class_index++;
+    }
+    class_index = 0;
+    while (script == DEFAULT_SCRIPT && class_index < sf->kerns->second_cnt) {
+      if (sf->kerns->seconds[class_index] != NULL) script = script_from_glyph_list(sf, sf->kerns->seconds[class_index]);
+      class_index++;
+    }
+    sf->kerns->subtable = SFSubTableFindOrMake(sf, CHR('k','e','r','n'), script, gpos_pair);
+  }
+  if (sf->vkerns != NULL) {
+    uint32 script = DEFAULT_SCRIPT;
+    int class_index;
+    class_index = 0;
+    while (script == DEFAULT_SCRIPT && class_index < sf->vkerns->first_cnt) {
+      if (sf->vkerns->firsts[class_index] != NULL) script = script_from_glyph_list(sf, sf->vkerns->firsts[class_index]);
+      class_index++;
+    }
+    class_index = 0;
+    while (script == DEFAULT_SCRIPT && class_index < sf->vkerns->second_cnt) {
+      if (sf->vkerns->seconds[class_index] != NULL) script = script_from_glyph_list(sf, sf->vkerns->seconds[class_index]);
+      class_index++;
+    }
+    sf->vkerns->subtable = SFSubTableFindOrMake(sf, CHR('v','k','r','n'), script, gpos_pair);
+  }
+#else
+  // Some test cases have proven that FontForge would do best to avoid classifying these.
+  uint32 script = DEFAULT_SCRIPT;
+  if (sf->kerns != NULL) {
+    sf->kerns->subtable = SFSubTableFindOrMake(sf, CHR('k','e','r','n'), script, gpos_pair);
+  }
+  if (sf->vkerns != NULL) {
+    sf->vkerns->subtable = SFSubTableFindOrMake(sf, CHR('v','k','r','n'), script, gpos_pair);
+  }
+#endif // UFO_GUESS_SCRIPTS
+
 }
 
 static void UFOHandleGroups(SplineFont *sf, char *basedir) {
@@ -3276,6 +3341,9 @@ static void UFOHandleKern(SplineFont *sf,char *basedir,int isv) {
     if ( doc==NULL )
 return;
 
+    // If there is native kerning (as we would expect if the function has not returned), set the SplineFont flag to prefer it on output.
+    sf->preferred_kerning = 1;
+
     plist = xmlDocGetRootElement(doc);
     dict = FindNode(plist->children,"dict");
     if ( xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 || dict==NULL ) {
@@ -3323,9 +3391,14 @@ return;
 			    kp->next = sc->kerns;
 			    sc->kerns = kp;
 			}
+#ifdef UFO_GUESS_SCRIPTS
 			script = SCScriptFromUnicode(sc);
 			if ( script==DEFAULT_SCRIPT )
 			    script = SCScriptFromUnicode(ssc);
+#else
+			// Some test cases have proven that FontForge would do best to avoid classifying these.
+			script = DEFAULT_SCRIPT;
+#endif // UFO_GUESS_SCRIPTS
 			kp->subtable = SFSubTableFindOrMake(sf,
 				isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
 				script, gpos_pair);
@@ -3376,6 +3449,9 @@ static void UFOHandleKern3(SplineFont *sf,char *basedir,int isv) {
     free(fname);
     if ( doc==NULL )
 return;
+
+    // If there is native kerning (as we would expect if the function has not returned), set the SplineFont flag to prefer it on output.
+    sf->preferred_kerning = 1;
 
     plist = xmlDocGetRootElement(doc);
     dict = FindNode(plist->children,"dict");
@@ -3473,9 +3549,14 @@ return;
 			    // kp->next = sc->kerns;
 			    // sc->kerns = kp;
 			}
+#ifdef UFO_GUESS_SCRIPTS
 			script = SCScriptFromUnicode(sc);
 			if ( script==DEFAULT_SCRIPT )
 			    script = SCScriptFromUnicode(ssc);
+#else
+			// Some test cases have proven that FontForge would do best to avoid classifying these.
+			script = DEFAULT_SCRIPT;
+#endif // UFO_GUESS_SCRIPTS
 			kp->subtable = SFSubTableFindOrMake(sf,
 				isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
 				script, gpos_pair);

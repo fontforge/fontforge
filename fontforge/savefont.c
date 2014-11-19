@@ -766,6 +766,7 @@ int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res,
     int iscid = oldformatstate==ff_cid || oldformatstate==ff_cffcid ||
 	    oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont;
     int flags = 0;
+    int tmpstore = 0;
 
     if ( oldformatstate == ff_multiple )
 return( WriteMultiplePSFont(sf,newname,sizes,subfontdefinition,map,layer));
@@ -837,7 +838,10 @@ return( true );
 	    oerr = !WriteSVGFont(newname,sf,oldformatstate,flags,map,layer);
 	  break;
 	  case ff_ufo:
+	    tmpstore = sf->preferred_kerning; // We toggle this flag in order to force native kerning output.
+	    if (flags & ttf_native_kern) sf->preferred_kerning = 1;
 	    oerr = !WriteUFOFont(newname,sf,oldformatstate,flags,map,layer);
+	    if (flags & ttf_native_kern) sf->preferred_kerning = tmpstore;
 	  break;
 	  default:
 	  break;

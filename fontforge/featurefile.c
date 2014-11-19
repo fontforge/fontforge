@@ -1450,7 +1450,8 @@ return;					/* No support for apple "lookups" */
 			  break;
 			}
 		    }
-		    for ( isv=0; isv<2; ++isv ) {
+		    // We skip outputting these here if the SplineFont says to use native kerning.
+		    if (sf->preferred_kerning != 1) for ( isv=0; isv<2; ++isv ) {
 			for ( kp=isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next ) if ( kp->subtable==sub ) {
 			    fprintf( out, "    pos " );
 			    dump_glyphname(out,sc);
