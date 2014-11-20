@@ -1509,6 +1509,7 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
                 while (glyphlist[index] != NULL) {
                   if (SFGetChar(sf, -1, glyphlist[index]))
                     xmlNewChild(grouparray, NULL, BAD_CAST "string", glyphlist[index]);
+                  index++;
                 }
                 ExplodedStringFree(glyphlist);
                 // We flag the output of this kerning class as complete.
