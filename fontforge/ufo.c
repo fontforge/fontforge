@@ -3202,7 +3202,7 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
       }
     }
   }
-#if 0
+#ifdef UFO_GUESS_SCRIPTS
   // Check the script in each element of each group (for each polarity) until a character is of a script other than DFLT.
   if (sf->kerns != NULL) {
     uint32 script = DEFAULT_SCRIPT;
@@ -3243,7 +3243,7 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
   if (sf->vkerns != NULL) {
     sf->vkerns->subtable = SFSubTableFindOrMake(sf, CHR('v','k','r','n'), script, gpos_pair);
   }
-#endif // 0
+#endif // UFO_GUESS_SCRIPTS
 
 }
 
@@ -3391,14 +3391,14 @@ return;
 			    kp->next = sc->kerns;
 			    sc->kerns = kp;
 			}
-#if 0
+#ifdef UFO_GUESS_SCRIPTS
 			script = SCScriptFromUnicode(sc);
 			if ( script==DEFAULT_SCRIPT )
 			    script = SCScriptFromUnicode(ssc);
 #else
 			// Some test cases have proven that FontForge would do best to avoid classifying these.
 			script = DEFAULT_SCRIPT;
-#endif // 0
+#endif // UFO_GUESS_SCRIPTS
 			kp->subtable = SFSubTableFindOrMake(sf,
 				isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
 				script, gpos_pair);
@@ -3549,14 +3549,14 @@ return;
 			    // kp->next = sc->kerns;
 			    // sc->kerns = kp;
 			}
-#if 0
+#ifdef UFO_GUESS_SCRIPTS
 			script = SCScriptFromUnicode(sc);
 			if ( script==DEFAULT_SCRIPT )
 			    script = SCScriptFromUnicode(ssc);
 #else
 			// Some test cases have proven that FontForge would do best to avoid classifying these.
 			script = DEFAULT_SCRIPT;
-#endif // 0
+#endif // UFO_GUESS_SCRIPTS
 			kp->subtable = SFSubTableFindOrMake(sf,
 				isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
 				script, gpos_pair);
