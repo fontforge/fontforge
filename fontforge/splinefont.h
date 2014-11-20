@@ -2352,7 +2352,9 @@ void GlyphGroupKernsFree(struct ff_rawoffsets* root);
 int CountKerningClasses(SplineFont *sf);
 #ifdef FF_UTHASH_GLIF_NAMES
 struct glif_name_index;
+int HashKerningClassNamesFlex(SplineFont *sf, struct glif_name_index * class_name_hash, int capitalize);
 int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_hash);
+int HashKerningClassNamesCaps(SplineFont *sf, struct glif_name_index * class_name_hash);
 #endif
 int KerningClassSeekByAbsoluteIndex(const struct splinefont *sf, int seek_index, struct kernclass **okc, int *oisv, int *oisr, int *ooffset);
 struct ff_glyphclasses *SFGetGroup(const struct splinefont *sf, int index, const char *name);
@@ -3535,6 +3537,12 @@ extern void debug_printHintInstance( HintInstance* hi, int hin, char* msg );
  * tolerence of b.
  */
 extern bool equalWithTolerence( real a, real b, real tolerence );
+
+// The following functions are in splineutil.c at present.
+size_t count_caps(const char * input);
+char * upper_case(const char * input);
+char * same_case(const char * input);
+char * delimit_null(const char * input, char delimiter);
 
 #include "ustring.h"
 
