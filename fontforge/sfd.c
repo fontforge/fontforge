@@ -8244,6 +8244,7 @@ bool SFD_GetFontMetaData( FILE *sfd,
         // return false;
         // Try to read through it anyway.
         read_unknown_tag(sfd);
+        LogError(_("Unknown tag %s."), tok);
     }
     return true;
 }
