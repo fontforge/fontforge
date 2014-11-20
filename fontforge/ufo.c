@@ -283,7 +283,7 @@ int index, const char * input, const char * prefix, const char * suffix, int fla
             while (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL || number_once) {
               name_number++; // Remangle the name until we have no more matches.
               free(name_numbered); name_numbered = NULL;
-              asprintf(&name_numbered, "%s%15ld", name_base_upper, name_number);
+              asprintf(&name_numbered, "%s%015ld", name_base_upper, name_number);
               number_once = 0;
             }
             free(name_base_upper); name_base_upper = NULL;
@@ -295,7 +295,7 @@ int index, const char * input, const char * prefix, const char * suffix, int fla
         // Now we want the correct capitalization.
         free(name_numbered); name_numbered = NULL;
         if (name_number > 0) {
-          asprintf(&name_numbered, "%s%15ld", name_base, name_number);
+          asprintf(&name_numbered, "%s%015ld", name_base, name_number);
         } else {
           asprintf(&name_numbered, "%s", full_name_base);
         }
