@@ -841,7 +841,7 @@ return( true );
 	    tmpstore = sf->preferred_kerning; // We toggle this flag in order to force native kerning output.
 	    if (flags & ttf_native_kern) sf->preferred_kerning = 1;
 	    oerr = !WriteUFOFont(newname,sf,oldformatstate,flags,map,layer);
-	    if (flags & ttf_native_kern) sf->preferred_kerning = 0;
+	    if (flags & ttf_native_kern) sf->preferred_kerning = tmpstore;
 	  break;
 	  default:
 	  break;
