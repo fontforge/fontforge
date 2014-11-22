@@ -248,14 +248,15 @@ static void SplashLayout() {
 
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
-    uc_strcpy(pt,"  git hash: ");;
+    uc_strcpy(pt,"  git hash: ");
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
+    uc_strcat(pt, " ");
     uc_strcat(pt, FONTFORGE_GIT_VERSION);
 
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
-    uc_strcpy(pt,"  Version: ");;
+    uc_strcpy(pt,"  Version: ");
     uc_strcat(pt,FONTFORGE_MODTIME_STR);
 
     pt += u_strlen(pt);
@@ -909,7 +910,7 @@ int fontforge_main( int argc, char **argv ) {
 #endif
 	        ".\n",
 	        FONTFORGE_MODTIME_STR );
-        fprintf( stderr, " Based on source from git with hash:%s\n", FONTFORGE_GIT_VERSION );
+        fprintf( stderr, " Based on source from git with hash: %s\n", FONTFORGE_GIT_VERSION );
     }
 
 #if defined(__Mac)
