@@ -3038,7 +3038,7 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
   // Allocate lookups if needed.
   if (sf->kerns == NULL && (left_count || right_count)) {
     sf->kerns = calloc(1, sizeof(struct kernclass));
-    // We set the subtable after reading the list members.
+    sf->kerns->subtable = SFSubTableFindOrMake(sf, CHR('k','e','r','n'), DEFAULT_SCRIPT, gpos_pair);
     sf->kerns->firsts = calloc(1, sizeof(char *));
     sf->kerns->firsts_names = calloc(1, sizeof(char *));
     sf->kerns->firsts_flags = calloc(1, sizeof(int));
