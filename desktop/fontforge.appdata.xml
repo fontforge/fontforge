@@ -25,6 +25,12 @@
   <p xml:lang="pt">
   Aprender a usar FontForge é fácil, e existem vários tutoriais disponíveis que começam
   com o básico até mais recursos avançados, como fazer e usar scripts.</p>
+  <p xml:lang="zh_CN">
+  FontForge是一个矢量字体和位图字体的编辑器。你可以用它来创造，编辑或者转换一些字体。支持的字体格式包括PostScript，TrueType，OpenType，CID-keyed，multi-master，CFF，SVG和位图（bdf，PON，NFNT）。</p>
+  <p xml:lang="zh_CN">
+  FontForge是一个自由开源软件，可以运行在多种计算机操作系统上。你可以使用FontForge的图形界面，也可以将其作为一个命令行工具来使用。</p>
+  <p xml:lang="zh_CN">
+  学习使用FontForge并不难，有各种各样的教程涵盖了基础知识到更高级的特性，比如制作和使用脚本。</p>
  </description>
  <screenshots>
   <screenshot type="default" width="1200" height="675">https://github.com/fontforge/fontforge/raw/master/doc/html/ff-screenshot.png</screenshot>
