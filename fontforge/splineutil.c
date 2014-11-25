@@ -2958,6 +2958,26 @@ static void LayerToRefLayer(struct reflayer *rl,Layer *layer, real transform[6])
     rl->fillfirst = layer->fillfirst;
 }
 
+int RefLayerFindBaseLayerIndex(RefChar *rf, int layer) {
+	// Note that most of the logic below is copied and lightly modified from SCReinstanciateRefChar.
+	SplineChar *rsc = rf->sc;
+	int i = 0, j = 0, cnt = 0;
+	RefChar *subref;
+	for ( i=ly_fore; i<rsc->layer_cnt; ++i ) {
+	    if ( rsc->layers[i].splines!=NULL || rsc->layers[i].images!=NULL ) {
+	        if (cnt == layer) return i;
+		++cnt;
+	    }
+	    for ( subref=rsc->layers[i].refs; subref!=NULL; subref=subref->next ) {
+		for ( j=0; j<subref->layer_cnt; ++j ) if ( subref->layers[j].images!=NULL || subref->layers[j].splines!=NULL ) {
+		    if (cnt == layer) return i;
+		    ++cnt;
+		}
+	    }
+	}
+	return -1;
+}
+
 void RefCharFindBounds(RefChar *rf) {
     int i;
     SplineChar *rsc = rf->sc;
@@ -2968,7 +2988,8 @@ void RefCharFindBounds(RefChar *rf) {
     for ( i=0; i<rf->layer_cnt; ++i ) {
 	_SplineSetFindBounds(rf->layers[i].splines,&rf->bb);
 	_SplineSetFindTop(rf->layers[i].splines,&rf->top);
-	if ( rsc->layers[i].dostroke ) {
+	int baselayer = RefLayerFindBaseLayerIndex(rf, i);
+	if ( baselayer >= 0 && rsc->layers[baselayer].dostroke ) {
 	    if ( rf->layers[i].stroke_pen.width!=WIDTH_INHERITED )
 		e = rf->layers[i].stroke_pen.width*rf->layers[i].stroke_pen.trans[0];
 	    else
@@ -3045,7 +3066,8 @@ return;
 	for ( i=0; i<rf->layer_cnt; ++i ) {
 	    _SplineSetFindBounds(rf->layers[i].splines,&rf->bb);
 	    _SplineSetFindTop(rf->layers[i].splines,&rf->top);
-	    if ( rsc->layers[i].dostroke ) {
+	    int baselayer = RefLayerFindBaseLayerIndex(rf, i);
+	    if ( baselayer >= 0 && rsc->layers[baselayer].dostroke ) {
 		if ( rf->layers[i].stroke_pen.width!=WIDTH_INHERITED )
 		    e = rf->layers[i].stroke_pen.width*rf->layers[i].stroke_pen.trans[0];
 		else
