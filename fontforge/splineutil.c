@@ -6661,8 +6661,62 @@ int CountKerningClasses(SplineFont *sf) {
     return absolute_index;
 }
 
+size_t count_caps(const char * input) {
+  size_t count = 0;
+  for (int i = 0; input[i] != '\0'; i++) {
+    if ((input[i] >= 'A') && (input[i] <= 'Z')) count ++;
+  }
+  return count;
+}
+
+char * upper_case(const char * input) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  off_t pos = 0;
+  if (output == NULL) return NULL;
+  while (pos < output_length) {
+    if ((input[pos] >= 'a') && (input[pos] <= 'z')) {
+      output[pos] = (char)(((unsigned char) input[pos]) - 0x20U);
+    } else {
+      output[pos] = input[pos];
+    }
+    pos++;
+  }
+  output[pos] = '\0';
+  return output;
+}
+
+char * same_case(const char * input) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  off_t pos = 0;
+  if (output == NULL) return NULL;
+  while (pos < output_length) {
+    output[pos] = input[pos];
+    pos++;
+  }
+  output[pos] = '\0';
+  return output;
+}
+
+char * delimit_null(const char * input, char delimiter) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  if (output == NULL) return NULL;
+  off_t pos = 0;
+  while (pos < output_length) {
+    if (input[pos] == delimiter) {
+      output[pos] = '\0';
+    } else {
+      output[pos] = input[pos];
+    }
+    pos++;
+  }
+  return output;
+}
+
 #ifdef FF_UTHASH_GLIF_NAMES
-int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_hash) {
+int HashKerningClassNamesFlex(SplineFont *sf, struct glif_name_index * class_name_hash, int capitalize) {
     struct kernclass *current_kernclass;
     int isv;
     int isr;
@@ -6676,11 +6730,23 @@ int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_ha
     for ( i=0; i < (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt); ++i )
     if ( (isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]) != NULL ) {
         // Add it to the hash table with its index.
-        glif_name_track_new(class_name_hash, absolute_index + i, (isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]));
+	if (capitalize) {
+          char * cap_name = upper_case(isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]);
+          glif_name_track_new(class_name_hash, absolute_index + i, cap_name);
+          free(cap_name); cap_name = NULL;
+	} else {
+          glif_name_track_new(class_name_hash, absolute_index + i, (isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]));
+        }
     }
     absolute_index +=i;
     }
     return absolute_index;
+}
+int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_hash) {
+  return HashKerningClassNamesFlex(sf, class_name_hash, 0);
+}
+int HashKerningClassNamesCaps(SplineFont *sf, struct glif_name_index * class_name_hash) {
+  return HashKerningClassNamesFlex(sf, class_name_hash, 1);
 }
 #endif
 

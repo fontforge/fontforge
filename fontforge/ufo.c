@@ -107,60 +107,6 @@ static void injectNumericVersion(char ** textVersion, int versionMajor, int vers
   return;
 }
 
-static size_t count_caps(const char * input) {
-  size_t count = 0;
-  for (int i = 0; input[i] != '\0'; i++) {
-    if ((input[i] >= 'A') && (input[i] <= 'Z')) count ++;
-  }
-  return count;
-}
-
-static char * upper_case(const char * input) {
-  size_t output_length = strlen(input);
-  char * output = malloc(output_length + 1);
-  off_t pos = 0;
-  if (output == NULL) return NULL;
-  while (pos < output_length) {
-    if ((input[pos] >= 'a') && (input[pos] <= 'z')) {
-      output[pos] = (char)(((unsigned char) input[pos]) - 0x20U);
-    } else {
-      output[pos] = input[pos];
-    }
-    pos++;
-  }
-  output[pos] = '\0';
-  return output;
-}
-
-static char * same_case(const char * input) {
-  size_t output_length = strlen(input);
-  char * output = malloc(output_length + 1);
-  off_t pos = 0;
-  if (output == NULL) return NULL;
-  while (pos < output_length) {
-    output[pos] = input[pos];
-    pos++;
-  }
-  output[pos] = '\0';
-  return output;
-}
-
-static char * delimit_null(const char * input, char delimiter) {
-  size_t output_length = strlen(input);
-  char * output = malloc(output_length + 1);
-  if (output == NULL) return NULL;
-  off_t pos = 0;
-  while (pos < output_length) {
-    if (input[pos] == delimiter) {
-      output[pos] = '\0';
-    } else {
-      output[pos] = input[pos];
-    }
-    pos++;
-  }
-  return output;
-}
-
 const char * DOS_reserved[12] = {"CON", "PRN", "AUX", "CLOCK$", "NUL", "COM1", "COM2", "COM3", "COM4", "LPT1", "LPT2", "LPT3"};
 const int DOS_reserved_count = 12;
 
@@ -1331,7 +1277,7 @@ int UFONameKerningClasses(SplineFont *sf) {
     int absolute_index = 0; // This gives us a unique index for each kerning class.
     // First we catch the existing names.
 #ifdef FF_UTHASH_GLIF_NAMES
-    HashKerningClassNames(sf, class_name_hash);
+    HashKerningClassNamesCaps(sf, class_name_hash); // Note that we use the all-caps hasher for compatibility with the official naming scheme and the following code.
 #endif
     // Next we create names for the unnamed. Note that we currently avoid naming anything that might go into the feature file (since that handler currently creates its own names).
     absolute_index = 0;
