@@ -2958,6 +2958,26 @@ static void LayerToRefLayer(struct reflayer *rl,Layer *layer, real transform[6])
     rl->fillfirst = layer->fillfirst;
 }
 
+int RefLayerFindBaseLayerIndex(RefChar *rf, int layer) {
+	// Note that most of the logic below is copied and lightly modified from SCReinstanciateRefChar.
+	SplineChar *rsc = rf->sc;
+	int i = 0, j = 0, cnt = 0;
+	RefChar *subref;
+	for ( i=ly_fore; i<rsc->layer_cnt; ++i ) {
+	    if ( rsc->layers[i].splines!=NULL || rsc->layers[i].images!=NULL ) {
+	        if (cnt == layer) return i;
+		++cnt;
+	    }
+	    for ( subref=rsc->layers[i].refs; subref!=NULL; subref=subref->next ) {
+		for ( j=0; j<subref->layer_cnt; ++j ) if ( subref->layers[j].images!=NULL || subref->layers[j].splines!=NULL ) {
+		    if (cnt == layer) return i;
+		    ++cnt;
+		}
+	    }
+	}
+	return -1;
+}
+
 void RefCharFindBounds(RefChar *rf) {
     int i;
     SplineChar *rsc = rf->sc;
@@ -2968,7 +2988,8 @@ void RefCharFindBounds(RefChar *rf) {
     for ( i=0; i<rf->layer_cnt; ++i ) {
 	_SplineSetFindBounds(rf->layers[i].splines,&rf->bb);
 	_SplineSetFindTop(rf->layers[i].splines,&rf->top);
-	if ( rsc->layers[i].dostroke ) {
+	int baselayer = RefLayerFindBaseLayerIndex(rf, i);
+	if ( baselayer >= 0 && rsc->layers[baselayer].dostroke ) {
 	    if ( rf->layers[i].stroke_pen.width!=WIDTH_INHERITED )
 		e = rf->layers[i].stroke_pen.width*rf->layers[i].stroke_pen.trans[0];
 	    else
@@ -3045,7 +3066,8 @@ return;
 	for ( i=0; i<rf->layer_cnt; ++i ) {
 	    _SplineSetFindBounds(rf->layers[i].splines,&rf->bb);
 	    _SplineSetFindTop(rf->layers[i].splines,&rf->top);
-	    if ( rsc->layers[i].dostroke ) {
+	    int baselayer = RefLayerFindBaseLayerIndex(rf, i);
+	    if ( baselayer >= 0 && rsc->layers[baselayer].dostroke ) {
 		if ( rf->layers[i].stroke_pen.width!=WIDTH_INHERITED )
 		    e = rf->layers[i].stroke_pen.width*rf->layers[i].stroke_pen.trans[0];
 		else
@@ -6639,8 +6661,62 @@ int CountKerningClasses(SplineFont *sf) {
     return absolute_index;
 }
 
+size_t count_caps(const char * input) {
+  size_t count = 0;
+  for (int i = 0; input[i] != '\0'; i++) {
+    if ((input[i] >= 'A') && (input[i] <= 'Z')) count ++;
+  }
+  return count;
+}
+
+char * upper_case(const char * input) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  off_t pos = 0;
+  if (output == NULL) return NULL;
+  while (pos < output_length) {
+    if ((input[pos] >= 'a') && (input[pos] <= 'z')) {
+      output[pos] = (char)(((unsigned char) input[pos]) - 0x20U);
+    } else {
+      output[pos] = input[pos];
+    }
+    pos++;
+  }
+  output[pos] = '\0';
+  return output;
+}
+
+char * same_case(const char * input) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  off_t pos = 0;
+  if (output == NULL) return NULL;
+  while (pos < output_length) {
+    output[pos] = input[pos];
+    pos++;
+  }
+  output[pos] = '\0';
+  return output;
+}
+
+char * delimit_null(const char * input, char delimiter) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  if (output == NULL) return NULL;
+  off_t pos = 0;
+  while (pos < output_length) {
+    if (input[pos] == delimiter) {
+      output[pos] = '\0';
+    } else {
+      output[pos] = input[pos];
+    }
+    pos++;
+  }
+  return output;
+}
+
 #ifdef FF_UTHASH_GLIF_NAMES
-int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_hash) {
+int HashKerningClassNamesFlex(SplineFont *sf, struct glif_name_index * class_name_hash, int capitalize) {
     struct kernclass *current_kernclass;
     int isv;
     int isr;
@@ -6654,11 +6730,23 @@ int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_ha
     for ( i=0; i < (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt); ++i )
     if ( (isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]) != NULL ) {
         // Add it to the hash table with its index.
-        glif_name_track_new(class_name_hash, absolute_index + i, (isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]));
+	if (capitalize) {
+          char * cap_name = upper_case(isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]);
+          glif_name_track_new(class_name_hash, absolute_index + i, cap_name);
+          free(cap_name); cap_name = NULL;
+	} else {
+          glif_name_track_new(class_name_hash, absolute_index + i, (isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]));
+        }
     }
     absolute_index +=i;
     }
     return absolute_index;
+}
+int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_hash) {
+  return HashKerningClassNamesFlex(sf, class_name_hash, 0);
+}
+int HashKerningClassNamesCaps(SplineFont *sf, struct glif_name_index * class_name_hash) {
+  return HashKerningClassNamesFlex(sf, class_name_hash, 1);
 }
 #endif
 

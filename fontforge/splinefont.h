@@ -1935,7 +1935,7 @@ typedef struct splinefont {
 
     struct sfundoes *undoes;
     char collab_uuid[ FF_UUID_STRING_SIZE ];
-    int preferred_kerning; // 1 for U. F. O. native, 2 for feature file, 0 undefined. Input functions shall flag 2, I think. This shall be a temporary value absent from S. F. D. for now.
+    int preferred_kerning; // 1 for U. F. O. native, 2 for feature file, 0 undefined. Input functions shall flag 2, I think. This is now in S. F. D. in order to round-trip U. F. O. consistently.
 } SplineFont;
 
 struct axismap {
@@ -2013,7 +2013,8 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		    ttf_flag_pfed_guides=0x1000,
 		    ttf_flag_pfed_layers=0x2000,
 		    ttf_flag_symbol=0x4000,
-		    ttf_flag_dummyDSIG=0x8000
+		    ttf_flag_dummyDSIG=0x8000,
+		    ttf_native_kern=0x10000 // This applies mostly to U. F. O. right now.
 		};
 enum ttc_flags { ttc_flag_trymerge=0x1, ttc_flag_cff=0x2 };
 enum openflags { of_fstypepermitted=1, of_askcmap=2, of_all_glyphs_in_ttc=4,
@@ -2351,7 +2352,9 @@ void GlyphGroupKernsFree(struct ff_rawoffsets* root);
 int CountKerningClasses(SplineFont *sf);
 #ifdef FF_UTHASH_GLIF_NAMES
 struct glif_name_index;
+int HashKerningClassNamesFlex(SplineFont *sf, struct glif_name_index * class_name_hash, int capitalize);
 int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_hash);
+int HashKerningClassNamesCaps(SplineFont *sf, struct glif_name_index * class_name_hash);
 #endif
 int KerningClassSeekByAbsoluteIndex(const struct splinefont *sf, int seek_index, struct kernclass **okc, int *oisv, int *oisr, int *ooffset);
 struct ff_glyphclasses *SFGetGroup(const struct splinefont *sf, int index, const char *name);
@@ -3534,6 +3537,12 @@ extern void debug_printHintInstance( HintInstance* hi, int hin, char* msg );
  * tolerence of b.
  */
 extern bool equalWithTolerence( real a, real b, real tolerence );
+
+// The following functions are in splineutil.c at present.
+size_t count_caps(const char * input);
+char * upper_case(const char * input);
+char * same_case(const char * input);
+char * delimit_null(const char * input, char delimiter);
 
 #include "ustring.h"
 
