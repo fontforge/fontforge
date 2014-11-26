@@ -1830,6 +1830,11 @@ void FVRevertGlyph(FontViewBase *fv) {
     }
 }
 
+void FVClearSpecialData(FontViewBase *fv) {
+    SplineFont *sf = fv->sf;
+    if (sf) SplineFontClearSpecial(sf);
+}
+
 static int isuniname(char *name) {
     int i;
     if ( name[0]!='u' || name[1]!='n' || name[2]!='i' )

@@ -16879,6 +16879,12 @@ return ( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFFont_clearSpecialData(PyFF_Font *self, PyObject *UNUSED(args)) {
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    FVClearSpecialData(self->fv);
+Py_RETURN( self );
+}
 
 PyMethodDef PyFF_Font_methods[] = {
     { "appendSFNTName", (PyCFunction) PyFFFont_appendSFNTName, METH_VARARGS, "Adds or replaces a name in the sfnt 'name' table. Takes three arguments, a language, a string id, and the string value" },
@@ -16977,6 +16983,7 @@ PyMethodDef PyFF_Font_methods[] = {
     { "nltransform", (PyCFunction)PyFFFont_NLTransform, METH_VARARGS, "Transform a font by non-linear expessions for x and y." },
     { "validate", (PyCFunction)PyFFFont_validate, METH_VARARGS, "Check whether a font is valid and return True if it is." },
     { "reencode", (PyCFunction)PyFFFont_reencode, METH_VARARGS, "Reencodes the current font into the given encoding." },
+    { "clearSpecialData", (PyCFunction)PyFFFont_clearSpecialData, METH_NOARGS, "Clear special data not accessible in FontForge." },
 
 //    { "CollabSessionStart", (PyCFunction) PyFFFont_CollabSessionStart, METH_VARARGS, "Start a collab session at the given address (or the public IP address by default)" },
 

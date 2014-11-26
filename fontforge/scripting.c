@@ -8390,6 +8390,10 @@ static void bDebugCrashFontForge(Context *UNUSED(c))
     *ptr = 1;
 }
 
+static void bclearSpecialData(Context *c) {
+    if (c->curfv) SplineFontClearSpecial(c->curfv->sf);
+}
+
 
 static struct builtins { const char *name; void (*func)(Context *); int nofontok; } builtins[] = {
 /* Generic utilities */
@@ -8724,6 +8728,7 @@ static struct builtins { const char *name; void (*func)(Context *); int nofontok
     { "CompareFonts", bCompareFonts, 0 },
     { "Validate", bValidate, 0 },
     { "DebugCrashFontForge", bDebugCrashFontForge, 0 },
+    { "ClearSpecialData", bclearSpecialData, 0},
     { NULL, 0, 0 }
 };
 
