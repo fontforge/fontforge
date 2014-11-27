@@ -1251,7 +1251,7 @@ return true;
 int kernclass_for_groups_plist(struct splinefont *sf, struct kernclass *kc, int flags) {
   // Note that this is not a complete logical inverse of sister function kernclass_for_feature_file.
   return ((flags & FF_KERNCLASS_FLAG_NATIVE) ||
-  (!(flags & FF_KERNCLASS_FLAG_FEATURE) && !kc->feature && sf->preferred_kerning == 1));
+  (!(flags & FF_KERNCLASS_FLAG_FEATURE) && !kc->feature && (sf->preferred_kerning & 1)));
 }
 
 void ClassKerningAddExtensions(struct kernclass * target) {
@@ -1286,7 +1286,7 @@ int UFONameKerningClasses(SplineFont *sf) {
     for (isr = 0; isr < 2; isr++) {
       // If the special class kerning storage blocks are unallocated, we allocate them if using native U. F. O. class kerning or skip the naming otherwise.
       if ( (isr ? current_kernclass->seconds_names : current_kernclass->firsts_names) == NULL ) {
-        if ( !(current_kernclass->feature) && (sf->preferred_kerning == 1) ) {
+        if ( !(current_kernclass->feature) && (sf->preferred_kerning & 1) ) {
           ClassKerningAddExtensions(current_kernclass);
         } else {
           continue;
@@ -1306,7 +1306,7 @@ int UFONameKerningClasses(SplineFont *sf) {
                 (sf->preferred_kerning == 0) &&
                 (classflags & (FF_KERNCLASS_FLAG_FEATURE | FF_KERNCLASS_FLAG_NAMETYPE))
               ) ||
-              (sf->preferred_kerning & 2)
+              (sf->preferred_kerning & 2) || (sf->preferred_kerning & 4)
             ) ?
             (
               isv ?
@@ -1437,9 +1437,9 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
       int absolute_index = 0;
       for (isv = 0; isv < 2; isv++)
       for (current_kernclass = (isv ? sf->vkerns : sf->kerns); current_kernclass != NULL; current_kernclass = current_kernclass->next)
-      for (isr = 0; isr < 2; isr++) {
-        for (i=0; i < (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt); ++i)
-        if (isr ? current_kernclass->seconds_names : current_kernclass->firsts_names) {
+      for (isr = 0; isr < 2; isr++)
+      if (isr ? current_kernclass->seconds_names : current_kernclass->firsts_names) {
+        for (i=0; i < (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt); ++i) {
           const char *classname = (isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]);
           const char *rawglyphlist = (isr ? current_kernclass->seconds[i] : current_kernclass->firsts[i]);
           int classflags = (isr ? current_kernclass->seconds_flags[i] : current_kernclass->firsts_flags[i]);
@@ -1495,7 +1495,7 @@ static int UFOOutputKerning(const char *basedir, const SplineFont *sf) {
     int i;
     int has_content = 0;
 
-    if (sf->preferred_kerning != 1) return true; // This goes into the feature file by default now.
+    if (!(sf->preferred_kerning & 1)) return true; // This goes into the feature file by default now.
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
@@ -1519,7 +1519,7 @@ static int UFOOutputVKerning(const char *basedir, const SplineFont *sf) {
     int i;
     int has_content = 0;
 
-    if (sf->preferred_kerning != 1) return true; // This goes into the feature file by default now.
+    if (!(sf->preferred_kerning & 1)) return true; // This goes into the feature file by default now.
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
@@ -1636,7 +1636,7 @@ static int UFOOutputKerning2(const char *basedir, SplineFont *sf, int isv) {
     int i, j;
     int has_content = 0;
 
-    if (sf->preferred_kerning != 1) return true; // This goes into the feature file by default now.
+    if (!(sf->preferred_kerning & 1)) return true; // This goes into the feature file by default now.
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.

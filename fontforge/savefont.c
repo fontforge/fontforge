@@ -839,7 +839,8 @@ return( true );
 	  break;
 	  case ff_ufo:
 	    tmpstore = sf->preferred_kerning; // We toggle this flag in order to force native kerning output.
-	    if (flags & ttf_native_kern) sf->preferred_kerning = 1;
+	    if (flags & ttf_native_kern) sf->preferred_kerning = 1; // 1 flags native kerning.
+	    sf->preferred_kerning |= 4; // 4 flags old-style naming for the starting name in UFONameKerningClasses.
 	    oerr = !WriteUFOFont(newname,sf,oldformatstate,flags,map,layer);
 	    if (flags & ttf_native_kern) sf->preferred_kerning = tmpstore;
 	  break;
