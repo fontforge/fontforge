@@ -851,7 +851,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 
     gcd[k].gd.pos.y = gcd[k-1].gd.pos.y; gcd[k].gd.pos.x = gcd[k-2].gd.pos.x;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    label[k].text = (unichar_t *) _("Force native kerning");
+    label[k].text = (unichar_t *) _("Prefer native kerning");
     label[k].text_is_1byte = true;
     gcd[k].gd.popup_msg = (unichar_t *) _(
 	"Use native kerning structures (instead of a feature file) even when this might lose information.\n");
