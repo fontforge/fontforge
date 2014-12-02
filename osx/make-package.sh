@@ -5,3 +5,4 @@ pwd >| /tmp/bundle.txt
 sudo chmod +x ./osx/create-osx-app-bundle.sh
 sudo ./osx/create-osx-app-bundle.sh >> /tmp/bundle.txt
 cat /tmp/FontForge.app.zip > ~/Desktop/FontForge.app.zip
+cat /tmp/FontForge.app.dmg > ~/Desktop/FontForge.app.dmg
