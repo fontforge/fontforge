@@ -401,16 +401,70 @@ cp -av /opt/local/share/mime/magic      opt/local/share/mime
 mkdir -p $bundle_share/X11
 cp -av /opt/local/share/X11/locale $bundle_share/X11
 
+#####
+#
+#
+FFBUILDBASE=/opt/local/var/macports/build/_Users_ben_Work_FontForge_2012_mac-build_categories_fontforge/fontforge/work/fontforge-2.0.0_beta1
+DEBUGOBJBASE=$TEMPDIR/FontForge.app/Contents/Resources/opt/local/var/
+for if in fontforgeexe fontforge gdraw gutils; do
+    cd $FFBUILDBASE/$if/.libs 
+    mkdir -p   $DEBUGOBJBASE/$if/.libs/
+    cp -av *.o $DEBUGOBJBASE/$if/.libs/
+done
+cd $bundle_lib
+
+# byte string length compatible
+OLDBASE="/opt/local/var/macports/build/_Users_ben_Work_FontForge_2012_mac-build_categories_fontforge/fontforge/work/fontforge-2.0.0_beta1"
+NEWBASE="/Applications/FontForge.app/Contents/Resources/opt/local/var////////////////////////////////////////////////////////////////////"
+echo "changing the location of the object files used for debug (fontforgeexe)"
+for ifpath in $FFBUILDBASE/fontforgeexe/.libs/*.o; do
+    if=$(basename "$ifpath");
+    LANG=C sed -i -e "s#$OLDBASE/fontforgeexe/.libs/$if#$NEWBASE/fontforgeexe/.libs/$if#g" libfontforgeexe.2.dylib
+done
+echo "changing the location of the object files used for debug (fontforge)"
+for ifpath in $FFBUILDBASE/fontforge/.libs/*.o; do
+    if=$(basename "$ifpath");
+    LANG=C sed -i -e "s#$OLDBASE/fontforge/.libs/$if#$NEWBASE/fontforge/.libs/$if#g" libfontforge.2.dylib
+done
+echo "changing the location of the object files used for debug (gdraw)"
+for ifpath in $FFBUILDBASE/gdraw/.libs/*.o; do
+    if=$(basename "$ifpath");
+    LANG=C sed -i -e "s#$OLDBASE/gdraw/.libs/$if#$NEWBASE/gdraw/.libs/$if#g" libgdraw.5.dylib
+done
+echo "changing the location of the object files used for debug (gutils)"
+for ifpath in $FFBUILDBASE/gutils/.libs/*.o; do
+    if=$(basename "$ifpath");
+    LANG=C sed -i -e "s#$OLDBASE/gutils/.libs/$if#$NEWBASE/gutils/.libs/$if#g" libgutils.2.dylib
+done
+
 
 cd $TEMPDIR
 find FontForge.app -exec touch {} \;
-rm -f  ~/FontForge.app.zip
+# if you don't maintain the timestamp then lldb will not 
+# load the .o file anymore.
+for if in fontforgeexe fontforge gdraw gutils; do
+    cd $FFBUILDBASE/$if/.libs 
+    for objfile in *.o; do
+        touch -r $objfile $DEBUGOBJBASE/$if/.libs/$objfile
+    done
+done
+cd $TEMPDIR
+
+rm -f  ~/FontForge.app.zip ~/FontForge.app.dmg
+# it seems that on 10.8 if you don't specify a size then you'll likely
+# get a result of hdiutil: create failed - error -5341
+hdiutil create -size 800m   \
+   -volname   FontForge     \
+   -srcfolder FontForge.app \
+   -ov        -format UDBZ  \
+   ~/FontForge.app.dmg
 zip -9 --symlinks -r ~/FontForge.app.zip FontForge.app
-cp -f  ~/FontForge.app.zip /tmp/
-chmod o+r /tmp/FontForge.app.zip
+cp -f  ~/FontForge.app.zip ~/FontForge.app.dmg /tmp/
+chmod o+r /tmp/FontForge.app.zip /tmp/FontForge.app.dmg
+
 
 echo "Completed at `date`"
-ls -lh `echo ~`/FontForge.app.zip
+ls -lh `echo ~`/FontForge.app.zip `echo ~`/FontForge.app.dmg
 
 
 
