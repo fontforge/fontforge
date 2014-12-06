@@ -1262,7 +1262,7 @@ void ClassKerningAddExtensions(struct kernclass * target) {
   if (target->offsets_flags == NULL && (target->first_cnt * target->second_cnt)) target->offsets_flags = calloc(target->first_cnt * target->second_cnt, sizeof(int));
 }
 
-int UFONameKerningClasses(SplineFont *sf) {
+void UFONameKerningClasses(SplineFont *sf) {
 #ifdef FF_UTHASH_GLIF_NAMES
     struct glif_name_index _class_name_hash;
     struct glif_name_index * class_name_hash = &_class_name_hash; // Open the hash table.
