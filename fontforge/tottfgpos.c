@@ -967,6 +967,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 	    }
 	    for ( v=0; v<2; ++v ) {
 		for ( kp = v ? glyphs[cnt]->vkerns : glyphs[cnt]->kerns; kp!=NULL; kp=kp->next ) {
+		    if( kp->subtable!=sub ) continue; // process only glyphs from the current subtable
 		    if ( kp->sc->ttf_glyph!=-1 ) {
 			if ( k ) {
 			    seconds[cnt][tot].other_gid = kp->sc->ttf_glyph;
