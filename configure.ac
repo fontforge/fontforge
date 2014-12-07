@@ -712,6 +712,17 @@ osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/PopUpButton.
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Progressbar.nib/Makefile
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/SecureInputbox.nib/Makefile
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Textbox.nib/Makefile
+osx/FontForge.app/Contents/Frameworks/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Headers/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Contents/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Contents/MacOS/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Contents/Resources/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Contents/Resources/English.lproj/Makefile
 fontforge.pc
 ])
 

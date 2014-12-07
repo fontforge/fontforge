@@ -26,13 +26,15 @@
 
 include $(top_srcdir)/mk/layout.am
 
-SUBDIRS = Resources MacOS Frameworks
-FFAPP_FILES = Info.plist PkgInfo
-EXTRA_DIST = $(FFAPP_FILES)
+SUBDIRS = A
 
 if PLATFORM_OSX
-  ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents
-  ffapp_DATA = $(FFAPP_FILES)
+
+install-exec-hook:
+	cd $(pkgdatadir)/osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions && \
+	$(LN_S) A Current
 endif
+
+
 
 -include $(top_srcdir)/git.mk

@@ -26,12 +26,11 @@
 
 include $(top_srcdir)/mk/layout.am
 
-SUBDIRS = Resources MacOS Frameworks
-FFAPP_FILES = Info.plist PkgInfo
+FFAPP_FILES = Breakpad.h BreakpadDefines.h
 EXTRA_DIST = $(FFAPP_FILES)
 
 if PLATFORM_OSX
-  ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents
+  ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Headers
   ffapp_DATA = $(FFAPP_FILES)
 endif
 

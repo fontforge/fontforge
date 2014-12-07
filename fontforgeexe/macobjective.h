@@ -28,4 +28,13 @@
 #import <Cocoa/Cocoa.h>
 
 
+#import <Breakpad/Breakpad.h>
+
+@interface BreakpadTest : NSObject {
+   BreakpadRef breakpad;
+}
+
+(NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
+
+@end
 

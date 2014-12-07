@@ -27,6 +27,28 @@
 
 #include "macobjective.h"
 
+static BreakpadRef InitBreakpad(void) {
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  BreakpadRef breakpad = 0;
+  NSDictionary *plist = [[NSBundle mainBundle] infoDictionary];
+  if (plist) {
+    // Note: version 1.0.0.4 of the framework changed the type of the argument 
+    // from CFDictionaryRef to NSDictionary * on the next line:
+    breakpad = BreakpadCreate(plist);
+  }
+  [pool release];
+  return breakpad;
+}
+
+(void)awakeFromNib {
+  breakpad = InitBreakpad();
+}
+
+(NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+  BreakpadRelease(breakpad);
+  return NSTerminateNow;
+}
+
 void setup_cocoa_app() 
 {
    [NSApplication sharedApplication];
