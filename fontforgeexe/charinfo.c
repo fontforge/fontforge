@@ -4291,12 +4291,12 @@ return;
 	uhvarray[19] = &ugcd[11]; uhvarray[20] = NULL;
 
 	ugcd[12].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-	ulabel[12].text = (unichar_t *) _("Mark for Unlink, Remove Overlap Before Save");
+	ulabel[12].text = (unichar_t *) _("Mark for Unlink, Remove Overlap before Generating");
 	ulabel[12].text_is_1byte = true;
 	ulabel[12].text_in_resource = true;
 	ugcd[12].gd.label = &ulabel[12];
 	ugcd[12].gd.cid = CID_UnlinkRmOverlap;
-	ugcd[12].gd.popup_msg = (unichar_t *) _("A few glyphs, like Aring, Ccedilla, Eogonek\nare composed of two overlapping references.\nOften it is desirable to retain the references\n(so that changes made to the base glyph are\nreflected in the composed glyph), but that\nmeans you are stuck with overlapping contours.\nThis flag means that just before saving the\nfont, fontforge will unlink the references,\nand run remove overlap on them, then just\nafter saving it will undo the operation\nthereby retaining the references.");
+	ugcd[12].gd.popup_msg = (unichar_t *) _("A few glyphs, like Aring, Ccedilla, Eogonek\nare composed of two overlapping references.\nOften it is desirable to retain the references\n(so that changes made to the base glyph are\nreflected in the composed glyph), but that\nmeans you are stuck with overlapping contours.\nThis flag means that just before generating\nthe font, FontForge will unlink the references\nand run remove overlap on them, while\n retaining the references in the SFD.");
 	ugcd[12].creator = GCheckBoxCreate;
 	uhvarray[21] = &ugcd[12]; uhvarray[22] = GCD_ColSpan; uhvarray[23] = NULL;
 	uhvarray[24] = GCD_Glue; uhvarray[25] = GCD_Glue; uhvarray[26] = NULL;
