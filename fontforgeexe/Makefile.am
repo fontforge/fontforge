@@ -46,7 +46,7 @@ lib_LTLIBRARIES = libfontforgeexe.la
 #--------------------------------------------------------------------------
 
 macobjective.o: macobjective.m
-	clang -I../osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Headers \
+	clang -I../inc -I../osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Headers \
             -g -arch x86_64 -arch i386 \
             -c "${srcdir}/macobjective.m" -o macobjective.o
 

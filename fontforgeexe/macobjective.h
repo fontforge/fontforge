@@ -27,7 +27,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include <fontforge-config.h>
+#include "fontforge-config.h"
 
 #ifdef USE_BREAKPAD
 

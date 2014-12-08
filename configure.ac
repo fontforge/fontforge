@@ -640,6 +640,7 @@ if test x$have_breakpad = xyes ; then
    BREAKPAD_LIBADD=" -L${top_builddir}/osx/FontForge.app/Contents/Frameworks/Breakpad.framework -lBreakpad "
    AC_DEFINE(USE_BREAKPAD,[1],[Build support and use Breakpad])
 fi
+BREAKPAD_LIBADD=' -L$(top_builddir)/osx/FontForge.app/Contents/Frameworks/Breakpad.framework -lBreakpad '
 AC_SUBST(BREAKPAD_LIBADD)
 
 #--------------------------------------------------------------------------
