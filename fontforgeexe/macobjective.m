@@ -26,6 +26,9 @@
  */
 
 #include "macobjective.h"
+#include <fontforge-config.h>
+
+#ifdef USE_BREAKPAD
 
 static BreakpadRef InitBreakpad(void) {
   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -84,3 +87,11 @@ printf("setup_cocoa_app()\n\n");
   //  [NSApplication sharedApplication];
 }
 
+#else
+
+void setup_cocoa_app()
+{
+    [NSApplication sharedApplication];
+}
+
+#endif
