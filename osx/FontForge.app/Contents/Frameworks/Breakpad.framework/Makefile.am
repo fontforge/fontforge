@@ -31,7 +31,7 @@ SUBDIRS = Versions
 if PLATFORM_OSX
 
 install-exec-hook:
-	cd $(pkgdatadir)/osx/FontForge.app/Contents/Frameworks/Breakpad.framework && \
+	cd $(DESTDIR)/$(pkgdatadir)/osx/FontForge.app/Contents/Frameworks/Breakpad.framework && \
 	$(LN_S) Versions/Current/Resources Resources && \
 	$(LN_S) Versions/Current/Headers   Headers   && \
 	$(LN_S) Versions/Current/Breakpad  Breakpad
