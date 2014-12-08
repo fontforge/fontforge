@@ -28,6 +28,14 @@ include $(top_srcdir)/mk/layout.am
 
 SUBDIRS = Versions
 
+FFAPP_FILES = dump_syms
+EXTRA_DIST = $(FFAPP_FILES)
+
+if PLATFORM_OSX
+  ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/Frameworks/Breakpad.framework/
+  ffapp_SCRIPTS = $(FFAPP_FILES)
+endif
+
 if PLATFORM_OSX
 
 install-exec-hook:

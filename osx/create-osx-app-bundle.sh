@@ -374,6 +374,27 @@ install_name_tool -change                                                       
 
 cd $bundle_bin
 
+cp -av ~/bak/dump_syms $frameworkdir/Breakpad.framework/dump_syms
+DUMPSYMS=$frameworkdir/Breakpad.framework/dump_syms
+mkdir -p $bundle_res/breakpad/symbols
+
+cd $bundle_bin
+for arch in x86_64 i386; do
+  mkdir -p $bundle_res/breakpad/symbols/$arch
+  $DUMPSYMS -a $arch fontforge  > $bundle_res/breakpad/symbols/$arch/fontforge
+done
+
+
+cd $bundle_lib
+for if in libfontforgeexe.?.dylib libfontforge.?.dylib libgdraw.?.dylib; do
+  for arch in x86_64 i386; do
+    mkdir -p $bundle_res/breakpad/symbols/$arch
+    $DUMPSYMS -a $arch $if  > $bundle_res/breakpad/symbols/$arch/$if
+  done
+done
+
+cd $bundle_bin
+
 
 ######################
 

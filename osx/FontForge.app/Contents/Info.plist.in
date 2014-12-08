@@ -4,8 +4,12 @@
 <dict>
         <key>BreakpadProductDisplay</key>
         <string>FontForge</string>
+        <key>BreakpadVendor</key>
+        <string>The FontForge Developers</string>
         <key>BreakpadURL</key>
         <string>http://localhost/FIXME</string>
+        <key>BreakpadVersion</key>
+        <string>@FONTFORGE_GIT_VERSION@ - @FONTFORGE_MODTIME_STR@</string>
 
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>

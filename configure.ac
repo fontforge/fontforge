@@ -741,6 +741,7 @@ osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/cr
 osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Contents/Resources/Makefile
 osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Contents/Resources/English.lproj/Makefile
 fontforge.pc
+osx/FontForge.app/Contents/Info.plist
 ])
 
 #--------------------------------------------------------------------------
@@ -774,6 +775,9 @@ AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_RAW,$FONTFORGE_MODTIME,"Epoch time that con
 AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_STR_RAW,$FONTFORGE_MODTIME_STR,
 	"A user friendly date that that configure was run at: For example 01:48 GMT 6-Sep-2012 (no quotes)")
 AC_DEFINE_UNQUOTED(FONTFORGE_VERSIONDATE_RAW,$FONTFORGE_VERSIONDATE,"YYYYMMDD as number when configure was run (no quotes)")
+AC_SUBST(FONTFORGE_GIT_VERSION)
+AC_SUBST(FONTFORGE_VERSIONDATE)
+AC_SUBST(FONTFORGE_MODTIME_STR)
 
 #--------------------------------------------------------------------------
 
