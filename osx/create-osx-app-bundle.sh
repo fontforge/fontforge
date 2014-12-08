@@ -18,8 +18,6 @@ export PATH="$PATH:$scriptdir"
 srcdir=$(pwd)
 
 
-#cp ./fontforge/MacFontForgeAppBuilt.zip $TEMPDIR/
-#unzip -d $TEMPDIR $TEMPDIR/MacFontForgeAppBuilt.zip
 echo "...doing the make install..."
 DESTDIR=$bundle_res make install
 echo "...setup FontForge.app bundle..."
@@ -450,7 +448,7 @@ for if in fontforgeexe fontforge gdraw gutils; do
 done
 cd $TEMPDIR
 
-rm -f  ~/FontForge.app.zip ~/FontForge.app.dmg
+rm -f  ~/FontForge.app.dmg
 # it seems that on 10.8 if you don't specify a size then you'll likely
 # get a result of hdiutil: create failed - error -5341
 hdiutil create -size 800m   \
@@ -458,13 +456,12 @@ hdiutil create -size 800m   \
    -srcfolder FontForge.app \
    -ov        -format UDBZ  \
    ~/FontForge.app.dmg
-zip -9 --symlinks -r ~/FontForge.app.zip FontForge.app
-cp -f  ~/FontForge.app.zip ~/FontForge.app.dmg /tmp/
-chmod o+r /tmp/FontForge.app.zip /tmp/FontForge.app.dmg
+cp -f  ~/FontForge.app.dmg /tmp/
+chmod o+r /tmp/FontForge.app.dmg
 
 
 echo "Completed at `date`"
-ls -lh `echo ~`/FontForge.app.zip `echo ~`/FontForge.app.dmg
+ls -lh `echo ~`/FontForge.app.dmg
 
 
 
