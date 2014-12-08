@@ -629,6 +629,21 @@ AM_CONDITIONAL([HAVE_PYTHON_EVEN],[test x"${have_python_even}" = xyes])
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
+
+AC_ARG_ENABLE([breakpad],
+        [AS_HELP_STRING([--enable-breakpad],
+                [Use Breakpad for crash reporting (currently osx only)])],
+        [have_breakpad=yes])
+AM_CONDITIONAL([HAVE_BREAKPAD],[test x"${have_breakpad}" = xyes])
+if test x$have_breakpad = xyes ; then
+   echo "Taking advantage of Breakpad for debug reporting. You must roll a bundle for this to work..."
+   BREAKPAD_LIBADD=" -L$(top_builddir)/osx/FontForge.app/Contents/Frameworks/Breakpad.framework -lBreakpad "
+fi
+AC_SUBST(BREAKPAD_LIBADD)
+
+#--------------------------------------------------------------------------
+#--------------------------------------------------------------------------
+#--------------------------------------------------------------------------
 # We do not use GTK2 unless explicitly told it is OK to try to do that
 #
 AC_ARG_ENABLE([gtk2-use],

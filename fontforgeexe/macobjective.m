@@ -31,26 +31,56 @@ static BreakpadRef InitBreakpad(void) {
   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
   BreakpadRef breakpad = 0;
   NSDictionary *plist = [[NSBundle mainBundle] infoDictionary];
+printf("xxx initBreakpad\n\n\n\n");
   if (plist) {
     // Note: version 1.0.0.4 of the framework changed the type of the argument 
     // from CFDictionaryRef to NSDictionary * on the next line:
+printf("xxx initBreakpad 0 plist:%p\n", plist );
     breakpad = BreakpadCreate(plist);
+printf("xxx initBreakpad  2\n");
+printf("xxx initBreakpad 3  %p\n", breakpad );
   }
   [pool release];
   return breakpad;
 }
 
-(void)awakeFromNib {
+@implementation BreakpadTest
+
+- (void)awakeFromNib {
   breakpad = InitBreakpad();
 }
 
-(NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+printf("fdfdsfdfdsfdsfdsssssssssfdsfsd\n");
   BreakpadRelease(breakpad);
   return NSTerminateNow;
 }
 
+@end
+
+@implementation MyApplication
+
+- (void)awakeFromNib {
+printf("awakeFromNib...\n\n");
+  breakpad = InitBreakpad();
+}
+
+
+
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+  BreakpadRelease(breakpad);
+  return NSTerminateNow;
+}
+
+@end
+
+
 void setup_cocoa_app() 
 {
-   [NSApplication sharedApplication];
+printf("setup_cocoa_app()\n\n");
+    [MyApplication sharedApplication];
+  BreakpadTest* bp = [BreakpadTest alloc];
+[bp awakeFromNib];
+  //  [NSApplication sharedApplication];
 }
 

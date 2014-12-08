@@ -8,6 +8,7 @@ rm -rf /tmp/fontforge-app-bundle
 mkdir $TEMPDIR
 
 scriptdir=$TEMPDIR/FontForge.app/Contents/MacOS
+frameworkdir=$TEMPDIR/FontForge.app/Contents/Frameworks
 bundle_res=$TEMPDIR/FontForge.app/Contents/Resources
 bundle_bin="$bundle_res/opt/local/bin"
 bundle_lib="$bundle_res/opt/local/lib"
@@ -349,11 +350,32 @@ cp -av ~/macports/categories/fontforge/node/node_modules .
 cd $bundle_bin
 
 
+#####################
+#
+# Some of this might be able to be taken out again, it is mainly to get
+# breakpad going in the first place, and to allow command line execution
+# of the fontforge binary which doesn't play well with @executable_path paths.
+#
+cd $bundle_bin
+install_name_tool -change                                                       \
+    @executable_path/../Frameworks/Breakpad.framework/Versions/A/Breakpad       \
+    /Applications/FontForge.app/Contents/Frameworks/Breakpad.framework/Breakpad \
+    fontforge 
+cd $bundle_lib
+install_name_tool -change                                                       \
+    @executable_path/../Frameworks/Breakpad.framework/Versions/A/Breakpad       \
+    /Applications/FontForge.app/Contents/Frameworks/Breakpad.framework/Breakpad \
+    libfontforgeexe.2.dylib 
+cd $frameworkdir/Breakpad.framework
+install_name_tool -change                                                               \
+    @executable_path/../Frameworks/Breakpad.framework/Resources/breakpadUtilities.dylib \
+    /Applications/FontForge.app/Contents/Frameworks/Breakpad.framework/Resources/breakpadUtilities.dylib \
+    Breakpad
+
+cd $bundle_bin
 
 
-
-
-#########
+######################
 
 
 mkdir -p $bundle_lib
