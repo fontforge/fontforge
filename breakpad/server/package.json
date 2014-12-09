@@ -1,0 +1,23 @@
+{
+  "name": "FontForgeBreakpadCrashAcceptor",
+  "version": "0.0.1",
+  "description": "Accept and store the breakpad crash reports from users",
+  "homepage": "http://fontforge.org",
+  "bugs": {
+    "url": "https://github.com/fontforge/fontforge/issues/"
+  },
+  "files": [
+    "report-acceptor.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fontforge/fontforge.git"
+  },
+  "license": "GPL-3.0",
+  "dependencies": {
+    "express": "~4.10.4",
+    "body-parser": "~1.10.0",
+    "multer": "~0.1.6",
+    "fs-extra": "~0.12.0"
+  }
+}

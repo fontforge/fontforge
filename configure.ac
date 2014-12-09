@@ -637,10 +637,9 @@ AC_ARG_ENABLE([breakpad],
 AM_CONDITIONAL([HAVE_BREAKPAD],[test x"${have_breakpad}" = xyes])
 if test x$have_breakpad = xyes ; then
    echo "Taking advantage of Breakpad for debug reporting. You must roll a bundle for this to work..."
-   BREAKPAD_LIBADD=" -L${top_builddir}/osx/FontForge.app/Contents/Frameworks/Breakpad.framework -lBreakpad "
+   BREAKPAD_LIBADD=' -L$(top_builddir)/osx/FontForge.app/Contents/Frameworks/Breakpad.framework -lBreakpad '
    AC_DEFINE(USE_BREAKPAD,[1],[Build support and use Breakpad])
 fi
-BREAKPAD_LIBADD=' -L$(top_builddir)/osx/FontForge.app/Contents/Frameworks/Breakpad.framework -lBreakpad '
 AC_SUBST(BREAKPAD_LIBADD)
 
 #--------------------------------------------------------------------------
@@ -740,6 +739,9 @@ osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/cr
 osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Contents/MacOS/Makefile
 osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Contents/Resources/Makefile
 osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Contents/Resources/English.lproj/Makefile
+breakpad/Makefile
+breakpad/server/Makefile
+
 fontforge.pc
 osx/FontForge.app/Contents/Info.plist
 ])
