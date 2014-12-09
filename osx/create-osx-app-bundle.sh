@@ -374,7 +374,7 @@ install_name_tool -change                                                       
 
 cd $bundle_bin
 
-cp -av ~/bak/dump_syms $frameworkdir/Breakpad.framework/dump_syms
+#cp -av ~/bak/dump_syms $frameworkdir/Breakpad.framework/dump_syms
 DUMPSYMS=$frameworkdir/Breakpad.framework/dump_syms
 mkdir -p $bundle_res/breakpad/symbols
 
@@ -395,6 +395,18 @@ done
 
 cd $bundle_bin
 
+#
+# I create the uncompressed tree so that a server script running on
+# the same machine can easily access them and turn the minidump into
+# human readable automatically
+#
+mkdir -p ~/fontforge-builds/breakpad-symbols-by-hash/$FONTFORGE_GIT_VERSION
+rsync -av $bundle_res/breakpad /tmp/fontforge-breakpad-symbols \
+          ~/fontforge-builds/breakpad-symbols-by-hash/$FONTFORGE_GIT_VERSION
+cd ~/fontforge-builds/breakpad-symbols-by-hash
+tar czf $FONTFORGE_GIT_VERSION.tar.gz $FONTFORGE_GIT_VERSION
+
+cd $bundle_bin
 
 ######################
 
