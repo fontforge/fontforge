@@ -1,4 +1,4 @@
-# Copyright (C) 2013 by Ben Martin
+# Copyright (C) 2014 by Ben Martin
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -25,14 +25,6 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 include $(top_srcdir)/mk/layout.am
-
-SUBDIRS = Resources MacOS Frameworks
-FFAPP_FILES = Info.plist PkgInfo
-EXTRA_DIST = $(FFAPP_FILES)
-
-if PLATFORM_OSX
-  ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents
-  ffapp_DATA = $(FFAPP_FILES)
-endif
-
+SUBDIRS = server
+EXTRA_DIST = 
 -include $(top_srcdir)/git.mk

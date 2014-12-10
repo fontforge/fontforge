@@ -26,13 +26,25 @@
 
 include $(top_srcdir)/mk/layout.am
 
-SUBDIRS = Resources MacOS Frameworks
-FFAPP_FILES = Info.plist PkgInfo
+SUBDIRS = Versions
+
+FFAPP_FILES = dump_syms
 EXTRA_DIST = $(FFAPP_FILES)
 
 if PLATFORM_OSX
-  ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents
-  ffapp_DATA = $(FFAPP_FILES)
+  ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/Frameworks/Breakpad.framework/
+  ffapp_SCRIPTS = $(FFAPP_FILES)
+endif
+
+if PLATFORM_OSX
+
+install-exec-hook:
+	cd $(DESTDIR)/$(pkgdatadir)/osx/FontForge.app/Contents/Frameworks/Breakpad.framework && \
+	$(LN_S) Versions/Current/Resources Resources && \
+	$(LN_S) Versions/Current/Headers   Headers   && \
+	$(LN_S) Versions/Current/Breakpad  Breakpad  && \
+	$(LN_S) Versions/Current/Breakpad  libBreakpad.dylib
+
 endif
 
 -include $(top_srcdir)/git.mk
