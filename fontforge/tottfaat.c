@@ -218,8 +218,14 @@ return;
 
 		for ( tot = 0; gid<at->gi.gcnt && tot<c; ++gid ) if ( at->gi.bygid[gid]!=-1 ) {
 		    SplineChar *sc = sf->glyphs[at->gi.bygid[gid]];
+		    // if requested, omit kern pairs with unmapped glyphs
+		    // (required for compatibility with non-OpenType-aware Windows applications)
+		    if( (at->gi.flags&ttf_flag_oldkernmappedonly) && (unsigned)(sc->unicodeenc)>0xFFFF ) continue;
 		    m = 0;
 		    for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next ) {
+			// if requested, omit kern pairs with unmapped glyphs
+			// (required for compatibility with non-OpenType-aware Windows applications)
+			if( (at->gi.flags&ttf_flag_oldkernmappedonly) && (unsigned)(kp->sc->unicodeenc)>0xFFFF ) continue;
 			if ( kp->off!=0 && kp->sc->ttf_glyph!=-1 &&
 				LookupHasDefault(kp->subtable->lookup)) {
 			    /* order the pairs */
