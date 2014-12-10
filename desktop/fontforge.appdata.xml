@@ -14,6 +14,16 @@
   <p xml:lang="C">
   Learning to use FontForge is easy, and there are various tutorials available beginning
   with the basics up to more advanced features such as making and using scripts.</p>
+  <p xml:lang="es">
+  FontForge es un editor tipográfico que permite crear, editar y convertir una gran
+  gama de fuentes en formatos vectoriales y basados en mapas de bits, entre los cuales están
+  PostScript, TrueType, OpenType, CID, «multi-master», CFF, SVG, BDF, FON y NFNT.</p>
+  <p xml:lang="es">
+  FontForge es software libre y de código abierto, compatible con varios sistemas operativos.
+  Es posible usar FontForge mediante su interfaz gráfica o en la consola de texto.</p>
+  <p xml:lang="es">
+  Es fácil aprender a utilizar FontForge, y existen diversos tutoriales que cubren desde los
+  conceptos básicos hasta las funcionalidades avanzadas, como la creación y uso de «scripts».</p>
   <p xml:lang="uk">
   FontForge — редактор контурних та растрових шрифтів, за допомогою якого ви можете
   створювати, редагувати та перетворювати шрифти у форматах PostScript, TrueType, OpenType,
