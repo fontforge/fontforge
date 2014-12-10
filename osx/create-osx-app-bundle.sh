@@ -389,7 +389,8 @@ cd $bundle_lib
 for if in libfontforgeexe.?.dylib libfontforge.?.dylib libgdraw.?.dylib; do
   for arch in x86_64 i386; do
     mkdir -p $bundle_res/breakpad/symbols/$arch
-    $DUMPSYMS -a $arch $if  > $bundle_res/breakpad/symbols/$arch/$if
+    dsymutil $if
+    $DUMPSYMS -a $arch $if.dSYM  > $bundle_res/breakpad/symbols/$arch/$if
   done
 done
 
@@ -401,7 +402,7 @@ cd $bundle_bin
 # human readable automatically
 #
 mkdir -p ~/fontforge-builds/breakpad-symbols-by-hash/$FONTFORGE_GIT_VERSION
-rsync -av $bundle_res/breakpad /tmp/fontforge-breakpad-symbols \
+rsync -av $bundle_res/breakpad \
           ~/fontforge-builds/breakpad-symbols-by-hash/$FONTFORGE_GIT_VERSION
 cd ~/fontforge-builds/breakpad-symbols-by-hash
 tar czf $FONTFORGE_GIT_VERSION.tar.gz $FONTFORGE_GIT_VERSION
