@@ -84,10 +84,10 @@ static void py_tllistcheck(struct gmenuitem *mi,PyObject *owner,
 	struct python_menu_info *menu_data, int menu_cnt) {
     PyObject *arglist, *result;
 
-    if ( menu_data==NULL )
+    if ( menu_data==NULL || mi == NULL )
 return;
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+    for ( mi = mi->sub; mi !=NULL && (mi->ti.text!=NULL || mi->ti.line); ++mi ) {
 	if ( mi->mid==-1 )		/* Submenu */
     continue;
 	if ( mi->mid<0 || mi->mid>=menu_cnt ) {
