@@ -107,6 +107,7 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_FontLog		1116
 #define CID_TTF_DummyDSIG	1117
 #define CID_NativeKern		1118
+#define CID_TTF_OldKernMappedOnly 1119
 
 struct gfc_data {
     int done;
@@ -374,6 +375,8 @@ return( false );
 		    d->sfnt_flags |= ps_flag_outputfontlog;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_NativeKern)) )
 		    d->sfnt_flags |= ttf_native_kern; // This applies mostly to U. F. O. right now.
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OldKernMappedOnly)) )
+		    d->sfnt_flags |= ttf_flag_oldkernmappedonly;
 	    } else {				/* PS + OpenType Bitmap */
 		d->ps_flags = d->psotb_flags = 0;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFMmarks)) )
@@ -469,6 +472,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_DummyDSIG),flags&ttf_flag_dummyDSIG);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_FontLog),flags&ps_flag_outputfontlog);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_NativeKern),flags&ttf_native_kern);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OldKernMappedOnly),flags&ttf_flag_oldkernmappedonly);
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Hints),which!=1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),which!=1);
@@ -500,6 +504,8 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_TeXTable),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_GlyphMap),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OFM),which!=0);
+    
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OldKernMappedOnly),which!=0 );
 
     d->optset[which] = true;
 }
@@ -511,10 +517,10 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     int k,fontlog_k,group,group2;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[33];
-    GTextInfo label[33];
+    GGadgetCreateData gcd[34];
+    GTextInfo label[34];
     GRect pos;
-    GGadgetCreateData *hvarray1[21], *hvarray2[42], *hvarray3[4], *harray[7], *varray[11];
+    GGadgetCreateData *hvarray1[21], *hvarray2[42], *hvarray3[6], *harray[7], *varray[11];
     GGadgetCreateData boxes[6];
 
     d->sod_done = false;
@@ -858,9 +864,19 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_NativeKern;
     gcd[k++].creator = GCheckBoxCreate;
-    hvarray3[1] = &gcd[k-1];
+    hvarray3[1] = &gcd[k-1]; hvarray3[2]=NULL;
+    
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Windows-compatible \'kern\'");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.popup_msg = (unichar_t *) _("If the old-style \'kern\' table contains unencoded glyphs\n(or glyphs encoded outside of the BMP), many Windows applications\nwon't have any kerning at all. This option excludes such\nproblematic glyphs from the old-style \'kern\' table.");
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_OldKernMappedOnly;
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray3[3] = &gcd[k-1];
 
-    hvarray3[2] = NULL; hvarray3[3] = NULL;
+    hvarray3[4] = NULL; hvarray3[5] = NULL;
 
     boxes[4].gd.flags = gg_enabled|gg_visible;
     boxes[4].gd.u.boxelements = hvarray3;
