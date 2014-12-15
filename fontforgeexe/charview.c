@@ -10539,8 +10539,14 @@ void CVAddAnchor(CharView *cv) {
     int waslig;
 
     if ( AnchorClassUnused(cv->b.sc,&waslig)==NULL ) {
-	ff_post_notice(_("Make a new anchor class"),_("I cannot find an unused anchor class\nto assign a new point to. If you\nwish a new anchor point you must\ndefine a new anchor class with\nElement->Font Info"));
-	FontInfo(cv->b.sc->parent,CVLayer((CharViewBase *) cv),15,true);		/* Lookups */
+        SplineFont *sf = cv->b.sc->parent;
+        AnchorClass *ac;
+        GTextInfo **ti;
+        int j;
+        char *name = gwwv_ask_string(_("Anchor Class Name"),"",_("Please enter the name of a Anchor point class to create"));
+        if ( name==NULL )
+return;
+        ac = SFFindOrAddAnchorClass(sf,name,NULL);
 	if ( AnchorClassUnused(cv->b.sc,&waslig)==NULL )
 return;
     }
