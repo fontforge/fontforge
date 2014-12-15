@@ -2019,7 +2019,7 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		};
 enum ttc_flags { ttc_flag_trymerge=0x1, ttc_flag_cff=0x2 };
 enum openflags { of_fstypepermitted=1, of_askcmap=2, of_all_glyphs_in_ttc=4,
-	of_fontlint=8, of_hidewindow=0x10 };
+	of_fontlint=8, of_hidewindow=0x10, of_all_tables=0x20 };
 enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 		    ps_flag_nohints = 0x40000, ps_flag_restrict256=0x80000,
 		    ps_flag_afm = 0x100000, ps_flag_pfm = 0x200000,
