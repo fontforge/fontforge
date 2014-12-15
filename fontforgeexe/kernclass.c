@@ -3344,7 +3344,8 @@ return;
     wattrs.utf8_window_title =  isv?_("VKern By Classes"):_("Kern By Classes");
     wattrs.is_dlg = false;
     pos.x = pos.y = 0;
-    temp = 40 + 300*GIntGetResource(_NUM_Buttonsize)/GGadgetScale(100);
+    // temp = 40 + 300*GIntGetResource(_NUM_Buttonsize)/GGadgetScale(100); // The _NUM_Buttonsize value is obsolete.
+    temp = 40 + 300*114/GGadgetScale(100);
     if ( kcl_width<temp ) kcl_width = temp;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,kcl_width));
     pos.height = GDrawPointsToPixels(NULL,KCL_Height);
