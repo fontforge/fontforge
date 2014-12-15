@@ -1037,6 +1037,23 @@ static GTextInfo **AnchorClassesLList(SplineFont *sf) {
 return( ti );
 }
 
+static int AI_NewClass(GGadget *g, GEvent *e) {
+    GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+    SplineFont *sf = ci->sc->parent;
+    AnchorClass *ac;
+    GTextInfo **ti;
+    int j;
+    char *name = gwwv_ask_string(_("Anchor Class Name"),"",_("Please enter the name of a Anchor point class to create"));
+    if ( name==NULL )
+return( true );
+    ac = SFFindOrAddAnchorClass(sf,name,NULL);
+    GGadgetSetList(GWidgetGetControl(ci->gw,CID_NameList),
+    ti = AnchorClassesLList(sf),false);
+    for ( j=0; ti[j]->text!=NULL && ti[j]->userdata!=ac; ++j )
+        GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_NameList),j);
+return( true );
+}
+
 static int AI_New(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
@@ -1047,36 +1064,13 @@ static int AI_New(GGadget *g, GEvent *e) {
 	if ( sf->cidmaster ) sf = sf->cidmaster;
 
 	if ( AnchorClassUnused(ci->sc,&waslig)==NULL ) {
-	    ff_post_notice(_("Make a new anchor class"),_("I cannot find an unused anchor class\nto assign a new point to. If you\nwish a new anchor point you must\ndefine a new anchor class with\nElement->Font Info"));
-	    FontInfo(sf,CVLayer((CharViewBase *) (ci->cv)),13,true);		/* Lookups */
-	    if ( AnchorClassUnused(ci->sc,&waslig)==NULL )
-return(true);
-	    GGadgetSetList(GWidgetGetControl(ci->gw,CID_NameList),
-		    AnchorClassesLList(ci->sc->parent),false);
+            if ( !AI_NewClass(g, e) )
+return( false );
 	}
 	ap = AnchorPointNew(ci->cv);
 	if ( ap==NULL )
 return( true );
 	AI_Display(ci,ap);
-    }
-return( true );
-}
-
-static int AI_NewClass(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
-        SplineFont *sf = ci->sc->parent;
-        AnchorClass *ac;
-        GTextInfo **ti;
-        int j;
-        char *name = gwwv_ask_string(_("Anchor Class Name"),"",_("Please enter the name of a Anchor point class to create"));
-        if ( name==NULL )
-return( true );
-        ac = SFFindOrAddAnchorClass(sf,name,NULL);
-	GGadgetSetList(GWidgetGetControl(ci->gw,CID_NameList),
-		    ti = AnchorClassesLList(sf),false);
-	for ( j=0; ti[j]->text!=NULL && ti[j]->userdata!=ac; ++j )
-	GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_NameList),j);
     }
 return( true );
 }
