@@ -718,28 +718,33 @@ static void ParseSaveTablesPref(struct ttfinfo *info) {
     char *pt, *spt;
     int cnt;
 
-    info->savecnt = 0;
-    info->savetab = NULL;
-    if ( SaveTablesPref==NULL || *SaveTablesPref=='\0' )
-return;
-    for ( pt=SaveTablesPref, cnt=0; *pt; ++pt )
-	if ( *pt==',' )
-	    ++cnt;
-    info->savecnt = cnt+1;
-    info->savetab = calloc(cnt+1,sizeof(struct savetab));
-    for ( pt=spt=SaveTablesPref, cnt=0; ; ++pt ) {
-	if ( *pt==',' || *pt=='\0' ) {
-	    uint32 tag;
-	    tag  = ( ( spt  <pt )? spt[0] : ' ' )<<24;
-	    tag |= ( ( spt+1<pt )? spt[1] : ' ' )<<16;
-	    tag |= ( ( spt+2<pt )? spt[2] : ' ' )<<8 ;
-	    tag |= ( ( spt+3<pt )? spt[3] : ' ' )    ;
-	    info->savetab[cnt++].tag = tag;
-	    if ( *pt )
-		spt = pt+1;
-	    else
-    break;
-	}
+    if (info->openflags & of_all_tables) {
+        info->savecnt = info->numtables;
+        info->savetab = calloc(info->savecnt,sizeof(struct savetab));
+    } else {
+        info->savecnt = 0;
+        info->savetab = NULL;
+        if ( SaveTablesPref==NULL || *SaveTablesPref=='\0' )
+    return;
+        for ( pt=SaveTablesPref, cnt=0; *pt; ++pt )
+            if ( *pt==',' )
+                ++cnt;
+        info->savecnt = cnt+1;
+        info->savetab = calloc(cnt+1,sizeof(struct savetab));
+        for ( pt=spt=SaveTablesPref, cnt=0; ; ++pt ) {
+            if ( *pt==',' || *pt=='\0' ) {
+                uint32 tag;
+                tag  = ( ( spt  <pt )? spt[0] : ' ' )<<24;
+                tag |= ( ( spt+1<pt )? spt[1] : ' ' )<<16;
+                tag |= ( ( spt+2<pt )? spt[2] : ' ' )<<8 ;
+                tag |= ( ( spt+3<pt )? spt[3] : ' ' )    ;
+                info->savetab[cnt++].tag = tag;
+                if ( *pt )
+                    spt = pt+1;
+                else
+        break;
+            }
+        }
     }
 }
 
@@ -1225,26 +1230,33 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  break;
 
 	  default:
-	    for ( j=0; j<info->savecnt; ++j ) if ( info->savetab[j].tag == tag ) {
-		info->savetab[j].offset = offset;
-		info->savetab[j].len = length;
-	    break;
-	    }
-	    if ( j==info->savecnt ) {
-		if ( first ) {
-		    LogError( _("The following table(s) in the font have been ignored by FontForge\n") );
-		    first = false;
-		}
-		for ( k=0; stdtables[k].tag!=0; ++k )
-		    if ( stdtables[k].tag == tag )
-		break;
-		if ( stdtables[k].tag==0 ) {
-		    LogError( _("  Ignoring '%c%c%c%c'\n"), tag>>24, tag>>16, tag>>8, tag);
-		} else {
-		    LogError( _("  Ignoring '%c%c%c%c' %s\n"), tag>>24, tag>>16, tag>>8, tag,
-			    _(stdtables[k].name));
-		}
-	    }
+            if (info->openflags & of_all_tables) {
+                info->savetab[i].offset = offset;
+                info->savetab[i].tag = tag;
+                info->savetab[i].len = length;
+            }
+            else {
+                for ( j=0; j<info->savecnt; ++j ) if ( info->savetab[j].tag == tag ) {
+                    info->savetab[j].offset = offset;
+                    info->savetab[j].len = length;
+                break;
+                }
+                if ( j==info->savecnt ) {
+                    if ( first ) {
+                        LogError( _("The following table(s) in the font have been ignored by FontForge\n") );
+                        first = false;
+                    }
+                    for ( k=0; stdtables[k].tag!=0; ++k )
+                        if ( stdtables[k].tag == tag )
+                    break;
+                    if ( stdtables[k].tag==0 ) {
+                        LogError( _("  Ignoring '%c%c%c%c'\n"), tag>>24, tag>>16, tag>>8, tag);
+                    } else {
+                        LogError( _("  Ignoring '%c%c%c%c' %s\n"), tag>>24, tag>>16, tag>>8, tag,
+                                _(stdtables[k].name));
+                    }
+                }
+            }
 	}
     }
     if ( info->glyphlocations_start!=0 && info->cff_start!=0 )
