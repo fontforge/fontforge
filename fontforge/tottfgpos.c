@@ -145,6 +145,8 @@ static uint32 scripts[][15] = {
 		{ 0 }
 };
 
+static SplineChar **SFOrderedGlyphs(SplineChar **glyphs);
+
 void ScriptMainRange(uint32 script, int *start, int *end) {
     int i;
 
@@ -407,13 +409,14 @@ void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *su
 	    subcnts[k] = 0;
 	}
     }
-    for ( i=0; i<4; ++i )
+    for ( i=0; i<4; ++i ) {
 	if ( heads[i].glyphs!=NULL )
 	    heads[i].glyphs[heads[i].cnt] = NULL;
+    }
 
-    *base = heads[at_basechar].glyphs;
-    *lig  = heads[at_baselig].glyphs;
-    *mkmk = heads[at_basemark].glyphs;
+    *base = SFOrderedGlyphs(heads[at_basechar].glyphs);
+    *lig  = SFOrderedGlyphs(heads[at_baselig].glyphs);
+    *mkmk = SFOrderedGlyphs(heads[at_basemark].glyphs);
 }
 
 SplineChar **EntryExitDecompose(SplineFont *sf,AnchorClass *ac,struct glyphinfo *gi) {
@@ -524,8 +527,7 @@ static int sc_ttf_order( const void *_sc1, const void *_sc2) {
 return( sc1->ttf_glyph - sc2->ttf_glyph );
 }
 
-static SplineChar **SFOrderedGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *sub) {
-    SplineChar **glyphs = SFGlyphsWithPSTinSubtable(sf,sub);
+static SplineChar **SFOrderedGlyphs(SplineChar **glyphs) {
     int cnt, i, k;
     if ( glyphs==NULL )
 return( NULL );
@@ -538,6 +540,11 @@ return( NULL );
 	    glyphs[i] = glyphs[i+k];
     }
 return( glyphs );
+}
+
+static SplineChar **SFOrderedGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *sub) {
+    SplineChar **glyphs = SFGlyphsWithPSTinSubtable(sf,sub);
+    return SFOrderedGlyphs(glyphs);
 }
 
 SplineChar **SFGlyphsFromNames(SplineFont *sf,char *names) {
