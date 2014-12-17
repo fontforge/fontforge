@@ -477,14 +477,13 @@ static void MListReplaceMonotonicComplete(struct mlist ** input, struct monotoni
   // This replaces a reference to one monotonic with a copied reference. I hope that it is not necessary.
   // It is necessary to use double pointers so that we can set the previous reference.
   struct mlist ** current_pointer = input;
-  struct mlist * tmp_pointer;
+  struct monotonic * tmp_pointer;
   while (*current_pointer) {
     if ((*current_pointer)->m == findm) {
       if ((tmp_pointer = chunkalloc(sizeof(struct monotonic))) &&
       (memcpy(tmp_pointer, replacement, sizeof(struct monotonic)) == 0)) {
-        tmp_pointer->next = (*current_pointer)->next;
-        chunkfree(*current_pointer, sizeof(struct monotonic));
-        (*current_pointer) = tmp_pointer;
+        chunkfree((*current_pointer)->m, sizeof(struct monotonic));
+        (*current_pointer)->m = tmp_pointer;
       } else SOError("Error copying segment.\n");
     }
     current_pointer = &((*current_pointer)->next);

@@ -1445,7 +1445,7 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
           int classflags = (isr ? current_kernclass->seconds_flags[i] : current_kernclass->firsts_flags[i]);
           // Note that we only output if the kernclass is destined for U. F. O. and has not already met said fate.
           if (classname != NULL && rawglyphlist != NULL &&
-              !output_done[absolute_index + i] && kernclass_for_groups_plist(sf, current_kernclass, classflags)) {
+              !(output_done[absolute_index + i]) && kernclass_for_groups_plist(sf, current_kernclass, classflags)) {
                 xmlNewChild(dictnode, NULL, BAD_CAST "key", classname);
                 xmlNodePtr grouparray = xmlNewChild(dictnode, NULL, BAD_CAST "array", NULL);
                 // We need to convert from the space-delimited string to something more easily accessed on a per-item basis.
