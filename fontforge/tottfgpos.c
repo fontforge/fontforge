@@ -413,6 +413,10 @@ void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *su
 	if ( heads[i].glyphs!=NULL )
 	    heads[i].glyphs[heads[i].cnt] = NULL;
     }
+    for ( i=0; i<classcnt; ++i ) {
+        if ( subcnts[k]!=0 )
+            SFOrderedGlyphs(marks[i]);
+    }
 
     *base = SFOrderedGlyphs(heads[at_basechar].glyphs);
     *lig  = SFOrderedGlyphs(heads[at_baselig].glyphs);
@@ -539,6 +543,11 @@ return( NULL );
 	for ( i=0; i<=cnt-k; ++i )
 	    glyphs[i] = glyphs[i+k];
     }
+    for ( i=0; i<cnt-1; ++i )
+        if (glyphs[i]->ttf_glyph==glyphs[i+1]->ttf_glyph) {
+            memmove(glyphs+i, glyphs+i+1, (cnt-i)*sizeof(SplineChar *));
+            --cnt;
+        }
 return( glyphs );
 }
 
@@ -1519,7 +1528,7 @@ static SplineChar **allmarkglyphs(SplineChar ***glyphlist, int classcnt) {
     int i, tot, k;
 
     if ( classcnt==1 )
-return( glyphlist[0]);
+return( SFOrderedGlyphs(glyphlist[0]));
 
     for ( i=tot=0; i<classcnt; ++i ) {
 	for ( k=0; glyphlist[i][k]!=NULL; ++k );
