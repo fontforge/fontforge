@@ -129,7 +129,6 @@ struct cvshows CVShowsPrevewToggleSavedState;
 
 // Note that the default values supplied in CVColInit over-ride these values.
 static Color pointcol = 0xff0000;
-static Color subcol = 0xffffff;
 static Color firstpointcol = 0x707000;
 static Color selectedpointcol = 0xc8c800;
 static int selectedpointwidth = 2;
