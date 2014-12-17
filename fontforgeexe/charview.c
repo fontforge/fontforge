@@ -5994,11 +5994,11 @@ return;
 
 static void CVHScrollSetPos( CharView *cv, int newpos )
 {
-    TRACE("CVHScrollSetPos(1) cvxoff:%d newpos:%d\n", cv->xoff, newpos );
+    TRACE("CVHScrollSetPos(1) cvxoff:%f newpos:%d\n", cv->xoff, newpos );
     if ( newpos<-(32000*cv->scale-cv->width) )
         newpos = -(32000*cv->scale-cv->width);
     if ( newpos>8000*cv->scale ) newpos = 8000*cv->scale;
-    TRACE("CVHScrollSetPos(2) cvxoff:%d newpos:%d\n", cv->xoff, newpos );
+    TRACE("CVHScrollSetPos(2) cvxoff:%f newpos:%d\n", cv->xoff, newpos );
     if ( newpos!=cv->xoff ) {
 	int diff = newpos-cv->xoff;
 	cv->xoff = newpos;
