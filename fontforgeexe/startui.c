@@ -107,7 +107,7 @@ static int unique = 0;
  * names as they come through.
  */
 #if defined(__Mac)
-    static int listen_to_apple_events = true;
+    static int listen_to_apple_events = false; // This was once true, but Apple broke it.
 #else
     static int listen_to_apple_events = false;
 #endif
@@ -1135,7 +1135,7 @@ int fontforge_main( int argc, char **argv ) {
 	    /* structure, and the current directory was (shudder) "/" */
 	    /* (however, we changed to HOME earlier in main routine). */
 	    unique = 1;
-	    listen_to_apple_events = true;
+	    // listen_to_apple_events = true; // This has been problematic on Mavericks and later.
 	}
 #endif
     }
