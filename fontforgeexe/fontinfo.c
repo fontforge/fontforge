@@ -10613,8 +10613,9 @@ return;
     mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
     mgcd[0].gd.u.tabs = aspects;
     mgcd[0].gd.flags = gg_visible | gg_enabled | gg_tabset_vert;
-    mgcd[0].gd.pos.width = 260+85;
-    mgcd[0].gd.pos.height = 325;
+    // We adjusted the following two values so as to make the GPOS and GSUB scrollbars visible.
+    mgcd[0].gd.pos.width = 500; // 260+85;
+    mgcd[0].gd.pos.height = 380; // 325;
     mgcd[0].gd.handle_controlevent = GFI_AspectChange;
     mgcd[0].gd.cid = CID_Tabs;
     mgcd[0].creator = GTabSetCreate;
