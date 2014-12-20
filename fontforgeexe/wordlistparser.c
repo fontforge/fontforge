@@ -472,10 +472,10 @@ WordListLine WordlistEscapedInputStringToParsedDataComplex(
 		     * start from 65536 (values beyond Unicode, 65535 being the reserved
 		     * "frontier" value).
 		     */
-		    if ( n < 65536 ) {
-		        printf("ToRealString: backmapped position does not match Unicode encoding\n");
-		        printf("orig_pos: %d, backmap: %d, attached unicode enc: %d\n", sc->orig_pos, n, sc->unicodeenc );
-		        printf("ToRealString: INVALID CHAR POSITION, name: %s\n", sc->name );
+		    if ( (sf->map->enc->is_unicodebmp || sf->map->enc->is_unicodefull) && n < 65536 ) {
+		        TRACE("ToRealString: backmapped position does not match Unicode encoding\n");
+		        TRACE("orig_pos: %d, backmap: %d, attached unicode enc: %d\n", sc->orig_pos, n, sc->unicodeenc );
+		        TRACE("ToRealString: INVALID CHAR POSITION, name: %s\n", sc->name );
 		    }
 		}
 
