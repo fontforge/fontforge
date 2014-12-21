@@ -260,7 +260,7 @@ u_WordlistEscapedInputStringToRealString_readGlyphName(
 	    unichar_t* endptr = 0;
 	    long unicodepoint = u_strtoul( glyphname+1, &endptr, 16 );
 	    TRACE("AAA glyphname:%s\n", u_to_c(glyphname+1) );
-	    TRACE("AAA unicodepoint:%d\n", unicodepoint );
+	    TRACE("AAA unicodepoint:%ld\n", unicodepoint );
 	    sc = SFGetChar( sf, unicodepoint, 0 );
 	    if( sc && endptr )
 	    {
@@ -482,6 +482,7 @@ WordListLine WordlistEscapedInputStringToParsedDataComplex(
 		out->sc = sc;
 		out->isSelected = isSelected;
 		out->currentGlyphIndex = currentGlyphIndex;
+                out->n = n;
 		out++;
 		/* out = utf8_idpb( out, n, 0 ); */
 		/* if( !out ) */
@@ -921,6 +922,7 @@ unichar_t* WordListLine_toustr( WordListLine wll )
     unichar_t* p = ret;
     for( ; wll->sc; wll++, p++ ) {
 	*p = wll->sc->unicodeenc;
+        if (*p == -1) *p = wll->n;
     }
     return ret;
 }
