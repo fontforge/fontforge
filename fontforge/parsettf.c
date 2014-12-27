@@ -512,7 +512,7 @@ char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
     /* srange = */ getushort(ttf);
     /* esel = */ getushort(ttf);
     /* rshift = */ getushort(ttf);
-    if ( num == EOF || feof(ttf) )
+    if ( num == EOF || feof(ttf) || cnt < 0 || cnt >= 0xFFFF)
         return( NULL );
     for ( i=0; i<num; ++i ) {
         tag = getlong(ttf);
@@ -6354,7 +6354,7 @@ return( NULL );
     if ( version==CHR('t','t','c','f')) {
 	/* TTCF version = */ getlong(ttf);
 	cnt = getlong(ttf);
-	if (cnt != EOF) {
+	if (cnt != EOF && cnt >= 0 && cnt < 0xFFFF) {
 		offsets = malloc(cnt*sizeof(int32));
 		for ( i=0; i<cnt; ++i )
 		    offsets[i] = getlong(ttf);
@@ -6367,7 +6367,7 @@ return( NULL );
 		ret[j] = NULL;
 		free(offsets);
 	} else {
-		LogError(_("Invalid TTF %s."), filename);
+		LogError(_("Invalid font count in TTC %s."), filename);
 	}
     } else {
 	temp = TTFGetFontName(ttf,0,0);
