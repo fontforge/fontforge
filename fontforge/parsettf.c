@@ -512,7 +512,7 @@ char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
     /* srange = */ getushort(ttf);
     /* esel = */ getushort(ttf);
     /* rshift = */ getushort(ttf);
-    if ( num == EOF || feof(ttf) || cnt < 0 || cnt >= 0xFFFF)
+    if ( num == EOF || feof(ttf) || num < 0 || num >= 0xFFFF)
         return( NULL );
     for ( i=0; i<num; ++i ) {
         tag = getlong(ttf);
