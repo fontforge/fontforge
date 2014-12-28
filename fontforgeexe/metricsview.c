@@ -702,7 +702,7 @@ static void MVRefreshValues(MetricsView *mv, int i) {
 if( !mv->perchar[i].width )
 return;
 
-printf("MVRefreshValues() **** setting width to %d\n", sc->width );
+    //printf("MVRefreshValues() **** setting width to %d\n", sc->width );
     sprintf(buf,"%d",mv->vertical ? sc->vwidth : sc->width);
     GGadgetSetTitle8(mv->perchar[i].width,buf);
 
