@@ -1378,7 +1378,7 @@ return( true );		/* No change, don't bother user */
 	    struct subtable_data sd;
 	    memset(&sd,0,sizeof(sd));
 	    sd.flags = (mv->vertical ? sdf_verticalkern : sdf_horizontalkern ) |
-		    sdf_kernpair;
+		    sdf_kernclass;
 	    sub = SFNewLookupSubtableOfType(psc->parent,gpos_pair,&sd,mv->layer);
 	    if ( sub==NULL )
 return( false );
