@@ -2758,7 +2758,6 @@ void cvt_unix_to_1904( long long time, int32 result[2]) {
 
 static void sethead(struct head *head,SplineFont *sf,struct alltabs *at,
 	enum fontformat format, int32 *bsizes) {
-    time_t now;
     int i, lr, rl, indic_rearrange, arabic;
     ASM *sm;
     struct ttflangname *useng;
@@ -2866,10 +2865,8 @@ static void sethead(struct head *head,SplineFont *sf,struct alltabs *at,
 	head->flags |= (1<<9);		/* Apple documents this */
     /* if there are any indic characters, set bit 10 */
 
-    time(&now);		/* seconds since 1970, need to convert to seconds since 1904 */
-    cvt_unix_to_1904(now,head->modtime);
-    memcpy(head->createtime,head->modtime,sizeof(head->modtime));
-
+    cvt_unix_to_1904(sf->creationtime,head->createtime);
+    cvt_unix_to_1904(sf->modificationtime,head->modtime);
 }
 
 static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at, SplineFont *sf) {
