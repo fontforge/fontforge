@@ -5018,13 +5018,18 @@ static int mv_e_h(GWindow gw, GEvent *event) {
 	  return 0;
 	} else if ((event->u.chr.keysym == GK_Return) && (!(event->u.chr.state&ksm_meta))) {
 		MVMoveInTableByColumnByOffset(mv, (event->u.chr.state&ksm_shift) ? -1 : 1);
+	} else {
+		MVChar(mv,event);
 	}
+#if 0
+	  // It is unclear to Frank why we were being so selective.
 	  if ( event->u.chr.keysym == GK_Left || event->u.chr.keysym==GK_KP_Left
 	       || event->u.chr.keysym == GK_Right || event->u.chr.keysym==GK_KP_Right ) {
 	      if( event->u.chr.state&ksm_meta ) {
 		  MVChar(mv,event);
 	      }
 	  }
+#endif // 0
       break;
       case et_mouseup: case et_mousemove: case et_mousedown:
           active = GWindowGetFocusGadgetOfWindow(mv->gw);
