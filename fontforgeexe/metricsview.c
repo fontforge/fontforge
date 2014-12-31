@@ -5007,7 +5007,7 @@ static int mv_e_h(GWindow gw, GEvent *event) {
 	  // For now, we just return 0 so that the default event handler takes care.
 	  return 0;
 	}
-	MVChar(mv,event);
+	// MVChar(mv,event);
       break;
       case et_charup:
 	if ((event->u.chr.keysym == GK_Tab || event->u.chr.keysym == GK_BackTab) && (!(event->u.chr.state&ksm_meta))) {
