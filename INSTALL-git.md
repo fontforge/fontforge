@@ -42,3 +42,53 @@ might have to run this as well:
 ```
 sudo ldconfig
 ```
+
+4. Common Mac OS issues
+----------
+
+* Problems with Python, run ```./configure``` line like this (paths may vary):
+```
+PYTHON_CFLAGS="-I/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7" \
+PYTHON_LIBS="-L/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config" \
+./configure \
+--disable-programs \
+--disable-native-scripting \
+--without-x \
+--without-cairo \
+--without-giflib \
+--without-libjpeg \
+--without-libtiff \
+--without-libpng \
+--without-libspiro \
+--without-libuninameslist \
+--without-libunicodenames \
+--without-iconv \
+--without-libzmq \
+--without-libreadline \
+--enable-python-scripting \
+--enable-python-extension
+
+PYTHON_CFLAGS="/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7/" PYTHON_LIBS="/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config/" ./configure
+```
+
+* Problems with lack of libs (homebrew needed for this code):
+```
+brew install autoconf
+brew install automake
+brew install glib
+```
+
+* Make command replies ```no such file or directory msgfmt``` (homebrew needed for this code):
+```
+brew install gettext
+```
+
+Edit then your ```.bash_profile``` or ```.zprofile``` (if you use zsh) and add:
+```
+export PATH=${PATH}:/usr/local/opt/gettext/bin
+```
+
+* You can't find the built FontForge app (paths may vary):
+```
+mv /usr/local/share/fontforge/osx/FontForge.app /Applications
+```
