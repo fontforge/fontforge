@@ -68,14 +68,20 @@ PYTHON_LIBS="-L/System/Library/Frameworks/Python.framework/Versions/2.7/lib/pyth
 --enable-python-scripting \
 --enable-python-extension
 
-PYTHON_CFLAGS="/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7/" PYTHON_LIBS="/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config/" ./configure
+# Other solution
+PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ \
+PYTHON_CFLAGS="-I/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7" \
+PYTHON_LIBS="-L/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config" \
+./configure
 ```
 
 * Problems with lack of libs (homebrew needed for this code):
 ```
+# Install if needed
 brew install autoconf
 brew install automake
 brew install glib
+brew install pango
 ```
 
 * Make command replies ```no such file or directory msgfmt``` (homebrew needed for this code):
