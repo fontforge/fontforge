@@ -577,7 +577,7 @@ return;			/* We clicked on the active point, that's a no-op */
 	cv->p.constrain = sp->me;
 }
 
-static void AdjustControls(SplinePoint *sp) {
+void AdjustControls(SplinePoint *sp) {
     if ( sp->next!=NULL ) {
 	SplineCharDefaultNextCP(sp);	/* also fixes up tangents */
 	SplineCharDefaultPrevCP(sp->next->to);
