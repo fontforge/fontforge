@@ -2477,7 +2477,10 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	    }
 	}
 	if ( paster->u.state.refs!=NULL ) {
-	    RefChar *last=NULL;
+	    RefChar *last = sc->layers[layer].refs;
+	    while ( last != NULL && last->next != NULL) {
+	       last = last->next;
+	    }
 	    RefChar *new, *refs;
 	    SplineChar *rsc;
 	    double scale = PasteFigureScale(sc->parent,paster->copied_from);
