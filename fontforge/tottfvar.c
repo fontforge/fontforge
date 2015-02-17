@@ -498,6 +498,7 @@ static void ttf_dumpcvar(struct alltabs *at, MMSet *mm) {
     uint16 *pts;
 
     deltas = CvtFindDeltas(mm,&ptcnt);
+    if ( deltas == NULL ) return;
     for ( i=cnt=0; i<mm->instance_count; ++i )
 	if ( deltas[i]!=NULL )
 	    ++cnt;
