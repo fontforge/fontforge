@@ -1097,6 +1097,7 @@ int LayerWorthOutputting(SplineFont *sf, int layer) {
 }
 
 int SCLWorthOutputtingOrHasData(SplineChar *sc, int layer) {
+  if (sc == NULL) return 0;
   if (layer >= sc->layer_cnt) return 0;
   if (SCDrawsSomethingOnLayer(sc, layer)) return 1;
   if (sc->layers[layer].python_persistent) return 1;
