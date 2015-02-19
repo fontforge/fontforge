@@ -5304,10 +5304,16 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     }
     mv->chars[mv->clen] = NULL;
 
-    for ( cnt=0; cnt<mv->clen; ++cnt )
-	pt = utf8_idpb(pt,
-		mv->chars[cnt]->unicodeenc==-1?
-		MVFakeUnicodeOfSc(mv,mv->chars[cnt]): mv->chars[cnt]->unicodeenc,0);
+    for ( cnt=0; cnt<mv->clen; ++cnt ) {
+        if ( mv->chars[cnt]->unicodeenc != -1 )
+	    pt = utf8_idpb(pt,mv->chars[cnt]->unicodeenc,0);
+        else {
+            *pt = '/'; pt++;
+            strcpy(pt, mv->chars[cnt]->name);
+            pt += strlen(mv->chars[cnt]->name);
+            *pt = ' '; pt++;
+        }
+    }
     *pt = '\0';
 
     memset(&gd,0,sizeof(gd));
