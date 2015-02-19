@@ -7179,6 +7179,8 @@ static void fea_NameLookups(struct parseState *tok) {
                 oldapm = NULL;
                 lastap = NULL;
                 sc = sf->glyphs[gid];
+                if (!sc)
+                    continue;
                 for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
                     if ( ap->anchor==ac ) {
                         if ( ap->type==at_mark || ap->type==at_centry ) {
