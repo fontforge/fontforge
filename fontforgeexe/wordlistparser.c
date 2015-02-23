@@ -284,15 +284,21 @@ u_WordlistEscapedInputStringToRealString_readGlyphName(
 	    {
 		unichar_t* endptr = 0;
 		long unicodepoint = u_strtoul( glyphname+3, &endptr, 16 );
+                SplineChar* tmp = 0;
 		TRACE("uni prefix, codepoint: %ld\n", unicodepoint );
 		sc = SFGetChar( sf, unicodepoint, 0 );
-		if( sc && endptr )
-		{
-		    unichar_t* endofglyphname = glyphname + u_strlen(glyphname);
-//		    printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname );
-		    for( ; endptr < endofglyphname; endptr++ )
-			--endpos;
-		}
+                if (tmp = SFGetChar( sf, -1, u_to_c(glyphname) )) {
+		    TRACE("have subst. char: %s\n", tmp->name );
+                    sc = tmp;
+                } else {
+		    if( sc && endptr )
+		    {
+		        unichar_t* endofglyphname = glyphname + u_strlen(glyphname);
+//		        printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname );
+		        for( ; endptr < endofglyphname; endptr++ )
+                            --endpos;
+		    }
+                }
 	    }
 	    
 	    if( firstLookup && glyphname[0] == '#' )
