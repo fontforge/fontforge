@@ -1907,23 +1907,23 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     }
 #endif
 
-    TRACE("about to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
-    TRACE("     has ksm_control:%d\n", (event->u.chr.state & ksm_control ));
-    TRACE("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
-    TRACE("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
+//    TRACE("about to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
+//    TRACE("     has ksm_control:%d\n", (event->u.chr.state & ksm_control ));
+//    TRACE("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
+//    TRACE("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
 
     event->u.chr.state |= ksm_numlock;
-    TRACE("about2 to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
+//    TRACE("about2 to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
 
     /**
      * Mask off the parts we don't explicitly care about
      */
     event->u.chr.state &= ( ksm_control | ksm_meta | ksm_shift | ksm_option );
 
-    TRACE("about3 to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
-    TRACE("     has ksm_control:%d\n", (event->u.chr.state & ksm_control ));
-    TRACE("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
-    TRACE("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
+//    TRACE("about3 to look for hotkey in new system...state:%d keysym:%d\n", event->u.chr.state, event->u.chr.keysym );
+//    TRACE("     has ksm_control:%d\n", (event->u.chr.state & ksm_control ));
+//    TRACE("     has ksm_meta:%d\n",    (event->u.chr.state & ksm_meta ));
+//    TRACE("     has ksm_shift:%d\n",   (event->u.chr.state & ksm_shift ));
 
     if( SkipUnQualifiedHotkeyProcessing && !event->u.chr.state )
     {
@@ -1936,8 +1936,8 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     struct dlistnode* hklist = (struct dlistnode*)node;
     for( ; node; node=(struct dlistnodeExternal*)(node->next) ) {
 	Hotkey* hk = (Hotkey*)node->ptr;
-	TRACE("hotkey found by event! hk:%p\n", hk );
-	TRACE("hotkey found by event! action:%s\n", hk->action );
+//	TRACE("hotkey found by event! hk:%p\n", hk );
+//	TRACE("hotkey found by event! action:%s\n", hk->action );
 
 	int skipkey = false;
 
@@ -1953,8 +1953,8 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	    mi = GMenuSearchAction(mb->g.base,mb->mi,hk->action,event,mb->child==NULL);
 	    if ( mi )
 	    {
-		TRACE("GMenuBarCheckKey(x) have mi... :%p\n", mi );
-		TRACE("GMenuBarCheckKey(x) have mitext:%s\n", u_to_c(mi->ti.text) );
+//		TRACE("GMenuBarCheckKey(x) have mi... :%p\n", mi );
+//		TRACE("GMenuBarCheckKey(x) have mitext:%s\n", u_to_c(mi->ti.text) );
 		if ( mi->ti.checkable && !mi->ti.disabled )
 		    mi->ti.checked = !mi->ti.checked;
 		if ( mi->invoke!=NULL && !mi->ti.disabled )
@@ -1974,7 +1974,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     }
     dlist_free_external(&hklist);
 
-    TRACE("menubarcheckkey(e1)\n");
+//    TRACE("menubarcheckkey(e1)\n");
 
     if ( mb->child )
     {
@@ -1985,7 +1985,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 	return( GMenuSpecialKeys(m,event->u.chr.keysym,event));
     }
 
-    TRACE("menubarcheckkey(e2)\n");
+//    TRACE("menubarcheckkey(e2)\n");
     if ( event->u.chr.keysym==GK_Menu )
 	GMenuCreatePopupMenu(event->w,event, mb->mi);
 

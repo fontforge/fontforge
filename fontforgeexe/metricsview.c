@@ -5211,7 +5211,8 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     FontRequest rq;
     static GWindow icon = NULL;
     extern int _GScrollBar_Width;
-    char buf[120], *pt;
+    // Max. glyphname length: 31, max. chars picked up: 15. 31*15 = 465
+    char buf[465], *pt;
     GTextInfo label;
     int i,j,cnt;
     int as,ds,ld;
@@ -5304,10 +5305,16 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     }
     mv->chars[mv->clen] = NULL;
 
-    for ( cnt=0; cnt<mv->clen; ++cnt )
-	pt = utf8_idpb(pt,
-		mv->chars[cnt]->unicodeenc==-1?
-		MVFakeUnicodeOfSc(mv,mv->chars[cnt]): mv->chars[cnt]->unicodeenc,0);
+    for ( cnt=0; cnt<mv->clen; ++cnt ) {
+        if ( mv->chars[cnt]->unicodeenc != -1 )
+	    pt = utf8_idpb(pt,mv->chars[cnt]->unicodeenc,0);
+        else {
+            *pt = '/'; pt++;
+            strcpy(pt, mv->chars[cnt]->name);
+            pt += strlen(mv->chars[cnt]->name);
+            *pt = ' '; pt++;
+        }
+    }
     *pt = '\0';
 
     memset(&gd,0,sizeof(gd));
