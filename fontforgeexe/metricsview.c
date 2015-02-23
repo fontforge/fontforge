@@ -5211,7 +5211,8 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     FontRequest rq;
     static GWindow icon = NULL;
     extern int _GScrollBar_Width;
-    char buf[120], *pt;
+    // Max. glyphname length: 31, max. chars picked up: 15. 31*15 = 465
+    char buf[465], *pt;
     GTextInfo label;
     int i,j,cnt;
     int as,ds,ld;
