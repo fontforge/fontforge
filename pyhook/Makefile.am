@@ -51,3 +51,7 @@ LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/fontforge/libfontforge.la
 
 -include $(top_srcdir)/git.mk
+
+install-exec-local:
+	@ sfff=`(pyff_count=0 ; for item in \`echo -e "import sys\nfor file in sys.path:\n\tprint \"%s\" %file\n" | python\` ; do if [ -e "$$item"/fontforge.so ] ; then echo "$$item"/fontforge.so ; pyff_count=\`expr $$pyff_count + 1\`; fi ; done ;) | grep -v '^$(DESTDIR)$(pyexecdir)' | grep -v '^$(pyexecdir)'`; if [ "$$sfff" != "" ]; then echo "There may be another FontForge Python library on this system."; echo "$$sfff"; fi;
+
