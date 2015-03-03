@@ -784,7 +784,8 @@ char *getShareDir(void) {
 
     set = true;
 
-    pt = strstr(GResourceProgramDir,"/bin");
+    //Assume share folder is one directory up
+    pt = strrchr(GResourceProgramDir, '/');
     if ( pt==NULL ) {
 #ifdef SHAREDIR
 	return( sharedir = SHAREDIR );
