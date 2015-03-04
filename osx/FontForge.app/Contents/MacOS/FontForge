@@ -118,4 +118,4 @@ $scriptdir/fcprogress.pl >|/tmp/zz 2>&1
 
 export PATH="$PATH:$bundle_bin"
 echo $WRAPPER $bundle_bin/fontforge -new "$@" > /tmp/oo
-$WRAPPER $bundle_bin/fontforge -new "$@"
+$WRAPPER $bundle_bin/fontforge -new "$@" &
