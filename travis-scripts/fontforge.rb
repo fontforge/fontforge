@@ -2,6 +2,25 @@
 #
 # last synced by hand by davelab6 at 2015-03-05
 
+class MyDownloadStrategy < GitDownloadStrategy
+  # get the PR
+  def fetch
+    system "rsync -a /Users/travis/build/fontforge/fontforge/. /Library/Caches/Homebrew/fontforge--git"
+  end
+  def reset_args
+    ref = case @ref_type
+          when :branch then "origin/#@ref"
+          when :revision, :tag then @ref
+          else "origin/HEAD"
+          end
+
+    %W{reset --hard pr{TRAVIS_PULL_REQUEST}}
+  end
+  def reset
+    quiet_safe_system 'git', *reset_args
+  end
+end
+
 class Fontforge < Formula
   homepage "https://fontforge.github.io"
   url "https://github.com/fontforge/fontforge/archive/20150228.tar.gz"
@@ -12,6 +31,12 @@ class Fontforge < Formula
     sha1 "5cdcd9ec8f1679a9285b3b85a8c063fd7a1c7153" => :yosemite
     sha1 "25382df7037e07d8cd72d10ac42657699d5005e1" => :mavericks
     sha1 "b13d67164ecdad117681234e3dd9386ab7611671" => :mountain_lion
+  end
+
+  head do
+    url 'file:///Users/travis/build/fontforge/fontforge', :branch => 'FETCH_HEAD', :using => MyDownloadStrategy
+    depends_on "zeromq"
+    depends_on "czmq"
   end
 
   option "with-giflib", "Build with GIF support"
@@ -92,6 +117,13 @@ class Fontforge < Formula
       system "install_name_tool", "-change", "@executable_path/../Frameworks/Breakpad.framework/Versions/A/Breakpad",
              "#{bin}/fontforge", "#{share}/fontforge/osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Breakpad"
     end
+
+    # Now we create a copy in /tmp that the script_osx.sh can use to
+    # roll a package
+    #
+    # WARNING: using rsync runs into all sorts of troubles with autotools.
+    system "cp -aL . /tmp/fontforge-source-tree/"
+
   end
 
   test do
