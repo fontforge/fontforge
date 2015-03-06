@@ -122,7 +122,7 @@ return;
 		width = bb.maxx-bb.minx + 2*wd->setto;
 	    } else if ( wd->type == st_incr ) {
 		transform[4] = wd->increment;
-		width += 2*wd->increment;
+		width = sc->width + 2*wd->increment;
 	    } else {
 		transform[4] = bb.minx*wd->scale/100 - bb.minx;
 		width = bb.maxx-bb.minx +
@@ -137,7 +137,7 @@ return;
 		width = (ib.maxx-ib.minx + 2*wd->setto);
 	    } else if ( wd->type == st_incr ) {
 		transform[4] = wd->increment;
-		width += 2*wd->increment;
+		width = sc->width + 2*wd->increment;
 	    } else {
 		transform[4] = ib.minx*wd->scale/100 - ib.minx;
 		width = ib.maxx-ib.minx +
