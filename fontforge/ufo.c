@@ -1164,7 +1164,7 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 	else
 	    PListAddInteger(dictnode,"openTypeOS2TypoAscender",sf->pfminfo.os2_typoascent);
 	if ( sf->pfminfo.typodescent_add )
-	    PListAddInteger(dictnode,"openTypeOS2TypoDescender",sf->descent+sf->pfminfo.os2_typodescent);
+	    PListAddInteger(dictnode,"openTypeOS2TypoDescender",-sf->descent+sf->pfminfo.os2_typodescent);
 	else
 	    PListAddInteger(dictnode,"openTypeOS2TypoDescender",sf->pfminfo.os2_typodescent);
 	PListAddInteger(dictnode,"openTypeOS2TypoLineGap",sf->pfminfo.os2_typolinegap);
@@ -1173,9 +1173,9 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 	else
 	    PListAddInteger(dictnode,"openTypeOS2WinAscent",sf->pfminfo.os2_winascent);
 	if ( sf->pfminfo.windescent_add )
-	    PListAddInteger(dictnode,"openTypeOS2WinDescent",-(bb.miny+sf->pfminfo.os2_windescent));
+	    PListAddInteger(dictnode,"openTypeOS2WinDescent",-bb.miny+sf->pfminfo.os2_windescent);
 	else
-	    PListAddInteger(dictnode,"openTypeOS2WinDescent",-sf->pfminfo.os2_windescent);
+	    PListAddInteger(dictnode,"openTypeOS2WinDescent",sf->pfminfo.os2_windescent);
     }
     if ( sf->pfminfo.subsuper_set ) {
 	PListAddInteger(dictnode,"openTypeOS2SubscriptXSize",sf->pfminfo.os2_subxsize);
