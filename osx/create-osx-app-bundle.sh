@@ -392,6 +392,19 @@ for if in libfontforgeexe.?.dylib libfontforge.?.dylib libgdraw.?.dylib; do
   done
 done
 
+for arch in x86_64 i386; do
+  cd $bundle_res/breakpad/symbols/$arch/
+  for symfile in *; do
+      hash=$(head -1 "$symfile"|cut -d' ' -f 4);
+      fn=$(head -1   "$symfile"|cut -d' ' -f 5);
+      if [ ! -z "$hash" -a ! -z "$fn" ]; then
+	  mv "$fn" "$fn.sym"
+	  mkdir -p "$fn/$hash"
+          mv "$fn.sym" "$fn/$hash/"
+      fi
+  done
+done
+
 cd $bundle_bin
 
 #
