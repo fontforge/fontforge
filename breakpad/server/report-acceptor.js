@@ -5,6 +5,7 @@ var bodyParser = require('body-parser');
 var fs = require('fs-extra');
 var multer = require('multer');
 var app = express();
+var exec = require('child_process').exec;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(multer({ dest: './uploads/'
@@ -43,6 +44,7 @@ app.post('/breakpad', function(req, res){
     var dumpFilePath = req.files["upload_file_minidump"]["path"];
     console.log("filename: " + dumpFilePath);
 
+    var githash = req.body["FontForgeGitHash"];
     var md = {
 	ver:         req.body["ver"]
 	, githash:   req.body["FontForgeGitHash"]
@@ -55,6 +57,26 @@ app.post('/breakpad', function(req, res){
 
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.end('thanks');
+
+    
+    var basename = dumpFilePath;
+    basename.replace(/\.[^/.]+$/, "");
+
+    var symbolsDir = "./breakpad-symbols-by-hash/" + githash + "/breakpad/symbols/x86_64";
+    console.log("dumpFilePath:" + dumpFilePath );
+    console.log("symbolsDir  :" + symbolsDir );
+    var child = exec("./minidump_stackwalk " + dumpFilePath + " " + symbolsDir,
+          function (error, stdout, stderr) {
+
+	      fs.outputFile( dumpFilePath + ".backtrace", stdout, function(err) {
+		  console.log(err) // => null
+	      })
+              // console.log('stdout: ' + stdout);
+              // console.log('stderr: ' + stderr);
+              if (error !== null) {
+                  console.log('exec error: ' + error);
+              }
+          });
 
 });
 
