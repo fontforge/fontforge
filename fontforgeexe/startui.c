@@ -81,9 +81,19 @@ extern void setup_cocoa_app();
 /* For reasons obscure to me RunApplicationEventLoop is not defined in */
 /*  the mac header files if we are in 64 bit mode. Strangely it seems to */
 /*  be in the libraries and functional */
-#  if __LP64__
-extern void RunApplicationEventLoop(void);
-#  endif
+/*
+ * It was found in Dec 2014 that using RunApplicationEventLoop() could induce strange
+ * and extremely frustrating pausing issues on osx. The main generic event handling
+ * seems to work just fine, so there doesn't seem to be a need for this specialized
+ * Application Event Loop.
+ * 
+ * See this issue bringing back Breakpad usage and the issues linked in comments 2,3
+ * by adrientetar:
+ * https://github.com/fontforge/fontforge/issues/2120
+ */
+//#  if __LP64__
+//extern void RunApplicationEventLoop(void);
+//#  endif
 #endif
 
 #if defined(__MINGW32__)
@@ -107,7 +117,7 @@ static int unique = 0;
  * names as they come through.
  */
 #if defined(__Mac)
-    static int listen_to_apple_events = false; // This was once true, but Apple broke it.
+    static int listen_to_apple_events = true; // This was once true, but Apple broke it.
 #else
     static int listen_to_apple_events = false;
 #endif
@@ -1135,7 +1145,7 @@ int fontforge_main( int argc, char **argv ) {
 	    /* structure, and the current directory was (shudder) "/" */
 	    /* (however, we changed to HOME earlier in main routine). */
 	    unique = 1;
-	    // listen_to_apple_events = true; // This has been problematic on Mavericks and later.
+	    listen_to_apple_events = true; // This has been problematic on Mavericks and later.
 	}
 #endif
     }
@@ -1359,7 +1369,12 @@ exit( 0 );
 	install_apple_event_handlers();
 	install_mac_timer();
 	setup_cocoa_app();
-	RunApplicationEventLoop();
+
+	
+	// WARNING: See declaration of RunApplicationEventLoop() above as to
+	// why you might not want to call that function anymore.
+	// RunApplicationEventLoop();
+	
     } else
 #endif
     if ( doopen || !any )
