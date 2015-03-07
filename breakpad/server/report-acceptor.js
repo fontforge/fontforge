@@ -5,7 +5,7 @@ var bodyParser = require('body-parser');
 var fs = require('fs-extra');
 var multer = require('multer');
 var app = express();
-var exec = require('child_process').exec;
+var child_process = require('child_process');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(multer({ dest: './uploads/'
@@ -65,7 +65,8 @@ app.post('/breakpad', function(req, res){
     var symbolsDir = "./breakpad-symbols-by-hash/" + githash + "/breakpad/symbols/x86_64";
     console.log("dumpFilePath:" + dumpFilePath );
     console.log("symbolsDir  :" + symbolsDir );
-    var child = exec("./minidump_stackwalk " + dumpFilePath + " " + symbolsDir,
+    var child = child_process.execFile("./minidump_stackwalk", 
+				       [ dumpFilePath, symbolsDir ],
           function (error, stdout, stderr) {
 
 	      fs.outputFile( dumpFilePath + ".backtrace", stdout, function(err) {
