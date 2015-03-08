@@ -5119,6 +5119,10 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
 	info->pfminfo.codepages[0] = getlong(ttf);
 	info->pfminfo.codepages[1] = getlong(ttf);
 	info->pfminfo.hascodepages = true;
+	if ( info->os2_version>=2 ) {
+	info->pfminfo.os2_xheight = (short) getushort(ttf);
+	info->pfminfo.os2_capheight = (short) getushort(ttf);
+	}
     }
 
     if ( info->os2_version==0 ) {
