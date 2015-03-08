@@ -641,7 +641,7 @@ static int PickTTFFont(FILE *ttf,char *filename,char **chosenname) {
     names = malloc(cnt*sizeof(char *));
     for ( i=0; i<cnt; ++i ) {
 	names[i] = TTFGetFontName(ttf,offsets[i],0);
-        if ( names[i]==NULL ) 
+        if ( names[i]==NULL )
             asprintf(&names[i], "<Unknown font name %d>", i+1);
     }
     pt = strrchr(filename,'/');
@@ -942,7 +942,7 @@ return;
     free(tabs);
     fseek(ttf,restore_this_pos,SEEK_SET);
 }
-	    
+
 static struct tablenames { uint32 tag; const char *name; } stdtables[] = {
     { CHR('a','c','n','t'), N_("accent attachment table") },
     { CHR('a','v','a','r'), N_("axis variation table") },
@@ -1282,12 +1282,12 @@ static void readdate(FILE *ttf,struct ttfinfo *info,int ismod) {
     /* These timestamps are in "number of seconds since 00:00 1904-01-01",  */
     /* noted some places as a Mac OS epoch time value.  We use Unix epoch   */
     /* timestamps which are "number of seconds since 00:00 1970-01-01".     */
-    /* The difference between these two epoch values is a constant number   */ 
+    /* The difference between these two epoch values is a constant number   */
     /* of seconds, and so we convert from Mac to Unix time by simple        */
     /* subtraction of that constant difference.                             */
 
     /*      (31781 * 65536) + 45184 = 2082844800 secs is 24107 days */
-    int date1970[4] = {45184, 31781, 0, 0}; 
+    int date1970[4] = {45184, 31781, 0, 0};
 
     /* As there was not (nor still is?) a portable way to do 64-bit math aka*/
     /* "long long" the code below works on 16-bit slices of the full value. */
@@ -1682,7 +1682,7 @@ static char *FindLangEntry(struct ttfinfo *info, int id ) {
 	for ( cur=info->names; cur!=NULL && cur->names[id]==NULL; cur=cur->next );
     if ( cur==NULL )
 return( NULL );
-    ret = copy(cur->names[id]);	
+    ret = copy(cur->names[id]);
 return( ret );
 }
 
@@ -1757,7 +1757,7 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
 	    name = getushort(ttf);
 	    str_len = getushort(ttf);
 	    stroff = getushort(ttf);
-    
+
 	    TTFAddLangStr(ttf,info,name,str_len,tableoff+stroff,
 		    platform,specific,language);
 	}
@@ -4038,7 +4038,7 @@ static int readtyp1glyphs(FILE *ttf,struct ttfinfo *info) {
 	    i = 0;
 	fseek(ttf,info->typ1_start+i,SEEK_SET);
     }
-    
+
     tmp = tmpfile();
     for ( i=0; i<info->typ1_length; ++i )
 	putc(getc(ttf),tmp);
@@ -4130,7 +4130,7 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	LogError( _("Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0\n") );
 	info->bad_metrics = true;
     }
-	
+
     for ( j=i; j<info->glyph_cnt; ++j ) {
 	if ( (sc = info->chars[j])!=NULL ) {	/* In a ttc file we may skip some */
 	    sc->width = lastwidth;
@@ -4881,7 +4881,7 @@ return;
 	} else if ( format==2 ) {
 	    int max_sub_head_key = 0, cnt, max_pos= -1;
 	    struct subhead *subheads;
-	    
+
 	    for ( i=0; i<256; ++i ) {
 		table[i] = getushort(ttf)/8;	/* Sub-header keys */
 		if ( table[i]>max_sub_head_key ) {
@@ -5157,9 +5157,21 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	fseek(ttf,info->postscript_start,SEEK_SET);
 	format = getlong(ttf);
 	info->italicAngle = getfixed(ttf);
+    /*
+     * Due to the legacy of two formats, there are two underlinePosition
+     * attributes in an OpenType CFF font, one being stored in the CFF table.
+     * FontForge due to its pfa heritage will only keep the PostScript/CFF
+     * underlinePosition in the SplineFont so we'll calculate that here if we
+     * are indeed working on a TTF.
+     * If we have a CFF font, cffinfofillup() has already read the appropriate
+     * data and so we don't rewind it (if info->uwidth is odd we are possibly
+     * introducing a rounding error).
+     */
+	if (info->cff_start==0) {
 	info->upos = (short) getushort(ttf);
 	info->uwidth = (short) getushort(ttf);
-	info->upos += info->uwidth/2;		/* 'post' defn of this field is different from FontInfo defn and I didn't notice */
+	info->upos -= info->uwidth/2;		/* 'post' defn of this field is different from FontInfo defn and I didn't notice */
+	}
 	info->isFixedPitch = getlong(ttf);
 	/* mem1 = */ getlong(ttf);
 	/* mem2 = */ getlong(ttf);
@@ -6163,7 +6175,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	sf->layers = info->layers;
 	sf->layer_cnt = info->layer_cnt;
     }
-	
+
 
     for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL ) {
 	SCOrderAP(info->chars[i]);
@@ -6184,7 +6196,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     ASCIIcheck(&sf->familyname);
     ASCIIcheck(&sf->weight);
     ASCIIcheck(&sf->version);
-    
+
     TTF_PSDupsDefault(sf);
 
     /* I thought the languages were supposed to be ordered, but it seems */
