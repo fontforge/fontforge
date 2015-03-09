@@ -1165,8 +1165,12 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 	    for ( i=fscnt=0; i<16; ++i )
 		if ( sf->pfminfo.fstype&(1<<i) )
 		    fstype[fscnt++] = i;
-	    if ( fscnt!=0 )
-		PListAddIntArray(dictnode,"openTypeOS2Type",fstype,fscnt);
+	    /*
+	     * Note that value 0x0 is represented by an empty bit, so in that case
+	     * we output an empty array, otherwise compilers will fallback to their
+	     * default fsType value.
+	     */
+	    PListAddIntArray(dictnode,"openTypeOS2Type",fstype,fscnt);
 	}
 	if ( sf->pfminfo.typoascent_add )
 	    PListAddInteger(dictnode,"openTypeOS2TypoAscender",sf->ascent+sf->pfminfo.os2_typoascent);
