@@ -367,7 +367,7 @@ xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc, int has
     xmlNodePtr retval = NULL, dictnode = NULL, keynode = NULL, valnode = NULL;
     // retval = xmlNewNode(NULL, BAD_CAST "lib"); //     "<lib>"
     dictnode = xmlNewNode(NULL, BAD_CAST "dict"); //     "  <dict>"
-    if ( has_hints
+    if ( has_hints 
 #ifndef _NO_PYTHON
          || (python_persistent!=NULL && PyMapping_Check((PyObject *)python_persistent))
 #endif
@@ -851,7 +851,7 @@ xmlDocPtr PlistInit() {
     xmlDocPtr doc = NULL;
     xmlNodePtr root_node = NULL, dict_node = NULL;
     xmlDtdPtr dtd = NULL;
-
+    
     char buff[256];
     int i, j;
 
@@ -905,13 +905,6 @@ int count_occurrence(const char* big, const char* little) {
     return output;
 }
 
-static char* normalizeToASCII(char *str) {
-    if ( str!=NULL && !AllAscii(str))
-        return StripToASCII(str);
-    else
-        return str;
-}
-
 void PListAddString(xmlNodePtr parent, const char *key, const char *value) {
     if ( value==NULL ) value = "";
     xmlNodePtr keynode = xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key); // "<key>%s</key>" key
@@ -959,8 +952,6 @@ static void PListAddNameString(xmlNodePtr parent, const char *key, const SplineF
     }
     if ( value==NULL && strid==ttf_version && sf->version!=NULL )
 	value = freeme = strconcat("Version ",sf->version);
-    if ( value==NULL && strid==ttf_copyright && sf->copyright!=NULL )
-	value = sf->copyright;
     if ( value==NULL )
 	value=nonenglish;
     if ( value!=NULL ) {
@@ -1096,7 +1087,7 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
       if (versionMajor >= 0) PListAddInteger(dictnode,"versionMajor", versionMajor);
       if (versionMinor >= 0) PListAddInteger(dictnode,"versionMinor", versionMinor);
     }
-    PListAddNameString(dictnode,"copyright",sf,ttf_copyright);
+    PListAddString(dictnode,"copyright",sf->copyright);
     PListAddNameString(dictnode,"trademark",sf,ttf_trademark);
     PListAddInteger(dictnode,"unitsPerEm",sf->ascent+sf->descent);
 // We decided that it would be more helpful to round-trip the U. F. O. data.
@@ -1934,7 +1925,7 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
 #ifdef FF_UTHASH_GLIF_NAMES
     glif_name_hash_destroy(glif_name_hash); // Close the hash table.
 #endif
-
+    
     if (all_layers) {
 #ifdef FF_UTHASH_GLIF_NAMES
       struct glif_name_index _layer_name_hash;
@@ -2198,7 +2189,7 @@ return( Py_BuildValue("d",val));
 	free(contents);
 return( ret );
       }
-
+      
       free( contents );
     }
     if (has_lists) {
@@ -2336,7 +2327,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
     } else if ( name==NULL )
 		name = copy("nameless");
 	// We assign a placeholder name if no name exists.
-	// We create a new SplineChar
+	// We create a new SplineChar 
 	if (existingglyph != NULL) {
 		sc = existingglyph;
 		free(name); name = NULL;
@@ -3737,9 +3728,7 @@ return( NULL );
 		else free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "copyright")==0 ) {
-		UFOAddName(sf,(char *) valname,ttf_copyright);
-        /* sf->copyright hosts the old ASCII-only PS attribute */
-        if (sf->copyright == NULL) sf->copyright = normalizeToASCII((char *) valname);
+		if (sf->copyright == NULL) sf->copyright = (char *) valname;
 		else free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "trademark")==0 )
