@@ -905,6 +905,13 @@ int count_occurrence(const char* big, const char* little) {
     return output;
 }
 
+static char* normalizeToASCII(char *str) {
+    if ( str!=NULL && !AllAscii(str))
+        return StripToASCII(str);
+    else
+        return str;
+}
+
 void PListAddString(xmlNodePtr parent, const char *key, const char *value) {
     if ( value==NULL ) value = "";
     xmlNodePtr keynode = xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key); // "<key>%s</key>" key
@@ -952,6 +959,8 @@ static void PListAddNameString(xmlNodePtr parent, const char *key, const SplineF
     }
     if ( value==NULL && strid==ttf_version && sf->version!=NULL )
 	value = freeme = strconcat("Version ",sf->version);
+    if ( value==NULL && strid==ttf_copyright && sf->copyright!=NULL )
+	value = sf->copyright;
     if ( value==NULL )
 	value=nonenglish;
     if ( value!=NULL ) {
@@ -1087,7 +1096,7 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
       if (versionMajor >= 0) PListAddInteger(dictnode,"versionMajor", versionMajor);
       if (versionMinor >= 0) PListAddInteger(dictnode,"versionMinor", versionMinor);
     }
-    PListAddString(dictnode,"copyright",sf->copyright);
+    PListAddNameString(dictnode,"copyright",sf,ttf_copyright);
     PListAddNameString(dictnode,"trademark",sf,ttf_trademark);
     PListAddInteger(dictnode,"unitsPerEm",sf->ascent+sf->descent);
 // We decided that it would be more helpful to round-trip the U. F. O. data.
@@ -3728,7 +3737,9 @@ return( NULL );
 		else free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "copyright")==0 ) {
-		if (sf->copyright == NULL) sf->copyright = (char *) valname;
+		UFOAddName(sf,(char *) valname,ttf_copyright);
+        /* sf->copyright hosts the old ASCII-only PS attribute */
+        if (sf->copyright == NULL) sf->copyright = normalizeToASCII((char *) valname);
 		else free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "trademark")==0 )
