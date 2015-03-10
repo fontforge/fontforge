@@ -1739,8 +1739,6 @@ struct pfminfo {		/* A misnomer now. OS/2 info would be more accurate, but that'
     int16 os2_family_class;
     uint32 codepages[2];
     uint32 unicoderanges[4];
-    char *os2_family_name;
-    char *os2_style_name;
 };
 
 struct ttf_table {

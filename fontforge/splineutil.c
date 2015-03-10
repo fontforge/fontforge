@@ -6447,10 +6447,6 @@ return;
         oldsf->orders = NULL;
       }
     }
-    // Free the special names.
-    if (sf->pfminfo.os2_family_name) { free(sf->pfminfo.os2_family_name); sf->pfminfo.os2_family_name = NULL; }
-    if (sf->pfminfo.os2_style_name) { free(sf->pfminfo.os2_style_name); sf->pfminfo.os2_style_name = NULL; }
-    // Free the bitmaps.
     for ( bdf = sf->bitmaps; bdf!=NULL; bdf = bnext ) {
 	bnext = bdf->next;
 	BDFFontFree(bdf);

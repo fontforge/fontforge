@@ -1086,8 +1086,6 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 /* Same keys in both formats */
     PListAddString(dictnode,"familyName",sf->familyname_with_timestamp ? sf->familyname_with_timestamp : sf->familyname);
     PListAddString(dictnode,"styleName",SFGetModifiers(sf));
-    if (sf->pfminfo.os2_family_name != NULL) PListAddString(dictnode,"styleMapFamilyName", sf->pfminfo.os2_family_name);
-    if (sf->pfminfo.os2_style_name != NULL) PListAddString(dictnode,"styleMapStyleName", sf->pfminfo.os2_style_name);
     {
       // We attempt to get numeric major and minor versions for U. F. O. out of the FontForge version string.
       int versionMajor = -1;
@@ -3713,14 +3711,6 @@ return( NULL );
 		if (stylename == NULL) stylename = (char *) valname;
 		else free(valname);
 	    }
-	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleMapFamilyName")==0 ) {
-		if (sf->pfminfo.os2_family_name == NULL) sf->pfminfo.os2_family_name = (char *) valname;
-		else free(valname);
-	    }
-	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleMapStyleName")==0 ) {
-		if (sf->pfminfo.os2_style_name == NULL) sf->pfminfo.os2_style_name = (char *) valname;
-		else free(valname);
-	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "fullName")==0 ||
 		    xmlStrcmp(keyname,(xmlChar *) "postscriptFullName")==0 ) {
 		if (sf->fullname == NULL) sf->fullname = (char *) valname;
@@ -3975,10 +3965,8 @@ return( NULL );
 	else
 	    sf->fullname = copy(sf->fontname);
     }
-    if ( sf->familyname==NULL ) {
-	if (sf->pfminfo.os2_family_name != NULL) sf->familyname=copy(sf->pfminfo.os2_family_name);
-	else sf->familyname = copy(sf->fontname);
-    }
+    if ( sf->familyname==NULL )
+	sf->familyname = copy(sf->fontname);
     free(stylename); stylename = NULL;
     if ( sf->weight==NULL )
 	sf->weight = copy("Regular");
