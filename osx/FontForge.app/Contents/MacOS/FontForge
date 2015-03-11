@@ -116,6 +116,9 @@ export LD_LIBRARY_PATH="$bundle_lib"
 /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f FontForge.app
 $scriptdir/fcprogress.pl >|/tmp/zz 2>&1
 
+# This ensures that File Open and File Save (etc) dialogs open in Home
+cd ~/ || true
+
 export PATH="$PATH:$bundle_bin"
 echo $WRAPPER $bundle_bin/fontforge -new "$@" > /tmp/oo
 $WRAPPER $bundle_bin/fontforge -new "$@" &
