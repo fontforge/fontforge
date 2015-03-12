@@ -13,7 +13,7 @@ my $forcecache = "";
 if ( ! -d "/Applications/FontForge.app/Contents/Resources/opt/local/var/cache/fontconfig" ) {
     $forcecache = "-f";
 } 
-my $fcproc = IO::File->new("$dirname/fc/fc-cache $forcecache  -v|");
+my $fcproc = IO::File->new("$dirname/fc/fc-cache $forcecache  -v /Applications/FontForge.app/Contents/Resources/opt/local/share/fontforge/pixmaps |");
 
 my $bodypreamble = "This setup is only run once...";
 my $args = '--title "FontForge is scanning for fonts" --text "This setup is only run once..."';
