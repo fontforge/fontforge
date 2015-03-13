@@ -26,18 +26,12 @@
 
 include $(top_srcdir)/mk/layout.am
 
-SUBDIRS = webinterface
-
-FFBP_FILES = localhost-8000.webloc
-FFAPP_FILES = minidump_stackwalk
-EXTRA_DIST = $(FFBP_FILES) $(FFAPP_FILES)
+WEBINTERFACE_FILES = index.html test.png
+EXTRA_DIST = $(WEBINTERFACE_FILES)
 
 if PLATFORM_OSX
-   ffbpdir = $(pkgdatadir)/osx/FontForge.app/Contents/Resources/breakpad
-   ffbp_DATA = $(FFBP_FILES)
-
-   ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/Resources/breakpad
-   ffapp_SCRIPTS = $(FFAPP_FILES)
+   webinterfacedir = $(pkgdatadir)/osx/FontForge.app/Contents/Resources/breakpad/webinterface
+   webinterface_DATA = $(WEBINTERFACE_FILES)
 endif
 
 -include $(top_srcdir)/git.mk

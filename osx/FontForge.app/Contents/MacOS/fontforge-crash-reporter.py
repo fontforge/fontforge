@@ -8,6 +8,8 @@ import subprocess
 import json
 import urllib
 import re
+import sys
+import time, threading
 
 PORT = 8000 # this must match up to the port used by the following files:
             # osx/FontForge.app/Contents/Resources/breakpad/localhost-8000.webloc
@@ -17,26 +19,84 @@ cmd_minidump_stackwalk = FFBP_DIR + "/minidump_stackwalk"
 symbolPath             = FFBP_DIR + "/symbols/x86_64/"
 dumpFilePath = "/tmp/fontforge.dmp"
 
+
+def getNumberOfRunningFontForges():
+    stdout = subprocess.check_output(['ps', '-eo' ,'pid,args'])
+    count = 0
+    for line in stdout.splitlines():
+        pid, cmdline = line.split(' ', 1)
+        if cmdline.startswith('/Applications/FontForge.app/Contents/Resources/opt/local/bin/fontforge'):
+            count += 1
+    return(count)
+
+
+#
+# if there is no fontforge process around for 
+# 2 minutes then we should probably call it a day too
+#
+shouldWeDiePreviousCount = 1    
+def shouldWeDie():
+    global shouldWeDiePreviousCount
+    print(time.ctime())
+    count = getNumberOfRunningFontForges()
+    print(count) 
+    if shouldWeDiePreviousCount==0 and count==0:
+        sys.exit()
+    shouldWeDiePreviousCount = count
+    threading.Timer(60, shouldWeDie).start()
+
 class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+
+    def fileToString(self, filename):
+        ret = ""
+        with open( filename, 'r') as f:
+            ret = f.read()
+        f.closed
+        return ret
+        
 
     def do_GET(self):
         logging.error(self.headers)
+
+
+        # allow css, js, and png files to get out to make the web interface
+        # more appealing.
+        logging.error(self.path)
+	if re.match( '^/[-a-zA-Z. _]+$', self.path ) is not None:
+             ct = "image/png"
+             if self.path.endswith(".css"):
+                 ct = "text/css"
+             if self.path.endswith(".js"):
+                 ct = "text/javascript"
+	     self.send_response(200)
+             self.send_header('Content-type', ct)
+             self.end_headers()
+             data = self.fileToString( FFBP_DIR + "/webinterface/" + self.path )
+             self.wfile.write( data )
+             return
+
+        #
+        # those nasty hackers might be trying to trick us 
+        #
+        if self.path != "/":
+	     self.send_response(200)
+             self.send_header('Content-type','text/html')
+             self.end_headers()
+             self.wfile.write("nice try")
+             return
+            
+        #
+        # OK, just the base index.html file then, load and merge.
+        #
 	self.send_response(200)
         self.send_header('Content-type','text/html')
         self.end_headers()
+        bt   = self.fileToString( "/tmp/fontforge.dmp.backtrace.4" )
+        data = self.fileToString( FFBP_DIR + "/webinterface/index.html" )
+        data = re.sub( '{{report}}', bt, data )
+        data = re.sub( '{{title}}',  'FontForge%20Breakpad%20Report', data )
+        self.wfile.write( data )
 
-        bt = ""
-        with open( "/tmp/fontforge.dmp.backtrace.4", 'r') as f:
-            bt = f.read()
-        f.closed
-
-        self.wfile.write("<html><body>")
-        self.wfile.write("<p>Please report this crash so we can try to stop it happening for everybody.")
-        self.wfile.write("<p>If you are a github user, clicking the below link will let you easily submit the backtrace to github and then you can keep an eye on the issue in case the developers need some more information to fix it.<br/>")
-        self.wfile.write('<p>Report with <a href="https://github.com/fontforge/fontforge/issues/new?title=FontForge%20Breakpad%20Report&body=' + bt + '">github</a>')
-
-        self.wfile.write("</body></html>")
-        #SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
     # This gets the raw minidump from the osx crash reporter
     # we then create a backtrace using the local breakpad symbols
@@ -111,7 +171,7 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         fin.close
 
         #
-        # Open a browser at ourselves
+        # Open a browser at ourselves to activate the above GET method
         # 
         subprocess.call(["open", FFBP_DIR + "/localhost-8000.webloc" ])
 
@@ -124,6 +184,7 @@ Handler = ServerHandler
 
 httpd = SocketServer.TCPServer(("127.0.0.1", PORT), Handler)
 
+shouldWeDie()
 print "serving at port", PORT
 httpd.serve_forever()
 
