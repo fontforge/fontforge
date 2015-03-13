@@ -471,7 +471,7 @@ cp -av /opt/local/share/X11/locale $bundle_share/X11
 #####
 #
 #
-FFBUILDBASE=/opt/local/var/macports/build/_Users_ben_Work_FontForge_2012_mac-build_categories_fontforge/fontforge/work/fontforge-2.0.0_beta1
+FFBUILDBASE=/opt/local/var/macports/build/_usr_local_src_github-fontforge_fontforge_osx/fontforge/work/fontforge-2.0.0_beta1
 DEBUGOBJBASE=$TEMPDIR/FontForge.app/Contents/Resources/opt/local/var/
 for if in fontforgeexe fontforge gdraw gutils; do
     cd $FFBUILDBASE/$if/.libs 
@@ -481,8 +481,8 @@ done
 cd $bundle_lib
 
 # byte string length compatible
-OLDBASE="/opt/local/var/macports/build/_Users_ben_Work_FontForge_2012_mac-build_categories_fontforge/fontforge/work/fontforge-2.0.0_beta1"
-NEWBASE="/Applications/FontForge.app/Contents/Resources/opt/local/var////////////////////////////////////////////////////////////////////"
+OLDBASE="/opt/local/var/macports/build/_usr_local_src_github-fontforge_fontforge_osx/fontforge/work/fontforge-2.0.0_beta1"
+NEWBASE="/Applications/FontForge.app/Contents/Resources/opt/local/var////////////////////////////////////////////////////"
 echo "changing the location of the object files used for debug (fontforgeexe)"
 for ifpath in $FFBUILDBASE/fontforgeexe/.libs/*.o; do
     if=$(basename "$ifpath");
