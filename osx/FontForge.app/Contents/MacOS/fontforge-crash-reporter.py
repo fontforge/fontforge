@@ -20,6 +20,9 @@ symbolPath             = FFBP_DIR + "/symbols/x86_64/"
 dumpFilePath = "/tmp/fontforge.dmp"
 
 
+# let the timeout handler close the httpd server
+httpd = None
+
 def getNumberOfRunningFontForges():
     stdout = subprocess.check_output(['ps', '-eo' ,'pid,args'])
     count = 0
@@ -37,13 +40,16 @@ def getNumberOfRunningFontForges():
 shouldWeDiePreviousCount = 1    
 def shouldWeDie():
     global shouldWeDiePreviousCount
+    global httpd
     print(time.ctime())
     count = getNumberOfRunningFontForges()
     print(count) 
     if shouldWeDiePreviousCount==0 and count==0:
+        if httpd is not None:
+            httpd.shutdown()
         sys.exit()
     shouldWeDiePreviousCount = count
-    threading.Timer(60, shouldWeDie).start()
+    threading.Timer(5, shouldWeDie).start()
 
 class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
@@ -184,7 +190,7 @@ Handler = ServerHandler
 
 httpd = SocketServer.TCPServer(("127.0.0.1", PORT), Handler)
 
-shouldWeDie()
+threading.Timer(5, shouldWeDie).start()
 print "serving at port", PORT
 httpd.serve_forever()
 
