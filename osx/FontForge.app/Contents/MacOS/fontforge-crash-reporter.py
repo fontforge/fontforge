@@ -49,7 +49,7 @@ def shouldWeDie():
             httpd.shutdown()
         sys.exit()
     shouldWeDiePreviousCount = count
-    threading.Timer(5, shouldWeDie).start()
+    threading.Timer(60, shouldWeDie).start()
 
 class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
@@ -190,7 +190,7 @@ Handler = ServerHandler
 
 httpd = SocketServer.TCPServer(("127.0.0.1", PORT), Handler)
 
-threading.Timer(5, shouldWeDie).start()
+threading.Timer(60, shouldWeDie).start()
 print "serving at port", PORT
 httpd.serve_forever()
 
