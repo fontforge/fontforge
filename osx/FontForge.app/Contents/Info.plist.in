@@ -7,11 +7,23 @@
         <key>BreakpadVendor</key>
         <string>The FontForge Developers</string>
         <key>BreakpadURL</key>
-        <string>http://fontforge.default.fontforge.uk0.bigv.io:3000/breakpad</string>
+        <string>http://localhost:8000</string>
         <key>BreakpadVersion</key>
         <string>@FONTFORGE_GIT_VERSION@ - @FONTFORGE_MODTIME_STR@</string>
         <key>BreakpadReportInterval</key>
         <string>0</string>
+	<key>BreakpadSkipConfirm</key>
+        <string>YES</string>
+
+        <!-- these look *really* handy, but do not allow user input on the
+             text boxes on osx -->
+<!--
+        <key>BreakpadRequestComments</key>
+        <string>YES</string>
+        <key>BreakpadRequestEmail</key>
+        <string>YES</string>
+-->
+
         <key>BreakpadServerParameters</key>
         <dict>
             <key>FontForgeGitHash</key>
