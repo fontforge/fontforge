@@ -68,7 +68,11 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         # allow css, js, and png files to get out to make the web interface
         # more appealing.
         logging.error(self.path)
-	if re.match( '^/[-a-zA-Z. _]+$', self.path ) is not None:
+
+        if( self.path == "/support/bootstrap.min.css"
+        or self.path == "/support/bootstrap.min.js"
+        or self.path == "/support/jquery-2.1.3.min.js"
+        or re.match( '^/[-a-zA-Z. _]+$', self.path ) is not None ):
              ct = "image/png"
              if self.path.endswith(".css"):
                  ct = "text/css"
@@ -87,6 +91,7 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         # those nasty hackers might be trying to trick us 
         #
         if self.path != "/":
+             logging.error("HACK ATTEMPT FOR URL: " + self.path)
 	     self.send_response(200)
              self.send_header('Content-type','text/html')
              self.end_headers()
@@ -103,8 +108,8 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         data = self.fileToString( FFBP_DIR + "/webinterface/index.html" )
         data = re.sub( '{{report}}', bt, data )
         data = re.sub( '{{report_raw}}', self.fileToString( "/tmp/fontforge.dmp.backtrace" ), data )
-        data = re.sub( '{{title}}',  'FontForge%20Breakpad%20Report', data )
-        data = re.sub( '{{title_raw}}',  'FontForge Breakpad Report', data )
+        data = re.sub( '{{title}}',  'FontForge%20Breakpad%20Crash%20Report', data )
+        data = re.sub( '{{title_raw}}',  'FontForge Breakpad Crash Report', data )
         self.wfile.write( data )
 
 
@@ -194,7 +199,7 @@ Handler = ServerHandler
 
 httpd = SocketServer.TCPServer(("127.0.0.1", PORT), Handler)
 
-threading.Timer(60, shouldWeDie).start()
+##threading.Timer(60, shouldWeDie).start()
 print "serving at port", PORT
 httpd.serve_forever()
 
