@@ -72,6 +72,8 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
              ct = "image/png"
              if self.path.endswith(".css"):
                  ct = "text/css"
+             if self.path.endswith("svg"):
+                 ct = "image/svg+xml"
              if self.path.endswith(".js"):
                  ct = "text/javascript"
 	     self.send_response(200)
