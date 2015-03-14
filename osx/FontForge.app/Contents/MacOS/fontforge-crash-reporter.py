@@ -199,7 +199,7 @@ Handler = ServerHandler
 
 httpd = SocketServer.TCPServer(("127.0.0.1", PORT), Handler)
 
-##threading.Timer(60, shouldWeDie).start()
+threading.Timer(60, shouldWeDie).start()
 print "serving at port", PORT
 httpd.serve_forever()
 
