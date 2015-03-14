@@ -2,6 +2,56 @@
      of normal a-z, the dot, and numbers, and some other characters. Simpler is safer.
 -->
 <html>
+  <head>
+    <script type="text/javascript">
+      function sendgist() {
+         console.log('ok');
+
+         var report = `
+ {{report_raw}}
+`;
+         var data = {
+   	   "description": "{{title_raw}}",
+	   "public": true,
+	   "files": {
+	     "file1.txt": {
+	        "content": report
+	     }
+           }
+	 };	 
+
+         console.log("ok 1");
+	 var xhr = new XMLHttpRequest();
+	 xhr.onreadystatechange = function()
+	 {
+            console.log("onreadystatechange()  r:" + xhr.readyState );
+            console.log("onreadystatechange() st:" + xhr.status );
+	    if (xhr.readyState==4 && (xhr.status==201 || xhr.status==200))
+   	    {
+	        console.log(xhr.responseText);
+		var j = JSON.parse( xhr.responseText );
+		var earl = j["html_url"];
+		console.log( "going to: " + earl );
+		window.location.replace( earl );
+	    }
+	 };
+	 xhr.onloadend = function () {
+	    // done
+            console.log('done');
+	 };
+	 xhr.open( "POST", "https://api.github.com/gists", true);
+	 xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+
+         console.log(JSON.stringify(data));
+	 // send the collected data as JSON
+	 xhr.send(JSON.stringify(data));
+	 
+
+
+
+      }
+    </script>
+  </head>
   <body>
 
   <p>
@@ -17,6 +67,7 @@
 
 <br/>
 <br/>
+      Report without any login using <a href="javascript:sendgist()">gist</a>.
 <br/>
 <br/>
 

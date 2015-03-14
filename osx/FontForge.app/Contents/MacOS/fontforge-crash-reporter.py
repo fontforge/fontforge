@@ -102,7 +102,9 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         bt   = self.fileToString( "/tmp/fontforge.dmp.backtrace.4" )
         data = self.fileToString( FFBP_DIR + "/webinterface/index.html" )
         data = re.sub( '{{report}}', bt, data )
+        data = re.sub( '{{report_raw}}', self.fileToString( "/tmp/fontforge.dmp.backtrace" ), data )
         data = re.sub( '{{title}}',  'FontForge%20Breakpad%20Report', data )
+        data = re.sub( '{{title_raw}}',  'FontForge Breakpad Report', data )
         self.wfile.write( data )
 
 
