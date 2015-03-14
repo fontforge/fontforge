@@ -26,7 +26,7 @@
 
 include $(top_srcdir)/mk/layout.am
 
-WEBINTERFACE_FILES = index.html test.png
+WEBINTERFACE_FILES = index.html fontforge.svg
 EXTRA_DIST = $(WEBINTERFACE_FILES)
 
 if PLATFORM_OSX
