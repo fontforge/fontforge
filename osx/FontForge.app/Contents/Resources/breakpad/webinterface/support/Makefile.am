@@ -30,7 +30,7 @@ SUPPORT_FILES = bootstrap.min.css bootstrap.min.js jquery-2.1.3.min.js
 EXTRA_DIST = $(SUPPORT_FILES)
 
 if PLATFORM_OSX
-   supportdir = $(pkgdatadir)/osx/FontForge.app/Contents/Resources/breakpad/support/support
+   supportdir = $(pkgdatadir)/osx/FontForge.app/Contents/Resources/breakpad/webinterface/support
    support_DATA = $(SUPPORT_FILES)
 endif
 
