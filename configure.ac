@@ -718,6 +718,7 @@ osx/FontForge.app/Contents/Resources/opt/local/etc/Makefile
 osx/FontForge.app/Contents/Resources/opt/local/etc/fonts/Makefile
 osx/FontForge.app/Contents/Resources/breakpad/Makefile
 osx/FontForge.app/Contents/Resources/breakpad/webinterface/Makefile
+osx/FontForge.app/Contents/Resources/breakpad/webinterface/support/Makefile
 osx/FontForge.app/Contents/MacOS/Makefile
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Makefile
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Makefile

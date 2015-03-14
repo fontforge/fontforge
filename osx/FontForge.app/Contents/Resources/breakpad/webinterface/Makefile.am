@@ -26,6 +26,8 @@
 
 include $(top_srcdir)/mk/layout.am
 
+SUBDIRS = support
+
 WEBINTERFACE_FILES = index.html fontforge.svg
 EXTRA_DIST = $(WEBINTERFACE_FILES)
 
