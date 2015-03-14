@@ -6467,6 +6467,7 @@ return;
     free(sf->xuid);
     free(sf->cidregistry);
     free(sf->ordering);
+    if ( sf->styleMapFamilyName && sf->styleMapFamilyName[0]!='\0' ) { free(sf->styleMapFamilyName); sf->styleMapFamilyName = NULL; }
     MacFeatListFree(sf->features);
     /* We don't free the EncMap. That field is only a temporary pointer. Let the FontViewBase free it, that's where it really lives */
     // TODO: But that doesn't always get freed. The statement below causes double-frees, so we need to come up with better conditions.

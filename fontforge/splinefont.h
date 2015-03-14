@@ -1725,6 +1725,10 @@ struct pfminfo {		/* A misnomer now. OS/2 info would be more accurate, but that'
     int16 weight;
     int16 width;
     char panose[10];
+    /* A subset of OS/2 fsSelection, used for style mapping. */
+    /* Must agree with macStyle per otspec, takes precedence. */
+    /* Can't use macStyle because it doesn't have a "regular" bit unlike the OS/2 component. */
+    int16 stylemap;
     int16 fstype;
     int16 linegap;		/* from hhea */
     int16 vlinegap;		/* from vhea */
@@ -1930,7 +1934,7 @@ typedef struct splinefont {
     char *woffMetadata;
     real ufo_ascent, ufo_descent;	/* I don't know what these mean, they don't seem to correspond to any other ascent/descent pair, but retain them so round-trip ufo input/output leaves them unchanged */
 	    /* ufo_descent is negative */
-
+    char *styleMapFamilyName;
     struct sfundoes *undoes;
     char collab_uuid[ FF_UUID_STRING_SIZE ];
     int preferred_kerning; // 1 for U. F. O. native, 2 for feature file, 0 undefined. Input functions shall flag 2, I think. This is now in S. F. D. in order to round-trip U. F. O. consistently.

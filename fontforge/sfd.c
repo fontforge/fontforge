@@ -2217,6 +2217,8 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 
     if ( sf->version!=NULL )
 	fprintf(sfd, "Version: %s\n", sf->version );
+    if ( sf->styleMapFamilyName!=NULL )
+	fprintf(sfd, "StyleMapFamilyName: %s\n", sf->styleMapFamilyName );
     if ( sf->fondname!=NULL )
 	fprintf(sfd, "FONDName: %s\n", sf->fondname );
     if ( sf->defbasefilename!=NULL )
@@ -2274,6 +2276,8 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	SFDDumpBase(sfd,"BaseHoriz:",sf->horiz_base);
     if ( sf->vert_base!=NULL )
 	SFDDumpBase(sfd,"BaseVert:",sf->vert_base);
+    if ( sf->pfminfo.stylemap!=-1 )
+	fprintf(sfd, "StyleMap: 0x%04x\n", sf->pfminfo.stylemap );
     if ( sf->pfminfo.fstype!=-1 )
 	fprintf(sfd, "FSType: %d\n", sf->pfminfo.fstype );
     fprintf(sfd, "OS2Version: %d\n", sf->os2_version );
@@ -2320,7 +2324,9 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	fprintf(sfd, "OS2StrikeYSize: %d\n", sf->pfminfo.os2_strikeysize );
 	fprintf(sfd, "OS2StrikeYPos: %d\n", sf->pfminfo.os2_strikeypos );
     }
+    if ( sf->pfminfo.os2_capheight!=0 )
     fprintf(sfd, "OS2CapHeight: %d\n", sf->pfminfo.os2_capheight );
+    if ( sf->pfminfo.os2_xheight!=0 )
     fprintf(sfd, "OS2XHeight: %d\n", sf->pfminfo.os2_xheight );
     if ( sf->pfminfo.os2_family_class!=0 )
 	fprintf(sfd, "OS2FamilyClass: %d\n", sf->pfminfo.os2_family_class );
@@ -7492,6 +7498,16 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	geteol(sfd,val);
 	sf->version = copy(val);
     }
+    else if ( strmatch(tok,"StyleMapFamilyName:")==0 )
+    {
+    sf->styleMapFamilyName = SFDReadUTF7Str(sfd);
+    }
+    /* Legacy attribute for StyleMapFamilyName. Deprecated. */
+    else if ( strmatch(tok,"OS2FamilyName:")==0 )
+    {
+    char* fname = SFDReadUTF7Str(sfd);
+    if (sf->styleMapFamilyName == NULL) sf->styleMapFamilyName = fname;
+    }
     else if ( strmatch(tok,"FONDName:")==0 )
     {
 	geteol(sfd,val);
@@ -7880,6 +7896,21 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	else
 	    d->last_base->scripts = bs;
 	d->last_base_script = bs;
+    }
+    else if ( strmatch(tok,"StyleMap:")==0 )
+    {
+    gethex(sfd,(uint32 *)&sf->pfminfo.stylemap);
+    }
+    /* Legacy attribute for StyleMap. Deprecated. */
+    else if ( strmatch(tok,"OS2StyleName:")==0 )
+    {
+    char* sname = SFDReadUTF7Str(sfd);
+    if (sf->pfminfo.stylemap == -1) {
+        if (sname == "bold italic") sf->pfminfo.stylemap = 0x21;
+        else if (sname == "bold") sf->pfminfo.stylemap = 0x20;
+        else if (sname == "italic") sf->pfminfo.stylemap = 0x01;
+        else if (sname == "regular") sf->pfminfo.stylemap = 0x40;
+    }
     }
     else if ( strmatch(tok,"FSType:")==0 )
     {

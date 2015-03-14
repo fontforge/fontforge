@@ -3316,6 +3316,8 @@ static void WinBB(SplineFont *sf,uint16 *winascent,uint16 *windescent,struct all
 	*windescent  = sf->pfminfo.os2_windescent;
 }
 
+static void redohead(struct alltabs *at);
+
 static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
 	enum fontformat format) {
     int i,cnt1,cnt2,first,last,avg1,avg2,gid;
@@ -3353,11 +3355,20 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
     os2->ysupYOff = sf->pfminfo.os2_supyoff;
     os2->yStrikeoutSize = sf->pfminfo.os2_strikeysize;
     os2->yStrikeoutPos = sf->pfminfo.os2_strikeypos;
-    os2->fsSel = (at->head.macstyle&1?32:0)|(at->head.macstyle&2?1:0);
+    if ( sf->pfminfo.stylemap!=-1 ) {
+        int changed = 0;
+        os2->fsSel = sf->pfminfo.stylemap;
+        /* Make sure fsSel and macStyle don't contradict */
+        if (at->head.macstyle&1 && !(os2->fsSel&32)) {at->head.macstyle &= 1111110; changed=1;}
+        if (at->head.macstyle&2 && !(os2->fsSel&1)) {at->head.macstyle &= 1111101; changed=1;}
+        if (changed) redohead(at);
+    } else {
+        os2->fsSel = (at->head.macstyle&1?32:0)|(at->head.macstyle&2?1:0);
+        if ( os2->fsSel==0 && sf->pfminfo.weight==400 )
+	        os2->fsSel = 64;		/* Regular */
+    }
     if ( sf->fullname!=NULL && strstrmatch(sf->fullname,"outline")!=NULL )
 	os2->fsSel |= 8;
-    if ( os2->fsSel==0 && sf->pfminfo.weight>=400 && sf->pfminfo.weight<=500 )
-	os2->fsSel = 64;		/* Regular */
     if ( os2->version>=4 ) {
 	if ( strstrmatch(sf->fontname,"Obli")!=NULL ) {
 	    os2->fsSel &= ~1;		/* Turn off Italic */
