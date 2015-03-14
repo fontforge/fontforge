@@ -8,12 +8,22 @@
 
   <head>
     <script type="text/javascript">
+
+      //
+      // This function just redirects the browser to the
+      // URL for the GIST
+      // 
       function uploadBackTraceToGist_onUpload_redirect( j ) {
           var earl = j["html_url"];
           console.log( "going to: " + earl );
           window.location.replace( earl );
       }
 
+      // 
+      // Because GIST is used by many submit buttons it is abstracted
+      // pass in a callback which will be executed after the GIST upload
+      // so you can embed a link back to the GIST in a different report.
+      // 
       function uploadBackTraceToGist( callback ) {
          console.log('ok');
 	 var bugdesc = $('#bugdesc').val();
@@ -58,10 +68,18 @@
 	 xhr.send(JSON.stringify(data));
       }
 
+      //
+      // Sent to GIST and redirect there.
+      // top level function for the HTML to call
+      // 
       function sendgist() {
          uploadBackTraceToGist( uploadBackTraceToGist_onUpload_redirect );
       }
 
+      //
+      // When we have a GIST upload, create a new github issue 
+      // which links to the backtrace on GIST
+      //
       function uploadBackTraceToGist_onUpload_createGithubIssue( j ) {
           var earl = j["html_url"];
           console.log( "gist earl: " + earl );
@@ -70,26 +88,23 @@
           var report = bugdesc 
 	    + "%0A--------------------------------------------------------------------------------%0A" 
 	    + "Backtrace available at " + earl;
+
+         // Note that 'bt' has the 4kb clean top of backtrace if we want
 //	    + bt;
+
           console.log( report );
           var earl = "https://github.com/fontforge/fontforge/issues/new?title={{title}}&body=" 
                   + report;
           window.location.replace( earl );
       }
 
+      //
+      // Sent the backtrace to GIST and create a new github issue linking
+      // to that backtrace...
+      // top level function for the HTML to call
+      // 
       function sendgithub() {
          uploadBackTraceToGist( uploadBackTraceToGist_onUpload_createGithubIssue );
-if( 0 ) {
-         var bt = $('#report').val();
-	 var bugdesc = $('#bugdesc').val();
-         var report = bugdesc 
-	    + "%0A--------------------------------------------------------------------------------%0A" 
-	    + bt;
-console.log( report );
-         var earl = "https://github.com/fontforge/fontforge/issues/new?title={{title}}&body=" 
-                  + report;
-         window.location.replace( earl );
-}
       }
     </script>
   </head>
@@ -114,12 +129,8 @@ console.log( report );
         the problem.</p>
         <label for="bugdesc" class="sr-only"></label>
 	<textarea id="bugdesc" class="form-control" rows="5" placeholder="please enter what happened before the crash..." autofocus></textarea>
-<!--        <input type="text" id="bugdesc" class="form-control" placeholder="please enter what happened before the crash..." autofocus> -->
-<!--        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button> -->
         <textarea id="report" hidden>{{report}}</textarea>
-
       </form>
-
     </div> <!-- jumbotron -->
 
     <div class="row">
@@ -137,7 +148,7 @@ console.log( report );
       </div>
     </div>
 
-  </div> <!-- /container -->
+  </div>
 
   </body>
 </html>
