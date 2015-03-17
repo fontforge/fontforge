@@ -1,4 +1,4 @@
-# Copyright (C) 2013 by Ben Martin
+# Copyright (C) 2015 by Ben Martin
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -26,15 +26,18 @@
 
 include $(top_srcdir)/mk/layout.am
 
-SUBDIRS = English.lproj opt breakpad
-FFAPP_FILES = buttonFF.icns fontforge_backup.icns fontforge_dfont.icns FontForge.icns \
-                fontforge_otf.icns fontforge_ps3.icns fontforge_ps.icns fontforge_sfd.icns \
-                fontforge_ttf.icns
-EXTRA_DIST = $(FFAPP_FILES)
+SUBDIRS = webinterface
+
+FFBP_FILES = localhost-8000.webloc
+FFAPP_FILES = minidump_stackwalk
+EXTRA_DIST = $(FFBP_FILES) $(FFAPP_FILES)
 
 if PLATFORM_OSX
-   ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/Resources
-   ffapp_DATA = $(FFAPP_FILES)
+   ffbpdir = $(pkgdatadir)/osx/FontForge.app/Contents/Resources/breakpad
+   ffbp_DATA = $(FFBP_FILES)
+
+   ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/Resources/breakpad
+   ffapp_SCRIPTS = $(FFAPP_FILES)
 endif
 
 -include $(top_srcdir)/git.mk
