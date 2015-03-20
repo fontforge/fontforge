@@ -56,6 +56,7 @@ GTextInfo emsizes[] = {
     GTEXTINFO_EMPTY
 };
 
+/* Note that we are storing integer data in a pointer field, hence the casts. They are not to be dereferenced. */
 GTextInfo interpretations[] = {
 /* GT: See the long comment at "Property|New" */
 /* GT: The msgstr should contain a translation of "None", ignore "Interpretation|" */
@@ -194,6 +195,15 @@ static GTextInfo ibmfamily[] = {
     { (unichar_t *) N_("Sy Old Style Serif"), NULL, 0, 0, (void *) 0xc06, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Sy Neo-grotesque Sans Serif"), NULL, 0, 0, (void *) 0xc07, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Sy Miscellaneous"), NULL, 0, 0, (void *) 0xc0f, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    GTEXTINFO_EMPTY
+};
+static GTextInfo stylemap[] = {
+    { (unichar_t *) N_("Automatic"), NULL, 0, 0, (void *) -1, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("None"), NULL, 0, 0, (void *) 0x00, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Regular"), NULL, 0, 0, (void *) 0x40, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Italic"), NULL, 0, 0, (void *) 0x01, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Bold"), NULL, 0, 0, (void *) 0x20, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Bold Italic"), NULL, 0, 0, (void *) 0x21, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     GTEXTINFO_EMPTY
 };
 static GTextInfo os2versions[] = {
@@ -1652,6 +1662,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_CapHeightLab		3035
 #define CID_XHeight		3036
 #define CID_XHeightLab		3037
+#define CID_StyleMap		3038
 
 #define CID_SubSuperDefault	3100
 #define CID_SubXSize		3101
@@ -4011,7 +4022,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int i,j, mcs;
 	int vmetrics, namechange, guideorder2;
 	int xuidchanged = false, usexuid, useuniqueid;
-	GTextInfo *pfmfam, *ibmfam, *fstype, *nlitem;
+	GTextInfo *pfmfam, *ibmfam, *fstype, *nlitem, *stylemap;
 	int32 len;
 	GTextInfo **ti;
 	int subs[4], super[4], strike[2];
@@ -4444,6 +4455,11 @@ return(true);
 		sf->pfminfo.os2_family_class = (intpt) (ibmfam->userdata);
 	    else
 		sf->pfminfo.os2_family_class = 0x00;
+        stylemap = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_StyleMap));
+        if ( stylemap!=NULL )
+        sf->pfminfo.stylemap = (intpt) (stylemap->userdata);
+        else
+        sf->pfminfo.stylemap = -1;
 	    memcpy(sf->pfminfo.os2_vendor,os2_vendor,sizeof(os2_vendor));
 	    fstype = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_FSType));
 	    if ( fstype!=NULL )
@@ -4861,7 +4877,6 @@ static void TTFSetup(struct gfi_data *d) {
     else
 	uc_strcpy(ubuf,"PfEd");
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_Vendor),ubuf);
-
 
     GGadgetSetChecked(GWidgetGetControl(d->gw,CID_PanDefault),!info.panose_set);
     _GFI_PanoseDefault(d);
@@ -7456,7 +7471,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     GWindowAttrs wattrs;
     GTabInfo aspects[26], vaspects[6], lkaspects[3];
     GGadgetCreateData mgcd[10], ngcd[19], psgcd[30], tngcd[8],
-	pgcd[12], vgcd[19], pangcd[23], comgcd[4], txgcd[23], floggcd[4],
+	pgcd[12], vgcd[21], pangcd[23], comgcd[4], txgcd[23], floggcd[4],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[7], metgcd[33], vagcd[3], ssgcd[23],
 	xugcd[8], dgcd[6], ugcd[6], gaspgcd[5], gaspgcd_def[2], lksubgcd[2][4],
 	lkgcd[2], lkbuttonsgcd[15], cgcd[12], lgcd[20], msgcd[7], ssngcd[8],
@@ -7468,7 +7483,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	    lkbox[7], cbox[6], lbox[8], msbox[3], ssboxes[4], woffbox[2];
     GGadgetCreateData *marray[7], *marray2[9], *narray[29], *narray2[7], *narray3[3],
 	*xuarray[20], *psarray[10], *psarray2[21], *psarray4[10],
-	*pparray[6], *vradio[5], *varray[38], *metarray[53],
+	*pparray[6], *vradio[5], *varray[41], *metarray[53],
 	*ssarray[58], *panarray[40], *comarray[3], *flogarray[3],
 	*mkarray[6], *msarray[6],
 	*txarray[5], *txarray2[30],
@@ -7481,7 +7496,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	*larray[16], *larray2[25], *larray3[6], *larray4[5], *uharray[4],
 	*ssvarray[4], *woffarray[16];
     GTextInfo mlabel[10], nlabel[18], pslabel[30], tnlabel[7],
-	plabel[12], vlabel[19], panlabel[22], comlabel[3], txlabel[23],
+	plabel[12], vlabel[21], panlabel[22], comlabel[3], txlabel[23],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[7], metlabel[32],
 	sslabel[23], xulabel[8], dlabel[5], ulabel[3], gasplabel[5],
 	lkbuttonslabel[14], clabel[11], floglabel[3], llabel[20], mslabel[7],
@@ -8433,16 +8448,6 @@ return;
     vgcd[13].gd.u.list = ibmfamily;
     vgcd[13].creator = GListButtonCreate;
 
-    vgcd[14].gd.pos.x = 10; vgcd[14].gd.pos.y = vgcd[13].gd.pos.y+24+6;
-    vlabel[14].text = (unichar_t *) _("Weight, Width, Slope Only");
-    vlabel[14].text_is_1byte = true;
-    vlabel[14].text_in_resource = true;
-    vgcd[14].gd.label = &vlabel[14];
-    vgcd[14].gd.cid = CID_WeightWidthSlopeOnly;
-    vgcd[14].gd.popup_msg = (unichar_t *) _("MS needs to know whether a font family's members differ\nonly in weight, width and slope (and not in other variables\nlike optical size)." );
-    vgcd[14].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    vgcd[14].creator = GCheckBoxCreate;
-
     vgcd[15].gd.pos.x = 10; vgcd[15].gd.pos.y = vgcd[11].gd.pos.y+24+6;
     vlabel[15].text = (unichar_t *) _("_OS/2 Version");
     vlabel[15].text_is_1byte = true;
@@ -8457,6 +8462,47 @@ return;
     vgcd[16].gd.cid = CID_OS2Version;
     vgcd[16].gd.u.list = os2versions;
     vgcd[16].creator = GListFieldCreate;
+    
+    vgcd[17].gd.pos.x = 10; vgcd[17].gd.pos.y = vgcd[13].gd.pos.y+26+6;
+    vlabel[17].text = (unichar_t *) _("Style Map:");
+    vlabel[17].text_is_1byte = true;
+    vlabel[17].text_in_resource = true;
+    vgcd[17].gd.label = &vlabel[17];
+    vgcd[17].gd.flags = gg_visible | gg_enabled;
+    vgcd[17].creator = GLabelCreate;
+
+    vgcd[18].gd.pos.x = 90; vgcd[18].gd.pos.y = vgcd[17].gd.pos.y-6; vgcd[13].gd.pos.width = vgcd[7].gd.pos.width;
+    vgcd[18].gd.flags = gg_visible | gg_enabled;
+    vgcd[18].gd.cid = CID_StyleMap;
+    vgcd[18].gd.u.list = stylemap;
+    vgcd[18].creator = GListButtonCreate;
+    stylemap[0].selected = stylemap[1].selected =
+	    stylemap[2].selected = stylemap[3].selected =
+        stylemap[4].selected = stylemap[5].selected = false;
+    if ( sf->pfminfo.stylemap == 0x00 )
+	i = 1;
+    else if ( sf->pfminfo.stylemap == 0x40 )
+	i = 2;
+    else if ( sf->pfminfo.stylemap == 0x01 )
+	i = 3;
+    else if ( sf->pfminfo.stylemap == 0x20 )
+	i = 4;
+    else if ( sf->pfminfo.stylemap == 0x21 )
+	i = 5;
+    else
+	i = 0;
+    stylemap[i].selected = true;
+    vgcd[7].gd.label = &stylemap[i];
+
+    vgcd[14].gd.pos.x = 10; vgcd[14].gd.pos.y = vgcd[18].gd.pos.y+24+6;
+    vlabel[14].text = (unichar_t *) _("Weight, Width, Slope Only");
+    vlabel[14].text_is_1byte = true;
+    vlabel[14].text_in_resource = true;
+    vgcd[14].gd.label = &vlabel[14];
+    vgcd[14].gd.cid = CID_WeightWidthSlopeOnly;
+    vgcd[14].gd.popup_msg = (unichar_t *) _("MS needs to know whether a font family's members differ\nonly in weight, width and slope (and not in other variables\nlike optical size)." );
+    vgcd[14].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    vgcd[14].creator = GCheckBoxCreate;
 
     vradio[0] = GCD_Glue; vradio[1] = &vgcd[8]; vradio[2] = &vgcd[9]; vradio[3] = GCD_Glue; vradio[4] = NULL;
 
@@ -8468,10 +8514,11 @@ return;
     varray[15] = &vbox[2]; varray[16] = GCD_ColSpan; varray[17] = NULL;
     varray[18] = &vgcd[10]; varray[19] = &vgcd[11]; varray[20] = NULL;
     varray[21] = &vgcd[12]; varray[22] = &vgcd[13]; varray[23] = NULL;
-    varray[24] = &vgcd[14]; varray[25] = GCD_ColSpan; varray[26] = NULL;
-    varray[27] = GCD_Glue; varray[28] = GCD_Glue; varray[29] = NULL;
+    varray[24] = &vgcd[17]; varray[25] = &vgcd[18]; varray[26] = NULL;
+    varray[27] = &vgcd[14]; varray[28] = GCD_ColSpan; varray[29] = NULL;
     varray[30] = GCD_Glue; varray[31] = GCD_Glue; varray[32] = NULL;
-    varray[33] = varray[37] = NULL;
+    varray[33] = GCD_Glue; varray[34] = GCD_Glue; varray[35] = NULL;
+    varray[36] = varray[40] = NULL;
 
     memset(vbox,0,sizeof(vbox));
     vbox[0].gd.flags = gg_enabled|gg_visible;

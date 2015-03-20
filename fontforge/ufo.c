@@ -912,6 +912,23 @@ static char* normalizeToASCII(char *str) {
         return str;
 }
 
+static char* fetchTTFAttribute(const SplineFont *sf, int strid) {
+    char* value=NULL, nonenglish=NULL;
+    struct ttflangname *nm;
+
+    for ( nm=sf->names; nm!=NULL; nm=nm->next ) {
+		if ( nm->names[strid]!=NULL ) {
+	    	nonenglish = nm->names[strid];
+	    	if ( nm->lang == 0x409 ) {
+				value = nm->names[strid];
+    			break;
+	    	}
+		}
+    }
+    if ( value==NULL ) value=nonenglish;
+    return value;
+}
+
 void PListAddString(xmlNodePtr parent, const char *key, const char *value) {
     if ( value==NULL ) value = "";
     xmlNodePtr keynode = xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key); // "<key>%s</key>" key
@@ -1086,8 +1103,38 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 /* Same keys in both formats */
     PListAddString(dictnode,"familyName",sf->familyname_with_timestamp ? sf->familyname_with_timestamp : sf->familyname);
     PListAddString(dictnode,"styleName",SFGetModifiers(sf));
-    if (sf->pfminfo.os2_family_name != NULL) PListAddString(dictnode,"styleMapFamilyName", sf->pfminfo.os2_family_name);
-    if (sf->pfminfo.os2_style_name != NULL) PListAddString(dictnode,"styleMapStyleName", sf->pfminfo.os2_style_name);
+    {
+        char* preferredFamilyName = fetchTTFAttribute(sf,ttf_preffamilyname);
+        char* preferredSubfamilyName = fetchTTFAttribute(sf,ttf_prefmodifiers);
+        char* styleMapFamily;
+        if (sf->styleMapFamilyName != NULL) {
+            /* Empty styleMapStyleName means we imported a UFO that does not have this field. Bypass the fallback. */
+            if (sf->styleMapFamilyName[0]!='\0')
+                styleMapFamily = sf->styleMapFamilyName;
+        } else if (preferredFamilyName != NULL && preferredSubfamilyName != NULL) {
+            styleMapFamily = malloc(strlen(preferredFamilyName)+strlen(preferredSubfamilyName)+2);
+            strcpy(styleMapFamily, preferredFamilyName);
+            strcat(styleMapFamily, " ");
+            strcat(styleMapFamily, preferredSubfamilyName);
+        } else if (sf->fullname != NULL) styleMapFamily = sf->fullname;
+        if (styleMapFamily != NULL) PListAddString(dictnode,"styleMapFamilyName", styleMapFamily);
+    }
+    {
+        char* styleMapName = NULL;
+        if (sf->pfminfo.stylemap != -1) {
+            if (sf->pfminfo.stylemap == 0x21) styleMapName = "bold italic";
+            else if (sf->pfminfo.stylemap == 0x20) styleMapName = "bold";
+            else if (sf->pfminfo.stylemap == 0x01) styleMapName = "italic";
+            else if (sf->pfminfo.stylemap == 0x40) styleMapName = "regular";
+        } else {
+            /* Figure out styleMapStyleName automatically. */
+            if (sf->pfminfo.weight == 700 && sf->italicangle < 0) styleMapName = "bold italic";
+            else if (sf->italicangle < 0) styleMapName = "italic";
+            else if (sf->pfminfo.weight == 700) styleMapName = "bold";
+            else if (sf->pfminfo.weight == 400) styleMapName = "regular";
+        }
+        if (styleMapName != NULL) PListAddString(dictnode,"styleMapStyleName", styleMapName);
+    }
     {
       // We attempt to get numeric major and minor versions for U. F. O. out of the FontForge version string.
       int versionMajor = -1;
@@ -3682,6 +3729,8 @@ return( NULL );
     sf->pfminfo.pfmset = 1; // We flag the pfminfo as present since we expect the U. F. O. to set any desired values.
     int versionMajor = -1; // These are not native SplineFont values.
     int versionMinor = -1; // We store the U. F. O. values and then process them at the end.
+    sf->styleMapFamilyName = ""; // Empty default to disable fallback at export (not user-accessible anyway as of now).
+    sf->pfminfo.stylemap = 0x0;
 
     temp = buildname(basedir,"fontinfo.plist");
     doc = xmlParseFile(temp);
@@ -3714,12 +3763,15 @@ return( NULL );
 		else free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleMapFamilyName")==0 ) {
-		if (sf->pfminfo.os2_family_name == NULL) sf->pfminfo.os2_family_name = (char *) valname;
+		if (sf->styleMapFamilyName == NULL) sf->styleMapFamilyName = (char *) valname;
 		else free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleMapStyleName")==0 ) {
-		if (sf->pfminfo.os2_style_name == NULL) sf->pfminfo.os2_style_name = (char *) valname;
-		else free(valname);
+		if ((char *) valname == "regular") sf->pfminfo.stylemap = 0x40;
+        else if ((char *) valname == "italic") sf->pfminfo.stylemap = 0x01;
+        else if ((char *) valname == "bold") sf->pfminfo.stylemap = 0x20;
+        else if ((char *) valname == "bold italic") sf->pfminfo.stylemap = 0x21;
+		free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "fullName")==0 ||
 		    xmlStrcmp(keyname,(xmlChar *) "postscriptFullName")==0 ) {
@@ -3975,10 +4027,8 @@ return( NULL );
 	else
 	    sf->fullname = copy(sf->fontname);
     }
-    if ( sf->familyname==NULL ) {
-	if (sf->pfminfo.os2_family_name != NULL) sf->familyname=copy(sf->pfminfo.os2_family_name);
-	else sf->familyname = copy(sf->fontname);
-    }
+    if ( sf->familyname==NULL )
+	sf->familyname = copy(sf->fontname);
     free(stylename); stylename = NULL;
     if ( sf->weight==NULL )
 	sf->weight = copy("Regular");
