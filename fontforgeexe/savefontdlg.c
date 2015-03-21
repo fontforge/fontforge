@@ -1997,7 +1997,7 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[20+2*48+5+1], *varray[13], *hvarray[39], *famarray[3*52+1],
+    GGadgetCreateData gcd[20+2*48+5+1], *varray[13], *hvarray[33], *famarray[3*52+1],
 	    *harray[10], boxes[7];
     GTextInfo label[20+2*48+4+1];
     struct gfc_data d;
@@ -2504,7 +2504,7 @@ return( 0 );
 	gcd[k].gd.handle_controlevent = GFD_TogglePrependTimestamp;
 	gcd[k++].creator = GCheckBoxCreate; //???
 	hvarray[hvi++] = &gcd[k-1]; hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = GCD_ColSpan;
-	hvarray[hvi++] = NULL;
+	hvarray[hvi++] = NULL; hvarray[hvi++] = NULL;
     } else {
 	hvarray[12] = NULL;
     }
