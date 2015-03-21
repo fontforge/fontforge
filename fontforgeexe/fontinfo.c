@@ -8471,7 +8471,7 @@ return;
     vgcd[17].gd.flags = gg_visible | gg_enabled;
     vgcd[17].creator = GLabelCreate;
 
-    vgcd[18].gd.pos.x = 90; vgcd[18].gd.pos.y = vgcd[17].gd.pos.y-6; vgcd[13].gd.pos.width = vgcd[7].gd.pos.width;
+    vgcd[18].gd.pos.x = 90; vgcd[18].gd.pos.y = vgcd[17].gd.pos.y-6; vgcd[18].gd.pos.width = vgcd[7].gd.pos.width;
     vgcd[18].gd.flags = gg_visible | gg_enabled;
     vgcd[18].gd.cid = CID_StyleMap;
     vgcd[18].gd.u.list = stylemap;
@@ -8492,7 +8492,7 @@ return;
     else
 	i = 0;
     stylemap[i].selected = true;
-    vgcd[7].gd.label = &stylemap[i];
+    vgcd[18].gd.label = &stylemap[i];
 
     vgcd[14].gd.pos.x = 10; vgcd[14].gd.pos.y = vgcd[18].gd.pos.y+24+6;
     vlabel[14].text = (unichar_t *) _("Weight, Width, Slope Only");
