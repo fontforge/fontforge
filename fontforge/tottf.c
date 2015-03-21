@@ -2145,7 +2145,7 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
     dumpsid(cfff,at,sf->version,0);
     dumpsid(cfff,at,sf->copyright,1);
     dumpsid(cfff,at,sf->fullname?sf->fullname:sf->fontname,2);
-    dumpsid(cfff,at,sf->pfminfo.os2_family_name?sf->pfminfo.os2_family_name:sf->familyname,3);
+    dumpsid(cfff,at,sf->familyname,3);
     dumpsid(cfff,at,sf->weight,4);
     if ( at->gi.fixed_width>0 ) dumpintoper(cfff,1,(12<<8)|1);
     if ( sf->italicangle!=0 ) dumpdbloper(cfff,sf->italicangle,(12<<8)|2);
@@ -2261,7 +2261,7 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
 
     dumpsid(cfff,at,sf->copyright,1);
     dumpsid(cfff,at,sf->fullname?sf->fullname:sf->fontname,2);
-    dumpsid(cfff,at,sf->pfminfo.os2_family_name?sf->pfminfo.os2_family_name:sf->familyname,3);
+    dumpsid(cfff,at,sf->familyname,3);
     dumpsid(cfff,at,sf->weight,4);
     /* FontMatrix  (identity here, real ones in sub fonts)*/
     /* Actually there is no fontmatrix in the adobe cid font I'm looking at */
@@ -3316,6 +3316,8 @@ static void WinBB(SplineFont *sf,uint16 *winascent,uint16 *windescent,struct all
 	*windescent  = sf->pfminfo.os2_windescent;
 }
 
+static void redohead(struct alltabs *at);
+
 static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
 	enum fontformat format) {
     int i,cnt1,cnt2,first,last,avg1,avg2,gid;
@@ -3353,11 +3355,20 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
     os2->ysupYOff = sf->pfminfo.os2_supyoff;
     os2->yStrikeoutSize = sf->pfminfo.os2_strikeysize;
     os2->yStrikeoutPos = sf->pfminfo.os2_strikeypos;
-    os2->fsSel = (at->head.macstyle&1?32:0)|(at->head.macstyle&2?1:0);
+    if ( sf->pfminfo.stylemap!=-1 ) {
+        int changed = 0;
+        os2->fsSel = sf->pfminfo.stylemap;
+        /* Make sure fsSel and macStyle don't contradict */
+        if (at->head.macstyle&1 && !(os2->fsSel&32)) {at->head.macstyle &= 1111110; changed=1;}
+        if (at->head.macstyle&2 && !(os2->fsSel&1)) {at->head.macstyle &= 1111101; changed=1;}
+        if (changed) redohead(at);
+    } else {
+        os2->fsSel = (at->head.macstyle&1?32:0)|(at->head.macstyle&2?1:0);
+        if ( os2->fsSel==0 && sf->pfminfo.weight==400 )
+	        os2->fsSel = 64;		/* Regular */
+    }
     if ( sf->fullname!=NULL && strstrmatch(sf->fullname,"outline")!=NULL )
 	os2->fsSel |= 8;
-    if ( os2->fsSel==0 && sf->pfminfo.weight>=400 && sf->pfminfo.weight<=500 )
-	os2->fsSel = 64;		/* Regular */
     if ( os2->version>=4 ) {
 	if ( strstrmatch(sf->fontname,"Obli")!=NULL ) {
 	    os2->fsSel &= ~1;		/* Turn off Italic */
@@ -3788,7 +3799,7 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     if ( dummy->names[ttf_copyright]==NULL || *dummy->names[ttf_copyright]=='\0' )
 	dummy->names[ttf_copyright] = utf8_verify_copy(sf->copyright);
     if ( dummy->names[ttf_family]==NULL || *dummy->names[ttf_family]=='\0' )
-	dummy->names[ttf_family] = utf8_verify_copy(sf->pfminfo.os2_family_name?sf->pfminfo.os2_family_name:sf->familyname);
+	dummy->names[ttf_family] = utf8_verify_copy(sf->familyname);
     if ( dummy->names[ttf_subfamily]==NULL || *dummy->names[ttf_subfamily]=='\0' )
 	dummy->names[ttf_subfamily] = utf8_verify_copy(SFGetModifiers(sf));
     if ( dummy->names[ttf_uniqueid]==NULL || *dummy->names[ttf_uniqueid]=='\0' ) {

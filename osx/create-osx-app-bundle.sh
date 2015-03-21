@@ -8,6 +8,7 @@ rm -rf /tmp/fontforge-app-bundle
 mkdir $TEMPDIR
 
 scriptdir=$TEMPDIR/FontForge.app/Contents/MacOS
+frameworkdir=$TEMPDIR/FontForge.app/Contents/Frameworks
 bundle_res=$TEMPDIR/FontForge.app/Contents/Resources
 bundle_bin="$bundle_res/opt/local/bin"
 bundle_lib="$bundle_res/opt/local/lib"
@@ -18,8 +19,6 @@ export PATH="$PATH:$scriptdir"
 srcdir=$(pwd)
 
 
-#cp ./fontforge/MacFontForgeAppBuilt.zip $TEMPDIR/
-#unzip -d $TEMPDIR $TEMPDIR/MacFontForgeAppBuilt.zip
 echo "...doing the make install..."
 DESTDIR=$bundle_res make install
 echo "...setup FontForge.app bundle..."
@@ -349,11 +348,79 @@ cp -av ~/macports/categories/fontforge/node/node_modules .
 cd $bundle_bin
 
 
+#####################
+#
+# Some of this might be able to be taken out again, it is mainly to get
+# breakpad going in the first place, and to allow command line execution
+# of the fontforge binary which doesn't play well with @executable_path paths.
+#
+cd $bundle_bin
+install_name_tool -change                                                       \
+    @executable_path/../Frameworks/Breakpad.framework/Versions/A/Breakpad       \
+    /Applications/FontForge.app/Contents/Frameworks/Breakpad.framework/Breakpad \
+    fontforge 
+cd $bundle_lib
+install_name_tool -change                                                       \
+    @executable_path/../Frameworks/Breakpad.framework/Versions/A/Breakpad       \
+    /Applications/FontForge.app/Contents/Frameworks/Breakpad.framework/Breakpad \
+    libfontforgeexe.2.dylib 
+cd $frameworkdir/Breakpad.framework
+install_name_tool -change                                                               \
+    @executable_path/../Frameworks/Breakpad.framework/Resources/breakpadUtilities.dylib \
+    /Applications/FontForge.app/Contents/Frameworks/Breakpad.framework/Resources/breakpadUtilities.dylib \
+    Breakpad
+
+cd $bundle_bin
+
+#cp -av ~/bak/dump_syms $frameworkdir/Breakpad.framework/dump_syms
+DUMPSYMS=$frameworkdir/Breakpad.framework/dump_syms
+mkdir -p $bundle_res/breakpad/symbols
+
+cd $bundle_bin
+for arch in x86_64 i386; do
+  mkdir -p $bundle_res/breakpad/symbols/$arch
+  $DUMPSYMS -a $arch fontforge  > $bundle_res/breakpad/symbols/$arch/fontforge
+done
 
 
+cd $bundle_lib
+for if in libfontforgeexe.?.dylib libfontforge.?.dylib libgdraw.?.dylib; do
+  for arch in x86_64 i386; do
+    mkdir -p $bundle_res/breakpad/symbols/$arch
+    dsymutil $if
+    $DUMPSYMS -a $arch $if.dSYM  > $bundle_res/breakpad/symbols/$arch/$if
+  done
+done
 
+for arch in x86_64 i386; do
+  cd $bundle_res/breakpad/symbols/$arch/
+  for symfile in *; do
+      hash=$(head -1 "$symfile"|cut -d' ' -f 4);
+      fn=$(head -1   "$symfile"|cut -d' ' -f 5);
+      if [ ! -z "$hash" -a ! -z "$fn" ]; then
+	  mv "$fn" "$fn.sym"
+	  mkdir -p "$fn/$hash"
+          mv "$fn.sym" "$fn/$hash/"
+      fi
+  done
+done
 
-#########
+cd $bundle_bin
+
+#
+# I create the uncompressed tree so that a server script running on
+# the same machine can easily access them and turn the minidump into
+# human readable automatically
+#
+mkdir -p ~/fontforge-builds/breakpad-symbols-by-hash/$FONTFORGE_GIT_VERSION
+rsync -av $bundle_res/breakpad \
+          ~/fontforge-builds/breakpad-symbols-by-hash/$FONTFORGE_GIT_VERSION
+cd ~/fontforge-builds/breakpad-symbols-by-hash
+tar czf $FONTFORGE_GIT_VERSION.tar.gz $FONTFORGE_GIT_VERSION
+
+cd $bundle_bin
+
+######################
 
 
 mkdir -p $bundle_lib
@@ -404,7 +471,7 @@ cp -av /opt/local/share/X11/locale $bundle_share/X11
 #####
 #
 #
-FFBUILDBASE=/opt/local/var/macports/build/_Users_ben_Work_FontForge_2012_mac-build_categories_fontforge/fontforge/work/fontforge-2.0.0_beta1
+FFBUILDBASE=/opt/local/var/macports/build/_usr_local_src_github-fontforge_fontforge_osx/fontforge/work/fontforge-2.0.0_beta1
 DEBUGOBJBASE=$TEMPDIR/FontForge.app/Contents/Resources/opt/local/var/
 for if in fontforgeexe fontforge gdraw gutils; do
     cd $FFBUILDBASE/$if/.libs 
@@ -414,8 +481,8 @@ done
 cd $bundle_lib
 
 # byte string length compatible
-OLDBASE="/opt/local/var/macports/build/_Users_ben_Work_FontForge_2012_mac-build_categories_fontforge/fontforge/work/fontforge-2.0.0_beta1"
-NEWBASE="/Applications/FontForge.app/Contents/Resources/opt/local/var////////////////////////////////////////////////////////////////////"
+OLDBASE="/opt/local/var/macports/build/_usr_local_src_github-fontforge_fontforge_osx/fontforge/work/fontforge-2.0.0_beta1"
+NEWBASE="/Applications/FontForge.app/Contents/Resources/opt/local/var////////////////////////////////////////////////////"
 echo "changing the location of the object files used for debug (fontforgeexe)"
 for ifpath in $FFBUILDBASE/fontforgeexe/.libs/*.o; do
     if=$(basename "$ifpath");
@@ -450,7 +517,7 @@ for if in fontforgeexe fontforge gdraw gutils; do
 done
 cd $TEMPDIR
 
-rm -f  ~/FontForge.app.zip ~/FontForge.app.dmg
+rm -f  ~/FontForge.app.dmg
 # it seems that on 10.8 if you don't specify a size then you'll likely
 # get a result of hdiutil: create failed - error -5341
 hdiutil create -size 800m   \
@@ -458,13 +525,12 @@ hdiutil create -size 800m   \
    -srcfolder FontForge.app \
    -ov        -format UDBZ  \
    ~/FontForge.app.dmg
-zip -9 --symlinks -r ~/FontForge.app.zip FontForge.app
-cp -f  ~/FontForge.app.zip ~/FontForge.app.dmg /tmp/
-chmod o+r /tmp/FontForge.app.zip /tmp/FontForge.app.dmg
+cp -f  ~/FontForge.app.dmg /tmp/
+chmod o+r /tmp/FontForge.app.dmg
 
 
 echo "Completed at `date`"
-ls -lh `echo ~`/FontForge.app.zip `echo ~`/FontForge.app.dmg
+ls -lh `echo ~`/FontForge.app.dmg
 
 
 

@@ -79,6 +79,47 @@ static int MVMoveToPrevInWordList(GGadget *g, GEvent *e)
     return 1;
 }
 
+static void MVMoveInTableByColumnByOffset(MetricsView *mv, int offset) {
+	int current_pos = 0;
+	// Find the currently selected record.
+	for (current_pos = 0; current_pos < mv->clen && mv->perchar[current_pos].selected == 0; current_pos ++);
+	// Return on failure.
+	if (current_pos >= mv->clen || mv->perchar[current_pos].selected == 0) return;
+	// Ensure that we can move ahead the selected number of records. Return otherwise.
+	if (current_pos + offset >= mv->clen) return;
+	// Change the selection.
+	mv->perchar[current_pos].selected = 0;
+	mv->perchar[current_pos + offset].selected = 1;
+	// Find the currently selected gadget.
+	GGadget *current_gadget = GWindowGetFocusGadgetOfWindow(mv->gw);
+	// Find which control in the current record it is.
+	int current_gadget_type = 0; // 0 is nothing, 1 is Name, 2 is Width, 3 is LBearing, 4 is RBearing, 5 is Kern.
+	// We do not currently use this value, but it seems likely to be useful.
+	GGadget *target_gadget = NULL;
+	if (current_gadget == mv->perchar[current_pos].name) {
+		current_gadget_type = 1;
+		target_gadget = mv->perchar[current_pos+offset].name;
+	} else if (current_gadget == mv->perchar[current_pos].width) {
+		current_gadget_type = 2;
+		target_gadget = mv->perchar[current_pos+offset].width;
+	} else if (current_gadget == mv->perchar[current_pos].lbearing) {
+		current_gadget_type = 3;
+		target_gadget = mv->perchar[current_pos+offset].lbearing;
+	} else if (current_gadget == mv->perchar[current_pos].rbearing) {
+		current_gadget_type = 4;
+		target_gadget = mv->perchar[current_pos+offset].rbearing;
+	} else if (current_gadget == mv->perchar[current_pos].kern) {
+		current_gadget_type = 5;
+		target_gadget = mv->perchar[current_pos+offset].kern;
+	}
+	// Abort if there is no selected control for the current record.
+	if (current_gadget_type == 0) return;
+	// Change the control focus.
+	if (target_gadget != NULL) {
+		GWidgetIndicateFocusGadget(target_gadget);
+	}
+	return;
+}
 
 /**
  * This doesn't need to be a perfect test by any means. It should
@@ -702,7 +743,7 @@ static void MVRefreshValues(MetricsView *mv, int i) {
 if( !mv->perchar[i].width )
 return;
 
-printf("MVRefreshValues() **** setting width to %d\n", sc->width );
+    //printf("MVRefreshValues() **** setting width to %d\n", sc->width );
     sprintf(buf,"%d",mv->vertical ? sc->vwidth : sc->width);
     GGadgetSetTitle8(mv->perchar[i].width,buf);
 
@@ -1337,7 +1378,7 @@ return( true );		/* No change, don't bother user */
 	    struct subtable_data sd;
 	    memset(&sd,0,sizeof(sd));
 	    sd.flags = (mv->vertical ? sdf_verticalkern : sdf_horizontalkern ) |
-		    sdf_kernpair;
+		    sdf_kernclass;
 	    sub = SFNewLookupSubtableOfType(psc->parent,gpos_pair,&sd,mv->layer);
 	    if ( sub==NULL )
 return( false );
@@ -4959,29 +5000,36 @@ static int mv_e_h(GWindow gw, GEvent *event) {
 	    MVResize(mv);
       break;
       case et_char:
-	if ((event->u.chr.keysym == GK_Tab) && (!(event->u.chr.state&ksm_meta))) {
+	if ((event->u.chr.keysym == GK_Tab || event->u.chr.keysym == GK_BackTab) && (!(event->u.chr.state&ksm_meta))) {
 	  // We want to allow somebody to move the cursor position
 	  // forwards with tab and backwards with shift + tab.
 	  // GGadget *active = GWindowGetFocusGadgetOfWindow(mv->gw); if (event->u.chr.state&ksm_shift) return 0;
 	  // For now, we just return 0 so that the default event handler takes care.
 	  return 0;
 	}
-	MVChar(mv,event);
+	// MVChar(mv,event);
       break;
       case et_charup:
-	if ((event->u.chr.keysym == GK_Tab) && (!(event->u.chr.state&ksm_meta))) {
+	if ((event->u.chr.keysym == GK_Tab || event->u.chr.keysym == GK_BackTab) && (!(event->u.chr.state&ksm_meta))) {
 	  // We want to allow somebody to move the cursor position
 	  // forwards with tab and backwards with shift + tab.
 	  // GGadget *active = GWindowGetFocusGadgetOfWindow(mv->gw); if (event->u.chr.state&ksm_shift) return 0;
 	  // For now, we just return 0 so that the default event handler takes care.
 	  return 0;
+	} else if ((event->u.chr.keysym == GK_Return) && (!(event->u.chr.state&ksm_meta))) {
+		MVMoveInTableByColumnByOffset(mv, (event->u.chr.state&ksm_shift) ? -1 : 1);
+	} else {
+		MVChar(mv,event);
 	}
+#if 0
+	  // It is unclear to Frank why we were being so selective.
 	  if ( event->u.chr.keysym == GK_Left || event->u.chr.keysym==GK_KP_Left
 	       || event->u.chr.keysym == GK_Right || event->u.chr.keysym==GK_KP_Right ) {
 	      if( event->u.chr.state&ksm_meta ) {
 		  MVChar(mv,event);
 	      }
 	  }
+#endif // 0
       break;
       case et_mouseup: case et_mousemove: case et_mousedown:
           active = GWindowGetFocusGadgetOfWindow(mv->gw);
@@ -5163,7 +5211,8 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     FontRequest rq;
     static GWindow icon = NULL;
     extern int _GScrollBar_Width;
-    char buf[120], *pt;
+    // Max. glyphname length: 31, max. chars picked up: 15. 31*15 = 465
+    char buf[465], *pt;
     GTextInfo label;
     int i,j,cnt;
     int as,ds,ld;
@@ -5256,10 +5305,16 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     }
     mv->chars[mv->clen] = NULL;
 
-    for ( cnt=0; cnt<mv->clen; ++cnt )
-	pt = utf8_idpb(pt,
-		mv->chars[cnt]->unicodeenc==-1?
-		MVFakeUnicodeOfSc(mv,mv->chars[cnt]): mv->chars[cnt]->unicodeenc,0);
+    for ( cnt=0; cnt<mv->clen; ++cnt ) {
+        if ( mv->chars[cnt]->unicodeenc != -1 )
+	    pt = utf8_idpb(pt,mv->chars[cnt]->unicodeenc,0);
+        else {
+            *pt = '/'; pt++;
+            strcpy(pt, mv->chars[cnt]->name);
+            pt += strlen(mv->chars[cnt]->name);
+            *pt = ' '; pt++;
+        }
+    }
     *pt = '\0';
 
     memset(&gd,0,sizeof(gd));

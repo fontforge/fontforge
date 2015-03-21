@@ -527,6 +527,7 @@ static void StrokeInit(StrokeDlg *sd) {
     sd->dummy_sf.glyphs = sd->chars;
     sd->dummy_sf.glyphcnt = sd->dummy_sf.glyphmax = 1;
     sd->dummy_sf.pfminfo.fstype = -1;
+    sd->dummy_sf.pfminfo.stylemap = -1;
     sd->dummy_sf.fontname = sd->dummy_sf.fullname = sd->dummy_sf.familyname = "dummy";
     sd->dummy_sf.weight = "Medium";
     sd->dummy_sf.origname = "dummy";
@@ -1357,6 +1358,7 @@ static void GDDInit(GradientDlg *gdd,SplineFont *sf,Layer *ly,struct gradient *g
     gdd->dummy_sf.glyphs = gdd->chars;
     gdd->dummy_sf.glyphcnt = gdd->dummy_sf.glyphmax = 1;
     gdd->dummy_sf.pfminfo.fstype = -1;
+    gdd->dummy_sf.pfminfo.stylemap = -1;
     gdd->dummy_sf.fontname = gdd->dummy_sf.fullname = gdd->dummy_sf.familyname = "dummy";
     gdd->dummy_sf.weight = "Medium";
     gdd->dummy_sf.origname = "dummy";

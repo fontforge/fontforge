@@ -4469,7 +4469,7 @@ return( ss );
 	    if ( !c->points[previ]->on_curve ) {
 		sp->prevcp.x = c->points[previ]->x;
 		sp->prevcp.y = c->points[previ]->y;
-		if ( sp->prevcp.x!=sp->me.x || sp->prevcp.y!=sp->me.y )
+		// if ( sp->prevcp.x!=sp->me.x || sp->prevcp.y!=sp->me.y ) // This is unnecessary since the other converter only makes a control point if there is supposed to be one.
 		    sp->noprevcp = false;
 	    }
 	    if ( i==c->pt_cnt-1 )
@@ -4480,7 +4480,7 @@ return( ss );
 		sp->nextcp.x = c->points[nexti]->x;
 		sp->nextcp.y = c->points[nexti]->y;
 		next += 2;
-		if ( sp->nextcp.x!=sp->me.x || sp->nextcp.y!=sp->me.y )
+		// if ( sp->nextcp.x!=sp->me.x || sp->nextcp.y!=sp->me.y ) // This is unnecessary since the other converter only makes a control point if there is supposed to be one.
 		    sp->nonextcp = false;
 		if ( nexti==c->pt_cnt-1 )
 		    nexti = 0;

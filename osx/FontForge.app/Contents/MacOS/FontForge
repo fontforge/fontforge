@@ -116,6 +116,12 @@ export LD_LIBRARY_PATH="$bundle_lib"
 /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f FontForge.app
 $scriptdir/fcprogress.pl >|/tmp/zz 2>&1
 
+# This ensures that File Open and File Save (etc) dialogs open in Home
+cd ~/ || true
+
+# starting more than one does nothing, and it will close itself.
+/Applications/FontForge.app/Contents/MacOS/fontforge-crash-reporter.py &
+
 export PATH="$PATH:$bundle_bin"
 echo $WRAPPER $bundle_bin/fontforge -new "$@" > /tmp/oo
-$WRAPPER $bundle_bin/fontforge -new "$@"
+$WRAPPER $bundle_bin/fontforge -new "$@" &

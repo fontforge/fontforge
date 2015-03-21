@@ -1842,6 +1842,7 @@ static StemInfo *RefHintsMerge(StemInfo *into, StemInfo *rh, real mul, real offs
 	if ( h==NULL || start!=h->start || width!=h->width ) {
 	    n = chunkalloc(sizeof(StemInfo));
 	    n->start = start; n->width = width;
+	    n->ghost = rh->ghost;
 	    n->next = h;
 	    if ( prev==NULL )
 		into = n;

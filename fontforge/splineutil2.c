@@ -3801,6 +3801,7 @@ SplineFont *SplineFontEmpty(void) {
 
     sf = calloc(1,sizeof(SplineFont));
     sf->pfminfo.fstype = -1;
+    sf->pfminfo.stylemap = -1;
     sf->top_enc = -1;
     sf->macstyle = -1;
     sf->desired_row_cnt = default_fv_row_count; sf->desired_col_cnt = default_fv_col_count;
@@ -3867,6 +3868,7 @@ SplineFont *SplineFontBlank(int charcnt) {
     sf->glyphmax = charcnt;
     sf->glyphs = calloc(charcnt,sizeof(SplineChar *));
     sf->pfminfo.fstype = -1;
+    sf->pfminfo.stylemap = -1;
     sf->use_typo_metrics = true;
 return( sf );
 }

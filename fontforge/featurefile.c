@@ -6611,6 +6611,7 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 		    } else {
 		      LogError(_("Discarding a duplicate kerning pair."));
 		      SplineCharFree(sc); sc = NULL;
+		      free(kp); kp = NULL;
 		    }
 		} else {
 		    // We want to add to the end of the list.
@@ -7178,6 +7179,8 @@ static void fea_NameLookups(struct parseState *tok) {
                 oldapm = NULL;
                 lastap = NULL;
                 sc = sf->glyphs[gid];
+                if (!sc)
+                    continue;
                 for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
                     if ( ap->anchor==ac ) {
                         if ( ap->type==at_mark || ap->type==at_centry ) {

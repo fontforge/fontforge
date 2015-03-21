@@ -1018,6 +1018,7 @@ extern Undoes *CVPreserveMaybeState(CharView *cv, int isTState );
 extern void CVRestoreTOriginalState(CharView *cv);
 extern void CVUndoCleanup(CharView *cv);
 
+extern void AdjustControls(SplinePoint *sp);
 extern void CVAdjustPoint(CharView *cv, SplinePoint *sp);
 extern void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	SplinePoint *merge, SplineSet *mergess);

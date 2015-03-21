@@ -1010,6 +1010,7 @@ static void TPDInit(TilePathDlg *tpd,SplineFont *sf) {
     tpd->dummy_sf.glyphs = tpd->chars;
     tpd->dummy_sf.glyphcnt = tpd->dummy_sf.glyphmax = 4;
     tpd->dummy_sf.pfminfo.fstype = -1;
+    tpd->dummy_sf.pfminfo.stylemap = -1;
     tpd->dummy_sf.fontname = tpd->dummy_sf.fullname = tpd->dummy_sf.familyname = "dummy";
     tpd->dummy_sf.weight = "Medium";
     tpd->dummy_sf.origname = "dummy";
@@ -1701,6 +1702,7 @@ static void PTDInit(TilePathDlg *ptd,SplineFont *sf) {
     ptd->dummy_sf.glyphs = ptd->chars;
     ptd->dummy_sf.glyphcnt = ptd->dummy_sf.glyphmax = 1;
     ptd->dummy_sf.pfminfo.fstype = -1;
+    ptd->dummy_sf.pfminfo.stylemap = -1;
     ptd->dummy_sf.fontname = ptd->dummy_sf.fullname = ptd->dummy_sf.familyname = "dummy";
     ptd->dummy_sf.weight = "Medium";
     ptd->dummy_sf.origname = "dummy";

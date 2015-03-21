@@ -905,6 +905,30 @@ int count_occurrence(const char* big, const char* little) {
     return output;
 }
 
+static char* normalizeToASCII(char *str) {
+    if ( str!=NULL && !AllAscii(str))
+        return StripToASCII(str);
+    else
+        return str;
+}
+
+static char* fetchTTFAttribute(const SplineFont *sf, int strid) {
+    char* value=NULL, nonenglish=NULL;
+    struct ttflangname *nm;
+
+    for ( nm=sf->names; nm!=NULL; nm=nm->next ) {
+		if ( nm->names[strid]!=NULL ) {
+	    	nonenglish = nm->names[strid];
+	    	if ( nm->lang == 0x409 ) {
+				value = nm->names[strid];
+    			break;
+	    	}
+		}
+    }
+    if ( value==NULL ) value=nonenglish;
+    return value;
+}
+
 void PListAddString(xmlNodePtr parent, const char *key, const char *value) {
     if ( value==NULL ) value = "";
     xmlNodePtr keynode = xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key); // "<key>%s</key>" key
@@ -952,6 +976,8 @@ static void PListAddNameString(xmlNodePtr parent, const char *key, const SplineF
     }
     if ( value==NULL && strid==ttf_version && sf->version!=NULL )
 	value = freeme = strconcat("Version ",sf->version);
+    if ( value==NULL && strid==ttf_copyright && sf->copyright!=NULL )
+	value = sf->copyright;
     if ( value==NULL )
 	value=nonenglish;
     if ( value!=NULL ) {
@@ -1077,8 +1103,38 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 /* Same keys in both formats */
     PListAddString(dictnode,"familyName",sf->familyname_with_timestamp ? sf->familyname_with_timestamp : sf->familyname);
     PListAddString(dictnode,"styleName",SFGetModifiers(sf));
-    if (sf->pfminfo.os2_family_name != NULL) PListAddString(dictnode,"styleMapFamilyName", sf->pfminfo.os2_family_name);
-    if (sf->pfminfo.os2_style_name != NULL) PListAddString(dictnode,"styleMapStyleName", sf->pfminfo.os2_style_name);
+    {
+        char* preferredFamilyName = fetchTTFAttribute(sf,ttf_preffamilyname);
+        char* preferredSubfamilyName = fetchTTFAttribute(sf,ttf_prefmodifiers);
+        char* styleMapFamily;
+        if (sf->styleMapFamilyName != NULL) {
+            /* Empty styleMapStyleName means we imported a UFO that does not have this field. Bypass the fallback. */
+            if (sf->styleMapFamilyName[0]!='\0')
+                styleMapFamily = sf->styleMapFamilyName;
+        } else if (preferredFamilyName != NULL && preferredSubfamilyName != NULL) {
+            styleMapFamily = malloc(strlen(preferredFamilyName)+strlen(preferredSubfamilyName)+2);
+            strcpy(styleMapFamily, preferredFamilyName);
+            strcat(styleMapFamily, " ");
+            strcat(styleMapFamily, preferredSubfamilyName);
+        } else if (sf->fullname != NULL) styleMapFamily = sf->fullname;
+        if (styleMapFamily != NULL) PListAddString(dictnode,"styleMapFamilyName", styleMapFamily);
+    }
+    {
+        char* styleMapName = NULL;
+        if (sf->pfminfo.stylemap != -1) {
+            if (sf->pfminfo.stylemap == 0x21) styleMapName = "bold italic";
+            else if (sf->pfminfo.stylemap == 0x20) styleMapName = "bold";
+            else if (sf->pfminfo.stylemap == 0x01) styleMapName = "italic";
+            else if (sf->pfminfo.stylemap == 0x40) styleMapName = "regular";
+        } else {
+            /* Figure out styleMapStyleName automatically. */
+            if (sf->pfminfo.weight == 700 && sf->italicangle < 0) styleMapName = "bold italic";
+            else if (sf->italicangle < 0) styleMapName = "italic";
+            else if (sf->pfminfo.weight == 700) styleMapName = "bold";
+            else if (sf->pfminfo.weight == 400) styleMapName = "regular";
+        }
+        if (styleMapName != NULL) PListAddString(dictnode,"styleMapStyleName", styleMapName);
+    }
     {
       // We attempt to get numeric major and minor versions for U. F. O. out of the FontForge version string.
       int versionMajor = -1;
@@ -1087,7 +1143,7 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
       if (versionMajor >= 0) PListAddInteger(dictnode,"versionMajor", versionMajor);
       if (versionMinor >= 0) PListAddInteger(dictnode,"versionMinor", versionMinor);
     }
-    PListAddString(dictnode,"copyright",sf->copyright);
+    PListAddNameString(dictnode,"copyright",sf,ttf_copyright);
     PListAddNameString(dictnode,"trademark",sf,ttf_trademark);
     PListAddInteger(dictnode,"unitsPerEm",sf->ascent+sf->descent);
 // We decided that it would be more helpful to round-trip the U. F. O. data.
@@ -1156,15 +1212,19 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 	    for ( i=fscnt=0; i<16; ++i )
 		if ( sf->pfminfo.fstype&(1<<i) )
 		    fstype[fscnt++] = i;
-	    if ( fscnt!=0 )
-		PListAddIntArray(dictnode,"openTypeOS2Type",fstype,fscnt);
+	    /*
+	     * Note that value 0x0 is represented by an empty bit, so in that case
+	     * we output an empty array, otherwise compilers will fallback to their
+	     * default fsType value.
+	     */
+	    PListAddIntArray(dictnode,"openTypeOS2Type",fstype,fscnt);
 	}
 	if ( sf->pfminfo.typoascent_add )
 	    PListAddInteger(dictnode,"openTypeOS2TypoAscender",sf->ascent+sf->pfminfo.os2_typoascent);
 	else
 	    PListAddInteger(dictnode,"openTypeOS2TypoAscender",sf->pfminfo.os2_typoascent);
 	if ( sf->pfminfo.typodescent_add )
-	    PListAddInteger(dictnode,"openTypeOS2TypoDescender",sf->descent+sf->pfminfo.os2_typodescent);
+	    PListAddInteger(dictnode,"openTypeOS2TypoDescender",-sf->descent+sf->pfminfo.os2_typodescent);
 	else
 	    PListAddInteger(dictnode,"openTypeOS2TypoDescender",sf->pfminfo.os2_typodescent);
 	PListAddInteger(dictnode,"openTypeOS2TypoLineGap",sf->pfminfo.os2_typolinegap);
@@ -1173,7 +1233,7 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 	else
 	    PListAddInteger(dictnode,"openTypeOS2WinAscent",sf->pfminfo.os2_winascent);
 	if ( sf->pfminfo.windescent_add )
-	    PListAddInteger(dictnode,"openTypeOS2WinDescent",bb.miny+sf->pfminfo.os2_windescent);
+	    PListAddInteger(dictnode,"openTypeOS2WinDescent",-bb.miny+sf->pfminfo.os2_windescent);
 	else
 	    PListAddInteger(dictnode,"openTypeOS2WinDescent",sf->pfminfo.os2_windescent);
     }
@@ -1445,7 +1505,7 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
           int classflags = (isr ? current_kernclass->seconds_flags[i] : current_kernclass->firsts_flags[i]);
           // Note that we only output if the kernclass is destined for U. F. O. and has not already met said fate.
           if (classname != NULL && rawglyphlist != NULL &&
-              !output_done[absolute_index + i] && kernclass_for_groups_plist(sf, current_kernclass, classflags)) {
+              !(output_done[absolute_index + i]) && kernclass_for_groups_plist(sf, current_kernclass, classflags)) {
                 xmlNewChild(dictnode, NULL, BAD_CAST "key", classname);
                 xmlNodePtr grouparray = xmlNewChild(dictnode, NULL, BAD_CAST "array", NULL);
                 // We need to convert from the space-delimited string to something more easily accessed on a per-item basis.
@@ -3669,6 +3729,8 @@ return( NULL );
     sf->pfminfo.pfmset = 1; // We flag the pfminfo as present since we expect the U. F. O. to set any desired values.
     int versionMajor = -1; // These are not native SplineFont values.
     int versionMinor = -1; // We store the U. F. O. values and then process them at the end.
+    sf->styleMapFamilyName = ""; // Empty default to disable fallback at export (not user-accessible anyway as of now).
+    sf->pfminfo.stylemap = 0x0;
 
     temp = buildname(basedir,"fontinfo.plist");
     doc = xmlParseFile(temp);
@@ -3701,12 +3763,15 @@ return( NULL );
 		else free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleMapFamilyName")==0 ) {
-		if (sf->pfminfo.os2_family_name == NULL) sf->pfminfo.os2_family_name = (char *) valname;
+		if (sf->styleMapFamilyName == NULL) sf->styleMapFamilyName = (char *) valname;
 		else free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleMapStyleName")==0 ) {
-		if (sf->pfminfo.os2_style_name == NULL) sf->pfminfo.os2_style_name = (char *) valname;
-		else free(valname);
+		if ((char *) valname == "regular") sf->pfminfo.stylemap = 0x40;
+        else if ((char *) valname == "italic") sf->pfminfo.stylemap = 0x01;
+        else if ((char *) valname == "bold") sf->pfminfo.stylemap = 0x20;
+        else if ((char *) valname == "bold italic") sf->pfminfo.stylemap = 0x21;
+		free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "fullName")==0 ||
 		    xmlStrcmp(keyname,(xmlChar *) "postscriptFullName")==0 ) {
@@ -3728,7 +3793,9 @@ return( NULL );
 		else free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "copyright")==0 ) {
-		if (sf->copyright == NULL) sf->copyright = (char *) valname;
+		UFOAddName(sf,(char *) valname,ttf_copyright);
+        /* sf->copyright hosts the old ASCII-only PS attribute */
+        if (sf->copyright == NULL) sf->copyright = normalizeToASCII((char *) valname);
 		else free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "trademark")==0 )
@@ -3960,10 +4027,8 @@ return( NULL );
 	else
 	    sf->fullname = copy(sf->fontname);
     }
-    if ( sf->familyname==NULL ) {
-	if (sf->pfminfo.os2_family_name != NULL) sf->familyname=copy(sf->pfminfo.os2_family_name);
-	else sf->familyname = copy(sf->fontname);
-    }
+    if ( sf->familyname==NULL )
+	sf->familyname = copy(sf->fontname);
     free(stylename); stylename = NULL;
     if ( sf->weight==NULL )
 	sf->weight = copy("Regular");

@@ -260,7 +260,7 @@ u_WordlistEscapedInputStringToRealString_readGlyphName(
 	    unichar_t* endptr = 0;
 	    long unicodepoint = u_strtoul( glyphname+1, &endptr, 16 );
 	    TRACE("AAA glyphname:%s\n", u_to_c(glyphname+1) );
-	    TRACE("AAA unicodepoint:%d\n", unicodepoint );
+	    TRACE("AAA unicodepoint:%ld\n", unicodepoint );
 	    sc = SFGetChar( sf, unicodepoint, 0 );
 	    if( sc && endptr )
 	    {
@@ -284,15 +284,21 @@ u_WordlistEscapedInputStringToRealString_readGlyphName(
 	    {
 		unichar_t* endptr = 0;
 		long unicodepoint = u_strtoul( glyphname+3, &endptr, 16 );
+                SplineChar* tmp = 0;
 		TRACE("uni prefix, codepoint: %ld\n", unicodepoint );
 		sc = SFGetChar( sf, unicodepoint, 0 );
-		if( sc && endptr )
-		{
-		    unichar_t* endofglyphname = glyphname + u_strlen(glyphname);
-//		    printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname );
-		    for( ; endptr < endofglyphname; endptr++ )
-			--endpos;
-		}
+                if (tmp = SFGetChar( sf, -1, u_to_c(glyphname) )) {
+		    TRACE("have subst. char: %s\n", tmp->name );
+                    sc = tmp;
+                } else {
+		    if( sc && endptr )
+		    {
+		        unichar_t* endofglyphname = glyphname + u_strlen(glyphname);
+//		        printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname );
+		        for( ; endptr < endofglyphname; endptr++ )
+                            --endpos;
+		    }
+                }
 	    }
 	    
 	    if( firstLookup && glyphname[0] == '#' )
@@ -472,16 +478,17 @@ WordListLine WordlistEscapedInputStringToParsedDataComplex(
 		     * start from 65536 (values beyond Unicode, 65535 being the reserved
 		     * "frontier" value).
 		     */
-		    if ( n < 65536 ) {
-		        printf("ToRealString: backmapped position does not match Unicode encoding\n");
-		        printf("orig_pos: %d, backmap: %d, attached unicode enc: %d\n", sc->orig_pos, n, sc->unicodeenc );
-		        printf("ToRealString: INVALID CHAR POSITION, name: %s\n", sc->name );
+		    if ( (sf->map->enc->is_unicodebmp || sf->map->enc->is_unicodefull) && n < 65536 ) {
+		        TRACE("ToRealString: backmapped position does not match Unicode encoding\n");
+		        TRACE("orig_pos: %d, backmap: %d, attached unicode enc: %d\n", sc->orig_pos, n, sc->unicodeenc );
+		        TRACE("ToRealString: INVALID CHAR POSITION, name: %s\n", sc->name );
 		    }
 		}
 
 		out->sc = sc;
 		out->isSelected = isSelected;
 		out->currentGlyphIndex = currentGlyphIndex;
+                out->n = n;
 		out++;
 		/* out = utf8_idpb( out, n, 0 ); */
 		/* if( !out ) */
@@ -921,6 +928,7 @@ unichar_t* WordListLine_toustr( WordListLine wll )
     unichar_t* p = ret;
     for( ; wll->sc; wll++, p++ ) {
 	*p = wll->sc->unicodeenc;
+        if (*p == -1) *p = wll->n;
     }
     return ret;
 }

@@ -512,7 +512,7 @@ char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
     /* srange = */ getushort(ttf);
     /* esel = */ getushort(ttf);
     /* rshift = */ getushort(ttf);
-    if ( feof(ttf) )
+    if ( num == EOF || feof(ttf) || num < 0 || num >= 0xFFFF)
         return( NULL );
     for ( i=0; i<num; ++i ) {
         tag = getlong(ttf);
@@ -718,28 +718,33 @@ static void ParseSaveTablesPref(struct ttfinfo *info) {
     char *pt, *spt;
     int cnt;
 
-    info->savecnt = 0;
-    info->savetab = NULL;
-    if ( SaveTablesPref==NULL || *SaveTablesPref=='\0' )
-return;
-    for ( pt=SaveTablesPref, cnt=0; *pt; ++pt )
-	if ( *pt==',' )
-	    ++cnt;
-    info->savecnt = cnt+1;
-    info->savetab = calloc(cnt+1,sizeof(struct savetab));
-    for ( pt=spt=SaveTablesPref, cnt=0; ; ++pt ) {
-	if ( *pt==',' || *pt=='\0' ) {
-	    uint32 tag;
-	    tag  = ( ( spt  <pt )? spt[0] : ' ' )<<24;
-	    tag |= ( ( spt+1<pt )? spt[1] : ' ' )<<16;
-	    tag |= ( ( spt+2<pt )? spt[2] : ' ' )<<8 ;
-	    tag |= ( ( spt+3<pt )? spt[3] : ' ' )    ;
-	    info->savetab[cnt++].tag = tag;
-	    if ( *pt )
-		spt = pt+1;
-	    else
-    break;
-	}
+    if (info->openflags & of_all_tables) {
+        info->savecnt = info->numtables;
+        info->savetab = calloc(info->savecnt,sizeof(struct savetab));
+    } else {
+        info->savecnt = 0;
+        info->savetab = NULL;
+        if ( SaveTablesPref==NULL || *SaveTablesPref=='\0' )
+    return;
+        for ( pt=SaveTablesPref, cnt=0; *pt; ++pt )
+            if ( *pt==',' )
+                ++cnt;
+        info->savecnt = cnt+1;
+        info->savetab = calloc(cnt+1,sizeof(struct savetab));
+        for ( pt=spt=SaveTablesPref, cnt=0; ; ++pt ) {
+            if ( *pt==',' || *pt=='\0' ) {
+                uint32 tag;
+                tag  = ( ( spt  <pt )? spt[0] : ' ' )<<24;
+                tag |= ( ( spt+1<pt )? spt[1] : ' ' )<<16;
+                tag |= ( ( spt+2<pt )? spt[2] : ' ' )<<8 ;
+                tag |= ( ( spt+3<pt )? spt[3] : ' ' )    ;
+                info->savetab[cnt++].tag = tag;
+                if ( *pt )
+                    spt = pt+1;
+                else
+        break;
+            }
+        }
     }
 }
 
@@ -1225,26 +1230,33 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  break;
 
 	  default:
-	    for ( j=0; j<info->savecnt; ++j ) if ( info->savetab[j].tag == tag ) {
-		info->savetab[j].offset = offset;
-		info->savetab[j].len = length;
-	    break;
-	    }
-	    if ( j==info->savecnt ) {
-		if ( first ) {
-		    LogError( _("The following table(s) in the font have been ignored by FontForge\n") );
-		    first = false;
-		}
-		for ( k=0; stdtables[k].tag!=0; ++k )
-		    if ( stdtables[k].tag == tag )
-		break;
-		if ( stdtables[k].tag==0 ) {
-		    LogError( _("  Ignoring '%c%c%c%c'\n"), tag>>24, tag>>16, tag>>8, tag);
-		} else {
-		    LogError( _("  Ignoring '%c%c%c%c' %s\n"), tag>>24, tag>>16, tag>>8, tag,
-			    _(stdtables[k].name));
-		}
-	    }
+            if (info->openflags & of_all_tables) {
+                info->savetab[i].offset = offset;
+                info->savetab[i].tag = tag;
+                info->savetab[i].len = length;
+            }
+            else {
+                for ( j=0; j<info->savecnt; ++j ) if ( info->savetab[j].tag == tag ) {
+                    info->savetab[j].offset = offset;
+                    info->savetab[j].len = length;
+                break;
+                }
+                if ( j==info->savecnt ) {
+                    if ( first ) {
+                        LogError( _("The following table(s) in the font have been ignored by FontForge\n") );
+                        first = false;
+                    }
+                    for ( k=0; stdtables[k].tag!=0; ++k )
+                        if ( stdtables[k].tag == tag )
+                    break;
+                    if ( stdtables[k].tag==0 ) {
+                        LogError( _("  Ignoring '%c%c%c%c'\n"), tag>>24, tag>>16, tag>>8, tag);
+                    } else {
+                        LogError( _("  Ignoring '%c%c%c%c' %s\n"), tag>>24, tag>>16, tag>>8, tag,
+                                _(stdtables[k].name));
+                    }
+                }
+            }
 	}
     }
     if ( info->glyphlocations_start!=0 && info->cff_start!=0 )
@@ -3700,8 +3712,7 @@ static SplineFont *cffsffillup(struct topdicts *subdict, char **strings,
 	sf->copyright = utf8_verify_copy(getsid(subdict->copyright,strings,scnt,info));
     else
 	sf->copyright = utf8_verify_copy(getsid(subdict->notice,strings,scnt,info));
-    sf->pfminfo.os2_family_name = utf8_verify_copy(getsid(subdict->familyname,strings,scnt,info));
-    sf->familyname = copy(sf->pfminfo.os2_family_name);
+    sf->familyname = utf8_verify_copy(getsid(subdict->familyname,strings,scnt,info));
     sf->fullname = utf8_verify_copy(getsid(subdict->fullname,strings,scnt,info));
     sf->weight = utf8_verify_copy(getsid(subdict->weight,strings,scnt,info));
     sf->version = utf8_verify_copy(getsid(subdict->version,strings,scnt,info));
@@ -5087,6 +5098,8 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
 	info->use_typo_metrics = (sel&128)?1:0;
 	info->weight_width_slope_only = (sel&256)?1:0;
     }
+    /* Clear the bits we don't support in stylemap and set it. */
+    info->pfminfo.stylemap = sel & 0x0001100001;
     /* firstchar */ getushort(ttf);
     /* lastchar */ getushort(ttf);
     info->pfminfo.os2_typoascent = getushort(ttf);
@@ -5107,6 +5120,10 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
 	info->pfminfo.codepages[0] = getlong(ttf);
 	info->pfminfo.codepages[1] = getlong(ttf);
 	info->pfminfo.hascodepages = true;
+	if ( info->os2_version>=2 ) {
+	info->pfminfo.os2_xheight = (short) getushort(ttf);
+	info->pfminfo.os2_capheight = (short) getushort(ttf);
+	}
     }
 
     if ( info->os2_version==0 ) {
@@ -5141,9 +5158,21 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	fseek(ttf,info->postscript_start,SEEK_SET);
 	format = getlong(ttf);
 	info->italicAngle = getfixed(ttf);
+    /*
+     * Due to the legacy of two formats, there are two underlinePosition
+     * attributes in an OpenType CFF font, one being stored in the CFF table.
+     * FontForge due to its pfa heritage will only keep the PostScript/CFF
+     * underlinePosition in the SplineFont so we'll calculate that here if we
+     * are indeed working on a TTF.
+     * If we have a CFF font, cffinfofillup() has already read the appropriate
+     * data and so we don't rewind it (if info->uwidth is odd we are possibly
+     * introducing a rounding error).
+     */
+	if (info->cff_start==0) {
 	info->upos = (short) getushort(ttf);
 	info->uwidth = (short) getushort(ttf);
-	info->upos += info->uwidth/2;		/* 'post' defn of this field is different from FontInfo defn and I didn't notice */
+	info->upos -= info->uwidth/2;		/* 'post' defn of this field is different from FontInfo defn and I didn't notice */
+	}
 	info->isFixedPitch = getlong(ttf);
 	/* mem1 = */ getlong(ttf);
 	/* mem2 = */ getlong(ttf);
@@ -5764,8 +5793,6 @@ static SplineFont *SFFromTuple(SplineFont *basesf,struct variations *v,int tuple
 
     sf->fontname = MMMakeMasterFontname(mm,tuple,&sf->fullname);
     sf->familyname = copy(basesf->familyname);
-    if ( sf->pfminfo.os2_family_name ) sf->pfminfo.os2_family_name = copy(basesf->pfminfo.os2_family_name);
-    if ( sf->pfminfo.os2_style_name ) sf->pfminfo.os2_style_name = copy(basesf->pfminfo.os2_style_name);
     sf->weight = copy("All");
     sf->italicangle = basesf->italicangle;
     sf->strokewidth = basesf->strokewidth;
@@ -5983,7 +6010,6 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->fontname = info->fontname;
     sf->fullname = info->fullname;
     sf->familyname = info->familyname;
-    sf->pfminfo.os2_family_name = info->familyname;
     sf->chosenname = info->chosenname;
     sf->onlybitmaps = info->onlystrikes;
     sf->layers[ly_fore].order2 = info->to_order2;
@@ -6039,7 +6065,6 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	    sf->fontname = EnforcePostScriptName(sf->familyname);
 	if ( sf->fontname==NULL ) sf->fontname = EnforcePostScriptName("UntitledTTF");
     }
-    if ( sf->familyname==NULL && sf->pfminfo.os2_family_name != NULL ) sf->familyname = copy( sf->pfminfo.os2_family_name );
     if ( sf->fullname==NULL ) sf->fullname = copy( sf->fontname );
     if ( sf->familyname==NULL ) sf->familyname = copy( sf->fontname );
     if ( sf->weight==NULL ) {
@@ -6342,17 +6367,21 @@ return( NULL );
     if ( version==CHR('t','t','c','f')) {
 	/* TTCF version = */ getlong(ttf);
 	cnt = getlong(ttf);
-	offsets = malloc(cnt*sizeof(int32));
-	for ( i=0; i<cnt; ++i )
-	    offsets[i] = getlong(ttf);
-	ret = malloc((cnt+1)*sizeof(char *));
-	for ( i=j=0; i<cnt; ++i ) {
-	    temp = TTFGetFontName(ttf,offsets[i],0);
-	    if ( temp!=NULL )
-		ret[j++] = temp;
+	if (cnt != EOF && cnt >= 0 && cnt < 0xFFFF) {
+		offsets = malloc(cnt*sizeof(int32));
+		for ( i=0; i<cnt; ++i )
+		    offsets[i] = getlong(ttf);
+		ret = malloc((cnt+1)*sizeof(char *));
+		for ( i=j=0; i<cnt; ++i ) {
+		    temp = TTFGetFontName(ttf,offsets[i],0);
+		    if ( temp!=NULL )
+			ret[j++] = temp;
+		}
+		ret[j] = NULL;
+		free(offsets);
+	} else {
+		LogError(_("Invalid font count in TTC %s."), filename);
 	}
-	ret[j] = NULL;
-	free(offsets);
     } else {
 	temp = TTFGetFontName(ttf,0,0);
 	if ( temp!=NULL ) {

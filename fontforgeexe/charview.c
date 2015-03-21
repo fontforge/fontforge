@@ -129,6 +129,7 @@ struct cvshows CVShowsPrevewToggleSavedState;
 
 // Note that the default values supplied in CVColInit over-ride these values.
 static Color pointcol = 0xff0000;
+static Color subcol = 0xffffff;
 static Color firstpointcol = 0x707000;
 static Color selectedpointcol = 0xc8c800;
 static int selectedpointwidth = 2;
@@ -5993,11 +5994,11 @@ return;
 
 static void CVHScrollSetPos( CharView *cv, int newpos )
 {
-    TRACE("CVHScrollSetPos(1) cvxoff:%d newpos:%d\n", cv->xoff, newpos );
+    TRACE("CVHScrollSetPos(1) cvxoff:%f newpos:%d\n", cv->xoff, newpos );
     if ( newpos<-(32000*cv->scale-cv->width) )
         newpos = -(32000*cv->scale-cv->width);
     if ( newpos>8000*cv->scale ) newpos = 8000*cv->scale;
-    TRACE("CVHScrollSetPos(2) cvxoff:%d newpos:%d\n", cv->xoff, newpos );
+    TRACE("CVHScrollSetPos(2) cvxoff:%f newpos:%d\n", cv->xoff, newpos );
     if ( newpos!=cv->xoff ) {
 	int diff = newpos-cv->xoff;
 	cv->xoff = newpos;
@@ -10538,8 +10539,14 @@ void CVAddAnchor(CharView *cv) {
     int waslig;
 
     if ( AnchorClassUnused(cv->b.sc,&waslig)==NULL ) {
-	ff_post_notice(_("Make a new anchor class"),_("I cannot find an unused anchor class\nto assign a new point to. If you\nwish a new anchor point you must\ndefine a new anchor class with\nElement->Font Info"));
-	FontInfo(cv->b.sc->parent,CVLayer((CharViewBase *) cv),15,true);		/* Lookups */
+        SplineFont *sf = cv->b.sc->parent;
+        AnchorClass *ac;
+        GTextInfo **ti;
+        int j;
+        char *name = gwwv_ask_string(_("Anchor Class Name"),"",_("Please enter the name of a Anchor point class to create"));
+        if ( name==NULL )
+return;
+        ac = SFFindOrAddAnchorClass(sf,name,NULL);
 	if ( AnchorClassUnused(cv->b.sc,&waslig)==NULL )
 return;
     }

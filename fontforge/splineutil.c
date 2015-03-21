@@ -1347,7 +1347,7 @@ return( head );
 static SplinePointList *SplinePointListCopySpiroSelected1(SplinePointList *spl) {
     SplinePointList *head=NULL, *last=NULL, *cur;
     int i,j;
-    spiro_cp *list = spl->spiros, *freeme = NULL, *temp;
+    spiro_cp *list = spl->spiros, *freeme = NULL, *temp = NULL;
 
     if ( !SPIRO_SPL_OPEN(spl)) {
 	/* If it's a closed contour and the start point is selected then we */
@@ -1378,6 +1378,7 @@ static SplinePointList *SplinePointListCopySpiroSelected1(SplinePointList *spl) 
 	memset(temp+(j-i),0,sizeof(spiro_cp));
 	temp[j-i].ty = SPIRO_END;
 	cur = SpiroCP2SplineSet( temp );
+	free( temp ); temp = NULL;
 	if ( head==NULL )
 	    head = cur;
 	else
@@ -1463,7 +1464,7 @@ return( head );
 static SplinePointList *SplinePointListSplitSpiros(SplineChar *sc,SplinePointList *spl) {
     SplinePointList *head=NULL, *last=NULL, *cur;
     int i;
-    spiro_cp *list = spl->spiros, *freeme = NULL, *temp;
+    spiro_cp *list = spl->spiros, *freeme = NULL, *temp = NULL;
 
     if ( !SPIRO_SPL_OPEN(spl)) {
 	/* If it's a closed contour and the start point is selected then we */
@@ -1493,6 +1494,7 @@ static SplinePointList *SplinePointListSplitSpiros(SplineChar *sc,SplinePointLis
 	    memset(temp+(i-start),0,sizeof(spiro_cp));
 	    temp[i-start].ty = SPIRO_END;
 	    cur = SpiroCP2SplineSet( temp );
+	    free( temp ); temp = NULL;
 	    if ( head==NULL )
 		head = cur;
 	    else
@@ -6017,11 +6019,11 @@ return( NULL );
     }
     for ( i=0; i<new->first_cnt; ++i ) {
 	new->firsts[i] = copy(kc->firsts[i]);
-	if (new->firsts_names) new->firsts_names[i] = copy(kc->firsts_names[i]);
+	if (kc->firsts_names[i]) new->firsts_names[i] = copy(kc->firsts_names[i]);
     }
     for ( i=0; i<new->second_cnt; ++i ) {
 	new->seconds[i] = copy(kc->seconds[i]);
-	if (new->seconds_names) new->seconds_names[i] = copy(kc->seconds_names[i]);
+	if (kc->seconds_names[i]) new->seconds_names[i] = copy(kc->seconds_names[i]);
     }
     new->adjusts = calloc(new->first_cnt*new->second_cnt,sizeof(DeviceTable));
     memcpy(new->adjusts,kc->adjusts, new->first_cnt*new->second_cnt*sizeof(DeviceTable));
@@ -6445,10 +6447,6 @@ return;
         oldsf->orders = NULL;
       }
     }
-    // Free the special names.
-    if (sf->pfminfo.os2_family_name) { free(sf->pfminfo.os2_family_name); sf->pfminfo.os2_family_name = NULL; }
-    if (sf->pfminfo.os2_style_name) { free(sf->pfminfo.os2_style_name); sf->pfminfo.os2_style_name = NULL; }
-    // Free the bitmaps.
     for ( bdf = sf->bitmaps; bdf!=NULL; bdf = bnext ) {
 	bnext = bdf->next;
 	BDFFontFree(bdf);
@@ -6469,6 +6467,7 @@ return;
     free(sf->xuid);
     free(sf->cidregistry);
     free(sf->ordering);
+    if ( sf->styleMapFamilyName && sf->styleMapFamilyName[0]!='\0' ) { free(sf->styleMapFamilyName); sf->styleMapFamilyName = NULL; }
     MacFeatListFree(sf->features);
     /* We don't free the EncMap. That field is only a temporary pointer. Let the FontViewBase free it, that's where it really lives */
     // TODO: But that doesn't always get freed. The statement below causes double-frees, so we need to come up with better conditions.
