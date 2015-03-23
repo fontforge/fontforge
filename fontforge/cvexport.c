@@ -54,7 +54,7 @@ return;
     depth = 4;
     bdfc = SplineCharFreeTypeRasterizeNoHints(sc,layer,pixelsize,72,4);
     if ( bdfc==NULL )
-	bdfc = SplineCharAntiAlias(sc,pixelsize,layer,4);
+	bdfc = SplineCharAntiAlias(sc,layer,pixelsize,4);
     if ( bdfc==NULL )
 return;
 
