@@ -767,7 +767,7 @@ return;
 	gcd[k++].creator = GGroupCreate;
 
 	GGadgetsCreate(gw,gcd);
-	for ( i=0; i<4; ++i )
+	for ( i=0; i<mm->axis_count; ++i )
 	    free(axisnames[i]);
 	GTextInfoListFree(gcd[k-4].gd.u.list);
 	GWidgetIndicateFocusGadget(gcd[1].ret);
