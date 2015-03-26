@@ -3528,12 +3528,18 @@ docs are wrong.
     }
 
     if ( os2->version>=2 ) {
-	double xh, caph;
-
-	xh   = SFXHeight  (sf,at->gi.layer,true);
-	caph = SFCapHeight(sf,at->gi.layer,true);
-	os2->xHeight = (xh >= 0.0 ? xh : 0);
-	os2->capHeight = (caph >= 0.0 ? caph : 0);
+    if ( sf->pfminfo.os2_xheight!=0 )
+        os2->xHeight = sf->pfminfo.os2_xheight;
+    else {
+	    double xh = SFXHeight(sf,at->gi.layer,true);
+        os2->xHeight = (xh >= 0.0 ? xh : 0);
+    }
+    if ( sf->pfminfo.os2_capheight!=0 )
+        os2->capHeight = sf->pfminfo.os2_capheight;
+    else {
+	    double caph = SFCapHeight(sf,at->gi.layer,true);
+        os2->capHeight = (caph >= 0.0 ? caph : 0);
+    }
 	os2->defChar = 0;
 	if ( format==ff_otf || format==ff_otfcid )
 	    os2->defChar = ' ';
