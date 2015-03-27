@@ -913,7 +913,7 @@ static char* normalizeToASCII(char *str) {
 }
 
 static char* fetchTTFAttribute(const SplineFont *sf, int strid) {
-    char* value=NULL, nonenglish=NULL;
+    char *value=NULL, *nonenglish=NULL;
     struct ttflangname *nm;
 
     for ( nm=sf->names; nm!=NULL; nm=nm->next ) {
@@ -1106,7 +1106,7 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
     {
         char* preferredFamilyName = fetchTTFAttribute(sf,ttf_preffamilyname);
         char* preferredSubfamilyName = fetchTTFAttribute(sf,ttf_prefmodifiers);
-        char* styleMapFamily;
+        char* styleMapFamily = NULL;
         if (sf->styleMapFamilyName != NULL) {
             /* Empty styleMapStyleName means we imported a UFO that does not have this field. Bypass the fallback. */
             if (sf->styleMapFamilyName[0]!='\0')
@@ -3767,10 +3767,10 @@ return( NULL );
 		else free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleMapStyleName")==0 ) {
-		if ((char *) valname == "regular") sf->pfminfo.stylemap = 0x40;
-        else if ((char *) valname == "italic") sf->pfminfo.stylemap = 0x01;
-        else if ((char *) valname == "bold") sf->pfminfo.stylemap = 0x20;
-        else if ((char *) valname == "bold italic") sf->pfminfo.stylemap = 0x21;
+		if (strcmp((char *) valname, "regular")==0) sf->pfminfo.stylemap = 0x40;
+        else if (strcmp((char *) valname, "italic")==0) sf->pfminfo.stylemap = 0x01;
+        else if (strcmp((char *) valname, "bold")==0) sf->pfminfo.stylemap = 0x20;
+        else if (strcmp((char *) valname, "bold italic")==0) sf->pfminfo.stylemap = 0x21;
 		free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "fullName")==0 ||

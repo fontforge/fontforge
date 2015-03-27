@@ -7906,11 +7906,12 @@ bool SFD_GetFontMetaData( FILE *sfd,
     {
     char* sname = SFDReadUTF7Str(sfd);
     if (sf->pfminfo.stylemap == -1) {
-        if (sname == "bold italic") sf->pfminfo.stylemap = 0x21;
-        else if (sname == "bold") sf->pfminfo.stylemap = 0x20;
-        else if (sname == "italic") sf->pfminfo.stylemap = 0x01;
-        else if (sname == "regular") sf->pfminfo.stylemap = 0x40;
+        if (strcmp(sname,"bold italic")==0) sf->pfminfo.stylemap = 0x21;
+        else if (strcmp(sname,"bold")==0) sf->pfminfo.stylemap = 0x20;
+        else if (strcmp(sname,"italic")==0) sf->pfminfo.stylemap = 0x01;
+        else if (strcmp(sname,"regular")==0) sf->pfminfo.stylemap = 0x40;
     }
+    free(sname);
     }
     else if ( strmatch(tok,"FSType:")==0 )
     {
