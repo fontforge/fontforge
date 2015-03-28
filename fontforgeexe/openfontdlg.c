@@ -547,7 +547,7 @@ return( true );
     file = u2def_copy(ufile);
     free(ufile);
 
-    fontnames = GetFontNames(file);
+    fontnames = GetFontNames(file, 0);
     if ( fontnames==NULL || fontnames[0]==NULL )
 	msg = uc_copy( "???" );
     else {
