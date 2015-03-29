@@ -1389,7 +1389,8 @@ return;					/* No support for apple "lookups" */
 	putc('\n',out);
     }
     for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
-	if ( sub!=otl->subtables )
+	/* The `subtable` keyword is only supported in class kerning lookups. */
+	if ( sub!=otl->subtables && sub->kc!=NULL )
 	    fprintf( out, "  subtable;\n" );
 	if ( sub->kc!=NULL )
 	    dump_kernclass(out,sf,sub);
