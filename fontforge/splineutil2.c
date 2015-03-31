@@ -41,7 +41,7 @@ int default_fv_row_count = 4;
 int default_fv_col_count = 16;
 int default_fv_font_size = 48;
 int default_fv_antialias=true;
-int default_fv_bbsized=true;
+int default_fv_bbsized=false;
 int snaptoint=0;
 
 /*#define DEBUG	1*/
