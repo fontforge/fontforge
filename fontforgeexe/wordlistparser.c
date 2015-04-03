@@ -67,10 +67,13 @@ const char* Wordlist_getSCName( SplineChar* sc )
         
     static char ret[ 1024 ];
     int simple = false;
+    /* If the glyph is unencoded, we need to keep a slash before the name because
+       it doesn't correspond to the codepoint. */
+    if( sc->unicodeenc != -1 ) {
     if( strlen( sc->name ) == 1 )
     {
         char ch = sc->name[0];
-        
+
         if( ch >= 'a' && ch <= 'z' )
             simple = true;
         else if( ch >= '0' && ch <= '9' )
@@ -85,7 +88,6 @@ const char* Wordlist_getSCName( SplineChar* sc )
         }
     }
 
-    
     if( !strcmp( sc->name, "zero" ))
         return "0";
     if( !strcmp( sc->name, "one" ))
@@ -106,7 +108,8 @@ const char* Wordlist_getSCName( SplineChar* sc )
         return "8";
     if( !strcmp( sc->name, "nine" ))
         return "9";
-        
+    }
+
     snprintf( ret, 1024, "/%s", sc->name );
     return ret;
 }
