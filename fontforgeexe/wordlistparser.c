@@ -498,10 +498,8 @@ WordListLine WordlistEscapedInputStringToParsedDataComplex(
 	    }
 	}
 
-	char glyphname[10];
-	glyphname[0] = ch;
-	glyphname[1] ='\0';
-	SplineChar* sc = SFGetOrMakeChar( sf, -1, glyphname );
+	/* If we reach this point, we're looking based on codepoint. */
+	SplineChar* sc = SFGetOrMakeChar( sf, (int)ch, 0 );
 	out->sc = sc;
 	out->isSelected = isSelected;
 	out->currentGlyphIndex = currentGlyphIndex;
