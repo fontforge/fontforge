@@ -6,8 +6,7 @@
 #include "ofl.h"
 
 static char *ofl_eng[] = {
-    "Copyright (c) %1$d, %2$s (<URL|email>),",
-    "with Reserved Font Name %s.",
+    "Copyright (c) %1$d, %2$s (<URL|email>)",
     "",
     "This Font Software is licensed under the SIL Open Font License, Version 1.1.",
     "This license is copied below, and is also available with a FAQ at:",
