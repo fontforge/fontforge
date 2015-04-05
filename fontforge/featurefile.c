@@ -1,5 +1,5 @@
 /* Copyright (C) 2000-2012 by George Williams */
-/* Copyright (C) 2012 by Khaled Hosny */
+/* Copyright (C) 2012-2013 by Khaled Hosny */
 /* Copyright (C) 2013 by Matthew Skala */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -1389,7 +1389,8 @@ return;					/* No support for apple "lookups" */
 	putc('\n',out);
     }
     for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
-	if ( sub!=otl->subtables )
+	/* The `subtable` keyword is only supported in class kerning lookups. */
+	if ( sub!=otl->subtables && sub->kc!=NULL )
 	    fprintf( out, "  subtable;\n" );
 	if ( sub->kc!=NULL )
 	    dump_kernclass(out,sf,sub);
@@ -5644,7 +5645,8 @@ static void fea_ParseTableKeywords(struct parseState *tok, struct tablekeywords 
 static void fea_ParseGDEFTable(struct parseState *tok) {
     /* GlyphClassDef <base> <lig> <mark> <component>; */
     /* Attach <glyph>|<glyph class> <number>+; */	/* parse & ignore */
-    /* LigatureCaret <glyph>|<glyph class> <caret value>+ */
+    /* LigatureCaretByPos <glyph>|<glyph class> <number>+; */
+    /* LigatureCaretByIndex <glyph>|<glyph class> <number>+; */	/* parse & ignore */
     int i;
     struct feat_item *item;
     int16 *carets=NULL; int len=0, max=0;
@@ -5668,12 +5670,8 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 		}
 	    }
 	} else if ( strcmp(tok->tokbuf,"LigatureCaret")==0 || /* FF backwards compatibility */ \
-		 /* strcmp(tok->tokbuf,"LigatureCaretByIndex")==0  TODO should include this */ \
 		    strcmp(tok->tokbuf,"LigatureCaretByPos")==0 ) {
-	    /* Older versions of FontForge was using LigatureCaret but there is actually */
-	    /* LigatureCaretByPos and LigatureCaretByIndex which we need to watch (2013) */
-	    /* 2013may16 TODO: We need to update all this featurefile stuff according to */
-	    /* http://www.adobe.com/devnet/opentype/afdko/topic_feature_file_syntax.html */
+	    // Ligature carets by single coordinate (format 1).
 	    carets=NULL;
 	    len=0;
 	    item = chunkalloc(sizeof(struct feat_item));
@@ -5717,6 +5715,24 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 	    } else {
 		LogError(_("Expected integer or list of integers after %s on line %d of %s"), item->u1.class,
 			tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	    }
+	} else if (strcmp (tok->tokbuf, "LigatureCaretByIndex") == 0) {
+	    // Ligature carets by contour point index (format 2).
+	    // Unsupported, will be parsed and ignored.
+	    fea_ParseTok (tok);
+	    if (tok->type != tk_class && tok->type != tk_name && tok->type != tk_cid) {
+	        LogError (_("Expected name or class on line %d of %s"),
+	            tok->line[tok->inc_depth],
+	            tok->filename[tok->inc_depth]);
+	        ++tok->err_count;
+	        fea_skip_to_semi (tok);
+	        continue;
+	    } else {
+	        while (true) {
+	            fea_ParseTok (tok);
+	            if (tok->type != tk_int)
+	                break;
+	        }
 	    }
 	} else if ( strcmp(tok->tokbuf,"GlyphClassDef")==0 ) {
 	    item = chunkalloc(sizeof(struct feat_item));

@@ -3,6 +3,7 @@
 *******************************************************************************
 
     Copyright (C) 2013 Ben Martin
+    Copyright 2014-2015, the FontForge Project Developers.
 
     This file is part of FontForge.
 
@@ -500,7 +501,7 @@ WordListLine WordlistEscapedInputStringToParsedDataComplex(
 	char glyphname[10];
 	glyphname[0] = ch;
 	glyphname[1] ='\0';
-	SplineChar* sc = SFGetOrMakeChar( sf, ch, 0 );
+	SplineChar* sc = SFGetOrMakeChar( sf, -1, glyphname );
 	out->sc = sc;
 	out->isSelected = isSelected;
 	out->currentGlyphIndex = currentGlyphIndex;
