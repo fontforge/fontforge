@@ -107,6 +107,17 @@ static void injectNumericVersion(char ** textVersion, int versionMajor, int vers
   return;
 }
 
+/* The spec does not really require padding the version str but it clears */
+/* 1.8 vs. 1.008 ambiguities and makes us inline with the AFDKO. */
+char* paddedVersionStr(const char * textVersion, char * buffer) {
+    int major = -1;
+    int minor = -1;
+    extractNumericVersion(textVersion, &major, &minor);
+    if (major < 0 || minor < 0) return (char *) textVersion;
+    snprintf(buffer, 6, "%d.%03d", major, minor);
+    return buffer;
+}
+
 const char * DOS_reserved[12] = {"CON", "PRN", "AUX", "CLOCK$", "NUL", "COM1", "COM2", "COM3", "COM4", "LPT1", "LPT2", "LPT3"};
 const int DOS_reserved_count = 12;
 
@@ -974,8 +985,11 @@ static void PListAddNameString(xmlNodePtr parent, const char *key, const SplineF
 	    }
 	}
     }
-    if ( value==NULL && strid==ttf_version && sf->version!=NULL )
-	value = freeme = strconcat("Version ",sf->version);
+    if ( value==NULL && strid==ttf_version && sf->version!=NULL ) {
+	char versionStr[6];
+	paddedVersionStr(sf->version, versionStr);
+	value = freeme = strconcat("Version ", versionStr);
+    }
     if ( value==NULL && strid==ttf_copyright && sf->copyright!=NULL )
 	value = sf->copyright;
     if ( value==NULL )
