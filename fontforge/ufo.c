@@ -80,23 +80,23 @@ static char *buildname(const char *basedir, const char *sub) {
 return( fname );
 }
 
-static void extractNumericVersion(const char * textVersion, int * versionMajor, int * versionMinor) {
+static int extractNumericVersion(const char * textVersion, int * versionMajor, int * versionMinor) {
   // We extract integer values for major and minor versions from a version string.
   *versionMajor = -1; *versionMinor = -1;
-  if (textVersion == NULL) return;
+  if (textVersion == NULL) return 0;
   char *nextText1 = NULL;
   char *nextText2 = NULL;
   int tempVersion = -1;
   tempVersion = strtol(textVersion, &nextText1, 10);
   if (tempVersion != -1 && nextText1 != NULL && (nextText1[0] == '\0' || nextText1[0] == ' ' || nextText1[0] == '.')) {
     *versionMajor = tempVersion;
-  } else return;
-  if (nextText1[0] == '\0') return;
+  } else return 0;
+  if (nextText1[0] == '\0') return 1;
   tempVersion = strtol(nextText1+1, &nextText2, 10);
   if (tempVersion != -1 && nextText2 != NULL && (nextText2[0] == '\0' || nextText2[0] == ' ' || nextText2[0] == '.')) {
     *versionMinor = tempVersion;
-  } else return;
-  return;
+  } else return 1;
+  return 2;
 }
 
 static void injectNumericVersion(char ** textVersion, int versionMajor, int versionMinor) {
@@ -105,6 +105,16 @@ static void injectNumericVersion(char ** textVersion, int versionMajor, int vers
   else if (versionMinor == -1) asprintf(textVersion, "%d", versionMajor);
   else asprintf(textVersion, "%d.%d", versionMajor, versionMinor);
   return;
+}
+
+/* The spec does not really require padding the version str but it clears */
+/* 1.8 vs. 1.008 ambiguities and makes us inline with the AFDKO. */
+char* paddedVersionStr(const char * textVersion, char * buffer) {
+    int major = -1;
+    int minor = -1;
+    if (!extractNumericVersion(textVersion, &major, &minor)) return (char *) textVersion;
+    snprintf(buffer, 6, "%d.%03d", major, minor);
+    return buffer;
 }
 
 const char * DOS_reserved[12] = {"CON", "PRN", "AUX", "CLOCK$", "NUL", "COM1", "COM2", "COM3", "COM4", "LPT1", "LPT2", "LPT3"};
@@ -974,8 +984,11 @@ static void PListAddNameString(xmlNodePtr parent, const char *key, const SplineF
 	    }
 	}
     }
-    if ( value==NULL && strid==ttf_version && sf->version!=NULL )
-	value = freeme = strconcat("Version ",sf->version);
+    if ( value==NULL && strid==ttf_version && sf->version!=NULL ) {
+    char versionStr[6];
+    paddedVersionStr(sf->version, versionStr);
+	value = freeme = strconcat("Version ", versionStr);
+    }
     if ( value==NULL && strid==ttf_copyright && sf->copyright!=NULL )
 	value = sf->copyright;
     if ( value==NULL )
@@ -1139,9 +1152,11 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
       // We attempt to get numeric major and minor versions for U. F. O. out of the FontForge version string.
       int versionMajor = -1;
       int versionMinor = -1;
-      if (sf->version != NULL) extractNumericVersion(sf->version, &versionMajor, &versionMinor);
-      if (versionMajor >= 0) PListAddInteger(dictnode,"versionMajor", versionMajor);
-      if (versionMinor >= 0) PListAddInteger(dictnode,"versionMinor", versionMinor);
+      if (sf->version != NULL) {
+          extractNumericVersion(sf->version, &versionMajor, &versionMinor);
+          if (versionMajor >=0) PListAddInteger(dictnode,"versionMajor", versionMajor);
+          if (versionMinor >=0) PListAddInteger(dictnode,"versionMinor", versionMinor);
+      }
     }
     PListAddNameString(dictnode,"copyright",sf,ttf_copyright);
     PListAddNameString(dictnode,"trademark",sf,ttf_trademark);

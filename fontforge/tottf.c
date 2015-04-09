@@ -3793,6 +3793,8 @@ return( copy(str));		/* Either in ASCII (good) or appears to be utf8*/
 return( latin1_2_utf8_copy(str));
 }
 
+char* paddedVersionStr(const char * textVersion, char * buffer);
+
 /* Oh. If the encoding is symbol (platform=3, specific=0) then Windows won't */
 /*  accept the font unless the name table also has entries for (3,0). I'm not */
 /*  sure if this is the case for the CJK encodings (docs don't mention that) */
@@ -3802,6 +3804,9 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     struct tm *tm;
     char buffer[200];
 
+    char versionStr[6] = "1.000";
+    if (sf->version!=NULL) paddedVersionStr(sf->version, versionStr);
+
     if ( dummy->names[ttf_copyright]==NULL || *dummy->names[ttf_copyright]=='\0' )
 	dummy->names[ttf_copyright] = utf8_verify_copy(sf->copyright);
     if ( dummy->names[ttf_family]==NULL || *dummy->names[ttf_family]=='\0' )
@@ -3809,23 +3814,24 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     if ( dummy->names[ttf_subfamily]==NULL || *dummy->names[ttf_subfamily]=='\0' )
 	dummy->names[ttf_subfamily] = utf8_verify_copy(SFGetModifiers(sf));
     if ( dummy->names[ttf_uniqueid]==NULL || *dummy->names[ttf_uniqueid]=='\0' ) {
-	time(&now);
-	tm = localtime(&now);
-	sprintf( buffer, "%s : %s : %d-%d-%d",
-		BDFFoundry?BDFFoundry:TTFFoundry?TTFFoundry:"FontForge 2.0",
-		sf->fullname!=NULL?sf->fullname:sf->fontname,
-		tm->tm_mday, tm->tm_mon+1, tm->tm_year+1900 );
+    int major = -1;
+    int minor = -1;
+	sprintf( buffer, "%s;%s;%s %s",
+        versionStr,
+		BDFFoundry?BDFFoundry:TTFFoundry?TTFFoundry:"UKWN",
+		sf->familyname,
+		SFGetModifiers(sf));
 	dummy->names[ttf_uniqueid] = copy(buffer);
     }
     if ( dummy->names[ttf_fullname]==NULL || *dummy->names[ttf_fullname]=='\0' )
 	dummy->names[ttf_fullname] = utf8_verify_copy(sf->fullname);
     if ( dummy->names[ttf_version]==NULL || *dummy->names[ttf_version]=='\0' ) {
 	if ( sf->subfontcnt!=0 )
-	    sprintf( buffer, "Version %f ", (double)sf->cidversion );
+	    sprintf( buffer, "Version %f", (double)sf->cidversion );
 	else if ( sf->version!=NULL )
-	    sprintf(buffer,"Version %.20s ", sf->version);
+	    sprintf(buffer,"Version %s", versionStr);
 	else
-	    strcpy(buffer,"Version 1.0" );
+	    strcpy(buffer,"Version 1.000" );
 	dummy->names[ttf_version] = copy(buffer);
     }
     if ( dummy->names[ttf_postscriptname]==NULL || *dummy->names[ttf_postscriptname]=='\0' )
