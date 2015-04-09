@@ -1187,8 +1187,10 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     li->ps = -1;
     SFMapOfSF(li,sf);
 
+#ifndef _NO_FFSCRIPT
     if ( arr==NULL || arr->argc<2 )
 	arr = freeme = SFDefaultScriptsLines(arr,sf);
+#endif /* _NO_FFSCRIPT */
 
     cnt = arr->argc/2;
     len = 1;
@@ -1275,8 +1277,10 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     GImageDestroy(image);
 
     LayoutInfo_Destroy(li);
+#ifndef _NO_FFSCRIPT
     if ( freeme!=NULL )
 	arrayfree(freeme);
+#endif /* _NO_FFSCRIPT */
 }
 
 #include <stdlib.h>
