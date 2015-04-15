@@ -4,8 +4,7 @@ FontForge [![Build Status](https://travis-ci.org/fontforge/fontforge.png)](https
 An outline font editor that lets you create your own OpenType, TrueType, CID-keyed, multi-master
 fonts and more... or simply edit existing ones.
 
-Web site at [fontforge.github.io](http://fontforge.github.io) (old site at
-[fontforge.org](http://fontforge.org))
+Web site at [fontforge.org](http://fontforge.org))
 
 Building from source
 --------------------
