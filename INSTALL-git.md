@@ -48,8 +48,7 @@ On Ubuntu, for example, you should install these :
 ```
 sudo apt-get install packaging-dev pkg-config python-dev libpango1.0-dev libglib2.0-dev libxml2-dev giflib-dbg libjpeg-dev libtiff-dev uthash-dev
 libspiro-dev
-// need to install each of these individually, document process and put in the process here, way of 
-contributing through documentation
+
 ```
 
 2. Installing
