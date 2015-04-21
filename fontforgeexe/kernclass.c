@@ -376,7 +376,10 @@ return;
 return;
     }
     kcd->offsets[kcd->old_pos] = val;
-    free(kcd->adjusts[kcd->old_pos].corrections);
+    if (kcd->adjusts[kcd->old_pos].corrections) {
+      free(kcd->adjusts[kcd->old_pos].corrections);
+      kcd->adjusts[kcd->old_pos].corrections = NULL;
+    }
     kcd->adjusts[kcd->old_pos] = kcd->active_adjust;
     kcd->active_adjust.corrections = NULL;
 
@@ -870,7 +873,7 @@ return(false);
 	kp->subtable = kcd->subtable;
 	kp->off = offset;
 	if ( kp->adjust!=NULL && kcd->active_adjust.corrections!=NULL ) {
-	    free(kp->adjust->corrections);
+	    free(kp->adjust->corrections); kp->adjust->corrections = NULL;
 	    *kp->adjust = kcd->active_adjust;
 	} else if ( kcd->active_adjust.corrections!=NULL ) {
 	    kp->adjust = chunkalloc(sizeof(DeviceTable));

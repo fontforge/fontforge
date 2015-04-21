@@ -1351,6 +1351,13 @@ static int MV_ChangeKerning(MetricsView *mv, int which, int offset, int is_diff)
     index = mv->glyphs[which-1].kc_index;
 
     if ( kc!=NULL ) {
+	// We do not want adjustments to the Everything Else class on either side.
+	// So we determine whether either character falls into that class.
+	int f = KCFindName(mv->glyphs[which-1].sc->name , kc->firsts , kc->first_cnt , 0);
+	int l = KCFindName(mv->glyphs[which].sc->name, kc->seconds, kc->second_cnt, 0);
+	if ((f == 0 && (kc->first_cnt < 1 || kc->firsts[0] == NULL)) ||
+	    (l == 0 && (kc->second_cnt < 1 || kc->seconds[0] == NULL)))
+	    index = -1; // Flag this so as to abort immediately.
 	if ( index==-1 )
 	    kc = NULL;
 	else if ( kp != NULL && kp->off != 0 )
@@ -1365,7 +1372,8 @@ return( true );		/* No change, don't bother user */
 	    offset = kc->offsets[index] = is_diff ? kc->offsets[index]+offset : offset;
     }
     if ( kc==NULL ) {
-	if ( sub!=NULL && sub->kc!=NULL ) {
+	if ( sub!=NULL && sub->kc!=NULL && 0 ) {
+	    // Frank has disabled this because it seems not to accomplish what the user would expect.
 	    /* If the subtable we were given contains a kern class, and for some reason */
 	    /*  we can't, or don't want to, use that kern class, then see */
 	    /*  if the lookup contains another subtable with no kern classes */
@@ -1385,6 +1393,16 @@ return( false );
 	    mv->cur_subtable = sub;
 	    MVSetSubtables(mv->sf);
 	    MVSetFeatures(mv);
+	}
+	if (sub != NULL && sub->kc != NULL) {
+	    // If there is no class match for the pair, let the user edit the class kerns manually.
+	    KernClassD(sub->kc,mv->sf,mv->layer,sub->vertical_kerning);
+	    kc = sub->kc;
+
+	    // The following code comes from KCL_Done.
+	    MVReFeatureAll( mv->sf );
+	    MVReKernAll( mv->sf );
+	    MVSelectFirstKerningTable( mv );
 	}
 
 	/* If we change the kerning offset, then any pixel corrections*/
@@ -1577,7 +1595,7 @@ return( true );
 	if ( *end && !(*end=='-' && end[1]=='\0'))
 	    GDrawBeep(NULL);
 	else {
-	    MV_ChangeKerning(mv,which,val, false);
+	    MV_ChangeKerning(mv,which,val, true);
 	}
     } else if ( e->u.control.subtype == et_textfocuschanged &&
 	    e->u.control.u.tf_focus.gained_focus ) {
