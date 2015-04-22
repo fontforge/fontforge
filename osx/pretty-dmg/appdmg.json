@@ -1,0 +1,11 @@
+{
+	"title": "FontForge",
+	"icon": "FontForge.icns",
+	"background": "FontForgeInstall.png",
+	"icon-size": 80,
+	"contents": [
+		{ "x": 448, "y": 344, "type": "link", "path": "/Applications" },
+		{ "x": 192, "y": 344, "type": "file", "path": "../FontForge.app" },
+		{ "x": 512, "y": 128, "type": "file", "path": "Install Instructions.webloc" }
+	]
+}
