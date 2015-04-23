@@ -3578,7 +3578,6 @@ return;
 		  } else if (left_class_name_record && right_class_name_record) {
 		    struct kernclass *left_kc, *right_kc;
 		    int left_isv, right_isv, left_isr, right_isr, left_offset, right_offset;
-		    int left_grouptype = GroupNameType(keyname);
 		    int left_exists = KerningClassSeekByAbsoluteIndex(sf, left_class_name_record->gid, &left_kc, &left_isv, &left_isr, &left_offset);
 		    int right_exists = KerningClassSeekByAbsoluteIndex(sf, right_class_name_record->gid, &right_kc, &right_isv, &right_isr, &right_offset);
 		    if ((left_kc == NULL) || (right_kc == NULL)) { LogError(_("kerning.plist references a missing kerning class.")); continue; } // I don't know how this would happen, at least as the code is now, but we do need to throw an error.
