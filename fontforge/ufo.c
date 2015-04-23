@@ -909,7 +909,7 @@ static char* normalizeToASCII(char *str) {
     if ( str!=NULL && !AllAscii(str))
         return StripToASCII(str);
     else
-        return str;
+        return copy(str);
 }
 
 static char* fetchTTFAttribute(const SplineFont *sf, int strid) {
