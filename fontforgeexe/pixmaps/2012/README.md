@@ -1,3 +1,3 @@
-This is the 'default theme' shown to users, and largely inherits and matches icons in the Tango Desktop Project. 
+This is the 'framework theme' that was developed by George Williams, and shown to FontForge users until late 2012.
 
-<http://tango.freedesktop.org>
+The default theme shown to users since then is located at <https://github.com/fontforge/fontforge/tree/master/fontforgeexe/pixmaps/tango>
