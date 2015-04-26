@@ -16,6 +16,35 @@ if not math.exists():
 if ( math.ScriptPercentScaleDown!=3 or math.SubscriptBaselineDropMin != 6) :
   raise ValueError("Assignment failed")
 
+# Test some default values for math constants
+math.clear()
+if ( math.ScriptPercentScaleDown != 80 or
+     math.ScriptScriptPercentScaleDown != 60 or
+     math.DelimitedSubFormulaMinHeight != font.em*1.5 or
+     math.SubSuperscriptGapMin != 4*font.uwidth or
+     math.SpaceAfterScript != font.em/24 or
+     math.StackGapMin != 3*font.uwidth or
+     math.StackDisplayStyleGapMin != 7*font.uwidth or
+     math.FractionNumeratorGapMin != font.uwidth or
+     math.FractionNumeratorDisplayStyleGapMin != 3*font.uwidth or
+     math.FractionRuleThickness != font.uwidth or
+     math.FractionDenominatorGapMin != font.uwidth or
+     math.OverbarVerticalGap != 3*font.uwidth or
+     math.OverbarRuleThickness != font.uwidth or
+     math.OverbarExtraAscender != font.uwidth or
+     math.UnderbarVerticalGap != 3*font.uwidth or
+     math.UnderbarRuleThickness != font.uwidth or
+     math.UnderbarExtraDescender != font.uwidth or
+     math.RadicalVerticalGap != font.uwidth or
+     math.RadicalDisplayStyleVerticalGap != font.uwidth or
+     math.RadicalRuleThickness != font.uwidth or
+     math.RadicalRuleThickness != font.uwidth or
+     math.RadicalExtraAscender != font.uwidth or
+     math.RadicalKernBeforeDegree != 5*font.em/18 or
+     math.RadicalKernAfterDegree != -int(10*font.em/18) or
+     math.RadicalDegreeBottomRaisePercent != 60 ):
+  raise ValueError("Unexpected default value for one math constant")
+
 math.clear()
 if math.exists():
   raise ValueError("Thinks there is a math table in an empty font")
