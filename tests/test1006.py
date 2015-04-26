@@ -35,6 +35,10 @@ if a.horizontalVariants != "B C D" or a.horizontalComponentItalicCorrection!=10:
 if a.verticalVariants != "B.v C.v D.v" or a.verticalComponentItalicCorrection!=20:
   raise ValueError("Failed to set some glyph vertical variant/component")
 
+# non-regression test for a bad allocation in ParseComponentTuple
+font[65].horizontalComponents = (('a',))
+font[65].verticalComponents = (('a',))
+
 #print a.verticalComponents
 #print a.mathKern.topLeft
 

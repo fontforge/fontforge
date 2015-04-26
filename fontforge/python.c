@@ -6870,6 +6870,7 @@ return( NULL );
     for ( i=0; i<cnt; ++i ) {
 	PyObject *obj = PySequence_GetItem(tuple,i);
 	int extender=0, start=0, end=0, full=0;
+	char *glyphName;
 	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(obj)) ) {
 	    parts[i].component = copy( ((PyFF_Glyph *) obj)->sc->name );
 	} else if ( ANYSTRING_CHECK(obj) ) {
@@ -6883,8 +6884,10 @@ return( NULL );
 return( NULL );
 	    }
 	    parts[i].component = copy(((PyFF_Glyph *) g)->sc->name);
-	} else if ( !PyArg_ParseTuple(obj,"s|iiii", &parts[i].component,
+	} else if ( PyArg_ParseTuple(obj,"s|iiii", &glyphName,
 		&extender, &start, &end, &full )) {
+	    parts[i].component = copy(glyphName);
+	} else {
             free(parts);
 return( NULL );
         }
