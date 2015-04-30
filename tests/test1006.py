@@ -43,6 +43,31 @@ if ( math.ScriptPercentScaleDown != 80 or
      math.RadicalKernBeforeDegree != 5*font.em/18 or
      math.RadicalKernAfterDegree != -int(10*font.em/18) or
      math.RadicalDegreeBottomRaisePercent != 60 ):
+  print ( math.ScriptPercentScaleDown , 80 ), \
+( math.ScriptScriptPercentScaleDown , 60 ), \
+( math.DelimitedSubFormulaMinHeight , font.em*1.5 ), \
+( math.SubSuperscriptGapMin , 4*font.uwidth ), \
+( math.SpaceAfterScript , font.em/24 ), \
+( math.StackGapMin , 3*font.uwidth ), \
+( math.StackDisplayStyleGapMin , 7*font.uwidth ), \
+( math.FractionNumeratorGapMin , font.uwidth ), \
+( math.FractionNumeratorDisplayStyleGapMin , 3*font.uwidth ), \
+( math.FractionRuleThickness , font.uwidth ), \
+( math.FractionDenominatorGapMin , font.uwidth ), \
+( math.OverbarVerticalGap , 3*font.uwidth ), \
+( math.OverbarRuleThickness , font.uwidth ), \
+( math.OverbarExtraAscender , font.uwidth ), \
+( math.UnderbarVerticalGap , 3*font.uwidth ), \
+( math.UnderbarRuleThickness , font.uwidth ), \
+( math.UnderbarExtraDescender , font.uwidth ), \
+( math.RadicalVerticalGap , font.uwidth ), \
+( math.RadicalDisplayStyleVerticalGap , font.uwidth ), \
+( math.RadicalRuleThickness , font.uwidth ), \
+( math.RadicalRuleThickness , font.uwidth ), \
+( math.RadicalExtraAscender , font.uwidth ), \
+( math.RadicalKernBeforeDegree , 5*font.em/18 ), \
+( math.RadicalKernAfterDegree , -int(10*font.em/18) ), \
+( math.RadicalDegreeBottomRaisePercent , 60 )
   raise ValueError("Unexpected default value for one math constant")
 
 math.clear()
