@@ -108,7 +108,6 @@ struct MATH *MathTableNew(SplineFont *sf) {
     math->ScriptScriptPercentScaleDown	= 60;
     math->DelimitedSubFormulaMinHeight	= emsize*1.5;
     /* No default given for math->DisplayOperatorMinHeight */
-    /* No default given for math->MathLeading */
     /* No default given for math->AxisHeight */
     sc = SFGetChar(sf,'x',NULL);
     if ( sc!=NULL ) {
@@ -132,31 +131,17 @@ struct MATH *MathTableNew(SplineFont *sf) {
     math->SubSuperscriptGapMin = 4*sf->uwidth;			/* 4* default rule thickness */
     math->SuperscriptBottomMaxWithSubscript = math->AccentBaseHeight;	/* X-height */
     math->SpaceAfterScript = emsize/24;				/* .5pt at 12pt */
-    /* No default given for math->UpperLimitGapMin */
-    /* No default given for math->UpperLimitBaselineRiseMin */
-    /* No default given for math->LowerLimitGapMin */
-    /* No default given for math->LowerLimitBaselineDropMin */
-    /* No default given for math->StackTopShiftUp */
-    /* No default given for math->StackTopDisplayStyleShiftUp */
-    /* No default given for math->StackBottomShiftDown */
-    /* No default given for math->StackBottomDisplayStyleShiftDown */
     math->StackGapMin = 3*sf->uwidth;				/* 3* default rule thickness */
     math->StackDisplayStyleGapMin = 7*sf->uwidth;
-    /* No default given for math->StretchStackTopShiftUp */
-    /* No default given for math->StretchStackBottomShiftDown */
     math->StretchStackGapAboveMin = math->UpperLimitGapMin;
     math->StretchStackGapBelowMin = math->LowerLimitGapMin;
-    /* No default given for math->FractionNumeratorShiftUp */
     math->FractionNumeratorDisplayStyleShiftUp = math->StackTopDisplayStyleShiftUp;
-    /* No default given for math->FractionDenominatorShiftDown */
     math->FractionDenominatorDisplayStyleShiftDown = math->StackBottomDisplayStyleShiftDown;
     math->FractionNumeratorGapMin = sf->uwidth;
     math->FractionNumeratorDisplayStyleGapMin = 3*sf->uwidth;
     math->FractionRuleThickness = sf->uwidth;
     math->FractionDenominatorGapMin = sf->uwidth;
     math->FractionDenominatorDisplayStyleGapMin = 3*sf->uwidth;
-    /* No default given for math->SkewedFractionHorizontalGap */
-    /* No default given for math->SkewedFractionVerticalGap */
     math->OverbarVerticalGap = 3*sf->uwidth;
     math->OverbarRuleThickness = sf->uwidth;
     math->OverbarExtraAscender = sf->uwidth;
@@ -164,8 +149,6 @@ struct MATH *MathTableNew(SplineFont *sf) {
     math->UnderbarRuleThickness = sf->uwidth;
     math->UnderbarExtraDescender = sf->uwidth;
     math->RadicalVerticalGap = sf->uwidth;
-    math->RadicalDisplayStyleVerticalGap = sf->uwidth+.25*math->AccentBaseHeight; /* rule thickness + 1/4 X-height */
-    math->RadicalRuleThickness = sf->uwidth;
     math->RadicalExtraAscender = sf->uwidth;
     math->RadicalKernBeforeDegree = 5*emsize/18;
     math->RadicalKernAfterDegree = -10*emsize/18;
