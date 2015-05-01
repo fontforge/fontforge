@@ -29,9 +29,20 @@ p.lineTo(accentBaseHeight, accentBaseHeight);
 p.lineTo(0, accentBaseHeight)
 p.closePath();
 
+# Create a glyph for the '+' letter, so that math->AxisHeight is nonzero.
+axisHeight = font.em * .3
+g = font.createChar(0x2B)
+p = g.glyphPen();
+p.moveTo(0, 0);
+p.lineTo(2*axisHeight, 0);
+p.lineTo(2*axisHeight, 2*axisHeight);
+p.lineTo(0, 2*axisHeight)
+p.closePath();
+
 if ( math.ScriptPercentScaleDown != 80 or
      math.ScriptScriptPercentScaleDown != 60 or
      math.DelimitedSubFormulaMinHeight != int(font.em*1.5) or
+     math.AxisHeight != int(axisHeight) or
      math.SubscriptTopMax != int(accentBaseHeight) or
      math.SuperscriptBottomMin != int(accentBaseHeight) or
      math.SubSuperscriptGapMin != int(4*font.uwidth) or
